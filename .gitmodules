@@ -1,6 +1,6 @@
 [submodule "psxrecomp"]
 	path = psxrecomp
-	url = https://github.com/novapowers0/psxrecomp.git
+	url = https://github.com/quangdang46/psxrecomp.git
 	branch = nova-mods
 [submodule "recomp-ui"]
 	path = recomp-ui
