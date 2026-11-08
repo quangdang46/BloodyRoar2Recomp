@@ -82,3 +82,4 @@ starvation_dump.jsonl
 # Local build toolchain / vendored deps (never commit)
 /toolchain/
 /deps/
+/release-macos/
