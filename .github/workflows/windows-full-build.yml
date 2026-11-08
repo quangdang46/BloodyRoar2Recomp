@@ -1,8 +1,8 @@
-# Windows ready-to-play build for Bloody Roar II Recompiled.
+# Windows ready-to-play build for Bloody Roar II Recompiled (Europe/SLES).
 #
 # The generated game C is restored only from a private repository at build
-# time. The public artifact contains the universal executable, OpenBIOS,
-# launcher assets and curated mods, but no disc image or generated source.
+# time. The public artifact contains the executable, OpenBIOS, launcher
+# assets and curated mods, but no disc image or generated source.
 
 name: Windows full build (ready-to-play)
 
@@ -131,7 +131,9 @@ jobs:
             "https://x-access-token:${GENERATED_REPO_PAT}@github.com/${GENERATED_REPO}.git" \
             generated
           rm -rf generated/.git
-          for S in SLES_017.22 SCUS_944.24 SLPS_018.42; do
+          # This fork ships the Europe (SLES-01722) region only; the
+          # universal EU+USA+Japan exe needs generated C for all three.
+          for S in SLES_017.22; do
             test -f "generated/${S}_dispatch.c" || { echo "::error::missing ${S}_dispatch.c"; exit 1; }
             test -f "generated/${S}_decls.h" || { echo "::error::missing ${S}_decls.h"; exit 1; }
             N="$(find generated -maxdepth 1 -type f -name "${S}_full_*.c" | wc -l)"
@@ -170,7 +172,6 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
             -DPSX_SETUP_WIZARD=ON \
             -DPSX_GAME_VERSION="${RELEASE_VERSION}" \
-            -DBR2_BUILD_UNIVERSAL=ON \
             -DPSX_ENABLE_VULKAN=OFF \
             "${EXTRA[@]}" 2>&1 | tee build-ci-configure.log
           if ! grep -q 'Vulkan backend: disabled' build-ci-configure.log; then
@@ -178,15 +179,15 @@ jobs:
             exit 1
           fi
 
-      - name: Build universal Windows executable
+      - name: Build Windows executable
         shell: msys2 {0}
         run: |
           set -euo pipefail
-          cmake --build build-ci --target psx-runtime-universal -j"$(nproc)"
+          cmake --build build-ci --target psx-runtime -j"$(nproc)"
           test -f build-ci/BloodyRoar2_Recompiled.exe
           STAMP="build-ci/psx_game_version.txt"
           if [[ ! -f "${STAMP}" ]]; then
-            echo "::error::missing game-version stamp next to universal runtime"
+            echo "::error::missing game-version stamp next to runtime"
             exit 1
           fi
           BUILT="$(tr -d '[:space:]' <"${STAMP}")"
@@ -198,8 +199,19 @@ jobs:
           echo "version pin ok: ${BUILT} (${STAMP})"
 
       - name: Package Windows release zip
-        shell: powershell
-        run: ./scripts/package_release.ps1 -Build build-ci
+        shell: bash
+        run: |
+          set -euo pipefail
+          STAGE="dist/BloodyRoar2"
+          rm -rf "${STAGE}"
+          mkdir -p "${STAGE}"
+          cp build-ci/BloodyRoar2_Recompiled.exe "${STAGE}/"
+          for F in game.toml game_options.toml settings.toml; do
+            if [[ -f "build-ci/${F}" ]]; then cp "build-ci/${F}" "${STAGE}/"; fi
+          done
+          cp -R build-ci/bios build-ci/assets build-ci/mods "${STAGE}/"
+          rm -f "dist/BloodyRoar2-v${RELEASE_VERSION}.zip"
+          (cd dist && zip -qr "BloodyRoar2-v${RELEASE_VERSION}.zip" BloodyRoar2)
 
       - name: Verify Windows release package contents
         shell: bash
@@ -218,7 +230,6 @@ jobs:
               "BloodyRoar2/game.toml",
               "BloodyRoar2/bios/openbios.bin",
               "BloodyRoar2/assets/psxrecomp.png",
-              "BloodyRoar2/mods/bundled/br2.enhancement.widescreen/1.0.0/manifest.toml",
           }
           missing = sorted(required - names)
           if missing:
