@@ -302,3 +302,13 @@ Result:
 - Known cosmetic issue in headless: `netplay SW GPU forced but present
   path failed` (expected — no window); `debug server bind FAILED` on the
   second instance sharing port 4370 (use `--debug-port` to disambiguate).
+
+### Agent-over-netplay (verified same session)
+
+- `agent_mode.py --netplay` runs the heuristic policy through the guest's
+  debug port. Read-only observation (phase/fighter/char-id scans) is safe;
+  the `ctrl+1` human-flag poke MUST be skipped (`--netplay` flag) because
+  it is a local RAM write that would diverge the peer's simulation.
+- Pad injection flows debug-override -> SIO -> staged input -> wire ->
+  remote apply; digests stayed byte-identical with the agent running.
+- Char-id scan (256KB blob window) works over the debug port at ~1Hz.
