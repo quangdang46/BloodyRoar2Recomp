@@ -269,3 +269,36 @@ Generate & rebuild / prepare flows should point at the **`.cue`**, not a lone
 
 This document will grow as N-way rollback confirmation, SFU soak on 5P titles,
 and further ICE/SFU policy land.
+
+---
+
+## Verified: BR2 local rollback session (2026-11-09)
+
+Two headless instances on one machine, direct LAN transport:
+
+```
+# host (slot 0)
+BloodyRoar2_Recompiled --headless --bios psxrecomp/bios/openbios.bin \
+  --disc Game.cue --no-launcher --netplay --net-slot 0 \
+  --net-bind 127.0.0.1:17777 --net-session-id 42 --memcard-dir /tmp/np/a
+
+# guest (slot 1)
+same + --net-slot 1 --net-peer 127.0.0.1:17777 --memcard-dir /tmp/np/b
+```
+
+Result:
+
+- Both reach `netplay lockstep armed (sim_tick=0, vsync off)` after the
+  admit barrier; guest memcards sandboxed to `<dir>/netplay`, mods
+  auto-cleared for vanilla determinism.
+- `rb live dig` state digests (cpu/clk/tim/ram/dirty/av/cd/spu/mdec/aux)
+  are **byte-identical between peers** at every sampled sim tick —
+  full-system lockstep determinism confirmed, not just input sync.
+- Guest-side `rb hash_confirm heal stale gap → resolved=1193` shows the
+  rollback resim path firing and converging.
+- Injecting pad input via the guest debug port (`press`/`set_input`)
+  kept digests identical on both sides → remote input relay +
+  prediction/resim verified end-to-end.
+- Known cosmetic issue in headless: `netplay SW GPU forced but present
+  path failed` (expected — no window); `debug server bind FAILED` on the
+  second instance sharing port 4370 (use `--debug-port` to disambiguate).
