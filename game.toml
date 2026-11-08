@@ -22,9 +22,11 @@ boot_exe = "SLES_017.22"
 known_sizes = [553651392]
 known_md5 = [
   "fb75a0fdf977a3eccc48fdc87286b0ef",
+  "e711793545631b226d91e295d04bfb8e",
 ]
 known_sha1 = [
   "c6021ee7817cdd3dba3e2cf8238054a7943aa5be",
+  "9b54679f42b6843bbda853674310d911206ac0b8",
 ]
 
 [recompiler]

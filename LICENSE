@@ -1,21 +1,84 @@
-MIT License
+# LICENSE
+
+## Project License
 
 Copyright (c) 2026 BloodyRoar2Recomp contributors
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+The original source code, tools, libraries, documentation, AI systems,
+platform integrations, and other original contributions developed
+specifically for this project are licensed under the MIT License, unless
+otherwise stated.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of the original project software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including without
+limitation the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, subject to the following
+conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+---
+
+## Excluded Intellectual Property
+
+This license applies only to original contributions owned by the project
+authors.
+
+It does NOT grant any rights to third-party intellectual property, including
+but not limited to:
+
+- Bloody Roar and Bloody Roar II trademarks and franchise rights.
+- Original game source code and executable code owned by third parties.
+- Original character designs, character models and artwork.
+- Original textures, animations and visual assets.
+- Original music, sound effects and voice recordings.
+- Original game data, disc images, ROMs, BIN/CUE files, and other
+  copyrighted materials.
+
+Statically recompiled output generated from a user-supplied game executable
+(`generated/` build artifacts) is a derivative of that executable and remains
+the property of its respective rights holders. It is not covered by this
+license.
+
+Such materials remain the property of their respective copyright holders and
+are not licensed under this MIT License.
+
+## Third-Party Components
+
+Third-party libraries, dependencies and other externally sourced components
+remain subject to their respective licenses and copyright notices. See
+`THIRD_PARTY_LICENSES.md` for the inventory.
+
+Notably, the `psxrecomp` framework submodule is licensed under the
+PolyForm Noncommercial License 1.0.0, and `recomp-ui` under the MIT License;
+both are © their respective authors and are NOT relicensed by this project.
+
+## Disclaimer of Affiliation
+
+This is an independent, unofficial community project.
+
+It is not affiliated with, endorsed by, sponsored by, or officially connected
+to Hudson Soft, Eighting, Raizing, Sony Interactive Entertainment, Virgin
+Interactive, or any other rights holder associated with Bloody Roar II.
+
+All third-party trademarks and copyrights belong to their respective owners.
+
+## No Grant of Game Distribution Rights
+
+This license does not grant permission to reproduce, distribute, sublicense,
+sell, or otherwise commercially exploit the original Bloody Roar II game or
+its copyrighted assets.
+
+Any use or distribution of third-party game content requires appropriate
+authorization from the relevant rights holders.

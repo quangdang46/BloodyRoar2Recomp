@@ -272,7 +272,11 @@ launcher and tools are distributed; **the game's copyrighted content is not**.
   supply your own SCPH locally.
 
 Unofficial, non-commercial, research and preservation project. Not affiliated
-with or endorsed by Hudson Soft, Sony Computer Entertainment, Virgin
-Interactive, or any rightsholder of Bloody Roar.
+with or endorsed by Hudson Soft, Eighting/Raizing, Sony Computer Entertainment,
+Virgin Interactive, or any rightsholder of Bloody Roar.
 
-Released under the **MIT License** — see [`LICENSE`](LICENSE).
+Released under the **MIT License** for original project code only — game
+assets, trademarks, and third-party components are expressly excluded; see
+[`LICENSE`](LICENSE), [`COPYRIGHT.md`](COPYRIGHT.md),
+[`ASSET_POLICY.md`](ASSET_POLICY.md), [`TRADEMARKS.md`](TRADEMARKS.md), and
+[`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md).
