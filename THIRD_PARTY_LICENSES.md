@@ -5,21 +5,25 @@ components. Each remains under its own license and copyright; nothing here
 relicenses them. Full license texts ship inside each component's source
 tree or upstream repository.
 
-## Framework submodules (git submodules of this repository)
+## Framework components (vendored in-tree)
 
 | Component | Source | License | Copyright |
 |---|---|---|---|
-| psxrecomp (static recompilation framework + runtime) | github.com/novapowers0/psxrecomp | PolyForm Noncommercial License 1.0.0 | (c) 2026 Matthew Stan |
-| recomp-ui (launcher UI framework) | github.com/mstan/recomp-ui | MIT | (c) 2026 Matthew Stanley |
+| psxrecomp/ (static recompilation framework + runtime) | fork of github.com/novapowers0/psxrecomp @ `aa38cd7` (branch `nova-mods`) | PolyForm Noncommercial License 1.0.0 | (c) 2026 Matthew Stan |
+| recomp-ui/ (launcher UI framework) | github.com/mstan/recomp-ui @ `b688ca7` | MIT | (c) 2026 Matthew Stanley |
 
 Notes:
 
-- `psxrecomp` is pinned at commit `219a362` (see `framework_pins.txt`).
-  Its PolyForm Noncommercial terms apply to the framework itself; this
-  game's MIT license does not extend to it. Noncommercial use of the
-  combined work should be reviewed against both licenses.
-- `recomp-ui` is pinned at `b688ca7`. It depends on Dear ImGui
-  (github.com/ocornut/imgui, MIT, (c) Omar Cornut) for its UI layer.
+- Both components are vendored directly into this repository (no git
+  submodules). Their upstream histories remain available at the sources
+  above.
+- `psxrecomp` is PolyForm Noncommercial — its terms apply to the
+  framework itself; this game's MIT license does not extend to it.
+  Noncommercial use of the combined work should be reviewed against both
+  licenses.
+- `recomp-ui` depends on Dear ImGui (github.com/ocornut/imgui, MIT,
+  (c) Omar Cornut) for its UI layer; ImGui sources are vendored under
+  `recomp-ui/src/third_party/imgui/`.
 
 ## Libraries inside psxrecomp
 
