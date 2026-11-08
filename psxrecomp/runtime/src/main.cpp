@@ -5562,7 +5562,7 @@ static void netplay_barrier_admit(int override) {
             (tip_hold && !psx_start_bisect_no_tiphold_capture());
         if (need_sample) {
             PsxNetPad local{};
-            if (override >= 0 && !g_headless) {
+            if (override >= 0) {
                 capture_override_pad(override, &local);
             } else if (g_headless) {
                 local.buttons = 0xFFFFu;
@@ -6800,7 +6800,10 @@ static NetplayVblankEpilogue sdl_vblank_present_body(void) {
      * Offline keeps pace-before-present. Barrier wait stays UDP poll — do
      * not pair this order with SDL_Delay(0) busy-spin (tick-0 hang). */
     ep.do_epilogue = psx_netplay_active() != 0 ? 1 : 0;
-    ep.override = override0;
+    /* Headless netplay has no SDL devices: the debug-server per-slot input
+     * override is the only input source, so route the override belonging to
+     * this peer's session slot into the staged local pad. */
+    ep.override = (psx_netplay_local_slot() == 1) ? override1 : override0;
 
     /* Turbo-active / multitap arming share game-started detection. */
     extern int fntrace_is_game_started(void);
