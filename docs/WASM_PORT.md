@@ -198,6 +198,15 @@ Three stacked causes, all fixed:
 - All 32 preload files now resolve (earlier 404 was the savestate
   before it was added to FILES); slot07 added alongside slot09 for
   mid-fight savestate boots.
+- **Pad-2 connection gotcha (fixed)**: `.pst` savestate seeds store
+  `p_device` per player and restore it over `game.toml`, so seeds
+  captured before `p2_device = "keyboard"` was set boot with pad 2
+  disconnected (`br2_pad_connected(1) == 0`) and the 2P VS roster waits
+  forever at gs8/ph6 — looks like a stall but is a missing pad.
+  `game.toml [controller] p2_device = "keyboard"` covers fresh boots;
+  the agent loop additionally calls `br2_pad_connect(slot)` every tick
+  (idempotent) so seeded sessions self-heal. Verified: `?agent=0,1`
+  runs title → 2P VS → char select → ph8 fight → rematch loop.
 - **Char-id on web**: `br2_dbg_read_buf` bulk export + embedded
   `CHARSIGS` (132 × 16-byte `.ANI` windows, same db as
   `bloody-roar-2/char_sigs.json`). Scan window is anchored on the live
