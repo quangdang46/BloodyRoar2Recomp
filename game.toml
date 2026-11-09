@@ -107,6 +107,7 @@ screen_h_imms = ["0x1E0"]
 [controller]
 default_mode = "digital"
 lock_mode = true
+p2_device = "keyboard"
 
 # Online mount gate: digests + track count + optional TOC fingerprint
 # (see docs/NETPLAY.md).

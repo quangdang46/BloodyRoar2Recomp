@@ -14720,6 +14720,18 @@ int br2_pad_status(int slot) {
     return ov >= 0 ? ov : (int)sio_get_pad_buttons_slot(slot);
 }
 
+int br2_pad_connected(int slot) {
+    extern int sio_get_pad_connected(int slot);
+    return sio_get_pad_connected(slot);
+}
+
+int br2_pad_connect(int slot) {
+    extern void sio_set_pad_connected(int slot, int connected);
+    if (slot < 0 || slot >= INPUT_OVERRIDE_SLOTS) return -1;
+    sio_set_pad_connected(slot, 1);
+    return 0;
+}
+
 /* Bulk guest-RAM read for the JS agent bridge: returns a pointer into a
  * static buffer (max 1 MiB) that JS reads via HEAPU8. One ccall replaces
  * tens of thousands of per-byte reads for blob scans (char-id). */
@@ -14888,4 +14900,32 @@ void br2_dbg_cdrom(uint32_t *out) {
         out[14] = e->xa_channel;
         out[15] = e->skip_reason;
     }
+}
+
+/* Compact CD command-history tail for the JS bridge: returns a pointer to a
+ * static array of 4 words per entry, newest last, up to 8 entries. Per entry:
+ *   w0 = kind<<24 | cmd<<16 | read_cmd<<8 | reading
+ *   w1 = seek/read MSF packed (min<<16|sec<<8|sect)
+ *   w2 = stat<<24 | mode<<16 | seq_lo16
+ *   w3 = func
+ * JS reads via HEAPU32. */
+#define BR2_CD_HIST_N 8
+static uint32_t s_br2_cd_hist[BR2_CD_HIST_N * 4];
+uint32_t *br2_dbg_cdrom_hist(void) {
+    const CDROMCommandHistoryEntry *entries = NULL;
+    uint64_t seq = cdrom_debug_get_command_history(&entries);
+    int n = (seq > BR2_CD_HIST_N) ? BR2_CD_HIST_N : (int)seq;
+    for (int i = 0; i < n; i++) {
+        const CDROMCommandHistoryEntry *e =
+            &entries[(seq - n + i) % CDROM_COMMAND_HISTORY_CAP];
+        uint32_t *w = &s_br2_cd_hist[i * 4];
+        w[0] = ((uint32_t)e->kind << 24) | ((uint32_t)e->cmd << 16) |
+               ((uint32_t)e->read_cmd << 8) | (uint32_t)e->reading;
+        w[1] = ((uint32_t)e->read_min << 16) | ((uint32_t)e->read_sec << 8) |
+               (uint32_t)e->read_sect;
+        w[2] = ((uint32_t)e->stat << 24) | ((uint32_t)e->mode << 16) |
+               (uint32_t)(e->seq & 0xFFFFu);
+        w[3] = e->func;
+    }
+    return s_br2_cd_hist;
 }

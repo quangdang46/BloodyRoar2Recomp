@@ -186,29 +186,34 @@ function br2navStep(st, slots, stt){
   var now = performance.now();
   if (stt.stage === 'title'){
     if (gs === 5 && ph === 1){
-      if (now - (stt.t||0) >= 300){ br2press(0, BR2.PAD.START, 2); stt.t = now; }
+      if (now - (stt.t||0) >= 300){ br2press(0, BR2.PAD.START, 12); stt.t = now; }
     } else if (gs === 5 && ph === 2) stt.stage = 'menu';
     else if (gs === 8) stt.stage = 'vs_init';
   } else if (stt.stage === 'menu'){
     if (gs === 5 && ph === 2){
       var sig = st[0x9B] * 256 + st[0x9C];
       if (sig !== 0x0201){
-        if (now - (stt.t||0) >= 400){ br2press(0, BR2.PAD.DOWN, 2); stt.t = now; }
+        if (now - (stt.t||0) >= 400){ br2press(0, BR2.PAD.DOWN, 3); stt.t = now; }
       } else if (now - (stt.t||0) >= 800){
-        br2press(0, BR2.PAD.START, 2); stt.t = now;
+        br2press(0, BR2.PAD.START, 12); stt.t = now;
       }
     } else if (gs === 8){ stt.stage = 'vs_init'; }
     else if (gs === 5 && ph === 1 || gs !== 5) stt.stage = 'title';
   } else if (stt.stage === 'vs_init'){
-    if (gs === 8 && ph === 6 && sub > 0){
+    /* Char-select roster UI (func_8014F260) borrows 0x1F800001 as its
+     * substate byte: 0xF0-0xF1/1/0 = pick phase (cursor + CROSS lock),
+     * 6 = post-pick wait. CROSS only lands during the pick window, so
+     * press across ALL pre-fight substates — at substate 6 it is a
+     * harmless no-op (verified: pad words reach guest, substate stays). */
+    if (gs === 8 && ph !== 7 && ph !== 8){
       slots.forEach(function(s){
-        if (now - (stt['c'+s]||0) >= 1500){
-          br2press(s, BR2.PAD.CROSS, 2); stt['c'+s] = now;
+        if (now - (stt['c'+s]||0) >= 1200){
+          br2press(s, BR2.PAD.CROSS, 12); stt['c'+s] = now;
         }
       });
     } else if (gs === 8 && ph === 7){
       slots.forEach(function(s){
-        if (now - (stt['g'+s]||0) >= 1000){ br2press(s, BR2.PAD.START, 2); stt['g'+s] = now; }
+        if (now - (stt['g'+s]||0) >= 1000){ br2press(s, BR2.PAD.START, 12); stt['g'+s] = now; }
       });
     } else if (gs === 8 && ph === 8) return true;
     else if (gs === 5) stt.stage = 'title';
@@ -255,6 +260,11 @@ function startAgent(){
   setInterval(function(){
     window.__agentTicks++;
     try {
+      /* Savestate seeds restore p_device and can leave agent slots
+       * disconnected (conn=0) — reconnect every tick; idempotent. */
+      slots.forEach(function(s){
+        Module.ccall('br2_pad_connect','number',['number'],[s]);
+      });
       br2tickPads();
       var st = br2readbytes(BR2.GAME_STATE, 0x9D);
       if (st.length < 0x9D) return;
