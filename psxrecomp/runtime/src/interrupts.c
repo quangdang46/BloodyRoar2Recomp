@@ -812,6 +812,21 @@ void psx_rfe_escape_check(CPUState* cpu) {
     }
 }
 
+void psx_irq_delivery_diag(uint32_t out[12])
+{
+    out[0] = i_stat;
+    out[1] = i_mask;
+    out[2] = (uint32_t)in_exception;
+    out[3] = (uint32_t)s_defer_switch_pending;
+    out[4] = s_defer_switch_target;
+    out[5] = s_defer_switch_from;
+    out[6] = dispatch_count;
+    out[7] = (uint32_t)exception_entries_total;
+    out[9]  = (uint32_t)g_vblank_raise_count;    /* low32: JS diffs across samples */
+    out[10] = (uint32_t)g_vblank_deliver_count;
+    out[11] = (uint32_t)g_vblank_ack_count;
+}
+
 void psx_get_freeze_diag(uint64_t *out_total_checks,
                          uint32_t *out_dispatch_count,
                          int *out_in_exception,

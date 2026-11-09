@@ -2125,7 +2125,7 @@ function(psxrecomp_add_runtime_target target)
         # br2_set_pad, br2_release_pad, br2_pad_status) plus ccall/cwrap so
         # index.html can drive observe+inject without a TCP socket.
         target_link_options(${target} PRIVATE
-            "-sEXPORTED_FUNCTIONS=['_main','_br2_dbg_read8','_br2_dbg_read16','_br2_dbg_read32','_br2_dbg_write8','_br2_dbg_write16','_br2_dbg_write32','_br2_dbg_read_buf','_br2_set_pad','_br2_release_pad','_br2_pad_status','_br2_dbg_func_pc','_br2_dbg_store_pc','_br2_dbg_irq_pc','_br2_dbg_resume_pc','_br2_dbg_cpu_pc','_br2_dbg_cpu_ra']"
+            "-sEXPORTED_FUNCTIONS=['_main','_br2_dbg_read8','_br2_dbg_read16','_br2_dbg_read32','_br2_dbg_write8','_br2_dbg_write16','_br2_dbg_write32','_br2_dbg_read_buf','_br2_set_pad','_br2_release_pad','_br2_pad_status','_br2_dbg_func_pc','_br2_dbg_store_pc','_br2_dbg_irq_pc','_br2_dbg_resume_pc','_br2_dbg_cpu_pc','_br2_dbg_cpu_ra','_br2_dbg_irq_diag','_br2_dbg_irqctx_stats','_br2_dbg_cpu_gpr','_br2_dbg_threadctx','_br2_dbg_cdrom','_br2_dbg_fntrace','_malloc','_free']"
             "-sEXPORTED_RUNTIME_METHODS=FS,FS_createPath,FS_createDataFile,FS_writeFile,ccall,cwrap")
     endif()
 

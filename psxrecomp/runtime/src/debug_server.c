@@ -9956,13 +9956,18 @@ static void handle_d44_ring(int id, const char *json)
  * callback word [0x80079D44], CD-DMA-active + dma-depth, and COP0/IRQ state. Shows
  * whether VBlank was delivered while 0x80079D44 was the clobbered 0x016F0110 AND a
  * CD DMA was mid-transfer (the VSync-in-DMA-window bug). */
+/* Mirror of interrupts.c IrqCtxEntry (kept local: interrupts.c owns the real
+ * type; this layout must match field-for-field). Shared by the irqctx_ring
+ * dump and the wasm br2_dbg_irqctx_stats bridge. */
+typedef struct { uint64_t seq, cycle; uint32_t frame, istat, imask, sr, d44,
+                 cdrom_active, is_vblank; int dma_depth;
+                 uint32_t take_pc, real_epc, exit_pc, exit_reason, same_thread,
+                 restored, v0_exit, v0_saved, v1_exit, v1_saved, ra_exit,
+                 ra_saved, redirects, entry_sp, pump_site; } DbgIrqCtxEntry;
+
 static void handle_irqctx_ring(int id, const char *json)
 {
-    typedef struct { uint64_t seq, cycle; uint32_t frame, istat, imask, sr, d44,
-                     cdrom_active, is_vblank; int dma_depth;
-                     uint32_t take_pc, real_epc, exit_pc, exit_reason, same_thread,
-                     restored, v0_exit, v0_saved, v1_exit, v1_saved, ra_exit,
-                     ra_saved, redirects, entry_sp, pump_site; } E;
+    typedef DbgIrqCtxEntry E;
     extern E g_irqctx_ring[]; extern uint64_t g_irqctx_seq;
     /* Ring cap must track IRQCTX_RING_CAP in interrupts.c. */
     uint32_t cap = 4096u;
@@ -14750,4 +14755,137 @@ uint32_t br2_dbg_cpu_pc(void) {
 }
 uint32_t br2_dbg_cpu_ra(void) {
     return debug_cpu_ptr ? debug_cpu_ptr->gpr[31] : 0;
+}
+
+/* IRQ-delivery gate snapshot for stall diagnosis: writes 12 words through
+ * `out` (a wasm-heap pointer). See psx_irq_delivery_diag for layout. */
+void br2_dbg_irq_diag(uint32_t *out) {
+    if (!out) return;
+    extern void psx_irq_delivery_diag(uint32_t out[12]);
+    psx_irq_delivery_diag(out);
+    if (debug_cpu_ptr) out[8] = debug_cpu_ptr->cop0[12];  /* COP0 SR */
+}
+
+/* Histogram of the IRQ-delivery context ring for wasm stall diagnosis.
+ * Scans all IRQCTX_RING_CAP entries and writes 16 words:
+ *  [0] g_irqctx_seq low32, [1] entries scanned,
+ *  [2] is_vblank count, [3] istat bit2 (CDROM), [4] istat bit3 (DMA),
+ *  [5] istat other bits, [6] cdrom_active!=0, [7] dma_depth>0,
+ *  [8] restored==0, [9] exit_reason!=0,
+ *  [10] last istat, [11] last imask, [12] last cdrom_active,
+ *  [13] last dma_depth, [14] last take_pc, [15] last exit_pc,
+ *  [16..23] exit_reason histogram (reasons 0-7),
+ *  [24] distinct take_pc count, [25] last exit_reason,
+ *  [26] last real_epc, [27] last same_thread, [28] last restored. */
+void br2_dbg_irqctx_stats(uint32_t *out) {
+    if (!out) return;
+    extern DbgIrqCtxEntry g_irqctx_ring[]; extern uint64_t g_irqctx_seq;
+    const uint32_t cap = 4096u;
+    uint64_t total = g_irqctx_seq;
+    uint32_t avail = total < cap ? (uint32_t)total : cap;
+    uint32_t c_vb = 0, c_cd = 0, c_dma = 0, c_oth = 0, c_cda = 0, c_dmd = 0,
+             c_norst = 0, c_exitrsn = 0;
+    uint32_t rsn[8] = {0};
+    /* distinct take_pc approximation: 64-entry direct-mapped tag array */
+    uint32_t seen[64]; memset(seen, 0xFF, sizeof(seen));
+    uint32_t nseen = 0;
+    for (uint32_t i = 0; i < avail; i++) {
+        DbgIrqCtxEntry *e = &g_irqctx_ring[i & (cap - 1u)];
+        if (e->seq == 0 && e->cycle == 0) continue;
+        if (e->is_vblank) c_vb++;
+        if (e->istat & 0x4u) c_cd++;
+        if (e->istat & 0x8u) c_dma++;
+        if (e->istat & ~0xDu) c_oth++;
+        if (e->cdrom_active) c_cda++;
+        if (e->dma_depth > 0) c_dmd++;
+        if (!e->restored) c_norst++;
+        if (e->exit_reason) c_exitrsn++;
+        if (e->exit_reason < 8) rsn[e->exit_reason]++;
+        uint32_t slot = (e->take_pc >> 4) & 63u;
+        if (seen[slot] != e->take_pc) {
+            int found = 0;
+            for (uint32_t k = 0; k < 64; k++) if (seen[k] == e->take_pc) { found = 1; break; }
+            if (!found) { seen[slot] = e->take_pc; nseen++; }
+        }
+    }
+    out[0] = (uint32_t)total; out[1] = avail;
+    out[2] = c_vb; out[3] = c_cd; out[4] = c_dma; out[5] = c_oth;
+    out[6] = c_cda; out[7] = c_dmd; out[8] = c_norst; out[9] = c_exitrsn;
+    for (int k = 0; k < 8; k++) out[16 + k] = rsn[k];
+    out[24] = nseen;
+    if (avail) {
+        DbgIrqCtxEntry *last = &g_irqctx_ring[(total - 1u) & (cap - 1u)];
+        out[10] = last->istat; out[11] = last->imask;
+        out[12] = last->cdrom_active; out[13] = (uint32_t)last->dma_depth;
+        out[14] = last->take_pc; out[15] = last->exit_pc;
+        out[25] = last->exit_reason; out[26] = last->real_epc;
+        out[27] = last->same_thread; out[28] = last->restored;
+    }
+}
+
+/* Live guest GPR read for the JS bridge (compiled backend keeps gpr[] current;
+ * cpu->pc is the stale field). idx 0..31. */
+uint32_t br2_dbg_cpu_gpr(uint32_t i) {
+    return (debug_cpu_ptr && i < 32u) ? debug_cpu_ptr->gpr[i] : 0;
+}
+
+/* Thread save/restore ring dump (traps.c g_thread_ctx_ring): writes
+ * out[0]=seq low32, out[1]=entries emitted (<=16), then 8 words per entry:
+ * [tcb, op(0=save,1=restore), resume_pc, sp, ra, sr, epc, frame]. */
+void br2_dbg_threadctx(uint32_t *out) {
+    if (!out) return;
+    const uint32_t cap = THREAD_CTX_RING_CAP_DS, maxe = 16u;
+    uint64_t total = g_thread_ctx_ring_seq;
+    uint32_t avail = total < cap ? (uint32_t)total : cap;
+    uint32_t n = avail < maxe ? avail : maxe;
+    out[0] = (uint32_t)total; out[1] = n;
+    for (uint32_t i = 0; i < n; i++) {
+        const ThreadCtxRingEntry *e = &g_thread_ctx_ring[(total - n + i) & (cap - 1u)];
+        uint32_t *w = out + 2 + i * 8;
+        w[0]=e->tcb; w[1]=e->op; w[2]=e->resume_pc; w[3]=e->gpr_29;
+        w[4]=e->gpr_31; w[5]=e->cop0_sr; w[6]=e->cop0_epc; w[7]=e->frame;
+    }
+}
+
+/* fntrace tail dump for wasm stall diagnosis.
+ * out[0]=seq(lo32) out[1]=count; then count entries of 9 words each:
+ * {frame,target,ra,a0,a1,a2,a3,s3,sp} — last `count` dispatches. */
+void br2_dbg_fntrace(uint32_t *out, uint32_t max_entries) {
+    if (!out || !max_entries) return;
+    extern FntraceEntry g_fntrace_ring[];
+    extern uint64_t g_fntrace_seq;
+    uint64_t seq = g_fntrace_seq;
+    uint32_t cap = 1u << 22;
+    uint32_t n = max_entries;
+    if (n > 512) n = 512;
+    if ((uint64_t)n > seq) n = (uint32_t)seq;
+    out[0] = (uint32_t)seq;
+    out[1] = n;
+    for (uint32_t i = 0; i < n; i++) {
+        uint64_t s = seq - n + i;
+        const FntraceEntry *e = &g_fntrace_ring[s % cap];
+        uint32_t *w = out + 2 + i * 9;
+        w[0]=e->frame; w[1]=e->target; w[2]=e->ra;
+        w[3]=e->a0; w[4]=e->a1; w[5]=e->a2; w[6]=e->a3;
+        w[7]=e->s3; w[8]=e->sp;
+    }
+}
+
+/* CD-ROM drive state for wasm stall diagnosis: out[0..11] per cdrom_dbg_state,
+ * out[12]=latest sector_history lba, out[13]=latest sector_history seq(lo32),
+ * out[14]=latest sector_history xa_channel, out[15]=latest skip_reason. */
+void br2_dbg_cdrom(uint32_t *out) {
+    if (!out) return;
+    extern void cdrom_dbg_state(uint32_t out[12]);
+    cdrom_dbg_state(out);
+    const CDROMSectorHistoryEntry *entries = NULL;
+    uint64_t seq = cdrom_debug_get_sector_history(&entries);
+    out[13] = (uint32_t)seq;
+    if (entries && seq) {
+        const CDROMSectorHistoryEntry *e =
+            &entries[(seq - 1) % CDROM_SECTOR_HISTORY_CAP];
+        out[12] = (uint32_t)e->lba;
+        out[14] = e->xa_channel;
+        out[15] = e->skip_reason;
+    }
 }

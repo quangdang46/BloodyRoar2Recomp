@@ -3488,3 +3488,15 @@ void debug_force_cd_reinsert(void) {
     trace_cdrom('O', 0, (uint32_t)CDROM_LID_CLOSE_DELAY_CYCLES,
                 (uint32_t)(CDROM_LID_CLOSE_DELAY_CYCLES >> 32));
 }
+
+/* JS-bridge diagnostic: compact CD-ROM drive state snapshot.
+ * out[0]=reading [1]=read_cmd [2..4]=read_min/sec/sect [5]=last_sector_lba
+ * [6]=sector_history_seq(lo32) [7]=s_ring_read [8]=s_ring_write
+ * [9]=read_delay [10]=stat_reg [11]=mode_reg */
+void cdrom_dbg_state(uint32_t out[12]) {
+    out[0]=(uint32_t)reading; out[1]=(uint32_t)read_cmd;
+    out[2]=(uint32_t)read_min; out[3]=(uint32_t)read_sec; out[4]=(uint32_t)read_sect;
+    out[5]=(uint32_t)last_sector_lba; out[6]=(uint32_t)sector_history_seq;
+    out[7]=(uint32_t)s_ring_read; out[8]=(uint32_t)s_ring_write;
+    out[9]=(uint32_t)read_delay; out[10]=(uint32_t)stat_reg; out[11]=(uint32_t)mode_reg;
+}

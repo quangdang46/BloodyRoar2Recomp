@@ -132,6 +132,14 @@ void psx_get_freeze_diag(uint64_t *out_total_checks,
                          uint64_t *out_exc_entries,
                          uint64_t *out_exc_reentry_blocks);
 
+/* IRQ-delivery gate snapshot for the JS agent bridge (br2_dbg_irq_diag).
+ * out[0]=i_stat, [1]=i_mask, [2]=in_exception, [3]=defer_switch_pending,
+ * [4]=defer_switch_target, [5]=defer_switch_from, [6]=dispatch_count,
+ * [7]=exception_entries_total, [9]=vblank_raise_count (low32),
+ * [10]=vblank_deliver_count (low32), [11]=vblank_ack_count (low32). */
+void psx_irq_delivery_diag(uint32_t out[12]);
+/* br2_dbg_irq_diag additionally writes out[8] = COP0 SR. */
+
 /* longjmp back to psx_check_interrupts, unwinding the exception handler.
  * Called by ReturnFromException (B0:0x17 or SYSCALL(3)) when inside
  * the exception handler to model real hardware's RFE+JR $k0 unwind. */
