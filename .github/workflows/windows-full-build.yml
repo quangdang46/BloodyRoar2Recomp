@@ -199,7 +199,9 @@ jobs:
           echo "version pin ok: ${BUILT} (${STAMP})"
 
       - name: Package Windows release zip
-        shell: bash
+        # msys2 bash: `zip` is installed by setup-msys2 but is not on Git
+        # bash's PATH, so the default `bash` shell fails with exit 127.
+        shell: msys2 {0}
         run: |
           set -euo pipefail
           STAGE="dist/BloodyRoar2"
