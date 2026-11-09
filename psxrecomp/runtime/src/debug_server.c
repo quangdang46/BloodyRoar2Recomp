@@ -14727,3 +14727,27 @@ uint8_t *br2_dbg_read_buf(uint32_t addr, int len) {
         s_br2_read_buf[i] = psx_read_byte(addr + (uint32_t)i);
     return s_br2_read_buf;
 }
+
+/* Guest-PC probes for the JS bridge: the compiled backend does not keep a
+ * live cpu->pc, but the dispatch stamps below track where guest code last
+ * ran — enough to localize a stall (e.g. a phase handler that never
+ * advances) without the TCP debug server. */
+uint32_t br2_dbg_func_pc(void)  { return g_debug_current_func_addr; }
+uint32_t br2_dbg_store_pc(void) {
+    extern uint32_t g_debug_last_store_pc;
+    return g_debug_last_store_pc;
+}
+uint32_t br2_dbg_irq_pc(void) {
+    extern uint32_t psx_last_irq_check_pc(void);
+    return psx_last_irq_check_pc();
+}
+uint32_t br2_dbg_resume_pc(void) {
+    extern uint32_t psx_compiled_irq_resume_pc(void);
+    return psx_compiled_irq_resume_pc();
+}
+uint32_t br2_dbg_cpu_pc(void) {
+    return debug_cpu_ptr ? debug_cpu_ptr->pc : 0;
+}
+uint32_t br2_dbg_cpu_ra(void) {
+    return debug_cpu_ptr ? debug_cpu_ptr->gpr[31] : 0;
+}

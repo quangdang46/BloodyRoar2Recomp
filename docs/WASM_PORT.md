@@ -243,3 +243,34 @@ Three stacked causes, all fixed:
   full JSON protocol still needs a WebSocket proxy if ever required.
 - Audio path (SPU→SDL→WebAudio) untested (ScriptProcessorNode deprecation
   warning seen — works but should move to AudioWorklet).
+
+**Agent-vs-agent via savestate seed + VS-init stall found (2026-11-09 pm)**
+
+- `?slot=N` URL param now selects the `PSX_LOAD_SLOT` savestate
+  (`preRun` reads `URLSearchParams`; default stays `'9'`). `.pst`
+  preloads are fault-tolerant (missing slot files skip with a log line
+  instead of failing the whole payload).
+- Verified end-to-end in headless Chromium: `?agent=0,1&slot=5` with a
+  native-saved mid-fight `.pst` → `LOADED slot 5 -> resuming
+  pc=0x80185090` in ~21 ms → straight into `gs=8 ph=8`, agents detect
+  `P1: YUG / P2: LON`, fight runs ~90 s, round/match-end phases
+  (ph 3→4) cycle back to `ph=8` for the next round, sustained ~50 fps,
+  zero pageerrors. This is the reliable playable path for web
+  agent-vs-agent.
+- **Known issue — fresh-boot VS-init stalls on wasm**: without a fight
+  savestate, agent menu-nav (title START → mode menu sig `(fc+9b,
+  fc+9c)=(2,1)` → START) reaches `gs=8 ph=6 sub=1` and parks there
+  indefinitely (>10 min observed). Guest keeps running (~50 fps, fc
+  pointers/counters still update, pad edge words register injected
+  presses, `mode_struct+0x50/0x60` ready bitmasks stay 0, CD idle,
+  DMA idle). Phase-6 (`0x80170144`) is a straight-line spawn sequence
+  that ends by writing phase=7 — yet the phase byte never advances,
+  suggesting a callee waits on a guest-thread/IRQ completion that
+  never fires under the Asyncify fiber scheduler (menus and .ANI loads
+  work, so it's specific to the spawn path). Native completes ph6 in
+  seconds. `br2_dbg_{func,store,irq,resume,cpu}_{pc,ra}` exports were
+  added for PC localization but the dispatch stamps do not carry guest
+  PCs in this build — needs a different probe (e.g. re-arm
+  post_load_probe or TCB inspection) to pinpoint the blocked callee.
+- Workaround shipped: seed via `?slot=N` (generate the `.pst` on the
+  native build's save-state menu, drop into `saves/openbios/`).

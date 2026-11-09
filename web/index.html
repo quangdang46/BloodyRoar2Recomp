@@ -1,0 +1,332 @@
+<!doctype html><html><body style="background:#000">
+<canvas id="canvas" width="1280" height="720"></canvas>
+<pre id="log" style="color:#0f0;font:12px monospace"></pre>
+<script>
+const FILES = [
+    "assets/fonts/LatoLatin-Bold.ttf",
+    "assets/fonts/LatoLatin-Regular.ttf",
+    "assets/fonts/NotoSansSymbols2-Regular.ttf",
+    "assets/fonts/OpenMoji-black-glyf.ttf",
+    "assets/img/brand_mark.tga",
+    "assets/img/brand_psx.tga",
+    "assets/img/flags.png",
+    "assets/img/memcard.tga",
+    "assets/img/pad_analog.tga",
+    "assets/img/pad_digital.tga",
+    "assets/img/verdict_bad.tga",
+    "assets/img/verdict_none.tga",
+    "assets/img/verdict_ok.tga",
+    "assets/img/verdict_warn.tga",
+    "assets/psxrecomp.png",
+    "bios/openbios.bin",
+    "bios/OpenBIOS.LICENSE",
+    "mods/bundled/br2.enhancement.performance/1.0.0/manifest.toml",
+    "mods/bundled/br2.enhancement.performance/1.0.0/README.txt",
+    "mods/bundled/br2.enhancement.turbo/1.0.0/manifest.toml",
+    "mods/bundled/br2.enhancement.turbo/1.0.0/README.txt",
+    "mods/bundled/br2.enhancement.unlock-all/1.0.0/manifest.toml",
+    "mods/bundled/br2.enhancement.unlock-all/1.0.0/README.txt",
+    "mods/bundled/br2.enhancement.widescreen/1.0.0/manifest.toml",
+    "mods/bundled/br2.enhancement.widescreen/1.0.0/README.txt",
+    "mods/bundled/psx.enhancement.cd-speed/1.0.0/manifest.toml",
+    "mods/bundled/psx.enhancement.fast-loading/1.0.0/manifest.toml",
+    "mods/bundled/psx.enhancement.pgxp/1.0.0/manifest.toml",
+    "game.toml",
+    "game_options.toml",
+    "mods/README.md",
+    "saves/openbios/state_80126178_slot09.pst",
+    "saves/openbios/state_80126178_slot07.pst",
+    "saves/openbios/state_80126178_slot05.pst"
+];
+const EXTRA = {
+    '/game/Game.cue': 'disc/Game.cue',
+    '/game/Game.bin': 'disc/Game.bin',
+};
+window.__payload = null;
+window.__err = null;
+(async () => {
+    const log = m => { const e=document.getElementById('log'); e.textContent += m + '\n'; console.log('[preload]', m); };
+    try {
+        const out = {};
+        const jobs = [];
+        for (const f of FILES) jobs.push(fetch(f).then(r=>{ if(!r.ok) throw new Error(f+': HTTP '+r.status); return r.arrayBuffer(); }).then(b=>{ out['/' + f] = new Uint8Array(b); }).catch(e=>{ if (f.endsWith('.pst')) log('optional savestate missing, skipped: '+f); else throw e; }));
+        for (const [dst, src] of Object.entries(EXTRA)) jobs.push(fetch(src).then(r=>r.arrayBuffer()).then(b=>{ out[dst] = new Uint8Array(b); log('fetched ' + dst + ' ' + (b.byteLength/1048576).toFixed(1) + 'MB'); }));
+        await Promise.all(jobs);
+        window.__payload = out;
+        log('preload done: ' + Object.keys(out).length + ' files');
+    } catch (e) { window.__err = String(e); log('preload FAIL ' + e); }
+    const s = document.createElement('script');
+    s.src = 'BloodyRoar2_Recompiled.js';
+    document.body.appendChild(s);
+})();
+</script>
+<script>
+/* SDL3-Emscripten's window framebuffer EM_ASM calls Browser.createContext,
+ * but the emscripten browser library isn't linked into this modularized
+ * build. Provide the 2D-context stub it needs for putImageData present. */
+window.Browser = {
+    createContext: function(canvas) { return canvas.getContext('2d'); }
+};
+var Module = {
+  canvas: document.getElementById('canvas'),
+  arguments: ['--bios','/bios/openbios.bin','--disc','/game/Game.cue','--no-launcher','--window-title','br2wasm'],
+  print: function(t){ console.log('[wasm]', t); var e=document.getElementById('log'); e.textContent += t + '\n'; },
+  printErr: function(t){ console.log('[wasm-err]', t); var e=document.getElementById('log'); e.textContent += 'ERR ' + t + '\n'; },
+  onAbort: function(r){ console.log('[wasm-abort]', r); },
+  preRun: function(){
+    /* getenv() reads the global ENV table and caches the string list on first
+     * call (possibly inside initRuntime) — preRun runs before all of it. */
+    window.ENV = window.ENV || {};
+    var q = new URLSearchParams(location.search);
+    window.ENV.PSX_LOAD_SLOT = q.get('slot') || '9';
+    window.ENV.PSX_FPS_TELEMETRY = '1';
+  },
+  onRuntimeInitialized: function(){
+    var e=document.getElementById('log'); e.textContent += 'runtime init\n';
+    if (window.__err) { e.textContent += 'PRELOAD ERR ' + window.__err + '\n'; return; }
+    if (!window.__payload) { e.textContent += 'no payload yet\n'; return; }
+    for (var p in window.__payload) {
+      var parts = p.split('/').filter(Boolean);
+      var dir = '/' + parts.slice(0,-1).join('/');
+      if (parts.length > 1) try { Module.FS.createPath('/', parts.slice(0,-1).join('/'), true, true); } catch(_){}
+      Module.FS.writeFile(p, window.__payload[p]);
+      window.__payload[p] = null;
+    }
+    window.__payload = null;
+    e.textContent += 'MEMFS populated\n';
+    /* NB: generated JS declares `var ENV={}` which wipes window.ENV before
+     * preRun — agent config must live outside ENV. */
+    if (window.BR2_AGENT) startAgent();
+  }
+};
+</script>
+<script>
+/* In-page agent mode — port of bloody-roar-2/agent_mode.py.
+ * window.BR2_AGENT='0,1' drives those SIO slots; fighters become pad-controlled by
+ * zeroing ctrl+1 (human flag) during phase 2. Buttons are the raw active-low
+ * PS1 word (~pressed & 0xFFFF), same convention as the TCP debug server. */
+/* ?agent=0,1 in the URL enables agent mode without devtools. */
+(function(){
+  var m = /[?&]agent=([0-9,]+)/.exec(location.search);
+  if (m && !window.BR2_AGENT) window.BR2_AGENT = m[1];
+})();
+var CHARSIGS={'ALI':["64b00000f47a0000e4000000387f0000", "111e0b01001e0f000003382701d70001", "ff0400ea070a00500000002600520009", "04026c170500500002ff050101000500", "04260e000e100f002000260242000302", "260d0010260e0008080f004000262241", "0004040f0080402602410003050a43a0", "030d2721c00001002711cb00010002ff", "000c0c0f0048002602400003062721c0", "aa020a0b000000020500e00110001113", "00034826000400031e2711d200010027", "000000fcfffcfffcfffefffefffeff00"],'BAK':["d8ba0000308000001801000074840000", "000402f6130708000033000807000103", "04028417210100800000040184171f00", "94001000171a231000000d101026040a", "1803e0310020170603000a03a0082212", "01100012152310000023200c000d000c", "2600060017011000170000000d000d26", "00261241002622010003082711cb0001", "0a330e000d0d0f004020260240000322", "0404040a83a00406040a000048008005", "03040f00508026004600170c00900304", "030000000000052e0800000400d85104"],'BUS':["a4b60000dc7f00003c01000020840000", "ff000400002e0502ff2e030000000000", "00040268130c030a0000000a00100000", "0e13ff02ff0a00100004000405502214", "430003092711d50001002721c2000100", "0b2711d60001002721c0000100252213", "000000020500b4001000141723000000", "000f0f0f001000262202000311252213", "000704cd743e0a16080000000401743e", "0002ff050101000a03800226000a0001", "000e1023100000232002000d000d260e", "0800fe00f82e05ff042e0600002e07c8"],'GAD':["98b700005c810000e4000000a0850000", "0a1d000000800402c60f2e0002002e02", "220000ff0404141f220100f80404141f", "1619230000000d000c260e0016160f00", "002721c0000100252219060f14140003", "010004053c040a03880002100a000100", "000d000c260d000d260e0028280f0040", "2721c0000100252219060f141400030e", "00252219060f141400030e252219081e", "0a460025221901641ee4ff2600050016", "de58e258e258385a385a385a385a385a", "b76cb7000000000b001e000000030003"],'JEN':["0cb80000d07e00001801000014830000", "00d60b2e0002002e02aa008fff00002e", "0500a100100011132310000023200c00", "062620570002ff050101000a03080100", "08000002ff050101002711d400010027", "0300090900ff00000300090900ff0000", "000313060103042610c70002ff050101", "000000020500d5011e0b01001e0f0000", "000100000005010100050680000a0012", "2620020003040f001000170c008a188a", "7fffff02ff06ff2e0003000a00010000", "375637563756375637563756375637b2"],'LON':["b4c30000cc8500003c010000108a0000", "361f0503660005005b0002ff00001c00", "14140f0040002602420003092711d300", "0e000f0f0f00808026020100030b0601", "041e0e00001e1001000405480402ff05", "83501402221883461202260405d24317", "1000171a1e0e01001e1000001e0b0100", "0402f04d02ff06ff0501010003002103", "03040405060403142711d40001002721", "240004019e7c17020312170204131902", "4f9a4f0a500a500a500a500a500a500a", "00940095009600970004000d00030002"],'MAR':["74bd0000b0840000e4000000f4880000", "0003000a1d000000800402e40b2e0002", "040272170500400002050c05000002ff", "2721c000060025221804050a1e000309", "010004053c040a03880000100a000100", "10260e0019190f001000260242000305", "0025221804140a1e000318252218051e", "09330e000a0a0f002000260240000304", "03062711cd0001002721c10001002522", "09252218051e1ee2ff03212701c20001", "260004000302170c0190030026000300", "a05d24000402985d0f00300018834017"],'RON':["7cc10000148600003c010000588a0000", "0500fc0000070a1d000000100401ac0f", "aa020a0b00000002050095001000191c", "000d400d000c260e000e0e0f00200026", "05010100040594040a03a02202520a00", "4c0d000f260e0302020f003000031327", "040132462f020500040138462f020600", "08060002ff0a00010000000501010004", "0d400d000c260e0004040f0060202612", "0020000402ae501e0b01001e0f00001e", "408e408e40e4423443a2433a447e44cc", "e8f020200300ab000400140004000200"],'STU':["a0ad0000087900003c0100004c7d0000", "000002ff00020405b2070a0020000000", "0b031c0a1d000000800402c00b0400e4", "0a0b0000000205009a0010000f122310", "ff050101000a03400400010a00010008", "000800000402e0360a03800020180a00", "02ff06ff050101000a03800244000a00", "26004000030305005201260040000303", "828860513218828860713d0302188246", "9c609c609c609c60b461e4611e624a62", "00000100960004000400040002000100", "000100010a020e010000000489072f01"],'ULI':["24c4000008860000080100004c8a0000", "0503ff2e030000000000092e0602002e", "0008090004050366002207000004029e", "0100008026080000060102ff05010100", "260d000a330e000e100f005000260242", "40202602410002ff05010b000a03a008", "0000020500bf00100010152310000023", "04040f00400026124000262201000304", "0b000000020500b0011000161b230000", "0d260d000c260e0009090f0050002622", "0111030216032b0100000a0003090a0b", "000000cc00000030000000cc00000034"],'YUG':["58bb0000c4830000e400000008880000", "0b2e0002002e023800000000002e0503", "1e10000000070a1d000000100401ac0f", "cb0001002721c000010025221305050a", "020500a3001e0b01001e0f000010000b", "ff0a0001000000050101000500ab0105", "0501010006000a03500404010a001000", "0003072711d80001002721c000010025", "00fd2e061e002e071e002e081e000300", "86100311180286110312188ebf602113", "001e0000004e8a00006300000085000d", "e88c0000088d0000288d0000488d0000"]};
+var BR2 = {
+  GAME_STATE: 0x1F800000,
+  PHASE: 0x1F800001,
+  VS_SUB: 0x1F80009C,
+  PAUSE: 0x1F800082,
+  CTRLS: [0x1F8000E8, 0x1F8001F0],
+  MOTIONS: [0x801F5328, 0x801F5440],   /* fixed per-slot motion_state addrs */
+  PAD: {SELECT:0x0001,START:0x0008,UP:0x0010,RIGHT:0x0020,DOWN:0x0040,
+        LEFT:0x0080,L2:0x0100,R2:0x0200,L1:0x0400,R1:0x0800,
+        TRI:0x1000,CIRCLE:0x2000,CROSS:0x4000,SQUARE:0x8000}
+};
+function br2r8(a){ return Module.ccall('br2_dbg_read8','number',['number'],[a]); }
+function br2r16(a){ return Module.ccall('br2_dbg_read16','number',['number'],[a]); }
+function br2w8(a,v){ Module.ccall('br2_dbg_write8',null,['number','number'],[a,v]); }
+function s16(v){ return v|0; }
+function br2fighter(i){
+  var b = BR2.CTRLS[i];
+  return {
+    x: s16(br2r16(b+0x74)), y: s16(br2r16(b+0x76)),
+    hp: s16(br2r16(b+0xAC)), stun: s16(br2r16(b+0xB2)),
+    gauge: s16(br2r16(b+0xD6)),
+    act: br2r16(BR2.MOTIONS[i]+0x80),
+    c1: br2r8(b+1), c2: br2r8(b+2)
+  };
+}
+function br2readbuf(addr,len){
+  var p=Module.ccall('br2_dbg_read_buf','number',['number','number'],[addr,len]);
+  var u8=HEAPU8.subarray(p,p+len), hex='';
+  for(var i=0;i<len;i++){var h=u8[i].toString(16);hex+=(h.length<2?'0':'')+h;}
+  return hex;
+}
+function br2readbytes(addr,len){
+  var p=Module.ccall('br2_dbg_read_buf','number',['number','number'],[addr,len]);
+  return Array.prototype.slice.call(HEAPU8.subarray(p,p+len));
+}
+var br2charCache={};
+function br2charid(i){
+  /* ctrl+0x30 = .ANI blob base; arena placement varies per round/char so
+   * scan a window anchored on the live pointer, not fixed regions. */
+  var blob = Module.ccall('br2_dbg_read32','number',['number'],[BR2.CTRLS[i]+0x30])>>>0;
+  if (blob < 0x80000000 || blob >= 0x80200000) return null;
+  var lo = (blob - 0x2000) >>> 0;
+  var hex = br2readbuf(lo, 0x40000), best=null, bc=0;
+  for(var ch in CHARSIGS){
+    var c=0, ss=CHARSIGS[ch];
+    for(var j=0;j<ss.length;j++) if(hex.indexOf(ss[j])>=0) c++;
+    if(c>bc){bc=c;best=ch;}
+  }
+  return (bc>=6)?best:null;
+}
+function word(pressed){ return (~pressed) & 0xFFFF; }
+/* Press = hold the active-low word for `ticks` agent ticks, then release.
+ * padQ[slot] = {w: word, left: ticks} — while left>0 the press overrides
+ * the policy's held word for that slot. */
+function br2press(slot, pressed, ticks){
+  if (!window.__padQ) window.__padQ = {};
+  window.__padQ[slot] = {w: word(pressed), left: ticks|0};
+}
+function br2tickPads(){
+  var q = window.__padQ || {};
+  for (var s in q){
+    var e = q[s];
+    if (e.left > 0){ Module.ccall('br2_set_pad',null,['number','number'],[+s, e.w]); e.left--; }
+    else { delete q[s]; Module.ccall('br2_release_pad',null,['number'],[+s]); }
+  }
+}
+/* Input-only navigation port of agent_mode.py menu_to_vs2p:
+ * title START -> mode menu -> read fc+0x9b/0x9c cursor signature until
+ * (2,1)=2P VS -> START -> char select CROSS per slot -> phase 8 fight.
+ * Slot 0 drives menus; every agent slot confirms its own fighter. */
+function br2navStep(st, slots, stt){
+  var gs = st[0], ph = st[1], sub = st[0x9C];
+  var now = performance.now();
+  if (stt.stage === 'title'){
+    if (gs === 5 && ph === 1){
+      if (now - (stt.t||0) >= 300){ br2press(0, BR2.PAD.START, 2); stt.t = now; }
+    } else if (gs === 5 && ph === 2) stt.stage = 'menu';
+    else if (gs === 8) stt.stage = 'vs_init';
+  } else if (stt.stage === 'menu'){
+    if (gs === 5 && ph === 2){
+      var sig = st[0x9B] * 256 + st[0x9C];
+      if (sig !== 0x0201){
+        if (now - (stt.t||0) >= 400){ br2press(0, BR2.PAD.DOWN, 2); stt.t = now; }
+      } else if (now - (stt.t||0) >= 800){
+        br2press(0, BR2.PAD.START, 2); stt.t = now;
+      }
+    } else if (gs === 8){ stt.stage = 'vs_init'; }
+    else if (gs === 5 && ph === 1 || gs !== 5) stt.stage = 'title';
+  } else if (stt.stage === 'vs_init'){
+    if (gs === 8 && ph === 6 && sub > 0){
+      slots.forEach(function(s){
+        if (now - (stt['c'+s]||0) >= 1500){
+          br2press(s, BR2.PAD.CROSS, 2); stt['c'+s] = now;
+        }
+      });
+    } else if (gs === 8 && ph === 7){
+      slots.forEach(function(s){
+        if (now - (stt['g'+s]||0) >= 1000){ br2press(s, BR2.PAD.START, 2); stt['g'+s] = now; }
+      });
+    } else if (gs === 8 && ph === 8) return true;
+    else if (gs === 5) stt.stage = 'title';
+  }
+  return false;
+}
+function br2policy(me, foe, cd){
+  if (me.stun > 0 || me.hp <= 0) return {held:0, tap:0};
+  var dx = foe.x - me.x, adx = Math.abs(dx);
+  var toward = dx > 10 ? BR2.PAD.RIGHT : (dx < -10 ? BR2.PAD.LEFT : 0);
+  var away  = dx > 10 ? BR2.PAD.LEFT  : (dx < -10 ? BR2.PAD.RIGHT : 0);
+  var beast = (me.gauge||0) >= 0x2000;
+  if (cd > 0 && !beast) return {held: away, tap: 0};
+  /* block: foe winding up an attack while close -> hold away (guard).
+   * 40-200 = normals; >=300 = heavy/throw band (action_clusters.json).
+   * HEAVY = empirically >=18 avg dmg (damage_by_act.json) -> block
+   * at longer range. */
+  var heavy = (foe.act===148||foe.act===170||foe.act===182||
+               foe.act===276||foe.act===352||foe.act===359);
+  if (foe.stun === 0 &&
+      (((foe.act >= 40 && foe.act <= 200) || foe.act >= 300) && adx < 100
+       || heavy && adx < 140))
+    return {held: away, tap: 0};
+  if (adx < 60) {
+    if (foe.stun > 0) return {held: toward, tap: BR2.PAD.R1};
+    return {held: toward, tap: (me.x % 3) ? BR2.PAD.TRI : BR2.PAD.CIRCLE};
+  }
+  if (adx < 160) {
+    if (Math.abs(me.x) % 211 < 12) return {held: toward|BR2.PAD.UP, tap: BR2.PAD.TRI};
+    return {held: toward, tap: 0};
+  }
+  return {held: toward, tap: 0};
+}
+function startAgent(){
+  var slots = (window.BR2_AGENT||'').split(',').map(Number).filter(function(s){return s===0||s===1;});
+  if (!slots.length) return;
+  var cds = {}; slots.forEach(function(s){ cds[s]=0; });
+  var tapLeft = {}; slots.forEach(function(s){ tapLeft[s]=0; });
+  var charWait = {}; slots.forEach(function(s){ charWait[s]=0; });
+  var log = document.getElementById('log');
+  log.textContent += 'agent mode: slots ' + slots.join(',') + '\n';
+  var nav = {stage:'title'}, inFight = false, lastNavLog = 0;
+  window.__agentTicks = 0;
+  setInterval(function(){
+    window.__agentTicks++;
+    try {
+      br2tickPads();
+      var st = br2readbytes(BR2.GAME_STATE, 0x9D);
+      if (st.length < 0x9D) return;
+      var gs = st[0], phase = st[1];
+      if (!inFight){
+        /* navigate title -> mode menu -> 2P VS -> char select -> fight;
+         * re-arms automatically when a match ends (gs leaves 8). */
+        if (br2navStep(st, slots, nav)){
+          inFight = true;
+          log.textContent += 'agent: VS fight\n';
+        } else if (gs === 8 && phase === 8){
+          inFight = true;   /* seeded savestate already inside a fight
+                             * (char confirm may be skipped) */
+          log.textContent += 'agent: VS fight (seeded)\n';
+        }
+        return;
+      }
+      if (!(gs === 8 && (phase === 6 || phase === 7 || phase === 8) ||
+            phase === 2)){
+        inFight = false; nav.stage = 'title';
+        slots.forEach(function(s){ cds[s]=0; tapLeft[s]=0; charWait[s]=0;
+          br2charCache[s]=undefined;
+          Module.ccall('br2_release_pad',null,['number'],[s]); });
+        return;
+      }
+      var now = performance.now();
+      /* ph6 gate: round transitions / match-end screen need a confirm on
+       * every fighter slot; fc+0x82 bit0 pause needs START. */
+      if (gs === 8 && phase === 6){
+        slots.forEach(function(s){
+          if (now - (cds['cf'+s]||0) >= 1500){
+            br2press(s, BR2.PAD.TRI, 2);
+            setTimeout(function(){ br2press(s, BR2.PAD.CROSS, 2); }, 120);
+            cds['cf'+s] = now;
+          }
+        });
+      }
+      if (st[0x82] & 1){
+        slots.forEach(function(s){
+          if (now - (cds['up'+s]||0) >= 1000){
+            br2press(s, BR2.PAD.START, 2); cds['up'+s] = now;
+          }
+        });
+      }
+      if (gs !== 8) slots.forEach(function(s){
+        br2w8(BR2.CTRLS[s]+1, 0);   /* human flag — demo path only; in the
+                                     * VS machine (gs==8) ctrl+1 already
+                                     * encodes pad ownership, don't touch */
+      });
+      slots.forEach(function(s){
+        if (br2charCache[s] === undefined) {
+          /* each scan reads ~256KB — throttle retries to ~1Hz */
+          if (charWait[s] > 0) { charWait[s]--; return; }
+          charWait[s] = 30;
+          var ch = br2charid(s);
+          if (ch) { br2charCache[s] = ch; log.textContent += 'P'+(s+1)+' char: '+ch+'\n'; }
+        }
+      });
+      var fs = [br2fighter(0), br2fighter(1)];
+      slots.forEach(function(s){
+        var p = br2policy(fs[s], fs[1-s], cds[s]);
+        if (p.tap) { tapLeft[s] = 2; cds[s] = 12; }
+        else if (cds[s] > 0) cds[s]--;
+        var pressed = p.held | (tapLeft[s] > 0 ? p.tap : 0);
+        if (tapLeft[s] > 0) tapLeft[s]--;
+        /* a queued press wins over the policy word while active */
+        var q = window.__padQ && window.__padQ[s];
+        if (!(q && q.left > 0))
+          Module.ccall('br2_set_pad',null,['number','number'],[s, word(pressed)]);
+      });
+    } catch(e) { log.textContent += 'agent err ' + e + '\n'; }
+  }, 33);
+}
+</script>
+</body></html>

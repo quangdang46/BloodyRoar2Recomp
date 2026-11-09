@@ -6529,6 +6529,15 @@ static NetplayVblankEpilogue sdl_vblank_present_body(void) {
     /* Check debug server input override (per SIO slot). */
     int override0 = debug_server_get_input_override(0);
     int override1 = debug_server_get_input_override(1);
+#elif defined(__EMSCRIPTEN__)
+    /* Production: skip debug server. Still need to advance frame counter
+     * locally so anything else that reads it continues to work. WASM has no
+     * TCP server, but the JS agent bridge (br2_set_pad) writes the same
+     * per-slot override slots, so poll them here or injected pads are dead. */
+    extern uint64_t s_frame_count;
+    s_frame_count++;
+    int override0 = debug_server_get_input_override(0);
+    int override1 = debug_server_get_input_override(1);
 #else
     /* Production: skip debug server. Still need to advance frame counter
      * locally so anything else that reads it continues to work. */
