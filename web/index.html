@@ -96,6 +96,16 @@ var Module = {
     e.textContent += 'MEMFS populated\n';
     /* NB: generated JS declares `var ENV={}` which wipes window.ENV before
      * preRun — agent config must live outside ENV. */
+    /* game.toml sets p2_device="keyboard", but .pst seeds restore an older
+     * p_device and can leave pad 2 disconnected — keep both pads connected
+     * so seeded sessions match fresh-boot behaviour (agent slots also get
+     * per-tick reconnects in startAgent). */
+    setInterval(function(){
+      try {
+        Module.ccall('br2_pad_connect','number',['number'],[0]);
+        Module.ccall('br2_pad_connect','number',['number'],[1]);
+      } catch(_){}
+    }, 500);
     if (window.BR2_AGENT) startAgent();
   }
 };
