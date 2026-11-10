@@ -501,21 +501,26 @@ extern void guest_bzero(uint32_t,int);
 
 /* ==================================================================
  * entry_0x80126178 — _start: BSS clear + main call.
- * BSS 0x801beef0..0x801ff650 zeroed; guest_bzero = memset;
+ * BSS 0x801ceef0..0x801ff650 zeroed; guest_bzero = memset;
  * then entry_0x80126234 (main); trap(1) on return.
  * ================================================================== */
-void entry_0x80126178(void)
+static void entry_0x80126178(void)
 {
-    undefined4 *puVar1;
-    undefined4 unaff_retaddr = 0;
-
-    puVar1 = (undefined4 *)guest_at(0x801beef0);
-    do {
-        *puVar1 = 0;
-        puVar1 = puVar1 + 1;
-    } while (puVar1 < (undefined4 *)guest_at(0x801ff650));
-    uRam801beef0 = unaff_retaddr;
-    guest_bzero(0x801ff654,(iRam80126228 - iRam801be720) + -0x1ff650);
+    /* Faithful _start (disasm 0x80126178-0x8012621c):
+     *   BSS clear 0x801CEEF0..0x801FF650 (sw $zero loop)
+     *   save $ra at 0x801CEEF0, set gp=0x801BEEDC, sp=$fp (loader stack —
+     *   host guest_sp already carries cpu->gpr[29], skip)
+     *   BIOS bzero(0x801FF654, (*(0x801FF650) - *(0x801BE720)) - 0x801FF650)
+     *   then main() = entry_0x80126234; break on return. */
+    uint32_t *puVar1 = (uint32_t *)guest_at(0x801ceef0);
+    uint32_t *end    = (uint32_t *)guest_at(0x801ff650);
+    uint32_t v0, v1, size;
+    while (puVar1 < end) *puVar1++ = 0;
+    *(uint32_t *)guest_at(0x801ceef0) = 0;   /* saved-ra slot (unused) */
+    v0 = *(uint32_t *)guest_at(0x801ff650);
+    v1 = *(uint32_t *)guest_at(0x801be720);
+    size = (v0 - v1) - 0x801ff650u;          /* guest subu wraps identically */
+    guest_bzero(0x801ff654, size);
     entry_0x80126234();
     trap(1);
     halt_baddata();

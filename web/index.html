@@ -80,6 +80,9 @@ var Module = {
     var q = new URLSearchParams(location.search);
     window.ENV.PSX_LOAD_SLOT = q.get('slot') || '9';
     window.ENV.PSX_FPS_TELEMETRY = '1';
+    var cmin = q.get('cleanmin'), cmax = q.get('cleanmax');
+    if (cmin) window.ENV.CLEAN_MIN = cmin;
+    if (cmax) window.ENV.CLEAN_MAX = cmax;
   },
   onRuntimeInitialized: function(){
     var e=document.getElementById('log'); e.textContent += 'runtime init\n';

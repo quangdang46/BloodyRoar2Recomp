@@ -42,7 +42,12 @@ for f in sorted(glob.glob('game/*.c')):
         fm=re.match(r'^(?:FUN_|LAB_)([0-9a-f]{8})$',name)
         if fm: addr=fm.group(1)
         else:
-            if name in ren: addr=ren[name][2:]
+            # addr-encoded names (entry_0x…, func_0x…, *_0x801…) carry the
+            # guest address in the suffix — more reliable than @markers,
+            # which doc comments may attach to jump tables/other addrs.
+            sm=re.search(r'_0x([0-9a-f]{8})$',name)
+            if sm: addr=sm.group(1)
+            elif name in ren: addr=ren[name][2:]
             else:
                 back=src[max(0,m.start()-600):m.start()]
                 marks=re.findall(r'@0x([0-9a-f]{8})',back)

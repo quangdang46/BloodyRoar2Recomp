@@ -14700,6 +14700,12 @@ void br2_dbg_write8(uint32_t addr, int val)  { psx_write_byte(addr, (uint8_t)val
 void br2_dbg_write16(uint32_t addr, int val) { psx_write_half(addr, (uint16_t)val); }
 void br2_dbg_write32(uint32_t addr, int val) { psx_write_word(addr, (uint32_t)val); }
 
+/* Weak stubs so the wasm export list resolves on targets that do not link
+ * src/clean_table.c (e.g. the USA build, whose clean table is SLES-only).
+ * The EU target links the strong definitions from clean_table.c instead. */
+__attribute__((weak)) uint32_t br2_dbg_clean_trace(uint32_t i) { (void)i; return 0; }
+__attribute__((weak)) uint32_t br2_dbg_clean_count(void) { return 0; }
+
 void br2_set_pad(int slot, int buttons) {
     if (slot < 0 || slot >= INPUT_OVERRIDE_SLOTS) return;
     s_input_override[slot] = buttons;

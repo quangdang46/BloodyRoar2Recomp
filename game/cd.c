@@ -22,6 +22,8 @@ typedef uint32_t uint;
 
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_sp(void);
+extern uint32_t psx_read_word(uint32_t addr);
+extern void psx_write_word(uint32_t addr, uint32_t val);
 
 uint cd_timer_read(int);
 void cd_busy_wait_fwd(int);
@@ -4402,37 +4404,37 @@ uint32_t cd_svc_5c(uint32_t a0,uint32_t a1)
 { return bios_svc(0xb0,0x5c,a0,a1); }
 
 /* cd_chan_cmd_submit — 7-arg channel command submit. a0 = channel slot,
- * entries are 16B at guest 0x1f801080 + a0*0x10 (verified genuine fixed
- * guest address: `lui $v1,0x1f80; ori $a1,$a1,0x1080` in 0x80199d88 —
- * not an sp-relative mistranslation; the CD driver keeps its channel
- * table in the 0x1f8 window):
- *   +0 = a1 (src ptr), +4 = (a2<<16)|a3, +8 = stack arg5 (a4).
- * entry+8 bit 0x10000000 busy -> bounded retry (one printf
+ * entries are the DMA channel regs at 0x1f801080 + a0*0x10
+ * (`lui $v0,0x1f80; addu; lw/sw 0x108x` in 0x80199d88):
+ *   +0 = a1 (MADR src ptr), +4 = (a2<<16)|a3 (BCR), +8 = stack arg5 (CHCR).
+ * CHCR bit 0x10000000 busy -> bounded retry (one printf
  * 0x80125b18). Flag byte @*(*(u32*)0x801bcc5c)+2 bit (1<<a0) set when
  * low byte of stack arg6 (a5) == 1 else cleared. Control u32
  * @*(*(u32*)0x801bcc58) |= 1<<(a0*4+3). Then waits bit 0x40 of byte
- * @*(*(u32*)0x801bcc40) before storing a4 -> entry+8.
- * Returns a4 (read back from entry+8).
+ * @*(*(u32*)0x801bcc40) before storing a4 -> CHCR (starts the DMA).
+ * Returns the CHCR readback.
  * Stack args: a4 = caller sp+0x10, a5 = +0x14 (lbu), a6 = +0x18 unused.
  * Disasm 0x80199d88-0x80199f2c. */
 uint32_t cd_chan_cmd_submit(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,
                       uint32_t a4,uint32_t a5,uint32_t a6)
 {
+  /* 0x1F801080 + ch*0x10 is the DMA channel register block, not a RAM table:
+   * +0 MADR, +4 BCR, +8 CHCR (bit 0x10000000 = DMA busy). All three fields are
+   * real MMIO — route through psx_read/write_word so the runtime's DMA engine
+   * sees them. Disasm 0x80199d88-0x80199f2c. */
   uint32_t s0 = a0;
-  uint8_t *ent = (uint8_t *)guest_at(0x1f801080 + (s0 << 4));
+  uint32_t base = 0x1f801080u + (s0 << 4);
   uint32_t retry = 0;
   uint8_t *fl, *fp;
   (void)a6;
 
-  if (*(uint32_t *)(ent + 8) & 0x10000000u) {
+  if (psx_read_word(base + 8) & 0x10000000u) {
     for (;;) {
-      uint32_t b;
       if (retry == 1) {
         printf_forward((const char *)guest_at(0x80125b18));
         break;
       }
-      b = *(uint32_t *)(ent + 8) & 0x10000000u;
-      if (b == 0) break;
+      if ((psx_read_word(base + 8) & 0x10000000u) == 0) break;
       retry++;
     }
   }
@@ -4446,14 +4448,14 @@ uint32_t cd_chan_cmd_submit(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,
   *(uint32_t *)guest_at(*(uint32_t *)guest_at(0x801bcc58)) |=
       1u << ((s0 * 4 + 3) & 31);                         /* sllv */
 
-  *(uint32_t *)ent       = a1;
-  *(uint32_t *)(ent + 4) = (a2 << 16) | a3;
+  psx_write_word(base,     a1);                          /* MADR */
+  psx_write_word(base + 4, (a2 << 16) | a3);             /* BCR  */
 
   fp = (uint8_t *)guest_at(DB32(0x801bcc40));
   while ((*fp & 0x40) == 0) { }
 
-  *(uint32_t *)(ent + 8) = a4;
-  return a4;
+  psx_write_word(base + 8, a4);                          /* CHCR: start */
+  return psx_read_word(base + 8);                        /* CHCR readback */
 }
 
 /* cd_chan_cmd_pump — CD command pump, up to 8 retries. a0 = channel,
@@ -6174,7 +6176,10 @@ void cd_cb8_run_param(uint32_t param_1)
  * Disasm 0x8018fe44-0x8018fe58. */
 uint32_t mdec_status_read(void)
 {
-  return CDREG32(CDREG32(0x801b68f4));
+  uint32_t reg = CDREG32(0x801b68f4);
+  if (reg >= 0x1f801000u && reg <= 0x1f803fffu)
+    return psx_read_word(reg);
+  return CDREG32(reg);
 }
 
 /* cd_strncmp — strncmp: a0 = guest string addr, a1 = host buffer
@@ -6448,9 +6453,12 @@ void cd_intc_dispatch(void)
  * bios_svc boundary (svc/a1 unused by bios_call). */
 int32_t bios_tramp_b035(int32_t a0,const void *a1,int32_t a2)
 {
-  (void)a2;
-  return (int32_t)bios_svc(0xb0,0x35,(uint32_t)a0,
-                              (uint32_t)(uintptr_t)a1);
+  /* callers pass a host pointer into guest RAM; the BIOS service expects a
+   * guest address, so translate back through guest_of. svc 0x35 forwards
+   * a0-a2 (line/buf/count). */
+  extern uint32_t bios_svc6(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+  return (int32_t)bios_svc6(0xb0,0x35,(uint32_t)a0,
+                              guest_of(a1),(uint32_t)a2,0);
 }
 
 /* cd_hw_chan_init — channel/hw object init under DI/EI (0x801a0be0-

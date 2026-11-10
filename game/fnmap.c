@@ -1194,7 +1194,7 @@ extern void xform_accum_tick(void);
 typedef struct { uint32_t addr; void *fn; } Br2FnEnt;
 
 const Br2FnEnt fn_table[] = {
-  { 0x8011e800, (void *)entry_0x80126234 },
+  { 0x80126234, (void *)entry_0x80126234 },
   { 0x80126720, (void *)versus_state_init },
   { 0x801267dc, (void *)cd_channel_init_seq },
   { 0x80126848, (void *)scratch_zero_reset },

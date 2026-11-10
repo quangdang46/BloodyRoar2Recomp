@@ -24,7 +24,9 @@ typedef void code(void);
 
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
+extern uint32_t bios_svc(uint32_t table,uint32_t svc,uint32_t a0,uint32_t a1);
 extern uint32_t guest_sp(void);
+extern uint16_t psx_read_half(uint32_t addr);
 void gauge_scale_fixed(short param_1,short param_2);
 void brightness_commit(undefined2 param_1);
 
@@ -1522,9 +1524,10 @@ void flow_cfg_init(undefined1 param_1)
 void guest_bzero(uint32_t addr,uint32_t size)
 
 {
-  /* guest: BIOS/kernel call LAB_000000a0 = bzero(dst,len).
-   * Called as (bss_addr, byte_count) from entry_0x80126178. */
-  memset(guest_at(addr),0,size);
+  /* guest 0x8018e2f0 is a BIOS trampoline (`li t2,0xa0; li t1,0x39; jr t2`)
+   * — kernel service A0/0x39 = memset(dst,len). Route through bios_svc so
+   * both clean callers and guest dispatch hit the recompiled BIOS. */
+  bios_svc(0xa0,0x39,addr,size);
   return;
 }
 
@@ -1809,7 +1812,7 @@ int slot_name_measure(void *param_1,int32_t param_2)
   return str_len((char *)param_1);
 }
 
-/* chan_blocks_reset — clear the 0x1f80e8/0x1f801f0 channel blocks: zero
+/* chan_blocks_reset — clear the 0x1f800e8/0x1f8001f0 channel blocks: zero
  * +0xe0..+0xec fields, store param_2 at +0xf0, then param_3 selects the
  * +0xec counter (0 -> clear, 1 -> increment, other -> untouched).
  * param_1 is a GUEST address (0x1f80xxx scratch). */
@@ -1929,8 +1932,8 @@ void picker_table_shuffle(uint8_t *param_1)
  * ret_stub_b. */
 void mc_slot_action(uint8_t *param_1,int32_t param_2)
 {
-  uint8_t *s1 = (uint8_t *)guest_at(0x1f80e8);
-  uint8_t *s2 = (uint8_t *)guest_at(0x1f801f0);
+  uint8_t *s1 = (uint8_t *)guest_at(0x1f800e8);
+  uint8_t *s2 = (uint8_t *)guest_at(0x1f8001f0);
   uint8_t *q;
   int32_t iVar1;
 
@@ -1970,9 +1973,9 @@ void mc_slot_action(uint8_t *param_1,int32_t param_2)
   q[0x19] = q[0x19] & 3;
   q[0x1a] = q[0x1a] & 3;
   picker_table_shuffle(param_1);
-  chan_blocks_reset(0x1f80e8,0,0);
-  chan_blocks_reset(0x1f801f0,0,0);
-  ret_stub_b(0x1f80e8 + (uint32_t)param_2 * 264,0);
+  chan_blocks_reset(0x1f800e8,0,0);
+  chan_blocks_reset(0x1f8001f0,0,0);
+  ret_stub_b(0x1f800e8 + (uint32_t)param_2 * 264,0);
 }
 
 /* chan_sweep_flag200 — sweep the 32-entry x6-byte channel table at guest
@@ -9089,7 +9092,7 @@ int32_t dev_byte_xfer(uint8_t *a0,int32_t a1)
   {
     /* disasm-verified @0x801a2048-0x801a2060: lui $v0,0x1f80; ori $v0,$v0,
      * 0x1120; lhu $a0,($v0) — absolute HW register address, not scratchpad. */
-    uint16_t hw = *(uint16_t *)guest_at(0x1f801120);
+    uint16_t hw = (uint16_t)psx_read_half(0x1f801120);
     *(uint32_t *)guest_at(0x801ff264) = 0x1ae;
     *(uint32_t *)guest_at(0x801ff260) = hw;
   }
@@ -9139,16 +9142,16 @@ int32_t dev_byte_xfer(uint8_t *a0,int32_t a1)
  * — hardware register addresses outside the 1KB scratchpad, kept as-is. */
 int32_t fifo_space_check(void)
 {
-  uint32_t a0 = (uint32_t)*(uint16_t *)guest_at(0x1f801120);
+  uint32_t a0 = (uint32_t)(uint16_t)psx_read_half(0x1f801120);
   uint32_t base = *(uint32_t *)guest_at(0x801ff260);
   uint32_t lim2 = *(uint32_t *)guest_at(0x801ff264);
   uint32_t v0;
   if (a0 < base) {
-    uint32_t c2 = (uint32_t)*(uint16_t *)guest_at(0x1f801128);
+    uint32_t c2 = (uint32_t)(uint16_t)psx_read_half(0x1f801128);
     a0 += (c2 != 0) ? c2 : 0x10000u;
   }
   v0 = a0 - base;
-  if ((*(uint16_t *)guest_at(0x1f801124) & 0x200) == 0)
+  if (((uint16_t)psx_read_half(0x1f801124) & 0x200) == 0)
     v0 >>= 3;
   return (v0 < lim2) ? 0 : 1;
 }

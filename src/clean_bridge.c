@@ -13,6 +13,7 @@
  */
 #include <stdint.h>
 #include <string.h>
+#include <stdlib.h>
 #include "cpu_state.h"
 
 extern uint8_t *memory_get_ram_ptr(void);
@@ -54,4 +55,51 @@ uint32_t guest_of(const void *p)
     if (b >= spad && b < spad + BR2_SCRATCH_SIZE)
         return BR2_SCRATCH_BASE | (uint32_t)(b - spad);
     return 0;
+}
+
+/* ── BIOS service bridge ──────────────────────────────────────────────────
+ * game/ ports express BIOS kernel calls as bios_svc(table, svc, a0, a1)
+ * where `table` is the call vector (0xA0/0xB0/0xC0 physical) and `svc` is the
+ * function number the guest trampoline places in $t1 before `jr $t2`. The
+ * faithful execution is a real nested guest call into the recompiled BIOS:
+ * set the argument registers, leave $ra at the clean function's own return
+ * address (the BIOS service returns to it, which is exactly the stop_addr
+ * contract psx_dispatch_call() implements), dispatch, and return $v0.
+ * a2/a3 are intentionally not touched — the guest trampolines forward
+ * whatever the caller left in them. */
+static CPUState *g_clean_cpu;
+
+void clean_bridge_set_cpu(CPUState *cpu) { g_clean_cpu = cpu; }
+
+extern void psx_dispatch_call(CPUState *cpu, uint32_t target_addr,
+                              uint32_t return_addr);
+
+uint32_t bios_svc(uint32_t table, uint32_t svc, uint32_t a0, uint32_t a1)
+{
+    CPUState *cpu = g_clean_cpu;
+    if (!cpu) return 0;
+    uint32_t ra = cpu->gpr[31];
+    cpu->gpr[4] = a0;
+    cpu->gpr[5] = a1;
+    cpu->gpr[9] = svc;              /* $t1 = kernel service number */
+    psx_dispatch_call(cpu, table, ra);
+    return cpu->gpr[2];             /* $v0 */
+}
+
+/* Six-arg variant: some kernel services consume a2/a3 as well (the guest
+ * trampoline only sets $t1/$t2 and forwards whatever the caller left in
+ * a0-a3). */
+uint32_t bios_svc6(uint32_t table, uint32_t svc,
+                   uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
+{
+    CPUState *cpu = g_clean_cpu;
+    if (!cpu) return 0;
+    uint32_t ra = cpu->gpr[31];
+    cpu->gpr[4] = a0;
+    cpu->gpr[5] = a1;
+    cpu->gpr[6] = a2;
+    cpu->gpr[7] = a3;
+    cpu->gpr[9] = svc;
+    psx_dispatch_call(cpu, table, ra);
+    return cpu->gpr[2];
 }
