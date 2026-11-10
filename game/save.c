@@ -2591,13 +2591,27 @@ int mc_op_dispatch_b(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,uint32_t s4
   int32_t r = mc_op_result_poll(fl);
   if (r == 3 || r == 0) {
     uint32_t *slot = (uint32_t *)guest_at(0x801b43e8 + ((a0 != 0) ? 4 : 0));
-    uint32_t in[3] = { a1,a2,a3 };
-    uint32_t out1[8] = {0}, out2[8] = {0};
+    /* in/out1/out2 cross the BIOS boundary inside cd_chan_job_pump —
+     * they must be guest RAM, so reserve a real guest stack frame
+     * (mirrors the guest caller's sp+0x10/+0x20/+0x40 locals). */
+    extern uint32_t br2_guest_frame(uint32_t);
+    extern void br2_guest_frame_free(void);
+    uint32_t fr = br2_guest_frame(0x60);
+    uint32_t *in = (uint32_t *)guest_at(fr + 0x10);
+    uint32_t *out1 = (uint32_t *)guest_at(fr + 0x20);
+    uint32_t *out2 = (uint32_t *)guest_at(fr + 0x40);
     uint32_t st1 = 0, st2 = 1;
+    in[0] = a1; in[1] = a2; in[2] = a3;
+    memset(out1, 0, 0x20);
+    memset(out2, 0, 0x20);
     int32_t rc = mc_chan_job_stable_poll(fl,in,out1,out2,st1,st2);
-    if (rc != 0) return rc;
-    if (out2[0] == 0) return 0;
-    return *slot == 3 ? 0xf : 0;
+    if (rc != 0) { br2_guest_frame_free(); return rc; }
+    if (out2[0] == 0) { br2_guest_frame_free(); return 0; }
+    {
+      int32_t ret = *slot == 3 ? 0xf : 0;
+      br2_guest_frame_free();
+      return ret;
+    }
   }
   if (r == 4) {
     *(uint32_t *)guest_at(0x801b43e8 + ((uint32_t)s1 & 4)) = 3;
@@ -8556,12 +8570,12 @@ static int mc_issue(uint32_t a0,const void *a1,void *a2,
     return 0;
   }
   cd_file_header_copy(a0,blk);
-  cd_strcat_guard(blk,(uint32_t)(uintptr_t)a1);
+  cd_strcat_guard(blk,(uintptr_t)a1);
   s1[0] = (uint32_t)state;
   s1[1] = 0;
   s1[2] = 0;
   s1[6] = a3;
-  s1[8] = (uint32_t)(uintptr_t)a2;
+  s1[8] = guest_of(a2);
   s1[7] = a4;
   s1[4] = a0;                        /* delay-slot store: before the call */
   cd_job_slot_alloc(cb,0);
@@ -8585,28 +8599,37 @@ int mc_job_issue_b(uint32_t a0,const void *a1,void *a2,uint32_t a3,uint32_t a4)
 int mc_file_cmd(uint32_t a0,const void *a1,uint32_t a2)
 {
   uint32_t *s0 = (uint32_t *)guest_at(0x801febe0);
-  uint8_t blk[0x20];
+  /* cmd blk crosses the BIOS boundary (FUN_801a0220/801a0250 kernel
+   * services) — must be guest RAM, so reserve a real guest frame. */
+  extern uint32_t br2_guest_frame(uint32_t);
+  extern void br2_guest_frame_free(void);
+  extern void br2_irq_poll(void);
+  uint32_t fr = br2_guest_frame(0x40);
+  uint8_t *blk = (uint8_t *)guest_at(fr + 0x10);
   uint32_t a2hi;
   int32_t s2 = 0;
   uint32_t st;
   int32_t v0;
   if (s0[0] != 0) {
     printf_forward((const char *)guest_at(0x80125e8c));
+    br2_guest_frame_free();
     return -1;
   }
   cd_file_header_copy(a0,blk);
-  cd_strcat_guard(blk,(uint32_t)(uintptr_t)a1);
+  cd_strcat_guard(blk,(uintptr_t)a1);
   s0[3] |= 1u << (s0[4] & 31);
-  v0 = FUN_801a0220((uint32_t)(uintptr_t)blk,1,s0[4]);
+  v0 = FUN_801a0220(fr + 0x10,1,s0[4]);
   a2hi = a2 << 16;                    /* delay slot: always executes */
   if (v0 >= 0) {
     FUN_801a0250(v0);
+    br2_guest_frame_free();
     return 6;
   }
   for (;;) {
-    v0 = FUN_801a0220((uint32_t)(uintptr_t)blk,(a2hi | 0x200),s0[4]);
+    v0 = FUN_801a0220(fr + 0x10,(a2hi | 0x200),s0[4]);
     if (v0 >= 0) {
       FUN_801a0250(v0);
+      br2_guest_frame_free();
       return 0;
     }
     *(uint32_t *)guest_at(0x801fec38) = cd_xchg_fec24(0);
@@ -8621,17 +8644,18 @@ int mc_file_cmd(uint32_t a0,const void *a1,uint32_t a2)
     }
     /* wait for state change */
     if (s0[0] == 0 && s0[2] == 0) {
-      while (*(uint32_t *)guest_at(0x801febe8) == 0) { }
+      while (*(uint32_t *)guest_at(0x801febe8) == 0) { br2_irq_poll(); }
     }
     st = *(uint32_t *)guest_at(0x801febd4);
     s0[2] = 0;
     cd_xchg_fec24(*(uint32_t *)guest_at(0x801fec38));
-    if (st == 0) return 7;
+    if (st == 0) { br2_guest_frame_free(); return 7; }
     if (st == 3) continue;             /* re-issue same cmd */
     if (st == 2) {
       s2++;
       if (s2 < 4) continue;            /* retry issue */
     }
+    br2_guest_frame_free();
     return (int32_t)st;
   }
 }

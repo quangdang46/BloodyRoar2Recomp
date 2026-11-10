@@ -43,6 +43,12 @@ for path in files:
         j = i
         while j < len(code) and code[j] in ' \t\r\n': j += 1
         if j >= len(code) or code[j] != '{': continue
+        # thunk bodies (br2_call_generated -> recompiled guest code) must
+        # NOT get a clean dispatch wrapper: the wrapper would re-enter the
+        # thunk and recurse forever through clean_try_dispatch.
+        bend = code.find('\n}', j)
+        if bend > 0 and 'br2_call_generated(' in code[j:bend]:
+            continue
         # exclude static defs (not callable cross-TU anyway, but be safe)
         k = m.start() - 1
         while k >= 0 and code[k] not in ';{}': k -= 1

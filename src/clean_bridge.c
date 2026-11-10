@@ -29,9 +29,21 @@ extern uint8_t *memory_get_scratchpad_ptr(void);
  * distinct guest addrs do not alias each other. */
 static uint8_t g_openbus[0x10000];
 
+/* Boundary-inclusive mapping: guest code uses region-top addresses
+ * (0x80200000 RAM end, 0x1F800400 scratchpad end) as EXCLUSIVE loop bounds
+ * materialized through guest_at(). Returning the open-bus mirror for those
+ * exact addresses breaks every `p < guest_at(end)` comparison — the pointer
+ * lands in a different host buffer and the loop wipes everything between
+ * (observed: scratch_zero_reset zeroed _MergedGlobals incl. the game-backend
+ * registry). Map the exact tops to the contiguous one-past pointer; the
+ * runtime buffers carry BR2_BOUNDARY_PAD slack so a stray deref stays
+ * in-bounds and behaves like open bus (~0, writes dropped into pad). */
+#define BR2_BOUNDARY_PAD 256u
+
 static uint32_t br2_phys(uint32_t addr)
 {
     uint32_t phys = addr & 0x1FFFFFFFu;
+    if (phys == BR2_RAM_SIZE) return phys;      /* exclusive RAM top */
     if (phys < 0x00800000u) phys &= (BR2_RAM_SIZE - 1u);
     return phys;
 }
@@ -39,9 +51,9 @@ static uint32_t br2_phys(uint32_t addr)
 void *guest_at(uint32_t addr)
 {
     uint32_t phys = br2_phys(addr);
-    if (phys < BR2_RAM_SIZE)
+    if (phys <= BR2_RAM_SIZE)
         return memory_get_ram_ptr() + phys;
-    if (phys >= BR2_SCRATCH_BASE && phys < BR2_SCRATCH_BASE + BR2_SCRATCH_SIZE)
+    if (phys >= BR2_SCRATCH_BASE && phys <= BR2_SCRATCH_BASE + BR2_SCRATCH_SIZE)
         return memory_get_scratchpad_ptr() + (phys - BR2_SCRATCH_BASE);
     return g_openbus + (addr & 0xFFFFu);
 }
@@ -51,9 +63,9 @@ uint32_t guest_of(const void *p)
     const uint8_t *b = (const uint8_t *)p;
     uint8_t *ram = memory_get_ram_ptr();
     uint8_t *spad = memory_get_scratchpad_ptr();
-    if (b >= ram && b < ram + BR2_RAM_SIZE)
+    if (b >= ram && b <= ram + BR2_RAM_SIZE)
         return 0x80000000u | (uint32_t)(b - ram);
-    if (b >= spad && b < spad + BR2_SCRATCH_SIZE)
+    if (b >= spad && b <= spad + BR2_SCRATCH_SIZE)
         return BR2_SCRATCH_BASE | (uint32_t)(b - spad);
     return 0;
 }
@@ -71,6 +83,17 @@ uint32_t guest_of(const void *p)
 static CPUState *g_clean_cpu;
 
 void clean_bridge_set_cpu(CPUState *cpu) { g_clean_cpu = cpu; }
+
+/* br2_guest_ra_set — publish the $ra the equivalent guest code would hold
+ * at this point.  BIOS services that validate their caller (OpenBIOS
+ * kernel-call patch check, e.g. B0/0x57) hash/inspect the code bytes at
+ * $ra; a stale dispatch ra produces "Couldn't find patch hash" -> the
+ * BIOS prints "Stopping." and halts.  Clean ports call this with the
+ * guest-accurate return address before such services. */
+void br2_guest_ra_set(uint32_t ra)
+{
+    if (g_clean_cpu) g_clean_cpu->gpr[31] = ra;
+}
 
 extern void psx_dispatch_call(CPUState *cpu, uint32_t target_addr,
                               uint32_t return_addr);
@@ -128,8 +151,20 @@ static uint32_t svc_call(uint32_t table, uint32_t svc,
     cpu->gpr[8]  = table;           /* $t0 — some dispatchers inspect it */
     cpu->gpr[9]  = svc;             /* $t1 = kernel service number */
     cpu->gpr[10] = table;           /* $t2 = call vector (guest sets this) */
-    cpu->gpr[31] = BR2_NESTED_RA;
-    psx_dispatch_call(cpu, table, 0);
+    /* Some BIOS services (e.g. B0/0x57) read $ra as an opaque token and
+     * dereference it as a struct pointer.  The generated-game path always
+     * presents a real guest code address there; BR2_NESTED_RA=0 feeds the
+     * BIOS low-memory vectors instead and sends it down a bogus path.
+     * Keep the live guest $ra when one exists and use it as the nested
+     * stop_addr: the svc's final `jr $ra` lands exactly on stop_addr,
+     * which psx_dispatch_impl converts to the plain-C return. */
+    if (ra != 0) {
+        cpu->gpr[31] = ra;
+        psx_dispatch_call(cpu, table, ra);
+    } else {
+        cpu->gpr[31] = BR2_NESTED_RA;
+        psx_dispatch_call(cpu, table, 0);
+    }
     cpu->gpr[31] = ra;
     cpu->gpr[29] = sp;
     cpu->pc = pc;
@@ -146,6 +181,41 @@ void br2_irq_poll(void)
 {
     CPUState *cpu = g_clean_cpu;
     if (cpu) psx_check_interrupts_at(cpu, cpu->gpr[31]);
+}
+
+/* br2_guest_frame — guest stack frame for clean C. Guest code allocates
+ * locals below $sp; clean ports must do the same whenever buffers cross
+ * a guest-visible boundary (BIOS services, nested guest calls, IRQ
+ * handlers) — a host stack buffer is invisible to guest code and a
+ * fixed guest_sp()-N window would be overwritten by the callee's own
+ * frame. Reserving below the live $sp (cpu->gpr[29] and the clean-side
+ * guest_sp mirror) reproduces the guest layout exactly: nested guest
+ * calls and BIOS services allocate below the reserved frame, never
+ * into it. LIFO discipline via br2_guest_frame_free. */
+extern uint32_t guest_sp(void);
+extern void guest_sp_set(uint32_t sp);
+
+static uint32_t g_frm_sp[32];
+static int g_frm_depth;
+
+uint32_t br2_guest_frame(uint32_t size)
+{
+    CPUState *cpu = g_clean_cpu;
+    uint32_t sp = cpu ? cpu->gpr[29] : guest_sp();
+    uint32_t ns = (sp - ((size + 15u) & ~15u)) & ~15u;
+    if (g_frm_depth < 32) g_frm_sp[g_frm_depth++] = sp;
+    if (cpu) cpu->gpr[29] = ns;
+    guest_sp_set(ns);
+    return ns;
+}
+
+void br2_guest_frame_free(void)
+{
+    uint32_t sp;
+    if (g_frm_depth <= 0) return;
+    sp = g_frm_sp[--g_frm_depth];
+    if (g_clean_cpu) g_clean_cpu->gpr[29] = sp;
+    guest_sp_set(sp);
 }
 
 /* call_guest — synchronous guest-function call from clean C. The guest
@@ -175,8 +245,15 @@ uint32_t call_guest(uint32_t fn, uint32_t a, uint32_t b)
     }
     {
         uint32_t sp = cpu->gpr[29];
-        cpu->gpr[31] = BR2_NESTED_RA;
-        psx_dispatch_call(cpu, fn, 0);
+        /* Same ra contract as svc_call: BIOS services inside the callee
+         * may inspect $ra; use the live guest ra as stop_addr. */
+        if (ra != 0) {
+            cpu->gpr[31] = ra;
+            psx_dispatch_call(cpu, fn, ra);
+        } else {
+            cpu->gpr[31] = BR2_NESTED_RA;
+            psx_dispatch_call(cpu, fn, 0);
+        }
         cpu->gpr[29] = sp;
     }
     {
@@ -185,6 +262,34 @@ uint32_t call_guest(uint32_t fn, uint32_t a, uint32_t b)
         cpu->gpr[31] = ra; cpu->pc = pc; cpu->gpr[2] = v0;
         return r;
     }
+}
+
+/* br2_call_generated — invoke the recompiled (generated) implementation of
+ * a guest function, bypassing clean_try_dispatch entirely.  Used by clean
+ * ports whose guest counterpart crosses BIOS kernel-call boundaries that
+ * need full guest-stack/ra fidelity (kernel-object validation, thread
+ * context).  Args go in $a0-$a3; return value in $v0. */
+uint32_t br2_call_generated(uint32_t fn, uint32_t a0, uint32_t a1,
+                            uint32_t a2, uint32_t a3)
+{
+    CPUState *cpu = g_clean_cpu;
+    uint32_t ra, pc, sp, s0, s1, s2, s3;
+    if (!cpu || fn == 0) return 0;
+    ra = cpu->gpr[31]; pc = cpu->pc; sp = cpu->gpr[29];
+    s0 = cpu->gpr[16]; s1 = cpu->gpr[17]; s2 = cpu->gpr[18]; s3 = cpu->gpr[19];
+    cpu->gpr[4] = a0; cpu->gpr[5] = a1;
+    cpu->gpr[6] = a2; cpu->gpr[7] = a3;
+    if (ra != 0) {
+        cpu->gpr[31] = ra;
+        psx_dispatch_call(cpu, fn, ra);
+    } else {
+        cpu->gpr[31] = BR2_NESTED_RA;
+        psx_dispatch_call(cpu, fn, 0);
+    }
+    cpu->gpr[31] = ra; cpu->gpr[29] = sp; cpu->pc = pc;
+    cpu->gpr[16] = s0; cpu->gpr[17] = s1;
+    cpu->gpr[18] = s2; cpu->gpr[19] = s3;
+    return cpu->gpr[2];
 }
 
 /* Kernel syscall wrappers — guest 0x8018E300 = `li a0,1; syscall 0`
@@ -240,5 +345,61 @@ uint32_t bios_svc6(uint32_t table, uint32_t svc,
         uint32_t v = svc_call(table, svc, a0, a1, a2, a3);
         g_svc_ring[(g_svc_ring_n - 1) % BR2_SVC_RING].v0 = v;
         return v;
+    }
+}
+
+/* BIOS kernel-call trampolines. Guest code reaches these as 4-insn
+ * stubs (`li t2,<vec>; jr t2; li t1,<svc>`) that forward the caller's
+ * a0-a3 untouched. Game/ ports that call the C symbol directly must
+ * route through the real recompiled BIOS — the bind.c weak stubs
+ * returned 0, which silently skipped kernel object allocation
+ * (FUN_8019b380/390), CD channel services (FUN_801a02x0), and event
+ * calls, deadlocking CD init inside the BIOS idle loop. */
+uint32_t FUN_8019b380(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
+{ return bios_svc6(0xb0,0x08,a0,a1,a2,a3); }
+void FUN_8019b390(uint32_t a0)
+{ (void)bios_svc6(0xb0,0x0c,a0,0,0,0); }
+uint32_t FUN_801a0260(const void *a0)
+{ return bios_svc6(0xb0,0x43,guest_of(a0),0,0,0); }
+void FUN_801a05f0(uint32_t a0)
+{ (void)bios_svc6(0xa0,0xac,a0,0,0,0); }
+void FUN_8019a2f0(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
+{ (void)bios_svc6(0xb0,0x12,a0,a1,a2,a3); }
+void FUN_8019a300(void)
+{ (void)bios_svc6(0xb0,0x13,0,0,0,0); }
+void FUN_8019a310(void)
+{ (void)bios_svc6(0xb0,0x14,0,0,0,0); }
+void FUN_8019ad48(uint32_t a0)
+{ (void)bios_svc6(0xa0,0x72,a0,0,0,0); }
+void FUN_8019ad70(uint32_t a0)
+{ (void)bios_svc6(0xb0,0x18,a0,0,0,0); }
+void FUN_8019ad80(uint32_t a0)
+{ (void)bios_svc6(0xb0,0x19,a0,0,0,0); }
+void FUN_8019e420(void)
+{ (void)bios_svc6(0xb0,0x4c,0,0,0,0); }
+int32_t FUN_801a0220(uint32_t a0,uint32_t a1,uint32_t a2)
+{ return (int32_t)bios_svc6(0xb0,0x32,a0,a1,a2,0); }
+uint32_t FUN_801a0230(uint32_t a0,uint32_t a1,uint32_t a2)
+{ return bios_svc6(0xb0,0x33,a0,a1,a2,0); }
+uint32_t FUN_801a0240(uint32_t a0,uint32_t a1,uint32_t a2)
+{ return bios_svc6(0xb0,0x34,a0,a1,a2,0); }
+void FUN_801a0250(uint32_t a0)
+{ (void)bios_svc6(0xb0,0x36,a0,0,0,0); }
+
+/* br2_bios_tramp — guest `jr $t2`-vector trampoline semantics: the stub
+ * sets only $t1=svc/$t2=vector and forwards the caller's a0-a3 untouched.
+ * Used by ported tramps whose clean signature carries no args. */
+void br2_bios_tramp(uint32_t table, uint32_t svc)
+{
+    CPUState *cpu = g_clean_cpu;
+    uint32_t ra;
+    if (!cpu) return;
+    ra = cpu->gpr[31];
+    svc_record(table, svc, cpu->gpr[4], cpu->gpr[5],
+               cpu->gpr[6], cpu->gpr[7], ra);
+    {
+        uint32_t v = svc_call(table, svc, cpu->gpr[4], cpu->gpr[5],
+                              cpu->gpr[6], cpu->gpr[7]);
+        g_svc_ring[(g_svc_ring_n - 1) % BR2_SVC_RING].v0 = v;
     }
 }

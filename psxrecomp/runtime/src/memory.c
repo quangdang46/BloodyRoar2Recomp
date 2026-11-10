@@ -35,8 +35,13 @@
 #define MOD_MEMORY_BASE 0x1F000000u
 #define MOD_MEMORY_SIZE (1u * 1024u * 1024u)
 
-static uint8_t ram[RAM_SIZE];
-static uint8_t scratchpad[SCRATCHPAD_SIZE];
+/* BR2_BOUNDARY_PAD slack after each region: the clean-room bridge maps a
+ * region's exclusive top address (0x80200000 / 0x1F800400) to the contiguous
+ * one-past pointer for `p < end` bound comparisons; a stray deref there must
+ * stay in-bounds and behave like open bus. */
+#define BOUNDARY_PAD 256
+static uint8_t ram[RAM_SIZE + BOUNDARY_PAD];
+static uint8_t scratchpad[SCRATCHPAD_SIZE + BOUNDARY_PAD];
 static uint8_t bios_rom[BIOS_ROM_SIZE];
 static uint8_t mod_memory[MOD_MEMORY_SIZE];
 static uint32_t mod_memory_used;

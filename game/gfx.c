@@ -848,8 +848,10 @@ LAB_80193540:
 void bios_call_a0(uint param_1)
 
 {
-  /* guest: jr 0xa0 — kernel/BIOS call trampoline */
-  bios_call(0xa0,param_1);
+  /* guest 0x80193d30: `li t2,0xa0; jr t2; li t1,0x49` — BIOS svc A0/0x49
+   * with a0 = param_1 (caller's arg register). */
+  extern uint32_t bios_svc6(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+  bios_svc6(0xa0,0x49,param_1,0,0,0);
   return;
 }
 

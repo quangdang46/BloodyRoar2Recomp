@@ -1304,15 +1304,19 @@ int cd_sync_wait_c(uint32_t param_1,uint32_t param_2)
   return cd_cmd_issue_c(param_1,param_2) == 0;
 }
 
-/* BIOS table trampolines (A0/B0/C0 vectors) -> host BIOS hook. */
+/* BIOS table trampolines — guest stubs are `li t2,<vec>; jr t2;
+ * li t1,<svc>` forwarding caller a0-a3. Disasm-verified:
+ * 0x80199fe0 = B0/0x5b, 0x8019a670 = C0/0x0a, 0x801957f0 = A0/0x44. */
+extern void br2_bios_tramp(uint32_t,uint32_t);
+extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 void bios_table_tramp()
 {
-  bios_call(0xb0,0);
+  br2_bios_tramp(0xb0,0x5b);
 }
 
 void bios_kobj_tramp()
 {
-  bios_call(0xc0,0);
+  br2_bios_tramp(0xc0,0x0a);
 }
 
 /* ---- batch29: CD command submit + status ---- */
@@ -1462,13 +1466,13 @@ int32_t cd_file_open_b(uint32_t param_1)
 /* cd_read_param_set — CD read setup: arg -> @0x801feb38, -1 -> @0x801feb28,
  * cd_dispatch_tblc dispatch, cd_cmd_sequence(0x20000001,&block), bios_table_tramp(0).
  * Disasm 0x80199f30-0x80199f74. */
-extern void cd_cmd_sequence(uint32_t,void *,uint32_t,uint32_t);
+extern void cd_cmd_sequence(uint32_t,uint32_t,uint32_t,uint32_t);
 void cd_read_param_set(uint32_t param_1)
 {
   *(uint32_t *)guest_at(0x801feb38) = param_1;
   *(uint32_t *)guest_at(0x801feb28) = 0xffffffff;
   cd_dispatch_tblc();
-  cd_cmd_sequence(0x20000001,guest_at(0x801feb28),0,0);
+  cd_cmd_sequence(0x20000001,0x801feb28,0,0);
   bios_table_tramp();
 }
 
@@ -1601,17 +1605,10 @@ extern void cd_kobj_init_a(void);
 extern void cd_kobj_init_b(void);
 extern void cd_subchan_table_install(void);
 extern void bios_tramp_b015(uint32_t,uint32_t);
-void cd_cmd_sequence(uint32_t param_1,void *param_2,uint32_t param_3,uint32_t param_4)
+void cd_cmd_sequence(uint32_t param_1,uint32_t param_2,uint32_t param_3,uint32_t param_4)
 {
-  cd_kobj_init_a();
-  FUN_8018e300();
-  cd_kobj_init_b();
-  FUN_8018e310(0);
-  bios_table_tramp();
-  cd_subchan_table_install();
-  bios_tramp_b015(param_1,(uint32_t)(uintptr_t)param_2);
-  (void)param_3; (void)param_4;
-  *(uint32_t *)guest_at(0x801bcc90) = 1;
+  /* BIOS kernel-object boundary — run the recompiled guest body. */
+  br2_call_generated(0x8019a00c,param_1,param_2,param_3,param_4);
 }
 
 /* cd_channel_main_init — CD channel main init: crit-in, flag=0, 9a340/9a330
@@ -1821,18 +1818,11 @@ int32_t cd_subsystem_init(void)
  * object ptr, clears 9 u32 at obj+0x62c, bios_tramp_a044, crit-out.
  * Disasm 0x8019a3f0-0x8019a450. */
 extern void bios_tramp_a044(void);
+extern void br2_guest_ra_set(uint32_t);
 void cd_kobj_init_a(void)
 {
-  uint32_t obj;
-  uint32_t *p;
-  int i;
-  FUN_8018e300();
-  obj = bios_svc(0xb0,0x57,0,0);
-  obj = *(uint32_t *)((uint8_t *)guest_at(obj) + 0x16c);
-  p = (uint32_t *)((uint8_t *)guest_at(obj) + 0x62c);
-  for (i = 0; i < 9; i++) p[i] = 0;
-  bios_tramp_a044();
-  FUN_8018e310(0);
+  /* BIOS svc B0/0x57 kernel-object boundary — run the recompiled guest body. */
+  br2_call_generated(0x8019a3f0,0,0,0,0);
 }
 
 /* cd_kobj_init_b — kernel-object init B: crit-in, BIOS svc B0/0x57 ->
@@ -1841,21 +1831,12 @@ void cd_kobj_init_a(void)
  * No crit-out (matches guest). Disasm 0x8019a378-0x8019a3e0. */
 void cd_kobj_init_b(void)
 {
-  uint32_t obj, sub;
-  uint32_t *p;
-  int i;
-  FUN_8018e300();
-  obj = bios_svc(0xb0,0x57,0,0);
-  sub = *(uint32_t *)((uint8_t *)guest_at(obj) + 0x16c);
-  *(uint32_t *)guest_at(0x801feb58) = sub + 0x884;
-  *(uint32_t *)guest_at(0x801feb5c) = sub + 0x894;
-  p = (uint32_t *)((uint8_t *)guest_at(sub) + 0x594);
-  for (i = 0; i < 11; i++) p[i] = 0;
-  bios_tramp_a044();
+  /* BIOS svc B0/0x57 kernel-object boundary — run the recompiled guest body. */
+  br2_call_generated(0x8019a378,0,0,0,0);
 }
 
 /* bios_tramp_a044 — BIOS svc A0/0x44 trampoline. */
-void bios_tramp_a044(void) { bios_svc(0xa0,0x44,0,0); }
+void bios_tramp_a044(void) { br2_bios_tramp(0xa0,0x44); }
 
 /* cd_dir_table_set — set dir table base/cursor: a0 -> @0x801fc6c0,
  * a1 -> @0x801fc6c4, then cd_dir_reset. Disasm 0x80195800-24. */
@@ -2444,7 +2425,7 @@ extern void cd_field_copy_gated(void *);
 extern int32_t cd_mode_apply_deferred(uint32_t);
 extern void cd_job_slot_alloc(uint32_t,uint32_t);
 extern void cd_file_header_copy(uint32_t,void *);
-extern void cd_strcat_guard(void *,uint32_t);
+extern void cd_strcat_guard(void *,uintptr_t);
 extern void cd_pending_args_pump(void);
 extern uint32_t cd_file_record_lookup(void *,void *);
 extern uint32_t FUN_801a0260(void *);
@@ -2889,11 +2870,20 @@ retry:
 int32_t cd_chan_job_pump(uint32_t a0,const void *a1,const void *a2,const void *a3,
                      uint32_t a4,uint32_t a5)
 {
-  uint32_t blk[8];    /* sp+0x10: 0x20-byte job block */
-  uint32_t rec[10];   /* sp+0x30: 0x28-byte record      */
+  /* blk/rec mirror the guest frame (sp+0x10 / sp+0x30 of a 0x60 frame)
+   * but must live in guest RAM: they cross the BIOS-service boundary
+   * (svc B0/0x42 tail call in cd_file_record_lookup) and host stack
+   * buffers are invisible to guest code. br2_guest_frame reserves real
+   * guest stack below $sp so nested BIOS frames can't collide. */
+  extern uint32_t br2_guest_frame(uint32_t);
+  extern void br2_guest_frame_free(void);
+  uint32_t fr = br2_guest_frame(0x60);
+  uint32_t *blk = (uint32_t *)guest_at(fr + 0x10);   /* sp+0x10: 0x20 job blk */
+  uint32_t *rec = (uint32_t *)guest_at(fr + 0x30);   /* sp+0x30: 0x28 record  */
   uint32_t err = 0;
   uint32_t s0, s1, s2, s4, s5;
-  uint32_t fp = a4, lim = a5, a1v;
+  uint32_t fp = a4, lim = a5;
+  uintptr_t a1v;
   uint32_t st0;
   uint8_t *dsta;
   int32_t v0;
@@ -2901,9 +2891,10 @@ int32_t cd_chan_job_pump(uint32_t a0,const void *a1,const void *a2,const void *a
 
   if (CDREG32(0x801febc0) != 0) {
     printf_forward((const char *)guest_at(0x80125e8c));
+    br2_guest_frame_free();
     return -1;
   }
-  a1v = (uint32_t)(uintptr_t)a1;
+  a1v = (uintptr_t)a1;
   cd_file_header_copy(a0,blk);
   cd_strcat_guard(blk,a1v);
   s2 = 0; s1 = 0;
@@ -2933,10 +2924,11 @@ int32_t cd_chan_job_pump(uint32_t a0,const void *a1,const void *a2,const void *a
           uint32_t *st = (uint32_t *)guest_at(0x801febc0);
           st[0] = 2; st[1] = 0; st[2] = 0;
           CDREG32(0x801febf0) = a0;      /* delay-slot store before call */
-          cd_job_slot_alloc(0x8019eb00,a1v);
+          cd_job_slot_alloc(0x8019eb00,(uint32_t)a1v);
         }
         cd_job_result(0,0,&err);
         cd_xchg_fec24(CDREG32(0x801fec38));
+        br2_guest_frame_free();
         return (int32_t)err;
       }
     } else {
@@ -2949,6 +2941,7 @@ int32_t cd_chan_job_pump(uint32_t a0,const void *a1,const void *a2,const void *a
       s4 += 0x28;
       s5++;
       a1v = rec[7];                    /* last lw a1 in copy loop */
+      (void)a1v;
     }
     s1++;
     if ((int32_t)s1 < (int32_t)(fp + lim)) continue;
@@ -2956,6 +2949,7 @@ done:
     break;
   }
   if (outa) *outa = s5;
+  br2_guest_frame_free();
   return 0;
 }
 
@@ -3644,45 +3638,9 @@ void cd_field_copy_gated(void *a0)
  * Disasm 0x8019ce10-0x8019cfa0. */
 int32_t cd_mode_apply_deferred(uint32_t a0)
 {
-  uint32_t s0 = a0, s1, s2, s3, s4, s5 = 0, sp10 = 0;
-  uint32_t ent, sh;
-  if (s0 >= 0xa) return -1;
-  ent = *(uint32_t *)guest_at(0x801be440 + s0 * 4);
-  if (cd_range_table_member(ent) != 0) return -1;
-  s3 = 1;                                 /* delay slot: always */
-  if (s0 == 0) {
-    sh = CDREG32(0x801bdee8);
-    s1 = 0x10u << (sh & 31);
-    s2 = 0xfff0u << (sh & 31);
-  } else {
-    sh = CDREG32(0x801bdee8);
-    s1 = (0u - ent) << (sh & 31);          /* v0(ret 0) - ent */
-    s2 = ent << (sh & 31);
-  }
-  s4 = CDREG32(0x801bdecc);
-  if (s4 == 1) { CDREG32(0x801bdecc) = 0; s5 = 1; }
-  if (CDREG32(0x801bdee8) != 0) {
-    sp10 = CDREG32(0x801bdee8);
-    CDREG32(0x801bdee8) = 0;
-  }
-  for (;;) {
-    if (s1 < 0x401) { s0 = s1; s3 = 0; }
-    else            { s0 = 0x400; }
-    cd_reg_window_op(2,s2,0);
-    cd_reg_window_op(1,s2,0);
-    cd_reg_window_op(3,0x801bdf20,s0);
-    /* FUN_8019cfb0 = BIOS trampoline (jr $t2=0xb0, t1=0xa); a1 carryover
-     * from b944 op3 tail = *(u32*)0x801bdeb4 pointer cell. */
-    bios_svc(0xb0,0xa,CDREG32(0x801bde38),CDREG32(0x801bdeb4));
-    s1 -= 0x400;
-    s2 += 0x400;
-    if (s3 == 0) break;
-  }
-  if (s5 != 0) CDREG32(0x801bdecc) = s4;
-  if (sp10 != 0) CDREG32(0x801bdee8) = sp10;
-  return 0;
+  /* BIOS kernel boundary — run the recompiled guest body. */
+  return (int32_t)br2_call_generated(0x8019ce10,a0,0,0,0);
 }
-
 /* cd_curve_lookup — 4-nibble curve lookup: combines a3+a1, derives a
  * signed mod-3 index into u16 table @0x801be320 and a 7-bit index into
  * @0x801be338, multiplies, then conditional round-up shift.
@@ -3784,74 +3742,31 @@ void cd_file_header_copy(uint32_t a0,void *a1)
  * Disasm 0x801a0280-0x801a0418. */
 uint32_t cd_file_record_lookup(void *a0,void *a1)
 {
-  uint8_t *s2 = (uint8_t *)a0;
-  uint8_t *s3 = (uint8_t *)a1;
-  uint8_t *buf = (uint8_t *)guest_at(0x801fec48);
-  uint8_t *a0p = buf;
-  uint8_t *v1;
-  uint32_t cnt, n, base, end, s0;
-  int found = 0;
-
-  v1 = s2;
-  if ((int8_t)*s2 < 0x3b) {
-    for (;;) {
-      uint8_t b = *v1;
-      v1++;
-      *a0p = b;
-      a0p++;
-      if ((int8_t)*v1 >= 0x3b) break;
-    }
-  }
-  *a0p = 0;
-
-  cnt = CDREG32(0x154);                  /* kernel cell: entry count */
-  n = ((uint32_t)(((uint64_t)cnt * 0xcccccccdULL) >> 32) >> 6) * 80;
-  base = CDREG32(0x150);                 /* kernel cell: table base  */
-  end = base + n;
-  s0 = base;
-  if (base < end) {
-    for (;;) {
-      uint32_t e0 = CDREG32(s0);
-      if (e0 != 0) {
-        if (cd_strcmp(guest_at(e0),buf) == 0) {
-          CDREG32(0x801fec40) = CDREG32(s0 + 0x34);
-          found = 1;
-          break;
-        }
-      }
-      s0 += 0x50;
-      if (s0 >= end) break;
-    }
-  }
-  if (!found) return 0;
-  /* phase 2: rescan; first strcmp==0 gets handler 0x801a041c */
-  s0 = base;
-  if (base < end) {
-    for (;;) {
-      uint32_t e0 = CDREG32(s0);
-      if (e0 != 0) {
-        if (cd_strcmp(guest_at(e0),buf) == 0) {
-          CDREG32(s0 + 0x34) = 0x801a041c;
-          break;
-        }
-      }
-      s0 += 0x50;
-      if (s0 >= end) break;
-    }
-  }
-  /* FUN_801a0520 = BIOS trampoline (jr $t2=0xb0, t1=0x42) */
-  return bios_svc(0xb0,0x42,(uint32_t)(uintptr_t)s2,
-                      (uint32_t)(uintptr_t)s3);
+  /* BIOS kernel boundary — run the recompiled guest body. */
+  return (int32_t)br2_call_generated(0x801a0280,(uint32_t)guest_of(a0),(uint32_t)guest_of(a1),0,0);
+}
+/* cd_arg_ptr — resolve a string/buffer argument that may arrive as a
+ * host pointer into guest RAM, a guest u32 address, or a raw host
+ * pointer. guest_of() detects guest-backed host pointers; the KSEG0 /
+ * scratchpad range check catches bare guest addresses. */
+static void *cd_arg_ptr(uintptr_t v)
+{
+  uint32_t g = guest_of((const void *)v);
+  if (g != 0) return guest_at(g);
+  if (v >= 0x80000000u && v < 0x80200000u) return guest_at((uint32_t)v);
+  if ((v & 0xfffff000u) == 0x1f800000u) return guest_at((uint32_t)v);
+  return (void *)v;
 }
 
 /* cd_strcat_guard — strcat with overlap guard: returns 0 when either arg
  * NULL or end(dst)==end(src); else appends src at dst's NUL.
- * a0/a1 are HOST pointers (callers pass stack/arena buffers).
+ * a0 is a HOST pointer; a1 may be a host pointer, guest-backed pointer,
+ * or bare guest u32 (resolved via cd_arg_ptr).
  * Disasm 0x801a0530-0x801a05d0. */
-void cd_strcat_guard(void *a0,uint32_t a1)
+void cd_strcat_guard(void *a0,uintptr_t a1)
 {
   char *s1 = (char *)a0;
-  char *s2 = (char *)(uintptr_t)a1;
+  char *s2 = (char *)cd_arg_ptr(a1);
   char *v1, *send, *send2;
   int c;
   if (s1 == NULL || s2 == NULL) return;
@@ -5504,7 +5419,7 @@ int cd_reg_bit40_ctrl(uint32_t param_1)
 
 extern uint32_t FUN_801a0230(uint32_t,uint32_t,uint32_t);
 extern uint32_t FUN_801a0240(uint32_t,uint32_t,uint32_t);
-extern int32_t FUN_801a0220(uint32_t,uint32_t);
+extern int32_t FUN_801a0220(uint32_t,uint32_t,uint32_t);
 extern void cd_svc_dual(uint32_t);
 extern uint32_t cd_queue_b_read(void);
 extern int32_t bios_tramp_b035(int32_t,const void *,int32_t);
@@ -5619,7 +5534,7 @@ int cd_job_submit5(uint32_t param_1)
     uint32_t *s0 = (uint32_t *)guest_at(0x801febe4);
     if (s0[0] != 0) return 1;
     {
-      int32_t r = FUN_801a0220(0x801fec04,0x8001);
+      int32_t r = FUN_801a0220(0x801fec04,0x8001,0);
       s0[4] = (uint32_t)r;
       if (r < 0) {
         s0[0] = 5;
@@ -5671,7 +5586,7 @@ int cd_job_submit6(uint32_t param_1)
     uint32_t *s0 = (uint32_t *)guest_at(0x801febe4);
     if (s0[0] != 0) return 1;
     {
-      int32_t r = FUN_801a0220(0x801fec04,0x8001);
+      int32_t r = FUN_801a0220(0x801fec04,0x8001,0);
       s0[4] = (uint32_t)r;
       if (r < 0) {
         s0[0] = 5;
@@ -6074,11 +5989,11 @@ int cd_file_open_wait(uint32_t param_1,uint32_t param_2,uint32_t param_3)
   cd_strcat_guard(s0,param_2);
   *(uint32_t *)guest_at(0x801febf0) = param_1;
   for (;;) {
-    v0 = FUN_801a0220((uint32_t)s0,1);
+    v0 = FUN_801a0220(guest_of(s0),1,0);
     if (v0 >= 0) {
       FUN_801a0250((uint32_t)v0);
       cd_pending_args_pump();
-      *q = FUN_801a0220((uint32_t)s0,param_3 | 0x8000);
+      *q = FUN_801a0220(guest_of(s0),param_3 | 0x8000,0);
       return 0;
     }
     cd_xchg_fec24(0);
@@ -6403,56 +6318,9 @@ int cd_ctx_save(uint32_t a0)
  * Disasm 0x8019a8ec-0x8019aab8. */
 void cd_intc_dispatch(void)
 {
-  uint32_t s0;
-  int i;
-  uint32_t pa, pb;
-  if (*(uint16_t *)guest_at(0x801bcd18) == 0) {
-    printf_forward((const char *)guest_at(0x80125b7c),
-                 *(uint16_t *)guest_at(DB32G(0x801bdda4)));
-    bios_svc(0xb0,0x17,0,0);        /* FUN_8019ad60: svc 0x17 */
-  }
-  *(uint16_t *)guest_at(0x801bcd1a) = 1;
-  for (;;) {
-    pa = DB32G(0x801bdda4);
-    pb = DB32G(0x801bdda8);
-    s0 = (uint32_t)(*(uint16_t *)guest_at(pa)
-                  & *(uint16_t *)guest_at(pb)
-                  & *(uint16_t *)guest_at(0x801bcd48));
-    if (s0 == 0) break;
-    i = 0;
-    for (;;) {
-      uint32_t fn;
-      if (i >= 0xb) break;              /* -> repoll */
-      if ((s0 & 1) != 0) {
-        *(uint16_t *)guest_at(DB32G(0x801bdda4)) =
-            (uint16_t)~(1u << i);
-        fn = DB32(0x801bcd1c + i * 4);
-        if (fn != 0) call_guest(fn,0,0);
-      }
-      s0 >>= 1;                         /* srl: logical */
-      i++;
-      if ((s0 & 0xffff) == 0) break;    /* -> repoll */
-    }
-  }
-  pa = DB32G(0x801bdda4);
-  pb = DB32G(0x801bdda8);
-  if ((*(uint16_t *)guest_at(pa) & *(uint16_t *)guest_at(pb)) != 0) {
-    uint32_t old = DB32(0x801bddb0);
-    DB32(0x801bddb0) = old + 1;
-    if (old >= 0x801) {
-      printf_forward((const char *)guest_at(0x80125b98),
-                   *(uint16_t *)guest_at(pa),
-                   *(uint16_t *)guest_at(pb));
-      DB32(0x801bddb0) = 0;
-      *(uint16_t *)guest_at(pa) = 0;
-    }
-  } else {
-    DB32(0x801bddb0) = 0;
-  }
-  bios_svc(0xb0,0x17,0,0);          /* FUN_8019ad60: svc 0x17 */
-  *(uint16_t *)guest_at(0x801bcd1a) = 0;
+  /* BIOS kernel boundary — run the recompiled guest body. */
+  br2_call_generated(0x8019a8ec,0, 0, 0, 0);
 }
-
 /* bios_tramp_b035 — BIOS trampoline only (0x8018ef50-0x8018ef58):
  * addiu t2,0xb0; jr t2; t1=0x35. Kernel svc 0x35 (line-buffer
  * flush used by the printf emit layer). a2 is dropped at the
