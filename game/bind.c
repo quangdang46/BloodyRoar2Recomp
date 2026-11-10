@@ -2040,8 +2040,8 @@ __attribute__((weak)) void FUN_80194140() { return; }
 void *PTR_FUN_801b831c;
 
 /* batch30 callees (not yet ported) */
-__attribute__((weak)) void FUN_80129660() { return; }
-__attribute__((weak)) void FUN_801297dc() { return; }
+__attribute__((weak)) void menu_stepper_redraw() { return; }
+__attribute__((weak)) void menu_stepper_input() { return; }
 __attribute__((weak)) void FUN_801562e0() { return; }
 __attribute__((weak)) void FUN_80156290() { return; }
 __attribute__((weak)) void FUN_801575bc() { return; }
@@ -2070,14 +2070,14 @@ static void br2_bind_init30(void)
  * keep faithful return-0 until the true target is identified. */
 __attribute__((weak)) void FUN_801274e8() { return; }
 __attribute__((weak)) void FUN_8015260c() { return; }
-__attribute__((weak)) void FUN_8012cc6c() { return; }
-__attribute__((weak)) void FUN_8012e184() { return; }
-__attribute__((weak)) void FUN_8012e61c() { return; }
-__attribute__((weak)) void FUN_8012e73c() { return; }
+__attribute__((weak)) void print_dispatch() { return; }
+__attribute__((weak)) void hud_text_a() { return; }
+__attribute__((weak)) void hud_text_b() { return; }
+__attribute__((weak)) void hud_text_c() { return; }
 __attribute__((weak)) void FUN_801513fc() { return; }
-__attribute__((weak)) void FUN_8012e7cc() { return; }
-__attribute__((weak)) void FUN_8018ce70() { return; }
-__attribute__((weak)) void FUN_8018c92c() { return; }
+__attribute__((weak)) void hud_text_d() { return; }
+__attribute__((weak)) void sprite_node_emit_a() { return; }
+__attribute__((weak)) void sprite_node_emit_b() { return; }
 
 /* printf rodata: hex-digit strings + guest ctype bitmap @0x801b6701
  * (extracted verbatim from the payload image). */
@@ -2154,11 +2154,11 @@ int FUN_8018e490() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_8019e410() { return; }
+void cd_mode_apply_wrap() { return; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_8019e400() { return; }
+void cd_mode_apply() { return; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -2257,11 +2257,11 @@ int FUN_80186d20() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_80129910() { return 0; }
+int menu_row_paint() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_80129944() { return 0; }
+int menu_row_paint_b() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif

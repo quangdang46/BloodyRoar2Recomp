@@ -32,7 +32,7 @@ void FUN_801941e0(int,int,int,uint,byte *);
 undefined1 * FUN_8018e490(uint32_t *,uint32_t *,int);
 void FUN_8018e550(const char *, ...);
 void  FUN_80193d08(uint32_t *,undefined1,int);
-void  FUN_8019a680(void);
+void  cd_dispatch_tblc(void);
 void  FUN_80193d30(uint);
 undefined4 FUN_80193424(uint);
 void  FUN_801921c0(int,ushort *);
@@ -482,7 +482,7 @@ LAB_80190e4c:
                  (uint32_t *)0x801b82d8,(uint32_t *)0x801b8320);
 LAB_80190e68:
     FUN_80193d08((uint32_t *)0x801b8320,0,0x80);
-    FUN_8019a680();
+    cd_dispatch_tblc();
     FUN_80193d30((*(uint32_t *)guest_at(0x801b8318)) & 0xffffff);
     DAT_801b8320 = (uint8_t)FUN_80193424(param_1);
     DAT_801b8321 = 1;
@@ -674,7 +674,7 @@ extern uint32_t FUN_8019a7fc(int);
 extern uint32_t FUN_80193828(uint);
 extern void FUN_8019b3a0(int);
 extern void FUN_8019b308(void);
-extern void FUN_8019bcac(int,uint32_t,int);
+extern void cd_u16_table_store(int,uint32_t,int);
 uint32_t bios_call(uint32_t,uint32_t);
 
 extern char *s__s_bad_RECT_801254c8;
@@ -904,7 +904,7 @@ void FUN_8019b220(int param_1)
   int iVar2;
   uint16_t *t;
   
-  FUN_8019a680();
+  cd_dispatch_tblc();
   FUN_8019b3a0(param_1);
   if (param_1 == 0) {
     iVar2 = 0x17;
@@ -925,7 +925,7 @@ void FUN_8019b220(int param_1)
   GP32(0x801bde5c) = 0;
   GP32(0x801bde60) = 0;
   GP32(0x801bde4c) = GP32(0x801be440);
-  FUN_8019bcac(0xd1,GP32(0x801be440),0);
+  cd_u16_table_store(0xd1,GP32(0x801be440),0);
   GP32(0x801bdf10) = 0;
   GP32(0x801bdf14) = 0;
   GP32(0x801bdf18) = 0;
@@ -1220,10 +1220,10 @@ uint32_t FUN_8018c71c(uint32_t param_1,uint32_t param_2,uint32_t param_3,
  * addr of fighter-state block (+0xc attr u32, +0x20/+0x22 s16 x/y);
  * param_2 = guest addr of sprite-list head cell; param_3 low nibble =
  * palette set, bits 4-7 = layout variant. Emits FUN_8018c71c/8c824/
- * 8ce70/8c92c sprite records + FUN_8012e7cc tile blits. */
-extern void FUN_8012e7cc(uint32_t,uint32_t,const void *,int32_t,int32_t,int32_t);
-extern void FUN_8018ce70(uint32_t,int32_t,int32_t,int32_t,int32_t,uint32_t,uint32_t,uint32_t,uint32_t,int32_t);
-extern void FUN_8018c92c(uint32_t,uint32_t,uint32_t,uint32_t,int32_t,int32_t);
+ * 8ce70/8c92c sprite records + hud_text_d tile blits. */
+extern void hud_text_d(uint32_t,uint32_t,const void *,int32_t,int32_t,int32_t);
+extern void sprite_node_emit_a(uint32_t,int32_t,int32_t,int32_t,int32_t,uint32_t,uint32_t,uint32_t,uint32_t,int32_t);
+extern void sprite_node_emit_b(uint32_t,uint32_t,uint32_t,uint32_t,int32_t,int32_t);
 void FUN_8012c374(uint32_t param_1,uint32_t param_2,uint32_t param_3)
 {
   int16_t sVar1;
@@ -1282,9 +1282,9 @@ LAB_8012c64c:
     FUN_8018c824((uint *)guest_at(iVar2),(*(int16_t *)(st + 0x22) + -0x54) * 0x10000 |
                  ((uint32_t)*(int16_t *)(st + 0x20) - 0x90U) & 0xffff,0x277e001e,
                  ((uint32_t)(iVar4 << 6) | 0x7e16U) << 0x10 | 0x9880);
-    FUN_8018ce70(iVar2,0,*(int16_t *)(st + 0x22) + -0x40,(int32_t)*(int16_t *)(st + 0x20),0x18,
+    sprite_node_emit_a(iVar2,0,*(int16_t *)(st + 0x22) + -0x40,(int32_t)*(int16_t *)(st + 0x20),0x18,
                  uVar5,0,uVar5,0,2);
-    FUN_8018c92c(iVar2,((uint32_t)(*(int16_t *)(st + 0x22) + -0x13f) * 0x10000) |
+    sprite_node_emit_b(iVar2,((uint32_t)(*(int16_t *)(st + 0x22) + -0x13f) * 0x10000) |
                  ((uint32_t)*(int16_t *)(st + 0x20) - 0xffU) & 0xffff,0xfefe001f,
                  ((uint32_t)(iVar4 << 6) | 0x7c16U) << 0x10,0x80,1);
 LAB_8012cb64:
@@ -1295,18 +1295,18 @@ LAB_8012cb64:
     if (param_3 < 0x21) {
       if (param_3 == 0) {
         iVar2 = param_2 + 4;
-        FUN_8012e7cc(iVar2,uVar3,guest_at(0x8011f10c),0xc0,
+        hud_text_d(iVar2,uVar3,guest_at(0x8011f10c),0xc0,
                      (int32_t)(((uint32_t)*(uint16_t *)(st + 0x22) - 0x38) * 0x10000) >> 0x10,0);
         FUN_8018c824((uint *)guest_at(iVar2),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xd8,0xf0f001e,0x7a16d830);
         FUN_8018c824((uint *)guest_at(iVar2),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xe8,0xf0f001e,0x7a16d820);
         FUN_8018c824((uint *)guest_at(iVar2),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xf8,0xf0f001e,0x7a16d810);
-        FUN_8012e7cc(iVar2,uVar3,guest_at(0x8011f110),0x120,
+        hud_text_d(iVar2,uVar3,guest_at(0x8011f110),0x120,
                      (int32_t)(((uint32_t)*(uint16_t *)(st + 0x22) - 0x38) * 0x10000) >> 0x10,0);
         FUN_8018c824((uint *)guest_at(iVar2),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0x148,0xf0f001e,0x7a16d800);
         goto LAB_8012c64c;
       }
       if (param_3 != 0x10) return;
-      FUN_8012e7cc(param_2 + 4,uVar3,guest_at(0x8011f110),0x120,
+      hud_text_d(param_2 + 4,uVar3,guest_at(0x8011f110),0x120,
                    (int32_t)(((uint32_t)*(uint16_t *)(st + 0x22) - 0x30) * 0x10000) >> 0x10,0);
       FUN_8018c824((uint *)guest_at(param_2 + 4),((uint32_t)(*(int16_t *)(st + 0x22) + -0x34) * 0x10000) | 0x148,0xf0f001e,0x7a16d800);
     } else {
@@ -1319,14 +1319,14 @@ LAB_8012cb64:
         FUN_8018c824((uint *)guest_at(iVar2),((uint32_t)(*(int16_t *)(st + 0x22) + -0x54) * 0x10000) |
                      ((uint32_t)*(int16_t *)(st + 0x20) - 0x90U) & 0xffff,0x277e001e,
                      ((uint32_t)(iVar4 << 6) | 0x7e16U) << 0x10 | 0x9880);
-        FUN_8018ce70(iVar2,0,*(int16_t *)(st + 0x22) + -0x40,(int32_t)*(int16_t *)(st + 0x20),0x18,
+        sprite_node_emit_a(iVar2,0,*(int16_t *)(st + 0x22) + -0x40,(int32_t)*(int16_t *)(st + 0x20),0x18,
                      uVar5,0,uVar5,0,2);
         goto LAB_8012cb64;
       }
       if (param_3 != 0x40) return;
     }
     iVar4 = param_2 + 4;
-    FUN_8012e7cc(iVar4,uVar3,guest_at(0x8011f10c),0xc0,
+    hud_text_d(iVar4,uVar3,guest_at(0x8011f10c),0xc0,
                  (int32_t)(((uint32_t)*(uint16_t *)(st + 0x22) - 0x30) * 0x10000) >> 0x10,0);
     FUN_8018c824((uint *)guest_at(iVar4),((uint32_t)(*(int16_t *)(st + 0x22) + -0x34) * 0x10000) | 0xd8,0xf0f001e,0x7a16d830);
     FUN_8018c824((uint *)guest_at(iVar4),((uint32_t)(*(int16_t *)(st + 0x22) + -0x34) * 0x10000) | 0xe8,0xf0f001e,0x7a16d820);
@@ -1338,14 +1338,14 @@ LAB_8012cb64:
     FUN_8018cc6c(iVar4,0,*(int16_t *)(st + 0x22) + -0x38,(int32_t)*(int16_t *)(st + 0x20),0x18,
                  uVar6,2);
     iVar2 = (*(int16_t *)(st + 0x22) * 3) / 5 + -8;
-    FUN_8018ce70(iVar4,0,0,(int32_t)*(int16_t *)(st + 0x20),iVar2,(int32_t)uVar8,(int32_t)uVar8,(int32_t)uVar7,(int32_t)uVar7,0);
+    sprite_node_emit_a(iVar4,0,0,(int32_t)*(int16_t *)(st + 0x20),iVar2,(int32_t)uVar8,(int32_t)uVar8,(int32_t)uVar7,(int32_t)uVar7,0);
     sVar1 = *(int16_t *)(st + 0x20);
     uVar8 = 0;
     iVar4 = *(int16_t *)(st + 0x22) - iVar2;
     uVar7 = uVar5;
     uVar6 = uVar5;
   }
-  FUN_8018ce70(param_2 + 4,0,iVar2,(int32_t)sVar1,iVar4,(int32_t)uVar7,(int32_t)uVar6,0,(int32_t)uVar8,0);
+  sprite_node_emit_a(param_2 + 4,0,iVar2,(int32_t)sVar1,iVar4,(int32_t)uVar7,(int32_t)uVar6,0,(int32_t)uVar8,0);
 }
 
 /* ======== 0x8018cbfc ======== */

@@ -1,5 +1,12 @@
 import re,glob
 names={}   # name -> addr_hex
+ren={}
+try:
+    for line in open('game/renames.map'):
+        line=line.strip()
+        if not line or line.startswith('#'): continue
+        a,n=line.split(None,1); ren[n]='0x'+a
+except FileNotFoundError: pass
 for f in sorted(glob.glob('game/*.c')):
     if f.endswith(('bind.c','fnmap.c')): continue
     src=open(f).read()
@@ -35,9 +42,11 @@ for f in sorted(glob.glob('game/*.c')):
         fm=re.match(r'^(?:FUN_|LAB_)([0-9a-f]{8})$',name)
         if fm: addr=fm.group(1)
         else:
-            back=src[max(0,m.start()-600):m.start()]
-            marks=re.findall(r'@0x([0-9a-f]{8})',back)
-            if marks: addr=marks[-1]
+            if name in ren: addr=ren[name][2:]
+            else:
+                back=src[max(0,m.start()-600):m.start()]
+                marks=re.findall(r'@0x([0-9a-f]{8})',back)
+                if marks: addr=marks[-1]
         if addr is None: continue
         # only map plausible guest text addrs
         if not (0x80110000 <= int(addr,16) <= 0x80200000): continue

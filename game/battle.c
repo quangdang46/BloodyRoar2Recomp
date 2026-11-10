@@ -15946,7 +15946,7 @@ extern void FUN_8018bd40(void *, uint32_t);
 extern void FUN_801940e0(uint32_t);
 extern void FUN_80194060(uint32_t,uint32_t);
 extern void FUN_80194090(uint32_t,uint32_t);
-extern void FUN_80196148(void *);
+extern void cd_cmd_retry(void *);
 
 /* FUN_8012e58c — round/announce parameter block init @0x1f80038c.
  * All fields u16 (sh) except +0x1c u32 (sw); verified vs disasm. */
@@ -16008,7 +16008,7 @@ void FUN_801274fc(uint8_t param_1,uint8_t param_2,uint8_t param_3)
   BA8(0x801e6209) = param_1; BA8(0x801e620a) = param_2; BA8(0x801e620b) = param_3;
 }
 
-/* FUN_80156114 — brightness/gamma level -> 4-byte packet to FUN_80196148.
+/* FUN_80156114 — brightness/gamma level -> 4-byte packet to cd_cmd_retry.
  * DAT_801bef70 = s16 level; DAT_801f36c0 u16 flag selects direct vs
  * scaled (x*63/127) encoding. Verified vs disasm incl. stack buf. */
 void FUN_80156114(int32_t param_1)
@@ -16027,7 +16027,7 @@ void FUN_80156114(int32_t param_1)
       buf[0] = buf[1] = buf[2] = buf[3] = (uint8_t)r;
     }
   }
-  FUN_80196148(buf);
+  cd_cmd_retry(buf);
 }
 
 /* FUN_80136ddc — HUD/sprite descriptor block init @0x801f0660.
@@ -16120,10 +16120,10 @@ void FUN_8012e6a8(uint32_t param_1,uint32_t param_2,const void *param_3,
  * calls (FUN_8012e334/2e184/2e61c/2e73c variants) per layout mode
  * param_6. param_5 = score/time record ptr; param_3 = layout base;
  * param_4 = color/attr; param_1/2 = draw env pair. */
-extern void FUN_8012e184(undefined4,undefined2,const void *,undefined2,undefined2,short);
-extern void FUN_8012e61c(undefined4,undefined4,const void *,undefined4,undefined2,short);
-extern void FUN_8012e73c(undefined4,undefined4,const void *,undefined4,undefined2,undefined4);
-extern void FUN_8012cc6c(const char *,...);
+extern void hud_text_a(undefined4,undefined2,const void *,undefined2,undefined2,short);
+extern void hud_text_b(undefined4,undefined4,const void *,undefined4,undefined2,short);
+extern void hud_text_c(undefined4,undefined4,const void *,undefined4,undefined2,undefined4);
+extern void print_dispatch(const char *,...);
 extern void FUN_801513fc(char *,uint32_t);
 void FUN_80163e38(uint32_t param_1,uint16_t param_2,int32_t param_3,int32_t param_4,
                   uint8_t *param_5,int32_t param_6)
@@ -16152,7 +16152,7 @@ void FUN_80163e38(uint32_t param_1,uint16_t param_2,int32_t param_3,int32_t para
     break;
   case 1:
     FUN_8018ef60(auStack_48,(char *)guest_at(0x80121fb8),iVar6,iVar5,iVar4);
-    FUN_8012cc6c((const char *)guest_at(0x80121fc8),(const char *)param_5,auStack_48);
+    print_dispatch((const char *)guest_at(0x80121fc8),(const char *)param_5,auStack_48);
     goto LAB_80164124;
   case 2:
     FUN_8012e334(param_1,param_2,auStack_48,(uint16_t)((param_3 + 0x10) * 0x10000 >> 0x10),(uint16_t)sVar3,1);
@@ -16160,10 +16160,10 @@ void FUN_80163e38(uint32_t param_1,uint16_t param_2,int32_t param_3,int32_t para
     FUN_8012e334(param_1,param_2,auStack_48,(uint16_t)((param_3 + 0xa0) * 0x10000 >> 0x10),(uint16_t)sVar3,1);
     break;
   case 3:
-    FUN_8012cc6c((const char *)guest_at(0x80121fd4),(const char *)param_5,iVar2);
+    print_dispatch((const char *)guest_at(0x80121fd4),(const char *)param_5,iVar2);
 LAB_80164124:
     FUN_801513fc(auStack_48,*(uint8_t *)(param_5 + 4));
-    FUN_8012cc6c(auStack_48);
+    print_dispatch(auStack_48);
     break;
   case 4:
     iVar5 = FUN_8018ef60(auStack_48,(char *)guest_at(0x80121fe0),iVar2,iVar1,iVar7);
@@ -16178,25 +16178,25 @@ LAB_80164124:
     iVar5 = FUN_8018ef60(auStack_48,(char *)guest_at(0x80121fe0),iVar1,iVar1,iVar7);
     FUN_8012e334(param_1,param_2,auStack_48,(uint16_t)((param_3 + (3 - iVar5) * 0x10) * 0x10000 >> 0x10),(uint16_t)sVar3,4);
     iVar5 = (param_4 + 10) * 0x10000 >> 0x10;
-    FUN_8012e184(param_1,param_2,guest_at(0x80121fe4),(uint16_t)((param_3 + 0x30) * 0x10000 >> 0x10),(uint16_t)iVar5,1);
+    hud_text_a(param_1,param_2,guest_at(0x80121fe4),(uint16_t)((param_3 + 0x30) * 0x10000 >> 0x10),(uint16_t)iVar5,1);
     FUN_801513fc(auStack_48,*(uint8_t *)(param_5 + 4));
-    FUN_8012e184(param_1,param_2,auStack_48,(uint16_t)((param_3 + 0x74) * 0x10000 >> 0x10),(uint16_t)iVar5,1);
+    hud_text_a(param_1,param_2,auStack_48,(uint16_t)((param_3 + 0x74) * 0x10000 >> 0x10),(uint16_t)iVar5,1);
     FUN_8012e334(param_1,param_2,param_5,(uint16_t)((param_3 + 0xb4) * 0x10000 >> 0x10),(uint16_t)sVar3,4);
     break;
   case 6:
     iVar5 = FUN_8018ef60(auStack_48,(char *)guest_at(0x80121fe0),iVar1,iVar1,iVar7);
     FUN_8012e334(param_1,param_2,auStack_48,(uint16_t)((param_3 + (3 - iVar5) * 0x10) * 0x10000 >> 0x10),(uint16_t)sVar3,4);
     iVar5 = (param_4 + 10) * 0x10000 >> 0x10;
-    FUN_8012e184(param_1,param_2,guest_at(0x80121fe4),(uint16_t)((param_3 + 0x30) * 0x10000 >> 0x10),(uint16_t)iVar5,1);
+    hud_text_a(param_1,param_2,guest_at(0x80121fe4),(uint16_t)((param_3 + 0x30) * 0x10000 >> 0x10),(uint16_t)iVar5,1);
     FUN_801513fc(auStack_48,*(uint8_t *)(param_5 + 4));
-    FUN_8012e184(param_1,param_2,auStack_48,(uint16_t)((param_3 + 0x74) * 0x10000 >> 0x10),(uint16_t)iVar5,1);
+    hud_text_a(param_1,param_2,auStack_48,(uint16_t)((param_3 + 0x74) * 0x10000 >> 0x10),(uint16_t)iVar5,1);
     break;
   case 0x12:
-    FUN_8012e61c(param_1,param_2,auStack_48,param_3 + 0x10,(uint16_t)param_4,5);
+    hud_text_b(param_1,param_2,auStack_48,param_3 + 0x10,(uint16_t)param_4,5);
     goto LAB_801645f8;
   case 0x13:
     if ((_DAT_1f8000dc & 4) == 0) uVar8 = 0; else uVar8 = 5;
-    FUN_8012e73c(param_1,param_2,auStack_48,param_3 + 0x10,(uint16_t)param_4,uVar8);
+    hud_text_c(param_1,param_2,auStack_48,param_3 + 0x10,(uint16_t)param_4,uVar8);
     goto LAB_80164538;
   case 0x14:
     iVar2 = iVar1;
@@ -16204,10 +16204,10 @@ LAB_80164124:
   case 0x15:
     iVar5 = FUN_8018ef60(auStack_48,(char *)guest_at(0x80121fe0),iVar1,iVar1,iVar7);
     if ((_DAT_1f8000dc & 4) == 0) {
-      FUN_8012e73c(param_1,param_2,auStack_48,param_3 + (3 - iVar5) * 0x10 + 0x10,(uint16_t)param_4,0);
+      hud_text_c(param_1,param_2,auStack_48,param_3 + (3 - iVar5) * 0x10 + 0x10,(uint16_t)param_4,0);
       uVar8 = 0;
     } else {
-      FUN_8012e73c(param_1,param_2,auStack_48,param_3 + (3 - iVar5) * 0x10 + 0x10,(uint16_t)param_4,5);
+      hud_text_c(param_1,param_2,auStack_48,param_3 + (3 - iVar5) * 0x10 + 0x10,(uint16_t)param_4,5);
       uVar8 = 5;
     }
     FUN_8012e6a8(param_1,param_2,guest_at(0x80121fe4),(uint16_t)(param_3 + 0x40),(uint16_t)param_4,uVar8);
@@ -16218,7 +16218,7 @@ LAB_80164538:
   case 0x16:
 LAB_8016457c:
     iVar5 = FUN_8018ef60(auStack_48,(char *)guest_at(0x80121fe0),iVar2,iVar1,iVar7);
-    FUN_8012e61c(param_1,param_2,auStack_48,param_3 + (3 - iVar5) * 0x10 + 0x10,(uint16_t)param_4,5);
+    hud_text_b(param_1,param_2,auStack_48,param_3 + (3 - iVar5) * 0x10 + 0x10,(uint16_t)param_4,5);
     FUN_8012e58c(param_1,param_2,guest_at(0x80121fe4),(uint16_t)((param_3 + 0x40) * 0x10000 >> 0x10),(uint16_t)sVar3,5);
 LAB_801645f8:
     FUN_8012e58c(param_1,param_2,param_5,(uint16_t)((param_3 + 0xa8) * 0x10000 >> 0x10),(uint16_t)sVar3,0);
@@ -16229,10 +16229,10 @@ LAB_801645f8:
 
 extern void FUN_8012b49c(int);
 extern int FUN_8012f024(uint32_t,uint32_t);
-extern void FUN_80136d28(int);
+extern void record_copy_1a(int);
 extern int FUN_801358e8(int,int);
 extern int FUN_8016d478(uint32_t);
-extern void FUN_801360cc(void);
+extern void clear_f0300_records(void);
 
 /* FUN_8012e97c — if byte @0x1f800099 == 0: copy 0x44-byte record
  * 0x8011f484 + idx*0x44 -> 0x1f8002f8, init record @0x801f0228
@@ -16273,8 +16273,8 @@ int FUN_80166f64(uint32_t a0)
 
 /* FUN_80166eb0 — fighter respawn/init: gate @0x801e3d00, save/restore
  * byte +0x99, FUN_8012b49c(0), FUN_8012f024, zero +9d/+9e/+99,
- * FUN_80136d28/+0x98 idx, FUN_801358e8, FUN_8012e97c, FUN_8016d478,
- * FUN_801360cc. Disasm 0x80166eb0-0x80166f60. */
+ * record_copy_1a/+0x98 idx, FUN_801358e8, FUN_8012e97c, FUN_8016d478,
+ * clear_f0300_records. Disasm 0x80166eb0-0x80166f60. */
 int FUN_80166eb0(uint32_t a0)
 {
   uint8_t *s0 = (uint8_t *)guest_at(a0);
@@ -16288,11 +16288,11 @@ int FUN_80166eb0(uint32_t a0)
   *(uint8_t *)(s0 + 0x9d) = 0;
   *(uint8_t *)(s0 + 0x9e) = 0;
   *(uint8_t *)(s0 + 0x99) = 0;
-  FUN_80136d28((int)(int8_t)*(uint8_t *)(s0 + 0x98));
+  record_copy_1a((int)(int8_t)*(uint8_t *)(s0 + 0x98));
   FUN_801358e8((int)(int8_t)*(uint8_t *)(s0 + 0x98),(int)(int8_t)*(uint8_t *)(s0 + 0x99));
   FUN_8012e97c((uint8_t)*(uint8_t *)(s0 + 0x98));
   FUN_8016d478(a0);
-  FUN_801360cc();
+  clear_f0300_records();
   *(uint8_t *)(s0 + 0x99) = (uint8_t)s1;
   return 0;
 }
@@ -16879,7 +16879,7 @@ void FUN_8013f648(int param_1)
 extern int  FUN_80197b30(undefined4 *param_1,uint32_t param_2);  /* guest 0x80197b30 — battle.c */
 extern int FUN_801980ec(uint32_t param_1,uint32_t param_2);  /* cd.c 0x801980ec */
 extern int FUN_80197e08(uint32_t param_1,uint32_t param_2);  /* cd.c 0x80197e08 */
-extern int  FUN_80195d8c(int param_1,void *param_2,int param_3);
+extern int  cd_mode_flag_set(int param_1,void *param_2,int param_3);
 extern int  FUN_8019a460(int param_1);
 extern uint32_t call_guest(uint32_t fn, uint32_t a, uint32_t b);
 extern void FUN_80185048(undefined4 *param_1,byte *param_2,short *param_3,undefined4 param_4);
@@ -17020,7 +17020,7 @@ void FUN_80186bfc(int param_1)
   return;
 }
 
-/* guest FUN_8018d8e4 @0x8018d8e4 — pad/record init: retry FUN_80195d8c(0xe)
+/* guest FUN_8018d8e4 @0x8018d8e4 — pad/record init: retry cd_mode_flag_set(0xe)
  * until success, FUN_8019a460(3) once via 0x801c4580 flag, reads count
  * @0x801b66dc (0 -> 0x169 sweep of 0x801b5b94 8-byte records), per record
  * FUN_80197b30 decode then writes *slot = ptr and rec+4 = (size+0x7ff)>>0xb. */
@@ -17036,7 +17036,7 @@ void FUN_8018d8e4(void)
   undefined4 auStack_10 [8];
   abStack_28[0] = 0x80;
   do {
-    iVar1 = FUN_80195d8c(0xe,abStack_28,0);
+    iVar1 = cd_mode_flag_set(0xe,abStack_28,0);
   } while (iVar1 == 0);
   if (*(byte *)guest_at(0x801c4580) == 0) {
     FUN_8019a460(3);

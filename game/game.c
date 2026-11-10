@@ -7,21 +7,21 @@
  *
  * Decoded architecture (live + static verified):
  *   entry_0x80126178  _start: BSS clear -> entry_0x80126234
- *   entry_0x80126234  main(): boot(FUN_80126f04) -> settings ->
+ *   entry_0x80126234  main(): boot(boot) -> settings ->
  *                     g_game_state SM (0-13) via switchD_80126370
- *   FUN_80126f04      boot: ~25 subsystem inits + CD file pump
- *                     FUN_80126870 until state 0x120 -> -1
- *   FUN_80126870      CD streaming pump: loads ~27 files into
+ *   boot      boot: ~25 subsystem inits + CD file pump
+ *                     cd_file_pump until state 0x120 -> -1
+ *   cd_file_pump      CD streaming pump: loads ~27 files into
  *                     _DAT_801e3cfc heap cursor, DMA queue per file
- *   FUN_8012aeec      frame driver: pad poll, GPU sync/DMA kick,
+ *   frame_tick      frame driver: pad poll, GPU sync/DMA kick,
  *                     per-fighter buffer toggle (+0xc 0/1),
  *                     calls FUN_8016362c logic + FUN_8012cd9c end
- *   FUN_80147034      match loop: DAT_1f800001 stage machine,
- *                     300-frame attract timeout, FUN_8016347c logic
- *   FUN_80159028      scene/stage entry: file-table load, VRAM
+ *   match_loop      match loop: DAT_1f800001 stage machine,
+ *                     300-frame attract timeout, match_end_check logic
+ *   scene_entry      scene/stage entry: file-table load, VRAM
  *                     window setup, stream reader, palette, then
- *                     FUN_8012ae3c(1) battle start + 2 frames
- *   FUN_8012ae3c      battle session arm: fighter buf ptrs +0x4/+8
+ *                     battle_session_arm(1) battle start + 2 frames
+ *   battle_session_arm      battle session arm: fighter buf ptrs +0x4/+8
  *                     = param_2*0x2150 + fixed guest addrs
  */
 #include <stdint.h>
@@ -350,7 +350,7 @@ extern void trap(int);
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
 int FUN_80157368();
-int FUN_80195d8c();
+int cd_mode_flag_set();
 int FUN_80198af0();
 int FUN_80198e2c();
 int FUN_8018d150();
@@ -379,9 +379,9 @@ extern uint32_t FUN_80191ed8(void);
 extern void FUN_80129f78(void);
 extern void FUN_8016362c(int);
 extern void FUN_8012a088(void);
-extern void FUN_8012a30c(void);
+extern void ot_packet_chain_fixup(void);
 extern void FUN_8012cd9c(int,int);
-extern void FUN_8012a0f0(int,int,int);
+extern void sprite_rect_table_init(int,int,int);
 extern void FUN_80191668(uint32_t,int);
 extern void FUN_801274d8(uint8_t);
 extern void FUN_801560f8(uint32_t);
@@ -402,62 +402,62 @@ extern void FUN_80163ab4(void);
 extern void FUN_8018babc(uint8_t);
 extern void FUN_80156048(uint8_t,int);
 extern void FUN_801561c8(uint8_t);
-extern void FUN_8019a680(void);
-extern void FUN_80199f30(int);
+extern void cd_dispatch_tblc(void);
+extern void cd_read_param_set(int);
 extern void FUN_80194478(void);
 extern void FUN_8018f850(int);
-extern int32_t FUN_80190f74(uint32_t);
-extern void FUN_8019b1d0(int);
-extern void FUN_80195a80(void);
-extern void FUN_80195ca8(int);
+extern int32_t set_graph_debug(uint32_t);
+extern void cd_xchg_bde20(int);
+extern void cd_probe_retry(void);
+extern void cd_xchg_bc850(int);
 extern void FUN_801689a8(void);
 extern void FUN_801267dc(void);
-extern void FUN_80126f04(void);
+extern void boot(void);
 extern void FUN_8012748c(void);
-extern void FUN_8012708c(uint32_t);
-extern int  FUN_80126870(int,int);
+extern void display_mode_setup(uint32_t);
+extern int  cd_file_pump(int,int);
 extern void FUN_80127524(void);
 extern void FUN_80127574(void);
-extern void FUN_8012ae3c(intptr_t,int);
-extern undefined4 FUN_80159028(int,int,int);
-extern void FUN_8012aeec(intptr_t);
-extern undefined4 FUN_8015f644(void);
-extern void FUN_80147034(void);
+extern void battle_session_arm(intptr_t,int);
+extern undefined4 scene_entry(int,int,int);
+extern void frame_tick(intptr_t);
+extern undefined4 memcard_poll_frame(void);
+extern void match_loop(void);
 extern void FUN_80126848(void);
 extern void FUN_80127574(void);
 extern void FUN_80155f64(int);
 extern void FUN_801560f8_(void);
 extern void FUN_801910e4_(void);
-extern int  FUN_80126870(int,int);
+extern int  cd_file_pump(int,int);
 extern void FUN_80127524(void);
-extern void FUN_8012ae3c(intptr_t,int);
-extern void FUN_8012aeec(intptr_t);
-extern void FUN_8012708c(uint32_t);
+extern void battle_session_arm(intptr_t,int);
+extern void frame_tick(intptr_t);
+extern void display_mode_setup(uint32_t);
 extern void FUN_80195290(int,int);
 extern void FUN_80195290(int,int);
 extern void FUN_801952b0(int);
 extern void FUN_80193f60(int,int,int,int,int);
 extern void FUN_80193ea0(int,int,int,int,int);
-extern void FUN_80127424(void);
+extern void oam_list_rebuild(void);
 extern void FUN_80136ddc(void);
 extern void FUN_8019117c_(void);
-extern void FUN_801274c4(int);
+extern void frame_counter_bump(int);
 extern void FUN_8018c034(void);
 extern void FUN_8018c118(void);
 extern void FUN_8018cb98(void);
 extern void FUN_8018cd94(void);
 extern void FUN_8012b49c(int);
 extern void FUN_801525c4(int);
-extern void FUN_801757b8(void);
-extern uint32_t FUN_8018e3bc(uint32_t);
+extern void players_ctrl_init(void);
+extern uint32_t u16_lut_lookup(uint32_t);
 extern void FUN_80129f64(uint32_t);
 extern void FUN_80129ff4(void);
 extern void FUN_8012a030(int);
 extern void FUN_8012aa6c(int,int);
-extern void FUN_801a36f0(uint8_t*,uint8_t*);
-extern void FUN_801a1250(void);
-extern void FUN_8012755c(void);
-extern int FUN_8015f590(void);
+extern void cd_channel_table_init(uint8_t*,uint8_t*);
+extern void cd_chan_init_wrap(void);
+extern void clear_battle_counters(void);
+extern int memcard_info_query(void);
 extern void FUN_80165cb4(int);
 extern void FUN_80167330(int);
 extern void FUN_80164668(int);
@@ -474,10 +474,10 @@ extern void FUN_8018c824(int,int,uint32_t,uint32_t);
 extern void FUN_8018cc6c(int,int,int,int,int,int,int);
 extern int  FUN_8012aaa8(void);
 extern void FUN_8012b23c(intptr_t);
-extern undefined4 FUN_8016347c(intptr_t);
+extern undefined4 match_end_check(intptr_t);
 extern void FUN_8012e078(int,int,const void *,int,int,int);
-extern undefined4 FUN_8015f644(void);
-extern undefined4 FUN_80159028(int,int,int);
+extern undefined4 memcard_poll_frame(void);
+extern undefined4 scene_entry(int,int,int);
 extern void FUN_80156114(int);
 extern void FUN_80159734(int,int,int,int,int,int*);
 extern void FUN_801597ec(uint8_t*,void*,int*);
@@ -491,9 +491,9 @@ extern void FUN_80159c24(int,int);
 extern void FUN_801594a4(int*,int);
 extern int  FUN_80195ffc(int,int,int);
 extern void FUN_8018faec(int);
-extern void FUN_80199070(void);
+extern void cd_subsystem_reset(void);
 extern void FUN_80190260(int);
-extern int  FUN_8019917c(uint32_t*);
+extern int  cd_file_open_b(uint32_t*);
 extern void FUN_8019a5d8(uint32_t,int);
 extern undefined4 FUN_8015f6a0(int);
 extern void FUN_8018e2f0(uint32_t,int);
@@ -561,8 +561,8 @@ static void apply_saved_settings_or_defaults(undefined4 *param_1)
  * State map (switchD_80126370 @0x8011e800, 14 entries):
  *   0 -> init sync, ->1      1 -> mode set + load, ->2
  *   2 -> ->3                 3 -> stage select, ->4
- *   4 -> FUN_80159028 demo fight load ->5 (retry on 0)
- *   5 -> per-frame: 2x FUN_8012aeec + FUN_8015f644 + FUN_80147034
+ *   4 -> scene_entry demo fight load ->5 (retry on 0)
+ *   5 -> per-frame: 2x frame_tick + memcard_poll_frame + match_loop
  *   6 -> post-match ->3      7,8 -> options (FUN_8016fcc4) ->5
  *   9 -> FUN_80167840 menus  10,12,13 -> nop ->5
  *   11-> FUN_8015c754/5b9a0 save mgr ->5
@@ -579,7 +579,7 @@ void entry_0x80126234(void)
 
     func_0x80126170();
     uVar6 = 0;
-    FUN_80126f04();
+    boot();
     auStack_30[1] = 0x1c7f;
     _g_pad_buffer = (uint8_t *)auStack_30;
     auStack_30[0] = 0;
@@ -594,7 +594,7 @@ void entry_0x80126234(void)
     g_sub_state = '\0';
     DAT_1f80009b = 0;
     DAT_1f80009c = '\0';
-    iVar3 = FUN_8015f590();
+    iVar3 = memcard_info_query();
     if (iVar3 == 0) {
         apply_saved_settings_or_defaults((undefined4 *)_g_system_config_ptr);
     }
@@ -620,7 +620,7 @@ LAB_80126350:
         g_game_state = 1;
         goto switchD_80126370_caseD_80126344;
     case 1: /* 0x8012638c */
-        FUN_8012708c(*(undefined1 *)(_g_system_config_ptr + 0xb));
+        display_mode_setup(*(undefined1 *)(_g_system_config_ptr + 0xb));
         FUN_8012748c();
         FUN_80165cb4(0xf);
         uVar4 = (uint)g_game_state;
@@ -635,7 +635,7 @@ LAB_80126350:
             uVar5 = 1;
         }
         FUN_801560f8(uVar5);
-        FUN_8012708c(*(undefined1 *)(_g_system_config_ptr + 0xb));
+        display_mode_setup(*(undefined1 *)(_g_system_config_ptr + 0xb));
         FUN_8012748c();
         FUN_80165cb4(3);
         FUN_80165cb4(1);
@@ -655,7 +655,7 @@ LAB_80126350:
         FUN_8012748c();
         FUN_80156048(*(undefined1 *)(_g_system_config_ptr + 0xe),
                      ((((uint)*(byte *)(_g_system_config_ptr + 0xf) * 0x10a) / 100) * 8) / 10);
-        iVar3 = FUN_80159028(0x80010000,0,1);
+        iVar3 = scene_entry(0x80010000,0,1);
         if (iVar3 != 0) {
             g_game_state = 5;
         }
@@ -732,12 +732,12 @@ switchD_80126370_caseD_80126534:
     }
     uVar6 = uVar6 + 1;
     FUN_801560f8(uVar5);
-    FUN_8012708c(*(undefined1 *)(_g_system_config_ptr + 0xb));
-    FUN_8012aeec(0x1f800000);
-    FUN_8015f644();
+    display_mode_setup(*(undefined1 *)(_g_system_config_ptr + 0xb));
+    frame_tick(0x1f800000);
+    memcard_poll_frame();
     FUN_8012748c();
-    FUN_8012aeec(0x1f800000);
-    FUN_8015f644();
+    frame_tick(0x1f800000);
+    memcard_poll_frame();
     uVar4 = (uint)g_game_state;
     bVar1 = uVar4 < 0xe;
     if (uVar4 == 5) {
@@ -762,21 +762,21 @@ LAB_8012661c:
 }
 
 /* ==================================================================
- * FUN_80126f04 — boot: subsystem inits + CD file pump.
+ * boot — boot: subsystem inits + CD file pump.
  * ================================================================== */
-void FUN_80126f04(void)
+void boot(void)
 {
     int iVar1;
 
-    FUN_8019a680();
-    FUN_80199f30(0);
+    cd_dispatch_tblc();
+    cd_read_param_set(0);
     FUN_80194478();
     FUN_8018f850(0);
-    FUN_80190f74(0);
+    set_graph_debug(0);
     FUN_80190e00(0);
-    FUN_8019b1d0(1);
-    FUN_80195a80();
-    FUN_80195ca8(0);
+    cd_xchg_bde20(1);
+    cd_probe_retry();
+    cd_xchg_bc850(0);
     DAT_801c4580 = 0;
     FUN_801689a8();
     FUN_801267dc();
@@ -786,31 +786,31 @@ void FUN_80126f04(void)
     DAT_801c4578 = 2;
     DAT_801c457c = (uint)*(uint8_t *)g_DAT_801b12e6;
     FUN_801910e4(0);
-    iVar1 = FUN_80126870(0x1f800000,0);
+    iVar1 = cd_file_pump(0x1f800000,0);
     FUN_80127524();
     FUN_80127574();
     FUN_8012d090(0);
     FUN_8012cbc0(2,0,0);
     apply_saved_settings_or_defaults((undefined4 *)_g_system_config_ptr);
     while (-1 < iVar1) {
-        iVar1 = FUN_80126870(0x1f800000,iVar1);
+        iVar1 = cd_file_pump(0x1f800000,iVar1);
         FUN_8019a460(0);
     }
-    FUN_8012ae3c(0x1f800000,0);
-    FUN_8012708c(*(undefined1 *)(_g_system_config_ptr + 0xb));
-    FUN_8012a0f0(0x40,(_DAT_1f800022 * 0xb) / 0xc,0);
+    battle_session_arm(0x1f800000,0);
+    display_mode_setup(*(undefined1 *)(_g_system_config_ptr + 0xb));
+    sprite_rect_table_init(0x40,(_DAT_1f800022 * 0xb) / 0xc,0);
     FUN_8012748c();
     return;
 }
 
-/* FUN_8012a0f0 — not yet decompiled; extern decl below */
+/* sprite_rect_table_init — not yet decompiled; extern decl below */
 
 /* ==================================================================
- * FUN_80126870 — CD file streaming pump.
+ * cd_file_pump — CD file streaming pump.
  * param_2 = pump state: 0 init -> 0x100 streaming -> 0x110 tail ->
  * 0x120 done -> -1. Each step queues one file's DMA reads.
  * ================================================================== */
-int FUN_80126870(int param_1,int param_2)
+int cd_file_pump(int param_1,int param_2)
 {
     undefined1 uVar1;
     undefined4 uVar2;
@@ -950,8 +950,8 @@ int FUN_80126870(int param_1,int param_2)
 /* small frame/console helpers */
 void FUN_801267dc(void)
 {
-    FUN_801a36f0(g_DAT_801befa8,g_DAT_801befca);
-    FUN_801a1250();
+    cd_channel_table_init(g_DAT_801befa8,g_DAT_801befca);
+    cd_chan_init_wrap();
     FUN_8018babc(0);
 }
 
@@ -966,13 +966,13 @@ void FUN_80126848(void)
     } while (puVar1 < (undefined4 *)guest_at(0x1f800400));
 }
 
-/* FUN_8012708c — display mode + screen window setup.
+/* display_mode_setup — display mode + screen window setup.
  * param_1 = video mode (0-7 from system config +0xb):
  *   0,2,4,6 -> 0xf0-height variant (interlaced?), odd -> 0x1e0.
  * Sets _DAT_1f800020/22/24 screen geometry, OAM window regs via
  * FUN_80195290/2b0, sprite blocks at 0x801e40a0/0x801e61f0/0x801e40fc/
- * 0x801e624c, then FUN_80127424 mode commit + FUN_80136ddc. */
-void FUN_8012708c(uint32_t param_1)
+ * 0x801e624c, then oam_list_rebuild mode commit + FUN_80136ddc. */
+void display_mode_setup(uint32_t param_1)
 {
     int iVar1;
     undefined4 uVar2;
@@ -1066,7 +1066,7 @@ LAB_80127160:
     *(uint8_t *)g_DAT_801e620b = 0;
     *(uint8_t *)g_DAT_801e625c = DAT_1f800015;
     *(uint8_t *)g_DAT_801e410c = DAT_1f800015;
-    FUN_80127424();
+    oam_list_rebuild();
     FUN_80136ddc();
     FUN_8019a460(0);
     return;
@@ -1076,7 +1076,7 @@ void FUN_8012748c(void)
 {
     FUN_8019117c(0);
     FUN_8019a460(0);
-    FUN_801274c4(1);
+    frame_counter_bump(1);
     FUN_801274d8(1);
 }
 
@@ -1115,7 +1115,7 @@ void FUN_80127574(void)
     _DAT_1f800078 = 0;
     _DAT_1f800070 = 0;
     _DAT_1f80006c = 0;
-    FUN_8012755c();
+    clear_battle_counters();
     DAT_1f800011 = 0;
     _DAT_1f8000b2 = 0;
     DAT_1f8000b1 = 0;
@@ -1125,9 +1125,9 @@ void FUN_80127574(void)
     _DAT_1f8000bc = 0x801f0270;
     _DAT_1f8000b8 = 0;
     _DAT_1f8000cc = 0x801c15f8;
-    FUN_801757b8();
+    players_ctrl_init();
     {
-        uint32_t uVar1 = FUN_8018e3bc(0xf2000002);
+        uint32_t uVar1 = u16_lut_lookup(0xf2000002);
         FUN_80129f64(uVar1);
     }
     FUN_80129ff4();
@@ -1187,8 +1187,8 @@ void FUN_801279f4(int param_1,int param_2)
     return;
 }
 
-/* FUN_80127424 — mode set: OAM list rebuild for both players */
-void FUN_80127424(void)
+/* oam_list_rebuild — mode set: OAM list rebuild for both players */
+void oam_list_rebuild(void)
 {
     FUN_8019117c(0);
     FUN_8019a460(0);
@@ -1200,8 +1200,8 @@ void FUN_80127424(void)
     FUN_801917e0(0x801e61f0);
 }
 
-/* FUN_8012ae3c — battle session arm (fighter slot buffers) */
-void FUN_8012ae3c(intptr_t param_1,int param_2)
+/* battle_session_arm — battle session arm (fighter slot buffers) */
+void battle_session_arm(intptr_t param_1,int param_2)
 {
     int iVar1;
 
@@ -1216,7 +1216,7 @@ void FUN_8012ae3c(intptr_t param_1,int param_2)
         *(int *)(param_1 + 0xc) = param_2;
         *(int *)(param_1 + 4) = param_2 * 0x2150 + -0x7fe1bf60;
         *(int *)(param_1 + 8) = iVar1;
-        FUN_8012755c();
+        clear_battle_counters();
         if (param_2 == 0) {
             FUN_80191668(0x801e4110,0x820);
             iVar1 = -0x7fe19da0;
@@ -1225,9 +1225,9 @@ void FUN_8012ae3c(intptr_t param_1,int param_2)
     }
 }
 
-/* FUN_8016347c — match-end check: pad-start prompt timer.
+/* match_end_check — match-end check: pad-start prompt timer.
  * Returns -1 normally; 0xffffff9d (-99) while prompting exit. */
-undefined4 FUN_8016347c(intptr_t param_1)
+undefined4 match_end_check(intptr_t param_1)
 {
     undefined4 uVar1;
     int iVar2;
@@ -1252,8 +1252,8 @@ undefined4 FUN_8016347c(intptr_t param_1)
     return uVar1;
 }
 
-/* FUN_8015f644 — per-frame memcard/save poll */
-undefined4 FUN_8015f644(void)
+/* memcard_poll_frame — per-frame memcard/save poll */
+undefined4 memcard_poll_frame(void)
 {
     undefined4 uVar1;
 
@@ -1271,11 +1271,11 @@ undefined4 FUN_8015f644(void)
 }
 
 /* ==================================================================
- * FUN_8012aeec — frame driver (called 2x/frame: fighter slot toggle).
+ * frame_tick — frame driver (called 2x/frame: fighter slot toggle).
  * param_1 = battle object guest addr (0x1f800000).
  * +0xc fighter index XORs 0/1 each call -> double-buffered submit.
  * ================================================================== */
-void FUN_8012aeec(intptr_t param_1)
+void frame_tick(intptr_t param_1)
 {
     undefined1 uVar1;
     undefined1 uVar2;
@@ -1367,18 +1367,18 @@ void FUN_8012aeec(intptr_t param_1)
     FUN_8016362c(param_1);
     if (*(char *)guest_at(*(uint32_t *)(param_1 + 200) + 2) < '\0') {
         FUN_8012a088();
-        FUN_8012a30c();
+        ot_packet_chain_fixup();
     }
     FUN_8012cd9c(0,0);
     return;
 }
 
 /* ==================================================================
- * FUN_80147034 — match loop (infinite until DAT_1f800001 == 0xff).
+ * match_loop — match loop (infinite until DAT_1f800001 == 0xff).
  * Stage machine: 0 boot select -> 1 running -> 2 ending ->
  * 0xf0/0xf1 shutdown. 300-frame attract timeout via unaff_s2.
  * ================================================================== */
-void FUN_80147034(void)
+void match_loop(void)
 {
     int iVar1;
     int unaff_s2;
@@ -1476,7 +1476,7 @@ LAB_801472f8:
                         FUN_8019a460(0);
                         FUN_801274d8(1);
                         _DAT_1f80008c = 0;
-                        FUN_8012ae3c(0x1f800000,0xffffffff);
+                        battle_session_arm(0x1f800000,0xffffffff);
                         unaff_s2 = 300;
                         DAT_1f800001 = DAT_1f800001 + 1;
                         goto LAB_801472a4;
@@ -1485,7 +1485,7 @@ LAB_801472f8:
             }
             else if (DAT_1f800001 == 1) {
 LAB_801472a4:
-                iVar1 = FUN_8016347c(0x1f800000);
+                iVar1 = match_end_check(0x1f800000);
                 if ((iVar1 < 0) && (unaff_s2 = unaff_s2 + -1, unaff_s2 == 0)) {
                     DAT_1f800001 = 0xf0;
                 }
@@ -1507,18 +1507,18 @@ LAB_801472a4:
             DAT_1f800001 = 0xff;
             goto joined_r0x801470b0;
         }
-        FUN_8012aeec(0x1f800000);
+        frame_tick(0x1f800000);
     } while( true );
 }
 
 /* ==================================================================
- * FUN_80159028 — scene/stage entry.
+ * scene_entry — scene/stage entry.
  * param_1 = VRAM arena base, param_2 = stage/file-table index,
  * param_3 = demo flag. Loads stage file, sets VRAM windows,
  * streams data, uploads palette/OAM, arms battle, runs 2 frames.
  * Returns 1 on success (state->5), 0 to retry.
  * ================================================================== */
-undefined4 FUN_80159028(int param_1,int param_2,int param_3)
+undefined4 scene_entry(int param_1,int param_2,int param_3)
 {
     int iVar1;
     int iVar2;
@@ -1546,7 +1546,7 @@ undefined4 FUN_80159028(int param_1,int param_2,int param_3)
     puVar6 = (undefined4 *)guest_at(((uint32_t *)g_PTR_DAT_801b5b94)[(param_2 + 8) * 2]);
     piVar5 = (int *)((char *)g_DAT_801b3ed8 + iVar1);
     _DAT_801f4754 = param_1;
-    FUN_8012aeec(0x1f800000);
+    frame_tick(0x1f800000);
     FUN_80156114(0x7f);
     FUN_801274d8(0);
     FUN_8019a460(0);
@@ -1598,7 +1598,7 @@ undefined4 FUN_80159028(int param_1,int param_2,int param_3)
         FUN_8018fa30(_DAT_801f4714 * 4 + -0x7fe0b8f4,
                      _DAT_801f4730 * 0x10 * ((iVar2 >> 4) + 1) >> 1);
         while (iVar2 = (int)FUN_80159a14(0x801f4700,piVar5), iVar2 == -1) {
-            iVar2 = FUN_8019917c(local_38);
+            iVar2 = cd_file_open_b(local_38);
             if ((*(int *)((char *)g_DAT_801b3ed8 + 0x8 + iVar1) < iVar2) || (iVar2 < 1)) {
                 local_38[0] = *puVar6;
             }
@@ -1618,14 +1618,14 @@ LAB_801593a8:
     FUN_80195ffc(0xe,(int)guest_of(local_48),0);
     DAT_801c4580 = 1;
     FUN_8018faec(0);
-    FUN_80199070();
+    cd_subsystem_reset();
     FUN_80195ffc(9,0,0);
     FUN_8019a460(0);
-    FUN_8012708c(*(undefined1 *)(_g_system_config_ptr + 0xb));
-    FUN_8012ae3c(0x1f800000,1);
-    FUN_8012aeec(0x1f800000);
+    display_mode_setup(*(undefined1 *)(_g_system_config_ptr + 0xb));
+    battle_session_arm(0x1f800000,1);
+    frame_tick(0x1f800000);
     FUN_8012748c();
-    FUN_8012aeec(0x1f800000);
+    frame_tick(0x1f800000);
     return uVar7;
 }
 
@@ -1647,7 +1647,7 @@ int FUN_8018cfdc(int param_1,uint32_t param_2)
     FUN_80157368();
     FUN_80198af0();
     local_20[0] = 0x80;
-    FUN_80195d8c(0xe,local_20,0);
+    cd_mode_flag_set(0xe,local_20,0);
     if (DAT_801c4580 == '\0') {
       _DAT_801f68d8 = 3;
     }
@@ -1757,14 +1757,14 @@ void FUN_8012b23c(intptr_t param_1)
   return;
 }
 
-/* FUN_80136fb0 — task/effect-table init: clears _DAT_801f0738 +
+/* task_table_init — task/effect-table init: clears _DAT_801f0738 +
  * DAT_801bef20, runs FUN_801a6ae8 then registers 7 named tables via
  * FUN_801ad59c/FUN_801ad1e4. */
 extern void *guest_at(uint32_t addr);
 extern void FUN_801a6ae8(void);
 extern void FUN_801ad59c(uint32_t,int32_t);
 extern void FUN_801ad1e4(uint32_t,int32_t);
-void FUN_80136fb0(int32_t param_1)
+void task_table_init(int32_t param_1)
 {
   (void)param_1;
   *(uint32_t *)guest_at(0x801f0738) = 0;
@@ -1780,11 +1780,11 @@ void FUN_80136fb0(int32_t param_1)
   FUN_801ad1e4(0x801c4434,3);
 }
 
-/* FUN_8012c0b4 — intro/movie playback state machine. State byte
+/* intro_movie_state — intro/movie playback state machine. State byte
  * _DAT_1f80008c: -1 idle; 0 init; 0x10..0x30 staged file loads via
  * FUN_8018cfdc(file_id, heap=_DAT_801e3cfc); FUN_80163154 advances
  * frames; param_1 selects which queued load to start (0/1/2). */
-int32_t FUN_8012c0b4(int32_t param_1)
+int32_t intro_movie_state(int32_t param_1)
 {
   uint8_t uVar1;
   int32_t iVar2, iVar3;
@@ -1897,10 +1897,10 @@ static int br2_text9_spr(uint32_t buf,const char *fmt,const uint32_t *v)
                       (int)v[3],(int)v[4],(int)v[5],(int)v[6],(int)v[7]);
 }
 
-/* FUN_8012cc6c — localized print dispatcher on mode @0x1f800384:
+/* print_dispatch — localized print dispatcher on mode @0x1f800384:
  * 1 = debug printf, 2 = sprintf into stack buf + queue text draw via
  * FUN_8012dce4 on the 0x1f80038c block, else nothing. */
-void FUN_8012cc6c(const char *param_1,...)
+void print_dispatch(const char *param_1,...)
 {
   __builtin_va_list ap;
   uint32_t v[8];
@@ -1925,9 +1925,9 @@ void FUN_8012cc6c(const char *param_1,...)
                BR2B16(0x1f80000c),(int)guest_of(b));
 }
 
-/* FUN_8012cf64 — same dispatcher but self-describing: mode 2 copies
+/* print_dispatch_selfdesc — same dispatcher but self-describing: mode 2 copies
  * caller +0x10/+0x12 u16 into block +2/+4 before the draw. */
-void FUN_8012cf64(void *param_1,const char *param_2,...)
+void print_dispatch_selfdesc(void *param_1,const char *param_2,...)
 {
   __builtin_va_list ap;
   uint32_t v[8];
@@ -1956,25 +1956,25 @@ void FUN_8012cf64(void *param_1,const char *param_2,...)
                BR2B16(0x1f80000c),(int)guest_of(b));
 }
 
-/* FUN_80129910 / FUN_80129944 — menu cursor row painters: emit "  > "
- * or "    " through FUN_8012cf64 when stepper byte+4 is clear. */
-void FUN_80129910(void *param_1)
+/* menu_row_paint / menu_row_paint_b — menu cursor row painters: emit "  > "
+ * or "    " through print_dispatch_selfdesc when stepper byte+4 is clear. */
+void menu_row_paint(void *param_1)
 {
   uint8_t *p = (uint8_t *)param_1;
   if (p[4] == 0)
-    FUN_8012cf64(param_1,(const char *)guest_at(0x8011ec20));
+    print_dispatch_selfdesc(param_1,(const char *)guest_at(0x8011ec20));
 }
-void FUN_80129944(void *param_1)
+void menu_row_paint_b(void *param_1)
 {
   uint8_t *p = (uint8_t *)param_1;
   if (p[4] == 0)
-    FUN_8012cf64(param_1,(const char *)guest_at(0x8011ec28));
+    print_dispatch_selfdesc(param_1,(const char *)guest_at(0x8011ec28));
 }
 
-/* FUN_80129660 — menu stepper redraw: cb(+0xc) with 0x100, then for
- * i = 1..h(+6) paint row i (FUN_80129910 when i == sel(+8) else
- * FUN_80129944) and cb with 0x100+i, finally cb with 0x1ff. */
-void FUN_80129660(void *param_1)
+/* menu_stepper_redraw — menu stepper redraw: cb(+0xc) with 0x100, then for
+ * i = 1..h(+6) paint row i (menu_row_paint when i == sel(+8) else
+ * menu_row_paint_b) and cb with 0x100+i, finally cb with 0x1ff. */
+void menu_stepper_redraw(void *param_1)
 {
   uint8_t *p = (uint8_t *)param_1;
   void (*cb)(void *,uint32_t);
@@ -1983,8 +1983,8 @@ void FUN_80129660(void *param_1)
   cb(param_1,0x100);
   i = 1;
   for (;;) {
-    if (i == *(uint16_t *)(p + 8)) FUN_80129910(param_1);
-    else                            FUN_80129944(param_1);
+    if (i == *(uint16_t *)(p + 8)) menu_row_paint(param_1);
+    else                            menu_row_paint_b(param_1);
     cb(param_1,(i + 0x100) & 0xffff);
     i++;
     if (*(uint16_t *)(p + 6) < i) break;
@@ -1992,10 +1992,10 @@ void FUN_80129660(void *param_1)
   cb(param_1,0x1ff);
 }
 
-/* FUN_801297dc — menu stepper input: pad flags @0x1f80007e; byte+5
+/* menu_stepper_input — menu stepper input: pad flags @0x1f80007e; byte+5
  * selects button pair (0: 0x4000/0x1000 sfx 0xa, else 0x2000/0x8000
  * sfx 0xb). Up wraps cur(+8) to 1 past max(+6); down wraps 1 -> max. */
-void FUN_801297dc(void *param_1)
+void menu_stepper_input(void *param_1)
 {
   uint8_t *p = (uint8_t *)param_1;
   uint16_t cur,max;
@@ -2024,8 +2024,8 @@ void FUN_801297dc(void *param_1)
   }
 }
 
-/* FUN_8012e184 — HUD text variant A (block +0x16 attr +0x1f). */
-void FUN_8012e184(undefined4 param_1,undefined2 param_2,const void *param_3,
+/* hud_text_a — HUD text variant A (block +0x16 attr +0x1f). */
+void hud_text_a(undefined4 param_1,undefined2 param_2,const void *param_3,
                   undefined2 param_4,undefined2 param_5,short param_6)
 {
   uint16_t *b = (uint16_t *)guest_at(0x1f80038c);
@@ -2040,8 +2040,8 @@ void FUN_8012e184(undefined4 param_1,undefined2 param_2,const void *param_3,
                (int)guest_of(b));
 }
 
-/* FUN_8012e61c — HUD text variant B (uniform 0xf metrics, +0x16). */
-void FUN_8012e61c(undefined4 param_1,undefined4 param_2,const void *param_3,
+/* hud_text_b — HUD text variant B (uniform 0xf metrics, +0x16). */
+void hud_text_b(undefined4 param_1,undefined4 param_2,const void *param_3,
                   undefined4 param_4,undefined2 param_5,short param_6)
 {
   uint16_t *b = (uint16_t *)guest_at(0x1f80038c);
@@ -2057,8 +2057,8 @@ void FUN_8012e61c(undefined4 param_1,undefined4 param_2,const void *param_3,
                (int)guest_of(b));
 }
 
-/* FUN_8012e73c — HUD text variant C (0x1e line gap, +0x16). */
-void FUN_8012e73c(undefined4 param_1,undefined4 param_2,const void *param_3,
+/* hud_text_c — HUD text variant C (0x1e line gap, +0x16). */
+void hud_text_c(undefined4 param_1,undefined4 param_2,const void *param_3,
                   undefined4 param_4,undefined2 param_5,undefined4 param_6)
 {
   uint16_t *b = (uint16_t *)guest_at(0x1f80038c);
@@ -2075,8 +2075,8 @@ void FUN_8012e73c(undefined4 param_1,undefined4 param_2,const void *param_3,
                (int)guest_of(b));
 }
 
-/* FUN_8012e7cc — HUD text variant D (metric 8, flag 5, +0x16). */
-void FUN_8012e7cc(uint32_t param_1,uint32_t param_2,const void *param_3,
+/* hud_text_d — HUD text variant D (metric 8, flag 5, +0x16). */
+void hud_text_d(uint32_t param_1,uint32_t param_2,const void *param_3,
                   int32_t param_4,int32_t param_5,int32_t param_6)
 {
   uint16_t *b = (uint16_t *)guest_at(0x1f80038c);
@@ -2093,10 +2093,10 @@ void FUN_8012e7cc(uint32_t param_1,uint32_t param_2,const void *param_3,
                (int)guest_of(b));
 }
 
-/* FUN_8018cdf8 — sprite-node pool alloc: 8 slots of 0x34 at
+/* sprite_node_alloc — sprite-node pool alloc: 8 slots of 0x34 at
  * 0x801f5d38, generation counter @0x1f8000dc, cursor @0x801b55e8.
  * Returns slot+4 host pointer or NULL when generation matches. */
-void *FUN_8018cdf8(void)
+void *sprite_node_alloc(void)
 {
   int32_t v1 = (int32_t)BR2B32(0x801b55e8);
   uint32_t gen = BR2B32(0x1f8000dc);
@@ -2112,16 +2112,16 @@ void *FUN_8018cdf8(void)
   return slot + 4;
 }
 
-/* FUN_8018ce70 — sprite-list node emit (pool FUN_8018cdf8, tag
+/* sprite_node_emit_a — sprite-list node emit (pool sprite_node_alloc, tag
  * 0x08000000, packet tail +0x24). 10 args; param_10 selects GPU
  * command variant 0x3a/0x38000000 and stride. */
-int FUN_8018ce70(uint32_t param_1,int32_t param_2,int32_t param_3,
+int sprite_node_emit_a(uint32_t param_1,int32_t param_2,int32_t param_3,
                  int32_t param_4,int32_t param_5,uint32_t param_6,
                  uint32_t param_7,uint32_t param_8,uint32_t param_9,
                  int32_t param_10)
 {
   uint32_t *head = (uint32_t *)guest_at(param_1);
-  uint8_t *node = (uint8_t *)FUN_8018cdf8();
+  uint8_t *node = (uint8_t *)sprite_node_alloc();
   uint32_t guest;
   int32_t tag;
   if (node == (uint8_t *)0) return -1;
@@ -2153,11 +2153,11 @@ int FUN_8018ce70(uint32_t param_1,int32_t param_2,int32_t param_3,
   return 0;
 }
 
-/* FUN_8018c92c — sprite-list node emit (pool FUN_8018c18c, tag
+/* sprite_node_emit_b — sprite-list node emit (pool FUN_8018c18c, tag
  * 0x04000000, packet tail +0x14). param_2 packs x|y<<16,
  * param_3 packs w|h<<16; param_5 low byte = colour, param_6 picks
  * GPU variant 0x66/0x64000000 + stride. */
-int FUN_8018c92c(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+int sprite_node_emit_b(uint32_t param_1,uint32_t param_2,uint32_t param_3,
                  uint32_t param_4,int32_t param_5,int32_t param_6)
 {
   uint32_t *head = (uint32_t *)guest_at(param_1);
@@ -2193,15 +2193,15 @@ int FUN_8018c92c(uint32_t param_1,uint32_t param_2,uint32_t param_3,
 }
 
 
-/* FUN_801274c4 — bump byte counter @0x1f800012 by arg+1. Disasm-verified. */
-void FUN_801274c4(int param_1)
+/* frame_counter_bump — bump byte counter @0x1f800012 by arg+1. Disasm-verified. */
+void frame_counter_bump(int param_1)
 {
   *(uint8_t *)guest_at(0x1f800012) = (uint8_t)(param_1 + 1);
 }
 
-/* FUN_8012755c — clear battle-side counters @0x1f800068/74 (u32) and
+/* clear_battle_counters — clear battle-side counters @0x1f800068/74 (u32) and
  * @0x1f80007c/7e (u16). Disasm 0x8012755c-0x80127570. */
-void FUN_8012755c(void)
+void clear_battle_counters(void)
 {
   *(uint16_t *)guest_at(0x1f80007e) = 0;
   *(uint16_t *)guest_at(0x1f80007c) = 0;
@@ -2209,9 +2209,9 @@ void FUN_8012755c(void)
   *(uint32_t *)guest_at(0x1f800068) = 0;
 }
 
-/* FUN_8018e3bc — u16 lookup: idx=a0&0xffff; <3 returns lhu at
+/* u16_lut_lookup — u16 lookup: idx=a0&0xffff; <3 returns lhu at
  * *(u32*)0x801b66e4 + idx*0x10, else 0. Disasm 0x8018e3bc-0x8018e3f0. */
-uint32_t FUN_8018e3bc(uint32_t param_1)
+uint32_t u16_lut_lookup(uint32_t param_1)
 {
   uint32_t idx = param_1 & 0xffff;
   uint32_t tbl;
@@ -2220,12 +2220,12 @@ uint32_t FUN_8018e3bc(uint32_t param_1)
   return *(uint16_t *)guest_at(tbl + idx * 0x10);
 }
 
-/* FUN_80190f74 — SetGraphDebug level setter: byte @0x801b8322 = arg;
+/* set_graph_debug — SetGraphDebug level setter: byte @0x801b8322 = arg;
  * when nonzero calls PTR_FUN_801b831c (FUN_80190a04 text-window printf)
  * with "SetGraphDebug:level:%d,type:%d reverse:%d". Returns old byte.
  * Disasm 0x80190f74-0x80190fc8. */
 extern void *PTR_FUN_801b831c;
-int32_t FUN_80190f74(uint32_t param_1)
+int32_t set_graph_debug(uint32_t param_1)
 {
   uint8_t *flag = (uint8_t *)guest_at(0x801b8322);
   int32_t old = flag[0];
@@ -2237,14 +2237,14 @@ int32_t FUN_80190f74(uint32_t param_1)
   return old;
 }
 
-/* FUN_8015f590 — memcard/info query: FUN_8016809c(0, tbl[0..2],
+/* memcard_info_query — memcard/info query: FUN_8016809c(0, tbl[0..2],
  * tbl[3..9], 0x801c11e0, 0x414) over table @0x801b45f4; ret 0 clears
  * @0x801c15f0 and returns byte @(*(u32*)0x1f8000c0)+0x22, ret<8&&!=0
  * ->1, ret>=8 ->0. Disasm 0x8015f590-0x8015f63c. */
 extern int32_t FUN_8016809c(int32_t,uint32_t,uint32_t,uint32_t,uint32_t,
                             uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,
                             uint32_t,uint32_t,uint32_t);
-int32_t FUN_8015f590(void)
+int32_t memcard_info_query(void)
 {
   uint32_t *t = (uint32_t *)guest_at(0x801b45f4);
   int32_t r;
@@ -2258,7 +2258,7 @@ int32_t FUN_8015f590(void)
 }
 
 /* FUN_8012a088 — debug stat print: FUN_8012cd9c(0,0xdc) then
- * FUN_8012cc6c("CPU(%d)\nGPU(%d)\n" or "#2CPU(%d)\nGPU(%d)\n",
+ * print_dispatch("CPU(%d)\nGPU(%d)\n" or "#2CPU(%d)\nGPU(%d)\n",
  * u16@0x1f80001a, u16@0x1f80001c) selected by u16@0x801e83a8.
  * Disasm 0x8012a088-0x8012a0e8. */
 void FUN_8012a088(void)
@@ -2267,15 +2267,15 @@ void FUN_8012a088(void)
   uint16_t a2 = *(uint16_t *)guest_at(0x1f80001c);
   FUN_8012cd9c(0,0xdc);
   if (*(uint16_t *)guest_at(0x801e83a8) == 0)
-    FUN_8012cc6c((const char *)guest_at(0x8011ed40),a1,a2);
+    print_dispatch((const char *)guest_at(0x8011ed40),a1,a2);
   else
-    FUN_8012cc6c((const char *)guest_at(0x8011ed54),a1,a2);
+    print_dispatch((const char *)guest_at(0x8011ed54),a1,a2);
 }
 
-/* FUN_801757b8 — two-player control-block init: fills guest structs at
+/* players_ctrl_init — two-player control-block init: fills guest structs at
  * 0x1f8000e8 / 0x1f8001f0 and descriptor tables 0x801f5258/0x801f52a0
  * with ptr pairs into 0x801e1b3c region. Disasm 0x801757b8-0x80175890. */
-void FUN_801757b8(void)
+void players_ctrl_init(void)
 {
   uint8_t *pa = (uint8_t *)guest_at(0x1f8000e8);
   uint8_t *pb = (uint8_t *)guest_at(0x1f8001f0);
@@ -2308,13 +2308,13 @@ void FUN_801757b8(void)
   *(uint8_t *)guest_at(0x1f800098) = 0;
 }
 
-/* FUN_8012a30c — OT/GPU packet-chain fixup: positions two 0x18-byte
+/* ot_packet_chain_fixup — OT/GPU packet-chain fixup: positions two 0x18-byte
  * records at 0x801e83e8/0x801e83d0 from u16 fields + scroll offsets,
  * then links five slots at 0x801e8348..0x801e8388 plus tail slots
  * 0x801e8398/0x801e83d0/0x801e83b8: each slot gets (*T1 | tag) and
  * *T1 becomes the slot's 24-bit address. T1 = *(u32*)0x1f800008.
  * Disasm 0x8012a30c-0x8012a4b0. */
-void FUN_8012a30c(void)
+void ot_packet_chain_fixup(void)
 {
   uint32_t h;
   uint32_t t1 = *(uint32_t *)guest_at(0x1f800008);
@@ -2355,7 +2355,7 @@ void FUN_8012a30c(void)
   }
 }
 
-/* FUN_8012a0f0 — sprite/UV rect table init: FUN_801940c0 x3 over
+/* sprite_rect_table_init — sprite/UV rect table init: FUN_801940c0 x3 over
  * 0x18-stride recs @0x801e83b8, fills three textured-quad descriptors
  * (u16 pos/uv fields from args, byte tags 0x28/0xc8), FUN_80194160 x6
  * over 0x10-stride recs @0x801e8348, then six flat-shade quads.
@@ -2366,7 +2366,7 @@ static void sh16(uint32_t a,uint32_t o,uint32_t v)
 { *(uint16_t *)((uint8_t *)guest_at(a) + o) = (uint16_t)v; }
 static void sb8(uint32_t a,uint32_t o,uint32_t v)
 { *(uint8_t *)((uint8_t *)guest_at(a) + o) = (uint8_t)v; }
-void FUN_8012a0f0(int32_t param_1,int32_t param_2,int32_t param_3)
+void sprite_rect_table_init(int32_t param_1,int32_t param_2,int32_t param_3)
 {
   uint32_t s3 = (uint32_t)param_1, s2 = (uint32_t)param_2;
   (void)param_3;
@@ -2406,12 +2406,12 @@ void FUN_8012a0f0(int32_t param_1,int32_t param_2,int32_t param_3)
   }
 }
 
-/* FUN_8012aab8 — empty function (guest: jr ra; nop). */
-void FUN_8012aab8(void) { }
+/* empty_ret — empty function (guest: jr ra; nop). */
+void empty_ret(void) { }
 
-/* FUN_801360cc — clear 0x34-stride records @0x801f0300, count =
+/* clear_f0300_records — clear 0x34-stride records @0x801f0300, count =
  * s16 @0x801f04a8+0x14. Disasm 0x801360cc-0x80136108+. */
-void FUN_801360cc(void)
+void clear_f0300_records(void)
 {
   uint16_t *a0 = (uint16_t *)guest_at(0x801f0300);
   int16_t *cnt = (int16_t *)guest_at(0x801f04a8 + 0x14);
@@ -2419,24 +2419,24 @@ void FUN_801360cc(void)
   for (i = 0; i < n; i++) a0[i * 0x1a] = 0;   /* 0x34 bytes = 0x1a u16 */
 }
 
-/* FUN_80142d58 — reset both combatant slots: 42c5c/42c9c/42cd8
+/* reset_combat_slots — reset both combatant slots: 42c5c/42c9c/42cd8
  * on slots 0 and 1. Disasm 0x80142d58-0x80142d98. */
-extern void FUN_80142c5c(int32_t);
+extern void reset_combat_record(int32_t);
 extern void FUN_80142c9c(int32_t);
 extern void FUN_80142cd8(int32_t);
-void FUN_80142d58(void)
+void reset_combat_slots(void)
 {
-  FUN_80142c5c(0); FUN_80142c5c(1);
+  reset_combat_record(0); reset_combat_record(1);
   FUN_80142c9c(0); FUN_80142c9c(1);
   FUN_80142cd8(0); FUN_80142cd8(1);
 }
 
-/* FUN_80155e30 — init block @0x801f26c0: +4=0x100, clear
+/* blk_1f26c0_init — init block @0x801f26c0: +4=0x100, clear
  * @0x801f36c4, FUN_8019c0f0(block), FUN_8019bf10(0).
  * Disasm 0x80155e30-0x80155e64. */
 extern void FUN_8019c0f0(uint32_t);
 extern void FUN_8019bf10(int32_t);
-void FUN_80155e30(void)
+void blk_1f26c0_init(void)
 {
   uint32_t blk = 0x801f26c0;
   *(uint32_t *)guest_at(0x801f36c4) = 0;
@@ -2445,9 +2445,9 @@ void FUN_80155e30(void)
   FUN_8019bf10(0);
 }
 
-/* FUN_8016f2c4 — clear 10 u16s at 0x801f4ee8 + byte(a0+2)*24 + 0x12,
+/* clear_f4ee8_u16s — clear 10 u16s at 0x801f4ee8 + byte(a0+2)*24 + 0x12,
  * plus u16 @+0x14/+0x16 and 9 words before +0x12. Disasm verified. */
-void FUN_8016f2c4(uint8_t *a0)
+void clear_f4ee8_u16s(uint8_t *a0)
 {
   uint8_t *v1 = (uint8_t *)guest_at(0x801f4ee8) + a0[2] * 24;
   uint16_t *v0 = (uint16_t *)(v1 + 0x12);
@@ -2457,11 +2457,11 @@ void FUN_8016f2c4(uint8_t *a0)
   for (i = 9; i >= 0; i--) *v0-- = 0;
 }
 
-/* FUN_80155dd0 — block @0x801f26c0 variant init: +0=7, +4=0x100,
- * +8/+0xa=0x3fff, clear @0x801f36c4, FUN_8019c0f0, FUN_8019caa0,
+/* blk_1f26c0_init_b — block @0x801f26c0 variant init: +0=7, +4=0x100,
+ * +8/+0xa=0x3fff, clear @0x801f36c4, FUN_8019c0f0, cd_chan_flags_to_dir,
  * FUN_8019bf10(1). Disasm 0x80155dd0-0x80155e28. */
-extern void FUN_8019caa0(uint32_t);
-void FUN_80155dd0(void)
+extern void cd_chan_flags_to_dir(uint32_t);
+void blk_1f26c0_init_b(void)
 {
   uint32_t s0 = 0x801f26c0;
   *(uint32_t *)guest_at(0x801f36c4) = 0;
@@ -2470,16 +2470,16 @@ void FUN_80155dd0(void)
   *(uint16_t *)guest_at(s0 + 8) = 0x3fff;
   *(uint16_t *)guest_at(s0 + 0xa) = 0x3fff;
   FUN_8019c0f0(s0);
-  FUN_8019caa0(s0);
+  cd_chan_flags_to_dir(s0);
   FUN_8019bf10(1);
 }
 
-/* FUN_8016fbfc — scratchpad pair init: FUN_8015a1e4(0x1f800000),
+/* scratchpad_pair_init — scratchpad pair init: FUN_8015a1e4(0x1f800000),
  * clear +0x99/+0x9a/+0xe4/+0xf4 on 0x1f8000e8 & 0x1f8001f0,
  * bump u16 +0xe8 on both, FUN_80159dac. Disasm 0x8016fbfc-6c6c. */
 extern int FUN_8015a1e4(uint32_t);
 extern int32_t FUN_80159dac(uint32_t);
-void FUN_8016fbfc(void)
+void scratchpad_pair_init(void)
 {
   uint8_t *s0 = (uint8_t *)guest_at(0x1f8000e8);
   uint8_t *s1 = (uint8_t *)guest_at(0x1f8001f0);
@@ -2499,11 +2499,11 @@ void FUN_8016fbfc(void)
   FUN_80159dac(0x1f800000);
 }
 
-/* FUN_80127be4 — reset sprite/OT block: zero 8 u16 at *(a0+0xcc),
+/* reset_sprite_ot_block — reset sprite/OT block: zero 8 u16 at *(a0+0xcc),
  * s8(+0x98)->+0x12, s8(+0x99)->+0x14, lhu(+0xa0)->+0x16, then five
  * u16=-1 stores stride -0x235c from 0x801cd530. a0 guest addr.
  * Disasm 0x80127be4-0x80127c58. */
-void FUN_80127be4(uint32_t a0)
+void reset_sprite_ot_block(uint32_t a0)
 {
   uint8_t *b = (uint8_t *)guest_at(a0);
   uint16_t *v1;
@@ -2523,9 +2523,9 @@ void FUN_80127be4(uint32_t a0)
   }
 }
 
-/* FUN_80142c5c — reset combat record block: 16 sub-slots stride 4
+/* reset_combat_record — reset combat record block: 16 sub-slots stride 4
  * at 0x801f0fb0 + a0*0x84: [i]=0, [i+0x40]=0x64. Disasm verified. */
-void FUN_80142c5c(int32_t a0)
+void reset_combat_record(int32_t a0)
 {
   uint8_t *base = (uint8_t *)guest_at(0x801f0fb0 + a0 * 0x84);
   int i;
@@ -2536,11 +2536,11 @@ void FUN_80142c5c(int32_t a0)
   }
 }
 
-/* FUN_80155e6c — block @0x801f26c0 variant init B: +0x36c4=a0,
+/* blk_1f26c0_init_c — block @0x801f26c0 variant init B: +0x36c4=a0,
  * +0=7, +4=a0|0x100, +8/+0xa=a1, 9c0f0, 9caa0, 9cb20(1,0xffffFF08),
  * 9bf10(1). Disasm 0x80155e6c-0x80155ed4. */
 extern void FUN_8019cb20(int32_t,uint32_t);
-void FUN_80155e6c(int32_t a0,uint32_t a1)
+void blk_1f26c0_init_c(int32_t a0,uint32_t a1)
 {
   uint32_t s0 = 0x801f26c0;
   *(uint32_t *)guest_at(0x801f36c4) = (uint32_t)a0;
@@ -2549,14 +2549,14 @@ void FUN_80155e6c(int32_t a0,uint32_t a1)
   *(uint16_t *)guest_at(s0 + 8) = (uint16_t)a1;
   *(uint16_t *)guest_at(s0 + 0xa) = (uint16_t)a1;
   FUN_8019c0f0(s0);
-  FUN_8019caa0(s0);
+  cd_chan_flags_to_dir(s0);
   FUN_8019cb20(1,0xffffFF08);
   FUN_8019bf10(1);
 }
 
-/* FUN_80136d28 — copy 0x1a-byte record 0x8011fea0 + idx*0x1a ->
+/* record_copy_1a — copy 0x1a-byte record 0x8011fea0 + idx*0x1a ->
  * 0x801f0640 then FUN_80136ddc. Disasm 0x80136d28-0x80136dd4. */
-void FUN_80136d28(int a0)
+void record_copy_1a(int a0)
 {
   memcpy(guest_at(0x801f0640),guest_at(0x8011fea0 + a0 * 0x1a),0x1a);
   FUN_80136ddc();

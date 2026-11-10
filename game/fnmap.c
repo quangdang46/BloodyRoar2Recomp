@@ -7,17 +7,11 @@
 extern void FUN_80126720(void);
 extern void FUN_801267dc(void);
 extern void FUN_80126848(void);
-extern void FUN_80126870(void);
-extern void FUN_80126f04(void);
-extern void FUN_8012708c(void);
-extern void FUN_80127424(void);
 extern void FUN_8012748c(void);
-extern void FUN_801274c4(void);
 extern void FUN_801274d8(void);
 extern void FUN_801274e8(void);
 extern void FUN_801274fc(void);
 extern void FUN_80127524(void);
-extern void FUN_8012755c(void);
 extern void FUN_80127574(void);
 extern void FUN_80127680(void);
 extern void FUN_8012768c(void);
@@ -26,7 +20,6 @@ extern void FUN_801279d0(void);
 extern void FUN_801279f4(void);
 extern void FUN_80127ae0(void);
 extern void FUN_80127b64(void);
-extern void FUN_80127be4(void);
 extern void FUN_80127c60(void);
 extern void FUN_80128268(void);
 extern void FUN_80128898(void);
@@ -41,11 +34,7 @@ extern void FUN_80128f98(void);
 extern void FUN_80129218(void);
 extern void FUN_801294cc(void);
 extern void FUN_80129540(void);
-extern void FUN_80129660(void);
 extern void FUN_80129710(void);
-extern void FUN_801297dc(void);
-extern void FUN_80129910(void);
-extern void FUN_80129944(void);
 extern void FUN_80129978(void);
 extern void FUN_80129a6c(void);
 extern void FUN_80129b48(void);
@@ -59,8 +48,6 @@ extern void FUN_80129fc4(void);
 extern void FUN_80129ff4(void);
 extern void FUN_8012a030(void);
 extern void FUN_8012a088(void);
-extern void FUN_8012a0f0(void);
-extern void FUN_8012a30c(void);
 extern void FUN_8012a4b4(void);
 extern void FUN_8012a504(void);
 extern void FUN_8012a5b8(void);
@@ -69,11 +56,8 @@ extern void FUN_8012a72c(void);
 extern void FUN_8012a884(void);
 extern void FUN_8012aa6c(void);
 extern void FUN_8012aaa8(void);
-extern void FUN_8012aab8(void);
 extern void FUN_8012aae4(void);
 extern void FUN_8012adf8(void);
-extern void FUN_8012ae3c(void);
-extern void FUN_8012aeec(void);
 extern void FUN_8012b23c(void);
 extern void FUN_8012b46c(void);
 extern void FUN_8012b488(void);
@@ -81,20 +65,16 @@ extern void FUN_8012b49c(void);
 extern void FUN_8012b55c(void);
 extern void FUN_8012ba04(void);
 extern void FUN_8012bf0c(void);
-extern void FUN_8012c0b4(void);
 extern void FUN_8012c374(void);
 extern void FUN_8012cbc0(void);
-extern void FUN_8012cc6c(void);
 extern void FUN_8012cd9c(void);
 extern void FUN_8012cdd8(void);
 extern void FUN_8012ce30(void);
-extern void FUN_8012cf64(void);
 extern void FUN_8012d090(void);
 extern void FUN_8012d154(void);
 extern void FUN_8012dce4(void);
 extern void FUN_8012e078(void);
 extern void FUN_8012e100(void);
-extern void FUN_8012e184(void);
 extern void FUN_8012e214(void);
 extern void FUN_8012e2a0(void);
 extern void FUN_8012e334(void);
@@ -102,10 +82,7 @@ extern void FUN_8012e3c4(void);
 extern void FUN_8012e45c(void);
 extern void FUN_8012e4f4(void);
 extern void FUN_8012e58c(void);
-extern void FUN_8012e61c(void);
 extern void FUN_8012e6a8(void);
-extern void FUN_8012e73c(void);
-extern void FUN_8012e7cc(void);
 extern void FUN_8012e85c(void);
 extern void FUN_8012e8e8(void);
 extern void FUN_8012e97c(void);
@@ -154,13 +131,10 @@ extern void FUN_80135724(void);
 extern void FUN_801358e8(void);
 extern void FUN_80135a14(void);
 extern void FUN_80136090(void);
-extern void FUN_801360cc(void);
 extern void FUN_80136114(void);
 extern void FUN_801365a4(void);
 extern void FUN_80136b64(void);
-extern void FUN_80136d28(void);
 extern void FUN_80136ddc(void);
-extern void FUN_80136fb0(void);
 extern void FUN_80137048(void);
 extern void FUN_80137098(void);
 extern void FUN_80137570(void);
@@ -221,11 +195,9 @@ extern void FUN_80141d2c(void);
 extern void FUN_80141d34(void);
 extern void FUN_80142108(void);
 extern void FUN_80142b3c(void);
-extern void FUN_80142c5c(void);
 extern void FUN_80142c9c(void);
 extern void FUN_80142cd8(void);
 extern void FUN_80142d20(void);
-extern void FUN_80142d58(void);
 extern void FUN_80142da0(void);
 extern void FUN_80142dd8(void);
 extern void FUN_80142df4(void);
@@ -247,7 +219,6 @@ extern void FUN_80145c90(void);
 extern void FUN_80145d84(void);
 extern void FUN_8014642c(void);
 extern void FUN_80146e38(void);
-extern void FUN_80147034(void);
 extern void FUN_8014751c(void);
 extern void FUN_801479c4(void);
 extern void FUN_80147bb4(void);
@@ -326,9 +297,6 @@ extern void FUN_80154368(void);
 extern void FUN_801545d0(void);
 extern void FUN_80154930(void);
 extern void FUN_80155c14(void);
-extern void FUN_80155dd0(void);
-extern void FUN_80155e30(void);
-extern void FUN_80155e6c(void);
 extern void FUN_80155edc(void);
 extern void FUN_80155f64(void);
 extern void FUN_80156048(void);
@@ -377,7 +345,6 @@ extern void FUN_80158528(void);
 extern void FUN_80158698(void);
 extern void FUN_80158da8(void);
 extern void FUN_80158e5c(void);
-extern void FUN_80159028(void);
 extern void FUN_801594a4(void);
 extern void FUN_80159734(void);
 extern void FUN_801597ec(void);
@@ -410,8 +377,6 @@ extern void FUN_8015e8a4(void);
 extern void FUN_8015e8c4(void);
 extern void FUN_8015e9fc(void);
 extern void FUN_8015ebf8(void);
-extern void FUN_8015f590(void);
-extern void FUN_8015f644(void);
 extern void FUN_8015f64c(void);
 extern void FUN_8015f6a0(void);
 extern void FUN_80160598(void);
@@ -425,7 +390,6 @@ extern void FUN_8016325c(void);
 extern void FUN_801632e4(void);
 extern void FUN_80163314(void);
 extern void FUN_80163320(void);
-extern void FUN_8016347c(void);
 extern void FUN_80163520(void);
 extern void FUN_8016362c(void);
 extern void FUN_80163634(void);
@@ -521,10 +485,8 @@ extern void FUN_8016d244(void);
 extern void FUN_8016d478(void);
 extern void FUN_8016ddf8(void);
 extern void FUN_8016e21c(void);
-extern void FUN_8016f2c4(void);
 extern void FUN_8016f30c(void);
 extern void FUN_8016f588(void);
-extern void FUN_8016fbfc(void);
 extern void FUN_8016fc74(void);
 extern void FUN_8016fcc4(void);
 extern void FUN_801709fc(void);
@@ -543,7 +505,6 @@ extern void FUN_801737ec(void);
 extern void FUN_801756b0(void);
 extern void FUN_80175708(void);
 extern void FUN_80175760(void);
-extern void FUN_801757b8(void);
 extern void FUN_80175e08(void);
 extern void FUN_80175fec(void);
 extern void FUN_80178754(void);
@@ -633,14 +594,11 @@ extern void FUN_8018c31c(void);
 extern void FUN_8018c578(void);
 extern void FUN_8018c71c(void);
 extern void FUN_8018c824(void);
-extern void FUN_8018c92c(void);
 extern void FUN_8018ca8c(void);
 extern void FUN_8018cb98(void);
 extern void FUN_8018cbfc(void);
 extern void FUN_8018cc6c(void);
 extern void FUN_8018cd94(void);
-extern void FUN_8018cdf8(void);
-extern void FUN_8018ce70(void);
 extern void FUN_8018cfdc(void);
 extern void FUN_8018d150(void);
 extern void FUN_8018d1bc(void);
@@ -668,7 +626,6 @@ extern void FUN_8018de6c(void);
 extern void FUN_8018df00(void);
 extern void FUN_8018e028(void);
 extern void FUN_8018e2f0(void);
-extern void FUN_8018e3bc(void);
 extern void FUN_8018e490(void);
 extern void FUN_8018e4d0(void);
 extern void FUN_8018e510(void);
@@ -704,7 +661,6 @@ extern void FUN_80190430(void);
 extern void FUN_80190a04(void);
 extern void FUN_80190dd0(void);
 extern void FUN_80190e00(void);
-extern void FUN_80190f74(void);
 extern void FUN_80190fd0(void);
 extern void FUN_80191084(void);
 extern void FUN_801910e4(void);
@@ -788,12 +744,6 @@ extern void FUN_80195398(void);
 extern void FUN_801954b4(void);
 extern void FUN_80195500(void);
 extern void FUN_80195570(void);
-extern void FUN_801957f0(void);
-extern void FUN_80195800(void);
-extern void FUN_80195830(void);
-extern void FUN_80195854(void);
-extern void FUN_80195a80(void);
-extern void FUN_80195b10(void);
 extern void FUN_80195b4c(void);
 extern void FUN_80195b74(void);
 extern void FUN_80195b9c(void);
@@ -803,33 +753,24 @@ extern void FUN_80195bf0(void);
 extern void FUN_80195c10(void);
 extern void FUN_80195c1c(void);
 extern void FUN_80195c88(void);
-extern void FUN_80195ca8(void);
 extern void FUN_80195d24(void);
 extern void FUN_80195d44(void);
 extern void FUN_80195d64(void);
 extern void FUN_80195d78(void);
-extern void FUN_80195d8c(void);
 extern void FUN_80195ec8(void);
 extern void FUN_80195ffc(void);
-extern void FUN_80196148(void);
 extern void FUN_80196168(void);
 extern void FUN_80196188(void);
 extern void FUN_801961a8(void);
 extern void FUN_801961cc(void);
-extern void FUN_801961ec(void);
 extern void FUN_801962f0(void);
 extern void FUN_80196370(void);
 extern void FUN_801968cc(void);
 extern void FUN_80196b4c(void);
-extern void FUN_80196e14(void);
-extern void FUN_80197220(void);
 extern void FUN_801972a8(void);
-extern void FUN_8019737c(void);
 extern void FUN_8019746c(void);
 extern void FUN_801974b8(void);
 extern void FUN_80197698(void);
-extern void FUN_80197800(void);
-extern void FUN_80197900(void);
 extern void FUN_8019799c(void);
 extern void FUN_801979f8(void);
 extern void FUN_80197ad0(void);
@@ -849,26 +790,19 @@ extern void FUN_80198e2c(void);
 extern void FUN_80198f60(void);
 extern void FUN_80198fe4(void);
 extern void FUN_80199010(void);
-extern void FUN_80199070(void);
 extern void FUN_801990f0(void);
 extern void FUN_80199100(void);
-extern void FUN_8019917c(void);
 extern void FUN_80199184(void);
 extern void FUN_801991e0(void);
-extern void FUN_80199270(void);
-extern void FUN_80199320(void);
 extern void FUN_80199360(void);
-extern void FUN_80199420(void);
 extern void FUN_80199440(void);
 extern void FUN_80199d5c(void);
 extern void FUN_80199d88(void);
-extern void FUN_80199f30(void);
 extern void FUN_80199f7c(void);
 extern void FUN_80199fa4(void);
 extern void FUN_80199fd0(void);
 extern void FUN_80199fe0(void);
 extern void FUN_80199ffc(void);
-extern void FUN_8019a00c(void);
 extern void FUN_8019a09c(void);
 extern void FUN_8019a12c(void);
 extern void FUN_8019a15c(void);
@@ -879,19 +813,14 @@ extern void FUN_8019a24c(void);
 extern void FUN_8019a320(void);
 extern void FUN_8019a330(void);
 extern void FUN_8019a340(void);
-extern void FUN_8019a378(void);
-extern void FUN_8019a3f0(void);
 extern void FUN_8019a460(void);
 extern void FUN_8019a5d8(void);
 extern void FUN_8019a670(void);
-extern void FUN_8019a680(void);
 extern void FUN_8019a688(void);
-extern void FUN_8019a6b0(void);
 extern void FUN_8019a6b8(void);
 extern void FUN_8019a6e0(void);
 extern void FUN_8019a6e8(void);
 extern void FUN_8019a710(void);
-extern void FUN_8019a744(void);
 extern void FUN_8019a74c(void);
 extern void FUN_8019a774(void);
 extern void FUN_8019a77c(void);
@@ -913,7 +842,6 @@ extern void FUN_8019af00(void);
 extern void FUN_8019af30(void);
 extern void FUN_8019af84(void);
 extern void FUN_8019b1a8(void);
-extern void FUN_8019b1d0(void);
 extern void FUN_8019b1e4(void);
 extern void FUN_8019b200(void);
 extern void FUN_8019b220(void);
@@ -927,17 +855,14 @@ extern void FUN_8019b8a4(void);
 extern void FUN_8019b944(void);
 extern void FUN_8019bbc4(void);
 extern void FUN_8019bc48(void);
-extern void FUN_8019bcac(void);
 extern void FUN_8019bcf0(void);
 extern void FUN_8019be28(void);
 extern void FUN_8019be50(void);
 extern void FUN_8019be78(void);
-extern void FUN_8019bee0(void);
 extern void FUN_8019bf10(void);
 extern void FUN_8019c060(void);
 extern void FUN_8019c0f0(void);
 extern void FUN_8019c5d0(void);
-extern void FUN_8019caa0(void);
 extern void FUN_8019cb20(void);
 extern void FUN_8019cb50(void);
 extern void FUN_8019ce10(void);
@@ -947,7 +872,6 @@ extern void FUN_8019d170(void);
 extern void FUN_8019d1b0(void);
 extern void FUN_8019d1f0(void);
 extern void FUN_8019d220(void);
-extern void FUN_8019d3e0(void);
 extern void FUN_8019d410(void);
 extern void FUN_8019d470(void);
 extern void FUN_8019d4d0(void);
@@ -958,9 +882,7 @@ extern void FUN_8019d5f0(void);
 extern void FUN_8019da44(void);
 extern void FUN_8019dad0(void);
 extern void FUN_8019e0d0(void);
-extern void FUN_8019e2d0(void);
 extern void FUN_8019e300(void);
-extern void FUN_8019e320(void);
 extern void FUN_8019e330(void);
 extern void FUN_8019e39c(void);
 extern void FUN_8019e3d4(void);
@@ -992,10 +914,8 @@ extern void FUN_801a0610(void);
 extern void FUN_801a0620(void);
 extern void FUN_801a0660(void);
 extern void FUN_801a07a4(void);
-extern void FUN_801a09b0(void);
 extern void FUN_801a09e0(void);
 extern void FUN_801a09f0(void);
-extern void FUN_801a0a00(void);
 extern void FUN_801a0a10(void);
 extern void FUN_801a0a8c(void);
 extern void FUN_801a0bb0(void);
@@ -1007,20 +927,15 @@ extern void FUN_801a0f98(void);
 extern void FUN_801a1070(void);
 extern void FUN_801a1148(void);
 extern void FUN_801a1184(void);
-extern void FUN_801a11e4(void);
-extern void FUN_801a11f8(void);
 extern void FUN_801a120c(void);
 extern void FUN_801a1230(void);
-extern void FUN_801a1250(void);
 extern void FUN_801a1270(void);
 extern void FUN_801a12dc(void);
 extern void FUN_801a13a8(void);
 extern void FUN_801a161c(void);
 extern void FUN_801a169c(void);
-extern void FUN_801a1808(void);
 extern void FUN_801a1834(void);
 extern void FUN_801a1a2c(void);
-extern void FUN_801a1a40(void);
 extern void FUN_801a1b0c(void);
 extern void FUN_801a1f74(void);
 extern void FUN_801a24c0(void);
@@ -1033,8 +948,6 @@ extern void FUN_801a3034(void);
 extern void FUN_801a3048(void);
 extern void FUN_801a3088(void);
 extern void FUN_801a30c0(void);
-extern void FUN_801a36f0(void);
-extern void FUN_801a3d50(void);
 extern void FUN_801a40f8(void);
 extern void FUN_801a4230(void);
 extern void FUN_801a42d0(void);
@@ -1191,7 +1104,94 @@ extern void LAB_80137cd0(void);
 extern void LAB_8013e558(void);
 extern void LAB_8013eb04(void);
 extern void LAB_80140510(void);
+extern void battle_session_arm(void);
+extern void bios_tramp_a044(void);
+extern void bios_tramp_a070(void);
+extern void blk_1f26c0_init(void);
+extern void blk_1f26c0_init_b(void);
+extern void blk_1f26c0_init_c(void);
+extern void boot(void);
+extern void cd_bzero(void);
+extern void cd_chan_block_init(void);
+extern void cd_chan_flags_to_dir(void);
+extern void cd_chan_init_wrap(void);
+extern void cd_channel_main_init(void);
+extern void cd_channel_table_init(void);
+extern void cd_cmd_bytes(void);
+extern void cd_cmd_issue(void);
+extern void cd_cmd_issue_b(void);
+extern void cd_cmd_issue_c(void);
+extern void cd_cmd_retry(void);
+extern void cd_cmd_sequence(void);
+extern void cd_dir_clear(void);
+extern void cd_dir_entry_probe(void);
+extern void cd_dir_read(void);
+extern void cd_dir_read_wrap(void);
+extern void cd_dir_table_set(void);
+extern void cd_dispatch_tbl8(void);
+extern void cd_dispatch_tblc(void);
+extern void cd_ext_table_init(void);
+extern void cd_file_open(void);
+extern void cd_file_open_b(void);
+extern void cd_file_pump(void);
+extern void cd_handler_pair_install(void);
+extern void cd_handler_triple_install(void);
+extern void cd_job_slots_reset(void);
+extern void cd_kobj_init_a(void);
+extern void cd_kobj_init_b(void);
+extern void cd_mode_flag_set(void);
+extern void cd_probe_retry(void);
+extern void cd_read_param_block(void);
+extern void cd_read_param_set(void);
+extern void cd_ready_probe(void);
+extern void cd_reg_init_seq(void);
+extern void cd_reg_window_update(void);
+extern void cd_subsys_reset_wrap(void);
+extern void cd_subsystem_reset(void);
+extern void cd_u16_table_store(void);
+extern void cd_xchg_bc850(void);
+extern void cd_xchg_bde20(void);
+extern void cd_xchg_fefb4(void);
+extern void cd_xchg_fefb8(void);
+extern void clear_battle_counters(void);
+extern void clear_f0300_records(void);
+extern void clear_f4ee8_u16s(void);
+extern void display_mode_setup(void);
+extern void empty_ret(void);
 extern void entry_0x80126234(void);
+extern void frame_counter_bump(void);
+extern void frame_tick(void);
+extern void hud_text_a(void);
+extern void hud_text_b(void);
+extern void hud_text_c(void);
+extern void hud_text_d(void);
+extern void intro_movie_state(void);
+extern void match_end_check(void);
+extern void match_loop(void);
+extern void memcard_info_query(void);
+extern void memcard_poll_frame(void);
+extern void menu_row_paint(void);
+extern void menu_row_paint_b(void);
+extern void menu_stepper_input(void);
+extern void menu_stepper_redraw(void);
+extern void oam_list_rebuild(void);
+extern void ot_packet_chain_fixup(void);
+extern void players_ctrl_init(void);
+extern void print_dispatch(void);
+extern void print_dispatch_selfdesc(void);
+extern void record_copy_1a(void);
+extern void reset_combat_record(void);
+extern void reset_combat_slots(void);
+extern void reset_sprite_ot_block(void);
+extern void scene_entry(void);
+extern void scratchpad_pair_init(void);
+extern void set_graph_debug(void);
+extern void sprite_node_alloc(void);
+extern void sprite_node_emit_a(void);
+extern void sprite_node_emit_b(void);
+extern void sprite_rect_table_init(void);
+extern void task_table_init(void);
+extern void u16_lut_lookup(void);
 typedef struct { uint32_t addr; void *fn; } Br2FnEnt;
 
 const Br2FnEnt fn_table[] = {
@@ -1199,17 +1199,17 @@ const Br2FnEnt fn_table[] = {
   { 0x80126720, (void *)FUN_80126720 },
   { 0x801267dc, (void *)FUN_801267dc },
   { 0x80126848, (void *)FUN_80126848 },
-  { 0x80126870, (void *)FUN_80126870 },
-  { 0x80126f04, (void *)FUN_80126f04 },
-  { 0x8012708c, (void *)FUN_8012708c },
-  { 0x80127424, (void *)FUN_80127424 },
+  { 0x80126870, (void *)cd_file_pump },
+  { 0x80126f04, (void *)boot },
+  { 0x8012708c, (void *)display_mode_setup },
+  { 0x80127424, (void *)oam_list_rebuild },
   { 0x8012748c, (void *)FUN_8012748c },
-  { 0x801274c4, (void *)FUN_801274c4 },
+  { 0x801274c4, (void *)frame_counter_bump },
   { 0x801274d8, (void *)FUN_801274d8 },
   { 0x801274e8, (void *)FUN_801274e8 },
   { 0x801274fc, (void *)FUN_801274fc },
   { 0x80127524, (void *)FUN_80127524 },
-  { 0x8012755c, (void *)FUN_8012755c },
+  { 0x8012755c, (void *)clear_battle_counters },
   { 0x80127574, (void *)FUN_80127574 },
   { 0x80127680, (void *)FUN_80127680 },
   { 0x8012768c, (void *)FUN_8012768c },
@@ -1218,7 +1218,7 @@ const Br2FnEnt fn_table[] = {
   { 0x801279f4, (void *)FUN_801279f4 },
   { 0x80127ae0, (void *)FUN_80127ae0 },
   { 0x80127b64, (void *)FUN_80127b64 },
-  { 0x80127be4, (void *)FUN_80127be4 },
+  { 0x80127be4, (void *)reset_sprite_ot_block },
   { 0x80127c60, (void *)FUN_80127c60 },
   { 0x80128268, (void *)FUN_80128268 },
   { 0x80128898, (void *)FUN_80128898 },
@@ -1233,11 +1233,11 @@ const Br2FnEnt fn_table[] = {
   { 0x80129218, (void *)FUN_80129218 },
   { 0x801294cc, (void *)FUN_801294cc },
   { 0x80129540, (void *)FUN_80129540 },
-  { 0x80129660, (void *)FUN_80129660 },
+  { 0x80129660, (void *)menu_stepper_redraw },
   { 0x80129710, (void *)FUN_80129710 },
-  { 0x801297dc, (void *)FUN_801297dc },
-  { 0x80129910, (void *)FUN_80129910 },
-  { 0x80129944, (void *)FUN_80129944 },
+  { 0x801297dc, (void *)menu_stepper_input },
+  { 0x80129910, (void *)menu_row_paint },
+  { 0x80129944, (void *)menu_row_paint_b },
   { 0x80129978, (void *)FUN_80129978 },
   { 0x80129a6c, (void *)FUN_80129a6c },
   { 0x80129b48, (void *)FUN_80129b48 },
@@ -1251,8 +1251,8 @@ const Br2FnEnt fn_table[] = {
   { 0x80129ff4, (void *)FUN_80129ff4 },
   { 0x8012a030, (void *)FUN_8012a030 },
   { 0x8012a088, (void *)FUN_8012a088 },
-  { 0x8012a0f0, (void *)FUN_8012a0f0 },
-  { 0x8012a30c, (void *)FUN_8012a30c },
+  { 0x8012a0f0, (void *)sprite_rect_table_init },
+  { 0x8012a30c, (void *)ot_packet_chain_fixup },
   { 0x8012a4b4, (void *)FUN_8012a4b4 },
   { 0x8012a504, (void *)FUN_8012a504 },
   { 0x8012a5b8, (void *)FUN_8012a5b8 },
@@ -1261,11 +1261,11 @@ const Br2FnEnt fn_table[] = {
   { 0x8012a884, (void *)FUN_8012a884 },
   { 0x8012aa6c, (void *)FUN_8012aa6c },
   { 0x8012aaa8, (void *)FUN_8012aaa8 },
-  { 0x8012aab8, (void *)FUN_8012aab8 },
+  { 0x8012aab8, (void *)empty_ret },
   { 0x8012aae4, (void *)FUN_8012aae4 },
   { 0x8012adf8, (void *)FUN_8012adf8 },
-  { 0x8012ae3c, (void *)FUN_8012ae3c },
-  { 0x8012aeec, (void *)FUN_8012aeec },
+  { 0x8012ae3c, (void *)battle_session_arm },
+  { 0x8012aeec, (void *)frame_tick },
   { 0x8012b23c, (void *)FUN_8012b23c },
   { 0x8012b46c, (void *)FUN_8012b46c },
   { 0x8012b488, (void *)FUN_8012b488 },
@@ -1273,20 +1273,20 @@ const Br2FnEnt fn_table[] = {
   { 0x8012b55c, (void *)FUN_8012b55c },
   { 0x8012ba04, (void *)FUN_8012ba04 },
   { 0x8012bf0c, (void *)FUN_8012bf0c },
-  { 0x8012c0b4, (void *)FUN_8012c0b4 },
+  { 0x8012c0b4, (void *)intro_movie_state },
   { 0x8012c374, (void *)FUN_8012c374 },
   { 0x8012cbc0, (void *)FUN_8012cbc0 },
-  { 0x8012cc6c, (void *)FUN_8012cc6c },
+  { 0x8012cc6c, (void *)print_dispatch },
   { 0x8012cd9c, (void *)FUN_8012cd9c },
   { 0x8012cdd8, (void *)FUN_8012cdd8 },
   { 0x8012ce30, (void *)FUN_8012ce30 },
-  { 0x8012cf64, (void *)FUN_8012cf64 },
+  { 0x8012cf64, (void *)print_dispatch_selfdesc },
   { 0x8012d090, (void *)FUN_8012d090 },
   { 0x8012d154, (void *)FUN_8012d154 },
   { 0x8012dce4, (void *)FUN_8012dce4 },
   { 0x8012e078, (void *)FUN_8012e078 },
   { 0x8012e100, (void *)FUN_8012e100 },
-  { 0x8012e184, (void *)FUN_8012e184 },
+  { 0x8012e184, (void *)hud_text_a },
   { 0x8012e214, (void *)FUN_8012e214 },
   { 0x8012e2a0, (void *)FUN_8012e2a0 },
   { 0x8012e334, (void *)FUN_8012e334 },
@@ -1294,10 +1294,10 @@ const Br2FnEnt fn_table[] = {
   { 0x8012e45c, (void *)FUN_8012e45c },
   { 0x8012e4f4, (void *)FUN_8012e4f4 },
   { 0x8012e58c, (void *)FUN_8012e58c },
-  { 0x8012e61c, (void *)FUN_8012e61c },
+  { 0x8012e61c, (void *)hud_text_b },
   { 0x8012e6a8, (void *)FUN_8012e6a8 },
-  { 0x8012e73c, (void *)FUN_8012e73c },
-  { 0x8012e7cc, (void *)FUN_8012e7cc },
+  { 0x8012e73c, (void *)hud_text_c },
+  { 0x8012e7cc, (void *)hud_text_d },
   { 0x8012e85c, (void *)FUN_8012e85c },
   { 0x8012e8e8, (void *)FUN_8012e8e8 },
   { 0x8012e97c, (void *)FUN_8012e97c },
@@ -1346,13 +1346,13 @@ const Br2FnEnt fn_table[] = {
   { 0x801358e8, (void *)FUN_801358e8 },
   { 0x80135a14, (void *)FUN_80135a14 },
   { 0x80136090, (void *)FUN_80136090 },
-  { 0x801360cc, (void *)FUN_801360cc },
+  { 0x801360cc, (void *)clear_f0300_records },
   { 0x80136114, (void *)FUN_80136114 },
   { 0x801365a4, (void *)FUN_801365a4 },
   { 0x80136b64, (void *)FUN_80136b64 },
-  { 0x80136d28, (void *)FUN_80136d28 },
+  { 0x80136d28, (void *)record_copy_1a },
   { 0x80136ddc, (void *)FUN_80136ddc },
-  { 0x80136fb0, (void *)FUN_80136fb0 },
+  { 0x80136fb0, (void *)task_table_init },
   { 0x80137048, (void *)FUN_80137048 },
   { 0x80137098, (void *)FUN_80137098 },
   { 0x80137570, (void *)FUN_80137570 },
@@ -1420,11 +1420,11 @@ const Br2FnEnt fn_table[] = {
   { 0x80141d34, (void *)FUN_80141d34 },
   { 0x80142108, (void *)FUN_80142108 },
   { 0x80142b3c, (void *)FUN_80142b3c },
-  { 0x80142c5c, (void *)FUN_80142c5c },
+  { 0x80142c5c, (void *)reset_combat_record },
   { 0x80142c9c, (void *)FUN_80142c9c },
   { 0x80142cd8, (void *)FUN_80142cd8 },
   { 0x80142d20, (void *)FUN_80142d20 },
-  { 0x80142d58, (void *)FUN_80142d58 },
+  { 0x80142d58, (void *)reset_combat_slots },
   { 0x80142da0, (void *)FUN_80142da0 },
   { 0x80142dd8, (void *)FUN_80142dd8 },
   { 0x80142df4, (void *)FUN_80142df4 },
@@ -1446,7 +1446,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80145d84, (void *)FUN_80145d84 },
   { 0x8014642c, (void *)FUN_8014642c },
   { 0x80146e38, (void *)FUN_80146e38 },
-  { 0x80147034, (void *)FUN_80147034 },
+  { 0x80147034, (void *)match_loop },
   { 0x8014751c, (void *)FUN_8014751c },
   { 0x801479c4, (void *)FUN_801479c4 },
   { 0x80147bb4, (void *)FUN_80147bb4 },
@@ -1525,9 +1525,9 @@ const Br2FnEnt fn_table[] = {
   { 0x801545d0, (void *)FUN_801545d0 },
   { 0x80154930, (void *)FUN_80154930 },
   { 0x80155c14, (void *)FUN_80155c14 },
-  { 0x80155dd0, (void *)FUN_80155dd0 },
-  { 0x80155e30, (void *)FUN_80155e30 },
-  { 0x80155e6c, (void *)FUN_80155e6c },
+  { 0x80155dd0, (void *)blk_1f26c0_init_b },
+  { 0x80155e30, (void *)blk_1f26c0_init },
+  { 0x80155e6c, (void *)blk_1f26c0_init_c },
   { 0x80155edc, (void *)FUN_80155edc },
   { 0x80155f64, (void *)FUN_80155f64 },
   { 0x80156048, (void *)FUN_80156048 },
@@ -1576,7 +1576,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80158698, (void *)FUN_80158698 },
   { 0x80158da8, (void *)FUN_80158da8 },
   { 0x80158e5c, (void *)FUN_80158e5c },
-  { 0x80159028, (void *)FUN_80159028 },
+  { 0x80159028, (void *)scene_entry },
   { 0x801594a4, (void *)FUN_801594a4 },
   { 0x80159734, (void *)FUN_80159734 },
   { 0x801597ec, (void *)FUN_801597ec },
@@ -1609,8 +1609,8 @@ const Br2FnEnt fn_table[] = {
   { 0x8015e8c4, (void *)FUN_8015e8c4 },
   { 0x8015e9fc, (void *)FUN_8015e9fc },
   { 0x8015ebf8, (void *)FUN_8015ebf8 },
-  { 0x8015f590, (void *)FUN_8015f590 },
-  { 0x8015f644, (void *)FUN_8015f644 },
+  { 0x8015f590, (void *)memcard_info_query },
+  { 0x8015f644, (void *)memcard_poll_frame },
   { 0x8015f64c, (void *)FUN_8015f64c },
   { 0x8015f6a0, (void *)FUN_8015f6a0 },
   { 0x80160598, (void *)FUN_80160598 },
@@ -1624,7 +1624,7 @@ const Br2FnEnt fn_table[] = {
   { 0x801632e4, (void *)FUN_801632e4 },
   { 0x80163314, (void *)FUN_80163314 },
   { 0x80163320, (void *)FUN_80163320 },
-  { 0x8016347c, (void *)FUN_8016347c },
+  { 0x8016347c, (void *)match_end_check },
   { 0x80163520, (void *)FUN_80163520 },
   { 0x8016362c, (void *)FUN_8016362c },
   { 0x80163634, (void *)FUN_80163634 },
@@ -1720,10 +1720,10 @@ const Br2FnEnt fn_table[] = {
   { 0x8016d478, (void *)FUN_8016d478 },
   { 0x8016ddf8, (void *)FUN_8016ddf8 },
   { 0x8016e21c, (void *)FUN_8016e21c },
-  { 0x8016f2c4, (void *)FUN_8016f2c4 },
+  { 0x8016f2c4, (void *)clear_f4ee8_u16s },
   { 0x8016f30c, (void *)FUN_8016f30c },
   { 0x8016f588, (void *)FUN_8016f588 },
-  { 0x8016fbfc, (void *)FUN_8016fbfc },
+  { 0x8016fbfc, (void *)scratchpad_pair_init },
   { 0x8016fc74, (void *)FUN_8016fc74 },
   { 0x8016fcc4, (void *)FUN_8016fcc4 },
   { 0x801709fc, (void *)FUN_801709fc },
@@ -1742,7 +1742,7 @@ const Br2FnEnt fn_table[] = {
   { 0x801756b0, (void *)FUN_801756b0 },
   { 0x80175708, (void *)FUN_80175708 },
   { 0x80175760, (void *)FUN_80175760 },
-  { 0x801757b8, (void *)FUN_801757b8 },
+  { 0x801757b8, (void *)players_ctrl_init },
   { 0x80175e08, (void *)FUN_80175e08 },
   { 0x80175fec, (void *)FUN_80175fec },
   { 0x80178754, (void *)FUN_80178754 },
@@ -1832,14 +1832,14 @@ const Br2FnEnt fn_table[] = {
   { 0x8018c578, (void *)FUN_8018c578 },
   { 0x8018c71c, (void *)FUN_8018c71c },
   { 0x8018c824, (void *)FUN_8018c824 },
-  { 0x8018c92c, (void *)FUN_8018c92c },
+  { 0x8018c92c, (void *)sprite_node_emit_b },
   { 0x8018ca8c, (void *)FUN_8018ca8c },
   { 0x8018cb98, (void *)FUN_8018cb98 },
   { 0x8018cbfc, (void *)FUN_8018cbfc },
   { 0x8018cc6c, (void *)FUN_8018cc6c },
   { 0x8018cd94, (void *)FUN_8018cd94 },
-  { 0x8018cdf8, (void *)FUN_8018cdf8 },
-  { 0x8018ce70, (void *)FUN_8018ce70 },
+  { 0x8018cdf8, (void *)sprite_node_alloc },
+  { 0x8018ce70, (void *)sprite_node_emit_a },
   { 0x8018cfdc, (void *)FUN_8018cfdc },
   { 0x8018d150, (void *)FUN_8018d150 },
   { 0x8018d1bc, (void *)FUN_8018d1bc },
@@ -1867,7 +1867,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8018df00, (void *)FUN_8018df00 },
   { 0x8018e028, (void *)FUN_8018e028 },
   { 0x8018e2f0, (void *)FUN_8018e2f0 },
-  { 0x8018e3bc, (void *)FUN_8018e3bc },
+  { 0x8018e3bc, (void *)u16_lut_lookup },
   { 0x8018e490, (void *)FUN_8018e490 },
   { 0x8018e4d0, (void *)FUN_8018e4d0 },
   { 0x8018e510, (void *)FUN_8018e510 },
@@ -1903,7 +1903,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80190a04, (void *)FUN_80190a04 },
   { 0x80190dd0, (void *)FUN_80190dd0 },
   { 0x80190e00, (void *)FUN_80190e00 },
-  { 0x80190f74, (void *)FUN_80190f74 },
+  { 0x80190f74, (void *)set_graph_debug },
   { 0x80190fd0, (void *)FUN_80190fd0 },
   { 0x80191084, (void *)FUN_80191084 },
   { 0x801910e4, (void *)FUN_801910e4 },
@@ -1987,12 +1987,12 @@ const Br2FnEnt fn_table[] = {
   { 0x801954b4, (void *)FUN_801954b4 },
   { 0x80195500, (void *)FUN_80195500 },
   { 0x80195570, (void *)FUN_80195570 },
-  { 0x801957f0, (void *)FUN_801957f0 },
-  { 0x80195800, (void *)FUN_80195800 },
-  { 0x80195830, (void *)FUN_80195830 },
-  { 0x80195854, (void *)FUN_80195854 },
-  { 0x80195a80, (void *)FUN_80195a80 },
-  { 0x80195b10, (void *)FUN_80195b10 },
+  { 0x801957f0, (void *)bios_tramp_a044 },
+  { 0x80195800, (void *)cd_dir_table_set },
+  { 0x80195830, (void *)cd_dir_read_wrap },
+  { 0x80195854, (void *)cd_dir_read },
+  { 0x80195a80, (void *)cd_probe_retry },
+  { 0x80195b10, (void *)cd_ready_probe },
   { 0x80195b4c, (void *)FUN_80195b4c },
   { 0x80195b74, (void *)FUN_80195b74 },
   { 0x80195b9c, (void *)FUN_80195b9c },
@@ -2002,33 +2002,33 @@ const Br2FnEnt fn_table[] = {
   { 0x80195c10, (void *)FUN_80195c10 },
   { 0x80195c1c, (void *)FUN_80195c1c },
   { 0x80195c88, (void *)FUN_80195c88 },
-  { 0x80195ca8, (void *)FUN_80195ca8 },
+  { 0x80195ca8, (void *)cd_xchg_bc850 },
   { 0x80195d24, (void *)FUN_80195d24 },
   { 0x80195d44, (void *)FUN_80195d44 },
   { 0x80195d64, (void *)FUN_80195d64 },
   { 0x80195d78, (void *)FUN_80195d78 },
-  { 0x80195d8c, (void *)FUN_80195d8c },
+  { 0x80195d8c, (void *)cd_mode_flag_set },
   { 0x80195ec8, (void *)FUN_80195ec8 },
   { 0x80195ffc, (void *)FUN_80195ffc },
-  { 0x80196148, (void *)FUN_80196148 },
+  { 0x80196148, (void *)cd_cmd_retry },
   { 0x80196168, (void *)FUN_80196168 },
   { 0x80196188, (void *)FUN_80196188 },
   { 0x801961a8, (void *)FUN_801961a8 },
   { 0x801961cc, (void *)FUN_801961cc },
-  { 0x801961ec, (void *)FUN_801961ec },
+  { 0x801961ec, (void *)cd_file_open },
   { 0x801962f0, (void *)FUN_801962f0 },
   { 0x80196370, (void *)FUN_80196370 },
   { 0x801968cc, (void *)FUN_801968cc },
   { 0x80196b4c, (void *)FUN_80196b4c },
-  { 0x80196e14, (void *)FUN_80196e14 },
-  { 0x80197220, (void *)FUN_80197220 },
+  { 0x80196e14, (void *)cd_cmd_issue },
+  { 0x80197220, (void *)cd_cmd_bytes },
   { 0x801972a8, (void *)FUN_801972a8 },
-  { 0x8019737c, (void *)FUN_8019737c },
+  { 0x8019737c, (void *)cd_reg_init_seq },
   { 0x8019746c, (void *)FUN_8019746c },
   { 0x801974b8, (void *)FUN_801974b8 },
   { 0x80197698, (void *)FUN_80197698 },
-  { 0x80197800, (void *)FUN_80197800 },
-  { 0x80197900, (void *)FUN_80197900 },
+  { 0x80197800, (void *)cd_cmd_issue_b },
+  { 0x80197900, (void *)cd_cmd_issue_c },
   { 0x8019799c, (void *)FUN_8019799c },
   { 0x801979f8, (void *)FUN_801979f8 },
   { 0x80197ad0, (void *)FUN_80197ad0 },
@@ -2048,26 +2048,26 @@ const Br2FnEnt fn_table[] = {
   { 0x80198f60, (void *)FUN_80198f60 },
   { 0x80198fe4, (void *)FUN_80198fe4 },
   { 0x80199010, (void *)FUN_80199010 },
-  { 0x80199070, (void *)FUN_80199070 },
+  { 0x80199070, (void *)cd_subsystem_reset },
   { 0x801990f0, (void *)FUN_801990f0 },
   { 0x80199100, (void *)FUN_80199100 },
-  { 0x8019917c, (void *)FUN_8019917c },
+  { 0x8019917c, (void *)cd_file_open_b },
   { 0x80199184, (void *)FUN_80199184 },
   { 0x801991e0, (void *)FUN_801991e0 },
-  { 0x80199270, (void *)FUN_80199270 },
-  { 0x80199320, (void *)FUN_80199320 },
+  { 0x80199270, (void *)cd_dir_entry_probe },
+  { 0x80199320, (void *)cd_dir_clear },
   { 0x80199360, (void *)FUN_80199360 },
-  { 0x80199420, (void *)FUN_80199420 },
+  { 0x80199420, (void *)cd_read_param_block },
   { 0x80199440, (void *)FUN_80199440 },
   { 0x80199d5c, (void *)FUN_80199d5c },
   { 0x80199d88, (void *)FUN_80199d88 },
-  { 0x80199f30, (void *)FUN_80199f30 },
+  { 0x80199f30, (void *)cd_read_param_set },
   { 0x80199f7c, (void *)FUN_80199f7c },
   { 0x80199fa4, (void *)FUN_80199fa4 },
   { 0x80199fd0, (void *)FUN_80199fd0 },
   { 0x80199fe0, (void *)FUN_80199fe0 },
   { 0x80199ffc, (void *)FUN_80199ffc },
-  { 0x8019a00c, (void *)FUN_8019a00c },
+  { 0x8019a00c, (void *)cd_cmd_sequence },
   { 0x8019a09c, (void *)FUN_8019a09c },
   { 0x8019a12c, (void *)FUN_8019a12c },
   { 0x8019a15c, (void *)FUN_8019a15c },
@@ -2078,19 +2078,19 @@ const Br2FnEnt fn_table[] = {
   { 0x8019a320, (void *)FUN_8019a320 },
   { 0x8019a330, (void *)FUN_8019a330 },
   { 0x8019a340, (void *)FUN_8019a340 },
-  { 0x8019a378, (void *)FUN_8019a378 },
-  { 0x8019a3f0, (void *)FUN_8019a3f0 },
+  { 0x8019a378, (void *)cd_kobj_init_b },
+  { 0x8019a3f0, (void *)cd_kobj_init_a },
   { 0x8019a460, (void *)FUN_8019a460 },
   { 0x8019a5d8, (void *)FUN_8019a5d8 },
   { 0x8019a670, (void *)FUN_8019a670 },
-  { 0x8019a680, (void *)FUN_8019a680 },
+  { 0x8019a680, (void *)cd_dispatch_tblc },
   { 0x8019a688, (void *)FUN_8019a688 },
-  { 0x8019a6b0, (void *)FUN_8019a6b0 },
+  { 0x8019a6b0, (void *)cd_dispatch_tbl8 },
   { 0x8019a6b8, (void *)FUN_8019a6b8 },
   { 0x8019a6e0, (void *)FUN_8019a6e0 },
   { 0x8019a6e8, (void *)FUN_8019a6e8 },
   { 0x8019a710, (void *)FUN_8019a710 },
-  { 0x8019a744, (void *)FUN_8019a744 },
+  { 0x8019a744, (void *)cd_chan_block_init },
   { 0x8019a74c, (void *)FUN_8019a74c },
   { 0x8019a774, (void *)FUN_8019a774 },
   { 0x8019a77c, (void *)FUN_8019a77c },
@@ -2112,7 +2112,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8019af30, (void *)FUN_8019af30 },
   { 0x8019af84, (void *)FUN_8019af84 },
   { 0x8019b1a8, (void *)FUN_8019b1a8 },
-  { 0x8019b1d0, (void *)FUN_8019b1d0 },
+  { 0x8019b1d0, (void *)cd_xchg_bde20 },
   { 0x8019b1e4, (void *)FUN_8019b1e4 },
   { 0x8019b200, (void *)FUN_8019b200 },
   { 0x8019b220, (void *)FUN_8019b220 },
@@ -2126,17 +2126,17 @@ const Br2FnEnt fn_table[] = {
   { 0x8019b944, (void *)FUN_8019b944 },
   { 0x8019bbc4, (void *)FUN_8019bbc4 },
   { 0x8019bc48, (void *)FUN_8019bc48 },
-  { 0x8019bcac, (void *)FUN_8019bcac },
+  { 0x8019bcac, (void *)cd_u16_table_store },
   { 0x8019bcf0, (void *)FUN_8019bcf0 },
   { 0x8019be28, (void *)FUN_8019be28 },
   { 0x8019be50, (void *)FUN_8019be50 },
   { 0x8019be78, (void *)FUN_8019be78 },
-  { 0x8019bee0, (void *)FUN_8019bee0 },
+  { 0x8019bee0, (void *)cd_ext_table_init },
   { 0x8019bf10, (void *)FUN_8019bf10 },
   { 0x8019c060, (void *)FUN_8019c060 },
   { 0x8019c0f0, (void *)FUN_8019c0f0 },
   { 0x8019c5d0, (void *)FUN_8019c5d0 },
-  { 0x8019caa0, (void *)FUN_8019caa0 },
+  { 0x8019caa0, (void *)cd_chan_flags_to_dir },
   { 0x8019cb20, (void *)FUN_8019cb20 },
   { 0x8019cb50, (void *)FUN_8019cb50 },
   { 0x8019ce10, (void *)FUN_8019ce10 },
@@ -2146,7 +2146,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8019d1b0, (void *)FUN_8019d1b0 },
   { 0x8019d1f0, (void *)FUN_8019d1f0 },
   { 0x8019d220, (void *)FUN_8019d220 },
-  { 0x8019d3e0, (void *)FUN_8019d3e0 },
+  { 0x8019d3e0, (void *)cd_reg_window_update },
   { 0x8019d410, (void *)FUN_8019d410 },
   { 0x8019d470, (void *)FUN_8019d470 },
   { 0x8019d4d0, (void *)FUN_8019d4d0 },
@@ -2157,9 +2157,9 @@ const Br2FnEnt fn_table[] = {
   { 0x8019da44, (void *)FUN_8019da44 },
   { 0x8019dad0, (void *)FUN_8019dad0 },
   { 0x8019e0d0, (void *)FUN_8019e0d0 },
-  { 0x8019e2d0, (void *)FUN_8019e2d0 },
+  { 0x8019e2d0, (void *)cd_subsys_reset_wrap },
   { 0x8019e300, (void *)FUN_8019e300 },
-  { 0x8019e320, (void *)FUN_8019e320 },
+  { 0x8019e320, (void *)bios_tramp_a070 },
   { 0x8019e330, (void *)FUN_8019e330 },
   { 0x8019e39c, (void *)FUN_8019e39c },
   { 0x8019e3d4, (void *)FUN_8019e3d4 },
@@ -2191,10 +2191,10 @@ const Br2FnEnt fn_table[] = {
   { 0x801a0620, (void *)FUN_801a0620 },
   { 0x801a0660, (void *)FUN_801a0660 },
   { 0x801a07a4, (void *)FUN_801a07a4 },
-  { 0x801a09b0, (void *)FUN_801a09b0 },
+  { 0x801a09b0, (void *)cd_bzero },
   { 0x801a09e0, (void *)FUN_801a09e0 },
   { 0x801a09f0, (void *)FUN_801a09f0 },
-  { 0x801a0a00, (void *)FUN_801a0a00 },
+  { 0x801a0a00, (void *)cd_job_slots_reset },
   { 0x801a0a10, (void *)FUN_801a0a10 },
   { 0x801a0a8c, (void *)FUN_801a0a8c },
   { 0x801a0bb0, (void *)FUN_801a0bb0 },
@@ -2206,20 +2206,20 @@ const Br2FnEnt fn_table[] = {
   { 0x801a1070, (void *)FUN_801a1070 },
   { 0x801a1148, (void *)FUN_801a1148 },
   { 0x801a1184, (void *)FUN_801a1184 },
-  { 0x801a11e4, (void *)FUN_801a11e4 },
-  { 0x801a11f8, (void *)FUN_801a11f8 },
+  { 0x801a11e4, (void *)cd_xchg_fefb4 },
+  { 0x801a11f8, (void *)cd_xchg_fefb8 },
   { 0x801a120c, (void *)FUN_801a120c },
   { 0x801a1230, (void *)FUN_801a1230 },
-  { 0x801a1250, (void *)FUN_801a1250 },
+  { 0x801a1250, (void *)cd_chan_init_wrap },
   { 0x801a1270, (void *)FUN_801a1270 },
   { 0x801a12dc, (void *)FUN_801a12dc },
   { 0x801a13a8, (void *)FUN_801a13a8 },
   { 0x801a161c, (void *)FUN_801a161c },
   { 0x801a169c, (void *)FUN_801a169c },
-  { 0x801a1808, (void *)FUN_801a1808 },
+  { 0x801a1808, (void *)cd_handler_pair_install },
   { 0x801a1834, (void *)FUN_801a1834 },
   { 0x801a1a2c, (void *)FUN_801a1a2c },
-  { 0x801a1a40, (void *)FUN_801a1a40 },
+  { 0x801a1a40, (void *)cd_channel_main_init },
   { 0x801a1b0c, (void *)FUN_801a1b0c },
   { 0x801a1f74, (void *)FUN_801a1f74 },
   { 0x801a24c0, (void *)FUN_801a24c0 },
@@ -2232,8 +2232,8 @@ const Br2FnEnt fn_table[] = {
   { 0x801a3048, (void *)FUN_801a3048 },
   { 0x801a3088, (void *)FUN_801a3088 },
   { 0x801a30c0, (void *)FUN_801a30c0 },
-  { 0x801a36f0, (void *)FUN_801a36f0 },
-  { 0x801a3d50, (void *)FUN_801a3d50 },
+  { 0x801a36f0, (void *)cd_channel_table_init },
+  { 0x801a3d50, (void *)cd_handler_triple_install },
   { 0x801a40f8, (void *)FUN_801a40f8 },
   { 0x801a4230, (void *)FUN_801a4230 },
   { 0x801a42d0, (void *)FUN_801a42d0 },

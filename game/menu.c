@@ -32,13 +32,13 @@ extern int g_game_state;
 extern int g_sub_state;
 
 extern int FUN_801274fc();
-extern int FUN_80127be4();
+extern int reset_sprite_ot_block();
 extern void FUN_80128898(uint32_t);
 extern void FUN_801294cc(void *);
 extern void FUN_80129540(void *,uint32_t);
 extern int FUN_8012b23c();
 extern uint32_t FUN_8012bf0c(int32_t,int32_t,int32_t,int16_t);
-extern int FUN_8012c0b4();
+extern int intro_movie_state();
 extern int FUN_8012c374();
 extern int FUN_8012cbc0();
 extern int FUN_8012cd9c();
@@ -50,11 +50,11 @@ extern void FUN_8012e97c(uint32_t);
 extern void FUN_8012f024(uint32_t,uint32_t);
 extern void FUN_8012fb04(uint32_t,int32_t);
 extern int32_t FUN_801358e8(int32_t,int32_t);
-extern int FUN_801360cc();
-extern void FUN_80136d28(int);
+extern int clear_f0300_records();
+extern void record_copy_1a(int);
 extern int FUN_80136ddc();
-extern int FUN_80136fb0();
-extern int FUN_80142d58();
+extern int task_table_init();
+extern int reset_combat_slots();
 extern int FUN_801468ec();
 extern int FUN_8014cdd0();
 extern int FUN_8014f260();
@@ -66,8 +66,8 @@ extern void FUN_80151328(uint8_t *,uint8_t *,uint32_t);
 extern int FUN_80153264();
 extern int FUN_80154930();
 extern void FUN_80155c14(uint8_t *,uint8_t *,uint32_t);
-extern int FUN_80155dd0();
-extern int FUN_80155e30();
+extern int blk_1f26c0_init_b();
+extern int blk_1f26c0_init();
 extern int FUN_80155edc();
 extern int FUN_80156114();
 extern int FUN_80156650();
@@ -99,9 +99,9 @@ extern int FUN_801670c8();
 extern int FUN_8016d478();
 extern int FUN_8016ddf8();
 extern int FUN_8016e21c();
-extern int FUN_8016f2c4();
+extern int clear_f4ee8_u16s();
 extern int FUN_8016f588();
-extern int FUN_8016fbfc();
+extern int scratchpad_pair_init();
 extern int FUN_801709fc();
 extern int FUN_80172a34();
 extern int FUN_80175fec();
@@ -126,25 +126,25 @@ extern int FUN_801917e0();
 extern int FUN_801919ac();
 extern int FUN_80193ea0();
 extern int FUN_80193f60();
-extern int FUN_80195800();
-extern int FUN_80195d8c();
+extern int cd_dir_table_set();
+extern int cd_mode_flag_set();
 extern int FUN_80198f60();
 extern int FUN_801991e0();
 extern int FUN_80199440();
 extern int FUN_8019b200();
 extern int FUN_8019dad0();
-extern int FUN_8019e2d0();
+extern int cd_subsys_reset_wrap();
 extern int FUN_8019e680();
 
 
-extern void FUN_8012708c(uint32_t);
+extern void display_mode_setup(uint32_t);
 extern void FUN_8012748c();
 extern void FUN_801279d0(uint32_t,int);
 extern int FUN_80129f78();
 extern void FUN_8012a030(uint);
 extern void FUN_8012aa6c(undefined1,int);
-extern void FUN_8012ae3c(intptr_t,int);
-extern void FUN_8012aeec(intptr_t);
+extern void battle_session_arm(intptr_t,int);
+extern void frame_tick(intptr_t);
 extern void FUN_8012b49c(int);
 extern void FUN_8012e334(uint32_t,uint32_t,const void *,uint16_t,uint16_t,int32_t);
 extern int FUN_8012ecbc();
@@ -161,7 +161,7 @@ extern void FUN_80156d98();
 extern void FUN_80156ef4();
 extern void FUN_80156ff0();
 extern void FUN_80157a00(void);
-extern undefined4 FUN_80159028();
+extern undefined4 scene_entry();
 extern void FUN_80166544();
 extern int FUN_8016cd8c();
 extern int FUN_8016d244();
@@ -520,11 +520,11 @@ void FUN_80167840(void)
     }
   }
   if ((int8_t)_DAT_1f8000a4 == -2) {
-    FUN_80159028(0x80010000,2,*(uint *)(_g_system_config_ptr + 0x28) >> 2 & 1);
+    scene_entry(0x80010000,2,*(uint *)(_g_system_config_ptr + 0x28) >> 2 & 1);
     uVar1 = *(uint *)(_g_system_config_ptr + 0x28) | 4;
   }
   else {
-    FUN_80159028(0x80010000,3,*(uint *)(_g_system_config_ptr + 0x28) >> 3 & 1);
+    scene_entry(0x80010000,3,*(uint *)(_g_system_config_ptr + 0x28) >> 3 & 1);
     uVar1 = *(uint *)(_g_system_config_ptr + 0x28) | 8;
   }
   *(uint *)(_g_system_config_ptr + 0x28) = uVar1;
@@ -566,7 +566,7 @@ joined_r0x8016fd30:
     FUN_80136ddc();
     iVar4 = FUN_8012aaa8();
     if (iVar4 == 0) {
-      FUN_8012708c(*(undefined1 *)(_g_system_config_ptr + 0xb));
+      display_mode_setup(*(undefined1 *)(_g_system_config_ptr + 0xb));
       FUN_8012748c();
       FUN_801560f8(1);
       FUN_801274fc(0,0,0);
@@ -611,8 +611,8 @@ joined_r0x8016fd30:
       case 4:
         _DAT_1f8000c4 = guest_of(_g_system_config_ptr + 0x2c);
         FUN_80156ef4(0x403,0,0);
-        FUN_8012aeec(0x1f800000);
-        FUN_80159028(0x80010000,1,*(uint *)(_g_system_config_ptr + 0x28) >> 1 & 1);
+        frame_tick(0x1f800000);
+        scene_entry(0x80010000,1,*(uint *)(_g_system_config_ptr + 0x28) >> 1 & 1);
         if ((*(uint *)(_g_system_config_ptr + 0x28) >> 1 & 1) == 0) {
           *(uint *)(_g_system_config_ptr + 0x28) = *(uint *)(_g_system_config_ptr + 0x28) | 2;
           _DAT_801c15f0 = 1;
@@ -649,7 +649,7 @@ switchD_8016fd64_caseD_2:
         FUN_8012cbc0(2,0,0);
         FUN_8015a69c(&DAT_1f8000e8,&DAT_1f8001f0,0x1f800000,_g_system_config_ptr);
         FUN_80151328(&DAT_1f8000e8,&DAT_1f8001f0,0x1f800000);
-        FUN_8016fbfc();
+        scratchpad_pair_init();
         DAT_1f80009e = '\0';
         DAT_1f800001 = '\x03';
 switchD_8016fd64_caseD_3:
@@ -691,32 +691,32 @@ switchD_8016fd64_caseD_5:
     FUN_80155edc((int)(char)DAT_1f800098);
     FUN_8015787c(0x1f800000);
     FUN_8012f024(_DAT_1f8000bc,0x1f800000);
-    FUN_80136fb0(0);
+    task_table_init(0);
     FUN_8012d090(0);
     FUN_8012cbc0(2,0,0);
-    FUN_8012ae3c(0x1f800000,0xffffffff);
+    battle_session_arm(0x1f800000,0xffffffff);
     DAT_1f800001 = '\x06';
   case '\x06':
     FUN_8015a69c(&DAT_1f8000e8,&DAT_1f8001f0,0x1f800000,_g_system_config_ptr);
     FUN_80151328(&DAT_1f8000e8,&DAT_1f8001f0,0x1f800000);
     uVar3 = FUN_80129f78();
     FUN_8012a030(uVar3);
-    FUN_80127be4(0x1f800000);
-    FUN_80136fb0(1);
+    reset_sprite_ot_block(0x1f800000);
+    task_table_init(1);
     FUN_8012b49c(1);
     FUN_80156114(0x7f);
-    FUN_80136d28((int)(char)DAT_1f800098);
+    record_copy_1a((int)(char)DAT_1f800098);
     FUN_801358e8((int)(char)DAT_1f800098,(int)DAT_1f800099);
     FUN_8012e97c((uint8_t)*(uint8_t *)&DAT_1f800098);
-    FUN_8016f2c4(&DAT_1f8000e8);
-    FUN_8016f2c4(&DAT_1f8001f0);
-    FUN_80142d58();
+    clear_f4ee8_u16s(&DAT_1f8000e8);
+    clear_f4ee8_u16s(&DAT_1f8001f0);
+    reset_combat_slots();
     FUN_80175fec(0x1f800000,&DAT_1f8000e8,DAT_1f80009a);
     FUN_80175fec(0x1f800000,&DAT_1f8001f0,DAT_1f80009a);
     FUN_80172a34((int)DAT_1f800099);
     FUN_8016d478(0x1f800000);
-    FUN_801360cc();
-    FUN_8012aeec(0x1f800000);
+    clear_f0300_records();
+    frame_tick(0x1f800000);
     DAT_1f800001 = '\a';
 switchD_8016fd64_caseD_7:
     iVar5 = FUN_8012aaa8();
@@ -875,12 +875,12 @@ LAB_80170714:
     FUN_8012b23c(0x1f800000);
     FUN_80136ddc();
     FUN_801560f8(1);
-    FUN_80155e30();
+    blk_1f26c0_init();
     FUN_80156ef4(0x204,0,0);
     FUN_8012aa6c(1,8);
     DAT_1f800010 = 0;
     DAT_1f80009e = '\0';
-    FUN_80136fb0(1);
+    task_table_init(1);
     FUN_801274fc(0,0,0);
     DAT_1f800001 = '\f';
     break;
@@ -898,7 +898,7 @@ LAB_80170714:
     iVar1 = _DAT_1f800008;
     goto joined_r0x8016fd30;
   }
-  FUN_8012aeec(0x1f800000);
+  frame_tick(0x1f800000);
   iVar4 = _DAT_1f80000c;
   iVar1 = _DAT_1f800008;
   goto joined_r0x8016fd30;
@@ -991,7 +991,7 @@ LAB_8015c900:
       }
       if ((DAT_1f800001 == 0) && (iVar2 = FUN_8012aaa8(), iVar2 == 0)) {
         FUN_8012cbc0(2,0,0);
-        iVar2 = FUN_8012c0b4(0);
+        iVar2 = intro_movie_state(0);
         if (iVar2 != 0) {
           FUN_80156ef4(0x203,0,0);
           local_54 = FUN_8015caa8;
@@ -1022,14 +1022,14 @@ LAB_8015c900:
           FUN_8012cbc0(2,0,0);
           _DAT_801e8508 = 0;
           _DAT_801e8518 = 0x30;
-          FUN_8012ae3c(0x1f800000,0xffffffff);
+          battle_session_arm(0x1f800000,0xffffffff);
           DAT_1f800001 = DAT_1f800001 + 1;
           goto LAB_8015c900;
         }
       }
     }
 LAB_8015ca68:
-    FUN_8012aeec(0x1f800000);
+    frame_tick(0x1f800000);
   } while( true );
 }
 
@@ -1136,7 +1136,7 @@ LAB_8015bbd8:
         goto joined_r0x8015b9e0;
       }
       if (((DAT_1f800001 == 0) && (iVar2 = FUN_8012aaa8(), iVar2 == 0)) &&
-         (iVar2 = FUN_8012c0b4(0), iVar2 != 0)) {
+         (iVar2 = intro_movie_state(0), iVar2 != 0)) {
         FUN_80156ef4(0x203,0,0);
         local_5c = FUN_8015bdc0;
         local_62 = 0xb;
@@ -1165,13 +1165,13 @@ LAB_8015bbd8:
         FUN_8012cbc0(2,0,0);
         _DAT_801e8508 = 0;
         _DAT_801e8518 = 0x30;
-        FUN_8012ae3c(0x1f800000,0xffffffff);
+        battle_session_arm(0x1f800000,0xffffffff);
         DAT_1f800001 = DAT_1f800001 + 1;
         goto LAB_8015bbd8;
       }
     }
 LAB_8015bd78:
-    FUN_8012aeec(0x1f800000);
+    frame_tick(0x1f800000);
   } while( true );
 }
 
@@ -1404,14 +1404,14 @@ LAB_80164d68:
           local_60[2] = 0xffffffff;
           local_60[1] = 0xffffffff;
           local_60[0] = -1;
-          FUN_8012ae3c(0x1f800000,0);
+          battle_session_arm(0x1f800000,0);
           local_48 = 1000;
           DAT_1f800001 = DAT_1f800001 + 1;
           goto LAB_80164830;
         }
       }
 LAB_80164e34:
-      FUN_8012aeec(0x1f800000);
+      frame_tick(0x1f800000);
       if (DAT_1f800001 == 1) {
         FUN_8016700c(0x1f800000,1);
       }
@@ -1607,7 +1607,7 @@ LAB_801654c0:
         FUN_8012bf0c(0,0,4,7);
         FUN_8012c374(0x1f800000,_DAT_1f800008,0x23);
 LAB_801658b4:
-        FUN_8012aeec(0x1f800000);
+        frame_tick(0x1f800000);
       }
       else {
         if (DAT_1f800001 < 4) {
@@ -1623,7 +1623,7 @@ LAB_80165090:
           }
           else if (DAT_1f800001 < 2) {
             if (((DAT_1f800001 != 0) || (iVar2 = FUN_8012aaa8(), iVar2 != 0)) ||
-               (iVar2 = FUN_8012c0b4(), iVar2 == 0)) goto LAB_801658b4;
+               (iVar2 = intro_movie_state(), iVar2 == 0)) goto LAB_801658b4;
             FUN_8012d090(1);
             FUN_8012cbc0(2,0,0);
             _DAT_1f80008c = 0;
@@ -1681,7 +1681,7 @@ LAB_801651e8:
             local_50 = -1;
             DAT_1f800001 = 3;
           }
-          FUN_8012ae3c(0x1f800000,0xffffffff);
+          battle_session_arm(0x1f800000,0xffffffff);
           goto LAB_801652bc;
         }
         if (DAT_1f800001 == 0xf0) {
@@ -1789,7 +1789,7 @@ LAB_80165ed0:
                            0x7d000000,iVar2,(int)_DAT_1f800022);
             }
 LAB_80166058:
-            FUN_8012aeec(0x1f800000);
+            frame_tick(0x1f800000);
             if ((param_1 == 0) && (DAT_1f800001 == 1)) {
               FUN_8016700c(0x1f800000,2);
             }
@@ -1858,7 +1858,7 @@ LAB_8016767c:
           _DAT_1f80008c = _DAT_1f80008c + 1;
         }
         else if (_DAT_1f80008c == 1) {
-          FUN_801360cc();
+          clear_f0300_records();
           _DAT_1f800148 = 0;
           _DAT_1f800250 = 0;
           goto LAB_8016767c;
@@ -1937,7 +1937,7 @@ LAB_8016767c:
           if (param_1 == 0) {
             unaff_s3 = 0x5dc;
           }
-          FUN_8012ae3c(0x1f800000,0xffffffff);
+          battle_session_arm(0x1f800000,0xffffffff);
           DAT_1f800001 = DAT_1f800001 + 1;
           goto LAB_80167620;
         }
@@ -1946,7 +1946,7 @@ LAB_8016767c:
         if (DAT_1f800001 == 0xf0) {
           FUN_8012b23c(0x1f800000);
           FUN_80136ddc();
-          FUN_80155e30();
+          blk_1f26c0_init();
           FUN_80156ef4(0x204,0,0);
           FUN_8012aa6c(1,8);
           DAT_1f800010 = 0;
@@ -1962,7 +1962,7 @@ LAB_8016767c:
         }
       }
 LAB_801677b4:
-      FUN_8012aeec(0x1f800000);
+      frame_tick(0x1f800000);
       FUN_801670c8(0x1f800000,1);
       if (DAT_1f800001 == 2) {
         FUN_8016700c(0x1f800000,0);
@@ -1983,7 +1983,7 @@ LAB_801677b4:
 void FUN_801689a8(void)
 
 {
-  FUN_8019e2d0(0);
+  cd_subsys_reset_wrap(0);
   FUN_8019e680();
   return;
 }
@@ -2111,7 +2111,7 @@ void FUN_801597ec(uint8_t *param_1,void *param_2,int *param_3)
 {
   FUN_8018f850(0);
   FUN_8018faec((uint32_t)(uintptr_t)param_2);
-  FUN_80195800(_DAT_801f4754,0x20);
+  cd_dir_table_set(_DAT_801f4754,0x20);
   FUN_801991e0(*param_3,param_3[1],0xffffffff,0,0);
   FUN_80159ce4(guest_of(param_1));
   return;
@@ -2207,10 +2207,10 @@ void FUN_80159ce4(undefined4 param_1)
   local_18[0] = 0x80;
   do {
     do {
-      iVar1 = FUN_80195d8c(2,param_1,0);
+      iVar1 = cd_mode_flag_set(2,param_1,0);
     } while (iVar1 == 0);
     do {
-      iVar1 = FUN_80195d8c(0xe,local_18,0);
+      iVar1 = cd_mode_flag_set(0xe,local_18,0);
     } while (iVar1 == 0);
     if (DAT_801c4580 == '\0') {
       FUN_8019a460(3);
@@ -2461,7 +2461,7 @@ void FUN_80155f64(void)
   _DAT_801f2678 = 7;
   _DAT_801f267c = 7;
   FUN_8019dad0();
-  FUN_80155dd0();
+  blk_1f26c0_init_b();
   FUN_801560f8(0);
   FUN_801561f0();
   FUN_801561c8(0);
@@ -2763,14 +2763,14 @@ extern void *fn_lookup(uint32_t addr);
 #define MB16(a)  (*(uint16_t *)guest_at(a))
 #define MB32(a)  (*(uint32_t *)guest_at(a))
 #define MB32S(a) (*(int32_t   *)guest_at(a))
-extern void FUN_801297dc(void *);
-extern void FUN_80129660(void *);
+extern void menu_stepper_input(void *);
+extern void menu_stepper_redraw(void *);
 extern void FUN_8012e58c(uint32_t,uint32_t,const void *,uint32_t,uint32_t,int32_t);
 extern char **PTR_s_NAME_ENTRY_801b13a8;
 extern char *PTR_s_MOVIES_AND_PICTURES_801b13c4;
 
 /* FUN_801294cc — generic 3-state stepper: byte+2 state (0->1),
- * byte+3 gate, callback at +0xc invoked once, then FUN_80129660. */
+ * byte+3 gate, callback at +0xc invoked once, then menu_stepper_redraw. */
 void FUN_801294cc(void *param_1)
 {
   uint8_t *p = (uint8_t *)param_1;
@@ -2781,14 +2781,14 @@ void FUN_801294cc(void *param_1)
     p[2] = 1;
   }
   if (*(char *)(p + 3) == '\0') {
-    FUN_801297dc(param_1);
+    menu_stepper_input(param_1);
     /* desc+0xc is a guest code address (e.g. 0x8015b190) — dispatch
      * through the fn map; arg = desc ptr, second arg = u16 @+8. */
     void *cb = fn_lookup(*(uint32_t *)(p + 0xc));
     if (cb != NULL)
       ((void (*)(void *,uint16_t))cb)(param_1,*(uint16_t *)(p + 8));
   }
-  FUN_80129660(param_1);
+  menu_stepper_redraw(param_1);
 }
 
 /* FUN_8012bf0c — scrolling banner stripes: walks DAT_801e8508/8518
@@ -2827,9 +2827,9 @@ uint32_t FUN_8012bf0c(int32_t param_1,int32_t param_2,int32_t param_3,int16_t pa
 
 /* FUN_8012a884 — cursor/sprite anim state machine: byte+0x9e selects
  * sprite variant via FUN_8018cc6c, byte+0x17 phase counter drives
- * FUN_801274e8/FUN_801274c4 transitions. param_1 = host ptr. */
+ * FUN_801274e8/frame_counter_bump transitions. param_1 = host ptr. */
 extern void FUN_801274e8(int32_t);
-extern void FUN_801274c4(int32_t);
+extern void frame_counter_bump(int32_t);
 extern uint32_t FUN_8018cc6c(uint32_t,int16_t,int16_t,int16_t,int16_t,uint32_t,int32_t);
 void FUN_8012a884(uint8_t *param_1)
 {
@@ -2871,7 +2871,7 @@ LAB_8012a9a0:
   }
   if (cVar1 < 0) {
     if (cVar1 != -2) return;
-    FUN_801274c4(1);
+    frame_counter_bump(1);
     param_1[0x17] = 0;
     return;
   }
@@ -2889,7 +2889,7 @@ LAB_8012a9a0:
 LAB_8012aa28:
       param_1[0x17] = 0xff;
       FUN_801274e8(1);
-      FUN_801274c4(0);
+      frame_counter_bump(0);
       return;
     }
     param_1[0x19] = param_1[0x19] - 1;
@@ -2904,7 +2904,7 @@ LAB_8012aa28:
 }
 
 /* FUN_8014f260 — character/stage-select orchestrator. DAT_1f800001
- * state machine: 0 = attract/wait (intro movie via FUN_8012c0b4,
+ * state machine: 0 = attract/wait (intro movie via intro_movie_state,
  * fighter setup via FUN_80153544 x2 + FUN_80149114), 6 = select
  * screen loop (cursor nav FUN_8014f1c8, confirm FUN_80148528,
  * stage preview FUN_8012bf0c, HUD FUN_8012c374), 0xf0/0xf1 = exit.
@@ -2912,7 +2912,7 @@ LAB_8012aa28:
  * locals in guest; reads only). param_1 = entry mode (0/1/2 battle,
  * 3/4 others). */
 extern void FUN_8018bf40(int32_t,int32_t,int32_t,int32_t);
-extern void FUN_8012e7cc(uint32_t,uint32_t,const void *,int32_t,int32_t,int32_t);
+extern void hud_text_d(uint32_t,uint32_t,const void *,int32_t,int32_t,int32_t);
 extern int32_t FUN_8014f1c8(int32_t,int32_t);
 
 extern void FUN_801487ac(uint32_t,uint8_t *,uint8_t *,uint8_t *,int32_t);
@@ -3143,7 +3143,7 @@ code_r0x8014f6c0:
                 if (iVar4 < 0) iVar4 += 3;
                 iVar3 = (int32_t)(int16_t)_DAT_1f800022;
                 if (iVar3 < 0) iVar3 += 7;
-                FUN_8012e7cc(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x801206bc),
+                hud_text_d(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x801206bc),
                              (iVar4 << 0xe) >> 16,iVar3 >> 3,3);
               }
             } else {
@@ -3153,7 +3153,7 @@ code_r0x8014f6c0:
               FUN_8012e58c(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47ec[uVar8 * 2]),
                            (int32_t)(((uint32_t)(t270[uVar8 * 2] + iVar4)) * 0x10000) >> 16,
                            (iVar3 + -0x34) * 0x10000 >> 16,5);
-              FUN_8012e7cc(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x801206b4),
+              hud_text_d(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x801206b4),
                            (iVar4 + 0x48) * 0x10000 >> 16,(iVar3 + -0x24) * 0x10000 >> 16,0);
               FUN_8012e58c(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47f0[uVar8 * 2]),
                            (int32_t)(((uint32_t)(t271[uVar8 * 2] + iVar4)) * 0x10000) >> 16,
@@ -3190,7 +3190,7 @@ LAB_80150558:
               FUN_8012e58c(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47ec[iVar4 * 2]),
                            (int32_t)((uint32_t)t270[iVar4 * 2] + 0), /* (&DAT_801b3270)[iVar4*2] u32? */
                            (iVar10 + -0x34) * 0x10000 >> 16,5);
-              FUN_8012e7cc(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x801206b4),0x48,
+              hud_text_d(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x801206b4),0x48,
                            (iVar10 + -0x24) * 0x10000 >> 16,0);
               FUN_8012e58c(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47f0[iVar4 * 2]),
                            (int32_t)((uint32_t)t271[iVar4 * 2] + 0),
@@ -3198,7 +3198,7 @@ LAB_80150558:
               if ((*(uint32_t *)(_g_system_config_ptr + 0x60) >> ((iVar4 + 0x10U) & 0x1f) & 1) != 0) {
                 iVar2 = (int32_t)(int16_t)_DAT_1f800022;
                 if (iVar2 < 0) iVar2 += 7;
-                FUN_8012e7cc(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x801206bc),8,
+                hud_text_d(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x801206bc),8,
                              iVar2 >> 3,3);
               }
             }
@@ -3206,7 +3206,7 @@ LAB_80150558:
               FUN_8012e58c(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47ec[iVar3 * 2]),
                            (int32_t)((uint32_t)t270[iVar3 * 2] + 0x140),
                            (iVar10 + -0x34) * 0x10000 >> 16,5);
-              FUN_8012e7cc(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x801206b4),0x188,
+              hud_text_d(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x801206b4),0x188,
                            (iVar10 + -0x24) * 0x10000 >> 16,0);
               FUN_8012e58c(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47f0[iVar3 * 2]),
                            (int32_t)((uint32_t)t271[iVar3 * 2] + 0x140),
@@ -3214,7 +3214,7 @@ LAB_80150558:
               if ((*(uint32_t *)(_g_system_config_ptr + 0x60) >> ((iVar3 + 0x10U) & 0x1f) & 1) != 0) {
                 iVar10 = (int32_t)(int16_t)_DAT_1f800022;
                 if (iVar10 < 0) iVar10 += 7;
-                FUN_8012e7cc(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x801206bc),
+                hud_text_d(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x801206bc),
                              (int32_t)((_DAT_1f800020 - 0x38) * 0x10000) >> 16,iVar10 >> 3,3);
               }
             }
@@ -3265,7 +3265,7 @@ LAB_80150558:
             if (param_1 < 2) unaff_s2 = 1;
             else if (param_1 < 4) unaff_s2 = 2;
           }
-          iVar4 = FUN_8012c0b4((int32_t)unaff_s2);
+          iVar4 = intro_movie_state((int32_t)unaff_s2);
           if (iVar4 != 0) {
             FUN_8012d090(1);
             FUN_8012cbc0(2,0,0);
@@ -3295,7 +3295,7 @@ LAB_8015060c:
         DAT_1f800001 = bVar1;
       }
 LAB_80150610:
-      FUN_8012aeec(0x1f800000);
+      frame_tick(0x1f800000);
     }
     if (DAT_1f800001 == 0xff) {
       if (local_c8 == 9) {
@@ -4442,7 +4442,7 @@ void FUN_80128898(uint32_t param_1)
 
 /* FUN_80129540 — menu stepper with button-wait: struct p (host ptr;
  * +2 state u8, +3 gate u8, +6 u16 max, +8 u16 cursor/timer, +0xc host
- * callback). param_2 = u32 button mask. If p[3]==0 runs FUN_801297dc
+ * callback). param_2 = u32 button mask. If p[3]==0 runs menu_stepper_input
  * input then spins on pad flags @0x1f80007e updating the timer
  * (0x4000 set: timer++ wraps 1..max; clear: timer-- wraps to max)
  * until bit `param_2 >> (timer&31)` fires, invokes cb(p,timer), then
@@ -4459,7 +4459,7 @@ void FUN_80129540(void *param_1, uint32_t param_2)
     p[2] = 1;                            /* b2 == 0 */
   }
   if (p[3] != 0) goto L_tail;
-  FUN_801297dc(param_1);
+  menu_stepper_input(param_1);
   /* first bit test on current timer */
   if (((param_2 >> (*(uint16_t *)(p + 8) & 31)) & 1) != 0) goto L_cb;
   for (;;) {
@@ -4577,7 +4577,7 @@ int32_t FUN_801358e8(int32_t param_1, int32_t param_2)
  * +0x38-count > 0 for either side); s0 = FUN_80153544(sideA,s1,0) |
  * FUN_80153544(sideB,s1,0); if s1[0x92]==4 -> FUN_8012b55c(s1,s0&0xffff);
  * if s16 s1[0x82]==0 and u8 s1[0x92]<5 dispatch table 0x80120a90:
- *  case0: side->bc u16+0x82=0xffff, FUN_8012fb04(bc,3), FUN_801360cc,
+ *  case0: side->bc u16+0x82=0xffff, FUN_8012fb04(bc,3), clear_f0300_records,
  *         u16 s1+0x8c=0, FUN_80128b28(s1), s1[0x92] lo=1.
  *  case1/2/3/4 fall-through chain: lo=2 (case1 only), lo=3,
  *         u32 sideA/B +0x60=0, FUN_80128bec(s1), lo=4, FUN_801513c8(s1),
@@ -4616,7 +4616,7 @@ L_eval:
     uint32_t bc = MB32(param_3 + 0xbc);
     *(uint16_t *)guest_at(bc + 0x82) = (uint16_t)-1;
     FUN_8012fb04(bc,3);
-    FUN_801360cc();
+    clear_f0300_records();
     *(uint16_t *)(s1 + 0x8c) = 0;
     FUN_80128b28(param_3);
     *(uint16_t *)(s1 + 0x92) =
@@ -4808,10 +4808,10 @@ void FUN_80128bec(uint32_t param_1)
 
 /* FUN_80129710 — masked menu-stepper sweep: cb(+0xc)(p,0x100); for
  * s0 = 1..u16(p+6): if bit (param_2 >> s0) set, paint row
- * (FUN_80129910 when s0 == u16(p+8) else FUN_80129944) and
+ * (menu_row_paint when s0 == u16(p+8) else menu_row_paint_b) and
  * cb(p,(s0+0x100)&0xffff); finally cb(p,0x1ff). p = host struct. */
-extern void FUN_80129910(void *);
-extern void FUN_80129944(void *);
+extern void menu_row_paint(void *);
+extern void menu_row_paint_b(void *);
 void FUN_80129710(void *param_1, uint32_t param_2)
 {
   uint8_t *p = (uint8_t *)param_1;
@@ -4823,8 +4823,8 @@ void FUN_80129710(void *param_1, uint32_t param_2)
   s0 = 1;
   for (;;) {
     if (((param_2 >> (s0 & 31)) & 1) != 0) {
-      if (s0 != *(uint16_t *)(p + 8)) FUN_80129944(param_1);
-      else                            FUN_80129910(param_1);
+      if (s0 != *(uint16_t *)(p + 8)) menu_row_paint_b(param_1);
+      else                            menu_row_paint(param_1);
       cb(param_1,(s0 + 0x100) & 0xffff);
     }
     s0++;
@@ -5017,46 +5017,46 @@ void FUN_8012ef6c(uint32_t param_1, uint32_t param_2)
   (void)d;
 }
 
-/* FUN_8012f164 — debug/status text dump: ten FUN_8012cc6c(format,
+/* FUN_8012f164 — debug/status text dump: ten print_dispatch(format,
  * fields...) calls reading s16/s8 fields of the guest struct a0 and
  * two pointer tables @0x801b1494 / 0x801b148c. a0 = guest u32. */
-extern void FUN_8012cc6c(const char *,...);
+extern void print_dispatch(const char *,...);
 void FUN_8012f164(uint32_t param_1)
 {
   uint8_t *s0 = (uint8_t *)guest_at(param_1);
 #define F2(a) ((const char *)guest_at(a))
-  FUN_8012cc6c(F2(0x8011fb5c),
+  print_dispatch(F2(0x8011fb5c),
                MB32(0x801b1494 + (uint32_t)((int32_t)MBS16(param_1 + 0x76) << 2)),
                MBS16(param_1 + 0x78));
-  FUN_8012cc6c(F2(0x8011fb6c),
+  print_dispatch(F2(0x8011fb6c),
                MBS16(0x1f800024),
                MB32(0x801b148c + (uint32_t)((int32_t)MBS16(param_1 + 0x7c) << 2)),
                MBS16(param_1 + 0x7e));
-  FUN_8012cc6c(F2(0x8011fb84), MBS8(param_1 + 0x80), MBS8(param_1 + 0x81));
-  FUN_8012cc6c(F2(0x8011fb98), MBS16(param_1 + 0x4a), MBS16(param_1 + 0x4c),
+  print_dispatch(F2(0x8011fb84), MBS8(param_1 + 0x80), MBS8(param_1 + 0x81));
+  print_dispatch(F2(0x8011fb98), MBS16(param_1 + 0x4a), MBS16(param_1 + 0x4c),
                MBS16(param_1 + 0x4e), MBS16(param_1 + 0x5a));
-  FUN_8012cc6c(F2(0x8011fbb0), MBS16(param_1 + 0x28), MBS16(param_1 + 0x2a),
+  print_dispatch(F2(0x8011fbb0), MBS16(param_1 + 0x28), MBS16(param_1 + 0x2a),
                MBS16(param_1 + 0x2c), MBS16(param_1 + 0x38));
-  FUN_8012cc6c(F2(0x8011fbc8), MBS16(param_1 + 0x5c), MBS16(param_1 + 0x5e),
+  print_dispatch(F2(0x8011fbc8), MBS16(param_1 + 0x5c), MBS16(param_1 + 0x5e),
                MBS16(param_1 + 0x60), MBS16(param_1 + 0x6c));
-  FUN_8012cc6c(F2(0x8011fbe0), MBS16(param_1 + 0x8a));
-  FUN_8012cc6c(F2(0x8011fbf4), MBS16(param_1 + 0x52), MBS16(param_1 + 0x54),
+  print_dispatch(F2(0x8011fbe0), MBS16(param_1 + 0x8a));
+  print_dispatch(F2(0x8011fbf4), MBS16(param_1 + 0x52), MBS16(param_1 + 0x54),
                MBS16(param_1 + 0x56));
-  FUN_8012cc6c(F2(0x8011fc08), MBS16(param_1 + 0x30), MBS16(param_1 + 0x32),
+  print_dispatch(F2(0x8011fc08), MBS16(param_1 + 0x30), MBS16(param_1 + 0x32),
                MBS16(param_1 + 0x34));
-  FUN_8012cc6c(F2(0x8011fc1c), MBS16(param_1 + 0x64), MBS16(param_1 + 0x66),
+  print_dispatch(F2(0x8011fc1c), MBS16(param_1 + 0x64), MBS16(param_1 + 0x66),
                MBS16(param_1 + 0x68));
 #undef F2
   (void)s0;
 }
 
 /* FUN_80136090 — if a1 <= 0: store table ptr 0x801b15f4 + a0*8 into
- * guest 0x801f04a4 and run FUN_801360cc. */
+ * guest 0x801f04a4 and run clear_f0300_records. */
 void FUN_80136090(int32_t param_1, int32_t param_2)
 {
   if (param_2 <= 0) {
     MB32(0x801f04a4) = 0x801b15f4u + ((uint32_t)param_1 << 3);
-    FUN_801360cc();
+    clear_f0300_records();
   }
 }
 
@@ -5114,7 +5114,7 @@ void FUN_80153984(uint8_t *param_1, uint8_t *param_2, uint32_t param_3)
  * pointers; state 6 = three record-table sweeps (2 iters stride
  * 0x28, then 16 iters stride 0x28 from 0x578) plus a per-side
  * 0x8018c824 sprite emit when s5[0x9c]==3; other s6 -> idle.
- * Each pass ends with FUN_8012aeec; the sp+0x130 counter reaches 2
+ * Each pass ends with frame_tick; the sp+0x130 counter reaches 2
  * on the third state-6 pass -> FUN_8014a804(p1[3],p2[3]) and
  * s6 = 0xff exit (returns 0xff). Guest frame ptr sp+0x18 is stored
  * to 0x801f10bc; FUN_80148170 gets sp+0x118 (= frame+0x100). */
@@ -5362,7 +5362,7 @@ L_e7c:
       s1 = 0;                               /* unused: straight to tail */
     }
 L_tail:
-    FUN_8012aeec((intptr_t)param_1);
+    frame_tick((intptr_t)param_1);
     if (s6 == 0xff) break;
   }
   return 0xff;
@@ -5749,7 +5749,7 @@ L_dispatch:
     FUN_8012f2a8(MB32(s3 + 0xbc),fp,0x1f8001f0,s3);
     MW16(s3 + 0x96,MB16(MB32(s3 + 0xbc) + 0x76));
     if (s7 != 0) {
-      FUN_8012cc6c((const char *)guest_at(0x80121d70));
+      print_dispatch((const char *)guest_at(0x80121d70));
       FUN_8012f164(MB32(s3 + 0xbc));
     }
     return 0;
@@ -5822,7 +5822,7 @@ L_dispatch:
     }
     d &= 7;
     MW8(MB32(s3 + 0xc0) + 0xb,(uint8_t)d);
-    FUN_8012708c(MB8(MB32(s3 + 0xc0) + 0xb));
+    display_mode_setup(MB8(MB32(s3 + 0xc0) + 0xb));
     FUN_8012748c();
     FUN_8012ef6c(MB32(s3 + 0xbc),s3);
     return 0;
@@ -6581,7 +6581,7 @@ int32_t FUN_80154930(uint8_t *param_1,uint8_t *param_2,uint32_t param_3)
       if ((uint32_t)(MB8(s1 + 0x9a) - 2) < 2)
         MW16(MB32(g2 + 0xbc) + 0x82,(uint16_t)-1);
       FUN_8012fb04(MB32(g2 + 0xbc),3);
-      FUN_801360cc();
+      clear_f0300_records();
       MW16(s1 + 0x8c,0);
       MW16(s1 + 0x92,(MB16(s1 + 0x92) & 0xff00) | 1);
       FUN_80128b28(s1);
@@ -6591,7 +6591,7 @@ int32_t FUN_80154930(uint8_t *param_1,uint8_t *param_2,uint32_t param_3)
     if (c == 0) {
       MW16(MB32(g2 + 0xbc) + 0x82,(uint16_t)-1);
       FUN_8012fb04(MB32(g2 + 0xbc),3);
-      FUN_801360cc();
+      clear_f0300_records();
       c = MBS16(s1 + 0x8c);
     }
     cond = (c < 10);
@@ -6902,7 +6902,7 @@ L_ewin:
   case 15: {
     int32_t a0v, hi, q, rem;
     MW8(s1 + 0xb1,1);                    /* jal delay slot: always */
-    if (MBS16(s1 + 0x8c) == 0) FUN_80136fb0(1);
+    if (MBS16(s1 + 0x8c) == 0) task_table_init(1);
     FUN_8012ea18(1,-1,-1,-1);
     FUN_8012ea18(2,-1,-1,-1);
     FUN_801560f8(3);
@@ -7532,8 +7532,8 @@ L_tail:                                       /* 0x80154258 */
  * (s1/s2), a2 = guest battle state (s0), a3 = flag (s4).
  * s3 = FUN_80143ac8(s1[2]) when s1[1]==0. Advances timer @s0+0x8c,
  * beeps via FUN_80156ef4, FUN_8015143c(0x10), FUN_801513c8, then the
- * phase-0 arm: FUN_8012fb04(bc,0xa/0xb), @s0+0xb0=1, FUN_80136fb0(1),
- * FUN_801360cc, FUN_80128c18(s0,2). Optional (s4&0x800) cancel via
+ * phase-0 arm: FUN_8012fb04(bc,0xa/0xb), @s0+0xb0=1, task_table_init(1),
+ * clear_f0300_records, FUN_80128c18(s0,2). Optional (s4&0x800) cancel via
  * FUN_80128ef0 + same reset writing 0xb. Tail: FUN_80128f98(s0,-1)==4
  * gate -> FUN_80128ef0 + reset writing 0xb. Returns 0. */
 void FUN_80154368(uint8_t *param_1,uint8_t *param_2,uint32_t param_3,
@@ -7555,16 +7555,16 @@ void FUN_80154368(uint8_t *param_1,uint8_t *param_2,uint32_t param_3,
   if (MBS16(s0 + 0x8c) == 0) {
     FUN_8012fb04(MB32(s0 + 0xbc),(s2[2] != 0) ? 0xb : 0xa);
     MW8(s0 + 0xb0,1);
-    FUN_80136fb0(1);
-    FUN_801360cc();
+    task_table_init(1);
+    clear_f0300_records();
     FUN_80128c18(s0,2);
   }
   /* 0x80154458: cancel arm needs counter >= 0x14 and s4 bit 0x800 */
   if (MBS16(s0 + 0x8c) >= 0x14 && (s4 & 0x800u) != 0) {
     /* 0x80154468: armed cancel */
     FUN_80128ef0(s0);
-    FUN_80136fb0(1);
-    FUN_801360cc();
+    task_table_init(1);
+    clear_f0300_records();
     MW16(s0 + 0x92,(uint16_t)((MB16(s0 + 0x92) & 0xff00) | 0xb));
     MW16(s0 + 0x8c,0);
     MW16(MB32(s0 + 0xbc) + 0x82,0xfffd);
@@ -7585,8 +7585,8 @@ void FUN_80154368(uint8_t *param_1,uint8_t *param_2,uint32_t param_3,
   }
   if (FUN_80128f98(s0,-1) != 4) return;         /* v0 = 0 */
   FUN_80128ef0(s0);
-  FUN_80136fb0(1);
-  FUN_801360cc();
+  task_table_init(1);
+  clear_f0300_records();
   MW16(s0 + 0x92,(uint16_t)((MB16(s0 + 0x92) & 0xff00) | 0xb));
   MW16(s0 + 0x8c,0);
   MW16(MB32(s0 + 0xbc) + 0x82,0xfffd);
@@ -7601,7 +7601,7 @@ void FUN_80154368(uint8_t *param_1,uint8_t *param_2,uint32_t param_3,
  * FUN_80152bdc(s0, sideA, sideB, order-flag). Otherwise merge
  * 0x80020000 flags and dispatch on @s0+0x92&0xf00 (0x200->5143c 0x14,
  * 0x100/0x300/0x400->5143c 0x13/0x11, else skip) with FUN_801577bc +
- * beep triplets; the 0x8c==0 arm does FUN_80136fb0/FUN_8016d478/
+ * beep triplets; the 0x8c==0 arm does task_table_init/FUN_8016d478/
  * FUN_80175fec x2 + field writes + FUN_8012fb04(bc,3). Tail merges
  * 0x40a10005/0x40a10007, optional 0x8c==2 record fixup, and the
  * >=0xa && s3&0x800 -> 0x1356 clamp. Returns 0. */
@@ -7677,7 +7677,7 @@ L_chk8c_b:                                      /* 0x300/0x400 tail */
 
 L_main:                                         /* 0x801547d4 */
   if (MBS16(s0 + 0x8c) != 0) goto L_868;
-  FUN_80136fb0(1);
+  task_table_init(1);
   FUN_8016d478(s0);
   FUN_80175fec(s0,s2,4);
   FUN_80175fec(s0,s1,4);
@@ -7747,7 +7747,7 @@ extern void FUN_801a4c60(uint32_t);
 extern void FUN_801a4c74(uint32_t);
 extern int32_t FUN_80175760(uint32_t,int32_t,int32_t,int32_t,int32_t);
 extern int FUN_80137fb8(int,int,int);
-extern void FUN_8012755c(void);
+extern void clear_battle_counters(void);
 
 #define B36_8(o)   (((uint8_t *)b36_sp)[(o)])
 #define B36_16(o)  (*(uint16_t *)((uint8_t *)b36_sp + (o)))
@@ -7860,7 +7860,7 @@ L_case0:                                      /* 0x8014cf38 */
     MW32(0x801f10c4, FUN_801a4ebc(2,2,0xbe0));
     FUN_801a42d0(1);
     FUN_801a42d0(2);
-    FUN_8012755c();
+    clear_battle_counters();
     FUN_80153544((uint8_t *)guest_at(B36_32(0x130)),0x1f800000,0);
     FUN_80153544((uint8_t *)guest_at(B36_32(0x134)),0x1f800000,0);
     FUN_80149114(0x1f800000,(uint8_t *)b36_sp + 0x18,0);
@@ -8468,7 +8468,7 @@ L_f20_ot:
       }
     }
 L_aeec:                                       /* 0x8014f164 */
-    FUN_8012aeec(0x1f800000);
+    frame_tick(0x1f800000);
     if (MB8(0x1f800001) != 0xff) continue;
     break;
   }
@@ -8919,8 +8919,8 @@ void FUN_80153ab0(uint8_t *param_1,uint8_t *param_2,uint32_t param_3,
     rec = MB32(s0 + 0xcc);
     if (MBS16(rec + 0xc) == 0) {
       FUN_8012fb04(MB32(s0 + 0xbc),s3 != 0 ? 0x10 : 0xe);
-      FUN_80136fb0(1);
-      FUN_801360cc();
+      task_table_init(1);
+      clear_f0300_records();
       FUN_80128c18(s0,1);
     }
     rec = MB32(s0 + 0xcc);
@@ -8939,8 +8939,8 @@ void FUN_80153ab0(uint8_t *param_1,uint8_t *param_2,uint32_t param_3,
     rec = MB32(s0 + 0xcc);
     if (MBS16(rec + 0xc) == 0) {
       FUN_8012fb04(MB32(s0 + 0xbc),s3 != 0 ? 0x11 : 0xf);
-      FUN_80136fb0(1);
-      FUN_801360cc();
+      task_table_init(1);
+      clear_f0300_records();
       FUN_80128d98(s0,1);
     }
     rec = MB32(s0 + 0xcc);
@@ -9063,7 +9063,7 @@ L_d10:                                        /* 0x80152d10 (cases 1/2,
   if ((MB16(s1 + 0x80) & 0xfu) != 0) {
     FUN_8015113c(s1);
     FUN_80151328(s2,s3,s1);
-    FUN_8016fbfc();
+    scratchpad_pair_init();
     MW8(s1 + 0x9e,0);                         /* j delay slot */
     MW8(s1 + 1,5);
   } else {
@@ -9408,7 +9408,7 @@ extern void FUN_80185c70(int,int);
 extern int FUN_80179ae0();
 extern int FUN_8015f6a0(int32_t);
 extern int FUN_80195ffc(int,int,int);
-extern void FUN_8012cf64(void *,const char *,...);
+extern void print_dispatch_selfdesc(void *,const char *,...);
 extern int FUN_8014bb34(int32_t);
 extern void FUN_80175e08(int,int);
 extern uint32_t FUN_8014b744(uint32_t,uint32_t,uint32_t,uint32_t,
@@ -9525,14 +9525,14 @@ void FUN_8015827c(void)
 }
 
 /* FUN_80129f1c — mode-string dispatch @0x80129f1c (17 insns):
- * a1==0 -> FUN_8012cf64(a0, 0x8011ec30); a1==1 -> same with
+ * a1==0 -> print_dispatch_selfdesc(a0, 0x8011ec30); a1==1 -> same with
  * 0x8011ec38; any other a1 returns without calling. */
 void FUN_80129f1c(uint32_t param_1,int32_t param_2)
 {
   if (param_2 == 0) {
-    FUN_8012cf64((void *)(uintptr_t)param_1, (const char *)0x8011ec30u);
+    print_dispatch_selfdesc((void *)(uintptr_t)param_1, (const char *)0x8011ec30u);
   } else if (param_2 == 1) {
-    FUN_8012cf64((void *)(uintptr_t)param_1, (const char *)0x8011ec38u);
+    print_dispatch_selfdesc((void *)(uintptr_t)param_1, (const char *)0x8011ec38u);
   }
 }
 
@@ -9689,7 +9689,7 @@ extern int FUN_8013b088(uint32_t,int32_t,uint32_t,uint32_t,uint32_t);
 extern void FUN_80141814(int32_t,int32_t,uint32_t,uint16_t,uint16_t,
                          int32_t,int32_t);
 extern void FUN_80138a24(int32_t,uint16_t,int32_t);
-extern void FUN_8018ce70(uint32_t,int32_t,int32_t,int32_t,int32_t,
+extern void sprite_node_emit_a(uint32_t,int32_t,int32_t,int32_t,int32_t,
                          uint32_t,uint32_t,uint32_t,uint32_t,int32_t);
 
 /* shared tail of the four 0x1f80038c descriptor-init variants:
@@ -9800,13 +9800,13 @@ void FUN_80140ca8(uint32_t param_1,uint32_t param_2)
 }
 
 /* FUN_801672a0 — dual sprite/attr emit @0x801672a0 (35 insns):
- * FUN_8018ce70(p1, p2-p4, p3, p4, p5, 0, p6, 0, p6, 3) then
+ * sprite_node_emit_a(p1, p2-p4, p3, p4, p5, 0, p6, 0, p6, 3) then
  * FUN_8018cc6c(p1, p2, p3, lh(0x1f800020), p5, 0, 0). p5/p6 are the
  * two incoming stack args. */
 void FUN_801672a0(uint32_t param_1,uint32_t param_2,uint32_t param_3,
                   uint32_t param_4,uint32_t param_5,uint32_t param_6)
 {
-  FUN_8018ce70(param_1, (int32_t)(param_2 - param_4), (int32_t)param_3,
+  sprite_node_emit_a(param_1, (int32_t)(param_2 - param_4), (int32_t)param_3,
                (int32_t)param_4, param_5, 0, param_6, 0, param_6, 3);
   FUN_8018cc6c(param_1, (int16_t)param_2, (int16_t)param_3,
                (int16_t)MBS16(0x1f800020u), (int16_t)param_4, param_5, 0);
@@ -9894,7 +9894,7 @@ extern int FUN_8015ab4c();
 extern int FUN_80167a64();
 extern int FUN_80163ab4();
 extern int FUN_8019e730();
-extern void FUN_801961ec(int32_t,uint8_t *);
+extern void cd_file_open(int32_t,uint8_t *);
 extern uint *FUN_80194960(undefined4 *,ushort *,uint *);
 extern uint32_t FUN_801756b0(int32_t,int16_t,int32_t,uint32_t,int32_t);
 extern uint32_t FUN_80194180(uint32_t *,uint32_t *,uint32_t,uint32_t);
@@ -10194,7 +10194,7 @@ uint32_t FUN_8014af0c(uint32_t param_1,uint32_t param_2,uint32_t param_3,
 
 /* FUN_80158da8 — BCD time -> frame count print @0x80158da8 (44
  * insns): d = (MB32(0x801bef80)-MB32(0x801bef84)-0x12c)/2 (trunc);
- * FUN_801961ec(d, buf); bcd = (buf[2]>>4)*10 + (buf[2]&0xf);
+ * cd_file_open(d, buf); bcd = (buf[2]>>4)*10 + (buf[2]&0xf);
  * frames = magic-div(bcd*100) by ~75; FUN_8018ef60(a0, 0x80120de0,
  * buf[0], buf[1], frames). */
 void FUN_80158da8(uint32_t param_1)
@@ -10208,7 +10208,7 @@ void FUN_80158da8(uint32_t param_1)
   memset(buf, 0, sizeof(buf));
   d = (int32_t)(MB32(0x801bef80u) - MB32(0x801bef84u)) - 0x12c;
   d = (d + (int32_t)((uint32_t)d >> 31)) >> 1;
-  FUN_801961ec(d, buf);
+  cd_file_open(d, buf);
   v1 = ((uint32_t)buf[2] >> 4) * 10u + ((uint32_t)buf[2] & 0xfu);
   x = v1 * 100u;
   prod = (int64_t)(int32_t)x * (int64_t)(int32_t)0x1b4e81b5;
@@ -10514,7 +10514,7 @@ void FUN_8016b6bc(uint32_t param_1,uint32_t param_2,uint32_t param_3,
 
 extern void FUN_8012dce4(uint32_t *,uint32_t,int32_t);
 extern int32_t FUN_80190a04(int32_t,uint32_t,uint32_t,uint32_t,...);
-extern void FUN_8019d3e0(uint8_t *);
+extern void cd_reg_window_update(uint8_t *);
 extern void FUN_801a482c(void);
 
 /* FUN_801479c4 — 8-tile GPU prim emitter @0x801479c4 (123 insns,
@@ -10621,7 +10621,7 @@ void FUN_80147bb4(uint32_t param_1,int32_t param_2,int32_t param_3,
  * volume from table 0x801b33bc[(MB8(t1+1)>>4)*2] scaled by
  * MB16(t1+4)>>7; else +8=+0xa=a3. +0x1c = MB32(0x801f26e0+
  * MB16(t0)*4); +0x3a=MB16(t0+4); +0x3c=MB16(t0+6);
- * FUN_8019d3e0(0x801f2650). */
+ * cd_reg_window_update(0x801f2650). */
 void FUN_80157188(uint32_t param_1,uint32_t param_2,int32_t param_3,
                   int32_t param_4)
 {
@@ -10651,7 +10651,7 @@ void FUN_80157188(uint32_t param_1,uint32_t param_2,int32_t param_3,
   MW32(P + 0x1c, MB32(0x801f26e0u + MB16(t0) * 4u));
   MW16(P + 0x3a, MB16(t0 + 4));
   MW16(P + 0x3c, MB16(t0 + 6));
-  FUN_8019d3e0((uint8_t *)guest_at(P));
+  cd_reg_window_update((uint8_t *)guest_at(P));
 }
 
 /* FUN_8012ce30 — print-mode dispatch @0x8012ce30 (76 insns, 9
@@ -11041,7 +11041,7 @@ void FUN_8014c76c(void)
 
 /* FUN_80158528 — quad gauge emit @0x80158528 (91 insns, 5 args).
  * t0/s7/s2/fp = MB32(0x801f46f8/36e8/36e4/46f0)>>10. mode = stk arg:
- * 0 -> FUN_8012cc6c(0x80120d98) + FUN_8012cc6c(0x80120dac,
+ * 0 -> print_dispatch(0x80120d98) + print_dispatch(0x80120dac,
  * MB32(0x801f36e8), MB32(0x801f46f0)); 1 -> four FUN_8018cc6c
  * border quads at head+0/+4 with y = a3+0x20 - edge, heights
  * 0xffff/0x60; else nothing. */
@@ -11054,8 +11054,8 @@ void FUN_80158528(uint32_t param_1,uint32_t param_2,uint32_t param_3,
   uint32_t fp = MB32(0x801f46f0u) >> 10;
   uint32_t s0, s1, s4;
   if (param_5 == 0) {
-    FUN_8012cc6c((const char *)guest_at(0x80120d98u));
-    FUN_8012cc6c((const char *)guest_at(0x80120dacu),
+    print_dispatch((const char *)guest_at(0x80120d98u));
+    print_dispatch((const char *)guest_at(0x80120dacu),
                  MB32(0x801f36e8u), MB32(0x801f46f0u));
   } else if (param_5 == 1) {
     s0 = param_4 + 0x20;
@@ -11264,7 +11264,7 @@ extern void FUN_8019da44(uint8_t *);
  * 0x8012ddf0), 2 -> (0x8012ddfc); high nibble: !=0 ->
  * 0x8012de08 else 0x8012de10 (remaining ce30 args are
  * caller-leftover regs in the original; zeroed here). Then
- * FUN_801961ec time-decode + FUN_8012cc6c label prints for the
+ * cd_file_open time-decode + print_dispatch label prints for the
  * four fields at s2+0x20/0x24/0x28, FUN_8019da44 24-byte status
  * dump at sp+0x20 printed 12+12 via 0x80120e84/0x80120e8c. */
 void FUN_80158e5c(void)
@@ -11284,28 +11284,28 @@ void FUN_80158e5c(void)
   } else {
     FUN_8012ce30(0x8012de10u,0,0,0,0,0,0,0,0);
   }
-  FUN_801961ec((int32_t)MB32(s2 + 0x20), buf8);
-  FUN_8012cc6c((const char *)guest_at(0x8012de18u),
+  cd_file_open((int32_t)MB32(s2 + 0x20), buf8);
+  print_dispatch((const char *)guest_at(0x8012de18u),
                buf8[0], buf8[1], buf8[2]);
-  FUN_801961ec((int32_t)(MB32(s2 + 0x20) - MB32(s2 + 0x24)), buf8);
-  FUN_8012cc6c((const char *)guest_at(0x8012de30u),
+  cd_file_open((int32_t)(MB32(s2 + 0x20) - MB32(s2 + 0x24)), buf8);
+  print_dispatch((const char *)guest_at(0x8012de30u),
                buf8[0], buf8[1], buf8[2]);
-  FUN_801961ec((int32_t)MB32(s2 + 0x24), buf8);
-  FUN_8012cc6c((const char *)guest_at(0x8012de48u),
+  cd_file_open((int32_t)MB32(s2 + 0x24), buf8);
+  print_dispatch((const char *)guest_at(0x8012de48u),
                buf8[0], buf8[1], buf8[2]);
-  FUN_801961ec((int32_t)MB32(s2 + 0x28), buf8);
-  FUN_8012cc6c((const char *)guest_at(0x8012de60u),
+  cd_file_open((int32_t)MB32(s2 + 0x28), buf8);
+  print_dispatch((const char *)guest_at(0x8012de60u),
                buf8[0], buf8[1], buf8[2]);
   FUN_8019da44(buf24);
-  FUN_8012cc6c((const char *)guest_at(0x8012de78u));
+  print_dispatch((const char *)guest_at(0x8012de78u));
   for (s1 = 0; s1 < 0xc; s1++) {
-    FUN_8012cc6c((const char *)guest_at(0x80120e84u), buf24[s1]);
+    print_dispatch((const char *)guest_at(0x80120e84u), buf24[s1]);
   }
-  FUN_8012cc6c((const char *)guest_at(0x80120e8cu));
+  print_dispatch((const char *)guest_at(0x80120e8cu));
   for (s1 = 0xc; s1 < 0x18; s1++) {
-    FUN_8012cc6c((const char *)guest_at(0x80120e84u), buf24[s1]);
+    print_dispatch((const char *)guest_at(0x80120e84u), buf24[s1]);
   }
-  FUN_8012cc6c((const char *)guest_at(0x80120e8cu));
+  print_dispatch((const char *)guest_at(0x80120e8cu));
 }
 
 /* FUN_801690fc — record table expander variant @0x801690fc (118
@@ -13087,7 +13087,7 @@ int32_t FUN_8015d420(void)
       uint32_t c;
       if (FUN_8012aaa8() == 0) {
         FUN_8012cbc0(2, 0, 0);
-        if (FUN_8012c0b4(0) != 0) {
+        if (intro_movie_state(0) != 0) {
           FUN_80156ef4(0x203, 0, 0);
           FUN_801582c0();
           c = MB32(0x1f8000c0u);
@@ -13105,7 +13105,7 @@ int32_t FUN_8015d420(void)
           *(uint16_t *)(blk + 0x1a) = (uint16_t)MB8(c + 0xfu);
           MW32(0x801f8508u, 0);
           MW32(0x801f8518u, 0x30u);
-          FUN_8012ae3c(0x1f800000u, 0xffffffffu);
+          battle_session_arm(0x1f800000u, 0xffffffffu);
         }
       }
       s0 = 1;
@@ -13143,7 +13143,7 @@ int32_t FUN_8015d420(void)
         FUN_801294cc(blk);
         FUN_8012c374(0x1f800000u, MB32(0x1f800008u), 2);
       }
-      FUN_8012aeec(0x1f800000);
+      frame_tick(0x1f800000);
     }
     if (s0 == 0xff) return 1;
   }
@@ -13166,7 +13166,7 @@ int32_t FUN_8015ebf8(void)
       uint32_t c, i;
       if (FUN_8012aaa8() == 0) {
         FUN_8012cbc0(2, 0, 0);
-        if (FUN_8012c0b4(0) != 0) {
+        if (intro_movie_state(0) != 0) {
           uint32_t n = 0;
           FUN_80156ef4(0x203, 0, 0);
           *(uint16_t *)(blk + 0x06) = 3;
@@ -13195,7 +13195,7 @@ int32_t FUN_8015ebf8(void)
       }
       MW32(0x801f8508u, 0);
       MW32(0x801f8518u, 0x30u);
-      FUN_8012ae3c(0x1f800000u, 0xffffffffu);
+      battle_session_arm(0x1f800000u, 0xffffffffu);
       s3 = (s0 == 1) ? 1 : 0;
       s0 = 1;
       do_checks = 1;
@@ -13223,7 +13223,7 @@ int32_t FUN_8015ebf8(void)
         FUN_801294cc(blk);
         FUN_8012c374(0x1f800000u, MB32(0x1f800008u) + 4u, 6);
       }
-      FUN_8012aeec(0x1f800000);
+      frame_tick(0x1f800000);
     }
     if (s0 == 0xff) return s3;
   }
@@ -13243,7 +13243,7 @@ int32_t FUN_8016088c(void)
     if (s0 == 0) {
       if (FUN_8012aaa8() == 0) {
         FUN_8012cbc0(2, 0, 0);
-        if (FUN_8012c0b4(0) != 0) {
+        if (intro_movie_state(0) != 0) {
           FUN_80156ef4(0x203, 0, 0);
           *(uint16_t *)(blk + 0x06) = 2;
           *(uint16_t *)(blk + 0x08) = 2;
@@ -13257,7 +13257,7 @@ int32_t FUN_8016088c(void)
           *(uint16_t *)(blk + 0x16) = 0;
           MW32(0x801f8508u, 0);
           MW32(0x801f8518u, 0x30u);
-          FUN_8012ae3c(0x1f800000u, 0xffffffffu);
+          battle_session_arm(0x1f800000u, 0xffffffffu);
         }
       }
       s0 = 1;
@@ -13286,7 +13286,7 @@ int32_t FUN_8016088c(void)
         FUN_801294cc(blk);
         FUN_8012c374(0x1f800000u, MB32(0x1f800008u), 5);
       }
-      FUN_8012aeec(0x1f800000);
+      frame_tick(0x1f800000);
     }
     if (s0 == 0xff) return s2;
   }
