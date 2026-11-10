@@ -24,6 +24,7 @@ typedef void code(void);
 
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
+extern uint32_t guest_sp(void);
 void gauge_scale_fixed(short param_1,short param_2);
 void brightness_commit(undefined2 param_1);
 
@@ -350,8 +351,10 @@ void memcard_tick(void)
     case '\x14':
       iVar3 = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
       if (iVar3 == 2) {
-        cd_file_open(DAT_801bef80,(uint8_t *)guest_at(0x1f800f30));
-        cd_cmd_issue_async(2,0x1f800f30);
+        /* disasm-verified: sprintf/cd buf = $sp+0x10, frame -0x28
+         * (0x80157b44/0x80157f3c) -> entry_sp - 0x18. */
+        cd_file_open(DAT_801bef80,(uint8_t *)guest_at(guest_sp() - 0x18));
+        cd_cmd_issue_async(2,(int)(guest_sp() - 0x18));
         DAT_801bef6d = DAT_801bef6d + '\x01';
         return;
       }
@@ -484,8 +487,10 @@ void memcard_tick(void)
   case '\x14':
     iVar3 = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
     if (iVar3 == 2) {
-      cd_file_open(DAT_801bef80,(uint8_t *)guest_at(0x1f800f30));
-      cd_cmd_issue_async(2,0x1f800f30);
+      /* disasm-verified: sprintf/cd buf = $sp+0x10, frame -0x28
+       * (0x80157b44/0x80157f3c) -> entry_sp - 0x18. */
+      cd_file_open(DAT_801bef80,(uint8_t *)guest_at(guest_sp() - 0x18));
+      cd_cmd_issue_async(2,(int)(guest_sp() - 0x18));
       DAT_801bef6d = DAT_801bef6d + '\x01';
     }
     else if (iVar3 == 5) {
@@ -663,7 +668,7 @@ int memcard_file_flow(int param_1)
   undefined2 local_a2;
   undefined2 local_a0;
   undefined2 local_9e;
-  char *acStack_78;   /* guest-backed staging buffer @0x1f800f80 */
+  char *acStack_78;   /* guest-backed staging buffer: $sp+0x80, frame -0xf8 */
   undefined4 local_38;
   int local_34;
   int local_30;
@@ -674,8 +679,10 @@ int memcard_file_flow(int param_1)
   iVar4 = 0;
   iVar5 = 0;
   /* sprintf_core and announce_param_block_init both take host string pointers;
-   * back both with scratchpad 0x1f800f80 so one buffer serves both. */
-  acStack_78 = (char *)guest_at(0x1f800f80);
+   * back both with the guest stack buffer ($sp+0x80, frame -0xf8 ->
+   * entry_sp - 0x78, disasm-verified @0x8015f96c/0x8015fc68+) so one buffer
+   * serves both. */
+  acStack_78 = (char *)guest_at(guest_sp() - 0x78);
   local_2c = acStack_78;
   local_34 = -1;
   local_30 = 0;
@@ -771,24 +778,24 @@ LAB_8015fbfc:
       scroll_offset_set(0x10,0x68);
       switch(iVar4) {
       case 0:
-        sprintf_core((char *)guest_at(0x1f800f80),s_LOAD_FROM_MEMORY_CARD__s___80121788,
+        sprintf_core((char *)guest_at(guest_sp() - 0x78),s_LOAD_FROM_MEMORY_CARD__s___80121788,
                      SLOTSTR(iVar5));
         break;
       case 2:
-        sprintf_core((char *)guest_at(0x1f800f80),s_FORMAT_MEMORY_CARD__s___801217d8,SLOTSTR(iVar5));
+        sprintf_core((char *)guest_at(guest_sp() - 0x78),s_FORMAT_MEMORY_CARD__s___801217d8,SLOTSTR(iVar5));
         break;
       case 3:
-        sprintf_core((char *)guest_at(0x1f800f80),s_SAVING_TO_MEMORY_CARD__s__801217f0,SLOTSTR(iVar5));
+        sprintf_core((char *)guest_at(guest_sp() - 0x78),s_SAVING_TO_MEMORY_CARD__s__801217f0,SLOTSTR(iVar5));
         announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,local_2c,0x10,0x1000,0);
         scroll_offset_accumulate(0,0x10);
-        sprintf_core((char *)guest_at(0x1f800f80),s_OVER_WRITE_OK___8012180c);
+        sprintf_core((char *)guest_at(guest_sp() - 0x78),s_OVER_WRITE_OK___8012180c);
       default:
         break;
       case 5:
         announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_MEMORY_CARD_CHANGED__801217a4,0x10,0x1000,2);
         scroll_offset_accumulate(0,0x10);
       case 1:
-        sprintf_core((char *)guest_at(0x1f800f80),s_SAVE_TO_MEMORY_CARD__s___801217bc,SLOTSTR(iVar5))
+        sprintf_core((char *)guest_at(guest_sp() - 0x78),s_SAVE_TO_MEMORY_CARD__s___801217bc,SLOTSTR(iVar5))
         ;
       }
       announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,acStack_78,0x10,0x1000,0);
@@ -864,7 +871,7 @@ LAB_8015fc08:
       default:
         goto switchD_8015fc3c_default;
       }
-      sprintf_core((char *)guest_at(0x1f800f80),pcVar3,puVar2);
+      sprintf_core((char *)guest_at(guest_sp() - 0x78),pcVar3,puVar2);
 switchD_8015fc3c_default:
       announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,acStack_78,0x10,0x1000,0);
       scroll_offset_accumulate(0,0x10);
@@ -935,7 +942,7 @@ code_r0x8015ffac:
       default:
         goto switchD_8015ffe4_default;
       }
-      sprintf_core((char *)guest_at(0x1f800f80),pcVar3,puVar2);
+      sprintf_core((char *)guest_at(guest_sp() - 0x78),pcVar3,puVar2);
 switchD_8015ffe4_default:
       announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,local_2c,0x10,0x1000,0);
       scroll_offset_accumulate(0,0x10);
@@ -1025,7 +1032,7 @@ LAB_8016028c:
         }
         announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_NO_MEMORY_CARD_IS_INSERTED_IN_80121960,0x10,
                      0x1000,2);
-        sprintf_core((char *)guest_at(0x1f800f80),s_MEMORY_CARD__s___80121980,SLOTSTR(iVar5));
+        sprintf_core((char *)guest_at(guest_sp() - 0x78),s_MEMORY_CARD__s___80121980,SLOTSTR(iVar5));
         pcVar3 = local_2c;
       }
       else if (unaff_s2 == 7) {
@@ -1795,11 +1802,10 @@ void dialog_mode_mirror(int32_t param_1)
 int slot_name_measure(void *param_1,int32_t param_2)
 {
   uint32_t uVar1 = *(uint32_t *)guest_at(0x801b47ec + ((uint32_t)param_2 << 3));
-  /* sprintf_core formats into a host buffer; stage in scratchpad
-   * then copy back to the caller's host buffer. */
-  uint8_t *tmp = (uint8_t *)guest_at(0x1f800f40);
-  int32_t n = sprintf_core((char *)guest_at(0x1f800f40),(char *)guest_at(uVar1));
-  memcpy(param_1,tmp,(size_t)n + 1);
+  /* disasm-verified @0x801513fc: guest does sprintf(param_1, name) straight
+   * into the caller's buffer (a0), then str_len(param_1). param_1 is already
+   * a host pointer into guest memory, so no staging buffer is needed. */
+  sprintf_core((char *)param_1,(char *)guest_at(uVar1));
   return str_len((char *)param_1);
 }
 
@@ -5497,18 +5503,22 @@ int dialog_sel_dispatch_wide(uint32_t a0,uint32_t a1)
     case 0x105: {
         BDC0_E58C(0x801212bc,0x1000,flag);
       round_announce_block(ctx8,ctxc,(const void *)guest_at(0x801212cc),0x140,0x1000,flag);
-      sprintf_core((char *)guest_at(0x1f800f80),(char *)guest_at(0x801212d0),
+      sprintf_core((char *)guest_at(guest_sp() - 0x30),(char *)guest_at(0x801212d0),
                    (int32_t)*(int16_t *)(s4 + 0x1c));
-      BDC0_E58C(0x1f800f80,0x140,flag);
+      /* disasm-verified: buf = $sp+0x18, frame -0x48 (0x8015c3a4/0x8015c3b8)
+       * -> entry_sp - 0x30. */
+      BDC0_E58C(guest_sp() - 0x30,0x140,flag);
       scroll_offset_accumulate(0,0xc);
       return 0;
     }
     case 0x106: {
       BDC0_E58C(0x801212d4,0x1000,flag);
       round_announce_block(ctx8,ctxc,(const void *)guest_at(0x801212cc),0x140,0x1000,flag);
-      sprintf_core((char *)guest_at(0x1f800f80),(char *)guest_at(0x801212d0),
+      sprintf_core((char *)guest_at(guest_sp() - 0x30),(char *)guest_at(0x801212d0),
                    (int32_t)*(int16_t *)(s4 + 0x1e));
-      BDC0_E58C(0x1f800f80,0x140,flag);
+      /* disasm-verified: buf = $sp+0x18, frame -0x48 (0x8015c3a4/0x8015c3b8)
+       * -> entry_sp - 0x30. */
+      BDC0_E58C(guest_sp() - 0x30,0x140,flag);
       scroll_offset_accumulate(0,0xc);
       return 0;
     }
@@ -9077,6 +9087,8 @@ int32_t dev_byte_xfer(uint8_t *a0,int32_t a1)
   gv = *(uint32_t *)guest_at(0x801be3e4);
   g1 = (uint8_t *)mem_ptr(gv);
   {
+    /* disasm-verified @0x801a2048-0x801a2060: lui $v0,0x1f80; ori $v0,$v0,
+     * 0x1120; lhu $a0,($v0) — absolute HW register address, not scratchpad. */
     uint16_t hw = *(uint16_t *)guest_at(0x1f801120);
     *(uint32_t *)guest_at(0x801ff264) = 0x1ae;
     *(uint32_t *)guest_at(0x801ff260) = hw;
@@ -9122,7 +9134,9 @@ int32_t dev_byte_xfer(uint8_t *a0,int32_t a1)
  * @0x1f801128, or +0x10000 when that is 0) when count < limit
  * @0x801ff260; then (a0 - base) compared against limit @0x801ff264,
  * raw when flag u16 @0x1f801124 & 0x200 else >>3 logical; returns
- * !(v0 < lim) i.e. 1 when space exhausted. Disasm 0x801a4230-0x801a42cc. */
+ * !(v0 < lim) i.e. 1 when space exhausted. Disasm 0x801a4230-0x801a42cc.
+ * The 0x1f8011xx reads are absolute (lui $v0,0x1f80; ori $v0,$v0,0x1120/24/28)
+ * — hardware register addresses outside the 1KB scratchpad, kept as-is. */
 int32_t fifo_space_check(void)
 {
   uint32_t a0 = (uint32_t)*(uint16_t *)guest_at(0x1f801120);

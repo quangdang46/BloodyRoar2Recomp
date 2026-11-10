@@ -26,6 +26,7 @@ typedef long long longlong;
 
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
+extern uint32_t guest_sp(void);
 extern uint8_t *_g_system_config_ptr;
 extern uint8_t *_g_pad_buffer;
 extern int g_game_state;
@@ -1199,7 +1200,8 @@ void results_scoreboard(int param_1)
   int iVar7;
   undefined1 *puVar8;
   undefined **ppuVar9;
-  undefined1 *auStack_70 = (undefined1 *)guest_at(0x1f801220);
+  /* sprintf dst = guest $sp+0x18 (frame -0x88) = entry_sp-0x70 */
+  undefined1 *auStack_70 = (undefined1 *)guest_at(guest_sp() - 0x70);
   int local_60 [6];
   int local_48;
   int local_44;
@@ -1450,7 +1452,8 @@ void player_name_entry(void)
   undefined1 local_67;
   undefined1 local_60;
   undefined1 local_5f;
-  undefined1 *auStack_58 = (undefined1 *)guest_at(0x1f801200);
+  /* sprintf dst = guest $sp+0x38 (frame -0x90) = entry_sp-0x58 */
+  undefined1 *auStack_58 = (undefined1 *)guest_at(guest_sp() - 0x58);
   int local_50;
   undefined1 *local_4c;
   undefined1 *local_48;
@@ -2162,8 +2165,11 @@ void tile_stream_pump(void)
     _DAT_801f473c = 1;
   }
   { uint32_t rect[2] = { local_18, local_14 };
-    memcpy(guest_at(0x1f801000), rect, 8);
-    gpu_load_image_cmd(0x1f801000,*(undefined4 *)guest_at((uint32_t)(iVar2 * 4 + -0x7fe0b8f4))); }
+    /* guest rect lives at $sp+0x10 (frame -0x28) = entry_sp-0x18;
+     * gpu_load_image_cmd takes the guest address of the 8-byte rect. */
+    uint32_t gaddr = (uint32_t)(guest_sp() - 0x18);
+    memcpy(guest_at(gaddr), rect, 8);
+    gpu_load_image_cmd(gaddr,*(undefined4 *)guest_at((uint32_t)(iVar2 * 4 + -0x7fe0b8f4))); }
   return;
 }
 
@@ -4095,7 +4101,8 @@ void fight_timer_announce(uint32_t param_1,uint8_t *param_2,int32_t param_3)
   int32_t s2, s0;
   uint32_t a1v;
   int32_t q, r, t0, v1;
-  uint8_t *buf = (uint8_t *)guest_at(0x1f801240);
+  /* sprintf buf = guest $sp+0x18 (frame -0x38) = entry_sp-0x20 */
+  uint8_t *buf = (uint8_t *)guest_at(guest_sp() - 0x20);
   if (((*(uint16_t *)(cr + 2) >> 0xb) & 1) == 0) return;
   if (s1[0xb0] != 0) return;
   if (*(int16_t *)guest_at(*(uint32_t *)(s1 + 0xcc) + (0xa)) != 0) return;
@@ -4125,7 +4132,7 @@ void fight_timer_announce(uint32_t param_1,uint8_t *param_2,int32_t param_3)
     s0 += 8;
     sprintf_core((char *)buf,(const char *)guest_at(0x80120934),v1,t0,r);
   }
-  hud_text_blk(*(uint32_t *)(s1 + 8),*(uint32_t *)(s1 + 0xc),0x1f801240,s0,0x20,s2);
+  hud_text_blk(*(uint32_t *)(s1 + 8),*(uint32_t *)(s1 + 0xc),guest_sp() - 0x20,s0,0x20,s2);
 }
 
 /* stage_fight_announce — round/stage announce selector. Gates on char-record
@@ -4140,7 +4147,8 @@ void stage_fight_announce(uint32_t param_1,uint8_t *param_2)
   uint8_t *s0 = (uint8_t *)guest_at(param_1);
   uint8_t *s1 = param_2;
   uint8_t *v1, *c0;
-  uint8_t *buf = (uint8_t *)guest_at(0x1f801280);
+  /* sprintf buf = guest $sp+0x18 (frame -0x38) = entry_sp-0x20 */
+  uint8_t *buf = (uint8_t *)guest_at(guest_sp() - 0x20);
   int32_t a2, a3;
   if (((*(uint16_t *)guest_at(*(uint32_t *)(s0 + 0xc8) + (2)) >> 0xb) & 1) == 0) return;
   v1 = (uint8_t *)guest_at(*(uint32_t *)(s1 + 0x2c));
@@ -4206,9 +4214,9 @@ extern int str_len(char *);
 void champion_win_announce(uint32_t param_1,uint8_t *param_2,int32_t param_3)
 {
   uint8_t *s0 = (uint8_t *)guest_at(param_1);
-  /* guest sprintf/draw buffer is a stack slot (sp+0x18); the draw
-   * path stores a guest string addr, so back it with scratch 0x1f8013c0. */
-  uint8_t *buf = (uint8_t *)guest_at(0x1f8013c0);
+  /* guest sprintf/draw buffer is a stack slot: $sp+0x18 post-prologue
+   * (frame -0x40) = entry_sp-0x28 = guest_sp()-0x28. */
+  uint8_t *buf = (uint8_t *)guest_at(guest_sp() - 0x28);
   int32_t cnt, a2, a3;
   uint32_t dc = *(uint32_t *)guest_at(0x1f8000dc);
   if (((dc >> 4) & 3) == 0) return;
@@ -4312,7 +4320,8 @@ int32_t continue_countdown(uint32_t param_1,uint32_t param_2)
 {
   uint8_t *s0 = (uint8_t *)guest_at(param_1);
   uint32_t s1 = param_2;
-  uint8_t *buf = (uint8_t *)guest_at(0x1f8012c0);
+  /* sprintf buf = guest $sp+0x18 (frame -0x38) = entry_sp-0x20 */
+  uint8_t *buf = (uint8_t *)guest_at(guest_sp() - 0x20);
   int32_t v0 = 0;
   uint32_t dc;
   if (battle_state_gate(param_1,1) == 0) return 0;
@@ -10656,7 +10665,8 @@ void voice_desc_fill(uint32_t param_1,uint32_t param_2,int32_t param_3,
 
 /* print_mode_dispatch — print-mode dispatch @0x8012ce30 (76 insns, 9
  * args). v1 = MB32(0x1f80384): ==1 -> text_win_printf(p1..p9);
- * ==2 -> sprintf(buf, p2..p9) into scratch 0x1f802000, init the
+ * ==2 -> sprintf(buf, p2..p9) into the guest stack buf ($sp+0x28,
+ * frame -0x130 = entry_sp-0x108), init the
  * 0x1f8038c GPU block and text_render_simple(MB32(0x1f800008),
  * MB16(0x1f80000c), 0x1f8038c); else return. */
 void print_mode_dispatch(uint32_t param_1,uint32_t param_2,uint32_t param_3,
@@ -10668,7 +10678,8 @@ void print_mode_dispatch(uint32_t param_1,uint32_t param_2,uint32_t param_3,
     text_win_printf((int32_t)param_1, param_2, param_3, param_4,
                  param_5, param_6, param_7, param_8, param_9);
   } else if (v1 == 2) {
-    uint8_t *buf = (uint8_t *)guest_at(0x1f802000u);
+    /* sprintf buf = guest $sp+0x28 (frame -0x130) = entry_sp-0x108 */
+    uint8_t *buf = (uint8_t *)guest_at(guest_sp() - 0x108);
     uint32_t B = 0x1f8038cu;
     sprintf_core((char *)buf, (char *)guest_at(param_2),
                  param_3, param_4, param_5, param_6, param_7,
@@ -10685,7 +10696,7 @@ void print_mode_dispatch(uint32_t param_1,uint32_t param_2,uint32_t param_3,
     MW16(B + 0x12, 0);
     MW16(B + 0x14, 0);
     MW16(B + 0x16, 0x78dfu);
-    MW32(B + 0x1c, 0x1f802000u);
+    MW32(B + 0x1c, guest_sp() - 0x108);
     MW16(B + 0x18, 0);
     text_render_simple((uint32_t *)guest_at(MB32(0x1f800008u)),
                  MB16(0x1f80000cu), (int32_t)B);
@@ -11212,7 +11223,9 @@ void hp_bar_tick(void)
       MW32(0x801fc68cu, 0);
     }
   }
-  memcpy(guest_at(0x1f801000u), guest_at(a0 + 0x2c), 8);
+  /* guest rect = $sp+0x10 (frame -0x28) = entry_sp-0x18; the 8-byte
+   * copy and the gpu_load_image_cmd guest addr both target it. */
+  memcpy(guest_at((uint32_t)(guest_sp() - 0x18)), guest_at(a0 + 0x2c), 8);
   s0 = MB32(a0 + 0x14);
   MW32(a0 + 0x14, s0 < 1u ? 1u : 0u);
   if (MB32(0x801f473cu) != 0) {
@@ -11252,7 +11265,7 @@ void hp_bar_tick(void)
     MW32(0x801f473cu, lim);
   }
   idx = 0x801f4700u + s0 * 4u;
-  gpu_load_image_cmd(0x1f801000u, MB32(idx + 0xc));
+  gpu_load_image_cmd((uint32_t)(guest_sp() - 0x18), MB32(idx + 0xc));
 }
 
 /* ======== batch52 ======== */
@@ -12005,7 +12018,9 @@ void event_record_walk(uint32_t param_1)
   uint32_t s0 = param_1;
   uint32_t p, hw, hi, lo, v0, v1, a3;
   int32_t den;
-  uint8_t *buf = (uint8_t *)guest_at(0x1f8013c0u);
+  /* emit vec = guest $sp+0x10 (frame -0x30) = entry_sp-0x20 */
+  uint32_t gbuf = (uint32_t)(guest_sp() - 0x20);
+  uint8_t *buf = (uint8_t *)guest_at(gbuf);
   uint32_t d0, d1;
   if (MBS16(s0 + 0x18) != 0) {
     MW16(s0 + 0x18, MB16(s0 + 0x18) - 1u);
@@ -12066,12 +12081,12 @@ emit:
   d0 = MB32(s0);
   d1 = MB32(s0 + 4);
   v1 = MB32(s0 + 0xc) + (uint32_t)(int32_t)MBS16(p) * 12u;
-  MW16(0x1f8013c0u + 0, MB16(v1));
-  MW16(0x1f8013c0u + 2, MB16(v1 + 2));
-  MW16(0x1f8013c0u + 4, MB16(v1 + 4));
-  MW16(0x1f8013c0u + 6, MB16(v1 + 6));
-  MW16(0x1f8013c0u + 8, MB16(v1 + 8));
-  MW16(0x1f8013c0u + 10, MB16(v1 + 0xa));
+  MW16(gbuf + 0, MB16(v1));
+  MW16(gbuf + 2, MB16(v1 + 2));
+  MW16(gbuf + 4, MB16(v1 + 4));
+  MW16(gbuf + 6, MB16(v1 + 6));
+  MW16(gbuf + 8, MB16(v1 + 8));
+  MW16(gbuf + 10, MB16(v1 + 0xa));
   if (MBS16(s0 + 0x1c) == 0) {
     den = MBS16(s0 + 0x1a);
     a3 = den != 0 ? (uint32_t)(((int32_t)MBS16(s0 + 0x14) << 12) / den) : 0;
@@ -12570,7 +12585,7 @@ extern uint32_t fighter_reset_fx();
  * 11: firework_spawn(MB32(s1+0x20)+sx16(a3)*80+0x34)
  * 12: idx2 = (sx8(a3>>8)&0x7f); flag100&&bit15 -> idx2 =
  *    MB8(0x801b180c+idx2); rec = MB32(s1+0x20)+idx2*80; copy
- *    u16 rec+0x34/38/3c to scratch; emit_task_spawn_b(buf,
+ *    u16 rec+0x34/38/3c to the stack vec; emit_task_spawn_b(buf,
  *    MB32(0x801f0790+(a3&0xff)*4), MB32(0x801f0780+(a3&0xff)*4),0)
  * 13: p = fx_record_alloc(MB32(s1+0x20)+0x124,6,0x80000010,2,
  *    MB32(0x801b1d44)); if p: MW16(p,rand_lcg())
@@ -12586,7 +12601,8 @@ uint32_t desc_opcode_dispatch(uint32_t param_1,uint32_t param_2,
   uint32_t idx, p, rec, s0 = 0;
   int32_t sx8 = (int32_t)(int8_t)(a3 >> 8);
   int32_t sx16 = (int32_t)(int16_t)a3;
-  uint8_t *buf = (uint8_t *)guest_at(0x1f8013c0u);
+  /* case-12 vec = guest $sp+0x20 (frame -0x38) = entry_sp-0x18 */
+  uint8_t *buf = (uint8_t *)guest_at(guest_sp() - 0x18);
   if (v0in != 0) return s2 + 4;
   idx = (uint32_t)(int32_t)(int8_t)(MB16(s2) >> 8);
   if (idx >= 0x10) return s2 + 4;
@@ -12647,10 +12663,11 @@ uint32_t desc_opcode_dispatch(uint32_t param_1,uint32_t param_2,
     if (MB8(MB32(s1 + 0x38) + 0x100) != 0 && (sx16 & 0x8000))
       i2 = MB8(0x801b180cu + i2);
     rec = MB32(s1 + 0x20) + i2 * 80u;
-    MW16(0x1f8013c0u + 0, MB16(rec + 0x34));
-    MW16(0x1f8013c0u + 2, MB16(rec + 0x38));
-    MW16(0x1f8013c0u + 4, MB16(rec + 0x3c));
-    emit_task_spawn_b(0x1f8013c0u,
+    MW16((uint32_t)(guest_sp() - 0x18) + 0, MB16(rec + 0x34));
+    MW16((uint32_t)(guest_sp() - 0x18) + 2, MB16(rec + 0x38));
+    MW16((uint32_t)(guest_sp() - 0x18) + 4, MB16(rec + 0x3c));
+    /* emit_task_spawn_b takes a host pointer to the 8-byte vec */
+    emit_task_spawn_b((undefined4 *)buf,
                  MB32(0x801f0790u + (a3 & 0xffu) * 4u),
                  MB32(0x801f0780u + (a3 & 0xffu) * 4u), 0);
     break;

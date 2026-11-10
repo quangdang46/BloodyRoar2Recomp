@@ -68,10 +68,18 @@ int psx_game_backend_select(const char* serial) {
     return 0;
 }
 
+/* Clean-room source dispatch (game/ hand ports). Weak default: targets
+ * without src/clean_table.c fall through to generated code. When linked,
+ * clean_table.c's strong definition claims covered guest addresses first;
+ * uncovered addresses still take the generated path below. */
+__attribute__((weak))
+int clean_try_dispatch(CPUState* cpu, uint32_t addr) { (void)cpu; (void)addr; return 0; }
+
 /* Unprefixed interface: forwarded to the selected image. Returning the
  * fail-closed default before selection guarantees no regional code can run
  * against the wrong image during early boot. */
 int psx_dispatch_game_compiled(CPUState* cpu, uint32_t addr) {
+    if (clean_try_dispatch(cpu, addr)) return 1;
     const PsxGameBackend* be = psx_game_backend_active();
     return be ? be->dispatch_compiled(cpu, addr) : 0;
 }

@@ -20,6 +20,7 @@ typedef int64_t  longlong;
 
 extern void    *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
+extern uint32_t guest_sp(void);
 extern void    *fn_lookup(uint32_t addr);
 #define CONCAT22(hi,lo) (((undefined4)(uint16_t)(hi) << 16) | (uint16_t)(lo))
 #define CONCAT11(hi,lo) (((uint16_t)(uint8_t)(hi) << 8) | (uint8_t)(lo))
@@ -16131,7 +16132,9 @@ void hud_time_score_draw(uint32_t param_1,uint16_t param_2,int32_t param_3,int32
   int32_t iVar1, iVar2, iVar4, iVar5, iVar6, iVar7;
   int16_t sVar3;
   uint32_t uVar8;
-  char *auStack_48 = (char *)guest_at(0x1f801380);
+  /* auStack_48 = sp+0x18 (frame 0x60) -> guest_sp()-0x48;
+   * `addiu $a0,$sp,0x18` before sprintf jal in 0x80163e38. */
+  char *auStack_48 = (char *)guest_at((uint32_t)(guest_sp() - 0x48));
   iVar5 = *(int32_t *)(param_5 + 8) / 0x32;
   iVar6 = iVar5 / 0x3c;
   iVar5 = iVar5 % 0x3c;

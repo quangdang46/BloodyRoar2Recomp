@@ -15,6 +15,7 @@
 
 static uint8_t  guest_arena[0x200000];
 static uint8_t  guest_scratch[0x10000];
+void *guest_at(uint32_t addr);
 static uint8_t *guest_for(const char *name)
 {
     char buf[64]; int n=0; unsigned long best=0; int found=0;
@@ -24,8 +25,7 @@ static uint8_t *guest_for(const char *name)
     }
     if(n>=6){ char *e; unsigned long v=strtoul(buf,&e,16); if(v>best)best=v; found=1; }
     if(!found) return guest_arena;
-    if ((best & 0xfffff000UL) == 0x1f800000UL) return guest_scratch + (best & 0xffff);
-    return guest_arena + (best & 0x1fffffUL);
+    return (uint8_t *)guest_at((uint32_t)best);
 }
 
 /* guest_at — address-based twin of guest_for for sites that carry
@@ -36,6 +36,14 @@ void *guest_at(uint32_t addr)
     if ((addr & 0xfffff000UL) == 0x1f800000UL) return guest_scratch + (addr & 0xffff);
     return guest_arena + (addr & 0x1fffffUL);
 }
+
+/* guest_sp — current guest stack pointer (KSEG0 top-of-RAM by default).
+ * The runtime dispatch adapter sets this from cpu->gpr[29] before each
+ * clean-function call so sp-relative guest buffers resolve to real guest
+ * RAM. Standalone builds keep the arena-top default. */
+static uint32_t g_guest_sp = 0x801ff000;
+uint32_t guest_sp(void) { return g_guest_sp; }
+void guest_sp_set(uint32_t sp) { g_guest_sp = sp; }
 
 uint8_t * _g_pad_buffer;
 uint8_t * g_DAT_1f800015;

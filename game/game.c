@@ -349,6 +349,7 @@ extern void halt_baddata(void);
 extern void trap(int);
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
+extern uint32_t guest_sp(void);
 int mc_init_reset();
 int cd_mode_flag_set();
 int cd_init_session();
@@ -1527,12 +1528,16 @@ undefined4 scene_entry(int param_1,int param_2,int param_3)
     int *piVar5;
     undefined4 *puVar6;
     undefined4 uVar7;
-    undefined1 *local_48 = (undefined1 *)guest_at(0x1f801340);
+    /* local_48 = sp+0x18 (frame 0x60) -> guest_sp()-0x48;
+     * `sb $v0,0x18($sp)` + `addiu $a1,$sp,0x18` in 0x80159028. */
+    undefined1 *local_48 = (undefined1 *)guest_at((uint32_t)(guest_sp() - 0x48));
     undefined2 local_40;
     undefined2 local_3e;
     undefined2 local_3c;
     undefined2 local_3a;
-    undefined4 *local_38 = (undefined4 *)guest_at(0x1f801300);
+    /* local_38 = sp+0x28 (frame 0x60) -> guest_sp()-0x38;
+     * `swl/swr $t2,0x28($sp)` + `addiu $a0,$sp,0x28` in 0x80159028. */
+    undefined4 *local_38 = (undefined4 *)guest_at((uint32_t)(guest_sp() - 0x38));
 
     uVar7 = 0;
     DAT_801c43a0 = 0;
@@ -1904,7 +1909,9 @@ void print_dispatch(const char *param_1,...)
 {
   __builtin_va_list ap;
   uint32_t v[8];
-  uint8_t *buf = (uint8_t *)guest_at(0x1f802000);
+  /* buf = sp+0x28 (frame 0x130) -> guest_sp()-0x108;
+   * `addiu $a0/$v0,$sp,0x28` in 0x8012cc6c (stored to block+0x1c). */
+  uint8_t *buf = (uint8_t *)guest_at((uint32_t)(guest_sp() - 0x108));
   uint16_t *b;
   uint32_t mode = BR2B32(0x1f800384);
   int i;
@@ -1931,7 +1938,9 @@ void print_dispatch_selfdesc(void *param_1,const char *param_2,...)
 {
   __builtin_va_list ap;
   uint32_t v[8];
-  uint8_t *buf = (uint8_t *)guest_at(0x1f802100);
+  /* buf = sp+0x28 (frame 0x138) -> guest_sp()-0x110;
+   * `addiu $a0/$v0,$sp,0x28` in 0x8012cf64 (stored to block+0x1c). */
+  uint8_t *buf = (uint8_t *)guest_at((uint32_t)(guest_sp() - 0x110));
   uint16_t *b;
   uint8_t *self = (uint8_t *)param_1;
   uint32_t mode = BR2B32(0x1f800384);

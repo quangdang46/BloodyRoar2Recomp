@@ -63,6 +63,20 @@ endif()
 # full dataflow coverage instead of the base build's reduced tier. The mod is
 # default-off, so the faithful floor is unchanged; the single target keeps its
 # name (only the PSX_PGXP_VARIANT clone is suffixed).
+# Clean-room hand-ported source (game/) + generated CPUState adapters
+# (src/clean_table.c) + runtime memory bridge (src/clean_bridge.c).
+# SLES addresses only — wired into the European target exclusively.
+file(GLOB _BR2_CLEAN_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/game/*.c")
+list(FILTER _BR2_CLEAN_SOURCES EXCLUDE REGEX "selftest\\.c$")
+list(APPEND _BR2_CLEAN_SOURCES
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/clean_table.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/clean_bridge.c"
+)
+# game/ ports intentionally pun guest pointers through u32/host-pointer
+# casts; newer clang promotes incompatible-pointer-types to an error.
+set_source_files_properties(${_BR2_CLEAN_SOURCES} PROPERTIES
+    COMPILE_OPTIONS "-Wno-error=incompatible-pointer-types;-Wno-incompatible-pointer-types")
+
 psxrecomp_add_game_runtime(psx-runtime
     PGXP
     ENABLE_NETPLAY_IF_PRESENT
@@ -75,6 +89,7 @@ psxrecomp_add_game_runtime(psx-runtime
     APP_ICON "${CMAKE_CURRENT_SOURCE_DIR}/assets/psxrecomp.ico"
     PRELOADED_MODS_DIR "${_BR2_PRELOADED}"
     EXTRAS_SOURCES
+        ${_BR2_CLEAN_SOURCES}
         "${CMAKE_CURRENT_SOURCE_DIR}/src/compat/psxrecomp_vulkan_stub_compat.c"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/mods/br2_widescreen_plugin.c"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/mods/br2_enhancement_plugin.c"

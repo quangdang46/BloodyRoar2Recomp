@@ -21,6 +21,7 @@ typedef uint32_t uint;
 #endif
 
 extern void *guest_at(uint32_t addr);
+extern uint32_t guest_sp(void);
 
 uint cd_timer_read(int);
 void cd_busy_wait_fwd(int);
@@ -569,12 +570,14 @@ undefined4 cd_read_open(int param_1)
     }
   }
   cd_cmd_reset_wrap();
-  p18 = (uint8_t *)guest_at(0x1f800f00);
+  /* stack buf = sp+0x10 (frame 0x28) -> guest_sp()-0x18; verified
+   * `sb $s0,0x10($sp)` / `addiu $a1,$sp,0x10` in 0x80198908. */
+  p18 = (uint8_t *)guest_at((uint32_t)(guest_sp() - 0x18));
   p18[0] = (undefined1)DAT_801bcb8c;
   uVar4 = DAT_801bcb8c & 0xff;
   uVar1 = cd_mode_byte_read();
   if (((uVar4 != uVar1) || (param_1 != 0)) &&
-      (iVar3 = cd_mode_flag_set(0xe,0x1f800f00,0), iVar3 == 0)) {
+      (iVar3 = cd_mode_flag_set(0xe,(int)(guest_sp() - 0x18),0), iVar3 == 0)) {
     DAT_801bcb94 = 0xffffffff;
     return 0xffffffff;
   }
@@ -1192,16 +1195,18 @@ void cd_read_step_cb(char param_1,undefined4 param_2)
   if (param_1 == '\x01') {
     if (0 < (int)DAT_801bcb94) {
       if (DAT_801bcb90 == 0x200) {
+        /* stack buf = sp+0x10 (frame 0x30) -> guest_sp()-0x20;
+         * `addiu $a0,$sp,0x10` before jal 0x801962f0 in 0x801985c4. */
         if ((DAT_801bc7b4 & 1) == 0) {
-          cd_sync_wait_b(0x1f800e00,3);
+          cd_sync_wait_b((uint32_t)(guest_sp() - 0x20),3);
         }
         else {
           cd_cmd_dispatch3(0);
-          cd_sync_wait_c(0x1f800e00,3);
+          cd_sync_wait_c((uint32_t)(guest_sp() - 0x20),3);
           cd_busy_wait_fwd(0);
           cd_cmd_dispatch3(0x80198838);
         }
-        iVar1 = cd_stamp_to_sector(guest_at(0x1f800e00));
+        iVar1 = cd_stamp_to_sector(guest_at((uint32_t)(guest_sp() - 0x20)));
         if (iVar1 != (int)DAT_801bcba0) {
           cd_str_print(0x80125ac8);
           DAT_801bcb94 = -1;
@@ -4038,12 +4043,14 @@ void cd_mc_state_machine(void)
   }
 
   /* cd_result_wait_b_fwd is declared void in this TU but the guest tests $v0;
-   * call through an int-returning alias. Out buffer: guest scratch
-   * 0x1f800f80 stands in for sp+0x30 (only bytes 0/1 are read back). */
-  ret = ((int (*)(int,undefined4))cd_result_wait_b_fwd)(1,0x1f800f80);
+   * call through an int-returning alias. Out buffer: sp+0x30 (frame 0x40)
+   * -> guest_sp()-0x10; `addiu $a1,$sp,0x30` before jal 0x80195d44 in
+   * 0x80199440. Only bytes 0/1 are read back. */
+  ret = ((int (*)(int,undefined4))cd_result_wait_b_fwd)
+        (1,(undefined4)(guest_sp() - 0x10));
   if (ret == 5) return;
   /* guest: lbu x2 -> sh -> lhu & 4  ==  test bit 2 of out byte 0 */
-  if ((*(uint8_t *)guest_at(0x1f800f80) & 4) != 0) {
+  if ((*(uint8_t *)guest_at((uint32_t)(guest_sp() - 0x10)) & 4) != 0) {
     DB32(0x801bcc88) = 3;
     return;
   }
@@ -4395,7 +4402,10 @@ uint32_t cd_svc_5c(uint32_t a0,uint32_t a1)
 { return bios_svc(0xb0,0x5c,a0,a1); }
 
 /* cd_chan_cmd_submit — 7-arg channel command submit. a0 = channel slot,
- * entries are 16B at guest 0x1f801080 + a0*0x10:
+ * entries are 16B at guest 0x1f801080 + a0*0x10 (verified genuine fixed
+ * guest address: `lui $v1,0x1f80; ori $a1,$a1,0x1080` in 0x80199d88 —
+ * not an sp-relative mistranslation; the CD driver keeps its channel
+ * table in the 0x1f8 window):
  *   +0 = a1 (src ptr), +4 = (a2<<16)|a3, +8 = stack arg5 (a4).
  * entry+8 bit 0x10000000 busy -> bounded retry (one printf
  * 0x80125b18). Flag byte @*(*(u32*)0x801bcc5c)+2 bit (1<<a0) set when
@@ -4453,15 +4463,15 @@ uint32_t cd_chan_cmd_submit(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,
  * (a0 = a0>>4 sra) until bit0, memset work buf, svc B0/0x50 again,
  * svc B0/0x4f (ret!=1 -> printf 0x80125f78, skip poll), optional
  * B0/0x5c poll, then XOR-check response buf byte 0x7f vs request.
- * Guest work buf = sp+0x10 (0x80B); stand-in guest scratch
- * 0x1f800f00 (0x1f800f80.. is the 2-byte out buf used by cd_mc_state_machine).
+ * Guest work buf = sp+0x10 (0x80B) -> guest_sp()-0xa0 (frame 0xb0);
+ * `addiu $s2,$sp,0x10` / `addiu $a0,$sp,0x10` in 0x801a0660.
  * svc50 carry args: iter0 a0=-1 (post-checksum), later a0=buf+0x7f;
  * a1 = running xor. Disasm 0x801a0660-0x801a07a0. */
 int32_t cd_chan_cmd_pump(uint32_t a0,uint32_t a1,uint32_t a2)
 {
   uint32_t s0 = a0, s4 = a1;
   uint8_t *req = (uint8_t *)guest_at(a2);
-  uint8_t *rsp = (uint8_t *)guest_at(0x1f800f00);
+  uint8_t *rsp = (uint8_t *)guest_at((uint32_t)(guest_sp() - 0xa0));
   uint32_t x, r, a0carry = 0xffffffffu;
   int i, k;
   (void)s4;
@@ -4477,8 +4487,8 @@ int32_t cd_chan_cmd_pump(uint32_t a0,uint32_t a1,uint32_t a2)
     do {
       r = cd_svc_5c((uint32_t)((int32_t)s0 >> 4),s4); /* svc B0/0x5c */
     } while ((r & 1) == 0);
-    cd_bzero(0x1f800f00,0x80);                    /* memset work buf */
-    cd_svc_50(0x1f800f00,0);                       /* svc B0/0x50 */
+    cd_bzero((uint32_t)(guest_sp() - 0xa0),0x80); /* memset work buf */
+    cd_svc_50((uint32_t)(guest_sp() - 0xa0),0);    /* svc B0/0x50 */
     r = cd_svc_4f(s0,s4);                          /* svc B0/0x4f */
     if (r == 1) {
       do {
@@ -4490,7 +4500,7 @@ int32_t cd_chan_cmd_pump(uint32_t a0,uint32_t a1,uint32_t a2)
     x = 0;
     for (k = 0; k < 0x7f; k++) x ^= rsp[k];
     if (rsp[0x7f] == (uint8_t)(x & 0xff)) return 1;
-    a0carry = 0x1f800f7f;              /* guest: rsp+0x7f leftover */
+    a0carry = (uint32_t)(guest_sp() - 0xa0 + 0x7f); /* guest: rsp+0x7f leftover */
   }
   return 0;
 }

@@ -26,6 +26,7 @@ typedef int      int32_t_ghidra;
 
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
+extern uint32_t guest_sp(void);
 
 void gpu_load_image_cmd(undefined4,undefined4);
 void prim_packet_init_tex(int,int,int,uint,byte *);
@@ -103,14 +104,13 @@ static uint32_t gpu_call(uint32_t off, uint32_t a0, uint32_t a1,
 }
 #define GPU_ADDR(p) guest_of((const void *)(uintptr_t)(p))
 /* PSX callers hand gpu_load_image_cmd a stack RECT (x,y,w,h s16 x4); the
- * port has no guest stack, so stage the 8-byte rect in scratchpad
- * and pass its guest address. 0x1f801000 is past the CD channel
- * blocks (0x1f800e00/0x1f800f00), the save-dialog buffer
- * (0x1f800f80) and the CD scratch cells (0x1f800f30/0x1f800f40). */
+ * port has no guest stack, so stage the 8-byte rect in the arg-build
+ * area below the guest stack pointer (o32 sp-0x10..sp-1) — scratchpad
+ * is only 0x400 bytes, so no fixed 0x1f8xxxx stand-in is valid. */
 static uint32_t gpu_rect(const void *p)
 {
-    memcpy(guest_at(0x1f801000), p, 8);
-    return 0x1f801000;
+    memcpy(guest_at((uint32_t)(guest_sp() - 0x10)), p, 8);
+    return (uint32_t)(guest_sp() - 0x10);
 }
 #define DB16(a) (*(uint16_t *)guest_at(a))
 #define DB32(a) (*(uint32_t *)guest_at(a))
