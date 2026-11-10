@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include "cpu_state.h"
 #include "interrupts.h"
+#include "psx_cycles.h"
 
 extern uint8_t *memory_get_ram_ptr(void);
 extern uint8_t *memory_get_scratchpad_ptr(void);
@@ -180,6 +181,14 @@ static uint32_t svc_call(uint32_t table, uint32_t svc,
 void br2_irq_poll(void)
 {
     CPUState *cpu = g_clean_cpu;
+    /* Guest time must pass while clean C spins: psx_cycle_count only
+     * advances on dispatch boundaries, and a `while(flag==0)` loop never
+     * leaves C — CD due-cycle deadlines (Pause/Seek/ReadN completion),
+     * timer countdowns and the wait loops' own timeouts would all freeze.
+     * Charge a small quantum per poll; psx_advance_cycles services device
+     * deadlines so no event is lost, only coarsened — exactly what a guest
+     * spin loop does between its own dispatch boundaries. */
+    psx_advance_cycles(256u);
     if (cpu) psx_check_interrupts_at(cpu, cpu->gpr[31]);
 }
 
