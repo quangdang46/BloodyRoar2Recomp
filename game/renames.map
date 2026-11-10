@@ -715,3 +715,959 @@
 8018ca8c sprite_obj_alloc_emit
 8018d8e4 pad_record_init
 8012cbc0 print_mode_dispatch_b
+8018d150 cd_read_issue
+
+80198af0 cd_init_session
+
+80198e2c cd_read_poll
+
+8019b200 cd_chan_boot_fwd
+
+80198c90 cd_read_setup
+
+8019a460 cd_timer_read
+
+80195d44 cd_result_wait_b_fwd
+
+801961cc cd_busy_wait_fwd
+
+801961a8 cd_cmd_dispatch3
+
+80195d78 mc_session_b
+
+80195ec8 cd_cmd_issue_async
+
+80198908 cd_read_open
+
+80198590 cd_init_done_cb
+
+801968cc cd_result_wait_a
+
+80197ad0 cd_str_print
+
+801972a8 cd_cmd_state_reset
+
+8019a7d4 cd_intc_busy_read
+
+80196370 cd_response_process
+
+80195be0 cd_status_raw
+
+80195bf0 cd_mode_byte_read
+
+80195c10 cd_param_buf_get
+
+80195c88 cd_cmd_reset_wrap
+
+80195ffc cd_cmd_issue_sync
+
+801962f0 cd_stamp_to_sector
+
+80196b4c cd_result_wait_b
+
+80197698 cd_busy_wait
+
+801985c4 cd_read_step_cb
+
+80198838 cd_read_finish_cb
+
+801a161c cd_ctx_cmd_fwd
+
+801a169c cd_ctx_set_fwd
+
+80199fa4 cd_chan_reset_fwd
+
+80192ef0 cd_queue_push_wrap
+
+8019d1f0 cd_tbl8_dispatch9
+
+80193ce0 cd_drain_dispatch
+
+80195b4c cd_bios_cmd20
+
+80195b74 cd_bios_cmd40
+
+80195b9c cd_bios_cmd40_b
+
+80199f7c cd_bios16_status
+
+8019a15c cd_chan_reset_seq
+
+8019a20c cd_crit_c003
+
+8019a12c cd_chan_init_trio
+
+80191978 cd_blk5c_copy
+
+80191ea4 cd_blk14_copy
+
+801936b0 cd_timeout_arm
+
+8019a710 cd_ind_dispatch_14
+
+8019d1b0 cd_state9_store
+
+80191f88 cd_coord_pack_entry
+
+8019d170 cd_reg_rw_d2
+
+8019e6f0 cd_block7_init
+
+8019ef30 cd_pending_release
+
+8019746c cd_chan_reset_b
+
+8019af30 cd_init_stage_b
+
+8019ae10 cd_init_stage_a
+
+80191714 cd_gpu_callpair_a
+
+80191084 cd_gpu_defer_set
+
+80191488 cd_gpu_call_8
+
+8019a244 cd_hdr_clear_fixed
+
+8019ae68 cd_cb8_dispatch
+
+8019bc48 cd_win_shift_op
+
+8019842c cd_file_load_sync
+
+8019e730 cd_job_start_e
+
+80195c1c cd_init_mode_dispatch
+
+801915a0 cd_prim_list_a
+
+80193be4 cd_gpu_call_18
+
+8019cfc0 cd_dma_xfer_mode
+
+8019aca4 cd_state_blk_save
+
+8019a09c cd_subsys_init_full
+
+8019ac04 cd_state_blk_restore
+
+8019b89c cd_dma_xfer_start
+
+80190fd0 cd_gpu_call_34
+
+801980ec cd_file_rec_find
+
+801914e8 cd_gpu_rect_draw
+
+8019ef74 cd_submit5
+
+8019f168 cd_submit6
+
+801979f8 cd_response_pump
+
+80192634 cd_cmd_queue_load
+
+801938c8 cd_gpu_call_20
+
+801939b4 cd_gpu_call_1c
+
+8019a814 cd_chan_full_init
+
+801918a0 cd_prim_emit_a
+
+80193574 cd_queue_poll
+
+8019d030 cd_reg_bit40_ctrl
+
+8019f02c cd_job_sm5
+
+8019f220 cd_job_sm6
+
+8019f474 cd_job_submit5
+
+8019f6cc cd_job_submit6
+
+80191ee0 cd_vcall_38
+
+8019a688 cd_vcall_c
+
+8019a6b8 cd_vcall_8
+
+8019a6e8 cd_vcall_4
+
+8019a74c cd_vcall_14
+
+8019a77c cd_vcall_10
+
+8019a7ac cd_vcall_18
+
+8019799c cd_mmio_bit_wait
+
+80199184 cd_file_open_seq
+
+80191184 cd_gpu_call_3c
+
+8019a24c cd_hdr_clear
+
+80191778 cd_gpu_call_8b
+
+8019b310 cd_dma_chan_init
+
+80199100 cd_dir_entry_store
+
+8019d508 cd_seek_step
+
+8019b8a4 cd_dma_xfer_start_b
+
+80191670 cd_gpu_call_2c
+
+8019b7e8 cd_dma_chan_reset
+
+801915a8 cd_prim_list_b
+
+8019aabc cd_chan_slot_set
+
+8019af84 cd_cb7_run
+
+8019eda8 cd_file_open_wait
+
+801936e4 cd_pump_watchdog
+
+80193aa0 cd_gpu_call_18_b
+
+8019ae70 cd_cb8_run_param
+
+801279c8 ret_stub_b
+
+801279f4 stat_counter_accum
+
+8012b23c frame_present
+
+80167840 unlock_progress_scene_entry
+
+8016fcc4 battle_flow_state_machine
+
+8015c754 system_config_menu_a
+
+8015b9a0 system_config_menu_b
+
+8016362c menu_noop
+
+80164668 results_scoreboard
+
+80164ea4 player_name_entry
+
+80165cb4 transition_screen_flow
+
+80167330 battle_intro_flow
+
+801689a8 cd_subsys_boot
+
+801594a4 display_frame_present
+
+80159734 tile_stream_job_init
+
+801597ec tile_stream_open
+
+80159864 tile_stream_pump
+
+80159c24 tile_decode_wait
+
+80159ce4 cd_stream_mode_init
+
+80163154 stream_block_decode
+
+801560f8 match_mode_set
+
+801566a0 fighter_record_apply
+
+801566d4 page_table_ptr_set
+
+80155f64 boot_globals_init
+
+80146e38 attract_stage_load_step
+
+8014751c attract_menu_dispatch
+
+8012a72c pad_state_refresh
+
+8012aaa8 frame_divisor_get
+
+801689d0 heap_serialize_tag_08
+
+801697f4 heap_serialize_tag_0a
+
+80168c20 heap_serialize_tag_0c
+
+80168ae0 heap_serialize_tag_10
+
+80169aa4 heap_serialize_tag_12
+
+80168d90 heap_serialize_tag_14
+
+80169c08 heap_serialize_tag_16
+
+8016991c heap_serialize_tag_0e
+
+80169dfc heap_serialize_tag_40048
+
+80169ee0 heap_serialize_tag_4004c
+
+80169fe4 heap_serialize_tag_40050
+
+8016a0f8 heap_serialize_tag_40054
+
+8016a8ec heap_serialize_tag_01000008
+
+8016a9ac heap_serialize_tag_0100000c
+
+8016ad04 heap_serialize_tag_0100000a
+
+8016addc heap_serialize_tag_0100000e
+
+8016aeec heap_serialize_tag_01000010
+
+8016afc8 heap_serialize_tag_01000014
+
+8016b3c4 heap_serialize_tag_01000012
+
+8016b4c4 heap_serialize_tag_01000016
+
+8016a23c heap_serialize_tag_40049
+
+8016a50c heap_serialize_tag_4004d
+
+8016a384 heap_serialize_tag_40051
+
+8016a674 heap_serialize_tag_40055
+
+8016aaa4 heap_serialize_tag_01000009
+
+8016abb4 heap_serialize_tag_0100000d
+
+8016b0f8 heap_serialize_tag_01000011
+
+8016b234 heap_serialize_tag_01000015
+
+8016a82c heap_serialize_tag_01000000
+
+80142b3c angle_from_xy
+
+80142cd8 table_1f0ae0_clear
+
+80148e70 sprite_place_centered
+
+8016d244 fighter_tint_fade
+
+8012e078 hud_text_blk_alt
+
+8012e334 announce_param_block_init_b
+
+8012ea18 slot_triple_set
+
+8012ee0c rec_flag1_set
+
+80132084 target_angles_set
+
+80132224 target_depth_set
+
+8013237c pair_depth_set
+
+8013258c target_angles_depth_set
+
+801326d4 midpoint_angles_set
+
+801329d8 dual_target_track
+
+80132d70 dual_target_track_b
+
+80132fdc camera_track_shot
+
+80133328 camera_track_step
+
+80133828 u16_step_toward
+
+801338c4 fixed_approach_s16
+
+80135180 fighter_trail_emit
+
+80135724 burst_slot_active
+
+801941e0 prim_packet_init_tex
+
+80194840 gte_xform_accum
+
+80194960 gte_rtps_xform3
+
+80194b60 gte_xform3_nold
+
+80194db0 gte_mvmva_add
+
+801951b0 gte_rtps_xform1
+
+80195210 gte_rot_load
+
+80195240 gte_light_load
+
+80195270 gte_tr_load
+
+801952b0 gte_cw_d000_set
+
+80195398 gte_op_a00428
+
+801385dc orbit_fx_spawn
+
+801a42d0 task_heads_clear
+
+801a482c task_slot_step
+
+801a4aac task_slot_fns_run
+
+801a4e2c task_pool_init
+
+801a4ebc task_pool_alloc
+
+801a4fd0 task_pool_free
+
+801a6bb8 gp_slot48_set
+
+801a6bc4 gp_slot24_set
+
+801a7570 prim_batch_emit
+
+801a74f0 obj_flag34_clear
+
+801a9644 tween_seq_alloc
+
+801aad04 gte_matrix_base_set
+
+801ac070 lazy_node_wrap
+
+801ac334 prim_group_alloc
+
+801ad260 node_param_quad_set
+
+801871bc prim_list_gte_invoke
+
+8012d154 text_render_full
+
+8012dce4 text_render_simple
+
+80136114 particle_burst_spawn
+
+801365a4 particle_burst_update
+
+801380e4 radial_glow_draw
+
+8013b5a8 iris_wipe_spawn
+
+80186e64 gte_xform3_ip
+
+80186f5c gte_xform3_t_ip
+
+8018a4f8 prim_task_run
+
+8018b050 vec2_rot
+
+8018b0a0 angle_gte_vec
+
+8018b208 prim_list_persp_step
+
+8018d2ec gte_light_set
+
+8018d568 gte_xform_add_off
+
+8018dac0 angle_pair_rotmat
+
+80137048 vec_emit_spawn
+
+8013b12c iris_wipe_update
+
+80184f28 script_op_dispatch
+
+8018d244 trig_sin_lookup
+
+8018e028 angle_vec_build
+
+8018e4d0 rand_lcg
+
+801943d4 isqrt
+
+80194c50 gte_rtps_xform3_t
+
+80194f10 gte_xform1_ir
+
+80195160 gte_rtps_xform1_raw
+
+801a6f44 tween_ensure
+
+801a7498 obj_flag34_set
+
+801a99e0 tween_seek
+
+801aa4fc tween_seq_step
+
+801ac154 prim_group_gc
+
+801ace48 rect_prim_spawn
+
+80194280 isqrt_refine
+
+801954b4 cop2_clz
+
+80195500 gte_points_xform
+
+801a953c tween_track_alloc
+
+801a9c24 tween_apply
+
+801acdbc rect_prim_tick
+
+801acf94 prim_tag_set
+
+801acfb4 prim_packet_init
+
+801acfe4 verts_offset_apply
+
+801ad070 verts_rgb_apply
+
+801ad11c verts_add_apply
+
+801ad180 verts_sub_apply
+
+8013ab8c popup_spawn
+
+8013da2c confetti_burst_spawn
+
+8013f178 speech_bubble_spawn
+
+8013f5f8 effect_arg_set
+
+80140710 hit_spark_spawn
+
+80140b18 sprite_burst_spawn
+
+80141050 firework_spawn
+
+80185290 gte_mat_vec_swap
+
+80185404 trig_cos
+
+80185408 trig_sin
+
+80185e6c fighter_anim_advance
+
+801862a8 pose_chain_build
+
+8018dc18 euler_rotmat
+
+8014512c trig_vel_flat
+
+801451d4 trig_vel_up
+
+801452d0 trig_vel_diag
+
+801375e8 slot_mark2_set
+
+8018d298 lut_cos_q12
+
+8018d29c lut_sin_q12
+
+801561f0 deferred_cmd_reset
+
+8018d4fc vec2_rot_lut
+
+8017eb78 action_commit
+
+80142da0 pending_hit_a_clear
+
+80142d20 hit_chain_clear
+
+80142dd8 pending_hit_b_clear
+
+80178754 fighter_combat_reset
+
+80179478 launch_vel_update
+
+801796ec motion_turn_update
+
+80185f64 motion_blend_frame
+
+80156ef4 deferred_cmd_post
+
+8018d618 range_circle_test
+
+8018d1bc atan2_lut
+
+80142c9c hitrec_table_clear
+
+80185998 keyframe_blend_apply
+
+80185ddc keyframe_advance
+
+8018544c skeleton_pose_step
+
+80185568 anim_lerp_scalar
+
+801855b4 anim_lerp_vec3
+
+80185680 anim_lerp_vec3_raw
+
+801857f0 anim_lerp_packed4
+
+8018572c anim_lerp_packed3
+
+8018594c anim_lerp_aux
+
+80185048 part_matrix_compute
+
+80195050 matrix_vec3_apply
+
+80140ca0 fighter_reset_fx
+
+80157a00 memcard_tick
+
+8015f6a0 memcard_file_flow
+
+80156ff0 memcard_slot_poll
+
+80156d98 deferred_cmd_drain
+
+8015ab4c save_defaults_fill
+
+80167a64 save_block_init
+
+80163ab4 save_tables_commit
+
+8018babc dbg_marker_mode_set
+
+801561c8 brightness_commit
+
+801525c4 rec_timer_pair_clear
+
+80129f64 mode_flag_pair_set
+
+80129ff4 perm_table_load
+
+8012a030 perm_table_apply
+
+8012aa6c scroll_cfg_set
+
+8019a5d8 vsync_wait_n
+
+8012b49c flow_cfg_init
+
+8018e2f0 guest_bzero
+
+8012a650 attr_word_decode
+
+801568fc deferred_cmd_exec
+
+8015787c confirm_code_select
+
+8015a1e4 select_phase_update
+
+8015a69c match_setup_apply
+
+8015abc0 menu_sprite_load_sm
+
+8015ace4 menu_stepper_sm
+
+80165908 card_sprite_load_sm
+
+801660c0 card_fade_sm
+
+8016642c battle_round_init
+
+801670c8 round_banner_draw
+
+8016ddf8 countdown_display_sm
+
+801709fc menu_res_load_sm
+
+8016dadc ret_zero_d
+
+80161630 ret_zero_e
+
+8017f13c flag_table_dump
+
+8019e3d4 ret_zero_f
+
+801af494 elem_pair_flag100_wrap
+
+801af4bc elem_pair_flag8_wrap
+
+801af4e4 elem_pair_field_set_wrap
+
+801af518 elem_flag100_wrap
+
+801af540 elem_flag8_wrap
+
+801af568 elem_field_set_wrap
+
+801af59c op_wrap_a73e4
+
+801af5c4 slot_field_clear_wrap
+
+801af5e4 op_wrap_a7498
+
+801af604 op_wrap_a74f0
+
+801af678 op_wrap_ac9b8
+
+801af6a0 op_wrap_acb08
+
+801af7d4 mat3x3_build_wrap
+
+801af804 op_wrap_8da2c_a
+
+801af828 op_wrap_8de6c_a
+
+801af84c op_wrap_8e028_a
+
+801af870 op_wrap_8dac0_a
+
+801af89c op_wrap_8da2c_b
+
+801af8c0 op_wrap_8de6c_b
+
+801af8e4 op_wrap_8e028_b
+
+801af908 op_wrap_8dac0_b
+
+801a0620 cd_svc_dual
+
+801aadc4 op_ctx_guard_call
+
+801ae8a8 op_call_ad38c
+
+801ae8dc op_ad38c_store
+
+801ae91c op_ad38c_ctx_store
+
+801a5bd0 guard_callee_a0
+
+801a6538 guard_callee_a1
+
+801a5d90 guard_callee_b0
+
+801a66dc guard_callee_b1
+
+801a5f50 guard_callee_c0
+
+801a6350 guard_callee_c1
+
+801a6150 guard_callee_d0
+
+801a6880 guard_callee_d1
+
+801a86bc guard_dispatch_a
+
+801a8744 guard_dispatch_b
+
+801a87cc guard_dispatch_c
+
+801a8854 guard_dispatch_d
+
+801aa0e4 elem_pair_flag100
+
+801aa168 elem_pair_flag8
+
+801aa1e4 elem_pair_field_set
+
+801aa2c8 elem_flag100
+
+801aa320 elem_flag8
+
+801aa374 elem_field_set
+
+80166544 battle_frame_tick
+
+8017f398 fighter_contact_resolve
+
+8012ee48 camera_state_cache
+
+8012ecbc player_light_apply
+
+801809c8 fighter_pair_update
+
+8016cd8c fighter_flash_update
+
+8012fb10 battle_camera_step
+
+801737ec battle_hud_draw
+
+8017fb34 fighter_state_tick
+
+8017f7c4 fighter_atk_dir
+
+8017eb10 hit_pose_swap
+
+801458ac hit_elig_check
+
+80145970 hitbox_pair_test
+
+80143bb8 fighter_range_code
+
+80143c6c hit_scale_calc
+
+80143d38 hit_react_apply
+
+8014642c hitbox_wall_collide
+
+80145d84 camera_aim_offset
+
+8018d700 node_translate_tree
+
+80186b2c fighter_attach_run
+
+80179638 fighter_height_track
+
+8017fe60 hitbox_corners_xform
+
+80142df4 pad_edge_scan
+
+801434d4 cmd_input_parse
+
+80142f3c action_from_input
+
+801454f0 seg_sphere_hit
+
+801453a0 sphere_pt_hit
+
+8013f034 debug_strike_fx_a
+
+8013ee40 debug_strike_fx_b
+
+80140c90 noop_fn
+
+8018d5b4 rtps_pt_xform
+
+8018d788 node_xform_apply
+
+80143ac8 attr_flag_mask
+
+801289b4 pad_hist_record
+
+80181f20 fighter_script_fsm
+
+80145c90 pt_box_radius_test
+
+80137570 always_one
+
+80138a24 triple_track_spawn
+
+80138b00 xform_accum_spawn
+
+80139fd0 impact_fx_spawn
+
+8013b088 fx_record_alloc
+
+8013d6b0 emit_task_spawn
+
+8013ed98 emit_task_spawn_b
+
+80141814 quad_fx_spawn
+
+80142108 group_fx_spawn
+
+80133aa0 vec3_step_toward
+
+80133c08 vec3_step_toward_spd
+
+80133db0 vec3_step_toward_q
+
+80133f30 vec3_step_toward_q_spd
+
+80129f78 table_byte_next_a
+
+80129fc4 table_byte_next_b
+
+801721a4 sprite_strip_draw_dual
+
+801725a4 task_alloc_wrap_a
+
+80172640 task_alloc_wrap_b
+
+801726ec hud_cell_frame_set
+
+801727b8 hud_digits_color
+
+80172a04 fighter_height_check
+
+801756b0 sprite_rect_set_a
+
+80175708 sprite_rect_set_b
+
+80175760 sprite_rect_set_c
+
+8018d538 rtps_point_xform
+
+8018d540 rtps_point_xform2
+
+8018de6c rotmat_rtps_build
+
+8018df00 rotmat2_pair_build
+
+8018ef60 sprintf_core
+
+80186d20 rtps_basis_xform
+
+8018da2c rotmat2_build
+
+801a4308 task_node_alloc
+
+801a48fc task_node_free
+
+801a49d0 task_pools_tick
+
+801ad240 noop_a
+
+801ad38c fx_group_alloc
+
+801ad224 noop_b
+
+801ad284 noop_c
+
+801ac758 node_tree_free
+
+801ac9b8 prim_attr_word_set
+
+801a6bd0 prim_group_build
+
+801a72a0 tween_chan_alloc
+
+801a73e4 tween_dur_spread
+
+8018e510 str_len
+
+8018eca0 strchr_bounded
+
+8018f7e0 mem_move
+
+80137824 script_stream_tick
+
+80136b64 slot_height_proj
+
+80137098 battle_intro_fsm
+
+80137e70 task_alloc_wrap_c
+
+80137f0c task_alloc_wrap_d
+
+80137fb8 task_alloc_wrap_e
+
+80138040 task_alloc_wrap_f
+
+8013885c slot_triple_tick
+
+8013893c xform_accum_tick
+
+80138cec impact_fx_update
+
+80139e0c impact_fx_emit_tick
+
+8013adb4 fx_record_init
+
+80141610 quad_fx_update
+

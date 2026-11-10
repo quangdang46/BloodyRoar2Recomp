@@ -16,7 +16,7 @@
  *   FUN_80181db8  ani_fixup                — S4 cat[0..4] -> absolute
  *   slot_apply  slot_apply(ctrl, slot)   — dual-form (beast) select
  *   skeleton_init  skeleton_init(ctrl,desc) — S5 part/matrix init
- *   FUN_801862a8  part_link(ctrl)          — part linked-list build
+ *   pose_chain_build  part_link(ctrl)          — part linked-list build
  *   FUN_80175a7c  entry_setup(ctrl, group) — spawn offsets by group
  *   action_switch_guest  action_switch(ctrl,motion,idx) — S0 -> EV stream
  *
@@ -31,7 +31,7 @@
 
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
-extern uint16_t *FUN_8018dc18(uint32_t,uint32_t,uint32_t,uint16_t *);
+extern uint16_t *euler_rotmat(uint32_t,uint32_t,uint32_t,uint16_t *);
 extern int32_t skeleton_init(uint32_t,uint32_t,uint32_t);
 
 typedef uint8_t  byte;
@@ -398,7 +398,7 @@ static void slot_apply(uint8_t *ctrl, uint32_t slot)
 }
 
 /* ------------------------------------------------------------------ */
-/* FUN_801862a8 — part_link.
+/* pose_chain_build — part_link.
  * Iterates part records [ctrl+6+0x13, ctrl+8), walking a u16 stream  */
 /* inside the active S5 descriptor to link matrix slots. Fully       */
 /* ported below (disasm 0x801862a8-0x801863a4).                      */
@@ -587,7 +587,7 @@ done:
 /* skeleton_init — skeleton_init: part/matrix init from S5 descriptor.  */
 /* desc = 0x1c-byte block inside S5 (two per section, slot*0x1c).      */
 /* Ports the verified loop structure; matrix decode helpers            */
-/* (FUN_8018dc18 euler->matrix, part_link_unlink part-copy) are host      */
+/* (euler_rotmat euler->matrix, part_link_unlink part-copy) are host      */
 /* hooks pending their own decode.                                     */
 /* ------------------------------------------------------------------ */
 static void skeleton_init_wrap(uint8_t *ctrl, const uint8_t *desc)

@@ -154,7 +154,7 @@ static uint8_t *objpos(uint8_t *ctrl);
  * motion+0x84/+0x88, resets motion+0x90). Host supplies this — it
  * indexes the .ANI move table. */
 extern void action_select(uint8_t *ctrl, int idx);
-/* FUN_80185e6c: special-reaction loader (hit reaction by table entry). */
+/* fighter_anim_advance: special-reaction loader (hit reaction by table entry). */
 extern void reaction_load(uint8_t *ctrl, uint32_t entry);
 
 
@@ -838,7 +838,7 @@ static uint8_t *ev21_skip(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
     if (!(GU8(ctrl, FC_MODE5) & 1)) return pc + 6;
     return pc + 2;
 }
-extern void FUN_80185e6c(int,int);
+extern void fighter_anim_advance(int,int);
 extern void action_switch_guest(int,int*,int);
 ushort * ev5_action_select(int param_1,int param_2,ushort *param_3)
 {
@@ -901,7 +901,7 @@ LAB_8017aebc:
       }
       *(short *)(p2 + 0xa2) = (short)iVar9;
 LAB_8017b090:
-      FUN_80185e6c(param_1,param_2);
+      fighter_anim_advance(param_1,param_2);
       return param_3 + 2;
     }
     break;
@@ -968,28 +968,28 @@ switchD_8017aedc_default:
 typedef uint8_t *evhandler_t(uint8_t *ctrl, uint8_t *motion);
 extern uint8_t *g_DAT_1f8000b1, *g_DAT_1f8000e8, *g_DAT_801f0760;
 extern uint32_t *g__DAT_801f093a, *g__DAT_801f093e;
-extern int FUN_801ad38c(undefined4,undefined4,int,int);
-extern undefined4 FUN_801ad284(int);
-extern void FUN_801ad240(int,undefined4,undefined4,undefined4);
-extern void FUN_801ad260(int,undefined4,undefined4,undefined4,undefined4);
-extern void FUN_80140710();
-extern void FUN_8013f178();
-extern void FUN_8013f5f8(int);
-extern void FUN_80140b18(int,int);
-extern void FUN_8013da2c(int,int);
-extern void FUN_8013ab8c(int,int,int);
-extern void FUN_80141050();
-extern void FUN_80138a24(int,undefined2,int);
-extern void FUN_8013b5a8(int,int);
-extern void FUN_801ad224(int,undefined4,undefined4);
-extern void FUN_8013ed98(undefined4*,undefined4,undefined4,undefined4);
-extern int FUN_8013b088(undefined4,int,uint,undefined4,undefined4);
-extern uint FUN_8018e4d0(void);
+extern int fx_group_alloc(undefined4,undefined4,int,int);
+extern undefined4 noop_c(int);
+extern void noop_a(int,undefined4,undefined4,undefined4);
+extern void node_param_quad_set(int,undefined4,undefined4,undefined4,undefined4);
+extern void hit_spark_spawn();
+extern void speech_bubble_spawn();
+extern void effect_arg_set(int);
+extern void sprite_burst_spawn(int,int);
+extern void confetti_burst_spawn(int,int);
+extern void popup_spawn(int,int,int);
+extern void firework_spawn();
+extern void triple_track_spawn(int,undefined2,int);
+extern void iris_wipe_spawn(int,int);
+extern void noop_b(int,undefined4,undefined4);
+extern void emit_task_spawn_b(undefined4*,undefined4,undefined4,undefined4);
+extern int fx_record_alloc(undefined4,int,uint,undefined4,undefined4);
+extern uint rand_lcg(void);
 extern uint32_t *g__DAT_1f8000c4, *g__DAT_801f0780, *g__DAT_801f0790;
 extern uint8_t *g_DAT_801b180c;
 extern uint8_t *g_DAT_801b1d5c;
 extern uint32_t *g_PTR_DAT_801b1d44;
-extern void FUN_80140ca0(int,int);
+extern void fighter_reset_fx(int,int);
 
 /* ev_spark_spawn — EV22: spawn hit-spark/effect task. a2 = pc (stream
  * ptr); consumes one u16 record, returns pc+2. */
@@ -1006,11 +1006,11 @@ ushort * ev_spark_spawn(int param_1,undefined4 param_2,ushort *param_3)
     iVar3 = (int)((uint)*param_3 << 0x10) >> 0x18;
     if (-1 < iVar3) {
       if (iVar3 < 3) {
-        iVar3 = FUN_801ad38c(1,1,0,0);
+        iVar3 = fx_group_alloc(1,1,0,0);
         if (iVar3 != 0) {
-          iVar2 = (int)FUN_801ad284(iVar3);
+          iVar2 = (int)noop_c(iVar3);
           ti = (uint8_t *)guest_at((uint32_t)iVar2);
-          FUN_801ad240(iVar3,GU32(p1, 0x20) + 0x124,
+          noop_a(iVar3,GU32(p1, 0x20) + 0x124,
                        (uint32_t)param_1,guest_of(g_DAT_801f0760));
           uVar1 = *param_3;
           *(uint32_t *)(ti + 0x18) = 0x80140710;
@@ -1019,10 +1019,10 @@ ushort * ev_spark_spawn(int param_1,undefined4 param_2,ushort *param_3)
         }
       }
       else if ((iVar3 == 3) &&
-               (iVar3 = FUN_801ad38c(1,1,GU8(p1,2) + 1,0), iVar3 != 0)) {
-        iVar2 = (int)FUN_801ad284(iVar3);
+               (iVar3 = fx_group_alloc(1,1,GU8(p1,2) + 1,0), iVar3 != 0)) {
+        iVar2 = (int)noop_c(iVar3);
         ti = (uint8_t *)guest_at((uint32_t)iVar2);
-        FUN_801ad260(iVar3,(uint32_t)param_1,
+        node_param_quad_set(iVar3,(uint32_t)param_1,
                      guest_of(g_DAT_1f8000e8 + (GU8(p1,2) ^ 1) * 0x108),
                      (uint32_t)(GU8(p1,2) + 1),
                      guest_of(g_DAT_801f0760));
@@ -1077,37 +1077,37 @@ ushort * ev_cmd_dispatch(int param_1,undefined4 param_2,ushort *param_3)
       else {
         uVar6 = uVar7 & 0xff;
       }
-      FUN_80140710(param_1,uVar6,(int)(uVar7 << 0x10) >> 0x18);
+      hit_spark_spawn(param_1,uVar6,(int)(uVar7 << 0x10) >> 0x18);
       break;
     case 1:
-      FUN_80138a24(GU8(p1,2),uVar7 & 0xff,(int)(uVar7 << 0x10) >> 0x18);
+      triple_track_spawn(GU8(p1,2),uVar7 & 0xff,(int)(uVar7 << 0x10) >> 0x18);
       break;
     case 2:
-      FUN_8013f178((undefined4 *)guest_at(GU32(p1, 0x20) + 0x124),
+      speech_bubble_spawn((undefined4 *)guest_at(GU32(p1, 0x20) + 0x124),
                    *(short *)(p1 + 0x4e) + -0x400,
                    (int)(uVar7 << 0x10) >> 0x18,uVar7 & 0xff);
       break;
     case 3:
-      FUN_8013f178((undefined4 *)guest_at(GU32(p1, 0x20) + 0x124),
+      speech_bubble_spawn((undefined4 *)guest_at(GU32(p1, 0x20) + 0x124),
                    *(short *)(p1 + 0x4e) + 0x400,
                    (int)(uVar7 << 0x10) >> 0x18,uVar7 & 0xff);
       break;
     case 4:
-      FUN_8013f5f8(param_1);
+      effect_arg_set(param_1);
       break;
     case 5:
-      FUN_80140b18(param_1,(int)(short)uVar1);
+      sprite_burst_spawn(param_1,(int)(short)uVar1);
       break;
     case 6:
-      FUN_8013da2c(param_1,(int)(short)uVar1);
+      confetti_burst_spawn(param_1,(int)(short)uVar1);
       break;
     case 7:
       if (*(int8_t *)((uint8_t *)guest_at(*g__DAT_1f8000c4) + 2) != 0) {
-        FUN_8013ab8c(param_1,(int)(uVar7 << 0x10) >> 0x18,uVar7 & 0xff);
+        popup_spawn(param_1,(int)(uVar7 << 0x10) >> 0x18,uVar7 & 0xff);
       }
       break;
     case 8:
-      FUN_8013b5a8(param_1,(int)(short)uVar1);
+      iris_wipe_spawn(param_1,(int)(short)uVar1);
       break;
     case 9:
       uVar7 = (uint)(short)uVar1;
@@ -1115,17 +1115,17 @@ ushort * ev_cmd_dispatch(int param_1,undefined4 param_2,ushort *param_3)
       if (*(int8_t *)(mo + 0x100) != 0) {
         uVar7 = (uint)g_DAT_801b180c[uVar7];
       }
-      iVar5 = FUN_801ad38c(1,1,0,0xf);
+      iVar5 = fx_group_alloc(1,1,0,0xf);
       if (iVar5 != 0) {
-        FUN_801ad224(iVar5,GU32(p1, 0x20) + uVar7 * 0x50 + 0x34,
+        noop_b(iVar5,GU32(p1, 0x20) + uVar7 * 0x50 + 0x34,
                      guest_of(g_DAT_801f0760));
       }
       break;
     case 10:
-      FUN_80141050(GU8(p1,3),(int)(short)uVar1);
+      firework_spawn(GU8(p1,3),(int)(short)uVar1);
       break;
     case 0xb:
-      FUN_80141050((int)(GU32(p1, 0x20) + (uint32_t)((int16_t)uVar1 * 0x50) + 0x34));
+      firework_spawn((int)(GU32(p1, 0x20) + (uint32_t)((int16_t)uVar1 * 0x50) + 0x34));
       break;
     case 0xc: {
       uint8_t *obj;
@@ -1141,21 +1141,21 @@ ushort * ev_cmd_dispatch(int param_1,undefined4 param_2,ushort *param_3)
       uStack_16 = *(undefined2 *)(obj + iVar5 + 0x38);
       uStack_14 = *(undefined2 *)(obj + iVar5 + 0x3c);
       iVar5 = (uVar7 & 0xff) * 4;
-      FUN_8013ed98(&uStack_18,
+      emit_task_spawn_b(&uStack_18,
                    *(uint32_t *)((char *)g__DAT_801f0790 + iVar5),
                    *(uint32_t *)((char *)g__DAT_801f0780 + iVar5),0);
       break;
     }
     case 0xd:
-      puVar3 = (undefined2 *)guest_at((uint32_t)FUN_8013b088(GU32(p1, 0x20) + 0x124,6,
+      puVar3 = (undefined2 *)guest_at((uint32_t)fx_record_alloc(GU32(p1, 0x20) + 0x124,6,
                             0x80000010,2,guest_of(g_PTR_DAT_801b1d44)));
       if (puVar3 != (undefined2 *)0x0) {
-        uVar2 = (undefined2)FUN_8018e4d0();
+        uVar2 = (undefined2)rand_lcg();
         *puVar3 = uVar2;
       }
       break;
     case 0xe:
-      piVar4 = (int *)guest_at((uint32_t)FUN_8013b088(GU32(p1, 0x20) + 0x444,0xc,
+      piVar4 = (int *)guest_at((uint32_t)fx_record_alloc(GU32(p1, 0x20) + 0x444,0xc,
                                    0x80000012,0x8e,guest_of(g_DAT_801b1d5c)));
       if (piVar4 != (int *)0x0) {
         *piVar4 = param_1;
@@ -1163,7 +1163,7 @@ ushort * ev_cmd_dispatch(int param_1,undefined4 param_2,ushort *param_3)
       }
       break;
     case 0xf:
-      FUN_80140ca0(1,param_1);
+      fighter_reset_fx(1,param_1);
     }
   }
   return param_3 + 2;

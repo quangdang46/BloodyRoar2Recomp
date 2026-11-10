@@ -28,7 +28,7 @@ extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
 
 void gpu_load_image_cmd(undefined4,undefined4);
-void FUN_801941e0(int,int,int,uint,byte *);
+void prim_packet_init_tex(int,int,int,uint,byte *);
 undefined1 * guest_memcpy(uint32_t *,uint32_t *,int);
 void printf_forward(const char *, ...);
 void  guest_memset(uint32_t *,undefined1,int);
@@ -335,7 +335,7 @@ undefined4 spr_slot_pkt_submit(uint *param_1,undefined4 param_2,undefined4 param
     *(short *)((char *)puVar1 + 10) = (short)((uint)param_2 >> 0x10);
     *(byte *)((char *)puVar1 + 7) = *(byte *)((char *)puVar1 + 7) & 0xfd | 1;
     puVar1[1] = 0x64808080;
-    FUN_801941e0((int)guest_of(puVar1 + 5),DAT_801e40b7,DAT_801e40b6,(int)(short)param_3,0);
+    prim_packet_init_tex((int)guest_of(puVar1 + 5),DAT_801e40b7,DAT_801e40b6,(int)(short)param_3,0);
     uVar2 = 0;
     *puVar1 = *cell | 0x4000000;
     *cell = guest & 0xffffff;
@@ -1090,7 +1090,7 @@ int32_t text_widget_alloc(uint16_t param_1,uint16_t param_2,int32_t param_3,
     if (0x400 < iVar2 + param_6) param_6 = 0x400 - iVar2;
     local_2c = 0x100; local_2a = 0x100;
     local_30 = 0;     local_2e = 0;
-    FUN_801941e0((int)(0x801b7750 + slot),0,0,(uint32_t)GB32(0x801fad10),
+    prim_packet_init_tex((int)(0x801b7750 + slot),0,0,(uint32_t)GB32(0x801fad10),
                  (byte *)&local_30);
     if (param_5 != 0) {
       gpu_pkt_tag_60(0x801b7740 + slot);
@@ -1160,7 +1160,7 @@ uint32_t spr_attr_alloc_a(uint32_t param_1,int16_t param_2,int16_t param_3,
       puVar1[1] = param_6 | 0x2a000000;
       iVar3 = (param_7 + -1) * 0x20;
     }
-    FUN_801941e0((int)guest_of(puVar1 + 6),GB8(0x801e40b7),GB8(0x801e40b6),iVar3,0);
+    prim_packet_init_tex((int)guest_of(puVar1 + 6),GB8(0x801e40b7),GB8(0x801e40b6),iVar3,0);
     uVar2 = 0;
     uint32_t *head = (uint32_t *)guest_at(param_1);
     *head = *head | 0x5000000;
@@ -1410,8 +1410,8 @@ void *spr_pool_b_alloc(void)
  * space pads pass 0x20. */
 extern void console_emit(uint32_t);
 extern void console_pct(void);
-extern int FUN_8018e510(char *);
-extern char * FUN_8018eca0(char *,char,int);
+extern int str_len(char *);
+extern char * strchr_bounded(char *,char,int);
 extern char s_0123456789abcdef_80124fe8[];
 extern char s_0123456789ABCDEF_80125004[];
 extern char s__null__80124ffc[];
@@ -1596,9 +1596,9 @@ LAB_8018e60c:
         pcVar15 = (char *)*puVar13;
         if (pcVar15 == 0) pcVar15 = s__null__80124ffc;
         if ((int)puVar17i < 0) {
-          puVar17i = FUN_8018e510(pcVar15);
+          puVar17i = str_len(pcVar15);
         } else {
-          char *pcVar8 = FUN_8018eca0(pcVar15,0,(int)puVar17i);
+          char *pcVar8 = strchr_bounded(pcVar15,0,(int)puVar17i);
           if (pcVar8 != 0 &&
               (iVar21 = 0, puVar19 = (uint32_t *)(intptr_t)(pcVar8 - pcVar15),
                pcVar8 - pcVar15 <= (intptr_t)puVar17i))
@@ -1785,7 +1785,7 @@ uint32_t sprite_9slice_build(uint32_t param_1,uint32_t param_2,uint32_t param_3,
  * guest values (reg cells at 0x801b68xx hold guest pointers). */
 
 /* ---- shared externs for this batch ---- */
-extern int      FUN_8018e510(char *);
+extern int      str_len(char *);
 void     mdec_decode_issue(uint32_t,uint32_t);
 void     mdec_error_reset(uint32_t);
 int32_t  mdec_stat_wait_a(void);
@@ -2177,7 +2177,7 @@ int32_t text_win_printf(int32_t param_1,uint32_t param_2,uint32_t param_3,
       }
       if (c == 0x73) {                 /* 's' */
         ep = (const uint8_t *)guest_at(BR2_ARG());
-        count = FUN_8018e510((char *)(uintptr_t)ep);
+        count = str_len((char *)(uintptr_t)ep);
         goto pad_tail;
       }
       goto pad_tail;               /* unreachable (spec<0x21 all mapped) */
@@ -2464,12 +2464,12 @@ uint32_t gpu_coord_clamp_b(uint32_t a0,uint32_t a1)
 /* Rotated sprite-quad emitter. a0=link-out ptr (sp+38), a1=s7 base pos
  * (16.16), a2=s0 packed (w-1/h-1 nibbles + color?), a3=s4 attr word,
  * stack args s5=scale-x?, s6=scale-y?, fp=angle. Alloc via pool-B
- * spr_pool_b_alloc; fail -> -1. sin/cos via FUN_8018d29c/8d298; corner
+ * spr_pool_b_alloc; fail -> -1. sin/cos via lut_sin_q12/8d298; corner
  * offsets rounded /8192; writes 4 corner xy pairs + tag 0x2c808080,
  * links node into *a0. Disasm 0x8018c31c-0x8018c574. */
 extern void *spr_pool_b_alloc(void);
-extern int FUN_8018d298(int);
-extern int FUN_8018d29c(uint);
+extern int lut_cos_q12(int);
+extern int lut_sin_q12(uint);
 int sprite_quad_emit(uint32_t a0g, int32_t s7, uint32_t s0, uint32_t s4,
                 int32_t s5, int32_t s6, int32_t fp)
 {
@@ -2500,11 +2500,11 @@ int sprite_quad_emit(uint32_t a0g, int32_t s7, uint32_t s0, uint32_t s4,
   if (v0r < 0) v0r += 0xfff;
   s3 = v0r >> 12;
   {
-    /* jal delay slots: s0 = FUN_8018d29c(angle) (f1),
-     * v0 = FUN_8018d298(angle) (f2). */
+    /* jal delay slots: s0 = lut_sin_q12(angle) (f1),
+     * v0 = lut_cos_q12(angle) (f2). */
     int32_t ang = (int16_t)fp;
-    sn = FUN_8018d29c((uint)ang);
-    cs = FUN_8018d298(ang);
+    sn = lut_sin_q12((uint)ang);
+    cs = lut_cos_q12(ang);
   }
   t2 = (-s2) * cs;          /* -s2 * f2 */
   a3r = s3 * sn;            /* s3 * f1 */

@@ -2043,7 +2043,7 @@ __attribute__((weak))
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_80161630() { return 0; }
+int ret_zero_e() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif

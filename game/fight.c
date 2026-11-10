@@ -46,8 +46,8 @@
 #define MO_9A      0x9a     /* s16 pending action field */
 #define MO_D6      0xd6     /* s16 (clamped >=0 when flag set) */
 
-extern void FUN_80142da0(uint8_t *ctrl);
-extern void FUN_80142d20(uint8_t *ctrl);
+extern void pending_hit_a_clear(uint8_t *ctrl);
+extern void hit_chain_clear(uint8_t *ctrl);
 
 /* ================================================================== */
 /* pending_action_gate — pending-action permission gate                        */
@@ -87,7 +87,7 @@ int32_t pending_gate(uint8_t *motion, uint8_t *ctrl,
 accept:
     pend = G16(motion, MO_1C);
     S16(motion, MO_1C, -1);
-    FUN_80142da0(ctrl);
-    FUN_80142d20(ctrl);
+    pending_hit_a_clear(ctrl);
+    hit_chain_clear(ctrl);
     return (int32_t)pend + 0x90;
 }
