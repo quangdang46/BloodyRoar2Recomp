@@ -4,7 +4,7 @@
  * VM1 "script VM" (AI/move scripts in .ANI): 19 opcodes, decoded from
  * handlers @0x80182f3c..0x80184f28 (RE_NOTES.md, vmops asm dumps).
  * VM2 "event VM" (.ACT/.ANI event streams): 24 event types + nested
- * ISAs, dispatcher FUN_8017ea7c, tables 0x801b4e68/0x801226e4..
+ * ISAs, dispatcher ev_stream_dispatch, tables 0x801b4e68/0x801226e4..
  * 0x8012294c.
  *
  * Faithful to guest semantics: s16 regs, u16 stream operands, s32 cmp.

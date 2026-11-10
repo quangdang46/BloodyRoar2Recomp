@@ -2,7 +2,7 @@
  * ev.c — clean-room reference implementation of the BR2 event VM.
  *
  * Event streams (.ACT/.ANI embedded) are consumed by the dispatcher
- * FUN_8017ea7c: each record starts with a type byte (0..23) dispatched
+ * ev_stream_dispatch: each record starts with a type byte (0..23) dispatched
  * through table 0x801b4e68. Handlers return the next stream pointer;
  * NULL ends the stream. motion+0x90 is a frame countdown decremented
  * by motion+0xce each dispatcher call; while >0 the dispatcher
@@ -150,7 +150,7 @@ static uint8_t *ev20_timers(uint8_t*,uint8_t*,uint8_t*);
 static uint8_t *ev21_skip(uint8_t*,uint8_t*,uint8_t*);
 static uint8_t *objpos(uint8_t *ctrl);
 
-/* FUN_8017a6e8: select event stream by action index (writes
+/* action_switch_guest: select event stream by action index (writes
  * motion+0x84/+0x88, resets motion+0x90). Host supplies this — it
  * indexes the .ANI move table. */
 extern void br2_action_select(uint8_t *ctrl, int idx);
@@ -162,7 +162,7 @@ extern void br2_reaction_load(uint8_t *ctrl, uint32_t entry);
 /* Dispatcher                                                           */
 /* ================================================================== */
 
-/* Returns next stream ptr, or NULL to end. Mirrors FUN_8017ea7c:
+/* Returns next stream ptr, or NULL to end. Mirrors ev_stream_dispatch:
  * countdown gate first, then type-byte dispatch. */
 uint8_t *br2_ev_step(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
 {
@@ -839,7 +839,7 @@ static uint8_t *ev21_skip(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
     return pc + 2;
 }
 extern void FUN_80185e6c(int,int);
-extern void FUN_8017a6e8(int,int*,int);
+extern void action_switch_guest(int,int*,int);
 ushort * FUN_8017ae18(int param_1,int param_2,ushort *param_3)
 {
   short sVar1;
@@ -938,7 +938,7 @@ LAB_8017b034:
       sVar1 = *(short *)(m5 + 0x80);
       *(undefined2 *)(m5 + 0x82) = 1;
 LAB_8017b044:
-      FUN_8017a6e8(iVar10,(int *)m5,(int)sVar1);
+      action_switch_guest(iVar10,(int *)m5,(int)sVar1);
       return (ushort *)guest_at(GU32(p2, 0x84));
     }
     break;
@@ -991,9 +991,9 @@ extern uint8_t *g_DAT_801b1d5c;
 extern uint32_t *g_PTR_DAT_801b1d44;
 extern void FUN_80140ca0(int,int);
 
-/* FUN_80141b78 — EV22: spawn hit-spark/effect task. a2 = pc (stream
+/* ev_spark_spawn — EV22: spawn hit-spark/effect task. a2 = pc (stream
  * ptr); consumes one u16 record, returns pc+2. */
-ushort * FUN_80141b78(int param_1,undefined4 param_2,ushort *param_3)
+ushort * ev_spark_spawn(int param_1,undefined4 param_2,ushort *param_3)
 {
   ushort uVar1;
   int iVar2;
@@ -1043,13 +1043,13 @@ ushort * FUN_80141b78(int param_1,undefined4 param_2,ushort *param_3)
 
 static uint8_t *w22(uint8_t *c, uint8_t *m)
 {
-    return (uint8_t *)FUN_80141b78(
+    return (uint8_t *)ev_spark_spawn(
         (int)guest_of(c), 0, (ushort *)guest_at(GU32(m, 0x84)));
 }
 
-/* FUN_80141d2c — EV23: event/sound/effect command dispatcher.
+/* ev_cmd_dispatch — EV23: event/sound/effect command dispatcher.
  * Consumes a 4-byte record {u8 op, u8 arg, u16 param}; returns pc+4. */
-ushort * FUN_80141d2c(int param_1,undefined4 param_2,ushort *param_3)
+ushort * ev_cmd_dispatch(int param_1,undefined4 param_2,ushort *param_3)
 {
   ushort uVar1;
   undefined2 uVar2;
@@ -1171,7 +1171,7 @@ ushort * FUN_80141d2c(int param_1,undefined4 param_2,ushort *param_3)
 
 static uint8_t *w23(uint8_t *c, uint8_t *m)
 {
-    return (uint8_t *)FUN_80141d2c(
+    return (uint8_t *)ev_cmd_dispatch(
         (int)guest_of(c), 0, (ushort *)guest_at(GU32(m, 0x84)));
 }
 #define EVWRAP(nm, fn) \

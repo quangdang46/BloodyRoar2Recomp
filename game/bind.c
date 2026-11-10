@@ -896,12 +896,12 @@ uint8_t *g_DAT_801f4d7a, *g_DAT_801f4d7c;
 
 void trap(int code) { (void)code; }
 
-/* FUN_80178664 == br2_pending_gate (fight.c), guest arg order:
+/* pending_action_gate == br2_pending_gate (fight.c), guest arg order:
  * (motion, ctrl, reqA, reqB) — a0 is a guest address; resolve it
  * before handing br2_pending_gate its host pointer. */
 int32_t br2_pending_gate(uint8_t *motion, uint8_t *ctrl,
                          uint32_t req_a, uint32_t req_b);
-int32_t FUN_80178664(uint32_t motion, uint8_t *ctrl,
+int32_t pending_action_gate(uint32_t motion, uint8_t *ctrl,
                      uint32_t req_a, uint32_t req_b)
 {
     return br2_pending_gate((uint8_t *)guest_at(motion), ctrl,
@@ -1418,7 +1418,7 @@ void FUN_8018c824() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_8018cc6c() { return (void)0; }
+void spr_attr_alloc_a() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -1430,15 +1430,15 @@ void FUN_8018e2f0() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_8018f850() { return (void)0; }
+void cd_fileop_reset() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_8018fa30() { return (void)0; }
+void cd_fileop_forward() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_8018faec() { return (void)0; }
+void cd_fileop_dispatch() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -1478,7 +1478,7 @@ void FUN_801917e0() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_801919ac() { return (void)0; }
+void draw_env_timing() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -2019,9 +2019,9 @@ static void br2_bind_init13(void)
 }
 
 /* batch28 callees (not yet ported) */
-__attribute__((weak)) int  FUN_80190390() { return 0; }
-__attribute__((weak)) int  FUN_80190350() { return 0; }
-__attribute__((weak)) uint32_t FUN_80190430() { return 0; }
+__attribute__((weak)) int  text_win_init() { return 0; }
+__attribute__((weak)) int  text_line_select() { return 0; }
+__attribute__((weak)) uint32_t text_widget_alloc() { return 0; }
 
 char *s_Print_mode_error_8011f140;
 __attribute__((constructor))
@@ -2031,7 +2031,7 @@ static void br2_bind_init28(void)
 }
 
 /* batch29 text-window callees */
-__attribute__((weak)) void FUN_80190a04() { return; }
+__attribute__((weak)) void text_win_printf() { return; }
 __attribute__((weak)) void FUN_80190dd0() { return; }
 __attribute__((weak)) uint32_t FUN_80193e30() { return 0; }
 __attribute__((weak)) uint32_t FUN_80193d40() { return 0; }
@@ -2047,8 +2047,8 @@ __attribute__((weak)) void FUN_80156290() { return; }
 __attribute__((weak)) void FUN_801575bc() { return; }
 __attribute__((weak)) void FUN_8015768c() { return; }
 __attribute__((weak)) int  FUN_80163520() { return 0; }
-__attribute__((weak)) void FUN_8018fb10() { return; }
-__attribute__((weak)) void FUN_8018fc90() { return; }
+__attribute__((weak)) void mdec_pump_a() { return; }
+__attribute__((weak)) void mdec_pump_b() { return; }
 __attribute__((weak)) void FUN_801a6ae8() { return; }
 __attribute__((weak)) void FUN_801ad59c() { return; }
 __attribute__((weak)) void FUN_801ad1e4() { return; }
@@ -2065,11 +2065,11 @@ static void br2_bind_init30(void)
     PTR_s_MOVIES_AND_PICTURES_801b13c4 = (char *)guest_at(
         *(uint32_t *)guest_at(0x801b13c4));
 }
-/* FUN_80163898 @0x80163898: six consecutive `jr ra; move v0,zero`
+/* ret_zero_b @0x80163898: six consecutive `jr ra; move v0,zero`
  * stubs in guest — returns 0. Real impl may be a jump-table alias;
  * keep faithful return-0 until the true target is identified. */
 __attribute__((weak)) void FUN_801274e8() { return; }
-__attribute__((weak)) void FUN_8015260c() { return; }
+__attribute__((weak)) void mc_slot_action() { return; }
 __attribute__((weak)) void print_dispatch() { return; }
 __attribute__((weak)) void hud_text_a() { return; }
 __attribute__((weak)) void hud_text_b() { return; }
@@ -2085,21 +2085,21 @@ char s_0123456789abcdef_80124fe8[] = "0123456789abcdef";
 char s_0123456789ABCDEF_80125004[] = "0123456789ABCDEF";
 char s__null__80124ffc[] = "(null)";
 uint8_t DAT_801b6701[256] = {32, 32, 32, 32, 32, 32, 32, 32, 32, 8, 8, 8, 8, 8, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 24, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 16, 16, 16, 16, 16, 16, 16, 65, 65, 65, 65, 65, 65, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 16, 16, 16, 16, 16, 16, 66, 66, 66, 66, 66, 66, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 16, 16, 16, 16, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 64, 2, 16, 16, 19, 16, 19, 22, 22, 22, 22, 22, 22, 26, 24, 26, 27, 27, 27, 26, 26, 26, 26, 27, 27, 27, 29, 29, 29, 34, 34, 34, 29, 29, 29, 27, 27, 29, 29, 32, 32, 34, 34, 37, 38, 37, 35, 35, 34, 35, 38, 38, 40, 40, 40, 48, 48, 46, 46, 56, 56, 58, 69, 69, 83, 2, 16, 16, 19, 16, 19, 22, 22, 22, 22, 22, 22, 26};
-/* FUN_8018ef50 — debug-output primitive: guest is a 16-byte
+/* bios_tramp_b035 — debug-output primitive: guest is a 16-byte
  * trampoline (`jr $t2` -> kernel 0xb0) fronting the line-buffer
  * flush used by the printf emit layer. Host stub until the BIOS
  * syscall boundary is wired. */
-__attribute__((weak)) void FUN_8018ef50() { return; }
-__attribute__((weak)) void FUN_80153544() { return; }
-__attribute__((weak)) int32_t FUN_80163634() { return 0; }
-__attribute__((weak)) int32_t FUN_801533e0() { return 0; }
-__attribute__((weak)) int32_t FUN_80151dc8() { return 0; }
-__attribute__((weak)) int32_t FUN_8015200c() { return 0; }
-__attribute__((weak)) int32_t FUN_8015226c() { return 0; }
-__attribute__((weak)) int32_t FUN_80152878() { return 0; }
-__attribute__((weak)) int32_t FUN_8015279c() { return 0; }
-__attribute__((weak)) int32_t FUN_80152548() { return 0; }
-__attribute__((weak)) int32_t FUN_801521a4() { return 0; }
+__attribute__((weak)) void bios_tramp_b035() { return; }
+__attribute__((weak)) void battle_config_eval() { return; }
+__attribute__((weak)) int32_t mode_name_announce() { return 0; }
+__attribute__((weak)) int32_t bcfg_step_a() { return 0; }
+__attribute__((weak)) int32_t stage_fight_announce() { return 0; }
+__attribute__((weak)) int32_t fight_timer_announce() { return 0; }
+__attribute__((weak)) int32_t continue_countdown() { return 0; }
+__attribute__((weak)) int32_t bcfg_step_d() { return 0; }
+__attribute__((weak)) int32_t bcfg_step_c() { return 0; }
+__attribute__((weak)) int32_t bcfg_step_b() { return 0; }
+__attribute__((weak)) int32_t battle_state_gate() { return 0; }
 __attribute__((weak)) void FUN_8016fc74() { return; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
@@ -2112,11 +2112,11 @@ void FUN_8018e310() { return; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_8018ff10() { return; }
+void cd_bitstream_decode() { return; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_8019a670() { return; }
+void bios_kobj_tramp() { return; }
 __attribute__((weak))
 uint32_t bios_svc(uint32_t table, uint32_t svc, uint32_t a0, uint32_t a1)
 {
@@ -2126,7 +2126,7 @@ uint32_t bios_svc(uint32_t table, uint32_t svc, uint32_t a0, uint32_t a1)
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_8019c0f0() { return; }
+void cd_chan_mode_apply() { return; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -2146,7 +2146,7 @@ void FUN_8019b390() { return; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_801a0be0() { return; }
+void cd_hw_chan_init() { return; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -2174,7 +2174,7 @@ void FUN_8019e55c() { return; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_8019d4d0() { return; }
+void cd_mode_store() { return; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -2191,35 +2191,35 @@ int FUN_8019d500() { return 1; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_8019cb50() { return; }
+void cd_reg_window_rmw() { return; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int32_t FUN_8019ea98() { return 1; }
+int32_t cd_chan_job_submit() { return 1; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int32_t FUN_8019fa80() { return 1; }
+int32_t cd_job_result() { return 1; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int32_t FUN_8019ff4c() { return 0; }
+int32_t cd_mc_op_wait() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int32_t FUN_8019f80c() { return 0; }
+int32_t cd_chan_job_pump() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_8019bbc4() { return; }
+void cd_seek_param_issue() { return; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int32_t FUN_8019bcf0() { return 0; }
+int32_t cd_reg_indexed_rw() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int32_t FUN_8019d5b0() { return 0; }
+int32_t cd_seek_state_machine() { return 0; }
 
 /* ---- menu-agent callees (unported, weak until disasm-verified) ---- */
 
@@ -2281,7 +2281,7 @@ int FUN_8014bb34() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_80179ae0() { return 0; }
+int skeleton_init() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -2289,11 +2289,11 @@ int FUN_8018fe44() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_80192f14() { return 0; }
+int cd_queue_push() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_801931c4() { return 0; }
+int cd_queue_drain() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -2309,7 +2309,7 @@ int FUN_80195370() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_80198510() { return 0; }
+int cd_strncmp() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -2337,7 +2337,7 @@ int FUN_8019a364() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_8019a8ec() { return 0; }
+int cd_intc_dispatch() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -2357,7 +2357,7 @@ int FUN_8019ad80() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_8019ad90() { return 0; }
+int cd_ctx_save() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -2369,7 +2369,7 @@ int FUN_8019b1a8() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_8019d5c0() { return 0; }
+int cd_state_store() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -2397,15 +2397,15 @@ int FUN_801a0250() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_801a1184() { return 0; }
+int cd_queue_b_read() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_801a1f74() { return 0; }
+int dev_byte_xfer() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_801a7038() { return 0; }
+int anim_node_alloc() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -2429,4 +2429,4 @@ int FUN_80197b30() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_8016b7c0() { return 0; }
+int heap_serialize() { return 0; }

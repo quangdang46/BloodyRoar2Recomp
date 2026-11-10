@@ -510,7 +510,7 @@ LAB_80190e68:
 /* Draw-env -> GPU display timing. param_1 is a guest address of the
  * 20-byte env struct (callers pass 0x801e40fc/0x801e624c-style addrs);
  * bridged to host here. Returns the host env pointer. */
-uint32_t FUN_801919ac(uint32_t param_1)
+uint32_t draw_env_timing(uint32_t param_1)
 
 {
   ushort uVar1;
@@ -665,14 +665,14 @@ LAB_80191e74:
 
 /* ======== batch27: GPU/env helpers ======== */
 
-extern uint32_t FUN_80192450(uint32_t,uint32_t);
-extern uint32_t FUN_801924e8(uint32_t,uint32_t);
-extern uint32_t FUN_80192580(int,int);
-extern uint32_t FUN_80192430(uint8_t,char,uint16_t);
-extern uint32_t FUN_8019259c(uint16_t *);
-extern uint32_t FUN_8019a7fc(int);
-extern uint32_t FUN_80193828(uint);
-extern void FUN_8019b3a0(int);
+extern uint32_t gpu_coord_clamp_a(uint32_t,uint32_t);
+extern uint32_t gpu_coord_clamp_b(uint32_t,uint32_t);
+extern uint32_t gpu_coord_pack(int,int);
+extern uint32_t gpu_pkt_pack(uint8_t,char,uint16_t);
+extern uint32_t gpu_texpage_pack(uint16_t *);
+extern uint32_t cd_u16_swap_store(int);
+extern uint32_t gpu_status_cmd(uint);
+extern void cd_chan_reg_init(int);
 extern void FUN_8019b308(void);
 extern void cd_u16_table_store(int,uint32_t,int);
 uint32_t bios_call(uint32_t,uint32_t);
@@ -748,16 +748,16 @@ void FUN_801921c0(int param_1,ushort *param_2)
   
   dst = (uint8_t *)guest_at((uint32_t)param_1);
   env = (ushort *)guest_at((uint32_t)(uintptr_t)param_2);
-  uVar4 = FUN_80192450((int)(short)env[0],(int)(short)env[1]);
+  uVar4 = gpu_coord_clamp_a((int)(short)env[0],(int)(short)env[1]);
   *(undefined4 *)(dst + 4) = uVar4;
-  uVar4 = FUN_801924e8((int)(((uint)env[2] + (uint)env[0] + -1) * 0x10000) >> 0x10,
+  uVar4 = gpu_coord_clamp_b((int)(((uint)env[2] + (uint)env[0] + -1) * 0x10000) >> 0x10,
                        (int)(((uint)env[1] + (uint)env[3] + -1) * 0x10000) >> 0x10);
   *(undefined4 *)(dst + 8) = uVar4;
-  uVar4 = FUN_80192580((int)(short)env[4],(int)(short)env[5]);
+  uVar4 = gpu_coord_pack((int)(short)env[4],(int)(short)env[5]);
   *(undefined4 *)(dst + 0xc) = uVar4;
-  uVar4 = FUN_80192430(*(uint8_t *)((char *)env + 0x17),(char)env[0xb],env[10]);
+  uVar4 = gpu_pkt_pack(*(uint8_t *)((char *)env + 0x17),(char)env[0xb],env[10]);
   *(undefined4 *)(dst + 0x10) = uVar4;
-  uVar4 = FUN_8019259c(env + 6);
+  uVar4 = gpu_texpage_pack(env + 6);
   *(undefined4 *)(dst + 0x14) = uVar4;
   *(undefined4 *)(dst + 0x18) = 0xe6000000;
   cVar5 = '\a';
@@ -809,7 +809,7 @@ undefined4 FUN_80193424(uint param_1)
   undefined4 uVar1;
   uint uVar2;
   
-  GP32(0x801b8458) = FUN_8019a7fc(0);
+  GP32(0x801b8458) = cd_u16_swap_store(0);
   GP32(0x801b844c) = 0;
   GP32(0x801b8448) = 0;
   uVar2 = param_1 & 7;
@@ -835,10 +835,10 @@ LAB_801934f4:
     FUN_80193d08((uint32_t *)0x801fae70,0,0x1800);
   }
 LAB_80193540:
-  FUN_8019a7fc(GP32(0x801b8458));
+  cd_u16_swap_store(GP32(0x801b8458));
   uVar1 = 0;
   if ((param_1 & 7) == 0) {
-    uVar1 = FUN_80193828(param_1);
+    uVar1 = gpu_status_cmd(param_1);
   }
   return uVar1;
 }
@@ -905,7 +905,7 @@ void FUN_8019b220(int param_1)
   uint16_t *t;
   
   cd_dispatch_tblc();
-  FUN_8019b3a0(param_1);
+  cd_chan_reg_init(param_1);
   if (param_1 == 0) {
     iVar2 = 0x17;
     t = (uint16_t *)guest_at(0x801bde9a);
@@ -939,10 +939,10 @@ void FUN_8019b220(int param_1)
 }
 
 /* ---- batch28: printf-forwarder + sprite-attr inits ---- */
-extern uint32_t FUN_8018e590(uint32_t,const uint8_t *,const uint32_t *);
+extern uint32_t printf_core(uint32_t,const uint8_t *,const uint32_t *);
 
 /* FUN_8018e550 — printf-style forwarder: packs up to 3 varargs and
- * calls FUN_8018e590(1, fmt, &args). Verbatim from decompile. */
+ * calls printf_core(1, fmt, &args). Verbatim from decompile. */
 void FUN_8018e550(const char *param_1, ...)
 {
   uint32_t args[8];
@@ -951,12 +951,12 @@ void FUN_8018e550(const char *param_1, ...)
   va_start(ap,param_1);
   for (i = 0; i < 8; i++) args[i] = va_arg(ap,uint32_t);
   va_end(ap);
-  FUN_8018e590(1,param_1,args);
+  printf_core(1,param_1,args);
 }
 
-/* FUN_80193ea0 — sprite/OAM attribute block init (u16 fields + tail
+/* sprite_attr_init_a — sprite/OAM attribute block init (u16 fields + tail
  * bytes). param_1 = host pointer to the attr struct. */
-void FUN_80193ea0(uint32_t param_1,uint16_t param_2,uint16_t param_3,
+void sprite_attr_init_a(uint32_t param_1,uint16_t param_2,uint16_t param_3,
                   uint16_t param_4,int32_t param_5)
 {
   int iVar2;
@@ -982,8 +982,8 @@ void FUN_80193ea0(uint32_t param_1,uint16_t param_2,uint16_t param_3,
   b[0x18] = 0;
 }
 
-/* FUN_80193f60 — second sprite-attr variant init. */
-void FUN_80193f60(uint32_t param_1,uint16_t param_2,uint16_t param_3,
+/* sprite_attr_init_b — second sprite-attr variant init. */
+void sprite_attr_init_b(uint32_t param_1,uint16_t param_2,uint16_t param_3,
                   uint16_t param_4,uint16_t param_5)
 {
   uint16_t *p1 = (uint16_t *)guest_at(param_1);
@@ -1004,10 +1004,10 @@ void FUN_80193f60(uint32_t param_1,uint16_t param_2,uint16_t param_3,
 
 /* ---- batch29: sprite-attr bit helpers (guest-addr convention) ---- */
 
-/* FUN_8018bd40 — unaligned bitfield OR-write: inserts param_2 (8-bit
+/* bitfield_or_write — unaligned bitfield OR-write: inserts param_2 (8-bit
  * value) at bit offset derived from param_1 alignment. param_1 is a
  * host pointer (sole caller FUN_80136ddc passes arena ptrs). */
-void FUN_8018bd40(const void *param_1,int param_2)
+void bitfield_or_write(const void *param_1,int param_2)
 {
   uintptr_t a = (uintptr_t)param_1;
   uint32_t uVar1 = (uint32_t)(a + 2) & 3;
@@ -1016,23 +1016,23 @@ void FUN_8018bd40(const void *param_1,int param_2)
            (uint32_t)((uint32_t)param_2 << 8) >> ((3 - uVar1) * 8);
 }
 
-/* FUN_801940e0/4060/4090 — per-slot sprite descriptor helpers.
+/* spr_desc_a/4060/4090 — per-slot sprite descriptor helpers.
  * param_1 = guest address of a 0x28-byte slot record. */
-void FUN_801940e0(uint32_t param_1)
+void spr_desc_a(uint32_t param_1)
 {
   uint8_t *p = (uint8_t *)guest_at(param_1);
   p[3] = 9;
   p[7] = 0x2c;
 }
 
-void FUN_80194060(uint32_t param_1,uint32_t param_2)
+void spr_desc_b(uint32_t param_1,uint32_t param_2)
 {
   uint8_t *p = (uint8_t *)guest_at(param_1);
   if (param_2 == 0) p[7] &= 0xfd;
   else               p[7] |= 2;
 }
 
-void FUN_80194090(uint32_t param_1,uint32_t param_2)
+void spr_desc_c(uint32_t param_1,uint32_t param_2)
 {
   uint8_t *p = (uint8_t *)guest_at(param_1);
   if (param_2 == 0) p[7] &= 0xfe;
@@ -1050,13 +1050,13 @@ void FUN_80194090(uint32_t param_1,uint32_t param_2)
 extern uint32_t FUN_80193e30(uint32_t,uint32_t,uint32_t);
 extern uint32_t FUN_80193d40(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern void     FUN_80190dd0(uint32_t,uint32_t,uint32_t);
-extern int32_t  FUN_80190a04(int32_t,uint32_t,uint32_t,uint32_t,...);
+extern int32_t  text_win_printf(int32_t,uint32_t,uint32_t,uint32_t,...);
 extern void     FUN_80194140(uint32_t);
 extern void     FUN_80194120(uint32_t);
 extern void    *PTR_FUN_801b831c;
 
-/* FUN_80190390 — text window init: two draw-env installs + clear. */
-void FUN_80190390(uint32_t param_1,int32_t param_2)
+/* text_win_init — text window init: two draw-env installs + clear. */
+void text_win_init(uint32_t param_1,int32_t param_2)
 {
   GB32(0x801fad12) = FUN_80193e30(0x801b78c8,param_1,(uint32_t)(param_2 + 0x80));
   GB32(0x801fad10) = FUN_80193d40(0x801b7ac8,0,0,param_1,(uint32_t)param_2,0x80,0x20);
@@ -1064,18 +1064,18 @@ void FUN_80190390(uint32_t param_1,int32_t param_2)
   FUN_80190dd0(0x801b7740,0,0x180);
 }
 
-/* FUN_80190350 — select active text line (bounds vs DAT_801b78c0). */
-void FUN_80190350(int32_t param_1)
+/* text_line_select — select active text line (bounds vs DAT_801b78c0). */
+void text_line_select(int32_t param_1)
 {
   if ((0 <= param_1) && (param_1 <= (int32_t)GB8(0x801b78c0))) {
-    PTR_FUN_801b831c = (void *)FUN_80190a04;
+    PTR_FUN_801b831c = (void *)text_win_printf;
     GB8(0x801b78c4) = (uint8_t)param_1;
   }
 }
 
-/* FUN_80190430 — allocate one 0x30-byte text-string widget slot.
+/* text_widget_alloc — allocate one 0x30-byte text-string widget slot.
  * Returns slot index or -1 when DAT_801b78c0 >= 8. */
-int32_t FUN_80190430(uint16_t param_1,uint16_t param_2,int32_t param_3,
+int32_t text_widget_alloc(uint16_t param_1,uint16_t param_2,int32_t param_3,
                      uint16_t param_4,int32_t param_5,int32_t param_6)
 {
   int32_t iVar1, iVar2;
@@ -1097,7 +1097,7 @@ int32_t FUN_80190430(uint16_t param_1,uint16_t param_2,int32_t param_3,
       GB8(0x801b7744 + slot) = 0;
       GB8(0x801b7745 + slot) = 0;
       GB8(0x801b7746 + slot) = 0;
-      FUN_80194060(0x801b7740 + slot,(param_5 == 2));
+      spr_desc_b(0x801b7740 + slot,(param_5 == 2));
     }
     iVar2 = (int32_t)GB32(0x801b82c8);
     slot = GB8(0x801b78c0) * 0x30;
@@ -1129,18 +1129,18 @@ int32_t FUN_80190430(uint16_t param_1,uint16_t param_2,int32_t param_3,
   return iVar2;
 }
 
-/* FUN_8018cc6c — sprite-attr slot alloc with 0x5000000/0x28000000|
+/* spr_attr_alloc_a — sprite-attr slot alloc with 0x5000000/0x28000000|
  * 0x2a000000 tag packing (same cluster as FUN_8018c18c/c824).
  * param_1 = guest address of the head pointer cell. */
-extern void *FUN_8018cbfc(void);
-uint32_t FUN_8018cc6c(uint32_t param_1,int16_t param_2,int16_t param_3,
+extern void *spr_pool_a_alloc(void);
+uint32_t spr_attr_alloc_a(uint32_t param_1,int16_t param_2,int16_t param_3,
                       int16_t param_4,int16_t param_5,uint32_t param_6,
                       int32_t param_7)
 {
   uint32_t *puVar1;
   uint32_t uVar2;
   int32_t iVar3;
-  puVar1 = (uint32_t *)FUN_8018cbfc();
+  puVar1 = (uint32_t *)spr_pool_a_alloc();
   if (puVar1 == (uint32_t *)0x0) {
     uVar2 = 0xffffffff;
   } else {
@@ -1171,18 +1171,18 @@ uint32_t FUN_8018cc6c(uint32_t param_1,int16_t param_2,int16_t param_3,
   return uVar2;
 }
 
-/* FUN_8018c71c — sprite-attr slot alloc variant: fixed tag
+/* spr_attr_alloc_b — sprite-attr slot alloc variant: fixed tag
  * 0x2c808080, *param_1 head cell gets 0x9000000 tag. Same
- * guest-addr + pointer-tag conventions as FUN_8018cc6c. */
-extern void *FUN_8018c0a8(void);
-uint32_t FUN_8018c71c(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+ * guest-addr + pointer-tag conventions as spr_attr_alloc_a. */
+extern void *spr_pool_b_alloc(void);
+uint32_t spr_attr_alloc_b(uint32_t param_1,uint32_t param_2,uint32_t param_3,
                       uint32_t param_4,uint16_t param_5,uint16_t param_6)
 {
   uint32_t *puVar1;
   uint32_t uVar2;
   uint16_t uVar3;
   int8_t cVar4, cVar5;
-  puVar1 = (uint32_t *)FUN_8018c0a8();
+  puVar1 = (uint32_t *)spr_pool_b_alloc();
   if (puVar1 == (uint32_t *)0x0) {
     uVar2 = 0xffffffff;
   } else {
@@ -1216,15 +1216,15 @@ uint32_t FUN_8018c71c(uint32_t param_1,uint32_t param_2,uint32_t param_3,
   return uVar2;
 }
 
-/* FUN_8012c374 — HUD gauge/frame sprite renderer. param_1 = guest
+/* hud_gauge_render — HUD gauge/frame sprite renderer. param_1 = guest
  * addr of fighter-state block (+0xc attr u32, +0x20/+0x22 s16 x/y);
  * param_2 = guest addr of sprite-list head cell; param_3 low nibble =
- * palette set, bits 4-7 = layout variant. Emits FUN_8018c71c/8c824/
+ * palette set, bits 4-7 = layout variant. Emits spr_attr_alloc_b/8c824/
  * 8ce70/8c92c sprite records + hud_text_d tile blits. */
 extern void hud_text_d(uint32_t,uint32_t,const void *,int32_t,int32_t,int32_t);
 extern void sprite_node_emit_a(uint32_t,int32_t,int32_t,int32_t,int32_t,uint32_t,uint32_t,uint32_t,uint32_t,int32_t);
 extern void sprite_node_emit_b(uint32_t,uint32_t,uint32_t,uint32_t,int32_t,int32_t);
-void FUN_8012c374(uint32_t param_1,uint32_t param_2,uint32_t param_3)
+void hud_gauge_render(uint32_t param_1,uint32_t param_2,uint32_t param_3)
 {
   int16_t sVar1;
   int32_t iVar2, iVar4;
@@ -1275,10 +1275,10 @@ LAB_8012c4f8:
   if (param_3 == 0x20) {
 LAB_8012c64c:
     iVar2 = param_2 + 4;
-    FUN_8018c71c(iVar2,0x280000,0x177e001e,0x7ad68080,0x80,0x48);
-    FUN_8018c71c(iVar2,0x280080,0x177e001e,0x7a968080,0x100,0x48);
-    FUN_8018c71c(iVar2,0x280100,0x177e001e,0x7a568080,0x180,0x48);
-    FUN_8018c71c(iVar2,0x280180,0x1780001e,0x7a5680ff,0x200,0x48);
+    spr_attr_alloc_b(iVar2,0x280000,0x177e001e,0x7ad68080,0x80,0x48);
+    spr_attr_alloc_b(iVar2,0x280080,0x177e001e,0x7a968080,0x100,0x48);
+    spr_attr_alloc_b(iVar2,0x280100,0x177e001e,0x7a568080,0x180,0x48);
+    spr_attr_alloc_b(iVar2,0x280180,0x1780001e,0x7a5680ff,0x200,0x48);
     FUN_8018c824((uint *)guest_at(iVar2),(*(int16_t *)(st + 0x22) + -0x54) * 0x10000 |
                  ((uint32_t)*(int16_t *)(st + 0x20) - 0x90U) & 0xffff,0x277e001e,
                  ((uint32_t)(iVar4 << 6) | 0x7e16U) << 0x10 | 0x9880);
@@ -1312,10 +1312,10 @@ LAB_8012cb64:
     } else {
       if (param_3 == 0x30) {
         iVar2 = param_2 + 4;
-        FUN_8018c71c(iVar2,0x280000,0x177e001e,0x7ad68080,0x80,0x48);
-        FUN_8018c71c(iVar2,0x280080,0x177e001e,0x7a968080,0x100,0x48);
-        FUN_8018c71c(iVar2,0x280100,0x177e001e,0x7a568080,0x180,0x48);
-        FUN_8018c71c(iVar2,0x280180,0x1780001e,0x7a5680ff,0x200,0x48);
+        spr_attr_alloc_b(iVar2,0x280000,0x177e001e,0x7ad68080,0x80,0x48);
+        spr_attr_alloc_b(iVar2,0x280080,0x177e001e,0x7a968080,0x100,0x48);
+        spr_attr_alloc_b(iVar2,0x280100,0x177e001e,0x7a568080,0x180,0x48);
+        spr_attr_alloc_b(iVar2,0x280180,0x1780001e,0x7a5680ff,0x200,0x48);
         FUN_8018c824((uint *)guest_at(iVar2),((uint32_t)(*(int16_t *)(st + 0x22) + -0x54) * 0x10000) |
                      ((uint32_t)*(int16_t *)(st + 0x20) - 0x90U) & 0xffff,0x277e001e,
                      ((uint32_t)(iVar4 << 6) | 0x7e16U) << 0x10 | 0x9880);
@@ -1331,11 +1331,11 @@ LAB_8012cb64:
     FUN_8018c824((uint *)guest_at(iVar4),((uint32_t)(*(int16_t *)(st + 0x22) + -0x34) * 0x10000) | 0xd8,0xf0f001e,0x7a16d830);
     FUN_8018c824((uint *)guest_at(iVar4),((uint32_t)(*(int16_t *)(st + 0x22) + -0x34) * 0x10000) | 0xe8,0xf0f001e,0x7a16d820);
     FUN_8018c824((uint *)guest_at(iVar4),((uint32_t)(*(int16_t *)(st + 0x22) + -0x34) * 0x10000) | 0xf8,0xf0f001e,0x7a16d810);
-    FUN_8018c71c(param_2,0x200000,0x1780001e,0x7a5680ff,0x80,0x40);
-    FUN_8018c71c(param_2,0x200080,0x1780001e,0x7a9680ff,0x100,0x40);
-    FUN_8018c71c(param_2,0x200100,0x177e001e,0x7a968080,0x180,0x40);
-    FUN_8018c71c(param_2,0x200180,0x177e001e,0x7a568080,0x200,0x40);
-    FUN_8018cc6c(iVar4,0,*(int16_t *)(st + 0x22) + -0x38,(int32_t)*(int16_t *)(st + 0x20),0x18,
+    spr_attr_alloc_b(param_2,0x200000,0x1780001e,0x7a5680ff,0x80,0x40);
+    spr_attr_alloc_b(param_2,0x200080,0x1780001e,0x7a9680ff,0x100,0x40);
+    spr_attr_alloc_b(param_2,0x200100,0x177e001e,0x7a968080,0x180,0x40);
+    spr_attr_alloc_b(param_2,0x200180,0x177e001e,0x7a568080,0x200,0x40);
+    spr_attr_alloc_a(iVar4,0,*(int16_t *)(st + 0x22) + -0x38,(int32_t)*(int16_t *)(st + 0x20),0x18,
                  uVar6,2);
     iVar2 = (*(int16_t *)(st + 0x22) * 3) / 5 + -8;
     sprite_node_emit_a(iVar4,0,0,(int32_t)*(int16_t *)(st + 0x20),iVar2,(int32_t)uVar8,(int32_t)uVar8,(int32_t)uVar7,(int32_t)uVar7,0);
@@ -1354,7 +1354,7 @@ LAB_8012cb64:
  * 0x801f5978, round-robin counter DAT_801b55e4, sentinel
  * _DAT_1f8000dc. Slot word0 == sentinel or sentinel-1 -> NULL;
  * else mark sentinel, bump counter (wrap at 0x18), return slot+4. */
-void *FUN_8018cbfc(void)
+void *spr_pool_a_alloc(void)
 {
   int32_t iVar3;
   uint32_t *puVar4;
@@ -1381,7 +1381,7 @@ void *FUN_8018cbfc(void)
 
 /* Sprite-attr pool B allocator: 0x20 slots x 0x2c stride at
  * 0x801f5ed8, counter DAT_801b55dc. Same sentinel protocol. */
-void *FUN_8018c0a8(void)
+void *spr_pool_b_alloc(void)
 {
   int32_t iVar3;
   uint32_t *puVar4;
@@ -1401,22 +1401,22 @@ void *FUN_8018c0a8(void)
 
 /* ======== 0x8018e590 ======== */
 
-/* printf core: emits formatted text via FUN_8018ecf0 (putc) /
- * FUN_8018edec ('%'), returns char count. param_1 = channel (unused
+/* printf core: emits formatted text via console_emit (putc) /
+ * console_pct ('%'), returns char count. param_1 = channel (unused
  * here — callee globals), param_2 = fmt, param_3 = u32 arg array.
  * Flags: '-' left, '+' sign, ' ' space, '#' alt, '0' pad, digit width,
  * '.' precision, '*' width/precision from args, l/h length, d/i/u/o/x/X/p/c/s/n.
  * Elided-arg sites verified against disasm: sign emit passes iVar21,
  * space pads pass 0x20. */
-extern void FUN_8018ecf0(uint32_t);
-extern void FUN_8018edec(void);
+extern void console_emit(uint32_t);
+extern void console_pct(void);
 extern int FUN_8018e510(char *);
 extern char * FUN_8018eca0(char *,char,int);
 extern char s_0123456789abcdef_80124fe8[];
 extern char s_0123456789ABCDEF_80125004[];
 extern char s__null__80124ffc[];
 extern uint8_t DAT_801b6701[];
-uint32_t FUN_8018e590(uint32_t param_1,const uint8_t *param_2,const uint32_t *param_3)
+uint32_t printf_core(uint32_t param_1,const uint8_t *param_2,const uint32_t *param_3)
 {
   uint8_t bVar1, bVar2;
   char cVar3;
@@ -1608,11 +1608,11 @@ LAB_8018e60c:
         puVar19 = (uint32_t *)puVar17i;
         goto LAB_8018e9fc_d;
       }
-      FUN_8018ecf0(uVar9);
+      console_emit(uVar9);
       goto LAB_8018ebec_d;
     }
 switchD_8018e634_caseD_0:
-    FUN_8018edec();
+    console_pct();
   }
   return (uint32_t)local_40;
 LAB_8018e958_d:
@@ -1656,27 +1656,27 @@ LAB_8018e9fc_d:
   if (local_3c < (intptr_t)puVar17) puVar18 = puVar17;
   if (uVar16 == 0 && local_34 != 0 && (intptr_t)puVar18 < local_34) {
     intptr_t puVar11 = (intptr_t)puVar18;
-    do { FUN_8018ecf0(0x20); puVar11++; } while (puVar11 < local_34);
+    do { console_emit(0x20); puVar11++; } while (puVar11 < local_34);
   }
-  if (iVar21 != 0) FUN_8018ecf0((uint32_t)iVar21);
-  if (bVar4) { FUN_8018ecf0(0x30); FUN_8018ecf0((uint32_t)(char)*param_2); }
+  if (iVar21 != 0) console_emit((uint32_t)iVar21);
+  if (bVar4) { console_emit(0x30); console_emit((uint32_t)(char)*param_2); }
   if (uVar16 == 0x20 && (intptr_t)puVar18 < local_34) {
     intptr_t puVar11 = (intptr_t)puVar18;
-    do { FUN_8018ecf0(0x30); puVar11++; } while (puVar11 < local_34);
+    do { console_emit(0x30); puVar11++; } while (puVar11 < local_34);
   }
   if ((intptr_t)puVar17 < local_3c) {
-    do { FUN_8018ecf0(0x30); puVar17 = (uint32_t *)((intptr_t)puVar17 + 1); }
+    do { console_emit(0x30); puVar17 = (uint32_t *)((intptr_t)puVar17 + 1); }
     while ((intptr_t)puVar17 < local_3c);
   }
   while ((puVar19 = (uint32_t *)((intptr_t)puVar19 - 1)), (intptr_t)puVar19 >= 0) {
     cVar3 = *pcVar15;
     pcVar15 = (char *)((intptr_t)pcVar15 + 1);
-    FUN_8018ecf0((uint32_t)cVar3);
+    console_emit((uint32_t)cVar3);
   }
-  while ((local_38 = local_38 - 1), local_38 >= 0) FUN_8018ecf0(0x30);
+  while ((local_38 = local_38 - 1), local_38 >= 0) console_emit(0x30);
   if ((uVar16 & 0x10) != 0 && (intptr_t)puVar18 < local_34) {
     intptr_t puVar17b = (intptr_t)puVar18;
-    do { FUN_8018ecf0(0x20); puVar17b++; } while (puVar17b < local_34);
+    do { console_emit(0x20); puVar17b++; } while (puVar17b < local_34);
   }
   puVar17 = (uint32_t *)local_34;
   if (local_34 < (intptr_t)puVar18) puVar17 = puVar18;
@@ -1688,19 +1688,19 @@ LAB_8018ebec_d:
 
 /* ======== debug console emit layer ========
  * 32-byte line buffer @0x801f68f0, col @0x801b6790, count @0x801b6794,
- * flushed via FUN_8018ef50(1, buf, count). */
-extern int32_t FUN_8018ef50(int32_t,const void *,int32_t);
+ * flushed via bios_tramp_b035(1, buf, count). */
+extern int32_t bios_tramp_b035(int32_t,const void *,int32_t);
 
-void FUN_8018ecf0(uint32_t c)
+void console_emit(uint32_t c)
 {
   int8_t ch = (int8_t)(c << 24 >> 24);
   if (ch == 9) {
-    do { FUN_8018ecf0(0x20); }
+    do { console_emit(0x20); }
     while ((*(int32_t *)guest_at(0x801b6790) & 7) != 0);
     return;
   }
   if (ch == 0xa) {
-    FUN_8018ecf0(0xd);
+    console_emit(0xd);
     *(int32_t *)guest_at(0x801b6790) = 0;
   } else {
     if ((DAT_801b6701[ch & 0xff] & 0x97) != 0)
@@ -1708,7 +1708,7 @@ void FUN_8018ecf0(uint32_t c)
   }
   int32_t cnt = *(int32_t *)guest_at(0x801b6794);
   if (0x1f < cnt) {
-    FUN_8018ef50(1,guest_at(0x801f68f0),cnt);
+    bios_tramp_b035(1,guest_at(0x801f68f0),cnt);
     *(int32_t *)guest_at(0x801b6794) = 0;
     cnt = 0;
   }
@@ -1716,11 +1716,11 @@ void FUN_8018ecf0(uint32_t c)
   *(int32_t *)guest_at(0x801b6794) = cnt + 1;
 }
 
-void FUN_8018edec(void)
+void console_pct(void)
 {
   int32_t cnt = *(int32_t *)guest_at(0x801b6794);
   if (0 < cnt) {
-    FUN_8018ef50(1,guest_at(0x801f68f0),cnt);
+    bios_tramp_b035(1,guest_at(0x801f68f0),cnt);
     *(int32_t *)guest_at(0x801b6794) = 0;
   }
 }
@@ -1728,16 +1728,16 @@ void FUN_8018edec(void)
 /* ======== 0x8018c1f4 ======== */
 
 /* 9-slice/frame sprite builder: allocates from pool B
- * (FUN_8018c0a8), writes corner/edge UVs derived from param_3 (w/h
+ * (spr_pool_b_alloc), writes corner/edge UVs derived from param_3 (w/h
  * packed bytes) and param_2 (pos), param_4 color at +0xc, tag
  * 0x2e808080 at +4, links slot[0] = old_head|0x9000000 and stores
  * compressed slot ptr into *param_1 head cell. Disasm-verified. */
-uint32_t FUN_8018c1f4(uint32_t param_1,uint32_t param_2,uint32_t param_3,uint32_t param_4)
+uint32_t sprite_9slice_build(uint32_t param_1,uint32_t param_2,uint32_t param_3,uint32_t param_4)
 {
   uint32_t *t1;
   uint8_t *b;
   int32_t a2, a3, a0, v1, v0_;
-  t1 = (uint32_t *)FUN_8018c0a8();
+  t1 = (uint32_t *)spr_pool_b_alloc();
   if (t1 == 0) return 0xffffffff;
   b = (uint8_t *)t1;
   a2 = (int32_t)(param_3 >> 16) & 0xff; a2 += 1;
@@ -1871,7 +1871,7 @@ void FUN_8018fe5c(uint32_t param_1)
 
 /* ======== 0x8018fb10 ======== */
 
-void FUN_8018fb10(int32_t param_1)
+void mdec_pump_a(int32_t param_1)
 
 {
   if (param_1 == 0) {
@@ -1896,7 +1896,7 @@ void FUN_8018fb10(int32_t param_1)
 
 /* ======== 0x8018fc90 ======== */
 
-void FUN_8018fc90(uint32_t param_1,uint32_t param_2)
+void mdec_pump_b(uint32_t param_1,uint32_t param_2)
 
 {
   uint32_t sz;
@@ -2039,7 +2039,7 @@ static int32_t br2_twpuc(uint32_t slot,int32_t c)
   return 0;
 }
 
-int32_t FUN_80190a04(int32_t param_1,uint32_t param_2,uint32_t param_3,
+int32_t text_win_printf(int32_t param_1,uint32_t param_2,uint32_t param_3,
                      uint32_t param_4,...)
 
 {
@@ -2256,12 +2256,12 @@ int32_t FUN_801ad1e4(uint32_t param_1,int32_t param_2)
   return 0;
 }
 
-/* FUN_80193828 — GPU status/command helper. Writes 0x10000007 to the
+/* gpu_status_cmd — GPU status/command helper. Writes 0x10000007 to the
  * reg at *0x801b8428; reads *0x801b8424, if !=2 sets bits
  * 0xe1001000|(v&0x3fff) and returns 1, or when (v&0xffffff)==2 and
  * a0&8 writes 0x9000001 returning 2; else returns 1.
  * Disasm-verified @0x80193828. */
-uint32_t FUN_80193828(uint32_t param_1)
+uint32_t gpu_status_cmd(uint32_t param_1)
 {
   uint32_t *reg_a = (uint32_t *)guest_at(*(uint32_t *)guest_at(0x801b8428));
   uint32_t *reg_b = (uint32_t *)guest_at(*(uint32_t *)guest_at(0x801b8424));
@@ -2279,11 +2279,11 @@ uint32_t FUN_80193828(uint32_t param_1)
   return 1;
 }
 
-/* FUN_8018cb98 — one-shot sprite-table bulk init: when flag @0x801b55e4
+/* spr_tbl_init_a — one-shot sprite-table bulk init: when flag @0x801b55e4
  * negative, fill 24 records descending from 0x801f5d10 stride -0x28:
  * +0 = (*(u32*)0x1f8000dc)-2, +7 = 5, +0xb = 0x28; clear flag.
  * Disasm 0x8018cb98-0x8018cbf4. */
-void FUN_8018cb98(void)
+void spr_tbl_init_a(void)
 {
   uint8_t *rec;
   uint32_t dc;
@@ -2300,10 +2300,10 @@ void FUN_8018cb98(void)
   *(uint32_t *)guest_at(0x801b55e4) = 0;
 }
 
-/* FUN_8018cd94 — same pattern for second table: flag @0x801b55e8,
+/* spr_tbl_init_b — same pattern for second table: flag @0x801b55e8,
  * 8 records from 0x801f5ea4 stride -0x34, +7 = 8, +0xb = 0x38.
  * Disasm 0x8018cd94-0x8018cdf0. */
-void FUN_8018cd94(void)
+void spr_tbl_init_b(void)
 {
   uint8_t *rec;
   uint32_t dc;
@@ -2334,13 +2334,13 @@ void FUN_8018f9b4(uint32_t param_1,int param_2)
   FUN_8018fc00(param_1,*(uint16_t *)w);
 }
 
-/* FUN_80190260 — VRAM tile RLE decoder + XOR descramble. Control bytes
+/* vram_tile_decode — VRAM tile RLE decoder + XOR descramble. Control bytes
  * from guest stream 0x801b6930: <0xf0 = run of n+1 bytes (n<0x80 only;
  * dist==0 copies literals, else backrefs from dst-dist); ==0xf0 resets
  * dist; >0xf0 packs dist = ((n<<8)|next) - 0xf0ff, dist==0xf00 ends.
  * Then u16 buf[i] ^= buf[i-4] for i in [4,0x87ff]. dst = host buffer.
  * Disasm 0x80190260-0x8019033c. */
-void FUN_80190260(uint8_t *param_1)
+void vram_tile_decode(uint8_t *param_1)
 {
   const uint8_t *s = (const uint8_t *)guest_at(0x801b6930);
   uint8_t *d = param_1;
@@ -2374,9 +2374,9 @@ void FUN_80190260(uint8_t *param_1)
   }
 }
 
-/* FUN_801940c0 — sprite-prim tag init: byte+3=5, byte+7=0x28.
+/* spr_prim_tag_a — sprite-prim tag init: byte+3=5, byte+7=0x28.
  * a0 is a guest address. Disasm 0x801940c0-0x801940d0. */
-void FUN_801940c0(uint32_t param_1)
+void spr_prim_tag_a(uint32_t param_1)
 {
   uint8_t *p = (uint8_t *)guest_at(param_1);
   if (p == NULL) return;
@@ -2384,9 +2384,9 @@ void FUN_801940c0(uint32_t param_1)
   p[7] = 0x28;
 }
 
-/* FUN_80194160 — sprite-prim tag init: byte+3=3, byte+7=0x40.
+/* spr_prim_tag_b — sprite-prim tag init: byte+3=3, byte+7=0x40.
  * a0 is a guest address. Disasm 0x80194160-0x80194170. */
-void FUN_80194160(uint32_t param_1)
+void spr_prim_tag_b(uint32_t param_1)
 {
   uint8_t *p = (uint8_t *)guest_at(param_1);
   if (p == NULL) return;
@@ -2394,9 +2394,9 @@ void FUN_80194160(uint32_t param_1)
   p[7] = 0x40;
 }
 
-/* FUN_80192430 — GPU packet word pack: a0?0x400:0, a1?0xe100200:0,
+/* gpu_pkt_pack — GPU packet word pack: a0?0x400:0, a1?0xe100200:0,
  * base (a2 & 0x9ff). Disasm 0x80192430-0x80192448. */
-uint32_t FUN_80192430(uint8_t a0,char a1,uint16_t a2)
+uint32_t gpu_pkt_pack(uint8_t a0,char a1,uint16_t a2)
 {
   uint32_t v0 = a2 & 0x9ff;
   if (a1) v0 |= 0xe100200;
@@ -2404,17 +2404,17 @@ uint32_t FUN_80192430(uint8_t a0,char a1,uint16_t a2)
   return v0;
 }
 
-/* FUN_80192580 — GPU coord pack: (a0 & 0x7ff) | 0xe5000000 |
+/* gpu_coord_pack — GPU coord pack: (a0 & 0x7ff) | 0xe5000000 |
  * ((a1 & 0x7ff) << 11). Disasm 0x80192580-0x80192594. */
-uint32_t FUN_80192580(int a0,int a1)
+uint32_t gpu_coord_pack(int a0,int a1)
 {
   return ((uint32_t)a0 & 0x7ff) | 0xe5000000 | (((uint32_t)a1 & 0x7ff) << 11);
 }
 
-/* FUN_8019259c — GPU texpage/coord pack from 8-byte descriptor:
+/* gpu_texpage_pack — GPU texpage/coord pack from 8-byte descriptor:
  * returns 0 on NULL; else packed (clut<<22)|(page<<12)|((u8+2)>>3)<<15|
  * ((-s16+6 &0xff)>>3)<<5 | ((-s16+4 &0xff)>>3). Disasm verified. */
-uint32_t FUN_8019259c(uint16_t *a0_)
+uint32_t gpu_texpage_pack(uint16_t *a0_)
 {
   uint8_t *a0 = (uint8_t *)a0_;
   uint32_t r, t;
@@ -2431,7 +2431,7 @@ uint32_t FUN_8019259c(uint16_t *a0_)
   return r;
 }
 
-/* FUN_80192450/801924e8 — coord pack with viewport clamp:
+/* gpu_coord_clamp_a/801924e8 — coord pack with viewport clamp:
  * low16 of each arg sign-extended, clamped to [0,dim-1] where dim is the
  * signed/unsigned hword @0x801c8324 (x) / @0x801c8326 (y); negative -> 0,
  * >=dim -> dim-1, in-range keeps original arg. Result
@@ -2447,13 +2447,13 @@ static uint32_t br2_coord_clamp(uint32_t v, uint32_t dimaddr)
   if (n - 1 < x) return nu - 1;
   return v;
 }
-uint32_t FUN_80192450(uint32_t a0,uint32_t a1)
+uint32_t gpu_coord_clamp_a(uint32_t a0,uint32_t a1)
 {
   uint32_t x = br2_coord_clamp(a0,0x801c8324);
   uint32_t y = br2_coord_clamp(a1,0x801c8326);
   return ((y & 0x3ff) << 10) | (x & 0x3ff) | 0xe3000000;
 }
-uint32_t FUN_801924e8(uint32_t a0,uint32_t a1)
+uint32_t gpu_coord_clamp_b(uint32_t a0,uint32_t a1)
 {
   uint32_t x = br2_coord_clamp(a0,0x801c8324);
   uint32_t y = br2_coord_clamp(a1,0x801c8326);
@@ -2464,16 +2464,16 @@ uint32_t FUN_801924e8(uint32_t a0,uint32_t a1)
 /* Rotated sprite-quad emitter. a0=link-out ptr (sp+38), a1=s7 base pos
  * (16.16), a2=s0 packed (w-1/h-1 nibbles + color?), a3=s4 attr word,
  * stack args s5=scale-x?, s6=scale-y?, fp=angle. Alloc via pool-B
- * FUN_8018c0a8; fail -> -1. sin/cos via FUN_8018d29c/8d298; corner
+ * spr_pool_b_alloc; fail -> -1. sin/cos via FUN_8018d29c/8d298; corner
  * offsets rounded /8192; writes 4 corner xy pairs + tag 0x2c808080,
  * links node into *a0. Disasm 0x8018c31c-0x8018c574. */
-extern void *FUN_8018c0a8(void);
+extern void *spr_pool_b_alloc(void);
 extern int FUN_8018d298(int);
 extern int FUN_8018d29c(uint);
-int FUN_8018c31c(uint32_t a0g, int32_t s7, uint32_t s0, uint32_t s4,
+int sprite_quad_emit(uint32_t a0g, int32_t s7, uint32_t s0, uint32_t s4,
                 int32_t s5, int32_t s6, int32_t fp)
 {
-  int32_t *s1 = (int32_t *)FUN_8018c0a8();
+  int32_t *s1 = (int32_t *)spr_pool_b_alloc();
   int32_t s2, s3, a1r, v0r, v1r;
   int32_t t2, t1, a3r, t0, t6, t5, t4, t3, a2r, a0r;
   int32_t sn, cs;
@@ -2547,18 +2547,18 @@ int FUN_8018c31c(uint32_t a0g, int32_t s7, uint32_t s0, uint32_t s4,
 
 /* ======== 0x801863ac ======== */
 /* Empty stub in the payload: jr ra; nop. Faithful no-op. */
-void FUN_801863ac(void) { }
+void guest_noop(void) { }
 
 /* ======== 0x80191f08 ======== */
 /* Sprite-rect packet fill: pkt+3=2, pkt+4=coord-pack(lh@r+0,lh@r+2)
- * via FUN_80192450, pkt+8=FUN_801924e8(s16(u16@0+u16@4-1),
+ * via gpu_coord_clamp_a, pkt+8=gpu_coord_clamp_b(s16(u16@0+u16@4-1),
  * s16(u16@2+u16@6-1)). a0=pkt host, a1=rect host. */
 void FUN_80191f08(uint32_t *pkt, uint16_t *r)
 {
   ((uint8_t *)pkt)[3] = 2;
-  pkt[1] = FUN_80192450((uint32_t)(int16_t)r[0],
+  pkt[1] = gpu_coord_clamp_a((uint32_t)(int16_t)r[0],
                         (uint32_t)(int16_t)r[1]);
-  pkt[2] = FUN_801924e8((uint32_t)(int16_t)(r[0] + r[2] - 1),
+  pkt[2] = gpu_coord_clamp_b((uint32_t)(int16_t)(r[0] + r[2] - 1),
                         (uint32_t)(int16_t)(r[1] + r[3] - 1));
 }
 
@@ -2566,7 +2566,7 @@ void FUN_80191f08(uint32_t *pkt, uint16_t *r)
 /* GPU texpage/clut packet: mode = (lh@a1+4 && lh@a1+6) ? 5 : 0;
  * +4=0x1000000, +8=0x80000000, +0x10=(a3<<16)|(a2&0xffff),
  * +0xc/+0x14 = a1[0]/a1[1]. Returns a1[1]. a0=host pkt. */
-uint32_t FUN_80194180(uint32_t *t0, uint32_t *a1, uint32_t a2, uint32_t a3)
+uint32_t gpu_texclut_pkt(uint32_t *t0, uint32_t *a1, uint32_t a2, uint32_t a3)
 {
   uint32_t mode = 5;
   if (*(int16_t *)((uint8_t *)a1 + 4) == 0 ||

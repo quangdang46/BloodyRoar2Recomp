@@ -6,7 +6,7 @@
  *
  * Guest map:
  *   FUN_80176248  action-request resolver (ctrl, battle) -> action idx
- *   FUN_80178664  pending-action permission gate (motion, ctrl, a, b)
+ *   pending_action_gate  pending-action permission gate (motion, ctrl, a, b)
  *   FUN_801787dc  per-fighter frame update (calls resolver, writes
  *                 motion+0x80)
  *   FUN_8017ae18  EV5 action-control record interpreter (in ev.c)
@@ -50,7 +50,7 @@ extern void FUN_80142da0(uint8_t *ctrl);
 extern void FUN_80142d20(uint8_t *ctrl);
 
 /* ================================================================== */
-/* FUN_80178664 — pending-action permission gate                        */
+/* pending_action_gate — pending-action permission gate                        */
 /*                                                                    */
 /* (motion, ctrl, reqA=ctrl+0x5c, reqB=ctrl+0x58) -> action or -1.     */
 /* motion+0x18 bit 0x100000 mirrors into ctrl+0x6c bit 0x100.          */

@@ -94,14 +94,14 @@ extern uint32_t guest_of(const void *p);
 
 /* host hooks for guest calls (bound by runtime) */
 extern void FUN_80142da0(byte*);
-void FUN_80144f8c(uint32_t,byte*);
+void trig_lut_read(uint32_t,byte*);
 void FUN_8014512c(uint32_t,byte*);
 void FUN_801451d4(uint32_t,byte*);
 void FUN_801452d0(uint32_t,byte*);
 extern void FUN_80142d20(byte*);
 extern void FUN_80142dd8(byte*);
 extern void FUN_80178754(byte*);
-extern int32_t FUN_80178664(uint32_t, byte*, uint32_t, uint32_t);
+extern int32_t pending_action_gate(uint32_t, byte*, uint32_t, uint32_t);
 void FUN_801375e8(int);
 int FUN_8018d298(int);
 int FUN_8018d29c(uint);
@@ -914,7 +914,7 @@ LAB_8017857c:
             return 0xbe;
           }
           if (((-1 < *(short *)(iVar18 + 0x1c)) && ((*(uint *)(iVar18 + 0x18) & 0x20) != 0)) &&
-             (iVar17 = FUN_80178664(guest_of((void *)iVar18),param_1,uVar21,uVar16), -1 < iVar17)) {
+             (iVar17 = pending_action_gate(guest_of((void *)iVar18),param_1,uVar21,uVar16), -1 < iVar17)) {
             return iVar17;
           }
         }
@@ -1019,7 +1019,7 @@ LAB_8017857c:
           }
         }
         if ((-1 < *(short *)(iVar18 + 0x1c)) &&
-           (iVar17 = FUN_80178664(guest_of((void *)iVar18),param_1,uVar21,uVar16), -1 < iVar17)) {
+           (iVar17 = pending_action_gate(guest_of((void *)iVar18),param_1,uVar21,uVar16), -1 < iVar17)) {
           return iVar17;
         }
         if ((uVar2 & 0x4000) == 0) {
@@ -1250,7 +1250,7 @@ LAB_801766e8:
             if ((uVar14 & 0x2000) == 0) {
               if ((uVar14 & 0x40000) == 0) {
                 *(uint *)(param_1 + 0x68) = *(uint *)(param_1 + 0x68) & 0xffffefff | 0x804400;
-                FUN_80144f8c(iVar12,param_1);
+                trig_lut_read(iVar12,param_1);
                 if ((param_1[5] & 1) == 0) {
                   return 0x5b;
                 }
@@ -1280,7 +1280,7 @@ LAB_801766e8:
         else {
           uVar14 = uVar14 | 0x800000;
           *(uint *)(param_1 + 0x68) = uVar14;
-          FUN_80144f8c(iVar12,param_1);
+          trig_lut_read(iVar12,param_1);
         }
       }
       if ((((uVar14 & 0x2000000) != 0) ||
@@ -1438,10 +1438,10 @@ void FUN_80156ef4(uint,int,short);
 extern void FUN_8017eb78(byte*,byte*);
 
 extern void FUN_80179478(byte*,byte*);
-extern void FUN_8017ea7c(byte *param_1,byte *param_2);
-extern void FUN_8017a6e8(int param_1,int *param_2,int param_3);
-extern void FUN_80175e08(int param_1,int param_2);
-extern void FUN_80179a6c(undefined2 *param_1);
+extern void ev_stream_dispatch(byte *param_1,byte *param_2);
+extern void action_switch_guest(int param_1,int *param_2,int param_3);
+extern void slot_apply_guest(int param_1,int param_2);
+extern void part_record_reset(undefined2 *param_1);
 extern ushort * FUN_8017ae18(int param_1,int param_2,ushort *param_3);
 void FUN_80185048(undefined4 *param_1,byte *param_2,short *param_3,undefined4 param_4);
 uint * FUN_80195050(undefined4 *param_1,uint *param_2);
@@ -1922,9 +1922,9 @@ void FUN_8017eb78(byte *param_1, byte *param_2)
   
   if (*(short *)(param_2 + 0x80) != *(short *)(param_2 + 0x82)) {
     *(undefined2 *)(param_2 + 0x82) = *(undefined2 *)(param_2 + 0x80);
-    FUN_8017a6e8((int)guest_of(param_1),(int *)param_2,(int)*(short *)(param_2 + 0x80));
+    action_switch_guest((int)guest_of(param_1),(int *)param_2,(int)*(short *)(param_2 + 0x80));
   }
-  FUN_8017ea7c(param_1,param_2);
+  ev_stream_dispatch(param_1,param_2);
   *(undefined2 *)(param_1 + 0x88) = *(undefined2 *)(param_1 + 0x86);
   if ((((param_1[5] & 1U) != 0) && ((*(uint *)(param_1 + 0x58) & 0xc0000000) == 0x80000000)) &&
      (*(short *)(param_2 + 0x80) != 0xbe)) {
@@ -2131,7 +2131,7 @@ void FUN_80178754(byte *param_1)
   *(undefined1 *)(param_1 + 5) = 0;
   *(uint *)(param_1 + 0x6c) = *(uint *)(param_1 + 0x6c) & 0xffff7fff;
   *(undefined2 *)(param_1 + 0xae) = *(undefined2 *)(param_1 + 0xac);
-  FUN_80175e08((int)guest_of(param_1),0);
+  slot_apply_guest((int)guest_of(param_1),0);
   FUN_80140ca0(1,param_1);
   FUN_80142d20(param_1);
   FUN_80142da0(param_1);
@@ -2142,7 +2142,7 @@ void FUN_80178754(byte *param_1)
 
 /* trig LUT readers (guest sin/cos) — host binds br2_lut tables */
 
-void FUN_80144f8c(uint32_t param_1, byte *param_2)
+void trig_lut_read(uint32_t param_1, byte *param_2)
 {
   int iVar1;
   int iVar2;
@@ -3066,9 +3066,9 @@ undefined8 FUN_8018d4fc(undefined4 param_1,int param_2)
 }
 
 /* ---- event-stream runner + GTE helpers (batch21) ---- */
-/* FUN_8017ea7c — event-stream dispatcher (guest-verbatim; a2-pc
+/* ev_stream_dispatch — event-stream dispatcher (guest-verbatim; a2-pc
  * residual modelled explicitly: handlers get pc = motion+0x84). */
-void FUN_8017ea7c(byte *param_1,byte *param_2)
+void ev_stream_dispatch(byte *param_1,byte *param_2)
 {
   byte *pbVar1;
   pbVar1 = (byte *)guest_at(*(uint32_t *)(param_2 + 0x84));

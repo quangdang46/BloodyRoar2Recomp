@@ -2,7 +2,7 @@
  * command issuer with retry (verbatim Ghidra, decomp/batch_sm3.txt).
  *
  * Guest globals via g_* arena bindings; timer FUN_8019a460 and
- * channel ops FUN_80195d64/95d78/961a8/961cc/98590/95ec8/98908/
+ * channel ops mc_session/95d78/961a8/961cc/98590/95ec8/98908/
  * 96e14/98c90 remain extern (deeper CD-driver cluster). */
 #include <stdint.h>
 #include <string.h>
@@ -26,7 +26,7 @@ uint FUN_8019a460(int);
 void FUN_801961cc(int);
 int FUN_801961a8(undefined4);
 void FUN_80198590(void);
-undefined4 FUN_80195d64(undefined4);
+undefined4 mc_session(undefined4);
 undefined4 FUN_80195d78(undefined4);
 undefined4 FUN_80195ec8(byte,int);
 undefined4 FUN_80198908(int);
@@ -106,7 +106,7 @@ void FUN_80198af0(void)
       }
       iVar2 = FUN_8019a460(0xffffffff);
     } while ((uint)(iVar2 - iVar1) < 0x79);
-    FUN_80195d64(DAT_801bcba8);
+    mc_session(DAT_801bcba8);
     iVar1 = -1;
     DAT_801bcba4 = 0;
   }
@@ -116,7 +116,7 @@ LAB_80198bc4:
     if ((DAT_801bc7b4 & 1) != 0) {
       FUN_801961a8(DAT_801bcbb0);
     }
-    FUN_80195d64(0x80198590);
+    mc_session(0x80198590);
     FUN_80195ec8(9,0);
     DAT_801bcba4 = 1;
     iVar1 = FUN_8019a460(0xffffffff);
@@ -126,7 +126,7 @@ LAB_80198bc4:
       }
       iVar2 = FUN_8019a460(0xffffffff);
     } while ((uint)(iVar2 - iVar1) < 0x79);
-    FUN_80195d64(DAT_801bcba8);
+    mc_session(DAT_801bcba8);
     DAT_801bcba4 = 0;
   }
   return;
@@ -217,7 +217,7 @@ extern int FUN_801962f0(const void *);
 extern void FUN_8019a5d8(int,int);
 extern uint FUN_80196b4c(int,undefined1 *);
 extern undefined4 FUN_80197698(int);
-extern int FUN_8019a6e0(int,uint32_t);
+extern int cd_dispatch_tbl4(int,uint32_t);
 uint32_t call_guest(uint32_t,uint32_t,uint32_t);
 
 extern char *s__s____80125840;
@@ -379,7 +379,7 @@ bool FUN_80198c90(undefined4 param_1,undefined4 param_2,uint param_3)
       if (DAT_801bcba4 == 0) goto LAB_80198d0c;
       iVar2 = FUN_8019a460(0xffffffff);
     } while ((uint)(iVar2 - iVar1) < 0x79);
-    FUN_80195d64(DAT_801bcba8);
+    mc_session(DAT_801bcba8);
     DAT_801bcba4 = 0;
   }
 LAB_80198d0c:
@@ -395,7 +395,7 @@ LAB_80198d0c:
   DAT_801bcb8c = param_3 | 0x20;
   DAT_801bcb80 = param_1;
   DAT_801bcb84 = param_2;
-  DAT_801bcba8 = FUN_80195d64(0);
+  DAT_801bcba8 = mc_session(0);
   DAT_801bcbac = FUN_80195d78(0);
   if ((DAT_801bc7b4 & 1) != 0) {
     DAT_801bcbb0 = FUN_801961a8(0);
@@ -474,12 +474,12 @@ void FUN_801961cc(int param_1)
 int FUN_801961a8(undefined4 param_1)
 
 {
-  return FUN_8019a6e0(3,param_1);
+  return cd_dispatch_tbl4(3,param_1);
 }
 
 /* ======== 0x80195d64 ======== */
 
-undefined4 FUN_80195d64(undefined4 param_1)
+undefined4 mc_session(undefined4 param_1)
 
 {
   undefined4 uVar1;
@@ -540,7 +540,7 @@ undefined4 FUN_80198908(int param_1)
   uint uVar4;
   uint8_t *p18;
   
-  FUN_80195d64(0);
+  mc_session(0);
   FUN_80195d78(0);
   if ((DAT_801bc7b4 & 1) != 0) {
     FUN_801961a8(0);
@@ -595,21 +595,21 @@ undefined4 FUN_80198908(int param_1)
 void FUN_80198590(void)
 
 {
-  FUN_80195d64(DAT_801bcba8);
+  mc_session(DAT_801bcba8);
   DAT_801bcba4 = 0;
   return;
 }
 
 /* ======== batch27: CD driver core ======== */
 
-extern int  FUN_8018ecf0(int);
-extern void FUN_8018edec(void);
-extern int  FUN_80196168();
-extern int  FUN_80196188();
-extern void FUN_80199fe0();
-extern void FUN_8019a670();
-extern uint16_t FUN_8019a7fc(uint16_t);
-extern uint32_t FUN_80193828(uint);
+extern int  console_emit(int);
+extern void console_pct(void);
+extern int  cd_sync_wait_b();
+extern int  cd_sync_wait_c();
+extern void bios_table_tramp();
+extern void bios_kobj_tramp();
+extern uint16_t cd_u16_swap_store(uint16_t);
+extern uint32_t gpu_status_cmd(uint);
 
 extern char *s_CD_sync_8012582c;
 extern char *s_CD_ready_80125834;
@@ -724,9 +724,9 @@ void FUN_80197ad0(uint32_t param_1)
     cVar1 = (char)*s;
     s = s + 1;
     if (cVar1 == '\0') break;
-    FUN_8018ecf0((int)cVar1);
+    console_emit((int)cVar1);
   }
-  FUN_8018edec();
+  console_pct();
   return;
 }
 
@@ -1172,7 +1172,7 @@ undefined4 FUN_80197698(int param_1)
 
 /* ======== 0x8019a6e0 ======== */
 
-int FUN_8019a6e0(int param_1,uint32_t param_2)
+int cd_dispatch_tbl4(int param_1,uint32_t param_2)
 
 {
   uint32_t tbl = CDB32G(0x801bdda0);
@@ -1193,11 +1193,11 @@ void FUN_801985c4(char param_1,undefined4 param_2)
     if (0 < (int)DAT_801bcb94) {
       if (DAT_801bcb90 == 0x200) {
         if ((DAT_801bc7b4 & 1) == 0) {
-          FUN_80196168(0x1f800e00,3);
+          cd_sync_wait_b(0x1f800e00,3);
         }
         else {
           FUN_801961a8(0);
-          FUN_80196188(0x1f800e00,3);
+          cd_sync_wait_c(0x1f800e00,3);
           FUN_801961cc(0);
           FUN_801961a8(0x80198838);
         }
@@ -1208,13 +1208,13 @@ void FUN_801985c4(char param_1,undefined4 param_2)
         }
       }
       if ((DAT_801bc7b4 & 1) == 0) {
-        FUN_80196168(DAT_801bcb88,DAT_801bcb90);
+        cd_sync_wait_b(DAT_801bcb88,DAT_801bcb90);
         DAT_801bcb88 = DAT_801bcb88 + DAT_801bcb90 * 4;
         DAT_801bcb94 = DAT_801bcb94 + -1;
         DAT_801bcba0 = DAT_801bcba0 + 1;
       }
       else {
-        FUN_80196188(DAT_801bcb88,DAT_801bcb90);
+        cd_sync_wait_c(DAT_801bcb88,DAT_801bcb90);
       }
     }
   }
@@ -1234,7 +1234,7 @@ void FUN_801985c4(char param_1,undefined4 param_2)
     if ((DAT_801bc7b4 & 1) != 0) {
       FUN_801961a8(DAT_801bcbb0);
     }
-    FUN_80195d64(0x80198590);
+    mc_session(0x80198590);
     FUN_80195ec8(9,0);
     DAT_801bcba4 = 1;
     if (CDB32G(0x801bc7b0) != 0) {
@@ -1261,7 +1261,7 @@ void FUN_80198838(void)
     if ((DAT_801bc7b4 & 1) != 0) {
       FUN_801961a8(DAT_801bcbb0);
     }
-    FUN_80195d64(0x80198590);
+    mc_session(0x80198590);
     FUN_80195ec8(9,0);
     DAT_801bcba4 = 1;
     if (CDB32G(0x801bc7b0) != 0) {
@@ -1277,28 +1277,28 @@ extern uint32_t cd_cmd_issue_c(uint32_t,uint32_t);
 uint32_t bios_call(uint32_t fn, uint32_t a0);
 extern void cd_cmd_bytes(uintptr_t);
 
-uint FUN_80195d24(int param_1,undefined1 *param_2)
+uint cd_sync_wait_a(int param_1,undefined1 *param_2)
 {
   return FUN_801968cc(param_1,param_2);
 }
 
-int FUN_80196168(uint32_t param_1,uint32_t param_2)
+int cd_sync_wait_b(uint32_t param_1,uint32_t param_2)
 {
   return cd_cmd_issue_b(param_1,param_2) == 0;
 }
 
-int FUN_80196188(uint32_t param_1,uint32_t param_2)
+int cd_sync_wait_c(uint32_t param_1,uint32_t param_2)
 {
   return cd_cmd_issue_c(param_1,param_2) == 0;
 }
 
 /* BIOS table trampolines (A0/B0/C0 vectors) -> host BIOS hook. */
-void FUN_80199fe0()
+void bios_table_tramp()
 {
   bios_call(0xb0,0);
 }
 
-void FUN_8019a670()
+void bios_kobj_tramp()
 {
   bios_call(0xc0,0);
 }
@@ -1352,31 +1352,31 @@ uint32_t cd_cmd_retry(uintptr_t param_1)
 }
 
 /* ---- batch30: file-pump dispatch wrappers ---- */
-extern void FUN_8018fc90(void);
-extern void FUN_8018fb10(int32_t);
+extern void mdec_pump_b(void);
+extern void mdec_pump_a(int32_t);
 extern void cd_dispatch_tblc(void);
 
-/* FUN_8018faec — dispatch file op 1 through FUN_8019a6e0 table. */
-void FUN_8018faec(uint32_t param_1)
+/* cd_fileop_dispatch — dispatch file op 1 through cd_dispatch_tbl4 table. */
+void cd_fileop_dispatch(uint32_t param_1)
 {
-  FUN_8019a6e0(1,param_1);
+  cd_dispatch_tbl4(1,param_1);
 }
 
-/* FUN_8018fa30 — forward to FUN_8018fc90. */
-void FUN_8018fa30(void)
+/* cd_fileop_forward — forward to mdec_pump_b. */
+void cd_fileop_forward(void)
 {
-  FUN_8018fc90();
+  mdec_pump_b();
 }
 
-/* FUN_8018f850 — param_1==0 resets via cd_dispatch_tblc, then FUN_8018fb10. */
-void FUN_8018f850(int32_t param_1)
+/* cd_fileop_reset — param_1==0 resets via cd_dispatch_tblc, then mdec_pump_a. */
+void cd_fileop_reset(int32_t param_1)
 {
   if (param_1 == 0) cd_dispatch_tblc();
-  FUN_8018fb10(param_1);
+  mdec_pump_a(param_1);
 }
 
-/* FUN_8019a7fc — u16 swap-store through DAT_801bdda8 pointer. */
-uint16_t FUN_8019a7fc(uint16_t param_1)
+/* cd_u16_swap_store — u16 swap-store through DAT_801bdda8 pointer. */
+uint16_t cd_u16_swap_store(uint16_t param_1)
 {
   uint16_t *slot = (uint16_t *)guest_at(DB32(0x801bdda8));
   uint16_t uVar1 = *slot;
@@ -1407,7 +1407,7 @@ void cd_cmd_bytes(uintptr_t param_1)
 }
 
 /* cd_dispatch_tblc — indirect dispatch: call *(u32*)(*0x801bddA0 + 0xc).
- * Same table family as FUN_8019a6e0: cells hold guest function
+ * Same table family as cd_dispatch_tbl4: cells hold guest function
  * addresses, dispatched through call_guest. */
 void cd_dispatch_tblc(void)
 {
@@ -1448,7 +1448,7 @@ int32_t cd_file_open_b(uint32_t param_1)
 }
 
 /* cd_read_param_set — CD read setup: arg -> @0x801feb38, -1 -> @0x801feb28,
- * cd_dispatch_tblc dispatch, cd_cmd_sequence(0x20000001,&block), FUN_80199fe0(0).
+ * cd_dispatch_tblc dispatch, cd_cmd_sequence(0x20000001,&block), bios_table_tramp(0).
  * Disasm 0x80199f30-0x80199f74. */
 extern void cd_cmd_sequence(uint32_t,void *,uint32_t,uint32_t);
 void cd_read_param_set(uint32_t param_1)
@@ -1457,7 +1457,7 @@ void cd_read_param_set(uint32_t param_1)
   *(uint32_t *)guest_at(0x801feb28) = 0xffffffff;
   cd_dispatch_tblc();
   cd_cmd_sequence(0x20000001,guest_at(0x801feb28),0,0);
-  FUN_80199fe0();
+  bios_table_tramp();
 }
 
 /* cd_chan_init_wrap — thin wrapper over cd_channel_main_init. Disasm verified. */
@@ -1557,10 +1557,10 @@ void cd_channel_table_init(uint8_t *param_1,uint8_t *param_2)
   *(uint32_t *)guest_at(0x801c47b8) = 1;
 }
 
-/* FUN_801a120c — dispatch wrapper: FUN_8019a6e0(3,arg). */
+/* FUN_801a120c — dispatch wrapper: cd_dispatch_tbl4(3,arg). */
 void FUN_801a120c(int32_t param_1)
 {
-  FUN_8019a6e0(3,(uint32_t)param_1);
+  cd_dispatch_tbl4(3,(uint32_t)param_1);
 }
 
 /* cd_xchg_fefb4 — get-and-set u32 @0x801fefb4, returns previous. */
@@ -1588,16 +1588,16 @@ int32_t cd_ready_probe(void)
 extern void cd_kobj_init_a(void);
 extern void cd_kobj_init_b(void);
 extern void FUN_8019a194(void);
-extern void FUN_8019a320(uint32_t,uint32_t);
+extern void bios_tramp_b015(uint32_t,uint32_t);
 void cd_cmd_sequence(uint32_t param_1,void *param_2,uint32_t param_3,uint32_t param_4)
 {
   cd_kobj_init_a();
   FUN_8018e300();
   cd_kobj_init_b();
   FUN_8018e310(0);
-  FUN_80199fe0();
+  bios_table_tramp();
   FUN_8019a194();
-  FUN_8019a320(param_1,(uint32_t)(uintptr_t)param_2);
+  bios_tramp_b015(param_1,(uint32_t)(uintptr_t)param_2);
   (void)param_3; (void)param_4;
   *(uint32_t *)guest_at(0x801bcc90) = 1;
 }
@@ -1607,21 +1607,21 @@ void cd_cmd_sequence(uint32_t param_1,void *param_2,uint32_t param_3,uint32_t pa
  * crit-out, two jalr calls through fn slot @0x801c4784 on channel
  * bases 0x801ff080/+0xf0, clear pair @0x801fefd0, flag=1.
  * Disasm 0x801a1a40-0x801a1b08. */
-extern void FUN_8019a340(uint32_t,uint32_t);
-extern void FUN_8019a330(uint32_t,uint32_t);
+extern void bios_tramp_c003(uint32_t,uint32_t);
+extern void bios_tramp_c002(uint32_t,uint32_t);
 void cd_channel_main_init(void)
 {
   uint32_t *v1, base;
   FUN_8018e300();
   *(uint32_t *)guest_at(0x801c47b8) = 0;
-  FUN_8019a340(2,0x801fefc0);
-  FUN_8019a330(2,0x801fefc0);
+  bios_tramp_c003(2,0x801fefc0);
+  bios_tramp_c002(2,0x801fefc0);
   v1 = (uint32_t *)guest_at(*(uint32_t *)guest_at(0x801c47e0));
   if (v1) {
     *v1 = 0xfffffffe;
     v1[1] |= 1;
   }
-  FUN_8019a670();
+  bios_kobj_tramp();
   FUN_8018e310(0);
   base = *(uint32_t *)guest_at(0x801c47b4);
   {
@@ -1680,16 +1680,16 @@ uint32_t cd_xchg_fefb8(uint32_t param_1)
 /* BIOS vector trampolines: jr $t2 -> kernel entries 0xa0/0xb0/0xc0
  * with t1 = service number and a0/a1 forwarded. Routed through
  * bios_svc (table,service,a0,a1) — same boundary family as
- * FUN_80199fe0/9a670. */
+ * bios_table_tramp/9a670. */
 uint32_t bios_svc(uint32_t,uint32_t,uint32_t,uint32_t);
-void FUN_8019a320(uint32_t a0,uint32_t a1) { bios_svc(0xb0,0x15,a0,a1); }
-void FUN_8019a330(uint32_t a0,uint32_t a1) { bios_svc(0xc0,2,a0,a1); }
-void FUN_8019a340(uint32_t a0,uint32_t a1) { bios_svc(0xc0,3,a0,a1); }
+void bios_tramp_b015(uint32_t a0,uint32_t a1) { bios_svc(0xb0,0x15,a0,a1); }
+void bios_tramp_c002(uint32_t a0,uint32_t a1) { bios_svc(0xc0,2,a0,a1); }
+void bios_tramp_c003(uint32_t a0,uint32_t a1) { bios_svc(0xc0,3,a0,a1); }
 
 /* FUN_8019a194 — CD sub-channel table install: crit-in, stores code
  * addrs 0x801aa244/0x801aa2ac into dispatch cells @0x801feb44/48,
  * clears @0x801feb40/@0x801feb4c, then
- * FUN_8019a340(1,0x801febc0) + FUN_8019a330(1,0x801febc0), crit-out.
+ * bios_tramp_c003(1,0x801febc0) + bios_tramp_c002(1,0x801febc0), crit-out.
  * Disasm 0x8019a194-0x8019a204. */
 void FUN_8019a194(void)
 {
@@ -1699,8 +1699,8 @@ void FUN_8019a194(void)
   *(uint32_t *)guest_at(0x801feb48) = 0x801aa2ac;
   *(uint32_t *)guest_at(0x801feb40) = 0;
   *(uint32_t *)guest_at(0x801feb4c) = 0;
-  FUN_8019a340(1,s0);
-  FUN_8019a330(1,s0);
+  bios_tramp_c003(1,s0);
+  bios_tramp_c002(1,s0);
   FUN_8018e310(0);
 }
 
@@ -1873,13 +1873,13 @@ void cd_u16_table_store(uint32_t a0,uint32_t a1,int32_t a2)
   }
 }
 
-/* cd_reg_window_update — FUN_8019dad0(); FUN_8019d220(1,*(u32*)a0). */
-extern void FUN_8019dad0(uint32_t);
-extern void FUN_8019d220(int32_t,uint32_t);
+/* cd_reg_window_update — cd_chan_attr_push(); cd_reg_window_u16(1,*(u32*)a0). */
+extern void cd_chan_attr_push(uint32_t);
+extern void cd_reg_window_u16(int32_t,uint32_t);
 void cd_reg_window_update(uint8_t *a0)
 {
-  FUN_8019dad0((uint32_t)(uintptr_t)a0);
-  FUN_8019d220(1,*(uint32_t *)a0);
+  cd_chan_attr_push((uint32_t)(uintptr_t)a0);
+  cd_reg_window_u16(1,*(uint32_t *)a0);
 }
 
 /* cd_subsys_reset_wrap — FUN_8019e330(); FUN_8019e39c(); bios_tramp_a070(). */
@@ -1945,9 +1945,9 @@ void FUN_8019b308(void)
 
 /* FUN_8019e680 — channel block @0x801febe0 init: clears +0/4/8/0xc/
  * 0x44/0x54, cd_job_slots_reset, +0x14=-1, +0x48/+0x4c=1, +0x50=old+0x54,
- * FUN_801a0be0, cd_chan_block_init(7,0x801a110). Disasm 0x8019e680-e6e8. */
+ * cd_hw_chan_init, cd_chan_block_init(7,0x801a110). Disasm 0x8019e680-e6e8. */
 extern void cd_job_slots_reset(void);
-extern void FUN_801a0be0(void);
+extern void cd_hw_chan_init(void);
 extern void cd_chan_block_init(int32_t,uint32_t);
 void FUN_8019e680(void)
 {
@@ -1966,7 +1966,7 @@ void FUN_8019e680(void)
   *(uint32_t *)(s0 + 0x4c) = 1;
   *(uint32_t *)(s0 + 0x48) = 1;
   *(uint32_t *)(s0 + 0x50) = v1;
-  FUN_801a0be0();
+  cd_hw_chan_init();
   cd_chan_block_init(7,0x801a110);
 }
 
@@ -2011,8 +2011,8 @@ void cd_read_param_block(uint32_t a0,uint32_t a1)
   *(uint32_t *)guest_at(0x801fc694) = a1;
 }
 
-/* cd_ext_table_init — dispatch wrapper: FUN_8019a6e0(4,a0). */
-void cd_ext_table_init(uint32_t a0) { FUN_8019a6e0(4,a0); }
+/* cd_ext_table_init — dispatch wrapper: cd_dispatch_tbl4(4,a0). */
+void cd_ext_table_init(uint32_t a0) { cd_dispatch_tbl4(4,a0); }
 
 /* cd_chan_block_init — indirect dispatch tbl+0x14: call_guest(fn,a0,a1). */
 void cd_chan_block_init(int32_t a0,uint32_t a1)
@@ -2029,7 +2029,7 @@ void FUN_8019e39c(void)
 {
   FUN_8018e300();
   cd_mode_apply_wrap();
-  FUN_80199fe0();
+  bios_table_tramp();
   FUN_8018e310(0);
 }
 
@@ -2060,7 +2060,7 @@ extern void FUN_8019e55c(void);
 extern int32_t FUN_80199ffc(void);
 void FUN_8019e330(uint32_t a0)
 {
-  FUN_80199fe0();
+  bios_table_tramp();
   FUN_8018e300();
   if (FUN_80199ffc() == 0) a0 = 0;
   cd_mode_apply(a0);
@@ -2139,12 +2139,12 @@ void cd_file_open(int32_t a0, uint8_t *v0)
   v0[0] = (uint8_t)(q * 16 + t0);
 }
 
-/* FUN_80199360 — CD channel-table poll: entry = base@0x801fc6c0 +
+/* cd_channel_poll — CD channel-table poll: entry = base@0x801fc6c0 +
  * idx@0x801fc6ac *0x20; state 1 -> maybe reset (if @0x801fc6b4),
  * state 2 -> state=4, *p1 = base + idx2@0x801fc6c4*0x20 + idx*0x7e0,
  * *p2 = entry (guest addrs). Returns 0 on handled, 1 while polling,
  * 2 on other states. Disasm 0x80199360-0x80199414. */
-int32_t FUN_80199360(uint32_t *param_1, uint32_t *param_2)
+int32_t cd_channel_poll(uint32_t *param_1, uint32_t *param_2)
 {
   uint32_t base = *(uint32_t *)guest_at(0x801fc6c0);
   uint32_t idx = *(uint32_t *)guest_at(0x801fc6ac);
@@ -2205,27 +2205,27 @@ void cd_dir_clear(uint32_t a0, uint32_t a1)
     *(uint32_t *)guest_at(base + (a0 + i) * 0x20) = 0;
 }
 
-/* FUN_8019cb20 — trampoline: FUN_8019cb50(a0,a1,0xcc,0xcd).
+/* FUN_8019cb20 — trampoline: cd_reg_window_rmw(a0,a1,0xcc,0xcd).
  * Disasm 0x8019cb20-0x8019cb40. */
-extern uint32_t FUN_8019cb50(uint32_t,uint32_t,uint32_t,uint32_t);
+extern uint32_t cd_reg_window_rmw(uint32_t,uint32_t,uint32_t,uint32_t);
 void FUN_8019cb20(uint32_t a0,uint32_t a1)
 {
-  FUN_8019cb50(a0,a1,0xcc,0xcd);
+  cd_reg_window_rmw(a0,a1,0xcc,0xcd);
 }
 
-/* FUN_80168424 — memcard op poll: FUN_8019ea98 ready-wait, then
- * FUN_8019fa80 samples; out@sp14 <5 uses JT @0x8012212c (idx 0,3 return
+/* FUN_80168424 — memcard op poll: cd_chan_job_submit ready-wait, then
+ * cd_job_result samples; out@sp14 <5 uses JT @0x8012212c (idx 0,3 return
  * immediately; 1,2,4 dedup), >=5 dedup; returns last sample.
  * Disasm 0x80168424-0x801684c4. */
-extern int32_t FUN_8019ea98(uint32_t);
-extern int32_t FUN_8019fa80(uint32_t,uint32_t *,uint32_t *);
+extern int32_t cd_chan_job_submit(uint32_t);
+extern int32_t cd_job_result(uint32_t,uint32_t *,uint32_t *);
 int32_t FUN_80168424(uint32_t a0)
 {
   uint32_t s0 = 0, sp10 = 0, sp14 = 0, r;
   for (;;) {
-    while (FUN_8019ea98(a0) == 0) { }
+    while (cd_chan_job_submit(a0) == 0) { }
     a0 = 0;
-    while ((r = FUN_8019fa80(a0,&sp10,&sp14)) == 0) a0 = 0;
+    while ((r = cd_job_result(a0,&sp10,&sp14)) == 0) a0 = 0;
     {
       uint32_t v1 = sp14;
       int imm = (v1 < 5 && (v1 == 0 || v1 == 3));
@@ -2237,30 +2237,30 @@ int32_t FUN_80168424(uint32_t a0)
   }
 }
 
-/* FUN_801684c8 — memcard op wait: poll FUN_8019ff4c until it returns 0
+/* FUN_801684c8 — memcard op wait: poll cd_mc_op_wait until it returns 0
  * (->0) or the same nonzero value twice (->that value).
  * Disasm 0x801684c8-0x80168508. */
-extern int32_t FUN_8019ff4c(uint32_t);
+extern int32_t cd_mc_op_wait(uint32_t);
 int32_t FUN_801684c8(uint32_t a0)
 {
   uint32_t s0 = 0, r;
   for (;;) {
-    r = (uint32_t)FUN_8019ff4c(a0);
+    r = (uint32_t)cd_mc_op_wait(a0);
     if (r == 0) return 0;
     if (s0 == r) return (int32_t)r;
     s0 = r;
   }
 }
 
-/* FUN_8016850c — memcard op probe: poll FUN_8019f80c(a0..a3,s2,s1)
+/* FUN_8016850c — memcard op probe: poll cd_chan_job_pump(a0..a3,s2,s1)
  * until 0 (->0) or same nonzero twice (->that value).
  * Disasm 0x8016850c-0x801685ac. */
-extern int32_t FUN_8019f80c(uint32_t,const void *,const void *,const void *,uint32_t,uint32_t);
+extern int32_t cd_chan_job_pump(uint32_t,const void *,const void *,const void *,uint32_t,uint32_t);
 int32_t FUN_8016850c(uint32_t a0,const void *a1,const void *a2,const void *a3,uint32_t s2,uint32_t s1)
 {
   uint32_t s0 = 0, r;
   for (;;) {
-    r = (uint32_t)FUN_8019f80c(a0,a1,a2,a3,s2,s1);
+    r = (uint32_t)cd_chan_job_pump(a0,a1,a2,a3,s2,s1);
     if (r == 0) return 0;
     if (s0 == r) return (int32_t)r;
     s0 = r;
@@ -2297,27 +2297,27 @@ int32_t FUN_80199ffc(void)
 }
 
 /* FUN_8019d410 — seek-param clamp+issue: a1 clamped to <=0x7eff0,
- * FUN_8019bbc4(a0,s0); if @0x801bdee8==0 clear @0x801bdee4; ret s0.
+ * cd_seek_param_issue(a0,s0); if @0x801bdee8==0 clear @0x801bdee4; ret s0.
  * Disasm 0x8019d410-0x8019d468. */
-extern uint32_t FUN_8019bbc4(uint32_t,uint32_t);
+extern uint32_t cd_seek_param_issue(uint32_t,uint32_t);
 uint32_t FUN_8019d410(uint32_t a0,uint32_t a1)
 {
   uint32_t s0 = a1;
   if (0x7eff0 < s0) s0 = 0x7eff0;
-  FUN_8019bbc4(a0,s0);
+  cd_seek_param_issue(a0,s0);
   if (*(uint32_t *)guest_at(0x801bdee8) == 0)
     *(uint32_t *)guest_at(0x801bdee4) = 0;
   return s0;
 }
 
 /* FUN_8019d470 — status read: if (a0-0x1010) <u 0x7efe8 ->
- * sh = FUN_8019bcf0(-1) @0x801bdec8; return sh << shift@0x801bded8;
+ * sh = cd_reg_indexed_rw(-1) @0x801bdec8; return sh << shift@0x801bded8;
  * else 0. Disasm 0x8019d470-0x8019d4c8. */
-extern int32_t FUN_8019bcf0(int32_t,uint32_t);
+extern int32_t cd_reg_indexed_rw(int32_t,uint32_t);
 uint32_t FUN_8019d470(uint32_t a0)
 {
   if (a0 - 0x1010 < 0x7efe8) {
-    int32_t r = FUN_8019bcf0(-1,a0);
+    int32_t r = cd_reg_indexed_rw(-1,a0);
     uint32_t sh = (uint16_t)r;
     *(uint16_t *)guest_at(0x801bdec8) = (uint16_t)sh;
     sh = *(uint16_t *)guest_at(0x801bdec8);
@@ -2326,9 +2326,9 @@ uint32_t FUN_8019d470(uint32_t a0)
   return 0;
 }
 
-/* FUN_8019d4d0 — mode store: @0x801bde40=a0, @0x801bdecc=(a0==1)?1:0.
+/* cd_mode_store — mode store: @0x801bde40=a0, @0x801bdecc=(a0==1)?1:0.
  * Disasm 0x8019d4d0-0x8019d500. */
-void FUN_8019d4d0(uint32_t a0)
+void cd_mode_store(uint32_t a0)
 {
   *(uint32_t *)guest_at(0x801bde40) = a0;
   *(uint32_t *)guest_at(0x801bdecc) = (a0 == 1) ? 1 : 0;
@@ -2336,18 +2336,18 @@ void FUN_8019d4d0(uint32_t a0)
 
 /* FUN_8019d500 — seek-complete state machine on @0x801bde40/@0x801bdee4:
  * early-out 1 when mode==1 or state==1; a0==1 waits for nonzero
- * FUN_8019d5b0(@0x801bde38) then stores @0x801bdee4; a0!=1 stores only
+ * cd_seek_state_machine(@0x801bde38) then stores @0x801bdee4; a0!=1 stores only
  * when result==1. Returns the sample. Disasm 0x8019d500-0x8019d5a0. */
-extern int32_t FUN_8019d5b0(uint32_t);
+extern int32_t cd_seek_state_machine(uint32_t);
 int32_t FUN_8019d500(uint32_t a0)
 {
   uint32_t mode = *(uint32_t *)guest_at(0x801bde40);
   uint32_t arg, v0;
   if (mode == 1 || *(uint32_t *)guest_at(0x801bdee4) == 1) return 1;
   arg = *(uint32_t *)guest_at(0x801bde38);
-  v0 = (uint32_t)FUN_8019d5b0(arg);
+  v0 = (uint32_t)cd_seek_state_machine(arg);
   if (a0 == 1) {
-    while (v0 == 0) v0 = (uint32_t)FUN_8019d5b0(arg);
+    while (v0 == 0) v0 = (uint32_t)cd_seek_state_machine(arg);
     *(uint32_t *)guest_at(0x801bdee4) = v0;
     return (int32_t)v0;
   }
@@ -2356,7 +2356,7 @@ int32_t FUN_8019d500(uint32_t a0)
   return (int32_t)v0;
 }
 
-/* cd_dir_read — memcard dir read: FUN_80195d64(0) session, cmd 0x13
+/* cd_dir_read — memcard dir read: mc_session(0) session, cmd 0x13
  * fetches BCD bounds into resp[1..2] (s0..s3), header record written,
  * then cmd 0x14 per index s0..s3 writes {resp[1],resp[2],0} entries.
  * Debug prints gated on @0x801cc850. Returns end-ptr (debug<2) or
@@ -2370,7 +2370,7 @@ uint32_t cd_dir_read(uint32_t a0,uint32_t a1)
   uint8_t *s1p;
   (void)a0;
   cmd[0] = 1;
-  s6 = FUN_80195d64(0);
+  s6 = mc_session(0);
   if (!FUN_80195ffc(0x13,0,(undefined4)(uintptr_t)resp)) goto fail;
   s0 = ((uint32_t)(resp[1] >> 4)) * 10 + (resp[1] & 0xf);
   s3 = ((uint32_t)(resp[2] >> 4)) * 10 + (resp[2] & 0xf);
@@ -2409,69 +2409,69 @@ done:
         p += 4;
       }
     }
-    FUN_80195d64(s6);
+    mc_session(s6);
     return (uint32_t)n;
   }
-  FUN_80195d64(s6);
+  mc_session(s6);
   return guest_of(s1p);
 fail:
   if (*(uint32_t *)guest_at(0x801cc850) != 0)
     FUN_8018e550((const char *)guest_at(0x80125624));
-  FUN_80195d64(s6);
+  mc_session(s6);
   return 0;
 }
 
 /* ======== batch31: CD register/block helpers (disasm-verified) ======== */
 
-extern uint32_t FUN_8019b944(uint32_t,uint32_t,uint32_t);
-extern void FUN_8019b620(uint32_t,uint32_t);
-extern void FUN_8019be78(void);
-extern uint32_t FUN_8019e0d0(uint32_t,uint32_t,uint32_t,uint32_t);
-extern void FUN_8019c5d0(void *);
+extern uint32_t cd_reg_window_op(uint32_t,uint32_t,uint32_t);
+extern void cd_reg_stream_push(uint32_t,uint32_t);
+extern void cd_delay_3c(void);
+extern uint32_t cd_curve_lookup(uint32_t,uint32_t,uint32_t,uint32_t);
+extern void cd_field_copy_gated(void *);
 extern int32_t FUN_8019ce10(uint32_t);
-extern void FUN_801a0a10(uint32_t,uint32_t);
-extern void FUN_801a01bc(uint32_t,void *);
-extern void FUN_801a0530(void *,uint32_t);
-extern void FUN_801a0e90(void);
-extern uint32_t FUN_801a0280(void *,void *);
+extern void cd_job_slot_alloc(uint32_t,uint32_t);
+extern void cd_file_header_copy(uint32_t,void *);
+extern void cd_strcat_guard(void *,uint32_t);
+extern void cd_pending_args_pump(void);
+extern uint32_t cd_file_record_lookup(void *,void *);
 extern uint32_t FUN_801a0260(void *);
-extern uint32_t FUN_801a1070(void);
-extern uint32_t FUN_801a00bc(uint32_t);
-extern uint32_t FUN_8019fa6c(uint32_t);
+extern uint32_t cd_queue_b_status(void);
+extern uint32_t cd_status_map(uint32_t);
+extern uint32_t cd_xchg_fec24(uint32_t);
 extern uint32_t FUN_801a07a4(uint32_t);
 extern void FUN_801a05f0(uint32_t);
-extern uint32_t FUN_801a1148(void);
-extern uint32_t FUN_801a0f98(void);
+extern uint32_t cd_queue_a_read(void);
+extern uint32_t cd_queue_a_status(void);
 
 #define CDREG32(a) (*(uint32_t *)guest_at(a))
 #define CDREG16(a) (*(uint16_t *)guest_at(a))
 
-/* FUN_8019bbc4 — seek/param issue: when mode flag @0x801bdecc==0 run
- * the 0x801feb70 register-window sequence via FUN_8019b944, else
- * FUN_8019b620; returns a1 either way.
+/* cd_seek_param_issue — seek/param issue: when mode flag @0x801bdecc==0 run
+ * the 0x801feb70 register-window sequence via cd_reg_window_op, else
+ * cd_reg_stream_push; returns a1 either way.
  * Disasm 0x8019bbc4-0x8019bc44. */
-uint32_t FUN_8019bbc4(uint32_t a0,uint32_t a1)
+uint32_t cd_seek_param_issue(uint32_t a0,uint32_t a1)
 {
   if (CDREG32(0x801bdecc) == 0) {
     uint32_t sh = (uint32_t)CDREG16(0x801bdec8)
                 << (CDREG32(0x801bded8) & 31);   /* sllv: sa&31 */
-    FUN_8019b944(2,sh,0);
-    FUN_8019b944(1,sh,0);
-    FUN_8019b944(3,a0,a1);
+    cd_reg_window_op(2,sh,0);
+    cd_reg_window_op(1,sh,0);
+    cd_reg_window_op(3,a0,a1);
   } else {
-    FUN_8019b620(a0,a1);
+    cd_reg_stream_push(a0,a1);
   }
   return a1;
 }
 
-/* FUN_8019bcf0 — indexed register write/read: optional round-up of a1
+/* cd_reg_indexed_rw — indexed register write/read: optional round-up of a1
  * (divu guard @0x801bded4/@0x801bdedc, mask @0x801bdee0), shift right
  * by @0x801bded8; a0==-2 -> a1, a0==-1 -> (a3)&0xffff, else store a3
  * into u16 table @*(u32*)0x801bdeb0 + a0*2 and return -2.
  * NOTE: guest has `break 7` on divide-by-zero (unreachable guard);
  * ported as a plain `if (d)` guard.
  * Disasm 0x8019bcf0-0x8019bd90. */
-int32_t FUN_8019bcf0(int32_t a0,uint32_t a1)
+int32_t cd_reg_indexed_rw(int32_t a0,uint32_t a1)
 {
   uint32_t a3;
   if (CDREG32(0x801bded4) != 0) {
@@ -2489,12 +2489,12 @@ int32_t FUN_8019bcf0(int32_t a0,uint32_t a1)
   return (int32_t)a1;                      /* v0=a1 set in delay slot */
 }
 
-/* FUN_8019d220 — paired u16 register window update. a1 &= 0x00ffffff,
+/* cd_reg_window_u16 — paired u16 register window update. a1 &= 0x00ffffff,
  * hi/lo halves distributed to either the 0x801feb70 shadow regs
  * (flag @0x801bde9c&1) or the main table @*(u32*)0x801bdeb0
  * (+0x188/+0x18c for a0==1/a0==0) with set/clear of @0x801bde3c.
  * Disasm 0x8019d220-0x8019d3d8. */
-void FUN_8019d220(int32_t a0,uint32_t a1)
+void cd_reg_window_u16(int32_t a0,uint32_t a1)
 {
   uint32_t a2;
   uint16_t *r, *b;
@@ -2531,14 +2531,14 @@ void FUN_8019d220(int32_t a0,uint32_t a1)
   }
 }
 
-/* FUN_8019d5f0 — channel-attribute block apply: a0 = guest ptr to
+/* cd_chan_attr_apply — channel-attribute block apply: a0 = guest ptr to
  * {u32 flags, u16 vals...}. flags==0 (t2) applies everything; else
  * each field gated by flag bits. Two indexed channels (+0x180/+0x182)
  * use 7-entry magnitude tables {0x8000..0xe000} (payload @0x80125c68/
  * 0x80125c88), then per-bit stores into the 0x10-stride entry table
  * @*(u32*)0x801bdeb0 plus bit ops on +0x1aa.
  * Disasm 0x8019d5f0-0x8019d968. */
-void FUN_8019d5f0(uint32_t a0)
+void cd_chan_attr_apply(uint32_t a0)
 {
   static const uint32_t jt_mag[8] = {
     0,0x8000,0x9000,0xa000,0xb000,0xc000,0xd000,0xe000 };
@@ -2633,14 +2633,14 @@ void FUN_8019d5f0(uint32_t a0)
   }
 }
 
-/* FUN_8019dad0 — per-channel attribute push: loops s4=0..0x17, gated
+/* cd_chan_attr_push — per-channel attribute push: loops s4=0..0x17, gated
  * per iteration by bit s4 of *(u32*)a0 and per-field by flags @a0+4
  * (s1==0 => apply all). Entries are 0x10-byte stride in the table
  * @*(u32*)0x801bdeb0; scratch u16s at 0x801bde6c+s4*2.
  * Magnitude sub-tables: payload @0x80125ca8 / @0x80125cc8 ->
  * {0x8000..0xe000} for mode-1 in 0..6.
  * Disasm 0x8019dad0-0x8019e0c4. */
-void FUN_8019dad0(uint32_t a0)
+void cd_chan_attr_push(uint32_t a0)
 {
   static const uint32_t jt_dad[7] = {
     0x8000,0x9000,0xa000,0xb000,0xc000,0xd000,0xe000 };
@@ -2666,11 +2666,11 @@ void FUN_8019dad0(uint32_t a0)
       /* +0x40 mask: scratch = p.u16[+0x18] */
       if (s2 || (s1 & 0x40)) *S = *(uint16_t *)(p + 0x18);
 
-      /* +0x20 mask: entry[2] = FUN_8019e0d0(byte split of scratch,
+      /* +0x20 mask: entry[2] = cd_curve_lookup(byte split of scratch,
        * byte split of p.u16[+0x16]) */
       if (s2 || (s1 & 0x20)) {
         uint16_t sv = *S, pv = *(uint16_t *)(p + 0x16);
-        uint32_t r = (uint32_t)FUN_8019e0d0(sv >> 8, sv & 0xff,
+        uint32_t r = (uint32_t)cd_curve_lookup(sv >> 8, sv & 0xff,
                                              pv >> 8, pv & 0xff);
         E[2] = (uint16_t)r;
       }
@@ -2707,13 +2707,13 @@ void FUN_8019dad0(uint32_t a0)
         E[1] = (uint16_t)(a1 | mc);
       }
 
-      /* +0x80 mask: FUN_8019bcf0(s3|3, p.u32[+0x1c]) */
+      /* +0x80 mask: cd_reg_indexed_rw(s3|3, p.u32[+0x1c]) */
       if (s2 || (s1 & 0x80))
-        FUN_8019bcf0((int32_t)(s3 | 3), *(uint32_t *)(p + 0x1c));
+        cd_reg_indexed_rw((int32_t)(s3 | 3), *(uint32_t *)(p + 0x1c));
 
-      /* +0x1 mask again: FUN_8019bcf0(s3|7, p.u32[+0x20]) */
+      /* +0x1 mask again: cd_reg_indexed_rw(s3|7, p.u32[+0x20]) */
       if (s2 || (s1 & 1))
-        FUN_8019bcf0((int32_t)(s3 | 7), *(uint32_t *)(p + 0x20));
+        cd_reg_indexed_rw((int32_t)(s3 | 7), *(uint32_t *)(p + 0x20));
 
       /* +0x2 mask: E[4] = p.u16[+0x3a] */
       if (s2 || (s1 & 2)) E[4] = *(uint16_t *)(p + 0x3a);
@@ -2780,11 +2780,11 @@ void FUN_8019dad0(uint32_t a0)
   }
 }
 
-/* FUN_8019ea98 — channel-job submit: state block @0x801febc0 must be
- * idle (<=0); stores mode 2 + arg, kicks FUN_801a0a10, returns 1;
+/* cd_chan_job_submit — channel-job submit: state block @0x801febc0 must be
+ * idle (<=0); stores mode 2 + arg, kicks cd_job_slot_alloc, returns 1;
  * busy -> printf + 0.
  * Disasm 0x8019ea98-0x8019eafc. */
-int32_t FUN_8019ea98(uint32_t a0)
+int32_t cd_chan_job_submit(uint32_t a0)
 {
   uint32_t *st = (uint32_t *)guest_at(0x801febc0);
   if ((int32_t)st[0] > 0) {
@@ -2795,18 +2795,18 @@ int32_t FUN_8019ea98(uint32_t a0)
   st[1] = 0;
   st[2] = 0;
   st[4] = a0;                        /* delay-slot store: before call */
-  FUN_801a0a10(0x8019eb00,a0);       /* a1 = orig a0 (delay-slot move) */
+  cd_job_slot_alloc(0x8019eb00,a0);       /* a1 = orig a0 (delay-slot move) */
   return 1;
 }
 
-/* FUN_8019fa80 — channel-job result sample: reads state @0x801febc0.
+/* cd_job_result — channel-job result sample: reads state @0x801febc0.
  * a0==0: drains first nonzero slot (busy-polls +8/+0x10/+0x18... per
  * guest), out a2<-@0x801febd4, a1<-@0x801febd0, clears +8, ret 1.
  * a0!=0: empty -> a2<-+4, a1<-+0 (ret 0); pending -> a2<-@0x801febd4,
  * a1<-@0x801febd0, clears +8, ret 1; totally idle -> -1.
  * a1/a2 are HOST out-pointers (callers pass &local).
  * Disasm 0x8019fa80-0x8019fb98. */
-int32_t FUN_8019fa80(uint32_t a0,uint32_t *a1,uint32_t *a2)
+int32_t cd_job_result(uint32_t a0,uint32_t *a1,uint32_t *a2)
 {
   uint32_t *st = (uint32_t *)guest_at(0x801febc0);
   uint32_t t0, a3;
@@ -2839,11 +2839,12 @@ int32_t FUN_8019fa80(uint32_t a0,uint32_t *a1,uint32_t *a2)
   return 1;
 }
 
-/* FUN_8019ff4c — channel-job wait: busy-check, FUN_801a07a4 gate,
- * retry while FUN_801a1070()&4; success path waits FUN_801a1148 then
- * returns FUN_801a00bc(FUN_801a0f98()).
+/* cd_mc_op_wait — channel-job wait: busy-check, FUN_801a07a4 gate,
+ * retry while cd_queue_b_status()&4; success path waits cd_queue_a_read then
+
+ * returns cd_status_map(cd_queue_a_status()).
  * Disasm 0x8019ff4c-0x801a0004. */
-int32_t FUN_8019ff4c(uint32_t a0)
+int32_t cd_mc_op_wait(uint32_t a0)
 {
   uint32_t s0 = a0;
   uint32_t v0;
@@ -2852,27 +2853,27 @@ int32_t FUN_8019ff4c(uint32_t a0)
     return -1;
   }
 retry:
-  FUN_801a0e90();
+  cd_pending_args_pump();
   if (FUN_801a07a4(s0) != 0) {
     uint32_t r;
-    FUN_801a0e90();
+    cd_pending_args_pump();
     FUN_801a05f0(CDREG32(0x801febf0));
-    do { } while (FUN_801a1148() == 0);
-    r = FUN_801a0f98();
-    return (int32_t)FUN_801a00bc(r);
+    do { } while (cd_queue_a_read() == 0);
+    r = cd_queue_a_status();
+    return (int32_t)cd_status_map(r);
   }
-  v0 = FUN_801a1070();
+  v0 = cd_queue_b_status();
   if ((v0 & 4) != 0) goto retry;
-  return (int32_t)FUN_801a00bc(v0);
+  return (int32_t)cd_status_map(v0);
 }
 
-/* FUN_8019f80c — channel-job pump: submits blk/rec pairs through the
+/* cd_chan_job_pump — channel-job pump: submits blk/rec pairs through the
  * 0x801febc0 job channel until fp+a5 records produced; copies 0x28-byte
  * records to a2 once s1 >= fp (signed). a1/a2/a3 are HOST pointers
  * (callers pass stack/arena buffers). Returns last error or 0;
  * writes produced count to *a3.
  * Disasm 0x8019f80c-0x8019fa68. */
-int32_t FUN_8019f80c(uint32_t a0,const void *a1,const void *a2,const void *a3,
+int32_t cd_chan_job_pump(uint32_t a0,const void *a1,const void *a2,const void *a3,
                      uint32_t a4,uint32_t a5)
 {
   uint32_t blk[8];    /* sp+0x10: 0x20-byte job block */
@@ -2890,8 +2891,8 @@ int32_t FUN_8019f80c(uint32_t a0,const void *a1,const void *a2,const void *a3,
     return -1;
   }
   a1v = (uint32_t)(uintptr_t)a1;
-  FUN_801a01bc(a0,blk);
-  FUN_801a0530(blk,a1v);
+  cd_file_header_copy(a0,blk);
+  cd_strcat_guard(blk,a1v);
   s2 = 0; s1 = 0;
   CDREG32(0x801febcc) |= 1u << (CDREG32(0x801febd0) & 31);  /* sllv */
   v0 = (int32_t)(fp + lim);
@@ -2900,17 +2901,17 @@ int32_t FUN_8019f80c(uint32_t a0,const void *a1,const void *a2,const void *a3,
   dsta = (uint8_t *)a2;
   for (;;) {
     if (s1 == 0) {
-      FUN_801a0e90();
-      s0 = FUN_801a0280(blk,rec);
+      cd_pending_args_pump();
+      s0 = cd_file_record_lookup(blk,rec);
       if (s0 == 0) {
         uint32_t r;
-        r = FUN_801a00bc(FUN_801a1070());
+        r = cd_status_map(cd_queue_b_status());
         err = r;                        /* sw v0,0x58(sp): always */
         if (r == 0) goto done;
         s2++;
         if (s2 < 4) continue;
         /* 4 strikes: teardown + drain + report last error */
-        v0 = (int32_t)FUN_8019fa6c(0);
+        v0 = (int32_t)cd_xchg_fec24(0);
         CDREG32(0x801fec38) = (uint32_t)v0;
         st0 = CDREG32(0x801febc0);
         if ((int32_t)st0 > 0) {
@@ -2919,10 +2920,10 @@ int32_t FUN_8019f80c(uint32_t a0,const void *a1,const void *a2,const void *a3,
           uint32_t *st = (uint32_t *)guest_at(0x801febc0);
           st[0] = 2; st[1] = 0; st[2] = 0;
           CDREG32(0x801febf0) = a0;      /* delay-slot store before call */
-          FUN_801a0a10(0x8019eb00,a1v);
+          cd_job_slot_alloc(0x8019eb00,a1v);
         }
-        FUN_8019fa80(0,0,&err);
-        FUN_8019fa6c(CDREG32(0x801fec38));
+        cd_job_result(0,0,&err);
+        cd_xchg_fec24(CDREG32(0x801fec38));
         return (int32_t)err;
       }
     } else {
@@ -2945,13 +2946,13 @@ done:
   return 0;
 }
 
-/* FUN_8019b3a0 — CD channel/register init: sets flag bits via
+/* cd_chan_reg_init — CD channel/register init: sets flag bits via
  * @0x801bdec0 ptr, clears mode regs, waits for channel idle
  * (+0x1ae & 0x7ff, max 0xf01 polls), programs shift/mode table
  * @0x801bded4-dc/e0, zeroes 10 u16 @0x801feb70, optional full
  * channel-block init when arg==0, then arms @0x801bdee4/8/ec.
  * Disasm 0x8019b3a0-0x8019b61c. */
-void FUN_8019b3a0(int32_t param_1)
+void cd_chan_reg_init(int32_t param_1)
 {
   uint16_t *b;
   uint32_t i, v1;
@@ -2963,7 +2964,7 @@ void FUN_8019b3a0(int32_t param_1)
   CDREG16(0x801bdec8) = 0;
   b = (uint16_t *)guest_at(CDREG32(0x801bdeb0));
   b[0xc0] = 0; b[0xc1] = 0; b[0xd5] = 0;
-  FUN_8019be78();
+  cd_delay_3c();
   b = (uint16_t *)guest_at(CDREG32(0x801bdeb0));
   b[0xc0] = 0; b[0xc1] = 0;
   v1 = 0;
@@ -2999,7 +3000,7 @@ void FUN_8019b3a0(int32_t param_1)
   b = (uint16_t *)guest_at(CDREG32(0x801bdeb0));
   b[0xc8] = 0; b[0xc9] = 0; b[0xca] = 0; b[0xcb] = 0;
   b[0xd8] = 0; b[0xd9] = 0; b[0xda] = 0; b[0xdb] = 0;
-  FUN_8019b620(0x801bdef0,0x10);
+  cd_reg_stream_push(0x801bdef0,0x10);
   b = (uint16_t *)guest_at(CDREG32(0x801bdeb0));
   for (i = 0; i < 0x18; i++) {
     uint16_t *e = b + i * 8;              /* 0x10-byte stride */
@@ -3008,10 +3009,10 @@ void FUN_8019b3a0(int32_t param_1)
   }
   b = (uint16_t *)guest_at(CDREG32(0x801bdeb0));
   b[0xc4] = 0xffff; b[0xc5] = 0xff;       /* +0x188,+0x18a */
-  FUN_8019be78(); FUN_8019be78(); FUN_8019be78(); FUN_8019be78();
+  cd_delay_3c(); cd_delay_3c(); cd_delay_3c(); cd_delay_3c();
   b = (uint16_t *)guest_at(CDREG32(0x801bdeb0));
   b[0xc6] = 0xffff; b[0xc7] = 0xff;       /* +0x18c,+0x18e */
-  FUN_8019be78(); FUN_8019be78(); FUN_8019be78(); FUN_8019be78();
+  cd_delay_3c(); cd_delay_3c(); cd_delay_3c(); cd_delay_3c();
 
 tail:
   b = (uint16_t *)guest_at(CDREG32(0x801bdeb0));
@@ -3021,13 +3022,13 @@ tail:
   CDREG32(0x801bdeec) = 0;
 }
 
-/* FUN_8019cb50 — register-window RMW: op a0 (0=AND-NOT,1=OR,8=STORE,
+/* cd_reg_window_rmw — register-window RMW: op a0 (0=AND-NOT,1=OR,8=STORE,
  * else passthrough), value a1 (lo16 -> index a2, bits16-23 -> index
  * a3 of the u16 reg file). Register file base = 0x801fe9e8 when
  * @0x801bde9c&1 else @*(u32*)0x801bdeb0; alt path also sets bit
  * (a2-0xc6)>>1 in @0x801bde68. Returns combined old/new fields.
  * Disasm 0x8019cb50-0x8019ce08. */
-uint32_t FUN_8019cb50(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
+uint32_t cd_reg_window_rmw(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
 {
   uint32_t t1 = a0, t0 = a1;
   int alt = (int)(CDREG32(0x801bde9c) & 1);
@@ -3079,12 +3080,12 @@ uint32_t FUN_8019cb50(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
   return t2;
 }
 
-/* FUN_8019c0f0 — channel mode/param apply. a0 = guest ptr to
+/* cd_chan_mode_apply — channel mode/param apply. a0 = guest ptr to
  * {u32 f0, u32 f1, u16 f2@8, u16 f3@0xa, u32 f4@0xc, u32 f5@0x10}.
  * Mode name table @0x801be470 + mode*0x44 (0x44-byte records);
  * function table @0x801be440. Returns -1 on bad mode/range check,
  * else 0. Disasm 0x8019c0f0-0x8019c5c0. */
-int32_t FUN_8019c0f0(uint32_t a0)
+int32_t cd_chan_mode_apply(uint32_t a0)
 {
   uint8_t *blk = (uint8_t *)guest_at(a0);
   uint8_t buf[0x44];
@@ -3209,7 +3210,7 @@ int32_t FUN_8019c0f0(uint32_t a0)
     }
   }
 
-  if (s4 || s6 || fp) FUN_8019c5d0(buf);
+  if (s4 || s6 || fp) cd_field_copy_gated(buf);
   if (f58) FUN_8019ce10(CDREG32(0x801bde54));
   if (s4) cd_u16_table_store(0xd1,CDREG32(0x801bde4c),0);
   if (s7) {
@@ -3219,13 +3220,13 @@ int32_t FUN_8019c0f0(uint32_t a0)
   return 0;
 }
 
-/* FUN_8018ff10 — packed-bitstream decoder. a0 = guest ptr to stream
+/* cd_bitstream_decode — packed-bitstream decoder. a0 = guest ptr to stream
  * (0 = resume from state @0x801b6904), a1 = guest out ptr,
  * a2 = guest VLC table base. Faithful goto transliteration of the
  * guest CFG; delay-slot side effects (a1+=2, v0 shifts, stores)
  * preserved literally. Tables read via guest_at.
  * Disasm 0x8018ff10-0x80190258. */
-void FUN_8018ff10(int32_t a0,uint32_t a1,uint32_t a2)
+void cd_bitstream_decode(int32_t a0,uint32_t a1,uint32_t a2)
 {
   uint32_t t0,t1,t2,t3,t4,t5,t6,t7,t8,t9;
   uint32_t v0,v1,at,at2;
@@ -3439,13 +3440,13 @@ L_2028:
 /* ======== batch32: CD register-window helpers (disasm-verified) ======== */
 
 extern int      FUN_8018e510(char *);
-extern int32_t  FUN_801984a0(const void *,const void *);
-extern int32_t  FUN_801a0660(uint32_t,uint32_t,uint32_t);
+extern int32_t  cd_strcmp(const void *,const void *);
+extern int32_t  cd_chan_cmd_pump(uint32_t,uint32_t,uint32_t);
 extern void     FUN_8019be28(void);
 extern void     FUN_8019be50(void);
 
-/* FUN_8019be78 — pure delay: 0x3c iterations of d *= 13 (d=13 seed). */
-void FUN_8019be78(void)
+/* cd_delay_3c — pure delay: 0x3c iterations of d *= 13 (d=13 seed). */
+void cd_delay_3c(void)
 {
   volatile uint32_t d = 13;
   int i;
@@ -3453,19 +3454,19 @@ void FUN_8019be78(void)
   (void)d;
 }
 
-/* FUN_8019b620 — streamed u16 register push: copies a1 bytes worth of
+/* cd_reg_stream_push — streamed u16 register push: copies a1 bytes worth of
  * u16s from guest src a0 into reg block +0x1a8 (0x40-byte chunks),
  * pulses +0x1aa bits 0x10, waits +0x1ae bit 0x400 clear, then waits
  * (+0x1ae & 0x7ff) == saved status. b[] = u16 view of block @0x801bdeb0.
  * Disasm 0x8019b620-0x8019b7dc. */
-void FUN_8019b620(uint32_t a0,uint32_t a1)
+void cd_reg_stream_push(uint32_t a0,uint32_t a1)
 {
   uint16_t *b = (uint16_t *)guest_at(CDREG32(0x801bdeb0));
   uint32_t s1 = a1;
   uint32_t s2 = a0;
   uint32_t s3 = b[0xd7] & 0x7ff;          /* +0x1ae, delay slot of jal */
   b[0xd3] = CDREG16(0x801bdec8);          /* +0x1a6 <- dec8 */
-  FUN_8019be78();
+  cd_delay_3c();
   while (s1 != 0) {
     uint32_t s0 = (s1 < 0x41) ? s1 : 0x40; /* sltiu 0x41 */
     if ((int32_t)s0 > 0) {
@@ -3478,7 +3479,7 @@ void FUN_8019b620(uint32_t a0,uint32_t a1)
       } while (v1 < s0);
     }
     b[0xd5] = (uint16_t)((b[0xd5] & 0xffcf) | 0x10);  /* +0x1aa */
-    FUN_8019be78();
+    cd_delay_3c();
     if ((b[0xd7] & 0x400) != 0) {          /* +0x1ae bit 0x400 */
       uint32_t v1 = 0;
       for (;;) {
@@ -3491,8 +3492,8 @@ void FUN_8019b620(uint32_t a0,uint32_t a1)
         if ((b[0xd7] & 0x400) == 0) break;
       }
     }
-    FUN_8019be78();
-    FUN_8019be78();
+    cd_delay_3c();
+    cd_delay_3c();
     s1 -= s0;
   }
   b[0xd5] = (uint16_t)(b[0xd5] & 0xffcf);
@@ -3513,12 +3514,12 @@ void FUN_8019b620(uint32_t a0,uint32_t a1)
   }
 }
 
-/* FUN_8019b944 — register-window op dispatch (ops 0..3), returns 0 or
+/* cd_reg_window_op — register-window op dispatch (ops 0..3), returns 0 or
  * -2 on poll timeout. Stack args a1/a2 land at saved slots; op2 shifts
  * a1 right by @0x801bdee8 into dec8/+0x1a6; op3 runs the sector-read
  * setup through MMIO cells 0x801bdeb4/8/c and cmd 0x801bdebc.
  * Disasm 0x8019b944-0x8019bbc0. */
-uint32_t FUN_8019b944(uint32_t a0,uint32_t a1,uint32_t a2)
+uint32_t cd_reg_window_op(uint32_t a0,uint32_t a1,uint32_t a2)
 {
   uint16_t *b = (uint16_t *)guest_at(CDREG32(0x801bdeb0));
   uint32_t op = a0;
@@ -3581,11 +3582,11 @@ uint32_t FUN_8019b944(uint32_t a0,uint32_t a1,uint32_t a2)
   return 0;
 }
 
-/* FUN_8019c5d0 — gated u16 field copy: fl = *(u32*)a0; fl==0 applies
+/* cd_field_copy_gated — gated u16 field copy: fl = *(u32*)a0; fl==0 applies
  * all 31 masked fields plus the sign-bit field; else each bit enables
  * one u16 copy p[src] -> regblock[dst]. dst indices 0xe0..0xff of the
  * u16 block @*(u32*)0x801bdeb0. Disasm 0x8019c5d0-0x8019ca9c. */
-void FUN_8019c5d0(void *a0)
+void cd_field_copy_gated(void *a0)
 {
   static const struct { uint32_t mask; uint32_t src; uint32_t dst; } T[] = {
     {0x00000001,0x04,0x1c0},{0x00000002,0x06,0x1c2},
@@ -3623,7 +3624,7 @@ void FUN_8019c5d0(void *a0)
  * mode a0 indexes u32 table @0x801be440 (+a0*4); FUN_8019c060 must
  * return 0. s0==0 -> s1=0x10<<sh, s2=0xfff0<<sh; else s1=(-ent)<<sh,
  * s2=ent<<sh (sh=@0x801bdee8). Saves/restores @0x801bdecc (when 1) and
- * @0x801bdee8 pending value. Chunk loop drives FUN_8019b944 ops
+ * @0x801bdee8 pending value. Chunk loop drives cd_reg_window_op ops
  * 2/1/3 then BIOS svc B0/0xa trampoline (FUN_8019cfb0) per 0x400 chunk.
  * NOTE: a1/a2 into the first two b944 calls are caller-carryover regs
  * in the guest (unused by those op paths); approximated as s2/0.
@@ -3654,9 +3655,9 @@ int32_t FUN_8019ce10(uint32_t a0)
   for (;;) {
     if (s1 < 0x401) { s0 = s1; s3 = 0; }
     else            { s0 = 0x400; }
-    FUN_8019b944(2,s2,0);
-    FUN_8019b944(1,s2,0);
-    FUN_8019b944(3,0x801bdf20,s0);
+    cd_reg_window_op(2,s2,0);
+    cd_reg_window_op(1,s2,0);
+    cd_reg_window_op(3,0x801bdf20,s0);
     /* FUN_8019cfb0 = BIOS trampoline (jr $t2=0xb0, t1=0xa); a1 carryover
      * from b944 op3 tail = *(u32*)0x801bdeb4 pointer cell. */
     bios_svc(0xb0,0xa,CDREG32(0x801bde38),CDREG32(0x801bdeb4));
@@ -3669,12 +3670,12 @@ int32_t FUN_8019ce10(uint32_t a0)
   return 0;
 }
 
-/* FUN_8019e0d0 — 4-nibble curve lookup: combines a3+a1, derives a
+/* cd_curve_lookup — 4-nibble curve lookup: combines a3+a1, derives a
  * signed mod-3 index into u16 table @0x801be320 and a 7-bit index into
  * @0x801be338, multiplies, then conditional round-up shift.
  * Faithful mult hi/lo + sra/srlv/sllv(&31) port.
  * Disasm 0x8019e0d0-0x8019e19c. */
-uint32_t FUN_8019e0d0(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
+uint32_t cd_curve_lookup(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
 {
   int32_t sum, q, rem, idx, v0, a1r, sh;
   uint32_t lu;
@@ -3718,8 +3719,8 @@ uint32_t FUN_8019e0d0(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
   return (uint32_t)a1r & 0xffff;
 }
 
-/* FUN_8019fa6c — get-and-set u32 @0x801fec24, returns previous. */
-uint32_t FUN_8019fa6c(uint32_t a0)
+/* cd_xchg_fec24 — get-and-set u32 @0x801fec24, returns previous. */
+uint32_t cd_xchg_fec24(uint32_t a0)
 {
   uint32_t *p = (uint32_t *)guest_at(0x801fec24);
   uint32_t old = *p;
@@ -3727,9 +3728,9 @@ uint32_t FUN_8019fa6c(uint32_t a0)
   return old;
 }
 
-/* FUN_801a00bc — status-code map: 0->0, 1->2, 2->1, 4->3,
+/* cd_status_map — status-code map: 0->0, 1->2, 2->1, 4->3,
  * anything else -> a0|0x8000. Disasm 0x801a00bc-0x801a010c. */
-uint32_t FUN_801a00bc(uint32_t a0)
+uint32_t cd_status_map(uint32_t a0)
 {
   if (a0 == 1) return 2;
   if ((int32_t)a0 < 2) {
@@ -3741,10 +3742,10 @@ uint32_t FUN_801a00bc(uint32_t a0)
   return a0 | 0x8000;
 }
 
-/* FUN_801a01bc — 6-byte header copy from payload @0x80125f6c into
+/* cd_file_header_copy — 6-byte header copy from payload @0x80125f6c into
  * host buf a1, then bytes 2/3 = two nibble+'0' chars of a0
  * (a0<0 -> +0xf before >>4; lo nibble = a0 - (q<<4)). Disasm verified. */
-void FUN_801a01bc(uint32_t a0,void *a1)
+void cd_file_header_copy(uint32_t a0,void *a1)
 {
   uint8_t *d = (uint8_t *)a1;
   int32_t v = (int32_t)a0;
@@ -3759,16 +3760,16 @@ void FUN_801a01bc(uint32_t a0,void *a1)
 /* FUN_801a0260 / FUN_801a05f0 — SKIPPED: pure BIOS-call trampolines
  * (jr $t2=0xb0, t1=0x43 / t2=0xa0,t1=0xac then b0 entries). No body. */
 
-/* FUN_801a0280 — file-record lookup: copies tag bytes (<0x3b signed)
+/* cd_file_record_lookup — file-record lookup: copies tag bytes (<0x3b signed)
  * from a0 into buf @0x801fec48, scans 0x50-stride table
  * @*(u32*)0x150..+count*80 (@0x154 count) comparing names via
- * FUN_801984a0; phase1 hit -> *0x801fec40 = entry+0x34; phase2
+ * cd_strcmp; phase1 hit -> *0x801fec40 = entry+0x34; phase2
  * strcmp==0 -> entry+0x34 = 0x801a041c; tail calls BIOS svc
  * B0/0x42 trampoline (FUN_801a0520) with (a0,a1) unless phase1 miss
  * (returns 0). a0/a1 are HOST pointers (callers pass stack bufs).
  * Reads kernel cells 0x150/0x154 via guest_at.
  * Disasm 0x801a0280-0x801a0418. */
-uint32_t FUN_801a0280(void *a0,void *a1)
+uint32_t cd_file_record_lookup(void *a0,void *a1)
 {
   uint8_t *s2 = (uint8_t *)a0;
   uint8_t *s3 = (uint8_t *)a1;
@@ -3799,7 +3800,7 @@ uint32_t FUN_801a0280(void *a0,void *a1)
     for (;;) {
       uint32_t e0 = CDREG32(s0);
       if (e0 != 0) {
-        if (FUN_801984a0(guest_at(e0),buf) == 0) {
+        if (cd_strcmp(guest_at(e0),buf) == 0) {
           CDREG32(0x801fec40) = CDREG32(s0 + 0x34);
           found = 1;
           break;
@@ -3816,7 +3817,7 @@ uint32_t FUN_801a0280(void *a0,void *a1)
     for (;;) {
       uint32_t e0 = CDREG32(s0);
       if (e0 != 0) {
-        if (FUN_801984a0(guest_at(e0),buf) == 0) {
+        if (cd_strcmp(guest_at(e0),buf) == 0) {
           CDREG32(s0 + 0x34) = 0x801a041c;
           break;
         }
@@ -3830,11 +3831,11 @@ uint32_t FUN_801a0280(void *a0,void *a1)
                       (uint32_t)(uintptr_t)s3);
 }
 
-/* FUN_801a0530 — strcat with overlap guard: returns 0 when either arg
+/* cd_strcat_guard — strcat with overlap guard: returns 0 when either arg
  * NULL or end(dst)==end(src); else appends src at dst's NUL.
  * a0/a1 are HOST pointers (callers pass stack/arena buffers).
  * Disasm 0x801a0530-0x801a05d0. */
-void FUN_801a0530(void *a0,uint32_t a1)
+void cd_strcat_guard(void *a0,uint32_t a1)
 {
   char *s1 = (char *)a0;
   char *s2 = (char *)(uintptr_t)a1;
@@ -3871,9 +3872,9 @@ void FUN_801a0530(void *a0,uint32_t a1)
 
 /* FUN_801a07a4 — channel command pump: 15 rounds building a 0x20-byte
  * request {0xa0,0,0xffff,0...} at 0x801fec70+i*0x20, copying it to the
- * 0x80-byte work buf @0x801feea0 and calling FUN_801a0660(a0,i+1,buf);
+ * 0x80-byte work buf @0x801feea0 and calling cd_chan_cmd_pump(a0,i+1,buf);
  * all must return 1. Then 20 rounds storing -1 at 0x801fee50+i*4,
- * work buf = that u32, FUN_801a0660(a0,i+0x10,buf); final sends
+ * work buf = that u32, cd_chan_cmd_pump(a0,i+0x10,buf); final sends
  * {'M','C'} header, returns (ret==1). Disasm 0x801a07a4-0x801a09ac. */
 uint32_t FUN_801a07a4(uint32_t a0)
 {
@@ -3887,26 +3888,26 @@ uint32_t FUN_801a07a4(uint32_t a0)
     CDREG32(blk + 4) = 0;
     CDREG16(blk + 8) = 0xffff;
     memcpy(guest_at(0x801feea0),guest_at(blk),0x20);
-    if (FUN_801a0660(s4,(uint32_t)(s2 + 1),0x801feea0) != 1) return 0;
+    if (cd_chan_cmd_pump(s4,(uint32_t)(s2 + 1),0x801feea0) != 1) return 0;
   }
   for (s2 = 0; s2 < 0x14; s2++) {
     uint32_t cell = 0x801fee50 + (uint32_t)s2 * 4;
     CDREG32(cell) = 0xffffffff;
     cd_bzero(0x801feea0,0x80);
     CDREG32(0x801feea0) = CDREG32(cell);
-    if (FUN_801a0660(s4,(uint32_t)(s2 + 0x10),0x801feea0) != 1) return 0;
+    if (cd_chan_cmd_pump(s4,(uint32_t)(s2 + 0x10),0x801feea0) != 1) return 0;
   }
   cd_bzero(0x801feea0,0x80);
   *(uint8_t *)guest_at(0x801feea0)     = 0x4d;   /* 'M' */
   *(uint8_t *)guest_at(0x801feea0 + 1) = 0x43;   /* 'C' */
-  return FUN_801a0660(s4,0,0x801feea0) == 1 ? 1u : 0u;
+  return cd_chan_cmd_pump(s4,0,0x801feea0) == 1 ? 1u : 0u;
 }
 
-/* FUN_801a0a10 — job-slot allocator: idx = *@0x801be768 + 1; >=4 ->
+/* cd_job_slot_alloc — job-slot allocator: idx = *@0x801be768 + 1; >=4 ->
  * printf 0x80125f98 + return; else store idx, fn ptr a0 ->
  * @0x801fef60+idx*4, zero 16-byte entry @0x801fef2c+idx*0x10.
  * a1 unused (overwritten in guest). Disasm 0x801a0a10-0x801a0a88. */
-void FUN_801a0a10(uint32_t a0,uint32_t a1)
+void cd_job_slot_alloc(uint32_t a0,uint32_t a1)
 {
   uint32_t idx, i;
   (void)a1;
@@ -3924,15 +3925,15 @@ void FUN_801a0a10(uint32_t a0,uint32_t a1)
   }
 }
 
-/* FUN_801a0e90 — pump 8 pending channel args through FUN_8019d5b0
+/* cd_pending_args_pump — pump 8 pending channel args through cd_seek_state_machine
  * (cells 0x801fef70..8c), then FIFO-clear both 4-deep queues
  * 0x801fef90-9c and 0x801fefa0-ac (each = shift-down by one slot,
  * head zeroed). Disasm 0x801a0e90-0x801a0f94. */
-void FUN_801a0e90(void)
+void cd_pending_args_pump(void)
 {
   int i;
   for (i = 0; i < 8; i++)
-    FUN_8019d5b0(CDREG32(0x801fef70 + (uint32_t)i * 4));
+    cd_seek_state_machine(CDREG32(0x801fef70 + (uint32_t)i * 4));
   CDREG32(0x801fef9c) = 0;
   CDREG32(0x801fef98) = CDREG32(0x801fef9c);
   CDREG32(0x801fef94) = CDREG32(0x801fef98);
@@ -3943,11 +3944,11 @@ void FUN_801a0e90(void)
   CDREG32(0x801fefa0) = CDREG32(0x801fefa4);
 }
 
-/* FUN_801a0f98 — queue-A status: s0 = q90 + q94*2 + q98*4 + q9c*8
- * (busy-poll until nonzero), drains 4 args via FUN_8019d5b0
+/* cd_queue_a_status — queue-A status: s0 = q90 + q94*2 + q98*4 + q9c*8
+ * (busy-poll until nonzero), drains 4 args via cd_seek_state_machine
  * (0x801fef80..8c), FIFO-clears queue A, returns s0>>1 (sra).
  * Disasm 0x801a0f98-0x801a106c. */
-uint32_t FUN_801a0f98(void)
+uint32_t cd_queue_a_status(void)
 {
   uint32_t s0;
   for (;;) {
@@ -3957,10 +3958,10 @@ uint32_t FUN_801a0f98(void)
        + (CDREG32(0x801fef9c) << 3);
     if (s0 != 0) break;
   }
-  FUN_8019d5b0(CDREG32(0x801fef80));
-  FUN_8019d5b0(CDREG32(0x801fef84));
-  FUN_8019d5b0(CDREG32(0x801fef88));
-  FUN_8019d5b0(CDREG32(0x801fef8c));
+  cd_seek_state_machine(CDREG32(0x801fef80));
+  cd_seek_state_machine(CDREG32(0x801fef84));
+  cd_seek_state_machine(CDREG32(0x801fef88));
+  cd_seek_state_machine(CDREG32(0x801fef8c));
   CDREG32(0x801fef9c) = 0;
   CDREG32(0x801fef98) = CDREG32(0x801fef9c);
   CDREG32(0x801fef94) = CDREG32(0x801fef98);
@@ -3968,11 +3969,11 @@ uint32_t FUN_801a0f98(void)
   return (uint32_t)((int32_t)s0 >> 1);
 }
 
-/* FUN_801a1070 — queue-B status: s0 = qa0 + qa4*2 + qa8*4 + qac*8
- * (busy-poll until nonzero), drains 4 args via FUN_8019d5b0
+/* cd_queue_b_status — queue-B status: s0 = qa0 + qa4*2 + qa8*4 + qac*8
+ * (busy-poll until nonzero), drains 4 args via cd_seek_state_machine
  * (0x801fef70..7c), FIFO-clears queue B, returns s0>>1 (sra).
  * Disasm 0x801a1070-0x801a1144. */
-uint32_t FUN_801a1070(void)
+uint32_t cd_queue_b_status(void)
 {
   uint32_t s0;
   for (;;) {
@@ -3982,10 +3983,10 @@ uint32_t FUN_801a1070(void)
        + (CDREG32(0x801fefac) << 3);
     if (s0 != 0) break;
   }
-  FUN_8019d5b0(CDREG32(0x801fef70));
-  FUN_8019d5b0(CDREG32(0x801fef74));
-  FUN_8019d5b0(CDREG32(0x801fef78));
-  FUN_8019d5b0(CDREG32(0x801fef7c));
+  cd_seek_state_machine(CDREG32(0x801fef70));
+  cd_seek_state_machine(CDREG32(0x801fef74));
+  cd_seek_state_machine(CDREG32(0x801fef78));
+  cd_seek_state_machine(CDREG32(0x801fef7c));
   CDREG32(0x801fefac) = 0;
   CDREG32(0x801fefa8) = CDREG32(0x801fefac);
   CDREG32(0x801fefa4) = CDREG32(0x801fefa8);
@@ -3993,9 +3994,9 @@ uint32_t FUN_801a1070(void)
   return (uint32_t)((int32_t)s0 >> 1);
 }
 
-/* FUN_801a1148 — queue-A packed read (no side effects):
+/* cd_queue_a_read — queue-A packed read (no side effects):
  * return q90 + q94*2 + q98*4 + q9c*8. Disasm 0x801a1148-0x801a1180. */
-uint32_t FUN_801a1148(void)
+uint32_t cd_queue_a_read(void)
 {
   return CDREG32(0x801fef90)
        + (CDREG32(0x801fef94) << 1)
@@ -4008,18 +4009,18 @@ uint32_t FUN_801a1148(void)
  * cluster). Walks the 0x20-stride entry table @*(u32*)0x801fc6c0 at
  * index *(u32*)0x801fc6a4, validates tag/sequence fields, then issues
  * a 0x1f8-byte DMA-style command through either the async path
- * FUN_80199d5c or the job path FUN_80199d88 (7 args, last three on
+ * cd_copy_u32 or the job path FUN_80199d88 (7 args, last three on
  * the guest stack). Status codes go to *(u32*)0x801bcc88; error
  * retries bump *(u32*)0x801fc6a0 when mode flag 0x801fc6b0 is set.
  * Disasm 0x80199440-0x80199d58. */
-extern uint32_t FUN_80199d5c(uint32_t,uint32_t,uint32_t,uint32_t);
+extern uint32_t cd_copy_u32(uint32_t,uint32_t,uint32_t,uint32_t);
 extern uint32_t FUN_80199d88(uint32_t,uint32_t,uint32_t,uint32_t,
                              uint32_t,uint32_t,uint32_t);
-extern void FUN_801990f0();
+extern void cd_dir_entry_finalize();
 
 #define CD_ENT16(o)  (*(uint16_t *)guest_at(DB32(0x801feb18) + (o)))
 
-void FUN_80199440(void)
+void cd_mc_state_machine(void)
 {
   uint8_t io[8];        /* sp+0x28: 4 tag bytes copied from *0x801bcc48 */
   uint32_t tag, cb, a0v, a1v, aux, lim;
@@ -4072,7 +4073,7 @@ void FUN_80199440(void)
 
   /* stage entry header: async copy or job submission */
   if (DB32(0x801fc6b0) != 0) {
-    FUN_80199d5c(DB32(0x801feb18),
+    cd_copy_u32(DB32(0x801feb18),
                  DB32(0x801fc6b0) + (DB32(0x801fc6a0) << 11), 8, 0);
   } else {
     FUN_80199d88(3,DB32(0x801feb18),0,8,0x11000000,0,0);
@@ -4199,7 +4200,7 @@ void FUN_80199440(void)
     /* last entry of window: arm done flag, bigger transfer, st via tail */
     DB32(0x801fc69c) = 1;
     if (DB32(0x801fc6b0) != 0) {
-      FUN_80199d5c(DB32(0x801fc6bc),
+      cd_copy_u32(DB32(0x801fc6bc),
                    DB32(0x801fc6b0) + (DB32(0x801fc6a0) << 11) + 0x20,
                    0x1f8,1);
       DB32(0x801fc6a0) += 1;
@@ -4211,7 +4212,7 @@ void FUN_80199440(void)
     DB32(0x801fc680) = 0;
   } else {
     if (DB32(0x801fc6b0) != 0) {
-      FUN_80199d5c(DB32(0x801fc6bc),
+      cd_copy_u32(DB32(0x801fc6bc),
                    DB32(0x801fc6b0) + (DB32(0x801fc6a0) << 11) + 0x20,
                    0x1f8,0);
       DB32(0x801fc6a0) += 1;
@@ -4225,7 +4226,7 @@ void FUN_80199440(void)
   CD_ENT16(0) = 3;
   DB32(0x801fc6a4) += 1;
   if (DB32(0x801fc6b0) != 0 && DB32(0x801fc69c) != 0)
-    FUN_801990f0();
+    cd_dir_entry_finalize();
 }
 
 #undef CD_ENT16
@@ -4313,10 +4314,10 @@ void FUN_801a169c(int32_t unused, uint32_t a1, int32_t a2)
 
 /* ======== batch33 ======== */
 
-/* FUN_801984a0 — strcmp: NULL/equality guards then signed-byte compare
+/* cd_strcmp — strcmp: NULL/equality guards then signed-byte compare
  * loop; NUL test is unsigned. Args are HOST pointers (callers pass
  * guest_at results / stack bufs). Disasm 0x801984a0-0x80198500. */
-int32_t FUN_801984a0(const void *pa0,const void *pa1)
+int32_t cd_strcmp(const void *pa0,const void *pa1)
 {
   const int8_t *a = (const int8_t *)pa0;
   const int8_t *b = (const int8_t *)pa1;
@@ -4334,12 +4335,12 @@ int32_t FUN_801984a0(const void *pa0,const void *pa1)
   }
 }
 
-/* FUN_801990f0 — dir-entry finalize: entry = table@0x801fc6c0 +
+/* cd_dir_entry_finalize — dir-entry finalize: entry = table@0x801fc6c0 +
  * idx@0x801fc6a8 *0x20; u16@+0 = 2; u32@+0x1c -> 0x801feb00;
  * u32@+8 -> 0x801feb04; @0x801fc6a8 = @0x801fc6a4; jalr fn
  * @0x801feb10 (a0 = fn ptr itself) when nonzero; @0x801fc69c = 0.
  * Disasm 0x801990f0-0x80199178. */
-void FUN_801990f0(void)
+void cd_dir_entry_finalize(void)
 {
   uint32_t idx = DB32(0x801fc6a8);
   uint8_t *e = (uint8_t *)guest_at(DB32(0x801fc6c0) + (idx << 5));
@@ -4355,9 +4356,9 @@ void FUN_801990f0(void)
   DB32(0x801fc69c) = 0;
 }
 
-/* FUN_80199d5c — copy a2 u32 words a1 -> a0 (guest addrs); a3 unused.
+/* cd_copy_u32 — copy a2 u32 words a1 -> a0 (guest addrs); a3 unused.
  * Disasm 0x80199d5c-0x80199d84. */
-uint32_t FUN_80199d5c(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
+uint32_t cd_copy_u32(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
 {
   uint32_t *d = (uint32_t *)guest_at(a0);
   uint32_t *s = (uint32_t *)guest_at(a1);
@@ -4381,7 +4382,7 @@ void FUN_8019be50(void)
   *p = (*p & 0xf0ffffffu) | 0x22000000u;
 }
 
-/* ---- BIOS svc trampolines used by FUN_801a0660 ----
+/* ---- BIOS svc trampolines used by cd_chan_cmd_pump ----
  * jr $t2=0xb0 with t1 = svc id; a0-a3 pass through. Disasm verified:
  * 0x801a0600->0x4e, 0x801a0610->0x50, 0x801a09e0->0x4f, 0x801a09f0->0x5c. */
 uint32_t FUN_801a0600(uint32_t a0,uint32_t a1)
@@ -4445,7 +4446,7 @@ uint32_t FUN_80199d88(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,
   return a4;
 }
 
-/* FUN_801a0660 — CD command pump, up to 8 retries. a0 = channel,
+/* cd_chan_cmd_pump — CD command pump, up to 8 retries. a0 = channel,
  * a1 = sub-command index, a2 = guest ptr to 0x80-byte request whose
  * byte 0x7f receives the XOR checksum of bytes 0..0x7e.
  * Per retry: svc B0/0x50, svc B0/0x4e (must ret 1), poll B0/0x5c
@@ -4453,10 +4454,10 @@ uint32_t FUN_80199d88(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,
  * svc B0/0x4f (ret!=1 -> printf 0x80125f78, skip poll), optional
  * B0/0x5c poll, then XOR-check response buf byte 0x7f vs request.
  * Guest work buf = sp+0x10 (0x80B); stand-in guest scratch
- * 0x1f800f00 (0x1f800f80.. is the 2-byte out buf used by FUN_80199440).
+ * 0x1f800f00 (0x1f800f80.. is the 2-byte out buf used by cd_mc_state_machine).
  * svc50 carry args: iter0 a0=-1 (post-checksum), later a0=buf+0x7f;
  * a1 = running xor. Disasm 0x801a0660-0x801a07a0. */
-int32_t FUN_801a0660(uint32_t a0,uint32_t a1,uint32_t a2)
+int32_t cd_chan_cmd_pump(uint32_t a0,uint32_t a1,uint32_t a2)
 {
   uint32_t s0 = a0, s4 = a1;
   uint8_t *req = (uint8_t *)guest_at(a2);
@@ -4593,7 +4594,7 @@ done:
 
 /* ======== batch_mass1: small wrappers / trampolines ======== */
 
-extern undefined4 FUN_80198510(undefined4,undefined4,undefined4);
+extern undefined4 cd_strncmp(undefined4,undefined4,undefined4);
 extern void FUN_8019a364(void);
 extern void FUN_8019a310(void);
 extern void FUN_8019a300(void);
@@ -4601,7 +4602,7 @@ extern void FUN_8019a350(void);
 extern void FUN_8019e420(void);
 extern void FUN_8019e600(void);
 extern undefined1 *FUN_8018e490(uint32_t *,uint32_t *,int);
-int FUN_80192f14(uint32_t,uint32_t,uint32_t,uint32_t);
+int cd_queue_push(uint32_t,uint32_t,uint32_t,uint32_t);
 void FUN_8019a15c(void);
 int FUN_8019a20c(void);
 void FUN_8019e3d4(void);
@@ -4618,14 +4619,14 @@ uint32_t FUN_80199fd0(uint32_t a0,uint32_t a1)
 
 int FUN_80197e08(undefined4 param_1,undefined4 param_2)
 {
-  return FUN_80198510(param_1,param_2,0xc) == 0;
+  return cd_strncmp(param_1,param_2,0xc) == 0;
 }
 
 /* ======== 0x80198fe4 ======== */
 
 void FUN_80198fe4(void)
 {
-  FUN_80199440();
+  cd_mc_state_machine();
 }
 
 /* ======== 0x80199fa4 ======== */
@@ -4646,7 +4647,7 @@ void FUN_8019e300(void)
 
 int FUN_80192ef0(uint32_t param_1,uint32_t param_2,uint32_t param_3)
 {
-  return FUN_80192f14(param_1,param_2,0,param_3);
+  return cd_queue_push(param_1,param_2,0,param_3);
 }
 
 /* ======== 0x8019d1f0 ======== */
@@ -4660,7 +4661,7 @@ int FUN_8019d1f0(uint32_t param_1)
 
 int FUN_80193ce0(void)
 {
-  return FUN_8019a6e0(2,0x801931c4);
+  return cd_dispatch_tbl4(2,0x801931c4);
 }
 
 /* ======== 0x80195b4c ======== */
@@ -4707,7 +4708,7 @@ void FUN_8019a15c(void)
 int FUN_8019a20c(void)
 {
   FUN_8018e300();
-  FUN_8019a340(1,0x801feb40);
+  bios_tramp_c003(1,0x801feb40);
   FUN_8018e310(0);
   return 1;
 }
@@ -4717,7 +4718,7 @@ int FUN_8019a20c(void)
 int FUN_8019a12c(void)
 {
   FUN_8019a300();
-  FUN_80199fe0();
+  bios_table_tramp();
   FUN_8019a350();
   return 1;
 }
@@ -4765,7 +4766,7 @@ uint32_t FUN_8019a710(uint32_t param_1)
 
 /* ======== batch_mass2 ======== */
 
-extern int FUN_80192580(int,int);
+extern int gpu_coord_pack(int,int);
 extern void FUN_8019b1a8(uint32_t,uint32_t);
 extern void FUN_8019af00(uint32_t,uint32_t);
 extern void FUN_801a0250(int32_t);
@@ -4809,7 +4810,7 @@ int FUN_80191f88(uint32_t param_1,uint32_t param_2)
 {
   int iVar1;
   *(uint8_t *)guest_at(param_1 + 3) = 2;
-  iVar1 = FUN_80192580((int)*(int16_t *)guest_at(param_2),
+  iVar1 = gpu_coord_pack((int)*(int16_t *)guest_at(param_2),
                        (int)*(int16_t *)guest_at(param_2 + 2));
   *(uint32_t *)guest_at(param_1 + 4) = (uint32_t)iVar1;
   *(uint32_t *)guest_at(param_1 + 8) = 0;
@@ -4821,7 +4822,7 @@ int FUN_80191f88(uint32_t param_1,uint32_t param_2)
 int32_t FUN_8019d170(uint32_t param_1)
 {
   if (param_1 > 0x7ffffff8u) return 0;
-  return FUN_8019bcf0(0xd2,param_1);
+  return cd_reg_indexed_rw(0xd2,param_1);
 }
 
 /* ======== 0x8019e6f0 ======== */
@@ -4951,9 +4952,9 @@ uint32_t FUN_8019bc48(uint32_t param_1,uint32_t param_2)
 {
   uint32_t sh = (uint32_t)DB16(0x801bdec8)
               << (DB32(0x801bded8) & 31);
-  FUN_8019b944(2,sh,0);
-  FUN_8019b944(0,sh,0);
-  FUN_8019b944(3,param_1,param_2);
+  cd_reg_window_op(2,sh,0);
+  cd_reg_window_op(0,sh,0);
+  cd_reg_window_op(3,param_1,param_2);
   return param_2;
 }
 
@@ -4980,7 +4981,7 @@ int FUN_8019e730(uint32_t param_1)
   DB32(0x801febe4) = 0;
   DB32(0x801febe8) = 0;
   DB32(0x801febf0) = param_1;
-  FUN_801a0a10(0x8019e798,param_1);
+  cd_job_slot_alloc(0x8019e798,param_1);
   return 1;
 }
 
@@ -5046,7 +5047,7 @@ int32_t FUN_80193be4(uint32_t param_1)
     if (!poll) break;
     if (FUN_801936e4() != 0) return -1;
   }
-  FUN_8019a6e0(2,0x80193ce0);
+  cd_dispatch_tbl4(2,0x80193ce0);
   br2_cd_gpu_call(0x18,param_1,0,0,0);
   return 0;
 }
@@ -5086,7 +5087,7 @@ uint32_t FUN_8019aca4(void)
 extern void cd_kobj_init_a(void);
 extern void cd_kobj_init_b(void);
 extern void FUN_8019a2f0(uint32_t,uint32_t,uint32_t,uint32_t);
-extern int FUN_8019d5b0(uint32_t);
+extern int cd_seek_state_machine(uint32_t);
 extern void FUN_8019be50(void);
 extern void FUN_8019ad70(uint32_t);
 
@@ -5099,7 +5100,7 @@ int FUN_8019a09c(uint32_t param_1,uint32_t param_2,uint32_t param_3,
   FUN_8018e300();
   cd_kobj_init_b();
   FUN_8018e310(0);
-  FUN_80199fe0();
+  bios_table_tramp();
   FUN_8019a194();
   FUN_8019a2f0(param_1,param_2,param_3,param_4);
   DB32(0x801bcc90) = 1;
@@ -5139,11 +5140,11 @@ void FUN_8019b89c(uint32_t param_1,uint32_t param_2,uint32_t param_3)
   uint32_t b = DB32G(0x801bdeb0);
   uint32_t v1;
   *(uint16_t *)guest_at(b + 0x1a6) = (uint16_t)param_2;
-  FUN_8019be78();
+  cd_delay_3c();
   b = DB32G(0x801bdeb0);
   v1 = *(uint16_t *)guest_at(b + 0x1aa);
   *(uint16_t *)guest_at(b + 0x1aa) = (uint16_t)(v1 | 0x30);
-  FUN_8019be78();
+  cd_delay_3c();
   FUN_8019be50();
   *(uint32_t *)guest_at(DB32G(0x801bdeb4)) = param_1;
   *(uint32_t *)guest_at(DB32G(0x801bdeb8)) = (param_3 << 16) | 0x10;
@@ -5166,7 +5167,7 @@ uint32_t FUN_80190fd0(uint32_t param_1,uint32_t param_2,uint32_t param_3,
     uint32_t tbl = DB32G(0x801b8318);
     br2_gpu_invoke(*(uint32_t *)guest_at(tbl + 0x34),1,param_2,param_3,param_4);
     DB8(0x801b8321) = (uint8_t)param_1;
-    FUN_8019a6e0(2,0);
+    cd_dispatch_tbl4(2,0);
   }
   return s2;
 }
@@ -5181,7 +5182,7 @@ int FUN_801980ec(uint32_t param_1,uint32_t param_2)
     uint32_t v0 = *(uint32_t *)guest_at(0x801fcd04 + off);
     if (v0 == 0) return -1;
     if (v0 == param_1) {
-      if (FUN_801984a0((const void *)(uintptr_t)param_2,
+      if (cd_strcmp((const void *)(uintptr_t)param_2,
                        guest_at(s2)) == 0) {
         return (int)(i + 1);
       }
@@ -5241,7 +5242,7 @@ static int br2_cd_e688(uint32_t a0,uint32_t a1,uint32_t a2,
   DB32(0x801febf8) = a1;
   DB32(0x801fec00) = a0;
   DB32(0x801febfc) = a2;
-  FUN_801a0a10(cb,a1);
+  cd_job_slot_alloc(cb,a1);
   return 1;
 }
 
@@ -5263,9 +5264,9 @@ int FUN_8019f168(uint32_t param_1,uint32_t param_2,uint32_t param_3)
 
 extern void FUN_801921c0(int,ushort *);
 extern void FUN_8019ad1c(uint32_t,uint32_t);
-extern int FUN_8019ad90(uint32_t);
+extern int cd_ctx_save(uint32_t);
 extern void FUN_8019ad48(uint32_t);
-extern void FUN_8019a8ec(void);
+extern void cd_intc_dispatch(void);
 
 /* shared CD wait: poll **0x801b8434 bit23 / **0x801b8428 bit22 with
  * FUN_801936e4 pump; -1 on pump failure. (0x80193be4/938c8/939b4) */
@@ -5332,7 +5333,7 @@ int32_t FUN_801938c8(uint32_t param_1,uint32_t param_2)
   FUN_801936b0();
   r = br2_cd_waitstat();
   if (r != 0) return r;
-  FUN_8019a6e0(2,0x80193ce0);
+  cd_dispatch_tbl4(2,0x80193ce0);
   {
     uint32_t tbl = DB32G(0x801b8318);
     br2_gpu_invoke(*(uint32_t *)guest_at(tbl + 0x20),param_1,param_2,0,0);
@@ -5349,7 +5350,7 @@ int32_t FUN_801939b4(uint32_t param_1,uint32_t param_2)
   FUN_801936b0();
   r = br2_cd_waitstat();
   if (r != 0) return r;
-  FUN_8019a6e0(2,0x80193ce0);
+  cd_dispatch_tbl4(2,0x80193ce0);
   {
     uint32_t tbl = DB32G(0x801b8318);
     br2_gpu_invoke(*(uint32_t *)guest_at(tbl + 0x1c),param_1,param_2,0,0);
@@ -5367,8 +5368,8 @@ uint32_t FUN_8019a814(void)
   *(uint16_t *)guest_at(DB32G(0x801bdda4)) = 0;
   *(uint32_t *)guest_at(DB32G(0x801bddac)) = 0x33333333;
   FUN_8019ad1c(s0,0x41a);
-  if (FUN_8019ad90(s0 + 0x38) != 0) {
-    FUN_8019a8ec();
+  if (cd_ctx_save(s0 + 0x38) != 0) {
+    cd_intc_dispatch();
   }
   s0 = 0x801bcd54;
   *(uint32_t *)guest_at(s0) = s0 + 0xfdc;
@@ -5407,7 +5408,7 @@ void FUN_801918a0(uint32_t param_1,uint32_t param_2)
 
 /* ======== batch_mass8 ======== */
 
-extern void FUN_801931c4(void);
+extern void cd_queue_drain(void);
 
 /* ======== 0x80193574 ======== */
 
@@ -5416,7 +5417,7 @@ int FUN_80193574(uint32_t param_1)
   if (param_1 == 0) {
     FUN_801936b0();
     while (DB32(0x801b8448) != DB32(0x801b844c)) {
-      FUN_801931c4();
+      cd_queue_drain();
       if (FUN_801936e4() != 0) return -1;
     }
     return br2_cd_waitstat();
@@ -5425,7 +5426,7 @@ int FUN_80193574(uint32_t param_1)
     uint32_t s0 = (DB32(0x801b8448) - DB32(0x801b844c)) & 0x3f;
     uint32_t st, o;
     int busy;
-    if (s0 != 0) FUN_801931c4();
+    if (s0 != 0) cd_queue_drain();
     st = *(uint32_t *)guest_at(DB32G(0x801b8434));
     o = *(uint32_t *)guest_at(DB32G(0x801b8428));
     busy = ((st & 0x1000000) != 0) || ((o & 0x400000) == 0);
@@ -5486,8 +5487,8 @@ extern uint32_t FUN_801a0230(uint32_t,uint32_t,uint32_t);
 extern uint32_t FUN_801a0240(uint32_t,uint32_t,uint32_t);
 extern int32_t FUN_801a0220(uint32_t,uint32_t);
 extern void FUN_801a0620(uint32_t);
-extern uint32_t FUN_801a1184(void);
-extern int32_t FUN_8018ef50(int32_t,const void *,int32_t);
+extern uint32_t cd_queue_b_read(void);
+extern int32_t bios_tramp_b035(int32_t,const void *,int32_t);
 
 /* ======== 0x8019f02c ======== */
 
@@ -5508,7 +5509,7 @@ int FUN_8019f02c(uint32_t param_1)
         want = FUN_801a0230(s0[0],s0[1],0);
         if (want == s0[1]) break;
       }
-      FUN_801a0e90();
+      cd_pending_args_pump();
       for (;;) {
         if (FUN_801a0240(s0[0],s0[3],s0[2]) == 0) break;
       }
@@ -5519,8 +5520,8 @@ int FUN_8019f02c(uint32_t param_1)
   if (v1 < 0xb) return 0;
   if (v1 == 0x1e) {
     uint32_t a0;
-    if (FUN_801a1148() == 0) return 0;
-    a0 = FUN_801a0f98();
+    if (cd_queue_a_read() == 0) return 0;
+    a0 = cd_queue_a_status();
     if (a0 != 0) {
       uint32_t cnt = DB32(0x801be74c) + 1;
       DB32(0x801be74c) = cnt;
@@ -5531,7 +5532,7 @@ int FUN_8019f02c(uint32_t param_1)
     } else {
       a0 = 0;
     }
-    DB32(0x801febe4) = FUN_801a00bc(a0);
+    DB32(0x801febe4) = cd_status_map(a0);
     return 1;
   }
   return 0;
@@ -5555,9 +5556,9 @@ int FUN_8019f220(uint32_t param_1)
         want = FUN_801a0230(s0[0],s0[1],0);
         if (want == s0[1]) break;
       }
-      FUN_801a0e90();
+      cd_pending_args_pump();
       for (;;) {
-        if (FUN_8018ef50((int32_t)s0[0],guest_at(s0[3]),(int32_t)s0[2]) == 0) break;
+        if (bios_tramp_b035((int32_t)s0[0],guest_at(s0[3]),(int32_t)s0[2]) == 0) break;
       }
       *s1 = 0x1e;
       return 0;
@@ -5566,8 +5567,8 @@ int FUN_8019f220(uint32_t param_1)
   if (v1 < 0xb) return 0;
   if (v1 == 0x1e) {
     uint32_t a0;
-    if (FUN_801a1148() == 0) return 0;
-    a0 = FUN_801a0f98();
+    if (cd_queue_a_read() == 0) return 0;
+    a0 = cd_queue_a_status();
     if (a0 != 0) {
       uint32_t cnt = DB32(0x801be750) + 1;
       DB32(0x801be750) = cnt;
@@ -5578,7 +5579,7 @@ int FUN_8019f220(uint32_t param_1)
     } else {
       a0 = 0;
     }
-    DB32(0x801febe4) = FUN_801a00bc(a0);
+    DB32(0x801febe4) = cd_status_map(a0);
     return 1;
   }
   return 0;
@@ -5592,7 +5593,7 @@ int FUN_8019f474(uint32_t param_1)
   switch (*s1) {
   case 0:
     DB32(0x801be754) = 0;
-    FUN_801a0a10(0x8019e798,0);
+    cd_job_slot_alloc(0x8019e798,0);
     *s1 = 0xa;
     return 0;
   case 10: {
@@ -5607,17 +5608,17 @@ int FUN_8019f474(uint32_t param_1)
       }
     }
     *s1 = 0x14;
-    FUN_801a0a10(0x8019f02c,0);
+    cd_job_slot_alloc(0x8019f02c,0);
     return 0;
   }
   case 11:
     *s1 = 0x14;
-    FUN_801a0a10(0x8019f02c,0);
+    cd_job_slot_alloc(0x8019f02c,0);
     return 0;
   case 20: {
     uint32_t *s0 = (uint32_t *)guest_at(0x801febe4);
     if (s0[0] == 3) {
-      FUN_801a0e90();
+      cd_pending_args_pump();
       FUN_801a0620(s0[3]);
       *s1 = 0x16;
       return 0;
@@ -5627,8 +5628,8 @@ int FUN_8019f474(uint32_t param_1)
     return 1;
   }
   case 22:
-    if (FUN_801a1184() == 0) return 0;
-    FUN_801a1070();
+    if (cd_queue_b_read() == 0) return 0;
+    cd_queue_b_status();
     *s1 = 0xb;
     return 0;
   default:
@@ -5644,7 +5645,7 @@ int FUN_8019f6cc(uint32_t param_1)
   switch (*s1) {
   case 0:
     DB32(0x801be758) = 0;
-    FUN_801a0a10(0x8019f220,0);
+    cd_job_slot_alloc(0x8019f220,0);
     *s1 = 0xa;
     return 0;
   case 10: {
@@ -5659,17 +5660,17 @@ int FUN_8019f6cc(uint32_t param_1)
       }
     }
     *s1 = 0x14;
-    FUN_801a0a10(0x8019f220,0);
+    cd_job_slot_alloc(0x8019f220,0);
     return 0;
   }
   case 11:
     *s1 = 0x14;
-    FUN_801a0a10(0x8019f220,0);
+    cd_job_slot_alloc(0x8019f220,0);
     return 0;
   case 20: {
     uint32_t *s0 = (uint32_t *)guest_at(0x801febe4);
     if (s0[0] == 3) {
-      FUN_801a0e90();
+      cd_pending_args_pump();
       FUN_801a0620(s0[3]);
       *s1 = 0x16;
       return 0;
@@ -5679,8 +5680,8 @@ int FUN_8019f6cc(uint32_t param_1)
     return 1;
   }
   case 22:
-    if (FUN_801a1184() == 0) return 0;
-    FUN_801a1070();
+    if (cd_queue_b_read() == 0) return 0;
+    cd_queue_b_status();
     *s1 = 0xb;
     return 0;
   default:
@@ -5846,18 +5847,18 @@ void FUN_80199100(uint32_t param_1,uint32_t param_2)
 
 /* ======== 0x8019d508 ======== */
 
-extern int32_t FUN_8019d5b0(uint32_t);
+extern int32_t cd_seek_state_machine(uint32_t);
 
 int32_t FUN_8019d508(uint32_t param_1,uint32_t param_2)
 {
   int32_t v0;
   if (param_2 == 1) return 1;
   if (DB32(0x801bdee4) == 1) return 1;
-  v0 = FUN_8019d5b0(DB32G(0x801bde38));
+  v0 = cd_seek_state_machine(DB32G(0x801bde38));
   if (param_1 == 1) {
     if (v0 == 0) {
       do {
-        v0 = FUN_8019d5b0(DB32G(0x801bde38));
+        v0 = cd_seek_state_machine(DB32G(0x801bde38));
       } while (v0 == 0);
     }
     DB32(0x801bdee4) = (uint32_t)v0;
@@ -5875,11 +5876,11 @@ void FUN_8019b8a4(uint32_t p_v0,uint32_t p_a0,uint32_t p_a1,uint32_t p_a2)
 {
   uint32_t b;
   *(uint16_t *)guest_at(p_v0 + 0x1a6) = (uint16_t)p_a1;
-  FUN_8019be78();
+  cd_delay_3c();
   b = DB32G(0x801bdeb0);
   *(uint16_t *)guest_at(b + 0x1aa) =
       (uint16_t)(*(uint16_t *)guest_at(b + 0x1aa) | 0x30);
-  FUN_8019be78();
+  cd_delay_3c();
   p_a2 <<= 16;
   FUN_8019be50();
   *(uint32_t *)guest_at(DB32G(0x801bdeb4)) = p_a0;
@@ -5911,7 +5912,7 @@ void FUN_80191670(uint32_t param_1,uint32_t param_2,uint32_t param_3)
 void FUN_8019b7e8(uint32_t param_1)
 {
   int i;
-  if (param_1 == 0) FUN_8019be78();
+  if (param_1 == 0) cd_delay_3c();
   {
     uint32_t b = DB32G(0x801bdeb0);
     uint16_t *w = (uint16_t *)guest_at(b);
@@ -5986,12 +5987,12 @@ uint32_t FUN_8019aabc(uint32_t param_1,uint32_t param_2)
   }
   if (param_1 == 0) {
     uint32_t s0 = param_2 < 1;
-    FUN_80199fe0();
-    FUN_8019a670(3,s0);
+    bios_table_tramp();
+    bios_kobj_tramp(3,s0);
   }
-  if (param_1 == 4) FUN_8019a670(0,param_2 < 1);
-  if (param_1 == 5) FUN_8019a670(1,param_2 < 1);
-  if (param_1 == 6) FUN_8019a670(2,param_2 < 1);
+  if (param_1 == 4) bios_kobj_tramp(0,param_2 < 1);
+  if (param_1 == 5) bios_kobj_tramp(1,param_2 < 1);
+  if (param_1 == 6) bios_kobj_tramp(2,param_2 < 1);
   *(uint16_t *)guest_at(DB32G(0x801bdda8)) = (uint16_t)s3;
   return s4;
 }
@@ -6050,30 +6051,30 @@ int FUN_8019eda8(uint32_t param_1,uint32_t param_2,uint32_t param_3)
     FUN_8018e550((const char *)guest_at(0x80125de4),0);
     return -1;
   }
-  FUN_801a01bc(param_1,s0);
-  FUN_801a0530(s0,param_2);
+  cd_file_header_copy(param_1,s0);
+  cd_strcat_guard(s0,param_2);
   *(uint32_t *)guest_at(0x801febf0) = param_1;
   for (;;) {
     v0 = FUN_801a0220((uint32_t)s0,1);
     if (v0 >= 0) {
       FUN_801a0250((uint32_t)v0);
-      FUN_801a0e90();
+      cd_pending_args_pump();
       *q = FUN_801a0220((uint32_t)s0,param_3 | 0x8000);
       return 0;
     }
-    FUN_8019fa6c(0);
+    cd_xchg_fec24(0);
     DB32(0x801fec38) = (uint32_t)v0;
     if ((int32_t)s4[0] > 0) {
       FUN_8018e550((const char *)guest_at(0x80125ce8),0);
     } else {
-      FUN_801a0a10(0x8019e700,0);
+      cd_job_slot_alloc(0x8019e700,0);
       s4[0] = 2;
       s4[1] = 0;
       s4[2] = 0;
       *(uint32_t *)guest_at(0x801febf0) = param_1;
     }
-    FUN_8019fa80(0,0,&st);
-    FUN_8019fa6c(DB32G(0x801fec38));
+    cd_job_result(0,0,&st);
+    cd_xchg_fec24(DB32G(0x801fec38));
     if (st == 3) continue;
     if (st == 2) {
       s2++;
@@ -6100,7 +6101,7 @@ int FUN_801936e4(void)
     uint32_t diff = (DB32(0x801b8448) - DB32(0x801b844c)) & 0x3f;
     uint16_t r;
     FUN_8018e550((const char *)guest_at(0x801255b8),diff,*a2p,*a3p,*cp);
-    r = FUN_8019a7fc(0);
+    r = cd_u16_swap_store(0);
     DB32(0x801b844c) = 0;
     DB32(0x801b8458) = r;
     DB32(0x801b8448) = 0;
@@ -6111,7 +6112,7 @@ int FUN_801936e4(void)
     }
     *a2p = 0x200;
     *a2p = 0x100;
-    FUN_8019a7fc(DB32(0x801b8458));
+    cd_u16_swap_store(DB32(0x801b8458));
     return -1;
   }
   return 0;
@@ -6128,7 +6129,7 @@ int FUN_80193aa0(uint32_t param_1,uint32_t param_2,uint32_t param_3)
   DB32(0x801b845c) = FUN_8019a460(-1) + 0xf0;
   DB32(0x801b8460) = 0;
   if (br2_cd_waitstat() != 0) return -1;
-  FUN_8019a6e0(2,0x80193ce0);
+  cd_dispatch_tbl4(2,0x80193ce0);
   if (*(int16_t *)(s0 + 4) == 0) return -1;
   if (*(int16_t *)(s0 + 6) == 0) return -1;
   a0p = (uint32_t *)guest_at(0x801b83c0);
@@ -6165,12 +6166,12 @@ uint32_t FUN_8018fe44(void)
   return CDREG32(CDREG32(0x801b68f4));
 }
 
-/* FUN_80198510 — strncmp: a0 = guest string addr, a1 = host buffer
+/* cd_strncmp — strncmp: a0 = guest string addr, a1 = host buffer
  * (callers pass stack bufs through u32, cf. FUN_80197e08), a2 = max
  * bytes. NULL guards -> 0/-1/1; signed-byte diff on mismatch; the
  * count bound is a2-1 (compares at most a2 bytes). Disasm
  * 0x80198510-0x8019858c. */
-undefined4 FUN_80198510(undefined4 param_1,undefined4 param_2,undefined4 param_3)
+undefined4 cd_strncmp(undefined4 param_1,undefined4 param_2,undefined4 param_3)
 {
   const int8_t *a;
   const int8_t *b;
@@ -6226,17 +6227,17 @@ void FUN_8019b1a8(uint32_t a0,uint32_t a1)
   for (i = 0; i < a1; i++) p[i] = 0;
 }
 
-/* FUN_8019d5c0 — store a0 into 0x801beee8 only when different.
+/* cd_state_store — store a0 into 0x801beee8 only when different.
  * Disasm 0x8019d5c0-0x8019d5e0. */
-void FUN_8019d5c0(uint32_t a0)
+void cd_state_store(uint32_t a0)
 {
   if (CDREG32(0x801beee8) != a0) CDREG32(0x801beee8) = a0;
 }
 
-/* FUN_801a1184 — queue-B packed word (no side effects):
+/* cd_queue_b_read — queue-B packed word (no side effects):
  * qa0 + qa4*2 + qa8*4 + qac*8 @0x801fefa0-ac. Same shape as the head
- * of FUN_801a1070. Disasm 0x801a1184-0x801a11bc. */
-uint32_t FUN_801a1184(void)
+ * of cd_queue_b_status. Disasm 0x801a1184-0x801a11bc. */
+uint32_t cd_queue_b_read(void)
 {
   return CDREG32(0x801fefa0)
        + (CDREG32(0x801fefa4) << 1)
@@ -6246,21 +6247,21 @@ uint32_t FUN_801a1184(void)
 
 /* ======== batch_mass17: disasm-verified ports ======== */
 
-/* FUN_801931c4 — CD command-queue drain (0x801931c4-0x80193420).
+/* cd_queue_drain — CD command-queue drain (0x801931c4-0x80193420).
  * Ring of 64 entries @0x801fae70, stride 96: +0 fn, +4 data, +8 arg;
  * head=0x801b8448, tail=0x801b844c (mod 64). Early-outs: hw status
  * bit 0x100000 set -> 1; empty queue -> epilogue only. Per entry:
- * reschedule via FUN_8019a6e0(2,0) when one slot remains and
+ * reschedule via cd_dispatch_tbl4(2,0) when one slot remains and
  * 0x801b832c==0, busy-wait *0x801b8428 & 0x400000, dispatch
  * fn(data,arg), advance tail; loop while queue non-empty and status
- * bit clear. Epilogue restores FUN_8019a7fc save @0x801b8454, fires
+ * bit clear. Epilogue restores cd_u16_swap_store save @0x801b8454, fires
  * pending cb @0x801b832c once (clearing flag @0x801b8328), returns
  * (head-tail)&0x3f (callers ignore it; declared void above). */
-void FUN_801931c4(void)
+void cd_queue_drain(void)
 {
   if ((*(uint32_t *)guest_at(DB32G(0x801b8434)) & 0x100000) != 0)
     return;
-  DB32(0x801b8454) = FUN_8019a7fc(0);
+  DB32(0x801b8454) = cd_u16_swap_store(0);
   if (DB32(0x801b8448) != DB32(0x801b844c)
       && (*(uint32_t *)guest_at(DB32G(0x801b8434)) & 0x100000) == 0) {
     for (;;) {
@@ -6268,7 +6269,7 @@ void FUN_801931c4(void)
       uint32_t *e;
       uint32_t fn, dp, arg;
       if (((tail + 1) & 0x3f) == DB32(0x801b8448) && DB32(0x801b832c) == 0)
-        FUN_8019a6e0(2,0);
+        cd_dispatch_tbl4(2,0);
       while ((*(uint32_t *)guest_at(DB32G(0x801b8428)) & 0x400000) == 0) { }
       e = (uint32_t *)guest_at(0x801fae70 + tail * 96);
       fn = e[0]; dp = e[1]; arg = e[2];
@@ -6278,7 +6279,7 @@ void FUN_801931c4(void)
       if ((*(uint32_t *)guest_at(DB32G(0x801b8434)) & 0x100000) != 0) break;
     }
   }
-  FUN_8019a7fc((uint16_t)DB32(0x801b8454));
+  cd_u16_swap_store((uint16_t)DB32(0x801b8454));
   if (DB32(0x801b8448) == DB32(0x801b844c)
       && (*(uint32_t *)guest_at(DB32G(0x801b8434)) & 0x100000) == 0
       && DB32(0x801b8328) != 0) {
@@ -6291,17 +6292,17 @@ void FUN_801931c4(void)
   /* guest returns (head-tail)&0x3f; all callers ignore it. */
 }
 
-/* FUN_80192f14 — CD command-queue push (0x80192f14-0x801931c0).
+/* cd_queue_push — CD command-queue push (0x80192f14-0x801931c0).
  * a0 = fn ptr, a1 = data ptr (guest addr), a2 = payload byte count
  * (copied as a2/4 u32 words into entry+0xc), a3 = arg. Preamble
  * FUN_801936b0; full queue ((head+1)&0x3f==tail) -> FUN_801936e4
- * pump + FUN_801931c4 drain, -1 on pump failure. Saves hw reg via
- * FUN_8019a7fc(0) -> 0x801b8450, sets flag @0x801b8328. Direct-call
+ * pump + cd_queue_drain drain, -1 on pump failure. Saves hw reg via
+ * cd_u16_swap_store(0) -> 0x801b8450, sets flag @0x801b8328. Direct-call
  * fast path when byte @0x801b8321==0, or queue empty + status bit
  * 0x100000 clear + @0x801b832c==0: busy-wait *0x801b8428 & 0x400000,
  * fn(data,arg), restore reg, return 0. Otherwise enqueue entry,
- * head=(head+1)&0x3f, restore reg, FUN_801931c4(), return depth. */
-int FUN_80192f14(uint32_t a0_fn,uint32_t a1_data,uint32_t a2_count,
+ * head=(head+1)&0x3f, restore reg, cd_queue_drain(), return depth. */
+int cd_queue_push(uint32_t a0_fn,uint32_t a1_data,uint32_t a2_count,
                  uint32_t a3_arg)
 {
   uint32_t head, tail, saved;
@@ -6312,9 +6313,9 @@ int FUN_80192f14(uint32_t a0_fn,uint32_t a1_data,uint32_t a2_count,
     tail = DB32(0x801b844c);
     if (((head + 1) & 0x3f) != tail) break;
     if (FUN_801936e4() != 0) return -1;
-    FUN_801931c4();
+    cd_queue_drain();
   }
-  saved = FUN_8019a7fc(0);
+  saved = cd_u16_swap_store(0);
   DB32(0x801b8450) = saved;
   DB32(0x801b8328) = 1;
   direct = (*(uint8_t *)guest_at(0x801b8321) == 0);
@@ -6328,10 +6329,10 @@ int FUN_80192f14(uint32_t a0_fn,uint32_t a1_data,uint32_t a2_count,
   if (direct) {
     while ((*(uint32_t *)guest_at(DB32G(0x801b8428)) & 0x400000) == 0) { }
     call_guest(a0_fn,a1_data,a3_arg);  /* jalr s3: a0=s0 a1=s2 */
-    FUN_8019a7fc((uint16_t)DB32(0x801b8450));
+    cd_u16_swap_store((uint16_t)DB32(0x801b8450));
     return 0;
   }
-  FUN_8019a6e0(2,0x801931c4);
+  cd_dispatch_tbl4(2,0x801931c4);
   head = DB32(0x801b8448);
   {
     uint32_t *e = (uint32_t *)guest_at(0x801fae70 + head * 96);
@@ -6348,25 +6349,25 @@ int FUN_80192f14(uint32_t a0_fn,uint32_t a1_data,uint32_t a2_count,
     e[0] = a0_fn;
   }
   DB32(0x801b8448) = (head + 1) & 0x3f;
-  FUN_8019a7fc((uint16_t)DB32(0x801b8450));
-  FUN_801931c4();
+  cd_u16_swap_store((uint16_t)DB32(0x801b8450));
+  cd_queue_drain();
   return (int)((DB32(0x801b8448) - DB32(0x801b844c)) & 0x3f);
 }
 
-/* FUN_8019ad90 — guest context save (0x8019ad90-0x8019adc8): stores
+/* cd_ctx_save — guest context save (0x8019ad90-0x8019adc8): stores
  * ra,sp,fp,s0-s7,gp into the 12-word frame at a0, returns 0. Paired
  * restore is 0x8019adcc (unported; returns a1 via longjmp). Host has
  * no guest register file, so the slots are zeroed; the !=0 resume
  * path in FUN_8019a814 therefore never fires, matching the absence of
  * guest interrupt delivery. */
-int FUN_8019ad90(uint32_t a0)
+int cd_ctx_save(uint32_t a0)
 {
   uint32_t *c = (uint32_t *)guest_at(a0);
   memset(c,0,12 * sizeof(uint32_t));
   return 0;
 }
 
-/* FUN_8019a8ec — CD interrupt dispatch (0x8019a8ec-0x8019aab8).
+/* cd_intc_dispatch — CD interrupt dispatch (0x8019a8ec-0x8019aab8).
  * State block @0x801bcd18: +0 u16 in-service flag, +2 u16 busy flag,
  * +4 u16 mask C, +4.. handler table u32[11] @0x801bcd1c. Mask =
  * *ptrA(0x801bdda4) & *ptrB(0x801bdda8) & u16@0x801bcd48; per set bit
@@ -6378,7 +6379,7 @@ int FUN_8019ad90(uint32_t a0)
  * trampoline: intc enable) and busy flag=0. First entry with
  * flag==0 prints "unexpected interrupt(%04x)" then enables intc.
  * Disasm 0x8019a8ec-0x8019aab8. */
-void FUN_8019a8ec(void)
+void cd_intc_dispatch(void)
 {
   uint32_t s0;
   int i;
@@ -6430,27 +6431,27 @@ void FUN_8019a8ec(void)
   *(uint16_t *)guest_at(0x801bcd1a) = 0;
 }
 
-/* FUN_8018ef50 — BIOS trampoline only (0x8018ef50-0x8018ef58):
+/* bios_tramp_b035 — BIOS trampoline only (0x8018ef50-0x8018ef58):
  * addiu t2,0xb0; jr t2; t1=0x35. Kernel svc 0x35 (line-buffer
  * flush used by the printf emit layer). a2 is dropped at the
  * bios_svc boundary (svc/a1 unused by bios_call). */
-int32_t FUN_8018ef50(int32_t a0,const void *a1,int32_t a2)
+int32_t bios_tramp_b035(int32_t a0,const void *a1,int32_t a2)
 {
   (void)a2;
   return (int32_t)bios_svc(0xb0,0x35,(uint32_t)a0,
                               (uint32_t)(uintptr_t)a1);
 }
 
-/* FUN_801a0be0 — channel/hw object init under DI/EI (0x801a0be0-
+/* cd_hw_chan_init — channel/hw object init under DI/EI (0x801a0be0-
  * 0x801a0db8). Eight FUN_8019b380(object,attr,size,cb) allocations —
  * objects 0xf4000001 / 0xf0000011, attrs {4,0x8000,0x100,0x2000},
  * size 0x1000, guest cb addrs 0x801a0b10..0x801a0b9c — stored to
  * 0x8020ef70..0x8020ef8c, then each released via FUN_8019b390 in
- * order, FUN_801a0e90() pump, conditional EI. Guest tests the DI
+ * order, cd_pending_args_pump() pump, conditional EI. Guest tests the DI
  * (syscall 1) return ==1 before EI; host FUN_8018e300 is a void
  * stub, so the restore runs unconditionally — same convention as
  * every other DI/EI site in this file. */
-void FUN_801a0be0(void)
+void cd_hw_chan_init(void)
 {
   uint32_t r;
   FUN_8018e300();
@@ -6478,6 +6479,6 @@ void FUN_801a0be0(void)
   FUN_8019b390(DB32(0x8020ef84));
   FUN_8019b390(DB32(0x8020ef88));
   FUN_8019b390(DB32(0x8020ef8c));
-  FUN_801a0e90();
+  cd_pending_args_pump();
   FUN_8018e310(0);
 }

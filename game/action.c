@@ -14,11 +14,11 @@
  *   FUN_8017a05c  apply(ctrl, motion)      — .ANI rebind + relocations
  *   FUN_80175898  reset(ctrl, sel)         — field zero + class scaling
  *   FUN_80181db8  ani_fixup                — S4 cat[0..4] -> absolute
- *   FUN_80175e08  slot_apply(ctrl, slot)   — dual-form (beast) select
- *   FUN_80179ae0  skeleton_init(ctrl,desc) — S5 part/matrix init
+ *   slot_apply  slot_apply(ctrl, slot)   — dual-form (beast) select
+ *   skeleton_init  skeleton_init(ctrl,desc) — S5 part/matrix init
  *   FUN_801862a8  part_link(ctrl)          — part linked-list build
  *   FUN_80175a7c  entry_setup(ctrl, group) — spawn offsets by group
- *   FUN_8017a6e8  action_switch(ctrl,motion,idx) — S0 -> EV stream
+ *   action_switch_guest  action_switch(ctrl,motion,idx) — S0 -> EV stream
  *
  * Guest pointer fields are raw u32 guest addresses (recomp model);
  * on a 64-bit host they need the address-space bridge, same as
@@ -32,7 +32,7 @@
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
 extern uint16_t *FUN_8018dc18(uint32_t,uint32_t,uint32_t,uint16_t *);
-extern int32_t FUN_80179ae0(uint32_t,uint32_t,uint32_t);
+extern int32_t skeleton_init(uint32_t,uint32_t,uint32_t);
 
 typedef uint8_t  byte;
 typedef uint16_t ushort;
@@ -349,10 +349,10 @@ static void ani_fixup(uint8_t *ctrl, int variant)
 }
 
 /* ------------------------------------------------------------------ */
-void FUN_80179a6c(undefined2 *param_1);
-void FUN_8017a6e8(int param_1,int *param_2,int param_3);
+void part_record_reset(undefined2 *param_1);
+void action_switch_guest(int param_1,int *param_2,int param_3);
 
-/* FUN_80175e08 — slot_apply: select one of two form descriptors.      */
+/* slot_apply — slot_apply: select one of two form descriptors.      */
 /* param_tbl + slot*0x24 = 0x24-byte form descriptor (verified).       */
 /* ------------------------------------------------------------------ */
 static void slot_apply(uint8_t *ctrl, uint32_t slot)
@@ -462,7 +462,7 @@ static void entry_setup(uint8_t *ctrl, uint32_t group)
     /* part-record resets (loops over ctrl+8 / ctrl+6 counts) */
     int n = (int8_t)GU8(ctrl, 0x08) - 1;
     for (int i = n; i >= 0; i--) {
-        FUN_80179a6c((undefined2 *)(fobj + i * 0x50));
+        part_record_reset((undefined2 *)(fobj + i * 0x50));
     }
     int pc = (int8_t)GU8(ctrl, 0x06) - 1;
     for (int i = pc; i >= 0; i--) {
@@ -525,7 +525,7 @@ static void entry_setup(uint8_t *ctrl, uint32_t group)
     GS16 (motion, 0xd0) = (int16_t)z;
 }
 
-/* FUN_80179964 — part link-state machine (decomp-verified).
+/* part_link_unlink — part link-state machine (decomp-verified).
  * param_1 = source 0x50 record (u16 state @+0, link @+0x44),
  * param_2 = dest 0x50 record, param_3 = link mode (1 own, 3 foe).
  * Pointer fields stored as guest addresses. */
@@ -584,30 +584,30 @@ done:
 }
 
 /* ------------------------------------------------------------------ */
-/* FUN_80179ae0 — skeleton_init: part/matrix init from S5 descriptor.  */
+/* skeleton_init — skeleton_init: part/matrix init from S5 descriptor.  */
 /* desc = 0x1c-byte block inside S5 (two per section, slot*0x1c).      */
 /* Ports the verified loop structure; matrix decode helpers            */
-/* (FUN_8018dc18 euler->matrix, FUN_80179964 part-copy) are host      */
+/* (FUN_8018dc18 euler->matrix, part_link_unlink part-copy) are host      */
 /* hooks pending their own decode.                                     */
 /* ------------------------------------------------------------------ */
-static void skeleton_init(uint8_t *ctrl, const uint8_t *desc)
+static void skeleton_init_wrap(uint8_t *ctrl, const uint8_t *desc)
 {
-    /* canonical disasm-verified port is FUN_80179ae0 in menu.c;
+    /* canonical disasm-verified port is skeleton_init in menu.c;
      * delegate with guest addresses (host ptrs -> guest via
      * guest_of). The older inline approximation was removed —
      * it read euler seeds from the wrong desc field. */
-    FUN_80179ae0(guest_of(ctrl), guest_of(desc), 0);
+    skeleton_init(guest_of(ctrl), guest_of(desc), 0);
 }
 
 /* ------------------------------------------------------------------ */
-/* FUN_8017a6e8 — action_switch: S0 table -> event stream.             */
+/* action_switch_guest — action_switch: S0 table -> event stream.             */
 /* ------------------------------------------------------------------ */
-void FUN_8017a6e8(int param_1,int *param_2,int param_3);
-void FUN_80179a6c(undefined2 *param_1);
+void action_switch_guest(int param_1,int *param_2,int param_3);
+void part_record_reset(undefined2 *param_1);
 static void action_switch(uint8_t *ctrl, uint8_t *motion, int32_t idx)
 {
     if (!ctrl || !motion) return;
-    FUN_8017a6e8((int)guest_of(ctrl),(int *)motion,idx);
+    action_switch_guest((int)guest_of(ctrl),(int *)motion,idx);
     return;
 #if 0
     uint16_t off = GU16(GU32(motion, MO_SEC0), (uint32_t)idx * 2);
@@ -625,7 +625,7 @@ static void action_switch(uint8_t *ctrl, uint8_t *motion, int32_t idx)
     GS16(ctrl, 0xb8) = 0;
     GS16(ctrl, 0xb6) = 0;
     GSU16(motion, 0x110) = 0xffff;
-    /* part-struct field resets — now covered by verbatim FUN_8017a6e8 */
+    /* part-struct field resets — now covered by verbatim action_switch_guest */
 #endif
 }
 
@@ -685,13 +685,13 @@ uint32_t br2_action_enter(void *battle, uint8_t *ctrl, uint32_t sel)
         uint8_t *s5 = s5_g ? (uint8_t *)guest_at(s5_g) : NULL;
         slot_apply(ctrl, 0);
         entry_setup(ctrl, sel >> 4);
-        if (s5) skeleton_init(ctrl, s5);
+        if (s5) skeleton_init_wrap(ctrl, s5);
         part_link(ctrl);
 
         GS8(ctrl, 0x05) = 0x11;
         slot_apply(ctrl, 1);
         entry_setup(ctrl, sel >> 4);
-        if (s5) skeleton_init(ctrl, s5 + 0x1c);
+        if (s5) skeleton_init_wrap(ctrl, s5 + 0x1c);
         part_link(ctrl);
 
         uint8_t b3 = (saved5 & 0x10) ? 0x11 : 0;
@@ -716,9 +716,9 @@ uint32_t br2_action_enter(void *battle, uint8_t *ctrl, uint32_t sel)
 /* Guest-faithful ports (verbatim Ghidra transliteration).            */
 /* ------------------------------------------------------------------ */
 
-/* FUN_80179a6c — part-record reset: identity 4x3 matrix + tail call. */
-void FUN_80179964(ushort *param_1,short *param_2,int param_3);
-void FUN_80179a6c(undefined2 *param_1)
+/* part_record_reset — part-record reset: identity 4x3 matrix + tail call. */
+void part_link_unlink(ushort *param_1,short *param_2,int param_3);
+void part_record_reset(undefined2 *param_1)
 {
   *(undefined4 *)(param_1 + 2) = 0x1000;
   *(undefined4 *)(param_1 + 4) = 0;
@@ -738,12 +738,12 @@ void FUN_80179a6c(undefined2 *param_1)
   *(undefined4 *)(param_1 + 0x1c) = 0;
   *(undefined4 *)(param_1 + 0x1e) = 0;
   *param_1 = 0;
-  FUN_80179964((ushort *)0,(short *)param_1,0);
+  part_link_unlink((ushort *)0,(short *)param_1,0);
 }
 
-/* FUN_8017a6e8 — action_switch (guest-verbatim; superset of the      */
+/* action_switch_guest — action_switch (guest-verbatim; superset of the      */
 /* static approximation above — adds part-struct resets).            */
-void FUN_8017a6e8(int param_1,int *param_2,int param_3)
+void action_switch_guest(int param_1,int *param_2,int param_3)
 {
   ushort uVar1;
   int iVar2;
@@ -782,16 +782,16 @@ void FUN_8017a6e8(int param_1,int *param_2,int param_3)
       (uint32_t)(*(int8_t *)(p1 + 6) * 0x28) - 0x1c)) = 0;
 }
 
-/* FUN_80175e08 guest entry — delegates to the faithful static port. */
-void FUN_80175e08(int param_1,int param_2)
+/* slot_apply_guest — guest entry @0x80175e08: delegates to the faithful static port. */
+void slot_apply_guest(int param_1,int param_2)
 {
   slot_apply((uint8_t *)guest_at((uint32_t)param_1),(uint32_t)param_2);
 }
 
-/* FUN_80179964 — part-record link/unlink: intrusive list via
+/* part_link_unlink — part-record link/unlink: intrusive list via
  * rec+0x44 next / rec-head +0x22 tail, state machine on rec[0].
  * param_3: 3 = detach-to-slot mode, else link mode. */
-void FUN_80179964(ushort *param_1,short *param_2,int param_3)
+void part_link_unlink(ushort *param_1,short *param_2,int param_3)
 {
   ushort uVar1;
   short sVar2;

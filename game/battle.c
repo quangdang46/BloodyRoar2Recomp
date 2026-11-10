@@ -278,7 +278,7 @@ extern int FUN_801943d4(int param_1);
 extern uint * FUN_80194c50(undefined4 *param_1,ushort *param_2,uint *param_3);
 extern undefined4 * FUN_80194f10(undefined4 *param_1,undefined4 *param_2);
 extern undefined4 * FUN_80195160(undefined4 *param_1,undefined4 *param_2,undefined4 *param_3);
-extern int * FUN_801a4414(int param_1,int param_2,int param_3,int param_4);
+extern int * node_lazy_attach(int param_1,int param_2,int param_3,int param_4);
 extern undefined4 FUN_801a6f44(int param_1);
 extern void FUN_801a7498(int param_1);
 extern void FUN_801a99e0(int param_1,int param_2);
@@ -3103,7 +3103,7 @@ extern uint32_t *g__DAT_801f0292, *g__DAT_801f02f6, *g__DAT_801f02f8, *g__DAT_80
 #define _DAT_801f04f6   (*g__DAT_801f04f6)
 #define _DAT_801f04f8   (*g__DAT_801f04f8)
 #define _DAT_801f04fa   (*g__DAT_801f04fa)
-extern void FUN_80144f8c(uint32_t,byte *);
+extern void trig_lut_read(uint32_t,byte *);
 extern void FUN_8014512c(uint32_t,byte *);
 extern void FUN_801451d4(uint32_t,byte *);
 extern void FUN_801452d0(uint32_t,byte *);
@@ -4177,7 +4177,7 @@ LAB_80144d0c:
     }
   }
   else {
-    FUN_80144f8c(param_1,(byte *)(intptr_t)param_2);
+    trig_lut_read(param_1,(byte *)(intptr_t)param_2);
   }
   if ((*(uint *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x54) ))& 0x20) != 0) {
     iVar5 = (uint)*(ushort *)guest_at((uint32_t)(uintptr_t)((param_2 + 0xb2) ))<< 0x10;
@@ -9230,9 +9230,9 @@ void FUN_8012e078(undefined4 param_1,undefined2 param_2,const void *param_3,unde
 
 }
 
-/* FUN_8012e100 — 0x1f80038c text-block variant: +0x1c = raw string guest
+/* hud_text_blk — 0x1f80038c text-block variant: +0x1c = raw string guest
  * addr, +0xa..0x10 all 8, +0x16 timing formula; disasm 0x8012e100-0x8012e180. */
-void FUN_8012e100(undefined4 param_1,undefined2 param_2,uint32_t param_3,undefined2 param_4, undefined2 param_5,short param_6)
+void hud_text_blk(undefined4 param_1,undefined2 param_2,uint32_t param_3,undefined2 param_4, undefined2 param_5,short param_6)
 {
   _DAT_1f80038c = 0;
   _DAT_1f80038e = 0;
@@ -9252,9 +9252,9 @@ void FUN_8012e100(undefined4 param_1,undefined2 param_2,uint32_t param_3,undefin
   return;
 }
 
-/* FUN_801524b0 — "PLEASE WAIT" announce when record flag bit 0x800 set
+/* please_wait_announce — "PLEASE WAIT" announce when record flag bit 0x800 set
  * and 0x1f8000dc mode bits 4-5 nonzero; disasm 0x801524b0-0x80152440. */
-void FUN_801524b0(uint32_t param_1,int param_2)
+void please_wait_announce(uint32_t param_1,int param_2)
 {
   uint8_t *a0 = (uint8_t *)guest_at(param_1);
   int32_t a3;
@@ -9270,10 +9270,10 @@ void FUN_801524b0(uint32_t param_1,int param_2)
                (uint16_t)(int16_t)(a3 - 0x21),0x20,1);
 }
 
-/* FUN_80159eec — signed counter adjust on a0+0xa0 gated by mode byte
+/* ctr_clamp — signed counter adjust on a0+0xa0 gated by mode byte
  * a0+0x9c (mode 0, mode>5, or mode==5&&+0x9b==0); clamps [-inf,0xff].
  * Disasm 0x80159eec-0x80159f58. */
-void FUN_80159eec(uint32_t param_1,int32_t a1)
+void ctr_clamp(uint32_t param_1,int32_t a1)
 {
   uint8_t *a0 = (uint8_t *)guest_at(param_1);
   int mode, adj = 0;
@@ -11526,7 +11526,7 @@ int FUN_801ac070(undefined4 param_1,undefined4 param_2,undefined2 param_3)
 {
   int iVar1;
   int iVar2;
-  iVar1 = (int)(uintptr_t)FUN_801a4414(param_1,0x801aae08,0,0x2c);
+  iVar1 = (int)(uintptr_t)node_lazy_attach(param_1,0x801aae08,0,0x2c);
   if (iVar1 == 0) {
     iVar1 = 0;
   }
@@ -13765,7 +13765,7 @@ undefined4 * FUN_80195160(undefined4 *param_1,undefined4 *param_2,undefined4 *pa
 
 }
 
-int * FUN_801a4414(int param_1,int param_2,int param_3,int param_4)
+int * node_lazy_attach(int param_1,int param_2,int param_3,int param_4)
 {
   char cVar1;
   undefined1 uVar2;
@@ -15938,14 +15938,14 @@ extern void *guest_at(uint32_t addr);
 #define BA32(a)  (*(uint32_t *)guest_at(a))
 #define BA16S(a) (*(int16_t  *)guest_at(a))
 extern char *s_Print_mode_error_8011f140;
-extern undefined4 FUN_80190390(uint32_t,uint32_t);
-extern uint32_t FUN_80190430(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
-extern undefined4 FUN_80190350(uint32_t);
+extern undefined4 text_win_init(uint32_t,uint32_t);
+extern uint32_t text_widget_alloc(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+extern undefined4 text_line_select(uint32_t);
 extern undefined4 FUN_8018e550(const char *, ...);
-extern void FUN_8018bd40(void *, uint32_t);
-extern void FUN_801940e0(uint32_t);
-extern void FUN_80194060(uint32_t,uint32_t);
-extern void FUN_80194090(uint32_t,uint32_t);
+extern void bitfield_or_write(void *, uint32_t);
+extern void spr_desc_a(uint32_t);
+extern void spr_desc_b(uint32_t,uint32_t);
+extern void spr_desc_c(uint32_t,uint32_t);
 extern void cd_cmd_retry(void *);
 
 /* FUN_8012e58c — round/announce parameter block init @0x1f80038c.
@@ -15972,9 +15972,9 @@ void FUN_8012cbc0(int32_t param_1,uint32_t param_2,uint32_t param_3)
   BA32(0x1f800384) = (uint32_t)param_1;
   if (param_1 == 1) {
     uint32_t uVar1;
-    FUN_80190390(0x3c0,0);
-    uVar1 = FUN_80190430(param_2,param_3,0x140,0xf0,0,0x200);
-    FUN_80190350(uVar1);
+    text_win_init(0x3c0,0);
+    uVar1 = text_widget_alloc(param_2,param_3,0x140,0xf0,0,0x200);
+    text_line_select(uVar1);
     return;
   }
   if (param_1 < 2) {
@@ -16043,28 +16043,28 @@ void FUN_80136ddc(void)
   b[0x03] = 3; b[0x07] = 0x60;
   *(uint16_t *)(b + 0x08) = 0; *(uint16_t *)(b + 0x0a) = 0;
   *(uint16_t *)(b + 0x0e) = 0; *(uint16_t *)(b + 0x0c) = v0;
-  FUN_8018bd40(b + 0x04, t[0]);
+  bitfield_or_write(b + 0x04, t[0]);
 
   b[0x5b] = 3; b[0x5f] = 0x60;
   *(uint16_t *)(b + 0x60) = 0; *(uint16_t *)(b + 0x62) = 0;
   *(uint16_t *)(b + 0x66) = 0; *(uint16_t *)(b + 0x64) = v0;
-  FUN_8018bd40(b + 0x5c, t[3]);
+  bitfield_or_write(b + 0x5c, t[3]);
 
   b[0x13] = 8; b[0x17] = 0x38;
   *(uint16_t *)(b + 0x28) = 0; *(uint16_t *)(b + 0x18) = 0;
   *(uint16_t *)(b + 0x30) = v0; *(uint16_t *)(b + 0x20) = v0;
-  FUN_8018bd40(b + 0x14, t[0]);
-  FUN_8018bd40(b + 0x1c, t[0]);
-  FUN_8018bd40(b + 0x24, t[1]);
-  FUN_8018bd40(b + 0x2c, t[1]);
+  bitfield_or_write(b + 0x14, t[0]);
+  bitfield_or_write(b + 0x1c, t[0]);
+  bitfield_or_write(b + 0x24, t[1]);
+  bitfield_or_write(b + 0x2c, t[1]);
 
   b[0x37] = 8; b[0x3b] = 0x38;
   *(uint16_t *)(b + 0x4c) = 0; *(uint16_t *)(b + 0x3c) = 0;
   *(uint16_t *)(b + 0x54) = v0; *(uint16_t *)(b + 0x44) = v0;
-  FUN_8018bd40(b + 0x38, t[2]);
-  FUN_8018bd40(b + 0x40, t[2]);
-  FUN_8018bd40(b + 0x48, t[3]);
-  FUN_8018bd40(b + 0x50, t[3]);
+  bitfield_or_write(b + 0x38, t[2]);
+  bitfield_or_write(b + 0x40, t[2]);
+  bitfield_or_write(b + 0x48, t[3]);
+  bitfield_or_write(b + 0x50, t[3]);
 
   /* mirror: 0x660..0x6c8 -> 0x6c8..0x730 (6x16B + tail 8B) */
   for (i = 0; i < 6; i++)
@@ -16073,7 +16073,7 @@ void FUN_80136ddc(void)
 }
 
 /* FUN_8012d090 — 800-slot sprite descriptor table init @0x801e8528.
- * Per slot: FUN_801940e0/4060/4090 calls + 0x7f bytes + u16 0x2f. */
+ * Per slot: spr_desc_a/4060/4090 calls + 0x7f bytes + u16 0x2f. */
 void FUN_8012d090(uint32_t param_1)
 {
   uint32_t s1 = 0x801e8528;
@@ -16082,9 +16082,9 @@ void FUN_8012d090(uint32_t param_1)
   BA16(0x1f800380) = 0; BA16(0x1f80037e) = 0; BA16(0x1f80037c) = 0;
   BA32(0x1f800388) = 0xffffffff;
   for (i = 0; i < 800; i++) {
-    FUN_801940e0(s1);
-    FUN_80194060(s1,param_1);
-    FUN_80194090(s1,1);
+    spr_desc_a(s1);
+    spr_desc_b(s1,param_1);
+    spr_desc_c(s1,1);
     BA8(s1 + 4) = 0x7f; BA8(s1 + 5) = 0x7f; BA8(s1 + 6) = 0x7f;
     BA16(s1 + 0x16) = 0x2f;
     s1 += 0x28;
@@ -16234,11 +16234,11 @@ extern int FUN_801358e8(int,int);
 extern int FUN_8016d478(uint32_t);
 extern void clear_f0300_records(void);
 
-/* FUN_8012e97c — if byte @0x1f800099 == 0: copy 0x44-byte record
+/* rec_copy_init — if byte @0x1f800099 == 0: copy 0x44-byte record
  * 0x8011f484 + idx*0x44 -> 0x1f8002f8, init record @0x801f0228
  * (+0=src guest addr, +4/+6/+8/+0xa u16=1, +0x14 u16=0).
  * Disasm 0x8012e97c-0x8012ea10. */
-void FUN_8012e97c(uint32_t a0)
+void rec_copy_init(uint32_t a0)
 {
   uint32_t src = 0x8011f484 + a0 * 0x44;
   if (*(int8_t *)guest_at(0x1f800099) == 0) {
@@ -16256,10 +16256,10 @@ void FUN_8012e97c(uint32_t a0)
   }
 }
 
-/* FUN_80166f64 — fighter re-init tail: gate on byte @0x801e3d00 >= 0,
+/* fighter_reinit_tail — fighter re-init tail: gate on byte @0x801e3d00 >= 0,
  * then FUN_8012fb10/FUN_8016d244/FUN_80135180/FUN_80136b64 chain.
  * Disasm 0x80166f64-0x80167004. */
-int FUN_80166f64(uint32_t a0)
+int fighter_reinit_tail(uint32_t a0)
 {
   uint8_t *s0 = (uint8_t *)guest_at(a0);
   if (*(int8_t *)guest_at(0x801e3d00) < 0) return -1;
@@ -16271,11 +16271,11 @@ int FUN_80166f64(uint32_t a0)
   return 0;
 }
 
-/* FUN_80166eb0 — fighter respawn/init: gate @0x801e3d00, save/restore
+/* fighter_respawn_init — fighter respawn/init: gate @0x801e3d00, save/restore
  * byte +0x99, FUN_8012b49c(0), FUN_8012f024, zero +9d/+9e/+99,
- * record_copy_1a/+0x98 idx, FUN_801358e8, FUN_8012e97c, FUN_8016d478,
+ * record_copy_1a/+0x98 idx, FUN_801358e8, rec_copy_init, FUN_8016d478,
  * clear_f0300_records. Disasm 0x80166eb0-0x80166f60. */
-int FUN_80166eb0(uint32_t a0)
+int fighter_respawn_init(uint32_t a0)
 {
   uint8_t *s0 = (uint8_t *)guest_at(a0);
   int8_t s1 = *(int8_t *)(s0 + 0x99);
@@ -16290,7 +16290,7 @@ int FUN_80166eb0(uint32_t a0)
   *(uint8_t *)(s0 + 0x99) = 0;
   record_copy_1a((int)(int8_t)*(uint8_t *)(s0 + 0x98));
   FUN_801358e8((int)(int8_t)*(uint8_t *)(s0 + 0x98),(int)(int8_t)*(uint8_t *)(s0 + 0x99));
-  FUN_8012e97c((uint8_t)*(uint8_t *)(s0 + 0x98));
+  rec_copy_init((uint8_t)*(uint8_t *)(s0 + 0x98));
   FUN_8016d478(a0);
   clear_f0300_records();
   *(uint8_t *)(s0 + 0x99) = (uint8_t)s1;
@@ -16298,7 +16298,7 @@ int FUN_80166eb0(uint32_t a0)
 }
 
 /* ================= guest task callbacks (payload ports) =================
- * Registered via FUN_801a4308/FUN_801a4414 as 32-bit guest code addrs;
+ * Registered via FUN_801a4308/node_lazy_attach as 32-bit guest code addrs;
  * dispatched through fn_lookup -> br2_task_invoke. param_1 is a
  * HOST pointer into the node's inline guest data area; fields that hold
  * guest addresses are accessed via guest_at / stored via guest_of. */
@@ -16629,17 +16629,17 @@ void LAB_8013eb04(int *param_1)
 
 /* ======== batch29: small task/effect wrappers + list walkers ===== */
 /* externs for batch29 callees */
-extern int  FUN_8019a6e0(int param_1,uint32_t param_2);
+extern int  cd_dispatch_tbl4(int param_1,uint32_t param_2);
 extern int  FUN_8018fd1c();
 extern int  FUN_8018fdb0();
 extern int  FUN_8018fe44();   /* guest 0x8018fe44 — no C def yet (weak-stub needed) */
 extern int  FUN_8018fc00(uint32_t param_1,uint32_t param_2);
 extern void FUN_80191428();
 
-/* guest FUN_8018fac8 @0x8018fac8 — file-op dispatch wrapper: FUN_8019a6e0(0,arg). */
+/* guest FUN_8018fac8 @0x8018fac8 — file-op dispatch wrapper: cd_dispatch_tbl4(0,arg). */
 int FUN_8018fac8(int param_1)
 {
-  return FUN_8019a6e0(0,(uint32_t)param_1);
+  return cd_dispatch_tbl4(0,(uint32_t)param_1);
 }
 
 /* guest FUN_8013514c @0x8013514c — channel-script emit wrapper. */
@@ -17274,26 +17274,26 @@ void FUN_8018be28(int param_1,int param_2,int param_3,int param_4,int param_5,in
 
 /* ======== batch31: debug putc + emit chains + vec lerp + record init ===== */
 /* externs for batch31 callees */
-extern int  FUN_8018ecf0(int param_1);
-extern void FUN_8018ef50();
+extern int  console_emit(int param_1);
+extern void bios_tramp_b035();
 extern int  FUN_80195570(int param_1,uint32_t param_2);  /* guest 0x80195570 — battle.c */
-extern int FUN_8018c0a8();   /* weak-stubbed in bind.c; returns prim ptr */
+extern int spr_pool_b_alloc();   /* weak-stubbed in bind.c; returns prim ptr */
 extern void *FUN_8018c18c(void);   /* gfx.c — returns host ptr */
 
 /* guest FUN_8018ee28 @0x8018ee28 — debug line-buffer putc: tab expands to
  * spaces to col&7==0, CR resets col, other chars bump col per 0x801b6701
- * class table; appends to 32B buf @0x801f68f0 flushed via FUN_8018ef50. */
+ * class table; appends to 32B buf @0x801f68f0 flushed via bios_tramp_b035. */
 void FUN_8018ee28(int param_1)
 {
   int iVar1;
   iVar1 = (int)(char)param_1;
   if (iVar1 == 9) {
     do {
-      FUN_8018ecf0(0x20);
+      console_emit(0x20);
     } while ((*(int *)guest_at(0x801b6790) & 7) != 0);
   }
   else if (iVar1 == 0xa) {
-    FUN_8018ecf0(0xd);
+    console_emit(0xd);
     *(int *)guest_at(0x801b6790) = 0;
     goto LAB_append;
   }
@@ -17303,14 +17303,14 @@ void FUN_8018ee28(int param_1)
     }
 LAB_append:
     if (*(int *)guest_at(0x801b6794) >= 0x20) {
-      FUN_8018ef50(1,guest_at(0x801f68f0),*(int *)guest_at(0x801b6794));
+      bios_tramp_b035(1,guest_at(0x801f68f0),*(int *)guest_at(0x801b6794));
       *(int *)guest_at(0x801b6794) = 0;
     }
     *(byte *)guest_at((uint32_t)(uintptr_t)(0x801f68f0 + *(int *)guest_at(0x801b6794))) = (byte)param_1;
     *(int *)guest_at(0x801b6794) = *(int *)guest_at(0x801b6794) + 1;
   }
   if (0 < *(int *)guest_at(0x801b6794)) {
-    FUN_8018ef50(1,guest_at(0x801f68f0),*(int *)guest_at(0x801b6794));
+    bios_tramp_b035(1,guest_at(0x801f68f0),*(int *)guest_at(0x801b6794));
     *(int *)guest_at(0x801b6794) = 0;
   }
   return;
@@ -17601,7 +17601,7 @@ void FUN_80134234(int param_1,int param_2,int param_3,int param_4)
   return;
 }
 
-/* guest FUN_8018c578 @0x8018c578 — builds a sprite prim via FUN_8018c0a8:
+/* guest FUN_8018c578 @0x8018c578 — builds a sprite prim via spr_pool_b_alloc:
  * uv/size deltas t1/t3 from p3 bytes +1, scaled by sext16(p5)/sext16(p6)
  * >>12, writes texpage/colour/clut fields and halfword corners, ORs
  * 0x09000000 into *p1 and stores low24(prim) back to *p1. */
@@ -17614,7 +17614,7 @@ void FUN_8018c578(int param_1,int param_2,int param_3,int param_4,int param_5,in
   int iVar5;
   int iVar6;
   int iVar7;
-  iVar1 = FUN_8018c0a8(param_1,param_2,param_3,param_4);
+  iVar1 = spr_pool_b_alloc(param_1,param_2,param_3,param_4);
   if (iVar1 != 0) {
     iVar2 = ((param_3 >> 0x10) & 0xff) + 1;
     iVar3 = (int)((uint32_t)param_3 >> 0x18) + 1;
@@ -17662,11 +17662,11 @@ void FUN_8018c578(int param_1,int param_2,int param_3,int param_4,int param_5,in
 }
 
 /* guest FUN_8018edf4 @0x8018edf4 — flush debug line buffer via
- * FUN_8018ef50 when count (a2) > 0, then reset count @0x801b6794. */
+ * bios_tramp_b035 when count (a2) > 0, then reset count @0x801b6794. */
 void FUN_8018edf4(int param_1,int param_2,int param_3)
 {
   if (0 < param_3) {
-    FUN_8018ef50(1,guest_at(0x801f68f0),param_3);
+    bios_tramp_b035(1,guest_at(0x801f68f0),param_3);
     *(int *)guest_at(0x801b6794) = 0;
   }
   return;
