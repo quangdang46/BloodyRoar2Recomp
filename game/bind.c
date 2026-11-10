@@ -1222,267 +1222,126 @@ void halt_baddata(void) { for(;;) { } }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void menu_stepper_state_advance() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_80129f64() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_80129ff4() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_8012a030() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_8012a72c() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void cursor_sprite_anim() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_8012aa6c() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_8012b23c() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_8012b49c() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_80146e38() { return (int)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_8014751c() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_801525c4() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_80155f64() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void gauge_scale_fixed() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_801560f8() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_801561c8() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_801566a0() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_801566d4() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_80156d98() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_80156ff0() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_80157a00() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_801594a4() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_80159734() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_801597ec() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_80159864() { return (int)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_80159c24() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_80159ce4() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_8015ab4c() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_8015b9a0() { return (int)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_8015c754() { return (int)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-uint32_t FUN_8015f6a0() { return (uint32_t)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_80163154() { return (int)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_8016362c() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_80163ab4() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_80164668() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_80164ea4() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_80165cb4() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_80167330() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_80167840() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_80167a64() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_801689a8() { return (void)0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-void FUN_8016fcc4() { return (void)0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-void FUN_8018babc() { return (void)0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-void gpu_pkt_unlink_n() { return (void)0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-void spr_draw_off() { return (void)0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-void spr_draw_pair() { return (void)0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-void spr_desc_tbl_a_init() { return (void)0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-void spr_desc_tbl_b_init() { return (void)0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-void spr_slot_pkt_submit() { return (void)0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-void spr_attr_alloc_a() { return (void)0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int cd_file_load_sm() { return (int)0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-void FUN_8018e2f0() { return (void)0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-void cd_fileop_reset() { return (void)0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-void cd_fileop_forward() { return (void)0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-void cd_fileop_dispatch() { return (void)0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-void gpu_graph_reset() { return (void)0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-void gpu_disp_mask_set() { return (void)0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-void gpu_draw_sync() { return (void)0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-void gpu_clear_image_cmd() { return (void)0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-void gpu_clear_image_cmd2() { return (void)0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-void gpu_load_image_cmd() { return (void)0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-void gpu_clear_otag_r() { return (void)0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-void gpu_draw_otag() { return (void)0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-void gpu_draw_env_put() { return (void)0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-void draw_env_timing() { return (void)0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-uint32_t gpu_stat_sign() { return (uint32_t)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -1495,7 +1354,6 @@ void FUN_80195290() { return (void)0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_8012aaa8() { return 0; }
 
 uint8_t *g_DAT_801e40b7, *g_DAT_801e40b8;
 uint8_t *g_DAT_801e6206, *g_DAT_801e6207, *g_DAT_801e6208;
@@ -2109,14 +1967,6 @@ void FUN_8018e300() { return; }
 __attribute__((weak))
 #endif
 void FUN_8018e310() { return; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-void cd_bitstream_decode() { return; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-void bios_kobj_tramp() { return; }
 __attribute__((weak))
 uint32_t bios_svc(uint32_t table, uint32_t svc, uint32_t a0, uint32_t a1)
 {
@@ -2126,15 +1976,6 @@ uint32_t bios_svc(uint32_t table, uint32_t svc, uint32_t a0, uint32_t a1)
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void cd_chan_mode_apply() { return; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-void brightness_packet_send() { return; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int FUN_80195ffc() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -2143,14 +1984,6 @@ uint32_t FUN_8019b380() { return 0; }
 __attribute__((weak))
 #endif
 void FUN_8019b390() { return; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-void cd_hw_chan_init() { return; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int guest_memcpy() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -2171,51 +2004,7 @@ void FUN_8019e4c8() { return; }
 __attribute__((weak))
 #endif
 void FUN_8019e55c() { return; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-void cd_mode_store() { return; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-void cd_status_shifted_read() { return; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-void cd_seek_param_issue_clamped() { return; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int cd_seek_complete_poll() { return 1; }
 
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-void cd_reg_window_rmw() { return; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int32_t cd_chan_job_submit() { return 1; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int32_t cd_job_result() { return 1; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int32_t cd_mc_op_wait() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int32_t cd_chan_job_pump() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-void cd_seek_param_issue() { return; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int32_t cd_reg_indexed_rw() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -2245,23 +2034,12 @@ int FUN_801a05f0() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_801a4e2c() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_801a4ebc() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_80186d20() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int menu_row_paint() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int menu_row_paint_b() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -2269,35 +2047,6 @@ int FUN_80161630() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int state_pair_init() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int options_menu_alloc() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int options_page_dispatch() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int skeleton_init() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int mdec_status_read() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int cd_queue_push() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int cd_queue_drain() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int FUN_801936e4() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -2306,10 +2055,6 @@ int FUN_801948c0() { return 0; }
 __attribute__((weak))
 #endif
 int FUN_80195370() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int cd_strncmp() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -2337,14 +2082,6 @@ int FUN_8019a364() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int cd_intc_dispatch() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int cd_guest_zero32_a() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
 int FUN_8019ad48() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
@@ -2354,22 +2091,6 @@ int FUN_8019ad70() { return 0; }
 __attribute__((weak))
 #endif
 int FUN_8019ad80() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int cd_ctx_save() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int cd_guest_zero32_b() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int cd_guest_zero32_c() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int cd_state_store() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -2394,39 +2115,3 @@ int FUN_801a0240() { return 0; }
 __attribute__((weak))
 #endif
 int FUN_801a0250() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int cd_queue_b_read() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int dev_byte_xfer() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int anim_node_alloc() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int op_anim_delta_walk() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int op_ctx_node_attach() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int op_node_alloc_init() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int rotate_xy_pairs() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int cd_search_file() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int heap_serialize() { return 0; }
