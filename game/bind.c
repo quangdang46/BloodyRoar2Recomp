@@ -450,7 +450,7 @@ uint8_t * g__DAT_801f68e0;
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((constructor))
 #endif
-static void br2_bind_init(void)
+static void bind_globals_1(void)
 {
     _g_pad_buffer = (uint8_t *)guest_for("_g_pad_buffer");
     g_DAT_1f800015 = (uint8_t *)guest_for("g_DAT_1f800015");
@@ -934,7 +934,7 @@ int32_t FUN_80194690(void) { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((constructor))
 #endif
-static void br2_bind_init2(void)
+static void bind_globals_2(void)
 {
     g__DAT_1f8003c4 = guest_scratch + 0x3c4;
     g__DAT_1f8003c8 = guest_scratch + 0x3c8;
@@ -1081,7 +1081,7 @@ uint32_t *g_PTR_DAT_801b5b94;
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((constructor))
 #endif
-static void br2_bind_init3(void)
+static void bind_globals_3(void)
 {
     _g_system_config_ptr = (uint8_t *)guest_for("_g_system_config_ptr");
     g_DAT_1f800000 = (uint8_t *)guest_for("g_DAT_1f800000");
@@ -1510,7 +1510,7 @@ uint8_t *g_DAT_801e40fc, *g_DAT_801e61f0, *g_DAT_801e624c;
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((constructor))
 #endif
-static void br2_bind_init4(void)
+static void bind_globals_4(void)
 {
     const char *names[] = {
         "g_DAT_801e40b7","g_DAT_801e40b8","g_DAT_801e6206","g_DAT_801e6207","g_DAT_801e6208",
@@ -1659,7 +1659,7 @@ char *s__s____80121864;
 uint32_t *g_PTR_u32_801b4160;
 
 __attribute__((constructor))
-static void br2_bind_init5(void)
+static void bind_globals_5(void)
 {
     const char *names[] = {"g_DAT_1f800014","g_DAT_1f800017","g_DAT_1f800018","g_DAT_1f800019","g_DAT_8012181c","g_DAT_80121820","g_DAT_801b3f78","g_DAT_801b45f4","g_DAT_801b45f8","g_DAT_801b45fc","g_DAT_801b4600","g_DAT_801b4604","g_DAT_801b4608","g_DAT_801b460c","g_DAT_801b4610","g_DAT_801b4614","g_DAT_801bef60","g_DAT_801bef64","g_DAT_801bef67","g_DAT_801bef68","g_DAT_801bef69","g_DAT_801bef6c","g_DAT_801bef6d","g_DAT_801bef6e","g_DAT_801bef6f","g_DAT_801bef72","g_DAT_801bef74","g_DAT_801bef76","g_DAT_801bef78","g_DAT_801bef80","g_DAT_801bef84","g_DAT_801bef88","g_DAT_801bef8c","g_DAT_801c11e0","g_DAT_801c11e4","g_DAT_801c11e8","g_DAT_801c11ec","g_DAT_801c11f4","g_DAT_801c1264","g_DAT_801c1304","g_DAT_801c13a4","g_DAT_801e8400","g_DAT_801f09b","g_DAT_801f24d0","g_DAT_801f24d1","g_DAT_801f35f4","g_DAT_801f3602","g_DAT_801f5968","g_DAT_801f5969","g_DAT_801f596e","g_DAT_801f596f","g_DAT_801f5972","g_DAT_801f5973","g_PTR_DAT_801b4618","g__DAT_1f80007c","g__DAT_1f800084","g__DAT_1f80008c","g__DAT_1f8000b8","g__DAT_801c15f0","g__DAT_801e8508","g__DAT_801e8518","g__DAT_801f2650","g__DAT_801f2654","g__DAT_801f2658","g__DAT_801f265a","g__DAT_801f2666","g__DAT_801f2668","g__DAT_801f266c","g__DAT_801f268a","g__DAT_801f268c","g__DAT_801f2690","g__DAT_801f2694","g__DAT_801f2696","g__DAT_801f26a0","g__DAT_801f26a2","g__DAT_801f26a8","g__DAT_801f36c0","g_DAT_801b43f0","g_DAT_801f2650","g_DAT_801f35f4"};
     uint8_t **vars[] = {&g_DAT_1f800014,&g_DAT_1f800017,&g_DAT_1f800018,&g_DAT_1f800019,&g_DAT_8012181c,&g_DAT_80121820,&g_DAT_801b3f78,&g_DAT_801b45f4,&g_DAT_801b45f8,&g_DAT_801b45fc,&g_DAT_801b4600,&g_DAT_801b4604,&g_DAT_801b4608,&g_DAT_801b460c,&g_DAT_801b4610,&g_DAT_801b4614,&g_DAT_801bef60,&g_DAT_801bef64,&g_DAT_801bef67,&g_DAT_801bef68,&g_DAT_801bef69,&g_DAT_801bef6c,&g_DAT_801bef6d,&g_DAT_801bef6e,&g_DAT_801bef6f,&g_DAT_801bef72,&g_DAT_801bef74,&g_DAT_801bef76,&g_DAT_801bef78,&g_DAT_801bef80,&g_DAT_801bef84,&g_DAT_801bef88,&g_DAT_801bef8c,&g_DAT_801c11e0,&g_DAT_801c11e4,&g_DAT_801c11e8,&g_DAT_801c11ec,&g_DAT_801c11f4,&g_DAT_801c1264,&g_DAT_801c1304,&g_DAT_801c13a4,&g_DAT_801e8400,&g_DAT_801f09b,&g_DAT_801f24d0,&g_DAT_801f24d1,&g_DAT_801f35f4,&g_DAT_801f3602,&g_DAT_801f5968,&g_DAT_801f5969,&g_DAT_801f596e,&g_DAT_801f596f,&g_DAT_801f5972,&g_DAT_801f5973,&g_PTR_DAT_801b4618,&g__DAT_1f80007c,&g__DAT_1f800084,&g__DAT_1f80008c,&g__DAT_1f8000b8,&g__DAT_801c15f0,&g__DAT_801e8508,&g__DAT_801e8518,&g__DAT_801f2650,&g__DAT_801f2654,&g__DAT_801f2658,&g__DAT_801f265a,&g__DAT_801f2666,&g__DAT_801f2668,&g__DAT_801f266c,&g__DAT_801f268a,&g__DAT_801f268c,&g__DAT_801f2690,&g__DAT_801f2694,&g__DAT_801f2696,&g__DAT_801f26a0,&g__DAT_801f26a2,&g__DAT_801f26a8,&g__DAT_801f36c0,&g_DAT_801b43f0,&g_DAT_801f2650,&g_DAT_801f35f4};
@@ -1816,7 +1816,7 @@ uint8_t *g__DAT_801fc68c;
 
 
 __attribute__((constructor))
-static void br2_bind_init6(void)
+static void bind_globals_6(void)
 {
     const char *names[] = {"g_DAT_1f800015","g_DAT_1f800068","g_DAT_1f800074","g_DAT_1f800098","g_DAT_1f800099","g_DAT_1f80009a","g_DAT_1f80009d","g_DAT_1f8000b1","g_DAT_1f8000e8","g_DAT_1f8000e9","g_DAT_1f8000eb","g_DAT_1f8000ec","g_DAT_1f8000ee","g_DAT_1f8001f0","g_DAT_1f8001f1","g_DAT_1f8001f3","g_DAT_1f8001f4","g_DAT_1f8001f6","g_DAT_80121f30","g_DAT_80121fe0","g_DAT_80122074","g_DAT_80122075","g_DAT_80122076","g_DAT_80122078","g_DAT_80122079","g_DAT_8012207c","g_DAT_8012207d","g_DAT_801b2253","g_DAT_801b2350","g_DAT_801b33dc","g_DAT_801b3400","g_DAT_801b346c","g_DAT_801b35a0","g_DAT_801b35b8","g_DAT_801b35cc","g_DAT_801b3758","g_DAT_801b377c","g_DAT_801b37dc","g_DAT_801b37f4","g_DAT_801b3814","g_DAT_801b3834","g_DAT_801b3854","g_DAT_801b3868","g_DAT_801b388c","g_DAT_801b38ac","g_DAT_801b38d0","g_DAT_801b3968","g_DAT_801b3a00","g_DAT_801b3a84","g_DAT_801b3b08","g_DAT_801b3b94","g_DAT_801b3c24","g_DAT_801b3ca8","g_DAT_801b3d34","g_DAT_801b3db4","g_DAT_801b3e44","g_DAT_801b3eb0","g_DAT_801b3ebc","g_DAT_801b3f64","g_DAT_801f24d8","g_PTR_DAT_801b4254","g__DAT_1f800004","g__DAT_1f800008","g__DAT_1f80000c","g__DAT_1f800020","g__DAT_1f800022","g__DAT_1f800080","g__DAT_1f800082","g__DAT_1f800088","g__DAT_1f80008e","g__DAT_1f800090","g__DAT_1f8000a4","g__DAT_1f8000b4","g__DAT_1f8000b6","g__DAT_1f8000bc","g__DAT_1f8000c4","g__DAT_1f8000dc","g__DAT_1f800100","g__DAT_1f800104","g__DAT_1f800110","g__DAT_1f800148","g__DAT_1f800154","g__DAT_1f800208","g__DAT_1f80020c","g__DAT_1f800218","g__DAT_1f800250","g__DAT_1f80025c","g__DAT_801c43a0","g__DAT_801c4578","g__DAT_801c47b8","g__DAT_801e3cfc","g__DAT_801e850c","g__DAT_801e851c","g__DAT_801f265c","g__DAT_801f265e","g__DAT_801f2664","g__DAT_801f2674","g__DAT_801f2678","g__DAT_801f267c","g__DAT_801f36c2","g__DAT_801f4714","g__DAT_801f4728","g__DAT_801f472c","g__DAT_801f4730","g__DAT_801f4732","g__DAT_801f4734","g__DAT_801f4738","g__DAT_801f473c","g__DAT_801f4744","g__DAT_801f4748","g__DAT_801f474c","g__DAT_801f4750","g__DAT_801f4754","g__DAT_801f4cb2","g__DAT_801f4cb6","g__DAT_801fc68c"};
     uint8_t **vars[] = {&g_DAT_1f800015,&g_DAT_1f800068,&g_DAT_1f800074,&g_DAT_1f800098,&g_DAT_1f800099,&g_DAT_1f80009a,&g_DAT_1f80009d,&g_DAT_1f8000b1,&g_DAT_1f8000e8,&g_DAT_1f8000e9,&g_DAT_1f8000eb,&g_DAT_1f8000ec,&g_DAT_1f8000ee,&g_DAT_1f8001f0,&g_DAT_1f8001f1,&g_DAT_1f8001f3,&g_DAT_1f8001f4,&g_DAT_1f8001f6,&g_DAT_80121f30,&g_DAT_80121fe0,&g_DAT_80122074,&g_DAT_80122075,&g_DAT_80122076,&g_DAT_80122078,&g_DAT_80122079,&g_DAT_8012207c,&g_DAT_8012207d,&g_DAT_801b2253,&g_DAT_801b2350,&g_DAT_801b33dc,&g_DAT_801b3400,&g_DAT_801b346c,&g_DAT_801b35a0,&g_DAT_801b35b8,&g_DAT_801b35cc,&g_DAT_801b3758,&g_DAT_801b377c,&g_DAT_801b37dc,&g_DAT_801b37f4,&g_DAT_801b3814,&g_DAT_801b3834,&g_DAT_801b3854,&g_DAT_801b3868,&g_DAT_801b388c,&g_DAT_801b38ac,&g_DAT_801b38d0,&g_DAT_801b3968,&g_DAT_801b3a00,&g_DAT_801b3a84,&g_DAT_801b3b08,&g_DAT_801b3b94,&g_DAT_801b3c24,&g_DAT_801b3ca8,&g_DAT_801b3d34,&g_DAT_801b3db4,&g_DAT_801b3e44,&g_DAT_801b3eb0,&g_DAT_801b3ebc,&g_DAT_801b3f64,&g_DAT_801f24d8,&g_PTR_DAT_801b4254,&g__DAT_1f800004,&g__DAT_1f800008,&g__DAT_1f80000c,&g__DAT_1f800020,&g__DAT_1f800022,&g__DAT_1f800080,&g__DAT_1f800082,&g__DAT_1f800088,&g__DAT_1f80008e,&g__DAT_1f800090,&g__DAT_1f8000a4,&g__DAT_1f8000b4,&g__DAT_1f8000b6,&g__DAT_1f8000bc,&g__DAT_1f8000c4,&g__DAT_1f8000dc,&g__DAT_1f800100,&g__DAT_1f800104,&g__DAT_1f800110,&g__DAT_1f800148,&g__DAT_1f800154,&g__DAT_1f800208,&g__DAT_1f80020c,&g__DAT_1f800218,&g__DAT_1f800250,&g__DAT_1f80025c,&g__DAT_801c43a0,&g__DAT_801c4578,&g__DAT_801c47b8,&g__DAT_801e3cfc,&g__DAT_801e850c,&g__DAT_801e851c,&g__DAT_801f265c,&g__DAT_801f265e,&g__DAT_801f2664,&g__DAT_801f2674,&g__DAT_801f2678,&g__DAT_801f267c,&g__DAT_801f36c2,&g__DAT_801f4714,&g__DAT_801f4728,&g__DAT_801f472c,&g__DAT_801f4730,&g__DAT_801f4732,&g__DAT_801f4734,&g__DAT_801f4738,&g__DAT_801f473c,&g__DAT_801f4744,&g__DAT_801f4748,&g__DAT_801f474c,&g__DAT_801f4750,&g__DAT_801f4754,&g__DAT_801f4cb2,&g__DAT_801f4cb6,&g__DAT_801fc68c};
@@ -1839,7 +1839,7 @@ int FUN_801468ec() { return 0; }
 int FUN_8018b100() { return 0; }
 
 __attribute__((constructor))
-static void br2_bind_init7(void)
+static void bind_globals_7(void)
 {
     s_NAME_ENTRY_80122080 = (char *)guest_at(0x80122080);
     s_RANKING_80122048 = (char *)guest_at(0x80122048);
@@ -1876,7 +1876,7 @@ uint8_t *g_DAT_801f68b4;
 
 
 __attribute__((constructor))
-static void br2_bind_init8(void)
+static void bind_globals_8(void)
 {
     const char *names[] = {"g_DAT_801b5b98","g__DAT_801f68d8","g_DAT_801b55ec","g__DAT_1f8000e0","g__DAT_1f8000e4","g__DAT_801e8500","g_DAT_801b55dc","g_DAT_801b55e0","g_DAT_801b55e4","g_DAT_801f642c","g_DAT_801f68b4"};
     uint8_t **vars[] = {&g_DAT_801b5b98,&g__DAT_801f68d8,&g_DAT_801b55ec,&g__DAT_1f8000e0,&g__DAT_1f8000e4,&g__DAT_801e8500,&g_DAT_801b55dc,&g_DAT_801b55e0,&g_DAT_801b55e4,&g_DAT_801f642c,&g_DAT_801f68b4};
@@ -1928,7 +1928,7 @@ char *s_ResetGraph_jtb__08x_env__08x_80125410;
 char *s_SetDispMask__d_____801254a0;
 
 __attribute__((constructor))
-static void br2_bind_init9(void)
+static void bind_globals_9(void)
 {
     const char *names[] = {"g_DAT_801bc7b4","g_DAT_801bc7c0","g_DAT_801bc848","g_DAT_801bc854","g_DAT_801bcb80","g_DAT_801bcb94","g_DAT_801bcb98","g_DAT_801bcb9c","g_DAT_801bcba4","g_DAT_801bcba8","g_DAT_801bcbac","g_DAT_801bcbb0"};
     uint8_t **vars[] = {&g_DAT_801bc7b4,&g_DAT_801bc7c0,&g_DAT_801bc848,&g_DAT_801bc854,&g_DAT_801bcb80,&g_DAT_801bcb94,&g_DAT_801bcb98,&g_DAT_801bcb9c,&g_DAT_801bcba4,&g_DAT_801bcba8,&g_DAT_801bcbac,&g_DAT_801bcbb0};
@@ -1950,7 +1950,7 @@ static void br2_bind_init9(void)
 /* ---- cd.c / gfx.c callees ---- */
 
 __attribute__((constructor))
-static void br2_bind_init10(void)
+static void bind_globals_10(void)
 {
     g_DAT_801b8320 = guest_at(0x801b8320);
     g_DAT_801b8321 = guest_at(0x801b8321);
@@ -1971,7 +1971,7 @@ char *s__s____80125840;
 char *s__s___s__Sync__s__Ready__s_801257b4;
 char *s__s__no_param_80125848;
 __attribute__((constructor))
-static void br2_bind_init11(void)
+static void bind_globals_11(void)
 {
     s__s____80125840 = (char *)guest_at(0x80125840);
     s__s___s__Sync__s__Ready__s_801257b4 = (char *)guest_at(0x801257b4);
@@ -1989,7 +1989,7 @@ char *s_com__s_code___02x__02x__801257dc;
 char *s_CDROM__unknown_intr_801257f8;
 char *s___d__8012580c;
 __attribute__((constructor))
-static void br2_bind_init12(void)
+static void bind_globals_12(void)
 {
     s_CD_sync_8012582c = (char *)guest_at(0x8012582c);
     s_CD_ready_80125834 = (char *)guest_at(0x80125834);
@@ -2012,7 +2012,7 @@ uint32_t bios_call(uint32_t fn, uint32_t a0)
 char *s__s_bad_RECT_801254c8;
 char *s___d__d____d__d__801254d4;
 __attribute__((constructor))
-static void br2_bind_init13(void)
+static void bind_globals_13(void)
 {
     s__s_bad_RECT_801254c8 = (char *)guest_at(0x801254c8);
     s___d__d____d__d__801254d4 = (char *)guest_at(0x801254d4);
@@ -2025,7 +2025,7 @@ __attribute__((weak)) uint32_t text_widget_alloc() { return 0; }
 
 char *s_Print_mode_error_8011f140;
 __attribute__((constructor))
-static void br2_bind_init28(void)
+static void bind_globals_28(void)
 {
     s_Print_mode_error_8011f140 = (char *)guest_at(0x8011f140);
 }
@@ -2056,7 +2056,7 @@ __attribute__((weak)) void FUN_801ad1e4() { return; }
 char *PTR_s_NAME_ENTRY_801b13a8[16];
 char *PTR_s_MOVIES_AND_PICTURES_801b13c4;
 __attribute__((constructor))
-static void br2_bind_init30(void)
+static void bind_globals_30(void)
 {
     int i;
     for (i = 0; i < 16; i++)
