@@ -37,6 +37,12 @@ for f in sorted(glob.glob('game/*.c')):
         decl_nc=re.sub(r'//.*','',decl_nc)
         if re.search(r'\bstatic\b',decl_nc): continue
         if '__attribute__' in decl_nc: continue
+        # entry-point symbols (_start/main) belong to the generated boot
+        # path — dispatching them clean would run the whole game inside one
+        # C call tree where unported callees hit weak stubs instead of
+        # falling back to generated code. Keep them out of the map.
+        if name.startswith('entry_0x'):
+            continue
         # determine guest addr: FUN_/LAB_ name, or @0x marker within 500 chars back
         addr=None
         fm=re.match(r'^(?:FUN_|LAB_)([0-9a-f]{8})$',name)
@@ -88,15 +94,6 @@ void *fn_lookup(uint32_t addr)
   return 0;
 }
 
-/* call_guest — guest callback dispatch used by the CD/file layer:
- * fn is a guest code address, a/b are guest u32 args. Returns the
- * callee's u32 result or 0 when unmapped. */
-uint32_t call_guest(uint32_t fn, uint32_t a, uint32_t b)
-{
-  void *p = fn_lookup(fn);
-  if (p == 0) return 0;
-  return ((uint32_t (*)(uint32_t, uint32_t))p)(a, b);
-}
 ''')
 open('game/fnmap.c','w').write(''.join(out))
 print(len(names),"entries")

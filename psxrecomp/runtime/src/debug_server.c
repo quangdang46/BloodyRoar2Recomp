@@ -7627,6 +7627,52 @@ extern uint16_t sio_get_pad_buttons_slot(int slot);
 extern int sio_get_pad_connected(int slot);
 extern int sio_get_pad_analog(int slot);
 extern void sio_get_pad_sticks(int slot, uint8_t out[4]);
+extern uint32_t br2_dbg_clean_trace(uint32_t i);
+extern uint32_t br2_dbg_clean_count(void);
+static void handle_clean_trace(int id, const char *json)
+{
+    (void)json;
+    uint32_t n = br2_dbg_clean_count();
+    uint32_t avail = n > 512 ? 512 : n;
+    char buf[16384];
+    int p = snprintf(buf, sizeof(buf),
+                     "{\"id\":%d,\"ok\":true,\"count\":%u,\"trace\":[",
+                     id, n);
+    uint32_t first = n - avail;
+    for (uint32_t i = 0; i < avail && p < (int)sizeof(buf) - 16; i++) {
+        p += snprintf(buf + p, sizeof(buf) - p, "%s\"0x%08X\"",
+                      i ? "," : "", br2_dbg_clean_trace(first + i));
+    }
+    snprintf(buf + p, sizeof(buf) - p, "]}");
+    send_fmt("%s", buf);
+}
+extern uint32_t br2_dbg_svc_count(void);
+extern int br2_dbg_svc_ent(uint32_t i, uint32_t out[8]);
+static void handle_bios_svc_trace(int id, const char *json)
+{
+    (void)json;
+    uint32_t n = br2_dbg_svc_count();
+    uint32_t avail = n > 256 ? 256 : n;
+    char buf[32768];
+    int p = snprintf(buf, sizeof(buf),
+                     "{\"id\":%d,\"ok\":true,\"count\":%u,\"svcs\":[",
+                     id, n);
+    uint32_t first = n - avail;
+    uint32_t ent[8];
+    for (uint32_t i = 0; i < avail && p < (int)sizeof(buf) - 200; i++) {
+        if (!br2_dbg_svc_ent(first + i, ent)) break;
+        p += snprintf(buf + p, sizeof(buf) - p,
+                      "%s{\"t\":\"0x%02X\",\"svc\":\"0x%02X\","
+                      "\"a0\":\"0x%08X\",\"a1\":\"0x%08X\","
+                      "\"a2\":\"0x%08X\",\"a3\":\"0x%08X\","
+                      "\"ra\":\"0x%08X\",\"v0\":\"0x%08X\"}",
+                      i ? "," : "",
+                      ent[0] & 0xFF, ent[1] & 0xFF,
+                      ent[2], ent[3], ent[4], ent[5], ent[6], ent[7]);
+    }
+    snprintf(buf + p, sizeof(buf) - p, "]}");
+    send_fmt("%s", buf);
+}
 static void handle_pad_status(int id, const char *json)
 {
     (void)json;
@@ -13804,6 +13850,8 @@ static const CmdEntry s_commands[] = {
     { "set_input",         handle_set_input },
     { "press",             handle_press },
     { "pad_status",        handle_pad_status },
+    { "clean_trace",       handle_clean_trace },
+    { "bios_svc_trace",    handle_bios_svc_trace },
     { "clear_input",       handle_clear_input },
     { "input_route_clear", handle_input_route_clear },
     { "input_route_append",handle_input_route_append },
@@ -14705,6 +14753,8 @@ void br2_dbg_write32(uint32_t addr, int val) { psx_write_word(addr, (uint32_t)va
  * The EU target links the strong definitions from clean_table.c instead. */
 __attribute__((weak)) uint32_t br2_dbg_clean_trace(uint32_t i) { (void)i; return 0; }
 __attribute__((weak)) uint32_t br2_dbg_clean_count(void) { return 0; }
+__attribute__((weak)) uint32_t br2_dbg_svc_count(void) { return 0; }
+__attribute__((weak)) int br2_dbg_svc_ent(uint32_t i, uint32_t out[8]) { (void)i; (void)out; return 0; }
 
 void br2_set_pad(int slot, int buttons) {
     if (slot < 0 || slot >= INPUT_OVERRIDE_SLOTS) return;

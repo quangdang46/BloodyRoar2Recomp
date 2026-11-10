@@ -38,6 +38,7 @@ bool cd_read_setup(undefined4,undefined4,uint);
 int cd_chan_boot_init(int);
 void cd_result_wait_b_fwd(int,undefined4);
 void printf_forward(const char *, ...);
+extern void br2_irq_poll(void);
 extern uint32_t guest_of(const void *);
 
 /* ---- guest globals ---- */
@@ -78,9 +79,11 @@ undefined4 cd_read_issue(undefined4 param_1,undefined4 param_2,undefined4 param_
   int iVar1;
   
   do {
+    br2_irq_poll();
     iVar1 = cd_mode_flag_set(2,param_1,0);
   } while (iVar1 == 0);
   do {
+    br2_irq_poll();
     iVar1 = cd_read_setup(param_3,param_2,0x80);
   } while (iVar1 == 0);
   return param_3;
@@ -302,6 +305,7 @@ undefined4 cd_cmd_issue(byte param_1,uint32_t param_2,uint32_t param_3,int param
       DB32(0x801fc6e4) = 0;
       DB32(0x801fc6e8) = 0x80125858; /* s_CD_cw guest addr */
       while (DB8(0x801bcb24) == 0) {
+        br2_irq_poll();
         iVar7 = cd_timer_read(0xffffffff);
         if (((int)(DB32(0x801fc6e0) - (uint32_t)iVar7) < 0) ||
            (iVar7 = (int)(DB32(0x801fc6e4) + 1),
@@ -745,6 +749,7 @@ void cd_cmd_state_reset(void)
   CDB8P(0x801bcb0c) = 1;
   bVar1 = CDB8P(0x801bcb18);
   while ((bVar1 & 7) != 0) {
+    br2_irq_poll();
     CDB8P(0x801bcb0c) = 1;
     CDB8P(0x801bcb18) = 7;
     CDB8P(0x801bcb14) = 7;
@@ -1324,10 +1329,10 @@ uint32_t cd_cmd_issue_b(uint32_t param_1,uint32_t param_2)
   DB32(0x801bcb44) = DB32(0x801bcb44) | 0x8000;
   DB32(0x801bcb48) = param_1;
   DB32(0x801bcb4c) = param_2 | 0x10000;
-  do { } while ((DB32(0x801bcb0c) & 0x40) == 0);
+  do { br2_irq_poll(); } while ((DB32(0x801bcb0c) & 0x40) == 0);
   DB32(0x801bcb50) = 0x11000000;
   uVar1 = DB32(0x801bcb50);
-  while ((uVar1 & 0x1000000) != 0) uVar1 = DB32(0x801bcb50);
+  while ((uVar1 & 0x1000000) != 0) { br2_irq_poll(); uVar1 = DB32(0x801bcb50); }
   DB32(0x801bcb1c) = 0x1325;
   return 0;
 }
@@ -1345,7 +1350,7 @@ uint32_t cd_cmd_issue_c(uint32_t param_1,uint32_t param_2)
   DB32(0x801bcb48) = param_1;
   DB32(0x801bcb4c) = param_2 | 0x10000;
   bVar1 = (uint8_t)DB32(0x801bcb0c);
-  while ((bVar1 & 0x40) == 0) bVar1 = (uint8_t)DB32(0x801bcb0c);
+  while ((bVar1 & 0x40) == 0) { br2_irq_poll(); bVar1 = (uint8_t)DB32(0x801bcb0c); }
   DB32(0x801bcb50) = 0x11400100;
   return 0;
 }
@@ -1787,6 +1792,7 @@ int32_t cd_subsystem_init(void)
   c = cdcell_u8(0x801bcb0c); if (c) *c = 1;
   c = cdcell_u8(0x801bcb18);
   while (c && (*c & 7) != 0) {
+    br2_irq_poll();
     c = cdcell_u8(0x801bcb0c); if (c) *c = a0;
     c = cdcell_u8(0x801bcb18); if (c) *c = v1;
     c = cdcell_u8(0x801bcb14); if (c) *c = v1;
@@ -2230,9 +2236,9 @@ int32_t mc_op_result_poll(uint32_t a0)
 {
   uint32_t s0 = 0, sp10 = 0, sp14 = 0, r;
   for (;;) {
-    while (cd_chan_job_submit(a0) == 0) { }
+    while (cd_chan_job_submit(a0) == 0) { br2_irq_poll(); }
     a0 = 0;
-    while ((r = cd_job_result(a0,&sp10,&sp14)) == 0) a0 = 0;
+    while ((r = cd_job_result(a0,&sp10,&sp14)) == 0) { br2_irq_poll(); a0 = 0; }
     {
       uint32_t v1 = sp14;
       int imm = (v1 < 5 && (v1 == 0 || v1 == 3));
@@ -2354,7 +2360,7 @@ int32_t cd_seek_complete_poll(uint32_t a0)
   arg = *(uint32_t *)guest_at(0x801bde38);
   v0 = (uint32_t)cd_seek_state_machine(arg);
   if (a0 == 1) {
-    while (v0 == 0) v0 = (uint32_t)cd_seek_state_machine(arg);
+    while (v0 == 0) { br2_irq_poll(); v0 = (uint32_t)cd_seek_state_machine(arg); }
     *(uint32_t *)guest_at(0x801bdee4) = v0;
     return (int32_t)v0;
   }
@@ -2827,7 +2833,7 @@ int32_t cd_job_result(uint32_t a0,uint32_t *a1,uint32_t *a2)
     if (v[2] == 0) {
       v += 2;                          /* +8 slot scan (guest quirk:
                                         * polls single next slot) */
-      while (*v == 0) { }
+      while (*v == 0) { br2_irq_poll(); }
     }
     if (a2) *a2 = CDREG32(0x801febd4);
     if (a1) *a1 = CDREG32(0x801febd0);
@@ -2865,7 +2871,7 @@ retry:
     uint32_t r;
     cd_pending_args_pump();
     FUN_801a05f0(CDREG32(0x801febf0));
-    do { } while (cd_queue_a_read() == 0);
+    do { br2_irq_poll(); } while (cd_queue_a_read() == 0);
     r = cd_queue_a_status();
     return (int32_t)cd_status_map(r);
   }
@@ -4089,7 +4095,7 @@ void cd_mc_state_machine(void)
   }
 
   /* outer check + inner spin collapse to one busy-wait on bit 0x10000000 */
-  while ((*(uint32_t *)guest_at(DB32(0x801bcc70)) & 0x10000000u) != 0) { }
+  while ((*(uint32_t *)guest_at(DB32(0x801bcc70)) & 0x10000000u) != 0) { br2_irq_poll(); }
 
   /* entry+0x1c = the 4 tag bytes (guest lwl/lwr unaligned u32) */
   memcpy(&tag,io,4);
@@ -4452,7 +4458,7 @@ uint32_t cd_chan_cmd_submit(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,
   psx_write_word(base + 4, (a2 << 16) | a3);             /* BCR  */
 
   fp = (uint8_t *)guest_at(DB32(0x801bcc40));
-  while ((*fp & 0x40) == 0) { }
+  while ((*fp & 0x40) == 0) { br2_irq_poll(); }
 
   psx_write_word(base + 8, a4);                          /* CHCR: start */
   return psx_read_word(base + 8);                        /* CHCR readback */

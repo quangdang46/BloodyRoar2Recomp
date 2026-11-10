@@ -15,6 +15,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "cpu_state.h"
+#include "interrupts.h"
 
 extern uint8_t *memory_get_ram_ptr(void);
 extern uint8_t *memory_get_scratchpad_ptr(void);
@@ -74,16 +75,154 @@ void clean_bridge_set_cpu(CPUState *cpu) { g_clean_cpu = cpu; }
 extern void psx_dispatch_call(CPUState *cpu, uint32_t target_addr,
                               uint32_t return_addr);
 
-uint32_t bios_svc(uint32_t table, uint32_t svc, uint32_t a0, uint32_t a1)
+/* bios_svc ring — last 256 kernel-service requests issued by clean code,
+ * queryable via the debug server "bios_svc_trace" command. */
+#define BR2_SVC_RING 256
+typedef struct { uint32_t table, svc, a0, a1, a2, a3, ra, v0; } Br2SvcEnt;
+static Br2SvcEnt g_svc_ring[BR2_SVC_RING];
+static uint32_t g_svc_ring_n;
+uint32_t br2_dbg_svc_count(void) { return g_svc_ring_n; }
+int br2_dbg_svc_ent(uint32_t i, uint32_t out[8])
+{
+    uint32_t n = g_svc_ring_n;
+    uint32_t avail = n > BR2_SVC_RING ? BR2_SVC_RING : n;
+    if (i >= avail) return 0;
+    const Br2SvcEnt *e = &g_svc_ring[(n - avail + i) % BR2_SVC_RING];
+    out[0]=e->table; out[1]=e->svc; out[2]=e->a0; out[3]=e->a1;
+    out[4]=e->a2;   out[5]=e->a3;   out[6]=e->ra;  out[7]=e->v0;
+    return 1;
+}
+
+static void svc_record(uint32_t table, uint32_t svc, uint32_t a0, uint32_t a1,
+                       uint32_t a2, uint32_t a3, uint32_t ra)
+{
+    uint32_t i = g_svc_ring_n % BR2_SVC_RING;
+    g_svc_ring[i].table = table; g_svc_ring[i].svc = svc;
+    g_svc_ring[i].a0 = a0;       g_svc_ring[i].a1 = a1;
+    g_svc_ring[i].a2 = a2;       g_svc_ring[i].a3 = a3;
+    g_svc_ring[i].ra = ra;       g_svc_ring[i].v0 = 0;
+    g_svc_ring_n++;
+}
+
+/* Nested-call contract: generated code returns by publishing $ra into
+ * cpu->pc (`cpu->pc = cpu->gpr[31]`). Parking $ra on 0 and dispatching
+ * with stop_addr=0 makes the final `jr $ra` produce pc==0, which
+ * psx_dispatch_impl treats as a plain C return for nested calls — no
+ * stop_addr/sp matching required, and no sentinel value can leak into
+ * guest registers or the stack. */
+#define BR2_NESTED_RA 0u
+
+static uint32_t svc_call(uint32_t table, uint32_t svc,
+                         uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
     CPUState *cpu = g_clean_cpu;
+    uint32_t ra, pc, sp;
     if (!cpu) return 0;
-    uint32_t ra = cpu->gpr[31];
-    cpu->gpr[4] = a0;
-    cpu->gpr[5] = a1;
-    cpu->gpr[9] = svc;              /* $t1 = kernel service number */
-    psx_dispatch_call(cpu, table, ra);
+    ra = cpu->gpr[31];
+    pc = cpu->pc;
+    sp = cpu->gpr[29];
+    cpu->gpr[4]  = a0;
+    cpu->gpr[5]  = a1;
+    cpu->gpr[6]  = a2;
+    cpu->gpr[7]  = a3;
+    cpu->gpr[8]  = table;           /* $t0 — some dispatchers inspect it */
+    cpu->gpr[9]  = svc;             /* $t1 = kernel service number */
+    cpu->gpr[10] = table;           /* $t2 = call vector (guest sets this) */
+    cpu->gpr[31] = BR2_NESTED_RA;
+    psx_dispatch_call(cpu, table, 0);
+    cpu->gpr[31] = ra;
+    cpu->gpr[29] = sp;
+    cpu->pc = pc;
     return cpu->gpr[2];             /* $v0 */
+}
+
+/* br2_irq_poll — interrupt check for clean-code busy-wait loops. Guest
+ * polling loops hit psx_check_interrupts at every dispatch boundary; a
+ * clean C `while(flag==0)` never leaves C, so IRQ-driven flag updates
+ * (CD responses, VSync, DMA) would starve forever. Call this inside
+ * tight polls — it runs the pending IRQ handler synchronously against
+ * the live CPUState, exactly like a guest dispatch boundary would. */
+void br2_irq_poll(void)
+{
+    CPUState *cpu = g_clean_cpu;
+    if (cpu) psx_check_interrupts_at(cpu, cpu->gpr[31]);
+}
+
+/* call_guest — synchronous guest-function call from clean C. The guest
+ * semantics are `jalr` with a0/a1 loaded and $ra = the post-call site; in
+ * clean C the "post-call site" is this C frame, so the contract is:
+ *   - clean-covered targets: run the clean wrapper directly on the live
+ *     CPUState (args in $a0/$a1, result in $v0), preserving caller regs;
+ *   - everything else: nested psx_dispatch_call with $ra parked on the
+ *     sentinel — generated/game code has real frames so $ra==$stop_addr
+ *     with balanced $sp returns cleanly through the dispatch contract. */
+extern int clean_try_dispatch(CPUState *cpu, uint32_t addr);
+
+uint32_t call_guest(uint32_t fn, uint32_t a, uint32_t b)
+{
+    CPUState *cpu = g_clean_cpu;
+    uint32_t a0, a1, ra, pc, v0;
+    if (!cpu || fn == 0) return 0;
+    a0 = cpu->gpr[4]; a1 = cpu->gpr[5];
+    ra = cpu->gpr[31]; pc = cpu->pc; v0 = cpu->gpr[2];
+    cpu->gpr[4] = a;
+    cpu->gpr[5] = b;
+    if (clean_try_dispatch(cpu, fn)) {
+        uint32_t r = cpu->gpr[2];
+        cpu->gpr[4] = a0; cpu->gpr[5] = a1;
+        cpu->gpr[31] = ra; cpu->pc = pc; cpu->gpr[2] = v0;
+        return r;
+    }
+    {
+        uint32_t sp = cpu->gpr[29];
+        cpu->gpr[31] = BR2_NESTED_RA;
+        psx_dispatch_call(cpu, fn, 0);
+        cpu->gpr[29] = sp;
+    }
+    {
+        uint32_t r = cpu->gpr[2];
+        cpu->gpr[4] = a0; cpu->gpr[5] = a1;
+        cpu->gpr[31] = ra; cpu->pc = pc; cpu->gpr[2] = v0;
+        return r;
+    }
+}
+
+/* Kernel syscall wrappers — guest 0x8018E300 = `li a0,1; syscall 0`
+ * (EnterCriticalSection/DI, returns old IEc in $v0) and 0x8018E310 =
+ * `li a0,2; syscall 0` (ExitCriticalSection/EI). Routed through the real
+ * psx_syscall so IEc/IM[2] in COP0 SR change exactly as generated code
+ * would do it. */
+extern int psx_syscall(CPUState *cpu, uint32_t code);
+
+void FUN_8018e300(void)
+{
+    CPUState *cpu = g_clean_cpu;
+    if (!cpu) return;
+    cpu->gpr[4] = 1;
+    psx_syscall(cpu, 0);
+}
+
+void FUN_8018e310(uint32_t unused)
+{
+    CPUState *cpu = g_clean_cpu;
+    (void)unused;
+    if (!cpu) return;
+    cpu->gpr[4] = 2;
+    psx_syscall(cpu, 0);
+}
+
+uint32_t bios_svc(uint32_t table, uint32_t svc, uint32_t a0, uint32_t a1)
+{
+    uint32_t ra;
+    CPUState *cpu = g_clean_cpu;
+    if (!cpu) return 0;
+    ra = cpu->gpr[31];
+    svc_record(table, svc, a0, a1, cpu->gpr[6], cpu->gpr[7], ra);
+    {
+        uint32_t v = svc_call(table, svc, a0, a1, cpu->gpr[6], cpu->gpr[7]);
+        g_svc_ring[(g_svc_ring_n - 1) % BR2_SVC_RING].v0 = v;
+        return v;
+    }
 }
 
 /* Six-arg variant: some kernel services consume a2/a3 as well (the guest
@@ -92,14 +231,14 @@ uint32_t bios_svc(uint32_t table, uint32_t svc, uint32_t a0, uint32_t a1)
 uint32_t bios_svc6(uint32_t table, uint32_t svc,
                    uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
+    uint32_t ra;
     CPUState *cpu = g_clean_cpu;
     if (!cpu) return 0;
-    uint32_t ra = cpu->gpr[31];
-    cpu->gpr[4] = a0;
-    cpu->gpr[5] = a1;
-    cpu->gpr[6] = a2;
-    cpu->gpr[7] = a3;
-    cpu->gpr[9] = svc;
-    psx_dispatch_call(cpu, table, ra);
-    return cpu->gpr[2];
+    ra = cpu->gpr[31];
+    svc_record(table, svc, a0, a1, a2, a3, ra);
+    {
+        uint32_t v = svc_call(table, svc, a0, a1, a2, a3);
+        g_svc_ring[(g_svc_ring_n - 1) % BR2_SVC_RING].v0 = v;
+        return v;
+    }
 }

@@ -949,7 +949,11 @@ void printf_forward(const char *param_1, ...)
   va_list ap;
   int i;
   va_start(ap,param_1);
-  for (i = 0; i < 8; i++) args[i] = va_arg(ap,uint32_t);
+  for (i = 0; i < 8; i++) {
+    uintptr_t v = va_arg(ap,uintptr_t);
+    uint32_t g = guest_of((const void *)v);
+    args[i] = g ? g : (uint32_t)v;
+  }
   va_end(ap);
   printf_core(1,param_1,args);
 }
@@ -1582,10 +1586,10 @@ LAB_8018e60c:
       case 0x6e:
         if (bVar5 || !bVar6) {
           param_3 = (const uint32_t *)(puVar13 + 1);
-          *(uint32_t *)*puVar13 = (uint32_t)local_40;
+          *(uint32_t *)guest_at(*puVar13) = (uint32_t)local_40;
         } else {
           param_3 = (const uint32_t *)(puVar13 + 1);
-          *(uint16_t *)*puVar13 = (uint16_t)local_40;
+          *(uint16_t *)guest_at(*puVar13) = (uint16_t)local_40;
         }
         goto LAB_8018ebec_d;
       case 0x70:
@@ -1593,8 +1597,8 @@ LAB_8018e60c:
         uVar10 = 0x10;
         goto LAB_8018e958_d;
       case 0x73:
-        pcVar15 = (char *)*puVar13;
-        if (pcVar15 == 0) pcVar15 = s__null__80124ffc;
+        pcVar15 = *puVar13 == 0 ? (char *)s__null__80124ffc
+                                : (char *)guest_at(*puVar13);
         if ((int)puVar17i < 0) {
           puVar17i = str_len(pcVar15);
         } else {

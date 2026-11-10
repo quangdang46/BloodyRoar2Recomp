@@ -7687,7 +7687,13 @@ joined_r0x8018efa8:
           local_38 = local_38 | 0x40;
           break;
         case 0x6e:
-          piVar7 = (int *)va_arg(ap,uint32_t);
+          {
+            uintptr_t nv = va_arg(ap,uintptr_t);
+            uint32_t ng = guest_of((const void *)nv);
+            piVar7 = (int *)(ng ? guest_at(ng)
+                        : ((uint32_t)nv < 0x20000000u || (uint32_t)nv >= 0x80000000u
+                           ? guest_at((uint32_t)nv) : (void *)(uintptr_t)nv));
+          }
 
           if ((local_38 >> 5 & 1) == 0) {
             *piVar7 = iVar8;
@@ -7733,7 +7739,13 @@ joined_r0x8018efa8:
           pcVar2 = s_0123456789ABCDEF_80125208;
           goto LAB_8018f504;
         case 0x73:
-          pbVar6 = (byte *)va_arg(ap,uint32_t);
+          {
+            uintptr_t sv = va_arg(ap,uintptr_t);
+            uint32_t sg = guest_of((const void *)sv);
+            pbVar6 = sg ? (byte *)guest_at(sg)
+                        : ((uint32_t)sv < 0x20000000u || (uint32_t)sv >= 0x80000000u
+                           ? (byte *)guest_at((uint32_t)sv) : (byte *)sv);
+          }
 
           if ((local_38 >> 2 & 1) == 0) {
             if ((local_38 >> 4 & 1) == 0) {

@@ -506,20 +506,23 @@ extern void guest_bzero(uint32_t,int);
  * ================================================================== */
 static void entry_0x80126178(void)
 {
-    /* Faithful _start (disasm 0x80126178-0x8012621c):
-     *   BSS clear 0x801CEEF0..0x801FF650 (sw $zero loop)
-     *   save $ra at 0x801CEEF0, set gp=0x801BEEDC, sp=$fp (loader stack —
-     *   host guest_sp already carries cpu->gpr[29], skip)
-     *   BIOS bzero(0x801FF654, (*(0x801FF650) - *(0x801BE720)) - 0x801FF650)
-     *   then main() = entry_0x80126234; break on return. */
+    /* Faithful _start (disasm 0x80126178-0x8012621c, delay slots incl.):
+     *   BSS clear 0x801CEEF0..0x801FF650 (sw $zero loop, end exclusive)
+     *   sp = (*(u32*)0x80126228) | 0x80000000   — literal-pool load, NOT a
+     *     BSS read; a0 = 0x801FF650 then sll/srl 3 -> phys 0x1FF650
+     *   a1 = v0 - *(0x801BE720) - 0x1FF650     — size for BIOS bzero
+     *   save $ra at 0x801CEEF0, gp=0x801BEEDC, fp=sp
+     *   jal bzero_tramp(0x801FF654, a1);  jal main(0x80126234); break.
+     * sp/gp/fp setup is skipped: the runtime owns cpu->gpr[29] and the
+     * clean ports address globals absolutely via guest_at(). */
     uint32_t *puVar1 = (uint32_t *)guest_at(0x801ceef0);
     uint32_t *end    = (uint32_t *)guest_at(0x801ff650);
-    uint32_t v0, v1, size;
+    uint32_t lit, v1, size;
     while (puVar1 < end) *puVar1++ = 0;
     *(uint32_t *)guest_at(0x801ceef0) = 0;   /* saved-ra slot (unused) */
-    v0 = *(uint32_t *)guest_at(0x801ff650);
-    v1 = *(uint32_t *)guest_at(0x801be720);
-    size = (v0 - v1) - 0x801ff650u;          /* guest subu wraps identically */
+    lit  = *(uint32_t *)guest_at(0x80126228); /* literal pool: 2MB top */
+    v1   = *(uint32_t *)guest_at(0x801be720);
+    size = (lit - v1) - 0x1ff650u;            /* guest subu wraps identically */
     guest_bzero(0x801ff654, size);
     entry_0x80126234();
     trap(1);

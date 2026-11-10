@@ -479,7 +479,6 @@ extern void emitter_30_teardown(void);
 extern void empty_ret(void);
 extern void engine_record_pair_update(void);
 extern void engine_tables_restore(void);
-extern void entry_0x80126234(void);
 extern void entry_attr_bump_loop(void);
 extern void euler_rotmat(void);
 extern void ev5_action_select(void);
@@ -1194,7 +1193,6 @@ extern void xform_accum_tick(void);
 typedef struct { uint32_t addr; void *fn; } Br2FnEnt;
 
 const Br2FnEnt fn_table[] = {
-  { 0x80126234, (void *)entry_0x80126234 },
   { 0x80126720, (void *)versus_state_init },
   { 0x801267dc, (void *)cd_channel_init_seq },
   { 0x80126848, (void *)scratch_zero_reset },
@@ -2396,12 +2394,3 @@ void *fn_lookup(uint32_t addr)
   return 0;
 }
 
-/* call_guest — guest callback dispatch used by the CD/file layer:
- * fn is a guest code address, a/b are guest u32 args. Returns the
- * callee's u32 result or 0 when unmapped. */
-uint32_t call_guest(uint32_t fn, uint32_t a, uint32_t b)
-{
-  void *p = fn_lookup(fn);
-  if (p == 0) return 0;
-  return ((uint32_t (*)(uint32_t, uint32_t))p)(a, b);
-}
