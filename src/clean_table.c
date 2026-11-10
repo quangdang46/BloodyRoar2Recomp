@@ -4824,8 +4824,10 @@ static int clean_range_ok(uint32_t addr) {
 }
 
 static uint32_t g_clean_trace[512];
+static uint32_t g_clean_trace_ra[512];
 static uint32_t g_clean_trace_n;
 uint32_t br2_dbg_clean_trace(uint32_t i) { return g_clean_trace[i & 511]; }
+uint32_t br2_dbg_clean_trace_ra(uint32_t i) { return g_clean_trace_ra[i & 511]; }
 uint32_t br2_dbg_clean_count(void) { return g_clean_trace_n; }
 
 int clean_try_dispatch(CPUState *cpu, uint32_t addr) {
@@ -4834,6 +4836,7 @@ int clean_try_dispatch(CPUState *cpu, uint32_t addr) {
     e = clean_find(addr);
     if (!e) return 0;
     g_clean_trace[g_clean_trace_n & 511] = addr;
+    g_clean_trace_ra[g_clean_trace_n & 511] = cpu->gpr[31];
     g_clean_trace_n++;
     extern void psx_check_interrupts_dispatch_entry(CPUState *cpu, uint32_t resume_pc);
     psx_check_interrupts_dispatch_entry(cpu, addr);

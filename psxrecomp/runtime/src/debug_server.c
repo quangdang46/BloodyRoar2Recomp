@@ -7628,20 +7628,22 @@ extern int sio_get_pad_connected(int slot);
 extern int sio_get_pad_analog(int slot);
 extern void sio_get_pad_sticks(int slot, uint8_t out[4]);
 extern uint32_t br2_dbg_clean_trace(uint32_t i);
+extern uint32_t br2_dbg_clean_trace_ra(uint32_t i);
 extern uint32_t br2_dbg_clean_count(void);
 static void handle_clean_trace(int id, const char *json)
 {
     (void)json;
     uint32_t n = br2_dbg_clean_count();
     uint32_t avail = n > 512 ? 512 : n;
-    char buf[16384];
+    char buf[24576];
     int p = snprintf(buf, sizeof(buf),
                      "{\"id\":%d,\"ok\":true,\"count\":%u,\"trace\":[",
                      id, n);
     uint32_t first = n - avail;
-    for (uint32_t i = 0; i < avail && p < (int)sizeof(buf) - 16; i++) {
-        p += snprintf(buf + p, sizeof(buf) - p, "%s\"0x%08X\"",
-                      i ? "," : "", br2_dbg_clean_trace(first + i));
+    for (uint32_t i = 0; i < avail && p < (int)sizeof(buf) - 40; i++) {
+        p += snprintf(buf + p, sizeof(buf) - p, "%s{\"a\":\"0x%08X\",\"ra\":\"0x%08X\"}",
+                      i ? "," : "", br2_dbg_clean_trace(first + i),
+                      br2_dbg_clean_trace_ra(first + i));
     }
     snprintf(buf + p, sizeof(buf) - p, "]}");
     send_fmt("%s", buf);
@@ -14752,6 +14754,7 @@ void br2_dbg_write32(uint32_t addr, int val) { psx_write_word(addr, (uint32_t)va
  * src/clean_table.c (e.g. the USA build, whose clean table is SLES-only).
  * The EU target links the strong definitions from clean_table.c instead. */
 __attribute__((weak)) uint32_t br2_dbg_clean_trace(uint32_t i) { (void)i; return 0; }
+__attribute__((weak)) uint32_t br2_dbg_clean_trace_ra(uint32_t i) { (void)i; return 0; }
 __attribute__((weak)) uint32_t br2_dbg_clean_count(void) { return 0; }
 __attribute__((weak)) uint32_t br2_dbg_svc_count(void) { return 0; }
 __attribute__((weak)) int br2_dbg_svc_ent(uint32_t i, uint32_t out[8]) { (void)i; (void)out; return 0; }
