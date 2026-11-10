@@ -213,6 +213,32 @@ on a fixed region -> next.
 
 ## 5. Status / Log (update every session)
 
+- **2026-11-11 (IRQ chain fully mapped — gap isolated to kernel-object CD callback):**
+  Traced the complete maskable-IRQ path live. CPU exception → kernel
+  `ExceptionHandler` (RAM vector `0x80000080`→`0x27AC`, valid low-mem kernel
+  code, saves TCB/GPRs) → iterates 4 IntRP callback queues via `ToT[0]`=0x8DE0
+  → **Queue3 (hardware IRQs)** func1=`0x16E4` = kernel hw-irq dispatcher.
+  Disasm of `0x16E4`: reads `I_MASK(0x1F801074) & I_STAT(0x1F801070)`, and for
+  each pending bit calls kernel `0x2610` with a per-source kernel-object handle
+  (`0xF0000003` for CDROM bit2, others for VBlank/etc), then conditionally ACKs
+  via flag `0x6514` (currently NULL — likely "auto-ack" flag, game acks manually).
+  `0x2610` dereferences the kernel object and invokes its registered callback.
+  KEY: VBlank IRQ works (frame counter advances, game logic runs) so the
+  kernel→game IRQ mechanism is functional — ONLY the CD-specific callback is
+  not invoked. `br2eu_func_8019A87C` (generated) is a conditional wrapper that
+  `jal 0x8019A8EC`=cd_intc_dispatch on its not-equal path; it and
+  `br2eu_func_8019A8EC` DO exist as real generated functions (in
+  `generated/SLES_017.22_full_46.c`), reached only via indirect dispatch.
+  `0x8019A87C` is NOT stored as a pointer anywhere in guest RAM (full scan) —
+  it is registered as a callback inside kernel-object space (`0xF000000X`),
+  populated by a BIOS call. CD subsystem init verified complete
+  (`0x801BCC90`=1, kernel objects `0x801FEB58/5C`=BIOS addrs, IntRP records
+  `0x801FEB40`/`0x801FEFC0` registered via C0/0x02+0x03 confirmed in
+  `bios_svc_trace`). NEXT: find the BIOS/kernel call that registers the game's
+  CD IRQ callback into the CDROM kernel object and verify it ran + the object
+  holds `0x8019A87C` (or wrapper). Suspect a clean-code BIOS-call boundary that
+  silently no-ops the registration.
+
 - **2026-11-11 (clean `game/` runtime integration — boots, CD IRQ stall localized):**
   Wired the clean-room `game/` C tree into the live recomp runtime as the
   canonical game implementation. `clean_try_dispatch` now runs first inside
