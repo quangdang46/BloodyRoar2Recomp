@@ -55,31 +55,31 @@ for n in sorted(names):
     out.append(f'extern void {n}(void);\n')
 out.append('''typedef struct { uint32_t addr; void *fn; } Br2FnEnt;
 
-const Br2FnEnt br2_fn_table[] = {
+const Br2FnEnt fn_table[] = {
 ''')
 for n in sorted(names,key=lambda n:int(names[n],16)):
     out.append(f'  {{ 0x{names[n]}, (void *){n} }},\n')
 out.append('''};
 
 
-void *br2_fn_lookup(uint32_t addr)
+void *fn_lookup(uint32_t addr)
 {
-  uint32_t lo = 0, hi = (uint32_t)(sizeof(br2_fn_table)/sizeof(br2_fn_table[0]));
+  uint32_t lo = 0, hi = (uint32_t)(sizeof(fn_table)/sizeof(fn_table[0]));
   while (lo < hi) {
     uint32_t mid = (lo + hi) >> 1;
-    if (br2_fn_table[mid].addr < addr) lo = mid + 1; else hi = mid;
+    if (fn_table[mid].addr < addr) lo = mid + 1; else hi = mid;
   }
-  if (lo < (uint32_t)(sizeof(br2_fn_table)/sizeof(br2_fn_table[0])) && br2_fn_table[lo].addr == addr)
-    return br2_fn_table[lo].fn;
+  if (lo < (uint32_t)(sizeof(fn_table)/sizeof(fn_table[0])) && fn_table[lo].addr == addr)
+    return fn_table[lo].fn;
   return 0;
 }
 
-/* br2_call_u32 — guest callback dispatch used by the CD/file layer:
+/* call_guest — guest callback dispatch used by the CD/file layer:
  * fn is a guest code address, a/b are guest u32 args. Returns the
  * callee's u32 result or 0 when unmapped. */
-uint32_t br2_call_u32(uint32_t fn, uint32_t a, uint32_t b)
+uint32_t call_guest(uint32_t fn, uint32_t a, uint32_t b)
 {
-  void *p = br2_fn_lookup(fn);
+  void *p = fn_lookup(fn);
   if (p == 0) return 0;
   return ((uint32_t (*)(uint32_t, uint32_t))p)(a, b);
 }

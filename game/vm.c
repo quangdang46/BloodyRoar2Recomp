@@ -1,5 +1,5 @@
 /*
- * br2_vm.c — clean-room reference implementation of the two BR2 VMs.
+ * vm.c — clean-room reference implementation of the two BR2 VMs.
  *
  * VM1 "script VM" (AI/move scripts in .ANI): 19 opcodes, decoded from
  * handlers @0x80182f3c..0x80184f28 (RE_NOTES.md, vmops asm dumps).
@@ -8,7 +8,7 @@
  * 0x8012294c.
  *
  * Faithful to guest semantics: s16 regs, u16 stream operands, s32 cmp.
- * All state is accessed by raw guest offsets — see br2_types.h for the
+ * All state is accessed by raw guest offsets — see types.h for the
  * struct view. Pointers are guest-space pointers (as in the recomp:
  * the guest RAM image is mapped into the host address space).
  *

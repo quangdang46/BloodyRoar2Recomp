@@ -1,4 +1,4 @@
-/* br2_cd.c — CD/file services: async read pump, status pollers,
+/* cd.c — CD/file services: async read pump, status pollers,
  * command issuer with retry (verbatim Ghidra, decomp/batch_sm3.txt).
  *
  * Guest globals via g_* arena bindings; timer FUN_8019a460 and

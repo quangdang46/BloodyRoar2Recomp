@@ -1,4 +1,4 @@
-/* br2_act.h — Bloody Roar 2 .ACT container, verified layout.
+/* action_table.h — Bloody Roar 2 .ACT container, verified layout.
  *
  * Per-frame action/animation parameter database (~190KB per char).
  * Loaded VERBATIM after the .ANI blob; ALL nonzero header section

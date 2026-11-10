@@ -1,6 +1,6 @@
-/* br2_menu.c — menu/options/save-manager cluster.
+/* menu.c — menu/options/save-manager cluster.
  * Verbatim Ghidra ports from decomp/batch_sm2.txt.
- * Guest globals bound via g_DAT_* (br2_bind.c arena, payload-backed). */
+ * Guest globals bound via g_DAT_* (bind.c arena, payload-backed). */
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5395,7 +5395,7 @@ extern int  FUN_8012d154(uint32_t *,uint32_t,int32_t);
 
 /* ======== 0x8012e8e8 ========
  * Round/announce param block @0x1f80038c (sibling of FUN_8012e58c in
- * br2_battle.c with different field constants). a0 = ctx (heap A ptr),
+ * battle.c with different field constants). a0 = ctx (heap A ptr),
  * a1 = ctx2 (u16), a2 = host string ptr (stored back as guest addr),
  * a3 = u16 field, stack5 = u16 field8, stack6 = packed attr for +0x16.
  * Tail: FUN_8012d154(ctx, ctx2 & 0xffff, 0x1f80038c). */
@@ -13954,7 +13954,7 @@ uint32_t FUN_801583cc(void)
  *   +0x18/+0x1c rec arrays (stride 0x28), +0x20 fobj parts (0x50),
  *   +0x2c foe ctrl, +0x30 ani base, +0x44/+0x48 matrix arrays (0x20).
  * NOTE: euler seeds come from desc+0x10[i-1], joint fields (+0x18/
- * 1a/1c) from desc+8[i-1] — br2_action.c's skeleton_init reads both
+ * 1a/1c) from desc+8[i-1] — action.c's skeleton_init reads both
  * from desc+8; the disasm splits them (s7=+0x10 for FUN_8018dc18,
  * a0=+8 for the sh fields). Ported verbatim here.
  * Return value is whatever v0 last held; callers ignore it. */

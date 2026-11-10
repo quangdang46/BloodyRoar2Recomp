@@ -1,7 +1,7 @@
 /*
- * br2_act.c — clean-room .ACT container accessors.
+ * action_table.c — clean-room .ACT container accessors.
  *
- * Implements the verified layout from br2_act.h. Works on the raw
+ * Implements the verified layout from action_table.h. Works on the raw
  * file image and the runtime blob (identical except header sec_off
  * slots are relocated to absolute pointers at load — accessors take
  * runtime_base to resolve either form).

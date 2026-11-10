@@ -1,4 +1,4 @@
-/* br2_ani.h — Bloody Roar 2 .ANI container, verified layout.
+/* ani.h — Bloody Roar 2 .ANI container, verified layout.
  *
  * File image is loaded VERBATIM into RAM; only the five leading
  * u32s of the S4 category table are relocated to absolute pointers
@@ -36,7 +36,7 @@ enum {
  * u16 table, ~647-700 entries. stream_file_off = table[action].
  * Runtime: motion+0x00 = relocated S0 base; stream = ani_base + off.
  * Verified live: table bytes identical file<->RAM, cursor at
- * motion+0x84 advances through EV records (br2_ev.c). */
+ * motion+0x84 advances through EV records (ev.c). */
 
 /* ---- S2: animation/hit channels -----------------------------------
  * Index: 16-byte records until a 16-byte zero terminator:

@@ -1,6 +1,6 @@
-/* br2_save.c — memory-card / settings / display-helper cluster.
+/* save.c — memory-card / settings / display-helper cluster.
  * Verbatim Ghidra ports from decomp/batch_shell.txt.
- * Guest globals bound via g_DAT_* (br2_bind.c arena, payload-backed);
+ * Guest globals bound via g_DAT_* (bind.c arena, payload-backed);
  * s_* strings resolve through guest_at into the loaded EXE image. */
 #include <stdint.h>
 #include <stdlib.h>
@@ -1359,7 +1359,7 @@ LAB_8018bb4c:
   return;
 }
 
-/* FUN_80156048 lives in br2_menu.c (disasm-verified magic-divide port). */
+/* FUN_80156048 lives in menu.c (disasm-verified magic-divide port). */
 
 /* ======== 0x801561c8 ======== */
 
@@ -2813,8 +2813,8 @@ extern void FUN_801566d4(uint32_t,int32_t);
 extern void FUN_80163154(uint32_t,uint32_t,int32_t);
 extern void FUN_8019a460(uint32_t);
 extern uint32_t br2_action_enter(void *battle, uint8_t *ctrl, uint32_t sel);
-/* strong FUN_80175fec: forwards to br2_action_enter (br2_action.c).
-   Overrides the weak stub in br2_bind.c. */
+/* strong FUN_80175fec: forwards to br2_action_enter (action.c).
+   Overrides the weak stub in bind.c. */
 int FUN_80175fec(void *battle, uint8_t *ctrl, uint32_t sel)
 {
   return (int)br2_action_enter(battle,ctrl,sel);
@@ -5556,7 +5556,7 @@ int FUN_8015bdc0(uint32_t a0,uint32_t a1)
  * pass as host pointers are dereferenced directly.
  * ====================================================================== */
 
-/* ---- weak stubs for still-unported callees (mirrors br2_bind.c) ---- */
+/* ---- weak stubs for still-unported callees (mirrors bind.c) ---- */
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -5629,7 +5629,7 @@ int FUN_8018e550() { return 0; }
 extern int32_t FUN_8019fa80(uint32_t,uint32_t *,uint32_t *);
 extern uint8_t *FUN_80127680(void);
 
-/* FUN_80163154's real signature (br2_menu.c): (guest heap ptr, host int*
+/* FUN_80163154's real signature (menu.c): (guest heap ptr, host int*
    tag table, tag) -> new heap ptr. save.c's mid-file extern says void;
    call through a cast to recover args+result faithfully. */
 static uint32_t br2_alloc54(uint32_t heap, int *tbl, int32_t tag)
@@ -7985,7 +7985,7 @@ int FUN_801a2fb4(uint8_t *a0)
   return 0;
 }
 
-/* FUN_801a0a10 lives in br2_cd.c (disasm-verified; counter @0x801be768). */
+/* FUN_801a0a10 lives in cd.c (disasm-verified; counter @0x801be768). */
 
 /* 0x801a0a8c — invoke channel fn ptr; decrement count on success. */
 void FUN_801a0a8c(void)

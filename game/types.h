@@ -1,5 +1,5 @@
 /*
- * br2_types.h — canonical Bloody Roar 2 runtime layout.
+ * types.h — canonical Bloody Roar 2 runtime layout.
  *
  * Consolidated from static MIPS disassembly + live RAM correlation
  * (see RE_NOTES.md). Offsets are byte offsets into guest structs.

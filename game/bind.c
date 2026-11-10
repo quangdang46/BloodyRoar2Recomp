@@ -1,4 +1,4 @@
-/* br2_bind.c — standalone binding layer for the unified source.
+/* bind.c — standalone binding layer for the unified source.
  *
  * The guest-faithful modules declare guest RAM symbols as extern
  * pointers (g_DAT_x, g__DAT_x, g_PTR_x). In the recomp runtime these
@@ -896,7 +896,7 @@ uint8_t *g_DAT_801f4d7a, *g_DAT_801f4d7c;
 
 void trap(int code) { (void)code; }
 
-/* FUN_80178664 == br2_pending_gate (br2_fight.c), guest arg order:
+/* FUN_80178664 == br2_pending_gate (fight.c), guest arg order:
  * (motion, ctrl, reqA, reqB) — a0 is a guest address; resolve it
  * before handing br2_pending_gate its host pointer. */
 int32_t br2_pending_gate(uint8_t *motion, uint8_t *ctrl,
@@ -950,7 +950,7 @@ static void br2_bind_init2(void)
     g_DAT_801f4d7c = guest_arena + (0x801f4d7c & 0x1fffff);
 }
 
-/* ---- br2_main.c globals ---- */
+/* ---- game.c globals ---- */
 uint8_t *_g_system_config_ptr;
 uint8_t *g_DAT_1f800000;
 uint8_t *g_DAT_1f800001;
@@ -1216,7 +1216,7 @@ static void br2_bind_init3(void)
 uint32_t uRam801beef0, iRam80126228, iRam801be720;
 void halt_baddata(void) { for(;;) { } }
 
-/* ---- UNPORTED weak stubs (br2_main.c callees) ----
+/* ---- UNPORTED weak stubs (game.c callees) ----
  * Guest functions not yet ported. Weak defs keep the tree
  * linkable; strong ports override. Return values are fake. */
 #if defined(__GNUC__) || defined(__clang__)
@@ -1549,7 +1549,7 @@ static void load_payload(void)
     fclose(f);
 }
 
-/* ---- br2_save.c globals ---- */
+/* ---- save.c globals ---- */
 uint8_t *g_DAT_1f800014;
 uint8_t *g_DAT_1f800017;
 uint8_t *g_DAT_1f800018;
@@ -1696,7 +1696,7 @@ static void br2_bind_init5(void)
     g_PTR_u32_801b4160 = (uint32_t *)guest_at(0x801b4160);
 }
 
-/* ---- br2_save.c callees ---- */
+/* ---- save.c callees ---- */
 uint8_t *g_DAT_1f800015;
 uint8_t *g_DAT_1f800068;
 uint8_t *g_DAT_1f800074;
@@ -1824,7 +1824,7 @@ static void br2_bind_init6(void)
         *vars[i] = guest_for(names[i]);
 }
 
-/* ---- br2_menu.c globals ---- */
+/* ---- menu.c globals ---- */
 int g_game_state;
 int g_sub_state;
 char *s_NAME_ENTRY_80122080;
@@ -1834,7 +1834,7 @@ char *s_TIME_ATTACK_80122050;
 char *s_VS_RANKING_80122068;
 char *s_time_out_in_decoding___80120e90;
 
-/* ---- br2_menu.c callees ---- */
+/* ---- menu.c callees ---- */
 int FUN_801468ec() { return 0; }
 int FUN_8018b100() { return 0; }
 
@@ -1884,9 +1884,9 @@ static void br2_bind_init8(void)
         *vars[i] = guest_for(names[i]);
 }
 
-/* ---- br2_main.c batch-2 callees ---- */
+/* ---- game.c batch-2 callees ---- */
 
-/* GPU syscall dispatch: wrappers in br2_gfx.c resolve table entries
+/* GPU syscall dispatch: wrappers in gfx.c resolve table entries
  * to guest func addrs and hand them here. Weak default = no-op until
  * the libgpu syscall cluster (0x80192xxx) is ported. */
 __attribute__((weak))
@@ -1902,7 +1902,7 @@ uint8_t *g_DAT_801b8322;
 uint8_t *g_DAT_801b8323;
 uint8_t *g_DAT_801b8324;
 uint8_t *g_DAT_801b8326;
-/* ---- br2_cd.c + br2_gfx.c globals ---- */
+/* ---- cd.c + gfx.c globals ---- */
 uint8_t *g_DAT_801bc7b4;
 uint8_t *g_DAT_801bc7c0;
 uint8_t *g_DAT_801bc848;
@@ -1947,7 +1947,7 @@ static void br2_bind_init9(void)
     s_SetDispMask__d_____801254a0 = (char *)guest_at(0x801254a0);
 }
 
-/* ---- br2_cd.c / br2_gfx.c callees ---- */
+/* ---- cd.c / gfx.c callees ---- */
 
 __attribute__((constructor))
 static void br2_bind_init10(void)
@@ -1960,7 +1960,7 @@ static void br2_bind_init10(void)
     g_DAT_801b8326 = guest_at(0x801b8326);
 }
 
-/* ---- br2_cd.c batch26 callees ---- */
+/* ---- cd.c batch26 callees ---- */
 __attribute__((weak))
 uint32_t call_guest(uint32_t fn, uint32_t a, uint32_t b)
 {

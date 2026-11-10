@@ -1,9 +1,9 @@
-/* br2_main.c — top-level game shell: boot, main state machine,
+/* game.c — top-level game shell: boot, main state machine,
  * CD file pump, frame driver, match loop, stage load.
  *
  * Guest-faithful verbatim ports (Ghidra decompiles preserved in
  * decomp/). Guest addresses are passed as raw ints per project
- * convention; globals via the g_DAT arena bindings in br2_bind.c.
+ * convention; globals via the g_DAT arena bindings in bind.c.
  *
  * Decoded architecture (live + static verified):
  *   entry_0x80126178  _start: BSS clear -> entry_0x80126234
@@ -41,7 +41,7 @@ typedef uint64_t ulonglong;
 #define CONCAT22(hi,lo) (((undefined4)(uint16_t)(hi) << 16) | (uint16_t)(lo))
 #define CONCAT11(hi,lo) (((uint16_t)(uint8_t)(hi) << 8) | (uint8_t)(lo))
 
-/* ---- guest globals (bindings in br2_bind.c) ---- */
+/* ---- guest globals (bindings in bind.c) ---- */
 extern uint8_t  *g_DAT_1f800000;   /* g_game_state (u32 at battle base) */
 extern uint8_t  *g_DAT_1f800001;   /* frame-loop stage */
 extern uint8_t  *g_DAT_1f800002;

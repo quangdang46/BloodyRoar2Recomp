@@ -1,5 +1,5 @@
 /*
- * br2_ev.c — clean-room reference implementation of the BR2 event VM.
+ * ev.c — clean-room reference implementation of the BR2 event VM.
  *
  * Event streams (.ACT/.ANI embedded) are consumed by the dispatcher
  * FUN_8017ea7c: each record starts with a type byte (0..23) dispatched
@@ -15,7 +15,7 @@
  *   class bits byte1>>8 & 0xc0 select target (self / foe=ctrl+0x2c /
  *   beast-gated); low bits select the nested op.
  *
- * All state via raw guest offsets — see br2_types.h / br2_vm.c.
+ * All state via raw guest offsets — see types.h / vm.c.
  * Project-original clean-room code (MIT).
  */
 #include <stdint.h>

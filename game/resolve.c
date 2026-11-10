@@ -1,4 +1,4 @@
-/* br2_resolve.c — FUN_80176248 action-request resolver.
+/* resolve.c — FUN_80176248 action-request resolver.
  * Faithful port: guest decompile kept 1:1 (identifiers, goto, labels).
  * Types: byte/ushort/uint/undefinedN are guest-width typedefs.
  * DAT_ symbols are lvalue macros yielding guest-field pointers;
@@ -88,7 +88,7 @@ extern int32_t *g_DAT_801f35f4i;
 #define DAT_1f80038e   g_DAT_1f80038c[1]
 #define DAT_1f800390   g_DAT_1f80038c[2]
 
-/* guest-address <-> host-pointer bridge (br2_bind.c) */
+/* guest-address <-> host-pointer bridge (bind.c) */
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
 

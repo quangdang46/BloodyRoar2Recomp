@@ -1,7 +1,7 @@
 /*
- * br2_ani.c — clean-room .ANI container accessors.
+ * ani.c — clean-room .ANI container accessors.
  *
- * Implements the verified layout from br2_ani.h. Works on the raw
+ * Implements the verified layout from ani.h. Works on the raw
  * file image AND the runtime blob (they are byte-identical except
  * the five relocated S4 category pointers, which this module treats
  * as opaque u32s — callers resolve them against the blob base when

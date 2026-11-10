@@ -1,5 +1,5 @@
 /*
- * br2_action.c — clean-room action-entry pipeline.
+ * action.c — clean-room action-entry pipeline.
  *
  * Faithful port of the verified guest sequence (Ghidra decompile,
  * functions named by guest address):
@@ -9,7 +9,7 @@
  *     class 1: apply -> reset -> fixup -> switch -> ev_dispatch
  *     class 0,2,3,4: shared path with triple slot_apply
  *     tail (all classes): motion+0x82=+0x80; action_switch;
- *                         ev_dispatch (br2_ev.c)
+ *                         ev_dispatch (ev.c)
  *
  *   FUN_8017a05c  apply(ctrl, motion)      — .ANI rebind + relocations
  *   FUN_80175898  reset(ctrl, sel)         — field zero + class scaling
@@ -22,7 +22,7 @@
  *
  * Guest pointer fields are raw u32 guest addresses (recomp model);
  * on a 64-bit host they need the address-space bridge, same as
- * br2_vm.c / br2_ev.c.
+ * vm.c / ev.c.
  */
 #include <stdint.h>
 #include <string.h>
@@ -592,7 +592,7 @@ done:
 /* ------------------------------------------------------------------ */
 static void skeleton_init(uint8_t *ctrl, const uint8_t *desc)
 {
-    /* canonical disasm-verified port is FUN_80179ae0 in br2_menu.c;
+    /* canonical disasm-verified port is FUN_80179ae0 in menu.c;
      * delegate with guest addresses (host ptrs -> guest via
      * guest_of). The older inline approximation was removed —
      * it read euler seeds from the wrong desc field. */

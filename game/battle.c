@@ -1,4 +1,4 @@
-/* br2_battle.c — FUN_80166544 battle-frame tick.
+/* battle.c — FUN_80166544 battle-frame tick.
  * Faithful verbatim port: guest identifiers/labels preserved.
  * param_1 = battle object (guest addr as int), param_2 = phase mask.
  * Fighter ctrls are the absolute globals 0x1f8000e8 (P1) /
@@ -16876,9 +16876,9 @@ void FUN_8013f648(int param_1)
 
 /* ======== batch30 (rebuilt): emit chains + save/record iterators ===== */
 /* externs for batch30 callees */
-extern int  FUN_80197b30(undefined4 *param_1,uint32_t param_2);  /* guest 0x80197b30 — br2_battle.c */
-extern int FUN_801980ec(uint32_t param_1,uint32_t param_2);  /* br2_cd.c 0x801980ec */
-extern int FUN_80197e08(uint32_t param_1,uint32_t param_2);  /* br2_cd.c 0x80197e08 */
+extern int  FUN_80197b30(undefined4 *param_1,uint32_t param_2);  /* guest 0x80197b30 — battle.c */
+extern int FUN_801980ec(uint32_t param_1,uint32_t param_2);  /* cd.c 0x801980ec */
+extern int FUN_80197e08(uint32_t param_1,uint32_t param_2);  /* cd.c 0x80197e08 */
 extern int  FUN_80195d8c(int param_1,void *param_2,int param_3);
 extern int  FUN_8019a460(int param_1);
 extern uint32_t call_guest(uint32_t fn, uint32_t a, uint32_t b);
@@ -17276,9 +17276,9 @@ void FUN_8018be28(int param_1,int param_2,int param_3,int param_4,int param_5,in
 /* externs for batch31 callees */
 extern int  FUN_8018ecf0(int param_1);
 extern void FUN_8018ef50();
-extern int  FUN_80195570(int param_1,uint32_t param_2);  /* guest 0x80195570 — br2_battle.c */
-extern int FUN_8018c0a8();   /* weak-stubbed in br2_bind.c; returns prim ptr */
-extern void *FUN_8018c18c(void);   /* br2_gfx.c — returns host ptr */
+extern int  FUN_80195570(int param_1,uint32_t param_2);  /* guest 0x80195570 — battle.c */
+extern int FUN_8018c0a8();   /* weak-stubbed in bind.c; returns prim ptr */
+extern void *FUN_8018c18c(void);   /* gfx.c — returns host ptr */
 
 /* guest FUN_8018ee28 @0x8018ee28 — debug line-buffer putc: tab expands to
  * spaces to col&7==0, CR resets col, other chars bump col per 0x801b6701

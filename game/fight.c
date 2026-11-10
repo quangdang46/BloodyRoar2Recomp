@@ -1,7 +1,7 @@
-/* br2_fight.c — per-fighter fight logic: action-request resolution.
+/* fight.c — per-fighter fight logic: action-request resolution.
  *
  * Clean-room C port of decoded guest functions. All state accessed
- * through raw guest-layout buffers (same caveat as br2_ev.c: 32-bit
+ * through raw guest-layout buffers (same caveat as ev.c: 32-bit
  * guest addresses need the recomp address-space bridge on 64-bit).
  *
  * Guest map:
@@ -9,7 +9,7 @@
  *   FUN_80178664  pending-action permission gate (motion, ctrl, a, b)
  *   FUN_801787dc  per-fighter frame update (calls resolver, writes
  *                 motion+0x80)
- *   FUN_8017ae18  EV5 action-control record interpreter (in br2_ev.c)
+ *   FUN_8017ae18  EV5 action-control record interpreter (in ev.c)
  */
 
 #include <stdint.h>
@@ -25,7 +25,7 @@
 #define SU16(p,o,v) (*(uint16_t *)((uint8_t *)(p) + (o)) = (uint16_t)(v))
 #define SU32(p,o,v) (*(uint32_t *)((uint8_t *)(p) + (o)) = (uint32_t)(v))
 
-/* ctrl offsets (shared with br2_ev.c convention) */
+/* ctrl offsets (shared with ev.c convention) */
 #define FC_FOE     0x2c
 #define FC_MOTION  0x38
 #define FC_MODE5   0x05

@@ -1,6 +1,6 @@
-/* br2_gfx.c — OAM/sprite attribute cluster (verbatim Ghidra ports).
+/* gfx.c — OAM/sprite attribute cluster (verbatim Ghidra ports).
  *
- * Guest globals bound via g_* arena pointers (br2_bind.c).
+ * Guest globals bound via g_* arena pointers (bind.c).
  * Pointer-compressed fields (& 0xffffff tags) round-trip through
  * guest_of(); FUN_8018c18c returns a host pointer (signature
  * widened from the guest's 32-bit return — sole caller is
