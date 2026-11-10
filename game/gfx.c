@@ -2,9 +2,9 @@
  *
  * Guest globals bound via g_* arena pointers (bind.c).
  * Pointer-compressed fields (& 0xffffff tags) round-trip through
- * guest_of(); FUN_8018c18c returns a host pointer (signature
+ * guest_of(); spr_desc_slot_alloc returns a host pointer (signature
  * widened from the guest's 32-bit return — sole caller is
- * FUN_8018c824 in this file). */
+ * spr_slot_pkt_submit in this file). */
 #include <stdint.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -27,18 +27,18 @@ typedef int      int32_t_ghidra;
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
 
-void FUN_80191428(undefined4,undefined4);
+void gpu_load_image_cmd(undefined4,undefined4);
 void FUN_801941e0(int,int,int,uint,byte *);
-undefined1 * FUN_8018e490(uint32_t *,uint32_t *,int);
-void FUN_8018e550(const char *, ...);
-void  FUN_80193d08(uint32_t *,undefined1,int);
+undefined1 * guest_memcpy(uint32_t *,uint32_t *,int);
+void printf_forward(const char *, ...);
+void  guest_memset(uint32_t *,undefined1,int);
 void  cd_dispatch_tblc(void);
-void  FUN_80193d30(uint);
-undefined4 FUN_80193424(uint);
-void  FUN_801921c0(int,ushort *);
-undefined4 FUN_8019b1e4(void);
-uint32_t br2_gpu_invoke(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
-void  FUN_801911e4(undefined4,short *);
+void  bios_call_a0(uint);
+undefined4 gpu_mode_regs_apply(uint);
+void  gpu_prim_pkt_build(int,ushort *);
+undefined4 gp_bde20_read(void);
+uint32_t gpu_invoke(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+void  gpu_rect_bounds_dbg(undefined4,short *);
 
 /* ---- guest globals ---- */
 extern uint8_t *g_DAT_801b55dc;
@@ -93,38 +93,38 @@ extern char *s__Id__sys_c_v_1_140_1998_01_12_07_801b82d8;
 
 /* GPU func table: PTR_PTR_801b8318 -> 0x801b82d8 (verified in
  * payload). Entries are guest addrs of libgpu syscall impls;
- * dispatch via br2_gpu_invoke (weak no-op until ported). */
+ * dispatch via gpu_invoke (weak no-op until ported). */
 #define GPU_TBL()  ((uint32_t *)guest_at(*(uint32_t *)guest_at(0x801b8318)))
-static uint32_t br2_gpu_call(uint32_t off, uint32_t a0, uint32_t a1,
+static uint32_t gpu_call(uint32_t off, uint32_t a0, uint32_t a1,
                          uint32_t a2, uint32_t a3)
 {
     uint32_t *t = GPU_TBL();
-    return br2_gpu_invoke(t[off >> 2], a0, a1, a2, a3);
+    return gpu_invoke(t[off >> 2], a0, a1, a2, a3);
 }
 #define GPU_ADDR(p) guest_of((const void *)(uintptr_t)(p))
-/* PSX callers hand FUN_80191428 a stack RECT (x,y,w,h s16 x4); the
+/* PSX callers hand gpu_load_image_cmd a stack RECT (x,y,w,h s16 x4); the
  * port has no guest stack, so stage the 8-byte rect in scratchpad
  * and pass its guest address. 0x1f801000 is past the CD channel
  * blocks (0x1f800e00/0x1f800f00), the save-dialog buffer
  * (0x1f800f80) and the CD scratch cells (0x1f800f30/0x1f800f40). */
-static uint32_t br2_gpu_rect(const void *p)
+static uint32_t gpu_rect(const void *p)
 {
     memcpy(guest_at(0x1f801000), p, 8);
     return 0x1f801000;
 }
 #define DB16(a) (*(uint16_t *)guest_at(a))
 #define DB32(a) (*(uint32_t *)guest_at(a))
-static void br2_gpu_dbg(const char *fmt, ...)
+static void gpu_dbg(const char *fmt, ...)
 {
     /* PTR_FUN_801b831c -> debug/trace printf (guest func addr) */
     uint32_t fn = *(uint32_t *)guest_at(0x801b831c);
     (void)fn; (void)fmt;
 }
-#define GPU_DBG(...) br2_gpu_dbg(__VA_ARGS__)
+#define GPU_DBG(...) gpu_dbg(__VA_ARGS__)
 
 /* ======== 0x8018bd50 ======== */
 
-void FUN_8018bd50(uint *param_1,int param_2)
+void gpu_pkt_unlink_n(uint *param_1,int param_2)
 
 {
   uint uVar1;
@@ -163,7 +163,7 @@ void FUN_8018bd50(uint *param_1,int param_2)
 
 /* ======== 0x8018bf40 ======== */
 
-void FUN_8018bf40(int param_1,short param_2,short param_3,int param_4)
+void spr_draw_off(int param_1,short param_2,short param_3,int param_4)
 
 {
   short local_10;
@@ -174,7 +174,7 @@ void FUN_8018bf40(int param_1,short param_2,short param_3,int param_4)
   
   /* param_1 is a guest address (callers pass the heap cursor
    * _DAT_801e3cfc); resolve before dereferencing. param_1 + 0x14
-   * stays a guest address for FUN_80191428's a1. */
+   * stays a guest address for gpu_load_image_cmd's a1. */
   hp = (uint8_t *)guest_at((uint32_t)param_1);
   if ((*(uint *)(hp + 4) & 8) != 0) {
     param_1 = param_1 + *(int *)(hp + 8);
@@ -188,13 +188,13 @@ void FUN_8018bf40(int param_1,short param_2,short param_3,int param_4)
   }
   local_c = *(undefined2 *)(hp + 0x10);
   local_a = *(undefined2 *)(hp + 0x12);
-  FUN_80191428(br2_gpu_rect(&local_10),(undefined4)(param_1 + 0x14));
+  gpu_load_image_cmd(gpu_rect(&local_10),(undefined4)(param_1 + 0x14));
   return;
 }
 
 /* ======== 0x8018bec0 ======== */
 
-void FUN_8018bec0(int param_1,short param_2,short param_3,int param_4)
+void spr_draw_cond(int param_1,short param_2,short param_3,int param_4)
 
 {
   short local_10;
@@ -203,7 +203,7 @@ void FUN_8018bec0(int param_1,short param_2,short param_3,int param_4)
   undefined2 local_a;
   uint8_t *hp;
   
-  /* param_1 is a guest address; see FUN_8018bf40. */
+  /* param_1 is a guest address; see spr_draw_off. */
   hp = (uint8_t *)guest_at((uint32_t)param_1);
   if ((*(uint *)(hp + 4) & 8) != 0) {
     local_10 = param_2;
@@ -214,25 +214,25 @@ void FUN_8018bec0(int param_1,short param_2,short param_3,int param_4)
     }
     local_c = *(undefined2 *)(hp + 0x10);
     local_a = *(undefined2 *)(hp + 0x12);
-    FUN_80191428(br2_gpu_rect(&local_10),(undefined4)(param_1 + 0x14));
+    gpu_load_image_cmd(gpu_rect(&local_10),(undefined4)(param_1 + 0x14));
   }
   return;
 }
 
 /* ======== 0x8018bfcc ======== */
 
-void FUN_8018bfcc(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
+void spr_draw_pair(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
                  undefined4 param_5,undefined4 param_6,undefined4 param_7)
 
 {
-  FUN_8018bf40(param_1,param_5,param_6,param_7);
-  FUN_8018bec0(param_1,param_2,param_3,param_4);
+  spr_draw_off(param_1,param_5,param_6,param_7);
+  spr_draw_cond(param_1,param_2,param_3,param_4);
   return;
 }
 
 /* ======== 0x8018c034 ======== */
 
-void FUN_8018c034(void)
+void spr_desc_tbl_a_init(void)
 
 {
   int iVar2;
@@ -258,7 +258,7 @@ void FUN_8018c034(void)
 
 /* ======== 0x8018c118 ======== */
 
-void FUN_8018c118(void)
+void spr_desc_tbl_b_init(void)
 
 {
   int iVar2;
@@ -285,8 +285,8 @@ void FUN_8018c118(void)
 /* ======== 0x8018c18c ======== */
 
 /* Guest returned a 32-bit guest pointer; widened to host pointer —
- * sole caller FUN_8018c824 is in this file. */
-void *FUN_8018c18c(void)
+ * sole caller spr_slot_pkt_submit is in this file. */
+void *spr_desc_slot_alloc(void)
 
 {
   uint32_t uVar1;
@@ -311,7 +311,7 @@ void *FUN_8018c18c(void)
 
 /* ======== 0x8018c824 ======== */
 
-undefined4 FUN_8018c824(uint *param_1,undefined4 param_2,undefined4 param_3,uint param_4)
+undefined4 spr_slot_pkt_submit(uint *param_1,undefined4 param_2,undefined4 param_3,uint param_4)
 
 {
   uint *puVar1;
@@ -322,7 +322,7 @@ undefined4 FUN_8018c824(uint *param_1,undefined4 param_2,undefined4 param_3,uint
   /* param_1 carries a guest address (callers pass _DAT_1f800008+n);
    * resolve the head cell before touching it. */
   cell = (uint32_t *)guest_at((uint32_t)(uintptr_t)param_1);
-  puVar1 = (uint *)FUN_8018c18c();
+  puVar1 = (uint *)spr_desc_slot_alloc();
   if (puVar1 == (uint *)0x0) {
     uVar2 = 0xffffffff;
   }
@@ -349,45 +349,45 @@ undefined4 FUN_8018c824(uint *param_1,undefined4 param_2,undefined4 param_3,uint
 
 /* ======== 0x80191428 ======== */
 
-void FUN_80191428(undefined4 param_1,undefined4 param_2)
+void gpu_load_image_cmd(undefined4 param_1,undefined4 param_2)
 
 {
-  FUN_801911e4(guest_of(s_LoadImage_80125504),(short *)(uintptr_t)param_1);
-  br2_gpu_call(8,GPU_TBL()[8],param_1,8,param_2);
+  gpu_rect_bounds_dbg(guest_of(s_LoadImage_80125504),(short *)(uintptr_t)param_1);
+  gpu_call(8,GPU_TBL()[8],param_1,8,param_2);
   return;
 }
 
 /* ======== 0x80191300 ======== */
 
-void FUN_80191300(undefined4 param_1,uint param_2,uint param_3,uint param_4)
+void gpu_clear_image_cmd(undefined4 param_1,uint param_2,uint param_3,uint param_4)
 
 {
-  FUN_801911e4(guest_of(s_ClearImage_801254ec),(short *)(uintptr_t)param_1);
-  br2_gpu_call(8,GPU_TBL()[3],param_1,8,
+  gpu_rect_bounds_dbg(guest_of(s_ClearImage_801254ec),(short *)(uintptr_t)param_1);
+  gpu_call(8,GPU_TBL()[3],param_1,8,
                (param_4 & 0xff) << 0x10 | (param_3 & 0xff) << 8 | param_2 & 0xff);
   return;
 }
 
 /* ======== 0x80191390 ======== */
 
-void FUN_80191390(undefined4 param_1,uint param_2,uint param_3,uint param_4)
+void gpu_clear_image_cmd2(undefined4 param_1,uint param_2,uint param_3,uint param_4)
 
 {
-  FUN_801911e4(guest_of(s_ClearImage2_801254f8),(short *)(uintptr_t)param_1);
-  br2_gpu_call(8,GPU_TBL()[3],param_1,8,
+  gpu_rect_bounds_dbg(guest_of(s_ClearImage2_801254f8),(short *)(uintptr_t)param_1);
+  gpu_call(8,GPU_TBL()[3],param_1,8,
                (param_4 & 0xff) << 0x10 | (param_3 & 0xff) << 8 | 0x80000000 | param_2 & 0xff);
   return;
 }
 
 /* ======== 0x80191668 ======== */
 
-void FUN_80191668(uint32_t param_1,uint32_t param_2)
+void gpu_clear_otag_r(uint32_t param_1,uint32_t param_2)
 
 {
   if (1 < DAT_801b8322) {
     GPU_DBG(s_ClearOTagR__08x__d_____80125540,param_1,param_2);
   }
-  br2_gpu_call(0x2c,GPU_TBL()[11],param_1,param_2,0);
+  gpu_call(0x2c,GPU_TBL()[11],param_1,param_2,0);
   DAT_801b83e0 = 0x41b83cc;
   *(uint32_t *)guest_at(param_1) = 0x1b83e0;
   return;
@@ -395,19 +395,19 @@ void FUN_80191668(uint32_t param_1,uint32_t param_2)
 
 /* ======== 0x80191770 ======== */
 
-void FUN_80191770(undefined4 param_1)
+void gpu_draw_otag(undefined4 param_1)
 
 {
   if (1 < DAT_801b8322) {
     GPU_DBG(s_DrawOTag__08x_____80125558,param_1);
   }
-  br2_gpu_call(8,GPU_TBL()[6],param_1,0,0);
+  gpu_call(8,GPU_TBL()[6],param_1,0,0);
   return;
 }
 
 /* ======== 0x801917e0 ======== */
 
-int FUN_801917e0(int param_1)
+int gpu_draw_env_put(int param_1)
 
 {
   undefined *puVar1;
@@ -417,27 +417,27 @@ int FUN_801917e0(int param_1)
   if (1 < DAT_801b8322) {
     GPU_DBG(s_PutDrawEnv__08x_____8012556c,param_1);
   }
-  FUN_801921c0(param_1 + 0x1c,(ushort *)(uintptr_t)param_1);
+  gpu_prim_pkt_build(param_1 + 0x1c,(ushort *)(uintptr_t)param_1);
   *(uint32_t *)((char *)hp + 0x1c) = *(uint32_t *)((char *)hp + 0x1c) | 0xffffff;
-  br2_gpu_call(8,GPU_TBL()[6],param_1 + 0x1c,0x40,0);
-  FUN_8018e490((uint32_t *)0x801b8330,(uint32_t *)param_1,0x5c);
+  gpu_call(8,GPU_TBL()[6],param_1 + 0x1c,0x40,0);
+  guest_memcpy((uint32_t *)0x801b8330,(uint32_t *)param_1,0x5c);
   return param_1;
 }
 
 /* ======== 0x80191ed8 ======== */
 
-uint FUN_80191ed8(void)
+uint gpu_stat_sign(void)
 
 {
   uint uVar1;
   
-  uVar1 = br2_gpu_call(0x38,0,0,0,0);
+  uVar1 = gpu_call(0x38,0,0,0,0);
   return uVar1 >> 0x1f;
 }
 
 /* ======== 0x801910e4 ======== */
 
-void FUN_801910e4(int param_1)
+void gpu_disp_mask_set(int param_1)
 
 {
   undefined4 uVar1;
@@ -446,31 +446,31 @@ void FUN_801910e4(int param_1)
     GPU_DBG(s_SetDispMask__d_____801254a0,param_1);
   }
   if (param_1 == 0) {
-    FUN_80193d08((uint32_t *)0x801b838c,0xff,0x14);
+    guest_memset((uint32_t *)0x801b838c,0xff,0x14);
   }
   uVar1 = 0x3000001;
   if (param_1 != 0) {
     uVar1 = 0x3000000;
   }
-  br2_gpu_call(0x10,uVar1,0,0,0);
+  gpu_call(0x10,uVar1,0,0,0);
   return;
 }
 
 /* ======== 0x8019117c ======== */
 
-void FUN_8019117c(undefined4 param_1)
+void gpu_draw_sync(undefined4 param_1)
 
 {
   if (1 < DAT_801b8322) {
     GPU_DBG(s_DrawSync__d_____801254b4,param_1);
   }
-  br2_gpu_call(0x3c,GPU_TBL()[15],param_1,0,0);
+  gpu_call(0x3c,GPU_TBL()[15],param_1,0,0);
   return;
 }
 
 /* ======== 0x80190e00 ======== */
 
-uint FUN_80190e00(uint param_1)
+uint gpu_graph_reset(uint param_1)
 
 {
   uint uVar1;
@@ -478,18 +478,18 @@ uint FUN_80190e00(uint param_1)
   uVar1 = param_1 & 7;
   if (uVar1 == 3) {
 LAB_80190e4c:
-    FUN_8018e550(s_ResetGraph_jtb__08x_env__08x_80125410,
+    printf_forward(s_ResetGraph_jtb__08x_env__08x_80125410,
                  (uint32_t *)0x801b82d8,(uint32_t *)0x801b8320);
 LAB_80190e68:
-    FUN_80193d08((uint32_t *)0x801b8320,0,0x80);
+    guest_memset((uint32_t *)0x801b8320,0,0x80);
     cd_dispatch_tblc();
-    FUN_80193d30((*(uint32_t *)guest_at(0x801b8318)) & 0xffffff);
-    DAT_801b8320 = (uint8_t)FUN_80193424(param_1);
+    bios_call_a0((*(uint32_t *)guest_at(0x801b8318)) & 0xffffff);
+    DAT_801b8320 = (uint8_t)gpu_mode_regs_apply(param_1);
     DAT_801b8321 = 1;
     DAT_801b8324 = *(undefined2 *)((char *)guest_at(0x801b83a0) + (uint)DAT_801b8320 * 4);
     DAT_801b8326 = *(undefined2 *)((char *)guest_at(0x801b83ac) + (uint)DAT_801b8320 * 4);
-    FUN_80193d08((uint32_t *)0x801b8330,0xff,0x5c);
-    FUN_80193d08((uint32_t *)0x801b838c,0xff,0x14);
+    guest_memset((uint32_t *)0x801b8330,0xff,0x5c);
+    guest_memset((uint32_t *)0x801b838c,0xff,0x14);
     uVar1 = (uint)DAT_801b8320;
   }
   else {
@@ -500,7 +500,7 @@ LAB_80190e68:
     if (1 < DAT_801b8322) {
       GPU_DBG(s_ResetGraph__d_____80125430,param_1);
     }
-    uVar1 = br2_gpu_call(0x34,GPU_TBL()[13],1,0,0);
+    uVar1 = gpu_call(0x34,GPU_TBL()[13],1,0,0);
   }
   return uVar1;
 }
@@ -532,11 +532,11 @@ uint32_t draw_env_timing(uint32_t param_1)
   if (1 < DAT_801b8322) {
     GPU_DBG(s_PutDispEnv__08x_____801255a0,param_1);
   }
-  br2_gpu_call(0x10,((env[1] & 0x3ff) << 10 | env[0] & 0x3ff | 0x5000000),0,0,0);
+  gpu_call(0x10,((env[1] & 0x3ff) << 10 | env[0] & 0x3ff | 0x5000000),0,0,0);
   if ((((DB32(0x801b839c) != *(int *)(env + 8)) || (DB16(0x801b838c) != env[0])) ||
       (DB16(0x801b838e) != env[1])) ||
      ((DB16(0x801b8390) != env[2] || (DB16(0x801b8392) != env[3])))) {
-    cVar3 = FUN_8019b1e4();
+    cVar3 = gp_bde20_read();
     *(char *)(env + 9) = cVar3;
     if (cVar3 == '\x01') {
       uVar10 = 0x8000008;
@@ -572,13 +572,13 @@ uint32_t draw_env_timing(uint32_t param_1)
     if (!bVar2) {
       uVar10 = uVar10 | 0x24;
     }
-    br2_gpu_call(0x10,uVar10,0,0,0);
+    gpu_call(0x10,uVar10,0,0,0);
     *(undefined1 *)(env + 9) = 8;
   }
   if (((DB16(0x801b8394) == env[4]) && (DB16(0x801b8396) == env[5])) &&
      ((DB16(0x801b8398) == env[6] && ((DB16(0x801b839a) == env[7] && ((char)env[9] != '\b'))))))
    goto LAB_80191e74;
-  cVar3 = FUN_8019b1e4();
+  cVar3 = gp_bde20_read();
   *(char *)(env + 9) = cVar3;
   uVar10 = (int)(short)env[5] + 0x13;
   if (cVar3 == '\0') {
@@ -656,10 +656,10 @@ LAB_80191e0c:
       }
     }
   }
-  br2_gpu_call(0x10,(uVar7 & 0xfff) << 0xc | uVar8 & 0xfff | 0x6000000,0,0,0);
-  br2_gpu_call(0x10,(uVar10 & 0x3ff) << 10 | uVar6 & 0x3ff | 0x7000000,0,0,0);
+  gpu_call(0x10,(uVar7 & 0xfff) << 0xc | uVar8 & 0xfff | 0x6000000,0,0,0);
+  gpu_call(0x10,(uVar10 & 0x3ff) << 10 | uVar6 & 0x3ff | 0x7000000,0,0,0);
 LAB_80191e74:
-  FUN_8018e490((uint32_t *)0x801b838c,(uint32_t *)param_1,0x14);
+  guest_memcpy((uint32_t *)0x801b838c,(uint32_t *)param_1,0x14);
   return param_1;
 }
 
@@ -673,7 +673,7 @@ extern uint32_t gpu_texpage_pack(uint16_t *);
 extern uint32_t cd_u16_swap_store(int);
 extern uint32_t gpu_status_cmd(uint);
 extern void cd_chan_reg_init(int);
-extern void FUN_8019b308(void);
+extern void cd_ext_init_once(void);
 extern void cd_u16_table_store(int,uint32_t,int);
 uint32_t bios_call(uint32_t,uint32_t);
 
@@ -689,7 +689,7 @@ extern char *s__Id__sys_c_v_1_140_1998_01_12_07_801b82d8;
 
 /* ======== 0x80193d08 ======== */
 
-void FUN_80193d08(uint32_t *param_1,undefined1 param_2,int param_3)
+void guest_memset(uint32_t *param_1,undefined1 param_2,int param_3)
 
 {
   int iVar1;
@@ -708,7 +708,7 @@ void FUN_80193d08(uint32_t *param_1,undefined1 param_2,int param_3)
 
 /* ======== 0x8018e490 ======== */
 
-undefined1 * FUN_8018e490(uint32_t *param_1,uint32_t *param_2,int param_3)
+undefined1 * guest_memcpy(uint32_t *param_1,uint32_t *param_2,int param_3)
 
 {
   undefined1 uVar1;
@@ -733,7 +733,7 @@ undefined1 * FUN_8018e490(uint32_t *param_1,uint32_t *param_2,int param_3)
 
 /* ======== 0x801921c0 ======== */
 
-void FUN_801921c0(int param_1,ushort *param_2)
+void gpu_prim_pkt_build(int param_1,ushort *param_2)
 
 {
   ushort uVar1;
@@ -803,7 +803,7 @@ void FUN_801921c0(int param_1,ushort *param_2)
 
 /* ======== 0x80193424 ======== */
 
-undefined4 FUN_80193424(uint param_1)
+undefined4 gpu_mode_regs_apply(uint param_1)
 
 {
   undefined4 uVar1;
@@ -831,8 +831,8 @@ LAB_801934f4:
     GPTRW(0x801b8434) = 0x401;
     GPTRW(0x801b8444) = GPTRW(0x801b8444) | 0x800;
     GP32(0x801b8428) = 0;
-    FUN_80193d08((uint32_t *)0x801fad68,0,0x100);
-    FUN_80193d08((uint32_t *)0x801fae70,0,0x1800);
+    guest_memset((uint32_t *)0x801fad68,0,0x100);
+    guest_memset((uint32_t *)0x801fae70,0,0x1800);
   }
 LAB_80193540:
   cd_u16_swap_store(GP32(0x801b8458));
@@ -845,7 +845,7 @@ LAB_80193540:
 
 /* ======== 0x80193d30 ======== */
 
-void FUN_80193d30(uint param_1)
+void bios_call_a0(uint param_1)
 
 {
   /* guest: jr 0xa0 — kernel/BIOS call trampoline */
@@ -855,7 +855,7 @@ void FUN_80193d30(uint param_1)
 
 /* ======== 0x801911e4 ======== */
 
-void FUN_801911e4(undefined4 param_1,short *param_2)
+void gpu_rect_bounds_dbg(undefined4 param_1,short *param_2)
 
 {
   int iVar1;
@@ -881,15 +881,15 @@ void FUN_801911e4(undefined4 param_1,short *param_2)
     }
     pcVar2 = (char *)guest_at(0x801254e8);
   }
-  br2_gpu_dbg(pcVar2,param_1);
-  br2_gpu_dbg(s___d__d____d__d__801254d4,(int)rc[0],(int)rc[1],(int)rc[2],
+  gpu_dbg(pcVar2,param_1);
+  gpu_dbg(s___d__d____d__d__801254d4,(int)rc[0],(int)rc[1],(int)rc[2],
               (int)rc[3]);
   return;
 }
 
 /* ======== 0x8019b1e4 ======== */
 
-undefined4 FUN_8019b1e4(void)
+undefined4 gp_bde20_read(void)
 
 {
   return GP32(0x801bde20);
@@ -897,7 +897,7 @@ undefined4 FUN_8019b1e4(void)
 
 /* ======== 0x8019b220 ======== */
 
-void FUN_8019b220(int param_1)
+void cd_chan_boot_init(int param_1)
 
 {
   undefined2 *puVar1;
@@ -916,7 +916,7 @@ void FUN_8019b220(int param_1)
       puVar1 = puVar1 + -1;
     } while (-1 < iVar2);
   }
-  FUN_8019b308();
+  cd_ext_init_once();
   GP32(0x801bde44) = 0;
   GP32(0x801bde48) = 0;
   GP32(0x801bde54) = 0;
@@ -941,9 +941,9 @@ void FUN_8019b220(int param_1)
 /* ---- batch28: printf-forwarder + sprite-attr inits ---- */
 extern uint32_t printf_core(uint32_t,const uint8_t *,const uint32_t *);
 
-/* FUN_8018e550 — printf-style forwarder: packs up to 3 varargs and
+/* printf_forward — printf-style forwarder: packs up to 3 varargs and
  * calls printf_core(1, fmt, &args). Verbatim from decompile. */
-void FUN_8018e550(const char *param_1, ...)
+void printf_forward(const char *param_1, ...)
 {
   uint32_t args[8];
   va_list ap;
@@ -962,7 +962,7 @@ void sprite_attr_init_a(uint32_t param_1,uint16_t param_2,uint16_t param_3,
   int iVar2;
   uint16_t *p1 = (uint16_t *)guest_at(param_1);
   uint8_t *b = (uint8_t *)p1;
-  iVar2 = FUN_8019b1e4();
+  iVar2 = gp_bde20_read();
   p1[0] = param_2;
   p1[1] = param_3;
   p1[2] = param_4;
@@ -1006,7 +1006,7 @@ void sprite_attr_init_b(uint32_t param_1,uint16_t param_2,uint16_t param_3,
 
 /* bitfield_or_write — unaligned bitfield OR-write: inserts param_2 (8-bit
  * value) at bit offset derived from param_1 alignment. param_1 is a
- * host pointer (sole caller FUN_80136ddc passes arena ptrs). */
+ * host pointer (sole caller hud_sprite_desc_init passes arena ptrs). */
 void bitfield_or_write(const void *param_1,int param_2)
 {
   uintptr_t a = (uintptr_t)param_1;
@@ -1047,21 +1047,21 @@ void spr_desc_c(uint32_t param_1,uint32_t param_2)
 #define GB16S(a) (*(int16_t  *)guest_at(a))
 #define GB32S(a) (*(int32_t   *)guest_at(a))
 
-extern uint32_t FUN_80193e30(uint32_t,uint32_t,uint32_t);
-extern uint32_t FUN_80193d40(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
-extern void     FUN_80190dd0(uint32_t,uint32_t,uint32_t);
+extern uint32_t gpu_sprite_rect_emit(uint32_t,uint32_t,uint32_t);
+extern uint32_t gpu_sprite_rect_emit_mode(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+extern void     guest_memset_b(uint32_t,uint32_t,uint32_t);
 extern int32_t  text_win_printf(int32_t,uint32_t,uint32_t,uint32_t,...);
-extern void     FUN_80194140(uint32_t);
-extern void     FUN_80194120(uint32_t);
+extern void     gpu_pkt_tag_60(uint32_t);
+extern void     gpu_pkt_tag_74(uint32_t);
 extern void    *PTR_FUN_801b831c;
 
 /* text_win_init — text window init: two draw-env installs + clear. */
 void text_win_init(uint32_t param_1,int32_t param_2)
 {
-  GB32(0x801fad12) = FUN_80193e30(0x801b78c8,param_1,(uint32_t)(param_2 + 0x80));
-  GB32(0x801fad10) = FUN_80193d40(0x801b7ac8,0,0,param_1,(uint32_t)param_2,0x80,0x20);
+  GB32(0x801fad12) = gpu_sprite_rect_emit(0x801b78c8,param_1,(uint32_t)(param_2 + 0x80));
+  GB32(0x801fad10) = gpu_sprite_rect_emit_mode(0x801b7ac8,0,0,param_1,(uint32_t)param_2,0x80,0x20);
   GB8(0x801b78c0) = 0;
-  FUN_80190dd0(0x801b7740,0,0x180);
+  guest_memset_b(0x801b7740,0,0x180);
 }
 
 /* text_line_select — select active text line (bounds vs DAT_801b78c0). */
@@ -1093,7 +1093,7 @@ int32_t text_widget_alloc(uint16_t param_1,uint16_t param_2,int32_t param_3,
     FUN_801941e0((int)(0x801b7750 + slot),0,0,(uint32_t)GB32(0x801fad10),
                  (byte *)&local_30);
     if (param_5 != 0) {
-      FUN_80194140(0x801b7740 + slot);
+      gpu_pkt_tag_60(0x801b7740 + slot);
       GB8(0x801b7744 + slot) = 0;
       GB8(0x801b7745 + slot) = 0;
       GB8(0x801b7746 + slot) = 0;
@@ -1114,7 +1114,7 @@ int32_t text_widget_alloc(uint16_t param_1,uint16_t param_2,int32_t param_3,
     iVar1 = 0;
     if (0 < param_6) {
       do {
-        FUN_80194120((uint32_t)iVar2);
+        gpu_pkt_tag_74((uint32_t)iVar2);
         iVar1 = iVar1 + 1;
         GB16((uint32_t)iVar2 + 0xe) = GB16(0x801fad12);
         iVar2 += 0x10;
@@ -1130,7 +1130,7 @@ int32_t text_widget_alloc(uint16_t param_1,uint16_t param_2,int32_t param_3,
 }
 
 /* spr_attr_alloc_a — sprite-attr slot alloc with 0x5000000/0x28000000|
- * 0x2a000000 tag packing (same cluster as FUN_8018c18c/c824).
+ * 0x2a000000 tag packing (same cluster as spr_desc_slot_alloc/c824).
  * param_1 = guest address of the head pointer cell. */
 extern void *spr_pool_a_alloc(void);
 uint32_t spr_attr_alloc_a(uint32_t param_1,int16_t param_2,int16_t param_3,
@@ -1279,7 +1279,7 @@ LAB_8012c64c:
     spr_attr_alloc_b(iVar2,0x280080,0x177e001e,0x7a968080,0x100,0x48);
     spr_attr_alloc_b(iVar2,0x280100,0x177e001e,0x7a568080,0x180,0x48);
     spr_attr_alloc_b(iVar2,0x280180,0x1780001e,0x7a5680ff,0x200,0x48);
-    FUN_8018c824((uint *)guest_at(iVar2),(*(int16_t *)(st + 0x22) + -0x54) * 0x10000 |
+    spr_slot_pkt_submit((uint *)guest_at(iVar2),(*(int16_t *)(st + 0x22) + -0x54) * 0x10000 |
                  ((uint32_t)*(int16_t *)(st + 0x20) - 0x90U) & 0xffff,0x277e001e,
                  ((uint32_t)(iVar4 << 6) | 0x7e16U) << 0x10 | 0x9880);
     sprite_node_emit_a(iVar2,0,*(int16_t *)(st + 0x22) + -0x40,(int32_t)*(int16_t *)(st + 0x20),0x18,
@@ -1297,18 +1297,18 @@ LAB_8012cb64:
         iVar2 = param_2 + 4;
         hud_text_d(iVar2,uVar3,guest_at(0x8011f10c),0xc0,
                      (int32_t)(((uint32_t)*(uint16_t *)(st + 0x22) - 0x38) * 0x10000) >> 0x10,0);
-        FUN_8018c824((uint *)guest_at(iVar2),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xd8,0xf0f001e,0x7a16d830);
-        FUN_8018c824((uint *)guest_at(iVar2),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xe8,0xf0f001e,0x7a16d820);
-        FUN_8018c824((uint *)guest_at(iVar2),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xf8,0xf0f001e,0x7a16d810);
+        spr_slot_pkt_submit((uint *)guest_at(iVar2),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xd8,0xf0f001e,0x7a16d830);
+        spr_slot_pkt_submit((uint *)guest_at(iVar2),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xe8,0xf0f001e,0x7a16d820);
+        spr_slot_pkt_submit((uint *)guest_at(iVar2),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xf8,0xf0f001e,0x7a16d810);
         hud_text_d(iVar2,uVar3,guest_at(0x8011f110),0x120,
                      (int32_t)(((uint32_t)*(uint16_t *)(st + 0x22) - 0x38) * 0x10000) >> 0x10,0);
-        FUN_8018c824((uint *)guest_at(iVar2),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0x148,0xf0f001e,0x7a16d800);
+        spr_slot_pkt_submit((uint *)guest_at(iVar2),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0x148,0xf0f001e,0x7a16d800);
         goto LAB_8012c64c;
       }
       if (param_3 != 0x10) return;
       hud_text_d(param_2 + 4,uVar3,guest_at(0x8011f110),0x120,
                    (int32_t)(((uint32_t)*(uint16_t *)(st + 0x22) - 0x30) * 0x10000) >> 0x10,0);
-      FUN_8018c824((uint *)guest_at(param_2 + 4),((uint32_t)(*(int16_t *)(st + 0x22) + -0x34) * 0x10000) | 0x148,0xf0f001e,0x7a16d800);
+      spr_slot_pkt_submit((uint *)guest_at(param_2 + 4),((uint32_t)(*(int16_t *)(st + 0x22) + -0x34) * 0x10000) | 0x148,0xf0f001e,0x7a16d800);
     } else {
       if (param_3 == 0x30) {
         iVar2 = param_2 + 4;
@@ -1316,7 +1316,7 @@ LAB_8012cb64:
         spr_attr_alloc_b(iVar2,0x280080,0x177e001e,0x7a968080,0x100,0x48);
         spr_attr_alloc_b(iVar2,0x280100,0x177e001e,0x7a568080,0x180,0x48);
         spr_attr_alloc_b(iVar2,0x280180,0x1780001e,0x7a5680ff,0x200,0x48);
-        FUN_8018c824((uint *)guest_at(iVar2),((uint32_t)(*(int16_t *)(st + 0x22) + -0x54) * 0x10000) |
+        spr_slot_pkt_submit((uint *)guest_at(iVar2),((uint32_t)(*(int16_t *)(st + 0x22) + -0x54) * 0x10000) |
                      ((uint32_t)*(int16_t *)(st + 0x20) - 0x90U) & 0xffff,0x277e001e,
                      ((uint32_t)(iVar4 << 6) | 0x7e16U) << 0x10 | 0x9880);
         sprite_node_emit_a(iVar2,0,*(int16_t *)(st + 0x22) + -0x40,(int32_t)*(int16_t *)(st + 0x20),0x18,
@@ -1328,9 +1328,9 @@ LAB_8012cb64:
     iVar4 = param_2 + 4;
     hud_text_d(iVar4,uVar3,guest_at(0x8011f10c),0xc0,
                  (int32_t)(((uint32_t)*(uint16_t *)(st + 0x22) - 0x30) * 0x10000) >> 0x10,0);
-    FUN_8018c824((uint *)guest_at(iVar4),((uint32_t)(*(int16_t *)(st + 0x22) + -0x34) * 0x10000) | 0xd8,0xf0f001e,0x7a16d830);
-    FUN_8018c824((uint *)guest_at(iVar4),((uint32_t)(*(int16_t *)(st + 0x22) + -0x34) * 0x10000) | 0xe8,0xf0f001e,0x7a16d820);
-    FUN_8018c824((uint *)guest_at(iVar4),((uint32_t)(*(int16_t *)(st + 0x22) + -0x34) * 0x10000) | 0xf8,0xf0f001e,0x7a16d810);
+    spr_slot_pkt_submit((uint *)guest_at(iVar4),((uint32_t)(*(int16_t *)(st + 0x22) + -0x34) * 0x10000) | 0xd8,0xf0f001e,0x7a16d830);
+    spr_slot_pkt_submit((uint *)guest_at(iVar4),((uint32_t)(*(int16_t *)(st + 0x22) + -0x34) * 0x10000) | 0xe8,0xf0f001e,0x7a16d820);
+    spr_slot_pkt_submit((uint *)guest_at(iVar4),((uint32_t)(*(int16_t *)(st + 0x22) + -0x34) * 0x10000) | 0xf8,0xf0f001e,0x7a16d810);
     spr_attr_alloc_b(param_2,0x200000,0x1780001e,0x7a5680ff,0x80,0x40);
     spr_attr_alloc_b(param_2,0x200080,0x1780001e,0x7a9680ff,0x100,0x40);
     spr_attr_alloc_b(param_2,0x200100,0x177e001e,0x7a968080,0x180,0x40);
@@ -1786,50 +1786,50 @@ uint32_t sprite_9slice_build(uint32_t param_1,uint32_t param_2,uint32_t param_3,
 
 /* ---- shared externs for this batch ---- */
 extern int      FUN_8018e510(char *);
-void     FUN_8018fc00(uint32_t,uint32_t);
-void     FUN_8018fe5c(uint32_t);
-int32_t  FUN_8018fd1c(void);
-int32_t  FUN_8018fdb0(void);
-void     FUN_801a4aa0(uint32_t);
+void     mdec_decode_issue(uint32_t,uint32_t);
+void     mdec_error_reset(uint32_t);
+int32_t  mdec_stat_wait_a(void);
+int32_t  mdec_stat_wait_b(void);
+void     gp_20_store(uint32_t);
 
 /* MDEC reg cell: 0x801b68xx holds a guest pointer to a status reg. */
-static uint32_t *br2_mdec_reg(uint32_t cell)
+static uint32_t *mdec_reg(uint32_t cell)
 {
     return (uint32_t *)guest_at(DB32(cell));
 }
 
 /* ======== 0x8018fc00 ======== */
 
-void FUN_8018fc00(uint32_t param_1,uint32_t param_2)
+void mdec_decode_issue(uint32_t param_1,uint32_t param_2)
 
 {
   uint32_t sz;
   
-  FUN_8018fd1c();
-  *br2_mdec_reg(0x801b68f8) = *br2_mdec_reg(0x801b68f8) | 0x88;
+  mdec_stat_wait_a();
+  *mdec_reg(0x801b68f8) = *mdec_reg(0x801b68f8) | 0x88;
   *(uint32_t *)guest_at(DB32(0x801b68c0)) = param_1 + 4;
   sz = ((param_2 >> 5) << 0x10) | 0x20;
-  *br2_mdec_reg(0x801b68c4) = sz;
-  *br2_mdec_reg(0x801b68f0) = *(uint32_t *)guest_at(param_1);
-  *br2_mdec_reg(0x801b68c8) = 0x1000201;
+  *mdec_reg(0x801b68c4) = sz;
+  *mdec_reg(0x801b68f0) = *(uint32_t *)guest_at(param_1);
+  *mdec_reg(0x801b68c8) = 0x1000201;
   return;
 }
 
 /* ======== 0x8018fd1c ======== */
 
-int32_t FUN_8018fd1c(void)
+int32_t mdec_stat_wait_a(void)
 
 {
   int32_t cnt = 0x10;
   
-  if ((*br2_mdec_reg(0x801b68f4) & 0x20000000) != 0) {
+  if ((*mdec_reg(0x801b68f4) & 0x20000000) != 0) {
     for (;;) {
       cnt = cnt - 1;
       if (cnt == -1) {
-        FUN_8018fe5c(0x80125304);
+        mdec_error_reset(0x80125304);
         return -1;
       }
-      if ((*br2_mdec_reg(0x801b68f4) & 0x20000000) == 0) return 0;
+      if ((*mdec_reg(0x801b68f4) & 0x20000000) == 0) return 0;
     }
   }
   return 0;
@@ -1837,19 +1837,19 @@ int32_t FUN_8018fd1c(void)
 
 /* ======== 0x8018fdb0 ======== */
 
-int32_t FUN_8018fdb0(void)
+int32_t mdec_stat_wait_b(void)
 
 {
   int32_t cnt = 0x10;
   
-  if ((*br2_mdec_reg(0x801b68d4) & 0x100) != 0) {
+  if ((*mdec_reg(0x801b68d4) & 0x100) != 0) {
     for (;;) {
       cnt = cnt - 1;
       if (cnt == -1) {
-        FUN_8018fe5c(0x80125314);
+        mdec_error_reset(0x80125314);
         return -1;
       }
-      if ((*br2_mdec_reg(0x801b68d4) & 0x100) == 0) return 0;
+      if ((*mdec_reg(0x801b68d4) & 0x100) == 0) return 0;
     }
   }
   return 0;
@@ -1857,15 +1857,15 @@ int32_t FUN_8018fdb0(void)
 
 /* ======== 0x8018fe5c ======== */
 
-void FUN_8018fe5c(uint32_t param_1)
+void mdec_error_reset(uint32_t param_1)
 
 {
-  FUN_8018e550((const char *)guest_at(0x80125324),
+  printf_forward((const char *)guest_at(0x80125324),
                (const char *)guest_at(param_1));
-  *br2_mdec_reg(0x801b68f4) = 0x80000000;
-  *br2_mdec_reg(0x801b68c8) = 0;
-  *br2_mdec_reg(0x801b68d4) = 0;
-  *br2_mdec_reg(0x801b68f4) = 0x60000000;
+  *mdec_reg(0x801b68f4) = 0x80000000;
+  *mdec_reg(0x801b68c8) = 0;
+  *mdec_reg(0x801b68d4) = 0;
+  *mdec_reg(0x801b68f4) = 0x60000000;
   return;
 }
 
@@ -1875,21 +1875,21 @@ void mdec_pump_a(int32_t param_1)
 
 {
   if (param_1 == 0) {
-    *br2_mdec_reg(0x801b68f4) = 0x80000000;
-    *br2_mdec_reg(0x801b68c8) = 0;
-    *br2_mdec_reg(0x801b68d4) = 0;
-    *br2_mdec_reg(0x801b68f4) = 0x60000000;
-    FUN_8018fc00(0x801b67b0,0x20);
-    FUN_8018fc00(0x801b6834,0x20);
+    *mdec_reg(0x801b68f4) = 0x80000000;
+    *mdec_reg(0x801b68c8) = 0;
+    *mdec_reg(0x801b68d4) = 0;
+    *mdec_reg(0x801b68f4) = 0x60000000;
+    mdec_decode_issue(0x801b67b0,0x20);
+    mdec_decode_issue(0x801b6834,0x20);
   }
   else if (param_1 == 1) {
-    *br2_mdec_reg(0x801b68f4) = 0x80000000;
-    *br2_mdec_reg(0x801b68c8) = 0;
-    *br2_mdec_reg(0x801b68d4) = 0;
-    *br2_mdec_reg(0x801b68f4) = 0x60000000;
+    *mdec_reg(0x801b68f4) = 0x80000000;
+    *mdec_reg(0x801b68c8) = 0;
+    *mdec_reg(0x801b68d4) = 0;
+    *mdec_reg(0x801b68f4) = 0x60000000;
   }
   else {
-    FUN_8018e550((const char *)guest_at(0x801252e8),param_1);
+    printf_forward((const char *)guest_at(0x801252e8),param_1);
   }
   return;
 }
@@ -1901,19 +1901,19 @@ void mdec_pump_b(uint32_t param_1,uint32_t param_2)
 {
   uint32_t sz;
   
-  FUN_8018fdb0();
-  *br2_mdec_reg(0x801b68f8) = *br2_mdec_reg(0x801b68f8) | 0x88;
-  *br2_mdec_reg(0x801b68d4) = 0;
-  *br2_mdec_reg(0x801b68cc) = param_1;
+  mdec_stat_wait_b();
+  *mdec_reg(0x801b68f8) = *mdec_reg(0x801b68f8) | 0x88;
+  *mdec_reg(0x801b68d4) = 0;
+  *mdec_reg(0x801b68cc) = param_1;
   sz = ((param_2 >> 5) << 0x10) | 0x20;
-  *br2_mdec_reg(0x801b68d0) = sz;
-  *br2_mdec_reg(0x801b68d4) = 0x1000200;
+  *mdec_reg(0x801b68d0) = sz;
+  *mdec_reg(0x801b68d4) = 0x1000200;
   return;
 }
 
 /* ======== 0x80193fa0 ======== */
 
-uint32_t FUN_80193fa0(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+uint32_t gpu_bits_pack_a(uint32_t param_1,uint32_t param_2,uint32_t param_3,
                       uint32_t param_4)
 
 {
@@ -1924,7 +1924,7 @@ uint32_t FUN_80193fa0(uint32_t param_1,uint32_t param_2,uint32_t param_3,
 
 /* ======== 0x80193fe0 ======== */
 
-uint32_t FUN_80193fe0(uint32_t param_1,uint32_t param_2)
+uint32_t gpu_coord_pack_b(uint32_t param_1,uint32_t param_2)
 
 {
   return (((param_2 << 6) | ((param_1 >> 4) & 0x3f)) & 0xffff);
@@ -1932,7 +1932,7 @@ uint32_t FUN_80193fe0(uint32_t param_1,uint32_t param_2)
 
 /* ======== 0x80193e30 ======== */
 
-uint32_t FUN_80193e30(uint32_t param_1,uint32_t param_2,uint32_t param_3)
+uint32_t gpu_sprite_rect_emit(uint32_t param_1,uint32_t param_2,uint32_t param_3)
 
 {
   int16_t local_10[4];
@@ -1941,13 +1941,13 @@ uint32_t FUN_80193e30(uint32_t param_1,uint32_t param_2,uint32_t param_3)
   local_10[1] = (int16_t)param_3;
   local_10[2] = 0x10;
   local_10[3] = 1;
-  FUN_80191428(br2_gpu_rect(local_10),param_1);
-  return FUN_80193fe0(param_2,param_3) & 0xffff;
+  gpu_load_image_cmd(gpu_rect(local_10),param_1);
+  return gpu_coord_pack_b(param_2,param_3) & 0xffff;
 }
 
 /* ======== 0x80193d40 ======== */
 
-uint32_t FUN_80193d40(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+uint32_t gpu_sprite_rect_emit_mode(uint32_t param_1,uint32_t param_2,uint32_t param_3,
                       uint32_t param_4,uint32_t param_5,uint32_t param_6,
                       uint32_t param_7)
 
@@ -1971,13 +1971,13 @@ uint32_t FUN_80193d40(uint32_t param_1,uint32_t param_2,uint32_t param_3,
     f14 = (int16_t)param_6;
   }
   local_10[2] = f14;
-  FUN_80191428(br2_gpu_rect(local_10),param_1);
-  return FUN_80193fa0(param_2,param_3,param_4,param_5) & 0xffff;
+  gpu_load_image_cmd(gpu_rect(local_10),param_1);
+  return gpu_bits_pack_a(param_2,param_3,param_4,param_5) & 0xffff;
 }
 
 /* ======== 0x80194120 ======== */
 
-void FUN_80194120(uint32_t param_1)
+void gpu_pkt_tag_74(uint32_t param_1)
 
 {
   uint8_t *p = (uint8_t *)guest_at(param_1);
@@ -1988,7 +1988,7 @@ void FUN_80194120(uint32_t param_1)
 
 /* ======== 0x80194140 ======== */
 
-void FUN_80194140(uint32_t param_1)
+void gpu_pkt_tag_60(uint32_t param_1)
 
 {
   uint8_t *p = (uint8_t *)guest_at(param_1);
@@ -1999,7 +1999,7 @@ void FUN_80194140(uint32_t param_1)
 
 /* ======== 0x80190dd0 ======== */
 
-void FUN_80190dd0(uint32_t param_1,uint32_t param_2,uint32_t param_3)
+void guest_memset_b(uint32_t param_1,uint32_t param_2,uint32_t param_3)
 
 {
   uint8_t *d;
@@ -2027,7 +2027,7 @@ void FUN_80190dd0(uint32_t param_1,uint32_t param_2,uint32_t param_3)
  * affects %x (zero-pad into the digit buffer). Faithful quirks kept:
  * unknown specs emit `count` bytes from a stale pointer, return is the
  * final cursor pos, -1 on overflow. */
-static int32_t br2_twpuc(uint32_t slot,int32_t c)
+static int32_t win_putc(uint32_t slot,int32_t c)
 {
   uint32_t pos = GB32(slot + 0x28);
   uint8_t *buf = (uint8_t *)guest_at(GB32(slot + 0x24));
@@ -2085,14 +2085,14 @@ int32_t text_win_printf(int32_t param_1,uint32_t param_2,uint32_t param_3,
     c = (int8_t)*fmt;
     if (c == 0) break;
     if (c != 0x25) {                   /* '%' */
-      if (br2_twpuc(slot,c) < 0) { va_end(ap); return -1; }
+      if (win_putc(slot,c) < 0) { va_end(ap); return -1; }
       fmt = fmt + 1;
       continue;
     }
     fmt = fmt + 1;
     c = (int8_t)*fmt;
     if (c == 0x25) {                   /* '%%' */
-      if (br2_twpuc(slot,c) < 0) { va_end(ap); return -1; }
+      if (win_putc(slot,c) < 0) { va_end(ap); return -1; }
       fmt = fmt + 1;
       continue;
     }
@@ -2109,7 +2109,7 @@ int32_t text_win_printf(int32_t param_1,uint32_t param_2,uint32_t param_3,
       if (width <= 0) width = 1;
       ep = dtop;                        /* $s0 reset (br delay slot) */
       spec = (uint32_t)(c - 0x58);
-      if (spec >= 0x21) goto br2_emit_tail;   /* unknown: stale count/ep */
+      if (spec >= 0x21) goto emit_tail;   /* unknown: stale count/ep */
       if (c == 0x64) {                 /* 'd' */
         int32_t av = (int32_t)BR2_ARG();
         uint32_t ua;
@@ -2136,7 +2136,7 @@ int32_t text_win_printf(int32_t param_1,uint32_t param_2,uint32_t param_3,
           count = count + 1;
         }
         ep = sp;
-        goto br2_pad_tail;
+        goto pad_tail;
       }
       if ((c == 0x78) || (c == 0x58)) { /* 'x'/'X' */
         uint32_t hv = BR2_ARG();
@@ -2163,9 +2163,9 @@ int32_t text_win_printf(int32_t param_1,uint32_t param_2,uint32_t param_3,
               *hp = 0x30;
             } while (count < width);
           }
-          goto br2_emit_only;
+          goto emit_only;
         }
-        goto br2_pad_tail;
+        goto pad_tail;
       }
       if (c == 0x63) {                 /* 'c' */
         uint32_t av = BR2_ARG();
@@ -2173,30 +2173,30 @@ int32_t text_win_printf(int32_t param_1,uint32_t param_2,uint32_t param_3,
         *hp = (uint8_t)av;
         ep = hp;
         count = 1;
-        goto br2_pad_tail;
+        goto pad_tail;
       }
       if (c == 0x73) {                 /* 's' */
         ep = (const uint8_t *)guest_at(BR2_ARG());
         count = FUN_8018e510((char *)(uintptr_t)ep);
-        goto br2_pad_tail;
+        goto pad_tail;
       }
-      goto br2_pad_tail;               /* unreachable (spec<0x21 all mapped) */
-br2_emit_tail:
+      goto pad_tail;               /* unreachable (spec<0x21 all mapped) */
+emit_tail:
       ;
-br2_pad_tail:
+pad_tail:
       if (count < width) {
         do {
-          if (br2_twpuc(slot,0x20) < 0) { va_end(ap); return -1; }
+          if (win_putc(slot,0x20) < 0) { va_end(ap); return -1; }
           width = width - 1;
         } while (count < width);
       }
-br2_emit_only:
+emit_only:
       count = count - 1;
       if (count != -1) {
         do {
           int32_t ch = *ep;
           ep = ep + 1;
-          if (br2_twpuc(slot,ch) < 0) { va_end(ap); return -1; }
+          if (win_putc(slot,ch) < 0) { va_end(ap); return -1; }
           count = count - 1;
         } while (count != -1);
       }
@@ -2215,7 +2215,7 @@ br2_emit_only:
 
 /* ======== 0x801a4aa0 ======== */
 
-void FUN_801a4aa0(uint32_t param_1)
+void gp_20_store(uint32_t param_1)
 
 {
   /* $gp = 0x801beedc (set at 0x801261f8: lui/addiu $gp); +0x20 cell */
@@ -2225,16 +2225,16 @@ void FUN_801a4aa0(uint32_t param_1)
 
 /* ======== 0x801a6ae8 ======== */
 
-void FUN_801a6ae8(void)
+void gp_20_store_default(void)
 
 {
-  FUN_801a4aa0(0x801b17b4);
+  gp_20_store(0x801b17b4);
   return;
 }
 
 /* ======== 0x801ad59c ======== */
 
-int32_t FUN_801ad59c(uint32_t param_1,int32_t param_2)
+int32_t aux_tbl_store_a(uint32_t param_1,int32_t param_2)
 
 {
   if (param_2 < 5) {
@@ -2246,7 +2246,7 @@ int32_t FUN_801ad59c(uint32_t param_1,int32_t param_2)
 
 /* ======== 0x801ad1e4 ======== */
 
-int32_t FUN_801ad1e4(uint32_t param_1,int32_t param_2)
+int32_t aux_tbl_store_b(uint32_t param_1,int32_t param_2)
 
 {
   if (param_2 < 5) {
@@ -2320,18 +2320,18 @@ void spr_tbl_init_b(void)
   *(uint32_t *)guest_at(0x801b55e8) = 0;
 }
 
-/* FUN_8018f9b4 — GPU packet attr bit setter on host word *a0:
+/* gpu_pkt_attr_set — GPU packet attr bit setter on host word *a0:
  * a1 bit0: set->clear bit27, clear->set bit27; a1 bit1: set->set
- * bit9, clear->clear bit9; then FUN_8018fc00(lhu(*a0)).
+ * bit9, clear->clear bit9; then mdec_decode_issue(lhu(*a0)).
  * Disasm 0x8018f9b4-0x8018fa28. */
-void FUN_8018f9b4(uint32_t param_1,int param_2)
+void gpu_pkt_attr_set(uint32_t param_1,int param_2)
 {
   uint32_t *w = (uint32_t *)guest_at(param_1);
   if (param_2 & 1) *w &= 0xf7ffffff;
   else             *w |= 0x08000000;
   if (param_2 & 2) *w |= 0x00000200;
   else             *w &= 0xfffffdff;
-  FUN_8018fc00(param_1,*(uint16_t *)w);
+  mdec_decode_issue(param_1,*(uint16_t *)w);
 }
 
 /* vram_tile_decode — VRAM tile RLE decoder + XOR descramble. Control bytes
@@ -2437,7 +2437,7 @@ uint32_t gpu_texpage_pack(uint16_t *a0_)
  * >=dim -> dim-1, in-range keeps original arg. Result
  * 0xe3000000/0xe4000000 | (x&0x3ff) | ((y&0x3ff)<<10).
  * Disasm 0x80192450-0x80192578. */
-static uint32_t br2_coord_clamp(uint32_t v, uint32_t dimaddr)
+static uint32_t coord_clamp(uint32_t v, uint32_t dimaddr)
 {
   uint8_t *p = (uint8_t *)guest_at(dimaddr);
   int32_t x = (int16_t)v;
@@ -2449,14 +2449,14 @@ static uint32_t br2_coord_clamp(uint32_t v, uint32_t dimaddr)
 }
 uint32_t gpu_coord_clamp_a(uint32_t a0,uint32_t a1)
 {
-  uint32_t x = br2_coord_clamp(a0,0x801c8324);
-  uint32_t y = br2_coord_clamp(a1,0x801c8326);
+  uint32_t x = coord_clamp(a0,0x801c8324);
+  uint32_t y = coord_clamp(a1,0x801c8326);
   return ((y & 0x3ff) << 10) | (x & 0x3ff) | 0xe3000000;
 }
 uint32_t gpu_coord_clamp_b(uint32_t a0,uint32_t a1)
 {
-  uint32_t x = br2_coord_clamp(a0,0x801c8324);
-  uint32_t y = br2_coord_clamp(a1,0x801c8326);
+  uint32_t x = coord_clamp(a0,0x801c8324);
+  uint32_t y = coord_clamp(a1,0x801c8326);
   return ((y & 0x3ff) << 10) | (x & 0x3ff) | 0xe4000000;
 }
 
@@ -2553,7 +2553,7 @@ void guest_noop(void) { }
 /* Sprite-rect packet fill: pkt+3=2, pkt+4=coord-pack(lh@r+0,lh@r+2)
  * via gpu_coord_clamp_a, pkt+8=gpu_coord_clamp_b(s16(u16@0+u16@4-1),
  * s16(u16@2+u16@6-1)). a0=pkt host, a1=rect host. */
-void FUN_80191f08(uint32_t *pkt, uint16_t *r)
+void sprite_rect_pkt_fill(uint32_t *pkt, uint16_t *r)
 {
   ((uint8_t *)pkt)[3] = 2;
   pkt[1] = gpu_coord_clamp_a((uint32_t)(int16_t)r[0],

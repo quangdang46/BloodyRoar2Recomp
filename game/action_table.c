@@ -22,7 +22,7 @@
 static uint32_t rd32(const uint8_t *p) { uint32_t v; memcpy(&v, p, 4); return v; }
 static uint16_t rd16(const uint8_t *p) { uint16_t v; memcpy(&v, p, 2); return v; }
 
-const ActHeader *br2_act_header(const uint8_t *blob)
+const ActHeader *act_header(const uint8_t *blob)
 {
     return (const ActHeader *)blob;
 }
@@ -31,7 +31,7 @@ const ActHeader *br2_act_header(const uint8_t *blob)
 static const uint8_t *sec_ptr(const uint8_t *blob, int sec,
                               uint32_t runtime_base)
 {
-    const ActHeader *h = br2_act_header(blob);
+    const ActHeader *h = act_header(blob);
     if (sec < 0 || sec > 15) return NULL;
     uint32_t v = h->sec_off[sec];
     if (v == 0) return NULL;
@@ -42,7 +42,7 @@ static const uint8_t *sec_ptr(const uint8_t *blob, int sec,
     return NULL;
 }
 
-const uint8_t *br2_act_sec(const uint8_t *blob, int sec, uint32_t runtime_base)
+const uint8_t *act_sec(const uint8_t *blob, int sec, uint32_t runtime_base)
 {
     return sec_ptr(blob, sec, runtime_base);
 }
@@ -52,7 +52,7 @@ const uint8_t *br2_act_sec(const uint8_t *blob, int sec, uint32_t runtime_base)
  * the authoritative stride is defined by the runtime consumer.
  * Returns the common stride; callers needing exact sizing must
  * consult the consumer semantics. */
-uint32_t br2_act_stride(int sec)
+uint32_t act_stride(int sec)
 {
     (void)sec;
     return 0x7a;
@@ -60,34 +60,34 @@ uint32_t br2_act_stride(int sec)
 
 /* Indexed-section layout helpers. sec = section base ptr.
  * count at +0, index entries at +4, records blob at +4+count*4. */
-uint32_t br2_act_count(const uint8_t *sec)
+uint32_t act_count(const uint8_t *sec)
 {
     return sec ? rd32(sec) : 0;
 }
 
-const ActIndexEnt *br2_act_index(const uint8_t *sec)
+const ActIndexEnt *act_index(const uint8_t *sec)
 {
     return sec ? (const ActIndexEnt *)(sec + 4) : NULL;
 }
 
-const uint8_t *br2_act_records(const uint8_t *sec)
+const uint8_t *act_records(const uint8_t *sec)
 {
     return sec ? sec + 4 + rd32(sec) * 4 : NULL;
 }
 
 /* Resolve index entry i -> record ptr, or NULL.
  * rec_off is relative to the records blob. */
-const uint8_t *br2_act_record(const uint8_t *sec, uint32_t i)
+const uint8_t *act_record(const uint8_t *sec, uint32_t i)
 {
     if (!sec) return NULL;
     uint32_t count = rd32(sec);
     if (i >= count) return NULL;
     const ActIndexEnt *ix = (const ActIndexEnt *)(sec + 4 + i * 4);
     if (ix->rec_off == 0) return NULL;
-    return br2_act_records(sec) + ix->rec_off;
+    return act_records(sec) + ix->rec_off;
 }
 
-uint16_t br2_act_tag(const uint8_t *sec, uint32_t i)
+uint16_t act_tag(const uint8_t *sec, uint32_t i)
 {
     if (!sec) return 0;
     uint32_t count = rd32(sec);

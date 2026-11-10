@@ -153,9 +153,9 @@ static uint8_t *objpos(uint8_t *ctrl);
 /* action_switch_guest: select event stream by action index (writes
  * motion+0x84/+0x88, resets motion+0x90). Host supplies this — it
  * indexes the .ANI move table. */
-extern void br2_action_select(uint8_t *ctrl, int idx);
+extern void action_select(uint8_t *ctrl, int idx);
 /* FUN_80185e6c: special-reaction loader (hit reaction by table entry). */
-extern void br2_reaction_load(uint8_t *ctrl, uint32_t entry);
+extern void reaction_load(uint8_t *ctrl, uint32_t entry);
 
 
 /* ================================================================== */
@@ -164,7 +164,7 @@ extern void br2_reaction_load(uint8_t *ctrl, uint32_t entry);
 
 /* Returns next stream ptr, or NULL to end. Mirrors ev_stream_dispatch:
  * countdown gate first, then type-byte dispatch. */
-uint8_t *br2_ev_step(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
+uint8_t *ev_step(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
 {
     int type;
     if (!pc) return NULL;
@@ -339,7 +339,7 @@ static uint8_t *ev4_branch(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
 /* ================================================================== */
 /* EV5 — action/move select (tbl 0x8012279c, 8 ops)                    */
 /* ================================================================== */
-/* EV5 = FUN_8017ae18 (guest-verified). Record = 4 bytes:
+/* EV5 = ev5_action_select (guest-verified). Record = 4 bytes:
  *   {u8 pad, u8 ctrl, s16 param}
  * ctrl: op = ctrl&0xf, foe-ctrl arg = ctrl&0x40, mode = (ctrl>>4)&3.
  * All state writes go to SELF motion; the foe bit only swaps the ctrl
@@ -394,12 +394,12 @@ static uint8_t *ev5_action(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
             GSU32(motion, MO_B0) = eB;
         }
         GS16(motion, MO_A2) = (int16_t)idx;
-        br2_reaction_load(ctrl, GSU32(motion, MO_B0));
+        reaction_load(ctrl, GSU32(motion, MO_B0));
         return pc + 4;
     fallback:
         GS16(motion, 0x80) = 1;
         GS16(motion, MO_PREV) = 1;
-        br2_action_select(swctrl, 1);
+        action_select(swctrl, 1);
         {
             uint32_t s = GU32(motion, MO_STREAM);
             return s ? (uint8_t *)guest_at(s) : NULL;
@@ -409,7 +409,7 @@ static uint8_t *ev5_action(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
         idx = (param == -1) ? G16(motion, MO_98) : param;
         GS16(motion, 0x80) = idx;
         GS16(motion, MO_PREV) = idx;
-        br2_action_select(swctrl, idx);
+        action_select(swctrl, idx);
         {   /* new stream ptr */
             uint32_t s = GU32(motion, MO_STREAM);
             return s ? (uint8_t *)guest_at(s) : NULL;
@@ -429,11 +429,11 @@ static uint8_t *ev5_action(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
             GS16(motion, MO_BE) = G16(motion, MO_BC);
             GSU32(motion, MO_B0) = e;
             GS16(motion, MO_A2) = param;
-            br2_reaction_load(ctrl, e);
+            reaction_load(ctrl, e);
         } else {
             GS16(motion, 0x80) = 1;
             GS16(motion, MO_PREV) = 1;
-            br2_action_select(swctrl, 1);
+            action_select(swctrl, 1);
             {
                 uint32_t s = GU32(motion, MO_STREAM);
                 return s ? (uint8_t *)guest_at(s) : NULL;
@@ -503,8 +503,8 @@ static uint8_t *ev7_position(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
         break;
     case 1: case 2: case 3: {  /* rotated delta: pos += (p1*cos-p2*sin)>>16 */
         uint16_t ang = (uint16_t)GS16(motion, MO_E4) & 0x3ff;
-        ca = br2_cos_lut[ang & 0x3ff];
-        sa = br2_sin_lut[ang & 0x3ff];
+        ca = cos_lut[ang & 0x3ff];
+        sa = sin_lut[ang & 0x3ff];
         dx = ((int32_t)p1 * ca - (int32_t)p2 * sa) >> 16;
         dy = ((int32_t)p1 * sa + (int32_t)p2 * ca) >> 16;
         GS16(motion, MO_D4) += (int16_t)dx;
@@ -797,7 +797,7 @@ static uint8_t *ev18_beast(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
 {
     GSU8(ctrl, FC_MODE5) = GU8(pc, 1);
     if (GU8(pc,1) & 1)
-        br2_action_select(ctrl, GU16(pc, 2));   /* param-table reload */
+        action_select(ctrl, GU16(pc, 2));   /* param-table reload */
     return pc + 4;
 }
 
@@ -840,7 +840,7 @@ static uint8_t *ev21_skip(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
 }
 extern void FUN_80185e6c(int,int);
 extern void action_switch_guest(int,int*,int);
-ushort * FUN_8017ae18(int param_1,int param_2,ushort *param_3)
+ushort * ev5_action_select(int param_1,int param_2,ushort *param_3)
 {
   short sVar1;
   undefined4 uVar2;
@@ -1185,7 +1185,7 @@ EVWRAP(w3,  ev3_wait)
 EVWRAP(w4,  ev4_branch)
 static uint8_t *w5(uint8_t *c, uint8_t *m)
 {
-    return (uint8_t *)FUN_8017ae18(
+    return (uint8_t *)ev5_action_select(
         (int)guest_of(c), (int)guest_of(m),
         (ushort *)guest_at(GU32(m, 0x84)));
 }

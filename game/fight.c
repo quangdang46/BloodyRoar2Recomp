@@ -9,7 +9,7 @@
  *   pending_action_gate  pending-action permission gate (motion, ctrl, a, b)
  *   FUN_801787dc  per-fighter frame update (calls resolver, writes
  *                 motion+0x80)
- *   FUN_8017ae18  EV5 action-control record interpreter (in ev.c)
+ *   ev5_action_select  EV5 action-control record interpreter (in ev.c)
  */
 
 #include <stdint.h>
@@ -60,7 +60,7 @@ extern void FUN_80142d20(uint8_t *ctrl);
 /* Allowed -> consume queue (motion+0x1c = -1), hitstun helpers,      */
 /* return queued + 0x90.                                              */
 /* ================================================================== */
-int32_t br2_pending_gate(uint8_t *motion, uint8_t *ctrl,
+int32_t pending_gate(uint8_t *motion, uint8_t *ctrl,
                          uint32_t req_a, uint32_t req_b)
 {
     int16_t pend;

@@ -24,7 +24,7 @@ typedef void code(void);
 
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
-void FUN_80156048(short param_1,short param_2);
+void gauge_scale_fixed(short param_1,short param_2);
 void FUN_801561c8(undefined2 param_1);
 
 
@@ -259,41 +259,41 @@ extern uint8_t *_g_system_config_ptr;
 #define _DAT_801f35f4  (*(uint32_t *)g_DAT_801f35f4)
 
 /* ---- callee externs ---- */
-extern void FUN_80156114();
-extern void FUN_801573ec();
+extern void brightness_packet_send();
+extern void mc_state_init();
 extern int FUN_80195ec8();
 extern int cd_sync_wait_a();
 extern int FUN_80195d44();
 extern void cd_file_open(int32_t,uint8_t *);
 extern int FUN_801962f0();
 extern int cd_dir_read_wrap();
-extern void FUN_8019da44();
+extern void slot_status_fill();
 extern void cd_reg_window_update();
 extern void cd_reg_window_u16();
 extern void cd_chan_attr_apply();
-extern int FUN_80156cf4();
-extern int FUN_80156c60();
-extern int FUN_80156d88();
+extern int mc_action_dispatch_b();
+extern int mc_action_dispatch();
+extern int ret_one();
 extern int FUN_801568fc();
-extern void FUN_801638c8();
-extern int FUN_80167ae8(void);
-extern int FUN_80167d7c();
+extern void save_rec_table_copy();
+extern int save_blk_cmp32(void);
+extern int mc_data_write();
 extern int mc_op_dispatch(uint32_t);
 extern int mc_read_queue();
 extern int mc_op_dispatch_b(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
-extern int FUN_8016809c();
+extern int mc_data_read();
 extern int FUN_8018ef60(char *,char *,...);
-extern void FUN_8012e58c(uint32_t,uint32_t,const void *,uint32_t,uint32_t,int32_t);
-extern void FUN_8012cdd8();
-extern void FUN_8012cbc0();
+extern void announce_param_block_init(uint32_t,uint32_t,const void *,uint32_t,uint32_t,int32_t);
+extern void scroll_offset_accumulate();
+extern void print_mode_dispatch_b();
 extern int intro_movie_state();
 extern void FUN_80156ef4();
-extern int FUN_80160598(uint32_t,uint32_t);
-extern void FUN_801294cc();
+extern int dialog_sel_dispatch(uint32_t,uint32_t);
+extern void menu_stepper_state_advance();
 extern void hud_gauge_render();
 extern void empty_ret();
 extern int FUN_8012aaa8();
-extern void FUN_8012cd9c();
+extern void scroll_offset_set();
 extern void battle_session_arm(intptr_t,int);
 extern void frame_tick(intptr_t);
 extern void FUN_80197ad0();
@@ -321,9 +321,9 @@ void FUN_80157a00(void)
     if ((int)((uint)uVar1 << 0x10) < 0) {
       DAT_801bef76 = 0;
     }
-    FUN_80156114((int)(short)DAT_801bef76);
+    brightness_packet_send((int)(short)DAT_801bef76);
     if (DAT_801bef76 == 0) {
-      FUN_801573ec();
+      mc_state_init();
       return;
     }
   }
@@ -335,7 +335,7 @@ void FUN_80157a00(void)
     default:
       return;
     case '\x10':
-      FUN_80156114(0);
+      brightness_packet_send(0);
       DAT_801bef60 = 0xca;
       FUN_80195ec8(0xe,(int)guest_of(&DAT_801bef60));
       if (DAT_801c4580 != '\0') {
@@ -363,7 +363,7 @@ void FUN_80157a00(void)
     case '\x15':
       iVar3 = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
       if (iVar3 == 2) {
-        FUN_80156114(0xffffffff);
+        brightness_packet_send(0xffffffff);
         FUN_80195ec8(0x1b,0);
         DAT_801bef6d = DAT_801bef6d + '\x01';
         return;
@@ -420,7 +420,7 @@ void FUN_80157a00(void)
       }
       goto joined_r0x80157c80;
     case ' ':
-      FUN_80156114(0);
+      brightness_packet_send(0);
       if ((DAT_801bef64 & 0x10) == 0) {
         DAT_801bef6d = 0x23;
         DAT_801bef74 = DAT_801bef74 + 1;
@@ -469,7 +469,7 @@ void FUN_80157a00(void)
   }
   switch(DAT_801bef6d) {
   case '\x10':
-    FUN_80156114(0);
+    brightness_packet_send(0);
     DAT_801bef60 = 7;
     FUN_80195ec8(0xe,(int)guest_of(&DAT_801bef60));
     if (DAT_801c4580 == '\0') {
@@ -495,7 +495,7 @@ void FUN_80157a00(void)
   case '\x15':
     iVar3 = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
     if (iVar3 == 2) {
-      FUN_80156114(0xffffffff);
+      brightness_packet_send(0xffffffff);
       FUN_80195ec8(3,0);
       DAT_801bef6d = DAT_801bef6d + '\x01';
     }
@@ -535,7 +535,7 @@ void FUN_80157a00(void)
     }
 joined_r0x80157c80:
     if ((DAT_801bef6e & 0x10) == 0) {
-      FUN_80156114(0);
+      brightness_packet_send(0);
       FUN_80195ec8(9,0);
       DAT_801bef6d = '\0';
       DAT_801bef6f = -1;
@@ -557,7 +557,7 @@ joined_r0x80157c80:
     }
     break;
   case ' ':
-    FUN_80156114(0);
+    brightness_packet_send(0);
     DAT_801bef74 = DAT_801bef74 + 1;
     if ((DAT_801bef64 & 0x10) == 0) {
       DAT_801bef6d = '#';
@@ -673,7 +673,7 @@ int FUN_8015f6a0(int param_1)
   uVar6 = 0;
   iVar4 = 0;
   iVar5 = 0;
-  /* FUN_8018ef60 and FUN_8012e58c both take host string pointers;
+  /* FUN_8018ef60 and announce_param_block_init both take host string pointers;
    * back both with scratchpad 0x1f800f80 so one buffer serves both. */
   acStack_78 = (char *)guest_at(0x1f800f80);
   local_2c = acStack_78;
@@ -684,11 +684,11 @@ int FUN_8015f6a0(int param_1)
     if (uVar7 != 1) {
       if (uVar7 < 2) {
         if ((uVar7 == 0) && (iVar1 = FUN_8012aaa8(), iVar1 == 0)) {
-          FUN_8012cbc0(2,0,0);
+          print_mode_dispatch_b(2,0,0);
           iVar1 = intro_movie_state(0);
           if (iVar1 != 0) {
             FUN_80156ef4(0x203,0,0);
-            local_b4 = (code *)FUN_80160598;
+            local_b4 = (code *)dialog_sel_dispatch;
             local_ba = 4;
             local_b8 = 4;
             local_b0 = 0x10;
@@ -730,7 +730,7 @@ int FUN_8015f6a0(int param_1)
     }
 LAB_8015f820:
     if (param_1 == 0) {
-      FUN_801294cc(&local_c0);
+      menu_stepper_state_advance(&local_c0);
     }
     switch(local_bd) {
     case '\0':
@@ -768,7 +768,7 @@ LAB_8015fbfc:
       break;
     case '\x11':
       if ((int)uVar6 < 0) goto code_r0x8015ffac;
-      FUN_8012cd9c(0x10,0x68);
+      scroll_offset_set(0x10,0x68);
       switch(iVar4) {
       case 0:
         FUN_8018ef60((char *)guest_at(0x1f800f80),s_LOAD_FROM_MEMORY_CARD__s___80121788,
@@ -779,30 +779,30 @@ LAB_8015fbfc:
         break;
       case 3:
         FUN_8018ef60((char *)guest_at(0x1f800f80),s_SAVING_TO_MEMORY_CARD__s__801217f0,SLOTSTR(iVar5));
-        FUN_8012e58c(_DAT_1f800008,_DAT_1f80000c,local_2c,0x10,0x1000,0);
-        FUN_8012cdd8(0,0x10);
+        announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,local_2c,0x10,0x1000,0);
+        scroll_offset_accumulate(0,0x10);
         FUN_8018ef60((char *)guest_at(0x1f800f80),s_OVER_WRITE_OK___8012180c);
       default:
         break;
       case 5:
-        FUN_8012e58c(_DAT_1f800008,_DAT_1f80000c,s_MEMORY_CARD_CHANGED__801217a4,0x10,0x1000,2);
-        FUN_8012cdd8(0,0x10);
+        announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_MEMORY_CARD_CHANGED__801217a4,0x10,0x1000,2);
+        scroll_offset_accumulate(0,0x10);
       case 1:
         FUN_8018ef60((char *)guest_at(0x1f800f80),s_SAVE_TO_MEMORY_CARD__s___801217bc,SLOTSTR(iVar5))
         ;
       }
-      FUN_8012e58c(_DAT_1f800008,_DAT_1f80000c,acStack_78,0x10,0x1000,0);
-      FUN_8012cdd8(0,0x10);
-      FUN_8012e58c(_DAT_1f800008,_DAT_1f80000c,&DAT_8012181c,0x30,0x1000,uVar6 != 0);
-      FUN_8012e58c(_DAT_1f800008,_DAT_1f80000c,&DAT_80121820,0x90,0x1000,uVar6 == 0);
-      FUN_8012cdd8(0,0x10);
+      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,acStack_78,0x10,0x1000,0);
+      scroll_offset_accumulate(0,0x10);
+      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,&DAT_8012181c,0x30,0x1000,uVar6 != 0);
+      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,&DAT_80121820,0x90,0x1000,uVar6 == 0);
+      scroll_offset_accumulate(0,0x10);
       switch(iVar4) {
       case 1:
       case 5:
-        FUN_8012e58c(_DAT_1f800008,_DAT_1f80000c,s_1_BLOCK_IS_REQUIRED_TO_SAVE__80121824,0x10,0x1000
+        announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_1_BLOCK_IS_REQUIRED_TO_SAVE__80121824,0x10,0x1000
                      ,3);
       }
-      FUN_8012cdd8(0,0x10);
+      scroll_offset_accumulate(0,0x10);
       if ((_DAT_1f80007c & 0xa000) != 0) {
         FUN_80156ef4(0x400,0xb,0);
         uVar6 = uVar6 ^ 1;
@@ -835,10 +835,10 @@ LAB_8015fc08:
       break;
     case '\x12':
     case '\x13':
-      FUN_8012cd9c(0x10,0x68);
+      scroll_offset_set(0x10,0x68);
       switch(iVar4) {
       case 0:
-        FUN_8012e58c(_DAT_1f800008,_DAT_1f80000c,s_NOW_LOADING_FROM_MEMORY_CARD_80121844,0x10,0x1000
+        announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_NOW_LOADING_FROM_MEMORY_CARD_80121844,0x10,0x1000
                      ,0);
         puVar2 = SLOTSTR(iVar5);
         pcVar3 = s__s____80121864;
@@ -866,9 +866,9 @@ LAB_8015fc08:
       }
       FUN_8018ef60((char *)guest_at(0x1f800f80),pcVar3,puVar2);
 switchD_8015fc3c_default:
-      FUN_8012e58c(_DAT_1f800008,_DAT_1f80000c,acStack_78,0x10,0x1000,0);
-      FUN_8012cdd8(0,0x10);
-      FUN_8012e58c(_DAT_1f800008,_DAT_1f80000c,s_DO_NOT_REMOVE_MEMORY_CARD___801218d0,0x10,0x1000,3)
+      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,acStack_78,0x10,0x1000,0);
+      scroll_offset_accumulate(0,0x10);
+      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_DO_NOT_REMOVE_MEMORY_CARD___801218d0,0x10,0x1000,3)
       ;
       goto code_r0x8015ffac;
     case '\x14':
@@ -880,15 +880,15 @@ switchD_8015fc3c_default:
       }
       switch(iVar4) {
       case 0:
-        unaff_s2 = FUN_8016809c(local_38,DAT_801b45f4,DAT_801b45f8,DAT_801b45fc,DAT_801b4600,
+        unaff_s2 = mc_data_read(local_38,DAT_801b45f4,DAT_801b45f8,DAT_801b45fc,DAT_801b4600,
                                 DAT_801b4604,DAT_801b4608,DAT_801b460c,DAT_801b4610,DAT_801b4614,
                                 PTR_DAT_801b4618,&DAT_801c11e0,0x414);
-        if ((unaff_s2 == 0) && (iVar1 = FUN_80167ae8(), iVar1 != 0)) {
+        if ((unaff_s2 == 0) && (iVar1 = save_blk_cmp32(), iVar1 != 0)) {
           unaff_s2 = 2;
         }
         break;
       case 1:
-        unaff_s2 = FUN_80167d7c(local_38,DAT_801b45f4,DAT_801b45f8,DAT_801b45fc,DAT_801b4600,
+        unaff_s2 = mc_data_write(local_38,DAT_801b45f4,DAT_801b45f8,DAT_801b45fc,DAT_801b4600,
                                 DAT_801b4604,DAT_801b4608,DAT_801b460c,DAT_801b4610,DAT_801b4614,
                                 PTR_DAT_801b4618,&DAT_801c11e0,0x414);
         break;
@@ -913,7 +913,7 @@ code_r0x8015ffac:
       local_bd = local_bd + '\x01';
       break;
     case '\x15':
-      FUN_8012cd9c(0x10,0x68);
+      scroll_offset_set(0x10,0x68);
       switch(iVar4) {
       case 0:
         puVar2 = SLOTSTR(iVar5);
@@ -937,8 +937,8 @@ code_r0x8015ffac:
       }
       FUN_8018ef60((char *)guest_at(0x1f800f80),pcVar3,puVar2);
 switchD_8015ffe4_default:
-      FUN_8012e58c(_DAT_1f800008,_DAT_1f80000c,local_2c,0x10,0x1000,0);
-      FUN_8012cdd8(0,0x10);
+      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,local_2c,0x10,0x1000,0);
+      scroll_offset_accumulate(0,0x10);
       if ((_DAT_1f80007c & 0xe0) != 0) {
         FUN_80156ef4(0x400,0xc,0);
         local_bd = '\x16';
@@ -961,13 +961,13 @@ switchD_8015ffe4_default:
             if (unaff_s2 != 0) goto LAB_801603ec;
             switch(iVar4) {
             case 0:
-              FUN_80156048(*(undefined1 *)(_g_system_config_ptr + 0xe),
+              gauge_scale_fixed(*(undefined1 *)(_g_system_config_ptr + 0xe),
                            ((uint)*(byte *)(_g_system_config_ptr + 0xf) << 3) / 10);
               FUN_801561c8(*(byte *)(_g_system_config_ptr + 0xc) ^ 1);
             case 1:
             case 3:
               _DAT_801c15f0 = 0;
-              FUN_8012e58c(_DAT_1f800008,_DAT_1f80000c,s_COMPLETED___80121954,0x10,0x1000,3);
+              announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_COMPLETED___80121954,0x10,0x1000,3);
               iVar1 = local_30 + -1;
               if ((-1 < local_30) && (local_30 = iVar1, iVar1 == -1)) {
                 local_bd = '\x16';
@@ -1008,7 +1008,7 @@ LAB_8016028c:
             }
           }
           else if (unaff_s2 == 2) {
-            FUN_8012e58c(_DAT_1f800008,_DAT_1f80000c,s_DATA_ERROR____80121a24,0x10,0x1000,2);
+            announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_DATA_ERROR____80121a24,0x10,0x1000,2);
           }
           else {
             if (unaff_s2 != 3) goto LAB_801603ec;
@@ -1023,15 +1023,15 @@ LAB_8016028c:
           }
           break;
         }
-        FUN_8012e58c(_DAT_1f800008,_DAT_1f80000c,s_NO_MEMORY_CARD_IS_INSERTED_IN_80121960,0x10,
+        announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_NO_MEMORY_CARD_IS_INSERTED_IN_80121960,0x10,
                      0x1000,2);
         FUN_8018ef60((char *)guest_at(0x1f800f80),s_MEMORY_CARD__s___80121980,SLOTSTR(iVar5));
         pcVar3 = local_2c;
       }
       else if (unaff_s2 == 7) {
-        FUN_8012e58c(_DAT_1f800008,_DAT_1f80000c,s_THERE_IS_INSUFFICIENT_MEMORY_CAR_80121994,0x10,
+        announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_THERE_IS_INSUFFICIENT_MEMORY_CAR_80121994,0x10,
                      0x1000,2);
-        FUN_8012e58c(_DAT_1f800008,_DAT_1f80000c,s_BLOCKS_AND_1_BLOCK_IS_REQUIRED_801219b8,0x10,
+        announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_BLOCKS_AND_1_BLOCK_IS_REQUIRED_801219b8,0x10,
                      0x1000,2);
         pcVar3 = s_TO_SAVE__801219d8;
       }
@@ -1053,7 +1053,7 @@ LAB_801603ec:
         pcVar3 = s_ERROR___80121a34;
       }
 LAB_801603fc:
-      FUN_8012e58c(_DAT_1f800008,_DAT_1f80000c,pcVar3,0x10,0x1000,2);
+      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,pcVar3,0x10,0x1000,2);
       break;
     case '\x16':
       if (iVar4 == 0) {
@@ -1125,7 +1125,7 @@ void FUN_80156ff0(void)
   int iVar5;
   char acStack_38 [24];
   
-  FUN_8019da44(acStack_38);
+  slot_status_fill(acStack_38);
   pcVar4 = &DAT_801f24d0;
   iVar5 = 0;
   puVar3 = &DAT_801f24d1;
@@ -1191,17 +1191,17 @@ void FUN_80156d98(undefined4 param_1,int param_2)
       if (psVar5[1] == 0) {
         uVar4 = uVar1 & 0xf00;
         if (uVar4 == 0x200) {
-          param_2 = FUN_80156cf4(uVar1 & 0xff,(int)*psVar5);
+          param_2 = mc_action_dispatch_b(uVar1 & 0xff,(int)*psVar5);
         }
         else if (uVar4 < 0x201) {
           if (uVar4 == 0x100) {
-            param_2 = FUN_80156c60(uVar1 & 0xff,(int)*psVar5);
+            param_2 = mc_action_dispatch(uVar1 & 0xff,(int)*psVar5);
           }
         }
         else if (uVar4 == 0x300) {
           if (bVar2) goto LAB_80156ebc;
           bVar2 = true;
-          param_2 = FUN_80156d88(uVar1 & 0xff,(int)*psVar5);
+          param_2 = ret_one(uVar1 & 0xff,(int)*psVar5);
         }
         else if (uVar4 == 0x400) {
           if (bVar3) goto LAB_80156ebc;
@@ -1299,9 +1299,9 @@ void FUN_80167a64(void)
 void FUN_80163ab4(void)
 
 {
-  FUN_801638c8(&DAT_801c1264,0,10);
-  FUN_801638c8(&DAT_801c1304,5,10);
-  FUN_801638c8(0x801c13a4,0,10);
+  save_rec_table_copy(&DAT_801c1264,0,10);
+  save_rec_table_copy(&DAT_801c1304,5,10);
+  save_rec_table_copy(0x801c13a4,0,10);
   return;
 }
 
@@ -1359,7 +1359,7 @@ LAB_8018bb4c:
   return;
 }
 
-/* FUN_80156048 lives in menu.c (disasm-verified magic-divide port). */
+/* gauge_scale_fixed lives in menu.c (disasm-verified magic-divide port). */
 
 /* ======== 0x801561c8 ======== */
 
@@ -1369,7 +1369,7 @@ void FUN_801561c8(undefined2 param_1)
 
 {
   _DAT_801f36c0 = param_1;
-  FUN_80156114(0xffffffff);
+  brightness_packet_send(0xffffffff);
   return;
 }
 
@@ -1568,49 +1568,49 @@ uint FUN_8012a650(uint8_t *param_1)
 #define SB32(a)  (*(uint32_t *)guest_at(a))
 extern uint8_t *_g_pad_buffer;
 extern int FUN_8012aaa8(void);
-extern int FUN_80163520(uint8_t *,uint32_t);
+extern int slot_display_pos(uint8_t *,uint32_t);
 extern void FUN_80156ef4(int,int,int);
-extern void FUN_801573ec(void);
-extern void FUN_801562e0(void);
-extern void FUN_80156290(void);
-extern void FUN_801575bc(int,uint32_t);
-extern void FUN_8015768c(int,uint32_t);
+extern void mc_state_init(void);
+extern void chan_sweep_flag100(void);
+extern void chan_sweep_flag200(void);
+extern void datetime_confirm_a(int,uint32_t);
+extern void datetime_confirm_b(int,uint32_t);
 extern int  FUN_80195ffc(int,int,int);
 
-/* FUN_80163868 — memcard error sentinel (-99). */
-uint32_t FUN_80163868(void)
+/* memcard_err_sentinel — memcard error sentinel (-99). */
+uint32_t memcard_err_sentinel(void)
 {
   return 0xffffff9d;
 }
 
-/* FUN_801577bc — PAD-start gated memcard confirm dispatch.
+/* mc_confirm_dispatch — PAD-start gated memcard confirm dispatch.
  * pad_buffer+2 bit12 = confirm press; DAT_801bef6e low nibble =
- * dialog state (1 -> FUN_801575bc path, 2 -> FUN_8015768c path). */
-void FUN_801577bc(int32_t param_1,uint32_t param_2)
+ * dialog state (1 -> datetime_confirm_a path, 2 -> datetime_confirm_b path). */
+void mc_confirm_dispatch(int32_t param_1,uint32_t param_2)
 {
   if ((((*(uint16_t *)(_g_pad_buffer + 2) >> 0xc) & 1) != 0) && (0 <= param_1)) {
-    FUN_801573ec();
+    mc_state_init();
     if ((SB8(0x801bef6e) & 0xf) == 1) {
-      FUN_801562e0();
-      FUN_801575bc(param_1,param_2);
+      chan_sweep_flag100();
+      datetime_confirm_a(param_1,param_2);
     } else if ((SB8(0x801bef6e) & 0xf) == 2) {
-      FUN_80156290();
-      FUN_8015768c(param_1,param_2);
+      chan_sweep_flag200();
+      datetime_confirm_b(param_1,param_2);
     }
   }
 }
 
-/* FUN_80157368 — memcard init/reset sequence: brightness off,
+/* mc_init_reset — memcard init/reset sequence: brightness off,
  * sync wait via FUN_80195ffc(9), dialog-state globals cleared. */
-void FUN_80157368(void)
+void mc_init_reset(void)
 {
   int iVar1;
-  FUN_80156114(0);
+  brightness_packet_send(0);
   do {
     iVar1 = FUN_80195ffc(9,0,0);
   } while (iVar1 == 0);
-  FUN_801562e0();
-  FUN_80156290();
+  chan_sweep_flag100();
+  chan_sweep_flag200();
   SB8(0x801bef6e) = 2;
   SB8(0x801bef6d) = 0;
   SB8(0x801bef76) = 0;
@@ -1618,16 +1618,16 @@ void FUN_80157368(void)
   SB8(0x801bef80) = SB8(0x801bef84);
 }
 
-/* FUN_8016700c — save-slot state fixup @guest 0x1f800000.
+/* save_slot_state_fixup — save-slot state fixup @guest 0x1f800000.
  * param_1 = guest address (bridged). */
-void FUN_8016700c(uint32_t param_1,uint32_t param_2)
+void save_slot_state_fixup(uint32_t param_1,uint32_t param_2)
 {
   uint8_t *p = (uint8_t *)guest_at(param_1);
   int32_t iVar1;
   (void)param_2;
   iVar1 = FUN_8012aaa8();
   if (iVar1 == 0) {
-    iVar1 = FUN_80163520(p,param_2);
+    iVar1 = slot_display_pos(p,param_2);
     if (0 <= iVar1) {
       p[0] = 5;
       p[1] = 0xf0;
@@ -1644,12 +1644,12 @@ void FUN_8016700c(uint32_t param_1,uint32_t param_2)
   }
 }
 
-/* FUN_80153264 — memcard button-press handler: PAD bits 0x840 on
+/* mc_pad_button_handler — memcard button-press handler: PAD bits 0x840 on
  * +0x68/+0x6a trigger FUN_80156ef4 sfx + mc_slot_action slot action.
  * param_1 = host ptr to save-manager state block. */
 extern int32_t ret_zero_b(uint32_t);
 extern void mc_slot_action(uint8_t *,int32_t);
-uint32_t FUN_80153264(uint8_t *param_1)
+uint32_t mc_pad_button_handler(uint8_t *param_1)
 {
   int32_t iVar1;
   uint32_t uVar2;
@@ -1685,12 +1685,12 @@ LAB_801533b0:
   return uVar3 | 2;
 }
 
-/* FUN_801638c8 — 16-byte record copy between caller buffer and one
+/* save_rec_table_copy — 16-byte record copy between caller buffer and one
  * of four static tables selected by param_2:
  *   0: 0x801b427c -> dst   1: dst -> 0x801c1264   2: 0x801c1264 -> dst
  *   3: dst -> 0x801c1304   4: 0x801c1304 -> dst   5: 0x801b431c -> dst
  * param_3 = record count. */
-void FUN_801638c8(uint32_t *param_1,uint32_t param_2,int32_t param_3)
+void save_rec_table_copy(uint32_t *param_1,uint32_t param_2,int32_t param_3)
 {
   int32_t iVar1;
   uint32_t *puVar2, *puVar3;
@@ -1774,25 +1774,25 @@ extern uint8_t  *g_DAT_801e6208;
 extern uint32_t *g_PTR_DAT_801b5b94;
 extern int      FUN_8018e510(char *);
 extern undefined1 FUN_80129f78(void);
-extern int32_t  FUN_801574b4(int32_t);
+extern int32_t  mc_dialog_bit4(int32_t);
 extern void     FUN_801279c8();
 extern void     FUN_8012e078(uint32_t,uint32_t,const void *,int32_t,int32_t,int32_t);
-extern void     FUN_8016fc74(uint32_t,uint32_t,int32_t);
-extern int      FUN_80159d78(uint8_t *);
+extern void     chan_blocks_reset(uint32_t,uint32_t,int32_t);
+extern int      slot_icon_nibble_resolve(uint8_t *);
 extern void     picker_table_shuffle(uint8_t *);
 
-/* FUN_801274e8 — mirror a mode byte into the two dialog-state cells
+/* dialog_mode_mirror — mirror a mode byte into the two dialog-state cells
  * (guest 0x801e40b8 and 0x801e6208). */
-void FUN_801274e8(int32_t param_1)
+void dialog_mode_mirror(int32_t param_1)
 {
   *g_DAT_801e6208 = (uint8_t)param_1;
   *g_DAT_801e40b8 = (uint8_t)param_1;
 }
 
-/* FUN_801513fc — print the slot-name string for fighter index param_2
+/* slot_name_measure — print the slot-name string for fighter index param_2
  * (table @0x801b47ec, 8-byte entries {char *name0, char *name1}) then
  * measure param_1 with FUN_8018e510. Returns FUN_8018e510's result. */
-int FUN_801513fc(void *param_1,int32_t param_2)
+int slot_name_measure(void *param_1,int32_t param_2)
 {
   uint32_t uVar1 = *(uint32_t *)guest_at(0x801b47ec + ((uint32_t)param_2 << 3));
   /* FUN_8018ef60 formats into a host buffer; stage in scratchpad
@@ -1803,11 +1803,11 @@ int FUN_801513fc(void *param_1,int32_t param_2)
   return FUN_8018e510((char *)param_1);
 }
 
-/* FUN_8016fc74 — clear the 0x1f80e8/0x1f801f0 channel blocks: zero
+/* chan_blocks_reset — clear the 0x1f80e8/0x1f801f0 channel blocks: zero
  * +0xe0..+0xec fields, store param_2 at +0xf0, then param_3 selects the
  * +0xec counter (0 -> clear, 1 -> increment, other -> untouched).
  * param_1 is a GUEST address (0x1f80xxx scratch). */
-void FUN_8016fc74(uint32_t param_1,uint32_t param_2,int32_t param_3)
+void chan_blocks_reset(uint32_t param_1,uint32_t param_2,int32_t param_3)
 {
   uint8_t *p = (uint8_t *)guest_at(param_1);
   *(uint16_t *)(p + 0xe0) = 0;
@@ -1826,10 +1826,10 @@ void FUN_8016fc74(uint32_t param_1,uint32_t param_2,int32_t param_3)
   }
 }
 
-/* FUN_80159d78 — resolve the save-slot icon nibble: index =
+/* slot_icon_nibble_resolve — resolve the save-slot icon nibble: index =
  * (int16)param_1[0xa4] + (c0block[7] << 4) into the byte table at
  * guest 0x801b3f88; store value<<4 at param_1+0xa0, return it. */
-int FUN_80159d78(uint8_t *param_1)
+int slot_icon_nibble_resolve(uint8_t *param_1)
 {
   uint8_t *p = (uint8_t *)guest_at(*(uint32_t *)(param_1 + 0xc0));
   uint32_t uVar1 = 0x801b3f88u + (uint32_t)(int32_t)*(int16_t *)(param_1 + 0xa4) +
@@ -1845,7 +1845,7 @@ int FUN_80159d78(uint8_t *param_1)
  * param_1[0x9c]: 0 -> Fisher-Yates on table A (mod 9), rotate the
  * A[7..10] window, swap B[4]/B[5], Fisher-Yates on B (mod 5);
  * 1..5 -> Fisher-Yates on A (mod 9) then B[i] = rand % 8 (11 entries);
- * anything else -> just the FUN_80159d78 icon resolve + +0xa4 clear. */
+ * anything else -> just the slot_icon_nibble_resolve icon resolve + +0xa4 clear. */
 void picker_table_shuffle(uint8_t *param_1)
 {
   uint8_t *puVar1 = (uint8_t *)guest_at(0x801f47a0);
@@ -1861,7 +1861,7 @@ void picker_table_shuffle(uint8_t *param_1)
     puVar2[iVar1] = (uint8_t)(iVar1 % 9);
   }
   *(int16_t *)(param_1 + 0xa4) = 0;
-  FUN_80159d78(param_1);
+  slot_icon_nibble_resolve(param_1);
   iVar1 = param_1[0x9c];
   if (iVar1 == 0) {
     puVar3 = puVar1;
@@ -1914,11 +1914,11 @@ void picker_table_shuffle(uint8_t *param_1)
   }
 }
 
-/* mc_slot_action — memcard slot action dispatched by FUN_80153264.
+/* mc_slot_action — memcard slot action dispatched by mc_pad_button_handler.
  * param_1 = host ptr to save-manager state; param_2 = slot (0/1).
  * Marks the c0-block busy flag, applies the per-state slot-mask table
  * (jump table @0x80120998 indexed by param_1[0x9b]), resets the two
- * 0x1f80 scratch channel blocks via FUN_8016fc74, re-shuffles the
+ * 0x1f80 scratch channel blocks via chan_blocks_reset, re-shuffles the
  * picker tables (picker_table_shuffle) and pokes channel param_2 via
  * FUN_801279c8. */
 void mc_slot_action(uint8_t *param_1,int32_t param_2)
@@ -1964,15 +1964,15 @@ void mc_slot_action(uint8_t *param_1,int32_t param_2)
   q[0x19] = q[0x19] & 3;
   q[0x1a] = q[0x1a] & 3;
   picker_table_shuffle(param_1);
-  FUN_8016fc74(0x1f80e8,0,0);
-  FUN_8016fc74(0x1f801f0,0,0);
+  chan_blocks_reset(0x1f80e8,0,0);
+  chan_blocks_reset(0x1f801f0,0,0);
   FUN_801279c8(0x1f80e8 + (uint32_t)param_2 * 264,0);
 }
 
-/* FUN_80156290 — sweep the 32-entry x6-byte channel table at guest
+/* chan_sweep_flag200 — sweep the 32-entry x6-byte channel table at guest
  * 0x801f3600: entries whose high flag nibble is 0x200 are cleared and
  * the live counter at 0x801f35f4 is decremented. */
-void FUN_80156290(void)
+void chan_sweep_flag200(void)
 {
   uint16_t *puVar1 = (uint16_t *)g_DAT_801f3600;
   int32_t iVar1 = 0;
@@ -1986,10 +1986,10 @@ void FUN_80156290(void)
   } while (iVar1 < 0x20);
 }
 
-/* FUN_801562e0 — same sweep as FUN_80156290 but only entries whose
+/* chan_sweep_flag100 — same sweep as chan_sweep_flag200 but only entries whose
  * flag nibble is exactly 0x100 are cleared (guest branch chain:
  * skip 0x200, skip >=0x201, require 0x100). */
-void FUN_801562e0(void)
+void chan_sweep_flag100(void)
 {
   uint16_t *puVar1 = (uint16_t *)g_DAT_801f3600;
   int32_t iVar1 = 0;
@@ -2004,12 +2004,12 @@ void FUN_801562e0(void)
   } while (iVar1 < 0x20);
 }
 
-/* FUN_801575bc — date/time dialog confirm path A. param_1 = packed
+/* datetime_confirm_a — date/time dialog confirm path A. param_1 = packed
  * date value stored at 0x801bef60+0x12 (clamped modulo byte +0xc),
- * param_2 = optional FUN_801574b4 hook index. Computes the display
+ * param_2 = optional mc_dialog_bit4 hook index. Computes the display
  * string offset table entry at +0x2c+idx*4 through FUN_801962f0 and
  * publishes the result at +0x20/+0x24. */
-void FUN_801575bc(int32_t param_1,uint32_t param_2)
+void datetime_confirm_a(int32_t param_1,uint32_t param_2)
 {
   uint8_t *s0 = g_DAT_801bef60;
   int32_t iVar1;
@@ -2025,7 +2025,7 @@ void FUN_801575bc(int32_t param_1,uint32_t param_2)
     *(int16_t *)(s0 + 0x12) = (int16_t)s0[0xc];
   }
   if ((int32_t)param_2 >= 0) {
-    FUN_801574b4((int32_t)param_2);
+    mc_dialog_bit4((int32_t)param_2);
   }
   iVar1 = *(int16_t *)(s0 + 0x12);
   s0[0xd] = 0x10;
@@ -2043,13 +2043,13 @@ void FUN_801575bc(int32_t param_1,uint32_t param_2)
   *(int16_t *)(s0 + 0x10) = 0x7f;
 }
 
-/* FUN_8015768c — date/time dialog confirm path B. param_1 = packed
+/* datetime_confirm_b — date/time dialog confirm path B. param_1 = packed
  * date value (param_1 % 8 -> weekday nibble at +1); looks up the
  * date-string pointer in the table @0x801b5b94 (8-byte entries,
  * index = param_1/8), resolves it and the +0x12-indexed string at
  * guest 0x801b3310 via FUN_801962f0, waits on FUN_80195ffc(0xd),
- * then publishes like FUN_801575bc with flag bits |2. */
-void FUN_8015768c(int32_t param_1,uint32_t param_2)
+ * then publishes like datetime_confirm_a with flag bits |2. */
+void datetime_confirm_b(int32_t param_1,uint32_t param_2)
 {
   uint8_t *s1 = g_DAT_801bef60;
   uint8_t *s3;
@@ -2067,7 +2067,7 @@ void FUN_8015768c(int32_t param_1,uint32_t param_2)
   iVar2 = param_1 - iVar1 * 8;
   s3 = (uint8_t *)guest_at(g_PTR_DAT_801b5b94[iVar1]);
   *(int16_t *)(s1 + 0x12) = (int16_t)param_1;
-  FUN_801573ec();
+  mc_state_init();
   iVar3 = FUN_801962f0(s3);
   iVar3 = iVar3 + FUN_801962f0((const void *)guest_at(
       0x801b3310u + (uint32_t)(*(int16_t *)(s1 + 0x12)) * 4)) * 2;
@@ -2078,7 +2078,7 @@ void FUN_8015768c(int32_t param_1,uint32_t param_2)
     iVar3 = FUN_80195ffc(0xd,(int)guest_of(s1),0);
   } while (iVar3 == 0);
   if ((int32_t)param_2 >= 0) {
-    FUN_801574b4((int32_t)param_2);
+    mc_dialog_bit4((int32_t)param_2);
   }
   bVar4 = s1[0xe];
   *(int16_t *)(s1 + 0x16) = 0;
@@ -2093,14 +2093,14 @@ void FUN_8015768c(int32_t param_1,uint32_t param_2)
   *(int16_t *)(s1 + 0x10) = 0x7f;
 }
 
-/* FUN_80163520 — save-slot display-position helper. Gates on the
+/* slot_display_pos — save-slot display-position helper. Gates on the
  * scratch flags at guest 0x1f8000dc ((v>>4)&3 != 0 and bit 0x40 set),
  * then param_2 selects the fixed-point divisor: 0 -> lh22*3 scaled
  * >>2, 1 -> lh22*7 scaled >>3 (both mod-adjusted toward zero), with
  * arg4 = ((int16)param_1[0x20] / 2) - 0x45 and arg6 = 4 handed to
  * FUN_8012e078(a0=+8 ptr, a1=+0xc ptr, a2=guest 0x80121e3c table).
  * Returns -0x63 (-99) on gate/selector failure. */
-int FUN_80163520(uint8_t *param_1,uint32_t param_2)
+int slot_display_pos(uint8_t *param_1,uint32_t param_2)
 {
   uint32_t uVar1 = SB32(0x1f8000dc);
   int32_t iVar1;
@@ -2140,10 +2140,10 @@ int FUN_80163520(uint8_t *param_1,uint32_t param_2)
   return -0x63;
 }
 
-/* FUN_801574b4 — memcard dialog flag @0x801bef6e bit4 setter.
+/* mc_dialog_bit4 — memcard dialog flag @0x801bef6e bit4 setter.
  * p<0 -> read-only return; p==0 -> clear 0x10; p>0 -> set 0x10.
  * Disasm-verified @0x801574b4. */
-int32_t FUN_801574b4(int32_t param_1)
+int32_t mc_dialog_bit4(int32_t param_1)
 {
   uint8_t *f = (uint8_t *)guest_at(0x801bef60);
   if (param_1 < 0) return f[0xe];
@@ -2233,9 +2233,9 @@ int32_t mc_date_serial_cmp(uint8_t *param_1,void *param_2)
   return (int32_t)sp18;
 }
 
-/* FUN_80163b08 — first 0x10-stride rec where f8==0 or f8<a1;
+/* rec_find_lt_f8 — first 0x10-stride rec where f8==0 or f8<a1;
  * -1 if none. a0 host ptr, a1 u32, a2 count. Disasm 0x80163b08-40. */
-int32_t FUN_80163b08(uint8_t *a0,uint32_t a1,int32_t a2)
+int32_t rec_find_lt_f8(uint8_t *a0,uint32_t a1,int32_t a2)
 {
   int32_t i;
   if (a2 <= 0) return -1;
@@ -2246,9 +2246,9 @@ int32_t FUN_80163b08(uint8_t *a0,uint32_t a1,int32_t a2)
   return -1;
 }
 
-/* FUN_80163b84 — first 0x10-stride rec where !(a1 < s16(+0xe));
+/* rec_find_ge_e — first 0x10-stride rec where !(a1 < s16(+0xe));
  * -1 if none. Disasm 0x80163b84-0x80163bb8. */
-int32_t FUN_80163b84(uint8_t *a0,int32_t a1,int32_t a2)
+int32_t rec_find_ge_e(uint8_t *a0,int32_t a1,int32_t a2)
 {
   int32_t i;
   if (a2 <= 0) return -1;
@@ -2258,16 +2258,16 @@ int32_t FUN_80163b84(uint8_t *a0,int32_t a1,int32_t a2)
   return -1;
 }
 
-/* FUN_80163bc0 — copy 4 bytes a2 -> a0 + a1*16. Disasm verified. */
-void FUN_80163bc0(uint8_t *a0,int32_t a1,const uint8_t *a2)
+/* rec_u32_store — copy 4 bytes a2 -> a0 + a1*16. Disasm verified. */
+void rec_u32_store(uint8_t *a0,int32_t a1,const uint8_t *a2)
 {
   uint8_t *d = a0 + (a1 << 4);
   d[0] = a2[0]; d[1] = a2[1]; d[2] = a2[2]; d[3] = a2[3];
 }
 
-/* FUN_80167ae8 — 32-byte compare: 0x801c11e0 vs *0x801b43f0;
+/* save_blk_cmp32 — 32-byte compare: 0x801c11e0 vs *0x801b43f0;
  * returns 1 on first diff, 0 if equal. Disasm 0x80167ae8-30. */
-int FUN_80167ae8(void)
+int save_blk_cmp32(void)
 {
   uint8_t *a = (uint8_t *)guest_at(0x801c11e0);
   uint8_t *b = (uint8_t *)guest_at(*(uint32_t *)guest_at(0x801b43f0));
@@ -2278,26 +2278,26 @@ int FUN_80167ae8(void)
   return 0;
 }
 
-/* FUN_80156650 — fighter_record_build(a0) -> idx table @0x801f36d0 + a1*4,
- * then FUN_801565ec(ret, a2, *slot). Disasm 0x80156650-98. */
+/* fighter_rec_fetch_apply — fighter_record_build(a0) -> idx table @0x801f36d0 + a1*4,
+ * then cd_file_read_seq(ret, a2, *slot). Disasm 0x80156650-98. */
 extern uint32_t fighter_record_build(uint32_t,uint32_t,uint32_t);
-extern uint32_t FUN_801565ec(uint32_t,uint32_t,uint32_t);
-void FUN_80156650(uint32_t a0,uint32_t a1,uint32_t a2)
+extern uint32_t cd_file_read_seq(uint32_t,uint32_t,uint32_t);
+void fighter_rec_fetch_apply(uint32_t a0,uint32_t a1,uint32_t a2)
 {
   uint32_t r = fighter_record_build(a0,a1,a2);
   uint32_t slot = *(uint32_t *)guest_at(0x801f36d0 + (a1 << 2));
-  FUN_801565ec(r,a2,slot);
+  cd_file_read_seq(r,a2,slot);
 }
 
-/* FUN_801573ec — memcard state init @0x801bef60: FUN_80156114(0),
+/* mc_state_init — memcard state init @0x801bef60: brightness_packet_send(0),
  * poll FUN_80195ffc(9,0,0) till 0, then +0xd=0, +0xf=0xff,
  * +0x20 = +0x24. Disasm 0x801573ec-0x8015743c. */
-extern void FUN_80156114(int32_t);
+extern void brightness_packet_send(int32_t);
 extern int32_t FUN_80195ffc(int32_t,int32_t,int32_t);
-void FUN_801573ec(void)
+void mc_state_init(void)
 {
   uint8_t *s0 = (uint8_t *)guest_at(0x801bef60);
-  FUN_80156114(0);
+  brightness_packet_send(0);
   while (FUN_80195ffc(9,0,0) != 0) { }
   if (s0 == NULL) return;
   s0[0xd] = 0;
@@ -2305,58 +2305,58 @@ void FUN_801573ec(void)
   *(uint32_t *)(s0 + 0x20) = *(uint32_t *)(s0 + 0x24);
 }
 
-/* FUN_80157458 — memcard mode nibble: a0<0 -> return s0[0xe]&0xff;
- * else FUN_801573ec() then s0[0xe] = (s0[0xe]&0xf0)|a0, ret val.
+/* mc_mode_nibble_rw — memcard mode nibble: a0<0 -> return s0[0xe]&0xff;
+ * else mc_state_init() then s0[0xe] = (s0[0xe]&0xf0)|a0, ret val.
  * Disasm 0x80157458-0x801574ac. */
-uint32_t FUN_80157458(int32_t a0)
+uint32_t mc_mode_nibble_rw(int32_t a0)
 {
   uint8_t *s0 = (uint8_t *)guest_at(0x801bef60);
   uint32_t v0;
   if (s0 == NULL) return 0;
   if (a0 < 0) return s0[0xe] & 0xff;
-  FUN_801573ec();
+  mc_state_init();
   v0 = (s0[0xe] & 0xf0) | (uint32_t)a0;
   s0[0xe] = (uint8_t)v0;
   return v0 & 0xff;
 }
 
-/* FUN_80155edc — gauge/se value select: FUN_80156048(0,a0),
+/* se_value_select — gauge/se value select: gauge_scale_fixed(0,a0),
  * FUN_80156ef4(0x405,0,4), a1 = table[a0<8] {0,4fff,0,0,4fff,3fff,
  * 5fff,3fff}, blk_1f26c0_init_c(2,a1). Disasm 0x80155edc-0x80155f5c. */
 extern void FUN_80156ef4(int32_t,int32_t,int32_t);
 extern void blk_1f26c0_init_c(int32_t,uint32_t);
-void FUN_80155edc(uint32_t a0)
+void se_value_select(uint32_t a0)
 {
   static const uint16_t tab[8] = {0,0x4fff,0,0,0x4fff,0x3fff,0x5fff,0x3fff};
   uint32_t a1 = 0;
-  FUN_80156048(0,(short)a0);
+  gauge_scale_fixed(0,(short)a0);
   FUN_80156ef4(0x405,0,4);
   if (a0 < 8) a1 = tab[a0];
   blk_1f26c0_init_c(2,a1);
 }
 
-/* FUN_8016325c — mode dispatch on *(u32*)a1: 0->632e4, 1->63314,
+/* mode3_dispatch — mode dispatch on *(u32*)a1: 0->632e4, 1->63314,
  * 2->63320, else break. Disasm 0x8016325c-0x801632dc. */
-extern uint32_t FUN_801632e4(uint32_t,uint32_t);
+extern uint32_t block_copy_ret_len(uint32_t,uint32_t);
 /* lzss_trap — guest `break 1,7; jr ra`: debug breakpoint stub.
  * Faithful port traps instead of silently returning. */
 extern void lzss_trap(uint32_t,uint32_t);
 
 extern uint32_t lzss_decode(uint32_t,uint32_t);
-void FUN_8016325c(uint32_t a0,uint32_t a1)
+void mode3_dispatch(uint32_t a0,uint32_t a1)
 {
   uint32_t v1 = *(uint32_t *)guest_at(a1);
   (void)a0;
   if (v1 == 1) { lzss_trap(a0,a1); return; }
   if (v1 < 2) {
-    if (v1 == 0) { FUN_801632e4(a0,a1); return; }
+    if (v1 == 0) { block_copy_ret_len(a0,a1); return; }
   } else if (v1 == 2) { lzss_decode(a0,a1); return; }
 }
 
-/* FUN_8019da44 — 24-slot status byte fill: for i<24, rec =
+/* slot_status_fill — 24-slot status byte fill: for i<24, rec =
  * *0x801bdeb0 + i*16, bit i of *0x801bde3c selects mapping of
  * lhu(rec+0xc): bit? (f?1:3) : (f?2:0). Disasm verified. */
-void FUN_8019da44(uint8_t *a0)
+void slot_status_fill(uint8_t *a0)
 {
   uint8_t *base = (uint8_t *)guest_at(*(uint32_t *)guest_at(0x801bdeb0));
   uint32_t mask = *(uint32_t *)guest_at(0x801bde3c);
@@ -2369,46 +2369,46 @@ void FUN_8019da44(uint8_t *a0)
   }
 }
 
-/* FUN_80156c60 — memcard action dispatch (JT 0x80120b74):
- * 0 -> if *0x801f36c2: FUN_801575bc(a1,1); 1 -> FUN_80156114(0x30);
- * 2 -> FUN_80156114(0x7f); 3/4 -> FUN_801573ec(); 5 -> FUN_80156114(a1).
+/* mc_action_dispatch — memcard action dispatch (JT 0x80120b74):
+ * 0 -> if *0x801f36c2: datetime_confirm_a(a1,1); 1 -> brightness_packet_send(0x30);
+ * 2 -> brightness_packet_send(0x7f); 3/4 -> mc_state_init(); 5 -> brightness_packet_send(a1).
  * Always returns 1. Disasm verified. */
-int32_t FUN_80156c60(uint32_t a0,uint32_t a1)
+int32_t mc_action_dispatch(uint32_t a0,uint32_t a1)
 {
   if (a0 >= 6) return 1;
   switch (a0) {
   case 0:
-    if (*(uint16_t *)guest_at(0x801f36c2) != 0) FUN_801575bc(a1,1);
+    if (*(uint16_t *)guest_at(0x801f36c2) != 0) datetime_confirm_a(a1,1);
     break;
-  case 1: FUN_80156114(0x30); break;
-  case 2: FUN_80156114(0x7f); break;
-  case 3: case 4: FUN_801573ec(); break;
-  case 5: FUN_80156114(a1); break;
+  case 1: brightness_packet_send(0x30); break;
+  case 2: brightness_packet_send(0x7f); break;
+  case 3: case 4: mc_state_init(); break;
+  case 5: brightness_packet_send(a1); break;
   }
   return 1;
 }
 
-/* FUN_80156cf4 — same dispatch via FUN_8015768c (JT 0x80120b8c). */
-int32_t FUN_80156cf4(uint32_t a0,uint32_t a1)
+/* mc_action_dispatch_b — same dispatch via datetime_confirm_b (JT 0x80120b8c). */
+int32_t mc_action_dispatch_b(uint32_t a0,uint32_t a1)
 {
   if (a0 >= 6) return 1;
   switch (a0) {
   case 0:
-    if (*(uint16_t *)guest_at(0x801f36c2) != 0) FUN_8015768c(a1,1);
+    if (*(uint16_t *)guest_at(0x801f36c2) != 0) datetime_confirm_b(a1,1);
     break;
-  case 1: FUN_80156114(0x30); break;
-  case 2: FUN_80156114(0x7f); break;
-  case 3: case 4: FUN_801573ec(); break;
-  case 5: FUN_80156114(a1); break;
+  case 1: brightness_packet_send(0x30); break;
+  case 2: brightness_packet_send(0x7f); break;
+  case 3: case 4: mc_state_init(); break;
+  case 5: brightness_packet_send(a1); break;
   }
   return 1;
 }
 
-/* FUN_80166398 — fighter spawn tail: 2b49c(0), 525c4(s1),
+/* fighter_spawn_tail — fighter spawn tail: 2b49c(0), 525c4(s1),
  * 5a584(scratch pair, s1, s1[0xc0]), 51328(pair, s1), 6fbfc(),
  * if !a1 record_copy_1a(s8(s1+0x98)); s1[0xa0]=0xff.
  * Disasm 0x80166398-0x80166424. */
-extern void FUN_8015a584(uint32_t,uint32_t,uint8_t *,uint32_t);
+extern void fighter_link_init(uint32_t,uint32_t,uint8_t *,uint32_t);
 extern void scratchpad_pair_init(void);
 extern void FUN_8012b49c(undefined1);
 extern void FUN_801525c4(intptr_t);
@@ -2416,39 +2416,39 @@ extern void battle_state_init(uint8_t *,uint8_t *,uint32_t);
 extern uint8_t *g_DAT_1f8000e8,*g_DAT_1f8001f0;
 extern uint32_t guest_of(const void *);
 extern void record_copy_1a(int);
-void FUN_80166398(uint8_t *s1,uint32_t s0)
+void fighter_spawn_tail(uint8_t *s1,uint32_t s0)
 {
   FUN_8012b49c(0);
   FUN_801525c4((intptr_t)(void *)s1);
-  FUN_8015a584(0x1f8000e8,0x1f8001f0,(uint8_t *)s1,*(uint32_t *)(s1 + 0xc0));
+  fighter_link_init(0x1f8000e8,0x1f8001f0,(uint8_t *)s1,*(uint32_t *)(s1 + 0xc0));
   battle_state_init(g_DAT_1f8000e8,g_DAT_1f8001f0,guest_of(s1));
   scratchpad_pair_init();
   if (s0 == 0) record_copy_1a((int8_t)s1[0x98]);
   *(uint16_t *)(s1 + 0xa0) = 0xff;
 }
 
-/* FUN_801565ec — CD file read seq: 9d4d0(0), 9d470(a1),
+/* cd_file_read_seq — CD file read seq: 9d4d0(0), 9d470(a1),
  * 9d410(a0,a2), poll 9d500(0) till nonzero; returns a2.
  * Disasm 0x801565ec-0x80156648. */
 extern void cd_mode_store(int32_t);
-extern void FUN_8019d470(uint32_t);
-extern void FUN_8019d410(uint32_t,uint32_t);
-extern int32_t FUN_8019d500(int32_t);
-uint32_t FUN_801565ec(uint32_t a0,uint32_t a1,uint32_t a2)
+extern void cd_status_shifted_read(uint32_t);
+extern void cd_seek_param_issue_clamped(uint32_t,uint32_t);
+extern int32_t cd_seek_complete_poll(int32_t);
+uint32_t cd_file_read_seq(uint32_t a0,uint32_t a1,uint32_t a2)
 {
   cd_mode_store(0);
-  FUN_8019d470(a1);
-  FUN_8019d410(a0,a2);
-  while (FUN_8019d500(0) == 0) { }
+  cd_status_shifted_read(a1);
+  cd_seek_param_issue_clamped(a0,a2);
+  while (cd_seek_complete_poll(0) == 0) { }
   return a2;
 }
 
-/* FUN_8015a584 — fighter link init: a2[0x94]=-1, a3 guest ptr,
+/* fighter_link_init — fighter link init: a2[0x94]=-1, a3 guest ptr,
  * +0xde=0x4b on both scratch blocks, +0x54 = (a3+0x19/0x1a)&3,
  * +0x86=0x10, +0x96=3, 5ab88(0,s0) + 5ab88(1,s0).
  * Disasm 0x8015a584-0x8015a610. */
 extern void u16_tbl_copy(uint32_t,uint32_t);
-void FUN_8015a584(uint32_t a0,uint32_t a1,uint8_t *a2,uint32_t a3)
+void fighter_link_init(uint32_t a0,uint32_t a1,uint8_t *a2,uint32_t a3)
 {
   uint8_t *t1 = (uint8_t *)guest_at(a0);
   uint8_t *t0 = (uint8_t *)guest_at(a1);
@@ -2468,25 +2468,25 @@ void FUN_8015a584(uint32_t a0,uint32_t a1,uint8_t *a2,uint32_t a3)
   u16_tbl_copy(1,s0);
 }
 
-/* FUN_801632e4 — s0=*(u32*)(a1+8); FUN_8018e490(a0,a1+0xc,s0);
+/* block_copy_ret_len — s0=*(u32*)(a1+8); guest_memcpy(a0,a1+0xc,s0);
  * returns s0. Disasm 0x801632e4-0x8016330c. */
-extern uint32_t FUN_8018e490(uint32_t,uint32_t,uint32_t);
-uint32_t FUN_801632e4(uint32_t a0,uint32_t a1)
+extern uint32_t guest_memcpy(uint32_t,uint32_t,uint32_t);
+uint32_t block_copy_ret_len(uint32_t a0,uint32_t a1)
 {
   uint8_t *b = (uint8_t *)guest_at(a1);
   uint32_t s0;
   if (b == NULL) return 0;
   s0 = *(uint32_t *)(b + 8);
-  /* FUN_8018e490 takes guest addresses; b+0xc is host, so pass the
+  /* guest_memcpy takes guest addresses; b+0xc is host, so pass the
    * guest address a1+0xc directly (b = guest_at(a1)). */
-  FUN_8018e490(a0,a1 + 0xc,s0);
+  guest_memcpy(a0,a1 + 0xc,s0);
   return s0;
 }
 
 extern int32_t rec_sorted_lookup(uint8_t *,uint32_t,int32_t);
-extern int32_t FUN_80168424(uint32_t);
-extern int32_t FUN_801684c8(uint32_t);
-extern int32_t FUN_8016850c(uint32_t,const void *,const void *,const void *,uint32_t,uint32_t);
+extern int32_t mc_op_result_poll(uint32_t);
+extern int32_t mc_op_wait_stable(uint32_t);
+extern int32_t mc_chan_job_stable_poll(uint32_t,const void *,const void *,const void *,uint32_t,uint32_t);
 
 /* hud_name_fixup — name fixup: sanitize first 3 bytes (0x3c/0x7f -> 0x20),
  * then scan string-pointer table @0x801b4250 backwards (a2 from 0x15,
@@ -2557,35 +2557,35 @@ void name_rec_gate(uint8_t *s1,const void *a1_)
 }
 
 /* mc_op_dispatch — memcard op dispatch: s0 = -(a0!=0), s1 = s0&0x10,
- * r = FUN_80168424(s1); r==3||4 -> slot @0x801b43e8+(s0&4) = 3;
- * r==0||4 -> return FUN_801684c8(s1); else return r.
+ * r = mc_op_result_poll(s1); r==3||4 -> slot @0x801b43e8+(s0&4) = 3;
+ * r==0||4 -> return mc_op_wait_stable(s1); else return r.
  * Disasm 0x80167b34-0x80167bd4. */
 int mc_op_dispatch(uint32_t a0)
 {
   int32_t s0 = -(a0 != 0);
   uint32_t s1 = (uint32_t)s0 & 0x10;
-  int32_t r = FUN_80168424(s1);
+  int32_t r = mc_op_result_poll(s1);
   if (r == 3 || r == 4)
     *(uint32_t *)guest_at(0x801b43e8 + ((uint32_t)s0 & 4)) = 3;
-  if (r == 0 || r == 4) return FUN_801684c8(s1);
+  if (r == 0 || r == 4) return mc_op_wait_stable(s1);
   return r;
 }
 
 /* mc_op_dispatch_b — memcard op dispatch variant: r==3||0 -> slot select
- * @0x801b43e8+((a0!=0)?4:0), FUN_8016850c probe; rc!=0 -> rc,
+ * @0x801b43e8+((a0!=0)?4:0), mc_chan_job_stable_poll probe; rc!=0 -> rc,
  * out2[0]==0 -> 0, else (*slot==3 ? 0xf : 0). r==4 -> slot=3 ret 4.
  * Disasm 0x80167bd8-0x80167cdc. */
 int mc_op_dispatch_b(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,uint32_t s4,uint32_t s5,uint32_t s6)
 {
   int32_t s1 = -(a0 != 0);
   uint32_t fl = (uint32_t)s1 & 0x10;
-  int32_t r = FUN_80168424(fl);
+  int32_t r = mc_op_result_poll(fl);
   if (r == 3 || r == 0) {
     uint32_t *slot = (uint32_t *)guest_at(0x801b43e8 + ((a0 != 0) ? 4 : 0));
     uint32_t in[3] = { a1,a2,a3 };
     uint32_t out1[8] = {0}, out2[8] = {0};
     uint32_t st1 = 0, st2 = 1;
-    int32_t rc = FUN_8016850c(fl,in,out1,out2,st1,st2);
+    int32_t rc = mc_chan_job_stable_poll(fl,in,out1,out2,st1,st2);
     if (rc != 0) return rc;
     if (out2[0] == 0) return 0;
     return *slot == 3 ? 0xf : 0;
@@ -2798,12 +2798,12 @@ void lzss_trap(uint32_t a0,uint32_t a1)
 /* ================= appended ports (psx_payload disasm) ================= */
 
 /* callee externs needed by the appended ports */
-extern void FUN_8012f024(uint32_t,uint32_t);
+extern void battle_struct_init(uint32_t,uint32_t);
 extern void FUN_8012a030(uint32_t);
 extern int reset_sprite_ot_block(uint32_t);
 extern void task_table_init(uint32_t);
 extern void record_copy_1a(int);
-extern void FUN_801358e8(int32_t,int32_t);
+extern void per_side_setup(int32_t,int32_t);
 extern void rec_copy_init(int32_t,uint32_t,uint32_t);
 extern int clear_f4ee8_u16s(uint32_t);
 extern int reset_combat_slots(void);
@@ -2812,28 +2812,28 @@ extern void FUN_801566a0(uint32_t,int32_t);
 extern void FUN_801566d4(uint32_t,int32_t);
 extern void FUN_80163154(uint32_t,uint32_t,int32_t);
 extern void FUN_8019a460(uint32_t);
-extern uint32_t br2_action_enter(void *battle, uint8_t *ctrl, uint32_t sel);
-/* strong FUN_80175fec: forwards to br2_action_enter (action.c).
+extern uint32_t action_enter(void *battle, uint8_t *ctrl, uint32_t sel);
+/* strong action_enter_fwd: forwards to action_enter (action.c).
    Overrides the weak stub in bind.c. */
-int FUN_80175fec(void *battle, uint8_t *ctrl, uint32_t sel)
+int action_enter_fwd(void *battle, uint8_t *ctrl, uint32_t sel)
 {
-  return (int)br2_action_enter(battle,ctrl,sel);
+  return (int)action_enter(battle,ctrl,sel);
 }
-extern void FUN_80172a34(int32_t);
-extern void FUN_8016d478(uint32_t);
-extern int FUN_80153484(uint32_t,uint32_t);
-extern int FUN_8015e87c();
-extern int FUN_8015e88c();
-extern int FUN_8015e8a4(int32_t);
-extern int FUN_80170d38(uint32_t,int32_t,uint8_t *,uint8_t *);
-extern int FUN_80170fe0(uint32_t,int32_t);
-extern int FUN_80171890(uint32_t,uint8_t *,int32_t);
+extern void fighter_anim_table_init(int32_t);
+extern void sprite_anim_chain_build(uint32_t);
+extern int select_phase_gate(uint32_t,uint32_t);
+extern int display_cur_invalidate();
+extern int display_pair_invalidate();
+extern int display_page_commit_a(int32_t);
+extern int save_channel_init_commit(uint32_t,int32_t,uint8_t *,uint8_t *);
+extern int save_load_state_machine(uint32_t,int32_t);
+extern int save_state_machine_alt(uint32_t,uint8_t *,int32_t);
 extern void FUN_80195290(int32_t,int32_t);
 extern void FUN_801952b0(int32_t);
-extern int FUN_801685b4(uint32_t,const void *,uint32_t);
-extern int FUN_80168838(uint32_t,const void *,void *,uint32_t,uint32_t);
-extern int FUN_801688f0(uint32_t,const void *,void *,uint32_t,uint32_t);
-extern int FUN_8016831c(uint32_t,const void *,void *,uint32_t,uint32_t);
+extern int mc_file_cmd_stable_poll(uint32_t,const void *,uint32_t);
+extern int mc_job_a_result_poll(uint32_t,const void *,void *,uint32_t,uint32_t);
+extern int mc_job_b_result_poll(uint32_t,const void *,void *,uint32_t,uint32_t);
+extern int mc_op_seq_probe(uint32_t,const void *,void *,uint32_t,uint32_t);
 /* pointer args may arrive as guest addrs or host ptrs; normalise */
 static void *mem_ptr(uint32_t v)
 {
@@ -2865,17 +2865,17 @@ extern uint32_t cd_xchg_fec24(uint32_t);
 extern int32_t fifo_space_check(void);
 extern int FUN_801a9644(int,undefined2,undefined4,undefined4,short,undefined2,undefined4,undefined4);
 extern int *node_lazy_attach(int,int,int,int);
-extern int FUN_8018cfdc(int32_t,uint32_t);
+extern int cd_file_load_sm(int32_t,uint32_t);
 extern int sprite_quad_emit(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
-extern uint32_t FUN_8018c824();
+extern uint32_t spr_slot_pkt_submit();
 extern void sprite_9slice_build(uint32_t,uint32_t,uint32_t,uint32_t);
 extern void spr_attr_alloc_a(uint32_t,int16_t,int16_t,int16_t,int16_t,uint32_t,int32_t);
 extern void spr_attr_alloc_b(uint32_t,uint32_t,uint32_t,uint32_t,int32_t,int32_t);
-extern void FUN_8018bfcc(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
-extern void FUN_80136ddc(void);
-extern int FUN_801274fc(uint32_t,uint32_t,uint32_t);
-extern int FUN_801274d8(uint32_t);
-extern int FUN_8018bf40(int32_t,int32_t,int32_t,int32_t);
+extern void spr_draw_pair(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+extern void hud_sprite_desc_init(void);
+extern int rgb_triple_store(uint32_t,uint32_t,uint32_t);
+extern int scratch_013_set(uint32_t);
+extern int spr_draw_off(int32_t,int32_t,int32_t,int32_t);
 
 static uint32_t g32(uint32_t a)
 {
@@ -2920,7 +2920,7 @@ int FUN_801568fc(uint32_t a0,int32_t a1)
     uint8_t *b = (uint8_t *)guest_at(g32(0x1f8000c0));
     int16_t x = b ? (int16_t)b[0xe] : 0;
     int16_t y = b ? (int16_t)b[0xf] : 0;
-    FUN_80156048(x,y);
+    gauge_scale_fixed(x,y);
     return 1;
   }
   case 1:
@@ -2991,8 +2991,8 @@ int FUN_801568fc(uint32_t a0,int32_t a1)
   return 1;
 }
 
-/* ---- FUN_80156d88 @0x80156d88 (1 insn: jr ra; li v0,1) ---- */
-int FUN_80156d88(void)
+/* ---- ret_one @0x80156d88 (1 insn: jr ra; li v0,1) ---- */
+int ret_one(void)
 {
   return 1;
 }
@@ -3025,10 +3025,10 @@ void FUN_8015787c(uint32_t a0,uint32_t a1)
     if ((uint32_t)v1 < 0xd) code = map[v1]; else code = 0;
     code += 0xa;
   } else {
-    FUN_801577bc(a1,1);
+    mc_confirm_dispatch(a1,1);
     return;
   }
-  FUN_801577bc(code,1);
+  mc_confirm_dispatch(code,1);
 }
 
 /* ---- FUN_8015a1e4 @0x8015a1e4 (231 insns) ----
@@ -3049,8 +3049,8 @@ void FUN_8015a1e4(uint32_t a0)
   uint8_t *bp;
   uint32_t *cell;
 
-  s0 = FUN_80153484(a0,0);
-  v0 = FUN_80153484(a0,1);
+  s0 = select_phase_gate(a0,0);
+  v0 = select_phase_gate(a0,1);
   if (s0 != 0) {
     s5 = (v0 == 0);
   } else {
@@ -3281,22 +3281,22 @@ int FUN_8015abc0(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,uint32_t a4)
 
   if (s0 < 0) return -1;
   if (s0 == 0) {
-    FUN_8018cfdc(-1,0);
+    cd_file_load_sm(-1,0);
     *(uint32_t *)guest_at(0x801c43a0) = 0;
     *(uint8_t *)guest_at(0x801e3d00) = 0xff;
     if (s1 == 0) {
       *(uint32_t *)guest_at(0x801c47b8) = 0x80010000;
     } else if (s1 == 1) {
-      extern uint8_t *FUN_80127680(void);
+      extern uint8_t *tag_table_get(void);
       extern uint32_t guest_of(const void *p);
-      *(uint32_t *)guest_at(0x801c47b8) = guest_of(FUN_80127680());
+      *(uint32_t *)guest_at(0x801c47b8) = guest_of(tag_table_get());
     }
     s0 = 0x10;
   } else if (s0 != 0x10) {
     *(int16_t *)(s2 + 0x8c) = (int16_t)s0;
     return 0;
   }
-  if (FUN_8018cfdc((int32_t)a1,g32(0x801c47b8)) == 0) {
+  if (cd_file_load_sm((int32_t)a1,g32(0x801c47b8)) == 0) {
     *(int16_t *)(s2 + 0x8c) = (int16_t)s0;
     return 0;
   }
@@ -3309,7 +3309,7 @@ int FUN_8015abc0(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,uint32_t a4)
 /* ---- FUN_8015ace4 @0x8015ace4 (298 insns) ----
    a0 is a HOST pointer (callers pass _g_pad_buffer).
    The 0x38-byte descriptor at sp+0x10 is built once in the init state
-   and persists across loop iterations (FUN_801294cc may edit it). */
+   and persists across loop iterations (menu_stepper_state_advance may edit it). */
 int FUN_8015ace4(uint8_t *s0)
 {
   uint8_t *s4 = (uint8_t *)guest_at(0x1f800000);
@@ -3325,7 +3325,7 @@ int FUN_8015ace4(uint8_t *s0)
         uint16_t f;
         uint8_t *bp;
         if (FUN_8012aaa8() != 0) goto poll;
-        FUN_8012cbc0(2,0,0);
+        print_mode_dispatch_b(2,0,0);
         f = *(uint16_t *)(s0 + 2);
         *(uint32_t *)(desc + 0xc) = 0x8015b190;
         /* explicit offsets (desc base = sp+0x10) */
@@ -3374,7 +3374,7 @@ body:
       s1 = 0xf0;
       s3 = 0;
     }
-    FUN_801294cc(desc);
+    menu_stepper_state_advance(desc);
     goto poll;
 statef0:
     s1 = 0xff;
@@ -3410,12 +3410,12 @@ check:
   return s3;
 }
 
-/* ---- FUN_80160598 @0x80160598 (188 insns) ----
+/* ---- dialog_sel_dispatch @0x80160598 (188 insns) ----
    a0 = guest dialog-state ptr, a1 = selector (u16). */
 extern void hud_text_b();
-extern int FUN_80129978();
-extern void FUN_8012bf0c();
-int FUN_80160598(uint32_t a0,uint32_t a1)
+extern int u16_counter_step_pad_a();
+extern void banner_stripe_scroll();
+int dialog_sel_dispatch(uint32_t a0,uint32_t a1)
 {
   uint8_t *s3 = (uint8_t *)guest_at(a0);
   uint8_t *s2 = (uint8_t *)guest_at(0x1f800000);
@@ -3425,7 +3425,7 @@ int FUN_80160598(uint32_t a0,uint32_t a1)
   uint32_t ctxc = *(uint32_t *)(s2 + 0xc);
   int32_t v0;
 
-  FUN_8012cd9c(0x20,0xffffffff);
+  scroll_offset_set(0x20,0xffffffff);
   s1 = (int32_t)(a1 & 0xffff);
   if (s1 == (int32_t)(*(uint16_t *)(s3 + 8) + 0x100)) {
     hud_text_b(ctx8,ctxc,(const void *)guest_at(0x80121270),0x1000,0x1000,0);
@@ -3441,11 +3441,11 @@ int FUN_80160598(uint32_t a0,uint32_t a1)
   s1 &= 0xffff;
   if (s1 == 0x100) {
     int32_t inrange;
-    FUN_8012cd9c(0xffffffff,0x18);
-    FUN_8012e58c(ctx8,ctxc,(const void *)guest_at(0x80121360),0x1000,0x1000,0);
+    scroll_offset_set(0xffffffff,0x18);
+    announce_param_block_init(ctx8,ctxc,(const void *)guest_at(0x80121360),0x1000,0x1000,0);
     inrange = ((uint32_t)(s3[3] - 0x12) < 3);
-    FUN_8012bf0c(4,0,inrange ? 0 : 4,7);
-    FUN_8012cdd8(0,0x10);
+    banner_stripe_scroll(4,0,inrange ? 0 : 4,7);
+    scroll_offset_accumulate(0,0x10);
     return 0;
   }
   if (s1 < 0x101) {
@@ -3457,7 +3457,7 @@ int FUN_80160598(uint32_t a0,uint32_t a1)
       return 0;
     }
     if (s1 == 1) {
-      if (FUN_80129978(ctx8,1,1) == 0) return 0;
+      if (u16_counter_step_pad_a(ctx8,1,1) == 0) return 0;
       {
         uint8_t *bp = (uint8_t *)guest_at(*(uint32_t *)(s2 + 0xc0));
         if (bp) bp[0x22] = s3[0x14];
@@ -3472,10 +3472,10 @@ int FUN_80160598(uint32_t a0,uint32_t a1)
   /* s1 >= 0x101 */
   if (s1 == 0x101) {
     uint32_t str;
-    FUN_8012e58c(ctx8,ctxc,(const void *)guest_at(0x80121b6c),0x1000,0x1000,s0);
+    announce_param_block_init(ctx8,ctxc,(const void *)guest_at(0x80121b6c),0x1000,0x1000,s0);
     str = g32(0x801b3f70 + (uint32_t)(*(int16_t *)(s3 + 0x14)) * 4);
-    FUN_8012e58c(ctx8,ctxc,(const void *)guest_at(str),0x160,0x1000,s0);
-    FUN_8012cdd8(0,0xc);
+    announce_param_block_init(ctx8,ctxc,(const void *)guest_at(str),0x160,0x1000,s0);
+    scroll_offset_accumulate(0,0xc);
     return 0;
   }
   if (s1 == 0x102 || s1 == 0x103 || s1 == 0x104) {
@@ -3483,8 +3483,8 @@ int FUN_80160598(uint32_t a0,uint32_t a1)
     if (s1 == 0x102)      str = 0x80121b78;
     else if (s1 == 0x103) str = 0x80121b98;
     else                  str = 0x80121318;
-    FUN_8012e58c(ctx8,ctxc,(const void *)guest_at(str),0x1000,0x1000,s0);
-    FUN_8012cdd8(0,0xc);
+    announce_param_block_init(ctx8,ctxc,(const void *)guest_at(str),0x1000,0x1000,s0);
+    scroll_offset_accumulate(0,0xc);
     return 0;
   }
   if (s1 == 0x1ff) return 0;
@@ -3510,7 +3510,7 @@ int FUN_80165908(uint32_t a0,uint32_t a1)
   s1 = (int32_t)*(int16_t *)(s4 + 0x8c);
   if (s1 < 0) return -1;
   if (s1 == 0) {
-    FUN_8018cfdc(-1,0);
+    cd_file_load_sm(-1,0);
     s1 = 0x10;
     *(uint32_t *)guest_at(0x801c43a0) = 0;
     *(uint8_t *)guest_at(0x801e3d00) = 0xff;
@@ -3522,45 +3522,45 @@ int FUN_80165908(uint32_t a0,uint32_t a1)
   }
   if ((uint32_t)s2 < 0x10) s0 = tab[s2];
   v3cfc = g32(0x801e3cfc);
-  if (FUN_8018cfdc(s0,v3cfc) == 0) {
+  if (cd_file_load_sm(s0,v3cfc) == 0) {
     *(int16_t *)(s4 + 0x8c) = (int16_t)s1;
     return 0;
   }
   s5 = g8(0x1f800013);
-  FUN_801274d8(0);
+  scratch_013_set(0);
   v47b8 = g32(0x801c47b8);
   v3cfc = g32(0x801e3cfc);
   if (s2 < 0xf) {
     if (s2 >= 4) {
       /* four-sprite block */
       FUN_80163154(v47b8,v3cfc,0);
-      FUN_8018bfcc(v47b8,0,0x1f0,1,0x200,0,1);
+      spr_draw_pair(v47b8,0,0x1f0,1,0x200,0,1);
       FUN_80163154(v47b8,v3cfc,1);
-      FUN_8018bfcc(v47b8,0,0x1f1,1,0x280,0,1);
+      spr_draw_pair(v47b8,0,0x1f1,1,0x280,0,1);
       FUN_80163154(v47b8,v3cfc,2);
-      FUN_8018bfcc(v47b8,0,0x1f2,1,0x240,0x100,1);
+      spr_draw_pair(v47b8,0,0x1f2,1,0x240,0x100,1);
       FUN_80163154(v47b8,v3cfc,3);
-      FUN_8018bfcc(v47b8,0,0x1f3,1,0x2c0,0x100,1);
+      spr_draw_pair(v47b8,0,0x1f3,1,0x2c0,0x100,1);
     } else if (s2 == 3) {
       FUN_80163154(v47b8,v3cfc,0);
-      FUN_8018bfcc(v47b8,0,0x1f4,1,0x300,0,1);
+      spr_draw_pair(v47b8,0,0x1f4,1,0x300,0,1);
       FUN_80163154(v47b8,v3cfc,1);
-      FUN_8018bf40((int32_t)v47b8,0x280,0,1);
+      spr_draw_off((int32_t)v47b8,0x280,0,1);
     } else {
       goto single;
     }
   } else if (s2 == 0xf) {
     FUN_80163154(v47b8,v3cfc,0);
-    FUN_8018bfcc(v47b8,0,0x1f4,1,0x300,0,1);
+    spr_draw_pair(v47b8,0,0x1f4,1,0x300,0,1);
     FUN_80163154(v47b8,v3cfc,1);
-    FUN_8018bf40((int32_t)v47b8,0x340,0,1);
+    spr_draw_off((int32_t)v47b8,0x340,0,1);
   } else {
 single:
     FUN_80163154(v47b8,v3cfc,0);
-    FUN_8018bfcc(v47b8,0,0x1f4,1,0x300,0,1);
+    spr_draw_pair(v47b8,0,0x1f4,1,0x300,0,1);
   }
   FUN_8019a460(0);
-  FUN_801274d8(s5);
+  scratch_013_set(s5);
   *(int16_t *)(s4 + 0x8c) = -1;
   return 1;
 }
@@ -3626,10 +3626,10 @@ tick:
                     (int16_t)*(uint16_t *)(s0 + 0x22),
                     (uint32_t)(v1 * 0x10101),3);
     }
-    FUN_8018c824(*(uint32_t *)(s0 + 8) + 4,0,0xefff0088,0x7c000000);
-    FUN_8018c824(*(uint32_t *)(s0 + 8) + 4,0x100,0xefff008a,0x7c400000);
-    FUN_8018c824(*(uint32_t *)(s0 + 8) + 4,0xf00000,0xefff0099,0x7c800000);
-    FUN_8018c824(*(uint32_t *)(s0 + 8) + 4,0xf00100,0xefff009b,0x7cc00000);
+    spr_slot_pkt_submit(*(uint32_t *)(s0 + 8) + 4,0,0xefff0088,0x7c000000);
+    spr_slot_pkt_submit(*(uint32_t *)(s0 + 8) + 4,0x100,0xefff008a,0x7c400000);
+    spr_slot_pkt_submit(*(uint32_t *)(s0 + 8) + 4,0xf00000,0xefff0099,0x7c800000);
+    spr_slot_pkt_submit(*(uint32_t *)(s0 + 8) + 4,0xf00100,0xefff009b,0x7cc00000);
     goto poll;
 poll:
     frame_tick((intptr_t)s0);
@@ -3652,22 +3652,22 @@ void FUN_8016642c(uint32_t a0,uint32_t a1)
   s0[0x9d] = 0;
   s0[0x9e] = 0;
   s0[0x99] = 0;
-  FUN_8012f024(w,a0);
+  battle_struct_init(w,a0);
   FUN_8012a030(FUN_80129f78());
   reset_sprite_ot_block(a0);
   task_table_init(0);
   record_copy_1a((int32_t)(int8_t)s0[0x98]);
-  FUN_801358e8((int32_t)(int8_t)s0[0x98],(int32_t)(int8_t)s0[0x99]);
+  per_side_setup((int32_t)(int8_t)s0[0x98],(int32_t)(int8_t)s0[0x99]);
   rec_copy_init((int32_t)(int8_t)s0[0x98],0x1f8000e8,0x1f8001f0);
   clear_f4ee8_u16s(0x1f8000e8);
   clear_f4ee8_u16s(0x1f8001f0);
   reset_combat_slots();
-  FUN_80175fec((void *)(uintptr_t)a0,(uint8_t *)guest_at(0x1f8000e8),a1);
-  FUN_80175fec((void *)(uintptr_t)a0,(uint8_t *)guest_at(0x1f8001f0),a1);
-  FUN_80172a34((int32_t)(int8_t)s0[0x99]);
-  FUN_8016d478(a0);
+  action_enter_fwd((void *)(uintptr_t)a0,(uint8_t *)guest_at(0x1f8000e8),a1);
+  action_enter_fwd((void *)(uintptr_t)a0,(uint8_t *)guest_at(0x1f8001f0),a1);
+  fighter_anim_table_init((int32_t)(int8_t)s0[0x99]);
+  sprite_anim_chain_build(a0);
   clear_f0300_records();
-  FUN_8012f024(*(uint32_t *)(s0 + 0xbc),a0);
+  battle_struct_init(*(uint32_t *)(s0 + 0xbc),a0);
   s0[0x99] = (uint8_t)s2;
 }
 
@@ -3730,14 +3730,14 @@ int mc_read_queue(uint32_t p0,uint32_t p1,uint32_t p2,uint32_t p3,
 {
   uint32_t slot = 0x801b43e8 + ((p0 != 0) ? 4 : 0);
   *(uint32_t *)guest_at(slot) = 0;
-  return FUN_80167d7c(p0,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12);
+  return mc_data_write(p0,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12);
 }
 
-/* ---- FUN_80167d7c @0x80167d7c (199 insns, 13-arg ABI) ----
+/* ---- mc_data_write @0x80167d7c (199 insns, 13-arg ABI) ----
    p0 = port flag (slot = 0x801b43e8 + (p0?4:0)), p1..p3 = in-header,
-   p7 = arg for FUN_801685b4, p8/p9 = a3 select for data stage,
+   p7 = arg for mc_file_cmd_stable_poll, p8/p9 = a3 select for data stage,
    p11 = data ptr, p12 = data size. */
-int FUN_80167d7c(uint32_t p0,uint32_t p1,uint32_t p2,uint32_t p3,
+int mc_data_write(uint32_t p0,uint32_t p1,uint32_t p2,uint32_t p3,
                  uint32_t p4,uint32_t p5,uint32_t p6,uint32_t p7,
                  uint32_t p8,uint32_t p9,uint32_t p10,uint32_t p11,
                  uint32_t p12)
@@ -3760,7 +3760,7 @@ int FUN_80167d7c(uint32_t p0,uint32_t p1,uint32_t p2,uint32_t p3,
   in[0] = p1; in[1] = p2; in[2] = p3;
 
 poll:
-  ret = FUN_80168424((uint32_t)s2);
+  ret = mc_op_result_poll((uint32_t)s2);
   if (ret == 3) {
     slot = 0x801b43e8 + ((p0 != 0) ? 4 : 0);
     *(uint32_t *)guest_at(slot) = (uint32_t)ret;
@@ -3776,20 +3776,20 @@ poll:
   return 4;
 
 probe:
-  ret = FUN_8016850c((uint32_t)s2,in,buf18,bc0,0,1);
+  ret = mc_chan_job_stable_poll((uint32_t)s2,in,buf18,bc0,0,1);
   if (ret != 0) return ret;
   st = *(uint32_t *)bc0;
   if (st != 0) {
     /* header already present: verify slot state then decompress */
     slot = 0x801b43e8 + ((p0 != 0) ? 4 : 0);
     if (*(uint32_t *)guest_at(slot) == 3) return 0xf;
-    ret = FUN_80168838((uint32_t)s2,in,b40,0x200,
+    ret = mc_job_a_result_poll((uint32_t)s2,in,b40,0x200,
                        *(uint32_t *)guest_at(slot));
     if (ret != 0) return ret;
     s4 = (*(uint8_t *)b40 < 1) ? 1 : 0;
     goto stage2;
   }
-  ret = FUN_801685b4((uint32_t)s2,in,p7);
+  ret = mc_file_cmd_stable_poll((uint32_t)s2,in,p7);
   if (ret == 4) goto poll;
   if ((uint32_t)ret < 5) {
     if (ret != 0) return ret;
@@ -3808,13 +3808,13 @@ stage2:
   {
     void *dp = mem_ptr(p10);
     void *dd = mem_ptr(p11);
-    ret = FUN_801688f0((uint32_t)s2,in,dp,0,0x200);
+    ret = mc_job_b_result_poll((uint32_t)s2,in,dp,0,0x200);
     if (ret != 0) return ret;
-    ret = FUN_8016831c((uint32_t)s2,in,dp,0,0x200);
+    ret = mc_op_seq_probe((uint32_t)s2,in,dp,0,0x200);
     if (ret != 0) return ret;
-    ret = FUN_801688f0((uint32_t)s2,in,dd,sel,asz);
+    ret = mc_job_b_result_poll((uint32_t)s2,in,dd,sel,asz);
     if (ret != 0) return ret;
-    ret = FUN_8016831c((uint32_t)s2,in,dd,sel,asz);
+    ret = mc_op_seq_probe((uint32_t)s2,in,dd,sel,asz);
     if (ret != 0) return ret;
     dat = (uint8_t *)dd;
     t0 = 0;
@@ -3823,9 +3823,9 @@ stage2:
     }
     b40[0] = (uint8_t)s4;
     b40[(uint32_t)s4 + 1] = t0;
-    ret = FUN_801688f0((uint32_t)s2,in,b40,0x200,0x80);
+    ret = mc_job_b_result_poll((uint32_t)s2,in,b40,0x200,0x80);
     if (ret != 0) return ret;
-    ret = FUN_8016831c((uint32_t)s2,in,b40,0x200,0x80);
+    ret = mc_op_seq_probe((uint32_t)s2,in,b40,0x200,0x80);
     if (ret != 0) return ret;
   }
   slot = 0x801b43e8 + ((p0 != 0) ? 4 : 0);
@@ -3833,10 +3833,10 @@ stage2:
   return 0;
 }
 
-/* ---- FUN_8016809c @0x8016809c (119 insns, 13-arg ABI) ----
-   Read-back counterpart of FUN_80167d7c: p0 flag, p1..p3 header,
+/* ---- mc_data_read @0x8016809c (119 insns, 13-arg ABI) ----
+   Read-back counterpart of mc_data_write: p0 flag, p1..p3 header,
    p8/p9 select, p11 dest, p12 size. */
-int FUN_8016809c(uint32_t p0,uint32_t p1,uint32_t p2,uint32_t p3,
+int mc_data_read(uint32_t p0,uint32_t p1,uint32_t p2,uint32_t p3,
                  uint32_t p4,uint32_t p5,uint32_t p6,uint32_t p7,
                  uint32_t p8,uint32_t p9,uint32_t p10,uint32_t p11,
                  uint32_t p12)
@@ -3863,7 +3863,7 @@ int FUN_8016809c(uint32_t p0,uint32_t p1,uint32_t p2,uint32_t p3,
   s4 = (s7 != 0) ? -1 : 0;
   s4 &= 0x10;
 
-  ret = FUN_80168424((uint32_t)s4);
+  ret = mc_op_result_poll((uint32_t)s4);
   if (ret == 3 || ret == 0) {
     /* ok */
   } else {
@@ -3878,7 +3878,7 @@ int FUN_8016809c(uint32_t p0,uint32_t p1,uint32_t p2,uint32_t p3,
   buf += 0x18; /* s2 = sp+0x18 */
 
   *(uint32_t *)(buf - 8) = 0x80; /* sp+0x10 outgoing arg */
-  ret = FUN_80168838((uint32_t)s4,in,buf,0x200,0x80);
+  ret = mc_job_a_result_poll((uint32_t)s4,in,buf,0x200,0x80);
   if (ret != 0) { free(buf - 0x18); return ret; }
 
   s6 = buf[0];
@@ -3890,7 +3890,7 @@ int FUN_8016809c(uint32_t p0,uint32_t p1,uint32_t p2,uint32_t p3,
       uint32_t sum = 0;
       uint32_t s1new;
       *(uint32_t *)(buf - 8) = asz;
-      ret = FUN_80168838((uint32_t)s4,in,buf,a3v,asz);
+      ret = mc_job_a_result_poll((uint32_t)s4,in,buf,a3v,asz);
       if (ret != 0) { free(buf - 0x18); return ret; }
       if ((int32_t)s0 > 0) {
         for (i = 0; i < s0; i++) sum ^= buf[i];
@@ -3927,8 +3927,8 @@ void FUN_8016ddf8(uint32_t a0)
   (void)a0;
 
   s0 = ((*(uint16_t *)(s2 + 0x92) & 0xf00) ^ 0x100) != 0;
-  FUN_80136ddc();
-  FUN_801274fc(0,0,0);
+  hud_sprite_desc_init();
+  rgb_triple_store(0,0,0);
   t1 = (uint8_t *)guest_at(0x1f800000 + (uint32_t)s0 * 2);
   for (;;) {
     int32_t st;
@@ -3936,8 +3936,8 @@ void FUN_8016ddf8(uint32_t a0)
     if (s5 < 2) {
       if (s5 == 0) {
         if (FUN_8012aaa8() != 0) goto poll;
-        FUN_8015e87c();
-        FUN_8015e88c();
+        display_cur_invalidate();
+        display_pair_invalidate();
         *(int16_t *)(s2 + 0x8c) = 0;
         s4 = 0;
         s3 = s4;
@@ -3972,7 +3972,7 @@ body:
       bp = (uint8_t *)guest_at(*(uint32_t *)(s2 + 0xc0));
       cell = bp ? (uint32_t *)(bp + (uint32_t)q * 4) : NULL;
       w = cell ? *cell : 0;
-      if (FUN_8015e8a4(idx) != 0) {
+      if (display_page_commit_a(idx) != 0) {
         fp = s6;
         if (!((w >> bit) & 1)) {
           w |= (uint32_t)1 << bit;
@@ -4032,7 +4032,7 @@ icon:
           if (q < 0) q += 3;
           xs = ((q >> 2) + 0x48);
           xs = (int16_t)xs;
-          FUN_8012e58c(*(uint32_t *)(s2 + 8),*(uint32_t *)(s2 + 0xc),
+          announce_param_block_init(*(uint32_t *)(s2 + 8),*(uint32_t *)(s2 + 0xc),
                         (const void *)guest_at(0x801222a4),
                         (uint32_t)(int32_t)(int16_t)yv,
                         (uint32_t)xs,0);
@@ -4098,7 +4098,7 @@ int32_t FUN_801709fc(uint32_t a0,uint8_t *s4,uint8_t *s5,int32_t s2)
     goto store0;
 
 st00:
-    FUN_8018cfdc(-1,0);
+    cd_file_load_sm(-1,0);
     s4[0] = 0;
     s5[0] = 0;
     *(uint32_t *)guest_at(0x801c47b8) = 0x80010000;
@@ -4136,7 +4136,7 @@ st00:
     goto dispatch;
 
 st10:
-    if (FUN_80170d38(a0,(int32_t)(int8_t)s1[0x98],s4,s5) == 0) {
+    if (save_channel_init_commit(a0,(int32_t)(int8_t)s1[0x98],s4,s5) == 0) {
       goto store0;
     }
     s0 = 0x20;
@@ -4146,7 +4146,7 @@ st10:
     /* fall into st20 */
 
 st20:
-    if (FUN_80170fe0(a0,(int32_t)(int8_t)s1[0x98]) == 0) {
+    if (save_load_state_machine(a0,(int32_t)(int8_t)s1[0x98]) == 0) {
       goto store0;
     }
     {
@@ -4168,7 +4168,7 @@ st20:
     }
 
 st40:
-    if (FUN_80171890(a0,s4,s3) == 0) {
+    if (save_state_machine_alt(a0,s4,s3) == 0) {
       goto store0;
     }
     *(uint32_t *)guest_at(0x801e3cfc) = 0x800f0000;
@@ -4180,7 +4180,7 @@ st40:
     /* fall into st50 */
 
 st50:
-    if (FUN_80171890(a0,s5,s3) == 0) {
+    if (save_state_machine_alt(a0,s5,s3) == 0) {
       goto store0;
     }
     *(uint8_t *)guest_at(0x801c4582) = s5[3];
@@ -4208,7 +4208,7 @@ dispatch:
 }
 
 
-/* ---- FUN_80172a34 @0x80172a34 (877 insns) ----
+/* ---- fighter_anim_table_init @0x80172a34 (877 insns) ----
    Fighter/menu animation-table init. a0!=0 -> immediate return.
    Builds records in two arena buffers (*(u32*)0x801f5210/14) plus
    scratchpad tables at 0x1f8000e8. */
@@ -4226,7 +4226,7 @@ extern uint32_t FUN_801725a4(uint32_t,uint32_t,uint32_t,uint32_t);
 extern uint32_t FUN_80172640(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 
 /* record byte-fill: d = rec+0xe style pointer; s = 4-byte src table */
-static void br2_72a34_fill(uint8_t *d, uint32_t s)
+static void coord_rec_fill(uint8_t *d, uint32_t s)
 {
   uint8_t b0 = g8(s);
   uint8_t b1 = g8(s + 1);
@@ -4241,7 +4241,7 @@ static void br2_72a34_fill(uint8_t *d, uint32_t s)
   d[0x16]=(uint8_t)(b0 + b2);
   d[0x17]=(uint8_t)(b1 + b3);
 }
-void FUN_80172a34(int32_t a0)
+void fighter_anim_table_init(int32_t a0)
 {
   uint32_t s5, s3i, s4i;
   uint8_t *rec;
@@ -4359,7 +4359,7 @@ void FUN_80172a34(int32_t a0)
       rec = (uint8_t *)guest_at(a + 0xe);
       FUN_80175760(a,(int32_t)gs16(t),(int32_t)gs16(t+2),
                    (int32_t)gs16(t+4),(int32_t)gs16(t+6));
-      br2_72a34_fill(rec,0x801b4c98);
+      coord_rec_fill(rec,0x801b4c98);
       *(uint16_t *)(rec) = 0x789e;
       *(uint16_t *)(rec + 8) = 0xe;
     }
@@ -4402,7 +4402,7 @@ void FUN_80172a34(int32_t a0)
             FUN_80175760(a,(int32_t)gs16(t6),
                          (int32_t)gs16(t6+2),(int32_t)gs16(t6+4),
                          (int32_t)gs16(t6+6));
-            br2_72a34_fill(d,s1b);
+            coord_rec_fill(d,s1b);
             *(uint16_t *)d = 0x781e;
             *(uint16_t *)(d + 8) = 0xe;
             t6 += 8; s1b += 4; aoff += 0x28;
@@ -4420,7 +4420,7 @@ void FUN_80172a34(int32_t a0)
         rec = (uint8_t *)guest_at(a + 0xe);
         FUN_80175760(a,(int32_t)gs16(t),(int32_t)gs16(t+2),
                      (int32_t)gs16(t+4),(int32_t)gs16(t+6));
-        br2_72a34_fill(rec,0x801b4c24);
+        coord_rec_fill(rec,0x801b4c24);
         *(uint16_t *)rec = id;
         *(uint16_t *)(rec + 8) = 0xe;
       }
@@ -4429,7 +4429,7 @@ void FUN_80172a34(int32_t a0)
     for (j = 0; j < 2; j++) {
       uint32_t a = bp + 0x626 + (uint32_t)j * 0x28;
       rec = (uint8_t *)guest_at(a);
-      br2_72a34_fill(rec,0x801b4ca4);
+      coord_rec_fill(rec,0x801b4ca4);
       *(uint16_t *)rec = 0x78de;
       *(uint16_t *)(rec + 8) = 0xe;
     }
@@ -4441,7 +4441,7 @@ void FUN_80172a34(int32_t a0)
       rec = (uint8_t *)guest_at(a + 0xe);
       FUN_80175760(a,(int32_t)gs16(t),(int32_t)gs16(t+2),
                    (int32_t)gs16(t+4),(int32_t)gs16(t+6));
-      br2_72a34_fill(rec,0x801b4c60);
+      coord_rec_fill(rec,0x801b4c60);
       *(uint16_t *)rec = 0x791d;
       *(uint16_t *)(rec + 8) = 0xe;
     }
@@ -4449,7 +4449,7 @@ void FUN_80172a34(int32_t a0)
     for (j = 0; j < 2; j++) {
       uint32_t a = bp + 0x676 + (uint32_t)j * 0x28;
       rec = (uint8_t *)guest_at(a);
-      br2_72a34_fill(rec,0x801b4cb8);
+      coord_rec_fill(rec,0x801b4cb8);
       *(uint16_t *)rec = 0x781e;
       *(uint16_t *)(rec + 8) = 0xe;
     }
@@ -4474,7 +4474,7 @@ void FUN_80172a34(int32_t a0)
       FUN_80148e70(a,0x1f800000,
                    (int32_t)gs16(t),(int32_t)gs16(t+2),
                    (int32_t)gs16(t+4),(int32_t)gs16(t+6));
-      br2_72a34_fill(rec,0x801b4c84);
+      coord_rec_fill(rec,0x801b4c84);
       *(uint16_t *)rec = 0x781e;
       *(uint16_t *)(rec + 8) = 0x18;
     }
@@ -4530,20 +4530,20 @@ void FUN_80172a34(int32_t a0)
 }
 
 
-/* ---- FUN_8016d478 @0x8016d478 (409 insns) ----
+/* ---- sprite_anim_chain_build @0x8016d478 (409 insns) ----
    a0 = guest ptr (byte 0x9f cleared). Two passes building sprite/
    anim descriptor chains at 0x801f4cbc.. and 0x801f4d7c.. */
 extern void FUN_801941e0(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern void gpu_texclut_pkt(uint32_t,const void *,uint32_t,uint32_t);
-extern void FUN_80191f08(uint32_t,const void *);
+extern void sprite_rect_pkt_fill(uint32_t,const void *);
 
-static void br2_6d478_tag(uint32_t dst, uint32_t src)
+static void tag24_merge(uint32_t dst, uint32_t src)
 {
   uint32_t v = g32(dst);
   *(uint32_t *)guest_at(dst) = (v & 0xff000000u) | (src & 0xffffffu);
 }
 
-void FUN_8016d478(uint32_t a0)
+void sprite_anim_chain_build(uint32_t a0)
 {
   uint32_t sp20 = 0, sp24, sp28, sp2c = 0;
   uint32_t s4t;
@@ -4566,7 +4566,7 @@ void FUN_8016d478(uint32_t a0)
     d18[0]=0x100; d18[1]=0x1f0; d18[2]=0x60; d18[3]=0x10;
     gpu_texclut_pkt(s3,d18,0x100,0x1e0);
     d18[0]=0x100; d18[1]=0x1e0; d18[2]=0x60; d18[3]=0x10;
-    FUN_80191f08(s1,d18);
+    sprite_rect_pkt_fill(s1,d18);
     {
       uint8_t *r = (uint8_t *)guest_at(s0);
       r[7]=0x60; *(uint16_t *)(r+8)=0x100; *(uint16_t *)(r+0xa)=0x1e0;
@@ -4574,12 +4574,12 @@ void FUN_8016d478(uint32_t a0)
       r[3]=3; r[4]=0; r[5]=0; r[6]=0; r[7]=0x62;
     }
     FUN_801941e0(s2,g8(s4t + 0x17),g8(s4t + 0x16),0,0);
-    FUN_80191f08(s7,(const void *)(uintptr_t)s4t);
-    br2_6d478_tag(s6,s3);
-    br2_6d478_tag(s3,s1);
-    br2_6d478_tag(s1,s0);
-    br2_6d478_tag(s0,s2);
-    br2_6d478_tag(s2,s7);
+    sprite_rect_pkt_fill(s7,(const void *)(uintptr_t)s4t);
+    tag24_merge(s6,s3);
+    tag24_merge(s3,s1);
+    tag24_merge(s1,s0);
+    tag24_merge(s0,s2);
+    tag24_merge(s2,s7);
   }
 
   /* init + pass 2 setup */
@@ -4622,7 +4622,7 @@ void FUN_8016d478(uint32_t a0)
     d18[0]=0; d18[1]=0x1f0; d18[2]=0x20; d18[3]=0x10;
     gpu_texclut_pkt(h1_9180,d18,0,0x1e0);
     d18[0]=0; d18[1]=0x1e0; d18[2]=0x20; d18[3]=0x10;
-    FUN_80191f08(h1_91f0a,d18);
+    sprite_rect_pkt_fill(h1_91f0a,d18);
     {
       uint8_t *r = (uint8_t *)guest_at(h1_fill);
       r[7]=0x60; *(uint16_t *)(r+8)=0; *(uint16_t *)(r+0xa)=0x1e0;
@@ -4630,18 +4630,18 @@ void FUN_8016d478(uint32_t a0)
       r[3]=3; r[4]=0; r[5]=0; r[6]=0; r[7]=0x62;
     }
     FUN_801941e0(h1_e0,g8(s4t + 0x17),g8(s4t + 0x16),0,0);
-    FUN_80191f08(h1_f08,(const void *)(uintptr_t)s4t);
-    br2_6d478_tag(h1_941e0,h1_9180);
-    br2_6d478_tag(h1_9180,h1_91f0a);
-    br2_6d478_tag(h1_91f0a,h1_fill);
-    br2_6d478_tag(h1_fill,h1_e0);
-    br2_6d478_tag(h1_e0,h1_f08);
+    sprite_rect_pkt_fill(h1_f08,(const void *)(uintptr_t)s4t);
+    tag24_merge(h1_941e0,h1_9180);
+    tag24_merge(h1_9180,h1_91f0a);
+    tag24_merge(h1_91f0a,h1_fill);
+    tag24_merge(h1_fill,h1_e0);
+    tag24_merge(h1_e0,h1_f08);
 
     FUN_801941e0(h2_e0c,0,g8(s4t + 0x16),0x40,0);
     d18[0]=0x30; d18[1]=0x1f0; d18[2]=0x20; d18[3]=0x10;
     gpu_texclut_pkt(h2_9180,d18,0,0x1e0);
     d18[0]=0x30; d18[1]=0x1e0; d18[2]=0x20; d18[3]=0x10;
-    FUN_80191f08(h2_91f0a,d18);
+    sprite_rect_pkt_fill(h2_91f0a,d18);
     {
       uint8_t *r = (uint8_t *)guest_at(h2_fill);
       r[7]=0x60; *(uint16_t *)(r+8)=0x30; *(uint16_t *)(r+0xa)=0x1e0;
@@ -4649,12 +4649,12 @@ void FUN_8016d478(uint32_t a0)
       r[3]=3; r[4]=0; r[5]=0; r[6]=0; r[7]=0x62;
     }
     FUN_801941e0(h2_e0,g8(s4t + 0x17),g8(s4t + 0x16),0,0);
-    FUN_80191f08(sp24,(const void *)(uintptr_t)s4t);
-    br2_6d478_tag(h2_e0c,h2_9180);
-    br2_6d478_tag(h2_9180,h2_91f0a);
-    br2_6d478_tag(h2_91f0a,h2_fill);
-    br2_6d478_tag(h2_fill,h2_e0);
-    br2_6d478_tag(h2_e0,sp24);
+    sprite_rect_pkt_fill(sp24,(const void *)(uintptr_t)s4t);
+    tag24_merge(h2_e0c,h2_9180);
+    tag24_merge(h2_9180,h2_91f0a);
+    tag24_merge(h2_91f0a,h2_fill);
+    tag24_merge(h2_fill,h2_e0);
+    tag24_merge(h2_e0,sp24);
 
     sp2c += 0x2150;
     sp20 += 1;
@@ -4678,34 +4678,34 @@ void FUN_8016d478(uint32_t a0)
 }
 
 
-/* ---- FUN_8016f588 @0x8016f588 (413 insns) ----
+/* ---- status_text_display @0x8016f588 (413 insns) ----
    Debug/status text display. a0 = guest char/state ptr,
    a1 = selector 0..15 (jump table 0x80122590). */
 extern void print_dispatch(const char *,...);
-extern void FUN_8012cd9c(int32_t,int32_t);
-extern void FUN_8016f30c(uint32_t,uint32_t);
+extern void scroll_offset_set(int32_t,int32_t);
+extern void hud_slot_blitter(uint32_t,uint32_t);
 extern void FUN_8017f13c(uint32_t,uint32_t);
-extern void FUN_8018106c(uint32_t);
+extern void record_struct_dump(uint32_t);
 extern void slot_action_dump(uint32_t);
 extern void guest_noop(uint32_t);
-extern void FUN_8012f164(uint32_t);
+extern void status_text_dump(uint32_t);
 
-static int32_t br2_6f588_div360(int32_t v)
+static int32_t mul360_div4096(int32_t v)
 { /* v*360 / 4096 trunc toward zero (MIPS mult+sra pattern) */
   int32_t t = v * 360;
   return t / 4096;
 }
-static int32_t br2_6f588_div100_256(int32_t v)
+static int32_t mul100_div256(int32_t v)
 {
   int32_t t = v * 100;
   return t / 256;
 }
-static int32_t br2_6f588_div16(int32_t v)
+static int32_t sdiv16(int32_t v)
 { /* (v<0 ? v+0xf : v) >> 4  == trunc(v/16) */
   return v / 16;
 }
 
-void FUN_8016f588(uint32_t a0,uint32_t a1)
+void status_text_display(uint32_t a0,uint32_t a1)
 {
   uint8_t *s0 = (uint8_t *)guest_at(a0);
   uint8_t *s2;
@@ -4717,10 +4717,10 @@ void FUN_8016f588(uint32_t a0,uint32_t a1)
   s2 = (uint8_t *)guest_at(*(uint32_t *)(s0 + 0x38));
 
   if (s0[2] == 0) {
-    FUN_8012cd9c(0,0x20);
+    scroll_offset_set(0,0x20);
     if (s0[2] == 0) goto sel;
   }
-  FUN_8012cd9c(0,0x60);
+  scroll_offset_set(0,0x60);
 sel:
   if (s1 != 0)
     print_dispatch((const char *)guest_at(0x801223d0),(int32_t)s0[2] + 1);
@@ -4740,7 +4740,7 @@ sel:
   }
   case 2: {
     int32_t v;
-    FUN_8016f30c(a0,0);
+    hud_slot_blitter(a0,0);
     FUN_8017f13c(a0,0);
     FUN_8017f13c(a0,3);
     print_dispatch((const char *)guest_at(0x801223fc),
@@ -4775,19 +4775,19 @@ sel:
     }
     return;
   }
-  case 4: FUN_8018106c(a0); return;
+  case 4: record_struct_dump(a0); return;
   case 5: slot_action_dump(a0); return;
-  case 6: FUN_8016f30c(a0,1); return;
+  case 6: hud_slot_blitter(a0,1); return;
   case 7: {
     uint8_t *q = (uint8_t *)guest_at(*(uint32_t *)(s0 + 0x20));
-    int32_t a1 = br2_6f588_div100_256(*(int32_t *)(q + 0x34));
-    int32_t a2 = br2_6f588_div100_256(*(int32_t *)(q + 0x38));
-    int32_t a3 = br2_6f588_div100_256(*(int32_t *)(q + 0x3c));
+    int32_t a1 = mul100_div256(*(int32_t *)(q + 0x34));
+    int32_t a2 = mul100_div256(*(int32_t *)(q + 0x38));
+    int32_t a3 = mul100_div256(*(int32_t *)(q + 0x3c));
     print_dispatch((const char *)guest_at(0x80122460),a1,a2,a3);
     q = (uint8_t *)guest_at(*(uint32_t *)(s0 + 0x20));
-    a1 = br2_6f588_div100_256(*(int32_t *)(q + 0x174));
-    a2 = br2_6f588_div100_256(*(int32_t *)(q + 0x178));
-    a3 = br2_6f588_div100_256(*(int32_t *)(q + 0x17c));
+    a1 = mul100_div256(*(int32_t *)(q + 0x174));
+    a2 = mul100_div256(*(int32_t *)(q + 0x178));
+    a3 = mul100_div256(*(int32_t *)(q + 0x17c));
     print_dispatch((const char *)guest_at(0x80122478),a1,a2,a3);
     print_dispatch((const char *)guest_at(0x80122490),
                  (int32_t)*(int16_t *)(s0 + 0x8c),
@@ -4802,26 +4802,26 @@ sel:
     return;
   }
   case 8: {
-    int32_t a1 = br2_6f588_div360(*(int16_t *)(s0 + 0x4e));
+    int32_t a1 = mul360_div4096(*(int16_t *)(s0 + 0x4e));
     print_dispatch((const char *)guest_at(0x801224c0),a1);
-    a1 = br2_6f588_div360(*(int16_t *)(s0 + 0x70));
+    a1 = mul360_div4096(*(int16_t *)(s0 + 0x70));
     {
-      int32_t a2 = br2_6f588_div360(*(int16_t *)(s0 + 0x74));
-      int32_t a3 = br2_6f588_div100_256(*(int16_t *)(s0 + 0x76));
+      int32_t a2 = mul360_div4096(*(int16_t *)(s0 + 0x74));
+      int32_t a3 = mul100_div256(*(int16_t *)(s0 + 0x76));
       print_dispatch((const char *)guest_at(0x801224c8),a1,a2,a3);
     }
     return;
   }
   case 9:
-    FUN_8012f164(g32(0x1f8000bc));
+    status_text_dump(g32(0x1f8000bc));
     return;
   case 10: {
     uint8_t *q = (uint8_t *)guest_at(*(uint32_t *)(s0 + 0x38));
-    int32_t a1 = br2_6f588_div16(*(int16_t *)(q + 0xc6));
-    int32_t a2 = br2_6f588_div16(*(int16_t *)(q + 0xca));
-    int32_t a3 = br2_6f588_div16(*(int16_t *)(q + 0xc8));
-    int32_t s10 = br2_6f588_div16(*(int16_t *)(q + 0xc4));
-    int32_t s14 = br2_6f588_div16(*(int16_t *)(q + 0xc2));
+    int32_t a1 = sdiv16(*(int16_t *)(q + 0xc6));
+    int32_t a2 = sdiv16(*(int16_t *)(q + 0xca));
+    int32_t a3 = sdiv16(*(int16_t *)(q + 0xc8));
+    int32_t s10 = sdiv16(*(int16_t *)(q + 0xc4));
+    int32_t s14 = sdiv16(*(int16_t *)(q + 0xc2));
     print_dispatch((const char *)guest_at(0x801224dc),a1,a2,a3,s10,s14);
     return;
   }
@@ -4874,26 +4874,26 @@ sel:
   }
 }
 
-/* ---- FUN_8016e21c @0x8016e21c (1066 insns) ----
+/* ---- hud_state_machine @0x8016e21c (1066 insns) ----
    Per-frame HUD/status-bar state machine. a0 = mode (0,1,2).
    s5 = scratchpad 0x1f800000; fp = display state. */
-extern int FUN_8015e9fc(uint32_t,uint32_t);
+extern int display_page_commit_b(uint32_t,uint32_t);
 extern void hud_announce(uint32_t,uint32_t,uint32_t);
-extern uint32_t FUN_8018c824();
+extern uint32_t spr_slot_pkt_submit();
 
-static int32_t br2_e21c_s16(uint32_t v){ return (int16_t)v; }
-static int32_t br2_e21c_divm(int32_t a0)
+static int32_t to_s16(uint32_t v){ return (int16_t)v; }
+static int32_t sdiv60(int32_t a0)
 { /* mult 0x88888889; mfhi; +a0; sra 5; - sign(a0) : exact MIPS seq */
   int64_t t = (int64_t)a0 * (int64_t)(int32_t)0x88888889;
   int32_t hi = (int32_t)(t >> 32);
   return ((hi + a0) >> 5) - (a0 >> 31);
 }
-static int32_t br2_e21c_shr4(int32_t v)
+static int32_t shr4_trunc(int32_t v)
 { return v < 0 ? (v + 0xf) >> 4 : v >> 4; }
-static int32_t br2_e21c_div3_4(int32_t v)
+static int32_t shr2_trunc(int32_t v)
 { return v < 0 ? (v + 3) >> 2 : v >> 2; }
 
-void FUN_8016e21c(uint32_t a0)
+void hud_state_machine(uint32_t a0)
 {
   uint8_t *g  = (uint8_t *)guest_at(0x1f800000);
   uint8_t *sp20, *sp24, *c0;
@@ -4914,8 +4914,8 @@ void FUN_8016e21c(uint32_t a0)
     sp60  = idx * 25;
     sp68  = idx * 25 + 1;
     sp6c  = idx * 25 + 2;
-    FUN_80136ddc();
-    FUN_801274fc(0,0,0);
+    hud_sprite_desc_init();
+    rgb_triple_store(0,0,0);
     ctx8  = *(uint32_t *)(g + 8);
     ctxc  = *(uint32_t *)(g + 0xc);
     w20   = (uint16_t *)(g + 0x20);
@@ -4933,8 +4933,8 @@ void FUN_8016e21c(uint32_t a0)
 
 case0:
     if (FUN_8012aaa8() != 0) goto poll;
-    FUN_8015e87c();
-    FUN_8015e88c();
+    display_cur_invalidate();
+    display_pair_invalidate();
     *(uint16_t *)(g + 0x28) = 0;
     *(uint16_t *)(g + 0x30) = 0;
     *(uint16_t *)(g + 0x40) = 0;
@@ -4957,11 +4957,11 @@ case0:
       uint32_t b5 = sp20[0xe4], b4 = sp24[0xe4];
       int32_t a4;
       if (b4 < b5) {
-        a4 = br2_e21c_s16(*(uint16_t *)(g + 0xa4));
+        a4 = to_s16(*(uint16_t *)(g + 0xa4));
         v0 = *(uint8_t *)guest_at(0x801b46d8 + a4 * 3 + sp6c);
         sp48 = 0;
       } else {
-        a4 = br2_e21c_s16(*(uint16_t *)(g + 0xa4));
+        a4 = to_s16(*(uint16_t *)(g + 0xa4));
         sp48 = 1;
         *(uint16_t *)(g + 0xa4) = (uint16_t)(a4 + 1);
         v0 = *(uint8_t *)guest_at(0x801b46d8 + a4 * 3 + sp68);
@@ -4982,14 +4982,14 @@ case1: {
     int32_t tt;
     *(uint16_t *)(g + 0x38) = (uint16_t)sv;
     if (sp54 == 0) {
-      if (br2_e21c_s16(*(uint16_t *)(g + 0x8e)) >= 0) {
-        tt = br2_e21c_s16(t4h);
+      if (to_s16(*(uint16_t *)(g + 0x8e)) >= 0) {
+        tt = to_s16(t4h);
         if (tt < 0) tt += 7;
-        if (FUN_8015e9fc(idx, (uint32_t)(tt >> 3)) != 0) {
+        if (display_page_commit_b(idx, (uint32_t)(tt >> 3)) != 0) {
           v0 = (int32_t)(uint8_t)g8(0x8007193 + (sv << 12));
           v1 = (int32_t)(uint8_t)g8(0x8007113 + (sv << 12));
           t0 = (v0 >> 4) + (v1 >> 4) * 10;
-          if (br2_e21c_s16(*(uint16_t *)(g + 0x28)) == t0) goto hit610;
+          if (to_s16(*(uint16_t *)(g + 0x28)) == t0) goto hit610;
           if ((uint32_t)(t0 - 1) < 0x5f) {
             int32_t a2v = t0 - 1;
             uint32_t wi, bit;
@@ -5009,8 +5009,8 @@ case1: {
           }
         }
       }
-      if (br2_e21c_s16(*(uint16_t *)(g + 0x8c)) >= 0) {
-        if (FUN_8015e8a4(br2_e21c_s16(*(uint16_t *)(g + 0x28)) - 1) != 0)
+      if (to_s16(*(uint16_t *)(g + 0x8c)) >= 0) {
+        if (display_page_commit_a(to_s16(*(uint16_t *)(g + 0x28)) - 1) != 0)
           goto hit610;
       }
       goto draw678;
@@ -5032,7 +5032,7 @@ hit610:
     goto draw678;
 
 draw678: {
-    int32_t t5 = br2_e21c_s16(*(uint16_t *)(g + 0x40));
+    int32_t t5 = to_s16(*(uint16_t *)(g + 0x40));
     if (t5 > 0) {
       if (sp54 < 6) {
         static const uint8_t jt_d4[6] = {0,1,1,3,4,4};
@@ -5052,43 +5052,43 @@ d6c0: /* sp54 4,5 : fade bar, cc6c stk18=2 */
     {
       int32_t a0x = s7 * 255;
       int32_t vv;
-      if (sp54 == 4) vv = br2_e21c_shr4(a0x);
-      else           vv = br2_e21c_divm(a0x);
+      if (sp54 == 4) vv = shr4_trunc(a0x);
+      else           vv = sdiv60(a0x);
       t0 = 0xff - vv;
       s7--;
       if (s7 == -1) { sp54 = 0; *(uint16_t *)(g + 0x40) = (uint16_t)-1; }
       a1 = 0; a2 = a1;
       v0 = (t0 | (t0 << 8) | (t0 << 16));
-      spr_attr_alloc_a(ctx8, (int16_t)a1, (int16_t)a2, (int16_t)br2_e21c_s16(*w20),
-                   (int16_t)br2_e21c_s16(*w22), (uint32_t)v0, 2);
+      spr_attr_alloc_a(ctx8, (int16_t)a1, (int16_t)a2, (int16_t)to_s16(*w20),
+                   (int16_t)to_s16(*w22), (uint32_t)v0, 2);
       goto after678;
     }
 d754: /* sp54 3 : 8c71c growing bar */
     {
       int32_t a2x = s7 - 1;
-      int32_t y  = br2_e21c_s16(*w20);
+      int32_t y  = to_s16(*w20);
       int32_t p  = a2x * y;
-      t0 = br2_e21c_shr4(p);
+      t0 = shr4_trunc(p);
       s7 = a2x;
       if (s7 == -1) { sp54 = 0; *(uint16_t *)(g + 0x40) = 0; }
       a1 = (t0 - y) & 0xffff;
       spr_attr_alloc_b(ctx8 + 4, (uint32_t)a1, 0xeffe0088, 0x7fc00000,
-                   t0, br2_e21c_s16(*w22));
+                   t0, to_s16(*w22));
       goto after678;
     }
 d7ac: /* sp54 1,2 : fade bar, cc6c stk18=3 */
     {
       int32_t a0x = s7 * 255;
       int32_t vv;
-      if (sp54 == 1) vv = br2_e21c_shr4(a0x);
-      else           vv = br2_e21c_divm(a0x);
+      if (sp54 == 1) vv = shr4_trunc(a0x);
+      else           vv = sdiv60(a0x);
       t0 = 0xff - vv;
       s7--;
       if (s7 == -1) { sp54 = 0; *(uint16_t *)(g + 0x40) = 0; }
       a1 = 0; a2 = 0;
       v0 = (t0 | (t0 << 8) | (t0 << 16));
-      spr_attr_alloc_a(ctx8, (int16_t)a1, (int16_t)a2, (int16_t)br2_e21c_s16(*w20),
-                   (int16_t)br2_e21c_s16(*w22), (uint32_t)v0, 3);
+      spr_attr_alloc_a(ctx8, (int16_t)a1, (int16_t)a2, (int16_t)to_s16(*w20),
+                   (int16_t)to_s16(*w22), (uint32_t)v0, 3);
       goto after678;
     }
 d818: /* sp54 0 : sub-state sp50 table */
@@ -5097,7 +5097,7 @@ d818: /* sp54 0 : sub-state sp50 table */
       switch (jt_ec[sp50]) {
       case 0: /* 6e9bc : plain 8c71c */
         spr_attr_alloc_b(ctx8 + 4, 0, 0xeffe0088, 0x7fc00000,
-                     br2_e21c_s16(*w20), br2_e21c_s16(*w22));
+                     to_s16(*w20), to_s16(*w22));
         goto after678;
       case 1: case 2: goto e91c;
       case 3: goto e8a8;
@@ -5109,49 +5109,49 @@ d818: /* sp54 0 : sub-state sp50 table */
 e91c: /* sp50 1,2 : shrinking bar, cc6c stk18=3 */
     {
       int32_t v1x = s7 * 255;
-      t0 = (sp50 == 1) ? br2_e21c_shr4(v1x) : br2_e21c_divm(v1x);
+      t0 = (sp50 == 1) ? shr4_trunc(v1x) : sdiv60(v1x);
       s7--;
       if (s7 == -1) sp50 = 0;
       a1 = 0; a2 = 0;
       v0 = (t0 | (t0 << 8) | (t0 << 16));
-      spr_attr_alloc_a(ctx8, (int16_t)a1, (int16_t)a2, (int16_t)br2_e21c_s16(*w20),
-                   (int16_t)br2_e21c_s16(*w22), (uint32_t)v0, 3);
+      spr_attr_alloc_a(ctx8, (int16_t)a1, (int16_t)a2, (int16_t)to_s16(*w20),
+                   (int16_t)to_s16(*w22), (uint32_t)v0, 3);
       goto after678;
     }
 e8a8: /* sp50 3 : growing bar, 8c71c */
     {
-      int32_t y = br2_e21c_s16(*w20);
-      t0 = br2_e21c_shr4(s7 * y);
+      int32_t y = to_s16(*w20);
+      t0 = shr4_trunc(s7 * y);
       s7--;
       if (s7 == -1) sp50 = 0;
       spr_attr_alloc_b(ctx8 + 4, (uint32_t)(t0 & 0xffff), 0xeffe0088, 0x7fc00000,
-                   (uint32_t)(t0 + y), br2_e21c_s16(*w22));
+                   (uint32_t)(t0 + y), to_s16(*w22));
       goto after678;
     }
 e848: /* sp50 4,5 : shrinking bar, cc6c stk18=2 */
     {
       int32_t v1x = s7 * 255;
-      t0 = (sp50 == 4) ? br2_e21c_shr4(v1x) : br2_e21c_divm(v1x);
+      t0 = (sp50 == 4) ? shr4_trunc(v1x) : sdiv60(v1x);
       s7--;
       if (s7 == -1) sp50 = 0;
       a1 = 0; a2 = 0;
       v0 = (t0 | (t0 << 8) | (t0 << 16));
-      spr_attr_alloc_a(ctx8, (int16_t)a1, (int16_t)a2, (int16_t)br2_e21c_s16(*w20),
-                   (int16_t)br2_e21c_s16(*w22), (uint32_t)v0, 2);
+      spr_attr_alloc_a(ctx8, (int16_t)a1, (int16_t)a2, (int16_t)to_s16(*w20),
+                   (int16_t)to_s16(*w22), (uint32_t)v0, 2);
       goto after678;
     }
 
 negpath:
     /* 6ea00 : sp40 == 0 handled above; here sp40 < 0 dim bar */
-    spr_attr_alloc_a(ctx8 + 4, 0, 0, (int16_t)br2_e21c_s16(*w20),
-                 (int16_t)br2_e21c_s16(*w22), 0xffffff, 0);
+    spr_attr_alloc_a(ctx8 + 4, 0, 0, (int16_t)to_s16(*w20),
+                 (int16_t)to_s16(*w22), 0xffffff, 0);
     goto after678;
     }
 
 after678:
     /* 6ea44 gates */
-    if (br2_e21c_s16(*(uint16_t *)(g + 0x8c)) >= 0) goto poll;
-    if (br2_e21c_s16(*(uint16_t *)(g + 0x8e)) >= 0) goto poll;
+    if (to_s16(*(uint16_t *)(g + 0x8c)) >= 0) goto poll;
+    if (to_s16(*(uint16_t *)(g + 0x8e)) >= 0) goto poll;
     if (sp50 != 0) goto poll;
     if (sp54 != 0) goto poll;
     {
@@ -5162,11 +5162,11 @@ after678:
     if (mode == 2) goto mode2body;
     {
       uint32_t dw = *(uint32_t *)(g + 0xdc) & 0x30;
-      int32_t sp30s = br2_e21c_s16(*(uint16_t *)(g + 0x30));
+      int32_t sp30s = to_s16(*(uint16_t *)(g + 0x30));
       if (dw != 0 || sp30s >= 0) {
         /* sprite block (6ecac/6ed1c merged — identical) */
-        s6 = br2_e21c_div3_4(br2_e21c_s16(*w22) * 3);
-        s0v = br2_e21c_s16(*w20);
+        s6 = shr2_trunc(to_s16(*w22) * 3);
+        s0v = to_s16(*w20);
         s1 = (s0v - 0x1c2) & 0xffff;
         s3 = (int32_t)*(uint16_t *)(g + 0x38);
         s2 = s3 << 5;
@@ -5188,11 +5188,11 @@ after678:
             a3 = ((vv + 0x1df) & 0x1ff) << 22;
             a3 |= hi;
             a3 |= (t0v & 3) << 6;
-            FUN_8018c824(ctx8, (uint32_t)(((s6 + 8) << 16) | 4),
+            spr_slot_pkt_submit(ctx8, (uint32_t)(((s6 + 8) << 16) | 4),
                          0x3e37009d, (uint32_t)a3);
           }
         }
-        spr_attr_alloc_a(ctx8, 0, (int16_t)s6, (int16_t)br2_e21c_s16(*w20),
+        spr_attr_alloc_a(ctx8, 0, (int16_t)s6, (int16_t)to_s16(*w20),
                      0x50, 0x80808080, 3);
       }
     }
@@ -5201,24 +5201,24 @@ after678:
 mode2body:
     /* mode==2 : three text rows + bar */
     {
-      int32_t yv = br2_e21c_s16(*w22);
+      int32_t yv = to_s16(*w22);
       int32_t t0v = yv * 3;
       int32_t a3v, row;
-      a3v = br2_e21c_s16(*w20);
+      a3v = to_s16(*w20);
       a3v = (a3v + (a3v >> 31)) >> 1;      /* /2 trunc */
       a3v -= 0x60;
       a3v = (int16_t)a3v;
       t0v = yv * 3; if (t0v < 0) t0v += 3; t0v >>= 2;
-      FUN_8012e58c(ctx8, ctxc, (const void *)guest_at(0x801222a8),
+      announce_param_block_init(ctx8, ctxc, (const void *)guest_at(0x801222a8),
                    (uint32_t)(int16_t)(t0v + 0x20), 0, a3v);
       t0v = yv * 3; if (t0v < 0) t0v += 3; t0v >>= 2;
-      FUN_8012e58c(ctx8, ctxc, (const void *)guest_at(0x801222b4),
+      announce_param_block_init(ctx8, ctxc, (const void *)guest_at(0x801222b4),
                    (uint32_t)(int16_t)(t0v + 0x30), sp4c, a3v);
       t0v = yv * 3; if (t0v < 0) t0v += 3; t0v >>= 2;
-      FUN_8012e58c(ctx8, ctxc, (const void *)guest_at(0x801222b8),
+      announce_param_block_init(ctx8, ctxc, (const void *)guest_at(0x801222b8),
                    (uint32_t)(int16_t)(t0v + 0x70), (uint32_t)(sp4c < 1), a3v);
       a2 = yv * 3; if (a2 < 0) a2 += 3; a2 >>= 2;
-      spr_attr_alloc_a(ctx8, 0, (int16_t)a2, (int16_t)br2_e21c_s16(*w20),
+      spr_attr_alloc_a(ctx8, 0, (int16_t)a2, (int16_t)to_s16(*w20),
                    0x50, 0x80808080, 3);
       (void)row;
     }
@@ -5265,7 +5265,7 @@ modechk:
 
 mode0body: {
     uint32_t byte = *(uint8_t *)guest_at(0x801b461c + idx);
-    int32_t a0x = br2_e21c_s16(*(uint16_t *)(g + 0xa4));
+    int32_t a0x = to_s16(*(uint16_t *)(g + 0xa4));
     if (a0x < (int32_t)byte && sp48 == 0) {
       uint8_t v = *(uint8_t *)guest_at(0x801f47a0 + a0x);
       sp24[3] = v;
@@ -5299,7 +5299,7 @@ mode0body: {
     }
     goto tail194;
 tail194:
-    g[0x98] = *(uint8_t *)guest_at(0x801f4770 + br2_e21c_s16(*(uint16_t *)(g + 0xa4)));
+    g[0x98] = *(uint8_t *)guest_at(0x801f4770 + to_s16(*(uint16_t *)(g + 0xa4)));
     fp = 0xf0;
     goto poll;
 }
@@ -5308,22 +5308,22 @@ mode1body:
     if (sp48 == 0) goto poll;
     mode = 0;
     *(uint16_t *)(g + 0x8e) = 0;
-    *(uint16_t *)(g + 0x30) = (uint16_t)(*(uint8_t *)guest_at(0x801b46d8 + br2_e21c_s16(*(uint16_t *)(g + 0xa4)) * 3 + sp60) << 3);
+    *(uint16_t *)(g + 0x30) = (uint16_t)(*(uint8_t *)guest_at(0x801b46d8 + to_s16(*(uint16_t *)(g + 0xa4)) * 3 + sp60) << 3);
     goto poll;
 
 mode2sel:
     if (sp4c != 0) goto mode2b;
     *(uint16_t *)(sp20 + 0xec) = (uint16_t)(*(uint16_t *)(sp20 + 0xec) + 1);
-    sp24[3] = *(uint8_t *)guest_at(0x801f47a0 + br2_e21c_s16(*(uint16_t *)(g + 0xa4)));
-    g[0x98] = *(uint8_t *)guest_at(0x801f4770 + br2_e21c_s16(*(uint16_t *)(g + 0xa4)));
+    sp24[3] = *(uint8_t *)guest_at(0x801f47a0 + to_s16(*(uint16_t *)(g + 0xa4)));
+    g[0x98] = *(uint8_t *)guest_at(0x801f4770 + to_s16(*(uint16_t *)(g + 0xa4)));
     fp = 0xf0;
     goto poll;
 mode2b:
     c0 = (uint8_t *)guest_at(*(uint32_t *)(g + 0xc0));
     if (c0[0xd] == 0) {
-      FUN_801577bc(0x27,0); s7 = 0x2ee;
+      mc_confirm_dispatch(0x27,0); s7 = 0x2ee;
     } else {
-      FUN_801577bc(6,0);   s7 = 0x15e;
+      mc_confirm_dispatch(6,0);   s7 = 0x15e;
     }
     fp = 2;
     goto poll;
@@ -5349,14 +5349,14 @@ poll:
   }
 }
 
-/* ---- FUN_8015bdc0 @0x8015bdc0 (613 insns) ----
+/* ---- dialog_sel_dispatch_wide @0x8015bdc0 (613 insns) ----
    a0 = guest dialog-state ptr, a1 = selector. Sibling of
-   FUN_80160598: same init, wider selector dispatch. */
-extern int FUN_80129b48();
-extern void FUN_8012e8e8();
+   dialog_sel_dispatch: same init, wider selector dispatch. */
+extern int u16_counter_step_pad_b();
+extern void round_announce_block();
 extern void mc_slot_action(uint8_t *,int);
 
-int FUN_8015bdc0(uint32_t a0,uint32_t a1)
+int dialog_sel_dispatch_wide(uint32_t a0,uint32_t a1)
 {
   uint8_t *s4 = (uint8_t *)guest_at(a0);
   uint8_t *g  = (uint8_t *)guest_at(0x1f800000);
@@ -5366,7 +5366,7 @@ int FUN_8015bdc0(uint32_t a0,uint32_t a1)
   uint8_t *c0;
   int32_t v0;
 
-  FUN_8012cd9c(0x20,0xffffffff);
+  scroll_offset_set(0x20,0xffffffff);
   sel = a1 & 0xffff;
   if (sel == (uint32_t)(*(uint16_t *)(s4 + 8) + 0x100)) {
     flag = 0;
@@ -5377,20 +5377,20 @@ int FUN_8015bdc0(uint32_t a0,uint32_t a1)
   }
 
 #define BDC0_E58C(str,sz,x) \
-  FUN_8012e58c(ctx8,ctxc,(const void *)guest_at(str),(sz),0x1000,(x))
+  announce_param_block_init(ctx8,ctxc,(const void *)guest_at(str),(sz),0x1000,(x))
 #define BDC0_STATUS() do { *(uint32_t *)guest_at(0x801c11f0) = 1; return 0; } while (0)
 
   if (sel == 0x100) {
-    FUN_8012cd9c(0xffffffff,0x18);
+    scroll_offset_set(0xffffffff,0x18);
     BDC0_E58C(0x80121278,0x1000,0);
-    FUN_8012bf0c(9,0,4,7);
-    FUN_8012cdd8(0,0x10);
+    banner_stripe_scroll(9,0,4,7);
+    scroll_offset_accumulate(0,0x10);
     return 0;
   }
   if (sel < 0x101) {
     switch (sel) {
     case 1:
-      if (FUN_80129978(a0 + 0x14,3,1) == 0) return 0;
+      if (u16_counter_step_pad_a(a0 + 0x14,3,1) == 0) return 0;
       *(uint32_t *)guest_at(0x801c11f0) = 1;
       g[0x9c] = 5;
       v0 = *(int16_t *)(s4 + 0x14);
@@ -5414,19 +5414,19 @@ int FUN_8015bdc0(uint32_t a0,uint32_t a1)
       return 0;
     case 2:
       /* a0 not rewritten by original: stale ctx8 (last a0 write) */
-      if (FUN_80129978(ctx8,3,1) == 0) return 0;
+      if (u16_counter_step_pad_a(ctx8,3,1) == 0) return 0;
       BDC0_STATUS();
     case 3:
-      if (FUN_80129978(a0 + 0x18,1,1) == 0) return 0;
+      if (u16_counter_step_pad_a(a0 + 0x18,1,1) == 0) return 0;
       BDC0_STATUS();
     case 4:
-      if (FUN_80129978(a0 + 0x1a,1,1) == 0) return 0;
+      if (u16_counter_step_pad_a(a0 + 0x1a,1,1) == 0) return 0;
       BDC0_STATUS();
     case 5:
-      if (FUN_80129b48(ctx8,8) == 0) return 0;
+      if (u16_counter_step_pad_b(ctx8,8) == 0) return 0;
       BDC0_STATUS();
     case 6:
-      if (FUN_80129978(a0 + 0x1e,8) == 0) return 0;
+      if (u16_counter_step_pad_a(a0 + 0x1e,8) == 0) return 0;
       BDC0_STATUS();
     default:
       return 0;
@@ -5435,13 +5435,13 @@ int FUN_8015bdc0(uint32_t a0,uint32_t a1)
   if (sel < 0x107) {
     switch (sel) {
     case 7:
-      if (FUN_80129978(a0 + 0x20,1,1) == 0) return 0;
+      if (u16_counter_step_pad_a(a0 + 0x20,1,1) == 0) return 0;
       BDC0_STATUS();
     case 8:
-      if (FUN_80129978(ctx8,1,1) == 0) return 0;
+      if (u16_counter_step_pad_a(ctx8,1,1) == 0) return 0;
       BDC0_STATUS();
     case 9:
-      if (FUN_80129978(a0 + 0x24,1,1) == 0) return 0;
+      if (u16_counter_step_pad_a(a0 + 0x24,1,1) == 0) return 0;
       BDC0_STATUS();
     case 0xa: {
       uint32_t w40;
@@ -5475,41 +5475,41 @@ int FUN_8015bdc0(uint32_t a0,uint32_t a1)
       f2 = (sel == (uint32_t)(*(uint16_t *)(s4 + 8) + 0x100)) ? 3 : 4;
       BDC0_E58C(0x80121280,0x1000,f2);
       BDC0_E58C(g32(0x801b4028 + (uint32_t)(*(int16_t *)(s4 + 0x14)) * 4),0x140,f2);
-      FUN_8012cdd8(0,0xa);
+      scroll_offset_accumulate(0,0xa);
       BDC0_E58C(g32(0x801b4038 + (uint32_t)(*(int16_t *)(s4 + 0x14)) * 4),0x140,f2);
-      FUN_8012cdd8(0,0xc);
+      scroll_offset_accumulate(0,0xc);
       return 0;
     case 0x102:
       BDC0_E58C(0x8012128c,0x1000,flag);
       BDC0_E58C(g32(0x801b4048 + (uint32_t)(*(int16_t *)(s4 + 0x16)) * 4),0x140,flag);
-      FUN_8012cdd8(0,0xc);
+      scroll_offset_accumulate(0,0xc);
       return 0;
     case 0x103:
       BDC0_E58C(0x80121298,0x1000,flag);
       BDC0_E58C(g32(0x801b3f70 + (uint32_t)(*(int16_t *)(s4 + 0x18)) * 4),0x140,flag);
-      FUN_8012cdd8(0,0xc);
+      scroll_offset_accumulate(0,0xc);
       return 0;
     case 0x104:
       BDC0_E58C(0x801212a8,0x1000,flag);
       BDC0_E58C(g32(0x801b3f70 + (uint32_t)(*(int16_t *)(s4 + 0x1a)) * 4),0x140,flag);
-      FUN_8012cdd8(0,0xc);
+      scroll_offset_accumulate(0,0xc);
       return 0;
     case 0x105: {
         BDC0_E58C(0x801212bc,0x1000,flag);
-      FUN_8012e8e8(ctx8,ctxc,(const void *)guest_at(0x801212cc),0x140,0x1000,flag);
+      round_announce_block(ctx8,ctxc,(const void *)guest_at(0x801212cc),0x140,0x1000,flag);
       FUN_8018ef60((char *)guest_at(0x1f800f80),(char *)guest_at(0x801212d0),
                    (int32_t)*(int16_t *)(s4 + 0x1c));
       BDC0_E58C(0x1f800f80,0x140,flag);
-      FUN_8012cdd8(0,0xc);
+      scroll_offset_accumulate(0,0xc);
       return 0;
     }
     case 0x106: {
       BDC0_E58C(0x801212d4,0x1000,flag);
-      FUN_8012e8e8(ctx8,ctxc,(const void *)guest_at(0x801212cc),0x140,0x1000,flag);
+      round_announce_block(ctx8,ctxc,(const void *)guest_at(0x801212cc),0x140,0x1000,flag);
       FUN_8018ef60((char *)guest_at(0x1f800f80),(char *)guest_at(0x801212d0),
                    (int32_t)*(int16_t *)(s4 + 0x1e));
       BDC0_E58C(0x1f800f80,0x140,flag);
-      FUN_8012cdd8(0,0xc);
+      scroll_offset_accumulate(0,0xc);
       return 0;
     }
     default:
@@ -5522,21 +5522,21 @@ int FUN_8015bdc0(uint32_t a0,uint32_t a1)
     case 0x107:
       BDC0_E58C(0x801212e4,0x1000,flag);
       BDC0_E58C(g32(0x801b3f70 + (uint32_t)(*(int16_t *)(s4 + 0x20)) * 4),0x140,flag);
-      FUN_8012cdd8(0,0xc);
+      scroll_offset_accumulate(0,0xc);
       return 0;
     case 0x108:
       BDC0_E58C(0x801212f4,0x1000,flag);
       BDC0_E58C(g32(0x801b3f70 + (uint32_t)(*(int16_t *)(s4 + 0x22)) * 4),0x140,flag);
-      FUN_8012cdd8(0,0xc);
+      scroll_offset_accumulate(0,0xc);
       return 0;
     case 0x109:
       BDC0_E58C(0x80121304,0x1000,flag);
       BDC0_E58C(g32(0x801b3f70 + (uint32_t)(*(int16_t *)(s4 + 0x24)) * 4),0x140,flag);
-      FUN_8012cdd8(0,0xc);
+      scroll_offset_accumulate(0,0xc);
       return 0;
     case 0x10a:
       BDC0_E58C(0x80121310,0x1000,flag);
-      FUN_8012cdd8(0,0xc);
+      scroll_offset_accumulate(0,0xc);
       return 0;
     default:
       return 0;
@@ -5544,7 +5544,7 @@ int FUN_8015bdc0(uint32_t a0,uint32_t a1)
   }
   if (sel == 0x10b) {
     BDC0_E58C(0x80121318,0x1000,flag);
-    FUN_8012cdd8(0,0x14);
+    scroll_offset_accumulate(0,0x14);
     return 0;
   }
   return 0;
@@ -5560,32 +5560,32 @@ int FUN_8015bdc0(uint32_t a0,uint32_t a1)
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_8016827c() { return 0; }
+int memcard_block_verify() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_80168648() { return 0; }
+int job_result_poll_stable() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_80168700() { return 0; }
+int job_state_query() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_8012ba04() { return 0; }
+int slot_attr_packet_build() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_8012e3c4() { return 0; }
+int descblk_variant_e() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_8012e4f4() { return 0; }
+int descblk_variant_f() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
 int hud_text_a() { return 0; }
-extern int32_t FUN_8015643c(uint32_t,uint32_t);
+extern int32_t attr_records_scan(uint32_t,uint32_t);
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -5593,27 +5593,27 @@ int FUN_8016dadc() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_8016cb20() { return 0; }
+int heap_ptr_fixup() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_8016cc5c() { return 0; }
+int heap_record_emit() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_80135a14() { return 0; }
+int terrain_packet_gen() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_8015d420() { return 0; }
+int save_flow_state_machine() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_8015ebf8() { return 0; }
+int options_state_machine() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_8016088c() { return 0; }
+int screen_flow_state_machine() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -5621,18 +5621,18 @@ int FUN_80161630() { return 0; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int FUN_8018e550() { return 0; }
+int printf_forward() { return 0; }
 
 /* callee externs for the ports below. The weak stubs above are ()-style
    non-prototype defs, so calls below promote args the usual way; results
    are read as int32_t. */
 extern int32_t cd_job_result(uint32_t,uint32_t *,uint32_t *);
-extern uint8_t *FUN_80127680(void);
+extern uint8_t *tag_table_get(void);
 
 /* FUN_80163154's real signature (menu.c): (guest heap ptr, host int*
    tag table, tag) -> new heap ptr. save.c's mid-file extern says void;
    call through a cast to recover args+result faithfully. */
-static uint32_t br2_alloc54(uint32_t heap, int *tbl, int32_t tag)
+static uint32_t heap_alloc54(uint32_t heap, int *tbl, int32_t tag)
 {
   return ((uint32_t (*)(uint32_t, int *, int))FUN_80163154)(heap, tbl, tag);
 }
@@ -5642,25 +5642,25 @@ static uint32_t br2_alloc54(uint32_t heap, int *tbl, int32_t tag)
 #define BR2_WS16(a,v)  (*(int16_t *)guest_at(a) = (int16_t)(v))
 #define BR2_W8(a,v)    (*(uint8_t *)guest_at(a) = (uint8_t)(v))
 
-/* ---- FUN_8015e87c @0x8015e87c (3 insns) ---- */
-int FUN_8015e87c(void)
+/* ---- display_cur_invalidate @0x8015e87c (3 insns) ---- */
+int display_cur_invalidate(void)
 {
   BR2_W32(0x801b4154, 0xffffffffu);
   return -1;
 }
 
-/* ---- FUN_8015e88c @0x8015e88c (5 insns) ---- */
-int FUN_8015e88c(void)
+/* ---- display_pair_invalidate @0x8015e88c (5 insns) ---- */
+int display_pair_invalidate(void)
 {
   BR2_W32(0x801b4158, 0xffffffffu);
   BR2_W32(0x801b415c, 0xffffffffu);
   return (int)0x801b0000;
 }
 
-/* ---- FUN_8015e8a4 @0x8015e8a4 (85 insns) ----
+/* ---- display_page_commit_a @0x8015e8a4 (85 insns) ----
    Display-page commit for channel A (regs @0x801f4760/64, state @0x1f80008c,
    current @0x801b4154). a0 = requested page (s2). */
-int FUN_8015e8a4(int32_t a0)
+int display_page_commit_a(int32_t a0)
 {
   uint8_t *s3 = (uint8_t *)guest_at(0x1f800000);
   int32_t s2 = a0;
@@ -5676,7 +5676,7 @@ int FUN_8015e8a4(int32_t a0)
       /* page change: state gate via h@0x1f80008c */
       s0 = (int32_t)*(int16_t *)(s3 + 0x8c);
       if (s0 == 0) {
-        FUN_8018cfdc(-1, 0);
+        cd_file_load_sm(-1, 0);
         s0 = 0x10;
         BR2_W32(0x801c43a0, 0);
         BR2_W8(0x801e3d00, 0xff);
@@ -5684,7 +5684,7 @@ int FUN_8015e8a4(int32_t a0)
         *(int16_t *)(s3 + 0x8c) = (int16_t)s0;
         return 0;
       }
-      if (FUN_8018cfdc((s2 >> 2) + 0x118,
+      if (cd_file_load_sm((s2 >> 2) + 0x118,
                        (uint32_t)g32(0x801f4760)) == 0) {
         *(int16_t *)(s3 + 0x8c) = (int16_t)s0;
         return 0;
@@ -5692,21 +5692,21 @@ int FUN_8015e8a4(int32_t a0)
     }
     /* commit path (also taken when same 1KB page) */
     s1 = (int32_t)g8(0x1f800013);
-    FUN_801274d8(0);
+    scratch_013_set(0);
     FUN_80163154(g32(0x801f4764), g32(0x801f4760), s2 & 3);
-    FUN_8018bfcc(g32(0x801f4764), 0, 0x1ff, 1, 0x200, 0, 1);
+    spr_draw_pair(g32(0x801f4764), 0, 0x1ff, 1, 0x200, 0, 1);
     FUN_8019a460(0);
-    FUN_801274d8((uint32_t)s1);
+    scratch_013_set((uint32_t)s1);
     BR2_W32(0x801b4154, (uint32_t)s2);
   }
   *(int16_t *)(s3 + 0x8c) = -1;
   return 1;
 }
 
-/* ---- FUN_8015e9fc @0x8015e9fc (126 insns) ----
+/* ---- display_page_commit_b @0x8015e9fc (126 insns) ----
    Display-page commit for channel B (regs @0x801f4768/6c, state @0x1f80008e,
    currents @0x801b4158/0x801b415c). a0 = bank, a1 = offset. */
-int FUN_8015e9fc(uint32_t a0, uint32_t a1)
+int display_page_commit_b(uint32_t a0, uint32_t a1)
 {
   uint8_t *s3 = (uint8_t *)guest_at(0x1f800000);
   uint32_t s4 = a0;
@@ -5725,16 +5725,16 @@ int FUN_8015e9fc(uint32_t a0, uint32_t a1)
   /* state gate via h@0x1f80008e */
   s0 = (int32_t)*(int16_t *)(s3 + 0x8e);
   if (s0 == 5) {
-    if (FUN_8018cfdc(0x16, 0x80050000u) == 0) {
+    if (cd_file_load_sm(0x16, 0x80050000u) == 0) {
       *(int16_t *)(s3 + 0x8e) = (int16_t)s0;
       return 0;
     }
     s1 = (int32_t)g8(0x1f800013);
-    FUN_801274d8(0);
-    FUN_8018bf40((int32_t)g32(0x801f4768), 0, 0x1e0, 1);
+    scratch_013_set(0);
+    spr_draw_off((int32_t)g32(0x801f4768), 0, 0x1e0, 1);
     s0 = 0x10;
     FUN_8019a460(0);
-    FUN_801274d8((uint32_t)s1);
+    scratch_013_set((uint32_t)s1);
     goto mid;
   }
   if (s0 >= 6) {
@@ -5745,7 +5745,7 @@ int FUN_8015e9fc(uint32_t a0, uint32_t a1)
     goto mid;
   }
   if (s0 == 0) {
-    FUN_8018cfdc(-1, 0);
+    cd_file_load_sm(-1, 0);
     BR2_W32(0x801c43a0, 0);
     BR2_W8(0x801e3d00, 0xff);
     if ((int32_t)g32(0x801b415c) != -1) {
@@ -5763,18 +5763,18 @@ mid:
   {
     int32_t t = (int32_t)(uint8_t)g8(0x801b4148 + s4);
     int32_t a0x = (s2 >> 3) + t + 0x130;
-    if (FUN_8018cfdc(a0x, (uint32_t)g32(0x801f4768)) == 0) {
+    if (cd_file_load_sm(a0x, (uint32_t)g32(0x801f4768)) == 0) {
       *(int16_t *)(s3 + 0x8e) = (int16_t)s0;
       return 0;
     }
   }
 commit:
   s1 = (int32_t)g8(0x1f800013);
-  FUN_801274d8(0);
+  scratch_013_set(0);
   FUN_80163154(g32(0x801f476c), g32(0x801f4768), s2 & 7);
-  FUN_8018bf40((int32_t)g32(0x801f476c), 0x300, 0x100, 1);
+  spr_draw_off((int32_t)g32(0x801f476c), 0x300, 0x100, 1);
   FUN_8019a460(0);
-  FUN_801274d8((uint32_t)s1);
+  scratch_013_set((uint32_t)s1);
   BR2_W32(0x801b4158, s4);
   BR2_W32(0x801b415c, (uint32_t)s2);
 same:
@@ -5782,21 +5782,21 @@ same:
   return 1;
 }
 
-/* ---- FUN_8016831c @0x8016831c (24 insns) ----
-   memcard op wrapper: probe (FUN_80168648), on success FUN_8016827c then
-   FUN_80168700. a2/a3/stack-a4 forwarded to FUN_8016827c. */
-int FUN_8016831c(uint32_t a0,const void *a1,void *a2,uint32_t a3,uint32_t a4)
+/* ---- mc_op_seq_probe @0x8016831c (24 insns) ----
+   memcard op wrapper: probe (job_result_poll_stable), on success memcard_block_verify then
+   job_state_query. a2/a3/stack-a4 forwarded to memcard_block_verify. */
+int mc_op_seq_probe(uint32_t a0,const void *a1,void *a2,uint32_t a3,uint32_t a4)
 {
-  int32_t r = FUN_80168648(a0,a1,1);
+  int32_t r = job_result_poll_stable(a0,a1,1);
   if (r != 0) return r;
-  FUN_8016827c(a2,a3,a4);
-  return FUN_80168700();
+  memcard_block_verify(a2,a3,a4);
+  return job_state_query();
 }
 
-/* ---- FUN_801685b4 @0x801685b4 (36 insns) ----
+/* ---- mc_file_cmd_stable_poll @0x801685b4 (36 insns) ----
    Poll mc_file_cmd until result stabilises (or 0). JT@0x80122144: idx0
    returns immediately; all other codes re-poll while the value changes. */
-int FUN_801685b4(uint32_t a0,const void *a1,uint32_t a2)
+int mc_file_cmd_stable_poll(uint32_t a0,const void *a1,uint32_t a2)
 {
   int32_t prev = 0;
   int32_t r;
@@ -5808,10 +5808,10 @@ int FUN_801685b4(uint32_t a0,const void *a1,uint32_t a2)
   }
 }
 
-/* ---- FUN_80168838 @0x80168838 (45 insns) ----
+/* ---- mc_job_a_result_poll @0x80168838 (45 insns) ----
    Issue via mc_job_issue_a then poll cd_job_result until a stable nonzero
    result code (0 returns immediately). */
-int FUN_80168838(uint32_t a0,const void *a1,void *a2,uint32_t a3,uint32_t a4)
+int mc_job_a_result_poll(uint32_t a0,const void *a1,void *a2,uint32_t a3,uint32_t a4)
 {
   uint32_t t1 = 0, code = 0;
   int32_t prev = 0;
@@ -5824,8 +5824,8 @@ int FUN_80168838(uint32_t a0,const void *a1,void *a2,uint32_t a3,uint32_t a4)
   }
 }
 
-/* ---- FUN_801688f0 @0x801688f0 (45 insns) ---- same shape, mc_job_issue_b */
-int FUN_801688f0(uint32_t a0,const void *a1,void *a2,uint32_t a3,uint32_t a4)
+/* ---- mc_job_b_result_poll @0x801688f0 (45 insns) ---- same shape, mc_job_issue_b */
+int mc_job_b_result_poll(uint32_t a0,const void *a1,void *a2,uint32_t a3,uint32_t a4)
 {
   uint32_t t1 = 0, code = 0;
   int32_t prev = 0;
@@ -5838,11 +5838,11 @@ int FUN_801688f0(uint32_t a0,const void *a1,void *a2,uint32_t a3,uint32_t a4)
   }
 }
 
-/* ---- FUN_8016f30c @0x8016f30c (158 insns) ----
+/* ---- hud_slot_blitter @0x8016f30c (158 insns) ----
    10-slot ambient/palette HUD blitter. a0 = guest state ptr, a1 = flag.
    s1 = per-slot record @0x801f4ee8 + idx*0x18; halfword attr array at
    s1+0..0x13, counters @0x14/0x15, timer @0x16. */
-void FUN_8016f30c(uint32_t a0, uint32_t a1)
+void hud_slot_blitter(uint32_t a0, uint32_t a1)
 {
   uint8_t *g = (uint8_t *)guest_at(0x1f800000);
   uint8_t *st = (uint8_t *)guest_at(a0);
@@ -5901,7 +5901,7 @@ void FUN_8016f30c(uint32_t a0, uint32_t a1)
   for (;;) {
     uint16_t attr = *(uint16_t *)(s1 + idx * 2);
     idx += 1;
-    FUN_8012ba04(_DAT_1f800008, _DAT_1f80000c, attr, 0x1000, 0x1000, a1);
+    slot_attr_packet_build(_DAT_1f800008, _DAT_1f80000c, attr, 0x1000, 0x1000, a1);
     idx %= 10;
     cnt += 1;
     if (cnt >= 10) break;
@@ -5936,10 +5936,10 @@ void FUN_8017f13c(uint32_t a0, uint32_t a1)
   print_dispatch((const char *)guest_at(0x80122f88));
 }
 
-/* ---- FUN_8018106c @0x8018106c (115 insns) ----
+/* ---- record_struct_dump @0x8018106c (115 insns) ----
    Debug dump of controller/record struct. a0 = guest state ptr;
    s2 = sub-struct ptr @a0+0x3c (guest ptr -> host). */
-void FUN_8018106c(uint32_t a0)
+void record_struct_dump(uint32_t a0)
 {
   uint8_t *s3 = (uint8_t *)guest_at(a0);
   uint8_t *s2;
@@ -6000,11 +6000,11 @@ void FUN_8018106c(uint32_t a0)
   print_dispatch((const char *)guest_at(0x80123114));
 }
 
-/* ---- FUN_80170d38 @0x80170d38 (169 insns) ----
+/* ---- save_channel_init_commit @0x80170d38 (169 insns) ----
    Save-channel init/commit. a0 = guest state ptr (h@0x8e = phase),
    a1 unused, s2/s3 = host save-slot buffers. Uses heap A @0x801c47b8
-   (tag table via FUN_80127680) and heap B @0x801e3cfc. */
-int FUN_80170d38(uint32_t a0,int32_t a1,uint8_t *s2,uint8_t *s3)
+   (tag table via tag_table_get) and heap B @0x801e3cfc. */
+int save_channel_init_commit(uint32_t a0,int32_t a1,uint8_t *s2,uint8_t *s3)
 {
   uint8_t *s5 = (uint8_t *)guest_at(a0);
   int32_t s0 = (int32_t)*(int16_t *)(s5 + 0x8e);
@@ -6020,17 +6020,17 @@ int FUN_80170d38(uint32_t a0,int32_t a1,uint8_t *s2,uint8_t *s3)
   return 0;
 
 st0:
-  if (FUN_8018cfdc(0x13, guest_of(FUN_80127680())) == 0) {
+  if (cd_file_load_sm(0x13, guest_of(tag_table_get())) == 0) {
     *(int16_t *)(s5 + 0x8e) = (int16_t)s0;
     return 0;
   }
   s4 = (int32_t)g8(0x1f800013);
-  FUN_801274d8(0);
-  tbl = (int *)FUN_80127680();
+  scratch_013_set(0);
+  tbl = (int *)tag_table_get();
   for (i = 0; i < 0x64; i++) {
     old = g32(0x801c43a8 + (uint32_t)i * 4);
     BR2_W32(0x801c43a8 + (uint32_t)i * 4, g32(0x801c47b8));
-    sz = (int32_t)br2_alloc54(g32(0x801c47b8), tbl, i);
+    sz = (int32_t)heap_alloc54(g32(0x801c47b8), tbl, i);
     if (sz != 0) {
       BR2_W32(0x801c47b8, g32(0x801c47b8) + (uint32_t)sz);
       data_relocate(old);
@@ -6040,33 +6040,33 @@ st0:
     BR2_W32(0x801c47b8, (g32(0x801c47b8) + 3) & ~3u);
   }
   /* heap B blocks */
-  sz = (int32_t)br2_alloc54(g32(0x801e3cfc), tbl, 0x100);
+  sz = (int32_t)heap_alloc54(g32(0x801e3cfc), tbl, 0x100);
   if (sz != 0) {
-    FUN_8018bfcc(g32(0x801e3cfc), 0x180, 0x1e0, 1, 0x3c0, 0x180, 1);
+    spr_draw_pair(g32(0x801e3cfc), 0x180, 0x1e0, 1, 0x3c0, 0x180, 1);
     BR2_W32(0x801e3cfc, g32(0x801e3cfc) + (uint32_t)sz);
   }
-  sz = (int32_t)br2_alloc54(g32(0x801e3cfc), tbl, 0x101);
+  sz = (int32_t)heap_alloc54(g32(0x801e3cfc), tbl, 0x101);
   if (sz != 0) {
-    FUN_8018bf40((int32_t)g32(0x801e3cfc), 0x240, 0x100, 1);
+    spr_draw_off((int32_t)g32(0x801e3cfc), 0x240, 0x100, 1);
     BR2_W32(0x801e3cfc, g32(0x801e3cfc) + (uint32_t)sz);
   }
-  sz = (int32_t)br2_alloc54(g32(0x801e3cfc), tbl, 0x102);
+  sz = (int32_t)heap_alloc54(g32(0x801e3cfc), tbl, 0x102);
   if (sz != 0) {
-    FUN_8018bf40((int32_t)g32(0x801e3cfc), 0x190, 0x1e0, 1);
+    spr_draw_off((int32_t)g32(0x801e3cfc), 0x190, 0x1e0, 1);
     BR2_W32(0x801e3cfc, g32(0x801e3cfc) + (uint32_t)sz);
   }
-  sz = (int32_t)br2_alloc54(g32(0x801e3cfc), tbl, 0x103);
+  sz = (int32_t)heap_alloc54(g32(0x801e3cfc), tbl, 0x103);
   if (sz != 0) {
-    FUN_8018bf40((int32_t)g32(0x801e3cfc), 0x1a0, 0x1e0, 1);
+    spr_draw_off((int32_t)g32(0x801e3cfc), 0x1a0, 0x1e0, 1);
     BR2_W32(0x801e3cfc, g32(0x801e3cfc) + (uint32_t)sz);
   }
   FUN_8019a460(0);
-  FUN_801274d8((uint32_t)s4);
+  scratch_013_set((uint32_t)s4);
   *(int16_t *)(s5 + 0x8e) = 0x10;
   return 0;
 
 st10:
-  if (FUN_8018cfdc(0x10, g32(0x801c47b8)) == 0) {
+  if (cd_file_load_sm(0x10, g32(0x801c47b8)) == 0) {
     *(int16_t *)(s5 + 0x8e) = (int16_t)s0;
     return 0;
   }
@@ -6084,22 +6084,22 @@ st10:
    Battle-announcement HUD printer. a0 = guest state ptr (regs/sprite
    coords), a1 = announcement id 0..0x16 (JT@0x80120840), a2 unused.
    Gate: (*(u16*)(*(u32*)(a0+0xc8)+2) >> 0xa) & 1 must be set.
-   All cases draw via FUN_8012e3c4/FUN_8012e4f4/hud_text_a with
+   All cases draw via descblk_variant_e/descblk_variant_f/hud_text_a with
    coords derived from lhu/lh @+0x20/+0x22. */
 
-static int32_t br2_5143c_x2(uint8_t *s0)
+static int32_t hud_x2(uint8_t *s0)
 { /* (sxt16 lhu@0x20) / 2 trunc */
   return ((int16_t)*(uint16_t *)(s0 + 0x20)) / 2;
 }
-static int32_t br2_5143c_y2(uint8_t *s0)
+static int32_t hud_y2(uint8_t *s0)
 { /* (sxt16 lhu@0x22) / 2 trunc */
   return ((int16_t)*(uint16_t *)(s0 + 0x22)) / 2;
 }
-static int32_t br2_5143c_y3(uint8_t *s0)
+static int32_t hud_y3(uint8_t *s0)
 { /* (lh@0x22 * 3) / 8 trunc */
   return (*(int16_t *)(s0 + 0x22) * 3) / 8;
 }
-static int32_t br2_5143c_sdiv4(int32_t v)
+static int32_t hud_div4(int32_t v)
 { /* (v<0 ? v+3 : v) >> 2 == v/4 trunc */
   return v / 4;
 }
@@ -6119,71 +6119,71 @@ void hud_announce(uint32_t a0,uint32_t a1,uint32_t a2)
 
   r8 = *(uint32_t *)(s0 + 8);
   rc = *(uint32_t *)(s0 + 0xc);
-  x2 = br2_5143c_x2(s0);
-  y2 = br2_5143c_y2(s0);
-  y3 = br2_5143c_y3(s0);
+  x2 = hud_x2(s0);
+  y2 = hud_y2(s0);
+  y3 = hud_y3(s0);
 
   switch (sel) {
   case 0:
-    /* "Here Comes A Challenger !!!" via 7-arg FUN_8012e4f4 */
-    FUN_8012e4f4(r8, rc, (const void *)guest_at(0x80120768),
+    /* "Here Comes A Challenger !!!" via 7-arg descblk_variant_f */
+    descblk_variant_f(r8, rc, (const void *)guest_at(0x80120768),
                  x2 - 0xe7, y2 - 0xc, 8, -4);
     return;
   case 1:
-    FUN_8012e3c4(r8, rc, (const void *)guest_at(0x80120784),
+    descblk_variant_e(r8, rc, (const void *)guest_at(0x80120784),
                  (int16_t)(x2 - 0x84), y3, 8);
     return;
   case 2:
-    FUN_8012e3c4(r8, rc, (const void *)guest_at(0x80120794),
+    descblk_variant_e(r8, rc, (const void *)guest_at(0x80120794),
                  (int16_t)(x2 - 0x79), y3, 0xe);
     return;
   case 3: {
     char *bp = buf;
     int32_t v;
-    FUN_8012e3c4(r8, rc, (const void *)guest_at(0x801207a0),
+    descblk_variant_e(r8, rc, (const void *)guest_at(0x801207a0),
                  (int16_t)(x2 - 0x4d), y3, 0xe);
     FUN_8018ef60(bp, (char *)guest_at(0x801207a8),
                  (int32_t)*(int8_t *)(s0 + 0x99) + 1);
     v = (*(int16_t *)(s0 + 0x22) * 3);
     if (v < 0) v += 7;
     v >>= 3;
-    FUN_8012e3c4(r8, rc, bp, 0x1000, v, 0xe);
+    descblk_variant_e(r8, rc, bp, 0x1000, v, 0xe);
     return;
   }
   case 4:
-    FUN_8012e3c4(r8, rc, (const void *)guest_at(0x801207ac),
+    descblk_variant_e(r8, rc, (const void *)guest_at(0x801207ac),
                  (int16_t)(x2 - 0x6e), y3, 0xe);
     return;
   case 5:
-    FUN_8012e3c4(r8, rc, (const void *)guest_at(0x801207b8),
+    descblk_variant_e(r8, rc, (const void *)guest_at(0x801207b8),
                  (int16_t)(x2 - 0x42), y3, 8);
     return;
   case 6:
   case 10:
-    FUN_8012e3c4(r8, rc, (const void *)guest_at(0x801207c0),
+    descblk_variant_e(r8, rc, (const void *)guest_at(0x801207c0),
                  (int16_t)(x2 - 0x63), (int16_t)(y2 - 0x10), 0xe);
     return;
   case 7:
   case 11:
-    FUN_8012e3c4(r8, rc, (const void *)guest_at(0x801207cc),
+    descblk_variant_e(r8, rc, (const void *)guest_at(0x801207cc),
                  (int16_t)(x2 - 0x79), (int16_t)(y2 - 0x10), 8);
     return;
   case 8:
   case 12:
-    FUN_8012e3c4(r8, rc, (const void *)guest_at(0x801207d8),
+    descblk_variant_e(r8, rc, (const void *)guest_at(0x801207d8),
                  (int16_t)(x2 - 0x58), (int16_t)(y2 - 0x10), 8);
     return;
   case 9:
   case 13:
-    FUN_8012e3c4(r8, rc, (const void *)guest_at(0x801207e4),
+    descblk_variant_e(r8, rc, (const void *)guest_at(0x801207e4),
                  (int16_t)(x2 - 0x2c), (int16_t)(y2 - 0x10), 8);
     return;
   case 14:
-    FUN_8012e3c4(r8, rc, (const void *)guest_at(0x801207ec),
+    descblk_variant_e(r8, rc, (const void *)guest_at(0x801207ec),
                  (int16_t)(x2 - 0x4d), (int16_t)(y2 - 0x10), 8);
     return;
   case 15:
-    FUN_8012e3c4(r8, rc, (const void *)guest_at(0x801207f8),
+    descblk_variant_e(r8, rc, (const void *)guest_at(0x801207f8),
                  (int16_t)(x2 - 0x2c), (int16_t)(y2 - 0x10), 8);
     return;
   case 16: {
@@ -6197,15 +6197,15 @@ void hud_announce(uint32_t a0,uint32_t a1,uint32_t a2)
   }
   case 17:
   case 18:
-    FUN_8012e3c4(r8, rc, (const void *)guest_at(0x80120808),
+    descblk_variant_e(r8, rc, (const void *)guest_at(0x80120808),
                  (int16_t)(x2 - 0x42), (int16_t)(y2 - 0x10), 8);
     return;
   case 19:
-    FUN_8012e3c4(r8, rc, (const void *)guest_at(0x80120810),
+    descblk_variant_e(r8, rc, (const void *)guest_at(0x80120810),
                  (int16_t)(x2 - 0x4d), (int16_t)(y2 - 0x10), 8);
     return;
   case 20:
-    FUN_8012e3c4(r8, rc, (const void *)guest_at(0x80120818),
+    descblk_variant_e(r8, rc, (const void *)guest_at(0x80120818),
                  (int16_t)(x2 - 0x58), (int16_t)(y2 - 0x10), 0xa);
     return;
   case 21: {
@@ -6216,12 +6216,12 @@ void hud_announce(uint32_t a0,uint32_t a1,uint32_t a2)
     FUN_8018ef60(buf, (char *)guest_at(0x80120824), num);
     v = (*(int16_t *)(s0 + 0x22) * 3);
     if (v < 0) v += 3;
-    v = br2_5143c_sdiv4(v) - 0x30;
-    FUN_8012e3c4(r8, rc, buf, 0, (int16_t)v, 8);
+    v = hud_div4(v) - 0x30;
+    descblk_variant_e(r8, rc, buf, 0, (int16_t)v, 8);
     return;
   }
   case 22:
-    FUN_8012e3c4(r8, rc, (const void *)guest_at(0x80120834),
+    descblk_variant_e(r8, rc, (const void *)guest_at(0x80120834),
                  (int16_t)(x2 - 0x63), (int16_t)(y2 - 0x10), 0xa);
     return;
   default:
@@ -6229,18 +6229,18 @@ void hud_announce(uint32_t a0,uint32_t a1,uint32_t a2)
   }
 }
 
-/* ---- FUN_80170fe0 @0x80170fe0 (555 insns) ----
+/* ---- save_load_state_machine @0x80170fe0 (555 insns) ----
    Save/load channel state machine. a0 = guest state struct (h@+0x8e =
    state), a1 = slot/index param. States: 0=init(load build), 0x10=commit
    tail, 0x20=alternate commit. Heap A @0x801c47b8, heap B @0x801e3cfc,
-   tag table via FUN_80127680. */
-int FUN_80170fe0(uint32_t a0, int32_t a1)
+   tag table via tag_table_get. */
+int save_load_state_machine(uint32_t a0, int32_t a1)
 {
   uint8_t *s0h = (uint8_t *)guest_at(a0);
   int32_t s0 = (int32_t)*(int16_t *)(s0h + 0x8e);
   int32_t t1 = a1;
   int32_t saved8 = (int32_t)g8(0x1f800013);
-  uint8_t blk[0x20];           /* sp+0x28..0x47 block for FUN_80135a14 */
+  uint8_t blk[0x20];           /* sp+0x28..0x47 block for terrain_packet_gen */
   uint16_t sp48 = 0, sp4c = 0;
   int32_t i, sel, ret;
   uint32_t heapB, heapA, sz, z0, z1, zsum, old, s7, s3n, s0v, h;
@@ -6261,25 +6261,25 @@ int FUN_80170fe0(uint32_t a0, int32_t a1)
 
 init:
   /* ---- state 0: build save image ---- */
-  if (FUN_8015643c(0,0x17) == 0) goto ret0;
-  if (FUN_8018cfdc(t1 + 0xa0, guest_of(FUN_80127680())) == 0)
+  if (attr_records_scan(0,0x17) == 0) goto ret0;
+  if (cd_file_load_sm(t1 + 0xa0, guest_of(tag_table_get())) == 0)
     goto ret0;
-  FUN_801274d8(0);
+  scratch_013_set(0);
   {
     uint8_t *s5 = (uint8_t *)guest_at(0x801f4a8);
-    int32_t *tbl = (int *)FUN_80127680();
+    int32_t *tbl = (int *)tag_table_get();
     *(int16_t *)(s5 + 4) = 0;
 
     /* alloc tag0 + tag1, then FUN_8016dadc */
     heapB = g32(0x801e3cfc);
-    z0 = br2_alloc54(heapB, tbl, 0);
+    z0 = heap_alloc54(heapB, tbl, 0);
     if (z0 != 0) {
       uint32_t mid, fin, r;
       old = heapB;
       *(uint32_t *)(s5 + 0) = 0x801c11b0u;
       mid = old + z0;                    /* heapB advance #1 (delay slot) */
       BR2_W32(0x801e3cfc, mid);
-      z1 = br2_alloc54(mid, tbl, 1);
+      z1 = heap_alloc54(mid, tbl, 1);
       zsum = z0 + z1;
       heapA = g32(0x801c47b8);
       fin = mid + zsum;                  /* heapB advance #2 (delay slot) */
@@ -6293,12 +6293,12 @@ init:
 
     /* alloc tag2: 0x17 character-record slots */
     heapB = g32(0x801e3cfc);
-    if (br2_alloc54(heapB, tbl, 2) != 0) {
+    if (heap_alloc54(heapB, tbl, 2) != 0) {
       uint8_t *rec = (uint8_t *)guest_at(0x801e3d08);
       uint8_t *s2p = rec + 4;
       int32_t s3i;
       uint32_t s4o = (uint32_t)t1 * 23;
-      FUN_8016cb20(g32(0x801e3cfc));
+      heap_ptr_fixup(g32(0x801e3cfc));
       *(uint32_t *)(s5 + 8) = 0x801e3d08u;
       for (s3i = 0; s3i < 0x17; s3i++, rec += 0x28, s2p += 0x28) {
         uint32_t cp = 0x801b4878u + s4o + (uint32_t)s3i;
@@ -6316,7 +6316,7 @@ init:
           *(int16_t *)(s5 + 0xc) =
             (int16_t)(*(int16_t *)(s5 + 0xc) + 1);
         } else {
-          uint32_t r = (uint32_t)FUN_8016cc5c(
+          uint32_t r = (uint32_t)heap_record_emit(
               g32(0x801e3cfc), 0x801e3d08u + (uint32_t)s3i * 0x28u,
               g32(0x801c47b8), (uint32_t)(s3i + 1),
               1, &sp48, ch, 0, 0);
@@ -6330,11 +6330,11 @@ init:
     /* alloc tag3 */
     *(int16_t *)(s5 + 0x14) = 0;
     heapB = g32(0x801e3cfc);
-    if (br2_alloc54(heapB, tbl, 3) != 0) {
-      FUN_8016cb20(g32(0x801e3cfc));
+    if (heap_alloc54(heapB, tbl, 3) != 0) {
+      heap_ptr_fixup(g32(0x801e3cfc));
       *(uint32_t *)(s5 + 0x10) = 0x801c4588u;
       {
-        uint32_t r = (uint32_t)FUN_8016cc5c(
+        uint32_t r = (uint32_t)heap_record_emit(
             g32(0x801e3cfc), 0x801c4588u, g32(0x801c47b8), 0,
             0, &sp4c, g8(0x801b49a4u + (uint32_t)t1), 0, 0);
         BR2_W32(0x801c47b8, r);
@@ -6342,36 +6342,36 @@ init:
       }
     }
 
-    /* alloc tags 0x12,0x13,0x14 with FUN_8018bf40(heapB,0,0,0) */
+    /* alloc tags 0x12,0x13,0x14 with spr_draw_off(heapB,0,0,0) */
     {
       static const int32_t tg[3] = { 0x12, 0x13, 0x14 };
       for (i = 0; i < 3; i++) {
         heapB = g32(0x801e3cfc);
-        sz = br2_alloc54(heapB, tbl, tg[i]);
+        sz = heap_alloc54(heapB, tbl, tg[i]);
         if (sz != 0) {
-          FUN_8018bf40((int32_t)g32(0x801e3cfc), 0, 0, 0);
+          spr_draw_off((int32_t)g32(0x801e3cfc), 0, 0, 0);
           BR2_W32(0x801e3cfc, g32(0x801e3cfc) + sz);
         }
       }
     }
 
-    /* alloc tags 0x20..0x25, two FUN_8018bf40 calls each */
+    /* alloc tags 0x20..0x25, two spr_draw_off calls each */
     {
       uint32_t s0p = 0x801b49b4u;
       for (i = 0; i < 6; i++, s0p += 4) {
         heapB = g32(0x801e3cfc);
-        sz = br2_alloc54(heapB, tbl, 0x20 + i);
+        sz = heap_alloc54(heapB, tbl, 0x20 + i);
         if (sz != 0) {
           uint16_t w0 = g16(s0p);
           uint16_t w1 = g16(s0p + 2);
-          FUN_8018bf40((int32_t)g32(0x801e3cfc), w0, w1, 1);
-          FUN_8018bf40((int32_t)g32(0x801e3cfc), w0, w1 + 0x10, 1);
+          spr_draw_off((int32_t)g32(0x801e3cfc), w0, w1, 1);
+          spr_draw_off((int32_t)g32(0x801e3cfc), w0, w1 + 0x10, 1);
           BR2_W32(0x801e3cfc, g32(0x801e3cfc) + sz);
         }
       }
     }
 
-    /* ---- render/param block: 5x FUN_80135a14 ---- */
+    /* ---- render/param block: 5x terrain_packet_gen ---- */
     s7 = g32(0x801b1674u + (uint32_t)t1 * 4);
     {
       uint8_t *s4p = (uint8_t *)guest_at(0x801c46c8);
@@ -6396,7 +6396,7 @@ init:
         BK16(0x38) = 0; BK16(0x3a) = 0;
         BK16(0x3c) = (int16_t)(-(lh6 * 2));
         BK8(0x40) = 0x40; BK8(0x41) = 0x40; BK8(0x42) = 0x80;
-        ret = (int32_t)FUN_80135a14(0x801c46c8u + 0xa0,
+        ret = (int32_t)terrain_packet_gen(0x801c46c8u + 0xa0,
                     g32(0x801c47b8), blk, blk + 8,
                     blk + 0x10, BKX(lhu4), BKX(lhu6), blk + 0x18);
         BR2_W32(0x801c47b8, (uint32_t)ret);
@@ -6411,7 +6411,7 @@ init:
         BK16(0x3a) = (int16_t)s3n;
         BK16(0x3c) = 0;
         BK8(0x40) = 0x40; BK8(0x41) = 0x80; BK8(0x42) = 0x40;
-        ret = (int32_t)FUN_80135a14(0x801c46c8u, (uint32_t)ret,
+        ret = (int32_t)terrain_packet_gen(0x801c46c8u, (uint32_t)ret,
                     blk, blk + 8, blk + 0x10, BKX(lhu6), s0v,
                     blk + 0x18);
         BR2_W32(0x801c47b8, (uint32_t)ret);
@@ -6424,7 +6424,7 @@ init:
         BK16(0x34) = (int16_t)(lh6 * 2);
         BK16(0x3a) = (int16_t)s3n;
         BK16(0x3c) = 0;
-        ret = (int32_t)FUN_80135a14(0x801c46c8u + 0x28, (uint32_t)ret,
+        ret = (int32_t)terrain_packet_gen(0x801c46c8u + 0x28, (uint32_t)ret,
                     blk, blk + 8, blk + 0x10, BKX(lhu6), s0v,
                     blk + 0x18);
         BR2_W32(0x801c47b8, (uint32_t)ret);
@@ -6437,7 +6437,7 @@ init:
         BK16(0x32) = 0; BK16(0x34) = 0; BK16(0x38) = 0;
         BK16(0x3a) = (int16_t)s3n;
         BK16(0x3c) = 0;
-        ret = (int32_t)FUN_80135a14(0x801c46c8u + 0x50, (uint32_t)ret,
+        ret = (int32_t)terrain_packet_gen(0x801c46c8u + 0x50, (uint32_t)ret,
                     blk, blk + 8, blk + 0x10, BKX(lhu4), s0v,
                     blk + 0x18);
         BR2_W32(0x801c47b8, (uint32_t)ret);
@@ -6450,7 +6450,7 @@ init:
         BK16(0x32) = 0; BK16(0x34) = 0; BK16(0x38) = 0;
         BK16(0x3a) = (int16_t)s3n;
         BK16(0x3c) = 0;
-        ret = (int32_t)FUN_80135a14(0x801c46c8u + 0x78, (uint32_t)ret,
+        ret = (int32_t)terrain_packet_gen(0x801c46c8u + 0x78, (uint32_t)ret,
                     blk, blk + 8, blk + 0x10, BKX(lhu4), s0v,
                     blk + 0x18);
         BR2_W32(0x801c47b8, (uint32_t)ret);
@@ -6469,7 +6469,7 @@ init:
       h = (g32(0x801c47b8) + 3) & ~3u;
       BR2_W32(0x801c47b8, h);
       BR2_W32(slot, h);
-      sz = br2_alloc54(h, tbl, 0x40 + i);
+      sz = heap_alloc54(h, tbl, 0x40 + i);
       if (sz != 0) {
         BR2_W32(0x801c47b8, g32(0x801c47b8) + sz);
         data_relocate(g32(slot));
@@ -6478,7 +6478,7 @@ init:
       }
     }
     FUN_8019a460(0);
-    FUN_801274d8((uint32_t)saved8);
+    scratch_013_set((uint32_t)saved8);
     s0 = 0x10;
   }
 
@@ -6488,13 +6488,13 @@ L10:
   else if (t1 < 8) sel = t1;
   else if (t1 == 0xb) sel = 0xb;
   else sel = 7;
-  if (FUN_8018cfdc(sel + 0xb0, guest_of(FUN_80127680())) == 0)
+  if (cd_file_load_sm(sel + 0xb0, guest_of(tag_table_get())) == 0)
     goto ret0;
-  FUN_801566a0(guest_of(FUN_80127680()), 2);
+  FUN_801566a0(guest_of(tag_table_get()), 2);
   FUN_801566d4((uint32_t)t1, 2);
 
 L20:
-  if (FUN_8018cfdc(0x88, g32(0x801c47b8)) == 0) goto ret0;
+  if (cd_file_load_sm(0x88, g32(0x801c47b8)) == 0) goto ret0;
   FUN_801566a0(g32(0x801c47b8), 1);
   FUN_801566d4(0, 1);
   return 1;
@@ -6507,11 +6507,11 @@ ret0:
 #undef BKX
 }
 
-/* ---- FUN_8015caa8 @0x8015caa8 (605 insns) ----
+/* ---- dialog_msg_dispatch @0x8015caa8 (605 insns) ----
    Dialog/message dispatcher. a0 = guest dialog-state ptr (fields
    lhu@+8, lbu/lh@+0x18..0x2a), a1 = selector (low16 dispatched).
-   Sibling of FUN_8015bdc0. Status flag @0x801c15f0 (=0x801c11e0+0x410). */
-int FUN_8015caa8(uint32_t a0, uint32_t a1)
+   Sibling of dialog_sel_dispatch_wide. Status flag @0x801c15f0 (=0x801c11e0+0x410). */
+int dialog_msg_dispatch(uint32_t a0, uint32_t a1)
 {
   uint8_t *s3 = (uint8_t *)guest_at(a0);
   uint8_t *g  = (uint8_t *)guest_at(0x1f800000);
@@ -6522,14 +6522,14 @@ int FUN_8015caa8(uint32_t a0, uint32_t a1)
   char buf[16];
 
 #define CAA8_E58C(str,sz,x) \
-  FUN_8012e58c(ctx8,ctxc,(const void *)guest_at(str),(sz),0x1000,(x))
+  announce_param_block_init(ctx8,ctxc,(const void *)guest_at(str),(sz),0x1000,(x))
 #define CAA8_STATUS() do { BR2_W32(0x801c15f0, 1); return 0; } while (0)
 #define CAA8_GATE() do { \
     if ((g16(0x1f80007c) & 0xe0) == 0) return 0; \
     FUN_80156ef4(0x400,0xc,0); \
   } while (0)
 
-  FUN_8012cd9c(0x20,0xffffffff);
+  scroll_offset_set(0x20,0xffffffff);
   if (sel == (uint32_t)(*(uint16_t *)(s3 + 8) + 0x100)) {
     flag = 0;
     hud_text_b(ctx8,ctxc,(const void *)guest_at(0x80121270),0x1000,0x1000,0);
@@ -6539,10 +6539,10 @@ int FUN_8015caa8(uint32_t a0, uint32_t a1)
   }
 
   if (sel == 0x100) {
-    FUN_8012cd9c(0xffffffff,0x18);
+    scroll_offset_set(0xffffffff,0x18);
     CAA8_E58C(0x80121358,0x1000,0);
-    FUN_8012bf0c(3,0,4,7);
-    FUN_8012cdd8(0,0x10);
+    banner_stripe_scroll(3,0,4,7);
+    scroll_offset_accumulate(0,0x10);
     return 0;
   }
 
@@ -6567,7 +6567,7 @@ int FUN_8015caa8(uint32_t a0, uint32_t a1)
       *(uint16_t *)guest_at(*(uint32_t *)(g + 0xc8)) = c0[0x1d];
       FUN_8018babc(c0[0x24]);
       xv = (uint32_t)c0[0xf] << 3;
-      FUN_80156048((short)c0[0xe],
+      gauge_scale_fixed((short)c0[0xe],
                    (short)(int32_t)(((xv * (uint64_t)0x66666667u) >> 32) >> 2));
       FUN_801561c8((uint16_t)(c0[0xc] ^ 1));
       *(uint16_t *)(s3 + 0x18) = c0[7];
@@ -6584,16 +6584,16 @@ int FUN_8015caa8(uint32_t a0, uint32_t a1)
       FUN_80161630(0);
       return 0;
     case 3:
-      if (FUN_80129b48(a0 + 0x18,7) == 0) return 0;
+      if (u16_counter_step_pad_b(a0 + 0x18,7) == 0) return 0;
       CAA8_STATUS();
     case 4:
-      if (FUN_80129b48(a0 + 0x1a,7) == 0) return 0;
+      if (u16_counter_step_pad_b(a0 + 0x1a,7) == 0) return 0;
       CAA8_STATUS();
     case 5:
-      if (FUN_80129978(a0 + 0x1c,4,1) == 0) return 0;
+      if (u16_counter_step_pad_a(a0 + 0x1c,4,1) == 0) return 0;
       CAA8_STATUS();
     case 6:
-      if (FUN_80129b48(a0 + 0x1e,3) == 0) return 0;
+      if (u16_counter_step_pad_b(a0 + 0x1e,3) == 0) return 0;
       CAA8_STATUS();
     default:
       return 0;
@@ -6603,26 +6603,26 @@ int FUN_8015caa8(uint32_t a0, uint32_t a1)
   if (sel < 0x109) {
     switch (sel) {
     case 7:
-      if (FUN_80129978(a0 + 0x20,1,1) == 0) return 0;
+      if (u16_counter_step_pad_a(a0 + 0x20,1,1) == 0) return 0;
       CAA8_STATUS();
     case 8:
-      if (FUN_80129978(a0 + 0x22,3,1) == 0) return 0;
+      if (u16_counter_step_pad_a(a0 + 0x22,3,1) == 0) return 0;
       CAA8_STATUS();
     case 9:
       CAA8_GATE();
-      FUN_8015d420();
+      save_flow_state_machine();
       return 0;
     case 0xa:
       CAA8_GATE();
-      FUN_8015ebf8();
+      options_state_machine();
       return 0;
     case 0xb:
       CAA8_GATE();
-      FUN_8016088c();
+      screen_flow_state_machine();
       return 0;
     case 0xc: {
       int32_t av;
-      if (FUN_80129978(a0 + 0x2a,1,1) == 0) return 0;
+      if (u16_counter_step_pad_a(a0 + 0x2a,1,1) == 0) return 0;
       BR2_W32(0x801c15f0, 1);
       av = *(int16_t *)(s3 + 0x2a);
       if (av == 0)      FUN_8018babc(0);
@@ -6652,90 +6652,90 @@ int FUN_8015caa8(uint32_t a0, uint32_t a1)
   switch (sel) {
   case 0x101:
     CAA8_E58C(0x80121360,0x1000,flag);
-    FUN_8012cdd8(0,0xc);
+    scroll_offset_accumulate(0,0xc);
     return 0;
   case 0x102:
     CAA8_E58C(0x8012136c,0x1000,flag);
-    FUN_8012cdd8(0,0xc);
+    scroll_offset_accumulate(0,0xc);
     return 0;
   case 0x103:
     CAA8_E58C(0x80121380,0x1000,flag);
     FUN_8018ef60(buf,(char *)guest_at(0x801212d0),
                  (int32_t)*(int16_t *)(s3 + 0x18) + 1);
-    FUN_8012e58c(ctx8,ctxc,(const void *)buf,0x160,0x1000,flag);
-    FUN_8012cdd8(0,0xc);
+    announce_param_block_init(ctx8,ctxc,(const void *)buf,0x160,0x1000,flag);
+    scroll_offset_accumulate(0,0xc);
     return 0;
   case 0x104:
     CAA8_E58C(0x8012138c,0x1000,flag);
     FUN_8018ef60(buf,(char *)guest_at(0x801212d0),
                  (int32_t)*(int16_t *)(s3 + 0x1a) + 1);
-    FUN_8012e58c(ctx8,ctxc,(const void *)buf,0x160,0x1000,flag);
-    FUN_8012cdd8(0,0xc);
+    announce_param_block_init(ctx8,ctxc,(const void *)buf,0x160,0x1000,flag);
+    scroll_offset_accumulate(0,0xc);
     return 0;
   case 0x105:
     CAA8_E58C(0x8012139c,0x1000,flag);
-    FUN_8012e58c(ctx8,ctxc,
+    announce_param_block_init(ctx8,ctxc,
                  (const void *)guest_at(g32(0x801b4060u +
                      (uint32_t)*(int16_t *)(s3 + 0x1c) * 4)),
                  0x160,0x1000,flag);
     if (*(int16_t *)(s3 + 0x1c) == 4) {
-      FUN_8012cdd8(0,0xc);
+      scroll_offset_accumulate(0,0xc);
       return 0;
     }
-    FUN_8012e8e8(ctx8,ctxc,(const void *)guest_at(0x801213a8),
+    round_announce_block(ctx8,ctxc,(const void *)guest_at(0x801213a8),
                  0x180,0x1000,flag);
-    FUN_8012cdd8(0,0xc);
+    scroll_offset_accumulate(0,0xc);
     return 0;
   case 0x106:
     CAA8_E58C(0x801213b0,0x1000,flag);
     FUN_8018ef60(buf,(char *)guest_at(0x801212d0),
                  (int32_t)*(int16_t *)(s3 + 0x1e) + 1);
-    FUN_8012e58c(ctx8,ctxc,(const void *)buf,0x160,0x1000,flag);
-    FUN_8012cdd8(0,0xc);
+    announce_param_block_init(ctx8,ctxc,(const void *)buf,0x160,0x1000,flag);
+    scroll_offset_accumulate(0,0xc);
     return 0;
   case 0x107:
     CAA8_E58C(0x801213bc,0x1000,flag);
-    FUN_8012e58c(ctx8,ctxc,
+    announce_param_block_init(ctx8,ctxc,
                  (const void *)guest_at(g32(0x801b4074u +
                      (uint32_t)*(int16_t *)(s3 + 0x20) * 4)),
                  0x160,0x1000,flag);
-    FUN_8012cdd8(0,0xc);
+    scroll_offset_accumulate(0,0xc);
     return 0;
   case 0x108:
     CAA8_E58C(0x801213d0,0x1000,flag);
-    FUN_8012e58c(ctx8,ctxc,
+    announce_param_block_init(ctx8,ctxc,
                  (const void *)guest_at(g32(0x801b407cu +
                      (uint32_t)*(int16_t *)(s3 + 0x22) * 4)),
                  0x160,0x1000,flag);
-    FUN_8012cdd8(0,0xc);
+    scroll_offset_accumulate(0,0xc);
     return 0;
   case 0x109:
     CAA8_E58C(0x801213e0,0x1000,flag);
-    FUN_8012cdd8(0,0xc);
+    scroll_offset_accumulate(0,0xc);
     return 0;
   case 0x10a:
     CAA8_E58C(0x801213f0,0x1000,flag);
-    FUN_8012cdd8(0,0xc);
+    scroll_offset_accumulate(0,0xc);
     return 0;
   case 0x10b:
     CAA8_E58C(0x80121404,0x1000,flag);
-    FUN_8012cdd8(0,0xc);
+    scroll_offset_accumulate(0,0xc);
     return 0;
   case 0x10c:
     CAA8_E58C(0x80121410,0x1000,flag);
-    FUN_8012e58c(ctx8,ctxc,
+    announce_param_block_init(ctx8,ctxc,
                  (const void *)guest_at(g32(0x801b3f70u +
                      (uint32_t)*(int16_t *)(s3 + 0x2a) * 4)),
                  0x160,0x1000,flag);
-    FUN_8012cdd8(0,0xc);
+    scroll_offset_accumulate(0,0xc);
     return 0;
   case 0x10d:
     CAA8_E58C(0x80121310,0x1000,flag);
-    FUN_8012cdd8(0,0xc);
+    scroll_offset_accumulate(0,0xc);
     return 0;
   case 0x10e:
     CAA8_E58C(0x80121318,0x1000,flag);
-    FUN_8012cdd8(0,0xc);
+    scroll_offset_accumulate(0,0xc);
     return 0;
   default:
     return 0;
@@ -6745,11 +6745,11 @@ int FUN_8015caa8(uint32_t a0, uint32_t a1)
 #undef CAA8_GATE
 }
 
-/* ---- FUN_80171890 @0x80171890 (526 insns) ----
-   Sibling of FUN_80170fe0: same heap/tag machinery, different state
+/* ---- save_state_machine_alt @0x80171890 (526 insns) ----
+   Sibling of save_load_state_machine: same heap/tag machinery, different state
    layout. fp = a0 guest state ptr (h@+0x8e), s4 = a1 guest param block
    (lbu@2,3,4; ptr@0x28,0x2c), a2 = gate flag. States 0/0x10/0x20/0x30/0x40. */
-int FUN_80171890(uint32_t a0, uint8_t *s4, int32_t a2)
+int save_state_machine_alt(uint32_t a0, uint8_t *s4, int32_t a2)
 {
   uint8_t *fp = (uint8_t *)guest_at(a0);
   int32_t s0 = (int32_t)*(int16_t *)(fp + 0x8e);
@@ -6759,7 +6759,7 @@ int FUN_80171890(uint32_t a0, uint8_t *s4, int32_t a2)
   int32_t saved8;
   uint8_t sp28 = 0;
   uint32_t heapB, heapA, sz, s1v, p, v1, i;
-  int *tbl = (int *)FUN_80127680();   /* tag table; pure getter */
+  int *tbl = (int *)tag_table_get();   /* tag table; pure getter */
 #define H90W16(a,v) BR2_WS16(a,v)
 
   if (s0 == 0x20) goto L20;
@@ -6776,7 +6776,7 @@ L00:
   /* state 0: quick commit, requires a2 == 0 */
   if (a2 != 0) goto ret0;
   heapB = g32(0x801e3cfc);
-  if (FUN_8018cfdc((int32_t)(s6 + 0xc4), heapB) == 0) goto ret0;
+  if (cd_file_load_sm((int32_t)(s6 + 0xc4), heapB) == 0) goto ret0;
   if (s5 == 0) {
     FUN_801566a0(heapB, 3);
     FUN_801566d4(s4[3], 3);
@@ -6789,25 +6789,25 @@ L00:
 
 L10:
   /* state 0x10: build image (two variants on s5) */
-  if (FUN_8018cfdc((int32_t)(s6 + s2 + 0xc0),
-                   guest_of(FUN_80127680())) == 0) goto ret0;
+  if (cd_file_load_sm((int32_t)(s6 + s2 + 0xc0),
+                   guest_of(tag_table_get())) == 0) goto ret0;
   saved8 = (int32_t)g8(0x1f800013);
-  FUN_801274d8(0);
+  scratch_013_set(0);
   heapA = g32(0x801c47b8);
   BR2_W32(0x801e3cfc, 0x800f0000u);
   BR2_W32(0x801f4f18, heapA);
 
   /* tag0 + cc5c -> p+0x10 / p+0 */
   heapB = g32(0x801e3cfc);
-  sz = br2_alloc54(heapB, tbl, 0);
-  FUN_8016cb20(g32(0x801e3cfc));
+  sz = heap_alloc54(heapB, tbl, 0);
+  heap_ptr_fixup(g32(0x801e3cfc));
   if (s5 == 0) {
     s1v = 0x801beff0u;
-    heapA = (uint32_t)FUN_8016cc5c(g32(0x801e3cfc), s1v,
+    heapA = (uint32_t)heap_record_emit(g32(0x801e3cfc), s1v,
                  g32(0x801c47b8), 0, 0, &sp28, 0, 0);
   } else {
     s1v = 0x801c00d0u;
-    heapA = (uint32_t)FUN_8016cc5c(g32(0x801e3cfc), s1v,
+    heapA = (uint32_t)heap_record_emit(g32(0x801e3cfc), s1v,
                  g32(0x801c47b8), 0, 0, &sp28, 0, 3, 3);
   }
   BR2_W32(0x801c47b8, heapA);
@@ -6818,15 +6818,15 @@ L10:
 
   /* tag1 + cc5c -> p+0x14 / p+1 */
   heapB = g32(0x801e3cfc);
-  sz = br2_alloc54(heapB, tbl, 1);
-  FUN_8016cb20(g32(0x801e3cfc));
+  sz = heap_alloc54(heapB, tbl, 1);
+  heap_ptr_fixup(g32(0x801e3cfc));
   if (s5 == 0) {
     s1v = 0x801bf860u;
-    heapA = (uint32_t)FUN_8016cc5c(g32(0x801e3cfc), s1v,
+    heapA = (uint32_t)heap_record_emit(g32(0x801e3cfc), s1v,
                  g32(0x801c47b8), 0, 0, &sp28, 0x81, 0);
   } else {
     s1v = 0x801c0940u;
-    heapA = (uint32_t)FUN_8016cc5c(g32(0x801e3cfc), s1v,
+    heapA = (uint32_t)heap_record_emit(g32(0x801e3cfc), s1v,
                  g32(0x801c47b8), 0, 0, &sp28, 0x81, 3, 3);
   }
   BR2_W32(0x801c47b8, heapA);
@@ -6837,15 +6837,15 @@ L10:
 
   /* tag2 + cc5c -> p+0x34 / p+0x24 */
   heapB = g32(0x801e3cfc);
-  sz = br2_alloc54(heapB, tbl, 2);
-  FUN_8016cb20(g32(0x801e3cfc));
+  sz = heap_alloc54(heapB, tbl, 2);
+  heap_ptr_fixup(g32(0x801e3cfc));
   if (s5 == 0) {
     s1v = 0x801bf428u;
-    heapA = (uint32_t)FUN_8016cc5c(g32(0x801e3cfc), s1v,
+    heapA = (uint32_t)heap_record_emit(g32(0x801e3cfc), s1v,
                  g32(0x801c47b8), 0, 0, &sp28, 0, 0);
   } else {
     s1v = 0x801c0508u;
-    heapA = (uint32_t)FUN_8016cc5c(g32(0x801e3cfc), s1v,
+    heapA = (uint32_t)heap_record_emit(g32(0x801e3cfc), s1v,
                  g32(0x801c47b8), 0, 0, &sp28, 0, 3, 3);
   }
   BR2_W32(0x801c47b8, heapA);
@@ -6856,15 +6856,15 @@ L10:
 
   /* tag3 + cc5c -> p+0x38 / p+0x25 */
   heapB = g32(0x801e3cfc);
-  sz = br2_alloc54(heapB, tbl, 3);
-  FUN_8016cb20(g32(0x801e3cfc));
+  sz = heap_alloc54(heapB, tbl, 3);
+  heap_ptr_fixup(g32(0x801e3cfc));
   if (s5 == 0) {
     s1v = 0x801bfc98u;
-    heapA = (uint32_t)FUN_8016cc5c(g32(0x801e3cfc), s1v,
+    heapA = (uint32_t)heap_record_emit(g32(0x801e3cfc), s1v,
                  g32(0x801c47b8), 0, 0, &sp28, 0x81, 0);
   } else {
     s1v = 0x801c0d78u;
-    heapA = (uint32_t)FUN_8016cc5c(g32(0x801e3cfc), s1v,
+    heapA = (uint32_t)heap_record_emit(g32(0x801e3cfc), s1v,
                  g32(0x801c47b8), 0, 0, &sp28, 0x81, 3, 3);
   }
   BR2_W32(0x801c47b8, heapA);
@@ -6878,57 +6878,57 @@ L10:
     uint32_t b0 = s5 ? 0x2c0 : 0x200;
     uint32_t b1 = s5 ? 0x30 : 0;
     /* tag4 */
-    sz = br2_alloc54(g32(0x801e3cfc), tbl, 4);
+    sz = heap_alloc54(g32(0x801e3cfc), tbl, 4);
     if (sz) {
-      FUN_8018bf40((int32_t)g32(0x801e3cfc), (int32_t)b0, 0, 1);
+      spr_draw_off((int32_t)g32(0x801e3cfc), (int32_t)b0, 0, 1);
       BR2_W32(0x801e3cfc, g32(0x801e3cfc) + sz);
     }
     /* tag5 */
-    sz = br2_alloc54(g32(0x801e3cfc), tbl, 5);
+    sz = heap_alloc54(g32(0x801e3cfc), tbl, 5);
     if (sz) {
-      FUN_8018bf40((int32_t)g32(0x801e3cfc), (int32_t)(b0 + 0x40), 0, 1);
+      spr_draw_off((int32_t)g32(0x801e3cfc), (int32_t)(b0 + 0x40), 0, 1);
       BR2_W32(0x801e3cfc, g32(0x801e3cfc) + sz);
     }
     /* tag6 */
-    sz = br2_alloc54(g32(0x801e3cfc), tbl, 6);
+    sz = heap_alloc54(g32(0x801e3cfc), tbl, 6);
     if (sz) {
-      FUN_8018bf40((int32_t)g32(0x801e3cfc), (int32_t)(b0 + 0x80), 0, 1);
+      spr_draw_off((int32_t)g32(0x801e3cfc), (int32_t)(b0 + 0x80), 0, 1);
       BR2_W32(0x801e3cfc, g32(0x801e3cfc) + sz);
     }
     /* tag7: s3=0x1e0 */
-    sz = br2_alloc54(g32(0x801e3cfc), tbl, 7);
+    sz = heap_alloc54(g32(0x801e3cfc), tbl, 7);
     if (sz) {
-      FUN_8018bf40((int32_t)g32(0x801e3cfc), (int32_t)b1, 0x1e0, 1);
-      FUN_8018bf40((int32_t)g32(0x801e3cfc), (int32_t)b1, 0x1f0, 1);
+      spr_draw_off((int32_t)g32(0x801e3cfc), (int32_t)b1, 0x1e0, 1);
+      spr_draw_off((int32_t)g32(0x801e3cfc), (int32_t)b1, 0x1f0, 1);
       BR2_W32(0x801e3cfc, g32(0x801e3cfc) + sz);
     }
     /* tag8: s0 += 0x10 unconditionally (delay slot) */
     b1 += 0x10;
-    sz = br2_alloc54(g32(0x801e3cfc), tbl, 8);
+    sz = heap_alloc54(g32(0x801e3cfc), tbl, 8);
     if (sz) {
-      FUN_8018bf40((int32_t)g32(0x801e3cfc), (int32_t)b1, 0x1e0, 1);
-      FUN_8018bf40((int32_t)g32(0x801e3cfc), (int32_t)b1, 0x1f0, 1);
+      spr_draw_off((int32_t)g32(0x801e3cfc), (int32_t)b1, 0x1e0, 1);
+      spr_draw_off((int32_t)g32(0x801e3cfc), (int32_t)b1, 0x1f0, 1);
       BR2_W32(0x801e3cfc, g32(0x801e3cfc) + sz);
     }
   }
   FUN_8019a460(0);
-  FUN_801274d8((uint32_t)saved8);
+  scratch_013_set((uint32_t)saved8);
   s0 = 0x20;
   /* fall into L20 */
 
 L20:
   /* state 0x20 */
-  if (FUN_8018cfdc((int32_t)(s6 + 0x25),
-                   guest_of(FUN_80127680())) == 0) goto ret0;
+  if (cd_file_load_sm((int32_t)(s6 + 0x25),
+                   guest_of(tag_table_get())) == 0) goto ret0;
   saved8 = (int32_t)g8(0x1f800013);
-  FUN_801274d8(0);
+  scratch_013_set(0);
   heapB = g32(0x801e3cfc);
-  sz = br2_alloc54(heapB, tbl, 0);
+  sz = heap_alloc54(heapB, tbl, 0);
   if (sz) {
     if (s5 == 0)
-      FUN_8018bfcc(heapB, 0x60, 0x1e0, 1, 0x3c0, 0x140, 1);
+      spr_draw_pair(heapB, 0x60, 0x1e0, 1, 0x3c0, 0x140, 1);
     else
-      FUN_8018bfcc(heapB, 0x70, 0x1e0, 1, 0x3c0, 0x140, 1);
+      spr_draw_pair(heapB, 0x70, 0x1e0, 1, 0x3c0, 0x140, 1);
     BR2_W32(0x801e3cfc, g32(0x801e3cfc) + sz);
   }
   v1 = s5 ? 0x3c : 0x28;
@@ -6939,7 +6939,7 @@ L20:
       uint32_t r;
       BR2_W32(0x801c47b8, h);
       BR2_W32(slot, h);
-      sz = br2_alloc54(h, tbl, (int32_t)i + 1);
+      sz = heap_alloc54(h, tbl, (int32_t)i + 1);
       if (sz) {
         BR2_W32(0x801c47b8, g32(0x801c47b8) + sz);
         data_relocate(h);
@@ -6949,7 +6949,7 @@ L20:
     }
   }
   FUN_8019a460(0);
-  FUN_801274d8((uint32_t)saved8);
+  scratch_013_set((uint32_t)saved8);
   s0 = 0x20;                    /* delay slot value stored by ret0 */
   goto ret0;
 
@@ -6957,9 +6957,9 @@ L30:
   /* state 0x30 */
   heapA = (g32(0x801c47b8) + 3) & ~3u;
   BR2_W32(0x801c47b8, heapA);
-  if (FUN_8018cfdc((int32_t)(s6 + s2 + 0x20), heapA) == 0) goto ret0;
+  if (cd_file_load_sm((int32_t)(s6 + s2 + 0x20), heapA) == 0) goto ret0;
   saved8 = (int32_t)g8(0x1f800013);
-  FUN_801274d8(0);
+  scratch_013_set(0);
   heapA = g32(0x801c47b8);
   s4[0xb] = 0;
   *(uint32_t *)(s4 + 0x30) = heapA;
@@ -6975,7 +6975,7 @@ L40:
     if (s4[3] == *(uint8_t *)guest_at(q + 3)) return 1;
   }
   heapA = g32(0x801c47b8);
-  if (FUN_8018cfdc((int32_t)(s6 + 0x24), heapA) == 0) goto ret0;
+  if (cd_file_load_sm((int32_t)(s6 + 0x24), heapA) == 0) goto ret0;
   heapA = g32(0x801c47b8);
   sz = *(uint32_t *)guest_at(heapA);
   BR2_W32(0x801c47b8, heapA + sz);
@@ -7287,16 +7287,16 @@ extern undefined4 FUN_801a6f44(int);
 extern void FUN_801a7498(int);
 extern void FUN_801a74f0(int);
 extern void FUN_801a48fc(int *);
-extern void FUN_8019e330(uint32_t);
-extern void FUN_8019e39c(void);
+extern void cd_mode_apply_seq(uint32_t);
+extern void cd_mode_reset_seq(void);
 extern void bios_tramp_a070(uint32_t,uint32_t);
 void cd_channel_init(void);
 
-/* 0x801a0bb0 — CD reset trio: FUN_8019e330(); FUN_8019e39c(); bios_tramp_a070(). */
+/* 0x801a0bb0 — CD reset trio: cd_mode_apply_seq(); cd_mode_reset_seq(); bios_tramp_a070(). */
 void cd_reset_trio(void)
 {
-  FUN_8019e330(0);
-  FUN_8019e39c();
+  cd_mode_apply_seq(0);
+  cd_mode_reset_seq();
   bios_tramp_a070(0,0);
   return;
 }
@@ -7339,7 +7339,7 @@ void rand_word_store(uint32_t a0,uint32_t *a1)
 }
 
 /* 0x801aec10 — if (*a1) FUN_801a48fc(*a1). */
-void FUN_801aec10(uint32_t *a1)
+void op_guarded_call(uint32_t *a1)
 {
   if (*a1 != 0) {
     FUN_801a48fc((int *)(uintptr_t)*a1);
@@ -7349,7 +7349,7 @@ void FUN_801aec10(uint32_t *a1)
 
 /* 0x801af3cc — v = FUN_801a6f44(a1); *(u32*)(*gp4c + 0x14) = v.
  * $gp = 0x801beedc; +0x4c cell = guest 0x801bef28. */
-void FUN_801af3cc(uint32_t a0,int32_t a1)
+void op_set_gp14(uint32_t a0,int32_t a1)
 {
   (void)a0;
   *(uint32_t *)guest_at(*(uint32_t *)guest_at(0x801bef28) + 0x14) =
@@ -7357,8 +7357,8 @@ void FUN_801af3cc(uint32_t a0,int32_t a1)
   return;
 }
 
-/* 0x801af3f8 — identical body to FUN_801af3cc (alias entry). */
-void FUN_801af3f8(uint32_t a0,int32_t a1)
+/* 0x801af3f8 — identical body to op_set_gp14 (alias entry). */
+void op_set_gp14_alias(uint32_t a0,int32_t a1)
 {
   (void)a0;
   *(uint32_t *)guest_at(*(uint32_t *)guest_at(0x801bef28) + 0x14) =
@@ -7529,14 +7529,14 @@ void *FUN_801af908(int16_t *a0,uint32_t a1)
 
 extern int FUN_801a6bd0();
 extern int anim_node_alloc();
-extern int FUN_801a984c();
-extern int FUN_801ad2e8();
-extern int *FUN_801ad424(int32_t,int32_t,uint32_t,uint32_t,uint32_t);
-extern int FUN_801aad24();
-extern void FUN_801ad4ac();
+extern int op_anim_delta_walk();
+extern int op_node_alloc_init();
+extern int *op_job_alloc_init(int32_t,int32_t,uint32_t,uint32_t,uint32_t);
+extern int op_ctx_node_attach();
+extern void op_job_submit_init();
 extern int32_t dev_byte_xfer(uint8_t *,int32_t);
-extern uint32_t FUN_801a0610(uint32_t,uint32_t);
-extern uint32_t FUN_801a0600(uint32_t,uint32_t,uint32_t);
+extern uint32_t cd_svc_50(uint32_t,uint32_t);
+extern uint32_t cd_svc_4e(uint32_t,uint32_t,uint32_t);
 extern int FUN_801ad38c(undefined4,undefined4,int,int);
 extern undefined4 FUN_801a72a0(int,int);
 extern void FUN_801a99e0(int,int);
@@ -7550,14 +7550,14 @@ extern void bios_tramp_c003(uint32_t,uint32_t);
 extern void FUN_8018e300(void);
 extern void FUN_8018e310(void);
 extern void FUN_801a482c();
-extern int FUN_8018e550();
+extern int printf_forward();
 extern uint32_t guest_of(const void *);
 
-/* 0x801a0620 — FUN_801a0610(a0,a1); FUN_801a0600(a0,0x3f,0). */
+/* 0x801a0620 — cd_svc_50(a0,a1); cd_svc_4e(a0,0x3f,0). */
 void FUN_801a0620(uint32_t a0,uint32_t a1)
 {
-  FUN_801a0610(a0,a1);
-  FUN_801a0600(a0,0x3f,0);
+  cd_svc_50(a0,a1);
+  cd_svc_4e(a0,0x3f,0);
   return;
 }
 
@@ -7599,7 +7599,7 @@ void FUN_801aadc4(uint8_t *a0)
 }
 
 /* 0x801ad298 — *(*a0)=0; if (a0[1]->f10) { a0[3]=a0[1]+f10; call 0x801b0db8(a0); } */
-void FUN_801ad298(uint32_t *a0)
+void op_list_head_reset(uint32_t *a0)
 {
   *(uint32_t *)guest_at(a0[0]) = 0;
   {
@@ -7619,7 +7619,7 @@ void FUN_801ad298(uint32_t *a0)
 }
 
 /* 0x801ad6f0 — ctx->fC = GP50 + a0[0]; call 0x801b0db8(ctx); *a1 += 4. */
-void FUN_801ad6f0(int16_t *a0,uint32_t *a1)
+void op_ctx_fc_set(int16_t *a0,uint32_t *a1)
 {
   uint32_t s0 = *a1;
   uint32_t v = BR2_GP50 + (uint32_t)(int32_t)a0[0];
@@ -7635,7 +7635,7 @@ void FUN_801ad6f0(int16_t *a0,uint32_t *a1)
 }
 
 /* 0x801adc60 — *a1 = (int8_t)(rand() magic-div). */
-void FUN_801adc60(uint32_t a0,int8_t *a1)
+void op_rand_i8(uint32_t a0,int8_t *a1)
 {
   (void)a0;
   {
@@ -7647,11 +7647,11 @@ void FUN_801adc60(uint32_t a0,int8_t *a1)
   return;
 }
 
-/* 0x801ae85c — if (*a1==0) *a1 = FUN_801ad2e8(a0[0..3], a1). */
-void FUN_801ae85c(int16_t *a0,uint32_t a1)
+/* 0x801ae85c — if (*a1==0) *a1 = op_node_alloc_init(a0[0..3], a1). */
+void op_cached_node_alloc(int16_t *a0,uint32_t a1)
 {
   if (*(uint32_t *)guest_at(a1) == 0) {
-    int32_t r = FUN_801ad2e8(a0[0],a0[1],a0[2],a0[3],a1);
+    int32_t r = op_node_alloc_init(a0[0],a0[1],a0[2],a0[3],a1);
     *(uint32_t *)guest_at(a1) = (uint32_t)r;
   }
   return;
@@ -7679,28 +7679,28 @@ void FUN_801ae91c(int16_t *a0,uint32_t *a1)
   return;
 }
 
-/* 0x801aeff8 — FUN_8018e550(0x801cee8, tbl[a0[1]][a0[0]], 0x801c0000). */
-void FUN_801aeff8(int16_t *a0)
+/* 0x801aeff8 — printf_forward(0x801cee8, tbl[a0[1]][a0[0]], 0x801c0000). */
+void op_trace_print_a(int16_t *a0)
 {
   uint32_t b = BR2_GPF(8) + (uint32_t)(int32_t)a0[0];
   uint32_t inner = *(uint32_t *)guest_at(b);
   uint32_t a1 = *(uint32_t *)guest_at(inner + (uint32_t)(int32_t)a0[1] * 4);
-  FUN_8018e550((const char *)guest_at(0x801cee8),a1,0x801c0000);
+  printf_forward((const char *)guest_at(0x801cee8),a1,0x801c0000);
   return;
 }
 
 /* 0x801af040 — same with cell 0x801ceec. */
-void FUN_801af040(int16_t *a0)
+void op_trace_print_b(int16_t *a0)
 {
   uint32_t b = BR2_GPF(8) + (uint32_t)(int32_t)a0[0];
   uint32_t inner = *(uint32_t *)guest_at(b);
   uint32_t a1 = *(uint32_t *)guest_at(inner + (uint32_t)(int32_t)a0[1] * 4);
-  FUN_8018e550((const char *)guest_at(0x801ceec),a1,0x801c0000);
+  printf_forward((const char *)guest_at(0x801ceec),a1,0x801c0000);
   return;
 }
 
 /* 0x801af094 — cached lookup: if (*a1==0) *a1 = FUN_801a6bd0(a1, T[a0[1]][a0[2]], a0[3], a0[4]); GPF(0x14)=1 on hit. */
-void FUN_801af094(int16_t *a0,uint32_t a1)
+void op_cached_lookup(int16_t *a0,uint32_t a1)
 {
   BR2_GPF(0x14) = 0;
   if (*(uint32_t *)guest_at(a1) == 0) {
@@ -7716,7 +7716,7 @@ void FUN_801af094(int16_t *a0,uint32_t a1)
 }
 
 /* 0x801af114 — variant: a1arg = ctx8[a3[2]] then T[a3[1]][a1arg]. */
-void FUN_801af114(int16_t *a0,uint32_t a1)
+void op_cached_lookup_b(int16_t *a0,uint32_t a1)
 {
   uint32_t idx = BR2_GPF(8) + (uint32_t)(int32_t)a0[2];
   uint32_t mid = *(uint32_t *)guest_at(idx);
@@ -7734,7 +7734,7 @@ void FUN_801af114(int16_t *a0,uint32_t a1)
 }
 
 /* 0x801af1a4 — variant: mid = ctx8[a0[1]] then T[mid][a0[2]]. */
-void FUN_801af1a4(int16_t *a0,uint32_t a1)
+void op_cached_lookup_c(int16_t *a0,uint32_t a1)
 {
   uint32_t idx = BR2_GPF(8) + (uint32_t)(int32_t)a0[1];
   uint32_t mid = *(uint32_t *)guest_at(idx);
@@ -7752,7 +7752,7 @@ void FUN_801af1a4(int16_t *a0,uint32_t a1)
 }
 
 /* 0x801af238 — free ctx8[a0[0]] cell via FUN_801ac758. */
-void FUN_801af238(int16_t *a0)
+void op_ctx8_cell_free(int16_t *a0)
 {
   uint32_t s0 = BR2_GPF(8) + (uint32_t)(int32_t)a0[0];
   uint32_t p = *(uint32_t *)guest_at(s0);
@@ -7763,8 +7763,8 @@ void FUN_801af238(int16_t *a0)
   return;
 }
 
-/* 0x801af284 — double-indirect variant of FUN_801af238. */
-void FUN_801af284(int16_t *a0)
+/* 0x801af284 — double-indirect variant of op_ctx8_cell_free. */
+void op_ctx8_cell_free_b(int16_t *a0)
 {
   uint32_t b = BR2_GPF(8);
   uint32_t s0 = b + *(uint32_t *)guest_at(b + (uint32_t)(int32_t)a0[0]);
@@ -7777,14 +7777,14 @@ void FUN_801af284(int16_t *a0)
 }
 
 /* 0x801af2dc — GPF(0x14) = anim_node_alloc(a1, a0[1]). */
-void FUN_801af2dc(int16_t *a0,int32_t a1)
+void op_gpf14_anim_alloc(int16_t *a0,int32_t a1)
 {
   BR2_GPF(0x14) = (uint32_t)anim_node_alloc(a1,a0[1]);
   return;
 }
 
 /* 0x801af310 — GPF(0x14) = anim_node_alloc(a1, ctx8[a0[1]]). */
-void FUN_801af310(int16_t *a0,uint32_t a1)
+void op_gpf14_anim_alloc_b(int16_t *a0,uint32_t a1)
 {
   uint32_t av = *(uint32_t *)guest_at(BR2_GPF(8) + (uint32_t)(int32_t)a0[1]);
   BR2_GPF(0x14) = (uint32_t)anim_node_alloc(a1,(int)av);
@@ -7792,29 +7792,29 @@ void FUN_801af310(int16_t *a0,uint32_t a1)
 }
 
 /* 0x801af354 — GPF(0x14) = FUN_801a72a0(a1, a0[1]). */
-void FUN_801af354(int16_t *a0,int32_t a1)
+void op_gpf14_a72a0(int16_t *a0,int32_t a1)
 {
   BR2_GPF(0x14) = FUN_801a72a0(a1,a0[1]);
   return;
 }
 
 /* 0x801af388 — GPF(0x14) = FUN_801a72a0(a1, ctx8[a0[1]]). */
-void FUN_801af388(int16_t *a0,uint32_t a1)
+void op_gpf14_a72a0_b(int16_t *a0,uint32_t a1)
 {
   uint32_t av = *(uint32_t *)guest_at(BR2_GPF(8) + (uint32_t)(int32_t)a0[1]);
   BR2_GPF(0x14) = FUN_801a72a0(a1,(int)av);
   return;
 }
 
-/* 0x801af424 — FUN_801a984c(a1, (int16_t)ctx8[a0[1]]). */
-int FUN_801af424(int16_t *a0,uint32_t a1)
+/* 0x801af424 — op_anim_delta_walk(a1, (int16_t)ctx8[a0[1]]). */
+int op_call_a984c(int16_t *a0,uint32_t a1)
 {
   int16_t v = *(int16_t *)guest_at(BR2_GPF(8) + (uint32_t)(int32_t)a0[1]);
-  return FUN_801a984c(a1,v);
+  return op_anim_delta_walk(a1,v);
 }
 
 /* 0x801af45c — FUN_801a99e0(a1, (int16_t)ctx8[a0[1]]). */
-void FUN_801af45c(int16_t *a0,uint32_t a1)
+void op_call_a99e0(int16_t *a0,uint32_t a1)
 {
   int16_t v = *(int16_t *)guest_at(BR2_GPF(8) + (uint32_t)(int32_t)a0[1]);
   FUN_801a99e0(a1,v);
@@ -7822,7 +7822,7 @@ void FUN_801af45c(int16_t *a0,uint32_t a1)
 }
 
 /* 0x801af624 — ctx8[a0[1]]==0 ? FUN_801a74f0(a1) : FUN_801a7498(a1). */
-void FUN_801af624(int16_t *a0,int32_t a1)
+void op_pick_a74xx(int16_t *a0,int32_t a1)
 {
   int16_t t = *(int16_t *)guest_at(BR2_GPF(8) + (uint32_t)(int32_t)a0[1]);
   if (t == 0) {
@@ -7833,18 +7833,18 @@ void FUN_801af624(int16_t *a0,int32_t a1)
   return;
 }
 
-/* 0x801af6d0 — *(*(a1)+0x48) = FUN_801aad24(a1, ctx8[a0[1]]); a1 is guest addr. */
-void FUN_801af6d0(int16_t *a0,uint32_t a1)
+/* 0x801af6d0 — *(*(a1)+0x48) = op_ctx_node_attach(a1, ctx8[a0[1]]); a1 is guest addr. */
+void op_node_attach_store(int16_t *a0,uint32_t a1)
 {
   uint32_t d = BR2_GPF(8) + (uint32_t)(int32_t)a0[1];
   uint32_t av = *(uint32_t *)guest_at(d);
-  uint32_t r = (uint32_t)FUN_801aad24(a1,(int)av);
+  uint32_t r = (uint32_t)op_ctx_node_attach(a1,(int)av);
   *(uint32_t *)guest_at(a1 + 0x48) = r;
   return;
 }
 
 /* 0x801af710 — if (a1) mat3x3_build(ctx8[a0[1]] s16 x3, *a1). */
-void FUN_801af710(int16_t *a0,uint32_t a1)
+void op_mat3_build_opt(int16_t *a0,uint32_t a1)
 {
   if (a1 != 0) {
     uint32_t d = BR2_GPF(8) + (uint32_t)(int32_t)a0[1];
@@ -7858,7 +7858,7 @@ void FUN_801af710(int16_t *a0,uint32_t a1)
 }
 
 /* 0x801af758 — FUN_80138040(a1, ctx8[a0[1]]|0, GP50+a0[2], GP50+a0[3]); store. */
-void FUN_801af758(int16_t *a0,uint32_t a1)
+void op_call_38040(int16_t *a0,uint32_t a1)
 {
   uint32_t b = BR2_GP50;
   uint32_t a2 = b + (uint32_t)(int32_t)a0[2];
@@ -7876,7 +7876,7 @@ void FUN_801af758(int16_t *a0,uint32_t a1)
 }
 
 /* 0x801afad0 — ctx8[a0[1]]->[a0[2]] pair -> FUN_80142b3c(f0,f8); store ctx8[a0[0]]. */
-void FUN_801afad0(int16_t *a0)
+void op_pair_f0f8_store(int16_t *a0)
 {
   uint32_t b = BR2_GPF(8);
   uint32_t inner = *(uint32_t *)guest_at(b + (uint32_t)(int32_t)a0[1]);
@@ -7889,7 +7889,7 @@ void FUN_801afad0(int16_t *a0)
 }
 
 /* 0x801afa30 — s16 variant: ctx8[a0[1]]->[a0[2]] s16 -> FUN_8018d29c; store ctx8[a0[0]]. */
-void FUN_801afa30(int16_t *a0)
+void op_s16_d29c_store(int16_t *a0)
 {
   uint32_t b = BR2_GPF(8);
   uint32_t inner = *(uint32_t *)guest_at(b + (uint32_t)(int32_t)a0[1]);
@@ -7900,7 +7900,7 @@ void FUN_801afa30(int16_t *a0)
 }
 
 /* 0x801afa80 — same with FUN_8018d298. */
-void FUN_801afa80(int16_t *a0)
+void op_s16_d298_store(int16_t *a0)
 {
   uint32_t b = BR2_GPF(8);
   uint32_t inner = *(uint32_t *)guest_at(b + (uint32_t)(int32_t)a0[1]);
@@ -7911,7 +7911,7 @@ void FUN_801afa80(int16_t *a0)
 }
 
 /* 0x801aecdc — if (*a2) { s0=ctx8[*a2]; r=(*a1)(); *(u32*)s0=r } else (*a1)(). */
-void FUN_801aecdc(uint32_t a0,uint32_t a1,int16_t *a2)
+void op_cond_call_store(uint32_t a0,uint32_t a1,int16_t *a2)
 {
   (void)a0;
   {
@@ -7933,7 +7933,7 @@ void FUN_801aecdc(uint32_t a0,uint32_t a1,int16_t *a2)
 }
 
 /* 0x801aebd0 — r=FUN_801ad284(*a1); *(u32*)(r + a0[1]*4) = *(u32*)(a0+6). */
-void FUN_801aebd0(uint8_t *a0,uint32_t *a1)
+void op_field_store_idx(uint8_t *a0,uint32_t *a1)
 {
   uint32_t r = FUN_801ad284(*a1);
   uint32_t d = r + ((uint32_t)(int32_t)*(int16_t *)(a0 + 2) << 2);
@@ -7946,11 +7946,11 @@ void FUN_801aebd0(uint8_t *a0,uint32_t *a1)
 extern void text_win_printf();
 extern int *FUN_801a4308(int,undefined4,uint,int,int,int);
 extern void FUN_801a9c24(short *,int,int);
-extern void FUN_801a6ae8(void);
+extern void gp_20_store_default(void);
 extern int FUN_801a6bd0();
 
 /* 0x801a1834 — global ctx flag check + fn-ptr call; returns 1/0. */
-int FUN_801a1834(void)
+int op_flag_fn_check(void)
 {
   uint32_t v1 = *(uint32_t *)guest_at(0x801be7e0);
   if ((*(uint32_t *)guest_at(v1 + 4) & 1) != 0 &&
@@ -7966,7 +7966,7 @@ int FUN_801a1834(void)
 }
 
 /* 0x801a2fb4 — state-byte dispatch; returns 1 when a0[0x46]==2. */
-int FUN_801a2fb4(uint8_t *a0)
+int op_state_dispatch(uint8_t *a0)
 {
   if (*(uint8_t *)(a0 + 0x53) != 0) {
     if (*(uint8_t *)(a0 + 0x46) == 2) {
@@ -7988,7 +7988,7 @@ int FUN_801a2fb4(uint8_t *a0)
 /* cd_job_slot_alloc lives in cd.c (disasm-verified; counter @0x801be768). */
 
 /* 0x801a0a8c — invoke channel fn ptr; decrement count on success. */
-void FUN_801a0a8c(void)
+void op_chan_fn_invoke(void)
 {
   int32_t i = *(int32_t *)guest_at(0x801be768);
   if (i >= 0) {
@@ -8005,15 +8005,15 @@ void FUN_801a0a8c(void)
   return;
 }
 
-/* 0x801a6b0c — stash a1/a2 into gp globals, FUN_801a6ae8, submit job. */
-int FUN_801a6b0c(uint32_t a0,uint32_t a1,uint32_t a2)
+/* 0x801a6b0c — stash a1/a2 into gp globals, gp_20_store_default, submit job. */
+int op_job_submit_ab(uint32_t a0,uint32_t a1,uint32_t a2)
 {
   int *r;
   *(uint32_t *)guest_at(0x801bef18) = a1;
   *(uint32_t *)guest_at(0x801bef1c) = a2;
   *(uint32_t *)guest_at(0x801bef24) = a1;
   *(uint32_t *)guest_at(0x801bef00) = 0;
-  FUN_801a6ae8();
+  gp_20_store_default();
   r = FUN_801a4308(a0,2,0,0x801a6b70,0,0);
   if (r != (int *)0x0) {
     return 1;
@@ -8022,7 +8022,7 @@ int FUN_801a6b0c(uint32_t a0,uint32_t a1,uint32_t a2)
 }
 
 /* 0x801a9bc0 — validate ctx chain then FUN_801a9c24(node). */
-void FUN_801a9bc0(uint8_t *a0)
+void op_ctx_validate_call(uint8_t *a0)
 {
   if (a0 != (uint8_t *)0x0) {
     uint32_t p = *(uint32_t *)(a0 + 0x3c);
@@ -8036,22 +8036,22 @@ void FUN_801a9bc0(uint8_t *a0)
   return;
 }
 
-/* 0x801aec40 — lazy ctx8[a0[3]] fill via FUN_801ad424. */
-void FUN_801aec40(int16_t *a0)
+/* 0x801aec40 — lazy ctx8[a0[3]] fill via op_job_alloc_init. */
+void op_ctx8_lazy_fill(int16_t *a0)
 {
   uint32_t s0 = BR2_GPF(8) + (uint32_t)(int32_t)a0[3];
   if (*(uint32_t *)guest_at(s0) == 0) {
     uint32_t stack5 = BR2_GP50 + (uint32_t)(int32_t)a0[2];
-    int *jr = FUN_801ad424(a0[0],a0[1],BR2_GPC,s0,stack5);
+    int *jr = op_job_alloc_init(a0[0],a0[1],BR2_GPC,s0,stack5);
     *(uint32_t *)guest_at(s0) = (uint32_t)(uintptr_t)jr;
   }
   return;
 }
 
-extern int *FUN_801ad424(int32_t,int32_t,uint32_t,uint32_t,uint32_t);
+extern int *op_job_alloc_init(int32_t,int32_t,uint32_t,uint32_t,uint32_t);
 
 /* 0x801acf34 — four text_win_printf dumps of a0 fields. */
-void FUN_801acf34(uint32_t *a0)
+void op_dbg_dump4(uint32_t *a0)
 {
   text_win_printf((const char *)guest_at(0x80126098),a0[0]);
   text_win_printf((const char *)guest_at(0x801260a8),a0[2]);
@@ -8061,7 +8061,7 @@ void FUN_801acf34(uint32_t *a0)
 }
 
 /* 0x801a5160 — five text_win_printf field dumps. */
-void FUN_801a5160(uint32_t a0,uint32_t a1)
+void op_dbg_dump5(uint32_t a0,uint32_t a1)
 {
   (void)a0;
   text_win_printf((const char *)guest_at(0x80125fd8),a1);
@@ -8073,7 +8073,7 @@ void FUN_801a5160(uint32_t a0,uint32_t a1)
 }
 
 /* 0x801a51d0 — table walk + text_win_printf dump (variadic tail args a1,a2,a3). */
-void FUN_801a51d0(uint32_t a0,uint32_t a1)
+void op_dbg_dump_tbl(uint32_t a0,uint32_t a1)
 {
   uint32_t addr = 0x801ff268 + a1 * 12 + a0 * 60;
   uint32_t cur = *(uint32_t *)guest_at(addr);
@@ -8092,7 +8092,7 @@ void FUN_801a51d0(uint32_t a0,uint32_t a1)
 }
 
 /* 0x801ad4ac — FUN_801a4308 job submit; init result node from a2/a3. */
-void FUN_801ad4ac(int32_t a0,int32_t a1,uint32_t a2,uint32_t a3)
+void op_job_submit_init(int32_t a0,int32_t a1,uint32_t a2,uint32_t a3)
 {
   int *r = FUN_801a4308(a0,a1,4,0x801b0db8,0,0x1c);
   if (r != (int *)0x0) {
@@ -8106,7 +8106,7 @@ void FUN_801ad4ac(int32_t a0,int32_t a1,uint32_t a2,uint32_t a3)
 }
 
 /* 0x801aea20 — r=FUN_801ad284(*a1); r[1]=e[0]; r[2]=e[1] (e=ctx8[a0[1]]+a0[2]*4). */
-void FUN_801aea20(int16_t *a0,uint32_t *a1)
+void op_pair_store(int16_t *a0,uint32_t *a1)
 {
   uint32_t r = FUN_801ad284(*a1);
   uint32_t inner = *(uint32_t *)guest_at(BR2_GPF(8) + (uint32_t)(int32_t)a0[1]);
@@ -8152,7 +8152,7 @@ __attribute__((weak))
 int FUN_801a6880() { return 0; }
 
 /* 0x801a4be8 — register node a0 (guest addr) into table slot idx*72+0x40. */
-void FUN_801a4be8(uint32_t a0)
+void op_node_register(uint32_t a0)
 {
   int32_t idx = *(int8_t *)guest_at(a0 + 0x14);
   uint32_t e = 0x801ff398 + (uint32_t)idx * 72;
@@ -8172,7 +8172,7 @@ void FUN_801a4be8(uint32_t a0)
 }
 
 /* 0x801a4cd8 — count nodes across 16 buckets of table a0; returns count. */
-int FUN_801a4cd8(uint32_t a0)
+int op_node_count16(uint32_t a0)
 {
   uint32_t v1 = 0x801ff398 + a0 * 72;
   int32_t s0 = 0;
@@ -8193,7 +8193,7 @@ int FUN_801a4cd8(uint32_t a0)
 }
 
 /* 0x801a536c — count flagged (fC!=0) nodes; text_win_printf(fmt, a1, cnt). */
-void FUN_801a536c(uint32_t a0,uint32_t a1)
+void op_node_count_flagged(uint32_t a0,uint32_t a1)
 {
   uint32_t addr = 0x801ff268 + a1 * 12 + a0 * 60;
   uint32_t first = *(uint32_t *)guest_at(addr);
@@ -8212,15 +8212,15 @@ void FUN_801a536c(uint32_t a0,uint32_t a1)
   return;
 }
 
-/* 0x801a53e8 — FUN_801a5160 dump for every node in ring. */
-void FUN_801a53e8(uint32_t a0,uint32_t a1)
+/* 0x801a53e8 — op_dbg_dump5 dump for every node in ring. */
+void op_dbg_dump_ring(uint32_t a0,uint32_t a1)
 {
   uint32_t addr = 0x801ff268 + a1 * 12 + a0 * 60;
   uint32_t first = *(uint32_t *)guest_at(addr);
   uint32_t cur = first;
   if (cur != 0) {
     for (;;) {
-      FUN_801a5160(0x801cee0,cur);
+      op_dbg_dump5(0x801cee0,cur);
       cur = *(uint32_t *)guest_at(cur + 4);
       if (cur == first) break;
     }
@@ -8229,7 +8229,7 @@ void FUN_801a53e8(uint32_t a0,uint32_t a1)
 }
 
 /* 0x801a50d8 — header + 3 field dumps of table node (a0*60+a1*12+0x801ff268 indexed by a2? see asm: s0 = a1*60 + a2*12... actually a0*60? recheck: sll s0,a1,4; subu s0,s0,a1 → a1*15; sll 2 → a1*60. v0=a2*3*4=a2*12. s0 += a2*12 + 0x801ff268. */
-void FUN_801a50d8(uint32_t a0,uint32_t a1,uint32_t a2)
+void op_dbg_dump_node(uint32_t a0,uint32_t a1,uint32_t a2)
 {
   uint32_t s0 = 0x801ff268 + a1 * 60 + a2 * 12;
   text_win_printf((const char *)guest_at(0x801ceec),a0);
@@ -8239,28 +8239,28 @@ void FUN_801a50d8(uint32_t a0,uint32_t a1,uint32_t a2)
   return;
 }
 
-extern void FUN_801a3034(uint8_t *,uint32_t);
-extern void FUN_801a3048(uint8_t *,uint32_t);
-extern void FUN_801a3088(uint8_t *,uint32_t);
+extern void op_tag_E_set(uint8_t *,uint32_t);
+extern void op_tag_L_set(uint8_t *,uint32_t);
+extern void op_tag_G_set(uint8_t *,uint32_t);
 
 /* 0x801a24dc — dispatch on a0[0x46]: 3->3048(a0,a0[0xe4]) 2->3034(a0,a1) 4->3088(a0,a0[0x47]). */
-void FUN_801a24dc(uint8_t *a0,uint32_t a1)
+void op_tag_dispatch(uint8_t *a0,uint32_t a1)
 {
   uint8_t v1 = *(uint8_t *)(a0 + 0x46);
   if (v1 == 3) {
-    FUN_801a3048(a0,*(uint8_t *)(a0 + 0xe4));
+    op_tag_L_set(a0,*(uint8_t *)(a0 + 0xe4));
   } else if (v1 < 4) {
     if (v1 == 2) {
-      FUN_801a3034(a0,a1);
+      op_tag_E_set(a0,a1);
     }
   } else if (v1 == 4) {
-    FUN_801a3088(a0,*(uint8_t *)(a0 + 0x47));
+    op_tag_G_set(a0,*(uint8_t *)(a0 + 0x47));
   }
   return;
 }
 
 /* 0x801ad424 — FUN_801a4308 job; init node {a3, a2[1], a2[2], a4}; returns job ptr. */
-int *FUN_801ad424(int32_t a0,int32_t a1,uint32_t a2,uint32_t a3,uint32_t a4)
+int *op_job_alloc_init(int32_t a0,int32_t a1,uint32_t a2,uint32_t a3,uint32_t a4)
 {
   int *r = FUN_801a4308(a0,a1,4,0x801b0db8,0x801ad2dc,0x1c);
   if (r != (int *)0x0) {
@@ -8274,7 +8274,7 @@ int *FUN_801ad424(int32_t a0,int32_t a1,uint32_t a2,uint32_t a3,uint32_t a4)
 }
 
 /* 0x801aed3c — cb(a3[a0[2]]); store at ctx8[*a2] when *a2!=0. */
-void FUN_801aed3c(int16_t *a0,uint32_t a1,int16_t *a2,uint32_t a3)
+void op_cb1_store_ctx8(int16_t *a0,uint32_t a1,int16_t *a2,uint32_t a3)
 {
   int32_t a2v = *a2;
   uint32_t node = *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[2] * 4);
@@ -8294,7 +8294,7 @@ void FUN_801aed3c(int16_t *a0,uint32_t a1,int16_t *a2,uint32_t a3)
 }
 
 /* 0x801aedbc — cb(a3[a0[2]], a3[a0[3]]); store at ctx8[*a2] when *a2!=0. */
-void FUN_801aedbc(int16_t *a0,uint32_t a1,int16_t *a2,uint32_t a3)
+void op_cb2_store_ctx8(int16_t *a0,uint32_t a1,int16_t *a2,uint32_t a3)
 {
   int32_t a2v = *a2;
   uint32_t n0 = *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[2] * 4);
@@ -8318,7 +8318,7 @@ void FUN_801aedbc(int16_t *a0,uint32_t a1,int16_t *a2,uint32_t a3)
  *      0x801ac0d4, 0x801acd3c, 0x801ad5d0): for each node in *a1 chain:
  *      (*a0)->f40 = node; if node->b17: node->b18 ? FUN_801a482c(a0)
  *      : node->f8(node->f10). Params are host pointers; fn via fnmap. ---- */
-static void br2_walk_dispatch(uint8_t **a0,uint8_t *a1)
+static void walk_dispatch(uint8_t **a0,uint8_t *a1)
 {
   uint8_t *node_ = a1;
   for (;;) {
@@ -8343,15 +8343,15 @@ static void br2_walk_dispatch(uint8_t **a0,uint8_t *a1)
   return;
 }
 
-void FUN_801a6a68(uint8_t **a0,uint8_t *a1) { br2_walk_dispatch(a0,a1); return; }
-void FUN_801a863c(uint8_t **a0,uint8_t *a1) { br2_walk_dispatch(a0,a1); return; }
-void FUN_801aa47c(uint8_t **a0,uint8_t *a1) { br2_walk_dispatch(a0,a1); return; }
-void FUN_801ac0d4(uint8_t **a0,uint8_t *a1) { br2_walk_dispatch(a0,a1); return; }
-void FUN_801acd3c(uint8_t **a0,uint8_t *a1) { br2_walk_dispatch(a0,a1); return; }
-void FUN_801ad5d0(uint8_t **a0,uint8_t *a1) { br2_walk_dispatch(a0,a1); return; }
+void op_walk_dispatch_a(uint8_t **a0,uint8_t *a1) { walk_dispatch(a0,a1); return; }
+void op_walk_dispatch_b(uint8_t **a0,uint8_t *a1) { walk_dispatch(a0,a1); return; }
+void op_walk_dispatch_c(uint8_t **a0,uint8_t *a1) { walk_dispatch(a0,a1); return; }
+void op_walk_dispatch_d(uint8_t **a0,uint8_t *a1) { walk_dispatch(a0,a1); return; }
+void op_walk_dispatch_e(uint8_t **a0,uint8_t *a1) { walk_dispatch(a0,a1); return; }
+void op_walk_dispatch_f(uint8_t **a0,uint8_t *a1) { walk_dispatch(a0,a1); return; }
 
 /* 0x801aa3fc — free slot a1 of container s1 (f24[] and f3c[] arrays). */
-void FUN_801aa3fc(uint8_t *s1,int32_t a1)
+void op_slot_free(uint8_t *s1,int32_t a1)
 {
   if (s1 != (uint8_t *)0x0 && a1 >= 0 &&
       a1 < (int32_t)*(uint32_t *)(s1 + 0x44)) {
@@ -8394,7 +8394,7 @@ void FUN_801a8854(uint8_t *a0) { BR2_GUARD_DISPATCH(FUN_801a6150,FUN_801a6880); 
 extern int32_t cd_seek_state_machine(uint32_t);
 
 /* 0x801a0e98 — reset 7 globals via cd_seek_state_machine, then shift two 4-word blocks. */
-void FUN_801a0e98(void)
+void op_globals_reset_shift(void)
 {
   cd_seek_state_machine(*(uint32_t *)guest_at(0x801ef744));
   cd_seek_state_machine(*(uint32_t *)guest_at(0x801ef774));
@@ -8415,7 +8415,7 @@ void FUN_801a0e98(void)
 }
 
 /* 0x801a40f8 — per-frame state advance on s0 (host struct). */
-void FUN_801a40f8(uint8_t *s0)
+void op_frame_advance(uint8_t *s0)
 {
   uint32_t v0 = *(uint32_t *)(s0 + 0x4c) + 1;
   *(uint32_t *)(s0 + 0x4c) = v0;
@@ -8456,7 +8456,7 @@ void FUN_801a40f8(uint8_t *s0)
 }
 
 /* 0x801aef18 — 4-arg cb dispatch; store result at ctx8[*a2] when *a2!=0. */
-void FUN_801aef18(int16_t *a0,uint32_t a1,int16_t *a2,uint32_t a3)
+void op_cb4_store_ctx8(int16_t *a0,uint32_t a1,int16_t *a2,uint32_t a3)
 {
   int32_t a2v = *a2;
   uint32_t fp = *(uint32_t *)guest_at(a1);
@@ -8486,7 +8486,7 @@ void FUN_801aef18(int16_t *a0,uint32_t a1,int16_t *a2,uint32_t a3)
 
 /* 0x801a3034 — tag 0x45 ('E'): a0[0x37]=0x45, a0[0x2c]=0,
  * a0[0x36]=0. a1 unused (guest never reads it). */
-void FUN_801a3034(uint8_t *a0,uint32_t a1)
+void op_tag_E_set(uint8_t *a0,uint32_t a1)
 {
   (void)a1;
   a0[0x37] = 0x45;
@@ -8496,7 +8496,7 @@ void FUN_801a3034(uint8_t *a0,uint32_t a1)
 
 /* 0x801a3048 — tag 0x4c ('L'): a0[0x37]=0x4c, a0[0x2c]=guest(a0+0x24),
  * a0[0x24]=a1, a0[0x36]=1. */
-void FUN_801a3048(uint8_t *a0,uint32_t a1)
+void op_tag_L_set(uint8_t *a0,uint32_t a1)
 {
   a0[0x37] = 0x4c;
   *(uint32_t *)(a0 + 0x2c) = guest_of(a0 + 0x24);
@@ -8505,7 +8505,7 @@ void FUN_801a3048(uint8_t *a0,uint32_t a1)
 }
 
 /* 0x801a3088 — tag 0x47 ('G'): same shape as 3048 with 0x47. */
-void FUN_801a3088(uint8_t *a0,uint32_t a1)
+void op_tag_G_set(uint8_t *a0,uint32_t a1)
 {
   a0[0x37] = 0x47;
   *(uint32_t *)(a0 + 0x2c) = guest_of(a0 + 0x24);
@@ -8521,25 +8521,25 @@ void FUN_801a3088(uint8_t *a0,uint32_t a1)
  * Checks -> printf str + ret 0; success -> state=3 (f35c) / 4 (f5b4),
  * queue cb 0x8019f474 / 0x8019f6cc, ret 1.
  * Disasm 0x8019f35c-0x8019f470, 0x8019f5b4-0x8019f6a8. */
-static int br2_mc_issue(uint32_t a0,const void *a1,void *a2,
+static int mc_issue(uint32_t a0,const void *a1,void *a2,
                         uint32_t a3,uint32_t a4,int state,uint32_t cb)
 {
   uint32_t *s1 = (uint32_t *)guest_at(0x801febe0);
   uint8_t *blk = (uint8_t *)guest_at(0x801febe0 + 0x24);
   if ((int32_t)s1[0] > 0) {
-    FUN_8018e550((const char *)guest_at(0x80125e8c));
+    printf_forward((const char *)guest_at(0x80125e8c));
     return 0;
   }
   if ((int32_t)s1[5] >= 0) {
-    FUN_8018e550((const char *)guest_at(0x80125de4));
+    printf_forward((const char *)guest_at(0x80125de4));
     return 0;
   }
   if ((a4 & 0x7f) != 0) {
-    FUN_8018e550((const char *)guest_at(0x80125e30));
+    printf_forward((const char *)guest_at(0x80125e30));
     return 0;
   }
   if ((a3 & 0x7f) != 0) {
-    FUN_8018e550((const char *)guest_at(0x80125e5c));
+    printf_forward((const char *)guest_at(0x80125e5c));
     return 0;
   }
   cd_file_header_copy(a0,blk);
@@ -8557,12 +8557,12 @@ static int br2_mc_issue(uint32_t a0,const void *a1,void *a2,
 
 int mc_job_issue_a(uint32_t a0,const void *a1,void *a2,uint32_t a3,uint32_t a4)
 {
-  return br2_mc_issue(a0,a1,a2,a3,a4,3,0x8019f474);
+  return mc_issue(a0,a1,a2,a3,a4,3,0x8019f474);
 }
 
 int mc_job_issue_b(uint32_t a0,const void *a1,void *a2,uint32_t a3,uint32_t a4)
 {
-  return br2_mc_issue(a0,a1,a2,a3,a4,4,0x8019f6cc);
+  return mc_issue(a0,a1,a2,a3,a4,4,0x8019f6cc);
 }
 
 /* mc_file_cmd — memory-card file command (open/read/write style).
@@ -8578,7 +8578,7 @@ int mc_file_cmd(uint32_t a0,const void *a1,uint32_t a2)
   uint32_t st;
   int32_t v0;
   if (s0[0] != 0) {
-    FUN_8018e550((const char *)guest_at(0x80125e8c));
+    printf_forward((const char *)guest_at(0x80125e8c));
     return -1;
   }
   cd_file_header_copy(a0,blk);
@@ -8598,7 +8598,7 @@ int mc_file_cmd(uint32_t a0,const void *a1,uint32_t a2)
     }
     *(uint32_t *)guest_at(0x801fec38) = cd_xchg_fec24(0);
     if ((int32_t)s0[0] > 0) {
-      FUN_8018e550((const char *)guest_at(0x80125ce8));
+      printf_forward((const char *)guest_at(0x80125ce8));
     } else {
       s0[0] = 2;
       s0[1] = 0;
@@ -8730,7 +8730,7 @@ void slot_field_clear(uint32_t a0)
  * record flag/field setters. a0 = host ctx; arrays at +0x34/+0x38 (or
  * +0x3c), count +0x44, idx a1 (signed). Records: flags u16 @+0x44,
  * params @+0x46/+0x48. Disasm 0x801aa0e4-0x801aa3f8. */
-static uint8_t *br2_aa_elem(uint8_t *s,uint32_t arros,int32_t idx)
+static uint8_t *elem_at(uint8_t *s,uint32_t arros,int32_t idx)
 {
   uint8_t *arr = (uint8_t *)mem_ptr(*(uint32_t *)(s + arros));
   uint32_t e = *(uint32_t *)(arr + (uint32_t)idx * 4);
@@ -8743,9 +8743,9 @@ void FUN_801aa0e4(void *a0,int32_t a1)
   uint8_t *e;
   if (s == (uint8_t *)0x0 || a1 < 0) return;
   if ((uint32_t)a1 >= *(uint32_t *)(s + 0x44)) return;
-  e = br2_aa_elem(s,0x34,a1);
+  e = elem_at(s,0x34,a1);
   if (e != (uint8_t *)0x0) *(uint16_t *)(e + 0x44) |= 0x100;
-  e = br2_aa_elem(s,0x38,a1);
+  e = elem_at(s,0x38,a1);
   if (e != (uint8_t *)0x0) *(uint16_t *)(e + 0x44) |= 0x100;
 }
 
@@ -8755,10 +8755,10 @@ void FUN_801aa168(void *a0,int32_t a1)
   uint8_t *e;
   if (s == (uint8_t *)0x0 || a1 < 0) return;
   if ((uint32_t)a1 >= *(uint32_t *)(s + 0x44)) return;
-  e = br2_aa_elem(s,0x34,a1);
+  e = elem_at(s,0x34,a1);
   if (e != (uint8_t *)0x0)
     *(uint16_t *)(e + 0x44) = (uint16_t)*(uint8_t *)(e + 0x44);
-  e = br2_aa_elem(s,0x38,a1);
+  e = elem_at(s,0x38,a1);
   if (e != (uint8_t *)0x0)
     *(uint16_t *)(e + 0x44) = (uint16_t)*(uint8_t *)(e + 0x44);
 }
@@ -8769,20 +8769,20 @@ void FUN_801aa1e4(void *a0,int32_t a1,int32_t a2,int32_t a3)
   uint8_t *e;
   if (s == (uint8_t *)0x0 || a1 < 0) return;
   if ((uint32_t)a1 >= *(uint32_t *)(s + 0x44)) return;
-  e = br2_aa_elem(s,0x34,a1);
+  e = elem_at(s,0x34,a1);
   if (e != (uint8_t *)0x0) {
     *(int16_t *)(e + 0x46) = (int16_t)a2;
-    e = br2_aa_elem(s,0x34,a1);
+    e = elem_at(s,0x34,a1);
     *(int16_t *)(e + 0x48) = (int16_t)a3;
-    e = br2_aa_elem(s,0x34,a1);
+    e = elem_at(s,0x34,a1);
     *(uint16_t *)(e + 0x44) |= 1;
   }
-  e = br2_aa_elem(s,0x38,a1);
+  e = elem_at(s,0x38,a1);
   if (e != (uint8_t *)0x0) {
     *(int16_t *)(e + 0x46) = (int16_t)a2;
-    e = br2_aa_elem(s,0x38,a1);
+    e = elem_at(s,0x38,a1);
     *(int16_t *)(e + 0x48) = (int16_t)a3;
-    e = br2_aa_elem(s,0x38,a1);
+    e = elem_at(s,0x38,a1);
     *(uint16_t *)(e + 0x44) |= 1;
   }
 }
@@ -8793,7 +8793,7 @@ void FUN_801aa2c8(void *a0,int32_t a1)
   uint8_t *e;
   if (s == (uint8_t *)0x0 || a1 < 0) return;
   if ((uint32_t)a1 >= *(uint32_t *)(s + 0x44)) return;
-  e = br2_aa_elem(s,0x3c,a1);
+  e = elem_at(s,0x3c,a1);
   if (e != (uint8_t *)0x0) *(uint16_t *)(e + 0x44) |= 0x100;
 }
 
@@ -8803,7 +8803,7 @@ void FUN_801aa320(void *a0,int32_t a1)
   uint8_t *e;
   if (s == (uint8_t *)0x0 || a1 < 0) return;
   if ((uint32_t)a1 >= *(uint32_t *)(s + 0x44)) return;
-  e = br2_aa_elem(s,0x3c,a1);
+  e = elem_at(s,0x3c,a1);
   if (e != (uint8_t *)0x0)
     *(uint16_t *)(e + 0x44) = (uint16_t)*(uint8_t *)(e + 0x44);
 }
@@ -8814,12 +8814,12 @@ void FUN_801aa374(void *a0,int32_t a1,int32_t a2,int32_t a3)
   uint8_t *e;
   if (s == (uint8_t *)0x0 || a1 < 0) return;
   if ((uint32_t)a1 >= *(uint32_t *)(s + 0x44)) return;
-  e = br2_aa_elem(s,0x3c,a1);
+  e = elem_at(s,0x3c,a1);
   if (e != (uint8_t *)0x0) {
     *(int16_t *)(e + 0x46) = (int16_t)a2;
-    e = br2_aa_elem(s,0x3c,a1);
+    e = elem_at(s,0x3c,a1);
     *(int16_t *)(e + 0x48) = (int16_t)a3;
-    e = br2_aa_elem(s,0x3c,a1);
+    e = elem_at(s,0x3c,a1);
     *(uint16_t *)(e + 0x44) |= 1;
   }
 }
@@ -8938,12 +8938,12 @@ int anim_node_alloc(uint32_t a0,int32_t a1)
   return 1;
 }
 
-/* FUN_801a984c — walk two anim slots (@ctx+0x34/+0x38, first record
+/* op_anim_delta_walk — walk two anim slots (@ctx+0x34/+0x38, first record
  * only) accumulating fixed-point deltas; when cumulative quotient
  * reaches clamped arg s2, emit FUN_801a9c24(node, idx, pos).
  * Signed lh/div semantics preserved (mflo trunc, sra, +0xfff fixup).
  * Disasm 0x801a984c-0x801a99dc. */
-int FUN_801a984c(uint32_t a0,int32_t a1)
+int op_anim_delta_walk(uint32_t a0,int32_t a1)
 {
   uint8_t *s3 = (uint8_t *)guest_at(a0);
   int32_t s2 = a1;
@@ -8989,11 +8989,11 @@ int FUN_801a984c(uint32_t a0,int32_t a1)
   return 0;
 }
 
-/* FUN_801aad24 — lazily attach node a1 to ctx a0: alloc via
+/* op_ctx_node_attach — lazily attach node a1 to ctx a0: alloc via
  * node_lazy_attach(0x30-byte rec, cb 0x801aadc4, dtor 0x801aad18), link
  * into *(*(a0+0x18)+0x10) list, cache at a0+0x48. Returns node or 0.
  * Disasm 0x801aad24-0x801aadc0. */
-int FUN_801aad24(uint32_t a0,uint32_t a1)
+int op_ctx_node_attach(uint32_t a0,uint32_t a1)
 {
   uint8_t *s0;
   uint32_t v0, r, A, v1g, nd;
@@ -9016,10 +9016,10 @@ int FUN_801aad24(uint32_t a0,uint32_t a1)
   return (int)r;
 }
 
-/* FUN_801ad2e8 — alloc/init node via FUN_801a4308 from table
+/* op_node_alloc_init — alloc/init node via FUN_801a4308 from table
  * 0x801ff620[a2][a3]; node fields from source s0 and stack arg a4.
  * Returns allocated guest addr or 0. Disasm 0x801ad2e8-0x801ad388. */
-int FUN_801ad2e8(int32_t a0,int32_t a1,int32_t a2,int32_t a3,uint32_t a4)
+int op_node_alloc_init(int32_t a0,int32_t a1,int32_t a2,int32_t a3,uint32_t a4)
 {
   uint32_t row = *(uint32_t *)guest_at(0x801ff620 + (uint32_t)a2 * 4);
   uint32_t s0  = *(uint32_t *)guest_at(row + (uint32_t)a3 * 4);

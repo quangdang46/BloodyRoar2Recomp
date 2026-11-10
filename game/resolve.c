@@ -107,10 +107,10 @@ int FUN_8018d298(int);
 int FUN_8018d29c(uint);
 void FUN_801561f0(void);
 undefined8 FUN_8018d4fc(undefined4,int);
-void FUN_8018d444(int,int,byte*,byte*);
-void FUN_8018d468(int,int,byte*,byte*);
+void dir_rotate_acc(int,int,byte*,byte*);
+void dir_rotate_set(int,int,byte*,byte*);
 
-int32_t br2_action_resolve(byte *param_1, uint8_t *param_2)
+int32_t action_resolve(byte *param_1, uint8_t *param_2)
 {
 
   short sVar1;
@@ -1442,7 +1442,7 @@ extern void ev_stream_dispatch(byte *param_1,byte *param_2);
 extern void action_switch_guest(int param_1,int *param_2,int param_3);
 extern void slot_apply_guest(int param_1,int param_2);
 extern void part_record_reset(undefined2 *param_1);
-extern ushort * FUN_8017ae18(int param_1,int param_2,ushort *param_3);
+extern ushort * ev5_action_select(int param_1,int param_2,ushort *param_3);
 void FUN_80185048(undefined4 *param_1,byte *param_2,short *param_3,undefined4 param_4);
 uint * FUN_80195050(undefined4 *param_1,uint *param_2);
 extern uint8_t *g_DAT_1f8003a0,*g_DAT_1f8003c0;
@@ -1505,7 +1505,7 @@ extern uint32_t *g__DAT_1f8003a0,*g__DAT_1f8003a4,*g__DAT_1f8003a8,*g__DAT_1f800
 #define _DAT_1f8003da (*(uint16_t *)&_DAT_1f8003d8)
 #define _DAT_1f8003de (*(uint16_t *)&_DAT_1f8003dc)
 
-void br2_fighter_frame(byte *param_1, uint8_t *param_2)
+void fighter_frame(byte *param_1, uint8_t *param_2)
 {
 
   byte bVar1;
@@ -1810,7 +1810,7 @@ LAB_80179238:
     uVar11 = 0;
     goto LAB_80179238;
   }
-  uVar6 = br2_action_resolve(param_1,param_2);
+  uVar6 = action_resolve(param_1,param_2);
   if (-1 < (int)uVar6) {
     sVar3 = (short)(uVar6 & 0xfff);
     *(short *)(iVar13 + 0x80) = sVar3;
@@ -1832,7 +1832,7 @@ LAB_80179238:
     *(ushort *)(param_1 + 0xd8) =
          *(short *)(param_1 + 0xd8) + (ushort)((byte)param_1[0xda] >> 3) * 0x3c;
   }
-  FUN_8018d468(((int)*(short *)(param_1 + 0x4e) - (int)*(short *)(iVar13 + 0xd2)) +
+  dir_rotate_set(((int)*(short *)(param_1 + 0x4e) - (int)*(short *)(iVar13 + 0xd2)) +
                (int)*(short *)(param_1 + 0x8a),(int)*(short *)(param_1 + 0x8c),param_1 + 0xa2,
                param_1 + 0x9a);
   if (*(short *)(param_1 + 0x8c) < 1) {
@@ -1853,7 +1853,7 @@ LAB_80179238:
   param_1[0x8d] = '\0';
 LAB_8017938c:
   if (*(short *)(param_1 + 0xb2) != 0) {
-    FUN_8018d444((int)*(short *)(param_1 + 0xc4),(int)*(short *)(param_1 + 0xb2),param_1 + 0xa2,
+    dir_rotate_acc((int)*(short *)(param_1 + 0xc4),(int)*(short *)(param_1 + 0xb2),param_1 + 0xa2,
                  param_1 + 0x9a);
     iVar10 = (int)*(short *)(param_1 + 0xb2) * (int)*(short *)(param_1 + 0xb4);
     if (iVar10 < 0) {
@@ -2270,7 +2270,7 @@ void FUN_80179478(byte *param_1,byte *param_2)
     return;
   }
   if (((*(uint *)(param_1 + 0x60) & 0x2000) == 0) && (iVar3 != 0 || iVar4 != 0)) {
-    FUN_8018d444((int)*(short *)(param_2 + 0xd0) + (int)*(short *)(param_2 + 0xe4) +
+    dir_rotate_acc((int)*(short *)(param_2 + 0xd0) + (int)*(short *)(param_2 + 0xe4) +
                  (int)*(short *)(param_1 + 0x96),(int)*(short *)(param_1 + 0x98),param_1 + 0xa2,
                  param_1 + 0x9a);
     if (*(short *)(param_1 + 0x98) < 1) {
@@ -2698,7 +2698,7 @@ int FUN_8018d29c(uint param_1)
 
 }
 
-unsigned long long FUN_8018d484(undefined4 param_1,int param_2,short *param_3)
+unsigned long long dir_rotate_wrap(undefined4 param_1,int param_2,short *param_3)
 {
   ushort uVar1;
   ushort uVar2;
@@ -3207,25 +3207,25 @@ uint * FUN_80195050(undefined4 *param_1,uint *param_2)
 }
 
 
-/* FUN_8018d444/8d468 — verified against disasm 0x8018d444-0x8018d4f8.
- * Both tail-call FUN_8018d484 (2D direction rotate+wrap, returns
+/* dir_rotate_acc/8d468 — verified against disasm 0x8018d444-0x8018d4f8.
+ * Both tail-call dir_rotate_wrap (2D direction rotate+wrap, returns
  * quotients in $v1/$t4 packed into the u64 port's hi/lo halves).
  * 8d444: only when a1!=0, ACCUMULATES into out pair (a3).
  * 8d468: unconditional OVERWRITE of out pair. */
-void FUN_8018d444(int param_1,int param_2,byte *param_3,byte *param_4)
+void dir_rotate_acc(int param_1,int param_2,byte *param_3,byte *param_4)
 {
   if (param_2 != 0) {
     short sVar1 = *(short *)param_4;
     short sVar2 = *(short *)(param_4 + 4);
-    unsigned long long r = FUN_8018d484(param_1,param_2,(short *)param_3);
+    unsigned long long r = dir_rotate_wrap(param_1,param_2,(short *)param_3);
     *(short *)param_4 = (short)(sVar1 + (short)(r >> 32));
     *(short *)(param_4 + 4) = (short)(sVar2 + (short)((uint32_t)r >> 16));
   }
 }
 
-void FUN_8018d468(int param_1,int param_2,byte *param_3,byte *param_4)
+void dir_rotate_set(int param_1,int param_2,byte *param_3,byte *param_4)
 {
-  unsigned long long r = FUN_8018d484(param_1,param_2,(short *)param_3);
+  unsigned long long r = dir_rotate_wrap(param_1,param_2,(short *)param_3);
   *(short *)param_4 = (short)(r >> 32);
   *(short *)(param_4 + 4) = (short)((uint32_t)r >> 16);
 }

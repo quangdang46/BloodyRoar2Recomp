@@ -15,7 +15,7 @@
  *                     _DAT_801e3cfc heap cursor, DMA queue per file
  *   frame_tick      frame driver: pad poll, GPU sync/DMA kick,
  *                     per-fighter buffer toggle (+0xc 0/1),
- *                     calls FUN_8016362c logic + FUN_8012cd9c end
+ *                     calls FUN_8016362c logic + scroll_offset_set end
  *   match_loop      match loop: DAT_1f800001 stage machine,
  *                     300-frame attract timeout, match_end_check logic
  *   scene_entry      scene/stage entry: file-table load, VRAM
@@ -349,12 +349,12 @@ extern void halt_baddata(void);
 extern void trap(int);
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
-int FUN_80157368();
+int mc_init_reset();
 int cd_mode_flag_set();
 int FUN_80198af0();
 int FUN_80198e2c();
 int FUN_8018d150();
-void FUN_8012a884(uint8_t *);
+void cursor_sprite_anim(uint8_t *);
 extern void entry_0x80126234(void);
 
 typedef void code(void);
@@ -362,45 +362,45 @@ typedef void code(void);
 /* ---- callee externs (ported in later batches; weak-bound meanwhile) ---- */
 extern void FUN_80157a00(void);
 extern void FUN_80156d98();
-extern void FUN_8012a884(uint8_t *);
+extern void cursor_sprite_anim(uint8_t *);
 extern void FUN_80156ff0(void);
 extern uint FUN_8019a460(int);
-extern void FUN_8018bd50(int,int);
+extern void gpu_pkt_unlink_n(int,int);
 extern void FUN_8012a72c(intptr_t);
-extern void FUN_8019117c(int);
-extern void FUN_80190e00(int);
+extern void gpu_draw_sync(int);
+extern void gpu_graph_reset(int);
 extern void draw_env_timing(int);
-extern void FUN_801917e0(int);
-extern void FUN_801910e4(int);
-extern void FUN_80191428(int,int);
-extern void FUN_80191770(int);
-extern void FUN_80191300(int,int,uint8_t,uint8_t);
-extern uint32_t FUN_80191ed8(void);
+extern void gpu_draw_env_put(int);
+extern void gpu_disp_mask_set(int);
+extern void gpu_load_image_cmd(int,int);
+extern void gpu_draw_otag(int);
+extern void gpu_clear_image_cmd(int,int,uint8_t,uint8_t);
+extern uint32_t gpu_stat_sign(void);
 extern void FUN_80129f78(void);
 extern void FUN_8016362c(int);
-extern void FUN_8012a088(void);
+extern void debug_stat_print(void);
 extern void ot_packet_chain_fixup(void);
-extern void FUN_8012cd9c(int,int);
+extern void scroll_offset_set(int,int);
 extern void sprite_rect_table_init(int,int,int);
-extern void FUN_80191668(uint32_t,int);
-extern void FUN_801274d8(uint8_t);
+extern void gpu_clear_otag_r(uint32_t,int);
+extern void scratch_013_set(uint8_t);
 extern void FUN_801560f8(uint32_t);
-extern int  FUN_8018cfdc(int32_t,uint32_t);
+extern int  cd_file_load_sm(int32_t,uint32_t);
 extern void FUN_801274d8_(void);
 extern void FUN_801566a0(int,int);
 extern void FUN_801566d4(int,int);
 extern uint32_t FUN_80163154(uint32_t,int *,int);
-extern void FUN_8018bf40(int,int,int,int);
-extern void FUN_8018bfcc(int,int,int,int,int,int,int);
-extern uint8_t *FUN_80127680(void);
-extern void FUN_80127574(void);
-extern void FUN_8012d090(int);
-extern void FUN_8012cbc0(int,int,int);
+extern void spr_draw_off(int,int,int,int);
+extern void spr_draw_pair(int,int,int,int,int,int,int);
+extern uint8_t *tag_table_get(void);
+extern void game_globals_reset(void);
+extern void sprite_desc_table_init(int);
+extern void print_mode_dispatch_b(int,int,int);
 extern void FUN_8015ab4c(void);
 extern void FUN_80167a64(void);
 extern void FUN_80163ab4(void);
 extern void FUN_8018babc(uint8_t);
-extern void FUN_80156048(uint8_t,int);
+extern void gauge_scale_fixed(uint8_t,int);
 extern void FUN_801561c8(uint8_t);
 extern void cd_dispatch_tblc(void);
 extern void cd_read_param_set(int);
@@ -411,25 +411,25 @@ extern void cd_xchg_bde20(int);
 extern void cd_probe_retry(void);
 extern void cd_xchg_bc850(int);
 extern void FUN_801689a8(void);
-extern void FUN_801267dc(void);
+extern void cd_channel_init_seq(void);
 extern void boot(void);
-extern void FUN_8012748c(void);
+extern void frame_advance_helper(void);
 extern void display_mode_setup(uint32_t);
 extern int  cd_file_pump(int,int);
-extern void FUN_80127524(void);
-extern void FUN_80127574(void);
+extern void gfx_tbls_init(void);
+extern void game_globals_reset(void);
 extern void battle_session_arm(intptr_t,int);
 extern undefined4 scene_entry(int,int,int);
 extern void frame_tick(intptr_t);
 extern undefined4 memcard_poll_frame(void);
 extern void match_loop(void);
-extern void FUN_80126848(void);
-extern void FUN_80127574(void);
+extern void scratch_zero_reset(void);
+extern void game_globals_reset(void);
 extern void FUN_80155f64(int);
 extern void FUN_801560f8_(void);
 extern void FUN_801910e4_(void);
 extern int  cd_file_pump(int,int);
-extern void FUN_80127524(void);
+extern void gfx_tbls_init(void);
 extern void battle_session_arm(intptr_t,int);
 extern void frame_tick(intptr_t);
 extern void display_mode_setup(uint32_t);
@@ -439,11 +439,11 @@ extern void FUN_801952b0(int);
 extern void sprite_attr_init_b(int,int,int,int,int);
 extern void sprite_attr_init_a(int,int,int,int,int);
 extern void oam_list_rebuild(void);
-extern void FUN_80136ddc(void);
+extern void hud_sprite_desc_init(void);
 extern void FUN_8019117c_(void);
 extern void frame_counter_bump(int);
-extern void FUN_8018c034(void);
-extern void FUN_8018c118(void);
+extern void spr_desc_tbl_a_init(void);
+extern void spr_desc_tbl_b_init(void);
 extern void spr_tbl_init_a(void);
 extern void spr_tbl_init_b(void);
 extern void FUN_8012b49c(int);
@@ -466,11 +466,11 @@ extern void FUN_80167840(int);
 extern void FUN_80164ea4(int);
 extern int  FUN_8015c754(void);
 extern int  FUN_8015b9a0(void);
-extern void FUN_801294cc(void*);
+extern void menu_stepper_state_advance(void*);
 extern void FUN_80156ef4(int,int,int);
 extern int  FUN_80146e38(int,void*);
 extern void FUN_8014751c(void);
-extern void FUN_8018c824(int,int,uint32_t,uint32_t);
+extern void spr_slot_pkt_submit(int,int,uint32_t,uint32_t);
 extern void spr_attr_alloc_a(int,int,int,int,int,int,int);
 extern int  FUN_8012aaa8(void);
 extern void FUN_8012b23c(intptr_t);
@@ -478,14 +478,14 @@ extern undefined4 match_end_check(intptr_t);
 extern void FUN_8012e078(int,int,const void *,int,int,int);
 extern undefined4 memcard_poll_frame(void);
 extern undefined4 scene_entry(int,int,int);
-extern void FUN_80156114(int);
+extern void brightness_packet_send(int);
 extern void FUN_80159734(int,int,int,int,int,int*);
 extern void FUN_801597ec(uint8_t*,void*,int*);
 extern int  FUN_80159864(void);
 extern int blk_io_retry(int,int*);
 extern void FUN_80159ce4(uint32_t);
-extern void FUN_80191390(uint16_t*,int,int,int);
-extern void FUN_8018f9b4(int,int);
+extern void gpu_clear_image_cmd2(uint16_t*,int,int,int);
+extern void gpu_pkt_attr_set(int,int);
 extern void cd_fileop_forward(int,int);
 extern void FUN_80159c24(int,int);
 extern void FUN_801594a4(int*,int);
@@ -551,7 +551,7 @@ static void apply_saved_settings_or_defaults(undefined4 *param_1)
     FUN_80167a64();
     FUN_80163ab4();
     FUN_8018babc(*(undefined1 *)(param_1 + 9));
-    FUN_80156048(*(undefined1 *)((int)param_1 + 0xe),
+    gauge_scale_fixed(*(undefined1 *)((int)param_1 + 0xe),
                  ((uint)*(byte *)((int)param_1 + 0xf) << 3) / 10);
     FUN_801561c8(*(byte *)(param_1 + 3) ^ 1);
 }
@@ -601,11 +601,11 @@ void entry_0x80126234(void)
     else {
         auStack_30[0] = (ushort)*(byte *)(_g_system_config_ptr + 0x1d);
         FUN_8018babc(*(undefined1 *)(_g_system_config_ptr + 0x24));
-        FUN_80156048(*(undefined1 *)(_g_system_config_ptr + 0xe),
+        gauge_scale_fixed(*(undefined1 *)(_g_system_config_ptr + 0xe),
                      ((uint)*(byte *)(_g_system_config_ptr + 0xf) << 3) / 10);
         FUN_801561c8(*(byte *)(_g_system_config_ptr + 0xc) ^ 1);
     }
-    FUN_8012748c();
+    frame_advance_helper();
     func_0x80163840(0);
 switchD_80126370_caseD_80126344:
     uVar4 = (uint)g_game_state;
@@ -621,7 +621,7 @@ LAB_80126350:
         goto switchD_80126370_caseD_80126344;
     case 1: /* 0x8012638c */
         display_mode_setup(*(undefined1 *)(_g_system_config_ptr + 0xb));
-        FUN_8012748c();
+        frame_advance_helper();
         FUN_80165cb4(0xf);
         uVar4 = (uint)g_game_state;
         bVar1 = uVar4 < 0xe;
@@ -636,7 +636,7 @@ LAB_80126350:
         }
         FUN_801560f8(uVar5);
         display_mode_setup(*(undefined1 *)(_g_system_config_ptr + 0xb));
-        FUN_8012748c();
+        frame_advance_helper();
         FUN_80165cb4(3);
         FUN_80165cb4(1);
         uVar4 = (uint)g_game_state;
@@ -652,14 +652,14 @@ LAB_80126350:
             uVar5 = 1;
         }
         FUN_801560f8(uVar5);
-        FUN_8012748c();
-        FUN_80156048(*(undefined1 *)(_g_system_config_ptr + 0xe),
+        frame_advance_helper();
+        gauge_scale_fixed(*(undefined1 *)(_g_system_config_ptr + 0xe),
                      ((((uint)*(byte *)(_g_system_config_ptr + 0xf) * 0x10a) / 100) * 8) / 10);
         iVar3 = scene_entry(0x80010000,0,1);
         if (iVar3 != 0) {
             g_game_state = 5;
         }
-        FUN_80156048(*(undefined1 *)(_g_system_config_ptr + 0xe),
+        gauge_scale_fixed(*(undefined1 *)(_g_system_config_ptr + 0xe),
                      ((uint)*(byte *)(_g_system_config_ptr + 0xf) << 3) / 10);
         if (g_game_state != 4) goto switchD_80126370_caseD_80126344;
         break;
@@ -735,7 +735,7 @@ switchD_80126370_caseD_80126534:
     display_mode_setup(*(undefined1 *)(_g_system_config_ptr + 0xb));
     frame_tick(0x1f800000);
     memcard_poll_frame();
-    FUN_8012748c();
+    frame_advance_helper();
     frame_tick(0x1f800000);
     memcard_poll_frame();
     uVar4 = (uint)g_game_state;
@@ -773,24 +773,24 @@ void boot(void)
     FUN_80194478();
     cd_fileop_reset(0);
     set_graph_debug(0);
-    FUN_80190e00(0);
+    gpu_graph_reset(0);
     cd_xchg_bde20(1);
     cd_probe_retry();
     cd_xchg_bc850(0);
     DAT_801c4580 = 0;
     FUN_801689a8();
-    FUN_801267dc();
-    FUN_80126848();
+    cd_channel_init_seq();
+    scratch_zero_reset();
     FUN_80155f64(0x1f800000);
     FUN_801560f8(1);
     DAT_801c4578 = 2;
     DAT_801c457c = (uint)*(uint8_t *)g_DAT_801b12e6;
-    FUN_801910e4(0);
+    gpu_disp_mask_set(0);
     iVar1 = cd_file_pump(0x1f800000,0);
-    FUN_80127524();
-    FUN_80127574();
-    FUN_8012d090(0);
-    FUN_8012cbc0(2,0,0);
+    gfx_tbls_init();
+    game_globals_reset();
+    sprite_desc_table_init(0);
+    print_mode_dispatch_b(2,0,0);
     apply_saved_settings_or_defaults((undefined4 *)_g_system_config_ptr);
     while (-1 < iVar1) {
         iVar1 = cd_file_pump(0x1f800000,iVar1);
@@ -799,7 +799,7 @@ void boot(void)
     battle_session_arm(0x1f800000,0);
     display_mode_setup(*(undefined1 *)(_g_system_config_ptr + 0xb));
     sprite_rect_table_init(0x40,(_DAT_1f800022 * 0xb) / 0xc,0);
-    FUN_8012748c();
+    frame_advance_helper();
     return;
 }
 
@@ -824,7 +824,7 @@ int cd_file_pump(int param_1,int param_2)
                 }
                 return -1;
             }
-            iVar3 = FUN_8018cfdc(0x89,_DAT_801e3cfc);
+            iVar3 = cd_file_load_sm(0x89,_DAT_801e3cfc);
             if (iVar3 == 0) {
                 return 0x110;
             }
@@ -835,7 +835,7 @@ int cd_file_pump(int param_1,int param_2)
         if (param_2 != 0) {
             return param_2;
         }
-        FUN_8018cfdc(0xffffffff,0);
+        cd_file_load_sm(0xffffffff,0);
         param_2 = 0x100;
         DAT_801c43a0 = 0;
         DAT_801befec = 0xff;
@@ -846,116 +846,116 @@ int cd_file_pump(int param_1,int param_2)
         _DAT_801c47b8 = 0x80010000;
         _DAT_801e3cfc = -0x7fff0000;
     }
-    uVar2 = guest_of(FUN_80127680());
-    iVar3 = FUN_8018cfdc(0x80,uVar2);
+    uVar2 = guest_of(tag_table_get());
+    iVar3 = cd_file_load_sm(0x80,uVar2);
     uVar1 = DAT_1f800013;
     if (iVar3 != 0) {
-        FUN_801274d8(0);
-        uVar2 = guest_of(FUN_80127680());
+        scratch_013_set(0);
+        uVar2 = guest_of(tag_table_get());
         iVar3 = FUN_80163154(_DAT_801e3cfc,(int *)guest_at(uVar2),0);
-        FUN_8018bf40(_DAT_801e3cfc,0x3c0,0,1);
+        spr_draw_off(_DAT_801e3cfc,0x3c0,0,1);
         _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(FUN_80127680());
+        uVar2 = guest_of(tag_table_get());
         iVar3 = FUN_80163154(_DAT_801e3cfc,(int *)guest_at(uVar2),1);
-        FUN_8018bf40(_DAT_801e3cfc,0x380,0,1);
+        spr_draw_off(_DAT_801e3cfc,0x380,0,1);
         _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(FUN_80127680());
+        uVar2 = guest_of(tag_table_get());
         iVar3 = FUN_80163154(_DAT_801e3cfc,(int *)guest_at(uVar2),2);
-        FUN_8018bf40(_DAT_801e3cfc,0x1f0,0x1e0,1);
+        spr_draw_off(_DAT_801e3cfc,0x1f0,0x1e0,1);
         _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(FUN_80127680());
+        uVar2 = guest_of(tag_table_get());
         iVar3 = FUN_80163154(_DAT_801e3cfc,(int *)guest_at(uVar2),3);
-        FUN_8018bf40(_DAT_801e3cfc,0x1e0,0x1e0,1);
+        spr_draw_off(_DAT_801e3cfc,0x1e0,0x1e0,1);
         _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(FUN_80127680());
+        uVar2 = guest_of(tag_table_get());
         iVar3 = FUN_80163154(_DAT_801e3cfc,(int *)guest_at(uVar2),4);
-        FUN_8018bf40(_DAT_801e3cfc,0x1d0,0x1e0,1);
+        spr_draw_off(_DAT_801e3cfc,0x1d0,0x1e0,1);
         _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(FUN_80127680());
+        uVar2 = guest_of(tag_table_get());
         iVar3 = FUN_80163154(_DAT_801e3cfc,(int *)guest_at(uVar2),5);
-        FUN_8018bf40(_DAT_801e3cfc,0x170,0x1e0,1);
+        spr_draw_off(_DAT_801e3cfc,0x170,0x1e0,1);
         _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(FUN_80127680());
+        uVar2 = guest_of(tag_table_get());
         iVar3 = FUN_80163154(_DAT_801e3cfc,(int *)guest_at(uVar2),6);
-        FUN_8018bf40(_DAT_801e3cfc,0x160,0x1f0,1);
+        spr_draw_off(_DAT_801e3cfc,0x160,0x1f0,1);
         _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(FUN_80127680());
+        uVar2 = guest_of(tag_table_get());
         iVar3 = FUN_80163154(_DAT_801e3cfc,(int *)guest_at(uVar2),0x10);
-        FUN_8018bf40(_DAT_801e3cfc,0x1d0,0x1f0,1);
+        spr_draw_off(_DAT_801e3cfc,0x1d0,0x1f0,1);
         _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(FUN_80127680());
+        uVar2 = guest_of(tag_table_get());
         iVar3 = FUN_80163154(_DAT_801e3cfc,(int *)guest_at(uVar2),0x11);
-        FUN_8018bf40(_DAT_801e3cfc,0x1f0,0x1f0,1);
+        spr_draw_off(_DAT_801e3cfc,0x1f0,0x1f0,1);
         _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(FUN_80127680());
+        uVar2 = guest_of(tag_table_get());
         iVar3 = FUN_80163154(_DAT_801e3cfc,(int *)guest_at(uVar2),0x12);
-        FUN_8018bf40(_DAT_801e3cfc,0x1e0,0x1f0,1);
+        spr_draw_off(_DAT_801e3cfc,0x1e0,0x1f0,1);
         _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(FUN_80127680());
+        uVar2 = guest_of(tag_table_get());
         iVar3 = FUN_80163154(_DAT_801e3cfc,(int *)guest_at(uVar2),0x13);
-        FUN_8018bf40(_DAT_801e3cfc,0x1c0,0x1f0,1);
+        spr_draw_off(_DAT_801e3cfc,0x1c0,0x1f0,1);
         _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(FUN_80127680());
+        uVar2 = guest_of(tag_table_get());
         iVar3 = FUN_80163154(_DAT_801e3cfc,(int *)guest_at(uVar2),0x14);
-        FUN_8018bf40(_DAT_801e3cfc,0x180,0x1f0,1);
+        spr_draw_off(_DAT_801e3cfc,0x180,0x1f0,1);
         _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(FUN_80127680());
+        uVar2 = guest_of(tag_table_get());
         iVar3 = FUN_80163154(_DAT_801e3cfc,(int *)guest_at(uVar2),0x15);
-        FUN_8018bf40(_DAT_801e3cfc,400,0x1f0,1);
+        spr_draw_off(_DAT_801e3cfc,400,0x1f0,1);
         _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(FUN_80127680());
+        uVar2 = guest_of(tag_table_get());
         iVar3 = FUN_80163154(_DAT_801e3cfc,(int *)guest_at(uVar2),0x16);
-        FUN_8018bf40(_DAT_801e3cfc,0x1a0,0x1f0,1);
+        spr_draw_off(_DAT_801e3cfc,0x1a0,0x1f0,1);
         _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(FUN_80127680());
+        uVar2 = guest_of(tag_table_get());
         iVar3 = FUN_80163154(_DAT_801e3cfc,(int *)guest_at(uVar2),0x17);
-        FUN_8018bf40(_DAT_801e3cfc,0x1b0,0x1f0,1);
+        spr_draw_off(_DAT_801e3cfc,0x1b0,0x1f0,1);
         _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(FUN_80127680());
+        uVar2 = guest_of(tag_table_get());
         iVar3 = FUN_80163154(_DAT_801e3cfc,(int *)guest_at(uVar2),0x18);
-        FUN_8018bf40(_DAT_801e3cfc,0x340,0x100,1);
+        spr_draw_off(_DAT_801e3cfc,0x340,0x100,1);
         _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(FUN_80127680());
+        uVar2 = guest_of(tag_table_get());
         iVar3 = FUN_80163154(_DAT_801e3cfc,(int *)guest_at(uVar2),0x19);
-        FUN_8018bf40(_DAT_801e3cfc,0x200,0x100,1);
+        spr_draw_off(_DAT_801e3cfc,0x200,0x100,1);
         _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(FUN_80127680());
+        uVar2 = guest_of(tag_table_get());
         iVar3 = FUN_80163154(_DAT_801e3cfc,(int *)guest_at(uVar2),0x1a);
-        FUN_8018bf40(_DAT_801e3cfc,0x1c0,0x1e0,1);
+        spr_draw_off(_DAT_801e3cfc,0x1c0,0x1e0,1);
         _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(FUN_80127680());
+        uVar2 = guest_of(tag_table_get());
         iVar3 = FUN_80163154(_DAT_801e3cfc,(int *)guest_at(uVar2),0x1b);
-        FUN_8018bf40(_DAT_801e3cfc,0x1b0,0x1e0,1);
+        spr_draw_off(_DAT_801e3cfc,0x1b0,0x1e0,1);
         _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(FUN_80127680());
+        uVar2 = guest_of(tag_table_get());
         iVar3 = FUN_80163154(_DAT_801e3cfc,(int *)guest_at(uVar2),7);
-        FUN_8018bfcc(_DAT_801e3cfc,0x160,0x1e0,1,0x340,0x1c0,1);
+        spr_draw_pair(_DAT_801e3cfc,0x160,0x1e0,1,0x340,0x1c0,1);
         _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(FUN_80127680());
+        uVar2 = guest_of(tag_table_get());
         iVar3 = FUN_80163154(_DAT_801e3cfc,(int *)guest_at(uVar2),8);
-        FUN_8018bf40(_DAT_801e3cfc,0x380,0x1c0,1);
+        spr_draw_off(_DAT_801e3cfc,0x380,0x1c0,1);
         _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(FUN_80127680());
+        uVar2 = guest_of(tag_table_get());
         iVar3 = FUN_80163154(_DAT_801e3cfc,(int *)guest_at(uVar2),9);
-        FUN_8018bf40(_DAT_801e3cfc,0x3a0,0x180,1);
+        spr_draw_off(_DAT_801e3cfc,0x3a0,0x180,1);
         _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
         FUN_8019a460(0);
         FUN_8019a460(0);
-        FUN_801274d8(uVar1);
+        scratch_013_set(uVar1);
         param_2 = 0x110;
     }
     return param_2;
 }
 
 /* small frame/console helpers */
-void FUN_801267dc(void)
+void cd_channel_init_seq(void)
 {
     cd_channel_table_init(g_DAT_801befa8,g_DAT_801befca);
     cd_chan_init_wrap();
     FUN_8018babc(0);
 }
 
-void FUN_80126848(void)
+void scratch_zero_reset(void)
 {
     undefined4 *puVar1;
 
@@ -971,15 +971,15 @@ void FUN_80126848(void)
  *   0,2,4,6 -> 0xf0-height variant (interlaced?), odd -> 0x1e0.
  * Sets _DAT_1f800020/22/24 screen geometry, OAM window regs via
  * FUN_80195290/2b0, sprite blocks at 0x801e40a0/0x801e61f0/0x801e40fc/
- * 0x801e624c, then oam_list_rebuild mode commit + FUN_80136ddc. */
+ * 0x801e624c, then oam_list_rebuild mode commit + hud_sprite_desc_init. */
 void display_mode_setup(uint32_t param_1)
 {
     int iVar1;
     undefined4 uVar2;
 
     FUN_8019a460(2);
-    FUN_801274d8(0);
-    FUN_80190e00(1);
+    scratch_013_set(0);
+    gpu_graph_reset(1);
     switch(param_1) {
     case 0:
         _DAT_1f800020 = 0x140;
@@ -1067,33 +1067,33 @@ LAB_80127160:
     *(uint8_t *)g_DAT_801e625c = DAT_1f800015;
     *(uint8_t *)g_DAT_801e410c = DAT_1f800015;
     oam_list_rebuild();
-    FUN_80136ddc();
+    hud_sprite_desc_init();
     FUN_8019a460(0);
     return;
 }
 
-void FUN_8012748c(void)
+void frame_advance_helper(void)
 {
-    FUN_8019117c(0);
+    gpu_draw_sync(0);
     FUN_8019a460(0);
     frame_counter_bump(1);
-    FUN_801274d8(1);
+    scratch_013_set(1);
 }
 
-void FUN_801274d8(uint8_t param_1)
+void scratch_013_set(uint8_t param_1)
 {
     DAT_1f800013 = param_1;
 }
 
-void FUN_80127524(void)
+void gfx_tbls_init(void)
 {
-    FUN_8018c034();
-    FUN_8018c118();
+    spr_desc_tbl_a_init();
+    spr_desc_tbl_b_init();
     spr_tbl_init_a();
     spr_tbl_init_b();
 }
 
-void FUN_80127574(void)
+void game_globals_reset(void)
 {
     g_game_state = 0;
     DAT_1f800001 = 0;
@@ -1138,7 +1138,7 @@ void FUN_80127574(void)
     DAT_801c15f4 = 0;
 }
 
-uint8_t *FUN_80127680(void)
+uint8_t *tag_table_get(void)
 {
     return g_DAT_801c47c0;
 }
@@ -1148,7 +1148,7 @@ void FUN_801279c8(void)
     return;
 }
 
-void FUN_801279d0(uint32_t param_1,int param_2)
+void status_flag_cond_set(uint32_t param_1,int param_2)
 {
     if ((param_2 != 0) && (param_2 == 1)) {
         DAT_801c15f0 = 1;
@@ -1190,14 +1190,14 @@ void FUN_801279f4(int param_1,int param_2)
 /* oam_list_rebuild — mode set: OAM list rebuild for both players */
 void oam_list_rebuild(void)
 {
-    FUN_8019117c(0);
+    gpu_draw_sync(0);
     FUN_8019a460(0);
-    FUN_801910e4(0);
+    gpu_disp_mask_set(0);
     draw_env_timing(0x801e40fc);
-    FUN_801917e0(0x801e40a0);
+    gpu_draw_env_put(0x801e40a0);
     FUN_8019a460(0);
     draw_env_timing(0x801e624c);
-    FUN_801917e0(0x801e61f0);
+    gpu_draw_env_put(0x801e61f0);
 }
 
 /* battle_session_arm — battle session arm (fighter slot buffers) */
@@ -1218,10 +1218,10 @@ void battle_session_arm(intptr_t param_1,int param_2)
         *(int *)(param_1 + 8) = iVar1;
         clear_battle_counters();
         if (param_2 == 0) {
-            FUN_80191668(0x801e4110,0x820);
+            gpu_clear_otag_r(0x801e4110,0x820);
             iVar1 = -0x7fe19da0;
         }
-        FUN_80191668((uint32_t)iVar1,0x820);
+        gpu_clear_otag_r((uint32_t)iVar1,0x820);
     }
 }
 
@@ -1292,17 +1292,17 @@ void frame_tick(intptr_t param_1)
     iVar9 = *(int *)(param_1 + 8);
     FUN_80157a00();
     FUN_80156d98();
-    FUN_8012a884((uint8_t *)param_1);
+    cursor_sprite_anim((uint8_t *)param_1);
     FUN_80156ff0();
     iVar4 = FUN_8019a460(1);
     if (iVar4 < 0xf1) {
-        FUN_8018bd50(iVar9 + 0x207c,0x81f);
+        gpu_pkt_unlink_n(iVar9 + 0x207c,0x81f);
     }
     FUN_8012a72c(param_1);
     if ((*(char *)(param_1 + 0x15) == '\0') && ((*(ushort *)(param_1 + 0x82) & 1) != 0)) {
         uVar3 = FUN_8019a460(1);
         *(undefined2 *)(param_1 + 0x1a) = uVar3;
-        FUN_8019117c(0);
+        gpu_draw_sync(0);
         uVar3 = FUN_8019a460(1);
         *(undefined2 *)(param_1 + 0x1c) = uVar3;
         FUN_8019a460(*(undefined1 *)(param_1 + 0x10));
@@ -1312,20 +1312,20 @@ void frame_tick(intptr_t param_1)
         *(undefined2 *)(param_1 + 0x1c) = uVar3;
         *(undefined2 *)(param_1 + 0x1a) = uVar3;
         FUN_8019a460(*(undefined1 *)(param_1 + 0x10));
-        FUN_80190e00(1);
+        gpu_graph_reset(1);
     }
     _DAT_1f8000e0 = _DAT_1f8000e4;
     _DAT_1f8000e4 = 0;
-    _DAT_801e8500 = FUN_80191ed8();
+    _DAT_801e8500 = gpu_stat_sign();
     draw_env_timing(iVar8 + 0x5c);
-    FUN_801917e0(iVar8);
+    gpu_draw_env_put(iVar8);
     if (*(byte *)(param_1 + 0x12) != 0) {
-        FUN_801910e4(*(byte *)(param_1 + 0x12) - 1);
+        gpu_disp_mask_set(*(byte *)(param_1 + 0x12) - 1);
         *(undefined1 *)(param_1 + 0x12) = 0;
     }
     iVar4 = (int)*(short *)(param_1 + 0xd0);
     while (0 < iVar4) {
-        FUN_80191428(iVar4 * 8 + -0x7fe3bad0,((uint32_t *)g_DAT_801bef38)[iVar4 + -1]);
+        gpu_load_image_cmd(iVar4 * 8 + -0x7fe3bad0,((uint32_t *)g_DAT_801bef38)[iVar4 + -1]);
         iVar4 = iVar4 + -1;
     }
     iVar4 = (int)*(short *)(param_1 + 0xd2);
@@ -1350,10 +1350,10 @@ void frame_tick(intptr_t param_1)
             uVar2 = *(undefined1 *)guest_at((uint32_t)(iVar4 + -0x7fe0f99a));
             *(undefined2 *)((char *)g_DAT_801f066a + iVar4) =
                  *(undefined2 *)guest_at((uint32_t)(*(int *)(param_1 + 0xc) * 0x2150 + -0x7fe1bf5e));
-            FUN_80191300(guest_of((char *)g_DAT_801f0668 + iVar4),
+            gpu_clear_image_cmd(guest_of((char *)g_DAT_801f0668 + iVar4),
                          (uint32_t)(uintptr_t)*(uint32_t *)((char *)g_DAT_801f0664 + iVar4),uVar1,uVar2);
         }
-        FUN_80191770(iVar9 + 0x207c);
+        gpu_draw_otag(iVar9 + 0x207c);
     }
     FUN_80129f78();
     uVar5 = *(uint *)(param_1 + 0xc) ^ 1;
@@ -1362,14 +1362,14 @@ void frame_tick(intptr_t param_1)
     *(uint *)(param_1 + 0xc) = uVar5;
     *(int *)(param_1 + 4) = iVar4 + -0x7fe1bf60;
     *(int *)(param_1 + 8) = iVar4 + -0x7fe1bef0;
-    FUN_80191668(iVar4 + -0x7fe1bef0,0x820);
+    gpu_clear_otag_r(iVar4 + -0x7fe1bef0,0x820);
     *(uint *)guest_at((uint32_t)(iVar4 + -0x7fe1bef0)) = *(uint *)guest_at((uint32_t)(iVar4 + -0x7fe1bef0)) | 0xffffff;
     FUN_8016362c(param_1);
     if (*(char *)guest_at(*(uint32_t *)(param_1 + 200) + 2) < '\0') {
-        FUN_8012a088();
+        debug_stat_print();
         ot_packet_chain_fixup();
     }
-    FUN_8012cd9c(0,0);
+    scroll_offset_set(0,0);
     return;
 }
 
@@ -1421,26 +1421,26 @@ joined_r0x801470b0:
             return;
         }
         if (DAT_1f800001 == 2) {
-            FUN_8012cd9c(0,0);
+            scroll_offset_set(0,0);
             if ((_DAT_1f80007c & 0x10) == 0) {
-                FUN_801294cc(&local_88);
+                menu_stepper_state_advance(&local_88);
             }
             else {
                 FUN_80156ef4(0x400,0xd,0);
                 DAT_1f800001 = 1;
             }
 LAB_801472f8:
-            FUN_8018c824(_DAT_1f800008 + 4,0,0xefff0088,0x7c000000);
-            FUN_8018c824(_DAT_1f800008 + 4,0x100,0xefff008a,0x7c400000);
-            FUN_8018c824(_DAT_1f800008 + 4,0xf00000,0xefff0099,0x7c800000);
-            FUN_8018c824(_DAT_1f800008 + 4,0xf00100,0xefff009b,0x7cc00000);
-            FUN_8018c824(_DAT_1f800008,0x1880074,0xf97000f,0x7b1fb810);
-            FUN_8018c824(_DAT_1f800008,0x189010c,0xf7f000f,0x7b1f9038);
-            FUN_8018c824(_DAT_1f800008,0x19800a4,0xfb7000f,0x7b1f9000);
-            FUN_8018c824(_DAT_1f800008,0x1a800a5,0xf39000f,0x7b1fa840);
-            FUN_8018c824(_DAT_1f800008,0x1a800e0,0xf17000f,0x7b1f90e4);
-            FUN_8018c824(_DAT_1f800008,0x1a800fc,0xf5d000f,0x7b1fa87a);
-            FUN_8018c824(_DAT_1f800008,0x11201e4,0x70f000f,0x7b1fb8e0);
+            spr_slot_pkt_submit(_DAT_1f800008 + 4,0,0xefff0088,0x7c000000);
+            spr_slot_pkt_submit(_DAT_1f800008 + 4,0x100,0xefff008a,0x7c400000);
+            spr_slot_pkt_submit(_DAT_1f800008 + 4,0xf00000,0xefff0099,0x7c800000);
+            spr_slot_pkt_submit(_DAT_1f800008 + 4,0xf00100,0xefff009b,0x7cc00000);
+            spr_slot_pkt_submit(_DAT_1f800008,0x1880074,0xf97000f,0x7b1fb810);
+            spr_slot_pkt_submit(_DAT_1f800008,0x189010c,0xf7f000f,0x7b1f9038);
+            spr_slot_pkt_submit(_DAT_1f800008,0x19800a4,0xfb7000f,0x7b1f9000);
+            spr_slot_pkt_submit(_DAT_1f800008,0x1a800a5,0xf39000f,0x7b1fa840);
+            spr_slot_pkt_submit(_DAT_1f800008,0x1a800e0,0xf17000f,0x7b1f90e4);
+            spr_slot_pkt_submit(_DAT_1f800008,0x1a800fc,0xf5d000f,0x7b1fa87a);
+            spr_slot_pkt_submit(_DAT_1f800008,0x11201e4,0x70f000f,0x7b1fb8e0);
         }
         else if (DAT_1f800001 < 3) {
             if (DAT_1f800001 == 0) {
@@ -1450,7 +1450,7 @@ LAB_801472f8:
                     iVar1 = FUN_80146e38(0x1f800000,&local_40);
                     if (iVar1 != 0) {
                         FUN_80156ef4(0x204,0,0);
-                        FUN_8012cbc0(2,0,0);
+                        print_mode_dispatch_b(2,0,0);
                         FUN_80156ef4(0x400,0x82,0);
                         local_7c = (void (*)(void))FUN_8014751c;
                         local_82 = 7;
@@ -1468,13 +1468,13 @@ LAB_801472f8:
                         local_6e = 0;
                         local_6c = 0;
                         local_6a = 0;
-                        FUN_801274d8(0);
-                        FUN_8018bfcc(local_40,0,0x1f0,1,0x200,0,1);
-                        FUN_8018bfcc(local_3c,0,0x1f1,1,0x280,0,1);
-                        FUN_8018bfcc(local_38,0,0x1f2,1,0x240,0x100,1);
-                        FUN_8018bfcc(local_34,0,499,1,0x2c0,0x100,1);
+                        scratch_013_set(0);
+                        spr_draw_pair(local_40,0,0x1f0,1,0x200,0,1);
+                        spr_draw_pair(local_3c,0,0x1f1,1,0x280,0,1);
+                        spr_draw_pair(local_38,0,0x1f2,1,0x240,0x100,1);
+                        spr_draw_pair(local_34,0,499,1,0x2c0,0x100,1);
                         FUN_8019a460(0);
-                        FUN_801274d8(1);
+                        scratch_013_set(1);
                         _DAT_1f80008c = 0;
                         battle_session_arm(0x1f800000,0xffffffff);
                         unaff_s2 = 300;
@@ -1547,8 +1547,8 @@ undefined4 scene_entry(int param_1,int param_2,int param_3)
     piVar5 = (int *)((char *)g_DAT_801b3ed8 + iVar1);
     _DAT_801f4754 = param_1;
     frame_tick(0x1f800000);
-    FUN_80156114(0x7f);
-    FUN_801274d8(0);
+    brightness_packet_send(0x7f);
+    scratch_013_set(0);
     FUN_8019a460(0);
     _DAT_801f473c = 1;
     if (*piVar5 == 0) {
@@ -1572,7 +1572,7 @@ undefined4 scene_entry(int param_1,int param_2,int param_3)
         FUN_80159ce4(guest_of(local_38));
     }
     _DAT_801f4740 = 0;
-    FUN_801910e4(0);
+    gpu_disp_mask_set(0);
     local_40 = 0;
     local_3e = 0;
     if (*piVar5 == 0) {
@@ -1584,13 +1584,13 @@ undefined4 scene_entry(int param_1,int param_2,int param_3)
                           (*(int *)((char *)g_DAT_801b3ed8 + 0x14 + iVar1) * 3 >> 0x1f)) >> 1);
     }
     local_3a = (undefined2)(*(int *)((char *)g_DAT_801b3ed8 + 0x18 + iVar1) << 1);
-    FUN_80191390((uint16_t *)&local_40,0,0,0);
+    gpu_clear_image_cmd2((uint16_t *)&local_40,0,0,0);
     do {
         uVar3 = 2;
         if (*piVar5 != 0) {
             uVar3 = 3;
         }
-        FUN_8018f9b4(_DAT_801f4708 * 4 + -0x7fe0b900,uVar3);
+        gpu_pkt_attr_set(_DAT_801f4708 * 4 + -0x7fe0b900,uVar3);
         iVar2 = _DAT_801f4732 + -1;
         if (iVar2 < 0) {
             iVar2 = _DAT_801f4732 + 0xe;
@@ -1610,7 +1610,7 @@ undefined4 scene_entry(int param_1,int param_2,int param_3)
     } while ((param_3 == 0) || ((_DAT_1f80007c & 0x850) == 0));
     uVar7 = 1;
 LAB_801593a8:
-    FUN_80156114(0);
+    brightness_packet_send(0);
     local_48[0] = 0x80;
     _DAT_1f80000c = (uint)(_DAT_1f80000c == 0);
     _DAT_1f800004 = _DAT_1f80000c * 0x2150 + -0x7fe1bf60;
@@ -1624,14 +1624,14 @@ LAB_801593a8:
     display_mode_setup(*(undefined1 *)(_g_system_config_ptr + 0xb));
     battle_session_arm(0x1f800000,1);
     frame_tick(0x1f800000);
-    FUN_8012748c();
+    frame_advance_helper();
     frame_tick(0x1f800000);
     return uVar7;
 }
 
 /* ======== 0x8018cfdc ======== */
 
-int FUN_8018cfdc(int param_1,uint32_t param_2)
+int cd_file_load_sm(int param_1,uint32_t param_2)
 
 {
   int iVar1;
@@ -1644,7 +1644,7 @@ int FUN_8018cfdc(int param_1,uint32_t param_2)
   piVar2 = (int *)guest_at(filetab[param_1 * 2]);
   uVar3 = filetab[param_1 * 2 + 1];
   if (param_1 < 0) {
-    FUN_80157368();
+    mc_init_reset();
     FUN_80198af0();
     local_20[0] = 0x80;
     cd_mode_flag_set(0xe,local_20,0);
@@ -1706,13 +1706,13 @@ void FUN_8012b23c(intptr_t param_1)
   iVar7 = *(int *)(param_1 + 4);
   FUN_80157a00();
   FUN_80156d98();
-  FUN_8012a884((uint8_t *)param_1);
+  cursor_sprite_anim((uint8_t *)param_1);
   FUN_80156ff0();
   FUN_8012a72c(param_1);
   if ((*(char *)(param_1 + 0x15) == '\0') && ((*(ushort *)(param_1 + 0x82) & 1) != 0)) {
     uVar3 = FUN_8019a460(1);
     *(undefined2 *)(param_1 + 0x1a) = uVar3;
-    FUN_8019117c(0);
+    gpu_draw_sync(0);
     uVar3 = FUN_8019a460(1);
     *(undefined2 *)(param_1 + 0x1c) = uVar3;
     FUN_8019a460(*(undefined1 *)(param_1 + 0x10));
@@ -1722,20 +1722,20 @@ void FUN_8012b23c(intptr_t param_1)
     *(undefined2 *)(param_1 + 0x1c) = uVar3;
     *(undefined2 *)(param_1 + 0x1a) = uVar3;
     FUN_8019a460(*(undefined1 *)(param_1 + 0x10));
-    FUN_80190e00(1);
+    gpu_graph_reset(1);
   }
   DAT_1f8000e0 = DAT_1f8000e4;
   DAT_1f8000e4 = 0;
-  _DAT_801e8500 = FUN_80191ed8();
+  _DAT_801e8500 = gpu_stat_sign();
   draw_env_timing(iVar7 + 0x5c);
-  FUN_801917e0(iVar7);
+  gpu_draw_env_put(iVar7);
   if (*(byte *)(param_1 + 0x12) != 0) {
-    FUN_801910e4(*(byte *)(param_1 + 0x12) - 1);
+    gpu_disp_mask_set(*(byte *)(param_1 + 0x12) - 1);
     *(undefined1 *)(param_1 + 0x12) = 0;
   }
   iVar4 = (int)*(short *)(param_1 + 0xd0);
   while (0 < iVar4) {
-    FUN_80191428((int)(iVar4 * 8 + -0x7fe3bad0),*(undefined4 *)((char *)DAT_801bef38 + (iVar4 + -1) * 4));
+    gpu_load_image_cmd((int)(iVar4 * 8 + -0x7fe3bad0),*(undefined4 *)((char *)DAT_801bef38 + (iVar4 + -1) * 4));
     iVar4 = iVar4 + -1;
   }
   *(undefined2 *)(param_1 + 0xd0) = 0;
@@ -1746,43 +1746,43 @@ void FUN_8012b23c(intptr_t param_1)
       uVar1 = *(undefined1 *)((char *)g_DAT_801f0664 + iVar4 + 4);
       uVar2 = *(undefined1 *)((char *)g_DAT_801f0664 + iVar4 + 5);
       *(undefined2 *)((char *)g_DAT_801f066a + iVar4) = *(undefined2 *)((char *)g_DAT_801f0664 + iVar4 - 0x42);
-      FUN_80191300(guest_of((char *)g_DAT_801f0668 + iVar4),((uint32_t *)g_DAT_801f0664)[iVar4 / 4],uVar1,uVar2);
+      gpu_clear_image_cmd(guest_of((char *)g_DAT_801f0668 + iVar4),((uint32_t *)g_DAT_801f0664)[iVar4 / 4],uVar1,uVar2);
     }
     uVar6 = 0x801e618c;
     if (iVar7 == -0x7fe1bf60) {
       uVar6 = 0x801e82dc;
     }
-    FUN_80191770(uVar6);
+    gpu_draw_otag(uVar6);
   }
   return;
 }
 
 /* task_table_init — task/effect-table init: clears _DAT_801f0738 +
- * DAT_801bef20, runs FUN_801a6ae8 then registers 7 named tables via
- * FUN_801ad59c/FUN_801ad1e4. */
+ * DAT_801bef20, runs gp_20_store_default then registers 7 named tables via
+ * aux_tbl_store_a/aux_tbl_store_b. */
 extern void *guest_at(uint32_t addr);
-extern void FUN_801a6ae8(void);
-extern void FUN_801ad59c(uint32_t,int32_t);
-extern void FUN_801ad1e4(uint32_t,int32_t);
+extern void gp_20_store_default(void);
+extern void aux_tbl_store_a(uint32_t,int32_t);
+extern void aux_tbl_store_b(uint32_t,int32_t);
 void task_table_init(int32_t param_1)
 {
   (void)param_1;
   *(uint32_t *)guest_at(0x801f0738) = 0;
   *(uint8_t  *)guest_at(0x801bef20) = 0;
-  FUN_801a6ae8();
-  FUN_801ad59c(0x801c43a8,0);
-  FUN_801ad1e4(0x801c44e8,0);
-  FUN_801ad59c(0x801c4448,1);
-  FUN_801ad59c(0x801c4498,2);
-  FUN_801ad59c(0x801c4420,3);
-  FUN_801ad1e4(0x801c4470,1);
-  FUN_801ad1e4(0x801c44c0,2);
-  FUN_801ad1e4(0x801c4434,3);
+  gp_20_store_default();
+  aux_tbl_store_a(0x801c43a8,0);
+  aux_tbl_store_b(0x801c44e8,0);
+  aux_tbl_store_a(0x801c4448,1);
+  aux_tbl_store_a(0x801c4498,2);
+  aux_tbl_store_a(0x801c4420,3);
+  aux_tbl_store_b(0x801c4470,1);
+  aux_tbl_store_b(0x801c44c0,2);
+  aux_tbl_store_b(0x801c4434,3);
 }
 
 /* intro_movie_state — intro/movie playback state machine. State byte
  * _DAT_1f80008c: -1 idle; 0 init; 0x10..0x30 staged file loads via
- * FUN_8018cfdc(file_id, heap=_DAT_801e3cfc); FUN_80163154 advances
+ * cd_file_load_sm(file_id, heap=_DAT_801e3cfc); FUN_80163154 advances
  * frames; param_1 selects which queued load to start (0/1/2). */
 int32_t intro_movie_state(int32_t param_1)
 {
@@ -1794,7 +1794,7 @@ int32_t intro_movie_state(int32_t param_1)
   if (sVar4 != 0x10) {
     if (0x10 < sVar4) {
       if (sVar4 == 0x20) {
-        iVar2 = FUN_8018cfdc(0x8b,(uint32_t)_DAT_801e3cfc);
+        iVar2 = cd_file_load_sm(0x8b,(uint32_t)_DAT_801e3cfc);
         if (iVar2 == 0) { *(int16_t *)g_DAT_1f80008c = sVar4; return 0; }
         sVar4 = 0x30;
         FUN_801566a0(_DAT_801e3cfc,1);
@@ -1804,15 +1804,15 @@ int32_t intro_movie_state(int32_t param_1)
         sVar4 = *(int16_t *)g_DAT_1f80008c;
         if (sVar4 != 0x30) return 0;
       }
-      iVar2 = FUN_8018cfdc(0x16,(uint32_t)_DAT_801e3cfc);
+      iVar2 = cd_file_load_sm(0x16,(uint32_t)_DAT_801e3cfc);
       uVar1 = DAT_1f800013;
       if (iVar2 == 0) { *(int16_t *)g_DAT_1f80008c = sVar4; return 0; }
-      FUN_801274d8(0);
-      FUN_8018bf40(_DAT_801e3cfc,0,0x1e0,1);
+      scratch_013_set(0);
+      spr_draw_off(_DAT_801e3cfc,0,0x1e0,1);
       goto LAB_8012c330;
     }
     if (sVar4 != 0) return 0;
-    FUN_8018cfdc(-1,0);
+    cd_file_load_sm(-1,0);
     sVar4 = 0x10;
     _DAT_801c43a0 = 0;
     DAT_801e3d00 = 0xff;
@@ -1820,7 +1820,7 @@ int32_t intro_movie_state(int32_t param_1)
     _DAT_801e3cfc = 0x800d0000;
   }
   if (param_1 == 1) {
-    iVar2 = FUN_8018cfdc(0x14,(uint32_t)_DAT_801e3cfc);
+    iVar2 = cd_file_load_sm(0x14,(uint32_t)_DAT_801e3cfc);
     if (iVar2 != 0) {
       iVar2 = 0;
       do {
@@ -1832,23 +1832,23 @@ int32_t intro_movie_state(int32_t param_1)
     }
   } else if (param_1 < 2) {
     if (param_1 == 0 &&
-        (iVar2 = FUN_8018cfdc(0x14,(uint32_t)_DAT_801e3cfc),
+        (iVar2 = cd_file_load_sm(0x14,(uint32_t)_DAT_801e3cfc),
          uVar1 = DAT_1f800013, iVar2 != 0)) {
-      FUN_801274d8(0);
+      scratch_013_set(0);
       uint8_t *ctr = (uint8_t *)guest_at(0x801b1408);
       *ctr = *ctr + 1;
       if (10 < *ctr) *ctr = 0;
       iVar2 = FUN_80163154(_DAT_801c47b8,(int *)guest_at(_DAT_801e3cfc),*ctr);
-      FUN_8018bf40((int)_DAT_801c47b8,0x3c0,0x100,1);
+      spr_draw_off((int)_DAT_801c47b8,0x3c0,0x100,1);
       _DAT_801c47b8 = _DAT_801c47b8 + (uint32_t)iVar2;
 LAB_8012c330:
       FUN_8019a460(0);
-      FUN_801274d8(uVar1);
+      scratch_013_set(uVar1);
       *(int16_t *)g_DAT_1f80008c = -1;
       return 1;
     }
   } else if (param_1 == 2 &&
-             (iVar2 = FUN_8018cfdc(0x15,(uint32_t)_DAT_801e3cfc), iVar2 != 0)) {
+             (iVar2 = cd_file_load_sm(0x15,(uint32_t)_DAT_801e3cfc), iVar2 != 0)) {
     iVar2 = 0;
     do {
       iVar3 = FUN_80163154((uint32_t)_DAT_801c47b8,(int *)guest_at(_DAT_801e3cfc),iVar2);
@@ -1877,20 +1877,20 @@ extern uint32_t guest_of(const void *);
 extern undefined4 FUN_8012d154(uint *,uint,int);
 extern undefined4 FUN_8012dce4(uint *,uint,int);
 extern void     FUN_801941e0(int,int,int,uint,byte *);
-extern void    *FUN_8018c18c(void);
+extern void    *spr_desc_slot_alloc(void);
 
 /* Varargs forwarders: the guest dispatchers pass fmt + 8 raw 32-bit
  * varargs straight through; C cannot forward ..., so collect and
  * re-emit with fixed arity (same convention as FUN_8018ef60's
  * va_arg(ap,uint32_t)). */
-static void br2_text9_dbg(const char *fmt,const uint32_t *v)
+static void text9_dbg(const char *fmt,const uint32_t *v)
 {
   /* text_win_printf takes guest u32 args; fmt is a host pointer into
    * arena/scratch, so recover its guest address. */
   text_win_printf((int32_t)guest_of(fmt),(int)v[0],(int)v[1],(int)v[2],
                (int)v[3],(int)v[4],(int)v[5],(int)v[6],(int)v[7]);
 }
-static int br2_text9_spr(uint32_t buf,const char *fmt,const uint32_t *v)
+static int text9_spr(uint32_t buf,const char *fmt,const uint32_t *v)
 {
   /* buf is a guest address; FUN_8018ef60 takes a host buffer pointer. */
   return FUN_8018ef60((char *)guest_at(buf),(char *)fmt,(int)v[0],(int)v[1],(int)v[2],
@@ -1911,10 +1911,10 @@ void print_dispatch(const char *param_1,...)
   __builtin_va_start(ap,param_1);
   for (i = 0; i < 8; i++) v[i] = (uint32_t)__builtin_va_arg(ap,uint32_t);
   __builtin_va_end(ap);
-  if (mode == 1) { br2_text9_dbg(param_1,v); return; }
+  if (mode == 1) { text9_dbg(param_1,v); return; }
   if ((int32_t)mode < 2) return;
   if (mode != 2) return;
-  br2_text9_spr(guest_of(buf),param_1,v);
+  text9_spr(guest_of(buf),param_1,v);
   b = (uint16_t *)guest_at(0x1f80038c);
   b[3] = 0x1000; b[4] = 0x1000;
   b[5] = 8; b[6] = 8; b[7] = 8; b[8] = 8;
@@ -1939,10 +1939,10 @@ void print_dispatch_selfdesc(void *param_1,const char *param_2,...)
   __builtin_va_start(ap,param_2);
   for (i = 0; i < 8; i++) v[i] = (uint32_t)__builtin_va_arg(ap,uint32_t);
   __builtin_va_end(ap);
-  if (mode == 1) { br2_text9_dbg(param_2,v); return; }
+  if (mode == 1) { text9_dbg(param_2,v); return; }
   if ((int32_t)mode < 2) return;
   if (mode != 2) return;
-  br2_text9_spr(guest_of(buf),param_2,v);
+  text9_spr(guest_of(buf),param_2,v);
   b = (uint16_t *)guest_at(0x1f80038c);
   b[0] = 0;
   b[1] = *(uint16_t *)(self + 0x10);
@@ -2153,7 +2153,7 @@ int sprite_node_emit_a(uint32_t param_1,int32_t param_2,int32_t param_3,
   return 0;
 }
 
-/* sprite_node_emit_b — sprite-list node emit (pool FUN_8018c18c, tag
+/* sprite_node_emit_b — sprite-list node emit (pool spr_desc_slot_alloc, tag
  * 0x04000000, packet tail +0x14). param_2 packs x|y<<16,
  * param_3 packs w|h<<16; param_5 low byte = colour, param_6 picks
  * GPU variant 0x66/0x64000000 + stride. */
@@ -2161,7 +2161,7 @@ int sprite_node_emit_b(uint32_t param_1,uint32_t param_2,uint32_t param_3,
                  uint32_t param_4,int32_t param_5,int32_t param_6)
 {
   uint32_t *head = (uint32_t *)guest_at(param_1);
-  uint8_t *node = (uint8_t *)FUN_8018c18c();
+  uint8_t *node = (uint8_t *)spr_desc_slot_alloc();
   uint32_t guest;
   int32_t tag;
   if (node == (uint8_t *)0) return -1;
@@ -2237,11 +2237,11 @@ int32_t set_graph_debug(uint32_t param_1)
   return old;
 }
 
-/* memcard_info_query — memcard/info query: FUN_8016809c(0, tbl[0..2],
+/* memcard_info_query — memcard/info query: mc_data_read(0, tbl[0..2],
  * tbl[3..9], 0x801c11e0, 0x414) over table @0x801b45f4; ret 0 clears
  * @0x801c15f0 and returns byte @(*(u32*)0x1f8000c0)+0x22, ret<8&&!=0
  * ->1, ret>=8 ->0. Disasm 0x8015f590-0x8015f63c. */
-extern int32_t FUN_8016809c(int32_t,uint32_t,uint32_t,uint32_t,uint32_t,
+extern int32_t mc_data_read(int32_t,uint32_t,uint32_t,uint32_t,uint32_t,
                             uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,
                             uint32_t,uint32_t,uint32_t);
 int32_t memcard_info_query(void)
@@ -2249,7 +2249,7 @@ int32_t memcard_info_query(void)
   uint32_t *t = (uint32_t *)guest_at(0x801b45f4);
   int32_t r;
   if (t == NULL) return -1;
-  r = FUN_8016809c(0,t[0],t[1],t[2],t[3],t[4],t[5],t[6],t[7],t[8],t[9],
+  r = mc_data_read(0,t[0],t[1],t[2],t[3],t[4],t[5],t[6],t[7],t[8],t[9],
                    0x801c11e0,0x414);
   if (r >= 8) return 0;
   if (r != 0) return 1;
@@ -2257,15 +2257,15 @@ int32_t memcard_info_query(void)
   return *(uint8_t *)guest_at(*(uint32_t *)guest_at(0x1f8000c0) + 0x22);
 }
 
-/* FUN_8012a088 — debug stat print: FUN_8012cd9c(0,0xdc) then
+/* debug_stat_print — debug stat print: scroll_offset_set(0,0xdc) then
  * print_dispatch("CPU(%d)\nGPU(%d)\n" or "#2CPU(%d)\nGPU(%d)\n",
  * u16@0x1f80001a, u16@0x1f80001c) selected by u16@0x801e83a8.
  * Disasm 0x8012a088-0x8012a0e8. */
-void FUN_8012a088(void)
+void debug_stat_print(void)
 {
   uint16_t a1 = *(uint16_t *)guest_at(0x1f80001a);
   uint16_t a2 = *(uint16_t *)guest_at(0x1f80001c);
-  FUN_8012cd9c(0,0xdc);
+  scroll_offset_set(0,0xdc);
   if (*(uint16_t *)guest_at(0x801e83a8) == 0)
     print_dispatch((const char *)guest_at(0x8011ed40),a1,a2);
   else
@@ -2432,17 +2432,17 @@ void reset_combat_slots(void)
 }
 
 /* blk_1f26c0_init — init block @0x801f26c0: +4=0x100, clear
- * @0x801f36c4, cd_chan_mode_apply(block), FUN_8019bf10(0).
+ * @0x801f36c4, cd_chan_mode_apply(block), cd_chan_mode_set(0).
  * Disasm 0x80155e30-0x80155e64. */
 extern void cd_chan_mode_apply(uint32_t);
-extern void FUN_8019bf10(int32_t);
+extern void cd_chan_mode_set(int32_t);
 void blk_1f26c0_init(void)
 {
   uint32_t blk = 0x801f26c0;
   *(uint32_t *)guest_at(0x801f36c4) = 0;
   *(uint32_t *)guest_at(blk + 4) = 0x100;
   cd_chan_mode_apply(blk);
-  FUN_8019bf10(0);
+  cd_chan_mode_set(0);
 }
 
 /* clear_f4ee8_u16s — clear 10 u16s at 0x801f4ee8 + byte(a0+2)*24 + 0x12,
@@ -2459,7 +2459,7 @@ void clear_f4ee8_u16s(uint8_t *a0)
 
 /* blk_1f26c0_init_b — block @0x801f26c0 variant init: +0=7, +4=0x100,
  * +8/+0xa=0x3fff, clear @0x801f36c4, cd_chan_mode_apply, cd_chan_flags_to_dir,
- * FUN_8019bf10(1). Disasm 0x80155dd0-0x80155e28. */
+ * cd_chan_mode_set(1). Disasm 0x80155dd0-0x80155e28. */
 extern void cd_chan_flags_to_dir(uint32_t);
 void blk_1f26c0_init_b(void)
 {
@@ -2471,14 +2471,14 @@ void blk_1f26c0_init_b(void)
   *(uint16_t *)guest_at(s0 + 0xa) = 0x3fff;
   cd_chan_mode_apply(s0);
   cd_chan_flags_to_dir(s0);
-  FUN_8019bf10(1);
+  cd_chan_mode_set(1);
 }
 
 /* scratchpad_pair_init — scratchpad pair init: FUN_8015a1e4(0x1f800000),
  * clear +0x99/+0x9a/+0xe4/+0xf4 on 0x1f8000e8 & 0x1f8001f0,
- * bump u16 +0xe8 on both, FUN_80159dac. Disasm 0x8016fbfc-6c6c. */
+ * bump u16 +0xe8 on both, gauge_leaf_update. Disasm 0x8016fbfc-6c6c. */
 extern int FUN_8015a1e4(uint32_t);
-extern int32_t FUN_80159dac(uint32_t);
+extern int32_t gauge_leaf_update(uint32_t);
 void scratchpad_pair_init(void)
 {
   uint8_t *s0 = (uint8_t *)guest_at(0x1f8000e8);
@@ -2496,7 +2496,7 @@ void scratchpad_pair_init(void)
     *(uint32_t *)(s1 + 0xf4) = 0;
     *(uint16_t *)(s1 + 0xe8) += 1;
   }
-  FUN_80159dac(0x1f800000);
+  gauge_leaf_update(0x1f800000);
 }
 
 /* reset_sprite_ot_block — reset sprite/OT block: zero 8 u16 at *(a0+0xcc),
@@ -2539,7 +2539,7 @@ void reset_combat_record(int32_t a0)
 /* blk_1f26c0_init_c — block @0x801f26c0 variant init B: +0x36c4=a0,
  * +0=7, +4=a0|0x100, +8/+0xa=a1, 9c0f0, 9caa0, 9cb20(1,0xffffFF08),
  * 9bf10(1). Disasm 0x80155e6c-0x80155ed4. */
-extern void FUN_8019cb20(int32_t,uint32_t);
+extern void cd_reg_win_rmw_cc_cd(int32_t,uint32_t);
 void blk_1f26c0_init_c(int32_t a0,uint32_t a1)
 {
   uint32_t s0 = 0x801f26c0;
@@ -2550,14 +2550,14 @@ void blk_1f26c0_init_c(int32_t a0,uint32_t a1)
   *(uint16_t *)guest_at(s0 + 0xa) = (uint16_t)a1;
   cd_chan_mode_apply(s0);
   cd_chan_flags_to_dir(s0);
-  FUN_8019cb20(1,0xffffFF08);
-  FUN_8019bf10(1);
+  cd_reg_win_rmw_cc_cd(1,0xffffFF08);
+  cd_chan_mode_set(1);
 }
 
 /* record_copy_1a — copy 0x1a-byte record 0x8011fea0 + idx*0x1a ->
- * 0x801f0640 then FUN_80136ddc. Disasm 0x80136d28-0x80136dd4. */
+ * 0x801f0640 then hud_sprite_desc_init. Disasm 0x80136d28-0x80136dd4. */
 void record_copy_1a(int a0)
 {
   memcpy(guest_at(0x801f0640),guest_at(0x8011fea0 + a0 * 0x1a),0x1a);
-  FUN_80136ddc();
+  hud_sprite_desc_init();
 }

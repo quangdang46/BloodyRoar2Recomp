@@ -4,7 +4,7 @@
  * Faithful port of the verified guest sequence (Ghidra decompile,
  * functions named by guest address):
  *
- *   FUN_80175fec  action_enter(battle, ctrl, sel)
+ *   action_enter_fwd  action_enter(battle, ctrl, sel)
  *     sel = (entry_group << 4) | action_class, class in 0..4
  *     class 1: apply -> reset -> fixup -> switch -> ev_dispatch
  *     class 0,2,3,4: shared path with triple slot_apply
@@ -306,7 +306,7 @@ static void reset(uint8_t *ctrl, uint32_t sel)
     GS8 (ctrl, 0x106) = 0;
     GS8 (ctrl, 0xdd)  = 0;
     GS8 (ctrl, 0xe5)  = GU8(ctrl, 0xe4);
-    /* ctrl+0x14 = per-player block: host hook br2_player_block(slot) */
+    /* ctrl+0x14 = per-player block: host hook player_block(slot) */
 
     uint8_t cls = sel & 0xf;
     int32_t scaled = (int32_t)((int32_t)GS16(ctrl, 0xb0) *
@@ -339,7 +339,7 @@ static void reset(uint8_t *ctrl, uint32_t sel)
 
 /* ------------------------------------------------------------------ */
 /* FUN_80181db8 — .ANI S4 category fixup.
- * Clean source resolves categories lazily via br2_ani_cat(); the     */
+ * Clean source resolves categories lazily via ani_cat(); the     */
 /* guest's in-place patch is represented by the once-flag only.       */
 /* ------------------------------------------------------------------ */
 static void ani_fixup(uint8_t *ctrl, int variant)
@@ -630,11 +630,11 @@ static void action_switch(uint8_t *ctrl, uint8_t *motion, int32_t idx)
 }
 
 /* ------------------------------------------------------------------ */
-/* FUN_80175fec — action_enter: the unified entry pipeline.            */
+/* action_enter_fwd — action_enter: the unified entry pipeline.            */
 /* battle = 0x1f800000 battle-state block (host supplies, unused here).*/
 /* sel    = (entry_group << 4) | action_class.                         */
 /* ------------------------------------------------------------------ */
-uint32_t br2_action_enter(void *battle, uint8_t *ctrl, uint32_t sel)
+uint32_t action_enter(void *battle, uint8_t *ctrl, uint32_t sel)
 {
     (void)battle;
     uint8_t *motion = ctrl_motion(ctrl);
@@ -707,7 +707,7 @@ uint32_t br2_action_enter(void *battle, uint8_t *ctrl, uint32_t sel)
     if (motion) {
         GSU16(motion, MO_PREV) = GU16(motion, MO_ACT);
         action_switch(ctrl, motion, (int16_t)GU16(motion, MO_ACT));
-        /* step 6: ev_dispatch — caller runs br2_ev_step(ctrl, motion) */
+        /* step 6: ev_dispatch — caller runs ev_step(ctrl, motion) */
     }
     return cls;
 }

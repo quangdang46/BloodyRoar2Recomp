@@ -84,7 +84,7 @@ static uint8_t *foe_of(uint8_t *ctrl)
 }
 
 /* RNG hook: host supplies 0..99 for weighted Bra. */
-int br2_rand(void);
+int host_rand(void);
 
 /* ================================================================== */
 /* SCRIPT VM — operand source decoders                                 */
@@ -278,7 +278,7 @@ static int chk_eval(uint8_t *ctrl, uint8_t *pc,
 /* Script VM step                                                       */
 /* ================================================================== */
 
-int br2_vm_step(uint8_t *ctx, uint8_t *ctrl, uint8_t *a3obj)
+int vm_step(uint8_t *ctx, uint8_t *ctrl, uint8_t *a3obj)
 {
     uint8_t *pc = GETPC(ctx);
     uint8_t op = GU8(pc,0), sub = GU8(pc,1);
@@ -315,7 +315,7 @@ int br2_vm_step(uint8_t *ctx, uint8_t *ctrl, uint8_t *a3obj)
         case 0x09: if (GS32(ctx,VX_CMP)> 0) goto bra_next;
                   t = base+tgt; len=4; break;
         case 0x0a: {                                    /* weighted random */
-            int n = GU8(pc,2), i, acc = 0, pick = br2_rand() % 100;
+            int n = GU8(pc,2), i, acc = 0, pick = host_rand() % 100;
             uintptr_t tp;
             for (i = 0; i < n; i++) {
                 acc += GU8(pc,3+i);
@@ -435,7 +435,7 @@ int br2_vm_step(uint8_t *ctx, uint8_t *ctrl, uint8_t *a3obj)
         case 6: case 7:     /* +0x58>=0 immediate-pass */
             w = 0; len2 = 2; break;
         case 8:             /* rand wait v2 */
-            w = (int)(((uint32_t)GU16(pc,2) * (uint32_t)(br2_rand()&0xff)) >> 8) + 1;
+            w = (int)(((uint32_t)GU16(pc,2) * (uint32_t)(host_rand()&0xff)) >> 8) + 1;
             break;
         case 9: case 10: {  /* wait while ctrl+0x6c & 0x10000 */
             int on = (ST(ctrl,FC_STATE5) & 0x10000) != 0;
@@ -444,7 +444,7 @@ int br2_vm_step(uint8_t *ctx, uint8_t *ctrl, uint8_t *a3obj)
         }
         case 11:            /* rand wait v3 + mirror u16 -> ctx+6 */
             GS16(ctx, VX_WAIT) = G16(pc,2);
-            w = (int)(((uint32_t)GU16(pc,2) * (uint32_t)(br2_rand()&0xff)) >> 8) + 1;
+            w = (int)(((uint32_t)GU16(pc,2) * (uint32_t)(host_rand()&0xff)) >> 8) + 1;
             break;
         default: w = G16(pc,2); break;
         }
@@ -526,15 +526,15 @@ int br2_vm_step(uint8_t *ctx, uint8_t *ctrl, uint8_t *a3obj)
 
 /* Guest step loop — func_0x80184f28. Runs up to 50 insns per call,
  * stops early when an insn handler returns 0 (End / Ret-underflow).
- * ctx+0x6e trace flag gates per-op logging (host hook br2_trace_op). */
-void br2_trace_op(uint8_t *ctx);
-int br2_vm_run(uint8_t *ctx, uint8_t *ctrl, uint8_t *a3obj)
+ * ctx+0x6e trace flag gates per-op logging (host hook trace_op). */
+void trace_op(uint8_t *ctx);
+int vm_run(uint8_t *ctx, uint8_t *ctrl, uint8_t *a3obj)
 {
     int n = 0;
     for (;;) {
         if (GU16(ctx, VX_DBG))
-            br2_trace_op(ctx);              /* optional host hook */
-        if (!br2_vm_step(ctx, ctrl, a3obj))
+            trace_op(ctx);              /* optional host hook */
+        if (!vm_step(ctx, ctrl, a3obj))
             return 0;
         if (++n >= 0x32)
             return 1;
