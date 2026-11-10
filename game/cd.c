@@ -46,6 +46,12 @@ extern uint32_t br2_ld32p(uint32_t cell);
 extern void     br2_st8p(uint32_t cell, uint8_t v);
 extern void     br2_st16p(uint32_t cell, uint16_t v);
 extern void     br2_st32p(uint32_t cell, uint32_t v);
+extern uint8_t  br2_ld8(uint32_t a);
+extern uint16_t br2_ld16(uint32_t a);
+extern uint32_t br2_ld32(uint32_t a);
+extern void     br2_st8(uint32_t a, uint8_t v);
+extern void     br2_st16(uint32_t a, uint16_t v);
+extern void     br2_st32(uint32_t a, uint32_t v);
 extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 
 /* ---- guest globals ---- */
@@ -4682,7 +4688,7 @@ void cd_chan_reset_b(void)
 uint32_t cd_init_stage_b(void)
 {
   cd_guest_zero32_c(0x801bddf4,8);
-  *(uint32_t *)guest_at(DB32G(0x801bddf0)) = 0;
+  br2_st32p(0x801bddf0, 0);
   cd_dispatch_tbl8(3,0x8019af7c);
   return 0x8019b0fc;
 }
@@ -4691,7 +4697,7 @@ uint32_t cd_init_stage_b(void)
 
 uint32_t cd_init_stage_a(void)
 {
-  *(uint32_t *)guest_at(DB32G(0x801bdde4)) = 0x100;
+  br2_st32p(0x801bdde4, 0x100);
   DB32(0x801bdde0) = 0;
   cd_guest_zero32_b(0x801bddc0,8);
   cd_dispatch_tbl8(0,0x8019ae68);
@@ -4894,10 +4900,8 @@ uint32_t cd_state_blk_save(void)
   if (*(uint16_t *)guest_at(s0) != 0) return 0;
   FUN_8019ad80(s0 + 0x38);
   *(uint16_t *)guest_at(s0) = 1;
-  *(uint16_t *)guest_at(DB32G(0x801bdda8)) =
-      *(uint16_t *)guest_at(s0 + 0x32);
-  *(uint32_t *)guest_at(DB32G(0x801bddac)) =
-      *(uint32_t *)guest_at(s0 + 0x34);
+  br2_st16p(0x801bdda8, *(uint16_t *)guest_at(s0 + 0x32));
+  br2_st32p(0x801bddac, *(uint32_t *)guest_at(s0 + 0x34));
   FUN_8018e310(DB32G(0x801bdda8));
   return s0;
 }
@@ -4937,17 +4941,17 @@ uint32_t cd_state_blk_restore(void)
   FUN_8018e300();
   v0 = DB32G(0x801bdda8);
   a0 = DB32G(0x801bddac);
-  v1 = *(uint16_t *)guest_at(v0);
+  v1 = br2_ld16(v0);
   *(uint16_t *)guest_at(s0 + 0x32) = (uint16_t)v1;
-  v1 = *(uint32_t *)guest_at(a0);
+  v1 = br2_ld32(a0);
   a0 = DB32G(0x801bdda4);
   *(uint32_t *)guest_at(s0 + 0x34) = v1;
-  *(uint16_t *)guest_at(v0) = 0;
-  v0 = *(uint16_t *)guest_at(v0);
-  *(uint16_t *)guest_at(a0) = (uint16_t)v0;
+  br2_st16(v0, 0);
+  v0 = br2_ld16(v0);
+  br2_st16(a0, (uint16_t)v0);
   a0 = DB32G(0x801bddac);
-  v0 = *(uint32_t *)guest_at(a0) & 0x77777777;
-  *(uint32_t *)guest_at(a0) = v0;
+  v0 = br2_ld32(a0) & 0x77777777;
+  br2_st32(a0, v0);
   FUN_8019ad70(a0);
   *(uint16_t *)guest_at(s0) = 0;
   return s0;
@@ -5184,9 +5188,12 @@ uint32_t cd_chan_full_init(void)
 {
   uint32_t s0 = 0x801bcd18;
   if (*(uint16_t *)guest_at(s0) != 0) return 0;
-  *(uint16_t *)guest_at(DB32G(0x801bdda8)) = 0;
-  *(uint16_t *)guest_at(DB32G(0x801bdda4)) = 0;
-  *(uint32_t *)guest_at(DB32G(0x801bddac)) = 0x33333333;
+  /* 0x801bdda4/8/ac are pointer cells into the 0x1F8010xx INTC/DMA regs —
+   * the final deref is MMIO and must go through the device model, not a raw
+   * guest_at pointer (which lands in the open-bus fallback and drops the write). */
+  br2_st16p(0x801bdda8, 0);
+  br2_st16p(0x801bdda4, 0);
+  br2_st32p(0x801bddac, 0x33333333);
   cd_guest_zero32_a(s0,0x41a);
   if (cd_ctx_save(s0 + 0x38) != 0) {
     cd_intc_dispatch();
@@ -5786,12 +5793,11 @@ uint32_t cd_chan_slot_set(uint32_t param_1,uint32_t param_2)
   uint32_t *slot = (uint32_t *)guest_at(base + (param_1 << 2));
   uint32_t s4 = *slot;
   uint32_t s3;
-  uint16_t *flagp;
   if (param_2 == s4) return s4;
   if (*(uint16_t *)guest_at(base - 4) == 0) return s4;
-  flagp = (uint16_t *)guest_at(DB32G(0x801bdda8));
-  s3 = *flagp;
-  *flagp = 0;
+  uint32_t imask = DB32G(0x801bdda8);
+  s3 = br2_ld16(imask);
+  br2_st16(imask, 0);
   if (param_2 != 0) {
     uint32_t bit = 1u << param_1;
     uint16_t *f48 = (uint16_t *)guest_at(base - 4 + 0x30);
@@ -5813,7 +5819,7 @@ uint32_t cd_chan_slot_set(uint32_t param_1,uint32_t param_2)
   if (param_1 == 4) bios_kobj_tramp(0,param_2 < 1);
   if (param_1 == 5) bios_kobj_tramp(1,param_2 < 1);
   if (param_1 == 6) bios_kobj_tramp(2,param_2 < 1);
-  *(uint16_t *)guest_at(DB32G(0x801bdda8)) = (uint16_t)s3;
+  br2_st16(imask, (uint16_t)s3);
   return s4;
 }
 
@@ -5826,29 +5832,30 @@ void cd_cb7_run(uint32_t param_1)
   uint32_t s3 = 0x00ffffff;
   uint32_t s1 = (*(uint32_t *)guest_at(param_1) >> 24) & 0x7f;
   int s0;
-  uint32_t *a0p;
-  uint32_t *tbl;
+  uint32_t dma, dv;
+  uint32_t *tbl, *tbl2;
   while (s1 != 0) {
-    a0p = (uint32_t *)guest_at(DB32G(0x801bddf0));
+    dma = DB32G(0x801bddf0);
     tbl = (uint32_t *)guest_at(0x801bddf4);
     s0 = 0;
     while (s1 != 0 && s0 < 7) {
       if ((s1 & 1) != 0) {
-        *a0p &= (1u << (s0 + 0x18)) | s3;
+        br2_st32(dma, br2_ld32(dma) & ((1u << (s0 + 0x18)) | s3));
         if (tbl[s0] != 0) call_guest(tbl[s0],0,0);
       }
       tbl++;
       s1 >>= 1;
       s0++;
     }
-    s1 = (*(uint32_t *)guest_at(DB32G(0x801bddf0)) >> 24) & 0x7f;
+    s1 = (br2_ld32(dma) >> 24) & 0x7f;
   }
-  a0p = (uint32_t *)guest_at(DB32G(0x801bddf0));
+  dma = DB32G(0x801bddf0);
+  dv = br2_ld32(dma);
   {
-    uint32_t v0 = *a0p & 0xff000000;
-    if (v0 == 0x80000000 || (*a0p & 0x8000) != 0) {
-      uint32_t *tbl2 = (uint32_t *)guest_at(DB32G(0x801bde14));
-      printf_forward((const char *)guest_at(0x80125bb8),*a0p);
+    uint32_t v0 = dv & 0xff000000;
+    if (v0 == 0x80000000 || (dv & 0x8000) != 0) {
+      tbl2 = (uint32_t *)guest_at(DB32G(0x801bde14));
+      printf_forward((const char *)guest_at(0x80125bb8),dv);
       for (s0 = 0; s0 < 7; s0++) {
         printf_forward((const char *)guest_at(0x80125bd4),
                      (uint32_t)s0,tbl2[s0 * 4]);

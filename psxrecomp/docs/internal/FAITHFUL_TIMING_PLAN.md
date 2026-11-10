@@ -239,6 +239,37 @@ on a fixed region -> next.
   holds `0x8019A87C` (or wrapper). Suspect a clean-code BIOS-call boundary that
   silently no-ops the registration.
 
+- **2026-11-11 (clean↔generated bisect + ROOT CAUSE: MMIO derefs dropped via
+  guest_at):** Added `CLEAN_MIN`/`CLEAN_MAX` (inclusive guest-addr range gate) +
+  `CLEAN_SKIP` (comma-list of addrs forced to generated) to `clean_try_dispatch`
+  for live A/B bisect. Reliable success signal = byte0 of `0x801BCB24` (CD
+  status): `0x02`=ready/idle in the working generated baseline (~57 fps),
+  `0x00`=stuck in the `cd_cmd_issue` retry loop (~13 fps).
+  Bisect: pure generated = OK; clean covering ONLY `0x8019A000-0x8019A800` = OK;
+  ONLY `0x8019A800-0x8019B000` = OK; `0x8019A000-0x8019A900` = BROKEN; and
+  `CLEAN_SKIP=0x8019a814` (force `cd_chan_full_init`→generated) inside that
+  range = OK again → **`cd_chan_full_init` is the confirmed culprit**.
+  ROOT CAUSE: the clean ports dereference MMIO through `guest_at()`. Cells like
+  `0x801bdda4/8/ac/e4/f0` and `0x801bcb0c-0x801bcb20` hold POINTERS into the
+  `0x1F8010xx`/`0x1F8018xx` INTC/DMA/CD register space. `*(u16*)guest_at(
+  DB32G(0x801bdda8)) = 0` reads the cell→`0x1f801074` then does a RAW
+  `guest_at(0x1f801074)` write — but `guest_at` only maps RAM/scratchpad, so the
+  MMIO write lands in the open-bus fallback and is SILENTLY DROPPED (I_MASK/
+  I_STAT/DMA never actually updated → CD IRQ never dispatches → `cd_cmd_issue`
+  retries forever). Generated code uses `cpu->write_half/write_word` which route
+  to the device models. FIX: route every MMIO deref through `br2_ld8/16/32` +
+  `br2_st8/16/32` (br2_addr_direct → RAM/scratchpad via guest_at, else
+  psx_read/write_* device) or the `br2_ldNp`/`br2_stNp` pointer-cell variants.
+  Landed fixes: `cd_chan_full_init` (I_MASK/I_STAT/DMA init), `cd_state_blk_save`/
+  `restore` (INTC ctx save/restore), `cd_chan_slot_set` (I_MASK RMW), `cd_cb7_run`
+  (DMA chan reg), `cd_init_stage_a/b` (timer/DMA reg). STILL OPEN: ~50 more
+  `guest_at(DB32G/DB32(0x801bccXX/0x801b84XX/0x801bcbXX))` sites across cd.c
+  (memcard `0x801bcc*`, GPU-queue `0x801b84*`, CD data `0x801bcb*`) need the same
+  audit — each cell's target (RAM vs `0x1f801xxx` MMIO) must be checked against a
+  live RAM dump. NEXT: dump the full `0x801b8000-0x801be000` pointer-cell table,
+  mechanically convert MMIO-pointing derefs to br2_ld/st, rebuild, re-run full
+  clean until `0x801BCB24` byte0 holds `0x02`.
+
 - **2026-11-11 (clean `game/` runtime integration — boots, CD IRQ stall localized):**
   Wired the clean-room `game/` C tree into the live recomp runtime as the
   canonical game implementation. `clean_try_dispatch` now runs first inside

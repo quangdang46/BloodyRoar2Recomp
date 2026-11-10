@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include "cpu_state.h"
 
 extern void *guest_at(uint32_t addr);
@@ -4830,9 +4832,34 @@ uint32_t br2_dbg_clean_trace(uint32_t i) { return g_clean_trace[i & 511]; }
 uint32_t br2_dbg_clean_trace_ra(uint32_t i) { return g_clean_trace_ra[i & 511]; }
 uint32_t br2_dbg_clean_count(void) { return g_clean_trace_n; }
 
+/* CLEAN_SKIP — comma-separated guest addrs (hex) forced to generated code.
+ * Debug/bisect aid: run the IRQ/BIOS-boundary cluster on the faithful
+ * generated path while the rest stays clean. */
+static int clean_skip_addr(uint32_t addr) {
+    static int init = -1;
+    static uint32_t skip[256];
+    static int n;
+    if (init < 0) {
+        const char *s = getenv("CLEAN_SKIP");
+        n = 0;
+        if (s) {
+            char tmp[2048];
+            snprintf(tmp, sizeof(tmp), "%s", s);
+            for (char *p = tmp, *tok; (tok = strtok(p, ", \t\n")) && n < 256;
+                 p = NULL)
+                skip[n++] = (uint32_t)strtoul(tok, NULL, 0);
+        }
+        init = 1;
+    }
+    for (int i = 0; i < n; i++)
+        if (skip[i] == addr || skip[i] == (addr & 0x1FFFFFFFu)) return 1;
+    return 0;
+}
+
 int clean_try_dispatch(CPUState *cpu, uint32_t addr) {
     const CleanDispatchEnt *e;
     if (!clean_range_ok(addr)) return 0;
+    if (clean_skip_addr(addr)) return 0;
     e = clean_find(addr);
     if (!e) return 0;
     g_clean_trace[g_clean_trace_n & 511] = addr;
