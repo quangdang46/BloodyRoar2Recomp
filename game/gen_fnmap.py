@@ -1,0 +1,88 @@
+import re,glob
+names={}   # name -> addr_hex
+for f in sorted(glob.glob('game/*.c')):
+    if f.endswith(('bind.c','fnmap.c')): continue
+    src=open(f).read()
+    # comment-blanked copy (positions preserved) for def scanning;
+    # markers live in comments so lookback uses original src
+    code=re.sub(r'/\*.*?\*/',lambda m:'\n'*m.group(0).count('\n')+' '*(len(m.group(0))-m.group(0).count('\n')),src,flags=re.S)
+    code=re.sub(r'//[^\n]*','',code)
+    # candidate defs: NAME(...) {  — any identifier, then check marker/static
+    for m in re.finditer(r'\b([A-Za-z_]\w*)\s*\(',code):
+        name=m.group(1)
+        if name in ('if','for','while','switch','return','sizeof','extern','static','void','int','uint32_t','int32_t','uint16_t','int16_t','uint8_t','int8_t','char','short','long','const','struct','union','enum','do','else','case','break','continue','typedef','defined'):
+            continue
+        i=m.end(); depth=1
+        while i<len(code) and depth:
+            c=code[i]
+            if c=='(':depth+=1
+            elif c==')':depth-=1
+            i+=1
+        if depth: continue
+        j=i
+        while j<len(code) and code[j] in ' \t\r\n': j+=1
+        if j>=len(code) or code[j]!='{': continue
+        # look back past whitespace/comments for 'static' or attribute
+        k=m.start()-1
+        while k>=0 and code[k] not in ';{}': k-=1
+        decl=code[k+1:m.start()]
+        decl_nc=re.sub(r'/\*.*?\*/','',decl,flags=re.S)
+        decl_nc=re.sub(r'//.*','',decl_nc)
+        if re.search(r'\bstatic\b',decl_nc): continue
+        if '__attribute__' in decl_nc: continue
+        # determine guest addr: FUN_/LAB_ name, or @0x marker within 500 chars back
+        addr=None
+        fm=re.match(r'^(?:FUN_|LAB_)([0-9a-f]{8})$',name)
+        if fm: addr=fm.group(1)
+        else:
+            back=src[max(0,m.start()-600):m.start()]
+            marks=re.findall(r'@0x([0-9a-f]{8})',back)
+            if marks: addr=marks[-1]
+        if addr is None: continue
+        # only map plausible guest text addrs
+        if not (0x80110000 <= int(addr,16) <= 0x80200000): continue
+        if name in names and names[name]!=addr:
+            print("CONFLICT",name,names[name],addr,f); continue
+        names[name]=addr
+out=['''/* Auto-generated guest-code-address -> host-function map.
+ * Regenerate: scan src/*.c for non-static FUN_/LAB_ defs and @0x
+ * marker defs (excludes bind.c weak stubs). Do not edit by hand. */
+
+#include <stdint.h>
+
+''']
+for n in sorted(names):
+    out.append(f'extern void {n}(void);\n')
+out.append('''typedef struct { uint32_t addr; void *fn; } Br2FnEnt;
+
+const Br2FnEnt br2_fn_table[] = {
+''')
+for n in sorted(names,key=lambda n:int(names[n],16)):
+    out.append(f'  {{ 0x{names[n]}, (void *){n} }},\n')
+out.append('''};
+
+
+void *br2_fn_lookup(uint32_t addr)
+{
+  uint32_t lo = 0, hi = (uint32_t)(sizeof(br2_fn_table)/sizeof(br2_fn_table[0]));
+  while (lo < hi) {
+    uint32_t mid = (lo + hi) >> 1;
+    if (br2_fn_table[mid].addr < addr) lo = mid + 1; else hi = mid;
+  }
+  if (lo < (uint32_t)(sizeof(br2_fn_table)/sizeof(br2_fn_table[0])) && br2_fn_table[lo].addr == addr)
+    return br2_fn_table[lo].fn;
+  return 0;
+}
+
+/* br2_call_u32 — guest callback dispatch used by the CD/file layer:
+ * fn is a guest code address, a/b are guest u32 args. Returns the
+ * callee's u32 result or 0 when unmapped. */
+uint32_t br2_call_u32(uint32_t fn, uint32_t a, uint32_t b)
+{
+  void *p = br2_fn_lookup(fn);
+  if (p == 0) return 0;
+  return ((uint32_t (*)(uint32_t, uint32_t))p)(a, b);
+}
+''')
+open('game/fnmap.c','w').write(''.join(out))
+print(len(names),"entries")
