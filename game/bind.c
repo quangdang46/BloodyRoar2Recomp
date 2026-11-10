@@ -2123,3 +2123,56 @@ int FUN_801a0240() { return 0; }
 __attribute__((weak))
 #endif
 int FUN_801a0250() { return 0; }
+
+/* ---- MMIO-aware accessors (weak selftest fallbacks) ----
+ * In the standalone arena every address is direct-mapped, so these reduce
+ * to plain guest_at() derefs. The runtime build overrides them in
+ * src/clean_bridge.c with psx_read / psx_write routing for MMIO. */
+#if defined(__GNUC__) || defined(__clang__)
+__attribute__((weak))
+#endif
+uint8_t br2_ld8(uint32_t a) { return *(uint8_t *)guest_at(a); }
+#if defined(__GNUC__) || defined(__clang__)
+__attribute__((weak))
+#endif
+uint16_t br2_ld16(uint32_t a) { return *(uint16_t *)guest_at(a); }
+#if defined(__GNUC__) || defined(__clang__)
+__attribute__((weak))
+#endif
+uint32_t br2_ld32(uint32_t a) { return *(uint32_t *)guest_at(a); }
+#if defined(__GNUC__) || defined(__clang__)
+__attribute__((weak))
+#endif
+void br2_st8(uint32_t a, uint8_t v) { *(uint8_t *)guest_at(a) = v; }
+#if defined(__GNUC__) || defined(__clang__)
+__attribute__((weak))
+#endif
+void br2_st16(uint32_t a, uint16_t v) { *(uint16_t *)guest_at(a) = v; }
+#if defined(__GNUC__) || defined(__clang__)
+__attribute__((weak))
+#endif
+void br2_st32(uint32_t a, uint32_t v) { *(uint32_t *)guest_at(a) = v; }
+#if defined(__GNUC__) || defined(__clang__)
+__attribute__((weak))
+#endif
+uint8_t br2_ld8p(uint32_t cell) { return br2_ld8(*(uint32_t *)guest_at(cell)); }
+#if defined(__GNUC__) || defined(__clang__)
+__attribute__((weak))
+#endif
+uint16_t br2_ld16p(uint32_t cell) { return br2_ld16(*(uint32_t *)guest_at(cell)); }
+#if defined(__GNUC__) || defined(__clang__)
+__attribute__((weak))
+#endif
+uint32_t br2_ld32p(uint32_t cell) { return br2_ld32(*(uint32_t *)guest_at(cell)); }
+#if defined(__GNUC__) || defined(__clang__)
+__attribute__((weak))
+#endif
+void br2_st8p(uint32_t cell, uint8_t v) { br2_st8(*(uint32_t *)guest_at(cell), v); }
+#if defined(__GNUC__) || defined(__clang__)
+__attribute__((weak))
+#endif
+void br2_st16p(uint32_t cell, uint16_t v) { br2_st16(*(uint32_t *)guest_at(cell), v); }
+#if defined(__GNUC__) || defined(__clang__)
+__attribute__((weak))
+#endif
+void br2_st32p(uint32_t cell, uint32_t v) { br2_st32(*(uint32_t *)guest_at(cell), v); }

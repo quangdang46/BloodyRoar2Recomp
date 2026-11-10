@@ -20,6 +20,12 @@
 
 extern uint8_t *memory_get_ram_ptr(void);
 extern uint8_t *memory_get_scratchpad_ptr(void);
+extern uint8_t  psx_read_byte(uint32_t addr);
+extern uint16_t psx_read_half(uint32_t addr);
+extern uint32_t psx_read_word(uint32_t addr);
+extern void     psx_write_byte(uint32_t addr, uint8_t val);
+extern void     psx_write_half(uint32_t addr, uint16_t val);
+extern void     psx_write_word(uint32_t addr, uint32_t val);
 
 #define BR2_RAM_SIZE        (2u * 1024u * 1024u)
 #define BR2_SCRATCH_BASE    0x1F800000u
@@ -70,6 +76,38 @@ uint32_t guest_of(const void *p)
         return BR2_SCRATCH_BASE | (uint32_t)(b - spad);
     return 0;
 }
+
+/* ── MMIO-aware accessors ─────────────────────────────────────────────────
+ * guest_at() can only back RAM and scratchpad with real pointers; every
+ * other guest address (0x1F800400.. up — CD/GPU/DMA/timer/SIO/SPU regs,
+ * BIOS ROM, open bus) must go through the runtime's load/store path so the
+ * device model sees the access. The br2_ldN / br2_stN helpers pick the
+ * fast pointer path for direct-mappable addresses and psx_read_* /
+ * psx_write_* otherwise.
+ * The *p variants resolve a pointer cell first (the cell itself is always
+ * RAM), matching the DB8P/DB16P/DB32P macro contract. */
+static int br2_addr_direct(uint32_t addr)
+{
+    uint32_t phys = addr & 0x1FFFFFFFu;
+    if (phys < 0x00800000u) phys &= (BR2_RAM_SIZE - 1u);
+    if (phys <= BR2_RAM_SIZE) return 1;
+    if (phys >= BR2_SCRATCH_BASE && phys < BR2_SCRATCH_BASE + BR2_SCRATCH_SIZE) return 1;
+    return 0;
+}
+
+uint8_t  br2_ld8 (uint32_t a) { return br2_addr_direct(a) ? *(uint8_t  *)guest_at(a) : psx_read_byte(a); }
+uint16_t br2_ld16(uint32_t a) { return br2_addr_direct(a) ? *(uint16_t *)guest_at(a) : psx_read_half(a); }
+uint32_t br2_ld32(uint32_t a) { return br2_addr_direct(a) ? *(uint32_t *)guest_at(a) : psx_read_word(a); }
+void br2_st8 (uint32_t a, uint8_t  v) { if (br2_addr_direct(a)) *(uint8_t  *)guest_at(a) = v; else psx_write_byte(a, v); }
+void br2_st16(uint32_t a, uint16_t v) { if (br2_addr_direct(a)) *(uint16_t *)guest_at(a) = v; else psx_write_half(a, v); }
+void br2_st32(uint32_t a, uint32_t v) { if (br2_addr_direct(a)) *(uint32_t *)guest_at(a) = v; else psx_write_word(a, v); }
+
+uint8_t  br2_ld8p (uint32_t cell) { return br2_ld8 (*(uint32_t *)guest_at(cell)); }
+uint16_t br2_ld16p(uint32_t cell) { return br2_ld16(*(uint32_t *)guest_at(cell)); }
+uint32_t br2_ld32p(uint32_t cell) { return br2_ld32(*(uint32_t *)guest_at(cell)); }
+void br2_st8p (uint32_t cell, uint8_t  v) { br2_st8 (*(uint32_t *)guest_at(cell), v); }
+void br2_st16p(uint32_t cell, uint16_t v) { br2_st16(*(uint32_t *)guest_at(cell), v); }
+void br2_st32p(uint32_t cell, uint32_t v) { br2_st32(*(uint32_t *)guest_at(cell), v); }
 
 /* ── BIOS service bridge ──────────────────────────────────────────────────
  * game/ ports express BIOS kernel calls as bios_svc(table, svc, a0, a1)
@@ -299,6 +337,17 @@ uint32_t br2_call_generated(uint32_t fn, uint32_t a0, uint32_t a1,
     cpu->gpr[16] = s0; cpu->gpr[17] = s1;
     cpu->gpr[18] = s2; cpu->gpr[19] = s3;
     return cpu->gpr[2];
+}
+
+/* gpu_invoke — libgpu syscall gateway. gfx.c/cd.c resolve entries in the
+ * game's GPU function table (guest addrs of the libgpu impls: DrawOTag,
+ * LoadImage, ClearImage, ...) and hand them here with a0-a3. This is a
+ * normal guest `jal` with four args, so run the target through the same
+ * nested-dispatch contract as br2_call_generated and return $v0. The weak
+ * no-op in game/bind.c only applies to the standalone selftest arena. */
+uint32_t gpu_invoke(uint32_t fn, uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
+{
+    return br2_call_generated(fn, a0, a1, a2, a3);
 }
 
 /* Kernel syscall wrappers — guest 0x8018E300 = `li a0,1; syscall 0`
