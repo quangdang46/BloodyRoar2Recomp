@@ -57,6 +57,22 @@ extern void     br2_st16(uint32_t a, uint16_t v);
 extern void     br2_st32(uint32_t a, uint32_t v);
 extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 
+/* MMIO register-block accessors. The pointer cells 0x801bdeb0,
+ * 0x801bdec0 and 0x801bdec4 resolve to HARDWARE addresses — the SPU
+ * register file (0x1F801C00+), DPCR (0x1F8010F0) and 0x1F801014.
+ * guest_at() can only back RAM/scratchpad; an MMIO address lands in the
+ * open-bus mirror so the access never reaches the device (the same
+ * mistranslation class as the GPU/DMA pointer cells fixed earlier).
+ * Every register-block access must go through br2_ldN/br2_stN on the
+ * resolved guest address. idx is the u16 index the original b[idx]
+ * accesses used (byte offset = idx*2). */
+#define CDMMIO16(base, idx)        br2_ld16((base) + ((uint32_t)(idx) << 1))
+#define CDMMIO16_ST(base, idx, v)  \
+    br2_st16((base) + ((uint32_t)(idx) << 1), (uint16_t)(v))
+#define CDMMIO32(base, idx)        br2_ld32((base) + ((uint32_t)(idx) << 2))
+#define CDMMIO32_ST(base, idx, v)  \
+    br2_st32((base) + ((uint32_t)(idx) << 2), (uint32_t)(v))
+
 /* ---- guest globals ---- */
 extern uint8_t  *g_DAT_801bc7b4;
 extern uint8_t  *g_DAT_801bcb80;
@@ -325,7 +341,13 @@ uint cd_timer_read(int param_1)
     uVar3 = br2_ld32(t2a);
     vsync_wait_n(DB32(0x801bdde0) + 1,1);
     if (((uVar3 & 0x400000) != 0) && (-1 < (int)(uVar3 ^ br2_ld32(t2a)))) {
+      /* GPUSTAT.LCF (bit31) toggles once per VBlank field, and VBlank is
+       * driven by the guest-cycle clock — the original MIPS spin consumed
+       * cycles per iteration; this clean-C loop must charge them via
+       * br2_irq_poll or LCF can never flip (same contract as every other
+       * busy-wait in this file). */
       do {
+        br2_irq_poll();
       } while (((uVar3 ^ br2_ld32(t2a)) & 0x80000000) == 0);
     }
     DB32(0x801bccb4) = DB32(0x801bdde0);
@@ -1832,24 +1854,20 @@ void cd_chan_flags_to_dir(uint32_t a0)
 {
   uint8_t *b = (uint8_t *)guest_at(a0);
   uint32_t a1;
-  uint16_t *base;
+  uint32_t base;
   int lo;
   if (b == NULL) return;
   a1 = *(uint32_t *)b;
   lo = (int32_t)a1 < 1;
   if (lo || (a1 & 2)) {
-    base = (uint16_t *)guest_at(*(uint32_t *)guest_at(0x801bdeb0));
-    if (base) {
-      base[0xc2] = *(uint16_t *)(b + 8);          /* +0x184 */
-      *(uint16_t *)guest_at(0x801bde58) = *(uint16_t *)(b + 8);
-    }
+    base = *(uint32_t *)guest_at(0x801bdeb0);
+    CDMMIO16_ST(base,0xc2,*(uint16_t *)(b + 8));      /* +0x184 */
+    *(uint16_t *)guest_at(0x801bde58) = *(uint16_t *)(b + 8);
   }
   if (!lo && (a1 & 4)) {
-    base = (uint16_t *)guest_at(*(uint32_t *)guest_at(0x801bdeb0));
-    if (base) {
-      base[0xc3] = *(uint16_t *)(b + 0xa);        /* +0x186 */
-      *(uint16_t *)guest_at(0x801bde5a) = *(uint16_t *)(b + 0xa);
-    }
+    base = *(uint32_t *)guest_at(0x801bdeb0);
+    CDMMIO16_ST(base,0xc3,*(uint16_t *)(b + 0xa));    /* +0x186 */
+    *(uint16_t *)guest_at(0x801bde5a) = *(uint16_t *)(b + 0xa);
   }
 }
 
@@ -1916,7 +1934,7 @@ int32_t cd_channel_poll(uint32_t *param_1, uint32_t *param_2)
 extern int32_t cd_range_table_member(uint32_t);
 int32_t cd_chan_mode_set(uint32_t mode)
 {
-  uint8_t *v1;
+  uint32_t blk;
   uint16_t v0;
   if (mode == 0 || mode == 1) {
     int do_set = 0;
@@ -1926,14 +1944,14 @@ int32_t cd_chan_mode_set(uint32_t mode)
       if (*(uint32_t *)guest_at(0x801bde48) == 1) do_set = 1;
       else if (cd_range_table_member(*(uint32_t *)guest_at(0x801bde4c)) == 0) do_set = 1;
     }
-    v1 = (uint8_t *)guest_at(*(uint32_t *)guest_at(0x801bdeb0));
-    v0 = *(uint16_t *)(v1 + 0x1aa);
+    blk = *(uint32_t *)guest_at(0x801bdeb0);
+    v0 = CDMMIO16(blk,0xd5);                    /* +0x1aa */
     if (do_set) {
       *(uint32_t *)guest_at(0x801bde44) = 1;
-      *(uint16_t *)(v1 + 0x1aa) = (uint16_t)(v0 | 0x80);
+      CDMMIO16_ST(blk,0xd5,(uint16_t)(v0 | 0x80));
     } else {
       *(uint32_t *)guest_at(0x801bde44) = 0;
-      *(uint16_t *)(v1 + 0x1aa) = (uint16_t)(v0 & 0xff7f);
+      CDMMIO16_ST(blk,0xd5,(uint16_t)(v0 & 0xff7f));
     }
   }
   return (int32_t)*(uint32_t *)guest_at(0x801bde44);
@@ -2230,7 +2248,7 @@ int32_t cd_reg_indexed_rw(int32_t a0,uint32_t a1)
   a3 = a1 >> (CDREG32(0x801bded8) & 31);   /* srlv: sa&31 */
   if (a0 == -2) return (int32_t)a1;
   if (a0 == -1) return (int32_t)(a3 & 0xffff);
-  ((uint16_t *)guest_at(CDREG32(0x801bdeb0)))[a0] = (uint16_t)a3;
+  CDMMIO16_ST(CDREG32(0x801bdeb0),(uint32_t)a0,(uint16_t)a3);
   return (int32_t)a1;                      /* v0=a1 set in delay slot */
 }
 
@@ -2241,8 +2259,8 @@ int32_t cd_reg_indexed_rw(int32_t a0,uint32_t a1)
  * Disasm 0x8019d220-0x8019d3d8. */
 void cd_reg_window_u16(int32_t a0,uint32_t a1)
 {
-  uint32_t a2;
-  uint16_t *r, *b;
+  uint32_t a2, blk;
+  uint16_t *r;
   a1 &= 0x00ffffff;
   a2 = a1 >> 16;
   if (CDREG32(0x801bde9c) & 1) {
@@ -2264,14 +2282,14 @@ void cd_reg_window_u16(int32_t a0,uint32_t a1)
     }
     return;
   }
-  b = (uint16_t *)guest_at(CDREG32(0x801bdeb0));
+  blk = CDREG32(0x801bdeb0);
   if (a0 == 1) {
-    b[0xc4] = (uint16_t)a1;               /* +0x188 */
-    b[0xc5] = (uint16_t)a2;               /* +0x18a */
+    CDMMIO16_ST(blk,0xc4,(uint16_t)a1);    /* +0x188 */
+    CDMMIO16_ST(blk,0xc5,(uint16_t)a2);    /* +0x18a */
     CDREG32(0x801bde3c) |= a1;
   } else if (a0 == 0) {
-    b[0xc6] = (uint16_t)a1;               /* +0x18c */
-    b[0xc7] = (uint16_t)a2;               /* +0x18e */
+    CDMMIO16_ST(blk,0xc6,(uint16_t)a1);    /* +0x18c */
+    CDMMIO16_ST(blk,0xc7,(uint16_t)a2);    /* +0x18e */
     CDREG32(0x801bde3c) &= ~a1;
   }
 }
@@ -2288,7 +2306,7 @@ void cd_chan_attr_apply(uint32_t a0)
   static const uint32_t jt_mag[8] = {
     0,0x8000,0x9000,0xa000,0xb000,0xc000,0xd000,0xe000 };
   uint8_t *p = (uint8_t *)guest_at(a0);
-  uint16_t *b;
+  uint32_t blk;
   uint32_t t1 = *(uint32_t *)p;
   int t2 = (t1 < 1u);
   uint32_t a1, a2, v0;
@@ -2312,8 +2330,8 @@ void cd_chan_attr_apply(uint32_t a0)
       a2 = *(uint16_t *)(p + 4);
     }
     v0 = a2 & 0x7fff;
-    b = (uint16_t *)guest_at(CDREG32(0x801bdeb0));
-    b[0xc0] = (uint16_t)(v0 | a1);
+    blk = CDREG32(0x801bdeb0);
+    CDMMIO16_ST(blk,0xc0,(uint16_t)(v0 | a1));
   }
 
   /* ---- channel 2 -> +0x182 ---- */
@@ -2333,48 +2351,48 @@ void cd_chan_attr_apply(uint32_t a0)
       a2 = *(uint16_t *)(p + 6);
     }
     v0 = a2 & 0x7fff;
-    b = (uint16_t *)guest_at(CDREG32(0x801bdeb0));
-    b[0xc1] = (uint16_t)(v0 | a1);
+    blk = CDREG32(0x801bdeb0);
+    CDMMIO16_ST(blk,0xc1,(uint16_t)(v0 | a1));
   }
 
   /* ---- simple u16 field copies ---- */
   if (t2 || (t1 & 0x40)) {
-    b = (uint16_t *)guest_at(CDREG32(0x801bdeb0));
-    b[0xd8] = *(uint16_t *)(p + 0x10);
+    blk = CDREG32(0x801bdeb0);
+    CDMMIO16_ST(blk,0xd8,*(uint16_t *)(p + 0x10));
   }
   if (t2 || (t1 & 0x80)) {
-    b = (uint16_t *)guest_at(CDREG32(0x801bdeb0));
-    b[0xd9] = *(uint16_t *)(p + 0x12);
+    blk = CDREG32(0x801bdeb0);
+    CDMMIO16_ST(blk,0xd9,*(uint16_t *)(p + 0x12));
   }
   if (t2 || (t1 & 0x400)) {
-    b = (uint16_t *)guest_at(CDREG32(0x801bdeb0));
-    b[0xda] = *(uint16_t *)(p + 0x1c);
+    blk = CDREG32(0x801bdeb0);
+    CDMMIO16_ST(blk,0xda,*(uint16_t *)(p + 0x1c));
   }
   if (t2 || (t1 & 0x800)) {
-    b = (uint16_t *)guest_at(CDREG32(0x801bdeb0));
-    b[0xdb] = *(uint16_t *)(p + 0x1e);
+    blk = CDREG32(0x801bdeb0);
+    CDMMIO16_ST(blk,0xdb,*(uint16_t *)(p + 0x1e));
   }
 
   /* ---- +0x1aa bit ops driven by u32 fields ---- */
   if (t2 || (t1 & 0x100)) {
-    b = (uint16_t *)guest_at(CDREG32(0x801bdeb0));
-    if (*(uint32_t *)(p + 0x14) == 0) b[0xd5] = (uint16_t)(b[0xd5] & ~4u);
-    else                            b[0xd5] = (uint16_t)(b[0xd5] | 4);
+    blk = CDREG32(0x801bdeb0);
+    if (*(uint32_t *)(p + 0x14) == 0) CDMMIO16_ST(blk,0xd5,(uint16_t)(CDMMIO16(blk,0xd5) & ~4u));
+    else                            CDMMIO16_ST(blk,0xd5,(uint16_t)(CDMMIO16(blk,0xd5) | 4));
   }
   if (t2 || (t1 & 0x200)) {
-    b = (uint16_t *)guest_at(CDREG32(0x801bdeb0));
-    if (*(uint32_t *)(p + 0x18) == 0) b[0xd5] = (uint16_t)(b[0xd5] & ~1u);
-    else                            b[0xd5] = (uint16_t)(b[0xd5] | 1);
+    blk = CDREG32(0x801bdeb0);
+    if (*(uint32_t *)(p + 0x18) == 0) CDMMIO16_ST(blk,0xd5,(uint16_t)(CDMMIO16(blk,0xd5) & ~1u));
+    else                            CDMMIO16_ST(blk,0xd5,(uint16_t)(CDMMIO16(blk,0xd5) | 1));
   }
   if (t2 || (t1 & 0x1000)) {
-    b = (uint16_t *)guest_at(CDREG32(0x801bdeb0));
-    if (*(uint32_t *)(p + 0x20) == 0) b[0xd5] = (uint16_t)(b[0xd5] & ~8u);
-    else                            b[0xd5] = (uint16_t)(b[0xd5] | 8);
+    blk = CDREG32(0x801bdeb0);
+    if (*(uint32_t *)(p + 0x20) == 0) CDMMIO16_ST(blk,0xd5,(uint16_t)(CDMMIO16(blk,0xd5) & ~8u));
+    else                            CDMMIO16_ST(blk,0xd5,(uint16_t)(CDMMIO16(blk,0xd5) | 8));
   }
   if (t2 || (t1 & 0x2000)) {
-    b = (uint16_t *)guest_at(CDREG32(0x801bdeb0));
-    if (*(uint32_t *)(p + 0x24) == 0) b[0xd5] = (uint16_t)(b[0xd5] & ~2u);
-    else                            b[0xd5] = (uint16_t)(b[0xd5] | 2);
+    blk = CDREG32(0x801bdeb0);
+    if (*(uint32_t *)(p + 0x24) == 0) CDMMIO16_ST(blk,0xd5,(uint16_t)(CDMMIO16(blk,0xd5) & ~2u));
+    else                            CDMMIO16_ST(blk,0xd5,(uint16_t)(CDMMIO16(blk,0xd5) | 2));
   }
 }
 
@@ -2390,7 +2408,7 @@ void cd_chan_attr_push(uint32_t a0)
   static const uint32_t jt_dad[7] = {
     0x8000,0x9000,0xa000,0xb000,0xc000,0xd000,0xe000 };
   uint8_t *p = (uint8_t *)guest_at(a0);
-  uint16_t *E;
+  uint32_t E;
   uint16_t *S;
   uint32_t s1 = *(uint32_t *)(p + 4);
   int s2 = (s1 < 1u);
@@ -2401,12 +2419,11 @@ void cd_chan_attr_push(uint32_t a0)
     if ((*(uint32_t *)p & (1u << s4)) == 0) continue;
     {
       uint32_t s3 = (uint32_t)s4 << 3;
-      E = (uint16_t *)((uint8_t *)guest_at(CDREG32(0x801bdeb0))
-                       + s4 * 0x10);
+      E = CDREG32(0x801bdeb0) + s4 * 0x10;
       S = (uint16_t *)guest_at(0x801bde6c + s4 * 2);
 
       /* +0x10 mask: entry[2] = p.u16[+0x14] */
-      if (s2 || (s1 & 0x10)) E[2] = *(uint16_t *)(p + 0x14);
+      if (s2 || (s1 & 0x10)) CDMMIO16_ST(E,2,*(uint16_t *)(p + 0x14));
 
       /* +0x40 mask: scratch = p.u16[+0x18] */
       if (s2 || (s1 & 0x40)) *S = *(uint16_t *)(p + 0x18);
@@ -2417,10 +2434,10 @@ void cd_chan_attr_push(uint32_t a0)
         uint16_t sv = *S, pv = *(uint16_t *)(p + 0x16);
         uint32_t r = (uint32_t)cd_curve_lookup(sv >> 8, sv & 0xff,
                                              pv >> 8, pv & 0xff);
-        E[2] = (uint16_t)r;
+        CDMMIO16_ST(E,2,(uint16_t)r);
       }
 
-      /* +0x1 mask: channel A -> E[0] */
+      /* +0x1 mask: channel A -> CDMMIO16(E,0) */
       if (s2 || (s1 & 1)) {
         uint32_t mc = 0;
         a1 = *(uint16_t *)(p + 8) & 0x7fff;
@@ -2433,10 +2450,10 @@ void cd_chan_attr_push(uint32_t a0)
           if (w >= 0x80) a1 = 0x7f;
           else if (w < 0) a1 = 0;
         }
-        E[0] = (uint16_t)(a1 | mc);
+        CDMMIO16_ST(E,0,(uint16_t)(a1 | mc));
       }
 
-      /* +0x2 mask: channel B -> E[1] */
+      /* +0x2 mask: channel B -> CDMMIO16(E,1) */
       if (s2 || (s1 & 2)) {
         uint32_t mc = 0;
         a1 = *(uint16_t *)(p + 0xa) & 0x7fff;
@@ -2449,7 +2466,7 @@ void cd_chan_attr_push(uint32_t a0)
           if (w >= 0x80) a1 = 0x7f;
           else if (w < 0) a1 = 0;
         }
-        E[1] = (uint16_t)(a1 | mc);
+        CDMMIO16_ST(E,1,(uint16_t)(a1 | mc));
       }
 
       /* +0x80 mask: cd_reg_indexed_rw(s3|3, p.u32[+0x1c]) */
@@ -2460,13 +2477,13 @@ void cd_chan_attr_push(uint32_t a0)
       if (s2 || (s1 & 1))
         cd_reg_indexed_rw((int32_t)(s3 | 7), *(uint32_t *)(p + 0x20));
 
-      /* +0x2 mask: E[4] = p.u16[+0x3a] */
-      if (s2 || (s1 & 2)) E[4] = *(uint16_t *)(p + 0x3a);
+      /* +0x2 mask: CDMMIO16_ST(E,4,p.u16[+0x3a] */
+      if (s2 || (s1 & 2)) CDMMIO16_ST(E,4,*(uint16_t *)(p + 0x3a));
 
-      /* +0x4 mask: E[5] = p.u16[+0x3c] */
-      if (s2 || (s1 & 4)) E[5] = *(uint16_t *)(p + 0x3c);
+      /* +0x4 mask: CDMMIO16_ST(E,5,p.u16[+0x3c] */
+      if (s2 || (s1 & 4)) CDMMIO16_ST(E,5,*(uint16_t *)(p + 0x3c));
 
-      /* +0x800 mask: E[4] hi byte fields */
+      /* +0x800 mask: CDMMIO16(E,4) hi byte fields */
       if (s2 || (s1 & 0x800)) {
         a1 = *(uint16_t *)(p + 0x30);
         if (a1 >= 0x80) a1 = 0x7f;
@@ -2474,19 +2491,19 @@ void cd_chan_attr_push(uint32_t a0)
         if (s2 || (s1 & 0x100)) {
           if (*(uint32_t *)(p + 0x24) == 5) a2 = 0x80;
         }
-        v0 = E[4];
-        E[4] = (uint16_t)((v0 & 0xff) | ((a1 | a2) << 8));
+        v0 = CDMMIO16(E,4);
+        CDMMIO16_ST(E,4,(uint16_t)((v0 & 0xff) | ((a1 | a2) << 8)));
       }
 
-      /* +0x1000 mask: E[4] bits 4-7 */
+      /* +0x1000 mask: CDMMIO16(E,4) bits 4-7 */
       if (s2 || (s1 & 0x1000)) {
         a1 = *(uint16_t *)(p + 0x32);
         if (a1 >= 0x10) a1 = 0xf;
-        v0 = E[4];
-        E[4] = (uint16_t)((v0 & 0xff0f) | (a1 << 4));
+        v0 = CDMMIO16(E,4);
+        CDMMIO16_ST(E,4,(uint16_t)((v0 & 0xff0f) | (a1 << 4)));
       }
 
-      /* +0x2000 mask: E[5] bits 6-15 */
+      /* +0x2000 mask: CDMMIO16(E,5) bits 6-15 */
       if (s2 || (s1 & 0x2000)) {
         a1 = *(uint16_t *)(p + 0x34);
         if (a1 >= 0x80) a1 = 0x7f;
@@ -2497,11 +2514,11 @@ void cd_chan_attr_push(uint32_t a0)
           else if (v1 < 6) { if (v1 == 1) a2 = 0; }
           else if (v1 == 7) a2 = 0x300;
         }
-        v0 = E[5];
-        E[5] = (uint16_t)((v0 & 0x3f) | ((a1 | a2) << 6));
+        v0 = CDMMIO16(E,5);
+        CDMMIO16_ST(E,5,(uint16_t)((v0 & 0x3f) | ((a1 | a2) << 6)));
       }
 
-      /* +0x4000 mask: E[5] bits 5-9 */
+      /* +0x4000 mask: CDMMIO16(E,5) bits 5-9 */
       if (s2 || (s1 & 0x4000)) {
         a1 = *(uint16_t *)(p + 0x36);
         if (a1 >= 0x20) a1 = 0x1f;
@@ -2510,16 +2527,16 @@ void cd_chan_attr_push(uint32_t a0)
           v1 = *(uint32_t *)(p + 0x2c);
           if (v1 == 7) a2 = 0x20;   /* v1==3 also lands here with a2=0 */
         }
-        v0 = E[5];
-        E[5] = (uint16_t)((v0 & 0xffc0) | (a1 | a2));
+        v0 = CDMMIO16(E,5);
+        CDMMIO16_ST(E,5,(uint16_t)((v0 & 0xffc0) | (a1 | a2)));
       }
 
-      /* +0x8000 mask: E[4] low nibble */
+      /* +0x8000 mask: CDMMIO16(E,4) low nibble */
       if (s2 || (s1 & 0x8000)) {
         a1 = *(uint16_t *)(p + 0x38);
         if (a1 >= 0x10) a1 = 0xf;
-        v0 = E[4];
-        E[4] = (uint16_t)((v0 & 0xfff0) | a1);
+        v0 = CDMMIO16(E,4);
+        CDMMIO16_ST(E,4,(uint16_t)((v0 & 0xfff0) | a1));
       }
     }
   }
@@ -2712,21 +2729,27 @@ done:
  * Disasm 0x8019b3a0-0x8019b61c. */
 void cd_chan_reg_init(int32_t param_1)
 {
-  uint16_t *b;
+  uint32_t blk;
   uint32_t i, v1;
   int s0 = param_1;
 
-  *(uint32_t *)guest_at(CDREG32(0x801bdec0)) |= 0xb0000;
+  {
+    /* DPCR |= 0xB0000 — enables the channel-4 (SPU stream) DMA. The
+     * pointer cell resolves to 0x1F8010F0 (MMIO); must RMW through
+     * br2 accessors, not guest_at (open-bus mirror). */
+    uint32_t dpcr = CDREG32(0x801bdec0);
+    br2_st32(dpcr, br2_ld32(dpcr) | 0xb0000u);
+  }
   CDREG32(0x801bdecc) = 0;
   CDREG32(0x801bddd0) = 0;
   CDREG16(0x801bdec8) = 0;
-  b = (uint16_t *)guest_at(CDREG32(0x801bdeb0));
-  b[0xc0] = 0; b[0xc1] = 0; b[0xd5] = 0;
+  blk = CDREG32(0x801bdeb0);
+  CDMMIO16_ST(blk,0xc0,0); CDMMIO16_ST(blk,0xc1,0); CDMMIO16_ST(blk,0xd5,0);
   cd_delay_3c();
-  b = (uint16_t *)guest_at(CDREG32(0x801bdeb0));
-  b[0xc0] = 0; b[0xc1] = 0;
+  blk = CDREG32(0x801bdeb0);
+  CDMMIO16_ST(blk,0xc0,0); CDMMIO16_ST(blk,0xc1,0);
   v1 = 0;
-  if ((b[0xd7] & 0x7ff) != 0) {
+  if ((CDMMIO16(blk,0xd7) & 0x7ff) != 0) {
     for (;;) {
       v1++;
       if (v1 >= 0xf01) {
@@ -2734,19 +2757,19 @@ void cd_chan_reg_init(int32_t param_1)
                      (const char *)guest_at(0x80125bf8));
         break;
       }
-      b = (uint16_t *)guest_at(CDREG32(0x801bdeb0));
-      if ((b[0xd7] & 0x7ff) == 0) break;
+      blk = CDREG32(0x801bdeb0);
+      if ((CDMMIO16(blk,0xd7) & 0x7ff) == 0) break;
     }
   }
   CDREG32(0x801bded4) = 2;
   CDREG32(0x801bded8) = 3;
   CDREG32(0x801bdedc) = 8;
   CDREG32(0x801bdee0) = 7;
-  b = (uint16_t *)guest_at(CDREG32(0x801bdeb0));
-  b[0xd6] = 4;                            /* +0x1ac */
-  b[0xc2] = 0; b[0xc3] = 0;               /* +0x184,+0x186 */
-  b[0xc6] = 0xffff; b[0xc7] = 0xffff;     /* +0x18c,+0x18e */
-  b[0xcc] = 0; b[0xcd] = 0;               /* +0x198,+0x19a */
+  blk = CDREG32(0x801bdeb0);
+  CDMMIO16_ST(blk,0xd6,4);                            /* +0x1ac */
+  CDMMIO16_ST(blk,0xc2,0); CDMMIO16_ST(blk,0xc3,0);               /* +0x184,+0x186 */
+  CDMMIO16_ST(blk,0xc6,0xffff); CDMMIO16_ST(blk,0xc7,0xffff);     /* +0x18c,+0x18e */
+  CDMMIO16_ST(blk,0xcc,0); CDMMIO16_ST(blk,0xcd,0);               /* +0x198,+0x19a */
   {
     uint16_t *z = (uint16_t *)guest_at(0x801feb70);
     for (i = 0; i < 10; i++) z[i] = 0;
@@ -2755,27 +2778,27 @@ void cd_chan_reg_init(int32_t param_1)
 
   /* ---- arg==0: full channel-block init ---- */
   CDREG16(0x801bdec8) = 0x200;
-  b = (uint16_t *)guest_at(CDREG32(0x801bdeb0));
-  b[0xc8] = 0; b[0xc9] = 0; b[0xca] = 0; b[0xcb] = 0;
-  b[0xd8] = 0; b[0xd9] = 0; b[0xda] = 0; b[0xdb] = 0;
+  blk = CDREG32(0x801bdeb0);
+  CDMMIO16_ST(blk,0xc8,0); CDMMIO16_ST(blk,0xc9,0); CDMMIO16_ST(blk,0xca,0); CDMMIO16_ST(blk,0xcb,0);
+  CDMMIO16_ST(blk,0xd8,0); CDMMIO16_ST(blk,0xd9,0); CDMMIO16_ST(blk,0xda,0); CDMMIO16_ST(blk,0xdb,0);
   cd_reg_stream_push(0x801bdef0,0x10);
-  b = (uint16_t *)guest_at(CDREG32(0x801bdeb0));
+  blk = CDREG32(0x801bdeb0);
   for (i = 0; i < 0x18; i++) {
-    uint16_t *e = b + i * 8;              /* 0x10-byte stride */
-    e[0] = 0; e[1] = 0; e[2] = 0x3fff;
-    e[3] = 0x200; e[4] = 0; e[5] = 0;
+    uint32_t e = blk + i * 0x10;          /* 0x10-byte stride */
+    CDMMIO16_ST(e,0,0); CDMMIO16_ST(e,1,0); CDMMIO16_ST(e,2,0x3fff);
+    CDMMIO16_ST(e,3,0x200); CDMMIO16_ST(e,4,0); CDMMIO16_ST(e,5,0);
   }
-  b = (uint16_t *)guest_at(CDREG32(0x801bdeb0));
-  b[0xc4] = 0xffff; b[0xc5] = 0xff;       /* +0x188,+0x18a */
+  blk = CDREG32(0x801bdeb0);
+  CDMMIO16_ST(blk,0xc4,0xffff); CDMMIO16_ST(blk,0xc5,0xff);       /* +0x188,+0x18a */
   cd_delay_3c(); cd_delay_3c(); cd_delay_3c(); cd_delay_3c();
-  b = (uint16_t *)guest_at(CDREG32(0x801bdeb0));
-  b[0xc6] = 0xffff; b[0xc7] = 0xff;       /* +0x18c,+0x18e */
+  blk = CDREG32(0x801bdeb0);
+  CDMMIO16_ST(blk,0xc6,0xffff); CDMMIO16_ST(blk,0xc7,0xff);       /* +0x18c,+0x18e */
   cd_delay_3c(); cd_delay_3c(); cd_delay_3c(); cd_delay_3c();
 
 tail:
-  b = (uint16_t *)guest_at(CDREG32(0x801bdeb0));
+  blk = CDREG32(0x801bdeb0);
   CDREG32(0x801bdee4) = 1;
-  b[0xd5] = 0xc000;                       /* +0x1aa */
+  CDMMIO16_ST(blk,0xd5,0xc000);                       /* +0x1aa */
   CDREG32(0x801bdee8) = 0;
   CDREG32(0x801bdeec) = 0;
 }
@@ -2790,48 +2813,49 @@ uint32_t cd_reg_window_rmw(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
 {
   uint32_t t1 = a0, t0 = a1;
   int alt = (int)(CDREG32(0x801bde9c) & 1);
-  uint16_t *base = alt ? (uint16_t *)guest_at(0x801fe9e8)
-                       : (uint16_t *)guest_at(CDREG32(0x801bdeb0));
-  uint32_t v1 = base[a3] & 0xff;
-  uint32_t v0 = base[a2];
+  /* base is a guest ADDRESS (RAM shadow 0x801fe9e8 or the MMIO reg
+   * block); br2_ld16/st16 route each access to RAM or the device. */
+  uint32_t base = alt ? 0x801fe9e8u : CDREG32(0x801bdeb0);
+  uint32_t v1 = br2_ld16(base + (a3 << 1)) & 0xff;
+  uint32_t v0 = br2_ld16(base + (a2 << 1));
   uint32_t t2 = (v1 << 16) | v0;
   uint32_t hb = (t0 >> 16) & 0xff;
   int32_t sh;
 
   if (t1 == 1) {                            /* OR */
     if (alt) {
-      base[a2] = (uint16_t)(base[a2] | t0);
-      base[a3] = (uint16_t)(base[a3] | hb);
+      br2_st16(base + (a2 << 1), (uint16_t)(br2_ld16(base + (a2 << 1)) | t0));
+      br2_st16(base + (a3 << 1), (uint16_t)(br2_ld16(base + (a3 << 1)) | hb));
       sh = ((int32_t)(a2 - 0xc6)) >> 1;
       CDREG32(0x801bde68) |= 1u << (sh & 31);
     } else {
-      base[a2] = (uint16_t)(base[a2] | t0);
-      base[a3] = (uint16_t)(base[a3] | hb);
+      br2_st16(base + (a2 << 1), (uint16_t)(br2_ld16(base + (a2 << 1)) | t0));
+      br2_st16(base + (a3 << 1), (uint16_t)(br2_ld16(base + (a3 << 1)) | hb));
     }
     t2 |= t0;
     return t2;
   }
   if (t1 < 2) {                            /* AND-NOT (t1==0) */
     if (alt) {
-      base[a2] = (uint16_t)(base[a2] & ~t0);
-      base[a3] = (uint16_t)(base[a3] & ~(uint32_t)hb);
+      br2_st16(base + (a2 << 1), (uint16_t)(br2_ld16(base + (a2 << 1)) & ~t0));
+      br2_st16(base + (a3 << 1), (uint16_t)(br2_ld16(base + (a3 << 1)) & ~(uint32_t)hb));
       sh = ((int32_t)(a2 - 0xc6)) >> 1;
       CDREG32(0x801bde68) |= 1u << (sh & 31);
     } else {
-      base[a2] = (uint16_t)(base[a2] & ~t0);
-      base[a3] = (uint16_t)(base[a3] & ~(uint32_t)hb);
+      br2_st16(base + (a2 << 1), (uint16_t)(br2_ld16(base + (a2 << 1)) & ~t0));
+      br2_st16(base + (a3 << 1), (uint16_t)(br2_ld16(base + (a3 << 1)) & ~(uint32_t)hb));
     }
     return t2 & ~t0;
   }
   if (t1 == 8) {                            /* STORE */
     if (alt) {
-      base[a2] = (uint16_t)t0;
-      base[a3] = (uint16_t)hb;
+      br2_st16(base + (a2 << 1), (uint16_t)t0);
+      br2_st16(base + (a3 << 1), (uint16_t)hb);
       sh = ((int32_t)(a2 - 0xc6)) >> 1;
       CDREG32(0x801bde68) |= 1u << (sh & 31);
     } else {
-      base[a2] = (uint16_t)t0;
-      base[a3] = (uint16_t)hb;
+      br2_st16(base + (a2 << 1), (uint16_t)t0);
+      br2_st16(base + (a3 << 1), (uint16_t)hb);
     }
     return t0;
   }
@@ -2949,20 +2973,20 @@ int32_t cd_chan_mode_apply(uint32_t a0)
 
   /* ---- s4: mode-active path clears fields; else flag stores ---- */
   {
-    uint16_t *gb = (uint16_t *)guest_at(CDREG32(0x801bdeb0));
+    uint32_t gmb = CDREG32(0x801bdeb0);
     if (s4 != 0) {
-      s7 = (gb[0xd5] >> 7) & 1;
-      if (s7) gb[0xd5] = (uint16_t)(gb[0xd5] & 0xff7f);
-      gb[0xc2] = 0; gb[0xc3] = 0;
+      s7 = (CDMMIO16(gmb,0xd5) >> 7) & 1;
+      if (s7) CDMMIO16_ST(gmb,0xd5,(uint16_t)(CDMMIO16(gmb,0xd5) & 0xff7f));
+      CDMMIO16_ST(gmb,0xc2,0); CDMMIO16_ST(gmb,0xc3,0);
       *(uint16_t *)guest_at(0x801bde58) = 0;
       *(uint16_t *)guest_at(0x801bde5a) = 0;
     } else {
       if (s5 || (s3 & 2)) {
-        gb[0xc2] = *(uint16_t *)(blk + 8);
+        CDMMIO16_ST(gmb,0xc2,*(uint16_t *)(blk + 8));
         *(uint16_t *)guest_at(0x801bde58) = *(uint16_t *)(blk + 8);
       }
       if (s5 || (s3 & 4)) {
-        gb[0xc3] = *(uint16_t *)(blk + 0xa);
+        CDMMIO16_ST(gmb,0xc3,*(uint16_t *)(blk + 0xa));
         *(uint16_t *)guest_at(0x801bde5a) = *(uint16_t *)(blk + 0xa);
       }
     }
@@ -2972,8 +2996,8 @@ int32_t cd_chan_mode_apply(uint32_t a0)
   if (f58) cd_mode_apply_deferred(CDREG32(0x801bde54));
   if (s4) cd_u16_table_store(0xd1,CDREG32(0x801bde4c),0);
   if (s7) {
-    uint16_t *gb = (uint16_t *)guest_at(CDREG32(0x801bdeb0));
-    gb[0xd5] = (uint16_t)(gb[0xd5] | 0x80);
+    uint32_t gmb = CDREG32(0x801bdeb0);
+    CDMMIO16_ST(gmb,0xd5,(uint16_t)(CDMMIO16(gmb,0xd5) | 0x80));
   }
   return 0;
 }
@@ -3219,11 +3243,11 @@ void cd_delay_3c(void)
  * Disasm 0x8019b620-0x8019b7dc. */
 void cd_reg_stream_push(uint32_t a0,uint32_t a1)
 {
-  uint16_t *b = (uint16_t *)guest_at(CDREG32(0x801bdeb0));
+  uint32_t b = CDREG32(0x801bdeb0);
   uint32_t s1 = a1;
   uint32_t s2 = a0;
-  uint32_t s3 = b[0xd7] & 0x7ff;          /* +0x1ae, delay slot of jal */
-  b[0xd3] = CDREG16(0x801bdec8);          /* +0x1a6 <- dec8 */
+  uint32_t s3 = CDMMIO16(b,0xd7) & 0x7ff;          /* +0x1ae, delay slot of jal */
+  CDMMIO16_ST(b,0xd3,CDREG16(0x801bdec8));          /* +0x1a6 <- dec8 */
   cd_delay_3c();
   while (s1 != 0) {
     uint32_t s0 = (s1 < 0x41) ? s1 : 0x40; /* sltiu 0x41 */
@@ -3233,12 +3257,12 @@ void cd_reg_stream_push(uint32_t a0,uint32_t a1)
         uint16_t w = *(uint16_t *)guest_at(s2);
         s2 += 2;
         v1 += 2;
-        b[0xd4] = w;                      /* +0x1a8 */
+        CDMMIO16_ST(b,0xd4,w);                      /* +0x1a8 */
       } while (v1 < s0);
     }
-    b[0xd5] = (uint16_t)((b[0xd5] & 0xffcf) | 0x10);  /* +0x1aa */
+    CDMMIO16_ST(b,0xd5,(uint16_t)((CDMMIO16(b,0xd5) & 0xffcf) | 0x10));  /* +0x1aa */
     cd_delay_3c();
-    if ((b[0xd7] & 0x400) != 0) {          /* +0x1ae bit 0x400 */
+    if ((CDMMIO16(b,0xd7) & 0x400) != 0) {          /* +0x1ae bit 0x400 */
       uint32_t v1 = 0;
       for (;;) {
         v1++;
@@ -3247,17 +3271,17 @@ void cd_reg_stream_push(uint32_t a0,uint32_t a1)
                        (const char *)guest_at(0x80125c08));
           break;
         }
-        if ((b[0xd7] & 0x400) == 0) break;
+        if ((CDMMIO16(b,0xd7) & 0x400) == 0) break;
       }
     }
     cd_delay_3c();
     cd_delay_3c();
     s1 -= s0;
   }
-  b[0xd5] = (uint16_t)(b[0xd5] & 0xffcf);
+  CDMMIO16_ST(b,0xd5,(uint16_t)(CDMMIO16(b,0xd5) & 0xffcf));
   {
     uint32_t want = s3 & 0xffff;
-    if ((b[0xd7] & 0x7ff) != want) {
+    if ((CDMMIO16(b,0xd7) & 0x7ff) != want) {
       uint32_t v1 = 0;
       for (;;) {
         v1++;
@@ -3266,7 +3290,7 @@ void cd_reg_stream_push(uint32_t a0,uint32_t a1)
                        (const char *)guest_at(0x80125c1c));
           break;
         }
-        if ((b[0xd7] & 0x7ff) == want) break;
+        if ((CDMMIO16(b,0xd7) & 0x7ff) == want) break;
       }
     }
   }
@@ -3279,7 +3303,7 @@ void cd_reg_stream_push(uint32_t a0,uint32_t a1)
  * Disasm 0x8019b944-0x8019bbc0. */
 uint32_t cd_reg_window_op(uint32_t a0,uint32_t a1,uint32_t a2)
 {
-  uint16_t *b = (uint16_t *)guest_at(CDREG32(0x801bdeb0));
+  uint32_t b = CDREG32(0x801bdeb0);
   uint32_t op = a0;
   uint32_t tgt, v1;
 
@@ -3287,11 +3311,11 @@ uint32_t cd_reg_window_op(uint32_t a0,uint32_t a1,uint32_t a2)
     tgt = CDREG16(0x801bdec8);
     CDREG32(0x801bdf00) = 0;
     v1 = 0;
-    while (b[0xd3] != tgt) {              /* +0x1a6 */
+    while (CDMMIO16(b,0xd3) != tgt) {              /* +0x1a6 */
       v1++;
       if (v1 >= 0xf01) return 0xfffffffe;
     }
-    b[0xd5] = (uint16_t)((b[0xd5] & 0xffcf) | 0x20);
+    CDMMIO16_ST(b,0xd5,(uint16_t)((CDMMIO16(b,0xd5) & 0xffcf) | 0x20));
     return 0;
   }
   if ((int32_t)op < 2) {
@@ -3299,25 +3323,25 @@ uint32_t cd_reg_window_op(uint32_t a0,uint32_t a1,uint32_t a2)
     tgt = CDREG16(0x801bdec8);
     CDREG32(0x801bdf00) = a2;
     v1 = 0;
-    while (b[0xd3] != tgt) {
+    while (CDMMIO16(b,0xd3) != tgt) {
       v1++;
       if (v1 >= 0xf01) return 0xfffffffe;
     }
-    b[0xd5] = (uint16_t)(b[0xd5] | 0x30);  /* ori: no mask clear */
+    CDMMIO16_ST(b,0xd5,(uint16_t)(CDMMIO16(b,0xd5) | 0x30));  /* ori: no mask clear */
     return 0;
   }
   if (op == 2) {
     uint32_t sh = CDREG32(0x801bdee8);
     uint32_t v = a1 >> (sh & 31);          /* srlv: sa&31 */
     CDREG16(0x801bdec8) = (uint16_t)v;
-    b[0xd3] = (uint16_t)v;
+    CDMMIO16_ST(b,0xd3,(uint16_t)v);
     return 0;
   }
   if (op == 3) {
     uint32_t cur = CDREG32(0x801bdec0);
     uint32_t want = (cur == a2) ? 0x30 : 0x20;
     v1 = 0;
-    while ((b[0xd5] & 0x30) != want) {
+    while ((CDMMIO16(b,0xd5) & 0x30) != want) {
       v1++;
       if (v1 >= 0xf01) return 0xfffffffe;
     }
@@ -3368,18 +3392,18 @@ void cd_field_copy_gated(void *a0)
     {0x10000000,0x3c,0x1f8},{0x20000000,0x3e,0x1fa},
     {0x40000000,0x40,0x1fc} };
   uint8_t *p = (uint8_t *)a0;
-  uint16_t *b;
+  uint32_t blk;
   uint32_t fl = *(uint32_t *)p;
   int all = (fl < 1u);
   uint32_t i;
-  b = (uint16_t *)guest_at(CDREG32(0x801bdeb0));
+  blk = CDREG32(0x801bdeb0);
   for (i = 0; i < sizeof(T)/sizeof(T[0]); i++) {
     if (all || (fl & T[i].mask))
-      b[T[i].dst >> 1] = *(uint16_t *)(p + T[i].src);
+      CDMMIO16_ST(blk,T[i].dst >> 1,*(uint16_t *)(p + T[i].src));
   }
   /* last field gated by bgez (signed fl >= 0) or all */
   if (all || ((int32_t)fl >= 0))
-    b[0xff] = *(uint16_t *)(p + 0x42);      /* +0x1fe */
+    CDMMIO16_ST(blk,0xff,*(uint16_t *)(p + 0x42));      /* +0x1fe */
 }
 
 /* cd_mode_apply_deferred — mode apply with deferred-pause save/restore:
@@ -4058,13 +4082,13 @@ uint32_t cd_copy_u32(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
  * op = 0x20000000 / 0x22000000. Disasm 0x8019be28-0x8019be78. */
 void cd_mmio_strobe_20(void)
 {
-  uint32_t *p = (uint32_t *)guest_at(CDREG32(0x801bdec4));
-  *p = (*p & 0xf0ffffffu) | 0x20000000u;
+  uint32_t a = CDREG32(0x801bdec4);   /* -> 0x1F801014 (MMIO) */
+  br2_st32(a,(br2_ld32(a) & 0xf0ffffffu) | 0x20000000u);
 }
 void cd_mmio_strobe_22(void)
 {
-  uint32_t *p = (uint32_t *)guest_at(CDREG32(0x801bdec4));
-  *p = (*p & 0xf0ffffffu) | 0x22000000u;
+  uint32_t a = CDREG32(0x801bdec4);
+  br2_st32(a,(br2_ld32(a) & 0xf0ffffffu) | 0x22000000u);
 }
 
 /* ---- BIOS svc trampolines used by cd_chan_cmd_pump ----
