@@ -1284,3 +1284,37 @@ on a fixed region -> next.
   `PSX_PRECISE_SLICE` left in tree (inert). −8 mechanism located in
   code_generator.cpp (delay-slot-is-leader undercount). Tree builds + boots clean.
   NEXT: P1 (cycle-audit) → P2 (delay-slot ownership fix).
+
+- **2026-07-XX (clean-runtime CD IRQ — precise gap localized):** With the
+  systematic pointer-cell->MMIO fixes in `game/cd.c` (commits 33d7427,
+  1ede216, e9e9b21 — `br2_ld*/br2_st*` + `*p` variants for every cell that
+  resolves into 0x1F801xxx), the CD device itself reaches ready
+  (`cdrom_state.stat=0x02`, `sector_available=1`, `irq_flag=0x03`) and the
+  frame counter advances. Remaining stall: the game's CD *interrupt
+  response* path never runs, so `cd_intc_busy_read` (@0x801bcd1a) stays 0 and
+  `cd_cmd_issue` spins until its cycle timeout then retries.
+  Instrumented proof (guest-RAM scratch counters, read via read_ram):
+    - `cd_intc_dispatch` (@0x8019a8ec, thunk->generated) counter @0x801bce00 = 0
+    - `cd_response_pump` (@0x801979f8, clean)        counter @0x801bce04 = 0
+    - `0x801bcd1a` busy flag = 0, `0x801bcb24` result = 0
+  IRQ delivery itself is healthy: `irqctx_ring` ~70k deliveries,
+  `istat=0x5` (VBLANK bit0 + CDROM bit2 both pending), `imask=0xD`, `IEc=1`,
+  `IM2=1`, and VBLANK-driven frame progression works — so the kernel->game
+  IRQ mechanism is fine; ONLY the CDROM-source callback is missing.
+  Chain confirmed: kernel hw-IRQ dispatcher -> kernel object 0xF0000003 ->
+  callback @0x8019A87C (`br2eu_func_8019A87C`, generated-only wrapper) ->
+  jal 0x8019A8EC (cd_intc_dispatch) -> reads INTC mask -> slot table
+  @0x801bcd1c -> chan2 = cd_response_pump. The slot table IS correctly
+  populated (chan0=cd_cb8_dispatch, chan2=cd_response_pump, chan3=0x8019af7c)
+  via `cd_dispatch_tbl8(2,0x801979f8)`->`cd_chan_slot_set`.
+  Neither 0x8019A8EC nor 0x8019A87C is stored anywhere in game RAM (full
+  0x80100000-0x80200000 scan = 0 hits) -> they are reached ONLY through the
+  kernel object's function pointer in kernel space, never via a game-RAM
+  data callback. => The kernel object 0xF0000003 either was never created
+  with callback 0x8019A87C, or the kernel-side CDROM dispatch isn't reaching
+  it. NEXT: inspect the kernel object table / Intc dispatch in kernel RAM
+  (0x1FC0xxxx) to read the registered CDROM callback, and verify the
+  B0/0x57 kernel-object creation in cd_kobj_init_a/b actually stored
+  0x8019A87C. Also still open: ~50 `guest_at(CDREG32(0x801bdeb0))` sites —
+  0x801bdeb0 -> 0x1F801C00 (SPU/reg-window) — still raw guest_at (audio/SPU
+  path, separate from the CD IRQ blocker).

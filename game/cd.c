@@ -5121,6 +5121,7 @@ void cd_response_pump(void)
 {
   uint32_t s2 = DB8P(0x801bcb0c) & 3;
   uint32_t s0;
+  DB32(0x801bce04) = DB32(0x801bce04) + 1;   /* dbg: pump invocations */
   for (;;) {
     s0 = cd_response_process();
     if (s0 == 0) break;
@@ -6218,6 +6219,9 @@ int cd_ctx_save(uint32_t a0)
  * Disasm 0x8019a8ec-0x8019aab8. */
 void cd_intc_dispatch(void)
 {
+  /* scratch debug counter @0x801bce00 — bumped on every clean-thunk entry so
+   * read_ram can confirm whether the CD IRQ dispatcher is ever invoked. */
+  DB32(0x801bce00) = DB32(0x801bce00) + 1;
   /* BIOS kernel boundary — run the recompiled guest body. */
   br2_call_generated(0x8019a8ec,0, 0, 0, 0);
 }
