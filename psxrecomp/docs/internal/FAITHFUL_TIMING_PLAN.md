@@ -2153,3 +2153,38 @@ between-fires sampling. FIX = find why CD IRQ (bit2) isn't acked: either
 cdromIOHandler/cdromDMAHandler absent from handlersArray(mem[0x100]) or
 game jmpbuf path (cd_intc_dispatch) doesn't write CDROM ack. Subagent
 3f974b24 comparing vs upstream openbios source.
+
+## 2026s — bios_svc_trace nails the event mismatch + recursion is host-dispatch
+
+bios_svc_trace (port 4376 post-halt) shows the FULL event sequence:
+  B0:0x08 OpenEvent x9: 8 CALLBACK (class 0xF4000001/0xF0000011, mode 0x1000,
+    handlers 0x801A0B10-0x801A0B9C flag-setters) -> handles 0xF1000000-7
+    PLUS 1 MARK: a0=0xF0000009 a1=0x20 a2=0x2000 -> handle 0xF1000008 (EvCB[8])
+  B0:0x0C EnableEvent x9 -> all enabled
+  B0:0x0B TestEvent a0=0 -> v0=0 (storm, event never READY)
+  B0:0x07 DeliverEvent a0=0xF0000003 a1=0x20 -> v0=0  (ra=0x8019A9C8, x3)
+
+=> game's CD handler delivers class 0xF0000003 spec 0x20, but its mark event is
+   class 0xF0000009 spec 0x20 -> NO EvCB match -> mark event never 0x4000.
+   Kernel IRQVerifier delivers (0xF0000009, spec=0x1000) on CDROM IRQ: class
+   right, SPEC wrong (0x1000 != 0x20). spec=0x20 is never delivered by kernel.
+
+irqctx_ring: CDROM IRQ (istat bit2=0x4, imask 0xD) repeatedly delivered to GAME
+  PCs 0x80197048/0x801970DC (game jmpbuf path, mem[0x4BF8]=0x801BCD50), each
+  restored=1 but re-fires. mem[0x6514]=0 -> CD autoack OFF (cdromIOHandler/
+  cdromDMAHandler must ack; both write I_STAT+call B0:0x17, no deliverEvent).
+
+Kernel VERIFIED upstream-faithful (subagent 3f974b24): deliverEvent/exception
+  Handler/B0Handler/IRQVerifier/syscallVerifier all match pcsx-redux OpenBIOS.
+  Callback events intentionally stay enabled -> recursion is call-cycle, NOT a
+  deliverEvent codegen bug.
+
+RECURSION = host-side nested-exception/dispatch issue: kernel event cycle
+  exceptionHandler->deliverEvent->cb handler->B0 syscall->B0Handler->
+  deliverEvent->returnFromException->exceptionHandler nests psx_dispatch ->
+  g_psx_dispatch_depth grows -> dirty_ram_interp recursion guard.
+
+Game CD regs CORRECT: 0x801BCB0C-18 = 0x1F801800-803 (banked CD interface).
+CD controller ack = write 0x1F801803 index_reg==1 (cdrom.c:2973) clears irq_flag
+  + re-arms latch. openEvent class consts: 0xF0000009 @0x8019B338 (mark event),
+  0xF0000003 @0x80195B54 (different event class).
