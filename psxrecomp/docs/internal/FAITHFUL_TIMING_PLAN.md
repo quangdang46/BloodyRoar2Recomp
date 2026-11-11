@@ -3117,3 +3117,44 @@ NEXT (concrete): catch the REAL writer. Options: (a) arm gwatch and read
   may be a red herring. Need: resolve WHICH TCB/RFE path yields
   returnPC=0x04000600 and whether 0x108 legitimately holds 0xFE000600
   (kernel globals relocated?) vs a real bad write gwatch can't see.
+
+=== UPDATE (session): CORRUPTOR IDENTIFIED — cd_bitstream_decode stale output ptr ===
+
+The "IRQ kernel corruption" theory is RESOLVED — the wild writer is the clean
+C tile-stream decoder, NOT generated MIPS and NOT an IRQ/context bug.
+
+MECHANISM (all live-verified via gwatch host-RIP + wtrace + generated disasm):
+- guest_watch (mprotect page watch) DID catch the writer this run: at frame
+  744/445 a sequential fill hits phys 0x100-0x13E via TWO host RIPs
+  0x101F713A0 / 0x101F7128C (276B apart = the copy loop's store sites).
+  atos -l resolved them to **cd_bitstream_decode +628 / +352** (game/cd.c).
+- cd_bitstream_decode's L_1f8 FLUSH loop (cd.c:3193) writes 0xfe00 halfwords
+  from a1g up to limit CDREG32(0x801b6928). Its OUTPUT pointer a1g derives
+  from arg a1.
+- Caller chain: blk_io_retry(0x801f4700) [clean save.c:2172, faithful vs
+  generated 0x80159A14] -> cd_bitstream_decode(s0, *(u32*)(s1+idx*4), vl).
+  s1=guest_at(0x801f4700); idx toggles on s1+8; a1 = param_1[idx] = the
+  decode output buffer pointer.
+- Live context read: 0x801f4700(param_1[0])=0x0, 0x801f4704(param_1[1])=
+  0x2000000, 0x801f4708(idx)=1 -> idx=0 -> a1 = param_1[0] = **0**.
+- a1=0 -> decoder writes decoded output + 0xfe00 flush-pads starting at
+  guest phys 0 -> floods 0x100-0x13E (kernel globals incl TCBH@0x108) ->
+  IRQ ReturnFromException reads mem[0x108]=garbage -> returnPC=0x04000600.
+
+ROOT CAUSE (buffer ptr stale): param_1[0]/[1] should be 0x80020000/0x80048000
+(set by tile_stream_job_init menu.c:2083-2086 from _DAT_801f4744/48, which
+scene_entry game.c:1554-55 sets = param_1+0x10000/+0x38000). The copy is gated
+by DAT_801b3f64==1 ("buffers changed" flag). wtrace frames176-445: flag NEVER
+written, buffer slots NEVER written -> refresh never ran for this context ->
+stale 0/0x2000000 used.
+
+OPEN: why DAT_801b3f64 is never set (buffer-reinit trigger). Not set by clean
+scene_entry NOR generated scene_entry(0x80159028). Set by decode-job completion
+/ buffer-change detector still to be located. Downstream of CD-stream decode
+state — connects to the CD XA/Mode2 delivery work.
+
+EXONERATED this session: mc_date_serial_cmp (fntrace all a0=0x801F4700 valid,
+~10B/call), guest_of/guest_at marshaling, dispatch-depth/defer-switch,
+host scheduler (HLE+fibers), BIOS HLE/LLE. store_pc=0x80159C08 was STALE
+(g_debug_last_store_pc only set by instrumented generated stores; clean-C
+guest_at derefs bypass it).
