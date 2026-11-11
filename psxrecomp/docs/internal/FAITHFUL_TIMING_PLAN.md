@@ -1653,3 +1653,36 @@ wakes. NEXT: find the kernel main-loop/scheduler entry that calls 0x1bd0-0x1c6c
 + the thread dispatcher, and check via pc_probe whether it runs during the stall.
 If it doesn't run, the faithful-core fix is in how the recomp drives guest
 kernel preemption/scheduling (timer IRQ -> scheduler), NOT game code.
+
+## 2026e — EXACT causal chain nailed: deferred-IRQ resume never fires
+
+Poll loop in cd_cmd_issue (0x80196e14 generated body) spins ~1.17M iters:
+  0x80197028 jal cd_timer_read(0x8019a460) ; timeout check
+  0x801970e8 jal cd_intc_busy_read(0x8019a7d4) -> u16 @0x801bcd1a
+  beqz -> loop. Only when busy!=0 does it jal cd_response_process(0x80196370).
+=> cd_intc_busy_read(@0x801bcd1a) returns 0 forever => infinite poll.
+
+cd_intc_busy_read flag @0x801bcd1a is SET inside cd_intc_dispatch
+(0x8019a8ec, the CD IRQ handler, runs via br2_call_generated).
+
+cd_intc_dispatch is invoked from cd_chan_full_init (0x8019a814) ONLY under:
+    if (cd_ctx_save(s0+0x38) != 0) cd_intc_dispatch();
+cd_ctx_save saves guest CPU context and returns 0 on first entry; it returns
+NONZERO only when the kernel RESUMES a context that was deferred by an
+interrupt. So cd_intc_dispatch runs iff a CD IRQ was deferred and is now
+being resumed through the kernel's context save/restore path.
+
+ROOT CAUSE (precise): the game's custom kernel IRQ-deferral mechanism —
+CD IRQ -> kernel saves ctx (cd_ctx_save) -> later resume -> cd_ctx_save!=0 ->
+cd_intc_dispatch -> sets busy -> cd_response_process -> CD completes —
+never triggers the resume. The deferred CD interrupt is not being delivered/
+resumed by the recomp's interrupt+context model. This is faithful-core:
+the game kernel expects IRQs deferred through ITS context-switch path
+(0x27ac save / 0x29cc restore / cd_ctx_save), which the recomp's IRQ
+delivery does not drive for the CDROM source.
+
+NEXT: determine how the game kernel defers the CDROM IRQ — which kernel
+function calls cd_ctx_save on IRQ and sets up the resume, and why the recomp
+doesn't reach it. Compare IRQ delivery path for CDROM (bit2) vs VBLANK (bit0,
+which works via 0x1bd0->0x29cc). The difference between a working source and
+CDROM is the faithful-core gap.
