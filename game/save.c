@@ -2166,6 +2166,7 @@ int32_t mc_dialog_bit4(int32_t param_1)
  * *(u32*)0x801f4758) then cd_dir_entry_probe(h); returns handle or -1.
  * Disasm 0x80159a14-0x80159aac. */
 extern int32_t mc_date_serial_cmp(uint8_t *,void *);
+extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern void cd_bitstream_decode(int32_t,uint32_t,uint32_t);
 extern void cd_dir_entry_probe(int32_t);
 int32_t blk_io_retry(uint32_t param_1,void *param_2)
@@ -2194,52 +2195,26 @@ int32_t blk_io_retry(uint32_t param_1,void *param_2)
  * record and stores scaled halves into s2 @+0x1c/1e/24/26/32.
  * Disasm 0x80159ab4-0x80159c1c. */
 extern int32_t cd_channel_poll(uint32_t *,uint32_t *);
+/* mc_date_serial_cmp — delegate the whole body to the generated MIPS
+ * (0x80159ab4). Its cd_channel_poll wait loop crosses a basic-block
+ * boundary every iteration, so psx_advance_cycles +
+ * psx_check_interrupts_at run per pass with a live guest resume PC. That is
+ * what lets the CD deferred-interrupt coroutine (cd_ctx_restore ->
+ * cd_intc_dispatch -> cd_response_pump -> cd_mc_state_machine) resume on
+ * INT1 and mark the channel-table entry state==2 that cd_channel_poll waits
+ * for. A clean-C poll cannot advance guest time or supply a dispatchable
+ * resume PC, so the CD read stream never delivers and blk_io_retry livelocks
+ * re-issuing SetLoc/SetMode/ReadS — the same reason cd_file_read_seq,
+ * cd_result_wait_a/b and cd_init_session were delegated. The two pointer
+ * params arrive as guest_at() host pointers; guest_of() recovers the guest
+ * addresses the generated body expects in a0/a1. br2_call_generated also
+ * makes gen_clean_table skip 0x80159ab4 so generated callers dispatch
+ * straight to the generated body (no clean_table wrap -> thunk -> generated
+ * recursion). Disasm 0x80159ab4-0x80159c1c. */
 int32_t mc_date_serial_cmp(uint8_t *param_1,void *param_2)
 {
-  uint32_t sp18 = 0, sp1c = 0, s0 = 0x7d0;
-  uint8_t *s2 = param_1;
-  uint8_t *s1 = (uint8_t *)param_2;
-  uint8_t *a0;
-  int32_t half;
-  while (cd_channel_poll(&sp18,&sp1c) != 0) {
-    if (--s0 == 0) return 0;
-  }
-  a0 = guest_at(sp1c);
-  if (a0 == NULL || s1 == NULL) return (int32_t)sp18;
-  if (!(*(uint32_t *)(a0 + 8) < *(uint32_t *)(s1 + 8)))
-    *(uint32_t *)guest_at(0x801f4740) = 1;
-  if (*(uint16_t *)(a0 + 0x10) != *(uint32_t *)guest_at(0x801b3f68) ||
-      *(uint16_t *)(a0 + 0x12) != *(uint32_t *)guest_at(0x801b3f6c)) {
-    int32_t d;
-    *(uint32_t *)guest_at(0x801b3f68) = *(uint16_t *)(a0 + 0x10);
-    *(uint32_t *)guest_at(0x801b3f6c) = *(uint16_t *)(a0 + 0x12);
-    d = *(uint32_t *)s1 != 0 ? *(int32_t *)(s1 + 0x14) : (int16_t)*(uint16_t *)(s1 + 0x14);
-    d = (d * 3 + (((d * 3) >> 31) & 1)) >> 1;
-    *(uint16_t *)(s2 + 0x24) = (uint16_t)d;
-    *(uint16_t *)(s2 + 0x1c) = (uint16_t)d;
-    {
-      int32_t g = *(int32_t *)guest_at(0x801b3f68);
-      d = *(uint32_t *)s1 != 0 ? (g * 3 + (((g * 3) >> 31) & 1)) >> 1
-                               : (int16_t)*(uint32_t *)guest_at(0x801b3f68);
-    }
-    *(uint16_t *)(s2 + 0x26) = (uint16_t)d;
-    *(uint16_t *)(s2 + 0x1e) = (uint16_t)d;
-    *(uint16_t *)(s2 + 0x32) = (uint16_t)d;
-    return (int32_t)sp18;
-  }
-  if (*(uint32_t *)s1 != 0) {
-    int32_t d = *(int32_t *)guest_at(0x801b3f68);
-    half = (d * 3 + (((d * 3) >> 31) & 1)) >> 1;
-  } else {
-    half = (int16_t)*(uint32_t *)guest_at(0x801b3f68);
-  }
-  *(uint16_t *)(s2 + 0x24) = (uint16_t)half;
-  *(uint16_t *)(s2 + 0x1c) = (uint16_t)half;
-  half = (int16_t)*(uint32_t *)guest_at(0x801b3f6c);
-  *(uint16_t *)(s2 + 0x26) = (uint16_t)half;
-  *(uint16_t *)(s2 + 0x1e) = (uint16_t)half;
-  *(uint16_t *)(s2 + 0x32) = (uint16_t)half;
-  return (int32_t)sp18;
+  return (int32_t)br2_call_generated(0x80159ab4u,
+                                     guest_of(param_1), guest_of(param_2), 0, 0);
 }
 
 /* rec_find_lt_f8 — first 0x10-stride rec where f8==0 or f8<a1;
