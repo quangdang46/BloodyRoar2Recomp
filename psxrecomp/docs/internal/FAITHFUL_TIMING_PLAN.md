@@ -2270,3 +2270,33 @@ NEXT HYPOTHESES (ordered):
     runtime keeps delivering (reading=1 until stop_read_stream). If the
     game's sector-count/stop logic depends on a status the runtime
     mis-reports, the stream overruns.
+
+## CD file-load: command_history decode (lldb, live process)
+
+Attached lldb to the spinning process (debug server starved at 100% CPU).
+Read cd_dma_log + command_history rings directly:
+
+- cd_dma_log: directory reads -> scratch dest 0x8598; then SLES_017.22 EXE
+  body -> dest 0x11e800+ advancing 0x800/sector, but **lba CONSTANT 216335**
+  for ~300 entries. CD read position never advances between per-sector DMAs.
+- command_history (82 cmds): each file sector = full cycle
+  Setloc(0x02)->SeekL(0x15)->Setmode(0x0E,0x80)->ReadN(0x06)->Pause(0x09)->
+  GetStat(0x01). Tail: Init(0x0A)->Demute(0x0C)->Pause x4 -> Setloc[0,0,0]
+  ->Setmode(0xa0)->ReadN @ rd00:00:00  = the lba=-150 seek = drive reset+retry.
+- dispatch_depth=1 (flat IRQ loop, NOT recursion). Thread in dma_advance.
+  dma_cdrom_transfer_active()=0. cd_dma_log_total=333.
+
+INTERPRETATION: game loads SYSTEM.CNF+SLES_017.22 correctly sector-by-sector,
+then a file-load completion FAILS -> drive Init/reset -> re-seek MSF 00:00:00
+-> whole load retries (the ReadN LBA cycle seen in bisect). The -150 read
+returns a zeroed sector (lba<0 -> iso_read fails -> memset 0, data_delivered=1).
+File offset 0 = LBA 0 = MSF 00:02:00 (PVD CD001 verified at file-sec 16); the
+.bin has NO 150-frame lead-in, so MSF 00:00:00 legitimately has no data.
+
+NEXT: find WHY the file load doesn't complete. The per-sector read cycle
+(Setloc->SeekL->Setmode->ReadN->Pause->GetStat) must be signalling "sector
+done" via an event/flag the runtime isn't producing, OR the last Pause/INT2
+completion isn't reaching the game's file-job state machine -> timeout->retry.
+Check cd_file_open_wait / job_result_poll_stable completion path and whether
+Pause(0x09) INT2 + the mark event (0xF0000009,0x20 via cd_dma_chan_reset)
+fire for the per-sector reads.
