@@ -1566,3 +1566,34 @@ creates class-0xF0000003 objects — likely a "register IRQ/driver" helper the g
 CD init calls, OR the kernel auto-creates 0xF000000N per IRQ source on
 EnableIntc. Trace which game init path should invoke it and whether a BIOS svc
 it depends on (B0/0x57 kobj-info, B0/0x15 cmd) returns wrong data in recomp.
+
+## 2026b — IntRP IRQ path decoded; CDROM handler IS registered (revises object theory)
+
+bios_svc_trace (109 entries) decoded fully:
+- B0/0x08 allocs (9): 4x class 0xF4000001 + 4x class 0xF0000011 (CD chan objs,
+  cb 0x801a0b10-9c) + 1x class 0xF0000009 (attr 0x20, cb=0). NO 0xF0000003 alloc.
+- NO B0/0x4b (CD enable), NO B0/0x07, NO B0/0x57 in window.
+- C0/0x03 = register IntRP record: a0=irq_src, a1=record_addr.
+  src1 -> rec 0x801FEB40 ; src2 -> rec 0x801FEFC0.
+- C0/0x02 = unregister/disable same records. C0/0x0A = intc enable (a0=mask).
+
+IntRP record layout (live):
+  +0x00 kernel dispatch func (src1=0x461c, src2=0xaecc)
+  +0x04 handler A, +0x08 handler B, +0x10.. extra/method slots
+src2/CDROM rec 0x801FEFC0: handlers 0x801a189c + op_flag_fn_check(0x801a1834).
+src1 rec 0x801FEB40: handlers 0x801aa244/0x801aa2ac + slots holding the CD
+  kobj methods 0xbfc07734/0xbfc07744 (the FUN_8019a350/364 indirect targets).
+
+=> The CDROM IRQ handler IS registered via IntRP (src2). op_flag_fn_check is a
+generic "check ctx flag -> call registered fn-ptr" deferred-callback. So the
+missing 0xF0000003 kernel OBJECT is likely a red herring for IRQ delivery — real
+CD completion goes IRQ -> IntRP src2 -> 0xaecc dispatch -> op_flag_fn_check ->
+(cd handler / sets intc-busy) -> cd_response_process.
+
+REVISED ROOT CAUSE: the break is downstream — either (a) CDROM IRQ never reaches
+the IntRP src2 dispatch (0xaecc), or (b) op_flag_fn_check's flag/fn-ptr is never
+armed, or (c) cd_intc_dispatch(0x8019a8ec) never runs to set intc-busy.
+cd_cmd_issue uses br2_call_generated so the wait IS interruptible; the IRQ must
+land mid-spin. NEXT: pc_probe 0xaecc, 0x801a189c, 0x801a1834(op_flag_fn_check),
+0x8019a8ec(cd_intc_dispatch) during a CD read; read intc-busy flag + the
+op_flag ctx flag/fn-ptr cells to see which link is dead.
