@@ -1739,17 +1739,18 @@ void cd_chan_block_boot(void)
 
 /* cd_mode_set_0e — CD mode/flag set: cd_mode_flag_set(0xe,&byte,0);
  * when bit 0x100 set, clears @0x801fc6f8 and runs 961a8/95d78 pair;
- * always cd_mode_flag_set(0x1b,0,0). Disasm 0x80198f60-0x80198fdc. */
+ * always cd_mode_flag_set(0x1b,0,0). Disasm 0x80198f60-0x80198fdc.
+ * The generated body builds the Setmode param byte on the GUEST stack
+ * (sp+16 after a 32-byte frame) and passes that guest address as param_2
+ * to cd_mode_flag_set -> cd_cmd_issue. A clean C `&b` is a host stack
+ * pointer that generated cd_cmd_issue reads as a guest address -> out of
+ * guest RAM -> delivers mode 0x00 instead of the computed byte -> drive
+ * stays in user-data mode (mode_reg&0x20==0), never delivers the per-sector
+ * MSF stamp cd_read_step_cb verifies -> "sector error" -> retry livelock.
+ * Delegate the whole body so the param byte lands in real guest RAM. */
 void cd_mode_set_0e(uint32_t s0)
 {
-  uint8_t b = (uint8_t)s0;
-  cd_mode_flag_set(0xe,(int)(intptr_t)&b,0);
-  if (s0 & 0x100) {
-    *(uint32_t *)guest_at(0x801fc6f8) = 0;
-    cd_cmd_dispatch3(0x801990f0);
-    mc_session_b(0x80198fe4);
-  }
-  cd_mode_flag_set(0x1b,0,0);
+  (void)br2_call_generated(0x80198f60u, s0, 0, 0, 0);
 }
 
 /* cd_read_params_store — CD read param block: cd_read_param_block(1), stores
