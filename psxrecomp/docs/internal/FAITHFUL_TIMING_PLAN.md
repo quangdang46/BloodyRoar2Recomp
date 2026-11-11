@@ -1882,3 +1882,26 @@ bypass confirmed, fix = ensure deferred resume runs under the handler's INTC
 mask (or ack i_stat bit2 before re-present). Clean coverage is otherwise strong:
 1162 clean wrappers; fnmap-vs-clean_table delta is only intentional
 generated-thunks (IRQ-context) + BIOS boundary.
+
+## 2026m — recursion cycle NAMED: OpenBIOS kernel event/thread dispatch
+
+Post-mortem rings DISPROVED the IRQ-reentrancy hypothesis: irqctx_ring shows
+NORMAL once-per-frame CDROM(bit2)/DMA(bit3) deliveries (imask=0xC steady,
+exit_reason=1, restored=1) — NOT nested IRQs. imask_trace shows the game DOES
+mask i_mask bit2 (CDROM) around cd_intc_dispatch (0x8019A8BC). cdrom_state:
+irq_flag=0, i_stat=0 (acked). cd_init_done_cb (0x80198590) is trivial.
+
+REAL recursion = guest C-call cycle in dispatch_tail (256 nested):
+  0x1FC06084 -> 0x1FC086C4 -> 0x1FC060A8 -> 0x1FC00C20   (~x50)
+  0x1FC00CDC -> 0xB0 -> 0x2AA0 -> 0x1FC05648 -> 0x1FC05600 -> 0x1FC0565C
+All 0x1FC0xxxx = recompiled OpenBIOS KERNEL funcs (OpenBIOS_func_*), 0xB0 =
+kernel vector, 0x2AA0 = kernel svc. The deferred CD IRQ (cd_init_session
+async-Pause -> cd_chan_full_init ctx_save/restore -> cd_intc_dispatch)
+drives the OpenBIOS kernel event/thread dispatch into an unbounded cycle.
+last_store_pc 0x8019AA98 is diagnostic only (valid BSS flag clear, codegen OK).
+
+ROOT: OpenBIOS kernel recompilation recurses on this deferred interrupt —
+likely event-loop/thread-wakeup (ChangeThread/DeliverEvent) re-trigger, NOT
+game clean source, NOT CD hw. Needs OpenBIOS kernel RE or Beetle oracle to
+find which kernel func fails to mark the event/thread consumed. cd_init_session
+reverted to clean spin (stable, no crash).
