@@ -2467,3 +2467,37 @@ better traced via wtrace_all + fntrace PSX_FN_FILTER env).
 FOLLOW-UP AUDIT (same bug class, not yet fixed): `(int)(intptr_t)&DAT_*`
 casts of host scratchpad pointers in battle.c (~31 sites) truncate host
 pointers to 32 bits — verify each callee's contract before changing.
+
+## 2026 — CD-completion blocker confirmed KERNEL-side; cd_dma_chan_reset MMIO fix
+
+STATUS: game stable (no crashes, frame counter advances = vblank only) but
+still logically parked at the SAME CD stall: cdrom_state seq:7941 lba:337
+seek_msf[0,6,15] Pause phase:1 irq_flag:0; response_pump frozen@152; PC
+parked calling memcard_info_query (0x80126290->0x8015F590) which is
+INCIDENTAL per-frame work, not the blocker (agent e6eb9e42 confirmed).
+
+CONFIRMED (live probes :4381 + generated oracle):
+- Deferred-IRQ contract intact: mem[0x4BF8]=0x801BCD50 -> cd_ctx_save frame
+  registered; frame resume target 0x8019A87C valid+dispatched; state blk
+  0x801BCD18 in-service=1, tbl[0]=0x8019AE68 tbl[2]=0x801979F8.
+- Coroutine DOES resume (sp_ring shows 0x8019A87C->kernel->back) but
+  cd_intc_dispatch never reaches the completion handler -> DeliverEvent
+  (0xF0000009,0x20) never fires -> TestEvent(0xF1000008) spins.
+- Per plan 2026s: kernel cdromIOHandler/cdromDMAHandler are MISSING from
+  handlersArray(mem[0x100]) OR their verifiers reject IRQ bit2 -> every CD
+  IRQ falls to game jmpbuf; kernel never acks (mem[0x6514]=0 autoack OFF)
+  -> IRQ re-fires; game handler delivers wrong class 0xF0000003 vs mark
+  EvCB 0xF0000009 -> mark event never READY(0x4000).
+
+FIX THIS SESSION: cd_dma_chan_reset (game/cd.c) had the SAME MMIO
+open-bus mistranslation the agent fixed elsewhere — w[0xd5] CD channel
+status @blk+0x1aa via guest_at() on 0x801bdeb0 cell hit open-bus mirror.
+Converted to CDMMIO16/CDMMIO16_ST. Committed 44ce842. (Correct faithful
+fix; not the direct unblock — the channel-callback may not even be the
+one not firing; kernel HandlerInfo registration is the real locus.)
+
+REMAINING (kernel RE, agent c9f8c5a4 instrumented): determine whether
+cdromIOHandler/cdromDMAHandler are absent from handlersArray or verifier-
+rejected; fix enqueueCDRomHandlers/initializeCDRomHandlersAndEvents
+ordering or cdromIOVerifier/cdromDMAVerifier IRQ-bit test in the
+recompiled kernel — faithful core fix, not a game patch.
