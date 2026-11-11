@@ -5725,7 +5725,12 @@ void cd_cb7_run(uint32_t param_1)
     while (s1 != 0 && s0 < 7) {
       if ((s1 & 1) != 0) {
         br2_st32(dma, br2_ld32(dma) & ((1u << (s0 + 0x18)) | s3));
-        if (tbl[s0] != 0) call_guest(tbl[s0],0,0);
+        /* tbl is a moving cursor (generated gpr[18] += 4, reads *cursor):
+         * dereference *tbl, NOT tbl[s0] — the latter double-indexes to
+         * base+s0*8 and reads the wrong slot (ch4 -> 0x801BDE14 MMIO junk
+         * instead of the 0x801BDE04 handler), so DeliverEvent never fires. */
+        uint32_t h = *tbl;
+        if (h != 0) call_guest(h,0,0);
       }
       tbl++;
       s1 >>= 1;
