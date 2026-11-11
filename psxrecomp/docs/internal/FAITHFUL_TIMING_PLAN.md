@@ -1455,3 +1455,40 @@ on a fixed region -> next.
   0x8019A87C. Also still open: ~50 `guest_at(CDREG32(0x801bdeb0))` sites —
   0x801bdeb0 -> 0x1F801C00 (SPU/reg-window) — still raw guest_at (audio/SPU
   path, separate from the CD IRQ blocker).
+
+## 2025 — kernel IRQ/object model fully decoded; IRQ-class objects absent
+
+Capstone disasm of the game kernel (low RAM, accessed as 0x8000xxxx) resolved
+the earlier "0xF0000000 is a pointer" misreading. `0x2610` does NOT deref a0;
+it is a kernel-object-list walker:
+
+- object-manager base = fixed `0x100`; list head `mem[0x120]`, tail `mem[0x124]`.
+- IRQ dispatcher `0x16E4` tests `I_MASK & I_STAT` bits and calls
+  `0x2610(class_id=0xF0000000|src, attr=0x1000)` per pending source
+  (CDROM bit2 -> 0xF0000003, bit1 -> 0xF0000002, bit8 -> 0xF000000B, ...).
+- `0x2610` walks objects stride `0x1c`, matches `+0x00==class_id`,
+  `+0x04==0x2000`, `+0x08==attr`, `+0x0c in {0x1000,0x4000}`, then `jalr +0x10`.
+- sibling `0x26e4` = same walk but `+0x04==0x4000` match (find/modify).
+- `0x27ac/0x29cc` = exception ctx save/restore; `0xe80` = BIOS syscall/cause
+  dispatcher; `0x2970` = ctx-switch return via `mem[0x4bf8]`.
+
+Live object list (head 0x8e08, ~16 slots stride 0x1c) contains ONLY
+device/channel objects — NO IRQ-class objects:
+  class 0xf4000001 x4 cb 0x801a0b10/24/38/4c
+  class 0xf0000011 x4 cb 0x801a0b60/74/88/9c   (CD channel class)
+  class 0xf0000009 x1 cb 0
+So `0x2610(0xF0000003,0x1000)` for CDROM finds no match -> returns silently.
+IRQ class objects (0xF0000001..0xB) were never created.
+
+Class 0xF0000011 objects ARE used: kernel scheduler ~0x3ee0 iterates them via
+0x26e4/0x2610 gated by flag 0x1faef4 (CD channel processing). VBLANK works via
+IntRP records (0x801aa244 etc fire every IRQ), not necessarily 0x2610 — so
+absence of IRQ-class objects may be normal for VBLANK but fatal for CDROM if
+the CDROM IRQ-class object is the intended bridge to the CD channel pump.
+
+OPEN: find where IRQ-class objects (class_id 0xF000000N) are created — the
+game's interrupt-handler registration / kernel intr-init. They are NOT made
+via FUN_8019b380/B0-0x08 (bios_svc_trace shows only 0xf4000001/0xf0000011/
+0xf0000009 device types). Determine whether registration ran and failed, or
+uses a separate kernel path. Then verify flag 0x1faef4 / scheduler 0x3ee0 is
+reached on CD IRQ.
