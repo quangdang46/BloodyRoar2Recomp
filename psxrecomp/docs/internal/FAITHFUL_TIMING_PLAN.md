@@ -2719,3 +2719,41 @@ slot-context base mismatch is suspicious: cd_job_slot_alloc zeroes
 arg (different regions). Handler may get wrong/empty context -> returns 0.
 Agent 5e538f5f tracing handler wait-condition + slot-base correctness vs
 generated oracle.
+
+=== 2026 — RESOLVED: memcard/job-channel stall -> game reaches versus/title load ===
+Three faithful clean-port fixes unblocked the entire channel-job system.
+All verified against generated oracle + live debug-server probes.
+
+FIX 1 (536f76c): job-channel state block base 0x801FEBE0, not 0x801FEBC0.
+  cd_chan_job_submit/cd_job_result/cd_mc_op_wait/cd_chan_job_pump all used
+  0x801FEBC0 (0x20 low). Submit wrote mode=2 to phantom block; real state
+  stayed idle -> handler saw idle channel, issued no SIO -> done-flag never
+  set -> cd_job_result spun -> memcard_info_query hung.
+
+FIX 2 (48944f0): op_chan_fn_invoke dispatch fn_lookup -> call_guest.
+  Slot fn-ptrs (0x801FEF60+i*4) are guest addresses that may be generated
+  OR clean. fn_lookup only resolves clean -> returned NULL for generated
+  handler 0x8019EB00 -> handler never invoked. call_guest reproduces jalr:
+  clean_try_dispatch first, psx_dispatch_call fallback. Live: SIO memcard
+  probes 74->112, reads 72->109.
+
+FIX 3 (16dfdff): cd_job_slot_alloc zero region 0x801FEF20, not 0x801FEF2C.
+  Generated 0x801A0A10 zero-fills 16-byte slot record at 0x801FEF20+idx*16
+  (count-down loop ending at +0xC). Clean used 0x801FEF2C -> ctx state word
+  (*s1 handler opcode) NEVER cleared -> handlers inherited stale state
+  (ctx=31 leftover), hit default: return 0 forever -> job starvation.
+  Slot records tile [0x801FEF20,0x801FEF60) ending at fn-ptr table.
+
+LIVE RESULT (port 4427, HLE default):
+  - slot index 0x801BE768 -> -1 (all channel jobs drain/pop)
+  - g_game_state 0x1F800000: 0 -> 4 (versus scene_entry loading)
+  - CD sequencer streaming versus/title assets: seq 7941 -> 4.6M+, reading=1
+  - GPU active: disabled=0, gp0_draw/env/writes climbing
+  - cd_read_log: diverse LBAs (315/8538/9542/216335) = multi-file asset load
+  - clean_trace hot fns now cd_intc_busy_read/cd_timer_read/cd_response_pump
+    (CD busy-wait read loop) — main thread in scene_entry->cd_read_poll.
+
+CURRENT: state 4 = scene_entry(0x80010000,..) loading versus/title scene.
+  Returns 0 while loading -> stays 4; nonzero -> state 5. Heavy asset pull
+  (seq still climbing). draw count 597 during load (static loading screen).
+  NEXT: confirm 4->5 transition + title/menu render + screenshot proof.
