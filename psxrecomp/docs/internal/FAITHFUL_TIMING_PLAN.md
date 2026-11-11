@@ -2328,3 +2328,20 @@ landing. NEXT: trace why queued CD reads don't produce DMA — likely the
 cd_queue consumer / CD-DMA ch3 drain or another pointer-cell mistranslation
 in the queue-pop/execute path (cd_queue_a/b_status, cd_queue_a_read use
 packed guest reads — verify they're not also direct-vs-indirect bugs).
+
+=== UPDATE2: past cd_cmd_issue livelock -> cd_queue busy-wait stall ===
+
+After the thunk fix the game reaches cd_file_pump -> gpu_invoke ->
+wrap_80192f14(=cd_queue_push 0x80192f14) -> cd_queue_push -> busy-wait.
+cmds 82->83 but dmas frozen at 333: queued CD reads never produce DMA.
+
+NEW STALL: cd_queue_push (game/cd.c ~6113) and cd_queue_drain (~6068) contain
+`while ((br2_ld32(DB32G(0x801b8428)) & 0x400000) == 0) { }` — a busy-wait on a
+hardware status bit via pointer cell 0x801b8428 (into the 0x1F8010xx DMA
+register file per comment @5900) with NO br2_irq_poll inside. If that DMA/GPU
+status bit never sets the queue spins at 100% (stack: guest_at+cd_queue_push).
+NEXT: identify which 0x1F8010xx register 0x801b8428 points to and what sets
+bit22 — likely a DMA channel-ready/idle flag the runtime isn't producing, or
+another pointer-cell mistranslation in the queue consumer (cd_queue_a/b_status,
+cd_queue_a_read, cd_pump_watchdog). Verify the pointer cell's target register
+and whether the corresponding device models that status bit.
