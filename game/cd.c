@@ -4860,7 +4860,7 @@ int32_t cd_gpu_call_18(uint32_t param_1)
       poll = 1;
     } else {
       o = br2_ld32(DB32G(0x801b8428));
-      poll = (o & 0x400000) == 0;
+      poll = (o & 0x04000000) == 0;
     }
     if (!poll) break;
     if (cd_pump_watchdog() != 0) return -1;
@@ -5096,7 +5096,7 @@ static int32_t cd_wait_stat(void)
       poll = 1;
     } else {
       o = br2_ld32(DB32G(0x801b8428));
-      poll = (o & 0x400000) == 0;
+      poll = (o & 0x04000000) == 0;
     }
     if (!poll) return 0;
     if (cd_pump_watchdog() != 0) return -1;
@@ -5231,7 +5231,7 @@ int cd_queue_poll(uint32_t param_1)
     if (s0 != 0) cd_queue_drain();
     st = br2_ld32(DB32G(0x801b8434));
     o = br2_ld32(DB32G(0x801b8428));
-    busy = ((st & 0x1000000) != 0) || ((o & 0x400000) == 0);
+    busy = ((st & 0x1000000) != 0) || ((o & 0x04000000) == 0);
     if (busy) return s0 != 0 ? (int)s0 : 1;
     return (int)s0;
   }
@@ -5660,6 +5660,7 @@ int32_t cd_seek_step(uint32_t param_1,uint32_t param_2)
   if (param_1 == 1) {
     if (v0 == 0) {
       do {
+        br2_irq_poll();
         v0 = cd_seek_state_machine(DB32G(0x801bde38));
       } while (v0 == 0);
     }
@@ -6078,7 +6079,7 @@ void cd_queue_drain(void)
       uint32_t fn, dp, arg;
       if (((tail + 1) & 0x3f) == DB32(0x801b8448) && DB32(0x801b832c) == 0)
         cd_dispatch_tbl4(2,0);
-      while ((br2_ld32(DB32G(0x801b8428)) & 0x400000) == 0) { }
+      while ((br2_ld32(DB32G(0x801b8428)) & 0x04000000) == 0) { }
       e = (uint32_t *)guest_at(0x801fae70 + tail * 96);
       fn = e[0]; dp = e[1]; arg = e[2];
       call_guest(fn,dp,arg);          /* jalr fn: a0=data a1=arg */
@@ -6135,7 +6136,7 @@ int cd_queue_push(uint32_t a0_fn,uint32_t a1_data,uint32_t a2_count,
               && DB32(0x801b832c) == 0);
   }
   if (direct) {
-    while ((br2_ld32(DB32G(0x801b8428)) & 0x400000) == 0) { }
+    while ((br2_ld32(DB32G(0x801b8428)) & 0x04000000) == 0) { }
     call_guest(a0_fn,a1_data,a3_arg);  /* jalr s3: a0=s0 a1=s2 */
     cd_u16_swap_store((uint16_t)DB32(0x801b8450));
     return 0;

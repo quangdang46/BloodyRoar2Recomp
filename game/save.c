@@ -2443,12 +2443,19 @@ extern void cd_mode_store(int32_t);
 extern void cd_status_shifted_read(uint32_t);
 extern void cd_seek_param_issue_clamped(uint32_t,uint32_t);
 extern int32_t cd_seek_complete_poll(int32_t);
+extern void br2_irq_poll(void);
 uint32_t cd_file_read_seq(uint32_t a0,uint32_t a1,uint32_t a2)
 {
   cd_mode_store(0);
   cd_status_shifted_read(a1);
   cd_seek_param_issue_clamped(a0,a2);
-  while (cd_seek_complete_poll(0) == 0) { }
+  /* The generated wait loop (0x80156628->0x80156630->back) crosses a basic-
+   * block boundary every iteration, so psx_check_interrupts_at + cycle
+   * advance run per pass and the CD seek-completion IRQ/flag can land. The
+   * clean a0==0 poll returns after one state-machine sample with no IRQ
+   * service, so the loop must br2_irq_poll or TestEvent spins forever on a
+   * flag the CD driver never gets a chance to set. */
+  while (cd_seek_complete_poll(0) == 0) { br2_irq_poll(); }
   return a2;
 }
 

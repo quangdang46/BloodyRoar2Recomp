@@ -27,6 +27,8 @@ typedef int      int32_t_ghidra;
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
 extern uint32_t guest_sp(void);
+extern uint32_t br2_ld32p(uint32_t cell);
+extern void     br2_st32p(uint32_t cell, uint32_t v);
 
 void gpu_load_image_cmd(undefined4,undefined4);
 void prim_packet_init_tex(int,int,int,uint,byte *);
@@ -815,10 +817,10 @@ undefined4 gpu_mode_regs_apply(uint param_1)
   uVar2 = param_1 & 7;
   if (uVar2 == 1) {
 LAB_801934f4:
-    GPTRW(0x801b8434) = 0x401;
-    GPTRW(0x801b8444) = GPTRW(0x801b8444) | 0x800;
-    GP32(0x801b8428) = 0x2000000;
-    GP32(0x801b8428) = 0x1000000;
+    br2_st32p(0x801b8434, 0x401);
+    br2_st32p(0x801b8444, br2_ld32p(0x801b8444) | 0x800);
+    br2_st32p(0x801b8428, 0x2000000);
+    br2_st32p(0x801b8428, 0x1000000);
   }
   else {
     if (uVar2 < 2) {
@@ -828,9 +830,9 @@ LAB_801934f4:
       if (uVar2 == 3) goto LAB_801934f4;
       if (uVar2 != 5) goto LAB_80193540;
     }
-    GPTRW(0x801b8434) = 0x401;
-    GPTRW(0x801b8444) = GPTRW(0x801b8444) | 0x800;
-    GP32(0x801b8428) = 0;
+    br2_st32p(0x801b8434, 0x401);
+    br2_st32p(0x801b8444, br2_ld32p(0x801b8444) | 0x800);
+    br2_st32p(0x801b8428, 0);
     guest_memset((uint32_t *)0x801fad68,0,0x100);
     guest_memset((uint32_t *)0x801fae70,0,0x1800);
   }
@@ -2269,19 +2271,17 @@ int32_t aux_tbl_store_b(uint32_t param_1,int32_t param_2)
  * Disasm-verified @0x80193828. */
 uint32_t gpu_status_cmd(uint32_t param_1)
 {
-  uint32_t *reg_a = (uint32_t *)guest_at(*(uint32_t *)guest_at(0x801b8428));
-  uint32_t *reg_b = (uint32_t *)guest_at(*(uint32_t *)guest_at(0x801b8424));
   uint32_t v;
-  *reg_a = 0x10000007;
-  v = *reg_b & 0xffffff;
+  br2_st32p(0x801b8428, 0x10000007);
+  v = br2_ld32p(0x801b8424) & 0xffffff;
   if (v == 2) {
     if ((param_1 & 8) != 0) {
-      *reg_a = 0x9000001;
+      br2_st32p(0x801b8428, 0x9000001);
       return 2;
     }
     return 1;
   }
-  *reg_b = (v & 0x3fff) | 0xe1001000;
+  br2_st32p(0x801b8424, (v & 0x3fff) | 0xe1001000);
   return 1;
 }
 
