@@ -2501,3 +2501,39 @@ cdromIOHandler/cdromDMAHandler are absent from handlersArray or verifier-
 rejected; fix enqueueCDRomHandlers/initializeCDRomHandlersAndEvents
 ordering or cdromIOVerifier/cdromDMAVerifier IRQ-bit test in the
 recompiled kernel — faithful core fix, not a game patch.
+
+## 2026 — CD stall narrowed to IRQ2-not-dispatching; device side proven sound
+
+LIVE PROBES (:4390, post-MMIO-fix binary):
+- cd_intc_dispatch clean-thunk counter @0x801bce00 = 0 -> guest NEVER jumps
+  to 0x8019a8ec. fnmap routes it to the clean thunk, so this is definitive:
+  the CD interrupt dispatcher is never invoked -> the cd_ctx jmpbuf coroutine
+  never resumes -> DeliverEvent never runs.
+- evcb[8] @0x8ee8 decoded: class=0xF0000009 spec=0x20 mode=MARK(0x2000)
+  status=0x2000 STILL WAITING (never 0x4000 READY). Confirms
+  DeliverEvent(0xF0000009,0x20) never executed. cd_dma_chan_reset would call
+  cd_bios_svc_07(0xf0000009,0x20) in its else-branch (0x801bdee8==0 live)
+  but is never reached (indirect channel-task callback).
+- irqctx_ring: EVERY entry vblank:1 cdrom_active:0 istat:0x1 -> NO CD IRQ2
+  context switch ever recorded despite imask:0xD (bit2 enabled).
+- cdrom_trace_dump: i_stat:0x4 (CD IRQ bit2 ASSERTED at INTC) while CPU spins
+  polling 0x1F801800/0x1F801803 in cd driver (pcs 0x8019787C/0x80196984/
+  0x8019780C = cd_cmd_issue_b region). IRQ line high but exception never
+  taken -> break is INTC->CPU IRQ2 dispatch, OR game in permanent DI.
+- Device side PROVEN: Pause(0x09) pending_arm->process_pending->
+  set_irq(CDIRQ_COMPLETE)->present_cdrom_irq->psx_irq_raise(2,2); mask
+  cdrom_irq_mask_matches_reason(0x07,2)=match. irq_flag consumed (0),
+  pending disarmed -> completion fired and was acked.
+- ANOMALY: cdrom_state still reading:1 read_cmd:0x06 read_delay~218K
+  sector_pos advancing AFTER Pause -> read stream may not have stopped
+  (stop_read_stream in Pause handler) — possible device-model secondary bug.
+
+SUSPECT ORDER: (1) CPU/INTC IRQ2 exception dispatch (i_stat bit2 set but
+no take) — check psx_irq_raise(2)/exception path & SR.IM/IE state; (2) game
+CD driver polling in DI; (3) kernel exceptionHandler not reaching jmpbuf
+tail. Agents c9f8c5a4 (IRQ->dispatch) + da811ba6 (OpenBIOS handler reg).
+
+FIXES THIS SESSION (faithful, committed): cd_dma_chan_reset + cd_dma_xfer_
+start + cd_dma_xfer_start_b + cd_reg_bit40_ctrl MMIO open-bus -> CDMMIO16
+(44ce842, 1d5c086). Verified no-regression; stall unchanged (kernel/INTC
+locus, not these).
