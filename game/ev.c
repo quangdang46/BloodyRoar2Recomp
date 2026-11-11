@@ -25,6 +25,12 @@
 
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
+extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+/* faithful guest-verified ports living in menu.c (same (ctrl,motion,pc)
+ * guest-addr calling convention, return = next stream guest addr) */
+extern uint32_t desc_cursor_select(uint32_t,uint32_t,uint32_t);
+extern void slot_apply_guest(int,int);
+extern void slot_mark2_set(uint32_t);
 
 typedef uint8_t  byte;
 typedef uint16_t ushort;
@@ -72,6 +78,25 @@ typedef uint64_t ulonglong;
 #define FC_D4      0xd4
 #define FC_D6      0xd6
 #define FC_FLAG27  0x27
+#define FC_4E      0x4e
+#define FC_54      0x54
+#define FC_60      0x60
+#define FC_70      0x70
+#define FC_76      0x76
+#define FC_86      0x86
+#define FC_88      0x88
+#define FC_94      0x94
+#define FC_8A      0x8a
+#define FC_8C      0x8c
+#define FC_8E      0x8e
+#define FC_90      0x90
+#define FC_92      0x92
+#define FC_96      0x96
+#define FC_98      0x98
+#define FC_C4      0xc4
+#define FC_C6      0xc6
+#define FC_CC      0xcc
+#define FC_FC      0xfc
 
 /* motion offsets */
 #define MO_PREV    0x82
@@ -108,6 +133,12 @@ typedef uint64_t ulonglong;
 #define MO_C8      0xc8
 #define MO_102     0x102
 #define MO_103     0x103
+#define MO_80      0x80
+#define MO_8C      0x8c
+#define MO_3A      0x3a
+#define MO_112     0x112
+#define MO_114     0x114
+#define MO_116     0x116
 
 static uint8_t *foe_of(uint8_t *ctrl)
 {
@@ -117,12 +148,6 @@ static uint8_t *foe_of(uint8_t *ctrl)
 static uint8_t *mof(uint8_t *ctrl)
 {
     uint32_t a = GU32(ctrl, 0x38);
-    return a ? (uint8_t *)guest_at(a) : NULL;
-}
-
-static uint8_t *objpos(uint8_t *ctrl)
-{
-    uint32_t a = GU32(ctrl, 0x20);
     return a ? (uint8_t *)guest_at(a) : NULL;
 }
 
@@ -148,7 +173,6 @@ static uint8_t *ev18_beast(uint8_t*,uint8_t*,uint8_t*);
 static uint8_t *ev19_flag27(uint8_t*,uint8_t*,uint8_t*);
 static uint8_t *ev20_timers(uint8_t*,uint8_t*,uint8_t*);
 static uint8_t *ev21_skip(uint8_t*,uint8_t*,uint8_t*);
-static uint8_t *objpos(uint8_t *ctrl);
 
 /* action_switch_guest: select event stream by action index (writes
  * motion+0x84/+0x88, resets motion+0x90). Host supplies this — it
@@ -207,133 +231,162 @@ uint8_t *ev_step(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
 
 /* ================================================================== */
 /* EV0 — conditional skip on motion+0x94 (9-way tbl 0x801226e4)        */
-/* record: {u8 type, s8 cond} — tests FLAG35 read-back word.           */
+/* guest @0x8017a8b4 — faithful port lives in menu.c as                */
+/* desc_cursor_select (verified insn-for-insn against the exe).        */
+/* sel = sx8(byte1); reads motion+0x8c/+0x94, writes motion+0x84 on    */
+/* op7, calls state_pair_init on op8.                                  */
 /* ================================================================== */
 static uint8_t *ev0_branch(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
 {
-    int32_t f = GS32(motion, MO_FLAGT);
-    int8_t c = (int8_t)GU8(pc, 1);
-    uint8_t *next = pc + 2;
-    int take;
-    switch (c) {
-    case 0: take = (f == 0); break;
-    case 1: take = (f != 0); break;
-    case 2: take = (f <  0); break;
-    case 3: take = (f >  0); break;
-    /* remaining ops: stream-switch / fx-call variants — approx: */
-    default: take = 1; break;
-    }
-    if (!take) return NULL;              /* halt stream */
-    return next;
+    uint32_t r = desc_cursor_select((uint32_t)guest_of(ctrl),
+                                    (uint32_t)guest_of(motion),
+                                    (uint32_t)guest_of(pc));
+    return r ? (uint8_t *)guest_at(r) : NULL;
 }
 
 /* ================================================================== */
-/* EV1 — alternate stream pointer                                      */
+/* EV1 — alternate stream pointer  (guest @0x8017a990)                 */
+/* b = sx8(byte1): 0 -> return motion+0x88 ; 1 -> motion+0x88 = pc+2,  */
+/* return pc+2 ; anything else -> guest returns literal 1.            */
 /* ================================================================== */
 static uint8_t *ev1_altstream(uint8_t *motion, uint8_t *pc)
 {
-    if (GU8(pc,1) == 0) {
+    int8_t b = (int8_t)GU8(pc, 1);
+    if (b == 0) {
         uint32_t a = GU32(motion, MO_ALT);
         return a ? (uint8_t *)guest_at(a) : NULL;
     }
-    if (GU8(pc,1) == 1) {
+    if (b == 1) {
         uint8_t *np = pc + 2;
         GSU32(motion, MO_ALT) = guest_of(np);
         return np;
     }
-    return NULL;
+    return (uint8_t *)guest_at(1);       /* guest: v0 = 1 */
 }
 
 /* ================================================================== */
-/* EV2 — hitstun/counter gate                                          */
-/* byte1>=0: continue iff s16 motion+0xc6 < param(u16@+2)              */
-/* byte1<0: 7-way sub-conditions on victim accumulators / flags        */
+/* EV2 — hitstun/counter gate  (guest @0x8017a9d0)                      */
+/* b = sx8(byte1). b>=0: ret NULL iff s16 motion+0xc6 < b, else pc+2.  */
+/* b in -7..-1: 7-way tbl 0x8012270c on victim/self state; ret pc+2    */
+/* or NULL. Other negative -> NULL.                                    */
 /* ================================================================== */
 static uint8_t *ev2_hitstun_gate(uint8_t *ctrl, uint8_t *motion,
                                  uint8_t *pc)
 {
     int8_t b = (int8_t)GU8(pc, 1);
-    if (b >= 0) {
-        uint16_t param = GU16(pc, 2);
-        return (G16(motion, MO_C6) < (int16_t)param) ? pc + 4 : NULL;
+    uint8_t *obj;
+    int ok;
+    if (b >= 0)
+        return (G16(motion, MO_C6) < b) ? NULL : pc + 2;
+    switch (b + 7) {
+    case 0: /* b==-7: ctrl+0x5c&0x28 || ctrl+0xbc>0 */
+        ok = (ST(ctrl, FC_STATE1) & 0x28) != 0 || G16(ctrl, FC_ATK3) > 0;
+        break;
+    case 1: /* b==-6: ctrl+0xd2==0 || (mo cc==0 && ca<=0) */
+        ok = G16(ctrl, FC_D2) == 0 ||
+             (G16(motion, MO_CC) == 0 && G16(motion, MO_CA) <= 0);
+        break;
+    case 2: /* b==-5: ctrl+0x94 - obj+0x178 < 0xe7 (signed) */
+        obj = (uint8_t *)guest_at(GU32(ctrl, 0x20));
+        ok = (G16(ctrl, FC_94) - (int32_t)GU32(obj, 0x178)) < 0xe7;
+        break;
+    case 3: /* b==-4: ctrl+0x5c&0x28 || (mo cc==0 && ca<=0) */
+        ok = (ST(ctrl, FC_STATE1) & 0x28) != 0 ||
+             (G16(motion, MO_CC) == 0 && G16(motion, MO_CA) <= 0);
+        break;
+    case 4: /* b==-3: foe ctrl+0x5c & 0x80 == 0 */
+        obj = (uint8_t *)guest_at(GU32(ctrl, FC_FOE));
+        ok = (GU32(obj, FC_STATE1) & 0x80) == 0;
+        break;
+    case 5: /* b==-2: obj+0x38 >= ctrl+0x94 (signed) */
+        obj = (uint8_t *)guest_at(GU32(ctrl, 0x20));
+        ok = (int32_t)GU32(obj, 0x38) >= (int32_t)G16(ctrl, FC_94);
+        break;
+    case 6: /* b==-1: mo cc==0 && ca<=0 */
+        ok = G16(motion, MO_CC) == 0 && G16(motion, MO_CA) <= 0;
+        break;
+    default:
+        return NULL;
     }
-    /* negative: victim-state gates — approximated from notes:
-     * checks foe motion +0xcc/+0xca, ctrl+0x5c bits, distance. */
-    {
-        uint8_t *foe = foe_of(ctrl);
-        uint8_t *fm = mof(foe);
-        int sub = b + 7;
-        int ok = 1;
-        switch (sub) {
-        case 0: ok = (G16(fm, MO_CC) == 0); break;
-        case 1: ok = (G16(fm, MO_CA) <= 0); break;
-        case 2: ok = (ST(foe, FC_STATE1) & 0x80) == 0; break;
-        case 3: ok = (ST(ctrl, FC_STATE1) & 0x28) == 0; break;
-        default: ok = 1; break;
-        }
-        return ok ? pc + 2 : NULL;
-    }
+    return ok ? pc + 2 : NULL;
 }
 
 /* ================================================================== */
-/* EV3 — frame wait                                                    */
-/* byte1==0xff -> countdown = s16 ctrl+0xbe <<4 ; else byte1<<4       */
+/* EV3 — frame wait  (guest @0x8017ab30)                               */
+/* byte1==0xff -> frames = s16 ctrl+0xbe <<4 ; else byte1<<4.          */
+/* Always stores motion+0x84 = pc+2 and returns 0 (end this dispatch). */
 /* ================================================================== */
 static uint8_t *ev3_wait(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
 {
-    uint8_t b = GU8(pc,1);
+    uint8_t b = GU8(pc, 1);
     int16_t frames;
-    if (b == 0xff) frames = G16(ctrl, FC_ATK3) << 4;
-    else           frames = (int16_t)b << 4;
+    if (b == 0xff) frames = (int16_t)(G16(ctrl, 0xbe) << 4);
+    else           frames = (int16_t)(b << 4);
     GS16(motion, 0x90) = frames;
-    return pc + 2;
+    GSU32(motion, MO_STREAM) = guest_of(pc + 2);
+    return NULL;
 }
 
 /* ================================================================== */
-/* EV4 — conditional branch (tbl 0x8012272c, 27 ops)                   */
-/* pass -> pc+4 ; fail -> ctrl+0x30 (.ANI base) + u16@pc+2             */
+/* EV4 — conditional branch  (guest @0x8017ab74, tbl 0x8012272c, 27)    */
+/* cls = byte1 & 0xc0: 0x00/0x40 -> t=ctrl (0x40 needs !(ctrl+5&1)     */
+/* else ret pc+4), 0x80 -> t=ctrl iff ctrl+5&1 (else ret pc+4),        */
+/* 0xc0 -> t=foe ctrl. op = byte1 & 0x3f; op>=27 -> fail.              */
+/* pass -> pc+4 ; fail -> ctrl+0x30 (.ANI base) + u16@pc+2.            */
+/* ops 5-9 also store motion+0x8c = pc+4 on the fail path.             */
 /* ================================================================== */
 static uint8_t *ev4_branch(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
 {
-    uint8_t cls = GU8(pc,1) >> 6;         /* bits 6-7 of byte1 hi? —
-                                              notes: byte1>>8&0xc0 on
-                                              u16; using u16 operand */
-    uint16_t op16 = GU16(pc, 0);
-    uint8_t hi = (uint8_t)(op16 >> 8);
-    uint8_t cls2 = hi & 0xc0;
-    int op = hi & 0x3f;
+    uint8_t cls = GU8(pc, 1) & 0xc0;
+    int op = GU8(pc, 1) & 0x3f;
     uint8_t *t;
-    uint8_t *self = ctrl, *foe = foe_of(ctrl);
     int32_t f;
-    int take;
-    (void)cls;
+    int pass;
 
-    /* target select: 0x00 self, 0x40 self-if-flag5, 0x80 self,
-     * 0xc0 foe — approximate: cls2 bit7 -> foe */
-    if (cls2 & 0x80) t = foe; else t = self;
-    if (cls2 == 0x40 && !(GU8(self, FC_MODE5) & 1)) t = self;
-
-    /* condition tests (decoded ops): */
-    switch (op) {
-    case 0:  f = GS32(motion, MO_FLAGT); take = (f == 0); break;
-    case 1:  f = GS32(motion, MO_FLAGT); take = (f != 0); break;
-    case 2:  f = GS32(motion, MO_FLAGT); take = (f <  0); break;
-    case 3:  f = GS32(motion, MO_FLAGT); take = (f >  0); break;
-    case 4:  f = GS32(motion, MO_FLAGT); take = (f >= 0); break;
-    case 5:  f = GS32(motion, MO_FLAGT); take = (f <= 0); break;
-    /* ops store a2+4 -> motion+0x8c variants (bookkeeping) */
-    case 12: take = (G16(motion, MO_CC) == 0) && (G16(motion, MO_CA) <= 0);
-             break;
-    case 14: take = !(GU8(t,5) & 0x10) && G16(t, FC_D6) < 0x1e00; break;
-    default:
-        if (op >= 16 && op <= 26) {          /* char-ID equality */
-            take = (GU8(t, 0x03) == (uint8_t)(op - 15));
-        } else take = 1;
-        break;
+    if (cls == 0x40) {
+        if (GU8(ctrl, FC_MODE5) & 1) return pc + 4;
+        t = ctrl;
+    } else if (cls == 0x80) {
+        if (!(GU8(ctrl, FC_MODE5) & 1)) return pc + 4;
+        t = ctrl;
+    } else if (cls == 0xc0) {
+        t = (uint8_t *)guest_at(GU32(ctrl, FC_FOE));
+    } else {
+        t = ctrl;
     }
-    if (take) return pc + 4;
-    /* fail -> branch: .ANI base + u16@rec+2 */
-    return (uint8_t *)guest_at(GU32(ctrl, FC_ANI)) + GU16(pc, 2);
+    if (op >= 0x1b) goto fail;
+
+    f = GS32(motion, MO_FLAGT);
+    switch (op) {
+    case 0: case 15: pass = 0; break;                    /* always fail */
+    case 1:  pass = (f != 0); break;
+    case 2:  pass = (f == 0); break;
+    case 3:  pass = (f <  0); break;
+    case 4:  pass = (f >= 0); break;
+    case 5:  GSU32(motion, MO_8C) = guest_of(pc + 4); pass = 0; break;
+    case 6:  pass = (f != 0);
+             if (!pass) GSU32(motion, MO_8C) = guest_of(pc + 4); break;
+    case 7:  pass = (f == 0);
+             if (!pass) GSU32(motion, MO_8C) = guest_of(pc + 4); break;
+    case 8:  pass = (f <  0);
+             if (!pass) GSU32(motion, MO_8C) = guest_of(pc + 4); break;
+    case 9:  pass = (f >= 0);
+             if (!pass) GSU32(motion, MO_8C) = guest_of(pc + 4); break;
+    case 10: pass = (GU8(t, 5) & 1) != 0; break;
+    case 11: pass = (GU8(t, 5) & 1) == 0; break;
+    case 12: pass = !(G16(motion, MO_CC) == 0 && G16(motion, MO_CA) <= 0);
+             break;
+    case 13: pass = (GU8(t, 0) & 0x80) == 0; break;
+    case 14: pass = !(GU8(t, 5) & 0x10) && G16(t, FC_D6) < 0x1e00; break;
+    case 16: pass = GU8(t, 3) != 0; break;
+    case 17: case 18: case 19: case 20: case 21:
+    case 22: case 23: case 24: case 25: case 26:
+        pass = GU8(t, 3) != (uint8_t)(op - 16); break;    /* char-id != N */
+    default: pass = 0; break;
+    }
+    if (pass) return pc + 4;
+fail:
+    return (uint8_t *)guest_at(GU32(ctrl, FC_ANI) + GU16(pc, 2));
 }
 
 /* ================================================================== */
@@ -452,353 +505,464 @@ static uint8_t *ev5_action(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
 }
 
 /* ================================================================== */
-/* EV6 — guard/counter state sync (6 ops, tbl 0x801227bc)              */
-/* ops copy/toggle flag bytes motion+0x9c/+0x100 self<->foe;          */
-/* master op swaps u16 pairs in *(ctrl+0x18) sub-struct.               */
+/* EV6 — guard/counter state sync (guest @0x8017b0d4)                  */
+/* b = sx8(byte1): -4..1 handled, others -> pc+2. Cases -4/-1/-2/-3   */
+/* touch motion+0x9c/+0x100 (self or foe-motion copy); all but the    */
+/* early-outs run a common tail swapping u16 pairs in *(ctrl+0x18).    */
 /* ================================================================== */
 static uint8_t *ev6_guard_sync(uint8_t *ctrl, uint8_t *motion,
                                uint8_t *pc)
 {
-    int op = GU8(pc, 1);
-    uint8_t *fm = mof(foe_of(ctrl));
-    switch (op) {
-    case 0: GSU8(motion, MO_9C) = GU8(fm, MO_9C); break;
-    case 1: GSU8(fm, MO_9C)   = GU8(motion, MO_9C); break;
-    case 2: GSU8(motion, MO_100)= GU8(fm, MO_100); break;
-    case 3: GSU8(fm, MO_100)  = GU8(motion, MO_100); break;
-    case 4: {   /* swap u16 pairs in ctrl+0x18 sub-struct */
-        uint32_t sg = GU32(ctrl, 0x18);
-        uint8_t *sub = sg ? (uint8_t *)guest_at(sg) : NULL;
-        uint16_t a = GU16(sub, 0x1c4), b = GU16(sub, 0x23c);
-        GSU16(sub, 0x1c4) = b; GSU16(sub, 0x23c) = a;
-        a = GU16(sub, 0x264); b = GU16(sub, 0x28c);
-        GSU16(sub, 0x264) = b; GSU16(sub, 0x28c) = a;
+    int8_t b = (int8_t)GU8(pc, 1);
+    uint8_t *sub;
+    uint16_t a, c;
+
+    switch (b) {
+    case -4:                                    /* 0x8017b174 */
+        if (GU8(motion, MO_9C) == 0) return pc + 2;
+        /* fall through */
+    case -1:                                    /* 0x8017b184 */
+        GSU8(motion, MO_9C)  = 0;
+        GSU8(motion, MO_100) = GU8(motion, MO_100) ^ 1;
+        break;
+    case -3: {                                  /* 0x8017b114 */
+        uint8_t *fo = (uint8_t *)guest_at(GU32(ctrl, FC_FOE));
+        uint8_t *fm = (uint8_t *)guest_at(GU32(fo, 0x38));
+        GSU8(motion, MO_9C) = GU8(fm, MO_9C);
+        if (GU8(motion, MO_100) == GU8(fm, MO_100)) return pc + 2;
+        GSU8(motion, MO_100) = GU8(fm, MO_100);
         break;
     }
-    default: break;
+    case -2:                                    /* 0x8017b15c */
+        GSU8(motion, MO_9C) = 0;
+        if (GU8(motion, MO_100) == 0) return pc + 2;
+        GSU8(motion, MO_100) = 0;
+        break;
+    case 0: case 1:                             /* 0x8017b1d4 */
+        GSU8(motion, MO_9C) = GU8(pc, 1);
+        return pc + 2;
+    default:
+        return pc + 2;
     }
+    /* common tail: swap u16 pairs in ctrl+0x18 sub-struct */
+    sub = (uint8_t *)guest_at(GU32(ctrl, 0x18));
+    a = GU16(sub, 0x1c4); c = GU16(sub, 0x23c);
+    GSU16(sub, 0x1c4) = c; GSU16(sub, 0x23c) = a;
+    a = GU16(sub, 0x264); c = GU16(sub, 0x28c);
+    GSU16(sub, 0x264) = c; GSU16(sub, 0x28c) = a;
     return pc + 2;
 }
 
 /* ================================================================== */
-/* EV7 — position/physics command (9 ops, tbl 0x801227d4)              */
-/* record 6B {u16 cls, s16 p1, s16 p2}: writes motion pos triple      */
-/* +0xd4/+0xd6/+0xd8 via abs-set or sin/cos rotated deltas.            */
+/* EV7 — position/physics command  (guest @0x8017b1ec)                 */
+/* 257-insn transform/effect dispatcher (10-way class tbl + nested    */
+/* op decode, live guest-stack/GTE-adjacent state). Delegated to the  */
+/* generated implementation — clean C cannot safely express it.       */
 /* ================================================================== */
 static uint8_t *ev7_position(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
 {
-    uint16_t op16 = GU16(pc, 0);
-    int op = op16 & 0x0f;
-    int16_t p1 = G16(pc, 2), p2 = G16(pc, 4);
-    uint32_t og = GU32(ctrl, 0x20);
-    uint8_t *obj = og ? (uint8_t *)guest_at(og) : NULL;
-    int32_t ca, sa, dx, dy;
-    (void)obj;
-
-    switch (op) {
-    case 0:  /* absolute set from object pos */
-        GS16(motion, MO_D4) = G16(obj, 0x174);
-        GS16(motion, MO_D6) = G16(obj, 0x176);
-        GS16(motion, MO_D8) = G16(obj, 0x17c);
-        break;
-    case 1: case 2: case 3: {  /* rotated delta: pos += (p1*cos-p2*sin)>>16 */
-        uint16_t ang = (uint16_t)GS16(motion, MO_E4) & 0x3ff;
-        ca = cos_lut[ang & 0x3ff];
-        sa = sin_lut[ang & 0x3ff];
-        dx = ((int32_t)p1 * ca - (int32_t)p2 * sa) >> 16;
-        dy = ((int32_t)p1 * sa + (int32_t)p2 * ca) >> 16;
-        GS16(motion, MO_D4) += (int16_t)dx;
-        GS16(motion, MO_D6) += (int16_t)dy;
-        break;
-    }
-    case 4:  /* facing/flag-bit mirror modes via ctrl+0x6c bits */
-        if (ST(ctrl, FC_STATE5) & 1)
-            GS16(motion, MO_D4) = -GS16(motion, MO_D4);
-        GS16(motion, MO_D4) += p1;
-        break;
-    case 5:  /* approach step toward foe */
-        GS16(motion, MO_D4) += (int16_t)((p1 * 0xb40b40b5LL) >> 39);
-        break;
-    default: break;
-    }
-    return pc + 6;
+    uint32_t r = br2_call_generated(0x8017b1ec,
+        (uint32_t)guest_of(ctrl), (uint32_t)guest_of(motion),
+        (uint32_t)guest_of(pc), 0);
+    return r ? (uint8_t *)guest_at(r) : NULL;
 }
 
 /* ================================================================== */
-/* EV8 — motion-param ISA (11 ops, tbl 0x801227fc); 4B recs            */
-/* writes motion+0xd0 param / +0xe4 angle (s12 fixed point)            */
+/* EV8 — motion-param ISA  (guest @0x8017b5f4)                         */
+/* b = sx8(byte1); mode = b>>4, op = b&0xf. mode1 -> ret pc+4 iff      */
+/* ctrl+5&1; mode2 -> ret pc+4 iff !(ctrl+5&1); op>=0xb -> pc+4.       */
+/* 4-byte records; writes motion+0xd0/+0xe4/+0xd4/+0xd8.               */
 /* ================================================================== */
 static uint8_t *ev8_motion_param(uint8_t *ctrl, uint8_t *motion,
                                  uint8_t *pc)
 {
-    uint16_t op16 = GU16(pc, 0);
-    int op = op16 & 0x0f;
+    int8_t b = (int8_t)GU8(pc, 1);
+    int mode = b >> 4;
+    int op = b & 0xf;
     int16_t p = G16(pc, 2);
-    uint8_t *foe = foe_of(ctrl);
-    int32_t v;
+    uint8_t *t;
+    uint32_t f;
+    int32_t dir, d, e;
+
+    if (mode == 1) { if (GU8(ctrl, FC_MODE5) & 1) return pc + 4; }
+    else if (mode == 2) { if (!(GU8(ctrl, FC_MODE5) & 1)) return pc + 4; }
+    if (op >= 0xb) return pc + 4;
+
     switch (op) {
-    case 0:  GS16(motion, MO_D0) = GU16(pc,2); break;   /* u16 store */
-    case 1:  GS16(motion, MO_D0) += p; break;
-    case 2:  GS16(motion, MO_D0) = G16(foe, 0x4e) + p; break;
-    case 3:  GS16(motion, MO_E4) = G16(ctrl, FC_DISTX) + p; break;
-    case 4:  GS16(motion, MO_E4) = G16(ctrl, 0xc4)
-                 - (G16(ctrl, 0x4e) - 0x800) + p; break;
-    case 5:  GS16(motion, MO_E4) = G16(ctrl, 0x70) + p; break;
-    case 6: {   /* facing decode via ctrl+0x6c bits -> dir +-0x400/800 */
-        uint32_t f = ST(ctrl, FC_STATE5);
-        int dir = 0;
-        if (f & 0x10) dir += 0x400;
-        if (f & 0x20) dir -= 0x400;
-        if (f & 0x40) dir += 0x800;
-        if (f & 0x80) dir -= 0x800;
-        GS16(motion, MO_E4) = dir - (G16(ctrl,0x4e) - G16(motion,MO_E4)) + p;
+    case 0:  GSU16(motion, MO_D0) = GU16(pc, 2); break;
+    case 1:  GS16(motion, MO_D0) = (int16_t)(G16(motion, MO_D0) + p); break;
+    case 2:  t = (uint8_t *)guest_at(GU32(ctrl, FC_FOE));
+             GS16(motion, MO_D0) = (int16_t)(G16(t, FC_4E) + p); break;
+    case 3:  GS16(motion, MO_E4) = (int16_t)(G16(ctrl, FC_DISTX) + p); break;
+    case 4:  GS16(motion, MO_E4) = (int16_t)(G16(ctrl, FC_C4)
+                 - (G16(ctrl, FC_4E) - 0x800) + p); break;
+    case 5:  GS16(motion, MO_E4) = (int16_t)(G16(ctrl, FC_70) + p); break;
+    case 6:  /* facing decode via ctrl+0x6c bits */
+        f = ST(ctrl, FC_STATE5);
+        dir = 0;
+        if (f & 0x10) dir = -0x400;
+        if (f & 0x20) dir += 0x400;
+        if (f & 0x40) dir = 0;
+        if (f & 0x80) dir += -0x800;
+        if (f & 0x01) dir += -0x400;
+        if (f & 0x02) dir += 0x400;
+        if (f & 0x04) dir = 0;
+        if (f & 0x08) dir += -0x800;
+        GS16(motion, MO_E4) = (int16_t)(dir
+            - (G16(ctrl, FC_4E) - G16(motion, MO_E4)) + p);
         break;
-    }
     case 7:
-        if (!(ST(ctrl, FC_STATE1) & 0x10000000))
-            GS16(motion, MO_E4) += (G16(ctrl,FC_DISTX) > 0) ? p : -p;
+        if (!(ST(ctrl, FC_STATE1) & 0x100000)) {
+            d = G16(ctrl, FC_DISTX); e = G16(motion, MO_E4);
+            if (d < -p)      GS16(motion, MO_E4) = (int16_t)(e - p);
+            else if (p < d)  GS16(motion, MO_E4) = (int16_t)(e + p);
+            else             GS16(motion, MO_E4) = (int16_t)(e + d);
+        }
         break;
     case 8:  break;                                     /* nop */
-    case 9:
-        GS16(motion, MO_D4) = G16(objpos(ctrl), 0x174);
-        GS16(motion, MO_D8) = G16(objpos(ctrl), 0x17c);
-        GS16(motion, MO_E4) = G16(ctrl,0xc4) - (G16(ctrl,0x4e)-0x800) + p;
+    case 9:  t = (uint8_t *)guest_at(GU32(ctrl, 0x20));
+        GS16(motion, MO_D4) = (int16_t)GU16(t, 0x174);
+        GS16(motion, MO_D8) = (int16_t)GU16(t, 0x17c);
+        GS16(motion, MO_E4) = (int16_t)(G16(ctrl, FC_C4)
+            - (G16(ctrl, FC_4E) - 0x800) + p);
         break;
-    case 10: GS16(motion, MO_E4) += p; break;
+    case 10: GS16(motion, MO_E4) = (int16_t)(G16(motion, MO_E4) + p); break;
     }
-    (void)v;
     return pc + 4;
 }
 
 /* ================================================================== */
-/* EV9 — physics/velocity ISA (11 ops, tbl 0x8012282c); 6B recs        */
-/* writes ctrl vel/pos +0x8a..+0x98 (launch vel, clamps)              */
+/* EV9 — physics/velocity ISA  (guest @0x8017b860)                     */
+/* b = sx8(byte1); mode = b>>4, op = b&0xf; mode1 -> pc+6 iff flag,   */
+/* mode2 -> pc+6 iff !flag; op>=0xb -> pc+6. 6-byte records; writes    */
+/* ctrl+0x8a..0x98 (velocities/clamps).                                */
 /* ================================================================== */
 static uint8_t *ev9_physics(uint8_t *ctrl, uint8_t *motion,
                             uint8_t *pc)
 {
-    uint16_t op16 = GU16(pc, 0);
-    int op = op16 & 0x0f;
+    int8_t b = (int8_t)GU8(pc, 1);
+    int mode = b >> 4;
+    int op = b & 0xf;
     int16_t p1 = G16(pc, 2), p2 = G16(pc, 4);
-    int32_t v;
+    int32_t a1, v;
+
+    if (mode == 1) { if (GU8(ctrl, FC_MODE5) & 1) return pc + 6; }
+    else if (mode == 2) { if (!(GU8(ctrl, FC_MODE5) & 1)) return pc + 6; }
+    if (op >= 0xb) return pc + 6;
+
     switch (op) {
-    case 0:  GS16(ctrl, 0x8a) = p1; break;
-    case 1:  GS16(ctrl, 0x8c) = p1; break;
-    case 2:  GS16(ctrl, 0x8e) = p1; break;
-    case 3:  GS16(ctrl, 0x90) = p1; break;
-    case 4:  GS16(ctrl, 0x92) = p1; break;
-    case 5:  /* launch vel: min(p1,lim)*128/div style scaling */
-        v = p1 < p2 ? p1 : p2;
-        GS16(ctrl, 0x96) = (int16_t)((v * 128) / 0x100);
+    case 0:  GSU16(ctrl, FC_8A) = GU16(pc, 2);
+             GSU16(ctrl, FC_8C) = GU16(pc, 4); break;
+    case 1:  GSU16(ctrl, FC_96) = GU16(pc, 2);
+             GSU16(ctrl, FC_98) = GU16(pc, 4); break;
+    case 2:  GSU16(ctrl, FC_90) = GU16(pc, 2);
+             GSU16(ctrl, FC_92) = GU16(pc, 4); break;
+    case 3:  GSU16(ctrl, FC_8E) = GU16(pc, 2); break;
+    case 4:  /* ctrl+0x96 = u16 ctrl+0x74 ; ctrl+0x98 = (min(p1,ctrl+0x76)
+             * 128) / p2  (MIPS div; p2==0 -> LO undefined, use -1) */
+        GSU16(ctrl, FC_96) = GU16(ctrl, FC_DISTX);
+        a1 = G16(ctrl, FC_76);
+        if (p1 < a1) a1 = p1;               /* a1 = min(p1, ctrl+0x76) */
+        GS16(ctrl, FC_98) = (int16_t)(p2 ? ((a1 << 7) / p2) : -1);
         break;
-    case 6:  /* vel_y clamp [-0x500, 0x1000] */
-        v = p1;
-        if (v < -0x500) v = -0x500;
-        if (v >  0x1000) v =  0x1000;
-        GS16(ctrl, 0x98) = (int16_t)v;
+    case 5:  GS16(ctrl, FC_96) = (int16_t)(G16(ctrl, FC_70) + p1);
+             GSU16(ctrl, FC_98) = GU16(pc, 4); break;
+    case 6:  GSU16(ctrl, FC_96) = GU16(pc, 2); break;
+    case 7:  GSU16(ctrl, FC_92) = GU16(pc, 2); break;
+    case 8:  GSU16(ctrl, FC_98) = (uint16_t)(GU16(ctrl, FC_98)
+                                          + GU16(pc, 2)); break;
+    case 9:  /* ctrl+0x98 = sx16(u16 sum) clamped [-0x500, 0x1000] */
+        v = (int16_t)(GU16(ctrl, FC_98) + GU16(pc, 2));
+        if (v >= 0x1001)      v = 0x1000;
+        else if (v < -0x500)  v = -0x500;
+        GS16(ctrl, FC_98) = (int16_t)v;
         break;
-    case 7:  GS16(ctrl, 0xd0) = p1; break;
-    case 8:  GS16(ctrl, 0xd4) = p1; break;
-    case 9:  GS16(ctrl, 0xd8) = p1; break;
-    default: break;
+    case 10: GS16(ctrl, FC_98) = (int16_t)(((int32_t)G16(ctrl, FC_98)
+                                          * p1) >> 7); break;
     }
-    (void)motion;
+    (void)a1; (void)v; (void)p2; (void)motion;
     return pc + 6;
 }
 
 /* ================================================================== */
-/* EV10 — FLAG35 state/flag ISA (35 ops, tbl 0x8012285c); 6B recs      */
-/* {u16 classop, u32 maskval}; class bits byte1>>8&0xc0 -> target      */
-/* ops: SET/AND/OR/XOR/TEST on state words +0x54/58/5c/60/64/68/6c    */
+/* EV10 — FLAG35 state/flag ISA  (guest @0x8017ba3c)                   */
+/* cls = byte1 & 0xc0 (same gate as EV4, ret pc+6 on reject);          */
+/* op = byte1 & 0x3f (<0x23). val = u16@+2 | u16@+4<<16.               */
+/* op<25: field = {0x58,0x60,0x5c,0x64,0x68}[op%5], grp = op/5;        */
+/* op25-29: field 0x6c; op30-34: field 0x54. grp: 0 SET 1 AND 2 OR    */
+/* 3 XOR 4 TEST (result -> motion+0x94). op0 also commits ctrl+0x88.   */
 /* ================================================================== */
 static uint8_t *ev10_flags(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
 {
-    uint16_t op16 = GU16(pc, 0);
-    uint8_t hi = (uint8_t)(op16 >> 8);
-    int cls = hi & 0xc0;
-    int op = hi & 0x3f;
-    uint32_t val = GU16(pc,2) | ((uint32_t)GU16(pc,4) << 16);
-    uint8_t *t = (cls & 0x80) ? foe_of(ctrl) : ctrl;
-    int field;
+    uint8_t cls = GU8(pc, 1) & 0xc0;
+    int op = GU8(pc, 1) & 0x3f;
+    uint32_t val = GU16(pc, 2) | ((uint32_t)GU16(pc, 4) << 16);
+    uint8_t *t;
+    static const int fo[5] = { 0x58, 0x60, 0x5c, 0x64, 0x68 };
+    int off, grp;
+    uint32_t cur, r;
 
-    /* field select: low 3 bits of op pick state word; op class in
-     * high bits chooses SET/AND/OR/XOR/TEST — approximated from the
-     * decoded flag ISA (see RE_NOTES FLAG35 section) */
-    field = op & 7;
-    {
-        static const int fo[8] = { 0x54, 0x58, 0x5c, 0x60,
-                                   0x64, 0x68, 0x6c, 0x94 };
-        int off = fo[field];
-        uint32_t cur = (off == 0x94) ? GU32(motion, MO_FLAGT)
-                                     : ST(t, off);
-        uint32_t r;
-        switch ((op >> 3) & 7) {
-        case 0: r = val; break;                    /* SET */
-        case 1: r = cur & val; break;              /* AND */
-        case 2: r = cur | val; break;              /* OR  */
-        case 3: r = cur ^ val; break;              /* XOR */
-        default: r = cur & val; break;             /* TEST -> readback */
-        }
-        if (off == 0x94) GSU32(motion, MO_FLAGT) = r;
-        else            GSU32(t, off) = r;
-        /* op0 special: commit attack power ctrl+0x86 -> +0x88 with
-         * 0xC0000000-class override to +0xfc (FLAG35 op0) */
-        if (op == 0 && cls == 0) {
-            uint32_t pw = GU32(t, 0x86);
-            if (pw & 0xc0000000u) GSU32(t, 0xfc) = pw;
-            else                  GSU32(t, 0x88) = pw;
-        }
+    if (cls == 0x40) {
+        if (GU8(ctrl, FC_MODE5) & 1) return pc + 6;
+        t = ctrl;
+    } else if (cls == 0x80) {
+        if (!(GU8(ctrl, FC_MODE5) & 1)) return pc + 6;
+        t = ctrl;
+    } else if (cls == 0xc0) {
+        t = (uint8_t *)guest_at(GU32(ctrl, FC_FOE));
+    } else {
+        t = ctrl;
+    }
+    if (op >= 0x23) return pc + 6;
+
+    if (op < 25)      { off = fo[op % 5]; grp = op / 5; }
+    else if (op < 30) { off = FC_STATE5; grp = op - 25; }
+    else              { off = FC_54;    grp = op - 30; }
+
+    if (grp == 4) {                       /* TEST: motion+0x94 = t[off]&val */
+        GSU32(motion, MO_FLAGT) = ST(t, off) & val;
+        return pc + 6;
+    }
+    cur = ST(t, off);
+    switch (grp) {
+    case 0: r = val; break;
+    case 1: r = cur & val; break;
+    case 2: r = cur | val; break;
+    default: r = cur ^ val; break;
+    }
+    GSU32(t, off) = r;
+    if (op == 0) {
+        /* attack-power commit: t+0x88 = u16 t+0x86; if flag &&
+         * (val&C0000000)==0x80000000 && sx16 motion+0x80 != 0xbe ->
+         * t+0x88 = u16 t+0xfc */
+        GSU16(t, FC_88) = GU16(t, FC_86);
+        if ((GU8(t, FC_MODE5) & 1) &&
+            (val & 0xc0000000u) == 0x80000000u &&
+            G16(motion, MO_80) != 0xbe)
+            GSU16(t, FC_88) = GU16(t, FC_FC);
     }
     return pc + 6;
 }
 
 /* ================================================================== */
-/* EV12 — damage ISA (8 ops, tbl 0x801228ec); 4B recs                  */
-/* operates on victim accumulators +0xc8/ca/c2/cc/c6 using            */
-/* attacker +0x88 power (see RE_NOTES DMG8).                          */
+/* EV12 — damage ISA  (guest @0x8017bd94)                              */
+/* ~136-insn damage accumulator/state dispatcher. Delegated to the     */
+/* generated implementation.                                           */
 /* ================================================================== */
 static uint8_t *ev12_damage(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
 {
-    uint16_t op16 = GU16(pc, 0);
-    int op = op16 & 0x0f;
-    int16_t p = G16(pc, 2);
-    uint8_t *vic = foe_of(ctrl);          /* damage lands on foe */
-    uint8_t *vm = mof(vic);
-    int32_t pow = G16(ctrl, 0x88);
-    int32_t dmg;
-    switch (op) {
-    case 0:  /* direct power damage */
-        GSU16(vic, FC_HPDISP) = GU16(vic, FC_HPDISP) + (uint16_t)pow;
-        GS16(vm, MO_CA) += (int16_t)pow;
-        break;
-    case 1:  /* fixed p*16 damage */
-        dmg = (int32_t)p * 16;
-        GS16(vic, FC_HPDISP) += (int16_t)dmg;
-        GS16(vm, MO_C6) += (int16_t)(dmg >> 4);
-        break;
-    case 2:  /* guard chip */
-        if (G16(vic, FC_ATK3) < 2)
-            GS16(vic, FC_HPDISP) += (int16_t)(pow >> 2);
-        break;
-    case 3:  /* flat add to accumulators */
-        GS16(vm, MO_CC) += p;
-        GS16(vm, 0xc2)  += p;
-        break;
-    case 4:  /* scaled class-select via victim param table */
-        dmg = (int32_t)((int64_t)pow * p / 0x100);
-        GS16(vm, MO_C8) += (int16_t)dmg;
-        break;
-    case 5:  dmg = pow * 16;               /* p16-scaled */
-        GS16(vm, MO_CA) += (int16_t)dmg;
-        break;
-    case 6:  GS16(vm, MO_CC) += (int16_t)(G16(ctrl,0xc2) * 16); break;
-    case 7:  /* multi-accumulator add */
-        GS16(vm, MO_CA) += p;
-        GS16(vm, 0xc2)  += p;
-        GS16(vm, 0xc8)  += p;
-        break;
-    }
-    (void)motion;
-    return pc + 4;
+    uint32_t r = br2_call_generated(0x8017bd94,
+        (uint32_t)guest_of(ctrl), (uint32_t)guest_of(motion),
+        (uint32_t)guest_of(pc), 0);
+    return r ? (uint8_t *)guest_at(r) : NULL;
 }
 
 /* ================================================================== */
-/* EV13 — hit-slot manager (motion+0xf8 slot table, 8x4B ctrl+0x14)     */
+/* EV13 — hit-slot manager  (guest @0x8017bfb8)                        */
+/* ~232-insn slot-table allocator/commit. Delegated to generated.      */
 /* ================================================================== */
 static uint8_t *ev13_hit_slots(uint8_t *ctrl, uint8_t *motion,
                                uint8_t *pc)
 {
-    int op = GU8(pc, 1) & 0x0f;
-    int slot = GU8(motion, MO_100);
-    uint8_t *ent = (uint8_t *)guest_at(GU32(motion, MO_F8)) + slot * 4;
-    switch (op) {
-    case 0: GSU8(ent, 0) = 1; GSU8(ent, 1) = 0; break;      /* alloc */
-    case 1: GSU8(ent, 0) = 0; break;                        /* clear */
-    case 2: GSU8(ent, 1)++; break;                          /* counter++ */
-    case 3: GSU16(ent, 2) = GU16(pc, 2); break;             /* store param */
-    }
-    return pc + 4;
+    uint32_t r = br2_call_generated(0x8017bfb8,
+        (uint32_t)guest_of(ctrl), (uint32_t)guest_of(motion),
+        (uint32_t)guest_of(pc), 0);
+    return r ? (uint8_t *)guest_at(r) : NULL;
+}
+
+/* MIPS signed-divide-by-constant idiom: mult x,magic ; mfhi ;
+ * (hi + x) >> sh ; - (x >> 31). Used by EV14 op3 (0xda77b1c9, >>17)
+ * and EV17 (0xb40b40b5, >>7). */
+static int32_t ev_fixdiv(int32_t x, uint32_t magic, int sh)
+{
+    int64_t p = (int64_t)x * (int32_t)magic;
+    int32_t hi = (int32_t)(p >> 32);
+    int32_t s = (int32_t)(hi + x) >> sh;
+    return s - (x >> 31);
 }
 
 /* ================================================================== */
-/* EV14 — chip/damage bytes -> ctrl+0xda/+0xdc; gauge scaling          */
+/* EV14 — chip bytes -> ctrl+0xda/+0xdc + foe-motion gauge fields      */
+/* guest @0x8017c35c. t0 = u8@pc+2, t1 = sx8@pc+3. mode gate like      */
+/* EV8/9 (ret pc+4). op = byte1&0xf: 0 assign, 1/2 add, 3 scaled       */
+/* assign, >=4 no write. Tail always: motion+0x3a += t0 (u16),         */
+/* foe-motion+0x112 = (ctrl+0x64&0x10000000)?0:0x40,                    */
+/* foe-motion+0x114 from ctrl+0x64&0x38 / chip thresholds.              */
 /* ================================================================== */
 static uint8_t *ev14_chip(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
 {
-    uint16_t op16 = GU16(pc, 0);
-    uint8_t *t = (op16 & 0x4000) ? foe_of(ctrl) : ctrl;
-    int32_t chip = G16(pc, 2);
-    if (ST(t, FC_STATE5) & 0x100) {          /* gauge-scaled variant */
-        chip = (int32_t)((int64_t)chip * G16(t, FC_D6) / 0x10000);
+    int8_t b = (int8_t)GU8(pc, 1);
+    int mode = b >> 4;
+    int op = GU8(pc, 1) & 0xf;
+    int32_t t0 = GU8(pc, 2);                  /* guest $t0: u8 or scaled */
+    int8_t  t1 = (int8_t)GU8(pc, 3);
+    uint8_t *fo, *fm;
+    uint32_t f;
+    int32_t scale, prod, v;
+    int chip;
+
+    if (mode == 1) { if (GU8(ctrl, FC_MODE5) & 1) return pc + 4; }
+    else if (mode == 2) { if (!(GU8(ctrl, FC_MODE5) & 1)) return pc + 4; }
+
+    switch (op) {
+    case 0:                                     /* assign */
+        GSU8(ctrl, FC_CHIP_A) = (uint8_t)t0;
+        GSU8(ctrl, FC_CHIP_C) = (uint8_t)t1;
+        break;
+    case 1: case 2:                             /* add (u8 wrap) */
+        GSU8(ctrl, FC_CHIP_A) = (uint8_t)(GU8(ctrl, FC_CHIP_A) + t0);
+        GSU8(ctrl, FC_CHIP_C) = (uint8_t)(GU8(ctrl, FC_CHIP_C) + t1);
+        break;
+    case 3: {                                   /* scaled assign */
+        int32_t d6 = G16(ctrl, FC_D6);
+        if (ST(ctrl, FC_STATE5) & 0x100)
+            scale = d6 * 2 + 0x12bfb;
+        else
+            scale = d6 * 3 + 0x1a3f9;
+        prod = (int32_t)((int64_t)scale * t0);  /* mflo */
+        t0 = ev_fixdiv(prod, 0xda77b1c9u, 17);   /* full int32 kept */
+        GSU8(ctrl, FC_CHIP_A) = (uint8_t)t0;
+        GSU8(ctrl, FC_CHIP_C) = (uint8_t)t1;
+        break;
     }
-    GSU8(t, FC_CHIP_A) = (uint8_t)(GU8(t, FC_CHIP_A) + (uint8_t)chip);
-    GSU8(t, FC_CHIP_B) = (uint8_t)(GU8(t, FC_CHIP_B) + (uint8_t)(chip >> 8));
+    default: break;                             /* op>=4: no write */
+    }
+
+    /* common tail */
+    GSU16(motion, MO_3A) = (uint16_t)(GU16(motion, MO_3A) + (uint32_t)t0);
+    fo = (uint8_t *)guest_at(GU32(ctrl, FC_FOE));
+    fm = (uint8_t *)guest_at(GU32(fo, 0x38));
+    if (ST(ctrl, FC_STATE3) & 0x10000000)
+        GS16(fm, MO_112) = 0;
+    else
+        GS16(fm, MO_112) = 0x40;
+    f = GU32(ctrl, FC_STATE3) & 0x38;
+    if (f == 8)            v = 0x4b;
+    else if (f < 9) {
+        if (f == 0)        v = 4;
+        else              goto chip_path;
+    } else if (f == 0x10) v = 0x4c;
+    else if (f == 0x20)   v = 4;
+    else {
+chip_path:
+        chip = GU8(ctrl, FC_CHIP_A);
+        if (chip >= 0x1a)      v = 4;
+        else if (chip >= 0x15) v = 0x4c;
+        else                   v = 0x4b;
+    }
+    GS16(fm, MO_114) = (int16_t)v;
     return pc + 4;
 }
 
 /* ================================================================== */
-/* EV15 — direct hitstun-class set                                      */
-/* ctrl+0xdb = byte@+2 ; motion+0xc6 = s12@+2 (negated iff +0x100!=0) */
+/* EV15 — hitstun-class set  (guest @0x8017c5b8)                       */
+/* mode gate (ret pc+4). ctrl+0xdb = u8@pc+2 ; ctrl+0xc6 =             */
+/* sx16(u16@pc+2)>>4, negated iff motion+0x100 != 0.                   */
 /* ================================================================== */
 static uint8_t *ev15_hitstun_set(uint8_t *ctrl, uint8_t *motion,
                                  uint8_t *pc)
 {
-    int16_t v = G16(pc, 2);
+    int8_t b = (int8_t)GU8(pc, 1);
+    int mode = b >> 4;
+    int32_t v;
+    if (mode == 1) { if (GU8(ctrl, FC_MODE5) & 1) return pc + 4; }
+    else if (mode == 2) { if (!(GU8(ctrl, FC_MODE5) & 1)) return pc + 4; }
     GSU8(ctrl, FC_CHIP_B) = GU8(pc, 2);
+    v = G16(pc, 2) >> 4;
     if (GU8(motion, MO_100) != 0) v = -v;
-    GS16(motion, MO_C6) = (int16_t)((v << 20) >> 20);   /* s12 */
+    GS16(ctrl, FC_C6) = (int16_t)v;
     return pc + 4;
 }
 
 /* ================================================================== */
-/* EV16 — attack-window/cancel counter init                            */
+/* EV16 — attack-window/cancel counter init  (guest @0x8017c66c)       */
+/* mode gate (ret pc+4 on mode1&flag / mode2&!flag). Otherwise         */
+/* motion+0x101..0x104 = 0xff, *(ctrl+0x14) = ctrl+0x26 = 0xff,         */
+/* ctrl+0xbc = (byte1&0xf)?-1:0, then ctrl+0xba/0xb8 from sx8 bytes    */
+/* @pc+2/+3 (pc+2<0 -> slot_mark2_set(ctrl+2), 0xba=-1),               */
+/* motion+0x116 = u16 ctrl+0xba.                                       */
 /* ================================================================== */
 static uint8_t *ev16_atkwin_init(uint8_t *ctrl, uint8_t *motion,
                                  uint8_t *pc)
 {
-    int op = GU8(pc, 1) & 0x0f;
-    GSU8(motion, MO_101) = 0;
-    GSU8(motion, MO_102) = 0;
-    GSU8(motion, MO_103) = 0;
-    GSU8(motion, MO_104) = 0;
-    GS16(ctrl, 0x26) = 0;
-    if (op == 0) GS16(ctrl, FC_ATK3) = -1;
-    else         GS16(ctrl, FC_ATK3) =  0;
-    GS16(ctrl, FC_ATK2) = (int16_t)((int8_t)GU8(pc,2) << 4);
+    int8_t b = (int8_t)GU8(pc, 1);
+    int mode = b >> 4;
+    int flag = GU8(ctrl, FC_MODE5) & 1;
+    uint8_t *sub, *mo;
+    uint8_t vb;
+    int8_t  b3;
+
+    if (mode == 1 && flag) return pc + 4;
+    if (mode == 2 && !flag) return pc + 4;
+    /* error stores — all non-early-return mode paths write all four */
+    GSU8(motion, MO_101) = 0xff;
+    GSU8(motion, MO_102) = 0xff;
+    GSU8(motion, MO_103) = 0xff;
+    GSU8(motion, MO_104) = 0xff;
+    sub = (uint8_t *)guest_at(GU32(ctrl, 0x14));
+    GSU8(ctrl, 0x26) = 0xff;
+    GSU8(sub, 0) = 0xff;
+    GS16(ctrl, FC_ATK3) = (GU8(pc, 1) & 0xf) ? -1 : 0;
+    if ((int8_t)GU8(pc, 2) < 0) {
+        slot_mark2_set(GU8(ctrl, 2));
+        GS16(ctrl, FC_ATK2) = -1;
+    } else {
+        vb = GU8(pc, 2);
+        GS16(ctrl, FC_ATK2) = (int16_t)(vb << 4);
+        if (vb == 0) GSU8(ctrl, 0x26) = 0;
+    }
+    b3 = (int8_t)GU8(pc, 3);
+    GS16(ctrl, FC_ATK1) = (b3 < 0) ? -1 : (int16_t)(b3 << 4);
+    mo = mof(ctrl);
+    if (mo) GS16(mo, MO_116) = GU16(ctrl, FC_ATK2);
     return pc + 4;
 }
 
 /* ================================================================== */
-/* EV17 — range-gated approach                                         */
-/* if |ctrl+0x74 + motion+0xd2| >= param -> motion+0x10a/0x10c =      */
-/* param*0xb40b40b5>>7 (fixed-point step)                             */
+/* EV17 — range-gated approach  (guest @0x8017c7b0)                    */
+/* b = sx8(byte1). b==0: thresh = (ctrl+0x5c&0x40)?G16(pc,2):0x400;     */
+/* dist = sx16(ctrl+0x74 + motion+0xd2) abs; dist>=thresh -> ret pc+4. */
+/* else motion+0x10a = fixdiv(thresh,0xb40b40b5,7), +0x10c = thresh.   */
+/* b!=0: motion+0x10a = b, +0x10c = u16@pc+2.                          */
+/* tail: ctrl+0x5c = (old&0xf7ffffff) then bit0x20000 = (+0x10a!=0).   */
 /* ================================================================== */
 static uint8_t *ev17_approach(uint8_t *ctrl, uint8_t *motion,
                               uint8_t *pc)
 {
-    int16_t param = G16(pc, 2);
-    int32_t dist = G16(ctrl, FC_DISTX) + G16(motion, MO_D2);
-    if (dist < 0) dist = -dist;
-    if (dist >= param) {
-        int32_t step = (int32_t)((int64_t)param * 0xb40b40b5LL >> 55);
+    int8_t b = (int8_t)GU8(pc, 1);
+    int32_t thresh, dist, step;
+    uint32_t s1;
+
+    if (b == 0) {
+        thresh = (ST(ctrl, FC_STATE1) & 0x40) ? G16(pc, 2) : 0x400;
+        dist = (int16_t)(G16(ctrl, FC_DISTX) + G16(motion, MO_D2));
+        if (dist < 0) dist = -dist;
+        if (dist >= thresh) return pc + 4;
+        GS16(motion, MO_10C) = (int16_t)thresh;
+        step = ev_fixdiv(thresh, 0xb40b40b5u, 7);
         GS16(motion, MO_10A) = (int16_t)step;
-        GS16(motion, MO_10C) = (int16_t)step;
-        GS32(ctrl, FC_STATE1) |= 0x40;
     } else {
-        GS32(ctrl, FC_STATE1) &= ~0x42;
+        GS16(motion, MO_10A) = (int16_t)b;
+        GSU16(motion, MO_10C) = GU16(pc, 2);
     }
+    s1 = ST(ctrl, FC_STATE1) & 0xf7ffffffu;
+    if (G16(motion, MO_10A) != 0) s1 |= 0x20000;
+    else                          s1 &= 0xfffdffffu;
+    GSU32(ctrl, FC_STATE1) = s1;
     return pc + 4;
 }
 
 /* ================================================================== */
-/* EV18 — beast/variant mode switch                                    */
+/* EV18 — beast/variant mode switch  (guest @0x8017c97c)               */
+/* ctrl+5 = sx8(byte1); slot_apply_guest(ctrl, byte1 & 1); ret pc+2.   */
 /* ================================================================== */
 static uint8_t *ev18_beast(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
 {
-    GSU8(ctrl, FC_MODE5) = GU8(pc, 1);
-    if (GU8(pc,1) & 1)
-        action_select(ctrl, GU16(pc, 2));   /* param-table reload */
-    return pc + 4;
+    int8_t b = (int8_t)GU8(pc, 1);
+    GSU8(ctrl, FC_MODE5) = (uint8_t)b;
+    slot_apply_guest((int)guest_of(ctrl), b & 1);
+    (void)motion;
+    return pc + 2;
 }
 
 /* ================================================================== */
@@ -812,18 +976,21 @@ static uint8_t *ev19_flag27(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
 }
 
 /* ================================================================== */
-/* EV20 — x16 timers (5 ops, tbl 0x8012294c)                           */
-/* ctrl+0xc0 (only if >=0), +0xd0, +0xd2, +0xcc, +0xd4 = s16@+2 <<4   */
+/* EV20 — x16 timers  (guest @0x8017c9d4)                              */
+/* op = sx8(byte1) (<5 unsigned). ctrl+{c0,d0,d2,cc,d4} = s16@+2 <<4;  */
+/* op0 only stores if current ctrl+0xc0 >= 0. ret pc+4 always.        */
 /* ================================================================== */
 static uint8_t *ev20_timers(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
 {
-    int op = GU8(pc, 1) & 0x07;
-    int16_t v = (int16_t)(G16(pc, 2) << 4);
+    int op = (int8_t)GU8(pc, 1);
+    int16_t v;
+    if ((uint32_t)op >= 5u) return pc + 4;
+    v = (int16_t)(G16(pc, 2) << 4);
     switch (op) {
     case 0: if (G16(ctrl, FC_C0) >= 0) GS16(ctrl, FC_C0) = v; break;
     case 1: GS16(ctrl, FC_D0) = v; break;
     case 2: GS16(ctrl, FC_D2) = v; break;
-    case 3: GS16(ctrl, 0xcc)  = v; break;
+    case 3: GS16(ctrl, FC_CC) = v; break;
     case 4: GS16(ctrl, FC_D4) = v; break;
     }
     (void)motion;
@@ -831,12 +998,13 @@ static uint8_t *ev20_timers(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
 }
 
 /* ================================================================== */
-/* EV21 — beast-gated 6-byte record skip                               */
+/* EV21 — 6-byte record skip  (guest @0x8017ca84)                      */
+/* mode/flag checks exist in guest but every path returns pc+6.        */
 /* ================================================================== */
 static uint8_t *ev21_skip(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
 {
-    if (!(GU8(ctrl, FC_MODE5) & 1)) return pc + 6;
-    return pc + 2;
+    (void)ctrl; (void)motion;
+    return pc + 6;
 }
 extern void fighter_anim_advance(int,int);
 extern void action_switch_guest(int,int*,int);
