@@ -2444,19 +2444,22 @@ extern void cd_status_shifted_read(uint32_t);
 extern void cd_seek_param_issue_clamped(uint32_t,uint32_t);
 extern int32_t cd_seek_complete_poll(int32_t);
 extern void br2_irq_poll(void);
+extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+/* cd_file_read_seq — delegate the whole body to the generated MIPS
+ * (0x801565ec). Its seek-completion wait loop (0x80156628->0x80156630)
+ * crosses a basic-block boundary every iteration, so psx_check_interrupts_at
+ * runs per pass with a real guest resume PC. That is what lets the CD
+ * deferred-interrupt coroutine (cd_ctx_restore -> cd_chan_full_init ->
+ * cd_intc_dispatch) resume and set the 0xf0000009 event flag TestEvent
+ * polls. A clean-C wait cannot supply a dispatchable guest resume PC for
+ * the deferred switch, so br2_irq_poll alone starves the coroutine and
+ * TestEvent spins forever — the same reason cd_init_session/cd_cmd_issue_*
+ * were delegated. br2_call_generated also makes gen_clean_table skip
+ * 0x801565ec so generated callers dispatch straight to the generated body
+ * (no clean_table wrap -> thunk -> generated recursion). */
 uint32_t cd_file_read_seq(uint32_t a0,uint32_t a1,uint32_t a2)
 {
-  cd_mode_store(0);
-  cd_status_shifted_read(a1);
-  cd_seek_param_issue_clamped(a0,a2);
-  /* The generated wait loop (0x80156628->0x80156630->back) crosses a basic-
-   * block boundary every iteration, so psx_check_interrupts_at + cycle
-   * advance run per pass and the CD seek-completion IRQ/flag can land. The
-   * clean a0==0 poll returns after one state-machine sample with no IRQ
-   * service, so the loop must br2_irq_poll or TestEvent spins forever on a
-   * flag the CD driver never gets a chance to set. */
-  while (cd_seek_complete_poll(0) == 0) { br2_irq_poll(); }
-  return a2;
+  return br2_call_generated(0x801565ec, a0, a1, a2, 0);
 }
 
 /* fighter_link_init — fighter link init: a2[0x94]=-1, a3 guest ptr,
