@@ -1525,3 +1525,44 @@ NEXT: find the game->kernel call that should create/enable the CDROM kobj
 not in recent trace), a kernel-call reaching func-table index 14, or CD-driver
 init tied to kobj creation. Verify whether cd_kobj_init_a/b run and whether
 B0/0x57 succeeds.
+
+## 2026 — B0 kernel-service table fully decoded; CD enable = B0/0x4b
+
+The game's own kernel (low RAM 0x8000xxxx) installs its OWN BIOS-call dispatch,
+separate from OpenBIOS. Vector stubs at phys 0xa0/0xb0/0xc0:
+  0xa0 -> jr 0x2a80  (A0 svc tbl @phys 0x200)
+  0xb0 -> jr 0x2aa0  (B0 svc tbl @phys 0x49cc)
+  0xc0 -> jr 0x2ac0  (C0 svc tbl @phys 0x494c)
+  (+0x2ae0 -> tbl @0x4b7c). Each dispatcher: t2 = tbl + t1*4; lw t2,(t2); jr t2.
+  t1 = service number, a0-a3 args. Kernel code calls these via jalr/jr 0xb0.
+
+B0 service table @0x49cc (live-dumped, index=svc#):
+  0x07 -> 0x2610   kobj method invoke (class+attr)   <- cd_bios_svc_07
+  0x08 -> bfc05648 kobj alloc                          <- FUN_8019b380
+  0x0c -> bfc056b4 kobj free                           <- FUN_8019b390
+  0x20 -> 0x26e4   kobj find/modify
+  0x4b -> 0x435c   ENABLE CD channel task  (sets 0xAEC8/0xAEE4, BF801074 bit0)
+  0x4c -> 0x43dc   DISABLE CD channel task (clears 0xAEE4)
+  0x4e/4f/50/5c -> CD channel cmd ops                  <- cd_svc_4e/4f/50/5c
+  0x17 -> 0x29cc   ctx restore ;  0x11/0x1a-0x1f -> 0x2afc (stub)
+CORRECTION: earlier "func table @0x4ac0 index 14" was really B0-table[0x4b]
+(0x4af8-0x49cc=0x12c/4=0x4b). The CD enable is reached ONLY via bios_svc(0xb0,0x4b).
+
+FACT: neither clean game/ nor generated/ contains a bios_svc(0xb0,0x4b) call or
+a t1=0x4b trampoline -> the game never explicitly enables CD channels. On real HW
+the enable must come from the kernel CD-driver init (auto on kobj/driver create)
+or a path not yet traced. pc_probe confirms 0x435c count=0.
+
+UNIFIED ROOT CAUSE (refined): CDROM kernel object class 0xf0000003 is absent
+from the object list. It is the linchpin for THREE paths:
+  (a) IRQ dispatch 0x16E4 -> 0x2610(0xf0000003) finds no object -> CD IRQ cb dead
+  (b) B0/7 kobj ops cd_bios_svc_07(0xf0000003,0x20/0x40) -> 0x2610 finds nothing
+  (c) CD channel task enable (0x435c via B0/0x4b or kobj method) never runs
+The CDROM kobj is created during kernel CD-driver init. That init either isn't
+reached or its create call targets a class/attr the live object list lacks.
+
+NEXT (concrete): find the kernel function that registers the CDROM driver /
+creates class-0xF0000003 objects — likely a "register IRQ/driver" helper the game
+CD init calls, OR the kernel auto-creates 0xF000000N per IRQ source on
+EnableIntc. Trace which game init path should invoke it and whether a BIOS svc
+it depends on (B0/0x57 kobj-info, B0/0x15 cmd) returns wrong data in recomp.
