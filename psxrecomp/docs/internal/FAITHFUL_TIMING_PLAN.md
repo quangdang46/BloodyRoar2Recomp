@@ -3051,3 +3051,69 @@ defer capture/restore. NOT a per-game hack; needs recompiler/runtime work.
 RETAIL-BIOS NOTE: SCPH7502.bin present but is JAPANESE region; game is
 SLES_017.22 EUROPEAN -> region mismatch + needs per-image Ghidra seeds that
 don't exist. Not a quick sidestep; OpenBIOS kernel bug is the real target.
+
+=== UPDATE (session): mc_date_serial_cmp EXONERATED — corruptor is un-instrumented writer ===
+
+fntrace (armed 0x80159AB4+0x80159A14, captures a0-a3 per dispatch):
+- ALL 130 mc_date_serial_cmp calls: a0=0x801F4700 VALID, a1=0x801B3ED8,
+  ra=0x801264E0, sp=0x801FFF90, frame=445. NO wild param_1 exists.
+- One call writes only ~5 halfwords @s2+{0x1c,1e,24,26,32} (~10 bytes) —
+  CANNOT fill the 0x200-byte 0x80-0x27F region. mc_date_serial_cmp is
+  INNOCENT.
+
+disp_tail (always-on last-128 dispatch ring):
+- Pure poll loop: cd_channel_poll(0x80199360) <-> 0x80159AE0 (mc_date_serial_cmp
+  jal-return continuation) repeating, constant ra=0x80159AE0 sp=0x801FFF90.
+- FINAL entry seq=...357: target=0x04000600 = the IRQ cross-thread resume
+  dispatching a corrupted thread's resume-PC. The BIOS IRQ handler
+  (OpenBIOS ChangeThread/RFE) runs between these game dispatches.
+
+store_pc REINTERPRETATION:
+- g_debug_last_store_pc is set ONLY by instrumented generated stores
+  (`g_debug_last_store_pc = 0x...` lines). cpu->write_word/psx_write_word/
+  clean br2_st*/guest_at-deref/memcpy do NOT set it -> reported
+  store_pc=0x80159C08 was STALE (last instrumented store before the wild
+  write), NOT the actual writer.
+- => the 0x80-0x27F corruptor is an UN-INSTRUMENTED writer: clean C code
+  (br2_st*/guest_at pointer deref) or memcpy/memset writing a repeating
+  0x000600FE/0x000400FE pattern to a bad low guest address. It bypasses
+  per-store instrumentation but still hits psx_write/watchpoints.
+- DMA ruled out: ch1(CD)->0x801F470C valid+active; ch3/ch4 low-madr but
+  chcr=0 inactive. No active low-memory DMA.
+
+NEXT (concrete): catch the REAL writer. Options: (a) arm gwatch and read
+  the WRITE VALUE + correlate seq/frame with disp_tail/fntrace to ID the
+  executing function; (b) since clean-C guest_at-deref bypasses psx_write,
+  instrument br2_st*/guest_at write path OR add a RAM-write hook that
+  records the CALLING clean function (g_clean_trace_ra already logs clean
+  dispatch ra — correlate the wild-write frame with the last clean dispatch).
+  The repeating pattern (date/dir-entry-like) points at memcard directory/
+  file-metadata code in save.c (mc_data_write/mc_data_read/cd_dir_entry_probe
+  family) writing to a bad computed guest pointer.
+
+=== UPDATE (session): memory-corruption theory WEAKENED — gwatch caught ZERO writes ===
+
+- Re-armed gwatch addr=0x80 len=512 (covers 0x80-0x27F) on a fresh HLE run,
+  ran to the SAME frame-445 0x04000600 crash: gwatch total=0, ZERO watched
+  writes. Yet post-crash read_ram shows 0x100-0x13C uniformly
+  0xFE000600/0xFE000400.
+- g_psx_ram == memory_get_ram_ptr() == same `ram[]` buffer (memory.c:43,102,
+  120) -> ONE RAM image; guest_at derefs, psx_write_*, generated stores all
+  hit the same mprotect-protected pages. A real write to 0x80-0x27F SHOULD
+  fault. total=0 => either the 0xFE0006xx pattern is LEGITIMATE kernel/heap
+  data (not corruption), or the writer bypasses the protected pages
+  (bulk memcpy already-unprotected window, or a non-ram mapping).
+- irqctx seq 19797 (fatal): CD IRQ take_pc=real_epc=0x80159AD8, then
+  exit_pc=0, exit_reason=NONE(0), same_thread=0, restored=0, ALL saved
+  v0/v1/ra=0 -> the guest handler did a cross-thread ChangeThread->RFE that
+  longjmp'd via sched_escape (did NOT populate exit fields / did NOT restore
+  same-thread). Prior IRQs 19792-1966 were same_thread=1 restored=1 normal.
+- REVISED LEADING HYPOTHESIS: the crash is the IRQ cross-thread resume
+  reading a bad/uninitialized TCB returnPC (subagent: OpenBIOS does NOT zero
+  Thread registers -> uninitialized returnPC = heap garbage 0x04000600),
+  possibly because 0x108 (TCBH) holds a non-pointer value 0xFE000600 at this
+  kernel state so mem[mem[0x108]] derefs garbage. The 0xFE0006xx region is
+  likely legitimate data, NOT corruption -> the whole "wild write" theory
+  may be a red herring. Need: resolve WHICH TCB/RFE path yields
+  returnPC=0x04000600 and whether 0x108 legitimately holds 0xFE000600
+  (kernel globals relocated?) vs a real bad write gwatch can't see.
