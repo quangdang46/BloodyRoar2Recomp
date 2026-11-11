@@ -213,6 +213,23 @@ on a fixed region -> next.
 
 ## 5. Status / Log (update every session)
 
+- **2026-11-11 (kernel-object handle scheme decoded via bios_svc_trace):**
+  `B0/0x08` (=FUN_8019b380 kernel-object alloc) calls and returns:
+  `{type=0xF4000001|0xF0000011|0xF0000009, attr={4,0x8000,0x100,0x2000,0x20}}
+  → handle=0xF1000000..0xF1000008`. So **object instances = 0xF1XXXXXX handles,
+  class/type IDs = 0xF0/0xF4XXXXXX**. The IRQ dispatcher `0x16E4` passes the
+  **class ID `0xF0000003`** (CDROM) to `0x2610` — i.e. `0x2610` is the kernel's
+  "invoke class interrupt handler" that maps class-ID → registered callback.
+  `B0/0x5B` registers per-source handlers (`a1=0x8019AE68` seen), `C0/0x02+0x03`
+  register IntRP records (`a1=0x801FEB40`), `B0/0x15` issues CD cmds
+  (`a0=0x20000001,a1=0x801FEB28`). memory.c:1677 already special-cases the
+  `0xF0000011`/`0xF000000X` **type-tag values stored inside normal-RAM objects**
+  — so object bodies live in RAM, but the `0xF0000000`-based CLASS-descriptor
+  space that `0x2610` dereferences (`lw 0x20(a0)`) reads open-bus. OPEN: is
+  `0xF0000000` a real mapped class-descriptor table the recomp must back, or a
+  handle `0x2610` should translate via a kernel table first? Disasm `0x2610`
+  fully (it continues past 0x2660) + find where class descriptors are written.
+
 - **2026-11-11 (ROOT-CAUSE CANDIDATE: kernel objects live at 0xF0000000 KSEG3 —
   unmapped → open-bus → CD callback lookup fails):** Disassembled the game's own
   kernel IRQ path straight from guest RAM (`read_ram` @0x8000xxxx):
