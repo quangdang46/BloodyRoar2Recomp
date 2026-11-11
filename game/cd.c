@@ -5623,14 +5623,14 @@ void cd_dma_chan_reset(uint32_t param_1)
   int i;
   if (param_1 == 0) cd_delay_3c();
   {
+    /* w[0xd5] is the CD channel status register at blk+0x1aa — MMIO via the
+     * 0x801bdeb0 pointer cell, must use CDMMIO16 not guest_at (open-bus). */
     uint32_t b = DB32G(0x801bdeb0);
-    uint16_t *w = (uint16_t *)guest_at(b);
-    w[0xd5] = (uint16_t)(w[0xd5] & 0xffcf);
-    if ((w[0xd5] & 0x30) != 0) {
+    CDMMIO16_ST(b,0xd5,(uint16_t)(CDMMIO16(b,0xd5) & 0xffcf));
+    if ((CDMMIO16(b,0xd5) & 0x30) != 0) {
       for (i = 0; i < 0xf01; i++) {
         b = DB32G(0x801bdeb0);
-        w = (uint16_t *)guest_at(b);
-        if ((w[0xd5] & 0x30) == 0) break;
+        if ((CDMMIO16(b,0xd5) & 0x30) == 0) break;
       }
     }
   }
