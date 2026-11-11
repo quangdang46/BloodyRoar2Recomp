@@ -2345,3 +2345,34 @@ bit22 — likely a DMA channel-ready/idle flag the runtime isn't producing, or
 another pointer-cell mistranslation in the queue consumer (cd_queue_a/b_status,
 cd_queue_a_read, cd_pump_watchdog). Verify the pointer cell's target register
 and whether the corresponding device models that status bit.
+
+=== UPDATE3: cd_queue stall ROOT-CAUSED to uninitialized pointer cell ===
+
+Live lldb on the spinning process (cd_file_pump->gpu_invoke->wrap_80192f14
+->cd_queue_push+644 busy-wait):
+
+Pointer table @0x801b8420-0x801b8444 (register fast-path cells, populated by
+generated init via computed addressing — NOT literal addrs, NOT clean C):
+  8424 -> 0x1F801810  (GPU GP0/GPUREAD)
+  8428 -> 0           *** UNINITIALIZED ***
+  842c -> 0x1F801000  (mem_ctrl[0])   8430 -> 0x1F801004
+  8434 -> 0x1F801008  (mem_ctrl[2])   8438 -> 0x1F801040 (SIO)
+  843c -> 0x1F801044                   8440 -> 0x1F801048  8444 -> 0x1F801050
+MMIO map (memory.c): 1F801000-03C mem_ctrl, 040-05F SIO, 060 ram_size,
+070/074 I_STAT/I_MASK, 080-0FF DMA ch, 810+ GPU.
+
+cd_queue_push (cd.c:6138) + cd_queue_drain (cd.c:6081) busy-wait:
+  while ((br2_ld32(DB32G(0x801b8428)) & 0x400000) == 0) {}
+DB32G(0x801b8428)=0 -> br2_ld32(0)=0x03000001 -> bit22 clear -> spins forever
+(no br2_irq_poll in the wait). cd_pump_watchdog writes 0x200/0x100 to the same
+reg (*0x801b8428=a2a) as reset commands.
+
+NEXT: determine what register 0x801b8428 SHOULD point to (candidates: a DMA ch
+reg 0x1F8010Bx CHCR/Dn_CHCR busy bit, I_STAT, or a SIO reg) and which init
+routine populates this table — it is generated code using computed addressing
+(lui/addiu base + sw offset), so grep for literal 0x801b8428 finds nothing.
+Find the init via the pointer VALUES (search generated for the lui 0x1f80 /
+addiu sequences building 0x1f801810 / 0x1f801000 stores), or breakpoint the
+store that writes 0x801b8424=0x1f801810 and inspect the sibling store.
+Once the correct target reg is known, either fix the init port or confirm the
+cell is set later (GPU/DMA device-init ordering) and trace why it didn't run.
