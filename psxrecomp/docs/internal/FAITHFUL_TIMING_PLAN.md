@@ -2087,3 +2087,48 @@ OpenBIOS_func_00003870 jalr's cd_ctx_restore -> cd_chan_full_init(resume)
 while frame armed, slot never clears -> guest call-cycle -> recursion
 guard. NEXT: read dequeueCDRomHandlers 0xBFC03DA0 + the deferred-dispatcher
 post-handler path to find where slot 0x4C18[idx]/count 0x4C04 should clear.
+
+## 2026q — CORRECTION: deferred frame = setExceptionJmpBuf longjmp, not func_00003870
+
+Subagent RE corrected the mechanism (func_00003870 is the SIO0/memcard
+action queue — mcHandler region — NOT the CD dispatcher; earlier notes
+mis-identified it).
+
+REAL game deferred-IRQ contract:
+- Register: game B0:0x19 = setExceptionJmpBuf. cd_ctx_save snapshots
+  {ra,sp,fp,s0-s7,gp} into frame @0x801BCD50; kernel stores ptr at
+  mem[0x4BF8] = g_exceptionJmpBufPtr.
+- Consume: exceptionHandler @0xBFC20780 saves ctx to thread->Registers,
+  walks 4 priority handlersArray lists (mem[0x100]; HandlerInfo{next,
+  handler,verifier}). If NO node claims the IRQ, tail @0xBFC20940-98 does
+  longjmp: lw a0,[0x4BF8] -> restore jmpbuf -> jr ra via
+  psx_restore_state_escape() = HOST-side unwind (not nested call).
+- B0:0x17 = returnFromException @0xBFC209A0: restores all GPRs+hi/lo+mtc0
+  Status from thread->Registers, erets. Returns NO consume value.
+- THERE IS NO SLOT/COUNT to clear — frame is a single ptr consumed by the
+  longjmp itself.
+
+WHY THE LOOP: every CD IRQ -> no kernel HandlerInfo claims it -> longjmp
+to game jmpbuf -> cd_ctx_restore -> cd_chan_full_init(resume) ->
+cd_intc_dispatch -> B0:0x17(returnFromException) -> resume interrupted
+ctx -> IRQ still pending -> next check -> longjmp again. The kernel CD
+drivers cdromIOHandler/cdromDMAHandler (enqueued by
+initializeCDRomHandlersAndEvents @0xBFC02E70 via enqueueCDRomHandlers
+@0xBFC03D28, removed by dequeueCDRomHandlers @0xBFC03DA0) are MISSING
+from handlersArray OR their verifiers reject IRQ bit2 -> every CD IRQ
+falls through to game jmpbuf.
+
+ALSO: the 1.36M TestEvent storm = B0:0x0B SYSCALLS; each is a syscall
+exception -> exceptionHandler -> syscallVerifier -> B0Handler -> testEvent
+-> returnFromException. If psx_restore_state_escape leaks host frames,
+dispatch_depth grows -> recursion guard. And the mark-mode EvCB the game
+polls only reaches READY(0x4000) via kernel cdromIOHandler's deliverEvent
+— absent -> cd_init_session spins ~98% forever.
+
+DECISIVE NEXT PROBE: dump mem[0x100] handlersArray heads + each
+HandlerInfo{handler,verifier} + verifier(IRQbit2) result + I_STAT/I_MASK
+(0xBF801070/74) + mem[0x4BF8] during the stall. If CD HandlerInfos absent
+-> bug in enqueueCDRomHandlers/initializeCDRomHandlersAndEvents ordering
+or errant dequeueCDRomHandlers/cdromUndeliverAll. If present but verifier
+returns 0 -> bug in cdromIOVerifier/cdromDMAVerifier IRQ-bit test
+(I_STAT ack/edge-detect mismatch in recompiled kernel).
