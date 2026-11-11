@@ -1937,3 +1937,22 @@ exception_nest_depth. Result: nest_depth stays low, host dispatch_depth grows
 unbounded -> trips at 257. Likely fix area: the deferred-interrupt resume must
 run inside the exception's nest accounting (or the IRQ that drives it must be
 delivered through the normal in_exception path so unwind decrements depth).
+
+## 2026o — deferred-interrupt contract fully traced; bug is OpenBIOS-kernel-side
+
+Game side verified correct (all generated, faithful):
+- cd_chan_full_init (0x8019A814): cd_ctx_save(0x801bcd50) snapshots live gpr,
+  registers frame via B0/0x19 -> mem[0x4C18]. Resumable: v0==0 arms, v0!=0 runs
+  cd_intc_dispatch. Already br2_call_generated (owns cpu->gpr).
+- cd_ctx_save (0x8019AD90): snapshots gpr to frame.
+- cd_ctx_restore (0x8019ADCC): 60-byte reg-restore stub only (ra/fp/sp/s0-s7/
+  a0-a3 from frame+a0). Does NOT touch mem[0x4C18].
+- cd_intc_dispatch (0x8019A8EC): handles CD IRQ, acks via response/0x1F801803.
+
+=> The deferred-frame CONSUMPTION (clearing mem[0x4C18] + marking the kernel
+event delivered) is 100% OpenBIOS-kernel-side (exceptionHandler->deliverEvent
+->deferred-frame dispatch). The recursion cycle (exceptionHandler->verifiers->
+deliverEvent->B0/C0Handler->returnFromException) is the kernel re-delivering
+the same unconsumed deferred event. Game code is exonerated; fix requires
+OpenBIOS kernel RE of the deferred-interrupt/event-consume path (ramtext
+0x2610 deliverEvent, 0x27AC exceptionHandler, 0x2AA0 B0Handler region).
