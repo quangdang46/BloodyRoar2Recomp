@@ -2871,3 +2871,54 @@ expire before next ReadS; any BFRD(0x1F801803 idx0)/CHCR(0x1F8010B8)
 write ever. Hypothesis: cd_mode_flag_set's synchronous command-response
 wait returns 0 (ACK/response not seen in time) -> cd_read_open -1 ->
 tight re-open; OR a higher-level file-read loop re-calls without waiting.
+
+=== 2026 — mc_date_serial_cmp delegated; DATA_READY now fires; new blocker = cd_result_wait_b busy ===
+FIX COMMITTED 509c55a (pushed mine): mc_date_serial_cmp (0x80159ab4) clean-C
+poll loop starved guest time + IRQs (same contract as cd_file_read_seq /
+cd_result_wait_a/b / cd_init_session). Delegated whole body to
+br2_call_generated(0x80159ab4); guest_of() recovers the two guest_at() host
+ptrs; gen_clean_table dropped wrap_80159ab4.
+
+LIVE-VERIFIED post-fix:
+- irq_flag clears (was stuck 0x03); int1_pended/int1_lost stay 0;
+  sector_available=1; read_msf advances through the ReadS stream.
+- CDDBG histogram 0x801bce34+type*4: type-1 (INT1/data-ready) processed
+  ~28.6k times; pump 0x801bce04 ~117k. DATA_READY DOES present now — the
+  earlier "DATA_READY never fires" note is STALE.
+- cd_response_pump -> cd_response_process case1 returns 4 ->
+  call_guest(*(0x801bc84c)=0x80198FE4=cd_mc_sm_wrap) -> cd_mc_state_machine.
+
+REMAINING BLOCKER (precise): cd_mc_state_machine (clean, 0x80199440) runs
+per INT1 but ALWAYS early-outs at cd.c:3762-3764 — status byte at
+guest_sp()-0x10 (filled by cd_result_wait_b_fwd(1,...) -> cd_result_wait_b
+@0x80196B4C, already generated) has bit 0x04 set -> DB32(0x801bcc88)=3 ->
+return BEFORE cd_chan_cmd_submit / cd_dir_entry_finalize. Channel entry
+state stays 0 (0x80010000 u16=0), ch3 CHCR stays 0, blk_io_retry -1 ->
+ReadS reissue livelock persists.
+
+cd_result_wait_b decoded (generated full_45.c:18596, 712B/37blk):
+- prologue saves regs, s3=param_2(out buf); s2=0x801BCB24, s6=+1, s4=+2
+  (result-code cells cd_response_process writes); fp=0x801BC86C,
+  s5=0x801BC8EC.
+- arms timeout cells 0x801FC6E0(deadline)/E4(count)/E8(name 0x80125834)
+  — same mechanism as cd_busy_wait; deadline via cd_timer_read(0x8019A460).
+- polls result bytes + counter vs 0x3C0000; on timeout prints "Sync" err
+  + cd_cmd_state_reset(0x801972A8).
+- two jalr predicates: _jt_80196CEC (a1=0x801FC6D0) and _jt_80196D1C
+  (a1=0x801FC6C8) — the result-buffer addrs cd_response_process fills
+  (case1->0x801fc6d0, case2/3->0x801fc6c8). v0 = fn ptr (result decoder).
+- LIVE: 0x801bcb24=0x02(ack ok), 0x801bcb25=0x00, 0x801bcb26=0x00;
+  0x801fc6e4 counter=1 (fresh wait, not timed out).
+
+OPEN: what does param_1=1 wait on / which result cell+value = "done" vs
+"busy"(out byte0 bit2)? Candidates (subagent 6fc69eac): job-slot busy flag
+(0x801FEF20=0x0a,0x801FEF30=0x0b), prev channel entry consumed state
+(circular wait), or kernel event/semaphore the CD-DMA-done path should
+signal. Each ReadS restart calls start_read_stream->
+cdrom_clear_pending_dataready()+clear_sector_buffer() and rewinds read_msf
+(observed 46:26:29<->46:27:61) — symptom amplifier; re-check vs Beetle
+Read-while-reading once the wait predicate is identified.
+
+NEXT: fully decompile cd_result_wait_b predicate + the fn-ptr table it
+indexes by param_1; identify the "done" result the wait expects and which
+upstream producer should set it.
