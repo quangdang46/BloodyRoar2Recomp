@@ -1840,3 +1840,26 @@ non-interruptible clean-C spin (br2_irq_poll crashes in cd_intc_dispatch
 IRQ ctx; alternative = br2_call_generated for the wait, per cd_cmd_issue
 precedent). If cells are WRONG -> .data load bug (bigger, affects all
 hardware-pointer globals).
+
+## 2026k — cd_init_session stall = deferred-IRQ RE-ENTRANCY in cd_intc_dispatch
+
+After mc_state_init fix (d9f4350), game reaches cd_file_pump -> cd_init_session
+(0x80198af0). Its wait loops spin on DAT_801bcba4 (cleared by session cb
+0x80198590 via CD IRQ -> cd_ctx_save/restore deferred path). Clean C spin is
+not interruptible; two unblock attempts both crash the SAME way:
+
+  br2_irq_poll in the clean wait  -> SIGSEGV @ cd_intc_dispatch store 0x8019AA98
+  cd_init_session -> br2_call_generated -> FATAL dispatch_depth=257
+
+Decoded 0x8019AA98 = `sh $zero,-13030($at)` (rs=$at=gpr1, CORRECT codegen —
+earlier gpr1-vs-gpr2 suspicion was a misdecode; at=0x801C0000 -> 0x801BCD0A
+valid BSS flag clear). last_store_pc is diagnostic only. REAL halt = IRQ
+re-entrancy: cd_intc_dispatch is re-entered ~257x because the CD IRQ source
+stays pending/unmasked while the handler runs its own psx_check_interrupts_at.
+On HW the exception masks further IRQs until intc re-enable (svc 0x17 tail).
+
+ROOT: deferred CD-interrupt path does not suppress nested CD IRQ delivery.
+Needs IRQ-mask/acknowledge fix in the faithful core (cdrom I_STAT clear or
+in-exception nesting guard covering the deferred ctx_save/restore path), NOT
+a clean-source change. cd_init_session reverted to clean spin (stable, no
+crash). Timer-pointer cells confirmed statically correct in EXE image.

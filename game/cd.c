@@ -43,6 +43,9 @@ extern uint32_t guest_of(const void *);
 extern uint8_t  br2_ld8p(uint32_t cell);
 extern uint16_t br2_ld16p(uint32_t cell);
 extern uint32_t br2_ld32p(uint32_t cell);
+
+#define CDDBG_INC(a) do{ (*(volatile uint32_t *)guest_at(a))++; }while(0)
+#define CDDBG_SET(a,v) do{ *(volatile uint32_t *)guest_at(a)=(uint32_t)(v); }while(0)
 extern void     br2_st8p(uint32_t cell, uint8_t v);
 extern void     br2_st16p(uint32_t cell, uint16_t v);
 extern void     br2_st32p(uint32_t cell, uint32_t v);
@@ -104,6 +107,15 @@ undefined4 cd_read_issue(undefined4 param_1,undefined4 param_2,undefined4 param_
 
 /* ======== 0x80198af0 ======== */
 
+/* cd_init_session — CD read-session init + async-Pause handshake.
+ * Waits on DAT_801bcba4 (cleared by session cb 0x80198590 via the CD IRQ ->
+ * cd_ctx_save/restore deferred path, which snapshots LIVE cpu->gpr). Its two
+ * wait loops spin on DAT_801bcba4 with a cd_timer_read deadline; the generated
+ * body polls interrupts at every block so the async cb can fire. A clean C
+ * spin is not interruptible at that granularity (br2_irq_poll delivers the IRQ
+ * against stale cpu->gpr -> cd_intc_dispatch wild store @0x8019AA98). The
+ * interruptible wait therefore needs the generated body OR a fixed deferred-IRQ
+ * context path; tracked in FAITHFUL_TIMING_PLAN. Clean port kept live below. */
 void cd_init_session(void)
 
 {
@@ -159,6 +171,7 @@ int cd_read_poll(int param_1,undefined4 param_2)
   int iVar1;
   int iVar2;
   
+  CDDBG_INC(0x801bce60);
   do {
     iVar1 = cd_timer_read(0xffffffff);
     iVar2 = -1;
@@ -418,6 +431,8 @@ undefined4 cd_cmd_issue_async(byte param_1,int param_2)
   int iVar2;
   int iVar3;
   
+  CDDBG_INC(0x801bce7c);
+  CDDBG_SET(0x801bce80, param_1);
   uVar1 = DAT_801bc848;
   iVar3 = 3;
   while( true ) {
@@ -448,6 +463,7 @@ undefined4 cd_read_open(int param_1)
   uint uVar4;
   uint8_t *p18;
   
+  CDDBG_INC(0x801bce64);
   mc_session(0);
   mc_session_b(0);
   if ((DAT_801bc7b4 & 1) != 0) {
@@ -455,6 +471,7 @@ undefined4 cd_read_open(int param_1)
   }
   uVar1 = cd_status_raw();
   if ((uVar1 & 0x10) != 0) {
+    CDDBG_INC(0x801bce68);   /* status bit4 early-return */
     uVar1 = cd_timer_read(0xffffffff);
     if ((uVar1 & 0x3f) == 0) {
       cd_str_print(0x80125ae0);
@@ -472,6 +489,7 @@ undefined4 cd_read_open(int param_1)
     uVar2 = guest_of(cd_param_buf_get());
     iVar3 = cd_mode_flag_set(2,uVar2,0);
     if (iVar3 == 0) {
+      CDDBG_INC(0x801bce74);   /* mode_flag_set(2) fail */
       DAT_801bcb94 = 0xffffffff;
       return 0xffffffff;
     }
@@ -485,6 +503,7 @@ undefined4 cd_read_open(int param_1)
   uVar1 = cd_mode_byte_read();
   if (((uVar4 != uVar1) || (param_1 != 0)) &&
       (iVar3 = cd_mode_flag_set(0xe,(int)(guest_sp() - 0x18),0), iVar3 == 0)) {
+    CDDBG_INC(0x801bce78);   /* mode_flag_set(0xe) fail */
     DAT_801bcb94 = 0xffffffff;
     return 0xffffffff;
   }
@@ -494,6 +513,8 @@ undefined4 cd_read_open(int param_1)
     cd_cmd_dispatch3(0x80198838);
   }
   DAT_801bcb88 = DAT_801bcb84;
+  CDDBG_INC(0x801bce6c);              /* reached ReadN issue */
+  CDDBG_SET(0x801bce70, DAT_801bcb80);/* sector count bcb80 */
   cd_cmd_issue_async(6,0);
   DAT_801bcb94 = DAT_801bcb80;
   DAT_801bcb98 = cd_timer_read(0xffffffff);
@@ -559,6 +580,7 @@ uint cd_result_wait_a(int param_1,undefined1 *param_2)
   uint32_t raw2 = (uint32_t)(uintptr_t)param_2;
 
   p2 = param_2 ? (uint8_t *)guest_at(raw2) : (uint8_t *)0;
+  CDDBG_INC(0x801bce10);
   CDB32(0x801fc6e0) = cd_timer_read(0xffffffff);
   CDB32(0x801fc6e0) = CDB32(0x801fc6e0) + 0x3c0;
   CDB32(0x801fc6e4) = 0;
@@ -570,6 +592,7 @@ uint cd_result_wait_a(int param_1,undefined1 *param_2)
         bVar3 = 0x3c0000 < CDB32(0x801fc6e4), CDB32(0x801fc6e4) = (uint32_t)iVar4,
         bVar3))
     {
+      CDDBG_INC(0x801bce14);
       cd_str_print(0x801257a4);
       printf_forward(s__s___s__Sync__s__Ready__s_801257b4,CDB32(0x801fc6e8),
                    CDNAME(CDB8(0x801bc865)),CDNOINTR(CDB8(0x801bcb24)),
@@ -599,7 +622,7 @@ uint cd_result_wait_a(int param_1,undefined1 *param_2)
       br2_st8p(0x801bcb0c, bVar1 & 3);
     }
     uVar5 = (uint)CDB8(0x801bcb24);
-    if ((uVar5 == 2) || (uVar5 == 5)) break;
+    if ((uVar5 == 2) || (uVar5 == 5)) { CDDBG_SET(0x801bce18,uVar5); CDDBG_INC(0x801bce1c); break; }
     if (param_1 != 0) {
       return 0;
     }
@@ -690,6 +713,7 @@ undefined4 cd_response_process(void)
   uint8_t *resA, *resB;
 
   br2_st8p(0x801bcb0c, 1);
+  CDDBG_INC(0x801bce30);
   local_20 = CDB8P(0x801bcb18) & 7;
   uVar7 = 0;
   if (local_20 == 0) {
@@ -727,6 +751,9 @@ LAB_801968b4:
       printf_forward(s_com__s_code___02x__02x__801257dc,CDNAME(CDB8(0x801bc865)),
                    CDB32(0x801bc854),CDB32(0x801bc858));
     }
+    CDDBG_INC(0x801bce34 + ((uint)local_20 & 7) * 4);  /* per-type histogram */
+    CDDBG_SET(0x801bce54, uVar7);                       /* last error flags */
+    CDDBG_SET(0x801bce58, CDB8(0x801bc865));            /* last drive idx */
     switch(local_20) {
     case 1:
       if ((uVar7 != 0) && (iVar6 == 1)) {
@@ -912,6 +939,7 @@ bool cd_cmd_issue_sync(byte param_1,int param_2,undefined4 param_3)
   
   uVar1 = DAT_801bc848;
   iVar5 = 3;
+  CDDBG_INC(0x801bce20);
   do {
     DAT_801bc848 = 0;
     if ((param_1 != 1) && ((DAT_801bc854 & 0x10) != 0)) {
@@ -923,6 +951,8 @@ bool cd_cmd_issue_sync(byte param_1,int param_2,undefined4 param_3)
       iVar3 = cd_cmd_issue(param_1,param_2,param_3,0);
       iVar4 = 0;
       if (iVar3 == 0) break;
+      CDDBG_INC(0x801bce24);   /* cd_cmd_issue(param_1) returned nonzero */
+      CDDBG_SET(0x801bce28,iVar3);
     }
     iVar5 = iVar5 + -1;
     iVar4 = -1;
@@ -931,6 +961,7 @@ bool cd_cmd_issue_sync(byte param_1,int param_2,undefined4 param_3)
   if (iVar4 == 0) {
     iVar5 = cd_result_wait_a(0,(undefined1 *)(uintptr_t)param_3);
     bVar2 = iVar5 == 2;
+    CDDBG_SET(0x801bce2c,iVar5);
   }
   else {
     bVar2 = false;
@@ -1099,6 +1130,7 @@ void cd_read_step_cb(char param_1,undefined4 param_2)
   int iVar1;
   undefined4 uVar2;
   
+  CDDBG_INC(0x801bce84);
   CDB32(0x801bcbb4) = param_2;
   if (param_1 == '\x01') {
     if (0 < (int)DAT_801bcb94) {
