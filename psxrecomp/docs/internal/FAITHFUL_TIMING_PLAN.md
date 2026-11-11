@@ -2055,3 +2055,35 @@ deferred-frame recursion are TWO SYMPTOMS of one root cause: the CD
 IRQ/event is not being delivered+consumed. The weak stub returning 0 is a
 separate latent bug for clean callers (must route to generated TestEvent,
 not return 0).
+
+## 2026p — OpenBIOS CD-ROM driver symbols + cd_seek_state_machine fixed
+
+openbios_elf_seeds.json names the kernel CD/event machinery:
+- cdromIOHandler 0xBFC1E9E8 / cdromDMAHandler 0xBFC1EA24 — OpenBIOS's own
+  CD IRQ handlers. cdromIOHandler: `lw v0,24280(v0)` gates on kernel cell
+  0x5ED8 (enqueued-handler count); nonzero -> dispatch, then `li t1,0x17`
+  + `sw -5 -> 0xBF801070` = B0:0x17 IRQ-handler return/ack.
+- enqueue/dequeueCDRomHandlers, resetAllCDRomIRQs, enableAllCDRomIRQs,
+  cdromUndeliverAll(ExceptAckAndRdy), initializeCDRomHandlersAndEvents.
+- testEvent 0xBFC0574C, waitEvent 0xBFC0578C, deliverEvent 0xBFC205E4,
+  undeliverEvent 0xBFC206B8, exceptionHandler 0xBFC20780,
+  syscallVerifier 0xBFC1FF40, enqueueIrqHandler 0xBFC1FC74,
+  enqueueSyscallHandler 0xBFC20050.
+
+CONFIRMED: B0:0x17 = kernel "IRQ handler return/ack" — used BOTH by
+cdromIOHandler AND by game's cd_intc_dispatch tail (jal 0x8019AD60).
+
+FIX LANDED (42bb43c): cd_seek_state_machine weak stub (bind.c:2019 returned
+0) replaced by strong def in cd.c -> bios_svc(0xb0,0x0b,a0,0). Clean callers
+now get real TestEvent. NOTE: does NOT unblock boot — generated path already
+calls real TestEvent 1.36M times and event still never reports ready; the
+weak stub was a latent correctness bug, not the primary blocker.
+
+REMAINING ROOT CAUSE (unchanged): deferred-IRQ frame (B0:0x19, slot array
+0x4C18, count 0x4C04, rotate idx 0x4C48) is not consumed. Dispatcher
+OpenBIOS_func_00003870 jalr's cd_ctx_restore -> cd_chan_full_init(resume)
+-> cd_intc_dispatch -> B0:0x17. Consume gated on handler v0==0 -> ack
+0xBF801070/0xBF801074. If B0:0x17 re-enters deliverEvent/deferred-dispatch
+while frame armed, slot never clears -> guest call-cycle -> recursion
+guard. NEXT: read dequeueCDRomHandlers 0xBFC03DA0 + the deferred-dispatcher
+post-handler path to find where slot 0x4C18[idx]/count 0x4C04 should clear.
