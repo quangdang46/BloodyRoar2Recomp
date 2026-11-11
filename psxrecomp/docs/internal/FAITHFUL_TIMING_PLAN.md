@@ -1597,3 +1597,35 @@ cd_cmd_issue uses br2_call_generated so the wait IS interruptible; the IRQ must
 land mid-spin. NEXT: pc_probe 0xaecc, 0x801a189c, 0x801a1834(op_flag_fn_check),
 0x8019a8ec(cd_intc_dispatch) during a CD read; read intc-busy flag + the
 op_flag ctx flag/fn-ptr cells to see which link is dead.
+
+## 2026c — IntRP table + IRQ dispatch chain fully mapped; live probe results
+
+IntRP mechanism (kernel funcs):
+- mem[0x100] = IntRP table base; per-IRQ-source slots, stride 8.
+- C0/0x03 (0x1edc) = register/find: slot = tbl + src*8; returns record->+0x00.
+- C0/0x02 (0x1eb8) = remove: swaps record out, links prev.
+- C0/0x06 -> 0x27ac = IRQ exception context save.
+- Record +0x00 = kernel dispatch func (src1=0x461c, src2/CDROM=0xaecc),
+  +0x04/+0x08 = game handlers (op_flag_fn_check etc).
+
+IRQ dispatcher 0x16e4 (FULL decode): per pending I_MASK&I_STAT bit ->
+  0x2610(0xF0000000|per-source-class, attr=0x1000) object-notify, then clears
+  I_STAT bit ONLY if per-source "handled" flag mem[0x650c+bit*4] set.
+  CDROM bit2 -> class 0xF0000003, handled-flag @0x6514.
+  NOTE: 0x16e4 does OBJECT notify only; IntRP record dispatch is elsewhere.
+
+LIVE pc_probe (virtual addrs) during CD read stall:
+  RUN: 0x800016e4=13794, 0x80002610=41382  (IRQ+object dispatch active)
+  ZERO: 0x8000aecc,0x8000461c (IntRP dispatchers), 0x80003ee0(sched),
+        0x8000435c(CD enable), 0x801a189c,0x801a1834,0x8019a8ec(cd_intc),
+        0x801a0b60(chan cb)
+=> IRQs fire and object-notify runs, but the IntRP record dispatch path that
+   should invoke the CDROM handlers is NEVER reached. Also CDROM kobj
+   0xF0000003 absent and B0/0x4b enable never called.
+
+NEXT (precise): find the kernel function that reads mem[0x100] IntRP table and
+calls record->+0x00 per pending IRQ source — it is the IRQ-handler sibling of
+0x16e4 (likely in the exception/IRQ path before or after 0x16e4). Determine why
+it doesn't run: gated flag, missing call in the IRQ epilogue, or the game IRQ
+handler that drains IntRP is starved because main thread spins in
+cd_cmd_issue->br2_call_generated.
