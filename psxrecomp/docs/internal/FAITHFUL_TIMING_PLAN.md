@@ -2537,3 +2537,53 @@ FIXES THIS SESSION (faithful, committed): cd_dma_chan_reset + cd_dma_xfer_
 start + cd_dma_xfer_start_b + cd_reg_bit40_ctrl MMIO open-bus -> CDMMIO16
 (44ce842, 1d5c086). Verified no-regression; stall unchanged (kernel/INTC
 locus, not these).
+
+## 2026 — CD stall: game owns INTC; Pause CDIRQ_COMPLETE dropped (pending.pending=0, no set_irq(2))
+
+MAJOR REFRAME (agent da811ba6 + OpenBIOS source fetched):
+- Game DELIBERATELY removes kernel CD handlers (deinitCDRom A0:72,
+  CloseEvent x5, DequeueCdIntr A0:A3, SysDeqIntRP) and installs its OWN
+  INTC @0x801BCD18, handler tbl @0x801BCD1C: tbl[2]=cd_response_pump
+  (0x801979f8). Absence from handlersArray is BY DESIGN, not a bug.
+- cd_intc_dispatch (0x8019a8ec) DOES run ~1.3M times (per-IRQ dispatch) —
+  earlier counter@0x801bce00=0 was a FALSE signal: generated dispatch
+  handles 0x8019a8ec directly, bypassing the clean thunk.
+- OpenBIOS statemachine.c confirms kernel complete() delivers spec 0x0200
+  for IDLE state anyway — game must use its own jmpbuf/INTC path. Kernel
+  side is faithful; bug is in CD device pending-completion delivery.
+
+COMMAND HISTORY (cdrom_command_history, port 4382): game loops
+SeekL(0x15)->Setloc(0x02)->Setmode(0x0E)->ReadN(0x06)->Pause(0x09).
+84 cycles COMPLETED fine over frames 4->340. 85th Pause (seq85,frm340)
+STALLS. So Pause->CDIRQ_COMPLETE->DeliverEvent works generally; one
+instance drops it.
+
+DEVICE PATH (cdrom.c): Pause case0x09 -> set_irq(CDIRQ_ACK=3) +
+pending_arm(0x09,~1.1-2.2M cyc,phase1). process_pending (every
+cdrom_advance) gates on `psx_cycle_count>=due_cyc && irq_flag==0`, then
+set_irq(CDIRQ_COMPLETE=2)+fire_cdrom_irq. irq_enable=0x07 mask OK.
+
+ANOMALY (the precise break): cdrom_state pending={cmd:0x09,active:0,
+delay:0,phase:1} -> pending.pending=0, irq_flag=0, reading=0, i_stat=0x1.
+NO set_irq(0x02) in cdrom_trace window; NO new exec_command after seq85.
+pending.pending cleared WITHOUT firing CDIRQ_COMPLETE. Only two clears:
+line2102 (new-command cancel, faithful psx-spx) & line2529 (completion,
+which WOULD set_irq2). Neither obviously applies -> suspect a QUEUED
+command via try_execute_queued_command->exec_command cancel, OR
+irq_flag!=0 starvation during residual ReadN DATA_READY drain, OR a
+pending-clear path not yet found. NEW COMMAND cancel is documented
+faithful, so if a queued cmd cancelled it, real HW would too -> then
+the game's wait would be a genuine game-side expectation needing the
+completion delivered differently.
+
+GAME SIDE: cd_response_pump reads reason CDB8P(0x801bcb18)&7; reason2
+returns 2 -> calls call_guest(DB32G(0x801bc848),..) ONLY if !=0.
+LIVE: 0x801bc848=0 (mc_session callback cleared) -> even IF pump ran,
+complete callback skipped. Secondary suspect. cd_dma_chan_reset
+(DeliverEvent 0xF0000009/0x20) is the REAL mark-event path, gated behind
+indirect channel-task cb — 0 hits.
+
+NEXT: instrument the single Pause-completion episode — watch
+pending.pending transition + set_irq(2) + irq_flag ack source (guest PC
+of the 0x1F801803.1 write). Distinguish queued-cmd-cancel vs irq_flag
+starvation vs missing-clear. Agent c9f8c5a4 tracing IRQ->dispatch.
