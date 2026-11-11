@@ -3448,13 +3448,17 @@ uint32_t cd_reg_window_op(uint32_t a0,uint32_t a1,uint32_t a2)
     {
       uint32_t cnt = (a2 >> 6) + ((a2 & 0x3f) != 0 ? 1u : 0u);
       CDREG32(0x801bdf08) = cnt;
-      *(uint32_t *)guest_at(*(uint32_t *)guest_at(0x801bdeb4)) = a1;
-      *(uint32_t *)guest_at(*(uint32_t *)guest_at(0x801bdeb8)) =
-        (cnt << 16) | 0x10;
+      /* 0x801bdeb4/8/c are pointer cells -> 0x1F8010C0/C4/C8, live DMA-channel
+       * registers. The guest_at double-deref lands in the flat 0x1f800xxx
+       * scratch mirror, so the DMA setup never reaches hardware (same
+       * mistranslation as the GPU pointer cells). br2_st32p derefs the cell
+       * then MMIO-writes, matching the generated lw-ptr;sw-val,0(ptr). */
+      br2_st32p(0x801bdeb4, a1);
+      br2_st32p(0x801bdeb8, (cnt << 16) | 0x10);
       {
         uint32_t cmd = 0x01000201;
         if (CDREG32(0x801bdec0) == 1) cmd = 0x01000200;
-        *(uint32_t *)guest_at(*(uint32_t *)guest_at(0x801bdebc)) = cmd;
+        br2_st32p(0x801bdebc, cmd);
       }
     }
     return 0;
