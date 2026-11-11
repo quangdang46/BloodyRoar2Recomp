@@ -1905,3 +1905,21 @@ likely event-loop/thread-wakeup (ChangeThread/DeliverEvent) re-trigger, NOT
 game clean source, NOT CD hw. Needs OpenBIOS kernel RE or Beetle oracle to
 find which kernel func fails to mark the event/thread consumed. cd_init_session
 reverted to clean spin (stable, no crash).
+
+## 2026n — recursion = OpenBIOS kernel IRQ dispatch cycle (NAMED functions)
+
+dispatch_tail addrs are kernel-ramtext funcs; VMA 0x500 -> LMA 0xBFC1E4D4 maps
+them to ELF symbols (openbios_elf_seeds.json). Recursion cycle:
+
+  exceptionHandler(0x27AC) -> getCop0CauseAndEPC(0x279C)
+  -> IRQVerifier(0x16E4/0x1F6C) + T0-T3verifier(0x1B7C/1B24/1ACC/1A74)
+     + sio0Verifier(0x371C) + syscallVerifier
+  -> deliverEvent(0x2610) -> B0Handler(0x2AA0)/C0Handler(0x2AC0)
+  -> returnFromException(0x29CC) -> exceptionHandler ... (256 deep)
+
+Timer IRQ verifiers (T0-T3) IN the cycle: cd_init_session's CD-event handler
+path touches timer regs (cd_timer_read) -> likely re-fires a timer IRQ that
+nests back through exceptionHandler->deliverEvent->syscall. The deferred CD
+IRQ (cd_ctx_save/restore) is the trigger; the kernel dispatch lacks a bound
+on this timer/IRQ re-entry. Faithful-core OpenBIOS kernel bug — NOT clean
+game source, NOT CD hw, NOT INTC mask (imask verified correct).
