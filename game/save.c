@@ -2307,7 +2307,7 @@ void mc_state_init(void)
 {
   uint8_t *s0 = (uint8_t *)guest_at(0x801bef60);
   brightness_packet_send(0);
-  while (cd_cmd_issue_sync(9,0,0) != 0) { }
+  while (cd_cmd_issue_sync(9,0,0) == 0) { }
   if (s0 == NULL) return;
   s0[0xd] = 0;
   s0[0xf] = 0xff;
