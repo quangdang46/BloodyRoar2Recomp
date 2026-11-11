@@ -213,6 +213,35 @@ on a fixed region -> next.
 
 ## 5. Status / Log (update every session)
 
+- **2026-11-11 (DECISIVE: all-generated baseline stalls identically → runtime/kernel
+  bug, NOT clean code):** Ran the definitive A/B: `CLEAN_MIN=0xffffffff
+  CLEAN_MAX=0xffffffff` makes `clean_range_ok` false for every guest addr →
+  `clean_try_dispatch` returns 0 → **100% generated code path**. Result is
+  IDENTICAL to the clean run: `busyflag @0x801bcd1a=0`, `result @0x801bcb24=0`,
+  `cd_intc_dispatch`/`cd_response_pump` counters = 0, and `cdrom_state.seq`
+  FROZEN at 5734 with `read_msf` pinned at `[48,10,56]` (no new CD commands
+  issued) while `frame` keeps advancing (VBLANK-only progress). Also ran
+  `CLEAN_SKIP=<whole IRQ-response cluster>` (force 11 CD-IRQ addrs to generated)
+  — same stall. CONCLUSION: the CD-completion stall is a **shared-runtime /
+  kernel-object IRQ delivery bug affecting generated AND clean code equally**.
+  The clean `game/` source is NOT the regression; it faithfully reproduces the
+  same kernel boundary the generated code hits. The real gap is upstream of all
+  game code: the kernel CDROM object (`0xF0000003`) interrupt→callback dispatch
+  never invokes the game's registered CD handler, so `cd_intc_busy_read` stays
+  0 → `cd_cmd_issue` waits forever → game retries the same sector read.
+  VBLANK IRQ works (frames advance) so generic IRQ→kernel→game dispatch is
+  fine; ONLY the CDROM-source kernel-object callback is missing. NEXT (runtime,
+  not game/): instrument the kernel `0x2610` kernel-object invoke for source
+  bit2/CDROM — dump the object table entry for handle `0xF0000003`, confirm
+  whether a callback was ever registered (B0 svc that installs it), and whether
+  the kernel CDROM ISR (`func 0x1FC04A8C` region) runs on CD irq_flag=0x03.
+  The indirect CD callbacks `0x801AA244`/`0x801AA2AC` ARE seeded into dispatch
+  cells `0x801FEB44/48` by `cd_subchan_table_install` — verify the kernel calls
+  THOSE (they have real `br2eu_func_*` generated bodies) rather than
+  `0x8019A87C`. Suspect: kernel-object callback registration BIOS call is a
+  no-op/misrouted, OR the CDROM kernel ISR isn't wired to the game's IntRP
+  record. This is faithful-core work in `psxrecomp/`, game/ is exonerated.
+
 - **2026-11-11 (IRQ chain fully mapped — gap isolated to kernel-object CD callback):**
   Traced the complete maskable-IRQ path live. CPU exception → kernel
   `ExceptionHandler` (RAM vector `0x80000080`→`0x27AC`, valid low-mem kernel
