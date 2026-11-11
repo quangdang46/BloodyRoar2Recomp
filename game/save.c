@@ -2345,21 +2345,24 @@ void se_value_select(uint32_t a0)
 }
 
 /* mode3_dispatch — mode dispatch on *(u32*)a1: 0->632e4, 1->63314,
- * 2->63320, else break. Disasm 0x8016325c-0x801632dc. */
+ * 2->63320, else break. Disasm 0x8016325c-0x801632dc.
+ * Returns v0 like the MIPS original: block_copy_ret_len/lzss_decode length,
+ * or 2 for unhandled mode words (li v0,2 survives to the epilogue). */
 extern uint32_t block_copy_ret_len(uint32_t,uint32_t);
 /* lzss_trap — guest `break 1,7; jr ra`: debug breakpoint stub.
  * Faithful port traps instead of silently returning. */
 extern void lzss_trap(uint32_t,uint32_t);
 
 extern uint32_t lzss_decode(uint32_t,uint32_t);
-void mode3_dispatch(uint32_t a0,uint32_t a1)
+uint32_t mode3_dispatch(uint32_t a0,uint32_t a1)
 {
   uint32_t v1 = *(uint32_t *)guest_at(a1);
   (void)a0;
-  if (v1 == 1) { lzss_trap(a0,a1); return; }
+  if (v1 == 1) { lzss_trap(a0,a1); return 0; }
   if (v1 < 2) {
-    if (v1 == 0) { block_copy_ret_len(a0,a1); return; }
-  } else if (v1 == 2) { lzss_decode(a0,a1); return; }
+    if (v1 == 0) return block_copy_ret_len(a0,a1);
+  } else if (v1 == 2) return lzss_decode(a0,a1);
+  return 2;
 }
 
 /* slot_status_fill — 24-slot status byte fill: for i<24, rec =
@@ -2843,7 +2846,11 @@ extern int reset_combat_slots(void);
 extern void clear_f0300_records(void);
 extern void fighter_record_apply(uint32_t,int32_t);
 extern void page_table_ptr_set(uint32_t,int32_t);
-extern void stream_block_decode(uint32_t,uint32_t,int32_t);
+/* real signature lives in menu.c: (guest heap ptr, host int* tag table,
+ * tag) -> consumed length. The table argument is a GUEST address at these
+ * call sites, so wrap it in guest_at() — passing the raw guest address as
+ * int* made *param_2 dereference host memory ~0x80xxxxxx (wild read). */
+extern undefined4 stream_block_decode(undefined4,int *,int);
 extern void cd_timer_read(uint32_t);
 extern uint32_t action_enter(void *battle, uint8_t *ctrl, uint32_t sel);
 /* strong action_enter_fwd: forwards to action_enter (action.c).
@@ -3566,30 +3573,30 @@ int card_sprite_load_sm(uint32_t a0,uint32_t a1)
   if (s2 < 0xf) {
     if (s2 >= 4) {
       /* four-sprite block */
-      stream_block_decode(v47b8,v3cfc,0);
+      stream_block_decode(v47b8,(int *)guest_at(v3cfc),0);
       spr_draw_pair(v47b8,0,0x1f0,1,0x200,0,1);
-      stream_block_decode(v47b8,v3cfc,1);
+      stream_block_decode(v47b8,(int *)guest_at(v3cfc),1);
       spr_draw_pair(v47b8,0,0x1f1,1,0x280,0,1);
-      stream_block_decode(v47b8,v3cfc,2);
+      stream_block_decode(v47b8,(int *)guest_at(v3cfc),2);
       spr_draw_pair(v47b8,0,0x1f2,1,0x240,0x100,1);
-      stream_block_decode(v47b8,v3cfc,3);
+      stream_block_decode(v47b8,(int *)guest_at(v3cfc),3);
       spr_draw_pair(v47b8,0,0x1f3,1,0x2c0,0x100,1);
     } else if (s2 == 3) {
-      stream_block_decode(v47b8,v3cfc,0);
+      stream_block_decode(v47b8,(int *)guest_at(v3cfc),0);
       spr_draw_pair(v47b8,0,0x1f4,1,0x300,0,1);
-      stream_block_decode(v47b8,v3cfc,1);
+      stream_block_decode(v47b8,(int *)guest_at(v3cfc),1);
       spr_draw_off((int32_t)v47b8,0x280,0,1);
     } else {
       goto single;
     }
   } else if (s2 == 0xf) {
-    stream_block_decode(v47b8,v3cfc,0);
+    stream_block_decode(v47b8,(int *)guest_at(v3cfc),0);
     spr_draw_pair(v47b8,0,0x1f4,1,0x300,0,1);
-    stream_block_decode(v47b8,v3cfc,1);
+    stream_block_decode(v47b8,(int *)guest_at(v3cfc),1);
     spr_draw_off((int32_t)v47b8,0x340,0,1);
   } else {
 single:
-    stream_block_decode(v47b8,v3cfc,0);
+    stream_block_decode(v47b8,(int *)guest_at(v3cfc),0);
     spr_draw_pair(v47b8,0,0x1f4,1,0x300,0,1);
   }
   cd_timer_read(0);
@@ -5730,7 +5737,7 @@ int display_page_commit_a(int32_t a0)
     /* commit path (also taken when same 1KB page) */
     s1 = (int32_t)g8(0x1f800013);
     scratch_013_set(0);
-    stream_block_decode(g32(0x801f4764), g32(0x801f4760), s2 & 3);
+    stream_block_decode(g32(0x801f4764), (int *)guest_at(g32(0x801f4760)), s2 & 3);
     spr_draw_pair(g32(0x801f4764), 0, 0x1ff, 1, 0x200, 0, 1);
     cd_timer_read(0);
     scratch_013_set((uint32_t)s1);
@@ -5808,7 +5815,7 @@ mid:
 commit:
   s1 = (int32_t)g8(0x1f800013);
   scratch_013_set(0);
-  stream_block_decode(g32(0x801f476c), g32(0x801f4768), s2 & 7);
+  stream_block_decode(g32(0x801f476c), (int *)guest_at(g32(0x801f4768)), s2 & 7);
   spr_draw_off((int32_t)g32(0x801f476c), 0x300, 0x100, 1);
   cd_timer_read(0);
   scratch_013_set((uint32_t)s1);

@@ -57,6 +57,13 @@ static uint32_t br2_phys(uint32_t addr)
 
 void *guest_at(uint32_t addr)
 {
+    /* gwatch: close any pending watched-write window. Clean-C stores go
+     * through raw guest_at() pointers and bypass every traced write path —
+     * this hook is what lets the mprotect watch finish entries for exactly
+     * the writers it exists to observe. One volatile load when disarmed. */
+    { extern volatile int g_guest_watch_pending;
+      extern void guest_watch_block_tick(void);
+      if (g_guest_watch_pending) guest_watch_block_tick(); }
     uint32_t phys = br2_phys(addr);
     if (phys <= BR2_RAM_SIZE)
         return memory_get_ram_ptr() + phys;

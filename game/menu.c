@@ -81,7 +81,7 @@ extern int select_phase_update();
 extern int match_setup_apply();
 extern int menu_sprite_load_sm();
 extern int menu_stepper_sm();
-extern int mode3_dispatch();
+extern uint32_t mode3_dispatch(uint32_t,uint32_t);
 extern int memcard_err_sentinel();
 extern int rec_find_lt_f8();
 extern int rec_find_ge_e();
@@ -2236,7 +2236,14 @@ undefined4 stream_block_decode(undefined4 param_1,int *param_2,int param_3)
   
   if (param_3 < *param_2) {
     if (param_2[param_3 + 1] != -1) {
-      uVar1 = mode3_dispatch(param_1,(int)param_2 + param_2[param_3 + 1] + (*param_2 + 1) * 4);
+      /* param_2 is a host pointer into guest RAM (callers pass guest_at()).
+       * The original MIPS added the table's GUEST address; (int)param_2
+       * truncated the host pointer instead, so mode3_dispatch received a
+       * bogus a1 (~0x87xxxxxx), read the mode word from open bus, and
+       * returned a garbage length that corrupted the heap cursor
+       * (_DAT_801e3cfc / _DAT_801c47b8) -> wrong CD dest -> DMA into .text.
+       * guest_of() recovers the guest address faithfully. */
+      uVar1 = mode3_dispatch(param_1,guest_of(param_2) + (uint32_t)param_2[param_3 + 1] + (uint32_t)(*param_2 + 1) * 4u);
       return uVar1;
     }
   }

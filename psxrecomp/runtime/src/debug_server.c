@@ -149,6 +149,11 @@ int debug_server_fmv_quiet(void)
  * ring-buffer entries with the current frame for cross-correlation. */
 uint64_t s_frame_count = 0;
 
+/* guest_watch (guest_watch.c): forward decls for the per-block stuck-pending
+ * recovery hook in cyc_watch_observe. Full API decls live with the handlers. */
+extern volatile int g_guest_watch_pending;
+extern void guest_watch_block_tick(void);
+
 /* ---- Layer-1 first-divergence per-frame fingerprint ----------------------
  * Cumulative, ORDER-DEPENDENT rolling hashes over MAIN-RAM guest writes.
  * The point: native and dirty-interp are the SAME deterministic program run
@@ -2228,6 +2233,11 @@ static uint64_t s_cyc_watch_last_cycle = 0xFFFFFFFFFFFFFFFFull;
 
 static inline void cyc_watch_observe(uint32_t block_leader_phys)
 {
+    /* gwatch stuck-pending recovery: if a watched store's PC+4 patch site was
+     * never reached (literal-pool data), force-finish the pending entry and
+     * re-protect the data pages. Normally g_guest_watch_pending is 0 — this
+     * is a single volatile load per block, ~free. */
+    if (g_guest_watch_pending) guest_watch_block_tick();
     if (!s_cyc_watch_armed) return;                 /* disarmed: no cost */
 
     /* DEDUPE the double-fire: a block reached via the dispatcher is observed
@@ -13159,6 +13169,102 @@ static void handle_xlate(int id, const char *json)
     send_fmt("{\"id\":%d,\"ok\":true,\"xlate\":%s}", id, buf);
 }
 
+/* ---- gwatch: mprotect-based guest-RAM write watch (guest_watch.c) ----
+ * Catches EVERY store to a watched guest-RAM byte range — generated-code
+ * stores, clean-C raw guest_at() stores (which bypass wtrace_all), and DMA
+ * writers — recording host RIP + guest provenance per hit. This is the only
+ * observability surface that sees clean-C writes.
+ *   gwatch         {"addr":"0x801C47B8","len":8}   (KSEG0 or phys; repeatable,
+ *                                                  up to 8 ranges accumulate)
+ *   gwatch_dump    {"count":N,"newest":1}
+ *   gwatch_disarm  {}
+ *   gwatch_reset   {}   (clear ring, keep armed) */
+extern int      guest_watch_add(uint32_t guest_addr, uint32_t len);
+extern void     guest_watch_disarm(void);
+extern void     guest_watch_reset_ring(void);
+extern void     guest_watch_block_tick(void);
+extern volatile int g_guest_watch_pending;
+extern uint64_t guest_watch_total(void);
+extern uint64_t guest_watch_oor(void);
+extern uint64_t guest_watch_dropped(void);
+extern int      guest_watch_armed(void);
+extern int      guest_watch_pending(void);
+extern int      guest_watch_range_count(void);
+extern void     guest_watch_range(int i, uint32_t *lo, uint32_t *hi);
+extern int      guest_watch_dump(char *buf, size_t cap, int max, int newest_first);
+extern void     guest_watch_diag(uint64_t *segv_pc, uint64_t *segv_addr,
+                                 uint64_t *trap_pc, uint64_t *patch_fail);
+
+static void handle_gwatch(int id, const char *json)
+{
+    char abuf[32]; uint32_t len = 4;
+    if (!json_get_str(json, "addr", abuf, sizeof(abuf))) {
+        send_err(id, "gwatch requires addr"); return;
+    }
+    len = (uint32_t)json_get_int(json, "len", 4);
+    uint32_t addr = hex_to_u32(abuf);
+    int r = guest_watch_add(addr, len);
+    if (r == 0) {
+        send_fmt("{\"id\":%d,\"ok\":true,\"armed\":%d,\"ranges\":%d,"
+                 "\"total\":%llu,\"oor\":%llu,\"dropped\":%llu}",
+                 id, guest_watch_armed(), guest_watch_range_count(),
+                 (unsigned long long)guest_watch_total(),
+                 (unsigned long long)guest_watch_oor(),
+                 (unsigned long long)guest_watch_dropped());
+    } else {
+        send_fmt("{\"id\":%d,\"ok\":false,\"err\":%d}", id, r);
+    }
+}
+
+static void handle_gwatch_dump(int id, const char *json)
+{
+    int count = json_get_int(json, "count", 256);
+    if (count < 1) count = 1;
+    if (count > 2048) count = 2048;
+    int newest = json_get_int(json, "newest", 0) != 0;
+    size_t cap = 4096 + (size_t)count * 1100;
+    if (cap > (size_t)32 * 1024 * 1024) cap = (size_t)32 * 1024 * 1024;
+    char *buf = (char *)malloc(cap);
+    if (!buf) { send_err(id, "oom"); return; }
+    int n = guest_watch_dump(buf, cap, count, newest);
+    /* Wrap the bare array in the response envelope. */
+    char head[256];
+    uint64_t d_segv_pc, d_segv_addr, d_trap_pc, d_patch_fail;
+    guest_watch_diag(&d_segv_pc, &d_segv_addr, &d_trap_pc, &d_patch_fail);
+    int hn = snprintf(head, sizeof(head),
+        "{\"id\":%d,\"ok\":true,\"total\":%llu,\"oor\":%llu,"
+        "\"dropped\":%llu,\"armed\":%d,\"pending\":%d,"
+        "\"segv_pc\":\"0x%llX\",\"segv_addr\":\"0x%llX\","
+        "\"trap_pc\":\"0x%llX\",\"patch_fail\":%llu,\"entries\":",
+        id, (unsigned long long)guest_watch_total(),
+        (unsigned long long)guest_watch_oor(),
+        (unsigned long long)guest_watch_dropped(),
+        guest_watch_armed(), guest_watch_pending(),
+        (unsigned long long)d_segv_pc, (unsigned long long)d_segv_addr,
+        (unsigned long long)d_trap_pc, (unsigned long long)d_patch_fail);
+    char *out = (char *)malloc((size_t)hn + (size_t)n + 2);
+    if (!out) { free(buf); send_err(id, "oom"); return; }
+    memcpy(out, head, (size_t)hn);
+    memcpy(out + hn, buf, (size_t)n);
+    out[hn + n] = '}'; out[hn + n + 1] = 0;
+    debug_server_send_line(out);
+    free(out); free(buf);
+}
+
+static void handle_gwatch_disarm(int id, const char *json)
+{
+    (void)json;
+    guest_watch_disarm();
+    send_ok(id);
+}
+
+static void handle_gwatch_reset(int id, const char *json)
+{
+    (void)json;
+    guest_watch_reset_ring();
+    send_ok(id);
+}
+
 /* Live host-stack-usage profile (RECURSION_BUG.md §17): read the always-on ring
  * while the game is still responsive to distinguish a gradual cross-frame leak
  * (used_kb climbs linearly with frame) from a within-one-frame runaway. */
@@ -13827,6 +13933,10 @@ static const CmdEntry s_commands[] = {
     { "wtrace_clear",        handle_wtrace_clear },
     { "freeze_check",      handle_freeze_check },
     { "d44_ring",          handle_d44_ring },
+    { "gwatch",            handle_gwatch },
+    { "gwatch_dump",       handle_gwatch_dump },
+    { "gwatch_disarm",     handle_gwatch_disarm },
+    { "gwatch_reset",      handle_gwatch_reset },
     { "irqctx_ring",       handle_irqctx_ring },
     { "sp_ring",           handle_sp_ring },
     { "disp_ring",         handle_disp_ring },

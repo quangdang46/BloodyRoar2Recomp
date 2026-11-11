@@ -2420,3 +2420,50 @@ CLEAN-SOURCE integration (committed, runtime-verified reach CD stall, 0 crash):
 - battle.c agent ports REVERTED: COP2 delegates had host/guest ptr bug ->
   ADEL crash; needs redo with correct guest_of marshaling (gameplay-only,
   deferred). Agents running: CD-IRQ diagnosis, resolve.c, gfx.c ports.
+
+=== UPDATE5 (session): ROOT CAUSE of nondeterministic CD->.text DMA found+fixed ===
+
+Symptom: CD-ROM DMA sometimes wrote file data over dispatched .text
+(0x8018E0B0..0x801970D0) -> unknown-dispatch crashes. Good runs loaded the
+same file at 0x801320D0; bad runs at 0x8018E0D0 (delta 0x5C000).
+
+ROOT CAUSE (host-pointer-as-guest-address in clean-C stream decoder):
+- stream_block_decode (menu.c, guest 0x80163154) took `int *param_2` =
+  HOST pointer into guest RAM (all menu.c/game.c callers pass
+  `(int*)guest_at(tbl)`), but computed mode3_dispatch's a1 as
+  `(int)param_2 + entry + (count+1)*4` — truncating the HOST pointer to
+  32 bits. mode3_dispatch then did guest_at(~0x87xxxxxx) -> open-bus
+  mode word -> nondeterministic return length -> heap cursor cells
+  (_DAT_801e3cfc @0x801E3CFC, _DAT_801c47b8 @0x801C47B8) corrupted
+  (observed live: 0x878B0FD0/0x878BC7D0 in cursor AND DAT_801BCB84/88
+  CD dest cells) -> cd_read_setup wrote bogus dest -> DMA into .text.
+- Same bug class in save.c: direct stream_block_decode call sites passed
+  GUEST addresses (g32() values) where the contract wants a host int* —
+  wild host dereference ~0x80xxxxxx.
+- mode3_dispatch was `void` relying on v0-leftover for the consumed
+  length; MIPS original returns block_copy_ret_len/lzss_decode length,
+  or v0=2 for unhandled mode words.
+
+FIXES (faithful, general — guest_of()/guest_at() marshaling):
+- menu.c stream_block_decode: a1 = guest_of(param_2) + entry + hdr.
+- save.c: corrected extern decl; wrapped table args in guest_at() at
+  card_sprite_load_sm + display_page_commit_a/b call sites.
+- save.c mode3_dispatch: returns uint32_t faithfully (len / 2 default).
+- menu.c extern decl updated to match.
+
+VERIFICATION: two fresh headless runs post-fix stable >2M/1.7M frames;
+cells now hold valid guest ptrs (0x801E3CFC=0x8003F5DC,
+0x801BCB84=0x8003F5DC, 0x801BCB88 advanced) vs garbage pre-fix.
+
+ALSO THIS SESSION: added guest_watch.c — mprotect/lazy-finish guest-RAM
+write watcher (gwatch/gwatch_dump/gwatch_disarm/gwatch_reset cmds) to
+cover clean-C raw guest_at() stores that bypass psx_write_*/wtrace_all.
+On macOS arm64e code-page patching is unsafe (W^X/recursive SIGBUS), so
+the watcher uses protected-page faults + lazy finish at guest_at()/block
+ticks; it captures host RIP + guest store PC + reg provenance per write.
+NOTE: watcher sees CPU stores only — DMA writes bypass it (CD cells are
+better traced via wtrace_all + fntrace PSX_FN_FILTER env).
+
+FOLLOW-UP AUDIT (same bug class, not yet fixed): `(int)(intptr_t)&DAT_*`
+casts of host scratchpad pointers in battle.c (~31 sites) truncate host
+pointers to 32 bits — verify each callee's contract before changing.
