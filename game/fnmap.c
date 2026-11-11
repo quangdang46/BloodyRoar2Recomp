@@ -4,6 +4,38 @@
 
 #include <stdint.h>
 
+extern void FUN_80157358(void);
+extern void FUN_801573dc(void);
+extern void FUN_80157444(void);
+extern void FUN_80157574(void);
+extern void FUN_80158274(void);
+extern void FUN_80159f54(void);
+extern void FUN_80159f58(void);
+extern void FUN_80159f60(void);
+extern void FUN_80159f7c(void);
+extern void FUN_8015a1dc(void);
+extern void FUN_801631fc(void);
+extern void FUN_80163248(void);
+extern void FUN_80163250(void);
+extern void FUN_80163840(void);
+extern void FUN_80163848(void);
+extern void FUN_80163858(void);
+extern void FUN_80163860(void);
+extern void FUN_80163870(void);
+extern void FUN_80163878(void);
+extern void FUN_80163880(void);
+extern void FUN_80163888(void);
+extern void FUN_80163890(void);
+extern void FUN_801638a8(void);
+extern void FUN_801638b0(void);
+extern void FUN_801638b8(void);
+extern void FUN_801638c0(void);
+extern void FUN_80163940(void);
+extern void FUN_80163b40(void);
+extern void FUN_80163b7c(void);
+extern void FUN_80163bb8(void);
+extern void FUN_8016fca8(void);
+extern void FUN_8016fcb0(void);
 extern void LAB_80137590(void);
 extern void LAB_80137680(void);
 extern void LAB_80137acc(void);
@@ -305,6 +337,7 @@ extern void cd_sector_debug_dump(void);
 extern void cd_seek_complete_poll(void);
 extern void cd_seek_param_issue(void);
 extern void cd_seek_param_issue_clamped(void);
+extern void cd_seek_state_machine(void);
 extern void cd_seek_step(void);
 extern void cd_stamp_to_sector(void);
 extern void cd_state9_store(void);
@@ -605,33 +638,7 @@ extern void guest_noop(void);
 extern void heap_ptr_fixup(void);
 extern void heap_record_emit(void);
 extern void heap_serialize(void);
-extern void heap_serialize_tag_01000008(void);
-extern void heap_serialize_tag_01000009(void);
-extern void heap_serialize_tag_0100000a(void);
-extern void heap_serialize_tag_0100000c(void);
-extern void heap_serialize_tag_0100000d(void);
-extern void heap_serialize_tag_0100000e(void);
-extern void heap_serialize_tag_01000010(void);
-extern void heap_serialize_tag_01000011(void);
-extern void heap_serialize_tag_01000012(void);
-extern void heap_serialize_tag_01000014(void);
-extern void heap_serialize_tag_01000015(void);
-extern void heap_serialize_tag_01000016(void);
-extern void heap_serialize_tag_0a(void);
-extern void heap_serialize_tag_0c(void);
-extern void heap_serialize_tag_0e(void);
-extern void heap_serialize_tag_10(void);
-extern void heap_serialize_tag_12(void);
-extern void heap_serialize_tag_14(void);
-extern void heap_serialize_tag_16(void);
-extern void heap_serialize_tag_40048(void);
-extern void heap_serialize_tag_40049(void);
-extern void heap_serialize_tag_4004c(void);
-extern void heap_serialize_tag_4004d(void);
-extern void heap_serialize_tag_40050(void);
-extern void heap_serialize_tag_40051(void);
-extern void heap_serialize_tag_40054(void);
-extern void heap_serialize_tag_40055(void);
+extern void heap_serialize_tag_01000000(void);
 extern void hit_chain_clear(void);
 extern void hit_elig_check(void);
 extern void hit_pose_swap(void);
@@ -1554,17 +1561,22 @@ const Br2FnEnt fn_table[] = {
   { 0x801572c0, (void *)chan_attr_rec_a },
   { 0x801572f8, (void *)chan_attr_rec_b },
   { 0x80157334, (void *)cd_reg_window_u16_wrap },
+  { 0x80157358, (void *)FUN_80157358 },
   { 0x80157368, (void *)mc_init_reset },
+  { 0x801573dc, (void *)FUN_801573dc },
   { 0x801573ec, (void *)mc_state_init },
+  { 0x80157444, (void *)FUN_80157444 },
   { 0x80157458, (void *)mc_mode_nibble_rw },
   { 0x801574b4, (void *)mc_dialog_bit4 },
   { 0x801574fc, (void *)one_shot_init },
+  { 0x80157574, (void *)FUN_80157574 },
   { 0x801575bc, (void *)datetime_confirm_a },
   { 0x8015768c, (void *)datetime_confirm_b },
   { 0x801577bc, (void *)mc_confirm_dispatch },
   { 0x8015787c, (void *)confirm_code_select },
   { 0x80157a00, (void *)memcard_tick },
   { 0x80158244, (void *)audio_seq_reset },
+  { 0x80158274, (void *)FUN_80158274 },
   { 0x8015827c, (void *)chan_flag_toggle },
   { 0x801582c0, (void *)chan_reset_register },
   { 0x80158358, (void *)chan_reset_clear },
@@ -1586,7 +1598,12 @@ const Br2FnEnt fn_table[] = {
   { 0x80159d78, (void *)slot_icon_nibble_resolve },
   { 0x80159dac, (void *)gauge_leaf_update },
   { 0x80159eec, (void *)ctr_clamp },
+  { 0x80159f54, (void *)FUN_80159f54 },
+  { 0x80159f58, (void *)FUN_80159f58 },
+  { 0x80159f60, (void *)FUN_80159f60 },
+  { 0x80159f7c, (void *)FUN_80159f7c },
   { 0x80159f84, (void *)picker_table_shuffle },
+  { 0x8015a1dc, (void *)FUN_8015a1dc },
   { 0x8015a1e4, (void *)select_phase_update },
   { 0x8015a584, (void *)fighter_link_init },
   { 0x8015a614, (void *)string_pair_emit },
@@ -1616,7 +1633,10 @@ const Br2FnEnt fn_table[] = {
   { 0x80162280, (void *)pad_handler_b },
   { 0x80162838, (void *)pad_handler_c },
   { 0x80163154, (void *)stream_block_decode },
+  { 0x801631fc, (void *)FUN_801631fc },
   { 0x80163204, (void *)offset_table_lookup },
+  { 0x80163248, (void *)FUN_80163248 },
+  { 0x80163250, (void *)FUN_80163250 },
   { 0x8016325c, (void *)mode3_dispatch },
   { 0x801632e4, (void *)block_copy_ret_len },
   { 0x80163314, (void *)lzss_trap },
@@ -1625,15 +1645,32 @@ const Br2FnEnt fn_table[] = {
   { 0x80163520, (void *)slot_display_pos },
   { 0x8016362c, (void *)menu_noop },
   { 0x80163634, (void *)mode_name_announce },
+  { 0x80163840, (void *)FUN_80163840 },
+  { 0x80163848, (void *)FUN_80163848 },
   { 0x80163850, (void *)ret_zero_a },
+  { 0x80163858, (void *)FUN_80163858 },
+  { 0x80163860, (void *)FUN_80163860 },
   { 0x80163868, (void *)memcard_err_sentinel },
+  { 0x80163870, (void *)FUN_80163870 },
+  { 0x80163878, (void *)FUN_80163878 },
+  { 0x80163880, (void *)FUN_80163880 },
+  { 0x80163888, (void *)FUN_80163888 },
+  { 0x80163890, (void *)FUN_80163890 },
   { 0x80163898, (void *)ret_zero_b },
   { 0x801638a0, (void *)ret_zero_c },
+  { 0x801638a8, (void *)FUN_801638a8 },
+  { 0x801638b0, (void *)FUN_801638b0 },
+  { 0x801638b8, (void *)FUN_801638b8 },
+  { 0x801638c0, (void *)FUN_801638c0 },
   { 0x801638c8, (void *)save_rec_table_copy },
+  { 0x80163940, (void *)FUN_80163940 },
   { 0x80163ab4, (void *)save_tables_commit },
   { 0x80163b08, (void *)rec_find_lt_f8 },
+  { 0x80163b40, (void *)FUN_80163b40 },
   { 0x80163b48, (void *)rec_sorted_lookup },
+  { 0x80163b7c, (void *)FUN_80163b7c },
   { 0x80163b84, (void *)rec_find_ge_e },
+  { 0x80163bb8, (void *)FUN_80163bb8 },
   { 0x80163bc0, (void *)rec_u32_store },
   { 0x80163bf4, (void *)name_rec_insert },
   { 0x80163cbc, (void *)name_rec_gate },
@@ -1676,37 +1713,11 @@ const Br2FnEnt fn_table[] = {
   { 0x80168838, (void *)mc_job_a_result_poll },
   { 0x801688f0, (void *)mc_job_b_result_poll },
   { 0x801689a8, (void *)cd_subsys_boot },
-  { 0x80168ae0, (void *)heap_serialize_tag_10 },
-  { 0x80168c20, (void *)heap_serialize_tag_0c },
-  { 0x80168d90, (void *)heap_serialize_tag_14 },
   { 0x80168f60, (void *)record_table_expand_a },
   { 0x801690fc, (void *)record_table_expand_b },
   { 0x801692d8, (void *)quad_strip_emit_a },
   { 0x8016951c, (void *)quad_strip_emit_b },
-  { 0x801697f4, (void *)heap_serialize_tag_0a },
-  { 0x8016991c, (void *)heap_serialize_tag_0e },
-  { 0x80169aa4, (void *)heap_serialize_tag_12 },
-  { 0x80169c08, (void *)heap_serialize_tag_16 },
-  { 0x80169dfc, (void *)heap_serialize_tag_40048 },
-  { 0x80169ee0, (void *)heap_serialize_tag_4004c },
-  { 0x80169fe4, (void *)heap_serialize_tag_40050 },
-  { 0x8016a0f8, (void *)heap_serialize_tag_40054 },
-  { 0x8016a23c, (void *)heap_serialize_tag_40049 },
-  { 0x8016a384, (void *)heap_serialize_tag_40051 },
-  { 0x8016a50c, (void *)heap_serialize_tag_4004d },
-  { 0x8016a674, (void *)heap_serialize_tag_40055 },
-  { 0x8016a8ec, (void *)heap_serialize_tag_01000008 },
-  { 0x8016a9ac, (void *)heap_serialize_tag_0100000c },
-  { 0x8016aaa4, (void *)heap_serialize_tag_01000009 },
-  { 0x8016abb4, (void *)heap_serialize_tag_0100000d },
-  { 0x8016ad04, (void *)heap_serialize_tag_0100000a },
-  { 0x8016addc, (void *)heap_serialize_tag_0100000e },
-  { 0x8016aeec, (void *)heap_serialize_tag_01000010 },
-  { 0x8016afc8, (void *)heap_serialize_tag_01000014 },
-  { 0x8016b0f8, (void *)heap_serialize_tag_01000011 },
-  { 0x8016b234, (void *)heap_serialize_tag_01000015 },
-  { 0x8016b3c4, (void *)heap_serialize_tag_01000012 },
-  { 0x8016b4c4, (void *)heap_serialize_tag_01000016 },
+  { 0x8016a82c, (void *)heap_serialize_tag_01000000 },
   { 0x8016b618, (void *)entry_attr_bump_loop },
   { 0x8016b6bc, (void *)dual_entry_attr_bump },
   { 0x8016b7c0, (void *)heap_serialize },
@@ -1722,6 +1733,8 @@ const Br2FnEnt fn_table[] = {
   { 0x8016f588, (void *)status_text_display },
   { 0x8016fbfc, (void *)scratchpad_pair_init },
   { 0x8016fc74, (void *)chan_blocks_reset },
+  { 0x8016fca8, (void *)FUN_8016fca8 },
+  { 0x8016fcb0, (void *)FUN_8016fcb0 },
   { 0x8016fcc4, (void *)battle_flow_state_machine },
   { 0x801709fc, (void *)menu_res_load_sm },
   { 0x80170d38, (void *)save_channel_init_commit },
@@ -2149,6 +2162,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8019d4d0, (void *)cd_mode_store },
   { 0x8019d500, (void *)cd_seek_complete_poll },
   { 0x8019d508, (void *)cd_seek_step },
+  { 0x8019d5b0, (void *)cd_seek_state_machine },
   { 0x8019d5c0, (void *)cd_state_store },
   { 0x8019d5f0, (void *)cd_chan_attr_apply },
   { 0x8019da44, (void *)slot_status_fill },
