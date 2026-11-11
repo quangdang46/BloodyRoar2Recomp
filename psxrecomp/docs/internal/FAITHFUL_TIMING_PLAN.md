@@ -3158,3 +3158,48 @@ EXONERATED this session: mc_date_serial_cmp (fntrace all a0=0x801F4700 valid,
 host scheduler (HLE+fibers), BIOS HLE/LLE. store_pc=0x80159C08 was STALE
 (g_debug_last_store_pc only set by instrumented generated stores; clean-C
 guest_at derefs bypass it).
+
+=== UPDATE (session): FULL ROOT CAUSE — decode-buffer lifecycle, flag never re-armed ===
+
+DEFINITIVE causal chain (all live-verified):
+1. cd_bitstream_decode (clean, game/cd.c) L_1f8 flush writes 0xfe00 halfwords
+   to output ptr a1g. Its a1 = *(u32*)(guest_at(0x801f4700)+idx*4) = param_1[idx]
+   (blk_io_retry save.c:2172, faithful vs generated 0x80159A14).
+2. param_1[0]/[1] @ 0x801f4700/04 should be 0x80020000/0x80048000 — set ONLY by
+   tile_stream_job_init (menu.c:2083-86) inside `if (DAT_801b3f64==1)` from
+   _DAT_801f4744/48 (scene_entry game.c:1554-55 = param_1+0x10000/+0x38000).
+3. Generated tile_stream_job_init (0x80159734) CONFIRMS clean port faithful:
+   param_1[0]/[1] written only in block_80159754 (flag==1 path); flag cleared
+   to 0 in same block. No other generated code writes param_1[0]/[1].
+
+LIVE TIMELINE (gwatch host-RIP + wtrace + read_ram):
+- 0x801B3F64 is in game .data; FILE value = 0x1 -> loads correctly (verified
+  neighbors 0x801b3f70=0x80120eac, 0x801b3f5c=0x140 match). Flag=1 at boot.
+- First tile_stream_job_init consumes flag (1->0), sets param_1[0]/[1] valid.
+- frame ~170 (HLE): memset (guest 0x80126188 word-clear loop) clears the WHOLE
+  decode context 0x801f4700+ -> param_1[0]/[1]=0. gwatch: 4 writes same RIP.
+- After memset, flag==0 -> subsequent tile_stream_job_init SKIPS buffer
+  refresh -> param_1[0]/[1] stay 0/0x2000000 forever.
+- frame ~445: blk_io_retry -> cd_bitstream_decode(a1=param_1[idx]=0) -> writes
+  decoded output + 0xfe00 pads to guest phys 0 -> floods 0x100-0x13E ->
+  kernel globals incl TCBH@0x108 destroyed -> IRQ ReturnFromException derefs
+  garbage -> returnPC=0x04000600 FAIL-FAST.
+
+EXHAUSTIVE NEGATIVE RESULTS:
+- NO code (generated full_*.c OR clean game/*.c) writes 1 to 0x801B3F64 after
+  .data init. Searched all offset/base forms (16228/0x3F64, neighbors, byte/
+  half). scene_entry sets _DAT_801f4744/48 but NOT the flag.
+- Therefore on real HW the flag is ALSO consumed once and stays 0. The design
+  intent: param_1[0]/[1] are set ONCE and must PERSIST across decode jobs.
+
+OPEN ROOT-CAUSE QUESTION (the actual bug): the memset that clears the decode
+context runs and wipes param_1[0]/[1], but they are never restored. Either
+(a) the memset clears a context/lifecycle point where real HW would NOT clear
+    param_1[0]/[1] (our memset range/timing diverges), or
+(b) a buffer-rearm path exists that our generated/clean code doesn't reach
+    (decode-job-done / buffer-free / overlay), or
+(c) param_1[0]/[1] are meant to be re-derived each job via a path other than
+    the flag (e.g. tile_stream_open/cd_stream_mode_init).
+NEXT: identify the memset caller (function resetting the decode context) and
+the decode-job-done path; determine whether param_1[0]/[1] should persist or
+be re-armed. This is a decode-job lifecycle bug, NOT an IRQ bug.
