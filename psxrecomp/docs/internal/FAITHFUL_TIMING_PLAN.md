@@ -1492,3 +1492,36 @@ via FUN_8019b380/B0-0x08 (bios_svc_trace shows only 0xf4000001/0xf0000011/
 0xf0000009 device types). Determine whether registration ran and failed, or
 uses a separate kernel path. Then verify flag 0x1faef4 / scheduler 0x3ee0 is
 reached on CD IRQ.
+
+## 2025 — CD stall localized to kernel CD-channel TASK never enabled
+
+Live headless run confirms real stall: cdrom_state.seq creeps but read_msf
+frozen at [48,10,56], irq_flag=0x03 pending, i_stat=0x5. bios_svc_trace shows
+the game looping B0/0x08 (alloc 8 chan objs 0xF1000000-7) + B0/0x0C (free them)
++ B0/0x35 (poll) — CD channel init retrying forever.
+
+Kernel decode (low RAM, guest 0x8000xxxx):
+- Scheduler ~0x3c00-0x3f00 is a kernel task loop. CD-channel processing branch
+  at 0x3ee0 iterates class-0xF0000011 objects via 0x26e4/0x2610, gated by flag
+  mem[0xAEF4] (reach) then mem[0xAEE4] (beqz->skip). Flag 0xAEE4=0 live.
+- Function 0x435c = "enable CD channel task": calls init 0x37c0, sets
+  mem[0xAEC8]=1, mem[0xAEE4]=1, bit0 of 0xBF801074, syscalls. Function 0x43dc
+  clears 0xAEE4. 0x435c/0x43dc are entries in kernel func table @phys 0x4ac0
+  (0x435c at +0x38 = index 14); reached indirectly, no direct jal.
+- pc_probe: 0x435c, 0x3ee0, and all chan callbacks 0x801a0b10-9c count=0 even
+  after manually setting flag 0xAEE4=1 -> the scheduler branch never runs, so
+  flag alone insufficient; full 0x435c (task register/enable) required.
+- Kernel svc helpers: 0x1d84 = indexed var-table set/get @0x64fc;
+  0x1da0/0x1dc4 = DMA chan regs @0xBF801100+idx*16.
+
+UNIFIED THEORY: CDROM kernel object class 0xf0000003 is referenced by BOTH
+IRQ dispatch (0x2610) and BIOS B0/7 kernel-object ops (cd_bios_svc_07), but is
+ABSENT from the object list (only 0xf4000001/0xf0000011/0xf0000009 device objs).
+The CDROM kobj is never created -> CD driver never enables its channel task
+(0x435c) -> IRQ completion path dead -> game retries CD read forever.
+
+NEXT: find the game->kernel call that should create/enable the CDROM kobj
+(class 0xf0000003) and CD task (0x435c). Candidates: B0/0x57 (cd_kobj_init_a/b,
+not in recent trace), a kernel-call reaching func-table index 14, or CD-driver
+init tied to kobj creation. Verify whether cd_kobj_init_a/b run and whether
+B0/0x57 succeeds.
