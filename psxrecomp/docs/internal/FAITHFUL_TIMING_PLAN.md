@@ -2665,3 +2665,23 @@ DISCRIMINATOR NEEDED: does the stalled Pause's CDIRQ_COMPLETE(INT2)
 actually fire+get consumed? If INT2 dropped -> cdrom.c pending bug.
 If INT2 consumed but coroutine still starved -> kernel EntryInt/deferred
 dispatch bug (who sets EntryInt.JB_PC=cd_ctx_restore / reads 0x4BF8).
+
+=== B0 TABLE DECODE (bios disasm B0_Table, index=t1) ===
+0x07 DeliverEvent, 0x08 OpenEvent, 0x09 CloseEvent, 0x0A WaitEvent,
+0x0B TestEvent, 0x0C EnableEvent, 0x0D DisableEvent, 0x17
+ReturnFromException, 0x18 ResetEntryInt, **0x19 HookEntryInt**,
+0x20 UnDeliverEvent. => the game's cd_chan_full_init calls
+HookEntryInt(jmpbuf) to arm EntryInt; BIOS ExceptionHandler then
+restores EntryInt (JB_PC/JB_SP/JB_GP/JB_FP/JB_S0-7) + jr ra on EVERY
+irq/exception -> resumes coroutine.
+cd_ctx_restore(0x8019ADCC) signature decoded: a0=frame, restores
+ra/sp/fp/s0-s7/gp from frame, **v0=a1**, jr ra. Frame=0x801BCD50
+(state blk 0x801BCD18+0x38). Resume lands block_8019A87C: v0!=0 ->
+jal cd_intc_dispatch. So kernel must call cd_ctx_restore(0x801BCD50,
+val) — reached via EntryInt.JB_PC=stub->cd_ctx_restore, NOT a direct
+jal (only dispatch-table entry exists).
+NEXT KERNEL CHECK: is HookEntryInt(B0/0x19) actually invoked + does
+recompiled-BIOS ExceptionHandler EntryInt-restore (the longjmp,
+psx_restore_state_escape) correctly resume? Verify EntryInt ptr
+(dword_75D0->guest RAM) points at a jmp_buf whose JB_PC leads to
+cd_ctx_restore at the moment CD IRQ2 fires.
