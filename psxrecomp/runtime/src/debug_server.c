@@ -7669,10 +7669,9 @@ static void handle_bios_svc_trace(int id, const char *json)
     int p = snprintf(buf, sizeof(buf),
                      "{\"id\":%d,\"ok\":true,\"count\":%u,\"svcs\":[",
                      id, n);
-    uint32_t first = n - avail;
     uint32_t ent[8];
     for (uint32_t i = 0; i < avail && p < (int)sizeof(buf) - 200; i++) {
-        if (!br2_dbg_svc_ent(first + i, ent)) break;
+        if (!br2_dbg_svc_ent(i, ent)) break;
         p += snprintf(buf + p, sizeof(buf) - p,
                       "%s{\"t\":\"0x%02X\",\"svc\":\"0x%02X\","
                       "\"a0\":\"0x%08X\",\"a1\":\"0x%08X\","

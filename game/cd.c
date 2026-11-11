@@ -5709,7 +5709,12 @@ uint32_t cd_chan_slot_set(uint32_t param_1,uint32_t param_2)
 void cd_cb7_run(uint32_t param_1)
 {
   uint32_t s3 = 0x00ffffff;
-  uint32_t s1 = (*(uint32_t *)guest_at(param_1) >> 24) & 0x7f;
+  /* Channel mask comes from DICR via the fixed pointer cell @0x801BDDF0
+   * (-> 0x1F8010F4), NOT from a0. The generated body (0x8019AF7C) loads
+   * *(0x801BDDF0) then dereferences it; a0 is an INTC-dispatch leftover and
+   * is never read. param_1 kept for signature parity only. */
+  (void)param_1;
+  uint32_t s1 = (br2_ld32(DB32G(0x801bddf0)) >> 24) & 0x7f;
   int s0;
   uint32_t dma, dv;
   uint32_t *tbl;
