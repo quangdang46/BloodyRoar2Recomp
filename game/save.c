@@ -9189,3 +9189,149 @@ int32_t fifo_space_check(void)
     v0 >>= 3;
   return (v0 < lim2) ? 0 : 1;
 }
+
+/* ======================================================================
+ * batch37: unnamed save-cluster leaf stubs & field ops @0x8015/0x8016.
+ * All bodies decoded insn-by-insn from generated/SLES_017.22_full_*.c.
+ * FUN_ names are deliberate — renames.map has no entry for these guest
+ * addresses; gen_fnmap maps the FUN_<addr> spelling automatically.
+ * The 0x801638xx run is the disabled save-slot op table (same family as
+ * ret_zero_a/b/c @0x80163850/98/a0): each entry is `jr ra` with the
+ * result-producing insn in the delay slot.
+ * ====================================================================== */
+
+extern uint32_t call_guest(uint32_t,uint32_t,uint32_t);
+
+/* 0x80163840 — bare `jr ra; nop`: v0 passes through untouched. */
+void FUN_80163840(void) { }
+/* 0x80163848 — bare `jr ra; nop`: v0 passes through untouched. */
+void FUN_80163848(void) { }
+/* 0x80163858 — `jr ra; li v0,-99` (delay slot): returns -99.
+ * Same sentinel value as memcard_err_sentinel @0x80163868. */
+int32_t FUN_80163858(uint32_t a0) { (void)a0; return -99; }
+/* 0x80163860/70/78/80/88/90/a8/b0/b8/c0 — `jr ra; move v0,zero`:
+ * disabled save-slot ops, faithful return-0 (NOT stubs — the guest
+ * literally zeroes v0 in the delay slot). */
+int32_t FUN_80163860(uint32_t a0) { (void)a0; return 0; }
+int32_t FUN_80163870(uint32_t a0) { (void)a0; return 0; }
+int32_t FUN_80163878(uint32_t a0) { (void)a0; return 0; }
+int32_t FUN_80163880(uint32_t a0) { (void)a0; return 0; }
+int32_t FUN_80163888(uint32_t a0) { (void)a0; return 0; }
+int32_t FUN_80163890(uint32_t a0) { (void)a0; return 0; }
+int32_t FUN_801638a8(uint32_t a0) { (void)a0; return 0; }
+int32_t FUN_801638b0(uint32_t a0) { (void)a0; return 0; }
+int32_t FUN_801638b8(uint32_t a0) { (void)a0; return 0; }
+int32_t FUN_801638c0(uint32_t a0) { (void)a0; return 0; }
+/* 0x80163940 — shared `jr ra; nop` exit tail of the 16-byte record
+ * copy family (0x80163948/90/d8/20/68); standalone entry = void ret. */
+void FUN_80163940(void) { }
+/* 0x80163b7c — `jr ra; nop`. */
+void FUN_80163b7c(void) { }
+/* 0x80163bb8 — `jr ra; nop`. */
+void FUN_80163bb8(void) { }
+/* 0x80163b40 — `jr ra; li v0,-1`: returns -1. */
+int32_t FUN_80163b40(uint32_t a0) { (void)a0; return -1; }
+/* 0x801631fc — `jr ra; move v0,zero`: not-found tail of the
+ * 0x801631b4/1d0 record-chase; faithful return-0. */
+int32_t FUN_801631fc(uint32_t a0) { (void)a0; return 0; }
+/* 0x80163248 — `jr ra; move v0,zero`: same not-found tail family. */
+int32_t FUN_80163248(uint32_t a0) { (void)a0; return 0; }
+/* 0x8015a1dc — `jr ra; nop`. */
+void FUN_8015a1dc(void) { }
+
+/* 0x80163250 — `lw v0,0(a0); jr ra`: return *(u32*)a0. */
+uint32_t FUN_80163250(uint32_t a0)
+{
+  return *(uint32_t *)guest_at(a0);
+}
+
+/* 0x80157358 — `lui v0,0x801c; lbu v0,-0x1091(v0); jr ra`:
+ * returns byte @0x801bef6f (memcard busy flag). */
+uint32_t FUN_80157358(void)
+{
+  return DAT_801bef6f;
+}
+/* 0x801573dc — same shape, byte @0x801bef6d (memcard cmd byte). */
+uint32_t FUN_801573dc(void)
+{
+  return DAT_801bef6d;
+}
+/* 0x80157444 — copies u16 @0x801bef70 -> @0x801bef76 (reload the
+ * memcard brightness countdown), returns base 0x801bef60 in v0. */
+uint32_t FUN_80157444(void)
+{
+  *(uint16_t *)guest_at(0x801bef76) = *(uint16_t *)guest_at(0x801bef70);
+  return 0x801bef60u;
+}
+
+/* 0x80157574 — memcard state-flag nudge on the @0x801bef60 block:
+ * if busy flag f[0xf]==1: when (f[0xe]&0xf)==2 arm cmd f[0xd]=0x10,
+ * then clear f[0xf]. v0 carries the last immediate (1 / 2 / 0x10). */
+int32_t FUN_80157574(void)
+{
+  uint8_t *f = (uint8_t *)guest_at(0x801bef60);
+  if (f[0xf] != 1) return 1;
+  if ((f[0xe] & 0xf) == 2) {
+    f[0xd] = 0x10;
+    f[0xf] = 0;
+    return 0x10;
+  }
+  f[0xf] = 0;
+  return 2;
+}
+
+/* 0x80158274 — channel flag toggle @0x801f46f4 (the true entry;
+ * renames.map's chan_flag_toggle @0x8015827c is the mid-prologue
+ * alias): *f = (*f != 0) ? 0 : 0x200, then cd_reg_rw_d2(*f) and
+ * cd_reg_bit40_ctrl(1). Prologue saves ra / sp-0x18 — plain subroutine,
+ * no IRQ or deferred-coroutine interaction, so call_guest is faithful. */
+void FUN_80158274(uint32_t a0, uint32_t a1)
+{
+  uint32_t *f = (uint32_t *)guest_at(0x801f46f4);
+  (void)a0;
+  if (*f != 0) *f = 0; else *f = 0x200;
+  call_guest(0x8019d170, *f, 0);
+  call_guest(0x8019d030, 1, a1);
+}
+
+/* 0x80159f54 — `sh a1,0xa0(a0)` then falls into 0x80159f58's `jr ra`:
+ * store low16 of a1 at guest a0+0xa0. */
+void FUN_80159f54(uint32_t a0, uint32_t a1)
+{
+  *(uint16_t *)guest_at(a0 + 0xa0) = (uint16_t)a1;
+}
+/* 0x80159f58 — `jr ra; nop`. */
+void FUN_80159f58(void) { }
+/* 0x80159f60 — signed/unsigned pair op on u16 @a0+0xa0:
+ * d = (s16)field - a1 decides clamp-to-0 (bltz taken -> store 0 via the
+ * 0x80159f7c tail); the delay slot always computes r = (u16)field - a1
+ * which is what actually gets stored on the not-taken path AND is the
+ * value left in v0 on both paths. */
+uint32_t FUN_80159f60(uint32_t a0, uint32_t a1)
+{
+  int32_t d = (int32_t)*(int16_t *)guest_at(a0 + 0xa0) - (int32_t)a1;
+  uint32_t r = *(uint16_t *)guest_at(a0 + 0xa0) - a1;
+  *(uint16_t *)guest_at(a0 + 0xa0) = (d < 0) ? 0 : (uint16_t)r;
+  return r;
+}
+/* 0x80159f7c — `jr ra; sh zero,0xa0(a0)` (delay slot): clear the
+ * u16 field at guest a0+0xa0. */
+void FUN_80159f7c(uint32_t a0)
+{
+  *(uint16_t *)guest_at(a0 + 0xa0) = 0;
+}
+
+/* 0x8016fca8 — `jr ra; sh zero,0xec(a0)` (delay slot): clear u16
+ * @a0+0xec. */
+void FUN_8016fca8(uint32_t a0)
+{
+  *(uint16_t *)guest_at(a0 + 0xec) = 0;
+}
+/* 0x8016fcb0 — u16 increment @a0+0xec: v0 = old+1 stored and returned
+ * (addiu result is NOT masked; sh truncates the store only). */
+uint32_t FUN_8016fcb0(uint32_t a0)
+{
+  uint32_t r = *(uint16_t *)guest_at(a0 + 0xec) + 1;
+  *(uint16_t *)guest_at(a0 + 0xec) = (uint16_t)r;
+  return r;
+}
