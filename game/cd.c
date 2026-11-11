@@ -2084,21 +2084,21 @@ void cd_mode_store(uint32_t a0)
  * cd_seek_state_machine(@0x801bde38) then stores @0x801bdee4; a0!=1 stores only
  * when result==1. Returns the sample. Disasm 0x8019d500-0x8019d5a0. */
 extern int32_t cd_seek_state_machine(uint32_t);
+/* cd_seek_complete_poll — delegate the whole body to generated MIPS
+ * (0x8019d500). Its a0==1 seek-completion wait loop crosses a basic-block
+ * boundary every iteration, so psx_check_interrupts_at runs per pass with a
+ * real guest resume PC. That is what lets the CD deferred-interrupt
+ * coroutine (cd_ctx_restore -> cd_chan_full_init -> cd_intc_dispatch)
+ * resume and DeliverEvent the 0xf0000009 flag TestEvent polls. A clean-C
+ * while+br2_irq_poll cannot supply a dispatchable resume PC for the
+ * deferred switch, so the coroutine starves and TestEvent spins forever —
+ * the same reason cd_file_read_seq/cd_result_wait_a/b were delegated.
+ * br2_call_generated also makes gen_clean_table skip 0x8019d500 so
+ * generated callers dispatch straight to the generated body. */
 int32_t cd_seek_complete_poll(uint32_t a0)
 {
-  uint32_t mode = *(uint32_t *)guest_at(0x801bde40);
-  uint32_t arg, v0;
-  if (mode == 1 || *(uint32_t *)guest_at(0x801bdee4) == 1) return 1;
-  arg = *(uint32_t *)guest_at(0x801bde38);
-  v0 = (uint32_t)cd_seek_state_machine(arg);
-  if (a0 == 1) {
-    while (v0 == 0) { br2_irq_poll(); v0 = (uint32_t)cd_seek_state_machine(arg); }
-    *(uint32_t *)guest_at(0x801bdee4) = v0;
-    return (int32_t)v0;
-  }
-  if (v0 != 1) return (int32_t)v0;
-  *(uint32_t *)guest_at(0x801bdee4) = v0;
-  return (int32_t)v0;
+  (void)cd_seek_state_machine;
+  return (int32_t)br2_call_generated(0x8019d500, a0, 0, 0, 0);
 }
 
 /* cd_dir_read — memcard dir read: mc_session(0) session, cmd 0x13
