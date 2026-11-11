@@ -1979,3 +1979,19 @@ FIX PATH: RE the OpenBIOS kernel deferred-frame/event-consume (the code that
 reads the B0/0x19-registered frame and clears it after cd_ctx_restore resumes)
 OR enable+validate the bios_hle kernel-call tier (needs deliver_event_ret
 anchor for OPENBIOS, currently absent per OpenBIOS.toml:88).
+
+## 2026o — located deferred-IRQ dispatcher: OpenBIOS_func_00003870
+
+Kernel ram 0x3870 (ROM BFC21844+): the deferred-interrupt dispatch loop.
+- mem[0x4C04] = registered deferred-handler COUNT (loop bound, a0).
+- mem[0x4C48] = rotating slot counter (incremented each iter, s0+0x4C48).
+- handler array at ABSOLUTE 0x4C18: lw v0,[0x4C18 + idx*4]; jalr ra,v0.
+- sh v1,4170(a1) sets flags 0x12 (in-deferred-IRQ marker) on a1 ctx.
+- idx derived from counter -> sll v0,v0,2 -> +0x4C18 -> lw -> jalr.
+
+This is what calls the game's B0/0x19-registered cd_ctx_restore. The recursion
+= this dispatcher re-invoking the CD deferred handler because the slot/frame
+is not consumed/cleared after cd_intc_dispatch returns. Next: find where the
+kernel clears the 0x4C18 slot + 0x4C04 count after a deferred handler
+completes (likely gated on the in-service flag 0x801BCD18 or a return code),
+and why it isn't reached.
