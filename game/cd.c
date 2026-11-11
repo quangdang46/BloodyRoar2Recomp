@@ -534,78 +534,17 @@ extern char *s__s___s__Sync__s__Ready__s_801257b4;
 uint cd_result_wait_a(int param_1,undefined1 *param_2)
 
 {
-  byte bVar1;
-  undefined1 uVar2;
-  bool bVar3;
-  int iVar4;
-  uint uVar5;
-  undefined1 *puVar6;
-  uint8_t *p2;
-  uint32_t raw2 = (uint32_t)(uintptr_t)param_2;
-
-  p2 = param_2 ? (uint8_t *)guest_at(raw2) : (uint8_t *)0;
-  CDDBG_INC(0x801bce10);
-  CDB32(0x801fc6e0) = cd_timer_read(0xffffffff);
-  CDB32(0x801fc6e0) = CDB32(0x801fc6e0) + 0x3c0;
-  CDB32(0x801fc6e4) = 0;
-  CDB32(0x801fc6e8) = 0x8012582c;
-  while( true ) {
-    iVar4 = cd_timer_read(0xffffffff);
-    if (((int)(CDB32(0x801fc6e0) - (uint32_t)iVar4) < 0) ||
-       (iVar4 = (int)(CDB32(0x801fc6e4) + 1),
-        bVar3 = 0x3c0000 < CDB32(0x801fc6e4), CDB32(0x801fc6e4) = (uint32_t)iVar4,
-        bVar3))
-    {
-      CDDBG_INC(0x801bce14);
-      cd_str_print(0x801257a4);
-      printf_forward(s__s___s__Sync__s__Ready__s_801257b4,CDB32(0x801fc6e8),
-                   CDNAME(CDB8(0x801bc865)),CDNOINTR(CDB8(0x801bcb24)),
-                   CDNOINTR(CDB8(0x801bcb25)));
-      cd_cmd_state_reset();
-      iVar4 = -1;
-    }
-    else {
-      iVar4 = 0;
-    }
-    if (iVar4 != 0) {
-      return 0xffffffff;
-    }
-    iVar4 = cd_intc_busy_read();
-    if (iVar4 != 0) {
-      bVar1 = CDB8P(0x801bcb0c);
-      while( true ) {
-        uVar5 = cd_response_process();
-        if (uVar5 == 0) break;
-        if (((uVar5 & 4) != 0) && (CDB32G(0x801bc84c) != 0)) {
-          call_guest(CDB32G(0x801bc84c),CDB8(0x801bcb25),0x801fc6d0);
-        }
-        if (((uVar5 & 2) != 0) && (DAT_801bc848 != 0)) {
-          call_guest(DAT_801bc848,CDB8(0x801bcb24),0x801fc6c8);
-        }
-      }
-      br2_st8p(0x801bcb0c, bVar1 & 3);
-    }
-    uVar5 = (uint)CDB8(0x801bcb24);
-    if ((uVar5 == 2) || (uVar5 == 5)) { CDDBG_SET(0x801bce18,uVar5); CDDBG_INC(0x801bce1c); break; }
-    if (param_1 != 0) {
-      return 0;
-    }
-  }
-  CDB8(0x801bcb24) = 2;
-  puVar6 = (undefined1 *)guest_at(0x801fc6c8);
-  iVar4 = 7;
-  if (raw2 == 0) {
-    CDB8(0x801bcb24) = 2;
-    return uVar5;
-  }
-  do {
-    uVar2 = *puVar6;
-    puVar6 = puVar6 + 1;
-    iVar4 = iVar4 + -1;
-    *p2 = uVar2;
-    p2 = p2 + 1;
-  } while (iVar4 != -1);
-  return uVar5;
+  /* Delegate the whole body to generated MIPS (0x801968cc): the
+   * Sync-wait while(true) loop must cross basic-block
+   * boundaries each pass so psx_check_interrupts_at runs with
+   * a live guest resume PC. A clean-C spin has no br2_irq_poll
+   * and no per-block interrupt check, so cd_timer_read freezes
+   * (the 0x3c0000 timeout never fires) AND the CD deferred-IRQ
+   * coroutine never resumes to set 0x801bcb25/26 -> infinite
+   * spin. Same contract as cd_init_session/cd_file_read_seq.
+   * br2_call_generated makes gen_clean_table skip this address. */
+  return (uint)br2_call_generated(0x801968ccu, (uint32_t)param_1,
+                                  (uint32_t)(uintptr_t)param_2, 0, 0);
 }
 
 /* ======== 0x80197ad0 ======== */
@@ -949,94 +888,17 @@ int cd_stamp_to_sector(const void *param_1)
 uint cd_result_wait_b(int param_1,undefined1 *param_2)
 
 {
-  byte bVar1;
-  undefined1 uVar2;
-  bool bVar3;
-  int iVar4;
-  uint uVar5;
-  undefined1 *puVar6;
-  uint8_t *p2;
-  uint32_t raw2 = (uint32_t)(uintptr_t)param_2;
-
-  p2 = param_2 ? (uint8_t *)guest_at(raw2) : (uint8_t *)0;
-  CDB32(0x801fc6e0) = cd_timer_read(0xffffffff);
-  CDB32(0x801fc6e0) = CDB32(0x801fc6e0) + 0x3c0;
-  CDB32(0x801fc6e4) = 0;
-  CDB32(0x801fc6e8) = 0x80125834;
-  while( true ) {
-    iVar4 = cd_timer_read(0xffffffff);
-    if (((int)(CDB32(0x801fc6e0) - (uint32_t)iVar4) < 0) ||
-       (iVar4 = (int)(CDB32(0x801fc6e4) + 1),
-        bVar3 = 0x3c0000 < CDB32(0x801fc6e4), CDB32(0x801fc6e4) = (uint32_t)iVar4,
-        bVar3))
-    {
-      cd_str_print(0x801257a4);
-      printf_forward(s__s___s__Sync__s__Ready__s_801257b4,CDB32(0x801fc6e8),
-                   CDNAME(CDB8(0x801bc865)),CDNOINTR(CDB8(0x801bcb24)),
-                   CDNOINTR(CDB8(0x801bcb25)));
-      cd_cmd_state_reset();
-      iVar4 = -1;
-    }
-    else {
-      iVar4 = 0;
-    }
-    if (iVar4 != 0) {
-      return 0xffffffff;
-    }
-    iVar4 = cd_intc_busy_read();
-    if (iVar4 != 0) {
-      bVar1 = CDB8P(0x801bcb0c);
-      while( true ) {
-        uVar5 = cd_response_process();
-        if (uVar5 == 0) break;
-        if (((uVar5 & 4) != 0) && (CDB32G(0x801bc84c) != 0)) {
-          call_guest(CDB32G(0x801bc84c),CDB8(0x801bcb25),0x801fc6d0);
-        }
-        if (((uVar5 & 2) != 0) && (DAT_801bc848 != 0)) {
-          call_guest(DAT_801bc848,CDB8(0x801bcb24),0x801fc6c8);
-        }
-      }
-      br2_st8p(0x801bcb0c, bVar1 & 3);
-    }
-    uVar5 = (uint)CDB8(0x801bcb26);
-    if (uVar5 != 0) break;
-    uVar5 = (uint)CDB8(0x801bcb25);
-    if (uVar5 != 0) {
-      CDB8(0x801bcb25) = 0;
-      puVar6 = (undefined1 *)guest_at(0x801fc6d0);
-      iVar4 = 7;
-      if (raw2 == 0) {
-        CDB8(0x801bcb25) = 0;
-        return uVar5;
-      }
-      do {
-        uVar2 = *puVar6;
-        puVar6 = puVar6 + 1;
-        iVar4 = iVar4 + -1;
-        *p2 = uVar2;
-        p2 = p2 + 1;
-      } while (iVar4 != -1);
-      return uVar5;
-    }
-    if (param_1 != 0) {
-      return 0;
-    }
-  }
-  CDB8(0x801bcb26) = 0;
-  puVar6 = (undefined1 *)guest_at(0x801fc6d8);
-  if (raw2 == 0) {
-    CDB8(0x801bcb26) = 0;
-    return uVar5;
-  }
-  iVar4 = 7;
-  do {
-    uVar2 = *puVar6;
-    puVar6 = puVar6 + 1;
-    iVar4 = iVar4 + -1;
-    *p2 = uVar2;
-    p2 = p2 + 1;
-  } while (iVar4 != -1);
-  return uVar5;
+  /* Delegate the whole body to generated MIPS (0x80196b4c): the
+   * Sync-wait while(true) loop must cross basic-block
+   * boundaries each pass so psx_check_interrupts_at runs with
+   * a live guest resume PC. A clean-C spin has no br2_irq_poll
+   * and no per-block interrupt check, so cd_timer_read freezes
+   * (the 0x3c0000 timeout never fires) AND the CD deferred-IRQ
+   * coroutine never resumes to set 0x801bcb25/26 -> infinite
+   * spin. Same contract as cd_init_session/cd_file_read_seq.
+   * br2_call_generated makes gen_clean_table skip this address. */
+  return (uint)br2_call_generated(0x80196b4cu, (uint32_t)param_1,
+                                  (uint32_t)(uintptr_t)param_2, 0, 0);
 }
 
 /* ======== 0x80197698 ======== */
