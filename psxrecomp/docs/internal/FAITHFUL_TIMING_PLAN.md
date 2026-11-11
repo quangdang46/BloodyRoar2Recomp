@@ -366,20 +366,22 @@ on a fixed region -> next.
   obj8 class `0xF0000009` attr `0x20` size `0x2000` cb `0` (the mark EvCB from
   `FUN_8019b380(0xf0000009,0x20,0x2000,0)`); objs9-15 empty. Sibling tables:
   `*(0x100)`=0x8de0/0x20, `*(0x108)`=0x8fd0/4, `*(0x110)`=0x8fe0/0x300.
-  IRQ dispatcher `0x16E4` calls `0x2610` per pending bit with handle
-  `a0=0xF0000003`(CD bit2), `0xF0000009`(bit0x200), `0xF0000002`, `0xF0000010`,
-  `a1=0x1000`. For CDROM it needs an object `class==0xF0000003 && attr==0x1000
-  && f4==0x2000 && size==0x2000` — **NO such object exists in the table** →
-  `jalr` never reached → game's CD IRQ callback never invoked → stall.
-  The `0xF000000X` IRQ-source objects are a SEPARATE registration from the CD
-  channel objects (0xF4000001/0xF0000011) and the mark EvCB — likely created by
-  a kernel interrupt-source register call during CD/IRQ init that either never
-  ran or wrote to a different table. NEXT: find the alloc that creates class
-  `0xF000000X` IRQ-source objects (candidates: a BIOS/kernel "register int
-  source" svc, `cd_subchan_table_install`, or the IntRP setup `0x801FEB40`)
-  and why it didn't populate `0x8e08`. VBLANK works → its IRQ-source object
-  must exist SOMEWHERE; dump which table/class VBLANK's handle resolves to for
-  comparison. This is faithful-core kernel-object registration, NOT a game hack.
+  IRQ dispatcher `0x16E4` calls `0x2610` per pending bit, ALL with `a1=0x1000`:
+  bit0x0004(CD)=`0xF0000003`, bit0x0200=`0xF0000009`, bit0x0002=`0xF0000002`,
+  bit0x0400=`0xF0000010`, bit0x0100=`0xF0000011`, bit0x0001(VBLANK)=`0xF0000001`.
+  CAVEAT (self-correction): the match ALSO requires `size(+0xc)==0x2000`, and
+  the ONLY size-0x2000 object is obj8 (mark EvCB, attr 0x20) — so `0x2610`
+  finds NO match for ANY irq incl. VBLANK, yet VBLANK works. => `0x2610` is
+  probably a SECONDARY kernel-object notify that legitimately no-ops here; the
+  REAL irq dispatch is the IntRP queue funcs (`ToT[0]`=0x8DE0, Queue3 hw-irq
+  func1=0x16E4 plus siblings). The missing `0xF0000003` object is therefore
+  NOT proven to be the blocker — do NOT over-claim. REAL question: which IntRP
+  func delivers CDROM bit2 to the game's CD handler (`cd_intc_dispatch`/
+  `0x8019A87C` jmpbuf resume)? Plan earlier: IntRP @0x801FEB40 cb1=0x801aa244
+  cb2=0x801aa2ac run but alias to memcard; CD addrs 0x801979f8/0x8019ae68/
+  0x8019af7c/0x8019a8ec/0x8019a048/0x8019a038 all probe=0. NEXT: enumerate the
+  IntRP queue3 func list for the CDROM source and find why the game's CD func
+  isn't in it (registration gap vs dispatch gap). Faithful-core, not a hack.
 
 - **2026-11-11 (IRQ chain fully mapped — gap isolated to kernel-object CD callback):**
   Traced the complete maskable-IRQ path live. CPU exception → kernel
