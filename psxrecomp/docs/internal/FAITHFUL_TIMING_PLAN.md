@@ -2132,3 +2132,24 @@ HandlerInfo{handler,verifier} + verifier(IRQbit2) result + I_STAT/I_MASK
 or errant dequeueCDRomHandlers/cdromUndeliverAll. If present but verifier
 returns 0 -> bug in cdromIOVerifier/cdromDMAVerifier IRQ-bit test
 (I_STAT ack/edge-detect mismatch in recompiled kernel).
+
+## 2026r — deliverEvent decoded (CORRECT func; earlier read was openEvent)
+
+deliverEvent = 0xBFC205E4 (ram 0x2610), OpenBIOS_full.c ~line 220530.
+NOTE: func_1FC05648 @0xBFC05648 is openEvent (allocates slot, returns
+handle 0xF1000000|idx) — do not confuse.
+
+deliverEvent(a0=class,a1=spec): iterates EvCB base(mem[0x120])..+size(mem[0x124])
+stride 0x1C; s2=0x2000:
+  status!=0x2000 skip ; class(+0)!=a0 skip ; spec(+8)!=a1 skip
+  mode(+0xC)==0x2000 MARK -> status(+4)=0x4000 READY  (testEvent sees it)
+  mode==0x1000 CALLBACK -> jalr handler(+0x10)(class,spec); NO status change
+    (event stays ENABLED -> re-fires on next deliverEvent)
+
+=> mark-mode events reach 0x4000 correctly. Recursion = CD IRQ never ACKed:
+exceptionHandler->deliverEvent->cb handler(B0 syscall)->B0Handler->
+deliverEvent->returnFromException->IRQ re-fires->inf. i_stat=0 at halt is
+between-fires sampling. FIX = find why CD IRQ (bit2) isn't acked: either
+cdromIOHandler/cdromDMAHandler absent from handlersArray(mem[0x100]) or
+game jmpbuf path (cd_intc_dispatch) doesn't write CDROM ack. Subagent
+3f974b24 comparing vs upstream openbios source.
