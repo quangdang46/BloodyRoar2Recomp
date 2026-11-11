@@ -2757,3 +2757,45 @@ CURRENT: state 4 = scene_entry(0x80010000,..) loading versus/title scene.
   Returns 0 while loading -> stays 4; nonzero -> state 5. Heavy asset pull
   (seq still climbing). draw count 597 during load (static loading screen).
   NEXT: confirm 4->5 transition + title/menu render + screenshot proof.
+
+=== 2026 — CD same-sector retry livelock: EntryInt deferred-coroutine resume broken ===
+After the channel-job fixes the game reached state 4 and streamed thousands of
+CD sectors, then hit a NEW stall: same-sector retry livelock at LBA 208829.
+
+LIVE EVIDENCE (port 4427, cdrom_command_history + cdrom_trace_dump + pc_probe):
+- Game loops SetMode(0x0E p=0)x2 -> SetLoc(0x02 p=46,26,29) -> ReadS(0x1B)
+  forever at pc=0x80196FC4 (func 0x29CC). Same LBA every iteration.
+- cdrom_state: irq_flag=0x03 STUCK (ACK+DATA_READY never cleared),
+  irq_enable=0x07, int1_pended grows unbounded (2500+), sector_available=0,
+  read_msf frozen [46,26,29], reading=1, stat=0x22, pending.cmd=0x09(Pause).
+- Game READS 0x1F801803 -> 0xE3 (=irq_flag|0xE0) — sees pending INT, never acks.
+- i_mask=0xD (IRQ2 CDROM enabled), cop0_sr IM/IE on; IRQ2 fires transiently
+  (i_stat=0x04 in cdrom_trace). irq_flag clears ONLY on guest ack WRITE to
+  0x1F801803 index_reg==1 (cdrom.c:2982 irq_flag &= ~(val&0x1F)).
+- cdrom.c: irq_flag!=0 && no DMA -> deliveries take pending_dataready path ->
+  s_int1_pended++ (matches growth). Same-sector retry = game never sees
+  data-ready consumed.
+
+pc_probe (3s window, decisive):
+  cd_intc_dispatch 0x8019a8ec = 623 hits (runs per-IRQ, mostly VBLANK)
+  cd_ctx_restore   0x8019adcc = 0 hits  <-- coroutine NEVER resumes
+  cd_response_pump 0x801979f8 = 0 hits  <-- IRQ2 sub-handler never called
+  cd_chan_full_init 0x8019a814 / cd_ctx_save 0x8019ad90 = 0 (ran at init)
+
+ROOT CAUSE (matches plan's 2624-2687 decode): the CD completion coroutine is
+armed via cd_ctx_save + HookEntryInt(B0/0x19). On CD IRQ2 the kernel
+ExceptionHandler must restore EntryInt jmp_buf (JB_PC/SP/GP/FP/S0-7) via
+psx_restore_state_escape -> deferred_exception_longjmp -> psx_fiber_switch
+(g_exception_owner_fiber) -> resume -> cd_ctx_restore(0x8019adcc) ->
+cd_intc_dispatch -> cd_response_pump -> ack write 0x1F801803 -> clear irq_flag.
+cd_ctx_restore=0 => EntryInt resume never fires => coroutine starved => no ack
+=> irq_flag stuck => same-sector retry livelock.
+
+NOTE: cd_intc_dispatch clean-thunk counter @0x801bce00=0 is a RED HERRING —
+generated 0x8019a8ec runs directly (623 pc_probe hits); the clean thunk is
+bypassed. Do NOT use that counter to judge dispatch liveness.
+
+OPEN: is the break (a) HookEntryInt(B0/0x19) never invoked/armed, (b)
+EntryInt jmp_buf JB_PC doesn't lead to cd_ctx_restore, or (c)
+psx_restore_state_escape/psx_fiber_switch fails to resume the owner fiber?
+Tracer 1a9f9079 on the EntryInt/ExceptionHandler/fiber path.
