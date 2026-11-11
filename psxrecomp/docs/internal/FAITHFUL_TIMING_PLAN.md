@@ -1863,3 +1863,22 @@ Needs IRQ-mask/acknowledge fix in the faithful core (cdrom I_STAT clear or
 in-exception nesting guard covering the deferred ctx_save/restore path), NOT
 a clean-source change. cd_init_session reverted to clean spin (stable, no
 crash). Timer-pointer cells confirmed statically correct in EXE image.
+
+## 2026l — deferred-IRQ re-entrancy: refined hypothesis (INTC mask bypass)
+
+cd_intc_dispatch recursion (dispatch_depth=257, dirty_block tail = BIOS B0
+kernel-vector calls a0=0x65/0x20/0x62) is CD-IRQ-specific. INTC model:
+i_stat (pending, write-1-clear via 0x1F801F00.stat) & i_mask (enable, 0x1F801F04).
+Normal IRQ entry masks the source; the deferred path (cd_chan_full_init ->
+cd_ctx_save @0x801bcd50 -> kernel -> cd_ctx_restore @0x8019adcc -> re-enter
+0x8019A838/0x8019A874 -> cd_intc_dispatch) may resume cd_intc_dispatch OUTSIDE
+the kernel handler's masked window, leaving i_mask bit2 set + i_stat bit2
+pending -> next psx_check_interrupts_at nests another CD IRQ -> unbounded.
+
+NEXT (empirical): trigger the path (cd_init_session->generated) under
+PSX_RECURSION_LIMIT and read irqctx_ring + imask_trace + g_cdrom_deliver_count
+to confirm i_mask bit2 / i_stat bit2 state inside cd_intc_dispatch. If mask
+bypass confirmed, fix = ensure deferred resume runs under the handler's INTC
+mask (or ack i_stat bit2 before re-present). Clean coverage is otherwise strong:
+1162 clean wrappers; fnmap-vs-clean_table delta is only intentional
+generated-thunks (IRQ-context) + BIOS boundary.
