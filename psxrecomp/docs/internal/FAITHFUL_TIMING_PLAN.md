@@ -2835,3 +2835,39 @@ NEXT: why doesn't DATA_READY fire / why does the game retry ReadS before
 sector delivery? Check deliver_read_sector gates (irq_flag!=0 pend path),
 whether read_delay ever expires, and whether the INT1->cd_read_step_cb->
 BFRD/CHCR chain has another host-ptr mistranslation.
+
+=== 2026 — CD retry-livelock narrowed: re-open every ~32k cyc, not sector timeout ===
+Deep live-probe of the post-0bf25c2 livelock at LBA 208829.
+
+TIMING DECODED (cdrom_command_history cycle stamps):
+- Full quad SetLoc(0x02)->SetMode(0x0E,0x00)->SetMode(0x0E,0xE0)->ReadS(0x1B)
+  repeats CONTIGUOUSLY every ~32k guest cycles (~8k per command), all inside
+  one frame. ReadS re-issued ~14x before the ~450k-cycle first-sector delay
+  could elapse -> start_read_stream resets read_delay + clears pending_dataready
+  each time -> sector 208829 re-delivered via pend path but INT1 never presents.
+- cd_timer_read reads MMIO 0x1F801110 = Timer1 COUNT (timers base
+  0x1F801100+t*0x10). T1 mode=0x1D00 -> HBLANK clock, 2146 cyc/tick.
+  => 0x3c=60 ticks ~=128k cyc, 0x4b0=1200 ticks ~=2.6M cyc.
+- Re-open cadence ~32k cyc ~=15 T1 ticks < 60-tick per-sector timeout
+  => the cd_read_poll retry is NOT the sector timeout; it is almost
+  certainly DAT_801bcb94<0 (cd_read_open returning -1 error) OR a
+  different caller. DAT_801bcb94 sampled = 0 (need finer sampling).
+
+cd_read_open clean body (cd.c:452, real=generated 0x80198908) retry path
+(param_1!=0) issues: cd_mode_flag_set(9)=Pause -> (2)=SetLoc -> (0xe)=SetMode
+-> cd_cmd_issue_async(6)=ReadN; sets DAT_801bcb94=count, DAT_801bcb98=now.
+Returns -1 on: status bit4 early-out, mode_flag_set(2)==0, or
+mode_flag_set(0xe)==0. mode_flag_set->cd_cmd_issue waits for the command
+response; a 0 return = command/response timeout.
+
+clean_trace dominated by cd_timer_read(0x8019A460)+vsync-wait
+(0x8019A7D4) from RAs 0x80197030/0x801970F0 (a sync wait loop), plus
+cd_response_pump(0x801979F8)<-0x8019A9C8 and cd_mode_flag_set(0x80195D8C)
+<-0x80198F84. cd_read_poll/open/step_cb absent (generated thunks).
+
+OPEN (tracer 06ce9cfc): exact caller of retrying cd_read_open; whether it
+returns -1; which cd_read_poll condition fires; does read_delay ever
+expire before next ReadS; any BFRD(0x1F801803 idx0)/CHCR(0x1F8010B8)
+write ever. Hypothesis: cd_mode_flag_set's synchronous command-response
+wait returns 0 (ACK/response not seen in time) -> cd_read_open -1 ->
+tight re-open; OR a higher-level file-read loop re-calls without waiting.
