@@ -1634,33 +1634,34 @@ static uint32_t cdcell_u32(uint32_t cell)
  * Disasm 0x8019737c-0x80197464. */
 int32_t cd_reg_init_seq(void)
 {
-  uint16_t *v1 = cdcell_u16(0x801bcb20);
+  /* 0x801bcb20 is a pointer cell into the 0x1F8010xx CD drive regs —
+   * indexed u16 accesses are MMIO and must use br2_ld/st, not guest_at. */
+  uint32_t base;
   uint16_t v0;
   uint8_t b[4];
-  if (v1 == NULL) return 0;
-  v0 = v1[0xdc];                    /* +0x1b8 */
+  base = DB32G(0x801bcb20);
+  if (base == 0) return 0;
+  v0 = br2_ld16(base + 0xdc * 2);        /* +0x1b8 */
   if (v0 == 0) {
-    v0 = v1[0xdd];                  /* +0x1ba */
+    v0 = br2_ld16(base + 0xdd * 2);      /* +0x1ba */
     if (v0 == 0) {
       v0 = 0x3fff;
-      v1[0xc0] = v0;                /* +0x180 */
-      v1[0xc1] = v0;                /* +0x182 */
-      v1 = cdcell_u16(0x801bcb20);
-      if (v1 == NULL) return 0;
+      br2_st16(base + 0xc0 * 2, v0);     /* +0x180 */
+      br2_st16(base + 0xc1 * 2, v0);     /* +0x182 */
     }
     v0 = 0x3fff;
   }
-  v1[0xd8] = v0;                    /* +0x1b0 */
-  v1[0xd9] = v0;                    /* +0x1b2 */
-  v1[0xd5] = 0xc001;                /* +0x1aa */
+  br2_st16(base + 0xd8 * 2, v0);         /* +0x1b0 */
+  br2_st16(base + 0xd9 * 2, v0);         /* +0x1b2 */
+  br2_st16(base + 0xd5 * 2, 0xc001);     /* +0x1aa */
   b[2] = 0x80; b[0] = 0x80; b[3] = 0; b[1] = 0;
-  if (cdcell_u8(0x801bcb0c)) br2_st8p(0x801bcb0c, 2);
-  if (cdcell_u8(0x801bcb14)) br2_st8p(0x801bcb14, b[0]);
-  if (cdcell_u8(0x801bcb18)) br2_st8p(0x801bcb18, b[1]);
-  if (cdcell_u8(0x801bcb0c)) br2_st8p(0x801bcb0c, 3);
-  if (cdcell_u8(0x801bcb10)) br2_st8p(0x801bcb10, b[2]);
-  if (cdcell_u8(0x801bcb14)) br2_st8p(0x801bcb14, b[3]);
-  if (cdcell_u8(0x801bcb18)) br2_st8p(0x801bcb18, 0x20);
+  if (br2_ld8(DB32G(0x801bcb0c))) br2_st8p(0x801bcb0c, 2);
+  if (br2_ld8(DB32G(0x801bcb14))) br2_st8p(0x801bcb14, b[0]);
+  if (br2_ld8(DB32G(0x801bcb18))) br2_st8p(0x801bcb18, b[1]);
+  if (br2_ld8(DB32G(0x801bcb0c))) br2_st8p(0x801bcb0c, 3);
+  if (br2_ld8(DB32G(0x801bcb10))) br2_st8p(0x801bcb10, b[2]);
+  if (br2_ld8(DB32G(0x801bcb14))) br2_st8p(0x801bcb14, b[3]);
+  if (br2_ld8(DB32G(0x801bcb18))) br2_st8p(0x801bcb18, 0x20);
   return 0;
 }
 
@@ -5139,8 +5140,8 @@ int cd_cmd_queue_load(uint32_t param_1,uint32_t param_2)
 {
   uint32_t p = DB32G(0x801b8444);
   uint32_t q = DB32G(0x801b8440);
-  *(uint32_t *)guest_at(p) |= 0x8000000;
-  *(uint32_t *)guest_at(q) = 0;
+  br2_st32(p, br2_ld32(p) | 0x8000000);
+  br2_st32(q, 0);
   br2_st32(DB32G(0x801b8438), param_1 + param_2 * 4 - 4);
   br2_st32(DB32G(0x801b843c), param_2);
   cd_timeout_arm();
