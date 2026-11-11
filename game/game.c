@@ -199,6 +199,7 @@ extern uint8_t  *g_DAT_801b1280;   /* settings defaults table */
 extern uint8_t  *g_DAT_801b12e0;
 extern uint8_t  *g_DAT_801b12e6;
 extern uint8_t  *g_DAT_801b3ed8;   /* stage param table (0x1c stride) */
+extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern uint32_t *g_PTR_DAT_801b5b94; /* file ptr table */
 extern uint8_t  *g_DAT_801b5b98;
 extern uint8_t  *g__DAT_801f68d8;
@@ -1644,62 +1645,19 @@ LAB_801593a8:
 
 /* ======== 0x8018cfdc ======== */
 
+/* cd_file_load_sm — per-file CD load state machine. The clean port passed
+ * piVar2 = guest_at(filetab[..]) — a HOST arena pointer — into
+ * cd_read_issue -> cd_mode_flag_set -> cd_cmd_issue(2,..), which is delegated
+ * to generated code that reads the SetLoc MSF params treating param_2 as a
+ * GUEST address. The host pointer decoded to a bogus address -> SetLoc
+ * [0,0,0] -> read lead-in zeros -> game rejected data and retried forever
+ * (the Pause->SetLoc[0,0,0]->Setmode->ReadN livelock at LBAs -148/-149/-150).
+ * The generated body keeps filetab[..] as a guest address end-to-end and has
+ * per-block interrupt checks for the poll loops. Delegate it. */
 int cd_file_load_sm(int param_1,uint32_t param_2)
 
 {
-  int iVar1;
-  int *piVar2;
-  undefined4 uVar3;
-  undefined1 local_20 [8];
-  uint32_t *filetab;
-  
-  filetab = (uint32_t *)g_PTR_DAT_801b5b94;
-  piVar2 = (int *)guest_at(filetab[param_1 * 2]);
-  uVar3 = filetab[param_1 * 2 + 1];
-  if (param_1 < 0) {
-    mc_init_reset();
-    cd_init_session();
-    local_20[0] = 0x80;
-    cd_mode_flag_set(0xe,local_20,0);
-    if (DAT_801c4580 == '\0') {
-      _DAT_801f68d8 = 3;
-    }
-    else {
-      _DAT_801f68d8 = 0;
-    }
-    DAT_801b55ec = 0;
-    iVar1 = _DAT_801f68d8;
-  }
-  else {
-    if (*piVar2 == 0) {
-      return 0xffffffff;
-    }
-    iVar1 = _DAT_801f68d8 + -1;
-    if (_DAT_801f68d8 == 0) {
-      DAT_801c4580 = '\x01';
-      if (DAT_801b55ec != 0) {
-        if (DAT_801b55ec == 2) {
-          DAT_801c4580 = 1;
-          return 1;
-        }
-        iVar1 = cd_read_poll(1,0);
-        if (0 < iVar1) {
-          return 0;
-        }
-        if (iVar1 < 0) {
-          cd_read_issue(piVar2,param_2,uVar3);
-          return 0;
-        }
-        DAT_801b55ec = 0;
-        return 1;
-      }
-      cd_read_issue(piVar2,param_2,uVar3);
-      DAT_801b55ec = 1;
-      iVar1 = _DAT_801f68d8;
-    }
-  }
-  _DAT_801f68d8 = iVar1;
-  return 0;
+  return (int)br2_call_generated(0x8018cfdc,(uint32_t)param_1,param_2,0,0);
 }
 
 /* ======== 0x8012b23c ======== */
