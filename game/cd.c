@@ -4861,11 +4861,12 @@ void cd_dma_xfer_start(uint32_t param_1,uint32_t param_2,uint32_t param_3)
 {
   uint32_t b = DB32G(0x801bdeb0);
   uint32_t v1;
-  *(uint16_t *)guest_at(b + 0x1a6) = (uint16_t)param_2;
+  /* +0x1a6/+0x1aa are channel regs on the MMIO block — CDMMIO not guest_at. */
+  CDMMIO16_ST(b,0xd3,(uint16_t)param_2);
   cd_delay_3c();
   b = DB32G(0x801bdeb0);
-  v1 = *(uint16_t *)guest_at(b + 0x1aa);
-  *(uint16_t *)guest_at(b + 0x1aa) = (uint16_t)(v1 | 0x30);
+  v1 = CDMMIO16(b,0xd5);
+  CDMMIO16_ST(b,0xd5,(uint16_t)(v1 | 0x30));
   cd_delay_3c();
   cd_mmio_strobe_22();
   br2_st32(DB32G(0x801bdeb4), param_1);
@@ -5150,14 +5151,12 @@ int cd_reg_bit40_ctrl(uint32_t param_1)
   int v0 = (int)param_1;
   if (param_1 == 0 || param_1 == 3) {
     uint32_t b = DB32G(0x801bdeb0);
-    uint16_t *w = (uint16_t *)guest_at(b);
     int i;
-    w[0xd5] = (uint16_t)(w[0xd5] & 0xffbf);
-    if ((w[0xd5] & 0x40) != 0) {
+    CDMMIO16_ST(b,0xd5,(uint16_t)(CDMMIO16(b,0xd5) & 0xffbf));
+    if ((CDMMIO16(b,0xd5) & 0x40) != 0) {
       for (i = 0; i < 0xf01; i++) {
         b = DB32G(0x801bdeb0);
-        w = (uint16_t *)guest_at(b);
-        if ((w[0xd5] & 0x40) == 0) break;
+        if ((CDMMIO16(b,0xd5) & 0x40) == 0) break;
       }
       if (i >= 0xf01) {
         printf_forward((const char *)guest_at(0x80125c38),
@@ -5169,14 +5168,12 @@ int cd_reg_bit40_ctrl(uint32_t param_1)
   }
   if (param_1 == 1 || param_1 == 3) {
     uint32_t b = DB32G(0x801bdeb0);
-    uint16_t *w = (uint16_t *)guest_at(b);
     int i;
-    w[0xd5] = (uint16_t)(w[0xd5] | 0x40);
-    if ((w[0xd5] & 0x40) == 0) {
+    CDMMIO16_ST(b,0xd5,(uint16_t)(CDMMIO16(b,0xd5) | 0x40));
+    if ((CDMMIO16(b,0xd5) & 0x40) == 0) {
       for (i = 0; i < 0xf01; i++) {
         b = DB32G(0x801bdeb0);
-        w = (uint16_t *)guest_at(b);
-        if ((w[0xd5] & 0x40) != 0) break;
+        if ((CDMMIO16(b,0xd5) & 0x40) != 0) break;
       }
       if (i >= 0xf01) {
         printf_forward((const char *)guest_at(0x80125c38),
@@ -5584,11 +5581,11 @@ extern void cd_mmio_strobe_22(void);
 void cd_dma_xfer_start_b(uint32_t p_v0,uint32_t p_a0,uint32_t p_a1,uint32_t p_a2)
 {
   uint32_t b;
-  *(uint16_t *)guest_at(p_v0 + 0x1a6) = (uint16_t)p_a1;
+  /* p_v0/b are the MMIO channel block — CDMMIO not guest_at. */
+  CDMMIO16_ST(p_v0,0xd3,(uint16_t)p_a1);
   cd_delay_3c();
   b = DB32G(0x801bdeb0);
-  *(uint16_t *)guest_at(b + 0x1aa) =
-      (uint16_t)(*(uint16_t *)guest_at(b + 0x1aa) | 0x30);
+  CDMMIO16_ST(b,0xd5,(uint16_t)(CDMMIO16(b,0xd5) | 0x30));
   cd_delay_3c();
   p_a2 <<= 16;
   cd_mmio_strobe_22();
