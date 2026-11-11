@@ -1956,3 +1956,26 @@ deliverEvent->B0/C0Handler->returnFromException) is the kernel re-delivering
 the same unconsumed deferred event. Game code is exonerated; fix requires
 OpenBIOS kernel RE of the deferred-interrupt/event-consume path (ramtext
 0x2610 deliverEvent, 0x27AC exceptionHandler, 0x2AA0 B0Handler region).
+
+## 2026o — recursion is a guest CALL-CYCLE, not IRQ storm; deferred-frame offset
+
+Post-mortem DURING recursion (PSX_RECURSION_LIMIT=4000): i_stat=0, i_mask=0xD,
+pending=0, cdrom irq_flag=0, pending.cmd=0x09 active=0 (Pause stuck). NO IRQ
+is pending -> the recursion is NOT interrupt-driven. It is a guest-level call
+cycle that the recompiler turns into nested host frames (dispatch_depth->4000).
+
+Mechanism (verified in generated code):
+- cd_chan_full_init (0x8019A814) reads in-service flag lh v0,0(0x801BCD18):
+  !=0 -> dispatch cd_intc_dispatch; ==0 -> arm via cd_ctx_save+B0/0x19.
+- cd_intc_dispatch clears the BUSY flag (sh zero -> 0x801BCD1A) at 0x8019AA98
+  but the IN-SERVICE flag 0x801BCD18 consumption + deferred-frame slot
+  (kernel struct +0x4C18 offset, NOT absolute) clearing is OpenBIOS-kernel-side.
+- deliverEvent (OpenBIOS_func_00002610) iterates EvCB table (mem[0x120] base,
+  mem[0x124] size, stride, s2=0x2000) delivering enabled events; the deferred
+  CD event is not marked consumed -> kernel re-dispatches it -> guest call
+  cycle exceptionHandler->deliverEvent->handler->returnFromException->...
+
+FIX PATH: RE the OpenBIOS kernel deferred-frame/event-consume (the code that
+reads the B0/0x19-registered frame and clears it after cd_ctx_restore resumes)
+OR enable+validate the bios_hle kernel-call tier (needs deliver_event_ret
+anchor for OPENBIOS, currently absent per OpenBIOS.toml:88).
