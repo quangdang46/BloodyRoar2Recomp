@@ -427,6 +427,14 @@ void FUN_8019a300(void)
 { (void)bios_svc6(0xb0,0x13,0,0,0,0); }
 void FUN_8019a310(void)
 { (void)bios_svc6(0xb0,0x14,0,0,0,0); }
+/* FUN_8019a350 / FUN_8019a364 are indirect tail-calls: `lw t1, mem[0x801FEB58/5C];
+ * jr t1`. The cells hold OpenBIOS kernel-object method pointers installed by
+ * cd_kobj_init_b (sub+0x884 / sub+0x894). Route through call_guest so the real
+ * callee runs; both targets are leaf flag-setters taking no args. */
+void FUN_8019a350(void)
+{ (void)call_guest(br2_ld32(0x801feb58u),0,0); }
+void FUN_8019a364(void)
+{ (void)call_guest(br2_ld32(0x801feb5cu),0,0); }
 void FUN_8019ad48(uint32_t a0)
 { (void)bios_svc6(0xa0,0x72,a0,0,0,0); }
 void FUN_8019ad70(uint32_t a0)
