@@ -7320,6 +7320,7 @@ __attribute__((weak))
 int ret_zero_f() { return 0; }
 
 extern void *fn_lookup(uint32_t);
+extern uint32_t call_guest(uint32_t,uint32_t,uint32_t);
 extern int rotmat2_build();
 extern int rotmat_rtps_build();
 extern int angle_vec_build();
@@ -8037,11 +8038,9 @@ void op_chan_fn_invoke(void)
   int32_t i = *(int32_t *)guest_at(0x801be768);
   if (i >= 0) {
     uint32_t f = *(uint32_t *)guest_at(0x801fef60 + (uint32_t)i * 4);
-    void *fn = fn_lookup(f);
-    uint32_t r = 0;
-    if (fn != (void *)0x0) {
-      r = ((uint32_t (*)(uint32_t))fn)(0x801fef20 + (uint32_t)i * 16);
-    }
+    /* jalr through the slot fn ptr: run clean when ported, generated
+     * otherwise — fn_lookup alone would silently skip generated targets. */
+    uint32_t r = call_guest(f, 0x801fef20 + (uint32_t)i * 16, 0);
     if (r != 0) {
       *(uint32_t *)guest_at(0x801be768) = (uint32_t)(i - 1);
     }
