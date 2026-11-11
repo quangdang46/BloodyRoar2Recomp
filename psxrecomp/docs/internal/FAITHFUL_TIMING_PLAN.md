@@ -1629,3 +1629,27 @@ calls record->+0x00 per pending IRQ source — it is the IRQ-handler sibling of
 it doesn't run: gated flag, missing call in the IRQ epilogue, or the game IRQ
 handler that drains IntRP is starved because main thread spins in
 cd_cmd_issue->br2_call_generated.
+
+## 2026d — kernel is a deferred IRQ->thread-wakeup RTOS; CD needs scheduler to run
+
+Kernel thread/scheduler region 0x1b00-0x1fd4 decoded:
+- mem[0x650c..0x6538] = per-IRQ-source flag array (what 0x16e4 "handled" checks).
+- 0x1cc8 = "signal source": sw a1 -> mem[0x650c + src*4]  (set pending flag).
+- 0x1bd0/0x1c04/0x1c38/0x1c6c = per-source "IRQ->wake thread": if flag set,
+  clear I_STAT bit + jal 0x29cc (context RESTORE = resume a blocked thread).
+- 0x1ca0 = IRQ cleanup: clear flag array + C0/0x02 remove IntRP records.
+- 0x1ce0 = C0/0x00 interrupt setup (registers handler table, masks INTC).
+- 0x1b80 = another IRQ-source handler -> 0x2610(0xF2000000,2) (class base F2!).
+
+MODEL: IRQ -> kernel sets source flag (0x1cc8) -> kernel scheduler/idle loop
+runs wakeup fns (0x1bd0..) -> 0x29cc restores CD worker thread -> thread does
+CD DMA/complete -> sets intc-busy -> game cd_response_process proceeds.
+
+LEADING HYPOTHESIS: the game's kernel RTOS scheduler/idle-loop that drives these
+wakeup fns + thread switches is NOT running while the main thread spins in
+cd_cmd_issue->br2_call_generated. On real HW the kernel preempts/schedules the
+CD worker; in recomp the spin may starve the kernel scheduler => CD thread never
+wakes. NEXT: find the kernel main-loop/scheduler entry that calls 0x1bd0-0x1c6c
++ the thread dispatcher, and check via pc_probe whether it runs during the stall.
+If it doesn't run, the faithful-core fix is in how the recomp drives guest
+kernel preemption/scheduling (timer IRQ -> scheduler), NOT game code.
