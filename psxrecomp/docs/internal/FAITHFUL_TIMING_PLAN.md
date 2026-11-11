@@ -1715,3 +1715,35 @@ attempted the restore.
 NEXT: trace the kernel IRQ->cd_ctx_restore call site (who reads mem[0x4C18])
 and how the recomp should model the deferred-resume return (eret vs jr).
 Compare IRQ delivery for the deferred path vs normal handler return.
+
+## 2026g — CD fatal ROOT-CAUSED + FIXED; CD hw path proven; now game-logic Pause stall
+
+CORRECTION to 2026f: the "hard-hang at pc=0" was NOT a deferred-resume
+corruption — host `sample` showed psx_unknown_dispatch -> psx_fatal_halt
+-> nanosleep. The guest jalr'd to 0x0801A110 (a LOW addr, no code).
+
+ROOT CAUSE = clean-port transcription bug in cd_chan_block_boot
+(game/cd.c): the channel-block callback was written 0x801a110 instead of
+the real 0x801A0110 (lui 0x801A + addiu 0x110 @0x8019E6D0-D4). Dropped
+hex digit -> invalid address -> FAIL-FAST unknown dispatch. This was
+MASKED until the deferred-IRQ fix let the callback path actually run.
+
+FIX (ae9b08c): 0x801a110 -> 0x801a0110. Verified br2eu_func_801A0110
+exists in dispatch table.
+
+VERIFIED after fix — CD hardware path works END-TO-END at register level:
+- cd_response_pump runs ~4.88M times; register cells correct
+  (0x801bcb0c->1F801800 idx, 0x801bcb10->1F801801 data, 0x801bcb18->1F801803 irq).
+- IRQ handler reads status 1F801800 (0x39/0x19), reads response 1F801801
+  (=0x02), writes controller ACK 1F801803=0x07 clearing irq_flag, and
+  pending_arm fires set_irq COMPLETE(0x02). ACK+COMPLETE phases both cycle.
+- Command seq now in the MILLIONS (was frozen at 6515 / fatal).
+
+NEW BLOCKER (game-logic, NOT hw): game issues Pause(0x09) ~5M times from
+cd_cmd_issue (pc 0x80196FC4) in a retry loop. cd_read_setup(0x80198c90)
+issues Pause when cd_status_raw()&0xe0 (busy), then cd_read_open(0)
+fails BEFORE issuing ReadN(6) -> caller retries -> re-Pause. cd_status_raw
+byte @0x801BC85C = 0x00 (bit4 clear, passes first gate). Likely failure:
+cd_mode_flag_set(0xe)/cd_mode_byte_read mismatch inside cd_read_open, or a
+higher-level read-state machine stuck. Next: trace cd_read_open's error
+return path / which cd_mode_flag_set call returns 0.
