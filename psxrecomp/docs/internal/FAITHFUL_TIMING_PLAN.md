@@ -1995,3 +1995,17 @@ is not consumed/cleared after cd_intc_dispatch returns. Next: find where the
 kernel clears the 0x4C18 slot + 0x4C04 count after a deferred handler
 completes (likely gated on the in-service flag 0x801BCD18 or a return code),
 and why it isn't reached.
+
+## 2026o — deferred-handler return-value contract (consume gate)
+
+Dispatcher OpenBIOS_func_00003870 post-jalr: v0==0 -> 0xBFC21944, v0==1 ->
+0xBFC21980, else post-process (clear 0x4C5C, sh 0->0x1F80104A, check 0x4C50/
+0x4C58). So the deferred handler's RETURN VALUE decides slot consumption.
+cd_intc_dispatch tail: clears busy flag (0x801BCD1A) then jal 0x8019AD60 =
+BIOS svc 0x17 (return-from-IRQ / re-enable). If the resumed
+cd_chan_full_init->cd_intc_dispatch->svc0x17 path returns a v0 the kernel
+reads as "not done" (nonzero/non-1), the 0x4C18 slot + 0x4C04 count stay
+armed -> dispatcher re-invokes -> guest call-cycle -> dispatch_depth guard.
+NEXT: determine exact v0 contract (what cd_ctx_restore/cd_chan_full_init must
+return for the kernel to clear the slot) and whether svc0x17/re-enable path
+drops/alters v0 in recomp.
