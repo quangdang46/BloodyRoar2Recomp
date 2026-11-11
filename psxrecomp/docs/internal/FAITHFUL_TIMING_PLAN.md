@@ -1923,3 +1923,17 @@ nests back through exceptionHandler->deliverEvent->syscall. The deferred CD
 IRQ (cd_ctx_save/restore) is the trigger; the kernel dispatch lacks a bound
 on this timer/IRQ re-entry. Faithful-core OpenBIOS kernel bug — NOT clean
 game source, NOT CD hw, NOT INTC mask (imask verified correct).
+
+## 2026o — mechanism: deferred resume bypasses exception_nest_depth unwind
+
+Timer IRQs ruled out (irq_line=0 all ch, i_stat=0). T0-T3 verifiers are just
+the IRQVerifier dispatch table walked per-IRQ. Real cycle:
+exceptionHandler->deliverEvent->B0/C0Handler->returnFromException->
+exceptionHandler. For dispatch_depth to reach 257 the host frames must NEST,
+but exception_nest_depth caps guest nesting at 2 — UNLESS the deferred CD
+resume (cd_ctx_restore does jr $ra into cd_chan_full_init->cd_intc_dispatch,
+NOT a normal exception return) skips the epilogue that decrements
+exception_nest_depth. Result: nest_depth stays low, host dispatch_depth grows
+unbounded -> trips at 257. Likely fix area: the deferred-interrupt resume must
+run inside the exception's nest accounting (or the IRQ that drives it must be
+delivered through the normal in_exception path so unwind decrements depth).
