@@ -3338,14 +3338,20 @@ uint32_t cd_reg_window_op(uint32_t a0,uint32_t a1,uint32_t a2)
     return 0;
   }
   if (op == 3) {
-    uint32_t cur = CDREG32(0x801bdec0);
+    /* 0x801bdf00 is the transfer-mode/state cell written by op0/op1 and the
+     * strobe path; the generated op3 reads it (lw -0x2100 -> 0x801BDF00) for
+     * the want-bits compare, the strobe select, and the ch4 cmd select.
+     * 0x801bdec0 is a different cell (DPCR pointer -> 0x1F8010F0); reading it
+     * here made want always 0x20 and forced the else-branch, so a zero-length
+     * transfer (a2==0) waited on the wrong SPU status bits and never kicked ch4. */
+    uint32_t cur = CDREG32(0x801bdf00);
     uint32_t want = (cur == a2) ? 0x30 : 0x20;
     v1 = 0;
     while ((CDMMIO16(b,0xd5) & 0x30) != want) {
       v1++;
       if (v1 >= 0xf01) return 0xfffffffe;
     }
-    if (CDREG32(0x801bdec0) == 1) cd_mmio_strobe_22(); else cd_mmio_strobe_20();
+    if (CDREG32(0x801bdf00) == 1) cd_mmio_strobe_22(); else cd_mmio_strobe_20();
     CDREG32(0x801bdf04) = a1;
     {
       uint32_t cnt = (a2 >> 6) + ((a2 & 0x3f) != 0 ? 1u : 0u);
@@ -3359,7 +3365,7 @@ uint32_t cd_reg_window_op(uint32_t a0,uint32_t a1,uint32_t a2)
       br2_st32p(0x801bdeb8, (cnt << 16) | 0x10);
       {
         uint32_t cmd = 0x01000201;
-        if (CDREG32(0x801bdec0) == 1) cmd = 0x01000200;
+        if (CDREG32(0x801bdf00) == 1) cmd = 0x01000200;
         br2_st32p(0x801bdebc, cmd);
       }
     }
