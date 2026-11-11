@@ -2620,3 +2620,48 @@ NEXT: instrument the single Pause-completion episode — watch
 pending.pending transition + set_irq(2) + irq_flag ack source (guest PC
 of the 0x1F801803.1 write). Distinguish queued-cmd-cancel vs irq_flag
 starvation vs missing-clear. Agent c9f8c5a4 tracing IRQ->dispatch.
+
+## 2026 — session: ch4-DMA→mark-event chain PROVEN working; deferred coroutine never resumes
+
+LIVE PROBES (:4412, fresh binary w/ cd_cb7_run fix 106698b):
+- dma_trace seq1579-1581: ch4 kick(frame341, pc=0x80156608, 10560w) ->
+  delayed-complete(frame342) -> DICR 0x00900000->0x90900000 (bit28) +
+  IRQ3(i_stat 0x08) -> DICR write pc=0x8019B008 INSIDE cd_cb7_run clears
+  flag -> handler -> DeliverEvent. FULL CHAIN WORKS when ch4 completes.
+- After that: NO further ch4 kicks. ch4 idle (active=0, remaining=0,
+  chcr=0x201). Game is NOT re-kicking ch4 -> upstream gate, not DMA bug.
+- pc_probe armed live: cd_intc_dispatch(0x8019A8EC)=155061 hits (runs
+  constantly, per-IRQ); cd_cb7_run(0x8019AF7C)=0, tbl4 0x8019B7E0/
+  cd_dma_chan_reset 0x8019B7E8/tbl4op4 0x8019AC04=0 in window (no DMA
+  IRQ since arming — consistent w/ ch4 idle).
+- cd_cb7_run runs GENERATED for the INTC jalr path: clean_table key is
+  0x8019af84 (mid-func), entry 0x8019af7c not clean-routed, so generated
+  body runs whole. Clean-port a0->DICR-cell fix (106698b) is FAITHFUL
+  (generated reads *(*(0x801BDDF0)=0x1F8010F4)>>24&0x7F, ignores a0) but
+  is NOT the runtime bug.
+- DEFERRED COROUTINE: cd_chan_full_init(0x8019a814) gates on
+  u16@0x801BCD18 (in-service): set->resume 0x8019A8DC, clear->init
+  0x8019A838. cd_ctx_save(0x8019ad90) snapshots ra/sp/fp/s0-s7/gp to
+  frame; B0/0x19 arms deferred ctx. LIVE: 0x4BF8=0x801bcd50(frame),
+  0x4C18=0x2b5c -> ctx ARMED. cd_ctx_restore(0x8019ADCC)=0 hits ->
+  kernel NEVER resumes the coroutine.
+- Kernel ExceptionHandler (bios disasm): saves TCB ctx, runs IntRP
+  queues ToT[0] func1()->func2(result), then restores EntryInt jmp_buf
+  (JB_PC/JB_SP/JB_GP/JB_FP/JB_S0-7) and jr ra. cd_ctx_restore reached
+  via EntryInt.JB_PC or a stored cb — NOT a direct jal (only dispatch-
+  table entry exists).
+- HLE check: hle_service_b0 handles only svc 0x07-0x0D; svc 0x19 ->
+  default LLE. Deferred registration runs faithful recompiled BIOS.
+
+UNIFIED HYPOTHESIS: game yields CD coroutine via cd_ctx_save + arms
+deferred ctx; on CD IRQ the kernel should resume via cd_ctx_restore ->
+cd_chan_full_init -> cd_intc_dispatch -> consume completion -> issue
+next CD read -> ch4 DMA kick -> ch4 complete -> mark event -> TestEvent
+ready. cd_ctx_restore=0 => coroutine starved => no new CD/ch4 activity
+=> mark event never re-delivered => TestEvent spins => black screen.
+ALTERNATIVE (plan's device-side): 85th Pause pending.pending dropped
+without set_irq(0x02) -> game never sees INT2 -> same downstream stall.
+DISCRIMINATOR NEEDED: does the stalled Pause's CDIRQ_COMPLETE(INT2)
+actually fire+get consumed? If INT2 dropped -> cdrom.c pending bug.
+If INT2 consumed but coroutine still starved -> kernel EntryInt/deferred
+dispatch bug (who sets EntryInt.JB_PC=cd_ctx_restore / reads 0x4BF8).
