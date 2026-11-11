@@ -2958,3 +2958,96 @@ find which TCB/escape target supplies resume_pc=0x04000600 and why the saved
 context is poisoned (mid-nest ChangeThread/RFE during clean<->generated CD
 call). Candidates: g_sched_escape.target_tcb resume, dirty_safe_resume_pc
 latch, or exception-handler $k0 table base.
+
+=== UPDATE (session): ROOT localized — kernel-global memory corruption by mc_date_serial_cmp wild-pointer write ===
+
+Narrowed hard via gwatch (guest write-watchpoint, captures store_pc):
+- Crash reproduces identically under PSX_HLE_SCHEDULER=0 (host-fiber) AND
+  PSX_BIOS_HLE=0 (LLE boot) -> NOT a host-scheduler bug; it is GUEST-side.
+- thread_trace + thread_ctx_ring both EMPTY -> all thread switching is
+  guest-kernel-driven (recompiled OpenBIOS ChangeThread/ReturnFromException);
+  host only sees the resulting dispatch PC.
+- OpenBIOS func_000029CC = guest ReturnFromException: k1=mem[mem[0x108]]
+  (TCBH->current TCB), k1+=8, lw k0,128(k1)=TCB+0x88=returnPC, restores regs,
+  jumps k0. 0x04000600 is literally the returnPC slot value.
+- TCB layout VERIFIED correct for OpenBIOS too (returnPC @ Thread+0x88,
+  globals @0x108 processes / 0x110 threads / 0x114 size). HLE offsets fine.
+
+MEMORY-CORRUPTION SMOKING GUN (gwatch armed 0x80 len 0x280, frame 744):
+- Physical 0x80-0x27F overwritten with repeating 0x000600fe/0x000400fe.
+- These halfwords are EXACTLY the date/time fields mc_date_serial_cmp
+  writes into its result struct (comment: "stores scaled halves into
+  s2 @+0x1c/1e/24/26/32").
+- store_pc = 0x80159C08 = `sh v1,50(s2)` inside br2eu_func_80159AB4
+  (mc_date_serial_cmp). dma.depth=0 -> CPU store, not DMA.
+- mc_date_serial_cmp: s2=a0=param_1, s1=a1=param_2 (move s2,a0 @0x80159ABC).
+  Callers pass param_1 = struct+0x4700 -> 0x801F4700 (valid). At crash
+  gpr[18]s2=0x801F4700 VALID, gpr[17]s1=0x801B3ED8 VALID.
+- => a SEPARATE/Prior mc_date_serial_cmp ran with WILD param_1 (~0x4E),
+  writing date fields into low RAM 0x80-0x27F, corrupting kernel globals
+  incl. TCBH@0x108. Next ReturnFromException reads garbage TCBH -> bad TCB
+  -> returnPC=0x04000600 -> FAIL-FAST.
+
+UNIFIED ROOT CAUSE (hypothesis): the IRQ cross-thread switch at
+0x80159AD8 resumes a thread whose saved context/registers are corrupted;
+that thread runs memcard code with a wild pointer AND/OR its TCB returnPC
+is garbage -> both the 0x80-region wild write and the 0x04000600 resume.
+Still need: WHICH thread/context is corrupted and where its registers/
+returnPC first went bad (upstream of mc_date_serial_cmp).
+
+NEXT: catch the FIRST wild mc_date_serial_cmp call — arm a probe/watch on
+param_1 (a0) into 0x80159AB4, or dump the full thread/TCB array
+(dword_110 base / dword_114 size) at crash to find the never-initialized
+or corrupted TCB. OpenBIOS does NOT zero Thread registers (unlike retail
+InitThreads) -> uninitialized returnPC = heap garbage is a live suspect.
+
+=== UPDATE (session): dispatch-depth + thread-array ruled out; residual = defer/pending-switch state ===
+
+Thread array dump (pre-crash, globals still valid @0x108=0x8FD0/0x110=0x8FE0):
+- ONLY thread0 @0x8FE0 active: flags=0x4000, returnPC=0x80159ae8 (VALID,
+  inside mc_date_serial_cmp), sp=0x801fff90. thread1-3 free(0x1000),
+  thread4 flags=0x6538 odd, rest zero. NO pre-poisoned TCB with
+  returnPC=0x04000600 -> the bad returnPC is WRITTEN during the crash
+  sequence (after globals@0x108 are corrupted), not pre-existing.
+
+Marshaling audit (game/bind.c + clean_bridge.c):
+- guest_at(addr)=guest_arena+(addr&0x1fffff) [weak]; guest_of(p) returns
+  0x80000000|off for arena ptrs, 0x1f800000|off for scratch, ELSE 0.
+  blk_io_retry(0x801f4700)->s1=guest_at->arena; mc_date_serial_cmp clean
+  does br2_call_generated(0x80159ab4, guest_of(s1), guest_of(p2)).
+  Round-trips correctly for arena addrs -> param_1 wild means the CALLER's
+  a0 (blk_io_retry param_1, or generated caller's s2+0x4700) was already bad.
+- br2_call_generated saves ra/pc/sp/s0-s3 only (NOT s4-s7 gpr[20-23], NOT
+  full arg/temp). Probably not the IRQ bug (clean callers use host locals)
+  but a real ABI gap worth noting.
+
+Dispatch-depth audit (THE key mechanism):
+- g_psx_dispatch_depth++ ONLY in OpenBIOS psx_dispatch_impl
+  (OpenBIOS_dispatch.c:9015). Game dispatch br2eu_psx_dispatch_game_compiled
+  + clean_try_dispatch do NOT touch it.
+- br2_call_generated -> psx_dispatch_call -> OpenBIOS_psx_dispatch_call ->
+  psx_dispatch_impl => depth++ DOES happen for game addrs routed via
+  PSX_HAS_GAME_DISPATCH. So inside generated mc_date_serial_cmp depth>=1.
+- IRQ handler psx_check_interrupts ZEROES g_psx_dispatch_depth (interrupts
+  .c:1813) to run guest handler as outermost, restores saved at :1865.
+- Thread-switch honor (interrupts.c:2100): at_outermost=(depth==0 &&
+  call_unit==0). can_defer -> DEFER path (2144-2171): restores saved_gpr[],
+  cpu->pc=g_exception_real_epc, sets s_defer_switch_{from,target,pending},
+  resumes OUTGOING thread transparently; honored at next outermost boundary.
+  !can_defer -> immediate longjmp PSX_RUN_YIELD_TO_TCB (poisoned-context
+  path the comment warns about).
+
+CONCLUSION: depth tracking is correct through the clean->generated boundary,
+so at_outermost is FALSE inside mc_date_serial_cmp and the DEFER path SHOULD
+engage. The residual bug is therefore in the DEFER/pending-switch state
+machine: either (a) saved_gpr[]/g_exception_real_epc captured at IRQ-entry
+is stale because generated code keeps live regs in C locals and only syncs
+cpu->gpr[] at block boundaries (recompiler materialization gap), or (b) the
+pending-switch honor at the next outermost boundary re-saves a context that
+desynced. Faithful fix = guarantee cpu->gpr[] is fully materialized at every
+interruptible point inside nested clean->generated dispatch, OR correct the
+defer capture/restore. NOT a per-game hack; needs recompiler/runtime work.
+
+RETAIL-BIOS NOTE: SCPH7502.bin present but is JAPANESE region; game is
+SLES_017.22 EUROPEAN -> region mismatch + needs per-image Ghidra seeds that
+don't exist. Not a quick sidestep; OpenBIOS kernel bug is the real target.
