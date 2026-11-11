@@ -213,6 +213,37 @@ on a fixed region -> next.
 
 ## 5. Status / Log (update every session)
 
+- **2026-11-11 (IRQ callback path fully traced — CD handler genuinely never
+  invoked; OpenBIOS ruled out):** Live pc_probe campaign on the running headless
+  build resolved the dispatch topology:
+  * IRQ delivery + kernel dispatch WORK: exception entry `0x27AC`=3911,
+    hw-irq dispatcher `0x16E4`=3911, kernel-object invoke `0x2610`=11733 (~3 per
+    IRQ batch). VBLANK path fine.
+  * The game's OWN kernel handles IRQs — OpenBIOS is NOT in the IRQ path:
+    `exceptionHandler`/`cdromDMAHandler`/`cdromIOHandler`/`cdromGetStatus`
+    (all `0xBFC2xxxx`→masked `0x1FC2xxxx`) = **count 0**. Game installs its own
+    low-mem kernel (`0x0000xxxx`) post-boot; OpenBIOS only services B0 calls.
+  * IntRP record @`0x801FEB40`: `{id=0x461c, cb1=0x801aa244, cb2=0x801aa2ac,
+    +0x10=0x8019a048, +0x18=bfc07734, +0x1c=bfc07744, +0x20=0x8019a038}`.
+    `0x801aa244`/`0x801aa2ac` DO run (3911/7822) — but they alias into
+    `elem_pair_field_set` (save/memcard, save.c) = **memcard poll, red herring**.
+  * Handler table @`0x801bcd1c` IS populated: `[0]=0x8019ae68, [2]=0x801979f8
+    (cd_response_pump), [3]=0x8019af7c` — but ALL of `0x801979f8/0x8019ae68/
+    0x8019af7c/0x8019a7d4/0x8019a8ec/0x8019a048/0x8019a038` probe = **count 0**.
+  * `cd_intc_dispatch`(0x8019a8ec) is a DECOY — only called from the never-taken
+    `cd_ctx_save` re-entry path (cd.c:5204); not the IRQ entry. Its address
+    `0x8019a8ec`/`0x8019a87c`/`0x8019a7d4` appear NOWHERE in guest RAM.
+  * NET: CDROM IRQ is pending at INTC (i_stat bit2, irq_flag=0x03) and CPU takes
+    IRQs, but the game's CD-completion handler is never reached → busy flag
+    `0x801bcd1a` stays 0 → `cd_sync_wait`/`cd_cmd_issue` spins → same-sector
+    retry forever. The kernel-object `0xF0000003` (CDROM) callback that SHOULD
+    reach the game CD handler is either unregistered or mis-dispatched.
+  * NEXT: locate kernel object `0xF0000003` in kernel space and read its
+    registered interrupt callback; determine which BIOS/kernel call installs it
+    during CD init (`cd_chan_init_trio`/`cd_subchan_table_install`/`cd_hw_chan_init`
+    → `FUN_8019b380` kernel-object allocs). Also bisect whether this is a
+    regression (game reportedly reached VS fights before) vs always-broken.
+
 - **2026-11-11 (DECISIVE: all-generated baseline stalls identically → runtime/kernel
   bug, NOT clean code):** Ran the definitive A/B: `CLEAN_MIN=0xffffffff
   CLEAN_MAX=0xffffffff` makes `clean_range_ok` false for every guest addr →
