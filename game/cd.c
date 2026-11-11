@@ -4250,6 +4250,15 @@ uint32_t cd_svc_4f(uint32_t a0,uint32_t a1)
 uint32_t cd_svc_5c(uint32_t a0,uint32_t a1)
 { return bios_svc(0xb0,0x5c,a0,a1); }
 
+/* cd_seek_state_machine — 0x8019d5b0 is a leaf B0 trampoline
+ * (`li t1,0x0B; jr 0xB0`) i.e. kernel TestEvent(a0).  bind.c's weak
+ * fallback returned 0, which made every `while(v0==0)` seek/state retry
+ * loop in cd_seek_step / cd_queue_*_status / cd_pending_args_pump spin
+ * forever on a "not ready" that was never really queried.  Route the real
+ * service like the other cd_svc_* wrappers. */
+int32_t cd_seek_state_machine(uint32_t a0)
+{ return (int32_t)bios_svc(0xb0,0x0b,a0,0); }
+
 /* cd_chan_cmd_submit — 7-arg channel command submit. a0 = channel slot,
  * entries are the DMA channel regs at 0x1f801080 + a0*0x10
  * (`lui $v0,0x1f80; addu; lw/sw 0x108x` in 0x80199d88):
