@@ -2300,3 +2300,31 @@ completion isn't reaching the game's file-job state machine -> timeout->retry.
 Check cd_file_open_wait / job_result_poll_stable completion path and whether
 Pause(0x09) INT2 + the mark event (0xF0000009,0x20 via cd_dma_chan_reset)
 fire for the per-sector reads.
+
+=== UPDATE: cd_cmd_issue_b/c pointer-cell mistranslation FIXED ===
+
+ROOT CAUSE of the file-load livelock found via lldb stack + generated disasm:
+cd_cmd_issue_b (0x80197800) / cd_cmd_issue_c (0x80197900) drive the game's
+software CD command block at 0x801bcbXX. EVERY access is a pointer-cell
+indirection: `lw ptr,[0x801BCBXX]; sb/sw/lbu/lw *ptr` into the CD register
+file. The clean port mistranslated all of them as direct `DB32(0x801bcbXX)`
+cell stores/reads. Concretely the done-poll `while(!(DB32(0x801bcb0c)&0x40))`
+read the POINTER VALUE (a 0x1F8018xx register address) and tested bit6 of an
+address — never the real status byte — so it polled forever at 100% CPU
+(stack: cd_cmd_issue_b -> br2_irq_poll). Faithful generated code does
+`lbu v0,0(v1)` where v1=*0x801BCB0C = the status byte through the pointer.
+
+FIX: converted both to `br2_call_generated` thunks (0x80197800/0x80197900) and
+removed their clean_table wrap+entries — same contract as cd_init_session.
+Also fixed cdrom.c present_cdrom_irq: re-arm cdrom_intc_request_latched when
+i_stat bit2 reads back clear while irq_flag still pending (level-triggered CD
+IRQ line must re-assert after a generic I_STAT ack that didn't ack HINTSTS;
+otherwise irq_flag sticks -> INT1 starved -> int1_lost ~48k).
+
+RESULT: livelock broken — game now runs cd_file_pump -> gpu_invoke ->
+cd_queue_push -> wrap_80192f14 actively (was hard-spinning in cd_cmd_issue_b).
+cmds 82->83 but dmas still 333: file reads queue but DMA completion still not
+landing. NEXT: trace why queued CD reads don't produce DMA — likely the
+cd_queue consumer / CD-DMA ch3 drain or another pointer-cell mistranslation
+in the queue-pop/execute path (cd_queue_a/b_status, cd_queue_a_read use
+packed guest reads — verify they're not also direct-vs-indirect bugs).

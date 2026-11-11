@@ -973,6 +973,15 @@ static void present_cdrom_irq(void) {
      * own trailing INTC ack. */
     if (cdrom_irq_present_due != 0 && psx_cycle_count < cdrom_irq_present_due)
         return;
+    /* The CD IRQ line is level-triggered from HINTSTS: while irq_flag holds an
+     * unacked reason the line stays high, so i_stat bit2 must re-assert if the
+     * guest cleared it with a generic I_STAT ack that did NOT ack the CD
+     * controller (no 0x1F801803.1 write). Re-arm the per-generation latch when
+     * bit2 reads back clear, otherwise a single stray I_STAT clear wedges the
+     * drive: irq_flag stuck set, i_stat bit2 never re-raised, INT1 starved and
+     * every later sector's data-ready lost (the boot file-load livelock). */
+    if (cdrom_intc_request_latched && (i_stat & 0x4u) == 0u)
+        cdrom_intc_request_latched = 0;
     if (cdrom_irq_mask_matches_reason(irq_enable, irq_flag) &&
         !cdrom_intc_request_latched) {
         psx_irq_raise(2, irq_flag); /* IRQ_CDROM; detail = CD response/IRQ type */

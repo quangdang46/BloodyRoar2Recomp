@@ -1219,41 +1219,24 @@ void bios_kobj_tramp()
 /* ---- batch29: CD command submit + status ---- */
 
 /* cd_cmd_issue_b — CD command issue A (param_1/param_2 -> regs 48/4c),
- * polls status bit 0x40 then waits DMA-clear on reg 0x50. */
+ * polls status bit 0x40 then waits DMA-clear on reg 0x50.
+ *
+ * Routed to the generated body: every 0x801bcbXX access is a pointer-cell
+ * indirection (lw ptr; sb/sw/lbu/lw *ptr) into the CD register file, which the
+ * clean port mistranslated as direct DB32 cell stores — the &0x40 done poll
+ * then read the pointer value instead of the status byte and spun forever
+ * (the boot file-load livelock). br2_call_generated also makes
+ * gen_clean_table skip this address. */
 uint32_t cd_cmd_issue_b(uint32_t param_1,uint32_t param_2)
 {
-  uint32_t uVar1;
-  DB32(0x801bcb0c) = 0;
-  DB32(0x801bcb18) = 0x80;
-  DB32(0x801bcb40) = 0x20943;
-  DB32(0x801bcb1c) = 0x1323;
-  DB32(0x801bcb44) = DB32(0x801bcb44) | 0x8000;
-  DB32(0x801bcb48) = param_1;
-  DB32(0x801bcb4c) = param_2 | 0x10000;
-  do { br2_irq_poll(); } while ((DB32(0x801bcb0c) & 0x40) == 0);
-  DB32(0x801bcb50) = 0x11000000;
-  uVar1 = DB32(0x801bcb50);
-  while ((uVar1 & 0x1000000) != 0) { br2_irq_poll(); uVar1 = DB32(0x801bcb50); }
-  DB32(0x801bcb1c) = 0x1325;
-  return 0;
+  return br2_call_generated(0x80197800, param_1, param_2, 0, 0);
 }
 
 /* cd_cmd_issue_c — CD command issue B (same protocol, different opcode
- * 0x21020843 / reply 0x11400100). */
+ * 0x21020843 / reply 0x11400100). Same pointer-cell indirection -> generated. */
 uint32_t cd_cmd_issue_c(uint32_t param_1,uint32_t param_2)
 {
-  uint8_t bVar1;
-  DB32(0x801bcb0c) = 0;
-  DB32(0x801bcb18) = 0x80;
-  DB32(0x801bcb40) = 0x21020843;
-  DB32(0x801bcb1c) = 0x1325;
-  DB32(0x801bcb44) = DB32(0x801bcb44) | 0x8000;
-  DB32(0x801bcb48) = param_1;
-  DB32(0x801bcb4c) = param_2 | 0x10000;
-  bVar1 = (uint8_t)DB32(0x801bcb0c);
-  while ((bVar1 & 0x40) == 0) { br2_irq_poll(); bVar1 = (uint8_t)DB32(0x801bcb0c); }
-  DB32(0x801bcb50) = 0x11400100;
-  return 0;
+  return br2_call_generated(0x80197900, param_1, param_2, 0, 0);
 }
 
 /* cd_cmd_retry — CD retry wrapper: forwards arg0 to cd_cmd_bytes,
