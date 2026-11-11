@@ -3618,7 +3618,7 @@ uint32_t cd_chan_cmd_burst(uint32_t a0)
 
 /* cd_job_slot_alloc — job-slot allocator: idx = *@0x801be768 + 1; >=4 ->
  * printf 0x80125f98 + return; else store idx, fn ptr a0 ->
- * @0x801fef60+idx*4, zero 16-byte entry @0x801fef2c+idx*0x10.
+ * @0x801fef60+idx*4, zero 16-byte entry @0x801fef20+idx*0x10.
  * a1 unused (overwritten in guest). Disasm 0x801a0a10-0x801a0a88. */
 void cd_job_slot_alloc(uint32_t a0,uint32_t a1)
 {
@@ -3630,7 +3630,7 @@ void cd_job_slot_alloc(uint32_t a0,uint32_t a1)
     CDREG32(0x801be768) = idx;
     CDREG32(0x801fef60 + idx * 4) = a0;
     {
-      uint32_t *e = (uint32_t *)guest_at(0x801fef2c + idx * 0x10);
+      uint32_t *e = (uint32_t *)guest_at(0x801fef20 + idx * 0x10);
       for (i = 0; i < 4; i++) e[i] = 0;
     }
   } else {
