@@ -1747,3 +1747,41 @@ byte @0x801BC85C = 0x00 (bit4 clear, passes first gate). Likely failure:
 cd_mode_flag_set(0xe)/cd_mode_byte_read mismatch inside cd_read_open, or a
 higher-level read-state machine stuck. Next: trace cd_read_open's error
 return path / which cd_mode_flag_set call returns 0.
+
+## 2026h — Pause stall ROOT-CAUSED to faithful timing race (timer-timeout vs CD-complete)
+
+Refined 2026g: the Pause loop is menu.c:9628 `while(cd_cmd_issue_sync(9,0,0)==0)`.
+cd_cmd_issue_sync returns cd_result_wait_a(...)->CDB8(0x801bcb24)==2.
+
+PROVEN mechanism (register+event-ring verified):
+- CD IRQ DOES fire+deliver: event_ring shows 12777 ISTAT_RAISE detail=2
+  (CDROM bit2) + IRQ_DELIVER at pc=0x80197060 (the wait loop, func=0x29CC
+  deferred path), istat=0x04 at delivery. i_stat bit2 is acked too fast for
+  200ms RAM samples to catch — earlier "i_stat=0" was a sampling artifact.
+- cd_response_process RUNS: response buffer 0x801fc6c8=0x02 populated.
+- BUT result byte 0x801bcb24 stays 0 -> sync never sees 2.
+- ACK path (case3) gives result=3 not 2 because I32AT(0x801bc90c,drive=9)
+  @0x801bc930 = 1 (nonzero) -> case3 else-branch -> CDB8(0x801bcb24)=3.
+- Only COMPLETE (case2, local_20=irq_flag&7==2) sets result=2.
+
+DEADLOCK: irq_flag stuck at 0x03 (ACK) — COMPLETE(2) never surfaces.
+cdrom.c exec_command cancels pending on each new command (line ~2091).
+Pause COMPLETE = pause_complete_delay_cycles(): 5000 cycles when not
+reading/playing, ~1.1M+ when reading. pending.delay samples 872-4532
+(=~5000 not-reading path) but JUMP, never reach 0 -> re-armed each retry.
+
+ROOT CAUSE = faithful TIMING RACE: cd_result_wait_a (game/cd.c:562-571)
+timeout = cd_timer_read()+0x3c0 (960 timer ticks) OR >0x3c0000 polls.
+It returns 0xffffffff -> sync false -> menu retries Pause -> exec_command
+cancels pending COMPLETE -> irq_flag stays ACK(3) -> repeat forever.
+For real HW this race must NOT happen: the game's 960-tick budget has to
+exceed Pause completion. Suspects (need Beetle oracle to disambiguate):
+  (a) cd_timer_read reads a timer whose clock-source/divider makes 960
+      ticks elapse in <5000 guest cycles (timer too fast), OR
+  (b) pause_complete_delay_cycles over-estimates (should be <<5000 or
+      the not-reading path should be near-instant), OR
+  (c) reading/stat_reg wrongly reports "reading" so delay is 1.1M not 5000.
+NEXT: identify which timer cd_timer_read uses (DB32G(0x801bccac) pointer),
+its configured clock source, and compare 960-tick span + Pause latency vs
+Beetle PS_CDC. Fix the faithful side (timer rate or CD latency), not the
+game timeout.
