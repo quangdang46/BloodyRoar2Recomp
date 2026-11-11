@@ -2548,7 +2548,7 @@ void cd_chan_attr_push(uint32_t a0)
  * Disasm 0x8019ea98-0x8019eafc. */
 int32_t cd_chan_job_submit(uint32_t a0)
 {
-  uint32_t *st = (uint32_t *)guest_at(0x801febc0);
+  uint32_t *st = (uint32_t *)guest_at(0x801febe0);
   if ((int32_t)st[0] > 0) {
     printf_forward((const char *)guest_at(0x80125ce8));
     return 0;
@@ -2570,7 +2570,7 @@ int32_t cd_chan_job_submit(uint32_t a0)
  * Disasm 0x8019fa80-0x8019fb98. */
 int32_t cd_job_result(uint32_t a0,uint32_t *a1,uint32_t *a2)
 {
-  uint32_t *st = (uint32_t *)guest_at(0x801febc0);
+  uint32_t *st = (uint32_t *)guest_at(0x801febe0);
   uint32_t t0, a3;
   if (st[0] == 0) {
     if (st[2] == 0) return -1;
@@ -2610,7 +2610,7 @@ int32_t cd_mc_op_wait(uint32_t a0)
 {
   uint32_t s0 = a0;
   uint32_t v0;
-  if (CDREG32(0x801febc0) != 0) {
+  if (CDREG32(0x801febe0) != 0) {
     printf_forward((const char *)guest_at(0x80125e8c));
     return -1;
   }
@@ -2657,7 +2657,7 @@ int32_t cd_chan_job_pump(uint32_t a0,const void *a1,const void *a2,const void *a
   int32_t v0;
   uint32_t *outa = (uint32_t *)a3;
 
-  if (CDREG32(0x801febc0) != 0) {
+  if (CDREG32(0x801febe0) != 0) {
     printf_forward((const char *)guest_at(0x80125e8c));
     br2_guest_frame_free();
     return -1;
@@ -2685,11 +2685,11 @@ int32_t cd_chan_job_pump(uint32_t a0,const void *a1,const void *a2,const void *a
         /* 4 strikes: teardown + drain + report last error */
         v0 = (int32_t)cd_xchg_fec24(0);
         CDREG32(0x801fec38) = (uint32_t)v0;
-        st0 = CDREG32(0x801febc0);
+        st0 = CDREG32(0x801febe0);
         if ((int32_t)st0 > 0) {
           printf_forward((const char *)guest_at(0x80125ce8));
         } else {
-          uint32_t *st = (uint32_t *)guest_at(0x801febc0);
+          uint32_t *st = (uint32_t *)guest_at(0x801febe0);
           st[0] = 2; st[1] = 0; st[2] = 0;
           CDREG32(0x801febf0) = a0;      /* delay-slot store before call */
           cd_job_slot_alloc(0x8019eb00,(uint32_t)a1v);
