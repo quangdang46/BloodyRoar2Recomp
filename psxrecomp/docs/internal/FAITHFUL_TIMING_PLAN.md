@@ -2188,3 +2188,47 @@ Game CD regs CORRECT: 0x801BCB0C-18 = 0x1F801800-803 (banked CD interface).
 CD controller ack = write 0x1F801803 index_reg==1 (cdrom.c:2973) clears irq_flag
   + re-arms latch. openEvent class consts: 0xF0000009 @0x8019B338 (mark event),
   0xF0000003 @0x80195B54 (different event class).
+
+=== 2026-… cd_init_session ROOT CAUSE — corrected mechanism (game-side, not kernel) ===
+
+The mark event the game polls is a GAME-side signal, NOT a kernel IRQ event.
+Full clean-source trace (game/cd.c):
+
+- cd_init_session (0x80198b.., game/cd.c:119): mc_session(0x80198590) registers
+  session cb cd_init_done_cb; cd_cmd_issue_async(9,0) issues Pause(0x09) ONCE;
+  sets DAT_801bcba4=1; waits <=0x79 frame ticks (cd_timer_read -> 0x801bdde0
+  VBlank counter) for cb to clear flag. Timeout path returns normally.
+- cd_init_done_cb (0x80198590, cd.c:526): mc_session(prev); DAT_801bcba4=0.
+  Invoked via the CD IRQ -> cd_response_process -> session-callback path.
+- The mark event (0xF0000009,0x20,MARK) opened via FUN_8019b380(0xf0000009,
+  0x20,0x2000) at cd.c:1860/5679 is delivered by cd_dma_chan_reset (0x8019b7e8,
+  cd.c:5786):  if DB32G(0x801bdee8)==0 -> cd_bios_svc_07(0xf0000009,0x20)
+  else call_guest(0x801bdee8,0xf0000000,0).  Reached only after CD DMA/init seq.
+
+Event-class map (verified against generated OpenBIOS + clean cd.c):
+- Kernel IRQVerifier (func_000016E4) delivers per-IRQ-bit class:
+    bit2 CDROM -> deliverEvent(0xF0000003,0x1000)   [0xBFC1F6E8]
+    bit9 (0x200)-> deliverEvent(0xF0000009,0x1000)   [0xBFC1F738]
+  deliverEvent (func_00002610) requires EXACT spec match (entry+8==a1) and
+  status==0x2000; MARK mode(+0xC==0x2000) sets status=0x4000(READY).
+- Game CD IRQ callbacks (cd_response_pump->cd_response_process, reads
+  HINTSTS@0x1F801803 via ptr 0x801bcb18): INT2->cd_bios_cmd20
+  DeliverEvent(0xF0000003,0x20); INT1->cd_bios_cmd40 DeliverEvent(0xF0000003,0x40).
+- So class 0xF0000003 = CD channel events; class 0xF0000009 spec0x20 = the
+  game's DMA-channel-reset done event.  Kernel's (0xF0000009,0x1000) is a
+  coincidental class match, DIFFERENT spec -> does NOT satisfy the mark event.
+
+cd_intc_dispatch (0x8019a8ec, clean cd.c:6244) = top-level INTC dispatcher:
+  mask = *0x801bdda4(I_STAT 0x1F801070) & *0x801bdda8(I_MASK 0x1F801074) &
+         u16@0x801bcd48(=0xD live). tbl[i]@0x801bcd1c: [0]=0x8019ae68 VBlank,
+  [2]=0x801979f8 cd_response_pump(CD), [3]=0x8019af7c. Per set bit calls tbl[i].
+
+OPEN QUESTION (next): why doesn't the CD init/DMA sequence reach
+cd_dma_chan_reset -> mark event, forcing cd_init_session to time out and boot
+to re-issue Pause(0x09) (the observed cmd=0x09 spam at pc=0x80196FC4)?
+Suspects: (a) session cb 0x80198590 not invoked because CD INT2/INT3 response
+path doesn't reach mc_session callback; (b) cd_timer_read frame counter frozen
+(VBlank IRQ not delivered) so the 0x79 timeout never expires -> infinite spin;
+(c) clean cd_init_session can't deliver IRQ (br2_irq_poll wild-store, cd.c:115)
+so relies on generated body — verify which body actually runs.
+The recursion-guard halt is a SEPARATE host-side nested-psx_dispatch issue.
