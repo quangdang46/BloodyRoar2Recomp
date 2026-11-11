@@ -213,6 +213,33 @@ on a fixed region -> next.
 
 ## 5. Status / Log (update every session)
 
+- **2026-11-11 (kernel objects FOUND in low RAM — structure decoded; class-desc
+  space 0xF0000000 still unmapped):** Scanned KUSEG low RAM (`0xA0000000+phys`)
+  and located the live kernel objects the `B0/0x08` allocs created:
+  * Handle table @phys `0x4bd4`: `0xF1000004..0xF1000000` (and mirrored cells
+    `0xef70-0xef80` = the `0x8020ef70` cells cd_hw_chan_init wrote).
+  * Object instances @phys `0x8e08`, stride `0x1C`, layout:
+    `{+0x00 class_id, +0x04 0x2000, +0x08 attr, +0x0c size, +0x10 CALLBACK,
+      +0x14 0, +0x18 0}`. The 8 CD-channel objects carry callbacks
+    `0x801a0b10/24/38/4c` (class `0xF4000001`) and `0x801a0b60/74/88/9c`
+    (class `0xF0000011`) — **CD IRQ callbacks ARE registered in the objects**.
+  * One class-descriptor entry @phys `0x9010`: `{0xbfc04974, 0xf0000009, ...}`
+    = {BIOS func, class_id} — class descriptors live in low RAM too.
+  * SO: object instances + class descriptors are all in normal low RAM and
+    populated correctly. The break is PURELY that `0x2610` is handed the class
+    ID `0xF0000003` and dereferences it as a **virtual address**
+    (`lw s0,0x20(a0)`→`0xF0000023`), but `0xF0000000` is KSEG3/unmapped in the
+    recomp → open-bus → the class→object→handler walk never reaches the
+    registered `0x801a0bXX` callbacks.
+  * OPEN (next): `0x2610` uses a0 DIRECTLY as a pointer — no handle→ptr
+    translation in its prologue. So on real HW `0xF0000000` MUST be a mapped
+    class-descriptor/virtual region. Determine its physical backing: either a
+    KSEG3 alias the recomp must implement in `psx_phys_addr`, or the kernel
+    object "class address" is `0xF0000000|index` into a table at a fixed low-RAM
+    base. Compare against how `0x2610`'s siblings (VBLANK etc, which DO work)
+    receive their class arg — if VBLANK passes a low-RAM pointer while CDROM
+    passes `0xF0000003`, the difference is the bug.
+
 - **2026-11-11 (kernel-object handle scheme decoded via bios_svc_trace):**
   `B0/0x08` (=FUN_8019b380 kernel-object alloc) calls and returns:
   `{type=0xF4000001|0xF0000011|0xF0000009, attr={4,0x8000,0x100,0x2000,0x20}}
