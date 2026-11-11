@@ -1785,3 +1785,38 @@ NEXT: identify which timer cd_timer_read uses (DB32G(0x801bccac) pointer),
 its configured clock source, and compare 960-tick span + Pause latency vs
 Beetle PS_CDC. Fix the faithful side (timer rate or CD latency), not the
 game timeout.
+
+## 2026i — mc_state_init transcription bug FIXED; cd_init_session is next stall
+
+CORRECTION to 2026h: the "timing race" hypothesis was WRONG. Guest-RAM
+instrumentation (CDDBG counters @0x801bce10+) proved the sync path WORKS:
+cd_cmd_issue(9) returns 0 always, cd_result_wait_a returns result=2
+(0x801bce2c=2), cd_cmd_issue_sync returns TRUE. The Pause "spam" was NOT
+the menu.c:9628 loop.
+
+REAL BUG #1 (FIXED, commit d9f4350): game/save.c mc_state_init @0x801bef60
+`while(cd_cmd_issue_sync(9)!=0)` was INVERTED. Generated MIPS
+br2eu_func_801573EC block_80157418 = `beq $v0,$zero -> loop` i.e.
+`while(sync==0)` (retry Pause until success). Clean had `!=0` -> looped
+while Pause SUCCEEDED -> infinite ~7M-command Pause spin at memcard init.
+Fix: `!=` -> `==`. Verified vs generated SLES_017.22_full_20.c.
+
+After fix, game progressed past memcard init into cd_file_pump ->
+cd_init_session @0x80198af0. NEW STALL: cd_init_session waits for
+DAT_801bcba4==0 (async Pause callback 0x80198590) in a clean-C spin.
+Two compounding issues:
+  (a) clean C wait-loop is NOT interruptible — generated version has
+      psx_check_interrupts_at at every block. Adding br2_irq_poll() DOES
+      deliver the CD IRQ but crashes in cd_intc_dispatch @0x8019AA98
+      (write_half via gpr[1]=at + -13030, wild ptr) — IRQ-handler register
+      context not set up for clean-C callers. Reverted.
+  (b) cd_timer_read @0x8019A460 is broken: pointer cells
+      0x801bcca8/0x801bccac hold 0x14/0x10 (NOT 0x1F8011xx timer-reg
+      ptrs) -> br2_ld32(0x14/0x10)=0 -> returns constant -> the 0x79-tick
+      timeout in cd_init_session (and ALL CD timeouts) never fire.
+      Init that writes these cells NOT found in clean or generated code —
+      likely kernel/BIOS-side timer-pointer setup still missing.
+NEXT: (1) find/fix timer-pointer-cell init so cd_timer_read works ->
+0x79 timeouts fire -> cd_init_session exits via timeout; (2) OR make
+cd_init_session's wait interruptible safely (br2_call_generated like
+cd_cmd_issue, or fix cd_intc_dispatch IRQ context for br2_irq_poll).
