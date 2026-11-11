@@ -2033,3 +2033,25 @@ NEXT: disassemble kernel B0:0x17 handler (mem[0x4A28] -> find its ROM addr
 via syscall-table init) to see if it calls deliverEvent/deferred-dispatch
 while the CD frame is still armed. Likely fix: ordering — the deferred
 slot must be consumed before B0:0x17 re-enables event delivery.
+
+## 2026o — bioscall histogram: B0:0x0B TestEvent storm = cd_seek_state_machine retry
+
+bioscall_dump post-halt: B0 idx11(0x0B TestEvent)=1,361,041 (~99.9% of all
+bioscalls); idx23(0x17)=769, idx61(0x3D)=753, idx32(0x20)=195 (per-recursion-
+iteration); DeliverEvent/OpenEvent/EnableEvent small counts.
+
+0x8019d5b0 = TestEvent trampoline (li t1,0x0B; jr 0xB0), renamed
+cd_seek_state_machine. Callers storm it via retry loops:
+- cd_seek_step (0x8019d508): do{v0=cd_seek_state_machine(DB32G(0x801bde38));}
+  while(v0==0)
+- cd_queue_a_status/cd_queue_b_status/cd_pending_args_pump: for(;;) poll
+  queue cells then drain via cd_seek_state_machine.
+- bind.c:2019 has __attribute__((weak)) cd_seek_state_machine(){return 0}
+  FALLBACK — clean C callers resolve to it (return 0 -> while(v0==0) spins),
+  while guest/dispatch callers of 0x8019d5b0 get real TestEvent.
+
+=> CD seek/state event never reports READY -> TestEvent retry storm AND the
+deferred-frame recursion are TWO SYMPTOMS of one root cause: the CD
+IRQ/event is not being delivered+consumed. The weak stub returning 0 is a
+separate latent bug for clean callers (must route to generated TestEvent,
+not return 0).
