@@ -2685,3 +2685,37 @@ recompiled-BIOS ExceptionHandler EntryInt-restore (the longjmp,
 psx_restore_state_escape) correctly resume? Verify EntryInt ptr
 (dword_75D0->guest RAM) points at a jmp_buf whose JB_PC leads to
 cd_ctx_restore at the moment CD IRQ2 fires.
+
+=== 2026 — BREAKTHROUGH: game progressed PAST CD/SPU stage; now blocked in memcard channel-job ===
+Live-verified on port 4427 (HLE default). The earlier TestEvent/ch4/SPU-stream
+stall is RESOLVED upstream — game now runs versus_state_init + versus-screen
+setup, then blocks in memcard_info_query. g_game_state@0x1F800000 stays 0.
+
+EXACT BLOCK CHAIN (all clean C except final handler):
+  br2eu_func_80126290 -> jal 0x8015F590 memcard_info_query (clean,
+    game/game.c:2222) -> mc_data_read (save.c:3879) -> mc_op_result_poll
+    (cd.c:1985) -> cd_job_result(0,..) (cd.c:2571) spins
+    `while(st[2]@0x801febc8==0) br2_irq_poll()` forever.
+  Channel-job state @0x801febc0: st[0]=2 (in-service), st[2]=0 (never done).
+  CPU parked at return-addr 0x801262A8 (40/40 get_registers samples identical).
+
+JOB DISPATCH (clean, running every frame — confirmed in clean_trace):
+  op_chan_fn_invoke (save.c:8035, guest 0x801a0a8c) reads count
+  *(0x801be768)=0, handler *(0x801fef60+0*4)=0x8019eb00, calls
+  fn(0x801ff960+0*16). Handler returns 0 (pending) forever -> slot never
+  popped -> st[2] never set -> mc_op_result_poll spins.
+
+HANDLER 0x8019EB00 = generated br2eu_func_8019EB00
+  (generated/SLES_017.22_full_48.c:13675, 680B/48 blocks). Reads context
+  a0=0x801ff960 (live: ALL ZEROS), opcode=context[0]=0 (<51 -> memcard-read
+  op). Returns 0 pending. SIO/memcard FROZEN: mc_probes=74/acks=74/reads=72
+  all done, 0 new cmds since versus-init -> handler NOT issuing SIO; stuck
+  waiting on a flag/status before issuing, or a completion IRQ that never
+  fires. Cards card1.mcd/card2.mcd present, memcard_dir="saves" configured.
+
+SUSPECT: clean-port mistranslation in the memcard-job channel chain —
+slot-context base mismatch is suspicious: cd_job_slot_alloc zeroes
+0x801fef2c+idx*0x10 but op_chan_fn_invoke passes 0x801ff960+i*16 as handler
+arg (different regions). Handler may get wrong/empty context -> returns 0.
+Agent 5e538f5f tracing handler wait-condition + slot-base correctness vs
+generated oracle.

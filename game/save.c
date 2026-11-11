@@ -8040,7 +8040,7 @@ void op_chan_fn_invoke(void)
     void *fn = fn_lookup(f);
     uint32_t r = 0;
     if (fn != (void *)0x0) {
-      r = ((uint32_t (*)(uint32_t))fn)(0x801ff960 + (uint32_t)i * 16);
+      r = ((uint32_t (*)(uint32_t))fn)(0x801fef20 + (uint32_t)i * 16);
     }
     if (r != 0) {
       *(uint32_t *)guest_at(0x801be768) = (uint32_t)(i - 1);
