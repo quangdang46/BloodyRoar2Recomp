@@ -1833,7 +1833,7 @@ void cd_ext_init_once(void)
 
 /* cd_chan_block_boot — channel block @0x801febe0 init: clears +0/4/8/0xc/
  * 0x44/0x54, cd_job_slots_reset, +0x14=-1, +0x48/+0x4c=1, +0x50=old+0x54,
- * cd_hw_chan_init, cd_chan_block_init(7,0x801a110). Disasm 0x8019e680-e6e8. */
+ * cd_hw_chan_init, cd_chan_block_init(7,0x801a0110). Disasm 0x8019e680-e6e8. */
 extern void cd_job_slots_reset(void);
 extern void cd_hw_chan_init(void);
 extern void cd_chan_block_init(int32_t,uint32_t);
@@ -1855,7 +1855,7 @@ void cd_chan_block_boot(void)
   *(uint32_t *)(s0 + 0x48) = 1;
   *(uint32_t *)(s0 + 0x50) = v1;
   cd_hw_chan_init();
-  cd_chan_block_init(7,0x801a110);
+  cd_chan_block_init(7,0x801a0110);
 }
 
 /* cd_mode_set_0e — CD mode/flag set: cd_mode_flag_set(0xe,&byte,0);
