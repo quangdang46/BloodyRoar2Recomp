@@ -2376,3 +2376,47 @@ addiu sequences building 0x1f801810 / 0x1f801000 stores), or breakpoint the
 store that writes 0x801b8424=0x1f801810 and inspect the sibling store.
 Once the correct target reg is known, either fix the init port or confirm the
 cell is set later (GPU/DMA device-init ordering) and trace why it didn't run.
+
+=== UPDATE4 (session): CD file reads now COMPLETE; blocker moved to seek-complete IRQ->DeliverEvent ===
+
+Committed+pushed to mine/master. Game now streams real file data (was
+lead-in-zero livelock). Faithful fixes, all "delegate to generated where
+clean C lost guest state / starved IRQ":
+- cd_reg_window_op op3 DMA-register MMIO via br2_st32p (34b3829)
+- cd_result_wait_a/b -> generated (1e6264e)
+- cd_file_load_sm -> generated: SetLoc gets real MSF 1:55:63, LBA 8538+
+  (was [0,0,0] -> lead-in) (62a2d98)
+- cd_read_open -> generated: Setmode 0xA0 whole-sector+stamp, reads complete
+  (1e1a5fb)
+- cd_seek_complete_poll -> generated: CD deferred coroutine now resumes
+  (0x8019A87C in sp_ring) (5b8c8f4)
+
+CURRENT BLOCKER (verified live, headless :4370):
+- Game reaches cd_file_load_sm -> cd_seek_complete_poll -> spins in BIOS
+  TestEvent on mark-event handle 0xF1000008 (class 0xF0000009 spec 0x20
+  MARK). bioscall_dump: TestEvent(B0:0x0B)~660M, DeliverEvent(B0:0x07)=49
+  frozen.
+- File 0x80 read fully (mode 0xA0, remaining->0, sectors thru LBA 337).
+  Then SeekL->0:6:15 + Pause(0x09). Device IDLE: seq 7941, irq_flag=0,
+  i_stat=0, pending.cmd=0x09 active=0.
+- cdrom.c Pause path CONFIRMED fires CDIRQ_COMPLETE via
+  set_irq+fire_cdrom_irq (cdrom.c:2562-2566); irq_enable=0x07 mask passes
+  reason 2 -> psx_irq_raise(2,2) -> I_STAT bit2 (imask 0xD enables it).
+- BUT cd_response_pump counter 0x801bce04 frozen at 152 -> the COMPLETE IRQ
+  is ACKed (irq_flag=0) yet never reaches response_pump->cd_dma_chan_reset
+  ->DeliverEvent(0xf0000009,0x20). Break is in kernel->game-jmpbuf->
+  cd_intc_dispatch->tbl dispatch, NOT the device.
+- irqctx_ring: only VBLANK IRQs recently (CD IRQs buried under vblank wrap).
+- cd_dma_chan_reset (clean_table wrap_8019b7e8) delivers mark event gated
+  on 0x801bdee8==0 (verified =0) else call_guest(*0x801bdee8,...).
+
+CLEAN-SOURCE integration (committed, runtime-verified reach CD stall, 0 crash):
+- save.c: 28 faithful leaf ports (dead code until fnmap wired) (9e9f51a)
+- ev.c: EV handler rewrites + EV7/12/13 delegates, live via
+  ev_stream_dispatch->PTR_FUN_801b4e68 (9075cbb)
+- bind.c: weak stubs -> br2_call_generated delegates incl strong
+  return-0 holes FUN_801468ec/8018b100; br2_guest_frame stack-arg staging
+  (9075cbb)
+- battle.c agent ports REVERTED: COP2 delegates had host/guest ptr bug ->
+  ADEL crash; needs redo with correct guest_of marshaling (gameplay-only,
+  deferred). Agents running: CD-IRQ diagnosis, resolve.c, gfx.c ports.
