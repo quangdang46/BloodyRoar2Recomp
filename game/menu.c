@@ -9495,12 +9495,13 @@ void chan_attr_rec_b(uint32_t param_1,uint32_t param_2)
 }
 
 /* slot_byte_commit — slot-byte apply @0x8017c97c (15 insns): s0 = a2;
- * a1 = (s8)lh(s0) -> MB8(a0+5) = a1, slot_apply_guest(a0, a1&1);
+ * lh s0; sll 16; sra 24 -> a1 = sx8 of the HIGH byte of the halfword
+ * (byte1); sh a1 -> MB8(a0+5); slot_apply_guest(a0, a1&1);
  * v0 = s0+2. a1 (in) is dead. */
 int32_t slot_byte_commit(uint32_t param_1,uint32_t param_2,uint32_t param_3)
 {
   uint32_t s0 = param_3;
-  int32_t a1 = (int32_t)(int16_t)MBS16(s0);
+  int32_t a1 = (int32_t)(int8_t)(MB16(s0) >> 8);
   MW8(param_1 + 5, (uint32_t)a1);
   slot_apply_guest((int)param_1, a1 & 1);
   return (int32_t)(s0 + 2u);
@@ -10851,21 +10852,24 @@ commit:
 extern void slot_mark2_set(uint32_t);
 
 /* desc_state_commit — descriptor state commit @0x8017c66c (80 insns,
- * 3 args). mode = sx8(MB16(a2)>>8). mode==1: if !(MB8(a0+5)&1)
- * -> error stores; else ret a2+4. mode<2 (0/neg) -> error stores.
- * mode==2: if !(MB8(a0+5)&1) ret a2+4; else error stores. mode>2:
- * only +0x102..0x104 = -1. Error stores: a1+0x101..0x104 = -1,
- * MB8(a0+0x26)=-1, MB8(MB32(a0+0x14))=-1, MB16(a0+0xbc) =
- * ((MB16(a2)>>8)&0xf)?-1:0, then lb a2+2 <0 -> slot_mark2_set(MB8
- * (a0+2)), +0xba=-1; else +0xba=MB8(a2+2)<<4, if that byte==0
- * MB8(a0+0x26)=0. +0xb8 = sx8(MB16(a2+2)>>8)<0 ? -1 : <<4.
+ * 3 args). mode = sx4(MB16(a2)>>12) i.e. sign-extended HIGH NIBBLE of
+ * byte1 (lhu;sll16;sra28 — NOT sx8 of the byte). mode==1: if
+ * !(MB8(a0+5)&1) -> error stores; else ret a2+4. mode<=0 -> error
+ * stores. mode==2: if !(MB8(a0+5)&1) ret a2+4; else error stores.
+ * mode>2: sh -1 -> a1+0x101 (covers +0x101,+0x102) then the shared
+ * +0x102..+0x104 byte stores — net all four bytes 0xff, same tail.
+ * Error stores: a1+0x101..0x104 = -1, MB8(a0+0x26)=-1,
+ * MB8(MB32(a0+0x14))=-1, MB16(a0+0xbc) = ((MB16(a2)>>8)&0xf)?-1:0,
+ * then lb a2+2 <0 -> slot_mark2_set(MB8(a2+2)), +0xba=-1; else
+ * +0xba=MB8(a2+2)<<4, if that byte==0 MB8(a0+0x26)=0.
+ * +0xb8 = sx8(MB16(a2+2)>>8)<0 ? -1 : <<4.
  * MB16(MB32(a0+0x38)+0x116) = MB16(a0+0xba). Always ret a2+4. */
 uint32_t desc_state_commit(uint32_t param_1,uint32_t param_2,
                       uint32_t param_3)
 {
   uint32_t s0 = param_1;
   uint32_t s1 = param_3;
-  int32_t v1 = (int32_t)(int8_t)(MB16(s1) >> 8);
+  int32_t v1 = (int32_t)((int16_t)MB16(s1) >> 12);
   uint32_t v0;
   uint32_t v1p;
   int32_t vb;
@@ -10876,6 +10880,9 @@ uint32_t desc_state_commit(uint32_t param_1,uint32_t param_2,
   } else if (v1 == 2) {
     if ((MB8(s0 + 5) & 1u) == 0) return s1 + 4;
   } else {
+    /* guest: sh 0xffff -> a1+0x101 (bytes +0x101,+0x102), then the
+     * shared sb 0xff -> +0x102,+0x103,+0x104 and the common tail */
+    MW16(param_2 + 0x101, 0xffffu);
     MW8(param_2 + 0x102, 0xffu);
     MW8(param_2 + 0x103, 0xffu);
     MW8(param_2 + 0x104, 0xffu);
@@ -10892,7 +10899,7 @@ common:
   v0 = (MB16(s1) >> 8) & 0xfu;
   MW16(s0 + 0xbc, v0 != 0 ? 0xffffu : 0);
   if (MBS8(s1 + 2) < 0) {
-    slot_mark2_set(MB8(s0 + 2));
+    slot_mark2_set(MB8(s1 + 2));
     MW16(s0 + 0xba, 0xffffu);
   } else {
     vb = MB8(s1 + 2);
@@ -11719,7 +11726,8 @@ extern void keyframe_advance(uint32_t);
  *    c2+=t*16-ca};
  * 1: c6=MB16(a2+2); sub-dispatch on lh(sx16(c6)*4+MB32(a1+0xb4)+2)
  *    same shape vs 0xcc; c6++; keyframe_advance(a3);
- * 2: c8=ca = lh(a3+0xbe)<2 ? lh(a2+2)*16 : MB16(a3+0x88);
+ * 2: t=lh(a3+0xbe); t<2 ? c8=ca=MB16(a3+0x88) : c8=ca=t*16
+ *    (s0+2 is NOT read on this path — verified vs 0x8017bebc..bf50);
  * 3: d=lh(a2+2)*16; cc+=d; c2+=d;
  * 4: t=((lh(a3+0xb2)<0?+0x1ff:0)>>9)+lh(a2+2), clamp 0xf;
  *    t<2 ? c8=ca=88 : c8=ca=t*16;
@@ -11773,8 +11781,7 @@ uint32_t stat_field_dispatch(uint32_t param_1,uint32_t param_2,
   }
   case 2:
     t = MBS16(a3 + 0xbe);
-    v0 = t < 2 ? (uint32_t)(int32_t)(int16_t)(MB16(s0 + 2) * 16)
-               : MB16(a3 + 0x88);
+    v0 = t < 2 ? MB16(a3 + 0x88) : (uint32_t)(t << 4);
     MW16(a1 + 0xc8, (uint16_t)v0);
     MW16(a1 + 0xca, (uint16_t)v0);
     break;
@@ -12517,15 +12524,30 @@ uint32_t desc_slot_alloc(uint32_t param_1,uint32_t param_2,
   }
   den = MBS16(s0 + 0x88);
   {
+    /* MIPS div-by-zero rule (generated): lo = num>=0 ? -1 : 1 */
     int32_t b = (int8_t)MB8(s2 + 0x102);
-    if (b < 0) q1 = den != 0 ? MBS16(s0 + 0xba) / den - 3 : -3;
-    else       q1 = den != 0 ? (b * 16) / den : 0;
+    int32_t n;
+    if (b < 0) {
+      n = MBS16(s0 + 0xba);
+      q1 = (den != 0 ? n / den : (n >= 0 ? -1 : 1)) - 3;
+    } else {
+      n = b * 16;
+      q1 = den != 0 ? n / den : -1;
+    }
     b = (int8_t)MB8(s2 + 0x103);
-    if (b < 0) q2 = den != 0 ? MBS16(s0 + 0xb8) / den : 0;
-    else       q2 = den != 0 ? (b * 16) / den : 0;
+    if (b < 0) {
+      n = MBS16(s0 + 0xb8);
+      q2 = den != 0 ? n / den : (n >= 0 ? -1 : 1);
+    } else {
+      n = b * 16;
+      q2 = den != 0 ? n / den : -1;
+    }
     b = (int8_t)MB8(s2 + 0x104);
     if (b < 0) q3 = 4;
-    else       q3 = den != 0 ? (b * 16) / den : 0;
+    else {
+      n = b * 16;
+      q3 = den != 0 ? n / den : -1;
+    }
   }
   q3 <<= 16;
   b101 = (int8_t)MB8(s2 + 0x101);
@@ -12537,7 +12559,9 @@ uint32_t desc_slot_alloc(uint32_t param_1,uint32_t param_2,
       else if (s1 == 0x10) anim_wb_init_gate(s0, 0x10, (uint32_t)q2, (uint32_t)q1, (uint32_t)q3);
     }
   } else if (b101 == -1) {
-    if (flag && s1 != 0xa && s1 >= 0xb) {
+    /* guest reloads lbu 5(s0) here (0x8017c1c4) — after the slot
+     * stores, so re-read rather than reuse the cached flag */
+    if ((MB8(s0 + 5) & 1) && s1 != 0xa && s1 >= 0xb) {
       if (s1 == 0xd) anim_wb_init_gate(s0, 0xd, (uint32_t)q2, (uint32_t)q1, (uint32_t)q3);
       else if (s1 == 0x10) anim_wb_init_gate(s0, 0x10, (uint32_t)q2, (uint32_t)q1, (uint32_t)q3);
     }
@@ -12877,7 +12901,7 @@ uint32_t desc_transform_dispatch(uint32_t param_1,uint32_t param_2,
     int32_t r1 = lut_cos_q12((uint32_t)s1);
     int32_t r2 = lut_sin_q12((uint32_t)s1);
     int32_t r3 = lut_sin_q12((uint32_t)s1);
-    int32_t r4 = lut_sin_q12((uint32_t)s1);
+    int32_t r4 = lut_cos_q12((uint32_t)s1);
     int32_t d;
     d = (int32_t)(((int32_t)((int64_t)s2 * r1) -
                    (int32_t)((int64_t)s4 * r2)) >> 16);
@@ -12897,19 +12921,23 @@ uint32_t desc_transform_dispatch(uint32_t param_1,uint32_t param_2,
   case 3: {
     uint32_t rec = MB32(s3 + 0x10) + (uint32_t)(MB8(a3 + 5) & 1) * 28u;
     uint32_t a0 = MB32(rec + 8) + MB32(a3 + 0x30);
-    uint32_t x = MB32(a0), v1 = MB32(a3 + 0x40);
     uint32_t p20 = MB32(a3 + 0x20);
     int32_t e;
-    e = (int32_t)(((int32_t)(x << 22)) >> 18);
-    MW16(v1 + 0x24, (uint16_t)(0u - (uint32_t)e));
-    e = (int32_t)((((int32_t)(x << 12)) >> 22) + s4);
-    MW16(v1 + 0x26, (uint16_t)(0u - (uint32_t)(e << 4)));
-    e = (int32_t)(((int32_t)(x << 2)) >> 22);
-    MW16(v1 + 0x28, (uint16_t)(0u - (uint32_t)(e << 4)));
-    MW16(v1 + 0x78, 0); MW16(v1 + 0x7a, 0); MW16(v1 + 0x7c, 0);
+    /* guest stores d4/d6/d8 first, then computes a0; a3+0x40 and
+     * MB32(a0) are RELOADED before every use, matching the guest's
+     * repeated lw's */
     MW16(s3 + 0xd4, MB16(p20 + 0x174));
     MW16(s3 + 0xd6, (uint16_t)(MB16(p20 + 0x178) - (uint16_t)s4));
     MW16(s3 + 0xd8, MB16(p20 + 0x17c));
+    e = (int32_t)(((int32_t)(MB32(a0) << 22)) >> 18);
+    MW16(MB32(a3 + 0x40) + 0x24, (uint16_t)(0u - (uint32_t)e));
+    e = (int32_t)((((int32_t)(MB32(a0) << 12)) >> 22) + s4);
+    MW16(MB32(a3 + 0x40) + 0x26, (uint16_t)(0u - (uint32_t)(e << 4)));
+    e = (int32_t)(((int32_t)(MB32(a0) << 2)) >> 22);
+    MW16(MB32(a3 + 0x40) + 0x28, (uint16_t)(0u - (uint32_t)(e << 4)));
+    MW16(MB32(a3 + 0x40) + 0x78, 0);
+    MW16(MB32(a3 + 0x40) + 0x7a, 0);
+    MW16(MB32(a3 + 0x40) + 0x7c, 0);
     break;
   }
   case 4:
@@ -12920,7 +12948,7 @@ uint32_t desc_transform_dispatch(uint32_t param_1,uint32_t param_2,
     MW16(s3 + 0xd6, (uint16_t)(MB16(a3 + 0x94) + (uint16_t)s2));
     break;
   case 6: {
-    uint32_t t = 0x801b158cu + (uint32_t)MB8(0x1f800098u) * 8u;
+    uint32_t t = 0x801b158cu + (uint32_t)(int32_t)(int8_t)MB8(0x1f800098u) * 8u;
     uint32_t f = MB32(a3 + 0x6c);
     if (f & 1) MW16(s3 + 0xd4, (uint16_t)(MB16(t + 4) - (uint16_t)s2));
     if (f & 2) MW16(s3 + 0xd4, (uint16_t)((uint16_t)s2 - MB16(t + 4)));
@@ -13740,7 +13768,6 @@ uint32_t terrain_packet_gen(uint32_t param_1,uint32_t param_2,
       : (uint32_t)((int64_t)(param_6 + 1) * (int64_t)param_7);
     t3 = param_2 + 0x24u;
     t2 = t3 + (uint32_t)ad * 48u;
-    (void)0;
     MW32(param_2 + 0x00u, 2);
     MW32(param_2 + 0x04u, 0x140000u);
     MW32(param_2 + 0x10u, 0x8019ab84u);
@@ -14095,9 +14122,9 @@ int32_t skeleton_init(uint32_t param_1,uint32_t param_2,uint32_t param_3)
 /* ---- heap_serialize serializer callees ----
  * Ported already (strong defs above): record_table_expand_a, quad_strip_emit_a,
  * record_table_expand_b, quad_strip_emit_b (7-arg emitters), entry_attr_bump_loop,
- * dual_entry_attr_bump (attr bumps). The rest are unported; weak stubs at
- * the bottom return the dst cursor unchanged (identity: writes
- * nothing, keeps the cursor chain sane). */
+ * dual_entry_attr_bump (attr bumps). The rest delegate to the generated
+ * guest bodies at the bottom of this file (br2_call_generated +
+ * br2_guest_frame stack-arg staging). */
 extern uint32_t heap_serialize_tag_08(uint32_t,uint32_t,uint32_t,uint32_t,
                              uint32_t,uint32_t,uint32_t);
 extern uint32_t heap_serialize_tag_0a(uint32_t,uint32_t,uint32_t,uint32_t,
@@ -14384,111 +14411,70 @@ next_block:
 #undef B7C0_CALL7H
 }
 
-/* Weak fallbacks for the unported serializer callees: identity —
- * return the dst cursor unchanged so the walk keeps its shape until
- * the real ports land (strong defs override these). */
-#if defined(__GNUC__) || defined(__clang__)
-#define BR2_WEAK_UINT32_7 \
-  __attribute__((weak)) uint32_t
-#define BR2_WEAK_UINT32_5 \
-  __attribute__((weak)) uint32_t
-#else
-#define BR2_WEAK_UINT32_7 uint32_t
-#define BR2_WEAK_UINT32_5 uint32_t
-#endif
+/* Serializer callees — delegated to the generated guest bodies.
+ * Args 5+ travel on the guest stack (o32): staged at fr+0x10/+0x14/+0x18
+ * via br2_guest_frame + br2_st32, same pattern as game/bind.c.
+ * All args are guest u32 values (no host pointers -> no guest_of). */
+extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+extern uint32_t br2_guest_frame(uint32_t);
+extern void br2_guest_frame_free(void);
+extern void br2_st32(uint32_t,uint32_t);
 
-BR2_WEAK_UINT32_7 heap_serialize_tag_08(uint32_t a,uint32_t b,uint32_t c,
-  uint32_t d,uint32_t e,uint32_t f,uint32_t g)
-{ (void)b;(void)c;(void)d;(void)e;(void)f;(void)g; return a; }
-BR2_WEAK_UINT32_7 heap_serialize_tag_40049(uint32_t a,uint32_t b,uint32_t c,
-  uint32_t d,uint32_t e,uint32_t f,uint32_t g)
-{ (void)b;(void)c;(void)d;(void)e;(void)f;(void)g; return a; }
-BR2_WEAK_UINT32_7 heap_serialize_tag_4004d(uint32_t a,uint32_t b,uint32_t c,
-  uint32_t d,uint32_t e,uint32_t f,uint32_t g)
-{ (void)b;(void)c;(void)d;(void)e;(void)f;(void)g; return a; }
-BR2_WEAK_UINT32_7 heap_serialize_tag_40051(uint32_t a,uint32_t b,uint32_t c,
-  uint32_t d,uint32_t e,uint32_t f,uint32_t g)
-{ (void)b;(void)c;(void)d;(void)e;(void)f;(void)g; return a; }
-BR2_WEAK_UINT32_7 heap_serialize_tag_40055(uint32_t a,uint32_t b,uint32_t c,
-  uint32_t d,uint32_t e,uint32_t f,uint32_t g)
-{ (void)b;(void)c;(void)d;(void)e;(void)f;(void)g; return a; }
-BR2_WEAK_UINT32_7 heap_serialize_tag_01000009(uint32_t a,uint32_t b,uint32_t c,
-  uint32_t d,uint32_t e,uint32_t f,uint32_t g)
-{ (void)b;(void)c;(void)d;(void)e;(void)f;(void)g; return a; }
-BR2_WEAK_UINT32_7 heap_serialize_tag_0100000d(uint32_t a,uint32_t b,uint32_t c,
-  uint32_t d,uint32_t e,uint32_t f,uint32_t g)
-{ (void)b;(void)c;(void)d;(void)e;(void)f;(void)g; return a; }
-BR2_WEAK_UINT32_7 heap_serialize_tag_01000011(uint32_t a,uint32_t b,uint32_t c,
-  uint32_t d,uint32_t e,uint32_t f,uint32_t g)
-{ (void)b;(void)c;(void)d;(void)e;(void)f;(void)g; return a; }
-BR2_WEAK_UINT32_7 heap_serialize_tag_01000015(uint32_t a,uint32_t b,uint32_t c,
-  uint32_t d,uint32_t e,uint32_t f,uint32_t g)
-{ (void)b;(void)c;(void)d;(void)e;(void)f;(void)g; return a; }
+#define BR2_TAG5(NM,AD) \
+uint32_t NM(uint32_t a,uint32_t b,uint32_t c,uint32_t d,uint32_t e) \
+{ uint32_t fr = br2_guest_frame(0x20); uint32_t r; \
+  br2_st32(fr + 0x10, e); \
+  r = br2_call_generated(AD,a,b,c,d); \
+  br2_guest_frame_free(); return r; }
+#define BR2_TAG7(NM,AD) \
+uint32_t NM(uint32_t a,uint32_t b,uint32_t c,uint32_t d,uint32_t e, \
+             uint32_t f,uint32_t g) \
+{ uint32_t fr = br2_guest_frame(0x20); uint32_t r; \
+  br2_st32(fr + 0x10, e); br2_st32(fr + 0x14, f); br2_st32(fr + 0x18, g); \
+  r = br2_call_generated(AD,a,b,c,d); \
+  br2_guest_frame_free(); return r; }
 
-BR2_WEAK_UINT32_5 heap_serialize_tag_0a(uint32_t a,uint32_t b,uint32_t c,
-  uint32_t d,uint32_t e)
-{ (void)b;(void)c;(void)d;(void)e; return a; }
-BR2_WEAK_UINT32_5 heap_serialize_tag_0c(uint32_t a,uint32_t b,uint32_t c,
-  uint32_t d,uint32_t e)
-{ (void)b;(void)c;(void)d;(void)e; return a; }
-BR2_WEAK_UINT32_5 heap_serialize_tag_10(uint32_t a,uint32_t b,uint32_t c,
-  uint32_t d,uint32_t e)
-{ (void)b;(void)c;(void)d;(void)e; return a; }
-BR2_WEAK_UINT32_5 heap_serialize_tag_12(uint32_t a,uint32_t b,uint32_t c,
-  uint32_t d,uint32_t e)
-{ (void)b;(void)c;(void)d;(void)e; return a; }
-BR2_WEAK_UINT32_5 heap_serialize_tag_14(uint32_t a,uint32_t b,uint32_t c,
-  uint32_t d,uint32_t e)
-{ (void)b;(void)c;(void)d;(void)e; return a; }
-BR2_WEAK_UINT32_5 heap_serialize_tag_16(uint32_t a,uint32_t b,uint32_t c,
-  uint32_t d,uint32_t e)
-{ (void)b;(void)c;(void)d;(void)e; return a; }
-BR2_WEAK_UINT32_5 heap_serialize_tag_0e(uint32_t a,uint32_t b,uint32_t c,
-  uint32_t d,uint32_t e)
-{ (void)b;(void)c;(void)d;(void)e; return a; }
-BR2_WEAK_UINT32_5 heap_serialize_tag_40048(uint32_t a,uint32_t b,uint32_t c,
-  uint32_t d,uint32_t e)
-{ (void)b;(void)c;(void)d;(void)e; return a; }
-BR2_WEAK_UINT32_5 heap_serialize_tag_4004c(uint32_t a,uint32_t b,uint32_t c,
-  uint32_t d,uint32_t e)
-{ (void)b;(void)c;(void)d;(void)e; return a; }
-BR2_WEAK_UINT32_5 heap_serialize_tag_40050(uint32_t a,uint32_t b,uint32_t c,
-  uint32_t d,uint32_t e)
-{ (void)b;(void)c;(void)d;(void)e; return a; }
-BR2_WEAK_UINT32_5 heap_serialize_tag_40054(uint32_t a,uint32_t b,uint32_t c,
-  uint32_t d,uint32_t e)
-{ (void)b;(void)c;(void)d;(void)e; return a; }
-BR2_WEAK_UINT32_5 heap_serialize_tag_01000008(uint32_t a,uint32_t b,uint32_t c,
-  uint32_t d,uint32_t e)
-{ (void)b;(void)c;(void)d;(void)e; return a; }
-BR2_WEAK_UINT32_5 heap_serialize_tag_0100000c(uint32_t a,uint32_t b,uint32_t c,
-  uint32_t d,uint32_t e)
-{ (void)b;(void)c;(void)d;(void)e; return a; }
-BR2_WEAK_UINT32_5 heap_serialize_tag_0100000a(uint32_t a,uint32_t b,uint32_t c,
-  uint32_t d,uint32_t e)
-{ (void)b;(void)c;(void)d;(void)e; return a; }
-BR2_WEAK_UINT32_5 heap_serialize_tag_0100000e(uint32_t a,uint32_t b,uint32_t c,
-  uint32_t d,uint32_t e)
-{ (void)b;(void)c;(void)d;(void)e; return a; }
-BR2_WEAK_UINT32_5 heap_serialize_tag_01000010(uint32_t a,uint32_t b,uint32_t c,
-  uint32_t d,uint32_t e)
-{ (void)b;(void)c;(void)d;(void)e; return a; }
-BR2_WEAK_UINT32_5 heap_serialize_tag_01000014(uint32_t a,uint32_t b,uint32_t c,
-  uint32_t d,uint32_t e)
-{ (void)b;(void)c;(void)d;(void)e; return a; }
-BR2_WEAK_UINT32_5 heap_serialize_tag_01000012(uint32_t a,uint32_t b,uint32_t c,
-  uint32_t d,uint32_t e)
-{ (void)b;(void)c;(void)d;(void)e; return a; }
-BR2_WEAK_UINT32_5 heap_serialize_tag_01000016(uint32_t a,uint32_t b,uint32_t c,
-  uint32_t d,uint32_t e)
-{ (void)b;(void)c;(void)d;(void)e; return a; }
+BR2_TAG7(heap_serialize_tag_08,        0x801689d0u)
+BR2_TAG5(heap_serialize_tag_0a,        0x801697f4u)
+BR2_TAG5(heap_serialize_tag_0c,        0x80168c20u)
+BR2_TAG5(heap_serialize_tag_10,        0x80168ae0u)
+BR2_TAG5(heap_serialize_tag_12,        0x80169aa4u)
+BR2_TAG5(heap_serialize_tag_14,        0x80168d90u)
+BR2_TAG5(heap_serialize_tag_16,        0x80169c08u)
+BR2_TAG5(heap_serialize_tag_0e,        0x8016991cu)
+BR2_TAG5(heap_serialize_tag_40048,     0x80169dfcu)
+BR2_TAG7(heap_serialize_tag_40049,     0x8016a23cu)
+BR2_TAG5(heap_serialize_tag_4004c,     0x80169ee0u)
+BR2_TAG7(heap_serialize_tag_4004d,     0x8016a50cu)
+BR2_TAG5(heap_serialize_tag_40050,     0x80169fe4u)
+BR2_TAG7(heap_serialize_tag_40051,     0x8016a384u)
+BR2_TAG5(heap_serialize_tag_40054,     0x8016a0f8u)
+BR2_TAG7(heap_serialize_tag_40055,     0x8016a674u)
+BR2_TAG5(heap_serialize_tag_01000008,  0x8016a8ecu)
+BR2_TAG7(heap_serialize_tag_01000009,  0x8016aaa4u)
+BR2_TAG5(heap_serialize_tag_0100000a,  0x8016ad04u)
+BR2_TAG5(heap_serialize_tag_0100000c,  0x8016a9acu)
+BR2_TAG7(heap_serialize_tag_0100000d,  0x8016abb4u)
+BR2_TAG5(heap_serialize_tag_0100000e,  0x8016addcu)
+BR2_TAG5(heap_serialize_tag_01000010,  0x8016aeecu)
+BR2_TAG7(heap_serialize_tag_01000011,  0x8016b0f8u)
+BR2_TAG5(heap_serialize_tag_01000012,  0x8016b3c4u)
+BR2_TAG5(heap_serialize_tag_01000014,  0x8016afc8u)
+BR2_TAG7(heap_serialize_tag_01000015,  0x8016b234u)
+BR2_TAG5(heap_serialize_tag_01000016,  0x8016b4c4u)
 
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
+/* 6-arg special case: arg5 @fr+0x10, arg6 @fr+0x14. */
 uint32_t heap_serialize_tag_01000000(uint32_t a,uint32_t b,uint32_t c,
                       uint32_t d,uint32_t e,uint32_t f)
-{ (void)b;(void)c;(void)d;(void)e;(void)f; return a; }
+{
+  uint32_t fr = br2_guest_frame(0x20);
+  uint32_t r;
+  br2_st32(fr + 0x10, e);
+  br2_st32(fr + 0x14, f);
+  r = br2_call_generated(0x8016a82cu,a,b,c,d);
+  br2_guest_frame_free();
+  return r;
+}
 
-#undef BR2_WEAK_UINT32_7
-#undef BR2_WEAK_UINT32_5
+#undef BR2_TAG5
+#undef BR2_TAG7

@@ -321,9 +321,14 @@ undefined4 spr_slot_pkt_submit(uint *param_1,undefined4 param_2,undefined4 param
   uint32_t guest;
   uint32_t *cell;
   
-  /* param_1 carries a guest address (callers pass _DAT_1f800008+n);
-   * resolve the head cell before touching it. */
-  cell = (uint32_t *)guest_at((uint32_t)(uintptr_t)param_1);
+  /* param_1 carries either a guest address value (direct clean callers
+   * pass _DAT_1f800008+n) or a host pointer (clean_table.c wrapper passes
+   * guest_at(gpr4)). guest_of() resolves the host form; fall back to the
+   * raw value otherwise. */
+  {
+    uint32_t p1g = guest_of(param_1);
+    cell = (uint32_t *)guest_at(p1g ? p1g : (uint32_t)(uintptr_t)param_1);
+  }
   puVar1 = (uint *)spr_desc_slot_alloc();
   if (puVar1 == (uint *)0x0) {
     uVar2 = 0xffffffff;
@@ -389,7 +394,9 @@ void gpu_clear_otag_r(uint32_t param_1,uint32_t param_2)
   if (1 < DAT_801b8322) {
     GPU_DBG(s_ClearOTagR__08x__d_____80125540,param_1,param_2);
   }
-  gpu_call(0x2c,GPU_TBL()[11],param_1,param_2,0);
+  /* jalr t[11] with a0=param_1,a1=param_2 (a2/a3 = caller leftovers in
+   * guest; 0 here — ClearOTagR impl reads only a0/a1). */
+  gpu_call(0x2c,param_1,param_2,0,0);
   DAT_801b83e0 = 0x41b83cc;
   *(uint32_t *)guest_at(param_1) = 0x1b83e0;
   return;
@@ -466,7 +473,8 @@ void gpu_draw_sync(undefined4 param_1)
   if (1 < DAT_801b8322) {
     GPU_DBG(s_DrawSync__d_____801254b4,param_1);
   }
-  gpu_call(0x3c,GPU_TBL()[15],param_1,0,0);
+  /* jalr t[15] with a0=param_1 (delay slot 0x801911D0: move a0,s0). */
+  gpu_call(0x3c,param_1,0,0,0);
   return;
 }
 
@@ -502,7 +510,9 @@ LAB_80190e68:
     if (1 < DAT_801b8322) {
       GPU_DBG(s_ResetGraph__d_____80125430,param_1);
     }
-    uVar1 = gpu_call(0x34,GPU_TBL()[13],1,0,0);
+    /* jalr t[13] with a0=1 (delay slot 0x80190F5C: addiu a0,zero,1);
+     * a1 = leftover (s1=param_1 on debug path, caller a1 otherwise). */
+    uVar1 = gpu_call(0x34,1,0,0,0);
   }
   return uVar1;
 }
@@ -540,10 +550,13 @@ uint32_t draw_env_timing(uint32_t param_1)
      ((DB16(0x801b8390) != env[2] || (DB16(0x801b8392) != env[3])))) {
     cVar3 = gp_bde20_read();
     *(char *)(env + 9) = cVar3;
+    /* s0 = 0x08000000 unconditionally (lui @0x801919DC delay slot);
+     * ori s0,s0,8 @0x80191AC0 only when cVar3==1. */
+    uVar10 = 0x08000000;
     if (cVar3 == '\x01') {
-      uVar10 = 0x8000008;
+      uVar10 |= 8;
     }
-    if (*(char *)env + 0x11 != '\0') {
+    if (((uint8_t *)env)[0x11] != 0) {   /* lbu @env+0x11 (0x80191AC4) */
       uVar10 = uVar10 | 0x10;
     }
     if ((char)env[8] != '\0') {
@@ -695,7 +708,10 @@ void guest_memset(uint32_t *param_1,undefined1 param_2,int param_3)
 
 {
   int iVar1;
-  uint8_t *d = (uint8_t *)guest_at((uint32_t)(uintptr_t)param_1);
+  /* param_1: host pointer from clean_table wrapper, guest-address value
+   * from in-file callers (0x801b83xx constants) — resolve either form. */
+  uint32_t g1 = guest_of(param_1);
+  uint8_t *d = (uint8_t *)guest_at(g1 ? g1 : (uint32_t)(uintptr_t)param_1);
   
   iVar1 = param_3 + -1;
   if (param_3 != 0) {
@@ -719,8 +735,14 @@ undefined1 * guest_memcpy(uint32_t *param_1,uint32_t *param_2,int param_3)
   uint8_t *d, *s;
   
   puVar3 = (undefined1 *)0x0;
-  d = (uint8_t *)guest_at((uint32_t)(uintptr_t)param_1);
-  s = (uint8_t *)guest_at((uint32_t)(uintptr_t)param_2);
+  /* params arrive as host pointers from the clean_table wrapper but as
+   * guest-address values from cd.c callers — resolve either form. */
+  {
+    uint32_t g1 = guest_of(param_1);
+    uint32_t g2 = guest_of(param_2);
+    d = (uint8_t *)guest_at(g1 ? g1 : (uint32_t)(uintptr_t)param_1);
+    s = (uint8_t *)guest_at(g2 ? g2 : (uint32_t)(uintptr_t)param_2);
+  }
   puVar2 = d;
   if (param_1 != (uint32_t *)0x0) {
     for (; puVar3 = (undefined1 *)d, 0 < param_3; param_3 = param_3 + -1) {
@@ -748,8 +770,12 @@ void gpu_prim_pkt_build(int param_1,ushort *param_2)
   uint8_t *dst;
   ushort *env;
   
+  /* param_2: host pointer from clean_table wrapper, guest-address value
+   * from gpu_draw_env_put — resolve either form. param_1 stays a guest
+   * address value in both paths. */
+  uint32_t p2g = guest_of(param_2);
   dst = (uint8_t *)guest_at((uint32_t)param_1);
-  env = (ushort *)guest_at((uint32_t)(uintptr_t)param_2);
+  env = (ushort *)guest_at(p2g ? p2g : (uint32_t)(uintptr_t)param_2);
   uVar4 = gpu_coord_clamp_a((int)(short)env[0],(int)(short)env[1]);
   *(undefined4 *)(dst + 4) = uVar4;
   uVar4 = gpu_coord_clamp_b((int)(((uint)env[2] + (uint)env[0] + -1) * 0x10000) >> 0x10,
@@ -865,7 +891,11 @@ void gpu_rect_bounds_dbg(undefined4 param_1,short *param_2)
   int iVar1;
   char *pcVar2;
   int iVar3;
-  short *rc = (short *)guest_at((uint32_t)(uintptr_t)param_2);
+  /* param_2 arrives as a host pointer from the clean_table wrapper
+   * (guest_at(gpr5)) but as a guest-address value from gpu_load_image_cmd
+   * family callers — resolve either form. */
+  uint32_t p2g = guest_of(param_2);
+  short *rc = (short *)guest_at(p2g ? p2g : (uint32_t)(uintptr_t)param_2);
   
   if (DAT_801b8322 == '\x01') {
     iVar3 = (int)rc[2];
@@ -1801,10 +1831,12 @@ int32_t  mdec_stat_wait_b(void);
 void     gp_20_store(uint32_t);
 
 /* MDEC reg cell: 0x801b68xx holds a guest pointer to a status reg. */
-static uint32_t *mdec_reg(uint32_t cell)
-{
-    return (uint32_t *)guest_at(DB32(cell));
-}
+/* The 0x801b68xx cells hold guest pointers into the 0x1F801xxx MDEC
+ * register file — accesses must go through the pointer-cell bridge
+ * (br2_ld32p/br2_st32p) so MMIO side effects fire; a raw guest_at()
+ * deref would only touch the open-bus mirror. */
+#define MDECREG(C) br2_ld32p(C)
+#define MDECREG_ST(C,V) br2_st32p(C,V)
 
 /* ======== 0x8018fc00 ======== */
 
@@ -1814,12 +1846,12 @@ void mdec_decode_issue(uint32_t param_1,uint32_t param_2)
   uint32_t sz;
   
   mdec_stat_wait_a();
-  *mdec_reg(0x801b68f8) = *mdec_reg(0x801b68f8) | 0x88;
-  *(uint32_t *)guest_at(DB32(0x801b68c0)) = param_1 + 4;
+  MDECREG_ST(0x801b68f8, MDECREG(0x801b68f8) | 0x88);
+  MDECREG_ST(0x801b68c0, param_1 + 4);
   sz = ((param_2 >> 5) << 0x10) | 0x20;
-  *mdec_reg(0x801b68c4) = sz;
-  *mdec_reg(0x801b68f0) = *(uint32_t *)guest_at(param_1);
-  *mdec_reg(0x801b68c8) = 0x1000201;
+  MDECREG_ST(0x801b68c4, sz);
+  MDECREG_ST(0x801b68f0, *(uint32_t *)guest_at(param_1));
+  MDECREG_ST(0x801b68c8, 0x1000201);
   return;
 }
 
@@ -1830,14 +1862,14 @@ int32_t mdec_stat_wait_a(void)
 {
   int32_t cnt = 0x10;
   
-  if ((*mdec_reg(0x801b68f4) & 0x20000000) != 0) {
+  if ((MDECREG(0x801b68f4) & 0x20000000) != 0) {
     for (;;) {
       cnt = cnt - 1;
       if (cnt == -1) {
         mdec_error_reset(0x80125304);
         return -1;
       }
-      if ((*mdec_reg(0x801b68f4) & 0x20000000) == 0) return 0;
+      if ((MDECREG(0x801b68f4) & 0x20000000) == 0) return 0;
     }
   }
   return 0;
@@ -1850,14 +1882,14 @@ int32_t mdec_stat_wait_b(void)
 {
   int32_t cnt = 0x10;
   
-  if ((*mdec_reg(0x801b68d4) & 0x100) != 0) {
+  if ((MDECREG(0x801b68d4) & 0x100) != 0) {
     for (;;) {
       cnt = cnt - 1;
       if (cnt == -1) {
         mdec_error_reset(0x80125314);
         return -1;
       }
-      if ((*mdec_reg(0x801b68d4) & 0x100) == 0) return 0;
+      if ((MDECREG(0x801b68d4) & 0x100) == 0) return 0;
     }
   }
   return 0;
@@ -1870,10 +1902,10 @@ void mdec_error_reset(uint32_t param_1)
 {
   printf_forward((const char *)guest_at(0x80125324),
                (const char *)guest_at(param_1));
-  *mdec_reg(0x801b68f4) = 0x80000000;
-  *mdec_reg(0x801b68c8) = 0;
-  *mdec_reg(0x801b68d4) = 0;
-  *mdec_reg(0x801b68f4) = 0x60000000;
+  MDECREG_ST(0x801b68f4, 0x80000000);
+  MDECREG_ST(0x801b68c8, 0);
+  MDECREG_ST(0x801b68d4, 0);
+  MDECREG_ST(0x801b68f4, 0x60000000);
   return;
 }
 
@@ -1883,18 +1915,18 @@ void mdec_pump_a(int32_t param_1)
 
 {
   if (param_1 == 0) {
-    *mdec_reg(0x801b68f4) = 0x80000000;
-    *mdec_reg(0x801b68c8) = 0;
-    *mdec_reg(0x801b68d4) = 0;
-    *mdec_reg(0x801b68f4) = 0x60000000;
+    MDECREG_ST(0x801b68f4, 0x80000000);
+    MDECREG_ST(0x801b68c8, 0);
+    MDECREG_ST(0x801b68d4, 0);
+    MDECREG_ST(0x801b68f4, 0x60000000);
     mdec_decode_issue(0x801b67b0,0x20);
     mdec_decode_issue(0x801b6834,0x20);
   }
   else if (param_1 == 1) {
-    *mdec_reg(0x801b68f4) = 0x80000000;
-    *mdec_reg(0x801b68c8) = 0;
-    *mdec_reg(0x801b68d4) = 0;
-    *mdec_reg(0x801b68f4) = 0x60000000;
+    MDECREG_ST(0x801b68f4, 0x80000000);
+    MDECREG_ST(0x801b68c8, 0);
+    MDECREG_ST(0x801b68d4, 0);
+    MDECREG_ST(0x801b68f4, 0x60000000);
   }
   else {
     printf_forward((const char *)guest_at(0x801252e8),param_1);
@@ -1910,12 +1942,12 @@ void mdec_pump_b(uint32_t param_1,uint32_t param_2)
   uint32_t sz;
   
   mdec_stat_wait_b();
-  *mdec_reg(0x801b68f8) = *mdec_reg(0x801b68f8) | 0x88;
-  *mdec_reg(0x801b68d4) = 0;
-  *mdec_reg(0x801b68cc) = param_1;
+  MDECREG_ST(0x801b68f8, MDECREG(0x801b68f8) | 0x88);
+  MDECREG_ST(0x801b68d4, 0);
+  MDECREG_ST(0x801b68cc, param_1);
   sz = ((param_2 >> 5) << 0x10) | 0x20;
-  *mdec_reg(0x801b68d0) = sz;
-  *mdec_reg(0x801b68d4) = 0x1000200;
+  MDECREG_ST(0x801b68d0, sz);
+  MDECREG_ST(0x801b68d4, 0x1000200);
   return;
 }
 
@@ -2264,11 +2296,13 @@ int32_t aux_tbl_store_b(uint32_t param_1,int32_t param_2)
   return 0;
 }
 
-/* gpu_status_cmd — GPU status/command helper. Writes 0x10000007 to the
- * reg at *0x801b8428; reads *0x801b8424, if !=2 sets bits
- * 0xe1001000|(v&0x3fff) and returns 1, or when (v&0xffffff)==2 and
- * a0&8 writes 0x9000001 returning 2; else returns 1.
- * Disasm-verified @0x80193828. */
+/* gpu_status_cmd — GPU status/command helper. Writes 0x10000007 through
+ * the pointer cell @0x801b8428; reads *(*(u32*)0x801b8424) & 0xffffff.
+ * If ==2: a0&8 -> write 0x9000001 via 0x801b8428, return 2; else return 1.
+ * If !=2: read *T8428, write (*T8428 & 0x3fff) | 0xe1001000 through the
+ * 0x801b8424 cell, re-read *T8424 (status side effect), return 0.
+ * Disasm-verified @0x80193828 (cell addrs 0x801B8428/0x801B8424, store
+ * base a1 = ptr from 0x801B8424 at 0x8019387C). */
 uint32_t gpu_status_cmd(uint32_t param_1)
 {
   uint32_t v;
@@ -2281,8 +2315,9 @@ uint32_t gpu_status_cmd(uint32_t param_1)
     }
     return 1;
   }
-  br2_st32p(0x801b8424, (v & 0x3fff) | 0xe1001000);
-  return 1;
+  br2_st32p(0x801b8424, (br2_ld32p(0x801b8428) & 0x3fff) | 0xe1001000);
+  (void)br2_ld32p(0x801b8424);
+  return 0;
 }
 
 /* spr_tbl_init_a — one-shot sprite-table bulk init: when flag @0x801b55e4
@@ -2327,16 +2362,17 @@ void spr_tbl_init_b(void)
 }
 
 /* gpu_pkt_attr_set — GPU packet attr bit setter on host word *a0:
- * a1 bit0: set->clear bit27, clear->set bit27; a1 bit1: set->set
- * bit9, clear->clear bit9; then mdec_decode_issue(lhu(*a0)).
+ * a1 bit0: set->clear bit27 (0x08000000), clear->set bit27;
+ * a1 bit1: set->set bit25 (0x02000000), clear->clear bit25
+ * (mask 0xfdffffff); then mdec_decode_issue(a0, lhu(*a0)).
  * Disasm 0x8018f9b4-0x8018fa28. */
 void gpu_pkt_attr_set(uint32_t param_1,int param_2)
 {
   uint32_t *w = (uint32_t *)guest_at(param_1);
   if (param_2 & 1) *w &= 0xf7ffffff;
   else             *w |= 0x08000000;
-  if (param_2 & 2) *w |= 0x00000200;
-  else             *w &= 0xfffffdff;
+  if (param_2 & 2) *w |= 0x02000000;
+  else             *w &= 0xfdffffff;
   mdec_decode_issue(param_1,*(uint16_t *)w);
 }
 
@@ -2349,11 +2385,19 @@ void gpu_pkt_attr_set(uint32_t param_1,int param_2)
 void vram_tile_decode(uint8_t *param_1)
 {
   const uint8_t *s = (const uint8_t *)guest_at(0x801b6930);
-  uint8_t *d = param_1;
+  /* param_1: host pointer from the clean_table wrapper, guest-address
+   * value from game.c scene_entry (_DAT_801f4758 = 0x80010000+0x6f000) —
+   * resolve either form. */
+  uint8_t *base;
+  {
+    uint32_t g = guest_of(param_1);
+    base = (uint8_t *)guest_at(g ? g : (uint32_t)(uintptr_t)param_1);
+  }
+  uint8_t *d = base;
   uint32_t dist = 0;
   uint32_t i;
   uint16_t *w;
-  if (s == NULL || d == NULL) return;
+  if (s == NULL || base == NULL) return;
   for (;;) {
     int32_t n = (int32_t)(s[0] & 0xff);
     s++;
@@ -2373,9 +2417,9 @@ void vram_tile_decode(uint8_t *param_1)
     }
     if (dist == 0xf00) break;
   }
-  w = (uint16_t *)(param_1 + 8);
+  w = (uint16_t *)(base + 8);
   for (i = 4; i <= 0x87ff; i++) {
-    w[0] ^= ((uint16_t *)param_1)[i - 4];
+    w[0] ^= ((uint16_t *)base)[i - 4];
     w++;
   }
 }
@@ -2547,7 +2591,7 @@ int sprite_quad_emit(uint32_t a0g, int32_t s7, uint32_t s0, uint32_t s4,
   }
   s1[1] = 0x2c808080;                        /* +4 tag */
   s1[0] = (int32_t)(*out | 0x09000000);
-  *out = (uint32_t)((uint32_t)s1 & 0xffffff); /* link: low24 of node */
+  *out = guest_of(s1) & 0xffffff;            /* link: low24 of guest node */
   return 0;
 }
 
@@ -2561,6 +2605,13 @@ void guest_noop(void) { }
  * s16(u16@2+u16@6-1)). a0=pkt host, a1=rect host. */
 void sprite_rect_pkt_fill(uint32_t *pkt, uint16_t *r)
 {
+  /* pkt/r: host pointers from the clean_table wrapper and menu.c/save.c
+   * guest_at() callers, but raw guest-address values from save.c
+   * (0x801f4xxx constants) — resolve either form. */
+  uint32_t g1 = guest_of(pkt);
+  uint32_t g2 = guest_of(r);
+  pkt = (uint32_t *)guest_at(g1 ? g1 : (uint32_t)(uintptr_t)pkt);
+  r = (uint16_t *)guest_at(g2 ? g2 : (uint32_t)(uintptr_t)r);
   ((uint8_t *)pkt)[3] = 2;
   pkt[1] = gpu_coord_clamp_a((uint32_t)(int16_t)r[0],
                         (uint32_t)(int16_t)r[1]);
@@ -2575,6 +2626,14 @@ void sprite_rect_pkt_fill(uint32_t *pkt, uint16_t *r)
 uint32_t gpu_texclut_pkt(uint32_t *t0, uint32_t *a1, uint32_t a2, uint32_t a3)
 {
   uint32_t mode = 5;
+  /* t0/a1: host pointers from the clean_table wrapper/menu.c, raw
+   * guest-address values from save.c — resolve either form. */
+  {
+    uint32_t g1 = guest_of(t0);
+    uint32_t g2 = guest_of(a1);
+    t0 = (uint32_t *)guest_at(g1 ? g1 : (uint32_t)(uintptr_t)t0);
+    a1 = (uint32_t *)guest_at(g2 ? g2 : (uint32_t)(uintptr_t)a1);
+  }
   if (*(int16_t *)((uint8_t *)a1 + 4) == 0 ||
       *(int16_t *)((uint8_t *)a1 + 6) == 0)
     mode = 0;
