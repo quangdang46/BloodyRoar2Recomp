@@ -2922,3 +2922,39 @@ Read-while-reading once the wait predicate is identified.
 NEXT: fully decompile cd_result_wait_b predicate + the fn-ptr table it
 indexes by param_1; identify the "done" result the wait expects and which
 upstream producer should set it.
+
+=== UPDATE (session): CD consumer UNBLOCKED; new blocker = IRQ cross-thread resume poison @frame445 ===
+
+cd_mc_state_machine (0x80199440) clean-C port could NOT reserve the guest
+stack frame cd_result_wait_b needs: it passes guest_sp()-0x10 as param_2,
+but with no sp-=0x40 prologue that lands inside the callee's own saved-reg
+area (wait_b saves s6/s7 @sp+0x30/0x34); the 8-byte response copy then
+collides and read-back sees stack garbage (bit4 -> status 3 livelock).
+FIX: delegate whole body to generated 0x80199440 via br2_call_generated
+thunk (same contract as cd_result_wait_b/mc_date_serial_cmp); gen_clean_table
+now skips 0x80199440 (no wrap -> no recursion). Verified LIVE:
+  - 0x801BCC88 status 3 -> 0; ring_dropped 12509 -> ~44 (sectors CONSUMED)
+  - cd_channel_poll now returns 0 (channel entry reaches state==2)
+
+Also fixed cd_response_pump callback buffer args: was 0x801ECBD0/0x801ECBC8,
+authoritative disasm FUN_80197A00 shows 0x801FC6D0 (data-ready) /
+0x801FC6C8 (ack) — off by 0x10000.
+
+NEW BLOCKER (deterministic, frame 445): FAIL-FAST unknown dispatch
+addr=0x04000600 phys=0x04000600 ra=0x80159AE0 a0=0x801FFFA8 a1=0x801FFFAC.
+irqctx_ring tail: IRQ @epc=0x80159AD8 (the `jal cd_channel_poll` inside
+generated mc_date_serial_cmp) exits same_thread=0 restored=0 -> cross-thread
+switch; target thread resume produces pc=0x04000600 (unmapped low addr).
+thread_ctx_ring EMPTY -> not a TCB save/restore path; this is the documented
+"mid-nest switch -> poisoned context / smeared jumptable index" failure
+(traps.c ~L365). Triggered only once CD streaming actually completes a
+channel read — i.e. DOWNSTREAM of the SM fix, a separate latent IRQ/scheduler
+bug, not caused by the delegation. mc_date_serial_cmp generated body has NO
+indirect jump (only jal cd_channel_poll + jr ra), so 0x04000600 enters via
+the IRQ-exit resume_pc, not game code.
+
+NEXT: trace the IRQ-exit path for the cross-thread switch at 0x80159AD8 —
+find which TCB/escape target supplies resume_pc=0x04000600 and why the saved
+context is poisoned (mid-nest ChangeThread/RFE during clean<->generated CD
+call). Candidates: g_sched_escape.target_tcb resume, dirty_safe_resume_pc
+latch, or exception-handler $k0 table base.

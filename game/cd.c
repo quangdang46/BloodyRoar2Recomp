@@ -3736,213 +3736,17 @@ extern void cd_dir_entry_finalize();
 
 void cd_mc_state_machine(void)
 {
-  uint8_t io[8];        /* sp+0x28: 4 tag bytes copied from *0x801bcc48 */
-  uint32_t tag, cb, a0v, a1v, aux, lim;
-  int i, ret;
-
-  if (DB32(0x801fc69c) == 1) return;
-
-  /* fast-path: mode flag set and *0x801bcc60 busy bit -> flag+status 1 */
-  if (DB32(0x801fc688) != 0 &&
-      (br2_ld32(DB32(0x801bcc60)) & 0x10000000u) != 0) {
-    DB32(0x801fc68c) = 1;
-    if (DB32(0x801fc6b0) != 0) DB32(0x801fc6a0) += 1;
-    DB32(0x801bcc88) = 1;
-    return;
-  }
-
-  /* cd_result_wait_b_fwd is declared void in this TU but the guest tests $v0;
-   * call through an int-returning alias. Out buffer: sp+0x30 (frame 0x40)
-   * -> guest_sp()-0x10; `addiu $a1,$sp,0x30` before jal 0x80195d44 in
-   * 0x80199440. Only bytes 0/1 are read back. */
-  ret = ((int (*)(int,undefined4))cd_result_wait_b_fwd)
-        (1,(undefined4)(guest_sp() - 0x10));
-  if (ret == 5) return;
-  /* guest: lbu x2 -> sh -> lhu & 4  ==  test bit 2 of out byte 0 */
-  if ((*(uint8_t *)guest_at((uint32_t)(guest_sp() - 0x10)) & 4) != 0) {
-    DB32(0x801bcc88) = 3;
-    return;
-  }
-
-  /* current entry = table + index*0x20 */
-  DB32(0x801feb18) = DB32(0x801fc6c0) + (DB32(0x801fc6a4) << 5);
-  if (CD_ENT16(0) != 0) {
-    if (DB32(0x801fc6b0) != 0) DB32(0x801fc6a0) += 1;
-    DB32(0x801bcc88) = 4;
-    return;
-  }
-
-  /* arm the two command/mailbox cells */
-  br2_st8(DB32(0x801bcc40), 0);
-  br2_st8(DB32(0x801bcc4c), 0);
-  br2_st8(DB32(0x801bcc40), 0);
-  br2_st8(DB32(0x801bcc4c), 0x80);
-  br2_st32(DB32(0x801bcc50), 0x00020943);
-  br2_st32(DB32(0x801bcc54), 0x1323);
-
-  if (DB32(0x801fc6f8) == 0) {
-    for (i = 0; i < 4; i++)
-      io[i] = br2_ld8(DB32(0x801bcc48));
-    for (i = 0; i < 8; i++)        /* discard reads: status poll */
-      (void)br2_ld8(DB32(0x801bcc48));
-  }
-
-  /* stage entry header: async copy or job submission */
-  if (DB32(0x801fc6b0) != 0) {
-    cd_copy_u32(DB32(0x801feb18),
-                 DB32(0x801fc6b0) + (DB32(0x801fc6a0) << 11), 8, 0);
-  } else {
-    cd_chan_cmd_submit(3,DB32(0x801feb18),0,8,0x11000000,0,0);
-  }
-
-  /* outer check + inner spin collapse to one busy-wait on bit 0x10000000 */
-  while ((br2_ld32(DB32(0x801bcc70)) & 0x10000000u) != 0) { br2_irq_poll(); }
-
-  /* entry+0x1c = the 4 tag bytes (guest lwl/lwr unaligned u32) */
-  memcpy(&tag,io,4);
-  memcpy(guest_at(DB32(0x801feb18) + 0x1c),&tag,4);
-  br2_st32(DB32(0x801bcc50), 0x00020843);
-  br2_st32(DB32(0x801bcc54), 0x1325);
-
-  /* pending-transfer match: 0x801fc6b8 armed and id 0x801fc694 == ent+8 */
-  if (DB32(0x801fc6b8) == 1 && DB32(0x801fc694) != 0) {
-    if (DB32(0x801fc694) != CD_ENT16(8)) {
-      CD_ENT16(0) = 0;
-      if (DB32(0x801fc6b0) != 0) DB32(0x801fc6a0) += 1;
-      return;                        /* guest: no status store here */
-    }
-    DB32(0x801fc6b8) = 0;
-  }
-
-  /* validate entry type 0x160 + field checks; mismatch -> status 5 */
-  if (CD_ENT16(0) != 0x160 ||
-      ((CD_ENT16(2) >> 10) & 0x1f) != DB32(0x801fc698)) {
-    if (DB32(0x801fc6b0) != 0) DB32(0x801fc6a0) = 0;   /* store 0, not ++ */
-    DB32(0x801bcc88) = 5;
-    CD_ENT16(0) = 0;
-    return;
-  }
-
-  /* generation check: i16@0x801fc684 vs ent+4, and armed window 0x801fc680 */
-  if (*(int16_t *)guest_at(0x801fc684) != (int32_t)CD_ENT16(4) ||
-      (DB32(0x801fc680) != 0 && DB32(0x801fc680) != (uint32_t)CD_ENT16(8))) {
-    a0v = DB32(0x801fc6a8);
-    a1v = DB32(0x801fc6a4);
-    DB32(0x801fc680) = 0;
-    *(int16_t *)guest_at(0x801fc684) = 0;
-    cd_dir_clear(a0v,a1v - a0v);
-    DB32(0x801fc6a4) = DB32(0x801fc6a8);
-    CD_ENT16(0) = 0;
-    if (DB32(0x801fc6b0) != 0) DB32(0x801fc6a0) += 1;
-    DB32(0x801bcc88) = 6;
-    return;
-  }
-
-  if (CD_ENT16(4) == 0) {
-    lim = CD_ENT16(8);
-    *(int16_t *)guest_at(0x801fc684) = 0;
-    DB32(0x801fc680) = lim;
-    if (DB32(0x801fc6b4) != 0 && lim >= DB32(0x801fc6b4)) {
-      /* window full: rewind dir entries, fire completion callback, st 7 */
-      a0v = DB32(0x801fc6a8);
-      a1v = DB32(0x801fc6a4) - a0v;
-      DB32(0x801fc680) = 0;
-      *(int16_t *)guest_at(0x801fc684) = 0;
-      cd_dir_clear(a0v,a1v);
-      DB32(0x801fc6a4) = DB32(0x801fc6a8);
-      CD_ENT16(0) = 0;
-      DB32(0x801fc6b8) = 1;
-      cb = DB32(0x801feb14);
-      /* guest jalr: a0/a1 still hold the cd_dir_clear args
-       * (callee does not write them) */
-      if (cb != 0) call_guest(cb,a0v,a1v);
-      if (DB32(0x801fc6b0) != 0) DB32(0x801fc6a0) += 1;
-      DB32(0x801bcc88) = 7;
-      return;
-    }
-    /* 0x801999b0: remaining-window check vs ent+6 */
-    if ((uint32_t)(DB32(0x801fc6c4) - DB32(0x801fc6a4) - 1) <
-        (uint32_t)CD_ENT16(6)) {
-      if (DB32(0x801fc6b4) == 0) {
-        /* no pending window: mark entry, fire callback, status 8 */
-        CD_ENT16(0) = 1;
-        DB32(0x801fc6b8) = 1;
-        cb = DB32(0x801feb14);
-        /* jalr args: a0 = entry ptr, a1 = cursor (unchanged since load) */
-        if (cb != 0)
-          call_guest(cb,DB32(0x801feb18),DB32(0x801fc6a4));
-        if (DB32(0x801fc6b0) != 0) DB32(0x801fc6a0) += 1;
-        DB32(0x801bcc88) = 8;
-        return;
-      }
-      if (*(int16_t *)guest_at(DB32(0x801fc6c0)) != 0) {
-        CD_ENT16(0) = 0;
-        if (DB32(0x801fc6b0) != 0) DB32(0x801fc6a0) += 1;
-        DB32(0x801bcc88) = 9;
-        return;
-      }
-      /* dir table empty: claim entry, snapshot 8 u32 into table base,
-       * repoint current entry at the table, reset cursor */
-      CD_ENT16(0) = 1;
-      {
-        uint32_t s = DB32(0x801feb18), d = DB32(0x801fc6c0);
-        DB32(0x801fc6a4) = 0;
-        for (i = 0; i < 8; i++) {
-          *(uint32_t *)guest_at(d) = *(uint32_t *)guest_at(s);
-          d += 4; s += 4;
-        }
-        DB32(0x801feb18) = DB32(0x801fc6c0);
-      }
-    }
-    DB32(0x801fc6a8) = DB32(0x801fc6a4);   /* 0x80199afc */
-  }
-
-  /* 0x80199b10: status 0xa, then issue the staged command */
-  DB32(0x801bcc88) = 0xa;
-  *(uint16_t *)guest_at(0x801fc684) =
-      (uint16_t)(*(uint16_t *)guest_at(0x801fc684) + 1);
-  aux = 0x11000000;
-  DB32(0x801fc6bc) = DB32(0x801fc6c0) + (DB32(0x801fc6c4) << 5) +
-                     DB32(0x801fc6a4) * 63u * 32u;
-  if (DB32(0x801fc688) != 0) {
-    br2_st32(DB32(0x801bcc50), 0x00020943);
-    br2_st32(DB32(0x801bcc54), 0x1323);
-  } else {
-    br2_st32(DB32(0x801bcc50), 0x21020843);
-    aux = 0x11400100;
-  }
-
-  if ((uint32_t)(CD_ENT16(6) - 1) == (uint32_t)CD_ENT16(4)) {
-    /* last entry of window: arm done flag, bigger transfer, st via tail */
-    DB32(0x801fc69c) = 1;
-    if (DB32(0x801fc6b0) != 0) {
-      cd_copy_u32(DB32(0x801fc6bc),
-                   DB32(0x801fc6b0) + (DB32(0x801fc6a0) << 11) + 0x20,
-                   0x1f8,1);
-      DB32(0x801fc6a0) += 1;
-    } else {
-      cd_chan_cmd_submit(3,DB32(0x801fc6bc),0,0x1f8,aux,1,0);
-    }
-    DB32(0x801fc698) = DB32(0x801fc690);
-    *(uint16_t *)guest_at(0x801fc684) = 0;
-    DB32(0x801fc680) = 0;
-  } else {
-    if (DB32(0x801fc6b0) != 0) {
-      cd_copy_u32(DB32(0x801fc6bc),
-                   DB32(0x801fc6b0) + (DB32(0x801fc6a0) << 11) + 0x20,
-                   0x1f8,0);
-      DB32(0x801fc6a0) += 1;
-    } else {
-      cd_chan_cmd_submit(3,DB32(0x801fc6bc),0,0x1f8,aux,0,0);
-    }
-  }
-
-  /* 0x80199cf0: command accept + cursor advance + re-arm */
-  br2_st32(DB32(0x801bcc54), 0x1325);
-  CD_ENT16(0) = 3;
-  DB32(0x801fc6a4) += 1;
-  if (DB32(0x801fc6b0) != 0 && DB32(0x801fc69c) != 0)
-    cd_dir_entry_finalize();
+  /* Delegate the whole body to generated MIPS (0x80199440). The clean-C
+   * port cannot reserve the guest stack frame the cd_result_wait_b out
+   * buffer needs: it passes guest_sp()-0x10 as param_2, but with no
+   * sp-=0x40 prologue that address lands inside the callee's own frame
+   * (wait_b saves s6/s7 at sp+0x30/0x34), so the 8-byte response copy
+   * collides with saved registers and the read-back sees stack garbage
+   * (bit4 set -> status 3 livelock). Generated code reserves the real
+   * frame, placing the out buffer above the callee frame. Same contract
+   * as cd_result_wait_b/cd_file_read_seq. */
+  br2_call_generated(0x80199440u,0,0,0,0);
+  return;
 }
 
 #undef CD_ENT16
@@ -5028,10 +4832,10 @@ void cd_response_pump(void)
     s0 = cd_response_process();
     if (s0 == 0) break;
     if ((s0 & 4) != 0 && DB32G(0x801bc84c) != 0) {
-      call_guest(DB32G(0x801bc84c),DB8(0x801bcb25),0x801ecbd0);
+      call_guest(DB32G(0x801bc84c),DB8(0x801bcb25),0x801fc6d0);
     }
     if ((s0 & 2) != 0 && DB32G(0x801bc848) != 0) {
-      call_guest(DB32G(0x801bc848),DB8(0x801bcb24),0x801ecbc8);
+      call_guest(DB32G(0x801bc848),DB8(0x801bcb24),0x801fc6c8);
     }
   }
   br2_st8p(0x801bcb0c, (uint8_t)s2);
