@@ -1686,3 +1686,32 @@ function calls cd_ctx_save on IRQ and sets up the resume, and why the recomp
 doesn't reach it. Compare IRQ delivery path for CDROM (bit2) vs VBLANK (bit0,
 which works via 0x1bd0->0x29cc). The difference between a working source and
 CDROM is the faithful-core gap.
+
+## 2026f — deferred-IRQ mechanism UNMASKED; restore path now hard-hangs
+
+FIX (clean source): cd_chan_full_init (0x8019a814) + cd_ctx_save (0x8019ad90)
+converted to br2_call_generated thunks -> gen_clean_table skips them -> they
+run GENERATED code. Rationale: the deferred-interrupt contract snapshots the
+LIVE guest register file (cpu->gpr) into frame @0x801bcd50 and later resumes
+via cd_ctx_restore (0x8019adcc, already generated). A clean C body owns a
+host stack, not cpu->gpr, so it cannot participate. The clean port had ALSO
+dropped the B0/0x19 call that registers the frame into mem[0x4C18].
+
+VERIFIED after fix:
+- ctx frame @0x801bcd50 now populated with real regs (ra=0x8019a87c = ret
+  into cd_chan_full_init, sp=0x801bdd30, gp=0x80200000, fp=0x801bcd18).
+- B0/0x19 ran; mem[0x4C18] was armed then consumed (one-shot).
+- cd_intc_dispatch RAN once: busy flag @0x801bcd1a = 1 (was 0 forever).
+
+NEW BLOCKER (faithful-core): CPU dispatch now hard-hangs at pc=0 (0.4% cpu,
+all pc_probe=0 incl IRQ dispatch 0x16e4). i_stat=0x04 (CDROM) stays pending,
+irq_flag=0x03, sector_available=1 unconsumed. The cd_ctx_restore non-local
+context jump (lw ra/gp/sp/fp/s0-s7; jr ra -> 0x8019a87c) abandons the IRQ
+handler mid-exception; the recomp's exception/IRQ dispatch does not compose
+with this coroutine-style resume -> dispatch dead. This bug was previously
+MASKED because B0/0x19 never ran (mem[0x4C18]=0) so the kernel never
+attempted the restore.
+
+NEXT: trace the kernel IRQ->cd_ctx_restore call site (who reads mem[0x4C18])
+and how the recomp should model the deferred-resume return (eret vs jr).
+Compare IRQ delivery for the deferred path vs normal handler return.

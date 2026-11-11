@@ -5187,36 +5187,18 @@ int32_t cd_gpu_call_1c(uint32_t param_1,uint32_t param_2)
   return 0;
 }
 
-/* ======== 0x8019a814 ======== */
-
+/* 0x8019a814 — cd_chan_full_init. This function is the resumable half of
+ * the CD deferred-interrupt contract: it calls cd_ctx_save(0x801bcd50)
+ * which snapshots the LIVE guest register file, registers that frame via
+ * B0/0x19 -> mem[0x4C18], and on CD IRQ the kernel calls cd_ctx_restore
+ * (0x8019adcc) which reloads the frame and re-enters here with v0!=0 to
+ * run cd_intc_dispatch. That save/restore operates on cpu->gpr, which a
+ * clean C body does not own — the host stack is invisible to it. The whole
+ * function therefore runs generated; the thunk keeps direct C callers
+ * correct and makes gen_clean_table skip the address. */
 uint32_t cd_chan_full_init(void)
 {
-  uint32_t s0 = 0x801bcd18;
-  if (*(uint16_t *)guest_at(s0) != 0) return 0;
-  /* 0x801bdda4/8/ac are pointer cells into the 0x1F8010xx INTC/DMA regs —
-   * the final deref is MMIO and must go through the device model, not a raw
-   * guest_at pointer (which lands in the open-bus fallback and drops the write). */
-  br2_st16p(0x801bdda8, 0);
-  br2_st16p(0x801bdda4, 0);
-  br2_st32p(0x801bddac, 0x33333333);
-  cd_guest_zero32_a(s0,0x41a);
-  if (cd_ctx_save(s0 + 0x38) != 0) {
-    cd_intc_dispatch();
-  }
-  s0 = 0x801bcd54;
-  *(uint32_t *)guest_at(s0) = s0 + 0xfdc;
-  *(uint16_t *)guest_at(s0 - 0x3c) = 1;
-  {
-    uint32_t v0 = cd_init_stage_a();
-    uint32_t v1 = DB32G(0x801bdd60);
-    *(uint32_t *)guest_at(v1 + 0x14) = v0;
-    v0 = cd_init_stage_b();
-    v1 = DB32G(0x801bdd60);
-    *(uint32_t *)guest_at(v1 + 4) = v0;
-    FUN_8019ad48(v1);
-  }
-  FUN_8018e310(0);
-  return 0x801bcd18;
+  return br2_call_generated(0x8019a814, 0, 0, 0, 0);
 }
 
 /* ======== 0x801918a0 ======== */
@@ -6194,15 +6176,16 @@ int cd_queue_push(uint32_t a0_fn,uint32_t a1_data,uint32_t a2_count,
 
 /* cd_ctx_save — guest context save (0x8019ad90-0x8019adc8): stores
  * ra,sp,fp,s0-s7,gp into the 12-word frame at a0, returns 0. Paired
- * restore is 0x8019adcc (unported; returns a1 via longjmp). Host has
- * no guest register file, so the slots are zeroed; the !=0 resume
- * path in cd_chan_full_init therefore never fires, matching the absence of
- * guest interrupt delivery. */
+ * restore is 0x8019adcc (returns a1 via register reload). This is the
+ * deferred-interrupt save half: it must capture the live GUEST register
+ * file so cd_ctx_restore can later resume cd_chan_full_init mid-body.
+ * A clean C port has no guest register file (host stack is not cpu->gpr),
+ * so delegate to the recompiled body which performs the real sw sequence.
+ * br2_call_generated in the body also makes gen_clean_table skip this
+ * address, so jal 0x8019ad90 runs generated code directly. */
 int cd_ctx_save(uint32_t a0)
 {
-  uint32_t *c = (uint32_t *)guest_at(a0);
-  memset(c,0,12 * sizeof(uint32_t));
-  return 0;
+  return (int)br2_call_generated(0x8019ad90, a0, 0, 0, 0);
 }
 
 /* cd_intc_dispatch — CD interrupt dispatch (0x8019a8ec-0x8019aab8).
