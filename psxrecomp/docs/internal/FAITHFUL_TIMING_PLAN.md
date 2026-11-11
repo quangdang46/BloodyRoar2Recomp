@@ -213,6 +213,39 @@ on a fixed region -> next.
 
 ## 5. Status / Log (update every session)
 
+- **2026-11-11 (ROOT-CAUSE CANDIDATE: kernel objects live at 0xF0000000 KSEG3 —
+  unmapped → open-bus → CD callback lookup fails):** Disassembled the game's own
+  kernel IRQ path straight from guest RAM (`read_ram` @0x8000xxxx):
+  * `0x16E4` (hw-IRQ dispatch): `lw v0,I_MASK(0x1F801074); lw v1,I_STAT(0x1F801070);
+    and; andi 4` → tests **CDROM bit2 only** → `jal 0x2610` with `a0=0xF0000003`
+    (CDROM kernel-object handle), `a1=0x1000`. Sibling blocks do the same for
+    other IRQ-source handles.
+  * `0x2610` (kernel-object invoke): prologue then `lw s0,0x20(a0)` /
+    `lw s1,0x24(a0)` — **dereferences a0=0xF0000003 as a raw pointer** into
+    `0xF0000000`-based kernel-object space, then bounds-checks and (on the
+    non-taken path past `0x2660`) walks object fields to reach the registered
+    interrupt callback.
+  * `psx_phys_addr(0xF0000003)` = `0xF0000003 & 0x1FFFFFFF` = `0x10000003` —
+    **outside RAM/MMIO/BIOS** → every `lw` in `0x2610` returns open-bus (0).
+    So the kernel object's callback field reads as 0 → no game CD handler is
+    ever invoked → busy flag `0x801bcd1a` stays 0 → `cd_cmd_issue` spins.
+  * `read_ram(0xF0000003)` confirms all-zero. `0xF0000000` is KSEG3
+    (0xE0000000-0xFFFFFFFF) — TLB-mapped kernel space on real HW; recomp has
+    NO KSEG3/TLB model → kernel-object derefs are dropped.
+  * HYPOTHESIS: the game kernel maps its device-object heap to `0xF0000000`
+    (KSEG3) via TLB, OR `0xF0000003` is a handle the kernel is supposed to
+    translate before deref. Either way the recomp's flat `&0x1FFFFFFF` phys
+    fold cannot reach it. FIX DIRECTION: find where `cd_hw_chan_init`'s
+    `FUN_8019b380`(B0/0x08) kernel-object allocs actually placed the objects in
+    RAM (they ARE created — bios_svc_trace shows the allocs), determine the
+    `0xF0000000`→RAM alias the game kernel uses, and map it in `psx_phys_addr`
+    / the memory model. This is faithful-core work (real HW kernel-object
+    space), NOT a game hack.
+  * VERIFY FIRST: confirm `0x2610`'s `lw` on `0xF0000023` actually returns
+    open-bus at runtime (not a mapped alias I haven't found) — set a read
+    watch or check `g_kseg2_ignored_reads`/open-bus counters while CD IRQ
+    fires. Then locate the real object backing store.
+
 - **2026-11-11 (IRQ callback path fully traced — CD handler genuinely never
   invoked; OpenBIOS ruled out):** Live pc_probe campaign on the running headless
   build resolved the dispatch topology:
