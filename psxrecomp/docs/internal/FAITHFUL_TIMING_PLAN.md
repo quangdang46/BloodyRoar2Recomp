@@ -2009,3 +2009,27 @@ armed -> dispatcher re-invokes -> guest call-cycle -> dispatch_depth guard.
 NEXT: determine exact v0 contract (what cd_ctx_restore/cd_chan_full_init must
 return for the kernel to clear the slot) and whether svc0x17/re-enable path
 drops/alters v0 in recomp.
+
+## 2026o — full recursion chain traced to B0:0x17 kernel handler
+
+cd_intc_dispatch tail = jal 0x8019AD60 = B0 syscall 0x17 (li t2,0xB0;
+li t1,0x17; jr t2). B0Handler (OpenBIOS_func_00002AA0, BFC20A74):
+t2 = mem[0x49CC + t1*4]; jr t2. So B0:0x17 handler = mem[0x4A28].
+
+FULL CYCLE (guest call-cycle, i_stat=0 — not IRQ storm):
+  deferred-dispatcher 0x3870 jalr -> cd_ctx_restore -> cd_chan_full_init
+  (resume, in-service flag 0x801BCD18!=0) -> cd_intc_dispatch
+  -> clears busy flag 0x801BCD1A -> jal svc B0:0x17 -> B0Handler
+  -> kernel B0:0x17 handler (mem[0x4A28]) -> [delivers pending events /
+     re-enables] -> deliverEvent -> deferred-dispatcher 0x3870 -> ...
+
+CONSUME CONTRACT: deferred-dispatcher reads handler v0: ==0 -> BFC21944
+(ack: write 0xFFFFFF7F->0xBF801070, set bit7 0xBF801074, return);
+==1 -> BFC21980; else post-process. The CD frame stays armed because
+B0:0x17's kernel handler re-delivers it BEFORE the slot is consumed, OR
+cd_chan_full_init's resume returns nonzero v0.
+
+NEXT: disassemble kernel B0:0x17 handler (mem[0x4A28] -> find its ROM addr
+via syscall-table init) to see if it calls deliverEvent/deferred-dispatch
+while the CD frame is still armed. Likely fix: ordering — the deferred
+slot must be consumed before B0:0x17 re-enables event delivery.
