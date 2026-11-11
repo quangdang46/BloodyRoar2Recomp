@@ -350,6 +350,37 @@ on a fixed region -> next.
   no-op/misrouted, OR the CDROM kernel ISR isn't wired to the game's IntRP
   record. This is faithful-core work in `psxrecomp/`, game/ is exonerated.
 
+- **2026-11-11 (ROOT CAUSE CORRECTED + object table decoded — CDROM IRQ-source
+  kernel object class `0xF0000003` is ABSENT):** Re-disassembled `0x2610`
+  (kernel-object invoke) from live RAM — the earlier "dereferences `0xF0000003`
+  as a pointer / KSEG3 unmapped" hypothesis is **WRONG**. Corrected decode:
+  `0x2610` sets `v0=0x100` (FIXED), reads object-table base `s0=*(0x120)` and
+  span `s1=*(0x124)`, then iterates objects at **stride 0x1C** calling
+  `callback=*(obj+0x10)` via `jalr`. Match requires ALL of:
+  `obj->f4(+4)==0x2000`, `obj->class(+0)==a0`, `obj->attr(+8)==a1`,
+  `obj->size(+0xc)==0x2000`. `a0`/`a1` are class/attr TAGS compared against
+  object fields — never dereferenced. So `0xF0000000`-space is NOT an address
+  and the KSEG2-guard/open-bus theory is moot.
+  LIVE TABLE @phys `0x8e08` (span `0x1c0`=16 objs): objs0-3 class `0xF4000001`
+  cb `0x801a0b10/24/38/4c`; objs4-7 class `0xF0000011` cb `0x801a0b60/74/88/9c`;
+  obj8 class `0xF0000009` attr `0x20` size `0x2000` cb `0` (the mark EvCB from
+  `FUN_8019b380(0xf0000009,0x20,0x2000,0)`); objs9-15 empty. Sibling tables:
+  `*(0x100)`=0x8de0/0x20, `*(0x108)`=0x8fd0/4, `*(0x110)`=0x8fe0/0x300.
+  IRQ dispatcher `0x16E4` calls `0x2610` per pending bit with handle
+  `a0=0xF0000003`(CD bit2), `0xF0000009`(bit0x200), `0xF0000002`, `0xF0000010`,
+  `a1=0x1000`. For CDROM it needs an object `class==0xF0000003 && attr==0x1000
+  && f4==0x2000 && size==0x2000` — **NO such object exists in the table** →
+  `jalr` never reached → game's CD IRQ callback never invoked → stall.
+  The `0xF000000X` IRQ-source objects are a SEPARATE registration from the CD
+  channel objects (0xF4000001/0xF0000011) and the mark EvCB — likely created by
+  a kernel interrupt-source register call during CD/IRQ init that either never
+  ran or wrote to a different table. NEXT: find the alloc that creates class
+  `0xF000000X` IRQ-source objects (candidates: a BIOS/kernel "register int
+  source" svc, `cd_subchan_table_install`, or the IntRP setup `0x801FEB40`)
+  and why it didn't populate `0x8e08`. VBLANK works → its IRQ-source object
+  must exist SOMEWHERE; dump which table/class VBLANK's handle resolves to for
+  comparison. This is faithful-core kernel-object registration, NOT a game hack.
+
 - **2026-11-11 (IRQ chain fully mapped — gap isolated to kernel-object CD callback):**
   Traced the complete maskable-IRQ path live. CPU exception → kernel
   `ExceptionHandler` (RAM vector `0x80000080`→`0x27AC`, valid low-mem kernel
