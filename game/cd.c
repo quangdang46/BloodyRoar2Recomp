@@ -418,7 +418,22 @@ undefined4 cd_cmd_issue_async(byte param_1,int param_2)
 
 /* ======== 0x80198908 ======== */
 
+/* cd_read_open — issues Pause/SetLoc/Setmode/ReadN for a read session.
+ * The clean port builds the Setmode param byte on a guest stack buffer via
+ * guest_sp()-0x18; a stale/wrong guest_sp makes cd_mode_flag_set(0xe,..)
+ * hand generated cd_cmd_issue a buffer that decodes to 0x1C instead of the
+ * computed 0xA0 mode, so the drive stays in user-data mode (mode_reg&0x20==0)
+ * and never delivers the per-sector MSF stamp that cd_read_step_cb verifies
+ * -> "sector error" -> DAT_801bcb94=-1 -> cd_read_open(1) retry livelock on
+ * the first file's first sectors. The generated body keeps sp live and has
+ * per-block interrupt checks. Delegate it. */
 undefined4 cd_read_open(int param_1)
+{
+  return (undefined4)br2_call_generated(0x80198908u,(uint32_t)param_1,0,0,0);
+}
+
+#if 0
+undefined4 cd_read_open_clean(int param_1)
 
 {
   uint uVar1;
@@ -484,6 +499,7 @@ undefined4 cd_read_open(int param_1)
   DAT_801bcb98 = cd_timer_read(0xffffffff);
   return DAT_801bcb94;
 }
+#endif /* cd_read_open clean body preserved for reference */
 
 /* ======== 0x80198590 ======== */
 
