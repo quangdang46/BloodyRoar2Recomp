@@ -2232,3 +2232,41 @@ path doesn't reach mc_session callback; (b) cd_timer_read frame counter frozen
 (c) clean cd_init_session can't deliver IRQ (br2_irq_poll wild-store, cd.c:115)
 so relies on generated body — verify which body actually runs.
 The recursion-guard halt is a SEPARATE host-side nested-psx_dispatch issue.
+
+## Boot unblocked -> CD file-load retry loop (commit 024e02e)
+
+cd_init_session now runs the GENERATED body via br2_call_generated thunk
+(deferred-IRQ wait needs per-block interrupt poll + live cpu->gpr; clean-C
+spin could never receive INT2->cd_init_done_cb). Plus two clean-port pointer
+bugs fixed: save_rec_table_copy host-ptr arg, apply_saved_settings
+(int)param_1 64->32 truncation. Boot now completes settings and reaches
+cd_file_pump (CD file loading).
+
+CURRENT BLOCKER — CD file-load retry loop, not IRQ-rooted:
+- PSX_RB_CD_BISECT ReadN-arm trace: only ~14 arms, LBAs cycle a tiny set
+  {16,18,22, 216333,216334,216335, -150} — game re-reads the same files,
+  never advances through the ~27-file pump. lba=-150 (invalid seek,
+  mode 0x80->0xa0) is the failure point.
+- Starvation dump: pc=0x8019A9AC (cd_intc_dispatch I_STAT-ack), i_stat=0x4
+  (CDROM bit2), i_mask=0xD, in_exc=1. The IRQ "storm" is per-sector INT1
+  data-ready during these reads — i_stat bit2 re-presents each generation
+  because irq_flag is re-set continuously (sectors stream faster than the
+  nested game->BIOS->game dispatch drains them).
+- IRQ/ack chain verified correct END-TO-END: br2_st8p(0x801bcb18,7) ->
+  psx_write_byte(0x1F801803) -> memory.c -> cdrom_write index_reg==1 ->
+  irq_flag &= ~7. index_reg set via br2_st8p(0x801bcb0c,1)->0x1F801800.
+  psx_irq_raise count ~0 during spin => i_stat bit2 stays SET (not re-raised);
+  exception re-fires because the bit is never cleared -> cd_intc_dispatch
+  re-entered continuously.
+
+NEXT HYPOTHESES (ordered):
+(a) CD sector DATA is wrong/corrupt -> file parse yields lba=-150 -> retry.
+    Verify iso_read_sector output vs known-good sector for lba 16/18/22.
+(b) Read-completion / CD-DMA-done event (mark event 0xF0000009,0x20 via
+    cd_dma_chan_reset 0x8019b7e8, or INT4 data-end) not reaching game ->
+    game thinks read incomplete -> retries. Check whether cd_dma_chan_reset
+    is reached and whether INT4/CDIRQ_DATA_END is ever raised.
+(c) ReadN stream never terminates: game expects N sectors then Stop, but
+    runtime keeps delivering (reading=1 until stop_read_stream). If the
+    game's sector-count/stop logic depends on a status the runtime
+    mis-reports, the stream overruns.
