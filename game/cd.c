@@ -107,60 +107,24 @@ undefined4 cd_read_issue(undefined4 param_1,undefined4 param_2,undefined4 param_
 
 /* ======== 0x80198af0 ======== */
 
-/* cd_init_session — CD read-session init + async-Pause handshake.
- * Waits on DAT_801bcba4 (cleared by session cb 0x80198590 via the CD IRQ ->
- * cd_ctx_save/restore deferred path, which snapshots LIVE cpu->gpr). Its two
- * wait loops spin on DAT_801bcba4 with a cd_timer_read deadline; the generated
- * body polls interrupts at every block so the async cb can fire. A clean C
- * spin is not interruptible at that granularity (br2_irq_poll delivers the IRQ
- * against stale cpu->gpr -> cd_intc_dispatch wild store @0x8019AA98). The
- * interruptible wait therefore needs the generated body OR a fixed deferred-IRQ
- * context path; tracked in FAITHFUL_TIMING_PLAN. Clean port kept live below. */
+/* cd_init_session — CD read-session init + async-Pause handshake (0x80198af0).
+ * Waits on DAT_801bcba4 (cleared by session cb 0x80198590 = cd_init_done_cb,
+ * registered as the INT2 command-complete callback via mc_session->
+ * DAT_801bc848). It issues Pause(0x09) once via cd_cmd_issue_async, sets
+ * DAT_801bcba4=1, then waits <=0x79 frame ticks (cd_timer_read -> 0x801bdde0
+ * VBlank counter) for the INT2 cb to clear the flag.
+ *
+ * This wait MUST run the generated body: the deferred-IRQ ctx save/restore
+ * (cd_ctx_save/cd_ctx_restore + cd_intc_dispatch) needs LIVE cpu->gpr, which a
+ * clean-C spin cannot provide — br2_irq_poll delivers the IRQ against stale
+ * cpu->gpr -> cd_intc_dispatch wild store @0x8019AA98 (and the frame counter
+ * freezes with no per-block interrupt check, so the 0x79 timeout never fires
+ * -> infinite 100% CPU spin + repeated cmd=0x09 as boot retries init).
+ * Same contract as cd_chan_full_init/cd_ctx_save (commit 15716b2): the
+ * br2_call_generated thunk also makes gen_clean_table skip this address. */
 void cd_init_session(void)
-
 {
-  int iVar1;
-  int iVar2;
-  
-  if ((DAT_801bc7b4 & 1) != 0) {
-    cd_busy_wait_fwd(0);
-  }
-  DAT_801bcb94 = 0;
-  iVar1 = 1;
-  if (DAT_801bcba4 != 0) {
-    iVar1 = cd_timer_read(0xffffffff);
-    do {
-      if (DAT_801bcba4 == 0) {
-        iVar1 = 0;
-        DAT_801bcba4 = 0;
-        goto LAB_80198bc4;
-      }
-      iVar2 = cd_timer_read(0xffffffff);
-    } while ((uint)(iVar2 - iVar1) < 0x79);
-    mc_session(DAT_801bcba8);
-    iVar1 = -1;
-    DAT_801bcba4 = 0;
-  }
-LAB_80198bc4:
-  if (iVar1 != 0) {
-    mc_session_b(DAT_801bcbac);
-    if ((DAT_801bc7b4 & 1) != 0) {
-      cd_cmd_dispatch3(DAT_801bcbb0);
-    }
-    mc_session(0x80198590);
-    cd_cmd_issue_async(9,0);
-    DAT_801bcba4 = 1;
-    iVar1 = cd_timer_read(0xffffffff);
-    do {
-      if (DAT_801bcba4 == 0) {
-        return;
-      }
-      iVar2 = cd_timer_read(0xffffffff);
-    } while ((uint)(iVar2 - iVar1) < 0x79);
-    mc_session(DAT_801bcba8);
-    DAT_801bcba4 = 0;
-  }
-  return;
+  br2_call_generated(0x80198af0, 0, 0, 0, 0);
 }
 
 /* ======== 0x80198e2c ======== */

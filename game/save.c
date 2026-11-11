@@ -1310,7 +1310,7 @@ void save_tables_commit(void)
 {
   save_rec_table_copy(&DAT_801c1264,0,10);
   save_rec_table_copy(&DAT_801c1304,5,10);
-  save_rec_table_copy(0x801c13a4,0,10);
+  save_rec_table_copy(&DAT_801c13a4,0,10);
   return;
 }
 

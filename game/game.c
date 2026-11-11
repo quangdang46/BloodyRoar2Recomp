@@ -560,8 +560,8 @@ static void apply_saved_settings_or_defaults(undefined4 *param_1)
     save_block_init();
     save_tables_commit();
     dbg_marker_mode_set(*(undefined1 *)(param_1 + 9));
-    gauge_scale_fixed(*(undefined1 *)((int)param_1 + 0xe),
-                 ((uint)*(byte *)((int)param_1 + 0xf) << 3) / 10);
+    gauge_scale_fixed(*(undefined1 *)((uint8_t *)param_1 + 0xe),
+                 ((uint)*(byte *)((uint8_t *)param_1 + 0xf) << 3) / 10);
     brightness_commit(*(byte *)(param_1 + 3) ^ 1);
 }
 
