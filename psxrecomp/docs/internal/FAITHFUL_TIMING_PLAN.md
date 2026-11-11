@@ -1820,3 +1820,23 @@ NEXT: (1) find/fix timer-pointer-cell init so cd_timer_read works ->
 0x79 timeouts fire -> cd_init_session exits via timeout; (2) OR make
 cd_init_session's wait interruptible safely (br2_call_generated like
 cd_cmd_issue, or fix cd_intc_dispatch IRQ context for br2_irq_poll).
+
+## 2026j — timer-pointer cells are STATICALLY CORRECT in EXE image
+
+Read disc/SLES_017.22 (PS-X EXE, taddr 0x8011e800, text 0xa0800, hdr 0x800):
+  0x801bcca8 = 0x1f801814   (static .data pointer)
+  0x801bccac = 0x1f801110   (Timer1 counter, base 0x1F801100+1*0x10)
+  0x801bcb20 = 0x1f801c00   (CD reg base)
+  0x801bcb0c = 0x1f801800   (CD cmd reg)
+Both cells lie inside the loaded image [0x8011e800,0x801BF000) -> .data.
+So the pointer VALUES are correct in the disc. The earlier runtime
+reading of 0x10/0x14 was either a misread/stale OR a real .data-section
+load bug (image loads text but not all of .data). UNVERIFIED — debug
+server starved by the cd_init_session spin before cells could be read
+in early boot. NEXT: read 0x801bcca8/ac early-boot (before stall) or via
+freeze-dump to determine if .data loads correctly. If cells ARE correct,
+cd_timer_read works and cd_init_session's ONLY blocker is the
+non-interruptible clean-C spin (br2_irq_poll crashes in cd_intc_dispatch
+IRQ ctx; alternative = br2_call_generated for the wait, per cd_cmd_issue
+precedent). If cells are WRONG -> .data load bug (bigger, affects all
+hardware-pointer globals).
