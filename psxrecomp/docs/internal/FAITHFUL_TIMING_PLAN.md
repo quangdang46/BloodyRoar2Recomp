@@ -4524,3 +4524,27 @@ NET: kernel idle loop waits for a worker-thread wake event that never arrives.
   blocked thread waits on. parity_trace empty (switches via LLE ChangeThread not
   HLE hooks). Next: Beetle oracle diff @~645, or RE the game's CreateThread/
   WaitEvent specs to name the exact event.
+
+=== SESSION9n: low-RAM "corruption" was MISDIAGNOSIS — it's legit tagged kernel tables ===
+CORRECTION to session9m: the 0x0-0x8000 repeating pattern (0x4005XXXX/0x5505XXXX/
+0x555555) is the LEGIT OpenBIOS kernel dispatch-table format, NOT corruption.
+Evidence: values embed func addrs (0x400529CC->0x29CC ChangeThread,
+0x40052610->0x2610, 0x40051E58->0x1E58, 0x55052AFC->0x2AFC notimpl-default).
+Kernel runs fine 648 frames => tables valid; read_ram reads same ram[] as CPU
+(phys&0x1FFFFF fold verified). Frame-593 "clean pointers" (0x25C8/0x40A0) vs
+frame-648 "tagged" was a misread of which table/format — NOT a live overwrite.
+ABANDON corruption theory (again). wtrace zero-hits was correct all along.
+
+GAME SYSCALL MAP (39 B0/C0 thunks extracted from generated code):
+  B0#7,8,9,10,11,12,18,19,20,21,22,23,24,25,50,51,52,53,54,66,67,69,74,75,76,
+  78,79,80,91,92 ; C0#2,3,10.  B0#23=ChangeThread(func_29CC), #91=func_40A0
+  get/set var 0xAEC8, C0#10=func_1D84 get/set table 0x64FC.
+
+INPUT TEST: pad press (START/Cross via debug 'press') accepted but frame frozen
+  at 648 => the game thread that reads pad is ASLEEP; only kernel idle runs.
+  Not an input-wait livelock.
+
+NET (unchanged): func_2810 DispatchThread idles; a worker thread stays blocked
+  on an undelivered kernel event. IRQs+event-queue+CD all healthy. The specific
+  WaitEvent spec / DeliverEvent source is still unidentified. Needs oracle diff
+  or RE of the game's OpenEvent/WaitEvent/CreateThread call sites + specs.
