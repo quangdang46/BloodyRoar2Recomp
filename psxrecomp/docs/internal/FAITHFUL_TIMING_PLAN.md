@@ -3983,3 +3983,23 @@ cd_chan_full_init -> cd_intc_dispatch). Needs live cpu->gpr -> must run
 generated, not clean-C. NEXT: verify the game's CD ISR actually invokes
 the deferred path on CDROM IRQ (bit2); check whether cd_ctx_save armed a
 resume that never fires, or the ISR mask/table skips CD events.
+
+=== SESSION8n: deferred-init armed; break is IRQ->cd_ctx_restore resume ===
+Verified live: ctx frame @0x801bcd50 IS populated (cd_ctx_save ran) and
+INTC handler table @0x801bcd1c holds 0x8019ae68/0x801979f8/0x8019af7c —
+so cd_chan_full_init (0x8019a814) is parked in its deferred wait. Channel
+table (base *(0x801fc6c0)=0x80010000, idx@0x801fc6ac=5): entries show
+state 0/3/4, NONE reach state==2 (data-ready) that cd_channel_poll needs.
+request_reg=0x00 (BFRD never set), DMA ch3 idle -> sector data never
+reaches channel buffers -> channels can't complete -> state!=2.
+CHAIN: CD IRQ fires (cd_irq_delivered=44280) -> should hit the game's
+registered deferred hook (cd_ctx_restore 0x8019adcc, registered via
+B0/0x19 -> kernel mem[0x4C18]) -> resume cd_chan_full_init ->
+cd_intc_dispatch -> arm data path / mark channels. The resume never
+fires, so the whole CD receive path stays unarmed = chicken-and-egg.
+NEXT: verify the recompiled-BIOS interrupt-hook dispatch actually calls
+the game's CD deferred handler on CDROM IRQ (i_stat bit2). Check whether
+B0/0x19 registration landed in the kernel hook table the IRQ dispatcher
+walks, and whether cd_ctx_restore (0x8019adcc) is reachable from it.
+cd_intc_dispatch thunk-counter may be bypassed by direct generated
+calls, so confirm via side-effects not the counter.
