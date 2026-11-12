@@ -1489,6 +1489,8 @@ uint32_t cd_dir_entry_probe(int32_t param_1)
   uint32_t *base, *rec;
   uint32_t table_guest;
   int64_t prod;
+  CDDBG_INC(0x801bcf24);              /* DIAG: probe calls */
+  CDDBG_SET(0x801bcf28, (uint32_t)param_1); /* DIAG: probe arg */
   /* param_1 and the table base are GUEST addresses (KSEG0). The index math
    * must run in guest-address space: subtracting the host pointer guest_at()
    * returns produces a wild idx and the cursor never advances. Keep the host
@@ -1503,7 +1505,8 @@ uint32_t cd_dir_entry_probe(int32_t param_1)
   idx = ((hi + sign) >> 8) - sign;
   rec = base + (idx << 5) / 4;   /* idx*32 bytes = idx*8 u32 */
   rec = (uint32_t *)((uint8_t *)base + (idx << 5));
-  if (*(int16_t *)rec != 4) { CDDBG_SET(0x801bce8c,param_1); CDDBG_SET(0x801bce90,idx); CDDBG_SET(0x801bce94,1); return 1; }
+  if (*(int16_t *)rec != 4) { CDDBG_SET(0x801bce8c,param_1); CDDBG_SET(0x801bce90,idx); CDDBG_SET(0x801bce94,1); CDDBG_SET(0x801bcf2c,idx); return 1; }
+  CDDBG_INC(0x801bcf30);              /* DIAG: probe freed entry */
   count = (int16_t)*(uint16_t *)((uint8_t *)rec + 6);
   if (count > 0) {
     for (i = 0; i < count; i++) {
@@ -1976,6 +1979,8 @@ int32_t cd_channel_poll(uint32_t *param_1, uint32_t *param_2)
   uint32_t base = *(uint32_t *)guest_at(0x801fc6c0);
   uint32_t idx = *(uint32_t *)guest_at(0x801fc6ac);
   uint8_t *e = (uint8_t *)guest_at(base + idx * 0x20);
+  CDDBG_INC(0x801bcf14);              /* DIAG: channel_poll calls */
+  CDDBG_SET(0x801bcf18, idx);         /* DIAG: poll idx seen */
   if (*(uint16_t *)e == 1) {
     if (*(uint32_t *)guest_at(0x801fc6b4) != 0) {
       *(uint32_t *)guest_at(0x801fc6ac) = 0;
@@ -1984,7 +1989,8 @@ int32_t cd_channel_poll(uint32_t *param_1, uint32_t *param_2)
     idx = *(uint32_t *)guest_at(0x801fc6ac);
     e = (uint8_t *)guest_at(base + idx * 0x20);
   }
-  if (*(uint16_t *)e != 2) return 1;
+  if (*(uint16_t *)e != 2) { CDDBG_SET(0x801bcf1c, *(uint16_t *)e); return 1; }
+  CDDBG_INC(0x801bcf20);              /* DIAG: poll found state2 */
   *(uint16_t *)e = 4;
   *param_1 = base + *(uint32_t *)guest_at(0x801fc6c4) * 0x20 + idx * 0x7e0;
   *param_2 = base + idx * 0x20;
@@ -3810,6 +3816,21 @@ void cd_mc_state_machine(void)
    * frame, placing the out buffer above the callee frame. Same contract
    * as cd_result_wait_b/cd_file_read_seq. */
   br2_call_generated(0x80199440u,0,0,0,0);
+  /* DIAG: histogram the status the generated body left at 0x801bcc88 so we
+   * can see which early-return path dominates (4=entry-busy, 8/9=claim-strand). */
+  {
+    uint32_t st = DB32(0x801bcc88) & 0xf;
+    if (st < 16) CDDBG_INC(0x801bcf34 + st * 4);
+    CDDBG_SET(0x801bcf78, DB32(0x801bcc88));
+    /* DIAG: entry state at the submit cursor + cursor value this call saw. */
+    {
+      uint32_t cur = DB32(0x801fc6a4);
+      uint32_t ent = DB32(0x801fc6c0) + cur * 0x20;
+      CDDBG_SET(0x801bcf7c, cur);
+      CDDBG_SET(0x801bcf80, *(uint16_t *)guest_at(ent));
+      CDDBG_SET(0x801bcf84, ent);
+    }
+  }
   return;
 }
 
