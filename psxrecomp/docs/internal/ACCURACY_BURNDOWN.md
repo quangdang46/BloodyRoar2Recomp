@@ -338,3 +338,23 @@ dir-table entry's progress halfword (+4) so the 0x80199bc4 predicate
 either a second INT handler, a poll in cd_mc_state_machine's work path, or a BIOS hook —
 not yet located. dir entries (0x20B: state@+0, prog@+4/+6) are a DIFFERENT struct than the
 channel entries (+68/+70/+72); the index/link between them is the open question.
+
+## SESSION 15q — LIVE dir-entry decode + deadlock characterization
+
+Dir table base fc6c0=0 (guest addr 0, low-mem alias of main RAM). Active entries 0x20B stride:
+  ent0 @0x00 state=3 w1=0x00050000 (+4 lo=0, +6 hi=5) stamp=0x02292646
+  ent1 @0x20 state=3 w1=0x00050001 (+4 lo=1) stamp=0x02302646
+  ent2 @0x40 state=3 w1=0x00050003 (+4 lo=3) stamp=0x02312646
+  ent3 @0x60 state=2 (done) -> freed manually -> auto-reinited 0x80010000, fc6a4 wrapped 3->0
+
+Completion predicate (cdmc_80199440.asm 0x80199bc4): entry=*(0x801FEB18)=entry[fc6a4];
+  lhu +6 -1 == lhu +4 -> fc69c=1 -> jal 0x801990f0 finalize. u32@+4 packs lo16=received,hi16=expected+1.
+Submit path (0x80199cf0+): sh state=3 to entry, fc6a4++, if fc6b0&&fc69c -> finalize.
+Status-4 early return (0x80199570) fires when entry[fc6a4].state!=0 -> skips submit+finalize.
+
+DEADLOCK: ent0-2 state=3 frozen (+4 = 0,1,3 need 4). ch3 DMA idle (6 transfers @frame444 then stop).
+sector_read_pos=0, ring_dropped>425k growing -> drive produces sectors, consumer never drains.
+Freeing ent3 proved scanner wraps (fc6a4 3->0, ent3 reinited) but ent0-2 still starve -> status4.
+ROOT: streaming entries stopped receiving sectors. Delivery = BIOS subchan cb (0x801AA2AC sets
+channel-entry +68) OR ch3 DMA ring->channel. Neither advancing. Needs oracle RAM-diff or the
+channel->dir progress consumer located.
