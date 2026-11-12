@@ -4805,3 +4805,61 @@ OPEN QUESTIONS / NEXT:
     word + node-walk cost) vs real hardware — cross-ref psx-spx/Beetle OT rate.
   - Oracle still needed for ground truth; DuckStation macOS GUI boot still
     blocked pre-BootSystem (Qt/cocoa), Beetle oracle is Windows-only.
+
+================================================================
+SESSION 11 — dirty-RAM boot crash root-caused + FIXED (noinline);
+           game now boots to menu/save; next blocker = clean_bridge
+           wild cpu pointer.
+================================================================
+
+FRESH-BUILD BOOT CRASH (blocked all runtime work):
+  - Symptom: SIGSEGV in dirty_ram_dispatch at dirty_ram_interp.c:2487
+    reading s_last_dirty_irq_pump_insns via ldr x9,[x28,#0x680].
+    Fault addr 0x8001f22080010680 = two packed guest KSEG0 addrs.
+    x28 (callee-saved, used as adrp base for file-statics) held
+    guest-derived data.
+  - Reproduced identically under PSX_FORCE_INTERP=1 and both
+    scheduler modes -> shared dirty-RAM path, not codegen, not BIOS.
+  - Regenerated OpenBIOS via psxrecomp-bios --config bios/OpenBIOS.toml:
+    output BYTE-IDENTICAL to in-tree copy -> the CMake "stale emitter"
+    warning is only an emitter-source hash drift, NOT wrong BIOS code.
+    Suspect eliminated.
+  - ROOT CAUSE: dirty_ram_dispatch_inner is inlined into
+    dirty_ram_dispatch by -O2 (confirmed via lldb: lr shows
+    "dirty_ram_dispatch_inner + 192" inlined). The interpreter body
+    leaves a guest-derived 64-bit value live in callee-saved x28 across
+    the psx_check_interrupts setjmp/longjmp boundary; on the normal
+    return path the wrapper reads file-statics through x28 as an adrp
+    base -> host SIGSEGV.
+  - FIX (verified): __attribute__((noinline)) on dirty_ram_dispatch_inner
+    gives it a real call frame; callee-saved regs restore per ABI and
+    the wrapper's static base stays intact. Game now boots past OpenBIOS
+    into menu/save code (previously died ~40s at boot; now alive 50s+
+    and reaches clean-source battle_intro_flow/menu/save).
+
+NEXT BLOCKER (not yet fixed): clean_bridge wild cpu pointer.
+  - After boot fix, crash moved to br2_bios_tramp (clean_bridge.c)
+    reading cpu->gpr[] with g_clean_cpu = 0x16f5555fa — a MISALIGNED
+    stack-region pointer (not a valid 8-aligned CPUState*).
+  - Backtrace: battle_intro_flow(menu.c) -> menu_res_load_sm(save.c)
+    -> save_load_state_machine -> cd_timer_read(cd.c) -> vsync_wait_n
+    -> br2_bios_tramp(table=0xB0,svi=91). Pure native C calls inside
+    clean-room game code.
+  - g_clean_cpu is set ONLY by clean_try_dispatch (clean_table.c) from
+    psx_game_backend's dispatch cpu. The cpu arriving is already wild,
+    so the corruption is UPSTREAM of clean dispatch (a stack CPUState
+    snapshot cpuN/snap in overlay_loader/savestate/rewind/selfcheck, or
+    a corrupted cpu pointer in the dispatch chain). Tried scoping
+    g_clean_cpu save/restore in clean_try_dispatch — did NOT fix (cpu
+    is bad before dispatch). Reverted (unproven).
+  - OPEN: trace which stack CPUState reaches clean_try_dispatch during
+    the save/load path; candidate sources overlay_loader.c cpuN/cpuI
+    (shadow-diff native pass), savestate.c snap, psx_rewind.c snap,
+    psx_selfcheck.c dig_cpu. s_native_exec=1 (shadow diff) is ON by
+    default — PSX_OVERLAY_NATIVE_OFF=1 disables it (untested as fix).
+
+BUILD NOTE: two runtime targets — psx-runtime (PAL ->
+BloodyRoar2_Recompiled) and psx-runtime-us (USA ->
+BloodyRoar2_Recompiled_USA). The -us variant FAILS to link:
+undefined _cd_feb00_trace_dump/_cd_seek_dump (clean game symbols the
+USA target doesn't compile). Pre-existing, unrelated to this work.

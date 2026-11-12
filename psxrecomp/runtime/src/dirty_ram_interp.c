@@ -2775,6 +2775,13 @@ int psx_slice_block_impl(CPUState *cpu, uint32_t block_addr, uint32_t bcyc, int 
     return 1;
 }
 
+/* noinline: the interpreter body is inlined here by -O2, which lets a
+ * guest-derived value stay live in a callee-saved host register (x28) across
+ * the psx_check_interrupts setjmp/longjmp boundary.  On return the wrapper then
+ * reads file-statics through that register as an adrp base -> host SIGSEGV
+ * (boot crash, addr=0x8001f22080010000).  A real call frame restores
+ * callee-saved regs per the ABI and keeps the wrapper's static base intact. */
+__attribute__((noinline))
 static int dirty_ram_dispatch_inner(CPUState* cpu, uint32_t addr, uint32_t stop_addr) {
     uint32_t phys = addr & 0x1FFFFFFFu;
     int clean_game_text_miss = 0;
