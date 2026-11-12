@@ -5239,3 +5239,32 @@ issues, not cdrom.c pacing.
   and the guest SP/context it restores vs what the recompiled-BIOS INT1
   dispatch provides. This is the same class as the earlier
   `PSX_HLE_SCHEDULER` fiber-vs-LLE scheduling landmine.
+
+### SESSION 15f — DECISIVE: CD FIFO consumer drains ZERO bytes (scheduling deadlock)
+
+- `cdrom_state` sampled repeatedly: `sector_read_pos` (RB_.pos) = **0**
+  ALWAYS, `sector_available`=1, `sector_size`=2340, `bfrd_set`=468
+  (static), `reading`=1. A full 2340-byte Mode2/Form2 sector sits in the
+  ring UNREAD while `ring_dropped` climbs ~200/sec.
+- ⇒ The guest reads **0 bytes** from the `0x1F801802` data FIFO (and the
+  `cdrom_dma_read` 4-byte path is likewise unused — CD DMA ch3 chcr=0).
+  This is NOT a slow consumer; the drain routine is **never scheduled**.
+- The FIFO drain is performed by GENERATED game code (the CD streaming
+  routine issues `0x1F801802` reads / arms CD DMA). The clean source
+  delegates those sequences (`cd_file_read_seq`, `cd_result_wait_*`,
+  `cd_seek_complete_poll`) to `br2_call_generated` precisely because they
+  need live `cpu->gpr` for the deferred-interrupt coroutine.
+- DEADLOCK SHAPE: INT1 → `cd_channel_poll` returns 1 (no dir entry at
+  state 2) → the streaming/drain routine that would consume the FIFO is
+  gated behind a channel-ready or coroutine-resume that never fires →
+  `wb->pos` stays 0 → every sector overwrite counts `ring_dropped` →
+  dir entries never see complete data → never finalize → state never 2.
+- This matches the documented failure mode in `cd_seek_complete_poll`
+  (cd.c:2191): "a clean-C while+br2_irq_poll cannot supply a dispatchable
+  resume PC for the deferred switch, so the coroutine starves."
+- NEXT (faithful-core scheduler/IRQ axis): find WHICH guest routine owns
+  the `0x1F801802` drain and what resumes/schedules it — a kernel thread,
+  the B0/0x19 deferred callback (`cd_ctx_restore`→`cd_intc_dispatch`),
+  or a per-INT1 handler tail. Verify that resume path actually fires on
+  CD IRQ under `PSX_HLE_SCHEDULER=0` (fibers). Suspect the same
+  fiber-vs-LLE scheduling landmine that `PSX_HLE_SCHEDULER` was added for.
