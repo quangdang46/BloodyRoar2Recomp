@@ -5087,3 +5087,33 @@ SESSION 15b — demo-scene CD load livelock (game_state 4, _DAT_801f4740 never s
     slot0 reports 0xFFF7 — but state-4 scene load ignores Start (only
     the 0x850 skip mask in the do/while would break it, and that path
     also needs the load to have started).
+
+SESSION 15c — CD livelock refined: consumer drain path + double-speed
+  - dma_state ch3 (CD-ROM DMA) chcr=0x00000000 = DISABLED -> the game
+    drains CD data via BFRD programmed-I/O polling (cdrom_dma_read /
+    cdrom_dma_ready on request_reg&BFRD), not DMA bursts.
+  - ring_starved=0 (drains never find an empty slot) while ring_dropped
+    climbs ~600/s -> the BFRD poll consumer is keeping up JUST enough to
+    avoid starvation-empties but NOT fast enough to prevent the 8-slot
+    ring overwriting unread sectors. Net: steady real data loss.
+  - Stuck sectors are Mode2/Form2 whole-sector (mode_reg=0xE0: bit7
+    double-speed + bit5 whole-sector + bit6) -> ~150Hz production. The
+    game set this mode itself, so it expects 2x cadence; our production
+    honours it, but the consumer path (BFRD poll -> MDEC/XA decode) is
+    not draining at 150Hz in guest-cycle terms.
+  - Faithful-core suspects, in order:
+    (a) BFRD/DMA-ready handshake timing — cdrom_dma_ready() may assert
+        BFRD in a way that lets the guest poll slower than hw, or the
+        per-word cdrom_dma_read() path lacks the burst cadence real
+        hardware gives a polling CPU;
+    (b) no producer flow-control — sectors are written to s_ring_write
+        unconditionally on the delay schedule; real drive+FIFO would
+        stall rather than overwrite unread data. Adding ring-full
+        back-pressure (hold production until consumer advances
+        s_ring_read) is the faithful fix IF hw models it;
+    (c) MDEC/XA consumer scheduling — if these sectors feed MDEC/SPU
+        via a path that runs on guest-cycle deadlines slower than the
+        CD clock, the drain starves.
+  - NOTE: previous session reached g_game_state=5/match_loop, so the
+    load CAN complete — the livelock is timing/probabilistic, consistent
+    with a marginal drain-rate deficit rather than a hard protocol break.
