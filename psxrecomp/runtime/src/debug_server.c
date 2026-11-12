@@ -14175,6 +14175,32 @@ void debug_server_init(int port)
                 if (s_rwatch_hi > s_rwatch_lo) g_ram_read_watch_active = 1;
             }
         }
+        /* PSX_GWATCH="<addr>,<len>" arms the mprotect guest-RAM write watch
+         * from boot (guest KSEG0 addr + byte len, hex/dec ok) so the writer
+         * provenance ring captures stores that land before any probe can
+         * connect. Comma-separated list arms multiple ranges. */
+        {
+            const char *gw = getenv("PSX_GWATCH");
+            if (gw && *gw) {
+                char spec[256]; snprintf(spec, sizeof(spec), "%s", gw);
+                for (char *tok = strtok(spec, ";"); tok;
+                     tok = strtok(NULL, ";")) {
+                    char *sep = strpbrk(tok, ",:");
+                    uint32_t a, l = 64;
+                    if (sep) { *sep = '\0';
+                        a = (uint32_t)strtoul(tok, NULL, 0);
+                        l = (uint32_t)strtoul(sep + 1, NULL, 0);
+                    } else {
+                        a = (uint32_t)strtoul(tok, NULL, 0);
+                    }
+                    if (a) {
+                        int rc = guest_watch_add(a, l);
+                        fprintf(stdout, "psxrecomp: gwatch armed 0x%08X+%u -> %d\n",
+                                a, l, rc);
+                    }
+                }
+            }
+        }
         /* PSX_ND_INTRO_PROBE=1 PolyG4; =2 OT; =3 wood; =4 depth; =5 wood DL.
          * PSX_PC_PROBE="0xA,0xB" arms an explicit list (can combine). */
         {

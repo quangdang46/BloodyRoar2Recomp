@@ -3785,3 +3785,101 @@ NEXT: find who queues the channel-entry read request (the sector range
 the helper should process). Likely cd_file_open_b/stream setup wrote it
 once for batch1 and nothing re-queues after consume. Trace 0x80196b4c's
 "pending command" source or the request-queue field it drains.
+
+=== SESSION8f: MDEC streaming decode — ROOT CAUSE of CD livelock FIXED ===
+Root cause of the whole CD-deadlock chain was MDEC, not CD logic:
+  cd_mc_state_machine GATE: *0x1f801098 (DMA ch1 CHCR, MDEC-out) & 0x1000000.
+  ch1 wedged active=1 remaining=2880 frozen. MDEC produced ZERO output
+  because execute_command() only ran execute_decode() when
+  input_count >= expected_halfwords (all-at-once buffering).
+  Game feeds MDEC-in via DMA ch0 in chunks -> partial input -> no output
+  -> ch1 can't drain -> busy bit set -> cd_mc_state_machine returns
+  status 1 -> never arms entries -> CD starves -> game can't feed rest
+  of MDEC input -> DEADLOCK.
+FIX (committed b53fa57): faithful streaming/incremental MDEC decode —
+  decode_rle_block(final) rewinds incomplete blocks; decode_stream_available
+  pumps complete blocks/macroblocks as input arrives via write_data +
+  mdec_dma_write_words; stream_pos in snapshot. Output identical:
+  mdec_pin + mdec_e2e BYTE-EXACT vs Beetle reference.
+RESULT (live-verified via lldb on guest RAM):
+  CD cursors a4=a8 advanced 5->10 (arm+finalize working, was frozen at 5).
+  Entry-table stamps INCREASE forward (0x02292646..0x02362646, +0x10000):
+  real forward sector streaming, NOT re-read. Pipeline UNBLOCKED.
+
+=== SESSION8g: NEW blocker — cd_bitstream_decode infinite loop ===
+Game now reaches blk_io_retry -> cd_bitstream_decode (game/cd.c:3075,
+disasm 0x8018ff10-0x80190258). Stuck at +832 in L_f0 main VLC loop.
+State @0x801b6904 (resume block) ALL ZERO + static -> stuck in FIRST pass,
+never reaches L_2028 save-state. Loop exits only when output a1g hits
+limit t6 (=a1g + CDREG32(0x801b6900)*2; reg reads 0x00ffffff -> t6 ~512MB,
+effectively infinite) OR escape sym 0x7c1f/0xfe00 -> L_1f8 flush.
+VLC table lookup keeps returning t3==0 (no output sym) -> consumes input
+bits forever, a0g marches off valid data -> INFINITE.
+DIAGNOSIS: bitstream input bytes are GARBAGE — decoder never finds a
+terminator. Same corruption class as the MSF-header bug: CD is delivering
+wrong payload to the stream. blk_ok=1 blk_to=0 frozen (stuck inside call).
+NEXT: verify the bytes at stream input ptr a0 (arg to cd_bitstream_decode,
+= s0 return of mc_date_serial_cmp 0x80159ab4, delegated generated). Compare
+stream buffer contents vs Game.bin sectors at the armed entry stamps
+(LBA ~0x023x region). Check Form2 userdata strip vs whole-sector, and
+whether a0 is a pointer vs a handle misinterpreted.
+
+=== SESSION8h: cd_bitstream_decode infinite loop — globals corrupted ===
+blk_io_retry -> cd_bitstream_decode(s0, *(s1+idx*4), *(u32*)0x801f4758).
+a0=s0=mc_date_serial_cmp ret (guest ptr ~0x8001xxxx file data, VALID).
+a1=job[0]/[1]=0x80020000/0x82048000 ping-pong out. a2=*(0x801f4758).
+LIVE (lldb guest RAM):
+  0x801f4758 held 0xfff12a00 = HOST PTR leaked into guest RAM (VLC base).
+  WHOLE block 0x801f4740-0x801f4800+ = high-entropy STREAM DATA, not the
+  scene_entry pointers (_DAT_801f4744 should=0x80020000 reads 0x39beff7d;
+  _DAT_801f4754 should=param_1=0x80010000 reads 0x003aaaff).
+  job[0]@0x801f4700=0x80020000 still correct (copied at init before clobber).
+  => stream/decode data OVERWRITES globals 0x801f4740+ AFTER setup.
+PATCH TEST: wrote 0x801f4758=0x8007f000 (=param_1+0x6f000, scene_entry val).
+  Decode changed from single-PC spin (+832) to cycling real VLC lookups
+  (+816/+832/+876/+896) -> VLC base now plausible. VLC table data confirmed
+  present ~guest 0x8007fa00 (entries w/ 0xfe00 escape) + 0x80080400.
+  BUT decode STILL never returns (blk_ok=1 frozen, resume state all-zero,
+  never reaches L_2028). => INPUT bitstream a0 produces no terminator
+  (0x7c1f/0xfe00 escape) -> input stream data wrong/incomplete, OR a0
+  points at wrong chunk. Output limit t6 ~512MB (reg 0x00ffffff) so only
+  escape sym ends decode.
+ROOT ISSUE: buffer writes stream data over 0x801f4740-58 globals -> VLC
+  base (+ likely stream chunk ptrs) corrupted -> decode reads bad table/
+  input -> infinite. NEXT: fresh-run hw watchpoint on guest 0x801f4740
+  from BEFORE scene_entry to catch the corrupting writer (one-time write,
+  already done in current run). Suspect CD sector-delivery or stream-input
+  buffer with wrong guest address (host/guest ptr confusion class).
+
+=== SESSION8i: CORRUPTION WRITER ROOT-CAUSED — MDEC-out DMA ch1 ===
+Armed guest_watch from BOOT via new PSX_GWATCH env (debug_server.c) so the
+one-time ~8s write is caught before the decode livelock starves the emu
+thread. Extended guest_watch GwEntry with host fp/lr/sp + a 10-deep unwound
+host return-address chain (ra_chain) captured AT fault time in the SIGSEGV
+handler — survives later stack reuse that defeated post-hoc lldb unwinding.
+CATCH (35 in-range entries on 0x801f4740:64):
+  seq16-18 legit scene_entry pointer writes (store_pc 0xBFC1FD70 BIOS).
+  seq19-34 CORRUPTION: 8+ contiguous u32 stream words (afffd7ff 7dffbe39
+  65ff45c2 00ff5600 f87d0000 003aaaff fff12a00 04005a7e ...) marching
+  0x801F4740->0x801F477C via psx_write_word_raw.
+RESOLVED CALL CHAIN (image lookup on ra_chain):
+  advance_mdec_channel+472 -> dma_advance+80 -> psx_devices_service_to_now
+  -> br2eu_func_80159AB4 -> br2eu_psx_dispatch_game_compiled ->
+  dirty_ram_dispatch -> psx_dispatch_impl -> br2_call_generated ->
+  blk_io_retry+88 -> scene_entry+736.
+WRITER = advance_mdec_channel (dma.c:541) ch==1 MDEC->RAM branch:
+  psx_write_word(addr, mdec_dma_read_word()), addr=channels[1].madr.
+  DMA provenance: madr marched 0x1F4740->0x1F477C, bcr=0x005A0020.
+  => MDEC-out DMA is streaming decoded output into guest 0x801F4740,
+     overwriting the scene pointer globals (_DAT_801f4744-58) that
+     cd_bitstream_decode needs as its VLC-table base -> decode spins.
+NOTE: init_pc=0x80192EBC (func br2eu_func_80192E78) programs DMA ch2 GPU
+  regs (0x1F8010A0/a4/a8 = ch2 madr/bcr/chcr), NOT ch1 — s_dma_ch_initiator
+  attribution is last-store-PC, misleading here. Real ch1 madr writer is a
+  different guest store to 0x1F801090 still to be pinned.
+OPEN: is madr=0x801F4740 game-intended (shared decode/video workspace,
+  ordering bug) or a wrong/garbage madr (b53fa57 incremental-MDEC timing
+  regression suspect — it made ch1 stream output continuously mid-feed)?
+NEXT: watch channels[1].madr writes (dma_write_masked reg==0x00 ch==1) to
+  catch the guest PC/value that programs 0x801F4740, and check whether the
+  MDEC transfer count/buffer is the scene decode workspace being reused.

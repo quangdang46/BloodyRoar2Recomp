@@ -112,6 +112,9 @@ typedef struct {
     int32_t  dma_depth, dma_ch;
     uint32_t dma_madr, dma_bcr, dma_init_pc;
     uint64_t cycle;
+    uint64_t host_fp, host_lr, host_sp; /* host frame regs at fault (arm64) */
+    uint64_t ra_chain[10];  /* unwound host return addrs at fault time */
+    uint32_t ra_count;
     uint8_t  in_range;     /* fault inside watched byte range (vs page spill) */
     uint8_t  pad[7];
     uint8_t  oldv[GW_WINDOW];
@@ -141,6 +144,9 @@ static size_t    s_page_size = 0;
 volatile int g_guest_watch_pending = 0;
 static uintptr_t         s_pend_host = 0;   /* fault address (host) */
 static uint64_t          s_pend_rip  = 0;
+static uint64_t          s_pend_fp = 0, s_pend_lr = 0, s_pend_sp = 0;
+static uint64_t          s_pend_ra[10];
+static uint32_t          s_pend_ra_count = 0;
 static uint8_t           s_pend_old[GW_WINDOW];
 static int               s_pend_in_range = 0;
 static uintptr_t         s_pend_brk  = 0;   /* unused (no code patching) */
@@ -191,6 +197,11 @@ static void gw_push_entry(void)
     e->dma_bcr    = g_dma_cur_bcr;
     e->dma_init_pc= g_dma_initiator_pc;
     e->cycle      = psx_get_cycle_count();
+    e->host_fp    = s_pend_fp;
+    e->host_lr    = s_pend_lr;
+    e->host_sp    = s_pend_sp;
+    e->ra_count   = s_pend_ra_count;
+    memcpy(e->ra_chain, s_pend_ra, sizeof(e->ra_chain));
     e->in_range   = (uint8_t)s_pend_in_range;
     if (debug_cpu_ptr) {
         uint32_t *gpr = (uint32_t *)debug_cpu_ptr;
@@ -274,6 +285,35 @@ static void gw_segv_handler(int sig, siginfo_t *si, void *uc_v)
     uint32_t phys = (uint32_t)(fa - (uintptr_t)ram);
     s_pend_host = fa;
     s_pend_rip  = pc;
+#if defined(__APPLE__) && defined(__aarch64__)
+    s_pend_fp = (uint64_t)uc->uc_mcontext->__ss.__x[29];
+    s_pend_lr = (uint64_t)uc->uc_mcontext->__ss.__x[30];
+    s_pend_sp = (uint64_t)uc->uc_mcontext->__ss.__sp;
+#elif defined(__linux__) && defined(__aarch64__)
+    s_pend_fp = (uint64_t)uc->uc_mcontext.regs[29];
+    s_pend_lr = (uint64_t)uc->uc_mcontext.regs[30];
+    s_pend_sp = (uint64_t)uc->uc_mcontext.sp;
+#endif
+    /* Unwind the host frame-pointer chain AT fault time so the caller survives
+     * later stack reuse. Each arm64 frame record is {prev_fp @+0, lr @+8};
+     * frames sit at higher addresses than sp. Bound every hop to the plausible
+     * stack window above sp so a corrupt fp can't fault inside the handler. */
+    s_pend_ra_count = 0;
+#if defined(__aarch64__)
+    {
+        uint64_t sp = s_pend_sp, f = s_pend_fp;
+        uint64_t hi = sp + 0x1000000ull;   /* 16MB stack ceiling */
+        for (int i = 0; i < 10; i++) {
+            if (f < sp || f >= hi || (f & 0xFULL)) break;
+            uint64_t prev = *(volatile uint64_t *)f;
+            uint64_t lr   = *(volatile uint64_t *)(f + 8);
+            s_pend_ra[i] = lr;
+            s_pend_ra_count++;
+            if (prev <= f || prev >= hi || (prev & 0xFULL)) break;
+            f = prev;
+        }
+    }
+#endif
     s_pend_in_range = gw_addr_in_ranges(phys) ? 1 : 0;
     {
         uint32_t n = GW_WINDOW;
@@ -393,6 +433,13 @@ void guest_watch_reset_ring(void)
 static void gw_entry_json(char *buf, size_t cap, const GwEntry *e)
 {
     char oldh[GW_WINDOW * 2 + 1], newh[GW_WINDOW * 2 + 1];
+    char rah[10 * 20 + 2];
+    size_t rp = 0;
+    rah[rp++] = '[';
+    for (uint32_t i = 0; i < e->ra_count && i < 10; i++)
+        rp += (size_t)snprintf(rah + rp, sizeof(rah) - rp, "%s\"0x%llX\"",
+                               i ? "," : "", (unsigned long long)e->ra_chain[i]);
+    rah[rp++] = ']'; rah[rp] = '\0';
     for (int i = 0; i < GW_WINDOW; i++) {
         sprintf(oldh + i * 2, "%02x", e->oldv[i]);
         sprintf(newh + i * 2, "%02x", e->newv[i]);
@@ -402,6 +449,8 @@ static void gw_entry_json(char *buf, size_t cap, const GwEntry *e)
         "\"rip\":\"0x%016llX\",\"store_pc\":\"0x%08X\",\"func\":\"0x%08X\","
         "\"ra\":\"0x%08X\",\"sp\":\"0x%08X\",\"a0\":\"0x%08X\",\"a1\":\"0x%08X\","
         "\"frame\":%u,\"cyc\":%llu,"
+        "\"hfp\":\"0x%016llX\",\"hlr\":\"0x%016llX\",\"hsp\":\"0x%016llX\","
+        "\"ra\":%s,"
         "\"dma\":{\"depth\":%d,\"ch\":%d,\"madr\":\"0x%08X\",\"bcr\":\"0x%08X\","
         "\"init_pc\":\"0x%08X\"},\"in_range\":%u,"
         "\"old\":\"%s\",\"new\":\"%s\"}",
@@ -409,6 +458,8 @@ static void gw_entry_json(char *buf, size_t cap, const GwEntry *e)
         (unsigned long long)e->rip, e->store_pc, e->func_addr,
         e->ra, e->sp, e->a0, e->a1,
         e->frame, (unsigned long long)e->cycle,
+        (unsigned long long)e->host_fp, (unsigned long long)e->host_lr,
+        (unsigned long long)e->host_sp, rah,
         e->dma_depth, e->dma_ch, e->dma_madr, e->dma_bcr, e->dma_init_pc,
         (unsigned)e->in_range, oldh, newh);
 }
@@ -451,11 +502,11 @@ int guest_watch_dump(char *buf, size_t cap, int max, int newest_first)
          * because seq starts at 0 and pushes are sequential. */
         GwEntry *e = &s_ring[idx];
         if (e->seq != seq) continue; /* stale/empty slot */
-        char tmp[1024];
+        char tmp[1408];
         gw_entry_json(tmp, sizeof(tmp), e);
         pos += snprintf(buf + pos, cap - pos, "%s%s", first ? "" : ",", tmp);
         first = 0; n++;
-        if (pos > cap - 1200) break;
+        if (pos > cap - 1500) break;
     }
     pos += snprintf(buf + pos, cap - pos, "]");
     return (int)pos;
