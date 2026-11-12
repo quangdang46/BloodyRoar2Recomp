@@ -5268,3 +5268,27 @@ issues, not cdrom.c pacing.
   or a per-INT1 handler tail. Verify that resume path actually fires on
   CD IRQ under `PSX_HLE_SCHEDULER=0` (fibers). Suspect the same
   fiber-vs-LLE scheduling landmine that `PSX_HLE_SCHEDULER` was added for.
+
+### SESSION 15g — clean cd_channel_poll exonerated; bug is upstream channel completion
+
+- Decoded generated `br2eu_func_80199360` (cd_channel_poll) vs clean port.
+  Generated is a TWO-STEP scan the clean port simplified:
+    state==1 -> clear idx@0x801FC6AC + entry state, recompute, recheck
+    state==2 -> write state=4, return channel ptrs (success)
+    else     -> return busy
+  Clean port only does `state!=2 -> busy`. BUT the live entry state is
+  0x10 (CDDBG 0x801bcf1c), which matches NEITHER generated==1 nor ==2 —
+  so generated would ALSO return busy here. Clean port is NOT the bug
+  for the current stall.
+- Tested PSX_HLE_SCHEDULER=1 (HLE deterministic-TCB) on :4420 — reached
+  gamestate=4 identically, sector_read_pos=0, ring_dropped climbing.
+  Scheduler is NOT the cause; fiber vs HLE identical.
+- CONCLUSION: dir/channel entries never progress to state 1/2 because
+  the underlying CD channel read never delivers sector data into the
+  channel buffer. The 0x1F801802 FIFO drain (sector_read_pos=0) is the
+  missing consumer — it is driven by GENERATED game CD-streaming code
+  whose trigger (channel-ready / INT1 data-ready callback) never fires.
+  This is the faithful-core frontier: trace the generated CD
+  streaming/INT1-callback path that owns the 0x1F801802 drain and find
+  why it never runs. Requires Ghidra/disasm of the generated CD driver,
+  not more black-box polling.
