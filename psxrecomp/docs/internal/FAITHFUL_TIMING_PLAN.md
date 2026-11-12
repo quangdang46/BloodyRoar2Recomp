@@ -4266,3 +4266,27 @@ object; (c) sprite writes alias env[0..5]. ALSO unresolved: GP1(06h)
 h_display=[3220,3260] -> 4px width, separate bad-value source.
 This is squarely the render-pipeline backlog (battle.c COP2/GTE + sprite/
 draw-env port), todo item 10 — large subsystem, not a quick fix.
+
+=== SESSION9d: display pipeline — draw env CLEAN, h_display=4px isolated ===
+VERIFIED via live read_ram (headless+software, port 4370):
+- Draw env @0x801e40a0/0x801e61f0 stays VALID whole run: u16
+  [0,0x00f0,0x0140,0x00f0,...] = [x0,y240,w320,h240] -> draw_area
+  [0,0,319,239] CORRECT (earlier [0,254,319,254] was post-halt noise).
+- Display envs @+0x5c (0x801e40fc/0x801e624c) plausible.
+- gpu_state draw_area now [0,0,319,239]; ONLY defect = h_display
+  [3220,3260]=[0xc94,0xcbc] -> dots=40,cycles=8 -> width=4 (black).
+ROOT-TRACED to draw_env_timing (gfx.c:674) GP1(06h):
+  iVar4=(env[9]*5+iVar9)*4 ; env[9]=cVar3=GP32(0x801bde20)=1 (faithful:
+  MIPS sb gpr[2]->env+0x12 confirmed @0x80191AAC; flag set=1 in boot()
+  via cd_xchg_bde20(1) @game.c:787). iVar9=1 (w=320). iVar4=24 ->
+  t16[24]=0x1810 -> uVar7=6160 overflows -> clamps to 0xc94/0xcbc.
+  Page0 (env[9]=0) gives iVar4=4 -> t16[4]=0x021b -> ~2560 dots = 320px.
+OPEN QUESTION (needs Beetle/psx-spx oracle): is 0x801bde20=1 correct so
+the game legitimately selects timing-table page1 (then the table@0x801b83f4
+or runtime GP1(06h)->width formula is the bug), OR does the real game keep
+page0? Table is [page][mode][4xu16]; page1 horiz values 0x1810/0x1f80 look
+like VERTICAL timing -> page1 likely invalid for GP1(06h).
+ALSO STILL OPEN: GP0 desync halt (0xF4/0xF7/0xFE opcode) — separate issue,
+command-buffer word corruption at packet boundary.
+gwatch on env region crashed process (mprotect fault-handler fragility) —
+avoid for now; use read_ram sampling instead.
