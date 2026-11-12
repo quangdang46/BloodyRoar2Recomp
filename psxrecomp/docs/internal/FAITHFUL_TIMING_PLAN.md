@@ -3900,3 +3900,33 @@ ch1 (0x1F801090/94/98) MDEC registers.
    garbage madr — consistent with b53fa57 incremental-MDEC making ch1 drain
    continuously. channels[]/mdec_async[] are static in _MergedGlobals; read
    live next session to confirm active/remaining_words/start_addr.
+
+=== SESSION8k: ROOT CAUSE + FIX — scene_entry MDEC slot deref (RESOLVED) ===
+The SESSION8j "phantom ch1" hypothesis was WRONG. dma_trace showed ch0/ch1
+MDEC regs ARE written — just not via dma_write_masked MMIO (the game uses
+cached reg-pointer cells 0x801B68xx -> 0x1F8010xx, bypassing that path).
+Full ch0/ch1 programming cluster captured at seq 98136-98144:
+  ch0 (MDEC-IN):  madr=0x801F4708 bcr=0x4000020 chcr=0x1000201 (32768w)
+  ch1 (MDEC-OUT): madr=0x801F470C bcr=0x5A0020  chcr=0x1000200 (2880w)
+ch1 'S'->'C' consecutive = legit decode, but output landed ON the job struct.
+
+TRUE ROOT CAUSE — clean-C porting bug in scene_entry (game/game.c):
+Original br2eu_func_80159028 does `lw a0, 0xC(flag*4 + $s1)` / `lw a0,
+flag2*4($s1)` — DEREFERENCES the job ping-pong slot to get the real
+MDEC-out buffer pointer (slots hold file+0x60000=0x80070000 etc, written
+by tile_stream_job_init). The clean port passed the slot ADDRESS
+(0x801F470C) directly to cd_fileop_forward / gpu_pkt_attr_set, so MDEC
+wrote 2880 decoded words onto 0x801F4700+ and obliterated the pointer
+globals at 0x801f4740 -> cd_bitstream_decode read a garbage VLC base and
+spun forever. tile_stream_pump (menu.c) already had the correct `*(...)`.
+
+FIX (commit 557415b): dereference both slots via guest_at in scene_entry.
+VERIFIED headless (PSX_HEADLESS --disc): frames advance ~66fps past scene
+decode (was infinite livelock), epc progresses 0x80159xxx->0x80199xxx,
+CD actively streaming (sector 46:27:07, reading:1), all frame_fingerprint
+hashes differ per frame = real animated output. Globals 0x801f4740+ now
+hold correct buffers 0x80020000/0x80048000/0x80070000/0x80077800.
+
+NOTE: GUI launcher path stalls in SDL event-wait (no emulation) in this
+environment; PSX_HEADLESS=1 + --disc build-wasm/disc/Game.cue is the
+reliable verification path. Debug server 127.0.0.1:4370.
