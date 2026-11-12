@@ -384,3 +384,15 @@ arm64 ubuntu:22.04 builder in background (/tmp/oracle_image.log). Next:
   python3 psxrecomp/tools/duckstation_oracle.py start --disc Game.cue   (port 4371)
 Then diff dir entries @0x00-0x7f + fc6c0-cursors + channel ctx vs our runtime to see
 whether real HW advances +4 and which consumer does it.
+
+## SESSION 15s — SMOKING GUN: subchannel cb fires but consumer dead
+
+gwatch on dir-entry +4 fields (ent2+4=0x44) caught store_pc=0x801AA2BC firing EVERY FRAME
+(~200K cyc) with old==new — the BIOS subchannel callback re-sets channel-entry +68 ready
+flag but NOTHING consumes it. Channel->dir progress consumer is dead/absent.
+
+Callback args live: a0=0x8FD0 (ctx), a1=0x400. The +68 flag stays set; no reader advances
+dir-entry +4 -> entries starve -> status4 -> ch3 never re-arms -> ring overflows.
+NEXT: locate the consumer that reads channel-entry +68/+70/+72 and bumps dir +4. It is
+either a per-INT handler, a per-frame pump, or gated on a flag our runtime leaves clear.
+Oracle (building) will show whether real HW invokes it and from where.
