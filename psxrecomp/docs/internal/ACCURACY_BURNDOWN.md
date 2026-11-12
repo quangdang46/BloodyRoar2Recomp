@@ -434,3 +434,26 @@ cd_mc_state_machine only READS entry+4 (0x80199810/d0/9bc8), never writes it ->
 +4 increment lives in a DIFFERENT sector-arrival fn. dir ent0-2 state=3 +4 frozen
 (0,1,3 need 4). NEXT: find the +4 writer (channel +68/+70/+72 consumer) OR oracle
 diff. cb84c path IS the live one to trace.
+
+## SESSION 15v — payload-DMA submission path frozen; deadlock cycle isolated
+
+Channel-command subsystem (game/cd.c): cd_chan_job_submit(0x8019ea98) ->
+cd_mc_op_wait(0x8019ff4c) -> cd_chan_cmd_burst(0x8019dxxx) -> cd_chan_cmd_pump
+-> cd_chan_cmd_submit(0x80199d88). cd_chan_cmd_submit arms DMA ch regs at
+0x1f801080+a0*0x10 (+0 MADR,+4 BCR,+8 CHCR) then stores a4->CHCR to start.
+
+LIVE counters: cd_chan_cmd_submit(0x801bcf00)=7 FROZEN. Job state @0x801febe0
+st[0]=0 (idle, not stuck). febd0=3 febd4=5. So the payload-DMA submitter ran
+7 times then STOPPED being invoked -> streams got initial chunks (0x400/0xBE0
+have data, 0x13C0 empty) then starve -> dir +4 frozen -> entries never
+complete -> cd_mc_state_machine status-4 -> no new submits. DEADLOCK CYCLE:
+  payload DMA done -> should trigger next submit -> doesn't -> +4 frozen ->
+  entry busy -> status4 -> no submit.
+
+cd_mc_state_machine confirmed READ-ONLY on entry+4/+6 (only psx_cyc_load_half
+at +4/+6 in full_46.c:2778/3298/3975). +4 writer is a separate consumer that
+isn't running. Both subchan cbs 0x801aa244/0x801aa2ac alias br2eu_func_801AA1E4
+(sets channel +68/+70/+72 only).
+NEXT: find what re-triggers cd_chan_job_submit after a payload DMA completes
+(DMA-done path or per-frame pump), OR restart+early-gwatch to catch +4 writer
+PC during stream setup.
