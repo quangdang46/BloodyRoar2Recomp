@@ -611,8 +611,10 @@ uint32_t draw_env_timing(uint32_t param_1)
   }
   iVar4 = ((uint)(byte)env[9] * 5 + iVar9) * 4;
   t16 = (uint16_t *)guest_at(0x801b83f4);
-  iVar5 = (int)t16[iVar4 + 1] - (int)t16[iVar4];
-  uVar7 = (uint)t16[iVar4] +
+  /* iVar4 is a BYTE offset into the u16 timing table (MIPS: lhu @base+iVar4),
+   * not a u16 element index — divide by 2 for t16[] indexing. */
+  iVar5 = (int)t16[iVar4 / 2 + 1] - (int)t16[iVar4 / 2];
+  uVar7 = (uint)t16[iVar4 / 2] +
           (int)(short)env[4] * (uint)(byte)((uint8_t *)guest_at(0x801b841c))[iVar9];
   if ((short)env[6] != 0) {
     iVar5 = iVar5 * (short)env[6] >> 8;
