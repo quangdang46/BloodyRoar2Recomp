@@ -5321,3 +5321,38 @@ lives in generated code (the same deferred-coroutine family as
 `cd_ctx_save`/`cd_intc_dispatch`); resolving it needs disassembly of the
 generated worker loop to find why the armed transfer doesn't drain.
 
+### SESSION 15i — TWO CD paths: BIOS DMA works, game's custom driver is the stuck one
+
+`cdrom_trace_dump` + `fn_filter`/`fn_entry_dump` + `cd_read_log` +
+`dma_cdrom_history` on the live livelock (`:4413`) gave the decisive split:
+
+- **Guest NEVER reads `0x1F801802`** (data FIFO): 0 reads across ~38K CD
+  register accesses. It only *writes* `0x1F801802` (param FIFO, 124×) and
+  polls index/status/response (`0x1F801800/803/801`). So the drain is NOT
+  programmed-I/O — consistent with DMA or a not-yet-reached drain.
+- **`irq_flag` is an enum** (DATA_READY=1/COMPLETE=2/ACK=3/DATA_END=4), and
+  status `0x1F801803` returns `irq_flag|0xE0`. Live trace shows
+  `irq_flag=0x01`/`status=0xE1` = **DATA_READY is being signaled**; the guest
+  sees it (polls status 594×) yet never drains.
+- **fn trace (filter 0x80180000-0x801A0000)** during the livelock runs ONLY:
+  `cd_chan_full_init`, `cd_intc_dispatch`, `cd_guest_zero32_a`,
+  `cd_mc_state_machine` (+0x90c continuation), `cd_result_wait_b`.
+  **No data-FIFO/drain function is ever entered.**
+- **BIOS CD path WORKS**: `dma_cdrom_history` shows 471 *completed* DMA-ch3
+  transfers, all `pc=0xBFC1E88C` (BIOS/kernel CdRead), streaming hundreds of
+  consecutive 2048-byte sectors (lba 216335→216578+) to a contiguous buffer
+  in frames 8–139 — the attract/initial loads.
+- The stuck `scene_entry` tile-stream uses the **game's CUSTOM CD driver**
+  (`0x8019xxxx`: `cd_channel_poll`/`cd_dir_*`/`cd_mc_state_machine`/
+  `cd_dma_xfer_start` software-DMA via the `0x801bdeb0` channel block), a
+  DIFFERENT path from BIOS CdRead. `cd_read_log` shows it re-reads lba
+  208829 (32B hdr + 2016B data chunks) each retry — data moves but the
+  dir-entry never reaches state 2.
+
+Conclusion: the bug is isolated to the game's **custom CD streaming
+driver's completion path** — the INT1 data-ready dispatch never invokes the
+FIFO→channel drain (or channel-ready mark) that would advance dir entries
+to state 2. The BIOS DMA path is exonerated. Next: trace the custom driver's
+INT1 dispatch (`cd_intc_dispatch` 0x8019a8ec generated body) to find the
+data-ready branch that should call the drain and why it isn't reached.
+
