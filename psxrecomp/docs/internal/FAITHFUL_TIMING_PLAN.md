@@ -3203,3 +3203,55 @@ context runs and wipes param_1[0]/[1], but they are never restored. Either
 NEXT: identify the memset caller (function resetting the decode context) and
 the decode-job-done path; determine whether param_1[0]/[1] should persist or
 be re-armed. This is a decode-job lifecycle bug, NOT an IRQ bug.
+
+=== UPDATE (session): decode-buffer ROOT CAUSE RESOLVED (uint8_t bind) + new XA-audio livelock ===
+
+RESOLVED the "OPEN ROOT-CAUSE QUESTION" above — it was NOT a flag/lifecycle
+bug. The buffer pointers ARE re-derived each job; the SOURCE globals were
+simply mistyped. Committed bd682f0 (local; push 403-blocked):
+
+- game/menu.c: _DAT_801f4744/48/4c/50 are 32-bit guest buffer POINTERS
+  consumed by tile_stream_job_init as u32, but the binds were uint8_t ->
+  job_init read only the low byte (0x80020000 & 0xFF = 0) -> param_1[0..4]=0
+  -> cd_bitstream_decode flooded phys 0 -> kernel globals clobbered ->
+  ReturnFromException returnPC=0x04000600 FAIL-FAST @frame744.
+  Generated code uses lw (full word). Fixed binds to uint32_t.
+- game/cd.c: cd_file_open_b param_1 is a GUEST address (wrapper passes
+  cpu->gpr[4]); it was cast straight to host ptr -> SIGSEGV @frame481.
+  Now guest_at(param_1) before cd_file_open.
+- game/game.c: scene_entry passed local_38 (host ptr) where guest ABI
+  wants guest addr -> now guest_of(local_38); fixed stale extern decl.
+
+RESULT: game runs past frame 744 -> frame ~29000+. Decode buffers populate
+correctly (0x80020000/0x82048000) and CONTAIN real tile data (0x80048000
+has 0x8008/0xfe00 VRAM tile patterns) -> earlier decode worked. Channel
+entry[0] cycled state 2->consumed->4.
+
+NEW BLOCKER (frame ~29000, demo/attract load): scene_entry(0x80010000,0,1)
+= demo fight (param_3=1). blk_io_retry livelock:
+- fntrace: cd_channel_poll(0x80199360) called 548M times from generated
+  mc_date_serial_cmp (ra=0x80159AE0); cd_dir_entry_finalize NEVER fires.
+- Channel table @0x80010000 (base 0x801fc6c0, idx 0x801fc6ac=0): states
+  frozen [4,3,3,3,3]; poll needs state==2, sees 4/3 -> returns 1 forever.
+- blk_io_retry -> mc_date_serial_cmp returns 0 -> -1 -> scene_entry
+  re-opens file (cd_file_open_b) -> seek+mode+read to SAME MSF[16,22,6]
+  every ~35 frames -> infinite loop. gp0_draw frozen 597, GPU disabled.
+- ROOT: the file blk_io_retry opened (stamp 0x00292646 @0x801b5610,
+  param_2=0) streams PURE CD-XA audio: last 64 sectors ALL xa_file=1,
+  submode=0x64 (AUDIO|REALTIME), xa_audio_delivered=1, data_delivered=0.
+  maybe_deliver_xa_audio routes them to SPU (mode_reg=0xE0 has bit6=0x40
+  XA-audio-enable SET). Audio sectors do NOT set_irq -> no DATA_READY INT1
+  -> request_reg(BFRD)=0 -> sector_available=0 -> channel state stuck=3.
+  irq_flag always 0x00, i_stat bit2 (CDROM IRQ) never asserts.
+
+OPEN QUESTION: is file 0x00292646 SUPPOSED to be the demo's tile/scene
+data (wrong file-table/stamp->sector resolution landing on an audio
+region = clean-port bug), OR a legit XA audio stream that should play
+concurrently while a SEPARATE data read is starved? Audio sectors raising
+no INT1 means a pure-audio stretch gives blk_io_retry zero progress ->
+2000-poll timeout -> re-seek to file start -> never reaches later data
+sectors. On real HW either (a) the file isn't pure-audio-leading, or
+(b) audio sectors DO advance the channel/raise an INT the poll catches.
+NEXT: confirm whether 0x00292646 is the intended data file (check disc
+layout / file table) vs an audio bank; if data, find why stamp->sector
+lands on xa_file=1 audio; if audio, find the concurrent data channel.
