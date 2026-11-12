@@ -5188,3 +5188,31 @@ NEXT: determine whether generated `0x80199440`'s wait is on a response
 flag the INT1 handler should set; and find the real writer/clearer of
 `0x801fc6c0` (add a write-watch on it). Both are faithful-core IRQ/MMIO
 issues, not cdrom.c pacing.
+
+### SESSION 15e addendum — consumer-drain is the throughput bottleneck
+
+- Poked `0x801fc6c0=0x80010000` via `write_ram` (4 byte-writes); value
+  PERSISTED (wtrace on 0x1fc6c0-0x1fc6c4 caught only my own pokes —
+  nothing re-clears it). `state2` counter `0x801bcf20` stayed 0 and
+  `_DAT_801f4740` stayed 0 → the base was a SYMPTOM (one-time early
+  clear), not the blocker. Corrected conclusion below.
+- `cdrom_state` snapshot: `ring_dropped`=174086 and climbing,
+  `ring_starved`=0, `bfrd_set`=468 / `bfrd_clear`=13 (tiny — the guest
+  barely drains via BFRD programmed-I/O), `reading`=1,
+  `read_cmd`=0x1B, mode=0xE0 (double-speed whole-sector ~150Hz),
+  `irq_flag`=0x03 during exec, `int1_pended`=0.
+- MECHANISM (reconciles 15d+15e): sectors are produced at ~150Hz into
+  the 8-slot ring unconditionally; the consumer (BFRD/DMA→dir-entry
+  buffers) drains SLOWER → producer overwrites unread slots
+  (`ring_dropped`) → the specific sectors a dir entry waits for are
+  lost → `cd_mc_state_machine` (generated 0x80199440) sees the entry
+  "busy" (status 4) forever → `cd_dir_entry_finalize` never sets
+  state=2 → `cd_channel_poll` spins ~billions → `blk_io_retry` never
+  returns → `scene_entry` re-issues Seek/Setmode/ReadN forever.
+- ROOT = consumer drain rate < 150Hz production in guest-cycle terms.
+  `bfrd_set`≈468 over the whole run means the BFRD poll path is barely
+  exercised — either the game drains via a path we're not pacing right,
+  or an entire consumer (MDEC/XA→dir-entry commit) is starved. NEXT:
+  find WHICH guest path is supposed to drain the ring for these
+  Mode2/Form2 sectors (BFRD target buffer vs MDEC vs SPU) and measure
+  its per-sector guest-cycle cost vs the 225792-cycle (2x) period.
