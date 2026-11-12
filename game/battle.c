@@ -20,6 +20,7 @@ typedef int64_t  longlong;
 
 extern void    *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
+extern uint32_t br2_gaddr(const void *p);
 extern uint32_t guest_sp(void);
 extern void    *fn_lookup(uint32_t addr);
 #define CONCAT22(hi,lo) (((undefined4)(uint16_t)(hi) << 16) | (uint16_t)(lo))
@@ -6272,8 +6273,8 @@ void triple_track_spawn(int param_1,undefined2 param_2,int param_3)
       *(undefined2 *)(puVar4 + 3) = 0;
       uVar1 = *puVar3;
       puVar3 = puVar3 + 1;
-      *puVar4 = (undefined4)(uintptr_t)puVar3;
-      puVar4[1] = (undefined4)(uintptr_t)puVar3;
+      *puVar4 = (undefined4)br2_gaddr(puVar3);
+      puVar4[1] = (undefined4)br2_gaddr(puVar3);
       *(undefined2 *)((intptr_t)puVar4 + 10) = uVar1;
     }
   }
@@ -8117,7 +8118,7 @@ int fx_group_alloc(undefined4 param_1,undefined4 param_2,int param_3,int param_4
     puVar2 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0x10))));
     *puVar2 = 0;
     puVar2[2] = (undefined4)(uintptr_t)(puVar2 + 7);
-    puVar2[1] = (undefined4)(uintptr_t)piVar3;
+    puVar2[1] = (undefined4)br2_gaddr(piVar3);
     puVar2[3] = (intptr_t)piVar3 + *piVar3;
     *(undefined4 *)guest_at((uint32_t)(uintptr_t)(puVar2[2] ))= puVar2[2];
   }
@@ -10923,10 +10924,10 @@ int prim_batch_emit(int param_1,int param_2,undefined4 param_3,undefined4 param_
   puVar20 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar3 + 0x10))));
   puVar16 = puVar20 + 0xe;
   puVar11 = puVar16 + *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0xc) ))* 4;
-  *puVar20 = (undefined4)(uintptr_t)puVar11;
+  *puVar20 = (undefined4)br2_gaddr(puVar11);
   bVar2 = (&PTR_DAT_801be84c)[param_9][param_2];
   iVar4 = *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 8)));
-  puVar20[2] = (undefined4)(uintptr_t)puVar16;
+  puVar20[2] = (undefined4)br2_gaddr(puVar16);
   puVar20[1] = (undefined4)(uintptr_t)((intptr_t)puVar11 + (uint)bVar2 * iVar4);
   iVar4 = *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0xc)));
   puVar20[4] = param_3;
@@ -15006,8 +15007,8 @@ void hit_spark_spawn(undefined4 param_1,uint param_2,undefined2 param_3)
     if (iVar1 != 0) {
       puVar2 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0x10))));
       puVar3 = (&PTR_DAT_801b22ec)[param_2 & 0x7f];
-      *puVar2 = (undefined4)(uintptr_t)puVar3;
-      puVar2[1] = (undefined4)(uintptr_t)puVar3;
+      *puVar2 = (undefined4)br2_gaddr(puVar3);
+      puVar2[1] = (undefined4)br2_gaddr(puVar3);
       *(undefined2 *)(puVar2 + 3) = 0;
       *(undefined2 *)((intptr_t)puVar2 + 0xe) = 0;
       puVar2[2] = param_1;

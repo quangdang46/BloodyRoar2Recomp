@@ -104,6 +104,18 @@ uint32_t guest_of(const void *p)
     return 0;
 }
 
+/* Resolve a value that may be a host pointer into guest RAM (or scratchpad)
+ * OR an already-guest address, to the canonical guest address. Clean ports
+ * sometimes store pointer/link fields as `(undefined4)(uintptr_t)ptr`,
+ * truncating a host address to 32 bits — garbage when the guest reads it as
+ * an address. br2_gaddr yields the real guest address for host pointers and
+ * passes guest-address values through unchanged. */
+uint32_t br2_gaddr(const void *p)
+{
+    uint32_t g = guest_of(p);
+    return g ? g : (uint32_t)(uintptr_t)p;
+}
+
 /* ── MMIO-aware accessors ─────────────────────────────────────────────────
  * guest_at() can only back RAM and scratchpad with real pointers; every
  * other guest address (0x1F800400.. up — CD/GPU/DMA/timer/SIO/SPU regs,
