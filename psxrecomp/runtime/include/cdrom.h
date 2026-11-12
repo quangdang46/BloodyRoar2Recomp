@@ -209,6 +209,8 @@ typedef struct CDROMDebugState {
     uint64_t accel_consumer_waits;
     uint64_t accel_consumer_wait_cycles;
     uint8_t  int1_pending_now;
+    uint64_t bfrd_set_count;    /* DIAG: REQUEST writes with BFRD bit7 */
+    uint64_t bfrd_clear_count;  /* DIAG: clear_sector_buffer BFRD clears */
 } CDROMDebugState;
 
 typedef struct CDROMSectorDebugState {

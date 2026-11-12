@@ -4131,3 +4131,29 @@ NEXT: (a) histogram status codes written to 0x801bcc88 to catch the
   verify whether e5.state4 SHOULD have been freed by cd_dir_entry_probe
   (is probe running? add counter); (d) the stale-Pause INT2 vs ReadS
   overlap is a real timing hazard to validate against Beetle.
+
+=== SESSION8t: consume-side live counters; BFRD exonerated ===
+NEW DIAG (0x801bcf14-0x801bcf84 + cdrom bfrd_set/clear):
+  cd_channel_poll = 260M calls, found state2 only 2x, stuck idx=5
+    (e5.state4 consumed). 0x801bcf1c=last entry state seen=4.
+  cd_dir_entry_probe = 2 calls only (freed 1). arg 0x80012B60 -> idx -5
+    (not a table entry; probe barely runs -> poll cursor can't advance).
+  cd_mc_state_machine status histogram @0x801bcc88:
+    st4=3261 (entry-busy wall), st8=1, st0xa=30, others 0.
+    cursor@0x801fc6a4=30, entry30.state=1 confirmed live.
+BFRD EXONERATED: cdrom bfrd_set=496, bfrd_clear=13, request=0x00 now.
+  Game DOES set BFRD regularly -> data IS offered to DMA when armed.
+REFINED MODEL: entry.state is TRANSIENT in one cd_mc_state_machine call.
+  state0->claim(state1)->issue-read->ret status8 ("read pending, deferred").
+  status8 is the NORMAL post-claim return, NOT a strand bug. state1 =
+  "CD read issued, awaiting sector data". The 1->3 (DMA-arm) transition
+  is done by a DIFFERENT path than cd_mc_state_machine (which returns
+  status8/4 for state!=0 and never re-processes state1).
+  => entry30.state1 persists because its CD sector data never completes
+     the 1->3 step. ring_dropped grows = sectors arrive but the specific
+     consumer for e30's read isn't draining.
+REMAINING QUESTION: which function performs state1->state3 on CD
+  data-ready (INT1)? Candidates: a DMA-arm helper, cd_dir_entry_store
+  (random state2 producer, never ran), or the ch3-DMA-done path.
+  cd_dir_entry_store(0x80199100) is reached via jalr/jal from generated;
+  its trigger/callback registration is the next thing to find.

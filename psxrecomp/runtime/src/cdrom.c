@@ -60,6 +60,8 @@ extern uint64_t s_frame_count;
 static uint8_t index_reg;
 static uint8_t stat_reg;
 static uint8_t request_reg;
+static uint64_t s_bfrd_set_count;   /* DIAG: REQUEST writes with BFRD bit7 */
+static uint64_t s_bfrd_clear_count; /* DIAG: clear_sector_buffer BFRD clears */
 static uint8_t irq_enable;
 static uint8_t irq_flag;
 static CdromLidState s_lid;
@@ -1556,6 +1558,7 @@ static void clear_sector_buffer(void) {
     }
     s_ring_read = 0;
     s_ring_write = 0;
+    if (request_reg & CDROM_REQUEST_BFRD) s_bfrd_clear_count++;
     request_reg &= (uint8_t)~CDROM_REQUEST_BFRD;
 }
 
@@ -2989,6 +2992,7 @@ void cdrom_write(uint32_t addr, uint32_t value) {
             }
         } else if (index_reg == 0) {
             request_reg = val;
+            if (val & CDROM_REQUEST_BFRD) s_bfrd_set_count++;
             if (!(request_reg & CDROM_REQUEST_BFRD)) {
                 RB_.pos = 0;
             }
@@ -3178,6 +3182,8 @@ void cdrom_debug_snapshot(CDROMDebugState* out) {
     out->accel_consumer_waits = s_accel_consumer_waits;
     out->accel_consumer_wait_cycles = s_accel_consumer_wait_cycles;
     out->int1_pending_now = pending_dataready;
+    out->bfrd_set_count = s_bfrd_set_count;
+    out->bfrd_clear_count = s_bfrd_clear_count;
     out->pending_pending = pending.pending;
     out->pending_delay = pending_rem_cycles();
     out->pending_phase = pending.phase;
