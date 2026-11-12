@@ -5145,3 +5145,46 @@ SESSION 15d — CD livelock ROOT refined: NOT a cdrom.c flow-control bug
     sector period; find which component over-counts. This is the
     IRQ/cycle axis of this plan, cross-checked vs Beetle cdc.cpp
     HandleSectorRead / INT1 presentation timing.
+
+## SESSION 15e — CD livelock redirected AGAIN: response coroutine stuck "entry-busy", dir-table base write lost
+
+Live debug-server dig (port 4413, frame ~50K, still g_game_state=4):
+
+- `cd_channel_poll` (clean, game/cd.c) has run ~2.5e9 calls; its
+  state2-found counter `0x801bcf20` = 0. It reads the dir-table base
+  from `*(u32*)0x801fc6c0`.
+- **`0x801fc6c0` = 0 while `0x801fc6c4` = 0x20.** `cd_dir_table_set(a0,a1)`
+  (game/cd.c:1692) is the ONLY writer of both, called once from
+  `tile_stream_open` (game/menu.c:2117) as
+  `cd_dir_table_set(_DAT_801f4754, 0x20)`. `_DAT_801f4754` = 0x80010000
+  (verified via read_ram: `00000180`), `param_1` to `scene_entry` =
+  0x80010000 (game.c:668). So `a0` SHOULD be 0x80010000 — yet the a0
+  store reads back 0 while the a1 store (0x20) persists. A later clear
+  or a lost/aliased write is suspected; manual `write_ram` poke of
+  0x801fc6c0=0x80010000 PERSISTED (not re-cleared), so `cd_dir_table_set`
+  is not re-running — it ran once and its a0 write did not stick.
+- `cd_mc_state_machine` (game/cd.c:3818) delegates its whole body to
+  GENERATED `br2_call_generated(0x80199440)` — the clean-C port was
+  abandoned for a guest-stack-frame collision (see its comment). DIAG
+  counters show it IS running: `0x801bce88` ≈ 175K invocations.
+- But the generated body leaves status `0x801bcc88` = **4 = "entry-busy"**
+  every call; `cd_dir_entry_finalize` (`0x801bcf08`, the state=2 setter)
+  = **0 calls**. Entry cursor `0x801fc6a4`=3, `ent=0x80010060`.
+- `cd_stream_mode_init`'s `do{cd_mode_flag_set}while(0)` infinite-retries
+  because `cd_cmd_issue`→generated `0x80196e14` never reports command
+  completion → repeating Seek(0x02)→Setmode(0x0e)→ReadN(0x1b) ~every 36f.
+
+CONCLUSION: the livelock is NOT sector-production pacing (SESSION 15d's
+consumer-cycle hypothesis is superseded). It is the **CD command/response
+completion path**: the deferred-interrupt coroutine (`cd_intc_dispatch →
+cd_response_pump → cd_mc_state_machine`) runs but every dir entry stays
+"busy" — the CD command response that should mark it ready never arrives
+or never matches. Two candidate roots now:
+  (a) `0x801fc6c0` a0-store lost → poll/finalize index the wrong table;
+  (b) INT1/CD-response delivery to the coroutine broken (irq fires per
+      `irq_flag:0x03` but the response buffer/flag the generated
+      `0x80199440` waits on may never be written).
+NEXT: determine whether generated `0x80199440`'s wait is on a response
+flag the INT1 handler should set; and find the real writer/clearer of
+`0x801fc6c0` (add a write-watch on it). Both are faithful-core IRQ/MMIO
+issues, not cdrom.c pacing.
