@@ -4065,3 +4065,29 @@ CDROM IRQ -> cd_response_pump -> type-callback -> channel-complete. Find
 which response type / callback marks a finished ch3 channel read state=2,
 and why it stopped after ~6 early completions (frame ~454). Likely the
 same deferred-coroutine resume class as cd_chan_full_init.
+
+=== SESSION8q: INTC dispatch decoded; stranded state=1 entry is the wedge ===
+cd_intc_dispatch (0x8019a8ec) mask = i_stat(0x1F801070) & i_mask(0x1F801074)
+& u16@0x801bcd48(=0xD). Handler table @0x801bcd1c u32[11]:
+  tbl[0]=0x8019ae68 cd_cb8_dispatch (VBlank bit0)
+  tbl[2]=0x801979f8 cd_response_pump (CDROM bit2) -- runs 264k, alive
+  tbl[3]=0x8019af7c (DMA bit3) -- channel/DMA completion, generated-only
+So channel state=2 completion is DMA-IRQ (i_stat bit3) -> tbl[3]=0x8019af7c
+-> cd_dir_entry_store/finalize. Runs only while ch3 DMA is active.
+ENTRY STATE MACHINE (cdmc_80199440.asm fully decoded):
+  state0=free -> claim(state1 @0x801999f4/0x80199ab0) -> submit DMA
+  (cd_chan_cmd_submit a0=3 OR cd_copy_u32 when flag@0x801fc6b0) ->
+  state3 (@0x80199d0c) -> cursor++ -> finalize(prev)@0x80199d44.
+  state!=0 at cursor -> status4 early return (never reaches submit/finalize).
+LIVE: cursor@0x801fc6a4=30, finalize-idx@0x801fc6a8=30, poll@0x801fc6ac=5.
+entry[30]@0x800103C0 state=1 sector=0x2592646 (~MSF46:26) = CLAIMED but
+DMA submit never ran -> stranded. cd_mc_state_machine only submits on
+state==0, so a stranded state=1 blocks the whole table (status4 x127k).
+entries 0-4 state0(free,behind cursor), 5 state4(consumed), 6-9 state3.
+ROOT QUESTION: why did the claim->submit path return early leaving
+state=1? A status path (5,6,7,8,9,0xa) fired between the state1 write and
+the state3 write. That early-return is gated by a register/entry-field
+read -- prime suspect is an MMIO/register read returning wrong data
+(faithful-core bug class), OR a legitimate CD-status timeout. Next: put a
+watchpoint/counter on the state1->early-return edges in generated
+0x80199440, or dump which status code path entry30's claim took.
