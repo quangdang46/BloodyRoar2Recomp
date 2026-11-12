@@ -3883,3 +3883,20 @@ OPEN: is madr=0x801F4740 game-intended (shared decode/video workspace,
 NEXT: watch channels[1].madr writes (dma_write_masked reg==0x00 ch==1) to
   catch the guest PC/value that programs 0x801F4740, and check whether the
   MDEC transfer count/buffer is the scene decode workspace being reused.
+
+=== SESSION8j: ch1 MADR provenance — MDEC ch regs NEVER written via MMIO ===
+Extended dma_write_masked to trace_dma_reg_write every per-channel
+MADR/BCR/CHCR store (kind 'W', captures guest store pc + func). Rebuilt,
+fresh PSX_GWATCH run to livelock, dumped full dma_trace ring (16384).
+RESULT: the ONLY DMA channel-register writes in the window are GPU ch2
+(0x1F8010A0/A4/A8 = madr/bcr/chcr, pc 0x80192e98/ea8/ebc = func_80192E78)
+and ch6 block (0x1F8010E0/E4/E8). ZERO writes to ch0 (0x1F801080) or
+ch1 (0x1F801090/94/98) MDEC registers.
+=> channels[1].madv=0x801F4740 (which advance_mdec_channel ch==1 streams
+   MDEC-out to) is NOT programmed by a normal DMA MMIO write in this window.
+   Either (a) ch1 regs written before trace window wrapped, (b) madr set by
+   an internal path (finish_async_mdec_transfer / mdec init / snapshot), or
+   (c) mdec_async[1] is a STALE/PHANTOM active transfer replaying to a
+   garbage madr — consistent with b53fa57 incremental-MDEC making ch1 drain
+   continuously. channels[]/mdec_async[] are static in _MergedGlobals; read
+   live next session to confirm active/remaining_words/start_addr.

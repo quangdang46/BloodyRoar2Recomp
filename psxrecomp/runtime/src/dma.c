@@ -1279,12 +1279,19 @@ void dma_write_masked(uint32_t addr, uint32_t val, uint32_t mask) {
         switch (reg) {
             case 0x00:
                 channels[ch].madr = (channels[ch].madr & ~mask) | (val & mask);
+                /* Trace every per-channel MADR/BCR/CHCR write so dma_trace_dump
+                 * shows the guest store PC that programs each channel — the
+                 * MDEC ch1 provenance question needed this (init_pc was a
+                 * red herring). */
+                trace_dma_reg_write(addr, val, mask, dicr, i_stat);
                 return;
             case 0x04:
                 channels[ch].bcr = (channels[ch].bcr & ~mask) | (val & mask);
+                trace_dma_reg_write(addr, val, mask, dicr, i_stat);
                 return;
             case 0x08:
                 channels[ch].chcr = (channels[ch].chcr & ~mask) | (val & mask);
+                trace_dma_reg_write(addr, val, mask, dicr, i_stat);
                 if ((mask & (1u << 24)) && !((channels[ch].chcr >> 24) & 1u)) {
                     cancel_async_transfer(ch);
                 }
