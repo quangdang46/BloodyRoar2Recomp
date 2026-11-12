@@ -4248,3 +4248,21 @@ NEXT: find who writes packed render data over 0x801e61f0 (gwatch on
 0x801e61f0+0x02 for the env[1] u16), or whether frame_tick's iVar8 path
 reads a stale/reused buffer. ALSO separate: GP1(06h) h_display 3220/3260
 bad value source.
+
+=== SESSION9c: draw-env corruption mechanism identified ===
+_DAT_1f800004 (scratchpad+4) is NOT a fixed env template — game.c:1630
+sets it = _DAT_1f80000c*0x2150 - 0x7fe1bf60, a PER-PLAYER-OBJECT pointer
+(=0x801e61f0 observed). menu.c:2042-45 does sprite_attr_init_a(ptr) then
+gpu_draw_env_put(ptr) adjacently (fresh env). BUT frame_tick calls
+gpu_draw_env_put(iVar8=scratchpad[4]) with NO preceding re-init -> reads
+stale env fields that the object's sprite/render writes have overwritten
+with packed vertex/command data (0x5505,0x5555,0xac00,0xc455,0xfe...).
+Result: draw_area=[0,254,319,254] zero-height -> black; and the same
+corrupted packet bytes surface as bogus GP0 commands (0xF4/0xFE desync).
+ROOT CANDIDATES: (a) frame_tick should re-init env per frame like
+menu.c does, or read a stable env copy (gpu_draw_env_put memcpys env to
+0x801b8330 — maybe should read THAT); (b) _DAT_1f800004 points to wrong
+object; (c) sprite writes alias env[0..5]. ALSO unresolved: GP1(06h)
+h_display=[3220,3260] -> 4px width, separate bad-value source.
+This is squarely the render-pipeline backlog (battle.c COP2/GTE + sprite/
+draw-env port), todo item 10 — large subsystem, not a quick fix.
