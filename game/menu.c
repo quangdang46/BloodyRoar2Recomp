@@ -2209,7 +2209,11 @@ void cd_stream_mode_init(undefined4 param_1)
 {
   int iVar1;
   undefined1 local_18 [8];
-  
+  extern void cd_seek_note(uint32_t,uint32_t,uint32_t);
+  extern int  cd_stamp_to_sector(const void *);
+  uint32_t _st = *(uint32_t *)guest_at(param_1);
+  cd_seek_note(4, _st, (uint32_t)cd_stamp_to_sector(guest_at(param_1)));
+
   local_18[0] = 0x80;
   do {
     do {

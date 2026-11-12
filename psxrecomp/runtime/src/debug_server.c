@@ -13153,6 +13153,30 @@ static void handle_game_options(int id, const char *json)
     send_fmt("{\"id\":%d,\"ok\":true,\"go\":%s}", id, buf);
 }
 
+/* DIAG: dump the 0x801feb00 resume-stamp write trace (tag:1=finalize,2=store). */
+static void handle_cd_feb00_trace(int id, const char *json)
+{
+    (void)json;
+    extern int cd_feb00_trace_dump(char *out, int cap);
+    extern uint32_t cd_feb00_trace_total(void);
+    static char buf[65536];
+    int n = cd_feb00_trace_dump(buf, sizeof(buf) - 64);
+    send_fmt("{\"id\":%d,\"ok\":true,\"total\":%u,\"writes\":\"%s\"}",
+             id, cd_feb00_trace_total(), buf);
+    (void)n;
+}
+
+static void handle_cd_seek_trace(int id, const char *json)
+{
+    (void)json;
+    extern int cd_seek_dump(char *out, int cap);
+    extern uint32_t cd_seek_total(void);
+    static char buf[262144];
+    cd_seek_dump(buf, sizeof(buf) - 64);
+    send_fmt("{\"id\":%d,\"ok\":true,\"total\":%u,\"seeks\":\"%s\"}",
+             id, cd_seek_total(), buf);
+}
+
 /* On-the-fly string translation (text_xlate.cpp). Always-on capture inventory +
  * apply stats/dump, queried over TCP (no log files — Rule 3). sub: stats (def) |
  * dump | todo | reload. */
@@ -13770,6 +13794,8 @@ static const CmdEntry s_commands[] = {
     { "latency",           handle_latency },
     { "vk_perf",           handle_vk_perf },
     { "game_options",      handle_game_options },
+    { "cd_feb00_trace",    handle_cd_feb00_trace },
+    { "cd_seek_trace",     handle_cd_seek_trace },
     { "stack_profile",     handle_stack_profile },
     { "xprobe",            handle_xprobe },
     { "xprobe_arm",        handle_xprobe_arm },

@@ -3516,3 +3516,43 @@ in channel arm/finalize or a missing per-file-open resume reset).
 NEXT: instrument/watch 0x801feb00 writes (clean-C fns, can log via debug
 ring) on a fresh run to catch FIRST bad write + its PC; OR read generated
 cd_mc_state_machine(0x80199440) arm path to see stamp source.
+
+=== SESSION4: arming-position vs command-position DISCONNECT isolated ===
+Instrumented all three position chokepoints (cd_file_open_b tag3,
+cd_stream_mode_init tag4, cd_mode_flag_set/cd_cmd_issue tag5) + feb00
+writers (finalize tag1, bc6-store tag2). Fresh-run seek trace:
+  tag4 00292646->208829   (file8 open, correct)
+  tag5 Setloc 208829      (command position CORRECT)
+  tag3 02052216->73505    (file_open_b reads 0x801feb00 ALREADY=16:22:05)
+  tag4 00062216->73506    (stream_mode_init seeks music)
+  ... livelock
+=> By the FIRST file_open_b, 0x801feb00 was already 73505. Between the
+   correct Setloc(208829) and that read, cd_dir_entry_finalize wrote
+   0x801feb00=entry+0x1c=0x02052216. So a channel entry ARMED AT 73505
+   completed (INT1) during the 208829 data read.
+=> DISCONNECT: cd_mc_state_machine armed fc6 entries @16:22:05-09 while
+   the issued Setloc/read was @46:26:29 (208829). The entry-stamp source
+   is NOT the command position — it is read from the 0x801febxx/0x801Cxxxx
+   position state (generated code loads it onto stack sp+40 then lwl/lwr
+   -> entry+0x1c). THIS is the upstream divergence to fix.
+Confirmed SINGLE stream: cdrom_command_history shows ONLY Setloc
+16:22:06->Setmode0->SetmodeE0->ReadS retries (pc 0x80196FC4); no music/
+XA file open interleaved. bc6 store (tag2) NEVER fired -> no concurrent
+music stream via that table. feb00 written exactly ONCE (tag1).
+Live state: CD free-runs fwd thru music region (read_msf 16:22:47, lba
+73546), mode 0xE0 realtime -> audio sectors to ADPCM, no INT1 -> armed
+data entries never reach state2 -> blk_io_retry livelock.
+cd_file_open_b NEVER resets 0x801feb00 (pure resume); scene_entry bounds
+check uses 0x801feb04 descriptor (=1, in-range) so stale 73505 stamp is
+accepted and local_38 overwritten -> Setloc 73506 forever.
+ROOT CAUSE (narrowed): whatever feeds cd_mc_state_machine's entry-stamp
+position yields 16:22:05 instead of the 208829 read position. Candidates:
+(a) a stale/queued read-request position populated before file8 open,
+(b) Getloc/status position our runtime reports differently than the
+game's Setloc+count expectation, (c) bitstream block->sector map entry.
+NEXT: trace the position value inside generated cd_mc_state_machine —
+find the guest load that produces 0x02052216 (it is copied to sp+40 then
+lwl/lwr'd to entry+0x1c @0x8019970C). Identify the source struct offset
+(0x801feb18 / 0x801CCC48 / read-request queue) and which earlier write
+put 73505 there. Compare against a position the game computed for the
+208829 stream.

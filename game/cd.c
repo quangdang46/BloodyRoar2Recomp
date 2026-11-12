@@ -6,6 +6,7 @@
  * 96e14/98c90 remain extern (deeper CD-driver cluster). */
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
 
 typedef uint8_t  undefined;
 typedef uint8_t  undefined1;
@@ -46,6 +47,54 @@ extern uint32_t br2_ld32p(uint32_t cell);
 
 #define CDDBG_INC(a) do{ (*(volatile uint32_t *)guest_at(a))++; }while(0)
 #define CDDBG_SET(a,v) do{ *(volatile uint32_t *)guest_at(a)=(uint32_t)(v); }while(0)
+
+/* DIAG: ring recording every write to resume stamp 0x801feb00.
+ * tag 1 = cd_dir_entry_finalize (fc6), tag 2 = cd_dir_entry_store (bc6). */
+#define FEB00_TRACE_CAP 2048
+static uint32_t s_feb00_val[FEB00_TRACE_CAP];
+static uint32_t s_feb00_tag[FEB00_TRACE_CAP];
+static uint32_t s_feb00_seq;
+static void feb00_note(uint32_t tag, uint32_t val) {
+  uint32_t i = s_feb00_seq % FEB00_TRACE_CAP;
+  s_feb00_val[i] = val;
+  s_feb00_tag[i] = tag;
+  s_feb00_seq++;
+}
+int cd_feb00_trace_dump(char *out, int cap) {
+  int pos = 0, i, n = (int)(s_feb00_seq < FEB00_TRACE_CAP ? s_feb00_seq : FEB00_TRACE_CAP);
+  int start = (int)(s_feb00_seq - (uint32_t)n);
+  for (i = 0; i < n && pos < cap - 48; i++) {
+    uint32_t idx = (uint32_t)(start + i) % FEB00_TRACE_CAP;
+    pos += snprintf(out + pos, (size_t)(cap - pos), "%s%u:%08x;",
+                    i ? "," : "", s_feb00_tag[idx], s_feb00_val[idx]);
+  }
+  return pos;
+}
+uint32_t cd_feb00_trace_total(void) { return s_feb00_seq; }
+
+/* DIAG: ring recording CD seek-position resolutions.
+ * tag 3 = cd_file_open_b (0x801feb00 stamp -> sector),
+ * tag 4 = cd_stream_mode_init (stamp buf -> sector). */
+#define SEEK_TRACE_CAP 4096
+static uint32_t s_seek_a[SEEK_TRACE_CAP];
+static uint32_t s_seek_b[SEEK_TRACE_CAP];
+static uint32_t s_seek_tag[SEEK_TRACE_CAP];
+static uint32_t s_seek_seq;
+void cd_seek_note(uint32_t tag, uint32_t a, uint32_t b) {
+  uint32_t i = s_seek_seq % SEEK_TRACE_CAP;
+  s_seek_tag[i] = tag; s_seek_a[i] = a; s_seek_b[i] = b; s_seek_seq++;
+}
+int cd_seek_dump(char *out, int cap) {
+  int pos = 0, i, n = (int)(s_seek_seq < SEEK_TRACE_CAP ? s_seek_seq : SEEK_TRACE_CAP);
+  int start = (int)(s_seek_seq - (uint32_t)n);
+  for (i = 0; i < n && pos < cap - 40; i++) {
+    uint32_t idx = (uint32_t)(start + i) % SEEK_TRACE_CAP;
+    pos += snprintf(out + pos, (size_t)(cap - pos), "%s%u:%08x>%u;",
+                    i ? "," : "", s_seek_tag[idx], s_seek_a[idx], s_seek_b[idx]);
+  }
+  return pos;
+}
+uint32_t cd_seek_total(void) { return s_seek_seq; }
 extern void     br2_st8p(uint32_t cell, uint8_t v);
 extern void     br2_st16p(uint32_t cell, uint16_t v);
 extern void     br2_st32p(uint32_t cell, uint32_t v);
@@ -171,6 +220,7 @@ int cd_read_poll(int param_1,undefined4 param_2)
 
 /* ======== 0x80195d8c ======== */
 
+extern int cd_stamp_to_sector(const void *);
 undefined4 cd_mode_flag_set(byte param_1,int param_2,undefined4 param_3)
 
 {
@@ -180,6 +230,11 @@ undefined4 cd_mode_flag_set(byte param_1,int param_2,undefined4 param_3)
   
   uVar1 = DAT_801bc848;
   iVar3 = 3;
+  if (param_2 >= 0x80000000 && param_2 < 0x80200000) {
+    uint32_t _st = *(uint32_t *)guest_at((uint32_t)param_2);
+    cd_seek_note(5, _st | ((uint32_t)param_1 << 28),
+                 (uint32_t)cd_stamp_to_sector(guest_at((uint32_t)param_2)));
+  }
   while( true ) {
     DAT_801bc848 = 0;
     if ((param_1 != 1) && ((DAT_801bc854 & 0x10) != 0)) {
@@ -1236,6 +1291,7 @@ int32_t cd_file_open_b(uint32_t param_1)
   int32_t v0;
   if (*(uint32_t *)guest_at(0x801ec6f8) != 0) return -1;
   v0 = cd_stamp_to_sector(guest_at(0x801feb00));
+  cd_seek_note(3, *(uint32_t *)guest_at(0x801feb00), (uint32_t)v0);
   cd_file_open(v0 + 1,(uint8_t *)guest_at(param_1));
   return *(int32_t *)guest_at(0x801feb04);
 }
@@ -3869,6 +3925,7 @@ void cd_dir_entry_finalize(void)
   memcpy(&t,e + 0x1c,4);                     /* lwl/lwr unaligned u32 */
   *(uint32_t *)guest_at(0x801feb00) = t;
   *(uint32_t *)guest_at(0x801feb04) = *(uint32_t *)(e + 8);
+  feb00_note(1, t);
   DB32(0x801fc6a8) = DB32(0x801fc6a4);        /* delay slot of beqz */
   fn = DB32(0x801feb10);
   if (fn != 0)
@@ -5355,6 +5412,7 @@ void cd_dir_entry_store(uint32_t param_1,uint32_t param_2)
   memcpy(&t,e + 0x1c,4);                     /* lwl/lwr unaligned u32 */
   *(uint32_t *)guest_at(0x801feb00) = t;
   *(uint32_t *)guest_at(0x801feb04) = *(uint32_t *)(e + 8);
+  feb00_note(2, t);
   DB32(0x801bc6a8) = DB32(0x801bc6a4);
   fn = DB32G(0x801feb10);
   if (fn != 0) call_guest(fn,fn,0);        /* jalr $a0: a0 = fn ptr */
