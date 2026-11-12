@@ -2384,8 +2384,8 @@ LAB_80173dd8:
       else {
         if (*(short *)(puVar13 + 0x1a) < 0) {
           if (*(char *)guest_at((uint32_t)(uintptr_t)((iVar4 + 5) ))== '\0') {
-            task_alloc_wrap_a(_DAT_801f5210 + iVar20 + 0xe,_DAT_801f5214 + iVar20 + 0xe,(undefined4)(uintptr_t)(undefined4)(uintptr_t)&DAT_801b4de8,
-                         (undefined4)(uintptr_t)(undefined4)(uintptr_t)&DAT_801b4e08);
+            task_alloc_wrap_a(_DAT_801f5210 + iVar20 + 0xe,_DAT_801f5214 + iVar20 + 0xe, (undefined4)br2_gaddr(&DAT_801b4de8),
+                          (undefined4)br2_gaddr(&DAT_801b4e08));
             *(undefined2 *)(puVar13 + 0x18) = 0x1000;
             *(undefined2 *)(puVar13 + 0x1a) = 0x78;
             piVar10 = (int *)((intptr_t)local_80 + iVar18);
@@ -2393,7 +2393,7 @@ LAB_80173dd8:
             iVar4 = fx_group_alloc(1,1,0,0x13);
             if (iVar4 != 0) {
               noop_a(iVar4,param_2 + iVar19 * 2 + 0x6c,*(int *)guest_at((uint32_t)(uintptr_t)((*piVar10 + 0x20) ))+ 0x124,
-                           (undefined4)(uintptr_t)&DAT_801f0760);
+                            (undefined4)br2_gaddr(&DAT_801f0760));
             }
             group_fx_spawn(*piVar10,0x1b,*(int *)guest_at((uint32_t)(uintptr_t)((*piVar10 + 0x20) ))+ 0x124,0xe00,0x2000,0,5);
           }
@@ -2415,8 +2415,8 @@ LAB_80173de8:
           if (*piVar10 != 0) {
             task_node_free((int *)(uintptr_t)*piVar10);
           }
-          iVar4 = task_alloc_wrap_b(_DAT_801f5210 + iVar22,_DAT_801f5214 + iVar22,(undefined4)br2_gaddr(piVar10),(undefined4)(uintptr_t)(undefined4)(uintptr_t)&DAT_801b4dd4,
-                               (undefined4)(uintptr_t)(undefined4)(uintptr_t)&DAT_801b4dbc);
+          iVar4 = task_alloc_wrap_b(_DAT_801f5210 + iVar22,_DAT_801f5214 + iVar22,(undefined4)br2_gaddr(piVar10), (undefined4)br2_gaddr(&DAT_801b4dd4),
+                                (undefined4)br2_gaddr(&DAT_801b4dbc));
           *piVar10 = iVar4;
         }
         if (*(short *)(puVar13 + 0x1a) < 0x28) {
@@ -2744,8 +2744,8 @@ LAB_80173de8:
             *(undefined2 *)guest_at((uint32_t)(uintptr_t)((iVar20 + *piVar10 + 0x586) ))= 0x791d;
             piVar10 = piVar10 + 1;
           } while (iVar22 < 2);
-          uVar12 = task_alloc_wrap_b(_DAT_801f5210 + iVar18,_DAT_801f5214 + iVar18,0,(undefined4)(uintptr_t)&DAT_801b4d34,
-                                (undefined4)(uintptr_t)&DAT_801b4d28);
+          uVar12 = task_alloc_wrap_b(_DAT_801f5210 + iVar18,_DAT_801f5214 + iVar18,0, (undefined4)br2_gaddr(&DAT_801b4d34),
+                                 (undefined4)br2_gaddr(&DAT_801b4d28));
           *local_54 = uVar12;
         }
         else if (sVar2 < 2) {
@@ -2795,10 +2795,10 @@ LAB_80173de8:
                            (int)*(short *)(&DAT_801b4c56 + iVar4));
             } while (iVar20 < 2);
             iVar4 = task_alloc_wrap_a(_DAT_801f5210 + iVar18 + 0xe,_DAT_801f5214 + iVar18 + 0xe,
-                                 (undefined4)(uintptr_t)(undefined4)(uintptr_t)&DAT_801b4d7c,(undefined4)(uintptr_t)&DAT_801b4d90);
+                                  (undefined4)br2_gaddr(&DAT_801b4d7c), (undefined4)br2_gaddr(&DAT_801b4d90));
             *local_4c = iVar4;
-            uVar12 = task_alloc_wrap_b(_DAT_801f5210 + iVar18,_DAT_801f5214 + iVar18,0,(undefined4)(uintptr_t)&DAT_801b4dac,
-                                  (undefined4)(uintptr_t)&DAT_801b4d98);
+            uVar12 = task_alloc_wrap_b(_DAT_801f5210 + iVar18,_DAT_801f5214 + iVar18,0, (undefined4)br2_gaddr(&DAT_801b4dac),
+                                   (undefined4)br2_gaddr(&DAT_801b4d98));
             *local_54 = uVar12;
           }
         }
@@ -2848,9 +2848,9 @@ LAB_80173de8:
                          (int)*(short *)(&DAT_801b4c46 + iVar4));
           } while (iVar20 < 2);
           iVar4 = task_alloc_wrap_a(_DAT_801f5210 + iVar18 + 0xe,_DAT_801f5214 + iVar18 + 0xe,
-                               (undefined4)(uintptr_t)&DAT_801b4d3c,(undefined4)(uintptr_t)&DAT_801b4d50);
+                                (undefined4)br2_gaddr(&DAT_801b4d3c), (undefined4)br2_gaddr(&DAT_801b4d50));
           *local_4c = iVar4;
-          uVar12 = task_alloc_wrap_b(_DAT_801f5210 + iVar18,_DAT_801f5214 + iVar18,0,(undefined4)(uintptr_t)&DAT_801b4d6c,
+          uVar12 = task_alloc_wrap_b(_DAT_801f5210 + iVar18,_DAT_801f5214 + iVar18,0, (undefined4)br2_gaddr(&DAT_801b4d6c),
                                 (int)(uintptr_t)&DAT_801b4d58);
           *local_54 = uVar12;
         }
@@ -5560,7 +5560,7 @@ void debug_strike_fx_b(short *param_1,undefined4 param_2,undefined4 param_3,usho
       else {
         puVar2 = &DAT_801b1be8;
       }
-      puVar3 = (undefined2 *)guest_at((uint32_t)(uintptr_t)(fx_record_alloc((undefined4)(uintptr_t)param_1,6,0x40000005,0,(undefined4)br2_gaddr(puVar2))));
+      puVar3 = (undefined2 *)guest_at((uint32_t)(uintptr_t)(fx_record_alloc((undefined4)br2_gaddr(param_1),6,0x40000005,0,(undefined4)br2_gaddr(puVar2))));
       if (puVar3 != (undefined2 *)0x0) {
         puVar3[1] = 0x400 - (short)param_3;
         *puVar3 = (short)param_2;
@@ -6407,7 +6407,7 @@ void impact_fx_spawn(undefined4 *param_1,uint param_2,int param_3,int param_4,ui
   } while (iVar10 < 2);
   switch(*(undefined2 *)(puVar14 + 0x19)) {
   case 0:
-    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)(uintptr_t)puVar14 + 10,(undefined4)(uintptr_t)puVar14 + 0x14,(undefined4)(uintptr_t)&DAT_801b1b1c,(undefined4)(uintptr_t)&DAT_801b1ad8);
+    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)(uintptr_t)puVar14 + 10,(undefined4)(uintptr_t)puVar14 + 0x14, (undefined4)br2_gaddr(&DAT_801b1b1c), (undefined4)br2_gaddr(&DAT_801b1ad8));
     if (iVar10 != 0) {
       if (param_3 < 10) {
         puVar14[0x15] = 0xa4;
@@ -6422,7 +6422,7 @@ void impact_fx_spawn(undefined4 *param_1,uint param_2,int param_3,int param_4,ui
     }
     break;
   case 1:
-    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)(uintptr_t)puVar14 + 10,(undefined4)(uintptr_t)puVar14 + 0x14,(undefined4)(uintptr_t)&DAT_801b1b78,(undefined4)(uintptr_t)&DAT_801b1b5c);
+    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)(uintptr_t)puVar14 + 10,(undefined4)(uintptr_t)puVar14 + 0x14, (undefined4)br2_gaddr(&DAT_801b1b78), (undefined4)br2_gaddr(&DAT_801b1b5c));
     if (iVar10 != 0) {
       puVar13 = (undefined2 *)guest_at((uint32_t)(uintptr_t)(puVar14[0x18]));
       uVar1 = rand_lcg();
@@ -6441,7 +6441,7 @@ void impact_fx_spawn(undefined4 *param_1,uint param_2,int param_3,int param_4,ui
     break;
   case 2:
   case 3:
-    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)(uintptr_t)puVar14 + 10,(undefined4)(uintptr_t)puVar14 + 0x14,(undefined4)(uintptr_t)&DAT_801b1a74,(undefined4)(uintptr_t)&DAT_801b1a50);
+    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)(uintptr_t)puVar14 + 10,(undefined4)(uintptr_t)puVar14 + 0x14, (undefined4)br2_gaddr(&DAT_801b1a74), (undefined4)br2_gaddr(&DAT_801b1a50));
     if (iVar10 != 0) {
       *(undefined4 **)guest_at((uint32_t)(uintptr_t)(puVar14[0x18] ))= param_1;
       uVar6 = rand_lcg();
@@ -6462,14 +6462,14 @@ void impact_fx_spawn(undefined4 *param_1,uint param_2,int param_3,int param_4,ui
     break;
   case 4:
   case 9:
-    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)(uintptr_t)puVar14 + 10,(undefined4)(uintptr_t)puVar14 + 0x14,(undefined4)(uintptr_t)&DAT_801b1ab8,(undefined4)(uintptr_t)&DAT_801b1a94);
+    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)(uintptr_t)puVar14 + 10,(undefined4)(uintptr_t)puVar14 + 0x14, (undefined4)br2_gaddr(&DAT_801b1ab8), (undefined4)br2_gaddr(&DAT_801b1a94));
     if (iVar10 != 0) {
       return;
     }
     break;
   case 5:
     puVar9 = puVar14 + 0x14;
-    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)(uintptr_t)puVar14 + 10,(undefined4)br2_gaddr(puVar9),(undefined4)(uintptr_t)&DAT_801b1bb4,(undefined4)(uintptr_t)&DAT_801b1b90);
+    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)(uintptr_t)puVar14 + 10,(undefined4)br2_gaddr(puVar9), (undefined4)br2_gaddr(&DAT_801b1bb4), (undefined4)br2_gaddr(&DAT_801b1b90));
     if (iVar10 != 0) {
       puVar13 = (undefined2 *)guest_at((uint32_t)(uintptr_t)(puVar14[0x18]));
       puVar14[0x15] = (int)param_5 >> 0xf;
@@ -6571,7 +6571,7 @@ LAB_8013a628:
     return;
   case 8:
   case 0x12:
-    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)(uintptr_t)puVar14 + 10,(undefined4)(uintptr_t)puVar14 + 0x14,(undefined4)(uintptr_t)&DAT_801b1c30,(undefined4)(uintptr_t)&DAT_801b1bfc);
+    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)(uintptr_t)puVar14 + 10,(undefined4)(uintptr_t)puVar14 + 0x14, (undefined4)br2_gaddr(&DAT_801b1c30), (undefined4)br2_gaddr(&DAT_801b1bfc));
     if (iVar10 != 0) {
       iVar5 = task_alloc_wrap_c((undefined4)(uintptr_t)((intptr_t)puVar14 + 0xe),(undefined4)(uintptr_t)((intptr_t)puVar14 + 0x36),(int)(uintptr_t)&DAT_801b1c60,(int)(uintptr_t)&DAT_801b1c74);
       if (iVar5 != 0) {
@@ -6594,7 +6594,7 @@ LAB_8013a628:
   case 0xb:
   case 0xc:
   case 0xd:
-    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)br2_gaddr(puVar14 + 10),(undefined4)(uintptr_t)(puVar14 + 0x14),(undefined4)(uintptr_t)(&PTR_DAT_801b19d4)[*(short *)(puVar14 + 0x19) + -10],(undefined4)(uintptr_t)&DAT_801b192c);
+    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)br2_gaddr(puVar14 + 10),(undefined4)(uintptr_t)(puVar14 + 0x14),(undefined4)(uintptr_t)(&PTR_DAT_801b19d4)[*(short *)(puVar14 + 0x19) + -10], (undefined4)br2_gaddr(&DAT_801b192c));
     if (iVar10 != 0) {
       puVar13 = (undefined2 *)guest_at((uint32_t)(uintptr_t)(puVar14[0x18]));
       uVar6 = rand_lcg();
@@ -6647,7 +6647,7 @@ LAB_8013a628:
     else {
       puVar8 = &DAT_801b1a3c;
     }
-    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)(uintptr_t)puVar14 + 10,(undefined4)(uintptr_t)puVar14 + 0x14,(undefined4)(uintptr_t)&DAT_801b1a2c,(undefined4)br2_gaddr(puVar8));
+    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)(uintptr_t)puVar14 + 10,(undefined4)(uintptr_t)puVar14 + 0x14, (undefined4)br2_gaddr(&DAT_801b1a2c),(undefined4)br2_gaddr(puVar8));
     if (iVar10 != 0) {
       if (*(short *)(puVar14 + 0x19) != 0xe) {
         return;
@@ -6854,7 +6854,7 @@ LAB_80141918:
         *(undefined2 *)((intptr_t)piVar8 + 0x76) = puVar6[1];
         return;
       }
-      iVar5 = task_alloc_wrap_f((undefined4)(uintptr_t)piVar8[1],(undefined4)br2_gaddr(piVar8 + 2),(undefined4)(uintptr_t)&DAT_801b1cbc,(undefined4)(uintptr_t)&DAT_801b1ccc);
+      iVar5 = task_alloc_wrap_f((undefined4)(uintptr_t)piVar8[1],(undefined4)br2_gaddr(piVar8 + 2), (undefined4)br2_gaddr(&DAT_801b1cbc), (undefined4)br2_gaddr(&DAT_801b1ccc));
       piVar8[2] = iVar5;
       if (iVar5 != 0) goto LAB_80141918;
     }
@@ -6872,7 +6872,7 @@ void group_fx_spawn(undefined4 param_1,undefined4 param_2,undefined4 param_3,und
   iVar1 = fx_group_alloc(1,1,0,0xc);
   if (iVar1 != 0) {
     iVar2 = noop_c(iVar1);
-    noop_b(iVar1,param_1,(undefined4)(uintptr_t)&DAT_801f0760);
+    noop_b(iVar1,param_1, (undefined4)br2_gaddr(&DAT_801f0760));
     *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0xc) ))= param_2;
     *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x10) ))= param_3;
     *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x14) ))= param_4;
@@ -10344,7 +10344,7 @@ LAB_80135630:
     }
   }
   if (_DAT_801f04c6 == 0) {
-    particle_burst_update(iVar10,uVar11,(undefined4)(uintptr_t)param_1,param_4);
+    particle_burst_update(iVar10,uVar11,(undefined4)br2_gaddr(param_1),param_4);
   }
   if (0 < _DAT_801f04c6) {
     _DAT_801f04c6 = _DAT_801f04c6 + -1;
@@ -14914,7 +14914,7 @@ void speech_bubble_spawn(undefined4 *param_1,short param_2,int param_3,ushort pa
   if (((DAT_1f8000b1 == '\0') && (_DAT_801f0930 < 3)) &&
      ((*(ushort *)(_g_pad_buffer + 2) >> 4 & 1) != 0)) {
     if ((DAT_1f800098 != '\x01') && ((param_4 & 0xf0) == 0)) {
-      psVar1 = (short *)guest_at((uint32_t)(uintptr_t)(fx_record_alloc((undefined4)(uintptr_t)param_1,6,0x8000000a,2,PTR_DAT_801b1d44)));
+      psVar1 = (short *)guest_at((uint32_t)(uintptr_t)(fx_record_alloc((undefined4)br2_gaddr(param_1),6,0x8000000a,2,PTR_DAT_801b1d44)));
       if (psVar1 != (short *)0x0) {
         *psVar1 = param_2 + 0x800;
       }
@@ -16889,7 +16889,7 @@ void task_cb_voice_line(int param_1)
   iVar2 = *(int *)guest_at((uint32_t)(uintptr_t)param_1);
   iVar3 = *(int *)guest_at((uint32_t)(uintptr_t)(iVar2 + 0x20));
   noop_b(iVar1,iVar3 + *(int *)guest_at((uint32_t)(uintptr_t)(param_1 + 4)) * 0x40 + iVar2 * 0x10 + 0x34,
-               (undefined4)(uintptr_t)&DAT_801f0760);
+                (undefined4)br2_gaddr(&DAT_801f0760));
   task_slot_step();
   return;
 }
