@@ -5474,3 +5474,34 @@ channel-ready mark), OR diff against the DuckStation oracle's CD path.
   present, no linux-arm64). No built macOS binary present.
 NEXT: find the +4 writer (channel +68/+70/+72 -> dir +4 consumer) OR get a
 working oracle (build linux-arm64 deps / fix macOS headless boot).
+
+## CD livelock — session 15x: STREAMING FIXED, new sync-load blocker isolated
+
+- guest_at low-KUSEG fix (fc1e966) BROKE the stream deadlock: bfrd_set
+  468->1246, request 0->0x80, ring_dropped 30722->516, cd_read_log shows
+  active sector-by-sector file loads. CD streaming path now healthy.
+- Game progressed MUCH further: boots -> memcard -> attract ->
+  battle_intro_flow (g_game_state path state 6). BUT stuck: _DAT_1f80008c
+  frozen at 0x20 inside match_loop stage-1 -> menu_res_load_sm ->
+  save_load_state_machine -> cd_file_load_sm(0xa0).
+- NEW ROOT CAUSE (precise): the CD/GPU immediate-mode + DMA
+  register-pointer-cell context is ENTIRELY UNINITIALIZED.
+  * 0x801b82c0-0x801b8320 (GPU func-table region): garbage
+    (0x555555/0x488040/0xb40000fa pattern)
+  * 0x801b8300-0x801b8500 (imm-mode cmd ctx + queue cells 0x801b8438-44):
+    same garbage
+  * 0x801bdeb0-0x801bded4 (DMA chan ptr cells): same garbage
+    (0x801bdec0 should ->0x1F8010F0 DPCR, holds 0xb80000ff)
+- Mechanism: cells hold MMIO pointers dereferenced via br2_st32p/br2_ld32
+  (cell -> 0x1F801xxx -> hw reg). Garbage cells -> cd_cmd_queue_load writes
+  commands to non-hw addrs -> drive seq FROZEN -> cd_read_poll/cd_intc_busy
+  loop forever -> zero GPU submits -> no render.
+- Streaming path UNAFFECTED: uses computed 0x1f801080+ch*0x10 directly,
+  bypassing these cells. That's why boot/attract loads worked but the first
+  synchronous cd_file_load_sm hangs.
+- Cells are pointer-table entries; values (0x1F801xxx) come from a data
+  table / computed base, NOT immediates (none in generated code).
+NEXT: find the register-pointer-table init fn (fills 0x801bdeb0+/0x801b84xx
+cells with 0x1F801xxx). Suspect it lives inside cd_chan_full_init (resumable
+coroutine via cd_ctx_restore) or a one-time CD/GPU ctx setup that either
+never ran or is gated. Once cells hold real MMIO addrs, sync loads complete.
