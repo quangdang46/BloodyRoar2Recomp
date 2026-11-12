@@ -396,3 +396,24 @@ dir-entry +4 -> entries starve -> status4 -> ch3 never re-arms -> ring overflows
 NEXT: locate the consumer that reads channel-entry +68/+70/+72 and bumps dir +4. It is
 either a per-INT handler, a per-frame pump, or gated on a flag our runtime leaves clear.
 Oracle (building) will show whether real HW invokes it and from where.
+
+## SESSION 15t — dir entries = disc-loaded STREAM DESCRIPTORS; payload buffers
+
+cd_read_log tail decode (lba 208829): the game reads 32-byte descriptors into
+0x00/0x20/0x40/0x60 (= the dir-entry addrs, size=0x20) AND 2016-byte payloads into
+0x400/0xBE0/0x13C0. So dir entries are channel/stream DESCRIPTORS loaded from disc;
++4/+6 are stream position fields advanced as payload sectors arrive.
+
+Buffer check: 0x400 and 0xBE0 have data; 0x13C0 is ALL ZEROS -> one stream's payload
+never landed -> its descriptor +4 frozen -> entry never completes -> cd_file_pump
+stuck at state 0x100 (cd_file_load_sm returns 0 forever) -> fight never loads.
+
+Interrupt map fully decoded: mask@0x801bcd48=0xd -> VBLANK(tbl0=0x8019ae68),
+CDROM(tbl2=0x801979f8=cd_response_pump), DMA(tbl3=0x8019af7c=cd_cb7_run).
+ptrA=0x1f801070(I_STAT) ptrB=0x1f801074(I_MASK). ch3 CDROM irq-enable(DICR bit19)=0
+so its done-bit never sets -> cb7_run can't see it (matches DuckStation ShouldSetIRQFlag).
+
+BIOS svc trace: game spins B0/0x0B(1.36M)+C0/0x0A(49K) polling CD status forever.
+NEXT: find why stream payload for the starving channel doesn't reach its buffer —
+likely the per-sector->descriptor+4 update in the recompiled stream-read path, OR
+ch3/PIO delivery gating. Oracle RAM-diff will show correct +4 progression.
