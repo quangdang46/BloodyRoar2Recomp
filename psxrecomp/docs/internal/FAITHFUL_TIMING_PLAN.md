@@ -5292,3 +5292,32 @@ issues, not cdrom.c pacing.
   streaming/INT1-callback path that owns the 0x1F801802 drain and find
   why it never runs. Requires Ghidra/disasm of the generated CD driver,
   not more black-box polling.
+
+### SESSION 15h — CD drain is a software-DMA worker that never runs
+
+Live probes (`:4413`, state-4 livelock) closed the loop on *what* should
+drain `0x1F801802`:
+
+- `cd_dma_xfer_start` (clean `cd.c:4773`) does NOT touch hardware DMA ch3.
+  It programs a **software register block** at guest `0x801bdeb0` (KSEG0 RAM):
+  writes the channel base ptr to `+0x04`, `(size<<16)|0x10` to `+0x08`,
+  sets start flag `0x801bdea0=1`, and `0x1000200` to `+0x1c`. `CDMMIO16`
+  offsets `0xd3/0xd5/0x22` index this block.
+- Live block state: `0x801bdea0=1` (**transfer armed**),
+  `0x801bdeb0..bc` = four pointers `0x1f801c00/10c0/14c0/18c0` (0x400 stride)
+  — the per-channel descriptor table.
+- `cd_intc_dispatch` clean thunk counter `0x801bce00` = **0** — the clean
+  entry is never used; generated `0x8019a8ec` is invoked directly by its
+  generated callers. `cd_response_pump` counter `0x801bce04` ≈ 616K and
+  climbing, so the response coroutine DOES run via generated dispatch.
+- `cd_response_process` handles command *responses* (the `local_20` switch),
+  not sector data. The per-sector `0x1F801802` drain is the software-DMA
+  worker gated on `0x801bdea0`, which stays armed-but-incomplete.
+
+Conclusion: the missing piece is the CD-driver **software-DMA worker** that
+should copy `0x1F801802`→channel buffer when `0x801bdea0` is set. It never
+completes → dir entries stay busy → `cd_channel_poll` spins. This worker
+lives in generated code (the same deferred-coroutine family as
+`cd_ctx_save`/`cd_intc_dispatch`); resolving it needs disassembly of the
+generated worker loop to find why the armed transfer doesn't drain.
+
