@@ -3762,3 +3762,26 @@ tag/seq validation, and the state=3 store. Suspect it early-outs on a
 0x801FC69C==1 early-return is a candidate: if a stale 1 is left set, the
 whole function no-ops every call -> explains 100/sec invokes, zero arms.
 CHECK: read 0x801FC69C live — if ==1, find who should clear it.
+
+=== SESSION8e: arm-gate fully traced to CD-command pump ===
+Disasm (capstone, docs/internal/cdmc_80199440.asm + cdmc_helper_96b4c.asm).
+cd_mc_state_machine flow (globals 0x80200000-base, neg off):
+  fc69c==1 -> ret (reentrancy). fc688!=0 && *0x1f801098&0x1000000 -> mode blk.
+  jal 0x80195d44 -> tail-jal 0x80196b4c (CD cmd/response pump, 177 insns,
+  calls 0x8019a460/0x80197ad0/0x8018e550/0x801972a8/0x8019a7d4/0x80196370).
+  GATE A: helper ret==5 -> EARLY RETURN (no status write; status stays 1).
+  GATE B: resp.byte0(sp+0x30)&0x4 -> status=3 return; clear -> entry walk.
+  ENTRY WALK 0x80199508: entry=*(0x801fc6c0)+(*(0x801fc6a4)<<5);
+    lhu entry.state==0 -> ARM path 0x80199574 (writes seq/stamp/state=3);
+    !=0 -> status=4 return.
+LIVE: status@0x801bcc88=1 (=> GATE A path: helper returns 5, exits before
+entry walk). entries 5-15 state manually zeroed -> STILL not armed, proving
+exit is BEFORE entry walk = helper-returns-5 = NO PENDING CD READ COMMAND.
+ROOT: stream/decode consumer never queues the next sector-range read.
+Decode state @0x801b6900=0x00ffffff idle; stream pos @0x801f472c=0 frozen;
+GPU OT frozen. blk_io_retry keeps polling empty entries -> timeout ->
+cd_stream_mode_init re-seek(ReadS raw) -> repeat.
+NEXT: find who queues the channel-entry read request (the sector range
+the helper should process). Likely cd_file_open_b/stream setup wrote it
+once for batch1 and nothing re-queues after consume. Trace 0x80196b4c's
+"pending command" source or the request-queue field it drains.
