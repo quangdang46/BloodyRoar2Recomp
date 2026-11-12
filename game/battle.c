@@ -6594,7 +6594,7 @@ LAB_8013a628:
   case 0xb:
   case 0xc:
   case 0xd:
-    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)(uintptr_t)(puVar14 + 10),(undefined4)(uintptr_t)(puVar14 + 0x14),(undefined4)(uintptr_t)(&PTR_DAT_801b19d4)[*(short *)(puVar14 + 0x19) + -10],(undefined4)(uintptr_t)&DAT_801b192c);
+    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)br2_gaddr(puVar14 + 10),(undefined4)(uintptr_t)(puVar14 + 0x14),(undefined4)(uintptr_t)(&PTR_DAT_801b19d4)[*(short *)(puVar14 + 0x19) + -10],(undefined4)(uintptr_t)&DAT_801b192c);
     if (iVar10 != 0) {
       puVar13 = (undefined2 *)guest_at((uint32_t)(uintptr_t)(puVar14[0x18]));
       uVar6 = rand_lcg();
@@ -6780,7 +6780,7 @@ void quad_fx_spawn(int param_1,int param_2,undefined4 *param_3,undefined2 param_
     return;
   }
   piVar8 = (int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar4 + 0x10))));
-  iVar5 = (int)(intptr_t)prim_group_build((undefined4)(uintptr_t)(piVar8 + 1),*(undefined4 *)(&DAT_801c43a8 + param_2 * 4),0,1);
+  iVar5 = (int)(intptr_t)prim_group_build((undefined4)br2_gaddr(piVar8 + 1),*(undefined4 *)(&DAT_801c43a8 + param_2 * 4),0,1);
   piVar8[1] = iVar5;
   if (iVar5 != 0) {
     iVar5 = tween_chan_alloc(iVar5,0);
@@ -6854,7 +6854,7 @@ LAB_80141918:
         *(undefined2 *)((intptr_t)piVar8 + 0x76) = puVar6[1];
         return;
       }
-      iVar5 = task_alloc_wrap_f((undefined4)(uintptr_t)piVar8[1],(undefined4)(uintptr_t)(piVar8 + 2),(undefined4)(uintptr_t)&DAT_801b1cbc,(undefined4)(uintptr_t)&DAT_801b1ccc);
+      iVar5 = task_alloc_wrap_f((undefined4)(uintptr_t)piVar8[1],(undefined4)br2_gaddr(piVar8 + 2),(undefined4)(uintptr_t)&DAT_801b1cbc,(undefined4)(uintptr_t)&DAT_801b1ccc);
       piVar8[2] = iVar5;
       if (iVar5 != 0) goto LAB_80141918;
     }
@@ -8117,7 +8117,7 @@ int fx_group_alloc(undefined4 param_1,undefined4 param_2,int param_3,int param_4
   if (iVar1 != 0) {
     puVar2 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0x10))));
     *puVar2 = 0;
-    puVar2[2] = (undefined4)(uintptr_t)(puVar2 + 7);
+    puVar2[2] = (undefined4)br2_gaddr(puVar2 + 7);
     puVar2[1] = (undefined4)br2_gaddr(piVar3);
     puVar2[3] = (intptr_t)piVar3 + *piVar3;
     *(undefined4 *)guest_at((uint32_t)(uintptr_t)(puVar2[2] ))= puVar2[2];
@@ -10978,9 +10978,9 @@ int prim_batch_emit(int param_1,int param_2,undefined4 param_3,undefined4 param_
         }
         *pbVar7 = bVar2;
         if (param_8 != 0) {
-          *puVar18 = (undefined4)(uintptr_t)(puVar11 + 1);
+          *puVar18 = (undefined4)br2_gaddr(puVar11 + 1);
           puVar18 = puVar18 + 1;
-          *puVar15 = (undefined4)(uintptr_t)(puVar16 + 1);
+          *puVar15 = (undefined4)br2_gaddr(puVar16 + 1);
           puVar15 = puVar15 + 1;
         }
         *puVar11 = 0x4000000;
@@ -11032,9 +11032,9 @@ int prim_batch_emit(int param_1,int param_2,undefined4 param_3,undefined4 param_
         }
         *pbVar7 = bVar2;
         if (param_8 != 0) {
-          *puVar18 = (undefined4)(uintptr_t)(puVar11 + 1);
+          *puVar18 = (undefined4)br2_gaddr(puVar11 + 1);
           puVar18 = puVar18 + 1;
-          *puVar15 = (undefined4)(uintptr_t)(puVar16 + 1);
+          *puVar15 = (undefined4)br2_gaddr(puVar16 + 1);
           puVar15 = puVar15 + 1;
         }
         *puVar11 = 0x5000000;
@@ -11091,11 +11091,11 @@ int prim_batch_emit(int param_1,int param_2,undefined4 param_3,undefined4 param_
         }
         *pbVar7 = bVar2;
         if (param_8 != 0) {
-          *puVar16 = (undefined4)(uintptr_t)(puVar18 + 1);
+          *puVar16 = (undefined4)br2_gaddr(puVar18 + 1);
           puVar16[1] = (undefined4)(uintptr_t)puVar18 + 3;
           puVar16[2] = (undefined4)(uintptr_t)puVar18 + 5;
           puVar16 = puVar16 + 3;
-          *puVar11 = (undefined4)(uintptr_t)(puVar8 + 1);
+          *puVar11 = (undefined4)br2_gaddr(puVar8 + 1);
           puVar11[1] = (undefined4)(uintptr_t)puVar8 + 3;
           puVar11[2] = (undefined4)(uintptr_t)puVar8 + 5;
           puVar11 = puVar11 + 3;
@@ -11155,12 +11155,12 @@ int prim_batch_emit(int param_1,int param_2,undefined4 param_3,undefined4 param_
         }
         *pbVar7 = bVar2;
         if (param_8 != 0) {
-          *puVar11 = (undefined4)(uintptr_t)(puVar18 + 1);
+          *puVar11 = (undefined4)br2_gaddr(puVar18 + 1);
           puVar11[1] = (undefined4)(uintptr_t)puVar18 + 3;
           puVar11[2] = (undefined4)(uintptr_t)puVar18 + 5;
           puVar11[3] = (undefined4)(uintptr_t)puVar18 + 7;
           puVar11 = puVar11 + 4;
-          *puVar16 = (undefined4)(uintptr_t)(puVar8 + 1);
+          *puVar16 = (undefined4)br2_gaddr(puVar8 + 1);
           puVar16[1] = (undefined4)(uintptr_t)puVar8 + 3;
           puVar16[2] = (undefined4)(uintptr_t)puVar8 + 5;
           puVar16[3] = (undefined4)(uintptr_t)puVar8 + 7;
@@ -11228,9 +11228,9 @@ int prim_batch_emit(int param_1,int param_2,undefined4 param_3,undefined4 param_
         }
         *pbVar7 = bVar2;
         if (param_8 != 0) {
-          *puVar18 = (undefined4)(uintptr_t)(puVar11 + 1);
+          *puVar18 = (undefined4)br2_gaddr(puVar11 + 1);
           puVar18 = puVar18 + 1;
-          *puVar15 = (undefined4)(uintptr_t)(puVar16 + 1);
+          *puVar15 = (undefined4)br2_gaddr(puVar16 + 1);
           puVar15 = puVar15 + 1;
         }
         *puVar11 = 0x7000000;
@@ -11302,9 +11302,9 @@ int prim_batch_emit(int param_1,int param_2,undefined4 param_3,undefined4 param_
         }
         *pbVar7 = bVar2;
         if (param_8 != 0) {
-          *puVar18 = (undefined4)(uintptr_t)(puVar11 + 1);
+          *puVar18 = (undefined4)br2_gaddr(puVar11 + 1);
           puVar18 = puVar18 + 1;
-          *puVar15 = (undefined4)(uintptr_t)(puVar16 + 1);
+          *puVar15 = (undefined4)br2_gaddr(puVar16 + 1);
           puVar15 = puVar15 + 1;
         }
         *puVar11 = 0x9000000;
@@ -11372,7 +11372,7 @@ int prim_batch_emit(int param_1,int param_2,undefined4 param_3,undefined4 param_
           }
           *pbVar6 = bVar2;
           if (param_8 != 0) {
-            *puVar8 = (undefined4)(uintptr_t)(puVar11 + 1);
+            *puVar8 = (undefined4)br2_gaddr(puVar11 + 1);
             puVar8[1] = (undefined4)(uintptr_t)puVar11 + 4;
             puVar8[2] = (undefined4)(uintptr_t)puVar11 + 7;
             puVar8 = puVar8 + 3;
@@ -11439,7 +11439,7 @@ LAB_801a83ec:
           }
           *pbVar6 = bVar2;
           if (param_8 != 0) {
-            *puVar8 = (undefined4)(uintptr_t)(puVar11 + 1);
+            *puVar8 = (undefined4)br2_gaddr(puVar11 + 1);
             puVar8[1] = (undefined4)(uintptr_t)puVar11 + 4;
             puVar8[2] = (undefined4)(uintptr_t)puVar11 + 7;
             puVar8[3] = (undefined4)(uintptr_t)puVar11 + 10;
