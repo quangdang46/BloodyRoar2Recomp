@@ -5356,3 +5356,28 @@ to state 2. The BIOS DMA path is exonerated. Next: trace the custom driver's
 INT1 dispatch (`cd_intc_dispatch` 0x8019a8ec generated body) to find the
 data-ready branch that should call the drain and why it isn't reached.
 
+### SESSION 15j — correction: cd_dir_table_set is NOT buggy; table base was a red herring
+
+Follow-up on the `0x801fc6c0==0` anomaly exonerated the clean port:
+
+- `game/cd.c:1692 cd_dir_table_set` DOES store `a0->0x801fc6c0`,
+  `a1->0x801fc6c4` before `cd_dir_reset()` (verified against generated
+  `br2eu_func_80195800`: `sw a0` then `jal cd_dir_reset` w/ `sw a1` in the
+  delay slot). An earlier awk excerpt that showed only `cd_dir_reset()` was
+  a misread — no stores are missing.
+- `guest_for` only accepts `[0-9a-f]` (lowercase); the `DAT` in both
+  `g_DAT_801f4754` and `g__DAT_801f4754` is uppercase and not hex, so BOTH
+  resolve to the single hex run `801f4754` -> guest `0x801f4754`. game.c and
+  menu.c share the same cell. No write/read mismatch.
+- Live: `0x801f4754 = 0x80010000` (= scene_entry param_1), so
+  `cd_dir_table_set` is called with the correct `a0`. The `0x801fc6c0==0`
+  seen pre-poke was a one-time early-init artifact, NOT a recurring clear
+  (wtrace caught only the manual pokes).
+- The manual poke to `0x80010000` set the CORRECT value and it persisted,
+  yet `state2`/`cd_dir_entry_finalize`/`load_done` stayed 0. => the dir-table
+  base is necessary-but-not-sufficient; the real blocker is upstream: dir
+  entries never reach state 2 because the custom CD driver's data/completion
+  path (INT1 data-ready -> FIFO->channel drain -> entry finalize) never
+  runs. BIOS CD path (DMA ch3, pc=0xBFC1xxxx) is fully working and
+  exonerated.
+
