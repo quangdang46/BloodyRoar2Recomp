@@ -5117,3 +5117,31 @@ SESSION 15c — CD livelock refined: consumer drain path + double-speed
   - NOTE: previous session reached g_game_state=5/match_loop, so the
     load CAN complete — the livelock is timing/probabilistic, consistent
     with a marginal drain-rate deficit rather than a hard protocol break.
+
+SESSION 15d — CD livelock ROOT refined: NOT a cdrom.c flow-control bug
+  - process_read_stream already HAS producer flow-control, but ONLY on
+    two gated paths: warm_route_consumer_blocked (HLE warm-route only)
+    and accelerated_consumer_blocked (speed-divisor/instant only).
+    cdrom_state shows accel_consumer_waits=0 -> we run AUTHENTIC cadence
+    (divisor=1, realtime), where flow-control is DELIBERATELY absent.
+  - The in-code comment is explicit: at authentic cadence "the guest is
+    guaranteed a full sector period (~6.6ms at 2x) to ack each
+    data-ready INT1 before the next sector can clobber the buffer;
+    hardware losing a sector there means the game really was too slow,
+    and the one-deep pend-then-lose below is Beetle-faithful."
+  - CONCLUSION: ring_dropped at authentic cadence is "faithful clobber" —
+    it means OUR guest consumes each sector SLOWER than one sector period
+    in guest-cycle terms. The bug is therefore UPSTREAM in the consumer
+    path's cycle accounting, not in cdrom.c delivery:
+      * INT1 (CD data-ready) ack latency — if interrupt delivery/ack
+        costs more guest cycles than hardware, the pend-then-lose path
+        drops sectors the game needed;
+      * BFRD programmed-I/O drain rate — ch3 DMA is disabled so the game
+        polls cdrom_dma_ready/cdrom_dma_read per word; if the MMIO read
+        path or poll loop is cycle-slower than hw, drain lags;
+      * MDEC/XA decode consumer scheduling on guest-cycle deadlines.
+  - NEXT INVESTIGATION: measure guest-cycle cost of one INT1 ack + one
+    sector BFRD drain vs the 225792-cycle (2x) / 451584-cycle (1x)
+    sector period; find which component over-counts. This is the
+    IRQ/cycle axis of this plan, cross-checked vs Beetle cdc.cpp
+    HandleSectorRead / INT1 presentation timing.
