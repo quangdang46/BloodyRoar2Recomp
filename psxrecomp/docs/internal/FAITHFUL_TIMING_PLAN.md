@@ -4988,3 +4988,19 @@ SESSION 13 — frame-444 crash ROOT-CAUSED + FIXED (clean dispatch unblocked)
   - NEXT: (a) hunt the upstream NULL producers now that crashes are gone;
     (b) confirm long-run stability + the frame-661 GPU-OT node-cap is the
     remaining faithful-timing frontier (BR2_OT_TRACE=1 ready).
+
+SESSION 13b — upstream NULL-producer mechanism identified (guest_of round-trip)
+  - Clean dispatch now stable to frame 236K+ (verify run, port 4406).
+  - The guest_at(0) NULL derefs trace to hud_text_blk_alt's
+    `_DAT_1f8003a8 = guest_of(param_3)`: param_3 arrives as a HOST pointer
+    (callers pass `(const void*)guest_at(pt)` via BR2_E078, menu.c:5412).
+    guest_of() only reverses RAM/scratchpad pointers — returns 0 for
+    host string literals / non-RAM arenas -> text ptr = 0 -> guest_at(0).
+  - Same class likely feeds cd_chan_*/spr_draw_* NULL bases: a guest
+    pointer that should resolve to RAM comes back 0 because the producer
+    stored a host-only pointer or an unmapped guest addr.
+  - NEXT (real port fixes, now fail-safe under the guard): audit every
+    `guest_of(...)` result used as a stored guest pointer; ensure string/
+    struct data lives in guest-mapped RAM (or add a host-string arena
+    guest_of can reverse). Priority: text/HUD announce path (menu.c
+    BR2_E078 callers), CD channel attr bases.
