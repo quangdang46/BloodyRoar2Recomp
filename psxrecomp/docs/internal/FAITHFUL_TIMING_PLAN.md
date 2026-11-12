@@ -3583,3 +3583,25 @@ trace of the sector-number -> cd_file_open(BCD) -> entry-stamp chain.
 NEXT: find the guest function that produces sector number 73505 for the
 read request (likely reads a block->sector map or increments a position
 counter); compare vs correct continuation of the 208829 stream.
+
+=== SESSION6: stamp source = CD data-FIFO reads (0x1F801802); arming is decoupled ===
+Generated cd_mc_state_machine (0x80199440) fills stack buf sp+40 via a
+byte-copy loop, then lwr's it toward entry+0x1c (the MSF stamp copied to
+0x801feb00 by cd_dir_entry_finalize). The copy loop loads a register
+address from table @0x801BCC48 (=0x1F801802, CD data FIFO) and reads
+bytes into sp+40. => the "position stamp" is derived from CD register /
+sector-payload reads, i.e. the game parses positions out of data it pulls
+from the drive, OR sp+40 is a decode buffer and the real stamp source is
+adjacent. Either way the value 0x02052216 (MSF16:22:05=LBA73505) enters
+via the CD read path, not a clean software position counter.
+Confirmed: NO raw sector 73505 / stamp 0x02052216 stored anywhere in
+0x801e0000-0x80200000 except 0x801feb00 itself => position is transient
+(computed per-arm inside generated code).
+File ptr table 0x801b5b94 -> [16]=0x801b5610 asset dir: first 4 stamps =
+stage files 208829/165898/176069/194654; ~120 more valid asset positions
+(3000-200000). NONE = 73505 => position is computed, not table-looked-up.
+cd_bitstream_decode = pure VLC, no position logic. blk_io_retry only
+polls/decodes/frees; positions armed by cd_mc_state_machine read-ahead.
+OPEN: exact guest load producing 0x02052216 inside 0x80199440 (sp+40
+fill) — needs Ghidra decompile (server down) or Beetle oracle divergence,
+or a write-watchpoint on entry+0x1c catching the FIRST arm PC+value.
