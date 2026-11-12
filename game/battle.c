@@ -2415,7 +2415,7 @@ LAB_80173de8:
           if (*piVar10 != 0) {
             task_node_free((int *)(uintptr_t)*piVar10);
           }
-          iVar4 = task_alloc_wrap_b(_DAT_801f5210 + iVar22,_DAT_801f5214 + iVar22,(undefined4)(uintptr_t)piVar10,(undefined4)(uintptr_t)(undefined4)(uintptr_t)&DAT_801b4dd4,
+          iVar4 = task_alloc_wrap_b(_DAT_801f5210 + iVar22,_DAT_801f5214 + iVar22,(undefined4)br2_gaddr(piVar10),(undefined4)(uintptr_t)(undefined4)(uintptr_t)&DAT_801b4dd4,
                                (undefined4)(uintptr_t)(undefined4)(uintptr_t)&DAT_801b4dbc);
           *piVar10 = iVar4;
         }
@@ -5560,7 +5560,7 @@ void debug_strike_fx_b(short *param_1,undefined4 param_2,undefined4 param_3,usho
       else {
         puVar2 = &DAT_801b1be8;
       }
-      puVar3 = (undefined2 *)guest_at((uint32_t)(uintptr_t)(fx_record_alloc((undefined4)(uintptr_t)param_1,6,0x40000005,0,(undefined4)(uintptr_t)puVar2)));
+      puVar3 = (undefined2 *)guest_at((uint32_t)(uintptr_t)(fx_record_alloc((undefined4)(uintptr_t)param_1,6,0x40000005,0,(undefined4)br2_gaddr(puVar2))));
       if (puVar3 != (undefined2 *)0x0) {
         puVar3[1] = 0x400 - (short)param_3;
         *puVar3 = (short)param_2;
@@ -6407,7 +6407,7 @@ void impact_fx_spawn(undefined4 *param_1,uint param_2,int param_3,int param_4,ui
   } while (iVar10 < 2);
   switch(*(undefined2 *)(puVar14 + 0x19)) {
   case 0:
-    iVar10 = task_alloc_wrap_d((undefined4)(uintptr_t)puVar14,(undefined4)(uintptr_t)puVar14 + 10,(undefined4)(uintptr_t)puVar14 + 0x14,(undefined4)(uintptr_t)&DAT_801b1b1c,(undefined4)(uintptr_t)&DAT_801b1ad8);
+    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)(uintptr_t)puVar14 + 10,(undefined4)(uintptr_t)puVar14 + 0x14,(undefined4)(uintptr_t)&DAT_801b1b1c,(undefined4)(uintptr_t)&DAT_801b1ad8);
     if (iVar10 != 0) {
       if (param_3 < 10) {
         puVar14[0x15] = 0xa4;
@@ -6422,7 +6422,7 @@ void impact_fx_spawn(undefined4 *param_1,uint param_2,int param_3,int param_4,ui
     }
     break;
   case 1:
-    iVar10 = task_alloc_wrap_d((undefined4)(uintptr_t)puVar14,(undefined4)(uintptr_t)puVar14 + 10,(undefined4)(uintptr_t)puVar14 + 0x14,(undefined4)(uintptr_t)&DAT_801b1b78,(undefined4)(uintptr_t)&DAT_801b1b5c);
+    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)(uintptr_t)puVar14 + 10,(undefined4)(uintptr_t)puVar14 + 0x14,(undefined4)(uintptr_t)&DAT_801b1b78,(undefined4)(uintptr_t)&DAT_801b1b5c);
     if (iVar10 != 0) {
       puVar13 = (undefined2 *)guest_at((uint32_t)(uintptr_t)(puVar14[0x18]));
       uVar1 = rand_lcg();
@@ -6441,7 +6441,7 @@ void impact_fx_spawn(undefined4 *param_1,uint param_2,int param_3,int param_4,ui
     break;
   case 2:
   case 3:
-    iVar10 = task_alloc_wrap_d((undefined4)(uintptr_t)puVar14,(undefined4)(uintptr_t)puVar14 + 10,(undefined4)(uintptr_t)puVar14 + 0x14,(undefined4)(uintptr_t)&DAT_801b1a74,(undefined4)(uintptr_t)&DAT_801b1a50);
+    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)(uintptr_t)puVar14 + 10,(undefined4)(uintptr_t)puVar14 + 0x14,(undefined4)(uintptr_t)&DAT_801b1a74,(undefined4)(uintptr_t)&DAT_801b1a50);
     if (iVar10 != 0) {
       *(undefined4 **)guest_at((uint32_t)(uintptr_t)(puVar14[0x18] ))= param_1;
       uVar6 = rand_lcg();
@@ -6462,14 +6462,14 @@ void impact_fx_spawn(undefined4 *param_1,uint param_2,int param_3,int param_4,ui
     break;
   case 4:
   case 9:
-    iVar10 = task_alloc_wrap_d((undefined4)(uintptr_t)puVar14,(undefined4)(uintptr_t)puVar14 + 10,(undefined4)(uintptr_t)puVar14 + 0x14,(undefined4)(uintptr_t)&DAT_801b1ab8,(undefined4)(uintptr_t)&DAT_801b1a94);
+    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)(uintptr_t)puVar14 + 10,(undefined4)(uintptr_t)puVar14 + 0x14,(undefined4)(uintptr_t)&DAT_801b1ab8,(undefined4)(uintptr_t)&DAT_801b1a94);
     if (iVar10 != 0) {
       return;
     }
     break;
   case 5:
     puVar9 = puVar14 + 0x14;
-    iVar10 = task_alloc_wrap_d((undefined4)(uintptr_t)puVar14,(undefined4)(uintptr_t)puVar14 + 10,(undefined4)(uintptr_t)puVar9,(undefined4)(uintptr_t)&DAT_801b1bb4,(undefined4)(uintptr_t)&DAT_801b1b90);
+    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)(uintptr_t)puVar14 + 10,(undefined4)br2_gaddr(puVar9),(undefined4)(uintptr_t)&DAT_801b1bb4,(undefined4)(uintptr_t)&DAT_801b1b90);
     if (iVar10 != 0) {
       puVar13 = (undefined2 *)guest_at((uint32_t)(uintptr_t)(puVar14[0x18]));
       puVar14[0x15] = (int)param_5 >> 0xf;
@@ -6571,7 +6571,7 @@ LAB_8013a628:
     return;
   case 8:
   case 0x12:
-    iVar10 = task_alloc_wrap_d((undefined4)(uintptr_t)puVar14,(undefined4)(uintptr_t)puVar14 + 10,(undefined4)(uintptr_t)puVar14 + 0x14,(undefined4)(uintptr_t)&DAT_801b1c30,(undefined4)(uintptr_t)&DAT_801b1bfc);
+    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)(uintptr_t)puVar14 + 10,(undefined4)(uintptr_t)puVar14 + 0x14,(undefined4)(uintptr_t)&DAT_801b1c30,(undefined4)(uintptr_t)&DAT_801b1bfc);
     if (iVar10 != 0) {
       iVar5 = task_alloc_wrap_c((undefined4)(uintptr_t)((intptr_t)puVar14 + 0xe),(undefined4)(uintptr_t)((intptr_t)puVar14 + 0x36),(int)(uintptr_t)&DAT_801b1c60,(int)(uintptr_t)&DAT_801b1c74);
       if (iVar5 != 0) {
@@ -6594,7 +6594,7 @@ LAB_8013a628:
   case 0xb:
   case 0xc:
   case 0xd:
-    iVar10 = task_alloc_wrap_d((undefined4)(uintptr_t)puVar14,(undefined4)(uintptr_t)(puVar14 + 10),(undefined4)(uintptr_t)(puVar14 + 0x14),(undefined4)(uintptr_t)(&PTR_DAT_801b19d4)[*(short *)(puVar14 + 0x19) + -10],(undefined4)(uintptr_t)&DAT_801b192c);
+    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)(uintptr_t)(puVar14 + 10),(undefined4)(uintptr_t)(puVar14 + 0x14),(undefined4)(uintptr_t)(&PTR_DAT_801b19d4)[*(short *)(puVar14 + 0x19) + -10],(undefined4)(uintptr_t)&DAT_801b192c);
     if (iVar10 != 0) {
       puVar13 = (undefined2 *)guest_at((uint32_t)(uintptr_t)(puVar14[0x18]));
       uVar6 = rand_lcg();
@@ -6647,7 +6647,7 @@ LAB_8013a628:
     else {
       puVar8 = &DAT_801b1a3c;
     }
-    iVar10 = task_alloc_wrap_d((undefined4)(uintptr_t)puVar14,(undefined4)(uintptr_t)puVar14 + 10,(undefined4)(uintptr_t)puVar14 + 0x14,(undefined4)(uintptr_t)&DAT_801b1a2c,(undefined4)(uintptr_t)puVar8);
+    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)(uintptr_t)puVar14 + 10,(undefined4)(uintptr_t)puVar14 + 0x14,(undefined4)(uintptr_t)&DAT_801b1a2c,(undefined4)br2_gaddr(puVar8));
     if (iVar10 != 0) {
       if (*(short *)(puVar14 + 0x19) != 0xe) {
         return;
@@ -10673,7 +10673,7 @@ void orbit_fx_spawn(int param_1)
     puVar5 = &DAT_801b1d78;
     piVar4 = piVar6;
     do {
-      iVar3 = (int)(intptr_t)prim_group_build((undefined4)(uintptr_t)piVar4,*(undefined4 *)
+      iVar3 = (int)(intptr_t)prim_group_build((undefined4)br2_gaddr(piVar4),*(undefined4 *)
                                    (&DAT_801c43a8 + ((byte)(&DAT_801b1d70)[iVar2] + 0x1e) * 4),0,1);
       *piVar4 = iVar3;
       if (iVar3 != 0) {
@@ -14922,7 +14922,7 @@ void speech_bubble_spawn(undefined4 *param_1,short param_2,int param_3,ushort pa
     iVar2 = (int)(uintptr_t)task_node_alloc(1,2,5,0x8013e558,0,0x48);
     if (iVar2 != 0) {
       piVar5 = (int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x10))));
-      iVar3 = (int)(uintptr_t)prim_group_build((undefined4)(uintptr_t)piVar5,*(undefined4 *)(&DAT_801c43a8 + param_3 * 4),0,1);
+      iVar3 = (int)(uintptr_t)prim_group_build((undefined4)br2_gaddr(piVar5),*(undefined4 *)(&DAT_801c43a8 + param_3 * 4),0,1);
       *piVar5 = (int)(uintptr_t)iVar3;
       if (iVar3 != 0) {
         if ((param_4 & 0xf) != 0) {
