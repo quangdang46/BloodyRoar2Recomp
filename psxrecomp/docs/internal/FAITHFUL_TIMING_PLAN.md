@@ -4003,3 +4003,37 @@ B0/0x19 registration landed in the kernel hook table the IRQ dispatcher
 walks, and whether cd_ctx_restore (0x8019adcc) is reachable from it.
 cd_intc_dispatch thunk-counter may be bypassed by direct generated
 calls, so confirm via side-effects not the counter.
+
+=== SESSION8o: channel-table cursor deadlock — steady-state starvation ===
+Refined SESSION8n. Deferred-init DID complete enough for real work: ch3 CD
+DMA ran frames ~444-454 (dma_trace: 8-word entry writes to 0x80010000+0x20*n
+and 504-word=0x7e0 data writes to channel buffers, i_stat bit2 firing), and
+cd_dir_entry_finalize ran 6x early. Then ALL DMA went idle for 24k+ frames.
+LIVE STATE (frame ~32k):
+- cd_mc_state_machine (0x80199440) invoked 87k times (ctr @0x801bce88),
+  returns status=4 (@0x801bcc88) EVERY call -> blk_io_retry retries forever.
+- Disasm cdmc_80199440.asm decoded: it computes entry = base@0x801fc6c0 +
+  cursor@0x801fc6a4 *0x20, loads entry.state (lhu +0). beqz -> proceeds to
+  submit (jal cd_chan_cmd_submit 0x80199d88 with a0=3 = DMA ch3, OR
+  cd_copy_u32 0x80199d5c when flag@0x801fc6b0!=0). state!=0 -> returns 4.
+- cursor@0x801fc6a4=30 -> entry[30] @0x800103C0 state=1 (stuck nonzero).
+  Entries 0-9: states 0,0,0,0,0,4,3,3,3,3 — reads issued (state3) but the
+  3->2 completion never fires. Poll cursor@0x801fc6ac=5 sits on state4.
+DEADLOCK CHAIN: an entry stuck non-zero blocks the submit cursor -> status4
+-> ch3 never re-arms -> in-progress entries starve for data -> stay state3
+-> cursor never frees. cd_channel_poll (epc 0x80199360) waits state==2.
+DATA PATH: ReadS streams (read_msf advances 46:26:55->46:28:12, re-seeks
+every ~36 frames), sectors land in ring but ring_dropped=88203 (consumer
+never drains). request_reg=0x00 -> BFRD(bit7) never set -> ring won't
+deliver. So sector->channel-buffer DMA (ch3) is the missing link AND the
+IRQ->cd_dir_entry_finalize(state=2) completion is also not firing now.
+NOTE: 0x801bdeb0 block -> 0x1F801C00 + ch4/ch7 = SPU ctx, NOT CD. Real CD
+DMA is ch3 (0x1F8010B0) via cd_chan_cmd_submit base=0x1f801080+ch*0x10.
+NEXT: find what sets entry.state 3->2 and 1->0. state=2 producer =
+cd_dir_entry_finalize(0x801990f0)/store(0x80199100), reached via CD IRQ
+-> cd_intc_dispatch -> cd_response_pump. state=1 likely = reserved/armed.
+Determine why the IRQ->finalize path stopped after frame ~454: is the
+game's top-level IRQ handler (vector 0x80000080 -> k0=0x27AC kernel
+dispatch) still calling the CD sub-handler, and is cd_response_pump
+(0x801979f8, in INTC table) executing? Add a counter to cd_chan_cmd_submit
+ch3-arm + cd_dir_entry_finalize to see which side of the break is dead.
