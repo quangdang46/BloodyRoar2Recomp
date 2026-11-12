@@ -1035,7 +1035,13 @@ uint32_t mdec_dma_read_words(uint32_t *dst, uint32_t max_words) {
 }
 
 int mdec_dma_write_ready(void) {
-    if (mdec.output_pos < mdec.output_size) return 0;
+    /* Input DMA is backpressured only by the input side: a live command that
+     * still expects halfwords. Pending decoded output does NOT stall input —
+     * real MDEC feeds input and drains output on independent paths, and the
+     * output[] store is a growable pending-drain buffer, not a fixed FIFO.
+     * Gating input on output_pos < output_size starved streaming decode:
+     * decode_stream_available emits output mid-feed, output_pos lags until
+     * ch1 drains, and ch0 then refuses further input -> decoder deadlock. */
     return !mdec.busy || mdec.input_count < mdec.expected_halfwords;
 }
 
