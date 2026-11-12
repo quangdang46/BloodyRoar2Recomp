@@ -41,6 +41,10 @@ extern void     psx_write_word(uint32_t addr, uint32_t val);
  * the CPUState* (observed: g_clean_cpu=0x16f5555fa wild stack value). 1MiB
  * absorbs any realistic struct/array access; .bss is lazily committed. */
 static uint8_t g_openbus[0x100000];
+/* Dummy backing for clean-code NULL/small-pointer derefs (guest addr
+ * < 0x10000). Zeroed .bss: reads return 0, writes are absorbed instead of
+ * reaching the kernel/BIOS workspace at phys 0. */
+static uint8_t g_low_dummy[0x10000];
 
 /* Boundary-inclusive mapping: guest code uses region-top addresses
  * (0x80200000 RAM end, 0x1F800400 scratchpad end) as EXCLUSIVE loop bounds
@@ -71,6 +75,16 @@ void *guest_at(uint32_t addr)
       extern void guest_watch_block_tick(void);
       if (g_guest_watch_pending) guest_watch_block_tick(); }
     uint32_t phys = br2_phys(addr);
+    /* Clean-code NULL/small-pointer guard. Game data pointers are KSEG0
+     * (0x8xxxxxxx), scratchpad (0x1f8xxxxx) or KUSEG RAM (>=0x10000); a raw
+     * guest address below 0x10000 is a NULL/tiny dereference — a port bug,
+     * never a legitimate game-data access. On real HW such a deref reads
+     * kernel workspace; here it would let a stray clean store smash the
+     * OpenBIOS handler tables at phys 0 and fault the interrupt dispatcher.
+     * Route it to a zeroed dummy (reads=0 -> callers treat it as empty,
+     * writes absorbed) until each upstream NULL producer is fixed. */
+    if (addr < 0x10000u)
+        return g_low_dummy + (addr & 0xFFFFu);
     if (phys <= BR2_RAM_SIZE)
         return memory_get_ram_ptr() + phys;
     if (phys >= BR2_SCRATCH_BASE && phys <= BR2_SCRATCH_BASE + BR2_SCRATCH_SIZE)
