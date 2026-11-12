@@ -1487,9 +1487,15 @@ uint32_t cd_dir_entry_probe(int32_t param_1)
   int32_t a0 = param_1;
   int32_t sign, hi, idx, count, i;
   uint32_t *base, *rec;
+  uint32_t table_guest;
   int64_t prod;
-  base = (uint32_t *)guest_at(*(uint32_t *)guest_at(0x801fc6c0));
-  a0 -= (int32_t)(*(uint32_t *)guest_at(0x801fc6c4) << 5) + (int32_t)(uintptr_t)base;
+  /* param_1 and the table base are GUEST addresses (KSEG0). The index math
+   * must run in guest-address space: subtracting the host pointer guest_at()
+   * returns produces a wild idx and the cursor never advances. Keep the host
+   * pointer only for the final record dereference. */
+  table_guest = *(uint32_t *)guest_at(0x801fc6c0);
+  base = (uint32_t *)guest_at(table_guest);
+  a0 -= (int32_t)(*(uint32_t *)guest_at(0x801fc6c4) << 5) + (int32_t)table_guest;
   a0 >>= 2;
   prod = (int64_t)a0 * (int32_t)0x82082083;
   hi = (int32_t)(prod >> 32);
@@ -1497,7 +1503,7 @@ uint32_t cd_dir_entry_probe(int32_t param_1)
   idx = ((hi + sign) >> 8) - sign;
   rec = base + (idx << 5) / 4;   /* idx*32 bytes = idx*8 u32 */
   rec = (uint32_t *)((uint8_t *)base + (idx << 5));
-  if (*(int16_t *)rec != 4) return 1;
+  if (*(int16_t *)rec != 4) { CDDBG_SET(0x801bce8c,param_1); CDDBG_SET(0x801bce90,idx); CDDBG_SET(0x801bce94,1); return 1; }
   count = (int16_t)*(uint16_t *)((uint8_t *)rec + 6);
   if (count > 0) {
     for (i = 0; i < count; i++) {
@@ -1506,6 +1512,7 @@ uint32_t cd_dir_entry_probe(int32_t param_1)
     }
     a0 = count;
   }
+  CDDBG_SET(0x801bce8c,param_1); CDDBG_SET(0x801bce90,idx); CDDBG_SET(0x801bce94,*(uint32_t *)guest_at(0x801fc6ac)); CDDBG_SET(0x801bce98,(uint32_t)(a0+idx));
   *(uint32_t *)guest_at(0x801fc6ac) = (uint32_t)(a0 + idx);
   return 0;
 }
@@ -3792,6 +3799,7 @@ extern void cd_dir_entry_finalize();
 
 void cd_mc_state_machine(void)
 {
+  CDDBG_INC(0x801bce88);   /* DIAG: invocation count */
   /* Delegate the whole body to generated MIPS (0x80199440). The clean-C
    * port cannot reserve the guest stack frame the cd_result_wait_b out
    * buffer needs: it passes guest_sp()-0x10 as param_2, but with no
