@@ -3244,14 +3244,30 @@ NEW BLOCKER (frame ~29000, demo/attract load): scene_entry(0x80010000,0,1)
   -> request_reg(BFRD)=0 -> sector_available=0 -> channel state stuck=3.
   irq_flag always 0x00, i_stat bit2 (CDROM IRQ) never asserts.
 
-OPEN QUESTION: is file 0x00292646 SUPPOSED to be the demo's tile/scene
-data (wrong file-table/stamp->sector resolution landing on an audio
-region = clean-port bug), OR a legit XA audio stream that should play
-concurrently while a SEPARATE data read is starved? Audio sectors raising
-no INT1 means a pure-audio stretch gives blk_io_retry zero progress ->
-2000-poll timeout -> re-seek to file start -> never reaches later data
-sectors. On real HW either (a) the file isn't pure-audio-leading, or
-(b) audio sectors DO advance the channel/raise an INT the poll catches.
-NEXT: confirm whether 0x00292646 is the intended data file (check disc
-layout / file table) vs an audio bank; if data, find why stamp->sector
-lands on xa_file=1 audio; if audio, find the concurrent data channel.
+CONFIRMED WRONG-FILE (psx-spx authoritative): per psx-spx cdc, with
+CdlModeRT(Setmode bit6)/CdlModeSF set, "INT1 comes only for the data
+sectors" — XA audio sectors route to the ADPCM decoder->SPU with NO INT1.
+Our cdrom.c model (maybe_deliver_xa_audio -> data_delivered=0 ->
+deliver_read_sector returns 0 -> no set_irq) is FAITHFUL. So real HW also
+gets zero INT1 reading this region -> real HW does NOT read this file for
+blk_io_retry -> the file/sector resolution is WRONG.
+
+DISC LAYOUT (verified by reading Game.bin raw, MODE2/2352, LBA0=off0):
+- LBA ~73550..~166000: pure XA audio bank, ALL sectors (file=1,ch=0,
+  submode=0x64 AUDIO|REALTIME, coding=0x01 ADPCM, payload=0 silence).
+  73000-74500 window: 1500/1500 identical audio, ZERO data substreams.
+- LBA ~166000-170000: transition (file=1,ch=1,submode=0x48).
+- LBA ~170000..~235441(end): MODE1 (mode byte 0) DATA sectors.
+blk_io_retry seeks MSF[16,22,6]=LBA~73505, DEEP inside the audio bank,
+~100k sectors from the data region. File record @0x801b5610 (rec8 of the
+0x801b5b94 ptr table, selected by scene_entry index (param_2+8)*2=16 for
+param_2=0) holds stamp 0x00292646 + size 0x1d50; cd_cmd_issue (generated
+0x80196e14 via br2_call_generated) resolves it to LBA 73505=audio.
+0x801feb00=0x16220502 is STALE (set by cd_dir_entry_store/finalize which
+never fire for audio reads; last value from entry[0]'s earlier data read).
+
+NEXT: pin down whether the wrong link is (a) scene_entry's record
+selection index -> wrong stamp 0x00292646, or (b) cd_cmd_issue's
+stamp->sector directory lookup landing on audio. Compare generated
+scene_entry table-index math vs clean (param_2+8)*2; disasm cd_cmd_issue
+file-stamp->LBA path (needs Ghidra up or generated-block trace).
