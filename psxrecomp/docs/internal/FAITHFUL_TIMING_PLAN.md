@@ -4751,3 +4751,57 @@ NEXT (concrete, faithful):
     video thread polls an event flag that should be set per-frame.
   - Beetle/DuckStation oracle (psx-dsoracle) is the definitive diff tool but is
     MSVC/Windows-only (tools/build_oracle.sh) — not runnable on this Mac.
+
+=== SESSION10: interp reproduces identical stall -> NOT a recompiler bug; GPU OT DMA is the mechanism ===
+
+DECISIVE TEST (PSX_FORCE_INTERP=1, same binary, port 4371):
+  - The dirty-RAM interpreter backend reproduces the IDENTICAL stall: same
+    ra=0x801265F4, sp=0x801FFFC0, s1=0x1F800000, mdec_decode_count=17477,
+    cd_irq_delivered=1086, bioscall poll counts (B0#91=167018, C0#10=167015).
+  - => The bug is in SHARED hardware simulation / OpenBIOS guest kernel, NOT
+    compiled-code generation. Both backends compute byte-identical wrong state.
+
+ROOT-CAUSE MECHANISM (verified via generated game code + OpenBIOS source):
+  - Stall PC function br2eu_func_801265E4 (game): jal 0x80167330 (GPU packet
+    submit) -> lbu s0,[s1=0x1F800000] -> require scratchpad[0]==6 -> write 3 ->
+    loop to 0x80126344. scratchpad[0] is a DMA/GPU-completion handshake flag.
+  - Two guest threads ping-pong through the 0xB0 kernel gate: thread A
+    (ra=0x801265F4, frame/render) and thread B (ra=0x8019AA9C, calls B0#23 =
+    returnFromException = IRQ/exception return path). Cooperative yield loop,
+    neither progresses.
+  - scratchpad[0] currently reads 0x06 (precondition met at snapshot), but the
+    steady-state handshake for the NEXT packet never completes.
+
+GPU OT DMA PATHOLOGY (dma_state, faithful baseline - widescreen ws.active=0):
+  - Channel 2 = GPU ordering-table linked-list DMA. gpu_ot stats:
+    starts=245345 completes=127761 cancels=117584.
+  - nodes_max=262144 = the 0x40000 node CAP; words_max/cycles_last=9.7M.
+    A single OT transfer walks ~9.7M words / ~9.7M cycles (~17 PSX frames of
+    GPU time) because the walker hits the node cap instead of finding the
+    0x00FFFFFF end-of-OT terminator (dma_gpu_ll.c: next_addr==0xFFFFFF).
+  - gpu_ll_complete->complete_transfer(2) raises the DMA-done IRQ on natural
+    finish; cancel_async_transfer(2)->dma_gpu_ll_cancel fires when the guest
+    clears CHCR bit24 (GPU_abort / explicit stop) and raises NO irq.
+  - OpenBIOS gpu.c: GPU_sendPackets->GPU_sync waits for DMA_CTRL[DMA_GPU].CHCR
+    bit24 (busy) to clear, 0x10000000-iter timeout -> GPU_timeout->GPU_abort
+    writes CHCR=0x401 (cancels the in-flight OT). 117K cancels ~= GPU_sync
+    timing out / games aborting a perpetually-backed-up GPU.
+
+DEADLOCK SHAPE:
+  - Render thread submits OT -> GPU falls ~17x behind -> GPU_sync timeout ->
+    GPU_abort cancels -> packet never signals done -> scratchpad[0] handshake
+    stalls -> frame loop spins. MDEC+CD go idle (video stream starved) because
+    the render/consume side never drains decoded frames -> producer-consumer
+    deadlock. Only VBLANK IRQ fires (i_stat=0x1, i_mask=0xD = VBLANK+CDROM+DMA).
+
+OPEN QUESTIONS / NEXT:
+  - Is nodes_max=262144 an OT-parsing bug (walker misreads header>>24 word_count
+    or header&0xFFFFFF next_addr, or misses the terminator) or a legitimately
+    huge OT? Read the actual OT the game built (channels[2].madr resolved) and
+    hand-walk first nodes to check for a 0xFFFFFF terminator the parser misses.
+  - Confirm whether completes are natural-end (hit_limit=0) or cap-hit
+    (hit_limit=1); channels[2].madr=0xFC residue suggests cap-hit.
+  - If OT parsing is faithful, the faithful fix is GPU OT DMA timing (cycles/
+    word + node-walk cost) vs real hardware — cross-ref psx-spx/Beetle OT rate.
+  - Oracle still needed for ground truth; DuckStation macOS GUI boot still
+    blocked pre-BootSystem (Qt/cocoa), Beetle oracle is Windows-only.
