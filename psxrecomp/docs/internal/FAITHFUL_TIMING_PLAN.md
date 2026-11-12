@@ -5452,3 +5452,25 @@ blk_io_retry livelock. The drain call is gated inside generated
 the cd_mc_state_machine per-channel "data-arrived -> drain" branch to find
 the exact flag/counter that never gets set (likely the INT1 data-ready ->
 channel-ready mark), OR diff against the DuckStation oracle's CD path.
+
+## CD livelock — session 15u/v refinement (callback architecture nailed)
+
+- `cd_response_pump`(INT1,0x801979f8) loops `cd_response_process()`->s0:
+  `s0&4`->per-sector cb `DAT_801bc84c`, `s0&2`->complete cb `DAT_801bc848`.
+- LIVE: cb84c=`0x80198fe4`=`cd_mc_sm_wrap`->`cd_mc_state_machine` = the
+  STREAMING per-sector cb. cb848=0. File-load cb `cd_read_step_cb`(0x801985c4)
+  dbgctr frozen @0x42 -> file-load session ended; streaming owns cb84c now.
+- `cd_response_process` returns 4 (sector-ready) ONLY for response-type 1
+  (`bcb18&7==1`); bcb25 stayed 0 -> type-1 responses may be starved OR
+  cd_mc_state_machine returns status-4 before sector accounting.
+- `fc6b0`==0 forces the status-4/retry path but does NOT gate +4 accounting
+  (verified: both fc6b0 branches return 4; it only gates fc6a0 retry counter).
+- dir ent+4 reached 0/1/3 then froze -> +4 writer ran partially then stopped.
+  `cd_mc_state_machine` only READS entry+4 (asm 0x80199810/d0/9bc8).
+- ring_dropped=511k: drive reads ahead, guest never drains (BFRD mostly 0,
+  sector_read_pos=0, ch3 idle). Flow-control holds exist but consumer dead.
+- ORACLE BLOCKED on macOS: `-nogui` exits (Qt Cocoa needs a window); container
+  build fails "Prebuilt dependencies not found" (only macos-universal deps
+  present, no linux-arm64). No built macOS binary present.
+NEXT: find the +4 writer (channel +68/+70/+72 -> dir +4 consumer) OR get a
+working oracle (build linux-arm64 deps / fix macOS headless boot).
