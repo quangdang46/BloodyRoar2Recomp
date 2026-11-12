@@ -317,3 +317,24 @@ OPEN: what increments entry+4 (received count) per delivered sector? Sectors ARE
 (cdrom_sector_history: lba advancing past 208829, data_delivered=1, total 205937) and INT1 fires
 (cd_mc_state_machine invoked ~179K times). The per-sector -> entry+4 accounting is the break.
 cd_read_step_cb (0x801985c4) = file-read path, NOT channel streaming; never invoked (correct).
+
+## SESSION 15p — BIOS sub-channel sector callback decoded (0x801AA1E4/0x801AA244/0x801AA2AC)
+
+cd_subchan_table_install (cd.c:1555) registers TWO aliases of br2eu_func_801AA1E4 into the
+BIOS CD sub-channel dispatch cells @0x801feb44 (0x801aa244) and @0x801feb48 (0x801aa2ac),
+then bios_tramp_c003/c002(1,0x801feb40) arms them. a0 = subchannel ctx.
+
+Callback signature: (a0=ctx, a1=sector_index, a2=data_a, a3=data_b).
+ctx layout: +52(0x34)=tableA of channel-entry ptrs, +56(0x38)=tableB, +68(0x44)=channel count.
+Per call, for index a1 (bounds-checked < ctx->count):
+  entryA = ctx->tableA[a1]; if nonzero: entryA->+70=a2, ->+72=a3, ->+68 |= 1
+  entryB = ctx->tableB[a1]; if nonzero: entryB->+70=a2, ->+72=a3, ->+68 |= 1
+store_pc 0x801AA2BC = `entry->+68 |= 1` (data-ready flag). gwatch CONFIRMED this fires.
+
+So per-sector delivery DOES reach the channel entries (sets +68 ready flag + data ptrs).
+REMAINING BREAK: the consumer that reads channel-entry +68/+70/+72 and increments the
+dir-table entry's progress halfword (+4) so the 0x80199bc4 predicate
+(entry[+6]-1 == entry[+4]) can fire cd_dir_entry_finalize (state 3->2). That consumer is
+either a second INT handler, a poll in cd_mc_state_machine's work path, or a BIOS hook —
+not yet located. dir entries (0x20B: state@+0, prog@+4/+6) are a DIFFERENT struct than the
+channel entries (+68/+70/+72); the index/link between them is the open question.
