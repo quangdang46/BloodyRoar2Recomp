@@ -4962,3 +4962,29 @@ SESSION 12c — earlier DISTINCT stall found at frame ~444
     timing-sensitive waits; frame-444 may be the more common first blocker.
   - NEXT: identify the 0x282C/0x2924 wait (disasm that region / check if
     it's a vsync/kernel idle loop vs a device-ready poll).
+
+SESSION 13 — frame-444 crash ROOT-CAUSED + FIXED (clean dispatch unblocked)
+  - The frame-444 "low-memory stall" was NOT a wait — it was an OpenBIOS
+    interrupt-dispatcher AdEL (epc=0x2924, cause=0x410) caused by clean
+    source corrupting kernel globals at phys 0/0x100 (handler-table base
+    *(u32*)0x100 -> 0, *(u32*)0x0 -> 0x80010003).
+  - ISOLATION: generated-only (CLEAN_MIN=1 CLEAN_MAX=0) runs to frame
+    100K+ — clean dispatch was the SOLE blocker. Low-cluster-only clean
+    (0x8012-0x8018) reproduced the crash; cd_channel_poll ruled out.
+  - ROOT CAUSE: clean ports intermittently pass guest address 0/tiny to
+    guest_at() — NULL-deref port bugs. Traced via a temporary
+    guest_at(low-phys) diagnostic + __builtin_return_address to the exact
+    C call sites: text_render_simple (battle.c:12389, descriptor +0x1c
+    text ptr=0), cd_chan_attr_push/mode_*/spr_draw_* (NULL channel/sprite
+    bases). A stray clean store through RAM[0] smashed the kernel tables.
+  - FIX (cd1e492): guest_at() now routes raw guest addr < 0x10000 to a
+    zeroed g_low_dummy[0x10000] — reads see empty data, writes absorbed.
+    Legit KSEG0/scratchpad/KUSEG-high pointers unaffected. Verified: clean
+    dispatch runs to frame 260K+ with real 3D rendering (25M GP0 writes,
+    140K draws), matching the generated-only baseline.
+  - CAVEAT: this neuters the NULL-deref CLASS; the upstream NULL producers
+    (text ptr, cd channel bases) still need individual port fixes — they
+    now fail safe instead of corrupting the kernel.
+  - NEXT: (a) hunt the upstream NULL producers now that crashes are gone;
+    (b) confirm long-run stability + the frame-661 GPU-OT node-cap is the
+    remaining faithful-timing frontier (BR2_OT_TRACE=1 ready).
