@@ -3437,3 +3437,21 @@ BLOCKER: cannot get ground truth - DuckStation oracle is Windows-only
 NEXT concrete: (1) user verify Game.bin dump integrity / provide known-
 good dump or emulator; (2) OR build file-ID->sector directory parser by
 finding the on-disc directory the boot sequence reads (early LBAs).
+
+=== DUMP DEFECT: Game.bin XA/Form2 payloads ALL ZERO ===
+Verified by direct Game.bin reads (lba*2352): every XA sector in the
+Mode2/Form2 regions (73500-170000, incl file-table idx2-5 @76601/119281/
+135977/155049 and stuck pos 73506) has valid sync+header+subheader
+(file=1,ch=0,submode=0x64,coding=0x01) but ZERO bytes nonzero in payload
+offset 24-2351 (checked 400+ sectors/region x5). Mode1/Form1 data sectors
+(216335,76600,208829) DO have payload -> dump captured Form1 fine, Form2
+zeroed = classic Mode2/Form2 dump-tool bug. Game.bin is complete size
+(235396*2352=528MB, single track MODE2/2352). => BR2 CANNOT have working
+audio/video from this image; likely explains attract-mode stream stall.
+Game seeks MSF 16:22:06 (=LBA73506, empty XA) via Setloc+Setmode(0xE0)+
+ReadS, reads ~106 sectors, blk_io_retry times out (audio->no INT1), re-seeks.
+File stamps ARE BCD-MSF (cd_stamp_to_sector): idx8->LBA208829 real data,
+idx2-5->XA region. MSF16:22:06 is NOT a file-table start -> stream/offset pos.
+NEXT: need known-good dump to verify; XA empty payload may itself cause
+stall if game validates sector content. HINTSTS BFEMPT(bit3)/BFWRDY(bit4)
+currently = irq_flag|0xE0 -> bits3,4 unmodeled (no ADPCM buf state).
