@@ -1475,6 +1475,19 @@ static int read_sector_at(int min, int sec, int sect) {
         if (mode_reg & 0x20) {
             if (have_raw) {
                 memcpy(wb->data, raw_data + WHOLE_SECTOR_OFFSET, WHOLE_SECTOR_SIZE);
+                /* The 3-byte MSF address is position metadata, not payload:
+                 * on every playable disc it equals the sector's absolute
+                 * address, which the drive knows independently of the stored
+                 * header bytes. Dumps exist whose stored MSF is wrong (e.g.
+                 * high-LBA extents re-headed at a fixed MSF), and games in
+                 * whole-sector/Form2 mode parse those bytes as the position.
+                 * Regenerate it from the read position — identical to what a
+                 * correctly-mastered disc stores and to the fallback path —
+                 * so a corrupt header can never desync the guest's position
+                 * tracking. Mode byte, subheader and user data stay disc-authentic. */
+                wb->data[0] = bin_to_bcd(min);
+                wb->data[1] = bin_to_bcd(sec);
+                wb->data[2] = bin_to_bcd(sect);
                 wb->size = WHOLE_SECTOR_SIZE;
             } else {
                 wb->data[0] = bin_to_bcd(min);
