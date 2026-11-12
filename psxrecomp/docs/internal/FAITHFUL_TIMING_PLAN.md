@@ -5408,3 +5408,47 @@ Live dir-table dump at the livelock (base `0x801fc6c0 = 0x80010000`, count
   and whether the table base overlaps a reused stream buffer. If entries are
   genuinely never populated, the read-issue path that creates them is the
   missing link — trace `cd_dir_entry_probe/store` callers.
+
+### SESSION 15n — rtrace PROOF: guest never reads CD data FIFO; drain worker never invoked
+
+Live `rtrace` (MMIO-read trace) on the livelock (`:4413`, PID 28173) gave the
+decisive hardware-level confirmation of SESSION 15f/15i:
+
+- Armed `rtrace` on `0x1F801800-0x1F801807` + DMA range. ~11K MMIO reads captured.
+- The guest reads `0x1F801803` (CD status) ×305 and `0x1F801800` (index) ×305,
+  `0x1F801801` ×61, and `0x1F801070/074` (I_STAT/I_MASK) ×384 — i.e. it POLLS
+  status/index/interrupt regs constantly.
+- **`0x1F801802` (CD data FIFO): ZERO reads.** The sector-data drain is
+  definitively never executed. No drain/FIFO function is ever entered.
+
+PC attribution of the polls:
+- `0x8019A9AC`/`0x8019A954` -> `br2eu_func_8019A8EC` = **cd_intc_dispatch**
+- `0x80199570`/`0x80199454` -> `br2eu_func_80199440` = **cd_mc_state_machine**
+- `0x80196C04`, `0x801AA260` -> other CD-region fns
+
+Decoded `cd_intc_dispatch` block_8019A944 (the resume-time gate):
+- Loads ptr cells `0x801BDDA4=0x1F801070` (I_STAT), `0x801BDDA8=0x1F801074`
+  (I_MASK); state field `*(u16*)0x801BCD48 = 0x000d`.
+- Computes `I_MASK & 0x000d & I_STAT`; nonzero -> continue, zero -> exit path.
+- With `i_stat=0` it exits normally — the dispatcher is NOT stuck; it simply
+  finds no pending IRQ in mask {0,2,3} on each resume.
+
+Interrupt path verified healthy:
+- `irq_enable=0x07` enables ALL CD IRQ reasons (mask_matches_reason ANDs reason).
+- `i_mask=0x0000000D` (VBLANK+CDROM+DMA bits) — CDROM bit2 ENABLED.
+- `int1_lost=0`, sectors delivered (`last_sector.lba` advancing 208829->208893),
+  `ring_dropped` grows ~CD rate = consumer fully stalled.
+
+Custom-driver read pattern (`cd_read_log` tail): lba 208829 -> 32B headers to
+physical 0x0/0x20/0x40 (dir entries) + 2016B data to 0x400/0xBE0/0x13C0.
+Confirmed dir table IS at physical 0 (fc6c0=0 correct); buf2@0x13C0 EMPTY =
+its sector was ring-dropped before the (non-running) drain could grab it.
+
+CONCLUSION (unchanged, now hardware-proven): the game's custom CD streaming
+coroutine never invokes its `0x1F801802` FIFO-drain worker, so channel data
+buffers never fill -> dir entries stuck state=3 -> cd_channel_poll spins ->
+blk_io_retry livelock. The drain call is gated inside generated
+`cd_mc_state_machine`/`cd_intc_dispatch` coroutine dispatch. NEXT: decompile
+the cd_mc_state_machine per-channel "data-arrived -> drain" branch to find
+the exact flag/counter that never gets set (likely the INT1 data-ready ->
+channel-ready mark), OR diff against the DuckStation oracle's CD path.
