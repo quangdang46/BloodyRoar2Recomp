@@ -5505,3 +5505,31 @@ NEXT: find the register-pointer-table init fn (fills 0x801bdeb0+/0x801b84xx
 cells with 0x1F801xxx). Suspect it lives inside cd_chan_full_init (resumable
 coroutine via cd_ctx_restore) or a one-time CD/GPU ctx setup that either
 never ran or is gated. Once cells hold real MMIO addrs, sync loads complete.
+
+## Wild-write root cause — session 15y: decompression runaway, NOT missing init
+
+- CORRECTION to 15x: pointer cells are NOT uninitialized. Fresh boot (4417)
+  shows 0x801bdeb0=0x1f801c00, 0x801bdec0=0x1f8010f0, 0x801b8438=0x1f8010e0
+  — all CORRECT (match EXE .data). The image loads fine.
+- The cells get CORRUPTED at runtime: valid at frame ~645, garbage by ~2907,
+  exactly when match_loop stage-1 -> menu_res_load_sm -> save_load_state_machine
+  -> cd_file_load_sm(t1+0xa0) runs. ~500KB of guest RAM
+  (0x80180000-0x801f8000) overwritten with a repeating structured pattern
+  (0x55555555/0x40408048/0xfa/0xfc) — trashes pointer cells AND heap cursors
+  (_DAT_801e3cfc, _DAT_801c47b8) -> cd_cmd_queue_load writes to garbage ->
+  sync load hangs -> zero GPU submits.
+- SOURCE of wild write: decompression path stream_block_decode(0x80163154)
+  -> mode3_dispatch -> {lzss_decode | block_copy_ret_len | lzss_trap}.
+  * block_copy_ret_len: guest_memcpy(a0, a1+0xc, s0) with s0 = *(u32*)(src+8)
+    — garbage s0 = huge copy.
+  * lzss_decode: writes *op++ until a len==0 terminator in the SOURCE stream;
+    garbage src => no terminator => unbounded write to dst.
+- stream_block_decode already carries a guest_of(param_2) fix (menu.c:2243)
+  for the source-base host->guest bug, but the src offset
+  (param_2[param_3+1] + (*param_2+1)*4) or the heap cursor dst may still be
+  wrong => a1 points into unloaded/garbage -> runaway decode.
+NEXT: find the FIRST bad write. Trace stream_block_decode's a0(dst)/a1(src)
+for the battle-intro load; check whether cd_file_load_sm actually populated
+the compressed blocks (CD sync path) and whether the tag_table offsets are
+valid. Likely a wrong src offset OR heap cursor corrupted by an earlier bad
+length return.
