@@ -358,3 +358,29 @@ Freeing ent3 proved scanner wraps (fc6a4 3->0, ent3 reinited) but ent0-2 still s
 ROOT: streaming entries stopped receiving sectors. Delivery = BIOS subchan cb (0x801AA2AC sets
 channel-entry +68) OR ch3 DMA ring->channel. Neither advancing. Needs oracle RAM-diff or the
 channel->dir progress consumer located.
+
+## SESSION 15r — ROOT localized to recompiled BIOS CD-streaming path; oracle building
+
+LIVE verification (port 4413, fibers+default identical):
+- Game RUNS: frame advancing ~30fps, attract/demo rendering. NOT a hard hang.
+- cd_read_log: linear file load lba216335 -> dest 0x172000+ (+0x800/sector). Data CONFIRMED
+  landing (0x172000/0x172800/0x173000/0x174000 all non-zero asset bytes). Sector->dest works.
+- BUT ring_dropped>436k growing, sector_read_pos=0, ch3 DMA idle -> drive re-reads same
+  LBAs (208850-208913 oscillating) = stream-buffer-full livelock on the CHANNEL path.
+- 3 dir entries ent0-2 (state=3) frozen at +4=0,1,3 (need 4). These are the streaming
+  channels (stamps 0x2292646/0x2302646/0x2312646 = consecutive LBAs). ent3 done/freed.
+
+Delivery chain for streaming channels:
+  BIOS streams sectors -> invokes subchan cb 0x801AA2AC (real BIOS via bios_svc->svc_call,
+  NOT HLE) -> marks channel-entry +68/+70/+72 -> consumer advances dir-entry +4 ->
+  predicate +6-1==+4 -> fc69c -> finalize -> state2 -> cd_channel_poll -> state4 -> free.
+BREAK: dir-entry +4 never advances => channel->dir progress consumer OR the BIOS
+  subchannel-callback invocation is broken in recompiled BIOS MIPS (generated code).
+
+ORACLE PATH (now viable): Docker daemon started. `duckstation_oracle.py image` building
+arm64 ubuntu:22.04 builder in background (/tmp/oracle_image.log). Next:
+  python3 psxrecomp/tools/duckstation_oracle.py build --container
+  python3 psxrecomp/tools/duckstation_oracle.py install --bios <scph7502>
+  python3 psxrecomp/tools/duckstation_oracle.py start --disc Game.cue   (port 4371)
+Then diff dir entries @0x00-0x7f + fc6c0-cursors + channel ctx vs our runtime to see
+whether real HW advances +4 and which consumer does it.
