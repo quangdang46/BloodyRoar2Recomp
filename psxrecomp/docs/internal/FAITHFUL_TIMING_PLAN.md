@@ -4950,3 +4950,15 @@ SESSION 12b — OT stall is NONDETERMINISTIC + ot_trace diagnostic added
     BR2_OT_TRACE=1, reach a node-cap stall, read the dumped chain to find
     the first divergent next-pointer (cycle vs garbage region vs wrong
     resolve). This is the decisive datum for the OT stall.
+
+SESSION 12c — earlier DISTINCT stall found at frame ~444
+  - With BR2_OT_TRACE=1 the run stalls at frame ~444 (ra=0x0000282C,
+    cop0_epc=0x00002924, low memory/kernel region; clean count frozen).
+    Reproduced identically across two instrumented runs. This is a
+    DIFFERENT, EARLIER stall than the frame-661 GPU-OT node-cap — the OT
+    trace never fired (not a ch2 walk divergence). Likely a kernel/BIOS
+    or low-memory wait (0x28xx/0x29xx = exception/idle region). The
+    nondeterministic stall frontier means boot->menu has MULTIPLE
+    timing-sensitive waits; frame-444 may be the more common first blocker.
+  - NEXT: identify the 0x282C/0x2924 wait (disasm that region / check if
+    it's a vsync/kernel idle loop vs a device-ready poll).
