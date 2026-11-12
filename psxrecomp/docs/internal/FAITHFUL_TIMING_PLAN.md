@@ -4222,3 +4222,29 @@ scratchpad has a bad word at offset ~0x110. Likely an upstream clean-C
 writer producing malformed OT data OR a DMA length/pointer error.
 NEXT: locate the scratchpad OT builder, find what writes word@+0x110,
 check count/terminator. Ghidra MCP still DOWN (port 8080 refused).
+
+=== SESSION9b: display pipeline black-screen root-caused to draw-env struct ===
+Game runs (CD/FM/attract/battle logic) but renders BLACK. Traced via
+gpu_frame_dump + gpu_state + read_ram:
+- GP0 env cmds all from pc 0x80192E88 <- ra 0x801265F4 (frame_tick path).
+- draw_area = [0,254,319,254] -> top==bottom=254 = ZERO HEIGHT clip ->
+  nothing rasterizes. X is correct (0..319 = 320px).
+- h_display=[3220,3260] -> GP1(06h) X-range only 40 video-cycles ->
+  width computes to 4px (should be ~2560 cycles/320px). Separate GP1 bug.
+- Screen dims OK: _DAT_1f800020=320, _DAT_1f800022=240 (scratchpad).
+- Draw-env struct ptr = scratchpad[4]=0x801e61f0 (also fixed addr in
+  oam_list_rebuild). gpu_draw_env_put->gpu_prim_pkt_build reads env[0..5]
+  ushorts: env[1]=drawY-top, env[3]=height -> bottom=env[3]+env[1]-1.
+- sprite_attr_init_a(0x801e61f0,0,0xf0,320,240) SHOULD set
+  env[1]=240,env[3]=240 -> draw_area [0,240,319,479] (back buffer, correct
+  for double-buffered 320x240). OBSERVED [0,254,319,254] means the struct
+  is CORRUPTED at call time: env[1]&0x3ff=254, env[3]+env[1]-1=254.
+- Dump of 0x801e61f0 shows PACKED sprite/vertex data (0x5505,0x5555,
+  0xac00,0xc455,0xfe...), NOT the env ushorts -> the draw-env struct is
+  being OVERWRITTEN by render/sprite writes between init and
+  gpu_draw_env_put. Likely another clean-C guest-pointer/aliasing bug:
+  a sprite/vertex writer targeting 0x801e61f0 as a buffer.
+NEXT: find who writes packed render data over 0x801e61f0 (gwatch on
+0x801e61f0+0x02 for the env[1] u16), or whether frame_tick's iVar8 path
+reads a stale/reused buffer. ALSO separate: GP1(06h) h_display 3220/3260
+bad value source.
