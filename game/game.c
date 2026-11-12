@@ -1604,12 +1604,12 @@ undefined4 scene_entry(int param_1,int param_2,int param_3)
         if (*piVar5 != 0) {
             uVar3 = 3;
         }
-        gpu_pkt_attr_set(_DAT_801f4708 * 4 + -0x7fe0b900,uVar3);
+        gpu_pkt_attr_set(*(uint32_t *)guest_at(_DAT_801f4708 * 4 + -0x7fe0b900),uVar3);
         iVar2 = _DAT_801f4732 + -1;
         if (iVar2 < 0) {
             iVar2 = _DAT_801f4732 + 0xe;
         }
-        cd_fileop_forward(_DAT_801f4714 * 4 + -0x7fe0b8f4,
+        cd_fileop_forward(*(uint32_t *)guest_at(_DAT_801f4714 * 4 + -0x7fe0b8f4),
                      _DAT_801f4730 * 0x10 * ((iVar2 >> 4) + 1) >> 1);
         while (iVar2 = (int)blk_io_retry(0x801f4700,piVar5), iVar2 == -1) {
             iVar2 = cd_file_open_b(guest_of(local_38));
