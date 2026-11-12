@@ -5249,6 +5249,15 @@ static void gp0_execute_command(void) {
             gp0_exec_fill_rect();
             break;
 
+        case 0x1F:
+            /* GP0(1Fh): IRQ1 request — sets GPUSTAT bit 24, acknowledged by
+             * GP1(02h). Rarely used but real (psx.wiki / psx-spx); games do
+             * emit it. Raise INTC cause bit 1 (IRQ_GPU) so an unmasked GPU
+             * interrupt delivers; the flag stays until GP1(02h) acks it. */
+            irq1_flag = 1;
+            psx_irq_raise(1, 0); /* IRQ_GPU */
+            break;
+
         case 0xE1:
             gp0_exec_draw_mode();
             break;
