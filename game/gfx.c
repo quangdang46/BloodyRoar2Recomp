@@ -1752,7 +1752,7 @@ void console_emit(uint32_t c)
     *(int32_t *)guest_at(0x801b6794) = 0;
     cnt = 0;
   }
-  *(uint8_t *)(guest_at(0x801f68f0) + cnt) = (uint8_t)c;
+  *(uint8_t *)guest_at(0x801f68f0u + (uint32_t)cnt) = (uint8_t)c;
   *(int32_t *)guest_at(0x801b6794) = cnt + 1;
 }
 
