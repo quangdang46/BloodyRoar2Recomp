@@ -3647,3 +3647,40 @@ scheduler can't advance, or (b) a downstream decode/stream bug.
 NEXT: determine whether file8's chunk directory/offsets are intact vs
 dump-corrupt; compare read pattern vs Beetle oracle; inspect the
 bitstream-decode consumed-offset cursor.
+
+=== SESSION8: stall narrowed to entry-completion starvation ===
+Restarted clean (turbo_loads off, instant_max_per_frame reset 32->1 live).
+Re-read loop is REAL, not a turbo artifact — persists at authentic speed.
+
+PRECISE CHARACTERIZATION (all live-verified via debug server):
+- cmd loop every ~36 frames: Setloc(46:26:30=LBA208830) + SetMode(0) +
+  SetMode(0xE0) + ReadS(0x1B) = blk_io_retry timeout -> cd_stream_mode_init
+  re-seek -> re-read. read_msf oscillates 46:26:47-46:27:62 (~208840-2089xx).
+- Channel entries @0x80010000 FROZEN: e0 state=4(consumed) stamp 46:26:29,
+  e1-4 state=3(armed) stamps 46:26:30-33 (=LBA 208829-833). Cursor
+  @0x801fc6ac=0 stuck on consumed e0; arm cursor @0x801fc6a8=5.
+- cd_feb00_trace total=1: cd_dir_entry_finalize ran EXACTLY ONCE (e0 only).
+  e1-4 never reach state 2 => cd_channel_poll never fires => blk_io_retry
+  2000-poll timeout => -1 => re-seek. DEADLOCK: cursor on consumed e0.
+- cd_read_log (CD DMA): all 5 entries' transfers logged lba=208829 —
+  same last_sector_lba for every entry though stamps want 208829-833.
+  Data bufs @0x80010400+idx*0x7e0 match cd_channel_poll's idx*0x7e0.
+- ring_dropped grows ~100/sec even at instant_rate=1 => drops are a
+  SYMPTOM: game stuck polling (not consuming FIFO) so ring overflows.
+- irq_flag=0 (game acks CD IRQ), i_mask=0xd bit2(CD) enabled, int1_lost=0.
+- cd_intc_dispatch clean-C counter @0x801bce00 = 0 (may be bypassed by
+  generated path — inconclusive).
+
+ROOT-CAUSE HYPOTHESIS: entries1-4 don't finalize because cd_mc_state_machine
+(generated 0x80199440, driven per-INT1 by the deferred CD-DMA->DeliverEvent
+->cd_ctx_restore->cd_intc_dispatch coroutine) is not iterating them. Either
+(a) the coroutine starves (documented failure mode: clean-C spin lacks
+br2_irq_poll/live guest PC -> coroutine never resumes), or (b) per-entry
+sector data isn't matched (all DMAs logged same lba -> stale/duplicate
+sector delivery vs distinct 208829-833).
+
+NEXT: determine whether CD DMA delivers DISTINCT consecutive sectors per
+entry or repeats 208829 (DMA gating / delivery-ahead-of-demand bug), and
+whether the deferred coroutine resumes per-INT1. Needs Ghidra decompile of
+0x80199440/0x8019a8ec (no JDK locally) or Beetle oracle divergence, or a
+watchpoint on cd_dir_entry_finalize entry + cd_mc_state_machine invocation.
