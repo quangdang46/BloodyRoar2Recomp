@@ -5060,3 +5060,30 @@ SESSION 15 — host-pointer->guest-address leak sweep (br2_gaddr rollout)
   - VERIFY: rebuilt psx-runtime cleanly; detached run PID on :4413 with
     BR2_OT_TRACE=1 exercising the new binary. Prior OT-fix run reached
     frame ~9351, clean_trace 723M, 0 HIT_LIMIT/FATAL.
+
+SESSION 15b — demo-scene CD load livelock (game_state 4, _DAT_801f4740 never set)
+  - With the host-pointer fixes live, the game boots cleanly into
+    g_game_state=4 = scene_entry(0x80010000,0,1) demo/attract fight load.
+    It never reaches state 5 (match_loop) because scene_entry's do/while
+    only exits on _DAT_801f4740==1 (all scene data loaded) or a skip
+    button; the flag stays 0 forever.
+  - _DAT_801f4740 is only ever written =0 in clean source; the =1 setter
+    lives in generated code (CD/stream completion path).
+  - cdrom_command_history shows a repeating ~36-frame cycle:
+    Seek(MSF 46:26:29) -> Setmode(0) -> Setmode(0xE0) -> ReadN(0x1B),
+    reading ~1.5s of sectors (read_msf advances 46:26:29 -> 46:27:61)
+    then seeking BACK to 46:26:29 and repeating. Classic read-retry
+    livelock: data is delivered but the game never accepts/validates it.
+  - cdrom_state: CD INT1 flags DO fire (irq_flag 0x03 in cmd history),
+    reads progress, but s_ring_dropped climbs ~600/s (8-sector ring,
+    guest a full ring behind -> unread slots overwritten = real loss for
+    whichever stream is starving; may be benign XA audio or fatal data).
+  - Suspects: (a) CD sector data reaching wrong guest dest / decode
+    mismatch so validation fails; (b) ring-buffer consumer (MDEC/DMA ch0
+    or CD-ch3) too slow -> drops corrupt the stream; (c) completion
+    handshake the generated setter waits on never satisfied.
+  - Input injection WORKS: pad_status shows both pads connected,
+    press{buttons:65527(Start=0xFFF7),frames:N,slot} sets override and
+    slot0 reports 0xFFF7 — but state-4 scene load ignores Start (only
+    the 0x850 skip mask in the do/while would break it, and that path
+    also needs the load to have started).
