@@ -3605,3 +3605,28 @@ polls/decodes/frees; positions armed by cd_mc_state_machine read-ahead.
 OPEN: exact guest load producing 0x02052216 inside 0x80199440 (sp+40
 fill) — needs Ghidra decompile (server down) or Beetle oracle divergence,
 or a write-watchpoint on entry+0x1c catching the FIRST arm PC+value.
+
+=== SESSION7: ROOT CAUSE + FIX — whole-sector MSF header regenerated ===
+RESOLVED the frame-29000 blk_io_retry livelock. The "position" the game
+parses is the sector's own MSF address header, delivered in whole-sector /
+Form2 mode (mode_reg & 0x20; BR2 uses mode 0xE0). In this mode the data FIFO
+(RB_ ring, shared by programmed-I/O 0x1F801802 and CD DMA) delivers the raw
+sector starting at WHOLE_SECTOR_OFFSET=12 = the 3-byte MSF address + mode +
+subheader + user data (2340 bytes). The game reads the first 4 bytes
+(MSF[3] + mode[1]) as a u32 -> the channel-entry stamp at entry+0x1c.
+  stamp 0x02052216 = bytes 16 22 05 02 = BCD MSF 16:22:05 + mode 0x02.
+The have_raw path memcpy'd the STORED header from Game.bin, but this dump
+re-heads every high-LBA extent at MSF 16:22:05 (verified: file-offset LBAs
+208829/165898/176069/194654 and 73505 ALL carry header MSF 16:22:05; low
+LBAs 0/1/100 are correct). So every data file reported position LBA 73505
+-> entries armed into a pure-XA-audio span -> no data INT1 -> livelock.
+FIX (commit 507ab79): MSF==absolute-position is a hardware invariant on
+every playable disc; the drive knows the position independent of stored
+header bytes. The have_raw whole-sector path now regenerates wb->data[0..2]
+= bin_to_bcd(min/sec/sect) — identical to the fallback path and to what a
+correctly-mastered disc stores. Mode byte, subheader, user data stay
+disc-authentic. General fix (all games/sectors), not per-game.
+VERIFIED live: read_msf now tracks 46:xx (LBA ~208xxx stage data) instead
+of sticking at 16:22:05; int1_lost=0; frame advancing past the old stall.
+NOTE: dump still has wrong stored MSF headers + empty ch0 audio payload —
+a re-dump would be cleaner, but the runtime now tolerates it faithfully.
