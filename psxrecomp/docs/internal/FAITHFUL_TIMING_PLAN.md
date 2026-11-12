@@ -4414,3 +4414,31 @@ as the 0xFFFF8040 bad saved-PC. NEXT: instrument the ChangeThread syscall
 (t1/B0[23]) to log entry_tcb vs exit_tcb + resumed PC per switch; confirm
 whether PCB[0] actually changes. If the HLE scheduler isn't rotating TCBs,
 that's the bug — check psx_scheduler_* / deterministic TCB selection.
+
+=== SESSION9k: deterministic frame-647 kernel livelock; stub "corruption" was post-mortem artifact ===
+CORRECTION to SESSION9j hypothesis: the low-RAM "syscall stub corruption"
+(0xA0-0x100 showing 0x55555555/invalid-opcode garbage) is a POST-MORTEM
+artifact, NOT live corruption. Proven: armed wtrace on 0x80-0x140 for a full
+run (incl. PSX_DEBUG_FMV_QUIET=0 so FMV quiet can't hide writes) -> ZERO
+writes to the region in ~490 frames, and a tight read_ram(0xA0) poller saw
+the clean stub 0x24082A80 (li t0,0x2A80; jr t0; nop; nop) right up to death.
+The garbage bytes only appear when read AFTER the crash.
+GP0(1Fh) fixed (commit 866e4a7): real IRQ1-request command, was fatal-halt
+"unimplemented" at ~frame 611 -> now sets irq1_flag + raises IRQ_GPU(1).
+DETERMINISM: BOTH schedulers now hit the IDENTICAL crash — fiber
+(PSX_HLE_SCHEDULER=0) and HLE (default) both signal_11 at frame 647. So the
+bug is in the GUEST kernel path, not the scheduler backend. thread_ctx_ring
+stays EMPTY during the livelock -> thread switches run through the LLE
+ChangeThread syscall (func_0x29CC), not the HLE TCB rotation.
+Livelock signature (dispatch_tail, 6.8M dispatches): cycle
+0xB0stub->0x2AA0(B0disp)->handler->0xC0stub->0x2AC0(C0disp)->0x1D84->0xB0,
+also 0x40A0 in cycle; a0=0xFFFFFFFF; last_func=0x29CC.
+Decoded handlers: func_1D84 = get/set table @0x64FC+idx*4; func_40A0 =
+get/set kernel var @0xAEC8; func_2AA0/2AC0 = B0/C0 syscall-table dispatchers.
+=> a kernel routine polls kernel variables via syscalls waiting on a
+flag/event that never arrives (IRQ/timer/DMA/event delivery gap), spins
+millions of dispatches, then signal_11 (host segv, not recursion — depth=1).
+NEXT: identify which kernel variable the poller waits on and which IRQ/
+event should set it. Compare vs Beetle oracle at frame ~647 for the exact
+divergence (which interrupt/TCB stalls). Candidates: VBLANK handler not
+reaching kernel flag, timer IRQ, DMA-done IRQ, or DeliverEvent not firing.
