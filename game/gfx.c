@@ -2485,7 +2485,7 @@ uint32_t gpu_texpage_pack(uint16_t *a0_)
 
 /* gpu_coord_clamp_a/801924e8 — coord pack with viewport clamp:
  * low16 of each arg sign-extended, clamped to [0,dim-1] where dim is the
- * signed/unsigned hword @0x801c8324 (x) / @0x801c8326 (y); negative -> 0,
+ * signed/unsigned hword @0x801b8324 (x) / @0x801b8326 (y); negative -> 0,
  * >=dim -> dim-1, in-range keeps original arg. Result
  * 0xe3000000/0xe4000000 | (x&0x3ff) | ((y&0x3ff)<<10).
  * Disasm 0x80192450-0x80192578. */
@@ -2501,14 +2501,14 @@ static uint32_t coord_clamp(uint32_t v, uint32_t dimaddr)
 }
 uint32_t gpu_coord_clamp_a(uint32_t a0,uint32_t a1)
 {
-  uint32_t x = coord_clamp(a0,0x801c8324);
-  uint32_t y = coord_clamp(a1,0x801c8326);
+  uint32_t x = coord_clamp(a0,0x801b8324);
+  uint32_t y = coord_clamp(a1,0x801b8326);
   return ((y & 0x3ff) << 10) | (x & 0x3ff) | 0xe3000000;
 }
 uint32_t gpu_coord_clamp_b(uint32_t a0,uint32_t a1)
 {
-  uint32_t x = coord_clamp(a0,0x801c8324);
-  uint32_t y = coord_clamp(a1,0x801c8326);
+  uint32_t x = coord_clamp(a0,0x801b8324);
+  uint32_t y = coord_clamp(a1,0x801b8326);
   return ((y & 0x3ff) << 10) | (x & 0x3ff) | 0xe4000000;
 }
 
