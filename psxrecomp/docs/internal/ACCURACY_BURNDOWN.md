@@ -417,3 +417,20 @@ BIOS svc trace: game spins B0/0x0B(1.36M)+C0/0x0A(49K) polling CD status forever
 NEXT: find why stream payload for the starving channel doesn't reach its buffer —
 likely the per-sector->descriptor+4 update in the recompiled stream-read path, OR
 ch3/PIO delivery gating. Oracle RAM-diff will show correct +4 progression.
+
+## SESSION 15u — TWO-callback CD architecture decoded; streaming cb = cd_mc_sm_wrap
+
+cd_response_pump (CDROM INT1, tbl[2]=0x801979f8) loops cd_response_process()->s0:
+  s0&4 -> call_guest(DAT_801bc84c, DB8(0x801bcb25), 0x801fc6d0)  // per-sector cb
+  s0&2 -> call_guest(DAT_801bc848, DB8(0x801bcb24), 0x801fc6c8)  // complete cb
+DAT_801bc84c/848 set via mc_session_b/mc_session.
+
+LIVE: pump_cnt(0x801bce04) incrementing ~180/s (INT1 firing). cb84c=0x80198fe4 =
+cd_mc_sm_wrap -> cd_mc_state_machine = the STREAMING/channel per-sector cb.
+cb848=0 (no complete cb). cd_read_step_cb(0x801985c4, file-load cb) dbgctr frozen
+@0x42 -> file-load session ended; STREAMING session now owns cb84c.
+
+cd_mc_state_machine only READS entry+4 (0x80199810/d0/9bc8), never writes it ->
++4 increment lives in a DIFFERENT sector-arrival fn. dir ent0-2 state=3 +4 frozen
+(0,1,3 need 4). NEXT: find the +4 writer (channel +68/+70/+72 consumer) OR oracle
+diff. cb84c path IS the live one to trace.
