@@ -1727,18 +1727,39 @@ irq_deliver_eval:
     } else {
         uint32_t w0 = cpu->read_word(0x80000080u);
         uint32_t w1 = cpu->read_word(0x80000084u);
-        uint32_t hi_val = (w0 & 0xFFFF) << 16;
-        int16_t lo_val = (int16_t)(w1 & 0xFFFF);
-        target_pc = hi_val + (uint32_t)(int32_t)lo_val;
-        /* The RAM exception vector is a LUI/ADDIU pair that materializes the
-         * installed handler address in $k0 before transferring to it.  The
-         * host-side fast path decodes that pair and dispatches straight to the
-         * target, so it must also commit the pair's architectural register
-         * result.  Vigilante 8's handler uses $k0 as its table base on its very
-         * first instruction; leaving the interrupted value in $k0 made it load
-         * a BIOS instruction word (0xAD400000) as a jump target. */
-        uint32_t vector_reg = (w1 >> 16) & 31u;
-        if (vector_reg != 0u) cpu->gpr[vector_reg] = target_pc;
+        /* The RAM exception vector is normally a LUI/ADDIU pair that
+         * materializes the installed handler address in a scratch register
+         * before transferring to it.  The host-side fast path decodes that
+         * pair and dispatches straight to the target, so it must also commit
+         * the pair's architectural register result.  Vigilante 8's handler
+         * uses $k0 as its table base on its very first instruction; leaving
+         * the interrupted value in $k0 made it load a BIOS instruction word
+         * (0xAD400000) as a jump target.
+         *
+         * Only take that decode when the vector really is the
+         * `lui $r,hi ; addiu $r,$r,lo` materialization.  OpenBIOS installs a
+         * kernel-call gate trampoline at the vector instead — the same format
+         * InitSyscall memcpy's to A0/B0/C0 — whose words are not LUI/ADDIU.
+         * Decoding them produced a wild target (0xFFFF8040 at frame 648).
+         * When the stub pattern is absent, dispatch the vector itself and let
+         * the trampoline execute, matching the A0/B0/C0 fall-through. */
+        uint32_t lui_rt  = (w0 >> 16) & 31u;
+        uint32_t addiu_rs = (w1 >> 21) & 31u;
+        uint32_t addiu_rt = (w1 >> 16) & 31u;
+        int is_lui_addiu =
+            (w0 >> 26) == 0x0Fu &&          /* LUI   $r, imm16 */
+            (w1 >> 26) == 0x09u &&          /* ADDIU $r, $r, imm16 */
+            addiu_rs == addiu_rt &&         /* addiu $r,$r (not $r,$other) */
+            addiu_rs == lui_rt &&           /* same $r the LUI wrote */
+            addiu_rt != 0u;                  /* not $zero */
+        if (is_lui_addiu) {
+            uint32_t hi_val = (w0 & 0xFFFFu) << 16;
+            int16_t lo_val = (int16_t)(w1 & 0xFFFFu);
+            target_pc = hi_val + (uint32_t)(int32_t)lo_val;
+            cpu->gpr[addiu_rt] = target_pc;
+        } else {
+            target_pc = 0x80000080u;
+        }
     }
 
     /* Record which fiber owns this setjmp. Any subsequent longjmp must
