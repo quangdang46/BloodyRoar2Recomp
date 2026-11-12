@@ -4442,3 +4442,43 @@ NEXT: identify which kernel variable the poller waits on and which IRQ/
 event should set it. Compare vs Beetle oracle at frame ~647 for the exact
 divergence (which interrupt/TCB stalls). Candidates: VBLANK handler not
 reaching kernel flag, timer IRQ, DMA-done IRQ, or DeliverEvent not firing.
+
+=== SESSION9l: frame-647 livelock decoded — syscall numbers + DispatchThread + IRQ health ===
+Added t0-t2/a2-a3/sp to crash_trace dirty_block_tail (commit 49611f0) so the
+post-mortem report carries the A0/B0/C0 syscall number (t1=gpr[9]) at each stub
+dispatch. Re-ran to frame 647 signal_11 and read the tail.
+
+SYSCALL NUMBERS AT THE LIVELOCK (dirty_block_tail, t1 field):
+- frame_tick 0x801265F4 -> B0 stub t1=0x5B(91)  AND  C0 stub t1=0x0A(10), a0=0xFFFFFFFF
+- game 0x8019AA9C (func_8019A8EC) -> B0 stub t1=0x17(23)=ChangeThread,
+  via thunk func_8019AD60 (li t2,0xB0; li t1,23; jr t2). a1/a2=I_STAT/I_MASK
+  addrs were leftover regs, not args.
+- Kernel thunk family: func_8019AD60=B0#23, func_8019AD70=B0#24, func_8019AD80=B0#25,
+  func_80199FE0=B0#91. Each is `li t2,0xB0; li t1,N; jr t2`.
+- C0[10]=func_1D84 = atomic get/set on kernel table 0x64FC (lw old; sw a1 in
+  delay slot). func_40A0 = get/set var 0xAEC8.
+
+DISPATCHTHREAD = func_2810 (OpenBIOS). It is the kernel context-switch/dispatch:
+  prologue saves ALL regs into TCB frame (s0-s7@64-92,t0-t9@32-60+96-100,
+  gp/sp/fp@112-120,hi/lo@132-136; resume PC at +128 — matches func_29CC restore).
+  Then loop @0x28F8-0x2964 walks linked list s6 (lw s6,0(s6)=next):
+    s1(node)->v0 predicate (event flags); if v0!=0 && s0!=0 -> s0(v0) action;
+    advance. predicate returns v0=0xF2000000 / 0xF0000003 (event flag masks).
+  Spinning = list rescanned endlessly; either circular/corrupt next-ptr or
+  every node's predicate keeps returning nonzero without a transition.
+
+IRQ/EVENT HEALTH (event_ring.json, 65536 entries, seq 525474-591009):
+  kinds: ISTAT_RAISE 28454, DEQ 16221, IRQ_DELIVER 16217, ENQ 4539, IRQ_GATE 105.
+  UNIFORM across all 16 seq-windows — NO degradation/stall:
+    IRQ0(VBLANK)~250x, IRQ2(CDROM)~1531x per window; imask=0xD (IRQ0,2,3 enabled).
+  ENQ/DEQ sources: pc 0x80159AD0 dominant (kernel event loop), 0x80196FC4,
+  0x8019AA98. func=0x29CC (context restore) on all — recorded during dispatch.
+  IRQ_GATE all at pc=0x8019AA98 func=0x29CC = CD IRQ gated during ctx switch (normal).
+CONCLUSION: kernel IRQ loop + event queue are HEALTHY and periodic. The livelock
+  is a GAME thread blocked on a specific event the periodic IRQ loop never
+  satisfies — NOT a dead IRQ path. signal_11 is a host segv AFTER the spin
+  (dispatch_depth=1, stack_profile all-zero => host-side, not guest stack).
+OPEN: which event/spec the game thread WaitEvent's on; whether DeliverEvent
+  sends a mismatched spec, or a non-IRQ DeliverEvent source is missing.
+  parity_trace (CHANGETHREAD/YIELD/SAVE/RESTORE ring) + Beetle oracle diff at
+  frame ~647 is the mandated next step to find the exact divergence.
