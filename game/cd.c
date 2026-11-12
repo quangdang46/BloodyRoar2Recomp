@@ -1994,10 +1994,12 @@ int32_t cd_channel_poll(uint32_t *param_1, uint32_t *param_2)
   CDDBG_INC(0x801bcf14);              /* DIAG: channel_poll calls */
   CDDBG_SET(0x801bcf18, idx);         /* DIAG: poll idx seen */
   if (*(uint16_t *)e == 1) {
-    if (*(uint32_t *)guest_at(0x801fc6b4) != 0) {
-      *(uint32_t *)guest_at(0x801fc6ac) = 0;
-      *(uint16_t *)e = 0;
-    }
+    /* Generated 0x8019938C-0x801993A4: the idx reset (0x801FC6AC=0) sits in
+     * the delay slot of the 0x801FC6B4 test, so it runs UNCONDITIONALLY on
+     * state==1; only the entry-state clear is gated on 0x801FC6B4!=0. */
+    uint32_t clr = *(uint32_t *)guest_at(0x801fc6b4);
+    *(uint32_t *)guest_at(0x801fc6ac) = 0;
+    if (clr != 0) *(uint16_t *)e = 0;
     idx = *(uint32_t *)guest_at(0x801fc6ac);
     e = (uint8_t *)guest_at(base + idx * 0x20);
   }
