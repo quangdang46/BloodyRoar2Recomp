@@ -4157,3 +4157,30 @@ REMAINING QUESTION: which function performs state1->state3 on CD
   (random state2 producer, never ran), or the ch3-DMA-done path.
   cd_dir_entry_store(0x80199100) is reached via jalr/jal from generated;
   its trigger/callback registration is the next thing to find.
+
+=== SESSION8u: accel exonerated; deadlock = channel data-delivery->entry-completion ===
+accel_consumer_waits=0 EXPECTED (g_disc_speed_divisor=1, acceleration OFF).
+ring_dropped=18023 is genuine consumer starvation, not an enhancement bug.
+cd_response_process type histogram @0x801bce34+type*4: type1(data-ready
+INT1)=43491 fires constantly -> cd_response_pump returns 4 -> fires
+0x801bc84c=cd_mc_sm_wrap->cd_mc_state_machine on EVERY data-ready.
+CONFIRMED: cd_mc_state_machine cannot advance state!=0 entries (returns
+status8 post-claim / status4 entry-busy). So state1->state3 (DMA-arm on
+data-ready) is done by a SEPARATE function not yet identified. Candidates
+examined: cd_drain_dispatch(->cd_queue_drain, no), tbl[3]=0x8019af7c
+(DMA-IRQ handler, generated-only, loads *(0x801BDDF0) dispatch tbl then
+falls into cd_cb7_run region). cd_dir_entry_store(0x80199100, random
+state2 producer) reached via jalr, trigger unregistered/unfired.
+GAME STATE: intro FMV loop (game.c:1584 blk_io_retry->cd_channel_poll)
+parked at epc 0x80159AE8, vblank advancing, MDEC decode works (645 mb).
+The channel ring is healthy (e10/15/20/25 state2) but BOTH cursors wedged:
+produce@30(e30.state1 awaiting data->DMA-arm), consume@5(e5.state4
+awaiting cd_dir_entry_probe free; probe ran only 2x).
+ROOT (refined): a channel read's sector data is not completing the
+state1->state3 DMA-arm for the frontier entry. Everything downstream
+(consume, reuse, BFRD re-arm, stream-advance) is starved by that.
+NEXT concrete step: find the data-delivery function that writes sector
+data into channel buffers (base+idx2*0x20+idx*0x7e0 from cd_channel_poll)
+and marks the entry — likely the ch3-DMA-done path via tbl[3]=0x8019af7c
+or a CD-data-ready->DMA-arm helper. Disasm 0x8019af7c / find who writes
+channel data buffers + transitions state1->3.
