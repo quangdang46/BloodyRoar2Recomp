@@ -3355,3 +3355,18 @@ psx_cyc_step cost + whether psx_check_interrupts_at advances to CD
 delivery deadlines. If budget < needed -> faithful-core CYCLE bug
 (poll loop under-counts cycles vs real HW) OR CD delivery too slow.
 Measure: guest-cycle delta across one full blk_io_retry -1 return.
+
+=== CALLER CORRECTION (frame ~106212) ===
+fntrace shows mc_date_serial_cmp(0x80159AB4) is called from
+ra=0x801264E0 (jal ~0x801264D8, ret->branch-check) — NOT from
+blk_io_retry (0x80159A14 has ZERO fntrace entries). a0=0x801F4700.
+Caller func = br2eu_func_801264B4 (full_00.c), which ALSO calls
+scene_entry(0x80159028) and 0x80156048. => scene_entry/blk_io_retry
+ALREADY RETURNED; the livelock is func_801264B4's OWN mc_date_serial_cmp
+wait loop polling a CD channel that never reaches state==2. The channel
+entries (73505-73509, all XA audio) belong to THIS wait — likely an
+audio/video stream the driver waits on, not the tile loader. Re-frame:
+this may be a legitimate "wait for stream data sector" that can't
+complete because the armed entries are audio-only, OR the wrong channel
+cursor. Need: what func_801264B4 waits for (its channel/file context)
+and whether the armed entries should be data not audio.
