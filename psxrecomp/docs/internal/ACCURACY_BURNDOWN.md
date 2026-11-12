@@ -457,3 +457,22 @@ isn't running. Both subchan cbs 0x801aa244/0x801aa2ac alias br2eu_func_801AA1E4
 NEXT: find what re-triggers cd_chan_job_submit after a payload DMA completes
 (DMA-done path or per-frame pump), OR restart+early-gwatch to catch +4 writer
 PC during stream setup.
+
+## SESSION 15w — streams are cd_stream/tile_stream system, NOT intro movie
+
+intro_movie_state(0x8012c0b4) state byte @0x1f80008c = 0xffff (-1 IDLE) ->
+intro/attract movie path is DONE/not active. The stuck dir entries ent0-2
+(state=3, +4 frozen) belong to the SEPARATE continuous-stream system:
+cd_stream_mode_init(0x80159ce4) + tile_stream_pump(0x80159864)->cd_mc_state_machine,
+driven per-sector via cb84c=cd_mc_sm_wrap(0x80198fe4).
+
+mc_op_wait/cd_chan_job_*/cd_chan_cmd_* are MEMORY-CARD ops (mc=memcard), NOT the
+CD stream path — earlier suspicion corrected. cd_chan_cmd_submit frozen@7 is
+memcard activity, unrelated.
+
+OPEN: the continuous-stream consumer that advances dir-entry +4 as payload
+sectors arrive. cd_mc_state_machine reads +4 (load_half only). Writer is a
+separate fn not yet isolated — likely reads channel +68/+70/+72 (set by
+br2eu_func_801AA1E4 subchan cb) and bumps dir +4 + copies payload to stream buf.
+Both oracles unavailable on macOS (DuckStation -nogui needs window; no linux-arm64
+prebuilt deps for container; no beetle-psx source/lib present).
