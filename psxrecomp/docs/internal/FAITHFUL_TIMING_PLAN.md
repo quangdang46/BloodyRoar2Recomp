@@ -4548,3 +4548,52 @@ NET (unchanged): func_2810 DispatchThread idles; a worker thread stays blocked
   on an undelivered kernel event. IRQs+event-queue+CD all healthy. The specific
   WaitEvent spec / DeliverEvent source is still unidentified. Needs oracle diff
   or RE of the game's OpenEvent/WaitEvent/CreateThread call sites + specs.
+
+=== SESSION9o: exception-vector trampoline fix LANDED (da96b5b); stall = thread-readiness, not events ===
+
+FIX (committed+pushed da96b5b): psx_check_interrupts no longer blindly decodes
+the RAM exception vector @0x80000080 as a Sony lui/addiu stub. OpenBIOS installs
+a kernel-call TRAMPOLINE there (same 0x4005xxxx/0x??5555?? format InitSyscall
+copies to A0/B0/C0). The old decode read w0=0x40050000/w1=0x27488040 ->
+target=0xFFFF8040 wild dispatch (frame-648 FAIL-FAST). Now: validate the
+lui/addiu/jr-t0 pattern (opcode+reg match, rt!=0); on match use the fast-path,
+else dispatch to 0x80000080 so the trampoline EXECUTES (faithful, matches
+interp_exception + the A0/B0/C0 fall-through path). Frame-648 crash GONE.
+
+POST-FIX STATE (boot_skip path, bios_hle=true default):
+  - frame counter climbs past 648 to 600K+ (VBLANK-driven; NOT real progress).
+  - get_registers identical every sample: ra=0xBFC05E00 epc=0xBFC05784 =
+    kernel DispatchThread IDLE loop. Game/worker thread NEVER re-dispatched.
+  - gpu_state: gp0_writes=0, gpu_ring total=0 -> ZERO GPU cmds this run.
+  - frame_fingerprint byte-identical across frames (pure idle).
+
+STALL CHARACTERIZATION (new data this session):
+  - bioscall_dump: B0#11 TestEvent=62661 (froze), B0#10 WaitEvent=0 !!!,
+    B0#32 UnDeliverEvent=38, B0#23 ReturnFromException=22, B0#7 DeliverEvent=8,
+    B0#8 OpenEvent=10, B0#12 EnableEvent=10. Game NEVER calls WaitEvent.
+  - cycles_to_next_event=0xFFFFFFFF; timers/cdrom/dma/sio all none -> only
+    VBLANK i_stat=0x1 pending. NOTHING scheduled to wake anything.
+  - Kernel globals (phys): *(0x108)=TCBH@0x8FD0, *(0x110)=TCBbase@0x8FE0,
+    *(0x114)=0x300 => 4 threads x 0xC0. TCB state @*(tcb): 0x4000=runnable.
+  - HLE thread scheduler (PSX_HLE_SCHEDULER, default ON, traps.c) only switches
+    to a TCB whose state==0x4000; else falls back / idles. Stall => no TCB is
+    runnable. Suspect: worker thread's TCB state stuck non-0x4000 (never woken)
+    OR scheduler not seeing the game-created threads.
+
+LLE BOOT (PSX_BIOS_HLE=0, real intro) CRASHES DIFFERENTLY:
+  - frame ~946/647, signal_11 in HOST console_emit (clean game/gfx.c:1734).
+    console_emit writes a 32B line buffer @guest 0x801f68f0 indexed by count
+    @0x801b6794; a corrupted/negative cnt -> OOB write -> host SIGSEGV.
+    guest_at() maps these to valid RAM; the COUNT is garbage because the guest
+    console state was never properly initialized (boot skipped / broken state).
+    Symptom of the same underlying stall, surfaced as a host crash.
+  - dispatch_tail at crash = same kernel idle pattern (0x40A0->C0->2AC0->1D84
+    ->B0->2AA0). So LLE boot hits the SAME thread stall, earlier, then crashes.
+
+NET: the frame-648 dispatch crash is FIXED. The remaining blocker is a
+THREAD-READINESS stall: after boot the kernel has 4 TCBs but none runnable, so
+DispatchThread idles forever. Not an event-wait (WaitEvent=0), not CD/timer/DMA.
+Next: read the 4 TCB states+saved PCs at the stall (need a non-crashing window —
+boot_skip idles stably but crashed once at 647; retry early-frame TCB dump),
+then RE which B0 thread call (OpenTh/CreateThread/ChangeTh) leaves a TCB
+non-0x4000, or diff vs Beetle oracle thread schedule.
