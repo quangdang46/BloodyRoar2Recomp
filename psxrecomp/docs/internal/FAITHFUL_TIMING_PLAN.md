@@ -3964,3 +3964,22 @@ NEXT: trace who is supposed to set request_reg BFRD + arm ch3 and mark
 channel state=2; check cd_intc_dispatch actually runs on CD IRQ and walks
 the job/channel tables. i_mask=0xD (CDROM bit2 enabled), i_stat=0 between
 serviced IRQs.
+
+=== SESSION8m: SMOKING GUN — cd_intc_dispatch never invoked ===
+cd_intc_dispatch (0x8019a8ec) bumps scratch counter @0x801bce00 on entry.
+read_ram shows it stays 0x00000000 -> the game's CD-subsystem INTC
+dispatcher is NEVER called, even though cd_irq_delivered=44280 (CD IRQs
+fire + are taken by the CPU) and CD commands ACK fine via polling.
+=> CD data-ready IRQs reach the CPU but the game's CD driver never runs
+   its deferred dispatch -> channel-table entries never reach state==2 ->
+   cd_channel_poll spins -> blk_io_retry -1 -> read-retry loop.
+Also confirmed: request_reg=0x00 (BFRD never set), DMA ch3 idle -> the
+sector ring fills but the guest never drains it into channel buffers.
+s_irq_defer_cdrom is env-gated OFF by default, so IRQs deliver normally;
+the break is in the game's ISR->cd_intc_dispatch routing or the
+deferred-coroutine ctx_save/ctx_restore resume (cd.c:4962 contract:
+cd_ctx_save(0x801bcd50) ... on CD IRQ kernel calls cd_ctx_restore ->
+cd_chan_full_init -> cd_intc_dispatch). Needs live cpu->gpr -> must run
+generated, not clean-C. NEXT: verify the game's CD ISR actually invokes
+the deferred path on CDROM IRQ (bit2); check whether cd_ctx_save armed a
+resume that never fires, or the ISR mask/table skips CD events.
