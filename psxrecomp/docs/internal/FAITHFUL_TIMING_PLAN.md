@@ -4037,3 +4037,31 @@ game's top-level IRQ handler (vector 0x80000080 -> k0=0x27AC kernel
 dispatch) still calling the CD sub-handler, and is cd_response_pump
 (0x801979f8, in INTC table) executing? Add a counter to cd_chan_cmd_submit
 ch3-arm + cd_dir_entry_finalize to see which side of the break is dead.
+
+=== SESSION8p: counters isolate the deadlock — submit cursor blocked ===
+Added CDDBG counters @0x801bcf00-f10 (chan_cmd_submit calls / ch3 arms /
+finalize / store / ch3 CHCR-kick). Live read at frame ~3303 (stuck loop):
+  submit=61  ch3arm=61  finalize=6  store=0  ch3kick=61  -- ALL FROZEN.
+cd_response_pump=264k, cd_response_process=530k (type2=129k dominant,
+type4=4849). cd_mc_state_machine=127k returns status=4 every call.
+DEADLOCK CONFIRMED both directions:
+- SUBMIT side dead: cd_mc_state_machine disasm shows it only calls
+  cd_chan_cmd_submit when entry[cursor@0x801fc6a4=30].state==0; entry[30]
+  @0x800103C0 is stuck state=1 -> status4 -> never reaches submit -> the
+  submit/ch3arm/kick counters froze at 61 (all from early boot).
+- COMPLETE side dead: finalize=6 (early only), store=0. ch3 DMA completes
+  (all 61 kicks finished, active:0) but does NOT raise i_stat bit3 (zero
+  DMA IRQs in irqctx) -> completion is CDROM-IRQ driven, not DMA-IRQ.
+  cd_response_pump runs constantly but the type-2 path (dominant, 129k)
+  has cb@0x801bc848==0 (per-session cb, NULL for this op) -> skipped;
+  type-4 (4849) fires cd_mc_sm_wrap(0x80198fe4)->cd_mc_state_machine.
+ENTRY LIFECYCLE (from cdmc_80199440.asm): state0=free->submit; nonzero->
+status4. Machine writes state=0 in cleanup paths (0x80199754/84/804).
+entry30.state=1 = reserved/DMA-in-flight awaiting completion that never
+signals. entries 0-9: 0,0,0,0,0,4,3,3,3,3 (reads issued, no state=2).
+OPEN: what transitions a state=1/3 entry to state=2? cd_dir_entry_finalize
+(0x801990f0)/store(0x80199100) are the only state=2 writers, reached via
+CDROM IRQ -> cd_response_pump -> type-callback -> channel-complete. Find
+which response type / callback marks a finished ch3 channel read state=2,
+and why it stopped after ~6 early completions (frame ~454). Likely the
+same deferred-coroutine resume class as cd_chan_full_init.

@@ -3927,6 +3927,7 @@ int32_t cd_strcmp(const void *pa0,const void *pa1)
 void cd_dir_entry_finalize(void)
 {
   uint32_t idx = DB32(0x801fc6a8);
+  CDDBG_INC(0x801bcf08);              /* DIAG: finalize (state=2) calls */
   uint8_t *e = (uint8_t *)guest_at(DB32(0x801fc6c0) + (idx << 5));
   uint32_t t, fn;
   *(uint16_t *)e = 2;
@@ -4012,6 +4013,8 @@ uint32_t cd_chan_cmd_submit(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,
   uint32_t retry = 0;
   uint32_t fla, fpa;
   (void)a6;
+  CDDBG_INC(0x801bcf00);              /* DIAG: chan_cmd_submit calls */
+  if (s0 == 3) CDDBG_INC(0x801bcf04); /* DIAG: ch3 (CDROM) arms */
 
   if (psx_read_word(base + 8) & 0x10000000u) {
     for (;;) {
@@ -4041,6 +4044,7 @@ uint32_t cd_chan_cmd_submit(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,
   fpa = DB32(0x801bcc40);
   while ((br2_ld8(fpa) & 0x40) == 0) { br2_irq_poll(); }
 
+  if (s0 == 3) CDDBG_INC(0x801bcf10); /* DIAG: ch3 CHCR kick reached */
   psx_write_word(base + 8, a4);                          /* CHCR: start */
   return psx_read_word(base + 8);                        /* CHCR readback */
 }
@@ -5416,6 +5420,7 @@ void cd_dir_entry_store(uint32_t param_1,uint32_t param_2)
   uint8_t *e = (uint8_t *)guest_at(param_2 + ((uint32_t)param_1 << 5));
   uint32_t t;
   uint32_t fn;
+  CDDBG_INC(0x801bcf0c);              /* DIAG: store (state=2) calls */
   *(uint16_t *)e = 2;
   memcpy(&t,e + 0x1c,4);                     /* lwl/lwr unaligned u32 */
   *(uint32_t *)guest_at(0x801feb00) = t;
