@@ -5216,3 +5216,26 @@ issues, not cdrom.c pacing.
   find WHICH guest path is supposed to drain the ring for these
   Mode2/Form2 sectors (BFRD target buffer vs MDEC vs SPU) and measure
   its per-sector guest-cycle cost vs the 225792-cycle (2x) period.
+
+### SESSION 15e addendum 2 — INT1 dispatch CONFIRMED working; gap is the coroutine resume
+
+- `irqctx_ring` shows `istat=0x4` (CDROM IRQ, i_mask bit2 enabled,
+  cop0_sr IEc=1) taken at `take_pc=0x80199360` = `cd_channel_poll`,
+  `exit_reason=1 same_thread=1 restored=1`, repeating every CD INT1.
+  → The CD interrupt IS delivered and DOES enter the game's CD poll.
+- `ring_dropped`≈174K vs ~179K sectors produced ⇒ the 0x1F801802 FIFO
+  drain effectively never runs; reads can't complete ⇒ dir entries stay
+  "busy" ⇒ `cd_channel_poll` returns 1 forever.
+- The missing link is the DEFERRED-INTERRUPT coroutine:
+  `cd_ctx_save/cd_ctx_restore → cd_chan_full_init → cd_intc_dispatch →
+  cd_response_pump → cd_mc_state_machine`. Its clean-C port was rejected
+  (cd.c:183) because it needs LIVE cpu->gpr — a wild store @0x8019AA98
+  otherwise — so it must run via generated code with a saved/restored
+  guest context. If that resume isn't firing (or restores a stale
+  context), the response pump never marks the sector arrival that flips
+  a dir entry to state 2.
+- NEXT (faithful-core IRQ axis): trace whether INT1 actually resumes the
+  deferred coroutine — check `cd_ctx_restore`/`cd_intc_dispatch` reach
+  and the guest SP/context it restores vs what the recompiled-BIOS INT1
+  dispatch provides. This is the same class as the earlier
+  `PSX_HLE_SCHEDULER` fiber-vs-LLE scheduling landmine.
