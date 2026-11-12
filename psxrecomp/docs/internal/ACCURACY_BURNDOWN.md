@@ -266,3 +266,28 @@ test-ROM harness (axis 1/GPU) which is worth building early.
    for the hybrid-pad bug) is the priority second front.
 4. Validate cross-title (Tomba 1, MMX6, Ape, BIOS) before merge.
 5. Merge wt/tomba2 → master; keep this doc as the post-merge burndown for the rest.
+
+## SESSION 15m — CD dir-table base CORRECTED: fc6c0=0 is right (physical-0 table)
+
+CORRECTION to SESSION 15k/15j: `0x801fc6c0 = 0` is NOT a bug. `guest_at(base)=
+guest_arena+(base&0x1fffff)`, so base=0 resolves to physical 0 = guest
+`0x80000000`. The CD dir table legitimately lives at physical 0.
+
+PROOF (cd_read_log DMA dest = madr&0x1FFFFF = physical offset):
+- 32B headers -> phys 0x0,0x20,0x40  (0x20-stride entry headers)
+- 2016B data  -> phys 0x400,0xBE0,0x13C0  (= count*0x20 + idx*0x7e0, count=0x20)
+This EXACTLY matches cd_channel_poll layout `entry=base+idx*0x20`,
+`data=base+count*0x20+idx*0x7e0` with base=0,count=0x20. Poking fc6c0=0x80010000
+was WRONG (points at scene data) — reverted.
+
+LIVE counters (CDDBG): chan_cmd_submit=ch3_arms=ch3_chcr_kick=6,
+finalize=0, store_state2=0, probe_calls=0. Entries at guest 0x80000000 show
+state=3 (in-progress). Deferred INT1 coroutine RUNS (fn trace: cd_intc_dispatch,
+cd_chan_full_init, cd_mc_state_machine, cd_result_wait_b all execute) but
+cd_mc_state_machine never reaches the finalize block (br2eu_func_80199CF0 ->
+cd_dir_entry_finalize 0x801990F0) that marks entry state==2.
+
+REMAINING: find what cd_mc_state_machine (0x80199440) polls to detect a channel
+read as complete (DMA status? byte counter? CD irq flag?). Entries stay state=3
+=> the "channel done" predicate never fires. mc_date_serial_cmp/blk_io_retry
+poll cd_channel_poll 27Kx waiting for state==2.
