@@ -3746,3 +3746,19 @@ read-request/sector-count state (stream job @0x801f4700 + decode state
 @0x801b6900/04). Compare vs Ghidra decompile of 0x80199440 arm gate, or
 Beetle oracle. file8 payload = 60 01 01 80 entry/GPU records; check whether
 an embedded next-LBA/offset field points backward into the window.
+
+=== SESSION8d: cd_mc_state_machine disassembled (capstone) ===
+Disasm of 0x80199440 (582 insns) saved to docs/internal/cdmc_80199440.asm.
+Globals are 0x80200000-base + negative offset (NOT gp-relative):
+- lw -0x3964 -> 0x801FC69C ; ==1 -> EARLY RETURN (reentrancy guard)
+- lw -0x3978 -> 0x801FC688 ; ==0 -> skip mode-block to 0x801994c4
+- lw -0x33a0 -> 0x801FCC60 deref ; tests bit 0x100000
+- fc6b0==0 -> sw 1 -> 0x801FC68C (re-arms tile_stream_pump gate) ; else
+  fc6a0++ (error-retry counter @0x801FC6A0) ; sw 1 -> 0x801FCC88
+- 0x801994c4: jal 0x80195d44 (helper, a1=sp+0x30 out-buf); v0==5 -> return
+REMAINING: trace the arm-gate — the entry-table walk at a4=0x801FC6A4,
+tag/seq validation, and the state=3 store. Suspect it early-outs on a
+"no pending read request" condition fed by stream/decode state. The
+0x801FC69C==1 early-return is a candidate: if a stale 1 is left set, the
+whole function no-ops every call -> explains 100/sec invokes, zero arms.
+CHECK: read 0x801FC69C live — if ==1, find who should clear it.
