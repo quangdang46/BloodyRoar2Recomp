@@ -11834,14 +11834,16 @@ undefined4 text_render_full(uint *param_1,uint param_2,int param_3)
     else {
       sVar18 = *(short *)guest_at((uint32_t)(uintptr_t)((param_3 + 0xc) ))<< 1;
     }
-    if (**(byte **)guest_at((uint32_t)(uintptr_t)((param_3 + 0x1c) ))!= 0) {
+    /* +0x1c cell stores a GUEST text pointer — resolve via guest_at before
+     * dereferencing (raw guest addr faults as a host pointer). */
+    pbVar22 = (byte *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((param_3 + 0x1c))));
+    if (*pbVar22 != 0) {
       iVar21 = (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_3 + 0xe)));
       cVar4 = (char)*(short *)guest_at((uint32_t)(uintptr_t)((param_3 + 0xe)));
       uVar20 = (ushort)DAT_8011ede0;
       uVar24 = (ushort)DAT_8011ef64;
       psVar13 = (short *)((intptr_t)puVar19 + 0x22);
       uVar11 = (ushort)DAT_8011ed80;
-      pbVar22 = *(byte **)guest_at((uint32_t)(uintptr_t)((param_3 + 0x1c)));
       do {
         psVar13[-10] = *(short *)guest_at((uint32_t)(uintptr_t)((param_3 + 0x16)));
         uVar12 = (uint)*pbVar22;
@@ -12380,10 +12382,13 @@ undefined4 text_render_simple(uint *param_1,uint param_2,int param_3)
     else {
       sVar19 = *(short *)guest_at((uint32_t)(uintptr_t)((param_3 + 0xc) ))<< 1;
     }
-    if (**(byte **)guest_at((uint32_t)(uintptr_t)((param_3 + 0x1c) ))!= 0) {
+    /* The +0x1c cell stores a GUEST pointer (guest_of(text buf)); resolve it
+     * through guest_at before dereferencing or the host faults on the raw
+     * guest address. */
+    pbVar14 = (byte *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((param_3 + 0x1c))));
+    if (*pbVar14 != 0) {
       uVar18 = (ushort)DAT_8011ed80;
       psVar10 = (short *)((intptr_t)puVar17 + 0x22);
-      pbVar14 = *(byte **)guest_at((uint32_t)(uintptr_t)((param_3 + 0x1c)));
       do {
         psVar10[-10] = *(short *)guest_at((uint32_t)(uintptr_t)((param_3 + 0x16)));
         uVar12 = (uint)*pbVar14;

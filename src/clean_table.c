@@ -3475,8 +3475,8 @@ extern uint32_t cd_channel_poll(uint32_t *param_1, uint32_t *param_2);
     cpu->gpr[2] = (uint32_t)(cd_channel_poll(((uint32_t *)guest_at(cpu->gpr[4])), ((uint32_t *)guest_at(cpu->gpr[5]))));
 }
 static void wrap_80199420(CPUState *cpu) {
-extern void cd_read_param_block(uint32_t a0,uint32_t a1);
-    cd_read_param_block(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]));
+extern void cd_read_param_block(uint32_t a0,uint32_t a1,uint32_t a2);
+    cd_read_param_block(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]));
 }
 static void wrap_80199d5c(CPUState *cpu) {
 extern uint32_t cd_copy_u32(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3);

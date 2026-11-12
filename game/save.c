@@ -5618,10 +5618,12 @@ int heap_ptr_fixup() { return 0; }
 __attribute__((weak))
 #endif
 int heap_record_emit() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int terrain_packet_gen() { return 0; }
+/* terrain_packet_gen is defined in menu.c with a full prototype; the weak
+ * ()-stub here made calls compile as "no prototype / too many args" and
+ * pass garbage in the arg registers (crash: param_3 read as 0x25). Declare
+ * the real signature instead of a conflicting stub. */
+extern uint32_t terrain_packet_gen(uint32_t,uint32_t,const uint16_t *,
+    const int16_t *,const int16_t *,int32_t,int32_t,const uint8_t *);
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -6092,10 +6094,11 @@ st10:
   }
   head = g32(0x801c47b8);
   np = head + 8;
-  /* s2/s3 are host save-slot structs; +0x38 holds a host pointer whose
-     +0xa8 slot caches the new heap head (guest addr value). */
-  *(uint32_t *)(*(uint32_t *)(s2 + 0x38) + 0xa8) = np;
-  *(uint32_t *)(*(uint32_t *)(s3 + 0x38) + 0xa8) = np;
+  /* s2/s3 are host save-slot structs; +0x38 holds a GUEST pointer whose
+     +0xa8 slot caches the new heap head — resolve via guest_at before the
+     store or the raw guest address faults as a host pointer. */
+  *(uint32_t *)guest_at(*(uint32_t *)(s2 + 0x38) + 0xa8) = np;
+  *(uint32_t *)guest_at(*(uint32_t *)(s3 + 0x38) + 0xa8) = np;
   BR2_W32(0x801c47b8, head + *(uint32_t *)guest_at(head));
   return 1;
 }

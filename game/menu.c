@@ -1914,7 +1914,7 @@ LAB_8016767c:
           }
           DAT_1f800098 = (char)iVar4 - cVar6;
           DAT_1f800099 = *(char *)(_g_system_config_ptr + 4) * '\x02' + -2;
-          fighter_spawn_tail(0x1f800000,0);
+          fighter_spawn_tail((uint8_t *)guest_at(0x1f800000),0);
           _DAT_1f800088 = 0;
           _DAT_1f80008c = 0;
           _DAT_1f80008e = 0;
@@ -2508,8 +2508,11 @@ undefined4 attract_stage_load_step(int param_1,int *param_2)
   undefined4 uVar1;
   int iVar2;
   short sVar3;
+  /* param_1 is a GUEST base (0x1f800000 scratchpad state block), not a host
+   * pointer — dereference via guest_at() or the raw 0x1f80008c access faults. */
+  short *st8c = (short *)guest_at((uint32_t)param_1 + 0x8cu);
   
-  sVar3 = *(short *)(param_1 + 0x8c);
+  sVar3 = *st8c;
   if (sVar3 < 0) {
     return 0xffffffff;
   }
@@ -2531,7 +2534,7 @@ undefined4 attract_stage_load_step(int param_1,int *param_2)
       }
       else {
         if (sVar3 != 0x30) {
-          *(short *)(param_1 + 0x8c) = sVar3;
+          *st8c = sVar3;
           return 0;
         }
         iVar2 = cd_file_load_sm(DAT_801b2350 + 0x91,_DAT_801e3cfc);
@@ -2542,14 +2545,14 @@ undefined4 attract_stage_load_step(int param_1,int *param_2)
           iVar2 = stream_block_decode(_DAT_801c47b8,(int *)guest_at(_DAT_801e3cfc),1);
           param_2[1] = _DAT_801c47b8;
           _DAT_801c47b8 = _DAT_801c47b8 + iVar2;
-          *(undefined2 *)(param_1 + 0x8c) = 0xffff;
+          *(undefined2 *)st8c = 0xffff;
           return 1;
         }
       }
       goto LAB_8014700c;
     }
     if (sVar3 != 0) {
-      *(short *)(param_1 + 0x8c) = sVar3;
+      *st8c = sVar3;
       return 0;
     }
     cd_file_load_sm(0xffffffff,0);
@@ -2567,11 +2570,11 @@ undefined4 attract_stage_load_step(int param_1,int *param_2)
   if (iVar2 != 0) {
     fighter_record_apply(_DAT_801c47b8,2);
     page_table_ptr_set(0x10,2,(undefined *)0);
-    *(undefined2 *)(param_1 + 0x8c) = 0x20;
+    *(undefined2 *)st8c = 0x20;
     return 0;
   }
 LAB_8014700c:
-  *(short *)(param_1 + 0x8c) = sVar3;
+  *st8c = sVar3;
   return 0;
 }
 

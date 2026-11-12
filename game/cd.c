@@ -1498,22 +1498,31 @@ uint32_t cd_dir_entry_probe(int32_t param_1)
   table_guest = *(uint32_t *)guest_at(0x801fc6c0);
   base = (uint32_t *)guest_at(table_guest);
   a0 -= (int32_t)(*(uint32_t *)guest_at(0x801fc6c4) << 5) + (int32_t)table_guest;
-  a0 >>= 2;
-  prod = (int64_t)a0 * (int32_t)0x82082083;
-  hi = (int32_t)(prod >> 32);
-  sign = a0 >> 31;
-  idx = ((hi + sign) >> 8) - sign;
+  /* MIPS magic-div (0x80199290-0x801992AC): pre-shift dividend >>2, signed
+   * mult by 0x82082083, then mfhi + add-back of the multiplicand, >>8, minus
+   * sign of the PRE-shift dividend. The add-back term is the multiplicand
+   * (a0 after >>=2), NOT the sign — dropping it yields idx=-5 instead of 5
+   * and the entry is never freed, wedging the consume cursor. */
+  {
+    int32_t n_pre = a0;
+    a0 >>= 2;
+    prod = (int64_t)a0 * (int32_t)0x82082083;
+    hi = (int32_t)(prod >> 32);
+    sign = n_pre >> 31;
+    idx = ((hi + a0) >> 8) - sign;
+  }
   rec = base + (idx << 5) / 4;   /* idx*32 bytes = idx*8 u32 */
   rec = (uint32_t *)((uint8_t *)base + (idx << 5));
   if (*(int16_t *)rec != 4) { CDDBG_SET(0x801bce8c,param_1); CDDBG_SET(0x801bce90,idx); CDDBG_SET(0x801bce94,1); CDDBG_SET(0x801bcf2c,idx); return 1; }
   CDDBG_INC(0x801bcf30);              /* DIAG: probe freed entry */
   count = (int16_t)*(uint16_t *)((uint8_t *)rec + 6);
+  a0 = 0;   /* MIPS 0x801992D8: move a0,zero — cursor addend baseline */
   if (count > 0) {
     for (i = 0; i < count; i++) {
       uint32_t *r = (uint32_t *)((uint8_t *)base + ((i + idx) << 5));
       *(int16_t *)r = 0;
     }
-    a0 = count;
+    a0 = count;   /* free-loop leaves a0 == count (0x801992E4 addiu) */
   }
   CDDBG_SET(0x801bce8c,param_1); CDDBG_SET(0x801bce90,idx); CDDBG_SET(0x801bce94,*(uint32_t *)guest_at(0x801fc6ac)); CDDBG_SET(0x801bce98,(uint32_t)(a0+idx));
   *(uint32_t *)guest_at(0x801fc6ac) = (uint32_t)(a0 + idx);
@@ -1822,10 +1831,10 @@ void cd_mode_set_0e(uint32_t s0)
 /* cd_read_params_store — CD read param block: cd_read_param_block(1), stores
  * flag&1, a3, stack arg and clears into @0x801fc6xx cells.
  * Disasm 0x801991e0-0x8019925c. */
-extern void cd_read_param_block(uint32_t,uint32_t);
+extern void cd_read_param_block(uint32_t,uint32_t,uint32_t);
 void cd_read_params_store(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,uint32_t s2)
 {
-  cd_read_param_block(1,a1);
+  cd_read_param_block(1,a1,a2);
   *(uint32_t *)guest_at(0x801fc6b0) = 0;
   *(uint32_t *)guest_at(0x801feb10) = a3;
   *(uint32_t *)guest_at(0x801fc688) = a0 & 1;
@@ -1837,12 +1846,15 @@ void cd_read_params_store(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,uint32
   (void)a1; (void)a2;
 }
 
-/* cd_read_param_block — store a0 -> @0x801fc6b8, a1 -> @0x801fc694.
- * Disasm 0x80199420-0x80199434. */
-void cd_read_param_block(uint32_t a0,uint32_t a1)
+/* cd_read_param_block — store a0 -> @0x801fc6b8, a1 -> @0x801fc694,
+ * a2 -> @0x801fc6b4 (channel stuck-entry reset flag read by
+ * cd_channel_poll). Disasm 0x80199420-0x8019943c: three word stores,
+ * a2 lands on -0x394c($at)=0x801fc6b4. */
+void cd_read_param_block(uint32_t a0,uint32_t a1,uint32_t a2)
 {
   *(uint32_t *)guest_at(0x801fc6b8) = a0;
   *(uint32_t *)guest_at(0x801fc694) = a1;
+  *(uint32_t *)guest_at(0x801fc6b4) = a2;
 }
 
 /* cd_ext_table_init — dispatch wrapper: cd_dispatch_tbl4(4,a0). */
