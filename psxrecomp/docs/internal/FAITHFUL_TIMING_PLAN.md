@@ -3710,3 +3710,39 @@ REMAINING: why cd_mc_state_machine stops arming after batch5 — stream
 read-ahead/request accounting (decode consumption signal) or another
 guest/host mix in the arm path. blk_io_retry is faithful (2000-poll);
 check whether producer arms ahead-of-consume correctly.
+
+=== SESSION8c: arm-side starvation precisely isolated ===
+LIVE FINDINGS (fresh run, turbo off, port 4458):
+- Entry table @0x80010000 has 32 slots (fc6c4=0x20 headers x0x20 = 0x400,
+  data bufs 0x7e0-stride from fc6bc=0x80012380). Entries 5-31 = 0x11111111
+  FREE marker. Cursors a4=a8=ac=5 = "next batch at index 5". Batch6 NEVER
+  armed -> no state-3 entries -> blk_io_retry polls entry[5] forever.
+- cd_mc_state_machine invoked ~100/sec (counter @0x801bce88, now 60k+) via
+  POLLING callers (menu.c:2137/11240), NOT via CD-event coroutine. It scans
+  but finds no pending read request -> writes nothing.
+- cd_dir_entry_finalize ran ONCE (e0). a8 set =a4=5 after it -> finalize
+  cursor sits at 5; e1-4 (state3) are never revisited.
+- IRQ path ALIVE: event_ring shows istat=0x4 (CD) + 0x1 (VBLANK) raising/
+  delivering constantly; pc=0x8019A9AC is inside cd_intc_dispatch range
+  (handler runs, clears I_STAT). cd_intc_dispatch clean-C counter @0x801bce00
+  =0 because generated code reaches 0x8019a8ec directly (wrapper bypassed).
+- DMA: DICR=0x009A0000 -> bit23 master + bit19 ch3/CD IRQ ENABLE set.
+  channel_irq_flag_armed(3)=true. BUT ch3 IDLE (chcr=0,active=0): no CD DMA
+  queued because no entries armed. No istat=0x8 (DMA IRQ) — consistent.
+- LOOP: blk_io_retry 2000-poll timeout -> cd_stream_mode_init re-seek ->
+  Setloc(seek_msf 46:26:30=LBA208830) because 0x801feb00 still holds e0's
+  stamp (208829, no new finalize) -> ReadS streams -> ring_dropped grows
+  (game never drains FIFO while polling) -> repeat. read_msf oscillates
+  208836-208913, never escapes 208936.
+ROOT: producer arm request never issued. cd_mc_state_machine arms only on a
+pending read request; the request-generation path (stream offset / decode
+consumption / next-chunk seek) is not producing batch6. Either (a) another
+guest/host address-space bug in a clean-C function feeding the request, or
+(b) file8 internal next-offset fields dump-corrupt (like MSF headers were),
+or (c) cd_bitstream_decode not advancing the stream read-offset so the
+producer thinks the current window is unfinished.
+NEXT: trace what feeds cd_mc_state_machine's arm decision — the pending
+read-request/sector-count state (stream job @0x801f4700 + decode state
+@0x801b6900/04). Compare vs Ghidra decompile of 0x80199440 arm gate, or
+Beetle oracle. file8 payload = 60 01 01 80 entry/GPU records; check whether
+an embedded next-LBA/offset field points backward into the window.
