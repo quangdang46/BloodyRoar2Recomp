@@ -4482,3 +4482,45 @@ OPEN: which event/spec the game thread WaitEvent's on; whether DeliverEvent
   sends a mismatched spec, or a non-IRQ DeliverEvent source is missing.
   parity_trace (CHANGETHREAD/YIELD/SAVE/RESTORE ring) + Beetle oracle diff at
   frame ~647 is the mandated next step to find the exact divergence.
+
+=== SESSION9m: CD-ROM ruled out; live livelock inspection; low-RAM pattern is ambiguous ===
+Disk was 100% full (39x ~100MB psx_freeze_dump_*.json = 3.3GB) — deleted them,
+freed 3.5GB. Rebuilt launch: build/BloodyRoar2_Recompiled --headless --no-launcher
+  --disc <bloody-roar-2>/Game.cue --bios build/bios/openbios.bin
+  (debug server 127.0.0.1:4370; HLE scheduler default).
+
+CD-ROM ELIMINATED as the stall cause:
+  cdrom_command_history: game runs SetLoc(0x02)->ReadN(0x06)->Pause(0x09)
+  chunk-stream loop, all completing. dma_cdrom_history (newest, frames 630-645):
+  every read completed=1 moved 512/512 through lba 479 @ frame 645, then reads
+  STOPPED (game finished loading -> new phase). pending.cmd=0x09 was stale
+  (pending.active=0 => Pause already completed). ring_dropped=516 is sector-ring
+  overflow noise, not a stall. CD is HEALTHY; the livelock is post-load.
+
+LIVE LIVELCK (process stayed alive at frame 648, stable — not instant SIGSEGV):
+  dirty_block_log live tail = func_2810 dispatch loop PCs 0x2914-0x2964 cycling,
+  t1=0xA(C0#10->func_1D84) t2=0x1D84, predicate returns a0=0xF2000000/0x1/0x8FD0,
+  a1=0x400 const. func_2810 fully decoded = kernel DispatchThread: outer reload
+  s6=*(s3) where s3=*(0x100); inner walks s6->next calling pred@8/action@4.
+  Two-level rescan = kernel IDLE loop (normal when no thread ready).
+
+irqctx_ring (IRQ delivery context): IRQs delivered normally thru ~frame 644,
+  ~1 VBLANK(istat=1)+several CD(istat=4) per frame. take_pc always in GAME code
+  (0x801265F4 frame_tick, 0x8018D0xx, 0x80192F14, 0x80196Cxx, 0x8019A460,
+  0x80192634) + occasional kernel 0x1D84. EVERY entry same_thread=1 restored=1
+  => single active thread; worker threads never scheduled => they starve.
+
+LOW-RAM 0x0-0x400 PATTERN (read_ram live @648): repeating ~0x50B records with
+  0x5505xxxx increasing vals, 0x4005xxxx COP0-looking, 0x555555 fill. This does
+  NOT match the `li t0,X;jr t0` stub form, BUT B0/C0 syscalls still dispatch fine
+  (func_2AA0/2AC0 run) => recompiler routes those PCs natively; RAM stub bytes
+  may be irrelevant OR this is legit OpenBIOS kernel trampoline data. AMBIGUOUS —
+  needs ground-truth compare vs canonical OpenBIOS low-memory image. NOT confirmed
+  as the corruptor (earlier "clean@506 vs weird@648" may reflect a legit region
+  I mis-assumed was stubs).
+
+NET: kernel idle loop waits for a worker-thread wake event that never arrives.
+  IRQs+event-queue healthy; CD healthy. Missing piece = WHICH event/spec the
+  blocked thread waits on. parity_trace empty (switches via LLE ChangeThread not
+  HLE hooks). Next: Beetle oracle diff @~645, or RE the game's CreateThread/
+  WaitEvent specs to name the exact event.
