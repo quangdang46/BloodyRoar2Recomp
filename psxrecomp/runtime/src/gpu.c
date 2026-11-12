@@ -4689,10 +4689,11 @@ static int gp0_command_word_count(uint8_t opcode) {
         case 0xE6: return 1;  /* mask bits */
 
         default:
-            /* 0x03-0x1E, 0xE7-0xEF, 0xFF: NOP (1 word) per DuckStation */
-            if ((opcode >= 0x03 && opcode <= 0x1E) ||
-                (opcode >= 0xE7 && opcode <= 0xEF) ||
-                opcode == 0xFF) {
+            /* Misc NOPs 0x03-0x1E (0x03 aside, per psx.wiki these mirror
+             * GP0(00h)); env group 0xE0-0xFF defines only E0(NOP)+E1-E6, so
+             * every opcode >= 0xE7 is an undefined env command the GPU
+             * ignores. Treat the whole undefined tail as a 1-word NOP. */
+            if ((opcode >= 0x03 && opcode <= 0x1E) || opcode >= 0xE7) {
                 return 1;
             }
             return 0;  /* unknown */
@@ -5405,11 +5406,10 @@ static void gp0_execute_command(void) {
             break;
 
         default:
-            /* NOP range: 0x03-0x1E, 0xE0, 0xE7-0xEF, 0xFF */
+            /* NOP range: misc 0x03-0x1E, env undefined tail >= 0xE7 */
             if ((opcode >= 0x03 && opcode <= 0x1E) ||
                 opcode == 0xE0 ||
-                (opcode >= 0xE7 && opcode <= 0xEF) ||
-                opcode == 0xFF) {
+                opcode >= 0xE7) {
                 break;  /* NOP — silently consume */
             }
 
