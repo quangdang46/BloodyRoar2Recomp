@@ -4395,3 +4395,22 @@ saved-PC 0xFFFF8040. BNEL fix is faithful (matches recompiler is_likely);
 the spin is the real signal. NEXT: identify which OpenBIOS handler 0x2a80/
 0x2aa0/0x2ac0 is (likely IRQ/syscall dispatch), what flag it polls, and why
 it never satisfies — probably a missing IRQ ack / event delivery / TCB state.
+
+=== SESSION9j: livelock = A0/B0/C0 syscall vectors + ChangeThread scheduler ===
+Syscall tables dumped (frame549): A0@0x200, C0@0x494C, B0@0x49CC — standard
+PSX kernel tables. KEY: B0[23]=0x29cc = the context-restore/ChangeThread
+syscall return. C0[10]=0x1d84 (the spinning C0 handler). Dispatch cycle
+0x2AC0(C0disp)->0x1D84->0xB0stub->0x2AA0(B0disp)->~0x40A0->0xC0stub =
+C0-syscall-handler triggers B0-syscall triggers C0 -> thread ping-pong.
+Handlers are low-RAM kernel fns (0x1xxx-0x4xxx) + ROM (0xbfc0xxxx); 0x2afc
+= not-implemented default. a0=0xFFFFFFFF = looping syscall arg (thread id?
+priority -1? event?).
+HYPOTHESIS: boot uses "thread scheduler = HLE (deterministic TCB)
+(PSX_HLE_SCHEDULER)". The LLE ChangeThread path (interrupts.c ~1590-1720:
+EPC=real resume PC, same-thread discriminator via PCB[0]/TCB, RFE-escape)
+may be restoring the SAME thread's frame each switch -> a thread re-runs
+its syscall forever instead of yielding to another -> livelock. Same root
+as the 0xFFFF8040 bad saved-PC. NEXT: instrument the ChangeThread syscall
+(t1/B0[23]) to log entry_tcb vs exit_tcb + resumed PC per switch; confirm
+whether PCB[0] actually changes. If the HLE scheduler isn't rotating TCBs,
+that's the bug — check psx_scheduler_* / deterministic TCB selection.
