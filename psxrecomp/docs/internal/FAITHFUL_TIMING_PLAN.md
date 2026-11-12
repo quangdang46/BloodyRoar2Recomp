@@ -3497,3 +3497,22 @@ music/video/ADPCM content; game assets intact => core gameplay data present).
 NEXT: trace which stream writes 0x801feb00=16:22:05 and whether bc6
 (cd_dir_entry_store) is an active concurrent stream vs idle; find the
 upstream divergence that armed fc6 entries @music position.
+
+=== SESSION3: MECHANISM ISOLATED — stale 0x801feb00 poisons file-open ===
+cd_file_open_b(local_38): v0=cd_stamp_to_sector(0x801feb00); then
+cd_file_open(v0+1, local_38) OVERWRITES local_38 with the BCD-MSF of the
+RESUME position (not the file stamp). scene_entry then calls
+cd_stream_mode_init(local_38) -> Setloc uses the now-overwritten local_38.
+=> A stale/wrong 0x801feb00 directly corrupts the Setloc target.
+LIVE: 0x801feb00=0x02052216 (MSF16:22:05, music) STATIC; 0x801fcb00 (seq
+path resume) all-zero => single active stream. fc6 entries armed 16:22:05-09.
+0x801feb00 written ONLY by cd_dir_entry_finalize(0x801990f0,fc6) and
+cd_dir_entry_store(0x80199100,bc6) from entry+0x1c stamp.
+HYPOTHESIS: music/XA stream (bc6) or a prior read left 0x801feb00=73505
+(music pos) before this blk_io_retry session; cd_file_open_b then resumes
+the DATA read there. On real HW 0x801feb00 would hold the correct bitstream
+position. ROOT = whatever first wrote the wrong stamp (upstream divergence
+in channel arm/finalize or a missing per-file-open resume reset).
+NEXT: instrument/watch 0x801feb00 writes (clean-C fns, can log via debug
+ring) on a fresh run to catch FIRST bad write + its PC; OR read generated
+cd_mc_state_machine(0x80199440) arm path to see stamp source.
