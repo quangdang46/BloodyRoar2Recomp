@@ -3930,3 +3930,37 @@ hold correct buffers 0x80020000/0x80048000/0x80070000/0x80077800.
 NOTE: GUI launcher path stalls in SDL event-wait (no emulation) in this
 environment; PSX_HEADLESS=1 + --disc build-wasm/disc/Game.cue is the
 reliable verification path. Debug server 127.0.0.1:4370.
+
+=== SESSION8l: MDEC input-gate FIX verified + new CD channel-job blocker ===
+FIX (a86ed31): mdec_dma_write_ready() no longer gates ch0 input on
+output_pos<output_size. b53fa57 streaming decode emits output mid-feed;
+the vendor gate then refused further input -> decoder froze at 180/192
+halfwords, busy=1 forever. Real MDEC input/output are independent paths;
+output[] is a growable pending-drain buffer, not a fixed FIFO.
+VERIFIED headless: the stalled DECODE (0x32000880, 4352 hw) now completes
+- 645 macroblocks, ~484KB output, ch1 drains. Was hard-frozen at 16 MB.
+
+NEW BLOCKER (next bring-up bug, deeper): game reaches scene_entry tile
+streaming, MDEC decode completes, but is now stuck in a CD read-retry
+loop at sector MSF 46:26:55 (~38-sector block, lba ~208923-208961):
+  cmd pattern repeats Setloc->SetMode(0)->SetMode(0xE0)->ReadS(0x1B).
+  read_continues_current_stream() returns 0 each Setloc (s_setloc_lba !=
+  next_lba) -> start_read_stream restarts the whole block -> never advances.
+ROOT SYMPTOM: cd_channel_poll (0x80199360, the game's epc) waits for a
+channel-table entry (base@0x801fc6c0 + idx@0x801fc6ac *0x20) state u16==2.
+No entry ever reaches 2 -> blk_io_retry returns -1 -> cd_file_open_b
+re-issues the read -> infinite loop. Frames still ~66fps (tile_decode_wait
+timeout lets the render loop run), CD seq >1.1M.
+KEY EVIDENCE: request_reg=0x00 -> BFRD NEVER set; DMA ch3 (CD data) chcr=0
+idle; sector ring fills (sector_avail=1, size 2340) but guest never drains
+-> ring_dropped grows. So sector data never reaches the game's channel
+buffers -> channel jobs (cd_chan_job_submit -> cd_job_slot_alloc ->
+cd_intc_dispatch) never complete -> entries never state=2.
+LEAD: the game's CD async-job path isn't arming the data-drain (BFRD/ch3)
+or the IRQ-driven channel-state update (cd_intc_dispatch @0x8019a8ec) isn't
+marking entries. Likely another clean-C porting divergence in the CD job /
+DMA-arm / IRQ-handler chain (same class as the scene_entry slot-deref bug).
+NEXT: trace who is supposed to set request_reg BFRD + arm ch3 and mark
+channel state=2; check cd_intc_dispatch actually runs on CD IRQ and walks
+the job/channel tables. i_mask=0xD (CDROM bit2 enabled), i_stat=0 between
+serviced IRQs.
