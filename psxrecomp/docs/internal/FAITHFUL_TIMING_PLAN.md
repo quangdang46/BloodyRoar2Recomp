@@ -3370,3 +3370,17 @@ this may be a legitimate "wait for stream data sector" that can't
 complete because the armed entries are audio-only, OR the wrong channel
 cursor. Need: what func_801264B4 waits for (its channel/file context)
 and whether the armed entries should be data not audio.
+
+=== MDEC EVIDENCE — likely VIDEO playback, not tile load ===
+mdec_state: busy=1, input_count=63170 < expected_halfwords=99716,
+decode_macroblocks=0, decode_blocks=0, enable_dma_in/out=1.
+command=0x2AC2C2C2 (suspicious/possibly mis-set). => the game is feeding
+an MDEC video decode and STARVED for bitstream — consistent with an
+FMV/cutscene (BR2 attract-mode video) rather than scene tile data.
+The XA file 0x00292646->73505 is likely a VIDEO+audio stream; blk_io_retry
+feeds MDEC video sectors. Audio ch=0 fills the read; video data (the
+sparse submode=0x0 sectors, possibly ch=1) starves -> channel never
+completes -> livelock. NEXT: determine which XA channel/submode carries
+the MDEC video payload and whether blk_io_retry should read THAT
+substream (ch=1?) not ch=0 audio. Check sector_history xa_channel
+distribution + MDEC input source (which decode buffer/sector feeds it).
