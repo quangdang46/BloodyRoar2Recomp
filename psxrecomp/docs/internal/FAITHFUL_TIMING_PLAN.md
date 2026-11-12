@@ -3556,3 +3556,30 @@ lwl/lwr'd to entry+0x1c @0x8019970C). Identify the source struct offset
 (0x801feb18 / 0x801CCC48 / read-request queue) and which earlier write
 put 73505 there. Compare against a position the game computed for the
 208829 stream.
+
+=== SESSION5: XA channel interleave — game data FULLY intact; only ch0 audio empty ===
+Sector subheader decode (file,ch,submode,coding @+16):
+  ch0 submode0x64 = XA AUDIO -> routed ADPCM, payload EMPTY (dump defect)
+  ch1 submode0x48 = DATA -> INT1, payload nz~1779 INTACT
+CRITICAL CORRECTION: the disc interleaves channels per-LBA. "High-LBA
+region" is NOT pure music — ch1 DATA files live at 165898/176069/194654/
+208829 (all nz1779). ONLY ch0 audio (music BR2_MC0x + the 73000-105000
+pure-audio span) has empty payload. => ALL game data present; dump defect
+kills ONLY music/video/ADPCM, NOT gameplay data.
+Game file table (0x801b5600+) decoded: stage uses 4 ch1-data files
+@208829,165898,176069,194654 + many low-LBA char/stage files. NONE ->73505.
+Channel entry layout (0x20 stride @0x80010000): +0x00 u16 state
+(4=consumed,3=armed,2=done), +0x04=(batch<<16|seqidx), +0x1c=MSF stamp.
+Livelock entries = ONE 5-sector read @MSF16:22:05-09 = LBA73505-09, which
+is PURE ch0-audio (verified 73000-105000 = 1000% audio, 0 ch1-data) ->
+no INT1 -> entries never complete -> blk_io_retry livelock.
+73000-105000 has ZERO ch1-data sectors -> a data read there can NEVER
+complete on real HW either => the position 73505 itself is the bug,
+queued by the stream scheduler (cd_mc_state_machine read-request path).
+ROOT (final narrowing): the block scheduler computes next-read sector
+73505 instead of continuing the 208829 ch1-data stream. Source is in
+generated cd_mc_state_machine / read-request queue — needs value-flow
+trace of the sector-number -> cd_file_open(BCD) -> entry-stamp chain.
+NEXT: find the guest function that produces sector number 73505 for the
+read request (likely reads a block->sector map or increments a position
+counter); compare vs correct continuation of the 208829 stream.
