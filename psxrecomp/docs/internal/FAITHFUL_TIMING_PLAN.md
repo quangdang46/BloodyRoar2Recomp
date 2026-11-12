@@ -4651,3 +4651,53 @@ Remaining blocker = kernel event/thread delivery in the video-player path
 scheduled or its event isn't hooked). Next: identify which TCB/thread should
 wake the parked thread — read TCB states+saved EPCs in the fiber run, or trace
 the DeliverEvent/UnDeliverEvent (B0#7/#32) pairing around the park.
+
+=== SESSION9q: stall ROOT-ISOLATED — FMV video-player frame-sync poll (ChangeClearRCnt+ChangeClearPad), MDEC starved ===
+
+REFINED DIAGNOSIS (both boot paths converge — faithful, deterministic):
+  - PSX_BIOS_HLE=0 (real LLE intro) + PSX_HLE_SCHEDULER=0 (fibers) reaches the
+    IDENTICAL state as boot-skip: ~57.3M gp0_writes, parks at epc=ra=
+    0x801265F4. => stall is NOT a boot-skip artifact; it is a real
+    video-playback path bug.
+
+LIVE LOOP (bioscall_dump tail + dirty_insn_log):
+  - Game spins alternating C0#10 ChangeClearRCnt(0xFFFFFFFF) <-> B0#91
+    ChangeClearPad(0xFFFFFFFF), ra=0x801265F4, frame stuck ~946. Thousands of
+    iterations, all a0=0xFFFFFFFF. This is the game's per-frame
+    timing+input poll — it waits for a root-counter/frame advance that never
+    arrives. NOT a kernel thread-block: CPU busy in interpreted code, kernel
+    only idles on VBLANK.
+
+HARDWARE/IRQ STATE at stall:
+  - i_mask=0xD (VBLANK+CDROM+DMA only). imask_trace shows it only ever toggles
+    0xD<->0x000 — game does NOT use timer IRQs (bits4-6 stay masked).
+  - event_ring: ONLY IRQ_GATE/IRQ_DELIVER VBLANK repeating, returning to
+    0x801265F4. No timer/CD/DMA/SIO IRQs pending or firing.
+  - timers_state: all 3 counters increment (hardware timers tick fine).
+  - mdec_state: FROZEN — output_pos=622096/13422336 (~4.6%), decode_macroblocks
+    =17477, busy=0, input_count=0, decode_input_pos=3796/3840 (buffer full,
+    not consumed), dma_in_words=113728. MDEC IDLE waiting for the NEXT decode
+    command the game never issues.
+  - cdrom_state: reading=0, read_msf=0:08:30 seek=0:08:12, ring_dropped=516,
+    sector_available=1. CD not actively reading.
+  - gpu_ot/dma: all channels active=0, no GPU work submitted.
+  - pad_buttons=0xFFFF (slot1 all-ones — possible phantom/2P pad anomaly).
+
+CAUSAL MODEL: the intro FMV player decoded ~4.6% of the video (17K macroblocks
+-> 622KB of 13.4MB), then the game's video loop entered the
+ChangeClearRCnt+ChangeClearPad frame-sync poll and never advanced to feed the
+next MDEC command. Most likely the video elementary stream stalled — either
+the next CD sector/chunk isn't being read (reading=0, ring_dropped=516 may have
+corrupted the ring) or a frame-present/DMA-done flag the poll waits on is never
+set. frame:946 = the game's video-frame counter frozen.
+
+NEXT (needs oracle or deeper RE):
+  - Determine whether the game is waiting on (a) CD data for the next video
+    chunk, (b) a DMA-done/GPU-present semaphore, or (c) the BIOS root counter
+    (RCnt) value that the VBLANK handler should increment. Read the RCnt
+    variable in kernel RAM across a VBLANK to see if it advances; check the
+    game's hooked VBLANK/DefInt handler is actually running and incrementing
+    the frame counter the poll reads.
+  - The 0x80167330 function is the scratchpad packet/video submit routine;
+    its callees 0x80163868 (BIOS-call thunks), 0x80166398, 0x80129F78 lead to
+    the ChangeClearRCnt/ChangeClearPad poll.
