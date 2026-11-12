@@ -291,3 +291,29 @@ REMAINING: find what cd_mc_state_machine (0x80199440) polls to detect a channel
 read as complete (DMA status? byte counter? CD irq flag?). Entries stay state=3
 => the "channel done" predicate never fires. mc_date_serial_cmp/blk_io_retry
 poll cd_channel_poll 27Kx waiting for state==2.
+
+## SESSION 15o — CD livelock: state machine fully decoded, break isolated to sector->channel accounting
+
+`cd_mc_state_machine` (0x80199440) fully disassembled -> docs/internal/cdmc_80199440.asm.
+It is a SUBMIT-SIDE scanner, NOT the sector consumer:
+
+- Entry gate: `fc69c==1` -> idle return; `fc688==0` OR `D1_CHCR bit24 clear` -> work path (0x801994c4).
+- Work path calls stub 0x80195d44, then checks `entry[fc6a4].state` (u16 @ +0).
+  - `state==0` (FREE) -> 0x80199574 real work: MMIO cmd + DMA setup via cd_copy_u32/cd_chan_cmd_submit.
+  - `state!=0` (occupied, incl. done=2) -> status 4 busy return. CORRECT, not a bug.
+- Completion predicate at 0x80199bc4: `entry[+6]-1 == entry[+4]` -> sets fc69c=1 ->
+  cd_dir_entry_finalize on exit -> state=2. entry+4 = received/progress (low16 of word1),
+  entry+6 = expected+1 (high16). For ent0 word1=0x00050000: +4=0, +6=5 -> needs +4 to reach 4.
+- entry+4 written by 0x801AA2AC (store_pc 0x801AA2BC) but with CONSTANT value -> progress source stalled.
+
+Channel entries: ent0-2 = streaming reads state=3 (flags 0x8001), ent3 = done state=2.
+fc6a4 submit cursor=3, fc6a8 finalize cursor=0, fc6ac poll cursor=0. All slots busy -> status 4 correct.
+
+DMA done-bit theory RULED OUT: DuckStation dma.cpp ShouldSetIRQFlag = irq_enable[ch] AND master(bit23).
+ch3 CDROM irq_enable (DICR bit19)=0 -> done-bit27 never sets on real HW either. cd_cb7_run/finalize
+is NOT the ch3 path. CHCR bit24 (busy) clears on completion = the real completion signal (polled).
+
+OPEN: what increments entry+4 (received count) per delivered sector? Sectors ARE produced
+(cdrom_sector_history: lba advancing past 208829, data_delivered=1, total 205937) and INT1 fires
+(cd_mc_state_machine invoked ~179K times). The per-sector -> entry+4 accounting is the break.
+cd_read_step_cb (0x801985c4) = file-read path, NOT channel streaming; never invoked (correct).
