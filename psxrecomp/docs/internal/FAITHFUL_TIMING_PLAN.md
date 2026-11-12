@@ -5004,3 +5004,59 @@ SESSION 13b — upstream NULL-producer mechanism identified (guest_of round-trip
     struct data lives in guest-mapped RAM (or add a host-string arena
     guest_of can reverse). Priority: text/HUD announce path (menu.c
     BR2_E078 callers), CD channel attr bases.
+
+SESSION 14 — frame-sync stall ROOT-CAUSED: OT next-links held host pointers (40e9bbf)
+  - The "frame advancing but GP0 frozen" stall was NOT a wait: get_registers
+    showed pc=0x00000000, ra=0x801265F4. GPU packets (0x4005/0x5555 GP0 words)
+    had overwritten the game data/BSS region — the GPU func-table ptr at
+    0x801b8318 read packet bytes instead of 0x801b82d8, so the next
+    gpu_call->gpu_invoke ran br2_call_generated on a garbage fn -> pc=0.
+    The "frame" counter kept bumping only because the VBLANK IRQ is
+    independent of the halted main loop.
+  - dma_state showed gpu_ot nodes_last=262144 (the hard cap) and
+    cancels=117583: the OT linked-list walker followed a `next` chain into
+    arbitrary RAM until it self-looped at addr 0.
+  - ROOT CAUSE (clean-port bug): battle.c built OT `next` link fields as
+    `(uintptr_t)host_ptr & 0xffffff` — the low 24 bits of the HOST address,
+    not the guest address. The DMA walker resolved those as guest addrs ->
+    garbage nodes -> node-cap -> abort -> packet buffer overran into BSS.
+  - FIX (commit 40e9bbf): 23 link-store sites in battle.c now use
+    guest_of(ptr) & 0xffffff (matching the gfx.c idiom). Affected:
+    battle_hud_draw, rect_prim_tick, sprite packet builders
+    (puVar*/local_78/psVar9/&DAT_801f4cbc operands). Guest-address-int
+    operands (iVar1, uint param_N) were already correct, left unchanged.
+  - SAME BUG CLASS still open (clean-source backlog): ~64 sites store
+    `(undefined4)(uintptr_t)host_ptr` (full low-32 host addr, not masked)
+    into guest pointer/link fields — task lists, packet chains, object
+    links. Needs the same guest_of treatment but each operand must be
+    verified host-ptr-into-RAM vs guest-addr-int. A safe universal helper
+    br2_gaddr(v)=guest_of(v)?guest_of(v):(uint32_t)v handles both cases.
+
+SESSION 15 — host-pointer->guest-address leak sweep (br2_gaddr rollout)
+  - Continued the SESSION-14 bug class: `(undefined4)(uintptr_t)host_ptr`
+    stores the low-32 bits of a HOST pointer where the guest expects a
+    guest address. Added `br2_gaddr(const void*)` in clean_bridge.c:
+    guest_of(p) if p maps into guest RAM/scratchpad, else (uint32_t)p —
+    so it is a strict no-op for values already holding guest addresses.
+  - Applied br2_gaddr to 52 unambiguous sites in game/battle.c across three
+    commits (8f493b5, ae41866, 1da85bd, 5fec9ec):
+      * bare pointer-var stores into guest memory fields;
+      * function-argument forms (`,`/`)`-terminated puVar/piVar);
+      * parenthesized pointer+element-offset `(puVarN + M)` link stores;
+      * `&DAT_xxx` operands (resolve to host ptr into guest RAM);
+      * pointer-typed `param_N` (short*/undefined4* host pointers).
+    Redundant double `(undefined4)(uintptr_t)` casts collapsed.
+  - DEFERRED (ambiguous, per-site review required):
+      * `(uintptr_t)ptr + N` where +N is OUTSIDE the cast — integer byte
+        offset vs element offset is not decidable from the decompile;
+      * `(intptr_t)ptr + off` forms — integer arithmetic, br2_gaddr's
+        const void* signature cannot take them without a cast;
+      * `(&PTR_DAT_xxx)[idx]` indexed pointer-table lookups (1 site);
+      * `(type*)(uintptr_t)` reverse-direction casts (guest-addr->host-ptr
+        for callees that re-guest_at) — correct-by-convention in some
+        places, `&local_48` host-stack cases differ;
+      * `(int)/(uint32_t)(uintptr_t)` casts feeding guest_at() address
+        args — already correct.
+  - VERIFY: rebuilt psx-runtime cleanly; detached run PID on :4413 with
+    BR2_OT_TRACE=1 exercising the new binary. Prior OT-fix run reached
+    frame ~9351, clean_trace 723M, 0 HIT_LIMIT/FATAL.
