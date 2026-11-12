@@ -791,10 +791,13 @@ void psx_crash_trace_dump(const char *reason, void *seh_info) {
                 &g_dirty_ram_block_log[(start + i) & (DIRTY_RAM_BLOCK_LOG_CAP - 1u)];
             append_fmt(buf, sizeof(buf), &pos,
                 "%s{\"seq\":%llu,\"target\":\"0x%08X\",\"ra\":\"0x%08X\","
-                "\"a0\":\"0x%08X\",\"a1\":\"0x%08X\",\"frame\":%u}",
+                "\"a0\":\"0x%08X\",\"a1\":\"0x%08X\",\"a2\":\"0x%08X\","
+                "\"a3\":\"0x%08X\",\"sp\":\"0x%08X\",\"t0\":\"0x%08X\","
+                "\"t1\":\"0x%08X\",\"t2\":\"0x%08X\",\"frame\":%u}",
                 i == 0 ? "" : ",",
                 (unsigned long long)e->seq,
-                e->target, e->ra, e->a0, e->a1, e->frame);
+                e->target, e->ra, e->a0, e->a1, e->a2, e->a3,
+                e->sp, e->t0, e->t1, e->t2, e->frame);
         }
         append_str(buf, sizeof(buf), &pos, "]\n  }\n");
     }
