@@ -3684,3 +3684,29 @@ entry or repeats 208829 (DMA gating / delivery-ahead-of-demand bug), and
 whether the deferred coroutine resumes per-INT1. Needs Ghidra decompile of
 0x80199440/0x8019a8ec (no JDK locally) or Beetle oracle divergence, or a
 watchpoint on cd_dir_entry_finalize entry + cd_mc_state_machine invocation.
+
+=== SESSION8b: SECOND root cause — cd_dir_entry_probe address-space mix ===
+FIXED (commit 03b69e3). cd_dir_entry_probe mixed guest/host address
+spaces: param_1 is a guest KSEG0 addr (entry data buffer, e.g.
+0x80010400) but base=guest_at() is a HOST pointer. a0 -= batch_off +
+(uintptr_t)base subtracted a host ptr from a guest addr -> wild magic-div
+idx (0xfff2f7a2) -> rec wild -> state!=4 early-return -> cursor
+@0x801fc6ac stuck on consumed entry0 -> blk_io_retry timeout -> re-seek.
+FIX: index math in guest space (param_1 and table base @0x801fc6c0=0x80010000
+both guest addrs); host ptr only for rec deref. VERIFIED: idx=0, cursor
+0->5, entries cleared to state 0.
+
+Also established (live):
+- CD DMA (ch3) delivers DISTINCT correct sectors per entry:
+  208829->e0,208830->e1,...208833->e4, all completed=1 (dma_cdrom_history).
+  Earlier "all lba 208829" was stale last_sector_lba in cd_read_log.
+- Sector payload == entry record (60 01 01 80 + fields); stamp comes from
+  sector MSF header (my 507ab79 fix makes it correct).
+- blk_io_retry now SUCCEEDS once (consumed batch5) then TIMES OUT ~41x:
+  producer (generated cd_mc_state_machine) does NOT arm batch6 -> no
+  state-2 entry -> 2000-poll timeout -> cd_stream_mode_init re-seek.
+  Entries stay state 0, seq stuck batch5, stamps stale.
+REMAINING: why cd_mc_state_machine stops arming after batch5 — stream
+read-ahead/request accounting (decode consumption signal) or another
+guest/host mix in the arm path. blk_io_retry is faithful (2000-poll);
+check whether producer arms ahead-of-consume correctly.
