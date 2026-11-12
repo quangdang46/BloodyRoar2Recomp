@@ -4184,3 +4184,41 @@ data into channel buffers (base+idx2*0x20+idx*0x7e0 from cd_channel_poll)
 and marks the entry — likely the ch3-DMA-done path via tbl[3]=0x8019af7c
 or a CD-data-ready->DMA-arm helper. Disasm 0x8019af7c / find who writes
 channel data buffers + transitions state1->3.
+
+=== SESSION9: CD deadlock ROOT-CAUSED + clean-C guest-pointer/prototype sweep ===
+BREAKTHROUGH — the CD channel livelock is SOLVED. Two faithful-port bugs:
+1. cd_dir_entry_probe (0x80199290): clean-C port dropped the MIPS
+   signed magic-div ADD-BACK term. MIPS does mfhi->addu hi,hi,n->sra8->
+   sub sign(pre-shift dividend). Port did ((hi+sign)>>8)-sign -> idx=-5
+   instead of 5 -> consumed ring entries never freed -> consume cursor
+   wedged @entry5.state4 -> produce starved @entry30.state1 -> BFRD never
+   re-armed -> Setloc/ReadS retry livelock in intro FMV. FIXED: restored
+   ((hi + a0_pre>>2) >> 8) - sign(n_pre). Verified: probe_freed 1->6,
+   consume cursor 5->30, ring drains to state0.
+2. cd_read_param_block (0x80199420): is a 3-arg fn storing a2->
+   @0x801fc6b4 (channel stuck-entry reset flag). Clean-C had 2-arg sig,
+   dropped a2 -> reset flag never set -> wedged state1 entries unrecoverable.
+   FIXED: 3-arg sig + clean_table wrapper passes gpr[6].
+THEN a sweep of clean-C guest-address bugs (all crash-verified):
+- attract_stage_load_step: param_1=0x1f800000 scratchpad guest addr was
+  deref'd as host ptr (+0x8c). -> guest_at.
+- text_render_simple/text_render_full: +0x1c cell holds GUEST text ptr,
+  was double-deref'd as host. -> guest_at(*guest_at(cell)).
+- fighter_spawn_tail caller passed raw 0x1f800000 guest addr to a fn
+  expecting host ptr. -> guest_at(0x1f800000).
+- save_channel_init_commit: +0x38 cell holds GUEST ptr, +0xa8 store
+  deref'd as host. -> guest_at(*guest_at(cell)+0xa8).
+- terrain_packet_gen: weak ()-stub shadowed real 8-arg impl in menu.c;
+  calls compiled "no prototype/too many args" -> param_3 read as 0x25.
+  -> real extern prototype.
+RESULT: game now boots, plays intro FMV (MDEC 645mb), reaches attract/
+demo, deep into battle setup + save/resource loading. Committed cd06290.
+NEW BLOCKER (current): GPU GP0 "unknown command 0xFE" (word 0xFE760F09)
+halt. gp0_frame_dump shows 68 well-formed identical draw packets
+(ops 01/02/0E/24/28/3C/BF/E1-E6) parsing cleanly, then ONE malformed word
+at the packet boundary. DMA src (masked &0x1FFFFC) = 0x2C..0x10C =
+scratchpad 0x1F80002C region -> the GPU command/OT list built in
+scratchpad has a bad word at offset ~0x110. Likely an upstream clean-C
+writer producing malformed OT data OR a DMA length/pointer error.
+NEXT: locate the scratchpad OT builder, find what writes word@+0x110,
+check count/terminator. Ghidra MCP still DOWN (port 8080 refused).
