@@ -3479,3 +3479,21 @@ fixed (music would be silent but fighters/stages have data). OPEN: trace which
 file/stream arms the 0x801fc6xx entries @16:22:05-09 and why position resolves
 into BR2_MC02; determine if music stream (bc6) and data stream (fc6) share
 0x801feb00 incorrectly.
+
+=== SESSION2: submode proves upstream divergence, not just dump ===
+Sector-format scan: game DATA uses submode 0x48/0x08 (data bit -> INT1) with
+real payload (file8@208829 nz~1779, assets@5000/1000 nz~2200). Music/XA uses
+submode 0x64 (audio+realtime) -> ADPCM, and payload is EMPTY (dump defect).
+file_table.json: 73500-170000 region = ONLY XA music (BR2_MC02 tail + MC03);
+NO data files. All 286 game-asset files at LBA<73500 intact.
+DEDUCTION: submode0x64 is structural (header bytes preserved by dump), so real
+HW also gets no INT1 there -> real game NEVER runs blk_io_retry @73505. Our
+reimpl diverged UPSTREAM leaving stale CD/stream state that mis-positions the
+data read into the music region. 0x801feb00 (shared resume stamp, written by
+BOTH cd_dir_entry_finalize fc6 AND cd_dir_entry_store bc6) is the suspect
+cross-talk point: a music/other-stream finalize may have poisoned the data
+read's resume position. Dump defect remains REAL but SEPARATE (kills only
+music/video/ADPCM content; game assets intact => core gameplay data present).
+NEXT: trace which stream writes 0x801feb00=16:22:05 and whether bc6
+(cd_dir_entry_store) is an active concurrent stream vs idle; find the
+upstream divergence that armed fc6 entries @music position.
