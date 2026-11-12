@@ -3384,3 +3384,33 @@ completes -> livelock. NEXT: determine which XA channel/submode carries
 the MDEC video payload and whether blk_io_retry should read THAT
 substream (ch=1?) not ch=0 audio. Check sector_history xa_channel
 distribution + MDEC input source (which decode buffer/sector feeds it).
+
+=== EMPTY-REGION FINDING (decisive disc scan) ===
+Direct Game.bin scan (single MODE2/2352 track, LBA0=offset0, verified vs
+real data at LBA216335 "SURVIVAL RANKING"):
+- LBA 73500-170000 (~95k sectors, ~21min): EVERY sector has valid XA
+  subheader (file=1,ch=0,submode=0x64) but ZERO 2328-byte payload.
+  audio_stats cd_in tap: 981M frames pushed, nonzero=0 (all silence -
+  CORRECT, payload really is zeros on disc).
+- Sparse submode=0x00 data markers inside: 76599-76600, 119275-119280,
+  ~135975, ~155047, ~165891 (~8 total, ~35000 apart - too sparse for
+  blk_io_retry ~46-sector budget).
+- Real content: LBA 0-73500 and 170000-235396 (Mode1 data, e.g.
+  216335+ has ASCII strings).
+=> file 0x00292646 -> LBA73505 lands at the START of a 21-minute EMPTY
+   XA-payload gap. blk_io_retry reads empty sectors via INT1 channel
+   entries; only ~8 data markers exist, none reachable in budget.
+   mode_reg=0xE0 (game-set CdlModeRT) -> audio->ADPCM->no INT1 (faithful
+   per psx-spx). cd_dir_entry_finalize/store are INT1/response-driven
+   (cd_response_pump->callbacks->cd_mc_state_machine). Clean port ==
+   generated (scene_entry index (param_2+8)<<3 -> rec8/0x801b5610 verified
+   instruction-level). cd_read_log shows game DOES read real data at
+   LBA216335 successfully => data path works; 73505 stream is separate.
+OPEN: is 73505 a WRONG resolution (should point to real data ~216335 or
+   another region) or a legit mostly-empty stream file? All resolution
+   code is faithful, so suspect upstream: file-record->stamp->sector
+   directory lookup in generated cd_cmd_issue (0x80196e14) OR the file
+   ID 0x00292646 encodes a directory entry that resolves wrong.
+   NEED: ground-truth which LBA real HW reads for this file (oracle is
+   Windows-only DuckStation - not buildable on macOS) OR trace
+   cd_cmd_issue's directory lookup.
