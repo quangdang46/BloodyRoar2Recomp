@@ -30,12 +30,22 @@
 #include <intrin.h>     /* __readgsqword — fiber TEB stack bounds for native_stack walk */
 #endif
 
+#if defined(__APPLE__)
+#ifndef _DARWIN_C_SOURCE
+#define _DARWIN_C_SOURCE   /* ucontext/mcontext + SA_SIGINFO on Darwin */
+#endif
+#ifndef _XOPEN_SOURCE
+#define _XOPEN_SOURCE 700  /* ucontext.h gate on modern SDKs */
+#endif
+#endif
+
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>   /* va_start/va_end — not pulled in transitively off Windows */
 #include <time.h>
+#include <signal.h>
 
 #include "cpu_state.h"
 #include "psx_bss.h"
@@ -90,6 +100,29 @@ extern uint64_t s_frame_count;
 /* Globals from debug_server.c we want to capture. */
 extern uint32_t g_debug_current_func_addr;
 extern uint32_t g_debug_last_store_pc;
+
+/* POSIX sigaction fault capture. The 1-arg signal() handler cannot see WHERE
+ * the host faulted (si_addr) or the faulting RIP, so a macOS/Linux SIGSEGV
+ * report only ever said "signal_11" with no native address — the report could
+ * not name the guest operation that died. guest_watch.c already proves the
+ * sigaction+SA_SIGINFO+ucontext path on this codebase; mirror it here. */
+#if !defined(_WIN32)
+#include <ucontext.h>
+#if defined(__linux__)
+#include <sys/ucontext.h>
+#include <sys/reg.h>
+#endif
+#if defined(__APPLE__) || defined(__linux__)
+#include <dlfcn.h>
+#endif
+static volatile sig_atomic_t g_sig_fault_valid = 0;
+static volatile uintptr_t     g_sig_fault_addr  = 0;
+static volatile uint64_t      g_sig_fault_pc    = 0;
+/* dladdr-resolved symbol + image base for the fault PC — names the exact
+ * recompiled/runtime function without needing the ASLR slide offline. */
+static char      g_sig_fault_sym[256];
+static uintptr_t g_sig_fault_fbase = 0;
+#endif
 
 /* Native dispatch nesting depth (generated/SCPH1001_dispatch.c). Incremented per
  * nested psx_dispatch_call, decremented on return. A huge value at crash time is
@@ -550,6 +583,26 @@ void psx_crash_trace_dump(const char *reason, void *seh_info) {
         append_str(buf, sizeof(buf), &pos, "  \"cpu\": null,\n");
     }
 
+#if !defined(_WIN32)
+    /* Host fault site captured by the sigaction handler — the native RIP and
+     * accessed address that POSIX signal() alone could not report. Lets a
+     * macOS/Linux "signal_11" be traced to the exact recompiled function /
+     * guest operation instead of a bare signal number. */
+    append_fmt(buf, sizeof(buf), &pos,
+        "  \"siginfo\": {\n"
+        "    \"captured\": %d,\n"
+        "    \"fault_addr\": \"0x%llX\",\n"
+        "    \"fault_pc\": \"0x%llX\",\n"
+        "    \"fault_symbol\": \"%s\",\n"
+        "    \"fault_image_base\": \"0x%llX\"\n"
+        "  },\n",
+        (int)g_sig_fault_valid,
+        (unsigned long long)g_sig_fault_addr,
+        (unsigned long long)g_sig_fault_pc,
+        g_sig_fault_sym,
+        (unsigned long long)g_sig_fault_fbase);
+#endif
+
     /* DRAM around $ra-32 (catches jalr at ra-8) and $s0-16, plus the overlay
      * page that held the TM4 splash caller (0x80165000), the j/jal target at
      * ra-8 (boot-text hole vs overwrite), and full scratchpad. */
@@ -862,9 +915,9 @@ void psx_fatal_halt(const char *reason) {
 
 #include <signal.h>
 
-static void psx_signal_handler(int sig) {
-    static char reason[64];
-    snprintf(reason, sizeof(reason), "signal_%d", sig);
+#if !defined(_WIN32)
+/* Shared fatal path for both the sigaction and legacy signal() entry points. */
+static void psx_fatal_signal_common(int sig, const char *reason) {
     psx_crash_trace_dump(reason, NULL);
     /* Involuntary death: dump the full freeze-style rings too, so the
      * crash doesn't take every ring with it. freeze_heartbeat_fatal_dump
@@ -875,6 +928,56 @@ static void psx_signal_handler(int sig) {
     signal(sig, SIG_DFL);
     raise(sig);
 }
+
+static void psx_signal_handler(int sig) {
+    static char reason[64];
+    snprintf(reason, sizeof(reason), "signal_%d", sig);
+    psx_fatal_signal_common(sig, reason);
+}
+
+/* SA_SIGINFO form: capture the accessed address (si_addr) and the faulting
+ * host PC (ucontext) BEFORE dumping, so the report names the exact native
+ * instruction and guest operation behind a bare "signal_11". Async-signal-
+ * unsafe by nature (same trade-off guest_watch.c already makes); diagnostic
+ * only — the process is about to die regardless. */
+static void psx_sigaction_handler(int sig, siginfo_t *si, void *uc_v) {
+    if (si) {
+        g_sig_fault_addr = (uintptr_t)si->si_addr;
+#if defined(__APPLE__) && defined(__aarch64__)
+        if (uc_v) g_sig_fault_pc =
+            (uint64_t)((ucontext_t *)uc_v)->uc_mcontext->__ss.__pc;
+#elif defined(__APPLE__) && defined(__x86_64__)
+        if (uc_v) g_sig_fault_pc =
+            (uint64_t)((ucontext_t *)uc_v)->uc_mcontext->__ss.__rip;
+#elif defined(__linux__) && defined(__x86_64__)
+        if (uc_v) g_sig_fault_pc =
+            (uint64_t)((ucontext_t *)uc_v)->uc_mcontext.gregs[REG_RIP];
+#endif
+        g_sig_fault_valid = 1;
+        /* Name the faulting function. dladdr is not async-signal-safe but is
+         * the only way to resolve a runtime PC to a symbol+slide in-process;
+         * the process is terminating regardless (same trade-off as the ring
+         * serializers below, which also allocate). */
+        g_sig_fault_sym[0] = '\0';
+        g_sig_fault_fbase = 0;
+#if defined(__APPLE__) || defined(__linux__)
+        if (g_sig_fault_pc) {
+            Dl_info di;
+            memset(&di, 0, sizeof(di));
+            if (dladdr((void *)(uintptr_t)g_sig_fault_pc, &di)) {
+                if (di.dli_sname)
+                    snprintf(g_sig_fault_sym, sizeof(g_sig_fault_sym),
+                             "%s", di.dli_sname);
+                g_sig_fault_fbase = (uintptr_t)di.dli_fbase;
+            }
+        }
+#endif
+    }
+    static char reason[64];
+    snprintf(reason, sizeof(reason), "signal_%d", sig);
+    psx_fatal_signal_common(sig, reason);
+}
+#endif /* !_WIN32 */
 
 /* Default SIGINT/SIGTERM terminate without running atexit, so GCC/LLVM
  * never flush PGO profiles (train scripts use kill). Route those through
@@ -923,7 +1026,20 @@ static void psx_atexit_handler(void) {
 
 void psx_crash_trace_install_handlers(void) {
 #ifndef _WIN32
-    signal(SIGSEGV, psx_signal_handler);
+    /* SIGSEGV/SIGBUS via sigaction+SA_SIGINFO so the report captures the fault
+     * address and host RIP (si_addr/ucontext) — signal() alone cannot. guest_
+     * watch chains correctly either way (it checks the saved sa_flags). */
+    {
+        struct sigaction sa;
+        memset(&sa, 0, sizeof(sa));
+        sa.sa_sigaction = psx_sigaction_handler;
+        sa.sa_flags = SA_SIGINFO;
+        sigemptyset(&sa.sa_mask);
+        sigaction(SIGSEGV, &sa, NULL);
+#ifdef SIGBUS
+        sigaction(SIGBUS, &sa, NULL);
+#endif
+    }
 #endif
     /* Soft-exit on all hosts (incl. MinGW): MSYS2 kill -TERM must flush PGO. */
     signal(SIGINT, psx_soft_exit_handler);
