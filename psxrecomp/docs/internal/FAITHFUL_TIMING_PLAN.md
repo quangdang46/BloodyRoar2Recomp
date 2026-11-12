@@ -4331,3 +4331,24 @@ variable-len cmd: CPU->VRAM 0xA0-0xBF pixel count, or a rare prim type at
 this scene). Emitter = br2eu_func_8018CFDC (generated, faithful). Likely
 clean-C upstream data corruption into the prim template. ALSO: display
 buffer static -> check present/swap path separately.
+
+=== SESSION9g: GP0 desync FIXED (game reaches frame 648); new dispatch bug ===
+FIX (committed+pushed ff4f78f): gp0_command_word_count + gp0_execute_command
+NOP range extended from {0x03-0x1E,0xE0,0xE7-0xEF,0xFF} to include the WHOLE
+undefined env tail >=0xE7. psx.wiki: env group 0xE0-0xFF defines only
+E0(NOP)+E1-E6; E7-FF all undefined -> real HW ignores them. The game emits
+0xFE1F220E (undefined env cmd) which runtime fatal-halted as "unknown".
+Now NOPs faithfully -> game blew past frame634 halt, reached frame648.
+NOTE: earlier "thousands of 0x03-0x1E NOPs" in frame634 ring are a per-prim
+data table that decodes as harmless NOPs on real HW too — NOT the desync.
+The REAL desync was the incomplete env-NOP range (0xF0-0xFE missing).
+
+NEW BLOCKER (frame648): FAIL-FAST unknown dispatch addr=0xFFFF8040
+phys=0x1FFF8040 ra(epc)=0x801265F4 a0=0x80192944. CPU gpr[8]=t0=0xFFFF8040.
+0xFFFF8040 = SIGN-EXTENSION of 0x8040 -> classic signed-vs-unsigned 16-bit
+load bug (lh/lb sign-extends 0x8040->0xFFFF8040 where lhu/lbu gives 0x8040),
+OR a jump-table/function-pointer-table entry read wrong. epc=0x801265F4 is
+frame_tick resume after jal 0x80167330 (big state-machine func, full_27.c);
+the bad indirect target came from inside it or a nested call. NEXT: find the
+jr/jalr producing 0xFFFF8040 — check for lh/lbu vs lhu/lbu sign-extension
+on a 16-bit func-offset table, or a clean-C callback-table port bug.
