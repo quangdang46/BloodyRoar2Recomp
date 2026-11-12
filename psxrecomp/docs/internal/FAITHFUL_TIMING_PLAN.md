@@ -3271,3 +3271,87 @@ selection index -> wrong stamp 0x00292646, or (b) cd_cmd_issue's
 stamp->sector directory lookup landing on audio. Compare generated
 scene_entry table-index math vs clean (param_2+8)*2; disasm cd_cmd_issue
 file-stamp->LBA path (needs Ghidra up or generated-block trace).
+
+=== REFINEMENT (frame ~55000, deeper disc scan) ===
+NOT pure audio after all. Full forward scan from LBA 73505 finds SPARSE
+DATA sectors (mode2, file=1,ch=0, submode=0x0 = no AUDIO|REALTIME bit ->
+data_delivered path) at: 76599,76600, 119275-119280, 135975-76,
+155047-48, 165891-96, then file=0/ch=1 submode=0x48/0x89 streams ~165897.
+So file 0x00292646 is a MIXED XA stream: long audio runs punctuated by
+rare data sectors (~every 30k sectors). First data sector = LBA 76599,
+~3100 sectors ahead of the 73505 start.
+
+Channel entries @0x80010000 (stride 0x20, data @idx*0x7e0) decode as 5
+CONSECUTIVE single-sector reads: stamp@+0x1c = BCD-MSF -> e0=16:22:05
+LBA73505 (state4=consumed via cd_channel_poll 2->4), e1-e4=73506-73509
+(state3 stuck). 0x801feb00 = e0's stamp (LE bytes 16 22 05 02 -> u32
+0x02052216; cd_stamp_to_sector -> LBA 73505). NOTE: earlier "0x16220502"
+was an endianness misread; real u32 = 0x02052216.
+
+Generated-vs-clean VERIFIED faithful: func_80159028 passes sp+0x28
+(&local_38) to cd_file_open_b(0x8019917C) AND cd_stream_mode_init
+(0x80159CE4) identically; local_38[0]=*puVar6 is a single swl/swr word
+store in BOTH. File stamp 0x00292646 is STATIC EXE .data (SLES_017.22
+file off 0x97610 -> guest 0x801b5610), not runtime-corrupted.
+
+REVISED MODEL: blk_io_retry polls channel entries for state==2 (set by
+cd_dir_entry_store/finalize on DATA_READY). Audio sectors give no INT1
+(psx-spx confirmed faithful). The read RESETS to ~73506 each blk_io_retry
+timeout (read_msf oscillates 73518-73580, never reaches 76599). DEADLOCK:
+need a data-sector INT1 to advance 0x801feb00/resume pos, but re-seek
+resets before reaching the sparse data at 76599.
+
+TWO HYPOTHESES remain:
+(A) TIMING: blk_io_retry's 2000x mc_date_serial_cmp budget elapses (guest
+    cycles) before the CD streams ~3100 sectors to first data. If our
+    guest-cycle/CD-delivery rate ratio is off, real HW reaches it. Check
+    sector-delivery rate vs poll cycle cost.
+(B) WRONG FILE: 0x00292646 is an audio bank; blk_io_retry should read a
+    different (pure-data) file record. rec8 may be the demo's AUDIO, not
+    its tile data.
+NEXT: measure CD sector-delivery rate vs blk_io_retry poll budget; if
+sound, the file record selection is wrong -> find correct record for
+scene-0 tile data.
+
+=== CHANNEL-POLL MECHANISM (cd.c:1911, disasm 0x80199360) ===
+cd_channel_poll reads entry[idx@0x801fc6ac] (0x20 stride @base
+0x801fc6c0->0x80010000). state==2 -> consume to 4, return data ptr; else
+return 1 (still polling). Live: idx=0 -> entry[0] state=4 (CONSUMED/dead,
+can never reach 2) -> returns 1 forever -> mc_date_serial_cmp 0 ->
+blk_io_retry 2000x -> -1 -> cd_file_open_b re-seek 0x801feb00+1.
+
+DECISIVE: the 5 armed channel entries (sectors 73505-73509) are ALL XA
+audio (submode 0x64). NONE can reach state==2 because audio gives no
+DATA_READY INT1 (psx-spx-faithful). So the game armed DATA-channel
+entries for an AUDIO file and waits for completions that can never come.
+This is NOT a timing/budget problem — even infinite time won't complete
+an audio sector's channel entry. It is a WRONG-FILE / wrong-sector
+resolution: blk_io_retry should be reading tile DATA, not this audio
+bank. The file record 0x801b5610/stamp 0x00292646 is static+faithful, so
+the divergence is in HOW the stamp resolves to LBA 73505 (cd_cmd_issue
+generated 0x80196e14 directory lookup) OR which record scene_entry
+should select for scene-0 tile data.
+
+NEXT: disasm cd_cmd_issue (0x80196e14) file-stamp->LBA directory lookup;
+determine if 0x00292646 SHOULD map to a data region (~LBA 170000 Mode1)
+but lands on audio 73505, OR if rec8 is simply the wrong record for
+scene-0 tiles (find the correct record). Beetle oracle on same ISO =
+definitive ground truth for which sector/file the game reads here.
+
+=== POLL-BUDGET CONSTANTS (generated, faithful) ===
+blk_io_retry (0x80159a14): outer s2=2000, calls mc_date_serial_cmp.
+mc_date_serial_cmp (br2eu_func_80159AB4, full_21.c): inner s0=2000
+(`li s0,2000` @0x80159ACC), loops jal cd_channel_poll(0x80199360);
+returns handle on poll==ready else 0 after 2000 inner iters.
+=> up to 2000*2000 = 4,000,000 cd_channel_poll calls per blk_io_retry
+   before it returns -1 and scene_entry re-seeks.
+CD rate: CDROM_SINGLE_SPEED_SECTOR_CYCLES=451584; at Setmode bit7 2x ->
+~225792 cyc/sector ~= 150 sectors/sec @33.87MHz (faithful).
+First data sector after LBA73505 start = 76599 -> ~3100 sectors ->
+~700M guest-cycles needed in ONE blk_io_retry budget to reach it.
+Observed: read_msf trapped 73511-73601 (~90-sector window), no ratchet.
+OPEN: does 4M poll-iters span >=700M guest-cycles? Depends on per-poll
+psx_cyc_step cost + whether psx_check_interrupts_at advances to CD
+delivery deadlines. If budget < needed -> faithful-core CYCLE bug
+(poll loop under-counts cycles vs real HW) OR CD delivery too slow.
+Measure: guest-cycle delta across one full blk_io_retry -1 return.
