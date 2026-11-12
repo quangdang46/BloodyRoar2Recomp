@@ -4701,3 +4701,53 @@ NEXT (needs oracle or deeper RE):
   - The 0x80167330 function is the scratchpad packet/video submit routine;
     its callees 0x80163868 (BIOS-call thunks), 0x80166398, 0x80129F78 lead to
     the ChangeClearRCnt/ChangeClearPad poll.
+
+=== SESSION9r: stall deepened — OpenBIOS guest-thread livelock, no host fiber switches ===
+
+NEW EVIDENCE (fiber scheduler, real LLE boot, frame ~1.9M host / game stuck ~946):
+  - thread_trace + thread_ctx_ring BOTH total:0 despite 6203 ChangeThread bioscalls.
+    => psx_change_thread_fiber NEVER runs. OpenBIOS's own changeThread
+    (recompiled C, elf 0xBFC06924) performs thread switches purely in guest RAM
+    via its own scheduler — NO host fibers involved. The runtime just runs
+    whatever guest PC the kernel dispatches.
+  - dirty_insn_log tail: CPU spins INSIDE the OpenBIOS low-RAM kernel-call gate
+    at phys 0xB0: synthesized `addiu t0,a0,0x2AA0; jr t0` looping continuously,
+    with current_tcb alternating 0x400500FE <-> 0x00008FE0 and ra alternating
+    0x801265F4 <-> 0x8019AA9C (two game call sites ping-ponging through the gate).
+  - dispatch_stats.static_hits FROZEN at 12692180; fn_stats.direct_seen FROZEN at
+    14063929; bioscall total frozen at 1704030 (last = C0#10 ChangeClearRCnt).
+    => ZERO compiled-game dispatches and ZERO new bioscalls. The game thread is
+    fully suspended; only the kernel/VBLANK idle path executes (frame_fingerprint
+    pc-hash identical every frame).
+
+OPENBIOS KERNEL MAP (from recompiler/seeds/openbios_elf_seeds.json — elf syms):
+  changeThread=0xBFC06924 openThread=0xBFC0688C closeThread=0xBFC068F8
+  getFreeTCBslot=0xBFC06834 initThreads=0xBFC06728 init_main_thread=0xBFC0019C
+  openEvent=0xBFC05648 closeEvent=0xBFC05724 testEvent=0xBFC0574C
+  waitEvent=0xBFC0578C deliverEvent=0xBFC205E4 undeliverEvent=0xBFC206B8
+  enableEvent=0xBFC056B4 disableEvent=0xBFC056EC getFreeEvCBSlot=0xBFC05600
+  initEvents=0xBFC05578 enqueueRCntIrqs=0xBFC1FCB4 waitVSync=0xBFC0BAA8
+
+ROOT-CAUSE HYPOTHESIS (strong):
+  - OpenBIOS.toml itself flags the EvCB/TCB ABI as "believed compatible — but
+    believed is not verified", and deliver_event_ret anchor is ABSENT pending
+    B0-event validation. The scheduler (traps.c) reads TCB globals at hardcoded
+    SONY SCPH1001 offsets phys 0x108(PCB)/0x110(base)/0x114(size); under
+    OpenBIOS those phys words decode to 0x4005xxxx/0x488040 trampoline/code
+    descriptors, NOT clean pointers — i.e. OpenBIOS stores its kernel globals at
+    DIFFERENT addresses. Guest thread state therefore cannot be read reliably.
+  - Combined with the livelock: a guest thread yielded (ChangeThread) into a
+    state the kernel scheduler can't wake — most likely waiting on an event
+    (frame tick / CD-data-ready / MDEC-done) that OpenBIOS's DeliverEvent path
+    does not raise, OR a TCB state word the runtime misreads.
+
+NEXT (concrete, faithful):
+  - Disassemble OpenBIOS changeThread/DispatchThread/testEvent/waitEvent +
+    deliverEvent in generated/OpenBIOS_full.c to recover OpenBIOS's ACTUAL
+    TCBH/TCB/EvCB global addresses and state encoding; correct the scheduler's
+    hardcoded Sony offsets OR key them per-BIOS (OpenBIOS.toml runtime_exports).
+  - Verify OpenBIOS DeliverEvent actually enqueues the game's event flags; the
+    19 OpenEvent/EnableEvent + 62 DeliverEvent + 1.36M TestEvent pattern says the
+    video thread polls an event flag that should be set per-frame.
+  - Beetle/DuckStation oracle (psx-dsoracle) is the definitive diff tool but is
+    MSVC/Windows-only (tools/build_oracle.sh) — not runnable on this Mac.
