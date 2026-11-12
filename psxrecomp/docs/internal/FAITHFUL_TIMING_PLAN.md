@@ -3630,3 +3630,20 @@ VERIFIED live: read_msf now tracks 46:xx (LBA ~208xxx stage data) instead
 of sticking at 16:22:05; int1_lost=0; frame advancing past the old stall.
 NOTE: dump still has wrong stored MSF headers + empty ch0 audio payload —
 a re-dump would be cleaner, but the runtime now tolerates it faithfully.
+
+=== SESSION7b: post-fix status — CD layer correct, consumer re-reads file8 head ===
+After 507ab79 the CD layer is verified correct: entries arm at real
+positions (46:26:29=LBA208829=file8), reach state 4, int1_lost=0, ra stays
+in blk_io_retry/cd_channel_poll (0x80159AE0). BUT the game still loops:
+last ~4000 delivered sectors ALL fall in LBA 208830-208936 (~106-sector
+window at file8 head), ~100-120 sectors/sec, ring_dropped grows (~18k).
+file8 payload is structured/valid (60 01 01 80 magic + incrementing
+seq/offset fields per sector) — not obviously corrupt data.
+INTERPRETATION: entries complete (data delivered) yet blk_io_retry keeps
+re-requesting the same window => the bitstream/tile-stream CONSUMER is not
+advancing its read offset. Either (a) chunk-offset/next-block fields in
+the dump's file8 data are also corrupt (like the MSF headers were) so the
+scheduler can't advance, or (b) a downstream decode/stream bug.
+NEXT: determine whether file8's chunk directory/offsets are intact vs
+dump-corrupt; compare read pattern vs Beetle oracle; inspect the
+bitstream-decode consumed-offset cursor.
