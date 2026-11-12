@@ -4379,3 +4379,19 @@ loop and spins on a condition that is corrupt upstream (the same root cause
 that produced the bad saved-PC). NEXT: dump the 0xB0-0xD0 trampoline bytes +
 the context frame k1 points to, find which flag/PC field stays wrong. The
 livelock is real signal, not a regression — faithful BNEL exposed it.
+
+=== SESSION9i: trampoline bytes decoded; livelock = stub<->handler spin ===
+read_ram 0xA0-0xFF @frame629: the low vectors are JUMP STUBS, 16B apart:
+  0xA0: li t0,0x2a80 ; jr t0   (0x24082a80 / 0x01000008)
+  0xB0: li t0,0x2aa0 ; jr t0
+  0xC0: li t0,0x2ac0 ; jr t0
+  0xD0+: data/nops (0x00000100...) — NOT the 0x55050100 BNEL seen at crash;
+  trampoline RAM is dynamic/re-written per state.
+So dispatch_tail cycle 0x2AC0,0x1D84,0xB0,0x2AA0,0x40A0,0xC0 = stub->handler->
+ret->next-stub. The livelock (dirty_block_tail, seq~5.15M, B0<->C0,
+a0=0xFFFFFFFF) = a handler keeps re-entering the stubs -> a flag/queue the
+handler waits on never clears. SAME upstream corruption that yielded the bad
+saved-PC 0xFFFF8040. BNEL fix is faithful (matches recompiler is_likely);
+the spin is the real signal. NEXT: identify which OpenBIOS handler 0x2a80/
+0x2aa0/0x2ac0 is (likely IRQ/syscall dispatch), what flag it polls, and why
+it never satisfies — probably a missing IRQ ack / event delivery / TCB state.
