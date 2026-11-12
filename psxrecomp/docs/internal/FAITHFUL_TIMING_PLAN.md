@@ -4863,3 +4863,90 @@ BloodyRoar2_Recompiled) and psx-runtime-us (USA ->
 BloodyRoar2_Recompiled_USA). The -us variant FAILS to link:
 undefined _cd_feb00_trace_dump/_cd_seek_dump (clean game symbols the
 USA target doesn't compile). Pre-existing, unrelated to this work.
+
+================================================================================
+SESSION 12 — clean_bridge crash ROOT-CAUSED + FIXED; GPU OT stall narrowed to
+            one pathological frame-661 OT (format verified vs psx-spx)
+================================================================================
+
+CLEAN_BRIDGE g_clean_cpu CORRUPTION — ROOT CAUSE FOUND + FIXED (0767f60)
+  - Symptom: br2_bios_tramp SIGSEGV, g_clean_cpu = 0x16f5555fa (misaligned
+    stack value). gpr[] is CPUState's first member so cpu->gpr[4]=cpu+16=
+    0x16f55560a = exact fault addr.
+  - KEY EVIDENCE: nm showed .bss layout — g_openbus[0x10000] ends at
+    0x13a28ec00 and g_clean_cpu sits at EXACTLY 0x13a28ec00 (immediately
+    after). guest_at() returns g_openbus + (addr & 0xFFFF) for any
+    MMIO/open-bus address, but clean code treats the result as a
+    struct/array and indexes it by UNMASKED field offsets (and some paths
+    memcpy variable lengths through it). A guest-indexed store reaching
+    offset >=0x10000 writes straight into g_clean_cpu.
+  - Confirms why a cpu-pointer watchpoint / setter diagnostic never fired:
+    the pointer was VALID when stored; the static was overwritten later by
+    an unrelated guest-indexed openbus access.
+  - FIX: g_openbus 0x10000 -> 0x100000 (1 MiB). .bss is lazily committed so
+    cost is virtual only. Verified: clean dispatch ran 11,490,361 calls
+    with zero corruption; game progressed past menu/save to the GPU-OT
+    stall instead of crashing. Pushed 0767f60.
+
+GPU OT / scratchpad[0]==6 STALL — narrowed (was "frame-944 FMV stall")
+  - With clean_bridge fixed the game BOOTS, runs clean source, renders
+    ~647 frames, then stalls in the main state machine
+    (game/game.c switchD_80126370, ra=0x801265F4, s1=0x1F800000 scratchpad,
+    t9=0xB0) inside frame_advance_helper's frame-completion poll.
+  - get_registers: cop0_epc=ra=0x801265F4, sp=0x801FFFC0 — same signature
+    as the earlier producer/consumer stall.
+  - VERIFIED CORRECT vs psx-spx/problemkaputt:
+      * CHCR bits[9:10]=SyncMode (0x01000401 -> bit10 -> sync_mode=2 =
+        linked-list/OT). bit0=direction(RAM->dev), bit24=start/busy.
+      * OT node = count:8 | next:24, next=low24 of phys byte addr,
+        0xFFFFFF=end. resolve_address (canonical&0x00FFFFFC then
+        &0x001FFFFC) folds to 2MB RAM correctly.
+      * dma_gpu_ll.c walker terminator check next_addr==0x00FFFFFF present
+        in both word_count==0 header path and post-payload path.
+  - dma_trace_dump (256-entry window, frames 647/661):
+      * 16 ch2 OT DMAs at frame 647 ALL completed clean (madr->0x00FFFFFF).
+      * ONE ch2 complete at frame 661 with madr=0x00050000 = hit_limit
+        wander end (gpu_ll_complete sets madr=current_addr on node-cap,
+        0x00FFFFFF on clean terminator).
+      * ch2 bases are KSEG0 0x801E618C/0x801E620C/0x801E82DC/0x801E40BC
+        (phys 0x1E....). The 0x50000 "GPU command" data seen earlier is
+        just where the wander ended, NOT the OT base.
+      * Buffer at 0x1E618C IS a valid OT: sparse node headers
+        (count~0x24-0xF8) with GP0 command payloads between them.
+  - CONCLUSION: OT walking is correct for 16/17 transfers. The frame-661
+    OT sends the walker into a garbage chain -> node-cap (0x40000) ->
+    ~9.7M cycles -> GPU_sync timeout -> GPU_abort cancels -> but abort
+    DOES call dma_gpu_ll_cancel (dma.c:410-424), so lifecycle is clean.
+    The "complete" fired via hit_limit->complete_transfer->IRQ, yet the
+    game's scratchpad[0] never reaches 6 -> frame_advance_helper spins.
+  - HYPOTHESES for the divergent OT (need failing OT's live node chain):
+      a) a next pointer resolving to wrong memory (scratchpad/MMIO fold,
+         or off-by-N) -> reads command buffer as tags -> self-sustaining
+         garbage chain;
+      b) walker reads a concurrently-rewritten OT (game builds next
+         frame's OT in same buffer while event-driven walk still runs) —
+         timing-faithfulness issue, would explain why only the large/complex
+         frame-661 (first real 3D battle scene) diverges;
+      c) a genuine OT cycle (node A->...->A) from game reusing entries.
+  - OPEN: capture the failing OT's first bad next pointer. The transfer
+    already completed (hit_limit) so its start is outside the trace
+    window; needs a targeted watch on dma_gpu_ll_update for the
+    frame-661 walk, or RAM snapshot + offline re-walk.
+
+BUILD NOTE (unchanged): psx-runtime-us fails to link (undefined
+_cd_feb00_trace_dump/_cd_seek_dump) — pre-existing, unrelated.
+
+SESSION 12b — OT stall is NONDETERMINISTIC + ot_trace diagnostic added
+  - A second instrumented run stalled EARLIER (frame ~444, ra=0x282C low
+    memory, clean count frozen) — a DIFFERENT stall point than frame-661.
+    The runtime has multiple/nondeterministic stall points; which one a
+    run hits varies (timing-sensitive).
+  - ot_trace instrumentation could NOT capture the failing OT chain this
+    session because the run stalled before reaching frame-661.
+  - ADDED (uncommitted->committed as opt-in diagnostic): dma_gpu_ll.c now
+    keeps a 256-entry ring of recent (node_addr -> next_addr) hops and
+    dumps it to stderr when a walk hits the 0x40000 node cap. Enabled with
+    BR2_OT_TRACE=1 (default OFF = ~zero overhead). NEXT STEP: run with
+    BR2_OT_TRACE=1, reach a node-cap stall, read the dumped chain to find
+    the first divergent next-pointer (cycle vs garbage region vs wrong
+    resolve). This is the decisive datum for the OT stall.

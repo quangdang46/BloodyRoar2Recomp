@@ -1,6 +1,42 @@
 #include "dma_gpu_ll.h"
 
 #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+/* Diagnostic: ring of recent OT node hops, dumped on node-cap (hit_limit)
+ * to expose the divergent next-pointer / cycle that sends the walker into
+ * garbage. BR2_OT_TRACE=0 disables. */
+#define OT_TRACE_CAP 256u
+static uint32_t s_ot_tr_addr[OT_TRACE_CAP];
+static uint32_t s_ot_tr_next[OT_TRACE_CAP];
+static uint32_t s_ot_tr_n;
+static uint32_t s_ot_tr_start;
+static int      s_ot_tr_on = -1;
+static void ot_trace_reset(void) {
+    if (s_ot_tr_on < 0) {
+        const char *e = getenv("BR2_OT_TRACE");
+        s_ot_tr_on = (e && e[0] == '1');   /* opt-in: BR2_OT_TRACE=1 */
+    }
+    s_ot_tr_n = 0;
+}
+static void ot_trace_push(uint32_t addr, uint32_t next) {
+    if (!s_ot_tr_on) return;
+    uint32_t i = s_ot_tr_n & (OT_TRACE_CAP - 1u);
+    s_ot_tr_addr[i] = addr; s_ot_tr_next[i] = next; s_ot_tr_n++;
+}
+static void ot_trace_dump(void) {
+    if (!s_ot_tr_on || s_ot_tr_n == 0) return;
+    uint32_t start = s_ot_tr_n > OT_TRACE_CAP ? s_ot_tr_n - OT_TRACE_CAP : 0;
+    fprintf(stderr, "[ot_ll] HIT_LIMIT start=%08x nodes=%u dump_from=%u\n",
+            s_ot_tr_start, s_ot_tr_n, start);
+    for (uint32_t k = start; k < s_ot_tr_n; k++) {
+        uint32_t i = k & (OT_TRACE_CAP - 1u);
+        fprintf(stderr, "  [%u] %08x -> next %06x\n", k,
+                s_ot_tr_addr[i], s_ot_tr_next[i]);
+    }
+    fflush(stderr);
+}
 
 /* Charge one guest clock for each 32-bit word read: one header per node and
  * one clock per payload word. There is no separate setup charge. Header and
@@ -17,6 +53,7 @@ static uint32_t resolve_address(const DMAGPULinkedListOps *ops, void *opaque,
 static void finish(DMAGPULinkedList *state,
                    const DMAGPULinkedListOps *ops, void *opaque) {
     int hit_limit = state->hit_limit != 0;
+    if (hit_limit) ot_trace_dump();
     state->active = 0;
     state->phase = DMA_GPU_LL_PHASE_IDLE;
     state->cycles_remaining = 0;
@@ -33,6 +70,8 @@ void dma_gpu_ll_start(DMAGPULinkedList *state, uint32_t start_addr,
     state->cycles_remaining = DMA_GPU_LL_HEADER_CYCLES;
     state->max_nodes = max_nodes;
     state->empty_rank = UINT32_MAX;
+    s_ot_tr_start = start_addr;
+    ot_trace_reset();
 }
 
 void dma_gpu_ll_cancel(DMAGPULinkedList *state) {
@@ -72,6 +111,7 @@ void dma_gpu_ll_advance(DMAGPULinkedList *state, uint32_t cycles,
             state->next_addr = header & 0x00FFFFFFu;
             state->nodes_processed++;
             state->total_words++;
+            ot_trace_push(state->current_addr, state->next_addr);
             if (state->word_count == 0)
                 state->empty_rank = state->empty_rank == UINT32_MAX
                     ? 0u : state->empty_rank + 1u;
