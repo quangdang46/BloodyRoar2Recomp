@@ -4597,3 +4597,57 @@ Next: read the 4 TCB states+saved PCs at the stall (need a non-crashing window �
 boot_skip idles stably but crashed once at 647; retry early-frame TCB dump),
 then RE which B0 thread call (OpenTh/CreateThread/ChangeTh) leaves a TCB
 non-0x4000, or diff vs Beetle oracle thread schedule.
+
+=== SESSION9p: BREAKTHROUGH — game RENDERS + reaches intro FMV; stall moved to video-player event wait ===
+
+SCHEDULER A/B (the decisive experiment):
+  - PSX_HLE_SCHEDULER=1 (default, deterministic TCB): stalls EARLY, before any
+    rendering. gp0_writes=0, game thread never dispatched, kernel idles on
+    VBLANK. 4 TCBs, none state==0x4000 -> DispatchThread has no target.
+  - PSX_HLE_SCHEDULER=0 (legacy host FIBERS): game ALIVE. epc=0x801265F4
+    (game frame code), TestEvent climbs past 1.38M, GPU DMA ordering tables
+    process (gpu_ot starts=245345 completes=127761), gp0_writes=57,335,865,
+    real screenshot captured (320x240, ~95-133 unique colors = real art).
+  => The HLE deterministic-TCB scheduler is the EARLY stall. The fiber path
+     lets the game run. (Fiber path has known non-determinism landmines per
+     CLAUDE.md, but it is the only path that currently reaches gameplay.)
+
+NEW STALL (fiber path, much later — frame ~300K+):
+  - Game boots, initializes, GPU-renders, then plays the INTRO FMV via MDEC.
+  - mdec_state: command=0x32000780, decode_macroblocks=17477,
+    decode_blocks=447282, dma_in_words=113728, dma_out_words=155520,
+    output_pos=622080 / output_size=13422336 (~4.6%), busy=0, input_count=0,
+    decode_input_pos=3796/3840. MDEC IDLE — finished a slice, waits for the
+    game to issue the NEXT decode command.
+  - cdrom_state: has_disc=1, reading=0, read_msf=0:08:30 seek=0:08:12,
+    ring_dropped=516 (unconsumed ring slots overwritten — possible stream
+    corruption under fast delivery, TBD benign vs bug).
+  - dma_state: ALL channels active=0. gpu_ot active=0, starts/completes/
+    cancels FROZEN (no GPU work submitted). Game fully parked.
+  - get_registers: ra=epc=0x801265F4 (return addr after `jal 0x80167330`),
+    sp=0x801FFFC0, t0=0xFFFF8040 (leftover kernel scratch — HARMLESS, kernel
+    repurposes t0; NOT the old wild-dispatch bug), cause=0x400 (IP2 pending),
+    i_stat=0x1 i_mask=0xD.
+  - bioscall_dump (fiber run): total=1,725,912 calls. B0#23 ChangeThread/
+    RFE=6202 (real yields), B0#11 TestEvent=1,383,560 (froze), B0#32
+    UnDeliverEvent=499, B0#8 OpenEvent=19, B0#12 EnableEvent=19. Only 19
+    events opened — game uses few kernel events.
+
+WHERE IT PARKS: func 0x80167330 (br2eu_func_80167330, 1296B/82 blocks) is the
+game's scratchpad (0x1F800000) packet-builder / GPU-DMA submission routine —
+it sets s0=s1=0x1F800000 and stages GPU packets there. The game thread called
+it and never returned: blocked inside on a kernel wait for a completion event
+(DMA-done / frame-consumed / semaphore) that never gets delivered. Same ROOT
+CLASS as the HLE-scheduler stall (kernel event/thread not delivered), just
+reached later via the fiber path.
+
+SCRATCHPAD[0]=0x06 already equals the polled value (the lbu/bne-6 loop at
+0x801265F4 is the CALLER's post-call code, not the block point). The real block
+is inside 0x80167330 awaiting an event.
+
+NET: recompilation is PROVEN through boot -> init -> GPU render -> intro FMV.
+Remaining blocker = kernel event/thread delivery in the video-player path
+(a worker/driver thread that should DeliverEvent on DMA/VBLANK-done isn't
+scheduled or its event isn't hooked). Next: identify which TCB/thread should
+wake the parked thread — read TCB states+saved EPCs in the fiber run, or trace
+the DeliverEvent/UnDeliverEvent (B0#7/#32) pairing around the park.
