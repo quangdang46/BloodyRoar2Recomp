@@ -849,6 +849,7 @@ static int dirty_ram_word_looks_decodable(uint32_t insn) {
     switch (op) {
     case 0x02u: case 0x03u: case 0x04u: case 0x05u:
     case 0x06u: case 0x07u:
+    case 0x14u: case 0x15u: case 0x16u: case 0x17u:
     case 0x08u: case 0x09u: case 0x0Au: case 0x0Bu:
     case 0x0Cu: case 0x0Du: case 0x0Eu: case 0x0Fu:
     case 0x10u: case 0x12u:
@@ -1398,6 +1399,7 @@ static void exec_delay_slot(CPUState *cpu, uint32_t pc) {
     if (opc == 0x02 /*j*/ || opc == 0x03 /*jal*/ ||
         opc == 0x04 /*beq*/ || opc == 0x05 /*bne*/ ||
         opc == 0x06 /*blez*/ || opc == 0x07 /*bgtz*/ ||
+        (opc >= 0x14u && opc <= 0x17u) /* branch-likely */ ||
         opc == 0x01 /*regimm*/ ||
         (opc == 0x00 && (fnt == 0x08 /*jr*/ || fnt == 0x09 /*jalr*/))) {
         (void)abort_unsupported(pc, insn, "control-transfer in delay slot");
@@ -1936,6 +1938,49 @@ static int exec_one_fetched_inner(CPUState *cpu, uint32_t pc, uint32_t insn,
         int taken = ((int32_t)cpu->gpr[rs] > 0);
         exec_delay_slot(cpu, pc + 4);
         cosim_exec_one_transfer_hook(pc + 4);
+        cpu->pc = taken ? (pc + 4 + (simm << 2)) : (pc + 8);
+        return 1;
+    }
+    /* MIPS-II branch-likely family (0x14-0x17). The static recompiler already
+     * emits these (code_generator.cpp is_likely: delay slot runs only when the
+     * branch is taken, nullified otherwise). The interpreter must match — the
+     * OpenBIOS low-RAM kernel trampolines (0xB0-0xD0 exception/IRQ vectors)
+     * are runtime-written dirty RAM and use BNEL; aborting here skipped the
+     * branch and corrupted the context-restore path (frame-648 dispatch to
+     * 0xFFFF8040). */
+    case 0x14: { /* BEQL */
+        int taken = (cpu->gpr[rs] == cpu->gpr[rt]);
+        if (taken) {
+            exec_delay_slot(cpu, pc + 4);
+            cosim_exec_one_transfer_hook(pc + 4);
+        }
+        cpu->pc = taken ? (pc + 4 + (simm << 2)) : (pc + 8);
+        return 1;
+    }
+    case 0x15: { /* BNEL */
+        int taken = (cpu->gpr[rs] != cpu->gpr[rt]);
+        if (taken) {
+            exec_delay_slot(cpu, pc + 4);
+            cosim_exec_one_transfer_hook(pc + 4);
+        }
+        cpu->pc = taken ? (pc + 4 + (simm << 2)) : (pc + 8);
+        return 1;
+    }
+    case 0x16: { /* BLEZL */
+        int taken = ((int32_t)cpu->gpr[rs] <= 0);
+        if (taken) {
+            exec_delay_slot(cpu, pc + 4);
+            cosim_exec_one_transfer_hook(pc + 4);
+        }
+        cpu->pc = taken ? (pc + 4 + (simm << 2)) : (pc + 8);
+        return 1;
+    }
+    case 0x17: { /* BGTZL */
+        int taken = ((int32_t)cpu->gpr[rs] > 0);
+        if (taken) {
+            exec_delay_slot(cpu, pc + 4);
+            cosim_exec_one_transfer_hook(pc + 4);
+        }
         cpu->pc = taken ? (pc + 4 + (simm << 2)) : (pc + 8);
         return 1;
     }

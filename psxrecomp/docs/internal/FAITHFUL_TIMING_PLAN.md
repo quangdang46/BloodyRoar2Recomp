@@ -4352,3 +4352,30 @@ frame_tick resume after jal 0x80167330 (big state-machine func, full_27.c);
 the bad indirect target came from inside it or a nested call. NEXT: find the
 jr/jalr producing 0xFFFF8040 — check for lh/lbu vs lhu/lbu sign-extension
 on a 16-bit func-offset table, or a clean-C callback-table port bug.
+
+=== SESSION9h: branch-likely interp gap found+fixed; new trampoline livelock ===
+ROOT-CAUSE CHAIN for frame-648 dispatch fail: epc path = frame_tick
+(0x801265F4) -> BIOS syscall/IRQ -> OpenBIOS low-RAM kernel trampolines
+(0xB0-0xD0, dirty RAM) -> context-restore OpenBIOS_func_000029CC which does
+lw k0,128(k1); jr k0 -> restored saved-PC was 0xFFFF8040 (sign-ext of 0x8040)
+-> unknown dispatch. The frame's resume-PC field was corrupt.
+interp_unsupported showed dirty_ram_interp hit insn 0x55050100 = BNEL
+(opcode 0x15) at pc 0xD0 block_entry 0xC0, entry_ra=0x801265F4 (matched).
+GAP: static recompiler supports branch-likely 0x14-0x17 (code_generator
+is_likely, conditional delay slot) but dirty_ram_interp did NOT -> the
+runtime-written kernel trampoline's BNEL aborted (abort_unsupported,
+non-fatal) so the branch never executed -> corrupted exception-return path.
+FIX (dirty_ram_interp.c): implemented BEQL/BNEL/BLEZL/BGTZL (0x14-0x17) with
+recompiler-identical semantics (delay slot executes only when taken,
+nullified otherwise); added them to dirty_ram_word_looks_decodable and to
+the delay-slot control-transfer reject list. NOTE: R3000A is MIPS-I (no
+branch-likely) but project recompiler already models them -> interp aligned.
+RESULT: interp_unsupported midblock_count 2->0 (BNEL now executes). BUT the
+failure MODE changed: instead of clean dispatch-fail@648 we now get a
+LIVELOCK — dirty_block_tail shows millions of alternating dispatches
+0xB0<->0xC0 (ra=0x801265F4 a0=0xFFFFFFFF) then signal_11 @frame647.
+Interpretation: BNEL now runs correctly, so the trampoline executes its real
+loop and spins on a condition that is corrupt upstream (the same root cause
+that produced the bad saved-PC). NEXT: dump the 0xB0-0xD0 trampoline bytes +
+the context frame k1 points to, find which flag/PC field stays wrong. The
+livelock is real signal, not a regression — faithful BNEL exposed it.
