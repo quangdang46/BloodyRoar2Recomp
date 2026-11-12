@@ -107,6 +107,11 @@ typedef struct MDECState {
     uint32_t decode_stop_reason;
     uint32_t decode_input_pos;
     uint32_t decode_input_end;
+    /* Streaming decode: halfword index into input[] of the next undecoded
+     * data. Real MDEC decodes block-by-block as words arrive (Beetle
+     * MDEC_Run); we mirror that so DMA-out can drain mid-feed instead of
+     * waiting for the whole DECODE command's input. */
+    uint32_t stream_pos;
     uint32_t dma_in_words;
     uint32_t dma_out_words;
     uint32_t dma_read_underflows;
@@ -414,16 +419,31 @@ static void idct_block(int16_t *block)
 }
 #endif
 
+/* Decode one RLE block starting at *pos. Returns 1 when a block was produced
+ * (and *pos advanced past it), 0 when more input is needed (!final and the
+ * block ran past `end` — *pos is restored to the block's DC word so the caller
+ * retries once more data arrives). When `final` is set the command's input is
+ * complete, so a truncated tail block is decoded anyway (legacy one-shot
+ * behaviour). EOB (0xFE00) padding before the block is always consumed. */
 static int decode_rle_block(int16_t *block, const uint8_t *quant,
-                            uint32_t *pos, uint32_t end) {
+                            uint32_t *pos, uint32_t end, int final) {
     memset(block, 0, 64 * sizeof(int16_t));
     if (*pos >= end) return 0;
     mdec.decode_blocks++;
 
-    uint16_t word = mdec.input[(*pos)++];
-    while (word == 0xFE00u && *pos < end) {
-        word = mdec.input[(*pos)++];
+    uint32_t p = *pos;
+    uint16_t word = mdec.input[p++];
+    while (word == 0xFE00u && p < end) {
+        word = mdec.input[p++];
     }
+    /* Position of the DC word (first non-EOB halfword). On a streaming
+     * starvation we rewind here so the padding we skipped stays consumed but
+     * the partial block is retried intact once more input lands. */
+    uint32_t block_start = p - 1u;
+    /* Pure-EOB tail: consumed padding only. In streaming mode emit nothing and
+     * report "need more"; in final mode fall through and decode the legacy
+     * tail block exactly as the old one-shot decoder did. */
+    int padding_tail = (word == 0xFE00u && p >= end);
 
     /* Dequant in Beetle's <<4 fixed-point domain (mdec.cpp:439-485), clamp
      * ±0x4000. DC uses quant[0] with no qscale; AC uses qscale*quant[k]. Each
@@ -437,12 +457,13 @@ static int decode_rle_block(int16_t *block, const uint8_t *quant,
                        : ((ci * 2) << 4);
     block[0] = (int16_t)clamp_int(tmp, -0x4000, 0x3FFF);
 
-    while (*pos < end && k < 63u) {
-        word = mdec.input[(*pos)++];
-        if (word == 0xFE00u) break;
+    int complete = 0;
+    while (p < end && k < 63u) {
+        word = mdec.input[p++];
+        if (word == 0xFE00u) { complete = 1; break; }
 
         k += ((word >> 10) & 0x3Fu) + 1u;
-        if (k >= 64u) break;
+        if (k >= 64u) { complete = 1; break; }
 
         ci = sign_extend_10(word & 0x03FFu);
         q  = (int)qscale * (int)quant[k];
@@ -450,8 +471,20 @@ static int decode_rle_block(int16_t *block, const uint8_t *quant,
                        : ((ci * 2) << 4);
         block[zigzag_to_linear[k]] = (int16_t)clamp_int(tmp, -0x4000, 0x3FFF);
     }
+    if (!complete && k >= 63u) complete = 1;
+    /* A padding-only tail carries no real block: consume it and report done
+     * without emitting (streaming) — or emit the legacy block when final. */
+    if (padding_tail && !final) {
+        *pos = p;
+        return 0;
+    }
+    if (!complete && !final) {
+        *pos = block_start;
+        return 0;
+    }
 
     idct_block(block);
+    *pos = p;
     return 1;
 }
 
@@ -647,53 +680,64 @@ static void append_color_macroblock(const int16_t *crblk, const int16_t *cbblk,
 static volatile uint32_t g_mdec_decode_count = 0;
 uint32_t mdec_get_decode_count(void) { return g_mdec_decode_count; }
 
-static void execute_decode(void) {
-    uint32_t pos = 0;
+/* Streaming decode: consume as many COMPLETE blocks/macroblocks as the
+ * received input allows, appending their output so DMA-out (channel 1) can
+ * drain while the command is still being fed. This mirrors Beetle's
+ * block-by-block MDEC_Run; the old one-shot decoder waited for the entire
+ * DECODE command's halfwords before producing any output, which starved the
+ * out-channel and deadlocked games that interleave MDEC with CD DMA.
+ * `final` = the command's full input has arrived (input_count==expected), so
+ * a truncated tail block is decoded rather than left pending. */
+static void decode_stream_available(void) {
+    if (!mdec.busy) return;
+    if ((mdec.command >> 29) != MDEC_CMD_DECODE) return;
+    int final = (mdec.input_count >= mdec.expected_halfwords);
     uint32_t end = mdec.input_count;
-    g_mdec_decode_count++;
-    clear_output();
-    mdec.decode_macroblocks = 0;
-    mdec.decode_blocks = 0;
-    mdec.decode_stop_reason = MDEC_STOP_NONE;
-    mdec.decode_input_pos = 0;
+    uint32_t mb_before = mdec.decode_macroblocks;
+    mdec.decode_input_pos = mdec.stream_pos;
     mdec.decode_input_end = end;
-    mdec.dma_out_words = 0;
-    mdec.dma_read_underflows = 0;
 
     if (mdec.output_depth < 2) {
-        int16_t yblk[64];
-        while (pos < end && decode_rle_block(yblk, mdec.y_quant, &pos, end)) {
+        /* Mono/luma: one 8x8 block → 64 output bytes per unit. */
+        while (mdec.stream_pos < end) {
+            int16_t yblk[64];
+            if (!decode_rle_block(yblk, mdec.y_quant, &mdec.stream_pos, end, final))
+                break;
             append_luma_block(yblk);
             mdec.decode_macroblocks++;
         }
-        mdec.decode_stop_reason = (pos >= end) ? MDEC_STOP_INPUT_END : MDEC_STOP_Y0;
-        mdec.decode_input_pos = pos;
-        trace_event(MDEC_EVT_DECODE_DONE, mdec.output_size);
-        return;
+    } else {
+        /* Colour: one 16x16 macroblock = Cr,Cb,Y0..Y3 → one output unit. The
+         * six blocks are decoded into temporaries and committed atomically so
+         * a starved tail never emits a half macroblock. */
+        while (mdec.stream_pos < end) {
+            uint32_t mb = mdec.stream_pos;
+            uint32_t p = mdec.stream_pos;
+            int16_t crblk[64];
+            int16_t cbblk[64];
+            int16_t yblk[4][64];
+            int ok = 1;
+            int r;
+            r = decode_rle_block(crblk, mdec.uv_quant, &p, end, final); if (r != 1) ok = 0;
+            if (ok) { r = decode_rle_block(cbblk, mdec.uv_quant, &p, end, final); if (r != 1) ok = 0; }
+            if (ok) { r = decode_rle_block(yblk[0], mdec.y_quant, &p, end, final); if (r != 1) ok = 0; }
+            if (ok) { r = decode_rle_block(yblk[1], mdec.y_quant, &p, end, final); if (r != 1) ok = 0; }
+            if (ok) { r = decode_rle_block(yblk[2], mdec.y_quant, &p, end, final); if (r != 1) ok = 0; }
+            if (ok) { r = decode_rle_block(yblk[3], mdec.y_quant, &p, end, final); if (r != 1) ok = 0; }
+            if (!ok) break;                 /* stream_pos stays at mb — retry later */
+            mdec.stream_pos = p;
+            append_color_macroblock(crblk, cbblk, yblk);
+            mdec.decode_macroblocks++;
+        }
     }
-
-    while (pos < end) {
-        int16_t crblk[64];
-        int16_t cbblk[64];
-        int16_t yblk[4][64];
-        if (!decode_rle_block(crblk, mdec.uv_quant, &pos, end)) { mdec.decode_stop_reason = MDEC_STOP_CR; break; }
-        if (!decode_rle_block(cbblk, mdec.uv_quant, &pos, end)) { mdec.decode_stop_reason = MDEC_STOP_CB; break; }
-        if (!decode_rle_block(yblk[0], mdec.y_quant, &pos, end)) { mdec.decode_stop_reason = MDEC_STOP_Y0; break; }
-        if (!decode_rle_block(yblk[1], mdec.y_quant, &pos, end)) { mdec.decode_stop_reason = MDEC_STOP_Y1; break; }
-        if (!decode_rle_block(yblk[2], mdec.y_quant, &pos, end)) { mdec.decode_stop_reason = MDEC_STOP_Y2; break; }
-        if (!decode_rle_block(yblk[3], mdec.y_quant, &pos, end)) { mdec.decode_stop_reason = MDEC_STOP_Y3; break; }
-        append_color_macroblock(crblk, cbblk, yblk);
-        mdec.decode_macroblocks++;
+    /* FMV detector: count a decode pass that produced output, and stamp
+     * colour (15/24-bit) decodes only — streamed video. The 4/8-bit luma path
+     * above is texture decompression, not video. */
+    if (mdec.decode_macroblocks != mb_before) g_mdec_decode_count++;
+    if (mdec.output_depth >= 2 && mdec.decode_macroblocks != mb_before) {
+        mdec_last_color_decode_frame = s_frame_count;
+        mdec_last_color_decode_cycle = psx_cycle_count;
     }
-    if (pos >= end && mdec.decode_stop_reason == MDEC_STOP_NONE) {
-        mdec.decode_stop_reason = MDEC_STOP_INPUT_END;
-    }
-    mdec.decode_input_pos = pos;
-    /* FMV detector: stamp colour (15/24-bit) decodes only — streamed video.
-     * The 4/8-bit luma path above is texture decompression, not video. */
-    mdec_last_color_decode_frame = s_frame_count;
-    mdec_last_color_decode_cycle = psx_cycle_count;
-    trace_event(MDEC_EVT_DECODE_DONE, mdec.output_size);
 }
 
 static void execute_command(void) {
@@ -718,7 +762,9 @@ static void execute_command(void) {
             mdec.scale[t] = (int16_t)((int16_t)mdec.input[i] >> 3);
         }
     } else if (op == MDEC_CMD_DECODE) {
-        execute_decode();
+        /* Streaming decode already ran as input arrived; drain any tail now
+         * that the full command input is present (final=1 inside). */
+        decode_stream_available();
     }
 
     finish_command();
@@ -731,6 +777,7 @@ static void begin_command(uint32_t value) {
     mdec.output_depth = (uint8_t)((value >> 27) & 3u);
     mdec.current_block = 4;
     mdec.input_count = 0;
+    mdec.stream_pos = 0;
     mdec.input_full = 0;
     mdec.busy = 1;
 
@@ -762,8 +809,13 @@ static void write_data(uint32_t value) {
         if (mdec.input_count < mdec.expected_halfwords) {
             mdec.input[mdec.input_count++] = (uint16_t)(value >> 16);
         }
+        /* DECODE streams: decode whatever complete blocks the new input
+         * unlocks on every append so DMA-out drains mid-feed. At full input
+         * execute_command drains the tail (final=1) and finishes. */
         if (mdec.input_count >= mdec.expected_halfwords) {
             execute_command();
+        } else if ((mdec.command >> 29) == MDEC_CMD_DECODE) {
+            decode_stream_available();
         }
         return;
     }
@@ -931,6 +983,10 @@ uint32_t mdec_dma_write_words(const uint32_t *src, uint32_t max_words) {
             }
             if (mdec.input_count >= mdec.expected_halfwords) {
                 execute_command();
+            } else if ((mdec.command >> 29) == MDEC_CMD_DECODE) {
+                /* Stream-decode the blocks this DMA burst unlocked so the
+                 * out-channel drains while the in-channel keeps feeding. */
+                decode_stream_available();
             }
             continue;
         }
@@ -1099,7 +1155,7 @@ void mdec_snapshot_write(uint8_t *p) {
     (void)pst_w_u32(&w, mdec.dma_out_words);
     (void)pst_w_u32(&w, mdec.dma_read_underflows);
     (void)pst_w_u32(&w, mdec.output_pos);
-    (void)pst_w_u32(&w, 0u); /* reserved */
+    (void)pst_w_u32(&w, mdec.stream_pos);
     (void)pst_w_u32(&w, 0u); /* reserved */
     (void)pst_w_u8(&w, mdec.output_bit15);
     (void)pst_w_u8(&w, mdec.output_signed);
@@ -1147,7 +1203,7 @@ int mdec_snapshot_read(const uint8_t *p, uint32_t len) {
         !pst_r_u32(&r, &mdec.dma_out_words) ||
         !pst_r_u32(&r, &mdec.dma_read_underflows) ||
         !pst_r_u32(&r, &mdec.output_pos) ||
-        !pst_r_u32(&r, &reserved) ||
+        !pst_r_u32(&r, &mdec.stream_pos) ||
         !pst_r_u32(&r, &reserved))
         return 0;
     if (!pst_r_u8(&r, &mdec.output_bit15) ||
