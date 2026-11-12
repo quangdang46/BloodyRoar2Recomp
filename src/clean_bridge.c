@@ -32,9 +32,15 @@ extern void     psx_write_word(uint32_t addr, uint32_t val);
 #define BR2_SCRATCH_SIZE    0x400u
 
 /* Open-bus stand-in for addresses guest_at() cannot back with real memory
- * (MMIO regs, unmapped space). Generous 64KB mirror indexed like bind.c so
- * distinct guest addrs do not alias each other. */
-static uint8_t g_openbus[0x10000];
+ * (MMIO regs, unmapped space). Indexed like bind.c so distinct guest addrs do
+ * not alias each other. The base is masked to 64KB, but callers treat the
+ * result as a struct/array and index it by UNMASKED field offsets — and some
+ * paths memcpy() variable lengths through it. The arena must therefore be far
+ * larger than 64KB: g_clean_cpu sits immediately after this buffer in .bss, so
+ * an undersized arena lets a guest-indexed store run off the end and corrupt
+ * the CPUState* (observed: g_clean_cpu=0x16f5555fa wild stack value). 1MiB
+ * absorbs any realistic struct/array access; .bss is lazily committed. */
+static uint8_t g_openbus[0x100000];
 
 /* Boundary-inclusive mapping: guest code uses region-top addresses
  * (0x80200000 RAM end, 0x1F800400 scratchpad end) as EXCLUSIVE loop bounds
