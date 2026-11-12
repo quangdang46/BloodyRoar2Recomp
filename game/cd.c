@@ -1236,7 +1236,7 @@ int32_t cd_file_open_b(uint32_t param_1)
   int32_t v0;
   if (*(uint32_t *)guest_at(0x801ec6f8) != 0) return -1;
   v0 = cd_stamp_to_sector(guest_at(0x801feb00));
-  cd_file_open(v0 + 1,(uint8_t *)param_1);
+  cd_file_open(v0 + 1,(uint8_t *)guest_at(param_1));
   return *(int32_t *)guest_at(0x801feb04);
 }
 

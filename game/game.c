@@ -495,7 +495,7 @@ extern int  cd_cmd_issue_sync(int,int,int);
 extern void cd_fileop_dispatch(int);
 extern void cd_subsystem_reset(void);
 extern void vram_tile_decode(int);
-extern int  cd_file_open_b(uint32_t*);
+extern int  cd_file_open_b(uint32_t);
 extern void vsync_wait_n(uint32_t,int);
 extern undefined4 memcard_file_flow(int);
 extern void guest_bzero(uint32_t,int);
@@ -1612,7 +1612,7 @@ undefined4 scene_entry(int param_1,int param_2,int param_3)
         cd_fileop_forward(_DAT_801f4714 * 4 + -0x7fe0b8f4,
                      _DAT_801f4730 * 0x10 * ((iVar2 >> 4) + 1) >> 1);
         while (iVar2 = (int)blk_io_retry(0x801f4700,piVar5), iVar2 == -1) {
-            iVar2 = cd_file_open_b(local_38);
+            iVar2 = cd_file_open_b(guest_of(local_38));
             if ((*(int *)((char *)g_DAT_801b3ed8 + 0x8 + iVar1) < iVar2) || (iVar2 < 1)) {
                 local_38[0] = *puVar6;
             }
