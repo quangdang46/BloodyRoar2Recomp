@@ -3414,3 +3414,26 @@ OPEN: is 73505 a WRONG resolution (should point to real data ~216335 or
    NEED: ground-truth which LBA real HW reads for this file (oracle is
    Windows-only DuckStation - not buildable on macOS) OR trace
    cd_cmd_issue's directory lookup.
+
+=== CONCLUSIVE: ALL XA AUDIO EMPTY ON DISC ===
+Random-sample scan (3000 sectors): 2003 XA-audio sectors (submode&0x60)
+ALL have zero payload; only 166/997 Mode1-data sectors have payload.
+Full-sector hex of LBA80000: only bytes0-31 nonzero (sync+hdr+subhdr),
+bytes32-2351 all zero. => The disc's ENTIRE XA-audio layer is silent.
+Either (a) dump missing audio payloads, or (b) BR2 stores audio as Mode1
+data and the XA region is unused reserved space. cd_read_log shows game
+DOES read real data at LBA~315-9542 and ~208829-216335 (Mode1) - so data
+path works; the stuck stream at 73505 is separate.
+scene_entry IS the stage/tile loader (game.c:1531) - needs real data, not
+an empty XA stream. File 0x00292646->73505 is faithful end-to-end
+(clean==gen, static .data, cd_cmd_issue faithful). File ID not duplicated
+in a RAM dir table (scanned 0x801a0000-0x801d0000: only record site).
+HINTSTS BFWRDY/BFEMPT (bits3,4) return irq_flag|0xE0 -> always ~0; runtime
+bypasses ADPCM buffer via spu_cd_audio_push direct-to-SPU. If game polls
+BFWRDY for XA flow-control this is a real modeling gap - but blk_io_retry
+uses INT1 channel entries (data path) not HINTSTS.
+BLOCKER: cannot get ground truth - DuckStation oracle is Windows-only
+(VS2022/MSBuild), no macOS PSX emulator installed, Ghidra MCP down.
+NEXT concrete: (1) user verify Game.bin dump integrity / provide known-
+good dump or emulator; (2) OR build file-ID->sector directory parser by
+finding the on-disc directory the boot sequence reads (early LBAs).
