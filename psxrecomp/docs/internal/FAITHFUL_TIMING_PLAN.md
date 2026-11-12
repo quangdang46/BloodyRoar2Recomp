@@ -4290,3 +4290,44 @@ ALSO STILL OPEN: GP0 desync halt (0xF4/0xF7/0xFE opcode) — separate issue,
 command-buffer word corruption at packet boundary.
 gwatch on env region crashed process (mprotect fault-handler fragility) —
 avoid for now; use read_ram sampling instead.
+
+=== SESSION9e: display FIXED (320x240 + real draw area); rendering CONFIRMED; GP0 desync isolated ===
+VERIFIED FIXES (committed+pushed 7b7e850, 42ab50c):
+1. draw_env_timing timing-table index bug (gfx.c): iVar4=(env[9]*5+iVar9)*4
+   is a BYTE offset into table@0x801b83f4, but clean-C indexed t16[iVar4]
+   (u16 index = *2). For iVar4=24 read t16[24]=0x801b8424 (VERTICAL table)
+   -> degenerate GP1(06h)=[0xc94,0xcbc]=4px. MIPS uses lhu base+iVar4 (byte).
+   FIX: index by iVar4/2 -> reads 0x801b840c=0x0270/0x0c70 = PAL-320
+   [624,3184]=2560 dots=320px EXACT (matches psx-spx PAL range).
+   env[9]=GP32(0x801bde20)=1 = legit PAL page (verified faithful MIPS).
+2. coord_clamp viewport dims segment bug (gfx.c): read 0x801c8324/326
+   (garbage code bytes 0xb8f4/0xbe0f) instead of 0x801b8324/326
+   (=0x0400/0x0200 real VRAM dims). FIX -> draw_area=[0,240,319,479]
+   real double-buffered back-buffer clip region (was [243,526,243,526]).
+RESULT: gpu_state w=320 h=240 draw_area=[0,240,319,479] h_display=[624,3184].
+Screenshot psx_screenshot.png now has REAL game colors (dark red/green/
+teal/purple ~6.7% coverage) -> primitives reach framebuffer. NOTE: image
+is byte-identical across frames -> display buffer appears static/frozen on
+one presented frame (present/swap path may need check; game still simulates,
+cur_frame advances).
+
+=== SESSION9f: GP0 desync PRECISELY ISOLATED (not word-count; systematic) ===
+Halt: "GPU GP0 unknown command 0xFE (word 0xFE1F220E)" at frame ~634.
+Command buffer located @guest 0x8002D974 (read_ram). Raw LE words:
+  ...0x17E90000(NOP) 0x04002121(NOP) 0x266B9828(tex-tri n7)
+  0xFFF306A2(NOP) 0x00000000 0xD0000181(VRAM->CPU n3) 0x477E004D(line n3)
+  0x43A0FF2D(line n3) 0x6C1B0000(1x1tex n3) 0x9BD600BF(VRAM->VRAM n4)
+  0x00001D9D 0x2704ABF9 0xC3900047 | 0xFE1F220E <- HALT
+  then VALID prims resume: 0x34573819(0x34 shaded-tex-tri) 0x2C310000(0x2C)
+VERIFIED all word-counts CORRECT vs psx.wiki/psx-spx: VRAM->VRAM=4,
+1x1tex=3, lines=3, tex-tri=7, VRAM->CPU header=3. src advances
+consistently = parser self-consistent. NO polylines (0x48-0x5F) in frame.
+0xF0+ has NO valid GP0 cmd on real HW -> 0xFE1F220E is DATA being read as
+cmd => a command EARLIER under/over-consumed (systematic desync), OR the
+packet/OT builder emitted a boundary artifact. DIAG: NOPing 0xF0-0xFF let it
+pass frame634 but died silently later -> multiple stray words = systematic.
+NEXT: find FIRST misaligned cmd in frame (42k-entry ring; likely a
+variable-len cmd: CPU->VRAM 0xA0-0xBF pixel count, or a rare prim type at
+this scene). Emitter = br2eu_func_8018CFDC (generated, faithful). Likely
+clean-C upstream data corruption into the prim template. ALSO: display
+buffer static -> check present/swap path separately.
