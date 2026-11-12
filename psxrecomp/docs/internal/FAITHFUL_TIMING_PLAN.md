@@ -3455,3 +3455,27 @@ idx2-5->XA region. MSF16:22:06 is NOT a file-table start -> stream/offset pos.
 NEXT: need known-good dump to verify; XA empty payload may itself cause
 stall if game validates sector content. HINTSTS BFEMPT(bit3)/BFWRDY(bit4)
 currently = irq_flag|0xE0 -> bits3,4 unmodeled (no ADPCM buf state).
+
+=== SESSION: CD livelock — refined to position/channel conflict + dump defect ===
+psx-spx confirms our XA->ADPCM routing is FAITHFUL: try_deliver_as_adpcm_sector
+sends audio+realtime (submode bit2+bit6) sectors to decoder, no INT1, exactly as
+cdrom.c does. Diagnostic maybe_deliver_xa_audio->0 (force data path) did NOT
+fix blk_io_retry: channel entries still state3, poll cursor stuck @entry0
+(state4), finalize cursor a8=5 already at end. => livelock is NOT just audio
+routing; it is a channel-entry arm/finalize/poll desync + wrong position.
+file_table.json (361 ISO9660 entries) + cd/ extraction: REAL game assets live
+at LOW LBAs and are INTACT — stages ST* 468-1313, characters (ALI/BAK/BUS/GAD/
+JEN/LON/MAR/RON/STU/ULI/YUG) 4387-1313, CMN 9100-11064, MOV 249190-317741.
+cd/XA/*.XA extracted files are ALSO all-zero (extracted from same Game.bin) =>
+dump defect confirmed for XA/MOV/Form2 payload. KEY: stuck read MSF16:22:05
+(LBA73505) lands INSIDE XA/BR2_MC02.XA (lba31055 size46896 -> ~77951), i.e. a
+DATA bitstream reader (blk_io_retry->cd_bitstream_decode) is positioned inside
+a MUSIC file. Two CD channel systems coexist: 0x801fc6xx (blk_io_retry:
+poll/finalize/probe) vs 0x801bc6xx (cd_dir_entry_store). Both write resume
+stamp 0x801feb00. Suspect concurrent music-XA + data-stream multiplexing
+conflict OR resume-stamp cross-talk pulling the data read into the music
+region. Game assets intact => gameplay MAY be reachable if stream conflict
+fixed (music would be silent but fighters/stages have data). OPEN: trace which
+file/stream arms the 0x801fc6xx entries @16:22:05-09 and why position resolves
+into BR2_MC02; determine if music stream (bc6) and data stream (fc6) share
+0x801feb00 incorrectly.
