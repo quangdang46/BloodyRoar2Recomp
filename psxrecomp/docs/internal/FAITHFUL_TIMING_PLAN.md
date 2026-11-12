@@ -5381,3 +5381,30 @@ Follow-up on the `0x801fc6c0==0` anomaly exonerated the clean port:
   runs. BIOS CD path (DMA ch3, pc=0xBFC1xxxx) is fully working and
   exonerated.
 
+
+### SESSION 15k — dir table is 0x11-poison: cd_dir_clear never reaches 0x80010000
+
+Live dir-table dump at the livelock (base `0x801fc6c0 = 0x80010000`, count
+`0x801fc6c4 = 0x20`, idx `0x801fc6ac = 0`, `0x801fc6b4 = 0xffffffff`):
+
+- All 32 entries (0x20 stride) at `0x80010000` have `firstu32 = 0x11111111`
+  (heap poison) except entries 0/1 which hold scene/stream data
+  (`ent0 firstu32=0x10`, `ent1=0x42202529`). NONE has a valid `state` u16.
+- `cd_dir_clear(0,0x20)` is supposed to write `u32=0` to every entry's first
+  word via `cd_dir_table_set -> cd_dir_reset -> cd_dir_clear`. Generated
+  `br2eu_func_80199320` confirmed faithful (reloads base from `0x801FC6C0`
+  each iter, stores 0). Clean port is functionally identical.
+- => Either `cd_dir_clear` does not execute its writes to `0x80010000`, or
+  the region is re-poisoned AFTER clearing (i.e. `0x80010000` doubles as a
+  heap/stream arena that gets `0x11`-filled, overlapping the CD table).
+- `cd_channel_poll` clean port had a REAL fidelity bug (committed d8fba2e):
+  generated resets `0x801FC6AC=0` UNCONDITIONALLY on `state==1` (delay slot of
+  the `0x801FC6B4` test); clean had it inside the `!=0` branch. Does NOT
+  manifest while `0x801fc6b4=0xffffffff`, but fixed for faithfulness.
+- The CD driver vtable at `0x801bdd80` confirmed: `0x801bde00 =
+  cd_dir_entry_finalize(0x801990f0)`, `0x801bdd8c = cd_chan_full_init
+  (0x8019a814)`, plus HW reg ptrs. Dispatch machinery intact.
+- NEXT: determine whether `cd_dir_clear` writes land (wtrace on 0x80010000)
+  and whether the table base overlaps a reused stream buffer. If entries are
+  genuinely never populated, the read-issue path that creates them is the
+  missing link — trace `cd_dir_entry_probe/store` callers.
