@@ -4091,3 +4091,43 @@ read -- prime suspect is an MMIO/register read returning wrong data
 (faithful-core bug class), OR a legitimate CD-status timeout. Next: put a
 watchpoint/counter on the state1->early-return edges in generated
 0x80199440, or dump which status code path entry30's claim took.
+
+=== SESSION8r: channel ring fully decoded — circular stall, not single wedge ===
+LIVE channel table @0x80010000 (stride 0x20, state=u16@+0):
+  e0-4 state0 free | e5 state4 consumed | e6-9,11-14,16-19,21-24,26-29
+  state3 in-flight | e10,15,20,25 state2 DATA-READY | e30 state1 CLAIMED
+  e31 sentinel. => ring is HEALTHY: CD delivers, entries DO reach state2.
+Cursors: produce/sub@0x801fc6a4=30, finalize@0x801fc6a8=30,
+  poll/consume@0x801fc6ac=5, mode@0x801fc6b0=0(DMA path), reset@0x801fc6b4=0.
+0x801feb18=0x800103C0 = current-entry ptr (=e30). 0x801feb00=0x2542646 =
+  e25 sector = last finalized. Callbacks 0x801feb10/0x801feb14 BOTH NULL.
+STATE MACHINE (cdmc_80199440.asm): state is TRANSIENT inside one call —
+  claim writes state1 (@0x801999f4 or @0x80199ab0), submit writes state3
+  (@0x80199d0c). state!=0 at cursor -> status4 return (NO advance, NO
+  retry-counter bump when 0x801fc6b0==0). So e30.state1 = a call claimed it
+  then EARLY-RETURNED before state3. Candidate strand exits after claim:
+  status8 (@0x80199a4c, gated *(0x801fc6b0)!=0), status9 (@0x80199aa8),
+  or a status5/6/7 path in the submit window. fn@0x801FEB14 is NULL so the
+  post-claim jalr is skipped.
+CONSUME SIDE: cd_channel_poll waits entry[poll_idx].state==2; e5.state4 ->
+  return1 forever. e5 is freed only by cd_dir_entry_probe(entry_addr)
+  (tag==4 check, clears count entries, sets 0x801fc6ac=a0+idx). Probe is
+  called by game AFTER consuming data; if it isn't running e5 stays 4.
+cd_dir_entry_store (random state2 producer, idx+base args) NEVER ran
+  (counter 0x801bcf0c=0); only sequential finalize (0x801bcf08) produced
+  the state2 entries. 0x801feb10 notify cb NULL -> no downstream kick.
+BFRD=0: clear_sector_buffer() clears REQUEST.BFRD on every seek/read;
+  re-arm needs the produce path (blocked at e30). ch3 DMA data is gated
+  request_reg&BFRD && rb_available (cdrom.c:1875). ring_dropped grows.
+STALE-PAUSE: pending.cmd=0x09(Pause) armed; cdrom.c:2105 documents Pause
+  INT2 (~1.1Mcyc) overlapping ReadS -> stale COMPLETE -> read-fail retry.
+  Game loops Setloc(46:26:55)->SetMode->SetMode->ReadS forever = the
+  read-retry the channel layer is starving on.
+CIRCULAR STALL: e30.state1 blocks produce -> BFRD stays0 -> ring drops ->
+  stream restarts at same seek -> e30's sector never delivered -> state1.
+NEXT: (a) histogram status codes written to 0x801bcc88 to catch the
+  strand status (8/9/5/6/7) for e30's claim; (b) check if 0x801fc6b0
+  toggles (mode flag) — e30 may've been claimed under copy-mode; (c)
+  verify whether e5.state4 SHOULD have been freed by cd_dir_entry_probe
+  (is probe running? add counter); (d) the stale-Pause INT2 vs ReadS
+  overlap is a real timing hazard to validate against Beetle.
