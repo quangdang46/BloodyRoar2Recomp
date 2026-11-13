@@ -6290,7 +6290,7 @@ int save_load_state_machine(uint32_t a0, int32_t a1)
   int32_t lh4, lh6;
 #define BK16(o)  (*(int16_t *)(blk + ((o) - 0x28)))
 #define BK8(o)   (blk[(o) - 0x28])
-#define BKX(v)   ((int32_t)((uint32_t)(v) << 16) >> 17)
+#define BKX(v)   ((int32_t)(((uint32_t)(int32_t)(int16_t)(v)) << 16) >> 23)
 
   if (s0 == 0x10) goto L10;
   if (s0 < 0x11) {
