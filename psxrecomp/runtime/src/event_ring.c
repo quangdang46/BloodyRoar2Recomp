@@ -168,6 +168,11 @@ static const char *decomp_tag_name(uint8_t t) {
         case 14: return "off_lookup";
         case 15: return "hser";
         case 16: return "rzd";
+        case 20: return "heapA_w_menu";
+        case 21: return "heapA_w_save";
+        case 22: return "hser_in";
+        case 23: return "hrec_in";
+        case 24: return "heapA_probe";
         default: return "?";
     }
 }

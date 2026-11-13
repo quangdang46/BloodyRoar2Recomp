@@ -4745,7 +4745,7 @@ void pad_slot_state_walk(void)
 #define MW16(a,v) (*(uint16_t *)guest_at(a) = (uint16_t)(v))
 #define MW32(a,v) ((uint32_t)(a)==0x801c47b8u ? \
    ({uint32_t _bv=(uint32_t)(v);uint32_t *_bp=(uint32_t *)guest_at(0x801c47b8u);uint32_t _bo=*_bp;*_bp=_bv; \
-     {extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);decomp_trace_record(13,_bo,_bv,0,0);} _bv;}) \
+     {extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);decomp_trace_record(20,_bo,_bv,0,__LINE__);} _bv;}) \
    : (*(uint32_t *)guest_at(a) = (uint32_t)(v)))
 
 /* 16-byte-block guest copy; lwl/lwr vs lw/sw in the original is only an
@@ -13446,6 +13446,11 @@ uint32_t heap_record_emit(uint32_t param_1,uint32_t param_2,uint32_t param_3,
   uint32_t s6 = param_9;
   uint32_t s3, sp20 = 0, fr;
   uint32_t v1;
+  { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+    decomp_trace_record(23,param_1,param_3,param_4,0); }  /* tag23 hrec_in */
+  { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+    /* tag24: param_3(heapA arg) vs *guest_at(0x801c47b8) live cell — split-brain probe */
+    decomp_trace_record(24,param_3,*(uint32_t *)guest_at(0x801c47b8u),0,0); }
   *s5 = 0;
   v1 = MB32(param_1 + 0xcu);
   if (a3 >= v1) return s1;
@@ -14265,6 +14270,8 @@ int32_t heap_serialize(uint32_t param_1,uint32_t param_2,uint32_t param_3,
   uint32_t s3 = 0;
   uint32_t i;
   uint32_t _eb = param_1;   /* entry blk for trace */
+  { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+    decomp_trace_record(22,param_1,param_2,param_3,0); }  /* tag22 hser_in */
 
 #define B7C0_EMIT(N_) do {                                    \
     scr[s3*4u+0u] = tag;   scr[s3*4u+1u] = param;             \

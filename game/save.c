@@ -5636,10 +5636,14 @@ uint32_t ret_zero_d(uint32_t a0, uint32_t a1, uint32_t a2,
 __attribute__((weak))
 #endif
 int heap_ptr_fixup() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int heap_record_emit() { return 0; }
+/* heap_record_emit is defined in menu.c with a full 9-param prototype
+ * (param_6 is a uint32_t* out-count). The weak ()-stub made calls compile
+ * unprototyped so the callee read param_3/param_6 from the wrong arg slots —
+ * param_3 came back as a decode source pointer and was stored into the heap-A
+ * cursor, running it into the compressed-source region. Declare the real
+ * signature instead of a conflicting stub (same fix as terrain_packet_gen). */
+extern uint32_t heap_record_emit(uint32_t,uint32_t,uint32_t,uint32_t,
+    uint32_t,uint32_t *,uint32_t,uint32_t,uint32_t);
 /* terrain_packet_gen is defined in menu.c with a full prototype; the weak
  * ()-stub here made calls compile as "no prototype / too many args" and
  * pass garbage in the arg registers (crash: param_3 read as 0x25). Declare
@@ -5683,7 +5687,7 @@ static uint32_t heap_alloc54(uint32_t heap, int *tbl, int32_t tag)
 
 #define BR2_W32(a,v)   ((uint32_t)(a)==0x801c47b8u ? \
    ({uint32_t _bv=(uint32_t)(v);uint32_t *_bp=(uint32_t *)guest_at(0x801c47b8u);uint32_t _bo=*_bp;*_bp=_bv; \
-     {extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);decomp_trace_record(13,_bo,_bv,0,0);} _bv;}) \
+     {extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);decomp_trace_record(21,_bo,_bv,0,__LINE__);} _bv;}) \
    : (*(uint32_t *)guest_at(a) = (uint32_t)(v)))
 #define BR2_W16(a,v)   (*(uint16_t *)guest_at(a) = (uint16_t)(v))
 #define BR2_WS16(a,v)  (*(int16_t *)guest_at(a) = (int16_t)(v))
@@ -6852,7 +6856,7 @@ L10:
   if (s5 == 0) {
     s1v = 0x801beff0u;
     heapA = (uint32_t)heap_record_emit(g32(0x801e3cfc), s1v,
-                 g32(0x801c47b8), 0, 0, &sp28, 0, 0);
+                 g32(0x801c47b8), 0, 0, &sp28, 0, 0, 0);
   } else {
     s1v = 0x801c00d0u;
     heapA = (uint32_t)heap_record_emit(g32(0x801e3cfc), s1v,
@@ -6871,7 +6875,7 @@ L10:
   if (s5 == 0) {
     s1v = 0x801bf860u;
     heapA = (uint32_t)heap_record_emit(g32(0x801e3cfc), s1v,
-                 g32(0x801c47b8), 0, 0, &sp28, 0x81, 0);
+                 g32(0x801c47b8), 0, 0, &sp28, 0x81, 0, 0);
   } else {
     s1v = 0x801c0940u;
     heapA = (uint32_t)heap_record_emit(g32(0x801e3cfc), s1v,
@@ -6890,7 +6894,7 @@ L10:
   if (s5 == 0) {
     s1v = 0x801bf428u;
     heapA = (uint32_t)heap_record_emit(g32(0x801e3cfc), s1v,
-                 g32(0x801c47b8), 0, 0, &sp28, 0, 0);
+                 g32(0x801c47b8), 0, 0, &sp28, 0, 0, 0);
   } else {
     s1v = 0x801c0508u;
     heapA = (uint32_t)heap_record_emit(g32(0x801e3cfc), s1v,
@@ -6909,7 +6913,7 @@ L10:
   if (s5 == 0) {
     s1v = 0x801bfc98u;
     heapA = (uint32_t)heap_record_emit(g32(0x801e3cfc), s1v,
-                 g32(0x801c47b8), 0, 0, &sp28, 0x81, 0);
+                 g32(0x801c47b8), 0, 0, &sp28, 0x81, 0, 0);
   } else {
     s1v = 0x801c0d78u;
     heapA = (uint32_t)heap_record_emit(g32(0x801e3cfc), s1v,
