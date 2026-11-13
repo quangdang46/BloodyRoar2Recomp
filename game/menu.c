@@ -13376,6 +13376,9 @@ void heap_ptr_fixup(uint32_t param_1)
   uint32_t a0 = param_1;
   int32_t  a3;
   uint32_t a2;
+  { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+    /* tag25 hfix_in: param_1, slot-count(+0xc), slot1(+0x14) pre-fixup */
+    decomp_trace_record(25,param_1,MB32(a0+0xcu),MB32(a0+0x14u),0); }
   if (MB32(a0 + 4u) != 0) {
     a2 = a0 + MB32(a0 + 8u) * 4u;
     MW32(a0 + 8u, a2);
@@ -13420,6 +13423,9 @@ void heap_ptr_fixup(uint32_t param_1)
       a2 += 4u;
     } while (a3 > 0);
   }
+  { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+    /* tag26 hfix_out: param_1, slot1(+0x14) post-fixup, slot2(+0x18) */
+    decomp_trace_record(26,param_1,MB32(a0+0x14u),MB32(a0+0x18u),0); }
 }
 
 extern uint32_t br2_guest_frame(uint32_t);

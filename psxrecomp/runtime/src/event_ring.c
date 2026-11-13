@@ -173,6 +173,8 @@ static const char *decomp_tag_name(uint8_t t) {
         case 22: return "hser_in";
         case 23: return "hrec_in";
         case 24: return "heapA_probe";
+        case 25: return "hfix_in";
+        case 26: return "hfix_out";
         default: return "?";
     }
 }

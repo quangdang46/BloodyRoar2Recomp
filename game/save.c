@@ -5632,10 +5632,15 @@ uint32_t ret_zero_d(uint32_t a0, uint32_t a1, uint32_t a2,
       decomp_trace_record(16,a3,r,0,(uint32_t)(r-a3)); }   /* tag16 rzd */
     return r;
 }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int heap_ptr_fixup() { return 0; }
+/* heap_ptr_fixup is defined in menu.c as void heap_ptr_fixup(uint32_t).
+ * The weak ()-stub here made calls compile unprototyped: clang dropped the
+ * g32() dereference on the argument, so heap_ptr_fixup received
+ * guest_at(0x801e3cfc) — a host pointer to the cursor cell — instead of the
+ * cursor value (the decoded tag table base). It then read count=0 via
+ * open-bus and converted no offset slots, leaving raw offsets that
+ * heap_record_emit fed to heap_serialize as blk=0xF4 (infinite block-walk).
+ * Declare the real signature instead of a conflicting stub. */
+extern void heap_ptr_fixup(uint32_t);
 /* heap_record_emit is defined in menu.c with a full 9-param prototype
  * (param_6 is a uint32_t* out-count). The weak ()-stub made calls compile
  * unprototyped so the callee read param_3/param_6 from the wrong arg slots —
