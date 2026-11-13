@@ -827,3 +827,18 @@ to 0x801b8420 is most likely a VICTIM: its dst ptr was corrupted by the
 earlier decompression overflow, OR it is a decode/transform stage fed
 poisoned src. The TRUE root cause remains 15y's: validate stream_block_
 decode src offset + heap cursor dst so decode can't run away.
+
+## Session 16k-final — corruption is WIDESPREAD (decompression runaway confirmed)
+
+Live RAM on corrupted instance: heap cursors ALSO poisoned —
+  _DAT_801e3cfc=0xf0488040, _DAT_801c47b8=0x0146aeae (both 0x5555/0x0480
+  pattern, not valid heap ptrs). stream_block_decode uses these as the
+  mode3_dispatch DST cursor -> once poisoned, every decode writes to a
+  garbage dst -> cascade. func 0x80192944's s1 dst=~0x801b8420 is one
+  victim; CD ptr table another; heap cursors the propagator.
+ROOT CAUSE (per 15y, now re-confirmed): stream_block_decode src offset /
+heap cursor produces a bad mode3_dispatch dst or runaway decode length.
+FIX TARGET: find FIRST bad write — validate srcg (tag_table offset +
+header) and the dst cursor BEFORE mode3_dispatch runs; ensure decode
+length is bounded by the real compressed-block size, not a garbage src
+terminator. Ghidra MCP down this session.
