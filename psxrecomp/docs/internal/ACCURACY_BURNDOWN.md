@@ -608,3 +608,35 @@ OR g_DAT_801c47c0 never initialized to a real heap tag array.
 NEXT: read g_DAT_801c47c0 (0x801c47c0) BEFORE corruption to get intended tag-array
 base; check cd_file_load_sm dest arg semantics (guest addr of buffer vs of the
 pointer cell); find who is supposed to allocate/init the tag array.
+
+## Session 16d — dir-entry lifecycle decoded (generated-MIPS trace)
+
+Entry record (0x20 stride, base=*(u32*)0x801fc6c0, idx via fc6a4/fc6a8):
+  +0x00 u16 state   (2=complete, 3=in-progress)
+  +0x04 u16 progress
+  +0x06 u16 expected
+  +0x08 u32 data addr
+  +0x1c u32 tag/id
+
+Key functions (all generated, full_46.c):
+- 0x80199CF0 = dir-entry SUBMIT. Loads entry ptr from cached 0x801FEB18,
+  write_half(entry,3) -> state=3; fc6a4++; calls cd_dir_entry_finalize ONLY
+  when fc69c!=0 (synchronous/immediate path). fc69c is the ready-to-finalize
+  flag.
+- 0x80199BC8 = completion DETECTOR. load_half(entry+4)=progress, compares
+  (expected-1 from entry+6); if progress==expected-1 -> fc69c=1. Called
+  indirectly (no direct jal; fn-ptr/continuation).
+- cd_dir_entry_finalize 0x801990F0: state=2, +0x1c->0x801feb00,
+  +8->0x801feb04, fires cb@0x801feb10, fc69c=0.
+- cd_mc_state_machine 0x80199440 caches entry=fc6c0+fc6a4*0x20 into
+  0x801FEB18 (store @0x80199524) and re-reads it ~10x; completion block at
+  0x801999C4-0x801999D8 reads entry+6 (expected) and gates finalize.
+
+OPEN: the entry+4 PROGRESS INCREMENTER is still unidentified. gwatch on the
+phys-0 dir table showed ent0/ent1 +4 receive ZERO writes of any kind (CPU or
+DMA) across the whole livelock -> the per-sector progress path is DEAD/gated,
+not merely slow. 0x80199BC8 (the consumer that would set fc69c) therefore
+never sees progress==expected-1. NEXT: find the DMA/sector-arrival handler
+that increments entry+4 and why it is not reached (likely the CD data is not
+landing in the entry's expected buffer, or the IRQ pump that calls the
+incrementer is gated on a channel-ready flag that never sets).
