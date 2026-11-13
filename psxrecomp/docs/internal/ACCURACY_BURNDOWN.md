@@ -727,3 +727,32 @@ of tractability. The reliable unblock is a HARDWARE ORACLE RAM-diff:
     on macOS arm64 is the remaining path to ground-truth RAM/state compare.
 NEXT: either finish the DuckStation oracle build (background, long) OR add a
 block-level guest-PC trace (not entry fntrace) to catch the +4 writer PC.
+
+## Session 16i — ORACLE LIVE + fc6c0 divergence (CORRECTS 16h)
+
+DuckStation oracle BUILT natively on macOS arm64 and LIVE on port 4371
+(running Game.cue, frame 10000+, working correctly). Tools:
+psxrecomp/tools/duckstation_oracle.py. BIOS caveat: JP SCPH7502 vs PAL game.
+
+ORACLE-VERIFIED DIVERGENCE (same game, same streaming subsystem):
+  ours : fc6c0(dir base)=0x00000000   _DAT_801f4754=0x80010000  fc6c4=0x20
+  orac : fc6c0(dir base)=0x80010000   _DAT_801f4754=0x80010000  fc6c4=0x20
+
+=> cd_dir_table_set RAN (fc6c4=0x20 correct) but captured a0=0, i.e.
+   _DAT_801f4754 was 0 at call time; it became 0x80010000 later.
+   Init-ordering/timing divergence: on HW _DAT_801f4754 is set before
+   tile_stream_open; in recomp it is not (or fc6c0 is reset afterward).
+
+CONSEQUENCE: dir entries + stream DMA land at phys-0 = kernel/exception
+vector region -> kernel corruption + the 0xC000 dispatch + +4 never credited.
+THIS is the likely root cause of the CD livelock (supersedes the t0/CHCR
+suspect — that was a symptom of DMA targeting phys-0).
+
+CORRECTION to 16h: "fc6c0=0 is CORRECT" was WRONG — I misread the
+0x80010000 region as asset data; it IS the dir table (oracle confirms).
+cd_dir_table_set is the ONLY writer of fc6c0 (clean cd.c + generated
+0x8019580C); cd_dir_reset/cd_dir_clear do NOT touch fc6c0.
+
+NEXT: oracle `watch` on phys 0x1FC6C0 to capture the correct write sequence
++ timing vs _DAT_801f4754 writes; determine whether tile_stream_open runs
+before scene_entry sets _DAT_801f4754, or fc6c0 is reset post-scene_entry.

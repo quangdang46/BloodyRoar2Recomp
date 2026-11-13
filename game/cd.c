@@ -1691,6 +1691,14 @@ void bios_tramp_a044(void) { br2_bios_tramp(0xa0,0x44); }
 extern void cd_dir_reset(void);
 void cd_dir_table_set(uint32_t a0,uint32_t a1)
 {
+  /* DIAG: log every (a0,a1) plus live _DAT_801f4754 to find the fc6c0=0 call. */
+  static uint32_t n;
+  uint32_t slot = 0x801bcfa0 + (n & 7) * 0x10;
+  CDDBG_SET(slot + 0x00, a0);
+  CDDBG_SET(slot + 0x04, a1);
+  CDDBG_SET(slot + 0x08, *(uint32_t *)guest_at(0x801f4754));
+  CDDBG_SET(slot + 0x0c, n);
+  n++;
   *(uint32_t *)guest_at(0x801fc6c0) = a0;
   *(uint32_t *)guest_at(0x801fc6c4) = a1;
   cd_dir_reset();
@@ -4050,6 +4058,10 @@ uint32_t cd_chan_cmd_submit(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,
   (void)a6;
   CDDBG_INC(0x801bcf00);              /* DIAG: chan_cmd_submit calls */
   if (s0 == 3) CDDBG_INC(0x801bcf04); /* DIAG: ch3 (CDROM) arms */
+  CDDBG_SET(0x801bcf88, a4);          /* DIAG: last CHCR arg */
+  CDDBG_SET(0x801bcf8c, a1);          /* DIAG: last MADR arg */
+  CDDBG_SET(0x801bcf90, a0);          /* DIAG: last channel arg */
+  CDDBG_SET(0x801bcf94, a3);          /* DIAG: last BCR-low arg */
 
   if (psx_read_word(base + 8) & 0x10000000u) {
     for (;;) {
