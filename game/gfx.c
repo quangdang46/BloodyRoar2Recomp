@@ -27,6 +27,7 @@ typedef int      int32_t_ghidra;
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
 extern uint32_t guest_sp(void);
+extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern uint32_t br2_ld32p(uint32_t cell);
 extern void     br2_st32p(uint32_t cell, uint32_t v);
 
@@ -836,41 +837,10 @@ void gpu_prim_pkt_build(int param_1,ushort *param_2)
 undefined4 gpu_mode_regs_apply(uint param_1)
 
 {
-  undefined4 uVar1;
-  uint uVar2;
-  
-  GP32(0x801b8458) = cd_u16_swap_store(0);
-  GP32(0x801b844c) = 0;
-  GP32(0x801b8448) = 0;
-  uVar2 = param_1 & 7;
-  if (uVar2 == 1) {
-LAB_801934f4:
-    br2_st32p(0x801b8434, 0x401);
-    br2_st32p(0x801b8444, br2_ld32p(0x801b8444) | 0x800);
-    br2_st32p(0x801b8428, 0x2000000);
-    br2_st32p(0x801b8428, 0x1000000);
-  }
-  else {
-    if (uVar2 < 2) {
-      if (uVar2 != 0) goto LAB_80193540;
-    }
-    else {
-      if (uVar2 == 3) goto LAB_801934f4;
-      if (uVar2 != 5) goto LAB_80193540;
-    }
-    br2_st32p(0x801b8434, 0x401);
-    br2_st32p(0x801b8444, br2_ld32p(0x801b8444) | 0x800);
-    br2_st32p(0x801b8428, 0);
-    guest_memset((uint32_t *)0x801fad68,0,0x100);
-    guest_memset((uint32_t *)0x801fae70,0,0x1800);
-  }
-LAB_80193540:
-  cd_u16_swap_store(GP32(0x801b8458));
-  uVar1 = 0;
-  if ((param_1 & 7) == 0) {
-    uVar1 = gpu_status_cmd(param_1);
-  }
-  return uVar1;
+  /* IRQ-path function: clean-C body cannot supply the live guest
+   * register file / MMIO ack semantics the deferred interrupt path needs.
+   * Delegate to generated MIPS (behavioral oracle). */
+  return (undefined4)br2_call_generated(0x80193424u,param_1, 0, 0, 0);
 }
 
 /* ======== 0x80193d30 ======== */

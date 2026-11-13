@@ -526,9 +526,10 @@ undefined4 cd_read_open_clean(int param_1)
 void cd_init_done_cb(void)
 
 {
-  mc_session(DAT_801bcba8);
-  DAT_801bcba4 = 0;
-  return;
+  /* IRQ-path function: clean-C body cannot supply the live guest
+   * register file / MMIO ack semantics the deferred interrupt path needs.
+   * Delegate to generated MIPS (behavioral oracle). */
+  br2_call_generated(0x80198590u,0, 0, 0, 0);
 }
 
 /* ======== batch27: CD driver core ======== */
@@ -619,7 +620,10 @@ void cd_cmd_state_reset(void)
 undefined2 cd_intc_busy_read(void)
 
 {
-  return DB16(0x801bcd1a);
+  /* IRQ-path function: clean-C body cannot supply the live guest
+   * register file / MMIO ack semantics the deferred interrupt path needs.
+   * Delegate to generated MIPS (behavioral oracle). */
+  return (undefined2)br2_call_generated(0x8019a7d4u,0, 0, 0, 0);
 }
 
 /* ======== 0x80196370 ======== */
@@ -966,11 +970,9 @@ int32_t cd_file_open_b(uint32_t param_1)
 extern void cd_cmd_sequence(uint32_t,uint32_t,uint32_t,uint32_t);
 void cd_read_param_set(uint32_t param_1)
 {
-  *(uint32_t *)guest_at(0x801feb38) = param_1;
-  *(uint32_t *)guest_at(0x801feb28) = 0xffffffff;
-  cd_dispatch_tblc();
-  cd_cmd_sequence(0x20000001,0x801feb28,0,0);
-  bios_table_tramp();
+  /* gpr-forwarding trampoline calls inside need live cpu->gpr that clean
+   * callers cannot supply; delegate whole body to generated MIPS. */
+  br2_call_generated(0x80199f30u,param_1,0,0,0);
 }
 
 /* cd_chan_init_wrap — thin wrapper over cd_channel_main_init. Disasm verified. */
@@ -1117,29 +1119,9 @@ extern void bios_tramp_c003(uint32_t,uint32_t);
 extern void bios_tramp_c002(uint32_t,uint32_t);
 void cd_channel_main_init(void)
 {
-  uint32_t *v1, base;
-  FUN_8018e300();
-  *(uint32_t *)guest_at(0x801c47b8) = 0;
-  bios_tramp_c003(2,0x801fefc0);
-  bios_tramp_c002(2,0x801fefc0);
-  v1 = (uint32_t *)guest_at(*(uint32_t *)guest_at(0x801c47e0));
-  if (v1) {
-    *v1 = 0xfffffffe;
-    v1[1] |= 1;
-  }
-  bios_kobj_tramp();
-  FUN_8018e310(0);
-  base = *(uint32_t *)guest_at(0x801c47b4);
-  {
-    uint32_t fn = *(uint32_t *)guest_at(0x801c4784);
-    call_guest(fn,base,0);
-    call_guest(fn,base + 0xf0,0);
-  }
-  {
-    uint32_t *z = (uint32_t *)guest_at(0x801fefd0);
-    if (z) { z[0] = 0; z[1] = 0; }
-  }
-  *(uint32_t *)guest_at(0x801c47b8) = 1;
+  /* gpr-forwarding trampoline calls inside need live cpu->gpr that clean
+   * callers cannot supply; delegate whole body to generated MIPS. */
+  br2_call_generated(0x801a1a40u,0,0,0,0);
 }
 
 /* cd_dir_entry_probe — CD directory entry probe/free: magic-div index into
@@ -1545,10 +1527,9 @@ void cd_chan_block_init(int32_t a0,uint32_t a1)
 extern void cd_mode_apply_wrap(void);
 void cd_mode_reset_seq(void)
 {
-  FUN_8018e300();
-  cd_mode_apply_wrap();
-  bios_table_tramp();
-  FUN_8018e310(0);
+  /* gpr-forwarding trampoline calls inside need live cpu->gpr that clean
+   * callers cannot supply; delegate whole body to generated MIPS. */
+  br2_call_generated(0x8019e39cu,0,0,0,0);
 }
 
 /* cd_dir_reset — CD dir reset: a1=*0x801fc6c4, clears
@@ -1578,14 +1559,9 @@ extern void FUN_8019e55c(void);
 extern int32_t cd_status_bcc90(void);
 void cd_mode_apply_seq(uint32_t a0)
 {
-  bios_table_tramp();
-  FUN_8018e300();
-  if (cd_status_bcc90() == 0) a0 = 0;
-  cd_mode_apply(a0);
-  FUN_8019e5cc();
-  FUN_8019e4c8();
-  FUN_8019e55c();
-  FUN_8018e310(0);
+  /* gpr-forwarding trampoline calls inside need live cpu->gpr that clean
+   * callers cannot supply; delegate whole body to generated MIPS. */
+  br2_call_generated(0x8019e330u,a0,0,0,0);
 }
 
 /* bios_tramp_a070 — BIOS svc A0/0x70 trampoline. */
@@ -4004,10 +3980,9 @@ int cd_crit_c003(void)
 
 int cd_chan_init_trio(void)
 {
-  FUN_8019a300();
-  bios_table_tramp();
-  FUN_8019a350();
-  return 1;
+  /* gpr-forwarding trampoline calls inside need live cpu->gpr that clean
+   * callers cannot supply; delegate whole body to generated MIPS. */
+  return (int)br2_call_generated(0x8019a12cu,0,0,0,0);
 }
 
 /* ======== 0x80191978 ======== */
@@ -4225,12 +4200,10 @@ void cd_hdr_clear_fixed(void)
 
 void cd_cb8_dispatch(void)
 {
-  int i;
-  DB32(0x801bdde0) = DB32(0x801bdde0) + 1;
-  for (i = 0; i < 8; i++) {
-    uint32_t fn = *(uint32_t *)guest_at(0x801bddc0 + i * 4);
-    if (fn != 0) call_guest(fn,0,0);
-  }
+  /* IRQ-path function: clean-C body cannot supply the live guest
+   * register file / MMIO ack semantics the deferred interrupt path needs.
+   * Delegate to generated MIPS (behavioral oracle). */
+  br2_call_generated(0x8019ae68u,0, 0, 0, 0);
 }
 
 /* ======== 0x8019bc48 ======== */
@@ -4381,15 +4354,9 @@ extern void FUN_8019ad70(uint32_t);
 int cd_subsys_init_full(uint32_t param_1,uint32_t param_2,uint32_t param_3,
                  uint32_t param_4)
 {
-  cd_kobj_init_a();
-  FUN_8018e300();
-  cd_kobj_init_b();
-  FUN_8018e310(0);
-  bios_table_tramp();
-  cd_subchan_table_install();
-  FUN_8019a2f0(param_1,param_2,param_3,param_4);
-  DB32(0x801bcc90) = 1;
-  return 1;
+  /* gpr-forwarding trampoline calls inside need live cpu->gpr that clean
+   * callers cannot supply; delegate whole body to generated MIPS. */
+  return (int)br2_call_generated(0x8019a09cu,param_1,param_2,param_3,param_4);
 }
 
 /* ======== 0x8019ac04 ======== */
@@ -5215,41 +5182,9 @@ void cd_prim_list_b(uint32_t param_1,uint32_t param_2,uint32_t param_3)
 
 uint32_t cd_chan_slot_set(uint32_t param_1,uint32_t param_2)
 {
-  uint32_t base = 0x801bcd1c;
-  uint32_t *slot = (uint32_t *)guest_at(base + (param_1 << 2));
-  uint32_t s4 = *slot;
-  uint32_t s3;
-  if (param_2 == s4) return s4;
-  if (*(uint16_t *)guest_at(base - 4) == 0) return s4;
-  uint32_t imask = DB32G(0x801bdda8);
-  s3 = br2_ld16(imask);
-  br2_st16(imask, 0);
-  if (param_2 != 0) {
-    uint32_t bit = 1u << param_1;
-    uint16_t *f48 = (uint16_t *)guest_at(base - 4 + 0x30);
-    *slot = param_2;
-    s3 |= bit;
-    *f48 = (uint16_t)(*f48 | bit);
-  } else {
-    uint32_t mask = ~(1u << param_1);
-    uint16_t *f48 = (uint16_t *)guest_at(base + 0x2c);
-    *slot = 0;
-    s3 &= mask;
-    *f48 = (uint16_t)(*f48 & mask);
-  }
-  if (param_1 == 0) {
-    uint32_t s0 = param_2 < 1;
-    bios_table_tramp();
-    /* bios_kobj_tramp is a no-arg trampoline that forwards live cpu->gpr
-     * a0-a3 to svc C0/0x0a; a direct C call drops the intended (idx,flag)
-     * args, so route through call_guest to load them into gpr first. */
-    call_guest(0x8019a670u,3,s0);
-  }
-  if (param_1 == 4) call_guest(0x8019a670u,0,param_2 < 1);
-  if (param_1 == 5) call_guest(0x8019a670u,1,param_2 < 1);
-  if (param_1 == 6) call_guest(0x8019a670u,2,param_2 < 1);
-  br2_st16(imask, (uint16_t)s3);
-  return s4;
+  /* gpr-forwarding trampoline calls inside need live cpu->gpr that clean
+   * callers cannot supply; delegate whole body to generated MIPS. */
+  return (uint32_t)br2_call_generated(0x8019aabcu,param_1,param_2,0,0);
 }
 
 /* ======== batch_mass13 ======== */

@@ -7626,11 +7626,9 @@ void cd_svc_dual(uint32_t a0,uint32_t a1)
 /* 0x801a1b0c — CD channel init: crit-in, mode 3/1, table 0x801fc000, crit-out. */
 void cd_channel_init(void)
 {
-  FUN_8018e300();
-  bios_kobj_tramp();
-  bios_tramp_c003(2,0x801fc000);
-  FUN_8018e310();
-  return;
+  /* gpr-forwarding trampoline calls inside need live cpu->gpr that clean
+   * callers cannot supply; delegate whole body to generated MIPS. */
+  br2_call_generated(0x801a1b0cu,0,0,0,0);
 }
 
 /* 0x801a30c0 — ctx fn-ptr call + dev_byte_xfer(ctx,-2). */
@@ -8014,17 +8012,10 @@ extern int prim_group_build();
 /* 0x801a1834 — global ctx flag check + fn-ptr call; returns 1/0. */
 int op_flag_fn_check(void)
 {
-  uint32_t v1 = *(uint32_t *)guest_at(0x801be7e0);
-  if ((*(uint32_t *)guest_at(v1 + 4) & 1) != 0 &&
-      (*(uint32_t *)guest_at(v1) & 1) != 0) {
-    uint32_t fp = *(uint32_t *)guest_at(0x801be7a8);
-    void *fn = fn_lookup(fp);
-    if (fn != (void *)0x0) {
-      ((void (*)(void))fn)();
-    }
-    return 1;
-  }
-  return 0;
+  /* IRQ-path function: clean-C body cannot supply the live guest
+   * register file / MMIO ack semantics the deferred interrupt path needs.
+   * Delegate to generated MIPS (behavioral oracle). */
+  return (int)br2_call_generated(0x801a1834u,0, 0, 0, 0);
 }
 
 /* 0x801a2fb4 — state-byte dispatch; returns 1 when a0[0x46]==2. */
