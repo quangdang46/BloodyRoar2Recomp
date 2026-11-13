@@ -5589,7 +5589,18 @@ int dialog_sel_dispatch_wide(uint32_t a0,uint32_t a1)
  * pass as host pointers are dereferenced directly.
  * ====================================================================== */
 
-/* ---- weak stubs for still-unported callees (mirrors bind.c) ---- */
+/* These callees are defined in menu.c/game.c with real prototypes. The weak
+ * ()-stubs made calls compile unprototyped: clang dropped argument
+ * dereferences (g32/guest_at results) and could misplace multi-arg values —
+ * the same defect class as heap_record_emit/terrain_packet_gen/heap_ptr_fixup.
+ * Declare the real signatures instead of conflicting stubs. descblk_variant_*
+ * param_3 is void* in the callee; const void* here is ABI-identical and
+ * accepts both const and non-const call arguments. */
+/* job_result_poll_stable/memcard_block_verify keep weak stubs for now: their
+ * menu.c defs take guest u32 addrs (MB32/guest_at) but mc_op_seq_probe forwards
+ * host buffer pointers (in/dp/dd/b40, incl. a stack array not in guest RAM) —
+ * a deeper host/guest-pointer mistranslation needing dedicated RE, not a
+ * prototype fix. Prototyping them surfaced the mismatch as a hard error. */
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -5598,26 +5609,15 @@ int memcard_block_verify() { return 0; }
 __attribute__((weak))
 #endif
 int job_result_poll_stable() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int job_state_query() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int slot_attr_packet_build() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int descblk_variant_e() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int descblk_variant_f() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int hud_text_a() { return 0; }
+extern int32_t job_state_query(void);
+extern int32_t slot_attr_packet_build(uint32_t,uint32_t,uint32_t,
+    int32_t,int32_t,int32_t);
+extern void descblk_variant_e(uint32_t,uint32_t,const void *,
+    int32_t,int32_t,int32_t);
+extern void descblk_variant_f(uint32_t,uint32_t,const void *,
+    int32_t,int32_t,int32_t,int32_t);
+extern void hud_text_a(uint32_t,uint16_t,const void *,
+    uint16_t,uint16_t,int16_t);
 extern int32_t attr_records_scan(uint32_t,uint32_t);
 /* ret_zero_d is guest 0x8016DADC: the generated body writes the save-record
  * header at a3 and returns the advanced heap-A cursor that the caller stores
@@ -5655,26 +5655,17 @@ extern uint32_t heap_record_emit(uint32_t,uint32_t,uint32_t,uint32_t,
  * the real signature instead of a conflicting stub. */
 extern uint32_t terrain_packet_gen(uint32_t,uint32_t,const uint16_t *,
     const int16_t *,const int16_t *,int32_t,int32_t,const uint8_t *);
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int save_flow_state_machine() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int options_state_machine() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int screen_flow_state_machine() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int ret_zero_e() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int printf_forward() { return 0; }
+/* State-machine callees defined in menu.c as int32_t name(void); ret_zero_e
+ * is int ret_zero_e(int32_t). Same unprototyped-stub defect class — declare
+ * the real signatures. */
+extern int32_t save_flow_state_machine(void);
+extern int32_t options_state_machine(void);
+extern int32_t screen_flow_state_machine(void);
+extern int ret_zero_e(int32_t);
+/* printf_forward's real def is the variadic gfx.c:982
+ * void printf_forward(const char *, ...). A ()-stub here would shadow-call
+ * unprototyped; declare the real signature instead. */
+extern void printf_forward(const char *, ...);
 
 /* callee externs for the ports below. The weak stubs above are ()-style
    non-prototype defs, so calls below promote args the usual way; results
@@ -7608,7 +7599,6 @@ extern void bios_tramp_c003(uint32_t,uint32_t);
 extern void FUN_8018e300(void);
 extern void FUN_8018e310(void);
 extern void task_slot_step();
-extern int printf_forward();
 extern uint32_t guest_of(const void *);
 
 /* 0x801a0620 — cd_svc_50(a0,a1); cd_svc_4e(a0,0x3f,0). */
