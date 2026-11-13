@@ -6538,6 +6538,9 @@ L10:
   else sel = 7;
   if (cd_file_load_sm(sel + 0xb0, guest_of(tag_table_get())) == 0)
     goto ret0;
+  s0 = 0x20;   /* resume state for L20: generated 0x80171800 li s0,0x20 —
+                  without it a busy L20 load stores s0=0x10 and re-runs L10,
+                  ping-ponging the tag-table/heap loads forever. */
   fighter_record_apply(guest_of(tag_table_get()), 2);
   page_table_ptr_set((uint32_t)t1, 2);
 
