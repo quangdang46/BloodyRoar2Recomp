@@ -476,3 +476,40 @@ separate fn not yet isolated — likely reads channel +68/+70/+72 (set by
 br2eu_func_801AA1E4 subchan cb) and bumps dir +4 + copies payload to stream buf.
 Both oracles unavailable on macOS (DuckStation -nogui needs window; no linux-arm64
 prebuilt deps for container; no beetle-psx source/lib present).
+
+## SESSION 16a — PHYSICAL-0 COLLISION: BIOS channel entries overlap game dir table
+
+Fresh LLE-boot run (PSX_BIOS_HLE=0, port 4436) reproduces the livelock AND reaches
+frame 743 before the IRQ->0xC000 dispatch crash (same crash as HLE-boot frame-444;
+the 0xC000 is the IRQ/exception path firing during the infinite CD poll, a SYMPTOM
+of the livelock not a separate bug). gwatch on dir table 0x80000000-0x80000080:
+
+- 433 writes to 0x80000000 (ent0 state) from BIOS store_pc 0xBFC1EAC8 — descriptor/state churn.
+- **1615 writes to 0x80000044 from store_pc 0x801AA2BC = the BIOS subchannel cb
+  `entry->+68 |= 1`.** 0x80000044 is ent2's +4 field. cb a0=0x8FD0(ctx), a1=0x400.
+
+COLLISION DECODED (generated full_52.c br2eu_func_801AA1E4 + alias body):
+- cb: entryA=*(ctx->tableA[a1]) gets +70=a2,+68|=1 ; entryB=*(ctx->tableB[a1]) gets
+  +72=a3,+68|=1. tableA=ctx+52, tableB=ctx+56, count=ctx+68.
+- +68 store hit guest 0x80000044 -> channel entry base = 0x80000000 = **SAME as
+  dir table base (fc6c0=0)**. Channel entry fields +68/+70/+72 land at
+  0x80000044/46/48 = ent2's +4/+6/+8. So "ent2 +4 progress" is actually the
+  channel ready-flag, not a progress counter — the dir/channel structures
+  OVERLAP in physical 0.
+- ctx @0x80008FD0: tableA(+52)=0x0 (NULL->phys0), tableB(+56)=0xb0 (phys0). Both
+  resolve into physical-0, i.e. the BIOS subchan ctx tables point INTO the same
+  low-RAM region the game uses for dir descriptors + payload (data @0x400+).
+
+CONCLUSION: ONE of the two phys-0 base assignments is wrong. fc6c0=0 was "proven"
+by descriptor DMA dests (phys 0/0x20/0x40 headers, 0x400+ payloads) — but that
+only proves the DESCRIPTOR reads land at phys 0; it does NOT prove the streaming
+channel tables belong there. The BIOS CD streaming ctx tableA/tableB=phys0 is the
+prime suspect: on real HW the channel-entry array should be a distinct BIOS/kernel
+buffer, not aliased onto the game's descriptor table. If tableA/tableB are wrong,
+the cb marks a phantom entry (always 0x80000000, +68 stuck=1, never drained)
+instead of the real per-channel entries -> no consumer advances dir +4 -> livelock.
+
+NEXT: (a) trace who writes ctx->tableA/tableB (ctx+52/+56 @0x80009004/08) during
+BIOS CD init — find the intended channel-entry array base; OR (b) oracle RAM-diff
+(DuckStation oracle build still incomplete on macOS — build/ has only CMakeCache).
+Verify whether ctx+68 count and the a1=0x400 index are sane vs a real channel count.
