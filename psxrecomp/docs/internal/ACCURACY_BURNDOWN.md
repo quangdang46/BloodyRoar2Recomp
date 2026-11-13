@@ -975,6 +975,20 @@ LIVE-VERIFIED BUG (gwatch mprotect write-watch on 0x801F68D8, port 4460):
     (0x801F68DC=0xf1111101, 0x801F68E0=0x4200022f) are STATIC; only D8 is
     decremented. The 0x122xxxxx value is classic LCG-range output.
 
+REFINED (write_ram probe): the field is a LEGIT countdown, re-corrupted each
+  iteration. Zeroing 0x801F68D8 -> cd_file_load_sm proceeded, read-issue set it
+  to 0xfaff (64255 = real byte/sector count), it drained ~5300/sec to ~0, the
+  load stage completed, then the NEXT stage re-wrote it to 0x1221f670 (same
+  0x122xxxxx garbage) -> stuck again. So 0x801F68D8 is NOT inherently corrupt;
+  a per-iteration writer feeds it a bad count. The bad value 0x122xxxxx is
+  LCG-range output and the field sits 8B below the PRNG seed @0x801F68E0 —
+  suspect the count/size source (file extent, sector LBA, or a struct field)
+  is being read from corrupted/adjacent data, OR a DMA/alias write lands the
+  PRNG/data bytes on it. Next: trace WHO writes 0x801F68D8 with the huge value
+  at the stage transition (gwatch armed, catch the non-decrement store_pc —
+  it was absent from the CPU-store ring, so look at DMA completion / cd_read_*
+  writers / dirty-ram alias).
+
 HYPOTHESIS (next session): 0x801F68D8 either (a) sits inside a file/asset
   load DMA destination buffer that overruns onto it, or (b) is a field that a
   CD-load-setup path should reset to a small value but the reset is not
