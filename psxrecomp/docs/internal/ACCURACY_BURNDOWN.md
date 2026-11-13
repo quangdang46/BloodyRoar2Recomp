@@ -1168,3 +1168,41 @@ NEXT: audit block_copy_ret_len + lzss_decode return lengths (the cursor
 advance) for host-pointer truncation or mis-sized decode; and find the
 FIRST write that puts file data on globals (the initial bad dest), since
 _DAT_801e3cfc itself gets clobbered by the same DMA.
+
+=== 0x801F68D8 / results-stall: PRECISE boundary + runaway cursor ===
+
+ORACLE MEMORY MAP (DuckStation :4371, persistent conn required):
+  0x801d0000 = dense file/heap data; 0x801e0000 = zeros
+  => file/stream data legitimately spans 0x80010000 .. ~0x801d-0x801e0000.
+  0x801e3cfc(cursor)=0x800f0000 sane; 0x801f68d8(counter)=0 clean;
+  0x801c47b8(heap cursor)=0x80000180 (early-boot value).
+  0x801c6000-0x801ca000 on oracle = dense file data => 0x801Cxxxx is LEGIT
+  stream-buffer territory, NOT off-limits globals. Globals start ~0x801e0000.
+
+OURS: CD DMA wrote file data 0x801c90b8->0x801fa8b8 (~202KB, 0x63=99 sectors)
+covering 0x801e3cfc(cursor-ptr) + 0x801f68d8(counter) => ~0x1a000 (~107KB)
+PAST oracle's file-data boundary into globals.
+
+ROOT: heap/file-load cursor _DAT_801c47b8 over-advances ~107KB into globals
+during cd_file_pump. It is advanced by (a) stream_block_decode returns,
+(b) terrain_packet_gen returns (save.c:6443+ BR2_W32(0x801c47b8,ret)),
+(c) cd_file_load_sm file loads. The corrupting CD read dest = _DAT_801c47b8
+value 0x801c90b8 (already in file-data tail), then 202KB tipped into globals.
+
+EXONERATED: terrain_packet_gen grid dims sane (decomp_trace tag9 param6=param7
+=12 => 12x12 grid, ~7.8KB/call). Decode dst reaching 0x801c856c is LEGIT
+(oracle has file data there too). decomp_trace shows the globals decode
+session (dst 0x801c63f8+) had cursor ALREADY in globals = symptom not cause.
+
+SUSPECT (next): a file-load sector-count/size miscount (~99 sectors read vs
+~50 real => ~100KB overrun) OR cumulative decode/terrain over-advance.
+File table @0x801b5b94 = {ptr->0x801b55f0+idx*4, val=byte size}; extent table
+@0x801b55f0 holds packed LBA/sector descriptors (0x00691402-style).
+NOTE: clean-C writes to _DAT_801c47b8/_DAT_801e3cfc go through raw guest_at()
+pointers and BYPASS wtrace entirely -> use decomp_trace (decode dst/src) +
+CD-state block (0x801bcb80-94) + oracle boundary, not wtrace, for these.
+
+FIXED THIS SESSION: bind.c bind_globals_2 pointed 15 g_DAT_*/scratch globals
+into private guest_arena/guest_scratch (dead in runtime build) -> split-brain
+vs generated code on real ram[]. Now routes via guest_at() -> ram[]/scratchpad.
+Commit 626cd74.
