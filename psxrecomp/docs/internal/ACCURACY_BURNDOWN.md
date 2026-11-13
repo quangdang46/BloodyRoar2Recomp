@@ -906,3 +906,46 @@ FIX: BKX(v) = ((int32_t)(((uint32_t)(int32_t)(int16_t)(v))<<16))>>23
 0x801B8428 stays 0x1F801814, cursor stays in-RAM, game passes frame 647
 and runs (frame counter >300k). func 0x80192944 + decompression fully
 exonerated (victims/downstream).
+
+## Session 16n — RESULTS-STALL root-caused to cd_file_load_sm parked coroutine (NOT pad)
+
+Symptom: after a full attract battle the game freezes on the results/scoreboard
+(state 0x0601, sub-state DAT_1f800001==1) indefinitely; frame counter keeps
+advancing ~55fps. NOT a pad problem — the resource reload itself never finishes.
+
+Call chain (all clean ports, verified live):
+  state6 -> battle_intro_flow(0) [menu.c:1834, blocking coroutine]
+    DAT_1f800001==1 waits on menu_res_load_sm(...)!=0   [menu.c:1928]
+      -> save_load_state_machine state 0x10 (L10)      [save.c:6526]
+        -> cd_file_load_sm(sel+0xb0 = 0xb3) returns 0 forever
+           -> menu_res_load_sm st20 (s1+0x8c==0x20)     [save.c:4178]
+
+Live-verified frozen state (port 4460, read_ram):
+  0x1f800000=0601  0x1f80008c(menu sm)=0x20  0x1f80008e(save sm)=0x10  — all static >8s
+  cd_file_load_sm coroutine state @0x801B55EC == 1 (parked continuation)
+  fntrace on cd_read_issue(0x8018D150)+cd_read_poll(0x80198E2C): ZERO calls in 3s
+    => the coroutine is NOT reaching the read-issue/poll stage; it is parked
+       on an earlier continuation waiting on a completion flag.
+
+CD drive is HEALTHY (rules out a disc/IRQ stall):
+  cdrom_state: reading=0 read_delay=0 irq_flag=0 sector_read_pos advanced
+  2060->2062 (sectors ARE delivered). i_mask=0x0D enables CDROM(bit2)+DMA(bit3);
+  only VBLANK(bit0) pending. DMA ch3 configured, all channels idle.
+  Cumulative bfrd_set=1468/bfrd_clear=13, ring_dropped=611 (whole-session
+  counters — may be normal streaming, not the stall).
+
+File being loaded: file_id 0xb3 -> table 0x801B5B94+0xb3*8 = {ptr=0x801b58bc,
+  val=0x16}; metadata @0x801b58bc = sector extents 0x0967,0x1032,0x1107,0x1149
+  (valid packed-CD layout). Entry val static 0x16 (a descriptor, not progress).
+
+Memcard NOT the blocker: mc_status slot0+slot1 present, valid "MC" magic,
+  dirty=false. memcard_err path not implicated.
+
+OPEN (next session): identify the exact completion flag cd_file_load_sm's
+parked continuation polls (context @0x801B0000, state word @+0x55EC==1) and
+what should set it — CD-read-done via game IRQ handler, a channel/task
+completion, or a decode stage. Both THIS stall and the separately-confirmed
+dead pad producer (records 0x801BEFA8/CA never written, zero 0x42 SIO polls)
+point at the game's async I/O worker layer not being serviced while the
+blocking results coroutine holds the frame loop. Prime suspect: coroutine/
+task scheduler starvation or a missed IRQ->task wakeup in the results state.
