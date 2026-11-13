@@ -1095,3 +1095,55 @@ ring / add a store_pc filter. Then trace gpr[0]'s producer: the extent
 iterator that turns file-table {ptr,val} + packed extent words into the
 sector/byte count — THAT is where the miscount lives (faithful-core fix,
 not a counter reset).
+
+================================================================
+SESSION UPDATE — 0x801F68D8 ROOT CAUSE FOUND (CD-DMA overwrite)
+================================================================
+The earlier "only cd_file_load_sm writes it / computed-count" theory is
+DISPROVEN. Live wtrace (WRITE_TRACE_CAP=262144, full reg context) caught
+the decisive store after a CORRECT 4-byte counter zero (write_ram is
+BYTE-ONLY — earlier "zero" attempts only cleared the low byte, which is
+why prior captures never saw a clean re-arm):
+
+  seq 261  addr=0x1F68D8  old=0x00000000  new=0x12220000  w=4
+          pc=0x801978AC  cpu_pc=0x00000000  dma_ch=3  frame=52427447
+          ra=0x8019A9C8  v0=0x11000000  a0=0x1F8010B8  a1=0x00010200
+          a2=0x00020943  sp=0x801BDD08
+
+KEY: dma_ch=3 => the write is CD-ROM DMA channel 3, NOT a CPU store.
+pc=0x801978AC is STALE g_debug_last_store_pc (the CPU store that wrote
+ch3 CHCR to kick the DMA). new=0x12220000 is raw CD sector data.
+
+DECODED WRITER PATH: br2eu_func_80197800 (full_45.c:27934) is the CD
+command/DMA sequencer. It loads dest pointers from the CD state block
+@0x801BCB0C..0x801BCB50 — which are DMA ch3 register addresses:
+  0x801BCB48 -> 0x1F8010B0 = ch3 MADR (dest)
+  0x801BCB4C -> 0x1F8010B4 = ch3 BCR  (count)
+  0x801BCB50 -> 0x1F8010B8 = ch3 CHCR (control; store @0x801978AC kicks it)
+Live ch3 regs: MADR=0x1FA8B8 (phys -> KSEG0 0x801FA8B8), BCR=0x10200.
+The DMA sweeps UP through phys 0x1F68D8 (=KSEG0 0x801F68D8) writing file
+data over the engine globals.
+
+ROOT CAUSE: the file-load DESTINATION CURSOR is corrupt. cd_file_pump
+(game.c:828) loads files to dest=_DAT_801e3cfc, a streaming cursor init
+to 0x80010000 (game.c:862) and advanced by stream_block_decode returns
+(_DAT_801e3cfc += iVar3, game.c:870-878). _DAT_801e3cfc now reads
+0x0DF0FD1C — itself CD file data, i.e. the cursor was ALREADY overwritten
+by an earlier bad load. Self-reinforcing: file data lands on globals ->
+overwrites the dest cursor + throttle + PRNG/console/gfx neighbours ->
+next load uses the corrupted dest -> more globals overwritten.
+
+CONFIRMED globals hit by the same CD DMA: _DAT_801f68d8 (throttle),
+_DAT_801e3cfc (dest cursor, =0x0df0fd1c garbage), and the dense
+quantized region 0x801F68xx-0x801F6Dxx (gfx transform tables, PRNG
+seed @0x801F68E0, console buf @0x801F68F0) — all read as file/LUT bytes.
+
+NEXT (faithful fix, NOT a counter reset): find why the file-load dest
+cursor/base lands in 0x801F6xxx-0x801FAxxx (globals/BSS) instead of the
+0x80010000 streaming buffer / heap. Suspect the SAME host-pointer->
+guest-address mis-resolution class as OT-nextlink (40e9bbf) and
+heap-cursor (7394315): a heap-top / tag_table / stream_block_decode
+return feeding _DAT_801e3cfc or the cd_file_load_sm dest arg is a host
+ptr or wrong guest addr. Trace stream_block_decode's iVar3 return and
+the heap-top globals (_DAT_801c47b8=0x801C90B8 ok; _DAT_801e3cfc bad)
+to find the first bad dest.
