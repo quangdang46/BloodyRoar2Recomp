@@ -9226,12 +9226,15 @@ L_31ac:                                       /* 0x801531ac shared tail */
  * uses the result as a cursor advance. */
 uint32_t offset_table_lookup(uint32_t a0,int32_t a1)
 {
+  extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
   int32_t n = (int32_t)MB32(a0);
-  uint32_t off;
-  if (a1 >= n) return 0;
+  uint32_t off, ret;
+  if (a1 >= n) { decomp_trace_record(14,a0,(uint32_t)n,(uint8_t)a1,0); return 0; }
   off = MB32(a0 + (uint32_t)a1 * 4u + 4u);
-  if (off == 0xffffffffu) return 0;
-  return a0 + off + (uint32_t)(n + 1) * 4u + 0xc;
+  if (off == 0xffffffffu) { decomp_trace_record(14,a0,(uint32_t)n,(uint8_t)a1,0); return 0; }
+  ret = a0 + off + (uint32_t)(n + 1) * 4u + 0xc;
+  decomp_trace_record(14,a0,(uint32_t)n,(uint8_t)a1,ret);
+  return ret;
 }
 
 /* packed_u16_expand — packed u16-pair expander @0x80148edc (20 insns,

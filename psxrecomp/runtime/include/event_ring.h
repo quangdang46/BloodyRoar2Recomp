@@ -127,7 +127,7 @@ void event_ring_clear(void);
  * guest dst/src/mode/len so the FIRST bad decode — garbage src producing a
  * runaway write that sprays the 0x5555 poison pattern over ~500KB of RAM —
  * can be identified before the cascade. OBSERVABILITY ONLY. */
-#define DECOMP_TRACE_CAP 16384u
+#define DECOMP_TRACE_CAP (1u<<20)
 typedef struct {
     uint64_t seq;
     uint64_t cycle;
