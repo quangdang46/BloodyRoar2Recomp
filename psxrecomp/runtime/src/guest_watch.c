@@ -108,6 +108,7 @@ typedef struct {
     uint32_t store_pc;     /* g_debug_last_store_pc (guest, generated path) */
     uint32_t func_addr;    /* g_debug_current_func_addr */
     uint32_t ra, sp, a0, a1;
+    uint32_t s0, s1, s2, s3, s4, s5;
     uint32_t frame;
     int32_t  dma_depth, dma_ch;
     uint32_t dma_madr, dma_bcr, dma_init_pc;
@@ -209,6 +210,8 @@ static void gw_push_entry(void)
          * verify against cpu_state.h before relying on indices beyond. */
         e->a0 = gpr[GW_GPR_A0]; e->a1 = gpr[GW_GPR_A1];
         e->sp = gpr[GW_GPR_SP]; e->ra = gpr[GW_GPR_RA];
+        e->s0 = gpr[16]; e->s1 = gpr[17]; e->s2 = gpr[18];
+        e->s3 = gpr[19]; e->s4 = gpr[20]; e->s5 = gpr[21];
     }
     memcpy(e->oldv, s_pend_old, GW_WINDOW);
     /* newv filled by caller (trap or recover) before/after push — instead we
@@ -448,6 +451,8 @@ static void gw_entry_json(char *buf, size_t cap, const GwEntry *e)
         "{\"seq\":%llu,\"addr\":\"0x%08X\",\"phys\":\"0x%08X\","
         "\"rip\":\"0x%016llX\",\"store_pc\":\"0x%08X\",\"func\":\"0x%08X\","
         "\"ra\":\"0x%08X\",\"sp\":\"0x%08X\",\"a0\":\"0x%08X\",\"a1\":\"0x%08X\","
+        "\"s0\":\"0x%08X\",\"s1\":\"0x%08X\",\"s2\":\"0x%08X\","
+        "\"s3\":\"0x%08X\",\"s4\":\"0x%08X\",\"s5\":\"0x%08X\","
         "\"frame\":%u,\"cyc\":%llu,"
         "\"hfp\":\"0x%016llX\",\"hlr\":\"0x%016llX\",\"hsp\":\"0x%016llX\","
         "\"ra\":%s,"
@@ -457,6 +462,7 @@ static void gw_entry_json(char *buf, size_t cap, const GwEntry *e)
         (unsigned long long)e->seq, e->guest_addr, e->phys,
         (unsigned long long)e->rip, e->store_pc, e->func_addr,
         e->ra, e->sp, e->a0, e->a1,
+        e->s0, e->s1, e->s2, e->s3, e->s4, e->s5,
         e->frame, (unsigned long long)e->cycle,
         (unsigned long long)e->host_fp, (unsigned long long)e->host_lr,
         (unsigned long long)e->host_sp, rah,

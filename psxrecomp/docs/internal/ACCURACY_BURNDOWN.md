@@ -842,3 +842,39 @@ FIX TARGET: find FIRST bad write — validate srcg (tag_table offset +
 header) and the dst cursor BEFORE mode3_dispatch runs; ensure decode
 length is bounded by the real compressed-block size, not a garbage src
 terminator. Ghidra MCP down this session.
+
+## Session 16l — decompression PROVEN innocent; real writer = terrain_packet_gen
+
+New `decomp_trace` ring (decomp_trace_record + debug cmd) instrumented
+mode3_dispatch/block_copy_ret_len/lzss_decode. On a fresh run to the
+frame-647 corruption: ALL ~190 decode calls had valid dst/src/mode and
+bounded output — ZERO lzss_runaway hits. => 15y/16k "decompression
+runaway" hypothesis is DISPROVEN for this corruption. The 0x5555/0x4040
+"poison" is terrain_packet_gen's literal packet padding
+(MW32(a2w+0x18,0x55555555)), not decode output.
+
+gwatch store_pc was STALE (clean-C writes don't update
+g_debug_last_store_pc). Authoritative writer = host `rip`, symbolized:
+  rip 0x1018CF5xx = terrain_packet_gen (menu.c:13821-13828 MW16 vertex
+  coords), ra_chain save_load_state_machine->menu_res_load_sm->
+  battle_intro_flow->clean_try_dispatch->psx_dispatch->dirty_ram.
+=> terrain_packet_gen IS a real writer to 0x801B8428 (CD ptr table).
+   (16d's "terrain_packet_gen is NOT the writer" was for 0x801C47C0/CD-DMA
+   file data — a DIFFERENT address/writer. Both hit the heap control block.)
+
+CURSOR RUNAWAY (oracle-verified): bump-allocator cursor _DAT_801c47b8
+  oracle=0x80010000 (reset to arena base)   ours=0x816312a2 (~23MB, >RAM)
+It is the SHARED dst cursor for stream_block_decode AND terrain_packet_gen
+(save.c:6440 chains 5 calls via BR2_W32(0x801c47b8,ret)).
+terrain_packet_gen returns t2 = param_2 + emitted records; emits a
+param_6 x param_7 grid of 0x48B records. Measured args (tag9 trace):
+  param_6=0x300(768) param_7=0x300/0x2, cursor already 0x816xxxxx.
+  BKX(v)=v/2; dims come from table 0x801b1524 (lhu4/lhu6) — that table is
+  ITSELF overwritten by the same packet poison (oracle clean).
+768x768 cells ~590K records ~27MB -> the runaway advance that marches the
+cursor through 0x801b1524 -> 0x801b8420 -> 0x816312a2.
+
+OPEN: are param_6/param_7 (grid dims) wrong, or is the cursor/arena
+management wrong (missing reset / wrong return)? On HW the cursor stays
+bounded ~0x80010000. Faithful fix = make the emit cursor + dims match HW
+arena accounting, NOT clamp/symptom-patch.

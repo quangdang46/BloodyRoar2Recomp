@@ -13757,6 +13757,8 @@ uint32_t terrain_packet_gen(uint32_t param_1,uint32_t param_2,
   uint32_t t2, t3, a2w, a3w;
   int32_t  t4, t8;
   int32_t  i;
+  { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+    decomp_trace_record(9,param_2,(uint32_t)param_6,0,(uint32_t)param_7); }
   /* header */
   MW32(param_1 + 0x1cu, param_2);
   MW16(param_1 + 0x0cu, 0);
