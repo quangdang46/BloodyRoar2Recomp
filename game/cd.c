@@ -157,17 +157,12 @@ undefined4 cd_cmd_issue(byte,uint32_t,uint32_t,int);
 undefined4 cd_read_issue(undefined4 param_1,undefined4 param_2,undefined4 param_3)
 
 {
-  int iVar1;
-  
-  do {
-    br2_irq_poll();
-    iVar1 = cd_mode_flag_set(2,param_1,0);
-  } while (iVar1 == 0);
-  do {
-    br2_irq_poll();
-    iVar1 = cd_read_setup(param_3,param_2,0x80);
-  } while (iVar1 == 0);
-  return param_3;
+  /* IRQ/coroutine-boundary function: clean-C body cannot supply the
+   * live guest register file the deferred CD coroutine needs, and its
+   * MMIO busy-waits lack per-block interrupt checks. Delegate to the
+   * generated MIPS (behavioral oracle) — same contract as the other
+   * read-path functions already delegated. */
+  return (undefined4)br2_call_generated(0x8018d150u,param_1, param_2, param_3, 0);
 }
 
 /* ======== 0x80198af0 ======== */
@@ -197,25 +192,12 @@ void cd_init_session(void)
 int cd_read_poll(int param_1,undefined4 param_2)
 
 {
-  int iVar1;
-  int iVar2;
-  
-  CDDBG_INC(0x801bce60);
-  do {
-    iVar1 = cd_timer_read(0xffffffff);
-    iVar2 = -1;
-    if ((iVar1 <= DAT_801bcb9c + 0x4b0) &&
-       ((DAT_801bcb94 < 0 ||
-        (iVar1 = cd_timer_read(0xffffffff), iVar2 = DAT_801bcb94, DAT_801bcb98 + 0x3c < iVar1)))) {
-      cd_read_open(1);
-      iVar2 = DAT_801bcb80;
-    }
-  } while ((param_1 == 0) && (((DAT_801bcba4 != 0 && (iVar2 == 0)) || (0 < iVar2))));
-  cd_result_wait_b_fwd(1,param_2);
-  if ((DAT_801bcba4 != 0) && (iVar2 == 0)) {
-    iVar2 = 1;
-  }
-  return iVar2;
+  /* IRQ/coroutine-boundary function: clean-C body cannot supply the
+   * live guest register file the deferred CD coroutine needs, and its
+   * MMIO busy-waits lack per-block interrupt checks. Delegate to the
+   * generated MIPS (behavioral oracle) — same contract as the other
+   * read-path functions already delegated. */
+  return (int)br2_call_generated(0x80198e2cu,param_1, param_2, 0, 0);
 }
 
 /* ======== 0x80195d8c ======== */
@@ -224,32 +206,11 @@ extern int cd_stamp_to_sector(const void *);
 undefined4 cd_mode_flag_set(byte param_1,int param_2,undefined4 param_3)
 
 {
-  undefined4 uVar1;
-  int iVar2;
-  int iVar3;
-  
-  uVar1 = DAT_801bc848;
-  iVar3 = 3;
-  if (param_2 >= 0x80000000 && param_2 < 0x80200000) {
-    uint32_t _st = *(uint32_t *)guest_at((uint32_t)param_2);
-    cd_seek_note(5, _st | ((uint32_t)param_1 << 28),
-                 (uint32_t)cd_stamp_to_sector(guest_at((uint32_t)param_2)));
-  }
-  while( true ) {
-    DAT_801bc848 = 0;
-    if ((param_1 != 1) && ((DAT_801bc854 & 0x10) != 0)) {
-      cd_cmd_issue(1,0,0,0);
-    }
-    if ((((param_2 == 0) || (*(int *)(&DAT_801bc7c0[param_1]) == 0)) ||
-        (iVar2 = cd_cmd_issue(2,param_2,param_3,0), iVar2 == 0)) &&
-       (DAT_801bc848 = uVar1, iVar2 = cd_cmd_issue(param_1,param_2,param_3,0), iVar2 == 0)) break;
-    iVar3 = iVar3 + -1;
-    if (iVar3 == -1) {
-      DAT_801bc848 = uVar1;
-      return 0;
-    }
-  }
-  return 1;
+  /* CD command issuer on the direct cd_file_load_sm path: its retry loop
+   * issues commands whose INT2 completion is delivered by the deferred CD
+   * coroutine that needs the live guest register file — the same boundary
+   * contract as the other read-path functions. Delegate to generated. */
+  return (undefined4)br2_call_generated(0x80195d8cu,(uint32_t)param_1,(uint32_t)param_2,param_3,0);
 }
 
 /* ======== 0x8019b200 ======== */
@@ -324,6 +285,19 @@ undefined4 cd_cmd_issue(byte param_1,uint32_t param_2,uint32_t param_3,int param
 bool cd_read_setup(undefined4 param_1,undefined4 param_2,uint param_3)
 
 {
+  /* Read configurator: picks sector size (0x200/0x246/0x249), mode|0x20,
+   * buffer ptrs, registers the INT2/step callbacks via mc_session(_b),
+   * arms the 0x79 timeout and issues Pause when the drive reports busy.
+   * A wrong sector-size/mode/buffer or a callback registered against the
+   * wrong slot makes the read deliver the wrong amount -> the consumer
+   * stops mid-sector and the completion event never fires (0x60a wedge).
+   * It also sits on the IRQ/deferred-coroutine boundary like the other
+   * read-path functions already delegated. Delegate to generated. */
+  return (bool)br2_call_generated(0x80198c90u,(uint32_t)param_1,
+                                  (uint32_t)param_2,(uint32_t)param_3,0);
+}
+
+#if 0
   int iVar1;
   int iVar2;
   uint uVar3;
@@ -363,6 +337,7 @@ LAB_80198d0c:
   iVar1 = cd_read_open(0);
   return 0 < iVar1;
 }
+#endif
 
 /* ======== 0x8019a460 ======== */
 
@@ -632,23 +607,10 @@ void cd_str_print(uint32_t param_1)
 void cd_cmd_state_reset(void)
 
 {
-  byte bVar1;
-  
-  br2_st8p(0x801bcb0c, 1);
-  bVar1 = CDB8P(0x801bcb18);
-  while ((bVar1 & 7) != 0) {
-    br2_irq_poll();
-    br2_st8p(0x801bcb0c, 1);
-    br2_st8p(0x801bcb18, 7);
-    br2_st8p(0x801bcb14, 7);
-    bVar1 = CDB8P(0x801bcb18);
-  }
-  CDB8(0x801bcb26) = 0;
-  CDB8(0x801bcb25) = 0;
-  CDB8(0x801bcb24) = 2;
-  br2_st8p(0x801bcb0c, 0);
-  br2_st8p(0x801bcb18, 0);
-  br2_st16(DB32G(0x801bcb1c), 0x1325);
+  /* IRQ-poll wait for the CD response channel (0x801bcb18&7) to drain —
+   * drained only by the IRQ-driven cd_response_process, which a clean-C
+   * spin cannot resume. Delegate to generated. */
+  br2_call_generated(0x801972a8u,0,0,0,0);
   return;
 }
 
@@ -665,202 +627,10 @@ undefined2 cd_intc_busy_read(void)
 undefined4 cd_response_process(void)
 
 {
-  byte bVar1;
-  undefined4 uVar2;
-  byte *pbVar3;
-  byte *pbVar4;
-  int iVar5;
-  int iVar6;
-  uint uVar7;
-  byte local_20;
-  byte local_18 [8];
-  uint8_t *resA, *resB;
-
-  br2_st8p(0x801bcb0c, 1);
-  CDDBG_INC(0x801bce30);
-  local_20 = CDB8P(0x801bcb18) & 7;
-  uVar7 = 0;
-  if (local_20 == 0) {
-LAB_801968b4:
-    uVar2 = 0;
-  }
-  else {
-    while (iVar5 = 0, local_20 != (CDB8P(0x801bcb18) & 7)) {
-      local_20 = CDB8P(0x801bcb18) & 7;
-    }
-    do {
-      pbVar3 = local_18 + iVar5;
-      iVar6 = iVar5;
-      if ((CDB8P(0x801bcb0c) & 0x20) == 0) break;
-      iVar5 = iVar5 + 1;
-      *pbVar3 = CDB8P(0x801bcb10);
-      iVar6 = iVar5;
-    } while (iVar5 < 8);
-    for (; iVar5 < 8; iVar5 = iVar5 + 1) {
-      local_18[iVar5] = 0;
-    }
-    br2_st8p(0x801bcb0c, 1);
-    br2_st8p(0x801bcb18, 7);
-    br2_st8p(0x801bcb14, 7);
-    if ((local_20 != 3) || (I32AT(0x801bca0c,CDB8(0x801bc865)) != 0)) {
-      if (((CDB32(0x801bc854) & 0x10) == 0) && ((local_18[0] & 0x10) != 0)) {
-        CDB32(0x801bc85c) = CDB32(0x801bc85c) + 1;
-      }
-      CDB32(0x801bc854) = (uint)local_18[0];
-      CDB32(0x801bc858) = (uint)local_18[1];
-      uVar7 = CDB32(0x801bc854) & 0x1d;
-    }
-    if (((local_20 == 5) && (0 < (int)DB8(0x801bc850))) &&
-       (printf_forward(s_DiskError__801257d0), 0 < (int)DB8(0x801bc850))) {
-      printf_forward(s_com__s_code___02x__02x__801257dc,CDNAME(CDB8(0x801bc865)),
-                   CDB32(0x801bc854),CDB32(0x801bc858));
-    }
-    CDDBG_INC(0x801bce34 + ((uint)local_20 & 7) * 4);  /* per-type histogram */
-    CDDBG_SET(0x801bce54, uVar7);                       /* last error flags */
-    CDDBG_SET(0x801bce58, CDB8(0x801bc865));            /* last drive idx */
-    switch(local_20) {
-    case 1:
-      if ((uVar7 != 0) && (iVar6 == 1)) {
-        uVar7 = 0;
-      }
-      CDB8(0x801bcb25) = 1;
-      if (uVar7 != 0) {
-        CDB8(0x801bcb25) = 5;
-      }
-      resA = (uint8_t *)guest_at(0x801fc6d0);
-      pbVar4 = local_18;
-      iVar5 = 7;
-      do {
-        bVar1 = *pbVar4;
-        pbVar4 = pbVar4 + 1;
-        iVar5 = iVar5 + -1;
-        *resA = bVar1;
-        resA = resA + 1;
-      } while (iVar5 != -1);
-      br2_st8p(0x801bcb0c, 0);
-      uVar2 = 4;
-      br2_st8p(0x801bcb18, 0);
-      break;
-    case 2:
-      CDB8(0x801bcb24) = 2;
-      if (uVar7 != 0) {
-        CDB8(0x801bcb24) = 5;
-      }
-      resA = (uint8_t *)guest_at(0x801fc6c8);
-      pbVar4 = local_18;
-      iVar5 = 7;
-      do {
-        bVar1 = *pbVar4;
-        pbVar4 = pbVar4 + 1;
-        iVar5 = iVar5 + -1;
-        *resA = bVar1;
-        resA = resA + 1;
-      } while (iVar5 != -1);
-      uVar2 = 2;
-      break;
-    case 3:
-      if (uVar7 == 0) {
-        if (I32AT(0x801bc90c,CDB8(0x801bc865)) == 0) {
-          CDB8(0x801bcb24) = 2;
-          resA = (uint8_t *)guest_at(0x801fc6c8);
-          pbVar4 = local_18;
-          iVar5 = 7;
-          do {
-            bVar1 = *pbVar4;
-            pbVar4 = pbVar4 + 1;
-            iVar5 = iVar5 + -1;
-            *resA = bVar1;
-            resA = resA + 1;
-          } while (iVar5 != -1);
-          uVar2 = 2;
-        }
-        else {
-          CDB8(0x801bcb24) = 3;
-          resA = (uint8_t *)guest_at(0x801fc6c8);
-          pbVar4 = local_18;
-          iVar5 = 7;
-          do {
-            bVar1 = *pbVar4;
-            pbVar4 = pbVar4 + 1;
-            iVar5 = iVar5 + -1;
-            *resA = bVar1;
-            resA = resA + 1;
-          } while (iVar5 != -1);
-          uVar2 = 1;
-        }
-      }
-      else {
-        CDB8(0x801bcb24) = 5;
-        resA = (uint8_t *)guest_at(0x801fc6c8);
-        pbVar4 = local_18;
-        iVar5 = 7;
-        do {
-          bVar1 = *pbVar4;
-          pbVar4 = pbVar4 + 1;
-          iVar5 = iVar5 + -1;
-          *resA = bVar1;
-          resA = resA + 1;
-        } while (iVar5 != -1);
-        uVar2 = 2;
-      }
-      break;
-    case 4:
-      resA = (uint8_t *)guest_at(0x801fc6d8);
-      CDB8(0x801bcb26) = 4;
-      pbVar4 = local_18;
-      CDB8(0x801bcb25) = 4;
-      iVar5 = 7;
-      do {
-        bVar1 = *pbVar4;
-        pbVar4 = pbVar4 + 1;
-        iVar5 = iVar5 + -1;
-        *resA = bVar1;
-        resA = resA + 1;
-      } while (iVar5 != -1);
-      resB = (uint8_t *)guest_at(0x801fc6d0);
-      pbVar4 = local_18;
-      iVar5 = 7;
-      do {
-        bVar1 = *pbVar4;
-        pbVar4 = pbVar4 + 1;
-        iVar5 = iVar5 + -1;
-        *resB = bVar1;
-        resB = resB + 1;
-      } while (iVar5 != -1);
-      uVar2 = 4;
-      break;
-    case 5:
-      resA = (uint8_t *)guest_at(0x801fc6c8);
-      CDB8(0x801bcb25) = 5;
-      pbVar4 = local_18;
-      CDB8(0x801bcb24) = 5;
-      iVar5 = 7;
-      do {
-        bVar1 = *pbVar4;
-        pbVar4 = pbVar4 + 1;
-        iVar5 = iVar5 + -1;
-        *resA = bVar1;
-        resA = resA + 1;
-      } while (iVar5 != -1);
-      resB = (uint8_t *)guest_at(0x801fc6d0);
-      pbVar4 = local_18;
-      iVar5 = 7;
-      do {
-        bVar1 = *pbVar4;
-        pbVar4 = pbVar4 + 1;
-        iVar5 = iVar5 + -1;
-        *resB = bVar1;
-        resB = resB + 1;
-      } while (iVar5 != -1);
-      uVar2 = 6;
-      break;
-    default:
-      cd_str_print(0x801257f8);
-      printf_forward(s___d__8012580c,local_20);
-      goto LAB_801968b4;
-    }
-  }
-  return uVar2;
+  /* 1372-byte response state machine — IRQ-context coroutine semantics and
+   * per-type dispatch are exactly reproduced only by the recompiled body.
+   * Delegate to generated (same contract as the other IRQ-wait CD fns). */
+  return (undefined4)br2_call_generated(0x80196370u,0,0,0,0);
 }
 
 /* ======== small getters ======== */
@@ -967,36 +737,12 @@ uint cd_result_wait_b(int param_1,undefined1 *param_2)
 undefined4 cd_busy_wait(int param_1)
 
 {
-  bool bVar1;
-  int iVar2;
-  undefined4 uVar3;
-  
-  CDB32(0x801fc6e0) = cd_timer_read(0xffffffff);
-  CDB32(0x801fc6e0) = CDB32(0x801fc6e0) + 0x3c0;
-  CDB32(0x801fc6e4) = 0;
-  CDB32(0x801fc6e8) = 0x801258b0;
-  do {
-    iVar2 = cd_timer_read(0xffffffff);
-    if (((int)(CDB32(0x801fc6e0) - (uint32_t)iVar2) < 0) ||
-       (iVar2 = (int)(CDB32(0x801fc6e4) + 1),
-        bVar1 = 0x3c0000 < CDB32(0x801fc6e4), CDB32(0x801fc6e4) = (uint32_t)iVar2,
-        bVar1))
-    {
-      cd_str_print(0x801257a4);
-      printf_forward(s__s___s__Sync__s__Ready__s_801257b4,CDB32(0x801fc6e8),
-                   CDNAME(CDB8(0x801bc865)),CDNOINTR(CDB8(0x801bcb24)),
-                   CDNOINTR(CDB8(0x801bcb25)));
-      cd_cmd_state_reset();
-      iVar2 = -1;
-    }
-    else {
-      iVar2 = 0;
-    }
-    uVar3 = 0xffffffff;
-  } while (((iVar2 == 0) && (uVar3 = 0,
-            (br2_ld32(CDB32G(0x801bcb50)) & 0x1000000) != 0)) &&
-          (uVar3 = 1, param_1 == 0));
-  return uVar3;
+  /* IRQ/coroutine-boundary function: clean-C body cannot supply the
+   * live guest register file the deferred CD coroutine needs, and its
+   * MMIO busy-waits lack per-block interrupt checks. Delegate to the
+   * generated MIPS (behavioral oracle) — same contract as the other
+   * read-path functions already delegated. */
+  return (undefined4)br2_call_generated(0x80197698u,param_1, 0, 0, 0);
 }
 
 /* ======== 0x8019a6e0 ======== */
@@ -1004,79 +750,29 @@ undefined4 cd_busy_wait(int param_1)
 int cd_dispatch_tbl4(int param_1,uint32_t param_2)
 
 {
-  uint32_t tbl = CDB32G(0x801bdda0);
-  uint32_t fn = *(uint32_t *)guest_at(tbl + 4);
-  return (int)call_guest(fn,(uint32_t)param_1,param_2);
+  /* IRQ/coroutine-boundary function: clean-C body cannot supply the
+   * live guest register file the deferred CD coroutine needs, and its
+   * MMIO busy-waits lack per-block interrupt checks. Delegate to the
+   * generated MIPS (behavioral oracle) — same contract as the other
+   * read-path functions already delegated. */
+  return (int)br2_call_generated(0x8019a6e0u,param_1, param_2, 0, 0);
 }
 
 /* ======== 0x801985c4 ======== */
 
-void cd_read_step_cb(char param_1,undefined4 param_2)
+void cd_read_step_cb(uint32_t param_1,undefined4 param_2)
 
 {
-  int iVar1;
-  undefined4 uVar2;
-  
-  CDDBG_INC(0x801bce84);
-  CDB32(0x801bcbb4) = param_2;
-  if (param_1 == '\x01') {
-    if (0 < (int)DAT_801bcb94) {
-      if (DAT_801bcb90 == 0x200) {
-        /* stack buf = sp+0x10 (frame 0x30) -> guest_sp()-0x20;
-         * `addiu $a0,$sp,0x10` before jal 0x801962f0 in 0x801985c4. */
-        if ((DAT_801bc7b4 & 1) == 0) {
-          cd_sync_wait_b((uint32_t)(guest_sp() - 0x20),3);
-        }
-        else {
-          cd_cmd_dispatch3(0);
-          cd_sync_wait_c((uint32_t)(guest_sp() - 0x20),3);
-          cd_busy_wait_fwd(0);
-          cd_cmd_dispatch3(0x80198838);
-        }
-        iVar1 = cd_stamp_to_sector(guest_at((uint32_t)(guest_sp() - 0x20)));
-        if (iVar1 != (int)DAT_801bcba0) {
-          cd_str_print(0x80125ac8);
-          DAT_801bcb94 = -1;
-        }
-      }
-      if ((DAT_801bc7b4 & 1) == 0) {
-        cd_sync_wait_b(DAT_801bcb88,DAT_801bcb90);
-        DAT_801bcb88 = DAT_801bcb88 + DAT_801bcb90 * 4;
-        DAT_801bcb94 = DAT_801bcb94 + -1;
-        DAT_801bcba0 = DAT_801bcba0 + 1;
-      }
-      else {
-        cd_sync_wait_c(DAT_801bcb88,DAT_801bcb90);
-      }
-    }
-  }
-  else {
-    DAT_801bcb94 = -1;
-  }
-  DAT_801bcb98 = cd_timer_read(0xffffffff);
-  if (DAT_801bcb94 < 0) {
-    cd_read_open(1);
-  }
-  iVar1 = cd_timer_read(0xffffffff);
-  if ((int)(DAT_801bcb9c + 0x4b0) < iVar1) {
-    DAT_801bcb94 = -1;
-  }
-  if ((DAT_801bcb94 == 0) || (iVar1 = cd_timer_read(0xffffffff), (int)(DAT_801bcb9c + 0x4b0) < iVar1)) {
-    mc_session_b(DAT_801bcbac);
-    if ((DAT_801bc7b4 & 1) != 0) {
-      cd_cmd_dispatch3(DAT_801bcbb0);
-    }
-    mc_session(0x80198590);
-    cd_cmd_issue_async(9,0);
-    DAT_801bcba4 = 1;
-    if (CDB32G(0x801bc7b0) != 0) {
-      uVar2 = 5;
-      if (DAT_801bcb94 == 0) {
-        uVar2 = 2;
-      }
-      call_guest(CDB32G(0x801bc7b0),uVar2,param_2);
-    }
-  }
+  /* Per-sector read-step callback: MSF stamp-verify into a guest stack buf,
+   * buffer advance, sync-wait issue of the next sector, and the read-complete
+   * Pause + user callback. Its stack-buf address is guest_sp()-0x20, which only
+   * reproduces the MIPS frame if the clean frame model is exact; a mismatch
+   * reads a wrong stamp -> "sector error" -> abort -> the completion event
+   * never fires -> TestEvent spins (the 0x60a wedge). It also drives the
+   * cd_sync_wait and cd_cmd_issue helpers which cross the deferred-IRQ
+   * coroutine boundary. Delegate to generated for a faithful SP/frame + IRQ path.
+   * param_1 taken as a full word (was char) so a0 is not truncated. */
+  br2_call_generated(0x801985c4u,param_1,param_2,0,0);
   return;
 }
 
@@ -4077,40 +3773,12 @@ uint32_t cd_chan_cmd_submit(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,
  * a1 = running xor. Disasm 0x801a0660-0x801a07a0. */
 int32_t cd_chan_cmd_pump(uint32_t a0,uint32_t a1,uint32_t a2)
 {
-  uint32_t s0 = a0, s4 = a1;
-  uint8_t *req = (uint8_t *)guest_at(a2);
-  uint8_t *rsp = (uint8_t *)guest_at((uint32_t)(guest_sp() - 0xa0));
-  uint32_t x, r, a0carry = 0xffffffffu;
-  int i, k;
-  (void)s4;
-
-  x = 0;
-  for (k = 0; k < 0x7f; k++) x ^= req[k];
-  req[0x7f] = (uint8_t)x;
-
-  for (i = 0; i < 8; i++) {
-    cd_svc_50(a0carry,x);                          /* svc B0/0x50 */
-    r = cd_svc_4e(s0,s4);                          /* svc B0/0x4e */
-    if (r != 1) return 0;
-    do {
-      r = cd_svc_5c((uint32_t)((int32_t)s0 >> 4),s4); /* svc B0/0x5c */
-    } while ((r & 1) == 0);
-    cd_bzero((uint32_t)(guest_sp() - 0xa0),0x80); /* memset work buf */
-    cd_svc_50((uint32_t)(guest_sp() - 0xa0),0);    /* svc B0/0x50 */
-    r = cd_svc_4f(s0,s4);                          /* svc B0/0x4f */
-    if (r == 1) {
-      do {
-        r = cd_svc_5c((uint32_t)((int32_t)s0 >> 4),s4);
-      } while ((r & 1) == 0);
-    } else {
-      printf_forward((const char *)guest_at(0x80125f78));
-    }
-    x = 0;
-    for (k = 0; k < 0x7f; k++) x ^= rsp[k];
-    if (rsp[0x7f] == (uint8_t)(x & 0xff)) return 1;
-    a0carry = (uint32_t)(guest_sp() - 0xa0 + 0x7f); /* guest: rsp+0x7f leftover */
-  }
-  return 0;
+  /* IRQ/coroutine-boundary function: clean-C body cannot supply the
+   * live guest register file the deferred CD coroutine needs, and its
+   * MMIO busy-waits lack per-block interrupt checks. Delegate to the
+   * generated MIPS (behavioral oracle) — same contract as the other
+   * read-path functions already delegated. */
+  return (int32_t)br2_call_generated(0x801a0660u,a0, a1, a2, 0);
 }
 
 /* ======== batch34 ======== */
@@ -4448,7 +4116,7 @@ int32_t cd_reg_rw_d2(uint32_t param_1)
 
 void cd_block7_init(void)
 {
-  while (DB32(0x801febe0) != 0) { }
+  while (DB32(0x801febe0) != 0) { br2_irq_poll(); }
   cd_chan_block_init(7,0);
   FUN_8019a0ddc();
 }
@@ -4929,18 +4597,12 @@ void cd_response_pump(void)
 
 int cd_cmd_queue_load(uint32_t param_1,uint32_t param_2)
 {
-  uint32_t p = DB32G(0x801b8444);
-  uint32_t q = DB32G(0x801b8440);
-  br2_st32(p, br2_ld32(p) | 0x8000000);
-  br2_st32(q, 0);
-  br2_st32(DB32G(0x801b8438), param_1 + param_2 * 4 - 4);
-  br2_st32(DB32G(0x801b843c), param_2);
-  cd_timeout_arm();
-  br2_st32(DB32G(0x801b8440), 0x11000002);
-  while ((br2_ld32(DB32G(0x801b8440)) & 0x1000000) != 0) {
-    if (cd_pump_watchdog() != 0) return -1;
-  }
-  return (int)param_2;
+  /* IRQ/coroutine-boundary function: clean-C body cannot supply the
+   * live guest register file the deferred CD coroutine needs, and its
+   * MMIO busy-waits lack per-block interrupt checks. Delegate to the
+   * generated MIPS (behavioral oracle) — same contract as the other
+   * read-path functions already delegated. */
+  return (int)br2_call_generated(0x80192634u,param_1, param_2, 0, 0);
 }
 
 /* ======== 0x801938c8 ======== */
@@ -5352,7 +5014,7 @@ uint32_t cd_vcall_18(uint32_t param_1,uint32_t param_2)
 int cd_mmio_bit_wait(uint32_t param_1,uint32_t param_2)
 {
   volatile uint8_t *p = (volatile uint8_t *)guest_at(param_2);
-  while ((*p & 0x40) == 0) {}
+  while ((*p & 0x40) == 0) { br2_irq_poll(); }
   br2_st32(DB32G(0x801bcb50), 0x11400100);
   (void)br2_ld32(DB32G(0x801bcb50));
   return 0;
@@ -5453,22 +5115,10 @@ extern int32_t cd_seek_state_machine(uint32_t);
 
 int32_t cd_seek_step(uint32_t param_1,uint32_t param_2)
 {
-  int32_t v0;
-  if (param_2 == 1) return 1;
-  if (DB32(0x801bdee4) == 1) return 1;
-  v0 = cd_seek_state_machine(DB32G(0x801bde38));
-  if (param_1 == 1) {
-    if (v0 == 0) {
-      do {
-        br2_irq_poll();
-        v0 = cd_seek_state_machine(DB32G(0x801bde38));
-      } while (v0 == 0);
-    }
-    DB32(0x801bdee4) = (uint32_t)v0;
-  } else if (v0 == 1) {
-    DB32(0x801bdee4) = 1;
-  }
-  return v0;
+  /* IRQ-poll spin on TestEvent(0x801bde38) — DeliverEvent needs the deferred
+   * CD coroutine resumed on IRQ, which a clean-C spin cannot drive. Delegate
+   * to generated (same contract as cd_seek_complete_poll 0x8019d500). */
+  return (int32_t)br2_call_generated(0x8019d508u,param_1,param_2,0,0);
 }
 
 /* ======== 0x8019b8a4 ======== */
@@ -5590,11 +5240,14 @@ uint32_t cd_chan_slot_set(uint32_t param_1,uint32_t param_2)
   if (param_1 == 0) {
     uint32_t s0 = param_2 < 1;
     bios_table_tramp();
-    bios_kobj_tramp(3,s0);
+    /* bios_kobj_tramp is a no-arg trampoline that forwards live cpu->gpr
+     * a0-a3 to svc C0/0x0a; a direct C call drops the intended (idx,flag)
+     * args, so route through call_guest to load them into gpr first. */
+    call_guest(0x8019a670u,3,s0);
   }
-  if (param_1 == 4) bios_kobj_tramp(0,param_2 < 1);
-  if (param_1 == 5) bios_kobj_tramp(1,param_2 < 1);
-  if (param_1 == 6) bios_kobj_tramp(2,param_2 < 1);
+  if (param_1 == 4) call_guest(0x8019a670u,0,param_2 < 1);
+  if (param_1 == 5) call_guest(0x8019a670u,1,param_2 < 1);
+  if (param_1 == 6) call_guest(0x8019a670u,2,param_2 < 1);
   br2_st16(imask, (uint16_t)s3);
   return s4;
 }
@@ -5889,7 +5542,7 @@ void cd_queue_drain(void)
       uint32_t fn, dp, arg;
       if (((tail + 1) & 0x3f) == DB32(0x801b8448) && DB32(0x801b832c) == 0)
         cd_dispatch_tbl4(2,0);
-      while ((br2_ld32(DB32G(0x801b8428)) & 0x04000000) == 0) { }
+      while ((br2_ld32(DB32G(0x801b8428)) & 0x04000000) == 0) { br2_irq_poll(); }
       e = (uint32_t *)guest_at(0x801fae70 + tail * 96);
       fn = e[0]; dp = e[1]; arg = e[2];
       call_guest(fn,dp,arg);          /* jalr fn: a0=data a1=arg */
@@ -5946,7 +5599,7 @@ int cd_queue_push(uint32_t a0_fn,uint32_t a1_data,uint32_t a2_count,
               && DB32(0x801b832c) == 0);
   }
   if (direct) {
-    while ((br2_ld32(DB32G(0x801b8428)) & 0x04000000) == 0) { }
+    while ((br2_ld32(DB32G(0x801b8428)) & 0x04000000) == 0) { br2_irq_poll(); }
     call_guest(a0_fn,a1_data,a3_arg);  /* jalr s3: a0=s0 a1=s2 */
     cd_u16_swap_store((uint16_t)DB32(0x801b8450));
     return 0;
