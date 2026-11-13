@@ -681,3 +681,25 @@ and check the DMA dest (ent0 +8/+0xc..+0x14) vs where ch3 actually writes.
 - ent0 buffer params: +8=1, +0xc=0xeb0, +0x10=0x00f00140, +0x14=0x38000880.
   NEXT: dma_state -> does ch3 write ent0's expected buffer? and which
   response type / cb should bump +4.
+
+## Session 16g — ROOT CAUSE CANDIDATE: ch3 CD-DMA programmed but IDLE
+
+dma_state on live 4440 (actively "streaming"):
+  ch3 (CD-ROM DMA): madr=0x00000BE0 bcr=0x000001F8 chcr=0x00000000
+                   active=0 remaining=0
+  => channel ARMED (madr/bcr set) but CHCR=0 -> DMA NOT transferring.
+  cdrom_state: reading=1 sector_available=1 -> drive reads sectors into the
+  controller buffer but DMA never drains them to guest RAM.
+  => no sector-arrival -> entry+4 never credited -> state=3 forever -> livelock.
+
+The DMA kick is cd_chan_cmd_submit (game/cd.c): writes MADR(+0),BCR(+4),
+then waits on *(0x801BCC40) bit 0x40 (controller-ready) before writing
+CHCR(+8). If that ready-wait never satisfies OR the CHCR write value is 0 /
+goes to the wrong place, the transfer never starts. chcr=0 (not even the
+enable/direction bits) suggests the final CHCR store wrote 0 or was skipped.
+ALSO possible: a SECOND DMA manager (BIOS CD driver) owns ch3 and the game's
+submit fights it; or the DMA-done IRQ that re-arms the next sector never
+fires because the first transfer never completed.
+
+NEXT: instrument cd_chan_cmd_submit's CHCR write (value + addr) live; check
+0x801BCC40 ready-bit semantics; determine whether BIOS or game owns ch3 MADR.
