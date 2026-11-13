@@ -878,3 +878,31 @@ OPEN: are param_6/param_7 (grid dims) wrong, or is the cursor/arena
 management wrong (missing reset / wrong return)? On HW the cursor stays
 bounded ~0x80010000. Faithful fix = make the emit cursor + dims match HW
 arena accounting, NOT clamp/symptom-patch.
+
+## Session 16m — ROOT CAUSE FIXED: BKX grid-dim mistranslation (commit 9dc0f0d)
+
+gwatch on cursor cell 0x801C47B8 + host-rip symbolization (atos, live
+vmmap base) gave the AUTHORITATIVE writers — store_pc 0x801929F8 was STALE
+(clean-C writes don't update g_debug_last_store_pc). Real writers to the
+cursor cell: save_load_state_machine bookkeeping (save.c:6364/6443/6511/
+6515) + terrain_packet_gen packet emits (menu.c:13814/13818).
+
+Cursor trace (seq): reset 0x80010000 @fr439/611 -> climbs via heap_alloc54
++ stream decodes -> 0x801C495c @fr647 (CD ctrl region) -> FIRST >RAM write
+seq178 = save.c:6443 storing terrain_packet_gen call-1 RETURN 0x8160d00c
+(~21MB emitted). terrain_packet_gen param_6=param_7=768 -> 768x768 cells.
+
+ROOT CAUSE = clean-port mistranslation in save_load_state_machine BKX:
+  generated arg setup (SLES_017.22_full_31.c, all 5 calls) computes the
+  grid dims as  lh s2h+4/+6 -> sll 16 -> sra 23   =  v/128  =  0x600/128 = 12
+  clean port BKX was  (v<<16)>>17                 =  v/2    =  768
+Oracle table 0x801b1524 confirmed lhu4=lhu6=0x600 for every entry -> HW
+also feeds 0x600, but HW transform yields 12 (12x12 grid ~144 cells).
+768x768 ~590K cells ~21MB -> cursor runaway -> CD ptr table 0x801B8420 +
+heap cursors overwritten -> cd_queue_drain wild-ptr livelock @frame647.
+
+FIX: BKX(v) = ((int32_t)(((uint32_t)(int32_t)(int16_t)(v))<<16))>>23
+(sign-extend lh, sll16, sra23 — faithful to generated). Result: CD ptr
+0x801B8428 stays 0x1F801814, cursor stays in-RAM, game passes frame 647
+and runs (frame counter >300k). func 0x80192944 + decompression fully
+exonerated (victims/downstream).
