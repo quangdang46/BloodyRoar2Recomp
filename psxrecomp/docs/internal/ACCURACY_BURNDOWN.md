@@ -664,3 +664,20 @@ doesn't associate with ent0, or (b) the arrival callback for this stream is
 never registered/fired. NEXT: trace which function owns the entry+4 RMW by
 gwatch on 0x80000004 during a FRESH submit (catch the first/only writer PC),
 and check the DMA dest (ent0 +8/+0xc..+0x14) vs where ch3 actually writes.
+
+## Session 16f — +4 credit is external (DMA/sector-arrival), bc848=NULL
+
+- cd_mc_state_machine does NOT store entry+4/+6 (only stack + FEB18-cached
+  entry+0 state). Its +4 reads (0x80199810,0x801998D0) are consume-vs-init
+  gates: progress==0 -> init branch (0x801998E0 reads entry+8 -> CD regs
+  0x801FC680/684); progress!=0 -> consume path 0x80199B10.
+- => +4 must be credited by the CD DMA/sector-ARRIVAL handler OUTSIDE the
+  state machine. Since +4 stays 0, that handler never runs for ent0.
+- Live cb regs (4440): 0x801BC848(type-0 cb)=NULL, 0x801BC84C(type-1 cb)=
+  0x80198FE4(cd_mc_sm_wrap). If sector-data arrival is a type-0 response it
+  has NO callback -> +4 never credited. cd_response_pump fires cb by response
+  type; verify which type carries per-sector DMA-done and whether its cb is
+  registered.
+- ent0 buffer params: +8=1, +0xc=0xeb0, +0x10=0x00f00140, +0x14=0x38000880.
+  NEXT: dma_state -> does ch3 write ent0's expected buffer? and which
+  response type / cb should bump +4.
