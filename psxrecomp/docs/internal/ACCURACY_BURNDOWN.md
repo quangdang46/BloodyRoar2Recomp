@@ -544,3 +544,39 @@ code clears cpu->pc at each block entry). Corrects a false lead from session 16a
   ALSO NOTE: 0x801BCE00 region now shows terrain-packet bytes (0x55555555/0x48804040)
   — heap-cursor corruption is overwriting CD globals too; may be a second-order
   effect of the same stream failure or an independent emitter bug.
+
+## SESSION 16c — ROOT UNIFIED: terrain-packet emit overrun destroys CD/heap control structures
+
+Live instance dumps prove the "CD livelock" and "heap corruption" are ONE bug.
+Terrain packet records (0x5555xxxx markers, 0x48804040 vertex words, 0x0500xxxx
+fields) are written across low memory, overwriting every structure the CD stream
+depends on:
+
+- phys-0 dir/channel table 0x80000000+ (ent fields -> phantom "progress")
+- BIOS CD streaming ctx 0x80008FD0+ (reads as packet bytes, NOT a real ctx —
+  earlier tableA=0/tableB=0xb0 "collision" was packet data misread as pointers)
+- CD globals 0x801BCE00+
+- heap control block 0x801C4780-0x801C47DC: cursor cell 0x801c47b8 = 0x555503bc
+  (packet word, was a cursor), tag-table ptr 0x801c47c0 = 0x555503bc, etc.
+
+terrain_packet_gen (0x80135a14) emits a param_6 x param_7 grid of 0x48-byte GPU
+records forward from param_2 = g32(0x801c47b8) (the heap cursor). The emit range
+0x801c46c8.. overlaps the control block at 0x801c47b8/c0 only ~0xF0 bytes later,
+so even a modest grid marches through and overwrites cursor+tag-table+neighbors.
+The cursor is legitimately seeded to guest_of(tag_table_get()) = guest addr of
+g_DAT_801c47c0's pointee, and advanced by stream_block_decode/mode3_dispatch
+returns (block_copy_ret_len / lzss_decode — both verified to return GUEST values,
+not host pointers; the earlier host-pointer theory is disproven).
+
+So the emit DESTINATION (cursor) or grid dims are wrong: packets land in the
+scene/control region instead of a dedicated packet heap. Once 0x801c47b8/c0 are
+packet bytes, every downstream cursor/tag read is garbage -> decode dst wild ->
+CD stream descriptors/channel ctx destroyed -> +4 never completes -> blk_io_retry
+livelock -> IRQ->0xC000 crash. IRQ path itself is healthy (session 16b).
+
+NEXT: determine the intended terrain_packet_gen output buffer. Check whether
+param_2 should be a dedicated GPU-packet heap region (not the decode cursor),
+whether tag_table_get()/g_DAT_801c47c0 should point at a real tag array vs the
+emit region, and whether param_6/param_7 (BKX lhu4/lhu6 stage dims) are sane.
+Likely a clean-port arg/return conflation between the decode cursor and the
+packet-emit cursor.
