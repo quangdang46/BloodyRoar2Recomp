@@ -366,51 +366,19 @@ LAB_80198d0c:
 
 /* ======== 0x8019a460 ======== */
 
+/* cd_timer_read — frame/timer read + DAT_801bdde0 waits (0x8019a460).
+ * This is the resumable half of the same deferred-IRQ contract as
+ * cd_chan_full_init/cd_intc_dispatch: its vsync_wait_n spins must let the CD
+ * IRQ drive cd_ctx_restore -> cd_intc_dispatch -> cd_cb8_dispatch (which
+ * increments DAT_801bdde0). That save/restore operates on cpu->gpr, which a
+ * clean-C body does not own — the host stack is invisible to it, so the
+ * deferred coroutine cannot resume and the frame counter freezes (observed:
+ * DAT_801bdde0 stalls -> vsync_wait_n timeout -> BIOS-tramp crash). The whole
+ * function therefore runs generated; the thunk keeps direct C callers correct
+ * and makes gen_clean_table skip the address. */
 uint cd_timer_read(int param_1)
-
 {
-  uint uVar1;
-  int iVar2;
-  uint uVar3;
-  uint32_t t0a, t2a, t0v;
-
-  /* 0x801bccac/0x801bcca8 are pointer globals into the 0x1F8011xx timer regs —
-   * MMIO reads must go through br2_ld32, not a raw guest_at pointer. */
-  t0a = DB32G(0x801bccac);
-  do {
-    t0v = br2_ld32(t0a);
-  } while (t0v != br2_ld32(t0a));
-  uVar3 = t0v - DB32(0x801bccb0) & 0xffff;
-  uVar1 = DB32(0x801bdde0);
-  if ((-1 < param_1) && (uVar1 = uVar3, param_1 != 1)) {
-    uVar3 = DB32(0x801bccb4);
-    if (0 < param_1) {
-      uVar3 = (DB32(0x801bccb4) - 1) + param_1;
-    }
-    iVar2 = 0;
-    if (0 < param_1) {
-      iVar2 = param_1 + -1;
-    }
-    vsync_wait_n(uVar3,iVar2);
-    t2a = DB32G(0x801bcca8);
-    uVar3 = br2_ld32(t2a);
-    vsync_wait_n(DB32(0x801bdde0) + 1,1);
-    if (((uVar3 & 0x400000) != 0) && (-1 < (int)(uVar3 ^ br2_ld32(t2a)))) {
-      /* GPUSTAT.LCF (bit31) toggles once per VBlank field, and VBlank is
-       * driven by the guest-cycle clock — the original MIPS spin consumed
-       * cycles per iteration; this clean-C loop must charge them via
-       * br2_irq_poll or LCF can never flip (same contract as every other
-       * busy-wait in this file). */
-      do {
-        br2_irq_poll();
-      } while (((uVar3 ^ br2_ld32(t2a)) & 0x80000000) == 0);
-    }
-    DB32(0x801bccb4) = DB32(0x801bdde0);
-    do {
-      DB32(0x801bccb0) = br2_ld32(t0a);
-    } while (DB32(0x801bccb0) != br2_ld32(t0a));
-  }
-  return uVar1;
+  return (uint)br2_call_generated(0x8019a460u, (uint32_t)param_1, 0, 0, 0);
 }
 
 /* ======== 0x80195d44 ======== */
