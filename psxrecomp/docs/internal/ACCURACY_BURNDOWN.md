@@ -640,3 +640,27 @@ never sees progress==expected-1. NEXT: find the DMA/sector-arrival handler
 that increments entry+4 and why it is not reached (likely the CD data is not
 landing in the entry's expected buffer, or the IRQ pump that calls the
 incrementer is gated on a channel-ready flag that never sets).
+
+## Session 16e — live-verified stuck entry (port 4440, actively streaming)
+
+read_ram ground truth on a LIVE (non-crashed) instance:
+  fc69c=0 fc6a4=1 fc6a8=0 fc6ac=0 fc6b4=0xFFFFFFFF fc6c0=0(dir base=phys0)
+  0x801FEB18 (cached entry ptr) = 0
+  ent0 @0x80000000: state=3, +4(progress)=0, +6(expected)=5, +8=1, +0x1c=0x02292646
+  ent1/ent2: empty
+
+CONFIRMED: ent0 is the sole active stream descriptor. progress(+4)=0 vs
+expected(+6)=5; completion detector 0x80199BC8 needs progress==expected-1=4.
++4 receives ZERO writes (CPU or DMA) across the entire run -> the per-sector
+PROGRESS-INCREMENT handler is never invoked for ent0. This is a DEAD PATH,
+not a wrong value: the CD read was submitted (state=3) but the sector-arrival
+consumer that bumps +4 never runs.
+
+The incrementer is a generic u16 field write (174 candidate `sh +4` sites
+game-wide) -> cannot isolate statically. It is invoked from the CD
+sector/DMA-arrival path (IRQ -> response_pump -> per-channel cb). Since +4
+stays 0, either (a) ent0's sectors are DMA'd to a buffer the arrival handler
+doesn't associate with ent0, or (b) the arrival callback for this stream is
+never registered/fired. NEXT: trace which function owns the entry+4 RMW by
+gwatch on 0x80000004 during a FRESH submit (catch the first/only writer PC),
+and check the DMA dest (ent0 +8/+0xc..+0x14) vs where ch3 actually writes.
