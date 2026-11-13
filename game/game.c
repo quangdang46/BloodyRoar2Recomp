@@ -585,7 +585,12 @@ void entry_0x80126234(void)
     uint uVar4;
     undefined4 uVar5;
     ushort uVar6;
-    ushort auStack_30 [8];
+    /* auStack_30 = the pad/input buffer. In the original it lives on the guest
+     * stack at sp_old-0x30 (generated 0x80126234: addiu sp,-64; buffer at
+     * sp+16). The pad driver is generated/BIOS code that writes guest RAM, so
+     * _g_pad_buffer must alias that guest buffer — a host stack array would
+     * never receive the controller data. */
+    ushort *auStack_30 = (ushort *)guest_at((uint32_t)(guest_sp() - 0x30));
 
     func_0x80126170();
     uVar6 = 0;
