@@ -1147,3 +1147,24 @@ return feeding _DAT_801e3cfc or the cd_file_load_sm dest arg is a host
 ptr or wrong guest addr. Trace stream_block_decode's iVar3 return and
 the heap-top globals (_DAT_801c47b8=0x801C90B8 ok; _DAT_801e3cfc bad)
 to find the first bad dest.
+
+REFINEMENT (same session): the corrupt dest is the STREAMING cursor
+_DAT_801e3cfc, advanced by stream_block_decode -> mode3_dispatch ->
+block_copy_ret_len/lzss_decode return lengths. NOTE menu.c:2241-2248
+already documents+fixed ONE instance of this exact class (host-ptr
+truncation -> garbage length -> cursor corruption -> CD dest into
+globals) via guest_of(param_2). Corruption persists => either that fix
+is incomplete (another host-ptr path / block_copy_ret_len / lzss_decode
+still returns a bad length) or the cursor is overwritten by the CD DMA
+itself (self-reinforcing once file data lands on globals).
+
+ORACLE COMPARISON (port 4371 vs ours 4460):
+  0x801F68D8/0x801F6A00/0x801FA000 : oracle=zeros/structured globals,
+    ours=CD file data  => real HW never file-loads into globals.
+  _DAT_801e3cfc cursor : oracle=0x800F0000 (sane, ~900KB into 0x8001xxxx
+    stream buffer), ours=0x0DF0FD1C (file-data garbage) => ours ran
+    ~2MB too far / was overwritten.
+NEXT: audit block_copy_ret_len + lzss_decode return lengths (the cursor
+advance) for host-pointer truncation or mis-sized decode; and find the
+FIRST write that puts file data on globals (the initial bad dest), since
+_DAT_801e3cfc itself gets clobbered by the same DMA.
