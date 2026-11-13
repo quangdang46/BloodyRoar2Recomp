@@ -213,6 +213,32 @@ on a fixed region -> next.
 
 ## 5. Status / Log (update every session)
 
+- **2026-11-11 (state-6 stall ROOT-LOCALIZED to CD read done-flag `bcba4`
+  never latching — data path verified OK):** Full hang chain traced live:
+  `g_game_state=6` frozen → `battle_intro_flow` sub-state `DAT_1f800001=1`
+  (resource-load) → `menu_res_load_sm` st20 → `save_load_state_machine` L10
+  → `cd_file_load_sm(sel+0xb0, tag_table)` returns 0 forever. CD-driver state:
+  `bcb94`(sectors-remaining)=0 and `bcba4`(done-flag)=0 **stably** — all sectors
+  consumed but the done-flag never latched, so `cd_read_poll` returns 0 ~195k×
+  and the SM never advances. `cd_read_step_cb`/`cd_read_finish_cb` set
+  `bcba4=1` when `bcb94` hits 0 (cd.c:1103/1130); `cd_init_done_cb`(0x80198590)
+  clears it at next-session init. Since `bcb94` stayed 0 (no new read), the
+  done-path that sets `bcba4=1` appears to have run then been cleared by the
+  async session/Pause-complete callback — an ordering race — OR never ran.
+  **CD data integrity VERIFIED OK:** `cd_read_log` shows all `size=2048` reads
+  at command-base `lba=9247` but consecutive dest chunks (`+0x800`) contain
+  DIFFERENT bytes → drive auto-advances sectors internally (logged lba is the
+  command base, not per-sector). filetab@`0x801b5b94`+id*8 = {extent_ptr,
+  sector_count}: fid `0x88`→extent `0x801b5810` cnt `0x63`(99, matches active
+  `bcb80=0x63` read), fid `0xb0`→extent `0x801b58b0` cnt `0x0c`(12) — the
+  99-sector read in flight is NOT `0xb0`'s primary data, so `cd_file_load_sm`
+  reads multiple streams/files per call. NEXT: determine whether `bcba4` is
+  ever written 1 (gwatch noisy — page hammered, 52M oor) vs cleared by
+  `cd_init_done_cb`; inspect generated `cd_file_load_sm`(0x8018cfdc) exit
+  condition + which guest flag it polls; check `mc_session`/session-callback
+  scheduling vs the synchronous `bcba4=1` latch. Disc symlinked
+  (`~/Projects/bloody-roar-2/Game.{bin,cue}`) → boots, renders, reaches battle.
+
 - **2026-11-11 (kernel objects FOUND in low RAM — structure decoded; class-desc
   space 0xF0000000 still unmapped):** Scanned KUSEG low RAM (`0xA0000000+phys`)
   and located the live kernel objects the `B0/0x08` allocs created:
