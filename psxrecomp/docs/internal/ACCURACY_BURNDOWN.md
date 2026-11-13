@@ -1266,3 +1266,39 @@ documented gameplay blocker. On the post-fix instance cursors read SANE
 (scene transitions / attract demos), which headless menu-idle hasn't hit.
 Headless display is disabled so visual fight-confirmation isn't possible
 in this env; game executes all systems (IRQ/CD/GPU/kernel/pad/memcard).
+
+## Session 18 — post-wedge state is a CD event-flag livelock (not attract idle)
+
+After the frame-1546 fix the instance runs stably (framecnt 139K+, IRQs clean,
+pad/memcard/GPU all live) BUT the main thread is parked in an infinite
+kernel-event poll — NOT attract/menu idle:
+
+- clean_trace = 100% `cd_seek_state_machine` (0x8019d5b0) = `jr 0xB0` B0/0x0B
+  TestEvent, ~832M calls, ra=0x8019d550 (cd_seek_complete_poll wait loop).
+- irqctx_ring: VBlank fires every frame; interrupted PC is ALWAYS
+  0x8019d550/0x80156630 (CD waits). cdrom_active=0 always.
+- hle_dump (LLE backend): OpenEvent B0/0x08 class 0xF0000009 ->
+  EnableEvent B0/0x0C a0=0x8019B0FC -> TestEvent B0/0x0B a0=0x8019B0FC
+  repeat=832408939. The event handle stored @0x801bde38 is 0x8019B0FC —
+  a CODE pointer (br2eu_func_8019B0FC), NOT a normal 0xF100000x EvCB handle
+  (compare class-0xF0000003 OpenEvents which DO return 0xF100000x).
+- cdrom_state: pending.active=0 (NO command in flight), irq_flag=0,
+  last_sector.frame=347. DeliverEvent is ONLY ever called for class
+  0xF0000003 — NEVER 0xF0000009 (the CD class the game polls).
+
+INTERPRETATION: the game issued a CD op ~frame 347; its completion
+DeliverEvent(0xF0000009,spec) never ran (or the OpenEvent handle itself is
+bogus), so TestEvent never reads READY and the seek/read wait spins forever
+without issuing the next command. Two candidate roots, both in the
+clean->generated->BIOS-call boundary:
+  (a) OpenEvent(0xF0000009) returned 0x8019B0FC instead of 0xF1xxxxxx —
+      a v0/return-value propagation bug through FUN_8019b380's
+      br2_call_generated->generated->jr 0xB0 chain (same class as the
+      frame-1546 gpr-forwarding bug, but on the RETURN path).
+  (b) the CD ISR/deferred coroutine that should DeliverEvent(0xF0000009)
+      is starved/not resuming (cd_intc_dispatch never appears in trace).
+NEXT: A/B whether FUN_8019b380's OpenEvent return is corrupted by forcing
+cd_ext_init_once/cd_dma_chan_init fully generated, OR trace the LLE kernel
+OpenEvent return for class 0xF0000009 vs 0xF0000003. The 0x8019B0FC handle
+is the anomaly to confirm first — if it's genuinely wrong, TestEvent can
+never succeed regardless of DeliverEvent.
