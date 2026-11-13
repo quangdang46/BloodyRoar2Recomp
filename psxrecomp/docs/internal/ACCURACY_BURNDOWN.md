@@ -785,3 +785,27 @@ REVISED MODEL: the PRIMARY divergence is upstream — a CD command
 NEXT: find why cmd 0x09 never completes — check the CD response/IRQ
   delivery for that command vs oracle; ring_dropped=516 hints the
   sector->consumer path stalls. Oracle is live on :4371 for RAM-diff.
+
+## Session 16k — ROOT CAUSE FOUND: CD pointer-table corruption (gwatch)
+
+Oracle-vs-recomp RAM diff (DuckStation :4371 vs recomp) PROVED the CD
+driver register-pointer cells are corrupted in ours:
+  cell        oracle(correct)   ours(corrupt)
+  0x801b8428  0x1f801814         0x55051814   (CD status reg ptr)
+  0x801b8434  0x1f8010a8         0x1c555503   (DMA reg ptr)
+  0x801b842c  0x1f8010a0         0x20555555
+  0x801b8444  0x1f8010f0         0x2c555503
+Once corrupt, cd_queue_drain busy-waits *(wild)&0x04000000 forever ->
+cd_queue_push<->cd_timeout_arm livelock -> PC=0. fc6c0=0 was DOWNSTREAM.
+
+Tight gwatch (0x801b8428..8447, excludes hot timer @8450+) caught the
+corrupting writer: ALL writes store_pc=0x801929F8 in br2eu_func_80192944,
+ra=0x801265F4, frame 647, DETERMINISTIC (identical values every run).
+Instruction 0x801929F8 = `sh a0,6(s1)` (0xA6240006) inside a fixed-point
+routine: `lh v1,4(s1)` coeff, `mult v1,v0`, `sh a0,6(s1)` store, `mflo a2`.
+s1 walks a buffer writing halfword results -> the destination buffer
+wrongly overlaps the CD pointer table (0x801b8420). Likely audio/ADPCM
+decode or transform writing PCM/coeff output to a bad pointer.
+NEXT: trace a0->s1 provenance (caller @0x801265F4 -> func 0x80192944) to
+find why the output buffer resolves to CD-driver data instead of its
+proper heap/audio region. Ghidra MCP was DOWN this session (conn refused).
