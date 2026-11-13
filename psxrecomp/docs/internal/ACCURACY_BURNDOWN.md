@@ -1206,3 +1206,17 @@ FIXED THIS SESSION: bind.c bind_globals_2 pointed 15 g_DAT_*/scratch globals
 into private guest_arena/guest_scratch (dead in runtime build) -> split-brain
 vs generated code on real ram[]. Now routes via guest_at() -> ram[]/scratchpad.
 Commit 626cd74.
+
+cd_read_log EXONERATION: all 1557 CD sector-read DMA records have dest <=
+0x1be800 (max) - ZERO writes into globals phys 0x1c0000-0x1fffff. The
+corrupting ch3 file-data write to 0x1F68D8 is therefore NOT a sector-read;
+it is the file-load DMA->final-dest path inside generated cd_file_load_sm
+(0x8018CFDC), whose MADR/dest comes from param_2 (= caller's _DAT_801c47b8 /
+uVar2 heap cursor). The file data legitimately fills 0x80010000..~0x801d0000;
+_DAT_801c47b8 reached 0x801c90b8 then a ~202KB (0x63-sector) load overshot
+to 0x801fa8b8 into globals. Over-advance of _DAT_801c47b8 accumulated across
+prior pump loads/decodes (~107KB excess vs oracle boundary).
+NEXT: instrument _DAT_801c47b8 advancement (clean-C guest_at writes bypass
+wtrace) OR audit generated cd_file_load_sm's dest/size computation; compare
+per-file load dest+size sequence ours vs oracle cd_read_log (same JSON cmd
+works on :4371) to find the first divergent load.
