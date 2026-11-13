@@ -160,6 +160,12 @@ static const char *decomp_tag_name(uint8_t t) {
         case 1: return "block_copy";
         case 2: return "lzss";
         case 3: return "lzss_runaway";
+        case 9: return "spr_pair";
+        case 10: return "file_load";
+        case 11: return "blk_ret";
+        case 12: return "heap_emit";
+        case 13: return "heapA_w";
+        case 14: return "off_lookup";
         default: return "?";
     }
 }

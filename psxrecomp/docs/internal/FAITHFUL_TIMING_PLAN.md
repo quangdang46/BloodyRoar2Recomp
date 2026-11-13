@@ -213,6 +213,37 @@ on a fixed region -> next.
 
 ## 5. Status / Log (update every session)
 
+- **2026-11-11 (heap-A over-production LOCALIZED to `heap_serialize` cur
+  return; CD delivery PROVEN byte-perfect; file-0x82 dest bug FIXED):**
+  - **CD data integrity VERIFIED** — dumped delivered sector (lba 314) vs
+    `Game.bin` bytes: 64/64 match. Extent→LBA decode delivers correct data.
+    The "CD data integrity vs disc unverified" suspect is CLOSED.
+  - **file-0x82 mistranslation FIXED (commit 92b06d4):** generated
+    `0x80147F28` loads file 0x82 dest = `*(0x801C47B8)` (heap-A cursor);
+    clean-C passed `s3`=tag-table `0x801c47c0`, overwriting the master decode
+    tag table → `offset_table_lookup` read foreign data → wild cursor jump.
+    Real faithful fix, BUT in `battle_bringup_b` path — trace shows NO file
+    0x82/0x81 load before the active corruption, so it does NOT fix THIS stall.
+  - **Named decomp_trace tags** (event_ring.c): 9=spr_pair 10=file_load
+    11=blk_ret 12=heap_emit 13=heapA_w(old→new) 14=off_lookup.
+  - **PRECISE localization of the +1.64MB heap-A jump (seq412
+    0x80034298→0x801C495C):** it is `heap_record_emit`→`heap_serialize`
+    returning `cur`=0x801C495C — a COMPRESSED-SOURCE block address (was the
+    seq411 decode `src`), NOT an output cursor and NOT offset_table_lookup
+    (zero tag14 records). Per-tag serializers are generated-faithful
+    (BR2_TAG→br2_call_generated), so the bug is in `heap_serialize`'s
+    clean-C walk @menu.c:14250 (guest 0x8016B7C0, ~1239 insns): record
+    parsing `cnt=MB32(blk+8)`, `ctx=MB32(blk+4)`, `src=MB32(ctx+4)+
+    MB32(rp+8)*4`, stride `rec=rp+4+f4*4`, block-list `blk=MB32(blk)` —
+    OR `blk`(=MB32(heapB slot)) points at undecoded/garbage data making
+    `cnt` huge → runaway emit. heapA then self-perpetuates 0x801C495C→
+    0x801C90B8 via repeated polls; file 0x88 DMA overwrites globals → L10.
+  - NEXT: diff `heap_serialize` clean walk vs generated `br2eu_func_8016B7C0`
+    focusing on `cnt`/`ctx`/`src`/stride and the blk-list termination; OR dump
+    the decoded heapB block + its record table at the seq411 instant to check
+    `cnt` sanity. Also audit the OTHER heapA_w jumps (seq449-457 +0x2dc steps
+    = off_lookup-driven table walk landing heapA in 0x801C region).
+
 - **2026-11-11 (CAUSAL CHAIN CLOSED — state-6 stall = heap/decode overrun,
   NOT a CD bug):** Disassembled generated `cd_file_load_sm`(`br2eu_func_8018CFDC`,
   25 blocks): filetab@`0x801B5B94`+file_id*8 `{extent_ptr,sector_count}`; gates
