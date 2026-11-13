@@ -1469,19 +1469,26 @@ void scroll_cfg_set(undefined1 param_1,int param_2)
 
 /* ======== 0x8019a5d8 ======== */
 
+extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+
+/* vsync_wait_n — delegate the whole body to the generated MIPS (0x8019a5d8).
+ * It busy-waits on DAT_801bdde0, the VBlank frame counter advanced by
+ * cd_cb8_dispatch on the VBlank IRQ. The generated body runs
+ * psx_check_interrupts_at at every basic-block boundary, so the pending VBlank
+ * is delivered and the counter advances while it spins. A clean-C spin has no
+ * guest resume PC to offer the deferred interrupt coroutine, so the counter
+ * never moves, the wait always times out and falls into bios_table_tramp /
+ * bios_kobj_tramp -> unknown dispatch (the L10 save_state_machine_alt freeze).
+ * This is the same reason cd_file_read_seq, cd_result_wait_a/b,
+ * cd_init_session and mc_date_serial_cmp were delegated. The two params are
+ * plain ints (frame target, timeout), passed raw — no guest_of. The
+ * br2_call_generated call also makes gen_clean_table skip 0x8019a5d8 so
+ * generated callers dispatch straight to the generated body (no clean_table
+ * wrap -> thunk -> generated recursion). Disasm 0x8019a5d8-0x8019a670. */
 void vsync_wait_n(int param_1,int param_2)
 
 {
-  param_2 = param_2 << 0xf;
-  do {
-    if (param_1 <= DAT_801bdde0) {
-      return;
-    }
-    param_2 = param_2 + -1;
-  } while (param_2 != -1);
-  cd_str_print(s_VSync__timeout_80125b38);
-  bios_table_tramp(0);
-  bios_kobj_tramp(3,0);
+  br2_call_generated(0x8019a5d8u,(uint32_t)param_1,(uint32_t)param_2,0,0);
   return;
 }
 
@@ -6836,7 +6843,8 @@ L00:
     page_table_ptr_set(s4[3], 4);
   }
   s0 = 0x10;
-  goto ret_nc;                 /* j 0x801720cc: return 0, no store */
+  goto ret0;                   /* gen 0x80171990 sh s0,0x8e(fp) stores 0x10, then j 0x801720cc ret 0 —
+                                  the store must NOT be skipped or L00 reloads s6+0xc4 forever */
 
 L10:
   /* state 0x10: build image (two variants on s5) */
@@ -7001,7 +7009,8 @@ L20:
   }
   cd_timer_read(0);
   scratch_013_set((uint32_t)saved8);
-  s0 = 0x20;                    /* delay slot value stored by ret0 */
+  s0 = 0x30;                    /* next state L30 — gen 0x80172020 li s0,0x30 -> ret0;
+                                   storing 0x20 here would re-run L20 and reload s6+0x25 forever */
   goto ret0;
 
 L30:
@@ -7033,8 +7042,10 @@ L40:
   return 1;
 
 ret0:
+  /* every generated return-0 path stores s0 -> fp+0x8e first (0x80171910/
+     0x80171928/0x80171990/0x801720C8 all sh s0,0x8e(fp) before j 0x801720cc);
+     there is no store-less return-0, so ret_nc is removed. */
   *(int16_t *)(fp + 0x8e) = (int16_t)s0;
-ret_nc:
   return 0;
 #undef H90W16
 }
