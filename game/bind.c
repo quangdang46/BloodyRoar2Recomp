@@ -1001,18 +1001,22 @@ __attribute__((constructor))
 #endif
 static void bind_globals_2(void)
 {
-    g__DAT_1f8003c4 = guest_scratch + 0x3c4;
-    g__DAT_1f8003c8 = guest_scratch + 0x3c8;
-    g_DAT_801b4e50 = guest_arena + (0x801b4e50 & 0x1fffff);
-    g_DAT_801b4e5c = guest_arena + (0x801b4e5c & 0x1fffff);
-    g_DAT_801e40b6 = guest_arena + (0x801e40b6 & 0x1fffff);
-    g_DAT_801f04f2 = guest_arena + (0x801f04f2 & 0x1fffff);
-    g_DAT_801f04f4 = guest_arena + (0x801f04f4 & 0x1fffff);
-    g_DAT_801f04f6 = guest_arena + (0x801f04f6 & 0x1fffff);
-    g_DAT_801f04f8 = guest_arena + (0x801f04f8 & 0x1fffff);
-    g_DAT_801f04fa = guest_arena + (0x801f04fa & 0x1fffff);
-    g_DAT_801f4d7a = guest_arena + (0x801f4d7a & 0x1fffff);
-    g_DAT_801f4d7c = guest_arena + (0x801f4d7c & 0x1fffff);
+    /* Route through guest_at() so these globals land in the REAL guest RAM
+     * (memory_get_ram_ptr()/scratchpad) in the runtime build, not the private
+     * standalone guest_arena/guest_scratch. The weak guest_at() fallback still
+     * resolves to the arena for standalone builds, so both stay correct. */
+    g__DAT_1f8003c4 = (uint8_t *)guest_at(0x1f8003c4);
+    g__DAT_1f8003c8 = (uint8_t *)guest_at(0x1f8003c8);
+    g_DAT_801b4e50 = (uint8_t *)guest_at(0x801b4e50);
+    g_DAT_801b4e5c = (uint8_t *)guest_at(0x801b4e5c);
+    g_DAT_801e40b6 = (uint8_t *)guest_at(0x801e40b6);
+    g_DAT_801f04f2 = (uint8_t *)guest_at(0x801f04f2);
+    g_DAT_801f04f4 = (uint8_t *)guest_at(0x801f04f4);
+    g_DAT_801f04f6 = (uint8_t *)guest_at(0x801f04f6);
+    g_DAT_801f04f8 = (uint8_t *)guest_at(0x801f04f8);
+    g_DAT_801f04fa = (uint8_t *)guest_at(0x801f04fa);
+    g_DAT_801f4d7a = (uint8_t *)guest_at(0x801f4d7a);
+    g_DAT_801f4d7c = (uint8_t *)guest_at(0x801f4d7c);
 }
 
 /* ---- game.c globals ---- */
