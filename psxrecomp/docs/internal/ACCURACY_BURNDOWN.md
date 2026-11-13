@@ -941,11 +941,52 @@ File being loaded: file_id 0xb3 -> table 0x801B5B94+0xb3*8 = {ptr=0x801b58bc,
 Memcard NOT the blocker: mc_status slot0+slot1 present, valid "MC" magic,
   dirty=false. memcard_err path not implicated.
 
-OPEN (next session): identify the exact completion flag cd_file_load_sm's
-parked continuation polls (context @0x801B0000, state word @+0x55EC==1) and
-what should set it — CD-read-done via game IRQ handler, a channel/task
-completion, or a decode stage. Both THIS stall and the separately-confirmed
-dead pad producer (records 0x801BEFA8/CA never written, zero 0x42 SIO polls)
-point at the game's async I/O worker layer not being serviced while the
-blocking results coroutine holds the frame loop. Prime suspect: coroutine/
-task scheduler starvation or a missed IRQ->task wakeup in the results state.
+## Session 16o — ROOT MECHANISM FOUND: cd_file_load_sm throttle counter @0x801F68D8 holds garbage
+
+Session 16n's "parked on a completion flag" was superseded by full disassembly
+of generated br2eu_func_8018CFDC (372B, full_41.c:37631). The function is a
+NON-blocking per-frame state machine keyed on state word @0x801B55EC:
+
+  entry: s1=*(0x801B5B94+file_id*8)=file data ptr, s3=*(entry+4)=size/meta,
+         s4=param_2 dest. a0>=0 -> block_8018D074.
+  block_8018D074: v0=*(s1); if 0 -> ret -1.
+  block_8018D08C: s0=*(0x801F68D8); s0--; if s0!=0 -> *(0x801F68D8)=s0-1, ret 0.
+                 if s0==0 -> proceed to state machine.
+  state==0: cd_read_issue(...) then *(0x801B55EC)=1, ret 0.
+  state==1: cd_read_poll -> done/ret1 / re-issue / ret0.
+
+=> 0x801F68D8 is a PER-FRAME THROTTLE/DLY counter: each call decrements it and
+   returns 0 (busy) until it reaches 0, only THEN touching the read state
+   machine. This is why fntrace showed ZERO cd_read_issue/cd_read_poll calls —
+   the coroutine never gets past the throttle.
+
+LIVE-VERIFIED BUG (gwatch mprotect write-watch on 0x801F68D8, port 4460):
+  * Field starts 0 (BSS). cd_file_load_sm init path stores 0 via 0x8018D064
+    (frames ~547/611). Then between init and first decrement (frame ~685) it
+    becomes 0x12220000-class garbage. It then decrements ~3300/sec (headless
+    uncapped) but needs ~303M -> effectively infinite -> results stall.
+  * gwatch ring (2048 entries, seq 0..2047): ONLY store_pc 0x8018D064 (init)
+    and 0x8018D0A0 (decrement). NO cpu->store wrote the huge value => the
+    corrupting write came through a path gwatch does not instrument as a CPU
+    store: DMA, an alias/dirty-RAM host mapping, or EXE-init data.
+  * Memory @0x801F6800..0x801F6900 is dense asset/PRNG-seed data, NOT clean
+    globals: 0x801F68E0 = LCG PRNG seed (battle.c:13659 rand: seed*0x41c64e6d
+    +0x3039), 0x801F68F0 = console_emit 32B line buffer. 0x801F68D8 neighbours
+    (0x801F68DC=0xf1111101, 0x801F68E0=0x4200022f) are STATIC; only D8 is
+    decremented. The 0x122xxxxx value is classic LCG-range output.
+
+HYPOTHESIS (next session): 0x801F68D8 either (a) sits inside a file/asset
+  load DMA destination buffer that overruns onto it, or (b) is a field that a
+  CD-load-setup path should reset to a small value but the reset is not
+  running for this file_id path. Determine the file-load DMA destination
+  (cd_read_issue param_2 dest via save_load_state_machine->menu_res_load_sm
+  chain) and whether its [dest,dest+size) covers 0x801F68D8. If so the fix is
+  the load-dest/buffer bound (faithful core). If not, find the alias-mapping
+  writer (dirty_ram / guest_at host-pointer class, cf. the OT-nextlink and
+  heap-cursor fixes).
+
+SEPARATE confirmed issue (still open): pad producer dead — records
+0x801BEFA8/CA never written, zero 0x42 SIO polls, tx_writes frozen. Both pad
+records and this throttle field live in the game's async I/O / channel-driver
+layer (0x801ff080 channel blocks, fn-table 0x801c4780) that is not being
+serviced while blocking coroutines hold the frame loop.
