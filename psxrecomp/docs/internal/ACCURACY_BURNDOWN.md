@@ -1050,3 +1050,48 @@ load whose fixed dest overlaps globals. Instrument dma.c write path (or
 psx_write_word) to log any write landing in [0x801e0000,0x801f8000) with the
 channel + initiator PC — that names the exact transfer. Then fix the
 destination computation in the faithful core (NOT a counter reset).
+
+SESSION 16q — CORRECTION + precise writer identified.
+
+  * NEIGHBOR-WATCH experiment: armed gwatch on 0x801F68C0..0x801F68D7 (table
+    bytes around the counter, EXCLUDING it). The huge re-corruption still
+    fired (0x18->0x1221fc50) but the ring stayed flooded by the SAME
+    store_pc 0x8018D0A0 decrement — because gwatch 'ranges:3' kept the old
+    0x801F68D8 watch armed too (arm ADDS ranges, does not replace). The
+    neighbours 0x801F68DC=0xf1111101 / 0x801F68E0=0x4200022f stayed STATIC
+    across every read => the corrupting write is a TARGETED 4-byte store to
+    EXACTLY 0x801F68D8, NOT a contiguous table/DMA fill. The 'asset table'
+    reading earlier was coincidental static globals.
+  * DISPROVED the DMA/asset-overwrite theory: cd_read_log shows ch3 CD DMA
+    only bounce-buffers sectors at phys 0x8598; dma.madr cycling
+    0x1F5F08-0x1F6430 is the GPU-OT command DMA (init_pc 0x80192EBC =
+    fn 0x80192E78), which READS RAM->GPU and cannot write guest RAM.
+    heapB 'pointer' 0x801e3cfc=0xdf0fd1c is likewise a misread static
+    field, not a live heap top.
+  * PRECISE WRITER: 0x801F68D8 is written ONLY inside br2eu_func_8018CFDC
+    (cd_file_load_sm) — three stores, all offset 26840 from base 0x801F0000:
+      0x8018D060 sw gpr[2]=3 (init const), 0x8018D064 sw gpr[0] (VARIABLE),
+      0x8018D0A0 sw gpr[2]=s0-1 (decrement). No other generated function or
+    clean-C site touches it (_DAT_801f68d8 defined game.c:274, unused).
+  * The huge value MUST come through 0x8018D064 storing gpr[0]. block_
+    8018D064 is reached ONLY from block_8018D040 (_bc_8018D04C branch),
+    which follows the init-call chain mc_init_reset(0x80157368) ->
+    cd_init_session(0x80198AF0) -> cd_mode_flag_set(0x80195D8C). BUT
+    cd_mode_flag_set returns only 0/1, so gpr[0] on the pure-init path is
+    small — meaning block_8018D040/64 is ALSO reachable as a coroutine
+    block-leader (case 0x8018D040) from a LATER state where gpr[0] holds
+    computed file/extent metadata. That is the huge-value source.
+  * The values are NOT constant (0x1221ffd4 / 0x1221fc50 / 0x11eb8d35 /
+    0xfa990cf / 0x121e240c) => a COMPUTED count (sector LBA / file offset /
+    extent-derived), varying per stage — consistent with mis-parsed packed
+    extent metadata (file table @0x801B5B94+file_id*8 -> {extent_ptr s1,
+    val s3}; extents are packed words like 0x00300800).
+
+NEXT (concrete): catch the 0x8018D064 store with huge gpr[0] and read the
+gwatch gpr/ra[] context — ra[] names the caller that computed the count.
+Because the decrement (0x8018D0A0) floods the 2048-ring, either (a) dump
+gwatch within <~300ms of the stage transition, or (b) temporarily raise the
+ring / add a store_pc filter. Then trace gpr[0]'s producer: the extent
+iterator that turns file-table {ptr,val} + packed extent words into the
+sector/byte count — THAT is where the miscount lives (faithful-core fix,
+not a counter reset).
