@@ -756,3 +756,32 @@ cd_dir_table_set is the ONLY writer of fc6c0 (clean cd.c + generated
 NEXT: oracle `watch` on phys 0x1FC6C0 to capture the correct write sequence
 + timing vs _DAT_801f4754 writes; determine whether tile_stream_open runs
 before scene_entry sets _DAT_801f4754, or fc6c0 is reset post-scene_entry.
+
+## Session 16j — livelock loop identified + CD state (gwatch/clean_trace)
+
+clean_trace tail shows the ACTUAL livelock: an infinite alternating poll
+  cd_queue_push (0x80192F14, ra=0x801265F4) <-> cd_timeout_arm (0x801936B0,
+  ra=0x80192970). A CD command is submitted, times out, retries forever.
+  => the pending CD op never reports DONE -> queue never drains -> spin.
+
+cdrom_state at livelock:
+  mode=0xA0 (was 0xE0 earlier), ring_dropped=516 (sectors dropped - consumer
+  not draining), reading=0, pending_cmd=0x09, read_cmd=0x00,
+  sector_read_pos=2060/2340 (partially consumed), seek_msf=00:08:12,
+  read_msf=00:08:30. irq_flag=0x00, i_stat=0x04.
+cmd history tail: seq128 cmd0x06 reading=1 (frame639), seq129 cmd0x09
+  pending=1 (frame645) -> stuck on cmd 0x09 since ~frame645.
+
+gwatch on fc6c0/_DAT_801f4754: only frame-647 writes from store_pc
+  0x801929F8 (bulk region init). NO cd_dir_table_set write of 0x80010000
+  ever landed -> our recomp reaches PC=0 (crash) BEFORE the dir-table
+  setup the oracle completes at ~frame1348. fc6c0=0 is the uninitialised
+  BSS value, i.e. SYMPTOM of crashing early, not necessarily the cause.
+
+REVISED MODEL: the PRIMARY divergence is upstream — a CD command
+  (0x09 = likely a seek/read-setup for the attract stream) pends but its
+  completion IRQ/response never arrives -> cd_queue_push timeout-retry
+  livelock -> eventually PC=0. fc6c0=0 is downstream fallout.
+NEXT: find why cmd 0x09 never completes — check the CD response/IRQ
+  delivery for that command vs oracle; ring_dropped=516 hints the
+  sector->consumer path stalls. Oracle is live on :4371 for RAM-diff.
