@@ -50,3 +50,28 @@ earlier but `+4` never credited -> the FIRST read's completion is the break.
 actually kicked (check DICR/DPCR bit15 + cdrom_async.active at submit time), and
 find the +4-crediting read-done handler (likely the ch3-DMA-done IRQ path or a
 paired consumer of the 0xBE0 double-buffer).
+
+## Session 16i — PRIME SUSPECT: stale $t0 -> wrong CHCR in fc6b0==0 claim path
+
+In `cd_mc_state_machine` claim path (state==0 entry), the `fc6b0==0` branch
+(0x80199674) calls `cd_chan_cmd_submit(ch3, madr=entry, bcr=8)` and passes CHCR
+via `sw $t0,0x10($sp)` at 0x80199688. **$t0 is never initialized on this path** —
+`lui $t0,0x1100` only executes in the sibling `fc6b0!=0` branch (0x80199644) and
+the `+4>0` path (0x80199b70/0x80199ba4).
+
+Chicken-and-egg hypothesis:
+- First stream read (claim path) needs CHCR bit24 set to kick ch3 DMA.
+- Valid CHCR (0x11000000) is only produced by the `+4>0` path's `lui $t0`.
+- `+4>0` requires a completed read; the first read's DMA never kicks if CHCR is
+  stale -> `+4` stays 0 -> `+4>0` never reached -> `t0` never set -> livelock.
+
+On hardware t0 is caller-saved and plausibly already 0x11000000 from prior code;
+in the recomp the value depends on coroutine/fiber register preservation across
+the state machine's continuation re-entry. If the fiber scheduler does not
+preserve $t0 (or the claim path runs before any +4>0 block in the same
+activation), CHCR is garbage -> try_execute sees bit24 clear -> no DMA -> +4=0.
+
+VERIFY: dump $t0 at 0x80199688 on a live run (gpr trace / watchpoint), and check
+whether cd_chan_cmd_submit's CHCR arg has bit24. If stale, the faithful fix is to
+confirm the original binary's t0 provenance (it may be set by jal 0x80195d44's
+callee or an earlier block in the same activation) — NOT to hardcode CHCR.
