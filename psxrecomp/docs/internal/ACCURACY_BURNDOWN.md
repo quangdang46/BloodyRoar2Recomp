@@ -513,3 +513,34 @@ NEXT: (a) trace who writes ctx->tableA/tableB (ctx+52/+56 @0x80009004/08) during
 BIOS CD init — find the intended channel-entry array base; OR (b) oracle RAM-diff
 (DuckStation oracle build still incomplete on macOS — build/ has only CMakeCache).
 Verify whether ctx+68 count and the a1=0x400 index are sane vs a real channel count.
+
+## SESSION 16b — IRQ path CONFIRMED WORKING; break is stream bookkeeping, not interrupts
+
+Live livelock instance (port 4419, frame 645+, PC transient-0 is normal: generated
+code clears cpu->pc at each block entry). Corrects a false lead from session 16a:
+
+- fntrace on ENTRY addresses showed total:0 for cd_intc_dispatch / cd_mc_state_machine
+  / cd_mc_sm_wrap / cd_ctx_restore / cd_chan_full_init — but this is an ARTIFACT.
+  The deferred-interrupt coroutine re-enters these functions at CONTINUATION basic
+  blocks, never at their hooked entry. cdrom_trace_dump proves the ISR runs:
+  seq 29666 set_irq(0x01=DATA_READY) -> 29667/29668 fire_irq -> i_stat=0x4, and the
+  consumer PC 0x8019A9AC = cd_intc_dispatch+0xc0 (inside its 0x8019a8ec-0x8019aab8
+  body). IRQs fire, irq_flag cycles set->present->ack->0, cd_cmd_issue_b /
+  cd_result_wait_a/b drive Setloc/Read/Seek and poll 0x1F801800/803.
+- cdrom_state: irq_enable=0x07 (matches ALL encoded reasons 1-5 per
+  cdrom_irq_mask_matches_reason), irq_flag=0 at snapshot (acked), sector_pos
+  advanced 0->12->2060 of 2340, ring_dropped=516 (response FIFO overflow because
+  consumer reads 1-at-a-time while drive streams).
+- CONCLUSION: hardware IRQ delivery + BIOS ISR + response decode ALL work. The
+  livelock is purely that dir/channel entry +4 progress never reaches the
+  +6-1 completion predicate, so cd_mc_state_machine scans forever without
+  finalizing -> cd_channel_poll never sees state==2 -> blk_io_retry spins.
+- Remaining suspect unchanged: physical-0 collision. The +4 progress writer is the
+  BIOS channel-entry consumer that reads ctx->tableA/tableB entries (+68 ready,
+  +70/+72 payload) and credits the descriptor. With tableA=0/tableB=0xb0 resolving
+  into phys-0 (the dir table itself), that consumer reads dir-table words as
+  channel entries -> finds no valid ready entry -> never credits +4. The a1=0x400
+  callback arg and the intended channel-entry array base are still unverified.
+  ALSO NOTE: 0x801BCE00 region now shows terrain-packet bytes (0x55555555/0x48804040)
+  — heap-cursor corruption is overwriting CD globals too; may be a second-order
+  effect of the same stream failure or an independent emitter bug.
