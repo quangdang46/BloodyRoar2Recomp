@@ -213,6 +213,42 @@ on a fixed region -> next.
 
 ## 5. Status / Log (update every session)
 
+- **2026-11-11 (frame-counter freeze ROOT-CAUSE narrowed — MMIO fix confirmed
+  landed; counter depends on CD IRQ, freezes when CD idles):**
+  - **MMIO guest_at-drop fix CONFIRMED LANDED in cd.c** — `cd_chan_full_init`,
+    `cd_state_blk_save/restore`, `cd_chan_slot_set`, `cd_cb7_run`,
+    `cd_init_stage_a/b` all route INTC/DMA/CD regs through `br2_ld*/br2_st*`;
+    ZERO `guest_at(0x1f801xxx)` literals remain in `game/*.c`. Bug #1
+    (CD-command MMIO) is closed for the IRQ path.
+  - **clean_trace ring (last 512 clean calls) shows `cd_cb8_dispatch`
+    (0x8019AE68) ran 17x** — so IRQ → `cd_intc_dispatch` → `cb8_dispatch` →
+    `DAT_801bdde0`++ DOES execute. `cd_intc_dispatch`/`cd_ctx_restore`/
+    `cd_chan_full_init` show 0 only because they are GENERATED (clean_trace
+    tracks clean calls only).
+  - Live state at wedge: `framecnt(0x801bdde0)=0x60a` FROZEN,
+    `cd_status(0x801bcb24)=0x2` READY/idle (the WORKING signal per earlier
+    bisect), `inservice(0x801bcd18)=1`, `intc_dbg(0x801bce00)=0`,
+    `cop0_epc=0x8019A648` (inside `vsync_wait_n`), `pc=0` after OpenBIOS
+    `0x27AC` trampoline. IRQs ARE delivered (`irqctx istat=0x1/0x5`).
+  - **REFINED mechanism:** `cb8_dispatch` is handler[0]=VBlank bit inside
+    `cd_intc_dispatch`, but `cd_intc_dispatch` is resumed by the deferred
+    coroutine (`cd_ctx_restore`→`cd_chan_full_init`) which the kernel invokes
+    on IRQ. It ran 17x then STOPPED once CD went idle (`cd_status=0x2`, no
+    pending CD command → no CD IRQ → coroutine not resumed → `cd_intc_dispatch`
+    stops → `framecnt` freezes → `vsync_wait_n` timeout → crash). The earlier
+    "clean-C nesting starves the switch" theory is WRONG — `cd_ctx_restore`
+    resumes INLINE via `psx_restore_state_escape`/`exception_jmpbuf`, no
+    thread switch needed.
+  - **NEXT (two concrete unknowns):** (a) is the hooked IRQ entry
+    (HookEntryInt→`cd_chan_full_init` coroutine) resumed on ALL maskable IRQs
+    or CD-ROM-source only — if CD-only, the frame counter genuinely needs
+    ongoing CD IRQs; (b) should a CD command/read stay ACTIVE during
+    `vsync_wait_n` (streaming read or periodic poll) that our CD emulation
+    completes/idles prematurely — compare the CD command + IRQ sequence
+    against the Beetle/DuckStation oracle at the same battle-intro point.
+    `cdcell_u16` (cd.c:1548) `guest_at(*(u32*)guest_at(cell))` double-indirect
+    is a remaining MMIO-audit candidate if the cell can hold `0x1f801xxx`.
+
 - **2026-11-11 (REFINED — heapA receives each decode's `srcg`, not a cursor):**
   Added tag15 `hser` (heap_serialize entry-blk/ret-cur/emit-count) + tag16
   `rzd` (ret_zero_d in/ret/delta). Result: heap_serialize NEVER reached (zero
@@ -5685,3 +5721,55 @@ length return.
   absolute returns; OR a decode reading a wrong tag-table entry (tag table
   @0x801c47c0 overwritten by file 0xa0/0xb0 loads). CD data integrity vs disc
   still unverified (extent->LBA decode pending).
+
+## Session 16 — CD/event stall root-caused to a starved sector consumer; full kernel IRQ map decoded
+
+Live instance (auto-boot, deterministic, no input) wedges at framecnt=0x60a.
+MEMORY IS CLEAN (heap-A cursor 0x8006AA34, globals intact) => this is an
+EARLIER stall than 15z's heap-corruption point, not that bug.
+
+CONFIRMED MECHANISM (corrects several prior wrong hypotheses):
+- Exception vector @0x80000080 decodes `lui $k0,0; addiu $k0,$k0,0x27ac; jr $k0`
+  => IRQs dispatch to the GAME kernel handler 0x000027ac (interpreted dirty-RAM),
+  NOT OpenBIOS. Table 0x494c[6]=0x27ac confirms it is the IRQ ExceptionHandler.
+- cd_intc_dispatch (0x8019A8EC, GENERATED) IS RUNNING — it calls kernel services
+  via trampoline slots 0xA0/0xB0/0xC0 -> dispatcher 0x2AA0/0x2AC0 ->
+  `lw table[0x49cc+$t1*4]; jr $t2`. Earlier "cd_intc_dispatch starved / fntrace 0"
+  was a FALSE NEGATIVE: fntrace hooks the native dispatch and these calls run
+  under dirty-RAM interp context; the interp insn_log (dirty_insn_log) shows
+  ra=0x8019AA9C/0x8019A9C8 = return addrs INSIDE cd_intc_dispatch.
+- Service table 0x49cc: t1=0x17->0x29CC (context/jmp_buf RESTORE ~30 reg loads),
+  t1=0x07->0x2610 (DeliverEvent), t1=0x0d->0xBFC056EC (BIOS).
+- HookEntryInt IS armed: kernel var @0x4BF8 = 0x801BCD50, a valid jmp_buf
+  (JB_PC=0x8019A87C resume->cd_intc_dispatch, JB_SP=0x80200000). Called once.
+- IRQs delivered normally: event_ring IRQ_DELIVER func=0x29CC, istat=0x1 VBlank
+  AND 0x4 CD, imask=0xD, DMA_KICK/SCHED/DONE active. sp/current_tcb constant =>
+  per-IRQ service calls, NOT recursion.
+
+THE STALL (evidence):
+- bioscall_dump: TestEvent (B0/0x0B) called 1,417,188x; DeliverEvent (B0/0x07)
+  only 69x; OpenEvent 19x; EnableEvent 19x; CloseEvent 5x; HookEntryInt 1x.
+- Game spins in cd_seek_complete_poll(0x8019D500, delegated->generated) whose
+  a0==1 loop calls cd_seek_state_machine=TestEvent(*(0x801BDE38)=0xF1000008).
+- cdrom_state FROZEN over time: sector_read_pos=2060/2340 (mid-sector, 280 left),
+  sector_available=1, bfrd_set=1660 vs bfrd_clear=13, ring_dropped=692,
+  reading=0, last_sector lba8240 frame1713, i_stat=0x1, irq_flag=0.
+- cb8_dispatch (0x8019AE68, VBlank frame counter) count flat 17=>17, framecnt
+  0x60a => the IRQ->VBlank-handler dispatch stopped feeding the counter.
+
+ROOT CAUSE (high confidence): the CD sector CONSUMER that drains the
+0x1F801802 data FIFO stalled mid-sector at offset 2060. bfrd_set(1660)>>
+bfrd_clear(13) => sector buffers fill but are never consumed; the read never
+completes => no CD completion IRQ/event => game's TestEvent busy-poll (does NOT
+yield) spins forever => downstream cb8_dispatch/frame-counter frozen => wedge.
+The consumer starvation is the single upstream fault; everything else is
+downstream symptom.
+
+OPEN: WHY the consumer stalls at 2060/2340. Candidates: (a) consumer is the same
+thread now spinning in TestEvent (self-deadlock: it can't drain because it's
+polling); (b) data-ready IRQ not reaching cd_response_pump/the stream worker;
+(c) a clean-C stream/seek function starved. cd_response_pump ran 86x (clean_trace)
+so it IS entered — need to check whether it actually reads 0x1F801802 or exits
+early. NEXT: trace which function reads CD data reg 0x1F801802 and whether the
+per-sector loop advances read_pos; check if the consumer shares the TestEvent
+thread's timeslice.
