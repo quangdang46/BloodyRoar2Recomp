@@ -580,3 +580,31 @@ whether tag_table_get()/g_DAT_801c47c0 should point at a real tag array vs the
 emit region, and whether param_6/param_7 (BKX lhu4/lhu6 stage dims) are sane.
 Likely a clean-port arg/return conflation between the decode cursor and the
 packet-emit cursor.
+
+## SESSION 16d — gwatch: CD DMA delivers file data ONTO heap control block
+
+Fresh LLE run (port 4440) with PSX_GWATCH="0x801C47B8,64". The 0x5555/0x48804040
+"terrain packets" are actually CD FILE DATA (game asset bytes) landing on the
+heap control block — terrain_packet_gen is NOT the writer.
+
+Decisive entry seq21 (frame 617): store to 0x801C47C0 with
+  dma.madr=0x1C4804, dma.init_pc=0x801978AC (=cd_cmd_issue_b+0xac), bcr=0x00010200
+=> a CD DMA channel wrote ~sector data to phys 0x1C4804 = guest 0x801C4804,
+   i.e. ONTO the tag-table global g_DAT_801c47c0 / cursor-cell neighborhood.
+
+ROOT REFINEMENT: the CD file-load / decode destination resolves to ~0x801C47C0,
+which IS the tag-table POINTER global (tag_table_get() returns g_DAT_801c47c0 =
+*(u32*)0x801c47c0). Loading file data AT 0x801c47c0 overwrites the tag-table
+pointer itself -> tag_table_get() returns file-data garbage -> decode dst wild ->
+cursor/tag/control all corrupt -> CD stream +4 never completes -> livelock.
+
+On real HW the tag-table buffer and its pointer global must be distinct: file
+data should go to *g_DAT_801c47c0 (the pointee array), never to 0x801c47c0.
+The bug is a dest/pointer conflation in the file-load path — likely
+cd_file_load_sm(0x13, guest_of(tag_table_get())) at save.c:6050 passing the
+POINTER-GLOBAL address as the DMA/decode dest instead of the pointee buffer,
+OR g_DAT_801c47c0 never initialized to a real heap tag array.
+
+NEXT: read g_DAT_801c47c0 (0x801c47c0) BEFORE corruption to get intended tag-array
+base; check cd_file_load_sm dest arg semantics (guest addr of buffer vs of the
+pointer cell); find who is supposed to allocate/init the tag array.
