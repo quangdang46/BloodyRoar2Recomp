@@ -122,6 +122,27 @@ int  event_ring_dump_json(char *out, int cap, int max_entries);
 /* Clear the ring (e.g. to isolate a fresh window before a run). */
 void event_ring_clear(void);
 
+/* ---- decompression decode trace (stream_block_decode -> mode3_dispatch) --
+ * Records each decode-stage invocation (dispatch / block_copy / lzss) with the
+ * guest dst/src/mode/len so the FIRST bad decode — garbage src producing a
+ * runaway write that sprays the 0x5555 poison pattern over ~500KB of RAM —
+ * can be identified before the cascade. OBSERVABILITY ONLY. */
+#define DECOMP_TRACE_CAP 16384u
+typedef struct {
+    uint64_t seq;
+    uint64_t cycle;
+    uint32_t dst;    /* guest dst cursor (a0)                          */
+    uint32_t src;    /* guest src addr   (a1 / srcg)                   */
+    uint32_t len;    /* block_copy: s0 length; lzss/dispatch: 0        */
+    uint8_t  tag;    /* 0=mode3_dispatch,1=block_copy_ret_len,2=lzss  */
+    uint8_t  mode;   /* mode3 mode word (0=copy,2=lzss,else raw)       */
+    uint16_t pad;
+} DecompEntry;
+void decomp_trace_record(uint8_t tag, uint32_t dst, uint32_t src,
+                         uint8_t mode, uint32_t len);
+int  decomp_trace_dump_json(char *out, int cap, int max_entries);
+void decomp_trace_clear(void);
+
 #ifdef __cplusplus
 }
 #endif

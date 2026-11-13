@@ -131,3 +131,58 @@ int event_ring_dump_json(char *out, int cap, int max_entries) {
     n += snprintf(out + n, cap - n, "]}");
     return n;
 }
+
+/* ---- decompression decode trace ring (see event_ring.h) ---- */
+static DecompEntry s_decomp[DECOMP_TRACE_CAP];
+static uint64_t     s_decomp_seq;
+
+void decomp_trace_record(uint8_t tag, uint32_t dst, uint32_t src,
+                         uint8_t mode, uint32_t len) {
+    DecompEntry *e = &s_decomp[s_decomp_seq & (DECOMP_TRACE_CAP - 1u)];
+    e->seq   = s_decomp_seq++;
+    e->cycle = psx_get_cycle_count();
+    e->dst   = dst;
+    e->src   = src;
+    e->len   = len;
+    e->tag   = tag;
+    e->mode  = mode;
+    e->pad   = 0;
+}
+
+void decomp_trace_clear(void) {
+    s_decomp_seq = 0;
+    memset(s_decomp, 0, sizeof(s_decomp));
+}
+
+static const char *decomp_tag_name(uint8_t t) {
+    switch (t) {
+        case 0: return "dispatch";
+        case 1: return "block_copy";
+        case 2: return "lzss";
+        case 3: return "lzss_runaway";
+        default: return "?";
+    }
+}
+
+int decomp_trace_dump_json(char *out, int cap, int max_entries) {
+    uint64_t total = s_decomp_seq;
+    uint64_t want  = (max_entries > 0) ? (uint64_t)max_entries : 512;
+    uint64_t start = (total > want) ? (total - want) : 0;
+    int n = 0;
+    n += snprintf(out + n, cap - n,
+                  "{\"total\":%llu,\"entries\":[", (unsigned long long)total);
+    int first = 1;
+    for (uint64_t s = start; s < total && n < cap - 400; s++) {
+        const DecompEntry *e = &s_decomp[s & (DECOMP_TRACE_CAP - 1u)];
+        n += snprintf(out + n, cap - n,
+            "%s{\"seq\":%llu,\"cycle\":%llu,\"tag\":\"%s\",\"mode\":%u,"
+            "\"dst\":\"0x%08X\",\"src\":\"0x%08X\",\"len\":\"0x%08X\"}",
+            first ? "" : ",",
+            (unsigned long long)e->seq, (unsigned long long)e->cycle,
+            decomp_tag_name(e->tag), (unsigned)e->mode,
+            e->dst, e->src, e->len);
+        first = 0;
+    }
+    n += snprintf(out + n, cap - n, "]}");
+    return n;
+}

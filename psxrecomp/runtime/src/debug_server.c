@@ -12705,6 +12705,33 @@ static void handle_event_ring_clear(int id, const char *json)
     send_fmt("{\"id\":%d,\"ok\":true,\"cleared\":true}\n", id);
 }
 
+/* decomp_trace: inline JSON tail of the decompression decode ring — each
+ * stream_block_decode -> mode3_dispatch / block_copy / lzss call with guest
+ * dst/src/mode/len. Used to find the FIRST bad decode (garbage src -> runaway
+ * write spraying the 0x5555 poison pattern). */
+static void handle_decomp_trace(int id, const char *json)
+{
+    extern int decomp_trace_dump_json(char *out, int cap, int max_entries);
+    int n = json_get_int(json, "n", 256);
+    if (n < 1) n = 1;
+    if (n > 8000) n = 8000;
+    int cap = n * 200 + 512;
+    char *out = (char *)malloc((size_t)cap);
+    if (!out) { send_err(id, "alloc failed"); return; }
+    int w = snprintf(out, cap, "{\"id\":%d,\"ok\":true,\"ring\":", id);
+    w += decomp_trace_dump_json(out + w, cap - w, n);
+    snprintf(out + w, cap - w, "}");
+    debug_server_send_line(out);
+    free(out);
+}
+static void handle_decomp_trace_clear(int id, const char *json)
+{
+    (void)json;
+    extern void decomp_trace_clear(void);
+    decomp_trace_clear();
+    send_fmt("{\"id\":%d,\"ok\":true,\"cleared\":true}\n", id);
+}
+
 /* overlay_native_on / overlay_native_off: toggle native overlay EXECUTION at
  * runtime (validity tracking still runs). A/B to prove whether native execution
  * is the cause without a rebuild. */
@@ -14065,6 +14092,8 @@ static const CmdEntry s_commands[] = {
     { "event_ring_dump",          handle_event_ring_dump },
     { "event_ring_tail",          handle_event_ring_tail },
     { "event_ring_clear",         handle_event_ring_clear },
+    { "decomp_trace",             handle_decomp_trace },
+    { "decomp_trace_clear",       handle_decomp_trace_clear },
     { "overlay_diff_on",      handle_overlay_diff_on },
     { "overlay_diff_off",     handle_overlay_diff_off },
     { "overlay_shadow_dump",  handle_overlay_shadow_dump },

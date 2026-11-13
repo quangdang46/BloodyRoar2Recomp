@@ -27,6 +27,8 @@ extern uint32_t guest_of(const void *p);
 extern uint32_t bios_svc(uint32_t table,uint32_t svc,uint32_t a0,uint32_t a1);
 extern uint32_t guest_sp(void);
 extern uint16_t psx_read_half(uint32_t addr);
+extern void decomp_trace_record(uint8_t tag, uint32_t dst, uint32_t src,
+                                uint8_t mode, uint32_t len);
 void gauge_scale_fixed(short param_1,short param_2);
 void brightness_commit(undefined2 param_1);
 
@@ -2334,6 +2336,7 @@ uint32_t mode3_dispatch(uint32_t a0,uint32_t a1)
 {
   uint32_t v1 = *(uint32_t *)guest_at(a1);
   (void)a0;
+  decomp_trace_record(0,a0,a1,(uint8_t)v1,0);
   if (v1 == 1) { lzss_trap(a0,a1); return 0; }
   if (v1 < 2) {
     if (v1 == 0) return block_copy_ret_len(a0,a1);
@@ -2475,6 +2478,7 @@ uint32_t block_copy_ret_len(uint32_t a0,uint32_t a1)
   uint32_t s0;
   if (b == NULL) return 0;
   s0 = *(uint32_t *)(b + 8);
+  decomp_trace_record(1,a0,a1,0,s0);
   /* guest_memcpy takes guest addresses; b+0xc is host, so pass the
    * guest address a1+0xc directly (b = guest_at(a1)). */
   guest_memcpy(a0,a1 + 0xc,s0);
@@ -2735,11 +2739,20 @@ uint32_t fighter_record_build(uint32_t a0,uint32_t a1,uint32_t a2)
 uint32_t lzss_decode(uint32_t dst,uint32_t src)
 {
   uint8_t *sd = (uint8_t *)guest_at(src);
+  decomp_trace_record(2,dst,src,2,0);
   uint32_t t1 = *(const uint32_t *)(sd + 8);
   const uint8_t *ip = sd + 0xc;
   uint8_t *op = (uint8_t *)guest_at(dst);
+  uint8_t *op0 = op;
+  uint32_t runaway_logged = 0;
   uint32_t a2 = 0x8000;
   for (;;) {
+    /* DIAGNOSTIC: flag runaway decode (garbage src -> unbounded *op++) so the
+     * guilty src is captured before it sprays the 0x5555 poison pattern. */
+    if (!runaway_logged && (uint32_t)(op - op0) > 0x100000u) {
+      decomp_trace_record(3,dst,src,2,(uint32_t)(op - op0));
+      runaway_logged = 1;
+    }
     uint32_t bit, len;
     const uint8_t *a3;
     if ((a2 & 0xffff) == 0x8000) {
