@@ -213,6 +213,28 @@ on a fixed region -> next.
 
 ## 5. Status / Log (update every session)
 
+- **2026-11-11 (CAUSAL CHAIN CLOSED — state-6 stall = heap/decode overrun,
+  NOT a CD bug):** Disassembled generated `cd_file_load_sm`(`br2eu_func_8018CFDC`,
+  25 blocks): filetab@`0x801B5B94`+file_id*8 `{extent_ptr,sector_count}`; gates
+  on `[extent_ptr]!=0` AND `DAT_801F68D8==0` (SM state counter, decremented
+  per call until 0 -> issue read); then `cd_read_issue(extent,dest,count)` /
+  `cd_read_poll(1,0)`; `0x801B55EC`=read-in-flight flag, `0x801C4580`=loading
+  byte. LIVE state: `0x801F68D8`=`0x11e5eae0` (huge garbage, actively
+  decrementing) = FILE DATA — file-0x88 DMA wrote `0x801C90B8->0x801FA8B8`
+  over it. heap-A cursor `0x801c47b8`=`0x801c90b8` (over-produced ~108KB past
+  safe bound `0x801AE800`); heap-B `0x801e3cfc`=`0xdf0fd1c` (also file data).
+  => decode over-produces -> heap cursor too high -> file-0x88 load dest too
+  high -> DMA overwrites `0x801F68D8`/`0x801e3cfc` -> cd_file_load_sm reads
+  garbage state -> never issues read -> returns 0 -> save_load_state_machine
+  L10 -> battle_intro_flow resource-load -> g_game_state=6 frozen. CD driver
+  VERIFIED faithful (data chunks differ per sector; bios_svc->svc_call real;
+  bcba4=in-flight flag, 0=idle/complete). Decode fns (`block_copy_ret_len`,
+  `lzss_decode`, `mode3_dispatch`) faithfully return header `*(src+8)` length
+  => over-production = WILD srcg from corrupted source table/cursor, not a
+  decoder bug. NEXT: fresh run + decomp_trace during the overrun to catch the
+  decode whose srcg/ret is wild (ring rolled to post-corruption len=0). The
+  heap-B cursor feeding param_2 source-table is the prime suspect.
+
 - **2026-11-11 (state-6 stall ROOT-LOCALIZED to CD read done-flag `bcba4`
   never latching — data path verified OK):** Full hang chain traced live:
   `g_game_state=6` frozen → `battle_intro_flow` sub-state `DAT_1f800001=1`
