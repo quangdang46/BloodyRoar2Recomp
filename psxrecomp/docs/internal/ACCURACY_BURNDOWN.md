@@ -703,3 +703,27 @@ fires because the first transfer never completed.
 
 NEXT: instrument cd_chan_cmd_submit's CHCR write (value + addr) live; check
 0x801BCC40 ready-bit semantics; determine whether BIOS or game owns ch3 MADR.
+
+## Session 16h — dead-path confirmations + oracle assessment
+
+- fc6c0=0 (phys-0 dir base) is CORRECT: _DAT_801f4754=0x80010000 holds asset
+  data not entries; the phys-0 table IS the live dir table.
+- _DAT_801fc68c (pump gate) = 0; cd_mc_state_machine also driven IRQ-side via
+  cd_mc_sm_wrap(0x80198FE4)->0x80199440.
+- fntrace entry-hooks ALL show total=0 for 0x80199360/0x80199BC8/0x801990F0/
+  0x80199CF0 -> coroutine continuation re-entry bypasses hooks; fntrace is
+  UNRELIABLE for this subsystem. Need block-level trace or oracle.
+- wtrace during livelock shows only BIOS housekeeping writes (0xBFC1xxxx),
+  no CD stream data landing in an entry-associated buffer.
+
+ASSESSMENT: the +4 progress credit is a per-sector DMA/arrival consumer inside
+the cd_mc_state_machine coroutine cluster (0x80199440-0x80199Cxx continuation
+blocks). Static trace of 65 blocks + coroutine register flow is at the limit
+of tractability. The reliable unblock is a HARDWARE ORACLE RAM-diff:
+  - psx-beetle needs libmednafen_psx.a built via MinGW (Windows-only path).
+  - psx-oracle (port 4371) is a co-sim deterministic build, NOT hardware truth.
+  - DuckStation oracle at ~/.local/share/retcomm/oracle/duckstation is a full
+    src checkout + Ninja/clang++-19 CMakeCache (incomplete build). Building it
+    on macOS arm64 is the remaining path to ground-truth RAM/state compare.
+NEXT: either finish the DuckStation oracle build (background, long) OR add a
+block-level guest-PC trace (not entry fntrace) to catch the +4 writer PC.
