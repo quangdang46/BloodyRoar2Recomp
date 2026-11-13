@@ -14264,6 +14264,7 @@ int32_t heap_serialize(uint32_t param_1,uint32_t param_2,uint32_t param_3,
                                   * corrupt its own locals instead) */
   uint32_t s3 = 0;
   uint32_t i;
+  uint32_t _eb = param_1;   /* entry blk for trace */
 
 #define B7C0_EMIT(N_) do {                                    \
     scr[s3*4u+0u] = tag;   scr[s3*4u+1u] = param;             \
@@ -14442,6 +14443,9 @@ next_block:
       cur += 0x10u;
     }
   }
+  { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+    /* tag15 hser: dst=entry blk, src=ret cur, len=emit count s3 */
+    decomp_trace_record(15,_eb,(uint32_t)cur,0,s3); }
   return (int32_t)cur;
 
 #undef B7C0_EMIT

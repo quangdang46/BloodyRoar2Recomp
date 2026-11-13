@@ -166,6 +166,8 @@ static const char *decomp_tag_name(uint8_t t) {
         case 12: return "heap_emit";
         case 13: return "heapA_w";
         case 14: return "off_lookup";
+        case 15: return "hser";
+        case 16: return "rzd";
         default: return "?";
     }
 }

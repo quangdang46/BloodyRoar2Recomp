@@ -213,6 +213,21 @@ on a fixed region -> next.
 
 ## 5. Status / Log (update every session)
 
+- **2026-11-11 (REFINED — heapA receives each decode's `srcg`, not a cursor):**
+  Added tag15 `hser` (heap_serialize entry-blk/ret-cur/emit-count) + tag16
+  `rzd` (ret_zero_d in/ret/delta). Result: heap_serialize NEVER reached (zero
+  hser — heap_record_emit early-returns all slots, heapA unchanged); ret_zero_d
+  fired once +0x1C14 (normal); terrain spr_pair records all post-date the jump.
+  The +0x1906C4 heapA write (seq413 0x80034298→0x801C495C) is none of those.
+  **KEY: heapA_w seq413/427/450/452... = 0x801C495C/0x801C63F8/0x801C79FC...
+  EXACTLY match the decode blk_ret `src` sequence — heapA is assigned each
+  block's compressed-source pointer (srcg).** srcg = offset_table_lookup's
+  return AND stream_block_decode's mode3_dispatch arg. So a decode-adjacent
+  path stores the block's source pointer into heapA instead of output cursor.
+  NEXT: tag the heapA_w write with caller-PC/callsite to find which
+  BR2_W32(0x801c47b8,...) receives srcg; audit mode3_dispatch/stream_block_decode
+  for a srcg-returning path and the save.c sibling SM (~6793+) heap/tag loop.
+
 - **2026-11-11 (heap-A over-production LOCALIZED to `heap_serialize` cur
   return; CD delivery PROVEN byte-perfect; file-0x82 dest bug FIXED):**
   - **CD data integrity VERIFIED** — dumped delivered sector (lba 314) vs

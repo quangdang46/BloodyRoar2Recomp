@@ -5625,8 +5625,12 @@ extern int32_t attr_records_scan(uint32_t,uint32_t);
 uint32_t ret_zero_d(uint32_t a0, uint32_t a1, uint32_t a2,
                     uint32_t a3, uint32_t a4)
 {
+    uint32_t r;
     (void)a4;
-    return br2_call_generated(0x8016dadcu, a0, a1, a2, a3);
+    r = (uint32_t)br2_call_generated(0x8016dadcu, a0, a1, a2, a3);
+    { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+      decomp_trace_record(16,a3,r,0,(uint32_t)(r-a3)); }   /* tag16 rzd */
+    return r;
 }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
