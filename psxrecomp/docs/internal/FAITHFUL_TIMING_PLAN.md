@@ -5533,3 +5533,38 @@ for the battle-intro load; check whether cd_file_load_sm actually populated
 the compressed blocks (CD sync path) and whether the tag_table offsets are
 valid. Likely a wrong src offset OR heap cursor corrupted by an earlier bad
 length return.
+
+## Session 15z — heap-A cursor overrun narrowed to a single +1.64MB offset_table set; every mechanism verified faithful
+
+- Instrumented decomp_trace with: tag10 = cd_file_load_sm(file_id,dest)
+  [deduped vs retry flood], tag11 = stream_block_decode return length,
+  tag12 = heap_record_emit heap-A advance, tag13 = every write to
+  _DAT_801c47b8 (old->new). Added seq_lo paging to decomp_trace so full
+  pump history survives the post-corruption retry livelock.
+- Cursor-write trace (tag13) caught the dominant advance: _DAT_801c47b8
+  jumps +0x1906C4 (~1.64MB) in ONE write, 0x80034298 -> 0x801C495C, inside
+  battle_bringup_b's L_state10 offset-table loop
+  (menu.c:8624 `MW32(0x801c47b8, o2[0xb]+(o2[1]-o2[0]))`). 0x801C495C is a
+  valid file-0x82 offset-table/blob region (holds 0xFFFFFFFF empty slots).
+- Verified faithful vs generated MIPS: offset_table_lookup (0x80163204)
+  returns a0+off+(count+1)*4+0xc — identical; caller loads a0=*(0x801C47B8)
+  faithfully; lzss_decode/block_copy_ret_len return src[8] declared size;
+  stream_block_decode/heap_alloc54 advance by return (guest_of fix holds);
+  terrain_packet_gen grid dims sane (12x12); file 0x88 = 99 sectors real;
+  cd_file_load_sm(0x88, *(0x801C47B8)) dest faithful.
+- Memory map confirmed vs oracle (DuckStation :4371): file/heap data
+  legitimately fills 0x80010000 -> ~0x801D-0x801E0000; globals
+  (_DAT_801e3cfc cursor ptr, 0x801F68D8 counter) live higher and MUST stay
+  clean. Ours: heap-A reaches 0x801C90B8, file 0x88 DMA writes
+  0x801C90B8->0x801FA8B8 (~198KB) covering both globals -> stall.
+- ALSO FIXED real split-brain (commit 626cd74): bind_globals_2 pointed 15
+  g_DAT_*/scratch globals into bind.c's private guest_arena/guest_scratch
+  (dead in runtime build); now routed through guest_at()->ram[]/scratchpad.
+- REMAINING: heap-A accumulates ~123KB+ excess vs real HW ceiling. All
+  per-op mechanisms faithful => divergence is data-dependent (a decode
+  emitting too much, or the offset-table input at cursor being wrong).
+  NEXT: compare _DAT_801c47b8 trajectory + decode output vs Beetle oracle
+  (psx-beetle :4380, parity tools) at the battle-load stage; OR verify the
+  offset-table base MB32(0x801c47b8)=0x80034298 held a valid table at the
+  L_state10 instant (memory is transient post-corruption). The pad-producer
+  issue remains a parallel open thread.
