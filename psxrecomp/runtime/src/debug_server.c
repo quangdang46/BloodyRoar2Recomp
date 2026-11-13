@@ -12711,15 +12711,20 @@ static void handle_event_ring_clear(int id, const char *json)
  * write spraying the 0x5555 poison pattern). */
 static void handle_decomp_trace(int id, const char *json)
 {
-    extern int decomp_trace_dump_json(char *out, int cap, int max_entries);
+    extern int decomp_trace_dump_json_range(char *out, int cap, uint64_t seq_lo,
+                                            int max_entries);
     int n = json_get_int(json, "n", 256);
     if (n < 1) n = 1;
     if (n > 8000) n = 8000;
+    uint64_t seq_lo = 0;
+    char sbuf[32];
+    if (json_get_str(json, "seq_lo", sbuf, sizeof(sbuf)))
+        seq_lo = strtoull(sbuf, NULL, 0);
     int cap = n * 200 + 512;
     char *out = (char *)malloc((size_t)cap);
     if (!out) { send_err(id, "alloc failed"); return; }
     int w = snprintf(out, cap, "{\"id\":%d,\"ok\":true,\"ring\":", id);
-    w += decomp_trace_dump_json(out + w, cap - w, n);
+    w += decomp_trace_dump_json_range(out + w, cap - w, seq_lo, n);
     snprintf(out + w, cap - w, "}");
     debug_server_send_line(out);
     free(out);

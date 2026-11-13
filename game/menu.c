@@ -2246,7 +2246,12 @@ undefined4 stream_block_decode(undefined4 param_1,int *param_2,int param_3)
        * (_DAT_801e3cfc / _DAT_801c47b8) -> wrong CD dest -> DMA into .text.
        * guest_of() recovers the guest address faithfully. */
       uint32_t srcg = guest_of(param_2) + (uint32_t)param_2[param_3 + 1] + (uint32_t)(*param_2 + 1) * 4u;
-      return mode3_dispatch(param_1,srcg);
+      { uint32_t r = mode3_dispatch(param_1,srcg);
+        /* tag 11: record the RETURN length so cursor advances are fully
+         * attributed (decode dst->dst+len). dst=heap cursor arg. */
+        { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+          decomp_trace_record(11,param_1,srcg,0,r); }
+        return r; }
     }
   }
   return 0;
@@ -4738,7 +4743,10 @@ void pad_slot_state_walk(void)
 #define MBS16(a)  (*(int16_t *)guest_at(a))
 #define MW8(a,v)  (*(uint8_t  *)guest_at(a) = (uint8_t)(v))
 #define MW16(a,v) (*(uint16_t *)guest_at(a) = (uint16_t)(v))
-#define MW32(a,v) (*(uint32_t *)guest_at(a) = (uint32_t)(v))
+#define MW32(a,v) ((uint32_t)(a)==0x801c47b8u ? \
+   ({uint32_t _bv=(uint32_t)(v);uint32_t *_bp=(uint32_t *)guest_at(0x801c47b8u);uint32_t _bo=*_bp;*_bp=_bv; \
+     {extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);decomp_trace_record(13,_bo,_bv,0,0);} _bv;}) \
+   : (*(uint32_t *)guest_at(a) = (uint32_t)(v)))
 
 /* 16-byte-block guest copy; lwl/lwr vs lw/sw in the original is only an
  * alignment variant of the same memcpy. */
@@ -13462,6 +13470,10 @@ uint32_t heap_record_emit(uint32_t param_1,uint32_t param_2,uint32_t param_3,
     s2--;
   } while (s2 > 0);
   br2_guest_frame_free();
+  { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+    /* tag 12: heapA cursor advance = return(s1) - param_3(heapA in).
+     * dst=heapA_in, src=dst_cursor s4, len=advance. Catches inflated emit. */
+    decomp_trace_record(12,param_3,s4,0,(s1>param_3)?(s1-param_3):0); }
   return s1;
 }
 

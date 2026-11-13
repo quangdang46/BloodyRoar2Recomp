@@ -141,6 +141,8 @@ typedef struct {
 void decomp_trace_record(uint8_t tag, uint32_t dst, uint32_t src,
                          uint8_t mode, uint32_t len);
 int  decomp_trace_dump_json(char *out, int cap, int max_entries);
+int  decomp_trace_dump_json_range(char *out, int cap, uint64_t seq_lo,
+                                  int max_entries);
 void decomp_trace_clear(void);
 
 #ifdef __cplusplus

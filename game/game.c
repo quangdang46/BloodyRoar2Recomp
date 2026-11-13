@@ -1662,6 +1662,16 @@ LAB_801593a8:
 int cd_file_load_sm(int param_1,uint32_t param_2)
 
 {
+  /* file-load dest trace (tag 10): dst=dest arg, src=file_id. Clean-C path
+   * bypasses wtrace, so this ring is the only visibility into which file is
+   * aimed at which heap cursor before the DMA lands. Dedup consecutive
+   * identical (file_id,dest) so the post-corruption cd_file_load_sm retry
+   * livelock does not flood the 16K ring and evict the pump decode history. */
+  { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+    static uint32_t last_f=-1,last_d=-1;
+    if((uint32_t)param_1!=last_f||param_2!=last_d){
+      last_f=(uint32_t)param_1;last_d=param_2;
+      decomp_trace_record(10,param_2,(uint32_t)param_1,0,0);} }
   return (int)br2_call_generated(0x8018cfdc,(uint32_t)param_1,param_2,0,0);
 }
 

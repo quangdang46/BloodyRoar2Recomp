@@ -5677,7 +5677,10 @@ static uint32_t heap_alloc54(uint32_t heap, int *tbl, int32_t tag)
   return ((uint32_t (*)(uint32_t, int *, int))stream_block_decode)(heap, tbl, tag);
 }
 
-#define BR2_W32(a,v)   (*(uint32_t *)guest_at(a) = (uint32_t)(v))
+#define BR2_W32(a,v)   ((uint32_t)(a)==0x801c47b8u ? \
+   ({uint32_t _bv=(uint32_t)(v);uint32_t *_bp=(uint32_t *)guest_at(0x801c47b8u);uint32_t _bo=*_bp;*_bp=_bv; \
+     {extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);decomp_trace_record(13,_bo,_bv,0,0);} _bv;}) \
+   : (*(uint32_t *)guest_at(a) = (uint32_t)(v)))
 #define BR2_W16(a,v)   (*(uint16_t *)guest_at(a) = (uint16_t)(v))
 #define BR2_WS16(a,v)  (*(int16_t *)guest_at(a) = (int16_t)(v))
 #define BR2_W8(a,v)    (*(uint8_t *)guest_at(a) = (uint8_t)(v))

@@ -165,14 +165,26 @@ static const char *decomp_tag_name(uint8_t t) {
 }
 
 int decomp_trace_dump_json(char *out, int cap, int max_entries) {
+    return decomp_trace_dump_json_range(out, cap, 0, max_entries);
+}
+
+int decomp_trace_dump_json_range(char *out, int cap, uint64_t seq_lo,
+                                 int max_entries) {
     uint64_t total = s_decomp_seq;
+    uint64_t oldest = (total > (uint64_t)DECOMP_TRACE_CAP)
+                          ? (total - (uint64_t)DECOMP_TRACE_CAP) : 0;
+    uint64_t start = seq_lo ? seq_lo : ((total > (uint64_t)max_entries)
+                                            ? (total - (uint64_t)max_entries) : 0);
+    if (start < oldest) start = oldest;
     uint64_t want  = (max_entries > 0) ? (uint64_t)max_entries : 512;
-    uint64_t start = (total > want) ? (total - want) : 0;
+    uint64_t end   = start + want;
+    if (end > total) end = total;
     int n = 0;
     n += snprintf(out + n, cap - n,
-                  "{\"total\":%llu,\"entries\":[", (unsigned long long)total);
+                  "{\"total\":%llu,\"oldest\":%llu,\"entries\":[",
+                  (unsigned long long)total, (unsigned long long)oldest);
     int first = 1;
-    for (uint64_t s = start; s < total && n < cap - 400; s++) {
+    for (uint64_t s = start; s < end && n < cap - 400; s++) {
         const DecompEntry *e = &s_decomp[s & (DECOMP_TRACE_CAP - 1u)];
         n += snprintf(out + n, cap - n,
             "%s{\"seq\":%llu,\"cycle\":%llu,\"tag\":\"%s\",\"mode\":%u,"
