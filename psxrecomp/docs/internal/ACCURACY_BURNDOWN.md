@@ -1004,3 +1004,49 @@ SEPARATE confirmed issue (still open): pad producer dead — records
 records and this throttle field live in the game's async I/O / channel-driver
 layer (0x801ff080 channel blocks, fn-table 0x801c4780) that is not being
 serviced while blocking coroutines hold the frame loop.
+
+SESSION 16p — 0x801F68D8 corruption ROOT-CAUSE CLASS NARROWED to DMA/asset
+overwrite of the globals region.
+
+  * Live memory dump @0x801F6800..0x801F6900: the field sits inside a DENSE
+    quantized engine table (repeated 0x10/0x11/0x12/0xf1/0xef byte patterns —
+    LUT/GTE-style data), NOT clean counter globals. Neighbours confirmed:
+    0x801F68DC=0xf1111101, 0x801F68E0=0x4200022f (PRNG seed), 0x801F68F0=
+    console_emit line buffer, gfx.c uses 0x801f6910/0x801f6d10 as indexed
+    transform-table bases. The whole 0x801f68xx-0x801f6dxx span is one
+    engine-data cluster.
+  * gwatch on 0x801F68D8 caught a LIVE corrupt jump 0x18 -> 0x1221ffd4. The
+    2048-entry ring held ONLY cd_file_load_sm CPU stores (0x8018D064 init,
+    0x8018D0A0 decrement) — every CPU store to the field writes small values
+    (3/0/decrement). No CPU store wrote the huge value => external writer.
+  * gwatch header counters: oor=254,063,987 / dropped=42,161,719 — the whole
+    4KB page phys 0x1F6000 is a CONTINUOUSLY hot write target (a DMA streams
+    through it). dma.madr in entries marched 0x1F6144->0x1F6430 climbing
+    toward phys 0x1F68D8. dma.init_pc=0x80192EBC (GPU-OT DMA setup fn
+    0x80192E78). The corrupting write is a DMA/host-alias write that either
+    bypasses the mprotect page or was evicted by the ~5000/sec decrement flood.
+  * SMOKING GUN — heapB top @0x801e3cfc reads 0x0df0fd1c (INVALID; heapA top
+    @0x801c47b8 = 0x801c90b8 valid KSEG0). The entire 0x801e3cxx region reads
+    as the SAME quantized table bytes (0x1f2d21f2, 0xd32f3e10, ...). So
+    0x801e3cfc is not a heap pointer at all — it sits INSIDE an asset/table
+    buffer that a DMA has filled. I.e. large BSS/globals spans are being
+    overwritten by loaded asset data.
+
+ROOT-CAUSE MODEL (high confidence): a file/asset CD-DMA (or bulk table fill)
+has a destination that lands in the 0x801Exxxx/0x801F6xxx globals region
+instead of its intended heap/scratch buffer — overwriting heap tops, the CD
+throttle counter, PRNG seed neighbours, etc. This is the same host-pointer /
+guest-address mis-resolution class as the OT-nextlink (40e9bbf) and
+heap-cursor (7394315) fixes: a buffer guest-address is computed wrong (host
+ptr masked/truncated, or guest_of on a non-RAM pointer), so DMA writes asset
+bytes over live globals. The throttle counter is just the most visible victim
+because cd_file_load_sm busy-waits on it.
+
+NEXT (concrete): find the DMA destination / heap-alloc that produces a
+0x801e3cxx-0x801f6xxx write. Candidates: (a) heap_alloc54 / heap top
+0x801e3cfc returning a wild guest addr; (b) a cd_read_setup dest param
+(DAT_801bcb84) computed from a bad extent/host ptr; (c) the engine LUT/table
+load whose fixed dest overlaps globals. Instrument dma.c write path (or
+psx_write_word) to log any write landing in [0x801e0000,0x801f8000) with the
+channel + initiator PC — that names the exact transfer. Then fix the
+destination computation in the faithful core (NOT a counter reset).
