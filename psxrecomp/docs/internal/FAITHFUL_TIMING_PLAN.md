@@ -5568,3 +5568,26 @@ length return.
   offset-table base MB32(0x801c47b8)=0x80034298 held a valid table at the
   L_state10 instant (memory is transient post-corruption). The pad-producer
   issue remains a parallel open thread.
+
+## Session 15z-addendum — decode output overlaps compressed-source region (self-corruption)
+
+- DECOMP_TRACE_CAP 16K->1M + tag14 offset_table_lookup(a0,n,ret) captured the
+  FULL 491-entry pump history. PROOF: zero tag14 records -> clean
+  offset_table_lookup is NEVER called this path; the +1.64MB cursor write is
+  NOT the offset-table set (earlier lead corrected).
+- _DAT_801c47b8 is purely the heap/decode OUTPUT cursor (+= decode return).
+  File table decoded: {extent_ptr@0x801b5b94+id*8, sector_count}; file 0x88
+  =99 sectors=0x31800 bytes, safe cursor bound =0x801AE800 (globals@0x801E0000).
+  Ours reaches 0x801C90B8 -> over by ~120KB -> file 0x88 DMA writes
+  0x801C90B8->0x801FA8B8 covering _DAT_801e3cfc + 0x801F68D8.
+- NEW MECHANISM: decode dst (output) climbs 0x800F0258->0x801C8F0C->0x801C90B8
+  while decode src (compressed blocks) sit at 0x801C495C->0x801CCExx in the
+  SAME 0x801Cxxxx file-data region. LZSS output outgrows input, so the output
+  cursor catches up and can overwrite not-yet-decoded compressed blocks ->
+  those decode to garbage -> even larger returns -> runaway. Root is still
+  the ~120KB heap over-production; the overlap is the corruption amplifier.
+- Remaining suspects for the over-produce: save.c st10 `cursor=head+*head`
+  size-skip trusting file-0x10's first u32; terrain_packet_gen/heap emit
+  absolute returns; OR a decode reading a wrong tag-table entry (tag table
+  @0x801c47c0 overwritten by file 0xa0/0xb0 loads). CD data integrity vs disc
+  still unverified (extent->LBA decode pending).
