@@ -1220,3 +1220,49 @@ NEXT: instrument _DAT_801c47b8 advancement (clean-C guest_at writes bypass
 wtrace) OR audit generated cd_file_load_sm's dest/size computation; compare
 per-file load dest+size sequence ours vs oracle cd_read_log (same JSON cmd
 works on :4371) to find the first divergent load.
+
+================================================================
+SESSION 17 — frame-1546 WEDGE ROOT-CAUSED + FIXED (commit 4711294)
+================================================================
+SYMPTOM: clean-enabled build froze deterministically at framecnt=1546
+(0x60A) during the file-0x89 menu load. clean_calls, event_ring, and
+framecnt all froze together; gen-only (CLEAN_MIN=MAX=0xffffffff) sailed
+past to frame ~542K reading lba ~122K — a clean-only divergence.
+
+ROOT CAUSE (instruction-log + register proof): the CPU livelocked in the
+low-RAM kernel IRQ trampoline `0xB0: li t0,0x2AA0; jr t0` -> `0x2AA0`,
+re-entered from cd_intc_dispatch tail (ra=0x8019AA9C) and cd_read_step_cb
+(ra=0x80198824). i_stat=0x1 (VBlank) pending forever, IEc=0. NOT a CD-data
+drain bug — ch3 DMA was complete; it was an IRQ-dispatch storm.
+
+MECHANISM: bios_table_tramp()/bios_kobj_tramp()/bios_tramp_a044() are
+()-signature stubs -> br2_bios_tramp() reads LIVE cpu->gpr[4..7]+gpr[31]
+to build svc_call. Generated callers set a0-a3 explicitly before `jal`
+(e.g. cd_mode_reset_seq does `move a0,zero` @0x8019E3B8). Clean C callers
+invoke the stub bare -> cpu->gpr holds the CALLER's stale args ->
+svc_call(B0/0x5b, C0/0x0a, A0/0x44) gets wrong args -> kernel IRQ/event
+attributes corrupt -> IRQ misroute -> the 0xB0->0x2AA0 storm.
+
+FIX: delegated the 8 functions that call the gpr-forwarding trampolines
+to generated MIPS (internal jal then runs with correct live gpr):
+  cd_read_param_set, cd_channel_main_init, cd_mode_reset_seq,
+  cd_mode_apply_seq, cd_chan_init_trio, cd_subsys_init_full,
+  cd_chan_slot_set, cd_channel_init  (+ IRQ-path helpers cd_intc_busy_read,
+  cd_cb8_dispatch, cd_init_done_cb, op_flag_fn_check, gpu_mode_regs_apply).
+Verified vs generated disasm. Result: framecnt 9331->123K+ advancing,
+clean_calls ~113M, no storm, valid memory cards, pad_buttons reach SIO.
+
+NOTE: explicit-arg clean reconstruction is possible (a0/a1 recovered per
+site; a2/a3 carry over from callee exit-gpr) but br2_call_generated on the
+WHOLE function is strictly more faithful (correct ra/nested-call handling).
+Kept as bridge; convert to readable C only when RE'ing each function's
+full logic (these are thin BIOS-call sequences — real clean source needs
+the svc semantics, a separate effort).
+
+OPEN (unchanged from 16q): the _DAT_801c47b8/_DAT_801e3cfc heap/stream
+cursor over-advance into globals during heavy cd_file_pump remains the
+documented gameplay blocker. On the post-fix instance cursors read SANE
+(0x80010000 / 0x8003f5dc) — corruption triggers only under heavy pumping
+(scene transitions / attract demos), which headless menu-idle hasn't hit.
+Headless display is disabled so visual fight-confirmation isn't possible
+in this env; game executes all systems (IRQ/CD/GPU/kernel/pad/memcard).
