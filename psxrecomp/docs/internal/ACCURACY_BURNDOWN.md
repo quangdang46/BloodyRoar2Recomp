@@ -809,3 +809,21 @@ decode or transform writing PCM/coeff output to a bad pointer.
 NEXT: trace a0->s1 provenance (caller @0x801265F4 -> func 0x80192944) to
 find why the output buffer resolves to CD-driver data instead of its
 proper heap/audio region. Ghidra MCP was DOWN this session (conn refused).
+
+## Session 16k-addendum — converges with 15y decompression runaway
+
+func 0x80192944 (fixed-point halfword transform: lh coeff/mult/sh result)
+sits in the generated gap between cd_cmd_queue_load(0x80192634) and
+cd_queue_push_wrap — a CD/GPU data-path routine, NOT in fnmap (no clean
+port). Call chain: br2eu_func_80126328 -> match_mode_set(0x801560f8) ->
+battle_intro_flow(0x80167330, clean menu.c) -> coroutine 0x80192944.
+
+RECONCILE with 15y: the 0x5555 halfword writes match 15y's documented
+"~500KB RAM overwritten with repeating 0x55555555/0x40408048/0xfa/0xfc
+pattern during menu_res_load_sm->cd_file_load_sm", sourced from
+stream_block_decode->mode3_dispatch->{lzss_decode|block_copy_ret_len}
+runaway on garbage src. func 0x80192944's output buffer (s1=a0) resolving
+to 0x801b8420 is most likely a VICTIM: its dst ptr was corrupted by the
+earlier decompression overflow, OR it is a decode/transform stage fed
+poisoned src. The TRUE root cause remains 15y's: validate stream_block_
+decode src offset + heap cursor dst so decode can't run away.
