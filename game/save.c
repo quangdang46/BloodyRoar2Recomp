@@ -5606,10 +5606,15 @@ __attribute__((weak))
 #endif
 int hud_text_a() { return 0; }
 extern int32_t attr_records_scan(uint32_t,uint32_t);
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int ret_zero_d() { return 0; }
+/* ret_zero_d is guest 0x8016DADC: the generated body writes the save-record
+ * header at a3 and returns the advanced heap-A cursor that the caller stores
+ * to 0x801c47b8. It reads only a0-a3, so the fifth argument is unused. */
+uint32_t ret_zero_d(uint32_t a0, uint32_t a1, uint32_t a2,
+                    uint32_t a3, uint32_t a4)
+{
+    (void)a4;
+    return br2_call_generated(0x8016dadcu, a0, a1, a2, a3);
+}
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif

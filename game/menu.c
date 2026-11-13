@@ -2236,8 +2236,6 @@ void cd_stream_mode_init(undefined4 param_1)
 undefined4 stream_block_decode(undefined4 param_1,int *param_2,int param_3)
 
 {
-  undefined4 uVar1;
-  
   if (param_3 < *param_2) {
     if (param_2[param_3 + 1] != -1) {
       /* param_2 is a host pointer into guest RAM (callers pass guest_at()).
@@ -2247,8 +2245,8 @@ undefined4 stream_block_decode(undefined4 param_1,int *param_2,int param_3)
        * returned a garbage length that corrupted the heap cursor
        * (_DAT_801e3cfc / _DAT_801c47b8) -> wrong CD dest -> DMA into .text.
        * guest_of() recovers the guest address faithfully. */
-      uVar1 = mode3_dispatch(param_1,guest_of(param_2) + (uint32_t)param_2[param_3 + 1] + (uint32_t)(*param_2 + 1) * 4u);
-      return uVar1;
+      uint32_t srcg = guest_of(param_2) + (uint32_t)param_2[param_3 + 1] + (uint32_t)(*param_2 + 1) * 4u;
+      return mode3_dispatch(param_1,srcg);
     }
   }
   return 0;
@@ -13409,11 +13407,16 @@ void heap_ptr_fixup(uint32_t param_1)
   }
 }
 
+extern uint32_t br2_guest_frame(uint32_t);
+extern void br2_guest_frame_free(void);
 /* heap_record_emit @0x8016cc5c — serialize one heap record: for s2 slots
  * (arg5, or remaining count when 0) at a0+0x10+a3*4, call
  * heap_serialize(slot, a2, dst=a1, fp, &sp20, s7, s6); when it produced
  * output (sp20 != 0) emit a 0x28 record at a1: +0=0, +4..+0xe u16
- * zeros, +0x20=src, +0x24=size, and (*s5)++. Returns last a2. */
+ * zeros, +0x20=src, +0x24=size, and (*s5)++. Returns last a2.
+ * heap_serialize's arg5 is a guest out-count pointer (it MW32s the count),
+ * so stage it in a real guest frame — a host &sp20 would be written through
+ * guest_at() to a bogus address and never reach sp20. */
 uint32_t heap_record_emit(uint32_t param_1,uint32_t param_2,uint32_t param_3,
                       uint32_t param_4,uint32_t param_5,uint32_t *param_6,
                       uint32_t param_7,uint32_t param_8,uint32_t param_9)
@@ -13426,7 +13429,7 @@ uint32_t heap_record_emit(uint32_t param_1,uint32_t param_2,uint32_t param_3,
   uint32_t fp = param_7;
   uint32_t s7 = param_8;
   uint32_t s6 = param_9;
-  uint32_t s3, sp20 = 0;
+  uint32_t s3, sp20 = 0, fr;
   uint32_t v1;
   *s5 = 0;
   v1 = MB32(param_1 + 0xcu);
@@ -13436,12 +13439,13 @@ uint32_t heap_record_emit(uint32_t param_1,uint32_t param_2,uint32_t param_3,
     s2 = (int32_t)(v1 - a3);
     if (s2 <= 0) return s1;
   }
+  fr = br2_guest_frame(0x10);
   do {
     uint32_t a0 = MB32(s3);
     if (a0 != 0) {
       uint32_t old = s1;
-      s1 = (uint32_t)heap_serialize(a0, s1, s4, fp,
-                                  (uint32_t)(uintptr_t)&sp20, s7, s6);
+      s1 = (uint32_t)heap_serialize(a0, s1, s4, fp, fr, s7, s6);
+      sp20 = MB32(fr);
       if (sp20 != 0) {
         uint32_t s0 = s4 + 0x24u;
         MW32(s4 + 0x00u, 0);
@@ -13457,6 +13461,7 @@ uint32_t heap_record_emit(uint32_t param_1,uint32_t param_2,uint32_t param_3,
     s3 += 4u;
     s2--;
   } while (s2 > 0);
+  br2_guest_frame_free();
   return s1;
 }
 
