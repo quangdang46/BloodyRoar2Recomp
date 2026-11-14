@@ -2261,3 +2261,31 @@ counter) advanced only via CD IRQ -> cd_cb8_dispatch. When pending IRQs
 stall (i_stat frozen 0x05), the counter freezes -> 0xf1 never exits.
 Same deferred-IRQ/coroutine family as the frame-348 fix; reproduce by
 letting attract run ~70k frames then inspect i_stat/CD coroutine.
+
+## N+17b — byte0 0x80 bit = fighter_script_fsm DISABLE flag (P2 frozen)
+
+fighter_state_tick (battle.c:3212, guest 0x8017fb34) reads the fighter
+ctrl block as uint32*: param_1[0] = bytes 0-3. It tests:
+  (*param_1 & 0x80)   -> byte0 bit7
+  (*param_1 & 0x8080) -> byte0 bit7 | byte1 bit7
+When (*param_1 & 0x8080) != 0 it SKIPS fighter_script_fsm() — the per-
+frame action/state machine that advances the fighter's current action.
+
+Live P2 ctrl @0x1f8001f0: byte0=0x81 (0x01|0x80), byte1=0x12.
+=> byte0 bit7 set => P2's fighter_script_fsm is DISABLED => P2 cannot
+   act/animate -> stays in a non-idle state -> phase-2 check (byte0!=1)
+   exits the round on frame 1 -> no fight -> flat screen.
+
+byte1 is the slot marker (P1=0x11, P2=0x12); byte2=player index
+(P1=0,P2=1); byte3=char/form id (P1=5,P2=8). P1=0x01 runs the FSM.
+
+action_enter (action.c) sets GS8(ctrl,0)=1 for BOTH cls==1 and the
+else-branch, so byte0=1 is the normal post-entry value; the 0x80 bit is
+OR'd on afterward by whatever marks the slot "externally driven /
+non-script". NEXT: find that writer. Prime suspects: the attract/demo
+input-replay path (CPU/demo fighters may legitimately run with the FSM
+disabled and be fed recorded actions), a fighter KO/down/dead-state
+setter, or fighter_record_apply marking an unloadable char. If attract
+is SUPPOSED to show byte0=1 for both (real CPU-vs-CPU fight), then the
+bug is that P2's FSM-disable is being set erroneously during spawn —
+check whether P2's .ANI/.ACT stream or AI/input record loaded.
