@@ -351,6 +351,7 @@ extern void trap(int);
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
 extern uint32_t guest_sp(void);
+extern void *fn_lookup(uint32_t addr);
 int mc_init_reset();
 int cd_mode_flag_set();
 int cd_init_session();
@@ -1987,7 +1988,10 @@ void menu_stepper_redraw(void *param_1)
   uint8_t *p = (uint8_t *)param_1;
   void (*cb)(void *,uint32_t);
   uint32_t i;
-  __builtin_memcpy(&cb,p + 0xc,sizeof cb);
+  /* p+0xc is a u32 GUEST code address (same field menu_stepper_state_advance
+   * resolves via fn_lookup) — not a host pointer. Resolve it the same way. */
+  cb = (void (*)(void *,uint32_t))fn_lookup(*(uint32_t *)(p + 0xc));
+  if (cb == NULL) return;
   cb(param_1,0x100);
   i = 1;
   for (;;) {
