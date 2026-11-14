@@ -5839,21 +5839,37 @@ thread's timeslice.
   (guest[0]==0) = fixed-point infinite loop. Fix: also break on `blk==0` (a
   null next-ptr is never a valid heap block; blocks live at 0x800Fxxxx+).
   heap_serialize now COMPLETES; framecnt advanced 1461->1547.
-- **NEXT crash (post-fix): `unknown dispatch addr=0x000027AC phys=0x27AC
-  ra=0x8019A53C a0=0x60C a1=0x8000`** during psx_check_interrupts in
-  br2eu_func_8019A5D8 (CD/IRQ path) -> psx_fatal_halt. phys 0x27AC is the
-  game's IRQ ExceptionHandler trampoline (Session 16: exception vector
-  0x80000080 does `lui k0,0; addiu k0,k0,0x27ac; jr k0`). VERIFIED the region
-  0x1d00-0x2800 now holds VALID MIPS (lui/lw/bne at 0x1d00/0x2400/0x2700) —
-  NOT serialize corruption. So this is a DISPATCH-COVERAGE gap: real code
-  exists at phys 0x27AC but psx_unknown_dispatch has no handler for that low
-  KUSEG address. The dirty-RAM interp should interpret it (Session 16 noted
-  IRQs go to "game kernel handler 0x27ac interpreted dirty-RAM") — the gap is
-  in dispatch ROUTING for this specific low address, likely reached via the
-  exception-vector jr path that bypasses the normal dirty-RAM entry. NEXT:
-  find why addr=0x27AC reaches psx_unknown_dispatch instead of dirty-RAM
-  interp — check the dispatch routing for KUSEG/low-RAM exception targets and
-  whether 0x27AC needs seeding/registration as an executable region.
+- **SESSION 18 — 0x27AC is CORRUPTION, not a dispatch gap (gwatch caught writer):**
+  Armed `gwatch` on phys 0x27AC before relaunch; reproduced the crash
+  deterministically. Watchpoint entries (frame 1717) show the writer:
+  `store_pc=0x8016A8D4` inside generated `br2eu_func_8016A82C` =
+  `heap_serialize_tag_01000000`. It is a struct copy writing heap pointers
+  (0x800507xx) to dest `0x800027B7` = phys 0x27B7 — the IRQ trampoline.
+  `dirty_ram_word_looks_decodable(0x27AC)=0` confirms the bytes are non-code.
+  Oracle (SCPH1001) at phys 0x27AC holds real MIPS (`0x03e00008`=jr ra,
+  `0x27bdffe0`=addiu sp,-0x20 prologue) — ours differs => genuine corruption.
+- **ROOT CAUSE (unrelocated heap-ctx pointers):** decomp_trace (tags 27/28)
+  shows the serialize ctx struct at valid heap `ctx=0x800F061C` but
+  `ctx+0x14=0x80001D6F` / `0x80001D1D` and `ctx+0x10=0x80001AD9` — LOW
+  unrelocated KSEG0 pointers into kernel space (phys 0x1Dxx). heap_serialize
+  reads record data from kernel RAM -> garbage tags/offsets -> the heap-A
+  output cursor `cur` (param_2=s1=g32(0x801c47b8)) runs away to 0x800027B7 ->
+  tag_01000000 writes serialized output over the IRQ trampoline -> next IRQ
+  dispatch hits non-code -> unknown dispatch 0x27AC. This is the SAME
+  low-RAM-corruption class as the original frame-1717 bug; heap_ptr_fixup
+  (70076c8) fixed ctx+0x14 for ONE block shape but ctx+0x10/+0x14 of these
+  serialize ctx structs are still unrelocated.
+- **WHY still unrelocated:** clean heap_ptr_fixup phase-2 inner walk only
+  relocates a1+0/+4/+8 per nested node — it does NOT cover +0x10/+0x14. The
+  generated br2eu_func_8016CB20 is 316 bytes/20 blocks (~1070 lines C) and
+  DOES contain the 0x8000/0x7fff mask+and+sll relocation idiom; my clean port
+  is a simplification that likely dropped coverage of the +0x10/+0x14 ctx
+  fields (or they are relocated by a different pass — decompressor/loader —
+  that mistranslated). NEXT: diff clean heap_ptr_fixup vs generated
+  br2eu_func_8016CB20 field-by-field to find which store offsets the port
+  dropped; the faithful fix is to restore that relocation coverage, NOT to
+  mask the crash. Values look like `0x80000000|offset` needing `heap_base+off`
+  style relocation — confirm base against generated before coding.
 - **NEXT (concrete, superseded by above):** capture the looping blk sequence — add a bounded-iter +
   blk dump to heap_serialize's `for(;;)` (or read s_decomp tag22 hser_in entries
   via lldb for entry blk, then walk MB32(blk) in g_psx_ram to find the cycle).
