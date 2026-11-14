@@ -23,6 +23,7 @@ extern uint32_t guest_of(const void *p);
 extern uint32_t br2_gaddr(const void *p);
 extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern uint32_t guest_sp(void);
+extern uint32_t guest_gp(void);
 extern void    *fn_lookup(uint32_t addr);
 #define CONCAT22(hi,lo) (((undefined4)(uint16_t)(hi) << 16) | (uint16_t)(lo))
 #define CONCAT11(hi,lo) (((uint16_t)(uint8_t)(hi) << 8) | (uint8_t)(lo))
@@ -8074,7 +8075,7 @@ void task_pools_tick(int param_1)
   int *piVar3;
   int iVar4;
   int *piVar5;
-  int unaff_gp;
+  int unaff_gp = (int)guest_gp();
   iVar4 = 0;
   iVar1 = param_1 * 0x48;
   piVar5 = (int *)guest_at((uint32_t)(uintptr_t)((iVar1 + -0x7fe00c68)));
@@ -10750,7 +10751,7 @@ void task_slot_step(void)
 {
   int iVar1;
   int *piVar2;
-  int unaff_gp;
+  int unaff_gp = (int)guest_gp();
   iVar1 = *(int *)guest_at((uint32_t)(uintptr_t)((unaff_gp + 0x1c) ))* 0x48;
   piVar2 = (int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar1 + -0x7fe00c28))));
   if ((char)piVar2[6] == '\0') {
@@ -10778,7 +10779,7 @@ void task_slot_fns_run(int param_1)
 {
   int iVar1;
   int iVar2;
-  int unaff_gp;
+  int unaff_gp = (int)guest_gp();
   int local_10 [2];
   iVar2 = 0;
   local_10[0] = param_1 * 0x48 + -0x7fe00c68;
@@ -10899,7 +10900,7 @@ void task_pool_free(int param_1)
 
 void gp_slot48_set(undefined4 param_1)
 {
-  int unaff_gp;
+  int unaff_gp = (int)guest_gp();
   *(undefined4 *)guest_at((uint32_t)(uintptr_t)((unaff_gp + 0x48) ))= param_1;
   return;
 
@@ -10907,7 +10908,7 @@ void gp_slot48_set(undefined4 param_1)
 
 void gp_slot24_set(undefined4 param_1)
 {
-  int unaff_gp;
+  int unaff_gp = (int)guest_gp();
   *(undefined4 *)guest_at((uint32_t)(uintptr_t)((unaff_gp + 0x24) ))= param_1;
   return;
 
@@ -11554,7 +11555,7 @@ int tween_seq_alloc(int param_1,undefined2 param_2,undefined4 param_3,undefined4
 
 void gte_matrix_base_set(undefined4 param_1,undefined4 param_2)
 {
-  int unaff_gp;
+  int unaff_gp = (int)guest_gp();
   DAT_801be838 = param_1;
   *(undefined4 *)guest_at((uint32_t)(uintptr_t)((unaff_gp + 0x34) ))= param_2;
   return;
@@ -13956,7 +13957,7 @@ void tween_seq_step(short *param_1)
   uint uVar4;
   byte bVar5;
   int iVar6;
-  int unaff_gp;
+  int unaff_gp = (int)guest_gp();
   if ((((*(int *)guest_at((uint32_t)(uintptr_t)((unaff_gp + 0x44) ))!= 1) && (param_1 != (short *)0x0)) && (-1 < param_1[0x22])) &&
      (param_1[0x22] < 2)) {
     if (param_1[5] < 0) {
@@ -14314,7 +14315,7 @@ void tween_apply(short *param_1,int param_2,int param_3)
   uint in_t4;
   int in_t6;
   short sVar11;
-  int unaff_gp;
+  int unaff_gp = (int)guest_gp();
   int local_18 [4];
   if (param_1 == (short *)0x0) {
     return;
@@ -14455,7 +14456,7 @@ void rect_prim_tick(uint *param_1)
 {
   uint uVar1;
   uint *puVar2;
-  int unaff_gp;
+  int unaff_gp = (int)guest_gp();
   uVar1 = param_1[7];
   param_1[7] = uVar1 - 1;
   if ((int)(uVar1 - 1) < 0) {
@@ -14668,7 +14669,7 @@ int fixed_point_divide(int param_1,int param_2)
    then lhu(+0x2c)->+0xa. */
 void keyframe_cursor_search(uint *param_1)
 {
-  int unaff_gp;
+  int unaff_gp = (int)guest_gp();
   int iVar1;
   int iVar2;
   int iVar3;

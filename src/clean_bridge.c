@@ -158,6 +158,14 @@ static CPUState *g_clean_cpu;
 
 void clean_bridge_set_cpu(CPUState *cpu) { g_clean_cpu = cpu; }
 
+/* guest_gp — current guest $gp (r28) small-data base.  Ghidra emits
+ * `unaff_gp` locals for gp-relative (offset($gp)) accesses; they must
+ * resolve to the live register value, not an uninitialized local. */
+uint32_t guest_gp(void)
+{
+    return g_clean_cpu ? g_clean_cpu->gpr[28] : 0x801beedc;
+}
+
 /* br2_guest_ra_set — publish the $ra the equivalent guest code would hold
  * at this point.  BIOS services that validate their caller (OpenBIOS
  * kernel-call patch check, e.g. B0/0x57) hash/inspect the code bytes at
