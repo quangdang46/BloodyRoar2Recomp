@@ -6709,7 +6709,9 @@ int fx_record_alloc(undefined4 param_1,int param_2,uint param_3,undefined4 param
       *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x14) ))= param_4;
       *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 8) ))= param_1;
       *(int *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0xc) ))= iVar2 + 0x1c;
-      fx_record_init((undefined4 *)(uintptr_t)iVar2);
+      /* iVar2 is a guest address; fx_record_init dereferences param_1 as a
+       * host pointer, so resolve it (a raw cast sign-extends KSEG0 addrs). */
+      fx_record_init((undefined4 *)guest_at((uint32_t)iVar2));
       iVar1 = *(int *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0xc)));
     }
   }
