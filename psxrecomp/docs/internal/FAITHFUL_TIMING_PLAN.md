@@ -5940,3 +5940,36 @@ clean-source debt; fix per-site as they crash or via dedicated RE pass.
 
 ALSO this session: heap_serialize ctx I/O-base relocation (72dd5d7) got past
 frame-1717 0x27AC; clear_f4ee8_u16s guest-addr fix (1fb3cf8).
+
+## Session 20 — battle frame pipeline unblocked; skeleton-data corruption next
+
+RUNTIME PATH: `--no-launcher --headless`-style runs need the windowed
+frontend; plain `--headless` hits a separate early `0xB0` BIOS-dispatch
+fail-fast (unrelated). Reliable iteration = `--no-launcher` windowed +
+lldb `process handle SIGSEGV` (runtime's own crash handler does NOT fire
+on these host SIGSEGVs — silent exit 139, no psx_last_run_report).
+
+FIXES (all committed+pushed to mine/quangdang46):
+- 0956297 battle.c: ~70 `*(type**)guest_at` sites read 8-byte host ptrs
+  from 4-byte guest cells -> `(type*)guest_at(*(u32*)guest_at(...))`;
+  line 6449 write-through -> store guest_of(param_1) as u32.
+- caad28c guest-address-as-host-pointer in battle frame path:
+  fighter_state_tick -> pad_edge_scan/cmd_input_parse/action_from_input
+  now pass br2_gaddr(param_1); battle_frame_tick -> fighter_frame param_2
+  now guest_at(param_1); fighter_anim_advance -> keyframe_advance now
+  guest_at(param_1),guest_at(param_2) (param_2 was dropped).
+
+VERIFIED PROGRESSION (lldb backtraces, each deeper):
+  cmd_input_parse -> fighter_frame -> keyframe_advance -> rtps_point_xform
+  -> node_xform_apply -> hitbox_corners_xform -> fighter_pair_update ->
+  battle_frame_tick -> battle_intro_flow. The whole input/action/anim
+  pipeline now executes inside a real battle frame.
+
+CURRENT BLOCKER: node_xform_apply(param_1=1,param_2=0x20) — skeleton/pose
+node tree is corrupt; hitbox_corners_xform reads fighter+0x20 (skeleton
+root ptr) = 0. Same upstream corruption class as the part_link pose-chain
+walk (action.c diagnostic cap still in place, tags 40-42). Root cause is
+in fighter/pose init record setup — the systematic guest-vs-host
+mistranslation debt in battle.c/resolve.c/ev.c/menu.c, NOT another
+isolated cast. menu.c also has a stale 1-arg keyframe_advance(uint32_t)
+prototype vs the real (byte*,byte*) def.
