@@ -9029,14 +9029,14 @@ void quad_fx_update(int param_1)
       if (sVar1 != 0) {
         return;
       }
-      gte_rtps_xform3((undefined4 *)(uintptr_t)(param_1 + 0x10),(ushort *)(uintptr_t)(param_1 + 0x30),(uint *)(uintptr_t)&DAT_1f8003e0);
+      gte_rtps_xform3((undefined4 *)guest_at((uint32_t)(param_1 + 0x10)),(ushort *)guest_at((uint32_t)(param_1 + 0x30)),(uint *)(uintptr_t)&DAT_1f8003e0);
       puVar3 = (undefined1 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x50)));
       uVar4 = *(undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((param_1 + 4))));
       puVar5 = &DAT_1f8003e0;
       goto LAB_801417f8;
     }
     if (sVar1 == 2) {
-      gte_rtps_xform3((undefined4 *)(uintptr_t)&DAT_801f0760,(ushort *)(uintptr_t)(param_1 + 0x30),(uint *)(uintptr_t)&DAT_1f8003e0);
+      gte_rtps_xform3((undefined4 *)(uintptr_t)&DAT_801f0760,(ushort *)guest_at((uint32_t)(param_1 + 0x30)),(uint *)(uintptr_t)&DAT_1f8003e0);
       puVar3 = &DAT_1f8003e0;
       uVar4 = *(undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((param_1 + 4))));
       puVar5 = (undefined1 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x50)));
@@ -9046,11 +9046,11 @@ void quad_fx_update(int param_1)
       return;
     }
   }
-  gte_rtps_xform3((undefined4 *)(uintptr_t)(param_1 + 0x10),(ushort *)(uintptr_t)(param_1 + 0x30),(uint *)(uintptr_t)&DAT_1f8003e0);
+  gte_rtps_xform3((undefined4 *)guest_at((uint32_t)(param_1 + 0x10)),(ushort *)guest_at((uint32_t)(param_1 + 0x30)),(uint *)(uintptr_t)&DAT_1f8003e0);
   puVar3 = (undefined1 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x50)));
   uVar4 = *(undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((param_1 + 4))));
 LAB_801417f8:
-  gte_rtps_xform3((undefined4 *)(uintptr_t)puVar3,(ushort *)(uintptr_t)puVar5,(uint *)(uintptr_t)uVar4);
+  gte_rtps_xform3((undefined4 *)(uintptr_t)puVar3,(ushort *)(uintptr_t)puVar5,(uint *)guest_at((uint32_t)uVar4));
   return;
 
 }
@@ -12973,10 +12973,10 @@ void radial_glow_draw(int *param_1)
       do {
         if (*piVar11 != 0) {
           if (iVar5 == 0) {
-            gte_rtps_xform3((undefined4 *)(uintptr_t)&DAT_801f0760,(ushort *)(uintptr_t)&DAT_1f8003e0,(uint *)(uintptr_t)*(undefined4 *)guest_at((uint32_t)(uintptr_t)(*param_1)));
+            gte_rtps_xform3((undefined4 *)(uintptr_t)&DAT_801f0760,(ushort *)(uintptr_t)&DAT_1f8003e0,(uint *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)(*param_1))));
           }
           else if (iVar5 == 1) {
-            gte_rtps_xform3((undefined4 *)(param_1 + 5),(ushort *)(uintptr_t)&DAT_801f0760,(uint *)(uintptr_t)*(undefined4 *)guest_at((uint32_t)(uintptr_t)(param_1[1])));
+            gte_rtps_xform3((undefined4 *)(param_1 + 5),(ushort *)(uintptr_t)&DAT_801f0760,(uint *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)(param_1[1]))));
           }
           else {
             *(undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)(*piVar11 )))= _DAT_801f0760;
