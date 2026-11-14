@@ -7338,6 +7338,7 @@ __attribute__((weak))
 int ret_zero_f() { return 0; }
 
 extern void *fn_lookup(uint32_t);
+extern void task_invoke(uint32_t fn_guest, uint32_t arg_guest);
 extern uint32_t call_guest(uint32_t,uint32_t,uint32_t);
 extern int rotmat2_build();
 extern int rotmat_rtps_build();
@@ -8218,10 +8219,7 @@ void op_node_register(uint32_t a0)
   } else {
     uint32_t fp = *(uint32_t *)guest_at(a0 + 8);
     uint32_t arg = *(uint32_t *)guest_at(a0 + 0x10);
-    void *fn = fn_lookup(fp);
-    if (fn != (void *)0x0) {
-      ((void (*)(uint32_t))fn)(arg);
-    }
+    task_invoke(fp, arg);
   }
   return;
 }
@@ -8392,10 +8390,9 @@ static void walk_dispatch(uint8_t **a0,uint8_t *a1)
       } else {
         uint32_t fp_ = *(uint32_t *)(node_ + 8);
         uint32_t ar_ = *(uint32_t *)(node_ + 0x10);
-        void *fn_ = fn_lookup(fp_);
-        if (fn_ != (void *)0x0) {
-          ((void (*)(uint32_t))fn_)(ar_);
-        }
+        /* node->f8/f10 is the same fn_guest/arg_guest pair task_invoke
+         * dispatches — it applies the int-vs-pointer arg convention. */
+        task_invoke(fp_, ar_);
       }
     }
     if (nx_ == (uint8_t *)0x0) break;

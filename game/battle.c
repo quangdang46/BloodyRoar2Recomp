@@ -7980,7 +7980,7 @@ undefined4 * rotmat2_build(uint param_1,undefined4 *param_2)
  *    host pointer into the guest data area.
  * The guest-u32 list below must stay in sync with those ports; unknown
  * (unported) targets resolve to NULL via fn_lookup and are skipped. */
-static void task_invoke(uint32_t fn_guest, uint32_t arg_guest)
+void task_invoke(uint32_t fn_guest, uint32_t arg_guest)
 {
   void *fn = fn_lookup(fn_guest);
   if (fn == (void *)0x0) return;
