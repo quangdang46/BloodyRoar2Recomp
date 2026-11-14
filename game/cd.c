@@ -3027,75 +3027,15 @@ void cd_reg_stream_push(uint32_t a0,uint32_t a1)
  * Disasm 0x8019b944-0x8019bbc0. */
 uint32_t cd_reg_window_op(uint32_t a0,uint32_t a1,uint32_t a2)
 {
-  uint32_t b = CDREG32(0x801bdeb0);
-  uint32_t op = a0;
-  uint32_t tgt, v1;
-
-  if (op == 1) {
-    tgt = CDREG16(0x801bdec8);
-    CDREG32(0x801bdf00) = 0;
-    v1 = 0;
-    while (CDMMIO16(b,0xd3) != tgt) {              /* +0x1a6 */
-      v1++;
-      if (v1 >= 0xf01) return 0xfffffffe;
-    }
-    CDMMIO16_ST(b,0xd5,(uint16_t)((CDMMIO16(b,0xd5) & 0xffcf) | 0x20));
-    return 0;
-  }
-  if ((int32_t)op < 2) {
-    if (op != 0) return 0;                /* negative op */
-    tgt = CDREG16(0x801bdec8);
-    CDREG32(0x801bdf00) = a2;
-    v1 = 0;
-    while (CDMMIO16(b,0xd3) != tgt) {
-      v1++;
-      if (v1 >= 0xf01) return 0xfffffffe;
-    }
-    CDMMIO16_ST(b,0xd5,(uint16_t)(CDMMIO16(b,0xd5) | 0x30));  /* ori: no mask clear */
-    return 0;
-  }
-  if (op == 2) {
-    uint32_t sh = CDREG32(0x801bdee8);
-    uint32_t v = a1 >> (sh & 31);          /* srlv: sa&31 */
-    CDREG16(0x801bdec8) = (uint16_t)v;
-    CDMMIO16_ST(b,0xd3,(uint16_t)v);
-    return 0;
-  }
-  if (op == 3) {
-    /* 0x801bdf00 is the transfer-mode/state cell written by op0/op1 and the
-     * strobe path; the generated op3 reads it (lw -0x2100 -> 0x801BDF00) for
-     * the want-bits compare, the strobe select, and the ch4 cmd select.
-     * 0x801bdec0 is a different cell (DPCR pointer -> 0x1F8010F0); reading it
-     * here made want always 0x20 and forced the else-branch, so a zero-length
-     * transfer (a2==0) waited on the wrong SPU status bits and never kicked ch4. */
-    uint32_t cur = CDREG32(0x801bdf00);
-    uint32_t want = (cur == a2) ? 0x30 : 0x20;
-    v1 = 0;
-    while ((CDMMIO16(b,0xd5) & 0x30) != want) {
-      v1++;
-      if (v1 >= 0xf01) return 0xfffffffe;
-    }
-    if (CDREG32(0x801bdf00) == 1) cd_mmio_strobe_22(); else cd_mmio_strobe_20();
-    CDREG32(0x801bdf04) = a1;
-    {
-      uint32_t cnt = (a2 >> 6) + ((a2 & 0x3f) != 0 ? 1u : 0u);
-      CDREG32(0x801bdf08) = cnt;
-      /* 0x801bdeb4/8/c are pointer cells -> 0x1F8010C0/C4/C8, live DMA-channel
-       * registers. The guest_at double-deref lands in the flat 0x1f800xxx
-       * scratch mirror, so the DMA setup never reaches hardware (same
-       * mistranslation as the GPU pointer cells). br2_st32p derefs the cell
-       * then MMIO-writes, matching the generated lw-ptr;sw-val,0(ptr). */
-      br2_st32p(0x801bdeb4, a1);
-      br2_st32p(0x801bdeb8, (cnt << 16) | 0x10);
-      {
-        uint32_t cmd = 0x01000201;
-        if (CDREG32(0x801bdf00) == 1) cmd = 0x01000200;
-        br2_st32p(0x801bdebc, cmd);
-      }
-    }
-    return 0;
-  }
-  return 0;
+  /* The op0/op1/op3 bodies busy-wait on live CD drive status (CDMMIO16
+   * 0xd3/0xd5) with a 0xf01-iteration cap. br2_ld16 does NOT advance guest
+   * cycles, so the clean-C spin burns all 0xf01 polls in native time before
+   * the cycle-driven CD model can move the status bits — op3 can then return
+   * -2 without kicking the ch4 transfer its caller armed. Delegate the whole
+   * body to generated MIPS, whose per-instruction cycle accounting lets the CD
+   * model progress during the wait — same contract as the other IRQ/MMIO-
+   * boundary functions already delegated. */
+  return br2_call_generated(0x8019b944u,a0,a1,a2,0);
 }
 
 /* cd_field_copy_gated — gated u16 field copy: fl = *(u32*)a0; fl==0 applies

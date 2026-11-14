@@ -1723,3 +1723,50 @@ status path in runtime cdrom.c/dma.c — the DMA ch3 completion must surface as 
 Suspect: DMA-ch3 done sets DICR bit27 + raises irq bit3, but the CD driver's cause-3 pending
 bit isn't being set (status register not reflecting channel-done), OR this op (seek) produces
 no channel-done and the event should come from a different cause.
+
+## Stall#2 — session N+3: REFRAMED — game is past TestEvent, wedged in cd_result_wait
+
+CORRECTION to N+2: the game is NOT spinning TestEvent. bioscall_dump shows
+B0/0x0B(TestEvent 0xF1000008) FROZEN at 1,567,926 — the seek-event wait EXITED
+(DeliverEvent eventually satisfied it or it timed out). The runtime advanced to a
+LATER wait. Live stack (sp=0x801FFF78) reconstructs the real call chain:
+
+  br2eu_func_8018CFDC  = cd_file_load_sm   (load state machine; fntrace x18 earlier)
+    -> br2eu_func_80192634 / 0x80196E14   (CD read issue path)
+    -> br2eu_func_80195D8C = cd_mode_flag_set (CD command issuer, delegated)
+    -> br2eu_func_80196B4C = cd_result_wait_b (delegated)
+    -> br2eu_func_801968CC = cd_result_wait_a (delegated)
+    -> br2eu_func_8019A460 = cd_timer_read   (delegated)
+    -> br2eu_func_8019A5D8 = vsync_wait_n    (delegated, countdown loop)
+
+cd_result_wait_a polls a result flag (set by the INT2 command-complete deferred
+coroutine) + a timeout vs free-running timer *(0x801FC6E0). The result flag never
+sets -> infinite frame-synced wait -> static screen, Start ignored.
+
+Verified HEALTHY (rules out prior IRQ-corruption theories):
+- irqctx_ring: VBlank IRQ taken @0x8019A648 and RESTORED cleanly every frame
+  (restored=1 same_thread=1, v0/v1/ra exit==saved). Interrupt machinery works.
+- DAT_801bdde0 (0x801BDDE0 frame counter) increments ~400/s — NOT frozen.
+- CD subsystem fully idle post-f5286: irq_flag=0, int1_pended=0, i_stat=VBlank
+  only, response_read==response_count (no backlog). Last CD cmd = Pause(0x09)
+  @frame5286 from pc=0x80196FC4; read of 1 sector @f4969 was the last data op.
+- DeliverEvent(B0/7)=127, OpenEvent=19 — event layer fine for earlier ops.
+
+So the break is NARROW: after cd_file_load_sm issues its read/result command,
+the INT2 command-complete path (cd_ctx_restore -> cd_intc_dispatch -> result-setter)
+does not set the flag cd_result_wait_a/b polls. Reads DID complete earlier
+(f3255-f4969) so the path works generally — the specific op sequence ending ~f5286
+(Pause then silence) leaves one result unset.
+
+ALSO THIS SESSION: delegated cd_reg_window_op(0x8019b944) -> generated. Its op0/1/3
+busy-wait CDMMIO16(0xd3/0xd5) loops use br2_ld16 which does NOT advance guest cycles,
+so the clean-C spin could burn the 0xf01 cap in native time before the cycle-driven
+CD model moved status bits -> premature -2 -> op3 ch4-DMA kick skipped. Faithful fix
+per the MMIO-busy-wait delegation contract; did NOT clear this stall (kept as correct).
+
+NEXT (decisive): identify the exact command cd_mode_flag_set issued last and which
+result flag cd_result_wait_a/b polls (read *(0x801bcb25/26) + the param_2 result buf
+on the stack @0x801fff40/44 = 0x801bcb9c/0x801bcba4 region). Then trace whether
+cd_intc_dispatch ran for that command's INT2 — if it ran but wrote the wrong slot,
+it's a result-slot mapping bug; if it never ran, the INT2 wasn't delivered (check
+cdrom.c irq_flag->I_STAT bit2 path for THIS command type vs reads).
