@@ -245,7 +245,16 @@ static void apply(uint8_t *ctrl, uint8_t *motion)
     GS16(motion, 0x420) = 0;        /* param_2+0x42 */
     GS16(motion, 0x428) = 0;        /* +0x10a */
     GS8 (ctrl, 0x26) = 0xff;
-    if (tbl) GS8(*(uint8_t **)guest_at(GU32(ctrl, 0x14)), 0) = 0xff; /* ctrl+0x14[0] */
+    if (tbl) {
+        /* ctrl+0x14 -> struct A (guest ptr); A[0] -> byte target B (guest
+         * ptr); write 0xff to B[0]. Guest pointers are u32 — read the cell
+         * as a guest word and translate, never as a host uint8_t*. */
+        uint32_t a_g = GU32(ctrl, 0x14);
+        uint8_t *pa = a_g ? (uint8_t *)guest_at(a_g) : NULL;
+        uint32_t b_g = pa ? GU32(pa, 0) : 0;
+        uint8_t *pb = b_g ? (uint8_t *)guest_at(b_g) : NULL;
+        if (pb) GS8(pb, 0) = 0xff;
+    }
     GS8 (ctrl, 0x27) = 0;
     GS16(motion, 0x438) = 0xffff;   /* +0x10e */
     GS16(motion, 0x440) = 0xffff;   /* param_2+0x44 */
