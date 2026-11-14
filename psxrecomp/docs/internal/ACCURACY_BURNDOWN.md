@@ -2124,3 +2124,56 @@ recursion-guard trips. Commit 14b83f4.
 REMAINING (separate bug): game runs deep but display is BLACK — CD sector
 drain still lossy (bfrd_set=5867 vs bfrd_clear=14, ring_dropped=2591).
 Fighter file 0xb1 load / sector-buffer-ready handshake needs its own trace.
+
+## N+14 — STATE-3 BLACK-SCREEN STALL ROOT-CAUSED + FIXED (commit 503c627)
+
+After N+13 the game ran deep but sat at g_game_state=3 forever on black.
+Live scratchpad reads localized it:
+
+  g_game_state @0x1F800000 = 3  (stuck, never reached 4/5)
+  DAT_1f800001 phase byte = 0   (transition_screen_flow loop never exits)
+  *(int16_t*)(0x1F80008C) = 0x0100  (256 -- UNRECOGNIZED load state)
+
+CHAIN: state3 -> transition_screen_flow(3) -> card_sprite_load_sm ->
+card_sprite_load_sm reads s1=lh(0x1f80008c). Valid states are -1/0/0x10;
+0x0100 hits `s1!=0x10 -> return 0` BEFORE ever calling cd_file_load_sm, so
+DAT_1f800001 stays 0 and the do{}while(frame_tick) spins forever.
+
+ROOT CAUSE -- width-confused clean-port global. _DAT_1f80008c is shared
+scratchpad accessed at THREE widths in the original:
+  transition_screen_flow reset  : `sh $0,0x8C`  (HALFWORD, clears 2 bytes)
+  card_sprite_load_sm / intro_movie_state : `lh`/`sh` (int16)
+  battle_intro_flow counter     : `lbu`/`sb`   (BYTE)
+The clean port defined it uint8_t in menu.c, so `_DAT_1f80008c = 0`
+emitted a BYTE store clearing only 0x1f80008c. A prior uint32 frame
+counter (battle_intro_flow, faithfully wider) had left 0x01 at 0x1f80008d
+(value 0x00000100=256 frames). The byte-reset left the stale high byte ->
+int16 read = 0x0100 -> card_sprite_load_sm wedged.
+
+FIX: menu.c `#define _DAT_1f80008c` uint8_t -> int16_t, so resets write
+`sh`-equivalent (2 bytes) matching the original. game.c still has
+uint32_t _DAT_1f80008c/DAT_1f80008c macros and battle.c uses the field in
+other widths -- audit pending if a later stall appears.
+
+VERIFIED: game now progresses 3->4->5->6 (battle_intro_flow), cycles the
+attract/demo loop, DAT_1f800001 reaches 0xf1/0xff. File 0x1D (the
+previously-stuck transition sprite) now loads to 0x800F0000.
+
+## N+15 — NEXT BLOCKER: battle submits draws but framebuffer is flat color
+
+State 6 (battle) reached and the GPU is BUSY: gp0_draw=284143,
+gp0_env=329792, gpu_opcodes histogram shows 0x2D=157718, 0x64=92708
+(sprites), 0x2C=15219 (gouraud quads), draw_area=[0,0,319,239].
+DAT_801c43a8 orbit table IS populated (valid 0x8001xxxx ptrs) -- the
+aux_tbl_store_a/b weak no-ops in bind.c:2012 did NOT leave it empty
+(generated dispatch populates it); deprioritize that theory.
+
+YET the displayed framebuffer is a SINGLE flat color ((0,16,40) dark blue
+during battle, (248,248,248) during a fade). VRAM has non-zero content
+(vram_peek 0x296c pattern). So primitives are submitted but produce no
+visible variation -> candidates: degenerate/clipped prims, wrong
+CLUT/texture page, OT entries pointing at bad prim data, or the GPU
+walking an OT whose leaf tags are stale. NEXT: dump the live OT leaf
+chain + a few prim headers during state 6 and check coords/uv/clut;
+verify the framebuffer the GPU writes is the one screenshot/present reads
+(display_y=240 observed -- check which 240-line half is shown).
