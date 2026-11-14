@@ -16314,7 +16314,7 @@ int fighter_reinit_tail(uint32_t a0)
   if (*(int8_t *)guest_at(0x801e3d00) < 0) return -1;
   *(uint8_t *)(s0 + 0x9d) = 0;
   battle_camera_step(*(uint32_t *)(s0 + 0xbc),(uint8_t *)guest_at(0x1f8000e8),(uint8_t *)guest_at(0x1f8001f0),(int)guest_of(s0));
-  fighter_tint_fade(*(uint32_t *)(s0 + 8),*(uint32_t *)(s0 + 0xc),(int)(int8_t)*(uint8_t *)(s0 + 0x98),(int)guest_of(s0));
+  fighter_tint_fade(*(uint32_t *)(s0 + 8),*(uint32_t *)(s0 + 0xc),(int)guest_of(s0),(int)(int8_t)*(uint8_t *)(s0 + 0x98));
   fighter_trail_emit((undefined4 *)(uintptr_t)(s0 + 0x28),0x1f80033c,*(int *)(s0 + 0xbc),(int)guest_of(s0));
   slot_height_proj(*(uint32_t *)(s0 + 8) + 0x207c,*(uint32_t *)(s0 + 0xbc),*(uint32_t *)(s0 + 0xc),(int)guest_of(s0));
   return 0;
