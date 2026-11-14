@@ -5628,12 +5628,12 @@ void node_xform_apply(int param_1,undefined4 param_2,undefined4 param_3)
 {
   int iVar1;
   if (param_1 != 0) {
-    rtps_point_xform((undefined4 *)(uintptr_t)param_2,(undefined4 *)(uintptr_t)(param_1 + 0x18),(int *)(uintptr_t)(param_1 + 0x34),(int)(uintptr_t)param_3);
-    gte_xform3_nold((ushort *)(uintptr_t)(param_1 + 4),(uint *)(uintptr_t)(param_1 + 0x20));
+    rtps_point_xform((undefined4 *)guest_at((uint32_t)param_2),(undefined4 *)guest_at((uint32_t)(param_1 + 0x18)),(int *)guest_at((uint32_t)(param_1 + 0x34)),(int)param_3);
+    gte_xform3_nold((ushort *)guest_at((uint32_t)(param_1 + 4)),(uint *)guest_at((uint32_t)(param_1 + 0x20)));
     node_xform_apply(*(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x48))),param_2,1);
     iVar1 = *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4c)));
     if (iVar1 != 0) {
-      rtps_point_xform2((undefined4 *)(uintptr_t)(param_1 + 0x20),(undefined4 *)(uintptr_t)(iVar1 + 4),(int *)(uintptr_t)(iVar1 + 0x10));
+      rtps_point_xform2((undefined4 *)guest_at((uint32_t)(param_1 + 0x20)),(undefined4 *)guest_at((uint32_t)(iVar1 + 4)),(int *)guest_at((uint32_t)(iVar1 + 0x10)));
     }
     node_xform_apply(*(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x44))),param_1 + 0x20,iVar1);
   }
