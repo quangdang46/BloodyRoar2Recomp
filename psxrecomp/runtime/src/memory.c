@@ -40,8 +40,19 @@
  * one-past pointer for `p < end` bound comparisons; a stray deref there must
  * stay in-bounds and behave like open bus. */
 #define BOUNDARY_PAD 256
+/* scratchpad is padded to a page-multiple, page-aligned allocation so the
+ * guest_watch mprotect (POSIX only) isolates it from adjacent .bss globals —
+ * otherwise protecting the 1 KiB guest scratchpad would also fault on every
+ * write to whatever .bss neighbours share its host page. 16 KiB covers both
+ * the 4 KiB (x86) and 16 KiB (Apple Silicon) host page sizes. */
+#if defined(_MSC_VER)
+#define SCRATCHPAD_ALIGN __declspec(align(16384))
+#else
+#define SCRATCHPAD_ALIGN __attribute__((aligned(16384)))
+#endif
+#define SCRATCHPAD_ALLOC 16384u
 static uint8_t ram[RAM_SIZE + BOUNDARY_PAD];
-static uint8_t scratchpad[SCRATCHPAD_SIZE + BOUNDARY_PAD];
+static uint8_t scratchpad[SCRATCHPAD_ALLOC] SCRATCHPAD_ALIGN;
 static uint8_t bios_rom[BIOS_ROM_SIZE];
 static uint8_t mod_memory[MOD_MEMORY_SIZE];
 static uint32_t mod_memory_used;

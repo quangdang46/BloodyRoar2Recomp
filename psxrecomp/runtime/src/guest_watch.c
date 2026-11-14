@@ -74,6 +74,7 @@
 
 /* ---- externs (runtime) ---- */
 extern uint8_t *memory_get_ram_ptr(void);
+extern uint8_t *memory_get_scratchpad_ptr(void);
 extern uint32_t g_debug_last_store_pc;
 extern uint32_t g_debug_current_func_addr;
 extern int      g_dma_exec_depth;
@@ -89,6 +90,14 @@ extern void   *debug_cpu_ptr; /* CPUState* — gpr[] layout per cpu_state.h */
 #define GW_MAX_RANGES 8
 #define GW_RING_CAP   (1u << 15)
 #define GW_WINDOW     16
+
+/* Scratchpad region: guest phys 0x1F800000..0x1F8003FF maps to
+ * memory_get_scratchpad_ptr()[0..1023]. Clean-C stores reach it through raw
+ * guest_at() pointers exactly like RAM, so it needs the same watch coverage —
+ * this is where the shared per-frame phase byte (DAT_1f800001) lives. */
+#define GW_SCRATCH_PHYS  0x1F800000u
+#define GW_SCRATCH_GSIZE 0x400u
+#define GW_SCRATCH_HSIZE 0x4000u  /* page-aligned SCRATCHPAD_ALLOC in memory.c */
 
 #ifdef GW_POSIX
 
@@ -158,7 +167,11 @@ static uint64_t s_last_segv_pc = 0, s_last_segv_addr = 0;
 static uint64_t s_last_trap_pc = 0;
 static uint64_t s_patch_fail   = 0;
 
-static int gw_phys_ok(uint32_t phys) { return phys < GW_RAM_SIZE; }
+static int gw_is_scratch(uint32_t phys)
+{ return phys >= GW_SCRATCH_PHYS && phys < GW_SCRATCH_PHYS + GW_SCRATCH_GSIZE; }
+
+static int gw_phys_ok(uint32_t phys)
+{ return phys < GW_RAM_SIZE || gw_is_scratch(phys); }
 
 static int gw_addr_in_ranges(uint32_t phys)
 {
@@ -167,10 +180,44 @@ static int gw_addr_in_ranges(uint32_t phys)
     return 0;
 }
 
-/* phys -> host pointer into main RAM (caller guarantees phys < GW_RAM_SIZE). */
+/* phys -> host pointer into main RAM or scratchpad (caller guarantees
+ * gw_phys_ok). */
 static inline uint8_t *gw_host(uint32_t phys)
 {
+    if (gw_is_scratch(phys))
+        return memory_get_scratchpad_ptr() + (phys - GW_SCRATCH_PHYS);
     return memory_get_ram_ptr() + phys;
+}
+
+/* host fault/watched address -> guest phys. Returns 1 and sets *out when the
+ * address lands inside a watched region's host array, else 0. */
+static int gw_phys_of_host(uintptr_t fa, uint32_t *out)
+{
+    uint8_t *sp  = memory_get_scratchpad_ptr();
+    uint8_t *ram = memory_get_ram_ptr();
+    if (fa >= (uintptr_t)sp && fa < (uintptr_t)sp + GW_SCRATCH_HSIZE) {
+        *out = GW_SCRATCH_PHYS + (uint32_t)(fa - (uintptr_t)sp);
+        return 1;
+    }
+    if (fa >= (uintptr_t)ram && fa < (uintptr_t)ram + GW_RAM_SIZE + 256) {
+        *out = (uint32_t)(fa - (uintptr_t)ram);
+        return 1;
+    }
+    return 0;
+}
+
+/* Bytes readable from host pointer h to the end of its containing region's
+ * host array — used to bound the 16B old/new windows without crossing the
+ * array edge (scratchpad is only 0x500 host bytes). */
+static size_t gw_host_avail(uintptr_t h)
+{
+    uint8_t *sp  = memory_get_scratchpad_ptr();
+    uint8_t *ram = memory_get_ram_ptr();
+    if (h >= (uintptr_t)sp && h < (uintptr_t)sp + GW_SCRATCH_HSIZE)
+        return (size_t)((uintptr_t)sp + GW_SCRATCH_HSIZE - h);
+    if (h >= (uintptr_t)ram && h < (uintptr_t)ram + GW_RAM_SIZE + 256)
+        return (size_t)((uintptr_t)ram + GW_RAM_SIZE + 256 - h);
+    return 0;
 }
 
 static void gw_protect_pages(int prot)
@@ -186,8 +233,14 @@ static void gw_push_entry(void)
     s_head = (s_head + 1) % GW_RING_CAP;
     memset(e, 0, sizeof(*e));
     e->seq        = s_seq++;
-    e->phys       = (uint32_t)(s_pend_host - (uintptr_t)memory_get_ram_ptr());
-    e->guest_addr = 0x80000000u | e->phys;
+    {
+        uint32_t phys = 0;
+        gw_phys_of_host((uintptr_t)s_pend_host, &phys);
+        e->phys = phys;
+    }
+    /* RAM phys -> KSEG0 0x8xxxxxxx; scratchpad phys is already the KSEG1
+     * 0x1F800xxx guest address the code uses. */
+    e->guest_addr = gw_is_scratch(e->phys) ? e->phys : (0x80000000u | e->phys);
     e->rip        = s_pend_rip;
     e->store_pc   = g_debug_last_store_pc;
     e->func_addr  = g_debug_current_func_addr;
@@ -218,13 +271,10 @@ static void gw_push_entry(void)
      * fill it here from the host window: at trap time the store has run. */
     {
         uint8_t *h = (uint8_t *)s_pend_host;
-        uint32_t phys = e->phys;
-        /* bound the 16B read to RAM */
-        if (phys + GW_WINDOW <= GW_RAM_SIZE) memcpy(e->newv, h, GW_WINDOW);
-        else {
-            uint32_t n = GW_RAM_SIZE - phys;
-            memcpy(e->newv, h, n < GW_WINDOW ? n : GW_WINDOW);
-        }
+        size_t avail = gw_host_avail((uintptr_t)h);
+        size_t n = avail < GW_WINDOW ? avail : GW_WINDOW;
+        memcpy(e->newv, h, n);
+        if (n < GW_WINDOW) memset(e->newv + n, 0, GW_WINDOW - n);
     }
     s_total++;
 }
@@ -258,11 +308,15 @@ static void gw_segv_handler(int sig, siginfo_t *si, void *uc_v)
     uint64_t pc = (uint64_t)uc->uc_mcontext.pc;
 #endif
     uint8_t *ram = memory_get_ram_ptr();
+    uint8_t *sp  = memory_get_scratchpad_ptr();
     uintptr_t fa = (uintptr_t)si->si_addr;
 
     s_last_segv_pc = pc; s_last_segv_addr = (uint64_t)fa;
     int ours = 0;
-    if (s_armed && fa >= (uintptr_t)ram && fa < (uintptr_t)ram + GW_RAM_SIZE + 256) {
+    int in_region =
+        (fa >= (uintptr_t)ram && fa < (uintptr_t)ram + GW_RAM_SIZE + 256) ||
+        (fa >= (uintptr_t)sp  && fa < (uintptr_t)sp  + GW_SCRATCH_HSIZE);
+    if (s_armed && in_region) {
         /* Only treat as ours if the fault page is one we protected. The byte
          * range check decides in_range vs spill. */
         uintptr_t pg = fa & ~(uintptr_t)(s_page_size - 1);
@@ -285,7 +339,8 @@ static void gw_segv_handler(int sig, siginfo_t *si, void *uc_v)
     }
 
     /* Record the pre-store window. */
-    uint32_t phys = (uint32_t)(fa - (uintptr_t)ram);
+    uint32_t phys = 0;
+    gw_phys_of_host(fa, &phys);
     s_pend_host = fa;
     s_pend_rip  = pc;
 #if defined(__APPLE__) && defined(__aarch64__)
@@ -319,8 +374,8 @@ static void gw_segv_handler(int sig, siginfo_t *si, void *uc_v)
 #endif
     s_pend_in_range = gw_addr_in_ranges(phys) ? 1 : 0;
     {
-        uint32_t n = GW_WINDOW;
-        if (phys + n > GW_RAM_SIZE) n = GW_RAM_SIZE - phys;
+        size_t avail = gw_host_avail(fa);
+        size_t n = avail < GW_WINDOW ? avail : GW_WINDOW;
         memcpy(s_pend_old, (void *)fa, n);
         if (n < GW_WINDOW) memset(s_pend_old + n, 0, GW_WINDOW - n);
     }
@@ -390,21 +445,30 @@ int guest_watch_add(uint32_t guest_addr, uint32_t len)
      * psx_phys_addr for the RAM region. */
     uint32_t phys = guest_addr & 0x1FFFFFFFu;
     if (phys < 0x00800000u) phys &= (GW_RAM_SIZE - 1u);
-    if (!gw_phys_ok(phys) || len == 0 || phys + len > GW_RAM_SIZE + 256) return -1;
-    if (phys + len > GW_RAM_SIZE) len = GW_RAM_SIZE - phys;
+    if (!gw_phys_ok(phys) || len == 0) return -1;
+    if (gw_is_scratch(phys)) {
+        uint32_t stop = GW_SCRATCH_PHYS + GW_SCRATCH_GSIZE;
+        if (phys + len > stop) len = stop - phys;
+        if (len == 0) return -1;
+    } else {
+        if (phys + len > GW_RAM_SIZE + 256) return -1;
+        if (phys + len > GW_RAM_SIZE) len = GW_RAM_SIZE - phys;
+    }
     if (s_range_count >= GW_MAX_RANGES) return -3;
 
     s_ranges[s_range_count].lo = phys;
     s_ranges[s_range_count].hi = phys + len;
     s_range_count++;
 
-    /* (Re)compute the protected page set from all ranges. */
-    uintptr_t ram = (uintptr_t)memory_get_ram_ptr();
+    /* (Re)compute the protected page set from all ranges. Pages are taken in
+     * HOST space via gw_host so a scratchpad range protects the scratchpad's
+     * own pages, not ram[]'s. */
     s_page_count = 0;
     for (int r = 0; r < s_range_count; r++) {
-        uintptr_t lo = (ram + s_ranges[r].lo) & ~(uintptr_t)(s_page_size - 1);
-        uintptr_t hi = (ram + s_ranges[r].hi + s_page_size - 1)
-                       & ~(uintptr_t)(s_page_size - 1);
+        uintptr_t lo  = (uintptr_t)gw_host(s_ranges[r].lo)
+                        & ~(uintptr_t)(s_page_size - 1);
+        uintptr_t last = (uintptr_t)gw_host(s_ranges[r].hi - 1);
+        uintptr_t hi  = (last & ~(uintptr_t)(s_page_size - 1)) + s_page_size;
         for (uintptr_t p = lo; p < hi && s_page_count < 256; p += s_page_size) {
             int dup = 0;
             for (int i = 0; i < s_page_count; i++)

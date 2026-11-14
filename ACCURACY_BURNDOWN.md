@@ -419,3 +419,30 @@ never acknowledges. NEXT: trace cd_file_load_sm(0x8018cfdc) generated body
 for the exact BFRD/status poll + DMA it waits on, and check whether file
 0xb1's LBA is valid on the disc (vs the SetLoc[0,0,0] livelock the comment
 documents). This is the faithful-timing/peripheral axis, not game logic.
+
+=== GWATCH SCRATCHPAD EXTENSION + 0x6c WRITER ISOLATED ===
+Built the missing instrumentation: guest_watch (mprotect page-protect) was
+RAM-only (phys<2MB), so clean-C scratchpad stores were unwatchable. Extended
+guest_watch.c to cover guest phys 0x1F800000-0x1F8003FF -> memory_get_
+scratchpad_ptr(), and padded scratchpad[] to a page-aligned 16KiB alloc
+(memory.c) so mprotect isolates it from .bss neighbours (no fault storm).
+Now `gwatch addr=0x1f800001 len=1` catches EVERY scratchpad[1] store with
+host rip + ra chain — including clean-C raw guest_at() stores that bypass
+all psx_write_* traces (why wtrace showed total:0).
+
+RESULT: the anomalous write is frame ~7967, old=0xf1 new=0x6c. The recorded
+rip host-PC symbolizes (atos, __TEXT base 0x10425c000) to
+battle_intro_flow/menu.c:~1964 = the `strb w28,[x8]` at vmaddr 0x10165789C
+that writes DAT_1f800001=0xff (w28=0xff set once at fn entry). That store is
+CORRECT — it wrote 0xff (exit phase). The recorded new=0x6c means a SECOND
+clean store overwrote it inside the same pending window (page stays
+unprotected between fault and guest_watch_block_tick, so merged writes keep
+the FIRST writer's rip but show the LAST value). => DAT_1f800001 is a SHARED
+phase byte raced by sequential state machines; the real 0x6c writer is a
+clean store in battle_intro_flow's exit->return->re-dispatch window that
+clobbers the byte before battle_intro_flow's next iteration reads it ->
+default dead-loop (frame_tick+round_banner only, no battle_frame_tick).
+NEXT: shrink the pending window (force guest_watch_block_tick sooner) or
+log a second-chance rip, to name the merged 0x6c writer; then fix the
+shared-phase-byte handoff faithfully (likely a missing DAT_1f800001=0 reset
+on the state-6/battle entry path that the guest relies on).
