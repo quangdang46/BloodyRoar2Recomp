@@ -8008,7 +8008,8 @@ int * task_node_alloc(int param_1,undefined4 param_2,uint param_3,int param_4,in
   int iVar4;
   iVar4 = param_1 * 0x48 + -0x7fe00c68;
   if ((param_4 != 0) && (param_3 < 0x10)) {
-    piVar1 = (int *)guest_at((uint32_t)(uintptr_t)(task_pool_alloc(param_1,param_2,param_6 + 0x1c)));
+    int allocg = task_pool_alloc(param_1,param_2,param_6 + 0x1c);
+    piVar1 = allocg ? (int *)guest_at((uint32_t)(uintptr_t)allocg) : (int *)0x0;
     if (piVar1 != (int *)0x0) {
       piVar2 = (int *)guest_at((uint32_t)(uintptr_t)((iVar4 + param_3 * 4)));
       iVar3 = *piVar2;
@@ -8055,7 +8056,7 @@ void task_node_free(int *param_1)
       if (*param_1 != 0) {
         *(int *)guest_at((uint32_t)(uintptr_t)((*param_1 + 4) ))= param_1[1];
       }
-      if ((int *)guest_at((uint32_t)(uintptr_t)(param_1[1] ))== (int *)0x0) {
+      if (param_1[1] == 0) {
         *(int *)guest_at((uint32_t)(uintptr_t)(((char)iVar1 * 0x48 + -0x7fe00c68 + *(char *)((intptr_t)param_1 + 0x16) * 4) ))= *param_1;
       }
       else {
@@ -8076,16 +8077,20 @@ void task_pools_tick(int param_1)
   int iVar4;
   int *piVar5;
   int unaff_gp = (int)guest_gp();
+  uint32_t headg;
+  uint32_t nextg;
   iVar4 = 0;
   iVar1 = param_1 * 0x48;
   piVar5 = (int *)guest_at((uint32_t)(uintptr_t)((iVar1 + -0x7fe00c68)));
   *(int *)guest_at((uint32_t)(uintptr_t)((unaff_gp + 0x1c) ))= param_1;
   do {
-    piVar2 = (int *)guest_at((uint32_t)(uintptr_t)(*piVar5));
+    headg = (uint32_t)*piVar5;
+    piVar2 = headg ? (int *)guest_at(headg) : (int *)0x0;
     if (piVar2 != (int *)0x0) {
       *(int *)guest_at((uint32_t)(uintptr_t)((iVar1 + -0x7fe00c24) ))= iVar4;
       do {
-        piVar3 = (int *)guest_at((uint32_t)(uintptr_t)(*piVar2));
+        nextg = (uint32_t)*piVar2;
+        piVar3 = nextg ? (int *)guest_at(nextg) : (int *)0x0;
         *(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar1 + -0x7fe00c28) ))= guest_of(piVar2);
         if (*(char *)((intptr_t)piVar2 + 0x17) != '\0') {
           if ((char)piVar2[6] == '\0') {
@@ -8096,7 +8101,7 @@ void task_pools_tick(int param_1)
           }
         }
         piVar2 = piVar3;
-      } while (piVar3 != (int *)0x0);
+      } while (nextg != 0);
     }
     iVar4 = iVar4 + 1;
     piVar5 = piVar5 + 1;
@@ -8457,7 +8462,7 @@ LAB_80137954:
       else if (uVar5 == 0xff00) {
         puVar6 = puVar6 + 2;
         if ((int)uVar3 <= (int)*(short *)((intptr_t)param_1 + 0x1a)) {
-          if ((undefined4 *)guest_at((uint32_t)(uintptr_t)(param_1[2] ))!= (undefined4 *)0x0) {
+          if (param_1[2] != 0) {
             *(undefined4 *)guest_at((uint32_t)(uintptr_t)(param_1[2] ))= 0;
           }
           task_slot_step();
@@ -9003,7 +9008,7 @@ void quad_fx_update(int param_1)
   undefined1 *puVar3;
   undefined4 uVar4;
   undefined1 *puVar5;
-  if ((int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((param_1 + 4) )))== (int *)0x0) {
+  if (*(uint32_t *)guest_at((uint32_t)(uintptr_t)((param_1 + 4) ))== 0) {
     if (*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 8) ))!= 0) {
       task_node_free((int *)(uintptr_t)*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 8))));
     }
@@ -10763,7 +10768,7 @@ void task_slot_step(void)
     if (*piVar2 != 0) {
       *(int *)guest_at((uint32_t)(uintptr_t)((*piVar2 + 4) ))= piVar2[1];
     }
-    if ((int *)guest_at((uint32_t)(uintptr_t)(piVar2[1] ))== (int *)0x0) {
+    if (piVar2[1] == 0) {
       *(int *)guest_at((uint32_t)(uintptr_t)((iVar1 + -0x7fe00c68 + *(int *)guest_at((uint32_t)(uintptr_t)((iVar1 + -0x7fe00c24) ))* 4) ))= *piVar2;
     }
     else {
