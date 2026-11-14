@@ -425,7 +425,7 @@ void battle_frame_tick(int param_1,uint param_2)
                  (int)*(char *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x98))));
   }
   if (((int)param_2 >> 3 & 1U) != 0) {
-    fighter_trail_emit((undefined4 *)(uintptr_t)iVar5,0x1f80033c,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0xbc))),param_1);
+    fighter_trail_emit((undefined4 *)guest_at((uint32_t)iVar5),0x1f80033c,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0xbc))),param_1);
   }
   if (((*(char *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x9f) ))== '\0') && (*(char *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x9e) ))== '\0')) &&
      (((int)param_2 >> 5 & 1U) != 0)) {
@@ -16301,10 +16301,10 @@ int fighter_reinit_tail(uint32_t a0)
   uint8_t *s0 = (uint8_t *)guest_at(a0);
   if (*(int8_t *)guest_at(0x801e3d00) < 0) return -1;
   *(uint8_t *)(s0 + 0x9d) = 0;
-  battle_camera_step(*(uint32_t *)(s0 + 0xbc),(uint8_t *)guest_at(0x1f8000e8),(uint8_t *)guest_at(0x1f8001f0),(int)(intptr_t)s0);
-  fighter_tint_fade(*(uint32_t *)(s0 + 8),*(uint32_t *)(s0 + 0xc),(int)(int8_t)*(uint8_t *)(s0 + 0x98),(int)(intptr_t)s0);
-  fighter_trail_emit((undefined4 *)(uintptr_t)(s0 + 0x28),0x1f80033c,*(int *)(s0 + 0xbc),(int)(intptr_t)s0);
-  slot_height_proj(*(uint32_t *)(s0 + 8) + 0x207c,*(uint32_t *)(s0 + 0xbc),*(uint32_t *)(s0 + 0xc),(int)(intptr_t)s0);
+  battle_camera_step(*(uint32_t *)(s0 + 0xbc),(uint8_t *)guest_at(0x1f8000e8),(uint8_t *)guest_at(0x1f8001f0),(int)guest_of(s0));
+  fighter_tint_fade(*(uint32_t *)(s0 + 8),*(uint32_t *)(s0 + 0xc),(int)(int8_t)*(uint8_t *)(s0 + 0x98),(int)guest_of(s0));
+  fighter_trail_emit((undefined4 *)(uintptr_t)(s0 + 0x28),0x1f80033c,*(int *)(s0 + 0xbc),(int)guest_of(s0));
+  slot_height_proj(*(uint32_t *)(s0 + 8) + 0x207c,*(uint32_t *)(s0 + 0xbc),*(uint32_t *)(s0 + 0xc),(int)guest_of(s0));
   return 0;
 }
 
