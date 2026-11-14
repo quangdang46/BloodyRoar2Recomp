@@ -5832,7 +5832,29 @@ thread's timeslice.
   cycle the generated body also hits. MUST diff clean `blk=MB32(blk)` walk vs
   generated br2eu_func_8016B7C0 block-advance (generated uses computed-goto;
   termination constant to verify — clean uses 0xffffffff sentinel).
-- **NEXT (concrete):** capture the looping blk sequence — add a bounded-iter +
+- **RESOLVED the wedge (`652e58a`):** lldb frame-select showed heap_serialize's
+  locals at the spin: `blk=0, cnt=0, s3=0`. The block list reached a NULL
+  next-pointer (blk==0 = end-of-list) but the clean port only broke on
+  `blk==0xffffffff`. blk=0 -> `cnt=MB32(8)=0` -> next_block -> `blk=MB32(0)=0`
+  (guest[0]==0) = fixed-point infinite loop. Fix: also break on `blk==0` (a
+  null next-ptr is never a valid heap block; blocks live at 0x800Fxxxx+).
+  heap_serialize now COMPLETES; framecnt advanced 1461->1547.
+- **NEXT crash (post-fix): `unknown dispatch addr=0x000027AC phys=0x27AC
+  ra=0x8019A53C a0=0x60C a1=0x8000`** during psx_check_interrupts in
+  br2eu_func_8019A5D8 (CD/IRQ path) -> psx_fatal_halt. phys 0x27AC is the
+  game's IRQ ExceptionHandler trampoline (Session 16: exception vector
+  0x80000080 does `lui k0,0; addiu k0,k0,0x27ac; jr k0`). VERIFIED the region
+  0x1d00-0x2800 now holds VALID MIPS (lui/lw/bne at 0x1d00/0x2400/0x2700) —
+  NOT serialize corruption. So this is a DISPATCH-COVERAGE gap: real code
+  exists at phys 0x27AC but psx_unknown_dispatch has no handler for that low
+  KUSEG address. The dirty-RAM interp should interpret it (Session 16 noted
+  IRQs go to "game kernel handler 0x27ac interpreted dirty-RAM") — the gap is
+  in dispatch ROUTING for this specific low address, likely reached via the
+  exception-vector jr path that bypasses the normal dirty-RAM entry. NEXT:
+  find why addr=0x27AC reaches psx_unknown_dispatch instead of dirty-RAM
+  interp — check the dispatch routing for KUSEG/low-RAM exception targets and
+  whether 0x27AC needs seeding/registration as an executable region.
+- **NEXT (concrete, superseded by above):** capture the looping blk sequence — add a bounded-iter +
   blk dump to heap_serialize's `for(;;)` (or read s_decomp tag22 hser_in entries
   via lldb for entry blk, then walk MB32(blk) in g_psx_ram to find the cycle).
   Determine if blk+0 was wrongly relocated by phase-1 (compare blk+0 value vs
