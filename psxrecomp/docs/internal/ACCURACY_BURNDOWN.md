@@ -2367,3 +2367,43 @@ iret/eret pc restore for the nested-exception case. Branch-likely
 nullification right); REGIMM only handles rt 0/1/0x10/0x11 — rt
 0x02/0x03/0x12/0x13 (BLTZL/BGEZL/BLTZALL/BGEZALL) hit abort_unsupported,
 a candidate if OpenBIOS trampolines use them.
+
+## N+20 — fighter byte0=0x81 writer FOUND: fighter_frame off-stage detection
+
+resolve.c fighter_frame (~line 1726) is the byte0=0x81 producer:
+  if (*param_1 == 0x01) { param_1[0xc0]=-1; param_1[0xc1]=-1; *param_1 = -0x7f; }
+-0x7f as int8 = 0x81. Sibling at ~1682 writes *param_1 = -0x80 (0x80).
+
+Trigger (verified faithful game logic, NOT a mis-port): fighter_frame runs
+range_circle_test() x3 against collision circles reached via
+*(u32*)(param_1+0x20) at stage-data offsets +0xd4/+0xdc, +0x354/+0x35c,
++0x264/+0x26c. When the fighter tests inside >=1 circle but fails the
+"in all 3 / boundary" conditions AND stage+0x38 distance/flag gate passes,
+a fighter that was active (byte0==1) is demoted to 0x81 = "off main
+platform / on ledge-or-pit edge" state. byte0 bit7 then makes
+fighter_state_tick SKIP fighter_script_fsm -> fighter frozen -> the
+battle_intro_flow phase-2 check (byte0!=1) exits the round on frame 1.
+
+So 0x81 is the game's legitimate "fighter on a stage boundary/secondary
+platform" marker. P2 getting it means P2's world position reads as
+off the main platform — i.e. P2 SPAWNED at a wrong/out-of-bounds
+position, OR its per-fighter collision/motion block (ctrl+0x20 ->
+0x801e2c1c for P2 vs 0x801e1b3c for P1) holds bad circle/position data.
+ctrl+0x20 and ctrl+0x38 are PER-FIGHTER pointers (P1!=P2 expected).
+NEXT: decode the fighter world X/Z position + the stage circle triplet
+format, compare P1 (on-stage, byte0=1) vs P2 (byte0=0x81) live, and find
+why P2's spawn position/collision is off-main-platform. Likely tied to
+the attract random-char pick (table_byte_next_a -> DAT_1f8000eb/1f3)
+selecting a char whose spawn/entry data isn't positioning it, OR the
+spawn position write being skipped.
+
+## N+21 — pczero instrumentation: capture cop0 EPC/Cause/BadVAddr live
+
+Added g_pczero_epc/g_pczero_cause/g_pczero_badvaddr (always-updated,
+not latched) + freeze_check fields pczero_epc/cause/badvaddr in
+dirty_ram_interp.c + debug_server.c. Purpose: name the exact faulting
+instruction behind the ~3000/s general-exception storm that keeps
+post_exception_cooldown hot and starves the CD coroutine (N+18/N+19).
+Fresh boot shows pczero=0 through frame ~46k of attract cycling — the
+storm is STATE-DEPENDENT (triggers on a specific CD/battle event), not
+constant. Monitor running to catch it at the wedge.

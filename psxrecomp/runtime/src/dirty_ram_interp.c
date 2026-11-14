@@ -198,6 +198,9 @@ uint32_t g_pczero_ra          = 0;
 uint32_t g_pczero_in_exc      = 0;
 uint32_t g_pczero_async_rfe   = 0;
 uint32_t g_pczero_dirty_safe  = 0;
+uint32_t g_pczero_epc         = 0;   /* cop0 EPC at the pc=0 dispatch (always-updated) */
+uint32_t g_pczero_cause       = 0;   /* cop0 Cause at the pc=0 dispatch (always-updated) */
+uint32_t g_pczero_badvaddr    = 0;   /* cop0 BadVAddr at the pc=0 dispatch (always-updated) */
 uint64_t g_pczero_count       = 0;
 
 /* Mid-block unsupported-opcode counters. Bumped instead of fprintf-spamming
@@ -2456,6 +2459,12 @@ int dirty_ram_dispatch(CPUState* cpu, uint32_t addr, uint32_t stop_addr) {
     if (r == 1 && cpu->pc == 0u) {
         extern uint32_t g_async_rfe_resume_pc, g_dirty_safe_resume_pc;
         g_pczero_count++;
+        /* Always refresh the live fault context — the latched block below only
+         * fires once, but the exception storm is ongoing so the freshest EPC/
+         * Cause/BadVAddr is what names the faulting instruction. */
+        g_pczero_epc      = cpu->cop0[14];
+        g_pczero_cause    = cpu->cop0[13];
+        g_pczero_badvaddr = cpu->cop0[8];
         if (!g_pczero_latched) {
             g_pczero_latched    = 1;
             g_pczero_addr       = addr;

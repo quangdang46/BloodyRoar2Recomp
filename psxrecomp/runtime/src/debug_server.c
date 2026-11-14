@@ -10177,7 +10177,8 @@ static void handle_freeze_check(int id, const char *json)
     extern uint64_t g_slice_fired, g_slice_irq_taken;
     extern uint64_t g_pczero_count;
     extern uint32_t g_pczero_addr, g_pczero_ra, g_pczero_in_exc,
-                    g_pczero_async_rfe, g_pczero_dirty_safe;
+                    g_pczero_async_rfe, g_pczero_dirty_safe,
+                    g_pczero_epc, g_pczero_cause, g_pczero_badvaddr;
     extern uint32_t g_slice_last_block, g_slice_last_first_pc, g_slice_last_first_insn;
     extern uint32_t g_slice_last_committed, g_slice_last_istat, g_slice_last_imask, g_slice_last_sr;
     extern uint32_t g_slice_entry_deliverable;
@@ -10306,6 +10307,9 @@ static void handle_freeze_check(int id, const char *json)
                     "\"pczero_in_exc\":%u,"
                     "\"pczero_async_rfe\":\"0x%08X\","
                     "\"pczero_dirty_safe\":\"0x%08X\","
+                    "\"pczero_epc\":\"0x%08X\","
+                    "\"pczero_cause\":\"0x%08X\","
+                    "\"pczero_badvaddr\":\"0x%08X\","
                     "\"nestgate_depth\":%llu,"
                     "\"nestgate_rfepend\":%llu,"
                     "\"nestgate_escreason\":%llu,"
@@ -10369,6 +10373,9 @@ static void handle_freeze_check(int id, const char *json)
                     g_pczero_in_exc,
                     g_pczero_async_rfe,
                     g_pczero_dirty_safe,
+                    g_pczero_epc,
+                    g_pczero_cause,
+                    g_pczero_badvaddr,
                     (unsigned long long)g_nestgate_depth,
                     (unsigned long long)g_nestgate_rfepend,
                     (unsigned long long)g_nestgate_escreason,
