@@ -446,3 +446,39 @@ NEXT: shrink the pending window (force guest_watch_block_tick sooner) or
 log a second-chance rip, to name the merged 0x6c writer; then fix the
 shared-phase-byte handoff faithfully (likely a missing DAT_1f800001=0 reset
 on the state-6/battle entry path that the guest relies on).
+
+=== STALL#3 (file 0xb1 / frame-348 codec race) — DMA PROGRESS + IRQ driver isolated ===
+LIVE dma_trace (frames 345-346, just before the ~348 recursion trip) shows the
+fighter-file load IS progressing: DMA ch3 (CD->RAM) completes transfers to
+SEQUENTIAL buffers 0x800495DC->0x80049DDC->0x8004A5DC->0x8004ADDC (+0x800 each)
+= the 0xb1 fighter payload landing. Two transfer shapes per frame: a 512-word
+sector drain (bcr 0x10200) to 0x80049xxx and a 3-word control push (bcr 0x10003)
+to 0x801BDCE8. So cd_file_load_sm is NOT dead — it is streaming the file.
+
+THE RECURSION DRIVER: i_stat=0x00000004 (CDROM bit2) is asserted THROUGHOUT every
+DMA op (i_stat_before==i_stat_after==0x4). The CD IRQ is LEVEL-triggered from
+HINTSTS (cdrom.c: while irq_flag holds, i_stat bit2 re-asserts until the guest
+writes 0x1F801803.1). During a streaming ReadN the drive raises a CD INT per
+sector-buffer, so bit2 stays hot for the whole load.
+
+MECHANISM (unifies stall#2 + file-0xb1): each CD IRQ -> game IRQ dispatch ->
+cd_intc_dispatch (generated 0x8019a8ec) -> channel handler -> BIOS DeliverEvent
+-> resumes the codec coroutine via a NESTED psx_dispatch_call (the clean<->gen
+CPS boundary at br2_call_generated). The resumed coroutine's next MMIO/CD read
+re-observes the still-asserted level i_stat bit2 -> re-delivers -> nests again.
+Depth grows ~unbounded because the resume is nested INSIDE the not-yet-acked
+IRQ window rather than deferred to the post-handler/outermost boundary.
+
+cd_file_load_sm (gen 0x8018CFDC, 25-block CPS coroutine) yields FLAT via
+cpu->pc continuations (does not grow depth). The depth growth is purely the
+DeliverEvent/IRQ resume nesting at the br2_call_generated boundary.
+
+FIX DIRECTION (faithful): the codec coroutine resume must be deferred until the
+CD IRQ is ACKED (guest writes 0x1F801803.1 -> irq_flag clears -> i_stat bit2
+deasserts) and the handler unwinds to an outermost/!in_exception boundary —
+mirroring hardware where the woken thread runs AFTER the exception returns.
+The s_defer_switch_* machinery (interrupts.c) already does this for
+ChangeThread; the DeliverEvent/callback resume path needs the same defer-until-
+acked treatment. NEXT: find the exact DeliverEvent->coroutine-resume call site
+(does it go through psx_change_thread / g_sched_escape, or a direct
+psx_dispatch_call of the event func?) and route it through the deferred path.
