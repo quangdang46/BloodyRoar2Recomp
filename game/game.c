@@ -2437,9 +2437,10 @@ void blk_1f26c0_init(void)
 
 /* clear_f4ee8_u16s — clear 10 u16s at 0x801f4ee8 + byte(a0+2)*24 + 0x12,
  * plus u16 @+0x14/+0x16 and 9 words before +0x12. Disasm verified. */
-void clear_f4ee8_u16s(uint8_t *a0)
+void clear_f4ee8_u16s(uint32_t a0)
 {
-  uint8_t *v1 = (uint8_t *)guest_at(0x801f4ee8) + a0[2] * 24;
+  uint8_t *ctrl = (uint8_t *)guest_at(a0);
+  uint8_t *v1 = (uint8_t *)guest_at(0x801f4ee8) + ctrl[2] * 24;
   uint16_t *v0 = (uint16_t *)(v1 + 0x12);
   int i;
   v1[0x14] = 0; v1[0x15] = 0;
