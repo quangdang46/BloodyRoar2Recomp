@@ -26,7 +26,11 @@ extern uint16_t *g_DAT_801f04ec, *g_DAT_801f04ee, *g_DAT_801f04f0,
               *g_DAT_801f04f2, *g_DAT_801f04f4, *g_DAT_801f04f6,
               *g_DAT_801f04f8, *g_DAT_801f04fa;
 extern int32_t *g__DAT_801f04a4;
-#define _DAT_801f04a4 g__DAT_801f04a4
+/* _DAT_801f04a4 is the guest POINTER stored in the 4-byte cell at
+ * 0x801f04a4 (written by record_table_select as a guest address).
+ * g__DAT_801f04a4 is the host pointer to that cell; dereference the
+ * u32 guest-pointer cell and translate before indexing the pointee. */
+#define _DAT_801f04a4 ((int32_t *)guest_at(*(uint32_t *)g__DAT_801f04a4))
 #define _DAT_801f4d70   (*g_DAT_801f4d70)
 #define _DAT_801f4d72   (*g_DAT_801f4d72)
 #define _DAT_801f4d76   (*g_DAT_801f4d76)

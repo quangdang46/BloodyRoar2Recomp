@@ -478,7 +478,7 @@ static uint8_t *ev5_action(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
         uint8_t *ftab = fta ? (uint8_t *)guest_at(fta) : NULL;
         uint32_t e;
         if (param < fcnt && ftab &&
-            (e = GU32(ftab, (uint16_t)param * 4)) > 0x80000000u) {
+            (e = GU32(ftab, param * 4)) > 0x80000000u) {
             GS16(motion, MO_BE) = G16(motion, MO_BC);
             GSU32(motion, MO_B0) = e;
             GS16(motion, MO_A2) = param;
@@ -1140,13 +1140,14 @@ extern int fx_group_alloc(undefined4,undefined4,int,int);
 extern undefined4 noop_c(int);
 extern void noop_a(int,undefined4,undefined4,undefined4);
 extern void node_param_quad_set(int,undefined4,undefined4,undefined4,undefined4);
-extern void hit_spark_spawn();
-extern void speech_bubble_spawn();
+extern void hit_spark_spawn(undefined4,uint,undefined2);
+extern void speech_bubble_spawn(undefined4*,short,int,ushort);
+extern void color_rec_table_init(uint32_t,uint32_t);
 extern void effect_arg_set(int);
 extern void sprite_burst_spawn(int,int);
 extern void confetti_burst_spawn(int,int);
 extern void popup_spawn(int,int,int);
-extern void firework_spawn();
+extern void firework_spawn(undefined2*);
 extern void triple_track_spawn(int,undefined2,int);
 extern void iris_wipe_spawn(int,int);
 extern void noop_b(int,undefined4,undefined4);
@@ -1157,7 +1158,7 @@ extern uint32_t *g__DAT_1f8000c4, *g__DAT_801f0780, *g__DAT_801f0790;
 extern uint8_t *g_DAT_801b180c;
 extern uint8_t *g_DAT_801b1d5c;
 extern uint32_t *g_PTR_DAT_801b1d44;
-extern void fighter_reset_fx(int,int);
+extern void fighter_reset_fx(int,byte*);
 
 /* ev_spark_spawn — EV22: spawn hit-spark/effect task. a2 = pc (stream
  * ptr); consumes one u16 record, returns pc+2. */
@@ -1253,12 +1254,12 @@ ushort * ev_cmd_dispatch(int param_1,undefined4 param_2,ushort *param_3)
     case 2:
       speech_bubble_spawn((undefined4 *)guest_at(GU32(p1, 0x20) + 0x124),
                    *(short *)(p1 + 0x4e) + -0x400,
-                   (int)(uVar7 << 0x10) >> 0x18,uVar7 & 0xff);
+                   uVar7 & 0xff,(ushort)((int)(uVar7 << 0x10) >> 0x18));
       break;
     case 3:
       speech_bubble_spawn((undefined4 *)guest_at(GU32(p1, 0x20) + 0x124),
                    *(short *)(p1 + 0x4e) + 0x400,
-                   (int)(uVar7 << 0x10) >> 0x18,uVar7 & 0xff);
+                   uVar7 & 0xff,(ushort)((int)(uVar7 << 0x10) >> 0x18));
       break;
     case 4:
       effect_arg_set(param_1);
@@ -1290,10 +1291,11 @@ ushort * ev_cmd_dispatch(int param_1,undefined4 param_2,ushort *param_3)
       }
       break;
     case 10:
-      firework_spawn(GU8(p1,3),(int)(short)uVar1);
+      color_rec_table_init(GU8(p1,3),(uint32_t)(int16_t)uVar1);
       break;
     case 0xb:
-      firework_spawn((int)(GU32(p1, 0x20) + (uint32_t)((int16_t)uVar1 * 0x50) + 0x34));
+      firework_spawn((undefined2 *)guest_at(GU32(p1, 0x20) +
+                        (uint32_t)((int16_t)uVar1 * 0x50) + 0x34));
       break;
     case 0xc: {
       uint8_t *obj;
@@ -1309,14 +1311,14 @@ ushort * ev_cmd_dispatch(int param_1,undefined4 param_2,ushort *param_3)
       uStack_16 = *(undefined2 *)(obj + iVar5 + 0x38);
       uStack_14 = *(undefined2 *)(obj + iVar5 + 0x3c);
       iVar5 = (uVar7 & 0xff) * 4;
-      emit_task_spawn_b(&uStack_18,
+      emit_task_spawn_b((undefined4 *)&uStack_18,
                    *(uint32_t *)((char *)g__DAT_801f0790 + iVar5),
                    *(uint32_t *)((char *)g__DAT_801f0780 + iVar5),0);
       break;
     }
     case 0xd:
       puVar3 = (undefined2 *)guest_at((uint32_t)fx_record_alloc(GU32(p1, 0x20) + 0x124,6,
-                            0x80000010,2,guest_of(g_PTR_DAT_801b1d44)));
+                            0x80000010,2,*g_PTR_DAT_801b1d44));
       if (puVar3 != (undefined2 *)0x0) {
         uVar2 = (undefined2)rand_lcg();
         *puVar3 = uVar2;
@@ -1331,7 +1333,7 @@ ushort * ev_cmd_dispatch(int param_1,undefined4 param_2,ushort *param_3)
       }
       break;
     case 0xf:
-      fighter_reset_fx(1,param_1);
+      fighter_reset_fx(1,p1);
     }
   }
   return param_3 + 2;

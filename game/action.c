@@ -830,7 +830,11 @@ void part_link_unlink(ushort *param_1,short *param_2,int param_3)
   }
   param_2[0x24] = 0;
   param_2[0x25] = 0;
-  *(ushort **)(param_2 + 0x20) = param_1;
+  /* rec+0x40 = source-record back-pointer: a 4-byte GUEST address cell.
+   * param_1 is a host pointer — store guest_of(param_1), never the
+   * host pointer itself (an 8-byte store here also clobbered the
+   * rec+0x44 link field and corrupted the part chain). */
+  *(uint32_t *)((uint8_t *)param_2 + 0x40) = param_1 ? guest_of(param_1) : 0;
   if (param_1 != (ushort *)0x0) {
     if (param_3 == 3) {
       uVar1 = *param_1;
