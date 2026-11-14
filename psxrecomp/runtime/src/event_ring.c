@@ -177,6 +177,7 @@ static const char *decomp_tag_name(uint8_t t) {
         case 26: return "hfix_out";
         case 27: return "hser_1000_ctx";
         case 28: return "hser_1000_rec";
+        case 29: return "hfix_in2";
         default: return "?";
     }
 }

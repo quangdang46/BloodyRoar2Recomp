@@ -13377,10 +13377,17 @@ void heap_ptr_fixup(uint32_t param_1)
   int32_t  a3;
   uint32_t a2;
   { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-    /* tag25 hfix_in: param_1, slot-count(+0xc), slot1(+0x14) pre-fixup */
-    decomp_trace_record(25,param_1,MB32(a0+0xcu),MB32(a0+0x14u),0); }
-  if (MB32(a0 + 4u) != 0) {
-    a2 = a0 + MB32(a0 + 8u) * 4u;
+    /* tag25/29 hfix_in: dump raw header words a0+0,+4 and +8,+0xc */
+    decomp_trace_record(25,param_1,MB32(a0+0u),0,MB32(a0+4u));
+    decomp_trace_record(29,param_1,MB32(a0+8u),0,MB32(a0+0xcu)); }
+  /* Phase-1 relocates the nested index table. +8 holds a small word-offset
+   * into the block until resolved to the table's KSEG0 pointer, so
+   * `noff < 0x80000000` is both the presence test and an idempotence guard
+   * (a resolved pointer fails it). Blocks arrive with +4==0 yet carry a
+   * live relocation table, so gate on the unresolved offset, not +4. */
+  { uint32_t noff = MB32(a0 + 8u);
+    if (noff != 0 && noff < 0x80000000u) {
+    a2 = a0 + noff * 4u;
     MW32(a0 + 8u, a2);
     a3 = (int32_t)MB32(a2);
     a2 += 4u;
@@ -13399,6 +13406,7 @@ void heap_ptr_fixup(uint32_t param_1)
       } while (--a3 > 0);
     }
     MW32(a0 + 4u, 1u);
+    }
   }
   a3 = (int32_t)MB32(a0 + 0xcu);
   a2 = a0 + 0x10u;
@@ -13424,8 +13432,8 @@ void heap_ptr_fixup(uint32_t param_1)
     } while (a3 > 0);
   }
   { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-    /* tag26 hfix_out: param_1, slot1(+0x14) post-fixup, slot2(+0x18) */
-    decomp_trace_record(26,param_1,MB32(a0+0x14u),MB32(a0+0x18u),0); }
+    /* tag26 hfix_out: dst=a0, src=gate(+4 post), mode=slotcount(+0xc), len=nested(+8 post) FULL */
+    decomp_trace_record(26,param_1,MB32(a0+4u),(uint8_t)MB32(a0+0xcu),MB32(a0+8u)); }
 }
 
 extern uint32_t br2_guest_frame(uint32_t);
