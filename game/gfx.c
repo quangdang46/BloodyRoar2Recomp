@@ -906,41 +906,12 @@ undefined4 gp_bde20_read(void)
 void cd_chan_boot_init(int param_1)
 
 {
-  undefined2 *puVar1;
-  int iVar2;
-  uint16_t *t;
-  
-  cd_dispatch_tblc();
-  cd_chan_reg_init(param_1);
-  if (param_1 == 0) {
-    iVar2 = 0x17;
-    t = (uint16_t *)guest_at(0x801bde9a);
-    puVar1 = t;
-    do {
-      *puVar1 = 0xc000;
-      iVar2 = iVar2 + -1;
-      puVar1 = puVar1 + -1;
-    } while (-1 < iVar2);
-  }
-  cd_ext_init_once();
-  GP32(0x801bde44) = 0;
-  GP32(0x801bde48) = 0;
-  GP32(0x801bde54) = 0;
-  GP32(0x801bde58) = 0;
-  GP16(0x801bde5a) = 0;
-  GP32(0x801bde5c) = 0;
-  GP32(0x801bde60) = 0;
-  GP32(0x801bde4c) = GP32(0x801be440);
-  cd_u16_table_store(0xd1,GP32(0x801be440),0);
-  GP32(0x801bdf10) = 0;
-  GP32(0x801bdf14) = 0;
-  GP32(0x801bdf18) = 0;
-  GP32(0x801bde40) = 0;
-  GP32(0x801bdecc) = 0;
-  GP32(0x801bde3c) = 0;
-  GP32(0x801bde68) = 0;
-  GP32(0x801bde64) = 0;
-  GP32(0x801bde9c) = 0;
+  /* Delegate whole body to generated MIPS (0x8019b220). Its cd_ext_init_once
+   * call must run in pure generated context: the clean cd_ext_init_once ->
+   * br2_call_generated -> generated -> FUN_8018e300(syscall EnterCritical)
+   * chain loses the continuation back to the OpenEvent block, so the CD
+   * event @0x801bde38 is never opened and TestEvent spins forever. */
+  br2_call_generated(0x8019b220u,(uint32_t)param_1, 0, 0, 0);
   return;
 }
 

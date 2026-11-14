@@ -1511,8 +1511,15 @@ void cd_read_param_block(uint32_t a0,uint32_t a1,uint32_t a2)
   *(uint32_t *)guest_at(0x801fc6b4) = a2;
 }
 
-/* cd_ext_table_init — dispatch wrapper: cd_dispatch_tbl4(4,a0). */
-void cd_ext_table_init(uint32_t a0) { cd_dispatch_tbl4(4,a0); }
+/* cd_ext_table_init — delegate whole body to generated MIPS (0x8019bee0).
+ * It is called from inside generated cd_ext_init_once's jal chain; routing it
+ * through the clean cd_dispatch_tbl4 wrapper nests a clean->generated->clean
+ * hop that loses the continuation back to block_8019B338 (the OpenEvent
+ * call), so the CD event is never opened and TestEvent spins forever. */
+void cd_ext_table_init(uint32_t a0)
+{
+  br2_call_generated(0x8019bee0u,a0, 0, 0, 0);
+}
 
 /* cd_chan_block_init — indirect dispatch tbl+0x14: call_guest(fn,a0,a1). */
 void cd_chan_block_init(int32_t a0,uint32_t a1)
@@ -4389,20 +4396,13 @@ uint32_t cd_state_blk_restore(void)
 
 void cd_dma_xfer_start(uint32_t param_1,uint32_t param_2,uint32_t param_3)
 {
-  uint32_t b = DB32G(0x801bdeb0);
-  uint32_t v1;
-  /* +0x1a6/+0x1aa are channel regs on the MMIO block — CDMMIO not guest_at. */
-  CDMMIO16_ST(b,0xd3,(uint16_t)param_2);
-  cd_delay_3c();
-  b = DB32G(0x801bdeb0);
-  v1 = CDMMIO16(b,0xd5);
-  CDMMIO16_ST(b,0xd5,(uint16_t)(v1 | 0x30));
-  cd_delay_3c();
-  cd_mmio_strobe_22();
-  br2_st32(DB32G(0x801bdeb4), param_1);
-  br2_st32(DB32G(0x801bdeb8), (param_3 << 16) | 0x10);
-  DB32(0x801bdea0) = 1;
-  br2_st32(DB32G(0x801bdebc), 0x1000200);
+  /* Delegate whole body to generated MIPS (0x8019b89c). The prior clean port
+   * mistranslated a store as DB32(0x801bdea0)=1 — that address is
+   * cd_ext_init_once's one-shot init guard, not a DMA flag (generated writes
+   * 0x801bdf00 there). Setting it early made cd_ext_init_once skip the CD
+   * OpenEvent(0xF0000009) so TestEvent(0) spun forever. */
+  br2_call_generated(0x8019b89cu,param_1, param_2, param_3, 0);
+  return;
 }
 
 /* ======== batch_mass5 ======== */

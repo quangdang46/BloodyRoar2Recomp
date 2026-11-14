@@ -1342,3 +1342,39 @@ write + FUN_8019b380 entry for class 0xF0000009), and whether the LLE
 kernel event table is initialized before cd_chan_boot_init->cd_ext_init_once
 runs. If ordering, the fix is to defer the CD-event open until kernel
 InitEvents completes.
+
+## Session — CD-event guard traced to cd_dma_xfer_start mistranslation
+
+Instrumented 0x801BDEA0 across a fresh boot: it is BSS-zero early, then goes
+0->1 during CD init. cd_dma_xfer_start (clean, cd.c) had
+`DB32(0x801bdea0)=1` — but the GENERATED cd_dma_xfer_start (0x8019B89C)
+writes 0x801BDF00 there, NOT 0x801BDEA0. The clean port mistranslated the
+store target: 0x801BDEA0 is cd_ext_init_once's one-shot init guard, the only
+other writer besides ext_init itself. When a CD DMA read ran before
+cd_ext_init_once, it pre-set the guard -> ext_init took the skip path ->
+OpenEvent(0xF0000009) never ran -> 0x801BDE38 stayed 0 -> TestEvent(0) spun.
+
+FIXES LAND (all faithful delegations to generated MIPS, committed):
+- cd_dma_xfer_start -> br2_call_generated(0x8019b89c): removes the bogus
+  guard write AND makes the DMA-start faithful (generated is ~10x larger).
+- cd_chan_boot_init -> br2_call_generated(0x8019b220): keeps the whole
+  cd_chan_reg_init + cd_ext_init_once chain in generated context (the clean
+  cd_ext_init_once->br2_call_generated->FUN_8018e300(syscall EnterCritical)
+  nested hop was suspect).
+- cd_ext_table_init -> br2_call_generated(0x8019bee0): removed a clean
+  cd->generated->clean->generated hop inside generated cd_ext_init_once.
+
+REMAINING: after all three, OpenEvent(0xF0000009) STILL does not appear in
+hle_dump and the game still parks in TestEvent(*(0x801bde38)) at the frame-347
+CD wait (cmd 0x09 seek pending, irq_flag=0x03, i_stat bit2 set). On the fixed
+build 0x801BDEA0 now reads 0 (xfer_start no longer sets it) and 0x801BDE38=0 —
+so cd_ext_init_once did NOT execute its init block (guard never set to 1),
+even though generated cd_chan_boot_init DOES cps-jal 0x8019B308 and the game
+reaches the CD wait (channel regs work). This points to cd_ext_init_once's
+generated body not reaching block_8019B31C — either it is not dispatched, or
+the CPS continuation into it is lost, OR an earlier guard/branch sends it to
+block_8019B368 (skip) despite guard==0.
+NEXT: fntrace 0x8019B308 entry + read 0x801BDEA0 AT entry on a fresh boot to
+see whether ext_init runs init or skips; if it enters but skips with guard==0,
+the guard load/branch in br2eu_func_8019B308 is mis-dispatching (check the
+_psx_slice_block / CPS resume for this function).
