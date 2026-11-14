@@ -2289,3 +2289,41 @@ setter, or fighter_record_apply marking an unloadable char. If attract
 is SUPPOSED to show byte0=1 for both (real CPU-vs-CPU fight), then the
 bug is that P2's FSM-disable is being set erroneously during spawn —
 check whether P2's .ANI/.ACT stream or AI/input record loaded.
+
+## N+18 — 0xf1 freeze ROOT-CAUSED: CD coroutine fiber starves in cd_timer_read
+
+Live state at the wedge (state 6, phase 0xf1, fully frozen):
+- cop0_cause=0x400 (IRQ exception), epc=ra=0x80197030 (CD driver region),
+  sp=0x801FFF88, s0-s3 -> 0x801BCxxx/0x801BDxxx CD state structs.
+- i_stat=pending=0x05 (VBlank+CD asserted), i_mask=0x0D (CD bit2 enabled).
+- DAT_801bdde0 (CD coroutine seq counter) FROZEN at 0xBC91 — set only by
+  cd_cb8_run_param via CD IRQ -> cd_intc_dispatch -> cd_cb8_dispatch.
+- cd_timer_read (0x8019a460) + vsync_wait_n (0x8019a5d8) both correctly
+  delegate to generated code so their spins cross psx_check_interrupts_at
+  block boundaries — the deferred-IRQ contract is set up right.
+- dispatch_stats: static_hits=10M, miss=0 -> compiled dispatch healthy.
+- CD: reading=0, irq_flag=0x03 (bits0,1 set; cmd-done bit2 clear),
+  bfrd_set=44237 vs bfrd_clear=36, ring_dropped=21711.
+
+CHAIN: CPU parks inside cd_timer_read's generated vsync_wait_n spin,
+waiting for DAT_801bdde0 to advance. That needs the CD IRQ to fire and
+the deferred coroutine (cd_ctx_restore -> cd_chan_full_init ->
+cd_intc_dispatch -> cd_cb8_dispatch) to resume on its fiber. The resume
+never happens -> counter frozen -> vsync_wait_n spins forever ->
+frame_tick never returns -> phase 0xf1 (frame_divisor_get!=0) never
+exits -> whole game frozen -> flat screen.
+
+The sector loss (ring_dropped=21711) is the likely TRIGGER: when a file
+load's sectors get overwritten before the IRQ-driven consumer drains the
+ring, the read never completes -> CD IRQ stays pending -> coroutine
+starves. But the proximate break is the deferred-resume failing at this
+PC — same fragile family as the frame-348 fix (clean_table thunk
+ping-pong re-observing the level CD IRQ).
+
+NEXT: instrument the deferred-switch path (deferred_exception_longjmp /
+irq_need_defer / irq_need_delivery counters at debug_server.c:12216) to
+see whether the CD IRQ is being deferred-but-never-delivered vs delivered
+-but-coroutine-can't-resume. Check g_cdrom_deliver_count advance. The
+resume PC selection (take_pc/real_epc/same_thread_resume in
+interrupts.c:62-66) is the suspect — a resume PC inside a clean-C or
+non-dispatchable region would starve the coroutine exactly like this.
