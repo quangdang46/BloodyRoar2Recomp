@@ -172,3 +172,33 @@ marker or count hser vs total heap_serialize calls); (b) if so, the record
 rp+0x18/ctx+0x14 for the bad blk is corrupt upstream (decompress/heap_alloc54/
 heap_ptr_fixup) — trace the heap-record BUILD for that blk; (c) alternatively
 a mid-function CPS re-entry at block_8016A8A8 with clobbered gpr5.
+
+=== SESSION: crash-chain cleared -> stable 11k-frame sim, zero render prims ===
+Fixed + pushed (all verified against guest MIPS / faithful semantics):
+- 0cd160f GTE/COP2 wired to real gte.cpp (setCopReg/getCopReg/copFunction ->
+  gte_read/write_data|ctrl + gte_execute); isqrt_refine UB->brk trap fixed by
+  faithful MIPS port (digit-recurrence sqrt, i==4 special step).
+- 8e6042c task_slot_fns_run slot-fn arity: guest jalr passes a0=&ctx cell,
+  a1=node_head; clean called fn(a0) only -> a1 garbage (0x1f deref).
+- 8b49349 node->f8/f10 generic dispatch -> task_invoke (correct int-vs-ptr
+  arg convention; was raw-guest-addr passed to host-ptr fns -> 0xffffffff..).
+- 125ab16 frame_divisor_get: cached g_DAT_1f800019 pointer miscompiled inside
+  huge battle_intro_flow state machine (x28 clobbered) -> direct
+  *(uint8_t*)guest_at(0x1f800019) = faithful scratchpad read.
+- 0e91caa fx_record_alloc: iVar2 (guest addr 0x801d0508) cast raw to host ptr
+  -> sign-extended 0xffffffff801d0508; now guest_at(iVar2). NOTE: the
+  (uintptr_t)int_holding_KSEG0_addr -> host-ptr bug class is SYSTEMIC (~86
+  sites); only bites when value is a guest addr, most sites are correct.
+
+RESULT: game now runs 11000+ frames @50Hz STABLE (was crashing in battle-intro).
+CD streaming live (seq 447K, normal seek/read/status track1 ~LBA3300, finished
+~frame7929). Task scheduler dispatching real fns (radial_glow_draw etc).
+GPU: gp0_draw=10422, gp0_env=58823 counted BUT gte_verts=0, ovh_prims=0,
+ot_rank=-1, VRAM all-zero, screenshot all-black.
+
+NEW FRONTIER (next target): game simulates correctly but submits ZERO draw
+primitives / empty OT to GPU. Either (a) game legitimately in black sub-state
+waiting for memcard/controller/input, or (b) OT/primitive-list build broken
+upstream (a clean-port guest_at miss leaving OT empty), or (c) GPU OT-scan
+not finding the ordering table the game wrote. Diagnose: check whether game
+issues GPU "draw OT" cmds (0x02/0x03) and whether OT base in RAM is populated.
