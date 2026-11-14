@@ -510,3 +510,30 @@ NEXT: locate the LLE DeliverEvent->codec-resume call site (OpenBIOS
 DeliverEvent/WaitEventFlag wakeup -> ChangeThread or direct func dispatch) and
 confirm whether it bypasses g_sched_escape; if it uses psx_dispatch_call for
 the woken context, switch it to the scheduler-escape path.
+
+=== STALL#3 N+2 — TWO SEPARATE COROUTINES; recursion is the FILE-READ one ===
+cd_ctx_restore (gen 0x8019ADCC, 60B) restores ra/gp/sp/fp/s0-s7 from the saved
+ctx frame then `jr $ra` -> psx_restore_state_escape() = a LONGJMP that flattens
+to the top-level dispatch. So the CD CHANNEL coroutine (cd_chan_full_init ->
+cd_ctx_save -> on-IRQ cd_ctx_restore -> cd_intc_dispatch) resumes FLAT and does
+NOT accumulate host frames — that path is correct.
+
+The [NEST] recursion (psx_dispatch_call addr=0x8019B944 cd_reg_window_op,
+ra=0x80156628 = cd_file_read_seq wait-loop callsite, sp=0x801FFFA0 main stack)
+is therefore the FILE-READ/codec coroutine: cd_file_load_sm(0x8018CFDC) ->
+cd_file_read_seq(0x801565ec) -> wait-loop calls cd_seek_complete_poll(0x8019D500)
+-> ... -> clean cd_reg_window_op -> br2_call_generated(0x8019b944) ->
+psx_dispatch_call [NEST+1]. Each nested call re-enters the SAME callsite with
+identical sp/ra/pc => a suspended CPS continuation resumed via nested dispatch.
+
+CONFIG TESTS (all crash identically at depth 256): PSX_DEFER_SWITCH=0 and
+PSX_PRECISE_SLICE=1 — so it is NOT the ChangeThread deferred-switch path and NOT
+a slice-timing race; it is a structural nested-dispatch resume.
+
+NEXT: find what resumes the file-read coroutine's continuation inside the IRQ
+window. Candidates: (a) DeliverEvent's event func callback (OpenEvent func),
+(b) the cd_dma_chan_reset call_guest(@0x801bdee8) callback when non-NULL,
+(c) a BIOS WaitEventFlag/TestEvent wake that dispatches the waiter via
+psx_dispatch_call. Instrument psx_dispatch_call to also record the IMMEDIATE
+caller (the clean fn that called br2_call_generated) via a caller-tag ring so
+the resume site is named, not guessed.
