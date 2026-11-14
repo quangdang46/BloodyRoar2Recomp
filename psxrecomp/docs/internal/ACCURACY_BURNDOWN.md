@@ -1509,3 +1509,24 @@ OPEN HYPOTHESES (tracer subagent aeb9ef21 investigating):
 
 NEXT: await tracer root cause -> fix the exact gate. Then resolve unaff_s2/s3
 via disasm. Then verify fighter anim/action/HP actually advance = playable.
+
+=== SESSION 24b: task_pools_tick infinite loop FIXED — game now simulates ===
+ROOT CAUSE (subagent aeb9ef21, live-proven): guest_at() NEVER returns NULL
+(returns ram+phys for any value, scratchpad, or g_openbus). task_pools_tick
+tested the RESOLVED host ptr `while(piVar3!=0)` -> never false -> unconditional
+infinite loop on first battle frame -> all state frozen mid-frame, debug
+server dead (emu busy). Guest tests RAW next-ptr (beqz/bnez).
+FIX (a1c9005): test raw guest values headg/nextg before guest_at; same latent
+bug fixed in task_node_alloc/free, quad_fx_update, task_slot_step, fx site.
+ALSO 6ed43cf: unaff_gp $gp small-data -> guest_gp()=cpu->gpr[28].
+
+VERIFIED PROGRESS: game now dispatches REAL task fns — task_pools_tick ->
+task_invoke -> radial_glow_draw. No more freeze/spin.
+
+NEW BLOCKER: EXC_BREAKPOINT in radial_glow_draw.cold.1 (battle.c:12906 area,
+GTE/COP2 glow effect: setCopReg/copFunction/getCopReg + isqrt). isqrt_refine
+is pure int math (not the trap). Likely a COP2/GTE function trap or abort —
+investigate copFunction/setCopReg/getCopReg impls + cop2_clz. fn_guest arg
+was a real task node -> task system works.
+NOTE: correct build target is `psx-runtime` (NOT --target BloodyRoar2_Recompiled
+which silently no-ops -> stale binary fooled earlier test).
