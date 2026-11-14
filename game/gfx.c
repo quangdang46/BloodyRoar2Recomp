@@ -134,11 +134,16 @@ void gpu_pkt_unlink_n(uint *param_1,int param_2)
   uint uVar2;
   uint *puVar3;
   uint *hp;
+  uint32_t p1g, p1;
   
-  /* param_1 arrives as a guest address (low 24 bits are the
-   * compressed link value); walk the resolved host cell. */
-  hp = (uint *)guest_at((uint32_t)(uintptr_t)param_1);
-  uVar2 = (uint)param_1 & 0xffffff;
+  /* param_1 arrives as a host pointer from the clean_table wrapper
+   * (guest_at(gpr4)) but as a raw guest-address value from the game.c/
+   * menu.c callers — resolve either form. The link value walked below
+   * is the guest address's low 24 bits. */
+  p1g = guest_of(param_1);
+  p1 = p1g ? p1g : (uint32_t)(uintptr_t)param_1;
+  hp = (uint *)guest_at(p1);
+  uVar2 = p1 & 0xffffff;
   do {
     uVar1 = *hp;
     uVar2 = uVar2 - 4;

@@ -463,7 +463,7 @@ extern int memcard_info_query(void);
 extern void transition_screen_flow(int);
 extern void battle_intro_flow(int);
 extern void results_scoreboard(int);
-extern void battle_flow_state_machine(uint16_t*);
+extern void battle_flow_state_machine(int);
 extern void unlock_progress_scene_entry(int);
 extern void player_name_entry(int);
 extern int  system_config_menu_a(void);
@@ -486,7 +486,7 @@ extern void tile_stream_open(uint8_t*,void*,int*);
 extern int  tile_stream_pump(void);
 extern int blk_io_retry(int,int*);
 extern void cd_stream_mode_init(uint32_t);
-extern void gpu_clear_image_cmd2(uint16_t*,int,int,int);
+extern void gpu_clear_image_cmd2(undefined4,int,int,int);
 extern void gpu_pkt_attr_set(int,int);
 extern void cd_fileop_forward(int,int);
 extern void tile_decode_wait(int,int);
@@ -700,7 +700,9 @@ LAB_80126350:
         goto LAB_8012666c;
     case 8: /* 0x80126654 */
         match_mode_set(1);
-        battle_flow_state_machine(auStack_30);
+        /* a0 is the pad-buffer GUEST address (matches clean_table's raw
+         * gpr[4] contract and the callee's int param_1). */
+        battle_flow_state_machine((int)guest_of(auStack_30));
         bVar2 = 8;
 LAB_8012666c:
         if (g_game_state == bVar2) {
@@ -1172,18 +1174,22 @@ void status_flag_cond_set(uint32_t param_1,int param_2)
 
 void stat_counter_accum(int param_1,int param_2)
 {
+    /* param_1 is a raw guest address (clean_table passes gpr[4] verbatim);
+     * resolve it once — the direct (param_1+off) derefs below would read
+     * guest address bits as a host pointer. */
+    uint8_t *rec = (uint8_t *)guest_at((uint32_t)param_1);
     short sVar1;
     int iVar2;
     int iVar3;
 
-    iVar3 = (uint)*(byte *)(param_1 + 3) * 0x24;
+    iVar3 = (uint)rec[3] * 0x24;
     switch(DAT_1f80009c) {
     default:
         if (param_2 == 0) {
             sVar1 = *(short *)guest_at((uint32_t)(iVar3 + -0x7fe3ebb2));
             *(short *)((char *)g_DAT_801c144c + iVar3) = *(short *)((char *)g_DAT_801c144c + iVar3) + 1;
             *(short *)guest_at((uint32_t)(iVar3 + -0x7fe3ebb2)) = sVar1 + 1;
-            iVar2 = (uint)*(byte *)guest_at(*(uint32_t *)(param_1 + 0x2c) + 3) * 2 + iVar3;
+            iVar2 = (uint)*(byte *)guest_at(*(uint32_t *)(rec + 0x2c) + 3) * 2 + iVar3;
             *(short *)((char *)g_DAT_801c1444 + iVar2 + 0xe) = *(short *)((char *)g_DAT_801c1444 + iVar2 + 0xe) + 1;
         }
         else {
@@ -1192,8 +1198,8 @@ void stat_counter_accum(int param_1,int param_2)
             *(short *)guest_at((uint32_t)(iVar3 + -0x7fe3ebb6)) = sVar1 + 1;
         }
         *(short *)((char *)g_DAT_801c1446 + iVar3) = *(short *)((char *)g_DAT_801c1446 + iVar3) + 1;
-        if (*(ushort *)((char *)g_DAT_801c1450 + iVar3) < *(ushort *)(param_1 + 0xe2)) {
-            *(ushort *)((char *)g_DAT_801c1450 + iVar3) = *(ushort *)(param_1 + 0xe2);
+        if (*(ushort *)((char *)g_DAT_801c1450 + iVar3) < *(ushort *)(rec + 0xe2)) {
+            *(ushort *)((char *)g_DAT_801c1450 + iVar3) = *(ushort *)(rec + 0xe2);
         }
         break;
     case 2:
@@ -1352,9 +1358,13 @@ void frame_tick(intptr_t param_1)
             uVar5 = iVar8 + iVar7;
             iVar7 = iVar7 + -0x18;
             iVar4 = iVar4 + -1;
-            *(uint *)(iVar6 + 0x20d8) = *(uint *)(iVar9 + 0x207c) | 0x5000000;
+            /* iVar6/iVar9 hold GUEST addresses (OT/packet bases stored
+             * as 0x801e.... ints) — resolve through guest_at, not a raw
+             * host dereference. */
+            *(uint *)guest_at((uint32_t)(iVar6 + 0x20d8)) =
+                *(uint *)guest_at((uint32_t)(iVar9 + 0x207c)) | 0x5000000;
             iVar6 = iVar6 + -0x18;
-            *(uint *)(iVar9 + 0x207c) = uVar5 & 0xffffff;
+            *(uint *)guest_at((uint32_t)(iVar9 + 0x207c)) = uVar5 & 0xffffff;
         } while (0 < iVar4);
     }
     *(undefined2 *)(param_1 + 0xd2) = 0;
@@ -1467,7 +1477,12 @@ LAB_801472f8:
                         deferred_cmd_post(0x204,0,0);
                         print_mode_dispatch_b(2,0,0);
                         deferred_cmd_post(0x400,0x82,0);
-                        local_7c = (void (*)(void))attract_menu_dispatch;
+                        /* struct+0xc is a u32 GUEST code address read by
+                         * menu_stepper_state_advance -> fn_lookup; storing
+                         * a host fn pointer leaks 64-bit host bits. The
+                         * guest value is 0x8014751c (attract_menu_dispatch
+                         * in fnmap). */
+                        local_7c = (void (*)(void))(uintptr_t)0x8014751c;
                         local_82 = 7;
                         local_88 = 0;
                         local_86 = 0;
@@ -1545,10 +1560,11 @@ undefined4 scene_entry(int param_1,int param_2,int param_3)
     /* local_48 = sp+0x18 (frame 0x60) -> guest_sp()-0x48;
      * `sb $v0,0x18($sp)` + `addiu $a1,$sp,0x18` in 0x80159028. */
     undefined1 *local_48 = (undefined1 *)guest_at((uint32_t)(guest_sp() - 0x48));
-    undefined2 local_40;
-    undefined2 local_3e;
-    undefined2 local_3c;
-    undefined2 local_3a;
+    /* ClearImage rect = sp+0x20..0x27 (frame 0x60) -> guest_sp()-0x40.
+     * gpu_clear_image_cmd2 forwards param_1 to generated GPU code as a
+     * raw guest address, so the rect must live in the guest frame —
+     * host stack locals are invisible to it. */
+    uint16_t *local_40 = (uint16_t *)guest_at((uint32_t)(guest_sp() - 0x40));
     /* local_38 = sp+0x28 (frame 0x60) -> guest_sp()-0x38;
      * `swl/swr $t2,0x28($sp)` + `addiu $a0,$sp,0x28` in 0x80159028. */
     undefined4 *local_38 = (undefined4 *)guest_at((uint32_t)(guest_sp() - 0x38));
@@ -1592,18 +1608,20 @@ undefined4 scene_entry(int param_1,int param_2,int param_3)
     }
     _DAT_801f4740 = 0;
     gpu_disp_mask_set(0);
-    local_40 = 0;
-    local_3e = 0;
+    local_40[0] = 0;
+    local_40[1] = 0;
     if (*piVar5 == 0) {
-        local_3c = *(undefined2 *)((char *)g_DAT_801b3ed8 + 0x14 + iVar1);
+        local_40[2] = *(undefined2 *)((char *)g_DAT_801b3ed8 + 0x14 + iVar1);
     }
     else {
-        local_3c = (undefined2)
+        local_40[2] = (undefined2)
                    ((uint)(*(int *)((char *)g_DAT_801b3ed8 + 0x14 + iVar1) * 3 -
                           (*(int *)((char *)g_DAT_801b3ed8 + 0x14 + iVar1) * 3 >> 0x1f)) >> 1);
     }
-    local_3a = (undefined2)(*(int *)((char *)g_DAT_801b3ed8 + 0x18 + iVar1) << 1);
-    gpu_clear_image_cmd2((uint16_t *)&local_40,0,0,0);
+    local_40[3] = (undefined2)(*(int *)((char *)g_DAT_801b3ed8 + 0x18 + iVar1) << 1);
+    /* param_1 is a raw guest address (the sp+0x20 rect), matching the
+     * callee's undefined4 signature — not a host pointer. */
+    gpu_clear_image_cmd2((undefined4)(guest_sp() - 0x40),0,0,0);
     do {
         uVar3 = 2;
         if (*piVar5 != 0) {

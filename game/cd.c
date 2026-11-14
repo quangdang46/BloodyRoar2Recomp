@@ -41,6 +41,9 @@ void cd_result_wait_b_fwd(int,undefined4);
 void printf_forward(const char *, ...);
 extern void br2_irq_poll(void);
 extern uint32_t guest_of(const void *);
+extern uint32_t br2_gaddr(const void *);
+extern uint32_t br2_guest_frame(uint32_t);
+extern void br2_guest_frame_free(void);
 extern uint8_t  br2_ld8p(uint32_t cell);
 extern uint16_t br2_ld16p(uint32_t cell);
 extern uint32_t br2_ld32p(uint32_t cell);
@@ -361,7 +364,10 @@ uint cd_timer_read(int param_1)
 void cd_result_wait_b_fwd(int param_1,undefined4 param_2)
 
 {
-  cd_result_wait_b(param_1,(undefined1 *)(uintptr_t)param_2);
+  /* param_2 arrives as a raw guest address (undefined4); the callee's
+   * undefined1* is a host pointer into guest memory — resolve it. */
+  cd_result_wait_b(param_1,param_2 ? (undefined1 *)guest_at(param_2)
+                                   : (undefined1 *)0);
   return;
 }
 
@@ -581,7 +587,7 @@ uint cd_result_wait_a(int param_1,undefined1 *param_2)
    * spin. Same contract as cd_init_session/cd_file_read_seq.
    * br2_call_generated makes gen_clean_table skip this address. */
   return (uint)br2_call_generated(0x801968ccu, (uint32_t)param_1,
-                                  (uint32_t)(uintptr_t)param_2, 0, 0);
+                                  br2_gaddr(param_2), 0, 0);
 }
 
 /* ======== 0x80197ad0 ======== */
@@ -697,7 +703,10 @@ bool cd_cmd_issue_sync(byte param_1,int param_2,undefined4 param_3)
     DAT_801bc848 = uVar1;
   } while (iVar5 != -1);
   if (iVar4 == 0) {
-    iVar5 = cd_result_wait_a(0,(undefined1 *)(uintptr_t)param_3);
+    /* param_3 is a raw guest address value; cd_result_wait_a's
+     * undefined1* param is a host pointer — resolve via guest_at. */
+    iVar5 = cd_result_wait_a(0,param_3 ? (undefined1 *)guest_at(param_3)
+                                      : (undefined1 *)0);
     bVar2 = iVar5 == 2;
     CDDBG_SET(0x801bce2c,iVar5);
   }
@@ -733,7 +742,7 @@ uint cd_result_wait_b(int param_1,undefined1 *param_2)
    * spin. Same contract as cd_init_session/cd_file_read_seq.
    * br2_call_generated makes gen_clean_table skip this address. */
   return (uint)br2_call_generated(0x80196b4cu, (uint32_t)param_1,
-                                  (uint32_t)(uintptr_t)param_2, 0, 0);
+                                  br2_gaddr(param_2), 0, 0);
 }
 
 /* ======== 0x80197698 ======== */
@@ -1348,7 +1357,9 @@ extern void cd_chan_attr_push(uint32_t);
 extern void cd_reg_window_u16(int32_t,uint32_t);
 void cd_reg_window_update(uint8_t *a0)
 {
-  cd_chan_attr_push((uint32_t)(uintptr_t)a0);
+  /* a0 is a host pointer into guest memory; cd_chan_attr_push takes a
+   * raw guest address — translate, don't truncate the host pointer. */
+  cd_chan_attr_push(br2_gaddr(a0));
   cd_reg_window_u16(1,*(uint32_t *)a0);
 }
 
@@ -1839,22 +1850,26 @@ int32_t cd_seek_complete_poll(uint32_t a0)
  * entry count (debug>=2) — guest quirk preserved. Disasm 0x80195854-0x80195a74. */
 uint32_t cd_dir_read(uint32_t a0,uint32_t a1)
 {
-  uint8_t cmd[1];
-  uint8_t resp[8];
+  /* cmd/resp are handed to cd_cmd_issue_sync as raw guest addresses and
+   * read/written by generated code — they must live in guest-visible
+   * memory, so reserve a guest frame instead of using host stack. */
+  uint32_t fr = br2_guest_frame(0x10);
+  uint8_t *cmd = (uint8_t *)guest_at(fr);
+  uint8_t *resp = (uint8_t *)guest_at(fr + 8);
   uint8_t *out = (uint8_t *)guest_at(a1);
   uint32_t s6, s0, s3, s2, dbg, i;
   uint8_t *s1p;
   (void)a0;
   cmd[0] = 1;
   s6 = mc_session(0);
-  if (!cd_cmd_issue_sync(0x13,0,(undefined4)(uintptr_t)resp)) goto fail;
+  if (!cd_cmd_issue_sync(0x13,0,(undefined4)(fr + 8))) goto fail;
   s0 = ((uint32_t)(resp[1] >> 4)) * 10 + (resp[1] & 0xf);
   s3 = ((uint32_t)(resp[2] >> 4)) * 10 + (resp[2] & 0xf);
   dbg = *(uint32_t *)guest_at(0x801cc850);
   if (dbg >= 2)
     printf_forward((const char *)guest_at(0x801255f8),s0,s3);
   cmd[0] = 0;
-  if (!cd_cmd_issue_sync(0x14,(int)(uintptr_t)cmd,(undefined4)(uintptr_t)resp)) goto fail;
+  if (!cd_cmd_issue_sync(0x14,(int)fr,(undefined4)(fr + 8))) goto fail;
   out[0] = resp[1];
   out[2] = 0;
   out[1] = resp[2];
@@ -1865,7 +1880,7 @@ uint32_t cd_dir_read(uint32_t a0,uint32_t a1)
     /* BCD encode s0 via /10 magic */
     uint32_t q = s0 / 10;
     cmd[0] = (uint8_t)(q * 16 + (s0 - q * 10));
-    if (!cd_cmd_issue_sync(0x14,(int)(uintptr_t)cmd,(undefined4)(uintptr_t)resp)) goto fail;
+    if (!cd_cmd_issue_sync(0x14,(int)fr,(undefined4)(fr + 8))) goto fail;
     s2++;
     s1p[0] = resp[1];
     s1p[2] = 0;
@@ -1886,14 +1901,17 @@ done:
       }
     }
     mc_session(s6);
+    br2_guest_frame_free();
     return (uint32_t)n;
   }
   mc_session(s6);
+  br2_guest_frame_free();
   return guest_of(s1p);
 fail:
   if (*(uint32_t *)guest_at(0x801cc850) != 0)
     printf_forward((const char *)guest_at(0x80125624));
   mc_session(s6);
+  br2_guest_frame_free();
   return 0;
 }
 
@@ -3500,7 +3518,10 @@ int32_t cd_ctx_status_map(int32_t sel)
   if (*(uint32_t *)(v1 + 0x10) != guest_of(v1) ||
       v1[0x39] != 0)
     goto map;
-  if (*(uint8_t *)*(uint32_t *)(v1 + 0x30) != 0)
+  /* ctx+0x30 is a 4-byte guest pointer cell — read the u32 guest address
+   * and resolve it; dereferencing the cell value as a host pointer reads
+   * guest address bits as a native address. */
+  if (*(uint8_t *)guest_at(*(uint32_t *)(v1 + 0x30)) != 0)
     goto map;
   return v1[0x49];
 map:
@@ -3532,8 +3553,12 @@ int32_t cd_ctx_field_get(int32_t unused, int32_t sel, int32_t idx)
   case 4:
     if (idx < 0)
       return v1[0xe3];
-    if (idx < v1[0xe3])
-      return *(uint16_t *)(*(uint8_t **)v1 + idx * 2);
+    if (idx < v1[0xe3]) {
+      /* ctx+0 is a 4-byte guest pointer cell holding the u16 table base —
+       * read it as u32 and resolve; *(uint8_t**)v1 would read 8 bytes
+       * (two guest cells) as a host pointer. */
+      return *(uint16_t *)guest_at(*(uint32_t *)v1 + (uint32_t)idx * 2);
+    }
     return 0;
   case 0x64:
     return *(int32_t *)(v1 + 0x4c);
@@ -4203,11 +4228,18 @@ uint32_t cd_win_shift_op(uint32_t param_1,uint32_t param_2)
 
 int cd_file_load_sync(uint32_t param_1,uint32_t param_2,uint32_t param_3)
 {
-  uint8_t buf[8];
+  /* buf is written by cd_file_open through a host pointer, then handed
+   * to cd_mode_flag_set -> generated code as a raw guest address — it
+   * must live in guest-visible memory, not on the host stack. */
+  uint32_t fr = br2_guest_frame(0x10);
+  uint8_t *buf = (uint8_t *)guest_at(fr);
+  int r;
   cd_file_open((int32_t)param_2,buf);
-  cd_mode_flag_set(2,(int)(uintptr_t)buf,0);
+  cd_mode_flag_set(2,(int)fr,0);
   cd_read_setup(param_1,param_3,0x80);
-  return cd_read_poll(0,0) == 0;
+  r = cd_read_poll(0,0) == 0;
+  br2_guest_frame_free();
+  return r;
 }
 
 /* ======== 0x8019e730 ======== */
@@ -4409,7 +4441,9 @@ int cd_file_rec_find(uint32_t param_1,uint32_t param_2)
     uint32_t v0 = *(uint32_t *)guest_at(0x801fcd04 + off);
     if (v0 == 0) return -1;
     if (v0 == param_1) {
-      if (cd_strcmp((const void *)(uintptr_t)param_2,
+      /* param_2 arrives as a raw guest address (clean_table) — cd_strcmp
+       * takes host pointers, so resolve through cd_arg_ptr. */
+      if (cd_strcmp(cd_arg_ptr(param_2),
                        guest_at(s2)) == 0) {
         return (int)(i + 1);
       }
@@ -4967,7 +5001,9 @@ int cd_file_open_seq(uint32_t param_1,uint32_t param_2)
 {
   if (param_2 == 0) {
     int32_t r = cd_stamp_to_sector(guest_at(0x801fcb00));
-    cd_file_open(r + 1,(uint8_t *)param_1);
+    /* param_1 is a raw guest address; cd_file_open's uint8_t* is a host
+     * pointer it writes the sector bytes through — resolve it. */
+    cd_file_open(r + 1,(uint8_t *)guest_at(param_1));
     return (int)*(int32_t *)guest_at(0x801feb04);
   }
   return -1;
@@ -5361,7 +5397,9 @@ undefined4 cd_strncmp(undefined4 param_1,undefined4 param_2,undefined4 param_3)
   }
   if (param_2 == 0) return 1;
   a = (const int8_t *)guest_at(param_1);
-  b = (const int8_t *)(uintptr_t)param_2;
+  /* a1 arrives as a raw guest address (clean_table) or a u32-held host
+   * pointer — resolve either form via cd_arg_ptr, not a raw cast. */
+  b = (const int8_t *)cd_arg_ptr(param_2);
   n = (int32_t)param_3 - 1;
   if (n < 0) return 0;
   for (;;) {
