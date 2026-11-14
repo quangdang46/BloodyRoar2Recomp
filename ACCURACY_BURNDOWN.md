@@ -482,3 +482,31 @@ ChangeThread; the DeliverEvent/callback resume path needs the same defer-until-
 acked treatment. NEXT: find the exact DeliverEvent->coroutine-resume call site
 (does it go through psx_change_thread / g_sched_escape, or a direct
 psx_dispatch_call of the event func?) and route it through the deferred path.
+
+=== STALL#3 N+1 — PRECISE RECURSION MECHANISM (in_exception window) ===
+IRQ take sets in_exception=1 + exception_nest_depth++ (interrupts.c:1560);
+restored to prev at :2043 after the handler body. psx_check_interrupts gates
+delivery on !in_exception. The codec coroutine (cd_file_read_seq, main-thread
+sp=0x801FFFA0 — NOT a separate fiber) is resumed by the CD IRQ's DeliverEvent
+through a NESTED psx_dispatch_call (br2_call_generated boundary), and that
+resume executes AFTER in_exception has been restored to 0 but STILL INSIDE the
+IRQ dispatch's host frames. So the resumed cd_reg_window_op MMIO sees
+in_exception==0 + i_stat bit2 (level CD IRQ, still hot from the sector stream)
+-> takes a FRESH nested IRQ -> handler -> DeliverEvent -> resume -> MMIO -> IRQ.
+Each cycle adds a psx_dispatch_call frame that never unwinds -> depth 4097.
+
+On hardware the woken thread runs AFTER the exception handler returns (RFE) —
+the handler's stack is gone, so each IRQ is a fresh top-level delivery and the
+coroutine's next MMIO IRQ is sequential, not nested. The recomp keeps the
+resume nested inside the not-yet-unwound IRQ dispatch -> unbounded host depth.
+
+FAITHFUL FIX: route the DeliverEvent/event-resume (and any in-exception thread
+wake) through the scheduler escape — g_sched_escape / longjmp to
+psx_scheduler_run — so the IRQ handler's dispatch frames UNWIND before the
+codec coroutine runs, exactly like the s_defer_switch / ChangeThread path
+(interrupts.c:2139-2192) already does for thread switches. The event-callback
+resume must NOT run as a nested psx_dispatch_call inside the IRQ window.
+NEXT: locate the LLE DeliverEvent->codec-resume call site (OpenBIOS
+DeliverEvent/WaitEventFlag wakeup -> ChangeThread or direct func dispatch) and
+confirm whether it bypasses g_sched_escape; if it uses psx_dispatch_call for
+the woken context, switch it to the scheduler-escape path.
