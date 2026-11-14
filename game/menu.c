@@ -14420,6 +14420,9 @@ int32_t heap_serialize(uint32_t param_1,uint32_t param_2,uint32_t param_3,
           scr[s3*4u+3u] = 0x80187dccu;
           s3++;
         }
+        { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+          decomp_trace_record(27,ctx,MB32(ctx+0x14u),0,MB32(rp+0x18u));
+          decomp_trace_record(28,rp,cur,0,MB32(ctx+0x10u)); }
         cur = heap_serialize_tag_01000000(cur, rp + 4u,
                            MB32(ctx + 8u), MB32(ctx + 0xcu),
                            MB32(ctx + 0x10u), MB32(ctx + 0x14u));

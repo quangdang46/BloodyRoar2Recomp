@@ -148,3 +148,27 @@ then real HW would corrupt the same code, so unlikely.
 NEXT: trace $s4 (gpr20) provenance in caller fn @~0x8016C5xx; check whether
 serialize dst comes from a clean-port field read (guest_at missing?) or a
 kernel-alloc return. The 0x??800507 pattern = a table of ptr/offset entries.
+
+=== REFINED: tag_01000000 write-cursor fully decoded + traced ===
+heap_serialize_tag_01000000 (gen 0x8016A82C) has TWO copy phases. The
+corrupting store is phase-2 `sw $v0,0($a1)` @0x8016A8D4. Phase-2 write cursor:
+  a1(gpr5) = MB32(rp+0x18)*8 + *(sp+0x14)   [= idx(+0x18)*8 + arg6]
+  arg6 = MB32(ctx+0x14)  (stack arg, staged fr+0x14 == sp+0x14; verified
+  br2_guest_frame math is correct). arg1 = rp+4, so idx=*(rp+0x18),
+cnt=*(rp+0x14). a0=cur is the separate output-stream cursor (0x8005/6xxxx).
+Added decomp_trace tags 27/28 (hser_1000_ctx/hser_1000_rec) in clean
+heap_serialize's 0x01000000 case capturing ctx, MB32(ctx+0x14), MB32(rp+0x18)
+AT CALL TIME. RESULT: all 30 calls produce a1 in 0x80001D1D..0x80002727 —
+VALID 0x8000xxxx table addrs (ctx=0x800F95D8 base 0x80001D1D; ctx=0x800F061C
+base 0x80001D6F). NONE reach 0x2790.
+=> The corrupting tag_01000000 call does NOT go through clean heap_serialize.
+It runs via GENERATED heap_serialize (br2eu_func_8016B7C0) reached through a
+dispatch path that skips clean_try_dispatch (heap_record_emit 0x8016CC5C is
+NOT in clean_table — only fnmap; psx_dispatch_call/CPS-continuation may bypass
+clean). Both clean+generated stage identical faithful args, so the divergence
+is WHICH blk/records each processes or corrupt heap-record input data.
+NEXT: (a) confirm generated heap_serialize actually runs (add a generated-side
+marker or count hser vs total heap_serialize calls); (b) if so, the record
+rp+0x18/ctx+0x14 for the bad blk is corrupt upstream (decompress/heap_alloc54/
+heap_ptr_fixup) — trace the heap-record BUILD for that blk; (c) alternatively
+a mid-function CPS re-entry at block_8016A8A8 with clobbered gpr5.
