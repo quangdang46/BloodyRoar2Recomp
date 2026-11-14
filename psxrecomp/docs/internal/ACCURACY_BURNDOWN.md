@@ -1302,3 +1302,43 @@ cd_ext_init_once/cd_dma_chan_init fully generated, OR trace the LLE kernel
 OpenEvent return for class 0xF0000009 vs 0xF0000003. The 0x8019B0FC handle
 is the anomaly to confirm first — if it's genuinely wrong, TestEvent can
 never succeed regardless of DeliverEvent.
+
+## Session — CD event OpenEvent returns 0 (TestEvent spins on slot 0)
+
+RESOLVED (partial): hypothesis (a) CONFIRMED + FIXED. Delegating
+cd_ext_init_once/cd_dma_chan_init/cd_hw_chan_init to generated MIPS
+(commit 0cd07f7) restored correct $v0 through the `jr 0xB0` BIOS boundary —
+cd_hw_chan_init's 8 OpenEvents now return proper 0xF1000000-7 handles and
+populate the EvCB table (verified via read_ram @0x8e08). The bogus
+0x8019B0FC handle is gone.
+
+REMAINING BUG (narrowed): the game STILL parks in
+cd_seek_complete_poll -> cd_seek_state_machine -> TestEvent(*(0x801bde38)).
+Now 0x801bde38 = 0 (was 0x8019B0FC). TestEvent(0) polls EvCB slot 0, which
+is a 0xF4000001 CALLBACK event (never READY) -> infinite spin.
+
+EvCB table @0x8e08 (16 slots, LLE kernel-managed — route=0 for ALL B0 calls,
+s_call_hle_on=0): only slots 0-7 populated, ALL class 0xF4000001/0xF0000011
+CALLBACK events from cd_hw_chan_init. NO class 0xF0000009 event exists, and
+NO OpenEvent(0xF0000009) appears in hle_dump (2295-entry ring).
+
+Generated cd_ext_init_once (br2eu_func_8019B308) DOES emit the full sequence:
+guard @0x801BDEA0 -> 0x8018E300 -> cd_ext_table_init(0x8019BEE0) ->
+FUN_8019b380(0xF0000009,0x20,0x2000,0)=OpenEvent -> sw v0 -> 0x801BDE38 ->
+FUN_8019b390 EnableEvent -> 0x8018E310. $at IS reloaded @0x8019B354 before
+the store, so the store address is correct; v0=OpenEvent return = 0.
+
+CONCLUSION: LLE kernel OpenEvent(0xF0000009,0x20,MARK,0) returns 0 — either
+(a) cd_ext_init_once's init chain exits before block_8019B338 (guard set=1
+at block_8019B31C but 0x801BDDF4 INTC-table cursor is 0 -> cd_ext_table_init
+may not have populated handlers), or (b) kernel rejects the open because the
+event system isn't ready at gfx-init time (cd_hw_chan_init opens succeed —
+it runs LATER). NOTE: cd_dma_chan_init @0x8019b310 is a PHANTOM — it is the
+`addiu sp` insn inside cd_ext_init_once, has NO dispatch entry, and NO
+callers; its br2_call_generated delegation is a harmless no-op. The real
+function is cd_ext_init_once @0x8019B308.
+NEXT: determine if block_8019B338/OpenEvent executes (watch 0x801BDE38
+write + FUN_8019b380 entry for class 0xF0000009), and whether the LLE
+kernel event table is initialized before cd_chan_boot_init->cd_ext_init_once
+runs. If ordering, the fix is to defer the CD-event open until kernel
+InitEvents completes.
