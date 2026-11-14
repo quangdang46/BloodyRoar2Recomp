@@ -5973,3 +5973,41 @@ in fighter/pose init record setup — the systematic guest-vs-host
 mistranslation debt in battle.c/resolve.c/ev.c/menu.c, NOT another
 isolated cast. menu.c also has a stale 1-arg keyframe_advance(uint32_t)
 prototype vs the real (byte*,byte*) def.
+
+=== Session 21 — systematic guest-vs-host pointer audit (battle/render path) ===
+
+Method: lldb breakpoint+backtrace per crash; each fix verified to advance
+the crash deeper. Commits a1fd0a9, 9c9a488, 4584812 (all pushed to mine).
+
+FIXED (all same root class — guest address used as host pointer, or host
+pointer truncated to 32-bit guest-address param):
+- fighter_pair_update/fighter_contact_resolve/battle_hud_draw/
+  fighter_height_check/task_alloc_wrap args: (int)(intptr_t)&DAT_x ->
+  (int)guest_of(&DAT_x) so int params receive real guest addrs.
+- fighter_attach_run: part-attach jump table read from EMPTY host array
+  g_PTR_FUN_801b55c0 -> now reads guest RAM 0x801b55c0 + br2_call_generated.
+- rotmat2_pair_build uint* results truncated through undefined4 (4 sites
+  feeding gte_rtps_xform1_raw) -> block-scoped uint *rm.
+- battle_camera_step rotmat2_pair_build/rtps_basis_xform args -> guest_at.
+- angle_gte_vec/vec2_rot literal 0x1f8003xx addrs -> guest_at.
+- prim_list_gte_invoke/prim_list_persp_step: int* param_1 callers pass
+  guest_at(); internal gte_xform3/range_circle_test guest addrs -> guest_at.
+- fighter_trail_emit callers + fighter_reinit_tail (int)(intptr_t)s0 ->
+  (int)guest_of(s0).
+
+VERIFIED PROGRESSION: hitbox_corners_xform (param_1 now correct guest
+0x1f8000e8) -> fighter_attach_run -> gte_rtps_xform1_raw ->
+rotmat2_pair_build -> angle_gte_vec/vec2_rot -> prim_list_gte_invoke ->
+prim_list_persp_step -> range_circle_test -> fighter_trail_emit ->
+fighter_reinit_tail -> battle_intro_flow (menu.c).
+
+CURRENT BLOCKER: menu.c battle_intro_flow(param_1=0) line 1859 —
+_DAT_1f80008c derefs wild ptr 0x3e5000000007fff. g__DAT_1f80008c binding
+verified correct (names[]/vars[] aligned, guest_for->guest_at(0x1f80008c));
+value overwritten by upstream corruption OR uninit menu/attract path.
+
+DEBT: ~36+ remaining (type*)(uintptr_t)X sites where X may be a guest
+address (many are false positives — param already host ptr). Thousands of
+(uint32_t)(uintptr_t) sites remain. This is the large clean-source RE
+audit — best done by parallel subagents per-file (battle.c, resolve.c,
+ev.c, menu.c, action.c) with lldb crash-oracle verification.
