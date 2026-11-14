@@ -1426,17 +1426,17 @@ void cd_handler_triple_install(void)
 extern void cd_ext_table_init(uint32_t);
 extern uint32_t FUN_8019b380(uint32_t,uint32_t,uint32_t,uint32_t);
 extern void FUN_8019b390(uint32_t);
+extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+/* cd_ext_init_once — delegate whole body to generated MIPS (0x8019b308).
+ * Its FUN_8019b380 OpenEvent(B0/0x08) + FUN_8019b390 EnableEvent(B0/0x0C)
+ * sequence must run with live guest gpr/ra: the BIOS `jr 0xB0` return value
+ * ($v0 event handle) does not propagate correctly through the clean->
+ * br2_call_generated->generated->BIOS-call boundary, so the CD event handle
+ * stored @0x801bde38 came back as a code pointer (0x8019B0FC) instead of a
+ * 0xF100000x EvCB handle -> TestEvent spins forever (session-18 finding). */
 void cd_ext_init_once(void)
 {
-  uint32_t r;
-  if (*(uint32_t *)guest_at(0x801bdea0) != 0) return;
-  *(uint32_t *)guest_at(0x801bdea0) = 1;
-  FUN_8018e300();
-  cd_ext_table_init(0x8019b7e0);
-  r = FUN_8019b380(0xf0000009,0x20,0x2000,0);
-  FUN_8019b390(r);
-  *(uint32_t *)guest_at(0x801bde38) = r;
-  FUN_8018e310(0);
+  br2_call_generated(0x8019b308u,0, 0, 0, 0);
 }
 
 /* cd_chan_block_boot — channel block @0x801febe0 init: clears +0/4/8/0xc/
@@ -5043,18 +5043,13 @@ void cd_gpu_call_8b(uint32_t param_1,uint32_t param_2)
 
 /* ======== 0x8019b310 ======== */
 
+/* cd_dma_chan_init — delegate whole body to generated MIPS (0x8019b310).
+ * Same BIOS `jr 0xB0` OpenEvent/EnableEvent boundary as cd_ext_init_once —
+ * the $v0 handle must propagate through generated context (session-18). */
 void cd_dma_chan_init(uint32_t param_1)
 {
-  if (param_1 != 0) return;
-  DB32(0x801bdea0) = 1;
-  FUN_8018e300();
-  cd_ext_table_init(0x8019b7e0);
-  {
-    uint32_t r = FUN_8019b380(0xf0000009,0x20,0x2000,0);
-    DB32(0x801bde38) = r;
-    FUN_8019b390(r);
-  }
-  FUN_8018e310(0);
+  (void)param_1;
+  br2_call_generated(0x8019b310u,param_1, 0, 0, 0);
 }
 
 /* ======== 0x80199100 ======== */
@@ -5618,34 +5613,11 @@ int32_t bios_tramp_b035(int32_t a0,const void *a1,int32_t a2)
  * (syscall 1) return ==1 before EI; host FUN_8018e300 is a void
  * stub, so the restore runs unconditionally — same convention as
  * every other DI/EI site in this file. */
+/* cd_hw_chan_init — delegate whole body to generated MIPS (0x801a0be0).
+ * Eight FUN_8019b380(B0/0x08) allocs + FUN_8019b390(B0/0x09) frees: the
+ * BIOS `jr 0xB0` $v0 handles must propagate through generated context
+ * (session-18 boundary bug — same as cd_ext_init_once/cd_dma_chan_init). */
 void cd_hw_chan_init(void)
 {
-  uint32_t r;
-  FUN_8018e300();
-  r = FUN_8019b380(0xf4000001,0x4,0x1000,0x801a0b10);
-  DB32(0x8020ef70) = r;
-  r = FUN_8019b380(0xf4000001,0x8000,0x1000,0x801a0b24);
-  DB32(0x8020ef74) = r;
-  r = FUN_8019b380(0xf4000001,0x100,0x1000,0x801a0b38);
-  DB32(0x8020ef78) = r;
-  r = FUN_8019b380(0xf4000001,0x2000,0x1000,0x801a0b4c);
-  DB32(0x8020ef7c) = r;
-  r = FUN_8019b380(0xf0000011,0x4,0x1000,0x801a0b60);
-  DB32(0x8020ef80) = r;
-  r = FUN_8019b380(0xf0000011,0x8000,0x1000,0x801a0b74);
-  DB32(0x8020ef84) = r;
-  r = FUN_8019b380(0xf0000011,0x100,0x1000,0x801a0b88);
-  DB32(0x8020ef88) = r;
-  r = FUN_8019b380(0xf0000011,0x2000,0x1000,0x801a0b9c);
-  DB32(0x8020ef8c) = r;
-  FUN_8019b390(DB32(0x8020ef70));
-  FUN_8019b390(DB32(0x8020ef74));
-  FUN_8019b390(DB32(0x8020ef78));
-  FUN_8019b390(DB32(0x8020ef7c));
-  FUN_8019b390(DB32(0x8020ef80));
-  FUN_8019b390(DB32(0x8020ef84));
-  FUN_8019b390(DB32(0x8020ef88));
-  FUN_8019b390(DB32(0x8020ef8c));
-  cd_pending_args_pump();
-  FUN_8018e310(0);
+  br2_call_generated(0x801a0be0u,0, 0, 0, 0);
 }
