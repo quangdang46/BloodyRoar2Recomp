@@ -2177,3 +2177,36 @@ walking an OT whose leaf tags are stale. NEXT: dump the live OT leaf
 chain + a few prim headers during state 6 and check coords/uv/clut;
 verify the framebuffer the GPU writes is the one screenshot/present reads
 (display_y=240 observed -- check which 240-line half is shown).
+
+## N+16 — flat-color battle: render pipeline traced to rasterize stage
+
+Follow-up forensics on the N+15 flat framebuffer (game now reaches state 6,
+GPU busy, OT populated, textures in VRAM, primitives built at 0x801e6210+
+with env cmds 0xE3/0xE4/0xE5/0x0E + vertex/UV/color words):
+
+- OT entries 0x001E6xxx are VALID: low-21-bit RAM offsets
+  (0x801E6288 & 0x1FFFFF = 0x1E6288); gpu.c:1811 ORs 0x80000000 back,
+  gpu.c:5000 masks to RAM range. NOT a pointer-truncation bug.
+- CPU-side VRAM (gpu_vram_peek, x/y pixel coords) shows flat 0x296c across
+  BOTH displayed pages (display_y=240 -> visible band y=240..479, x=0..319)
+  AND x=0..319 of page0. BUT the renderer is OpenGL (FBO); CPU VRAM is only
+  a shadow, so flat CPU VRAM != proof of flat GPU output.
+- gl_fbo_peek returns "GL pipeline inactive" in headless mode, so the real
+  GPU-side framebuffer can't be peeked directly; screenshot_file reads the
+  true presented output and it IS a single flat color that CHANGES per
+  attract scene ((0,16,40)->(99,90,82)->white fades).
+
+CONCLUSION: stage/backdrop color varies per scene (so the display path and
+per-frame present DO update), primitives+textures exist, yet no geometry
+detail rasterizes. Most likely a SYSTEMIC issue, not fighter-specific:
+  (a) GTE/projection produces off-screen/degenerate coords for ALL prims
+      (camera/projection matrix or GTE transform broken) -> only the
+      fullscreen backdrop/clear survives;
+  (b) primitive packet format mismatch so the GPU walker drops/misreads
+      every draw prim (env cmds parse, draw cmds don't);
+  (c) draw-area/scissor or OT-leaf-tag interpretation clips everything.
+NEXT: oracle-diff one frame's GPU command stream + rasterized pixels vs
+DuckStation/Beetle (the project already keeps a psx-spx oracle), OR decode
+a single sprite/poly prim header the GPU walker consumes and check its
+coords/CLUT/UV against sane ranges. A GTE sanity check (transform a known
+vertex, verify screen-space result) would quickly separate (a) from (b).
