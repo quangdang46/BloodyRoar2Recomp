@@ -339,8 +339,8 @@ void battle_frame_tick(int param_1,uint param_2)
   iVar5 = param_1 + 0x28;
   if (*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x82) ))== 0) {
     fighter_contact_resolve((int)(intptr_t)&DAT_1f8000e8,(int)(intptr_t)&DAT_1f8001f0,param_1);
-    FUN_801787dc(&DAT_1f8000e8,(uint8_t *)(uintptr_t)param_1);
-    FUN_801787dc(&DAT_1f8001f0,(uint8_t *)(uintptr_t)param_1);
+    FUN_801787dc(&DAT_1f8000e8,(uint8_t *)guest_at((uint32_t)param_1));
+    FUN_801787dc(&DAT_1f8001f0,(uint8_t *)guest_at((uint32_t)param_1));
     fighter_pair_update((int)(intptr_t)&DAT_1f8000e8,(int)(intptr_t)&DAT_1f8001f0,param_1);
   }
   if (((int)param_2 >> 2 & 1U) != 0) {
@@ -3302,11 +3302,11 @@ LAB_8017fca0:
   else if (-1 < (int)param_1[0x16]) {
     param_1[0x18] = param_1[0x18] & 0xfffbffff;
   }
-  pad_edge_scan((int)(uintptr_t)param_1);
+  pad_edge_scan((int)br2_gaddr(param_1));
   if ((param_1[0x18] & 0x40000) == 0) {
-    cmd_input_parse((int)(uintptr_t)param_1);
+    cmd_input_parse((int)br2_gaddr(param_1));
   }
-  action_from_input((int)(uintptr_t)param_1);
+  action_from_input((int)br2_gaddr(param_1));
   return;
 
 }
@@ -15300,7 +15300,7 @@ void fighter_anim_advance(int param_1,int param_2)
   sVar3 = *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 0xb0) ))+ 6)));
   *(short *)guest_at((uint32_t)(uintptr_t)((param_2 + 0xc6) ))= *(short *)guest_at((uint32_t)(uintptr_t)((param_2 + 0xc6) ))+ 1;
   *(short *)guest_at((uint32_t)(uintptr_t)((param_2 + 0xcc) ))= sVar3 << 4;
-  keyframe_advance(param_1);
+  keyframe_advance((byte *)guest_at((uint32_t)param_1),(byte *)guest_at((uint32_t)param_2));
   return;
 }
 
