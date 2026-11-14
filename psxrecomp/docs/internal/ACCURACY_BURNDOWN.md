@@ -2510,3 +2510,43 @@ CD coroutine ctx save/restore, a kernel structure overlapping the
 vector page, or the game's own kernel reusing 0x80000080+ for data
 after clearing BEV. The value 0x000000f2 (=242) + surrounding zeros
 looks like a small data field, not code.
+
+## N+25 — WRITER IDENTIFIED: fighter transform-node wild pointer -> gte_xform3_nold
+
+Armed guest_watch (mprotect page watch) on 0x80000080 len 16, reproduced
+at frame ~48443-48607 (consistent ~48.5k). The corrupting entry:
+    addr 0x80000084  store window old=ac275a2708004003... new=f2000000...b1ff0000
+    (a ~20-byte contiguous write = gte_xform3_nold's 5-word vertex output)
+
+store_pc=0x8017D1C0 was a STALE g_debug_last_store_pc (clean-C store
+bypasses it). Resolved the HOST rip/ra_chain via atos:
+    gte_xform3_nold      battle.c:10509   <- faulting *param_2 write
+    node_xform_apply     battle.c:5634/5635
+    hitbox_corners_xform battle.c
+    fighter_pair_update  battle.c:645
+    battle_frame_tick    battle.c:348
+    battle_intro_flow    menu.c
+
+Mechanism: node_xform_apply(param_1=node) writes the transformed vertex
+INLINE at guest_at(node+0x20) (5 words, node+0x20..0x33). For the write to
+land on phys 0x84, the NODE POINTER param_1 itself was ~0x80000064 —
+kernel low memory treated as a transform node. The wild node pointer came
+from a fighter model node-tree link (+0x44 sibling / +0x48 child).
+
+Tree walk (debug server, wedged state):
+    P1 node_root=0x801e1b3c -> BAD links 0xa77912a8, 0x12d  (garbage)
+    P2 node_root=0x801e2c1c -> 19 nodes, clean
+
+ROOT CAUSE (unified): the fighter MODEL node tree is partially
+uninitialized/corrupt (P1 has wild link fields). This ties to the CD
+sector loss (ring_dropped~21k): fighter model resource not fully loaded
+-> node-tree link fields hold garbage -> node_xform_apply follows a wild
+link into kernel space -> gte_xform3_nold writes transformed vertex over
+the exception vector -> IRQ exception storm -> post_exception_cooldown
+hot -> CD IRQ delivery suppressed -> CD coroutine starves -> 0xf1 freeze.
+Same bad model data also explains flat battle (no valid geometry).
+
+NEXT: find the fighter model/node-tree loader; determine whether P1's
+garbage links are (a) unloaded resource (CD loss) or (b) a relocation/
+parse bug writing wrong link values. The faithful fix is valid model
+data, NOT patching node_xform_apply (it faithfully writes node+0x20).
