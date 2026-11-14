@@ -110,7 +110,7 @@ static uint32_t gpu_call(uint32_t off, uint32_t a0, uint32_t a1,
  * port has no guest stack, so stage the 8-byte rect in the arg-build
  * area below the guest stack pointer (o32 sp-0x10..sp-1) — scratchpad
  * is only 0x400 bytes, so no fixed 0x1f8xxxx stand-in is valid. */
-static uint32_t gpu_rect(const void *p)
+uint32_t gpu_rect(const void *p)
 {
     memcpy(guest_at((uint32_t)(guest_sp() - 0x10)), p, 8);
     return (uint32_t)(guest_sp() - 0x10);

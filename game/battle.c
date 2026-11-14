@@ -1485,7 +1485,7 @@ LAB_80130048:
     else {
       if (*(short *)guest_at((uint32_t)(uintptr_t)((param_4 + 0x24) ))!= 0x168) {
         local_28[0] = 0x168;
-        u16_step_toward((ushort *)(uintptr_t)(param_4 + 0x24),(ushort *)(uintptr_t)local_28,10);
+        u16_step_toward((ushort *)guest_at((uint32_t)(param_4 + 0x24)),(ushort *)(uintptr_t)local_28,10);
         gte_cw_d000_set((int)*(short *)guest_at((uint32_t)(uintptr_t)((param_4 + 0x24))));
       }
       dual_target_track((int)(uintptr_t)param_1,(int)(uintptr_t)param_2,(int)(uintptr_t)param_3);
@@ -8992,7 +8992,7 @@ void impact_fx_emit_tick(int param_1)
   }
   uVar3 = 0x40000007;
 LAB_80139fb0:
-  impact_fx_spawn((undefined4 *)(uintptr_t)(param_1 + 0x58),uVar3,uVar1,0,0);
+  impact_fx_spawn((undefined4 *)guest_at((uint32_t)(param_1 + 0x58)),uVar3,uVar1,0,0);
   return;
 
 }
@@ -9760,7 +9760,7 @@ void dual_target_track(int param_1,int param_2,int param_3)
     }
     iVar3 = iVar3 << 0xc;
   }
-  u16_step_toward((ushort *)(uintptr_t)(param_1 + 0x60),(ushort *)(uintptr_t)(param_1 + 0x68),iVar3 >> 0x10);
+  u16_step_toward((ushort *)guest_at((uint32_t)(param_1 + 0x60)),(ushort *)guest_at((uint32_t)(param_1 + 0x68)),iVar3 >> 0x10);
   return;
 
 }
@@ -9964,7 +9964,7 @@ void camera_track_shot(int param_1,int param_2,int param_3)
     }
     iVar4 = iVar4 << 0xb;
   }
-  u16_step_toward((ushort *)(uintptr_t)(param_1 + 0x60),(ushort *)(uintptr_t)(param_1 + 0x68),iVar4 >> 0x10);
+  u16_step_toward((ushort *)guest_at((uint32_t)(param_1 + 0x60)),(ushort *)guest_at((uint32_t)(param_1 + 0x68)),iVar4 >> 0x10);
 LAB_801332f0:
   *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x20) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x28)));
   *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x22) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x2a)));
@@ -10110,7 +10110,7 @@ void camera_track_step(int param_1,int param_2,int param_3)
     }
     iVar5 = iVar5 << 0xc;
   }
-  u16_step_toward((ushort *)(uintptr_t)(param_1 + 0x60),(ushort *)(uintptr_t)(param_1 + 0x68),iVar5 >> 0x10);
+  u16_step_toward((ushort *)guest_at((uint32_t)(param_1 + 0x60)),(ushort *)guest_at((uint32_t)(param_1 + 0x68)),iVar5 >> 0x10);
   return;
 
 }
@@ -16696,6 +16696,7 @@ extern int  mdec_stat_wait_b();
 extern int  mdec_status_read();   /* guest 0x8018fe44 — no C def yet (weak-stub needed) */
 extern int  mdec_decode_issue(uint32_t param_1,uint32_t param_2);
 extern void gpu_load_image_cmd();
+extern uint32_t gpu_rect(const void *p);
 
 /* guest file_op_dispatch @0x8018fac8 — file-op dispatch wrapper: cd_dispatch_tbl4(0,arg). */
 int file_op_dispatch(int param_1)
@@ -17154,7 +17155,11 @@ int cd_search_file(undefined4 *param_1,uint32_t param_2)
   const uint8_t *name = (const uint8_t *)guest_at(param_2);
   const uint8_t *s0;
   uint8_t *s1;
-  char lbuf[64];              /* guest sp+0x10 token buffer */
+  /* token buffer must live in guest RAM: cd_file_rec_find/cd_strncmp12_eq
+   * receive it as a u32 guest address (cd_arg_ptr). Stage 64 bytes below
+   * guest_sp (gpu_rect uses sp-0x10..sp-1, so sp-0x50..sp-0x11 is free). */
+  uint32_t lbuf_g = (uint32_t)(guest_sp() - 0x50);
+  char *lbuf = (char *)guest_at(lbuf_g);
   int s2;
   int a0v;
   int c;
@@ -17189,7 +17194,7 @@ tok_end:
     if (c == 0) goto str_end;
     s0++;
     *s1 = 0;
-    a0v = cd_file_rec_find((uint32_t)a0v,(uint32_t)(uintptr_t)lbuf);
+    a0v = cd_file_rec_find((uint32_t)a0v,lbuf_g);
     if (a0v == -1) {
       lbuf[0] = 0;
       goto have;                  /* slti s2,8 always true here */
@@ -17222,7 +17227,7 @@ have:
       const uint8_t *flag = (const uint8_t *)guest_at(0x801fc708 + i * 0x18);
       const uint8_t *rec  = (const uint8_t *)guest_at(0x801fc700 + i * 0x18);
       if (*flag == 0) break;
-      if (cd_strncmp12_eq(0x801fc708 + i * 0x18,(uint32_t)(uintptr_t)lbuf) != 0) {
+      if (cd_strncmp12_eq(0x801fc708 + i * 0x18,lbuf_g) != 0) {
         if (2 <= (int)*(int32_t *)guest_at(0x801cc850)) {
           printf_forward((const char *)guest_at(0x80125948),lbuf);
         }
@@ -17305,7 +17310,7 @@ void corner_emit_cond_offset(int param_1,int param_2,int param_3,int param_4,int
   asStack_10[2] = (short)param_6;
   asStack_10[3] = (short)param_7;
   iVar1 = iVar1 + ((param_4 + param_5 * (int)*(short *)guest_at((uint32_t)(uintptr_t)(iVar1 + 0x10))) << 1) + 0x14;
-  gpu_load_image_cmd((undefined4)(uintptr_t)asStack_10,iVar1);
+  gpu_load_image_cmd(gpu_rect(asStack_10),iVar1);
   return;
 }
 
@@ -17329,7 +17334,7 @@ void corner_emit_variant(int param_1,int param_2,int param_3,int param_4,int par
   }
   asStack_10[2] = (short)(*(ushort *)guest_at((uint32_t)(uintptr_t)(iVar1 + 0x10)) + param_4);
   asStack_10[3] = (short)(*(ushort *)guest_at((uint32_t)(uintptr_t)(iVar1 + 0x12)) + param_5);
-  gpu_load_image_cmd((undefined4)(uintptr_t)asStack_10,iVar1 + 0x14);
+  gpu_load_image_cmd(gpu_rect(asStack_10),iVar1 + 0x14);
   return;
 }
 
