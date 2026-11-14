@@ -2012,3 +2012,35 @@ multiple event deliveries interleaving.
 NEXT: identify the OpenBIOS routine at 0x00002914 (read OpenBIOS_full.c
 ~222967) — likely DeliverEvent or TestEvent — and check its re-entrancy
 contract vs the game's event-wait flag clearing.
+
+## N+11 — the recursing routine is the OpenBIOS THREAD-SCHEDULER context-restore
+
+The dispatch-0x00002914 block maps to BIOS ~0xBFC208D0-0xBFC20964. Its
+prologue is unambiguous:
+  0xBFC208D0  lw $sp, 19332($sp)   <- restore SP from saved-context offset
+  0xBFC208D4  lw $s3, 0($s3)
+  0xBFC208D8  lui $gp,0 / addiu $gp
+  0xBFC208E0  or  $fp,$sp,$zero
+  0xBFC208E4  addi $s4,$s3,32
+  0xBFC208E8  lw $s6,0($s3) / beq $s6,$zero  <- scan saved ctx / wait-flag
+
+This is the OpenBIOS cooperative-thread SCHEDULER's context save/restore +
+wait-flag scan — i.e. the thread RESUME / WaitEventFlag path. The codec
+operation runs on a kernel THREAD; when it waits it yields to the scheduler,
+and DeliverEvent/the CD-SPU IRQ wakes it -> scheduler resumes the thread.
+
+ROOT CAUSE (final form): the thread RESUME is being dispatched as a NESTED
+psx_dispatch_call inside the waker's (IRQ handler / DeliverEvent) frame,
+instead of returning to the top-level scheduler loop so the resume frame
+unwinds. Each wake nests a scheduler context-restore -> g_psx_dispatch_depth
+grows ~23/frame, frozen cycle, guard trips. Same class as the documented
+MoH/Driver-2 "IRQ at return boundary swaps sp" freezes but here it is the
+THREAD context-switch sp (0x8548 kernel stack) that the return-boundary gate
+can't recognize as a legitimate scheduler resume.
+
+FIX DIRECTION: thread resumes must go through the top-level psx_dispatch
+(frame loop), not nested psx_dispatch_call. Find where the OpenBIOS
+scheduler's resume/DeliverEvent issues the nested dispatch_call for the
+woken thread and route it to the flat dispatcher — OR extend the
+return-boundary gate to recognize the kernel-stack (sp~0x8548) context
+restore as a legitimate resume, mirroring exc_sp_straddle_.
