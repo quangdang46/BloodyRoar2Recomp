@@ -379,3 +379,18 @@ dev_byte_xfer is driving (memcard write 0x57? controller? CD-stream?) and
 whether the card RX=0xFF is a desync or expected NAK. The clean fifo_space_check
 may also be mis-reading T2 because generated dev_byte_xfer and clean
 fifo_space_check disagree on cycle-advance timing.
+
+=== CORRECTION: dev_byte_xfer spin = PAD POLL, not memcard wedge ===
+sio_trace shows the hot SIO traffic is dev=1 (DEV_PAD/controller),
+mc_state=0 (MC_IDLE) throughout, func=0x00001B7C. tx pattern 0x00/0x01/0x42
++ rx 0xFF/0x41/0x5A = pad-poll protocol. mc_read_done frozen@108 is EXPECTED
+(no card ops pending). => the 98M fifo_space_check spin is per-frame pad
+polling throttled by the Timer2 wait — burns CPU but does NOT block a memcard
+load and is NOT the +0x13 cause. Prior "memcard wedge" hypothesis WRONG.
+REVISED MODEL: +0x13=0 is a game-LOGIC state, not an I/O stall. The game sits
+in battle_intro_flow's internal do-while (state-6 path) which never calls
+frame_advance_helper -> +0x13 frozen at entry value 0. Forcing +0x13=1 makes
+gpu_draw_otag submit (gp0_draw +3510) but pixels stay black because the OT
+prims are degenerate/garbage — the fighter/.ANI/.ACT scene geometry was never
+decoded, so GTE vertices are invalid -> nothing rasterizes. The REAL blocker
+is the fighter-model/animation load+decode RE backlog, upstream of rendering.
