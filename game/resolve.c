@@ -3075,11 +3075,24 @@ undefined8 vec2_rot_lut(undefined4 param_1,int param_2)
 void ev_stream_dispatch(byte *param_1,byte *param_2)
 {
   byte *pbVar1;
+  extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+  extern uint32_t br2_gaddr(const void *p);
   pbVar1 = (byte *)guest_at(*(uint32_t *)(param_2 + 0x84));
   if (*(short *)(param_2 + 0x90) < 1) {
-    while (pbVar1 = (byte *)PTR_FUN_801b4e68[(uint8_t)*pbVar1]
-                        ((uint8_t *)param_1,(uint8_t *)param_2),
-          pbVar1 != (byte *)0x0) {
+    for (;;) {
+      uint8_t op = (uint8_t)*pbVar1;
+      if (op < 24) {
+        pbVar1 = (byte *)PTR_FUN_801b4e68[op]((uint8_t *)param_1,(uint8_t *)param_2);
+      } else {
+        /* Opcodes >=24 have no clean-C port; the guest table at 0x801b4e68
+         * holds their real handlers (48+ entries). Dispatch through the
+         * recompiled guest code: h(ctrl,motion,pc) -> next pc in $v0. */
+        uint32_t h = *(uint32_t *)guest_at(0x801b4e68u + (uint32_t)op * 4);
+        uint32_t pc = *(uint32_t *)(param_2 + 0x84);
+        uint32_t r = br2_call_generated(h, br2_gaddr(param_1), br2_gaddr(param_2), pc, 0);
+        pbVar1 = r ? (byte *)guest_at(r) : (byte *)0;
+      }
+      if (pbVar1 == (byte *)0x0) break;
       *(uint32_t *)(param_2 + 0x84) = guest_of(pbVar1);
     }
   }
