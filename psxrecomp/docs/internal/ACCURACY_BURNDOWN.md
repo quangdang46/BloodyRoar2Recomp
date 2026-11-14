@@ -1702,3 +1702,24 @@ NEXT: fresh-boot trace of `cd_cb7_run` DICR reads + per-channel handler calls (d
 ch3-done fire? which index?) and of the CDROM-IRQ completion path (cd_response_pump
 s0&2/s0&4 -> 0x801bc848/84c, both NULL-guarded). Compare channel-index mapping against
 the generated `cd_ext_table_init`/`0x8019A6E0` registration to confirm faithful slot.
+
+## Stall#2 — session N+2: cd_cb7_run (channel-done) NEVER invoked
+
+Fresh-boot fntrace (423k records) is decisive:
+- cd_file_load_sm(0x8018CFDC)x18, cd_read_issue(0x8018D150)x1 @frame4969 -> read issued to 0x800DC800
+- cd_response_process(0x80196370)x143, cd_response_pump(0x801979F8)x94 -> CDROM-IRQ completion processed
+- **cd_cb7_run(0x8019AF7C/84) = 0 hits, cd_dma_chan_reset(0x8019B7E0) = 0 hits — the DMA/channel-done path NEVER runs**
+- irqctx ring tail: ONLY VBlank IRQs; cdrom_active=0, dma_depth=0 (post-load idle)
+
+cd_intc_dispatch (generated 0x8019A8EC) iterates 11 CD interrupt causes (bit pos 0..10,
+`gpr[17]<11`): pending-mask gpr[16] (from 0x801BDDA4=0x1F801070 & CD status) selects which
+handler-table slots (base gpr[20]=0x801BCD1C) get jalr'd. Table:
+  cause0=0x8019ae68(cb8_dispatch) cause1=0 cause2=0x801979f8(response_pump) cause3=0x8019af7c(cb7_run)
+response_pump runs (cause2) but cause3 (channel/DMA done -> cb7_run -> cd_dma_chan_reset ->
+DeliverEvent 0xF0000009/0x20) is NEVER pending -> handler skipped -> TestEvent(0xF1000008) spins.
+
+NEXT: find what sets CD pending-mask bit3 (channel-done cause). Likely the CDROM-IRQ/DICR
+status path in runtime cdrom.c/dma.c — the DMA ch3 completion must surface as CD cause-3.
+Suspect: DMA-ch3 done sets DICR bit27 + raises irq bit3, but the CD driver's cause-3 pending
+bit isn't being set (status register not reflecting channel-done), OR this op (seek) produces
+no channel-done and the event should come from a different cause.
