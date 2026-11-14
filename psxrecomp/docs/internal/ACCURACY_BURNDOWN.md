@@ -2210,3 +2210,54 @@ DuckStation/Beetle (the project already keeps a psx-spx oracle), OR decode
 a single sprite/poly prim header the GPU walker consumes and check its
 coords/CLUT/UV against sane ranges. A GTE sanity check (transform a known
 vertex, verify screen-space result) would quickly separate (a) from (b).
+
+## N+17 — flat battle ROOT-CAUSED: phase-2 exits immediately (P2 fighter byte0=0x81)
+
+The flat framebuffer is NOT primarily a rasterize bug. Live scratchpad
+dump (read_ram 0x1f800000, state 6):
+
+- g_game_state=6, DAT_1f800001=0xf1, divisor byte 0x1f800019=0x21 (stuck).
+- P1 fighter struct @0x1f8000e8: byte0=0x01, byte1=0x11.
+- P2 fighter struct @0x1f8001f0: byte0=0x81, byte1=0x12.
+
+battle_intro_flow phase-2 body (menu.c ~L1895) runs EVERY frame:
+    _DAT_1f80008e--;
+    if ((DAT_1f8000e8 != 1) || (DAT_1f8001f0 != 1)) DAT_1f800001 = 0xf0;
+    if (bVar1) battle_frame_tick(...);
+So phase 2 -> 0xf0 on the FIRST frame because P2 byte0=0x81 != 1.
+battle_frame_tick (the GTE/prim path) never gets a real fight frame ->
+gte_verts stays ~1 -> no fighter geometry -> flat backdrop only.
+
+VERIFIED the check is FAITHFUL, not a mis-port. Generated
+battle_intro_flow @0x80167330 (SLES_017.22_full_27.c):
+  0x801676E8 lbu $3,0($18)   ; fighterA.byte0
+  0x801676F0 bne $3,$21 ->0xf0 ; $21=1 (li at 0x8016741c)
+  0x801676F8 lbu $2,0($17)   ; fighterB.byte0
+  0x80167700 beq $2,$3 ->cont ; continue only if B==A
+=> continue iff A==1 && B==A == A==1 && B==1. Identical to clean port.
+
+byte0 = fighter action/state byte. action_enter (action.c ~L668) writes
+GS8(ctrl,0x00)=1 only for action class cls==1; P1=0x01 = active/idle,
+P2=0x81 = 0x01|0x80 = active state + 0x80 flag. The 0x80 bit is OR'd on
+top of a valid low state somewhere in the fighter state machine
+(battle.c fighter update / KO / spawn-intro). It is NOT a permanent P2
+marker (the original would never fight otherwise) and NOT an loader
+error flag (save_state_machine_alt returns 1 without touching byte0).
+
+NEXT: find the writer that ORs 0x80 into fighter byte0 (offset 0 of the
+0x1f8000e8/0x1f8001f0 ctrl blocks). Likely the fighter spawn/intro or
+first-hit state that never completes because P2's .ANI/.ACT/model or its
+action stream didn't load/advance -> fighter stuck in a non-idle action.
+Trace fighter_anim_advance / the per-frame fighter ctrl update for the
+byte0 store, and check whether P2's animation section is present/valid.
+If P2's anim data is missing, that is the real asset-load bug to fix;
+forcing byte0=1 would only mask it (model still wouldn't render).
+
+SECONDARY (intermittent): after N attract battles the game wedges at
+DAT_1f800001=0xf1 with 0x1f800019 frozen nonzero. frame_divisor_get reads
+that byte; the decrement lives in the 0x8012A9xx frame-timing module +
+cd_timer_read's vsync_wait_n which spins on DAT_801bdde0 (CD coroutine
+counter) advanced only via CD IRQ -> cd_cb8_dispatch. When pending IRQs
+stall (i_stat frozen 0x05), the counter freezes -> 0xf1 never exits.
+Same deferred-IRQ/coroutine family as the frame-348 fix; reproduce by
+letting attract run ~70k frames then inspect i_stat/CD coroutine.
