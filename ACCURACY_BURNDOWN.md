@@ -300,3 +300,25 @@ stale/garbage sub-state the intro SM can't handle.
 NEXT: disasm guest @0x80126370 region (g_game_state switch) to learn the
 REAL access width (lbu/lh/lw) for g_game_state and DAT_1f800001, then fix
 the port's DAT_1f800000/DAT_1f800001 access widths to match exactly.
+
+=== SESSION3d: RESOLVED access width + real blocker isolated ===
+CONFIRMED via generated MIPS (br2eu_func_80126234 / _80167330):
+  g_game_state @0x1f800000 is a UINT8 — guest uses write_byte/load_byte
+  (sb/lbu), NOT lw/sw. DAT_1f800001 @+1 is a separate u8. FIXED in
+  game/game.c: DAT_1f800000 u32->u8 (commit ebe4bb6). The u32 read
+  produced 0x6c05 and every `g_game_state=N` u32-store clobbered bytes
+  1-3 (incl DAT_1f800001). Faithful width now matches guest.
+POST-FIX live state: g_game_state=5, DAT_1f800001 cycles (was stable
+0x6c; forcing it to 0 via write_ram lets the phase SM run 01->F1->B9).
+DIAGNOSIS: DAT_1f800001=0x6c has no battle_intro_flow case -> falls to
+LAB_801677b4 frame_tick+round_banner = black clear. BUT forcing it to 0
+only moves the stuck value (0x6c->0xB9); gp0_draw stays FROZEN at 10422
+since boot logos. => DAT_1f800001 is a SYMPTOM, not the cause.
+ROOT BLOCKER: the battle/scene render pipeline emits ZERO primitives.
+Ordering table never populates despite fighters spawned + prim lists
+populated. battle_frame_tick->prim_list_gte_invoke/persp_step either
+never runs (phase!=2) or runs but emits nothing. Remaining work = the
+fighter/scene/.ANI/.ACT/event-VM/render RE backlog.
+SIDE: dev_byte_xfer SIO spin (fifo_space_check Timer2 timed-wait,
+base@0x801ff260 rewritten per-poll) ~18M calls dominates clean_trace;
+frames still advance @50Hz. Secondary.
