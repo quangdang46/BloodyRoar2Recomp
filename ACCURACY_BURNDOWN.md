@@ -322,3 +322,36 @@ fighter/scene/.ANI/.ACT/event-VM/render RE backlog.
 SIDE: dev_byte_xfer SIO spin (fifo_space_check Timer2 timed-wait,
 base@0x801ff260 rewritten per-poll) ~18M calls dominates clean_trace;
 frames still advance @50Hz. Secondary.
+
+=== SESSION: +0x13 render-gate isolated; root = SIO/memcard read wedge ===
+RENDER GATE FOUND: scratchpad byte 0x1f800013 (+0x13 off the 0x1f800000
+battle object) is the draw-enable flag. BOTH frame_tick (game.c:1746-area)
+and frame_present (game.c:1746) gate `gpu_draw_otag(ot)` on
+`*(char*)(param_1+0x13)!=0`. It is maintained ONLY by:
+  - frame_advance_helper -> scratch_013_set(1)  (game.c:1097)
+  - load/decode wrappers: save uVar1=+0x13; scratch_013_set(0); ...work...
+    scratch_013_set(uVar1)  (scene_entry:1586, menu.c, save.c ~20 sites)
+NEVER set inside frame_tick/frame_present/battle_intro_flow.
+battle_intro_flow runs an internal do-while calling frame_tick forever but
+NEVER calls frame_advance_helper -> +0x13 frozen at whatever it was on entry.
+LIVE: +0x13=0 persistently -> gpu_draw_otag skipped -> OT built but never
+submitted -> black. Forcing +0x13=1 via write_ram: gp0_draw 10422->13932
+(+3510 draw cmds reach GPU) => OT submission path is CORRECT.
+BUT screenshot still black (0.1% nonzero px) => prims submit yet rasterize
+nothing visible => the OT/scene DATA is incomplete: the resource load that
+populates it never finished.
+ROOT CAUSE (upstream): SIO/memcard byte-transfer WEDGE.
+  clean_trace = 99.6% fifo_space_check (0x801A4230); tx_writes climbing
+  ~500/sec (238k->239k); mc_read_done FROZEN at 108; sio_rx=0xFF.
+  dev_byte_xfer (0x801A1F74) spins in a Timer2 timed-wait per byte; the
+  memcard read protocol (sio.c MC_CMD 0x52 -> ID1/ID2 -> ADDR -> READ_DATA
+  128B -> CHK -> END) desyncs: card ACKs each byte but read never reaches
+  MC_READ_END. Game keeps retransmitting -> load never completes ->
+  +0x13 stays 0 (suspended block) AND scene/fighter geometry never loads.
+fifo_space_check (0x801A4230): reads T2 counter 0x1f801120, base@0x801FF260,
+lim@0x801FF264(=0x3C=60); elapsed=(T2count16-base)>>3 >= lim. base is the
+last-activity timestamp refreshed per sent byte -> during a continuous
+stalled stream it never lets elapsed reach lim -> returns 0 -> spin.
+NEXT: fix the memcard read-protocol desync (why card RX=0xFF / protocol
+stall) OR the dev_byte_xfer FIFO-wait so the pending load completes and
++0x13 restores. This unblocks BOTH the flag AND the scene data.
