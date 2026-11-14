@@ -282,3 +282,21 @@ DAT_1f800001=0 before battle_intro_flow (scene_entry/state4->5->6 path),
 or whether battle_intro_flow(param_1==0) must self-init the phase. Compare
 against guest MIPS: does the real game zero DAT_1f800001 on battle entry,
 or does a specific predecessor own it? Then the OT/scene build unblocks.
+
+=== SESSION3c: DAT_1f800000/001 overlap suspicion ===
+Declarations (bind.c:1032-33, game.c:210-212, menu.c:340):
+  g_DAT_1f800000 -> guest 0x1f800000 ; DAT_1f800000 = *(u32*) = g_game_state
+  g_DAT_1f800001 -> guest 0x1f800001 ; DAT_1f800001 = *(u8*)  = sub-state
+They are ADJACENT: DAT_1f800001 is byte1 of the DAT_1f800000 u32.
+Live scratchpad bytes 05 6c 00 00 -> u32 g_game_state = 0x00006c05 (NOT 5),
+byte1 DAT_1f800001 = 0x6c.
+=> If g_game_state is faithfully a u32, byte1 pollution (0x6c) corrupts it
+to 0x6c05 -> switch(uVar4<0xe) fails -> wrong/absent case. If g_game_state
+is meant to be a u8/byte0-only read, the *(u32*) cast in game.c:210 is a
+PORT BUG reading 4 bytes and mixing the sub-state byte into game_state.
+This is now the PRIME suspect for the black screen: either (a) the u32
+read over-reads into DAT_1f800001, or (b) DAT_1f800001=0x6c itself is a
+stale/garbage sub-state the intro SM can't handle.
+NEXT: disasm guest @0x80126370 region (g_game_state switch) to learn the
+REAL access width (lbu/lh/lw) for g_game_state and DAT_1f800001, then fix
+the port's DAT_1f800000/DAT_1f800001 access widths to match exactly.
