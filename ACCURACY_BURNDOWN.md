@@ -75,3 +75,36 @@ VERIFY: dump $t0 at 0x80199688 on a live run (gpr trace / watchpoint), and check
 whether cd_chan_cmd_submit's CHCR arg has bit24. If stale, the faithful fix is to
 confirm the original binary's t0 provenance (it may be set by jal 0x80195d44's
 callee or an earlier block in the same activation) — NOT to hardcode CHCR.
+
+=== RESOLVED: dev_byte_xfer SIO device-ptr mistranslation (commit 99b190d) ===
+ROOT CAUSE: clean dev_byte_xfer (0x801a1f74) read the SIO device struct/ctrl
+pointers from 0x801be3e4/0x801be3e0 — but the real globals are 0x801be7e4/
+0x801be7e0 (-6172/-6176 off the 0x801C0000 base; the port had a 0x400-low
+typo, same class as the cd_channel_table_init 0x6000-base bug). be3e0/e4 sit
+in an unrelated .data table (arithmetic sequence 0x840c83fd..0x85d985c9), so
+*(0x801be3e4)=0x85208510 -> mem_ptr wild deref -> segfault during CD/SIO init.
+The real pointers hold MMIO addrs baked into .data: be7e4=0x1F801040 (SIO_DATA
+dev struct: [0]=byte buf,+4=status u16,+0xe=cmd u16,+0xa=u16) and
+be7e0=0x1F801070 (I_STAT ctrl u32 bit7/bit2). Body also busy-polls hardware
+FIFO status in while-loops needing IRQ/DMA-driven updates.
+FIX: delegated whole body to generated br2_call_generated(0x801a1f74) —
+mem_ptr() routes 0x1F801xxx to the open-bus mirror (guest_at has no MMIO
+backing) and a clean-C spin never yields to psx_check_interrupts_at ->
+livelock; same contract as cd_timer_read/cd_mc_state_machine/cd_channel_init.
+a0 is a host ptr into guest RAM; guest_of() recovers the guest $a0.
+VERIFIED: game now reaches frame 1718 (was crashing in dev_byte_xfer ~frame<100).
+
+=== NEW BLOCKER @frame1718: wild dispatch to low-KUSEG 0x27AC ===
+symptom: FAIL-FAST unknown dispatch addr=0x27AC ra=0x8019A53C (vsync_wait_n
+caller cont), last_func=0x29CC, epc=0x8019A600, frame=1718. Single miss
+(unknown_dispatch_log count=1), k0(gpr26)=0x27AC, sp=0x801FFF78, a0=0x60C
+a1=0x8000. Region 0x2000-0x2800 is the PSX kernel/low-RAM segment (kernel
+fns like OpenEvent/TestEvent land ~0x2500-0x3000); 0x29a0-0x29fc is clean
+MIPS (lw struct fields, jr ra @0x29c4, fn entry @0x29cc). 0x27AC itself
+holds 0xd8000000 inside a data-table-looking run (repeating 0x??800507 /
+0x??e00008) -> likely jumped to a DATA word = bad kernel/interrupt pointer,
+OR a recompiler discovery gap for kernel code the static pass never found.
+NEXT: identify the jumping insn (jr/jalr through $k0 or a kernel fn-ptr
+table) — likely another uninit callback/trampoline in the SIO/memcard or
+kernel-call path; check whether 0x27AC is code needing a seed vs corrupt
+state. PSX_FAIL_FAST_UNKNOWN_DISPATCH=0 survives-and-logs for enumeration.
