@@ -443,9 +443,23 @@ static void part_link(uint8_t *ctrl)
                 GSU32(node, 0x44) = GU32(link, 0);
             } else {
                 uint8_t *cur = (uint8_t *)guest_at(cur_g);
-                while (GU32(cur, 0x48) != sent_g)
+                /* DIAG bound: real HW chain always terminates at sent_g;
+                 * a corrupt upstream record makes this walk forever.
+                 * Cap + dump the live chain pointers, then break so the
+                 * run continues and the corruption is visible in trace. */
+                { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+                  int steps = 0;
+                  while (GU32(cur, 0x48) != sent_g) {
+                    if (++steps > 0x400) {
+                      decomp_trace_record(40, cur_g, sent_g, 0, 0);
+                      decomp_trace_record(41, node_g, GU32(link,0), 0, 0);
+                      decomp_trace_record(42, obj_g, GU32(cur,0x48), 0, 0);
+                      break;
+                    }
                     cur = (uint8_t *)guest_at(GU32(cur, 0x48));
-                GSU32(cur, 0x48) = GU32(link, 0);
+                  }
+                  if (steps <= 0x400) GSU32(cur, 0x48) = GU32(link, 0);
+                }
             }
         }
         for (int k = 0; k < 7; k++) GSU16(part, k * 2) = 0;
