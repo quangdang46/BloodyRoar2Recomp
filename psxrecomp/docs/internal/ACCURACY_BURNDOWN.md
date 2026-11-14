@@ -1544,3 +1544,17 @@ overflow -> trap. THIS is the core missing subsystem for playable 3D.
 NEXT: implement real COP2/GTE (RTPS, NCLIP, AVSZ, OP, GPF, LZCR/HLE-style
 faithful per docs) — large faithful-RE task, replaces bind.c stubs. Also
 verify whether trap is UBSan (-fsanitize) on int overflow in isqrt input.
+
+=== GTE INTEGRATION SPEC (next session) ===
+Clean stubs to replace (game/bind.c:878-884): setCopReg/getCopReg/
+copFunction/setCopControlWord/getCopControlWord. These are COP2 semantics
+(Ghidra helpers), NOT guest fns — port faithfully, do NOT just call gte_execute
+blindly (register `r` uses game's encoding: in_zero/in_at are computed data-reg
+selectors; 0xf000/0xf800/0x800/0x4000/0x9800/0xe/0xd are status/control/special
+regs). Map each to cpu->gte_data[]/cpu->gte_ctrl[] via gte.cpp's
+gte_mtc2/gte_mfc2/gte_ctc2/gte_cfc2 (lines ~1391+, used in gte_execute 1906-38).
+copFunction(2,op): op low6 = GTE func (0x180001&0x3f=1=RTPS) -> gte_execute
+(g_clean_cpu, op) which imports/exports cpu->gte_data/ctrl. Access g_clean_cpu
+via clean_bridge (static there; add accessor or extern). Verify reg-index
+mapping against EXE disasm (disasm_fn.py) — game setCopReg reg# != raw gte idx
+necessarily. After wiring, radial_glow_draw/isqrt + all gte_* should compute.
