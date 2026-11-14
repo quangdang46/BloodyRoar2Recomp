@@ -174,22 +174,22 @@ static void apply(uint8_t *ctrl, uint8_t *motion)
     }
 
     /* ---- .ACT once-relocation (ctrl+0xb == 0) ----
-     * motion+0xac: u32 list, -1 term, positive += base
-     * motion+0xa8: u32 list, -1 term, positive += base-8           */
+     * motion+0xac: u32 list, -1 term, positive += base+size (.ACT base)
+     * motion+0xa8: u32 list, -1 term, positive += pa8_g-8 (list-relative) */
     if (GU8(ctrl, FC_FLAGB) == 0) {
         uint32_t ac_g = GU32(motion, MO_AC);
         uint32_t pa8_g = GU32(motion, MO_PA8);
         uint32_t *p = ac_g ? (uint32_t *)guest_at(ac_g) : NULL;
         if (p) {
             while (*p != 0xffffffffu) {
-                if ((int32_t)*p > 0) *p += base;
+                if ((int32_t)*p > 0) *p += base + size;
                 p++;
             }
         }
         p = pa8_g ? (uint32_t *)guest_at(pa8_g) : NULL;
         if (p && *p != 0xffffffffu) {
             do {
-                if ((int32_t)*p > 0) *p = (uint32_t)((int32_t)*p + (int32_t)base - 8);
+                if ((int32_t)*p > 0) *p = (uint32_t)((int32_t)*p + (int32_t)pa8_g - 8);
                 p++;
             } while (*p != 0xffffffffu);
         }

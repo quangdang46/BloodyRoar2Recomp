@@ -13881,7 +13881,7 @@ undefined4 tween_ensure(int param_1)
     uVar1 = 1;
     if (*(int *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x14) ))== 1) {
       uVar1 = tween_track_alloc(2,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x14))),*(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x30))),
-                           (undefined2 *)(uintptr_t)*(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x8c))),*(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x24))),
+                           (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x8c)))),*(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x24))),
                            *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 8) ))+ 0x30))),
                            *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 8) ))+ 0x38))),
                            (int)*(char *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x14) ))+ 0x14))));
@@ -13958,7 +13958,7 @@ void tween_seek(int param_1,int param_2)
             if (iVar6 < 0) {
               iVar6 = iVar6 + 0xfff;
             }
-            tween_apply((short *)(uintptr_t)iVar3,iVar8,iVar6 >> 0xc);
+            tween_apply((short *)guest_at((uint32_t)iVar3),iVar8,iVar6 >> 0xc);
             return;
           }
           iVar8 = iVar8 + 1;
@@ -14065,12 +14065,12 @@ LAB_801aa65c:
     }
     if (param_1[1] == 2) {
       if (param_1[0x1f] < 1) {
-        verts_sub_apply(*(undefined4 *)(param_1 + 0xe),(undefined4 *)(uintptr_t)*(undefined4 *)(param_1 + 0x12),
-                     (ushort *)(uintptr_t)*(undefined4 *)(param_1 + 10),(int)param_1[8]);
+        verts_sub_apply(*(undefined4 *)(param_1 + 0xe),(undefined4 *)guest_at(*(uint32_t *)(param_1 + 0x12)),
+                     (ushort *)guest_at(*(uint32_t *)(param_1 + 10)),(int)param_1[8]);
       }
       else {
-        verts_add_apply(*(undefined4 *)(param_1 + 0xe),(undefined4 *)(uintptr_t)*(undefined4 *)(param_1 + 0x12),
-                     (ushort *)(uintptr_t)*(undefined4 *)(param_1 + 10),(int)param_1[8]);
+        verts_add_apply(*(undefined4 *)(param_1 + 0xe),(undefined4 *)guest_at(*(uint32_t *)(param_1 + 0x12)),
+                     (ushort *)guest_at(*(uint32_t *)(param_1 + 10)),(int)param_1[8]);
       }
     }
     else {
@@ -14083,8 +14083,8 @@ LAB_801aa65c:
         param_1[0x20] = 0x1000;
       }
       if (*param_1 == 0) {
-        verts_offset_apply((undefined4 *)(uintptr_t)*(undefined4 *)(param_1 + 0x12),(uint *)(uintptr_t)*(undefined4 *)(param_1 + 0x14),
-                     *(undefined4 *)(param_1 + 0xe),(short *)(uintptr_t)*(undefined4 *)(param_1 + 10),(int)param_1[8],
+        verts_offset_apply((undefined4 *)guest_at(*(uint32_t *)(param_1 + 0x12)),(uint *)guest_at(*(uint32_t *)(param_1 + 0x14)),
+                     *(undefined4 *)(param_1 + 0xe),(short *)guest_at(*(uint32_t *)(param_1 + 10)),(int)param_1[8],
                      (int)param_1[0x20]);
       }
       else if (*param_1 == 2) {
@@ -14095,8 +14095,8 @@ LAB_801aa65c:
         else {
           iVar6 = *(int *)(param_1 + 0x10) + param_1[4] * 4;
         }
-        verts_rgb_apply((uint *)(uintptr_t)*(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar3 + 8))),(uint *)(uintptr_t)*(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar3 + 0xc))),iVar6,
-                     (short *)(uintptr_t)*(undefined4 *)(param_1 + 10),(int)param_1[8],(int)param_1[0x20]);
+        verts_rgb_apply((uint *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar3 + 8)))),(uint *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar3 + 0xc)))),iVar6,
+                     (short *)guest_at(*(uint32_t *)(param_1 + 10)),(int)param_1[8],(int)param_1[0x20]);
       }
       param_1[0x20] = param_1[0x20] + param_1[0x21];
     }
@@ -14123,7 +14123,7 @@ void prim_group_gc(int param_1)
       if (iVar2 != 0) {
         sVar1 = *(short *)guest_at((uint32_t)(uintptr_t)((iVar2 + 4)));
         if (sVar1 == -2) {
-          task_node_free((int *)(uintptr_t)*(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar3 + *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x1c)))))));
+          task_node_free((int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar3 + *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x1c))))))));
           *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar3 + *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x1c)))) ))= 0;
           *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar3 + *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x34)))) ))= 0;
         }
@@ -14133,7 +14133,7 @@ void prim_group_gc(int param_1)
       if (iVar2 != 0) {
         sVar1 = *(short *)guest_at((uint32_t)(uintptr_t)((iVar2 + 4)));
         if (sVar1 == -2) {
-          task_node_free((int *)(uintptr_t)*(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar3 + *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x20)))))));
+          task_node_free((int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar3 + *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x20))))))));
           *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar3 + *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x20)))) ))= 0;
           *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar3 + *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x38)))) ))= 0;
         }
@@ -14143,7 +14143,7 @@ void prim_group_gc(int param_1)
       if (iVar2 != 0) {
         sVar1 = *(short *)guest_at((uint32_t)(uintptr_t)((iVar2 + 4)));
         if (sVar1 == -2) {
-          task_node_free((int *)(uintptr_t)*(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar3 + *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x24)))))));
+          task_node_free((int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar3 + *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x24))))))));
           *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar3 + *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x24)))) ))= 0;
           *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar3 + *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3c)))) ))= 0;
         }
@@ -14348,8 +14348,8 @@ void tween_apply(short *param_1,int param_2,int param_3)
            *(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_1[7] * 0x14 + *(int *)(param_1 + 0xc) + 8)));
       *(undefined4 *)(param_1 + 0x14) =
            *(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_1[7] * 0x14 + *(int *)(param_1 + 0xc) + 0xc)));
-      verts_offset_apply((undefined4 *)(uintptr_t)*(undefined4 *)(param_1 + 0x12),(uint *)(uintptr_t)*(undefined4 *)(param_1 + 0x14),
-                   *(undefined4 *)(param_1 + 0xe),(short *)(uintptr_t)*(undefined4 *)(param_1 + 10),(int)param_1[8],
+      verts_offset_apply((undefined4 *)guest_at(*(uint32_t *)(param_1 + 0x12)),(uint *)guest_at(*(uint32_t *)(param_1 + 0x14)),
+                   *(undefined4 *)(param_1 + 0xe),(short *)guest_at(*(uint32_t *)(param_1 + 10)),(int)param_1[8],
                    param_3);
       return;
     }
@@ -14363,8 +14363,8 @@ void tween_apply(short *param_1,int param_2,int param_3)
     else {
       iVar10 = *(int *)(param_1 + 0x10) + param_1[4] * 4;
     }
-    verts_rgb_apply((uint *)(uintptr_t)*(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar5 + 8))),(uint *)(uintptr_t)*(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar5 + 0xc))),iVar10,
-                 (short *)(uintptr_t)*(undefined4 *)(param_1 + 10),(int)param_1[8],param_3);
+    verts_rgb_apply((uint *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar5 + 8)))),(uint *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar5 + 0xc)))),iVar10,
+                 (short *)guest_at(*(uint32_t *)(param_1 + 10)),(int)param_1[8],param_3);
     return;
   }
   if (param_1[1] != 2) {
