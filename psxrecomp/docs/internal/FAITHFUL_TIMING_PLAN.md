@@ -5859,16 +5859,21 @@ thread's timeslice.
   low-RAM-corruption class as the original frame-1717 bug; heap_ptr_fixup
   (70076c8) fixed ctx+0x14 for ONE block shape but ctx+0x10/+0x14 of these
   serialize ctx structs are still unrelocated.
-- **WHY still unrelocated:** clean heap_ptr_fixup phase-2 inner walk only
-  relocates a1+0/+4/+8 per nested node — it does NOT cover +0x10/+0x14. The
-  generated br2eu_func_8016CB20 is 316 bytes/20 blocks (~1070 lines C) and
-  DOES contain the 0x8000/0x7fff mask+and+sll relocation idiom; my clean port
-  is a simplification that likely dropped coverage of the +0x10/+0x14 ctx
-  fields (or they are relocated by a different pass — decompressor/loader —
-  that mistranslated). NEXT: diff clean heap_ptr_fixup vs generated
-  br2eu_func_8016CB20 field-by-field to find which store offsets the port
-  dropped; the faithful fix is to restore that relocation coverage, NOT to
-  mask the crash. Values look like `0x80000000|offset` needing `heap_base+off`
+- **CORRECTION (heap_ptr_fixup is FAITHFUL):** decoded generated
+  br2eu_func_8016CB20 store sites — it writes only a0+8, a0+4, nested a2
+  entries, and a1+0/+4/+8, IDENTICAL to the clean port. It does NOT relocate
+  ctx+0x10/+0x14 either. So the clean port is NOT dropping coverage; those
+  fields are produced by stream_block_decode (@0x80163154, clean-ported) or
+  resolved at serialize time inside the tag serializers. Delegating
+  heap_ptr_fixup->generated via br2_call_generated(0x8016cb20) RECURSES
+  (fnmap maps the addr back to the clean fn) — reverted.
+- **NEXT:** ctx+0x10/+0x14 = 0x80001AD9/0x80001D6F look like `0x80000000|off`.
+  Determine whether (a) stream_block_decode mistranslates and writes wrong
+  values (diff its clean port vs generated), or (b) the values are correct
+  kernel-resident offsets the tag serializers are meant to resolve via a
+  base my port drops. The tag funcs receive ctx+0x10/+0x14 as args
+  (menu.c:14436) — check whether a serializer adds a heap base my port
+  omits. Values look like `0x80000000|offset` needing `heap_base+off`
   style relocation — confirm base against generated before coding.
 - **NEXT (concrete, superseded by above):** capture the looping blk sequence — add a bounded-iter +
   blk dump to heap_serialize's `for(;;)` (or read s_decomp tag22 hser_in entries
