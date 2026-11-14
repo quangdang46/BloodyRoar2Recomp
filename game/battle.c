@@ -1594,7 +1594,7 @@ code_r0x8013181c:
         iVar11 = param_1 + 0x68;
         uVar12 = 2;
 LAB_80131a34:
-        fixed_approach_s16((ushort *)(uintptr_t)iVar9,(short *)(uintptr_t)iVar11,uVar12);
+        fixed_approach_s16((ushort *)guest_at((uint32_t)iVar9),(short *)guest_at((uint32_t)iVar11),uVar12);
       }
     }
     else {
@@ -9711,7 +9711,7 @@ void dual_target_track(int param_1,int param_2,int param_3)
     if (iVar2 < 1) {
       iVar2 = 1;
     }
-    fixed_approach_s16((ushort *)(uintptr_t)(param_1 + 0x2a),(short *)(uintptr_t)(param_1 + 0x32),(int)(short)iVar2);
+    fixed_approach_s16((ushort *)guest_at((uint32_t)(param_1 + 0x2a)),(short *)guest_at((uint32_t)(param_1 + 0x32)),(int)(short)iVar2);
   }
   iVar2 = *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x28) ))+ -0x5b;
   if (iVar2 < 0) {
@@ -9725,7 +9725,7 @@ void dual_target_track(int param_1,int param_2,int param_3)
   if (iVar2 < 1) {
     iVar2 = 1;
   }
-  fixed_approach_s16((ushort *)(uintptr_t)(param_1 + 0x28),(short *)(uintptr_t)(param_1 + 0x30),(int)(short)iVar2);
+  fixed_approach_s16((ushort *)guest_at((uint32_t)(param_1 + 0x28)),(short *)guest_at((uint32_t)(param_1 + 0x30)),(int)(short)iVar2);
   *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x34) ))= 0;
   *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x2c) ))= 0;
   if (-0x80 < iVar11) {
@@ -10047,7 +10047,7 @@ void camera_track_step(int param_1,int param_2,int param_3)
     if (iVar8 < 1) {
       iVar8 = 1;
     }
-    fixed_approach_s16((ushort *)(uintptr_t)(param_1 + 0x2a),(short *)(uintptr_t)(param_1 + 0x32),(int)(short)iVar8);
+    fixed_approach_s16((ushort *)guest_at((uint32_t)(param_1 + 0x2a)),(short *)guest_at((uint32_t)(param_1 + 0x32)),(int)(short)iVar8);
   }
   iVar8 = iVar3 << 1;
   if (0x400 < iVar3) {
@@ -10075,7 +10075,7 @@ void camera_track_step(int param_1,int param_2,int param_3)
   if (iVar3 < 1) {
     iVar3 = 1;
   }
-  fixed_approach_s16((ushort *)(uintptr_t)(param_1 + 0x28),(short *)(uintptr_t)(param_1 + 0x30),(int)(short)iVar3);
+  fixed_approach_s16((ushort *)guest_at((uint32_t)(param_1 + 0x28)),(short *)guest_at((uint32_t)(param_1 + 0x30)),(int)(short)iVar3);
   *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x34) ))= 0;
   *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x2c) ))= 0;
   if (-0x80 < iVar10) {
