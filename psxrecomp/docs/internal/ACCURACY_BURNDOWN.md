@@ -1364,17 +1364,40 @@ FIXES LAND (all faithful delegations to generated MIPS, committed):
 - cd_ext_table_init -> br2_call_generated(0x8019bee0): removed a clean
   cd->generated->clean->generated hop inside generated cd_ext_init_once.
 
-REMAINING: after all three, OpenEvent(0xF0000009) STILL does not appear in
-hle_dump and the game still parks in TestEvent(*(0x801bde38)) at the frame-347
-CD wait (cmd 0x09 seek pending, irq_flag=0x03, i_stat bit2 set). On the fixed
-build 0x801BDEA0 now reads 0 (xfer_start no longer sets it) and 0x801BDE38=0 —
-so cd_ext_init_once did NOT execute its init block (guard never set to 1),
-even though generated cd_chan_boot_init DOES cps-jal 0x8019B308 and the game
-reaches the CD wait (channel regs work). This points to cd_ext_init_once's
-generated body not reaching block_8019B31C — either it is not dispatched, or
-the CPS continuation into it is lost, OR an earlier guard/branch sends it to
-block_8019B368 (skip) despite guard==0.
-NEXT: fntrace 0x8019B308 entry + read 0x801BDEA0 AT entry on a fresh boot to
-see whether ext_init runs init or skips; if it enters but skips with guard==0,
-the guard load/branch in br2eu_func_8019B308 is mis-dispatching (check the
-_psx_slice_block / CPS resume for this function).
+REMAINING / ROOT CAUSE NARROWED (fntrace on fresh boot, build with
+cd_chan_boot_init reverted to clean + cd_dma_xfer_start delegated):
+- 0x8019B308 (cd_ext_init_once) IS entered once at frame 318, ra=0x80126260.
+- Guard 0x801BDEA0 transitions 0->1 => block_8019B31C ran (init path taken).
+- Then NOTHING: no FUN_8018e300 entry with ra in 0x8019B3xx, no 0x8019BEE0
+  (cd_ext_table_init) entry, no OpenEvent(0xF0000009), 0x801BDE38 stays 0.
+- Generated flow confirmed: block_8019B31C sets guard -> CPS jal 0x8018E300
+  (FUN_8018e300 = EnterCriticalSection, `syscall` a0=1) ra=0x8019B32C ->
+  block_8019B32C -> CPS jal 0x8019BEE0 -> block_8019B338 -> OpenEvent ->
+  block_8019B350 stores v0->0x801BDE38.
+- Dispatch table DOES map 0x8019B32C/0x8019B338 -> br2eu_func_8019B308 cont.
+- psx_syscall EnterCritical (a0=1) returns 0 synchronously (cpu->pc=0 then
+  jr ra overwrites) — does NOT context-switch. So the break is NOT the
+  syscall yielding.
+KEY COMPARISON: cd_hw_chan_init (0x801a0be0, delegated, generated-DIRECT —
+called from generated code under the main dispatch loop) ALSO CPS-jals
+FUN_8018e300 and its 8 OpenEvents DO fire. cd_ext_init_once is the ONLY one
+reached via a NESTED br2_call_generated (clean cd_chan_boot_init -> clean
+cd_ext_init_once -> br2_call_generated). Delegating cd_chan_boot_init to
+generated was tried: then 0x8019B308 was NEVER entered (generated
+br2eu_func_8019B220's CPS path to the ext_init call did not dispatch —
+likely its own caller cd_chan_boot_fwd is clean 0x8019b200 so it is STILL
+nested one level up).
+ROOT CAUSE (best current model): cd_ext_init_once's generated body runs
+inside a nested psx_dispatch_call (br2_call_generated). Somewhere between
+block_8019B31C's CPS jal to FUN_8018e300 and the continuation resume at
+0x8019B32C, the nested-dispatch continuation is lost — the same class of
+bug as the frame-1546 gpr-forwarding fix but on the CPS/continuation axis.
+The EnterCritical syscall's cpu->pc=0 side-effect or psx_check_interrupts_at
+at the continuation boundary is the prime suspect inside the nested frame.
+NEXT: instrument psx_dispatch_call to log cpu->pc transitions for the
+0x8019B308 call tree (or set a watchpoint on the 0x8019B32C dispatch) to
+see exactly where cpu->pc diverges from 0x8019B32C. Alternative: hoist
+cd_ext_init_once invocation into generated context by making the whole
+cd_chan_boot_fwd->cd_chan_boot_init->cd_ext_init_once chain generated-direct
+from its generated caller (find the generated jal site that reaches
+0x8019b200/0x8019b220 and ensure no clean wrapper intercepts).
