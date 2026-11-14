@@ -1828,3 +1828,35 @@ state it's parked in and what single condition advances it (byte count? a flag
 in the 0x801BCB80 session block? an event?). Cross-check the expected sector/
 byte total vs bcba0 cursor=8509 / bytes delivered. The CD side is proven healthy;
 the wedge is the load state machine's advance condition.
+
+## Stall#2 — session N+5: session-block decode + sector-size lead
+
+Read-session block 0x801BCB80 (live):
+  +0x00=0x28  +0x04=dest 0x800DC800  +0x08=cursor 0x800F0800  +0x0c=mode 0xA0
+  +0x10=sector_size 0x200 (512)  +0x14=remaining 0  +0x18/+0x1c=cd_timer_read
+  timestamps (4812/4799 — TIME not bytes)  +0x20=LBA cursor 8509  +0x24=done 0
+
+- bcb98/bcb9c are cd_timer_read TIMESTAMPS (cd.c:335/485/525), NOT byte counters —
+  the earlier "13-byte gap" was a red herring.
+- request_reg=0x80 = CDROM_REQUEST_BFRD (buffered-read request) — normal while a
+  read session is armed; cleared on next command. Not obviously stuck.
+- cd_file_load_sm (0x8018CFDC) is a SUSPENDABLE coroutine-style state machine —
+  dispatch table shows continuation blocks 0x8018D018..0x8018D074+ all -> same fn.
+- cd_cmd_issue (0x80196E14) CLEARS the response byte 0x801BCB24 before issuing
+  (sb zero @0x80196F3C) then waits for the IRQ to set it. Live 0x801BCB24=0x02
+  is SET — so the raw response IS available; the wait is NOT blocked on the
+  response byte itself.
+
+LEADING HYPOTHESIS (sector-size / byte-accounting): the read session configured
+sector_size=0x200 (512 B). If the file assembly expects a different per-sector
+byte count (e.g. full 2048 B Mode1 or 0x246/0x249 XA), the consumer's byte
+counter never reaches the expected total even though bcb94 hit 0 -> the load
+state machine waits for data that was never requested. Verify: does the cd model
+deliver exactly the configured sector_size bytes per ReadN INT1, and does the
+game's byte accounting (bcB84 dest cursor advance) match? Compare a WORKING
+earlier file-load's sector_size vs this stuck one (was it also 0x200?).
+
+ALT: the wait may be for a result flag written by cd_response_process for a
+specific response TYPE (not the Pause stat byte) — check which response code
+cd_response_process emits for ReadN-complete vs Pause-complete and which one
+cd_result_wait_b's caller actually tests.
