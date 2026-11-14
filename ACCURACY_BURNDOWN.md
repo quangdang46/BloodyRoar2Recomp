@@ -225,3 +225,34 @@ NEXT: trace the scene/OT builder (what walks fighters+arena emitting prim
 packets into OT) — likely a clean-port task/anim/render path not running or
 its data ptrs broken. Check whether scene_entry loaded battle assets and
 whether the per-frame prim-emitter task is in the task pools.
+
+=== SESSION3: black-screen root -> empty OT; dev_byte_xfer serial spin ===
+Deep trace of the black screen:
+- Game reaches battle state; battle_intro_flow->battle_frame_tick(0x1ff)
+  runs prim_list_gte_invoke/persp_step. Fighter slots populated
+  (0x03001101/0x02011201), prim lists populated (model ptrs 0x8004xxxx,
+  packet chains 0x801E1xxx). Scene DATA exists.
+- BUT gpu_draw_otag submits OT @0x801e82dc which has ~1 entry -> packet
+  @0x801ec588 that is NOT GPU primitive data (linked struct records).
+  Every frame = 7 cmds (draw-area + 1 black fill), ZERO poly prims.
+  => OT never populated with drawable packets = scene builder emits none.
+- clean_trace: 97.8M calls, ~100% = fifo_space_check(0x801A4230) from
+  dev_byte_xfer(0x801A1F74, ra 0x801A1FFC). dev_byte_xfer = SIO/memcard
+  byte send/recv. tx_writes=1.5M climbing ~500/s, sio_rx occasionally 0x41.
+  fifo_space_check reads TIMER2 (0x1f801120/124/128 = T2 count/mode/target)
+  as a timed drain-wait; base(0x801ff260) is rewritten constantly so
+  elapsed never accumulates -> returns 0 (keep polling) ~forever.
+  This is a SIO/memcard byte-transfer throttle spinning. Likely a BACKGROUND
+  card op (frames still advance) OR a genuinely slow/stuck card transaction.
+  mc: 114 cmds, 108 reads done, both slots MC-magic present, dirty:false.
+
+TWO SEPARATE ISSUES:
+(A) dev_byte_xfer/fifo_space_check spin — memcard/SIO transfer not
+    completing at reasonable rate. Investigate: is it a legit huge/slow
+    card op, or does the card fail to ACK/drain so the game retries?
+    Timer2-based wait may be mis-computed (base reset semantics).
+(B) PRIMARY visible blocker — battle OT stays empty, no prims submitted.
+    Scene builder (fighter/arena -> OT packets) produces nothing despite
+    populated prim lists. Next: find the per-frame prim emitter and why
+    it emits zero (task not dispatched? transform/GTE producing offscreen?
+    OT link broken?).
