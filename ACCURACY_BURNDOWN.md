@@ -355,3 +355,27 @@ stalled stream it never lets elapsed reach lim -> returns 0 -> spin.
 NEXT: fix the memcard read-protocol desync (why card RX=0xFF / protocol
 stall) OR the dev_byte_xfer FIFO-wait so the pending load completes and
 +0x13 restores. This unblocks BOTH the flag AND the scene data.
+
+=== dev_byte_xfer / fifo_space_check internals (clean+gen decoded) ===
+dev_byte_xfer (0x801a1f74) is GENERATED-delegated (save.c:9124 ->
+br2_call_generated) because clean-C can't do the MMIO busy-poll faithfully.
+fifo_space_check (0x801a4230) IS clean-ported (save.c:9138):
+  a0=u16@0x1f801120 (T2 counter, LIVE sysclk timer - verified advancing,
+  mode toggles 0x0400<->0x1C00); base=u32@0x801FF260; lim=u32@0x801FF264(=0x3C);
+  if a0<base: a0+=u16@0x1f801128(or 0x10000); v0=a0-base; if(mode@0x1f801124
+  &0x200)==0 v0>>=3; return v0>=lim.
+dev_byte_xfer writes base=gpr[4]@0x801A2078 and lim=gpr[2]@0x801A2070 ONCE per
+wait-setup (0x80200000-3488/-3484) - NOT per-poll. So the wait is correctly
+armed; it should complete after ~lim ticks.
+LIVE: tx_writes climbs ~500/sec steady, mc_reads=111 mc_read_done=FROZEN 108,
+sio_rx=0xFF. +0x13 forced to 1 PERSISTS (nothing re-clears it) and gp0_draw
+rises, but screenshot stays ~0.1% non-black => OT submits draw cmds yet
+rasterizes nothing => scene/fighter geometry data is ABSENT (load never
+populated it), NOT a rasterizer bug.
+OPEN: is the SIO transfer a genuine wedge (protocol desync -> infinite
+retransmit) or a legitimately huge/slow stream? mc_read_done frozen says the
+pending op is NOT completing a card read. Next: identify WHICH device/protocol
+dev_byte_xfer is driving (memcard write 0x57? controller? CD-stream?) and
+whether the card RX=0xFF is a desync or expected NAK. The clean fifo_space_check
+may also be mis-reading T2 because generated dev_byte_xfer and clean
+fifo_space_check disagree on cycle-advance timing.
