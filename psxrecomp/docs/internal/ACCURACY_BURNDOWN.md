@@ -2436,3 +2436,42 @@ words at 0x80000084-0x800000a0 are the cause dispatch table) and whether
 the CD handler pointer is populated. This is the SAME class as the
 frame-348 fix: a dispatch-table/handler-resolution gap, now isolated to
 the CD IRQ cause specifically.
+
+## N+23 — pc=0 storm ROOT: exception vector 0x80000080 holds DATA, hits unsupported SPECIAL fn=0x32
+
+`dirty_ram_unsupported` + `pczero` correlation is decisive:
+  pczero_count == dirty_ram_aborts == 1,261,235  (identical, growing)
+  entry        = 0x80000080   (exception vector)
+  entry_insns  = 1            (only ONE insn executes, then abort)
+  last_pc      = 0x80000084
+  last_insn    = 0x000000F2    -> SPECIAL funct 0x32  (reason "SPECIAL funct")
+  entry_ra     = 0x801970F0   (cd_cmd_issue region — CD IRQ interrupted CD code)
+  entry_sp     = 0x801FFF88
+
+So the chain is: CD IRQ (cause=0x400, IP2) -> IRQ entry picks
+0x80000080 (BEV=0, RAM vector) -> dirty_ram_interp executes word0
+`lui k0,0` (0x3c1a0000) -> word1 0x000000F2 decodes as SPECIAL funct
+0x32 which is UNDEFINED on R3000A (no MMI) -> abort_unsupported ->
+returns with cpu->pc==0 -> re-dispatch -> ~3000/s storm ->
+post_exception_cooldown hot -> CD coroutine (DAT_801bdde0) starved ->
+cd_timer_read/vsync_wait_n/cd_cmd_issue wait forever -> 0xf1 freeze.
+
+KEY FACT: 0x000000F2 is DATA, not a valid instruction. The 16-byte
+vector stub OpenBIOS copies to RAM 0x80 (OpenBIOS.toml L58) should be
+executable trampoline code; the live bytes `3c1a0000 000000f2
+00000000 00000000` contain an undefined SPECIAL funct and NO jump —
+execution would fall through into the A0 vector's `jr t0` with t0=0.
+Pattern NOT found in openbios.bin -> this stub was written by the
+GAME kernel (SCEI intr.c/kernel), not the OpenBIOS template, OR the
+vector was overwritten.
+
+OPEN QUESTION (next session): is 0x80000080 (a) a corrupted/missing
+exception stub the game kernel should have installed as a jump to its
+handler, or (b) a legitimately different trampoline format the
+interpreter must special-case? Compare the live 0x80000080 bytes
+against a fresh-boot snapshot and against the game's intr.c vector
+install (find the kernel code that writes 0x80000080). If the game
+kernel clears BEV and installs its own exception vector, that install
+is the thing to trace — the CD IRQ only vectors here when BEV=0, which
+is why VBlank/other IRQs (BEV=1 -> 0xBFC00180 compiled BIOS handler)
+still work.
