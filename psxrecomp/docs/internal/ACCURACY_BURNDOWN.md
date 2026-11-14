@@ -1465,3 +1465,47 @@ NEXT BUG (now reachable, was masked by wedge): dev_byte_xfer (save.c:9116)
 reads device-struct ptr @0x801be3e4 -> mem_ptr -> wild deref 0x85208510.
 Likely uninitialized device/memcard global — init-ordering issue in the device
 path, NOT a missing guest_at. Investigate what populates 0x801be3e4.
+
+=== SESSION 24: battle_intro_fsm state-3 freeze — diagnosis (in progress) ===
+STATUS: game boots -> loads assets -> runs battle_intro_fsm STATE 3 (correct
+steady "fight running" state; no exit by design — match end via
+DAT_1f800001->0xf0 upstream). 10+ min, zero crashes, ~90% CPU. BUT all guest
+battle state FROZEN: 0x1f800000-0x1f800400 (both fighter ctrls + ctx) and
+motion sub-structs 0x801f5328/0x801f5440 byte-identical over 12s+. Not simulating.
+
+FIXED+PUSHED 6ed43cf: unaff_gp ($gp r28) uninitialized locals in 10 battle fns
+(task_pools_tick/task_slot_step/task_slot_fns_run +7). Added guest_gp() ->
+cpu->gpr[28] (live $gp=0x801beedc). Did NOT unfreeze battle.
+
+CONFIRMED LIVE FACTS (lldb on running proc):
+- ctx+0x82 pause gate (0x1f800082) = 0 -> fighter block in battle_frame_tick
+  (battle.c:342-346) RUNS: fighter_contact_resolve + FUN_801787dc(=fighter_frame
+  #def battle.c:131, resolve.c:1512)x2 + fighter_pair_update.
+- battle_frame_tick(0x1f800000,0x1fb) from battle_intro_flow (menu.c:1891).
+- fighter ctrl param_1[0]=0x01 (active), &DAT_1f8000e8==guest_at(0x1f8000e8)
+  = real RAM (binding correct).
+- task_slot_fns_run post-fix: fn-table ptr @(gp+0x20)=guest 0x801beefc ->
+  0x801b17b4 valid; pool-1 slots 1,3,8,11 populated -> fns 0x801ac0d4,
+  0x801aa47c, 0x801387dc, 0x8013cde8.
+- fighter_frame (resolve.c:1512) has NO early return before action_commit
+  (resolve.c:1833, unconditional -> ev_stream_dispatch+motion_blend_frame).
+  param_1[2]=0 so the goto@1815 skip is not taken.
+
+OPEN HYPOTHESES (tracer subagent aeb9ef21 investigating):
+1. fighter_frame/action_commit writes gated by a fighter-state condition or
+   land in guest_arena (wrong buffer) via a pointer that resolves there.
+2. cd_timer_read -> br2_call_generated(0x8019a460): if the frame/timer counter
+   it reads never advances, ALL game timing freezes (matches total stall).
+   frame_counter_bump(0x801274c4) only runs in game-state 3/4/5, NOT state-6
+   battle_intro_flow -> 0x1f800012 stays 0 (may be normal, not the signal).
+3. ~200 unaff_s0-s7 register artifacts (same Ghidra class, context-dependent):
+   unaff_s3 = battle_intro_flow fight-duration countdown (1500 attract /
+   9000 VS, ->0xf0 at 0); unaff_s2 = match_loop 300-frame attract timeout.
+   Both uninitialized locals = UB; need disasm (bloody-roar-2/disasm_fn.py
+   0x80167620 / match_loop) to find true storage (global or spilled reg).
+4. _g_pad_buffer bound to guest_arena+0 (name has no hex -> guest_for arena
+   fallback); runtime entry_0x80126234 sets it to guest_at(sp-0x30) but live
+   value stayed arena. Input path suspect (attract demo may not need live pad).
+
+NEXT: await tracer root cause -> fix the exact gate. Then resolve unaff_s2/s3
+via disasm. Then verify fighter anim/action/HP actually advance = playable.
