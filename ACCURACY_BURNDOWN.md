@@ -202,3 +202,26 @@ waiting for memcard/controller/input, or (b) OT/primitive-list build broken
 upstream (a clean-port guest_at miss leaving OT empty), or (c) GPU OT-scan
 not finding the ordering table the game wrote. Diagnose: check whether game
 issues GPU "draw OT" cmds (0x02/0x03) and whether OT base in RAM is populated.
+
+=== SESSION2: stable sim -> battle state reached, OT empty (black) ===
+Post-crash-chain the game no longer crashes: 18000+ frames @50Hz stable.
+CD/memcard/SIO/tasks/GPU-cmd-path all confirmed live via debug server.
+Rendered real content frames ~500-1500 (boot logos, prims 0x2C/0x64+texpage),
+then went permanently black ~frame1999. Every frame since: identical 7 GP0
+cmds = draw-area setup + ONE black fill (0x02), ZERO polygon prims.
+g_game_state (DAT_1f800000) = 5 -> battle_intro_flow per-frame loop
+(sample: battle_intro_flow menu.c:1969 -> frame_tick game.c:1335 ->
+guest 0x8019A5D8). frame_tick calls gpu_draw_otag(iVar9+0x207c) EVERY frame
+= submits the ordering table. gpu_draw_otag -> gpu_call(8,GPU_TBL()[6],ot)
+-> gpu_invoke(t[2], t[6], ot_addr) (gfx.c:101-107,419). Same gpu_call path
+emits the env cmds that DO reach GPU, so submission works.
+
+DIAGNOSIS: the ordering table is EMPTY -> scene builder emits no packets.
+The battle 3D scene (arena + fighters) never populates the OT. Not a GPU or
+present bug (VRAM genuinely zero, not a readback artifact). The game reached
+battle state (via attract/scene_entry) but the render-list build produces
+nothing -> fighter/arena/animation render subsystem is the missing piece.
+NEXT: trace the scene/OT builder (what walks fighters+arena emitting prim
+packets into OT) — likely a clean-port task/anim/render path not running or
+its data ptrs broken. Check whether scene_entry loaded battle assets and
+whether the per-frame prim-emitter task is in the task pools.
