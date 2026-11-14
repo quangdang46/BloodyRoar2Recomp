@@ -357,6 +357,14 @@ uint32_t br2_call_generated(uint32_t fn, uint32_t a0, uint32_t a1,
     CPUState *cpu = g_clean_cpu;
     uint32_t ra, pc, sp, s0, s1, s2, s3;
     if (!cpu || fn == 0) return 0;
+    /* Bail-unwind in flight (g_psx_call_bail): a prior generated frame detected
+     * wild flow and is unwinding host frames toward the outermost dispatch. Do
+     * NOT start a fresh guest call here — it would inherit the stale bail and
+     * its CPS continuation would be cut short (the cd_ext_init_once wedge:
+     * OpenEvent never ran because a null jalr in cd_chan_boot_init's sibling
+     * left bail set). Return $v0 untouched so the unwind's cpu->pc / $ra /
+     * $sp survive intact up to the flatten point. */
+    if (g_psx_call_bail) return cpu->gpr[2];
     ra = cpu->gpr[31]; pc = cpu->pc; sp = cpu->gpr[29];
     s0 = cpu->gpr[16]; s1 = cpu->gpr[17]; s2 = cpu->gpr[18]; s3 = cpu->gpr[19];
     cpu->gpr[4] = a0; cpu->gpr[5] = a1;
@@ -368,6 +376,11 @@ uint32_t br2_call_generated(uint32_t fn, uint32_t a0, uint32_t a1,
         cpu->gpr[31] = BR2_NESTED_RA;
         psx_dispatch_call(cpu, fn, 0);
     }
+    /* The callee (or a nested frame it reached) began a bail unwind: cpu->pc
+     * now holds the wild-flow target the outermost dispatch must resume at.
+     * Restoring the saved pc/ra/sp here would clobber that target and strand
+     * the unwind, so leave every guest register exactly as the unwind left it. */
+    if (g_psx_call_bail) return cpu->gpr[2];
     cpu->gpr[31] = ra; cpu->gpr[29] = sp; cpu->pc = pc;
     cpu->gpr[16] = s0; cpu->gpr[17] = s1;
     cpu->gpr[18] = s2; cpu->gpr[19] = s3;

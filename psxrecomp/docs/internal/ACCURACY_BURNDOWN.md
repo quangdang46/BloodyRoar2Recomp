@@ -1401,3 +1401,48 @@ cd_ext_init_once invocation into generated context by making the whole
 cd_chan_boot_fwd->cd_chan_boot_init->cd_ext_init_once chain generated-direct
 from its generated caller (find the generated jal site that reaches
 0x8019b200/0x8019b220 and ensure no clean wrapper intercepts).
+
+=== DEFINITIVE ROOT CAUSE (dispatch-instrumented, supersedes model above) ===
+Instrumented psx_dispatch_impl / dirty_ram_dispatch / psx_check_interrupts_at
+with [CDP]/[CDINIT]/[CDIRQ]/[CDBAIL] tags on a fresh boot. Findings:
+
+1. cd_ext_init_once (0x8019B308) IS dispatched, returns pc=0x8018E300
+   ra=0x8019B32C (correct CPS continuation), found=1 -- BUT g_psx_call_bail
+   is ALREADY 1 at psx_dispatch_game_compiled ENTRY (before its body runs).
+   The prior 0x8018E300 dispatch had bail=0, so bail was set in the intervening
+   clean->generated window.
+
+2. The SOLE bail-init all run:
+     [CDBAIL] init addr=0x801A1AA8 stop=0x80126260 pc=0x00000000
+              ra=0x801A1AC4 sp=0x801FFFA8 spc=0x801FFFC0 depth=2 outer=0
+   0x801A1AA8 is a CPS continuation inside br2eu_func_801A1A40, an indirect-
+   call dispatcher: block_801A1AA8 loads a func ptr into $v0 and `jalr v0`.
+   The loaded target was 0 (null table entry at guest 0x801BE768) -> cpu->pc=0
+   -> the cpu->pc==0 contract check in psx_dispatch_impl declared wild-flow ->
+   g_psx_call_bail=1, cpu->pc=0x801A1AC4 (unwind target).
+
+3. PROPAGATION BUG (fixed in src/clean_bridge.c): br2_call_generated ran
+   psx_dispatch_call then UNCONDITIONALLY restored saved cpu->pc/gpr[31]/gpr[29]
+   and s0-s3. That clobbered the unwind's cpu->pc target AND let clean C keep
+   dispatching fresh guest calls while g_psx_call_bail stayed set. The next
+   br2_call_generated (cd_ext_init_once) inherited the stale bail -> its
+   psx_dispatch_impl took the bail path and returned instead of tail-
+   dispatching 0x8018E300 -> OpenEvent(0xF0000009) never ran -> 0x801BDE38=0
+   -> TestEvent(*(0x801bde38)) wedge at frame ~347.
+
+FIX LANDED (src/clean_bridge.c br2_call_generated): bail-aware. If
+   g_psx_call_bail is set on ENTRY, return $v0 without dispatching a fresh
+   guest call (unwind is in flight; new calls would inherit the stale bail).
+   If the callee SETS bail during psx_dispatch_call, return WITHOUT restoring
+   saved pc/ra/sp/s0-s3 so the wild-flow target survives to the flatten point.
+   Normal path (bail=0) is byte-for-byte unchanged.
+
+REMAINING BLOCKER: the NULL jalr itself. 0x801A1A40 is reached via CPS jal
+   from ~0x801A1260 (caller region 0x801A12xx, CD-driver). It reads a func ptr
+   from guest table 0x801BE768 which is 0 at that moment. On real hardware a
+   jalr to 0 would crash, so the table is expected to be populated earlier --
+   likely by cd_ext_table_init (0x8019BEE0) which runs INSIDE cd_ext_init_once,
+   i.e. chicken-and-egg: the dispatcher fires before its table exists, OR the
+   table is populated by a different init that hasn't run / ran with wrong
+   index. NEXT: identify function 0x801A1A40 + caller 0x801A1260, find what
+   writes 0x801BE768, and determine correct population order vs the dispatcher.
