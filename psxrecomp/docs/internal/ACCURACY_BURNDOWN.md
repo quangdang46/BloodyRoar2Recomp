@@ -1860,3 +1860,54 @@ ALT: the wait may be for a result flag written by cd_response_process for a
 specific response TYPE (not the Pause stat byte) — check which response code
 cd_response_process emits for ReadN-complete vs Pause-complete and which one
 cd_result_wait_b's caller actually tests.
+
+## N+6 — frame-348 crash IS the same deadlock; NONDETERMINISTIC race; register-window is SPU not CD
+
+Reproduced a deterministic-looking FATAL "dispatch recursion guard tripped" at
+frame ~348 on fresh boot. Traced the runaway: disp_ring = 128x
+`0x8019B944`(cd_reg_window_op) <- `0x80156628`, ALL at guest cycle 235749733
+(FROZEN — zero cycle advance across 128 dispatches).
+
+Call chain decoded (generated full_19/full_47):
+  cd_file_read_seq(0x801565EC)
+    -> cd_seek_param_issue_clamped(0x8019D410)   [issue seek]
+    -> LOOP: cd_seek_complete_poll(0x8019D500)   [wait seek-done]
+         -> cd_seek_state_machine(0x8019D5B0)->cd_state_store(0x8019D5C0)
+         -> reads @0x801BDEE8 (seek-state cell)
+  cd_seek_complete_poll is DELEGATED to generated specifically so
+  psx_check_interrupts_at runs per iter -> deferred coroutine
+  (cd_ctx_restore->cd_chan_full_init->cd_intc_dispatch) can resume and
+  DeliverEvent(0xF0000009). See game/cd.c:1822-1836.
+
+CRITICAL REFRAME — the "CD register window" is actually SPU:
+  @0x801BDEB0 = 0x1F801C00  = SPU register region (memory.c:1127 labels
+  0x1F801C00-0x1F801FFF SPU), NOT CDROM (real CD regs are 0x1F801800-3).
+  CDMMIO16(blk,0xd5) -> 0x1F801DAA = SPUCNT. The cd_* names in renames.map
+  are misleading; this path may be SPU/ADPCM (streamed audio), not file CD.
+  Live: ALL SPU regs (DAA/D9C/D9E/DA4/DA6/DA8) read 0x0000 = idle.
+
+NONDETERMINISM PROOF (not a code regression):
+  Working binary built ~22:07 (incl 78c4489 cd_reg_window_op delegation).
+  Crashing binary 22:40 built from IDENTICAL code — only docs commits
+  dfbcfd3+820cd2c landed between; menu.c int16 fix was REVERTED (verified
+  baseline ALSO crashes at 348 => pre-existing, not my edit).
+  => Same source, different outcome = TIMING RACE in the completion path.
+
+Frozen-cycle anomaly (key unsolved piece):
+  128 dispatches of 0x8019B944 all at cycle 235749733. A real MMIO busy-poll
+  would advance psx_cycle_count each iter. Frozen => each dispatched body
+  returns ~0 cycles. Suspects: (a) g_psx_call_bail stuck set ->
+  br2_call_generated returns stale v0 w/o dispatch (clean_bridge.c:380,396);
+  (b) psx_check_interrupts_at diverting to a stuck IRQ handler before cycle
+  charge; (c) CPS continuation lost across clean<->generated boundary.
+
+Live post-mortem state:
+  @0x801BDEE8=0 (seek-state never set), @0x801BDEE4=1, @0x801BDE40=0,
+  @0x801BDECC=0 (mode), @0x801BDE38=0xF1000008, @0x801BDEF0=0x07070707.
+  pending.cmd=0x09(Pause) active=0; CD stat=0x02 idle; I_STAT=VBlank only.
+
+NEXT: determine why psx_cycle_count freezes — instrument psx_cyc_step /
+br2_call_generated bail flag during the runaway, OR check whether the SPU
+register-window ops (0xd3/0xd5 -> 0x1F801DA6/DAA) return a value the game
+reads as "not ready". The SPU-idle-but-game-waits mismatch is the lead:
+game may expect a nonzero SPU status the emulator returns 0 for.
