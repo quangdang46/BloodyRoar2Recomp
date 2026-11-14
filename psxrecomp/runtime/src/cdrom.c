@@ -103,6 +103,20 @@ static int cdrom_intc_request_latched;
 static uint32_t cdrom_irq_generation;
 static uint32_t cdrom_intc_latched_generation;
 
+/* i_stat presentation must latch the CD IRQ *line*, not the live HINTSTS
+ * byte. irq_flag (HINTSTS) is cleared the instant the guest acks the CD
+ * controller, but on hardware the IRQ line was already high and INTC has
+ * latched i_stat bit2 — the HINTSTS ack only drops the source, it cannot
+ * un-present an interrupt the controller already saw. The CDROM_IRQ_PRESENT_DELAY
+ * hold below lets a fast HINTSTS poll-ack clear irq_flag before the delayed
+ * present runs; gating the present on the *current* irq_flag then loses the
+ * IRQ entirely (i_stat bit2 never asserts -> the game's CD ISR never runs ->
+ * its completion DeliverEvent never fires -> the file-load TestEvent spins).
+ * s_irq_i_stat_reason captures the reason at set_irq so the owed presentation
+ * survives a HINTSTS ack that lands inside the delay window. */
+static uint8_t s_irq_i_stat_reason;
+static int     s_irq_i_stat_armed;
+
 /* CD response presentation latency.
  *
  * Real CD hardware does not produce a command's first response instantly: the
@@ -915,9 +929,13 @@ static void response_push(uint8_t val) {
 static void set_irq(int type) {
     irq_flag = (uint8_t)type;
     /* New visible CD INT generation: it has not yet been presented to INTC,
-     * so re-arm the latch (the delayed present below raises it once). */
+     * so re-arm the latch (the delayed present below raises it once). Also
+     * record the reason owed to i_stat so a HINTSTS ack inside the present
+     * delay cannot cancel the presentation (level-triggered CD line). */
     cdrom_irq_generation++;
     cdrom_intc_request_latched = 0;
+    s_irq_i_stat_reason = (uint8_t)type;
+    s_irq_i_stat_armed = 1;
     /* Arm the presentation latency: this response must NOT be presented to INTC
      * synchronously inside the guest store that triggered it (see the
      * CDROM_IRQ_PRESENT_DELAY note). Absolute due — not a slice-relative
@@ -984,14 +1002,21 @@ static void present_cdrom_irq(void) {
      * every later sector's data-ready lost (the boot file-load livelock). */
     if (cdrom_intc_request_latched && (i_stat & 0x4u) == 0u)
         cdrom_intc_request_latched = 0;
-    if (cdrom_irq_mask_matches_reason(irq_enable, irq_flag) &&
+    /* Reason owed to i_stat: prefer the generation captured at set_irq while it
+     * is still awaiting first presentation — a HINTSTS ack inside the delay
+     * window zeroes irq_flag but must not cancel the already-asserted CD line.
+     * Once presented (armed cleared) fall back to live irq_flag so an unacked
+     * HINTSTS re-asserts i_stat bit2 (level-triggered re-arm). */
+    uint8_t reason = s_irq_i_stat_armed ? s_irq_i_stat_reason : irq_flag;
+    if (cdrom_irq_mask_matches_reason(irq_enable, reason) &&
         !cdrom_intc_request_latched) {
-        psx_irq_raise(2, irq_flag); /* IRQ_CDROM; detail = CD response/IRQ type */
+        psx_irq_raise(2, reason); /* IRQ_CDROM; detail = CD response/IRQ type */
         cdrom_intc_request_latched = 1;
         cdrom_intc_latched_generation = cdrom_irq_generation;
+        s_irq_i_stat_armed = 0;
         event_ring_record(EV_ISTAT_RAISE, 2 /* IRQ_CDROM bit */);
-        trace_cdrom('F', 0, irq_flag, 0);
-        if (irq_flag == CDIRQ_DATA_READY) cd_timing_note_intc();
+        trace_cdrom('F', 0, reason, 0);
+        if (reason == CDIRQ_DATA_READY) cd_timing_note_intc();
     }
 }
 
@@ -2824,6 +2849,8 @@ void cdrom_init(const char* cue_path) {
     cdrom_irq_generation = 0;
     cdrom_intc_latched_generation = 0;
     cdrom_irq_present_due = 0;
+    s_irq_i_stat_reason = 0;
+    s_irq_i_stat_armed = 0;
     pending_present_due = 0;
     param_count = 0;
     response_read = 0;
@@ -3465,6 +3492,12 @@ static int cdrom_snap_parse(PstR *r) {
         pending_set_remaining(pending_rem);
     else
         pending.due_cyc = 0;
+    /* The i_stat capture pair is transient set_irq->present state and is not
+     * on the wire (format frozen). Re-derive it from the restored irq_flag so
+     * a stale armed flag cannot present a pre-load reason; live irq_flag then
+     * drives presentation exactly as it did before the capture existed. */
+    s_irq_i_stat_reason = irq_flag;
+    s_irq_i_stat_armed = 0;
     return 1;
 }
 
