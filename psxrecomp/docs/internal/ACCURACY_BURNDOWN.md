@@ -1558,3 +1558,47 @@ copFunction(2,op): op low6 = GTE func (0x180001&0x3f=1=RTPS) -> gte_execute
 via clean_bridge (static there; add accessor or extern). Verify reg-index
 mapping against EXE disasm (disasm_fn.py) — game setCopReg reg# != raw gte idx
 necessarily. After wiring, radial_glow_draw/isqrt + all gte_* should compute.
+
+=== SESSION — stall #2: post-attract CD file-load re-wedge (i_stat fix landed) ===
+FIX LANDED+PUSHED 4baaa3b (runtime/src/cdrom.c): CD IRQ presentation race.
+set_irq() now captures the IRQ reason (s_irq_i_stat_reason/_armed) so a fast
+HINTSTS poll-ack inside CDROM_IRQ_PRESENT_DELAY cannot zero irq_flag and lose
+the owed i_stat bit2 presentation. Level-triggered CD line modeled correctly:
+HINTSTS ack drops the source, cannot un-present an already-latched INTC bit.
+snap_parse re-derives the pair from restored irq_flag (wire format unchanged).
+VERIFIED: CDROM IRQs reach INTC (irqctx istat=0x04); game advances past the
+first file-load wedge into the attract loop (g_game_state 3->4->5->6).
+
+REMAINING STALL #2 (same DeliverEvent(0xF0000009) class as Session-18, later):
+After attract the game re-wedges at transition_screen_flow ph0 ->
+card_sprite_load_sm -> cd_file_load_sm. Live evidence (debug :4400):
+- g_game_state=3, phase byte DAT_1f800001=0 (card_sprite_load_sm never returns).
+- TestEvent B0/11 FROZEN at 1567926 (blocked inside ONE call = kernel sleep,
+  not spinning). DeliverEvent B0/7 FROZEN at 127 (never fires for this load).
+- cdrom_state: seq 113787 frozen, pending cmd 0x09 (Pause, read-complete from
+  cd_read_finish_cb) active=0, response FIFO drained (read==count==1) =>
+  cd_response_pump DID consume the completion via the IRQ path.
+- Wait flag DB8(0x801bcb24)=2 (command-done SET) => cd_result_wait is NOT the
+  blocker; main thread is in vsync_wait_n (epc 0x8019A648) inside the CD
+  channel/kernel thread while the game thread sleeps in TestEvent.
+- cd_subsystem_init (0x801974b8) faithfully clears 0x801bc848/84c — VERIFIED
+  generated body also stores C848/C84C/C858/C854, so 848=0 is faithful, NOT a
+  clean-port bug (earlier suspect ruled out).
+- DeliverEvent(0xF0000009,0x20) lives ONLY in cd_dma_chan_reset (0x8019b7e8),
+  which does a CD MMIO 0xd5 wait then bios_svc(0xb0,7,0xF0000009,0x20). It is
+  NOT in the 0x801be780/0x801c4780 channel fn-ptr tables — invoked via a
+  different completion/session path (generated call graph / deferred coroutine).
+- cd_read_open registers per-sector cb cd_read_step_cb(0x801985c4) via
+  mc_session_b and complete cb cd_read_finish_cb(0x80198838) via
+  cd_cmd_dispatch3. cd_read_finish_cb issues async Pause(9) then
+  call_guest(0x801bc7b0=cd_bios_cmd40_b=0x80195b9c) -> DeliverEvent(0xF0000003,
+  0x40) — a DIFFERENT class than the 0xF0000009 the file-load polls.
+
+OPEN QUESTION (next): why cd_dma_chan_reset / the 0xF0000009 DeliverEvent is
+not invoked. Candidates: (a) deferred coroutine cd_ctx_restore (registered
+via B0/0x19=HookEntryInt -> mem[0x4C18]) not resuming on CD IRQ so the
+session/channel completion handler never runs; (b) the channel/session
+completion callback table slot for cd_dma_chan_reset is unpopulated or the
+wrong slot (cf. the 0x801BE784 NULL-jalr class of bug); (c) call_guest to
+0x801bc7b0/0x801bdee8 boundary arg mismatch. Watch 0x801bdee8 (alt DeliverEvent
+cb) + the channel-completion dispatch on a fresh boot to the stall.
