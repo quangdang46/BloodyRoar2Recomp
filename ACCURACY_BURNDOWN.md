@@ -108,3 +108,43 @@ NEXT: identify the jumping insn (jr/jalr through $k0 or a kernel fn-ptr
 table) — likely another uninit callback/trampoline in the SIO/memcard or
 kernel-call path; check whether 0x27AC is code needing a seed vs corrupt
 state. PSX_FAIL_FAST_UNKNOWN_DISPATCH=0 survives-and-logs for enumeration.
+
+=== DIAGNOSED: frame-1718 wild dispatch 0x27AC (kernel-RAM overwrite) ===
+MECHANISM (verified): 0x27AC is a REAL dispatch-table key
+(OpenBIOS_func_000027AC, kbless kernel window RAM[0x500,0x4BA0) <- ROM
+0x1E4D4). The kernel's exception/interrupt RETURN is
+OpenBIOS_func_000029CC: it restores the full GPR set from a saved context
+block via $k1, loads $k0=*(k1+128) (the saved resume-EPC slot), then
+`jr $k0; rfe` -> cpu->pc=$k0. The saved resume PC was 0x27AC.
+ROOT CAUSE: live kernel RAM at 0x2700-0x27c0 & 0x281c-0x285c does NOT match
+the ROM image (bless->MISMATCH). Region holds a runtime-written DATA
+structure (repeating 0x??800507/0x??e00008 pattern; NOT present anywhere in
+openbios.bin -> not relocated code). 0x27c4-0x2818 still matches ROM.
+So a kernel data object (TCB/event/install table) overwrote relocated kernel
+CODE. On return, jr $k0 -> 0x27AC reads 0xd8000000 (op 0x36, unassigned
+R3000A) -> dirty-RAM interp can't decode first insn (insns==0) ->
+dirty_ram_dispatch returns 0 -> psx_unknown_dispatch FAIL-FAST.
+Page 0x2000 IS dirty (bitmap word0=0xffff2fff) so interp WAS reached; the
+failure is purely the non-decodable first word = data where code was expected.
+NEXT: catch the writer of 0x2700-0x27c0 (gwatch armed) — likely a kernel
+object alloc with wrong base/size during CD/SIO/memcard activity. Alternatively
+the saved-context $k1 block itself may be corrupt (offset128 read wrong).
+
+=== WRITER IDENTIFIED: heap_serialize writes kernel RAM (frame 1717) ===
+PSX_GWATCH on 0x2790+208 caught it: at frame 1717, store_pc=0x8016A8D4
+(`sw $v0,0($a1)` = 0xACA20000, plus swl/swr unaligned copies) inside generated
+br2eu_func_8016A82C wrote the 0x??800507 data pattern over relocated kernel
+code at 0x2797-0x27BF. Caller: game fn @0x8016C594 does `jal 0x8016A82C`
+with $a1=$s4 (serialize-object ptr), $a0=$s1, $a2/a3=*(s2+8/12).
+0x8016A82C = heap_serialize_tag_01000000 (clean menu.c wrapper ->
+br2_call_generated; NOT in clean_table -> faithful generated body runs).
+So the wild write is FAITHFUL guest behaviour: $s4 pointed into kernel RAM
+[0x500,0x4BA0). On real HW the game works, so $s4 SHOULD point to a normal
+buffer -> the pointer is wrong upstream (caller 0x8016C5xx sets $s4, or the
+serialize object's dst field is mistranslated/corrupt).
+ALTERNATIVE: game legitimately uses a kernel-allocated buffer (alloc_kernel_
+memory / kernel-call) and the collision is a kernel-layout difference — but
+then real HW would corrupt the same code, so unlikely.
+NEXT: trace $s4 (gpr20) provenance in caller fn @~0x8016C5xx; check whether
+serialize dst comes from a clean-port field read (guest_at missing?) or a
+kernel-alloc return. The 0x??800507 pattern = a table of ptr/offset entries.
