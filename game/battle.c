@@ -14168,60 +14168,48 @@ void rect_prim_spawn(undefined2 param_1,undefined2 param_2,undefined2 param_3,un
 /* ---- batch19: task/effect node ops ---- */
 undefined4 isqrt_refine(int param_1)
 {
-  int iVar1;
-  int *piVar2;
-  uint uVar3;
-  int *piVar4;
-  int local_3c [6];
-  undefined4 local_24;
-  int local_1c [7];
-  uVar3 = 1;
-  piVar4 = local_1c;
-  piVar2 = local_3c;
-  local_3c[0] = param_1 + 0x5d50ad;
-  local_1c[0] = param_1 + -0x5d50ad;
-  do {
-    piVar4 = piVar4 + 1;
-    if (uVar3 == 4) {
-      iVar1 = local_3c[3] >> 4;
-      if (local_1c[3] < 0) {
-        local_3c[3] = local_3c[3] + (local_1c[3] >> 4);
-        local_1c[3] = local_1c[3] + iVar1;
-        if (local_1c[3] < 0) goto LAB_8019439c;
-        local_3c[4] = local_3c[3] - (local_1c[3] >> 4);
-        local_1c[4] = local_1c[3] - (local_3c[3] >> 4);
+  /* Faithful port of guest 0x80194280: a restoring digit-recurrence integer
+   * square-root.  Two recurrences run in parallel — g[] (the root digits)
+   * and p[] (the residual/partner) — seeded at param +/- 0x5d50ad, refined
+   * for i = 1..6.  The i == 4 step uses a wider cross-term refinement.
+   * g[i] and p[i] map to the guest stack slots sp+0x04.. and sp+0x24.. . */
+  int g[7];
+  int p[7];
+  int i;
+  g[0] = param_1 + 0x5d50ad;
+  p[0] = param_1 - 0x5d50ad;
+  for (i = 1; i < 7; i = i + 1) {
+    if (i == 4) {
+      int a0 = p[3];
+      int v0 = a0 >> 4;
+      int v1 = g[3];
+      int a1 = v1 - v0;
+      v0 = v1 >> 4;
+      v1 = a0 - v0;
+      g[3] = a1;
+      p[3] = v1;
+      if (v1 < 0) {
+        g[4] = a1 + (v1 >> 4);
+        p[4] = v1 + (a1 >> 4);
       }
       else {
-        local_3c[3] = local_3c[3] - (local_1c[3] >> 4);
-        local_1c[3] = local_1c[3] - iVar1;
-        if (local_1c[3] < 0) {
-LAB_8019439c:
-          local_3c[4] = local_3c[3] + (local_1c[3] >> 4);
-          local_1c[4] = local_1c[3] + (local_3c[3] >> 4);
-        }
-        else {
-          local_3c[4] = local_3c[3] - (local_1c[3] >> 4);
-          local_1c[4] = local_1c[3] - (local_3c[3] >> 4);
-        }
+        g[4] = a1 - (v1 >> 4);
+        p[4] = v1 - (a1 >> 4);
       }
     }
     else {
-      iVar1 = piVar2[8];
-      if (iVar1 < 0) {
-        piVar2[1] = *piVar2 + (iVar1 >> (uVar3 & 0x1f));
-        local_1c[uVar3] = piVar2[8] + (*piVar2 >> (uVar3 & 0x1f));
+      int pv = p[i - 1];
+      if (pv < 0) {
+        g[i] = g[i - 1] + (pv >> i);
+        p[i] = pv + (g[i - 1] >> i);
       }
       else {
-        piVar2[1] = *piVar2 - (iVar1 >> (uVar3 & 0x1f));
-        *piVar4 = piVar2[8] - (*piVar2 >> (uVar3 & 0x1f));
+        g[i] = g[i - 1] - (pv >> i);
+        p[i] = pv - (g[i - 1] >> i);
       }
     }
-    uVar3 = uVar3 + 1;
-    piVar2 = piVar2 + 1;
-    if (6 < (int)uVar3) {
-      return local_24;
-    }
-  } while( true );
+  }
+  return (undefined4)g[6];
 
 }
 

@@ -158,6 +158,11 @@ static CPUState *g_clean_cpu;
 
 void clean_bridge_set_cpu(CPUState *cpu) { g_clean_cpu = cpu; }
 
+/* clean_cpu_state — expose the live CPUState to the clean C ports so COP2/GTE
+ * helpers (setCopReg/getCopReg/copFunction/...) operate on the same
+ * cpu->gte_data/gte_ctrl backing the generated recompiled code uses. */
+CPUState *clean_cpu_state(void) { return g_clean_cpu; }
+
 /* guest_gp — current guest $gp (r28) small-data base.  Ghidra emits
  * `unaff_gp` locals for gp-relative (offset($gp)) accesses; they must
  * resolve to the live register value, not an uninitialized local. */

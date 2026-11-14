@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include "cpu_state.h"
 
 static uint8_t  guest_arena[0x200000];
 static uint8_t  guest_scratch[0x10000];
@@ -875,13 +876,20 @@ int host_rand(void) { return rand() % 100; }
 void action_select(uint8_t *ctrl,int idx){ (void)ctrl;(void)idx; }
 void reaction_load(uint8_t *ctrl,uint32_t e){ (void)ctrl;(void)e; }
 void trace_op(int op){ (void)op; }
-static uint32_t cop_regs[32];
-static uint32_t cop_cw[16];
-void setCopReg(int f,int r,uint32_t v){ if(r<32)cop_regs[r]=v; }
-int  getCopReg(int f,int r){ return r<32?(int)cop_regs[r]:0; }
-void copFunction(int f,uint32_t op){ (void)f;(void)op; }
-void setCopControlWord(int f,int r,uint32_t v){ if(r<16)cop_cw[r]=v; }
-int  getCopControlWord(int f,int r){ return r<16?(int)cop_cw[r]:0; }
+extern CPUState *clean_cpu_state(void);
+
+/* COP2/GTE register operand decode.  The clean port carries the COP2 move's
+ * low-16 instruction bits for wide accesses (rd field in bits[15:11], so the
+ * value is >= 0x800) and a bare register index for narrow ones; both resolve
+ * to a GTE register 0-31.  Verified against the recompiled MIPS: e.g.
+ * 0x4884F000 (MTC2 rd=30) -> arg 0xF000, 0x4802F800 (MFC2 rd=31) -> 0xF800. */
+static int cop2_reg_index(int r){ return (r>=0x800)?((r>>11)&0x1f):(r&0x1f); }
+
+void setCopReg(int f,int r,uint32_t v){ (void)f; CPUState*c=clean_cpu_state(); if(c) gte_write_data(c,(uint8_t)cop2_reg_index(r),v); }
+int  getCopReg(int f,int r){ (void)f; CPUState*c=clean_cpu_state(); return c?(int)gte_read_data(c,(uint8_t)cop2_reg_index(r)):0; }
+void copFunction(int f,uint32_t op){ (void)f; CPUState*c=clean_cpu_state(); if(c) gte_execute(c,op); }
+void setCopControlWord(int f,int r,uint32_t v){ (void)f; CPUState*c=clean_cpu_state(); if(c) gte_write_ctrl(c,(uint8_t)cop2_reg_index(r),v); }
+int  getCopControlWord(int f,int r){ (void)f; CPUState*c=clean_cpu_state(); return c?(int)gte_read_ctrl(c,(uint8_t)cop2_reg_index(r)):0; }
 
 
 
