@@ -256,3 +256,29 @@ TWO SEPARATE ISSUES:
     populated prim lists. Next: find the per-frame prim emitter and why
     it emits zero (task not dispatched? transform/GTE producing offscreen?
     OT link broken?).
+
+=== SESSION3b: black-screen = battle_intro_flow stuck on bad sub-state ===
+Root of black screen narrowed further:
+- battle_intro_flow is a phase SM keyed on DAT_1f800001 (shared u8 sub-state
+  byte, scratchpad+1). Valid intro phases: 0=setup(fighter select+spawn),
+  1=menu_res_load_sm, 2=countdown->battle_frame_tick(0x1ff/0x1fb)->0xf0,
+  0xf0/0xf1=shutdown->frame_divisor_get->0xff->exit.
+- Live DAT_1f800001 = 0x6c (108) — NOT a valid intro phase. Falls through
+  every branch to LAB_801677b4 = frame_tick+round_banner_draw = BLACK.
+- DAT_1f800001 is written by MANY state machines (menu.c sets it to
+  0..0xf,0xf0,0xf1,0xff,-1 across title/transition/select flows). On entry
+  battle_intro_flow expects it ==0 (fresh) to run setup; 0x6c means a
+  PRECEDING state left a non-intro value -> intro never initializes the
+  battle scene -> empty OT -> black.
+- Scene data IS present (fighters spawned 0x03001101/0x02011201, prim
+  lists 0x801BEFF0 populated with model ptrs 0x8004xxxx + packet chains).
+- SIDE ISSUE: dev_byte_xfer(0x801A1F74)=SIO/memcard byte xfer spins in
+  fifo_space_check(Timer2 timed drain-wait); base(0x801ff260) rewritten
+  constantly -> never accumulates -> ~98M polls. tx_writes=1.5M ~500/s.
+  Likely background card op OR stuck card transaction; frames still advance.
+
+NEXT (highest value): find which preceding state should reset
+DAT_1f800001=0 before battle_intro_flow (scene_entry/state4->5->6 path),
+or whether battle_intro_flow(param_1==0) must self-init the phase. Compare
+against guest MIPS: does the real game zero DAT_1f800001 on battle entry,
+or does a specific predecessor own it? Then the OT/scene build unblocks.
