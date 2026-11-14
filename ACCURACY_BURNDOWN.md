@@ -394,3 +394,28 @@ gpu_draw_otag submit (gp0_draw +3510) but pixels stay black because the OT
 prims are degenerate/garbage — the fighter/.ANI/.ACT scene geometry was never
 decoded, so GTE vertices are invalid -> nothing rasterizes. The REAL blocker
 is the fighter-model/animation load+decode RE backlog, upstream of rendering.
+
+=== FULL CAUSAL CHAIN: black screen -> fighter file 0xb1 CD load stall ===
+1. g_game_state=5/6 -> battle_intro_flow. DAT_1f800001=0x6c = polluted shared
+   phase byte (no case) -> falls to frame_tick+round_banner = 2D-only black.
+2. Forcing DAT_1f800001=0 -> phase SM advances 0->1, then STUCK at phase 1:
+   needs menu_res_load_sm()!=0 AND _DAT_1f800090==0 to reach phase 2
+   (battle_frame_tick = the 3D fight render).
+3. menu_res_load_sm stuck at st20 -> save_load_state_machine @ s0=0x10 (L10)
+   -> cd_file_load_sm(sel+0xb0). t1=DAT_1f800098=1 -> sel=1 -> file_id 0xb1.
+4. filetab[0xb1] @0x801B611C = {0x801B58B4, 0x0F} -> filedesc sector records.
+   cd_file_load_sm returns 0 every frame -> fighter .ANI/.ACT/model never
+   loads -> DAT_1f8000e8/0x1f8001f0 stay 0 -> phase1 never completes.
+5. CD-ROM delivery mismatch: cdrom_state bfrd_set=32866 vs bfrd_clear=13,
+   ring_dropped climbing (13537), reading=0, pending cmd 0x09 inactive.
+   The drive signals sector-ready ~32K times but the guest consumes ~13 ->
+   the file-load sector counter never reaches N -> cd_file_load_sm=0 forever.
+   decomp_trace shows OTHER files (0x50/0x54/0x55) DO load+LZSS-decompress,
+   so the CD path basically works; the 0xb1 fighter file specifically stalls.
+ROOT: CD-ROM sector-delivery/consumption fidelity — either the game's
+ReadN->BFRD->DMA-drain handshake isn't completing for this file, or file
+0xb1's extent/LBA resolves to sectors the drive delivers but the guest
+never acknowledges. NEXT: trace cd_file_load_sm(0x8018cfdc) generated body
+for the exact BFRD/status poll + DMA it waits on, and check whether file
+0xb1's LBA is valid on the disc (vs the SetLoc[0,0,0] livelock the comment
+documents). This is the faithful-timing/peripheral axis, not game logic.
