@@ -13881,7 +13881,7 @@ undefined4 tween_ensure(int param_1)
     uVar1 = 1;
     if (*(int *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x14) ))== 1) {
       uVar1 = tween_track_alloc(2,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x14))),*(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x30))),
-                           (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x8c)))),*(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x24))),
+                           (undefined2 *)(uintptr_t)*(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x8c))),*(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x24))),
                            *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 8) ))+ 0x30))),
                            *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 8) ))+ 0x38))),
                            (int)*(char *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x14) ))+ 0x14))));
@@ -14123,7 +14123,7 @@ void prim_group_gc(int param_1)
       if (iVar2 != 0) {
         sVar1 = *(short *)guest_at((uint32_t)(uintptr_t)((iVar2 + 4)));
         if (sVar1 == -2) {
-          task_node_free((int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar3 + *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x1c))))))));
+          task_node_free((int *)(uintptr_t)*(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar3 + *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x1c)))))));
           *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar3 + *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x1c)))) ))= 0;
           *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar3 + *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x34)))) ))= 0;
         }
@@ -14133,7 +14133,7 @@ void prim_group_gc(int param_1)
       if (iVar2 != 0) {
         sVar1 = *(short *)guest_at((uint32_t)(uintptr_t)((iVar2 + 4)));
         if (sVar1 == -2) {
-          task_node_free((int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar3 + *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x20))))))));
+          task_node_free((int *)(uintptr_t)*(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar3 + *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x20)))))));
           *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar3 + *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x20)))) ))= 0;
           *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar3 + *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x38)))) ))= 0;
         }
@@ -14143,7 +14143,7 @@ void prim_group_gc(int param_1)
       if (iVar2 != 0) {
         sVar1 = *(short *)guest_at((uint32_t)(uintptr_t)((iVar2 + 4)));
         if (sVar1 == -2) {
-          task_node_free((int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar3 + *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x24))))))));
+          task_node_free((int *)(uintptr_t)*(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar3 + *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x24)))))));
           *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar3 + *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x24)))) ))= 0;
           *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar3 + *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3c)))) ))= 0;
         }
