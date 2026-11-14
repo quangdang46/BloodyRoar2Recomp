@@ -422,7 +422,7 @@ extern char *s_time_out_in_decoding___80120e90;
 #define _DAT_1f800080   (*(uint8_t *)g__DAT_1f800080)
 #define _DAT_1f800082   (*(uint8_t *)g__DAT_1f800082)
 #define _DAT_1f800088   (*(uint8_t *)g__DAT_1f800088)
-#define _DAT_1f80008c   (*(uint8_t *)guest_at(0x1f80008c))
+#define _DAT_1f80008c   (*(int16_t *)guest_at(0x1f80008c))
 #define _DAT_1f80008e   (*(uint8_t *)guest_at(0x1f80008e))
 #define _DAT_1f800090   (*(uint8_t *)guest_at(0x1f800090))
 #define _DAT_1f8000a4   (*(uint8_t *)g__DAT_1f8000a4)
