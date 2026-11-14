@@ -1990,3 +1990,25 @@ confirm whether the codec coroutine's event-wait flag (@0x801BDEE8 region /
 TestEvent) is cleared on delivery. The coroutine must see the event ONCE;
 if the flag isn't cleared or the coroutine re-suspends on the same event,
 it recurses.
+
+## N+10 — dirty_block_tail: the recursing kernel routine is OpenBIOS 0x00002914-0x00002964
+
+dirty_block_tail (frame 348) shows a tight loop through targets
+0x00002914/0x00002924/0x00002934/0x0000293C/0x00002944/0x0000294C/0x00002954/
+0x00002964 — a ~0x50-byte OpenBIOS kernel routine (OpenBIOS_full.c:222967+,
+kernel mapped at LOW addrs not 0xBFC0). Called repeatedly with:
+  a0 = 0xF0000001 / 0xF0000009   (kernel event flags)
+  a1 = 0x00001000 / 0x0000FFFF
+  sp = 0x00008548                (separate low/kernel stack, NOT 0x801FFxxx)
+Last entry transitions back to game: tgt 0x000000B0, ra=0x8019AA9C
+(in cd_chan region just before cd_chan_slot_set 0x8019aabc), sp=0x801BDD08.
+
+So: game CD/SPU codec code (~0x8019AA98) invokes an OpenBIOS kernel
+event primitive (DeliverEvent/TestEvent family) on a kernel stack; the
+primitive + the codec coroutine's event-wait recurse through nested
+psx_dispatch_call. The 0xF0000001 AND 0xF0000009 flags both appear ->
+multiple event deliveries interleaving.
+
+NEXT: identify the OpenBIOS routine at 0x00002914 (read OpenBIOS_full.c
+~222967) — likely DeliverEvent or TestEvent — and check its re-entrancy
+contract vs the game's event-wait flag clearing.
