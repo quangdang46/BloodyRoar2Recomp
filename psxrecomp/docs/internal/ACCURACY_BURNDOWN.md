@@ -1446,3 +1446,22 @@ REMAINING BLOCKER: the NULL jalr itself. 0x801A1A40 is reached via CPS jal
    table is populated by a different init that hasn't run / ran with wrong
    index. NEXT: identify function 0x801A1A40 + caller 0x801A1260, find what
    writes 0x801BE768, and determine correct population order vs the dispatcher.
+
+=== RESOLVED: frame-347 CD wedge (commit pending) ===
+ROOT CAUSE (final): clean cd_channel_table_init (0x801a36f0) wrote the
+channel fn-ptr table to 0x801c4780+ but generated stores target 0x801BE780+
+(a uniform 0x6000 base error). So cd_channel_main_init's callback slot
+0x801BE784 stayed NULL -> its `jalr $v0` jumped to 0 -> wild-flow bail ->
+cd_ext_init_once's CPS continuation was cut by the stale bail -> OpenEvent
+(0xF0000009) never ran -> TestEvent(*(0x801bde38)) wedge @frame~347.
+FIX: delegated cd_channel_table_init to generated br2_call_generated
+(0x801a36f0) — generator auto-skips the clean wrap (no recursion). Verified:
+cd_ext_init_once now runs its FULL CPS chain with bail=0, OpenEvent+EnableEvent
+(BIOS B0) fire, cd_ext_table_init runs.
+ALSO FIXED: clean_bridge.c br2_call_generated bail-aware (don't clobber unwind
+target / don't start fresh calls mid-unwind); save.c ctx_fn_send missing
+guest_at() on ctx+0x3c ptr deref.
+NEXT BUG (now reachable, was masked by wedge): dev_byte_xfer (save.c:9116)
+reads device-struct ptr @0x801be3e4 -> mem_ptr -> wild deref 0x85208510.
+Likely uninitialized device/memcard global — init-ordering issue in the device
+path, NOT a missing guest_at. Investigate what populates 0x801be3e4.

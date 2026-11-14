@@ -1037,39 +1037,13 @@ extern uint32_t cd_bzero(uint32_t,uint32_t);
 extern void cd_handler_pair_install(void);
 void cd_channel_table_init(uint8_t *param_1,uint8_t *param_2)
 {
-  static const uint32_t fns[7] = {
-    0x801a38b8,0x801a3850,0x801a39bc,0x801a3a78,0x801a3cf4,0x801a3d2c,0x801a39ac };
-  uint8_t *s0 = (uint8_t *)guest_at(0x801ff080);
-  uint32_t a2, a3;
-  int t;
-  if (s0 == NULL) return;
-  *(uint32_t *)guest_at(0x801c47b8) = 0;
-  *(uint32_t *)guest_at(0x801c47cc) = 0;
-  cd_handler_triple_install();
-  for (t = 0; t < 7; t++)
-    *(uint32_t *)guest_at(0x801c4780 + t * 4) = fns[t];
-  *(uint32_t *)guest_at(0x801c47b4) = 0x801ff080;
-  cd_bzero(0x801ff080,0x1e0);
-  *(uint32_t *)(s0 + 0x30) = guest_of(param_1);
-  *(uint32_t *)(s0 + 0x120) = guest_of(param_2);
-  a2 = 0x801feff0;
-  a3 = 0x801ff038;
-  for (t = 0; t < 2; t++) {
-    uint8_t *b = s0 + t * 0xf0;
-    uint8_t *a0 = b + 0x40;
-    uint8_t *p = (uint8_t *)guest_at(*(uint32_t *)(a0 - 0x10));
-    int i;
-    *(uint32_t *)(a0 - 0x34) = 0;
-    *(uint32_t *)(a0 - 0x30) = 0x801ff080 + (uint32_t)t * 0xf0;
-    if (p) { p[0] = 0xff; p[1] = 0; }
-    *(uint32_t *)(a0 - 4) = a2;
-    *(uint32_t *)(a0 + 0) = a3;
-    for (i = 0; i < 6; i++) b[0x5d + i] = 0xff;
-    a2 += 0x23;
-    a3 += 0x23;
-  }
-  cd_handler_pair_install();
-  *(uint32_t *)guest_at(0x801c47b8) = 1;
+  /* Delegate whole body to generated MIPS (0x801a36f0). The clean port wrote
+   * the channel fn-ptr table to 0x801c4780+ but the real stores target
+   * 0x801BE780+ (incl. the cd_channel_main_init callback @0x801BE784 and its
+   * arg @0x801BE7B4). Leaving 0x801BE784 NULL made cd_channel_main_init's
+   * `jalr` jump to 0 -> wild-flow bail -> cd_ext_init_once's CPS continuation
+   * was cut -> OpenEvent(0xF0000009) never ran -> TestEvent wedge @frame~347. */
+  br2_call_generated(0x801a36f0u, guest_of(param_1), guest_of(param_2), 0, 0);
 }
 
 /* cd_tbl4_dispatch3 — dispatch wrapper: cd_dispatch_tbl4(3,arg). */

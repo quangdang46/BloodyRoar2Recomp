@@ -7640,7 +7640,7 @@ void ctx_fn_send(uint8_t *a0)
     r = ((uint32_t (*)(uint32_t))fn)(guest_of(a0));
   }
   *(uint32_t *)guest_at(0x801be800) = r;
-  *(uint8_t *)*(uint32_t *)(a0 + 0x3c) = 0;
+  *(uint8_t *)guest_at(*(uint32_t *)(a0 + 0x3c)) = 0;
   dev_byte_xfer(a0,-2);
   return;
 }
