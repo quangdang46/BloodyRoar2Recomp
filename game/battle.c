@@ -8662,7 +8662,7 @@ LAB_801373c0:
   iVar6 = 0;
   piVar5 = (int *)&DAT_801f0790;
   piVar4 = (int *)&DAT_801f0780;
-  piVar8 = (int *)(uintptr_t)_DAT_801c4508;
+  piVar8 = (int *)guest_at(_DAT_801c4508);
   do {
     *piVar4 = *piVar8;
     iVar6 = iVar6 + 1;
@@ -14280,11 +14280,14 @@ int tween_track_alloc(int param_1,undefined2 param_2,undefined4 param_3,undefine
     else {
       *(undefined4 *)(puVar4 + 0x10) = param_3;
     }
-    *(undefined2 **)(puVar4 + 0xc) = param_4;
-    *(undefined4 *)(puVar4 + 0x12) = *(undefined4 *)(param_4 + 4);
-    *(undefined4 *)(puVar4 + 0x14) = *(undefined4 *)(param_4 + 6);
-    *(undefined4 *)(puVar4 + 10) = *(undefined4 *)(param_4 + 8);
-    uVar1 = *param_4;
+    /* param_4 is a GUEST address (keyframe descriptor); resolve fields via
+     * guest_at and store it as a 32-bit guest pointer, not a host ptr. */
+    uint32_t p4g = (uint32_t)(uintptr_t)param_4;
+    *(uint32_t *)((char *)puVar4 + 0x18) = p4g;
+    *(undefined4 *)((char *)puVar4 + 0x24) = *(uint32_t *)guest_at(p4g + 8);
+    *(undefined4 *)((char *)puVar4 + 0x28) = *(uint32_t *)guest_at(p4g + 12);
+    *(undefined4 *)((char *)puVar4 + 0x14) = *(uint32_t *)guest_at(p4g + 16);
+    uVar1 = *(undefined2 *)guest_at(p4g);
     puVar4[5] = 0;
     puVar4[7] = 0;
     puVar4[8] = uVar1;
