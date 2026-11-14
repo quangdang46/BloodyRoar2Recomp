@@ -1770,3 +1770,61 @@ on the stack @0x801fff40/44 = 0x801bcb9c/0x801bcba4 region). Then trace whether
 cd_intc_dispatch ran for that command's INT2 — if it ran but wrote the wrong slot,
 it's a result-slot mapping bug; if it never ran, the INT2 wasn't delivered (check
 cdrom.c irq_flag->I_STAT bit2 path for THIS command type vs reads).
+
+## Stall#2 — session N+4: CD path fully decoded; NULL-callback theory DISPROVEN
+
+Deep decode of the generated CD interrupt/result path + live MMIO/cmd-history:
+
+cd_intc_dispatch (0x8019A8EC) — fully decoded:
+- State block @0x801BCD18: +0 u16 in-service flag (=1 live, healthy), +2 busy,
+  handler table u32[11] @0x801BCD1C.
+- Gate: lhu in-service; ==0 -> "unexpected interrupt" path (0x8018E550), !=0 ->
+  normal dispatch. Runs EVERY frame (caller invokes regardless), finds no CD cause.
+- pending mask = *(0x1F801070 I_STAT) & *(0x1F801074 I_MASK) & u16@(0x801BCD48).
+  Per set INTC bit i: ACK (*ptrA = ~(1<<i)) then jalr handler_table[i].
+  CDROM = INTC bit2 -> cd_response_pump. Re-polls until mask drains.
+
+Live MMIO: I_STAT=0x00000001 (VBlank ONLY), I_MASK=0x0000000D (bit2 CDROM
+ENABLED but not pending), CD stat=0x02 request=0x80 mode=0xA0 irq_enable=0x07.
+=> CD subsystem is fully IDLE, not broken. No CD IRQ is owed.
+
+cdrom_command_history (128-ring) — the real command sequence:
+- Reads are chunked: Setloc(0x02)->ReadN(0x06)->Pause(0x09) repeating, ~1 sector
+  per ReadN via INT1 data-ready (cd_read_step_cb x282, last f4982).
+- LAST commands: seq314 ReadN f4969 -> seq315/316/317 Pause f4982/f4986/f5286.
+- Then ZERO CD commands for 25k+ frames. Every command's INT2 completed
+  (pend cleared). The game simply STOPPED issuing reads after f4982 and now
+  only re-issues Pause on each cd_result_wait retry.
+
+cdrom_state: pending={cmd:0x09,active:0,phase:1} — last Pause's process_pending
+ran (response_clear + push stat + set_irq COMPLETE + fire_cdrom_irq); response
+consumed (read==count==1), 0x801BCB24=0x02 (the Pause stat byte). irq_flag=0.
+Read-session cells: bcb94(remaining)=0, bcba0(cursor)=8509, bcba4(done)=0.
+
+cd_result_wait_a/b decoded: they are BOUNDED SYNC waits, not the flag poll —
+deadline=cd_timer_read+960 -> 0x801FC6E0, spin counter 0x801FC6E4 vs 0x3C0000,
+timeout strings 0x801257A4/0x80125834, yield to IRQs each iter via
+cd_timer_read->vsync_wait_n. cd_result_wait_b loops wait_a; on timeout it
+re-arms and retries (infinite). The actual "result ready" flag is set elsewhere.
+
+DISPROVEN — 0x801BC848/0x801BC84C NULL callbacks: cd_read_setup calls
+mc_session(0)/mc_session_b(0) which INTENTIONALLY clear both and stash the old
+values in bcba8/bcbac for session restore. NULL is the correct file-load state;
+cd_response_pump only invokes them when non-NULL (cd.c:4494-4498). NOT the bug.
+
+REMAINING HYPOTHESIS (narrowed): the reads stopped because the per-chunk read
+session reached its sector budget (bcb94=0) and the game is now waiting — inside
+cd_file_load_sm's state machine — for either (a) a NEW read session it never
+issues because an upstream condition is unmet, or (b) a "load complete / next
+chunk" signal that depends on a result flag cd_response_process writes for a
+specific response type. Since the CD is idle and every issued command completed,
+the missing piece is UPSTREAM of the CD IRQ: cd_file_load_sm is blocked on a
+non-CD condition (file-size/byte-count vs delivered, or a different event), OR
+cd_result_wait_b's caller interprets a wait_a return status that never becomes
+the expected value because the consumed Pause response maps to the wrong slot.
+
+NEXT decisive: read cd_file_load_sm (0x8018CFDC) state machine — find which
+state it's parked in and what single condition advances it (byte count? a flag
+in the 0x801BCB80 session block? an event?). Cross-check the expected sector/
+byte total vs bcba0 cursor=8509 / bytes delivered. The CD side is proven healthy;
+the wedge is the load state machine's advance condition.
