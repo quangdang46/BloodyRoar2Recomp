@@ -1965,3 +1965,28 @@ continuation is dispatched from the TOP-LEVEL frame loop (psx_dispatch, not
 nested psx_dispatch_call), matching how working suspendable coroutines yield.
 Likely a generated CPS jal targets a dispatcher that calls dispatch_call
 recursively rather than returning pc to the outer loop.
+
+## N+9 — crash-report register state: recursion is DeliverEvent(0xF0000009) kernel-call path
+
+psx_last_run_report.json @ frame 348, dispatch_depth=4097:
+  ra=0x80156628 (cd_file_read_seq codec path), sp=0x801FFFA0, gp=0x801BEEDC
+  epc=0x8019A648 (game IRQ/kernel-tramp region, near cd_dispatch_tbl*/bios_kobj_tramp)
+  t2=0xBFC056B4  = OpenBIOS kernel routine (~0xBFC05600 block in OpenBIOS_full.c)
+  t3=0xF0000009  = the DeliverEvent event flag the codec coroutine waits for
+  im2=1 iec=1    -> an interrupt/exception is live at the trip
+  xprobe: mixed_depth_now=4094, first_depth_frame=170 (depth grew f170->f348)
+
+INTERPRETATION: the codec coroutine issues DeliverEvent(0xF0000009) via the
+BIOS kernel (0xBFC056B4). The event delivery resumes the waiting coroutine,
+which re-issues the SPU op and calls DeliverEvent again before the prior
+frame unwinds -> nested psx_dispatch_call cycle -> unbounded depth. The IRQ
+(epc in CD/SPU dispatch-tramp region) is entangled: the event is normally
+raised BY the CD/SPU interrupt handler; if the handler's DeliverEvent and
+the coroutine's re-wait race, the coroutine never observes the event as
+consumed and re-arms forever.
+
+NEXT: trace OpenBIOS 0xBFC056B4 (the kernel DeliverEvent/syscall body) and
+confirm whether the codec coroutine's event-wait flag (@0x801BDEE8 region /
+TestEvent) is cleared on delivery. The coroutine must see the event ONCE;
+if the flag isn't cleared or the coroutine re-suspends on the same event,
+it recurses.
