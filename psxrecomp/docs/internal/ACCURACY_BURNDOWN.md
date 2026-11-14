@@ -1635,3 +1635,38 @@ time. Two hypotheses: (a) ORDERING — cd_reg_window_op op1 clears the flag in
   ->IntRP) is a real-kernel mechanism — if openbios ExceptionHandler lacks
   IntRP/EntryInt restore, cd_ctx_restore can't resume; verify against
   generated/OpenBIOS_full.c if the flag ordering proves correct.
+
+=== SESSION — coroutine RESUME RULED OUT; flag never armed (0x801BDF00) ===
+Fresh boot (PID relaunch) + fntrace on the whole coroutine chain
+(0x8019ADCC ctx_restore / 0x8019A814 chan_full_init / 0x8019A8EC intc_dispatch
+/ 0x801979F8 resp_pump / 0x80196370 resp_process / 0x8019B7E0 chan_reset):
+- cd_intc_dispatch (0x8019A8EC) is invoked ~36,000x, ALWAYS with
+  ra=0x8019A88C (inside cd_chan_full_init), a0=0x801BCD50 (the saved coroutine
+  frame), a1=1. => cd_ctx_restore -> cd_chan_full_init -> cd_intc_dispatch
+  RESUMES correctly on IRQs. The HookEntryInt->EntryInt->ExceptionHandler->IntRP
+  deferred-coroutine contract WORKS under openbios.bin. Hypothesis (a) from the
+  prior session (coroutine not resuming) and the openbios-ExceptionHandler
+  concern are both RULED OUT.
+- cd_dma_chan_reset / br2eu_func_8019B7E0 IS invoked as an INTC-table handler
+  on every dispatch, but ALWAYS takes the *(0x801BDF00)==0 branch ->
+  jal cd_delay_3c -> NO DeliverEvent(0xF0000009). (verified generated:
+  block_8019B7E0 loads *(0x801C0000-8448)=*(0x801BDF00); !=0 -> block_8019B7FC
+  MMIO-wait+reset+DeliverEvent; ==0 -> block_8019B7F4 -> 0x8019BE78 delay.)
+- wtrace on 0x801BDF00..0x801BDF04 captured ZERO writes all boot. The only
+  writers in generated: cd_dma_xfer_start store @0x8019B928 (gpr[2]),
+  0x8019B9E8 (gpr[0]=0 clear), 0x8019BA54 (gpr[6]=a2) — all inside the
+  cd_dma_xfer_start / 0x8019B954 reg_window family that fntrace shows were
+  NEVER invoked this boot.
+=> The file-load's CD transfer path that arms 0x801BDF00 never runs. The break
+   is UPSTREAM of event delivery: whatever should kick the sector DMA /
+   transfer-mode write (arming the flag the channel-reset handler checks) is
+   not executing. Command side completes (Pause 0x09 pending.active=0,
+   response drained, irq_flag=0, sector 2060/2340 partial, BFRD set) but no
+   transfer armed the flag -> handler skips -> TestEvent(0xF1000008) spins.
+NEXT (decisive): find which game function SHOULD call cd_dma_xfer_start /
+   write 0x801BDF00 for this load and why it isn't reached. Candidates: the
+   cd_file_load_sm / session state machine may take a PIO path (no DMA) on
+   real HW too — in which case DeliverEvent(0xF0000009) comes from a DIFFERENT
+   table handler, and cd_dma_chan_reset is a red herring. Disambiguate by
+   checking whether ANY generated site besides 0x8019B7E0 builds 0xF0000009
+   for a B0/7 call, and whether the load's sector count actually completed.
