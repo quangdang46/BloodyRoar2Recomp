@@ -2044,3 +2044,40 @@ scheduler's resume/DeliverEvent issues the nested dispatch_call for the
 woken thread and route it to the flat dispatcher — OR extend the
 return-boundary gate to recognize the kernel-stack (sp~0x8548) context
 restore as a legitimate resume, mirroring exc_sp_straddle_.
+
+## N+12 — LIVE-CONFIRMED mechanism: IRQ/DeliverEvent re-entrancy via psx_dispatch_call
+
+Instrumented psx_dispatch_call (temporary fprintf, since reverted) and ran to
+the frame-348 crash. The [NEST] trace shows EVERY nested call identical:
+  addr=0x8019B944 (cd_reg_window_op)  ra=0x80156628 (cd_file_read_seq)
+  sp=0x801FFFA0 (CONSTANT)  pc=0x00000000 (CONSTANT)
+Constant sp/ra/pc => NOT guest-stack recursion; the SAME call is re-entered
+via interrupt/event resume, each entry nesting a host psx_dispatch_call frame.
+
+CONFIRMED CHAIN:
+  cd_reg_window_op generated body -> MMIO strobe (cd_mmio_strobe_20/22)
+    -> psx_check_interrupts_at -> pending IRQ (I_STAT nonzero during runaway)
+    -> IRQ handler -> DeliverEvent(0xF0000009) kernel path
+    -> resumes codec coroutine via psx_dispatch_call  [NESTED, depth+1]
+    -> coroutine re-enters cd_file_read_seq -> cd_reg_window_op
+    -> strobe -> psx_check_interrupts_at -> IRQ STILL pending -> repeat
+
+KEY GAP: interrupt delivery is gated by in_exception / exception_nest_depth
+(interrupts.c:1190,1270,1462) AND hw_deliverable requires SR.IE (bit10,
+interrupts.c:1513). BUT the DeliverEvent user-callback resume uses
+psx_dispatch_call (a kernel-call, NOT an exception take) which does NOT set
+in_exception and does not clear/ack the pending i_stat bit. So the resumed
+coroutine's MMIO strobe sees the SAME still-pending IRQ and re-delivers it,
+recursing through nested psx_dispatch_call frames that never unwind.
+
+On real hardware the IRQ would be acked (handler writes I_STAT) or IE masked
+during the coroutine resume, so the strobe wouldn't re-fire the same source.
+
+FIX DIRECTION (faithful): ensure the pending IRQ i_stat bit is acked/cleared
+(or IE/in_exception covers the DeliverEvent callback window) BEFORE the
+resumed coroutine's MMIO can re-observe it — i.e. the IRQ handler must ack
+its source before DeliverEvent resumes the waiter, matching hardware where
+the exception handler clears the cause before dispatching the event.
+Verify which i_stat bit (CD bit2? SPU? VBlank?) stays pending and whether
+the handler's ack write is being skipped because the coroutine resume
+longjmps/returns before reaching it.
