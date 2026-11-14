@@ -14306,6 +14306,20 @@ int32_t heap_serialize(uint32_t param_1,uint32_t param_2,uint32_t param_3,
     uint32_t cnt = MB32(blk + 8u);
     uint32_t ctx = MB32(blk + 4u);
     uint32_t rec;
+    /* The serialize ctx's I/O base pointers (+4/+8/+0xc/+0x10/+0x14) arrive
+     * offset-encoded as 0x8000xxxx tags into the 0x800F0000 heap image; the
+     * tag serializers consume them as absolute KSEG0 pointers, so resolve
+     * them against the image base. Guarded: only fires while a field still
+     * carries the unrelocated 0x8000xxxx tag (relocated 0x800Fxxxx and live
+     * heapA 0x8001xxxx pointers are untouched). */
+    { uint32_t ci;
+      for (ci = 0u; ci < 5u; ci++) {
+        uint32_t ro = 4u + ci * 4u;
+        uint32_t v  = MB32(ctx + ro);
+        if (v >= 0x80000000u && v < 0x80010000u)
+          MW32(ctx + ro, 0x800F0000u + (v & 0x7FFFFFFFu));
+      }
+    }
     if (cnt == 0) goto next_block;
     rec = blk + 0xcu;
     for (i = 0; i < cnt; i++) {
@@ -14430,7 +14444,9 @@ int32_t heap_serialize(uint32_t param_1,uint32_t param_2,uint32_t param_3,
         }
         { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
           decomp_trace_record(27,ctx,MB32(ctx+0x14u),0,MB32(rp+0x18u));
-          decomp_trace_record(28,rp,cur,0,MB32(ctx+0x10u)); }
+          decomp_trace_record(28,rp,cur,0,MB32(ctx+0x10u));
+          decomp_trace_record(30,MB32(ctx+4u),MB32(ctx+8u),0,MB32(ctx+0xcu));
+          decomp_trace_record(31,MB32(blk+0u),MB32(blk+8u),0,blk); }
         cur = heap_serialize_tag_01000000(cur, rp + 4u,
                            MB32(ctx + 8u), MB32(ctx + 0xcu),
                            MB32(ctx + 0x10u), MB32(ctx + 0x14u));
