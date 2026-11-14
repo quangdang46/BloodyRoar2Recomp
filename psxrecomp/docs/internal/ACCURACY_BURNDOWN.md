@@ -1911,3 +1911,33 @@ br2_call_generated bail flag during the runaway, OR check whether the SPU
 register-window ops (0xd3/0xd5 -> 0x1F801DA6/DAA) return a value the game
 reads as "not ready". The SPU-idle-but-game-waits mismatch is the lead:
 game may expect a nonzero SPU status the emulator returns 0 for.
+
+## N+7 — recursion is OUTER coroutine layer, not cd_reg_window_op itself
+
+cd_reg_window_op(0x8019B954) body makes only TWO calls: cd_mmio_strobe_20
+(0x8019BE28) and cd_mmio_strobe_22(0x8019BE50) — leaf MMIO-write strobes, no
+self-recursion. So the unbounded host-stack recursion (depth>4096, still
+tripped at PSX_RECURSION_LIMIT=4096) is NOT inside the register-window op.
+
+Mechanism: the codec sequencer (cd_file_load_sm/cd_file_read_seq ->
+cd_seek_complete_poll) is a SUSPENDABLE coroutine. Its CPS continuations are
+being RESUMED as nested synchronous psx_dispatch_call frames instead of
+yielding back to the frame scheduler / vsync boundary. Each resume nests a
+host frame without the prior one returning -> g_psx_dispatch_depth grows
+unbounded -> frozen psx_cycle_count (resumed frames return ~0 cycles before
+the next nested dispatch). cd_reg_window_op(0x8019B944) is just the innermost
+dispatch the ring keeps sampling.
+
+ROOT-CAUSE CLASS: CPS-coroutine re-entrancy in the dispatch layer — a
+suspendable generated function's continuation must RETURN control to the
+scheduler (so the host frame unwinds each frame), not chain into the next
+continuation synchronously. The clean<->generated boundary
+(br2_call_generated -> psx_dispatch_call) preserves ra/pc/sp/s0-s3 but does
+NOT flatten coroutine resumes, so nested continuations accumulate.
+
+NEXT (needs live instrumentation): find WHERE the codec coroutine's yield
+should return to the scheduler — likely the vsync_wait_n / frame boundary —
+and why the resume path bypasses it. Compare against how OTHER working
+suspendable coroutines (battle_intro_flow, transition_screen_flow) yield vs
+this codec path. Possibly a missing "yield to scheduler" CPS opcode or a
+continuation PC that points back into the read loop instead of the frame top.
