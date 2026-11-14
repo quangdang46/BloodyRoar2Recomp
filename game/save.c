@@ -9098,87 +9098,27 @@ int op_node_alloc_init(int32_t a0,int32_t a1,int32_t a2,int32_t a3,uint32_t a4)
   return (int)r;
 }
 
-/* dev_byte_xfer — device byte send/recv. a0 = host ctx (fields +0x3c
- * buf ptr, +0x40 alt ptr, +0x44/+0x45 counters); a1 = byte (-2 =
- * query/flush path). Globals: dev struct @0x801be3e4 (byte buf,
- * +4 status u16, +0xe u16 cmd, +0xa u16), ctrl @0x801be3e0 (u32
- * status bit7/bit2). Disasm 0x801a1f74-0x801a2180. */
+/* dev_byte_xfer — SIO/memory-card byte send/recv (0x801a1f74). a0 = host ctx
+ * (fields +0x3c buf ptr, +0x40 alt ptr, +0x44/+0x45 counters); a1 = byte
+ * (-2 = query/flush path). Globals: dev struct @0x801be7e4 -> SIO regs
+ * 0x1F801040 (byte buf, +4 status u16, +0xe u16 cmd, +0xa u16), ctrl
+ * @0x801be7e0 -> 0x1F801070 (u32 status bit7/bit2).
+ *
+ * The device pointers are MMIO addresses (SIO_DATA / I_STAT), and the body
+ * busy-polls hardware FIFO status in `while` loops whose exit depends on
+ * interrupt/DMA-driven state changes. Clean-C cannot express that faithfully:
+ * mem_ptr() routes 0x1F801xxx to the open-bus mirror (guest_at has no MMIO
+ * backing) and a raw spin never yields to psx_check_interrupts_at, so the
+ * status bits would never update -> livelock. Same contract as
+ * cd_timer_read/cd_mc_state_machine/cd_channel_init: delegate the whole body
+ * to generated MIPS so the recompiled SIO accesses and CPS interrupt checks
+ * run verbatim. a0 arrives as a host pointer into guest RAM; guest_of()
+ * recovers the guest address the generated prologue expects in $a0. */
 int32_t dev_byte_xfer(uint8_t *a0,int32_t a1)
 {
-  uint8_t *s0 = a0;
-  int32_t s1, s2;
-  uint8_t *g1, *g2p;
-  uint32_t gv, gv2;
-  if (a1 < 0) {
-    /* flush/query path */
-    gv = *(uint32_t *)guest_at(0x801be3e4);
-    g1 = (uint8_t *)mem_ptr(gv);
-    s2 = g1[0] & 0xff;
-    s0[0x44] = 0xff;
-    s0[0x45] = 1;
-    *(uint8_t *)(uintptr_t)*(uint32_t *)(s0 + 0x40) = (uint8_t)~a1;
-    for (;;) {
-      gv = *(uint32_t *)guest_at(0x801be3e4);
-      g1 = (uint8_t *)mem_ptr(gv);
-      if ((*(uint16_t *)(g1 + 4) & 1) != 0) break;
-    }
-    while (fifo_space_check() == 0) { }
-    gv = *(uint32_t *)guest_at(0x801be3e4);
-    g1 = (uint8_t *)mem_ptr(gv);
-    g1[0] = (uint8_t)~a1;
-    return s2;
-  }
-  /* normal send path */
-  {
-    uint8_t *p3c = (uint8_t *)(uintptr_t)*(uint32_t *)(s0 + 0x3c);
-    int32_t nib = (int32_t)(uint8_t)p3c[0] >> 4;   /* lbu then sra4 */
-    s1 = 0x88;
-    if (nib == 8 && s0[0x44] >= 9) s1 = 0x22;
-  }
-  gv = *(uint32_t *)guest_at(0x801be3e4);
-  g1 = (uint8_t *)mem_ptr(gv);
-  {
-    /* disasm-verified @0x801a2048-0x801a2060: lui $v0,0x1f80; ori $v0,$v0,
-     * 0x1120; lhu $a0,($v0) — absolute HW register address, not scratchpad. */
-    uint16_t hw = (uint16_t)psx_read_half(0x1f801120);
-    *(uint32_t *)guest_at(0x801ff264) = 0x1ae;
-    *(uint32_t *)guest_at(0x801ff260) = hw;
-  }
-  gv = *(uint32_t *)guest_at(0x801be3e4);
-  g1 = (uint8_t *)mem_ptr(gv);
-  /* wait status bit1 */
-  while ((*(uint16_t *)(g1 + 4) & 2) == 0) { }
-  gv = *(uint32_t *)guest_at(0x801be3e4);
-  g1 = (uint8_t *)mem_ptr(gv);
-  s2 = g1[0] & 0xff;
-  *(uint16_t *)(g1 + 0xe) = (uint16_t)s1;
-  gv2 = *(uint32_t *)guest_at(0x801be3e0);
-  for (;;) {
-    g2p = (uint8_t *)mem_ptr(gv2);
-    if ((*(uint32_t *)g2p & 0x80) != 0) break;
-    if (fifo_space_check() != 0) return -0x14;
-    gv2 = *(uint32_t *)guest_at(0x801be3e0);
-  }
-  gv = *(uint32_t *)guest_at(0x801be3e4);
-  g1 = (uint8_t *)mem_ptr(gv);
-  g1[0] = (uint8_t)a1;
-  if (s1 == 0x22) {
-    gv2 = *(uint32_t *)guest_at(0x801be3e0);
-    g2p = (uint8_t *)mem_ptr(gv2);
-    *(uint32_t *)g2p = 0xffffff7fu;
-    gv = *(uint32_t *)guest_at(0x801be3e4);
-    g1 = (uint8_t *)mem_ptr(gv);
-    *(uint16_t *)(g1 + 0xa) |= 0x10;
-  }
-  {
-    uint8_t *buf = (uint8_t *)(uintptr_t)*(uint32_t *)(s0 + 0x3c);
-    uint8_t idx = s0[0x44];
-    uint8_t v = s0[0x45];
-    s0[0x45] = (uint8_t)(v + 1);
-    buf[(uint32_t)idx] = (uint8_t)s2;
-    s0[0x44] = (uint8_t)(s0[0x44] + 1);
-  }
-  return s2;
+  return (int32_t)br2_call_generated(0x801a1f74u,
+                                     guest_of((const void *)a0),
+                                     (uint32_t)a1, 0, 0);
 }
 
 /* fifo_space_check — FIFO space check. a0 = u16 count @0x1f801120 (+ u16
