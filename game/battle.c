@@ -10796,7 +10796,11 @@ void task_slot_fns_run(int param_1)
       {
         void *fn = fn_lookup((uint32_t)*(int *)guest_at((uint32_t)(uintptr_t)((iVar2 * 4 + iVar1))));
         if (fn != (void *)0x0) {
-          ((void (*)(uintptr_t))fn)((uintptr_t)local_10);
+          /* Guest jalr passes a0 = &ctx_base cell (sp+0x10) and
+           * a1 = ctx_base[i] node-head guest addr.  The clean slot fns take
+           * host pointers, so resolve a1 through guest_at. */
+          uint32_t nodeg_ = (uint32_t)*(int *)guest_at((uint32_t)(uintptr_t)((local_10[0] + iVar2 * 4)));
+          ((void (*)(uintptr_t,uintptr_t))fn)((uintptr_t)local_10, (uintptr_t)guest_at(nodeg_));
         }
       }
     }
