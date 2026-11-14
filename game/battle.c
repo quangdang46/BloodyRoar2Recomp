@@ -5629,6 +5629,18 @@ void node_xform_apply(int param_1,undefined4 param_2,undefined4 param_3)
 {
   int iVar1;
   if (param_1 != 0) {
+    /* DIAG N+27: flag transform-node links that leave plausible node RAM.
+     * Valid scene nodes live in the fighter arenas (~0x801exxxx); a child
+     * below 0x80100000 or above 0x80200000 is a stale/garbage link. */
+    {
+      extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+      uint32_t c48 = *(uint32_t *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x48)));
+      uint32_t c44 = *(uint32_t *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x44)));
+      if (c48 != 0 && (c48 < 0x80100000u || c48 >= 0x80200000u))
+        decomp_trace_record(50, (uint32_t)param_1, c48, 0x48, 0);
+      if (c44 != 0 && (c44 < 0x80100000u || c44 >= 0x80200000u))
+        decomp_trace_record(50, (uint32_t)param_1, c44, 0x44, 0);
+    }
     rtps_point_xform((undefined4 *)guest_at((uint32_t)param_2),(undefined4 *)guest_at((uint32_t)(param_1 + 0x18)),(int *)guest_at((uint32_t)(param_1 + 0x34)),(int)param_3);
     gte_xform3_nold((ushort *)guest_at((uint32_t)(param_1 + 4)),(uint *)guest_at((uint32_t)(param_1 + 0x20)));
     node_xform_apply(*(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x48))),param_2,1);

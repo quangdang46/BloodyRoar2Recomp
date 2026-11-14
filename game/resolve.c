@@ -2731,6 +2731,7 @@ unsigned long long dir_rotate_wrap(undefined4 param_1,int param_2,short *param_3
 
 void keyframe_blend_apply(byte *param_1,byte *param_2)
 {
+  extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
   byte bVar1;
   short sVar2;
   byte *pbVar3;
@@ -2781,6 +2782,12 @@ void keyframe_blend_apply(byte *param_1,byte *param_2)
   bVar1 = *(byte *)((char *)guest_at((uint32_t)iVar4) + 0x78);
   pbVar3 = (byte *)guest_at((uint32_t)iVar4) + 0x78;
   while (bVar1 != 0xff) {
+    {
+      uint32_t _idx = (uint)*(byte *)((char *)guest_at((uint32_t)iVar14) + (uint)bVar1);
+      uint32_t _dst = (uint32_t)iVar5 + _idx * 0x1c + 0x24;
+      if (_dst >= 0x801d0000u && _dst < 0x80200000u)
+        decomp_trace_record(52, _dst, (uint32_t)iVar5, (uint8_t)_idx, 0);
+    }
     anim_lerp_packed3((short *)guest_at((uint32_t)(iVar5 + (uint)*(byte *)((char *)guest_at((uint32_t)iVar14) + (uint)bVar1) * 0x1c + 0x24)),(ushort *)pbVar3,uVar13,iVar12);
     bVar1 = pbVar3[4];
     pbVar3 = pbVar3 + 4;
@@ -2973,6 +2980,12 @@ void anim_lerp_packed4(short *param_1,ushort *param_2,int param_3,int param_4)
   int iVar3;
   int iVar4;
   int iVar5;
+  {
+    extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+    uint32_t _gd = (uint32_t)guest_of(param_1);
+    if (_gd >= 0x801d0000u && _gd < 0x80200000u)
+      decomp_trace_record(53, _gd, (uint32_t)guest_of(param_2), 4, 0);
+  }
   
   uVar1 = (uint)*param_2;
   iVar5 = uVar1 + (uint)param_2[1] * 0x10000;
@@ -3030,6 +3043,12 @@ void anim_lerp_packed3(short *param_1,ushort *param_2,int param_3,int param_4)
   ushort uVar1;
   int iVar2;
   int iVar3;
+  {
+    extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+    uint32_t _gd = (uint32_t)guest_of(param_1);
+    if (_gd >= 0x801d0000u && _gd < 0x80200000u)
+      decomp_trace_record(53, _gd, (uint32_t)guest_of(param_2), 3, 0);
+  }
   
   iVar2 = (int)((uint)*param_2 << 0x10) >> 0x18;
   iVar3 = iVar2 * 0x10;
