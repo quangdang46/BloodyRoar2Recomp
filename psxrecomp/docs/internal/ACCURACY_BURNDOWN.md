@@ -2327,3 +2327,43 @@ see whether the CD IRQ is being deferred-but-never-delivered vs delivered
 resume PC selection (take_pc/real_epc/same_thread_resume in
 interrupts.c:62-66) is the suspect — a resume PC inside a clean-C or
 non-dispatchable region would starve the coroutine exactly like this.
+
+## N+19 — 0xf1 freeze refined: GENERAL-EXCEPTION storm keeps IRQ cooldown hot
+
+freeze_check live at the wedge (frame ~85k, still 37fps present):
+- exception_entries +3000/s, pczero_count +3000/s — EVERY exception is a
+  pc=0 producer tripwire (dirty_ram_interp.c:2457: dispatch returned
+  handled but cpu->pc==0).
+- pczero_addr=0x80000080 = the MIPS GENERAL-EXCEPTION vector (SR.BEV=0).
+  pczero_ra=0x8019A53C (cd_timer_read frame), pczero_in_exc=1,
+  exception_reentry_blocks=5937 -> NESTED exception re-entry: the vector
+  is being re-dispatched while already in exception context and the
+  return path publishes pc=0. Same fragile family as the frame-348
+  clean_table recursion fix (14b83f4), but in the dirty-RAM interpreter
+  nested-exception/async-RFE-resume machinery (g_async_rfe_resume_pc /
+  g_dirty_safe_resume_pc / g_rfe_escape_pending).
+- post_exception_cooldown oscillates but is essentially never 0 ->
+  psx_interrupt_delivery_needed keeps deferring -> i_stat=0x05 (VBlank+CD)
+  stays asserted, i_mask=0x0D -> CD IRQ never reaches cd_intc_dispatch ->
+  DAT_801bdde0 frozen -> vsync_wait_n times out.
+- vsync_wait_n actually waits on DAT_801bdde0 (CD coroutine tick), NOT
+  VBlank. Its timeout branch calls cd_str_print(0x80197AD0)->
+  console_emit->bios_tramp_b035 -> prints "VSync: timeout\n" (string at
+  0x80125B38, next to SCEI intr.c v1.75 ident) EVERY loop -> the ~3000/s
+  exception rate is plausibly the print/B0-svc-0x35 flush path OR the
+  nested-exception itself; either way it is a SYMPTOM of the CD-IRQ
+  starvation, and it self-reinforces via post_exception_cooldown.
+
+So the freeze chain is: nested-exception pc=0 recursion -> IRQ delivery
+starved -> CD coroutine never advances DAT_801bdde0 -> cd_timer_read /
+cd_cmd_issue / vsync_wait_n wait forever -> battle phase 0xf1 never exits.
+
+NEXT (concrete): catch the faulting/returning instruction inside the
+0x80000080 exception path — read cop0_epc+cop0_cause at the moment
+pczero latches (add epc/cause to the pczero latch in
+dirty_ram_interp.c:2459), and audit the async-RFE/dirty-safe resume +
+iret/eret pc restore for the nested-exception case. Branch-likely
+(abc67d0) was reviewed and looks correct (simm sign-extended, delay-slot
+nullification right); REGIMM only handles rt 0/1/0x10/0x11 — rt
+0x02/0x03/0x12/0x13 (BLTZL/BGEZL/BLTZALL/BGEZALL) hit abort_unsupported,
+a candidate if OpenBIOS trampolines use them.
