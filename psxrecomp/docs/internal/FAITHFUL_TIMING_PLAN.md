@@ -5773,3 +5773,68 @@ so it IS entered — need to check whether it actually reads 0x1F801802 or exits
 early. NEXT: trace which function reads CD data reg 0x1F801802 and whether the
 per-sector loop advances read_pos; check if the consumer shares the TestEvent
 thread's timeslice.
+
+## Session 17 — heap_ptr_fixup nested-table fix landed (70076c8); game still wedges at the SAME Session-16 CD stall (framecnt frozen ~1461)
+
+- **heap_ptr_fixup fix COMMITTED + PUSHED (`70076c8`).** Phase-1 (the pass that
+  relocates the nested index table's `0x8000xxxx` tagged offsets into
+  `a0+off*4` heap pointers) was gated on `MB32(a0+4)!=0`, but EVERY decompressed
+  heap block arrives with `+4==0` (verified faithful via independent LZSS decode
+  producing exactly `0x7dac` bytes, and the original MIPS disasm confirms the
+  gate). So phase-1 never ran -> `ctx+0x14` stayed an unrelocated low offset ->
+  `heap_serialize` wrote fixup records into OpenBIOS kernel RAM (phys
+  0x1d1d-0x2727, confirmed live kernel code on the SCPH1001 oracle too) ->
+  `unknown dispatch 0x27AC`. Fix: gate phase-1 on `+8` still holding an
+  unresolved word-offset (`noff < 0x80000000`) instead of `+4`; phase-1 rewrites
+  `+8` to the resolved KSEG0 pointer so the test is idempotent on re-entry.
+  Verified correct heap pointers produced (0x80100388-class).
+- **CORRECTION — the game does NOT actually progress past the CD stall.** An
+  earlier read of "13+ min stable at ~99% CPU, memcard writes, clean dispatch
+  active" was MISLEADING: high CPU + clean_try_dispatch is exactly what a
+  busy-poll wedge looks like. framecnt(0x801bdde0) is FROZEN (read 3x over 8s via
+  lldb: 0x5b5=1461 constant). The process is wedged in Session 16's CD stall,
+  NOT running gameplay. memcard writes were from early boot only.
+- **NEW OBSERVABILITY CHANNEL — lldb reads guest RAM directly.** The debug
+  server starves completely under the busy-poll (every command incl. set_input
+  and read_ram times out; all commands run on the saturated emu thread). But
+  `g_psx_ram` is a flat host array: KSEG0 0x801bdde0 -> phys 0x1bdde0. Use
+  `lldb -p PID --batch -o "expr/x *(unsigned int*)(g_psx_ram+0x1bdde0)" -o
+  detach -o quit` to read ANY guest word, and `p <host_global>` for runtime
+  counters — no debug-server dependency. THIS IS THE WAY to introspect a
+  wedged run.
+- **Live wedge state captured (matches Session 16 exactly):**
+  framecnt=0x5b5 frozen; cd_status(0x1bcb24)=0x2; inservice(0x1bcd18)=1;
+  intc_dbg(0x1bce00)=0; TestEvent flag(0x1bde38)=0xf1000008; guest ra=0x801265f4
+  in the cd_seek/TestEvent poll. HOST side: s_ring_read==s_ring_write==2,
+  RB_.pos=2060/RB_.size=2340 (IDENTICAL to Session 16), s_bfrd_set=1248 >>
+  s_bfrd_clear=13, s_ring_dropped=518, reading=1, irq_flag=0, pending_dataready=0,
+  s_warm_route_active=0, g_disc_speed_divisor=1, read_delay=0, all flow-control
+  wait counters 0. g_vblank_raise_count=1631 (hardware vblanks DO fire;
+  cycles_since_vblank accumulating) -> the game's VBlank HANDLER (cb8_dispatch)
+  is masked/not running during the seek, freezing framecnt — but CD advance
+  still runs via cdrom_advance at event deadlines.
+- **ROOT CAUSE PINNED — `heap_serialize` infinite block-list loop (menu.c:14305).
+  `sample` shows the guest parked in `clean_try_dispatch -> battle_intro_flow
+  (menu.c:1928) -> menu_res_load_sm (save.c:4185) -> save_load_state_machine
+  (save.c:6374) -> heap_record_emit (menu.c:13481) -> heap_serialize
+  (menu.c:14307) -> guest_at`. heap_serialize's outer `for(;;)` walks the block
+  list via `blk = MB32(blk)` (next-block ptr at blk+0) and only breaks on
+  `blk == 0xffffffff`. It NEVER terminates -> the clean C loop spins in guest_at
+  reads without returning to a cycle-charge boundary -> **psx_cycle_count frozen
+  (verified: 0x41daacc1 identical across 4s, cycles_since_vblank frozen 39777)**
+  -> cdrom_advance/process_read_stream never run -> CD frozen -> the resource
+  load that called heap_serialize never completes -> wedge. THIS is the real
+  upstream fault; Session 16's "CD consumer starved / TestEvent busy-poll" was
+  the downstream symptom (CD frozen because guest cycles frozen).
+- **WHY it loops:** either (a) the block list genuinely cycles (blk+0 next-ptr
+  forms a loop or points into a non-terminating chain) because heap_ptr_fixup
+  phase-1 (70076c8) over-relocated a next-block pointer, or (b) a faithful data
+  cycle the generated body also hits. MUST diff clean `blk=MB32(blk)` walk vs
+  generated br2eu_func_8016B7C0 block-advance (generated uses computed-goto;
+  termination constant to verify — clean uses 0xffffffff sentinel).
+- **NEXT (concrete):** capture the looping blk sequence — add a bounded-iter +
+  blk dump to heap_serialize's `for(;;)` (or read s_decomp tag22 hser_in entries
+  via lldb for entry blk, then walk MB32(blk) in g_psx_ram to find the cycle).
+  Determine if blk+0 was wrongly relocated by phase-1 (compare blk+0 value vs
+  the unresolved-offset form). The heap_ptr_fixup fix is correct for ctx+0x14
+  but may need to EXCLUDE next-block-list pointers from relocation.
