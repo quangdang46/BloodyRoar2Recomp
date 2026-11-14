@@ -1602,3 +1602,36 @@ completion callback table slot for cd_dma_chan_reset is unpopulated or the
 wrong slot (cf. the 0x801BE784 NULL-jalr class of bug); (c) call_guest to
 0x801bc7b0/0x801bdee8 boundary arg mismatch. Watch 0x801bdee8 (alt DeliverEvent
 cb) + the channel-completion dispatch on a fresh boot to the stall.
+
+=== SESSION — stall #2 ROOT MECHANISM MAPPED (0x801bdf00 channel-reset gate) ===
+Traced the full DeliverEvent(0xF0000009) chain live + in generated code:
+- cd_ext_init_once -> cd_ext_table_init(0x8019b7e0) registers br2eu_func_8019B7E0
+  as the CHANNEL-4 (CD DMA) done handler via 0x8019A6E0(4, 0x8019b7e0).
+- cd_dma_xfer_start (0x8019b89c, generated) arms 0x801BDF00 during DMA kick.
+- cd_reg_window_op (clean, 0x8019b944): op0 sets 0x801BDF00=a2, op1 clears =0.
+  cd_win_shift_op/cd_seek_param_issue/cd_mode_apply_deferred all drive ops
+  2/1/3 (or 2/0/3) leaving 0x801BDF00 = 0 after the transfer.
+- On channel-4 done, callback 0x8019b7e0 (br2eu_func_8019B7E0) checks
+  *(0x801BDF00): !=0 -> MMIO 0xd5 reset + DeliverEvent(0xF0000009,0x20);
+  ==0 -> jal cd_delay_3c (0x8019BE78) early-return, NO DeliverEvent.
+- LIVE: 0x801BDF00 == 0, all DMA ch idle, response FIFO drained, irq_flag=0,
+  cmd-done flag 0x801bcb24=2 SET, TestEvent(0xF1000008) blocked, DeliverEvent
+  frozen at 127. => callback ran (or would run) but saw flag==0 -> skipped.
+OPEN (next session, decisive): WHY is 0x801BDF00==0 at channel-done callback
+time. Two hypotheses: (a) ORDERING — cd_reg_window_op op1 clears the flag in
+  the read-complete sequence BEFORE the channel-4 callback checks it (would be
+  a faithful-ordering bug in generated dispatch or a clean op-port); (b) the
+  file-load DMA path (cd_mode_apply_deferred ops 2/1/3) never arms the flag
+  because it uses cd_reg_window_op not cd_dma_xfer_start. NOTE: clean
+  cd_dma_chan_reset (fnmap 0x8019b7e8) delivers UNCONDITIONALLY (no flag
+  check) — it is the reset BODY for direct 0x8019b7e8 calls; the registered
+  callback uses 0x8019b7e0 (flag-gated dispatcher). Do NOT "fix" by removing
+  the generated guard — that would diverge from hardware.
+  EXPERIMENT: fresh boot, wtrace_arm 0x801BDF00 + fntrace_arm 0x8019b7e0 +
+  0x8019b89c + 0x8019b944; run to first file-load; dump ordering of
+  [xfer_start set] vs [op1 clear] vs [0x8019b7e0 callback guard-read].
+  BIOS NOTE: running openbios.bin (PCSX-Redux HLE-compiled); real SCPH ROMs
+  absent. Deferred coroutine (HookEntryInt->EntryInt jmp_buf->ExceptionHandler
+  ->IntRP) is a real-kernel mechanism — if openbios ExceptionHandler lacks
+  IntRP/EntryInt restore, cd_ctx_restore can't resume; verify against
+  generated/OpenBIOS_full.c if the flag ordering proves correct.
