@@ -6045,3 +6045,26 @@ param_2 = DAT_801c43a8[orbit_type+0x1e] returns a bad guest pointer.
 6995). aux_tbl_store_a is a weak no-op (bind.c:2004). The requested
 orbit descriptor was never allocated/aliased -> stale/garbage handle.
 Deep render-resource (prim/orbit descriptor) lifecycle RE remaining.
+
+## Session — frame-348 recursion ROOT-CAUSED + FIXED (14b83f4): stale clean_table thunk wrappers
+
+RESOLVED the long-running frame-348 dispatch-recursion crash. Live [NESTCYC]
+ring instrumentation proved it was NOT an IRQ/event-resume bug (the N+12
+hypothesis) but a stale clean_table.c: it still held wrap_* entries for
+cd_read_finish_cb (0x80198838) and cd_reg_window_op (0x8019B944), both
+converted to pure br2_call_generated thunks. Every guest jal to those
+addresses ping-ponged generated->clean->generated->clean->generated, nesting
+a psx_dispatch_call frame per codec register-window op; the level-triggered
+CD IRQ (irq_flag until 0x1F801803.1 ack) re-fired on each nested MMIO
+boundary -> unbounded recursion -> guard trip ~frame 348.
+
+FIX: `python3 game/gen_clean_table.py` regenerated clean_table.c, dropping
+both stale wrappers (1118 wrappers / 75 skipped). Generated callers now use
+flat CPS tail-dispatch — no clean boundary, no nested frame.
+
+VERIFIED: two clean-build runs pass frame 348, climb past 14000 frames,
+GPU draws + LZSS decomp active, zero recursion trips. Committed + pushed.
+
+REMAINING BLOCKER (next): display BLACK despite frames advancing — CD sector
+drain lossy (bfrd_set=5867 vs bfrd_clear=14, ring_dropped=2591). Fighter
+file 0xb1 / sector-buffer-ready consumer handshake needs its own trace.

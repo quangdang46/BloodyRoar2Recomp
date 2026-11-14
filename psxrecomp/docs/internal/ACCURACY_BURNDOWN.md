@@ -2081,3 +2081,46 @@ the exception handler clears the cause before dispatching the event.
 Verify which i_stat bit (CD bit2? SPU? VBlank?) stays pending and whether
 the handler's ack write is being skipped because the coroutine resume
 longjmps/returns before reaching it.
+
+## N+13 — ROOT CAUSE FOUND + FIXED (commit 14b83f4): stale clean_table thunk wrappers
+
+The N+12 hypothesis (DeliverEvent resume re-entrancy) was WRONG. Live [NESTCYC]
+ring instrumentation (recorded addr/return_addr/depth into a 96-entry ring,
+dumped at depth>=240) proved the recursion is a clean<->generated PING-PONG,
+not an event-resume:
+
+  EVERY nested psx_dispatch_call was byte-identical:
+    addr=0x8019B944 (cd_reg_window_op)  ra=0x80156628 (cd_file_read_seq)
+    in_exception=0  sp=0x801FFFA0 (main stack)  pc=0
+  depth OSCILLATED 181->212->181->240 (bounded re-entrancy ratcheting, not
+  monotonic stack growth) — frames DO unwind between IRQ re-deliveries.
+
+ROOT CAUSE: src/clean_table.c was STALE. It still contained wrap_* entries
+for cd_read_finish_cb (0x80198838) and cd_reg_window_op (0x8019B944) — both
+converted to pure `return br2_call_generated(...)` thunks (the bodies
+busy-wait on live CD drive status and need generated per-instruction cycle
+accounting). gen_clean_table.py's thunk-skip (line ~50) correctly excludes
+br2_call_generated bodies, but the checked-in table predated the delegation.
+
+So every guest `jal 0x8019B944` routed: generated caller -> dispatch ->
+wrap_8019b944 (clean) -> clean cd_reg_window_op -> br2_call_generated ->
+psx_dispatch_call [depth+1] -> generated body -> MMIO -> psx_check_interrupts_at
+-> level-triggered CD IRQ (irq_flag held until 0x1F801803.1 ack) -> handler ->
+codec work -> cd_reg_window_op again -> recurse. The clean<->generated
+round-trip added a host frame per codec register-window op (3x per
+cd_seek_param_issue), and each nested MMIO boundary re-observed the still-
+asserted CD IRQ.
+
+FIX: regenerated clean_table.c via `python3 game/gen_clean_table.py` — both
+stale wrappers dropped (1118 wrappers, 75 skipped). Generated callers now
+dispatch straight to the generated bodies via flat CPS (cpu->pc tail-
+dispatch inside psx_dispatch_impl's loop), so no clean boundary, no nested
+psx_dispatch_call frame, no recursion.
+
+VERIFIED: two independent clean-build runs both pass frame 348 and climb
+past 14000 frames (GPU gp0_draw/gp0_env active, LZSS decomp live), zero
+recursion-guard trips. Commit 14b83f4.
+
+REMAINING (separate bug): game runs deep but display is BLACK — CD sector
+drain still lossy (bfrd_set=5867 vs bfrd_clear=14, ring_dropped=2591).
+Fighter file 0xb1 load / sector-buffer-ready handshake needs its own trace.
