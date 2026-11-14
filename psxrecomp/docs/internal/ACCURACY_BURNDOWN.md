@@ -2475,3 +2475,38 @@ kernel clears BEV and installs its own exception vector, that install
 is the thing to trace — the CD IRQ only vectors here when BEV=0, which
 is why VBlank/other IRQs (BEV=1 -> 0xBFC00180 compiled BIOS handler)
 still work.
+
+## N+24 — ROOT CAUSE: exception vector stub @0x80000080 is CORRUPTED (jr k0 overwritten)
+
+Compared live RAM against the OpenBIOS trampoline template in
+openbios.bin (file offset 0x6950). The correct 16-byte exception stub:
+    0x80000080: 3c1a0000  lui k0,0x0
+    0x80000084: 275a27ac  addiu k0,k0,0x27ac   ; k0 = 0x27ac
+    0x80000088: 03400008  jr k0                 ; -> exception handler @0x27ac
+    0x8000008c: 00000000  nop
+
+LIVE bytes are:
+    0x80000080: 3c1a0000  lui k0,0x0            <- word0 INTACT
+    0x80000084: 000000f2  ???  (was 275a27ac)   <- CORRUPTED
+    0x80000088: 00000000  nop  (was 03400008)   <- jr k0 DESTROYED
+    0x8000008c: 00000000  nop                   <- intact
+
+word1 (addiu) and word2 (jr k0) were overwritten by 0x000000f2 and
+0x00000000. 0x27ac IS a valid handler (live RAM there has kernel code;
+0x2a80/0x2aa0/0x2ac0 B0/C0 kernel-call targets also valid). B0 and C0
+vector stubs verified INTACT -> the corruption is TARGETED to the
+exception stub only.
+
+Effect: IRQ (BEV=0 -> 0x80000080) -> `lui k0,0` -> 0x000000f2 =
+SPECIAL funct 0x32 undefined on R3000A -> abort_unsupported -> pc=0
+-> storm -> CD coroutine starved -> 0xf1 freeze. This is why ONLY the
+CD IRQ path wedges: it is the IRQ that happens to vector through the
+corrupted stub at the moment BEV=0.
+
+NEXT (concrete): arm a write-watchpoint on phys 0x84/0x88 (guest addr
+0x80000084/0x80000088) via guest_watch / debug_server wtrace to catch
+the store PC that corrupts the stub. Suspects: a wild store from the
+CD coroutine ctx save/restore, a kernel structure overlapping the
+vector page, or the game's own kernel reusing 0x80000080+ for data
+after clearing BEV. The value 0x000000f2 (=242) + surrounding zeros
+looks like a small data field, not code.
