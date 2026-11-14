@@ -2777,7 +2777,10 @@ uint pad_state_refresh(intptr_t param_1)
 undefined1 frame_divisor_get(void)
 
 {
-  return DAT_1f800019;
+  /* Read the scratchpad byte directly.  The g_DAT_1f800019 bound-pointer
+   * indirection miscompiled inside battle_intro_flow's inlined copy (the
+   * cached &g_DAT_1f800019 register held a wrong address -> wild deref). */
+  return *(uint8_t *)guest_at(0x1f800019);
 }
 
 /* ---- batch30: state-machine stepper + scroll stripes ---- */
