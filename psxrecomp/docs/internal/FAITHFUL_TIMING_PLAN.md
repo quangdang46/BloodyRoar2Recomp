@@ -5867,14 +5867,22 @@ thread's timeslice.
   resolved at serialize time inside the tag serializers. Delegating
   heap_ptr_fixup->generated via br2_call_generated(0x8016cb20) RECURSES
   (fnmap maps the addr back to the clean fn) — reverted.
-- **NEXT:** ctx+0x10/+0x14 = 0x80001AD9/0x80001D6F look like `0x80000000|off`.
-  Determine whether (a) stream_block_decode mistranslates and writes wrong
-  values (diff its clean port vs generated), or (b) the values are correct
-  kernel-resident offsets the tag serializers are meant to resolve via a
-  base my port drops. The tag funcs receive ctx+0x10/+0x14 as args
-  (menu.c:14436) — check whether a serializer adds a heap base my port
-  omits. Values look like `0x80000000|offset` needing `heap_base+off`
-  style relocation — confirm base against generated before coding.
+- **EXACT FORMULA (decoded br2eu_func_8016A82C):** the tag serializer
+  computes `write_dest($a1) = MB32(rp+0x18) + ctx+0x14` and
+  `read_src($v1) = MB32(rp+0x18) + ctx+0x10`, where MB32(rp+0x18) is the
+  per-record offset. So ctx+0x14 = OUTPUT base ptr, ctx+0x10 = INPUT base
+  ptr — both must be valid heap pointers. Ours are 0x80001AD9/0x80001D6F
+  (raw decompressed values; lzss_decode is a faithful byte-copy so real HW
+  has the same raw values => a relocation pass MUST convert them before
+  serialize). dest=0xA48+0x80001D6F=0x800027B7 = the trampoline write.
+- **RELOCATOR STILL UNFOUND:** heap_ptr_fixup faithful (no +0x10/+0x14),
+  lzss_decode/stream_block_decode faithful (no relocation), data_relocate
+  is a different format (magic 0x000ed1c4). The ctx+0x10/+0x14 relocation
+  must be inside generated heap_serialize (br2eu_func_8016B7C0, ~5000
+  lines, inlined per-tag) OR an upstream block-ctx init path. NEXT: in
+  generated heap_serialize find where ctx (=MB32(blk+4)) fields +0x10/+0x14
+  are read — check whether generated adds a base (blk/heap-image) that the
+  clean port's raw MB32(ctx+0x10/0x14) drops. That base-add is the bug.
 - **NEXT (concrete, superseded by above):** capture the looping blk sequence — add a bounded-iter +
   blk dump to heap_serialize's `for(;;)` (or read s_decomp tag22 hser_in entries
   via lldb for entry blk, then walk MB32(blk) in g_psx_ram to find the cycle).
