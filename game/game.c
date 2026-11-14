@@ -207,7 +207,7 @@ extern uint8_t  *g_DAT_801b55ec;
 extern uint8_t  *_g_pad_buffer;
 extern uint8_t  *_g_system_config_ptr;
 
-#define DAT_1f800000    (*(uint32_t *)g_DAT_1f800000)
+#define DAT_1f800000    (*(uint8_t *)g_DAT_1f800000)
 #define g_game_state    DAT_1f800000
 #define DAT_1f800001    (*g_DAT_1f800001)
 #define DAT_1f800002    (*g_DAT_1f800002)
