@@ -2417,7 +2417,7 @@ extern void record_copy_1a(int);
 void fighter_spawn_tail(uint8_t *s1,uint32_t s0)
 {
   flow_cfg_init(0);
-  rec_timer_pair_clear((intptr_t)(void *)s1);
+  rec_timer_pair_clear((intptr_t)guest_of(s1));
   fighter_link_init(0x1f8000e8,0x1f8001f0,(uint8_t *)s1,*(uint32_t *)(s1 + 0xc0));
   battle_state_init(g_DAT_1f8000e8,g_DAT_1f8001f0,guest_of(s1));
   scratchpad_pair_init();
@@ -7649,11 +7649,12 @@ void ctx_fn_send(uint8_t *a0)
 void op_ctx_guard_call(uint8_t *a0)
 {
   uint32_t *p4 = (uint32_t *)(a0 + 4);
-  uint32_t *p2 = (uint32_t *)(uintptr_t)*p4;
-  if (*(uint32_t *)(uintptr_t)*(uint32_t *)(p2 + 3) == 0) {
+  /* *p4 and p2[3] are 4-byte guest cells holding guest addresses */
+  uint32_t *p2 = (uint32_t *)guest_at(*p4);
+  if (*(uint32_t *)guest_at(*(uint32_t *)(p2 + 3)) == 0) {
     uint32_t *q = (uint32_t *)(a0 + 0xc);
     *q = 0;
-    task_slot_step(a0);
+    task_slot_step();
   }
   return;
 }
@@ -8147,7 +8148,10 @@ void op_job_submit_init(int32_t a0,int32_t a1,uint32_t a2,uint32_t a3)
 {
   int *r = task_node_alloc(a0,a1,4,0x801b0db8,0,0x1c);
   if (r != (int *)0x0) {
-    uint32_t *p = *(uint32_t **)((char *)r + 0x10);
+    /* r is the node's GUEST address (task_node_alloc returns guest-addr-as-
+     * pointer); node+0x10 cell holds the guest addr of the inline data. */
+    uint32_t *p = (uint32_t *)guest_at(
+        *(uint32_t *)guest_at((uint32_t)(uintptr_t)r + 0x10));
     p[0] = 0;
     p[2] = *(uint32_t *)guest_at(a2 + 8);
     p[3] = a3;
@@ -8210,7 +8214,7 @@ void op_node_register(uint32_t a0)
   *(uint32_t *)guest_at(e + 0x40) = a0;
   *(uint32_t *)guest_at(0x801beef8) = (uint32_t)idx;
   if (*(int8_t *)guest_at(a0 + 0x18) != 0) {
-    task_slot_step((int)a0);
+    task_slot_step();
   } else {
     uint32_t fp = *(uint32_t *)guest_at(a0 + 8);
     uint32_t arg = *(uint32_t *)guest_at(a0 + 0x10);
@@ -8315,7 +8319,10 @@ int *op_job_alloc_init(int32_t a0,int32_t a1,uint32_t a2,uint32_t a3,uint32_t a4
 {
   int *r = task_node_alloc(a0,a1,4,0x801b0db8,0x801ad2dc,0x1c);
   if (r != (int *)0x0) {
-    uint32_t *p = *(uint32_t **)((char *)r + 0x10);
+    /* r is the node's GUEST address (task_node_alloc returns guest-addr-as-
+     * pointer); node+0x10 cell holds the guest addr of the inline data. */
+    uint32_t *p = (uint32_t *)guest_at(
+        *(uint32_t *)guest_at((uint32_t)(uintptr_t)r + 0x10));
     p[0] = a3;
     p[2] = *(uint32_t *)guest_at(a2 + 8);
     p[3] = a4;
@@ -8373,12 +8380,15 @@ static void walk_dispatch(uint8_t **a0,uint8_t *a1)
 {
   uint8_t *node_ = a1;
   for (;;) {
-    uint8_t *nx_ = *(uint8_t **)node_;
-    uint8_t *ctx_ = *(uint8_t **)a0;
-    *(uint8_t **)(ctx_ + 0x40) = node_;
+    /* a0/a1/node_/ctx_ are host pointers into guest RAM; link/cell fields
+     * are 4-byte GUEST addresses — never read/write them as host pointers. */
+    uint32_t nxg_ = *(uint32_t *)node_;
+    uint8_t *nx_ = nxg_ ? (uint8_t *)guest_at(nxg_) : (uint8_t *)0x0;
+    uint8_t *ctx_ = (uint8_t *)guest_at(*(uint32_t *)a0);
+    *(uint32_t *)(ctx_ + 0x40) = (uint32_t)guest_of(node_);
     if (*(int8_t *)(node_ + 0x17) != 0) {
       if (*(int8_t *)(node_ + 0x18) != 0) {
-        task_slot_step((int)(uintptr_t)a0);
+        task_slot_step();
       } else {
         uint32_t fp_ = *(uint32_t *)(node_ + 8);
         uint32_t ar_ = *(uint32_t *)(node_ + 0x10);
@@ -8407,11 +8417,11 @@ void op_slot_free(uint8_t *s1,int32_t a1)
   if (s1 != (uint8_t *)0x0 && a1 >= 0 &&
       a1 < (int32_t)*(uint32_t *)(s1 + 0x44)) {
     uint32_t o = (uint32_t)a1 * 4;
-    uint32_t *arr = (uint32_t *)(uintptr_t)*(uint32_t *)(s1 + 0x24);
+    uint32_t *arr = (uint32_t *)guest_at(*(uint32_t *)(s1 + 0x24));
     task_node_free((int *)(uintptr_t)arr[a1]);
     arr[a1] = 0;
     {
-      uint32_t *arr2 = (uint32_t *)(uintptr_t)*(uint32_t *)(s1 + 0x3c);
+      uint32_t *arr2 = (uint32_t *)guest_at(*(uint32_t *)(s1 + 0x3c));
       arr2[a1] = 0;
     }
     (void)o;
@@ -8489,7 +8499,7 @@ void op_frame_advance(uint8_t *s0)
           uint32_t fp = *(uint32_t *)guest_at(0x801be784);
           void *fn = fn_lookup(fp);
           if (fn != (void *)0x0) {
-            ((void (*)(uint32_t))fn)((uint32_t)(uintptr_t)s0);
+            ((void (*)(uint32_t))fn)((uint32_t)guest_of(s0));
           }
         }
       }
@@ -8991,7 +9001,7 @@ int anim_node_alloc(uint32_t a0,int32_t a1)
       /* alloc failed: free arr1c[idx] node, clear slot, ret 0 */
       arr = *(uint32_t *)(s1 + 0x1c);
       nd = *(uint32_t *)guest_at(arr + idx);
-      task_node_free((int *)guest_at(nd));
+      task_node_free((int *)(uintptr_t)nd);
       *(uint32_t *)guest_at(arr + idx) = 0;
       return 0;
     }

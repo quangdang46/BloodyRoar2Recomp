@@ -26,6 +26,7 @@ typedef long long longlong;
 
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
+extern uint32_t br2_gaddr(const void *p);
 extern uint32_t guest_sp(void);
 extern uint8_t *_g_system_config_ptr;
 extern uint8_t *_g_pad_buffer;
@@ -1199,7 +1200,7 @@ void results_scoreboard(int param_1)
   int iVar6;
   int iVar7;
   undefined1 *puVar8;
-  undefined **ppuVar9;
+  uint32_t *ppuVar9;
   /* sprintf dst = guest $sp+0x18 (frame -0x88) = entry_sp-0x70 */
   undefined1 *auStack_70 = (undefined1 *)guest_at(guest_sp() - 0x70);
   int local_60 [6];
@@ -1441,7 +1442,7 @@ void player_name_entry(void)
   int iVar5;
   int iVar6;
   int iVar7;
-  undefined **ppuVar8;
+  uint32_t *ppuVar8;
   undefined1 *puVar9;
   int iVar10;
   undefined4 local_78;
@@ -2113,7 +2114,7 @@ void tile_stream_open(uint8_t *param_1,void *param_2,int *param_3)
 
 {
   cd_fileop_reset(0);
-  cd_fileop_dispatch((uint32_t)(uintptr_t)param_2);
+  cd_fileop_dispatch(br2_gaddr(param_2));
   cd_dir_table_set(_DAT_801f4754,0x20);
   cd_read_params_store(*param_3,param_3[1],0xffffffff,0,0);
   cd_stream_mode_init(guest_of(param_1));
@@ -2952,7 +2953,9 @@ int32_t select_screen_tick(int32_t param_1)
   uint32_t *puVar7;
   uint32_t unaff_s2;
   int32_t local_c8 = 0, local_c0 = 0;
-  uint8_t auStack_e0[24];
+  /* sp+0x18 (frame 0xf8) -> guest_sp()-0xe0; guest RAM backing so the
+   * 0x801f10bc cell carries a real guest address. */
+  uint8_t *auStack_e0 = (uint8_t *)guest_at(guest_sp() - 0xe0);
   uint8_t auStack_b8[0x60];
   int32_t local_a8[0x18];
   int32_t local_94[0x30];
@@ -2960,7 +2963,7 @@ int32_t select_screen_tick(int32_t param_1)
   int32_t local_34, local_30, local_2c = 0;
   uint8_t *local_40 = (uint8_t *)guest_at(0x1f8000e8);
   uint8_t *local_3c = (uint8_t *)guest_at(0x1f8001f0);
-  *(uint32_t *)guest_at(0x801f10bc) = (uint32_t)(uintptr_t)auStack_e0;
+  *(uint32_t *)guest_at(0x801f10bc) = guest_of(auStack_e0);
   local_a8[3] = 0;
   local_94[10] = 0;
   memset(local_a8,0,sizeof(local_a8));
@@ -5157,7 +5160,10 @@ extern void ko_count_announce(uint32_t,uint32_t);
 extern void victory_jingle_schedule(uint32_t,uint32_t);
 int battle_init(uint32_t param_1, uint8_t *param_2, uint8_t *param_3)
 {
-  uint8_t  auStack_18[0x158];           /* sp+0x18 .. sp+0x170 image */
+  /* sp+0x18 .. sp+0x170 image (frame 0x168) -> guest_sp()-0x150;
+   * guest RAM backing so the 0x801f10bc cell carries a real guest
+   * address aliasing the same bytes. */
+  uint8_t  *auStack_18 = (uint8_t *)guest_at(guest_sp() - 0x150);
   uint32_t cnt   = 0;                   /* sp+0x130 */
   uint32_t p134  = 0x801b2604;          /* sp+0x134: lh-pair cursor */
   uint32_t p138  = 0xa50;               /* sp+0x138: record offset A */
@@ -5165,7 +5171,7 @@ int battle_init(uint32_t param_1, uint8_t *param_2, uint8_t *param_3)
   int32_t  s6    = 0;
   uint8_t *p1 = param_2, *p2 = param_3;
 
-  *(uint32_t *)guest_at(0x801f10bc) = (uint32_t)(uintptr_t)auStack_18;
+  *(uint32_t *)guest_at(0x801f10bc) = guest_of(auStack_18);
 
   for (;;) {
     int32_t s1;
@@ -7806,27 +7812,32 @@ static void copy8_rec(uint32_t e0, uint32_t e1, uint32_t s1,
 {
   uint8_t *d0 = (uint8_t *)guest_at(e0 + s1);
   uint8_t *d1 = (uint8_t *)guest_at(e1 + s1);
-  MW8((uint32_t)(uintptr_t)d0 + 0x264, src[0]);
-  MW8((uint32_t)(uintptr_t)d0 + 0x265, src[1]);
-  MW8((uint32_t)(uintptr_t)d0 + 0x26c, (uint8_t)(src[0] + src[2]));
-  MW8((uint32_t)(uintptr_t)d0 + 0x26d, src[1]);
-  MW8((uint32_t)(uintptr_t)d0 + 0x274, src[0]);
-  MW8((uint32_t)(uintptr_t)d0 + 0x275, (uint8_t)(src[1] + src[3]));
-  MW8((uint32_t)(uintptr_t)d0 + 0x27c, (uint8_t)(src[0] + src[2]));
-  MW8((uint32_t)(uintptr_t)d0 + 0x27d, (uint8_t)(src[1] + src[3]));
-  MW8((uint32_t)(uintptr_t)d1 + 0x264, src[0]);
-  MW8((uint32_t)(uintptr_t)d1 + 0x265, src[1]);
-  MW8((uint32_t)(uintptr_t)d1 + 0x26c, (uint8_t)(src[0] + src[2]));
-  MW8((uint32_t)(uintptr_t)d1 + 0x26d, src[1]);
-  MW8((uint32_t)(uintptr_t)d1 + 0x274, src[0]);
-  MW8((uint32_t)(uintptr_t)d1 + 0x275, (uint8_t)(src[1] + src[3]));
-  MW8((uint32_t)(uintptr_t)d1 + 0x27c, (uint8_t)(src[0] + src[2]));
-  MW8((uint32_t)(uintptr_t)d1 + 0x27d, (uint8_t)(src[1] + src[3]));
+  uint32_t g0 = guest_of(d0), g1 = guest_of(d1);
+  MW8(g0 + 0x264, src[0]);
+  MW8(g0 + 0x265, src[1]);
+  MW8(g0 + 0x26c, (uint8_t)(src[0] + src[2]));
+  MW8(g0 + 0x26d, src[1]);
+  MW8(g0 + 0x274, src[0]);
+  MW8(g0 + 0x275, (uint8_t)(src[1] + src[3]));
+  MW8(g0 + 0x27c, (uint8_t)(src[0] + src[2]));
+  MW8(g0 + 0x27d, (uint8_t)(src[1] + src[3]));
+  MW8(g1 + 0x264, src[0]);
+  MW8(g1 + 0x265, src[1]);
+  MW8(g1 + 0x26c, (uint8_t)(src[0] + src[2]));
+  MW8(g1 + 0x26d, src[1]);
+  MW8(g1 + 0x274, src[0]);
+  MW8(g1 + 0x275, (uint8_t)(src[1] + src[3]));
+  MW8(g1 + 0x27c, (uint8_t)(src[0] + src[2]));
+  MW8(g1 + 0x27d, (uint8_t)(src[1] + src[3]));
 }
 
 int battle_frame(void)
 {
-  static uint32_t b36_sp[0x60];             /* guest sp .. sp+0x17f */
+  /* guest sp .. sp+0x17f frame image (frame 0x180) -> guest_sp()-0x180;
+   * guest RAM backing so pointers stored into the frame (0x801f10bc,
+   * slots 0x140/0x144) are real guest addresses that alias the same
+   * bytes the host-pointer accesses below use. */
+  uint32_t *b36_sp = (uint32_t *)guest_at(guest_sp() - 0x180);
   uint8_t *T;                               /* record table = sp+0x40 */
   uint8_t *ctx;                             /* context base = sp+0x18 */
   uint32_t st;
@@ -7835,7 +7846,7 @@ int battle_frame(void)
   B36_32(0x130) = 0x1f8000e8;
   B36_32(0x134) = 0x1f8001f0;
   ctx = (uint8_t *)b36_sp + 0x18;
-  MW32(0x801f10bc, (uint32_t)(uintptr_t)ctx);
+  MW32(0x801f10bc, guest_of(ctx));
   B36_32(0x5c) = 0;
   B36_32(0x8c) = 0;
   task_heads_clear(0);
@@ -7845,7 +7856,7 @@ int battle_frame(void)
   flow_cfg_init(0);
   MW16(0x1f80008c, 0);
   T = (uint8_t *)b36_sp + 0x40;
-  B36_32(0x140) = (uint32_t)(uintptr_t)T;
+  B36_32(0x140) = guest_of(T);
 
   for (;;) {
     /* dispatcher @0x8014ce80 */
@@ -8284,7 +8295,7 @@ L_tail:                                       /* 0x8014df6c */
        * S32(0x148)=0x30i, S32(0x14c)=2i. */
       int32_t i;
       uint32_t fp = 0xaa0, s1 = 0;
-      B36_32(0x144) = (uint32_t)(uintptr_t)ctx;
+      B36_32(0x144) = guest_of(ctx);
       B36_32(0x148) = 0;
       B36_32(0x14c) = 0;
       for (i = 0; i < 2; i++) {
@@ -8319,27 +8330,27 @@ L_tail:                                       /* 0x8014df6c */
           if (*(uint32_t *)(s7 + 0x10) == 0) {
             /* src = s2 + S32(0x14c); bytes 0/1 */
             uint8_t *src = (uint8_t *)guest_at(s2 + B36_32(0x14c));
-            uint8_t *d = (uint8_t *)guest_at(B36_ENG() + s1);
-            MW8((uint32_t)(uintptr_t)d + 0xb9c, src[0]);
-            MW8((uint32_t)(uintptr_t)d + 0xb9d, src[1]);
-            MW8((uint32_t)(uintptr_t)d + 0xba4, (uint8_t)(src[0] + 0x20));
-            MW8((uint32_t)(uintptr_t)d + 0xba5, src[1]);
-            MW8((uint32_t)(uintptr_t)d + 0xbac, src[0]);
-            MW8((uint32_t)(uintptr_t)d + 0xbad, (uint8_t)(src[1] + 0x18));
-            MW8((uint32_t)(uintptr_t)d + 0xbb4, (uint8_t)(src[0] + 0x20));
-            MW8((uint32_t)(uintptr_t)d + 0xbb5, (uint8_t)(src[1] + 0x18));
+            uint32_t dg = B36_ENG() + s1;
+            MW8(dg + 0xb9c, src[0]);
+            MW8(dg + 0xb9d, src[1]);
+            MW8(dg + 0xba4, (uint8_t)(src[0] + 0x20));
+            MW8(dg + 0xba5, src[1]);
+            MW8(dg + 0xbac, src[0]);
+            MW8(dg + 0xbad, (uint8_t)(src[1] + 0x18));
+            MW8(dg + 0xbb4, (uint8_t)(src[0] + 0x20));
+            MW8(dg + 0xbb5, (uint8_t)(src[1] + 0x18));
           } else if (*(uint32_t *)(s7 + 0x10) == 1) {
             /* s2 bytes 4/5 */
             uint8_t *src = (uint8_t *)guest_at(s2);
-            uint8_t *d = (uint8_t *)guest_at(B36_ENG() + s1);
-            MW8((uint32_t)(uintptr_t)d + 0xb9c, src[4]);
-            MW8((uint32_t)(uintptr_t)d + 0xb9d, src[5]);
-            MW8((uint32_t)(uintptr_t)d + 0xba4, (uint8_t)(src[4] + 0x20));
-            MW8((uint32_t)(uintptr_t)d + 0xba5, src[5]);
-            MW8((uint32_t)(uintptr_t)d + 0xbac, src[4]);
-            MW8((uint32_t)(uintptr_t)d + 0xbad, (uint8_t)(src[5] + 0x17));
-            MW8((uint32_t)(uintptr_t)d + 0xbb4, (uint8_t)(src[4] + 0x20));
-            MW8((uint32_t)(uintptr_t)d + 0xbb5, (uint8_t)(src[5] + 0x17));
+            uint32_t dg = B36_ENG() + s1;
+            MW8(dg + 0xb9c, src[4]);
+            MW8(dg + 0xb9d, src[5]);
+            MW8(dg + 0xba4, (uint8_t)(src[4] + 0x20));
+            MW8(dg + 0xba5, src[5]);
+            MW8(dg + 0xbac, src[4]);
+            MW8(dg + 0xbad, (uint8_t)(src[5] + 0x17));
+            MW8(dg + 0xbb4, (uint8_t)(src[4] + 0x20));
+            MW8(dg + 0xbb5, (uint8_t)(src[5] + 0x17));
           }
           if (f24 > 0 && f24 < 3) {
             uint32_t h0 = B36_32(0x1c + 4 * i);
@@ -8353,10 +8364,11 @@ L_tail:                                       /* 0x8014df6c */
             {
               uint8_t *d0 = (uint8_t *)guest_at(MB32(0x801f10c0) + s1);
               uint8_t *d1 = (uint8_t *)guest_at(MB32(0x801f10c4) + s1);
-              MW16((uint32_t)(uintptr_t)d0 + 0xaae, tag);
-              MW16((uint32_t)(uintptr_t)d1 + 0xaae, tag);
-              MW16((uint32_t)(uintptr_t)d0 + 0xb9e, tag);
-              MW16((uint32_t)(uintptr_t)d1 + 0xb9e, tag);
+              uint32_t g0 = guest_of(d0), g1 = guest_of(d1);
+              MW16(g0 + 0xaae, tag);
+              MW16(g1 + 0xaae, tag);
+              MW16(g0 + 0xb9e, tag);
+              MW16(g1 + 0xb9e, tag);
             }
           } else {
             int32_t f1c = (int32_t)*(uint32_t *)(s7 + 0x1c);
@@ -8364,8 +8376,8 @@ L_tail:                                       /* 0x8014df6c */
               record_flag_byte_set(B36_32(0x1c + 4 * i));
               record_flag_byte_set(B36_32(0x24 + 4 * i));
             } else {
-              uint8_t *d = (uint8_t *)guest_at(B36_ENG() + s1);
-              MW16((uint32_t)(uintptr_t)d + 0xaae, 0x7a9c);
+              uint32_t dg = B36_ENG() + s1;
+              MW16(dg + 0xaae, 0x7a9c);
               record_flag_byte_clear(B36_32(0x1c + 4 * i));
               record_flag_byte_clear(B36_32(0x24 + 4 * i));
             }
@@ -9567,9 +9579,9 @@ void chan_flag_toggle(void)
 void mode_string_dispatch(uint32_t param_1,int32_t param_2)
 {
   if (param_2 == 0) {
-    print_dispatch_selfdesc((void *)(uintptr_t)param_1, (const char *)0x8011ec30u);
+    print_dispatch_selfdesc((void *)guest_at(param_1), (const char *)guest_at(0x8011ec30));
   } else if (param_2 == 1) {
-    print_dispatch_selfdesc((void *)(uintptr_t)param_1, (const char *)0x8011ec38u);
+    print_dispatch_selfdesc((void *)guest_at(param_1), (const char *)guest_at(0x8011ec38));
   }
 }
 
@@ -10251,7 +10263,7 @@ void bcd_time_frame_print(uint32_t param_1)
   prod = (int64_t)(int32_t)x * (int64_t)(int32_t)0x1b4e81b5;
   q = (int32_t)(prod >> 32) >> 3;
   q -= (int32_t)x >> 31;
-  sprintf_core((char *)(uintptr_t)s0, (char *)0x80120de0u,
+  sprintf_core((char *)guest_at(s0), (char *)guest_at(0x80120de0),
                (int)buf[0], (int)buf[1], q);
 }
 
@@ -10369,8 +10381,8 @@ void dual_axis_coord_xform(uint32_t param_1,uint32_t param_2,uint32_t param_3)
   r = atan2_lut(-(int32_t)s0, r);
   s0 = (uint32_t)(int32_t)(int16_t)r;
   s1 = (uint32_t)(int32_t)(int16_t)s1;
-  vec2_rot(s0, s1, (undefined2 *)(uintptr_t)(s2 + 6));
-  angle_gte_vec(s0, s1, (uint *)(uintptr_t)(s2 + 0x20));
+  vec2_rot(s0, s1, (undefined2 *)guest_at(s2 + 6));
+  angle_gte_vec(s0, s1, (uint *)guest_at(s2 + 0x20));
 }
 
 /* dual_redraw_a — dual redraw, no pre/post call @0x8014c258 (50
@@ -11744,7 +11756,7 @@ void emitter_30_teardown(uint32_t param_1)
 
 /* ======== batch58 ======== */
 
-extern void keyframe_advance(uint32_t);
+extern void keyframe_advance(byte*,byte*);
 
 /* stat_field_dispatch — stat-field dispatcher @0x8017bd94 (136 insns,
  * 3 args; jump table 0x801228ec on sx8(MB16(a2)>>8), idx>=8 ->
@@ -11803,7 +11815,7 @@ uint32_t stat_field_dispatch(uint32_t param_1,uint32_t param_2,
       MW16(a1 + 0xc2, MB16(a1 + 0xc2) + (uint16_t)(t - v1));
     }
     MW16(a1 + 0xc6, MB16(a1 + 0xc6) + 1);
-    keyframe_advance(a3);
+    keyframe_advance((byte *)guest_at(a3),(byte *)guest_at(a1));
     break;
   }
   case 2:
@@ -12668,11 +12680,13 @@ uint32_t desc_opcode_dispatch(uint32_t param_1,uint32_t param_2,
     triple_track_spawn(MB8(s1 + 2), a3 & 0xffu, (uint32_t)sx8);
     break;
   case 2:
-    speech_bubble_spawn(MB32(s1 + 0x20) + 0x124u, (uint32_t)(MBS16(s1 + 0x4e) - 0x400),
+    speech_bubble_spawn((undefined4 *)guest_at(MB32(s1 + 0x20) + 0x124u),
+                 (uint32_t)(MBS16(s1 + 0x4e) - 0x400),
                  a3 & 0xffu, (uint32_t)sx8);
     break;
   case 3:
-    speech_bubble_spawn(MB32(s1 + 0x20) + 0x124u, (uint32_t)(MBS16(s1 + 0x4e) + 0x400),
+    speech_bubble_spawn((undefined4 *)guest_at(MB32(s1 + 0x20) + 0x124u),
+                 (uint32_t)(MBS16(s1 + 0x4e) + 0x400),
                  a3 & 0xffu, (uint32_t)sx8);
     break;
   case 4:
@@ -12707,7 +12721,7 @@ uint32_t desc_opcode_dispatch(uint32_t param_1,uint32_t param_2,
     color_rec_table_init(MB8(s1 + 3), (uint32_t)sx16);
     break;
   case 11:
-    firework_spawn(MB32(s1 + 0x20) + (uint32_t)sx16 * 80u + 0x34u);
+    firework_spawn((undefined2 *)guest_at(MB32(s1 + 0x20) + (uint32_t)sx16 * 80u + 0x34u));
     break;
   case 12: {
     uint32_t i2 = (uint32_t)(sx8 & 0x7f);
@@ -12737,7 +12751,7 @@ uint32_t desc_opcode_dispatch(uint32_t param_1,uint32_t param_2,
     }
     break;
   case 15:
-    fighter_reset_fx(1, s1);
+    fighter_reset_fx(1, (byte *)guest_at(s1));
     break;
   }
   return s2 + 4;
