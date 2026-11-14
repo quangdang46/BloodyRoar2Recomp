@@ -373,10 +373,10 @@ void battle_frame_tick(int param_1,uint param_2)
         uVar3 = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((_DAT_1f800110 + 0x34)));
         cVar1 = *(char *)guest_at((uint32_t)(uintptr_t)((_DAT_1f800110 + 0x24)));
       }
-      prim_list_gte_invoke((int *)(uintptr_t)uVar3,iVar2 + 0x40,uVar4,(int)cVar1,iVar5,0x1f80033c);
+      prim_list_gte_invoke((int *)guest_at((uint32_t)uVar3),iVar2 + 0x40,uVar4,(int)cVar1,iVar5,0x1f80033c);
     }
     if ((((int)param_2 >> 6 & 1U) != 0) && (*(char *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x9f) ))== '\0')) {
-      prim_list_persp_step((int *)(uintptr_t)_DAT_1f800104,*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 8) ))+ 0x2040,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0xc))),0xf,
+      prim_list_persp_step((int *)guest_at((uint32_t)_DAT_1f800104),*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 8) ))+ 0x2040,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0xc))),0xf,
                    iVar5,0x1f80035c,*(char *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x98) ))* 8 + -0x7fe4e94c,
                    *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 8) ))+ 0x206c);
     }
@@ -399,10 +399,10 @@ void battle_frame_tick(int param_1,uint param_2)
         uVar3 = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((_DAT_1f800218 + 0x34)));
         cVar1 = *(char *)guest_at((uint32_t)(uintptr_t)((_DAT_1f800218 + 0x24)));
       }
-      prim_list_gte_invoke((int *)(uintptr_t)uVar3,iVar2 + 0x40,uVar4,(int)cVar1,iVar5,0x1f80033c);
+      prim_list_gte_invoke((int *)guest_at((uint32_t)uVar3),iVar2 + 0x40,uVar4,(int)cVar1,iVar5,0x1f80033c);
     }
     if ((((int)param_2 >> 6 & 1U) != 0) && (*(char *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x9f) ))== '\0')) {
-      prim_list_persp_step((int *)(uintptr_t)_DAT_1f80020c,*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 8) ))+ 0x2040,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0xc))),0xf,
+      prim_list_persp_step((int *)guest_at((uint32_t)_DAT_1f80020c),*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 8) ))+ 0x2040,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0xc))),0xf,
                    iVar5,0x1f80035c,*(char *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x98) ))* 8 + -0x7fe4e94c,
                    *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 8) ))+ 0x206c);
     }
@@ -11772,8 +11772,8 @@ int * prim_list_gte_invoke(int *param_1,undefined4 param_2,undefined4 param_3,in
     _DAT_1f8003fc = unaff_retaddr;
     do {
       if (((short)param_1[3] == 0) && (*param_1 != 0)) {
-        gte_xform3_ip((undefined4 *)(uintptr_t)param_6,(undefined2 *)(uintptr_t)(*param_1 + 0x20));
-        gte_xform3_t_ip((undefined4 *)(uintptr_t)param_5,(undefined2 *)(uintptr_t)(*param_1 + 0x20));
+        gte_xform3_ip((undefined4 *)guest_at((uint32_t)param_6),(undefined2 *)guest_at((uint32_t)(*param_1 + 0x20)));
+        gte_xform3_t_ip((undefined4 *)guest_at((uint32_t)param_5),(undefined2 *)guest_at((uint32_t)(*param_1 + 0x20)));
         setCopReg(2,in_zero,param_1[1]);
         setCopReg(2,extraout_at,param_1[2]);
         copFunction(2,0x480012);
@@ -13321,7 +13321,7 @@ int * prim_list_persp_step(int *param_1,undefined4 param_2,undefined4 param_3,in
     do {
       if (((short)param_1[3] == 0) && (*param_1 != 0)) {
         iVar2 = *param_1 + 0x20;
-        gte_xform3_t_ip((undefined4 *)(uintptr_t)param_6,(undefined2 *)(uintptr_t)(*param_1 + 0x20));
+        gte_xform3_t_ip((undefined4 *)guest_at((uint32_t)param_6),(undefined2 *)guest_at((uint32_t)(*param_1 + 0x20)));
         setCopReg(2,in_zero,param_1[1]);
         setCopReg(2,extraout_at,param_1[2]);
         copFunction(2,0x480012);
@@ -13332,14 +13332,14 @@ int * prim_list_persp_step(int *param_1,undefined4 param_2,undefined4 param_3,in
         _DAT_1f8003a8 = in_t7;
         _DAT_1f8003ac = in_t8;
         _DAT_1f8003b0 = in_t5;
-        _DAT_1f8003b8 = range_circle_test(iVar1,iVar3,_DAT_1f8003d0,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x18))));
+        _DAT_1f8003b8 = range_circle_test(iVar1,iVar3,(uint *)guest_at((uint32_t)_DAT_1f8003d0),*(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x18))));
         if (_DAT_1f8003b8 != 0) {
           iVar1 = iVar1 + ((int)*(short *)guest_at((uint32_t)(uintptr_t)((param_6 + 2) ))* -_DAT_1f8003b8 >> 0xc);
           iVar3 = iVar3 + ((int)*(short *)guest_at((uint32_t)(uintptr_t)((param_6 + 0xe) ))* -_DAT_1f8003b8 >> 0xc);
         }
         _DAT_1f8003b4 = iVar1;
         _DAT_1f8003bc = iVar3;
-        gte_xform3_t_ip((undefined4 *)(uintptr_t)_DAT_1f8003d4,(undefined2 *)(uintptr_t)&DAT_1f8003a0);
+        gte_xform3_t_ip((undefined4 *)guest_at((uint32_t)_DAT_1f8003d4),(undefined2 *)(uintptr_t)&DAT_1f8003a0);
         iVar1 = *(int *)guest_at((uint32_t)(uintptr_t)(param_1[7]));
         piVar4 = (int *)guest_at((uint32_t)(uintptr_t)(param_1[7] ))+ 1;
         if (iVar1 != 0) {
