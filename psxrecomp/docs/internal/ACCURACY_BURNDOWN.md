@@ -2407,3 +2407,32 @@ post_exception_cooldown hot and starves the CD coroutine (N+18/N+19).
 Fresh boot shows pczero=0 through frame ~46k of attract cycling — the
 storm is STATE-DEPENDENT (triggers on a specific CD/battle event), not
 constant. Monitor running to catch it at the wedge.
+
+## N+22 — pc=0 storm PINPOINTED: CD-IRQ handler dispatch yields t0=0
+
+pczero instrumentation (N+21) caught the live fault at the 0xf1 wedge:
+- pczero_epc=0x8019A5C4 (cd_timer_read tail), pczero_cause=0x400
+  (ExcCode=0 interrupt, IP field=0x04 -> IP2 = CD-ROM IRQ),
+  pczero_addr=0x80000080 (exception/interrupt vector), pczero_ra=0x8019A53C.
+- The vector @0x80000080 is runtime-written dirty RAM: a cause->handler
+  dispatch stub ending in `jr t0` (0x800000a4 / 0x800000b4). pczero fires
+  when dirty_ram_dispatch_inner returns handled with cpu->pc==0 -> the
+  dispatch resolved t0=0 -> `jr t0` -> pc=0 -> re-dispatch -> storm.
+
+So: CD IRQ (IP2) fires -> kernel exception dispatcher looks up the
+registered handler for that cause -> gets 0 -> jr 0 -> pc=0 -> the
+pc=0 "exception" itself re-vectors -> ~3000/s storm -> post_exception_
+cooldown permanently hot -> real IRQ delivery starved -> CD coroutine
+(DAT_801bdde0) never advances -> cd_timer_read/vsync_wait_n/cd_cmd_issue
+wait forever -> battle phase 0xf1 freeze. VBlank (IP0) still works
+(frame_count advances) so the dispatch is fine for OTHER causes — only
+the CD-IRQ handler slot resolves null.
+
+NEXT: find the intr.c handler table + the CD IRQ handler registration.
+The game CD driver must EnableInt/SetIntrMask a handler for IP2; either
+registration never ran, the slot was cleared, or the cause->index
+computation for IP2 is off. Check the kernel handler table (the data
+words at 0x80000084-0x800000a0 are the cause dispatch table) and whether
+the CD handler pointer is populated. This is the SAME class as the
+frame-348 fix: a dispatch-table/handler-resolution gap, now isolated to
+the CD IRQ cause specifically.
