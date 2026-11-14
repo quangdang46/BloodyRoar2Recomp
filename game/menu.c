@@ -14450,7 +14450,13 @@ int32_t heap_serialize(uint32_t param_1,uint32_t param_2,uint32_t param_3,
     }
 next_block:
     blk = MB32(blk);
-    if (blk == 0xffffffffu) break;
+    /* Terminators: 0xffffffff sentinel AND null next-ptr (blk==0). A block's
+     * +0 next-pointer is 0 at end-of-list; without the blk==0 check the walk
+     * reads MB32(0)=0 forever (guest[0]==0 fixed point) -> infinite clean-C
+     * loop that never charges cycles -> psx_cycle_count freezes -> all device
+     * clocks (CD/DMA/timer) stall -> wedge. blk==0 can never be a valid heap
+     * block (blocks live at 0x800Fxxxx+). */
+    if (blk == 0xffffffffu || blk == 0u) break;
   }
 
   MW32(dst + 0x1cu, cur);
