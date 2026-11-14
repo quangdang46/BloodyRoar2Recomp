@@ -1530,3 +1530,17 @@ investigate copFunction/setCopReg/getCopReg impls + cop2_clz. fn_guest arg
 was a real task node -> task system works.
 NOTE: correct build target is `psx-runtime` (NOT --target BloodyRoar2_Recompiled
 which silently no-ops -> stale binary fooled earlier test).
+
+=== SESSION 24c: GTE/COP2 coprocessor is a STUB — the real 3D blocker ===
+After task_pools_tick fix, game reaches radial_glow_draw (real task) then
+EXC_BREAKPOINT in isqrt.cold path. ROOT: bind.c:878-884 stubs the whole
+coprocessor:
+  cop_regs[32]/cop_cw[16] only; setCopReg/getCopReg ignore r>=32 (return 0);
+  copFunction(f,op) is a NO-OP -> NO GTE computation ever runs.
+Consequences: cop2_clz always returns 0 (setCopReg 0xf000 ignored,
+getCopReg 0xf800 ->0); RTPS/perspective/LZCR/CLIP/AVSZ/OP/GPF all no-op.
+All 3D transform/lighting/camera math is broken -> isqrt/gte_* get garbage,
+overflow -> trap. THIS is the core missing subsystem for playable 3D.
+NEXT: implement real COP2/GTE (RTPS, NCLIP, AVSZ, OP, GPF, LZCR/HLE-style
+faithful per docs) — large faithful-RE task, replaces bind.c stubs. Also
+verify whether trap is UBSan (-fsanitize) on int overflow in isqrt input.
