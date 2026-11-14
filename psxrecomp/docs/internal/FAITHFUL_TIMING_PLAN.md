@@ -6011,3 +6011,37 @@ address (many are false positives — param already host ptr). Thousands of
 (uint32_t)(uintptr_t) sites remain. This is the large clean-source RE
 audit — best done by parallel subagents per-file (battle.c, resolve.c,
 ev.c, menu.c, action.c) with lldb crash-oracle verification.
+
+=== Session 22 — data-binding root cause + event-stream OOB fixed ===
+
+ROOT-CAUSE FIX (fbc6f00): guest_for()'s hex-parse buffer `char buf[64]`
+was NEVER NUL-terminated before strtoul(buf,&e,16). strtoul read past the
+hex run into uninitialized stack, producing a garbage 'best' guest address
+for EVERY g_DAT_*/s_* binding. All bound globals pointed into unrelated
+BSS (zeros) instead of live PSX RAM — rodata tables like the orbit
+descriptor table at 0x801b1d70 read zeros. Fixed with buf[n]=0 at both
+strtoul sites + noinline on weak guest_at/guest_of so calls bind to the
+strong real-RAM clean_bridge implementations. VERIFIED: g_DAT_801b1d70
+now = 0x1117832e8 = guest_at(0x801b1d70) = real RAM with correct EXE
+bytes (00 01 02 03...). This was THE systematic data-corruption bug
+affecting thousands of bindings.
+
+EVENT-STREAM OOB FIX (fd25718): ev_stream_dispatch indexed
+PTR_FUN_801b4e68[(uint8_t)*pbVar1] but the clean table only ports 24
+handlers while the real guest table at 0x801b4e68 holds 48+ entries
+(verified in EXE: consecutive 0x801xxxxx code ptrs). Opcode 30 (0x1e)
+indexed OOB -> null call -> EXC_BAD_ACCESS at PC=0. Now opcodes >=24
+dispatch to the real guest handler via br2_call_generated(h, ctrl_g,
+motion_g, pc_g, 0); clean handlers kept for 0-23.
+
+VERIFIED PROGRESSION: battle_frame_tick -> fighter_frame ->
+action_commit -> ev_stream_dispatch -> (guest handlers) ->
+prim_group_build/orbit_fx_spawn.
+
+CURRENT BLOCKER: prim_group_build(param_2) via orbit_fx_spawn —
+param_2 = DAT_801c43a8[orbit_type+0x1e] returns a bad guest pointer.
+0x801c43a8 is a slot->descriptor-handle table (BSS) populated from
+0x801c47b8 master table by save.c lifecycle code (save.c:6085-6092,
+6995). aux_tbl_store_a is a weak no-op (bind.c:2004). The requested
+orbit descriptor was never allocated/aliased -> stale/garbage handle.
+Deep render-resource (prim/orbit descriptor) lifecycle RE remaining.
