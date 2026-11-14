@@ -1670,3 +1670,35 @@ NEXT (decisive): find which game function SHOULD call cd_dma_xfer_start /
    table handler, and cd_dma_chan_reset is a red herring. Disambiguate by
    checking whether ANY generated site besides 0x8019B7E0 builds 0xF0000009
    for a B0/7 call, and whether the load's sector count actually completed.
+
+## Stall#2 — session N+1 refinement (channel-index correction)
+
+Corrected a mis-analysis: `0x801BDF00` only gates a *delay* in `br2eu_func_8019B7E0`,
+NOT the DeliverEvent — both branches converge on `block_8019B7FC`. The real gate is
+`0x801BDEE8` (user-callback ptr): `!=0 -> call_guest(cb,0xF0000000,0)`, `==0 ->
+DeliverEvent(0xF0000009,0x20)`. Live `0x801BDEE8==0`, so the deliver WOULD fire if the
+handler is reached.
+
+Decisive facts this session:
+- Event handle `0xF1000008` @`0x801BDE38` = `OpenEvent(0xF0000009,0x20,...)` set up by
+  `cd_ext_init_once` (0x8019b308, generated). `TestEvent` is `cd_seek_step`(0x8019d508)
+  -> `cd_seek_state_machine`(0x8019d5b0) -> `bios_svc(B0,0x0B,handle)`.
+- CD data reads use **DMA channel 3** (`cd_chan_cmd_submit` s0==3 x1108, writes
+  0x1F8010B0). DMA ch3 completes (`active:0`).
+- `cd_cb7_run` (0x8019af84) walks DICR done-bits -> handler table `0x801BDDF4`,
+  cursor +4 per channel index. Table has `0x8019b7e0` ONLY at index 4 (`0x801BDE04`);
+  index 3 (`0x801BDE00`, CDROM ch3) is NULL. If handler index == DMA channel, ch3-done
+  -> NULL -> no DeliverEvent. OPEN QUESTION: is index-4 registration faithful (CD uses
+  a different done channel) or a port/table-population bug.
+- `cd_read_finish_cb` (0x80198838) was a clean body in the IRQ/completion family;
+  delegated to generated `br2_call_generated(0x80198838)` matching `cd_read_step_cb`.
+  Did NOT clear the stall (game still wedges identically) — kept as faithful cleanup.
+- Fresh-boot fntrace on the whole load chain returned EMPTY (seq_lo=0): none of
+  cd_file_load_sm/cd_read_issue/cd_read_setup/cd_read_poll/cd_dma_xfer_*/
+  cd_dma_chan_reset/cd_read_finish_cb were hit — the wedge is a SEEK-path wait, and
+  either fntrace misses br2_call_generated dispatches or this op never reaches them.
+
+NEXT: fresh-boot trace of `cd_cb7_run` DICR reads + per-channel handler calls (does
+ch3-done fire? which index?) and of the CDROM-IRQ completion path (cd_response_pump
+s0&2/s0&4 -> 0x801bc848/84c, both NULL-guarded). Compare channel-index mapping against
+the generated `cd_ext_table_init`/`0x8019A6E0` registration to confirm faithful slot.

@@ -791,25 +791,18 @@ void cd_read_step_cb(uint32_t param_1,undefined4 param_2)
 
 /* ======== 0x80198838 ======== */
 
+/* cd_read_finish_cb — read-session completion callback: advances the sector
+ * cursor (bcb88 += bcb90*4), decrements sectors-remaining bcb94, and on the
+ * final sector issues the Pause(9) + fires the registered user callback
+ * (0x801bc7b0 -> DeliverEvent). This is the same IRQ/completion-path family
+ * as cd_read_step_cb: it calls cd_cmd_issue_async and call_guest across the
+ * deferred-IRQ coroutine boundary, and a clean-C body cannot supply the live
+ * guest register file / frame the generated MIPS keeps. DAT_801bcba4 stayed 0
+ * at the stall (completion branch never ran) — delegate the whole body to the
+ * recompiled 0x80198838 so the Pause + DeliverEvent fire faithfully. */
 void cd_read_finish_cb(void)
-
 {
-  DAT_801bcb88 = DAT_801bcb88 + DAT_801bcb90 * 4;
-  DAT_801bcb94 = DAT_801bcb94 + -1;
-  DAT_801bcba0 = DAT_801bcba0 + 1;
-  if (DAT_801bcb94 == 0) {
-    mc_session_b(DAT_801bcbac);
-    if ((DAT_801bc7b4 & 1) != 0) {
-      cd_cmd_dispatch3(DAT_801bcbb0);
-    }
-    mc_session(0x80198590);
-    cd_cmd_issue_async(9,0);
-    DAT_801bcba4 = 1;
-    if (CDB32G(0x801bc7b0) != 0) {
-      call_guest(CDB32G(0x801bc7b0),2,CDB32(0x801bcbb4));
-    }
-  }
-  return;
+  br2_call_generated(0x80198838u,0,0,0,0);
 }
 
 /* ---- batch28: CD sync-wait wrappers + BIOS trampolines ---- */
