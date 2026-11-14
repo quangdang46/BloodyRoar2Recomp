@@ -5919,3 +5919,24 @@ apply() (action.c .ANI section bind) fault_addr 0x100000000: wild
 ani + h[7]/h[8] offset => corrupt .ANI blob or ctrl FC_ANI pointer. Commit
 1fb3cf8. Investigate whether serialize byte-vs-word scaling or .ANI load is
 the source of the bad ani pointer.
+
+## Session 19b — apply() crash fixed; game runs past frame 1824
+
+ROOT CAUSE (frame-1824 apply SIGSEGV, fault_addr 0x100000000):
+game/action.c apply() line ~265 did
+  GS8(*(uint8_t **)guest_at(GU32(ctrl,0x14)),0)=0xff
+The *(uint8_t**) deref is an 8-BYTE host-pointer load, but guest RAM holds
+4-byte guest addresses. It concatenated two adjacent u32 cells into a garbage
+64-bit pointer (high cell 0x00000001 <<32 | low guest ptr = 0x100000000).
+atos confirmed fault at action.c:265. The .ANI header reads earlier in apply
+were VALID all along (my temporary h[] sanity guard never fired — removed).
+
+FIX (commit 9fca07d): read the inner cell as guest u32 + guest_at(), matching
+the codebase guest-pointer model. Game now runs clean 3+ min past frame 1824
+(was deterministic crash). NOTE: *(type**)guest_at and
+(uint32_t)(uintptr_t)(host_ptr+off) mistranslations are SYSTEMIC in
+battle.c (~3138 uintptr casts + ~71 ** derefs / 17.7k lines) — the remaining
+clean-source debt; fix per-site as they crash or via dedicated RE pass.
+
+ALSO this session: heap_serialize ctx I/O-base relocation (72dd5d7) got past
+frame-1717 0x27AC; clear_f4ee8_u16s guest-addr fix (1fb3cf8).
