@@ -2550,3 +2550,31 @@ NEXT: find the fighter model/node-tree loader; determine whether P1's
 garbage links are (a) unloaded resource (CD loss) or (b) a relocation/
 parse bug writing wrong link values. The faithful fix is valid model
 data, NOT patching node_xform_apply (it faithfully writes node+0x20).
+
+## N+26 — node[1] uninitialized: transform arena reused, slot not populated
+
+Node arena = heap region @0x801e1b3c, elem 0x50, capacity ~0x21c0
+(~108 nodes) per menu.c heap-map printf. Fighter+0x20 = arena base.
+
+Walked P1 tree (fighter@0x1f8000e8, byte0=0x01 ACTIVE):
+    node[0]@0x801e1b3c  +44=0x801e1b8c (valid sibling) +48=0
+    node[1]@0x801e1b8c  ALL FIELDS GARBAGE: +04=0xf4790001 +18=0xff0d000e
+                        +20=0x6cfe8bf +34=0x2796 +44=0xa77912a8 +48=0x12d
+    node[2]=0xa77912a8  OUT OF RANGE
+
+node[1] is stale/uninitialized heap — NOT zeroed, NOT populated by
+skeleton_init for this fighter. Its +0x44/+0x48 links are leftover data
+from a prior battle's model. node_xform_apply recurses node[0]->node[1]
+->wild links; guest_at maps out-of-range links to g_openbus (1MiB dummy),
+and a stale openbus field chains to node~0x80000064 -> gte_xform3_nold
+writes 5-word vertex at node+0x20=0x80000084 -> exception vector dead.
+
+P2 tree (fighter@0x1f8001f0, byte0=0x81 DISABLED) walked 19 clean nodes.
+
+HYPOTHESIS: node arena is reused across attract battles without full
+re-init; skeleton_init populates only the nodes the CURRENT model needs,
+but a stale +0x44 link from node[0] reaches an unpopulated slot whose
+leftover fields point wild. Faithful fix = ensure skeleton_init/node-tree
+build writes valid (or NULL) links for every reachable node — i.e. the
+model descriptor (S5) parse or the arena reset. NOT a guard in
+node_xform_apply.
