@@ -5889,3 +5889,33 @@ thread's timeslice.
   Determine if blk+0 was wrongly relocated by phase-1 (compare blk+0 value vs
   the unresolved-offset form). The heap_ptr_fixup fix is correct for ctx+0x14
   but may need to EXCLUDE next-block-list pointers from relocation.
+
+## Session 19 — serialize ctx relocation + clear_f4ee8 pointer fix
+
+ROOT CAUSE (0x27AC crash, frame 1717): heap_serialize's ctx (blk+4) carries
+five I/O base pointers at +4/+8/+0xc/+0x10/+0x14 as 0x8000xxxx offset-encoded
+tags into the 0x800F0000 heap image. Generated heap_serialize AND the tag
+serializers read them RAW (verified in generated br2eu_func_8016B7C0 /
+br2eu_func_8016A82C — psx_cyc_load_word + raw stack-arg stores, no base-add).
+heap_ptr_fixup (faithful, verified store-for-store) only covers node +0/+4/+8
+and does NOT reach ctx+0x10/+0x14. With fields left at 0x8000xxxx the tag
+serializer used phys 0x0DA8-0x2800 (BIOS kernel window — CODE on both
+SCPH1001 oracle and OpenBIOS) as record I/O bases -> runaway heap-A cursor ->
+serialize_tag_01000000 wrote heap ptrs over the IRQ trampoline at phys 0x27AC.
+
+FIX (commit 72dd5d7): in heap_serialize, after ctx=MB32(blk+4), resolve each
+of the five fields 0x8000xxxx -> 0x800F0000 + (v & 0x7fffffff), guarded to
+fire only while the field still carries the unrelocated tag. Byte-offset
+chosen (heap-image header pointers 0x800f0xxx are byte addresses). NOTE:
+heap_ptr_fixup uses *4 word-indexing for the runtime heap — if a later
+correctness pass shows the image ctx needs *4 too, revisit scaling.
+
+RESULT: 0x27AC crash gone; game reaches frame 1824.
+
+NEXT BUG (frame 1824): host SIGSEGV in clear_f4ee8_u16s — signature took
+uint8_t* (host ptr) but all callers pass guest addrs (fnmap a0, save.c
+0x1f8000e8/uint32_t). a0[2] deref'd host 0x1f8000ea. Fixed -> now crashes in
+apply() (action.c .ANI section bind) fault_addr 0x100000000: wild
+ani + h[7]/h[8] offset => corrupt .ANI blob or ctrl FC_ANI pointer. Commit
+1fb3cf8. Investigate whether serialize byte-vs-word scaling or .ANI load is
+the source of the bad ani pointer.
