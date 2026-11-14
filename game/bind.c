@@ -22,16 +22,16 @@ static uint8_t *guest_for(const char *name)
     char buf[64]; int n=0; unsigned long best=0; int found=0;
     for (const char *c=name; *c; c++) {
         if ((*c>='0'&&*c<='9')||(*c>='a'&&*c<='f')) { if(n<63)buf[n++]=*c; }
-        else { if(n>=6){ char *e; unsigned long v=strtoul(buf,&e,16); if(v>best)best=v; found=1;} n=0; }
+        else { if(n>=6){ buf[n]=0; char *e; unsigned long v=strtoul(buf,&e,16); if(v>best)best=v; found=1;} n=0; }
     }
-    if(n>=6){ char *e; unsigned long v=strtoul(buf,&e,16); if(v>best)best=v; found=1; }
+    if(n>=6){ buf[n]=0; char *e; unsigned long v=strtoul(buf,&e,16); if(v>best)best=v; found=1; }
     if(!found) return guest_arena;
     return (uint8_t *)guest_at((uint32_t)best);
 }
 
 /* guest_at — address-based twin of guest_for for sites that carry
  * a raw guest address value rather than a named symbol. */
-__attribute__((weak))
+__attribute__((weak,noinline))
 void *guest_at(uint32_t addr)
 {
     if ((addr & 0xfffff000UL) == 0x1f800000UL) return guest_scratch + (addr & 0xffff);
@@ -1803,7 +1803,7 @@ static void bind_globals_7(void)
 /* guest_of — inverse of guest_at: recover the guest address a
  * bound host pointer refers to (arena -> 0x80xxxxxx, scratch ->
  * 0x1f800xxx). Needed where guest code stores ptr & 0xffffff tags. */
-__attribute__((weak))
+__attribute__((weak,noinline))
 uint32_t guest_of(const void *p)
 {
     const uint8_t *b = (const uint8_t *)p;
