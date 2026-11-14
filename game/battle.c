@@ -8279,14 +8279,18 @@ undefined4 * prim_group_build(undefined4 param_1,int param_2,undefined4 param_3,
            prim_group_alloc(2,param_2,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x20))),*(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x28))),
                         *(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x24))),*(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x18))),param_4);
   if (puVar1 != (undefined4 *)0x0) {
-    piVar5 = (int *)guest_at((uint32_t)(uintptr_t)(puVar1[4]));
-    local_30[0] = puVar1[0xc];
-    puVar1[2] = param_2;
-    puVar1[3] = param_1;
+    /* puVar1 holds a GUEST address (prim_group_alloc returns the node's
+     * guest pointer). Field accesses must resolve through guest_at; the
+     * guest addr itself is what node_tree_free/return propagate. */
+    uint32_t g1 = (uint32_t)(uintptr_t)puVar1;
+    piVar5 = (int *)guest_at(*(uint32_t *)guest_at(g1 + 0x10));
+    local_30[0] = *(undefined4 *)guest_at(g1 + 0x30);
+    *(undefined4 *)guest_at(g1 + 0x8) = param_2;
+    *(undefined4 *)guest_at(g1 + 0xc) = param_1;
     uVar4 = 0;
     if (*(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x20) ))!= 0) {
       do {
-        unaff_s4 = prim_batch_emit((int)(uintptr_t)puVar3,*puVar3,puVar1[10],puVar1[0xb],local_30,
+        unaff_s4 = prim_batch_emit((int)(uintptr_t)puVar3,*puVar3,*(undefined4 *)guest_at(g1 + 0x28),*(undefined4 *)guest_at(g1 + 0x2c),local_30,
                                 *(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x2c))),*(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x34))),
                                 *(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x30))),param_3,
                                 *(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x1c))),param_4);
@@ -8298,15 +8302,15 @@ undefined4 * prim_group_build(undefined4 param_1,int param_2,undefined4 param_3,
       } while (uVar4 < *(uint *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x20))));
     }
     if (*(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x20) ))!= 0) {
-      iVar2 = lazy_node_wrap(unaff_s4,puVar1[1],*(int *)guest_at((uint32_t)(uintptr_t)((puVar1[2] + 0x10) ))!= 0);
-      puVar1[6] = iVar2;
+      iVar2 = lazy_node_wrap(unaff_s4,*(undefined4 *)guest_at(g1 + 0x4),*(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x10) ))!= 0);
+      *(undefined4 *)guest_at(g1 + 0x18) = iVar2;
       if (iVar2 == 0) {
 LAB_801a6cfc:
         node_tree_free((int)(uintptr_t)puVar1);
         puVar1 = (undefined4 *)0x0;
       }
       else {
-        *puVar1 = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x10)));
+        *(undefined4 *)guest_at(g1) = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x10)));
       }
     }
   }
@@ -10931,8 +10935,13 @@ int prim_batch_emit(int param_1,int param_2,undefined4 param_3,undefined4 param_
   undefined4 *puVar18;
   undefined2 *puVar19;
   undefined4 *puVar20;
-  iVar3 = (int)(intptr_t)task_node_alloc(param_11,2,0xd,*(undefined4 *)((&PTR_PTR_801be894)[param_9] + param_2 * 4),0,
-                       (uint)(byte)(&PTR_DAT_801be84c)[param_9][param_2] * *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 8) ))* 2
+  /* PTR_PTR_801be894 / PTR_DAT_801be84c are guest pointer-tables: entry
+   * [param_9] is a guest sub-table address, then [param_2] indexes it.
+   * Read the 32-bit guest entries via guest_at (never host ** deref). */
+  uint32_t ptrsub = *(uint32_t *)guest_at(0x801be894u + (uint32_t)param_9 * 4);
+  uint32_t datsub = *(uint32_t *)guest_at(0x801be84cu + (uint32_t)param_9 * 4);
+  iVar3 = (int)(intptr_t)task_node_alloc(param_11,2,0xd,*(undefined4 *)guest_at(ptrsub + (uint32_t)param_2 * 4),0,
+                       (uint)*(uint8_t *)guest_at(datsub + (uint32_t)param_2) * *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 8) ))* 2
                        + *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0xc) ))* 0x10 + 0x38);
   if (iVar3 == 0) {
     return 0;
@@ -10941,7 +10950,7 @@ int prim_batch_emit(int param_1,int param_2,undefined4 param_3,undefined4 param_
   puVar16 = puVar20 + 0xe;
   puVar11 = puVar16 + *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0xc) ))* 4;
   *puVar20 = (undefined4)br2_gaddr(puVar11);
-  bVar2 = (&PTR_DAT_801be84c)[param_9][param_2];
+  bVar2 = *(uint8_t *)guest_at(datsub + (uint32_t)param_2);
   iVar4 = *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 8)));
   puVar20[2] = (undefined4)br2_gaddr(puVar16);
   puVar20[1] = (undefined4)(uintptr_t)((intptr_t)puVar11 + (uint)bVar2 * iVar4);
