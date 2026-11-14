@@ -1832,6 +1832,17 @@ LAB_80166058:
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
+/* The 0xff phase-exit flag must be materialized adjacent to its store.  Held in
+ * a callee-saved register across the intro loop it was observed clobbered to a
+ * stale value by a nested dispatch/interrupt boundary (w28 -> 0x00/0xae77),
+ * writing garbage into DAT_1f800001 and dead-looping the boot->battle
+ * transition on a black screen.  A noinline leaf keeps the constant out of the
+ * caller's long-lived register allocation. */
+static void __attribute__((noinline)) battle_phase_mark_done(void)
+{
+  DAT_1f800001 = 0xff;
+}
+
 void battle_intro_flow(int param_1)
 
 {
@@ -1961,7 +1972,7 @@ LAB_8016767c:
         else if (DAT_1f800001 != 0xf1) goto LAB_801677b4;
         iVar4 = frame_divisor_get();
         if (iVar4 == 0) {
-          DAT_1f800001 = 0xff;
+          battle_phase_mark_done();
           goto joined_r0x801673ac;
         }
       }
