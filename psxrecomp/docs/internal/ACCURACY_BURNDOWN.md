@@ -1941,3 +1941,27 @@ and why the resume path bypasses it. Compare against how OTHER working
 suspendable coroutines (battle_intro_flow, transition_screen_flow) yield vs
 this codec path. Possibly a missing "yield to scheduler" CPS opcode or a
 continuation PC that points back into the read loop instead of the frame top.
+
+## N+8 — bail path RULED OUT; genuine coroutine self-re-entrancy
+
+Crash log (/tmp/br2_*.log) has ZERO [CDBAIL] lines -> the cpu->pc==0
+sp/ra-mismatch bail unwind (OpenBIOS_dispatch.c:9176-9202) is NOT the
+mechanism. exc_sp_straddle_ theory disproven for this stall.
+
+Therefore g_psx_dispatch_depth grows via NESTED psx_dispatch_call where each
+codec-coroutine resume keeps its parent frame alive: cd_file_load_sm (or the
+codec sequencer) is re-entered while its previous continuation is still
+suspended on the host stack. The coroutine's yield/resume path uses a nested
+dispatch (br2_call_generated or CPS jal into dispatch_call) instead of
+returning to the frame scheduler so the host frame unwinds each vsync.
+
+This is the SAME structural class as a fiber/coroutine that must be resumed
+by the scheduler (flat, depth resets per frame) but is instead resumed
+synchronously inside a still-live parent dispatch -> unbounded host nesting.
+The vsync_wait_n / frame boundary is where the resume SHOULD flatten.
+
+FIX DIRECTION: find the codec coroutine's suspend point and ensure its
+continuation is dispatched from the TOP-LEVEL frame loop (psx_dispatch, not
+nested psx_dispatch_call), matching how working suspendable coroutines yield.
+Likely a generated CPS jal targets a dispatcher that calls dispatch_call
+recursively rather than returning pc to the outer loop.
