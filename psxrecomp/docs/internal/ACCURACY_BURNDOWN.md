@@ -2677,3 +2677,33 @@ call stage_char_data_load per locked char and seed rec+0xa) is generated
 MIPS in the versus orchestrator (br2eu_func_80126328 family,
 _jt_80126370 jr-v0 jump table). Ghidra backend :8080 is down; Beetle
 oracle :4380 is down. Cannot decompile or oracle-diff until one returns.
+
+### versus select->fight mechanism (372-entry clean_trace, CLEAN_RANGES on)
+
+Drove title->2P VS->versus select->fight headless (debug :4370; note
+nav_to_fight.py still targets stale :4382 — runtime debug is :4370).
+State bytes: DAT_1f800000=gs, DAT_1f800001=ph, DAT_1f80009c=sub/mode.
+
+versus select runs at gs=8 with ph walking 6->7->8; ph=6/7 are handled
+entirely by GENERATED code (absent from clean_trace). The fight-entry
+tick is generated block_80126654 -> block_8012665C:
+  match_mode_set(1) [0x801560F8]  then  battle_flow_state_machine
+  [0x8016FCC4]  (jal link ra=0x80126664).
+
+clean_trace tail into the freeze (chronological):
+  ... match_loop(0x80147034) -> match_mode_set(0x801560F8)
+  -> battle_flow_state_machine(0x8016FCC4, ra=0x80126664) -> 0x80157368
+  -> PC=0 freeze.
+
+battle_flow appears EXACTLY ONCE in the whole versus->fight run
+(index 370 of 372). It is entered already at ph=8 -> case8 ->
+post_battle_dispatch -> vs_confirm_c (gated rec+0xa==0) -> empty fighters
+-> indirect call through null -> PC=0. battle_init / stage_char_data_load
+/ versus_stage_commit / vs_confirm_* = 0 clean dispatches.
+
+The versus select->fight match-init that should call
+stage_char_data_load(0x80129218) per locked char and seed rec+0xa is
+generated MIPS inside br2eu_func_80126328 (versus orchestrator,
+_jt_80126370 jr-v0). No direct jal / rodata pointer to 0x80129218 exists;
+it is reached only via computed dispatch. Not yet identified — needs
+Ghidra (:8080 down) or Beetle oracle (:4380 down) to diff correct flow.
