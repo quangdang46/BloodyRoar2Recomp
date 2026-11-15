@@ -433,6 +433,23 @@ on a fixed region -> next.
     (vsync_wait_n) bracket it. Next: instruction/block trace WITHIN
     `OpenBIOS_psx_dispatch`/`br2eu_func_8019A87C` tail to catch the exact
     `cpu->pc=0` write, vs Beetle oracle IRQ/RFE semantics.
+  - **2026-11-15 dispatch_tail = the storm cycle, game handler ABSENT:** the
+    FATAL crash report's `dispatch_tail` (256 addrs) shows ONE repeating
+    OpenBIOS-kernel cycle per storm iteration (low-RAM funcs):
+    `0x16E4 0x1830..0x1884 0x2610 0x18AC 0x2970 0xB0 0x2AA0 0x29CC 0x27AC
+    0x279C 0x27EC 0x1F6C 0x2074 0x1A74 0x2610 0x1AB4 0x1BD0 0x1ACC 0x1B24
+    0x1B7C 0x371C 0x3E6C 0x26E4 0x3F00..0x3F30 0x4000..0x4010 0x3FDC` then
+    repeats. Named: `0x27AC`=exceptionHandler, `0x279C`=GetCauseEpc,
+    `0x29CC`=returnFromException, `0xB0`=BIOS vector. **`0x8019A87C` (game IRQ
+    entry) NEVER appears** — consistent with fntrace stopping. So the kernel
+    exceptionHandler runs its full cycle each VBlank but does NOT invoke the
+    game's IRQ handler → the game's I_STAT ack (`cd_intc_dispatch` 0x8019A9AC)
+    never runs → I_STAT bit0 stays 1 → level-triggered VBlank re-fires forever.
+    The `pc=0` is produced inside this kernel cycle (likely the EntryInt
+    `jr ra`→JB_PC or a func2 handler `jalr` resolving to 0 / a func returning
+    pc unset). NEXT: decode the tail funcs `0x3F00-0x3FDC`/`0x4000-0x4010`
+    (the handler-invocation + return) and the EntryInt JB_PC value to find the
+    null dispatch, vs Beetle oracle IRQ-handler registration semantics.
 
 - **2026-11-11 (frame-counter freeze ROOT-CAUSE narrowed — MMIO fix confirmed
   landed; counter depends on CD IRQ, freezes when CD idles):**
