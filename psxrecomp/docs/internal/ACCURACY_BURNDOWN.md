@@ -2884,3 +2884,23 @@ audio_seq_reset (or a sibling seq-load) run, reach cd_dma_xfer_mode, and
 does its ch4 DMA complete? Check whether the seq-load is skipped because a
 state/guard (cd_state9 @0x801f46f4 etc) isn't set on the fight path, or the
 DMA completes but DeliverEvent is lost to the deferred-IRQ coroutine.
+
+=== SESSION — waiter identified: cd_seek_step (0x8019d508) ===
+
+The TestEvent(0x801bde38)=0xF0000009 spin lives in cd_seek_step
+(0x8019d508, cd.c:5021), delegated to generated — the CD SEEK state
+machine's per-step wait, called under cd_seek_state_machine (0x8019d5b0)
+via cd_seek_complete_poll (0x8019d500). So the wedge is SEEK completion,
+not bulk data read and (probably) not audio_seq_reset — audio_seq_reset is
+just the sole flag-armer I found; the seek path may arm via a different
+route or deliver via a different callback.
+
+OPEN (sharpest form yet): the seek issues reg_window_op {2,1,3} (op3 =
+"sector-read setup"). On real HW the seek's ch4/command completion must
+DeliverEvent(0xF0000009). Our done-callback (0x8019B7E0) only delivers
+when 0x801BDF00!=0, and the seek leaves it 0. EITHER (a) seek completion
+uses a different DeliverEvent site we haven't found, OR (b) the flag IS
+supposed to be armed for seek and a clean/generated boundary drops the
+arm write. NEXT decisive step: disasm cd_seek_state_machine (0x8019d5b0)
++ the command-completion callback it registers, find the faithful
+DeliverEvent(0xF0000009) site for seek-done, and check why it doesn't fire.
