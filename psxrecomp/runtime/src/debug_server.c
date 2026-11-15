@@ -13496,12 +13496,26 @@ static void handle_game_options(int id, const char *json)
     send_fmt("{\"id\":%d,\"ok\":true,\"go\":%s}", id, buf);
 }
 
+/* CD trace hooks are diagnostic-only. The EU target links game/cd.c, which
+ * provides strong implementations; regional targets without the clean tree
+ * get these weak fallbacks so the debug commands still link. */
+__attribute__((weak)) int cd_feb00_trace_dump(char *out, int cap)
+{
+    (void)out; (void)cap;
+    return 0;
+}
+__attribute__((weak)) uint32_t cd_feb00_trace_total(void) { return 0; }
+__attribute__((weak)) int cd_seek_dump(char *out, int cap)
+{
+    (void)out; (void)cap;
+    return 0;
+}
+__attribute__((weak)) uint32_t cd_seek_total(void) { return 0; }
+
 /* DIAG: dump the 0x801feb00 resume-stamp write trace (tag:1=finalize,2=store). */
 static void handle_cd_feb00_trace(int id, const char *json)
 {
     (void)json;
-    extern int cd_feb00_trace_dump(char *out, int cap);
-    extern uint32_t cd_feb00_trace_total(void);
     static char buf[65536];
     int n = cd_feb00_trace_dump(buf, sizeof(buf) - 64);
     send_fmt("{\"id\":%d,\"ok\":true,\"total\":%u,\"writes\":\"%s\"}",
@@ -13512,8 +13526,6 @@ static void handle_cd_feb00_trace(int id, const char *json)
 static void handle_cd_seek_trace(int id, const char *json)
 {
     (void)json;
-    extern int cd_seek_dump(char *out, int cap);
-    extern uint32_t cd_seek_total(void);
     static char buf[262144];
     cd_seek_dump(buf, sizeof(buf) - 64);
     send_fmt("{\"id\":%d,\"ok\":true,\"total\":%u,\"seeks\":\"%s\"}",
