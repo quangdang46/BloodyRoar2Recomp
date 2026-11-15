@@ -1404,26 +1404,37 @@ void frame_tick(intptr_t param_1)
  * Stage machine: 0 boot select -> 1 running -> 2 ending ->
  * 0xf0/0xf1 shutdown. 300-frame attract timeout via unaff_s2.
  * ================================================================== */
+/* match_stepper_desc — contiguous menu-stepper descriptor. In the original
+ * frame this is a single stack block at sp+0x20: menu_stepper_state_advance /
+ * menu_stepper_input / menu_stepper_redraw and the +0xc callback all address
+ * it by byte offset, so the fields MUST be contiguous. Declaring them as
+ * separate C locals lets the compiler reorder/pad them, which breaks the
+ * +0xc callback read (fn_lookup gets garbage -> dead menu). */
+struct match_stepper_desc {
+    uint16_t unk00;      /* +0x00 */
+    uint8_t  state;      /* +0x02 0 -> armed to 1 */
+    uint8_t  gate;       /* +0x03 input+callback enable */
+    uint8_t  unk04;      /* +0x04 */
+    uint8_t  nav_mode;   /* +0x05 0: 0x4000/0x1000 else 0x2000/0x8000 */
+    uint16_t max;        /* +0x06 row count */
+    uint16_t sel;        /* +0x08 cursor */
+    uint16_t unk0a;      /* +0x0a */
+    uint32_t callback;   /* +0x0c guest code address */
+    uint16_t unk10;      /* +0x10 */
+    uint16_t unk12;
+    uint16_t unk14;
+    uint16_t unk16;
+    uint16_t unk18;
+    uint16_t unk1a;
+    uint16_t unk1c;
+    uint16_t unk1e;      /* +0x1e */
+};                      /* 0x20 bytes */
+
 void match_loop(void)
 {
     int iVar1;
     int unaff_s2;
-    undefined2 local_88;
-    undefined1 local_86;
-    undefined1 local_85;
-    undefined1 local_84;
-    undefined1 local_83;
-    undefined2 local_82;
-    undefined2 local_80;
-    void (*local_7c)(void);
-    undefined2 local_78;
-    undefined2 local_76;
-    undefined2 local_74;
-    undefined2 local_72;
-    undefined2 local_70;
-    undefined2 local_6e;
-    undefined2 local_6c;
-    undefined2 local_6a;
+    struct match_stepper_desc sd;
     undefined4 local_40;
     undefined4 local_3c;
     undefined4 local_38;
@@ -1449,7 +1460,7 @@ joined_r0x801470b0:
         if (DAT_1f800001 == 2) {
             scroll_offset_set(0,0);
             if ((_DAT_1f80007c & 0x10) == 0) {
-                menu_stepper_state_advance(&local_88);
+                menu_stepper_state_advance(&sd);
             }
             else {
                 deferred_cmd_post(0x400,0xd,0);
@@ -1482,23 +1493,14 @@ LAB_801472f8:
                          * menu_stepper_state_advance -> fn_lookup; storing
                          * a host fn pointer leaks 64-bit host bits. The
                          * guest value is 0x8014751c (attract_menu_dispatch
-                         * in fnmap). */
-                        local_7c = (void (*)(void))(uintptr_t)0x8014751c;
-                        local_82 = 7;
-                        local_88 = 0;
-                        local_86 = 0;
-                        local_85 = 0;
-                        local_84 = 1;
-                        local_83 = 0;
-                        local_80 = 1;
-                        local_78 = 0xffff;
-                        local_76 = 0xffff;
-                        local_74 = 0;
-                        local_72 = 0;
-                        local_70 = 0;
-                        local_6e = 0;
-                        local_6c = 0;
-                        local_6a = 0;
+                         * in fnmap). sd must stay contiguous (see struct). */
+                        memset(&sd, 0, sizeof sd);
+                        sd.callback = 0x8014751c;
+                        sd.max = 7;
+                        sd.unk04 = 1;
+                        sd.sel = 1;
+                        sd.unk10 = 0xffff;
+                        sd.unk12 = 0xffff;
                         scratch_013_set(0);
                         spr_draw_pair(local_40,0,0x1f0,1,0x200,0,1);
                         spr_draw_pair(local_3c,0,0x1f1,1,0x280,0,1);

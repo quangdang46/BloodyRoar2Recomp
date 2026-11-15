@@ -1040,8 +1040,8 @@ extern void match_loop(void);
     match_loop();
 }
 static void wrap_8014751c(CPUState *cpu) {
-extern uint32_t attract_menu_dispatch(int param_1,uint param_2);
-    cpu->gpr[2] = (uint32_t)(attract_menu_dispatch(((int)cpu->gpr[4]), ((uint)cpu->gpr[5])));
+extern uint32_t attract_menu_dispatch(intptr_t param_1,uint param_2);
+    cpu->gpr[2] = (uint32_t)(attract_menu_dispatch(((intptr_t)guest_at(cpu->gpr[4])), ((uint)cpu->gpr[5])));
 }
 static void wrap_801479c4(CPUState *cpu) {
 extern void gpu_prim8_emit(uint32_t param_1,int32_t param_2,int32_t param_3,

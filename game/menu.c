@@ -2597,7 +2597,7 @@ LAB_8014700c:
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-undefined4 attract_menu_dispatch(int param_1,uint param_2)
+undefined4 attract_menu_dispatch(intptr_t param_1,uint param_2)
 
 {
   int iVar1;
