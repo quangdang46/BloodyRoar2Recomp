@@ -470,6 +470,27 @@ on a fixed region -> next.
     clean-C boundary yields `pc==0`. NEXT: instrument `psx_dispatch_impl`'s
     pc==0 handling to log dispatch_depth + whether it was a nested return vs
     a genuine null — the frame-2073 transition is where nesting first breaks.
+  - **2026-11-15 MECHANISM IDENTIFIED — poisoned TCB resume-PC from IRQ taken
+    deep in nested host dispatch (the documented bug class, now live in
+    battle):** resume PC lives at **TCB+136 (0x88)** — guest RFE `0x29CC` does
+    `k0=*(TCB+0x88); jr $k0;rfe`, host `psx_restore_context_from_tcb`
+    (traps.c:373) reads the same slot into `gpr[26]`. traps.c:380-392 +
+    interrupts.c:695-711 ALREADY document this exact failure: a ChangeThread/
+    IRQ honored *mid-nested-host-dispatch* saves a POISONED TCB — the latched
+    resume-PC (`s_compiled_interrupt_resume_pc`/`g_dirty_safe_resume_pc`) is
+    AHEAD of the live GPRs because the true block PC lives only in a host C
+    frame's local `addr`, not CPUState. Result: RFE `jr $k0` resumes to a
+    stale/zero PC → `cpu->pc=0` → unwind → outermost sees pc==0 → the IRQ
+    re-fires (I_STAT never acked because the game handler's continuation was
+    cut) → `0x80000080` storm. Battle reaches `dispatch_depth=3`
+    (clean `battle_frame`→`frame_tick`→generated `vsync_wait_n`), so the VBlank
+    IRQ lands inside a nested `psx_dispatch_call` where the resume-PC latch
+    desyncs — matching why menus (shallow) work and battle breaks ~2073 frames
+    in (first IRQ to land at the deepest nesting). FIX DIRECTION: defer the
+    IRQ/ChangeThread honor to the outermost dispatch boundary (the
+    `s_defer_switch_pending` mechanism already exists for thread-switch —
+    extend the same deferral to the IRQ-resume-PC capture so the TCB is saved
+    with the materialized PC, not the stale latch), vs Beetle oracle IRQ-timing.
 
 - **2026-11-11 (frame-counter freeze ROOT-CAUSE narrowed — MMIO fix confirmed
   landed; counter depends on CD IRQ, freezes when CD idles):**
