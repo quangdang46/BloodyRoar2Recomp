@@ -6898,3 +6898,44 @@ resource loader in select_screen_tick's generated tail, or a
 select_screen_tick!=0 -> case2 transition. gwatch on the SELECT-screen
 .ANI dest (the 0x8001-0x8003 decode region) during char-select would
 show whether the preview .ANI loads at all in versus mode.
+
+### Session N+6 — versus->fight wedge: op3-timeout RULED OUT; CD->event flow-control stall
+
+Built on N+5e. The versus->fight path now spawns both fighters (the
+zero-cycle clean-dispatch bug is FIXED — decode-based per-function
+costs, commits d8a3445/28d628e) then wedges in the CD/SPU resource
+load. Reproduced ~6x; crash is nondeterministic in WHICH kernel event
+the game waits on but CONSISTENT in mechanism.
+
+DIAGNOSTICS (all committed, freeze dump device_state):
+- regwin_* counters prove cd_reg_window_op op3 NEVER returns -2
+  (regwin_op3_to=0; all op3 ret=0). The "op3 status-poll timeout skips
+  ch4 kick" hypothesis is DISPROVEN — the kick happens when op3 runs.
+- dma_chan_hist: ch3(CDROM)/ch2(GPU)/ch6(OTC) all complete normally;
+  ch4(SPU) kicks+completes a few times then stops being issued.
+- EvCB decode: waited handles 0xF1000006/7 -> slots 6/7 = class
+  0xF0000011 (channel/hw events, cbs 0x801A0B88/9C); 0xF1000008 ->
+  slot 8 = class 0xF0000009 (CD/SPU done, cb7->cd_dma_chan_reset).
+- cdrom: game byte-reads sectors via 0x1F801802; RB_.pos frozen at the
+  SAME 2060/2340 every run; bfrd_set~2350 vs bfrd_clr~13 (only ~14 of
+  2350 delivered sectors consumed); ring_drop~971.
+- irq_counts: vb_raise 1871 vs vb_deliver 1701 (170 VBlank IRQs raised
+  but not delivered = coalescing under load, likely benign); irq_deliver
+  22459 = legitimate heavy CD/DMA streaming, NOT a stuck-flag storm
+  (DICR 0x00900000 = master+ch4 IRQ enable, all done-flags clear).
+
+CURRENT MODEL: the game stalls mid-sector consuming CD data because it
+is blocked in TestEvent waiting for a channel/hw or CD-completion
+event whose producing DeliverEvent never arrives. The CD side finished
+its command (pend_cmd=0x09 Pause done, irq_fl=0, CD idle) — the missing
+piece is a downstream consumer/flow-control event (SPU ch4 stream or a
+0xF0000011 channel event). Which event is needed varies run-to-run =
+whichever the pipeline needed next when it wedged.
+
+NEXT: identify the producer of the waited class (0xF0000011 spec
+0x100/0x2000 and 0xF0000009 spec 0x20) — trace which IRQ handler calls
+DeliverEvent for it and whether that handler runs during the wedge.
+Likely suspects: SPU-voice/ADPCM decode completion gating the CD feed,
+or a channel event whose IRQ is masked/coalesced. Beetle oracle
+(psx-beetle :4380) ground-truth on the same path is the RULE-2 check
+but is not built on this host (oracle build is MSVC/DuckStation).
