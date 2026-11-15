@@ -6814,3 +6814,47 @@ NEXT (unchanged): find the char-resource loader/heap that produces
 the .ANI dest and why FC_ANI stays 0 / the blob overlaps staging.
 Ghidra MCP backend (port 8080) still down; generated-code archaeology
 or a gwatch on FC_ANI during a run that reaches char-select needed.
+
+### Session N+5d — versus->fight: fighter objects EMPTY, not just FC_ANI
+
+Corrected an earlier mis-read: the FIGHTER OBJECTS (not the scratchpad
+ctrl blocks) are what battle case 8 dereferences.
+- _DAT_1f800110 -> 0x801f5258 (P1 fighter obj), _DAT_1f800218 ->
+  0x801f52a0 (P2 fighter obj). These are heap objects, NOT the
+  0x1f8000e8/0x1f8001f0 scratchpad ctrl blocks (those are the per-side
+  arg/ctrl records; FC_ANI lives inside the heap object).
+- Both heap objects are ~EMPTY: first 0x10 bytes zero, FC_ANI(+0x30)=0,
+  and the case-8 fields +0x10 (prim list), +0x24, +0x34 are 0. Only a
+  few heap back-pointers (+0x18/+0x1c/+0x3c/+0x40) are set.
+- battle_flow case 8 does guest_at(obj+0x10) -> prim_list_gte_invoke
+  and guest_at(obj+0x34) -> uVar3 -> guest_at(uVar3): with those fields
+  0, guest_at(0)/guest_at(NULL) -> wild jump -> PC=0. task_invoke is
+  null-safe so the fault is the prim-list/obj+0x34 deref, not task_invoke.
+
+State-machine path (battle_flow_state_machine is CLEAN, menu.c:549):
+  case0->1 select_screen_tick -> case2 match_setup_apply+battle_state_init
+  -> case3 battle_init -> case4 menu_res_load_sm -> case5
+  battle_struct_init+task_table_init+sprite_desc_table_init+
+  battle_session_arm -> case6 match_setup_apply+battle_state_init+
+  per_side_setup+action_enter_fwd(both)+fighter_anim_table_init+
+  sprite_anim_chain_build -> case7 wait -> case8 in-fight (CRASH).
+
+ALL of battle_init/battle_struct_init/per_side_setup/action_enter_fwd/
+fighter_pair_update/post_battle_dispatch/battle_sides_commit/
+fighter_contact_resolve are CLEAN C (verified definitions in
+game/menu.c + game/battle.c). The fighter-object ALLOC + populate
+(the write of 0x801f5258 into guest 0x1f800110, and the .ANI/prim
+bind) is in GENERATED code — not yet ported.
+
+CONCLUSION: versus->fight reaches case 8 with fighter objects
+unpopulated (empty heap objs, FC_ANI=0, no prim list). The char
+resource load + fighter spawn that fills them either (a) never ran,
+(b) ran async and didn't complete before case 8, or (c) ran but the
+heap dest overlaps the 0x800D0000 staging arena (Session N+4) so the
+data is corrupt/absent. cd_file_load_sm decomp_trace shows NO file_id
+0x40 (.ANI) call in versus mode — the .ANI/char-pack load uses a
+different (streaming/pack-decode) path OR isn't triggered.
+
+NEXT: locate the generated fighter-spawn/resource-bind that writes
+0x1f800110/0x1f800218 and fills the heap object (+0x10 prim list,
++0x30 FC_ANI, +0x34). Ghidra MCP backend still down (port 8080).
