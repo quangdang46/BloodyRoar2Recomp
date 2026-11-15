@@ -6858,3 +6858,43 @@ different (streaming/pack-decode) path OR isn't triggered.
 NEXT: locate the generated fighter-spawn/resource-bind that writes
 0x1f800110/0x1f800218 and fills the heap object (+0x10 prim list,
 +0x30 FC_ANI, +0x34). Ghidra MCP backend still down (port 8080).
+
+### Session N+5e — gwatch PROOF: fighter spawn/.ANI bind is SKIPPED
+
+Armed guest_watch (mprotect, catches ALL write paths incl. clean
+MW32/memcpy/DMA — unlike wtrace) on the four versus->fight slots and
+drove tools/nav_to_fight.py to FIGHT REACHED:
+  0x1f800118 (P1 ctrl FC_ANI), 0x1f800220 (P2 ctrl FC_ANI),
+  0x1f800110 (P1 fighter-obj ptr), 0x1f800218 (P2 fighter-obj ptr).
+gwatch covers scratchpad (GW_SCRATCH_PHYS=0x1F800000, host
+SCRATCHPAD_ALLOC). Result: total=0 — ZERO writes to ANY of the four
+slots during the entire versus->fight navigation.
+
+Yet post-run the slots hold stale values: fighter-obj ptrs
+0x801f5258/0x801f52a0 (set during BOOT/attract, before arming) and
+FC_ANI=0. Conclusion: versus->fight does NOT re-run the fighter
+spawn/.ANI->FC_ANI bind at all. The battle_flow state machine reaches
+case 8 (in-fight) with fighter ctrl+heap objects left over from a
+prior mode, unpopulated for the versus chars -> case 8 derefs
+obj+0x10/+0x34 = 0 -> PC=0.
+
+This REFRAMES the bug: it is NOT (only) the .ANI/staging heap overlap
+(Session N+4). It is that the versus->fight path SKIPS the fighter
+resource bind/spawn step entirely — a state/trigger omission. The
+select->battle transition (select_screen_tick return -> case2
+match_setup_apply/battle_state_init -> case3 battle_init/battle_bringup_a
+-> case6 action_enter_fwd) is not invoking whatever binds .ANI->FC_ANI
+and fills the 0x801f5xxx fighter objects.
+
+select_confirm_handler (clean, menu.c:3412) only records the char id
+into ctrl+3 / confirm record — it does NOT bind .ANI. The .ANI bind +
+fighter spawn is elsewhere (generated, or a select-screen preview-load
+path that versus isn't triggering).
+
+NEXT: find the select-screen char-preview .ANI load + the
+select->battle fighter-spawn trigger. Candidates: the cursor/confirm
+resource loader in select_screen_tick's generated tail, or a
+"vs_resource_load"/fighter_spawn guest fn invoked on the
+select_screen_tick!=0 -> case2 transition. gwatch on the SELECT-screen
+.ANI dest (the 0x8001-0x8003 decode region) during char-select would
+show whether the preview .ANI loads at all in versus mode.
