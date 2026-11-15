@@ -3570,3 +3570,69 @@ NEXT (ordered):
    versus->fight CD/channel timing on real HW.
 5. Do NOT fake DeliverEvent / force ch4 / skip the wait — fix the
    faithful CD flow-control or IRQ path.
+
+=== SESSION UPDATE (versus->fight wedge — pc=0 is SENTINEL, deadlock localized to 3 channel events) ===
+
+New freeze-dump instrumentation (committed 7f8777b) added the irqctx_ring
+exit-half tail + the dedicated pc0exc / rfe29cc / irqanom null-jump latches.
+Decisive result on the fatal run (frame ~1638):
+
+- cpu.pc=0x00000000 is the SCHEDULER-IDLE SENTINEL, not a jump-to-null crash.
+  traps.c uses cpu->pc=0 as the dispatch-return/yield contract throughout
+  (syscall boundaries, thread yield, top-level exit). current_func=0x000029CC
+  is the kernel ReturnFromException/ChangeThread dispatcher sitting idle.
+- irqctx tail: all 12 sampled IRQ deliveries show take_pc==real_epc==exit_pc
+  (0x8019A600/0x8019A648 vsync-wait region), same_thread=1, restored=1, and
+  saved-vs-exit v0/v1/ra identical => IRQ resume is CLEAN. No corruption.
+- pc0exc.total=0, rfe29cc.latched=0, irqanom.n=0 => the 0x29CC `jr $k0`
+  null-target path and the in-exception pc==0 producers NEVER fired.
+  The earlier "pc=0 crash" framing was wrong: it is a genuine DEADLOCK —
+  every kernel thread blocked on a channel event, scheduler has nothing
+  runnable, CPU idles at the sentinel. wedge_kind=fatal is the freeze
+  detector seeing no-progress + pc==sentinel.
+
+DEADLOCK MAP (ev_agg, this run):
+- Game spins TestEvent ~470Kx on exactly THREE channel handles:
+    0xF1000001 = F4000001/spec 0x8000   (ra=0x8019E830)
+    0xF1000003 = F4000001/spec 0x2000  (ra=0x8019E830)
+    0xF1000004 = F0000011/spec 0x04     (ra=0x8019E868)
+  plus 0xF1000008 = F0000009/0x20 ~26Kx (ra=0x8019D550, the CD-DMA-done
+  event that DOES get delivered x3).
+- Handles checked only 7-10x (0xF1000000/2/5/6/7) => those events already
+  satisfied; the three hot ones are the blockers.
+- DeliverEvent producers observed: F0000003/{20,10,40} (game+kernel),
+  F0000009/0x20 x3 (game cd_dma_chan_reset), and F4000001/spec 0x04 x4
+  from kernel ra=0x00003A20 ONLY. NO DeliverEvent ever fired for
+  F4000001/{0x8000,0x2000} or ANY F0000011 spec.
+
+KERNEL PRODUCER FOUND: OpenBIOS_func_1FC07578 (BIOS 0xBFC07578) is the
+kernel routine that calls the event vector (jalr $s0, s0=0xB0) four times
+with a0=0xF4000001 and a1={4,0x8000,0x2000,0x100} — i.e. it CAN deliver
+all four F4000001 specs in one call. It is invoked from ~83 BIOS/kernel
+call sites across the device-driver range (0xBFC00C48..0xBFC01EEC+),
+i.e. the per-device completion paths. F0000011 has a sibling routine near
+0xBFC02EA4 (lui $s1,0xF000). => The events ARE kernel-auto-delivered on
+hardware channel completion; the three hot specs simply never got their
+completion because the underlying CD/DMA/SPU channel work never finished
+or its IRQ handler never ran during the wedge.
+
+REVISED ROOT-CAUSE SHAPE: not an IRQ-resume bug and not (primarily) a CD
+stamp-mismatch. The game is waiting on three specific hardware-channel
+completion events. The CD sector read itself completed (bcb94=0,
+cd_read_finish_cb fired DeliverEvent(F0000003,0x40)). What never completed
+is whichever DMA/SPU/CD sub-channel the specs {F4000001:0x8000,0x2000,
+F0000011:0x04} map to — most likely an SPU/streaming DMA channel or a
+second CD channel that versus->fight starts for multi-stream asset load.
+
+NEXT (ordered):
+1. Map each hot spec to its hardware channel: read the game's channel
+   scheduler br2eu_func_8019E798 (0x8019E798, the TestEvent spin) to see
+   which DMA/SPU/CD channel each handle gates, and what kicks that channel.
+2. Check dma_state/dma_trace at the wedge for a channel that was armed
+   (CHCR enable) but never completed (act=0, rem!=0) — that is the missing
+   completion. All dma ch act=0 at freeze; find which one the game expected.
+3. If a channel was never kicked, find why (guest wrote CHCR but runtime
+   dropped it, or guest never wrote because it waited on an earlier event).
+4. RULE-2 oracle still blocked on P2 input; revisit only if a pad-binding
+   path appears.
+5. Do NOT fake DeliverEvent / force a channel / skip the wait.
