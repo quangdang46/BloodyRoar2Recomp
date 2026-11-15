@@ -363,6 +363,19 @@ on a fixed region -> next.
     restore) lands on this sentinel/`pc=0` path in battle's deep-nesting
     context instead of resuming `vsync_wait_n`. Menus resume cleanly because
     the IRQ is taken at a shallow/dispatchable boundary.
+  - **Thread-switch RULED OUT:** `thread_trace` + `thread_ctx_ring` are EMPTY
+    (total=0) for the whole run incl. battle — no ChangeThread/event-30/31
+    fired. So `pc=0` is NOT a bad thread-resume-PC; it is the plain IRQ
+    ack/handler-dispatch path. The loop is: VBlank IRQ → kernel
+    exceptionHandler → game `cd_intc_dispatch` → return → **I_STAT bit0 never
+    acked** → next `psx_check_interrupts` re-fires → `0x80000080` again.
+    fntrace showed `cd_intc_dispatch`/`cd_cb8_dispatch` firing during early
+    battle then STOPPING — once they stop, nothing acks I_STAT → storm.
+    Open question narrowed to: what makes the kernel stop dispatching to the
+    game's `cd_intc_dispatch` (registered intc handler) after ~200 battle
+    frames — a corrupt handler-table pointer, a kernel HandlerInfo/verifier
+    rejecting IRQ bit0, or the game handler itself wedging before its I_STAT
+    ack write.
   - **NEXT (refined):** with fntrace armed on {0x8019A8EC,0x8019AE68,
     0x8019AD60,0x8018E550,0x8019A5D8}, drive to battle and diff which entries
     STOP firing vs the menu baseline — that pinpoints the exact stall call.
