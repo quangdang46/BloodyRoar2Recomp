@@ -3605,34 +3605,71 @@ DEADLOCK MAP (ev_agg, this run):
   from kernel ra=0x00003A20 ONLY. NO DeliverEvent ever fired for
   F4000001/{0x8000,0x2000} or ANY F0000011 spec.
 
-KERNEL PRODUCER FOUND: OpenBIOS_func_1FC07578 (BIOS 0xBFC07578) is the
-kernel routine that calls the event vector (jalr $s0, s0=0xB0) four times
-with a0=0xF4000001 and a1={4,0x8000,0x2000,0x100} — i.e. it CAN deliver
-all four F4000001 specs in one call. It is invoked from ~83 BIOS/kernel
-call sites across the device-driver range (0xBFC00C48..0xBFC01EEC+),
-i.e. the per-device completion paths. F0000011 has a sibling routine near
-0xBFC02EA4 (lui $s1,0xF000). => The events ARE kernel-auto-delivered on
-hardware channel completion; the three hot specs simply never got their
-completion because the underlying CD/DMA/SPU channel work never finished
-or its IRQ handler never ran during the wedge.
+CORRECTION (this session): 0xBFC07578 is NOT the producer — it is a
+channel-RESET routine. The bios_calls ring proves it ran during the wedge
+and issued B0 fn 0x20 = **UnDeliverEvent** (B0 table idx 0x20, confirmed
+against docs/psx_bios_disasm.txt B0_Table @0x874) for ALL FOUR F4000001
+specs {0x04,0x8000,0x2000,0x100}:
+  fn=0x20 a0=0xF4000001 a1={0x04,0x8000,0x2000,0x100}
+  ra={0xBFC075C0,0xBFC075D0,0xBFC075E0,0xBFC01C40}
+i.e. the kernel bulk-CLEARS these channel events (device/channel re-init),
+it does not deliver them. The earlier "CAN deliver all four specs" reading
+was wrong — fn 0x20 is the UNDO.
 
-REVISED ROOT-CAUSE SHAPE: not an IRQ-resume bug and not (primarily) a CD
-stamp-mismatch. The game is waiting on three specific hardware-channel
-completion events. The CD sector read itself completed (bcb94=0,
-cd_read_finish_cb fired DeliverEvent(F0000003,0x40)). What never completed
-is whichever DMA/SPU/CD sub-channel the specs {F4000001:0x8000,0x2000,
-F0000011:0x04} map to — most likely an SPU/streaming DMA channel or a
-second CD channel that versus->fight starts for multi-stream asset load.
+So the real producer is a kernel ISR that calls DeliverEvent (B0 fn 0x07)
+for F4000001/{0x8000,0x2000,0x100} and F0000011/0x04, and it NEVER ran —
+ev_agg shows the ONLY F4000001 DeliverEvent ever issued was spec 0x04 x4
+(kernel ra=0x00003A20), and zero F0000011 deliveries of any spec. The
+sibling F0000011 deliverer is near 0xBFC02EA4 (lui $s1,0xF000).
+
+NEW WEDGE DATUMS (dump psx_freeze_dump_..._1794785318):
+- cpu.pc=0 sentinel, epc=0x8019A648 (vsync-wait poll), wedge_kind=4 fatal.
+- irq_counts: irq_deliver=22459, cdrom_deliver=1713, vb_deliver=1701 —
+  VBlank+CDROM IRQs ARE reaching the kernel; the missing channel events are
+  not explained by a globally dead IRQ path.
+- cdrom: pend_cmd=0x09 (Pause) armed not yet fired, irq_fl=0x00,
+  reading=0, sec_pos=2060/2340, ring_drop=971, bfrd_set=2350/bfrd_clr=13.
+- dma: ALL channels act=0/rem=0 (idle). dicr=0x00900000. ch3 (CD-DMA)
+  chcr=0 — no CD->RAM transfer armed at the freeze.
+- bios_calls tail is dominated by fn=0x17 (x9), fn=0xB TestEvent (x7),
+  fn=0x7 DeliverEvent (x4, all F0000003/F0000009 game-side), fn=0x20
+  UnDeliverEvent (x4, the F4000001 reset above).
+
+REVISED ROOT-CAUSE SHAPE: the game is waiting on three kernel channel-
+completion events whose DeliverEvent producer (a device ISR -> fn 0x07) is
+not firing. Candidates for the missing completion, in order:
+  a) A DMA channel that the game armed but the runtime dropped/never
+     completed — but ALL dma ch act=0 at freeze, so either it completed
+     without signalling or was never kicked (guest blocked earlier).
+  b) An SPU/streaming channel — i_mask=0xD masks SPU(bit9)/SIO(bit7);
+     if the channel events are SPU-driven the game/kernel may have left
+     those IRQs masked, OR the SPU transfer never finished.
+  c) A second CD channel/read that never issued its completion because the
+     drive is parked on the pending Pause(0x09).
+The UnDeliverEvent burst shows the kernel DID run channel-reset code, so
+kernel ISRs for at least the reset path execute — the gap is specifically
+the completion->DeliverEvent edge for these three specs.
 
 NEXT (ordered):
 1. Map each hot spec to its hardware channel: read the game's channel
    scheduler br2eu_func_8019E798 (0x8019E798, the TestEvent spin) to see
    which DMA/SPU/CD channel each handle gates, and what kicks that channel.
-2. Check dma_state/dma_trace at the wedge for a channel that was armed
-   (CHCR enable) but never completed (act=0, rem!=0) — that is the missing
-   completion. All dma ch act=0 at freeze; find which one the game expected.
-3. If a channel was never kicked, find why (guest wrote CHCR but runtime
-   dropped it, or guest never wrote because it waited on an earlier event).
+   The objects were OpenEvent'd in cd_hw_chan_init (br2eu_func_801A0BE0)
+   order — class/spec/callback, handle stored into the table at 0x8020EF6C+:
+     F4000001/0x04    cb=0x801A0B10 -> flag 0x8020EF90
+     F4000001/0x8000  cb=0x801A0B24 -> flag 0x8020EF94
+     F4000001/0x100   cb=0x801A0B38 -> flag 0x8020EF98
+     F4000001/0x2000  cb=0x801A0B4C -> flag 0x8020EF9C
+     F0000011/0x04    cb=0x801A0B60 -> flag 0x8020EFA0
+     ... (slots 5-7) + slot8 F0000009/0x20 CD-DMA-done which DOES fire.
+   NOTE: these specs {0x04,0x100,0x8000,0x2000} are EXACTLY the set the
+   kernel UnDeliverEvent burst cleared — confirming they are the game's
+   four CD-streaming channel slots.
+2. Determine which kernel ISR owns DeliverEvent for F4000001 high specs +
+   F0000011: they live in interpreted kernel RAM (phys<0x10000). Dump the
+   kernel RAM DeliverEvent callers or set a pc_probe/rtrace on the ISR.
+3. Check whether the corresponding device IRQ bit is masked at the wedge
+   (i_mask=0xD) vs what real HW expects during versus->fight multi-stream.
 4. RULE-2 oracle still blocked on P2 input; revisit only if a pad-binding
    path appears.
 5. Do NOT fake DeliverEvent / force a channel / skip the wait.
