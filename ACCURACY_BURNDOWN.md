@@ -749,3 +749,20 @@ per-battle-frame counter or the event/VM dispatch that should run each
 battle_frame but is gated. Check whether battle_frame (0x8014cdd0, the OTHER
 battle driver distinct from battle_flow_state_machine) is the one that ticks
 the action VM and whether IT is reached.
+
+=== ARCHITECTURE FINDING: battle runs GENERATED MIPS, not clean-C ===
+The live main loop is generated SLES_017.22 code. block_8012665C does
+cpu->pc=0x8016FCC4 (JAL battle_flow_state_machine); ra=0x80126664 is its
+return site. disp_ring ra=0x80126664 confirms battle_flow_state_machine
+IS entered and issues the CD/GPU/vsync calls seen in the ring. HOWEVER
+the CLEAN-C battle_flow_state_machine (menu.c:549) is NOT the executed
+path — its decomp_trace tag-60 (logs DAT_1f800001 every call) NEVER
+appears and the decomp ring is frozen at total=4134. So 0x8016FCC4 runs
+GENERATED MIPS (faithful recompile), not the clean-C port. Consequence:
+the fight-sim stall is a RUNTIME/data condition inside generated code,
+NOT a clean-C logic bug. ALSO relevant to the "clean C actually used"
+goal: battle_flow_state_machine's clean port exists but is bypassed —
+verify whether wrap_8016fcc4 in clean_table is active or whether the
+generated body shadows it. NEXT: find the generated battle_flow_state_
+machine's poll/wait condition at ph=8 (it loops CD/GPU/vsync without
+advancing fighter anim — likely a resource-ready or event flag).
