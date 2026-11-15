@@ -689,3 +689,37 @@ LANDING PATHS (pick one):
     openbios.elf symbol table (not in repo) or careful .ramtext disasm.
 Toolchain build status: brew install pcsx-redux/mips/mipsel-none-elf-gcc in
 progress (compiles binutils+gcc from source; deps gmp/mpfr/mpc via brew).
+
+=== RESOLVED: fight-entry freeze (HookEntryInt) — VERIFIED 2026 (commit f019a17) ===
+Path B (binary patch) landed. Located cdromIOHandler @0xBFC1E9E8 and
+cdromDMAHandler @0xBFC1EA24 in bios/openbios.bin (.text, IREG=0xBF801070);
+NOP'd the 3-word frame+jalr(returnFromException) prologue in each (6 words
+total) so handled CD/DMA IRQs return normally -> exceptionHandler reaches
+the universal g_exceptionJmpBufPtr restore (Sony EntryInt semantics).
+Patched image sha256 6ad31beb...; OpenBIOS.toml hash updated; regen via
+psxrecomp-bios --config bios/OpenBIOS.toml (EMIT OK 651 fns); runtime
+rebuilt. VERIFIED live: nav_arcade reaches gs=8/ph=8; B0/0x0B TestEvent
+count FROZEN at 1,593,985 (was spinning ~M/s); B0/0x07 DeliverEvent=136;
+CD deferred coroutine resumes via jmp_buf (disp_ring: 0x8019A87C->
+cd_intc_dispatch 0x8019A8EC->cd_cb8_dispatch 0x8019AE68->DeliverEvent);
+DAT_801bdde0 advances. The original wedge is FIXED.
+
+=== NEXT STALL (post-entry): fight renders but does not simulate ===
+Game now reaches gs=8 -> case8 battle_flow_state_machine -> match_loop ->
+frame_tick every frame (render driver; _DAT_1f8000dc advances ~432/s).
+CD command queue EMPTY (head==tail @0x801b8448/44c) — not a load stall.
+battle_intro_fsm phase _DAT_801f0738 == 3 (live-fight phase; would run
+task_pools_tick(2)+task_slot_fns_run(1)+fighter updates). Fighter objects
+@0x801f5258/0x801f52a0 POPULATED (real ptrs, 1356/4096 nonzero in
+0x801f5000-0x801f7000) — NOT the versus empty-data bug. YET the entire
+fighter region is byte-identical over seconds (0 diff) and screenshots
+pixel-identical: battle_frame_tick's fighter updates are NOT landing.
+Conclusion: frame_tick(render) runs but battle_frame/battle_frame_tick
+(fighter SIM, 0x8014cdd0/0x8013xxxx) is either never called by
+battle_flow_state_machine or its fighter-update path is gated off.
+START input does not change it. NEXT: determine whether battle_frame is
+reached (fntrace/clean-table hit on 0x8014cdd0) and what
+battle_flow_state_machine (generated 0x8016fcc4) waits on before calling
+it — likely a ready/loaded flag or a deferred event the coroutine should
+deliver. Same event-delivery class as the fixed wedge; check whether the
+specific completion event the battle waits for is being DeliverEvent'd.
