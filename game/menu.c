@@ -558,6 +558,9 @@ void battle_flow_state_machine(intptr_t param_1)
   bVar2 = false;
   iVar4 = _DAT_1f80000c;
   iVar1 = _DAT_1f800008;
+  { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+    if (DAT_1f800001 != 0 && DAT_1f800001 != 1)
+      decomp_trace_record(60,(uint32_t)DAT_1f800001,(uint32_t)DAT_1f80009c,0,0); }
 joined_r0x8016fd30:
   _DAT_1f800008 = iVar1;
   _DAT_1f80000c = iVar4;
@@ -8971,6 +8974,8 @@ void vs_confirm_a(uint8_t *param_1,uint8_t *param_2,uint32_t param_3,
   uint32_t s3 = param_4;
   uint32_t rec, v0;
   int32_t ret;
+  { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+    decomp_trace_record(49,(uint32_t)(uintptr_t)param_1,(uint32_t)(uintptr_t)param_2,s0,param_4); }
 
   rec = MB32(s0 + 0xcc);
   v0 = MB8(rec + 0xa);
@@ -9439,6 +9444,8 @@ void versus_stage_commit(uint32_t param_1,uint32_t param_2)
   int32_t s2 = (int32_t)param_2;
   uint32_t s0 = MB32(s1 + 0xcc);
   int32_t a1;
+  { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+    decomp_trace_record(47,param_1,param_2,s0,MB32(s1+0xcc)); }
 
   MW16(s0 + 0, 3);
   results_record_build(4, (int32_t)MBS16(s0 + 6));
@@ -9464,6 +9471,8 @@ void versus_stage_commit_b(uint32_t param_1,int32_t param_2)
   int32_t t0 = param_2;
   uint32_t s0 = MB32(param_1 + 0xcc);
   int32_t a1;
+  { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+    decomp_trace_record(48,param_1,param_2,s0,MB32(param_1+0xcc)); }
 
   MW16(s0 + 0, 3);
   blk_copy(0x801e1b3c, s0 + 0x18,   0x21c0);

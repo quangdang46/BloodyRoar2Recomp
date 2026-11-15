@@ -2578,3 +2578,45 @@ leftover fields point wild. Faithful fix = ensure skeleton_init/node-tree
 build writes valid (or NULL) links for every reachable node — i.e. the
 model descriptor (S5) parse or the arena reset. NOT a guard in
 node_xform_apply.
+
+---
+
+## versus->fight PC=0 — full call-chain root cause (this session)
+
+Runtime proof (headless nav_to_fight, debug :4370, tags 43-49/60 +
+gwatch on 0x801c15f8/0x801e1b3c + live register/memory reads at the
+frozen PC=0 state):
+
+- battle+0x01 (DAT_1f800001) = 0x8 at crash -> battle_flow DID reach
+  case 8. mode 0x9c = 1 (versus). battle+0xcc = 0x801c15f8.
+- versus sub-record 0x801c15f8 is ALL ZERO (incl. +0xa confirm phase).
+- gwatch: ZERO writes to 0x801c15f8 char region all run; live table
+  0x801e1b3c got only 2 boot-init writes (store_pc 0x80135764).
+
+Call chain (clean C, disasm-verified):
+  battle_flow case8 -> post_battle_dispatch(0x1f8000e8,0x1f8001f0,
+    0x1f800000) -> [versus branch] vs_confirm_c ->
+    vs_confirm_a gated by MB16(MB32(s0+0xcc)+0xa) != 0  (menu.c:7558)
+  vs_confirm_a dispatches on MB8(rec+0xa) via table 0x80120a30:
+    case3 -> versus_stage_commit (menu.c:9010)  [char->live tables]
+    case4 -> versus_stage_commit_b               (menu.c:9030)
+    case5 -> engine_tables_restore, rec+0xa=0    (menu.c:9046-9049)
+
+ROOT CAUSE: the versus match sub-record 0x801c15f8 is never built.
+- stage_char_data_load(0x80129218) is the ONLY writer of the record's
+  char engine blob: blk_copy(0x801c15f8, 0x80200000+char*23140, 0x2da8)
+  then s0+0x18/+0x21d8 -> live 0x801e1b3c/0x801e0f6c. It is dispatched
+  by address via clean_table wrap_80129218; it has NO direct jal caller
+  (function-pointer/jump-table reach). decomp_trace tag46 = 0 hits.
+- rec+0xa (confirm phase) stays 0 -> vs_confirm_a case0 early-return,
+  versus_stage_commit/_b never run -> live tables stay empty ->
+  fighter objects empty -> case-8 indirect call/jr through null -> PC=0.
+
+WHY SKIPPED: versus select exits DAT_1f800001=0xf0; battle_flow walks
+to case8 WITHOUT running battle_init (tag44=0) / battle_bringup_a
+(tag43=0). The versus match-init that should call stage_char_data_load
+per fighter + seed rec+0xa lives in GENERATED code (versus orchestrator
+br2eu_func_80126328 family, 0x80126xxx) and is not being reached /
+not ported. Needs Ghidra decompile of the versus select->fight
+transition (backend :8080 down) or a gwatch on rec+0xa armed before
+versus select to catch its writer PC.
