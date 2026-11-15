@@ -10201,6 +10201,15 @@ static void handle_freeze_check(int id, const char *json)
     extern int      g_irqanom_jmpval, g_irqanom_depth;
     extern uint32_t g_irqanom_lastfunc, g_irqanom_epc;
     extern uint64_t g_irqanom_seq, g_irqanom_count;
+    extern uint32_t g_irqanom_k0, g_irqanom_ra, g_irqanom_sp,
+                    g_irqanom_pcb0, g_irqanom_tcb, g_irqanom_tcb88,
+                    g_irqanom_cause;
+    extern uint64_t g_esc_check_calls, g_esc_fired,
+                    g_esc_decline_nopending, g_esc_decline_noexc,
+                    g_esc_decline_sentinel, g_esc_decline_fiber;
+    extern int      g_esc_decline_latched;
+    extern uint32_t g_esc_l_pc, g_esc_l_curfiber, g_esc_l_ownfiber,
+                    g_esc_l_reason;
 
     /* Top-K fn_entry histogram over the last `window` slots. */
     typedef struct { uint32_t func; uint32_t count; } HistBucket;
@@ -10358,6 +10367,23 @@ static void handle_freeze_check(int id, const char *json)
                     "\"irqanom_lastfunc\":\"0x%08X\","
                     "\"irqanom_depth\":%d,"
                     "\"irqanom_epc\":\"0x%08X\","
+                    "\"irqanom_k0\":\"0x%08X\","
+                    "\"irqanom_ra\":\"0x%08X\","
+                    "\"irqanom_sp\":\"0x%08X\","
+                    "\"irqanom_pcb0\":\"0x%08X\","
+                    "\"irqanom_tcb\":\"0x%08X\","
+                    "\"irqanom_tcb88\":\"0x%08X\","
+                    "\"irqanom_cause\":\"0x%08X\","
+                    "\"esc_calls\":%llu,"
+                    "\"esc_fired\":%llu,"
+                    "\"esc_dec_nopend\":%llu,"
+                    "\"esc_dec_noexc\":%llu,"
+                    "\"esc_dec_sentinel\":%llu,"
+                    "\"esc_dec_fiber\":%llu,"
+                    "\"esc_l_pc\":\"0x%08X\","
+                    "\"esc_l_curfiber\":\"0x%08X\","
+                    "\"esc_l_ownfiber\":\"0x%08X\","
+                    "\"esc_l_reason\":\"0x%08X\","
                     "\"hist\":[",
                     id,
                     g_debug_current_func_addr,
@@ -10453,7 +10479,24 @@ static void handle_freeze_check(int id, const char *json)
                     g_irqanom_jmpval,
                     g_irqanom_lastfunc,
                     g_irqanom_depth,
-                    g_irqanom_epc);
+                    g_irqanom_epc,
+                    g_irqanom_k0,
+                    g_irqanom_ra,
+                    g_irqanom_sp,
+                    g_irqanom_pcb0,
+                    g_irqanom_tcb,
+                    g_irqanom_tcb88,
+                    g_irqanom_cause,
+                    (unsigned long long)g_esc_check_calls,
+                    (unsigned long long)g_esc_fired,
+                    (unsigned long long)g_esc_decline_nopending,
+                    (unsigned long long)g_esc_decline_noexc,
+                    (unsigned long long)g_esc_decline_sentinel,
+                    (unsigned long long)g_esc_decline_fiber,
+                    g_esc_l_pc,
+                    g_esc_l_curfiber,
+                    g_esc_l_ownfiber,
+                    g_esc_l_reason);
     for (int i = 0; i < hist_n && pos < sizeof(buf) - 64; i++) {
         pos += snprintf(buf + pos, sizeof(buf) - pos,
                         "%s{\"func\":\"0x%08X\",\"count\":%u}",

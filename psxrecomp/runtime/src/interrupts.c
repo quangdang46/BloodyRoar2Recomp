@@ -97,6 +97,30 @@ int      g_irqanom_depth       = -1;
 uint64_t g_irqanom_seq         = 0;
 uint32_t g_irqanom_epc         = 0;
 uint64_t g_irqanom_count       = 0;   /* deliveries exiting pc==0 & reason NONE */
+/* Register/TCB context at the first anomalous exit: k0 is the jr target the
+ * context-restore (0x29CC) committed before pc went 0; tcb88 is the saved-PC
+ * slot it read; pcb0/tcb are the kernel current-thread pointers. */
+uint32_t g_irqanom_k0          = 0;
+uint32_t g_irqanom_ra          = 0;
+uint32_t g_irqanom_sp          = 0;
+uint32_t g_irqanom_pcb0        = 0;
+uint32_t g_irqanom_tcb         = 0;
+uint32_t g_irqanom_tcb88       = 0;
+uint32_t g_irqanom_cause       = 0;
+/* psx_rfe_escape_check outcome attribution: which guard declines the escape.
+ * The wedge signature is esc_decline_fiber — an armed, in-exception, real-PC
+ * RFE that cannot longjmp because the fiber differs from the exception owner. */
+uint64_t g_esc_check_calls      = 0;
+uint64_t g_esc_fired            = 0;
+uint64_t g_esc_decline_nopending= 0;
+uint64_t g_esc_decline_noexc    = 0;
+uint64_t g_esc_decline_sentinel = 0;
+uint64_t g_esc_decline_fiber    = 0;
+int      g_esc_decline_latched  = 0;
+uint32_t g_esc_l_pc             = 0;
+uint32_t g_esc_l_curfiber       = 0;
+uint32_t g_esc_l_ownfiber       = 0;
+uint32_t g_esc_l_reason         = 0;
 extern uint64_t psx_get_cycle_count(void);
 
 /* Record an interrupt-delivery decision into the event ring. GATE outcomes are
@@ -839,6 +863,36 @@ void psx_rfe_escape_check(CPUState* cpu) {
      * the trampoline keeps dispatching cpu->pc = the real resume EPC, which is
      * exactly how a suspended thread continues at its own PC. */
     extern void* psx_fiber_current(void); /* psx_fiber.h is included further down */
+    /* Diagnostic: attribute every escape-check outcome. A wedge signature is a
+     * call where the escape was ARMED (pending) and in_exception, the resume PC
+     * was real (not sentinel), yet the fiber check declined — the RFE then ran
+     * inline and the resumed code produced pc==0. */
+    g_esc_check_calls++;
+    {
+        int pend = g_rfe_escape_pending;
+        int iexc = in_exception;
+        int sent = (cpu->pc == PSX_EXC_SENTINEL_PC);
+        void *curf = psx_fiber_current();
+        int fibmis = (curf != g_exception_owner_fiber);
+        if (pend && iexc && !sent) {
+            if (fibmis) {
+                g_esc_decline_fiber++;
+                if (!g_esc_decline_latched) {
+                    g_esc_decline_latched = 1;
+                    g_esc_l_pc        = cpu->pc;
+                    g_esc_l_curfiber  = (uint32_t)(uintptr_t)curf;
+                    g_esc_l_ownfiber  = (uint32_t)(uintptr_t)g_exception_owner_fiber;
+                    g_esc_l_reason    = (uint32_t)g_exc_escape_reason;
+                }
+            } else {
+                g_esc_fired++;
+            }
+        } else {
+            if (!pend)        g_esc_decline_nopending++;
+            else if (!iexc)   g_esc_decline_noexc++;
+            else              g_esc_decline_sentinel++;
+        }
+    }
     if (g_rfe_escape_pending && in_exception &&
         cpu->pc != PSX_EXC_SENTINEL_PC &&
         psx_fiber_current() == g_exception_owner_fiber) {
@@ -2084,11 +2138,20 @@ irq_deliver_eval:
     if (cpu->pc == 0 && g_exc_escape_reason == PSX_EXC_ESCAPE_NONE) {
         g_irqanom_count++;
         if (g_irqanom_seq == 0) {
+            uint32_t pcb = psx_read_word(0x108u);
+            uint32_t tcb = pcb ? psx_read_word(pcb & 0x1FFFFFFFu) : 0u;
             g_irqanom_seq      = g_irqctx_seq;
             g_irqanom_jmpval   = handler_jmp_val;
             g_irqanom_lastfunc = g_debug_current_func_addr;
             g_irqanom_depth    = g_psx_dispatch_depth;
             g_irqanom_epc      = g_exception_real_epc;
+            g_irqanom_k0       = cpu->gpr[26];
+            g_irqanom_ra       = cpu->gpr[31];
+            g_irqanom_sp       = cpu->gpr[29];
+            g_irqanom_pcb0     = pcb;
+            g_irqanom_tcb      = tcb;
+            g_irqanom_tcb88    = tcb ? psx_read_word((tcb & 0x1FFFFFFFu) + 0x88u) : 0u;
+            g_irqanom_cause    = cpu->cop0[COP0_CAUSE];
         }
     }
     if (do_restore) {
