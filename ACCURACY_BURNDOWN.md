@@ -608,3 +608,50 @@ menu->fight transition and whether a corresponding play/seq-load should
 follow. Alternative: the file-load's OWN completion may deliver 0xF0000009
 via a cd_intc_dispatch channel handler (slots 0/2/3) — verify which handler
 owns read-done and whether it runs.
+
+## FIGHT-FREEZE ROOT CAUSE — OpenBIOS HookEntryInt semantic gap (SUPERSEDES audio theory)
+
+The prior "SPU/audio channel torn down" theory was WRONG. Decisive decode of the
+actual deferred-CD-interrupt contract (generated disasm + OpenBIOS source):
+
+GAME MECHANISM (Sony-kernel style):
+- cd_file_read_seq(0x801565ec) -> cd_seek_param_issue(0x8019D410) ->
+  cd_seek_complete_poll(0x8019D500) -> cd_seek_state_machine = BIOS TestEvent
+  on handle @0x801bde38 = event 0xF0000009 spec 0x20 (EvCB 0xF1000008, valid).
+- cd_chan_full_init(0x8019A814) is the resumable coroutine half. On first entry
+  (flag @0x801CCD18==0) it zeroes a state block, then block_8019A874 calls
+  cd_ctx_save(0x801CCD50) which snapshots ra/sp/fp/s0-s7/gp (jmp_buf layout)
+  and returns; continuation 0x8019A87C branches on v0: v0==0 -> arm path,
+  v0!=0 -> block_8019A884 -> jal cd_intc_dispatch(0x8019A8EC) -> DeliverEvent.
+- The resume is driven by B0/0x19 = Sony HookEntryInt: game calls
+  setExceptionJmpBuf(frame); kernel stores frame ptr; on IRQ the kernel
+  restores the jmp_buf (sets v0=1, jr ra=frame.JB_PC) -> lands at 0x8019A87C
+  -> cd_intc_dispatch -> DeliverEvent(0xF0000009) -> TestEvent unblocks.
+
+OPENBIOS (the actual BIOS — NOT retail SCPH-1001):
+- B0table[0x18]=setDefaultExceptionJmpBuf, [0x19]=setExceptionJmpBuf.
+  JmpBuf layout {ra,sp,s8/s8,fp,s0-s7,gp} MATCHES game cd_ctx_save frame.
+- g_exceptionJmpBufPtr is honored ONLY on the UNHANDLED path: exceptionHandler
+  (vectors.s) runs priority verifiers; IRQVerifier returns 0 (delivers
+  OpenBIOS EVENT_* + acks as side-effects, does NOT take). If NO handler's
+  verifier returns nonzero -> "nobody took the call" -> longjmp g_exceptionJmpBufPtr.
+- OpenBIOS enqueues its OWN CD-ROM driver handlers (enqueueCDRomHandlers,
+  statemachine.c) which DO take CD IRQs -> exception marked HANDLED ->
+  returnFromException (TCB restore) -> the game's hooked frame is BYPASSED.
+
+=> On a handled CD IRQ, OpenBIOS never restores g_exceptionJmpBufPtr, so the
+game's deferred coroutine never resumes, cd_intc_dispatch never runs,
+DeliverEvent(0xF0000009) never fires, TestEvent spins forever = freeze.
+
+EVIDENCE: bioscall_dump — B0/0x19(HookEntryInt) x1, B0/0x18(ResetEntryInt) x1,
+DeliverEvent x67 (none =0xF0000009), ReturnFromException x297079,
+TestEvent x1,414,357 (the spin). Frame @0x801bcd50 armed; 0x801CCD50 frame
+region holds state block. i_stat bit2 (CDROM IRQ) fired on last cmd (seq144).
+
+FIX (faithful, rule -1): OpenBIOS exceptionHandler must honor
+g_exceptionJmpBufPtr at the end of HANDLED exception/interrupt processing too
+(Sony EntryInt = universal exception-exit hook), not only for unhandled.
+Requires patching pcsx-redux OpenBIOS (vectors.s/handlers) + rebuild
+openbios.bin (mipsel-none-elf toolchain, pinned 55fbf046) + regen OpenBIOS_full.c
+via psxrecomp/tools/regen_bios.sh. NOT a per-game hack — it is the documented
+kernel mechanism the game depends on; general for every game using HookEntryInt.
