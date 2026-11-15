@@ -10194,6 +10194,13 @@ static void handle_freeze_check(int id, const char *json)
                     g_sent_ft_rfe_pending, g_sent_ft_k0, g_sent_ft_epc,
                     g_sent_ft_ra, g_sent_ft_sp, g_sent_ft_asyncrfe,
                     g_sent_ft_owner_lo, g_sent_ft_cur_lo;
+    extern uint64_t g_rfe_mark_total, g_rfe_mark_noexc;
+    extern uint32_t g_rfe_noexc_k0, g_rfe_noexc_pc, g_rfe_noexc_epc,
+                    g_rfe_noexc_cause, g_rfe_noexc_ra, g_rfe_noexc_sp,
+                    g_rfe_noexc_tcb;
+    extern int      g_irqanom_jmpval, g_irqanom_depth;
+    extern uint32_t g_irqanom_lastfunc, g_irqanom_epc;
+    extern uint64_t g_irqanom_seq, g_irqanom_count;
 
     /* Top-K fn_entry histogram over the last `window` slots. */
     typedef struct { uint32_t func; uint32_t count; } HistBucket;
@@ -10336,6 +10343,21 @@ static void handle_freeze_check(int id, const char *json)
                     "\"sent_ft_asyncrfe\":\"0x%08X\","
                     "\"sent_ft_owner\":\"0x%08X\","
                     "\"sent_ft_cur\":\"0x%08X\","
+                    "\"rfe_mark_total\":%llu,"
+                    "\"rfe_mark_noexc\":%llu,"
+                    "\"rfe_noexc_k0\":\"0x%08X\","
+                    "\"rfe_noexc_pc\":\"0x%08X\","
+                    "\"rfe_noexc_epc\":\"0x%08X\","
+                    "\"rfe_noexc_cause\":\"0x%08X\","
+                    "\"rfe_noexc_ra\":\"0x%08X\","
+                    "\"rfe_noexc_sp\":\"0x%08X\","
+                    "\"rfe_noexc_tcb\":\"0x%08X\","
+                    "\"irqanom_count\":%llu,"
+                    "\"irqanom_seq\":%llu,"
+                    "\"irqanom_jmpval\":%d,"
+                    "\"irqanom_lastfunc\":\"0x%08X\","
+                    "\"irqanom_depth\":%d,"
+                    "\"irqanom_epc\":\"0x%08X\","
                     "\"hist\":[",
                     id,
                     g_debug_current_func_addr,
@@ -10416,7 +10438,22 @@ static void handle_freeze_check(int id, const char *json)
                     g_sent_ft_sp,
                     g_sent_ft_asyncrfe,
                     g_sent_ft_owner_lo,
-                    g_sent_ft_cur_lo);
+                    g_sent_ft_cur_lo,
+                    (unsigned long long)g_rfe_mark_total,
+                    (unsigned long long)g_rfe_mark_noexc,
+                    g_rfe_noexc_k0,
+                    g_rfe_noexc_pc,
+                    g_rfe_noexc_epc,
+                    g_rfe_noexc_cause,
+                    g_rfe_noexc_ra,
+                    g_rfe_noexc_sp,
+                    g_rfe_noexc_tcb,
+                    (unsigned long long)g_irqanom_count,
+                    (unsigned long long)g_irqanom_seq,
+                    g_irqanom_jmpval,
+                    g_irqanom_lastfunc,
+                    g_irqanom_depth,
+                    g_irqanom_epc);
     for (int i = 0; i < hist_n && pos < sizeof(buf) - 64; i++) {
         pos += snprintf(buf + pos, sizeof(buf) - pos,
                         "%s{\"func\":\"0x%08X\",\"count\":%u}",

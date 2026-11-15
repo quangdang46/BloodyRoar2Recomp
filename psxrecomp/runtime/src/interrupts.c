@@ -82,6 +82,21 @@ typedef struct {
 } IrqCtxEntry;
 IrqCtxEntry g_irqctx_ring[IRQCTX_RING_CAP];
 uint64_t    g_irqctx_seq = 0;
+
+/* Diagnostic (battle VBlank pc=0 wedge): latch HOW the synchronous exception
+ * handler's psx_dispatch exited on the FIRST anomalous delivery — one that
+ * reaches the epilogue with cpu->pc==0 and no recognised RFE/SYSCALL escape.
+ * jmp_val==0 means psx_dispatch returned NORMALLY (the guest handler's own
+ * pc==0 C-return contract leaked to the outermost boundary before its RFE);
+ * jmp_val==1 means an RFE/SYSCALL escape longjmp fired but left pc==0.
+ * last_func is g_debug_current_func_addr at exit (the last dispatched guest
+ * function). first_anom_seq marks the first wedged delivery. */
+int      g_irqanom_jmpval      = -1;
+uint32_t g_irqanom_lastfunc    = 0;
+int      g_irqanom_depth       = -1;
+uint64_t g_irqanom_seq         = 0;
+uint32_t g_irqanom_epc         = 0;
+uint64_t g_irqanom_count       = 0;   /* deliveries exiting pc==0 & reason NONE */
 extern uint64_t psx_get_cycle_count(void);
 
 /* Record an interrupt-delivery decision into the event ring. GATE outcomes are
@@ -762,7 +777,41 @@ extern void psx_exception_longjmp(void);
  * commits cpu->pc = real EPC. On a fiber/thread resume (in_exception==0) this is a
  * no-op and the real EPC is dispatched directly — that is how a suspended thread
  * resumes at its own PC. */
+/* Diagnostic: every rfe calls this BEFORE the emitted `cpu->pc = gpr[26]`
+ * commits the resume PC. Latch the resume target + in_exception so a null/bad
+ * RFE resume (the battle VBlank pc=0 wedge) is visible in freeze_check. */
+uint64_t g_rfe_mark_total    = 0;
+uint64_t g_rfe_mark_noexc    = 0;   /* rfe with in_exception==0 (window already gone) */
+uint32_t g_rfe_noexc_k0      = 0;   /* gpr[26] = resume PC about to be committed */
+uint32_t g_rfe_noexc_pc      = 0;
+uint32_t g_rfe_noexc_epc     = 0;
+uint32_t g_rfe_noexc_cause   = 0;
+uint32_t g_rfe_noexc_ra      = 0;
+uint32_t g_rfe_noexc_sp      = 0;
+uint32_t g_rfe_noexc_tcb     = 0;
+static int  g_rfe_noexc_latched = 0;
+
 void psx_rfe_mark_escape(void) {
+    g_rfe_mark_total++;
+    {
+        extern CPUState *debug_cpu_ptr;
+        CPUState *dc = debug_cpu_ptr;
+        if (dc) {
+            if (!in_exception) {
+                g_rfe_mark_noexc++;
+                if (!g_rfe_noexc_latched) {
+                    g_rfe_noexc_latched = 1;
+                    g_rfe_noexc_k0    = dc->gpr[26];
+                    g_rfe_noexc_pc    = dc->pc;
+                    g_rfe_noexc_epc   = dc->cop0[14];
+                    g_rfe_noexc_cause = dc->cop0[13];
+                    g_rfe_noexc_ra    = dc->gpr[31];
+                    g_rfe_noexc_sp    = dc->gpr[29];
+                    g_rfe_noexc_tcb   = dc->read_word(0x108u);
+                }
+            }
+        }
+    }
     if (!in_exception) return;
     /* Arm on EVERY handler-window RFE, including LEGACY_SENTINEL deliveries.
      * The old blanket decline assumed a sentinel delivery always resumes AT
@@ -1842,8 +1891,10 @@ irq_deliver_eval:
     jmp_buf saved_exception_jmpbuf;
     memcpy(&saved_exception_jmpbuf, &exception_jmpbuf, sizeof(jmp_buf));
     g_exc_setjmp_epoch++;   /* new setjmp frame armed (see decl above) */
+    int handler_jmp_val = -1;   /* diagnostic: how the handler dispatch exited */
     for (;;) {
         int jmp_val = setjmp(exception_jmpbuf);
+        handler_jmp_val = jmp_val;
         if (jmp_val == 2) {
             /* RestoreState redirect: re-dispatch to cpu->pc.
              * GPRs were already set by RestoreState — do NOT restore.
@@ -2025,6 +2076,20 @@ irq_deliver_eval:
         e->v1_saved    = saved_gpr[3];
         e->ra_exit     = cpu->gpr[31];
         e->ra_saved    = saved_gpr[31];
+    }
+    /* Latch the FIRST anomalous exit: handler returned pc==0 with no recognised
+     * escape (the battle VBlank wedge signature). Records how psx_dispatch
+     * exited (jmp_val) and the last dispatched guest function so the producer
+     * of the stray pc==0 is identifiable. */
+    if (cpu->pc == 0 && g_exc_escape_reason == PSX_EXC_ESCAPE_NONE) {
+        g_irqanom_count++;
+        if (g_irqanom_seq == 0) {
+            g_irqanom_seq      = g_irqctx_seq;
+            g_irqanom_jmpval   = handler_jmp_val;
+            g_irqanom_lastfunc = g_debug_current_func_addr;
+            g_irqanom_depth    = g_psx_dispatch_depth;
+            g_irqanom_epc      = g_exception_real_epc;
+        }
     }
     if (do_restore) {
         for (int i = 0; i < 32; i++) cpu->gpr[i] = saved_gpr[i];
