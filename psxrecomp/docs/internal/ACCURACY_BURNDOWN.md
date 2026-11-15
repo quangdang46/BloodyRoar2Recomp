@@ -3393,3 +3393,38 @@ br2eu_func_* oracle per-function for the spawn/intro path
 descriptor d+0x18/+0x1c fobj/parts source). The fobj/parts pointers come
 from form descriptors tbl+slot*0x24 (+0x18/+0x1c) — find who populates
 those (fighter object allocator) and verify it.
+
+=== SYSTEMIC LEAD: clean functions charge ZERO guest cycles ===
+
+PROVEN by code inspection (src/clean_table.c clean_try_dispatch +
+wrap_XXXXXXXX entries): a clean-covered guest function runs as native C
+via e->fn(cpu) with NO psx_cyc_step / psx_advance_cycles anywhere in the
+call path. Generated bodies self-charge per basic-block
+(psx_cyc_step). The only cycle charge in clean code is a
+psx_advance_cycles(256) busy-poll special case (clean_bridge.c:299).
+
+CONSEQUENCE: guest psx_cycle_count advances far slower whenever clean
+code dominates a frame. Fighter/menu/resolve hot paths are largely
+clean, so per-VBlank the guest executes MANY more function-calls than
+the original -> logic runs in fast-forward; CD/IRQ/SPU due-cycle
+deadlines and any cycle-counted waits skew. This plausibly explains the
+NONDETERMINISTIC wedge spectrum observed live: sometimes fighters
+spawn-then-die (off-platform), sometimes never spawn (ph=0x100 stall),
+audio 100% silent (SPU/driver timing), residual CD stalls.
+
+STATUS: hypothesis, not yet proven causal for the fighter bug. The fix
+is non-trivial: each clean function must charge ~its guest instruction
+count in cycles. Feasible source = the generated dispatch entry's
+block/instruction count (br2eu_func_* "Size: N bytes, Blocks: M") ->
+charge bytes/4 * CPI, or record exact per-function cycles. CleanDispatchEnt
+currently has only {addr, fn} — would need a cost field.
+
+ALTERNATIVE cheaper probe before implementing: measure guest
+psx_get_cycle_count() delta over a fixed frame window on pure-gen vs
+full-clean at the SAME reachable state (title/menu) to quantify the
+under-charge, then decide cost model.
+
+NOTE: unaff_* sweep CLOSED — genuine read-before-init cases are few
+(menu.c transition_screen_flow unaff_s1/s3 frame counters, sprite coord
+unaff_s2) and are screen/FX timing, not the fighter blocker; the s-reg
+scratch-save blocks are harmless dead-stores (scratch-users never nest).
