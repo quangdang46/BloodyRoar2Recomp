@@ -165,6 +165,12 @@ uint32_t g_bg_hi=0,g_bg_lo=0,g_bg_count=0;
  * = MB8(s1+0x92), g_pbd_ctr = MBS16(s1+0x8c) as seen at entry; g_pbd_exit latches
  * the return path taken (see menu.c). */
 uint32_t g_pbd_calls=0, g_pbd_phase=0, g_pbd_ctr=0, g_pbd_exit=0, g_pbd_writes=0;
+/* battle_config_eval latch: does the per-fighter select-phase machine ever run
+ * with fz=1 (param_3==0, the confirm/advance path) per-frame, or only the fz=0
+ * announce path from battle_frame stage 8? bce_fz0 = param_3==0 calls (real
+ * driver), bce_fzN = param_3!=0 calls (announce). bce_cls latches last phase
+ * class (ph&0xf00) seen; bce_p3 latches last param_3. */
+uint32_t g_bce_calls=0, g_bce_fz0=0, g_bce_fzN=0, g_bce_cls=0, g_bce_p3=0;
 /* Name the function whose dispatch produced the FIRST cpu->pc==0 while inside
  * an exception (the wedge's root). `addr` is the just-executed block leader;
  * a ring keeps the last few so the producing insn's neighbourhood is visible. */

@@ -10240,6 +10240,7 @@ static void handle_freeze_check(int id, const char *json)
     extern uint32_t g_pu_raw,g_pu_guestof,g_pu_gbuf,g_pu_node,g_pu_count;
     extern uint32_t g_bg_hi,g_bg_lo,g_bg_count;
     extern uint32_t g_pbd_calls,g_pbd_phase,g_pbd_ctr,g_pbd_exit,g_pbd_writes;
+    extern uint32_t g_bce_calls,g_bce_fz0,g_bce_fzN,g_bce_cls,g_bce_p3;
 
     /* Top-K fn_entry histogram over the last `window` slots. */
     typedef struct { uint32_t func; uint32_t count; } HistBucket;
@@ -10479,6 +10480,11 @@ static void handle_freeze_check(int id, const char *json)
                     "\"pbd_ctr\":\"0x%04X\","
                     "\"pbd_exit\":%u,"
                     "\"pbd_writes\":%u,"
+                    "\"bce_calls\":%u,"
+                    "\"bce_fz0\":%u,"
+                    "\"bce_fzN\":%u,"
+                    "\"bce_cls\":\"0x%03X\","
+                    "\"bce_p3\":\"0x%08X\","
                     "\"hist\":[",
                     id,
                     g_debug_current_func_addr,
@@ -10629,7 +10635,8 @@ static void handle_freeze_check(int id, const char *json)
                     g_wb_bad_count,g_wb_bad_node,g_wrap_src,
                     g_pu_raw,g_pu_guestof,g_pu_gbuf,g_pu_node,g_pu_count,
                     g_bg_hi,g_bg_lo,g_bg_count,
-                    g_pbd_calls,g_pbd_phase,g_pbd_ctr,g_pbd_exit,g_pbd_writes);
+                    g_pbd_calls,g_pbd_phase,g_pbd_ctr,g_pbd_exit,g_pbd_writes,
+                    g_bce_calls,g_bce_fz0,g_bce_fzN,g_bce_cls,g_bce_p3);
     for (int i = 0; i < hist_n && pos < sizeof(buf) - 64; i++) {
         pos += snprintf(buf + pos, sizeof(buf) - pos,
                         "%s{\"func\":\"0x%08X\",\"count\":%u}",

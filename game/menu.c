@@ -3872,6 +3872,10 @@ int32_t battle_config_eval(uint8_t *param_1,uint32_t param_2,int32_t param_3)
   uint32_t cls = ph & 0xf00;                 /* $v1 */
   uint32_t g, gcls, idx;
   int32_t r;
+  extern uint32_t g_bce_calls,g_bce_fz0,g_bce_fzN,g_bce_cls,g_bce_p3;
+  g_bce_calls++;
+  if (param_3 == 0) g_bce_fz0++; else g_bce_fzN++;
+  g_bce_cls = cls; g_bce_p3 = (uint32_t)param_3;
 
   if (cls == 0x500) goto L_ret68;            /* 0x801537f8 */
   if (cls < 0x501) {
