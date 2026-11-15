@@ -920,3 +920,35 @@ into SPU RAM (not live voice streaming). NEXT: trace the game's sound-init /
 audio_seq_reset / cd_reg_stream_push path to find the ch4 kick that should
 precede this TestEvent, and why it isn't issued (likely gated on a prior
 CD-read completion that itself is the stalled event).
+
+=== MECHANISM FULLY VERIFIED; stall = sequencing at fighter-record read ===
+spu_ta ring (PSX_SPUDTA) captured the register-window handshake live:
+per cd_seek_param_issue -> op2 writes TA(0x1F801DA6)=shadow, op1 polls TA
+(match) then writes SPUCNT 0xC001->0xC021, op3 polls (SPUCNT&0x30)==0x20 then
+writes ch4 MADR/BCR/CHCR=0x01000201 (start). On ch4 done the SPUCNT bits clear
+back to 0xC001 (cd_dma_chan_reset) and DeliverEvent fires. THREE handshakes
+seen at cyc ~789M/974M/1005M; LAST at ~cyc1008M, then ZERO further SPU-reg or
+ch4 DMA activity (event_ring 65k window: only ch2/ch6 GPU, no ch3/ch4).
+cd_reg_window_op op3 disasm confirms it computes file offset/count -> ch4
+MADR/BCR and kicks CHCR=0x01000201. Handler table @0x801bddf4: ONLY ch4(SPU)
+has a handler (0x8019b7e0->DeliverEvent 0xF0000009/0x20); ch3 CD-ROM none.
+
+Caller chain: fighter_rec_fetch_apply -> fighter_record_build ->
+cd_file_read_seq(0x801565ec) -> cd_seek_param_issue_clamped ->
+cd_seek_param_issue -> [register-window op2/1/3 -> ch4 kick] ->
+cd_seek_complete_poll(0) -> cd_seek_state_machine -> TestEvent(0xF1000008).
+=> The game is loading a FIGHTER RECORD file through the SPU/ch4 path and is
+blocked in the completion poll. It already kicked ch4 for the reads that
+completed (3 events consumed) but is now waiting for a completion whose next
+ch4 kick never issued — i.e. it is parked in cd_seek_complete_poll AFTER
+cd_seek_param_issue already ran, so THIS read's ch4 either (a) completed and
+its DeliverEvent was consumed by a prior/overlapping TestEvent on the shared
+slot8 flag, or (b) the read is sector-starved: fighter file needs more sectors
+than the drive delivered (ring_dropped) so the SPU never finishes and the
+next chunk's handshake never runs. The HLE thread scheduler runs the CD IRQ
+deferred coroutine (cd_ctx_restore->cd_chan_full_init->cd_intc_dispatch) on a
+separate context that shares event slot8 with the main thread's TestEvent —
+a candidate for the consume-mismatch. NEXT: determine whether the current
+cd_file_read_seq already issued its ch4 (check 0x801bdee4 result + whether a
+4th handshake is pending vs consumed), and whether the fighter file's sector
+count vs delivered count diverges (ring_dropped correlation).
