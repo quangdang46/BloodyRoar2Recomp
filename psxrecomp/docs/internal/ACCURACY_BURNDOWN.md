@@ -3241,3 +3241,35 @@ scheduled/running (TCB state); (2) determine what resource it blocks on
 (CD stream? SPU DMA? seq command queue?); (3) verify whether VxVOL/ADSR
 writes reach the SPU reg file (audit the SPU MMIO write path for the
 0x1F801C00-0x1F801FFF voice regs) — rule out a runtime reg-write drop.
+
+=== BREAKTHROUGH: fighter freeze = CLEAN-C PORT BUG (pure-gen WORKS) ===
+
+A/B via CLEAN_RANGES env (clean_table.c selection):
+  PURE-GENERATED (CLEAN_RANGES=single pt -> ~all generated MIPS):
+    anim accumulator b6 CYCLES, P1 HP ac rises 0->68, ctrl+0=0x01 ACTIVE.
+    => generated fighter path produces a LIVE animated fight.
+  FULL-CLEAN (default): b6 static, HP=-1/0, ctrl+0=0x81 FROZEN.
+  CLEAN only fighter-range 0x80174000-0x80183000 (rest generated):
+    b6 CYCLES (animation ticks!) but HP=-1. => fighter-range clean fns OK.
+
+CONCLUSION: freeze is a clean-C port bug, NOT runtime/core. The buggy
+clean fn is OUTSIDE 0x80174000-0x80183000 (enabling clean there too
+re-freezes; both low 0x80126720-0x80173fff and high 0x80183000-0x801c0000
+regions each reintroduce it).
+
+ROOT-CAUSE EVIDENCE (P1 fobj @0x801e1b3c, zone-test collision input):
+  PUREGEN: +0xd4=0xffffff14 +0x26c=0x23 +0x35c=0x57  (sane coords/radii)
+  FULLCLN: +0xd4=0xffff954e +0x354=0x0000697c +0x358=0x01 (GARBAGE)
+  ctrl+0: PURE=0x01 active | CLEAN=0x81 (-0x7f off-platform/death)
+  ctrl+0xac: PURE=+0x56 | CLEAN=0xffff(-1)
+
+So a clean-C fn corrupts the fighter OBJECT (position/collision circles
+at fobj+0xd4/+0x264/+0x354) -> fighter_frame range_circle_test marks it
+off-main-platform -> *ctrl=-0x7f + HP=-1 -> action_commit skipped ->
+frozen bind pose. entry_setup (in exonerated range) writes fobj+0x34/0x3c
+position correctly; the COLLISION-CIRCLE fields (+0xd4/+0x264/+0x354)
+are written by a DIFFERENT clean fn (skeleton/stage/collision setup).
+NEXT: find the clean fn that populates fobj collision circles + fighter
+world pos consumed by range_circle_test; diff its clean vs generated
+output. Candidates: skeleton_init, fighter_spawn_setup, fighter_link_init,
+desc/state-commit fns, or the stage-platform collision loader.
