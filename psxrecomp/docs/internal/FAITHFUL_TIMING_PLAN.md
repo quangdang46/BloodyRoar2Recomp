@@ -450,6 +450,26 @@ on a fixed region -> next.
     pc unset). NEXT: decode the tail funcs `0x3F00-0x3FDC`/`0x4000-0x4010`
     (the handler-invocation + return) and the EntryInt JB_PC value to find the
     null dispatch, vs Beetle oracle IRQ-handler registration semantics.
+  - **2026-11-15 MAJOR REFRAME — clean-C nested-dispatch is the real layer:**
+    the IRQ path itself (`vsync_wait_n` 0x8019A648, IRQ entry 0x8019A87C,
+    `cd_cb8_dispatch` 0x8019AE68, ra 0x8019A53C) is ALL generated — verified
+    NOT in `clean_table.c`. BUT the battle main loop (`battle_frame`,
+    `frame_tick`, `battle_frame_tick`, ~thousands of `wrap_801*` entries in
+    0x8012-0x801F) IS clean-C, calling generated funcs via `call_guest`/
+    `br2_call_generated`→`psx_dispatch_call` (nested, `dispatch_depth=3` at
+    crash). **`pc==0` is the NORMAL nested-call return contract**: generated
+    code returns by `cpu->pc = $ra`; when a nested call parks `$ra=0`
+    (`BR2_NESTED_RA`), the final `jr $ra` yields `pc==0` which
+    `psx_dispatch_impl` treats as a plain C return — NOT a fault. The bug is
+    a `pc==0` ESCAPING the nested `psx_dispatch_call` and reaching the
+    OUTERMOST dispatch, where it routes to `0x80000080`. Mechanism candidates:
+    (a) IRQ fires inside a generated func nested under clean-C; RFE produces
+    `pc==0` and the nested-depth accounting fails to claim it as a return;
+    (b) `psx_check_interrupts_dispatch_entry` (clean_table.c:4677) delivers
+    VBlank at clean-fn entry with `resume_pc=addr`, and the RFE resume into a
+    clean-C boundary yields `pc==0`. NEXT: instrument `psx_dispatch_impl`'s
+    pc==0 handling to log dispatch_depth + whether it was a nested return vs
+    a genuine null — the frame-2073 transition is where nesting first breaks.
 
 - **2026-11-11 (frame-counter freeze ROOT-CAUSE narrowed — MMIO fix confirmed
   landed; counter depends on CD IRQ, freezes when CD idles):**
