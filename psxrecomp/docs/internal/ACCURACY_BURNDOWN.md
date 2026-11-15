@@ -3314,3 +3314,36 @@ full-clean: verify whether those slots are read back as saved regs.
 NEXT: (1) diff fighter_frame zone-test block clean-vs-generated at
 0x801787dc; (2) audit in-range action.c init for part base-transform
 writes; (3) separately bisect the out-of-range animation-freeze bug.
+
+=== PLATFORM-DESC VERIFIED GOOD -> bug is FIGHTER part transforms ===
+
+fighter_frame zone-test pointer math (resolve.c:1529-1530,1696-1711):
+  stage_idx = *(char*)(param_2+0x98)   [param_2 = battle struct, +0x98]
+  iVar12    = stage_idx*8 + 0x801b1524  -> platform circle desc (8B)
+  iVar10    = stage_idx*8 + 0x801b158c  -> 2nd desc table (+0x68)
+  range_circle_test(part_world_x, part_world_z, desc, 0): 0=on-platform.
+
+LIVE CHECK (full-clean, stage_idx=3): desc @0x801b153c =
+  param_3[0]=0x00000001 (circle mode), param_3[1]=0x00060006
+  (packed radius ~ sane). STAGE COLLISION TABLE IS POPULATED CORRECTLY.
+  => range_circle_test receives GOOD platform data. The off-platform
+     verdict comes from the FIGHTER side: part world-coords at
+     fobj+0xd4/+0x174/+0x264/+0x354 (part-rec+0x34, records 2/4/7/10)
+     reading outside the platform.
+
+Since the pose/GTE path (skeleton_pose_step/part_matrix_compute, all
+>0x80183000) ran GENERATED in the animating config yet HP still -1, the
+wrong world coords originate UPSTREAM: the part LOCAL transforms /
+bone matrices that skeleton_pose_step consumes. Those are produced by
+skeleton_init (0x80179ae0) + part_link — BOTH clean-C INSIDE the
+fighter range. skeleton_init decodes S5 seed blocks (euler seeds
++0x10, joint seeds +8, bone seeds +0xc) into per-part rotation
+matrices + link records; a port error there -> parts at wrong world
+pos -> legit off-platform -> *ctrl=-0x7f, HP=-1, while the anim
+clock (b6) still ticks (timing != pose correctness).
+
+PRIME SUSPECT for Bug A: skeleton_init (menu.c:14129) seed-decode /
+euler_rotmat / part_link_unlink port. SECOND: part_link (action.c:415)
+link-record/stream walk. Audit both against disasm 0x80179ae0 /
+0x801862a8. Bug B (anim freeze, b6 static) remains a SEPARATE clean
+fn OUTSIDE 0x80174000-0x80183000.
