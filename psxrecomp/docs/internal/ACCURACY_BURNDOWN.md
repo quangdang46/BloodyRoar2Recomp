@@ -2930,3 +2930,23 @@ reg_window_op op3 in the read path (the "caller armed" the docstring
 references) — it writes the 0x801BDEB0-block channel regs AND should set
 0x801BDF00. Find that writer in generated full_19.c around the
 cd_file_read_seq/cd_read_step_cb call chain.
+
+=== SESSION — DEFINITIVE: no reg_window_op caller arms 0x801BDF00 ===
+
+All 9 jal->0x8019B944 sites enumerated: cd_seek_param_issue(0x8019BBC4)
+ops{2,1,3}, cd_win_shift_op(0x8019BC48) ops{2,0(a2=0),3},
+cd_mode_apply_deferred(0x8019CE10) ops{2,1,3}. op0 is only ever called
+with a2=0 -> flag stays 0. cd_dma_xfer_start (=1) is the ONLY nonzero
+arm, reached solely via audio_seq_reset->cd_dma_xfer_mode.
+
+CONCLUSION: file/seek programmed-I/O reads NEVER arm 0x801BDF00 by design,
+so DeliverEvent(0xF0000009) via 0x8019B7E0 correctly does NOT fire for
+them. The game's cd_seek_step TestEvent(0xF0000009) wait therefore must
+be for a BULK-DMA file load that SHOULD route through cd_dma_xfer_mode
+(arm flag -> ch4-done -> DeliverEvent) but is instead going through the
+programmed-I/O cd_file_read_seq path. HYPOTHESIS: the file-load has a
+DMA-vs-programmed-I/O size/mode decision that our port resolves wrong for
+the large fight-init files (char models/stage). NEXT: find the read-size/
+mode selector that chooses cd_dma_xfer_mode vs cd_file_read_seq and check
+why fight-init files take the programmed path. If faithful, large reads
+must DMA.
