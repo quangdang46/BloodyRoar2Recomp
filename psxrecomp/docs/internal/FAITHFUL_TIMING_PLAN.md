@@ -411,6 +411,28 @@ on a fixed region -> next.
     `psx_rfe_escape_check` declines → trampoline dispatches `cpu->pc`=sentinel
     → `pc=0`→`0x80000080` storm. Needs fiber/in_exception state capture at the
     failing IRQ take vs the 2072nd working one, vs Beetle oracle.
+  - **2026-11-15 sentinel path RULED OUT + storm signature captured:** added a
+    `0x80000048`-reach diagnostic in `traps.c` (counts sync-longjmp / async-resume
+    / fallthrough + latches first-fallthrough GPR/COP0/fiber context, exposed via
+    `freeze_check` `sent_*`). Reproduced battle→crash: **`sent_reach=0`** — the
+    sentinel is NEVER dispatched, so the async-RFE/sentinel hypothesis is dead.
+    `irqctx_ring` storm entries are uniform: `take_pc=real_epc=0x8019A648`
+    (vsync_wait_n, REAL-EPC not sentinel), `ra_exit=ra_saved=0x8019A53C`,
+    `v1=0xFFFFFFFF`, but **`escape_reason=NONE`, `cpu->pc=0`, `restored=0`** —
+    i.e. the handler DOES run and return each iteration, but leaves `cpu->pc=0`
+    with no recognised RFE/SYSCALL escape. Live TCB dump: `*(0x108)`→TCBH
+    `0x8FD0`, `entry`→TCB `0x8FE0`, saved EPC (TCB+0x88)=`0x8019A600` VALID —
+    the interrupted thread's context is NOT corrupt. RULED OUT this session:
+    sentinel path, TCB/EPC corruption, thread-switch (thread rings empty), null
+    `jr ra` (ra=0x8019A53C valid), unaligned/overflow early-return
+    (`psx_unaligned_access`/`psx_arith_overflow` don't publish pc=0).
+  - **Refined producer:** `pc=0` is set inside the COMPILED OpenBIOS
+    exceptionHandler / game-IRQ-handler (`0x8019A87C`) return chain — a generated
+    `cpu->pc = <reg>` (jr/jalr/RFE) resolving to 0, or a function returning with
+    pc unset. `current_func=0x29CC`(kernel RFE)+`last_store_pc=0x8019A60C`
+    (vsync_wait_n) bracket it. Next: instruction/block trace WITHIN
+    `OpenBIOS_psx_dispatch`/`br2eu_func_8019A87C` tail to catch the exact
+    `cpu->pc=0` write, vs Beetle oracle IRQ/RFE semantics.
 
 - **2026-11-11 (frame-counter freeze ROOT-CAUSE narrowed — MMIO fix confirmed
   landed; counter depends on CD IRQ, freezes when CD idles):**

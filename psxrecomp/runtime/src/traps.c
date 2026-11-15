@@ -27,6 +27,26 @@ int psx_get_in_exception(void);
 void psx_exception_longjmp(void);
 void psx_irq_refresh_cause_ip2(void);
 
+/* Sentinel-0x80000048 reach diagnostics (battle VBlank IRQ wedge). Counts which
+ * branch each reach takes and latches the full resume context of the FIRST
+ * fallthrough — the in_exception==0 && async_rfe==0 case that produces pc=0. */
+uint64_t g_sent_reach_total    = 0;
+uint64_t g_sent_sync_longjmp   = 0;
+uint64_t g_sent_async_resume   = 0;
+uint64_t g_sent_fallthrough    = 0;
+int      g_sent_ft_latched     = 0;
+uint32_t g_sent_ft_in_exc      = 0;
+uint32_t g_sent_ft_real_epc    = 0;
+uint32_t g_sent_ft_escreason   = 0;
+uint32_t g_sent_ft_rfe_pending = 0;
+uint32_t g_sent_ft_k0          = 0;
+uint32_t g_sent_ft_epc         = 0;
+uint32_t g_sent_ft_ra          = 0;
+uint32_t g_sent_ft_sp          = 0;
+uint32_t g_sent_ft_asyncrfe    = 0;
+uint32_t g_sent_ft_owner_lo    = 0;
+uint32_t g_sent_ft_cur_lo      = 0;
+
 /* ── Deterministic TCB scheduler — SCAFFOLDING (plan steps 1-2, INERT) ───────
  * These definitions back psx_scheduler.h. They are NOT yet wired into the live
  * thread-switch path: psx_change_thread_fiber (the host-fiber bridge) below is
@@ -1118,7 +1138,9 @@ void psx_unknown_dispatch(CPUState* cpu, uint32_t addr, uint32_t phys) {
      * 0x80000048.  The dispatch loop tail-calls here.  If we're inside
      * the exception handler, longjmp back to psx_check_interrupts to
      * properly unwind the handler call tree. */
+    if (addr == 0x80000048u) g_sent_reach_total++;
     if (addr == 0x80000048u && psx_get_in_exception()) {
+        g_sent_sync_longjmp++;
         cpu->pc = 0;
         psx_exception_longjmp(); /* does not return */
     }
@@ -1134,12 +1156,34 @@ void psx_unknown_dispatch(CPUState* cpu, uint32_t addr, uint32_t phys) {
         extern uint64_t g_async_rfe_fire_count;
         extern uint64_t g_sentinel_reach_traps;
         extern uint32_t g_sentinel_reach_async;
+        extern uint32_t g_exception_real_epc;
+        extern int g_exc_escape_reason, g_rfe_escape_pending;
+        extern void* g_exception_owner_fiber;
+        extern void* psx_fiber_current(void);
         g_sentinel_reach_traps++;
         g_sentinel_reach_async = g_async_rfe_resume_pc;
         if (g_async_rfe_resume_pc != 0u) {
+            g_sent_async_resume++;
             g_async_rfe_fire_count++;
             cpu->pc = g_async_rfe_resume_pc;
             return;
+        }
+        /* Fallthrough: in_exception==0 && async_rfe==0 -> this reach produces pc=0.
+         * Latch the full resume context of the FIRST occurrence to name the fault. */
+        g_sent_fallthrough++;
+        if (!g_sent_ft_latched) {
+            g_sent_ft_latched     = 1;
+            g_sent_ft_in_exc      = (uint32_t)psx_get_in_exception();
+            g_sent_ft_real_epc    = g_exception_real_epc;
+            g_sent_ft_escreason   = (uint32_t)g_exc_escape_reason;
+            g_sent_ft_rfe_pending = (uint32_t)g_rfe_escape_pending;
+            g_sent_ft_k0          = cpu->gpr[26];
+            g_sent_ft_epc         = cpu->cop0[14];
+            g_sent_ft_ra          = cpu->gpr[31];
+            g_sent_ft_sp          = cpu->gpr[29];
+            g_sent_ft_asyncrfe    = g_async_rfe_resume_pc;
+            g_sent_ft_owner_lo    = (uint32_t)(uintptr_t)g_exception_owner_fiber;
+            g_sent_ft_cur_lo      = (uint32_t)(uintptr_t)psx_fiber_current();
         }
     }
 

@@ -10187,6 +10187,13 @@ static void handle_freeze_check(int id, const char *json)
     extern uint32_t g_sentinel_reach_async;
     extern uint64_t g_nestgate_depth, g_nestgate_rfepend,
                     g_nestgate_escreason, g_nestgate_iec;
+    extern uint64_t g_sent_reach_total, g_sent_sync_longjmp,
+                    g_sent_async_resume, g_sent_fallthrough;
+    extern int      g_sent_ft_latched;
+    extern uint32_t g_sent_ft_in_exc, g_sent_ft_real_epc, g_sent_ft_escreason,
+                    g_sent_ft_rfe_pending, g_sent_ft_k0, g_sent_ft_epc,
+                    g_sent_ft_ra, g_sent_ft_sp, g_sent_ft_asyncrfe,
+                    g_sent_ft_owner_lo, g_sent_ft_cur_lo;
 
     /* Top-K fn_entry histogram over the last `window` slots. */
     typedef struct { uint32_t func; uint32_t count; } HistBucket;
@@ -10314,6 +10321,21 @@ static void handle_freeze_check(int id, const char *json)
                     "\"nestgate_rfepend\":%llu,"
                     "\"nestgate_escreason\":%llu,"
                     "\"nestgate_iec\":%llu,"
+                    "\"sent_reach\":%llu,"
+                    "\"sent_sync\":%llu,"
+                    "\"sent_async\":%llu,"
+                    "\"sent_fall\":%llu,"
+                    "\"sent_ft_inexc\":%u,"
+                    "\"sent_ft_realepc\":\"0x%08X\","
+                    "\"sent_ft_escreason\":\"0x%08X\","
+                    "\"sent_ft_rfepend\":%u,"
+                    "\"sent_ft_k0\":\"0x%08X\","
+                    "\"sent_ft_epc\":\"0x%08X\","
+                    "\"sent_ft_ra\":\"0x%08X\","
+                    "\"sent_ft_sp\":\"0x%08X\","
+                    "\"sent_ft_asyncrfe\":\"0x%08X\","
+                    "\"sent_ft_owner\":\"0x%08X\","
+                    "\"sent_ft_cur\":\"0x%08X\","
                     "\"hist\":[",
                     id,
                     g_debug_current_func_addr,
@@ -10379,7 +10401,22 @@ static void handle_freeze_check(int id, const char *json)
                     (unsigned long long)g_nestgate_depth,
                     (unsigned long long)g_nestgate_rfepend,
                     (unsigned long long)g_nestgate_escreason,
-                    (unsigned long long)g_nestgate_iec);
+                    (unsigned long long)g_nestgate_iec,
+                    (unsigned long long)g_sent_reach_total,
+                    (unsigned long long)g_sent_sync_longjmp,
+                    (unsigned long long)g_sent_async_resume,
+                    (unsigned long long)g_sent_fallthrough,
+                    (unsigned)g_sent_ft_in_exc,
+                    g_sent_ft_real_epc,
+                    g_sent_ft_escreason,
+                    (unsigned)g_sent_ft_rfe_pending,
+                    g_sent_ft_k0,
+                    g_sent_ft_epc,
+                    g_sent_ft_ra,
+                    g_sent_ft_sp,
+                    g_sent_ft_asyncrfe,
+                    g_sent_ft_owner_lo,
+                    g_sent_ft_cur_lo);
     for (int i = 0; i < hist_n && pos < sizeof(buf) - 64; i++) {
         pos += snprintf(buf + pos, sizeof(buf) - pos,
                         "%s{\"func\":\"0x%08X\",\"count\":%u}",
