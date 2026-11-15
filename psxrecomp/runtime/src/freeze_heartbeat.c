@@ -111,6 +111,46 @@ static void freeze_dump_device_state_json(FILE *f) {
     }
     fputs("],", f);
 
+    /* Game CD-completion globals: the callback-vs-DeliverEvent fork
+     * (@0x801bdee8), the TestEvent handle cell (@0x801bde38), the cd_cb7
+     * DMA-done dispatch inputs (DICR ptr @0x801bddf0, handler-table cursor
+     * @0x801bddf4), and the per-channel handler slots. These decide whether a
+     * finished CD read signals DeliverEvent(0xF0000009,0x20) or is dropped. */
+    fputs("\"game_cd\":{", f);
+    fprintf(f, "\"cb8_dee8\":\"0x%08X\",\"testev_handle\":\"0x%08X\","
+               "\"dicr_ptr\":\"0x%08X\",\"cb7_cursor\":\"0x%08X\","
+               "\"dma_base\":\"0x%08X\",\"ch4_handler\":\"0x%08X\","
+               "\"cb7_handlers\":[",
+            fd_guest_rd32(0x801BDEE8u), fd_guest_rd32(0x801BDE38u),
+            fd_guest_rd32(0x801BDDF0u), fd_guest_rd32(0x801BDDF4u),
+            fd_guest_rd32(0x801BDE14u), fd_guest_rd32(0x801BDE04u));
+    for (int i = 0; i < 8; i++) {
+        if (i) fputs(",", f);
+        fprintf(f, "\"0x%08X\"", fd_guest_rd32(0x801BDDF4u + (uint32_t)i * 4u));
+    }
+    /* CD-INTC coroutine heartbeat: 0x801bce00 is bumped on every
+     * cd_intc_dispatch entry; the 0x801bcd18 state block (+0 in-service u16,
+     * +2 busy u16, +4 mask u16, +8 handler tbl u32[11]) drives the deferred-IRQ
+     * resume that produces the DeliverEvent the game polls. If the counter
+     * stalls while TestEvent spins, the coroutine is starved. */
+    fprintf(f, "],\"intc_count\":\"0x%08X\",\"intc_state\":[", fd_guest_rd32(0x801BCE00u));
+    for (int i = 0; i < 16; i++) {
+        if (i) fputs(",", f);
+        fprintf(f, "\"0x%08X\"", fd_guest_rd32(0x801BCD18u + (uint32_t)i * 4u));
+    }
+    /* The two status pointers cd_intc_dispatch ANDs into its handler mask —
+     * dereference them (they hold MMIO/reg addresses) plus the u16 mask @0x801bcd48. */
+    {
+        uint32_t pa = fd_guest_rd32(0x801BDDA4u);
+        uint32_t pb = fd_guest_rd32(0x801BDDA8u);
+        fprintf(f, "],\"intc_ptrA\":\"0x%08X\",\"intc_ptrB\":\"0x%08X\","
+                   "\"intc_statA\":\"0x%08X\",\"intc_statB\":\"0x%08X\","
+                   "\"intc_mask48\":\"0x%08X\"},",
+                pa, pb,
+                pa ? fd_guest_rd32(pa) : 0u, pb ? fd_guest_rd32(pb) : 0u,
+                fd_guest_rd32(0x801BCD48u));
+    }
+
     /* EvCB table: kernel event control blocks (base ptr @0x120, size @0x124,
      * 28-byte entries: cls,status,spec,mode,fhandler). */
     {
@@ -214,6 +254,25 @@ static void freeze_dump_device_state_json(FILE *f) {
                     e->i_stat_after, e->func, e->pc);
         }
         fputs("]},", f);
+
+        /* Per-channel kick('S')/complete('C') histogram across the WHOLE ring —
+         * the tail alone can't show whether ch4 (SPU) / ch3 (CDROM) ever ran
+         * earlier in the load. This is the decisive ch4-kick-presence check. */
+        {
+            uint32_t kick[8] = {0}, done[8] = {0};
+            uint64_t lo = (tseq > (uint64_t)DMA_TRACE_CAP) ? (tseq - DMA_TRACE_CAP) : 0ull;
+            for (uint64_t i = lo; i < tseq; i++) {
+                const DMATraceEntry *e = &tr[i % DMA_TRACE_CAP];
+                if (e->seq != i || e->channel > 7u) continue;
+                if (e->kind == (uint8_t)'S') kick[e->channel]++;
+                else if (e->kind == (uint8_t)'C') done[e->channel]++;
+            }
+            fputs("\"dma_chan_hist\":{\"kick\":[", f);
+            for (int i = 0; i < 8; i++) { if (i) fputs(",", f); fprintf(f, "%u", kick[i]); }
+            fputs("],\"done\":[", f);
+            for (int i = 0; i < 8; i++) { if (i) fputs(",", f); fprintf(f, "%u", done[i]); }
+            fputs("]},", f);
+        }
     }
 
     /* BIOS/HLE call ring tail — every kernel B0/A0/C0 call (vector, fn,
