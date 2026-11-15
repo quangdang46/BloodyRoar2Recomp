@@ -2654,3 +2654,26 @@ jump-table (_jt_80126370 jr v0) — needs Ghidra decompile (:8080 down)
 or a targeted gwatch on DAT_1f800001 written via clean-C guest_at
 (bypasses store watchpoint) is not possible; use a clean-C trace on
 the versus confirm->state transition instead.
+
+### versus match-init — final localization
+
+- versus sub-record ptr `_DAT_1f8000cc = 0x801c15f8` is fixed at reset
+  (game.c:1146 game_globals_reset). Its CONTENTS (char engine blob,
+  0x2da8+0x235c+0x960 bytes) are written ONLY by stage_char_data_load
+  (0x80129218), which has NO direct jal caller and NO 0x80129218 pointer
+  in Game.bin rodata -> reached only via computed/indirect dispatch.
+- decomp_trace tag46 + clean_trace both = 0 -> never invoked on versus.
+- All vs_confirm_* are ROUND-END/post_battle dispatchers
+  (post_battle_dispatch -> vs_confirm_c/e/b), NOT match-init.
+- versus->fight enters battle_flow ONCE at DAT_1f800001=8 (clean_trace
+  count=1) -> the fight state is written directly by the versus->fight
+  edge, skipping select(1)->setup(2..7). battle_init never runs.
+- match_loop (0x80147034) is the ATTRACT/demo loop (300-frame timeout);
+  it runs during g_game_state=5 while versus select is up, then
+  g_game_state->8 -> battle_flow once -> case8 -> PC=0 on empty fighters.
+
+BLOCKER: the versus select->fight match-init (the function that should
+call stage_char_data_load per locked char and seed rec+0xa) is generated
+MIPS in the versus orchestrator (br2eu_func_80126328 family,
+_jt_80126370 jr-v0 jump table). Ghidra backend :8080 is down; Beetle
+oracle :4380 is down. Cannot decompile or oracle-diff until one returns.
