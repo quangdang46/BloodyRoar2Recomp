@@ -3500,3 +3500,73 @@ kick/complete counts over the whole trace ring). intc_count stays 0 by
 design (clean-wrapper-only counter; IRQ dispatch enters generated code
 directly). cb7_handlers[4]=0x8019B7E0, cb8_dee8=0, testev_handle=
 0xF1000008 — all correct; only the ch4 kick is missing.
+
+=== SESSION UPDATE (versus->fight wedge, continued) ===
+
+PRIOR HYPOTHESIS DISPROVEN: cd_reg_window_op op3 NEVER times out
+(regwin_op3_to=0 across runs; all 6 op3 calls return 0). ch4 kick count
+varies run to run (2x, then 4x) — the "missing 3rd ch4 kick" framing was
+a symptom, not the cause.
+
+WHAT THE WEDGE ACTUALLY IS — two faces of one bug:
+- Run A (spin_freeze): TestEvent spins on kernel channel-event handles
+  0xF1000001/3/4 = EvCB slots for class 0xF4000001 (specs 0x8000,0x2000)
+  and 0xF0000011 (spec 0x04). ~400-470K polls each, never delivered.
+- Run B (fatal, frame 1653): cpu.pc=0x00000000, epc=0x8019A600 — an
+  indirect jump to NULL in the IRQ-heavy region. SAME root family:
+  IRQ/exception resume corruption under the versus->fight load.
+
+EVENT MODEL (decoded this session):
+- cd_hw_chan_init (0x801a0be0) OpenEvent's (B0 fn8) EIGHT objects:
+  classes {0xF4000001,0xF0000011} x specs {4,0x8000,0x100,0x2000},
+  size 0x1000, cbs 0x801a0b10..9c; handles -> 0x8020ef70..8c.
+- The game NEVER calls DeliverEvent for these classes. The ONLY
+  DeliverEvent producers (0x80195BD0 wrapper) signal 0xF0000003
+  (specs 0x10/0x20/0x40) and 0xF0000009 (spec 0x20, CD DMA done via
+  cd_dma_chan_reset 0x8019b7e0). Class consts appear ONLY in the
+  OpenEvent calls, never in a DeliverEvent.
+- => These channel events are KERNEL-AUTO-DELIVERED on CD/DMA hardware
+  completion. Proof: ev_agg showed DeliverEvent(0xF4000001, spec 0x04)
+  fired from kernel ra=0x3A20 — OpenBIOS's kernel DOES signal this
+  class on a hardware condition. The specs the game waits on
+  (0x8000/0x2000/0x04-of-F0000011) are OTHER hardware sub-conditions
+  that never occur because the underlying CD channel transfer stalls.
+
+CARD I/O IS A RED HERRING: the SIO memcard traffic (114 txns, 81 52 00
+probe aborts + sector reads) is the game's CONCURRENT versus-record
+save/load — it completes normally (open=0). It is NOT the wedge. The
+Sony-BIOS libcard cells (0x800A6C10/0x800B4E30/0x800B4E38) all read 0
+because the runtime uses OpenBIOS (PCSX-Redux), which has a different
+kernel layout — the Ape-Escape card machinery is Sony-address-specific
+and does not apply here. freeze dump now records libcard cells +
+card_handoff ring (commit 7de2674) for future runs.
+
+CD STATE AT WEDGE: sec_pos=2060/2340 frozen mid-sector, reading=0,
+bfrd_set=1274 vs bfrd_clr=13 (huge undrained buffer-ready backlog),
+pend_cmd=0x09 Pause completed. CD->RAM DMA ch3 completed 1064x —
+data flows; the game simply STOPPED consuming the current sector and
+is blocked upstream on a channel-completion event.
+
+ROOT-CAUSE SHAPE: a CD->consumer flow-control deadlock — the game waits
+on a kernel channel-completion event (delivered on CD/DMA IRQ) that
+requires the CD read-step (cd_read_step_cb MSF stamp-verify) to finish
+the sector; the consumer stalls mid-sector (pos 2060) likely because a
+ring-dropped sector (ring_drop=523) produced an MSF stamp mismatch ->
+"sector error" -> abort -> completion event never signalled. The pc=0
+variant is the same IRQ-resume corruption (21653 exceptions, kernel
+dispatcher at low-RAM 0x00002970/0x000029CC) surfacing as a bad jump.
+
+NEXT (ordered):
+1. Read cd_read_step_cb's MSF stamp-verify + the ring_drop->stamp-mismatch
+   -> abort path; confirm whether a dropped sector aborts the read and
+   whether the abort path fails to DeliverEvent the channel completion.
+2. Instrument the sector-error cell (DAT_801bcb94) + cd_read_step_cb
+   stamp compare result into the freeze dump to confirm the abort.
+3. The bfrd_set>>bfrd_clr backlog suggests the game isn't draining the
+   data port; check whether consumption is gated on a channel event that
+   itself needs the drain (circular wait) vs a genuine IRQ loss.
+4. RULE-2: get a working two-pad oracle path (DuckStation set_input is
+   P1-only; needs P2 injection or a pad-binding fix) to compare the
+   versus->fight CD/channel timing on real HW.
+5. Do NOT fake DeliverEvent / force ch4 / skip the wait — fix the
+   faithful CD flow-control or IRQ path.
