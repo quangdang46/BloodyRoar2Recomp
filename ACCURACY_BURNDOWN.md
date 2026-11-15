@@ -655,3 +655,37 @@ Requires patching pcsx-redux OpenBIOS (vectors.s/handlers) + rebuild
 openbios.bin (mipsel-none-elf toolchain, pinned 55fbf046) + regen OpenBIOS_full.c
 via psxrecomp/tools/regen_bios.sh. NOT a per-game hack — it is the documented
 kernel mechanism the game depends on; general for every game using HookEntryInt.
+
+STATUS / APPLIED PATCH (pcsx-redux OpenBIOS @ /private/tmp/nugget, MIT):
+The minimal faithful change is in cdrom/statemachine.c. On Sony, an IRQ
+handler returns and the COMMON exception exit restores EntryInt; OpenBIOS
+handlers instead call syscall_returnFromException() (B0/0x17 -> TCB restore),
+which exits exceptionHandler via jr $k0; rfe BEFORE the g_exceptionJmpBufPtr
+longjmp is reached. Removing that call makes the handler return normally so
+exceptionHandler falls through to the universal g_exceptionJmpBufPtr restore.
+The DEFAULT frame's .ra == returnFromException (kernel/handlers.c:119), so
+un-hooked operation produces the IDENTICAL full TCB restore — only hooked
+(HookEntryInt) frames change behaviour, which is exactly the Sony contract.
+
+  cdromIOHandler  (statemachine.c ~705): dropped syscall_returnFromException()
+                  after IREG = ~IRQ_CDROM  -> returns, hits jmp_buf restore.
+  cdromDMAHandler (statemachine.c ~720): same for IREG = ~IRQ_DMA.
+Both edits APPLIED in the local OpenBIOS source tree (not yet built).
+
+NOTE: irq.c T0..T3handler (timer/VBLANK) call returnFromException() the same
+way and carry the same latent divergence for OTHER IRQs during a hook window;
+they are left unchanged because the proven freeze is the CD-ROM IRQ path and a
+broad untested change is riskier. Audit them if residual stalls appear.
+
+LANDING PATHS (pick one):
+ A) Full SDK rebuild: brew tap pcsx-redux/mips -> mipsel-none-elf-gcc
+    (formula builds gcc-16.2.0 from source, RUNNING in bg), then
+    make -C openbios PREFIX=mipsel-none-elf FORMAT=elf32-littlemips
+    (needs common/psxlibc + shell deps built for mipsel), then
+    tools/regen_bios.sh --config bios/OpenBIOS.toml, rebuild runtime, test.
+ B) Binary patch: locate cdromIOHandler/.ramtext in bios/openbios.bin
+    (kernel .data copy ROM 0xBFC1E4D4 -> RAM 0x500, kernel_bless), NOP the
+    returnFromException call, regen OpenBIOS_full.c. Faster but needs the
+    openbios.elf symbol table (not in repo) or careful .ramtext disasm.
+Toolchain build status: brew install pcsx-redux/mips/mipsel-none-elf-gcc in
+progress (compiles binutils+gcc from source; deps gmp/mpfr/mpc via brew).
