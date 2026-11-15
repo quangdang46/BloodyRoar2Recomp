@@ -2826,3 +2826,33 @@ op is "read/transfer complete" and does it write 0x801BDF00 nonzero?
 If a faithful op sets the flag but our dispatch routes to the wrong op
 block, that is the bug (same class as N+13 stale-thunk). Compare a0 op
 values {1,2,3} seen vs the op that reaches block_8019BA54.
+
+=== SESSION — op0 is the flag-armer; file-load uses ops{1,2,3} only ===
+
+Decoded cd_reg_window_op (br2eu_func_8019B944/8019B954, full_47.c) op
+dispatch: `beq a0,0 -> block_8019BA3C` which stores a2 -> 0x801BDF00
+(the ARM). op0 is the ONLY reg_window_op path that writes the flag
+nonzero. cd_dma_xfer_start (0x8019B89C) is the other armer (=1).
+
+TWO faithful register-window sequences exist in clean C:
+- cd_win_shift_op (0x8019bc48, cd.c:4150): ops 2,0,3  -> INCLUDES op0 arm
+- cd_seek_param_issue (0x8019bbc4, cd.c:1940):    ops 2,1,3  -> NO op0
+
+fntrace a0 histogram over fight-init window: reg_window_op called ONLY
+with a0 in {1,2,3} (75 each), ra=0x80156628 (cd_file_read_seq) for ALL
+225 calls. op0 (a0=0) NEVER fired. cd_dma_xfer_start/xfer_mode never fired.
+
+=> The file-load's ch4 DMA is kicked (op3) with 0x801BDF00 NEVER armed,
+so the ch4-done callback skips DeliverEvent(0xF0000009,0x20) ->
+TestEvent(0xf1000008) wedge. This is faithful game code reaching a state
+the recomp doesn't satisfy — i.e. the ARM that real HW performs is missing.
+
+OPEN (precise): which code path arms 0x801BDF00 for a programmed-I/O file
+read on real HW. Candidates: (a) a reg_window_op op0 call that SHOULD be
+issued by the read-setup caller but is routed to op1 instead (dispatch/
+port bug — cf cd_win_shift_op ops2,0,3 vs seek_param_issue ops2,1,3);
+(b) the ch4-DMA register setup inside cd_file_read_seq/cd_mode_apply_
+deferred writes the flag via a path our port drops; (c) DeliverEvent
+comes from a different completion the read should trigger. NEXT: disasm
+the read-setup caller of reg_window_op op3 (cd_file_read_seq 0x801565ec
+region / cd_mode_apply_deferred 0x8019ce10) to find the intended flag arm.
