@@ -2184,8 +2184,8 @@ extern uint32_t FUN_8016fcb0(uint32_t a0);
     cpu->gpr[2] = (uint32_t)(FUN_8016fcb0(((uint32_t)cpu->gpr[4])));
 }
 static void wrap_8016fcc4(CPUState *cpu) {
-extern void battle_flow_state_machine(int param_1);
-    battle_flow_state_machine(((int)cpu->gpr[4]));
+extern void battle_flow_state_machine(intptr_t param_1);
+    battle_flow_state_machine(((intptr_t)guest_at(cpu->gpr[4])));
 }
 static void wrap_801709fc(CPUState *cpu) {
 extern uint32_t menu_res_load_sm(uint32_t a0,uint8_t *s4,uint8_t *s5,int32_t s2);

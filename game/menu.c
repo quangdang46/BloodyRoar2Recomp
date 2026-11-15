@@ -539,7 +539,7 @@ switchD_801678c4_caseD_1:
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void battle_flow_state_machine(int param_1)
+void battle_flow_state_machine(intptr_t param_1)
 
 {
   int iVar1;

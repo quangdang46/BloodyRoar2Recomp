@@ -701,9 +701,10 @@ LAB_80126350:
         goto LAB_8012666c;
     case 8: /* 0x80126654 */
         match_mode_set(1);
-        /* a0 is the pad-buffer GUEST address (matches clean_table's raw
-         * gpr[4] contract and the callee's int param_1). */
-        battle_flow_state_machine((int)guest_of(auStack_30));
+        /* a0 is the pad/input buffer. auStack_30 is already the host pointer
+         * into guest RAM (guest_at of the staged sp-0x30 buffer); the callee
+         * dereferences it directly, so pass the host pointer, not guest_of. */
+        battle_flow_state_machine((intptr_t)auStack_30);
         bVar2 = 8;
 LAB_8012666c:
         if (g_game_state == bVar2) {
