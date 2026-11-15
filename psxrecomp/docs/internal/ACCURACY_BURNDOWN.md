@@ -3148,3 +3148,37 @@ record during bring-up (per_side_setup/record_table_select/action_enter_fwd)
 — is the source stat field empty, or is the copy gated on a class/flag that
 versus+arcade both miss? Compare a WORKING reference (Beetle oracle / a save
 state) for expected +0xac value at fight start.
+
+=== SESSION — CORRECTION: fresh-run fighters spawn ACTIVE, HP=0, frozen at round-start ===
+
+Re-tested on a FRESH instance (:4383, nav_arcade -> gs=8 ph=8). Earlier
+ctrl+0=-0x7f / +0xac=-1 reads were STALE instances in a progressed/bad state.
+Fresh bring-up produces a DIFFERENT, cleaner picture:
+
+  P1 ctrl+0 = 0x01 (ACTIVE), P2 ctrl+0 = 0x01   [NOT -0x7f]
+  ctrl+0xac/0xae (HP cur/tgt) = 0x0000 BOTH      [NOT -1; HP=0]
+  ctrl+0xb0 (HP cap) = 150 BOTH                   [.ANI+0x2e loaded OK]
+  Spawn position CORRECT (entry_setup group-0):
+    P1 fobj+0x18/x=-0x100 z(ctrl+0x4e)=0x0400
+    P2 fobj+0x18/x=+0x100 z=-0x0400
+  intro FSM _DAT_801f0738 = 3 (active per-frame state), stable
+  ctrl+0xb6 anim accumulator = 0x20 STATIC over 4s; HP stays 0; no field moves
+
+So fighters are ALIVE and correctly positioned but the ROUND never starts:
+HP current/target never get set to max (stay 0), animation never advances,
+position never changes. ctrl+0=1 means fighter_frame DOES reach the
++0xac<0 gate (0>=0 passes) -> action_commit runs, yet motion timer/delta
+stay 0 -> event stream not stepping. This points at the round-start /
+intro sequence (battle_intro_fsm state 3 task node LAB_80137590, or the
+battle_sides_commit s1[0x92] sub-state stuck at 0) never issuing the
+"fight live" transition. battle_sub 0x1f800090 = 00 00 00 01 ff ff 03 00
+-> s1[0x92]=0 (round-start sub-state never advanced past initial).
+
+STRONG SUSPECT: the intro/round-start is gated on an audio/voice cue
+("ROUND 1 / FIGHT!") and SPU/audio never started (see earlier finding:
+game blocked before audio init). If the intro task waits on a voice/
+sequence-done event that never fires, fighters stay in spawn pose.
+NEXT: (1) confirm whether LAB_80137590 / the state-3 task waits on an
+SPU/seq event; (2) check seq_state / spu channel state live; (3) find the
+exact "round live" flag writer and what gates it. Also re-verify +0xac=0
+vs expected max-HP (should be ~150 like cap) -> stat copy may set HP=0.
