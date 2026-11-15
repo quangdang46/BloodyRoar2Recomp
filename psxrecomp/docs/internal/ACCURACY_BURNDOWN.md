@@ -2856,3 +2856,31 @@ deferred writes the flag via a path our port drops; (c) DeliverEvent
 comes from a different completion the read should trigger. NEXT: disasm
 the read-setup caller of reg_window_op op3 (cd_file_read_seq 0x801565ec
 region / cd_mode_apply_deferred 0x8019ce10) to find the intended flag arm.
+
+=== SESSION — CORRECTION: wedge is ch4 AUDIO/SEQ DMA, not file-read ===
+
+Re-decoded the flag semantics. cd_reg_window_op op0 stores a2->0x801BDF00
+and cd_win_shift_op calls op0 with a2=0 -> writes flag=0, SAME as op1.
+So BOTH register-window read sequences ({2,0,3} win_shift and {2,1,3}
+seek_param) leave 0x801BDF00=0. File sector-reads are programmed-I/O and
+correctly never arm the flag -> they do NOT need DeliverEvent(0xF0000009).
+
+The ONLY armer of 0x801BDF00=1 is cd_dma_xfer_start (0x8019B89C), reached
+solely via cd_dma_xfer_mode (0x8019CFC0) <- audio_seq_reset (0x80158244,
+clean menu.c:9536): cd_reg_bit40_ctrl(0); cd_dma_xfer_mode(0x801f36f0,5)
+-> cd_dma_xfer_start(0x801f36f0,0,0x20). audio_seq_reset is dispatched
+indirectly via cd_state9_store(0x80158244) (menu.c:9979) — the audio/seq
+state mechanism.
+
+=> TestEvent(0xF0000009) wedge during fight-init is the ch4 CD-DMA-done
+event for an AUDIO/SEQUENCE bulk transfer, NOT the file-load. The file-load
+call-stack sample (cd_file_load_sm) was the thread doing its normal
+programmed-I/O reads while a SEPARATE audio-seq DMA should have armed the
+flag + completed. fntrace: cd_dma_xfer_mode/xfer_start = 0 hits in window
+=> the audio-seq DMA either never kicked or completed without arming.
+
+NEXT: trace the cd_state9/audio-seq dispatch during fight-init — does
+audio_seq_reset (or a sibling seq-load) run, reach cd_dma_xfer_mode, and
+does its ch4 DMA complete? Check whether the seq-load is skipped because a
+state/guard (cd_state9 @0x801f46f4 etc) isn't set on the fight path, or the
+DMA completes but DeliverEvent is lost to the deferred-IRQ coroutine.
