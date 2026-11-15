@@ -6660,3 +6660,34 @@ NEXT: determine whether versus->fight is SUPPOSED to run intro_movie_state
 (pre-fight cinematic) or whether it's a state-machine bug; find the char
 .ANI loader (separate from cd_file_load_sm) and its dest/gating; check if
 _DAT_801e3cfc heap cursor is shared/reset between intro staging and .ANI.
+
+### Session N+3 — corrected leads; char .ANI is an async pre-load, action_enter assumes it done
+
+CORRECTIONS to prior hypotheses:
+- menu_res_load_sm (save.c:4098, guest 0x801709fc) is a SAVE/MEMORY-CARD
+  state machine (save_channel_init_commit/save_load_state_machine/
+  save_state_machine_alt), NOT the character-resource gate. The
+  battle_flow case-4 gate (menu.c:692-696) waits on save/memcard +
+  _DAT_1f800090, unrelated to .ANI.
+- battle_state_init (menu.c:4427) only zeroes state/phase fields; does
+  NOT load .ANI.
+- action_enter (action.c:660) -> apply() reads FC_ANI(ctrl+0x30) and
+  early-returns on 0. It ASSUMES .ANI already resident; it does NOT
+  trigger the load. So FC_ANI must be set by an async resource task
+  kicked off earlier in versus->fight setup (char-select confirm /
+  battle entry), BEFORE action_enter_fwd (menu.c:723-724).
+
+CONCLUSION: the versus->fight bug is a LOAD-ORDERING / completion-gate
+failure in the async character-.ANI resource pipeline:
+  (a) FC_ANI=0 runs: the async .ANI load never completed/linked before
+      action_enter -> apply() early-return -> zeroed motion ->
+      ev_stream_dispatch null-stream fatal.
+  (b) FC_ANI=corrupt runs: .ANI loaded (header ok) but its tail
+      (>=0x800D0000) was clobbered by intro_movie_state staging
+      (_DAT_801e3cfc=0x800D0000) -> relocated ptr into string table ->
+      ev_stream_dispatch fatal.
+The .ANI blob loader + its completion flag are GENERATED code (clean
+code only reads FC_ANI). Next: locate the generated fighter-resource/
+.ANI loader (Ghidra disasm of fighter-init region, or wtrace on the
+.ANI staging region during a fresh nav_to_fight run) and find the
+completion gate action_enter is supposed to wait on.
