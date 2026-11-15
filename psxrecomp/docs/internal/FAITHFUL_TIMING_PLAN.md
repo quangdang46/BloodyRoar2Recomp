@@ -6501,3 +6501,40 @@ end? gs=8 sub=8 stable for 48s+ sampling. Need to locate fighter HP + round
 timer state (battle.c uses decompiled generic names; fighter struct accessed
 via guest_at(host_ptr+off), +0xbc sub-struct, +0xc0 counter). If rounds never
 end, combat damage may be stubbed -> real gameplay bug to chase next.
+
+## Session — versus->fight root-caused to MISSING character .ANI (FC_ANI=0)
+
+NAVIGATION (committed 1a040b5): the earlier "battle" was character/vs-select,
+NOT combat. Correct path = 2P VS mode (battle+0x9b=2, +0x9c=1) ->
+select_screen_tick -> CROSS confirm both SIO slots -> START at ph==7 pad gate.
+tools/nav_to_fight.py automates it; reaches gs=8/stg=8 (post_battle_dispatch).
+
+FIGHT-INIT CRASH (new, precise): host sample shows
+  battle_flow_state_machine -> fighter_frame -> action_commit ->
+  ev_stream_dispatch -> br2_call_generated -> psx_unknown_dispatch ->
+  psx_fatal_halt  ("DISPATCH FATAL: misaligned target 0x00030001").
+NOT the IRQ/pc=0 storm — a clean fatal halt. Guest regs: a0=0x1F8000E8 (P1
+ctrl), a1=0x801F5328 (P1 motion), epc=0x8019A648 (vsync_wait_n spin ctx).
+
+ROOT CAUSE (verified live):
+- fighter ctrl+0x30 (FC_ANI) = 0 for BOTH fighters; motion+0x00 (MO_SEC0)=0,
+  motion+0x84 (event/script PC)=0; whole motion object zeroed; HP=0.
+- ctrl+0x20 node_root=0x801e1b3c, +0x38 motion ptr, +0x3c AI ctx ARE set ->
+  fighter STRUCT allocated, but .ANI resource never linked.
+- action.c apply() (FUN_8017a05c) reads FC_ANI and EARLY-RETURNS on 0 ->
+  motion stays zeroed. action_switch_guest then computes
+  stream = FC_ANI(0)+off = 0 -> motion+0x84=0.
+- ev_stream_dispatch reads opcode at scriptPC=0 -> guest[0]=0xFF -> op>=24 ->
+  handler table 0x801b4e68+op*4 OOB -> dispatch target 0x00030001 -> fatal.
+- RAM scan: searched exact 16-byte .ANI header sigs of ALL 14 characters
+  (cd/<CHAR>/<CHAR><N>P.ANI) across full 2MB guest RAM -> ZERO hits. The
+  character .ANI blob was NEVER loaded (not a link bug — the file isn't there).
+- .DAT/model data DID load (node_root populated) -> PARTIAL char load; .ANI
+  specifically missing. Consistent with documented CD sector loss
+  (ring_dropped) OR the 2P-VS resource-load request path.
+
+OPEN: prior session (post-d8610ab) reached STABLE combat gs=8 sub=8 — so .ANI
+loaded on THAT path. Either 2P-VS selects a char/mode whose .ANI load differs,
+or a regression since. NEXT: determine which char ids 2P-VS selected
+(P2 ctrl byte2=0x01 byte3=0x05), confirm their .ANI LBA was read from CD, and
+check whether the .ANI file-load (cd_file_load_sm) was requested/dropped.
