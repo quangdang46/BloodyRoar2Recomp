@@ -234,21 +234,46 @@ on a fixed region -> next.
     falling into `bios_table_tramp`/`bios_kobj_tramp` → wild `jr` to
     `0x04000000` (bad kernel-object ptr). Same signature as the 2026-11-11
     save-menu freeze, now reached via the battle path.
-  - **Confirms the CD-IRQ-dependence hypothesis:** sampled `DAT_801bdde0`
-    (framecnt) through boot→menu→attract — it advances steadily (~+0xF-0x60 per
-    0.25 s) while CD is active in menus. The counter only stalls once battle_
-    frame's `cd_timer_read`/`vsync_wait_n` spins with CD idle. This is exactly
-    unknowns (a)/(b) below: the deferred coroutine (`cd_ctx_restore→cd_chan_
-    full_init→cd_intc_dispatch→cd_cb8_dispatch`) appears to resume only on CD-
-    source IRQs, so with no pending CD command the frame counter freezes and
-    `vsync_wait_n` times out.
-  - **NEXT (unchanged, now battle-confirmed):** resolve whether the hooked IRQ
-    entry resumes on ALL maskable IRQs (VBlank should tick framecnt too) or is
-    CD-source-gated; and whether the game keeps a CD command/read ACTIVE during
-    battle (streaming music/pre-load) that our CD emulation completes/idles
-    prematurely. Compare CD command+IRQ sequence vs Beetle/DuckStation oracle
-    at the battle-intro point. This is faithful-core IRQ/coroutine work — NOT
-    a clean-C port bug; do not patch around it.
+  - **CORRECTED mechanism (supersedes the CD-IRQ-dependence theory below):**
+    sampled live — `DAT_801bdde0` advances steadily through boot→menu→attract→
+    gs=3/4/5 transitions with `cd_status=0x2` (CD fully IDLE) and
+    `intc_dbg(0x801bce00)=0` the whole time. So the frame counter is NOT
+    CD-IRQ-driven; `cd_intc_dispatch` is not its path. `cd_cb8_dispatch`
+    (0x8019AE68, the registered VBlank/frame handler — writes into intc table
+    @0x801bcd1c via vtable+8 reg fn 0x8019aabc) does `framecnt++` inline at
+    0x8019AE94 then runs the 0x801bddc0 callback table.
+  - **Live battle freeze confirmed:** launched gs=8/sub=3, framecnt went
+    0x515→0x540 then FROZE solid while `gs=8`/`sub=3` stayed stable. During the
+    freeze `I_STAT=0x1` (VBlank pending), `I_MASK=0xD`, and `irqctx_ring`/
+    `event_ring` show VBlank IRQ_DELIVER events firing constantly with
+    `take_pc=real_epc=0x8019A648` (inside `vsync_wait_n`) — **IRQs ARE
+    delivered** — but every entry has `restored=0, exit_pc=0x0,
+    same_thread=0, exit_reason=0, redirects=0`. That is the deferred-coroutine
+    / fork-peer path (the "host coroutine/fiber cooperative-thread scheduler"
+    landmine, CLAUDE.md §0): the IRQ does NOT restore/complete inline; the
+    handler work (→ cd_cb8_dispatch → framecnt++) is deferred to a coroutine
+    that `battle_frame`'s blocking clean-C `do{}while` never yields to resume.
+    `clean_trace` confirms zero calls to 0x8019ae68/0x8019ae70 during battle.
+    `v0_exit` decrements 0x100 per IRQ = the vsync_wait_n timeout counting
+    down → hits 0 → BIOS trampoline → wild `jr` 0x04000000.
+  - **Why menus work:** there `vsync_wait_n` is reached via frame_tick in the
+    top-level dispatch loop, which returns to the scheduler between frames so
+    the deferred IRQ coroutine gets resumed → cd_cb8_dispatch runs → framecnt
+    advances. In battle, `battle_frame` (clean C) → frame_tick → cd_timer_read
+    → `br2_call_generated`→vsync_wait_n is a deep clean→generated nest inside a
+    blocking loop; the deferred resume can't unwind through the clean-C frames
+    / is starved → framecnt frozen.
+  - **NEXT (faithful-core, do NOT patch around):** make the deferred-IRQ
+    coroutine resume deterministic under nested clean→generated call chains —
+    either (a) the resume/`exception_jmpbuf`/`psx_restore_state_escape` path
+    must handle a resume PC inside a `br2_call_generated` frame reached through
+    clean-C callers, or (b) per §0 amendment evaluate an HLE subsystem
+    replacement for the IRQ-defer mechanism IF it meets the landmine criteria
+    (non-determinism, general, real guest structures, oracle-validated).
+    Compare IRQ-delivery + coroutine-resume behaviour vs Beetle/DuckStation
+    oracle at the battle-intro vsync_wait_n. This is runtime IRQ/scheduler
+    work in `psxrecomp/runtime/src/interrupts.c` + the coroutine/restore path —
+    NOT a clean-C game-port bug.
 
 - **2026-11-11 (frame-counter freeze ROOT-CAUSE narrowed — MMIO fix confirmed
   landed; counter depends on CD IRQ, freezes when CD idles):**
