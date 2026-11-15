@@ -6434,3 +6434,37 @@ the pool head ptr at param_1*0x3c+param_2*0xc-0x7fe00d98) points into phys
 per-frame quad writes then trash the IRQ vectors. Same memory-corruption class
 as the documented heap_serialize low-RAM overwrites — need to find what writes
 a wild pointer into the pool free list (or mis-sets the pool arena base).
+
+## Session — refined: dest pointers are GARBAGE, not a low-mem node
+
+Added sst_bad latch in script_stream_tick (battle.c) + tpool_bad latch in
+task_pool_alloc; exposed via freeze_check. Result on live wedge:
+  sst_bad_count=693, sst_bad_state=0x12060790 (HOST ptr of stream state),
+  sst_bad_d0=0x28, sst_bad_d1=0xFA0, sst_bad_sbase=0x801B31B0,
+  sst_bad_spc=0x801B31B4 (script base/pc VALID).
+  tpool_bad_count=0 -> the free-list walk does NOT drop <0x80100000, so the
+  earlier "corrupt free-list link" model is WRONG for this path.
+
+The quad-vertex DEST pointers param_1[0]/param_1[1] hold GARBAGE small values
+(0x28, 0xFA0; a sibling instance reaches 0x80000078 -> writes phys 0x84).
+script_stream_tick writes sprite bytes via guest_at(*param_1+off) /
+guest_at(param_1[1]+off) -> lands in kernel/vector page -> IRQ vector corrupt.
+
+PROVENANCE of the dest ptrs (task_alloc_wrap_b/d, battle.c:7272/8733):
+  puVar2[0]=param_1=br2_gaddr(puVar14)
+  puVar2[1]=param_2=(undefined4)(uintptr_t)puVar14 + 10   <-- RAW truncated
+             host ptr, NOT br2_gaddr'd (inconsistent with param_1).
+br2_gaddr (clean_bridge.c:109): guest_of(p) returns 0 when p is not a
+recognized RAM/scratchpad host ptr -> falls back to (uint32_t)(uintptr_t)p
+= low-32 of a host pointer = garbage "guest address". So BOTH dest fields can
+hold garbage: param_1[0] via br2_gaddr fallback on an unrecognized puVar14,
+param_1[1] via raw host-ptr truncation.
+
+ROOT CAUSE (refined): clean-C guest<->host pointer-translation bug in the
+effect/sprite stream task setup. puVar14 (the sprite node's inline GPU-cmd
+buffer, node+0x1C) is either a bad/near-null host pointer or its guest
+address is computed wrong, so the stream state's dest pointers become garbage
+and script_stream_tick's per-frame quad writes corrupt the exception vectors.
+NEXT: verify puVar14's actual value & whether the sprite node's +0x10 data
+ptr is valid; check every `(undefined4)(uintptr_t)ptr` store that should be
+br2_gaddr'd in the effect-task path (task_alloc_wrap_b/d and siblings).

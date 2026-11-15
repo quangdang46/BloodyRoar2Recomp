@@ -10227,6 +10227,11 @@ static void handle_freeze_check(int id, const char *json)
     extern uint32_t g_pc0exc_first_addr, g_pc0exc_first_ra,
                     g_pc0exc_first_stop, g_pc0exc_first_ctx;
     extern int      g_pc0exc_first_inexc;
+    extern uint32_t g_tpool_bad_prev, g_tpool_bad_cur, g_tpool_bad_link,
+                    g_tpool_bad_count;
+    extern int32_t  g_tpool_bad_p1, g_tpool_bad_p2, g_tpool_bad_p3;
+    extern uint32_t g_sst_bad_state, g_sst_bad_d0, g_sst_bad_d1;
+    extern uint32_t g_sst_bad_sbase, g_sst_bad_spc, g_sst_bad_count;
 
     /* Top-K fn_entry histogram over the last `window` slots. */
     typedef struct { uint32_t func; uint32_t count; } HistBucket;
@@ -10423,6 +10428,17 @@ static void handle_freeze_check(int id, const char *json)
                     "\"pc0exc_first_ctx\":\"0x%08X\","
                     "\"pc0exc_first_inexc\":%d,"
                     "\"pc0exc_head\":\"0x%08X\","
+                    "\"tpool_bad_count\":%u,"
+                    "\"tpool_bad_prev\":\"0x%08X\","
+                    "\"tpool_bad_cur\":\"0x%08X\","
+                    "\"tpool_bad_link\":\"0x%08X\","
+                    "\"tpool_bad_p\":\"%d,%d,%d\","
+                    "\"sst_bad_count\":%u,"
+                    "\"sst_bad_state\":\"0x%08X\","
+                    "\"sst_bad_d0\":\"0x%08X\","
+                    "\"sst_bad_d1\":\"0x%08X\","
+                    "\"sst_bad_sbase\":\"0x%08X\","
+                    "\"sst_bad_spc\":\"0x%08X\","
                     "\"hist\":[",
                     id,
                     g_debug_current_func_addr,
@@ -10557,7 +10573,15 @@ static void handle_freeze_check(int id, const char *json)
                     g_pc0exc_first_stop,
                     g_pc0exc_first_ctx,
                     g_pc0exc_first_inexc,
-                    g_pc0exc_head);
+                    g_pc0exc_head,
+                    g_tpool_bad_count,
+                    g_tpool_bad_prev,
+                    g_tpool_bad_cur,
+                    g_tpool_bad_link,
+                    g_tpool_bad_p1, g_tpool_bad_p2, g_tpool_bad_p3,
+                    g_sst_bad_count,
+                    g_sst_bad_state, g_sst_bad_d0, g_sst_bad_d1,
+                    g_sst_bad_sbase, g_sst_bad_spc);
     for (int i = 0; i < hist_n && pos < sizeof(buf) - 64; i++) {
         pos += snprintf(buf + pos, sizeof(buf) - pos,
                         "%s{\"func\":\"0x%08X\",\"count\":%u}",

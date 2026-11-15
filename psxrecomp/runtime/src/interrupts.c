@@ -133,6 +133,18 @@ uint32_t g_rfe29cc_null_tcb88   = 0;
 uint32_t g_rfe29cc_null_ra      = 0;
 uint32_t g_rfe29cc_null_sp      = 0;
 uint32_t g_rfe29cc_null_depth   = 0;
+/* task_pool_alloc free-list anomaly latch (written by game/battle.c). Defined
+ * here so both the full and -us builds link them. */
+uint32_t g_tpool_bad_prev  = 0;
+uint32_t g_tpool_bad_cur   = 0;
+uint32_t g_tpool_bad_link  = 0;
+uint32_t g_tpool_bad_count = 0;
+int32_t  g_tpool_bad_p1    = -1;
+int32_t  g_tpool_bad_p2    = -1;
+int32_t  g_tpool_bad_p3    = -1;
+/* script_stream_tick dest-ptr anomaly latch (written by game/battle.c). */
+uint32_t g_sst_bad_state = 0, g_sst_bad_d0 = 0, g_sst_bad_d1 = 0;
+uint32_t g_sst_bad_sbase = 0, g_sst_bad_spc = 0, g_sst_bad_count = 0;
 /* Name the function whose dispatch produced the FIRST cpu->pc==0 while inside
  * an exception (the wedge's root). `addr` is the just-executed block leader;
  * a ring keeps the last few so the producing insn's neighbourhood is visible. */

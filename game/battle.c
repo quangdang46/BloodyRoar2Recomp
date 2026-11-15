@@ -8442,6 +8442,13 @@ undefined1 * mem_move(undefined1 *param_1,undefined1 *param_2,int param_3)
 
 }
 
+/* script_stream_tick dest-ptr anomaly latch: the quad-vertex dest pointers
+ * (*param_1, param_1[1]) must be normal RAM (>=0x80100000). A value in the
+ * kernel/vector page means the stream state's pointers are corrupt — record
+ * the state addr, both dest ptrs, and the script base/pc for freeze_check. */
+extern uint32_t g_sst_bad_state, g_sst_bad_d0, g_sst_bad_d1;
+extern uint32_t g_sst_bad_sbase, g_sst_bad_spc, g_sst_bad_count;
+
 void script_stream_tick(int *param_1)
 {
   short sVar1;
@@ -8450,6 +8457,15 @@ void script_stream_tick(int *param_1)
   char *pcVar4;
   uint uVar5;
   ushort *puVar6;
+  if (((uint32_t)*param_1 < 0x80100000u || (uint32_t)param_1[1] < 0x80100000u) &&
+      (uint32_t)*param_1 != 0u && (uint32_t)param_1[1] != 0u) {
+    g_sst_bad_count++;
+    g_sst_bad_state = (uint32_t)(uintptr_t)param_1;
+    g_sst_bad_d0    = (uint32_t)*param_1;
+    g_sst_bad_d1    = (uint32_t)param_1[1];
+    g_sst_bad_sbase = (uint32_t)param_1[4];
+    g_sst_bad_spc   = (uint32_t)param_1[5];
+  }
   if (_DAT_1f800082 == 0) {
     *(short *)(param_1 + 6) = (short)param_1[6] + -1;
   }
@@ -10841,6 +10857,12 @@ void task_pool_init(int param_1,int param_2,int param_3,int param_4)
 
 }
 
+/* task_pool_alloc anomaly latch globals — defined in runtime interrupts.c so
+ * both the full and -us builds link them (battle.c is not in the -us target). */
+extern uint32_t g_tpool_bad_prev,  g_tpool_bad_cur,   g_tpool_bad_link;
+extern uint32_t g_tpool_bad_count;
+extern int32_t  g_tpool_bad_p1,    g_tpool_bad_p2,    g_tpool_bad_p3;
+
 int task_pool_alloc(int param_1,int param_2,int param_3)
 {
   short sVar1;
@@ -10855,7 +10877,16 @@ int task_pool_alloc(int param_1,int param_2,int param_3)
   sVar1 = *(short *)guest_at((uint32_t)(uintptr_t)((iVar4 + 0xc)));
   iVar5 = iVar4;
   while ((sVar1 != 0 || (*(int *)guest_at((uint32_t)(uintptr_t)((iVar5 + 8) ))< param_3))) {
-    iVar5 = *(int *)guest_at((uint32_t)(uintptr_t)((iVar5 + 4)));
+    int iVarPrev = iVar5;
+    uint32_t linkv = (uint32_t)*(int *)guest_at((uint32_t)(uintptr_t)((iVar5 + 4)));
+    iVar5 = (int)linkv;
+    if ((uint32_t)iVar5 < 0x80100000u && iVar5 != 0) {
+      g_tpool_bad_count++;
+      g_tpool_bad_prev = (uint32_t)iVarPrev;
+      g_tpool_bad_cur  = (uint32_t)iVar5;
+      g_tpool_bad_link = linkv;
+      g_tpool_bad_p1 = param_1; g_tpool_bad_p2 = param_2; g_tpool_bad_p3 = param_3;
+    }
     if (iVar5 == iVar4) {
       return 0;
     }
