@@ -121,7 +121,38 @@ uint32_t g_esc_l_pc             = 0;
 uint32_t g_esc_l_curfiber       = 0;
 uint32_t g_esc_l_ownfiber       = 0;
 uint32_t g_esc_l_reason         = 0;
+/* Battle VBlank pc=0 wedge: 0x29CC (ReturnFromException / ChangeThread context
+ * restore) ends `jr $k0` where k0 = *(current_TCB + 0x88). When that slot is 0
+ * the restore jumps to pc==0. Latch WHICH TCB produced the null target — the
+ * current-Thread pointer chain *(0x108) -> *(pcb) -> TCB -> +0x88. */
+uint64_t g_rfe29cc_null_count   = 0;
+int      g_rfe29cc_null_latched = 0;
+uint32_t g_rfe29cc_null_tcb     = 0;
+uint32_t g_rfe29cc_null_pcb     = 0;
+uint32_t g_rfe29cc_null_tcb88   = 0;
+uint32_t g_rfe29cc_null_ra      = 0;
+uint32_t g_rfe29cc_null_sp      = 0;
+uint32_t g_rfe29cc_null_depth   = 0;
 extern uint64_t psx_get_cycle_count(void);
+
+void psx_dbg_null_jr(CPUState* cpu, uint32_t target)
+{
+    if (target != 0u) return;
+    uint32_t pcb = cpu->read_word(0x108u);
+    uint32_t tcb = (pcb != 0u) ? cpu->read_word(pcb) : 0u;
+    uint32_t tcb88 = (tcb != 0u) ? cpu->read_word(tcb + 0x88u) : 0u;
+    extern int g_psx_dispatch_depth;
+    g_rfe29cc_null_count++;
+    if (!g_rfe29cc_null_latched) {
+        g_rfe29cc_null_latched = 1;
+        g_rfe29cc_null_tcb     = tcb;
+        g_rfe29cc_null_pcb     = pcb;
+        g_rfe29cc_null_tcb88   = tcb88;
+        g_rfe29cc_null_ra      = cpu->gpr[31];
+        g_rfe29cc_null_sp      = cpu->gpr[29];
+        g_rfe29cc_null_depth   = (uint32_t)g_psx_dispatch_depth;
+    }
+}
 
 /* Record an interrupt-delivery decision into the event ring. GATE outcomes are
  * edge-suppressed (they repeat every block while blocked); DELIVER is always

@@ -10210,6 +10210,16 @@ static void handle_freeze_check(int id, const char *json)
     extern int      g_esc_decline_latched;
     extern uint32_t g_esc_l_pc, g_esc_l_curfiber, g_esc_l_ownfiber,
                     g_esc_l_reason;
+    extern uint64_t g_tcbsave_zero_count;
+    extern uint32_t g_tcbsave_zero_tcb, g_tcbsave_zero_pc,
+                    g_tcbsave_zero_func;
+    extern int      g_tcbsave_zero_inexc, g_tcbsave_zero_depth,
+                    g_tcbsave_zero_latched;
+    extern uint64_t g_rfe29cc_null_count;
+    extern uint32_t g_rfe29cc_null_tcb, g_rfe29cc_null_pcb,
+                    g_rfe29cc_null_tcb88, g_rfe29cc_null_ra,
+                    g_rfe29cc_null_sp, g_rfe29cc_null_depth;
+    extern int      g_rfe29cc_null_latched;
 
     /* Top-K fn_entry histogram over the last `window` slots. */
     typedef struct { uint32_t func; uint32_t count; } HistBucket;
@@ -10384,6 +10394,21 @@ static void handle_freeze_check(int id, const char *json)
                     "\"esc_l_curfiber\":\"0x%08X\","
                     "\"esc_l_ownfiber\":\"0x%08X\","
                     "\"esc_l_reason\":\"0x%08X\","
+                    "\"tcbsave_zero_count\":%llu,"
+                    "\"tcbsave_zero_tcb\":\"0x%08X\","
+                    "\"tcbsave_zero_pc\":\"0x%08X\","
+                    "\"tcbsave_zero_func\":\"0x%08X\","
+                    "\"tcbsave_zero_inexc\":%d,"
+                    "\"tcbsave_zero_depth\":%d,"
+                    "\"tcbsave_zero_latched\":%d,"
+                    "\"rfe29cc_null_count\":%llu,"
+                    "\"rfe29cc_null_tcb\":\"0x%08X\","
+                    "\"rfe29cc_null_pcb\":\"0x%08X\","
+                    "\"rfe29cc_null_tcb88\":\"0x%08X\","
+                    "\"rfe29cc_null_ra\":\"0x%08X\","
+                    "\"rfe29cc_null_sp\":\"0x%08X\","
+                    "\"rfe29cc_null_depth\":\"0x%08X\","
+                    "\"rfe29cc_null_latched\":%d,"
                     "\"hist\":[",
                     id,
                     g_debug_current_func_addr,
@@ -10496,7 +10521,22 @@ static void handle_freeze_check(int id, const char *json)
                     g_esc_l_pc,
                     g_esc_l_curfiber,
                     g_esc_l_ownfiber,
-                    g_esc_l_reason);
+                    g_esc_l_reason,
+                    (unsigned long long)g_tcbsave_zero_count,
+                    g_tcbsave_zero_tcb,
+                    g_tcbsave_zero_pc,
+                    g_tcbsave_zero_func,
+                    g_tcbsave_zero_inexc,
+                    g_tcbsave_zero_depth,
+                    g_tcbsave_zero_latched,
+                    (unsigned long long)g_rfe29cc_null_count,
+                    g_rfe29cc_null_tcb,
+                    g_rfe29cc_null_pcb,
+                    g_rfe29cc_null_tcb88,
+                    g_rfe29cc_null_ra,
+                    g_rfe29cc_null_sp,
+                    g_rfe29cc_null_depth,
+                    g_rfe29cc_null_latched);
     for (int i = 0; i < hist_n && pos < sizeof(buf) - 64; i++) {
         pos += snprintf(buf + pos, sizeof(buf) - pos,
                         "%s{\"func\":\"0x%08X\",\"count\":%u}",

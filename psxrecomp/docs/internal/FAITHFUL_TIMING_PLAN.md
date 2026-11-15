@@ -6347,3 +6347,33 @@ GPU draws + LZSS decomp active, zero recursion trips. Committed + pushed.
 REMAINING BLOCKER (next): display BLACK despite frames advancing — CD sector
 drain lossy (bfrd_set=5867 vs bfrd_clear=14, ring_dropped=2591). Fighter
 file 0xb1 / sector-buffer-ready consumer handshake needs its own trace.
+
+## Session — battle VBlank wedge: BIOS-0x29CC TCB-restore hypothesis RULED OUT
+
+Deep IRQ/exception investigation of the ~2073-frame battle freeze. Decisive
+instrumentation results (all committed diagnostics in interrupts.c / traps.c /
+debug_server.c):
+
+- RFE escape path is HEALTHY: rfe_mark_total == esc_fired (~31818),
+  esc_dec_fiber=0, esc_dec_noexc=0, esc_dec_sentinel=0. Every armed RFE
+  longjmps correctly. NOT an RFE/fiber/sentinel bug.
+- Anomaly signature: handler's psx_dispatch returns NORMALLY (jmpval=0) with
+  cpu->pc==0, escape_reason=NONE, in_exception still 1 at the pc==0 moment.
+  lastfunc=0x29CC (BIOS ReturnFromException / ChangeThread context restore).
+- pc=0 is the normal nested-call C-return contract leaking to the outermost
+  boundary -> psx_dispatch_check_return_boundary re-polls the still-pending
+  level-triggered VBlank IRQ -> re-delivers -> pc=0 storm. I_STAT never acked.
+- HOST save path RULED OUT: psx_save_context_to_tcb never writes resume_pc==0
+  (tcbsave_zero_count=0). The sentinel assert rejects 0x80000048 but NOT 0.
+- 0x29CC TCB-restore RULED OUT: decoded generated func_000029CC — it does
+  k1=*(0x108)->*(pcb)->TCB, k1+=8, lw $k0,128($k1) = *(TCB+0x88), jr $k0; rfe.
+  A psx_dbg_null_jr probe at that exact jr showed gpr[26] != 0 on EVERY call
+  (rfe29cc_null_count=0). 0x29CC always resumes a VALID pc. Current TCB 0x8FE0
+  +0x88 = 0x8019A600 (vsync_wait_n) — valid.
+
+CONCLUSION: pc=0 is a GENERIC null indirect jump (jr/jalr/jr-ra -> 0) produced
+inside the IRQ handler's call tree AFTER 0x29CC resumed — i.e. in game/kernel
+code reached post-RFE, while in_exception==1. NOT the BIOS context restore.
+Next: a general null-jump-target tracer (emitter-level cpu->pc=gpr[X]==0
+watchpoint) or the Beetle/DuckStation oracle for IRQ/RFE timing. Downstream
+symptom seen earlier: FAIL-FAST unknown dispatch addr=0x04000000.

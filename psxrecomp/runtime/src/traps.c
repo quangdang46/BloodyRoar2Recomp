@@ -331,9 +331,35 @@ static void psx_assert_no_sentinel_pc(const char* where, uint32_t tcb, uint32_t 
     }
 }
 
+/* Diagnostic (battle VBlank pc=0 wedge): psx_assert_no_sentinel_pc rejects the
+ * exception sentinel but NOT resume_pc==0, so a thread can be saved with a null
+ * resume PC into TCB+0x88 and later restored to pc==0. Latch every null-resume
+ * save with the context that produced it. */
+uint64_t g_tcbsave_zero_count  = 0;
+uint32_t g_tcbsave_zero_tcb    = 0;
+uint32_t g_tcbsave_zero_pc     = 0;
+uint32_t g_tcbsave_zero_func   = 0;
+int      g_tcbsave_zero_inexc  = -1;
+int      g_tcbsave_zero_depth  = -1;
+int      g_tcbsave_zero_latched= 0;
+
 static void psx_save_context_to_tcb(CPUState* cpu, uint32_t tcb, uint32_t resume_pc)
 {
     psx_assert_no_sentinel_pc("save_context_to_tcb", tcb, resume_pc);
+    if (resume_pc == 0u) {
+        extern uint32_t g_debug_current_func_addr;
+        extern int      psx_get_in_exception(void);
+        extern int      g_psx_dispatch_depth;
+        g_tcbsave_zero_count++;
+        if (!g_tcbsave_zero_latched) {
+            g_tcbsave_zero_latched = 1;
+            g_tcbsave_zero_tcb     = tcb;
+            g_tcbsave_zero_pc      = cpu->pc;
+            g_tcbsave_zero_func    = g_debug_current_func_addr;
+            g_tcbsave_zero_inexc   = psx_get_in_exception();
+            g_tcbsave_zero_depth   = g_psx_dispatch_depth;
+        }
+    }
     uint32_t save = tcb + 8u;
     uint32_t sr = cpu->cop0[12];
     for (int i = 1; i < 32; i++) {
