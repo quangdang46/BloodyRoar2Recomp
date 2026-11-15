@@ -878,3 +878,29 @@ being classified/delivered as audio (maybe_deliver_xa_audio / xa_data_end).
 Sector pos stuck at 2060/2340 with BFRD armed suggests ch3 CD-ROM DMA also
 stalled mid-sector — check whether ch3 (CD-ROM DMA ch) has an unserviced
 transfer or whether cdrom_dma_ready is being starved.
+
+=== ch3 CD-ROM DMA stream STOPS at lba 8801 ~frame1688 (session cont.) ===
+dma_cdrom_history (2013 entries) shows the game streamed CD sectors via ch3
+only up to lba 8801 — every transfer frame_start=frame_end in 1686..1688 —
+then ZERO ch3 reads for ~43000 frames while wedged at gs=8/ph=8. Per lba the
+game issues a 3-word header read (pos 0->12) + a 512-word data read
+(pos 12->2060 of sector_size 2340; the 280-byte tail is subheader/ECC, normal).
+Last sector lba8801 seq2012 last_words are all 0x00000000 (tail read hit an
+empty/zero region). request=0x80 BFRD still armed, sector_available=1.
+
+=> The sector stream legitimately ENDED (drive reading=0, no pending cmd, no
+INT1 pending/lost) around lba 8801 — either the ReadN range was exhausted or
+an XA EOF submode (0x80|AUDIO -> xa_data_end_pending -> stop_read_stream,
+cdrom.c:1495) fired. The game then sits in cd_seek_complete_poll->TestEvent
+waiting for the ch4/SPU-DMA DeliverEvent that would accompany the NEXT audio
+buffer, but issuing that next read/transfer is gated behind the same wait —
+circular stall. The break is therefore NOT event delivery (proven healthy)
+but that the audio/file stream ended without the game receiving the
+continuation it expects: either (a) ReadN covered too few sectors / wrong LBA
+range so the stream truncated mid-file, or (b) the XA data-end/EOF INT that
+should tell the game "stream finished, wrap/continue" was consumed without
+the matching game-side handler advancing.
+NEXT: read the game's CD audio-stream state machine (audio_seq_reset /
+cd_reg_stream_push / the ReadN sector-count bookkeeping around the last lba)
+to learn whether it expected more sectors past 8801, and whether an
+xa_data_end/cdda_data_end INT was raised for lba8801.
