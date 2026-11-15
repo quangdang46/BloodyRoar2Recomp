@@ -848,3 +848,33 @@ entry + cd_intc_dispatch to see whether the completion IRQ is raised at all
 for seq340, and whether a CD command sits queued-but-unissued in the game's
 driver (cd_cmd_queue / pending_args). Compare a WORKING file load (early
 boot, DeliverEvent->136) vs this fight-asset load for the divergent step.
+
+=== wtrace CORRECTION: DeliverEvent/TestEvent mechanism WORKS (session cont.) ===
+Earlier hypothesis "LLE BIOS DeliverEvent does not mark EvCB slot8 READY" is
+DISPROVEN. Armed wtrace on slot8 EvCB (0x8EE8..0x8F00) across a fresh
+nav_arcade run to the gs=8/ph=8 wedge. Captured writes to status word 0x8EEC:
+  seq205/211/213  0x2000->0x4000  pc=0xBFC20678 (BIOS) ra=0x8019B88C  = DeliverEvent
+  seq206/212/214  0x4000->0x2000  pc=0xBFC0577C (BIOS) ra=0x8019D550  = TestEvent consume
+So OpenBIOS DeliverEvent(0xF0000009,0x20) DOES set slot8 READY and TestEvent
+DOES consume it back to ENABLED and return success — 3 full cycles observed.
+The bios_svc_trace v0=0 samples are the SUBSEQUENT spin after the last delivery.
+
+=> The event/delivery path (ch4 DMA done -> cd_cb7_run -> cd_dma_chan_reset ->
+   jr 0xB0 DeliverEvent -> slot8 READY -> TestEvent) is HEALTHY.
+
+REAL STALL (unchanged, now precisely bounded): after the last consumed event
+the game issues/awaits ANOTHER completion whose DeliverEvent never arrives.
+cd_dma_chan_reset ran only 4x total; drive went fully idle
+(cdrom_state: reading=0, pending.active=0, i_stat=0, irq_flag=0,
+request=0x80 BFRD still armed, sector_available=1 pos=2060/2340,
+ring_dropped=743, stat=0x02 MOTOR-only). ch4 idle chcr=0x201, DICR no done bits.
+The awaited op is the ch4/SPU (fight audio XA stream) completion — DeliverEvent
+0xF0000009 is the SPU-DMA-done signal, not a generic CD-read-done.
+
+NEXT (unchanged from prior): determine whether a CD command sits
+queued-but-unissued in the game driver (its issue pump gated on the same
+event), or whether the XA-audio/SPU stream stopped because sectors stopped
+being classified/delivered as audio (maybe_deliver_xa_audio / xa_data_end).
+Sector pos stuck at 2060/2340 with BFRD armed suggests ch3 CD-ROM DMA also
+stalled mid-sector — check whether ch3 (CD-ROM DMA ch) has an unserviced
+transfer or whether cdrom_dma_ready is being starved.

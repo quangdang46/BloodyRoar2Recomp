@@ -6706,6 +6706,36 @@ static void handle_spu_events_reset(int id, const char *json)
     send_fmt("{\"id\":%d,\"ok\":true}\n", id);
 }
 
+static void handle_spu_ta(int id, const char *json)
+{
+    int count = json_get_int(json, "count", 256);
+    if (count < 1) count = 1;
+    if (count > 4096) count = 4096;
+    uint32_t total = spu_ta_total();
+    uint64_t start = (total > (uint32_t)count) ? total - (uint32_t)count : 0;
+    size_t cap = 256u + (size_t)count * 160u;
+    char *out = (char *)malloc(cap);
+    if (!out) { send_fmt("{\"id\":%d,\"ok\":false,\"err\":\"alloc\"}", id); return; }
+    size_t off = 0;
+    int emitted = 0, n = snprintf(out + off, cap - off,
+        "{\"id\":%d,\"ok\":true,\"total\":%u,\"entries\":[", id, total);
+    if (n > 0) off += (size_t)n;
+    for (uint64_t i = start; i < total && off < cap - 160; i++) {
+        uint32_t addr, val, cyc, is_wr;
+        if (!spu_ta_get((uint32_t)i, &addr, &val, &cyc, &is_wr)) continue;
+        n = snprintf(out + off, cap - off,
+            "%s{\"seq\":%llu,\"addr\":\"0x%08X\",\"val\":\"0x%04X\","
+            "\"cyc\":%u,\"wr\":%u}",
+            emitted ? "," : "", (unsigned long long)i, addr, val, cyc, is_wr);
+        if (n > 0) off += (size_t)n;
+        emitted++;
+    }
+    n = snprintf(out + off, cap - off, "],\"emitted\":%d}", emitted);
+    if (n > 0) off += (size_t)n;
+    send_fmt("%s", out);
+    free(out);
+}
+
 /* ---- Always-on audio tap rings (audio_trace.c) -------------------------
  * audio_stats  — counters: per-tap produced/nonzero/audible/peak + pump
  *                behavior (skips, underruns, queue watermarks).
@@ -14179,6 +14209,7 @@ static const CmdEntry s_commands[] = {
     { "spu_ram",           handle_spu_ram },
     { "spu_events",        handle_spu_events },
     { "spu_events_reset",  handle_spu_events_reset },
+    { "spu_ta",            handle_spu_ta },
     { "audio_stats",       handle_audio_stats },
     { "audio_wav",         handle_audio_wav },
     { "audio_events",      handle_audio_events },

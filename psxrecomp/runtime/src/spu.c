@@ -1338,6 +1338,46 @@ void spu_debug_info(SpuDebugInfo* out) {
     out->cd_underflow_frames = cd_underflow_frames;
 }
 
+/* PSX_SPUDTA-gated: bounded ring of recent reads/writes to the two SPU
+ * registers the file-read op1/op3 handshake polls — TA (0x1F801DA6) and
+ * SPUCNT (0x1F801DAA). Lets us see the exact values the generated handshake
+ * observes at poll time without a guest-PC on the read path. */
+typedef struct {
+    uint32_t addr;
+    uint32_t val;
+    uint32_t cyc;
+    uint32_t seq;
+    uint32_t is_wr;
+} SpuTaEnt;
+#define SPU_TA_RING_CAP 512u
+static SpuTaEnt spu_ta_ring[SPU_TA_RING_CAP];
+static uint32_t spu_ta_seq;
+static int spu_ta_armed = -1;
+static void spu_ta_note(uint32_t addr, uint32_t val, int is_wr) {
+    if (addr != 0x1F801DA6u && addr != 0x1F801DAAu) return;
+    if (spu_ta_armed < 0) {
+        const char *e = getenv("PSX_SPUDTA");
+        spu_ta_armed = (e && e[0] && e[0] != '0') ? 1 : 0;
+    }
+    if (!spu_ta_armed) return;
+    SpuTaEnt *t = &spu_ta_ring[spu_ta_seq % SPU_TA_RING_CAP];
+    t->addr = addr; t->val = val & 0xFFFFu;
+    t->cyc = (uint32_t)psx_cycle_count; t->seq = spu_ta_seq++;
+    t->is_wr = (uint32_t)is_wr;
+}
+uint32_t spu_ta_total(void) { return spu_ta_seq; }
+int spu_ta_get(uint32_t i, uint32_t *addr, uint32_t *val,
+               uint32_t *cyc, uint32_t *is_wr) {
+    if (i >= spu_ta_seq) return 0;
+    SpuTaEnt *t = &spu_ta_ring[i % SPU_TA_RING_CAP];
+    if (t->seq != i) return 0;
+    if (addr) *addr = t->addr;
+    if (val) *val = t->val;
+    if (cyc) *cyc = t->cyc;
+    if (is_wr) *is_wr = t->is_wr;
+    return 1;
+}
+
 uint32_t spu_read(uint32_t addr) {
     if (addr >= 0x1F801C00u && addr <= 0x1F801DFFu) {
         uint32_t idx = reg_index(addr);
@@ -1408,7 +1448,9 @@ uint32_t spu_read(uint32_t addr) {
                 if (v >= 0 && v < SPU_VOICE_COUNT)
                     return voices[v].env_level;
             }
-            return spu_regs[idx];
+            {   uint32_t rv = spu_regs[idx];
+                spu_ta_note(addr, rv, 0);
+                return rv; }
         }
     }
 
@@ -1438,6 +1480,7 @@ void spu_write(uint32_t addr, uint32_t value) {
              * quantization audit (snesrecomp 8ffc797 class). */
             audio_trace_event(AUDIO_EV_REG_WRITE, addr, value & 0xFFFFu);
             spu_regs[idx] = (uint16_t)value;
+            spu_ta_note(addr, value, 1);
 
             /* Voice repeat/loop address (voice reg 7) is LIVE state on real
              * hardware: writing it after KEYON retargets where the next
@@ -1500,6 +1543,20 @@ void spu_write(uint32_t addr, uint32_t value) {
             }
 
             if (addr == 0x1F801DA6u) {
+                {   /* env-gated: log every SPU transfer-address (TA) write so the
+                     * file-read op1 handshake (poll TA==shadow @0x801bdec8) can be
+                     * traced to the writer that leaves TA != shadow. */
+                    static int ta_dbg = -1;
+                    if (ta_dbg < 0) { const char *e = getenv("PSX_SPUDTA"); ta_dbg = (e && e[0] && e[0] != '0') ? 1 : 0; }
+                    if (ta_dbg) {
+                        extern uint32_t g_debug_last_store_pc;
+                        extern uint32_t g_debug_current_func_addr;
+                        fprintf(stderr, "[spudta] TA<-0x%04X pc=0x%08X func=0x%08X cyc=%llu\n",
+                                value & 0xFFFFu, g_debug_last_store_pc,
+                                g_debug_current_func_addr,
+                                (unsigned long long)psx_cycle_count);
+                    }
+                }
                 transfer_addr = ((uint32_t)(uint16_t)value) << 3;
                 if (transfer_addr >= SPU_RAM_SIZE) transfer_addr = 0;
                 /* Setting the transfer address is an IRQ compare site (same

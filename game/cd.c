@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 typedef uint8_t  undefined;
 typedef uint8_t  undefined1;
@@ -5083,6 +5084,12 @@ void cd_dma_chan_reset(uint32_t param_1)
       }
     }
   }
+  {
+    static int cr_dbg = -1;
+    if (cr_dbg < 0) { const char *e = getenv("PSX_CB7"); cr_dbg = (e && e[0] && e[0] != '0') ? 1 : 0; }
+    if (cr_dbg) fprintf(stderr, "[chanreset] dee8=0x%08X -> %s\n",
+                        DB32G(0x801bdee8), DB32G(0x801bdee8) ? "callback" : "DeliverEvent(0xF0000009,0x20)");
+  }
   if (DB32G(0x801bdee8) != 0) {
     call_guest(DB32G(0x801bdee8),0xf0000000,0);
   } else {
@@ -5138,6 +5145,11 @@ void cd_cb7_run(uint32_t param_1)
    * is never read. param_1 kept for signature parity only. */
   (void)param_1;
   uint32_t s1 = (br2_ld32(DB32G(0x801bddf0)) >> 24) & 0x7f;
+  {
+    static int cb7_dbg = -1;
+    if (cb7_dbg < 0) { const char *e = getenv("PSX_CB7"); cb7_dbg = (e && e[0] && e[0] != '0') ? 1 : 0; }
+    if (cb7_dbg) fprintf(stderr, "[cb7] donemask=0x%02X dicr=0x%08X\n", s1, br2_ld32(DB32G(0x801bddf0)));
+  }
   int s0;
   uint32_t dma, dv;
   uint32_t *tbl;
@@ -5153,6 +5165,11 @@ void cd_cb7_run(uint32_t param_1)
          * base+s0*8 and reads the wrong slot (ch4 -> 0x801BDE14 MMIO junk
          * instead of the 0x801BDE04 handler), so DeliverEvent never fires. */
         uint32_t h = *tbl;
+        {
+          static int cb7_dbg2 = -1;
+          if (cb7_dbg2 < 0) { const char *e = getenv("PSX_CB7"); cb7_dbg2 = (e && e[0] && e[0] != '0') ? 1 : 0; }
+          if (cb7_dbg2 && h != 0) fprintf(stderr, "[cb7] ch%d handler=0x%08X\n", s0, h);
+        }
         if (h != 0) call_guest(h,0,0);
       }
       tbl++;

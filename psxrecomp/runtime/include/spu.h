@@ -184,6 +184,12 @@ typedef struct SpuSnapPartDigests {
 } SpuSnapPartDigests;
 void spu_snapshot_part_digests(SpuSnapPartDigests *out);
 
+/* PSX_SPUDTA-gated debug ring of TA(0x1F801DA6)/SPUCNT(0x1F801DAA)
+ * reads+writes for the file-read op1/op3 handshake. */
+uint32_t spu_ta_total(void);
+int      spu_ta_get(uint32_t i, uint32_t *addr, uint32_t *val,
+                    uint32_t *cyc, uint32_t *is_wr);
+
 #ifdef __cplusplus
 }
 #endif

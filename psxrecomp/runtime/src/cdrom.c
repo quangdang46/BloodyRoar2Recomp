@@ -720,12 +720,22 @@ static int irq_present_rem_cycles(void) {
     return cycles_until_due(cdrom_irq_present_due);
 }
 
+static int cd_dbg_enabled(void) {
+    static int v = -1;
+    if (v < 0) { const char *e = getenv("PSX_CDDBG"); v = (e && e[0] && e[0] != '0') ? 1 : 0; }
+    return v;
+}
+#define CDDBG(...) do { if (cd_dbg_enabled()) fprintf(stderr, __VA_ARGS__); } while (0)
+
 static void pending_arm(uint8_t cmd, int latency_cycles, int phase) {
     if (latency_cycles < 0) latency_cycles = 0;
     pending.cmd = cmd;
     pending.pending = 1;
     pending.phase = phase;
     pending.due_cyc = psx_cycle_count + (uint64_t)latency_cycles;
+    CDDBG("[cdpend] ARM cmd=0x%02X cyc=%llu due=%llu lat=%d irq_flag=0x%02X\n",
+          cmd, (unsigned long long)psx_cycle_count,
+          (unsigned long long)pending.due_cyc, latency_cycles, irq_flag);
 }
 
 static void pending_set_remaining(int rem) {
@@ -928,6 +938,7 @@ static void response_push(uint8_t val) {
 
 static void set_irq(int type) {
     irq_flag = (uint8_t)type;
+    CDDBG("[cdpend] SET_IRQ type=%d cyc=%llu\n", type, (unsigned long long)psx_cycle_count);
     /* New visible CD INT generation: it has not yet been presented to INTC,
      * so re-arm the latch (the delayed present below raises it once). Also
      * record the reason owed to i_stat so a HINTSTS ack inside the present
@@ -2140,6 +2151,8 @@ static void exec_command(uint8_t cmd) {
      * shows the same stale-Pause overlap during ReadS streaming. */
     if (pending.pending) {
         trace_cdrom('X', 0, pending.cmd, 0);
+        CDDBG("[cdpend] CANCEL cmd=0x%02X by new cmd=0x%02X cyc=%llu\n",
+              pending.cmd, cmd, (unsigned long long)psx_cycle_count);
         pending.pending = 0;
     }
     /* Snapshot the param FIFO before handlers consume it, so the
@@ -2564,11 +2577,13 @@ static void process_pending(uint32_t cycles) {
      * due_cyc forward while the response FIFO is busy (old relative freeze
      * under/over-counted mid-slice acks and forked Pause→Seek→ReadN). */
     if (psx_cycle_count < pending.due_cyc) return;
-    if (irq_flag != 0) return;
+    if (irq_flag != 0) { CDDBG("[cdpend] BLOCK cmd=0x%02X cyc=%llu due=%llu irq_flag=0x%02X\n",
+        pending.cmd,(unsigned long long)psx_cycle_count,(unsigned long long)pending.due_cyc,irq_flag); return; }
 
     done_cmd = pending.cmd;
     pending.pending = 0;
     pending.due_cyc = 0;
+    CDDBG("[cdpend] FIRE cmd=0x%02X cyc=%llu\n", done_cmd,(unsigned long long)psx_cycle_count);
     response_clear();
 
     switch (done_cmd) {
@@ -2878,6 +2893,8 @@ void cdrom_init(const char* cue_path) {
     spu_cd_audio_reset();
     /* Rematch: pending.cmd/delay/phase and read MSF used to survive with
      * pending.pending=0 / reading=0 and fork the CD digest at dig0. */
+    CDDBG("[cdpend] INIT-RESET pending.cmd=0x%02X pending=%d cyc=%llu\n",
+          pending.cmd, pending.pending, (unsigned long long)psx_cycle_count);
     memset(&pending, 0, sizeof(pending));
     memset(&queued_cmd, 0, sizeof(queued_cmd));
     cdrom_clear_pending_dataready();

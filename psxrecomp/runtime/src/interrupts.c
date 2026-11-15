@@ -2460,6 +2460,47 @@ int psx_interrupts_checked_at_current_cycle(uint32_t resume_pc) {
 }
 
 void psx_check_interrupts_dispatch_entry(CPUState* cpu, uint32_t resume_pc) {
+    /* CD/DMA handler-entry probe (PSX_CDPROBE): the fight-entry wedge waits on
+     * DeliverEvent(0xF0000009,0x20) which only cd_dma_chan_reset emits, reached
+     * via CD INTC idx3 -> cd_cb7_run -> ch4 handler. Log which of these guest
+     * entry PCs actually dispatch so we can see where the chain breaks. The
+     * clean C ports are bound 8 bytes past these prologue addresses, so the
+     * executed code is the generated body — this hook is the only place that
+     * observes the real entries. */
+    {
+        static int s_probe = -1;
+        if (s_probe < 0) { const char *e = getenv("PSX_CDPROBE");
+                           s_probe = (e && e[0] && e[0] != '0') ? 1 : 0; }
+        if (s_probe) {
+            uint32_t p = resume_pc & 0x1FFFFFFFu;
+            const char *name = NULL;
+            switch (p) {
+                case 0x0019A8ECu: name = "cd_intc_dispatch"; break;
+                case 0x0019AF7Cu: name = "cd_cb7_run";       break;
+                case 0x0019B7E0u: name = "cd_dma_chan_reset"; break;
+                case 0x0019B944u: name = "cd_reg_window_op"; break;
+                case 0x0019D508u: name = "cd_seek_step?";    break;
+                default: break;
+            }
+            if (name) {
+                static uint32_t s_hits[8];
+                static const uint32_t s_idx[8] = {0,1,2,3,4,5,6,7};
+                (void)s_idx;
+                /* count per-slot by name order */
+                uint32_t slot = (p == 0x0019A8ECu) ? 0 :
+                                (p == 0x0019AF7Cu) ? 1 :
+                                (p == 0x0019B7E0u) ? 2 :
+                                (p == 0x0019B944u) ? 3 : 4;
+                if (s_hits[slot] < 4000) {
+                    s_hits[slot]++;
+                    fprintf(stderr, "[cdprobe] %s pc=0x%08X cyc=%llu hit=%u\n",
+                            name, resume_pc,
+                            (unsigned long long)psx_get_cycle_count(),
+                            s_hits[slot]);
+                }
+            }
+        }
+    }
     if (psx_interrupts_checked_at_current_cycle(resume_pc)) {
         return;
     }
