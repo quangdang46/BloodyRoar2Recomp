@@ -6388,6 +6388,13 @@ void impact_fx_spawn(undefined4 *param_1,uint param_2,int param_3,int param_4,ui
     return;
   }
   puVar14 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar4 + 0x10))));
+  { extern uint32_t g_pu_raw,g_pu_guestof,g_pu_gbuf,g_pu_node,g_pu_count;
+    uint32_t _gof = (uint32_t)guest_of(puVar14);
+    uint32_t _gbuf = *(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar4 + 0x10)));
+    g_pu_count++;
+    g_pu_raw=(uint32_t)(uintptr_t)puVar14; g_pu_guestof=_gof;
+    g_pu_gbuf=_gbuf; g_pu_node=(uint32_t)iVar4;
+  }
   if (((param_2 & 0xf0000000) == 0x40000000) || ((param_2 & 0xf0000000) != 0x80000000)) {
     uVar12 = param_1[1];
     puVar14[0x16] = *param_1;
@@ -6428,7 +6435,7 @@ void impact_fx_spawn(undefined4 *param_1,uint param_2,int param_3,int param_4,ui
   } while (iVar10 < 2);
   switch(*(undefined2 *)(puVar14 + 0x19)) {
   case 0:
-    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)(uintptr_t)puVar14 + 10,(undefined4)(uintptr_t)puVar14 + 0x14, (undefined4)br2_gaddr(&DAT_801b1b1c), (undefined4)br2_gaddr(&DAT_801b1ad8));
+    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)br2_gaddr(puVar14 + 10),(undefined4)br2_gaddr(puVar14 + 0x14), (undefined4)br2_gaddr(&DAT_801b1b1c), (undefined4)br2_gaddr(&DAT_801b1ad8));
     if (iVar10 != 0) {
       if (param_3 < 10) {
         puVar14[0x15] = 0xa4;
@@ -6443,7 +6450,7 @@ void impact_fx_spawn(undefined4 *param_1,uint param_2,int param_3,int param_4,ui
     }
     break;
   case 1:
-    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)(uintptr_t)puVar14 + 10,(undefined4)(uintptr_t)puVar14 + 0x14, (undefined4)br2_gaddr(&DAT_801b1b78), (undefined4)br2_gaddr(&DAT_801b1b5c));
+    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)br2_gaddr(puVar14 + 10),(undefined4)br2_gaddr(puVar14 + 0x14), (undefined4)br2_gaddr(&DAT_801b1b78), (undefined4)br2_gaddr(&DAT_801b1b5c));
     if (iVar10 != 0) {
       puVar13 = (undefined2 *)guest_at((uint32_t)(uintptr_t)(puVar14[0x18]));
       uVar1 = rand_lcg();
@@ -6462,7 +6469,7 @@ void impact_fx_spawn(undefined4 *param_1,uint param_2,int param_3,int param_4,ui
     break;
   case 2:
   case 3:
-    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)(uintptr_t)puVar14 + 10,(undefined4)(uintptr_t)puVar14 + 0x14, (undefined4)br2_gaddr(&DAT_801b1a74), (undefined4)br2_gaddr(&DAT_801b1a50));
+    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)br2_gaddr(puVar14 + 10),(undefined4)br2_gaddr(puVar14 + 0x14), (undefined4)br2_gaddr(&DAT_801b1a74), (undefined4)br2_gaddr(&DAT_801b1a50));
     if (iVar10 != 0) {
       *(uint32_t *)guest_at((uint32_t)(uintptr_t)(puVar14[0x18] ))= (uint32_t)guest_of(param_1);
       uVar6 = rand_lcg();
@@ -6483,14 +6490,14 @@ void impact_fx_spawn(undefined4 *param_1,uint param_2,int param_3,int param_4,ui
     break;
   case 4:
   case 9:
-    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)(uintptr_t)puVar14 + 10,(undefined4)(uintptr_t)puVar14 + 0x14, (undefined4)br2_gaddr(&DAT_801b1ab8), (undefined4)br2_gaddr(&DAT_801b1a94));
+    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)br2_gaddr(puVar14 + 10),(undefined4)br2_gaddr(puVar14 + 0x14), (undefined4)br2_gaddr(&DAT_801b1ab8), (undefined4)br2_gaddr(&DAT_801b1a94));
     if (iVar10 != 0) {
       return;
     }
     break;
   case 5:
     puVar9 = puVar14 + 0x14;
-    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)(uintptr_t)puVar14 + 10,(undefined4)br2_gaddr(puVar9), (undefined4)br2_gaddr(&DAT_801b1bb4), (undefined4)br2_gaddr(&DAT_801b1b90));
+    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)br2_gaddr(puVar14 + 10),(undefined4)br2_gaddr(puVar9), (undefined4)br2_gaddr(&DAT_801b1bb4), (undefined4)br2_gaddr(&DAT_801b1b90));
     if (iVar10 != 0) {
       puVar13 = (undefined2 *)guest_at((uint32_t)(uintptr_t)(puVar14[0x18]));
       puVar14[0x15] = (int)param_5 >> 0xf;
@@ -6592,7 +6599,7 @@ LAB_8013a628:
     return;
   case 8:
   case 0x12:
-    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)(uintptr_t)puVar14 + 10,(undefined4)(uintptr_t)puVar14 + 0x14, (undefined4)br2_gaddr(&DAT_801b1c30), (undefined4)br2_gaddr(&DAT_801b1bfc));
+    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)br2_gaddr(puVar14 + 10),(undefined4)br2_gaddr(puVar14 + 0x14), (undefined4)br2_gaddr(&DAT_801b1c30), (undefined4)br2_gaddr(&DAT_801b1bfc));
     if (iVar10 != 0) {
       iVar5 = task_alloc_wrap_c((undefined4)(uintptr_t)((intptr_t)puVar14 + 0xe),(undefined4)(uintptr_t)((intptr_t)puVar14 + 0x36),(int)guest_of(&DAT_801b1c60),(int)guest_of(&DAT_801b1c74));
       if (iVar5 != 0) {
@@ -6615,7 +6622,7 @@ LAB_8013a628:
   case 0xb:
   case 0xc:
   case 0xd:
-    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)br2_gaddr(puVar14 + 10),(undefined4)(uintptr_t)(puVar14 + 0x14),(undefined4)(uintptr_t)(&PTR_DAT_801b19d4)[*(short *)(puVar14 + 0x19) + -10], (undefined4)br2_gaddr(&DAT_801b192c));
+    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)br2_gaddr(puVar14 + 10),(undefined4)br2_gaddr(puVar14 + 0x14),(undefined4)(uintptr_t)(&PTR_DAT_801b19d4)[*(short *)(puVar14 + 0x19) + -10], (undefined4)br2_gaddr(&DAT_801b192c));
     if (iVar10 != 0) {
       puVar13 = (undefined2 *)guest_at((uint32_t)(uintptr_t)(puVar14[0x18]));
       uVar6 = rand_lcg();
@@ -6668,7 +6675,7 @@ LAB_8013a628:
     else {
       puVar8 = &DAT_801b1a3c;
     }
-    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)(uintptr_t)puVar14 + 10,(undefined4)(uintptr_t)puVar14 + 0x14, (undefined4)br2_gaddr(&DAT_801b1a2c),(undefined4)br2_gaddr(puVar8));
+    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)br2_gaddr(puVar14 + 10),(undefined4)br2_gaddr(puVar14 + 0x14), (undefined4)br2_gaddr(&DAT_801b1a2c),(undefined4)br2_gaddr(puVar8));
     if (iVar10 != 0) {
       if (*(short *)(puVar14 + 0x19) != 0xe) {
         return;
@@ -7269,6 +7276,17 @@ int task_alloc_wrap_b(undefined4 param_1,undefined4 param_2,undefined4 param_3,u
 {
   int iVar1;
   undefined4 *puVar2;
+  { extern uint32_t g_wb_last_p1,g_wb_last_p2,g_wb_last_p3,g_wb_last_p4,g_wb_last_p5;
+    extern uint32_t g_wb_bad_count,g_wb_bad_node,g_wrap_src;
+    g_wrap_src=1;
+    g_wb_last_p1=(uint32_t)param_1; g_wb_last_p2=(uint32_t)param_2;
+    g_wb_last_p3=(uint32_t)param_3; g_wb_last_p4=(uint32_t)param_4;
+    g_wb_last_p5=(uint32_t)param_5;
+    if (((uint32_t)param_1 < 0x80100000u || (uint32_t)param_2 < 0x80100000u) &&
+        (uint32_t)param_1 != 0u && (uint32_t)param_2 != 0u) {
+      g_wb_bad_count++; g_wb_bad_node=(uint32_t)param_4;
+    }
+  }
   iVar1 = (int)(intptr_t)task_node_alloc(0,3,0,0x80137824,0,0x1c);
   if (iVar1 != 0) {
     puVar2 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0x10))));
@@ -8448,6 +8466,7 @@ undefined1 * mem_move(undefined1 *param_1,undefined1 *param_2,int param_3)
  * the state addr, both dest ptrs, and the script base/pc for freeze_check. */
 extern uint32_t g_sst_bad_state, g_sst_bad_d0, g_sst_bad_d1;
 extern uint32_t g_sst_bad_sbase, g_sst_bad_spc, g_sst_bad_count;
+extern uint32_t g_sst_bad_d2, g_sst_bad_d3, g_sst_bad_d4, g_sst_bad_d6;
 
 void script_stream_tick(int *param_1)
 {
@@ -8465,6 +8484,10 @@ void script_stream_tick(int *param_1)
     g_sst_bad_d1    = (uint32_t)param_1[1];
     g_sst_bad_sbase = (uint32_t)param_1[4];
     g_sst_bad_spc   = (uint32_t)param_1[5];
+    g_sst_bad_d2    = (uint32_t)param_1[2];
+    g_sst_bad_d3    = (uint32_t)param_1[3];
+    g_sst_bad_d4    = (uint32_t)param_1[4];
+    g_sst_bad_d6    = (uint32_t)param_1[6];
   }
   if (_DAT_1f800082 == 0) {
     *(short *)(param_1 + 6) = (short)param_1[6] + -1;
@@ -8746,6 +8769,21 @@ int task_alloc_wrap_d(undefined4 param_1,undefined4 param_2,undefined4 param_3,u
 {
   int iVar1;
   undefined4 *puVar2;
+  /* creation-time arg latch: the dest-ptr args must be real guest addrs
+   * (>=0x80100000). Recording them lets freeze_check tell a bad br2_gaddr /
+   * puVar14 at alloc apart from the stream state being overwritten later. */
+  { extern uint32_t g_wd_last_p1,g_wd_last_p2,g_wd_last_p3,g_wd_last_p4,g_wd_last_p5;
+    extern uint32_t g_wd_bad_count,g_wd_bad_node,g_wrap_src;
+    g_wrap_src=2;
+    g_wd_last_p1=(uint32_t)param_1; g_wd_last_p2=(uint32_t)param_2;
+    g_wd_last_p3=(uint32_t)param_3; g_wd_last_p4=(uint32_t)param_4;
+    g_wd_last_p5=(uint32_t)param_5;
+    if (((uint32_t)param_1 < 0x80100000u || (uint32_t)param_2 < 0x80100000u ||
+         (uint32_t)param_3 < 0x80100000u) &&
+        (uint32_t)param_1 != 0u && (uint32_t)param_2 != 0u) {
+      g_wd_bad_count++; g_wd_bad_node=(uint32_t)(uintptr_t)param_4;
+    }
+  }
   iVar1 = (int)(intptr_t)task_node_alloc(1,2,6,0x80137824,0,0x1c);
   if (iVar1 != 0) {
     puVar2 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0x10))));

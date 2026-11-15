@@ -13549,7 +13549,11 @@ int32_t options_menu_alloc(void)
   uint32_t s6, s5, s0, s1, s2, s3, s4;
   int32_t  i;
   if (blk == 0) return 0;
-  s6 = MB32(guest_of(blk) + 0x10u);
+  /* blk is the node's GUEST address (task_node_alloc returns guest_of(node));
+   * read the +0x10 inline-buffer pointer field by guest addr, not guest_of()
+   * (which expects a host ptr and would return 0 -> s6=0 -> wrap_d dest ptrs
+   * collapse to small offsets that script_stream_tick writes into low mem). */
+  s6 = MB32((uint32_t)(uintptr_t)blk + 0x10u);
   s5 = 0xfa0u;
   s0 = s6 + s5;
   s1 = s6;

@@ -145,6 +145,21 @@ int32_t  g_tpool_bad_p3    = -1;
 /* script_stream_tick dest-ptr anomaly latch (written by game/battle.c). */
 uint32_t g_sst_bad_state = 0, g_sst_bad_d0 = 0, g_sst_bad_d1 = 0;
 uint32_t g_sst_bad_sbase = 0, g_sst_bad_spc = 0, g_sst_bad_count = 0;
+uint32_t g_sst_bad_d2 = 0, g_sst_bad_d3 = 0, g_sst_bad_d4 = 0, g_sst_bad_d6 = 0;
+/* task_alloc_wrap_d creation-time arg latch: records the dest-ptr args
+ * (param_1..param_3) and script args (param_4,param_5) so freeze_check can
+ * compare creation values against the runtime script_stream_tick snapshot —
+ * distinguishes a bad br2_gaddr/puVar14 at alloc from later state overwrite. */
+uint32_t g_wd_last_p1=0,g_wd_last_p2=0,g_wd_last_p3=0,g_wd_last_p4=0,g_wd_last_p5=0;
+uint32_t g_wd_bad_count=0, g_wd_bad_node=0;
+uint32_t g_wb_last_p1=0,g_wb_last_p2=0,g_wb_last_p3=0,g_wb_last_p4=0,g_wb_last_p5=0;
+uint32_t g_wb_bad_count=0, g_wb_bad_node=0, g_wrap_src=0;
+/* puVar14 (sprite node inline GPU buffer) conversion latch: captures the raw
+ * host ptr low32, guest_of() result, the node's +0x10 buffer guest addr (Gbuf)
+ * and the node guest addr, to explain why br2_gaddr(puVar14) yields garbage. */
+uint32_t g_pu_raw=0,g_pu_guestof=0,g_pu_gbuf=0,g_pu_node=0,g_pu_count=0;
+/* br2_gaddr fallback latch: last host pointer (>4GB) guest_of could not map. */
+uint32_t g_bg_hi=0,g_bg_lo=0,g_bg_count=0;
 /* Name the function whose dispatch produced the FIRST cpu->pc==0 while inside
  * an exception (the wedge's root). `addr` is the just-executed block leader;
  * a ring keeps the last few so the producing insn's neighbourhood is visible. */

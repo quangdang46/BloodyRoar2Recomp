@@ -10232,6 +10232,13 @@ static void handle_freeze_check(int id, const char *json)
     extern int32_t  g_tpool_bad_p1, g_tpool_bad_p2, g_tpool_bad_p3;
     extern uint32_t g_sst_bad_state, g_sst_bad_d0, g_sst_bad_d1;
     extern uint32_t g_sst_bad_sbase, g_sst_bad_spc, g_sst_bad_count;
+    extern uint32_t g_sst_bad_d2, g_sst_bad_d3, g_sst_bad_d4, g_sst_bad_d6;
+    extern uint32_t g_wd_last_p1,g_wd_last_p2,g_wd_last_p3,g_wd_last_p4,g_wd_last_p5;
+    extern uint32_t g_wd_bad_count,g_wd_bad_node;
+    extern uint32_t g_wb_last_p1,g_wb_last_p2,g_wb_last_p3,g_wb_last_p4,g_wb_last_p5;
+    extern uint32_t g_wb_bad_count,g_wb_bad_node,g_wrap_src;
+    extern uint32_t g_pu_raw,g_pu_guestof,g_pu_gbuf,g_pu_node,g_pu_count;
+    extern uint32_t g_bg_hi,g_bg_lo,g_bg_count;
 
     /* Top-K fn_entry histogram over the last `window` slots. */
     typedef struct { uint32_t func; uint32_t count; } HistBucket;
@@ -10439,6 +10446,33 @@ static void handle_freeze_check(int id, const char *json)
                     "\"sst_bad_d1\":\"0x%08X\","
                     "\"sst_bad_sbase\":\"0x%08X\","
                     "\"sst_bad_spc\":\"0x%08X\","
+                    "\"sst_bad_d2\":\"0x%08X\","
+                    "\"sst_bad_d3\":\"0x%08X\","
+                    "\"sst_bad_d4\":\"0x%08X\","
+                    "\"sst_bad_d6\":\"0x%08X\","
+                    "\"wd_last_p1\":\"0x%08X\","
+                    "\"wd_last_p2\":\"0x%08X\","
+                    "\"wd_last_p3\":\"0x%08X\","
+                    "\"wd_last_p4\":\"0x%08X\","
+                    "\"wd_last_p5\":\"0x%08X\","
+                    "\"wd_bad_count\":%u,"
+                    "\"wd_bad_node\":\"0x%08X\","
+                    "\"wb_last_p1\":\"0x%08X\","
+                    "\"wb_last_p2\":\"0x%08X\","
+                    "\"wb_last_p3\":\"0x%08X\","
+                    "\"wb_last_p4\":\"0x%08X\","
+                    "\"wb_last_p5\":\"0x%08X\","
+                    "\"wb_bad_count\":%u,"
+                    "\"wb_bad_node\":\"0x%08X\","
+                    "\"wrap_src\":%u,"
+                    "\"pu_raw\":\"0x%08X\","
+                    "\"pu_guestof\":\"0x%08X\","
+                    "\"pu_gbuf\":\"0x%08X\","
+                    "\"pu_node\":\"0x%08X\","
+                    "\"pu_count\":%u,"
+                    "\"bg_hi\":\"0x%08X\","
+                    "\"bg_lo\":\"0x%08X\","
+                    "\"bg_count\":%u,"
                     "\"hist\":[",
                     id,
                     g_debug_current_func_addr,
@@ -10581,7 +10615,14 @@ static void handle_freeze_check(int id, const char *json)
                     g_tpool_bad_p1, g_tpool_bad_p2, g_tpool_bad_p3,
                     g_sst_bad_count,
                     g_sst_bad_state, g_sst_bad_d0, g_sst_bad_d1,
-                    g_sst_bad_sbase, g_sst_bad_spc);
+                    g_sst_bad_sbase, g_sst_bad_spc,
+                    g_sst_bad_d2, g_sst_bad_d3, g_sst_bad_d4, g_sst_bad_d6,
+                    g_wd_last_p1,g_wd_last_p2,g_wd_last_p3,g_wd_last_p4,g_wd_last_p5,
+                    g_wd_bad_count,g_wd_bad_node,
+                    g_wb_last_p1,g_wb_last_p2,g_wb_last_p3,g_wb_last_p4,g_wb_last_p5,
+                    g_wb_bad_count,g_wb_bad_node,g_wrap_src,
+                    g_pu_raw,g_pu_guestof,g_pu_gbuf,g_pu_node,g_pu_count,
+                    g_bg_hi,g_bg_lo,g_bg_count);
     for (int i = 0; i < hist_n && pos < sizeof(buf) - 64; i++) {
         pos += snprintf(buf + pos, sizeof(buf) - pos,
                         "%s{\"func\":\"0x%08X\",\"count\":%u}",

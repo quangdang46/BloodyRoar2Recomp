@@ -109,7 +109,20 @@ uint32_t guest_of(const void *p)
 uint32_t br2_gaddr(const void *p)
 {
     uint32_t g = guest_of(p);
-    return g ? g : (uint32_t)(uintptr_t)p;
+    if (g) return g;
+    /* Fallback diagnostic: a real host pointer (>4GB) that guest_of cannot map
+     * back to a guest address means the caller passed a host ptr living outside
+     * emulated RAM/scratchpad (e.g. g_openbus or a bogus ptr). Record it so
+     * freeze_check can name the producer. Guest-address values (<4GB) pass
+     * through unchanged and are ignored here. */
+    uintptr_t up = (uintptr_t)p;
+    if (up > 0x100000000ULL) {
+        extern uint32_t g_bg_hi, g_bg_lo, g_bg_count;
+        g_bg_count++;
+        g_bg_hi = (uint32_t)(up >> 32);
+        g_bg_lo = (uint32_t)up;
+    }
+    return (uint32_t)up;
 }
 
 /* ── MMIO-aware accessors ─────────────────────────────────────────────────
