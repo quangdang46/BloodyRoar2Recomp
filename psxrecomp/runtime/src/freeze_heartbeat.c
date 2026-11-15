@@ -304,6 +304,37 @@ static void freeze_dump_device_state_json(FILE *f) {
         fputs("]},", f);
     }
 
+    /* Event-call breakdown over a deep HLE-ring window: DeliverEvent (fn 0x7)
+     * grouped by class+spec (repeat-weighted) + last producer ra; TestEvent
+     * (fn 0xB) grouped by handle. Shows which classes ARE delivered vs which
+     * the wedged TestEvent spins on. */
+    {
+        uint64_t hseq = psx_hle_ring_seq();
+        uint64_t hstart = (hseq > 8192ull) ? (hseq - 8192ull) : 0ull;
+        #define EV_AGG_CAP 64
+        struct { uint32_t c,s,ra; uint64_t n; } de[EV_AGG_CAP]; int nde=0;
+        struct { uint32_t h,ra; uint64_t n; } te[EV_AGG_CAP]; int nte=0;
+        for (uint64_t i = hstart; i < hseq; i++) {
+            const PsxHleCallEntry *e = psx_hle_ring_entry(i);
+            if (!e) continue;
+            uint64_t rep = e->repeat ? e->repeat : 1;
+            if (e->vector == 0xB0u && e->fn == 0x7u) {
+                int k; for (k=0;k<nde;k++) if (de[k].c==e->a0 && de[k].s==e->a1) break;
+                if (k==nde && nde<EV_AGG_CAP) { de[nde].c=e->a0; de[nde].s=e->a1; de[nde].ra=e->ra; de[nde].n=0; nde++; k=nde-1; }
+                if (k<nde) { de[k].n += rep; de[k].ra = e->ra; }
+            } else if (e->vector == 0xB0u && e->fn == 0xBu) {
+                int k; for (k=0;k<nte;k++) if (te[k].h==e->a0) break;
+                if (k==nte && nte<EV_AGG_CAP) { te[nte].h=e->a0; te[nte].ra=e->ra; te[nte].n=0; nte++; k=nte-1; }
+                if (k<nte) { te[k].n += rep; te[k].ra = e->ra; }
+            }
+        }
+        fputs("\"ev_agg\":{\"deliver\":[", f);
+        for (int i=0;i<nde;i++) { if(i)fputs(",",f); fprintf(f,"{\"cls\":\"0x%08X\",\"spec\":\"0x%08X\",\"n\":%llu,\"ra\":\"0x%08X\"}",de[i].c,de[i].s,(unsigned long long)de[i].n,de[i].ra); }
+        fputs("],\"test\":[", f);
+        for (int i=0;i<nte;i++) { if(i)fputs(",",f); fprintf(f,"{\"h\":\"0x%08X\",\"n\":%llu,\"ra\":\"0x%08X\"}",te[i].h,(unsigned long long)te[i].n,te[i].ra); }
+        fputs("]},", f);
+    }
+
     /* CD command history tail — last commands issued with IRQ state, showing
      * whether a completion interrupt was expected for the wedged operation. */
     {
