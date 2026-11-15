@@ -723,3 +723,29 @@ battle_flow_state_machine (generated 0x8016fcc4) waits on before calling
 it — likely a ready/loaded flag or a deferred event the coroutine should
 deliver. Same event-delivery class as the fixed wedge; check whether the
 specific completion event the battle waits for is being DeliverEvent'd.
+
+=== POST-ENTRY STALL — refined root-cause narrowing (verified live) ===
+Ruled OUT (all checked live on the running gs=8/ph=8 fight):
+- CD command queue: EMPTY (head==tail @0x801b8448/44c). Not a load stall.
+- Asset decompress: decomp_trace ring FROZEN at total=4134 (LZSS/file_load
+  stream completed; dst marched 0x800A3F14->0x800E1064 then stopped).
+- VBLANK: cycle_paced_raise=362170, delivered=362000 — vsync IRQs fire 60Hz.
+- Fighter data: structs @0x1f8000e8/0x1f8001f0 POPULATED (real char-data
+  ptrs 0x8006ba58/0x800ce9ac, anim tables 0x801beff0/0x801bf860, 0x801c00d0).
+- Sim gate: _DAT_1f800082==0 so case8 DOES call fighter_contact_resolve,
+  fighter_pair_update, battle_camera_step, AND fighter_frame (FUN_801787dc)
+  once per fighter every frame.
+- Input: press START (buttons=8) does not change gs/ph or fighter state.
+
+CONFIRMED STALL: fighter_frame runs per frame but fighter STATE structs
+(0x1f8000e8/1f0, 0x108 stride) AND the rendered frame are byte-identical
+over seconds — the per-fighter ANIMATION/ACTION frame is not advancing.
+fighter_frame writes timers/state (param_1+0xd6/0xd8/0xaa) that stay fixed,
+meaning its action/anim-advance branch is not progressing — the .ACT/.ANI
+action VM or anim-frame counter is not stepping. NEXT: find the per-fighter
+anim-frame/action-timer field fighter_frame increments (or the ev_stream/
+action_switch path) and determine what global tick it depends on — likely a
+per-battle-frame counter or the event/VM dispatch that should run each
+battle_frame but is gated. Check whether battle_frame (0x8014cdd0, the OTHER
+battle driver distinct from battle_flow_state_machine) is the one that ticks
+the action VM and whether IT is reached.
