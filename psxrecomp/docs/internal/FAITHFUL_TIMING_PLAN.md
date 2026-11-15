@@ -6783,3 +6783,34 @@ corrupts pointers; a corrupted function/dispatch pointer in the
 cinematic path is the likely source of the null indirect target. The
 pc=0 wedge and the .ANI-corruption fatal are probably the SAME root
 (memory overlap) manifesting at different points.
+
+### Session N+5c — pc=0 localized: battle_flow_state_machine case 8, FC_ANI=0
+
+Traced the versus->fight pc=0 crash to its exact site:
+- Call chain: generated 0x80126xxx orchestrator -> jal
+  battle_flow_state_machine (0x8016FCC4, CLEAN) -> ... -> PC=0.
+- Live battle block @0x1f800000: DAT_1f80009c=0x01 (2P-VERSUS mode),
+  DAT_1f800001=0x08 -> case 8 = in-fight per-frame logic.
+- Case 8 calls prim_list_gte_invoke (battle.c:11848) which loops
+  task_invoke(piVar4[3],piVar4[2]) over the prim/task list, plus reads
+  fighter objects _DAT_1f800110/_DAT_1f800218. task_invoke itself is
+  null-safe (fn_lookup->NULL skips), so the wild jump is a generated
+  jr/jalr through a zeroed pointer in the prim/task/fighter data.
+- FC_ANI (ctrl+0x30): P1=0x1f800118 -> 0, P2=0x1f800220 -> 0. BOTH
+  fighters have FC_ANI=0 -> the char .ANI never linked. With no .ANI,
+  action/anim/task data derived from it is absent -> downstream null
+  deref -> PC=0. This is the FC_ANI=0 manifestation (vs the earlier
+  FC_ANI=corrupt -> ev_stream_dispatch fatal).
+
+COMMON ROOT: the char .ANI resource (file_id 0x40) is not reaching
+FC_ANI correctly — whether via failed load, bad heap dest
+(0x800CE958 overlaps 0x800D0000 staging, Session N+4), or the
+select/battle resource path not completing. All versus->fight crash
+signatures (pc=0, ev_stream_dispatch fatal, FC_ANI=0/corrupt) trace
+to the char .ANI resource not being resident+intact when battle
+case 7/8 consumes it.
+
+NEXT (unchanged): find the char-resource loader/heap that produces
+the .ANI dest and why FC_ANI stays 0 / the blob overlaps staging.
+Ghidra MCP backend (port 8080) still down; generated-code archaeology
+or a gwatch on FC_ANI during a run that reaches char-select needed.
