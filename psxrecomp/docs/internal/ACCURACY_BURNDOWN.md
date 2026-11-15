@@ -2950,3 +2950,23 @@ the large fight-init files (char models/stage). NEXT: find the read-size/
 mode selector that chooses cd_dma_xfer_mode vs cd_file_read_seq and check
 why fight-init files take the programmed path. If faithful, large reads
 must DMA.
+
+=== SESSION — 0xF0000009 likely = ch4 STREAM event; audio-seq DMA absent ===
+
+cdrom_state + RAM on frozen fight: audio_seq_reset DMA target
+0x801f36f0=0 (empty), seq state 0x801f46f4=0 -> the audio/sequence bulk
+DMA never ran, matching fntrace cd_dma_xfer_mode/xfer_start=0 hits.
+
+REFRAMED MODEL: 0xF0000009 is the channel-4 CD-DMA-done event, delivered
+by 0x8019B7E0 only when 0x801BDF00 armed (cd_dma_xfer_start). File/seek
+programmed-I/O reads do NOT use ch4 -> correctly no event. Therefore the
+cd_seek_step TestEvent(0xF0000009) wait during fight-init is almost
+certainly for a ch4 STREAM transfer (music/voice/seq ADPCM) that SHOULD
+be kicked via cd_dma_xfer_mode during fight bring-up but is NOT — the
+same "skipped init" class as the versus match-init gap, OR a stream-start
+call that isn't reached on the fight path.
+
+NEXT: find which fight-init function should call audio_seq_reset
+(0x80158244) / cd_dma_xfer_mode to start the stream, and why it isn't
+reached. Check the audio/seq state machine (cd_state9 @0x801f46f4,
+cd_state9_store) — is a seq-load requested but never dispatched?
