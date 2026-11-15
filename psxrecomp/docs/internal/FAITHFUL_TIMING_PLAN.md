@@ -6538,3 +6538,27 @@ loaded on THAT path. Either 2P-VS selects a char/mode whose .ANI load differs,
 or a regression since. NEXT: determine which char ids 2P-VS selected
 (P2 ctrl byte2=0x01 byte3=0x05), confirm their .ANI LBA was read from CD, and
 check whether the .ANI file-load (cd_file_load_sm) was requested/dropped.
+
+### versus->fight deep-dive (cont.) — char resource load in-flight at crash
+
+- Char ids: P1 ctrl+0x03=0, P2 ctrl+0x03=5. FC_PLAYER +0x02 = 0/1. FC_ANI +0x30=0 both.
+- node_root (ctrl+0x20)=0x801e1b3c points to an EMPTY struct too -> WHOLESALE
+  char-resource absence, not .ANI-specific. .DAT/model also not landed.
+- CD DMA IS working: dma_cdrom_history shows full 512-word sector transfers
+  streaming to guest 0x8011E800+ early, and CONTINUING to a staging buffer
+  0x800D0000-0x800DE000 (~56KB ring) at frames 1567-1577, ~16 frames before
+  the psx_fatal_halt (~1593). Load was IN-FLIGHT when ev_stream_dispatch fired.
+- Staging buffer 0x800D0000 holds dense binary (not a clean .ANI header) ->
+  char files arrive packed/encoded or .ANI is extracted+relocated by a later
+  generated step that sets ctrl+0x30 (FC_ANI writer is generated, not clean).
+- ring_dropped=523: sectors overwritten before guest consumed (8-deep ring,
+  s_sector_ring). At authentic speed drops are "hardware-faithful" -> guest
+  consumption (CD data-ready IRQ / DMA drain) may be lagging in the
+  clean-C battle path = the deferred-IRQ contract again, OR genuine slowness.
+- HYPOTHESES: (A) async-load RACE — fighter_frame runs ev_stream_dispatch
+  before the char .ANI link completes (load-complete gate broken/skipped);
+  (B) .ANI inside packed char archive needs an unpack/relocate step that
+  didn't run; (C) CD consumption IRQ starving -> ring drops -> incomplete file.
+- NEXT: find the generated fn that writes ctrl+0x30 (FC_ANI) — likely a
+  CD-completion callback or deferred task; check whether it's gated on a
+  "resources ready" flag that battle_flow should wait on before stage 8.
