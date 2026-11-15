@@ -973,3 +973,40 @@ NEXT (decisive): wtrace slot8 status (0x8EEC) + correlate each write's
 pc/ra/cycle against hle_dump DeliverEvent seqs and spu_ta handshake seqs on a
 fresh run — determines whether the last DeliverEvent found slot8 disabled
 (write skipped) vs whether a 4th ch4 kick is simply absent.
+
+=== SESSION UPDATE: fighter SPAWN fixed via clean-cycle accounting; versus->fight crash PROVEN clean-independent ===
+ROOT CAUSE of the earlier "fighters never spawn / fobj=0" wedge: clean-C
+dispatch (clean_try_dispatch -> wrap_*) ran with ZERO guest-cycle accounting
+while generated bodies self-charge via psx_cyc_step (~1 base + load
+interlock). Clean hot paths therefore advanced psx_cycle_count far too
+slowly, so CD-load/IRQ/SPU deadlines never landed inside clean waits and
+fighter-model bring-up stalled before spawn.
+FIX (commit d8a3445): gen_clean_table.py now emits a per-CleanDispatchEnt
+`cost` derived from the generated oracle's per-function byte size
+(instr_count * ~2 CPI) and clean_try_dispatch calls psx_advance_cycles(cost)
+after each clean call. Verified live: versus->fight now spawns BOTH fighters
+(state=0x1, valid fobj/parts ptrs, sane +/-256 spawn x, phase advances).
+NOTE: psx_instr_base_cycles()==1 is the documented per-instr base; the flat
+~2 CPI is a lump-sum approximation (decode-based n_instr+n_loads*K gives a
+similar magnitude, so it is roughly calibrated, not the crash cause).
+
+versus->fight crash is PRE-EXISTING + CLEAN-INDEPENDENT (A/B proven):
+pure-generated (CLEAN_RANGES="0x0-0x0", no clean code) crashes identically
+pc=0x0 in the OpenBIOS kernel spin, just later (frame ~12541 vs clean ~5527)
+and at a different EPC (0x8018BD7C vs 0x8019A648). Both end in the same
+low-memory kernel loop (last_func_addr=0x000029CC) after the B0 kernel
+trampoline (jr 0xB0, t1=fn). => NOT a clean-port bug; it is the runtime's
+OpenBIOS-kernel / IRQ / CD-DMA event path.
+NEW crash manifestation observed: "DISPATCH FATAL: misaligned target
+0x00030001" with COP0_EPC=0x8019A648 — inside the vsync_wait_n spin reading
+DAT_801bdde0. During the spin a VBlank IRQ fires and an indirect jump lands
+on 0x30001, a DATA value (0x30000/0x30001 pairs populate struct arrays at
+0x801B2Exx / 0x8008xxxx / 0x801B1xxx). So the IRQ/callback path executes a
+data word as a code pointer -> pc=0. Consistent with the prior slot8
+TestEvent-spin analysis: same versus->fight fighter-file SPU/ch4 completion
+wedge, different surface symptom.
+NEXT (unchanged, decisive): on a fresh run wtrace slot8 status (0x8EEC) +
+correlate DeliverEvent seqs vs spu_ta handshake seqs to learn whether the
+4th ch4 kick is absent or its DeliverEvent found slot8 disabled; ALSO catch
+the misaligned-jump source PC (which jr/jalr loaded 0x30001) via cyc_watch
+armed on the IRQ entry.
