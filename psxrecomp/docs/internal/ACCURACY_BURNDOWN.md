@@ -2744,3 +2744,49 @@ NEXT: disassemble guest 0xB0/0x2AA0 poll loop to name the exact flag it
 reads; then find why fight-init doesn't satisfy it (compare vs the menu
 path which DOES exit these waits). Suspect a per-frame callback /
 VBlank-IRQ-handler / kernel-object signal armed only in the fight state.
+
+=== SESSION — fight-freeze = TestEvent(0xF0000009) wedge; 0x801BDF00 gate confirmed LIVE ===
+
+Re-drove ARCADE 1P to ph=8 (general freeze, same as versus). Live debug :4370.
+This is the SAME DeliverEvent(0xF0000009) class as stall#2 / Session-18,
+now with the gate flag decoded end-to-end in generated code.
+
+CONFIRMED LIVE (read_ram on frozen instance):
+- TestEvent handle @0x801bde38 = 0xf1000008 -> EvCB slot 8 = class
+  0xF0000009 spec 0x20 MARK ENABLED (OpenEvent DID run; handle is VALID,
+  not the old bogus 0x8019B0FC). bioscall B0[11] TestEvent ~1.9M calls.
+- GATE FLAG @0x801bdf00 = 0  -> channel-4 done callback takes the
+  flag==0 early-return -> DeliverEvent(0xF0000009,0x20) NEVER fires.
+- @0x801bdee8 = 0 (alt DeliverEvent cb unset -> callback would use the
+  direct BIOS B0/7 path if it ran).
+- @0x801bdea0 = 1 (cd_ext_init_once guard set -> init ran).
+- @0x801bc7b0 = 0x80195b9c (cd_bios_cmd40_b, the 0xF0000003 deliverer).
+
+CALLBACK DECODE (br2eu_func_8019B7E0, generated full_46.c:39084):
+  block_8019B7E0: v0 = *(0x801C0000-8448)=*(0x801BDF00)
+    ==0 -> block_8019B7F4 -> jal cd_delay_3c (0x8019BE78) -> RETURN, no deliver
+    !=0 -> block_8019B7FC: MMIO reset CD chan status (0x801BDEB0+0x1AA,
+      clear 0x30), drain-wait loop (<=3841 iters on 0xd5 &0x30), then
+      block_8019B850: a0=*(0x801BDEE8); ==0 -> block_8019B880:
+        a0=0xF0000009, a1=0x20 -> jal BIOS DeliverEvent(B0 idx7)
+      !=0 -> jalr *(0x801BDEE8) callback.
+So 0x801BDF00 is the SOLE gate for DeliverEvent(0xF0000009,0x20).
+
+FLAG WRITERS (all `sw` to 0x801C0000-8448=0x801BDF00):
+  0x8019B928 (cd_dma_xfer_start 0x8019B89C tail):  li v0,1 ; sw -> ARMS=1
+  0x8019B9E8 (cd_reg_window_op 0x8019B944):       sw zero -> CLEARS=0
+  0x8019BA54 (cd.c full_47):                      sw a2 -> op-dependent
+ARM PATH: cd_dma_xfer_mode(0x8019cfc0) -> cd_dma_xfer_start for modes
+5/6/other. Generated caller br2eu_func_80158244 (match/battle region)
+CPS-jals 0x8019CFC0, so fight-init CD DMA SHOULD arm the flag.
+
+OPEN (unchanged, now precisely framed): 0x801BDF00==0 at channel-4 done
+time. Either (a) ORDERING — cd_reg_window_op op1 (0x8019B9E8) clears the
+flag in the read-complete sequence BEFORE the level-triggered channel-4
+IRQ callback reads it (faithful-ordering / IRQ-delivery-point bug), or
+(b) the file-load DMA takes a path that never calls cd_dma_xfer_start.
+DECISIVE EXPERIMENT (still queued): fresh boot, wtrace_arm 0x801BDF00 +
+fntrace_arm 0x8019B7E0(done cb) + 0x8019B89C(xfer_start) + 0x8019B944(regop);
+run to first fight-init file-load; dump ordering of [xfer_start arm=1] vs
+[regop clear=0] vs [done-cb flag read]. If regop clears before the cb,
+the IRQ is being delivered too late / the flag lifetime is wrong.
