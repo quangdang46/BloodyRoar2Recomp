@@ -3273,3 +3273,44 @@ NEXT: find the clean fn that populates fobj collision circles + fighter
 world pos consumed by range_circle_test; diff its clean vs generated
 output. Candidates: skeleton_init, fighter_spawn_setup, fighter_link_init,
 desc/state-commit fns, or the stage-platform collision loader.
+
+=== REFINEMENT: TWO SEPARATE clean-C BUGS; pose/GTE path EXONERATED ===
+
+The "collision circles" at fobj+0xd4/+0x264/+0x354 are NOT standalone
+stage data — they are PART-RECORD fields. fobj part records are 0x50
+stride from fobj+0; each of +0xd4/+0x174/+0x264/+0x354 sits at record
++0x34 (records 2/4/7/10 = specific body parts). range_circle_test is
+called as (part_world_x, part_world_z, platform_desc, 0): it tests
+whether each named body part is over a platform; if ALL fail and
+fobj+0x38 range permits -> off-platform death (*ctrl=-0x7f, HP=-1).
+
+Per-frame these part world coords are produced by the pose/GTE chain:
+  skeleton_pose_step 0x8018544c -> part_matrix_compute 0x80185048
+  -> rotmat_rtps_build 0x8018de6c / matrix_vec3_apply 0x80195050
+  (COP2/GTE via clean_cpu_state()->gte_*).
+ALL of these sit ABOVE 0x80183000 -> in the clean-in-fighter-range
+test (CLEAN_RANGES=0x80174000-0x80183000) they ran GENERATED (correct
+GTE), yet HP still went -1 and the fight still read as off-platform.
+
+=> The HP=-1 / off-platform bug is caused by a clean-C fn INSIDE
+   0x80174000-0x80183000, NOT by the GTE pose math. That range holds
+   fighter_frame (0x801787dc, contains the zone-test itself),
+   action_enter/entry_setup/part_link/reset/apply (action.c), and
+   skeleton_init_wrap->skeleton_init (0x80179ae0). Two live suspects:
+     (a) fighter_frame's zone-test block has a port error (wrong
+         offset/threshold/inverted cond) -> false off-platform;
+     (b) an in-range init fn writes the part world-pos / fobj base
+         transform wrong -> parts legitimately land off-platform.
+=> The ANIMATION freeze is a SEPARATE clean-C bug OUTSIDE
+   0x80174000-0x80183000 (low 0x80126720-0x80173fff and high
+   0x80183000-0x801c0000 each reintroduce it when enabled).
+
+NOTE part_matrix_compute (clean, 0x80185048) stores UNINITIALIZED
+unaff_s0..s6/unaff_retaddr locals into the GTE scratch area
+_DAT_1f8003e0-3fc before FUN_801851d8 — a decompiler spill artifact.
+Benign in the exonerated test (it ran generated) but a REAL hazard in
+full-clean: verify whether those slots are read back as saved regs.
+
+NEXT: (1) diff fighter_frame zone-test block clean-vs-generated at
+0x801787dc; (2) audit in-range action.c init for part base-transform
+writes; (3) separately bisect the out-of-range animation-freeze bug.
