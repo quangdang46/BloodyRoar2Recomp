@@ -3428,3 +3428,75 @@ NOTE: unaff_* sweep CLOSED — genuine read-before-init cases are few
 (menu.c transition_screen_flow unaff_s1/s3 frame counters, sprite coord
 unaff_s2) and are screen/FX timing, not the fighter blocker; the s-reg
 scratch-save blocks are harmless dead-stores (scratch-users never nest).
+
+=== SESSION — zero-cycle bug FIXED + versus->fight wedge RE-LOCALIZED to ch4/SPU kick ===
+
+ZERO-CYCLE CLEAN DISPATCH — RESOLVED.
+The "clean functions charge ZERO guest cycles" lead above is fixed.
+game/gen_clean_table.py now decodes each clean-covered function's real
+instructions from disc/SLES_017.22 (load addr 0x8011E800, text 0xA0800,
+data @file 0x800): base 1 cycle/instr (psx_instr_base_cycles) + memory
+surcharge on load/store coproc ops. src/clean_table.c regenerated: 1116
+wrappers, mean ~96 / median ~40 guest cycles. Commits d8a3445 (flat-CPI
+attempt), 28d628e (decode-based model + freeze-dump device_state +
+bioscall/dma rings). VERIFIED: both fighters now spawn (state=0x1,
+valid fobj/parts) — the spawn-skip of Session N+5e is gone.
+
+NEW VERSUS->FIGHT WEDGE (post-cycle-fix). After both fighters spawn the
+runtime wedges in the versus->fight CD/SPU load. Symptom: guest spins in
+cd_seek_complete_poll -> TestEvent(0xF1000008) ~22450x then times out to
+the pc=0/IRQ-storm crash. This is CLEAN-INDEPENDENT (pure-gen crashes
+identically) — a faithful-hardware CD/DMA timing race.
+
+PRECISE MECHANISM (all verified against code + freeze dumps):
+- TestEvent(0xF1000008) waits for DeliverEvent(0xF0000009,0x20), which
+  is produced ONLY by cd_dma_chan_reset (game/cd.c, clean) — the DMA
+  channel-4 (SPU) completion handler registered at cb7_handlers[4].
+- cd_cb7_run iterates the DICR-derived channel mask and calls each
+  channel's completion handler; ch4 done -> cd_dma_chan_reset ->
+  DeliverEvent(0xF0000009,0x20) -> sets the slot-8 EvCB flag TestEvent polls.
+- Per file chunk the game issues Setloc->(0x0E)->ReadN->Pause and waits
+  for the ch4/SPU stream to drain before the next chunk.
+- DMA channel histogram (whole trace ring, freeze dump):
+    kick: [56,54,1180,1064,2,0,561,0]
+    done: [56,54,1181,1064,2,0,561,0]
+  ch3(CDROM)=1064 kicks all complete; ch2(GPU)=1180; ch6(OTC)=561;
+  ch4(SPU)=ONLY 2 kicks. DeliverEvent(0xF0000009) fired exactly 2x —
+  once per ch4 completion. The 3rd required ch4 transfer never kicks.
+- cd_rom state at wedge: pend_cmd=0x09(Pause) already completed
+  (pend_act=0, irq_fl=0); sec_pos=2060/2340 (mid-sector); CD idle.
+  So the CD side finished; the missing piece is purely the ch4 kick.
+
+PRIME SUSPECT: cd_reg_window_op (game/cd.c, thunked to generated
+0x8019B944 for faithful cycle-accurate MMIO status polling). op3 — the
+op that kicks the ch4/SPU transfer — polls a CD status u16 at
+CD-reg-block+0x1AA with a 0xF01-iteration cap and returns -2 on timeout.
+cd_seek_param_issue (clean, cd.c:1941) runs op2->op1->op3 and DISCARDS
+op3's return, so a -2 timeout silently skips the ch4 kick -> the later
+TestEvent(0xF1000008) waits forever -> timeout -> pc=0.
+
+WHY IT'S INTERMITTENT: op3's poll window is fixed (~0xF01 iters of real
+guest cycles); whether the CD reports ready in time depends on exact
+cycle timing of the preceding Setloc/ReadN/Pause — a faithful race, not
+a logic bug. cdrom.c is Beetle-validated; op3 is faithful generated code.
+
+NEXT (ordered):
+1. Empirically confirm op3 returns -2 on the failing chunk — add a
+   cd_reg_window_op return-value ring / debug command, or watch the ch4
+   CHCR MMIO write (0x1F8010C0 region) to see if the kick is attempted.
+2. If -2 confirmed: find WHY the CD status op3 polls isn't ready — check
+   the status u16 source (CD-reg-block+0x1AA), whether the pending
+   Pause/ReadN completion IRQ is delivered on time, and whether
+   apply_speed/g_disc_speed_divisor skews the delay vs op3's window.
+3. Beetle oracle comparison (psx-beetle :4380) on the same versus->fight
+   path to get ground-truth ch4 kick timing — RULE-2.
+4. Do NOT fix by forcing DeliverEvent / kicking ch4 / skipping the wait —
+   that violates the no-fakes rule. Fix the underlying MMIO/cycle timing.
+
+DIAGNOSTICS ADDED (committed e608953): freeze dump now captures
+intc_state[16] (0x801bcd18 INTC coroutine block + handler table +
+mask48), intc_ptrA/ptrB (I_STAT/I_MASK), and dma_chan_hist (per-channel
+kick/complete counts over the whole trace ring). intc_count stays 0 by
+design (clean-wrapper-only counter; IRQ dispatch enters generated code
+directly). cb7_handlers[4]=0x8019B7E0, cb8_dee8=0, testev_handle=
+0xF1000008 — all correct; only the ch4 kick is missing.

@@ -145,10 +145,16 @@ static void freeze_dump_device_state_json(FILE *f) {
         uint32_t pb = fd_guest_rd32(0x801BDDA8u);
         fprintf(f, "],\"intc_ptrA\":\"0x%08X\",\"intc_ptrB\":\"0x%08X\","
                    "\"intc_statA\":\"0x%08X\",\"intc_statB\":\"0x%08X\","
-                   "\"intc_mask48\":\"0x%08X\"},",
+                   "\"intc_mask48\":\"0x%08X\","
+                   "\"regwin_calls\":\"0x%08X\",\"regwin_op3\":\"0x%08X\","
+                   "\"regwin_op3_to\":\"0x%08X\",\"regwin_op3_ret\":\"0x%08X\","
+                   "\"regwin_op3_a1\":\"0x%08X\",\"regwin_lastop\":\"0x%08X\"},",
                 pa, pb,
                 pa ? fd_guest_rd32(pa) : 0u, pb ? fd_guest_rd32(pb) : 0u,
-                fd_guest_rd32(0x801BCD48u));
+                fd_guest_rd32(0x801BCD48u),
+                fd_guest_rd32(0x801BCE30u), fd_guest_rd32(0x801BCE34u),
+                fd_guest_rd32(0x801BCE38u), fd_guest_rd32(0x801BCE3Cu),
+                fd_guest_rd32(0x801BCE40u), fd_guest_rd32(0x801BCE44u));
     }
 
     /* EvCB table: kernel event control blocks (base ptr @0x120, size @0x124,

@@ -2990,7 +2990,20 @@ uint32_t cd_reg_window_op(uint32_t a0,uint32_t a1,uint32_t a2)
    * body to generated MIPS, whose per-instruction cycle accounting lets the CD
    * model progress during the wait — same contract as the other IRQ/MMIO-
    * boundary functions already delegated. */
-  return br2_call_generated(0x8019b944u,a0,a1,a2,0);
+  uint32_t ret = br2_call_generated(0x8019b944u,a0,a1,a2,0);
+  /* DIAG (guest-RAM counters on the 0x801bce30 diag page, read by the
+   * freeze dump): does op3 return -2 (poll timeout) and skip the ch4 kick?
+   * 0x801bce30=total calls, 34=op3 calls, 38=op3 -2 timeouts,
+   * 3c=last op3 ret, 40=last op3 a1, 44=last op. */
+  CDDBG_INC(0x801bce30);
+  CDDBG_SET(0x801bce44, a0);
+  if (a0 == 3u) {
+    CDDBG_INC(0x801bce34);
+    CDDBG_SET(0x801bce3c, ret);
+    CDDBG_SET(0x801bce40, a1);
+    if ((int32_t)ret == -2) CDDBG_INC(0x801bce38);
+  }
+  return ret;
 }
 
 /* cd_field_copy_gated — gated u16 field copy: fl = *(u32*)a0; fl==0 applies
