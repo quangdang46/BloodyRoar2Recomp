@@ -952,3 +952,24 @@ a candidate for the consume-mismatch. NEXT: determine whether the current
 cd_file_read_seq already issued its ch4 (check 0x801bdee4 result + whether a
 4th handshake is pending vs consumed), and whether the fighter file's sector
 count vs delivered count diverges (ring_dropped correlation).
+
+=== slot8 LIVE-VERIFIED ENABLED+MATCHING; DeliverEvent simply not re-firing ===
+Live EvCB dump this run: slot8 @0x8EE8 cls=0xF0000009 st=0x2000(ENABLED)
+spec=0x20 mode=0x2000(MARK) fn=0 — a DeliverEvent(0xF0000009,0x20) NOW would
+set it READY. hle_dump DeliverEvent history: 0xF0000009/0x20 fired seq2133
+cyc236M (rep1) and seq2420 cyc791961513->cycle_last1008314781 (rep3 = the 3
+spaced handshakes ~792/974/1008M, NOT coalesced). Last SPU-reg access
+spu_ta seq59 cyc1008314735 — no 4th handshake since.
+=> The current cd_file_read_seq poll needs ONE more DeliverEvent but no new
+ch4 completion is produced: either (a) this read's ch4 was kicked+completed
+and its DeliverEvent found slot8 NOT-enabled at that instant (event-lifecycle
+desync: game Disable/Close/Enable ordering vs async IRQ-context DeliverEvent),
+or (b) op3's ch4 kick for this read silently failed (SPUCNT poll timeout ->
+no CHCR write -> no transfer -> no DeliverEvent -> TestEvent spins), or
+(c) the read is sector-starved and the SPU never signals done.
+slot8 st=0x2000 ENABLED now proves the flag is armed and waiting — the miss
+is upstream in producing the completion, not in event delivery.
+NEXT (decisive): wtrace slot8 status (0x8EEC) + correlate each write's
+pc/ra/cycle against hle_dump DeliverEvent seqs and spu_ta handshake seqs on a
+fresh run — determines whether the last DeliverEvent found slot8 disabled
+(write skipped) vs whether a 4th ch4 kick is simply absent.
