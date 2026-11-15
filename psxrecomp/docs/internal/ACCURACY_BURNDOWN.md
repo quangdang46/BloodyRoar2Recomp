@@ -2620,3 +2620,37 @@ br2eu_func_80126328 family, 0x80126xxx) and is not being reached /
 not ported. Needs Ghidra decompile of the versus select->fight
 transition (backend :8080 down) or a gwatch on rec+0xa armed before
 versus select to catch its writer PC.
+
+### UPDATE — decisive clean_trace proof (CLEAN_RANGES=80126000-80180000)
+
+Restricting clean dispatch to the versus/battle region collapses the
+trace to 89 entries. Chronological tail into the PC=0 crash:
+
+  ... match_loop(0x80147034) -> battle_flow_state_machine(0x8016FCC4,
+  ra=0x80126664 = versus tick block_8012665C) -> crash.
+
+COUNTS across the whole versus->fight run:
+  battle_flow_state_machine 0x8016FCC4 : 1
+  match_mode_set 0x801560F8           : 5
+  battle_init 0x801506D0              : 0
+  stage_char_data_load 0x80129218     : 0
+  versus_stage_commit 0x80128C18      : 0
+  versus_stage_commit_b 0x80128D98    : 0
+  vs_confirm_a/b/c/d/e                : 0
+  battle_bringup_a/b                  : 0
+
+battle_flow runs once per frame via the versus tick; it can only reach
+DAT_1f800001=8 (fight) after walking select->setup over many frames.
+A SINGLE clean dispatch means it was ENTERED already at state 8 —
+i.e. the versus->fight transition wrote DAT_1f800001=8 directly,
+BYPASSING battle_flow's select(1)->setup(2..7)->fight(8) sequence.
+
+CONCLUSION: the versus match-init that should (a) call
+stage_char_data_load per locked char to build sub-record 0x801c15f8 and
+(b) seed rec+0xa confirm phase is NOT on the executed path. The
+versus->fight edge sets the fight state directly. The init lives in the
+generated versus orchestrator (br2eu_func_80126328 family) sub-state
+jump-table (_jt_80126370 jr v0) — needs Ghidra decompile (:8080 down)
+or a targeted gwatch on DAT_1f800001 written via clean-C guest_at
+(bypasses store watchpoint) is not possible; use a clean-C trace on
+the versus confirm->state transition instead.
