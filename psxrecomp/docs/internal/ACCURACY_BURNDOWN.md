@@ -3673,3 +3673,62 @@ NEXT (ordered):
 4. RULE-2 oracle still blocked on P2 input; revisit only if a pad-binding
    path appears.
 5. Do NOT fake DeliverEvent / force a channel / skip the wait.
+
+---
+
+## versus->fight channel-event deadlock — producer chain fully traced (session N+1)
+
+Deep trace of the kernel device-event path resolved the class identity and
+producer mechanics. Commits: freeze-dump card/libcard/handoff/irqctx/pc0exc
+instrumentation (7de2674, 1454ac4, 7f8777b).
+
+### Event classes are SIO-multiplexed device-channel events
+
+- `F0000011` = **SIO0 (memory-card/controller) channel events.** Producer is
+  the kernel SIO0 IRQ handler at low-RAM `0x39AC`: it writes `I_STAT=0xFFFFFF7F`
+  (ack, via kseg1 `0xBF801070`), clears `I_MASK` bit7 (SIO0 enable, `0xBF801074`),
+  calls `A0[0xa7]` (`0xa0`->`0x2a80` dispatcher, table `0x200`, ROM `0xBFC00EE0`),
+  then tail-calls `DeliverEvent(0xF0000011, 4)` via `j 0x2610`.
+- `F4000001` = **shared "hardware channel done" class**, spec = channel/device ID.
+  Producer `func_1FC00E98` (`0xBFC00E98`): clears per-channel pending tables
+  `0x4BA4`/`0x4C80`/`0x4C78` (indexed `a0*4`), then `DeliverEvent(0xF4000001, a1)`.;
+  a1 = spec passed by caller. Called from ~10 BIOS device-ISR sites.
+- Kernel `DeliverEvent` = `0x2610` (walks waiter list @ `0x10020/0x10024`,
+  matches class `a0` + status `0x2000`).
+
+### Spec -> producer callsite map (F4000001)
+
+  spec 0x04   <- 0xBFC00FE0, 0xBFC028EC, 0xBFC02C7C   (FIRES x4, ra=0x3A20 = SIO path)
+  spec 0x8000 <- 0xBFC01110 (func_1FC010D0), 0xBFC014A0/0xBFC015C8 (func_1FC011E0/1FC01570)
+  spec 0x100  <- 0xBFC01638 (func_1FC015E0)
+  spec 0x2000 <- 0xBFC016A8 (func_1FC01650; checks pending-table 0x4BA4+a0*4 first)
+  F0000011/4  <- kernel SIO0 ISR tail (0x39AC->0x3A38), FIRES x11 near wedge
+
+### Decisive wedge data (dump _1794786286)
+
+- Game spins TestEvent (B0/0xB) on handles: 0xF1000001(F4000001/0x8000)=473K,
+  0xF1000004(F0000011/0x04)=473K, 0xF1000003(F4000001/0x2000)=405K. Slot8
+  (F0000009/0x20 CD-DMA) resolves. ev_agg.deliver over last 8192 BIOS calls:
+  ONLY F4000001/0x04 (x4) + F0000003/F0000009 — never the needed specs.
+- SIO0 ISR (0x39AC) + F0000011/4 tail DO run ~11x, last near wedge (wtrace idx
+  ~257K/262K) -> producers are live; deliveries happen but the specific channel
+  specs the scheduler needs never complete.
+- Card path healthy: 114 SIO txns, open=0; pad+card both raise IRQ7.
+- CD parked: pend_cmd=0x09(Pause), sec_pos=2060/2340, bfrd_set=1274 vs clr=13,
+  ring_drop=523; read consumed (bcb94=0) + F0000003/0x40 delivered.
+- i_mask=0xD (VBlank+CDROM+DMA); bit7 SIO only during card ops (0x8D), bit9 SPU
+  never set. irq_deliver=21659/1653fr (~13/frame storm) yet resume is CLEAN
+  (irqctx take==epc==xpc, same_thread, restored; pc0exc/irqanom all zero).
+- cpu.pc=0 is scheduler-idle sentinel (NOT a crash): every kernel thread blocked
+  on the undelivered channel events.
+
+### Root-cause shape (revised, high confidence)
+
+Not a lost IRQ/dispatch — the kernel channel-completion ISRs run. The game's
+CD-streaming "hardware channels" for specs {0x8000,0x100,0x2000} (and the
+F0000011 set the scheduler also polls) never get their completion registered in
+the kernel pending tables, so func_1FC00E98/the SIO tail never fire for them.
+The open question is WHICH physical transfer each spec binds (SPU stream vs
+DMA vs CD sub-channel) and why that transfer's done-bit never reaches the ISR.
+Next: identify the device for func_1FC010D0/1FC011E0/1FC01570/1FC015E0/1FC01650
+by their MMIO status reads, then check that register's runtime update path.
