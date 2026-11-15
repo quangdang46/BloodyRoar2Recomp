@@ -3211,3 +3211,33 @@ silence is a faithful-core bug (SPU ADPCM/mix/IRQ path) vs the game
 never keying voices (seq not started). Check SPU voice regs (VxP/VxD
 volumes, adsr) + whether game wrote SPU regs at all; trace the audio
 init path that the earlier "blocked before audio init" finding flagged.
+
+=== SPU voice forensics: volumes/ADSR all ZERO ===
+
+spu_voices on live fight (:4383):
+  ALL 24 voices: vol_l=0x0000 vol_r=0x0000 pitch=0x3FFF
+                 adsr_lo=0x0000 adsr_hi=0x0000 env=0x0000
+                 start=0x01000 loop=0x01000 active=0
+  kon=0xFFFFFF koff=0x000000  (all keyed-on, none off)
+  spu_events: 48 events, first KEYON batch at frame=318, every one
+              carries vol_l=0x0000 vol_r=0x0000 adsr=0x0000.
+
+So the game DID drive the SPU (issued KON for all voices) but every
+voice's VxVOL and ADSR registers are 0 -> renders silence. The SPU core
+is faithful; the game's audio driver never programmed voice params
+(volume/pitch-envelope/ADSR) — OR those register writes are being lost.
+
+cd_frames=0 / cd_push_frames=0 -> CD-DA music path also never streamed.
+
+This is the concrete form of the earlier "blocked before audio init"
+finding: the sound driver sequencer is not running its voice-setup
+stage. Likely the audio driver is a kernel thread/task that is either
+never scheduled or blocked waiting on a CD/stream resource that never
+arrives (chained to the same CD resource-load stall). If the round
+intro waits on announcer-voice done, fighters stay frozen.
+
+NEXT: (1) find the game's sound-driver thread/entry and check if it is
+scheduled/running (TCB state); (2) determine what resource it blocks on
+(CD stream? SPU DMA? seq command queue?); (3) verify whether VxVOL/ADSR
+writes reach the SPU reg file (audit the SPU MMIO write path for the
+0x1F801C00-0x1F801FFF voice regs) — rule out a runtime reg-write drop.
