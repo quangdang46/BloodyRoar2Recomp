@@ -3084,3 +3084,35 @@ OR the fight is parked at a pre-round intro gate (sub=1) awaiting a
 round-start trigger the versus flow never issues. NEXT: find who writes
 motion+0xce (frame delta) and +0x90 (timer) per frame; check whether
 fighter_frame/frame_tick runs in ph=8 sub=1 vs needs sub advance.
+
+=== SESSION — versus fight reached STABLE; residual = fighter HP/vitals not loaded ===
+
+After b79971a the versus->fight path reaches gs=8 ph=8 sub=1 STABLE (no pc=0
+storm, CPU in main loop). .ANI binds (FC_ANI nonzero), motion blocks populate
+(act idx + event PC). BUT fighters are frozen because they spawn DEAD:
+
+  fighter_frame (resolve.c:1561) skips action_commit when
+  *(short*)(ctrl+0xac) < 0  [HP current < 0 = KO'd/inactive].
+
+Live ctrl state (0x1f8000e8 / 0x1f8001f0):
+  ctrl+0    = 0x01            (active state byte OK)
+  ctrl+0xac = -1  (HP cur)    BOTH -> dead -> action_commit skipped
+  ctrl+0xae = -1  (HP target) BOTH
+  ctrl+0xb0 = 150 (P1 cap, plausible) / -10275 (P2 cap, GARBAGE)
+  ctrl+0x86 = 0x10, +0x88=0x10 (frame delta live), +0xb6 anim accum static
+
+ctrl+0xac/0xae/0xb0 are HP current/target/cap (resolve.c:1617-1691 death
+path sets them -1 and *ctrl=-0x80/-0x7f). They are NOT being initialised
+from the character stats -> fighters spawn with HP=-1 -> treated as
+KO'd -> no action/event/anim processing -> frozen bind pose.
+
+This is the SAME versus-record-incomplete problem (record 0x801c15f8 /
+char stats) manifesting downstream: .ANI/model pointers now resolve (data
+loads) but the per-fighter STAT block (HP, and likely the rest of the
+combat vitals) is still empty because the versus char-select record was
+never populated by the generated loader.
+
+NEXT: find where ctrl+0xac/0xae/0xb0 (HP vitals) are initialised during
+fighter bring-up (action_enter_fwd / per_side_setup / record_table_select)
+and which record field supplies max-HP; confirm the versus record's stat
+sub-block is empty vs arcade's is populated (arcade nav_arcade.py A/B).
