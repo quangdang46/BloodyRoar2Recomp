@@ -803,3 +803,48 @@ whether the game is waiting for a ReadN data-end (INT1) that the Pause
 preempted, and whether the deferred CD coroutine / DeliverEvent path for
 the read-complete event is reachable — compare against a working load
 (e.g. does a fresh CD read after this point deliver?).
+
+=== DEEP DIVE: CD completion->DeliverEvent chain (session cont.) ===
+Confirmed the stall is NOT a logic freeze — it is a CD-ROM event-delivery
+wedge. Precise chain:
+
+WAIT: game spins in cd_file_read_seq(0x801565EC) -> cd_seek_complete_poll
+(0x8019d500) -> cd_seek_state_machine(0x8019d5b0) = leaf TestEvent trampoline
+polling event-flag handle 0xF1000008 (= OpenEvent class 0xF0000009 spec 0x20,
+EvCB entry i=8 status=0x2000 mode=0x2000 fhandler=0). bios_svc_trace: ~all
+calls B0/0x0B TestEvent a0=0xF1000008 v0=0 forever (~1.6M).
+
+DELIVER side: DeliverEvent(0xF0000009,0x20) is issued ONLY by
+cd_dma_chan_reset (game/cd.c:5089) when callback @0x801bdee8==0 (it IS 0 ->
+the DeliverEvent branch is armed). cd_dma_chan_reset is reached via the CD
+IRQ -> deferred coroutine (cd_ctx_restore -> cd_intc_dispatch -> cd_cb7_run
+-> per-channel handler) -> channel reset. bios_svc B0/0x07 DeliverEvent count
+FROZEN at 136 -> this chain has not run for the stuck completion.
+
+DRIVE state (cdrom_state): reading=0, irq_flag=0, pending.cmd=0x09
+active=0, stat=0x02 (MOTOR only, no READ/SEEK/PLAY/ERROR), i_stat=0,
+irq_enable=0x07, seek_msf[1,58,70] vs read_msf[1,59,27],
+sector_available=1 (one sector unconsumed), bfrd_set=6800 vs bfrd_clear=13,
+ring_dropped=2874. cycles_to_next_event cdrom=0xFFFFFFFF -> NOTHING scheduled.
+irqctx_ring: only VBLANK (istat=0x1) IRQs taken; cdrom_active=0 always.
+
+COMMAND history (sorted): game cycles SetLoc(0x02)->ReadN(0x06)->Pause(0x09);
+each Pause's INT2 (~1.1Mcy) is cancelled by the next SetLoc (psx-spx command
+cancellation, cdrom.c:2141). LAST cmds: seq339 ReadN@frame4590 (reading=1),
+seq340 Pause@frame4601 pending=1 -> then NO commands for ~760k frames.
+ReadN has no completion IRQ of its own (INT3 ACK only; streams INT1 sectors).
+
+INTERPRETATION: the game finished a read chunk and entered cd_seek_complete_
+poll waiting for the completion DeliverEvent. The drive is fully idle — no
+command in flight, no IRQ owed, nothing scheduled — so no CD IRQ will ever
+fire to drive cd_ctx_restore->cd_intc_dispatch->cd_dma_chan_reset->DeliverEvent.
+Either (a) the seq340 Pause/read-end completion fired an IRQ whose
+DeliverEvent was lost (handler ran but didn't reach cd_dma_chan_reset, or the
+IRQ was acked without the coroutine resume), or (b) the game is waiting for a
+completion of an operation queued in its CD driver but never issued to
+hardware because the issuing pump is itself gated on the same event.
+NEXT: instrument cd_dma_chan_reset (0x8019b7e8) + the game's CD IRQ handler
+entry + cd_intc_dispatch to see whether the completion IRQ is raised at all
+for seq340, and whether a CD command sits queued-but-unissued in the game's
+driver (cd_cmd_queue / pending_args). Compare a WORKING file load (early
+boot, DeliverEvent->136) vs this fight-asset load for the divergent step.
