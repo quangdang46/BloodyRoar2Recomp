@@ -65,7 +65,7 @@ void post_confirm_config_build(uint32_t,uint8_t *,int32_t);
 extern int battle_init();
 extern int confirm_bookkeeping();
 extern void battle_state_init(uint8_t *,uint8_t *,uint32_t);
-extern int mc_pad_button_handler();
+extern uint32_t mc_pad_button_handler(uint8_t *param_1);
 extern int post_battle_dispatch();
 extern void battle_sides_commit(uint8_t *,uint8_t *,uint32_t);
 extern int blk_1f26c0_init_b();
@@ -2615,7 +2615,7 @@ undefined4 attract_menu_dispatch(int param_1,uint param_2)
       if (param_2 == 3) {
         DAT_1f80009b = 1;
         DAT_1f80009c = 4;
-        iVar1 = mc_pad_button_handler();
+        iVar1 = mc_pad_button_handler((uint8_t *)guest_at(0x1f800000));
         if (iVar1 != 0) {
           g_game_state = 8;
           DAT_1f800001 = 0xf0;
@@ -2628,7 +2628,7 @@ undefined4 attract_menu_dispatch(int param_1,uint param_2)
           *(undefined1 *)(_g_system_config_ptr + 0x10) = 99;
           DAT_1f80009b = 0;
           DAT_1f80009c = 3;
-          iVar1 = mc_pad_button_handler();
+          iVar1 = mc_pad_button_handler((uint8_t *)guest_at(0x1f800000));
           if (iVar1 != 0) {
             g_game_state = 8;
             DAT_1f800001 = 0xf0;
@@ -2639,7 +2639,7 @@ undefined4 attract_menu_dispatch(int param_1,uint param_2)
         if (param_2 == 5) {
           DAT_1f80009b = 3;
           DAT_1f80009c = 2;
-          iVar1 = mc_pad_button_handler();
+          iVar1 = mc_pad_button_handler((uint8_t *)guest_at(0x1f800000));
           if (iVar1 != 0) {
             g_game_state = 8;
             DAT_1f800001 = 0xf0;
@@ -2653,7 +2653,7 @@ undefined4 attract_menu_dispatch(int param_1,uint param_2)
         *(undefined1 *)(_g_system_config_ptr + 0x10) = 8;
         DAT_1f80009b = 0;
         DAT_1f80009c = 0;
-        iVar1 = mc_pad_button_handler();
+        iVar1 = mc_pad_button_handler((uint8_t *)guest_at(0x1f800000));
         if (iVar1 != 0) {
           g_game_state = 8;
           DAT_1f800001 = 0xf0;
@@ -2664,7 +2664,7 @@ undefined4 attract_menu_dispatch(int param_1,uint param_2)
       if (param_2 == 2) {
         DAT_1f80009b = 2;
         DAT_1f80009c = 1;
-        iVar1 = mc_pad_button_handler();
+        iVar1 = mc_pad_button_handler((uint8_t *)guest_at(0x1f800000));
         if (iVar1 != 0) {
           g_game_state = 8;
           DAT_1f800001 = 0xf0;
