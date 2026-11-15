@@ -3116,3 +3116,35 @@ NEXT: find where ctrl+0xac/0xae/0xb0 (HP vitals) are initialised during
 fighter bring-up (action_enter_fwd / per_side_setup / record_table_select)
 and which record field supplies max-HP; confirm the versus record's stat
 sub-block is empty vs arcade's is populated (arcade nav_arcade.py A/B).
+
+=== SESSION — ARCADE also spawns DEAD fighters (ctrl+0=-0x7f) ===
+
+nav_arcade.py -> gs=8 ph=8 sub=0 STABLE. Verified live on :4500:
+  P1/P2 ctrl+0 = -0x7f (0x81) = DEATH state byte (resolve.c:1726 path)
+  ctrl+0xac/0xae (HP cur/tgt) = -1 BOTH
+  ctrl+0xb0 (HP cap) = 150 BOTH  [arcade DOES init the cap; versus P2 was -10275]
+  ctrl+0x86/0x88 frame delta = live; motion act=0x0001, evpc set; b6 static
+
+So the dead-fighter freeze is NOT versus-specific — BOTH modes spawn fighters
+into the KO/dead state. ctrl+0=-0x7f is set by the death path at
+resolve.c:1723-1732, gated by:
+   *(int*)(ctrl+0x20)->+0x38 >= 0   AND
+   range_circle_test(...) zone checks (1713-1712)
+   -> *ctrl=-0x7f, ctrl+0xac=-1, flags|=0x80000
+
+Two candidate roots (need disambiguation):
+  (a) fighter POSITION/spawn is wrong (origin/garbage) -> out-of-bounds zone
+      test fails -> death. ctrl+0x20 points to a pos/motion struct.
+  (b) HP (+0xac/0xae) never initialised positive for non-class-3 fighters
+      (reset() only sets them for sel&0xf==3; other classes rely on the char
+      record stat block which may be empty -> stays -1 sentinel).
+
+ctrl+0xac=-1 with +0xb0=150(cap) present suggests (b): cap loaded from
+.ANI+0x2e (action.c:130) but current/target HP never copied from the char
+stat record -> remain -1 -> fighter_frame's +0xac<0 gate skips action_commit.
+
+NEXT: find where ctrl+0xac/0xae (HP cur/tgt) are initialised from the char
+record during bring-up (per_side_setup/record_table_select/action_enter_fwd)
+— is the source stat field empty, or is the copy gated on a class/flag that
+versus+arcade both miss? Compare a WORKING reference (Beetle oracle / a save
+state) for expected +0xac value at fight start.
