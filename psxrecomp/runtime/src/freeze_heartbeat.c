@@ -190,6 +190,23 @@ static void freeze_dump_device_state_json(FILE *f) {
                 fd_guest_rd32(0x801BCE38u), fd_guest_rd32(0x801BCE3Cu),
                 fd_guest_rd32(0x801BCE40u), fd_guest_rd32(0x801BCE44u));
     }
+    /* CD read-session state cells (game globals @0x801bcb80..bcbb0):
+     * bcb88=sector cursor, bcb8c=mode byte, bcb90=stride, bcb94=sectors-
+     * remaining/status (-1 = sector error), bcb9c=timer, bcba0=start sector,
+     * bcba4=completion flag (0 = finish_cb completion branch never ran),
+     * bcba8/bcbb0 aux. These decide whether the read aborts on an MSF stamp
+     * mismatch (ring-dropped sector) vs stalls waiting on a channel event. */
+    fprintf(f, "\"cd_read\":{\"bcb80\":\"0x%08X\",\"bcb84\":\"0x%08X\","
+               "\"bcb88\":\"0x%08X\",\"bcb8c\":\"0x%08X\",\"bcb90\":\"0x%08X\","
+               "\"bcb94\":\"0x%08X\",\"bcb98\":\"0x%08X\",\"bcb9c\":\"0x%08X\","
+               "\"bcba0\":\"0x%08X\",\"bcba4\":\"0x%08X\",\"bcba8\":\"0x%08X\","
+               "\"bcbb0\":\"0x%08X\"},",
+            fd_guest_rd32(0x801BCB80u), fd_guest_rd32(0x801BCB84u),
+            fd_guest_rd32(0x801BCB88u), fd_guest_rd32(0x801BCB8Cu),
+            fd_guest_rd32(0x801BCB90u), fd_guest_rd32(0x801BCB94u),
+            fd_guest_rd32(0x801BCB98u), fd_guest_rd32(0x801BCB9Cu),
+            fd_guest_rd32(0x801BCBA0u), fd_guest_rd32(0x801BCBA4u),
+            fd_guest_rd32(0x801BCBA8u), fd_guest_rd32(0x801BCBB0u));
 
     /* Memory-card protocol state. versus->fight wedges in TestEvent on the
      * card event classes (0xF0000011 / 0xF4000001); this captures whether the
@@ -258,6 +275,98 @@ static void freeze_dump_device_state_json(FILE *f) {
             fputs("]", f);
         }
         fputs("},", f);
+    }
+
+    /* irqctx_ring exit-half tail: per IRQ delivery the resume PC chosen at
+     * entry (take_pc/real_epc), the PC/reason at the restore decision
+     * (exit_pc/exit_reason), whether same-thread restore fired and the
+     * interrupted GPRs were restored (same_thread/restored), and the
+     * saved-vs-exit v0/v1/ra — the signature of a nested-IRQ resume-PC
+     * corruption that skips a DeliverEvent or jumps to NULL (pc=0 wedge). */
+    {
+        extern uint64_t g_irqctx_seq;
+        typedef struct {
+            uint64_t seq, cycle; uint32_t frame, istat, imask, sr, d44,
+                     cdrom_active, is_vblank; int dma_depth;
+            uint32_t take_pc, real_epc, exit_pc, exit_reason, same_thread,
+                     restored, v0_exit, v0_saved, v1_exit, v1_saved,
+                     ra_exit, ra_saved, redirects, entry_sp, pump_site;
+        } FdIrqCtx;
+        extern FdIrqCtx g_irqctx_ring[];
+        fputs("\"irqctx\":{\"seq\":\"0x", f);
+        fprintf(f, "%llX\",\"tail\":[", (unsigned long long)g_irqctx_seq);
+        uint64_t total = g_irqctx_seq;
+        uint32_t avail = total < 4096ull ? (uint32_t)total : 4096u;
+        uint32_t n = avail < 12 ? avail : 12;
+        for (uint32_t j = 0; j < n; j++) {
+            if (j) fputs(",", f);
+            uint64_t idx = total - 1 - j;
+            FdIrqCtx *e = &g_irqctx_ring[idx & 4095u];
+            fprintf(f, "{\"seq\":%llu,\"take\":\"0x%08X\",\"epc\":\"0x%08X\","
+                       "\"xpc\":\"0x%08X\",\"rsn\":%u,\"st\":%u,\"rst\":%u,"
+                       "\"v0x\":\"0x%08X\",\"v0s\":\"0x%08X\","
+                       "\"v1x\":\"0x%08X\",\"v1s\":\"0x%08X\","
+                       "\"rax\":\"0x%08X\",\"ras\":\"0x%08X\"}",
+                    (unsigned long long)e->seq, e->take_pc, e->real_epc,
+                    e->exit_pc, e->exit_reason, e->same_thread, e->restored,
+                    e->v0_exit, e->v0_saved, e->v1_exit, e->v1_saved,
+                    e->ra_exit, e->ra_saved);
+        }
+        fputs("]},", f);
+    }
+
+    /* pc=0 / null-jr $k0 wedge latches (interrupts.c): the kernel
+     * ReturnFromException/ChangeThread at 0x29CC ends `jr $k0` where
+     * k0 = *(current_TCB + 0x88) saved-PC. When that slot is 0 the restore
+     * jumps to pc==0. g_rfe29cc_null_* names the guilty TCB/PCB/tcb88;
+     * g_pc0exc_* names the dispatching block+ra+stop of the first in-exception
+     * pc==0; g_irqanom_* captures k0/ra/sp/pcb0/tcb/tcb88/cause at the first
+     * anomalous exit. */
+    {
+        extern uint64_t g_rfe29cc_null_count, g_pc0exc_total, g_irqanom_count;
+        extern uint32_t g_rfe29cc_null_tcb, g_rfe29cc_null_pcb,
+                        g_rfe29cc_null_tcb88, g_rfe29cc_null_ra,
+                        g_rfe29cc_null_sp, g_rfe29cc_null_depth;
+        extern int      g_rfe29cc_null_latched;
+        extern uint32_t g_pc0exc_ring[32], g_pc0exc_ra[32], g_pc0exc_stop[32],
+                        g_pc0exc_ctx[32], g_pc0exc_head,
+                        g_pc0exc_first_addr, g_pc0exc_first_ra,
+                        g_pc0exc_first_stop, g_pc0exc_first_ctx;
+        extern int      g_pc0exc_first_inexc;
+        const uint32_t pc0ring = 32u;
+        extern uint32_t g_irqanom_k0, g_irqanom_ra, g_irqanom_sp,
+                        g_irqanom_pcb0, g_irqanom_tcb, g_irqanom_tcb88,
+                        g_irqanom_cause, g_irqanom_epc, g_irqanom_lastfunc;
+        extern uint64_t g_irqanom_seq;
+        fputs("\"pc0exc\":{\"total\":\"0x", f);
+        fprintf(f, "%llX\",\"first_addr\":\"0x%08X\",\"first_ra\":\"0x%08X\","
+                   "\"first_stop\":\"0x%08X\",\"first_ctx\":\"0x%08X\","
+                   "\"first_inexc\":%d,\"ring\":[",
+                (unsigned long long)g_pc0exc_total, g_pc0exc_first_addr,
+                g_pc0exc_first_ra, g_pc0exc_first_stop, g_pc0exc_first_ctx,
+                g_pc0exc_first_inexc);
+        for (int j = 0; j < 8; j++) {
+            if (j) fputs(",", f);
+            uint32_t h = (g_pc0exc_head + pc0ring - 1 - j) % pc0ring;
+            fprintf(f, "{\"a\":\"0x%08X\",\"ra\":\"0x%08X\",\"st\":\"0x%08X\","
+                       "\"ctx\":\"0x%08X\"}", g_pc0exc_ring[h],
+                    g_pc0exc_ra[h], g_pc0exc_stop[h], g_pc0exc_ctx[h]);
+        }
+        fprintf(f, "]},\"rfe29cc\":{\"n\":\"0x%llX\",\"lat\":%d,"
+                   "\"tcb\":\"0x%08X\",\"pcb\":\"0x%08X\",\"tcb88\":\"0x%08X\","
+                   "\"ra\":\"0x%08X\",\"sp\":\"0x%08X\",\"depth\":%u},"
+                   "\"irqanom\":{\"n\":\"0x%llX\",\"seq\":\"0x%llX\","
+                   "\"epc\":\"0x%08X\",\"func\":\"0x%08X\",\"k0\":\"0x%08X\","
+                   "\"ra\":\"0x%08X\",\"sp\":\"0x%08X\",\"pcb0\":\"0x%08X\","
+                   "\"tcb\":\"0x%08X\",\"tcb88\":\"0x%08X\",\"cause\":\"0x%08X\"},",
+                (unsigned long long)g_rfe29cc_null_count, g_rfe29cc_null_latched,
+                g_rfe29cc_null_tcb, g_rfe29cc_null_pcb, g_rfe29cc_null_tcb88,
+                g_rfe29cc_null_ra, g_rfe29cc_null_sp, g_rfe29cc_null_depth,
+                (unsigned long long)g_irqanom_count,
+                (unsigned long long)g_irqanom_seq, g_irqanom_epc,
+                g_irqanom_lastfunc, g_irqanom_k0, g_irqanom_ra,
+                g_irqanom_sp, g_irqanom_pcb0, g_irqanom_tcb,
+                g_irqanom_tcb88, g_irqanom_cause);
     }
 
     /* EvCB table: kernel event control blocks (base ptr @0x120, size @0x124,
