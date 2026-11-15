@@ -5197,6 +5197,8 @@ int battle_init(uint32_t param_1, uint8_t *param_2, uint8_t *param_3)
   uint8_t *p1 = param_2, *p2 = param_3;
 
   *(uint32_t *)guest_at(0x801f10bc) = guest_of(auStack_18);
+  { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+    decomp_trace_record(44,param_1,(uint32_t)p1[3],(uint32_t)p2[3],0); }
 
   for (;;) {
     int32_t s1;
@@ -5498,6 +5500,8 @@ int32_t battle_bringup_a(uint32_t param_1,uint32_t param_2,uint32_t param_3,
 
   s3 = guest_of(tag_table_get());       /* tag table 0x801c47c0 */
   v1 = MBS16(s5 + 0x8c);
+  { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+    decomp_trace_record(43,param_1,param_2,param_3,(uint32_t)(int16_t)v1); }
   if (v1 < 0) return -1;
   s0 = (uint32_t)v1;
   if (s0 >= 0x31) goto L_store;
@@ -12053,6 +12057,8 @@ void stage_char_data_load(uint32_t param_1,uint32_t param_2)
 {
   uint32_t s1 = param_1;
   uint32_t K = param_2 * 23140u;
+  { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+    decomp_trace_record(46,param_1,param_2,K,0); }
   uint32_t s0 = MB32(s1 + 0xcc);
   uint32_t r;
   blk_copy(0x801c15f8u, 0x80200000u + K, 0x2da8u);
