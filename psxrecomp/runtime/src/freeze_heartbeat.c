@@ -8,6 +8,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
@@ -72,6 +73,215 @@ extern int      g_present_vsync_disabled;
  * (gpr[32], pc) in cpu_state.h — both already included above. */
 extern uint8_t *memory_get_scratchpad_ptr(void);   /* memory.c */
 extern uint8_t *g_psx_ram;                         /* memory.c — 2 MiB DRAM */
+
+/* Device-state capture for wedge dumps: CD / DMA / SPU / EvCB / the CD
+ * coroutine's frame counter + VBlank callback table. These are the structures
+ * the versus->fight CD-load stall wedges on; dumping them at freeze time is
+ * the only reliable post-mortem (the debug server is gone by then). */
+#include "cdrom.h"
+#include "dma.h"
+#include "spu.h"
+#include "bios_hle.h"
+extern void cdrom_debug_snapshot(CDROMDebugState *out);
+extern void dma_debug_get_state(DMADebugState *out);
+extern uint32_t spu_ta_total(void);
+extern int      spu_ta_get(uint32_t i, uint32_t *addr, uint32_t *val,
+                           uint32_t *cyc, uint32_t *is_wr);
+
+static uint32_t fd_guest_rd32(uint32_t gaddr) {
+    /* KSEG0/KSEG1 cached+uncached -> physical; low mem used directly. */
+    uint32_t phys = gaddr & 0x1FFFFFFFu;
+    if (phys >= 0x00200000u || !g_psx_ram) return 0;
+    uint32_t v;
+    memcpy(&v, g_psx_ram + phys, 4);
+    return v;
+}
+
+static void freeze_dump_device_state_json(FILE *f) {
+    fputs("  \"device_state\":{", f);
+
+    /* Frame counter the vsync_wait_n spin polls + the VBlank callback table
+     * cd_cb8_run_param iterates (0x801bddc0..0x801bddd8). */
+    fputs("\"frame_ctr\":\"0x", f);
+    fprintf(f, "%08X", fd_guest_rd32(0x801BDDE0u));
+    fputs("\",\"cb_table\":[", f);
+    for (int i = 0; i < 8; i++) {
+        if (i) fputs(",", f);
+        fprintf(f, "\"0x%08X\"", fd_guest_rd32(0x801BDDC0u + (uint32_t)i * 4u));
+    }
+    fputs("],", f);
+
+    /* EvCB table: kernel event control blocks (base ptr @0x120, size @0x124,
+     * 28-byte entries: cls,status,spec,mode,fhandler). */
+    {
+        uint32_t ebase = fd_guest_rd32(0x00000120u) & 0x1FFFFFu;
+        uint32_t ebytes = fd_guest_rd32(0x00000124u);
+        uint32_t n = ebytes / 28u; if (n > 32u) n = 32u;
+        fputs("\"evcb\":{\"base\":\"0x", f);
+        fprintf(f, "%08X\",\"bytes\":%u,\"entries\":[", ebase, ebytes);
+        for (uint32_t i = 0; i < n; i++) {
+            uint32_t off = ebase + i * 28u;
+            if (off + 28u > 0x200000u) break;
+            if (i) fputs(",", f);
+            fprintf(f, "{\"i\":%u,\"cls\":\"0x%08X\",\"status\":\"0x%08X\","
+                       "\"spec\":\"0x%08X\",\"mode\":\"0x%08X\",\"fn\":\"0x%08X\"}",
+                    i, fd_guest_rd32(off), fd_guest_rd32(off + 4u),
+                    fd_guest_rd32(off + 8u), fd_guest_rd32(off + 12u),
+                    fd_guest_rd32(off + 16u));
+        }
+        fputs("]},", f);
+    }
+
+    /* CD-ROM device state. */
+    {
+        CDROMDebugState *cd = (CDROMDebugState *)calloc(1, sizeof(CDROMDebugState));
+        if (cd) {
+            cdrom_debug_snapshot(cd);
+            fprintf(f, "\"cdrom\":{\"seq\":%llu,\"stat\":\"0x%02X\",\"req\":\"0x%02X\","
+                       "\"irq_en\":\"0x%02X\",\"irq_fl\":\"0x%02X\",\"pend_cmd\":\"0x%02X\","
+                       "\"pend_ph\":%d,\"pend_act\":%d,\"sec_avail\":%d,\"sec_pos\":%d,"
+                       "\"sec_size\":%d,\"reading\":%d,\"last_lba\":%d,\"last_frame\":%u,"
+                       "\"ring_drop\":%llu,\"bfrd_set\":%llu,\"bfrd_clr\":%llu,"
+                       "\"int1_pended\":%llu,\"int1_lost\":%llu},",
+                    (unsigned long long)cd->seq, cd->stat_reg, cd->request_reg,
+                    cd->irq_enable, cd->irq_flag, cd->pending_cmd,
+                    cd->pending_phase, cd->pending_pending, cd->sector_available,
+                    cd->sector_read_pos, cd->sector_size, cd->reading,
+                    cd->last_sector_lba, (unsigned)cd->last_sector_frame,
+                    (unsigned long long)cd->ring_dropped,
+                    (unsigned long long)cd->bfrd_set_count,
+                    (unsigned long long)cd->bfrd_clear_count,
+                    (unsigned long long)cd->int1_pended,
+                    (unsigned long long)cd->int1_lost);
+            free(cd);
+        }
+    }
+
+    /* DMA device state: DPCR/DICR + per-channel busy/remaining. ch4=SPU. */
+    {
+        DMADebugState *dm = (DMADebugState *)calloc(1, sizeof(DMADebugState));
+        if (dm) {
+            dma_debug_get_state(dm);
+            fputs("\"dma\":{\"dpcr\":\"0x", f);
+            fprintf(f, "%08X\",\"dicr\":\"0x%08X\",\"ch\":[", dm->dpcr, dm->dicr);
+            for (int i = 0; i < 7; i++) {
+                if (i) fputs(",", f);
+                fprintf(f, "{\"madr\":\"0x%08X\",\"bcr\":\"0x%08X\",\"chcr\":\"0x%08X\","
+                           "\"act\":%u,\"rem\":%u}",
+                        dm->channels[i].madr, dm->channels[i].bcr,
+                        dm->channels[i].chcr, dm->channels[i].active,
+                        dm->channels[i].remaining_words);
+            }
+            fputs("]},", f);
+            free(dm);
+        }
+    }
+
+    /* SPU TA(0x1F801DA6) handshake ring tail — the file-read op1/op3 protocol. */
+    {
+        uint32_t tot = spu_ta_total();
+        uint32_t start = (tot > 12u) ? (tot - 12u) : 0u;
+        fputs("\"spu_ta\":{\"total\":", f);
+        fprintf(f, "%u,\"tail\":[", tot);
+        for (uint32_t i = start; i < tot; i++) {
+            uint32_t a = 0, v = 0, c = 0, w = 0;
+            if (!spu_ta_get(i, &a, &v, &c, &w)) break;
+            if (i > start) fputs(",", f);
+            fprintf(f, "{\"a\":\"0x%08X\",\"v\":\"0x%08X\",\"wr\":%u}", a, v, w);
+        }
+        fputs("]},", f);
+    }
+
+    /* DMA trace tail — channel kicks/completions (esp. ch4=SPU) with DICR
+     * before/after, showing whether the completion IRQ ever latched. */
+    {
+        const DMATraceEntry *tr = NULL;
+        uint64_t tseq = dma_debug_get_trace(&tr);
+        uint64_t start = (tseq > 24ull) ? (tseq - 24ull) : 0ull;
+        fputs("\"dma_trace\":{\"total\":", f);
+        fprintf(f, "%llu,\"tail\":[", (unsigned long long)tseq);
+        int first = 1;
+        for (uint64_t i = start; i < tseq; i++) {
+            const DMATraceEntry *e = &tr[i % DMA_TRACE_CAP];
+            if (e->seq != i) continue;
+            if (!first) fputs(",", f);
+            first = 0;
+            fprintf(f, "{\"ch\":%u,\"kind\":\"0x%X\",\"tot\":%u,\"madr\":\"0x%08X\","
+                       "\"dicr_b\":\"0x%08X\",\"dicr_a\":\"0x%08X\",\"istat_b\":\"0x%08X\","
+                       "\"istat_a\":\"0x%08X\",\"fn\":\"0x%08X\",\"pc\":\"0x%08X\"}",
+                    e->channel, e->kind, e->total_words, e->madr,
+                    e->dicr_before, e->dicr_after, e->i_stat_before,
+                    e->i_stat_after, e->func, e->pc);
+        }
+        fputs("]},", f);
+    }
+
+    /* BIOS/HLE call ring tail — every kernel B0/A0/C0 call (vector, fn,
+     * args, ra) even when LLE-serviced. Shows the TestEvent/DeliverEvent/
+     * EnableEvent polling the kernel was doing when it wedged. */
+    {
+        uint64_t hseq = psx_hle_ring_seq();
+        uint64_t hstart = (hseq > 32ull) ? (hseq - 32ull) : 0ull;
+        fputs("\"bios_calls\":{\"total\":", f);
+        fprintf(f, "%llu,\"tail\":[", (unsigned long long)hseq);
+        int first = 1;
+        for (uint64_t i = hstart; i < hseq; i++) {
+            const PsxHleCallEntry *e = psx_hle_ring_entry(i);
+            if (!e) continue;
+            if (!first) fputs(",", f);
+            first = 0;
+            fprintf(f, "{\"vec\":\"0x%X\",\"fn\":\"0x%X\",\"a0\":\"0x%08X\",\"a1\":\"0x%08X\","
+                       "\"a2\":\"0x%08X\",\"ra\":\"0x%08X\",\"v0\":\"0x%08X\",\"rep\":%u,"
+                       "\"tcb\":\"0x%08X\",\"exc\":%u}",
+                    e->vector, e->fn, e->a0, e->a1, e->a2, e->ra, e->v0,
+                    e->repeat, e->tcb, (unsigned)e->in_exc);
+        }
+        fputs("]},", f);
+    }
+
+    /* CD command history tail — last commands issued with IRQ state, showing
+     * whether a completion interrupt was expected for the wedged operation. */
+    {
+        const CDROMCommandHistoryEntry *ch = NULL;
+        uint64_t cseq = cdrom_debug_get_command_history(&ch);
+        uint64_t cstart = (cseq > 16ull) ? (cseq - 16ull) : 0ull;
+        fputs("\"cd_cmds\":{\"total\":", f);
+        fprintf(f, "%llu,\"tail\":[", (unsigned long long)cseq);
+        int first = 1;
+        for (uint64_t i = cstart; i < cseq; i++) {
+            const CDROMCommandHistoryEntry *e = NULL;
+            e = &ch[i % CDROM_COMMAND_HISTORY_CAP];
+            if (e->seq != i) continue;
+            if (!first) fputs(",", f);
+            first = 0;
+            fprintf(f, "{\"k\":\"%c\",\"cmd\":\"0x%02X\",\"pc\":\"0x%08X\",\"fn\":\"0x%08X\","
+                       "\"fr\":%u,\"irqfl\":\"0x%02X\",\"pend\":\"0x%02X\",\"q\":\"0x%02X\","
+                       "\"stat\":\"0x%02X\",\"seek\":\"%02X:%02X:%02X\"}",
+                    (char)e->kind, e->cmd, e->pc, e->func, e->frame,
+                    e->irq_flag, e->pending_cmd, e->queued_cmd, e->stat,
+                    e->seek_min, e->seek_sec, e->seek_sect);
+        }
+        fputs("]},", f);
+    }
+
+    /* IRQ raise/deliver/ack counters — which interrupt sources actually reach
+     * the guest during the wedge (CD vs VBlank vs DMA delivery rate). */
+    {
+        extern uint64_t g_vblank_raise_count, g_vblank_deliver_count;
+        extern uint64_t g_irq_deliver_count, g_cdrom_deliver_count;
+        extern uint64_t g_vblank_ack_count;
+        fputs("\"irq_counts\":{\"vb_raise\":", f);
+        fprintf(f, "%llu,\"vb_deliver\":%llu,\"irq_deliver\":%llu,"
+                   "\"cdrom_deliver\":%llu,\"vb_ack\":%llu},",
+                (unsigned long long)g_vblank_raise_count,
+                (unsigned long long)g_vblank_deliver_count,
+                (unsigned long long)g_irq_deliver_count,
+                (unsigned long long)g_cdrom_deliver_count,
+                (unsigned long long)g_vblank_ack_count);
+    }
+
+    fputs("\"_end\":true}\n", f);
+}
 
 static int s_started = 0;
 static char s_backend[32] = "psx-runtime";
@@ -627,6 +837,9 @@ static int freeze_dump_write(long long wall, uint64_t frame, uint64_t cyc,
 
     fputs("  \"dirty_block\":", f);
     debug_server_freeze_dump_dirty_block_json(f, DUMP_CAP_DIRTY_BLOCK);
+    fputs(",\n", f);
+
+    freeze_dump_device_state_json(f);
     fputs(",\n", f);
 
 #ifdef _WIN32

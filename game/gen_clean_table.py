@@ -20,12 +20,38 @@ for line in open(os.path.join(GAME, 'fnmap.c')):
     if m:
         entries.append((int(m.group(1), 16), m.group(2)))
 
-# ---- per-function byte sizes from the generated oracle ----
-# "/* Address: 0xXXXX, Size: N bytes, ... */" headers in generated/*.c.
-# Used to charge an approximate guest-cycle cost per clean dispatch so
-# clean functions do not run cycle-free (generated bodies self-charge via
-# psx_cyc_step). ~2 CPI is a reasonable MIPS average; the byte size is the
-# instruction count floor (MIPS is fixed 4-byte).
+# ---- per-function cycle cost from the generated oracle ----
+# Decode the actual MIPS words from the PS-X EXE so the clean dispatch charges
+# the same per-instruction base the recompiler folds in (psx_instr_base_cycles
+# == 1) plus a memory-access surcharge for guest loads/stores (charged in the
+# runtime memory path, not the opcode base). A flat multiplier is wrong: the
+# faithful model is instruction-count + memory-op aware, matching the
+# interpreter's psx_cyc accounting closely enough that device deadlines stay
+# synchronized whether a body runs clean or generated.
+EXE_PATH = os.path.join(ROOT, 'disc', 'SLES_017.22')
+EXE_TEXT_VADDR = 0x8011E800
+EXE_TEXT_FILEOFF = 0x800
+EXE_TEXT_SIZE = 0xA0800
+try:
+    _exe = open(EXE_PATH, 'rb').read()
+    _text = _exe[EXE_TEXT_FILEOFF:EXE_TEXT_FILEOFF + EXE_TEXT_SIZE]
+except OSError:
+    _text = b''
+
+def _insn_cost(word):
+    """1 base cycle + memory-op surcharge, mirroring psx_instr_base_cycles +
+    the load/store path charge. Returns the guest cycles for one insn."""
+    op = (word >> 26) & 0x3F
+    # I-type load/store opcodes (incl. unaligned LWL/LWR/SWL/SWR, coproc,
+    # LL/LR, CACHE). Each guest data access costs ~+1 over the execute base.
+    if op in (0x20,0x21,0x22,0x23,0x24,0x25,0x26,          # LB LH LWL LW LBU LHU LWR
+              0x28,0x29,0x2A,0x2B,0x2E,                  # SB SH SWL SW SWR
+              0x2F,                                       # CACHE
+              0x30,0x33,                                  # LL LR
+              0x31,0x32,0x35,0x36,0x39,0x3A,0x3D,0x3E):   # LWC1/2 LDC1/2 SWC1/2 SDC1/2
+        return 2
+    return 1
+
 fn_size = {}
 for gpath in glob.glob(os.path.join(ROOT, 'generated', '*.c')):
     for gm in re.finditer(r'Address: 0x([0-9A-Fa-f]+), Size: (\d+) bytes', open(gpath).read()):
@@ -38,7 +64,20 @@ def clean_cost(addr):
     s = fn_size.get(addr)
     if not s:
         return 8  # tiny default for thunks/aliases with no emitted body
-    return max(4, (s // 4) * 2)  # instructions * ~2 CPI
+    # Decode the function's instructions from the EXE text for an accurate
+    # instruction+memory cost; fall back to instruction-count if bytes absent.
+    off = addr - EXE_TEXT_VADDR
+    total = 0
+    if 0 <= off < len(_text):
+        end = min(off + s, len(_text))
+        for i in range(off, end, 4):
+            if i + 4 > len(_text):
+                break
+            w = int.from_bytes(_text[i:i+4], 'little')
+            total += _insn_cost(w)
+    if total == 0:
+        total = max(4, s // 4)  # instruction-count floor (MIPS is 4-byte)
+    return max(4, total)
 
 # ---- index definitions: name -> (ret_type, params_text, file) ----
 defs = {}
