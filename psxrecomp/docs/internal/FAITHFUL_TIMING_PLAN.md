@@ -6562,3 +6562,30 @@ check whether the .ANI file-load (cd_file_load_sm) was requested/dropped.
 - NEXT: find the generated fn that writes ctrl+0x30 (FC_ANI) — likely a
   CD-completion callback or deferred task; check whether it's gated on a
   "resources ready" flag that battle_flow should wait on before stage 8.
+
+### versus->fight ROOT CAUSE CONFIRMED — CD sector drops corrupt .ANI
+
+Reproduced twice. Run A: FC_ANI=0 (load didn't finish -> null stream ->
+0x00030001 fatal). Run B (.ANI loaded): fatal at addr=0x80122F0C which is a
+STRING/DATA table ("OFFBEAST"/"LEVER"/"REV"/"SPOSE"), NOT code.
+
+VERIFIED DATA-PATH BUG:
+- P1=JEN(char0) .ANI@0x8006ba04, P2=MAR(char5) .ANI@0x800ce958 — headers load.
+- Diffed P2 MAR .ANI (48500B) vs disc MAR1P.ANI: first 0x16a8 bytes
+  (~3 sectors) BYTE-IDENTICAL, then ~40KB diverges to dense foreign data
+  matching the 0x800D0000 staging buffer -> .ANI body overwritten/incomplete.
+- ring_dropped grew 523 -> 2767. bfrd_set=6325 vs bfrd_clear=14: guest CD
+  consumption/ack handshake barely runs -> 8-deep s_sector_ring overflows ->
+  sectors dropped -> file data corrupt.
+- accel_consumer_waits=0: disc at divisor=1 (authentic); drops are "faithful"
+  only if guest genuinely slow — here consumption is impaired by the
+  clean-C battle path (deferred-IRQ/coroutine contract), NOT real HW.
+- Corrupt .ANI -> S4 relocated ptrs land in string table -> ev_stream_dispatch
+  -> br2_call_generated -> psx_unknown_dispatch -> psx_fatal_halt.
+
+ROOT: CD data-ready IRQ / DMA drain does not keep up during the clean-C
+battle_flow resource load -> ring drops -> corrupt fighter files. The fix is
+the deferred-IRQ/consumption path (same contract as vsync_wait_n), NOT a
+disc-speed shim (non-faithful). NEXT: find why CD consumption IRQs stall in
+the battle_flow clean-C dispatch window; check pending_dataready/irq_flag
+delivery vs clean_try_dispatch nesting depth.
