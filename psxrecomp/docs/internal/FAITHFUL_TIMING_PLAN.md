@@ -213,6 +213,43 @@ on a fixed region -> next.
 
 ## 5. Status / Log (update every session)
 
+- **2026-11-15 (battle path reached LIVE — same frame-counter freeze wall now
+  hit from `battle_frame`, not just save-menu; VBlank counter confirmed
+  advancing during menus):**
+  - Clean-C pointer/ABI fixes (commits `9ffb080`,`174c6d9`,`79a840d`,`becc0d2`,
+    `9cf7fa4`, all pushed to `mine/master`) took the game from fully-stuck-at-
+    title to a LIVE battle: menu stepper desc made contiguous, `attract_menu_
+    dispatch`/`battle_flow_state_machine` `int param_1`→`intptr_t` host-ptr
+    fixes, `g_game_state`/`g_sub_state` re-aliased to the guest scratchpad bytes
+    they were split-brain'd away from (THE unlock — `gs=8` finally reaches
+    `battle_flow_state_machine`), and `task_invoke` now passes a guest-u32 arg
+    to `script_move_timer_eval` (was a host ptr → infinite move-timer loop).
+  - Verified live: `gs=8` sustained, `battle_flow_state_machine → battle_frame
+    → task_pools_tick → script_move_timer_eval` running at ~98% CPU, character-
+    select phase words advancing, debug server responsive.
+  - Then hit the DOCUMENTED wall at frame ~1509: `frame_tick → cd_timer_read →
+    psx_unknown_dispatch`. `unknown_dispatch_log`: `phys=0x04000000`, `ra=0`,
+    `a1=0x801F68F0`, `epc=0x8019A648` (inside `vsync_wait_n`). Run report:
+    `FAIL-FAST unknown dispatch addr=0x04000000` — the `vsync_wait_n` timeout
+    falling into `bios_table_tramp`/`bios_kobj_tramp` → wild `jr` to
+    `0x04000000` (bad kernel-object ptr). Same signature as the 2026-11-11
+    save-menu freeze, now reached via the battle path.
+  - **Confirms the CD-IRQ-dependence hypothesis:** sampled `DAT_801bdde0`
+    (framecnt) through boot→menu→attract — it advances steadily (~+0xF-0x60 per
+    0.25 s) while CD is active in menus. The counter only stalls once battle_
+    frame's `cd_timer_read`/`vsync_wait_n` spins with CD idle. This is exactly
+    unknowns (a)/(b) below: the deferred coroutine (`cd_ctx_restore→cd_chan_
+    full_init→cd_intc_dispatch→cd_cb8_dispatch`) appears to resume only on CD-
+    source IRQs, so with no pending CD command the frame counter freezes and
+    `vsync_wait_n` times out.
+  - **NEXT (unchanged, now battle-confirmed):** resolve whether the hooked IRQ
+    entry resumes on ALL maskable IRQs (VBlank should tick framecnt too) or is
+    CD-source-gated; and whether the game keeps a CD command/read ACTIVE during
+    battle (streaming music/pre-load) that our CD emulation completes/idles
+    prematurely. Compare CD command+IRQ sequence vs Beetle/DuckStation oracle
+    at the battle-intro point. This is faithful-core IRQ/coroutine work — NOT
+    a clean-C port bug; do not patch around it.
+
 - **2026-11-11 (frame-counter freeze ROOT-CAUSE narrowed — MMIO fix confirmed
   landed; counter depends on CD IRQ, freezes when CD idles):**
   - **MMIO guest_at-drop fix CONFIRMED LANDED in cd.c** — `cd_chan_full_init`,
