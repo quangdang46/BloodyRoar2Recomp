@@ -5,6 +5,7 @@
 #include "debug_server.h"
 #include "crash_trace.h"   /* g_psx_fatal_reason */
 #include "cpu_state.h"     /* g_psx_bail_* call-contract counters */
+#include "sio.h"           /* SioTxnEntry + card transaction getters */
 
 #include <stdint.h>
 #include <stdio.h>
@@ -37,6 +38,16 @@ extern void     sio_get_freeze_diag(int *irq_pending, int *irq_countdown,
                                     int *card_active);
 extern int      sio_get_mc_max_state(void);
 extern int      sio_get_tx_writes(void);
+extern int      sio_get_mc_cmd_count(void);
+extern int      sio_get_mc_read_count(void);
+extern int      sio_get_mc_read_done(void);
+extern int      sio_get_mc_probe_count(void);
+extern int      sio_get_mc_ack_count(void);
+extern int      sio_get_mc_abort_count(void);
+extern int      sio_get_mc_abort_state(void);
+extern uint16_t sio_get_mc_abort_ctrl(void);
+extern uint32_t sio_get_mc_last_caller(void);
+extern int      sio_get_tx_gated(void);
 
 /* dirty_ram_interp counters — defined as plain globals in dirty_ram_interp.c.
  * Declared weakly here in case a future build drops the unit; missing symbol
@@ -97,6 +108,29 @@ static uint32_t fd_guest_rd32(uint32_t gaddr) {
     return v;
 }
 
+/* Dump one SioTxnEntry compactly: identity + protocol position + byte tails.
+ * tx/rx are capped at SIO_TXN_MAX_BYTES; we emit only the last TAIL bytes so a
+ * 256-byte sector dump stays small. */
+#define FD_TXN_TAIL 24
+static void fd_dump_txn(FILE *f, const SioTxnEntry *t, int live) {
+    if (!t) { fputs("null", f); return; }
+    uint16_t nb = t->byte_count;
+    if (nb > SIO_TXN_MAX_BYTES) nb = SIO_TXN_MAX_BYTES;
+    uint16_t tx0 = nb > FD_TXN_TAIL ? (uint16_t)(nb - FD_TXN_TAIL) : 0;
+    uint16_t rx0 = tx0;
+    fprintf(f, "{\"seq\":%u,\"live\":%d,\"slot\":%u,\"cmd\":\"0x%02X\","
+               "\"sector\":\"0x%04X\",\"bytes\":%u,\"ack\":%u,"
+               "\"term\":%u,\"end\":%u,\"sfn\":\"0x%08X\",\"efn\":\"0x%08X\","
+               "\"tx\":\"", t->txn_seq, live, (unsigned)t->slot,
+            (unsigned)t->cmd, (unsigned)t->sector, (unsigned)t->byte_count,
+            (unsigned)t->ack_count, (unsigned)t->terminal_state,
+            (unsigned)t->end_reason, t->start_func, t->end_func);
+    for (uint16_t i = tx0; i < nb; i++) fprintf(f, "%02X", t->tx[i]);
+    fputs("\",\"rx\":\"", f);
+    for (uint16_t i = rx0; i < nb; i++) fprintf(f, "%02X", t->rx[i]);
+    fputs("\"}", f);
+}
+
 static void freeze_dump_device_state_json(FILE *f) {
     fputs("  \"device_state\":{", f);
 
@@ -155,6 +189,43 @@ static void freeze_dump_device_state_json(FILE *f) {
                 fd_guest_rd32(0x801BCE30u), fd_guest_rd32(0x801BCE34u),
                 fd_guest_rd32(0x801BCE38u), fd_guest_rd32(0x801BCE3Cu),
                 fd_guest_rd32(0x801BCE40u), fd_guest_rd32(0x801BCE44u));
+    }
+
+    /* Memory-card protocol state. versus->fight wedges in TestEvent on the
+     * card event classes (0xF0000011 / 0xF4000001); this captures whether the
+     * SIO card transaction is still open (and where it stalled) or closed
+     * without delivering the completion the game polls. */
+    {
+        fputs("\"card\":{", f);
+        const SioTxnEntry *live = sio_get_card_txn_live();
+        int open = 0;
+        uint32_t total = sio_get_card_txns(NULL, NULL, &open);
+        fprintf(f, "\"open\":%d,\"total\":%u,\"live\":", open, total);
+        fd_dump_txn(f, live, 1);
+        fputs(",\"tail\":[", f);
+        const SioTxnEntry *buf = NULL;
+        int widx = 0, open2 = 0;
+        uint32_t closed = sio_get_card_txns(&buf, &widx, &open2);
+        if (buf && closed > 0) {
+            /* widx is the next-write slot; the most recent closed txn sits at
+             * widx-1 (mod CAP). Emit up to the last 8, newest first. */
+            uint32_t n = closed < 8 ? closed : 8;
+            for (uint32_t j = 0; j < n; j++) {
+                if (j) fputs(",", f);
+                uint32_t slotidx = (uint32_t)((widx - 1 - (int)j + SIO_TXN_CAP) % SIO_TXN_CAP);
+                fd_dump_txn(f, &buf[slotidx], 0);
+            }
+        }
+        fprintf(f, "],\"mc\":{\"cmd\":%d,\"read\":%d,\"read_done\":%d,"
+                   "\"probe\":%d,\"ack\":%d,\"abort\":%d,\"abort_state\":%d,"
+                   "\"abort_ctrl\":\"0x%04X\",\"max_state\":%d,\"tx_w\":%d,"
+                   "\"tx_gated\":%d,\"last_caller\":\"0x%08X\"}},",
+                sio_get_mc_cmd_count(), sio_get_mc_read_count(),
+                sio_get_mc_read_done(), sio_get_mc_probe_count(),
+                sio_get_mc_ack_count(), sio_get_mc_abort_count(),
+                sio_get_mc_abort_state(), sio_get_mc_abort_ctrl(),
+                sio_get_mc_max_state(), sio_get_tx_writes(),
+                sio_get_tx_gated(), sio_get_mc_last_caller());
     }
 
     /* EvCB table: kernel event control blocks (base ptr @0x120, size @0x124,
