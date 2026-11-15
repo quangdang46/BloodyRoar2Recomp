@@ -219,13 +219,45 @@ static void freeze_dump_device_state_json(FILE *f) {
         fprintf(f, "],\"mc\":{\"cmd\":%d,\"read\":%d,\"read_done\":%d,"
                    "\"probe\":%d,\"ack\":%d,\"abort\":%d,\"abort_state\":%d,"
                    "\"abort_ctrl\":\"0x%04X\",\"max_state\":%d,\"tx_w\":%d,"
-                   "\"tx_gated\":%d,\"last_caller\":\"0x%08X\"}},",
+                   "\"tx_gated\":%d,\"last_caller\":\"0x%08X\"},",
                 sio_get_mc_cmd_count(), sio_get_mc_read_count(),
                 sio_get_mc_read_done(), sio_get_mc_probe_count(),
                 sio_get_mc_ack_count(), sio_get_mc_abort_count(),
                 sio_get_mc_abort_state(), sio_get_mc_abort_ctrl(),
                 sio_get_mc_max_state(), sio_get_tx_writes(),
                 sio_get_tx_gated(), sio_get_mc_last_caller());
+        /* BIOS libcard globals (kernel RAM, relocated): A6C10 nest depth/busy,
+         * B4E30 scan cursor, B4E38 publish latch. LibCardIntRP only latches
+         * B4E38 once A6C10 reaches idle (bit31); a merged/missing IRQ7 edge
+         * leaves it nested and the card-completion DeliverEvent never fires —
+         * the versus->fight TestEvent wedge. */
+        fprintf(f, "\"libcard\":{\"a6c10\":\"0x%08X\",\"b4e30\":\"0x%08X\","
+                   "\"b4e38\":\"0x%08X\",\"b4e34\":\"0x%08X\"},",
+                fd_guest_rd32(0x800A6C10u), fd_guest_rd32(0x800B4E30u),
+                fd_guest_rd32(0x800B4E38u), fd_guest_rd32(0x800B4E34u));
+        /* card_handoff ring: bit7->TX0x57 / nest_irq_pulse / b7_hold events
+         * with the a6c10/b4e30/b4e38/imask snapshot at each — shows whether the
+         * unstick repair is firing and what state it keeps seeing. */
+        {
+            int hidx = 0, hcount = 0;
+            int hcap = sio_card_handoff_cap();
+            const SioCardHandoffEntry *hb = sio_get_card_handoff(&hidx, &hcount);
+            fputs("\"handoff\":[", f);
+            if (hb && hcount > 0 && hcap > 0) {
+                int hn = hcount < 12 ? hcount : 12;
+                for (int j = 0; j < hn; j++) {
+                    if (j) fputs(",", f);
+                    int hi = (hidx - 1 - j + hcap) % hcap;
+                    const SioCardHandoffEntry *e = &hb[hi];
+                    fprintf(f, "{\"k\":%u,\"im\":\"0x%04X\",\"pc\":\"0x%08X\","
+                               "\"a6\":\"0x%08X\",\"b30\":\"0x%08X\",\"b38\":\"0x%08X\"}",
+                            (unsigned)e->kind, (unsigned)e->imask, e->pc,
+                            e->a6c10, e->b4e30, e->b4e38);
+                }
+            }
+            fputs("]", f);
+        }
+        fputs("},", f);
     }
 
     /* EvCB table: kernel event control blocks (base ptr @0x120, size @0x124,
