@@ -974,6 +974,7 @@ extern void ret_stub_b(void);
 extern void ret_zero_a(void);
 extern void ret_zero_b(void);
 extern void ret_zero_c(void);
+extern void ret_zero_d(void);
 extern void ret_zero_f(void);
 extern void rgb_triple_store(void);
 extern void ring_effect_task_update(void);
@@ -1726,6 +1727,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8016cd8c, (void *)fighter_flash_update },
   { 0x8016d244, (void *)fighter_tint_fade },
   { 0x8016d478, (void *)sprite_anim_chain_build },
+  { 0x8016dadc, (void *)ret_zero_d },
   { 0x8016ddf8, (void *)countdown_display_sm },
   { 0x8016e21c, (void *)hud_state_machine },
   { 0x8016f2c4, (void *)clear_f4ee8_u16s },

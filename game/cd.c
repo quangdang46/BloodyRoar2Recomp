@@ -2968,57 +2968,11 @@ void cd_delay_3c(void)
  * Disasm 0x8019b620-0x8019b7dc. */
 void cd_reg_stream_push(uint32_t a0,uint32_t a1)
 {
-  uint32_t b = CDREG32(0x801bdeb0);
-  uint32_t s1 = a1;
-  uint32_t s2 = a0;
-  uint32_t s3 = CDMMIO16(b,0xd7) & 0x7ff;          /* +0x1ae, delay slot of jal */
-  CDMMIO16_ST(b,0xd3,CDREG16(0x801bdec8));          /* +0x1a6 <- dec8 */
-  cd_delay_3c();
-  while (s1 != 0) {
-    uint32_t s0 = (s1 < 0x41) ? s1 : 0x40; /* sltiu 0x41 */
-    if ((int32_t)s0 > 0) {
-      uint32_t v1 = 0;
-      do {
-        uint16_t w = *(uint16_t *)guest_at(s2);
-        s2 += 2;
-        v1 += 2;
-        CDMMIO16_ST(b,0xd4,w);                      /* +0x1a8 */
-      } while (v1 < s0);
-    }
-    CDMMIO16_ST(b,0xd5,(uint16_t)((CDMMIO16(b,0xd5) & 0xffcf) | 0x10));  /* +0x1aa */
-    cd_delay_3c();
-    if ((CDMMIO16(b,0xd7) & 0x400) != 0) {          /* +0x1ae bit 0x400 */
-      uint32_t v1 = 0;
-      for (;;) {
-        v1++;
-        if (v1 >= 0xf01) {
-          printf_forward((const char *)guest_at(0x80125be8),
-                       (const char *)guest_at(0x80125c08));
-          break;
-        }
-        if ((CDMMIO16(b,0xd7) & 0x400) == 0) break;
-      }
-    }
-    cd_delay_3c();
-    cd_delay_3c();
-    s1 -= s0;
-  }
-  CDMMIO16_ST(b,0xd5,(uint16_t)(CDMMIO16(b,0xd5) & 0xffcf));
-  {
-    uint32_t want = s3 & 0xffff;
-    if ((CDMMIO16(b,0xd7) & 0x7ff) != want) {
-      uint32_t v1 = 0;
-      for (;;) {
-        v1++;
-        if (v1 >= 0xf01) {
-          printf_forward((const char *)guest_at(0x80125be8),
-                       (const char *)guest_at(0x80125c1c));
-          break;
-        }
-        if ((CDMMIO16(b,0xd7) & 0x7ff) == want) break;
-      }
-    }
-  }
+  /* Delegate whole body to generated MIPS (0x8019b620). The clean port's
+   * CDMMIO16 busy-waits do not advance guest cycles, so the CD/SPU status
+   * handshake cannot progress during the spin (same contract as
+   * cd_reg_window_op). */
+  br2_call_generated(0x8019b620u,a0,a1,0,0);
 }
 
 /* cd_reg_window_op — register-window op dispatch (ops 0..3), returns 0 or
