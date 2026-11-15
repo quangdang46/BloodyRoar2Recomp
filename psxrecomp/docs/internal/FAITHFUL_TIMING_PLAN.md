@@ -308,13 +308,48 @@ on a fixed region -> next.
     repeatedly then dispatches `0x4000000` → `psx_fatal_halt`. BIOS calls
     work elsewhere (1.4M recorded) → context-specific to the IRQ/console
     nested path.
-  - **NEXT (refined):** instrument `cd_intc_dispatch` block progression
-    (0x8019A8EC→helper calls→block_8019A9C0 jalr) to find the exact stall
-    point; determine why the exception RETURN (RFE→`async_rfe` resume) never
-    fires and why `pc` reaches 0 → `0x80000080`. The `pczero`/`nestgate_
-    rfepend` counters + `async_rfe` ring are the observability surface. This
-    is faithful-core IRQ exception-return work in `interrupts.c`, needs
-    Beetle-oracle comparison of the IRQ handler's RFE/resume semantics.
+  - **fntrace baseline (WORKING menu phase) captured:** per VBlank IRQ the
+    generated path runs `cd_intc_dispatch`(0x8019A8EC, ra=0x8019A88C,
+    a0=0x801BCD50) → `cd_cb8_dispatch`(0x8019AE68, **ra=0x8019A9C8** = the
+    block_8019A9C0 jalr) → `0x8019AD60` return trampoline (ra=0x8019AA9C,
+    a1=0x1F801070=I_STAT, a2=0x1F801074=I_MASK). All three fire every frame
+    and the IRQ completes (`restored=1`). `0x8019AD60` is a kernel-call
+    trampoline `li $t2,0xB0; li $t1,0x17; jr $t2` → **B0 svc 0x17 =
+    ReturnFromException** (B0_Table[0x17] per psx_bios_disasm.txt) — i.e.
+    cd_intc_dispatch's own exception return goes through the kernel RFE.
+  - **Correction to "fork-peer" reading:** the irqctx `restored=0/exit_pc=0/
+    same_thread=0/exit_reason=0` are the ENTRY-half defaults (interrupts.c
+    ~1668) — they mean the handler **never reaches the exception-exit
+    epilogue** (~2016), i.e. it is entered and then HANGS mid-body, not that
+    it completes on a peer. Combined with `cd_cb8_dispatch` never firing
+    (framecnt `gwatch` total=0) the hang is inside `cd_intc_dispatch` BEFORE
+    the block_8019A9C0 handler `jalr` — in its setup calls (`printf_forward`
+    0x8018E550, the B0/0x17 RFE trampoline, or the I_STAT/I_MASK mask compute).
+  - **Battle reached + freeze is TRANSIENT (new data):** drove to gs=8/sub=3
+    live battle. fntrace showed the IRQ path WORKING during early battle —
+    `cd_intc_dispatch`→`cd_cb8_dispatch`→`0x8019AD60`(RFE trampoline) all
+    firing, framecnt advancing `0xb94e→0xba1e` (~200 frames). Then it wedged
+    → same `0x4000000` fatal. So the handler is NOT permanently broken in
+    battle; it works until a specific event (likely a thread-switch inside a
+    VBlank callback or a nested IRQ) triggers the wedge.
+  - **Wedge localized to kernel ctx-restore:** `freeze_check` at the crash
+    reads `current_func=0x29CC` — and per this plan (lines ~1754/1921/2200)
+    `0x29CC` = **ReturnFromException / exception context-restore** (resume a
+    blocked thread). `exception_entries=92066`,
+    `exception_reentry_blocks=5552` — massive re-entry. This matches the
+    documented `returnFromException(0x29CC) → exceptionHandler … (256 deep)`
+    recursion. So: IRQ handler completes → RFE → kernel ctx-restore (0x29CC)
+    → re-triggers exceptionHandler → RFE → ctx-restore → … infinite recursion
+    → the interrupted `vsync_wait_n` never resumes → framecnt frozen →
+    timeout → `console_pct`→BIOS `B0/0x35`→`0x4000000` fatal. The proximate
+    defect is the **exception-return / thread-context-restore recursion** in
+    the IRQ path, triggered once battle runs a thread-switching callback.
+  - **NEXT (refined):** with fntrace armed on {0x8019A8EC,0x8019AE68,
+    0x8019AD60,0x8018E550,0x8019A5D8}, drive to battle and diff which entries
+    STOP firing vs the menu baseline — that pinpoints the exact stall call.
+    Then determine why the IRQ taken deep in `battle_frame`'s nested
+    clean→generated dispatch wedges the handler (exception-return /
+    cooperative-resume path in `interrupts.c`), vs Beetle-oracle.
 
 - **2026-11-11 (frame-counter freeze ROOT-CAUSE narrowed — MMIO fix confirmed
   landed; counter depends on CD IRQ, freezes when CD idles):**
