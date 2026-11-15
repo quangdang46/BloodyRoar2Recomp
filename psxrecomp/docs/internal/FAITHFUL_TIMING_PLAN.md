@@ -6761,3 +6761,25 @@ NEXT: (a) determine what writes 0x1f801120/124/128 on real HW (GPU DMA
 completion? a libgpu drain task? an IRQ?) and why it's not running;
 (b) get the .ANI (fid 0x40) caller ra by getting past this deadlock or
 by tracing the select-screen resource path directly.
+
+### Session N+5b — CORRECTION: the "fifo deadlock" is the pc=0 wedge
+
+Deeper probe of the frame-1650 freeze shows it is NOT a FIFO/timer bug:
+- get_registers: pc=0x00000000, epc=0x8019A600, ra(gpr31)=0x80126664
+  (intro_movie_state region), cop0_cause=0, sr=0x40000401.
+- dispatch_tail addrs are LOW memory (0x00004000,0x000016E4,0x00003Fxx)
+  = guest executing from physical ~0, i.e. it branched/jalr'd to NULL.
+- guest cycle counter frozen (cycles_to_next_event constant 654619),
+  all 3 timer counters frozen, clean_trace count frozen -> total halt.
+
+So versus->fight -> intro_movie_state (ra 0x80126664) performs an
+indirect call/jump through a NULL/bad pointer -> PC=0 -> executes the
+null page -> hard freeze. This is the SAME pc=0 signature as the
+earlier versus->fight IRQ-storm wedge (todo #9). fifo_space_check x7.3M
+was the last clean fn before the wild jump, a red herring.
+
+LINK to Session N+4: the .ANI@0x800CE958 / staging@0x800D0000 overlap
+corrupts pointers; a corrupted function/dispatch pointer in the
+cinematic path is the likely source of the null indirect target. The
+pc=0 wedge and the .ANI-corruption fatal are probably the SAME root
+(memory overlap) manifesting at different points.
