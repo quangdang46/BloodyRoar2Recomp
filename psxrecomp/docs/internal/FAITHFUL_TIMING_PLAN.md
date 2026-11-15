@@ -6589,3 +6589,38 @@ the deferred-IRQ/consumption path (same contract as vsync_wait_n), NOT a
 disc-speed shim (non-faithful). NEXT: find why CD consumption IRQs stall in
 the battle_flow clean-C dispatch window; check pending_dataready/irq_flag
 delivery vs clean_try_dispatch nesting depth.
+
+### Session N+1 — third repro + IRQ-starvation hypothesis REFINED
+
+Third versus->fight run: FC_ANI=0 again (null-stream fatal via
+ev_stream_dispatch->br2_call_generated->psx_unknown_dispatch->psx_fatal_halt).
+ring_dropped froze at 523 once the read went idle (CD stat idle, irq_flag=0,
+sector_read_pos stuck) — drops accumulate ONLY during the active read window,
+then the load "finishes" with FC_ANI still 0 -> hang-then-fatal.
+
+EMPIRICAL data this session:
+- Sector production is STEADY ~1 sector/frame (cdrom_sector_history frames
+  1654-1655, sequential LBAs) — NOT bursting. 8-deep ring needs a >8-frame
+  consumption stall to drop; drops are cumulative over the whole load.
+- clean_trace (last-512 dispatch ring) dominated by fifo_space_check
+  (0x801A4230, GPU FIFO space poll) x7.3M from ra=0x801A1FFC — normal per-frame
+  GPU command submission, a red herring, NOT the stall.
+- CRITICAL REFINEMENT: clean-C advances guest cycles ONLY via br2_irq_poll()
+  (clean_bridge.c:290, psx_advance_cycles(256)+psx_check_interrupts_at). Every
+  clean spin that charges cycles self-checks IRQs. So naive "clean-C spins
+  without IRQ check" is NOT the drop mechanism — the starvation is subtler:
+  (a) generated-code consumption coroutine cd_read_step_cb/cd_read_finish_cb
+      (cd.c:776/803, delegated via br2_call_generated across the deferred-IRQ
+      boundary) not being re-invoked promptly per sector, or
+  (b) a consumption-rate deficit vs 2x production (mode_reg=0xA0, game-set),
+      or (c) psx_check_interrupts_dispatch_entry not delivering CD INT1 at the
+      clean-function granularity the load path needs.
+- mode_reg=0xA0 = game-requested 2x (faithful; BR2 reads at 2x on HW too).
+  Production timing CDROM_SINGLE_SPEED_SECTOR_CYCLES=451584 (~13.4ms 1x,
+  ~6.7ms 2x) is accurate. INT1 data-ready is LEVEL-triggered from irq_flag
+  (cdrom.c:996-1010) — re-fires while data ready, faithful.
+
+NEXT (concrete): instrument cdrom.c to timestamp ring_dropped increments vs
+guest PC / clean-function, OR check whether cd_read_step_cb (the per-sector
+consumer, generated coroutine) is invoked once per produced sector during the
+char-load window. The consumption side is the suspect, not production.
