@@ -3051,3 +3051,36 @@ All-generated baseline stalls identically => faithful-core/runtime bug,
 game/ exonerated. Suspect the INT1 data-ready dispatch / per-sector callback
 (cd_response_process type-1 gating on bcb18&7==1, bcb25) and the
 kernel-object CDROM(0xF0000003) IntRP callback delivery.
+
+=== SESSION — versus->fight WEDGE FIXED (b79971a) ===
+
+Two fixes landed together unblocked the versus->fight resource bind:
+
+1. cd_reg_bit40_ctrl (0x8019d030) delegated to generated MIPS. The clean-C
+   body busy-waited on CD/MMIO status (0xf01 cap) but br2_ld16 does not
+   advance guest cycles -> the spin burned the cap in native time before the
+   cycle-driven CD model moved the bits. Generated lets the wait cross
+   basic-block boundaries with psx_check_interrupts_at.
+
+2. clean_table.c: restored guest_at(cpu->gpr[4]) in wrap_8014751c +
+   wrap_8016fcc4. The working tree had silently reverted commit 79a840d
+   ("pass host pad-buffer pointer to battle_flow_state_machine") -> the
+   dispatcher was handed a guest address it derefs as a host pointer.
+
+VERIFIED LIVE (headless, nav_to_fight.py -> gs=8 ph=8 sub=1, STABLE, no
+pc=0 storm):
+  FC_ANI (+0x30): 0 -> 0x8006de00 (P1) / 0x800d2ba0 (P2)   [.ANI bound]
+  motion blk 0x801f5328/0x801f5440: all-zero -> populated
+      act=0x00010001, evpc=0x8006e34e/0x800d2ba6 (into .ANI data), 42 nz
+  CPU: was TestEvent(0xF0000009) spin (gpr11=0xF0000009, ra=0x8019D550)
+       -> now main loop (gpr11=0x12, ra=0x80126664), frame advancing.
+
+REMAINING: motion-block frame timer (+0x90) and delta (+0xce) stay 0 and
+evpc does not advance over 4s -> the per-frame event-VM tick
+(ev_stream_dispatch decrementing timer by delta) is not being fed. Fighters
+are bound + posed but the action/anim is not stepping. Likely the per-frame
+delta writer (fighter_frame / frame_tick path) is not running or writes 0,
+OR the fight is parked at a pre-round intro gate (sub=1) awaiting a
+round-start trigger the versus flow never issues. NEXT: find who writes
+motion+0xce (frame delta) and +0x90 (timer) per frame; check whether
+fighter_frame/frame_tick runs in ph=8 sub=1 vs needs sub advance.
