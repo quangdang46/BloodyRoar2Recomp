@@ -2904,3 +2904,29 @@ supposed to be armed for seek and a clean/generated boundary drops the
 arm write. NEXT decisive step: disasm cd_seek_state_machine (0x8019d5b0)
 + the command-completion callback it registers, find the faithful
 DeliverEvent(0xF0000009) site for seek-done, and check why it doesn't fire.
+
+=== SESSION — CD completes fine; break is flag-gate on DeliverEvent ===
+
+cdrom_state on the frozen fight instance: irq_flag=0, pending inactive
+(cmd 0x09 Pause done), reading=0, i_stat=0x1 (VBlank only, no CD bit2).
+=> All CD commands COMPLETED and their IRQs fired+cleared. The CD model
+is NOT dropping the seek/read IRQ.
+
+So the wedge is purely the game-side gate: ch4/command-done callback
+0x8019B7E0 checks 0x801BDF00; it is 0 -> skips MMIO reset +
+DeliverEvent(0xF0000009,0x20) -> cd_seek_step's TestEvent spins forever
+even though the underlying CD op finished.
+
+0x801BDF00 is armed ONLY by cd_dma_xfer_start (=1, via cd_dma_xfer_mode<-
+audio_seq_reset) — never on the file/seek programmed-I/O path. On real HW
+the read/seek completion MUST deliver 0xF0000009 somehow; our port never
+arms the gate for it. The faithful fix is to find WHERE the read/seek
+path arms 0x801BDF00 (a DMA-channel-setup write our port drops, or an
+op0/reg_window_op call the caller should issue) — NOT to force
+DeliverEvent (constitution forbids the hack).
+
+SHARPEST NEXT STEP: disasm the ch4-DMA channel setup that precedes
+reg_window_op op3 in the read path (the "caller armed" the docstring
+references) — it writes the 0x801BDEB0-block channel regs AND should set
+0x801BDF00. Find that writer in generated full_19.c around the
+cd_file_read_seq/cd_read_step_cb call chain.
