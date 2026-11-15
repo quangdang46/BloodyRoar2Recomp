@@ -6624,3 +6624,39 @@ NEXT (concrete): instrument cdrom.c to timestamp ring_dropped increments vs
 guest PC / clean-function, OR check whether cd_read_step_cb (the per-sector
 consumer, generated coroutine) is invoked once per produced sector during the
 char-load window. The consumption side is the suspect, not production.
+
+### Session N+2 — REFRAME: ring_dropped is FAITHFUL; real suspect = intro_movie_state / buffer overlap
+
+KEY CORRECTION: cdrom.c:1600-1618 documents that sector-buffer overwrite is
+HARDWARE-FAITHFUL clobbering ("the sector buffer is overwritten on schedule
+(hardware clobbers the FIFO the same way)"). ring_dropped=523 (~55% of 942
+sectors) is NORMAL PSX streaming behaviour for sectors the game does not
+consume in time — likely a RED HERRING for the .ANI failure, NOT the cause.
+bfrd_clear=13 = clear_sector_buffer ran ~13x (per read-session flush), normal.
+
+NEW CONCRETE LEAD — decomp_trace file_load sequence (this run, FC_ANI=0):
+  0x14->0x800D0000 (big packed decode -> 0x80010000+ blocks)
+  0x8B->0x800D0000, 0x16->0x800D0000  <- LAST loads before crash
+These are intro_movie_state (game.c:1795, guest 0x8012c0b4) resources, NOT the
+character .ANI (which uses a separate loader — never appears in file_load).
+CRITICAL: .ANI blob sits at 0x800ce958 (Run B) spanning to 0x800DA6CC; the
+intro staging buffer 0x800D0000 lies INSIDE that span at offset 0x16a8 —
+EXACTLY where the Run-B .ANI byte-diff diverged. Staging writes to 0x800D0000
+overwrite the .ANI tail.
+
+TWO LIVE HYPOTHESES:
+  (A) BUFFER COLLISION: char .ANI placed at 0x800ce958 overlaps the
+      intro_movie_state staging cursor 0x800D0000 (_DAT_801e3cfc). If the
+      versus->fight path runs intro_movie_state (pre-fight cinematic /
+      attract replay) AFTER .ANI is resident, staging clobbers .ANI tail.
+      On HW the order/buffers must not collide -> suggests wrong dest or
+      wrong sequencing in our port.
+  (B) WRONG STATE: versus->fight may be entering intro_movie_state (loading
+      cinematic file_ids 0x14/0x15/0x8b/0x16) instead of / before real fight
+      init, so the character .ANI link (FC_ANI) never runs -> FC_ANI=0 ->
+      ev_stream_dispatch null-stream fatal. The last decomp activity IS
+      intro_movie_state file_loads, supporting this.
+NEXT: determine whether versus->fight is SUPPOSED to run intro_movie_state
+(pre-fight cinematic) or whether it's a state-machine bug; find the char
+.ANI loader (separate from cd_file_load_sm) and its dest/gating; check if
+_DAT_801e3cfc heap cursor is shared/reset between intro staging and .ANI.
