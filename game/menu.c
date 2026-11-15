@@ -30,8 +30,15 @@ extern uint32_t br2_gaddr(const void *p);
 extern uint32_t guest_sp(void);
 extern uint8_t *_g_system_config_ptr;
 extern uint8_t *_g_pad_buffer;
-extern int g_game_state;
-extern int g_sub_state;
+/* g_game_state/g_sub_state are guest scratchpad bytes at 0x1f800000/0x1f800002
+ * (the top-level mode SM read by entry_0x80126234 in game.c). They must alias
+ * the SAME guest storage — declaring them `extern int` bound them to throwaway
+ * host ints in bind.c, so menu writes (e.g. g_game_state=8 on mode confirm)
+ * never reached the dispatcher and battle_flow_state_machine never ran. */
+extern uint8_t *g_DAT_1f800000;
+extern uint8_t *g_DAT_1f800002;
+#define g_game_state (*(uint8_t *)g_DAT_1f800000)
+#define g_sub_state  (*(uint8_t *)g_DAT_1f800002)
 
 extern int rgb_triple_store();
 extern int reset_sprite_ot_block();
