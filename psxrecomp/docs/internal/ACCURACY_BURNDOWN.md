@@ -2970,3 +2970,26 @@ NEXT: find which fight-init function should call audio_seq_reset
 (0x80158244) / cd_dma_xfer_mode to start the stream, and why it isn't
 reached. Check the audio/seq state machine (cd_state9 @0x801f46f4,
 cd_state9_store) — is a seq-load requested but never dispatched?
+
+=== SESSION — state-9 handler slot 0x801bdeec = 0 at fight wedge ===
+
+Live RAM: 0x801bdeec=0 (state-9 handler EMPTY), 0x801bdecc=0 (mode ->
+programmed-I/O branch, correct), 0x801bde40=0. chan_reset_register sets
+cd_state9_store(0x80158244) at boot, but a reset path calls
+cd_state9_store(0) (menu.c:9674, the "cd_reg_bit40_ctrl(0);
+cd_state9_store(0); cd_state_store(0)" reset). If that reset runs during
+fight bring-up it clears the ch4-stream handler -> no audio_seq_reset ->
+no cd_dma_xfer_mode -> flag 0 -> no DeliverEvent(0xF0000009) -> wedge.
+
+cd_seek_param_issue mode-flag branch (@0x801bdecc): ==0 -> reg_window_op
+{2,1,3} programmed I/O; !=0 -> cd_reg_stream_push (0x8019b620, ALSO
+programmed register-stream, NOT ch4 DMA). So BOTH seek paths are
+programmed I/O — the flag is genuinely DMA-only.
+
+NEW HYPOTHESIS: the wedge is NOT the file/seek read at all — it's a ch4
+AUDIO/STREAM that should be playing during fight (music/voice) whose
+state-9 handler got cleared by a reset. cd_seek_step's TestEvent may be
+waiting on stream-buffer drain, not command completion. NEXT: find what
+calls the cd_state9_store(0) reset (menu.c:9667 func) and whether it
+fires on the fight path; and confirm whether 0xF0000009 is stream-drain
+vs command-done by checking which ch4 DMA the game expects.
