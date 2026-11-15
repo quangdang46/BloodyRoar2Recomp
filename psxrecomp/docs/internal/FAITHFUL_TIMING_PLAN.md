@@ -6722,3 +6722,42 @@ produces 0x800CE958). Heaps seen: _DAT_801c47b8 (base 0x80010000) and
 _DAT_801e3cfc (0x800d0000/0x800dc800/0x800f0000 staging cursors). Determine
 which heap owns 0x800CE958 and why its top bound allows overlap into the
 reserved 0x800D0000 arena. Likely a guest->host pointer or arena-limit bug.
+
+### Session N+5 — caller-ra provenance + NEW deterministic deadlock (fifo_space_check)
+
+Instrumentation (commit 3053320): clean_caller_ra() exposes gpr[31] at
+clean-port entry; file_load decomp_trace `len` field now carries the
+generated caller's post-jal ra. Live data (attract/menu loads):
+  fid 0x80->0x801C47C0 ra=0x80126260; fid 0x89->0x8003F5DC ra=0x80126260
+  fid 0x1c/1d/1f->0x800F0000 ra=0x801263B0/428/430; fid 0x8a->0x80010000
+  fid 0x90/91->0x800DC800 ra=0x80126594; fid 0x14/8b/16->0x800D0000
+  ra=0x80126664 (intro_movie_state region — confirms staging caller).
+
+NEW BLOCKER (deterministic, 2/2 runs): nav_to_fight reaches vs_init then
+the game FREEZES at frame ~1650, BEFORE char-select/.ANI load. State:
+- clean_trace = fifo_space_check (0x801A4230) x7.3M called from 0x801A1FFC
+- fifo_space_check reads u16 @0x1f801120 (=0), @0x1f801124 (=0),
+  @0x1f801128 (=0); base=*(0x801ff260)=0x2f37, lim2=*(0x801ff264)=0x3c.
+  a0=0 < base -> a0 += 0x10000; v0=(0x10000-0x2f37)>>3=0x1A19 >= lim2
+  -> returns "space exhausted" forever -> caller spins.
+- CD idle (reading=0), MDEC stalled (busy=0,input_count=0,
+  output_pos frozen 622080/13MB), i_stat=0 pending=0, frame frozen.
+  TOTAL pipeline deadlock: nothing progresses.
+
+The 0x1f8011xx FIFO-depth vars are game-side libgpu command-queue
+trackers (NOT GPU regs; real GP0 is 0x1F801810). They stay 0 -> the
+game believes the GPU command FIFO is permanently full. The drain side
+(GPU command consumption / completion that should advance these vars)
+is not running. Hypothesis: same deferred-IRQ/task-scheduling starvation
+class as the CD-consumption issue — the async GPU-command drain isn't
+driven while the main thread spins in the clean fifo_space_check loop.
+
+This deadlock fires during the intro_movie_state cinematic (post
+vs_init), so it MASKS the .ANI-load path — we never reach file_id 0x40
+in these runs. Earlier sessions reached frame ~5495/.ANI because the
+timing differed; the deadlock is timing-sensitive but now reproduces.
+
+NEXT: (a) determine what writes 0x1f801120/124/128 on real HW (GPU DMA
+completion? a libgpu drain task? an IRQ?) and why it's not running;
+(b) get the .ANI (fid 0x40) caller ra by getting past this deadlock or
+by tracing the select-screen resource path directly.
