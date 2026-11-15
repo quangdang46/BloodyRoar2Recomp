@@ -904,3 +904,19 @@ NEXT: read the game's CD audio-stream state machine (audio_seq_reset /
 cd_reg_stream_push / the ReadN sector-count bookkeeping around the last lba)
 to learn whether it expected more sectors past 8801, and whether an
 xa_data_end/cdda_data_end INT was raised for lba8801.
+
+=== SPU/audio pipeline NEVER started this session (session cont.) ===
+spu_status: active_mask=0x000000 (no voices), render_frames=107M but
+nonzero_frames=0 (total silence), cd_l/cd_r/main_l/main_r all 0.
+audio_stats: cd_in frames=0 — CD audio never reached SPU.
+spu_events: only 48 events TOTAL, ALL at frame~318 (boot voice KEYON/KEYOFF
+v0-23); ZERO SPU voice/regs commands since boot. key_on_count=24 historical.
+=> The fight audio driver never ran: game is blocked BEFORE audio init,
+waiting on a ch4/SPU-DMA DeliverEvent for a transfer it has not yet kicked
+(the sound-bank/stream upload), and that kick is gated behind the same
+TestEvent wait -> circular stall, now confirmed at the audio-driver level.
+The ch4 transfer the game awaits is almost certainly the sound-data upload
+into SPU RAM (not live voice streaming). NEXT: trace the game's sound-init /
+audio_seq_reset / cd_reg_stream_push path to find the ch4 kick that should
+precede this TestEvent, and why it isn't issued (likely gated on a prior
+CD-read completion that itself is the stalled event).
