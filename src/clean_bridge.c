@@ -184,6 +184,15 @@ uint32_t guest_gp(void)
     return g_clean_cpu ? g_clean_cpu->gpr[28] : 0x801beedc;
 }
 
+/* clean_caller_ra — return the guest $ra live at clean-port entry.  For a
+ * clean function reached via a generated `jal`, gpr[31] still holds the
+ * caller's return address (the instruction after the jal), so this names
+ * the generated caller.  Used by diagnostic traces that need provenance. */
+uint32_t clean_caller_ra(void)
+{
+    return g_clean_cpu ? g_clean_cpu->gpr[31] : 0;
+}
+
 /* br2_guest_ra_set — publish the $ra the equivalent guest code would hold
  * at this point.  BIOS services that validate their caller (OpenBIOS
  * kernel-call patch check, e.g. B0/0x57) hash/inspect the code bytes at

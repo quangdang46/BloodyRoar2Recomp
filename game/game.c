@@ -1690,10 +1690,13 @@ int cd_file_load_sm(int param_1,uint32_t param_2)
    * identical (file_id,dest) so the post-corruption cd_file_load_sm retry
    * livelock does not flood the 16K ring and evict the pump decode history. */
   { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+    extern uint32_t clean_caller_ra(void);
     static uint32_t last_f=-1,last_d=-1;
     if((uint32_t)param_1!=last_f||param_2!=last_d){
       last_f=(uint32_t)param_1;last_d=param_2;
-      decomp_trace_record(10,param_2,(uint32_t)param_1,0,0);} }
+      /* len field carries the generated caller's $ra (post-jal addr) so the
+       * file_load provenance names which function aimed file_id at dst. */
+      decomp_trace_record(10,param_2,(uint32_t)param_1,0,clean_caller_ra());} }
   return (int)br2_call_generated(0x8018cfdc,(uint32_t)param_1,param_2,0,0);
 }
 
