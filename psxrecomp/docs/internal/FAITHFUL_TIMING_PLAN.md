@@ -382,6 +382,35 @@ on a fixed region -> next.
     Then determine why the IRQ taken deep in `battle_frame`'s nested
     clean→generated dispatch wedges the handler (exception-return /
     cooperative-resume path in `interrupts.c`), vs Beetle-oracle.
+  - **2026-11-15 fntrace decisive data (IRQ-entry armed):** armed fntrace on
+    the game's IRQ entry wrapper `0x8019A87C` (calls cd_intc_dispatch) +
+    `0x8019A8EC` + `0x8019AE68` + `0x8019A814`. Reproduced battle → crash.
+    Ring tail shows **all three fire per-frame through battle, last at guest
+    frame ~2073** — the kernel DOES reach the game IRQ handler the whole time;
+    it stops being invoked only at the very end. So "kernel stops dispatching"
+    is the SYMPTOM, not a corrupt handler table.
+  - **returnFromException is a LEAF (verified in OpenBIOS_full.c
+    `OpenBIOS_func_000029CC`):** reads current TCB via `*(0x108)→*k1`, restores
+    every GPR from TCB offsets (LO@144/HI@132/EPC→k0@128/…), `mtc0 a1→SR`,
+    `jr $k0`+`rfe`, `pc=gpr[26]`=saved EPC. **No thread scheduling inside** —
+    it completes and resumes `vsync_wait_n` correctly every time it runs.
+  - **Refined break location:** IRQ works through ~2073 battle frames, then
+    the LAST `cd_cb8_dispatch` fires and the NEXT VBlank never reaches
+    `0x8019A87C`. Since RFE resumes correctly, the break is in the
+    **RFE→resume→next-IRQ-entry cycle**: after resume, the next exception
+    entry produces `pc=0`/sentinel `0x80000048` instead of dispatching the
+    handler. That sentinel path needs `!in_exception && async_rfe_resume_pc==0`
+    (dirty_ram_interp.c:2798); `g_async_rfe_resume_pc` is latched from
+    `g_dirty_safe_resume_pc` at dirty-safe exception entry — but this IRQ
+    interrupts COMPILED `vsync_wait_n` (block-boundary pump leaves
+    `g_dirty_safe_resume_pc==0`), so the async-RFE latch never arms and the
+    compiled-code sentinel+longjmp path must carry it instead. Working
+    hypothesis: at ~frame 2073 a VBlank IRQ lands on a compiled-code resume
+    point where `in_exception`/`g_exception_owner_fiber` no longer matches
+    (fiber resumed on different fiber, or in_exception cleared early), so
+    `psx_rfe_escape_check` declines → trampoline dispatches `cpu->pc`=sentinel
+    → `pc=0`→`0x80000080` storm. Needs fiber/in_exception state capture at the
+    failing IRQ take vs the 2072nd working one, vs Beetle oracle.
 
 - **2026-11-11 (frame-counter freeze ROOT-CAUSE narrowed — MMIO fix confirmed
   landed; counter depends on CD IRQ, freezes when CD idles):**
