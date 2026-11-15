@@ -766,3 +766,40 @@ verify whether wrap_8016fcc4 in clean_table is active or whether the
 generated body shadows it. NEXT: find the generated battle_flow_state_
 machine's poll/wait condition at ph=8 (it loops CD/GPU/vsync without
 advancing fighter anim — likely a resource-ready or event flag).
+
+=== CORRECTION + ROOT CAUSE of fight-sim stall (session cont.) ===
+Earlier "battle runs generated / ph=8 sim" conclusion was WRONG. cyc_watch
+(verified working via cd_timer_read hits) shows battle_flow_state_machine
+entry block 0x8016FD38, case-8 handler 0x80170260, AND gs=8 case blocks
+0x80126654/5C/64 ALL get 0 hits — battle_flow is NEVER entered. The gs=8
+case calls match_mode_set(0x801560F8) then JALs battle_flow; neither runs.
+
+REAL stall: the game is spinning in cd_seek_complete_poll (0x8019d500,
+delegated to generated) -> cd_seek_state_machine (0x8019d5b0) = a leaf
+TestEvent trampoline polling event flag handle 0xF1000008 (= OpenEvent
+class 0xf0000009 spec 0x20 stored @0x801bde38). bios_svc_trace: ~all
+recent calls are B0/0x0B TestEvent a0=0xF1000008, v0=0 forever.
+
+Evidence:
+- bioscall_dump: DeliverEvent (B0/0x07) count FROZEN at 136 (was the
+  fight-entry load deliveries). TestEvent B0/0x0B = 1,593,985.
+- cdrom_command_history: LAST CD command seq224 = cmd 0x09 Pause at
+  frame ~2491; current frame ~765049 -> NO CD command issued for ~762k
+  frames. Repeating SetLoc(0x02)->ReadN(0x06)->Pause(0x09) loop then STOP.
+- cdrom_state frozen: seq=119859, reading=0, pending cmd0x09 active=0,
+  seek_msf[1,58,70] vs read_msf[1,59,27], bfrd_set=6800 vs bfrd_clear=13,
+  ring_dropped=2874, i_stat=0, irq pending=0.
+- irq_state: i_mask=0xD (CD unmasked), i_stat=0, pending=0.
+
+Interpretation: the game finished initial asset loads (136 DeliverEvents),
+issued a final SetLoc->ReadN->Pause at frame ~2491, then blocked waiting
+for a CD completion event that requires a NEW DeliverEvent — but no new
+CD command is issued and no CD IRQ is pending, so DeliverEvent never
+fires and TestEvent spins forever. Either the last ReadN was interrupted
+by Pause before its data-end/completion delivered, or the completion
+DeliverEvent was consumed/lost. The bfrd_set:6800 vs clear:13 + dropped
+sectors suggest the sector stream/consumer is imbalanced. NEXT: determine
+whether the game is waiting for a ReadN data-end (INT1) that the Pause
+preempted, and whether the deferred CD coroutine / DeliverEvent path for
+the read-complete event is reachable — compare against a working load
+(e.g. does a fresh CD read after this point deliver?).
