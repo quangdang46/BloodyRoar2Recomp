@@ -3182,3 +3182,32 @@ NEXT: (1) confirm whether LAB_80137590 / the state-3 task waits on an
 SPU/seq event; (2) check seq_state / spu channel state live; (3) find the
 exact "round live" flag writer and what gates it. Also re-verify +0xac=0
 vs expected max-HP (should be ~150 like cap) -> stat copy may set HP=0.
+
+=== SESSION — SPU/audio is 100% DEAD; likely gates round-start ===
+
+spu_status on live fight (:4383, gs=8 ph=8):
+  ctrl=0xC001  active_mask=0x000000  key_on_count=24
+  render_frames=77150304  nonzero_frames=0  last_peak=0  peak=0
+  cd_frames=0  cd_push_frames=0  irq_flag=0
+
+77M SPU frames rendered, ZERO nonzero output. Voices were keyed (24
+key-ons) but produced silence — no menu music, no fight music, no
+announcer voice. active_mask=0 => no voice currently keyed. This is
+either (a) the game's audio sequencer never started / all volumes 0, or
+(b) a runtime SPU mix/render bug dropping all output.
+
+Fighter sim state on same instance: ctrl+0=1 active, spawn pos correct,
+.ANI bound, motion populated, evpc/act set — but HP +0xac/+0xae stay 0
+(should be max ~150), anim accumulator b6 static, position unresponsive
+to injected pad input (press RIGHT/LEFT -> fobj pos unchanged). Round
+intro FSM _DAT_801f0738=3 runs per-frame (task_pools_tick etc.) but the
+"fight live" transition never fires.
+
+HYPOTHESIS: the round-start sequence ("ROUND 1 / FIGHT!" + control
+enable) is gated on an announcer-voice / sequence-done event. With the
+audio sequencer dead, that event never fires -> fighters frozen in spawn
+pose, HP never set to max, input ignored. NEXT: determine whether SPU
+silence is a faithful-core bug (SPU ADPCM/mix/IRQ path) vs the game
+never keying voices (seq not started). Check SPU voice regs (VxP/VxD
+volumes, adsr) + whether game wrote SPU regs at all; trace the audio
+init path that the earlier "blocked before audio init" finding flagged.
