@@ -6377,3 +6377,22 @@ code reached post-RFE, while in_exception==1. NOT the BIOS context restore.
 Next: a general null-jump-target tracer (emitter-level cpu->pc=gpr[X]==0
 watchpoint) or the Beetle/DuckStation oracle for IRQ/RFE timing. Downstream
 symptom seen earlier: FAIL-FAST unknown dispatch addr=0x04000000.
+
+## Session — wedge terminal signature: BIOS service-gate loop -> 0x04000000
+
+Post-mortem of the FAIL-FAST (frame 6471, dispatch_depth=3, epc=0x8019A648,
+cause=0x400 IRQ, pc=0, ra=0, a0=1, a1=0x801F68F0):
+
+- dispatch_tail ends in a tight repeating `0xB0,0xB0,0xC0` loop = the OpenBIOS
+  kernel-call GATE stubs at phys 0xA0/0xB0/0xC0 (native_stub table,
+  OpenBIOS_dispatch.c:8949). These decode a target from embedded lui/addiu and
+  route to callB0. Repeating B0/C0 = BIOS service spam = IRQ livelock symptom
+  (VBlank level-triggered, I_STAT never acked because handler exits pc=0 early).
+- Decoded callB0 (func_00002AA0): t0=0x49CC service-table base,
+  t2=*(0x49CC + t1*4); jr $t2. Verified table[0x35] (t1=0x35 at crash) =
+  0xBFC04AA8 = VALID BIOS ROM ptr, NOT 0x04000000. Service table not corrupted
+  at that index; 0x04000000 comes from a different/later wild jump.
+- pc=0 remains the root: handler's psx_dispatch returns pc=0 (nested C-return
+  contract) before its RFE -> boundary re-polls pending VBlank -> storm.
+  Still need the exact guest insn producing the first pc=0 (game-side handler
+  0x8019A87C is fn-traceable; OpenBIOS BIOS funcs are not in fn_entry ring).
