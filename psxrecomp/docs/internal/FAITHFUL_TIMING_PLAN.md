@@ -6691,3 +6691,34 @@ code only reads FC_ANI). Next: locate the generated fighter-resource/
 .ANI loader (Ghidra disasm of fighter-init region, or wtrace on the
 .ANI staging region during a fresh nav_to_fight run) and find the
 completion gate action_enter is supposed to wait on.
+
+### Session N+4 — ROOT CAUSE CONFIRMED (byte-exact): char .ANI overlaps cinematic staging arena
+
+DEFINITIVE reproduction (fresh run, nav_to_fight -> FIGHT, frame ~5495):
+- P1 JEN .ANI FC_ANI=0x8006ba04, P2 MAR .ANI FC_ANI=0x800ce958 (deterministic).
+- MAR1P.ANI is 0xBD74 bytes -> occupies 0x800CE958..0x800DA6CC.
+- Byte-diff loaded .ANI vs disc: IDENTICAL until offset 0x16A8 = guest
+  0x800D0000, then diverges into staging/decode data. 100% reproducible.
+
+DMA + decomp_trace prove the collision in time AND address:
+- .ANI DMA load: frame 3365, dst 0x800CE958..0x800DA158 (lba 3818-3841).
+- intro_movie_state / cinematic decode uses 0x800D0000 as staging AND as
+  LZSS decode SOURCE: stream_block_decode reads src 0x800D0030/0x800D3470/
+  0x800D5C60/... -> outputs to 0x8001xxxx-0x8006xxxx. Then file_load
+  0x8B->0x800D0000, 0x16->0x800D0000 (decomp seq 4075/4076).
+- Later loads ALSO hit 0x800D0000 at frames 5451/5474/5487 (lba 8575/61/8765)
+  — squarely inside the live .ANI range 0x800CE958-0x800DA6CC.
+
+CONCLUSION: the character .ANI heap allocation at 0x800CE958 overlaps the
+fixed cinematic/decode staging arena at 0x800D0000(+). A 48KB .ANI cannot
+fit below 0x800D0000 (only ~5.8KB room), so 0x800CE958 is a BAD heap
+placement — the char-resource allocator is handing out memory inside the
+reserved 0x800D0000-0x800Exxxx staging/decode arena. On HW the .ANI must
+land above the staging arena (or staging elsewhere); our heap cursor /
+arena bound is mistranslated.
+
+NEXT: find the char-resource heap allocator + arena bounds (the heap that
+produces 0x800CE958). Heaps seen: _DAT_801c47b8 (base 0x80010000) and
+_DAT_801e3cfc (0x800d0000/0x800dc800/0x800f0000 staging cursors). Determine
+which heap owns 0x800CE958 and why its top bound allows overlap into the
+reserved 0x800D0000 arena. Likely a guest->host pointer or arena-limit bug.
