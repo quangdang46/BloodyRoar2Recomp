@@ -2790,3 +2790,39 @@ fntrace_arm 0x8019B7E0(done cb) + 0x8019B89C(xfer_start) + 0x8019B944(regop);
 run to first fight-init file-load; dump ordering of [xfer_start arm=1] vs
 [regop clear=0] vs [done-cb flag read]. If regop clears before the cb,
 the IRQ is being delivered too late / the flag lifetime is wrong.
+
+=== SESSION — wtrace/fntrace DECISIVE: file-load never arms 0x801BDF00 ===
+
+Ran the prescribed experiment (fresh boot :4370, wtrace slot on
+0x801BDF00-04 + fntrace on 0x8019B7E0 done-cb / 0x8019B89C xfer_start /
+0x8019B944 reg_window_op / 0x8019CFC0 xfer_mode). Drove arcade -> gs=8
+ph=8 (FIGHT REACHED, then wedge). tools/nav_arcade.py added.
+
+FINDINGS (fntrace, fight-init window frames ~9k-29k):
+- 0x8019B7E0 (channel-4 done cb): 75 hits, ra=0x8019B024 (INTC dispatch),
+  a0=0x1F8010F4=DICR, sp=0x801BDCD8 (IRQ stack). DMA ch4 completions DO fire.
+- 0x8019B944 (cd_reg_window_op): 225 hits, ra=0x80156628 (cd_file_read_seq),
+  a0=op in {1,2,3}, a1=dest, a2=size.
+- 0x8019B89C (cd_dma_xfer_start = flag ARMer): ZERO hits.
+- 0x8019CFC0 (cd_dma_xfer_mode -> xfer_start): ZERO hits.
+
+WTRACE 0x801BDF00: only writer observed = pc 0x8019B9E8 (reg_window_op),
+always new=0x00000000. NEVER written nonzero. (0x8019B928 xfer_start arm
+and 0x8019BA54 regop op-store never appear -> never executed.)
+
+CONCLUSION: the fight-init CD file-load transfers via cd_reg_window_op
+(PROGRAMMED register-window I/O), NOT cd_dma_xfer_start/cd_dma_xfer_mode
+(DMA channel). So 0x801BDF00 stays 0 -> done-cb early-returns ->
+DeliverEvent(0xF0000009,0x20) never fires -> TestEvent(0xf1000008) wedge.
+
+INTERPRETATION: menu loads succeed, so either they use a different wait or
+the fight-init is the first programmed-I/O read large enough to need the
+DMA-channel-done event. The flag 0x801BDF00 likely means "a CD transfer
+needing channel-reset+event-signal is in flight". For programmed-I/O reads
+the equivalent arm must come from a reg_window_op op (the 0x8019BA54
+op-dependent store writes gpr[6], not the 0x8019B9E8 zero-store) OR the
+read-complete path. NEXT: decode cd_reg_window_op op dispatch — which a0
+op is "read/transfer complete" and does it write 0x801BDF00 nonzero?
+If a faithful op sets the flag but our dispatch routes to the wrong op
+block, that is the bug (same class as N+13 stale-thunk). Compare a0 op
+values {1,2,3} seen vs the op that reaches block_8019BA54.
