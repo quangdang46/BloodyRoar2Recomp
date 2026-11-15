@@ -537,3 +537,74 @@ window. Candidates: (a) DeliverEvent's event func callback (OpenEvent func),
 psx_dispatch_call. Instrument psx_dispatch_call to also record the IMMEDIATE
 caller (the clean fn that called br2_call_generated) via a caller-tag ring so
 the resume site is named, not guessed.
+
+=== SESSION: fight freeze ROOT-DECODED — 0xF0000009 = SPU/audio-stream-done ===
+Live gwatch on 0x801BDF00 (armed before nav, whole run) + dma_state + handler
+table dumps give the COMPLETE mechanism, superseding the "CD-ROM IRQ" framing:
+
+EVENT: cd_seek_step -> cd_seek_complete_poll(0x8019d500) -> cd_seek_state_
+machine(0x8019d5b0) = BIOS trampoline `li t2,0xB0; li t1,0x0B; jr t2` =
+kernel TestEvent(handle @0x801bde38 = 0xF1000008 = ev[8]). Event opened in
+cd_ext_init_once (0x8019b308) via FUN_8019b380(0xf0000009,0x20,0x2000,0)+
+FUN_8019b390 EnableEvent. Live handle is a VALID EvCB 0xF1000008 (OpenEvent
+worked; the session-18 0x8019B0FC corruption is NOT present this run).
+
+DELIVERER CHAIN (all generated-verified):
+- cd_cb7_run (0x8019af84) = DMA-interrupt dispatcher. Reads DICR via
+  0x801BDDF0->0x1F8010F4, mask=(DICR>>24)&0x7f, calls per-channel done-handler
+  from moving-cursor table @0x801BDDF4. Handler slots: ch3(CDROM)@0x801bde00
+  =0 NULL, ch4(SPU)@0x801bde04 = 0x8019B7E0.
+- 0x8019B7E0 (ch4/SPU done handler, size 0xBC): loads flag 0x801BDF00;
+  bne flag,0 -> flag-set path does SPU-status dance on 0x1F801C00+0x1AA
+  (0x1F801DAA, &0xFFCF) then DeliverEvent; flag==0 -> jal 0x8019BE78 (alt path).
+- cd_dma_chan_reset label 0x8019b7e8 is a SUB-ENTRY inside 0x8019B7E0 — polls
+  SPU reg 0x1F801DAA bits 0x30 then cd_bios_svc_07(0xf0000009,0x20).
+- 0x1F801C00 = SPU register file (memory.c "SPU: 0x1F801C00..0x1F801FFF"),
+  NOT CD-DMA. The earlier "CD-DMA regs 0x1F8010C0/C4/C8" = DMA ch4 = SPU.
+
+FLAG 0x801BDF00 lifecycle (3 stores, all via base 0x801C0000-8448):
+- ARM =1: 0x8019B928 inside br2eu_func_8019B89C = cd_dma_xfer_start (li v0,1;
+  sw v0,-8448). Reached ONLY via cd_dma_xfer_mode(0x8019CFC0)<-audio_seq_reset
+  (0x80158244, the state-9 CD handler). fntrace=0 hits all session.
+- CLEAR =0: 0x8019B9E8 (sw $zero) inside br2eu_func_8019B954 status-poll, ran
+  3x early (frames ~1142-1637) on already-0 flag = no-op.
+- 0x8019BA54 stores gpr[6] (third store, never observed).
+- GWATCH RESULT: flag written ONLY 3x whole run, ALL =0 clears early. The =1
+  arm (0x8019B928) NEVER executed => 0xF0000009 NEVER delivered via flag path.
+
+STATE-9 / AUDIO CHANNEL: 0x801BDEEC (cd_state9_store target) = current CD
+state-9 value. chan_reset_register(0x801582c0) sets it to 0x80158244
+(audio_seq_reset) at boot/intro (save_flow_state_machine s0==0). Live =0 at
+freeze => audio/seq channel torn down. chan_reset_clear(0x80158358) sets
+state9=0 + zeroes buffer 0x801f36f0 (shared s16-table scratch too) — called
+from save_flow_state_machine s0==0xf0 (options/save screen teardown) and 2
+other sites. audio_seq_reset = cd_reg_bit40_ctrl(0)+cd_dma_xfer_mode(
+0x801f36f0,5) = the SPU stream kick.
+
+DMA STATE at freeze: ch4(SPU) madr=0x4F6E0 bcr=0x0F930010 chcr=0x201
+active=0; ch3(CDROM) active=0. No SPU transfer in flight. SPU status regs
+0x1F801DA0-AAC all 0 (bits 0x30 clear => cd_dma_chan_reset poll would pass
+immediately IF invoked).
+
+cd_intc_dispatch (0x8019a8ec) handler table @0x801bcd1c populated:
+slot0=0x8019ae68 slot2=0x801979f8 slot3=0x8019af7c, mask@0x801bcd48=0xd.
+Clean-wrapper scratch counter @0x801bce00 =0 (only proves clean entry not
+taken; generated may dispatch directly — ambiguous probe).
+
+FILE-LOAD side (works): cd_read_log shows healthy CD-ROM ch3 DMA — fight load
+read LBA8802 sectors ->0x8009C000..0x800A1800 (+0x800 each) with interleaved
+size=12 header reads ->0x801BDCE8, THEN stalled spamming lba=8770 size=12
+x32+ to 0x801BDCE8 (a poll that never satisfies). File data DOES land; the
+stall is the TestEvent(0xF0000009) wait, i.e. the game couples CD-read
+completion to SPU-stream drain.
+
+ROOT CAUSE (refined): the fight's audio/SPU streaming channel is NOT active
+(state-9=0, buffer cleared, no ch4 DMA) so the ch4-done->DeliverEvent(0xF
+0000009) never fires and cd_seek_step's TestEvent blocks the game thread.
+NEXT: find what should re-arm state-9=0x80158244 / start the fight music- seq
+stream on fight entry (likely a skipped fight-init step, same class as the
+versus fighter-data gap). Check whether chan_reset_clear ran during the
+menu->fight transition and whether a corresponding play/seq-load should
+follow. Alternative: the file-load's OWN completion may deliver 0xF0000009
+via a cd_intc_dispatch channel handler (slots 0/2/3) — verify which handler
+owns read-done and whether it runs.
