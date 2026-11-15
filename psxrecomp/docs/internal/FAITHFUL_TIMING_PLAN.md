@@ -344,6 +344,25 @@ on a fixed region -> next.
     timeout → `console_pct`→BIOS `B0/0x35`→`0x4000000` fatal. The proximate
     defect is the **exception-return / thread-context-restore recursion** in
     the IRQ path, triggered once battle runs a thread-switching callback.
+  - **Live recursion captured (post-crash rings):** `disp_ring` tail = ONLY
+    `target=0x80000080` (general exception vector) repeating, `ra=0x8019A53C`,
+    `sp=0x801FFF78`, cycle advancing ~8k/entry — an infinite exception
+    re-entry loop, NOT the kernel-func call-cycle of the CD case. `freeze_
+    check`: `pczero_addr=0x80000080`, `pczero_epc=0x8019A648`(vsync_wait_n),
+    `pczero_cause=0x400`(Cause.IP pending field → VBlank IRQ), `badvaddr=0`
+    (NOT a memory fault), `I_STAT=1`/`I_MASK=0xD` (VBlank never acked),
+    `in_exception=0` between fires. So: VBlank IRQ taken → handler runs →
+    return produces `cpu->pc=0` → top dispatch routes to `0x80000080` →
+    exception re-taken (I_STAT still pending) → loop. `async_rfe_resume_pc`
+    is DEAD CODE (never assigned nonzero anywhere) — not the active resume.
+  - **pc=0 producer located:** `dirty_ram_interp.c:2798` — sentinel dispatch
+    `addr==0x80000048` sets `cpu->pc=0`; when not `in_exception` it checks
+    `g_async_rfe_resume_pc`(=0) then `return 1` leaving pc=0 → top-level
+    dispatch treats pc=0 as exception-vector entry `0x80000080`. The IRQ
+    handler's return (kernel `returnFromException`/`0x29CC` → thread ctx
+    restore) lands on this sentinel/`pc=0` path in battle's deep-nesting
+    context instead of resuming `vsync_wait_n`. Menus resume cleanly because
+    the IRQ is taken at a shallow/dispatchable boundary.
   - **NEXT (refined):** with fntrace armed on {0x8019A8EC,0x8019AE68,
     0x8019AD60,0x8018E550,0x8019A5D8}, drive to battle and diff which entries
     STOP firing vs the menu baseline — that pinpoints the exact stall call.
