@@ -263,17 +263,58 @@ on a fixed region -> next.
     → `br2_call_generated`→vsync_wait_n is a deep clean→generated nest inside a
     blocking loop; the deferred resume can't unwind through the clean-C frames
     / is starved → framecnt frozen.
-  - **NEXT (faithful-core, do NOT patch around):** make the deferred-IRQ
-    coroutine resume deterministic under nested clean→generated call chains —
-    either (a) the resume/`exception_jmpbuf`/`psx_restore_state_escape` path
-    must handle a resume PC inside a `br2_call_generated` frame reached through
-    clean-C callers, or (b) per §0 amendment evaluate an HLE subsystem
-    replacement for the IRQ-defer mechanism IF it meets the landmine criteria
-    (non-determinism, general, real guest structures, oracle-validated).
-    Compare IRQ-delivery + coroutine-resume behaviour vs Beetle/DuckStation
-    oracle at the battle-intro vsync_wait_n. This is runtime IRQ/scheduler
-    work in `psxrecomp/runtime/src/interrupts.c` + the coroutine/restore path —
-    NOT a clean-C game-port bug.
+  - **Precise defer mechanism (interrupts.c:695-706,1347-1404):** a nested IRQ
+    sets `s_defer_switch_pending` (from_tcb→to_tcb, the guest cooperative
+    ChangeThread). It is honored only at a "materialized clean boundary" — a
+    `psx_check_interrupts` poll where `s_last_interrupt_check_pc` is a valid
+    `psx_is_dispatchable` resume PC AND `psx_sched_current_tcb==from_tcb`.
+    Two failure modes in battle_frame's spin: (a) `vsync_wait_n`'s poll PCs
+    (0x8019A648 mid-function) may never be `psx_is_dispatchable` → pending
+    forever; (b) if `current_tcb != from_tcb` at the poll it is dropped as
+    STALE (line ~1372) → switch lost → handler never runs. Both starve
+    cd_cb8_dispatch → framecnt frozen.
+  - **NEXT (faithful-core, do NOT patch around):** make the deferred cooperative
+    IRQ/ChangeThread switch honor inside `battle_frame`'s nested blocking loop —
+    either reach a dispatchable thread-save boundary per frame, or fix the
+    resume-PC/TCB matching so the deferred switch isn't dropped. Then
+    cd_intc_dispatch→cd_cb8_dispatch runs → framecnt advances → vsync_wait_n
+    returns. Compare IRQ-delivery + cooperative-switch behaviour vs
+    Beetle/DuckStation oracle at the battle-intro vsync_wait_n. Runtime work in
+    `psxrecomp/runtime/src/interrupts.c` + `psx_scheduler` — NOT a clean-C
+    game-port bug.
+  - **2026-11-15 (freeze_check exposes the REAL pathology — exception
+    re-entry + PC-zero, NOT a cleanly-starved coroutine):** `freeze_check` on
+    the frozen battle reads `exception_entries=26577`,
+    **`exception_reentry_blocks=4672`**, `nestgate_rfepend=4672`,
+    **`pczero_count=1187`** (`pczero_addr=0x80000080` = general-exception
+    vector, `pczero_epc=0x8019A648` = inside `vsync_wait_n`,
+    `pczero_in_exc=1`, `pczero_ra=0x8019A53C`), `async_rfe_set=0 /
+    async_rfe_fire=0 / async_rfe_resume_pc=0` (the async RFE resume path NEVER
+    fires), `current_func=0x29CC` (a kernel-call-gate address), `in_exception=0`,
+    `frame_count=3213` stuck, `i_stat=0x1`/`i_mask=0xD`. So the IRQ is NOT
+    cleanly deferred-and-starved: the handler is entered, does work, then its
+    RETURN (RFE→resume `vsync_wait_n` at a dispatchable PC) FAILS → `pc`→0 →
+    `0x80000080` re-exception → the handler re-runs → loop. `cd_cb8_dispatch`
+    is never reached (framecnt never written — `gwatch` total=0), so the hang
+    is BEFORE its `jalr`, i.e. inside `cd_intc_dispatch` setup: it calls
+    `printf_forward` (0x8018E550) then `bios_svc` trampoline 0x8019AD60 =
+    `svc(0xB0,0x17)` before the handler dispatch at block_8019A9C0. The
+    re-entry/PC-zero storm + dead async-RFE points at the exception-return /
+    cooperative-resume path, not the ChangeThread defer gate alone.
+    `PSX_HLE_SCHEDULER=0` (LLE host-fiber path) does NOT fix it — same freeze,
+    same `0x4000000` — ruling out the HLE defer gate as the sole cause.
+    Secondary fatal confirmed: vsync timeout prints "VSync: timeout" to
+    `0x801F68F0`, `console_pct` flushes via BIOS `B0/0x35`, which returns -1
+    repeatedly then dispatches `0x4000000` → `psx_fatal_halt`. BIOS calls
+    work elsewhere (1.4M recorded) → context-specific to the IRQ/console
+    nested path.
+  - **NEXT (refined):** instrument `cd_intc_dispatch` block progression
+    (0x8019A8EC→helper calls→block_8019A9C0 jalr) to find the exact stall
+    point; determine why the exception RETURN (RFE→`async_rfe` resume) never
+    fires and why `pc` reaches 0 → `0x80000080`. The `pczero`/`nestgate_
+    rfepend` counters + `async_rfe` ring are the observability surface. This
+    is faithful-core IRQ exception-return work in `interrupts.c`, needs
+    Beetle-oracle comparison of the IRQ handler's RFE/resume semantics.
 
 - **2026-11-11 (frame-counter freeze ROOT-CAUSE narrowed — MMIO fix confirmed
   landed; counter depends on CD IRQ, freezes when CD idles):**
