@@ -160,6 +160,11 @@ uint32_t g_wb_bad_count=0, g_wb_bad_node=0, g_wrap_src=0;
 uint32_t g_pu_raw=0,g_pu_guestof=0,g_pu_gbuf=0,g_pu_node=0,g_pu_count=0;
 /* br2_gaddr fallback latch: last host pointer (>4GB) guest_of could not map. */
 uint32_t g_bg_hi=0,g_bg_lo=0,g_bg_count=0;
+/* post_battle_dispatch latch: is the round-phase state machine running, and
+ * what phase/counter does it see? g_pbd_calls increments per call; g_pbd_phase
+ * = MB8(s1+0x92), g_pbd_ctr = MBS16(s1+0x8c) as seen at entry; g_pbd_exit latches
+ * the return path taken (see menu.c). */
+uint32_t g_pbd_calls=0, g_pbd_phase=0, g_pbd_ctr=0, g_pbd_exit=0, g_pbd_writes=0;
 /* Name the function whose dispatch produced the FIRST cpu->pc==0 while inside
  * an exception (the wedge's root). `addr` is the just-executed block leader;
  * a ring keeps the last few so the producing insn's neighbourhood is visible. */

@@ -6572,6 +6572,7 @@ extern void stat_counter_accum(int32_t,int32_t);
 extern int32_t record_field_step(int32_t,int32_t);
 extern int  menu_sprite_load_sm(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern void hud_announce(uint32_t,uint32_t,uint32_t);
+extern uint32_t g_pbd_calls,g_pbd_phase,g_pbd_ctr,g_pbd_exit,g_pbd_writes;
 int32_t post_battle_dispatch(uint8_t *param_1,uint8_t *param_2,uint32_t param_3)
 {
   uint32_t s1 = param_3;
@@ -6580,6 +6581,9 @@ int32_t post_battle_dispatch(uint8_t *param_1,uint8_t *param_2,uint32_t param_3)
   uint32_t s5 = 0;
   int32_t  r;
   uint32_t b92;
+  g_pbd_calls++;
+  g_pbd_phase = MB8(s1 + 0x92);
+  g_pbd_ctr   = (uint16_t)MBS16(s1 + 0x8c);
 
   /* ---- preamble ---- */
   if ((int32_t)MB32(MB32(g2 + 0x20) + 0x38) > 0 ||
@@ -6601,6 +6605,7 @@ int32_t post_battle_dispatch(uint8_t *param_1,uint8_t *param_2,uint32_t param_3)
     }
   }
   if (MB16(s1 + 0x92) & 0x1000) {
+    g_pbd_exit = 3;   /* armed path */
     /* armed: tick 0x8c and gate on select_phase_gate */
     MW16(s1 + 0x8c,MB16(s1 + 0x8c) + 1);
     r = select_phase_gate(s1,0);
@@ -6626,9 +6631,10 @@ int32_t post_battle_dispatch(uint8_t *param_1,uint8_t *param_2,uint32_t param_3)
   /* L54b40: disarmed path */
   if (((MB16(s1 + 0x92) & 0xff) == 4))
     battle_input_dispatch(s1,s5 & 0xffff);
-  if (MBS16(s1 + 0x82) != 0) return 0;
+  if (MBS16(s1 + 0x82) != 0) { g_pbd_exit=1; return 0; }
   b92 = MB8(s1 + 0x92);
-  if (b92 >= 0x11) return 0;
+  if (b92 >= 0x11) { g_pbd_exit=2; return 0; }
+  g_pbd_exit = 10 + b92;   /* reached the phase switch; low nibble = phase */
 
   switch (b92) {
   case 0: {
@@ -6663,6 +6669,7 @@ int32_t post_battle_dispatch(uint8_t *param_1,uint8_t *param_2,uint32_t param_3)
       MW16(MB32(g3 + 0x38) + 0x80,0x29);
     }
     if (MBS16(s1 + 0x8c) < 0xa0) {
+      g_pbd_writes++;
       MW16(s1 + 0x8c,MB16(s1 + 0x8c) + 1);
       return 0;
     }
