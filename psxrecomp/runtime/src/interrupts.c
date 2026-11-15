@@ -133,7 +133,51 @@ uint32_t g_rfe29cc_null_tcb88   = 0;
 uint32_t g_rfe29cc_null_ra      = 0;
 uint32_t g_rfe29cc_null_sp      = 0;
 uint32_t g_rfe29cc_null_depth   = 0;
+/* Name the function whose dispatch produced the FIRST cpu->pc==0 while inside
+ * an exception (the wedge's root). `addr` is the just-executed block leader;
+ * a ring keeps the last few so the producing insn's neighbourhood is visible. */
+#define PC0EXC_RING 32
+uint64_t g_pc0exc_total         = 0;
+uint32_t g_pc0exc_ring[PC0EXC_RING];
+uint32_t g_pc0exc_ra[PC0EXC_RING];
+uint32_t g_pc0exc_stop[PC0EXC_RING];
+uint32_t g_pc0exc_ctx[PC0EXC_RING]; /* depth | (outermost<<8) | (inexc<<16) */
+uint32_t g_pc0exc_head          = 0;
+uint32_t g_pc0exc_first_addr    = 0;
+uint32_t g_pc0exc_first_ra      = 0;
+uint32_t g_pc0exc_first_stop    = 0;
+uint32_t g_pc0exc_first_ctx     = 0;
+int      g_pc0exc_first_inexc   = -1;
 extern uint64_t psx_get_cycle_count(void);
+
+void psx_dbg_pc0(CPUState* cpu, uint32_t addr, uint32_t stop_addr,
+                 int outermost)
+{
+    extern int g_psx_dispatch_depth;
+    extern int psx_get_in_exception(void);
+    int inexc = psx_get_in_exception();
+    g_pc0exc_total++;
+    if (!inexc) return;   /* routine nested C-return: count only, no ring write */
+    uint32_t ctx = ((uint32_t)g_psx_dispatch_depth & 0xFFu) |
+                   ((uint32_t)(outermost & 1) << 8) |
+                   ((uint32_t)(inexc & 1) << 16);
+    uint32_t h = g_pc0exc_head++ % PC0EXC_RING;
+    g_pc0exc_ring[h]  = addr;
+    g_pc0exc_ra[h]    = cpu->gpr[31];
+    g_pc0exc_stop[h]  = stop_addr;
+    g_pc0exc_ctx[h]   = ctx;
+    /* Latch the MOST RECENT pc==0 that is BOTH inside an exception AND at a
+     * dispatch boundary (outermost frame or a real call stop_addr) — the wedge
+     * signature, not a routine nested callee C-return. Overwritten each time so
+     * at freeze it names a storm producer. */
+    if (outermost || stop_addr != 0u) {
+        g_pc0exc_first_addr = addr;
+        g_pc0exc_first_ra   = cpu->gpr[31];
+        g_pc0exc_first_stop = stop_addr;
+        g_pc0exc_first_ctx  = ctx;
+        g_pc0exc_first_inexc = inexc;
+    }
+}
 
 void psx_dbg_null_jr(CPUState* cpu, uint32_t target)
 {

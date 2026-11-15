@@ -6396,3 +6396,41 @@ cause=0x400 IRQ, pc=0, ra=0, a0=1, a1=0x801F68F0):
   contract) before its RFE -> boundary re-polls pending VBlank -> storm.
   Still need the exact guest insn producing the first pc=0 (game-side handler
   0x8019A87C is fn-traceable; OpenBIOS BIOS funcs are not in fn_entry ring).
+
+## Session — ROOT CAUSE FOUND: task-pool node allocated into exception-vector page
+
+Decisive capture via `gwatch` (guest_watch.c — mprotect write watch, catches
+DMA + all stores that bypass the wtrace CPU-store hook). wtrace ring had ZERO
+vector writes -> corruption is NOT a normal CPU store; gwatch `dma.ch=-1`
+confirmed CPU store but `store_pc`/`sp`/`func` are STALE globals
+(g_debug_last_store_pc = hot cd_timer_read poll loop). The REAL writer is the
+`rip` host fault PC -> resolved via vmmap __TEXT base + atos.
+
+WRITER = `script_stream_tick` (game/battle.c:8445, guest 0x80137824), a
+task-callback bytecode-stream interpreter. Lines 8491-8506 write quad/sprite
+VERTEX BYTES through `*param_1` and `param_1[1]` dest pointers:
+  *(char*)guest_at(*param_1 + 0xc/0xd/0x14/0x15/0x1c/0x1d/0x24/0x25) = coords
+Observed write addrs 0x80000084/85/8C/8D/94/95/9C/9D decode EXACTLY:
+  param_1[0] = 0x80000078  (0x78+0xc=0x84 ... +0x25=0x9D)
+  param_1[1] ~= 0x800000A0 (0xA0+0xc=0xAC ... )
+Both dest pointers sit in the EXCEPTION-VECTOR page (phys 0x78/0xA0 =
+KSEG 0x80000078/0x800000A0). Writes recur every ~7 battle frames -> overwrite
+IRQ vector handler-addr load at 0x80000084 -> jr k0=0 -> pc=0 IRQ storm -> wedge.
+
+PROVENANCE (clean-C):
+- script_stream_tick state set by task_alloc_wrap_b/d -> task_node_alloc
+  (battle.c:8018). Node data buffer is INLINE at node+0x1C (piVar1[4]=guest_of
+  piVar1+7); allocated size = param_6+0x1c via task_pool_alloc.
+- param_1[0]=br2_gaddr(node_data)=0x80000078  =>  the task NODE itself is at
+  guest phys ~0x5C, i.e. INSIDE the exception-vector page.
+- task_pool_alloc (battle.c:10844) returns `iVar5+0x10` walking a free list
+  (block hdr: +4 next, +8 size, +0xc flags). A free-list block header sits at
+  guest 0x8000004C -> the POOL FREE LIST IS CORRUPTED to include a block in
+  low memory (phys 0x4C).
+
+ROOT CAUSE: task-pool heap/free-list corruption. A block `next`/`prev` link (or
+the pool head ptr at param_1*0x3c+param_2*0xc-0x7fe00d98) points into phys
+0x4C, so allocations hand out nodes in the vector page; script_stream_tick's
+per-frame quad writes then trash the IRQ vectors. Same memory-corruption class
+as the documented heap_serialize low-RAM overwrites — need to find what writes
+a wild pointer into the pool free list (or mis-sets the pool arena base).

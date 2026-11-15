@@ -10220,6 +10220,13 @@ static void handle_freeze_check(int id, const char *json)
                     g_rfe29cc_null_tcb88, g_rfe29cc_null_ra,
                     g_rfe29cc_null_sp, g_rfe29cc_null_depth;
     extern int      g_rfe29cc_null_latched;
+    extern uint64_t g_pc0exc_total;
+    extern uint32_t g_pc0exc_ring[32], g_pc0exc_ra[32],
+                    g_pc0exc_stop[32], g_pc0exc_ctx[32],
+                    g_pc0exc_head;
+    extern uint32_t g_pc0exc_first_addr, g_pc0exc_first_ra,
+                    g_pc0exc_first_stop, g_pc0exc_first_ctx;
+    extern int      g_pc0exc_first_inexc;
 
     /* Top-K fn_entry histogram over the last `window` slots. */
     typedef struct { uint32_t func; uint32_t count; } HistBucket;
@@ -10409,6 +10416,13 @@ static void handle_freeze_check(int id, const char *json)
                     "\"rfe29cc_null_sp\":\"0x%08X\","
                     "\"rfe29cc_null_depth\":\"0x%08X\","
                     "\"rfe29cc_null_latched\":%d,"
+                    "\"pc0exc_total\":%llu,"
+                    "\"pc0exc_first_addr\":\"0x%08X\","
+                    "\"pc0exc_first_ra\":\"0x%08X\","
+                    "\"pc0exc_first_stop\":\"0x%08X\","
+                    "\"pc0exc_first_ctx\":\"0x%08X\","
+                    "\"pc0exc_first_inexc\":%d,"
+                    "\"pc0exc_head\":\"0x%08X\","
                     "\"hist\":[",
                     id,
                     g_debug_current_func_addr,
@@ -10536,11 +10550,32 @@ static void handle_freeze_check(int id, const char *json)
                     g_rfe29cc_null_ra,
                     g_rfe29cc_null_sp,
                     g_rfe29cc_null_depth,
-                    g_rfe29cc_null_latched);
+                    g_rfe29cc_null_latched,
+                    (unsigned long long)g_pc0exc_total,
+                    g_pc0exc_first_addr,
+                    g_pc0exc_first_ra,
+                    g_pc0exc_first_stop,
+                    g_pc0exc_first_ctx,
+                    g_pc0exc_first_inexc,
+                    g_pc0exc_head);
     for (int i = 0; i < hist_n && pos < sizeof(buf) - 64; i++) {
         pos += snprintf(buf + pos, sizeof(buf) - pos,
                         "%s{\"func\":\"0x%08X\",\"count\":%u}",
                         i ? "," : "", hist[i].func, hist[i].count);
+    }
+    pos += snprintf(buf + pos, sizeof(buf) - pos, "],\"pc0exc_ring\":[");
+    {
+        uint32_t retained = (g_pc0exc_head < 32u) ? g_pc0exc_head : 32u;
+        uint32_t oldest   = g_pc0exc_head - retained;
+        int firste = 1;
+        for (uint32_t i = 0; i < retained && pos < sizeof(buf) - 200; i++) {
+            uint32_t idx = (oldest + i) % 32u;
+            pos += snprintf(buf + pos, sizeof(buf) - pos,
+                "%s{\"a\":\"0x%08X\",\"ra\":\"0x%08X\",\"stop\":\"0x%08X\",\"ctx\":\"0x%08X\"}",
+                firste ? "" : ",", g_pc0exc_ring[idx], g_pc0exc_ra[idx],
+                g_pc0exc_stop[idx], g_pc0exc_ctx[idx]);
+            firste = 0;
+        }
     }
     pos += snprintf(buf + pos, sizeof(buf) - pos, "]}");
     debug_server_send_line(buf);
