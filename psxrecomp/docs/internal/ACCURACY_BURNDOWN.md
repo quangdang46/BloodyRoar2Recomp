@@ -3347,3 +3347,49 @@ euler_rotmat / part_link_unlink port. SECOND: part_link (action.c:415)
 link-record/stream walk. Audit both against disasm 0x80179ae0 /
 0x801862a8. Bug B (anim freeze, b6 static) remains a SEPARATE clean
 fn OUTSIDE 0x80174000-0x80183000.
+
+=== DISASM-VERIFIED EXONERATIONS (authoritative, not live-A/B) ===
+
+skeleton_init (menu.c:14129, guest 0x80179ae0, 0x57c bytes): dumped full
+MIPS disasm and compared — seed decode, euler extraction, joint-field
+math, link dispatch, partmap loops ALL MATCH the clean port. EXONERATED.
+
+fighter_frame zone-test (resolve.c, guest 0x801787dc): the four
+range_circle_test calls at 0x80178E28/E50/E6C/E88 and the death branch
+(*ctrl=-0x7f, HP=-1, ctrl+0=0x81) match disasm EXACTLY — offsets,
+call order, OR-of-secondary-tests, platform-desc indexing all correct.
+EXONERATED as a port bug; it is reacting to genuinely-wrong inputs.
+
+pose/GTE chain (skeleton_pose_step 0x8018544c, part_matrix_compute
+0x80185048, motion_blend_frame 0x80185f64): all >0x80183000 -> ran
+GENERATED in the clean-in-fighter-range A/B yet HP still -1. EXONERATED.
+
+unaff_* sweep: 234 hits but most are decompiler misnomers (assigned
+before use, e.g. prim_batch_emit return). Genuinely-uninitialized are
+few and mostly dead-stores to the shared s-reg save scratch
+0x1f8003e0-0x3fc (each function overwrites before reading; original
+never nests scratch-users). part_matrix_compute stores uninit
+s0-s6/ra there -> faithful value = cpu->gpr[16-22]/[31], but likely
+harmless dead-store. NOT the fighter bug.
+
+NEW OBSERVATION: a full-clean run reached gs=8 ph=0x100 with fighters
+UNSPAWNED (ctrl+0x20 fobj=0, ctrl+0x40 parts=0, state=0). Pure-gen at
+equivalent nav reached live fighters. If clean is stuck in the
+battle-intro/flow BEFORE fighter spawn, the blocker is UPSTREAM of
+fighter_frame/skeleton_init — consistent with all downstream
+verification coming back clean. The "off-platform death" seen in other
+runs may be a later/different manifestation.
+
+LIVE-A/B LIMITS hit: pure-gen gs=2 vs clean gs=8 (different states,
+incomparable); instances crash/regress during stage-load; direct C
+calls (skeleton_init_wrap->skeleton_init) bypass CLEAN_EXCLUDE dispatch
+so range-exclusion cannot isolate them; mixed configs break bring-up.
+
+NEXT (deterministic, no flaky live diff): need authoritative decompiler
+diff of the ~419 clean fns in the fighter bring-up + per-frame path.
+Ghidra MCP was down; fallback = compare clean C against the generated
+br2eu_func_* oracle per-function for the spawn/intro path
+(battle_intro_fsm, confirm_bookkeeping, fighter spawn/alloc, slot_apply
+descriptor d+0x18/+0x1c fobj/parts source). The fobj/parts pointers come
+from form descriptors tbl+slot*0x24 (+0x18/+0x1c) — find who populates
+those (fighter object allocator) and verify it.
