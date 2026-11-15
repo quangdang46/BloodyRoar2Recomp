@@ -6468,3 +6468,36 @@ and script_stream_tick's per-frame quad writes corrupt the exception vectors.
 NEXT: verify puVar14's actual value & whether the sprite node's +0x10 data
 ptr is valid; check every `(undefined4)(uintptr_t)ptr` store that should be
 br2_gaddr'd in the effect-task path (task_alloc_wrap_b/d and siblings).
+
+## RESOLVED — battle IRQ wedge FIXED (commit d8610ab)
+
+The dest pointers were NOT from task_alloc_wrap_b/d in battle.c. Creation-time
+arg latches (wd_*/wb_*) proved task_alloc_wrap_d fires 99x with bad args, but
+the REAL caller is a SECOND call site: options_menu_alloc in game/menu.c:13560.
+
+ROOT CAUSE: options_menu_alloc read the task node's +0x10 inline-buffer ptr via
+  s6 = MB32(guest_of(blk) + 0x10)
+blk is already a GUEST address (task_node_alloc returns guest_of(node)), so
+guest_of() — which expects a HOST pointer — returned 0 -> s6=0. All 100
+sprite-stream dest ptrs collapsed to small offsets (s2=s6+i*0x28 -> 0xF78,
+s0=s6+0xfa0 -> 0xFA0, param_3=s6+i*4+0x2260 -> 0x23EC at i=99, matching
+wd_last_p1/p2/p3 exactly). script_stream_tick then wrote quad-vertex bytes via
+guest_at(*param_1+off) into low mem -> overwrote 0x80000084 IRQ vector ->
+jr k0->0 -> pc=0 storm -> wedge ~2k frames into battle.
+
+FIX (menu.c:13556): read the field by blk's guest-addr value:
+  s6 = MB32((uint32_t)(uintptr_t)blk + 0x10u);
+matching the MB32(blk + 0x10) idiom used by sibling fns (menu.c:12449).
+
+Also fixed earlier: task_alloc_wrap_d host-ptr truncation args
+((undefined4)(uintptr_t)puVar14 + N) -> br2_gaddr(puVar14 + N).
+
+VERIFIED: battle runs 90k+ frames (~270fps), combat inputs register, gs=8
+sub=8 stable, sst_bad/wd_bad/pczero all 0, exception vector healthy
+(3C1A0000 275A27AC 03400008 00000000). Committed d8610ab -> mine/master.
+
+OPEN QUESTION for next session: does combat actually deal damage / do rounds
+end? gs=8 sub=8 stable for 48s+ sampling. Need to locate fighter HP + round
+timer state (battle.c uses decompiled generic names; fighter struct accessed
+via guest_at(host_ptr+off), +0xbc sub-struct, +0xc0 counter). If rounds never
+end, combat damage may be stubbed -> real gameplay bug to chase next.
