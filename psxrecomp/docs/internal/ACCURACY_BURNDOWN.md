@@ -2707,3 +2707,40 @@ generated MIPS inside br2eu_func_80126328 (versus orchestrator,
 _jt_80126370 jr-v0). No direct jal / rodata pointer to 0x80129218 exists;
 it is reached only via computed dispatch. Not yet identified — needs
 Ghidra (:8080 down) or Beetle oracle (:4380 down) to diff correct flow.
+
+### MAJOR REFRAME — fight-entry freeze is GENERAL, not versus-specific
+
+Dropping the versus-only theory. Drove ARCADE mode (1P) headless:
+gs=8 ph walks 241->0->3->6->8 and reaches ph=8 with fighter ctrl blocks
+0x1f8000e8/0x1f8001f0 POPULATED (nonzero) — unlike versus which left
+them empty. BUT the fight does NOT animate: ctrl-block bytes are
+byte-identical over 4s, ph stays 8, main thread frozen.
+
+So the REAL blocker for "game chạy được" is a GENERAL fight-init freeze
+at DAT_1f800001=8 affecting arcade AND versus (and attract never reaches
+a fight either — it loops menus). versus->fight is just one instance.
+
+Freeze signature (get_registers + dirty_insn_log + event_ring):
+- CPU is ALIVE: dirty_ram_insns grows, frame_count advances,
+  kernel DEQ events fire, GPUSTAT toggles 0xD65C<->0x565C (rendering).
+- Main thread spins at LOW-RAM guest 0xB0/0xB4 -> target 0x2AA0,
+  ra=0x8019AA9C (cd_chan_slot_set region). dirty_ram_interp.c:2483
+  documents 0xB0 as a "VBlank polling" dirty loop.
+- The pczero/pchung path cd_timer_read(0x8019A460) -> vsync_wait_n
+  (0x8019A5D8) -> bios_kobj_tramp(0x8019A670, `li t2,0xC0; jr t2`).
+- CD: Pause(0x09) completed (pending.active=0); ring_dropped grew to
+  ~8300 (free-run drive, guest behind — likely symptom not cause).
+- VBlank frame counter 0x801BDDE0 DOES advance -> VBlank IRQ fires at
+  the timer level, yet the 0xB0 poll never exits.
+
+HYPOTHESIS: the 0xB0 low-RAM poll waits on a flag/counter that the
+fight-init path fails to update (a software vblank/frame counter the
+VBlank IRQ handler should bump, or a GPU-status bit, or a kernel
+semaphore/event signaled on a path not taken during fight init). The
+interrupt-pump fix (dirty_ram_interp.c:2494) covers block-return pumps;
+the 0xB0 loop may still bypass it OR the awaited signal is never sent.
+
+NEXT: disassemble guest 0xB0/0x2AA0 poll loop to name the exact flag it
+reads; then find why fight-init doesn't satisfy it (compare vs the menu
+path which DOES exit these waits). Suspect a per-frame callback /
+VBlank-IRQ-handler / kernel-object signal armed only in the fight state.
