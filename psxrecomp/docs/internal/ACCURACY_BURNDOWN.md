@@ -2993,3 +2993,61 @@ waiting on stream-buffer drain, not command completion. NEXT: find what
 calls the cd_state9_store(0) reset (menu.c:9667 func) and whether it
 fires on the fight path; and confirm whether 0xF0000009 is stream-drain
 vs command-done by checking which ch4 DMA the game expects.
+
+=== SESSION — arcade ALSO hits FC_ANI=0 / empty-resource wedge (NOT versus-only) ===
+
+Fresh full-clean run, ARC mode -> gs=8 ph=8 (fight phase) then frozen.
+CONFIRMED the versus-only analysis generalises: arcade fight-entry hits the
+SAME resource-load failure.
+
+Live RAM (fighter ctrls 0x1f8000e8 / 0x1f8001f0):
+  +0x28 param = 0x801f5258 / 0x801f52a0   (fighter objects, populated)
+  +0x2c foe  = peer ctrl
+  +0x30 FC_ANI = 0   BOTH  -> apply() early-returns -> motion block never built
+  +0x38 FC_MOTION = 0x801f5328 / 0x801f5440
+  +0x3c FC_VM = 0x801f55c0 / 0x801f5704
+
+Motion blocks 0x801f5328 / 0x801f5440: 256 bytes ALL ZERO
+  (action_switch/apply never ran -> +0x80 action idx, +0x84 event PC,
+   +0x90 frame timer all 0 -> ev_stream_dispatch has no active .ANI).
+
+Fighter objects 0x801f5258/0x801f52a0: populated with guest ptrs
+  (0x801e1b3c, 0x801e348c, ...) BUT every pointer target reads as PURE ZEROS
+  -> char .ANI/model buffers ALLOCATED but data NEVER ARRIVED.
+  => resource-load stall, not a bind-order bug.
+
+CPU: spins in TestEvent. bios_svc_trace: svc=table B0 idx 0x0B (TestEvent),
+  a0=0xF1000008 (event handle @0x801bde38), ra=0x8019D550
+  (cd_seek_complete_poll / cd_seek_step family). ~1.4M BIOS calls.
+
+Live CD cells:
+  0x801bdeec state9_handler = 0   (audio_seq_reset never armed)
+  0x801bdf00 dma_flag       = 0   (cd_dma_xfer_start_b never ran)
+  0x801f46f4 seq_state      = 0
+  0x801bdecc mode           = 0   (programmed-I/O branch)
+
+CD drive (cdrom_state): irq_flag=0, reading=0, pending cmd=0x09 Pause
+  active=0, sector_read_pos=2060/2340, last_sector lba=8801.
+  bfrd_set=1793 vs bfrd_clear=13 -> consumer not draining.
+  ch3 CDROM DMA idle (chcr=0); ch4 SPU armed but active=0.
+
+CORRECTION: sector_read_pos=2060 is NOT a stall. Device model reads
+  12-byte header + 2048 data = 2060 and INTENTIONALLY leaves the final 280
+  bytes unread (cdrom.c ~2690, Tomba raw-sector note). IRQ ack, not
+  sector_available, is the completion handshake. irq_flag=0 + reading=0
+  => drive FINISHED; the wedge is game-side bookkeeping, not drive starvation.
+
+Event 0xF0000009 is delivered ONLY by cd_dma_chan_reset (ch4/CD-channel DMA
+done -> cd_bios_svc_07 iFlushEvent). dma_flag 0x801bdf00=0 => the DMA that
+should fire it never kicked. state9_handler 0 => the ch4 audio-stream handler
+(audio_seq_reset @0x80158244) was never armed on the fight path —
+chan_reset_register (the only armer) has NO generated jal callers, only the
+clean-C save_flow_state_machine calls it.
+
+NEXT LEAD (unchanged root): the custom CD streaming driver's data-ready ->
+FIFO-drain(0x1F801802) -> channel-ready -> coroutine-resume chain never
+finalises a resource sector set, so char .ANI/model never land in the buffers.
+All-generated baseline stalls identically => faithful-core/runtime bug,
+game/ exonerated. Suspect the INT1 data-ready dispatch / per-sector callback
+(cd_response_process type-1 gating on bcb18&7==1, bcb25) and the
+kernel-object CDROM(0xF0000003) IntRP callback delivery.

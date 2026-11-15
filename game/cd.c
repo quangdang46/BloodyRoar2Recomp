@@ -4610,46 +4610,16 @@ int cd_queue_poll(uint32_t param_1)
   }
 }
 
-/* ======== 0x8019d030 ======== */
-
+/* cd_reg_bit40_ctrl — CD register bit40 control @0x8019d030. The param_1==0/1/3
+ * paths busy-wait on live CD/MMIO status with a 0xf01-iteration cap; br2_ld16
+ * does not advance guest cycles, so a clean-C spin can burn the whole cap in
+ * native time before the cycle-driven CD model moves the status bits. It runs
+ * inside chan_reset_register/chan_reset_clear during versus->fight; delegate
+ * to generated MIPS so the wait crosses basic-block boundaries with
+ * psx_check_interrupts_at, same contract as cd_reg_window_op. */
 int cd_reg_bit40_ctrl(uint32_t param_1)
 {
-  int v0 = (int)param_1;
-  if (param_1 == 0 || param_1 == 3) {
-    uint32_t b = DB32G(0x801bdeb0);
-    int i;
-    CDMMIO16_ST(b,0xd5,(uint16_t)(CDMMIO16(b,0xd5) & 0xffbf));
-    if ((CDMMIO16(b,0xd5) & 0x40) != 0) {
-      for (i = 0; i < 0xf01; i++) {
-        b = DB32G(0x801bdeb0);
-        if ((CDMMIO16(b,0xd5) & 0x40) == 0) break;
-      }
-      if (i >= 0xf01) {
-        printf_forward((const char *)guest_at(0x80125c38),
-                     (const char *)guest_at(0x80125c48));
-        return -1;
-      }
-    }
-    v0 = 1;
-  }
-  if (param_1 == 1 || param_1 == 3) {
-    uint32_t b = DB32G(0x801bdeb0);
-    int i;
-    CDMMIO16_ST(b,0xd5,(uint16_t)(CDMMIO16(b,0xd5) | 0x40));
-    if ((CDMMIO16(b,0xd5) & 0x40) == 0) {
-      for (i = 0; i < 0xf01; i++) {
-        b = DB32G(0x801bdeb0);
-        if ((CDMMIO16(b,0xd5) & 0x40) != 0) break;
-      }
-      if (i >= 0xf01) {
-        printf_forward((const char *)guest_at(0x80125c38),
-                     (const char *)guest_at(0x80125c58));
-        return -1;
-      }
-    }
-    v0 = (int)param_1;
-  }
-  return v0;
+  return (int)br2_call_generated(0x8019d030u,param_1,0,0,0);
 }
 
 /* ======== batch_mass9 ======== */
