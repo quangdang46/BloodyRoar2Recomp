@@ -7489,3 +7489,64 @@ sector-drain (INT1 -> 3w hdr DMA + 512w data DMA) vs the 225792-cycle
 (2x) / 451584-cycle (1x) sector period; find whether our per-DMA or
 per-instruction cost inflates the drain past the budget. Cross-check the
 INT1->handler->DMA-arm latency against Beetle's CD interrupt path.
+
+=== SESSION N+18 — CORRECTION: not in battle at all; stuck in VERSUS SELECT, config uninitialized ===
+
+N+17's "battle loop runs generated code / CD-truncation" pivot was WRONG.
+This session proved the game never reaches the fight: it is wedged in the
+VERSUS character-select/confirm state machine. gs=8 + DAT_1f800001=8 are
+the select screen's reuse of the shared scratchpad phase bytes, NOT a live
+battle (battle_flow_state_machine / post_battle_dispatch are NOT running).
+
+DECISIVE COUNTERS (freeze_check, sampled):
+- pbd_calls=0, bce_fz0 frozen at 132  -> clean post_battle_dispatch (param_3=0)
+  NEVER runs; the whole battle dispatcher is absent.
+- bce_fzN climbs ~2/frame (548/274fr), bce_p3=1 -> ALL battle_config_eval
+  calls come from the SELECT path with param_3=1, i.e. menu.c:8251-8252.
+
+EXECUTING PATH (identified): vs_confirm_e (menu.c:7682) switch on
+*(s0+0x24) is in case 8 (menu.c:8250). L_case7 sets DAT_1f800001=8 then
+falls into L_case8, which calls battle_config_eval(playerA/B,0x1f800000,1)
+x2 per frame polling both players' select phase (pl+0xb4/b6) for 0x700
+(ready). This is the versus confirm FSM, not battle.
+
+WHY PLAYERS NEVER BECOME READY — bcfg_step_a (menu.c:4066) returns 0:
+  bcfg_step_a = battle_state_gate(battle) && (player_flags&0x800) &&
+                ret_zero_b(player)>=0.
+Live scratchpad shows the versus select config was NEVER populated:
+  - *(u32*)0x1f8000c0 (active-mode config/char-record ptr) = 0x00000000 NULL
+    -> battle_state_gate's "s16(0xa4) < u8(cr+0x10)" reads null -> returns 0.
+  - u16 player flags @0x1f800068 (P1) and @0x1f80006a (P2) = 0x0000
+    -> (flags & 0x800)==0 -> bcfg_step_a returns 0 for BOTH players.
+  - player phases: P1 0xb4=0x0300 (cls 0x300, mid-select), P2 0xb6=0x0000.
+  - global select phase u16@0x92 = 0x0100 (gcls 0x100, valid).
+
+INPUT IS NOT THE BLOCKER: pad data reaches the game — 0x1f80007e/0x80
+update with debug `press` (verified 0x1234->0xedc9). But NO button on
+either slot changes phases/flags/0xc0: the select FSM has no populated
+records to confirm into, so it cannot advance. versus_state_init
+(menu.c:10320) copies the versus-screen backdrop config but does NOT set
+0x1f8000c0 or the +0x68 player flags — those come from the versus
+CHARACTER-SELECT resource/config load that apparently never ran/completed.
+
+SCREEN: ~99% black + a teal (8,168,168) UI panel on the right = the versus
+select backdrop (P2 side), consistent with an un-populated select screen.
+
+ROOT-CAUSE (best model): the versus character-select entry did not finish
+initializing the per-player select records (0x1f8000c0 config ptr +
++0x68 confirm flags). Either the versus-select resource load (CD) was
+skipped/truncated, or the mode->versus transition took a path that bypassed
+the select-config init. NOT a timing/IRQ issue this time — timers, CD,
+memcard, SIO all verified live; vsync_wait_n (0x8019a5d8) is the normal
+per-frame limiter working correctly (DAT_801bdde0 VBlank counter advances
+~280/s, timeout counter resets each call = completes+recalls).
+
+NEXT CONCRETE STEP: find the versus/character-select entry that is
+supposed to allocate the select config and store its pointer to
+0x1f8000c0 + set player +0x68 flags (likely a generated function reached
+from the mode->versus transition, or a cd_file_load_sm completion for the
+select resources). Trace the versus entry from mode_select_commit /
+select_screen_tick / select_confirm_handler and identify which init call
+is missing or whose resource load did not complete. THEN the select can
+populate records -> players confirm -> 0x700 -> versus_state_init case9 ->
+battle_struct_init/match_setup_apply/battle_state_init -> real fight.
