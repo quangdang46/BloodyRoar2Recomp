@@ -8358,3 +8358,25 @@ need TCB wait-queue decode), and which producer should DeliverEvent it.
 Prime suspects: (a) ch2 GPU/OT DMA stuck-active never completing;
 (b) CD Pause(0x09)/read-complete DeliverEvent lost; (c) SIO0 channel
 event. LIVE repro preserved on port 4397 (frame 2276 frozen).
+
+### N+40b — deadlock refined: WHOLE cycle/event pump frozen, not just DMA
+
+Follow-up probes on the live 4397 wedge (frame 2276):
+- event_ring total FROZEN at 113926 (no new events over 3s) =>
+  psx_cycle_count is NOT advancing. This is a HARD stall of the exec/
+  dispatch path, not merely device starvation.
+- cpu.pc=0x00000000 idle sentinel; process at 0.6% CPU (BLOCKED/sleeping,
+  not spinning — vs arcade 4396 which spins TestEvent at 99.7%).
+- Last events mode=INTERP pc=0x801926A8 func=0x000029CC (kernel).
+- GPU OT linked-list walk (ch2) frozen at nodes=1 words=10 active=1 —
+  consistent with global pump stall (dma_advance never called).
+- idle_skip DISABLED (skips=0) — ruled out.
+- OT table dump @0x801E618C region shows a valid terminator node
+  0x09FFFFFF (wc=9,next=END) matching words_last=10 — walk was 1 cycle
+  from finishing when the pump froze.
+
+=> The versus wedge is the runtime BLOCKING (no runnable thread / a wait
+that never wakes), while arcade spins TestEvent. Same fight-init root,
+different host manifestation. Prime suspect shifts to the fiber/
+coroutine scheduler or a blocking wait in the INTERP dispatch path —
+NOT a per-device completion bug. Deadlock agent 4dea3363 on live repro.
