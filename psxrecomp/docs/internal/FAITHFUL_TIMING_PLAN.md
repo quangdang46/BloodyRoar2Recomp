@@ -8699,3 +8699,34 @@ stream PC), the op byte, and the resolved handler h on the versus crash;
 then trace which versus-only stage re-load frees/reuses the .ANI region that
 P2's motion+0x84 still references. Compare versus vs arcade FC_ANI bind
 addresses on a live pair. Do NOT bounds-check op (would mask = stub).
+
+### N+48 — versus P2 stream-PC ALWAYS lands >0x800d0000 (deterministic); heap layout comparison
+
+Live comparative reads (halted versus vs live arcade/attract):
+
+| port | mode | P1 FC_ANI | P1 streamPC(+0x84) | P2 FC_ANI | P2 streamPC(+0x84) |
+|---|---|---|---|---|---|
+| 4397 | versus | 0x8007121c | 0x80071712 (ok) | 0x800d1020 | 0x800d4165 (>D0000 BAD) |
+| 4401 | versus | 0x8006ba04 | 0x8006bf2e (ok) | 0x800ce958 | 0x800dc99a (>D0000 BAD) |
+| 4520 | arcade | 0 | 0 | 0 | 0 (alive, renders) |
+
+heap cursors (0x801c47b8 heapA / 0x801e3cfc heapB):
+- versus: heapA=0x800680dc heapB=0x800d0000/1  (staging AT the 0x800d0000 arena)
+- arcade: heapA=0x800e9078 heapB=0x800dc800  (heapA grew PAST D0000, works)
+- attract:heapA=0x80010000 heapB=0x800f0000
+
+=> versus P2's .ANI/stream is allocated in heapA at ~0x800ce958-0x800d1020,
+INSIDE the fixed intro_movie_state staging arena @0x800D0000. P1 lands
+low (~0x8006-0x8007) always safe. The versus->fight loads BOTH fighters'
+full resource sets; P2 (allocated last) crosses the 0x800d0000 boundary.
+heapA is a faithful bump cursor with NO bounds check — the question is
+whether ORIGINAL versus->fight heapA legitimately reaches 0x800d0000+
+(then staging arena must be elsewhere / heapA reset first) or our load
+over-produces by ~a few KB pushing P2 over.
+
+heapB_cur differs per mode (arcade 0x800dc800, attract 0x800f0000,
+versus 0x800d0000) — versus re-stages at the LOWEST arena, maximising
+overlap with heapA's high allocations.
+
+Agents 03b98d5b (heapA) + 34845d78 (ph-writer) have this data; the
+faithful fix is the heapA-boundary / staging-arena / load-order question.
