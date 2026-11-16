@@ -9944,3 +9944,36 @@ THREE agents converging: (a) static generated-diff of versus rebind/
 menu_res_load_sm ordering (save.c/menu.c/game.c); (b) runtime watchpoint on
 0x800DC99A/0x801F54C4/heap cursors to catch exact stomp-write PC; (c) PTR
 audit finishing verify. Goal: find faithful ordering/reload/cursor fix.
+
+### N+88 — STALE-FC_ANI CONFIRMED with live dump: P2 .ANI zeroed inside heapB band; PTR-table fixes committed (e11a9ee) cleared 0x80122F0C wild-jump
+
+PTR-TABLE AUDIT COMMITTED (e11a9ee): all &PTR_*/PTR_FUN_*/PTR_LAB_*
+stride+domain bugs fixed vs generated (u32 stride, ptr-cell double-deref,
+host->br2_gaddr, PTR_FUN_801b1734 real guest-table dispatch,
+impact_fx_update delegated). RESULT: versus 0x80122F0C/0x80122EB0
+wild-jump CLEARED — reaches gs=8 ph=8 FIGHT REACHED. Baseline died earlier.
+
+REMAINING versus blocker = pc=0 / VECGA near-null storm in-fight.
+
+ROOT CAUSE NOW PROVEN (live fcani.log dump, port 4890):
+  P1ani=0x8006e814  P2ani=0x800d1ff0  heapA_cursor=0x800680dc  heapB=0x800d0000
+  P1head=a0ad0000087900003c0100004c7d0000   VALID .ANI header
+  P2head=00000000000000000000000000000000   ALL ZEROS — stomped
+Both FC_ANI (.ANI stream base, fighter record +0x30) values are STALE —
+above the regrown heapA cursor 0x800680dc, i.e. allocated during an
+earlier heapA pass before intro_movie_state reset _DAT_801c47b8=0x80010000
+(game/game.c:1831). heapA regrew only to 0x800680dc; the .ANI pointers were
+never re-stored.
+P1's stale .ANI (0x8006e814) survives — below heapB band, data intact.
+P2's stale .ANI (0x800d1ff0) lands INSIDE heapB staging band
+[0x800d0000,0x800f0000] -> zeroed by heapB writes -> corrupt stream PC ->
+ev_stream_dispatch opcode over-read / near-null deref -> VECGA/pc=0 storm.
+At t=32.0 heapA reset to 0x80010000 (ph=0 transition) and P2head showed
+transient garbage then zeros — consistent with repurpose+stale pointer.
+
+FAITHFUL BUG: after intro_movie_state resets heapA mid-versus-flow,
+generated must RELOAD .ANI from disc and RE-STORE FC_ANI before fight;
+clean leaves the stale record+0x30 pointer. Versus loads BOTH fighters so
+P2's stale .ANI lands in the heapB kill-zone; attract/demo loads fewer and
+survives. Agent b4709d7e tracing the exact generated reload/rebind gate
+(fighter-loaded flag surviving the heap reset) — fix pending.
