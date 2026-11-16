@@ -8322,3 +8322,39 @@ OPEN (agent prime suspects):
 3. Whether faithful HW reloads .ANI post-movie (needs oracle heapA-top
    or a versus-capable oracle — oracle read_ram returned stale constants).
 4. State-byte audit across the 5+ SMs sharing DAT_1f800001/08c/08e/090.
+
+### Session N+40 — versus→fight and arcade CONVERGE on one deadlock: fight-init kernel event wait
+
+Live versus repro (port 4397, nav_to_fight.py): reaches gs=8 ph=8
+(FIGHT REACHED) at ~frame 2270 then frame FREEZES at 2276 — identical
+signature to the arcade wedge. NOT the .ANI crash this run (heapA stayed
+low at 0x800680dc; .ANI below heapB staging → no stomp). The .ANI crash
+is a SEPARATE character/timing-dependent latent bug.
+
+State-byte trace (/tmp/vs_trace.jsonl) captured the faithful versus
+order: gs6 battle_intro_flow preload (heapA->0x8010ae54) -> gs5
+match_loop RESET heapA->0x80010000 heapB->0x800DC800 + title load ->
+gs8 battle_flow -> select stage0 intro_movie_state (heapB->0x800D0000,
+b08c stages 16->32->48->-1) -> ph=8 fight. The gs6 preload IS followed
+by a heapA reset + reload into low heapA — the reload mechanism fired.
+
+DEADLOCK SIGNATURE (both modes):
+- cpu.pc=0x00000000 = scheduler-idle sentinel; NO runnable thread.
+- ra=0x80126664 (battle_flow→select case8 caller) = last real context.
+- bioscall B0:11 TestEvent = 1,440,713 cumulative — kernel thread
+  blocked in TestEvent on an event flag never DeliverEvent'd.
+- i_stat=0, pending=0, imask=0xD (VBlank+CDROM+DMA IRQs enabled).
+- ALL DMA channels inactive EXCEPT ch2: active=1, bcr=0x0 (count 0!),
+  chcr=0x01000401, cycles_accum=1 — degenerate stuck "active" GPU/OT
+  channel, never completes.
+- CDROM: reading=0, pending=0 (Pause 0x09 completed/cancelled), last
+  sector lba=8769 @frame2270, sector_read_pos=2060/2340.
+- Last event_ring entries: VBlank IRQ_DELIVER then DEQ storm, then
+  silence. CD command history ends: Setloc(0x02)→ReadN(0x06)→Pause(0x09)
+  @frame2270 — the Pause is the last CD op before the wait.
+
+OPEN: which event flag the blocked TestEvent waits on (EvCB walk empty,
+need TCB wait-queue decode), and which producer should DeliverEvent it.
+Prime suspects: (a) ch2 GPU/OT DMA stuck-active never completing;
+(b) CD Pause(0x09)/read-complete DeliverEvent lost; (c) SIO0 channel
+event. LIVE repro preserved on port 4397 (frame 2276 frozen).
