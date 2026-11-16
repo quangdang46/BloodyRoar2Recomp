@@ -13714,7 +13714,14 @@ undefined4 script_op_dispatch(undefined4 param_1,undefined4 param_2,int param_3,
         *(int *)guest_at((uint32_t)(uintptr_t)((param_3 + 0x78) ))= *(int *)guest_at((uint32_t)(uintptr_t)((param_3 + 0x78) ))+ iVar3;
       }
     }
-    sVar2 = (*(short (*)(undefined4,undefined4,int,undefined4))(uintptr_t)PTR_entry_0x80182f3c_801b5528[bVar1])(param_1,param_2,param_3,param_4);
+    /* PTR_entry_0x80182f3c_801b5528 is the guest opcode-handler jump table
+     * @0x801b5528 (19 entries, handlers @0x80182f3c..0x80184f28). It was never
+     * populated with host pointers, so indexing it called address 0. Dispatch
+     * through the real guest table via br2_call_generated — the same jalr the
+     * original performs — returning the handler's $v0 as the s16 result. */
+    sVar2 = (short)br2_call_generated(
+        *(uint32_t *)guest_at(0x801b5528u + (uint32_t)bVar1 * 4u),
+        param_1, param_2, (uint32_t)param_3, param_4);
     iVar4 = iVar4 + 1;
   } while ((sVar2 != 0) && (iVar4 * 0x10000 >> 0x10 < 0x32));
   return 0;
