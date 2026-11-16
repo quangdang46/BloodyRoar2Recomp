@@ -10057,3 +10057,23 @@ growth as generated, or over-produce pushing heapA into heapB early? If faithful
 overlap, generated must bound heapA<0x800d0000 or order decode to avoid self-
 overwrite; find that bound/order clean is missing. Agents b4709d7e/c8b13257/
 a497e6a0 converging.
+
+## N+92 — VECGA is a CLEAN-C bad-pointer diagnostic, not a guest MIPS exception
+
+src/clean_bridge.c:78-82 guest_at() logs "VECGA addr=.. phys=0x80-0xC0 ra0=%p"
+whenever clean C calls guest_at() with an address mapping into the PSX vector
+page (phys 0x80-0xC0). The observed addr=0xAC/0xBC/0xBD are GUEST addresses
+~0x000000AC — i.e. a CLEAN-C function is dereferencing a near-NULL / small-integer
+value as a guest pointer.
+
+This means the versus->fight blocker is a clean port reading a struct field
+that holds a SMALL value (state/count/ID/offset — NOT a pointer) and treating
+it as a pointer -> guest_at(0xAC) -> VECGA. ra0=__builtin_return_address(0) is
+the HOST caller (PIE slide varies per run; map via per-run __TEXT base
+~0x1049bc000 -> nm). NOT a guest MIPS load exception — the guest is fine; the
+clean port's pointer domain is wrong.
+
+Prime suspect class: versus P2 fighter entity/motion/ctrl sub-struct field read
+as pointer but actually a small scalar (uninitialized or wrong-offset field).
+Attract CPU-fighter path provisions the same structs differently -> survives.
+Agent a497e6a0 pinpointing the exact clean function + field.
