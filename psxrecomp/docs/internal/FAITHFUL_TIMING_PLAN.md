@@ -8106,3 +8106,47 @@ NEXT: determine whether ch4 was kicked for the pending read (watch ch4
 chcr bit24 / madr/bcr writes via gwatch on 0x1F8010C0-C8) and whether a
 completion IRQ was generated-but-dropped vs never-started. Compare the
 versus CD-DMA channel usage vs attract/oracle.
+
+=== SESSION N+29b — ROOT CAUSE CONFIRMED: heapB cinematic staging overlaps heapA .ANI ===
+
+Subagent forensics (disc-verified): file 0x40 = MAR/MAR1P.ANI (LBA 6104,
+24 sectors, raw/uncompressed, real size 0xBD74). Disc S0 section @file
+0x84B0 is a VALID u16 table (RE_NOTES: motion+0 == relocated S0 copy,
+verified verbatim on HW path). In-memory S0 is garbage because the .ANI
+tail (file offset >=0x16A8 = guest 0x800D0000) was OVERWRITTEN POST-LOAD
+by heapB staging cursor _DAT_801E3CFC.
+
+Mechanism: select_screen_tick (menu.c:3324, legit pre-fight select path)
+-> intro_movie_state -> sets _DAT_801e3cfc=0x800d0000 (game.c:1832) and
+cd_file_load_sm(0x8b/0x16) loads packed cinematic files there (decomp
+seq 4075/4076, frames 5347-5360, caller ra 0x80126664 = inside
+battle_flow_state_machine call tree). P2's .ANI spans
+0x800CE958..0x800DA6CC — it CROSSES 0x800D0000 → S0 section (offset
+0x84B0 → guest 0x800D6E08) destroyed → action_switch_guest reads garbage
+u16=0xE042 → stream=0x800DC99A (past .ANI end, inside TITLE*.DAT staging
+at 0x800DC800) → opcode 0xDF → table[223]=string ptr 0x80122F0C →
+unknown dispatch FAIL-FAST at frame 5368.
+
+Live state at crash: g_game_state=8, battle_flow DAT_1f800001=8 (fight),
+_DAT_801e3cfc=0x800D0000 (heapB base active), _DAT_801c47b8=0x800680DC.
+
+Handler audit (subagent): all 24 clean op<24 EV handlers exonerated —
+next-pc arithmetic matches generated/RE_NOTES. ev_stream_dispatch
+(resolve.c:3094) is faithful to guest 0x8017EA7C (no bounds check in
+either). Minor non-fatal bugs found: ev16_atkwin_init wrong arg
+(ev.c:907 should be GU8(pc,2) not GU8(ctrl,2)); ev17_approach inverted
+gate (ev.c:937); dead ev5_action wrong mode-1 gate (ev.c:160, no callers);
+fprintf debug spam action.c:798/109 (no-printf rule — clean up later).
+
+ROOT CAUSE = heap layout divergence: heapA placed .ANI spanning
+0x800D0000 which heapB owns for cinematic staging. On HW heapA must keep
+.ANI below 0x800D0000 (or heapB uses a different base at this phase).
+Matches documented Session-15z heapA over-production (~+100KB). The
+versus→fight cinematic load is LEGIT (select_screen_tick path) — the
+bug is heapA trajectory, not a spurious state.
+
+NEXT: trace heapA allocation trajectory (_DAT_801c47b8 decode cursor +
+the .ANI placement allocator in save_state_machine_alt) vs oracle to
+find the over-production source; OR verify whether heapB base 0x800d0000
+is phase-correct (maybe heapB should be higher/lower during fight bring-
+up). Compare heapA top-of-allocations vs DuckStation/Beetle.
