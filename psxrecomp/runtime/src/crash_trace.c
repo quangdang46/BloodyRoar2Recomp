@@ -114,6 +114,7 @@ extern uint32_t g_debug_last_store_pc;
 #endif
 #if defined(__APPLE__) || defined(__linux__)
 #include <dlfcn.h>
+#include <execinfo.h>
 #endif
 static volatile sig_atomic_t g_sig_fault_valid = 0;
 static volatile uintptr_t     g_sig_fault_addr  = 0;
@@ -122,6 +123,12 @@ static volatile uint64_t      g_sig_fault_pc    = 0;
  * recompiled/runtime function without needing the ASLR slide offline. */
 static char      g_sig_fault_sym[256];
 static uintptr_t g_sig_fault_fbase = 0;
+/* Native call chain at the fault, captured via backtrace() in the sigaction
+ * handler (libunwind-backed on macOS, so it does not need frame pointers).
+ * Emitted image-base-relative so atos/lldb can resolve offline. */
+#define CRASH_BT_MAX 24
+static void     *g_sig_bt[CRASH_BT_MAX];
+static int       g_sig_bt_n = 0;
 #endif
 
 /* Native dispatch nesting depth (generated/SCPH1001_dispatch.c). Incremented per
@@ -601,6 +608,22 @@ void psx_crash_trace_dump(const char *reason, void *seh_info) {
         (unsigned long long)g_sig_fault_pc,
         g_sig_fault_sym,
         (unsigned long long)g_sig_fault_fbase);
+
+    /* Native backtrace captured in the sigaction handler. Each frame's "off"
+     * is pc - fault image base, valid for frames in the main executable (the
+     * recompiled game + runtime); foreign-lib frames carry a meaningless off
+     * but a usable raw "pc". Resolve main-exe frames offline with atos. */
+    append_str(buf, sizeof(buf), &pos, "  \"native_bt\": [");
+    for (int i = 0; i < g_sig_bt_n; i++) {
+        uintptr_t pc = (uintptr_t)g_sig_bt[i];
+        append_fmt(buf, sizeof(buf), &pos,
+            "%s\n    {\"pc\": \"0x%llX\", \"off\": \"0x%llX\"}",
+            i ? "," : "",
+            (unsigned long long)pc,
+            (unsigned long long)(pc >= g_sig_fault_fbase
+                                 ? pc - g_sig_fault_fbase : pc));
+    }
+    append_str(buf, sizeof(buf), &pos, "\n  ],\n");
 #endif
 
     /* DRAM around $ra-32 (catches jalr at ra-8) and $s0-16, plus the overlay
@@ -972,6 +995,10 @@ static void psx_sigaction_handler(int sig, siginfo_t *si, void *uc_v) {
             }
         }
 #endif
+        /* Capture the native call chain. backtrace() walks libunwind frames so
+         * it works without frame pointers; it is not async-signal-safe but the
+         * process is terminating regardless (same trade-off as dladdr above). */
+        g_sig_bt_n = (int)backtrace(g_sig_bt, CRASH_BT_MAX);
     }
     static char reason[64];
     snprintf(reason, sizeof(reason), "signal_%d", sig);

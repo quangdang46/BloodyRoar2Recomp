@@ -3963,3 +3963,42 @@ NEXT: build with -fsanitize=address (or add a faulting-line probe) and
 reproduce the versus->fight crash to get the exact host variable+line.
 The nondeterminism (wedge vs SIGSEGV) suggests an uninitialized host
 pointer whose value depends on prior heap/stack state.
+
+=== SESSION UPDATE N+41 — UNIFIED ROOT CAUSE: host<->guest pointer-convention confusion ===
+
+Added native backtrace to crash_trace.c (backtrace() in sigaction handler,
+emitted as image-base-relative offsets in psx_last_run_report.json "native_bt").
+Reproduced versus->fight crash; resolved frames with atos:
+  main -> psx_scheduler_run -> psx_dispatch_impl -> dirty_ram_dispatch ->
+  psx_dispatch_game_compiled -> clean_try_dispatch -> battle_flow_state_machine -> SIGSEGV
+
+Disasm at fault_pc: `ldr x8,[x28]; ldrb w21,[x8]` x28=&_g__DAT_1f80000c
+(BSS). The global pointer held scratchpad_ptr+0x8FE0 (wild, past the 1KB
+BR2_SCRATCH_SIZE=0x400 window) instead of +0xc. lldb watchpoint on a healthy
+instance: g__DAT_1f80000c = scratchpad+0xc CORRECT at title; corruption happens
+during versus->fight (nondeterministic).
+
+Second repro = THIRD manifestation:
+  FAIL-FAST unknown dispatch addr=0x80122F0C ra=0x80126664 (ret addr inside the
+  jal battle_flow_state_machine wrapper). 0x80122F0C is below the compiled
+  function range = rodata/data executed as code = bad function pointer.
+
+UNIFIED ROOT CAUSE (all manifestations: CD/SPU wedge, battle_flow_state_machine
+SIGSEGV, FAIL-FAST bad dispatch):
+  Decompiled battle/menu functions MIX two arg conventions:
+   - guest ADDRESS params (e.g. 0x1f800000): `param_1+off` then
+     guest_at((uint32_t)(param_1+off)) is CORRECT;
+   - host POINTER params (e.g. &DAT_1f8000e8): same idiom truncates host ptr
+     to u32 -> guest_at() maps to g_openbus/wrong RAM -> garbage "pointers"
+     -> wild derefs / bad jalr targets.
+  post_battle_dispatch(&DAT_1f8000e8,&DAT_1f8001f0,0x1f800000) passes HOST ptr
+  as param_1 but guest addr as param_3; callees apply the
+  guest_at((uint32_t)param_N) idiom inconsistently -> corruption.
+
+  NOTE: scratchpad window is only 0x400 (BR2_SCRATCH_SIZE) but real PSX SPR is
+  0x4000 — guest_at(0x1f808fe0) routes to g_openbus, so scratchpad offsets
+  >0x400 alias openbus. Audit whether 0x400 is sufficient.
+
+FIX PATH (todos #20/#21): audit every guest_at((uint32_t)(uintptr_t)(param+off))
+site — normalize per-function whether param is host-ptr (direct deref / guest_of
+first) or guest-addr (keep guest_at). This is the real versus->fight blocker.
