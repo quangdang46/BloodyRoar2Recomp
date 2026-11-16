@@ -7920,3 +7920,42 @@ NEXT: determine why cd_intc_dispatch's deferred-IRQ resume is dropped at
 versus fight entry (vs attract which completes). Check the coroutine resume
 path (deferred IRQ dispatch -> intc_state block 0x801bcd18) against oracle.
 Do NOT hand-deliver the event — fix the coroutine resume.
+
+=== SESSION N+27 — wedge = deferred-IRQ CD coroutine starved; resume chain broken ===
+
+Deep-traced the starved cd_intc_dispatch (intc_count @0x801bce00 frozen at 0).
+
+Coroutine contract (game/cd.c):
+- cd_chan_full_init (0x8019a814, GENERATED) calls cd_ctx_save(0x801bcd50)
+  which snapshots live cpu->gpr into a 12-word frame, registers it via
+  BIOS B0/0x19 -> mem[0x4C18].
+- On CD IRQ the kernel calls cd_ctx_restore (0x8019adcc) which reloads the
+  frame and re-enters cd_chan_full_init with v0!=0 -> cd_intc_dispatch.
+- cd_intc_dispatch clean thunk bumps intc_count then br2_call_generated.
+
+Observed at wedge:
+- intc_count=0 delta=0 -> cd_intc_dispatch NEVER entered -> coroutine never
+  resumed after initial setup.
+- ctx_frame @0x801bcd50[0]=0x8019a87c (saved ra in cd_intc region) present.
+- mem[0x4C18]=0x0c3300005c2b0000... does NOT obviously hold a
+  cd_ctx_restore(0x8019adcc) pointer -> B0/0x19 deferred registration may be
+  un-wired or consumed.
+- Spinner IS generated: ra=0x8019D550 inside cd_seek_complete_poll
+  (0x8019D500, delegated to br2_call_generated) -> provides dispatchable
+  resume PCs, so a CD IRQ *could* resume the coroutine IF one fired.
+- CD queue EMPTY: pending={cmd 0x09 Pause, active 0}; last_sector lba 8769
+  frame 2313; reading=0; i_stat=0 no IRQ pending; ring_dropped=1181.
+
+CONCLUSION: the game finished streaming (last sector f2313), issued Pause,
+went idle — but the FINAL CD-DMA-done interrupt that resumes the deferred
+coroutine and DeliverEvents slot8 never fired / its resume was dropped.
+slot8 stays ENABLED(0x2000); TestEvent spins forever.
+
+NEXT (runtime deferred-IRQ / kernel B0-0x19): verify (a) cd_ctx_save's B0/0x19
+call actually registered cd_ctx_restore at the kernel deferred-handler slot
+the CD IRQ dispatches through, and (b) a CD completion IRQ actually reaches
+that handler at fight entry. The versus path likely issues a read whose done
+IRQ lands while the CPU is at a non-dispatchable PC (clean-C or BIOS boundary)
+-> deferred switch dropped -> coroutine starves. Compare the deferred-IRQ
+dispatch (mem[0x4C18] handler, psx_check_interrupts_at resume-PC capture)
+against oracle. Do NOT hand-deliver the event.
