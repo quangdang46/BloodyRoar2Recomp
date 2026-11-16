@@ -280,6 +280,26 @@ static void gw_push_entry(void)
         memcpy(e->newv, h, n);
         if (n < GW_WINDOW) memset(e->newv + n, 0, GW_WINDOW - n);
     }
+    /* Crash-surviving trace: the debug-server ring dies with the process on a
+     * FAIL-FAST, so mirror each watched write to stderr (write(2) is
+     * async-signal-safe; the fault handler runs in signal context). */
+    {
+        char lb[192]; int o = 0;
+        static const char *H = "0123456789ABCDEF";
+        uint32_t vals[8];
+        vals[0]=e->guest_addr; vals[1]=*(const uint32_t*)e->newv;
+        vals[2]=e->store_pc; vals[3]=e->func_addr; vals[4]=e->ra;
+        vals[5]=e->a0; vals[6]=e->a1; vals[7]=e->v0;
+        const char *tags[8] = {"GA","NV","PC","FN","RA","A0","A1","V0"};
+        memcpy(lb,"GW ",3); o=3;
+        for (int i=0;i<8;i++){
+            memcpy(lb+o,tags[i],2); o+=2; lb[o++]='=';
+            for (int s=28;s>=0;s-=4) lb[o++]=H[(vals[i]>>s)&0xF];
+            lb[o++]=' ';
+        }
+        lb[o++]='\n';
+        (void)!write(2,lb,(size_t)o);
+    }
     s_total++;
 }
 

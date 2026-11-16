@@ -315,11 +315,12 @@ static void reset(uint8_t *ctrl, uint32_t sel)
     GS8 (ctrl, 0x106) = 0;
     GS8 (ctrl, 0xdd)  = 0;
     GS8 (ctrl, 0xe5)  = GU8(ctrl, 0xe4);
-    /* ctrl+0x14 = per-player block: host hook player_block(slot) */
+    GSU32(ctrl, 0x14) = 0x801f52e8u + ((uint32_t)GU8(ctrl, 0x02) << 5);
 
     uint8_t cls = sel & 0xf;
     int32_t scaled = (int32_t)((int32_t)GS16(ctrl, 0xb0) *
                                (uint32_t)GU8(ctrl, 0xde)) / 100;
+    const uint8_t *battle = (const uint8_t *)guest_at(0x1f800000);
 
     switch (cls) {
     case 0:
@@ -327,7 +328,16 @@ static void reset(uint8_t *ctrl, uint32_t sel)
         /* fallthrough */
     case 1:
     case 2:
-        /* battle-mode adjustments (DAT_1f80009b/c) — host globals */
+        if (GU8(battle, 0x9b) == 4) GS16(ctrl, 0xd6) = 0x1e00;
+        if (GU8(battle, 0x9c) == 3 && GU8(ctrl, 0x01) == 0 &&
+            GU16(battle, 0xa2) != 0) {
+            GS16(ctrl, 0xaa) = GS16(ctrl, 0xac);
+            GS16(ctrl, 0xae) = GS16(ctrl, 0xac);
+        } else {
+            GS16(ctrl, 0xac) = 0;
+            GS16(ctrl, 0xaa) = 0;
+            GS16(ctrl, 0xae) = 0;
+        }
         GS16(ctrl, 0xd8) = 0;
         GS16(ctrl, 0xb0) = (int16_t)scaled;
         if (GS16(ctrl, 0xd6) < 0) GS16(ctrl, 0xd6) = 0;

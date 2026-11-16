@@ -6602,6 +6602,17 @@ int32_t post_battle_dispatch(uint8_t *param_1,uint8_t *param_2,uint32_t param_3)
   g_pbd_calls++;
   g_pbd_phase = MB8(s1 + 0x92);
   g_pbd_ctr   = (uint16_t)MBS16(s1 + 0x8c);
+  {
+    static int s_pbd_log = 0;
+    if (s_pbd_log < 6) {
+      s_pbd_log++;
+      fprintf(stderr,"[PBD] p1=%p p2=%p p3=%u s1bc=%x g2bc=%x f0bc=%x\n",
+              (void*)param_1,(void*)param_2,param_3,
+              (unsigned)MB32(s1+0xbc),(unsigned)MB32(g2+0xbc),
+              (unsigned)*(uint32_t*)guest_at(0x1f8000bc));
+      fflush(stderr);
+    }
+  }
 
   /* ---- preamble ---- */
   if ((int32_t)MB32(MB32(g2 + 0x20) + 0x38) > 0 ||
@@ -6659,8 +6670,8 @@ int32_t post_battle_dispatch(uint8_t *param_1,uint8_t *param_2,uint32_t param_3)
     int32_t c, cond;
     if (MBS8(s1 + 0x99) != 0) {
       if ((uint32_t)(MB8(s1 + 0x9a) - 2) < 2)
-        MW16(MB32(g2 + 0xbc) + 0x82,(uint16_t)-1);
-      battle_field_set(MB32(g2 + 0xbc),3);
+        MW16(MB32(s1 + 0xbc) + 0x82,(uint16_t)-1);
+      battle_field_set(MB32(s1 + 0xbc),3);
       clear_f0300_records();
       MW16(s1 + 0x8c,0);
       MW16(s1 + 0x92,(MB16(s1 + 0x92) & 0xff00) | 1);
@@ -6669,8 +6680,8 @@ int32_t post_battle_dispatch(uint8_t *param_1,uint8_t *param_2,uint32_t param_3)
     }
     c = MBS16(s1 + 0x8c);
     if (c == 0) {
-      MW16(MB32(g2 + 0xbc) + 0x82,(uint16_t)-1);
-      battle_field_set(MB32(g2 + 0xbc),3);
+      MW16(MB32(s1 + 0xbc) + 0x82,(uint16_t)-1);
+      battle_field_set(MB32(s1 + 0xbc),3);
       clear_f0300_records();
       c = MBS16(s1 + 0x8c);
     }
@@ -12075,6 +12086,12 @@ void stage_char_data_load(uint32_t param_1,uint32_t param_2)
   uint32_t K = param_2 * 23140u;
   { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
     decomp_trace_record(46,param_1,param_2,K,0); }
+  { static int s_scdl=0; if(s_scdl<8){s_scdl++;
+    fprintf(stderr,"[SCDL] p1=%x p2=%x K=%x src0=%08x src4=%08x s0cc=%x\n",
+      param_1,param_2,K,
+      (unsigned)*(uint32_t*)guest_at(0x80200000u+K),
+      (unsigned)*(uint32_t*)guest_at(0x80200004u+K),
+      (unsigned)MB32(param_1+0xcc)); fflush(stderr);} }
   uint32_t s0 = MB32(s1 + 0xcc);
   uint32_t r;
   blk_copy(0x801c15f8u, 0x80200000u + K, 0x2da8u);

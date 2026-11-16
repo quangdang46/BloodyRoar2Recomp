@@ -2315,7 +2315,7 @@ void battle_hud_draw(int param_1,int param_2,int param_3,int param_4)
   iVar4 = *(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 0xc)));
   local_74 = (uint *)guest_at((uint32_t)(uintptr_t)((iVar4 * 0xc0 + -0x7fe0b0d0)));
   local_70 = (uint *)guest_at((uint32_t)(uintptr_t)((iVar4 * 0x90 + -0x7fe0af50)));
-  local_78 = *(uint **)(&DAT_801f5210 + iVar4 * 4);
+  local_78 = (uint *)guest_at(*(uint32_t *)(&DAT_801f5210 + iVar4 * 4));
   if ((*(uint *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 0xc4) ))+ 8) ))>> 1 & 1) == 0) {
     _DAT_801f4f20 = _DAT_801f4f20 + 1;
     local_80[0] = param_3;
@@ -14798,16 +14798,16 @@ LAB_801a9784:
   }
   for (;;) {
 LAB_801a97a0:
-    puVar7 = *(uint **)(pbVar6 + 0x18);
-    iVar8 = *(int *)((uint *)guest_at((uint32_t)(uintptr_t)(((iVar5 * 5) * 4) ))+ (uint)(uintptr_t)puVar7 + 4);
+    puVar7 = (uint *)guest_at(*(uint32_t *)(pbVar6 + 0x18));
+    iVar8 = *(int *)(puVar7 + iVar5 * 5 + 1);
     iVar2 = iVar2 + iVar4;
     if (iVar8 < iVar2) {
       if (0 <= iVar2) {
         goto LAB_801a9810;
       }
       iVar5 = iVar5 + -1;
-      puVar7 = *(uint **)(pbVar6 + 0x18);
-      iVar8 = *(int *)((uint *)guest_at((uint32_t)(uintptr_t)(((iVar5 * 5) * 4) ))+ (uint)(uintptr_t)puVar7 + 4);
+      puVar7 = (uint *)guest_at(*(uint32_t *)(pbVar6 + 0x18));
+      iVar8 = *(int *)(puVar7 + iVar5 * 5 + 1);
       iVar2 = iVar8 + -1;
       if (iVar5 < 0) {
         iVar5 = 0;

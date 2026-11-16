@@ -7726,3 +7726,45 @@ GENERATED code, most likely menu_res_load_sm (per-fighter collision/hitbox
 resource bind) or a fighter-resource relocation. Verify whether menu_res_load_sm
 writes fighter+0xbc for versus fighters, or whether a per-fighter battle-
 struct allocator/link step is being skipped.
+
+=== SESSION N+22 — two clean-port guest/host pointer bugs fixed; next blocker = x28 clobber via context restore ===
+
+FIXED (both verified vs generated/disasm, runtime-confirmed progress):
+
+1. post_battle_dispatch phase-0 wrong base reg (game/menu.c ~6662-6673):
+   `MB32(g2 + 0xbc)` read fighter-record +0xbc (legit 0) instead of the
+   shared battle-state block. Guest asm 0x80154bc4 is `lw $v1,0xbc($s1)`
+   with s1=param_3=0x1f800000 -> cell 0x1f8000bc = 0x801F0270. Clean code
+   already used `MB32(s1 + 0xbc)` everywhere else in the same function;
+   only the phase-0 block used g2. Fixed all 4 sites to `MB32(s1 + 0xbc)`.
+   This was the N+21 "fighter+0xbc NULL / battle struct zeros" crash —
+   NOT missing init (battle_struct_init DID run; struct is initialized).
+
+2. battle_hud_draw local_78 wild pointer (game/battle.c:2318):
+   `*(uint**)(&DAT_801f5210 + iVar4*4)` read 8 bytes = TWO guest u32 table
+   entries as one host pointer -> local_78 = 0x801e9eb4801e9634 ->
+   `*puVar16` SIGSEGV. Table 0x801f5210 holds guest pointers; fixed to
+   `(uint*)guest_at(*(uint32_t*)(&DAT_801f5210 + iVar4*4))`.
+
+3. keyframe_cursor_search table access (game/battle.c:14801-14810):
+   `*(uint**)(pbVar6+0x18)` 8-byte read + bogus `guest_at(iVar5*20)+(uint)puVar7`
+   index. Generated 0x801A97A4 is `lw 0x18(node)` (guest ptr) then
+   `lw 4(tbl + iVar5*0x14)`. Fixed to guest_at(tbl) + u32-indexed +4 read.
+
+NEW BLOCKER (frame ~1601, signal_11, battle_flow_state_machine):
+- lldb: fault `ldrb w21,[x8]` at join-tail; x8=[x28]=0x100000407.
+- x28 SHOULD be &_g__DAT_1f80000c (0x111bbcbc0) but was
+  0x111bb0000-equivalent (file 0x111264000, inside .bss near the
+  dispatch/ring buffers). Hardware watchpoint on g__DAT_1f80000c NEVER
+  fired -> the global itself is fine (p/x shows valid arena ptr).
+- => x28 (callee-saved) was CLOBBERED mid-function. Only longjmp/
+  ucontext/asm can do that: the exception setjmp/longjmp or POSIX-fiber
+  scheduler restored a stale x28 captured while executing ring/buffer
+  code (irqctx/dispatch tails). This is the deferred-interrupt coroutine
+  family — a psxrecomp RUNTIME bug, not game code.
+- [PBD] debug print confirms fix #1 live: s1bc=801f0270 g2bc=0 f0bc=801f0270.
+
+NEXT: trace which context-restore path delivers the stale x28
+(psx_fiber ucontext swap vs exception_jmpbuf longjmp vs deferred
+exception longjmp on wrong fiber). Watch g_exc_setjmp_epoch /
+s_pending_exception_longjmp around the versus->fight IRQ storm.
