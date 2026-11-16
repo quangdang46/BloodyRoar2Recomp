@@ -7283,3 +7283,50 @@ runs. NEXT: implement buffer-full backpressure for ReadN/ReadS sector
 production (gate deliver on ring space, resume on drain) matching real
 CD flow control; verify against Beetle sector-buffer-full semantics, then
 re-run arcade+versus for pbd_calls>0.
+
+=== SESSION N+14 — CORRECTIONS: async poll returns done; block is GPU/OTC DMA queue loop on already-loaded data; backpressure hypothesis REFUTED ===
+
+Disassembled the exact wait chain + cross-checked Beetle source. Three
+corrections to N+12/N+13:
+
+1. func_0x8019D500 (the cd_file_read_seq tail poll) is NOT the block.
+   Decoded full_47.c: it reads STATE=load(0x801BDE40); if ==1 -> return 1.
+   Else reads SELECTOR=load(0x801BDEE4); if ==1 -> return 1. Only when
+   SELECTOR!=1 does it pump the state machine via op_cb(0x801BDE38=
+   0xf1000008 -> trampoline 0x8019D5B0 -> func_0x8019D5F0). Live
+   0x801BDEE4=1 -> func_0x8019D500 returns 1 (done). cd_file_read_seq's
+   `while(func_0x8019D500(0)==0)` EXITS. (NOTE: selector addr is
+   0x801BDEE4, not 0x801BDEEC — earlier decode had an off-by-8.)
+
+2. The live block is cd_cmd_queue_load (0x80192634, 224B/7blk) running
+   REPEATEDLY as an INDIRECT callback inside the data-delivery path —
+   NOT a single stuck call and NOT a CD-completion wait. Decoded body:
+   it is a DMA-channel loader for ch6 (GPU/OTC): stores data ptr into
+   ch6 MADR(0x1F8010E0 via cell 0x801B8438), count into BCR(0x1F8010E4
+   via 0x801B843C), kicks CHCR(0x1F8010E8 via 0x801B8440) with
+   0x11000002, arms timeout(0x801936B0), then loops
+   `while(ch6_CHCR & 0x01000000) { cd_pump_watchdog(0x801936E4); recheck }`.
+   Live ch6 CHCR=0x00000002 -> busy bit24 CLEAR -> each call COMPLETES.
+   madr OSCILLATES 0x801E82DC<->0x801E618C across samples -> the caller
+   iterates a double-buffered queue. CD is 100% IDLE (seq frozen 244091,
+   reading=0, ring_dropped frozen 5808, no new cmds for ~285k frames) ->
+   the loop processes ALREADY-LOADED RAM, not waiting on CD data.
+
+3. N+13's "implement buffer-full backpressure" is REFUTED by the oracle.
+   Beetle cdrom.cpp ProcessDataSector (L3457-61) DROPS on buffer-full
+   ("previous sector dropped") and DeliverAsyncInterrupt (L1444-45) sets
+   current_read_sector_buffer=current_write_sector_buffer on each INT1 —
+   read snaps to write IDENTICALLY to ours. Our ring/drop model is
+   FAITHFUL; adding backpressure would DIVERGE from the oracle. Sector
+   size also verified: ours 2340 == Beetle RAW_SECTOR_OUTPUT_SIZE
+   (2352-12); game intentionally reads 2060 leaving 280 (comment L2690).
+
+CONCLUSION (N+14): every CD mechanic checked is faithful. The wedge is a
+GPU/OTC DMA command-queue processing loop (cd_cmd_queue_load invoked as a
+callback) that iterates already-loaded data and never reaches its exit
+condition — a GPU/DMA-completion or queue-state issue, NOT a CD read
+completion issue. NEXT: find cd_cmd_queue_load's caller/callback
+registration (it is invoked indirectly — no direct jal; likely a
+function-pointer in the CD/GPU queue ctx) and the loop's exit condition;
+check whether it waits on a GPU fence/OTAG-drain or a queue-slot count
+that our GPU/DMA model never signals. pbd_calls still 0; gs=8 ph=8 hollow.
