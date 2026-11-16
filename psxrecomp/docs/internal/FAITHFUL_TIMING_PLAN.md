@@ -8425,3 +8425,34 @@ FAITHFUL FIX DIRECTION: root why audio_seq_reset/state-9 cb 0x801bdeec
 isn't re-armed for versus/arcade fight (game-state sequencing) OR why
 the ch4 kick path drops it (runtime). Verify .ANI load completion via
 watchpoint on motion+0x84 (0x801F54C4). NO fakes — fix the real kick.
+
+### Session N+42 — slot-9/ch4 mechanism decoded; versus→fight flow-routing is the unified suspect
+
+Two agent reports converge (4dea3363 fatal-halt decode + 5f215e7d SPU
+wedge decode) + my live RAM reads on the halted 4397:
+
+CONFIRMED LIVE STATE (versus→fight fatal @frame2292):
+- P1 FC_ANI(+0x30)=0x8007121C (SAFE, low heapA)
+- P2 FC_ANI(+0x30)=0x800D1020 — INSIDE heapB staging kill-zone (0x800D0000+)
+  → stomped → S0 table corrupt → stream_pc(motion+0x84)=0x800D4165 into
+  keyframe data → op 0xBF → table[191]=0x80122DC8 string → fatal.
+- DMA chan-handler table 0x801bddf4: ONLY ch4=0x8019B7E0 armed; ch0-3,5,6
+  NULL. Audio slot registry 0x801bcd1c: slots 0,2,3 armed (CD handlers),
+  slot9=0, mask 0x801bcd48=0xD (bit9 CLEAR).
+- cd_dma_chan_reset (cd.c:5008): DeliverEvent(0xF0000009,0x20) fires only
+  when 0x801bdee8 callback==0; else calls the callback.
+
+ROOT-CAUSE CANDIDATE (unifies .ANI crash + audio wedge):
+versus→fight routes intro_movie_state through battle_flow→select_screen_
+tick (gs8), NOT through save_flow_state_machine (0x8015D420). Only the
+save_flow path calls chan_reset_register (0x8015D4B4, gated on
+intro_movie_state!=0) which arms slot9→ch4→DeliverEvent. battle_flow's
+intro_movie_state does NOT arm slot9 → ch4 starves → file-load coroutine
+TestEvent(0xF0000009/0x20) spins → resource load incomplete → .ANI corrupt.
+
+Q: is faithful versus→fight SUPPOSED to route through save_flow (arming
+slot9 + re-binding .ANI) and our clean port takes battle_flow instead?
+That would be ONE state-routing divergence causing BOTH symptoms.
+chan_reset_register/clear + audio_seq_reset + cd_state9_store are clean;
+0x8015D69C flow SM + save_flow are the suspects. Oracle (DuckStation
+:4371) is stuck at gs=4 — unusable for nav without more work.
