@@ -8574,3 +8574,30 @@ fidelity; the flicker is the documented PRIMARY versus defect (subagent
 NEXT: find what should invoke cd_ctx_restore/cd_chan_full_init on CD IRQ —
 the kernel deferred-handler dispatch (OpenBIOS intr path) or a game-registered
 slot. Compare OpenBIOS interrupt dispatch vs DuckStation kernel model.
+
+### N+45 — versus ph-flicker: writer inventory + arcade is STABLE (no flicker)
+
+Subagent 23003b64 report:
+- store_pc field was a red herring; true writer = host rip via
+  `atos -l <slide>`. All captured 0x1f800001 writes are LEGIT SM
+  transitions (match_loop=0, select_screen_tick, battle_flow case7→8).
+  No rogue 8→1 captured yet — flicker is intermittent/timing-gated.
+- Complete writer inventory: clean-C (battle_flow, select_screen_tick,
+  match_loop, player_name_entry, transition_screen_flow, card_fade_sm,
+  battle_intro_flow, attract_menu_dispatch, system_config_menu_a/b,
+  results_scoreboard) + generated-only leaves (0x80126704 abort,
+  0x8014CDA8 ph=9, 0x8014CDBC ph=0xF0). 23 byte+1 store sites, no
+  hidden sw/sh/memset clobber of 0x1f800001.
+- KEY: arcade (09c=0→battle_frame) is STABLE at ph=8 — NO flicker.
+  Versus (09c=1→select_screen_tick) flickers → versus-specific.
+- Prime suspects for 8→1: match_loop(game.c:1469 =1, attract loop —
+  would fire if gs dispatch wrongly re-enters it), player_name_entry
+  (menu.c:1645 =1), battle_flow re-entry (case0→1 / -1 exit→re-init).
+- Repro left armed: port 4512 (versus, stable ph=8, gwatch armed over
+  scratchpad window) + port 4511 (arcade). Poll gwatch_dump until an
+  8→1 write lands, then atos the rip.
+
+PARALLEL: new agent c112f7fb hunting the CD deferred-coroutine resume
+(cd_ctx_restore never invoked on CD IRQ → no DeliverEvent → TestEvent
+wedge). Both threads likely share "incomplete async init / IRQ-resume
+fidelity" root.
