@@ -7999,3 +7999,80 @@ NEXT: trace one istat=0x4 IRQ take -> confirm whether cd_intc_dispatch runs
 and what I_STAT it samples; check where I_STAT bit2 is cleared relative to
 the deferred resume (psx_check_interrupts_at / kernel IRQ entry vs the game's
 INTC ack in cd_intc_dispatch). Compare ack ordering vs oracle/Beetle.
+
+=== SESSION N+29 — versus→fight reaches battle init; new blocker = event-stream OOB opcode ===
+
+PROGRESS: post_battle_dispatch s1-base fix (menu.c, commit e55ff5a class) held —
+run now reaches FIGHT REACHED, battle_round_init/struct_init, .ANI resource
+loads, and fight runs ~5368 frames before failing.
+
+NEW FAIL-FAST: unknown dispatch addr=0x80122F0C ra=0x80126664 a0=0x1F8001F0
+(P2 ctrl) a1=0x801F5440 (P2 motion), frame 5368.
+
+ROOT-CAUSE CHAIN (established this session):
+- Dispatch site = clean ev_stream_dispatch (resolve.c:3094, guest 0x8017EA7C).
+  op>=24 path reads handler = *(u32*)(0x801B4E68 + op*4) then
+  br2_call_generated(h, gaddr(ctrl), gaddr(motion), pc, 0). Crash args match
+  exactly. The GENERATED original (full_36.c:20856) has IDENTICAL semantics —
+  lbu op; sll*4; lw table[op]; jalr — NO bounds check. Clean port is faithful;
+  bug is upstream (bad stream byte), not the dispatcher.
+- Guest table 0x801B4E68: entries 0-47 = real handler code ptrs (0x8017xxxx);
+  entries 48-239 = a SECOND table of string/name ptrs (0x80122xxx — the
+  "FURI/YORO/DOWN/BREAK" move-name pool). op=0xDF=223 indexed entry 223 =
+  0x80122F0C (a string address) → unknown dispatch.
+- Stream cursor = motion+0x84 = 0x800DC99A, byte there = 0xDF. Valid opcodes
+  are only 0-47 → stream misaligned or stream base wrong.
+- P1 healthy: motion+0x84=0x8006BF2E inside its .ANI (0x8006BA04+0xB80C);
+  P1 S0 table @motion[0]=0x800738D4 = clean u16 offsets (0x49c,0x4a6,...).
+- P2 corrupt: motion[0]=0x800D6E08=.ANI(0x800CE958)+0x84B0 = S0 section, but
+  contains DENSE BINARY not u16 offsets. action_switch_guest computed
+  stream=.ANI+u16(S0[idx])=0x800CE958+0xE042=0x800DC99A — offset exceeds
+  .ANI size 0xBD74 → points into unrelated file region (files 0x90/0x94
+  loaded at 0x800DC800).
+- .ANI file 0x40 was LZSS-loaded to 0x800CE958 (decomp seq 3932). S0 section
+  at ~69% into file is garbage → suspect truncated/corrupt delivery OR S0
+  populated by a separate async load still in flight. cdrom_state at crash:
+  ring_dropped=2767 (grew from 1181), last_sector lba8769 frame5362 — drive
+  STILL streaming when fight logic consumed the S0 table.
+
+OPEN: (a) does disc file 0x40's S0 section contain a valid u16 table
+(subagent verifying vs Game.bin); (b) which of the 24 clean op<24 handlers
+could return a misaligned next-pc (subagent auditing all vs generated);
+(c) is motion+0x84 ever written as u16 elsewhere (field aliasing — unlikely,
+battle.c +0x84 hits are different structs); (d) does the .ANI/S0 load complete
+before action_switch reads it, or does ring_dropped leave holes.
+
+NEXT: await subagent reports; if disc S0 is valid → CD delivery bug (holes
+from ring_dropped or truncated LZSS); if disc S0 is also binary → wrong
+section interpretation (motion[0] should point elsewhere / s0 field misuse).
+
+=== SESSION N+29 — decoded the wedge spin: cd_seek_complete_poll wait loop ===
+
+Disassembled generated br2eu_func_8019D500 (cd_seek_complete_poll). The spin:
+
+  0x8019D500  lw v0, 0x801BDE40      ; async-op flag
+  0x8019D51C  beq v0,1 -> ret(1)     ; async op in flight -> early out
+  0x8019D524  lw v0, 0x801BDEEC      ; completion flag
+  0x8019D530  bne v0,1 -> WAIT       ; not complete -> enter TestEvent loop
+  WAIT (0x8019D540/560):
+    lw a0, 0x801BDE38 (=0xF1000008 = EvCB slot8, CD-DMA done F0000009/0x20)
+    jal 0x8019D5B0 (TestEvent trampoline)
+    bnez v0 -> exit                  ; TestEvent==1 -> done
+    else loop
+
+Live values at wedge: 0x801BDE40=0 (async done), 0x801BDEEC=0 (complete flag
+never set), 0x801BDE38=0xF1000008. So the game correctly waits for the
+CD-DMA-done event; it never arrives because the CD-DMA channel-4 completion
+interrupt is not being delivered through cd_intc_dispatch->handler[2]->
+cd_dma_chan_reset->DeliverEvent.
+
+dma_state shows NO active CD-data DMA channel (only GPU ch2) -> the ch4
+CD-DMA transfer already finished (or never ran) and its done-IRQ was dropped
+before cd_intc_dispatch could DeliverEvent. DeliverEvent(B0/7) ran 88x total
+but not for this pending wait.
+
+OPEN: determine whether the ch4 CD-DMA completion raised a CD IRQ (istat
+bit2) that cd_intc_dispatch consumed without delivering, or whether the DMA
+finished without raising it. Compare cdrom.c DMA-done->set_irq->present_
+cdrom_irq path vs oracle. The versus path streams enough CD data to hit a
+ch4 DMA completion the attract path doesn't.
