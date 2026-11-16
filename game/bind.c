@@ -2170,7 +2170,7 @@ __attribute__((weak))
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int ret_zero_e() { return 0; }
+int ret_zero_e(int32_t a0) { return (int)br2_call_generated(0x80161630u,(uint32_t)a0,0,0,0); }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif

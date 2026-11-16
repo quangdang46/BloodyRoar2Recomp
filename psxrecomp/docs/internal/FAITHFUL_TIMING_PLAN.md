@@ -9282,3 +9282,20 @@ Systematic check of every `return 0`/weak stub vs strong defs:
 => The return-0 stub surface is now clean except the two documented
 deferred memcard ptr-contract items. No load-bearing guessed stubs remain
 in bind.c/save.c.
+
+### N+70 — ret_zero_e delegation verified: build clean, boot reaches known N+68 blocker
+
+bind.c:2173 `ret_zero_e` is now `br2_call_generated(0x80161630, a0)`
+(int32_t arg, int return — matches menu.c/save.c extern decls; return
+value unused by callers). `python3 game/gen_clean_table.py` regenerated
+src/clean_table.c (1115 wrappers, 79 skipped; 0x80161630 correctly stays
+generated-authoritative since the clean body delegates). Build clean.
+Headless run (`--headless --debug-port 4381`): boots LLE, reaches frame
+1871 and fails at the DOCUMENTED N+68 wild-dispatch 0x0B808000 inside
+battle_struct_init — pre-existing blocker, NOT a regression from this
+change (the stub->delegation swap cannot produce a wild dispatch; the
+crash signature is identical to the N+68 attract-path record). Menu/save
+call sites now execute the real 1572-byte/74-block guest body (20+ jals
+into generated callees, scratchpad +0x1F80008C halfword init, IRQ-check
+block boundaries — a faithful clean port is a future RE task, delegation
+is the correct interim per AGENTS.md §4).
