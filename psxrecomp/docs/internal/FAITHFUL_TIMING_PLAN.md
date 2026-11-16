@@ -9395,3 +9395,32 @@ tile_decode_wait, rec_timer_pair_clear, cd_cmd_bytes, cd_cmd_retry)
 do guest_at(param_1) INTERNALLY -> they take a GUEST addr -> wrapper
 correctly passes raw. Only the 3 in HOST_PTR_PARAMS take a HOST ptr.
 Override set is complete, not partial.
+
+### N+74 — .ANI heap-alloc is FAITHFUL; real Q = does heapA legitimately reach ~0x800D1000 (over-production vs faithful)
+
+Agent f3f44605 (investigation-only) traced the FC_ANI write:
+
+- Write site: `game/save.c:7035` inside `save_state_machine_alt`
+  (@0x80171890, state L30) — the per-fighter resource loader.
+  `heapA=(g32(0x801C47B8)+3)&~3; cd_file_load_sm(...,heapA)` loads .ANI
+  into heapA (cursor cell 0x801C47B8, base reset 0x80010000 in
+  menu_res_load_sm st00 save.c:4150); `s4+0x30=heapA` stores FC_ANI.
+- VERIFIED instruction-level vs generated br2eu_func_80171890
+  (0x80172050 lw cursor / 0x8017205C sw s4+0x30 / cursor+=size) —
+  IDENTICAL. The .ANI heapA allocation is faithful, NOT a port bug.
+- Post-mortem RAM (attract crash): P1 FC_ANI=0x8007121C (safe),
+  P2 FC_ANI=0x800D1020; P2 .ANI spans 0x800D1020-0x800DBDC0 — sits ABOVE
+  the 0x800D0000 heapB staging base intro_movie_state resets to
+  (game.c:1832). Ends just below heapB battle base 0x800DC800 — tight.
+- Both .ANI blobs looked INTACT at crash time -> the 0x0B808000 wild
+  dispatch may involve a DIFFERENT corrupt ptr (.ACT cursor motion+0xac,
+  S5 skeleton motion+0x10, param_tbl) — worth fntrace/pc_probe capture.
+
+=> The faithful question is now precise: SHOULD heapA top out ~0x800D1000
+during versus/attract fight resource load? If HW tops lower (~0x800Cxxxx)
+there is a heapA over-producer (~+100KB) in a clean port
+(stream_block_decode/heap_alloc54/heap_record_emit/data_relocate/
+heap_ptr_fixup sizes). If HW heapB staging uses a different base during
+fight, intro_movie_state's 0x800d0000 needs phase-gating. Player-arcade
+works (heapA presumably tops lower with fewer/different resources).
+Spawned follow-up agent on the heap-trajectory audit.
