@@ -9668,6 +9668,65 @@ P2 .ANI load wrote to the wrong heap slot (heapA-overproduction, N+74)
 or the stream itself is mis-decoded. Sibling gwatch/wtrace agents own
 the write-attribution hunt.
 
+### N+83 — menu.c heap-producer audit: 3 faithful-bug fixes (heap_ptr_fixup gate+store, heap_record_emit record-init, stream_block_decode domain); heapA/heapB cursors advance by real emitted sizes
+
+Instruction-level audit of every heap-size producer named in the versus
+crash hunt (generated bodies read-only; clean `game/menu.c` compared
+store-for-store):
+
+- `heap_ptr_fixup` @0x8016CB20 — **was buggy, FIXED** (menu.c ~13466).
+  Generated phase-1 runs iff `MB32(a0+4)==0` (the "already fixed" flag);
+  the port gated on the +8 offset instead, skipping (+4==0,+8==0) blocks
+  the guest still relocates and running it on (+4!=0,+8 small) blocks the
+  guest skips. Inner loop: generated stores the resolved pointer back to
+  the SAME slot it loaded (a2 advances in the delay slot after the sw)
+  and tests ONLY bit31 — a `0x80000000` entry stores `a0+0`. The port
+  wrote one word too far (post-increment store) and added a spurious
+  `(v1 & 0x7fffffff)!=0` guard. Now `a2 = a0 + noff*4`, `MW32(a0+8,a2)`,
+  nested row/col loops with in-place `a0 + (v1 & 0x7fffffff)*4` stores,
+  `MW32(a0+4,1)`. a0+off*4 scaling and real-block base confirmed.
+- `heap_record_emit` @0x8016CC5C — **was buggy, FIXED** (menu.c ~13560).
+  Generated writes `sw zero -> rec+0` (0x8016CD18) then five u16 zeros at
+  +4/+6/+8/+0xc/+0xe, `+0x20=src cursor`, `+0x24=s1-old`. The port was
+  missing the +0 u32 zero (stale heap data survived as the record tag)
+  and only ran the count<=0 early-out when arg5==0 — generated computes
+  the FINAL count (`arg5!=0 ? arg5 : v1-a3`, lw sp+0x60 / sub at
+  0x8016CCC8) then `blez` (0x8016CCCC) before the first slot, so a
+  negative nonzero arg5 must not enter the do-loop. Both corrected;
+  return is the advanced cursor `s1`, no size inflation.
+- `stream_block_decode` @0x80163154 — **was buggy, FIXED** (menu.c
+  ~2264). `param_2` is a HOST pointer (`guest_at()` of the table);
+  generated adds the table's GUEST base to the entry offset. The port
+  truncated the host pointer into the address math -> mode3_dispatch
+  read open-bus mode word -> garbage return length -> heap cursor
+  corruption (the original suspect for heapA overrun). Now
+  `srcg = guest_of(param_2) + entry + (count+1)*4`.
+- `heap_serialize` @0x8016B7C0 — **faithful** (menu.c ~14368). Emit-table
+  walk uses 16-byte slots (`count<<4`, generated 0x8016B838 sll 4 +
+  addu), terminator = next-ptr 0/0xffffffff, per-tag dispatch via
+  B7C0_EMIT/B7C0_CALL{5,7}; all 28 `heap_serialize_tag_*` are pure
+  `br2_call_generated` delegations with correct guest addrs + o32 stack
+  staging (menu.c 14626-14666) — generated-authoritative by design.
+- `terrain_packet_gen` @0x80135A14 — **faithful** (menu.c ~13890).
+  Header stores match generated (`sw a1,0x1c(a0)` 0x80135A30, u16 zeros
+  +0xc/+0xe, args 8/9 via guest stack sp+0x44/+0x48); constants
+  0x140000 / tables 0x8019ac54 / 0x8019ab84 and <<4 strides verified.
+- Cursor cells: heapA @0x801C47B8 and heapB @0x801E3CFC advance ONLY by
+  serializer/emit return values (gwatch NV sequence 0x80010000 ->
+  ... -> 0x800680DC during vs_init heap setup = real emitted sizes, no
+  literal inflation found in any producer).
+
+Runtime after fixes (headless, debug port): versus still dies in
+vs_init, but the failure MOVED — no more FAIL-FAST 0x0B808000; the
+process now SIGSEGVs inside `battle_flow_state_machine` via
+`clean_try_dispatch` (host deref at 0x100000407, crash report
+2026-11-17-034329.ips). That is battle.c territory (sibling-owned);
+the heap producers are no longer the suspect for the wild dispatch.
+Arcade path unchanged through gs=5 menu.
+
+OPEN: battle_flow_state_machine host-pointer deref (sibling scope);
+0x80062401 write-attribution still open per N+84.
+
 ### N+84 — dispatch mechanism PINNED: OOB opcode index reads string/data table as fn-ptr (both dispatchers FAITHFUL; bug is corrupt stream upstream)
 
 Live-captured the wedge stack on a bare attract run pinned at frame 1871
