@@ -4002,3 +4002,44 @@ SIGSEGV, FAIL-FAST bad dispatch):
 FIX PATH (todos #20/#21): audit every guest_at((uint32_t)(uintptr_t)(param+off))
 site — normalize per-function whether param is host-ptr (direct deref / guest_of
 first) or guest-addr (keep guest_at). This is the real versus->fight blocker.
+
+=== SESSION UPDATE N+42 — versus->fight WEDGE root: audio-init task never runs ===
+
+fntrace-armed run (12 targets: audio_seq_reset 0x80158244, chan_reset_register
+0x801582c0, chan_reset_clear 0x80158358, save_flow_state_machine 0x8015d420,
+cd_state9_store 0x8019d1b0, cd_state_store 0x8019d5c0, cd_mode_store 0x8019d4d0,
+cd_dma_xfer_mode 0x8019cfc0, cd_dma_xfer_start 0x8019b89c, cd_dma_chan_reset
+0x8019b7e8, cd_reg_bit40_ctrl 0x8019d030, cd_file_read_seq 0x801565ec) driven
+title->2P VS->char select->fight via nav_to_fight.py. Result: gs=8 ph=8 frozen,
+CD reading=0 partial sector, SPU active_mask=0 (silent).
+
+fntrace_dump: ring held ONLY cd_file_read_seq + cd_mode_store calls (14 events,
+frames 1655-2283). NONE of the audio/CD-DMA-kick functions EVER fired —
+no audio_seq_reset, no chan_reset_register/clear, no cd_dma_xfer_mode/start,
+no cd_state9_store, no save_flow_state_machine.
+
+Call graph established:
+  chan_reset_register/clear are invoked ONLY by save_flow_state_machine
+  (0x8015d420) and unnamed 0x8015d69c. save_flow_state_machine is called ONLY
+  by dialog_msg_dispatch (0x8015caa8, save.c:6581), which is stored as a
+  callback ptr (menu.c:1010 local_54). So ALL fight audio init flows through
+  dialog_msg_dispatch -> save_flow_state_machine -> chan_reset_register ->
+  cd_state9_store(audio_seq_reset) -> cd_dma_xfer_mode -> cd_dma_xfer_start
+  -> ch4 kick -> DeliverEvent(F0000009/0x20).
+
+DEADLOCK MODEL: cd_file_read_seq (0x801565ec, the fight resource loader) is
+DELEGATED to generated MIPS and spins in kernel TestEvent waiting for the
+F0000009/0x20 event that ONLY ch4 completion delivers. ch4 needs the audio
+kick which needs save_flow_state_machine running. If the guest scheduler
+does not run dialog_msg_dispatch while cd_file_read_seq's TestEvent spins
+(cooperative threads not preempted, or the task isn't in the ready queue),
+the audio init never happens -> ch4 never completes -> TestEvent spins
+forever -> gs=8 ph=8 wedge. Consistent with prior "coroutine starves /
+TestEvent spins forever" comments in cd.c (lines 785,1048,1415,1497,1830).
+
+NEXT: determine whether dialog_msg_dispatch/save_flow_state_machine is (a)
+never scheduled during versus->fight, or (b) scheduled but its state doesn't
+select the chan_reset branch. Arm 0x8015caa8 + 0x8015d69c + read the flow-SM
+state cell; compare vs a WORKING mode (arcade/attract) if one reaches audio.
+The nondeterministic SIGSEGV/FAIL-FAST variants are downstream of the same
+incomplete-init (bad struct fields -> bad fn ptrs).
