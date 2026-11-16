@@ -8503,7 +8503,7 @@ void script_stream_tick(int *param_1)
       if (uVar5 == 0xfe00) {
         puVar6 = (ushort *)guest_at((uint32_t)(uintptr_t)((param_1[4] + uVar3 * 4)));
 LAB_80137954:
-        param_1[5] = (intptr_t)puVar6;
+        param_1[5] = (int)guest_of(puVar6);
       }
       else if (uVar5 < 0xfe01) {
         if (uVar5 == 0xfc00) {
