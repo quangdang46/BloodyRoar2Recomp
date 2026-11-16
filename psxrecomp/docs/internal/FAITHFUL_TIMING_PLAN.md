@@ -9000,3 +9000,35 @@ manifests (ra=0x80126664).
 
 vsync_wait_n @0x8019a5d8 reads counter @0x801BDDA0; epc alternates
 0x8019A648/0x8019A600 = the poll/compare block.
+
+### N+57 — versus->fight IRQ storm quantified: 21524 IRQ deliveries, only ~2481 are VBLANK+CDROM
+
+freeze ..._1794856792 device_state:
+  irq_counts: vb_raise=1524 vb_deliver=1354 vb_ack=1357  (VBLANK ~1/frame OK)
+              cdrom_deliver=1127                        (CDROM IRQs)
+              irq_deliver=21524  == exception_entries   (TOTAL hardware IRQ dispatches)
+  => ~19000 IRQ deliveries are NOT VBLANK/CDROM. Either a stuck i_stat
+     source re-presented at every psx_check_interrupts boundary, or many
+     unaccounted device IRQs.
+  exception_reentry_blocks=4950  => NESTED exceptions (IRQ taken while
+     already in handler) = abnormal; implies SR IRQ-disable / i_mask not
+     respected during handling, OR a level-triggered source stays asserted.
+
+irqctx tail: every IRQ 'take' has epc/xpc=0x8019A648|0x8019A600 (inside
+vsync_wait_n poll loop), ra=0x8019A53C, rsn=1 st=1 rst=1. v0x varies
+(0x3063/0x1/0x7E4F...) -> not a single constant vector.
+
+intc_state[14]=0x8019A87C = the CD/INTC dispatch handler (cd region);
+[15]=0x801BDD30 kernel stack.
+
+ev_agg.deliver (BIOS DeliverEvent): only ~65 total — the storm is NOT
+DeliverEvent-driven; it's raw INTC re-delivery.
+
+cdrom.pend_cmd=0x09 (Pause) pending, pend_ph=1; cd_read buffer
+bcb84=0x800D0000 (file data -> staging arena). CD file-0x14 load active.
+
+=> faithful-core IRQ hypothesis: a device IRQ source asserts i_stat but is
+never edge-latched/acked, so psx_check_interrupts re-delivers it at every
+block boundary -> re-entrant exception storm starves vsync_wait_n -> pc=0.
+Same family as the cdrom.c latch comments (unacked CD INT = unbounded
+re-entry storm). afcfd8bf owns the runtime IRQ-dispatch investigation.
