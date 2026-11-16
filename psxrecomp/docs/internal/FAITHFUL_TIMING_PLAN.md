@@ -8874,3 +8874,30 @@ must be sequenced so they don't collide — either the cinematic fully
 completes before fight .ANI bind, or heapA .ANI is placed below 0x800D0000.
 The versus ph-writer agent (34845d78) is naming the DAT_1f800001 writer that
 drives this interleave; heapA agent (03b98d5b) has the over-production side.
+
+### N+52 — versus ph-flicker ROOT: phase-machine re-entry loop; fight never advances past b92==12
+
+Agent 34845d78 live capture (port 4525, versus 09c=1) + atos host-RIP:
+- DAT_1f800001(ph) cycles 6->7->8->6->7->8... gs stays 8 (no 8<->5 flicker).
+- Writer of ->6: side_phase_commit game/menu.c:7500 MW8(s0+1,6), called from
+  post_battle_dispatch case 12 (menu.c:6974/6983). ->7/->8: battle_flow
+  menu.c:733/737. ALL writes are faithful clean-C (generated-confirmed).
+- Mechanism: post_battle_dispatch switches on b92=MB8(s1+0x92) (byte
+  0x1f800092). In case 12, once s1+0x8c counter hits 0x5a it calls
+  side_phase_commit + resets counter. side_phase_commit writes ph=6 whenever
+  MB8(s0+0x9b)<4; versus 09b=2 keeps gate open -> refires every ~90 ticks.
+- Arcade (09c=0): battle_frame path, 09b differs -> stable ph=8.
+- Versus (09c=1): select_screen_tick orchestrates two-side dispatch; the
+  versus-only 09b=2 state keeps the commit gate open -> infinite 6/7/8 loop.
+- This re-entry re-runs intro_movie_state/resource staging (N+51) -> heapB
+  0x800d0000 re-stage stomps high-heapA .ANI -> ev_stream wild dispatch.
+  ALSO manifests as pc=0/epc=0x8019A648 exception storm (~frame 1516).
+
+ROOT (faithful fix target, upstream of phase byte): the versus battle/round
+never advances s1[0x92] past 12 — round timer / KO / side_phase_advance is
+stuck in the versus path. Likely a ported-function divergence in
+battle.c/fight.c combat-or-round progression under select_screen_tick's
+two-side versus dispatch, vs arcade's battle_frame path.
+
+LIVE REPRO: port 4520 alive+stable gs=8/ph=8 versus (09c=1), gwatch armed;
+log /tmp/br2_4520.log. guest_watch.c instrumentation kept (observability).
