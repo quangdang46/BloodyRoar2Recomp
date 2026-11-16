@@ -9859,3 +9859,49 @@ advancing). Confirmed via direct frame query.
 OPEN: battle_flow_state_machine SIGSEGV (versus init, sibling scope);
 versus fight-entry cat_tab path now unblocked in principle but unreachable
 until that earlier crash is fixed.
+
+### N+86 — versus->fight ADVANCED: triple_track_spawn PTR_DAT 8-byte-index SIGSEGV fixed; new blocker 0x80122F0C wild-jump at frame ~5393
+
+The versus-init SIGSEGV flagged at N+85 (epc=0x8019A648, fault_addr
+0x801B1DE4801B1DD4) is root-caused + fixed (commit e5a9047).
+
+ROOT CAUSE — same host/guest domain class as N+83/N+85, but a NEW
+sub-variant: STRIDE + WIDTH, not just domain.
+  game/battle.c triple_track_spawn did:
+      puVar3 = (undefined2 *)(&PTR_DAT_801b1e8c)[param_3];
+  &PTR_DAT_801b1e8c == g_PTR_DAT_801b1e8c, declared `uint8_t **` in
+  bind.c and bound by guest_for("g_PTR_DAT_801b1e8c") -> guest_at(0x801b1e8c)
+  = host ptr to the TABLE BASE. The table holds 4-byte GUEST pointers to
+  u16-pair data (generated 0x80138AAC-0x80138AE0: lui 0x801B/addiu 0x1E8C,
+  entry=base+param_3*4, lw -> guest ptr, lhu -> u16, store entry+2 twice).
+  But `uint8_t**` indexing reads sizeof(uint8_t*)=8 bytes at param_3*8,
+  folding TWO adjacent 4-byte guest entries into ONE bogus 64-bit host
+  pointer -> *puVar3 SIGSEGV. fault_addr 0x801B1DE4801B1DD4 is literally
+  entries[param_3],[param_3+1] concatenated.
+
+FIX (faithful, matches generated):
+      puVar3 = (undefined2 *)guest_at(((uint32_t *)&PTR_DAT_801b1e8c)[param_3]);
+  u32* index = 4-byte stride; guest_at() converts the guest entry addr to
+  the host u16-data pointer. br2_gaddr(puVar3+1) then yields entry+2 as a
+  guest addr, matching generated sw of gpr[2]=entry+2.
+
+VERIFIED: versus now reaches gs=8 ph=8 (fight live) and advances to
+frame ~5393 — far past the prior ~1900 SIGSEGV. triple_track_spawn cleared.
+
+NEW BLOCKER (next layer, same bug FAMILY):
+  frame ~5393 -> FAIL-FAST unknown dispatch addr=0x80122F0C
+  ra=0x80126664 a0=0x1F8001F0 a1=0x801F5440. 0x80122F0C has NO recompiled
+  block (only br2eu_func_80122170 exists in 0x80122xxx; no block_80122F0C).
+  ra=0x80126664 is inside br2eu_func_80126654 = alias into
+  br2eu_psx_alias_body_80126234. Prime suspect: a FUNCTION-POINTER/JUMP
+  table read with the same uint8_t** 8-byte-index bug -> wild code jump:
+    battle.c:8995  (*(code*)(&PTR_LAB_801200b8)[uVar3])()
+    battle.c:10435 (&PTR_FUN_801b1734)[char_idx]
+    + data tables 2368/2370/6629/15133 (same stride bug, latent)
+  Two agents deployed: (a) comprehensive &PTR_*/PTR_FUN_*/PTR_LAB_*
+  audit+faithful-fix across game/*.c + versus re-verify; (b) read-only
+  trace pinning the exact table/index that yields 0x80122F0C.
+
+STATUS: versus->fight is now UNBLOCKED through init (was the N+85 SIGSEGV);
+remaining versus work is the in-fight 0x80122F0C wild-jump (PTR-table class)
+plus any post-fight progression issues. Attract remains stable (N+85).
