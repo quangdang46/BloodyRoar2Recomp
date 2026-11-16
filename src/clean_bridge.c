@@ -14,6 +14,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include "cpu_state.h"
 #include "interrupts.h"
 #include "psx_cycles.h"
@@ -70,6 +71,15 @@ void *guest_at(uint32_t addr)
       extern void guest_watch_block_tick(void);
       if (g_guest_watch_pending) guest_watch_block_tick(); }
     uint32_t phys = br2_phys(addr);
+    /* DIAG: vector-page access hunt (BR2 0x80000080 fight-init corruption).
+     * Clean-C stores bypass psx_write_*; guest_at() is the one funnel they
+     * all pass through. Log accesses landing in the vector page so the
+     * corrupting writer's caller can be symbolized. */
+    if (phys >= 0x80u && phys < 0xC0u) {
+        fprintf(stderr, "VECGA addr=0x%08X phys=0x%03X ra0=%p\n",
+                addr, phys, __builtin_return_address(0));
+        fflush(stderr);
+    }
     /* Low guest addresses (<0x10000 KUSEG) map to real main RAM phys
      * 0x0000-0xFFFF — valid, readable/writable PSX memory (kernel low
      * workspace AND game structures that legitimately live there, e.g. the

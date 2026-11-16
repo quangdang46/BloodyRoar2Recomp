@@ -7646,3 +7646,49 @@ ctrl+0x30) — likely generated fighter-resource code; check whether the
 offset-table section is loaded at all (CD sector drop? wrong section
 mapping? parse skip?). game/ani.c is only 116 lines — the real loader is
 generated or in battle.c/menu.c fighter-spawn path.
+
+=== SESSION N+21 — vector corruption root-caused: fighter+0xbc battle-struct ptr NULL ===
+
+NEW CRASH (fresh run, frame ~1567), distinct from N+20's .ANI dispatch crash:
+FAIL-FAST unknown dispatch addr=0x80000080 — the RAM exception vector was
+corrupted mid-fight-init, then the next IRQ dispatched the bad vector.
+
+EXACT WRITER FOUND via new instrumentation:
+- guest_at() diagnostic (src/clean_bridge.c) logged VECGA addr=0x00000082
+  ra0=post_battle_dispatch -> a CLEAN-C pointer store, not generated code.
+- post_battle_dispatch (menu.c:6655, guest 0x80154930) phase-0 runs
+  MW16(MB32(g2+0xbc)+0x82, -1) per player. g2=guest_of(&P1)=0x1F8000E8.
+- MB32(0x1F8001A4) [P1 fighter+0xbc] = 0 -> write target = guest 0x82 ->
+  br2_phys folds low addrs into RAM -> phys 0x82 = exception-vector page.
+  Writes 0xFFFF at vector+2 -> corrupts the lui/addiu stub -> next IRQ
+  (ra=0x8019A53C vsync path) dispatches 0x80000080 -> FAIL-FAST.
+
+LIVE STATE at crash (all verified via read_ram):
+- P1 fighter+0xbc (0x1F8001A4) = 0, P2 (0x1F8002AC) = 0.
+- ENTIRE fighter-struct tail +0xA0..+0xC8 = 0 for both players (per-fighter
+  battle/hitbox/collision struct ptrs never assigned).
+- SHARED battle struct _DAT_1f8000bc = 0x801F0270 is ALL ZEROS (first 32B)
+  -> battle_struct_init (menu.c:4564, writes +0x7c=1/+0x7a=0x1000/+0x82=-1)
+  NEVER ran on it.
+- Player phases = 0x300, fighter byte0 = active — PARTIAL init only.
+- CD was actively seeking/reading frames ~1558-1560 (resource load live or
+  stalled); async-op flag 0x801BDE40 = 0.
+
+ROOT CAUSE: versus->fight runs post_battle_dispatch battle phases on
+UNINITIALIZED battle/fighter structs. fighter+0xbc points to a per-fighter
+battle/hitbox struct that is never allocated/linked, and the shared battle
+struct 0x801F0270 is never battle_struct_init'd. The versus transition does
+NOT execute the full battle-init sequence (menu.c:690-729 case5/6:
+battle_struct_init/match_setup_apply/battle_state_init/per_side_setup/
+action_enter_fwd) before post_battle_dispatch phase-0 dereferences them.
+
+LIKELY UNIFIED WITH N+20: the .ANI offset-table zeros (N+20) and the
+fighter+0xbc battle-struct NULLs (N+21) are BOTH symptoms of incomplete
+fighter/battle resource init in versus->fight — consistent with the known
+CD deferred-coroutine / async resource-load stall (todo #17): resource-
+derived structs stay zeroed because the CD completion path never finishes.
+
+NEXT: determine whether versus->fight ISSUES the fighter battle-struct /
+resource load at all, and whether the async CD completion that would run
+battle_struct_init + assign fighter+0xbc is firing. Compare vs oracle.
+Do NOT patch fighter+0xbc or the vector — fix the missing init upstream.

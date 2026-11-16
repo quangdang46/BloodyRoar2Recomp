@@ -1629,6 +1629,13 @@ static void psx_write_word_raw(uint32_t addr, uint32_t val) {
 
     uint32_t phys = psx_phys_addr(addr);
 
+    /* DIAG: vector-page scribble hunt (BR2 fight-init 0x80000080 corruption). */
+    if (phys >= 0x80u && phys < 0xC0u) {
+        fprintf(stderr, "VECWR word addr=0x%08X phys=0x%03X val=0x%08X esp=0x%08X dspc=0x%08X\n",
+                addr, phys, (unsigned)val, effective_store_pc(), g_debug_last_store_pc);
+        fflush(stderr);
+    }
+
     /* The generated BIOS mirrors its exception trampoline to 0x80000000 during
      * boot. On hardware this mirror copy is not visible in RAM; only the real
      * exception vector at 0x80000080 is. Tomba 2 later passes buffer=0 to the
@@ -1822,6 +1829,13 @@ static void psx_write_half_raw(uint32_t addr, uint16_t val) {
         /* KSEG2 guard — see psx_read_word_raw. */
     if (addr >= 0xC0000000u) { g_kseg2_ignored_writes++; return; }
     uint32_t phys = psx_phys_addr(addr);
+
+    /* DIAG: vector-page scribble hunt (BR2 fight-init 0x80000080 corruption). */
+    if (phys >= 0x80u && phys < 0xC0u) {
+        fprintf(stderr, "VECWR half addr=0x%08X phys=0x%03X val=0x%04X esp=0x%08X dspc=0x%08X\n",
+                addr, phys, (unsigned)val, effective_store_pc(), g_debug_last_store_pc);
+        fflush(stderr);
+    }
 
     if (phys < RAM_SIZE) {
         debug_server_trace_write_check(phys, (uint32_t)read_ram_half(phys), (uint32_t)val, 2);
@@ -2157,6 +2171,13 @@ static void psx_write_byte_raw(uint32_t addr, uint8_t val) {
         /* KSEG2 guard — see psx_read_word_raw. */
     if (addr >= 0xC0000000u) { g_kseg2_ignored_writes++; return; }
     uint32_t phys = psx_phys_addr(addr);
+
+    /* DIAG: vector-page scribble hunt (BR2 fight-init 0x80000080 corruption). */
+    if (phys >= 0x80u && phys < 0xC0u) {
+        fprintf(stderr, "VECWR byte addr=0x%08X phys=0x%03X val=0x%02X esp=0x%08X dspc=0x%08X\n",
+                addr, phys, (unsigned)val, effective_store_pc(), g_debug_last_store_pc);
+        fflush(stderr);
+    }
 
     if (phys < RAM_SIZE) {
         debug_server_trace_write_check(phys, (uint32_t)ram[phys], (uint32_t)val, 1);
