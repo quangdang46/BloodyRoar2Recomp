@@ -439,12 +439,12 @@ extern char *s_time_out_in_decoding___80120e90;
 #define _DAT_1f8000c4   (*(uint32_t *)g__DAT_1f8000c4)
 #define _DAT_1f8000dc   (*(uint8_t *)g__DAT_1f8000dc)
 #define _DAT_1f800100   (*(uint8_t *)g__DAT_1f800100)
-#define _DAT_1f800104   (*(uint8_t *)g__DAT_1f800104)
+#define _DAT_1f800104   (*(uint32_t *)g__DAT_1f800104)
 #define _DAT_1f800110   (*(uint32_t *)g__DAT_1f800110)
 #define _DAT_1f800148   (*(uint8_t *)g__DAT_1f800148)
 #define _DAT_1f800154   (*(uint8_t *)g__DAT_1f800154)
-#define _DAT_1f800208   (*(uint8_t *)g__DAT_1f800208)
-#define _DAT_1f80020c   (*(uint8_t *)g__DAT_1f80020c)
+#define _DAT_1f800208   (*(uint32_t *)g__DAT_1f800208)
+#define _DAT_1f80020c   (*(uint32_t *)g__DAT_1f80020c)
 #define _DAT_1f800218   (*(uint32_t *)g__DAT_1f800218)
 #define _DAT_1f800250   (*(uint8_t *)g__DAT_1f800250)
 #define _DAT_1f80025c   (*(uint8_t *)g__DAT_1f80025c)
@@ -802,7 +802,7 @@ LAB_80170524:
               if (DAT_1f800098 == 1) goto LAB_80170524;
             }
             else if (DAT_1f800098 == 6) goto LAB_80170524;
-            prim_list_persp_step(_DAT_1f800104,iVar1 + 0x2040,iVar4,0xf,0x1f800028,0x1f80035c,
+            prim_list_persp_step((int *)guest_at(_DAT_1f800104),iVar1 + 0x2040,iVar4,0xf,0x1f800028,0x1f80035c,
                          ((int)((uint)DAT_1f800098 << 0x18) >> 0x15) + -0x7fe4e94c,iVar1 + 0x206c);
           }
         }
@@ -843,7 +843,7 @@ LAB_80170714:
               if (DAT_1f800098 == 1) goto LAB_80170714;
             }
             else if (DAT_1f800098 == 6) goto LAB_80170714;
-            prim_list_persp_step(_DAT_1f80020c,iVar1 + 0x2040,iVar4,0xf,0x1f800028,0x1f80035c,
+            prim_list_persp_step((int *)guest_at(_DAT_1f80020c),iVar1 + 0x2040,iVar4,0xf,0x1f800028,0x1f80035c,
                          ((int)((uint)DAT_1f800098 << 0x18) >> 0x15) + -0x7fe4e94c,iVar1 + 0x206c);
           }
         }
