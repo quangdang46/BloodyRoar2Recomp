@@ -9424,3 +9424,29 @@ heap_ptr_fixup sizes). If HW heapB staging uses a different base during
 fight, intro_movie_state's 0x800d0000 needs phase-gating. Player-arcade
 works (heapA presumably tops lower with fewer/different resources).
 Spawned follow-up agent on the heap-trajectory audit.
+
+### N+75 — attract-crash post-mortem: P1 pointers INTACT; P2 .ANI confirmed in kill-zone; dispatch table intact
+
+Reproduced attract crash on :4744, dumped guest RAM post-FAIL-FAST:
+
+- Crash: `unknown dispatch addr=0x0B808000 ra=0x00062409 a0=0x1F8000E8
+  a1=0x801F5328` (P1 ctrl + P1 motion).
+- P1 ctrl+0x30 FC_ANI=0x8007121C (safe low heapA). P1 motion 0x801F5328:
+  +0x00 MO_SEC0=0x80078D10 (=.ANI+0x7AF4, relocation correct),
+  +0x84/+0x88 stream PC=0x80071C52, +0xac=0x8007C28C — ALL point into
+  P1's own heapA .ANI region, values plausible.
+- Stream bytes @0x80071C52 = `04 05 b8 02 04 05 50 03 0a...` — valid
+  .ANI event opcodes, NOT garbage.
+- Handler table 0x801B4E68 entries [0..15] all valid 0x8017xxxx — table
+  itself intact.
+- P2 ctrl+0x30 FC_ANI=0x800D1020 (CONFIRMED in heapB 0x800D0000 staging
+  kill-zone); P2 ctrl+0x10=0x800D10BC inside same region.
+
+=> P1's .ANI/stream/dispatch-table are INTACT at crash. The wild
+dispatch 0x0B808000 (ra=0x00062409, both non-guest-code values) most
+likely originates from P2's event stream whose .ANI region (0x800D1020)
+is the heapB-staging overlap — OR a transient stream-state/handler-return
+corruption. This STRENGTHENS the heapB-stomp theory specifically for P2
+while showing P1 is clean. The fight dispatches both fighters' streams;
+the corrupt one is P2's. a0861f48 (heapA over-production) + 78d6700f
+(match-end/phase-loop) own the fix; 8432f37e owns versus-wedge forensics.
