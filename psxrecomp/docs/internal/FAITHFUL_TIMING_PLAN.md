@@ -8666,3 +8666,36 @@ Consider deleting/annotating dead ev path in a cleanup pass.
 ani_fixup/action_select were .ANI/action-path stubs — plausibly
 contributed to versus .ANI/stream corruption. Worth re-testing versus
 after the ph-flicker + CD-coroutine fixes land.
+
+### N+47 — versus->fight is a DETERMINISTIC ev_stream crash; arcade->fight WORKS
+
+Live-instance triage (ports queried + lldb bt) resolves the "nondeterministic
+wedge vs crash" framing into a crisp versus-specific defect:
+
+- port 4520  gs=8 ph=8 mode09b=0 sub09c=0  frame ADVANCING  -> arcade/attract
+  fight is ALIVE and rendering (gpu_ring_stats newest_frame advancing,
+  gp0_draw=5.8M). THE FIGHT ENGINE WORKS.
+- ports 4401/4404/4397  gs=8 ph=8 mode09b=2 sub09c=1  frame FROZEN(delta 0)
+  -> versus->fight. lldb bt on 96999(4401) + 54507(4397): BOTH halted in
+  IDENTICAL chain: battle_flow_state_machine -> fighter_frame ->
+  action_commit -> ev_stream_dispatch -> br2_call_generated ->
+  psx_unknown_dispatch -> psx_fatal_halt -> nanosleep.
+- port 4407 attract alive; port 4405 prior halt = same ev_stream crash.
+
+CONCLUSION: versus->fight is a REPRODUCIBLE crash (not a timing wedge) in the
+versus char-select -> fight handoff. fighter_frame is invoked as
+fighter_frame(&DAT_1f8000e8 / &DAT_1f8001f0 [P1/P2 scratchpad ctrl blocks],
+motion). ev_stream_dispatch reads op=*pbVar1 (pbVar1=guest_at(motion+0x84)
+= .ANI event-stream PC); corrupt stream PC/op -> h=*(0x801b4e68+op*4) OOB ->
+br2_call_generated(garbage) -> wild dispatch (seen: 0x80122F0C rodata ASCII,
+0x00120201 misaligned). Arcade binds the same fighters correctly, so the
+defect is in the VERSUS-ONLY asset/anim path: select_screen_tick / versus
+char-select P2 .ANI (FC_ANI) binding — consistent with N+43 heapB re-stage
+stomping P2's binding when DAT_1f800001 flickers 8->1->8 and re-enters the
+stage loader, leaving motion+0x84 pointing into reused sound/text data.
+
+NEXT (faithful): instrument ev_stream_dispatch to record motion+0x84 (guest
+stream PC), the op byte, and the resolved handler h on the versus crash;
+then trace which versus-only stage re-load frees/reuses the .ANI region that
+P2's motion+0x84 still references. Compare versus vs arcade FC_ANI bind
+addresses on a live pair. Do NOT bounds-check op (would mask = stub).
