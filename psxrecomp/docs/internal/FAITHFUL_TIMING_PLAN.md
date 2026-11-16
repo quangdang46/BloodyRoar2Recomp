@@ -9051,3 +9051,26 @@ progression (78d6700f); CD IRQ fidelity (afcfd8bf) is the secondary
 correctness thread. If round progression is faithful and the loop is
 legitimate multi-round play, then the crash is a resource/heap collision
 under sustained load — revisit N+49 heapA boundary.
+
+### N+59 — refinement: inner b92 is NOT stuck@12 — confirm_bookkeeping resets it to 0 each commit; the loop is round-cycling without match-end
+
+confirm_bookkeeping (menu.c:3842) writes *(u16*)(s0+0x92)=ph where ph is
+0x100/0x200/0x300/0x400 -> LOW BYTE ALWAYS 0. side_phase_commit calls it
+when 09b<4 (versus 09b=2 -> runs). So after case12->side_phase_commit->
+confirm_bookkeeping, inner b92 low byte resets to 0 -> next dispatch sees
+b92=0 -> case0 -> NEW round. battle_state_init does NOT touch +0x92 but
+confirm_bookkeeping does.
+
+=> the 6->7->8->(fight)->12->6 cycle is NORMAL per-round cycling, NOT a
+stuck phase. The real defect: the match never ENDS — the round-win counter
+t0+0xa4 (side_phase_advance, saturates 0xffff/-1 at threshold a0b=
+MB8(MB32(t0+0xc0)+0x10)) never reaches match-end, so rounds repeat forever.
+Likely cause: versus combat isn't actually progressing (fighters not
+fighting / no KO / round timer not resolving) -> no winner -> counter never
+saturates. Connects to resource-load: if fight .ANI/combat data is corrupt
+(.ANI stomp N+49) or missing (CD load), combat can't run -> instant/empty
+rounds -> infinite loop -> eventually IRQ/heap crash.
+
+78d6700f tracing win-counter/match-end; afcfd8bf on CD-IRQ. The unifying
+suspect remains: versus fight resources/combat state not fully initialized
+-> rounds can't resolve -> phase loop.
