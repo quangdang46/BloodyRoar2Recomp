@@ -9299,3 +9299,21 @@ call sites now execute the real 1572-byte/74-block guest body (20+ jals
 into generated callees, scratchpad +0x1F80008C halfword init, IRQ-check
 block boundaries — a faithful clean port is a future RE task, delegation
 is the correct interim per AGENTS.md §4).
+
+### N+71 — ATTRACT-mode fight ALSO crashes with same wild-dispatch -> bug is UNIVERSAL to fight-entry, not versus-specific
+
+Plain headless run (NO input -> title -> attract demo -> fight) crashes at
+frame 1871 with the IDENTICAL signature: FAIL-FAST unknown dispatch
+addr=0x0B808000 ra=0x00062409 a0=0x1F8000E8(P1) a1=0x801F5328(P1 motion)
+inside battle_struct_init. gs byte read = 0x02.
+
+=> The .ANI/event-stream wild-dispatch is NOT a versus-only bug. Attract
+demo AND versus->fight BOTH crash; only the specific nav_arcade char/
+timing path reaches a stable fight. The unified root is the
+resource-completion gap: whenever a fight-entry path reaches battle init
+with an .ANI/FC_ANI bind that didn't fully complete (DeliverEvent-
+starved load OR stale select-preview pointer), the motion/stream dispatch
+jumps to garbage. Fixing the DeliverEvent/resource-completion link
+(22f3537a) + the stale-FC_ANI re-bind should fix ALL fight paths, not just
+versus. This RAISES the priority of the resource-completion fix — it is
+the difference between "some fights work" and "every fight works."
