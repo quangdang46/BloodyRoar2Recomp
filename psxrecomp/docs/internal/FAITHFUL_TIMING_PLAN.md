@@ -10104,3 +10104,27 @@ primitive/render task provisioning gap for versus P2's fighter channel-script.
 Attract CPU fighters provision differently -> stable 106K+ frames.
 NEXT: find who writes task-desc +0x1c invoke-list for versus P2 channel script
 and why it's skipped/garbage. a497e6a0 owns battle.c/fight.c/action.c scope.
+
+## N+94 — SECOND fault site + full versus->fight mechanism mapped
+
+Live versus run (port 4920) reached gs=8 ph=8 FIGHT then wedged in VECGA storm
+(37K+ exceptions, debug server starved). Two fault sites, BOTH verified faithful:
+
+1. prim_task_run (0x8018A4F8, battle.c:13216): *(desc+0x1c) invoke-list ptr =
+   0xAC/0xBC -> guest_at(near-null). ra0 -> _prim_task_run+0x5c.
+2. channel_script_emit_chain_gate (0x80134f2c, battle.c:17409): iVar3 =
+   *(param_4+0xbc) is a small garbage value; guest_at(iVar3+0x4a)/(iVar3+0x4e)
+   -> 0xBD VECGA. ra0 -> _channel_script_emit_chain_gate+0x24.
+
+Generated br2eu_func_80134F2C verified instruction-identical (lw s5,0xbc(a3);
+lw a0,0/8(s1); lh v0,0x26(s1); lh v0,0x4a/0x4e(s5)). BOTH ports faithful.
+
+ROOT: versus P2's fighter channel-script/model context (param_3, param_4) has
+UNPOPULATED pointer fields — *(param_4+0xbc) garbage, *(param_3+8) task-array
+descriptors' +0x1c garbage. The per-frame render emit chain reads them -> VECGA.
+
+param_3/param_4 are built upstream by the fighter model/channel-script
+instantiation during versus->fight setup. Attract CPU fighters provision the
+same contexts correctly -> stable. NEXT: find the versus P2 context builder
+that skips/under-fills param_3/param_4 (likely fighter_spawn_setup /
+battle_config_eval / model-load path). Agents f56f8eec + a497e6a0 on it.
