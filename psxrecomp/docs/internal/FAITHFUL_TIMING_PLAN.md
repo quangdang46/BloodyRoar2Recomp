@@ -8810,3 +8810,36 @@ FIX (faithful, owned by ph-writer agent 34845d78 + heapA agent 03b98d5b):
 stop the DAT_1f800001 8->1->8 re-entry so intro_movie_state/heapB staging
 runs ONCE before fighter .ANI bind; OR make heapB re-stage not clobber a
 bound .ANI region. Do NOT bounds-check ev_stream_dispatch op (masks = stub).
+
+### N+50 — versus→fight heap trajectory (vs_trace.jsonl): intro_movie_state re-runs at gs=8 ph=0, drops heapB to 0x800d0000
+
+Time-series heapA/heapB cursor + gs/ph for versus→fight:
+  t=1.33 gs=5 ph=0  heapA=0x80010000 heapB=0x800dc800   (match/attract reset)
+  t=2.17 gs=5       heapA=0x8002e440 heapB=0x800dc800   (resource load grows heapA)
+  t=3.21 gs=5 ph=2 sub=1 b09c=1                          (versus flag set)
+  t=3.35 gs=8 ph=241 heapA=0x8004c880 heapB=0x800dc800   (-> battle_flow)
+  t=3.90 gs=8 ph=0  heapA=0x800680dc heapB=0x800d0000   *** heapB -> 0x800d0000 ***
+  t=4.86 gs=8 ph=8  heapA=0x800680dc heapB=0x800d0001   (fight; heapB stays ~0x800d0000)
+
+=> versus->fight ENTERS gs=8 (battle_flow/select_screen_tick) and at ph=0
+re-runs intro_movie_state -> _DAT_801e3cfc(heapB)=0x800d0000 (game.c:1832).
+heapB then STAYS ~0x800d0000 through fight (ph=8). menu_res_load_sm's
+heapB=0x800f0000 (save.c:4150) either ran earlier or its value was
+overwritten by the intro_movie re-run.
+
+heapB base writers (clean tree):
+  game.c:1832  intro_movie_state        -> 0x800d0000   <-- versus fight value
+  game.c:866   (-0x7fff0000 = 0x80010000)
+  menu.c:2593  attract_stage_load_step  -> 0x800dc800   <-- arcade/match value
+  save.c:*     menu_res_load_sm/save    -> 0x800f0000
+
+arcade->fight works with heapB=0x800dc800 (attract_stage_load_step /
+match_loop path). versus->fight is left at intro_movie's LOWEST arena
+0x800d0000, which sits squarely in heapA's growth path -> P2 .ANI S0
+@0x800d6e08 lands inside the staged file-0x14/sound region -> stomped.
+
+OPEN (faithful question): on HW does versus->fight (a) run intro_movie's
+0x800d0000 staging and still place P2 .ANI elsewhere (heapA bounded /
+different alloc), or (b) reach the fight via a path that resets heapB to
+0x800dc800/0x800f0000 like arcade? The versus ph-writer agent + heapA
+trajectory agent are resolving which.
