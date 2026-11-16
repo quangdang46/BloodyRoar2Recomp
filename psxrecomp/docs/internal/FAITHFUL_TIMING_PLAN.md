@@ -8274,3 +8274,51 @@ ch4-SPU done? ch3-CDROM done? SIO? DICR=0x00900000 shows only ch4
 enable+master; need spec->IRQ-bit map vs what real HW raises during
 versus→fight multi-stream. SPU agent (5f215e7d) + ordering agent
 (225dc84c) + port-audit agent (7cc2edcc) still running.
+
+### Session N+39 — versus→fight ordering resolved: shared loader-stage byte 0x1f80008c + attract-pipeline detour
+
+Agent 225dc84c ra-provenance map (file_load len = caller ra =
+g_game_state case): case6 0x801265F4=battle_intro_flow→menu_res_load_sm;
+case5 0x80126594=match_loop→attract_stage_load_step;
+case8 0x80126664=battle_flow→select_screen_tick→intro_movie_state.
+
+Faithful versus→fight order (decomp_snap seq):
+- gs6 battle_intro_flow→menu_res_load_sm: ALL fight .ANI/.ACT into heapA
+  (JEN/MAR preview pair, then BUS/YUG fight pair; P2 .ANI->0x800D2F70,
+  heapA tops 0x8010D2E4). st00 resets heapA=0x80010000 heapB=0x800f0000.
+- gs5 match_loop→attract_stage_load_step: heapA RESET->0x80010000,
+  heapB->0x800DC800, TITLE files->0x800DC800.
+- gs8 battle_flow→select_screen_tick→intro_movie_state: heapB->0x800D0000,
+  files 0x14/0x8B/0x16->0x800D0000 STOMP the high .ANI -> crash ~5368.
+
+heapB=0x800D0000 stomp is GENERATED-FAITHFUL (intro_movie_state stores
+verified vs SLES_017.22_full_02.c:6560). NOT the bug.
+
+ATTRACT SURVIVAL MECHANISM (the key): every attract cycle does
+[resources high] -> [heapA reset] -> [file 0x13 + FULL fighter-resource
+RELOAD ra=0x801265F4 into fresh low heapA] -> fight. The reload re-binds
+.ANI->FC_ANI so the stomped copy is dead weight. Versus detours through
+gs5/gs6 attract pipeline and crashes BEFORE its post-movie reload.
+
+SHARED-BYTE ALIASING (verified clean+generated): guest byte 0x1f80008c
+is ONE stage variable shared by intro_movie_state (game.c:1796-1872,
+-1=done) AND menu_res_load_sm (save.c:4114 reads s1+0x8c, <0 early-
+return) AND match_loop resets it to 0 at entry (game.c:1450). So after
+the movie sets -1, a subsequent menu_res_load_sm SKIPS unless match_loop
+(or another resetter) zeroes it first. The faithful reload requires a
+gs5->gs6 cycle AFTER the movie.
+
+LIVE arcade wedge confirms: 0x1f80008c=0xffff (-1) at freeze,
+pad_state_07c=0 (attract-menu gate 0x840 clear — attract detour NOT
+armed in arcade), DAT_1f800098=5.
+
+OPEN (agent prime suspects):
+1. match_loop clean port vs generated br2eu_func_80147034 — the
+   DAT_1f800001==2 -> attract-menu transition + _DAT_1f80007c&0x840 pad
+   gate; phantom pad state in 2P versus could arm attract_menu_dispatch
+   -> g_game_state=8 erroneously.
+2. battle_intro_flow (menu.c:1857) state2 fight-rounds engagement for
+   versus vs yielding to attract; leftover fprintf debug at 1871/1956.
+3. Whether faithful HW reloads .ANI post-movie (needs oracle heapA-top
+   or a versus-capable oracle — oracle read_ram returned stale constants).
+4. State-byte audit across the 5+ SMs sharing DAT_1f800001/08c/08e/090.
