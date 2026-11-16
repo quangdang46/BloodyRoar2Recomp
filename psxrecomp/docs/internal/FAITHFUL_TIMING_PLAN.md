@@ -8527,3 +8527,50 @@ wedge. dicr=0x00900000 steady (bit23+bit20) across snapshots.
 Open: which single ch3 transfer stalls, and does its complete_transfer
 fire? Agents 23003b64 (ph-flicker) + 03b98d5b (heapA/CD) + 7cc2edcc
 (latent) still running.
+
+### N+44 — CD wedge root-caused to ORPHANED deferred-IRQ coroutine (this session)
+
+Live-traced the :4405 versus->fight TestEvent wedge end-to-end (fntrace +
+irqctx_ring + read_ram + generated disasm). The CD file read is NOT a DMA
+transfer — it is a PIO read driven by a per-sector coroutine, and the
+completion signal is a kernel deferred-interrupt coroutine that is never
+resumed.
+
+Confirmed chain (all live-verified):
+- Read data DOES arrive: buffer @0x800d2800 fully populated, sectors-remaining
+  DAT_801bcb94 5->0. cdrom_state frozen at sector_read_pos=2060/2340 with
+  sector_available=1 + response_count=1 (game stopped issuing PIO reads
+  mid-sector because its coroutine is blocked, not because the drive stalled).
+- cd_file_read_seq -> cd_seek_complete_poll(a0=1) waits on
+  cd_seek_state_machine(@0x801bde38) for event flag 0xf0000009.
+- 0xf0000009 is delivered ONLY by cd_dma_chan_reset (0x8019b7e8) via
+  cd_bios_svc_07, reached through cd_intc_dispatch's channel-done handler.
+- cd_intc_dispatch (0x8019a8ec) is reached ONLY via the deferred coroutine:
+  cd_chan_full_init(0x8019a814) -> cd_ctx_save(@0x801bcd50, resume PC
+  0x8019a87c) -> [CD IRQ] -> cd_ctx_restore(0x8019adcc) -> re-enter
+  @0x8019A87C -> cd_intc_dispatch -> DeliverEvent.
+
+THE BREAK: cd_chan_full_init IS registered (ptr @0x801bdd8c in the CD driver
+object @0x801bdd80) and its ctx frame IS armed (@0x801bcd50 ra=0x8019a87c),
+but cd_intc_dispatch / cd_ctx_restore / cd_chan_full_init ALL have zero
+invocations (fntrace total=0 over 3s) despite CDROM IRQs firing continuously
+(irqctx_ring istat=0x4, take_pc=0x8019A648/0x8019A600, same_thread=1,
+restored=1). The kernel/deferred-resume that should call cd_ctx_restore on CD
+IRQ is not wired -> coroutine never resumes -> no DeliverEvent -> TestEvent
+spin -> gs=8 ph=8 frozen.
+
+Secondary: even if cd_intc_dispatch ran, its mask = *ptrA(0x1f801070)=0 &
+*ptrB(0xd) & mask(0xd) = 0 -> no handler bits -> nothing dispatched. ptrA
+reads the CD interrupt-pending status as 0 (IRQ may be acked before dispatch,
+or ptrA targets the wrong status source).
+
+NOTE vs N+43: this CD wedge is a REAL defect (any TestEvent(0xf0000009)
+waiter wedges) but versus->fight is nondeterministic — some runs hit this
+CD wedge, others hit the N+43 DAT_1f800001-flicker -> heapB-stomp -> .ANI
+corruption crash. Likely shared root = incomplete async init / IRQ-resume
+fidelity; the flicker is the documented PRIMARY versus defect (subagent
+23003b64 / vs_watch.py hunting the 0x1f800001 writer).
+
+NEXT: find what should invoke cd_ctx_restore/cd_chan_full_init on CD IRQ —
+the kernel deferred-handler dispatch (OpenBIOS intr path) or a game-registered
+slot. Compare OpenBIOS interrupt dispatch vs DuckStation kernel model.
