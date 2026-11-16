@@ -8843,3 +8843,34 @@ OPEN (faithful question): on HW does versus->fight (a) run intro_movie's
 different alloc), or (b) reach the fight via a path that resets heapB to
 0x800dc800/0x800f0000 like arcade? The versus ph-writer agent + heapA
 trajectory agent are resolving which.
+
+### N+51 — PRECISE mechanism: intro_movie_state re-loads file 0x14 -> 0x800D0000 AFTER fight .ANI bind, stomping P2 .ANI
+
+decomp_snap file_load trace (ra = cd_file_load_sm call-site return addr):
+  ra=0x801265F4 = fighter/resource loader (menu_res_load_sm/save_state_machine_alt) — 62 calls
+  ra=0x80126594 = staging loader — 24 calls
+  ra=0x80126664 = intro_movie_state (game.c) — 8 calls; loads file 0x14/0x15/0x16 + the -1 reset
+
+Last versus->fight cycle ordering (seq):
+  5305  file 0x20 -> 0x800D2F70   (heapA .ANI/resource, ra=0x801265F4)
+  5318  file 0x24 -> 0x800DEAC8   (heapA .ANI/resource, ra=0x801265F4)
+  5321  file 0x8A -> 0x80010000   (heapA reset via ra=0x80126594)
+  5322  file 0x90 -> 0x800DC800   (staging)
+  5329  file 0x96 -> 0x800DC800   (staging)
+  5336  file -1  -> reset         (cd_file_load_sm(-1,0), ra=0x80126664 = intro_movie_state:1827)
+  5337  file 0x14-> 0x800D0000    (intro_movie_state:1835, heapB=0x800d0000 :1832)
+  -> then 0xb stream_block_decode grow heapA from 0x80010000 (game.c:1839-1841)
+
+file 0x14 is loaded to 0x800D0000 TWICE in the trace: seq=107 (first
+intro) and seq=5337 (re-run). The re-run happens AFTER the fight .ANI
+resources were bound to high heapA (0x800D2F70/0x800DEAC8). intro_movie_state
+hardcodes heapB=0x800d0000 (game.c:1832) and heapA=0x80010000 (:1831), then
+decodes the cinematic into heapA. The file-0x14 staged blob + decoded
+stream data occupy 0x800D0000+, overlapping P2's .ANI S0 @0x800D6E08.
+
+=> versus->fight interleaves [fight .ANI bind to high heapA] with
+[intro_movie_state cinematic staging at fixed 0x800D0000]. On HW the two
+must be sequenced so they don't collide — either the cinematic fully
+completes before fight .ANI bind, or heapA .ANI is placed below 0x800D0000.
+The versus ph-writer agent (34845d78) is naming the DAT_1f800001 writer that
+drives this interleave; heapA agent (03b98d5b) has the over-production side.
