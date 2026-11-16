@@ -11,9 +11,10 @@
 # NOTE: reaching ph==8 currently triggers a guest pc=0 exception storm in
 # fight init (see freeze_check pczero_count) — the versus->fight handoff bug.
 import socket,json,time,sys
+PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 4370
 def cmd(c):
     for _ in range(50):
-        try: s=socket.create_connection(('127.0.0.1',4382),10); break
+        try: s=socket.create_connection(('127.0.0.1',PORT),10); break
         except OSError: time.sleep(0.2)
     else: return {}
     s.sendall((json.dumps(c)+'\n').encode()); s.settimeout(10); b=b''

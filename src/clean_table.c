@@ -269,7 +269,7 @@ extern uint32_t attr_word_decode(uint8_t *param_1);
 }
 static void wrap_8012a72c(CPUState *cpu) {
 extern uint32_t pad_state_refresh(intptr_t param_1);
-    cpu->gpr[2] = (uint32_t)(pad_state_refresh(((intptr_t)cpu->gpr[4])));
+    cpu->gpr[2] = (uint32_t)(pad_state_refresh(((intptr_t)guest_at(cpu->gpr[4]))));
 }
 static void wrap_8012a884(CPUState *cpu) {
 extern void cursor_sprite_anim(uint8_t *param_1);
@@ -1042,7 +1042,7 @@ extern void match_loop(void);
 }
 static void wrap_8014751c(CPUState *cpu) {
 extern uint32_t attract_menu_dispatch(intptr_t param_1,uint param_2);
-    cpu->gpr[2] = (uint32_t)(attract_menu_dispatch(((intptr_t)cpu->gpr[4]), ((uint)cpu->gpr[5])));
+    cpu->gpr[2] = (uint32_t)(attract_menu_dispatch(((intptr_t)guest_at(cpu->gpr[4])), ((uint)cpu->gpr[5])));
 }
 static void wrap_801479c4(CPUState *cpu) {
 extern void gpu_prim8_emit(uint32_t param_1,int32_t param_2,int32_t param_3,
@@ -2186,7 +2186,7 @@ extern uint32_t FUN_8016fcb0(uint32_t a0);
 }
 static void wrap_8016fcc4(CPUState *cpu) {
 extern void battle_flow_state_machine(intptr_t param_1);
-    battle_flow_state_machine(((intptr_t)cpu->gpr[4]));
+    battle_flow_state_machine(((intptr_t)guest_at(cpu->gpr[4])));
 }
 static void wrap_801709fc(CPUState *cpu) {
 extern uint32_t menu_res_load_sm(uint32_t a0,uint8_t *s4,uint8_t *s5,int32_t s2);
