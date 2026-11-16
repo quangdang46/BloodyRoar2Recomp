@@ -1010,3 +1010,31 @@ correlate DeliverEvent seqs vs spu_ta handshake seqs to learn whether the
 4th ch4 kick is absent or its DeliverEvent found slot8 disabled; ALSO catch
 the misaligned-jump source PC (which jr/jalr loaded 0x30001) via cyc_watch
 armed on the IRQ entry.
+
+=== N+31 — versus->fight IN-FIGHT wedge: decisive data = ch4/SPU stream kick ABSENT ===
+Now past fighter spawn (gs=8 ph=8, valid .ANI both fighters). Wedge moved to
+the IN-FIGHT CD/SPU streaming completion: cd_seek_complete_poll spins
+TestEvent(slot8=F0000009/0x20) forever. Live ground truth on wedged proc:
+- dma_state: ch4 (SPU stream) madr=0xDDE60 bcr=0x03490010 chcr=0x201
+  active=0 remaining=0 -> CONFIGURED but NEVER KICKED (no start bit).
+  ch3 (CD data) also idle. Only ch2 (GPU OT) active.
+- dicr=0x00900000 = bit20(ch4 IRQ en)+bit23(master) -> game DID arm ch4 IRQ.
+- spu_ta total=0 entries=[] -> SPU stream path never transferred all session.
+- cdrom_state: last CD cmd Pause(0x09) issued+completed frame2313; IRQ type3
+  processed (cd_response_process pc 0x8019638C/8C/A8 ran); then CD silent.
+  resp_count=1 sector_available=1 (partial 2060/2340) irq_flag=0 i_stat=0.
+- irqctx: VBlank(0x1)+CDROM(0x4) IRQs still taken every frame at valid
+  resume PCs; DMA IRQ(0x8) ceased ~frame1716 (unrelated GPU/other ch).
+=> CONFIRMS doc hypothesis (b): the stream completion is never PRODUCED
+   because the ch4/SPU DMA kick never fires upstream — NOT a dropped
+   DeliverEvent (slot8 ENABLED+matching would accept it). The game's custom
+   streaming engine (register block via ptr @0x801bdeb0, channel-4 SPU
+   stream + channel-3 CD data) gates the ch4 kick on a condition that is
+   never met in-fight. cd_chan_reg_init arms 0x801bdee4=1 dee8=0 deec=0;
+   deec is the completion flag cd_state9_store sets on finish.
+NEXT (decisive): find the ch4 kick site + its gate. The kick writes CHCR
+start for channel4; trace which guest fn issues it (dma_reg_write pc for
+ch4 CHCR 0x1F8010D8) and what SPU/status poll (SPUCNT / blk+0xd7 &0x7ff
+idle wait in cd_chan_reg_init) precedes it — determine whether the gate
+reads a status bit our SPU/CD emulation never sets, or whether the kick
+code path is unreached. Compare vs oracle at same point.
