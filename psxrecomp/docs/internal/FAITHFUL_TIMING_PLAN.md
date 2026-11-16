@@ -6989,3 +6989,45 @@ runs during the wedge. Suspects: SPU-voice/ADPCM decode completion
 gating the CD feed, or a channel event whose IRQ is masked/coalesced.
 The debug-server commands used in N+6 (dma_chan_hist/regwin/evcb) are
 NOT in the current build — re-add as proper debug commands if needed.
+
+### Session N+8 — REFRAME: NO mode is genuinely playable; FC_ANI=0 hollow fight
+
+versus->fight transition crashes are FIXED (fed8fdf, a62b16a) and both
+modes reach gs=8 ph=8. BUT live memory proves neither produces a real
+fight — the "playable" milestone is NOT met.
+
+LIVE EVIDENCE (arcade, gs=8 ph=8 sustained, ~98% CPU):
+- battle_flow_state_machine substate DAT_1f800001=8 = live per-frame
+  battle loop (fighter_contact_resolve/pair_update/camera/hud all run).
+- Fighter ctrl structs at scratchpad 0x1f8000e8 (P1) / 0x1f8001f0 (P2):
+  link/resource ptrs populated (+0x28 fighter-def, +0x2c opponent,
+  +0x38 S5, +0x3c motion, +0x44/48 script) BUT every combat field = 0
+  (flags/pos/HP) and the action-state block @+0x3c (0x801f55c0/0x801f5704)
+  is ALL ZEROS.
+- SMOKING GUN: FC_ANI = ctrl+0x30 = guest 0x1f800118 = 0x00000000 for
+  BOTH fighters — the .ANI animation-stream pointer was NEVER bound.
+  action.c action_switch computes stream=FC_ANI+off=0 -> empty action.
+  fighter_state_tick reads action-id @motion+6 = 0; position +0x4e = 0.
+- Selectors DAT_1f800099 (char/anim id)=0, DAT_1f80009a (action)=0,
+  DAT_1f80009b..9f=0. fighter_anim_table_init(0)/action_enter_fwd(...,0)
+  ran with NO valid character data.
+- Input (attack/direction) produces NO fighter-state change.
+
+ROOT CAUSE (matches N+5e/N+5d, now confirmed live in BOTH modes):
+the select->battle .ANI->FC_ANI bind is SKIPPED. per_side_setup(3,0)
+(menu.c:4603) -> record_table_select + mode-dispatch call_guest(fn,
+s0=0x801f04a8, 0x1f800000) via table 0x801b1774[idx=(s8)B[0x98]*4].
+The bind that writes 0x1f800118 (P1) / 0x1f800220 (P2) never fires or
+writes 0. Without FC_ANI the fighters are allocated+linked shells with
+no animation/action/combat data -> battle_intro_fsm waits forever ->
+hollow fight at high CPU, no interactivity.
+
+versus ADDITIONALLY deadlocks earlier on the N+6 CD/SPU channel-event
+stall during its heavier resource load (bfrd_set=1274 vs clr=13).
+
+NEXT: trace the .ANI->FC_ANI write. Candidates: the call_guest dispatch
+in per_side_setup, record_table_select, fighter_rec_fetch_apply, or the
+character-record .ANI loader. gwatch on 0x1f800118/0x1f800220 during
+arcade->fight will show whether ANY write fires and from which PC.
+The uncommitted game/action.c reset() work (ctrl+0x14 player-block +
+battle-mode adj) is related in-progress fighter-init fix — preserve it.
