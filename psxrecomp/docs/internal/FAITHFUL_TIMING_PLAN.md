@@ -9178,3 +9178,16 @@ isn't signaled. Trace cd_intc_dispatch handler-table dispatch: which of the
 DeliverEvent. Suspect: the completion reason's handler isn't installed, or
 cd_ctx_restore resumes to the wrong continuation, or the load waits on a
 different event class than what's delivered.
+
+### N+65 — DeliverEvent source pinpointed: cd_dma_chan_reset @0x8019b7e8
+
+The ONLY path that fires BIOS DeliverEvent(0xF0000009,0x20) is
+cd_dma_chan_reset (game/cd.c:5008, guest 0x8019b7e8): it polls CDMMIO
+status (blk+0x1aa off 0xd5) bits 0x30 until clear (cap 0xf01), then either
+call_guest(DB32G(0x801bdee8),0xf0000000,0) if a callback is installed, else
+cd_bios_svc_07(0xf0000009,0x20). No direct C caller — reached via guest
+dispatch (DMA-done/channel-reset handler table). If this fn isn't invoked
+on ch3 CD-DMA completion, or DB32G(0x801bdee8) holds a stale/wrong callback,
+DeliverEvent starves -> cd_file_load_sm spins -> versus wedge. Spawned
+focused agent 22f3537a to trace which of (a-e) breaks the link.
+Arcade->fight re-verified stable (gs=8 ph=8, frames advancing, no storm).
