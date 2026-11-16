@@ -1480,7 +1480,7 @@ LAB_80130048:
         *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_4 + 0x24) ))= 0x168;
         gte_cw_d000_set(0x168);
       }
-      dual_target_track_b((int)(uintptr_t)param_1,(int)(uintptr_t)param_2,(int)(uintptr_t)param_3);
+      dual_target_track_b((int)(uintptr_t)param_1,(int)guest_of(param_2),(int)guest_of(param_3));
     }
     else {
       if (*(short *)guest_at((uint32_t)(uintptr_t)((param_4 + 0x24) ))!= 0x168) {
@@ -1488,7 +1488,7 @@ LAB_80130048:
         u16_step_toward((ushort *)guest_at((uint32_t)(param_4 + 0x24)),(ushort *)(uintptr_t)local_28,10);
         gte_cw_d000_set((int)*(short *)guest_at((uint32_t)(uintptr_t)((param_4 + 0x24))));
       }
-      dual_target_track((int)(uintptr_t)param_1,(int)(uintptr_t)param_2,(int)(uintptr_t)param_3);
+      dual_target_track((int)(uintptr_t)param_1,(int)guest_of(param_2),(int)guest_of(param_3));
     }
     break;
   case 4:
@@ -1659,12 +1659,12 @@ LAB_80131b40:
   case 8:
     *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_4 + 0x24) ))= 0x168;
     gte_cw_d000_set((undefined4)*(short *)guest_at((uint32_t)(uintptr_t)((param_4 + 0x24))));
-    camera_track_shot((int)(uintptr_t)param_1,(int)(uintptr_t)param_2,(int)(uintptr_t)param_3);
+    camera_track_shot((int)(uintptr_t)param_1,(int)guest_of(param_2),(int)guest_of(param_3));
     break;
   case 9:
     *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_4 + 0x24) ))= 0x168;
     gte_cw_d000_set((undefined4)*(short *)guest_at((uint32_t)(uintptr_t)((param_4 + 0x24))));
-    camera_track_shot((int)(uintptr_t)param_1,(int)(uintptr_t)param_3,(int)(uintptr_t)param_2);
+    camera_track_shot((int)(uintptr_t)param_1,(int)guest_of(param_3),(int)guest_of(param_2));
     break;
   case 10:
   case 0xb:
@@ -1938,7 +1938,7 @@ switchD_801306ac_caseD_3:
   case 0xc:
   case 0xd:
 switchD_8012fb70_caseD_c:
-    camera_track_step((int)(uintptr_t)param_1,(int)(uintptr_t)param_2,(int)(uintptr_t)param_3);
+    camera_track_step((int)(uintptr_t)param_1,(int)guest_of(param_2),(int)guest_of(param_3));
     break;
   case 0xe:
   case 0x10:
@@ -3252,7 +3252,7 @@ void fighter_state_tick(uint *param_1,undefined4 param_2,int param_3)
   else {
     uVar4 = 0;
     if ((*param_1 & 0x8080) == 0) {
-      fighter_script_fsm((int)(uintptr_t)param_1,uVar5,(int *)guest_at(param_1[0xf]),param_2);
+      fighter_script_fsm((int)guest_of(param_1),uVar5,(int *)guest_at(param_1[0xf]),param_2);
       uVar4 = *(ushort *)guest_at((uint32_t)(uintptr_t)((param_1[0xf] + 6)));
       uVar2 = uVar4 & 0x8000;
       goto LAB_8017fca0;
@@ -10385,7 +10385,7 @@ LAB_801354fc:
             }
           }
 LAB_80135504:
-          gte_xform_add_off((int)(uintptr_t)param_1,&local_38,(int *)&local_44);
+          gte_xform_add_off((int)guest_of(param_1),&local_38,(int *)&local_44);
           setCopControlWord(2,0x2800,local_44);
           setCopControlWord(2,0x3000,local_40);
           setCopControlWord(2,0x3800,local_3c);
@@ -14370,8 +14370,11 @@ int tween_track_alloc(int param_1,undefined2 param_2,undefined4 param_3,undefine
       *(undefined4 *)(puVar4 + 0x10) = param_3;
     }
     /* param_4 is a GUEST address (keyframe descriptor); resolve fields via
-     * guest_at and store it as a 32-bit guest pointer, not a host ptr. */
-    uint32_t p4g = (uint32_t)(uintptr_t)param_4;
+     * guest_at and store it as a 32-bit guest pointer, not a host ptr.
+     * It may arrive as a guest address in pointer costume (clean callers)
+     * or as a host pointer (clean_table wrap); br2_gaddr yields the
+     * canonical guest address for both. */
+    uint32_t p4g = br2_gaddr(param_4);
     *(uint32_t *)((char *)puVar4 + 0x18) = p4g;
     *(undefined4 *)((char *)puVar4 + 0x24) = *(uint32_t *)guest_at(p4g + 8);
     *(undefined4 *)((char *)puVar4 + 0x28) = *(uint32_t *)guest_at(p4g + 12);
