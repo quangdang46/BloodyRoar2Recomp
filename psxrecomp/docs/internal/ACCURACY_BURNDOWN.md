@@ -4043,3 +4043,55 @@ select the chan_reset branch. Arm 0x8015caa8 + 0x8015d69c + read the flow-SM
 state cell; compare vs a WORKING mode (arcade/attract) if one reaches audio.
 The nondeterministic SIGSEGV/FAIL-FAST variants are downstream of the same
 incomplete-init (bad struct fields -> bad fn ptrs).
+
+=== SESSION N+43 — versus->fight WEDGE pinpointed: CD-ROM DMA mid-sector stall ===
+
+Live-verified on wedged instance (:4405, gs=8 ph=8 frozen):
+
+DMA state:
+  ch3 (CDROM) madr=0x000D2800 bcr=0x00010200 chcr=0x00000000 active=0 rem=0
+  ch4 (stream) madr=0x000DDE60 bcr=0x03490010 chcr=0x00000201 active=0 rem=0
+  dicr=0x00900000 dpcr=0x3B3BBBBB
+
+CD-ROM state:
+  reading=0  stat=0x02  request=0x80  i_stat=0x00000000 (NO IRQ pending)
+  pending cmd=0x09 (Pause) phase=1
+  last_sector lba=8769 size=2340 mode=0xA0 have_raw=1
+  sector_read_pos=2060   <-- STALLED MID-SECTOR (of 2340)
+  ring_dropped=1181  bfrd_set=2860 bfrd_clear=13
+
+MECHANISM (fully traced):
+  cd_file_read_seq (0x801565ec, generated coroutine) issues sector reads via
+  0x8019D4xx register ops then spins in kernel TestEvent(0x801bde38) waiting
+  for event class 0xF0000009 spec 0x20.
+  That event is delivered ONLY by cd_dma_chan_reset (0x8019b7e8):
+      if (@0x801bdee8 != 0) call_guest(@0x801bdee8,0xf0000000,0)
+      else cd_bios_svc_07(0xf0000009,0x20)   // DeliverEvent
+  cd_dma_chan_reset runs on CD-DMA channel completion. It NEVER fired (armed
+  in fntrace, 0 hits) because the sector DMA stalls mid-transfer at byte
+  2060/2340 -> no completion IRQ (i_stat=0) -> no DeliverEvent -> TestEvent
+  spins forever -> gs=8 ph=8 wedge.
+
+CONFIRMED via guest RAM on wedge:
+  @0x801bdeec (state-9 cb) = 0x0   (audio_seq_reset never armed)
+  @0x801f46f4 = 0x0                (chan_reset_register never ran; it sets 0x200)
+  => chan_reset_register (0x801582c0) never invoked -> cd_state9_store
+     (0x80158244=audio_seq_reset) never armed -> ch4 kick path dead.
+  The audio arm is callback-driven via flow SMs (save_flow_state_machine
+  0x8015d420 <- dialog_msg_dispatch 0x8015caa8; and 0x8015d69c) which are
+  clean_table+fnmap wired but NEVER called — even during 45s of attract/title
+  (fntrace total=0). The whole 0x8015xxxx media-flow module is dormant.
+
+UNIFIED ROOT (matches deadlock-agent N+41): the CD-ROM/streaming async I/O
+subsystem does not complete -> .ANI/.ACT + music data load partially ->
+corrupt/incomplete state -> (a) ev_stream reads garbage opcode -> SIGSEGV /
+FAIL-FAST bad dispatch, or (b) cd_file_read_seq TestEvent spin -> gs=8 ph=8
+wedge. Nondeterministic which manifestation.
+
+NEXT (faithful, no fakes): find WHY the sector DMA stalls at pos 2060.
+Suspects: (1) ch3 DMA not armed for the tail of the sector; (2) CD-ROM IRQ
+presentation timing (cdrom.c IRQ_PRESENT_DELAY / i_stat latch) dropping the
+completion; (3) ring_dropped=1181 consumer starvation -> read sees gap;
+(4) accel fast-path (accel_consumer_waits) mis-sequencing. Compare ch3
+madr/bcr/chcr arming sequence vs a WORKING mode; check whether the read is
+XA/sector vs the stall being a mode-0xA0 raw-sector edge.
