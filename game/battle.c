@@ -15438,7 +15438,7 @@ void pose_chain_build(int param_1)
     puVar3 = (undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x20) ))+ 0x638)));
     puVar2 = (undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x40) ))+ 0x21c)));
     do {
-      *(short **)(puVar2 + 8) = psVar4;
+      *(uint32_t *)(puVar2 + 8) = (uint32_t)guest_of(psVar4);
       if (((int)*psVar4 & 0x8000U) != 0) {
         iVar1 = *(int *)guest_at((uint32_t)(uintptr_t)((puVar3[-2] + 0x44)));
         if (iVar1 == iVar5) {

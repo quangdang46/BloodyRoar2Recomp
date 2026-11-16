@@ -7881,3 +7881,42 @@ Compare against oracle at the same point (versus fight entry) to see the exact
 CD command + DMA channel sequence the original runs. The versus path likely
 streams 2-char match data the attract path doesn't, hitting a read the attract
 demos never needed.
+
+=== SESSION N+26 — wedge narrowed to starved CD-INTC coroutine ===
+
+Live globals at the versus->fight wedge (frame ~2319, pc=0 scheduler-idle):
+
+- testev_handle @0x801bde38 = 0xF1000008  (slot8 CD-DMA done, confirmed)
+- cb8_dee8 @0x801bdee8    = 0             (callback fork NULL -> DeliverEvent path)
+- ch4_handler @0x801bde04 = 0x8019B7E0    (cd_dma_chan_reset registered correctly)
+- cb7_cursor  @0x801bddf4 = 0
+- intc_count  @0x801bce00 = 0  DELTA=0 over 1s  -> cd_intc_dispatch NEVER re-entered
+- intc_mask48 @0x801bcd48 = 0x0000000D
+- irq_state: i_stat=0 i_mask=0xD pending=0 cop0_sr=0x40000401 (IEc=1 IM2=1)
+- cdrom_state: reading=0 irq_flag=0 stat=0x02 request=0x80 mode=0xA0
+               ring_dropped=1181 bfrd_set=2860  seq=56489
+- dma_state: only ch2 (GPU OT) active; NO CD-data DMA channel in flight.
+
+MECHANISM: the versus fight's CD streaming runs through the game's
+cd_intc_dispatch coroutine (heartbeat 0x801bce00 bumped per entry). That
+coroutine is STARVED — intc_count frozen at 0 — so the
+CD-DMA-done -> cd_cb7_run -> cd_dma_chan_reset -> DeliverEvent(F0000009,0x20)
+chain never executes for the pending transfer. slot8 stays ENABLED(0x2000)
+instead of flipping READY(0x4000); TestEvent spins forever.
+
+This is the SAME deferred-interrupt-coroutine family as the N+22 x28-clobber:
+a coroutine resumed via deferred IRQ context is not being re-scheduled.
+cdprobe showed cb7_run/chan_reset DO fire during attract fights (cumulative
+hits), so the machinery works when the coroutine runs — versus hits a path
+where the resume is dropped.
+
+ring_dropped=1181 + CD fully idle (no read in flight, no IRQ pending) means
+the game believes a CD-DMA is outstanding but the controller has none: the
+read that should produce the DMA-done either was never issued, was dropped
+from the ring, or completed without raising the IRQ that resumes the
+coroutine.
+
+NEXT: determine why cd_intc_dispatch's deferred-IRQ resume is dropped at
+versus fight entry (vs attract which completes). Check the coroutine resume
+path (deferred IRQ dispatch -> intc_state block 0x801bcd18) against oracle.
+Do NOT hand-deliver the event — fix the coroutine resume.

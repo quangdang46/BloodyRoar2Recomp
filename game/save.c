@@ -8088,8 +8088,9 @@ void op_ctx_validate_call(uint8_t *a0)
 {
   if (a0 != (uint8_t *)0x0) {
     uint32_t p = *(uint32_t *)(a0 + 0x3c);
-    uint8_t *q = (uint8_t *)*(uint32_t *)p;
-    if (q != (uint8_t *)0x0 &&
+    uint32_t qg = *(uint32_t *)guest_at(p);
+    uint8_t *q = (uint8_t *)guest_at(qg);
+    if (qg != 0 &&
         *(int16_t *)(q + 0xe) == (int32_t)*(uint32_t *)(q + 0x30) &&
         *(int16_t *)(q + 0xa) == (int32_t)*(uint32_t *)(q + 0x2c)) {
       tween_apply((short *)q,0,0);
