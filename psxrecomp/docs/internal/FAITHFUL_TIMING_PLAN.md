@@ -9556,3 +9556,28 @@ does the runtime's channels[3] CDROM path correspond to the game's ch3
 or ch4? If the game's data-DMA uses slot 4 while runtime does ch3, the
 fix is runtime channel remap; if slot 3, the fix is cb7/DICR indexing.
 3aeaa95d (runtime dma.c) + 22f3537a (game/cd.c) own the resolution.
+
+### N+79 — CORRECTION to N+78: cd_ext_table_init's a0=4 goes through a trampoline, channel-index not yet proven
+
+Generated br2eu_func_8019A6E0 (the callee cd_ext_table_init jumps to with
+a0=4, a1=0x8019b7e0) is NOT the registration body — it's a 48-byte
+TRAMPOLINE: `lui v0,0x801c; lw v0,-0x2260(v0)=*(0x801BDDA0); lw v0,4(v0);
+jalr v0`. It loads a fn-ptr from *(*(0x801BDDA0)+4) and tail-jumps,
+forwarding a0=4/a1=handler. So a0=4 is passed THROUGH to whatever driver
+object 0x801BDDA0 points to — it is NOT proven to be the cb7 channel index
+directly. The cb7 table @0x801BDDF4 index-4 observation (78d6700f) is the
+post-registration RESULT; whether a0=4 CAUSED index-4 or the driver maps
+CD->slot4 internally is unresolved.
+
+CONFIRMED separately: all 3 generated call sites of cd_chan_cmd_submit
+(0x80199674/0x80199C30/0x80199CCC) do `li a0,3` -> CD data DMA programs
+DMA channel slot 3 (regs 0x1f8010B0). So CD data DMA IS channel 3.
+
+OPEN (agents 3aeaa95d runtime + 22f3537a cd.c): trace what the
+0x8019A6E0 trampoline target does with a0=4 — does it write cb7 table[4]
+(ch4) for the CD-done handler (=> runtime must signal ch4-done for ch3
+DMA = channel remap bug), or does the CD driver keep an internal
+channel-slot abstraction where slot4==DMA-ch3 (=> cb7_run's sequential
+tbl[s0]<->DICR-bit(24+s0) mapping or complete_transfer's done-bit is the
+divergence)? Also whether CD completion is meant via CDROM-IRQ path
+(cd_response_pump) not DMA-IRQ at all.
