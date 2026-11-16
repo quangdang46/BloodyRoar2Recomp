@@ -10179,3 +10179,31 @@ REMAINING QUESTIONS (next level, not blockers):
     even though non-fatal. versus_stage_commit/victory_record_restore index
     path (N+95) still the suspect for THAT.
   - Verify attract>16 fights + arcade regression on this build.
+
+## N+97 — record-stride fix committed (944fd47); versus "crash" = benign VECGA + flaky battle_flow SIGSEGV
+
+RESOLVED the N+95 prime suspect. `victory_record_restore`/`results_record_build`/
+`dec_walk` used stride `0x2354` forward but `-0x235c` decrement — INCONSISTENT.
+Generated computes `rec = 0x801c47c0 + idx*9052` (`idx*0x235c`) via sll3/add/sll3/
+add/sll5/sub/sll2 BOTH directions; `0x2354`(9044) is only a field OFFSET (+9044),
+never the stride. Clean mixed `*0x2354` fwd / `-0x235c` dec -> idx>0 resolved the
+WRONG record slot -> copied wrong/empty 0x194 blob into live 0x801f04a8 (the
+prim-task descriptor-array ptrs feeding prim_task_run +0x1c). Fix committed
+944fd47 (menu.c, 3 sites + comments). Faithful at instruction level.
+
+VECGA CONFIRMED BENIGN (agent a497e6a0, verified vs generated block_801356B0):
+fighter_trail_emit does `a0 = *(0x801F04C0)+0xA0`; cell=0 -> a0=0xA0 ->
+guest_at(0xAC/0xBC) = phys 0x80-0xC0 = the kernel exception-vector trampoline
+page (BIOS legitimately writes handler stubs there). Generated does the
+IDENTICAL read; guest never faults. Clean prim_task_run is instruction-faithful.
+The "storm" was purely the host fprintf+fflush DoS (rate-limited f4564a8).
+
+VERSUS STATUS: reaches gs=8 ph=8 FIGHT, holds stable ~100fps, debug responsive
+(confirmed by a497e6a0 + b4709d7e + c8b13257, multiple runs). Attract cycles
+demo fights stable (c8b13257, ~2min, 64 battle_struct_init).
+
+REMAINING REAL BUG (flaky, pre-existing, multi-site): host SIGSEGV in
+battle_flow_state_machine (menu.c:550, guest 0x8016FCC4) during versus init,
+frame ~1572. fault_addr=0x60200008FE0 = wild HOST pointer (guest/host ptr
+confusion), guest pc=0. Documented earlier at bf3ead3/N+85. Pinpoint agent
+a9d30c03 on it now (freeze dump psx_freeze_dump_...2042 + report).
