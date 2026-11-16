@@ -168,6 +168,20 @@ def ret_kind(ret):
     if BAD_RET.search(r): return 'u32'
     return 'skip'
 
+# Guest addrs whose leading param is a HOST pointer even though declared as a
+# scalar (intptr_t). These clean fns dereference param_1 directly as a host
+# buffer (e.g. battle_flow_state_machine reads lhu at +2/+4 pad buttons), so
+# the wrapper MUST translate the incoming guest address via guest_at. Without
+# this, param_kind() classifies intptr_t as 'val' and emits the raw guest
+# address -> the callee dereferences a guest address as a host pointer ->
+# SIGSEGV / wild reads. Keyed by guest addr -> set of 0-based param indices
+# to force 'ptr' (guest_at translation).
+HOST_PTR_PARAMS = {
+    0x8012a72c: {0},   # pad_state_refresh(intptr_t)       -> host pad buffer
+    0x8014751c: {0},   # attract_menu_dispatch(intptr_t)   -> host menu ctx
+    0x8016fcc4: {0},   # battle_flow_state_machine(intptr_t)-> host pad buf
+}
+
 wrappers, table, skipped = [], [], []
 for addr, name in sorted(entries):
     if name not in defs:
@@ -189,11 +203,16 @@ for addr, name in sorted(entries):
     nargs = 0 if kinds == [('void',)] else len(kinds)
     # build call args
     args = []
+    force_ptr = HOST_PTR_PARAMS.get(addr, set())
     for i, k in enumerate(kinds):
         if k[0] == 'void': break
         raw = f'cpu->gpr[{4+i}]' if i < 4 else f'(uint32_t)cpu->read_word((cpu->gpr[29] + {16+4*(i-4)}) & 0xffffffffu)'
-        if k[0] == 'ptr':
-            args.append(f'(({k[1]})guest_at({raw}))')
+        if k[0] == 'ptr' or i in force_ptr:
+            # 'ptr' params carry a declared C type; forced host-ptr scalars
+            # (intptr_t) keep their declared type for the cast but still get
+            # the guest_at translation.
+            ctype = k[1] if k[0] == 'ptr' else 'intptr_t'
+            args.append(f'(({ctype})guest_at({raw}))')
         else:
             args.append(f'(({k[1]}){raw})')
     call = f'{name}({", ".join(args)})' if args else f'{name}()'
