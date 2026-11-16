@@ -8456,3 +8456,26 @@ That would be ONE state-routing divergence causing BOTH symptoms.
 chan_reset_register/clear + audio_seq_reset + cd_state9_store are clean;
 0x8015D69C flow SM + save_flow are the suspects. Oracle (DuckStation
 :4371) is stuck at gs=4 — unusable for nav without more work.
+
+### N+42b — P2 FC_ANI confirmed pointing into staged SOUND data, not a real .ANI
+
+Live RAM dump on halted versus 4397:
+- P1 FC_ANI=0x8007121C → valid .ANI section-offset table (0xB064,0x7AF4,
+  0xE4,0x7F38… plausible S0-S9 offsets).
+- P2 FC_ANI=0x800D1020 → bytes `21042004 04000500 22000600…` = packed
+  16-bit keyframe/sound data, NOT a section table.
+- heapB staging @0x800D0000 contains the SAME `2104 2104…` byte pattern
+  as P2's "ANI" → P2 FC_ANI points INTO the staged SND/DAT region
+  (files 0x14/0x8B/0x16), i.e. FC_ANI is a STALE pointer into sound
+  data, not a loaded .ANI at all.
+
+=> versus→fight never gives P2 a valid .ANI binding. P1 bound correctly
+(low heapA), P2's FC_ANI still references the pre-reset/high region
+that heapB staging overwrote with sound data. The faithful path must
+re-load/re-bind BOTH fighters' .ANI after the heap reset + staging;
+versus binds only P1 (or P2's bind targets the stale slot).
+
+This is now the PRIMARY versus→fight defect (independent of the audio
+slot-9 wedge which is the arcade/versus TestEvent symptom — likely the
+same incomplete-init root). Flow-routing agent a1f5c1dc + heapA agent
+03b98d5b hunting the faithful sequence.
