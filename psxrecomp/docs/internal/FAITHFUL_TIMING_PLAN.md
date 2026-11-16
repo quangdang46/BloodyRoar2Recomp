@@ -9667,3 +9667,55 @@ a stream opcode or an unvalidated .ANI chunk pointer), and whether the
 P2 .ANI load wrote to the wrong heap slot (heapA-overproduction, N+74)
 or the stream itself is mis-decoded. Sibling gwatch/wtrace agents own
 the write-attribution hunt.
+
+### N+84 — dispatch mechanism PINNED: OOB opcode index reads string/data table as fn-ptr (both dispatchers FAITHFUL; bug is corrupt stream upstream)
+
+Live-captured the wedge stack on a bare attract run pinned at frame 1871
+(debug server starved — tight interpreted loop, same starvation class as
+the script_stream_tick wedge):
+
+  battle_intro_flow -> battle_frame_tick -> fighter_contact_resolve
+  -> fighter_state_tick -> fighter_script_fsm (battle.c:5837, case 8)
+  -> script_op_dispatch (battle.c:13722)
+  -> psx_dispatch -> dirty_ram_dispatch -> dispatch_nonlocal_call
+  -> psx_unknown_dispatch            (spin)   OR   FAIL-FAST 0x0B808000
+
+Two faithful dispatchers, both read a stream opcode byte then index a
+handler table with NO bounds check (correct — real HW never sees op>=size
+on a valid stream):
+
+- script_op_dispatch @0x80184f28 (battle.c:13697-13728):
+    bVar1 = *(byte*)guest_at(*(u32*)guest_at(param_3+0x24));   // opcode
+    h = *(u32*)guest_at(0x801b5528 + bVar1*4);                  // table
+    br2_call_generated(h, ...)
+  Table @0x801b5528 has EXACTLY 19 entries (ends 0x801b5574). The STRING
+  table @0x801b5574 is immediately adjacent. bVar1>=19 reads a string/data
+  pointer as a handler -> br2_call_generated(0x80062401) -> data-as-code.
+- ev_stream_dispatch @0x8017ea7c (resolve.c:3094): op<24 -> clean
+  PTR_FUN_801b4e68[24]; op>=24 -> guest table @0x801b4e68+op*4 (48+ real
+  entries). op>=48 reads OOB into adjacent data -> same wild dispatch.
+
+=> 0x80062401 is a value read OOB from the string/data table region, NOT a
+relocated code pointer and NOT a heap-stomp artifact per se. The faithful
+fix is UPSTREAM: the script/.ANI stream PC (param_3+0x24 -> motion+0x84)
+points at corrupt bytes whose "opcode" is >=table-size. param_3 domain is
+verified clean (guest_of(guest_at(param_1[0xf])) round-trips). Do NOT add
+bounds checks to either dispatcher — that would mask the real corruption.
+
+FIXED this session (all faithful, committed):
+- 88ea0c4 clean_table guest_at() for 3 host-ptr intptr_t fns (regression)
+- c5d4c7d save.c data_relocate wrong-base (stale slot vs heap cursor h)
+- 3b5779c dma.c DICR done-flag latch on per-ch-enable alone (psx.wiki)
+- 082a560 battle.c script_stream_tick host-ptr -> guest_of for script PC
+  (the versus WEDGE manifestation; clean while-loop starved debug/vblank)
+
+CD deferred-interrupt path verified FAITHFUL end-to-end (afcfd8bf):
+CDROM irq -> cd_ctx_restore -> cd_chan_full_init -> cd_intc_dispatch ->
+cd_response_pump -> cd_dma_chan_reset -> DeliverEvent(0xF0000009,0x20).
+versus reaches battle_struct_init = all CD loads complete.
+
+OPEN: which resource/stream is corrupt for versus+attract but not arcade
+(P2 .ANI/script). heapA legitimately reaches ~0x8010AE54 (save.c faithful);
+menu.c heap_serialize*/stream_block_decode/terrain_packet_gen producers +
+heap_ptr_fixup scaling under audit (agent 67c5fb11); 0x80062401 write-
+attribution under trace (agent 8ef478a3).
