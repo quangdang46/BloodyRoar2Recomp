@@ -26,6 +26,7 @@
  */
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
 #include "types.h"
 #include "ani.h"
 
@@ -104,6 +105,11 @@ static void apply(uint8_t *ctrl, uint8_t *motion)
 
     uint32_t *h = (uint32_t *)ani;            /* [0]=size [1..8]=sec  */
     uint32_t size = h[0];
+    { static int s_ap=0; if(s_ap<10){s_ap++;
+      fprintf(stderr,"[APL] ctrl=%x ani=%x size=%x s0=%x s1=%x char=%x\n",
+        (unsigned)guest_of(ctrl),(unsigned)ani_g,(unsigned)size,
+        (unsigned)h[1],(unsigned)h[2],(unsigned)GU8(ctrl,FC_CHAR));
+      fflush(stderr);} }
 
     /* Section slots -> motion (file offsets, relocated below). */
     GSU32(motion, MO_SEC0) = h[1];            /* S0 */
@@ -789,6 +795,10 @@ void action_switch_guest(int param_1,int *param_2,int param_3)
   iVar2 = (uint)uVar1 + iVar2;
   param_2[0x22] = iVar2;
   param_2[0x21] = iVar2;
+  { static int s_as=0; if(s_as<10){s_as++;
+    fprintf(stderr,"[ASW] p1=%x ani=%x s0tbl=%x idx=%d off=%x stream=%x\n",
+      (unsigned)param_1,(unsigned)GU32(p1,0x30),(unsigned)(uint32_t)*param_2,
+      param_3,(unsigned)uVar1,(unsigned)iVar2); fflush(stderr);} }
   *(undefined2 *)(p1 + 0x8c) = 0;
   *(undefined2 *)(p1 + 0x8e) = 0;
   *(undefined1 *)(p1 + 0x26) = 0xff;

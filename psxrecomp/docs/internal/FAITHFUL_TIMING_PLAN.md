@@ -7807,3 +7807,42 @@ call that should reach stage_char_data_load / the per-character file loader —
 and what args (char index, stage). Compare against oracle execution. Then port
 the missing call faithfully; do NOT inject a fallback handler or fake the
 opcode table.
+
+=== SESSION N+24 — CORRECTION: versus->fight .ANI path WORKS; new blocker = scheduler-idle channel wedge ===
+
+N+23's "missing character-data load" hypothesis was WRONG. Live instrumented
+run ([APL]/[ASW] in apply()/action_switch_guest) proves versus fighters get
+VALID .ANI blobs and event streams:
+
+  [APL] ctrl=1f8000e8 ani=8006ba04 size=b80c char=7
+  [ASW] p1=1f8000e8 ani=8006ba04 s0tbl=800738d4 stream=8006c4a0
+  [APL] ctrl=1f8001f0 ani=800ce958 size=bd74 char=4
+  [ASW] p1=1f8001f0 ani=800ce958 s0tbl=800d6e08 stream=800cf3ca
+
+Live read_ram at the versus fight: gs=8 ph=8 sub=1, mode 9b=2 (versus),
+P1 char=1 FC_ANI=0x8007121c, P2 char=8 FC_ANI=0x800d1020 — two DIFFERENT
+characters, both valid .ANI. The 0x80122DC8 event-VM crash is GONE (fixed by
+the N+22 guest/host pointer commits e55ff5a). stage_char_data_load is NOT
+required for the fight .ANI path (it is the select-screen stats loader).
+
+NEW BLOCKER — scheduler-idle wedge at frame 2319:
+  get_registers: pc=0x00000000 (scheduler-idle sentinel — ALL kernel threads
+  blocked on undelivered channel events), ra=0x80126664 (battle_flow_state_
+  machine call site), a0=0x1F8001F0 a1=0x801F5440, cop0_epc=0x8019A648.
+  frame frozen at 2319, process 99% CPU (busy-wait inside one frame tick).
+  vblank_rate: cycle_paced_raise=2319 delivered=2149 -> ~170 vblanks LOST.
+  cdrom_state: reading=0 request=0x80 (CD parked, not streaming).
+  dma_state ch2: active=1 madr=0x801E82DC chcr=0x01000401 remaining=0.
+  sio_state healthy: tx_writes=35556, both pads 0xFFFF, mc 114/114.
+
+DIAGNOSIS: identical family to ACCURACY_BURNDOWN's channel-completion wedge —
+kernel threads block on TestEvent/WaitEvent for channel specs whose done-bit
+never registers. Versus reaches gs=8 ph=8 then starves; attract demos
+completed (10 fight-init cycles) so this is versus/2P-specific — likely the
+second-pad or heavier 2-char CD-stream path hitting the undelivered-spec set
+{0x8000,0x100,0x2000}/F0000011. NOT a game-code bug; runtime IRQ/event fidelity.
+
+NEXT: identify which kernel channel spec the versus fight's threads block on
+(reuse ACCURACY_BURNDOWN ev_agg/TestEvent map) and which physical transfer
+(SPU stream vs DMA vs CD sub-channel) its done-bit binds. Do NOT patch game
+code — this is the deferred-interrupt/channel-delivery runtime bug.
