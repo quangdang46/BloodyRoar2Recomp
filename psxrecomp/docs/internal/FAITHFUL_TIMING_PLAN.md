@@ -8752,3 +8752,27 @@ dispatch. The faithful fix is upstream (heapA boundary / staging-arena /
 load-order, owned by agents 03b98d5b+34845d78): get P2's real .ANI stream
 into a region the stream PC actually references. Do NOT bounds-check op —
 that masks the corruption (stub).
+
+### N+49 — versus→fight ROOT CAUSE CONFIRMED: heapA overflows into heapB staging arena, stomps P2 .ANI S0 table
+
+Live RAM on halted versus :4401 (deterministic crash):
+- P2 motion @0x801f5440: MO_SEC0(+0x00)=0x800d6e08, MO_STREAM(+0x84)=0x800dc99a.
+- P2 S0 table @0x800d6e08 = GARBAGE `caef e03e feab ccfe...` — NOT u16
+  action->stream offsets. P1 S0 @0x800738d4 = clean `049c 04a6 054c...`.
+- P2 FC_ANI @0x800ce958 header IS valid (.ANI section offsets) — the .ANI
+  loaded; its S0 TABLE region got overwritten.
+- stream offset read from garbage S0 = 0xE042 > .ANI size 0xBD74 ->
+  stream=0x800dc99a lands ~0x22CE PAST .ANI end -> packed/sound data ->
+  op=0xdf=223 OOB -> wild dispatch.
+
+=> heapA grew to ~0x800d6e08 during versus->fight resource load, i.e.
+PAST the heapB staging base 0x800d0000 (faithful constant, generated
+0x800D<<16). P2's .ANI S0 table landed inside the staging kill-zone and
+was overwritten by staged file-0x14/sound data. heapA is a faithful bump
+cursor with NO bounds check — so on HW heapA must NOT reach 0x800d0000+
+during versus->fight. Our load over-produces (extra heapA allocation)
+OR heapA isn't reset/freed where the original does.
+
+heapB base 0x800d0000 is FAITHFUL (generated uses it) — NOT the bug.
+The bug is heapA over-production pushing P2's S0 table over the boundary.
+heapA agent 03b98d5b has the trajectory; this is the concrete proof.
