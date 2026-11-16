@@ -8730,3 +8730,25 @@ overlap with heapA's high allocations.
 
 Agents 03b98d5b (heapA) + 34845d78 (ph-writer) have this data; the
 faithful fix is the heapA-boundary / staging-arena / load-order question.
+
+### N+49 — versus crash MECHANISM pinned: P2 stream byte 0xdf -> OOB handler table -> wild dispatch
+
+Corroborates N+48 (parallel heap-layout analysis) with the exact fault chain,
+read live on halted versus :4401 (motion @0x801F5440, ram_base 0x114210008):
+
+- P2 motion+0x84 streamPC = 0x800dc99a -> first byte 0xdf (op=223 >=24)
+  -> ev_stream_dispatch reads h=*(0x801b4e68 + 223*4)=*(0x801b51e4), ~0x37C
+  bytes past the 48-entry handler table -> h=garbage ->
+  br2_call_generated(garbage) -> psx_unknown_dispatch -> fatal halt.
+- P1 motion+0x84 streamPC = 0x8006bf2e -> first byte 0x02 (valid op<24).
+- Stream bytes @0x800dc980: `45 00 11 00 f0 51 65 ce 0a 33 f0 22 ae 4d 22
+  0e 25 00 c1 da 51 d1 0e e1 0d 42 df fd f1 11 ...` — packed/high-byte data,
+  NOT an .ANI event stream (cf. P1's `02 ff 01 01 05 00 00 00 02 ff 01 00`).
+
+So the versus P2 stream PC lands in heapA's high arena (>0x800d0000, the
+intro_movie_state staging region per N+48) where the bytes are sound/packed
+data, not the .ANI event stream -> first opcode byte is garbage -> OOB
+dispatch. The faithful fix is upstream (heapA boundary / staging-arena /
+load-order, owned by agents 03b98d5b+34845d78): get P2's real .ANI stream
+into a region the stream PC actually references. Do NOT bounds-check op —
+that masks the corruption (stub).
