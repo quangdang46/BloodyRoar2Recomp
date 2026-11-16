@@ -7588,3 +7588,61 @@ stall just fixed. pcdzero_count=0 (not the literal pc=0 fetch storm).
 NEXT: trace the exception/IRQ delivery deadlock at fight init — likely a
 kernel SleepEvent/WaitEvent or IRQ-handler reentry that never completes;
 compare irqctx/exception path vs oracle once oracle reaches versus.
+
+=== SESSION N+20 — FIGHT REACHED; crash root-caused to .ANI event-stream selection ===
+
+PRIOR "kernel deadlock" THEORY DISPROVEN. psx_last_run_report + `sample`
+showed two DIFFERENT fatal halts, neither an IRQ deadlock:
+
+CRASH 1 (earlier instance, frame 1583): FAIL-FAST unknown dispatch
+addr=0x80000080 — psx_check_interrupts read the RAM exception vector at
+0x80000080/84, found it did NOT match the lui/addiu handler-stub pattern,
+and dispatched the vector itself; the vector page was ALL ZEROS (never
+written / cleared). Vector verified NONZERO at fresh boot
+(0x3c1a0000/0x275a27ac/0x03400008 = lui/addiu/jr $k0 stub -> kernel
+handler ~0x27AC, matching dispatch_tail kernel PCs). gwatch armed on
+0x80000080/0x20 for the whole nav run: ZERO writes after boot — the
+vector was never touched again, so crash-1's zeroed vector was likely a
+one-off stale-state artifact of that older instance, NOT reproduced on
+the fresh run (vector stayed intact through frame 9326).
+
+CRASH 2 (fresh run + nav_to_fight.py, frame 9326) — THE REAL ONE:
+The game reached ACTUAL FIGHT CODE. Host stack:
+  battle_flow_state_machine (menu.c:756)
+    -> fighter_frame (resolve.c:1833)
+      -> action_commit (resolve.c:1931)
+        -> ev_stream_dispatch (resolve.c:3111)
+          -> br2_call_generated -> psx_unknown_dispatch(0x80122BCC)
+FAIL-FAST: addr=0x80122BCC ra=0x80126664 a0=0x1F8000E8 a1=0x801F5328.
+
+ROOT CAUSE (fully traced live):
+- 0x80122BCC is NOT code — guest RAM there holds ASCII animation-state
+  names ("DOWN","DAMAGE","SMALL","FALL","JUMP","FLOAT","QUICK","SLAM"...).
+- ev_stream_dispatch reads op=*stream_pc; op>=24 indexes guest table
+  0x801b4e68+op*4 and jalr's the entry. Real handler table = ops 0..47
+  (0x8017xxxx/0x8014xxxx code ptrs). Entries "op48+" point into the
+  0x80122Bxx NAME-STRING region — i.e. the table is only ~48 entries and
+  op>=48 reads PAST it into an animation-name pointer table.
+- The dispatched op was 0x58=88 -> table[88]=0x80122bcc -> jalr into
+  ASCII -> unknown dispatch.
+- Stream pc = motion+0x84 = 0x8006f648 (motion obj 0x801F5328).
+  action_switch_guest (action.c:779, == generated func_8017A6E8 verified
+  insn-for-insn): stream = ctrl->FC_ANI(+0x30) + u16(motion[0] + idx*2).
+  Live: FC_ANI=0x8006f648, motion[0]=0x80077a0c, idx=1.
+- ANOMALY: the u16 offset table at 0x80077a0c is ALL ZEROS (verified
+  0x80077900-0x80077d00 = 1024 zero bytes) -> off=0 -> stream=FC_ANI.
+- FC_ANI=0x8006f648 points at animation FRAME/keyframe data (u32 offset
+  array + u16 key pairs), NOT an event-command stream -> first byte 0x58.
+
+So either (a) the .ANI offset-table section was never populated (resource
+load/parse gap — zeros where u16 action offsets belong), or (b) FC_ANI
+points at the wrong .ANI section (frame data instead of event stream).
+Both are .ANI load/parse bugs, upstream of ev_stream_dispatch. The clean
+port's action_switch_guest is verified faithful to generated — the bug
+is in whatever fills motion[0]'s table and ctrl+0x30.
+
+NEXT: find the .ANI loader (sets motion+0x00..0x10 section ptrs and
+ctrl+0x30) — likely generated fighter-resource code; check whether the
+offset-table section is loaded at all (CD sector drop? wrong section
+mapping? parse skip?). game/ani.c is only 116 lines — the real loader is
+generated or in battle.c/menu.c fighter-spawn path.
