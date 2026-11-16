@@ -9523,3 +9523,36 @@ registration is fine and only the DICR-enable channel is in question.
 DECISIVE next probe: what value does the guest WRITE to DICR
 (0x1F8010F4), and does real HW/game enable ch3 or ch4 for CD. Agents
 3aeaa95d (runtime dma.c) + 22f3537a (game/cd.c) converge here.
+
+### N+78 — DECISIVE: game registers CD-DMA-done handler at cb7 index 4, but cmd_submit uses channel slot 3 -> channel-mapping contradiction is THE bug
+
+Generated-code proof (br2eu_func_8019BEE0 = cd_ext_table_init):
+- `li a0,4` + `jal 0x8019A6E0` -> registers handler 0x8019b7e0
+  (cd_dma_chan_reset) into cb7 channel-handler table @0x801BDDF4 at
+  INDEX 4 (= DMA channel 4, since cb7_run maps done-bit(24+s0)->tbl[s0]).
+- Separately, `cd_chan_cmd_submit` (cd.c:3594) programs DMA via
+  `base=0x1f801080+(s0<<4)` with s0=channel slot; its own DIAG marks
+  `s0==3` as "ch3 (CDROM) arms" -> CD data DMA uses channel slot 3.
+
+=> The game programs CD data DMA on channel 3 BUT registers its
+completion handler + enables DICR IRQ for channel 4. On real hardware
+this MUST be consistent — so one of these is a recomp/runtime divergence:
+
+(a) The cb7 index / DICR-enable channel is NOT the DMA channel number but
+a driver channel-slot that maps ch3-DMA -> slot4. If so, cd_cb7_run's
+sequential tbl[s0]<->DICR-bit(24+s0) mapping is faithful and the bug is
+that complete_transfer sets the WRONG done-bit (ch3->bit27 but game
+expects the completion signaled as if ch4->bit28), i.e. runtime channel
+numbering off-by-one vs the game's cb7/DICR view.
+
+(b) CD data DMA genuinely runs on ch4 in this game and cmd_submit's
+s0==3 path is a DIFFERENT CD op (param/command vs data). Then runtime
+ch3 hardwiring (execute_ch3_cdrom/cdrom_async on channels[3]) is wrong —
+should be channels[4].
+
+DECISIVE probe for agents: which channel slot does the CD DATA-read path
+(cd_file_load_sm -> sector DMA) actually pass to cd_chan_cmd_submit, and
+does the runtime's channels[3] CDROM path correspond to the game's ch3
+or ch4? If the game's data-DMA uses slot 4 while runtime does ch3, the
+fix is runtime channel remap; if slot 3, the fix is cb7/DICR indexing.
+3aeaa95d (runtime dma.c) + 22f3537a (game/cd.c) own the resolution.
