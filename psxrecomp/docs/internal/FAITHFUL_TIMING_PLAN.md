@@ -7434,3 +7434,58 @@ load (timing) vs a bad LBA region; (c) whether black is purely missing
 geometry or also a broken draw-submission path. NEXT: identify the
 truncated file's destination buffer + expected size, and measure the
 CD-drain cycle budget vs Beetle during that specific load.
+
+=== SESSION N+17 — architecture resolved: battle loop runs GENERATED code; clean port not live for battle ===
+
+CORRECTION to N+16's framing. The clean game/*.c functions run as HOST C
+calls — they never set a guest PC, so fntrace/decomp_trace CANNOT see them
+(guest-PC probes are blind to direct C calls). The REAL signals:
+- pbd_calls=0  -> clean post_battle_dispatch (menu.c:6587, has g_pbd_*
+  counters) is NEVER invoked.
+- decomp_trace empty -> clean battle_flow_state_machine's entry
+  decomp_trace_record(60) never fires.
+- bce_calls=3.15M -> clean battle_config_eval (menu.c:3867) DOES run,
+  but only via the MENU/SELECT/spawn callers (menu.c:3322/3638/4664/7943),
+  NOT via post_battle_dispatch.
+- cd_cmd_queue_load(0x80192634) fires via fntrace = GENERATED code path.
+
+CONCLUSION: menu/select screens execute CLEAN code, but once g_game_state
+hits 8 the BATTLE loop executes GENERATED SLES code (func_8016FCC4 etc.).
+The clean_table DOES contain wrap_8016fcc4/wrap_80154930, but the live
+battle path does not route through them — the generated main/battle loop
+drives the fight. So the "2 source trees" issue is REAL and load-bearing:
+the clean port is a parallel reference, NOT yet the execution path for
+combat. All game-logic analysis of game/menu.c battle_flow is therefore
+about code that is NOT running.
+
+OBSERVABLE STATE (unchanged, generated-path): gs=8, phase byte
+DAT_1f800001=8, all battle sub-state bytes (0x90-0x9e,0x92) frozen at 0,
+fighter control blocks bound + descriptor tables populated, BUT fighter
+animation FSM gated by status flag 0x80 -> pose 100% frozen (0/96B over
+1s), framebuffer ~99.8% black + tiny centered splash, ~1 polygon/frame
+(gte nproj=1). intro_fsm stage=3 (setup done). NOT input-gated (START
+no-op). CD 100% idle.
+
+ROOT-CAUSE CHAIN (best current model): the earlier large CD resource
+read dropped 5808 sectors (guest fell >8 sectors behind the sector ring)
+-> battle/fighter resource files (.ACT/.ANI action scripts, stage/fighter
+models) delivered TRUNCATED -> fighters bound but have no valid action
+script -> flag 0x80 stays set -> animation FSM never runs -> frozen
+fighters + empty draw lists -> black pre-fight screen that never reaches
+combat.
+
+STRATEGIC PIVOT: stop tracing game logic (clean port isn't live for
+battle anyway). The blocker is the RUNTIME/hardware sim — specifically WHY
+the guest CD-drain falls >8 sectors behind during the heavy battle-
+resource load when real HW/Beetle keeps up. That is the faithful-timing
+core (P1-P6): per-instruction cycle cost, IRQ delivery latency, DMA
+completion timing, CD sector-production vs guest-drain budget. Fixing the
+timing so the resource load completes untruncated is the faithful,
+class-level fix — it helps EVERY game, not a per-game patch.
+
+NEXT CONCRETE STEP: measure the CD-drain cycle budget vs Beetle during
+the specific battle-resource ReadN — count guest cycles/instructions per
+sector-drain (INT1 -> 3w hdr DMA + 512w data DMA) vs the 225792-cycle
+(2x) / 451584-cycle (1x) sector period; find whether our per-DMA or
+per-instruction cost inflates the drain past the budget. Cross-check the
+INT1->handler->DMA-arm latency against Beetle's CD interrupt path.
