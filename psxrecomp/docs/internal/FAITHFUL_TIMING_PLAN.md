@@ -7031,3 +7031,36 @@ character-record .ANI loader. gwatch on 0x1f800118/0x1f800220 during
 arcade->fight will show whether ANY write fires and from which PC.
 The uncommitted game/action.c reset() work (ctrl+0x14 player-block +
 battle-mode adj) is related in-progress fighter-init fix — preserve it.
+
+### Session N+9 — SHARPENED: fighter resource BUFFERS all-zero; char data never loaded
+
+gwatch on the WHOLE P1 ctrl block 0x1f8000e8 (len 0x100) during a fresh
+arcade->fight nav: only 2 writes total, both to fighter+1 @0x8019A5A4
+during the fight. The populated ctrl fields (+0x28/+0x38/+0x3c/+0x44/48)
+were written during BOOT/ATTRACT, before arming — the select->battle
+transition does NOT re-run fighter spawn/.ANI bind (confirms N+5e for
+arcade too, not just versus).
+
+FOLLOW-ON: every fighter resource pointer targets ZEROED memory —
+ctrl+0x44/0x48 (0x801e01ec/08ac P1, 0x801e054c/0c0c P2) script/matrix,
++0x3c motion-state (0x801f55c0/5704), +0x38 S5 (0x801f5328/5440) all
+read 0/32 nonzero. Buffers are ALLOCATED but the character .ANI/.ACT/
+script payload was NEVER loaded. menu_res_load_sm (save.c:4105,
+guest 0x801709fc) is the async loader driving s1+0x8c through
+0->0x10->0x20->0x40->0x50->0xf00 via cd_file_load_sm /
+save_channel_init_commit / save_load_state_machine /
+save_state_machine_alt; it reached case8 (returned 1) yet left all
+fighter buffers empty -> the CD-read/decode/.ANI-bind produced nothing.
+
+NOTE: char ids ARE set (DAT_1f8000eb/1f3 = fighter+3, RNG via
+table_byte_next_a; P1=0 P2=5) and DAT_1f800099 is a config value
+(config[4]*2-2), NOT the char id — earlier "no char selected" read was
+wrong. The bug is the resource LOAD yielding empty data, not selection.
+
+NEXT: determine whether menu_res_load_sm's save_* states actually
+issued CD reads for the char files (vs returned success early /
+read wrong LBA / decode to wrong dest). Check cdrom_command_history +
+cd_file_load_sm/save_*_state_machine impls for the char .ANI/.ACT
+file table. versus hits the N+6 CD/SPU deadlock during this same load;
+arcade "completes" it but empty — possibly the same root (CD data not
+delivered/decoded) manifesting differently.
