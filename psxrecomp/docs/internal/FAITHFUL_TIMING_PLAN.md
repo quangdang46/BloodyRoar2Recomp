@@ -8928,3 +8928,23 @@ Convergent hypothesis: CD deferred-event delivery (DeliverEvent
 round resources finish -> round progresses -> b92 advances -> no phase
 loop -> no intro_movie re-stage -> no .ANI stomp. The phase-loop and the
 CD stall likely share this root.
+
+### N+54 — host-ptr leak FIXED (family-b crash removed); battle.c guest_of sweep
+
+Agent 8a8f7d6b proved + fixed the host-pointer leak:
+- battle.c:3255 fighter_state_tick passed (int)(uintptr_t)param_1 (host
+  ptr) to fighter_script_fsm which treats it as a GUEST addr -> guest $a0
+  = host-ptr low32 0x1183C1F0 -> generated opcode handler derefs as guest
+  struct -> wild jr/jalr -> DISPATCH FATAL misaligned 0x00120201.
+- Fixed 6 sites: fighter_script_fsm arg, dual_target_track[_b],
+  camera_track_shot/step, gte_xform_add_off, tween_track_alloc (br2_gaddr).
+- Committed d9cd287. Build clean.
+- Versus lldb run reached FIGHT REACHED (gs=8 ph=8); then hit the separate
+  pc=0 exception-storm blocker. Non-lldb versus runs SIGSEGV at versus init
+  (gs=8 ph=0) intermittently — possible separate host-side crash, follow-up.
+
+versus->fight crash families status:
+  (b) host-ptr leak -> wild dispatch      FIXED d9cd287
+  (a) .ANI stream-PC corruption           open (phase-loop symptom, N+51/52)
+  CD deferred-IRQ wedge                  open (agent afcfd8bf)
+  phase re-entry loop b92 stuck@12        open (agent 78d6700f)
