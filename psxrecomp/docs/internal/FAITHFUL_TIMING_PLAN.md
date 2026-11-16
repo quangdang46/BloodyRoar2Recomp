@@ -9905,3 +9905,42 @@ NEW BLOCKER (next layer, same bug FAMILY):
 STATUS: versus->fight is now UNBLOCKED through init (was the N+85 SIGSEGV);
 remaining versus work is the in-fight 0x80122F0C wild-jump (PTR-table class)
 plus any post-fight progression issues. Attract remains stable (N+85).
+
+### N+87 — versus in-fight crash refined: 0x80122EB0 = SAME opcode-over-read; VECGA 0xBD storm is PRE-EXISTING; PTR-table audit landed
+
+Post-triple_track_spawn (e5a9047), versus reliably reaches gs=8 ph=8
+(FIGHT REACHED via nav_to_fight.py) then dies in-fight. Two manifestations,
+SAME root cause (event-stream opcode over-read, N+84/N+86):
+
+- FAIL-FAST `unknown dispatch addr=0x80122EB0` (was 0x80122F0C) —
+  ra=0x80126664 a0=0x1F8001F0(P2 ctrl) a1=0x801F5440(P2 motion). Different
+  garbage fn-ptr each run because the corrupt stream-PC byte varies; both
+  land in the 0x80122xxx string/rodata pool. ev_stream_dispatch reads op at
+  motion+0x84 (guest 0x801F54C4) -> ~0x800DC99A (heapB-staged, NOT .ANI) ->
+  OOB past handler table 0x801B4E68.
+- VECGA addr=0xBD/0xAC/0xBC exception storm (esp=0xBFC05B18 BIOS stack,
+  dspc~0x801AA260) — near-null deref, PRE-EXISTING (identical on pre-PTR-fix
+  baseline binary br2base.log). NOT a regression; likely same corrupt
+  motion/ctrl struct feeding a bad pointer.
+
+PTR-TABLE AUDIT (agent, uncommitted battle.c+clean_table.c): faithful
+fixes at 2368/2370 (u32 stride), 3047-3065 (PTR_DAT_801b4e10/14 ptr-cell
+double-deref), 6629 (u32 stride), 6723+15046 (&PTR_FUN host->br2_gaddr),
+15133 (u32 stride+guest_at), 10435 (PTR_FUN_801b1734 was calling
+UNINITIALIZED host code* -> now dispatches real guest table via
+br2_call_generated+br2_guest_frame), 8995 impact_fx_update DELEGATED to
+generated (jump-table-into-mid-function consumes live s-regs; correct
+per delegation rule). clean_table.c regen dropped wrap_80138cec+wrap_80135180.
+
+ROOT CAUSE (confirmed, being fixed): P2 .ANI ~0x800D1xxx-0x800DCxxx overlaps
+heapB staging (cursor _DAT_801e3cfc bases 0x800d0000 intro_movie_state /
+0x800f0000 menu_res_load_sm / 0x80010000 elsewhere) which sits INSIDE heapA
+growth range (heapA -> ~0x8010AE54). heapB staging writes stomp P2 .ANI ->
+corrupt stream PC -> opcode over-read -> wild jump / near-null deref.
+Versus loads BOTH fighters -> P2 .ANI lands in kill zone; attract (demo)
+loads fewer -> survives.
+
+THREE agents converging: (a) static generated-diff of versus rebind/
+menu_res_load_sm ordering (save.c/menu.c/game.c); (b) runtime watchpoint on
+0x800DC99A/0x801F54C4/heap cursors to catch exact stomp-write PC; (c) PTR
+audit finishing verify. Goal: find faithful ordering/reload/cursor fix.
