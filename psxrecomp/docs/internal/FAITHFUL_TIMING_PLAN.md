@@ -9977,3 +9977,35 @@ clean leaves the stale record+0x30 pointer. Versus loads BOTH fighters so
 P2's stale .ANI lands in the heapB kill-zone; attract/demo loads fewer and
 survives. Agent b4709d7e tracing the exact generated reload/rebind gate
 (fighter-loaded flag surviving the heap reset) — fix pending.
+
+---
+
+## N+89 — .ANI/heap stomp is a GENERAL attract+versus bug; heapA ~1MB high-water is the suspect
+
+NEW EVIDENCE (fcani_poll.log timeline, headless attract gs=6 auto-demo, no input):
+  The opcode-over-read / VECGA crash is NOT versus-specific. attract demo fights
+  crash after 2–16 cycles (br2_emu4 wedged ~2, br2_emu3 ~16, br2_4840 FAIL-FAST
+  0x80122F0C on 3rd). battle_intro_flow (menu.c:1857) is the SHARED attract+versus
+  fight path -> menu_res_load_sm -> save_state_machine_alt loads .ANI per fight.
+
+  heapA cursor (_DAT_801c47b8) high-water during ONE demo resource load reaches
+  ~0x801117c4 (~1MB of heapA allocations). P2 .ANI lands ~0x800d7xxx-0x800d1xxx —
+  freshly loaded, BELOW cursor, valid at load time. P2ani DOES change each fight
+  (0x800d297c->0x800d783c->0x800d1e58) so .ANI IS reloaded — the pointer is not
+  simply skipped.
+
+  Then gs=3 transition resets heapA ->0x80010000 while P2ani stays high (stale),
+  heapA regrows only ~0x8004c880 during select. Next fight reloads .ANI again —
+  but it keeps landing in the 0x800dxxxx band that heapB staging
+  (_DAT_801e3cfc = 0x800d0000 intro_movie_state / 0x800dc800 / 0x800f0000)
+  overwrites. heapB grows UP from a low base THROUGH the .ANI region.
+
+OPEN QUESTION (agent c8b13257 tracing): does GENERATED heapA also reach
+0x801117c4 (faithful overlap, stomp is ordering) or does clean OVER-ALLOCATE
+heapA pushing .ANI into heapB's band? If over-allocation -> find the clean fn
+inflating heapA. If faithful -> the stomp is heapB-0x800d0000 staging running
+after .ANI load; find the generated ordering that avoids it.
+
+Repro is now input-free: headless attract cycles demo fights until crash.
+Stray fprintf debug at menu.c:1871,1956 (battle_intro_flow [BIF]) — pre-existing,
+flagged for cleanup (no-printf rule).
