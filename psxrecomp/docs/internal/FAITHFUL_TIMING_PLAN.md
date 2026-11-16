@@ -8076,3 +8076,33 @@ bit2) that cd_intc_dispatch consumed without delivering, or whether the DMA
 finished without raising it. Compare cdrom.c DMA-done->set_irq->present_
 cdrom_irq path vs oracle. The versus path streams enough CD data to hit a
 ch4 DMA completion the attract path doesn't.
+
+=== SESSION N+30 — DMA IRQ cessation + ch4 CD-DMA channel idle ===
+
+irqctx_ring histogram (1727 entries at wedge):
+  istat 0x1 VBLANK x844, istat 0x4 CDROM x879, istat 0x8 DMA only x4-window
+  -> actually DMA IRQs fired steadily frames ~1082-1716 (~every 2 frames)
+     at take_pc inside the CD wait loop (0x8019D5B0/550/580) = the CD-DMA-done
+     deliveries that let cd_seek_complete_poll proceed. LAST DMA IRQ seq21905
+     frame1716 take_pc=0xBFC0574C (kernel). After frame1716: ZERO DMA IRQs
+     while CD IRQs continue to the wedge (~2319).
+
+DMA channel state at wedge:
+  ch4 (CD-DMA, ch4_handler=0x8019b7e0=cd_dma_chan_reset):
+    madr=0x000DDE60 bcr=0x03490010 chcr=0x00000201 active=0 remaining=0
+    -> configured but NOT started (chcr bit24 start clear), idle.
+  DICR=0x00900000 -> ch4 IRQ-enable (bit20) SET, so ch4 CAN interrupt.
+  Only ch2 (GPU OT) active.
+
+CONCLUSION: the CD-DMA-done the game waits on is a DMA-channel-4 completion
+-> I_STAT bit3(0x8) -> cd_intc_dispatch tbl[3]=0x8019af7c -> cd_dma_chan_reset
+-> DeliverEvent(F0000009,0x20) -> slot8 READY -> TestEvent returns 1.
+DMA IRQs stopped being delivered after ~frame1716. ch4 is configured but not
+running -> either the pending transfer's START was never kicked, or it
+completed and its IRQ was dropped. The versus path initiates a ch4 CD-DMA
+that attract never does (or at a point the IRQ path is already broken).
+
+NEXT: determine whether ch4 was kicked for the pending read (watch ch4
+chcr bit24 / madr/bcr writes via gwatch on 0x1F8010C0-C8) and whether a
+completion IRQ was generated-but-dropped vs never-started. Compare the
+versus CD-DMA channel usage vs attract/oracle.
