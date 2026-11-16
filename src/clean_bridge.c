@@ -74,11 +74,20 @@ void *guest_at(uint32_t addr)
     /* DIAG: vector-page access hunt (BR2 0x80000080 fight-init corruption).
      * Clean-C stores bypass psx_write_*; guest_at() is the one funnel they
      * all pass through. Log accesses landing in the vector page so the
-     * corrupting writer's caller can be symbolized. */
+     * corrupting writer's caller can be symbolized.
+     * Rate-limited: phys 0x80-0xC0 is valid low main RAM (kernel workspace),
+     * and faithful guest code legitimately reads it (e.g. fighter_trail_emit
+     * -> prim_task_run with a NULL trail-slot base +0xa0). An unbounded
+     * fprintf+fflush per access storms stderr and starves the heartbeat
+     * watchdog, so only the first hits are recorded. */
     if (phys >= 0x80u && phys < 0xC0u) {
-        fprintf(stderr, "VECGA addr=0x%08X phys=0x%03X ra0=%p\n",
-                addr, phys, __builtin_return_address(0));
-        fflush(stderr);
+        static int s_vecga_n;
+        if (s_vecga_n < 256) {
+            s_vecga_n++;
+            fprintf(stderr, "VECGA addr=0x%08X phys=0x%03X ra0=%p\n",
+                    addr, phys, __builtin_return_address(0));
+            fflush(stderr);
+        }
     }
     /* Low guest addresses (<0x10000 KUSEG) map to real main RAM phys
      * 0x0000-0xFFFF — valid, readable/writable PSX memory (kernel low

@@ -10157,3 +10157,25 @@ versus_stage_commit is called at menu.c:7652(s0,2),9028(s0,1),9048_b(s0,1);
 victory_record_restore also at menu.c:8631(param_1,4),12103(s1,0).
 NEXT: verify a1 index math + per-side record selection vs generated
 0x80128C18/0x80128268; dump 0x801f04a8[0]/[8] live at fight (catch before storm).
+
+## N+96 — VECGA rate-limit reveals versus fight is STABLE (not a hard crash)
+
+clean_bridge.c guest_at() VECGA fprintf was UNBOUNDED -> phys 0x80-0xC0 is
+VALID low kernel RAM that faithful code legitimately reads (agent note:
+fighter_trail_emit->prim_task_run NULL trail-slot base +0xa0). The per-access
+fprintf+fflush stormed stderr and STARVED the debug server/heartbeat, making
+the versus fight LOOK fatal. Rate-limited to first 256 hits.
+
+RESULT (port 4950, rate-limited build, versus nav):
+  reaches gs=8 ph=8 FIGHT, HOLDS ph=8 stable 30s+, frames ~100fps advancing,
+  debug server fully responsive. VECGA capped at 256 (benign low-RAM reads).
+The versus->fight "crash" was largely a DIAGNOSTIC ARTIFACT. The fight runs.
+
+REMAINING QUESTIONS (next level, not blockers):
+  - Is the fight fully CORRECT? (fighters animate/deform, HP/damage, round
+    timer, KO->results->next round). ph=8 constant = in-fight phase (normal).
+  - prim_task_run +0x1c garbage (0xAC/0xBC) may still mean SOME primitive
+    invoke-lists unpopulated -> missing/degraded visual primitives for P2,
+    even though non-fatal. versus_stage_commit/victory_record_restore index
+    path (N+95) still the suspect for THAT.
+  - Verify attract>16 fights + arcade regression on this build.
