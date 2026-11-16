@@ -9032,3 +9032,22 @@ never edge-latched/acked, so psx_check_interrupts re-delivers it at every
 block boundary -> re-entrant exception storm starves vsync_wait_n -> pc=0.
 Same family as the cdrom.c latch comments (unacked CD INT = unbounded
 re-entry storm). afcfd8bf owns the runtime IRQ-dispatch investigation.
+
+### N+58 — versus->fight CD activity is PROGRESSING file loads, not a stuck re-read
+
+cd_cmds tail: repeating seek(0x02)->?(0x06)->read(0x09) cycles to DIFFERENT
+MSF positions each iteration (01:38:19 / 00:02:3D / 01:3A:41 ...) — the
+loader advances through a file sequence, not re-reading one file. ~100+
+loads over 1524 frames -> the 21524 IRQs are largely legitimate per-file
+seek/read IRQs, amplified by the phase loop re-running intro_movie.
+
+cd_read buffer bcb84=0x800D0000 (file data -> heapB staging arena, the
+same region that stomps .ANI). pend_cmd=0x09 Pause pending.
+
+=> the IRQ storm is the SYMPTOM of repeated resource loading driven by the
+phase re-entry loop (b92 stuck@12 -> intro_movie re-run -> file-0x14 +
+resource reload each cycle). Primary fix target remains round/match
+progression (78d6700f); CD IRQ fidelity (afcfd8bf) is the secondary
+correctness thread. If round progression is faithful and the loop is
+legitimate multi-round play, then the crash is a resource/heap collision
+under sustained load — revisit N+49 heapA boundary.
