@@ -166,7 +166,13 @@ static void apply(uint8_t *ctrl, uint8_t *motion)
     static const uint8_t moffs[] = {0x00,0x04,0x08,0x0c,0x10,0xac,0xe8,0xec,0xf0,0xf4};
     for (unsigned i = 0; i < sizeof moffs; i++)
         GSU32(motion, moffs[i]) += base;
-    if (vm)  GSU32(vm, 0x0c) += base;
+    /* NOTE: vm+0x0c (S4 cat_tab) is deliberately NOT relocated here.
+     * Guest func_8017a05c seeds it raw (sec_off[4]) at +0x8017a09c and
+     * leaves it file-relative; func_80181db8 (ani_fixup) adds the blob
+     * base exactly once. Relocating it here too double-adds base ->
+     * cat_tab = sec_off[4] + 2*base (e.g. 0x000eacec), which then feeds
+     * garbage cat_tab[1]/[2]/[5] into the ScriptVM and wild-dispatches.
+     * (N+85) */
     if (tbl) {
         static const uint8_t toffs[] = {0x08,0x0c,0x2c,0x30};
         for (unsigned i = 0; i < sizeof toffs; i++)
