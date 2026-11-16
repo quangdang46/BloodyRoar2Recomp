@@ -6939,3 +6939,53 @@ Likely suspects: SPU-voice/ADPCM decode completion gating the CD feed,
 or a channel event whose IRQ is masked/coalesced. Beetle oracle
 (psx-beetle :4380) ground-truth on the same path is the RULE-2 check
 but is not built on this host (oracle build is MSVC/DuckStation).
+
+### Session N+7 — versus->fight TRANSITION FIXED; wedge confirmed = N+6 CD/SPU event deadlock
+
+Two real port bugs masked the versus->fight path; both fixed+committed.
+
+FIX 1 (fed8fdf): versus SIGTRAP `bl FUN_80194500; brk` in
+battle_camera_step + vec3_step_toward_spd. Root cause = LLVM mid-end
+miscompile: decompiler emits vector locals as separate `int` decls that
+must be contiguous on the MIPS stack, but C gives no contiguity ->
+LLVM drops "dead" Y/Z stores AND (worse) proves the else-branch
+unreachable after an uninitialized/escaped-local read -> emits
+`call;noreturn-brk`. Reproduced in isolation: initializing the escaped
+out-array locals (local_28/24/20, always overwritten by FUN_80194630
+before reads) clears the brk. FUN_80194500 proto -> variadic.
+NOTE: the broader vector-local->array contiguity defect is SYSTEMATIC
+and still latent in other decompiled fns (only X component computed,
+Y/Z dropped) — needs a dedicated array refactor.
+
+FIX 2 (a62b16a): versus SIGSEGV prim_list_persp_step param_1=0.
+menu.c declared scratchpad ptr globals _DAT_1f800104/_DAT_1f80020c/
+_DAT_1f800208 as uint8_t (truncated 32-bit guest ptr to 1 byte) and
+passed them raw instead of guest_at() — battle.c does both correctly.
+Fixed to uint32_t + guest_at at the two prim_list_persp_step call
+sites. Same width-error class likely latent elsewhere in menu.c
+(_DAT_1f800154/25c mask 0x8000000, _DAT_1f8000b4/0b6 mask 0xf00 —
+impossible under uint8_t) — audit pending.
+
+VERIFIED: nav_to_fight.py -> FIGHT REACHED, versus sustains gs=8 ph=8
+(sig 2,1 = 2P VS) without crash. Arcade regression PASSED — reaches+sustains
+gs=8 ph=8 @ ~98.7% CPU actively simulating.
+
+REMAINING BLOCKER (vs arcade): versus reaches the fight STATE but the
+sim STALLS — ~0.2% CPU, freeze_check current_func=0x29CC
+(scheduler-idle), in_exception=1, esc_dec_nopend=8.3M (spinning on IRQs
+that never come), frame_count still advancing. cdrom_state CONFIRMS
+the N+6 wedge byte-for-byte: bfrd_set=1274 vs bfrd_clear=13,
+sector_read_pos=2060 frozen, ring_dropped=523, pending.cmd=0x09 (Pause)
+done/idle, i_stat=0x1 (VBlank only). Game buffered ~1274 CD sectors,
+consumed 13, then blocked in TestEvent waiting for a channel/hw or
+CD-completion DeliverEvent that never fires — versus's heavier resource
+load (2 fighter records + stage assets) triggers the deadlock arcade's
+lighter load avoids.
+
+NEXT (unchanged from N+6): identify the producer of the waited event
+class (0xF0000011 spec 0x100/0x2000 channel/hw, 0xF0000009 spec 0x20
+CD/SPU-done). Trace which IRQ handler calls DeliverEvent and whether it
+runs during the wedge. Suspects: SPU-voice/ADPCM decode completion
+gating the CD feed, or a channel event whose IRQ is masked/coalesced.
+The debug-server commands used in N+6 (dma_chan_hist/regwin/evcb) are
+NOT in the current build — re-add as proper debug commands if needed.
