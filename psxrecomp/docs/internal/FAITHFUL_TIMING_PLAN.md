@@ -9493,3 +9493,33 @@ via the working CDROM-IRQ path before the DMA-dependent stage.
 Owner: 22f3537a (cd_dma_chan_reset/cd.c) + spawning runtime-DMA agent.
 a0861f48 (heapA) + 8432f37e (wedge) results now secondary — the DMA-IRQ
 root likely subsumes them.
+
+### N+77 — DICR decode confirmed: runtime layout bits16-22=per-ch IRQ-enable, bit23=master, bits24-30=done-flags; game enabled ch4(bit20) NOT ch3(bit19)
+
+Read psxrecomp/runtime/src/dma.c DICR model:
+- `channel_irq_flag_armed(ch)` = bit(16+ch) [per-ch IRQ-enable] AND bit23
+  [master enable]. complete_transfer sets done-flag bit(24+ch) only if
+  armed, then raise_dma_irq_on_master_edge -> i_stat bit3.
+- Per-channel regs at 0x1F801080+ch*0x10; CD data DMA runs on ch3
+  (execute_ch3_cdrom/cdrom_async) — observed 5300 ch3 completes.
+- Observed dicr=0x00900000 = bit23(master) + bit20 = **ch4 IRQ-enable**.
+  ch3 IRQ-enable = bit19 (0x80000) is NOT set.
+
+So the game writes DICR enabling channel-4 IRQ, not channel-3. Two
+readings, both need the game/cd.c + oracle to disambiguate:
+(a) FAITHFUL: game enables ch4 for GPU/OT DMA and CD completion is meant
+    via CDROM-IRQ (bit2->cause2->cd_response_pump->reason cb->
+    cd_dma_chan_reset->DeliverEvent), NOT DMA-IRQ. Then the bug is the
+    CDROM-IRQ path not DeliverEvent-ing on re-loads (afcfd8bf said it
+    works for initial loads; 78d6700f saw TestEvent spin on re-loads).
+(b) BUG: game should enable ch3 but runtime mis-stores the DICR write,
+    OR CD DMA should run on ch4 not ch3 (channel-number mismatch between
+    game cb7 index-4 registration and runtime ch3 execution).
+
+The cb7 handler table @0x801BDDF4 has 0x8019b7e0 at INDEX 4, index3=NULL
+— consistent with the game treating CD-DMA-done as channel-4. If the
+game's channel numbering is 1-based in that table (idx4 = ch3 0-based),
+registration is fine and only the DICR-enable channel is in question.
+DECISIVE next probe: what value does the guest WRITE to DICR
+(0x1F8010F4), and does real HW/game enable ch3 or ch4 for CD. Agents
+3aeaa95d (runtime dma.c) + 22f3537a (game/cd.c) converge here.
