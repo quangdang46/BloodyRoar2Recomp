@@ -323,13 +323,25 @@ static int channel_enabled(int ch) {
     return (dpcr >> (ch * 4 + 3)) & 1;
 }
 
+static int channel_irq_enabled(int ch) {
+    /* DICR bits 16-22: per-channel IRQ mask. On real hardware a completed
+     * transfer latches the done-flag (bit 24+ch) whenever this mask is set —
+     * INDEPENDENT of the master enable (bit 23). Only the computed bit31 and
+     * I_STAT bit3 are gated by bit 23 (psx.wiki DMA register test: the
+     * "enable alone" column sets flag bits with bit23=0 and leaves bit31
+     * clear; a flag latched while master was off raises IRQ3 as soon as
+     * bit23 is written). psx-spx's "both required" wording describes the
+     * IRQ outcome, not the flag latch. */
+    return (dicr >> (16 + ch)) & 1u;
+}
+
 static int channel_irq_flag_armed(int ch) {
-    /* DICR channel completion flags (24+n) are latched only when both
-     * the per-channel interrupt bit and the master DMA interrupt bit are
-     * enabled at completion time. Old flags still contribute to bit31
-     * until acknowledged, but masked/master-disabled completions do not
-     * create new stale flags. */
-    return ((dicr >> (16 + ch)) & 1u) && ((dicr >> 23) & 1u);
+    /* True when a completion on this channel will produce a DELIVERABLE
+     * IRQ3: the flag will latch (per-channel mask set) AND the master
+     * enable is on so the computed bit31 can rise. Used only by the
+     * IRQ-timing estimator; complete_transfer() itself latches the flag
+     * on channel_irq_enabled() alone. */
+    return channel_irq_enabled(ch) && ((dicr >> 23) & 1u);
 }
 
 static uint32_t transfer_word_count(int ch) {
@@ -380,10 +392,14 @@ static void complete_transfer(int ch) {
     uint32_t dicr_before = dicr;
     uint32_t i_stat_before = i_stat;
     channels[ch].chcr &= ~((1u << 24) | (1u << 28));
-    if (channel_irq_flag_armed(ch)) {
+    /* Latch the done-flag whenever the per-channel mask is set, regardless
+     * of master enable — faithful to hardware (see channel_irq_enabled).
+     * raise_dma_irq_on_master_edge then fires IRQ3 only if the computed
+     * bit31 actually went 0->1 (which requires bit23 + a flag). */
+    if (channel_irq_enabled(ch)) {
         dicr |= (1u << (24 + ch));
-        raise_dma_irq_on_master_edge(dicr_before);
     }
+    raise_dma_irq_on_master_edge(dicr_before);
     trace_dma('C', ch, 0, dicr_before, i_stat_before);
     event_ring_record_aux(EV_DMA_DONE, (uint8_t)ch, channels[ch].chcr);
     event_ring_record_aux(EV_DEQ, (uint8_t)(SRC_DMA0 + ch), channels[ch].chcr);
