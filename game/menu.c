@@ -4793,7 +4793,7 @@ static void blk_copy(uint32_t dst, uint32_t src, uint32_t len)
   memcpy(guest_at(dst), guest_at(src), len);
 }
 
-/* results_record_build — victory/results record builder @0x801c47c0 + idx*0x2354.
+/* results_record_build — victory/results record builder @0x801c47c0 + idx*0x235c.
  * HW args are (a0 = battle base 0x1f800000, a1 = record index,
  * a2 = u16 tag). Every real caller passes a0 = 0x1f800000
  * (record_state_stepper(0x1f800000), battle_subrecord_reset(param_3 = 0x1f800000),
@@ -4806,7 +4806,7 @@ static void blk_copy(uint32_t dst, uint32_t src, uint32_t len)
 int32_t results_record_build(int32_t param_1, int32_t param_2)
 {
   const uint32_t a0 = 0x1f800000u;
-  uint32_t a3 = 0x801c47c0u + ((uint32_t)param_1 * 0x2354u);
+  uint32_t a3 = 0x801c47c0u + ((uint32_t)param_1 * 0x235cu);
   uint32_t pa, pb, f, bit;
 
   MW16(a3 + 0, (uint16_t)param_2);          /* sh $a2,($a3) */
@@ -9352,7 +9352,7 @@ void cmd_queue_push(int32_t a0,int32_t a1,int32_t a2,int32_t a3,
 
 /* victory_record_restore — victory-record restorer @0x80128268 (397 insns,
  * jr $ra @0x80128890). a0 = guest battle base (kept in t3), a1 =
- * record index. rec = 0x801c47c0 + a1*0x2354 — the same table
+ * record index. rec = 0x801c47c0 + a1*0x235c — the same table
  * results_record_build builds. Copies nine fixed blobs OUT of the record
  * into the live tables (inverse direction of results_record_build), plus
  * two flag-selected 0x870 tables and two 756-stride subtables, then
@@ -9366,7 +9366,7 @@ void cmd_queue_push(int32_t a0,int32_t a1,int32_t a2,int32_t a3,
  * word) while L copies 0x2f0 + 1 trailing word = 0x2f4. */
 int32_t victory_record_restore(uint32_t param_1,int32_t param_2)
 {
-  uint32_t rec = 0x801c47c0u + (uint32_t)param_2 * 0x2354u;
+  uint32_t rec = 0x801c47c0u + (uint32_t)param_2 * 0x235cu;
   uint32_t bit, pa, pb, f;
 
   blk_copy(0x1f8000e8, rec + 0x16cc, 0x210);
@@ -9423,13 +9423,14 @@ static int32_t dec_wrap(int32_t a1,int32_t n)
   return a1;
 }
 
-/* shared record-index walk: from rec = 0x801c47c0 + a1*0x2354 walk
+/* shared record-index walk: from rec = 0x801c47c0 + a1*0x235c walk
  * DOWN while lh(rec) < 0, a1-- per step; the pointer decrement is
- * -0x235c (stride+8 — an original-game quirk, kept faithful). Exits
+ * -0x235c, the same record stride (generated 0x80128D18-D54 computes
+ * idx*9052 = idx*0x235c both ways). Exits
  * with a1 possibly 0. */
 static int32_t dec_walk(int32_t a1)
 {
-  uint32_t r = 0x801c47c0u + (uint32_t)a1 * 0x2354u;
+  uint32_t r = 0x801c47c0u + (uint32_t)a1 * 0x235cu;
   while (MBS16(r) < 0) {
     a1--;
     r -= 0x235cu;
