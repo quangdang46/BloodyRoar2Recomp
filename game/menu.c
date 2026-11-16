@@ -13253,7 +13253,7 @@ int32_t save_flow_state_machine(void)
           blk[0x04] = 1; blk[0x05] = 0;
           *(uint16_t *)(blk + 0x06) = 9;
           *(uint16_t *)(blk + 0x08) = 9;
-          *(uint32_t *)(blk + 0x0c) = 0x8016d69cu;
+          *(uint32_t *)(blk + 0x0c) = 0x8015d69cu;
           *(uint16_t *)(blk + 0x10) = 0x10;
           *(uint16_t *)(blk + 0x12) = 0xffffu;
           *(uint16_t *)(blk + 0x14) = (uint16_t)MB8(c + 0xcu);
@@ -13334,7 +13334,7 @@ int32_t options_state_machine(void)
           *(uint16_t *)(blk + 0x0c - 0x10 + 0x10) = 0; /* +0x10 u16 */
           *(uint16_t *)(blk + 0x10) = 0x10;
           *(uint16_t *)(blk + 0x12) = 0xffffu;
-          *(uint32_t *)(blk + 0x0c) = 0x8016ee40u;
+          *(uint32_t *)(blk + 0x0c) = 0x8015ee40u;
           c = MB32(0x1f8000c0u);
           for (i = 0; i < 3; i++) {
             uint32_t v = MB32(c + 0x54u + i * 4u);

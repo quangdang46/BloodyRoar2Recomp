@@ -8479,3 +8479,31 @@ This is now the PRIMARY versus→fight defect (independent of the audio
 slot-9 wedge which is the arcade/versus TestEvent symptom — likely the
 same incomplete-init root). Flow-routing agent a1f5c1dc + heapA agent
 03b98d5b hunting the faithful sequence.
+
+### N+43 — versus→fight reframed: ph-flicker re-entry, NOT save_flow / slot9
+
+Subagent a1f5c1dc (decisive flow-routing) REFUTED two prior hypotheses:
+- versus→fight does NOT route through save_flow_state_machine — that SM
+  is the OPTIONS/config screen (gs=11) stepper callback, reached only via
+  dialog_msg_dispatch case 9. chan_reset_register/clear only run there.
+- slot9=0 / mask 0xD during versus→fight is FAITHFUL — a session that
+  never opens options legitimately never arms audio slot9. The earlier
+  "missing slot9 → CD wedge" theory was a red herring for versus.
+
+REAL mechanism (live port 4490): versus→fight reaches gs=8 ph=8, then
+DAT_1f800001 (battle_flow sub-state) FLICKERS 8→1→8 each cycle. Every
+flicker re-enters select_screen_tick/intro_movie_state → re-stages
+heapB at 0x800D0000 → stomps P2's high-heapA .ANI (FC_ANI=0x800D1FF0,
+legit heapA high-water) → stream_pc into keyframe data → op 0xBF →
+FAIL-FAST unknown dispatch. Fight GTE loop (0x801851D8) runs between
+flickers. heapB=0x800D0000 (intro_movie value, NOT menu_res_load_sm's
+0x800F0000) is direct evidence of movie-phase re-entry.
+
+Also fixed (faithful, verified vs generated lui+addiu sign-extension):
+- menu.c:13256 stepper cb 0x8016d69c -> 0x8015d69c
+- menu.c:13337 stepper cb 0x8016ee40 -> 0x8015ee40
+(masked today: fn_lookup returns NULL; observably wrong guest values)
+
+NEXT: subagent 23003b64 hunting the 0x1f800001 writer that resets ph
+during fight (shared-SP-byte clobber vs rollback path). Arcade
+(09c=0→battle_frame) comparison pending.
