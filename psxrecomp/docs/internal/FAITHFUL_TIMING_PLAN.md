@@ -9616,3 +9616,54 @@ load is genuinely still running (heapA/heapB resource staging, the
 .a0861f48 heapA-overproduction + 8432f37e wedge agents' scope).
 The DMA-IRQ/ch4 thread is deprioritized unless a ch3-DMA-done-specific
 load is found.
+
+### N+81 — versus->fight REPRODUCED post-N+80: reaches battle init, then FAIL-FAST wild dispatch via bogus fn-ptr 0x80062401 (data-as-code); arcade->fight confirmed STABLE in-fight
+
+Fresh versus nav on :4370/:4372/:4747 (nav_to_fight.py): all three runs
+reach `gs=8 ph=8` FIGHT REACHED territory — [BRI] battle_round_init and
+[BSI] battle_struct_init(p1=0x801f0270 p2=0x1f800000) print — then at
+frame ~1871 the runtime FAIL-FASTs:
+
+    unknown dispatch: addr=0x0B808000 ra=0x00062409 a0=0x1F8000E8 a1=0x801F5328
+
+Post-mortem disp_ring tail (port 4372, before it was reaped) gives the
+exact dispatch chain, all at sp=0x801FFFC0:
+
+    seq 8777022  target=0x80195290  (gte_tr_load+0x20)
+    seq 8777023  target=0x801357DC  (burst_slot_active+0xb8)
+    seq 8777024  target=0x00062401  ra=0x801265F4   <-- bogus fn ptr
+    seq 8777025  target=0x0B808000  ra=0x00062409  <-- FAIL-FAST
+
+Decisive facts:
+- 0x80062401 is BELOW the exe text base (PS-X EXE t_addr=0x8011E800,
+  t_size=0xA0800 -> text ends 0x801BF000). It is RAM data, not code.
+  RAM@0x80062400 = E0200010 E001310E 014B0107 1D22CD24 ... (packed
+  data, not MIPS). The dispatch "succeeded" only because the
+  runtime-written-code path executed the data until a jalr produced
+  0x0B808000.
+- The value is misaligned (+1) and does not appear as an aligned dword
+  anywhere it was expected; it is a corrupted/derived pointer, not a
+  stale-but-valid code address.
+- a1=0x801F5328 = fighter struct (words there: 0x80078D10, 0x80071434,
+  0x80079154 ... -> 0x80078D10 holds u16-pair keyframe data = .ANI
+  stream). Consistent with N+75: P2's .ANI/stream data is the corrupt
+  input; the VM/action dispatch reads a handler ptr that is stream data.
+- CD side is CLEAN: wedged-instance dma_cdrom_history tail showed all
+  ch3 transfers completed=1, dicr constant 0x009000000 (ch4 IRQ only,
+  faithful per N+80), i_stat=0x04; pending Pause already fired.
+  DeliverEvent starvation is NOT the live blocker — N+80 stands.
+
+ARCADE REGRESSION CHECK: nav_arcade.py on :4746 reached gs=8 ph=8 and is
+still running at frame 55379+ in-fight (live query: gs=8 ph=8, cdrom
+idle, sector_available=1). Player-arcade->fight remains STABLE — the
+crash is versus/attract-specific (P2 resource path), matching N+71/N+73.
+
+=> The versus->fight wedge symptom has EVOLVED: versus now reaches
+ph=8 (the old TestEvent spin is gone — CD completion delivers), but
+fight init corrupts P2's action/.ANI stream and the action-VM dispatch
+jumps through a data word. Next probe: identify which table/struct
+supplied 0x80062401 (likely fighter->action/EV handler table indexed by
+a stream opcode or an unvalidated .ANI chunk pointer), and whether the
+P2 .ANI load wrote to the wrong heap slot (heapA-overproduction, N+74)
+or the stream itself is mis-decoded. Sibling gwatch/wtrace agents own
+the write-attribution hunt.
