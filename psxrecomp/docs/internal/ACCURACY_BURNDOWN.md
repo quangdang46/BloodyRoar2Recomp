@@ -4157,3 +4157,31 @@ use CDROM DMA ch3 or PIO, and which channel's done-handler is
 cd_dma_chan_reset (read the full handler table @0x801bde04 region +
 index->channel map). If file reads SHOULD use ch3 DMA, find why ch3 is
 never armed (chcr=0) during versus->fight loads.
+
+=== N+43d — handler 0x801bde04 = fn 0x8019B7E0 (188B, multi-entry) ===
+
+Correction to N+43c: handler slot @0x801bde04 holds 0x8019B7E0 (NOT
+0x8019B7E8). 0x8019B7E0 is a real generated function (188 bytes, 11
+blocks, many alias entries 0x8019B7F4/F C/82C/830/83C/850/864) — NOT
+clean-ported. cd_dma_chan_reset (0x8019b7e8) sits +8 inside this
+function's range, i.e. it is a block/entry of the same DMA-done handler
+body, not a separate dispatch target.
+
+Event block layout @0x801bddf0..0x801bde38 decoded:
+  0x801bddf0 = 0x1F8010F4  (DICR MMIO ptr — done-mask source)
+  0x801bde04 = 0x8019B7E0  (channel-done handler -> DeliverEvent path)
+  0x801bde14 = 0x1F801080  (DMA channel regs base ptr)
+  0x801bde30 = 0x00117350  (RAM buf)
+  0x801bde38 = 0xf1000008  (EvCB handle TestEvent polls — event OPENED)
+
+So the event IS opened (0x801bde38=0xf1000008 valid EvCB). The ONLY
+missing link is the DICR done-bit: file reads are PIO -> no DMA channel
+completes -> cd_cb7_run s1=0 -> handler 0x8019B7E0 never invoked ->
+DeliverEvent(0xF0000009/0x20) never fires.
+
+DECISIVE NEXT STEP (needs oracle): on DuckStation, does a Bloody Roar 2
+file read (cd_file_read_seq) arm CDROM DMA ch3 or read PIO? If HW uses
+ch3 DMA for sector->RAM, our recomp delivering via PIO is the bug (the
+DMA arm/kick path for file reads is missing -> no done-bit -> no event).
+Compare ch3 CHCR/DICR during an equivalent file load in the oracle.
+This is now a single concrete hardware-fidelity question, not a maze.
