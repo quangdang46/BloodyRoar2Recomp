@@ -13097,7 +13097,8 @@ uint32_t desc_transform_dispatch(uint32_t param_1,uint32_t param_2,
 extern int32_t cd_file_open_wait(uint32_t,uint32_t,uint32_t);
 extern int task_alloc_wrap_d(uint32_t,uint32_t,uint32_t,uint32_t,int32_t);
 extern void cd_pending_release(void);
-extern int heap_serialize();
+extern int32_t heap_serialize(uint32_t,uint32_t,uint32_t,uint32_t,
+                              uint32_t,uint32_t,uint32_t);
 extern uint32_t peak_track(void);
 extern int32_t display_cur_invalidate(void);
 extern int32_t display_pair_invalidate(void);
@@ -13465,13 +13466,14 @@ void heap_ptr_fixup(uint32_t param_1)
     /* tag25/29 hfix_in: dump raw header words a0+0,+4 and +8,+0xc */
     decomp_trace_record(25,param_1,MB32(a0+0u),0,MB32(a0+4u));
     decomp_trace_record(29,param_1,MB32(a0+8u),0,MB32(a0+0xcu)); }
-  /* Phase-1 relocates the nested index table. +8 holds a small word-offset
-   * into the block until resolved to the table's KSEG0 pointer, so
-   * `noff < 0x80000000` is both the presence test and an idempotence guard
-   * (a resolved pointer fails it). Blocks arrive with +4==0 yet carry a
-   * live relocation table, so gate on the unresolved offset, not +4. */
-  { uint32_t noff = MB32(a0 + 8u);
-    if (noff != 0 && noff < 0x80000000u) {
+  /* Phase-1 gate (generated 0x8016CB20): runs iff MB32(a0+4)==0 — the
+   * "already fixed" flag. +8 then holds a small word-offset into the
+   * block; it is resolved in place to the table's KSEG0 pointer. The
+   * previous port gated on the offset instead, which both skipped the
+   * pass for (+4==0, +8==0) blocks the guest still processes and ran it
+   * for (+4!=0, +8 small) blocks the guest skips. */
+  if (MB32(a0 + 4u) == 0) {
+    uint32_t noff = MB32(a0 + 8u);
     a2 = a0 + noff * 4u;
     MW32(a0 + 8u, a2);
     a3 = (int32_t)MB32(a2);
@@ -13482,16 +13484,20 @@ void heap_ptr_fixup(uint32_t param_1)
         a2 += 4u;
         if (a1 > 0) {
           do {
+            /* generated stores back to the SAME slot it loaded
+             * (a2 advances in the delay slot AFTER the sw), and the
+             * only test is bit31 — a 0x80000000 entry stores a0+0.
+             * The prior port wrote one word too far (post-increment)
+             * and added a spurious low-bits!=0 guard. */
             uint32_t v1 = MB32(a2);
-            a2 += 4u;
-            if ((v1 & 0x80000000u) != 0 && (v1 & 0x7fffffffu) != 0)
+            if ((v1 & 0x80000000u) != 0)
               MW32(a2, a0 + (v1 & 0x7fffffffu) * 4u);
+            a2 += 4u;
           } while (--a1 > 0);
         }
       } while (--a3 > 0);
     }
     MW32(a0 + 4u, 1u);
-    }
   }
   a3 = (int32_t)MB32(a0 + 0xcu);
   a2 = a0 + 0x10u;
@@ -13554,10 +13560,11 @@ uint32_t heap_record_emit(uint32_t param_1,uint32_t param_2,uint32_t param_3,
   v1 = MB32(param_1 + 0xcu);
   if (a3 >= v1) return s1;
   s3 = param_1 + 0x10u + a3 * 4u;
-  if (s2 == 0) {
-    s2 = (int32_t)(v1 - a3);
-    if (s2 <= 0) return s1;
-  }
+  /* generated tests the FINAL count (arg5, or v1-a3 when arg5==0) with
+   * blez before the first slot — a negative nonzero arg5 must not run
+   * the do-loop once. */
+  if (s2 == 0) s2 = (int32_t)(v1 - a3);
+  if (s2 <= 0) return s1;
   fr = br2_guest_frame(0x10);
   do {
     uint32_t a0 = MB32(s3);
@@ -13567,6 +13574,11 @@ uint32_t heap_record_emit(uint32_t param_1,uint32_t param_2,uint32_t param_3,
       sp20 = MB32(fr);
       if (sp20 != 0) {
         uint32_t s0 = s4 + 0x24u;
+        /* generated 0x8016CD14: sw zero -> rec+0 (u32), then five u16
+         * zeros at +4/+6/+8/+0xc/+0xe, +0x20=src cursor, +0x24=size.
+         * The +0 word was missing — the emitted record kept stale heap
+         * data in its tag/first word. */
+        MW32(s4 + 0x00u, 0);
         MW16(s4 + 0x04u, 0); MW16(s4 + 0x06u, 0); MW16(s4 + 0x08u, 0);
         MW16(s4 + 0x0cu, 0); MW16(s4 + 0x0eu, 0);
         MW32(s0 - 4u, old);          /* +0x20 = src cursor */
