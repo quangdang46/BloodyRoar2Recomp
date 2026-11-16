@@ -7241,3 +7241,45 @@ NEXT (faithful, class-level):
    queued sectors drain in order instead of collapsing to newest.
 3. Re-run arcade+versus; confirm pbd_calls>0, fighter_state_tick runs,
    screen renders.
+
+=== SESSION N+13 — coroutine DOES run every frame; break is NULL work-ptr ===
+fntrace_arm on the IRQ/coroutine path gave GROUND TRUTH (corrects N+12):
+- cd_intc_dispatch(0x8019A8EC, a0=ctx 0x801BCD50) AND
+  cd_cb8_dispatch(0x8019AE68, a0=1,a1=1,a3=0x4000) fire ONCE PER FRAME
+  (~560 entries). The deferred coroutine RESUMES every VBlank — the
+  "coroutine never resumes" hypothesis is DISPROVEN.
+- cd_cb8_dispatch body: bumps DAT_801bdde0 (frame counter), then reads a
+  function pointer at 0x801BDDC0 and jalr's it ONLY if non-NULL. Live
+  read_ram 0x801BDDC0 = 0 -> the per-tick WORK callback is NULL, so the
+  dispatch is a no-op besides the frame counter. func_0x801582C0
+  (cd_mode_store caller) and cd_mode_store(0x8019D4D0) NEVER appear in
+  the trace -> they are not reached on the VBlank path.
+- CORRECTION: func_0x801582C0 is chan_reset_register (fnmap.c:1582,
+  menu.c:9960) — CD channel INIT/reset that calls cd_mode_store(0). It
+  is NOT the per-IRQ handler. cd_mode_store has only 2 callers, both
+  reset paths. STATE(0x801BDE40)=1 is written by the async state machine
+  func_0x8019D5F0 (892B/75blk), pumped synchronously by func_0x8019D500
+  each poll — NOT by an IRQ callback.
+- Dispatch table live: 0x801BCD18=1(flag->dispatch path),
+  0x801BCD1C=0x8019ae68(cd_cb8_dispatch), 0x801BCD24=0x801979f8,
+  0x801BCD28=0x8019af7c, 0x801BCD48=0xd. Coroutine ctx 0x801BCD50 holds
+  resume PC 0x8019a87c (armed, valid).
+- CD state at wedge: reading=0 stat=0x02(MOTOR) pending=0 irq_flag=0
+  response_count=response_read=1 sector_available=1(leftover @pos2060/2340)
+  ring_dropped=5808. Last CD cmd seq613=Pause INT2 fired+acked frame10524.
+- DMA history: per-sector the game arms 3-word header DMA + 512-word data
+  DMA (sector_pos 0->12->2060 of 2340); each COMPLETES. ch3 works; the
+  game simply stops re-arming once the read is aborted.
+
+CONCLUSION (refined): the coroutine+IRQ delivery is HEALTHY. The break is
+that the async op func_0x8019D500->cd_seek_state_machine(0x8019D5F0) never
+observes the completion condition because the awaited CD response/sector
+stream was truncated by the game-issued Pause after 5808 ring drops. On
+real HW the buffered-read drive flow-controls (pauses production when the
+sector buffer is full) so NO sectors are lost; ours DROPS on ring-full in
+authentic mode -> guest sector accounting short -> state machine never
+sees "read done" -> STATE stays 0 -> infinite pump -> battle_flow never
+runs. NEXT: implement buffer-full backpressure for ReadN/ReadS sector
+production (gate deliver on ring space, resume on drain) matching real
+CD flow control; verify against Beetle sector-buffer-full semantics, then
+re-run arcade+versus for pbd_calls>0.
