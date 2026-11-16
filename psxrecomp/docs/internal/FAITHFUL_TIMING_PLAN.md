@@ -7768,3 +7768,42 @@ NEXT: trace which context-restore path delivers the stale x28
 (psx_fiber ucontext swap vs exception_jmpbuf longjmp vs deferred
 exception longjmp on wrong fiber). Watch g_exc_setjmp_epoch /
 s_pending_exception_longjmp around the versus->fight IRQ storm.
+
+=== SESSION N+23 — versus->fight crashes in .ANI event VM; character-data load never runs ===
+
+NEW CRASH (after N+22 fixes), distinct from the +0xbc vector write:
+  FAIL-FAST unknown dispatch: addr=0x80122DC8  ra=0x80126664
+  a0=0x1F8001F0 (P2 fighter)  a1=0x801F5440 (P2 FC_MOTION default table)
+  [PBD] absent -> post_battle_dispatch NOT reached; crash is EARLIER.
+
+MECHANISM: script_op_dispatch (game/battle.c:13697) reads an opcode byte from
+the script cursor (param_3+0x24) and calls handler *(0x801b5528 + op*4). The
+handler table has 19 entries; a garbage op indexes past it into string/data ->
+handler ptr = 0x80122DC8 (a data region) -> jump to non-code -> FAIL-FAST.
+Root: the .ANI event stream the cursor walks is NOT the selected character's —
+it reads frame/struct data as opcodes.
+
+WHY: versus fighters keep BOOT-DEFAULT descriptor tables. players_ctrl_init
+(game.c:2300) binds FC_MOTION=0x801f5328/0x801f5440 etc. at boot; nothing
+rebinds them to the selected characters' loaded .ANI/.ACT/motion data.
+
+CONFIRMED MISSING CALL: stage_char_data_load (0x80129218, game/menu.c:12083)
+— copies the per-character param block 0x80200000 + idx*23140 -> work buffers
+0x801c15f8/0x801c47c0/0x801cf88c/0x801e1b3c/0x801e0f6c — is NEVER invoked.
+[SCDL] instrumentation produced ZERO output across a full versus->fight run.
+It has no static clean-C caller; reachable only via an indirect guest
+function-pointer. The versus character-select->fight transition is missing
+the character-data populate (and likely the .ANI/motion file bind that goes
+with it).
+
+NOTE: fighter+0xbc (0x1f8001a4/0x1f8002ac) also shows ZERO gwatch writes, but
+that is now MOOT — the +0xbc crash was the N+22 wrong-base-register port bug,
+already fixed. Do not chase +0xbc as missing init.
+
+NEXT: trace the versus select->fight path (battle_flow_state_machine substates
+in game/menu.c:550, DAT_1f800001 machine; versus = DAT_1f80009b/09c modes) to
+find where the original issues the character-data + .ANI load — the indirect
+call that should reach stage_char_data_load / the per-character file loader —
+and what args (char index, stage). Compare against oracle execution. Then port
+the missing call faithfully; do NOT inject a fallback handler or fake the
+opcode table.
