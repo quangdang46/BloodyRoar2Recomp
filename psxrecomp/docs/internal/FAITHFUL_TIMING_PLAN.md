@@ -9246,3 +9246,16 @@ battle/menu workstream, not save.c.
 Outstanding (out of scope, flagged): ret_zero_e @0x80161630 is a
 `return 0` stub defined in game/bind.c:2173 but the guest body is 624
 bytes — needs the bind.c owner to port/delegate.
+
+### N+68 — second wild-dispatch signature: P1 fighter -> 0x0B808000 (same .ANI/stream-corruption family)
+
+psx_crash.txt now shows TWO fail-fast wild dispatches, same family:
+- addr=0x0B808000 ra=0x00062409 a0=0x1F8000E8(P1) a1=0x801F5328(P1 motion)
+- addr=0x80122F0C ra=0x80126664 a0=0x1F8001F0(P2) a1=0x801F5440(P2 motion)
+Both jump from a fighter battle-motion struct to garbage — the corrupted
+.ANI/event-stream dispatch (DeliverEvent-starved resource load leaves
+stale/corrupt motion+stream pointers). P1 variant seen in a plain headless
+run (attract path) at frame ~1871 inside battle_struct_init — confirms the
+corruption is not versus-specific; ANY path that reaches fight with an
+incomplete .ANI bind can wild-dispatch. Reinforces: fix the DeliverEvent/
+resource-completion gap (22f3537a) and the stale-FC_ANI re-bind.
