@@ -7064,3 +7064,63 @@ cd_file_load_sm/save_*_state_machine impls for the char .ANI/.ACT
 file table. versus hits the N+6 CD/SPU deadlock during this same load;
 arcade "completes" it but empty — possibly the same root (CD data not
 delivered/decoded) manifesting differently.
+
+### Session N+10 — CORRECTION + ROOT: unified blocker is CD-DMA ch3 stall, not fighter bind
+
+REVISED DIAGNOSIS (supersedes N+9's "bind skipped" hypothesis):
+
+- Fighters ARE bound when given attract/load time: live read of
+  0x1f8000e8/0x1f8001f0 showed FC_ANI=0x800722c4/0x800d47dc, nparts=22/19,
+  char=4/0, spawn pos +-1024, action-state blocks populated. N+9's all-zero
+  buffers were a PREMATURE-SAMPLE artifact (async bind not finished).
+- BUT the fight still never simulates: fighter ctrl + motion + matrix +
+  action-state buffers are byte-for-byte FROZEN over seconds (0 diffs),
+  screen ~99.7% black (673/243712 nonblack px), input produces no change.
+
+ROOT CAUSE (unified across arcade AND versus):
+- freeze_check: current_func=0x29CC (main thread busy-spin, NOT kernel
+  sleep), frame_count advances ~278/s via VBlank IRQ independently.
+- irqctx_ring: main thread interrupted at guest pc~0x8019A648 EVERY VBlank —
+  a BUSY-WAIT inside the BIOS CD/vsync region (vsync_wait_n 0x8019a5d8 /
+  cd_timer_read 0x8019a460 / cd_dispatch 0x8019a680), not a DeliverEvent sleep.
+- g_pbd_calls=0 across 126k frames: post_battle_dispatch (the real fight
+  driver, menu.c:6587, called from battle_flow_state_machine caseD_8 /
+  substate 8) NEVER runs -> the main thread never reaches the battle dispatch.
+- g_game_state=DAT_1f800000=8, DAT_1f800001=8 -> routes to
+  battle_flow_state_machine, whose caseD_8 calls post_battle_dispatch +
+  fighter_contact_resolve->fighter_state_tick. None of it executes.
+
+CD-ROM DEADLOCK (the actual wedge):
+- cdrom_state: pending.cmd=0x09(Pause) active=0, reading=0,
+  sector_read_pos=2060/2340 FROZEN, bfrd_set=12787 vs bfrd_clear=16
+  (~800x imbalance, still growing), ring_dropped=5808, i_stat=0.
+- dma_state: ALL channels inactive, dma_depth=0. CD data moves on DMA ch3
+  (cdrom_async, dma.c:1000 dma_cdrom_transfer_active / dma_advance:1129).
+- dma_cdrom_history: ch3 previously moved sector words fine (512-word chunks,
+  sector_read_pos 12->2060, lba 3774, completed=1). LAST state: ch3
+  chcr=0x00000000 active=0 remaining=0 madr=0x1D47C0 bcr=0x10200 — the DMA
+  finished its armed 512-word chunk MID-SECTOR (pos 2060 of 2340) and was
+  NEVER re-armed for the remaining ~280B + next sectors.
+- cdrom_dma_ready() returns TRUE (BFRD set, rb_available, pos+4<=size) but
+  no DMA is active to pull cdrom_dma_read() -> RB_.pos frozen at 2060 ->
+  the game's CD read never signals complete -> main thread polls CD status
+  at 0x8019A648 forever.
+
+WHY IT MANIFESTS AS "FIGHT REACHED BUT EMPTY": char .ANI/.ACT loads far
+enough to spawn fighters (FC_ANI bound), then a LATER streaming/stage CD
+read stalls mid-sector -> main thread blocks in the CD poll -> the battle
+substate machine (post_battle_dispatch -> battle_frame_tick ->
+fighter_state_tick) never runs -> fighters frozen, black screen. versus
+hits the same wall during its heavier resource load (N+6).
+
+NEXT: find why CD-DMA ch3 does not re-arm after completing a 512-word chunk
+mid-sector. Candidates: (a) DMA-completion IRQ (ch3 / DICR bit3) not
+delivered so the game's CD-read loop never re-kicks ch3; (b) the game's
+re-arm waits on a CD "data ready"/sector-done flag (INT1/STAT) that the
+model sets at the wrong granularity (per-sector vs per-chunk); (c) BCR word
+count 512 vs sector 2340B(585w) mismatch — the model or the game's chunking
+expects different completion. Inspect the CD-DMA complete path
+(dma.c cancel_async_transfer / delayed_complete / DICR ch3) and the game's
+CD-read loop at func 0x2970/pc 0x801978AC (the ch3 kick site) + the poll at
+0x8019A648. Compare against real HW: does ch3 auto-reload BCR or must the
+driver re-write CHCR per chunk?
