@@ -9086,3 +9086,30 @@ pc=0. The ACUTE versus->fight blocker is the IRQ storm (afcfd8bf scope);
 the round-cycling-without-match-end (78d6700f scope) is the underlying
 logic defect visible only if the storm is cleared. Both must be fixed for
 a stable versus fight.
+
+### N+61 — IRQ-storm source narrowed to DMA bit3 (not CDROM): ~19000 non-VB/non-CDROM deliveries, i_mask=0xD
+
+Freeze-dump forensics (psx_freeze_dump_1794856940):
+- exception_entries=21530, reentry_blocks=4950, i_mask=0xD (bits 0=VBLANK,
+  2=CDROM, 3=DMA).
+- ev_agg.deliver (BIOS DeliverEvent) totals only ~65: 0xF0000003/0x20 x34,
+  /0x10 x13, /0x40 x11, 0xF0000009/0x20 (CDROM) x3, 0xF4000001/0x4 x4.
+- => the 21530 IRQ-line TAKES almost never reach a BIOS DeliverEvent. The
+  INTC line stays asserted and the exception handler RFE's without servicing
+  the source -> immediate re-take.
+- vb_deliver~1354 + cdrom_deliver~1127 account for ~2481; the remaining
+  ~19000 deliveries are bit3 DMA (only other enabled source in 0xD).
+- cdrom.irq_fl=0x00 at freeze (HINTSTS cleared) and irqctx epc pinned at
+  0x8019A600/0x8019A648 (vsync_wait_n). CDROM is NOT the re-firing source.
+
+DMA bit3 is raised EDGE-triggered on DICR master-flag 0->1
+(dma.c raise_dma_irq_on_master_edge, detail=(dicr>>24)&0x7f). For ~19000
+deliveries the DICR per-channel done-flags must be re-setting repeatedly:
+either (a) the guest CD-file-load DMA (ch3) completes per-sector and the
+handler never clears the channel done-flag so each new completion re-raises
+the master edge, or (b) a channel is left enabled+complete so bit31 toggles.
+NEXT: dump DICR channel-done flags (bits24-30) + which channel completes in
+the storm window; check whether the game's DMA-done ISR acks DICR (writes
+channel flag clear) or only does a generic I_STAT ack. If the ISR path is
+delegated/starved (cd_file_load_sm continuation), the done-flags never clear
+-> faithful-core DMA IRQ storm. This is the acute versus->fight wedge.
