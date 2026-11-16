@@ -10207,3 +10207,26 @@ battle_flow_state_machine (menu.c:550, guest 0x8016FCC4) during versus init,
 frame ~1572. fault_addr=0x60200008FE0 = wild HOST pointer (guest/host ptr
 confusion), guest pc=0. Documented earlier at bf3ead3/N+85. Pinpoint agent
 a9d30c03 on it now (freeze dump psx_freeze_dump_...2042 + report).
+
+## N+98 — battle_flow_state_machine SIGSEGV = callee-saved x28 clobbered by host ctx-switch (RUNTIME bug, not game port)
+
+PINPOINTED (agent a9d30c03 + my disasm confirm). Fault `ldrb w21,[x8]` at
+battle_flow_state_machine+0x158 (static 0x1016582D0) = menu.c:566-567 loop head
+`joined_r0x8016fd30`. x8=[x28]; x28 SHOULD be &_g__DAT_1f80000c (bound once by
+constructor bind_globals_6 -> guest_for -> guest_at(0x1f80000c)=scratchpad+0xc).
+[x28] yielded wild host ptr 0x60200008FE0 (heap/mmap/fiber-stack territory, NOT a
+guest_at product: ram~0x112080008, scratch~0x112284000, openbus~0x13C4C2xxx).
+
+ROOT CAUSE (favored): callee-saved x28 CLOBBERED mid-function by host
+context restore — SAME bug as SESSION N+22 (~line 7756). Hardware watchpoint on
+g__DAT_1f80000c NEVER fires -> the global is fine; x28 drifts into a ring/context
+buffer holding host ptrs. Nondeterministic (frame ~1563-1572), versus-only timing
+-> POSIX-fiber scheduler / exception setjmp-longjmp not preserving x19-x28.
+NOT a guest/host confusion in menu.c logic; clean port faithful.
+GENERATED CANNOT produce this (uses cpu->gpr[]+psx_read/write, no host ptrs).
+
+FIX BELONGS IN psxrecomp RUNTIME (fiber/exception ctx-switch must save/restore
+callee-saved regs x19-x28), NOT game/. NEXT: lldb repro — watchpoint on
+&_g__DAT_1f80000c (fires only if global written=mechanism b) + break at bfsm+0x154
+print $x28 each hit (confirms x28 drift=mechanism a). If global watchpoint silent
+-> confirmed N+22 ctx-restore bug -> fix fiber/exception reg preservation.
