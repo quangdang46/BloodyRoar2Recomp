@@ -9778,3 +9778,84 @@ OPEN: which resource/stream is corrupt for versus+attract but not arcade
 menu.c heap_serialize*/stream_block_decode/terrain_packet_gen producers +
 heap_ptr_fixup scaling under audit (agent 67c5fb11); 0x80062401 write-
 attribution under trace (agent 8ef478a3).
+
+### N+85 — ROOT CAUSE of 0x80062401 wild-dispatch FOUND+FIXED: .ANI S4 cat_tab double-relocated by clean apply() (game/action.c)
+
+N+84 pinned the mechanism (OOB opcode -> string-table -> wild fn-ptr) and
+left "which resource/stream is corrupt" OPEN. This session traced the
+corrupt stream PC upstream to its producer and fixed the faithful bug.
+
+LIVE STATE at crash (post-mortem, debug :4821):
+  VM ctx (ScriptVM/cat) @0x801f55c0  [ctrl+0x3c of P1 ctrl 0x1f8000e8]
+    +0x00 obj_registry = 0x801f0001
+    +0x0c cat_tab      = 0x000EACEC   <-- WRONG (should be 0x80079AD0)
+    +0x14 cat_1        = 0x7F9635CB   <-- garbage (read from bad cat_tab)
+    +0x18 cat_2        = 0xAE64CC9B   <-- garbage
+    +0x24 pc           = 0x8007121C   <-- lands in .ANI keyframe/channel
+                                       data, NOT script bytecode -> opcode
+                                       byte 0x64 -> table[0x64]=0x00062401
+                                       -> wild dispatch 0x0B808000
+  ctrl+0x30 (FC_ANI .ANI blob base) = 0x8007121C  [== pc, blob base]
+    .ANI header there: size=0xB064, h[5]=sec_off[4]=0x88B4
+
+EXACT ARITHMETIC (proves double relocation):
+  correct cat_tab = ani_base + sec_off[4] = 0x8007121C + 0x88B4 = 0x80079AD0
+  observed cat_tab = sec_off[4] + 2*ani_base
+                   = 0x88B4 + 2*0x8007121C = 0x88B4 + 0x1000E2438
+                   = 0x1000EACEC -> (mod 2^32) = 0x000EACEC  == OBSERVED
+
+ROOT CAUSE — clean-vs-generated diff in game/action.c `apply()`
+(clean port of guest func_8017A05C, .ANI rebind+relocate):
+
+  Guest func_8017A05C (@0x8017A05C, generated full_34.c):
+    - seeds  vm+0x0c = h[5] = sec_off[4]  RAW file offset  (@0x8017A09C)
+    - relocation pass (@0x8017A260-0x8017A398) adds ctrl+0x30 base to
+      motion fields {0,4,8,c,ac,10,e8,ec,f0,f4} (10) and param_tbl
+      {8,c,2c,30} (4) ONLY. It does NOT touch vm+0x0c.
+    => vm+0x0c stays file-relative after apply().
+
+  Guest func_80181DB8 = ani_fixup (@0x80181DB8, generated full_37.c):
+    - UNCONDITIONALLY does cat+0x0c += ctrl+0x30  (@0x80181DBC-0x80181DCC)
+      BEFORE the ctrl+0xb once-flag check (which gates only the 5-word
+      cat_tab[] entry relocation, not cat_tab itself).
+    => cat_tab relocated to absolute EXACTLY ONCE, here.
+
+  Clean apply() had an EXTRA line the guest does not have:
+      if (vm)  GSU32(vm, 0x0c) += base;        // action.c:169 (removed)
+  so clean left vm+0x0c = sec_off[4]+base already absolute, then clean
+  ani_fixup added base a SECOND time -> cat_tab = sec_off[4]+2*base.
+
+FIX (game/action.c, apply()): deleted the vm+0x0c += base relocation and
+left a NOTE. vm+0x0c is now seeded raw by apply() and relocated exactly
+once by ani_fixup() — byte-faithful to the guest pair 8017A05C+80181DB8.
+apply()/ani_fixup() are static helpers of clean action_enter_fwd
+(0x80175FEC); no clean_table regen needed (no mapped fn changed).
+
+SECONDARY CORRUPTION this also explains: with cat_tab=0x000EACEC,
+ani_fixup's once-flag cat_tab[0..4] relocation (when ctrl+0xb==0) and the
+cat+0x14/+0x18 = cat_tab[1]/[2] reads all operate on phys 0xEACEC — a
+non-.ANI data region — producing the observed garbage cat_1/cat_2 and a
+mis-seeded VM pc.
+
+RUNTIME VERIFICATION:
+- ATTRACT (headless, :4821): reaches gs=8 ph=8 (fight live) and stays
+  stable — frames 6638->8698+ sampled gs=8/ph=8 continuously, and an
+  earlier run held ph=8 through frame ~19461 (was crashing ~1871 before).
+  Demo fights cycle ph=1<->ph=8 normally. cat_tab fix confirmed.
+- VERSUS (nav_to_fight.py :4821): still dies, but at frame ~1594 in
+  versus INIT with signal_11 epc=0x8019A648 (battle_flow_state_machine
+  SIGSEGV) — BEFORE fight entry / before action_enter/apply/ani_fixup run.
+  VERIFIED PRE-EXISTING + UNRELATED: stashed the fix, rebuilt original
+  binary, re-ran versus -> IDENTICAL signal_11 epc=0x8019A648 lastfunc
+  0x000029CC at frame 1594. This is the N+83 battle_flow_state_machine
+  SIGSEGV (battle.c, sibling scope), an earlier blocker upstream of the
+  cat_tab path. The cat_tab fix will apply once versus clears that.
+
+NOTE on debug-server "DEAD" readings: during heavy interpreted fight
+loops the debug TCP server starves (documented N+84); connection-refused
+polls are false-negatives — the process stays alive (frame keeps
+advancing). Confirmed via direct frame query.
+
+OPEN: battle_flow_state_machine SIGSEGV (versus init, sibling scope);
+versus fight-entry cat_tab path now unblocked in principle but unreachable
+until that earlier crash is fixed.
