@@ -9581,3 +9581,38 @@ channel-slot abstraction where slot4==DMA-ch3 (=> cb7_run's sequential
 tbl[s0]<->DICR-bit(24+s0) mapping or complete_transfer's done-bit is the
 divergence)? Also whether CD completion is meant via CDROM-IRQ path
 (cd_response_pump) not DMA-IRQ at all.
+
+### N+80 — REFINEMENT: ch4/cb7 is likely a RED HERRING for CD; CD completion probably uses CDROM-IRQ not DMA-IRQ
+
+Runtime-verified on :4745 (early CD-init snapshot):
+- cb7 channel-handler table @0x801BDDF4: ONLY tbl[4]=0x8019B7E0
+  (cd_dma_chan_reset); tbl[0,1,2,3,5,6,7]=NULL.
+- DICR=0x00900000 = bit23(master)+bit20(ch4 IRQ-enable); ch3 IRQ-enable
+  (bit19) NOT set.
+- All 3 cd_chan_cmd_submit call sites pass a0=3 -> CD data DMA = ch3.
+
+Analysis: cb7_run maps DICR done-bit(24+s0)->tbl[s0]. CD ch3 DMA-done ->
+DICR bit27 -> tbl[3]=NULL. tbl[4] fires only on ch4 done (bit28), and ch4
+IRQ-enable(bit20) IS set -> tbl[4] is armed for CHANNEL 4 (GPU DMAot),
+NOT CD ch3. Since ch4 DMA never runs during CD loads and CD loads DO
+complete (afcfd8bf reached battle_round_init), the CD completion event
+is delivered via the CDROM-IRQ path (i_stat bit2 -> cd_intc_dispatch ->
+cd_response_pump -> reason cb -> cd_dma_chan_reset -> DeliverEvent),
+NOT via ch3 DMA-IRQ. ch3 IRQ-enable being unset is therefore FAITHFUL —
+the game does not use DMA-IRQ for CD data completion.
+
+=> 78d6700f's "ch3 IRQ-enable unset -> DeliverEvent starves" is likely a
+RED HERRING for the CD-data path. The cb7 tbl[4]/DICR-ch4 is the GPU
+channel-4 handler, unrelated to CD ch3. afcfd8bf's CDROM-IRQ-works
+verdict stands.
+
+REMAINING real question (back to afcfd8bf's residual + heap agents):
+WHY does TestEvent(0xF1000008) spin 1.4M times during the versus/attract
+FIGHT-ENTRY re-loads specifically? Initial loads complete; the
+phase-loop re-loads don't. Likely: a per-command reason-callback cell
+(0x801BC84C/0x801BC848) not installed for the re-load command type, OR
+cd_response_process returns non-zero (status/reason mismatch), OR the
+load is genuinely still running (heapA/heapB resource staging, the
+.a0861f48 heapA-overproduction + 8432f37e wedge agents' scope).
+The DMA-IRQ/ch4 thread is deprioritized unless a ch3-DMA-done-specific
+load is found.
