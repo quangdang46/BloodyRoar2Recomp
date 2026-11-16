@@ -4095,3 +4095,36 @@ completion; (3) ring_dropped=1181 consumer starvation -> read sees gap;
 (4) accel fast-path (accel_consumer_waits) mis-sequencing. Compare ch3
 madr/bcr/chcr arming sequence vs a WORKING mode; check whether the read is
 XA/sector vs the stall being a mode-0xA0 raw-sector edge.
+
+=== N+43b — IRQ path IS live; gap is cd_dma_chan_reset not reached by handler chain ===
+
+Deeper instrumentation on wedged :4405:
+
+- cdrom_command_history: game reads SECTORS via PIO (0x1F801800 data reg).
+  Pattern = SetLoc(0x02)->ReadN(0x06)->Pause(0x09) one sector at a time.
+  Sectors ARE delivered+consumed (sector_pos cycles 0->2060->reset).
+  cdrom_trace shows continuous register activity + set_irq/fire_irq
+  (i_stat=0x4) + one 'overwrite' event (seq 56410 val=0x80C, a response
+  overwritten before delivery).
+
+- irqctx_ring: CD-ROM IRQs DO reach the CPU interrupt handler —
+  istat=0x00000004, take_pc=0x8019A648 / 0x8019A600 (CD ISR entry),
+  ra_exit=0x8019A53C, same_thread=1/restored=1. VBLANK IRQs interleave.
+  => IRQ presentation + CPU dispatch WORK.
+
+- cd_intc_dispatch clean wrapper @0x8019a8ec is NOT in clean_table ->
+  dispatches to generated br2eu_func_8019A8EC. The @0x801bce00 counter=0
+  is a FALSE signal (clean wrapper bypassed, not proof IRQ dead).
+
+- intc handler table @0x801bcd1c (u32[11]) has only 3 valid:
+  [0]=0x8019ae68 [2]=0x801979f8 [3]=0x8019af7c; rest 0.
+  cd_dma_chan_reset (0x8019b7e8) is NOT a table entry -> it is invoked
+  deeper, by one of those handlers or the read-completion path, under a
+  condition not met during versus->fight.
+
+CONCLUSION: sector-level CD I/O + IRQ delivery WORK. The file-loader's
+completion event (0xF0000009/0x20 via cd_dma_chan_reset->DeliverEvent)
+is not generated because whatever calls cd_dma_chan_reset isn't reached.
+NEXT: trace which of the 3 intc handlers (or read-completion fn) calls
+cd_dma_chan_reset in generated code, and what state gates it. The
+'overwrite' response-loss event is a secondary suspect for count desync.
