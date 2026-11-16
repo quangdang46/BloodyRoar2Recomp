@@ -9074,3 +9074,15 @@ rounds -> infinite loop -> eventually IRQ/heap crash.
 78d6700f tracing win-counter/match-end; afcfd8bf on CD-IRQ. The unifying
 suspect remains: versus fight resources/combat state not fully initialized
 -> rounds can't resolve -> phase loop.
+
+### N+60 — live versus repro confirms acute wedge = IRQ storm at ph=8 (fighter state frozen, debug starved)
+
+Fresh nav_to_fight.py run on :4700 reached gs=8 ph=8 (FIGHT REACHED) at
+frame ~4323 then wedged: process pinned 100% CPU, debug server stops
+answering read_ram, fighter base structs (0x1f8000e8/0x1f8001f0) byte-
+identical across samples. Matches N+55/N+56: per-frame IRQ storm inside
+vsync_wait_n/CD deferred path -> guest spins, all progress frozen, eventual
+pc=0. The ACUTE versus->fight blocker is the IRQ storm (afcfd8bf scope);
+the round-cycling-without-match-end (78d6700f scope) is the underlying
+logic defect visible only if the storm is cleared. Both must be fixed for
+a stable versus fight.
