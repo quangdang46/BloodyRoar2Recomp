@@ -9131,3 +9131,27 @@ arrives -> load never finishes -> it retries the sector DMA forever ->
 DMA IRQ per retry. THE FIX IS THE CD DEFERRED-IRQ/DeliverEvent RESUME
 (afcfd8bf scope: cd_ctx_restore->cd_chan_full_init->cd_intc_dispatch->
 DeliverEvent). Clearing that unblocks the load AND stops the DMA storm.
+
+### N+63 — CORRECTION to N+62: DMA storm channels are ch2(GPU)+ch6, NOT confirmed ch3; CDROM IRQ actually fires 1713x
+
+Re-examined freeze dump (1794856940) dma_trace.tail + irq_counts:
+- dma_trace completions observed: ch=2 (GPU, tot=65536w, pc=0x80192EBC,
+  madr=0x801E620C) and ch=6 (tot=2080w, pc=0x801926A8, madr=0x801E618C).
+  These are RENDERING DMAs (GPU VRAM + ordering-table), NOT ch3 CD-DMA.
+  The 24-entry tail may not represent the whole storm — per-channel IRQ
+  detail (psx_irq_raise bit3 detail=(dicr>>24)&0x7f) still needed.
+- irq_counts: irq_deliver=22459, vb_raise=1871/vb_deliver=1701/vb_ack=1704,
+  cdrom_deliver=1713. So CDROM i_stat bit2 DOES fire ~1713x (~1.1/frame) —
+  the CDROM IRQ path is ACTIVE, not dead.
+- ev_agg.deliver 0xF0000009/0x20 = only x3 is a DIFFERENT metric (BIOS
+  DeliverEvent for that one event class) vs cdrom_deliver=1713 (raw CDROM
+  IRQ-line takes). CDROM IRQs fire but rarely produce the file-complete
+  event the load waits on.
+
+=> Revised: the ~19000 non-VB/non-CDROM IRQs are DMA bit3 from RENDERING
+channels (ch2 GPU + ch6) repeating during the intro_movie/cd_file_load
+path — likely movie/graphics DMA retried because a frame/vsync or CD
+completion event starves. The CD deferred-coroutine DeliverEvent gap
+(afcfd8bf) remains the leading root but the proximate IRQ spammer is
+rendering DMA, not CD sector DMA. Needs per-channel irq detail + which
+DMA channel's done-flag toggles in the storm window.
