@@ -3,6 +3,7 @@
  * Guest globals bound via g_DAT_* (bind.c arena, payload-backed);
  * s_* strings resolve through guest_at into the loaded EXE image. */
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -2823,8 +2824,14 @@ uint32_t lzss_decode(uint32_t dst,uint32_t src)
 
 void lzss_trap(uint32_t a0,uint32_t a1)
 {
-  (void)a0; (void)a1;
-  __builtin_trap();
+  /* Mode-1 (break) should be unreachable on real data; reaching it means the
+   * compressed asset header is corrupt (bad CD/file delivery upstream). Halt
+   * with state instead of a bare trap so the freeze dump + decomp_trace ring
+   * capture the failing dst/src for diagnosis. */
+  extern void psx_fatal_halt(const char *reason);
+  char msg[96];
+  snprintf(msg, sizeof(msg), "lzss mode1 break a0=%08x a1=%08x", a0, a1);
+  psx_fatal_halt(msg);
 }
 
 /* ================= appended ports (psx_payload disasm) ================= */

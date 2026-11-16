@@ -1189,7 +1189,7 @@ extern int      getCopReg(int,int);
 extern void     setCopControlWord(int,int,int);
 extern int lut_cos_q12();
 extern int lut_sin_q12();
-extern int FUN_80194500();
+extern int FUN_80194500(uint32_t a0, ...);
 
 void battle_camera_step(uint param_1,byte *param_2,byte *param_3,int param_4)
 {
@@ -6969,9 +6969,9 @@ undefined4 * vec3_step_toward_spd(undefined4 *param_1,short *param_2,short *para
   int local_38;
   int local_34;
   int local_30;
-  int local_28;
-  int local_24;
-  int local_20;
+  int local_28 = 0;
+  int local_24 = 0;
+  int local_20 = 0;
   undefined4 local_18;
   undefined4 local_14;
   local_38 = (int)*param_3 - (int)*param_2;

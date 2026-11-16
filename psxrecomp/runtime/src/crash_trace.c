@@ -1039,6 +1039,14 @@ void psx_crash_trace_install_handlers(void) {
 #ifdef SIGBUS
         sigaction(SIGBUS, &sa, NULL);
 #endif
+#ifdef SIGTRAP
+        /* Guest `break`/`teq` and __builtin_unreachable land here; without a
+         * handler the process dies silently with no fault PC/symbol. */
+        sigaction(SIGTRAP, &sa, NULL);
+#endif
+#ifdef SIGILL
+        sigaction(SIGILL, &sa, NULL);
+#endif
     }
 #endif
     /* Soft-exit on all hosts (incl. MinGW): MSYS2 kill -TERM must flush PGO. */
