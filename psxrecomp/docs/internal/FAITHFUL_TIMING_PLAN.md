@@ -8948,3 +8948,32 @@ versus->fight crash families status:
   (a) .ANI stream-PC corruption           open (phase-loop symptom, N+51/52)
   CD deferred-IRQ wedge                  open (agent afcfd8bf)
   phase re-entry loop b92 stuck@12        open (agent 78d6700f)
+
+### N+55 — post-host-ptr-fix versus->fight crash = pc=0 jump inside CD/vsync path (ra=intro_movie cd_file_load_sm)
+
+Fresh versus repro (port 4601, build w/ d9cd287 host-ptr fix + 445b1a0
+heap_record_emit) still crashes, but signature CHANGED — no longer the
+.ANI wild-dispatch / host-ptr misaligned target. Now:
+
+freeze psx_freeze_dump_..._1794856792: wedge_kind=fatal,
+exception_entries=21524 (exception storm), cpu.pc=0x00000000,
+epc=0x8019A648, ra=0x80126664, a0=0xFFFFFFFF, a1=0x1F801110 (CDROM reg),
+s1=0x1F800000, sp=0x801FFFC0.
+
+- epc 0x8019A648 is inside vsync_wait_n (renames 0x8019a5d8): reads a
+  counter at 0x801BDDA0, compares vs a0. Called within the CD file-load /
+  frame-present path.
+- ra 0x80126664 = intro_movie_state's cd_file_load_sm call site (game.c
+  :1827/:1835 region) — SAME ra as the file-0x14->0x800D0000 staging load.
+- a1=0x1F801110 = CDROM register -> CD-command path.
+- => the versus->fight now dies by jumping to pc=0 somewhere in the
+  intro_movie cd_file_load_sm -> CD/vsync/deferred-coroutine chain.
+  Consistent with the CD deferred-IRQ resume gap (agent afcfd8bf): a null
+  resume-PC / uninitialized handler in the deferred dispatch.
+
+This is likely the SAME root as the CD wedge — versus->fight re-runs
+intro_movie_state (phase loop N+52) which issues cd_file_load_sm; if the
+deferred coroutine/context is corrupt or a dispatch entry is null -> pc=0.
+
+Arcade regression: nav_arcade 4600 -> FIGHT REACHED gs=8 ph=8 stable.
+No regression from committed fixes.
