@@ -3804,3 +3804,28 @@ check the sound-driver state (sequencer pc, command queue, "music playing"
 flag) and whether sound init (chan_reset_register/audio_seq_reset path)
 completed for this fight vs menus/attract. Compare oracle: does versus->fight
 on real HW start voices immediately?
+
+=== SESSION UPDATE N+35 — CD read is NOT stuck: Pause completed; wedge is purely the SPU/sound stream ===
+
+cdrom_state at wedge decoded: read_msf=[1,58,70] ahead of seek_msf=[1,58,65]
+(5 sectors delivered), last_sector lba=8769 size=2340 mode=0xA0 have_raw=1.
+reading=0 + sector_available=1 + sector_read_pos=2060/2340 = a Pause(0x09)
+stopped the read mid-sector — NORMAL (cd_read_finish_cb issues Pause at read
+end; the partial sector stays buffered). pending.cmd=0x09 active=0 phase=1 =
+the Pause completion already fired and self-cleared. irq_flag=0,
+response_count=1/response_read=1, irq_enable=0x07.
+
+CONCLUSION: the CD file-read path is HEALTHY — it delivered sectors and
+completed its Pause cleanly. cd_file_read_seq -> cd_seek_complete_poll ->
+TestEvent(slot8) is NOT waiting on a stuck CD command. It is waiting on
+DeliverEvent(F0000009/0x20), which is produced ONLY by DMA ch4 (SPU stream)
+completion via handler[4]=cd_dma_chan_reset. That stream is silent
+(spu_voices active_mask=0) because the sound sequencer never activated a
+voice — the stream consumer starved and stopped re-arming ch4.
+
+ROOT ISOLATED TO: the versus fight never starts its music/sequence — the
+sound driver's play command or voice activation is missing/blocked, upstream
+of CD/DMA/IRQ. This is a SOUND-subsystem (sequencer/command-processor)
+defect, not a CD-ROM defect. NEXT: find the sound command queue / sequencer
+tick and check whether versus->fight issues a music-play that menus/attract
+do issue. Compare oracle audio state at the same point.
