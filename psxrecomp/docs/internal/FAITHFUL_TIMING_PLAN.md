@@ -9317,3 +9317,43 @@ jumps to garbage. Fixing the DeliverEvent/resource-completion link
 (22f3537a) + the stale-FC_ANI re-bind should fix ALL fight paths, not just
 versus. This RAISES the priority of the resource-completion fix — it is
 the difference between "some fights work" and "every fight works."
+
+### N+72 — CD deferred-IRQ path VERIFIED working; clean_table guest_at regression fixed; .ANI heap-alloc is the live blocker
+
+Two corrections landed this session:
+
+1. **CD deferred-interrupt path is faithful end-to-end** (agent afcfd8bf,
+   investigation-only, no edits). Live + generated-code trace proves the
+   full chain: CDROM irq_flag -> fire_cdrom_irq -> kernel deferred
+   coroutine -> cd_ctx_restore (0x8019ADCC) -> cd_chan_full_init
+   (0x8019A814) -> cd_intc_dispatch (0x8019A8EC) -> clean
+   cd_response_pump (cd.c:4454, byte-faithful to generated
+   br2eu_func_801979F8) -> cd_dma_chan_reset -> DeliverEvent
+   (0xF0000009,0x20). A versus run reached battle_round_init +
+   battle_struct_init = ALL CD file loads completed. The earlier
+   "DeliverEvent starvation" theory is RESOLVED for the current blocker —
+   cd_response_process returns 0 correctly, EvCB fn=0 is legitimate
+   MARK-mode flag-only behavior (bios_hle.c:221-256). N+64's residual
+   wedge question is moot unless the TestEvent spin recurs AFTER the heap
+   fix.
+
+2. **src/clean_table.c regen regression FIXED** (commit 88ea0c4).
+   gen_clean_table.py's param_kind() classifies intptr_t as scalar 'val',
+   so a regen dropped guest_at() for three clean fns taking a HOST pointer
+   as intptr_t param_1 (pad_state_refresh 0x8012a72c, attract_menu_dispatch
+   0x8014751c, battle_flow_state_machine 0x8016fcc4) -> host deref of a
+   guest address -> SIGSEGV (afcfd8bf saw fault_addr=0x801FFFD2). Added
+   HOST_PTR_PARAMS override (per-addr param-index set) so the generator
+   emits ((intptr_t)guest_at(cpu->gpr[N])) on every regen. intptr_t stays
+   ambiguous (match_end_check/frame_tick take a GUEST addr and call
+   guest_at internally -> need raw), so override is per-addr not global.
+   Verified: post-fix run reaches the SAME documented 0x0B808000 heap
+   fatal at frame ~1871, not the pointer SIGSEGV.
+
+**Live blocker (unchanged, now isolated):** the .ANI/heapB stomp.
+intro_movie_state (game.c:1799) resets _DAT_801e3cfc=0x800d0000 (game.c:1832)
+and cd_file_load_sm(0x14)+stream_block_decode writes over P2's .ANI which
+lands ~0x800d1xxx. Spawned agent f3f44605 to determine whether the .ANI
+heap allocation (which cursor: heapA vs heapB/_DAT_801e3cfc) is faithful
+or a clean-port bug, scoped to game/action.c, ani.c, ev.c, battle.c.
+78d6700f still owns the match-end/combat-resolution root cause.
