@@ -1038,3 +1038,38 @@ ch4 CHCR 0x1F8010D8) and what SPU/status poll (SPUCNT / blk+0xd7 &0x7ff
 idle wait in cd_chan_reg_init) precedes it — determine whether the gate
 reads a status bit our SPU/CD emulation never sets, or whether the kick
 code path is unreached. Compare vs oracle at same point.
+
+=== N+32 — wedge narrowed to missing ch4/SPU-stream KICK (not a dropped event) ===
+Live-verified on wedged proc (port 4370, frame frozen 2319):
+- DeliverEvent(F0000009/0x20)->slot8 is produced ONLY by DMA channel-4
+  completion: cd_cb7_run walks DICR donemask -> handler[ch]; live handler
+  table @0x801bddf4 has ONLY handler[4]@0x801bde04 = 0x8019B7E0
+  (cd_dma_chan_reset -> cd_bios_svc_07 DeliverEvent). ch3 CD-data has
+  handler[3]=0 (handled via CDROM IRQ -> cd_response_pump instead). So the
+  event REQUIRES a ch4 DMA completion.
+- ch4 state: DPCR-enabled (channel_enabled(4)=bit19 of 0x3B3BBBBB=1),
+  DICR IRQ-armed (dicr=0x00900000 bit20=ch4 en + bit23 master), regs
+  programmed madr=0xDDE60 bcr=0x03490010 chcr=0x201 (dir+sync, NO start
+  bit24). execute_ch4_spu would move payload then schedule_delayed_complete
+  (~13k words * 48cyc) -> complete_transfer -> DICR bit28 -> DMA IRQ.
+  dma_advance DOES drive advance_delayed_complete for all ch incl ch4, so a
+  kicked ch4 WOULD complete. It never did: spu_ta total=0, active=0,
+  dicr done-bits=0.
+- => ch4 CHCR start bit is NEVER written: the game's channel-4 kick never
+  fires. NOT a runtime DMA bug (kick->complete->IRQ path is sound) and NOT
+  a dropped DeliverEvent (slot8 ENABLED+matching would accept it).
+- cd_reg_window_op diag counters (0x801bce30..44): op3 calls=8, op3 -2
+  poll-timeouts=0, last op3 ret=0 SUCCESS -> the ch4 kick is NOT skipped by
+  the CD/SPU status poll timeout (hypothesis b disproven for this wedge).
+- cd_chan_cmd_submit diag (0x801bcf00..94): total calls=554, ch3-arms=554,
+  ch3-kick-reached=554, last channel arg=3, last CHCR=0x11000000 -> ALL
+  submits are channel 3 (CD data). Channel 4 is NEVER submitted via
+  cd_chan_cmd_submit -> it uses a DIFFERENT kick path (SPU driver / dedicated
+  stream submission / BIOS SPU DMA), still to be located.
+NEXT (decisive): find the ch4 kick site — the code that writes ch4 CHCR
+(0x1F8010C8) start bit or calls the SPU/stream DMA submit. It is gated on a
+ready/status condition upstream in the game's streaming engine (analogous
+to the *(0x801bcc40)&0x40 wait that gates ch3 in cd_chan_cmd_submit). Trace
+the in-fight streaming setup: which fn arms ch4 regs (the madr/bcr/chcr=0x201
+write DID happen) vs which fn should add the start bit, and what status bit
+that second write waits on. Compare vs oracle at versus->fight entry.
