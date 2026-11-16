@@ -9113,3 +9113,21 @@ the storm window; check whether the game's DMA-done ISR acks DICR (writes
 channel flag clear) or only does a generic I_STAT ack. If the ISR path is
 delegated/starved (cd_file_load_sm continuation), the done-flags never clear
 -> faithful-core DMA IRQ storm. This is the acute versus->fight wedge.
+
+### N+62 — DMA IRQ storm is a SYMPTOM of CD file-load retry loop, not a DICR-ack bug
+
+DICR model (dma.c): per-channel done-flags bits24-30 are write-1-to-ack
+(DICR write @0x1F8010F4, dma.c:1252-1266); master flag bit31 = OR of armed
+done-flags; i_stat bit3 raised EDGE-triggered on master 0->1 only
+(raise_dma_irq_on_master_edge). ~19000 bit3 deliveries REQUIRE the master
+flag to toggle 0->1 ~19000 times => the done-flags ARE being cleared each
+cycle (the game's DMA-done ISR RUNS and write-1-acks DICR), then a NEW ch3
+CD-DMA completes and re-sets them.
+
+=> NOT a missing-DICR-ack bug. The ISR path works. The storm is the CD
+file-load coroutine issuing ~19000 ch3 DMA reads because the deferred
+completion event (DeliverEvent 0xF0000009/0x20, only x3 delivered) never
+arrives -> load never finishes -> it retries the sector DMA forever ->
+DMA IRQ per retry. THE FIX IS THE CD DEFERRED-IRQ/DeliverEvent RESUME
+(afcfd8bf scope: cd_ctx_restore->cd_chan_full_init->cd_intc_dispatch->
+DeliverEvent). Clearing that unblocks the load AND stops the DMA storm.
