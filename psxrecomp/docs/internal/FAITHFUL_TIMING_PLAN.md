@@ -8977,3 +8977,26 @@ deferred coroutine/context is corrupt or a dispatch entry is null -> pc=0.
 
 Arcade regression: nav_arcade 4600 -> FIGHT REACHED gs=8 ph=8 stable.
 No regression from committed fixes.
+
+### N+56 — versus->fight crash detail: per-frame exception storm inside vsync_wait_n region
+
+restore_trace tail (every frame 1517-1524 identical pattern):
+  rfe_resume  -> 0x8019A648 / 0x8019A600   (vsync_wait_n body, func 0x29CC)
+                 ra=0x8019A53C sp=0x801FFF78 in_exc=1
+  restore_escape/resume -> 0x8019A87C       (IRQ/exception handler, func 0x2970)
+                 sp=0x801BDD30 epc=0x8019A648/0x8019A600 istat=0x4/0x1
+
+=> an IRQ/exception fires during vsync_wait_n EVERY frame; handler
+0x8019A87C runs; rfe resumes into vsync_wait_n; re-faults. exception_entries
+=21524 over 1524 frames (~14/frame), exception_reentry_blocks=4950 (nested
+re-entry = abnormal). Ends pc=0 (jump to null) -> fatal.
+
+istat toggles 0x00000004 / 0x00000001; i_mask=0x0000000D. The stuck IRQ is
+the prime suspect — a level-triggered device IRQ (CD? VBLANK? DMA ch?) not
+being acknowledged/cleared, OR the deferred-coroutine resume corrupting
+state so the handler re-faults. Directly relevant to afcfd8bf (CD deferred
+IRQ) — the versus->fight intro_movie cd_file_load_sm path is where it
+manifests (ra=0x80126664).
+
+vsync_wait_n @0x8019a5d8 reads counter @0x801BDDA0; epc alternates
+0x8019A648/0x8019A600 = the poll/compare block.
