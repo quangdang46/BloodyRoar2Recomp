@@ -8901,3 +8901,30 @@ two-side versus dispatch, vs arcade's battle_frame path.
 
 LIVE REPRO: port 4520 alive+stable gs=8/ph=8 versus (09c=1), gwatch armed;
 log /tmp/br2_4520.log. guest_watch.c instrumentation kept (observability).
+
+### N+53 — agent roster + committed faithful fixes; CD coroutine agent respawned
+
+Committed this session:
+- 445b1a0 fix(menu): heap_record_emit faithful record layout (u16 zeros
+  +0xc/+0xe, drop extra +0 store) — matches generated 0x8016CC5C.
+- battle.c guest_of(param_2/param_3) host->guest ptr fixes (uncommitted,
+  agent 8a8f7d6b in flight) — build clean.
+
+Agent 34845d78 (versus ph-writer) DONE: phase re-entry loop, b92 stuck@12.
+Agent 03b98d5b (heapA) DONE: heap_record_emit fix + confirmed versus still
+blocks on CD deferred-IRQ deadlock (EvCB 0xF0000009/0x20 fn=0, CD Pause
+pend, cd_ctx_restore->cd_intc_dispatch->DeliverEvent not firing).
+Agent c112f7fb (CD coroutine) returned EMPTY — respawned as afcfd8bf with
+full evidence.
+
+Active agents (disjoint scope):
+- 78d6700f  versus round-progression: what advances s1[0x92] past 12
+            (battle.c/fight.c; may NOT edit menu.c/cd.c).
+- 8a8f7d6b  host-ptr leak: guest_of fixes in battle.c camera/dual_target.
+- afcfd8bf  CD deferred-IRQ coroutine resume (cd.c + runtime IRQ dispatch).
+
+Convergent hypothesis: CD deferred-event delivery (DeliverEvent
+0xF0000009/0x20) is the force multiplier — if file-load completes, versus
+round resources finish -> round progresses -> b92 advances -> no phase
+loop -> no intro_movie re-stage -> no .ANI stomp. The phase-loop and the
+CD stall likely share this root.
