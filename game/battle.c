@@ -6288,7 +6288,11 @@ void triple_track_spawn(int param_1,undefined2 param_2,int param_3)
     *(int *)(&DAT_801f0740 + param_1 * 4) = iVar2;
     if (iVar2 != 0) {
       puVar4 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x10))));
-      puVar3 = (undefined2 *)(&PTR_DAT_801b1e8c)[param_3];
+      /* Table @0x801b1e8c holds 4-byte GUEST pointers to u16-pair data.
+       * g_PTR_DAT_801b1e8c is uint8_t** so [&PTR][i] reads 8 bytes at i*8,
+       * folding two guest entries into one bogus host ptr (SIGSEGV
+       * 0x801B1DE4801B1DD4). Index as u32 and guest_at() the entry. */
+      puVar3 = (undefined2 *)guest_at(((uint32_t *)&PTR_DAT_801b1e8c)[param_3]);
       *(undefined2 *)((intptr_t)puVar4 + 0xe) = param_2;
       *(short *)(puVar4 + 2) = (short)param_1;
       *(undefined2 *)(puVar4 + 3) = 0;
