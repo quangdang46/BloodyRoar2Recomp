@@ -8776,3 +8776,37 @@ OR heapA isn't reset/freed where the original does.
 heapB base 0x800d0000 is FAITHFUL (generated uses it) — NOT the bug.
 The bug is heapA over-production pushing P2's S0 table over the boundary.
 heapA agent 03b98d5b has the trajectory; this is the concrete proof.
+
+### N+50 — COMPLETE causal chain proven: ph-flicker -> heapB reset -> .ANI overwrite -> ev_stream crash
+
+Synthesis of N+43..N+49 with the decisive heap-cursor evidence:
+
+versus_crash :4401  heapA=0x800680dc heapB=0x800d0000 P2motion=0x801f5440
+              P2 streamPC(+0x84)=0x800dc99a  (first byte 0xdf -> OOB -> halt)
+arcade_live  :4520  heapA=0x800e9078 heapB=0x800dc800 (works, frame advancing)
+
+DECISIVE: heapB cursor = 0x800d0000 = the arena BASE (i.e. heapB was RESET to
+base / is re-staging from empty), yet P2's .ANI stream sits at 0x800dc99a —
+ABOVE the cursor, inside the region heapB is actively re-staging. A bump
+allocator never places a live allocation above its own top; the only way
+.ANI@0x800dc99a coexists with heapB=0x800d0000 is that heapB was reset AFTER
+the .ANI was bound, and the re-stage wrote sound/intro data over it.
+
+FULL CHAIN (all live-verified):
+  DAT_1f800001 flicker 8->1->8 (versus-only; arcade stable)
+    -> select_screen_tick / intro_movie_state re-entered
+      -> heapB (_DAT_801e3cfc) reset to 0x800d0000, re-stages intro/sound
+        -> overwrites P2's already-bound .ANI event stream @0x800dc99a
+          -> motion+0x84 still points there; first byte now 0xdf (was .ANI op)
+            -> ev_stream_dispatch op=223 -> h=*(0x801b4e68+223*4) OOB
+              -> br2_call_generated(garbage) -> psx_unknown_dispatch -> halt
+
+Fresh-build repro :4600 (current tree) crashed even earlier — signal_11
+SIGSEGV during vs_init (ph 0xf1->0) — versus->fight has MULTIPLE crash
+manifestations (ev_stream halt, SIGSEGV, SIGTRAP, CD wedge) all downstream of
+the same versus-only init/heap corruption. Arcade->fight is unaffected.
+
+FIX (faithful, owned by ph-writer agent 34845d78 + heapA agent 03b98d5b):
+stop the DAT_1f800001 8->1->8 re-entry so intro_movie_state/heapB staging
+runs ONCE before fighter .ANI bind; OR make heapB re-stage not clobber a
+bound .ANI region. Do NOT bounds-check ev_stream_dispatch op (masks = stub).
