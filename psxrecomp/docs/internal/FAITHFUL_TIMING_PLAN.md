@@ -9155,3 +9155,26 @@ completion event starves. The CD deferred-coroutine DeliverEvent gap
 (afcfd8bf) remains the leading root but the proximate IRQ spammer is
 rendering DMA, not CD sector DMA. Needs per-channel irq detail + which
 DMA channel's done-flag toggles in the storm window.
+
+### N+64 — CORRECTION (major): NOT an IRQ storm — it's a logic busy-loop taking NORMAL IRQs; DMA ruled out
+
+event_ring.json per-source IRQ_DELIVER tally (istat bit -> count):
+  bit0 VBLANK=1869, bit2 CDROM=1497, bit7 SIO=972 (all early menu/attract
+  cycles 286-301M, NOT fight), bit3 DMA=60 only.
+dma_chan_hist (freeze 1794857902): ch2=1091, ch3=1336, ch6=604 DMA dones
+  total ~3036 — far below irq_deliver=22459, and bit3 delivered only 60x.
+
+=> My N+61/N+62/N+63 "DMA bit3 storm" theory is WRONG. There is no abnormal
+IRQ source re-firing. The ~22459 deliveries are the NORMAL VBLANK+CDROM
+mix accumulated because the guest is stuck in a BUSY LOOP: cd_file_load_sm /
+vsync_wait_n spins thousands of iterations, each taking ordinary VBLANK+CDROM
+IRQs. The wedge is a LOGIC loop (deferred completion event never arrives ->
+load state machine never advances -> spins), not an interrupt-controller bug.
+
+REAL QUESTION (afcfd8bf): CDROM IRQ fires ~1497x but BIOS DeliverEvent
+0xF0000009/0x20 only x3 — the CDROM ISR runs yet the file-complete event
+isn't signaled. Trace cd_intc_dispatch handler-table dispatch: which of the
+11 handlers should fire on the completion HINTSTS reason, and why it doesn't
+DeliverEvent. Suspect: the completion reason's handler isn't installed, or
+cd_ctx_restore resumes to the wrong continuation, or the load waits on a
+different event class than what's delivered.
