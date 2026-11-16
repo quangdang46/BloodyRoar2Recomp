@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "cpu_state.h"
 
 typedef uint8_t  undefined;
 typedef uint8_t  undefined1;
@@ -7341,10 +7342,11 @@ void slot_action_dump(uint32_t a0)
 /* ======== batch32: 0x801a/0x801af thunk & field-forwarding wrappers ======== */
 
 /* ---- weak stubs for still-unported callees ---- */
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int ret_zero_f() { return 0; }
+/* 0x8019e3d4 — save-flow pair thunk owned by cd.c (`ret_zero_f` there
+ * jals 0x8019e420/0x8019e600, which resolve to the B0-svc bridges).
+ * This file only needs the declaration for cd_tail_call_a; the old weak
+ * `return 0` def here was dead code shadowed by cd.c's strong def. */
+extern void ret_zero_f(void);
 
 extern void *fn_lookup(uint32_t);
 extern void task_invoke(uint32_t fn_guest, uint32_t arg_guest);
@@ -8184,38 +8186,40 @@ void op_pair_store(int16_t *a0,uint32_t *a1)
 
 /* ======== batch35: 0x801a4b/0x801a50/0x801a53/0x801a86/0x801aa3/0x801ad4/0x801ad5/0x801aed ======== */
 
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int guard_callee_a0() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int guard_callee_a1() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int guard_callee_b0() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int guard_callee_b1() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int guard_callee_c0() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int guard_callee_c1() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int guard_callee_d0() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int guard_callee_d1() { return 0; }
+/* guard_callee_a0/a1/b0/b1/c0/c1/d0/d1 — the guarded-dispatch targets
+ * (guest 0x801a5bd0/6538/5d90/66dc/5f50/6350/6150/6880; generated bodies
+ * are 0x1a4-0x200 bytes — real functions, NOT `jr ra`). They were weak
+ * `return 0` stubs: a load-bearing guess. Delegate each to generated MIPS.
+ * Args arrive as guest values; a2 is already a guest address (the macro
+ * resolves the host object pointer via guest_of). a3 is the caller's
+ * passthrough $a3 on the v1==0 path and the sign-extended slot index v1
+ * on the v1!=0 path — matching the jal sites (e.g. 0x801a8708/0x801a8730
+ * and siblings in 0x801a8744/0x801a87cc/0x801a8854). */
+int guard_callee_a0(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
+{ return (int)br2_call_generated(0x801a5bd0u,a0,a1,a2,a3); }
+int guard_callee_a1(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
+{ return (int)br2_call_generated(0x801a6538u,a0,a1,a2,a3); }
+int guard_callee_b0(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
+{ return (int)br2_call_generated(0x801a5d90u,a0,a1,a2,a3); }
+int guard_callee_b1(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
+{ return (int)br2_call_generated(0x801a66dcu,a0,a1,a2,a3); }
+int guard_callee_c0(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
+{ return (int)br2_call_generated(0x801a5f50u,a0,a1,a2,a3); }
+int guard_callee_c1(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
+{ return (int)br2_call_generated(0x801a6350u,a0,a1,a2,a3); }
+int guard_callee_d0(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
+{ return (int)br2_call_generated(0x801a6150u,a0,a1,a2,a3); }
+int guard_callee_d1(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
+{ return (int)br2_call_generated(0x801a6880u,a0,a1,a2,a3); }
+
+/* Live guest $a3 — the v1==0 jal path passes the caller's $a3 through
+ * untouched (guard_dispatch never writes $a3 before the call). */
+extern CPUState *clean_cpu_state(void);
+static uint32_t br2_guard_passthru_a3(void)
+{
+  CPUState *c = clean_cpu_state();
+  return c ? c->gpr[7] : 0;
+}
 
 /* 0x801a4be8 — register node a0 (guest addr) into table slot idx*72+0x40. */
 void op_node_register(uint32_t a0)
@@ -8443,11 +8447,13 @@ void op_slot_free(uint8_t *s1,int32_t a1)
         *(uint32_t *)(a0 + 0x1c) == 0) {                           \
       int16_t v1_ = *(int16_t *)(a0 + 0x32);                       \
       uint32_t a1_ = *(uint32_t *)guest_at(0x801bef00);          \
+      uint32_t o_ = guest_of((const void *)a0);                    \
       if (v1_ == 0) {                                              \
-        FN_A(*(uint32_t *)guest_at(0x801bef24),a1_,a0);          \
+        FN_A(*(uint32_t *)guest_at(0x801bef24),a1_,o_,            \
+             br2_guard_passthru_a3());                             \
       } else if ((uint32_t)(v1_ - 1) < 0x7ff) {                    \
         FN_B(*(uint32_t *)guest_at(0x801bef24) +                 \
-             (uint32_t)v1_ * 4,a1_,a0);                            \
+             (uint32_t)v1_ * 4,a1_,o_,(uint32_t)(int32_t)v1_);     \
       }                                                            \
     }                                                              \
   } while (0)

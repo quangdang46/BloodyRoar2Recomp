@@ -9207,3 +9207,42 @@ completion-event delivery (cd_dma_chan_reset -> DeliverEvent). Both the
 phase-loop AND the DeliverEvent gap must be addressed; fixing DeliverEvent
 likely lets each load complete -> resource manifest finishes -> phase
 advances -> fight stabilizes.
+
+### N+67 — save.c stub audit: guard_callee_* weak stubs -> generated delegation (build+runtime verified)
+
+Audited game/save.c (~9.3k LOC memcard/save/LZSS) for `return 0/1` guesses
+and weak stubs. Findings:
+
+- ret_zero_a/b/c @0x80163850/98/a0 — VERIFIED FAITHFUL, left as-is: each
+  guest body is literally `jr ra; move v0,zero` (generated
+  br2eu_func_80163850/98/A0, 8-byte single block). Return-0 is the real
+  semantics, not a stub.
+- ret_zero_f @0x8019e3d4 — looked like a stub but is ALREADY OWNED by
+  cd.c:3921 (jals 0x8019e420/0x8019e600 -> B0-svc bridges). save.c's weak
+  `return 0` def was dead code shadowed by cd.c's strong def; removed it,
+  kept an extern decl for cd_tail_call_a. No behavior change.
+- memcard_block_verify / job_result_poll_stable weak stubs — shadowed by
+  real defs in menu.c:13182/13207. Left (weak fallback only).
+- guard_callee_a0/a1/b0/b1/c0/c1/d0/d1 @0x801a5bd0/6538/5d90/66dc/5f50/
+  6350/6150/6880 — REAL BUG FIXED: these were `__attribute__((weak))
+  int f(){return 0;}` stubs, and no strong def existed anywhere, so the
+  guarded-dispatch family (guard_dispatch_a-d @0x801a86bc/8744/87cc/8854)
+  silently dropped every callee invocation. Guest bodies are 0x1a4-0x200
+  bytes — real functions. Replaced with br2_call_generated delegations.
+  Verified arg setup insn-by-insn against generated 0x801A86BC/0x801A8854:
+  a0=*(u32*)0x801bef24 (+v1*4 on index path), a1=*(u32*)0x801bef00,
+  a2=object guest addr (macro now passes guest_of(host_ptr) instead of
+  the host pointer — the exact host-ptr-where-guest-addr-expected bug
+  class), a3=caller passthrough $a3 (v1==0 path, read live via
+  clean_cpu_state()->gpr[7]) or sign-extended v1 (v1!=0 path).
+
+Proof: `cmake --build . -j8` clean; headless run boots identically to
+baseline — frame 1871 then the SAME pre-existing FATAL
+unknown-dispatch 0x0B808000 @ battle_struct_init with AND without the
+patch (verified by stash-rebuild-rerun), i.e. zero regression; the
+0x0B808000 battle-init crash is a separate frontier blocker owned by the
+battle/menu workstream, not save.c.
+
+Outstanding (out of scope, flagged): ret_zero_e @0x80161630 is a
+`return 0` stub defined in game/bind.c:2173 but the guest body is 624
+bytes — needs the bind.c owner to port/delegate.
