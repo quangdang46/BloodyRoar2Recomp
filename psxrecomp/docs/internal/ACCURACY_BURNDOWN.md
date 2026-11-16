@@ -4128,3 +4128,32 @@ is not generated because whatever calls cd_dma_chan_reset isn't reached.
 NEXT: trace which of the 3 intc handlers (or read-completion fn) calls
 cd_dma_chan_reset in generated code, and what state gates it. The
 'overwrite' response-loss event is a secondary suspect for count desync.
+
+=== N+43c — cd_cb7_run dispatches DMA-done but DICR done-bits = 0 ===
+
+cd_cb7_run (0x8019af84, intc handler [3]=0x8019af7c) is the DMA-channel-
+done dispatcher: s1 = (DICR@0x1F8010F4 >> 24) & 0x7f = per-channel done
+flags; for each set bit clears DICR and calls handler *tbl (cursor table,
+handlers live ~0x801bde04). cd_dma_chan_reset (0x8019b7e8) IS a table
+handler (@0x801bde04 confirmed in guest RAM).
+
+On the wedge: DICR = 0x00900000 -> done-bits (top byte) = 0x00 -> s1=0 ->
+cd_cb7_run calls ZERO handlers -> cd_dma_chan_reset never runs ->
+DeliverEvent(0xF0000009/0x20) never fires -> cd_file_read_seq TestEvent
+spins forever.
+
+ROOT QUESTION narrowed to ONE thing: the file read delivers sector data
+via PIO (0x1F801800 reads) and NEVER arms/completes a DMA channel, so no
+DICR done-bit is ever set. Either (a) the file read is SUPPOSED to use a
+DMA channel (ch3 CDROM or a streaming ch) whose completion fires
+cd_dma_chan_reset, and the arm is missing/wrong; or (b) cd_dma_chan_reset
+is invoked by a non-DMA path that isn't reached.
+
+NOTE: cd_dma_xfer_start/mode (the DMA kick) are called ONLY by
+audio_seq_reset (ch4 SPU streaming), never by the file loader -> file
+reads are PIO, confirming no DMA done-bit for them.
+NEXT: determine on real HW / DuckStation whether Bloody Roar 2 file reads
+use CDROM DMA ch3 or PIO, and which channel's done-handler is
+cd_dma_chan_reset (read the full handler table @0x801bde04 region +
+index->channel map). If file reads SHOULD use ch3 DMA, find why ch3 is
+never armed (chcr=0) during versus->fight loads.
