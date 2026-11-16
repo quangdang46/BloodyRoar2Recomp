@@ -13526,8 +13526,8 @@ extern void br2_guest_frame_free(void);
 /* heap_record_emit @0x8016cc5c — serialize one heap record: for s2 slots
  * (arg5, or remaining count when 0) at a0+0x10+a3*4, call
  * heap_serialize(slot, a2, dst=a1, fp, &sp20, s7, s6); when it produced
- * output (sp20 != 0) emit a 0x28 record at a1: +0=0, +4..+0xe u16
- * zeros, +0x20=src, +0x24=size, and (*s5)++. Returns last a2.
+ * output (sp20 != 0) emit a 0x28 record at a1: u16 zeros at +4/+6/+8/
+ * +0xc/+0xe, +0x20=src, +0x24=size, and (*s5)++. Returns last a2.
  * heap_serialize's arg5 is a guest out-count pointer (it MW32s the count),
  * so stage it in a real guest frame — a host &sp20 would be written through
  * guest_at() to a bogus address and never reach sp20. */
@@ -13567,9 +13567,8 @@ uint32_t heap_record_emit(uint32_t param_1,uint32_t param_2,uint32_t param_3,
       sp20 = MB32(fr);
       if (sp20 != 0) {
         uint32_t s0 = s4 + 0x24u;
-        MW32(s4 + 0x00u, 0);
         MW16(s4 + 0x04u, 0); MW16(s4 + 0x06u, 0); MW16(s4 + 0x08u, 0);
-        MW16(s4 + 0x0au, 0); MW16(s4 + 0x0cu, 0);
+        MW16(s4 + 0x0cu, 0); MW16(s4 + 0x0eu, 0);
         MW32(s0 - 4u, old);          /* +0x20 = src cursor */
         MW32(s0 + 0x00u, s1 - old);  /* +0x24 = bytes produced */
         s0 += 0x28u;
