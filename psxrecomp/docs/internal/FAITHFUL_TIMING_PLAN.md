@@ -9450,3 +9450,46 @@ corruption. This STRENGTHENS the heapB-stomp theory specifically for P2
 while showing P1 is clean. The fight dispatches both fighters' streams;
 the corrupt one is P2's. a0861f48 (heapA over-production) + 78d6700f
 (match-end/phase-loop) own the fix; 8432f37e owns versus-wedge forensics.
+
+### N+76 — ROOT CAUSE FOUND (78d6700f): CD data-DMA ch3 completion IRQ never fires -> DeliverEvent starves -> file loads spin -> fight-entry phase-loop/wild-dispatch
+
+This SUPERSEDES the heap/.ANI-stomp framing for the PRIMARY blocker.
+78d6700f traced the match/round state machine (faithful, no bug in
+battle.c/fight.c/menu.c post_battle_dispatch) and found the real break:
+
+- `TestEvent(0xF1000008)` (the OpenEvent(0xF0000009,0x20) CD completion
+  handle @0x801BDE38) = **1,418,266 calls**, 0 DeliverEvent in trace tail.
+- DMA ch3 (CDROM) starts+completes **5300x** but `dicr` is CONSTANT
+  `0x00900000` across all 40000 dma_trace entries = only ch4 IRQ-enable
+  (bit20) + master (bit23); **ch3 IRQ-enable (bit19) is NEVER set**.
+- -> `channel_irq_flag_armed(3)` fails -> no DICR done-flag -> `i_stat`
+  bit3 (DMA IRQ) never sets (i_stat only ever 0x4=CDROM or 0).
+- `cd_intc_dispatch` mask = i_stat & i_mask(0xD) & 0xD; cause3
+  (cd_cb7_run -> channel-handler table -> cd_dma_chan_reset/0x8019b7e0 ->
+  DeliverEvent) requires i_stat bit3 -> **never pends**.
+- cb7 channel-handler table @0x801BDDF4: `0x8019b7e0` registered only at
+  INDEX 4; index 3 = NULL. CD data DMA is hardwired to **channel 3**;
+  channel 4 never runs. So even a fired DMA IRQ wouldn't match ch3.
+
+=> Real sectors+DMA complete, but the completion EVENT never delivers ->
+file loads never finish -> versus/attract fight-entry either phase-loops
+re-loading forever (s1[0x92] cycling) or wild-dispatches through a
+corrupt motion/.ANI fn-ptr (0x0B808000 / 0x00062401 @RAM[0x801B56B8]).
+
+TWO candidate break points (both faithful-core, not game-logic):
+1. **runtime dma.c/interrupts.c**: DICR ch3 IRQ-enable (bit19) never set
+   -> complete_transfer/raise_dma_irq doesn't arm ch3 done->i_stat bit3.
+   Verify faithful DICR bit layout + per-channel IRQ-enable vs Beetle.
+2. **game/cd.c cb7 registration**: handler 0x8019b7e0 at index 4 but CD
+   DMA is ch3 -> index-3 NULL. Either registration index wrong, or CD
+   completion is meant via CDROM-IRQ (bit2->cause2->response_pump) not
+   DMA-IRQ — then a DIFFERENT handler should DeliverEvent.
+
+This explains BOTH symptoms: attract wild-dispatch (corrupt .ANI from
+incomplete load) AND versus silent-wedge (phase-loop re-loading).
+Player-arcade survives because its lighter single-side load completes
+via the working CDROM-IRQ path before the DMA-dependent stage.
+
+Owner: 22f3537a (cd_dma_chan_reset/cd.c) + spawning runtime-DMA agent.
+a0861f48 (heapA) + 8432f37e (wedge) results now secondary — the DMA-IRQ
+root likely subsumes them.
