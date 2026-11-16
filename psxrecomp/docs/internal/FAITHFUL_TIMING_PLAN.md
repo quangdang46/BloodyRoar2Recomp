@@ -7180,3 +7180,64 @@ dropped. NEXT: inspect rb_available()/ring push vs the game's drain rate,
 whether s_ring_write-s_ring_read overflow should stall sector production
 instead of dropping, and whether ReadN completion counts requested vs
 delivered sectors.
+
+## Session N+12 — ROOT ISOLATED: CD-interrupt deferred coroutine never completes the async op; flag 0x801BDE40 stays 0
+
+Full call-chain + flag decode; supersedes the "ring overflow is the cause"
+framing — the drops are a SYMPTOM, the wedge is the async-op completion path.
+
+EXACT BLOCKING CALL CHAIN (stack unwind, sp=0x801fff78):
+  main 0x80126220 -> game.c case8 region 0x80126664 -> cd_file_read_seq
+  0x801565ec -> cd_cmd_queue_load 0x80192634 -> cd_timer_read 0x8019a460 ->
+  vsync_wait_n 0x8019a5d0 (hot poll pc 0x8019a648).
+cd_file_read_seq's tail loop (gen full_19.c block_80156628/30):
+    do { v0 = func_0x8019D500(0); } while (v0 == 0);
+func_0x8019D500 reads the async-CD-op result slot at 0x801BDE40 (and code at
+0x801BDECC / frame ctr 0x801bdde0 nearby) and returns nonzero only when the
+slot shows done. func_0x8019D4D0 = cd_mode_store WRITES that slot — invoked
+from the game's CD response handler func_0x801582C0, which is reached ONLY
+through the CD deferred-interrupt coroutine:
+    CD IRQ -> kernel -> cd_ctx_restore -> cd_chan_full_init(0x8019a814)
+      -> cd_intc_dispatch(0x8019a8ec) -> cd_cb8_dispatch
+      -> game CD handler 0x801582C0 -> cd_mode_store 0x8019D4D0 -> flag.
+
+LIVE STATE PROVES THE COROUTINE NEVER COMPLETES THE OP:
+- read_ram 0x801BDE40 = 0, 0x801BDECC = 0 -> async op never reported done.
+- Event ring (65536 entries): ZERO ISTAT_RAISE/IRQ_DELIVER with i_stat bit2
+  (CDROM=0x4). ONLY VBlank bit0 fires. cd_dataready_fires=7114 and
+  cd_irq_delivered=7915 FROZEN — CD IRQs worked during load then stopped.
+- irq_flag=0, pending.cmd=0x09 Pause pending=0 (INT2 fired+acked),
+  reading=0, stat=0x02(MOTOR), i_mask=0xD (CDROM bit2 enabled), irq_enable=0x07.
+- Command history tail: per-file Pause->SetLoc->ReadN->stream->Pause. Last
+  exec seq613 frame10524 = Pause, i_stat was 0x4 at issue, now fully consumed.
+
+CONCLUSION: every CD interrupt was delivered+acked, but the deferred
+coroutine did NOT run cd_mode_store for the awaited op -> flag stays 0 ->
+cd_file_read_seq spins forever -> main thread never reaches
+battle_flow_state_machine -> pbd_calls=0 -> gs=8 ph=8 hollow black screen.
+The coroutine resume (cd_ctx_restore re-entering cd_chan_full_init) is the
+break — NOT a missing i_stat raise (irq_flag legitimately 0 after ack) and
+NOT the ring drop itself.
+
+SECONDARY (faithful-model gap, Beetle cross-ref):
+- cdrom.cpp ProcessDataSector keeps 8 sector_buffers with INDEPENDENT
+  current_read/write_sector_buffer; guest drains ring[read] then read++.
+- Ours sets s_ring_read = s_ring_write on EVERY delivery
+  (deliver_read_sector L1935, _without_irq L1968, process_pending L2597)
+  and NEVER advances s_ring_read on drain-complete (cdrom_dma_read only
+  bumps RB_.pos). So RB_ collapses to newest sector; there is no multi-
+  sector drain queue -> any drain/delivery overlap corrupts and any >1
+  sector lag drops. This is why ring_dropped=5808: the game's DMA-arm is
+  gated on the SAME broken coroutine/INT1 path, so it can't keep up.
+
+NEXT (faithful, class-level):
+1. Verify whether cd_ctx_restore/cd_chan_full_init coroutine actually
+   resumes on CD IRQ — instrument the kernel IRQ->coroutine dispatch, or
+   compare cd_cb8_dispatch/cd_intc_dispatch execution vs Beetle's CD IRQ
+   handler reaching the game's response routine. The break is between
+   "i_stat bit2 IRQ taken+acked" and "game CD handler runs".
+2. Give s_ring_read proper drain-advance semantics ((read+1)%8 when
+   RB_.pos>=RB_.size) matching Beetle's current_read_sector_buffer, so
+   queued sectors drain in order instead of collapsing to newest.
+3. Re-run arcade+versus; confirm pbd_calls>0, fighter_state_tick runs,
+   screen renders.
