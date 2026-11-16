@@ -7124,3 +7124,59 @@ expects different completion. Inspect the CD-DMA complete path
 CD-read loop at func 0x2970/pc 0x801978AC (the ch3 kick site) + the poll at
 0x8019A648. Compare against real HW: does ch3 auto-reload BCR or must the
 driver re-write CHCR per chunk?
+
+---
+
+## Session N+11 — CD buffered-read stall REFINED: read ends idle, ring drops sectors, file-load never completes
+
+Corrects/refines the N+10 "ch3 stalls mid-sector" framing with live state.
+
+MAIN THREAD IS NOT HARD-BLOCKED IN vsync_wait_n:
+- pc samples land at 0x8019A648 but that is cd_timer_read (0x8019a460)'s
+  per-frame pacing primitive — it calls vsync_wait_n (0x8019a5d8) twice:
+  once "wait until DAT_801bdde0>=target" and once "wait 1 frame"
+  (a0=counter+1,a1=1). DAT_801bdde0 advances ~292/s (per-IRQ-batch, not
+  clean 60Hz). vsync_wait_n has a bounded a1<<15 delay budget + a timeout
+  path (block_8019A620 -> 3 calls -> return). It RETURNS; the main loop
+  iterates (frame_count ~294k).
+
+REAL BLOCK: battle_flow_state_machine is NEVER CALLED.
+- decomp_trace_record(60,...) at menu.c:563 fires every frame substate!=0,1
+  and tag 60 maps to "?" in decomp_tag_name. decomp ring total FROZEN at
+  8102 -> NO records of any tag -> battle_flow_state_machine not running.
+- g_game_state=DAT_1f800000=8 -> game.c case 8 -> match_mode_set(1) +
+  battle_flow_state_machine(auStack_30). It should reach caseD_8 ->
+  post_battle_dispatch (DAT_1f80009b=0 != 4). pbd_calls=0 confirms none of
+  it runs. The main thread is stuck in a NESTED file-load/CD wait from an
+  earlier state, never returning to the top-of-loop dispatch.
+
+CD STATE — read ENDED, did not stall mid-transfer:
+- pending.cmd=0x09(Pause) active/pending=0 -> Pause COMPLETED.
+  reading=0, irq_flag=0, i_stat=0, all DMA channels inactive, dma_depth=0.
+- last_sector lba=8801 size=2340 frame=10524 — coincides with last cmd.
+  No sector/command/DMA activity for ~285k frames since.
+- cd_intc_dispatch (0x8019a8ec, drives cd_read_step_cb 0x801985c4 /
+  cd_read_finish_cb 0x80198838) entry counter @0x801bce00 reads 0 — but
+  that only proves the CLEAN thunk wasn't hit; generated IRQ path may
+  bypass it. Inconclusive alone.
+
+SMOKING GUN — buffered-read accounting broken:
+- ring_dropped=5808 (sector ring overflowed, data LOST)
+- bfrd_set=12787 vs bfrd_clear=16 (~800x imbalance)
+- sector_available=1 (one sector sits unconsumed in RB_)
+- response_count=1 response_read=1 (one response consumed)
+- file_load caller = func 0x80167330 invoked from main-loop helper
+  0x801265E4 (ret 0x801265F4), which then checks a state byte==6.
+
+HYPOTHESIS: the game issues buffered CD reads; the model's sector ring
+overflows (game DMA-consumes slower than drive produces) and DROPS sectors.
+The read-completion accounting expects the full requested sector count —
+dropped sectors mean it never reaches "done", so cd_read_finish_cb /
+the file-load done-flag never fires -> file_load waits forever -> main
+thread never returns to dispatch -> gs=8 ph=8 hollow. On real HW the drive
+flow-controls (no drop) or the game drains fast enough; the model must
+backpressure rather than drop, OR the completion must count delivered-not-
+dropped. NEXT: inspect rb_available()/ring push vs the game's drain rate,
+whether s_ring_write-s_ring_read overflow should stall sector production
+instead of dropping, and whether ReadN completion counts requested vs
+delivered sectors.
