@@ -7550,3 +7550,41 @@ select_screen_tick / select_confirm_handler and identify which init call
 is missing or whose resource load did not complete. THEN the select can
 populate records -> players confirm -> 0x700 -> versus_state_init case9 ->
 battle_struct_init/match_setup_apply/battle_state_init -> real fight.
+
+=== SESSION N+19 — 0x1f8000c0 ROOT CAUSE FOUND+FIXED (ed72abb); versus->fight hang is NEXT ===
+
+ROOT CAUSE (confirmed, faithful clean-port omission — NOT generated, NOT CD):
+game_globals_reset (game.c:1115, guest 0x80127574, registered clean in
+fnmap) initializes the battle-block pointer cells. The GENERATED code at
+0x80127604 does `sw $v0(=0x801C1200), 0xc0($s0)` where s0=0x1f800000 —
+i.e. it stores the SYSTEM CONFIG guest address 0x801C1200 into scratchpad
+0x1f8000c0, alongside +0xbc=0x801F0270, +0xb8=0, +0xcc=0x801C15F8.
+The clean port set _g_system_config_ptr=g_DAT_801c1200 and the 0xbc/0xb8/
+0xcc cells but OMITTED the 0x1f8000c0 store -> cell stayed NULL forever.
+
+FIX (game.c:1144): *(uint32_t*)guest_at(0x1f8000c0)=guest_of(g_DAT_801c1200);
+placed in generated order (0xc0 before 0xbc). guest_of() is the same
+convention as _DAT_1f8000c4=guest_of(_g_system_config_ptr+0x2c) (menu.c:593).
+NOTE: 0x1f8000c0 is the SYSTEM CONFIG ptr (0x801C1200), not a separate
+versus roster — select_confirm_handler/per_side_setup/battle_state_gate/
+battle_config_eval/post_confirm_config_build all index it as
+cr[player+0x1b]=chosen char, cr[0x10]=count, cr[4]=players, etc.
+
+VERIFIED LIVE (fresh boot + nav_to_fight.py):
+  - 0x1f8000c0 = 0x801C1200 (was NULL)
+  - both fighter byte0 = 0x01 ACTIVE (was 0x81 inactive)
+  - P2 phase 0xb6 advanced 0x000 -> 0x300 (was stuck 0); P1 0x300
+  - versus-select stall CLEARED; progressed into versus->fight transition
+
+NEXT BLOCKER (new, separate): versus->fight transition now HARD-HANGS the
+emulator — psx_cycle_count, DAT_801bdde0 (VBlank), frame_count all frozen;
+in_exception=1; cop0_epc=0x8019A600 (vsync_wait_n), cause=0x400 (IRQ);
+cdrom_state reading=0 (CD idle, NOT a pending read). irqctx_ring shows the
+CPU was executing CD/kernel wait code (0x8019A600/0x8019D540/0x80197030)
+under repeated VBlank IRQs then parked in exception delivery. nestgate_
+rfepend=4950. This is the versus->fight handoff bug family (kernel/IRQ
+deadlock during fight-init resource bring-up), distinct from the select
+stall just fixed. pcdzero_count=0 (not the literal pc=0 fetch storm).
+NEXT: trace the exception/IRQ delivery deadlock at fight init — likely a
+kernel SleepEvent/WaitEvent or IRQ-handler reentry that never completes;
+compare irqctx/exception path vs oracle once oracle reaches versus.
