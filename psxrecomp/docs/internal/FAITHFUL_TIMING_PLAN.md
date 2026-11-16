@@ -9259,3 +9259,26 @@ run (attract path) at frame ~1871 inside battle_struct_init — confirms the
 corruption is not versus-specific; ANY path that reaches fight with an
 incomplete .ANI bind can wild-dispatch. Reinforces: fix the DeliverEvent/
 resource-completion gap (22f3537a) and the stale-FC_ANI re-bind.
+
+### N+69 — weak return-0 stub audit COMPLETE: bind.c/save.c landscape resolved
+
+Systematic check of every `return 0`/weak stub vs strong defs:
+- guard_callee_* (8): FIXED -> br2_call_generated (commit 1bc47da).
+- ret_zero_e @0x80161630 (624B real fn): FIXED -> delegation (agent e91eb732,
+  bind.c:2173 now br2_call_generated).
+- ret_zero_a/b/c @0x80163850/98/a0: FAITHFUL (real return-0, disabled
+  save-slot op table) — verified vs generated.
+- ret_zero_d: NOT a stub — br2_call_generated(0x8016dadc) delegation,
+  misleading name only.
+- cd_seek_state_machine: bind.c weak return-0 is DEAD — cd.c:3579 strong
+  def (bios_svc B0/0x11 TestEvent) wins at link. Harmless.
+- bind.c weak return-0 stubs (text_*, gpu_sprite_*, bcfg_*, announce_*):
+  ALL have strong defs in gfx.c/save.c/menu.c -> overridden, harmless.
+- memcard_block_verify/job_result_poll_stable (save.c weak): INTENTIONAL
+  deferred — menu.c strong defs take guest u32 addrs but mc_op_seq_probe
+  forwards HOST buffer ptrs; documented host/guest-ptr mistranslation
+  needing dedicated RE (save.c:5616 comment). Known latent, not a guess.
+
+=> The return-0 stub surface is now clean except the two documented
+deferred memcard ptr-contract items. No load-bearing guessed stubs remain
+in bind.c/save.c.
