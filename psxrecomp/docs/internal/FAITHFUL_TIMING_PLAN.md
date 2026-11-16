@@ -9191,3 +9191,19 @@ on ch3 CD-DMA completion, or DB32G(0x801bdee8) holds a stale/wrong callback,
 DeliverEvent starves -> cd_file_load_sm spins -> versus wedge. Spawned
 focused agent 22f3537a to trace which of (a-e) breaks the link.
 Arcade->fight re-verified stable (gs=8 ph=8, frames advancing, no storm).
+
+### N+66 — wedge CD-command pattern: phase-loop drives REPEATED multi-file loads (not one stuck file)
+
+cd_cmds.tail (freeze 1794858054): repeating groups at pc=0x80196FC4
+(fn 0x29CC/0x2970): Pause(0x09) -> 0x0E -> 0x02 -> ReadN(0x06), with 'seek'
+MSF changing each group (02:03:37, 01:38:19, 00:02:3D, 01:3A:41). The game
+is NOT stuck on one file — it cycles through MANY different file loads.
+=> the versus phase-loop (round-cycling, N+59) re-triggers the resource-
+load sequence each cycle; each load issues real CD reads+DMA (ch3=1336
+dones, seeks work) but DeliverEvent(0xF0000009/0x20) never signals
+completion -> load never cleanly finishes -> loop repeats -> wedge.
+Confirms: CD hardware+DMA+seek all WORK; the single missing link is the
+completion-event delivery (cd_dma_chan_reset -> DeliverEvent). Both the
+phase-loop AND the DeliverEvent gap must be addressed; fixing DeliverEvent
+likely lets each load complete -> resource manifest finishes -> phase
+advances -> fight stabilizes.
