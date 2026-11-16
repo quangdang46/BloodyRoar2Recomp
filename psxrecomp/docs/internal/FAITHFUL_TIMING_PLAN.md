@@ -10034,3 +10034,26 @@ sub-pointer the fight logic derefs -> 0xAC/0xBC. Agents b4709d7e (versus
 rebind/entity) + c8b13257 (heap-overlap) converging; the heap-overlap may be
 faithful (generated cd_file_load_sm reproduces it) — versus entity init is the
 sharper lead.
+
+## N+91 — versus->fight near-null root narrowed: intro_movie_state heapA/heapB self-overlap
+
+FAITHFUL-BASES PROOF: generated br2eu_func_8012C0B4 stores
+  0x8012C158: 0x80010000 -> [0x801C47B8] (heapA cursor)
+  0x8012C164: 0x800D0000 -> [0x801E3CFC] (heapB cursor)
+clean intro_movie_state (game/game.c:1831-1832) matches EXACTLY. Bases are correct.
+
+MECHANISM: intro_movie_state is a multi-state decode SM (_DAT_1f80008c
+0x10->0x20->0x30). It cd_file_load_sm's the movie into heapB@0x800d0000, then
+stream_block_decode reads compressed source from heapB and writes decoded output
+to heapA (cursor _DAT_801c47b8 advancing from 0x80010000). versus loads BOTH
+fighters so heapA grows ~0xC0000+ during resource load; .ANI lands ~0x800d4f38 —
+INSIDE heapB's [0x800d0000,+] movie region. When heapA decoded output reaches
+0x800d0000 it overwrites the compressed source stream_block_decode is still
+reading -> corrupt decode -> near-null pointer -> VECGA 0xAC/0xBC storm.
+Attract never runs intro_movie_state's 0x800d0000 heapB path -> stable (106K+ fr).
+
+OPEN: does clean stream_block_decode/intro_movie_state produce the SAME heapA
+growth as generated, or over-produce pushing heapA into heapB early? If faithful
+overlap, generated must bound heapA<0x800d0000 or order decode to avoid self-
+overwrite; find that bound/order clean is missing. Agents b4709d7e/c8b13257/
+a497e6a0 converging.
