@@ -10128,3 +10128,32 @@ instantiation during versus->fight setup. Attract CPU fighters provision the
 same contexts correctly -> stable. NEXT: find the versus P2 context builder
 that skips/under-fills param_3/param_4 (likely fighter_spawn_setup /
 battle_config_eval / model-load path). Agents f56f8eec + a497e6a0 on it.
+
+## N+95 — menu.c select_screen_tick "fix" was a REGRESSION (reverted); versus_stage_commit is prime suspect
+
+TEST: stashed the uncommitted menu.c select_screen_tick change
+(goto LAB_80150558_2 -> spr_attr_alloc_b+return0  ==>  direct call + fallthrough).
+Rebuilt, ran versus:
+  PRE-FIX  (menu.c reverted): versus reaches gs=8 ph=8 FIGHT -> VECGA storm
+           (the real prim_task_run bug). CONFIRMED working-to-fight.
+  POST-FIX (menu.c change):  versus STUCK at gs=8 ph=6 (DAT_1f800001=6),
+           never reaches fight. REGRESSION.
+The return-0 was load-bearing for the clean port's structure even though
+generated block_80150558 appears to fall through — the clean function's
+do-while(1)/return-value contract differs from raw block flow. menu.c change
+is STASHED (git stash "wip-menu-fix-test"), NOT committed. Whoever owns it:
+the faithful form needs the correct return/tail structure, not a naive
+fall-through — do NOT re-apply as-is.
+
+PRIME SUSPECT for the real versus->fight VECGA (versus-specific, clean-dispatched):
+versus_stage_commit (0x80128c18) / versus_stage_commit_b (0x80128d98),
+menu.c:9461/9489 -> dec_finish -> victory_record_restore(battle, a1).
+  a1 = dec_wrap(lh(s0+2), s2+1) then dec_walk (r -= 0x235c quirk) while lh(rec)<0.
+  victory_record_restore copies record[a1]+0x1bdc (0x194 blob holding the
+  [0]/[8] prim-task descriptor-array ptrs) into live 0x801f04a8.
+If a1 resolves wrong for versus P2 -> 0x801f04a8[0]/[8] point at a wrong/empty
+descriptor block -> channel_script_emit->prim_task_run reads garbage +0x1c -> VECGA.
+versus_stage_commit is called at menu.c:7652(s0,2),9028(s0,1),9048_b(s0,1);
+victory_record_restore also at menu.c:8631(param_1,4),12103(s1,0).
+NEXT: verify a1 index math + per-side record selection vs generated
+0x80128C18/0x80128268; dump 0x801f04a8[0]/[8] live at fight (catch before storm).
