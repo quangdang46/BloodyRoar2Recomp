@@ -3784,3 +3784,23 @@ mode-apply/xfer requests.
 NEXT: instrument cd_chan_mode_apply entry+arg and cd_mode_apply_deferred chunk
 count on a fresh versus run; OR diff against oracle whether the versus fight
 issues the stream mode-apply. Do NOT fake the kick.
+
+=== SESSION UPDATE N+34 — SPU is IDLE: zero active voices; versus fight produces no audio ===
+
+spu_voices dump at the wedge (gs=8 ph=8): ctrl=0xC001, kon=0x000100 (voice-8
+key-on pending), active_mask=0x000000, ALL voices active=0. The versus fight
+is outputting NO audio — the sound sequencer never activated any voice.
+
+This reframes the ch4 wedge: the game blocks on TestEvent(slot8=F0000009/0x20,
+SPU-stream DMA done) waiting for stream data that would feed the voices, but
+the voices never start because the sequencer isn't running/feeding. Circular
+starvation at the SOUND layer, upstream of DMA/IRQ:
+  sound seq/play-music cmd -> (not issued / driver not ready)
+    -> no voice KON -> ch4 stream consumer starves -> no ch4 kick ->
+    no DeliverEvent -> TestEvent spins.
+
+NEXT: determine whether the versus fight issues its music/sequence command —
+check the sound-driver state (sequencer pc, command queue, "music playing"
+flag) and whether sound init (chan_reset_register/audio_seq_reset path)
+completed for this fight vs menus/attract. Compare oracle: does versus->fight
+on real HW start voices immediately?
