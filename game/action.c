@@ -26,7 +26,6 @@
  */
 #include <stdint.h>
 #include <string.h>
-#include <stdio.h>
 #include "types.h"
 #include "ani.h"
 
@@ -105,11 +104,6 @@ static void apply(uint8_t *ctrl, uint8_t *motion)
 
     uint32_t *h = (uint32_t *)ani;            /* [0]=size [1..8]=sec  */
     uint32_t size = h[0];
-    { static int s_ap=0; if(s_ap<10){s_ap++;
-      fprintf(stderr,"[APL] ctrl=%x ani=%x size=%x s0=%x s1=%x char=%x\n",
-        (unsigned)guest_of(ctrl),(unsigned)ani_g,(unsigned)size,
-        (unsigned)h[1],(unsigned)h[2],(unsigned)GU8(ctrl,FC_CHAR));
-      fflush(stderr);} }
 
     /* Section slots -> motion (file offsets, relocated below). */
     GSU32(motion, MO_SEC0) = h[1];            /* S0 */
@@ -363,14 +357,58 @@ static void reset(uint8_t *ctrl, uint32_t sel)
 }
 
 /* ------------------------------------------------------------------ */
-/* FUN_80181db8 — .ANI S4 category fixup.
- * Clean source resolves categories lazily via ani_cat(); the     */
-/* guest's in-place patch is represented by the once-flag only.       */
+/* FUN_80181db8 — .ANI S4 category fixup (faithful port).
+ * Guest args: a0=ctrl, a2=cat=*(ctrl+0x3c), a3=battle(0x1f800000),
+ * variant arrives on the caller's stack frame. cat+0xc is relocated
+ * by ctrl[0x30]; the 5-word table it points at is relocated too, once
+ * per fighter (gated by ctrl+0xb, set by the caller after return).
+ * Then the descriptor fields are filled and cat+0x28 is set from the
+ * variant (1 -> 9, bit6 -> variant, else untouched). Split tails:
+ * 0x80181ee8 (cat+0x28=0), 0x80181ef0 (variant==2, unreachable),
+ * 0x80181f10 (cat+0x28=9), 0x80181f18 (plain return).            */
 /* ------------------------------------------------------------------ */
 static void ani_fixup(uint8_t *ctrl, int variant)
 {
-    (void)variant;
-    GS8(ctrl, FC_FLAGB) = 1;
+    uint8_t *cat    = (uint8_t *)guest_at(GU32(ctrl, 0x3c));
+    const uint8_t *battle = (const uint8_t *)guest_at(0x1f800000);
+    uint32_t base = GU32(ctrl, 0x30);
+    uint8_t *tbl;
+    int i;
+
+    /* relocate the S4 category pointer itself */
+    GSU32(cat, 0x0c) = GU32(cat, 0x0c) + base;
+
+    /* once-only: relocate the 5 category words the pointer references */
+    if ((int8_t)GU8(ctrl, 0x0b) == 0) {
+        tbl = (uint8_t *)guest_at(GU32(cat, 0x0c));
+        for (i = 0; i < 5; i++)
+            GSU32(tbl, i * 4) = GU32(tbl, i * 4) + base;
+    }
+
+    tbl = (uint8_t *)guest_at(GU32(cat, 0x0c));
+    GSU32(cat, 0x14) = GU32(tbl, 4);
+    GSU32(cat, 0x18) = GU32(tbl, 8);
+    GSU32(cat, 0x10) = 0x801b5228;
+    GSU32(cat, 0x1c) = 0x801b5268;
+    GSU32(cat, 0x20) = 0x801b5278;
+    GSU32(cat, 0x00) = 0x801f8400;
+    GS8 (cat, 0x04)  = (uint8_t)(GU8(ctrl, 0x02) << 7);
+    GS16(cat, 0x06)  = 0;
+    GS16(cat, 0x28)  = 0;
+    GS16(cat, 0x0a)  = 0;
+    GS16(cat, 0x2a)  = 0;
+    GS16(cat, 0x6c)  = 0;
+    GSU32(cat, 0x70) = 0;
+    GSU32(cat, 0x74) = 0;
+    GS16(cat, 0x08)  = (int16_t)GU16(battle, 0xa0);
+    for (i = 0; i < 7; i++)
+        GS16(cat, 0x3c + i * 2) = 0;
+
+    /* variant tail: 1 -> 9 ; bit6 set -> variant ; else untouched.
+     * (guest's ==2/==3 compares are unreachable — only variant<2
+     * reaches them and neither 0 nor 1 equals 2 or 3.) */
+    if (variant == 1)            GS16(cat, 0x28) = 9;
+    else if (variant & 0x40)     GS16(cat, 0x28) = (int16_t)variant;
 }
 
 /* ------------------------------------------------------------------ */
@@ -691,6 +729,7 @@ uint32_t action_enter(void *battle, uint8_t *ctrl, uint32_t sel)
         reset(ctrl, sel);
         int variant = GU8(ctrl, 0x01) ? ((GU8(ctrl, 0x01) & 0x7f) - 1) : 0;
         ani_fixup(ctrl, variant);
+        GS8(ctrl, FC_FLAGB) = 1;   /* guest: caller sets ctrl+0xb after fixup */
     } else {
         if (cls == 0) {
             GS8 (ctrl, 0x05) = 0;
@@ -795,10 +834,6 @@ void action_switch_guest(int param_1,int *param_2,int param_3)
   iVar2 = (uint)uVar1 + iVar2;
   param_2[0x22] = iVar2;
   param_2[0x21] = iVar2;
-  { static int s_as=0; if(s_as<10){s_as++;
-    fprintf(stderr,"[ASW] p1=%x ani=%x s0tbl=%x idx=%d off=%x stream=%x\n",
-      (unsigned)param_1,(unsigned)GU32(p1,0x30),(unsigned)(uint32_t)*param_2,
-      param_3,(unsigned)uVar1,(unsigned)iVar2); fflush(stderr);} }
   *(undefined2 *)(p1 + 0x8c) = 0;
   *(undefined2 *)(p1 + 0x8e) = 0;
   *(undefined1 *)(p1 + 0x26) = 0xff;

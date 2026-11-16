@@ -873,7 +873,21 @@ static void bind_globals_1(void)
 }
 
 int host_rand(void) { return rand() % 100; }
-void action_select(uint8_t *ctrl,int idx){ (void)ctrl;(void)idx; }
+/* action_select — select the event stream for action `idx` on `ctrl`.
+ * Only reachable from the legacy ev_step EV5 path in ev.c (dead code —
+ * the live dispatch is ev_stream_dispatch -> PTR_FUN_801b4e68 ->
+ * ev5_action_select @0x8017ae18, which calls action_switch_guest
+ * @0x8017a6e8). Faithful equivalent of that guest tail: motion obj is
+ * ctrl+0x38. */
+extern void action_switch_guest(int,int*,int);
+void action_select(uint8_t *ctrl,int idx)
+{
+    uint32_t mg;
+    if (!ctrl) return;
+    mg = *(const uint32_t *)(ctrl + 0x38);   /* ctrl -> motion obj */
+    if (!mg) return;
+    action_switch_guest((int)guest_of(ctrl),(int *)guest_at(mg),idx);
+}
 void reaction_load(uint8_t *ctrl,uint32_t e){ (void)ctrl;(void)e; }
 void trace_op(int op){ (void)op; }
 extern CPUState *clean_cpu_state(void);

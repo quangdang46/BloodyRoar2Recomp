@@ -935,7 +935,9 @@ static uint8_t *ev17_approach(uint8_t *ctrl, uint8_t *motion,
 
     if (b == 0) {
         thresh = (ST(ctrl, FC_STATE1) & 0x40) ? G16(pc, 2) : 0x400;
-        dist = (int16_t)(G16(ctrl, FC_DISTX) + G16(motion, MO_D2));
+        /* guest: sx16(ctrl+0x74) + sx16(motion+0xd2), then <<20>>20
+         * = sign-extend low 12 bits before abs (0x8017c7ec-0x8017c800). */
+        dist = (int32_t)((G16(ctrl, FC_DISTX) + G16(motion, MO_D2)) << 20) >> 20;
         if (dist < 0) dist = -dist;
         if (dist >= thresh) return pc + 4;
         GS16(motion, MO_10C) = (int16_t)thresh;
