@@ -8507,3 +8507,23 @@ Also fixed (faithful, verified vs generated lui+addiu sign-extension):
 NEXT: subagent 23003b64 hunting the 0x1f800001 writer that resets ph
 during fight (shared-SP-byte clobber vs rollback path). Arcade
 (09c=0→battle_frame) comparison pending.
+
+### N+44 — ch3 CD-ROM DMA IS kicking+completing (refines N+43c/d "PIO" read)
+
+Live dma_trace_dump on fresh versus run (port 4512) shows channel-3
+CD-ROM DMA transfers START+COMPLETE cleanly and repeatedly:
+  start ch3 chcr=0x01000000 (bit24 start, dir=to-RAM)
+  complete ch3, madr advances 0x800DC800→0x800DD000→0x800DD800→0x800D0000
+  bcr=0x10200 (~sector-sized blocks) — these ARE the file-load dests.
+dma_state snapshot ch3.chcr=0 is just BETWEEN transfers (async).
+
+=> The wedge is NOT "ch3 never fires". File data DOES arrive via ch3 DMA.
+The gap is narrower: either (a) ONE specific transfer stalls mid-sector
+(N+43 pos 2060/2340) and never completes, or (b) a completion→
+cd_dma_chan_reset→DeliverEvent link drops for a particular transfer,
+or (c) versus ph-flicker is a SEPARATE bug from the arcade TestEvent
+wedge. dicr=0x00900000 steady (bit23+bit20) across snapshots.
+
+Open: which single ch3 transfer stalls, and does its complete_transfer
+fire? Agents 23003b64 (ph-flicker) + 03b98d5b (heapA/CD) + 7cc2edcc
+(latent) still running.
