@@ -3938,3 +3938,28 @@ battle_flow_state_machine entry (or read it live pre-crash) to confirm
 corruption; (b) check whether _g_system_config_ptr should be guest_at(0x801c1200)
 vs g_DAT_801c1200 (guest-vs-host confusion, same class as N+21); (c) if the
 0x1f8000c0 config ptr fix (ed72abb) regressed, re-audit that binding.
+
+=== SESSION UPDATE N+40 — crash report mining: scratchpad globals VALID; wild ptr is host-side ===
+
+psx_last_run_report.json full decode (frame 11598, signal_11):
+  - jal_target peek @0x8016FCC4 = battle_flow_state_machine code (confirms SM)
+  - scratchpad @0x1F800000 dump: _DAT_1f800008~0x801e40a0, _DAT_1f80000c~
+    0x801e4110, _DAT_1f8000e8/1f0 region populated — ALL VALID guest addrs.
+    => the scratchpad-global cells are NOT corrupted at crash time.
+  - dispatch_tail addrs are small offsets (0x00002xxx) ending 0x000000B0
+    (BIOS trampoline) -> guest was in CD/kernel path; last_func_addr=0x29CC,
+    last_store_pc=0x8019A48C (CD range).
+  - fault_addr=0x2D4500008FE0 is a HOST-side wild pointer (non-canonical),
+    NOT derivable from a guest cell via guest_at (which masks &0x1fffff).
+
+CONCLUSION: the corruption is a HOST pointer variable inside
+battle_flow_state_machine (or an inlined callee) holding 0x2D45... — produced
+by a host-side computation (uninitialized ptr, bad guest_of/guest_at arg, or
+a u64/float bit-pattern reused as ptr). NOT a guest-RAM cell. gwatch on guest
+RAM will NOT catch it — need host-side debugging (ASan/valgrind or a
+canary on the specific deref).
+
+NEXT: build with -fsanitize=address (or add a faulting-line probe) and
+reproduce the versus->fight crash to get the exact host variable+line.
+The nondeterminism (wedge vs SIGSEGV) suggests an uninitialized host
+pointer whose value depends on prior heap/stack state.
