@@ -22,6 +22,9 @@ extern void    *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
 extern uint32_t br2_gaddr(const void *p);
 extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+extern uint32_t br2_guest_frame(uint32_t);
+extern void    br2_guest_frame_free(void);
+extern void    br2_st32(uint32_t,uint32_t);
 extern uint32_t guest_sp(void);
 extern uint32_t guest_gp(void);
 extern void    *fn_lookup(uint32_t addr);
@@ -2365,9 +2368,9 @@ void battle_hud_draw(int param_1,int param_2,int param_3,int param_4)
         uVar12 = 0x28;
       }
       hud_text_blk_alt(*(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 8) ))+ 0x2038,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0xc))),
-                   (const void *)guest_at((uint32_t)(uintptr_t)(&PTR_DAT_801b47ec)[(uint)*(byte *)guest_at((uint32_t)(uintptr_t)((param_3 + 3) ))* 2]),0x22,uVar12,0);
+                   (const void *)guest_at(((uint32_t *)&PTR_DAT_801b47ec)[(uint)*(byte *)guest_at((uint32_t)(uintptr_t)((param_3 + 3) ))* 2]),0x22,uVar12,0);
       hud_text_blk_alt(*(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 8) ))+ 0x2038,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0xc))),
-                   (const void *)guest_at((uint32_t)(uintptr_t)(&PTR_DAT_801b47ec)[(uint)*(byte *)guest_at((uint32_t)(uintptr_t)((param_4 + 3) ))* 2]),
+                   (const void *)guest_at(((uint32_t *)&PTR_DAT_801b47ec)[(uint)*(byte *)guest_at((uint32_t)(uintptr_t)((param_4 + 3) ))* 2]),
                    (int)*(short *)(&DAT_801b4a30 + (uint)*(byte *)guest_at((uint32_t)(uintptr_t)((param_4 + 3) ))* 2),uVar12,0);
     }
     iVar19 = 0;
@@ -3044,14 +3047,17 @@ LAB_8017544c:
             iVar4 = iVar4 + 2;
           } while (iVar18 < 3);
           sVar2 = *(short *)guest_at((uint32_t)(uintptr_t)((iVar19 + 0x28)));
+          /* 0x801B4E10 / 0x801B4E14 are guest POINTER cells (lw in the guest):
+           * each holds a guest address of a 1-char digit buffer. Deref the
+           * u32 entry, then the pointed-to byte — never the host ** value. */
           if (sVar2 < 10) {
-            *PTR_DAT_801b4e10 = 0x20;
+            *(uint8_t *)guest_at(*(uint32_t *)guest_at(0x801b4e10)) = 0x20;
           }
           else {
-            *PTR_DAT_801b4e10 =
+            *(uint8_t *)guest_at(*(uint32_t *)guest_at(0x801b4e10)) =
                  (((char)((int)sVar2 / 10) + (char)(sVar2 >> 7)) - (char)(sVar2 >> 0xf)) + '0';
           }
-          *PTR_DAT_801b4e14 =
+          *(uint8_t *)guest_at(*(uint32_t *)guest_at(0x801b4e14)) =
                (char)*(short *)guest_at((uint32_t)(uintptr_t)((iVar19 + 0x28) ))+ (char)((int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar19 + 0x28) ))/ 10) * -10 +
                '0';
           uVar12 = 0x5e;
@@ -3059,9 +3065,9 @@ LAB_8017544c:
             uVar12 = 0x2f;
           }
           announce_param_block_init_b(*(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 8) ))+ 0x2038,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0xc))),
-                       (const void *)guest_at((uint32_t)(uintptr_t)PTR_DAT_801b4e10),(int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar20 + 0x10))),uVar12,1);
+                       (const void *)guest_at(*(uint32_t *)guest_at(0x801b4e10)),(int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar20 + 0x10))),uVar12,1);
           announce_param_block_init_b(*(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 8) ))+ 0x2038,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0xc))),
-                       (const void *)guest_at((uint32_t)(uintptr_t)PTR_DAT_801b4e14),(int)((*(ushort *)guest_at((uint32_t)(uintptr_t)((iVar20 + 0x12) ))+ 0x10) * 0x10000) >> 0x10
+                       (const void *)guest_at(*(uint32_t *)guest_at(0x801b4e14)),(int)((*(ushort *)guest_at((uint32_t)(uintptr_t)((iVar20 + 0x12) ))+ 0x10) * 0x10000) >> 0x10
                        ,uVar12,1);
           uVar11 = (intptr_t)local_78 + local_68 + 0x668;
           sprite_rect_set_c(uVar11,*(short *)guest_at((uint32_t)(uintptr_t)((iVar20 + 0x14) ))+ 0x24,0x72,0x20,0x18);
@@ -6626,7 +6632,10 @@ LAB_8013a628:
   case 0xb:
   case 0xc:
   case 0xd:
-    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)br2_gaddr(puVar14 + 10),(undefined4)br2_gaddr(puVar14 + 0x14),(undefined4)(uintptr_t)(&PTR_DAT_801b19d4)[*(short *)(puVar14 + 0x19) + -10], (undefined4)br2_gaddr(&DAT_801b192c));
+    /* guest: lw a3, (0x801B19D4 + (idx-10)*4) — u32 table of guest addrs,
+     * passed raw to task_alloc_wrap_d. g_PTR_DAT_801b19d4 is uint8_t** so
+     * [&PTR][i] would read 8 bytes at i*8; index as u32 instead. */
+    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)br2_gaddr(puVar14 + 10),(undefined4)br2_gaddr(puVar14 + 0x14),(undefined4)((uint32_t *)&PTR_DAT_801b19d4)[*(short *)(puVar14 + 0x19) + -10], (undefined4)br2_gaddr(&DAT_801b192c));
     if (iVar10 != 0) {
       puVar13 = (undefined2 *)guest_at((uint32_t)(uintptr_t)(puVar14[0x18]));
       uVar6 = rand_lcg();
@@ -6724,7 +6733,9 @@ int fx_record_alloc(undefined4 param_1,int param_2,uint param_3,undefined4 param
   int iVar2;
   iVar1 = (int)DAT_1f8000b1;
   if (iVar1 == 0) {
-    iVar2 = task_alloc_wrap_e((int)(uintptr_t)(param_2 + 0x1c),(int)(uintptr_t)&PTR_FUN_801b1ea8,param_5);
+    /* guest passes a1 = 0x801B1EA8 (guest addr of the fn-ptr table) to
+     * task_alloc_wrap_e — &PTR_FUN_801b1ea8 is a host pointer; convert. */
+    iVar2 = task_alloc_wrap_e((int)(uintptr_t)(param_2 + 0x1c),(int)br2_gaddr(&PTR_FUN_801b1ea8),param_5);
     iVar1 = 0;
     if (iVar2 != 0) {
       *(uint *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x10) ))= param_3 & 0xfffffff;
@@ -8899,102 +8910,15 @@ void xform_accum_tick(undefined4 *param_1)
 
 void impact_fx_update(int param_1)
 {
-  bool bVar1;
-  ushort uVar2;
-  uint uVar3;
-  int iVar4;
-  uVar3 = (uint)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 100)));
-  bVar1 = false;
-  switch(uVar3) {
-  case 0:
-  case 1:
-  case 2:
-  case 3:
-  case 4:
-  case 5:
-  case 8:
-  case 9:
-  case 10:
-  case 0xb:
-  case 0xc:
-  case 0xd:
-  case 0xe:
-  case 0xf:
-  case 0x10:
-  case 0x12:
-    if (*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x50) ))== 0) {
-LAB_80138d64:
-      task_slot_step();
-      return;
-    }
-    break;
-  case 6:
-    if (_DAT_1f800082 == 0) {
-      uVar2 = *(ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x60) )))- 1;
-      *(ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x60) )))= uVar2;
-      if ((int)((uint)uVar2 << 0x10) < 1) goto LAB_80138d64;
-      iVar4 = param_1 + _DAT_1f80000c * 0x28;
-      if (*(byte *)guest_at((uint32_t)(uintptr_t)((iVar4 + 4) ))< 8) {
-        *(undefined1 *)guest_at((uint32_t)(uintptr_t)((iVar4 + 4) ))= 0;
-      }
-      else {
-        *(byte *)guest_at((uint32_t)(uintptr_t)((iVar4 + 4) ))= *(byte *)guest_at((uint32_t)(uintptr_t)((iVar4 + 4) ))- 8;
-      }
-      iVar4 = param_1 + _DAT_1f80000c * 0x28;
-      if (*(byte *)guest_at((uint32_t)(uintptr_t)((iVar4 + 5) ))< 8) {
-        *(undefined1 *)guest_at((uint32_t)(uintptr_t)((iVar4 + 5) ))= 0;
-      }
-      else {
-        *(byte *)guest_at((uint32_t)(uintptr_t)((iVar4 + 5) ))= *(byte *)guest_at((uint32_t)(uintptr_t)((iVar4 + 5) ))- 8;
-      }
-      iVar4 = param_1 + _DAT_1f80000c * 0x28;
-      if (*(byte *)guest_at((uint32_t)(uintptr_t)((iVar4 + 6) ))< 8) {
-LAB_80138f0c:
-        *(undefined1 *)guest_at((uint32_t)(uintptr_t)((iVar4 + 6) ))= 0;
-      }
-      else {
-        *(byte *)guest_at((uint32_t)(uintptr_t)((iVar4 + 6) ))= *(byte *)guest_at((uint32_t)(uintptr_t)((iVar4 + 6) ))- 8;
-      }
-    }
-    break;
-  case 7:
-    if (_DAT_1f800082 == 0) {
-      uVar2 = *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x60) ))+ 8) ))- 1;
-      *(ushort *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x60) ))+ 8) ))= uVar2;
-      if ((int)((uint)uVar2 << 0x10) < 1) goto LAB_80138d64;
-      iVar4 = param_1 + _DAT_1f80000c * 0x28;
-      if (*(byte *)guest_at((uint32_t)(uintptr_t)((iVar4 + 4) ))< 8) {
-        *(undefined1 *)guest_at((uint32_t)(uintptr_t)((iVar4 + 4) ))= 0;
-      }
-      else {
-        *(byte *)guest_at((uint32_t)(uintptr_t)((iVar4 + 4) ))= *(byte *)guest_at((uint32_t)(uintptr_t)((iVar4 + 4) ))- 8;
-      }
-      iVar4 = param_1 + _DAT_1f80000c * 0x28;
-      if (*(byte *)guest_at((uint32_t)(uintptr_t)((iVar4 + 5) ))< 8) {
-        *(undefined1 *)guest_at((uint32_t)(uintptr_t)((iVar4 + 5) ))= 0;
-      }
-      else {
-        *(byte *)guest_at((uint32_t)(uintptr_t)((iVar4 + 5) ))= *(byte *)guest_at((uint32_t)(uintptr_t)((iVar4 + 5) ))- 8;
-      }
-      iVar4 = param_1 + _DAT_1f80000c * 0x28;
-      if (*(byte *)guest_at((uint32_t)(uintptr_t)((iVar4 + 6) ))< 8) goto LAB_80138f0c;
-      *(byte *)guest_at((uint32_t)(uintptr_t)((iVar4 + 6) ))= *(byte *)guest_at((uint32_t)(uintptr_t)((iVar4 + 6) ))- 8;
-    }
-    break;
-  case 0x11:
-    break;
-  default:
-    goto switchD_80138d4c_default;
-  }
-  uVar3 = (uint)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 100)));
-  bVar1 = uVar3 < 0x13;
-switchD_80138d4c_default:
-  if (!bVar1) {
-    return;
-  }
-  (*(code *)(&PTR_LAB_801200b8)[uVar3])();
-  return;
-
+  /* guest impact_fx_update @0x80138CEC: after the type switch, EVERY
+   * non-returning case reaches a computed goto — lw v0,(0x801200B8+type*4);
+   * jr v0 — into mid-function continuations (0x80138F48..0x8013A014) that
+   * consume the function's live s-register file (s1=record, s3=0x1F8003FC,
+   * s4=0x1F8000xx, s5=0x1F8003F8 plus caller-preserved s0/s2/s6/s7/fp).
+   * That register state cannot be reconstructed from clean C locals, so the
+   * whole body delegates to the generated implementation (faithful per the
+   * delegation rule) rather than guessing the jump-table dispatch. */
+  br2_call_generated(0x80138CECu,(uint32_t)param_1,0,0,0);
 }
 
 void impact_fx_emit_tick(int param_1)
@@ -10432,9 +10356,20 @@ LAB_80135630:
     } while (iVar6 < 4);
     if (*(char *)guest_at((uint32_t)(uintptr_t)((param_4 + 0x9e) ))== '\0') {
       if (*(char *)guest_at((uint32_t)(uintptr_t)((param_4 + 0x9f) ))== '\0') {
-        if ((code *)(&PTR_FUN_801b1734)[*(char *)guest_at((uint32_t)(uintptr_t)((param_4 + 0x98)))] != (code *)0x0) {
-          (*(code *)(&PTR_FUN_801b1734)[*(char *)guest_at((uint32_t)(uintptr_t)((param_4 + 0x98)))])
-                    (iVar10,uVar11,&DAT_801f04a8,param_4,param_1);
+        /* PTR_FUN_801b1734 is the guest u32 code-pointer table @0x801B1734
+         * (channel_script_emit_* handlers). It was never populated with host
+         * pointers; dispatch the real guest jalr — a0=s7=*(param_4+8),
+         * a1=fp=*(param_4+0xc), a2=0x801F04A8, a3=param_4, arg5@sp+16=
+         * param_1's guest address. */
+        {
+          int _ti = (int)*(char *)guest_at((uint32_t)(uintptr_t)((param_4 + 0x98)));
+          uint32_t _tf = *(uint32_t *)guest_at(0x801b1734u + (uint32_t)_ti * 4u);
+          if (_tf != 0) {
+            uint32_t _fr = br2_guest_frame(0x20);
+            br2_st32(_fr + 0x10, br2_gaddr(param_1));
+            br2_call_generated(_tf,(uint32_t)iVar10,uVar11,0x801f04a8u,(uint32_t)param_4);
+            br2_guest_frame_free();
+          }
         }
       }
       else {
@@ -15111,7 +15046,7 @@ void effect_arg_set(undefined4 param_1)
   undefined4 *puVar1;
   
   if ((DAT_1f8000b1 == '\0') &&
-     (puVar1 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(task_alloc_wrap_e(4,(int)(uintptr_t)g_PTR_FUN_801b1ec0,(int)guest_of(&DAT_801b1eac)))),
+     (puVar1 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(task_alloc_wrap_e(4,(int)br2_gaddr(g_PTR_FUN_801b1ec0),(int)guest_of(&DAT_801b1eac)))),
      puVar1 != (undefined4 *)0x0)) {
     *puVar1 = param_1;
   }
@@ -15130,7 +15065,10 @@ void hit_spark_spawn(undefined4 param_1,uint param_2,undefined2 param_3)
     iVar1 = (int)(uintptr_t)task_node_alloc(1,2,8,0x80140510,0,0x14);
     if (iVar1 != 0) {
       puVar2 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0x10))));
-      puVar3 = (&PTR_DAT_801b22ec)[param_2 & 0x7f];
+      /* guest: lw v1, (0x801B22EC + (param_2&0x7f)*4) — u32 table of guest
+       * data addrs. g_DAT_801b22ec is undefined** so [&PTR][i] reads 8
+       * bytes at i*8; index as u32 instead. */
+      puVar3 = (undefined *)guest_at(((uint32_t *)&PTR_DAT_801b22ec)[param_2 & 0x7f]);
       *puVar2 = (undefined4)br2_gaddr(puVar3);
       puVar2[1] = (undefined4)br2_gaddr(puVar3);
       *(undefined2 *)(puVar2 + 3) = 0;
