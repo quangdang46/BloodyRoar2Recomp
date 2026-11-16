@@ -8641,3 +8641,28 @@ is NOT what halted :4405.
 NEXT: capture motion+0x84 (stream PC) + the op byte at crash to confirm
 stream-PC-vs-data corruption; and trace where a host ptr (0x118xxxxx) is
 stored into guest-readable state that generated code later dispatches on.
+
+### N+46 — latent clean-port bug sweep (agent 7cc2edcc, committed 6456497)
+
+Instruction-level audit vs generated (delay slots accounted). Real bugs
+fixed, verified faithful:
+- ani_fixup (0x80181DB8): was flag-only stub -> full faithful port
+  (relocates cat+0xc by ctrl+0x30, once-only 5-word table relocate gated
+  by ctrl+0xb, descriptor fills, variant tail ==1->9 / &0x40->variant).
+  Also added missing ctrl+0xb=1 on class-1 path (guest sets it on BOTH
+  call sites) — else relocation loop re-ran every entry.
+- action_select (bind.c): was no-op stub -> faithful action_switch_guest
+  via motion obj ctrl+0x38.
+- ev17_approach (ev.c:938): dist was sx16-truncated; guest does
+  sx12(sx16+sx16) via <<20>>20 — fixed sign-extension.
+- ev16_atkwin_init, ev5_action_select: verified CORRECT, no change.
+- Removed debug fprintf [APL]/[ASW] + stdio.h.
+
+FLAGGED for later: reaction_load/trace_op still no-op (dead ev_step
+path); whole ev_step + ev0-ev21 handlers are dead code superseded by
+resolve.c ev_stream_dispatch -> PTR_FUN_801b4e68 -> ev5_action_select.
+Consider deleting/annotating dead ev path in a cleanup pass.
+
+ani_fixup/action_select were .ANI/action-path stubs — plausibly
+contributed to versus .ANI/stream corruption. Worth re-testing versus
+after the ph-flicker + CD-coroutine fixes land.
