@@ -8236,3 +8236,41 @@ byte was left at 8 by a prior SM. battle_flow has no entry guard for
 case>1 (only -1/0xff resets to 0). Needs verification whether case 8
 body actually executes (PBD gated by DAT_1f80009b==4 ->
 battle_sides_commit path has no print).
+
+### Session N+38 — wedge = kernel channel-event deadlock (clean-independent); live DMA/SPU state captured
+
+Live arcade wedge (port 4396) root-caused via debug server:
+- bios_svc_trace: B0/0x0B TestEvent(0xF1000008) spins ~1.4M calls,
+  ra=0x8019D550 (cd_seek_complete_poll region). Event handle
+  0xF1000008 @0x801BDE38 = OpenEvent(0xF0000009,0x20) — the CD-DMA-done
+  flag delivered by game cd_dma_chan_reset (cb7 handler).
+- gs=8/case-byte=8 are FROZEN scratchpad values: gwatch on
+  0x1f800008/0x1f80000c (written every battle_flow call) = 0 hits;
+  fntrace on battle_flow/match_loop/battle_struct_init = 0 hits.
+  battle_flow IS blocked mid-case-8 inside a callee — frames still
+  advance via VBlank/other kernel threads (sp_ring ping-pong
+  0x8019A53C<->0x8019A87C = thread scheduler).
+- dma_state: ALL channels idle (active=0, delayed_complete drained).
+  ch3(CDROM) CHCR=0 done; ch4(SPU) CHCR=0x201 = direction+enable, NOT
+  busy (bit24 clear) — SPU transfer completed. DICR=0x00900000.
+- spu_status: active_mask=0, all voices inactive env_phase=3,
+  last_peak=0 — SPU silent (sequencer never re-arms voices).
+- event_ring tail: healthy per-frame VBlank->GPU(ch2)/OTC(ch6)
+  DMA_KICK/DMA_DONE cycling; ZERO ch4(SPU) or ch3(CD) activity —
+  the versus→fight stream is dead while the render loop lives.
+- bioscall_dump: B0/0x0B(TestEvent)=1.4M dominant, B0/0x17=218K.
+
+CONCLUSION: the versus→fight blocker is the documented kernel
+channel-event deadlock (ACCURACY_BURNDOWN N+1): game waits on
+DeliverEvent for F4000001/{0x8000,0x2000} + F0000011/0x04 +
+F0000009/0x20 whose BIOS device-ISR producers never fire for the
+needed specs. i_mask=0xD, i_stat shows only VBlank pending. This is
+CLEAN-INDEPENDENT (pure-gen reproduces) = faithful-hardware IRQ/DMA
+completion->DeliverEvent edge, NOT a clean-port bug. The .ANI
+corruption is a versus-specific SECOND issue (or downstream symptom).
+
+OPEN: which device IRQ should raise the missing DeliverEvents —
+ch4-SPU done? ch3-CDROM done? SIO? DICR=0x00900000 shows only ch4
+enable+master; need spec->IRQ-bit map vs what real HW raises during
+versus→fight multi-stream. SPU agent (5f215e7d) + ordering agent
+(225dc84c) + port-audit agent (7cc2edcc) still running.
