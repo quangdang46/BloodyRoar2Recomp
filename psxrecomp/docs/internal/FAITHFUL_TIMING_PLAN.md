@@ -8601,3 +8601,43 @@ PARALLEL: new agent c112f7fb hunting the CD deferred-coroutine resume
 (cd_ctx_restore never invoked on CD IRQ → no DeliverEvent → TestEvent
 wedge). Both threads likely share "incomplete async init / IRQ-resume
 fidelity" root.
+
+### N+46 — :4405 "CD wedge" was POST-MORTEM; real crash = ev_stream wild dispatch + host-ptr leak
+
+lldb backtrace on halted :4405 (PID 68349, port 4405) proves the instance was
+NOT a live CD wedge — it had already fatal-halted and parked in
+`psx_fatal_halt -> nanosleep`. Every "frozen" CD/irqctx/frame reading taken on
+it (sector_read_pos=2060, irqctx seq=23175, frame=2292, i_stat=0) is POST-MORTEM
+state, not a live stall. Correcting the earlier N+44 attribution for THIS
+instance.
+
+Actual crash chain (native bt, all live-verified):
+  battle_flow_state_machine -> fighter_frame -> action_commit
+    -> ev_stream_dispatch (resolve.c:3111) -> br2_call_generated
+    -> psx_unknown_dispatch(addr=0x80122F0C) -> trap_crash -> psx_fatal_halt
+
+0x80122F0C is rodata ASCII ("FURI/YORO/DOWN/BREAK"). ev_stream_dispatch reads
+op=*pbVar1 (pbVar1=guest_at(motion+0x84)); a corrupt stream PC/op makes
+h=*(0x801b4e68+op*4) read OOB -> br2_call_generated(garbage) -> wild dispatch.
+This is the N+43 .ANI-corruption manifestation (P2's stream PC points into
+staged sound/text data after the heapB stomp).
+
+SECOND manifestation — root psx_last_run_report.json (frame 540):
+  "DISPATCH FATAL: misaligned target 0x00120201", ra=0x801265F4 (battle_flow),
+  a0=0x1183C1F0, a3=0x1F800000. a0 is a HOST heap pointer (clean-struct addr)
+  sitting in a guest register -> generated code used it as a guest addr ->
+  wild dispatch. This is the host<->guest ptr-convention leak (todo #18)
+  reaching the dispatch boundary, distinct from the .ANI-corruption path but
+  same battle_flow->ev_stream/action_commit callsite region.
+
+NET: versus->fight has (at least) two live crash families — (a) N+43
+DAT_1f800001 flicker -> heapB stomp -> .ANI stream-PC corruption -> ev_stream
+OOB handler -> wild dispatch; (b) host ptr leaking into guest reg/mem ->
+misaligned dispatch. Both nondeterministic, both in the fighter_frame/
+action_commit/ev_stream path. CD deferred-coroutine (cd_ctx_restore) remains
+a SEPARATE real defect for the TestEvent(0xf0000009) wedge manifestation but
+is NOT what halted :4405.
+
+NEXT: capture motion+0x84 (stream PC) + the op byte at crash to confirm
+stream-PC-vs-data corruption; and trace where a host ptr (0x118xxxxx) is
+stored into guest-readable state that generated code later dispatches on.
