@@ -6074,7 +6074,7 @@ int save_channel_init_commit(uint32_t a0,int32_t a1,uint8_t *s2,uint8_t *s3)
   int32_t s0 = (int32_t)*(int16_t *)(s5 + 0x8e);
   int32_t s4;
   int32_t i, sz;
-  uint32_t head, np, old;
+  uint32_t head, np;
   int *tbl;
   (void)a1;
 
@@ -6092,12 +6092,17 @@ st0:
   scratch_013_set(0);
   tbl = (int *)tag_table_get();
   for (i = 0; i < 0x64; i++) {
-    old = g32(0x801c43a8 + (uint32_t)i * 4);
-    BR2_W32(0x801c43a8 + (uint32_t)i * 4, g32(0x801c47b8));
-    sz = (int32_t)heap_alloc54(g32(0x801c47b8), tbl, i);
+    /* gen 0x80170DC0-0x80170DEC: slot[i] = raw heap cursor, then
+     * stream_block_decode(heap, tbl, i); on success cursor += sz and
+     * data_relocate is called with a0 = [slot] — the value JUST stored
+     * (the alloc base h), NOT the slot's previous contents. The earlier
+     * port passed the stale `old` slot word, relocating the wrong block. */
+    uint32_t h = g32(0x801c47b8);
+    BR2_W32(0x801c43a8 + (uint32_t)i * 4, h);
+    sz = (int32_t)heap_alloc54(h, tbl, i);
     if (sz != 0) {
       BR2_W32(0x801c47b8, g32(0x801c47b8) + (uint32_t)sz);
-      data_relocate(old);
+      data_relocate(h);
     } else {
       BR2_W32(0x801c43a8 + (uint32_t)i * 4, 0);
     }
