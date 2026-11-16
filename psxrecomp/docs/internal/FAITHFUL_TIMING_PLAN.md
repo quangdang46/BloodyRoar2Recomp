@@ -7371,3 +7371,66 @@ NEXT: dump the op struct / file-load state func_8016FCC4 uses (the
 staging-ring write cursor + expected total) to get the EXACT
 expected-vs-delivered sector count; then determine if the shortfall is
 drops (timing) or a bad region (data).
+
+=== SESSION N+16 — MAJOR CORRECTION: battle_flow IS running the fight loop; screen is black because render data is absent ===
+
+N+15's identification of func_8016FCC4 as a "file-upload loader" was WRONG.
+fnmap.c:1740 maps 0x8016FCC4 -> battle_flow_state_machine. The two
+ping-pong buffers 0x801E4110/0x801E6260 (stride 0x2150, 2080-word chunks)
+are the NORMAL double-buffered OTAG region, NOT a truncated file upload:
+- menu.c computes _DAT_1f800008 = _DAT_1f80000c*0x2150 + 0x801e4110;
+  live _DAT_1f80000c cycles 0->1 (buffer index advancing per frame).
+- game.c:1244 calls gpu_clear_otag_r(0x801e4110,0x820) — it is an
+  ordering-table clear region, contents are pointer/index tables
+  (0x1e4110,0x1e4114,...), not file bytes.
+- cd_cmd_queue_load (0x80192634) is a GPU/OTC DMA queue loader on ch6;
+  it completes every call (CHCR busy bit24 clear). The "livelock" is just
+  per-frame OTAG maintenance.
+
+LIVE STATE (scratchpad 0x1f800000): gs=8, DAT_1f800001(phase)=8,
+_DAT_1f800082(sim gate)=0 (OPEN), DAT_1f80009b=0 -> caseD_8 calls
+post_battle_dispatch (NOT battle_sides_commit), DAT_1f80009e/9d/9a=0,
+DAT_1f800098=3, DAT_1f800099=0. _DAT_1f80000c advanced 0->1 between
+reads -> per-frame iteration is LIVE.
+
+caseD_8 (menu.c:737) is the REAL battle loop: every frame it runs
+post_battle_dispatch, then (gate _DAT_1f800082==0) record_state_stepper,
+fighter_contact_resolve, FUN_801787dc x2, fighter_pair_update, then
+battle_hud_draw, battle_camera_step, camera_state_cache, fighter_flash,
+player_light. ALL prior docs claiming "battle_flow never runs /
+pbd_calls=0 / stuck in loader" were WRONG — the game reaches and SUSTAINS
+the battle simulation.
+
+FIGHTER STATE: control structs 0x1f8000e8(P1)/0x1f8001f0(P2) are
+populated with valid pointers (+0x14 player_block, +0x38 motion, +0x3c
+action-state). Motion/action sub-structs (0x801f5328/0x801f55c0 etc.)
+contain real data pointers into the loaded game region — NOT empty.
+CD is 100% idle (seq frozen, reading=0). Frame counter ~270/s.
+
+DECISIVE VISUAL: screenshot_file -> /tmp/br2_frame.png is ~99.8% BLACK
+(15202/15232 sampled px = 0x000000; a few dark-red/green specks = tiny
+HUD artifact). The battle sim runs every frame but renders NO scene —
+stage/fighter geometry is not reaching the screen.
+
+NOTE on fntrace: arming the clean fn addresses (post_battle_dispatch
+0x80154930, fighter_pair_update 0x801809c8, etc.) captured NOTHING —
+clean game/*.c functions are invoked by NAME (C call), not via their
+0x8xxxxxxx generated entry, so entry-instrumentation does not see them.
+This is an observability gap, not proof they don't run (the decompiled
+call path + open gates prove they do).
+
+NEW ROOT CAUSE (supersedes N+15): the game is IN the fight loop but the
+stage/fighter RENDER resources are absent/empty -> black screen. This is
+consistent with the earlier CD file-load dropping 5808 sectors: the
+resource files (stage model/texture, fighter .ANI/model) were truncated,
+so the draw lists are empty even though sim structs are bound. The wedge
+is NO LONGER "battle_flow stuck" — it is "file-load delivered truncated
+render data".
+
+OPEN: (a) confirm WHICH resource file truncated and whether its buffer is
+zeroed vs partial; (b) the real root cause of the 5808 sector drops —
+guest CD-drain falling >8 sectors behind during the heavy battle-resource
+load (timing) vs a bad LBA region; (c) whether black is purely missing
+geometry or also a broken draw-submission path. NEXT: identify the
+truncated file's destination buffer + expected size, and measure the
+CD-drain cycle budget vs Beetle during that specific load.
