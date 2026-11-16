@@ -7330,3 +7330,44 @@ registration (it is invoked indirectly — no direct jal; likely a
 function-pointer in the CD/GPU queue ctx) and the loop's exit condition;
 check whether it waits on a GPU fence/OTAG-drain or a queue-slot count
 that our GPU/DMA model never signals. pbd_calls still 0; gs=8 ph=8 hollow.
+
+=== SESSION N+15 — wedge localized to TRUNCATED file upload: GPU/OTC loop ping-pongs exactly 2 buffers ===
+
+fntrace_arm(0x80192634) captured the real caller + args:
+- ra=0x80126664 -> game.c case8 dispatch region; the loader is
+  func_8016FCC4 (3384B/218blk, called at 0x80126660 with a0=sp+16).
+- a0 ALTERNATES only 0x801E4110 <-> 0x801E6260 (two ~8.3KB staging
+  buffers, 0x2150 apart); a1=0x820 (2080-word chunks); a2=0.
+- Over a multi-second window the DISTINCT a0 set is EXACTLY those two —
+  the upload pointer NEVER advances to a third buffer. It is a hard
+  ping-pong livelock re-uploading the same two chunks, not slow progress.
+- ch6 DMA completes every call (CHCR busy bit24 clear); CD 100% idle
+  (seq frozen 244091, reading=0, ring_dropped frozen 5808).
+
+INTERPRETATION: the file-load produced only ~2 buffers of valid data
+(~16KB) then stopped advancing — consistent with the CD read having
+dropped 5808 sectors so the loader's byte/sector accounting never reached
+the file's real size. The GPU/OTC upload loop (func_8016FCC4) iterates
+the staging ring waiting for the next chunk that never arrives ->
+infinite ping-pong -> battle_flow_state_machine never reached.
+
+Sector timing verified faithful: sector_delay_cycles()=451584 (1x) or
+/2 (mode bit7=2x -> 225792 cyc = authentic 150 sectors/s @33.87MHz);
+sector_size=2340 == Beetle RAW_SECTOR_OUTPUT_SIZE; game reads 2060
+leaving 280 intentionally. Ring read=write snap == Beetle
+DeliverAsyncInterrupt. ALL CD mechanics faithful.
+
+OPEN ROOT CAUSE: WHY did this specific (large) file read drop so many
+sectors that only 2 buffers loaded? Two live hypotheses:
+ (a) TIMING: guest CD-drain (per-sector INT1->3w hdr +512w data DMA)
+     falls >8 sectors behind during this heavier battle-resource load.
+     If our cycle accounting makes the drain loop slower than real HW,
+     drops -> truncation. Compare guest cycles/instr vs Beetle at the
+     same load; check apply_read_speed/divisor is 1 (authentic) here.
+ (b) A specific sector/LBA region this file crosses that our ISO reader
+     or sector-delivery mishandles (bad LBA -> zero/garbage sector ->
+     game aborts early). Check last_sector_lba range vs file extent.
+NEXT: dump the op struct / file-load state func_8016FCC4 uses (the
+staging-ring write cursor + expected total) to get the EXACT
+expected-vs-delivered sector count; then determine if the shortfall is
+drops (timing) or a bad region (data).
