@@ -3736,11 +3736,19 @@ by their MMIO status reads, then check that register's runtime update path.
 === SESSION UPDATE N+33 — ch4/SPU-stream kick traced to its exact call-chain; DF00 gate decoded ===
 
 Live wedge re-captured on fresh run (port 4401, gs=8 ph=8). Decisive flags:
-- 0x801bdf00 (xfer-armed flag) = 0  -> cd_dma_xfer_start's final block NEVER ran
+- 0x801bdf00 (xfer-armed flag) = 0  -> last op3 saw DF00!=1 -> wrote CHCR
+  prepare-only (0x201). Does NOT by itself prove xfer_start never ran — a
+  completed earlier kick leaves DF00 cleared by the next op3 re-prepare.
 - 0x801bdeec (state9 cb) = 0, 0x801bdee8 = 0, 0x801bdee4 = 1 (armed)
 - ch4: madr=0xDDE60 bcr=0x03490010 chcr=0x201 active=0  (prepared, no start bit)
-- mode block 0x801f26c0: s3=7, s0(+4)=0x100 (stream bit SET); 0x801bde54 active mode=0
+- mode block 0x801f26c0: s3=7, s0(+4)=0x100 (stream bit SET); 0x801bde54 active
+  mode=0 and 0x801bde4c=tab[0]=0xFFFE -> cd_chan_mode_apply DID run (mode-0
+  applied), so f58=1 and cd_mode_apply_deferred(0) was reached.
 - range tbl ptr 0x801bdf18 = NULL -> cd_range_table_member returns 0 (no early bail)
+- NOTE: prior sessions saw ch4 kick 2-4x, so cd_dma_xfer_start DOES run for
+  earlier transfers. DF00=0 at the wedge = the LAST required re-arm/kick did
+  not happen — the stream engine stopped re-arming, consistent with the
+  flow-control deadlock, not a never-called bug.
 
 THE CH4 KICK, END TO END (all generated-verified):
 - cd_dma_xfer_start (0x8019B89C) block_8019B8F0 is UNCONDITIONAL: builds
@@ -3761,15 +3769,17 @@ THE CH4 KICK, END TO END (all generated-verified):
   DF00==1 -> CHCR=0x1000200 (start); DF00!=1 -> CHCR=...|0x201 (prepare only).
   This is exactly why live ch4 sits at chcr=0x201 with DF00=0.
 
-ROOT-CAUSE SHAPE (narrowed): the versus fight's SPU/stream channel init
-(blk_1f26c0_init* -> mode-apply 0x100 -> deferred -> xfer_start) never produces
-the ch4 kick. Either (a) cd_chan_mode_apply is not invoked on 0x801f26c0 for the
-versus fight, (b) cd_mode_apply_deferred's chunk loop iterates 0 times (chunk
-count/size fields +8/+0xa read 0 on live block), or (c) an upstream sound/
-sequencer trigger that issues the stream request never fires. This is upstream
-of DMA/IRQ — a game-logic/sound-init gate, consistent with the broader
-"CD->consumer flow-control deadlock" already logged (the missing ch4 completion
-is one of the kernel channel-events that never gets delivered).
+ROOT-CAUSE SHAPE (narrowed): the versus fight's SPU/stream channel runs through
+blk_1f26c0_init* -> cd_chan_mode_apply(0x100) -> cd_mode_apply_deferred ->
+FUN_8019cfb0 -> cd_dma_xfer_mode -> cd_dma_xfer_start -> ch4 kick ->
+DeliverEvent(F0000009/0x20). mode-apply verifiably RAN (mode-0 applied). ch4
+kicked for earlier transfers (2-4x per prior runs) then stopped: at the wedge
+the consumer is blocked on a kernel channel-event and no further stream chunk
+is requested/kicked — i.e. this is the SAME CD->consumer flow-control
+deadlock already logged (ring_dropped sector -> MSF stamp mismatch -> abort ->
+completion never signalled), now with the ch4 kick path fully decoded. The
+missing piece is upstream: WHY the stream consumer stalls and stops issuing
+mode-apply/xfer requests.
 
 NEXT: instrument cd_chan_mode_apply entry+arg and cd_mode_apply_deferred chunk
 count on a fresh versus run; OR diff against oracle whether the versus fight
