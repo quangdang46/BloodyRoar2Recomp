@@ -3909,3 +3909,32 @@ side structs' +0xbc should be set — i.e. is the crash an ORDERING bug (dispatc
 too early) or a MISSING init (struct never populated)? Compare the call order
 vs battle_struct_init/battle_round_init which DID run (log shows them before
 PBD). Check what writes side+0xbc and whether it ran for param_1.
+
+=== SESSION UPDATE N+39 — REAL crash site: battle_flow_state_machine, fault_addr=0x2D4500008FE0 ===
+
+psx_last_run_report.json from the :4402 crash (frame 11598):
+  reason=signal_11, fault_symbol=battle_flow_state_machine (menu.c:550)
+  fault_addr=0x2D4500008FE0  <- NON-CANONICAL/wild pointer (garbage high bits)
+  fault_pc=0x10640BD68, image_base=0x104DB4000 -> offset 0x1657D68
+  cpu.pc=0x5, cpu.epc=0x8019A648, last_store_pc=0x801A2160
+  atos resolves fault_pc -> battle_flow_state_machine (menu.c, no line table)
+
+So the [PBD] print was NOT the crash — post_battle_dispatch returned and the
+SIGSEGV is inside battle_flow_state_machine (the top-level battle/select SM,
+game.c:707 caller). The wild 0x2D45... address = a CORRUPTED host pointer:
+either a guest u32 misused as a host ptr, or _g_system_config_ptr /
+DAT_1f8000xx global-access macro returning garbage.
+
+PRIME SUSPECTS inside battle_flow_state_machine (menu.c:550+):
+  - _g_system_config_ptr derefs (+0xb,+0x11,+0x20,+0x24,+0x28,+0x2c,+0x4c..+0x60)
+    set at game.c:1143 = g_DAT_801c1200 and bind.c:1163 = guest_for(...).
+    If it holds a guest ADDRESS (0x801c1200) instead of host ptr, or is
+    stale/corrupted -> wild deref. fault_addr low bits 0x8FE0 ~ +0x2c of a
+    ~0x...8FB4 base is consistent with a config-ptr deref.
+  - DAT_1f800001/008/00c/09c/09b scratchpad globals via access macros.
+
+NEXT: (a) add a one-line fprintf of _g_system_config_ptr value at
+battle_flow_state_machine entry (or read it live pre-crash) to confirm
+corruption; (b) check whether _g_system_config_ptr should be guest_at(0x801c1200)
+vs g_DAT_801c1200 (guest-vs-host confusion, same class as N+21); (c) if the
+0x1f8000c0 config ptr fix (ed72abb) regressed, re-audit that binding.
