@@ -7846,3 +7846,38 @@ NEXT: identify which kernel channel spec the versus fight's threads block on
 (reuse ACCURACY_BURNDOWN ev_agg/TestEvent map) and which physical transfer
 (SPU stream vs DMA vs CD sub-channel) its done-bit binds. Do NOT patch game
 code — this is the deferred-interrupt/channel-delivery runtime bug.
+
+=== SESSION N+25 — wedge root-caused: TestEvent spins on CD-DMA done (class F0000009 spec 0x20) ===
+
+Live diagnosis of the versus->fight scheduler-idle wedge (frame 2319, pc=0):
+
+- bioscall_dump: BIOS B0/0x0B = TestEvent called 1,440,713x (the busy-wait).
+- bios_svc_trace: spinning call is TestEvent(a0=0xF1000008, a1=0,
+  a2=0x01000201) -> v0=0 forever. ra=0x8019D550.
+- Handle 0xF1000008 = EvCB slot 8. Event table base @0xA0000120->0x00008e08,
+  16 slots x 0x1C. Slot8: class=0xF0000009 spec=0x00000020 status=0x2000
+  mode=0x2000 func=0  => class F0000009/spec 0x20 = **CD-DMA completion**
+  (matches ACCURACY_BURNDOWN "Slot8 F0000009/0x20 CD-DMA resolves").
+- irqctx_ring: IRQs ARE delivered (vblank etc.); event_ring shows DMA
+  KICK/DONE + ENQ/DEQ cycling — low-level machinery healthy.
+- cdrom_command_history: last CD cmd = 0x09 (Pause) issued frame 2313,
+  completed (pending.active=0 now). Prior: ReadN sectors 8767-8769 delivered
+  frames 2312-2313 (sector_history data_delivered=1). reading=0, CD parked.
+- cdrom_state: irq_flag=0x00 (NOT stuck — process_pending NOT blocked),
+  request=0x80, stat=0x02.
+- dma_state ch2 active=1 madr=0x801E82DC chcr=0x01000401 remaining=0 (GPU OT).
+- sio healthy (tx_writes=35556, pads 0xFFFF, mc 114/114).
+
+CONCLUSION: versus fight reaches gs=8 ph=8 then the game's CD-streaming thread
+spins TestEvent waiting for a CD-DMA-done kernel event that never fires.
+The game's CD driver calls DeliverEvent(F0000009,0x20) only when a CD data
+transfer completes; no transfer is completing because the read pipeline is
+stalled after Pause — either the game needs to issue another ReadN/ReadS that
+isn't being issued, or a queued/in-flight CD-DMA isn't being serviced.
+
+NEXT (runtime, cdrom.c/dma): determine whether a CD read/DMA the versus fight
+requested is stuck un-issued (queued_cmd/pending) or issued-but-not-completing.
+Compare against oracle at the same point (versus fight entry) to see the exact
+CD command + DMA channel sequence the original runs. The versus path likely
+streams 2-char match data the attract path doesn't, hitting a read the attract
+demos never needed.
