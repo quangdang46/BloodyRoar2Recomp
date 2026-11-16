@@ -3732,3 +3732,45 @@ The open question is WHICH physical transfer each spec binds (SPU stream vs
 DMA vs CD sub-channel) and why that transfer's done-bit never reaches the ISR.
 Next: identify the device for func_1FC010D0/1FC011E0/1FC01570/1FC015E0/1FC01650
 by their MMIO status reads, then check that register's runtime update path.
+
+=== SESSION UPDATE N+33 — ch4/SPU-stream kick traced to its exact call-chain; DF00 gate decoded ===
+
+Live wedge re-captured on fresh run (port 4401, gs=8 ph=8). Decisive flags:
+- 0x801bdf00 (xfer-armed flag) = 0  -> cd_dma_xfer_start's final block NEVER ran
+- 0x801bdeec (state9 cb) = 0, 0x801bdee8 = 0, 0x801bdee4 = 1 (armed)
+- ch4: madr=0xDDE60 bcr=0x03490010 chcr=0x201 active=0  (prepared, no start bit)
+- mode block 0x801f26c0: s3=7, s0(+4)=0x100 (stream bit SET); 0x801bde54 active mode=0
+- range tbl ptr 0x801bdf18 = NULL -> cd_range_table_member returns 0 (no early bail)
+
+THE CH4 KICK, END TO END (all generated-verified):
+- cd_dma_xfer_start (0x8019B89C) block_8019B8F0 is UNCONDITIONAL: builds
+  CHCR=0x01000200, writes MADR/BCR via 0x801bdeb4/8, sets DF00=1 @0x8019B928,
+  writes CHCR @0x8019B92C. Helpers 0x8019BE50/0x8019BE78 are reg-RMW, not waits.
+  => if entered, it ALWAYS kicks ch4. DF00=0 proves it was NEVER ENTERED.
+- Callers of cd_dma_xfer_start: ONLY cd_dma_xfer_mode (0x8019CFC0).
+- Callers of cd_dma_xfer_mode: audio_seq_reset (0x80158244, via 0x801bdeec cb —
+  currently NULL) OR 0x8019CFB0 <- cd_mode_apply_deferred (0x8019CE10) <-
+  cd_chan_mode_apply (0x8019C0F0) <- blk_1f26c0_init* (sound/stream chan init,
+  sets mode-block +4 |= 0x100).
+- cd_chan_mode_apply: f58=1 iff mode-block s0 has bit 0x100 (stream/deferrred).
+  Block IS set up with 0x100. cd_range_table_member(ent)=0 (NULL tbl) so the
+  early `return -1` @cd.c:2620 is NOT taken -> deferred path IS reachable.
+- cd_mode_apply_deferred (0x8019CE10) chunk loop: 3x cd_reg_window_op(0x8019B944)
+  then FUN_8019cfb0->cd_dma_xfer_mode->cd_dma_xfer_start per 0x400 chunk.
+- op3 (cd_reg_window_op) ch4-CHCR write @0x8019BBAC is GATED on DF00:
+  DF00==1 -> CHCR=0x1000200 (start); DF00!=1 -> CHCR=...|0x201 (prepare only).
+  This is exactly why live ch4 sits at chcr=0x201 with DF00=0.
+
+ROOT-CAUSE SHAPE (narrowed): the versus fight's SPU/stream channel init
+(blk_1f26c0_init* -> mode-apply 0x100 -> deferred -> xfer_start) never produces
+the ch4 kick. Either (a) cd_chan_mode_apply is not invoked on 0x801f26c0 for the
+versus fight, (b) cd_mode_apply_deferred's chunk loop iterates 0 times (chunk
+count/size fields +8/+0xa read 0 on live block), or (c) an upstream sound/
+sequencer trigger that issues the stream request never fires. This is upstream
+of DMA/IRQ — a game-logic/sound-init gate, consistent with the broader
+"CD->consumer flow-control deadlock" already logged (the missing ch4 completion
+is one of the kernel channel-events that never gets delivered).
+
+NEXT: instrument cd_chan_mode_apply entry+arg and cd_mode_apply_deferred chunk
+count on a fresh versus run; OR diff against oracle whether the versus fight
+issues the stream mode-apply. Do NOT fake the kick.
