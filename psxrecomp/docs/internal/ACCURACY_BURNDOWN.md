@@ -3829,3 +3829,31 @@ of CD/DMA/IRQ. This is a SOUND-subsystem (sequencer/command-processor)
 defect, not a CD-ROM defect. NEXT: find the sound command queue / sequencer
 tick and check whether versus->fight issues a music-play that menus/attract
 do issue. Compare oracle audio state at the same point.
+
+=== SESSION UPDATE N+36 — CORRECTION: ch4 kick is audio_seq_reset (state-9 cb), NOT cd_mode_apply_deferred ===
+
+Re-traced generated bodies. FUN_8019cfb0 (0x8019CFB0) is a PURE BIOS
+trampoline: li t2,0xB0; li t1,0xA; jr t2 -> BIOS kernel fn 0xA. It does NOT
+call cd_dma_xfer_mode. The br2eu_func_8019CFC0 (cd_dma_xfer_mode) block after
+it is a separate function unreachable by fallthrough (jr is unconditional).
+Earlier "mode-apply -> FUN_8019cfb0 -> ch4 kick" chain was WRONG.
+
+REAL ch4/SPU-stream kick path:
+  chan_reset_register (0x801582c0) -> cd_state9_store(0x80158244)
+    -> 0x801bdeec = audio_seq_reset AND cd_tbl8_dispatch9(audio_seq_reset)
+    -> audio_seq_reset: cd_reg_bit40_ctrl(0); cd_dma_xfer_mode(0x801f36f0,5)
+    -> cd_dma_xfer_start(0x801f36f0,0,0x20) -> block_8019B8F0 CHCR=0x1000200,DF00=1
+
+cd_state9_store dispatches IMMEDIATELY on store (not deferred). At the wedge
+0x801bdeec=0 => last store was cd_state9_store(0) (a clear) OR
+chan_reset_register never ran for this fight => audio_seq_reset never fired
+=> ch4 never kicked => no DeliverEvent(F0000009/0x20) => TestEvent spins.
+
+cd_reg_window_op diag live: total=54, op3=18, op3 -2 timeouts=0, last op3
+a0=3 a1=0x800d0c20 ret=0. op3 prepares ch4 (clears DF00) but the KICK is the
+separate audio_seq_reset path, explaining DF00=0 + chcr=0x201.
+
+NEXT: find who calls cd_state9_store(0) (the clear at menu.c:9692 / cd.c:2528)
+and whether versus->fight re-registers audio_seq_reset after it. Determine if
+the stream channel needs periodic re-kick per chunk (state-9 re-arm) that
+stopped.
