@@ -10009,3 +10009,28 @@ after .ANI load; find the generated ordering that avoids it.
 Repro is now input-free: headless attract cycles demo fights until crash.
 Stray fprintf debug at menu.c:1871,1956 (battle_intro_flow [BIF]) — pre-existing,
 flagged for cleanup (no-printf rule).
+
+## N+90 — versus progresses to frame ~24K post-e11a9ee; blocker is now a near-null deref, .ANI valid
+
+POST-e11a9ee (PTR-table audit, committed) versus/attract state:
+  - versus emu (port 4890) advances to frame ~24149+ and keeps going — was
+    crashing ~frame 5393 before PTR fixes. e11a9ee cleared the 0x80122F0C
+    wild-jump class AND bought large versus progress.
+  - attract emu (port 4900, same binary) cycled 106K+ frames gs=3/4/5/6
+    WITHOUT the earlier attract crash — attract may be stable now.
+  - .ANI headers in latest versus capture are BOTH VALID
+    (P1head=a4b6..., P2head=24c4...) — the heapB stomp did NOT trigger this run.
+    .ANI IS reloaded each fight (P2ani changes per cycle).
+  - Remaining crash = VECGA near-null storm, addr=0xAC/0xBC phys=0x0AC/0x0BC,
+    ra0 host ~0x101d35f60-84 repeating. Guest dereferences a near-NULL pointer.
+    26K+ exceptions logged; frame counter still advances (guest retries).
+
+REFINED HYPOTHESIS: with .ANI valid, the near-null deref is likely a
+versus-specific FIGHTER ENTITY / motion-ctrl sub-struct pointer that is NULL —
+versus loads TWO human-selected fighters via versus_stage_commit/
+battle_config_eval whereas attract CPU fighters are auto-provisioned. If P2's
+entity/motion struct (e.g. 0x801f5440 family, stream-PC cell +0x84) has a NULL
+sub-pointer the fight logic derefs -> 0xAC/0xBC. Agents b4709d7e (versus
+rebind/entity) + c8b13257 (heap-overlap) converging; the heap-overlap may be
+faithful (generated cd_file_load_sm reproduces it) — versus entity init is the
+sharper lead.
