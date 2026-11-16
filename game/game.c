@@ -1141,6 +1141,7 @@ void game_globals_reset(void)
     DAT_1f8000b0 = 0;
     rec_timer_pair_clear(0x1f800000);
     _g_system_config_ptr = g_DAT_801c1200;
+    *(uint32_t *)guest_at(0x1f8000c0) = guest_of(g_DAT_801c1200);
     _DAT_1f8000bc = 0x801f0270;
     _DAT_1f8000b8 = 0;
     _DAT_1f8000cc = 0x801c15f8;
