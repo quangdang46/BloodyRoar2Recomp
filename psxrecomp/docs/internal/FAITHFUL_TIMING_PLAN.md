@@ -8150,3 +8150,89 @@ the .ANI placement allocator in save_state_machine_alt) vs oracle to
 find the over-production source; OR verify whether heapB base 0x800d0000
 is phase-correct (maybe heapB should be higher/lower during fight bring-
 up). Compare heapA top-of-allocations vs DuckStation/Beetle.
+
+### Session N+36 — heapA NOT over-produced; .ANI is select-preview leftover + bind skipped
+
+Subagent full-trace analysis (/tmp/decomp_snap.jsonl, 5373 records,
+boot->attract->versus->crash) REFUTES the "+100KB heapA over-production"
+theory: versus->fight heapA consumption 0xF49E8 is the SMALLEST of all
+cycles (attract C1 0xFC364, C2 0xF74C8). File sizes all faithful
+(sector-count match). heap_serialize walk verified vs generated
+(SLES_017.22_full_28.c br2eu_func_8016B7C0): cnt/ctx/rec/stride match.
+
+REVISED mechanism (file_load caller-ra provenance):
+- versus SELECT loads JEN.ANI(0x58)->0x8006BA04 + MAR.ANI(0x40)->0x800CE958
+  (select-preview pair).
+- versus FIGHT loads BUS.ANI(0x48)->0x8006EF18 + YUG.ANI(0x20)->0x800D2F70
+  (DIFFERENT chars — selection is input/timing dependent per run).
+- The fight .ANI lands at/above heapB staging base 0x800D0000 -> its S0
+  tail is stomped by the post-load cinematic (intro_movie_state sound
+  loader, files 0x14/0x8b/0x16 SND/*.DAT — FAITHFUL, confirmed via
+  file_table.json: CHASEL_1.SND battle music etc).
+- heapA is NOT reset between fight-load and cinematic in a way that
+  saves the .ANI; _DAT_801e3cfc=0x800D0000 staging overwrites it.
+
+LINK to Session N+5e gwatch proof: versus->fight does NOT re-run
+fighter spawn/.ANI->FC_ANI bind (zero writes to 0x1f800118/220/110/218).
+FC_ANI=0x800CE958 is a STALE select-preview pointer. Combined: the fight
+uses a leftover .ANI that (a) may be the wrong character's and (b) sits
+in the staging kill-zone. On HW the async char-resource pipeline must
+re-load/re-bind .ANI to a safe heapA slot before case 8.
+
+OPEN: is the versus->fight missing the fighter-resource-bind a state-
+machine bug (wrong case/gate) or an async CD-load completion failure?
+The .ANI files ARE loaded (file_load records prove it) but to heapA
+addresses that collide with heapB staging — suggests heapA should top
+lower OR .ANI/.ACT belong to a different arena on HW. Compare heapA
+top vs Beetle oracle at versus->fight (needs 2P-capable oracle or
+attract-demo equivalent).
+
+### Session N+37 — versus→fight window fully mapped; ARCADE also wedges (general bug)
+
+Live arcade run (tools/nav_arcade.py, port 4396) reached gs=8/case=8
+("FIGHT REACHED") but is a SILENT WEDGE, not a fight: battle struct
+_DAT_1f8000bc=0x801F0270 is ALL ZEROS, fighter objects 0x801F5258/
+0x801F52A0 have only +0x18/+0x1c/+0x3c populated (heapB ptrs), ctrl
+blocks 0x1f8000e8/0x1f8001f0 cross-linked but NO .ANI/FC_ANI binding
+anywhere, sp_ring shows only the per-frame vsync ping-pong
+(0x8019A53C<->0x8019A87C). Confirms commit ad1f507: fight-init bug is
+GENERAL (arcade+versus); versus just crashes loudly on the corrupted
+.ANI while arcade soft-locks.
+
+SM-sharing discovery: DAT_1f800001 (0x1f800001) is a SHARED sub-state
+byte used by battle_flow_state_machine (cases 0-13), select_screen_tick
+(own do-while stages 0->6->0xf0->0xf1->0xff, resets to 0 on exit),
+match_loop, system_config_menu_a/b, results_scoreboard,
+player_name_entry, transition_screen_flow, battle_intro_flow,
+attract_menu_dispatch. select_screen_tick is a BLOCKING infinite SM
+called from battle_flow case 1; it calls intro_movie_state at its
+stage 0 (menu.c:3324) and fighter_spawn_setup at stage 6
+(menu.c:3008-3009) — the select-preview fighter spawn.
+
+Versus→fight file_load window (decomp_snap.jsonl seq4880-5373):
+- fight resources ra=0x801265F4 (menu_res_load_sm pump):
+  0x48 BUS.ANI->0x8006EF18, 0x4c BUS.ACT->0x8007A5BC, 0xc4->0x800F0000,
+  0xc0->0x801C47C0, 0x25->0x801C47C0, 0x20 YUG.ANI->0x800D2F70,
+  0x24 YUG.ACT->0x800DEAC8
+- phase reset ra=0x80126594: 0x8a->0x80010000 (heapA reset),
+  0x90/0x96->0x800DC800 (title/stage staging)
+- cinematic ra=0x80126664 (outer-loop level, entry case region):
+  0x14 P00.DAT->0x800D0000, 0x8b CHASEL_1.SND->0x800D0000,
+  0x16 SE00.DAT->0x800D0000 — battle music/stage data, requested as
+  fight begins (seq5337+ AFTER .ANI loads; async completion order).
+
+P2 .ANI at 0x800D2F70 sits INSIDE heapB staging arena (base 0x800D0000).
+Attract fights also place P2 .ANI high (0x800D1020/0x800D1FF0) but
+survive: no cinematic stages at 0x800D0000 while their .ANI is live.
+Versus is uniquely exposed: .ANI live + immediate sound staging at
+same base. On HW this cannot corrupt -> either heapA tops ~0x30000
+lower (over-production) or the sound staging/.ANI lifetime differs.
+Oracle attract-demo heapA-top check in flight (agent 225dc84c).
+
+ANOMALY: arcade log has ZERO [BSI]/[BIF]/[PBD]/[SCDL] fprintf hits yet
+gs=8/case=8 persists -> either battle_flow entered with case byte
+pre-set to 8 (skipping cases 0-7 incl. battle_struct_init) or the
+byte was left at 8 by a prior SM. battle_flow has no entry guard for
+case>1 (only -1/0xff resets to 0). Needs verification whether case 8
+body actually executes (PBD gated by DAT_1f80009b==4 ->
+battle_sides_commit path has no print).
