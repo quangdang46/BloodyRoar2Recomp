@@ -10077,3 +10077,30 @@ Prime suspect class: versus P2 fighter entity/motion/ctrl sub-struct field read
 as pointer but actually a small scalar (uninitialized or wrong-offset field).
 Attract CPU-fighter path provisions the same structs differently -> survives.
 Agent a497e6a0 pinpointing the exact clean function + field.
+
+## N+93 — ROOT CAUSE PINPOINTED: prim_task_run reads unpopulated +0x1c invoke-list ptr
+
+VECGA ra0 (PIE slide -> nm) resolves to _prim_task_run = prim_task_run,
+guest 0x8018A4F8, clean-ported game/battle.c:13216.
+
+VERIFIED FAITHFUL vs generated br2eu_func_8018A4F8:
+  lh v0,0xc(s0)      -> *(short*)guest_at(param_1+0xc)   [active flag]
+  lw s2,0x1c(s0)     -> *(u32*)guest_at(param_1+0x1c)    [invoke-list ptr P]
+  lw s6,0(s2)        -> *(int*)guest_at(P)               [entry count]
+  entries 16B: {+4 arg2, +8 arg1, +0xc func} jalr func
+Clean port matches exactly -> prim_task_run is NOT the bug.
+
+BUG = DATA: *(param_1+0x1c) holds 0xAC/0xBC/0xBD (small ints, not ptrs) ->
+guest_at(0xAC)->VECGA. The 0x28-stride primitive-task descriptor's invoke-list
+pointer is UNPOPULATED for versus.
+
+Task array @ scratchpad _DAT_801f04c0 (0x1f8004c0), fed by channel_script_emit*
+(battle.c:16730/16793/16801) via per-fighter channel-script struct param_3:
+  base = *(param_3+8)+0xf0  or  *(param_3)   [+0xa0 variant]
+Allocator = task_pool_alloc (guest 0x801a4ebc, battle.c:10843).
+
+REFRAME: NOT heap-overlap/.ANI/decode (those were faithful/symptoms). This is a
+primitive/render task provisioning gap for versus P2's fighter channel-script.
+Attract CPU fighters provision differently -> stable 106K+ frames.
+NEXT: find who writes task-desc +0x1c invoke-list for versus P2 channel script
+and why it's skipped/garbage. a497e6a0 owns battle.c/fight.c/action.c scope.
