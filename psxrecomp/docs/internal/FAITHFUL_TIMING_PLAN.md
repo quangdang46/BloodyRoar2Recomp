@@ -7959,3 +7959,43 @@ IRQ lands while the CPU is at a non-dispatchable PC (clean-C or BIOS boundary)
 -> deferred switch dropped -> coroutine starves. Compare the deferred-IRQ
 dispatch (mem[0x4C18] handler, psx_check_interrupts_at resume-PC capture)
 against oracle. Do NOT hand-deliver the event.
+
+=== SESSION N+28 — CORRECTION + sharper root cause: CD IRQ taken but cd_intc_dispatch sees I_STAT=0 ===
+
+CORRECTION to N+26/N+27: intc_count @0x801bce00 is bumped ONLY by the clean
+cd_intc_dispatch thunk, but gen_clean_table SKIPS 0x8019a8ec (the thunk's own
+br2_call_generated makes gen_clean_table skip it) -> jal 0x8019a8ec runs
+GENERATED br2eu_func_8019A8EC directly. intc_count=0 is EXPECTED and does NOT
+mean the dispatch is starved. Discard that signal.
+
+What IS true (live reads at wedge):
+- cd_intc_dispatch computes mask = I_STAT(0x1F801070) & I_MASK(0x1F801074)
+  & u16@0x801bcd48(=0xD). 0x1F801070/74 = PSX I_STAT/I_MASK (debug_server
+  mmio map confirms). CD IRQ = I_STAT bit2 (0x4).
+- irqctx_ring: IRQs ARE taken every frame at take_pc~0x8019A648 (inside CD
+  wait fn 0x8019A5D8) with istat alternating 0x1 (VBLANK) AND 0x4 (CDROM).
+  -> CD IRQs DO fire and ARE dispatched at a valid resume PC. The deferred
+  coroutine resume is NOT starved for lack of dispatch.
+- handler table @0x801bcd1c u32[11]: idx0=0x8019ae68(cd_cb8_dispatch)
+  idx2=0x801979f8 idx3=0x8019af7c. Mask bits 0x1/0x4/0x8 -> idx 0/2/3.
+  bit2(0x4=CD) -> handler[2]=0x801979f8 = the CD-DMA-done -> DeliverEvent path.
+- I_STAT sampled live = 0 (between IRQs). slot8 stays ENABLED(0x2000);
+  TestEvent spins. async-op flag 0x801bde40=0 (op completed).
+
+ROOT CAUSE (narrowed): a CD IRQ (istat 0x4) IS taken and the deferred resume
+reaches the CD dispatch region, but when cd_intc_dispatch samples
+I_STAT&mask the CD bit is already clear -> effective_mask=0 -> handler[2]
+(0x801979f8 -> cd_cb7_run -> cd_dma_chan_reset -> DeliverEvent F0000009/0x20)
+never runs -> slot8 never READY -> TestEvent spins forever.
+
+LIKELY BUG: I_STAT bit2 (CD) is being acked/cleared BEFORE cd_intc_dispatch
+reads it — i.e. the runtime clears the CD interrupt status at IRQ-take (or
+the kernel entry path) instead of letting the game's INTC handler ack it, so
+the deferred dispatcher's I_STAT sample sees 0. cdrom.c comments describe
+"the handler's own INTC ack then clears it" — the ack ordering is the suspect.
+Versus streams more CD data than attract -> hits the lost-done window.
+
+NEXT: trace one istat=0x4 IRQ take -> confirm whether cd_intc_dispatch runs
+and what I_STAT it samples; check where I_STAT bit2 is cleared relative to
+the deferred resume (psx_check_interrupts_at / kernel IRQ entry vs the game's
+INTC ack in cd_intc_dispatch). Compare ack ordering vs oracle/Beetle.
