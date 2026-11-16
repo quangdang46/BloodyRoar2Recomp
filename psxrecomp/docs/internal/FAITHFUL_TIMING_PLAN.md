@@ -9357,3 +9357,41 @@ lands ~0x800d1xxx. Spawned agent f3f44605 to determine whether the .ANI
 heap allocation (which cursor: heapA vs heapB/_DAT_801e3cfc) is faithful
 or a clean-port bug, scoped to game/action.c, ani.c, ev.c, battle.c.
 78d6700f still owns the match-end/combat-resolution root cause.
+
+### N+73 — POST-FIX REGRESSION CHECK: player-arcade->fight STABLE+RENDERING; attract crashes; versus wedges silently
+
+After commit 88ea0c4 (clean_table guest_at restore), ran both nav paths:
+
+- **nav_arcade.py (player 1P arcade, port 4741): WORKS.** Reached
+  gs=8 ph=8 FIGHT REACHED and HELD stable; frame advanced 4402->4806->5215,
+  fn_stats direct_seen=5.83M dispatches -> fight engine live+rendering.
+  This is the regression oracle — player-arcade resource path is correct.
+
+- **plain headless / attract (port 4730):** crashes frame ~1871
+  FAIL-FAST unknown dispatch 0x0B808000 in battle_struct_init (the
+  documented .ANI/heapB stomp).
+
+- **nav_to_fight.py (2P versus, port 4742):** reached vs_init gs=8 ph=0
+  sub=1 sig=(2,1), then WEDGED SILENTLY — process state Ss @0% CPU,
+  debug port stops answering, NO FATAL/crash in log. The [PBD] line
+  (p1=0x1144a40e8 p2=0x1144a41f0 p3=0x1F800000 s1bc/f0bc=0x801f0270) is
+  the known diagnostic, NOT a crash indicator (per ACCURACY_BURNDOWN
+  ~3873: host ptrs into guest RAM are valid; [PBD] != crash). The versus
+  wedge is now a SILENT stall (dead debug, 0% CPU) rather than the
+  earlier 100%-CPU IRQ busy-loop — likely the same handoff stall reaching
+  a different terminal state, OR the .ANI corruption manifesting as a
+  hang before the wild-dispatch fatal.
+
+=> Refinement of N+71 "universal": PLAYER-ARCADE works; the .ANI/heapB
+stomp hits ATTRACT-demo and VERSUS (the two paths that stage resources
+differently / run the phase-loop). The resource-path divergence between
+working arcade and crashing attract/versus is the precise question —
+f3f44605 (.ANI heap-alloc cursor) + 78d6700f (match-end/phase-loop)
+own it.
+
+intptr_t/uintptr_t first-param AUDIT (complete): all other intptr_t fns
+(battle_session_arm, match_end_check, frame_tick, frame_present,
+tile_decode_wait, rec_timer_pair_clear, cd_cmd_bytes, cd_cmd_retry)
+do guest_at(param_1) INTERNALLY -> they take a GUEST addr -> wrapper
+correctly passes raw. Only the 3 in HOST_PTR_PARAMS take a HOST ptr.
+Override set is complete, not partial.
