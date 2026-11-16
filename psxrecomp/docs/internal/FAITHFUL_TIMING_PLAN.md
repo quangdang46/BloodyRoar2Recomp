@@ -8380,3 +8380,48 @@ that never wakes), while arcade spins TestEvent. Same fight-init root,
 different host manifestation. Prime suspect shifts to the fiber/
 coroutine scheduler or a blocking wait in the INTERP dispatch path —
 NOT a per-device completion bug. Deadlock agent 4dea3363 on live repro.
+
+### Session N+41 — UNIFICATION: versus crash + arcade wedge + SPU starvation = ONE root
+
+Deadlock agent 4dea3363 (live repro 4397) FATAL-HALT decoded via `sample`:
+
+```
+psx_fatal_halt <- psx_unknown_dispatch <- br2_call_generated(0x80122DC8)
+<- ev_stream_dispatch (resolve.c:3106) <- action_commit <- fighter_frame
+<- battle_flow_state_machine (menu.c:758)
+FAIL-FAST unknown dispatch addr=0x80122DC8 ra=0x80126664 frame 2292
+```
+
+0x80122DC8 = ASCII string data ("FURI/YORO/DOWN/BREAK…"), NOT code —
+the event-opcode table @0x801b4e68 has only 48 valid handlers (ops 0-47);
+op>=48 over-reads into the adjacent string table. Guest 0x8017ea7c has
+NO bounds check either → real HW faults identically. So the crash is
+DATA CORRUPTION upstream, not a dispatch bug. Do NOT seed 0x80122DC8.
+
+motion+0x84 (event-stream pc) = 0x800D4165 = odd addr inside binary
+keyframe data (repeating 12 00 XX XX) → the .ANI/.ACT stream base or a
+prior stream next-pc is corrupt → op byte 0xBF → table[191]=0x80122DC8.
+
+UPSTREAM ROOT (unifies ALL symptoms):
+- spu_status: active_mask=0, eon=0xFFFF08, reverb_on=0 — ZERO voices.
+- ch4 DMA prepared (madr=0xDDE60 bcr=0x03490010 chcr=0x201 NO start bit)
+  but never kicked. Kick comes only from audio_seq_reset via state-9 cb
+  0x801bdeec — never re-armed for fight.
+- => sound stream starves => kernel channel events (F0000009/0x20 ch4-DMA,
+  F4000001 specs, F0000011 SIO) never DeliverEvent => async file-load /
+  stream consumer never finishes => .ANI/.ACT incomplete => ev_stream
+  reads garbage op => fatal (versus) / TestEvent spin (arcade).
+
+The "kernel channel-event deadlock", "CD-DMA mid-sector stall",
+"SPU stream starvation", and ".ANI corruption" are ONE bug: the fight's
+audio/SPU stream (ch4) is never kicked, starving the shared kernel
+event pipeline that also drives CD file loads.
+
+CH2 GPU-OT "stuck" was a RED HERRING (normal linked-list walk in flight;
+DMA_KICK→DMA_DONE pairs completing). CD Pause(0x09) healthy. idle_skip
+off. The whole-pump "freeze" was psx_fatal_halt's nanosleep debug loop.
+
+FAITHFUL FIX DIRECTION: root why audio_seq_reset/state-9 cb 0x801bdeec
+isn't re-armed for versus/arcade fight (game-state sequencing) OR why
+the ch4 kick path drops it (runtime). Verify .ANI load completion via
+watchpoint on motion+0x84 (0x801F54C4). NO fakes — fix the real kick.
