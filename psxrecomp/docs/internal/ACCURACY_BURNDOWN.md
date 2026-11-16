@@ -3857,3 +3857,29 @@ NEXT: find who calls cd_state9_store(0) (the clear at menu.c:9692 / cd.c:2528)
 and whether versus->fight re-registers audio_seq_reset after it. Determine if
 the stream channel needs periodic re-kick per chunk (state-9 re-arm) that
 stopped.
+
+=== SESSION UPDATE N+37 — fntrace instrumentation armed; run crashed EARLIER in post_battle_dispatch ===
+
+Set up decisive fntrace run: launched fresh instance :4402, armed 12 targets
+(chan_reset_register 0x801582C0, chan_reset_clear 0x80158358, audio_seq_reset
+0x80158244, cd_dma_xfer_start 0x8019B89C, cd_dma_xfer_mode 0x8019CFC0,
+cd_mode_apply_deferred 0x8019CE10, save_flow_state_machine 0x8015D420,
+0x8015D69C, cd_reg_window_op 0x8019B944, cd_state9_store 0x8019D1B0,
+cd_seek_step 0x8019D508, cd_file_read_seq 0x801565EC). FNTRACE_RING_CAP=4M,
+ARM_MAX=32; ring only records armed targets (was empty unarmed).
+
+nav_to_fight reached FURTHER than prior wedge runs: log shows
+[BIF]res_load -> battle_round_init -> battle_struct_init -> post_battle_dispatch
+(PBD p1=0x1165940e8 p2=0x1165941f0 — HOST pointers, guest->host confusion)
+then process DIED (SIGSEGV) before reaching gs=8 ph=8 wedge.
+
+NEW OBSERVATION: versus->fight can crash in post_battle_dispatch with host
+pointers passed where guest addrs expected — same class as N+21 vector bug.
+This may be nondeterministic (timing) OR fntrace-arming perturbed it. The CD
+wedge (gs=8 ph=8) and this PBD crash may be two faces of the same
+uninitialized-struct root cause.
+
+NEXT: (a) reproduce PBD crash without fntrace to confirm it's not an
+instrumentation artifact; (b) if real, root-cause the host-ptr args in
+post_battle_dispatch (battle.c); (c) re-run instrumented to capture the
+audio_seq_reset/ch4-kick call sequence at the wedge.
