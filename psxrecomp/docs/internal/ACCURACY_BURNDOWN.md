@@ -3883,3 +3883,29 @@ NEXT: (a) reproduce PBD crash without fntrace to confirm it's not an
 instrumentation artifact; (b) if real, root-cause the host-ptr args in
 post_battle_dispatch (battle.c); (c) re-run instrumented to capture the
 audio_seq_reset/ch4-kick call sequence at the wedge.
+
+=== SESSION UPDATE N+38 — post_battle_dispatch crash: g2+0xbc = 0x7c0 (uninitialized battle-struct ptr) ===
+
+Decoded the PBD debug line from the crashed :4402 run:
+  p1=0x1165940e8 p2=0x1165941f0 (valid host ptrs into guest RAM, +0x108 apart)
+  p3=528482304 = 0x1F800000 (battle state block, guest addr)
+  s1bc = MB32(s1+0xbc) = 0x801f0270   (battle state's +0xbc = valid ptr)
+  g2bc = MB32(g2+0xbc)  = 0x7c0       (param_1's +0xbc = GARBAGE/small value)
+  f0bc = MB32(0x1f8000bc) = 0x801f0270
+
+param_1 = side-A player/fighter struct. Its +0xbc field (battle-struct ptr,
+same offset as the N+21 fighter+0xbc bug) reads 0x7c0 — NOT a valid pointer.
+This is the SAME uninitialized-struct root cause: the versus->fight path runs
+post_battle_dispatch (per-side battle_config_eval) before the side structs'
++0xbc battle-struct pointers are populated. Downstream deref of 0x7c0 -> SIGSEGV.
+
+NOTE: p1/p2 differ by 0x108 (264 bytes) = two adjacent side/player structs.
+The +0xbc offset being uninitialized while +0xbc of the battle STATE (s1) is
+valid suggests the SIDE structs specifically aren't fully built — consistent
+with N+19/20/21 (battle_intro_flow's struct-init sequence incomplete).
+
+NEXT: determine whether post_battle_dispatch is reached before or after the
+side structs' +0xbc should be set — i.e. is the crash an ORDERING bug (dispatch
+too early) or a MISSING init (struct never populated)? Compare the call order
+vs battle_struct_init/battle_round_init which DID run (log shows them before
+PBD). Check what writes side+0xbc and whether it ran for param_1.
