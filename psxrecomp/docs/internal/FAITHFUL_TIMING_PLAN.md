@@ -7692,3 +7692,37 @@ NEXT: determine whether versus->fight ISSUES the fighter battle-struct /
 resource load at all, and whether the async CD completion that would run
 battle_struct_init + assign fighter+0xbc is firing. Compare vs oracle.
 Do NOT patch fighter+0xbc or the vector — fix the missing init upstream.
+
+=== SESSION N+22 — init sequence DOES run; bug narrowed to fighter+0xbc only ===
+
+Instrumented battle_intro_flow/battle_round_init/battle_struct_init/
+fighter_spawn_tail with stderr markers; fresh boot + nav_to_fight.py.
+
+CONFIRMED the versus->fight init sequence RUNS TO COMPLETION:
+  [BIF] sub=0 gs=6            -> battle_intro_flow entered (game_state 6)
+  [FST] fighter_spawn_tail    -> fighter spawn ran
+  [BIF] res_load iVar4=0 x~46 -> menu_res_load_sm polled async CD load
+  [BIF] res_load iVar4=1      -> load COMPLETED
+  [BRI] battle_round_init bc=0x801f0270
+  [BSI] battle_struct_init p1=0x801f0270 p2=0x1f800000   (x2, two rounds)
+  [FST] fighter_spawn_tail    -> second spawn
+Then VECGA addr=0x00000082 -> same crash.
+
+So the shared battle struct 0x801F0270 IS initialized (battle_struct_init
+ran twice) and the whole menu_res_load_sm->battle_round_init->
+battle_struct_init chain executes. The earlier "all zeros" post-mortem was
+a PRE-init snapshot — the crash happens AFTER init completes.
+
+REMAINING BUG (narrowed): post_battle_dispatch reads MB32(FIGHTER+0xbc)
+where FIGHTER=0x1F8000E8/0x1F8001F0 -> scratchpad 0x1F8001A4/0x1F8002AC.
+This is the PER-FIGHTER battle/hitbox-struct pointer — DISTINCT from the
+shared battle-block+0xbc (0x1f8000bc=0x801F0270, which IS set+init'd).
+fighter+0xbc is still NULL -> write folds to guest 0x82 -> vector corrupt.
+
+NEXT: find what assigns fighter+0xbc (per-fighter battle struct ptr). It is
+NOT in any clean-C fn (grepped: no '+0xbc =' writes) and NOT in
+fighter_link_init/battle_round_init/battle_struct_init — so it is set by
+GENERATED code, most likely menu_res_load_sm (per-fighter collision/hitbox
+resource bind) or a fighter-resource relocation. Verify whether menu_res_load_sm
+writes fighter+0xbc for versus fighters, or whether a per-fighter battle-
+struct allocator/link step is being skipped.

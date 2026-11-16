@@ -2,6 +2,7 @@
  * Verbatim Ghidra ports from decomp/batch_sm2.txt.
  * Guest globals bound via g_DAT_* (bind.c arena, payload-backed). */
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -1864,7 +1865,11 @@ void battle_intro_flow(int param_1)
   char cVar6;
   int unaff_s3;
   undefined4 unaff_s6;
-  
+  static int s_last_sub = -1;
+  if ((int)DAT_1f800001 != s_last_sub) {
+    s_last_sub = (int)DAT_1f800001;
+    fprintf(stderr,"[BIF] sub=%d gs=%d\n",s_last_sub,(int)g_game_state); fflush(stderr);
+  }
   bVar1 = false;
   iVar4 = memcard_err_sentinel();
   uVar2 = DAT_1f80009b;
@@ -1948,6 +1953,7 @@ LAB_8016767c:
           _DAT_1f800090 = 0;
         }
         iVar4 = menu_res_load_sm(0x1f800000,&DAT_1f8000e8,&DAT_1f8001f0,0);
+        fprintf(stderr,"[BIF] res_load iVar4=%d f090=0x%x\n",iVar4,(unsigned)_DAT_1f800090); fflush(stderr);
         if ((iVar4 != 0) && (_DAT_1f800090 == 0)) {
           if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
             confirm_code_select(0x1f800000);
@@ -4568,6 +4574,7 @@ void battle_struct_init(uint32_t param_1, uint32_t param_2)
     0x42,0x44,0x46,0x4a,0x4c,0x4e,0x52,0x54,0x56,0x5a,0x5c,0x5e,0x60,
     0x64,0x66,0x68,0x6c,0x7e };
   unsigned i;
+  fprintf(stderr,"[BSI] battle_struct_init p1=0x%08x p2=0x%08x\n",param_1,param_2); fflush(stderr);
   for (i = 0; i < sizeof(zfld)/sizeof(zfld[0]); i++)
     *(uint16_t *)guest_at(param_1 + zfld[i]) = 0;
   *(uint32_t *)guest_at(param_2 + 0x5c) = 0;
