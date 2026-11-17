@@ -8191,25 +8191,28 @@ extern int prim_group_build();
 
 /* 0x801a1834 — ctx flag gate + indirect callback; returns 1/0.
  * Faithful port of generated 0x801A1834-0x801A1898:
- *   ctx = *0x801CE7E0;
+ *   ctx = *0x801BE7E0;   // lui 0x801C + lw -6176 -> 0x801BE7E0 (=0x1F801070)
  *   if (!(*(ctx+4) & 1)) return 0;   // beqz -> epilogue, v0=0
  *   if (!(*ctx     & 1)) return 0;
- *   fp  = *0x801CE7A8;
+ *   fp  = *0x801BE7A8;   // lui 0x801C + lw -6232 -> 0x801BE7A8
  *   if (fp != 0) jalr fp;            // caller's a0-a3 forwarded untouched
  *   return 1;                        // v0 forced to 1 on both tail paths
  * The jalr target is a guest fn ptr: call_guest runs the clean wrapper or
  * nested-dispatches generated, and only writes $a0/$a1 — pass the live
  * values through so the callee sees the caller's regs; $a2/$a3 pass
- * through untouched exactly like the guest jalr. No IRQ wait, no MMIO,
- * no loop — clean C is faithful here. */
+ * through untouched exactly like the guest jalr. No IRQ wait, no loop —
+ * clean C is faithful here (ctx flags are plain MMIO reads). */
 extern CPUState *clean_cpu_state(void);
+extern uint32_t br2_ld32(uint32_t a);
 int op_flag_fn_check(void)
 {
-  uint32_t ctx = *(uint32_t *)guest_at(0x801ce7e0);
+  /* ctx resolves to the SIO status reg 0x1F801070 — MMIO, so the ctx+4/ctx
+   * flag reads must go through br2_ld32 (guest_at only backs RAM/scratch). */
+  uint32_t ctx = *(uint32_t *)guest_at(0x801be7e0);
   uint32_t fp;
-  if ((*(uint32_t *)guest_at(ctx + 4) & 1) == 0) return 0;
-  if ((*(uint32_t *)guest_at(ctx) & 1) == 0) return 0;
-  fp = *(uint32_t *)guest_at(0x801ce7a8);
+  if ((br2_ld32(ctx + 4) & 1) == 0) return 0;
+  if ((br2_ld32(ctx) & 1) == 0) return 0;
+  fp = *(uint32_t *)guest_at(0x801be7a8);
   if (fp != 0) {
     CPUState *cpu = clean_cpu_state();
     uint32_t a0 = cpu ? cpu->gpr[4] : 0;
@@ -8734,11 +8737,14 @@ void op_frame_advance(uint8_t *s0)
       }
     }
   }
-  if (*(uint8_t *)(*(uint32_t *)(s0 + 0x3c)) == 0xf3) {
+  /* s0+0x3c / s0+0x30 hold guest addresses — deref through guest_at, the
+   * same way the generated lw/sb pair resolves them. */
+  if (*(uint8_t *)guest_at(*(uint32_t *)(s0 + 0x3c)) == 0xf3) {
     /* fallthrough: nothing */
   } else {
-    *(uint8_t *)(*(uint32_t *)(s0 + 0x30)) = 0xff;
-    *(uint8_t *)(*(uint32_t *)(s0 + 0x30) + 1) = 0;
+    uint8_t *t = (uint8_t *)guest_at(*(uint32_t *)(s0 + 0x30));
+    t[0] = 0xff;
+    t[1] = 0;
     *(uint8_t *)(s0 + 0xe8) = 0;
     *(uint8_t *)(s0 + 0x35) = 0;
   }
