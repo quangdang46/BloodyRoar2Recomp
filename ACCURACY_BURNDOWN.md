@@ -1356,3 +1356,19 @@ Combat audit flagged NOT-fully-audited: fighter_script_fsm (12.7K gen),
 fighter_contact_resolve (3.2K), fighter_pair_update (4.6K),
 camera_aim_offset (4.3K), battle_camera_step, entry_setup, part_link —
 next audit wave targets.
+
+=== N+111 — x28 fix WORKS: frame 1899 -> 2195, new blocker surfaced ===
+ba9ede73 implemented the converged fix: s_exc_jmpbuf_live liveness token
+paired with exception_jmpbuf (interrupts.c), armed at setjmp, cleared on
+frame exit, saved/restored in lockstep with the nested-delivery jmp_buf
+memcpy; all longjmp consumers refuse dead frames (deferred_exception_
+longjmp, psx_rfe_escape_check, traps.c pending-honor). Faithful: stale
+RFE escapes now decline (g_stale_exc_longjmp) instead of resurrecting
+dead frames — cpu->pc/GPR commit already happened so dispatch continues.
+VERIFIED: fresh headless run passes frame 1899 (was deterministic crash)
+and reaches frame 2195 — attract fight runs ~300 frames deeper.
+NEW BLOCKER at frame 2195: FAIL-FAST unknown dispatch
+addr=0x8019AA94 ra=0x8019AA9C a1=0x1F801070 (MMIO), pc=0xB0 BIOS-svc
+context, epc=0x8018AA60. 0x8019AA94 sits in cd_chan_slot_set
+(0x8019AABC) region — CD-channel path, possibly same unwind class or a
+new port bug. Under investigation by ba9ede73.
