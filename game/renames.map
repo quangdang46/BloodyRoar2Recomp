@@ -1671,3 +1671,21 @@
 
 80141610 quad_fx_update
 
+80176248 action_resolve
+801787dc fighter_frame
+80182f3c scriptop_end
+80183558 scriptop_ret
+80183bd0 scriptop_sflag
+80184810 scriptop_sub
+80184890 scriptop_mul
+80184914 scriptop_div
+
+801851d8 anim_vec3_normalize
+80185444 anim_ret_nop
+801858f8 anim_angle_approach
+80194500 fixed_rsqrt_q12
+80194590 fixed_rsqrt_q12_ex
+8019461c vec3_s32_h_normalize
+80194630 vec3_s32_normalize
+80194660 vec3_s16_normalize
+80194690 gte_vec3_normalize
