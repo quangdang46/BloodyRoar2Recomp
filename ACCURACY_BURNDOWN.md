@@ -1307,3 +1307,10 @@ construction and skipped. Named-unwrapped census: 75 functions remain —
 unwrapped (would infinitely recurse through clean dispatch otherwise).
 FUN_ marathon (~2668 unnamed) deferred until the x28 gate falls and live
 combat is verified.
+
+POST-AUDIT RUNTIME CHECK (build @9ce6b9a+docs): fresh headless run still
+hits the SAME context-unwind gate, new manifestation — frame 1899,
+FAIL-FAST `unknown dispatch addr=0x03FF0100 ra=0x801265F4`, cpu.pc=0,
+epc=0x8019A648 (VSync region, same ra as N+106). Confirms the 23 audit
+fixes did not cause it and did not clear it — x28/RestoreState root cause
+(445d995c) remains THE gate for attract-fight completion and versus.
