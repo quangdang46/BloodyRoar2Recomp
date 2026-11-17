@@ -1478,3 +1478,28 @@ Port agent 53328f16 committed b34253b: 12 hot fn_stats functions ported
 (cd.c+3, gfx.c+9), clean_table 1220 wrappers, no regression.
 NEXT: agent on TestEvent/DeliverEvent starvation (critical); agent on
 0x27EC host-ptr leak.
+
+=== N+117 — ALL symptoms = ONE root cause: host-ptr leak -> kernel RAM spray ===
+Two agents converged independently:
+- "TestEvent starvation" (0bc00341) is NOT a scheduler bug: CPU dies
+  because kernel RAM is overwritten — BIOS exceptionHandler code @0x27EC,
+  EvCB table @0x8E08, kernel heap all sprayed with GPU/GTE primitive
+  packet words. TestEvent count FROZEN (CPU stopped reaching BIOS calls);
+  pc=0 livelock in dirty-RAM interp on corrupted code.
+- Wild writer = generated br2eu_func_8018A9C8/8018A9E8 (GTE prim-emit /
+  heap-serialize tag-0x40051 mode-7 deserializer, emitted by
+  game/menu.c:14484) running with a0/a1/a3 = TRUNCATED HOST POINTERS
+  (0x60208E54 = low32 of macOS heap 0x0000000260xxxxxxxx). Computes
+  output cursor t3 into kernel RAM; first fatal write frame 3159
+  (0x011C0129 -> phys 0x27EC), wild writes begin frame 2198 = exact
+  starvation onset.
+- Call chain: call_guest <- prim_task_run (battle.c:13240) <-
+  channel_script_emit_triple (battle.c:16863) <- clean_try_dispatch.
+- Host ptrs already inside guest-visible task/heap structures consumed
+  by the deserializer — producing store predates frame 2198, propagates
+  via TCB save/restore. Same bug class as ee5c6d1/5c0c7d4.
+NEXT: find the clean-C store writing host ptrs into heap/task structs
+feeding func_8018A9E8 (menu.c:14484 serializer emitter; battle.c
+prim_task_run/task node fields [2]/[3]/[4]; node_list_collect
+battle.c:17334 indirect fn(arg) path). Fixing it should resolve
+starvation + dead input + attract park + 0x27EC crash simultaneously.
