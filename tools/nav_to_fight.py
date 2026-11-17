@@ -1,15 +1,26 @@
 #!/usr/bin/env python3
 # nav_to_fight.py — drive headless BloodyRoar2_Recompiled (debug :4382) from
 # title -> mode menu -> 2P VS -> char select -> fight, input-only (no RAM
-# pokes). Proven sequence from bloody-roar-2/agent_mode.py menu_to_vs2p:
-#   title: mash START until gs=5,ph=2 (mode menu)
-#   menu : press DOWN until (0x9b,0x9c)==(2,1) [2P VS], then START
-#   vs   : gs=8,ph==6 -> CROSS on BOTH pad slots (char lock)
-#          gs=8,ph==7 -> mash START on both slots (pad gate)
-#          gs=8,ph==8 -> fight live
+# pokes). Proven sequence from bloody-roar2/agent_mode.py menu_to_vs2p,
+# with corrected input timing found via runtime pad/decoded-state tracing:
+#   title: HOLD START ~30 frames (a 3-frame pulse is too short to survive
+#          the title's brief valid-sample window and usually lands in
+#          attract gs=6 instead of the mode menu gs=5,ph=2)
+#   menu : press DOWN until (0x9b,0x9c)==(2,1) [2P VS], then HOLD START
+#          ~40 frames to confirm
+#   vs   : gs=8,ph==6 -> HOLD CROSS on BOTH pad slots ~30 frames (char lock)
+#          gs=8,ph==7 -> HOLD START on both slots ~30 frames (pad gate)
+#          gs=8,ph==8 -> fight init reached; keep watching for frame advance
+# gs=8 ph=241 (0xF1) is a NORMAL transition stage, not a stall.
 # Active-low pad words. Requires p2_device set so both SIO pads connect.
-# NOTE: reaching ph==8 currently triggers a guest pc=0 exception storm in
-# fight init (see freeze_check pczero_count) — the versus->fight handoff bug.
+# KNOWN BLOCKER: the 2P VS path reaches gs=8,ph=8 then dies with
+#   FAIL-FAST unknown dispatch addr=0x01000000 ra=0x80126664
+# preceded by a massive BIOS TestEvent (B0:0B) spin inside the generated
+# cd_seek path (ra=0x8019D550) — versus file loading starves the deferred
+# interrupt/event delivery (see AGENTS.md §4/§8 CD-seek blocker). The
+# default/arcade path (sig 0,0) DOES reach a live fight and frames
+# advance. Do NOT treat ph=8 alone as success — verify the frame counter
+# keeps increasing after the gate.
 import socket,json,time,sys
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 4370
 def cmd(c):
@@ -37,32 +48,48 @@ def rd(a,n):
 def press(btn,frames,slot): return cmd({"cmd":"press","slot":slot,"buttons":btn&0xFFFF,"frames":frames})
 START=0xFFF7; CROSS=0xBFFF; DOWN=0xFFBF
 t0=time.time(); stage="title"; sent={}
+fight_frame=None; stall_at=None
 while time.time()-t0<150:
     st=rd(0x1f800000,0x9d)
     if len(st)<0x9d: time.sleep(0.3); continue
     gs,ph,sub=st[0],st[1],st[0x9C]; sig=(st[0x9B],st[0x9C])
-    print("stage=%s gs=%d ph=%d sub=%d sig=%s"%(stage,gs,ph,sub,sig),flush=True)
+    fr=cmd({"cmd":"frame"}).get("frame")
+    print("stage=%s gs=%d ph=%d sub=%d sig=%s frame=%s"%(stage,gs,ph,sub,sig,fr),flush=True)
     now=time.time()
     if stage=="title":
-        if gs==5 and ph==1: press(START,3,0); time.sleep(0.3)
+        # Title window is short; hold START long enough for a valid edge.
+        if gs==5 and ph==1:
+            if now-sent.get('t',0)>=0.5: press(START,30,0); sent['t']=now
         elif gs==5 and ph==2: stage="menu"
         elif gs==8: stage="vs_init"
+        elif gs==6: stage="title"   # missed window -> attract; mashes will retry
     elif stage=="menu":
         if gs==5 and ph==2:
             if sig!=(2,1):
-                if now-sent.get('d',0)>=0.4: press(DOWN,3,0); sent['d']=now
+                if now-sent.get('d',0)>=0.5: press(DOWN,3,0); sent['d']=now
             else:
-                if now-sent.get('s',0)>=0.8: press(START,3,0); sent['s']=now; time.sleep(0.3)
+                if now-sent.get('s',0)>=1.0: press(START,40,0); sent['s']=now
         elif gs==8: stage="vs_init"
         elif gs!=5: stage="title"
     elif stage=="vs_init":
-        if gs==8 and ph==6 and sub>0:
+        if gs==8 and ph==6:
             for s in (0,1):
-                if now-sent.get(s,0)>=1.5: press(CROSS,3,s); time.sleep(0.15); sent[s]=now
+                if now-sent.get(('c',s),0)>=1.0: press(CROSS,30,s); sent[('c',s)]=now
         elif gs==8 and ph==7:
             for s in (0,1):
-                if now-sent.get(('g',s),0)>=1.0: press(START,3,s); sent[('g',s)]=now
+                if now-sent.get(('g',s),0)>=1.0: press(START,30,s); sent[('g',s)]=now
         elif gs==8 and ph==8:
-            print("FIGHT REACHED",flush=True); break
+            if fight_frame is None:
+                fight_frame=fr
+            else:
+                print("FIGHT frames %s -> %s"%(fight_frame,fr),flush=True)
+                if isinstance(fr,int) and isinstance(fight_frame,int) and fr>fight_frame+30:
+                    break
+                if stall_at is None: stall_at=now
+                elif now-stall_at>10:
+                    print("FIGHT STALLED at ph=8 frame=%s"%fr,flush=True); break
         elif gs==5: stage="title"
     time.sleep(0.15)
+print("done stage=%s"%stage,flush=True)
+try: cmd({"cmd":"quit"})
+except: pass
