@@ -33,7 +33,19 @@ entry_pc     = "0xBFC00000"
 text_size    = "0x80000"
 
 [program.image]
-sha256          = "6ad31beba3b1516e2f34014d1bfc678d9ef379711db6bf2facc0d70b217f0b7d"
+# LOCAL PATCH vs upstream pin 55fbf04 (pcsx-redux / nugget openbios):
+# patches/patches.c `int g_patch_permissive = 0` makes patch_hook() halt the
+# machine ("Couldn't find %c0 patch hash ... Stopping.") on ANY B0:56/57
+# (GetC0Table/GetB0Table) call site whose code-hash is not in the 17-entry
+# registered patch table. Bloody Roar 2 legitimately calls GetC0Table during
+# driver init via a tail-call chain (ra=0x80126260, hash 0xf12639c8) that is
+# NOT a kernel-patch site; the retail Sony BIOS simply returns the table.
+# Upstream's own comment states permissive mode "probably should remain 1".
+# Patched in place at file offset 0x7F24 (vaddr 0xBFC07F24):
+#   lw v0,0x4C70(v0)  ->  li v0,1        (g_patch_permissive forced true)
+# No code moves; all seeds/addresses unchanged. Original image sha256:
+# 6ad31beba3b1516e2f34014d1bfc678d9ef379711db6bf2facc0d70b217f0b7d
+sha256          = "7440f5e2694237b5e1df5b36cdbad618c2186b2d4e02468f614f2e1d87b37167"
 license         = "MIT"
 redistributable = true
 
