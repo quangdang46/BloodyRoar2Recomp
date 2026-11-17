@@ -1555,3 +1555,22 @@ processing, or response channel drains only one queued response per IRQ.
 NEXT: verify double-completion IRQ accounting in runtime CD model
 (set_irq/present_cdrom_irq re-arm after ack); faithful fix = second
 completion must re-present, not game-side fake.
+
+=== N+121 — CD IRQ accounting EXONERATED; stall = guest deferred-job starvation ===
+3f558ecc disproved N+120 hypothesis with hard trace: BOTH Pause
+completions produced set_irq+fire_irq and both responses consumed
+correctly (cdrom.c:939-1040 level re-arm works). seq478's COMPLETE fired
+inside the ACK ISR (pause delay 5000cyc when already stopped,
+cdrom.c:2102) — guest consumed via pump's internal loop. irq_flag=0,
+FIFO empty, device genuinely idle.
+REAL STALL: guest-side deferred-job starvation. DeliverEvent
+(0xF0000009) the SM waits on comes ONLY from cd_dma_chan_reset
+(cd.c:4957) via IRQ3/CD-DMA completion — which never ran since before
+seq477. No CD cmd/DMA/reg_window_op since frame 3772. Deferred
+coroutine alive (cd_intc_dispatch ~1/frame no-op, empty INTC mask) but
+NO QUEUED WORK. The response type-2 completion handler for seq478
+should post the job/callback leading to chan_reset/next Setloc — it
+didn't, OR that job is scheduled only on CD IRQ2 edges which stopped
+when drive idled.
+NEXT: instrument whether type-2 response handler posts the job, and
+whether the reg-window command worker is IRQ2-edge-scheduled only.
