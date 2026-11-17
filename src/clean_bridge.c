@@ -400,6 +400,53 @@ uint32_t call_guest(uint32_t fn, uint32_t a, uint32_t b)
     }
 }
 
+/* call_guest4 — four-argument variant of call_guest for guest `jalr`
+ * sites that pass a0-a3. prim_task_run's record runner is the canonical
+ * case: the generated body sets a1 = param_2 + lh(task+0xE), keeps
+ * a2 = param_3, and loads a3 = record[1] before every indirect call, so a
+ * two-argument invoke leaves $a2/$a3 holding stale register-file values
+ * (which can be truncated host pointers) that the callee then dereferences.
+ * Same nested-dispatch contract as call_guest: clean targets run through
+ * clean_try_dispatch (wrappers marshal $a0-$a3), everything else goes
+ * through psx_dispatch_call; caller arg/ra/pc regs preserved. */
+uint32_t call_guest4(uint32_t fn, uint32_t a0, uint32_t a1,
+                     uint32_t a2, uint32_t a3)
+{
+    CPUState *cpu = g_clean_cpu;
+    uint32_t r0, r1, r2, r3, ra, pc, v0;
+    if (!cpu || fn == 0) return 0;
+    r0 = cpu->gpr[4]; r1 = cpu->gpr[5];
+    r2 = cpu->gpr[6]; r3 = cpu->gpr[7];
+    ra = cpu->gpr[31]; pc = cpu->pc; v0 = cpu->gpr[2];
+    cpu->gpr[4] = a0; cpu->gpr[5] = a1;
+    cpu->gpr[6] = a2; cpu->gpr[7] = a3;
+    if (clean_try_dispatch(cpu, fn)) {
+        uint32_t r = cpu->gpr[2];
+        cpu->gpr[4] = r0; cpu->gpr[5] = r1;
+        cpu->gpr[6] = r2; cpu->gpr[7] = r3;
+        cpu->gpr[31] = ra; cpu->pc = pc; cpu->gpr[2] = v0;
+        return r;
+    }
+    {
+        uint32_t sp = cpu->gpr[29];
+        if (ra != 0) {
+            cpu->gpr[31] = ra;
+            psx_dispatch_call(cpu, fn, ra);
+        } else {
+            cpu->gpr[31] = BR2_NESTED_RA;
+            psx_dispatch_call(cpu, fn, 0);
+        }
+        cpu->gpr[29] = sp;
+    }
+    {
+        uint32_t r = cpu->gpr[2];
+        cpu->gpr[4] = r0; cpu->gpr[5] = r1;
+        cpu->gpr[6] = r2; cpu->gpr[7] = r3;
+        cpu->gpr[31] = ra; cpu->pc = pc; cpu->gpr[2] = v0;
+        return r;
+    }
+}
+
 /* br2_call_generated — invoke the recompiled (generated) implementation of
  * a guest function, bypassing clean_try_dispatch entirely.  Used by clean
  * ports whose guest counterpart crosses BIOS kernel-call boundaries that

@@ -13865,200 +13865,46 @@ blockB:
   return 0;
 }
 
-/* terrain_packet_gen @0x80135a14 — terrain/grid packet generator (~230
- * insns). hdr=a0 guest (writes +0x1c=out, +0xc/+0xe=0); out=a1 guest
- * cursor (returned); a2=u16 triple (uv base), a3=s16 triple /t6,
- * a4=s16 triple /t7, a5=t6, a6=t7 divisors... (see callers:
- * save.c passes BKX-derived ints), a7=u8 color triple.
- * Emits 0x48-byte quad records + edge 0x30-byte tri records into the
- * out buffer; grid is t6 x t7 cells split on the diagonal. */
+/* terrain_packet_gen @0x80135a14 — terrain/grid packet header emitter.
+ * DELEGATED to generated: the guest body is a ~111-insn function that
+ * writes the param_1 header (+0x1c = out cursor, +0xc/+0xe = 0), emits
+ * two 0x14-byte record headers at the param_2 cursor (fn ptrs
+ * 0x8019ab84 / 0x8019ac54 do the per-cell work later during serialize),
+ * and returns the advanced cursor. The previous clean port inlined a
+ * param_6*param_7 grid-emit loop that does not exist in the guest code —
+ * for negative grid dims (param_6 = -4) the unsigned-bound loop ran ~4G
+ * iterations and livelocked the whole emulator inside one clean call.
+ *
+ * The pointer args (param_3/4/5/8) may be host pointers (save.c's blk[]
+ * is a host stack array) or guest_at() aliases; the generated body reads
+ * them as guest addresses, so each triple is staged into a guest frame
+ * and the guest addresses are passed instead. The guest function treats
+ * all four as read-only inputs (verified against generated/SLES_017.22
+ * _full_06.c: all stores target param_1/param_2 or the local frame). */
 uint32_t terrain_packet_gen(uint32_t param_1,uint32_t param_2,
                       const uint16_t *param_3,const int16_t *param_4,
                       const int16_t *param_5,int32_t param_6,
                       int32_t param_7,const uint8_t *param_8)
 {
-  uint16_t L[15];                 /* guest sp+0..0x1c u16 slots */
-  uint32_t t2, t3, a2w, a3w;
-  int32_t  t4, t8;
-  int32_t  i;
-  { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-    decomp_trace_record(9,param_2,(uint32_t)param_6,0,(uint32_t)param_7); }
-  /* header */
-  MW32(param_1 + 0x1cu, param_2);
-  MW16(param_1 + 0x0cu, 0);
-  MW16(param_1 + 0x0eu, 0);
-  L[0] = param_3[0]; L[1] = param_3[1]; L[2] = param_3[2];
-  for (i = 0; i < 3; i++) {
-    L[8 + i]  = (uint16_t)(param_4[i] / param_6);
-    L[12 + i] = (uint16_t)(param_5[i] / param_7);
-  }
-  t8 = param_6 - param_7;
-  {
-  uint32_t prod = (param_7 < param_6)
-    ? (uint32_t)((int64_t)param_6 * (int64_t)(param_7 + 1))
-    : (uint32_t)((int64_t)(param_6 + 1) * (int64_t)param_7);
-  if (param_7 == 0) { t2 = param_2; t3 = 0; }
-  else if (t8 == 0) {
-    MW32(param_2 + 0x00u, 1);
-    MW32(param_2 + 0x04u, 0x140000u);
-    MW32(param_2 + 0x08u, prod);
-    MW32(param_2 + 0x0cu, param_2 + 0x14u);
-    MW32(param_2 + 0x10u, 0x8019ac54u);
-    t3 = 0;
-    t2 = param_2 + 0x14u;
-  } else {
-    int32_t ad = t8 < 0 ? -t8 : t8;
-    uint32_t prod = (param_7 < param_6)
-      ? (uint32_t)((int64_t)param_6 * (int64_t)(param_7 + 1))
-      : (uint32_t)((int64_t)(param_6 + 1) * (int64_t)param_7);
-    t3 = param_2 + 0x24u;
-    t2 = t3 + (uint32_t)ad * 48u;
-    MW32(param_2 + 0x00u, 2);
-    MW32(param_2 + 0x04u, 0x140000u);
-    MW32(param_2 + 0x10u, 0x8019ab84u);
-    MW32(param_2 + 0x08u, (uint32_t)ad);
-    MW32(param_2 + 0x0cu, t3);
-    MW32(param_2 + 0x14u, 0x140000u);
-    MW32(param_2 + 0x20u, 0x8019ac54u);
-    MW32(param_2 + 0x1cu, t2);
-    MW32(param_2 + 0x18u, prod - (uint32_t)ad);
-  }
-  }
-  /* emit loops; t4 = row 0..param_7-1 (unsigned), t0col = col */
-  a2w = t2 + 0x14u;
-  a3w = t3 + 0x0cu;
-  for (t4 = 0; (uint32_t)t4 < (uint32_t)param_7; t4++) {
-    int32_t t0;
-    L[4] = L[0]; L[5] = L[1]; L[6] = L[2];   /* save uv base */
-    for (t0 = 0; (uint32_t)t0 < (uint32_t)param_6; t0++) {
-      int below = ((uint32_t)t0 < (uint32_t)t4);
-      int above = ((uint32_t)t4 < (uint32_t)t0);
-      if (!below) {
-        /* 0x48 rec A at a2w */
-        MW8(a2w + 7u, 5); MW8(a2w + 0xbu, 0x48);
-        MW32(a2w + 0x18u, 0x55555555u);
-        MW8(a2w + 0x1fu, 5); MW8(a2w + 0x23u, 0x48);
-        MW32(a2w + 0x30u, 0x55555555u);
-        MW8(a2w + 8u, param_8[0]); MW8(a2w + 9u, param_8[1]);
-        MW8(a2w + 0xau, param_8[2]);
-        MW8(a2w + 0x20u, param_8[0]); MW8(a2w + 0x21u, param_8[1]);
-        MW8(a2w + 0x22u, param_8[2]);
-        MW16(a2w - 0x14u + 0x00u, L[0]);
-        MW16(a2w - 0x14u + 0x02u, L[1]);
-        MW16(a2w - 0x14u + 0x04u, L[2]);
-        MW16(a2w - 0x14u + 0x08u, (uint16_t)(L[0] + L[8]));
-        MW16(a2w - 0x14u + 0x0au, (uint16_t)(L[1] + L[9]));
-        MW16(a2w - 0x14u + 0x0cu, (uint16_t)(L[2] + L[10]));
-        MW16(a2w - 0x14u + 0x10u, (uint16_t)(L[12] + L[0] + L[8]));
-        MW16(a2w - 0x14u + 0x12u, (uint16_t)(L[13] + L[1] + L[9]));
-        MW16(a2w - 0x14u + 0x14u, (uint16_t)(L[14] + L[2] + L[10]));
-        a2w += 0x48u;
-      }
-      if (below) {
-        if (t8 < 0 && t0 == param_6 - 1) {
-          /* 0x30 left-edge tri at a3w */
-          MW8(a3w + 7u, 3); MW8(a3w + 0xbu, 0x40);
-          MW8(a3w + 0x17u, 3); MW8(a3w + 0x1bu, 0x40);
-          MW8(a3w + 8u, param_8[0]); MW8(a3w + 9u, param_8[1]);
-          MW8(a3w + 0xau, param_8[2]);
-          MW8(a3w + 0x18u, param_8[0]); MW8(a3w + 0x19u, param_8[1]);
-          MW8(a3w + 0x1au, param_8[2]);
-          MW16(t3 + 0x00u, L[0]);
-          MW16(t3 + 0x02u, L[1]);
-          MW16(t3 + 0x04u, L[2]);
-          MW16(t3 + 0x08u, (uint16_t)(L[0] + L[8]));
-          MW16(t3 + 0x0au, (uint16_t)(L[1] + L[9]));
-          MW16(t3 + 0x0cu, (uint16_t)(L[2] + L[10]));
-          a3w += 0x30u; t3 += 0x30u;
-        }
-        /* 0x48 rec B at a2w */
-        MW8(a2w + 7u, 5); MW8(a2w + 0xbu, 0x48);
-        MW32(a2w + 0x18u, 0x55555555u);
-        MW8(a2w + 0x1fu, 5); MW8(a2w + 0x23u, 0x48);
-        MW32(a2w + 0x30u, 0x55555555u);
-        MW8(a2w + 8u, param_8[0]); MW8(a2w + 9u, param_8[1]);
-        MW8(a2w + 0xau, param_8[2]);
-        MW8(a2w + 0x20u, param_8[0]); MW8(a2w + 0x21u, param_8[1]);
-        MW8(a2w + 0x22u, param_8[2]);
-        MW16(a2w - 0x14u + 0x00u, (uint16_t)(L[12] + L[0] + L[8]));
-        MW16(a2w - 0x14u + 0x02u, (uint16_t)(L[13] + L[1] + L[9]));
-        MW16(a2w - 0x14u + 0x04u, (uint16_t)(L[14] + L[2] + L[10]));
-        MW16(a2w - 0x14u + 0x08u, (uint16_t)(L[0] + L[12]));
-        MW16(a2w - 0x14u + 0x0au, (uint16_t)(L[1] + L[13]));
-        MW16(a2w - 0x14u + 0x0cu, (uint16_t)(L[2] + L[14]));
-        MW16(a2w - 0x14u + 0x10u, L[0]);
-        MW16(a2w - 0x14u + 0x12u, L[1]);
-        MW16(a2w - 0x14u + 0x14u, L[2]);
-        a2w += 0x48u;
-        t2 += 0x48u;
-      } else if (above) {
-        if (t8 > 0 && t4 == param_7 - 1) {
-          /* 0x30 right-edge tri at a3w */
-          MW8(a3w + 7u, 3); MW8(a3w + 0xbu, 0x40);
-          MW8(a3w + 0x17u, 3); MW8(a3w + 0x1bu, 0x40);
-          MW8(a3w + 8u, param_8[0]); MW8(a3w + 9u, param_8[1]);
-          MW8(a3w + 0xau, param_8[2]);
-          MW8(a3w + 0x18u, param_8[0]); MW8(a3w + 0x19u, param_8[1]);
-          MW8(a3w + 0x1au, param_8[2]);
-          MW16(t3 + 0x00u, (uint16_t)(L[12] + L[0] + L[8]));
-          MW16(t3 + 0x02u, (uint16_t)(L[13] + L[1] + L[9]));
-          MW16(t3 + 0x04u, (uint16_t)(L[14] + L[2] + L[10]));
-          MW16(t3 + 0x08u, (uint16_t)(L[0] + L[12]));
-          MW16(t3 + 0x0au, (uint16_t)(L[1] + L[13]));
-          MW16(t3 + 0x0cu, (uint16_t)(L[2] + L[14]));
-          a3w += 0x30u; t3 += 0x30u;
-        }
-      } else {
-        /* diagonal: rec A then rec B */
-        MW8(a2w + 7u, 5); MW8(a2w + 0xbu, 0x48);
-        MW32(a2w + 0x18u, 0x55555555u);
-        MW8(a2w + 0x1fu, 5); MW8(a2w + 0x23u, 0x48);
-        MW32(a2w + 0x30u, 0x55555555u);
-        MW8(a2w + 8u, param_8[0]); MW8(a2w + 9u, param_8[1]);
-        MW8(a2w + 0xau, param_8[2]);
-        MW8(a2w + 0x20u, param_8[0]); MW8(a2w + 0x21u, param_8[1]);
-        MW8(a2w + 0x22u, param_8[2]);
-        MW16(a2w - 0x14u + 0x00u, L[0]);
-        MW16(a2w - 0x14u + 0x02u, L[1]);
-        MW16(a2w - 0x14u + 0x04u, L[2]);
-        MW16(a2w - 0x14u + 0x08u, (uint16_t)(L[0] + L[8]));
-        MW16(a2w - 0x14u + 0x0au, (uint16_t)(L[1] + L[9]));
-        MW16(a2w - 0x14u + 0x0cu, (uint16_t)(L[2] + L[10]));
-        MW16(a2w - 0x14u + 0x10u, (uint16_t)(L[12] + L[0] + L[8]));
-        MW16(a2w - 0x14u + 0x12u, (uint16_t)(L[13] + L[1] + L[9]));
-        MW16(a2w - 0x14u + 0x14u, (uint16_t)(L[14] + L[2] + L[10]));
-        a2w += 0x48u;
-        MW8(a2w + 7u, 5); MW8(a2w + 0xbu, 0x48);
-        MW32(a2w + 0x18u, 0x55555555u);
-        MW8(a2w + 0x1fu, 5); MW8(a2w + 0x23u, 0x48);
-        MW32(a2w + 0x30u, 0x55555555u);
-        MW8(a2w + 8u, param_8[0]); MW8(a2w + 9u, param_8[1]);
-        MW8(a2w + 0xau, param_8[2]);
-        MW8(a2w + 0x20u, param_8[0]); MW8(a2w + 0x21u, param_8[1]);
-        MW8(a2w + 0x22u, param_8[2]);
-        MW16(a2w - 0x14u + 0x00u, (uint16_t)(L[12] + L[0] + L[8]));
-        MW16(a2w - 0x14u + 0x02u, (uint16_t)(L[13] + L[1] + L[9]));
-        MW16(a2w - 0x14u + 0x04u, (uint16_t)(L[14] + L[2] + L[10]));
-        MW16(a2w - 0x14u + 0x08u, (uint16_t)(L[0] + L[12]));
-        MW16(a2w - 0x14u + 0x0au, (uint16_t)(L[1] + L[13]));
-        MW16(a2w - 0x14u + 0x0cu, (uint16_t)(L[2] + L[14]));
-        MW16(a2w - 0x14u + 0x10u, L[0]);
-        MW16(a2w - 0x14u + 0x12u, L[1]);
-        MW16(a2w - 0x14u + 0x14u, L[2]);
-        a2w += 0x48u;
-        t2 += 0x48u;
-      }
-      /* uv advance (inner): sp0 += L8, sp2 += L9, sp4 += L10 */
-      L[0] = (uint16_t)(L[0] + L[8]);
-      L[1] = (uint16_t)(L[1] + L[9]);
-      L[2] = (uint16_t)(L[2] + L[10]);
-    }
-    /* outer: restore uv base then add v-step */
-    L[0] = (uint16_t)(L[4] + L[12]);
-    L[1] = (uint16_t)(L[5] + L[13]);
-    L[2] = (uint16_t)(L[6] + L[14]);
-  }
-  return t2;
+  extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+  extern uint32_t br2_guest_frame(uint32_t);
+  extern void br2_guest_frame_free(void);
+  extern void br2_st32(uint32_t,uint32_t);
+  uint32_t fr = br2_guest_frame(0x40);
+  uint8_t *gb = (uint8_t *)guest_at(fr + 0x20);
+  uint32_t r;
+  memcpy(gb + 0x00, param_3, 8);   /* u16 triple  */
+  memcpy(gb + 0x08, param_4, 8);   /* s16 triple  */
+  memcpy(gb + 0x10, param_5, 8);   /* s16 triple  */
+  memcpy(gb + 0x18, param_8, 8);   /* u8 triple   */
+  br2_st32(fr + 0x10, fr + 0x30);  /* arg5 = param_5 guest addr */
+  br2_st32(fr + 0x14, (uint32_t)param_6);
+  br2_st32(fr + 0x18, (uint32_t)param_7);
+  br2_st32(fr + 0x1c, fr + 0x38);  /* arg8 = param_8 guest addr */
+  r = br2_call_generated(0x80135a14u, param_1, param_2,
+                         fr + 0x20, fr + 0x28);
+  br2_guest_frame_free();
+  return r;
 }
 
 

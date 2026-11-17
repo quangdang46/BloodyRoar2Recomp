@@ -23,6 +23,7 @@ extern uint32_t guest_of(const void *p);
 extern uint32_t br2_gaddr(const void *p);
 extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern uint32_t call_guest(uint32_t fn, uint32_t a, uint32_t b);
+extern uint32_t call_guest4(uint32_t fn, uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3);
 extern uint32_t br2_guest_frame(uint32_t);
 extern void    br2_guest_frame_free(void);
 extern void    br2_st32(uint32_t,uint32_t);
@@ -13278,9 +13279,18 @@ int prim_task_run(int param_1,undefined4 param_2,undefined4 param_3,int param_4)
       iVar14 = *(int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x1c))));
       piVar13 = (int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x1c) )))+ 1;
       if (iVar14 != 0) {
+        /* Generated 0x8018A4F8 jalr's each record fn with the full a0-a3
+         * set: a0 = record[2] (data cursor), a1 = param_2 + lh(task+0xE)
+         * (computed once per task block), a2 = param_3, a3 = record[1]
+         * (per-record field). task_invoke/call_guest only program $a0/$a1,
+         * leaving $a2/$a3 as stale register-file values — truncated host
+         * pointers that the generated mode-7 serializer (0x8018A9E8)
+         * dereferences, spraying kernel RAM. call_guest4 reproduces the
+         * guest ABI exactly. */
+        uint32_t prim_a1 = param_2 + (uint32_t)(int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0xe) ));
         do {
           iVar14 = iVar14 + -1;
-          task_invoke((uint32_t)piVar13[3],(uint32_t)piVar13[2]);
+          call_guest4((uint32_t)piVar13[3],(uint32_t)piVar13[2],prim_a1,(uint32_t)param_3,(uint32_t)piVar13[1]);
           piVar13 = piVar13 + 4;
         } while (0 < iVar14);
       }
@@ -15687,15 +15697,21 @@ void ring_effect_task_update(int param_1)
     task_slot_step();
   }
   else {
-    local_30 = ((undefined4)*(undefined2 *)
-                 (*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x164) ))* 0x50 +
-                  *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x160) ))+ 0x20) ))+ 0x38) << 16) |
+    /* Guest 0x80140848-0x801408B4: the record address
+     *   lw(param_1+0x164)*0x50 + lw(lw(param_1+0x160)+0x20)
+     * is a guest address; the halfword loads at +0x34/+0x38/+0x3c go
+     * through guest_at(). The decompiled form dropped the guest_at()
+     * wrapper and dereferenced the raw guest address as a host pointer. */
+    {
+      int ring_ent = (*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x164) ))* 0x50 +
+                     *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x160) ))+ 0x20) )));
+      local_30 = ((undefined4)*(undefined2 *)
+                   guest_at((uint32_t)(uintptr_t)(ring_ent + 0x38)) << 16) |
                *(undefined2 *)
-                 (*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x164) ))* 0x50 +
-                  *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x160) ))+ 0x20) ))+ 0x34);
-    local_2c = (*(undefined2 *)
-                 (*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x164) ))* 0x50 +
-                  *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x160) ))+ 0x20) ))+ 0x3c)) & 0xffff;
+                 guest_at((uint32_t)(uintptr_t)(ring_ent + 0x34));
+      local_2c = (*(undefined2 *)
+                   guest_at((uint32_t)(uintptr_t)(ring_ent + 0x3c))) & 0xffff;
+    }
     setCopControlWord(2,0,((uint32_t *)g_DAT_801be838)[0]);
     setCopControlWord(2,0x800,((uint32_t *)g_DAT_801be838)[1]);
     setCopControlWord(2,0x1000,((uint32_t *)g_DAT_801be838)[2]);
