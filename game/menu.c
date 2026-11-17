@@ -660,7 +660,7 @@ switchD_8016fd64_caseD_2:
         hud_sprite_desc_init();
         rgb_triple_store(0,0,0);
         print_mode_dispatch_b(2,0,0);
-        match_setup_apply(&DAT_1f8000e8,&DAT_1f8001f0,0x1f800000,_g_system_config_ptr);
+        match_setup_apply(0x1f8000e8u,0x1f8001f0u,0x1f800000u,(uint32_t)guest_of(_g_system_config_ptr));
         battle_state_init(&DAT_1f8000e8,&DAT_1f8001f0,0x1f800000);
         scratchpad_pair_init();
         DAT_1f80009e = '\0';
@@ -710,7 +710,7 @@ switchD_8016fd64_caseD_5:
     battle_session_arm(0x1f800000,0xffffffff);
     DAT_1f800001 = '\x06';
   case '\x06':
-    match_setup_apply(&DAT_1f8000e8,&DAT_1f8001f0,0x1f800000,_g_system_config_ptr);
+    match_setup_apply(0x1f8000e8u,0x1f8001f0u,0x1f800000u,(uint32_t)guest_of(_g_system_config_ptr));
     battle_state_init(&DAT_1f8000e8,&DAT_1f8001f0,0x1f800000);
     uVar3 = table_byte_next_a();
     perm_table_apply(uVar3);
@@ -753,17 +753,17 @@ switchD_8016fd64_caseD_8:
       }
       if (_DAT_1f800082 == 0) {
         record_state_stepper(0x1f800000);
-        fighter_contact_resolve(&DAT_1f8000e8,&DAT_1f8001f0,0x1f800000);
+        fighter_contact_resolve((int)guest_of(&DAT_1f8000e8),(int)guest_of(&DAT_1f8001f0),0x1f800000);
         FUN_801787dc(&DAT_1f8000e8,(uint8_t *)guest_at(0x1f800000));
         FUN_801787dc(&DAT_1f8001f0,(uint8_t *)guest_at(0x1f800000));
-        fighter_pair_update(&DAT_1f8000e8,&DAT_1f8001f0,0x1f800000);
+        fighter_pair_update((int)guest_of(&DAT_1f8000e8),(int)guest_of(&DAT_1f8001f0),0x1f800000);
       }
       if (((*(ushort *)(param_1 + 2) >> 2 & 1) != 0) && (DAT_1f8000b0 == '\0')) {
         iVar5 = iVar1 + 0x10;
         if (DAT_1f80009d == '\0') {
           iVar5 = iVar1 + 0x2038;
         }
-        battle_hud_draw(iVar5,0x1f800000,&DAT_1f8000e8,&DAT_1f8001f0);
+        battle_hud_draw(iVar5,0x1f800000,(int)guest_of(&DAT_1f8000e8),(int)guest_of(&DAT_1f8001f0));
       }
       battle_camera_step(_DAT_1f8000bc,&DAT_1f8000e8,&DAT_1f8001f0,0x1f800000);
       camera_state_cache(_DAT_1f8000bc,0x1f800000);
@@ -873,10 +873,10 @@ LAB_80170714:
         FUN_801468ec(iVar1,iVar4,0x1f800028,&DAT_1f8001f0,(int)*(short *)(param_1 + 10));
       }
       if (*(short *)(param_1 + 4) != 0) {
-        status_text_display(&DAT_1f8000e8);
+        status_text_display(0x1f8000e8u,(uint32_t)*(short *)(param_1 + 4));
       }
       if (*(short *)(param_1 + 6) != 0) {
-        status_text_display(&DAT_1f8001f0);
+        status_text_display(0x1f8001f0u,(uint32_t)*(short *)(param_1 + 6));
       }
     }
     break;
@@ -10081,9 +10081,9 @@ int32_t fighter_frame_triple_emit(uint32_t param_1)
   uint32_t s1 = s0 + 0x28;
   if (MBS8(0x801e3d00u) < 0) return -1;
   MW8(s0 + 0x9d, 0);
-  battle_camera_step(MB32(s0 + 0xbc), 0x1f8000e8u, 0x1f8001f0u, s0);
+  battle_camera_step(MB32(s0 + 0xbc), (uint8_t *)guest_at(0x1f8000e8),(uint8_t *)guest_at(0x1f8001f0),(int32_t)s0);
   fighter_tint_fade(MB32(s0 + 8), MB32(s0 + 0xc), s0, MBS8(s0 + 0x98));
-  fighter_trail_emit(s1, 0x1f80033cu, MB32(s0 + 0xbc), s0);
+  fighter_trail_emit((undefined4 *)guest_at(s1), 0x1f80033cu, MB32(s0 + 0xbc), (int32_t)s0);
   slot_height_proj(MB32(s0 + 8) + 0x207cu, MB32(s0 + 0xbc), MB32(s0 + 0xc),
                s0);
   return 0;

@@ -933,7 +933,7 @@ LAB_8016d1c0:
   uVar6 = (&DAT_801e40b6)[param_2 * 0x2150];
   uVar8 = 0x20;
 LAB_8016d1cc:
-  prim_packet_init_tex((int)(uintptr_t)puVar4,1,uVar6,uVar8,0);
+  prim_packet_init_tex((int)guest_of(puVar4),1,uVar6,uVar8,0);
 switchD_8016cecc_default:
   *(uint *)(psVar9 + param_2 * 0x2c + 0x2c) =
        *(uint *)(psVar9 + param_2 * 0x2c + 0x2c) & 0xff000000 |
@@ -2365,8 +2365,8 @@ void battle_hud_draw(int param_1,int param_2,int param_3,int param_4)
     else {
       iVar4 = ((int)*(short *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x94) ))/ 0x32) * 0x10000 >> 0x10;
     }
-    hud_digits_color(iVar4,(int)(uintptr_t)puVar16);
-    hud_cell_frame_set(iVar4,(int)(uintptr_t)puVar16);
+    hud_digits_color(iVar4,(int)guest_of(puVar16));
+    hud_cell_frame_set(iVar4,(int)guest_of(puVar16));
     iVar4 = 0;
     do {
       iVar4 = iVar4 + 1;
@@ -2419,7 +2419,7 @@ LAB_80173dd8:
           goto LAB_80173dd8;
         }
 LAB_80173de8:
-        sprite_rect_set_c((int)(uintptr_t)puVar16,(int)*(short *)((intptr_t)&DAT_801b4c88 + local_38) +
+        sprite_rect_set_c((int)guest_of(puVar16),(int)*(short *)((intptr_t)&DAT_801b4c88 + local_38) +
                              ((int)*(short *)((intptr_t)&DAT_801b4c9c + iVar18) *
                               (int)*(short *)(puVar13 + 0x18) >> 0xc),
                      (int)*(short *)((intptr_t)&DAT_801b4c8a + local_38) +
@@ -2467,7 +2467,7 @@ LAB_80173de8:
         iVar19 = (int)*(short *)guest_at((uint32_t)(uintptr_t)((*piVar10 + 0xac)));
         if (-1 < iVar19) {
           *(undefined2 *)(puVar13 + 4) = *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*piVar10 + 0xac)));
-          iVar19 = sprite_rect_set_b((int)(uintptr_t)puVar16,(int)*psVar15,(int)psVar17[-2],
+          iVar19 = sprite_rect_set_b((int)guest_of(puVar16),(int)*psVar15,(int)psVar17[-2],
                                 ((int)psVar17[-1] * (*(short *)guest_at((uint32_t)(uintptr_t)((*piVar10 + 0xb0) ))- iVar19)) /
                                 (int)*(short *)guest_at((uint32_t)(uintptr_t)((*piVar10 + 0xb0))),(int)*psVar17);
           if (iVar19 == 0) {
@@ -2535,7 +2535,7 @@ LAB_80173de8:
               *(undefined2 *)(puVar13 + 6) = 0;
             }
             local_30 = (uint *)(uintptr_t)puVar8;
-            sprite_rect_set_a((int)(uintptr_t)puVar16,(int)*psVar15,(int)psVar17[-2],
+            sprite_rect_set_a((int)guest_of(puVar16),(int)*psVar15,(int)psVar17[-2],
                          ((int)psVar17[-1] *
                          ((int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar18 + 0xb0) ))- *(int *)(puVar13 + 8))) /
                          (int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar18 + 0xb0))),(int)*psVar17);
@@ -2578,7 +2578,7 @@ LAB_80173de8:
         if (*(short *)(puVar13 + 0x10) != *(short *)guest_at((uint32_t)(uintptr_t)((iVar18 + 0xaa)))) {
           *(undefined2 *)(puVar13 + 0x10) = *(undefined2 *)guest_at((uint32_t)(uintptr_t)((iVar18 + 0xaa)));
           local_30 = (uint *)(uintptr_t)puVar5;
-          sprite_rect_set_a((int)(uintptr_t)puVar16,(int)*psVar15,(int)psVar17[-2],
+          sprite_rect_set_a((int)guest_of(puVar16),(int)*psVar15,(int)psVar17[-2],
                        ((int)psVar17[-1] *
                        ((int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar18 + 0xb0) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar18 + 0xaa))))) /
                        (int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar18 + 0xb0))),(int)*psVar17);
@@ -2653,7 +2653,7 @@ LAB_80173de8:
           sVar1 = *psVar17;
           iVar23 = (int)psVar17[-2] + (uint)(*(char *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x15) ))== '\0');
         }
-        sprite_rect_set_b((int)(uintptr_t)puVar16,(int)sVar2,iVar23,(iVar20 >> 0xc) - (iVar22 >> 0x1f),(int)sVar1);
+        sprite_rect_set_b((int)guest_of(puVar16),(int)sVar2,iVar23,(iVar20 >> 0xc) - (iVar22 >> 0x1f),(int)sVar1);
         *(uint *)guest_at((uint32_t)(uintptr_t)((iVar19 + 8) ))= puVar14[-6];
         *(uint *)guest_at((uint32_t)(uintptr_t)((iVar19 + 0x10) ))= puVar14[-4];
         *(uint *)guest_at((uint32_t)(uintptr_t)((iVar19 + 0x18) ))= puVar14[-2];
@@ -2661,7 +2661,7 @@ LAB_80173de8:
       }
       else {
         iVar19 = *(int *)(&DAT_801f5210 + (*(uint *)guest_at((uint32_t)(uintptr_t)((param_2 + 0xc) ))^ 1) * 4) + local_3c;
-        sprite_rect_set_c((int)(uintptr_t)puVar5,(int)*psVar15,
+        sprite_rect_set_c((int)guest_of(puVar5),(int)*psVar15,
                      (int)psVar17[-2] + (uint)(*(char *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x15) ))== '\0'),
                      ((int)psVar17[-1] * (int)sVar2) / 0x3bff,(int)*psVar17);
         *(uint *)guest_at((uint32_t)(uintptr_t)((iVar19 + 8) ))= puVar8[-6];
@@ -3083,7 +3083,7 @@ LAB_8017544c:
           announce_param_block_init_b(*(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 8) ))+ 0x2038,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0xc))),
                        (const void *)guest_at(*(uint32_t *)guest_at(0x801b4e14)),(int)((*(ushort *)guest_at((uint32_t)(uintptr_t)((iVar20 + 0x12) ))+ 0x10) * 0x10000) >> 0x10
                        ,uVar12,1);
-          uVar11 = (intptr_t)local_78 + local_68 + 0x668;
+          uVar11 = guest_of(local_78) + (uint32_t)local_68 + 0x668;
           sprite_rect_set_c(uVar11,*(short *)guest_at((uint32_t)(uintptr_t)((iVar20 + 0x14) ))+ 0x24,0x72,0x20,0x18);
           local_6c[0x19a] = *(uint *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 8) ))+ 0x2038) ))| 0x9000000;
           *(uint *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 8) ))+ 0x2038) ))= uVar11 & 0xffffff;
