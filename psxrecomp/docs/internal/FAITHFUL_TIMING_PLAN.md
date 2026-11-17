@@ -10353,3 +10353,17 @@ NEXT (needs lldb repro — it DOES reproduce ~frame1562):
 SEPARATE BLOCKER (unchanged, deterministic): heapB cinematic staging
 overwrites heapA .ANI S0 -> wild ev_stream opcode -> unknown dispatch
 0x80122F0C (N+29b). Independent of this host-register bug.
+
+N+102 — x28 bug narrowed to a frame_tick CALLEE (4 agents, still unfixed):
+  x28 = globals ADRP PAGE BASE 0x111280000 (missing +0xbc0 add); bfsm sets
+  x28=x19=0x111280bc0=&_g__DAT_1f80000c, corruption during `bl _frame_tick`.
+  frame_tick does NOT save/use x27/x28 -> passes x28 to ~40 callees.
+  VERIFIED CLEAN: psx_check_interrupts/_at/_dispatch_entry, br2_irq_poll,
+  br2_call_generated, fibers(ucontext), runtime interp — all save x19-x28.
+  => culprit = a frame_tick CALLEE keeping a globals page-base in x28 live
+     across psx_check_interrupts (same class as 57e5a72 noinline fix).
+  Escape-capable callees: _memcard_tick, _deferred_cmd_drain,
+  _pad_state_refresh, _draw_env_timing. NEXT: bisect which callee returns
+  foreign x28 — break at _frame_tick entry during versus (gs==8), finish,
+  compare x28; or noinline-audit those 4. Repro flaky + masked by separate
+  versus->fight pc=0 DISPATCH FATAL bug (isolate separately).
