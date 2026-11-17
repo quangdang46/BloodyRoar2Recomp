@@ -198,6 +198,17 @@ def ret_kind(ret):
     if BAD_RET.search(r): return 'u32'
     return 'skip'
 
+# Guest addrs whose clean body calls br2_call_generated() only for OTHER
+# targets (delegated sub-operations), proven safe to wrap: br2_call_generated
+# bypasses clean_try_dispatch, so the inner call runs the generated body
+# directly and can never re-enter this wrapper. Self-thunks
+# (br2_call_generated of the function's OWN guest addr) must still be
+# skipped — psx_dispatch_call would route back through fnmap to the same
+# clean body and recurse forever.
+WRAP_OK_DELEGATE = {
+    0x8017ea7c,   # ev_stream_dispatch: op>=24 stream handlers via guest table
+}
+
 # Guest addrs whose leading param is a HOST pointer even though declared as a
 # scalar (intptr_t). These clean fns dereference param_1 directly as a host
 # buffer (e.g. battle_flow_state_machine reads lhu at +2/+4 pad buttons), so
@@ -224,6 +235,8 @@ for addr, name in sorted(entries):
     for ga in gen_args:
         lit = re.fullmatch(r'0x[0-9a-fA-F]+[uUlL]*|\d+[uUlL]*', ga)
         if lit is None:
+            if addr in WRAP_OK_DELEGATE:
+                continue  # proven-safe indirect delegate (see WRAP_OK_DELEGATE)
             skipped.append((addr, name, 'indirect-delegate')); deleg_bad = True; break
         v = lit.group(0).rstrip('uUlL')
         iv = int(v, 16) if v.lower().startswith('0x') else int(v, 10)
