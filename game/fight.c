@@ -6,9 +6,13 @@
  *
  * Guest map:
  *   FUN_80176248  action-request resolver (ctrl, battle) -> action idx
+ *                 (clean: action_resolve in resolve.c; dispatch-registered
+ *                 via renames.map)
  *   pending_action_gate  pending-action permission gate (motion, ctrl, a, b)
+ *                 (clean: pending_gate here; bind.c guest-ABI wrapper)
  *   FUN_801787dc  per-fighter frame update (calls resolver, writes
- *                 motion+0x80)
+ *                 motion+0x80) (clean: fighter_frame in resolve.c;
+ *                 dispatch-registered via renames.map)
  *   ev5_action_select  EV5 action-control record interpreter (in ev.c)
  */
 

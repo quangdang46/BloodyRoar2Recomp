@@ -269,6 +269,11 @@
 80179964 part_link_unlink
 8017a6e8 action_switch_guest
 80175e08 slot_apply_guest
+8017a05c apply_guest
+80175898 reset_guest
+80175a7c entry_setup_guest
+80181db8 ani_fixup_guest
+80178664 pending_gate_guest
 80141b78 ev_spark_spawn
 80141d2c ev_cmd_dispatch
 8017ea7c ev_stream_dispatch
