@@ -2813,6 +2813,7 @@ undefined1 frame_divisor_get(void)
 /* ---- batch30: state-machine stepper + scroll stripes ---- */
 extern void *guest_at(uint32_t addr);
 extern void *fn_lookup(uint32_t addr);
+extern uint32_t call_guest(uint32_t,uint32_t,uint32_t);
 #define MB8(a)   (*(uint8_t  *)guest_at(a))
 #define MB16(a)  (*(uint16_t *)guest_at(a))
 #define MB32(a)  (*(uint32_t *)guest_at(a))
@@ -2837,10 +2838,14 @@ void menu_stepper_state_advance(void *param_1)
   if (*(char *)(p + 3) == '\0') {
     menu_stepper_input(param_1);
     /* desc+0xc is a guest code address (e.g. 0x8015b190) — dispatch
-     * through the fn map; arg = desc ptr, second arg = u16 @+8. */
-    void *cb = fn_lookup(*(uint32_t *)(p + 0xc));
+     * through the fn map; arg = desc ptr, second arg = u16 @+8.
+     * Guest jalr is unconditional: a0 = desc guest addr, a1 = lhu @+8. */
+    uint32_t cb_g = *(uint32_t *)(p + 0xc);
+    void *cb = fn_lookup(cb_g);
     if (cb != NULL)
       ((void (*)(void *,uint16_t))cb)(param_1,*(uint16_t *)(p + 8));
+    else
+      call_guest(cb_g,guest_of(param_1),(uint32_t)*(uint16_t *)(p + 8));
   }
   menu_stepper_redraw(param_1);
 }

@@ -28,6 +28,13 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdio.h> /* TEMP: x28 bisect instrumentation */
+
+/* TEMP x28 bisect: read host callee-saved x28, verify each frame_tick
+ * callee preserves it. Remove before commit. */
+static uintptr_t ft_rd28(void){ uintptr_t v; __asm__ volatile("mov %0, x28" : "=r"(v)); return v; }
+#define FTCK(tag, call) do { uintptr_t _e=ft_rd28(); call; uintptr_t _a=ft_rd28(); \
+    if(_a!=_e) fprintf(stderr,"FTX28 %s: %p -> %p\n",(tag),(void*)_e,(void*)_a); } while(0)
 
 typedef uint8_t  byte;
 typedef uint16_t ushort;
@@ -352,6 +359,7 @@ extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
 extern uint32_t guest_sp(void);
 extern void *fn_lookup(uint32_t addr);
+extern uint32_t call_guest(uint32_t,uint32_t,uint32_t);
 int mc_init_reset();
 int cd_mode_flag_set();
 int cd_init_session();
@@ -1311,45 +1319,46 @@ void frame_tick(intptr_t param_1)
     int iVar8;
     int iVar9;
 
+    uintptr_t ft_x28_entry = ft_rd28(); /* TEMP */
     param_1 = (intptr_t)guest_at((uint32_t)param_1);
     iVar8 = *(int *)(param_1 + 4);
     iVar9 = *(int *)(param_1 + 8);
-    memcard_tick();
-    deferred_cmd_drain();
-    cursor_sprite_anim((uint8_t *)param_1);
-    memcard_slot_poll();
-    iVar4 = cd_timer_read(1);
+    FTCK("memcard_tick", memcard_tick());
+    FTCK("deferred_cmd_drain", deferred_cmd_drain());
+    FTCK("cursor_sprite_anim", cursor_sprite_anim((uint8_t *)param_1));
+    FTCK("memcard_slot_poll", memcard_slot_poll());
+    FTCK("cd_timer_read1", iVar4 = cd_timer_read(1));
     if (iVar4 < 0xf1) {
-        gpu_pkt_unlink_n(iVar9 + 0x207c,0x81f);
+        FTCK("gpu_pkt_unlink_n", gpu_pkt_unlink_n(iVar9 + 0x207c,0x81f));
     }
-    pad_state_refresh(param_1);
+    FTCK("pad_state_refresh", pad_state_refresh(param_1));
     if ((*(char *)(param_1 + 0x15) == '\0') && ((*(ushort *)(param_1 + 0x82) & 1) != 0)) {
-        uVar3 = cd_timer_read(1);
+        FTCK("cd_timer_read2", uVar3 = cd_timer_read(1));
         *(undefined2 *)(param_1 + 0x1a) = uVar3;
-        gpu_draw_sync(0);
-        uVar3 = cd_timer_read(1);
+        FTCK("gpu_draw_sync", gpu_draw_sync(0));
+        FTCK("cd_timer_read3", uVar3 = cd_timer_read(1));
         *(undefined2 *)(param_1 + 0x1c) = uVar3;
-        cd_timer_read(*(undefined1 *)(param_1 + 0x10));
+        FTCK("cd_timer_read4", cd_timer_read(*(undefined1 *)(param_1 + 0x10)));
     }
     else {
-        uVar3 = cd_timer_read(1);
+        FTCK("cd_timer_read5", uVar3 = cd_timer_read(1));
         *(undefined2 *)(param_1 + 0x1c) = uVar3;
         *(undefined2 *)(param_1 + 0x1a) = uVar3;
-        cd_timer_read(*(undefined1 *)(param_1 + 0x10));
-        gpu_graph_reset(1);
+        FTCK("cd_timer_read6", cd_timer_read(*(undefined1 *)(param_1 + 0x10)));
+        FTCK("gpu_graph_reset", gpu_graph_reset(1));
     }
     _DAT_1f8000e0 = _DAT_1f8000e4;
     _DAT_1f8000e4 = 0;
-    _DAT_801e8500 = gpu_stat_sign();
-    draw_env_timing(iVar8 + 0x5c);
-    gpu_draw_env_put(iVar8);
+    FTCK("gpu_stat_sign", _DAT_801e8500 = gpu_stat_sign());
+    FTCK("draw_env_timing", draw_env_timing(iVar8 + 0x5c));
+    FTCK("gpu_draw_env_put", gpu_draw_env_put(iVar8));
     if (*(byte *)(param_1 + 0x12) != 0) {
-        gpu_disp_mask_set(*(byte *)(param_1 + 0x12) - 1);
+        FTCK("gpu_disp_mask_set", gpu_disp_mask_set(*(byte *)(param_1 + 0x12) - 1));
         *(undefined1 *)(param_1 + 0x12) = 0;
     }
     iVar4 = (int)*(short *)(param_1 + 0xd0);
     while (0 < iVar4) {
-        gpu_load_image_cmd(iVar4 * 8 + -0x7fe3bad0,((uint32_t *)g_DAT_801bef38)[iVar4 + -1]);
+        FTCK("gpu_load_image_cmd", gpu_load_image_cmd(iVar4 * 8 + -0x7fe3bad0,((uint32_t *)g_DAT_801bef38)[iVar4 + -1]));
         iVar4 = iVar4 + -1;
     }
     iVar4 = (int)*(short *)(param_1 + 0xd2);
@@ -1378,26 +1387,28 @@ void frame_tick(intptr_t param_1)
             uVar2 = *(undefined1 *)guest_at((uint32_t)(iVar4 + -0x7fe0f99a));
             *(undefined2 *)((char *)g_DAT_801f066a + iVar4) =
                  *(undefined2 *)guest_at((uint32_t)(*(int *)(param_1 + 0xc) * 0x2150 + -0x7fe1bf5e));
-            gpu_clear_image_cmd(guest_of((char *)g_DAT_801f0668 + iVar4),
-                         (uint32_t)(uintptr_t)*(uint32_t *)((char *)g_DAT_801f0664 + iVar4),uVar1,uVar2);
+            FTCK("gpu_clear_image_cmd", gpu_clear_image_cmd(guest_of((char *)g_DAT_801f0668 + iVar4),
+                         (uint32_t)(uintptr_t)*(uint32_t *)((char *)g_DAT_801f0664 + iVar4),uVar1,uVar2));
         }
-        gpu_draw_otag(iVar9 + 0x207c);
+        FTCK("gpu_draw_otag", gpu_draw_otag(iVar9 + 0x207c));
     }
-    table_byte_next_a();
+    FTCK("table_byte_next_a", table_byte_next_a());
     uVar5 = *(uint *)(param_1 + 0xc) ^ 1;
     iVar4 = uVar5 * 0x2150;
     _DAT_1f8000dc = _DAT_1f8000dc + 1;
     *(uint *)(param_1 + 0xc) = uVar5;
     *(int *)(param_1 + 4) = iVar4 + -0x7fe1bf60;
     *(int *)(param_1 + 8) = iVar4 + -0x7fe1bef0;
-    gpu_clear_otag_r(iVar4 + -0x7fe1bef0,0x820);
+    FTCK("gpu_clear_otag_r", gpu_clear_otag_r(iVar4 + -0x7fe1bef0,0x820));
     *(uint *)guest_at((uint32_t)(iVar4 + -0x7fe1bef0)) = *(uint *)guest_at((uint32_t)(iVar4 + -0x7fe1bef0)) | 0xffffff;
-    menu_noop(param_1);
+    FTCK("menu_noop", menu_noop(param_1));
     if (*(char *)guest_at(*(uint32_t *)(param_1 + 200) + 2) < '\0') {
-        debug_stat_print();
-        ot_packet_chain_fixup();
+        FTCK("debug_stat_print", debug_stat_print());
+        FTCK("ot_packet_chain_fixup", ot_packet_chain_fixup());
     }
-    scroll_offset_set(0,0);
+    FTCK("scroll_offset_set", scroll_offset_set(0,0));
+    if (ft_rd28() != ft_x28_entry) /* TEMP */
+        fprintf(stderr,"FTX28 frame_tick-exit: %p -> %p\n",(void*)ft_x28_entry,(void*)ft_rd28());
     return;
 }
 
@@ -2098,19 +2109,26 @@ void menu_stepper_redraw(void *param_1)
   void (*cb)(void *,uint32_t);
   uint32_t i;
   /* p+0xc is a u32 GUEST code address (same field menu_stepper_state_advance
-   * resolves via fn_lookup) — not a host pointer. Resolve it the same way. */
-  cb = (void (*)(void *,uint32_t))fn_lookup(*(uint32_t *)(p + 0xc));
-  if (cb == NULL) return;
-  cb(param_1,0x100);
+   * resolves via fn_lookup) — not a host pointer. Resolve it the same way.
+   * Every guest jalr is unconditional: a0 = desc guest addr, a1 = row code;
+   * unported targets fall back to call_guest so the generated body runs. */
+  uint32_t cb_g = *(uint32_t *)(p + 0xc);
+  cb = (void (*)(void *,uint32_t))fn_lookup(cb_g);
+  if (cb != NULL) cb(param_1,0x100);
+  else            call_guest(cb_g,guest_of(param_1),0x100);
   i = 1;
   for (;;) {
+    uint32_t code;
     if (i == *(uint16_t *)(p + 8)) menu_row_paint(param_1);
     else                            menu_row_paint_b(param_1);
-    cb(param_1,(i + 0x100) & 0xffff);
+    code = (i + 0x100) & 0xffff;
+    if (cb != NULL) cb(param_1,code);
+    else            call_guest(cb_g,guest_of(param_1),code);
     i++;
     if (*(uint16_t *)(p + 6) < i) break;
   }
-  cb(param_1,0x1ff);
+  if (cb != NULL) cb(param_1,0x1ff);
+  else            call_guest(cb_g,guest_of(param_1),0x1ff);
 }
 
 /* menu_stepper_input — menu stepper input: pad flags @0x1f80007e; byte+5
