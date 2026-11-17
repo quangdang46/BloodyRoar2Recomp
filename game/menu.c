@@ -4252,7 +4252,7 @@ void stage_fight_announce(uint32_t param_1,uint8_t *param_2)
     champion_win_announce(param_1,s1,s1[2]);
     return;
   }
-  if ((*(uint32_t *)guest_at(0x1f80dc) & 0x40) == 0) return;
+  if ((*(uint32_t *)guest_at(0x1f8000dc) & 0x40) == 0) return;
   if (s1[2] == 0) a3 = 0x32;
   else            a3 = (int32_t)*(int16_t *)(s0 + 0x20) - 0x6e;
   hud_text_blk_alt(*(uint32_t *)(s0 + 8),*(uint32_t *)(s0 + 0xc),
@@ -4307,7 +4307,7 @@ void mode_name_announce(uint32_t param_1,uint32_t param_2,int32_t param_3)
   uint32_t text = 0;
   a3 = param_2 ? ((int32_t)*(int16_t *)(t0 + 0x20) - 0x50) : 0x50;
   if (((*(uint16_t *)guest_at(*(uint32_t *)(t0 + 0xc8) + (2)) >> 0xb) & 1) == 0) return;
-  if (((*(uint32_t *)guest_at(0x1f80dc) >> 4) & 3) == 0) return;
+  if (((*(uint32_t *)guest_at(0x1f8000dc) >> 4) & 3) == 0) return;
   /* JT1 on t0[0x92] < 0x11 */
   {
     static const uint8_t jt1_kind[17] = {
@@ -4347,7 +4347,7 @@ void mode_name_announce(uint32_t param_1,uint32_t param_2,int32_t param_3)
     if (text) goto emit;
   }
   /* 637d8 tail */
-  if ((*(uint32_t *)guest_at(0x1f80dc) & 0x40) != 0) {
+  if ((*(uint32_t *)guest_at(0x1f8000dc) & 0x40) != 0) {
     if (param_3 != 0) return;
     text = 0x80121ea4;  /* AWAITING CHALLENGER */
     v0 = 1; a3 -= 0x39;
@@ -4378,7 +4378,7 @@ int32_t continue_countdown(uint32_t param_1,uint32_t param_2)
   int32_t v0 = 0;
   uint32_t dc;
   if (battle_state_gate(param_1,1) == 0) return 0;
-  dc = *(uint32_t *)guest_at(0x1f80dc);
+  dc = *(uint32_t *)guest_at(0x1f8000dc);
   if (((*(uint16_t *)guest_at(*(uint32_t *)(s0 + 0xc8) + (2)) >> 0xb) & 1) != 0 &&
       (dc & 0x40) != 0 && ((dc >> 4) & 3) != 0) {
     /* remaining = 9 - (counter&0x3fff)/10000 */
