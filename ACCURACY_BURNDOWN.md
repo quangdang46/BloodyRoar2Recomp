@@ -1416,3 +1416,27 @@ Host-pointer-leak theory DEAD (bg_count=0; value deterministic, not ASLR).
 REAL BUG = memory aliasing: context-init writes into pool-owned memory.
 Either slot-table entry stale OR pool alloc/free double-booked block.
 Agent 710ceb0d determining which side diverges.
+
+=== N+114 — frame-1899 crash FIXED: host-pointer truncation in prim_group_build ===
+b8af3cef found the divergent write: game/battle.c prim_group_build passed
+(int)(uintptr_t)puVar3 (HOST ptr into batch-descriptor table) to
+prim_batch_emit, which indexes it via guest_at(param_1+off) as a GUEST
+address. Truncated host ptr corrupted task-pool node @0x801D0C20 with
+GTE data -> wild call_guest(0x03FF0100). Fix: br2_gaddr(puVar3).
+Committed ee5c6d1. VERIFIED: frame 1899 -> 2195, deterministic under
+BOTH schedulers (HLE TCB + fiber, PSX_HLE_SCHEDULER=0).
+NEW BLOCKER frame 2195: unknown dispatch 0x8019AA94 — mid-block PC =
+the `jal 0x8019AD60` insn inside cd_intc_dispatch (renames.map:93 ->
+0x8019a8ec, delegated game/cd.c:5433). ra=0x8019AA9C = correct post-jal.
+in_exception=1, current_func=0x00002970 (OpenBIOS kernel restore),
+epc=0x8018AB6C, cpu->pc=0xB0 (kernel gate). Value exists NOWHERE in
+2MB RAM+scratchpad -> COMPUTED not loaded. Leading theory: IRQ-resume-PC
+-> COP0.EPC -> guest ExceptionHandler saves mid-block EPC into TCB
+reg[R_EPC] slot; kernel RFE `jr k0`(k0=TCB[136]) resumes at it.
+Dirty-RAM interp should handle non-leader PCs via clean_game_text_miss
+(dirty_ram_interp.c:2836) — fail implies different dispatch path fired.
+NEXT: instrument writer of cpu->pc=0x8019AA94 (psx_restore_context_from_tcb
+traps.c:378 / func_000029CC jr k0 / g_exception_real_epc interrupts.c:2492 /
+br2_irq_poll clean_bridge.c:319). ALSO audit other (int)(uintptr_t)
+host-ptr truncations in battle.c siblings (prim_packet_init_tex, hud_*,
+sprite_rect_*) — same bug class.
