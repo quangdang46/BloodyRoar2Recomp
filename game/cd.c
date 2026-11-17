@@ -528,9 +528,12 @@ void cd_init_done_cb(void)
 
 {
   /* guest 0x80198590: a0 = lw(0x801BCBA8); jal 0x80195D64 (mc_session);
-   * on return sw $zero,36($s0) with $s0 = 0x801BFFD8 -> *(0x801BFFFC)=0. */
+   * on return sw $zero,36($s0). $s0 = 0x801C0000-13400-40 = 0x801BCB80,
+   * so the store clears the read-session completion flag @0x801BCBA4 —
+   * NOT 0x801BFFFC (earlier mis-decode; that left bcba4=1 forever and
+   * cd_read_poll reported busy -> infinite 37-sector read retry). */
   mc_session(DB32(0x801bcba8));
-  DB32(0x801bfffc) = 0;
+  DB32(0x801bcba4) = 0;
 }
 
 /* ======== batch27: CD driver core ======== */
