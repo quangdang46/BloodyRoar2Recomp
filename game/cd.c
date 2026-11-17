@@ -533,10 +533,10 @@ undefined4 cd_read_open_clean(int param_1)
 void cd_init_done_cb(void)
 
 {
-  /* IRQ-path function: clean-C body cannot supply the live guest
-   * register file / MMIO ack semantics the deferred interrupt path needs.
-   * Delegate to generated MIPS (behavioral oracle). */
-  br2_call_generated(0x80198590u,0, 0, 0, 0);
+  /* guest 0x80198590: a0 = lw(0x801BCBA8); jal 0x80195D64 (mc_session);
+   * on return sw $zero,36($s0) with $s0 = 0x801BFFD8 -> *(0x801BFFFC)=0. */
+  mc_session(DB32(0x801bcba8));
+  DB32(0x801bfffc) = 0;
 }
 
 /* ======== batch27: CD driver core ======== */
@@ -627,10 +627,10 @@ void cd_cmd_state_reset(void)
 undefined2 cd_intc_busy_read(void)
 
 {
-  /* IRQ-path function: clean-C body cannot supply the live guest
-   * register file / MMIO ack semantics the deferred interrupt path needs.
-   * Delegate to generated MIPS (behavioral oracle). */
-  return (undefined2)br2_call_generated(0x8019a7d4u,0, 0, 0, 0);
+  /* guest 0x8019A7D4: lui $v0,0x801C; lh $v0,-0x32E6($v0); jr $ra; nop
+   * -> signed halfword at guest 0x801BCD1A (lh sign-extends into $v0,
+   * but the undefined2 return truncates to the same 16 bits). */
+  return (undefined2)br2_ld16(0x801bcd1a);
 }
 
 /* ======== 0x80196370 ======== */

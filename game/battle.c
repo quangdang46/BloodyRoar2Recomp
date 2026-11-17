@@ -22,6 +22,7 @@ extern void    *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
 extern uint32_t br2_gaddr(const void *p);
 extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+extern uint32_t call_guest(uint32_t fn, uint32_t a, uint32_t b);
 extern uint32_t br2_guest_frame(uint32_t);
 extern void    br2_guest_frame_free(void);
 extern void    br2_st32(uint32_t,uint32_t);
@@ -582,9 +583,16 @@ void camera_state_cache(uint param_1,int param_2)
     vec2_rot((int)_DAT_1f800302,(int)_DAT_1f800300,(undefined2*)guest_at((uint32_t)0x1f800342));
   }
   else {
-    void *fn = fn_lookup(*(uint32_t *)(&DAT_801b144c + *(char *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x98) ))* 4));
+    uint32_t fn_g = *(uint32_t *)(&DAT_801b144c + *(char *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x98) ))* 4);
+    void *fn = fn_lookup(fn_g);
     if (fn != (void *)0x0) {
       ((void (*)(void *, void *, int))fn)(&DAT_1f8002f8,&DAT_801f0228,param_2);
+    }
+    else {
+      /* Unported jalr target: run the generated body with the same guest
+       * args — a0=0x1F8002F8, a1=0x801F0228 (guest addrs, not host ptrs),
+       * a2=param_2. */
+      br2_call_generated(fn_g,0x1f8002f8u,0x801f0228u,(uint32_t)param_2,0);
     }
   }
   return;
@@ -614,9 +622,15 @@ void player_light_apply(byte *param_1,int param_2)
     }
   }
   if (*(uint32_t *)(&DAT_801b140c + ((int)((uint)DAT_1f800098 << 0x18) >> 0x16)) != 0) {
-    void *fn = fn_lookup(*(uint32_t *)(&DAT_801b140c + ((int)((uint)DAT_1f800098 << 0x18) >> 0x16)));
+    uint32_t fn_g = *(uint32_t *)(&DAT_801b140c + ((int)((uint)DAT_1f800098 << 0x18) >> 0x16));
+    void *fn = fn_lookup(fn_g);
     if (fn != (void *)0x0) {
       ((void (*)(void *, void *, uint32_t, byte *))fn)(&DAT_1f8002f8,&DAT_801f0228,0x1f80033c,param_1);
+    }
+    else {
+      /* Unported jalr target: guest args a0=0x1F8002F8, a1=0x801F0228,
+       * a2=0x1F80033C, a3=param_1's guest address. */
+      br2_call_generated(fn_g,0x1f8002f8u,0x801f0228u,0x1f80033cu,guest_of(param_1));
     }
   }
   gte_light_load(&DAT_801f0250);
@@ -8025,12 +8039,18 @@ undefined4 * rotmat2_build(uint param_1,undefined4 *param_2)
  *    `param_1 + off` guest-address arithmetic inside guest_at.
  *  - pointer-typed ports (`int *`, `undefined4 *`, ...) treat it as a
  *    host pointer into the guest data area.
- * The guest-u32 list below must stay in sync with those ports; unknown
- * (unported) targets resolve to NULL via fn_lookup and are skipped. */
+ * The guest-u32 list below must stay in sync with those ports; targets with
+ * no clean port (fn_lookup -> NULL) fall back to call_guest, which reproduces
+ * the guest jalr through the generated dispatcher. */
 void task_invoke(uint32_t fn_guest, uint32_t arg_guest)
 {
   void *fn = fn_lookup(fn_guest);
-  if (fn == (void *)0x0) return;
+  if (fn == (void *)0x0) {
+    /* Unported target: reproduce the guest jalr — a0 = arg_guest (a guest
+     * address), callee runs its generated body via the dispatcher. */
+    call_guest(fn_guest, arg_guest, 0);
+    return;
+  }
   switch (fn_guest) {
   case 0x80138cec:   /* impact_fx_update(int)      — guest u32 arg */
   case 0x80139e0c:   /* impact_fx_emit_tick(int)      — guest u32 arg */
@@ -16517,9 +16537,14 @@ LAB_80137c14:
               iVar4 = iVar4 + 1;
               {
                 /* guest fn-ptr table: param_1[3] + psVar3[2]*4 */
-                void *fn = fn_lookup(*(uint32_t *)guest_at((uint32_t)(param_1[3] + psVar3[2] * 4)));
+                uint32_t fn_g = *(uint32_t *)guest_at((uint32_t)(param_1[3] + psVar3[2] * 4));
+                void *fn = fn_lookup(fn_g);
                 if (fn != (void *)0x0) {
                   ((void (*)(uintptr_t))fn)(param_1[0] != 0 ? (uintptr_t)guest_at((uint32_t)param_1[0]) : 0);
+                }
+                else {
+                  /* Unported jalr target: a0 = param_1[0] (guest addr or 0). */
+                  br2_call_generated(fn_g,(uint32_t)param_1[0],0,0,0);
                 }
               }
               psVar3 = (short *)guest_at((uint32_t)*piVar6);
@@ -16590,10 +16615,17 @@ void LAB_80137cd0(int *param_1)
     }
     psVar4 = (short *)guest_at((uint32_t)(param_1[2] + *(short *)guest_at((uint32_t)param_1[4]) * 4));
     {
-      /* FUN_801acb08 — unported; dispatch via fnmap (guest addr) */
-      void *fn = fn_lookup(0x801acb08);
-      if (fn != (void *)0x0) {
-        ((void (*)(uint32_t,int,int))fn)((uint32_t)param_1[0],(int)*psVar4,(int)psVar4[1]);
+      /* guest: jal 0x801ACB08 — a0 = *(u32*)(param_1+0) (guest word),
+       * a1 = s16 *psVar4, a2 = s16 psVar4[1] (sign-extended lh loads). */
+      {
+        void *fn = fn_lookup(0x801acb08);
+        if (fn != (void *)0x0) {
+          ((void (*)(uint32_t,int,int))fn)((uint32_t)param_1[0],(int)*psVar4,(int)psVar4[1]);
+        }
+        else {
+          br2_call_generated(0x801acb08u,(uint32_t)param_1[0],
+                             (uint32_t)(int)*psVar4,(uint32_t)(int)psVar4[1],0);
+        }
       }
     }
     *(undefined2 *)(param_1 + 5) = *(undefined2 *)guest_at((uint32_t)(param_1[4] + 2));

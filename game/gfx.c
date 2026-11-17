@@ -847,13 +847,49 @@ void gpu_prim_pkt_build(int param_1,ushort *param_2)
 
 /* ======== 0x80193424 ======== */
 
+/* gpu_mode_regs_apply — GPU mode/register apply @0x80193424 (336 bytes,
+ * 15 blocks). Faithful clean port; every callee is already clean:
+ * cd_u16_swap_store (0x8019A7FC), guest_memset (0x80193D08),
+ * gpu_status_cmd (0x80193828). All values are guest u32s.
+ *
+ * Prologue side effects (all modes): *0x801B845C = 0; first
+ * cd_u16_swap_store(0) result saved @0x801B8468; *0x801B8458 =
+ * *0x801B845C (the just-zeroed cell -> 0).
+ *
+ * mode = a0 & 7 dispatch (verified against the slti/beq tree):
+ *   {0,3,5}: **(u32*)0x801B8444 = 0x401; **(u32*)0x801B8454 |= 0x800;
+ *            **(u32*)0x801B8438 = 0 (in the jal delay slot);
+ *            guest_memset(0x801FAD68,0,0x100);
+ *            guest_memset(0x801FAE70,0,0x1800).
+ *   {1}:     same two register writes; **(u32*)0x801B8438 = 0x02000000
+ *            then = 0x01000000 (first store is dead — faithful).
+ *   {2,4,6,7}: no register writes.
+ * Tail (all modes): v0 = cd_u16_swap_store(*0x801B8468); if mode==0
+ * v0 = gpu_status_cmd(a0). Returns last call's $v0. */
 undefined4 gpu_mode_regs_apply(uint param_1)
-
 {
-  /* IRQ-path function: clean-C body cannot supply the live guest
-   * register file / MMIO ack semantics the deferred interrupt path needs.
-   * Delegate to generated MIPS (behavioral oracle). */
-  return (undefined4)br2_call_generated(0x80193424u,param_1, 0, 0, 0);
+  uint32_t mode = param_1 & 7u;
+  uint32_t v0 = cd_u16_swap_store(0);
+  uint32_t p;
+  uint32_t r;
+  GP32(0x801B845C) = 0;
+  GP32(0x801B8468) = v0;
+  GP32(0x801B8458) = GP32(0x801B845C);
+  if (mode == 0 || mode == 3 || mode == 5) {
+    p = GP32(0x801B8444); GP32(p) = 0x401;
+    p = GP32(0x801B8454); GP32(p) = GP32(p) | 0x800;
+    p = GP32(0x801B8438); GP32(p) = 0;
+    guest_memset((uint32_t *)0x801FAD68, 0, 0x100);
+    guest_memset((uint32_t *)0x801FAE70, 0, 0x1800);
+  } else if (mode == 1) {
+    p = GP32(0x801B8444); GP32(p) = 0x401;
+    p = GP32(0x801B8454); GP32(p) = GP32(p) | 0x800;
+    p = GP32(0x801B8438); GP32(p) = 0x02000000;
+    p = GP32(0x801B8438); GP32(p) = 0x01000000;
+  }
+  r = cd_u16_swap_store((int)GP32(0x801B8468));
+  if (mode == 0) r = gpu_status_cmd(param_1);
+  return r;
 }
 
 /* ======== 0x80193d30 ======== */
@@ -3041,18 +3077,66 @@ void gte_xform_norm3pts(uint32_t a0g, uint32_t a1g)
 }
 
 /* ======== 0x80194478 / 0x80195710 ======== */
-/* Init-time helpers that issue BIOS calls (0x80195710 jalr's the 0xB0
- * syscall vector) and mutate GTE control state — faithful clean ports
- * would need live guest-sp/IRQ-expressible call sequences, so both
- * delegate to the generated bodies per the delegation rule.
- * 0x80194478: saves ra @0x801c8470, jal 0x80195710, then CTC2-writes
- * GTE ctrl regs (0x155/0x100/0x3E8/0xEF9E/0x1400000 family).
- * 0x80195710: BIOS B0:0x56 call + pointer-table patch + two jals. */
+/* Init-time helpers. Both ported faithfully against the generated
+ * bodies; every callee is already clean or a sanctioned bridge:
+ *   0x80194478 gte_screen_init_defer: spill ra @0x801B8470, jal
+ *     gpu_state_patch_defer, restore, SR |= 0x40000000 (cop0 r12),
+ *     then GTE ctrl writes: ctc2 29=0x155, 30=0x100, 26=0x3E8,
+ *     27=0xFFFFEF9E (s16 -4194), 28=0x01400000, 24=0, 25=0 — the
+ *     generated code routes 26/27/29/30 through gte_write_ctrl
+ *     (sign-extend/&0xffff semantics) and stores 24/25/28 directly.
+ *   0x80195710 gpu_state_patch_defer: spill ra @0x801FC670, jal
+ *     FUN_8018e300 (EnterCriticalSection), BIOS B0 svc 0x56 via the
+ *     0xB0 vector, then a 6-word compare of *(v0+24)+40 against the
+ *     table @0x801957BC; on match copies the table @0x801957D4 over
+ *     it. Tail (both paths): BIOS A0 svc 0x44 (bios_tramp_a044 /
+ *     br2_bios_tramp forwards live a0-a3) then FUN_8018e310
+ *     (ExitCriticalSection), restore ra, return. */
+void gpu_state_patch_defer(void);
 uint32_t gte_screen_init_defer(void)
 {
-  return br2_call_generated(0x80194478u, 0, 0, 0, 0);
+  CPUState *c = clean_cpu_state();
+  uint32_t ra;
+  if (!c) return 0;
+  ra = c->gpr[31];
+  GP32(0x801B8470) = ra;               /* sw ra scratch slot */
+  gpu_state_patch_defer();
+  c->cop0[12] = (c->cop0[12] | 0x40000000u);
+  gte_write_ctrl(c, 29, 0x155u);
+  gte_write_ctrl(c, 30, 0x100u);
+  gte_write_ctrl(c, 26, 0x3E8u);
+  gte_write_ctrl(c, 27, 0xFFFFEF9Eu);
+  c->gte_ctrl[28] = 0x01400000u;
+  c->gte_ctrl[24] = 0;
+  c->gte_ctrl[25] = 0;
+  (void)GP32(0x801B8470);               /* lw ra restore — dead in C */
+  return 0;
 }
+
 void gpu_state_patch_defer(void)
 {
-  br2_call_generated(0x80195710u, 0, 0, 0, 0);
+  CPUState *c = clean_cpu_state();
+  uint32_t v0, base;
+  int i, same = 1;
+  extern void FUN_8018e300(void);
+  extern void FUN_8018e310(uint32_t);
+  extern void br2_bios_tramp(uint32_t,uint32_t);
+  if (!c) return;
+  GP32(0x801FC670) = c->gpr[31];        /* sw ra scratch slot */
+  FUN_8018e300();                       /* jal 0x8018E300: EnterCriticalSection */
+  br2_bios_tramp(0xb0, 0x56);           /* jalr 0xB0, $t1=0x56 — B0 svc 0x56 */
+  v0 = c->gpr[2];                       /* BIOS $v0 */
+  base = GP32(v0 + 24) + 40;
+  for (i = 0; i < 6; i++) {
+    if (GP32(0x801957BCu + (uint32_t)i * 4u) != GP32(base + (uint32_t)i * 4u)) {
+      same = 0;
+      break;
+    }
+  }
+  if (same) {
+    for (i = 0; i < 6; i++)
+      GP32(base + (uint32_t)i * 4u) = GP32(0x801957D4u + (uint32_t)i * 4u);
+  }
+  br2_bios_tramp(0xa0, 0x44);           /* jal 0x801957F0: BIOS A0 svc 0x44 */
+  FUN_8018e310(0);                      /* jal 0x8018E310: ExitCriticalSection */
 }

@@ -14282,7 +14282,8 @@ int32_t skeleton_init(uint32_t param_1,uint32_t param_2,uint32_t param_3)
 /* ---- heap_serialize serializer callees ----
  * Ported already (strong defs above): record_table_expand_a, quad_strip_emit_a,
  * record_table_expand_b, quad_strip_emit_b (7-arg emitters), entry_attr_bump_loop,
- * dual_entry_attr_bump (attr bumps). The rest delegate to the generated
+ * dual_entry_attr_bump (attr bumps), heap_serialize_tag_01000000 (@0x8016a82c).
+ * The rest delegate to the generated
  * guest bodies at the bottom of this file (br2_call_generated +
  * br2_guest_frame stack-arg staging). */
 extern uint32_t heap_serialize_tag_08(uint32_t,uint32_t,uint32_t,uint32_t,
@@ -15981,17 +15982,55 @@ uint32_t heap_serialize_tag_01000015(uint32_t param_1,uint32_t param_2,uint32_t 
 }
 
 
-/* 6-arg special case: arg5 @fr+0x10, arg6 @fr+0x14. */
-uint32_t heap_serialize_tag_01000000(uint32_t a,uint32_t b,uint32_t c,
-                      uint32_t d,uint32_t e,uint32_t f)
+/* heap_serialize_tag_01000000 — heap record serializer @0x8016a82c
+ * (192 bytes, 7 blocks, leaf: no calls, no MMIO). Faithful clean port.
+ *
+ * Args (all guest addrs): a = dst cursor (16-byte record array),
+ * b = record header {+4 count1, +8 base1, +0x10 count2, +0x14 base2},
+ * c/d = pass-1 src 8-byte-record array / ptr-slot array,
+ * e/f = pass-2 src / ptr-slot array (guest stack args 5/6).
+ *
+ * Each pass: off = MB32(hdr+base_off)*8; src += off; ptab += off;
+ * then count times: copy 8 bytes src[i] -> dst record's low half,
+ * store &dst[+8] into ptab[i]; dst += 16, src/ptab += 8.
+ * Returns dst advanced by (count1+count2)*16. lwl/lwr pairs ==
+ * MB32/MW32 word accesses (file convention). */
+uint32_t heap_serialize_tag_01000000(uint32_t dst,uint32_t hdr,
+                      uint32_t src1,uint32_t ptab1,
+                      uint32_t src2,uint32_t ptab2)
 {
-  uint32_t fr = br2_guest_frame(0x20);
-  uint32_t r;
-  br2_st32(fr + 0x10, e);
-  br2_st32(fr + 0x14, f);
-  r = br2_call_generated(0x8016a82cu,a,b,c,d);
-  br2_guest_frame_free();
-  return r;
+  uint32_t n = MB32(hdr + 4u);
+  uint32_t off;
+  if (n != 0) {
+    off = MB32(hdr + 8u) * 8u;
+    src1 += off; ptab1 += off;
+    do {
+      uint32_t rec = dst;
+      MW32(dst,     MB32(src1));
+      MW32(dst + 4, MB32(src1 + 4));
+      dst += 16;
+      MW32(ptab1, rec + 8);
+      ptab1 += 8;
+      src1 += 8;
+      n -= 1;
+    } while (n != 0);
+  }
+  n = MB32(hdr + 16u);
+  if (n != 0) {
+    off = MB32(hdr + 20u) * 8u;
+    src2 += off; ptab2 += off;
+    do {
+      uint32_t rec = dst;
+      MW32(dst,     MB32(src2));
+      MW32(dst + 4, MB32(src2 + 4));
+      dst += 16;
+      MW32(ptab2, rec + 8);
+      ptab2 += 8;
+      src2 += 8;
+      n -= 1;
+    } while (n != 0);
+  }
+  return dst;
 }
 
 #undef BR2_TAG5

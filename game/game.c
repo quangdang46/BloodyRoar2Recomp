@@ -407,7 +407,7 @@ extern void gauge_scale_fixed(uint8_t,int);
 extern void brightness_commit(uint8_t);
 extern void cd_dispatch_tblc(void);
 extern void cd_read_param_set(int);
-extern void FUN_80194478(void);
+extern uint32_t gte_screen_init_defer(void);   /* guest 0x80194478 clean port */
 extern void cd_fileop_reset(int);
 extern int32_t set_graph_debug(uint32_t);
 extern void cd_xchg_bde20(int);
@@ -789,7 +789,7 @@ void boot(void)
 
     cd_dispatch_tblc();
     cd_read_param_set(0);
-    FUN_80194478();
+    gte_screen_init_defer();   /* guest 0x80194478 (was FUN_80194478 -> generated) */
     cd_fileop_reset(0);
     set_graph_debug(0);
     gpu_graph_reset(0);

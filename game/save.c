@@ -5636,18 +5636,134 @@ extern void descblk_variant_f(uint32_t,uint32_t,const void *,
 extern void hud_text_a(uint32_t,uint16_t,const void *,
     uint16_t,uint16_t,int16_t);
 extern int32_t attr_records_scan(uint32_t,uint32_t);
-/* ret_zero_d is guest 0x8016DADC: the generated body writes the save-record
- * header at a3 and returns the advanced heap-A cursor that the caller stores
- * to 0x801c47b8. It reads only a0-a3, so the fifth argument is unused. */
+/* ret_zero_d is guest 0x8016DADC: writes the save-record header at a3 and
+ * expands packed source fields into 0x70-byte records, returning the
+ * advanced heap-A cursor (a3+20+0x70*nrec) the caller stores to
+ * 0x801c47b8. Faithful port of generated 0x8016DADC-0x8016DDF4 — three
+ * nested loops (outer t9=1..N-1 over N=lhu(a0+4); middle t3=0..b5-1 over
+ * b5=u8(a1+5); inner t2=0..b4-1 over b4=u8(a1+4)) scanning a u16 selector
+ * array at a1+8; each selector==1 writes one record at cursor a3+88+0x70*k
+ * (t4 cursor a3+20 tracks it, +0x70 per record). No calls, no MMIO, no
+ * IRQ-sensitive waits — clean C is faithful. a0-a4 are guest addresses
+ * (heap cursors), dereferenced via guest_at. */
 uint32_t ret_zero_d(uint32_t a0, uint32_t a1, uint32_t a2,
                     uint32_t a3, uint32_t a4)
 {
-    uint32_t r;
-    (void)a4;
-    r = (uint32_t)br2_call_generated(0x8016dadcu, a0, a1, a2, a3);
+    uint8_t *P1 = (uint8_t *)guest_at(a0);
+    uint8_t *P2 = (uint8_t *)guest_at(a1);
+    uint8_t *P3 = (uint8_t *)guest_at(a2);
+    uint8_t *P4 = (uint8_t *)guest_at(a3);
+    uint8_t *cur = P4 + 20;              /* t4 cursor: a3+20, +0x70/record */
+    uint32_t nrec = 0;
+    uint32_t N    = *(uint16_t *)(P1 + 4);   /* record-group count */
+    uint32_t cnt_a = *(uint8_t *)(P2 + 4);   /* inner bound  (a1 reg) */
+    uint32_t cnt_b = *(uint8_t *)(P2 + 5);   /* middle bound (s2)    */
+    uint32_t add6  = *(uint8_t *)(P2 + 6);   /* s6 */
+    uint32_t add7  = *(uint8_t *)(P2 + 7);   /* s5 */
+    uint32_t half_b = cnt_b >> 1;
+    uint32_t t9;
+
+    /* header at P4+0..16 (guest values stored are guest addresses) */
+    *(uint32_t *)(P4 + 0)  = 1;
+    *(uint32_t *)(P4 + 4)  = 0x00040051;
+    *(uint32_t *)(P4 + 12) = a3 + 20;
+    *(uint32_t *)(P4 + 16) = a4;
+
+    for (t9 = 1; t9 < N; t9++) {
+        const uint8_t *src16 = P2 + 8;    /* t7: u16 selector stream */
+        const uint8_t *t1    = P1 + 16;   /* field source */
+        uint32_t t3;
+        if (cnt_b == 0) continue;         /* DB88: beqz s2 -> outer bottom */
+        for (t3 = 0; t3 < cnt_b; t3++) {
+            /* middle-loop constants (DBA4-DBC0): tm5=-384*(t3-half_b),
+             * tm8=tm5-384 — stored as u16 into each written record. */
+            int32_t dm  = (int32_t)t3 - (int32_t)half_b;
+            uint32_t tm5 = (uint32_t)(-(dm * 384));
+            uint32_t tm8 = tm5 - 384u;
+            uint32_t t2;
+            if (cnt_a == 0) continue;     /* DB9C: beqz a1 -> middle bottom */
+            for (t2 = 0; t2 < cnt_a; t2++) {
+                uint32_t sel = *(const uint16_t *)src16;
+                src16 += 2;                /* delay-slot advance, every iter */
+                if (sel != 1) continue;    /* DD70: skip record, no cursor bump */
+                {
+                    /* ==1 path: write one 0x70 record. D = t4+68 cursor. */
+                    uint8_t *D = cur + 68;
+                    int32_t di = (int32_t)t2 - (int32_t)(cnt_a >> 1);
+                    uint32_t vi = (uint32_t)(di * 384);   /* inner v1 */
+                    uint32_t w  = vi + 384u;              /* inner v0 */
+                    uint16_t f2, f6;
+                    uint32_t fl, b0, b1, c0, c1;
+
+                    D[-33] = 9;  D[-29] = 44;
+                    D[7]   = 9;  D[11] = 44;
+                    D[-32] = 128; D[-31] = 128; D[-30] = 128;
+                    D[8]   = 128; D[9]  = 128;  D[10] = 128;
+                    *(uint16_t *)(cur + 0) = (uint16_t)vi;
+                    *(uint16_t *)(D - 66) = 0;
+                    *(uint16_t *)(D - 64) = (uint16_t)tm5;
+                    *(uint16_t *)(D - 60) = (uint16_t)w;
+                    *(uint16_t *)(D - 58) = 0;
+                    *(uint16_t *)(D - 56) = (uint16_t)tm5;
+                    *(uint16_t *)(D - 52) = (uint16_t)vi;
+                    *(uint16_t *)(D - 50) = 0;
+                    *(uint16_t *)(D - 48) = (uint16_t)tm8;
+                    *(uint16_t *)(D - 44) = (uint16_t)w;
+                    *(uint16_t *)(D - 42) = 0;
+                    *(uint16_t *)(D - 40) = (uint16_t)tm8;
+
+                    f2 = *(const uint16_t *)(t1 + 2);
+                    *(uint16_t *)(D + 18) = f2;
+                    *(uint16_t *)(D - 22) = f2;
+                    b0 = t1[0];
+                    D[32] = (uint8_t)b0; D[-8]  = (uint8_t)b0;
+                    D[16] = (uint8_t)b0; D[-24] = (uint8_t)b0;
+                    b1 = t1[1];
+                    D[25] = (uint8_t)b1; D[-15] = (uint8_t)b1;
+                    D[17] = (uint8_t)b1; D[-23] = (uint8_t)b1;
+                    c0 = b0 + add6 - 1;
+                    D[40] = (uint8_t)c0; D[0]   = (uint8_t)c0;
+                    D[24] = (uint8_t)c0; D[-16] = (uint8_t)c0;
+                    c1 = b1 + add7 - 1;
+                    D[41] = (uint8_t)c1; D[1]   = (uint8_t)c1;
+                    D[33] = (uint8_t)c1; D[-7]  = (uint8_t)c1;
+                    f6 = *(const uint16_t *)(t1 + 6);
+                    *(uint16_t *)(D + 26) = f6;
+                    *(uint16_t *)(D - 14) = f6;
+
+                    fl = *(const uint16_t *)(t1 + 4);
+                    if (fl & 1) {           /* DCF0-0x8016DD1C fixup */
+                        uint32_t x = D[-23], y = D[-7];
+                        uint32_t z = D[1],  w2 = D[-15];
+                        D[33] = (uint8_t)x; D[-7]  = (uint8_t)x;
+                        D[17] = (uint8_t)y; D[-23] = (uint8_t)y;
+                        D[25] = (uint8_t)z; D[-15] = (uint8_t)z;
+                        D[41] = (uint8_t)w2; D[1] = (uint8_t)w2;
+                    }
+                    if (fl & 2) {           /* 0x8016DD34-0x8016DD60 fixup */
+                        uint32_t x = D[-24], y = D[-16];
+                        uint32_t z = D[0],  w2 = D[-8];
+                        D[24]  = (uint8_t)x; D[-16] = (uint8_t)x;
+                        D[16]  = (uint8_t)y; D[-24] = (uint8_t)y;
+                        D[32]  = (uint8_t)z; D[-8]  = (uint8_t)z;
+                        D[40]  = (uint8_t)w2; D[0]  = (uint8_t)w2;
+                    }
+                    nrec++;
+                    cur += 0x70;             /* s0++/a3+=0x70/t4+=0x70 */
+                }
+            }
+        }
+    }
+
+    /* epilogue 0x8016DDA4-0x8016DDF4 */
+    *(uint32_t *)(P4 + 8)  = nrec;
+    *(uint32_t *)(P3 + 28) = a3;
+    *(uint16_t *)(P3 + 12) = 0;
+    *(uint16_t *)(P3 + 14) = 0;
     { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-      decomp_trace_record(16,a3,r,0,(uint32_t)(r-a3)); }   /* tag16 rzd */
-    return r;
+      decomp_trace_record(16,a3,(uint32_t)(a3 + 20 + nrec * 0x70),0,
+                          nrec * 0x70); }
+    return a3 + 20 + nrec * 0x70;
 }
 /* heap_ptr_fixup is defined in menu.c as void heap_ptr_fixup(uint32_t).
  * The weak ()-stub here made calls compile unprototyped: clang dropped the
@@ -7640,12 +7756,25 @@ void cd_svc_dual(uint32_t a0,uint32_t a1)
   return;
 }
 
-/* 0x801a1b0c — CD channel init: crit-in, mode 3/1, table 0x801fc000, crit-out. */
+/* 0x801a1b0c — CD channel init: crit-in, mode 3/1, table 0x801fefc0,
+ * crit-out. Faithful port of generated 0x801A1B0C-0x801A1B48:
+ *   FUN_8018e300();                          // EnterCriticalSection
+ *   a0=3, a1=1; jal 0x8019a670;              // bios_kobj_tramp C0/0x0a —
+ *     // the guest stub forwards caller a0-a3 untouched, so stage them on
+ *     // the live CPUState for br2_bios_tramp's gpr read.
+ *   a0=2, a1=0x801FEFC0; jal 0x8019a340;     // bios_tramp_c003 -> C0/0x03
+ *   FUN_8018e310();                           // ExitCriticalSection
+ * a2/a3 are never written by the guest body, so they stay whatever the
+ * kobj service left in $a2/$a3 — matching bios_svc's live-gpr read. */
+extern CPUState *clean_cpu_state(void);
 void cd_channel_init(void)
 {
-  /* gpr-forwarding trampoline calls inside need live cpu->gpr that clean
-   * callers cannot supply; delegate whole body to generated MIPS. */
-  br2_call_generated(0x801a1b0cu,0,0,0,0);
+  CPUState *cpu = clean_cpu_state();
+  FUN_8018e300();
+  if (cpu != NULL) { cpu->gpr[4] = 3; cpu->gpr[5] = 1; }
+  bios_kobj_tramp();
+  bios_tramp_c003(2,0x801fefc0);
+  FUN_8018e310();
 }
 
 /* 0x801a30c0 — ctx fn-ptr call + dev_byte_xfer(ctx,-2). */
@@ -8027,13 +8156,34 @@ extern void tween_apply(short *,int,int);
 extern void gp_20_store_default(void);
 extern int prim_group_build();
 
-/* 0x801a1834 — global ctx flag check + fn-ptr call; returns 1/0. */
+/* 0x801a1834 — ctx flag gate + indirect callback; returns 1/0.
+ * Faithful port of generated 0x801A1834-0x801A1898:
+ *   ctx = *0x801CE7E0;
+ *   if (!(*(ctx+4) & 1)) return 0;   // beqz -> epilogue, v0=0
+ *   if (!(*ctx     & 1)) return 0;
+ *   fp  = *0x801CE7A8;
+ *   if (fp != 0) jalr fp;            // caller's a0-a3 forwarded untouched
+ *   return 1;                        // v0 forced to 1 on both tail paths
+ * The jalr target is a guest fn ptr: call_guest runs the clean wrapper or
+ * nested-dispatches generated, and only writes $a0/$a1 — pass the live
+ * values through so the callee sees the caller's regs; $a2/$a3 pass
+ * through untouched exactly like the guest jalr. No IRQ wait, no MMIO,
+ * no loop — clean C is faithful here. */
+extern CPUState *clean_cpu_state(void);
 int op_flag_fn_check(void)
 {
-  /* IRQ-path function: clean-C body cannot supply the live guest
-   * register file / MMIO ack semantics the deferred interrupt path needs.
-   * Delegate to generated MIPS (behavioral oracle). */
-  return (int)br2_call_generated(0x801a1834u,0, 0, 0, 0);
+  uint32_t ctx = *(uint32_t *)guest_at(0x801ce7e0);
+  uint32_t fp;
+  if ((*(uint32_t *)guest_at(ctx + 4) & 1) == 0) return 0;
+  if ((*(uint32_t *)guest_at(ctx) & 1) == 0) return 0;
+  fp = *(uint32_t *)guest_at(0x801ce7a8);
+  if (fp != 0) {
+    CPUState *cpu = clean_cpu_state();
+    uint32_t a0 = cpu ? cpu->gpr[4] : 0;
+    uint32_t a1 = cpu ? cpu->gpr[5] : 0;
+    (void)call_guest(fp, a0, a1);
+  }
+  return 1;
 }
 
 /* 0x801a2fb4 — state-byte dispatch; returns 1 when a0[0x46]==2. */
