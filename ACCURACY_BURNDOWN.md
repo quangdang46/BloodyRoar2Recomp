@@ -1115,3 +1115,20 @@ that the streaming/IRQ race can strike at multiple waits, but sample
 size is small; if wave-3 builds keep dying pre-title after the SPU fix
 lands, re-bisect {save.c,gfx.c,menu.c,battle.c} next.
 Last svc before wedge: B0:0x56 ra=0x80126260 (game main state machine).
+
+=== N+36 — CD read-completion handshake FIXED + two clean-port address typos ===
+- cd_init_done_cb (0x80198590) stored to wrong guest word: generated does
+  s0=0x801BCBA8, delay-slot addiu s0,-40 -> 0x801BCB80, then sw $zero,0x24(s0)
+  = 0x801BCBA4 (the read-session busy flag cd_init_session/cd_read_poll
+  handshake on). Clean port wrote 0x801BFFFC -> bcba4 stuck 1 -> infinite
+  37-sector read retry. FIXED (b4c25f3). Verified: bcba4=0 post-fix vs =1
+  on wedged builds.
+- save_load_state_machine (0x80170FE0) bound the channel-script/primitive
+  context record to guest_at(0x801f4a8)=0x0801F4A8 (7-digit typo) instead of
+  0x801F04A8. All channel-pointer binds went to invalid low mem ->
+  *(0x801F04A8)=0 -> scheduler 0x801343BC -> prim_task_run(0) walked addr 0
+  -> task_invoke(0x01000000) fail-fast @frame1868. FIXED (ac8de0c).
+- RESULT: game now boots clean and runs ATTRACT fight demo (gs=6) stable,
+  frame 21000+ (~3.6min game time). First time past the CD wedge AND the
+  early crash. versus->fight nav agent assigned (port 4680).
+- OPEN: audit agent hunting more wrong-address typos (same bug class).
