@@ -10230,3 +10230,26 @@ callee-saved regs x19-x28), NOT game/. NEXT: lldb repro — watchpoint on
 &_g__DAT_1f80000c (fires only if global written=mechanism b) + break at bfsm+0x154
 print $x28 each hit (confirms x28 drift=mechanism a). If global watchpoint silent
 -> confirmed N+22 ctx-restore bug -> fix fiber/exception reg preservation.
+
+## N+99 — clean-port sweep wave launched (ani/fight/vm) + x28 runtime fix in flight
+
+PORT WAVE (parallel subagents, disjoint game/*.c scopes):
+  3981ed7f -> game/ani.c  (116 LOC — animation subsystem, nearly all generated)
+  dc8048c7 -> game/fight.c (93 LOC — fight logic, nearly all generated)
+  51e181c9 -> game/vm.c   (542 LOC — script/event VM)
+  Rationale: these are the THINNEST subsystems = biggest generated->clean gap.
+  Big files already heavily ported (menu.c 539KB, save.c 310KB, cd.c 183KB).
+  Delegates pending faithful ports: 144 total (cd.c:61, bind.c:41, save.c:21,
+  menu.c:5, battle.c:6, ev.c:4, resolve.c:2, gfx.c:2, game.c:2).
+
+x28 RUNTIME FIX (ed5184f8, ~65min): battle_flow_state_machine SIGSEGV root-
+caused to callee-saved x28 restored WRONG across psx_check_interrupts
+setjmp/longjmp + fiber switch. Register proof: x28=0x111A30000 (.bss ~0x4BC0
+below globals, inside g_spdom_ring region) vs correct &_g__DAT_1f80000c
+~0x111A34BC0; siblings x19-x27 correct. = context-restore frame mixup, NOT
+data corruption. Suspects: deferred_exception_longjmp owner-fiber path +
+nested-exception saved_exception_jmpbuf guard (interrupts.c:1205/2051).
+
+INTEGRATION PLAN: agents port+build+verify on unique debug ports, commit only
+their game/*.c; parent runs central gen_clean_table.py + build + verify +
+commit clean_table.c once.
