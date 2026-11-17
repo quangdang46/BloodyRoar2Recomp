@@ -14625,34 +14625,1361 @@ uint32_t NM(uint32_t a,uint32_t b,uint32_t c,uint32_t d,uint32_t e, \
   r = br2_call_generated(AD,a,b,c,d); \
   br2_guest_frame_free(); return r; }
 
-BR2_TAG7(heap_serialize_tag_08,        0x801689d0u)
-BR2_TAG5(heap_serialize_tag_0a,        0x801697f4u)
-BR2_TAG5(heap_serialize_tag_0c,        0x80168c20u)
-BR2_TAG5(heap_serialize_tag_10,        0x80168ae0u)
-BR2_TAG5(heap_serialize_tag_12,        0x80169aa4u)
-BR2_TAG5(heap_serialize_tag_14,        0x80168d90u)
-BR2_TAG5(heap_serialize_tag_16,        0x80169c08u)
-BR2_TAG5(heap_serialize_tag_0e,        0x8016991cu)
-BR2_TAG5(heap_serialize_tag_40048,     0x80169dfcu)
-BR2_TAG7(heap_serialize_tag_40049,     0x8016a23cu)
-BR2_TAG5(heap_serialize_tag_4004c,     0x80169ee0u)
-BR2_TAG7(heap_serialize_tag_4004d,     0x8016a50cu)
-BR2_TAG5(heap_serialize_tag_40050,     0x80169fe4u)
-BR2_TAG7(heap_serialize_tag_40051,     0x8016a384u)
-BR2_TAG5(heap_serialize_tag_40054,     0x8016a0f8u)
-BR2_TAG7(heap_serialize_tag_40055,     0x8016a674u)
-BR2_TAG5(heap_serialize_tag_01000008,  0x8016a8ecu)
-BR2_TAG7(heap_serialize_tag_01000009,  0x8016aaa4u)
-BR2_TAG5(heap_serialize_tag_0100000a,  0x8016ad04u)
-BR2_TAG5(heap_serialize_tag_0100000c,  0x8016a9acu)
-BR2_TAG7(heap_serialize_tag_0100000d,  0x8016abb4u)
-BR2_TAG5(heap_serialize_tag_0100000e,  0x8016addcu)
-BR2_TAG5(heap_serialize_tag_01000010,  0x8016aeecu)
-BR2_TAG7(heap_serialize_tag_01000011,  0x8016b0f8u)
-BR2_TAG5(heap_serialize_tag_01000012,  0x8016b3c4u)
-BR2_TAG5(heap_serialize_tag_01000014,  0x8016afc8u)
-BR2_TAG7(heap_serialize_tag_01000015,  0x8016b234u)
-BR2_TAG5(heap_serialize_tag_01000016,  0x8016b4c4u)
+/* Faithful clean ports of the heap_serialize_tag_* serializers
+ * (0x801689d0-0x8016b4c4). All share one shape verified against the
+ * generated bodies: guard on the stack count arg, preheader bumps the
+ * dst cursor +0x10 and src +stride-2, then a count-loop that stamps
+ * four tag bytes, copies a u32 stream word, two lw words, and four
+ * u16-indexed 8-byte table lookups (first via arg4 table, rest via
+ * arg3 table) into the dst record; returns dst + count*stride.
+ * lwl/lwr+swl/swr pairs are unaligned LE word accesses == MB32/MW32.
+ * lh indices are sign-extended then <<3 (index*8 into the tables). */
+
+/* heap_serialize_tag_08 @0x801689d0 (68 insns, 7 args): dst stride
+ * 0x4c, src u32 stream stride 0xc at src+0, u16 index quads at
+ * src+4/+6/+8/+10 stride 0xc, src aux ptr src+10 stride 0xc.
+ * Tag bytes 4/0x20 at dst+0x27/0x2b/0x3b/0x3f (a0 = cur+0x10).
+ * Returns cur + count*0x4c. */
+uint32_t heap_serialize_tag_08(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
+                     uint32_t param_7)
+{
+  uint32_t a0 = param_1;
+  uint32_t a1 = param_2;
+  uint32_t a2 = param_3;
+  uint32_t a3 = param_4;
+  uint32_t t0 = param_1;
+  uint32_t v1 = param_5;
+  uint32_t t1 = param_2;
+  uint32_t v0, t4, t5;
+  (void)param_6; (void)param_7;
+  if (v1 == 0) return t0;
+  a0 += 16; a1 += 10;
+  do {
+    MW8(a0 + 23, 4);  MW8(a0 + 27, 32);
+    MW8(a0 + 43, 4);  MW8(a0 + 47, 32);
+    MW32(a0 + 8, MB32(t1));
+    t1 += 12;
+    v0 = (uint32_t)MBS16(a1 - 6) << 3;
+    v0 += a3;
+    t4 = MB32(v0);     t5 = MB32(v0 + 4);
+    MW32(a0 + 12, t4); MW32(a0 + 16, t5);
+    v0 = (uint32_t)MBS16(a1 - 4) << 3;
+    v1 -= 1;
+    v0 += a2;
+    t4 = MB32(v0);     t5 = MB32(v0 + 4);
+    MW32(t0 + 0, t4);  MW32(t0 + 4, t5);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3;
+    t0 += 76;
+    v0 += a2;
+    t4 = MB32(v0);     t5 = MB32(v0 + 4);
+    MW32(a0 - 8, t4);  MW32(a0 - 4, t5);
+    v0 = (uint32_t)MBS16(a1 + 0) << 3;
+    a1 += 12;
+    v0 += a2;
+    t4 = MB32(v0);     t5 = MB32(v0 + 4);
+    MW32(a0 + 0, t4);  MW32(a0 + 4, t5);
+    a0 += 76;
+  } while (v1 != 0);
+  return t0;
+}
+
+/* heap_serialize_tag_0a @0x801697f4 (74 insns, 5 args): dst stride
+ * 0x64, src u32 stream stride 0x14 at src+0, two extra u32s at
+ * src+4/+8, u16 index quads at src+12/+14/+16/+18 stride 0x14,
+ * aux src+18 stride 0x14. Tag bytes 6/0x30 at dst+0x2f/0x33/0x4b/0x4f.
+ * Returns cur + count*0x64. */
+uint32_t heap_serialize_tag_0a(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+                     uint32_t param_4,uint32_t param_5)
+{
+  uint32_t a0 = param_1;
+  uint32_t a1 = param_2;
+  uint32_t a2 = param_3;
+  uint32_t a3 = param_4;
+  uint32_t t0 = param_1;
+  uint32_t v1 = param_5;
+  uint32_t t1 = param_2;
+  uint32_t v0, t4, t5;
+  if (v1 == 0) return t0;
+  a0 += 16; a1 += 18;
+  do {
+    MW8(a0 + 31, 6);  MW8(a0 + 35, 48);
+    MW8(a0 + 59, 6);  MW8(a0 + 63, 48);
+    MW32(a0 + 8,  MB32(t1));
+    MW32(a0 + 12, MB32(a1 - 14));
+    MW32(a0 + 16, MB32(a1 - 10));
+    t1 += 20;
+    v0 = (uint32_t)MBS16(a1 - 6) << 3;
+    v0 += a3;
+    t4 = MB32(v0);     t5 = MB32(v0 + 4);
+    MW32(a0 + 20, t4); MW32(a0 + 24, t5);
+    v0 = (uint32_t)MBS16(a1 - 4) << 3;
+    v1 -= 1;
+    v0 += a2;
+    t4 = MB32(v0);     t5 = MB32(v0 + 4);
+    MW32(t0 + 0, t4);  MW32(t0 + 4, t5);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3;
+    t0 += 100;
+    v0 += a2;
+    t4 = MB32(v0);     t5 = MB32(v0 + 4);
+    MW32(a0 - 8, t4);  MW32(a0 - 4, t5);
+    v0 = (uint32_t)MBS16(a1 + 0) << 3;
+    a1 += 20;
+    v0 += a2;
+    t4 = MB32(v0);     t5 = MB32(v0 + 4);
+    MW32(a0 + 0, t4);  MW32(a0 + 4, t5);
+    a0 += 100;
+  } while (v1 != 0);
+  return t0;
+}
+
+/* heap_serialize_tag_0c @0x80168c20 (92 insns, 5 args): dst stride
+ * 0x6c, src u32 stream stride 0x10 at src+0, u16 index quint at
+ * src+4/+6/+8/+10/+12 stride 0x10, aux src+14 stride 0x10.
+ * Six 8-byte table lookups alternating arg4/arg3 tables
+ * (-10,-8,-6,-4,-2,0). Tag bytes 6/0x30 at dst+0x37/0x3b/0x5b/0x5f.
+ * Returns cur + count*0x6c. */
+uint32_t heap_serialize_tag_0c(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+                     uint32_t param_4,uint32_t param_5)
+{
+  uint32_t a0 = param_1;
+  uint32_t a1 = param_2;
+  uint32_t a2 = param_3;
+  uint32_t a3 = param_4;
+  uint32_t t0 = param_1;
+  uint32_t v1 = param_5;
+  uint32_t t1 = param_2;
+  uint32_t v0, t4, t5;
+  if (v1 == 0) return t0;
+  a0 += 16; a1 += 14;
+  do {
+    MW8(a0 + 39, 6);  MW8(a0 + 43, 48);
+    MW8(a0 + 67, 6);  MW8(a0 + 71, 48);
+    MW32(a0 + 8, MB32(t1));
+    t1 += 16;
+    v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(a0 + 12, t4); MW32(a0 + 16, t5);
+    v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(t0 + 0, t4); MW32(t0 + 4, t5);
+    v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a3;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(a0 + 20, t4); MW32(a0 + 24, t5);
+    v0 = (uint32_t)MBS16(a1 - 4) << 3;  v1 -= 1; v0 += a2;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(a0 - 8, t4); MW32(a0 - 4, t5);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3;  v0 += a3;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(a0 + 28, t4); MW32(a0 + 32, t5);
+    v0 = (uint32_t)MBS16(a1 + 0) << 3;  a1 += 16; v0 += a2;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(a0 + 0, t4); MW32(a0 + 4, t5);
+    t0 += 108;
+    a0 += 108;
+  } while (v1 != 0);
+  return t0;
+}
+
+/* heap_serialize_tag_10 @0x80168ae0 (80 insns, 5 args): dst stride
+ * 0x5c, src u32 stream stride 0x10 at src+0, u16 index quad at
+ * src+4/+6/+8/+10 stride 0x10, aux src+12 stride 0x10.
+ * Tag bytes 5/0x28 at dst+0x27/0x2b/0x3b/0x3f (a0 = cur+0x18).
+ * Returns cur + count*0x5c. */
+uint32_t heap_serialize_tag_10(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+                     uint32_t param_4,uint32_t param_5)
+{
+  uint32_t a0 = param_1;
+  uint32_t a1 = param_2;
+  uint32_t a2 = param_3;
+  uint32_t a3 = param_4;
+  uint32_t t0 = param_1;
+  uint32_t v1 = param_5;
+  uint32_t t1 = param_2;
+  uint32_t v0, t4, t5;
+  if (v1 == 0) return t0;
+  a0 += 24; a1 += 12;
+  do {
+    MW8(a0 + 23, 5);  MW8(a0 + 27, 40);
+    MW8(a0 + 47, 5);  MW8(a0 + 51, 40);
+    MW32(a0 + 8, MB32(t1));
+    t1 += 16;
+    v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a3;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(a0 + 12, t4); MW32(a0 + 16, t5);
+    v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a2;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(t0 + 0, t4); MW32(t0 + 4, t5);
+    v0 = (uint32_t)MBS16(a1 - 4) << 3;  v1 -= 1; v0 += a2;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(a0 - 16, t4); MW32(a0 - 12, t5);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3;  t0 += 92; v0 += a2;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(a0 - 8, t4); MW32(a0 - 4, t5);
+    v0 = (uint32_t)MBS16(a1 + 0) << 3;  a1 += 16; v0 += a2;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(a0 + 0, t4); MW32(a0 + 4, t5);
+    a0 += 92;
+  } while (v1 != 0);
+  return t0;
+}
+
+/* heap_serialize_tag_14 @0x80168d90 (116 insns, 5 args): dst stride
+ * 0x8c, src u32 stream stride 0x14 at src+0, u16 index octet at
+ * src+4..+18 stride 0x14, aux src+18 stride 0x14.
+ * Eight 8-byte lookups alternating arg4/arg3 tables
+ * (-14,-12,-10,-8,-6,-4,-2,0). Tag bytes 8/0x38 at
+ * dst+0x3f/0x43/0x6b/0x6f (a0 = cur+0x18). Returns cur + count*0x8c. */
+uint32_t heap_serialize_tag_14(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+                     uint32_t param_4,uint32_t param_5)
+{
+  uint32_t a0 = param_1;
+  uint32_t a1 = param_2;
+  uint32_t a2 = param_3;
+  uint32_t a3 = param_4;
+  uint32_t t0 = param_1;
+  uint32_t v1 = param_5;
+  uint32_t t1 = param_2;
+  uint32_t v0, t4, t5;
+  if (v1 == 0) return t0;
+  a0 += 24; a1 += 18;
+  do {
+    MW8(a0 + 47, 8);  MW8(a0 + 51, 56);
+    MW8(a0 + 83, 8);  MW8(a0 + 87, 56);
+    MW32(a0 + 8, MB32(t1));
+    t1 += 20;
+    v0 = (uint32_t)MBS16(a1 - 14) << 3; v0 += a3;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(a0 + 12, t4); MW32(a0 + 16, t5);
+    v0 = (uint32_t)MBS16(a1 - 12) << 3; v0 += a2;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(t0 + 0, t4); MW32(t0 + 4, t5);
+    v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(a0 + 20, t4); MW32(a0 + 24, t5);
+    v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(a0 - 16, t4); MW32(a0 - 12, t5);
+    v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a3;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(a0 + 28, t4); MW32(a0 + 32, t5);
+    v0 = (uint32_t)MBS16(a1 - 4) << 3;  v1 -= 1; v0 += a2;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(a0 - 8, t4); MW32(a0 - 4, t5);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3;  t0 += 140; v0 += a3;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(a0 + 36, t4); MW32(a0 + 40, t5);
+    v0 = (uint32_t)MBS16(a1 + 0) << 3;  a1 += 20; v0 += a2;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(a0 + 0, t4); MW32(a0 + 4, t5);
+    a0 += 140;
+  } while (v1 != 0);
+  return t0;
+}
+
+/* heap_serialize_tag_12 @0x80169aa4 (89 insns, 5 args): dst stride
+ * 0x80, src u32 stream stride 0x1c at src+0 plus three u32s at
+ * src+4/+8/+12, u16 index quad at src+16/+18/+20/+22 stride 0x1c,
+ * aux src+24 stride 0x1c. Tag bytes 8/0x38 at dst+0x33/0x37/0x57/0x5b
+ * (a0 = cur+0x18). Returns cur + count*0x80. */
+uint32_t heap_serialize_tag_12(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+                     uint32_t param_4,uint32_t param_5)
+{
+  uint32_t a0 = param_1;
+  uint32_t a1 = param_2;
+  uint32_t a2 = param_3;
+  uint32_t a3 = param_4;
+  uint32_t t0 = param_1;
+  uint32_t v1 = param_5;
+  uint32_t t1 = param_2;
+  uint32_t v0, t4, t5;
+  if (v1 == 0) return t0;
+  a0 += 24; a1 += 24;
+  do {
+    MW8(a0 + 35, 8);  MW8(a0 + 39, 56);
+    MW8(a0 + 71, 8);  MW8(a0 + 75, 56);
+    MW32(a0 + 8,  MB32(t1));
+    MW32(a0 + 12, MB32(a1 - 20));
+    MW32(a0 + 16, MB32(a1 - 16));
+    MW32(a0 + 20, MB32(a1 - 12));
+    t1 += 28;
+    v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a3;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(a0 + 24, t4); MW32(a0 + 28, t5);
+    v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a2;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(t0 + 0, t4); MW32(t0 + 4, t5);
+    v0 = (uint32_t)MBS16(a1 - 4) << 3;  v1 -= 1; v0 += a2;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(a0 - 16, t4); MW32(a0 - 12, t5);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3;  t0 += 128; v0 += a2;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(a0 - 8, t4); MW32(a0 - 4, t5);
+    v0 = (uint32_t)MBS16(a1 + 0) << 3;  a1 += 28; v0 += a2;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(a0 + 0, t4); MW32(a0 + 4, t5);
+    a0 += 128;
+  } while (v1 != 0);
+  return t0;
+}
+
+/* heap_serialize_tag_16 @0x80169c08 (125 insns, 5 args): dst stride
+ * 0x98, src u32 stream stride 0x20 at src+0 plus three u32s at
+ * src+4/+8/+12, u16 index octet at src+16..+30 stride 0x20,
+ * aux src+30 stride 0x20. Eight 8-byte lookups alternating
+ * arg4/arg3 tables (-14..0 step 2). Tag bytes 8/0x38 at
+ * dst+0x3b/0x3f/0x5f/0x63 (a0 = cur+0x18). Returns cur + count*0x98. */
+uint32_t heap_serialize_tag_16(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+                     uint32_t param_4,uint32_t param_5)
+{
+  uint32_t a0 = param_1;
+  uint32_t a1 = param_2;
+  uint32_t a2 = param_3;
+  uint32_t a3 = param_4;
+  uint32_t t0 = param_1;
+  uint32_t v1 = param_5;
+  uint32_t t1 = param_2;
+  uint32_t v0, t4, t5;
+  if (v1 == 0) return t0;
+  a0 += 24; a1 += 30;
+  do {
+    MW8(a0 + 59, 8);  MW8(a0 + 63, 56);
+    MW8(a0 + 95, 8);  MW8(a0 + 99, 56);
+    MW32(a0 + 8,  MB32(t1));
+    MW32(a0 + 12, MB32(a1 - 26));
+    MW32(a0 + 16, MB32(a1 - 22));
+    MW32(a0 + 20, MB32(a1 - 18));
+    t1 += 32;
+    v0 = (uint32_t)MBS16(a1 - 14) << 3; v0 += a3;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(a0 + 24, t4); MW32(a0 + 28, t5);
+    v0 = (uint32_t)MBS16(a1 - 12) << 3; v0 += a2;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(t0 + 0, t4); MW32(t0 + 4, t5);
+    v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(a0 + 32, t4); MW32(a0 + 36, t5);
+    v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(a0 - 16, t4); MW32(a0 - 12, t5);
+    v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a3;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(a0 + 40, t4); MW32(a0 + 44, t5);
+    v0 = (uint32_t)MBS16(a1 - 4) << 3;  v1 -= 1; v0 += a2;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(a0 - 8, t4); MW32(a0 - 4, t5);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3;  t0 += 152; v0 += a3;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(a0 + 48, t4); MW32(a0 + 52, t5);
+    v0 = (uint32_t)MBS16(a1 + 0) << 3;  a1 += 32; v0 += a2;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(a0 + 0, t4); MW32(a0 + 4, t5);
+    a0 += 152;
+  } while (v1 != 0);
+  return t0;
+}
+
+/* heap_serialize_tag_0e @0x8016991c (98 insns, 5 args): dst stride
+ * 0x74, src u32 stream stride 0x18 at src+0 plus two u32s at
+ * src+4/+8, u16 index sextet at src+12..+22 stride 0x18,
+ * aux src+22 stride 0x18. Six 8-byte lookups alternating
+ * arg4/arg3 tables (-10..0 step 2). Tag bytes 6/0x30 at
+ * dst+0x2f/0x33/0x4b/0x4f (a0 = cur+0x10). Returns cur + count*0x74. */
+uint32_t heap_serialize_tag_0e(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+                     uint32_t param_4,uint32_t param_5)
+{
+  uint32_t a0 = param_1;
+  uint32_t a1 = param_2;
+  uint32_t a2 = param_3;
+  uint32_t a3 = param_4;
+  uint32_t t0 = param_1;
+  uint32_t v1 = param_5;
+  uint32_t t1 = param_2;
+  uint32_t v0, t4, t5;
+  if (v1 == 0) return t0;
+  a0 += 16; a1 += 22;
+  do {
+    MW8(a0 + 47, 6);  MW8(a0 + 51, 48);
+    MW8(a0 + 75, 6);  MW8(a0 + 79, 48);
+    MW32(a0 + 8,  MB32(t1));
+    MW32(a0 + 12, MB32(a1 - 18));
+    MW32(a0 + 16, MB32(a1 - 14));
+    t1 += 24;
+    v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(a0 + 20, t4); MW32(a0 + 24, t5);
+    v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(t0 + 0, t4); MW32(t0 + 4, t5);
+    v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a3;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(a0 + 28, t4); MW32(a0 + 32, t5);
+    v0 = (uint32_t)MBS16(a1 - 4) << 3;  v1 -= 1; v0 += a2;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(a0 - 8, t4); MW32(a0 - 4, t5);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3;  t0 += 116; v0 += a3;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(a0 + 36, t4); MW32(a0 + 40, t5);
+    v0 = (uint32_t)MBS16(a1 + 0) << 3;  a1 += 24; v0 += a2;
+    t4 = MB32(v0); t5 = MB32(v0 + 4);
+    MW32(a0 + 0, t4); MW32(a0 + 4, t5);
+    a0 += 116;
+  } while (v1 != 0);
+  return t0;
+}
+
+/* heap_serialize_tag_40048 @0x80169dfc (57 insns, 5 args): dst
+ * stride 0x40, src u32 stream stride 0xc at src+0 (dual-stored to
+ * dst+0xc/+0x20 region), u16 index triple at src+4/+6/+8 stride 0xc,
+ * aux src+8. Three 8-byte lookups all via arg3 table (-4,-2,0);
+ * first lands at the a3 cursor pair, a3 += 0x40 per record.
+ * Tag bytes 4/0x20 at dst+0xb/0xf/0x1f/0x23 (a0 = cur+0x10).
+ * Returns cur + count*0x40. */
+uint32_t heap_serialize_tag_40048(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+                     uint32_t param_4,uint32_t param_5)
+{
+  uint32_t a0 = param_1;
+  uint32_t a1 = param_2;
+  uint32_t a2 = param_3;
+  uint32_t a3 = param_1;
+  uint32_t t0 = param_2;
+  uint32_t v1 = param_5;
+  uint32_t v0, t3, t4;
+  (void)param_4;
+  if (v1 == 0) return a3;
+  a0 += 16; a1 += 8;
+  do {
+    MW8(a0 + 11, 4);  MW8(a0 + 15, 32);
+    MW8(a0 + 31, 4);  MW8(a0 + 35, 32);
+    v0 = MB32(t0); t0 += 12;
+    MW32(a0 + 32, v0); MW32(a0 + 12, v0);
+    v0 = (uint32_t)MBS16(a1 - 4) << 3; v1 -= 1; v0 += a2;
+    t3 = MB32(v0); t4 = MB32(v0 + 4);
+    MW32(a3 + 0, t3); MW32(a3 + 4, t4);
+    a3 += 64;
+    v0 = (uint32_t)MBS16(a1 - 2) << 3; v0 += a2;
+    t3 = MB32(v0); t4 = MB32(v0 + 4);
+    MW32(a0 - 8, t3); MW32(a0 - 4, t4);
+    v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 12; v0 += a2;
+    t3 = MB32(v0); t4 = MB32(v0 + 4);
+    MW32(a0 + 0, t3); MW32(a0 + 4, t4);
+    a0 += 64;
+  } while (v1 != 0);
+  return a3;
+}
+
+/* heap_serialize_tag_4004c @0x80169ee0 (65 insns, 5 args): dst
+ * stride 0x50, src u32 stream stride 0x14 at src+0 plus two u32s at
+ * src+4/+8 (each dual-stored), u16 index triple at src+12/+14/+16
+ * stride 0x14, aux src+16. Three 8-byte lookups via arg3 table
+ * (-4,-2,0); first at a3 pair, a3 += 0x50.
+ * Tag bytes 6/0x30 at dst+0xb/0xf/0x27/0x2b (a0 = cur+0x10).
+ * Returns cur + count*0x50. */
+uint32_t heap_serialize_tag_4004c(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+                     uint32_t param_4,uint32_t param_5)
+{
+  uint32_t a0 = param_1;
+  uint32_t a1 = param_2;
+  uint32_t a2 = param_3;
+  uint32_t a3 = param_1;
+  uint32_t t0 = param_2;
+  uint32_t v1 = param_5;
+  uint32_t v0, t3, t4;
+  (void)param_4;
+  if (v1 == 0) return a3;
+  a0 += 16; a1 += 16;
+  do {
+    MW8(a0 + 11, 6);  MW8(a0 + 15, 48);
+    MW8(a0 + 39, 6);  MW8(a0 + 43, 48);
+    v0 = MB32(t0); MW32(a0 + 40, v0); MW32(a0 + 12, v0);
+    v0 = MB32(a1 - 12); MW32(a0 + 48, v0); MW32(a0 + 20, v0);
+    v0 = MB32(a1 - 8);  t0 += 20;
+    MW32(a0 + 56, v0); MW32(a0 + 28, v0);
+    v0 = (uint32_t)MBS16(a1 - 4) << 3; v1 -= 1; v0 += a2;
+    t3 = MB32(v0); t4 = MB32(v0 + 4);
+    MW32(a3 + 0, t3); MW32(a3 + 4, t4);
+    a3 += 80;
+    v0 = (uint32_t)MBS16(a1 - 2) << 3; v0 += a2;
+    t3 = MB32(v0); t4 = MB32(v0 + 4);
+    MW32(a0 - 8, t3); MW32(a0 - 4, t4);
+    v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 20; v0 += a2;
+    t3 = MB32(v0); t4 = MB32(v0 + 4);
+    MW32(a0 + 0, t3); MW32(a0 + 4, t4);
+    a0 += 80;
+  } while (v1 != 0);
+  return a3;
+}
+
+/* heap_serialize_tag_40050 @0x80169fe4 (69 insns, 5 args): dst
+ * stride 0x50, src u32 stream stride 0xc at src+0 (dual-stored),
+ * u16 index quadruple at src+4/+6/+8/+10 stride 0xc, aux src+10.
+ * Four 8-byte lookups via arg3 table (-6,-4,-2,0); first at a3
+ * pair, a3 += 0x50. Tag bytes 5/0x28 at dst+0xb/0xf/0x23/0x27
+ * (a0 = cur+0x18). Returns cur + count*0x50. */
+uint32_t heap_serialize_tag_40050(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+                     uint32_t param_4,uint32_t param_5)
+{
+  uint32_t a0 = param_1;
+  uint32_t a1 = param_2;
+  uint32_t a2 = param_3;
+  uint32_t a3 = param_1;
+  uint32_t t0 = param_2;
+  uint32_t v1 = param_5;
+  uint32_t v0, t3, t4;
+  (void)param_4;
+  if (v1 == 0) return a3;
+  a0 += 24; a1 += 10;
+  do {
+    MW8(a0 + 11, 5);  MW8(a0 + 15, 40);
+    MW8(a0 + 35, 5);  MW8(a0 + 39, 40);
+    v0 = MB32(t0); t0 += 12;
+    MW32(a0 + 36, v0); MW32(a0 + 12, v0);
+    v0 = (uint32_t)MBS16(a1 - 6) << 3; v0 += a2;
+    t3 = MB32(v0); t4 = MB32(v0 + 4);
+    MW32(a3 + 0, t3); MW32(a3 + 4, t4);
+    v0 = (uint32_t)MBS16(a1 - 4) << 3; v1 -= 1; v0 += a2;
+    t3 = MB32(v0); t4 = MB32(v0 + 4);
+    MW32(a0 - 16, t3); MW32(a0 - 12, t4);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3; a3 += 80; v0 += a2;
+    t3 = MB32(v0); t4 = MB32(v0 + 4);
+    MW32(a0 - 8, t3); MW32(a0 - 4, t4);
+    v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 12; v0 += a2;
+    t3 = MB32(v0); t4 = MB32(v0 + 4);
+    MW32(a0 + 0, t3); MW32(a0 + 4, t4);
+    a0 += 80;
+  } while (v1 != 0);
+  return a3;
+}
+
+/* heap_serialize_tag_40054 @0x8016a0f8 (81 insns, 5 args): dst
+ * stride 0x68, src u32 stream stride 0x18 at src+0 plus three u32s
+ * at src+4/+8/+12 (each dual-stored), u16 index quadruple at
+ * src+16/+18/+20/+22 stride 0x18, aux src+22.
+ * Four 8-byte lookups via arg3 table (-6,-4,-2,0); first at a3
+ * pair, a3 += 0x68. Tag bytes 8/0x38 at dst+0xb/0xf/0x2f/0x33
+ * (a0 = cur+0x18). Returns cur + count*0x68. */
+uint32_t heap_serialize_tag_40054(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+                     uint32_t param_4,uint32_t param_5)
+{
+  uint32_t a0 = param_1;
+  uint32_t a1 = param_2;
+  uint32_t a2 = param_3;
+  uint32_t a3 = param_1;
+  uint32_t t0 = param_2;
+  uint32_t v1 = param_5;
+  uint32_t v0, t3, t4;
+  (void)param_4;
+  if (v1 == 0) return a3;
+  a0 += 24; a1 += 22;
+  do {
+    MW8(a0 + 11, 8);  MW8(a0 + 15, 56);
+    MW8(a0 + 47, 8);  MW8(a0 + 51, 56);
+    v0 = MB32(t0);      MW32(a0 + 48, v0); MW32(a0 + 12, v0);
+    v0 = MB32(a1 - 18); MW32(a0 + 56, v0); MW32(a0 + 20, v0);
+    v0 = MB32(a1 - 14); MW32(a0 + 64, v0); MW32(a0 + 28, v0);
+    v0 = MB32(a1 - 10); t0 += 24;
+    MW32(a0 + 72, v0); MW32(a0 + 36, v0);
+    v0 = (uint32_t)MBS16(a1 - 6) << 3; v0 += a2;
+    t3 = MB32(v0); t4 = MB32(v0 + 4);
+    MW32(a3 + 0, t3); MW32(a3 + 4, t4);
+    v0 = (uint32_t)MBS16(a1 - 4) << 3; v1 -= 1; v0 += a2;
+    t3 = MB32(v0); t4 = MB32(v0 + 4);
+    MW32(a0 - 16, t3); MW32(a0 - 12, t4);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3; a3 += 104; v0 += a2;
+    t3 = MB32(v0); t4 = MB32(v0 + 4);
+    MW32(a0 - 8, t3); MW32(a0 - 4, t4);
+    v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 24; v0 += a2;
+    t3 = MB32(v0); t4 = MB32(v0 + 4);
+    MW32(a0 + 0, t3); MW32(a0 + 4, t4);
+    a0 += 104;
+  } while (v1 != 0);
+  return a3;
+}
+
+/* heap_serialize_tag_40049 @0x8016a23c (82 insns, 7 args): dst
+ * stride 0x58, src u32 stream stride 0x14 at src+0 plus u32s at
+ * src+4/+8 and a u16 at src+12 (all dual-stored), u16 index triple
+ * at src+12/+14/+16 stride 0x14, aux src+18.
+ * Three 8-byte lookups via arg3 table (-4,-2,0); first at the t0
+ * cursor pair, t0 += 0x58. Tail adds arg6 to the two x u16s and
+ * arg7 to the two y u16s (a0-0x18/+8 x, a0-0x20/+0 y).
+ * Tag bytes 7/0x24 at dst+0x1b/0x1f/0x3b/0x3f (a0 = cur+0x46).
+ * Returns cur + count*0x58. */
+uint32_t heap_serialize_tag_40049(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
+                     uint32_t param_7)
+{
+  uint32_t a0 = param_1;
+  uint32_t a1 = param_2;
+  uint32_t a2 = param_3;
+  uint32_t t0 = param_1;
+  uint32_t v1 = param_5;
+  uint32_t t5 = param_6;
+  uint32_t t4 = param_7;
+  uint32_t t1 = param_2;
+  uint32_t v0, v2, t6, t7;
+  (void)param_4;
+  if (v1 == 0) return t0;
+  a0 += 70; a1 += 18;
+  do {
+    MW8(a0 - 43, 7);  MW8(a0 - 39, 36);
+    MW8(a0 - 11, 7);  MW8(a0 - 7, 36);
+    v0 = MB32(t1); MW32(a0 - 42, v0); MW32(a0 - 10, v0);
+    v0 = MB32(a1 - 14); MW32(a0 - 34, v0); MW32(a0 - 2, v0);
+    v0 = MB32(a1 - 10); MW32(a0 - 26, v0); MW32(a0 + 6, v0);
+    v0 = MB16(a1 - 6);  t1 += 20;
+    MW32(a0 - 18, v0); MW32(a0 + 14, v0);
+    v0 = (uint32_t)MBS16(a1 - 4) << 3; v1 -= 1; v0 += a2;
+    t6 = MB32(v0); t7 = MB32(v0 + 4);
+    MW32(t0 + 0, t6); MW32(t0 + 4, t7);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3; t0 += 88; v0 += a2;
+    t6 = MB32(v0); t7 = MB32(v0 + 4);
+    MW32(a0 - 62, t6); MW32(a0 - 58, t7);
+    v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 20; v0 += a2;
+    t6 = MB32(v0); t7 = MB32(v0 + 4);
+    MW32(a0 - 54, t6); MW32(a0 - 50, t7);
+    v0 = MB16(a0 - 24); v2 = MB16(a0 - 32);
+    v0 += t5; MW16(a0 - 24, v0);
+    v0 = MB16(a0 + 8);  v2 += t4; MW16(a0 - 32, v2);
+    v2 = MB16(a0 + 0);
+    v0 += t5; v2 += t4;
+    MW16(a0 + 8, v0);  MW16(a0 + 0, v2);
+    a0 += 88;
+  } while (v1 != 0);
+  return t0;
+}
+
+/* heap_serialize_tag_4004d @0x8016a50c (90 insns, 7 args): dst
+ * stride 0x68, src u32 stream stride 0x1c at src+0 plus four u32s
+ * at src+4..+16 and a u16 at src+20 (all dual-stored), u16 index
+ * triple at src+22/+24/+26 stride 0x1c, aux src+26.
+ * Three 8-byte lookups via arg3 table (-4,-2,0); first at the t0
+ * cursor pair, t0 += 0x68. Tail adds arg6/arg7 to the coord u16s
+ * (a0-0x1c/+0xc x, a0-0x28/+0 y). Tag bytes 9/0x34 at
+ * dst+0x1b/0x1f/0x43/0x47 (a0 = cur+0x4e). Returns cur + count*0x68. */
+uint32_t heap_serialize_tag_4004d(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
+                     uint32_t param_7)
+{
+  uint32_t a0 = param_1;
+  uint32_t a1 = param_2;
+  uint32_t a2 = param_3;
+  uint32_t t0 = param_1;
+  uint32_t v1 = param_5;
+  uint32_t t5 = param_6;
+  uint32_t t4 = param_7;
+  uint32_t t1 = param_2;
+  uint32_t v0, v2, t6, t7;
+  (void)param_4;
+  if (v1 == 0) return t0;
+  a0 += 78; a1 += 26;
+  do {
+    MW8(a0 - 51, 9);  MW8(a0 - 47, 52);
+    MW8(a0 - 11, 9);  MW8(a0 - 7, 52);
+    v0 = MB32(t1);      MW32(a0 - 50, v0); MW32(a0 - 10, v0);
+    v0 = MB32(a1 - 22); MW32(a0 - 38, v0); MW32(a0 + 2, v0);
+    v0 = MB32(a1 - 18); MW32(a0 - 26, v0); MW32(a0 + 14, v0);
+    v0 = MB32(a1 - 14); MW32(a0 - 42, v0); MW32(a0 - 2, v0);
+    v0 = MB32(a1 - 10); MW32(a0 - 30, v0); MW32(a0 + 10, v0);
+    v0 = MB16(a1 - 6);  t1 += 28;
+    MW32(a0 - 18, v0); MW32(a0 + 22, v0);
+    v0 = (uint32_t)MBS16(a1 - 4) << 3; v1 -= 1; v0 += a2;
+    t6 = MB32(v0); t7 = MB32(v0 + 4);
+    MW32(t0 + 0, t6); MW32(t0 + 4, t7);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3; t0 += 104; v0 += a2;
+    t6 = MB32(v0); t7 = MB32(v0 + 4);
+    MW32(a0 - 70, t6); MW32(a0 - 66, t7);
+    v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 28; v0 += a2;
+    t6 = MB32(v0); t7 = MB32(v0 + 4);
+    MW32(a0 - 62, t6); MW32(a0 - 58, t7);
+    v0 = MB16(a0 - 28); v2 = MB16(a0 - 40);
+    v0 += t5; v2 += t4;
+    MW16(a0 - 28, v0); MW16(a0 - 40, v2);
+    v0 = MB16(a0 + 12); v2 = MB16(a0 + 0);
+    v0 += t5; v2 += t4;
+    MW16(a0 + 12, v0); MW16(a0 + 0, v2);
+    a0 += 104;
+  } while (v1 != 0);
+  return t0;
+}
+
+/* heap_serialize_tag_40051 @0x8016a384 (98 insns, 7 args): dst
+ * stride 0x70, src u32 stream stride 0x18 at src+0 plus three u32s
+ * at src+4/+8/+12 and two u16s at src+16/+20 (all dual-stored),
+ * u16 index quadruple at src+14..+22 stride 0x18, aux src+22.
+ * Four 8-byte lookups via arg3 table (-8,-4,-2,0); first at the
+ * t0 cursor pair, t0 += 0x70. Tail adds arg6/arg7 to coord u16s
+ * (a0-0x20/+8 x, a0-0x28/+0 y). Tag bytes 9/0x2c at
+ * dst+0x1b/0x1f/0x43/0x47 (a0 = cur+0x56). Returns cur + count*0x70. */
+uint32_t heap_serialize_tag_40051(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
+                     uint32_t param_7)
+{
+  uint32_t a0 = param_1;
+  uint32_t a1 = param_2;
+  uint32_t a2 = param_3;
+  uint32_t t0 = param_1;
+  uint32_t v1 = param_5;
+  uint32_t t5 = param_6;
+  uint32_t t4 = param_7;
+  uint32_t t1 = param_2;
+  uint32_t v0, v2, t6, t7;
+  (void)param_4;
+  if (v1 == 0) return t0;
+  a0 += 86; a1 += 22;
+  do {
+    MW8(a0 - 51, 9);  MW8(a0 - 47, 44);
+    MW8(a0 - 11, 9);  MW8(a0 - 7, 44);
+    v0 = MB32(t1);      MW32(a0 - 50, v0); MW32(a0 - 10, v0);
+    v0 = MB32(a1 - 18); MW32(a0 - 42, v0); MW32(a0 - 2, v0);
+    v0 = MB32(a1 - 14); MW32(a0 - 34, v0); MW32(a0 + 6, v0);
+    v0 = MB16(a1 - 10); MW32(a0 - 26, v0); MW32(a0 + 14, v0);
+    v0 = MB16(a1 - 6);  t1 += 24;
+    MW32(a0 - 18, v0); MW32(a0 + 22, v0);
+    v0 = (uint32_t)MBS16(a1 - 8) << 3; v0 += a2;
+    t6 = MB32(v0); t7 = MB32(v0 + 4);
+    MW32(t0 + 0, t6); MW32(t0 + 4, t7);
+    v0 = (uint32_t)MBS16(a1 - 4) << 3; v1 -= 1; v0 += a2;
+    t6 = MB32(v0); t7 = MB32(v0 + 4);
+    MW32(a0 - 78, t6); MW32(a0 - 74, t7);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3; t0 += 112; v0 += a2;
+    t6 = MB32(v0); t7 = MB32(v0 + 4);
+    MW32(a0 - 70, t6); MW32(a0 - 66, t7);
+    v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 24; v0 += a2;
+    t6 = MB32(v0); t7 = MB32(v0 + 4);
+    MW32(a0 - 62, t6); MW32(a0 - 58, t7);
+    v0 = MB16(a0 - 32); v2 = MB16(a0 - 40);
+    v0 += t5; v2 += t4;
+    MW16(a0 - 32, v0); MW16(a0 - 40, v2);
+    v0 = MB16(a0 + 8);  v2 = MB16(a0 + 0);
+    v0 += t5; v2 += t4;
+    MW16(a0 + 8, v0);   MW16(a0 + 0, v2);
+    a0 += 112;
+  } while (v1 != 0);
+  return t0;
+}
+
+/* heap_serialize_tag_40055 @0x8016a674 (110 insns, 7 args): dst
+ * stride 0x88, src u32 stream stride 0x24 at src+0 plus five u32s
+ * at src+4..+20 and two u16s at src+24/+28 (all dual-stored),
+ * u16 index quadruple at src+26..+34 stride 0x24, aux src+34.
+ * Four 8-byte lookups via arg3 table (-8,-4,-2,0); first at the
+ * t0 cursor pair, t0 += 0x88. Tail adds arg6 to the two x u16s
+ * (a0-0x28/+0xc) and arg7 to the two y u16s (a0-0x34/+0).
+ * Tag bytes 12/0x3c at dst+0x1b/0x1f/0x57/0x5b (a0 = cur+0x62).
+ * Returns cur + count*0x88. */
+uint32_t heap_serialize_tag_40055(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
+                     uint32_t param_7)
+{
+  uint32_t a0 = param_1;
+  uint32_t a1 = param_2;
+  uint32_t a2 = param_3;
+  uint32_t t0 = param_1;
+  uint32_t v1 = param_5;
+  uint32_t t5 = param_6;
+  uint32_t t4 = param_7;
+  uint32_t t1 = param_2;
+  uint32_t v0, v2, t6, t7;
+  (void)param_4;
+  if (v1 == 0) return t0;
+  a0 += 98; a1 += 34;
+  do {
+    MW8(a0 - 63, 12);  MW8(a0 - 59, 60);
+    MW8(a0 - 11, 12);  MW8(a0 - 7, 60);
+    v0 = MB32(t1);      MW32(a0 - 62, v0); MW32(a0 - 10, v0);
+    v0 = MB32(a1 - 30); MW32(a0 - 50, v0); MW32(a0 + 2, v0);
+    v0 = MB32(a1 - 26); MW32(a0 - 38, v0); MW32(a0 + 14, v0);
+    v0 = MB32(a1 - 22); MW32(a0 - 26, v0); MW32(a0 + 26, v0);
+    v0 = MB32(a1 - 18); MW32(a0 - 54, v0); MW32(a0 - 2, v0);
+    v0 = MB32(a1 - 14); MW32(a0 - 42, v0); MW32(a0 + 10, v0);
+    v0 = MB16(a1 - 10); MW32(a0 - 30, v0); MW32(a0 + 22, v0);
+    v0 = MB16(a1 - 6);  t1 += 36;
+    MW32(a0 - 18, v0); MW32(a0 + 34, v0);
+    v0 = (uint32_t)MBS16(a1 - 8) << 3; v0 += a2;
+    t6 = MB32(v0); t7 = MB32(v0 + 4);
+    MW32(t0 + 0, t6); MW32(t0 + 4, t7);
+    v0 = (uint32_t)MBS16(a1 - 4) << 3; v1 -= 1; v0 += a2;
+    t6 = MB32(v0); t7 = MB32(v0 + 4);
+    MW32(a0 - 90, t6); MW32(a0 - 86, t7);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3; t0 += 136; v0 += a2;
+    t6 = MB32(v0); t7 = MB32(v0 + 4);
+    MW32(a0 - 82, t6); MW32(a0 - 78, t7);
+    v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 36; v0 += a2;
+    t6 = MB32(v0); t7 = MB32(v0 + 4);
+    MW32(a0 - 74, t6); MW32(a0 - 70, t7);
+    v0 = MB16(a0 - 40); v2 = MB16(a0 - 52);
+    v0 += t5; MW16(a0 - 40, v0);
+    v0 = MB16(a0 + 12); v2 += t4; MW16(a0 - 52, v2);
+    v2 = MB16(a0 + 0);
+    v0 += t5; v2 += t4;
+    MW16(a0 + 12, v0); MW16(a0 + 0, v2);
+    a0 += 136;
+  } while (v1 != 0);
+  return t0;
+}
+
+/* heap_serialize_tag_01000008 @0x8016a8ec (48 insns, 5 args): dst
+ * stride 0x3c, src u32 stream stride 0xc at src+0, u16 index quad
+ * at src+4/+6/+8/+10 stride 0xc, aux src+10.
+ * Four single-word lookups: lh idx<<3 +table -> lw -> sw
+ * (arg4 table for -6, arg3 table for -4/-2/0). Tag bytes 4/0x20 at
+ * dst+0xf/0x13/0x23/0x27 (a0 = cur+8). Returns cur + count*0x3c. */
+uint32_t heap_serialize_tag_01000008(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+                     uint32_t param_4,uint32_t param_5)
+{
+  uint32_t a0 = param_1;
+  uint32_t a1 = param_2;
+  uint32_t a2 = param_3;
+  uint32_t a3 = param_4;
+  uint32_t t0 = param_1;
+  uint32_t t1 = param_2;
+  uint32_t v1 = param_5;
+  uint32_t v0;
+  if (v1 == 0) return t0;
+  a0 += 8; a1 += 10;
+  do {
+    MW8(a0 + 15, 4);  MW8(a0 + 19, 32);
+    MW8(a0 + 35, 4);  MW8(a0 + 39, 32);
+    MW32(a0 + 4, MB32(t1));
+    v0 = (uint32_t)MBS16(a1 - 6) << 3; v0 += a3;
+    MW32(a0 + 8, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 4) << 3; v0 += a2;
+    MW32(t0 + 0, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 2) << 3; t1 += 12; v0 += a2;
+    v1 -= 1;
+    MW32(a0 - 4, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 + 0) << 3; t0 += 60; a1 += 12; v0 += a2;
+    MW32(a0 + 0, MB32(v0));
+    a0 += 60;
+  } while (v1 != 0);
+  return t0;
+}
+
+/* heap_serialize_tag_0100000c @0x8016a9ac (62 insns, 5 args): dst
+ * stride 0x54, src u32 stream stride 0x10 at src+0, u16 index
+ * quint at src+4..+12 stride 0x10, aux src+14. Six single-word
+ * lookups alternating arg4/arg3 tables (-10,-8,-6,-4,-2,0).
+ * Tag bytes 6/0x30 stamped at loop tail at dst+0x1f/0x23/0x3b/0x3f
+ * (a0 = cur+0x3f). Returns cur + count*0x54. */
+uint32_t heap_serialize_tag_0100000c(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+                     uint32_t param_4,uint32_t param_5)
+{
+  uint32_t a0 = param_1;
+  uint32_t a1 = param_2;
+  uint32_t a2 = param_3;
+  uint32_t a3 = param_4;
+  uint32_t t0 = param_1;
+  uint32_t t1 = param_2;
+  uint32_t v1 = param_5;
+  uint32_t v0;
+  if (v1 == 0) return t0;
+  a0 += 63; a1 += 14;
+  do {
+    MW32(a0 - 51, MB32(t1));
+    v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
+    MW32(a0 - 47, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
+    MW32(t0 + 0, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a3;
+    MW32(a0 - 43, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 4) << 3;  v0 += a2;
+    MW32(a0 - 59, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 2) << 3;  t1 += 16; v0 += a3;
+    v1 -= 1;
+    MW32(a0 - 39, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 + 0) << 3;  t0 += 84; a1 += 16; v0 += a2;
+    MW32(a0 - 55, MB32(v0));
+    MW8(a0 - 32, 6);  MW8(a0 - 28, 48);
+    MW8(a0 - 4, 6);   MW8(a0 + 0, 48);
+    a0 += 84;
+  } while (v1 != 0);
+  return t0;
+}
+
+/* heap_serialize_tag_0100000a @0x8016ad04 (54 insns, 5 args): dst
+ * stride 0x54, src u32 stream stride 0x14 at src+0 plus two u32s
+ * at src+4/+8, u16 index quad at src+12/+14/+16/+18 stride 0x14,
+ * aux src+18. Four single-word lookups (arg4 for -6, arg3 for
+ * -4/-2/0). Tag bytes 6/0x30 at dst+0x1f/0x23/0x37/0x3b
+ * (a0 = cur+8). Returns cur + count*0x54. */
+uint32_t heap_serialize_tag_0100000a(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+                     uint32_t param_4,uint32_t param_5)
+{
+  uint32_t a0 = param_1;
+  uint32_t a1 = param_2;
+  uint32_t a2 = param_3;
+  uint32_t a3 = param_4;
+  uint32_t t0 = param_1;
+  uint32_t t1 = param_2;
+  uint32_t v1 = param_5;
+  uint32_t v0;
+  if (v1 == 0) return t0;
+  a0 += 8; a1 += 18;
+  do {
+    MW8(a0 + 23, 6);  MW8(a0 + 27, 48);
+    MW8(a0 + 51, 6);  MW8(a0 + 55, 48);
+    MW32(a0 + 4, MB32(t1));
+    MW32(a0 + 8,  MB32(a1 - 14));
+    MW32(a0 + 12, MB32(a1 - 10));
+    v0 = (uint32_t)MBS16(a1 - 6) << 3; v0 += a3;
+    MW32(a0 + 16, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 4) << 3; v0 += a2;
+    MW32(t0 + 0, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 2) << 3; t1 += 20; v0 += a2;
+    v1 -= 1;
+    MW32(a0 - 4, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 + 0) << 3; t0 += 84; a1 += 20; v0 += a2;
+    MW32(a0 + 0, MB32(v0));
+    a0 += 84;
+  } while (v1 != 0);
+  return t0;
+}
+
+/* heap_serialize_tag_0100000e @0x8016addc (68 insns, 5 args): dst
+ * stride 0x5c, src u32 stream stride 0x18 at src+0 plus two u32s
+ * at src+4/+8, u16 index sextet at src+12..+22 stride 0x18,
+ * aux src+22. Six single-word lookups alternating arg4/arg3
+ * tables (-10,-8,-6,-4,-2,0). Tag bytes 6/0x30 at
+ * dst+0x1f/0x23/0x3b/0x3f (a0 = cur+8). Returns cur + count*0x5c. */
+uint32_t heap_serialize_tag_0100000e(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+                     uint32_t param_4,uint32_t param_5)
+{
+  uint32_t a0 = param_1;
+  uint32_t a1 = param_2;
+  uint32_t a2 = param_3;
+  uint32_t a3 = param_4;
+  uint32_t t0 = param_1;
+  uint32_t t1 = param_2;
+  uint32_t v1 = param_5;
+  uint32_t v0;
+  if (v1 == 0) return t0;
+  a0 += 8; a1 += 22;
+  do {
+    MW8(a0 + 31, 6);  MW8(a0 + 35, 48);
+    MW8(a0 + 59, 6);  MW8(a0 + 63, 48);
+    MW32(a0 + 4,  MB32(t1));
+    MW32(a0 + 8,  MB32(a1 - 18));
+    MW32(a0 + 12, MB32(a1 - 14));
+    v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
+    MW32(a0 + 16, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
+    MW32(t0 + 0, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a3;
+    MW32(a0 + 20, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 4) << 3;  v0 += a2;
+    MW32(a0 - 4, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 2) << 3;  t1 += 24; v0 += a3;
+    v1 -= 1;
+    MW32(a0 + 24, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 + 0) << 3;  t0 += 92; a1 += 24; v0 += a2;
+    MW32(a0 + 0, MB32(v0));
+    a0 += 92;
+  } while (v1 != 0);
+  return t0;
+}
+
+/* heap_serialize_tag_01000010 @0x8016aeec (55 insns, 5 args): dst
+ * stride 0x48, src u32 stream stride 0x10 at src+0, u16 index
+ * quint at src+4..+12 stride 0x10, aux src+12.
+ * Five single-word lookups (arg4 for -8, arg3 for -6/-4/-2/0).
+ * Tag bytes 5/0x28 at dst+0xf/0x13/0x27/0x2b (a0 = cur+0xc).
+ * Returns cur + count*0x48. */
+uint32_t heap_serialize_tag_01000010(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+                     uint32_t param_4,uint32_t param_5)
+{
+  uint32_t a0 = param_1;
+  uint32_t a1 = param_2;
+  uint32_t a2 = param_3;
+  uint32_t a3 = param_4;
+  uint32_t t0 = param_1;
+  uint32_t t1 = param_2;
+  uint32_t v1 = param_5;
+  uint32_t v0;
+  if (v1 == 0) return t0;
+  a0 += 12; a1 += 12;
+  do {
+    MW8(a0 + 15, 5);  MW8(a0 + 19, 40);
+    MW8(a0 + 39, 5);  MW8(a0 + 43, 40);
+    MW32(a0 + 4, MB32(t1));
+    v0 = (uint32_t)MBS16(a1 - 8) << 3; v0 += a3;
+    MW32(a0 + 8, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 6) << 3; v0 += a2;
+    MW32(t0 + 0, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 4) << 3; v0 += a2;
+    MW32(a0 - 8, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 2) << 3; t1 += 16; v0 += a2;
+    v1 -= 1;
+    MW32(a0 - 4, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 + 0) << 3; t0 += 72; a1 += 16; v0 += a2;
+    MW32(a0 + 0, MB32(v0));
+    a0 += 72;
+  } while (v1 != 0);
+  return t0;
+}
+
+/* heap_serialize_tag_01000014 @0x8016afc8 (76 insns, 5 args): dst
+ * stride 0x6c, src u32 stream stride 0x14 at src+0, u16 index
+ * octet at src+4..+18 stride 0x14, aux src+18.
+ * Eight single-word lookups alternating arg4/arg3 tables
+ * (-14..0 step 2). Tag bytes 8/0x38 at dst+0x1b/0x1f/0x3f/0x43
+ * (a0 = cur+0xc). Returns cur + count*0x6c. */
+uint32_t heap_serialize_tag_01000014(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+                     uint32_t param_4,uint32_t param_5)
+{
+  uint32_t a0 = param_1;
+  uint32_t a1 = param_2;
+  uint32_t a2 = param_3;
+  uint32_t a3 = param_4;
+  uint32_t t0 = param_1;
+  uint32_t t1 = param_2;
+  uint32_t v1 = param_5;
+  uint32_t v0;
+  if (v1 == 0) return t0;
+  a0 += 12; a1 += 18;
+  do {
+    MW8(a0 + 27, 8);  MW8(a0 + 31, 56);
+    MW8(a0 + 63, 8);  MW8(a0 + 67, 56);
+    MW32(a0 + 4, MB32(t1));
+    v0 = (uint32_t)MBS16(a1 - 14) << 3; v0 += a3;
+    MW32(a0 + 8, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 12) << 3; v0 += a2;
+    MW32(t0 + 0, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
+    MW32(a0 + 12, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
+    MW32(a0 - 8, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a3;
+    MW32(a0 + 16, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 4) << 3;  v0 += a2;
+    MW32(a0 - 4, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 2) << 3;  t1 += 20; v0 += a3;
+    v1 -= 1;
+    MW32(a0 + 20, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 + 0) << 3;  t0 += 108; a1 += 20; v0 += a2;
+    MW32(a0 + 0, MB32(v0));
+    a0 += 108;
+  } while (v1 != 0);
+  return t0;
+}
+
+/* heap_serialize_tag_01000012 @0x8016b3c4 (64 insns, 5 args): dst
+ * stride 0x6c, src u32 stream stride 0x1c at src+0 plus three u32s
+ * at src+4/+8/+12, u16 index quad at src+16/+18/+20/+22 stride
+ * 0x1c, aux src+24. Five single-word lookups (arg4 for -8, arg3
+ * for -6/-4/-2/0). Tag bytes 8/0x38 at dst+0x1b/0x1f/0x3f/0x43
+ * (a0 = cur+0xc). Returns cur + count*0x6c. */
+uint32_t heap_serialize_tag_01000012(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+                     uint32_t param_4,uint32_t param_5)
+{
+  uint32_t a0 = param_1;
+  uint32_t a1 = param_2;
+  uint32_t a2 = param_3;
+  uint32_t a3 = param_4;
+  uint32_t t0 = param_1;
+  uint32_t t1 = param_2;
+  uint32_t v1 = param_5;
+  uint32_t v0;
+  if (v1 == 0) return t0;
+  a0 += 12; a1 += 24;
+  do {
+    MW8(a0 + 27, 8);  MW8(a0 + 31, 56);
+    MW8(a0 + 63, 8);  MW8(a0 + 67, 56);
+    MW32(a0 + 4,  MB32(t1));
+    MW32(a0 + 8,  MB32(a1 - 20));
+    MW32(a0 + 12, MB32(a1 - 16));
+    MW32(a0 + 16, MB32(a1 - 12));
+    v0 = (uint32_t)MBS16(a1 - 8) << 3; v0 += a3;
+    MW32(a0 + 20, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 6) << 3; v0 += a2;
+    MW32(t0 + 0, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 4) << 3; v0 += a2;
+    MW32(a0 - 8, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 2) << 3; t1 += 28; v0 += a2;
+    v1 -= 1;
+    MW32(a0 - 4, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 + 0) << 3; t0 += 108; a1 += 28; v0 += a2;
+    MW32(a0 + 0, MB32(v0));
+    a0 += 108;
+  } while (v1 != 0);
+  return t0;
+}
+
+/* heap_serialize_tag_01000016 @0x8016b4c4 (85 insns, 5 args): dst
+ * stride 0x78, src u32 stream stride 0x20 at src+0 plus three u32s
+ * at src+4/+8/+12, u16 index octet at src+16..+30 stride 0x20,
+ * aux src+30. Eight single-word lookups alternating arg4/arg3
+ * tables (-14..0 step 2). Tag bytes 8/0x38 at dst+0x27/0x2b/0x4b/0x4f
+ * (a0 = cur+0xc). Returns cur + count*0x78. */
+uint32_t heap_serialize_tag_01000016(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+                     uint32_t param_4,uint32_t param_5)
+{
+  uint32_t a0 = param_1;
+  uint32_t a1 = param_2;
+  uint32_t a2 = param_3;
+  uint32_t a3 = param_4;
+  uint32_t t0 = param_1;
+  uint32_t t1 = param_2;
+  uint32_t v1 = param_5;
+  uint32_t v0;
+  if (v1 == 0) return t0;
+  a0 += 12; a1 += 30;
+  do {
+    MW8(a0 + 39, 8);  MW8(a0 + 43, 56);
+    MW8(a0 + 75, 8);  MW8(a0 + 79, 56);
+    MW32(a0 + 4,  MB32(t1));
+    MW32(a0 + 8,  MB32(a1 - 26));
+    MW32(a0 + 12, MB32(a1 - 22));
+    MW32(a0 + 16, MB32(a1 - 18));
+    v0 = (uint32_t)MBS16(a1 - 14) << 3; v0 += a3;
+    MW32(a0 + 20, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 12) << 3; v0 += a2;
+    MW32(t0 + 0, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
+    MW32(a0 + 24, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
+    MW32(a0 - 8, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a3;
+    MW32(a0 + 28, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 4) << 3;  v0 += a2;
+    MW32(a0 - 4, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 2) << 3;  t1 += 32; v0 += a3;
+    v1 -= 1;
+    MW32(a0 + 32, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 + 0) << 3;  t0 += 120; a1 += 32; v0 += a2;
+    MW32(a0 + 0, MB32(v0));
+    a0 += 120;
+  } while (v1 != 0);
+  return t0;
+}
+
+/* heap_serialize_tag_01000009 @0x8016aaa4 (68 insns, 7 args): dst
+ * stride 0x50, src u32 stream stride 0x14 at src+0 plus u32s at
+ * src+4/+8 (all dual-stored), u16 index quad at src+12..+18
+ * stride 0x14, aux src+18. Four single-word lookups (arg4 for -6,
+ * arg3 for -4/-2/0). Tail adds param_6 to x u16s (t0-0x18/+8) and
+ * param_7 to y u16s (t0-0x20/+0). Tag bytes 7/0x24 at
+ * dst+0x13/0x17/0x33/0x37 (t0 = cur+0x3e). Returns cur + count*0x50. */
+uint32_t heap_serialize_tag_01000009(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
+                     uint32_t param_7)
+{
+  uint32_t a0 = param_1;
+  uint32_t a1 = param_2;
+  uint32_t a2 = param_3;
+  uint32_t a3 = param_4;
+  uint32_t t2 = param_1;
+  uint32_t t3 = param_2;
+  uint32_t v1 = param_5;
+  uint32_t t7 = param_6;
+  uint32_t t6 = param_7;
+  uint32_t t0 = param_1 + 62;
+  uint32_t v0;
+  if (v1 == 0) return t2;
+  a1 += 18;
+  do {
+    MW8(t0 - 43, 7);  MW8(t0 - 39, 36);
+    MW8(t0 - 11, 7);  MW8(t0 - 7, 36);
+    v0 = MB32(t3); MW32(t0 - 34, v0); MW32(t0 - 2, v0);
+    v0 = MB32(a1 - 14); MW32(t0 - 26, v0); MW32(t0 + 6, v0);
+    v0 = MB32(a1 - 10); t3 += 20;
+    MW32(t0 - 18, v0); MW32(t0 + 14, v0);
+    v0 = (uint32_t)MBS16(a1 - 6) << 3; v0 += a3;
+    MW32(t0 - 50, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 4) << 3; v0 += a2;
+    MW32(t2 + 0, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 2) << 3; v0 += a2;
+    v1 -= 1;
+    t2 += 80;
+    MW32(t0 - 58, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 20; v0 += a2;
+    a0 = MB32(v0);
+    MW32(t0 - 54, a0);
+    { uint32_t c0 = MB16(t0 - 32), c1 = MB16(t0 - 24);
+      c0 += t6; MW16(t0 - 32, c0);
+      c1 += t7; MW16(t0 - 24, c1);
+      c0 = MB16(t0 + 0);  c1 = MB16(t0 + 8);
+      c0 += t6; c1 += t7;
+      MW16(t0 + 0, c0);   MW16(t0 + 8, c1); }
+    t0 += 80;
+  } while (v1 != 0);
+  return t2;
+}
+
+/* heap_serialize_tag_0100000d @0x8016abb4 (84 insns, 7 args): dst
+ * stride 0x68, src u32 stream stride 0x18 at src+0 plus u32s at
+ * src+4/+8 (all dual-stored), u16 index sextet at src+12..+22
+ * stride 0x18 (positive lh offsets), aux src+8/+32.
+ * Six single-word lookups alternating arg4/arg3 tables
+ * (+4,+6,+8,+10,+12,+14). Tail adds param_6 to x u16s (a0-0x1c/+0xc)
+ * and param_7 to y u16s (a0-0x28/+0). Tag bytes 9/0x34 at
+ * dst+0x1b/0x1f/0x43/0x47 (a0 = cur+0x4e). Returns cur + count*0x68. */
+uint32_t heap_serialize_tag_0100000d(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
+                     uint32_t param_7)
+{
+  uint32_t a0 = param_1;
+  uint32_t a1 = param_2;
+  uint32_t a2 = param_3;
+  uint32_t a3 = param_4;
+  uint32_t t1 = param_1;
+  uint32_t t2 = param_2;
+  uint32_t t0 = param_5;
+  uint32_t t6 = param_6;
+  uint32_t t5 = param_7;
+  uint32_t v0, v1;
+  if (t0 == 0) return t1;
+  a0 += 78; a1 += 8;
+  do {
+    v0 = (uint32_t)MBS16(a1 + 4) << 3;  v0 += a3;
+    MW32(a0 - 66, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 + 6) << 3;  v0 += a2;
+    MW32(t1 + 0, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 + 8) << 3;  v0 += a3;
+    MW32(a0 - 62, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 + 10) << 3; v0 += a2;
+    MW32(a0 - 74, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 + 12) << 3; v0 += a3;
+    MW32(a0 - 58, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 + 14) << 3; v0 += a2;
+    t0 -= 1;
+    MW32(a0 - 70, MB32(v0));
+    v0 = MB32(t2); t1 += 104; t2 += 24;
+    MW32(a0 - 42, v0); MW32(a0 - 2, v0);
+    v0 = MB32(a1 - 4); v1 = MB16(a0 - 40);
+    MW32(a0 - 30, v0); MW32(a0 + 10, v0);
+    v0 = MB32(a1 + 0); a1 += 24;
+    MW32(a0 - 18, v0); MW32(a0 + 22, v0);
+    v0 = MB16(a0 - 28); v0 += t6; MW16(a0 - 28, v0);
+    v1 += t5; MW16(a0 - 40, v1);
+    v0 = MB16(a0 + 12); v1 = MB16(a0 + 0);
+    v0 += t6; v1 += t5;
+    MW16(a0 + 12, v0); MW16(a0 + 0, v1);
+    MW8(a0 - 51, 9);  MW8(a0 - 47, 52);
+    MW8(a0 - 11, 9);  MW8(a0 - 7, 52);
+    a0 += 104;
+  } while (t0 != 0);
+  return t1;
+}
+
+/* heap_serialize_tag_01000011 @0x8016b0f8 (79 insns, 7 args): dst
+ * stride 0x64, src u32 stream stride 0x18 at src+0 plus three u32s
+ * at src+4/+8/+12 (all dual-stored), u16 index quintet at
+ * src+14..+22 stride 0x18, aux src+22.
+ * Five single-word lookups (arg4 for -8, arg3 for -6/-4/-2/0).
+ * Tail adds param_6 to x u16s (t0-0x20/+8) and param_7 to y u16s
+ * (t0-0x28/+0). Tag bytes 9/0x2c at dst+0x1b/0x1f/0x43/0x47
+ * (t0 = cur+0x4a). Returns cur + count*0x64. */
+uint32_t heap_serialize_tag_01000011(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
+                     uint32_t param_7)
+{
+  uint32_t a1 = param_2;
+  uint32_t a2 = param_3;
+  uint32_t a3 = param_4;
+  uint32_t t2 = param_1;
+  uint32_t t3 = param_2;
+  uint32_t t1 = param_5;
+  uint32_t t7 = param_6;
+  uint32_t t6 = param_7;
+  uint32_t t0 = param_1 + 74;
+  uint32_t v0;
+  if (t1 == 0) return t2;
+  a1 += 22;
+  do {
+    MW8(t0 - 51, 9);  MW8(t0 - 47, 44);
+    MW8(t0 - 11, 9);  MW8(t0 - 7, 44);
+    v0 = MB32(t3); MW32(t0 - 42, v0); MW32(t0 - 2, v0);
+    v0 = MB32(a1 - 18); MW32(t0 - 34, v0); MW32(t0 + 6, v0);
+    v0 = MB32(a1 - 14); MW32(t0 - 26, v0); MW32(t0 + 14, v0);
+    v0 = MB32(a1 - 10); t3 += 24;
+    MW32(t0 - 18, v0); MW32(t0 + 22, v0);
+    v0 = (uint32_t)MBS16(a1 - 8) << 3; v0 += a3;
+    MW32(t0 - 58, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 6) << 3; v0 += a2;
+    MW32(t2 + 0, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 4) << 3; v0 += a2;
+    t1 -= 1;
+    MW32(t0 - 70, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 2) << 3; v0 += a2;
+    t2 += 100;
+    MW32(t0 - 66, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 24; v0 += a2;
+    { uint32_t r = MB32(v0);
+      { uint32_t c0 = MB16(t0 - 40), c1 = MB16(t0 - 32);
+        c1 += t7; MW16(t0 - 32, c1);
+        MW32(t0 - 62, r);
+        c0 += t6; MW16(t0 - 40, c0);
+        c0 = MB16(t0 + 8);  c1 = MB16(t0 + 0);
+        c0 += t7; c1 += t6;
+        MW16(t0 + 8, c0);   MW16(t0 + 0, c1); } }
+    t0 += 100;
+  } while (t1 != 0);
+  return t2;
+}
+
+/* heap_serialize_tag_01000015 @0x8016b234 (100 insns, 7 args): dst
+ * stride 0x88, src u32 stream stride 0x1c at src+0 plus three u32s
+ * at src+4/+8/+12 (all dual-stored), u16 index octet at
+ * src+12..+26 stride 0x1c, aux src+26.
+ * Eight single-word lookups alternating arg4/arg3 tables
+ * (-16..0 step 2). Tail adds param_6 to x u16s (t0-0x28/+0xc) and
+ * param_7 to y u16s (t0-0x34/+0). Tag bytes 12/0x3c at
+ * dst+0x1b/0x1f/0x57/0x5b (t0 = cur+0x62). Returns cur + count*0x88. */
+uint32_t heap_serialize_tag_01000015(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
+                     uint32_t param_7)
+{
+  uint32_t a1 = param_2;
+  uint32_t a2 = param_3;
+  uint32_t a3 = param_4;
+  uint32_t t2 = param_1;
+  uint32_t t3 = param_2;
+  uint32_t t1 = param_5;
+  uint32_t t7 = param_6;
+  uint32_t t6 = param_7;
+  uint32_t t0 = param_1 + 98;
+  uint32_t v0;
+  if (t1 == 0) return t2;
+  a1 += 26;
+  do {
+    MW8(t0 - 63, 12);  MW8(t0 - 59, 60);
+    MW8(t0 - 11, 12);  MW8(t0 - 7, 60);
+    v0 = MB32(t3);      MW32(t0 - 54, v0); MW32(t0 - 2, v0);
+    v0 = MB32(a1 - 22); MW32(t0 - 42, v0); MW32(t0 + 10, v0);
+    v0 = MB32(a1 - 18); MW32(t0 - 30, v0); MW32(t0 + 22, v0);
+    v0 = MB32(a1 - 14); t3 += 28;
+    MW32(t0 - 18, v0); MW32(t0 + 34, v0);
+    v0 = (uint32_t)MBS16(a1 - 16) << 3; v0 += a3;
+    MW32(t0 - 82, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 12) << 3; v0 += a2;
+    MW32(t2 + 0, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
+    MW32(t0 - 78, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
+    MW32(t0 - 94, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a3;
+    MW32(t0 - 74, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 4) << 3;  v0 += a2;
+    t1 -= 1;
+    MW32(t0 - 90, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 2) << 3;  v0 += a3;
+    t2 += 136;
+    MW32(t0 - 70, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 + 0) << 3;  a1 += 28; v0 += a2;
+    { uint32_t r = MB32(v0);
+      { uint32_t cy = MB16(t0 - 52), cx = MB16(t0 - 40);
+        cy += t6; MW16(t0 - 52, cy);
+        MW32(t0 - 86, r);
+        cx += t7; MW16(t0 - 40, cx);
+        cy = MB16(t0 + 0); cx = MB16(t0 + 12);
+        cx += t7; cy += t6;
+        MW16(t0 + 12, cx); MW16(t0 + 0, cy); } }
+    t0 += 136;
+  } while (t1 != 0);
+  return t2;
+}
+
 
 /* 6-arg special case: arg5 @fr+0x10, arg6 @fr+0x14. */
 uint32_t heap_serialize_tag_01000000(uint32_t a,uint32_t b,uint32_t c,
