@@ -585,8 +585,8 @@ int scriptop_end(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
 /* op03 Ret/Brr — guest 0x80183558. sub<10 = conditional return on
  * ctx->cmp (s32 @0x38); sub 0/1 and sub>=10 = unconditional.
  * Conditional-fail path: ctx->pc += 2, return 1.
- * Unconditional: pop return stack; depth 1->0 runs the End epilogue
- * (ctx+0x28 = 0, return 0); depth>1 resumes at retstk[depth-1]. */
+ * Unconditional: pop return stack; depth 0 runs the End epilogue
+ * (ctx+0x28 = 0, return 0); depth>0 resumes at retstk[depth-1]. */
 int scriptop_ret(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
 {
     uint32_t pcg = GU32(ctx, VX_PC);
@@ -613,14 +613,21 @@ int scriptop_ret(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
             return 1;
         }
     }
-    /* unconditional depth pop (guest block 0x80183594) */
-    d = (int32_t)(uint16_t)GU16(ctx, VX_RETD) - 1;
-    if (d == 0) {                    /* depth was 1 -> script over */
+    /* unconditional depth pop (guest block 0x80183594):
+     * lh s16 RETD; RETD==0 -> epilogue 0x801835C4 (ctx+0x28=0, v0=0).
+     * Else RETD-- (s16), PC = RETSTK[(RETD-1) & 0xffff], return 1.
+     * The previous port tested depth-1==0, i.e. ended at RETD==1 and
+     * never popped slot 0; at RETD==0 it stored RETD=-1 and read
+     * RETSTK[0xffff] -> VX_PC = garbage (observed 0 -> opcode 0xCC
+     * -> DISPATCH FATAL at frame ~1880). */
+    d = (int32_t)G16(ctx, VX_RETD);
+    if (d == 0) {                    /* depth 0 -> script over */
         GS16(ctx, VX_ENDW) = 0;
         return 0;
     }
+    d = d - 1;
     GS16(ctx, VX_RETD) = (int16_t)d;
-    GSU32(ctx, VX_PC) = GU32(ctx, VX_RETSTK + (d & 0xffff) * 4);
+    GSU32(ctx, VX_PC) = GU32(ctx, VX_RETSTK + ((uint32_t)d & 0xffff) * 4);
     return 1;
 }
 
@@ -901,7 +908,10 @@ static uint32_t bra_target(uint8_t *ctx, uint8_t *pc, uint32_t pcg,
 static uint32_t bsr_call(uint8_t *ctx, uint32_t pcg, uint8_t *pc,
                          uint32_t base_g, uint32_t ret)
 {
-    int depth = (int16_t)GU16(ctx, VX_RETD);
+    /* guest 0x801832F0: lh RETD then andi 0xffff — the depth test is on
+     * the UNSIGNED u16 (slti vs 0..0xffff), not the s16 value. A
+     * negative/corrupt RETD must not push at a negative index. */
+    uint32_t depth = GU16(ctx, VX_RETD);
     if (depth < 8) {
         GSU32(ctx, VX_RETSTK + depth * 4) = pcg + 4;
         GS16(ctx, VX_RETD) = (int16_t)(depth + 1);
@@ -946,7 +956,7 @@ int scriptop_bsr(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
         else { GS32(ctx, VX_CMP) = 0; sel = GU16(pc, 6); }
         if (sel == 0) npc = pcg + 8;
         else {
-            int depth = (int16_t)GU16(ctx, VX_RETD);
+            uint32_t depth = GU16(ctx, VX_RETD);   /* u16 depth, guest andi */
             if (depth < 8) {
                 GSU32(ctx, VX_RETSTK + depth * 4) = pcg + 8;
                 GS16(ctx, VX_RETD) = (int16_t)(depth + 1);
