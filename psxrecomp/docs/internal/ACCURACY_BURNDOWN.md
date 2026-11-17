@@ -4185,3 +4185,46 @@ ch3 DMA for sector->RAM, our recomp delivering via PIO is the bug (the
 DMA arm/kick path for file reads is missing -> no done-bit -> no event).
 Compare ch3 CHCR/DICR during an equivalent file load in the oracle.
 This is now a single concrete hardware-fidelity question, not a maze.
+
+=== N+46 — EARLY-BOOT WEDGE ROOT CAUSE: OpenBIOS patch_hook fatal halt ===
+
+The long-standing "early boot TestEvent spin -> pc=0" wedge was NOT a
+TestEvent/event/CD problem at all. fntrace + live registers showed:
+
+- Game boots, reaches driver/kernel init tail-chain under ra=0x80126260
+  (legitimate: `jal boot`@0x80126258 -> boot 0x80126F04 -> j/tail-jump
+  chain through 0x8019A8xx helpers -> cd_read_param_set 0x80199F30).
+- A B0:86 (GetC0Table, t1=0x56) BIOS call is issued with ra=0x80126260.
+- OpenBIOS patch_hook (patches/patches.c) hashes 16 bytes at the call
+  site (hash f12639c8), finds no match in the 17-entry registered patch
+  table, reads g_patch_permissive @0x00004C70 (=0, .bss, never written),
+  prints "Couldn't find C0 patch hash ... Stopping." and halts.
+  pc then reads 0x0 while VBLANK keeps frames advancing — the "wedge".
+- Retail Sony BIOS GetC0Table/GetB0Table simply return the table; the
+  patch/fingerprint mechanism is OpenBIOS-specific (counter-patching
+  known game kernel patches). BR2's call site is NOT a patch site.
+
+FIX (commit c74f4db): patched openbios.bin in place at file off 0x7F24
+(vaddr 0xBFC07F24): `lw v0,0x4C70(v0)` -> `li v0,1`, forcing
+g_patch_permissive — the escape hatch upstream's own comment says should
+"remain 1". No code moves; seeds/addresses unchanged; toml sha256 +
+patch documentation updated; BIOS regenerated via tools/regen_bios.sh
+--config bios/OpenBIOS.toml (651 funcs, 3989 dispatch entries).
+
+VERIFIED: game now boots past the halt — CD streaming active, frames
+advancing ~330/s, BIOS calls flowing, CD deferred coroutine
+(sp_ring target 0x8019A87C, TCB 0x8FE0) running per frame.
+
+=== N+47 — NEW ACTIVE WEDGE: CD streaming consumer stall ===
+
+Post-fix the game enters a repeating CD command loop every ~72 frames:
+SetLoc(0x02,1:55:63) -> SetMode(0x0E,0xA0) -> ReadN(0x06) -> Pause(0x09).
+seek_msf frozen [1,55,63], last_sector.lba frozen 8574 for 10k+ frames,
+bfrd_set=199615 vs clear=12, ring_dropped=78097. BIOS: B0:0x17 polling
+(~220k), DeliverEvent ~1832. Game is alive but the sector consumer
+stalls — same file region re-fetched forever. Debugger agent
+investigating ch3-DMA-vs-PIO file-read path and the DeliverEvent link
+(handler 0x8019B7E0 / cd_dma_chan_reset @0x8019b7e8, event handle
+0xF1000008 @0x801bde38). pc=0 samples are the normal idle park — threads
+continue via HLE scheduler; do not treat as crash when BIOS activity
+continues.

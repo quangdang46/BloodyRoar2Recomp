@@ -10367,3 +10367,18 @@ N+102 — x28 bug narrowed to a frame_tick CALLEE (4 agents, still unfixed):
   foreign x28 — break at _frame_tick entry during versus (gs==8), finish,
   compare x28; or noinline-audit those 4. Repro flaky + masked by separate
   versus->fight pc=0 DISPATCH FATAL bug (isolate separately).
+
+- **session (OpenBIOS permissive patch — boot wedge RESOLVED):**
+  Early-boot "TestEvent spin -> pc=0" was an OpenBIOS patch_hook fatal
+  halt, not an event/CD bug: BR2's legitimate GetC0Table call (tail-chain
+  ra=0x80126260, hash 0xf12639c8, not a registered patch site) hit
+  g_patch_permissive=0 -> "Couldn't find C0 patch hash ... Stopping."
+  Patched openbios.bin in place (0xBFC07F24 lw->li v0,1; commit c74f4db),
+  regenerated BIOS, verified boot proceeds: CD streaming active,
+  frames ~330/s, CD deferred coroutine (0x8019A87C/TCB 0x8FE0) per frame.
+  NEW active blocker: CD consumer stall — repeating
+  SetLoc(1:55:63)->ReadN->Pause loop, ring_dropped growing, last_lba
+  pinned; debugger agent tracing ch3-DMA-vs-PIO read path + DeliverEvent
+  link (handler 0x8019B7E0 / cd_dma_chan_reset 0x8019b7e8, EvCB
+  0xF1000008). NOTE: pc=0 samples with advancing BIOS calls = normal
+  idle park under HLE scheduler, not a crash.
