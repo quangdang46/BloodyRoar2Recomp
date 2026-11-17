@@ -698,6 +698,9 @@ int scriptop_div(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
 static int32_t  gld_s16(uint32_t g) { return *(const int16_t  *)guest_at(g); }
 static uint32_t gld_u16(uint32_t g) { return *(const uint16_t *)guest_at(g); }
 static uint32_t gld_u32(uint32_t g) { return *(const uint32_t *)guest_at(g); }
+static uint32_t gld_u8 (uint32_t g) { return *(const uint8_t  *)guest_at(g); }
+extern void br2_st8 (uint32_t a, uint8_t  v);
+extern void br2_st16(uint32_t a, uint16_t v);
 
 /* op01 Cmp — guest 0x80184378. sub = hi byte of insn: dst = sub>>4,
  * src = sub&0xf. cmp = dv - sv stored s32 @ctx+0x38; returns 1.
@@ -797,11 +800,582 @@ int scriptop_add(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
     return 1;
 }
 
-/* op05 Move — guest 0x8018444c. Large handler (operand tables
- * @0x801236dc/0x801235b8/0x801236e4, trace ring @ctx+0x78, foe/object
- * field writes). Not yet faithfully expressed in clean C — delegate the
- * whole body to the generated implementation. */
+/* ================================================================== */
+/* op01 Bra — guest 0x80182F48. sub = insn byte1. Jump table          */
+/* @0x801232E4 covers sub 0..11; sub>=12 takes the unconditional       */
+/* default (pc = base + u16@pc+2). base = ctrl+0x30 (FC_ANI). The      */
+/* ctx+0x6e trace ring (ctx+0x78, call 0x8018EF60) is debug-only and   */
+/* omitted here exactly like the other ported handlers. All paths      */
+/* return 1.                                                          */
+/* ================================================================== */
+
+/* Stream random byte: *(u8*)(ctx->stream + (ctx->idx & 0xff)), then
+ * ctx->idx = idx+1 (sb). Used by the weighted-Bra pick. */
+static uint32_t vm_stream_byte(uint8_t *ctx)
+{
+    uint32_t base = GU32(ctx, 0x00);
+    uint32_t idx  = GU8(ctx, 0x04);
+    GSU8(ctx, 0x04) = (uint8_t)(idx + 1);
+    return gld_u8(base + (idx & 0xff));
+}
+
+/* Weighted pick shared by Bra sub10 / Bsr sub6: n = u8@pc+2 weight
+ * bytes at pc+3.., target table at pc + ((n+4) & 0x1fe), u16 entries.
+ * pick = first index whose cumulative weight exceeds
+ * X = ((stream_byte * sum) >> 8) - w[0] logic per guest blocks
+ * 0x8018310C..0x801831C8. n==0 is degenerate (guest reads an
+ * uninitialised stack slot); real scripts never emit it — treated as
+ * the n==0 tail (pc + ((3n+4)&0x7fe) = pc+4 absolute). */
+static uint32_t bra_random_pick(uint8_t *ctx, uint8_t *pc, int n)
+{
+    uint16_t w[256];
+    int32_t sum = 0;
+    int i, pick = 0;
+    int32_t a0v;
+    uint32_t b;
+
+    for (i = 0; i < n; i++) {
+        w[i] = GU8(pc, 3 + i);
+        sum += w[i];
+    }
+    b = vm_stream_byte(ctx);
+    /* mult lo = b*sum (both small); sra 8 */
+    a0v = (int32_t)(((int64_t)b * sum) >> 8) - (n > 0 ? w[0] : 0);
+    if (n > 0 && a0v >= 0) {
+        for (i = 1;; i++) {
+            a0v -= w[i];
+            if (a0v < 0) break;
+            pick = i;
+        }
+    }
+    return GU16(pc, ((n + 4) & 0x1fe) + pick * 2);
+}
+
+/* Conditional-jump target evaluation shared by Bra (op01) and the
+ * Bsr low-sub entries that alias Bra's blocks (op02 sub 0..7). Returns
+ * the new guest pc. sub is the raw insn byte1 (already remapped by
+ * the caller for Bsr). cmp = ctx+0x38 s32. */
+static uint32_t bra_target(uint8_t *ctx, uint8_t *pc, uint32_t pcg,
+                           int sub, uint32_t base_g, int32_t cmp)
+{
+    switch (sub) {
+    case 0:                                     /* unconditional */
+        return base_g + GU16(pc, 2);
+    case 1: {                                   /* if/else 8B */
+        uint32_t sel;
+        if (cmp > 0) sel = GU16(pc, 2);
+        else { GS32(ctx, VX_CMP) = 0; sel = GU16(pc, 6); }
+        return base_g + sel;
+    }
+    case 2: case 5:                             /* jump if cmp != 0 */
+        return cmp == 0 ? pcg + 4 : base_g + GU16(pc, 2);
+    case 3: case 4:                             /* jump if cmp == 0 */
+        return cmp != 0 ? pcg + 4 : base_g + GU16(pc, 2);
+    case 6:                                     /* jump if cmp > 0 */
+        return cmp <= 0 ? pcg + 4 : base_g + GU16(pc, 2);
+    case 7:                                     /* jump if cmp >= 0 */
+        return cmp <  0 ? pcg + 4 : base_g + GU16(pc, 2);
+    case 8:                                     /* jump if cmp < 0 */
+        return cmp >= 0 ? pcg + 4 : base_g + GU16(pc, 2);
+    case 9:                                     /* jump if cmp <= 0 */
+        return cmp >  0 ? pcg + 4 : base_g + GU16(pc, 2);
+    case 10: {                                  /* weighted random */
+        int n = GU8(pc, 2);
+        uint32_t sel = bra_random_pick(ctx, pc, n);
+        /* n==0 tail: guest stores pc + ((3n+4)&0x7fe) = pc+4 absolute
+         * (no base add); n>0 stores base + sel via the shared tail. */
+        return n ? base_g + sel : pcg + ((3 * n + 4) & 0x7fe);
+    }
+    case 11: {                                  /* if/else 6B */
+        uint32_t sel = cmp ? GU16(pc, 2) : GU16(pc, 4);
+        return sel ? base_g + sel : pcg + 6;
+    }
+    default:                                    /* sub >= 12: uncond */
+        return base_g + GU16(pc, 2);
+    }
+}
+
+/* Push return address onto the ctx+0x4c stack (depth ctx+0x6c, max 8).
+ * Returns the call target (base + u16@pc+2) on success, or `ret` when
+ * the stack is full (guest then just advances pc, no call). */
+static uint32_t bsr_call(uint8_t *ctx, uint32_t pcg, uint8_t *pc,
+                         uint32_t base_g, uint32_t ret)
+{
+    int depth = (int16_t)GU16(ctx, VX_RETD);
+    if (depth < 8) {
+        GSU32(ctx, VX_RETSTK + depth * 4) = pcg + 4;
+        GS16(ctx, VX_RETD) = (int16_t)(depth + 1);
+        return base_g + GU16(pc, 2);
+    }
+    return ret;
+}
+
+int scriptop_bra(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
+{
+    uint32_t pcg = GU32(ctx, VX_PC);
+    uint8_t *pc = (uint8_t *)guest_at(pcg);
+    int sub = GU8(pc, 1);
+    uint32_t base_g = gld_u32(a0 + FC_ANI);
+    int32_t cmp = GS32(ctx, VX_CMP);
+    (void)a1; (void)a3;
+
+    GSU32(ctx, VX_PC) = bra_target(ctx, pc, pcg, sub, base_g, cmp);
+    return 1;
+}
+
+/* op02 Bsr — guest 0x80183248. sub 0..7 alias Bra's conditional-jump
+ * blocks via table @0x801232F4 (remap below); sub 8 and sub>=12 are the
+ * unconditional call; sub 9/10/11 are the conditional-call forms that
+ * live in Bsr's own blocks. */
+int scriptop_bsr(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
+{
+    uint32_t pcg = GU32(ctx, VX_PC);
+    uint8_t *pc = (uint8_t *)guest_at(pcg);
+    int sub = GU8(pc, 1);
+    uint32_t base_g = gld_u32(a0 + FC_ANI);
+    int32_t cmp = GS32(ctx, VX_CMP);
+    uint32_t npc;
+    static const uint8_t remap[8] = { 3, 1, 6, 7, 8, 9, 10, 11 };
+    (void)a1; (void)a3;
+
+    if (sub <= 7) {                     /* conditional jump, no push */
+        npc = bra_target(ctx, pc, pcg, remap[sub], base_g, cmp);
+    } else if (sub == 9) {              /* call if/else: sel@2 / @6 */
+        uint32_t sel;
+        if (cmp > 0) sel = GU16(pc, 2);
+        else { GS32(ctx, VX_CMP) = 0; sel = GU16(pc, 6); }
+        if (sel == 0) npc = pcg + 8;
+        else {
+            int depth = (int16_t)GU16(ctx, VX_RETD);
+            if (depth < 8) {
+                GSU32(ctx, VX_RETSTK + depth * 4) = pcg + 8;
+                GS16(ctx, VX_RETD) = (int16_t)(depth + 1);
+                npc = base_g + sel;
+            } else npc = pcg + 8;
+        }
+    } else if (sub == 10) {             /* call if cmp != 0 */
+        npc = (cmp != 0) ? bsr_call(ctx, pcg, pc, base_g, pcg + 4)
+                         : pcg + 4;
+    } else if (sub == 11) {             /* call if cmp == 0 */
+        npc = (cmp == 0) ? bsr_call(ctx, pcg, pc, base_g, pcg + 4)
+                         : pcg + 4;
+    } else {                            /* sub 8 / >=12: uncond call */
+        npc = bsr_call(ctx, pcg, pc, base_g, pcg + 4);
+    }
+    GSU32(ctx, VX_PC) = npc;
+    return 1;
+}
+
+/* ================================================================== */
+/* op0b Wait group — guest 0x80183664. Wait counter is the s16 at      */
+/* ctx+0x3c (r0 slot). Tick tail shared by the frame waits: counter   */
+/* decremented each invocation; while (u16)(cnt-1) keeps bit pattern  */
+/* the handler returns 0 with pc untouched, else pc advances and the  */
+/* counter clears. Returns 1 only for the 2-byte conditional waits    */
+/* and the sub1/sub11 expiries.                                        */
+/* ================================================================== */
+
+/* 3-byte stream sum wait operand (sub1 / sub11): reads stream bytes
+ * at ctx->stream + idx, idx+1, idx+2 (each &0xff), bumps ctx->idx by
+ * 3, then w = ((256 - ctx->aux8) * (b0+b1+b2)) / 8192 trunc-to-zero
+ * (guest adds 8191 before sra 13 when the product is negative). */
+static int32_t wait_rand3(uint8_t *ctx)
+{
+    uint32_t base = GU32(ctx, 0x00);
+    uint32_t idx  = GU8(ctx, 0x04);
+    int32_t b0 = (int32_t)gld_u8(base + ((idx + 0) & 0xff));
+    int32_t b1 = (int32_t)gld_u8(base + ((idx + 1) & 0xff));
+    int32_t b2 = (int32_t)gld_u8(base + ((idx + 2) & 0xff));
+    int32_t sum, num;
+    GSU8(ctx, 0x04) = (uint8_t)(idx + 3);
+    sum = b0 + b1 + b2;
+    num = (256 - (int32_t)GU16(ctx, VX_AUX8)) * sum;
+    return (num >= 0 ? num : num + 8191) >> 13;
+}
+
+/* Shared frame-wait tick. cnt already holds the wait value (loaded
+ * by the caller when it was 0). adv = guest pc to store on expiry,
+ * ret = handler return on expiry. Returns the handler result. */
+static int wait_tick(uint8_t *ctx, uint32_t pcg, uint32_t adv, int ret)
+{
+    int32_t d = (int32_t)GU16(ctx, 0x3c) - 1;   /* lhu - 1 */
+    GS16(ctx, 0x3c) = (int16_t)d;               /* sh */
+    /* sll v0,16 then signed >0 test: waits iff d in [1,32767] */
+    if ((int32_t)((uint32_t)d << 16) > 0)
+        return 0;                               /* still waiting */
+    GS16(ctx, 0x3c) = 0;
+    GSU32(ctx, VX_PC) = adv;
+    return ret;
+}
+
+/* Load the wait counter from the insn when it is 0 (lh signed test). */
+static void wait_arm(uint8_t *ctx, int32_t w)
+{
+    if (GS16(ctx, 0x3c) == 0)
+        GS16(ctx, 0x3c) = (int16_t)w;
+}
+
+int scriptop_wait(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
+{
+    uint32_t pcg = GU32(ctx, VX_PC);
+    uint8_t *pc = (uint8_t *)guest_at(pcg);
+    int sub = GU8(pc, 1);
+    uint32_t foe_g = gld_u32(a0 + FC_FOE);
+    int32_t st, w;
+    uint32_t adv;
+    (void)a1; (void)a3;
+
+    switch (sub) {
+    case 1:                                     /* rand3 wait, 2B insn */
+        /* stream operand consumed only on the arming invocation */
+        if (GS16(ctx, 0x3c) == 0)               /* lh signed */
+            GS16(ctx, 0x3c) = (int16_t)wait_rand3(ctx);
+        adv = pcg + 2;
+        return wait_tick(ctx, pcg, adv, 1);
+    case 2: case 3: {                           /* self/foe attack win */
+        uint32_t w_g = (sub == 3) ? foe_g : a0;
+        st = (int32_t)gld_u32(w_g + FC_STATE0);
+        /* continue iff not-attacking, or atkwin2==0 && atkwin1!=0 */
+        if (st >= 0 ||
+            (gld_s16(w_g + FC_ATKWIN2) == 0 &&
+             gld_s16(w_g + FC_ATKWIN1) != 0)) {
+            GSU32(ctx, VX_PC) = pcg + 2;
+            return 1;
+        }
+        return 0;
+    }
+    case 4: case 5: {                           /* ... via atkwin3 */
+        uint32_t w_g = (sub == 5) ? foe_g : a0;
+        st = (int32_t)gld_u32(w_g + FC_STATE0);
+        if (st >= 0 || gld_s16(w_g + FC_ATKWIN3) > 0) {
+            GSU32(ctx, VX_PC) = pcg + 2;
+            return 1;
+        }
+        return 0;
+    }
+    case 6: case 7: {                           /* wait while attacking */
+        uint32_t w_g = (sub == 7) ? foe_g : a0;
+        if ((int32_t)gld_u32(w_g + FC_STATE0) >= 0) {
+            GSU32(ctx, VX_PC) = pcg + 2;
+            return 1;
+        }
+        return 0;
+    }
+    case 8: {                                   /* rand wait v2, 4B insn */
+        if (GS16(ctx, 0x3c) == 0) {             /* lh signed */
+            uint32_t b = vm_stream_byte(ctx);
+            GS16(ctx, 0x3c) =
+                (int16_t)(((uint32_t)GU16(pc, 2) * b) >> 8) + 1;
+        }
+        adv = pcg + 4;
+        return wait_tick(ctx, pcg, adv, 0);
+    }
+    case 9: case 10: {                          /* atk & state5 bit24 */
+        uint32_t w_g = (sub == 10) ? foe_g : a0;
+        st = (int32_t)gld_u32(w_g + FC_STATE0);
+        int on = (gld_u32(w_g + FC_STATE5) & 0x01000000) != 0;
+        if (st >= 0 || !on) {
+            GSU32(ctx, VX_PC) = pcg + 2;
+            return 1;
+        }
+        return 0;
+    }
+    case 11: {                                  /* rand3 + mirror, 4B */
+        /* operand bytes are consumed only on the arming invocation */
+        if (GS16(ctx, 0x3c) == 0)               /* lh signed */
+            GS16(ctx, 0x3c) = (int16_t)wait_rand3(ctx);
+        /* while still waiting the operand u16 is mirrored to ctx+6 */
+        {
+            int32_t d = (int32_t)GU16(ctx, 0x3c) - 1;
+            GS16(ctx, 0x3c) = (int16_t)d;
+            if ((int32_t)((uint32_t)d << 16) > 0) {
+                GS16(ctx, VX_WAIT) = G16(pc, 2);
+                return 0;
+            }
+        }
+        GS16(ctx, 0x3c) = 0;
+        GSU32(ctx, VX_PC) = pcg + 4;
+        return 1;
+    }
+    default:                                    /* sub 0 / >=12: frames */
+        wait_arm(ctx, GU16(pc, 2));
+        adv = pcg + 4;
+        return wait_tick(ctx, pcg, adv, 0);
+    }
+    (void)w;
+}
+
+/* ================================================================== */
+/* op04 Chk — guest 0x80183C30. cond = insn byte1 (table @0x801235CC,  */
+/* 45 entries). Result -> ctx+0x38 (u32), pc += 2 (mask conds += 6).   */
+/* self = a0 (ctrl guest addr), foe = ctrl+0x2c.                       */
+/*                                                                     */
+/* DELEGATED: the 45-entry dispatch has branchy per-sub handlers       */
+/* (attack-window combos, mode-byte tests, signed compares, the       */
+/* 0x29/0x2a guard-reaction mask chain, and the 0x2b NULL vector /     */
+/* 0x2c+0x2d Cmp-alias entries that need caller-scratch regs). A       */
+/* partial clean decode risks poisoning ctx+0x38 — the value every     */
+/* Bra/Bsr conditional consumes — so the whole body stays             */
+/* generated-authoritative until each subblock is verified against    */
+/* the oracle.                                                        */
+/* ================================================================== */
+
+int scriptop_chk(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
+{
+    return br2_call_generated(0x80183C30, a0, a1, guest_of(ctx), a3);
+}
+
+/* ================================================================== */
+/* op0f GPad — guest 0x80184AA0. Polls fighter state + pad stream     */
+/* each invocation; always returns 0 (suspends the dispatch batch).   */
+/* ================================================================== */
+
+int scriptop_gpad(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
+{
+    uint32_t pcg = GU32(ctx, VX_PC);
+    uint8_t *pc = (uint8_t *)guest_at(pcg);
+    uint32_t foe_g = gld_u32(a0 + FC_FOE);
+    uint32_t st0 = gld_u32(a0 + FC_STATE0);
+    uint32_t st1 = gld_u32(a0 + FC_STATE1);
+    uint32_t flags;
+    (void)a1;
+
+    /* Path A: entered when guard/hit state bits are up. */
+    if ((st0 & 0x10000000) || (st1 & 0x02000000)) {
+        /* deep path: state1 bit25 set + ctrl+0xcc < 97 + stream rand */
+        if ((st1 & 0x02000000) == 0x02000000 &&
+            gld_s16(a0 + 0xcc) < 97) {
+            uint32_t sbase = GU32(ctx, 0x00);
+            uint32_t idx   = GU8(ctx, 0x04);
+            uint32_t b;
+            GSU8(ctx, 0x04) = (uint8_t)(idx + 1);
+            b = gld_u8(sbase + (idx & 0xff));
+            if (b < (GU16(ctx, VX_AUX8) >> 3))
+                GS16(ctx, VX_WAIT) = 0x2000;
+        }
+        GS16(ctx, VX_ENDW) = 3;
+        return 0;
+    }
+
+    /* Path B: reload counter from insn sub byte when 0. */
+    if (GS16(ctx, 0x3c) == 0) {                /* lh signed */
+        GS16(ctx, 0x3c) = (int16_t)GU8(pc, 1);
+        flags = GU16(ctx, VX_FLAGS) & 0xfffd;
+        GS16(ctx, VX_FLAGS) = (int16_t)flags;
+    }
+    GS16(ctx, VX_WAIT) = G16(pc, 2);           /* sh lhu @pc+2 */
+
+    /* foe attack-window stream compare -> flags bit1 */
+    if ((int32_t)gld_u32(foe_g + FC_STATE0) < 0 &&
+        gld_s16(foe_g + 0x88) >= gld_s16(foe_g + FC_ATKWIN2) &&
+        gld_s16(foe_g + FC_ATKWIN2) >= 0) {
+        uint32_t sbase = GU32(ctx, 0x00);
+        uint32_t idx   = GU8(ctx, 0x04);
+        uint32_t p1c   = GU32(ctx, 0x1c);
+        uint32_t b0, b1;
+        GSU8(ctx, 0x04) = (uint8_t)(idx + 1);
+        b0 = gld_u8(sbase + (idx & 0xff));
+        /* guest adds (aux8 >> 10) to the ctx+0x1c pointer */
+        b1 = gld_u8(p1c + (GU16(ctx, VX_AUX8) >> 10));
+        if (b0 < b1)
+            GS16(ctx, VX_FLAGS) = (int16_t)(GU16(ctx, VX_FLAGS) | 2);
+    }
+
+    flags = GU16(ctx, VX_FLAGS);
+    if (flags & 2) {
+        if (gld_s16(foe_g + FC_ATKWIN1) == 0) {
+            GS16(ctx, VX_FLAGS) = (int16_t)(flags & 0xfffd);
+        } else {
+            uint32_t w  = GU16(ctx, VX_WAIT);
+            uint32_t w1 = w & 0xdfff;
+            uint32_t st3 = gld_u32(foe_g + FC_STATE3);
+            GS16(ctx, VX_WAIT) = (int16_t)w1;
+            if (st3 & 0x80) {
+                GS16(ctx, VX_WAIT) = (int16_t)(w & 0x9fff);
+            } else if (st3 & 0x40) {
+                /* guest stores the andi result (0x40); the
+                 * (w&0xdfff)|0x4000 value computed in the delay slot
+                 * is dead — reproduced literally. */
+                GS16(ctx, VX_WAIT) = 0x40;
+            }
+        }
+    }
+
+    /* counter tick: advance pc only when it reaches exactly 0 */
+    {
+        int32_t d = (int32_t)GU16(ctx, 0x3c) - 1;
+        GS16(ctx, 0x3c) = (int16_t)d;
+        if ((int32_t)((uint32_t)d << 16) == 0)
+            GSU32(ctx, VX_PC) = pcg + 4;
+    }
+    return 0;
+}
+
+/* ================================================================== */
+/* op11 Camera — guest 0x80184D3C. cam = *(u32*)0x1F8000BC guest ptr. */
+/* sub = sign-extended insn byte1; dispatch table @0x8012376C has 10  */
+/* entries (sub 0..9); sub>=10 unsigned -> pc+2, ret 1.               */
+/*   0: cam+0x76 = u16@2            (+4)                              */
+/*   1: cam+0x52/54/56 = u16@2/4/6  (+8)                              */
+/*   2: cam+0x30=u16@2, +0x32=u16@4, +0x8a=u16@4, +0x34=u16@6 (+8)   */
+/*   3: cam+0x64/66/68 = u16@2/4/6  (+8)                              */
+/*   4: cam+0x42/44/46 = u16@2/4/6  (+8)                              */
+/*   5: cam[0x80+ctrl.b2]=insn.b2, cam[0x80+foe.b2]=insn.b3 (+4)      */
+/*   6: cam+0x5a = u16@2            (+4)                              */
+/*   7: cam+0x38 = u16@2            (+4)                              */
+/*   8: cam+0x6c = u16@2            (+4)                              */
+/*   9: preset: cam+0x7e=idx; cam+0x4a/4c/4e = s16s at               */
+/*      0x8011F944 + (s16)idx*8 (+0,+2,+4)          (+4)               */
+/* ================================================================== */
+
+int scriptop_camera(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
+{
+    uint32_t pcg = GU32(ctx, VX_PC);
+    uint8_t *pc = (uint8_t *)guest_at(pcg);
+    int sub = (int8_t)GU8(pc, 1);
+    uint32_t cam_g = gld_u32(0x1f8000bc);
+    uint32_t npc = pcg + 2;
+    (void)a1; (void)a3;
+
+    if (sub < 0 || sub >= 10)
+        goto store;
+
+    switch (sub) {
+    case 0:
+        br2_st16(cam_g + 0x76, GU16(pc, 2));
+        npc = pcg + 4; break;
+    case 1:
+        br2_st16(cam_g + 0x52, GU16(pc, 2));
+        br2_st16(cam_g + 0x54, GU16(pc, 4));
+        br2_st16(cam_g + 0x56, GU16(pc, 6));
+        npc = pcg + 8; break;
+    case 2:
+        br2_st16(cam_g + 0x30, GU16(pc, 2));
+        br2_st16(cam_g + 0x32, GU16(pc, 4));
+        br2_st16(cam_g + 0x8a, GU16(pc, 4));
+        br2_st16(cam_g + 0x34, GU16(pc, 6));
+        npc = pcg + 8; break;
+    case 3:
+        br2_st16(cam_g + 0x64, GU16(pc, 2));
+        br2_st16(cam_g + 0x66, GU16(pc, 4));
+        br2_st16(cam_g + 0x68, GU16(pc, 6));
+        npc = pcg + 8; break;
+    case 4:
+        br2_st16(cam_g + 0x42, GU16(pc, 2));
+        br2_st16(cam_g + 0x44, GU16(pc, 4));
+        br2_st16(cam_g + 0x46, GU16(pc, 6));
+        npc = pcg + 8; break;
+    case 5: {                                   /* per-fighter byte pair */
+        uint32_t foe_g = gld_u32(a0 + FC_FOE);
+        br2_st8(cam_g + 0x80 + gld_u8(a0 + 2), GU8(pc, 2));
+        br2_st8(cam_g + 0x80 + gld_u8(foe_g + 2), GU8(pc, 3));
+        npc = pcg + 4; break;
+    }
+    case 6:
+        br2_st16(cam_g + 0x5a, GU16(pc, 2));
+        npc = pcg + 4; break;
+    case 7:
+        br2_st16(cam_g + 0x38, GU16(pc, 2));
+        npc = pcg + 4; break;
+    case 8:
+        br2_st16(cam_g + 0x6c, GU16(pc, 2));
+        npc = pcg + 4; break;
+    case 9: {                                   /* preset vector */
+        int32_t idx = (int16_t)GU16(pc, 2);
+        /* guest: idx<<16 sra13 == (s16)idx*8; reloads cam+0x7e as lh */
+        uint32_t e = 0x8011f944 + (uint32_t)(idx * 8);
+        br2_st16(cam_g + 0x7e, (uint16_t)idx);
+        br2_st16(cam_g + 0x4a, (uint16_t)gld_u16(e));
+        br2_st16(cam_g + 0x4c, (uint16_t)gld_u16(e + 2));
+        br2_st16(cam_g + 0x4e, (uint16_t)gld_u16(e + 4));
+        npc = pcg + 4; break;
+    }
+    }
+store:
+    GSU32(ctx, VX_PC) = npc;
+    return 1;
+}
+
+/* ================================================================== */
+/* op05 Move — guest 0x8018444C. sub = insn byte1: dst = sub>>4,       */
+/* src = sub&0xf. Only src 1..5 (regs), 7 (imm16), 15 (ext byte)       */
+/* advance pc; every other src stores the literal and leaves pc       */
+/* untouched — the guest then re-executes the same insn forever        */
+/* (kept). ext byte @pc+2 selects a field source for src==15:         */
+/*   1 distX 2 distY 3 ctx+8 4 a3+0x94&7fff 5/6 gauge>>6 self/foe     */
+/*   7/8 dmg% self/foe(per SELF maxHP) 9/10 obj+0x178-own+0x94        */
+/*   11/12 red-bar% self/foe(per SELF maxHP); 0 or >12 -> literal.    */
+/* ================================================================== */
+
+static int32_t move_gauge_s16(uint32_t g)
+{
+    int32_t v = gld_s16(g + FC_GAUGE);
+    return v >= 0 ? v >> 6 : (v + 0x3f) >> 6;
+}
+
+/* 100*(maxHP-hp)/maxHP style percent; den==0 -> -1 (MIPS LO div0). */
+static int32_t pct100(int32_t num, int32_t den)
+{
+    return den ? (int32_t)((int64_t)num * 100 / den) : -1;
+}
+
 int scriptop_move(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
 {
-    return br2_call_generated(0x8018444c, a0, a1, guest_of(ctx), a3);
+    uint32_t pcg = GU32(ctx, VX_PC);
+    uint8_t *pc = (uint8_t *)guest_at(pcg);
+    int sub = GU8(pc, 1);
+    int dst = sub >> 4, src = sub & 0xf;
+    uint32_t foe_g = gld_u32(a0 + FC_FOE);
+    int32_t sv = 0;
+    uint32_t npc = 0;
+    int have_pc = 0;
+    (void)a1;
+
+    if (src == 7) {                         /* imm16, 4B insn */
+        sv = gld_s16(pcg + 2);
+        npc = pcg + 4; have_pc = 1;
+    } else if (src >= 1 && src <= 5) {      /* vm reg, 2B insn */
+        sv = VREG(ctx, src);
+        npc = pcg + 2; have_pc = 1;
+    } else if (src == 15) {                 /* ext byte @pc+2, 4B */
+        int e = GU8(pc, 2);
+        if (e >= 1 && e <= 12) {
+            switch (e) {
+            case 1:  sv = gld_s16(a0 + FC_DISTX); break;
+            case 2:  sv = gld_s16(a0 + FC_DISTY); break;
+            case 3:  sv = (int32_t)GU16(ctx, VX_AUX8); break;
+            case 4:  sv = (int32_t)(gld_u16(a3 + 0x94) & 0x7fff); break;
+            case 5:  sv = move_gauge_s16(a0); break;
+            case 6:  sv = move_gauge_s16(foe_g); break;
+            case 7:  sv = pct100(gld_s16(a0 + FC_MAXHP) -
+                                 gld_s16(a0 + FC_HP),
+                                 gld_s16(a0 + FC_MAXHP)); break;
+            case 8:  sv = pct100(gld_s16(foe_g + FC_MAXHP) -
+                                 gld_s16(foe_g + FC_HP),
+                                 gld_s16(a0 + FC_MAXHP)); break; /* SELF maxHP */
+            case 9: case 10: {                       /* obj+0x178 - +0x94 */
+                uint32_t w = (e == 9) ? a0 : foe_g;
+                uint32_t vth = gld_u32(w + FC_VTH);
+                sv = (int32_t)(gld_u32(vth + 0x178) -
+                               (uint32_t)gld_s16(w + 0x94));
+                break;
+            }
+            case 11: sv = pct100(gld_s16(a0 + FC_HP) -
+                                 gld_s16(a0 + FC_HPDISP),
+                                 gld_s16(a0 + FC_MAXHP)); break;
+            case 12: sv = pct100(gld_s16(foe_g + FC_HP) -
+                                 gld_s16(foe_g + FC_HPDISP),
+                                 gld_s16(a0 + FC_MAXHP)); break; /* SELF maxHP */
+            }
+            npc = pcg + 4; have_pc = 1;
+        } else {
+            sv = e;                     /* literal ext, pc hangs */
+        }
+    } else {
+        sv = src;                       /* 0,6,8..14 literal, hangs */
+    }
+
+    if (have_pc) GSU32(ctx, VX_PC) = npc;
+    GS16(ctx, VX_REGS + dst * 2) = (int16_t)sv;
+    return 1;
 }
