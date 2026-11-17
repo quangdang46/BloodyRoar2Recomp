@@ -1314,3 +1314,45 @@ FAIL-FAST `unknown dispatch addr=0x03FF0100 ra=0x801265F4`, cpu.pc=0,
 epc=0x8019A648 (VSync region, same ra as N+106). Confirms the 23 audit
 fixes did not cause it and did not clear it — x28/RestoreState root cause
 (445d995c) remains THE gate for attract-fight completion and versus.
+
+=== N+109 — x28 root cause CONVERGED by two independent analysts ===
+Both read-only analysts independently converged on the same mechanism:
+`exception_jmpbuf` (interrupts.c:748) is a SINGLE GLOBAL jmp_buf shared
+across all host fibers, armed per-IRQ-delivery inside
+psx_check_interrupts's setjmp loop (~L2063). g_exception_owner_fiber
+tracks only the last-armed frame. A longjmp fired from
+interrupts.c:~1027/~1214 or traps.c:~669 against a jmp_buf captured by an
+ALREADY-RETURNED psx_check_interrupts activation resurrects that dead
+frame: stale SP/PC + stale x19-x28 — including x25/x28 pinned to
+&g_irqctx_ring (.bss base 0x111270000) by the ring writes at
+interrupts.c:1762/1881/2235 which the -O2 compiler keeps in callee-saved
+regs across the setjmp. Explains BOTH symptoms: stale x28 in
+battle_intro_flow AND poisoned TCB save (resume_pc=0 -> BIOS
+RestoreState 0x29CC jr $k0 -> pc=0 / 0x03FF0100 unknown-dispatch).
+In-tree precedent: dirty_ram_interp.c:2787 noinline fix for the same
+-O2-caches-static-base-across-setjmp hazard; menu.c stopgaps at
+frame_divisor_get (2793) and battle_intro_flow 0xf0 (1969).
+Nested-delivery clobber: interrupts.c:2051's own comment documents the
+inner-setjmp-overwrites-global hazard; the memcpy save/restore guard
+only protects the normal-return path.
+Faithful fix direction (per CLAUDE.md -1): fiber-scoped exception
+escape or epoch-validated jmp_buf — never a per-site workaround.
+Recommended instrumentation: epoch tag on exception_jmpbuf + assert
+jmp_buf's captured SP/PC inside a live psx_check_interrupts frame
+before honoring deferred longjmps (traps.c:659, interrupts.c:1214).
+
+=== N+110 — audit campaign RESULTS: 30+ proven bugs fixed ===
+Committed: 1619f14 (ani/gfx x4), 545b0d5 (vm/ev x8), 156e2a1 (cd x10),
+9ce6b9a (game/bind x5), 6a27033+552b9d9 (action.c apply()/ani_fixup —
+~20 motion-offset/deref/loop fixes vs generated 0x8017A05C/0x80181DB8),
+4aa1756 (save.c stub removal + br2_guest_frame staging + cd.c
+cd_file_open_seq rewrite + gen_clean_table ARG_GPRS for
+cd_dir_entry_store v0/v1 arg domain).
+Clean bills: menu.c (heap serializers+SMs), save.c (~19 fns block-level).
+Fixed by parent: menu.c memcard_block_verify — host .bss buf made
+guest_of()=0 so job_wait_pump DMAs card data to guest addr 0; now
+br2_guest_frame(0x80) per generated stack-buffer semantics.
+Combat audit flagged NOT-fully-audited: fighter_script_fsm (12.7K gen),
+fighter_contact_resolve (3.2K), fighter_pair_update (4.6K),
+camera_aim_offset (4.3K), battle_camera_step, entry_setup, part_link —
+next audit wave targets.
