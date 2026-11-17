@@ -372,6 +372,30 @@ typedef struct {
 extern DirtyRamInsnLogEntry g_dirty_ram_insn_log[DIRTY_RAM_INSN_LOG_CAP];
 extern uint64_t             g_dirty_ram_insn_log_seq;
 
+
+/* Return-0 reject ring for dirty_ram_dispatch_inner: every dispatch the
+ * inner refuses records WHY (dirty-page gate vs first-insn undecodable) plus
+ * the gate inputs, so a fail-fast unknown-dispatch can be traced to the exact
+ * rejecting condition over TCP (dirty_reject_log). */
+#define DIRTY_RAM_REJECT_LOG_CAP 256
+typedef struct {
+    uint64_t seq;
+    uint32_t addr;
+    uint32_t phys;
+    uint32_t word;
+    uint32_t flags;     /* bit0 native_ok bit1 in_text bit2 clean_miss
+                         * bit3 dirty bit4 overlay_region bit5 word_decodable
+                         * bit6 phys<2MB */
+    uint32_t reason;    /* 1 = dirty-page gate, 2 = first-insn undecodable */
+    uint32_t unsup_pc;
+    uint32_t unsup_insn;
+    uint32_t unsup_id;
+    uint32_t ra;
+    uint32_t frame;
+} DirtyRamRejectEntry;
+extern DirtyRamRejectEntry g_dirty_ram_reject_log[DIRTY_RAM_REJECT_LOG_CAP];
+extern uint64_t            g_dirty_ram_reject_log_seq;
+
 #ifdef __cplusplus
 }
 #endif

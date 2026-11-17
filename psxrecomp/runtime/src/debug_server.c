@@ -3684,6 +3684,90 @@ static void handle_hle_dump(int id, const char *json)
     debug_server_send_line(out); free(out);
 }
 
+
+/* ---- dirty_reject_log: dump dirty_ram_dispatch_inner return-0 rejects ----
+ * Every dispatch the dirty-RAM inner refuses (dirty-page gate or
+ * first-insn-undecodable) lands here with the gate predicates, so a
+ * fail-fast unknown-dispatch can be traced to the exact rejecting condition.
+ *   {"cmd":"dirty_reject_log"}          summary (total + last entry)
+ *   {"cmd":"dirty_reject_log","tail":N} last N ring entries
+ *   {"cmd":"dirty_reject_log","addr":"0x8019AA94"} filter by target
+ */
+static void handle_dirty_reject_log(int id, const char *json)
+{
+    int tail = json_get_int(json, "tail", 0);
+    uint32_t want_addr = 0xFFFFFFFFu;
+    int have_addr = 0;
+    {
+        char tbuf[32] = {0};
+        if (json_get_str(json, "addr", tbuf, sizeof tbuf)) {
+            want_addr = (uint32_t)strtoul(tbuf, NULL, 0);
+            have_addr = 1;
+        }
+    }
+    uint64_t total = g_dirty_ram_reject_log_seq;
+    if (tail <= 0 && !have_addr) {
+        char out[512];
+        DirtyRamRejectEntry *last = total
+            ? &g_dirty_ram_reject_log[(total - 1) & (DIRTY_RAM_REJECT_LOG_CAP - 1u)]
+            : NULL;
+        snprintf(out, sizeof out,
+                 "{\"id\":%d,\"ok\":true,\"total\":%llu,\"cap\":%d",
+                 id, (unsigned long long)total, DIRTY_RAM_REJECT_LOG_CAP);
+        if (last) {
+            size_t p = strlen(out);
+            snprintf(out + p, sizeof out - p,
+                     ",\"last\":{\"seq\":%llu,\"addr\":\"0x%08X\",\"phys\":\"0x%08X\","
+                     "\"word\":\"0x%08X\",\"flags\":\"0x%X\",\"reason\":%u,"
+                     "\"unsup_pc\":\"0x%08X\",\"unsup_insn\":\"0x%08X\",\"unsup_id\":%u,"
+                     "\"ra\":\"0x%08X\",\"frame\":%u}}",
+                     (unsigned long long)last->seq, last->addr, last->phys,
+                     last->word, last->flags, last->reason,
+                     last->unsup_pc, last->unsup_insn, last->unsup_id,
+                     last->ra, last->frame);
+        }
+        strncat(out, "}\n", sizeof out - strlen(out) - 1);
+        debug_server_send_line(out);
+        return;
+    }
+    if (tail <= 0) tail = DIRTY_RAM_REJECT_LOG_CAP;
+    if (tail > (int)DIRTY_RAM_REJECT_LOG_CAP) tail = DIRTY_RAM_REJECT_LOG_CAP;
+    uint64_t avail = (total < DIRTY_RAM_REJECT_LOG_CAP) ? total : DIRTY_RAM_REJECT_LOG_CAP;
+    uint64_t start = total - (uint64_t)tail;
+    if (start > avail) start = avail - (uint64_t)tail; /* keep window valid */
+    if ((int64_t)start < 0) start = 0;
+    const size_t BUF_SZ = 4 * 1024 * 1024;
+    char *out = (char *)malloc(BUF_SZ);
+    if (!out) { send_err(id, "oom"); return; }
+    size_t pos = 0;
+    pos += snprintf(out + pos, BUF_SZ - pos,
+                    "{\"id\":%d,\"ok\":true,\"total\":%llu,\"entries\":[",
+                    id, (unsigned long long)total);
+    int first = 1, emitted = 0;
+    /* Walk the retained window oldest->newest; apply the addr filter. */
+    uint64_t wstart = (total > DIRTY_RAM_REJECT_LOG_CAP)
+        ? total - DIRTY_RAM_REJECT_LOG_CAP : 0;
+    (void)start; (void)avail;
+    for (uint64_t s = wstart; s < total; s++) {
+        DirtyRamRejectEntry *e =
+            &g_dirty_ram_reject_log[s & (DIRTY_RAM_REJECT_LOG_CAP - 1u)];
+        if (have_addr && e->addr != want_addr) continue;
+        if (!first) pos += snprintf(out + pos, BUF_SZ - pos, ",");
+        first = 0; emitted++;
+        pos += snprintf(out + pos, BUF_SZ - pos,
+            "{\"seq\":%llu,\"addr\":\"0x%08X\",\"phys\":\"0x%08X\","
+            "\"word\":\"0x%08X\",\"flags\":\"0x%X\",\"reason\":%u,"
+            "\"unsup_pc\":\"0x%08X\",\"unsup_insn\":\"0x%08X\",\"unsup_id\":%u,"
+            "\"ra\":\"0x%08X\",\"frame\":%u}",
+            (unsigned long long)e->seq, e->addr, e->phys, e->word, e->flags,
+            e->reason, e->unsup_pc, e->unsup_insn, e->unsup_id, e->ra, e->frame);
+        if (pos > BUF_SZ - 512) break;
+    }
+    pos += snprintf(out + pos, BUF_SZ - pos, "],\"emitted\":%d}\n", emitted);
+    debug_server_send_line(out);
+    free(out);
+}
+
 static void handle_unknown_dispatch_log(int id, const char *json)
 {
     int tail = json_get_int(json, "tail", 0);
@@ -14267,6 +14351,7 @@ static const CmdEntry s_commands[] = {
     { "fntrace_clear",     handle_fntrace_clear },
     { "fntrace_dump",      handle_fntrace_dump },
     { "unknown_dispatch_log", handle_unknown_dispatch_log },
+    { "dirty_reject_log",  handle_dirty_reject_log },
     { "bioscall_dump",     handle_bioscall_dump },
     { "bios_info",         handle_bios_info },
     { "hle_dump",          handle_hle_dump },

@@ -228,6 +228,13 @@ uint64_t              g_dirty_ram_flow_log_seq = 0;
 DirtyRamInsnLogEntry  g_dirty_ram_insn_log[DIRTY_RAM_INSN_LOG_CAP] = {0};
 uint64_t              g_dirty_ram_insn_log_seq = 0;
 
+/* Return-0 reject ring for dirty_ram_dispatch_inner (struct + cap live in
+ * dirty_ram_interp.h). Always-on, bounded; written only on the reject paths
+ * (rare) so a fail-fast unknown-dispatch can be traced to the exact
+ * rejecting condition over TCP (dirty_reject_log) without a rebuild. */
+DirtyRamRejectEntry g_dirty_ram_reject_log[DIRTY_RAM_REJECT_LOG_CAP] = {0};
+uint64_t            g_dirty_ram_reject_log_seq = 0;
+
 /* Current frame counter, defined in debug_server.c. */
 extern uint64_t s_frame_count;
 
@@ -1703,6 +1710,14 @@ static int exec_one_fetched_inner(CPUState *cpu, uint32_t pc, uint32_t insn,
             CRET(CRES_PCCHAIN, 1);
 #undef CRET
         }
+        case 0x0A: /* MOVZ — MIPS32-only; unimplemented on the R3000A.
+                    * psx_interpreter.c documents the faithful behavior:
+                    * the R3000A ignores undefined SPECIAL encodings (no
+                    * trap, no register write). Seen live in BR2 overlay
+                    * code at 0x8019AA98 (delay slot of jal 0x8019AD60). */
+        case 0x0B: /* MOVN — same: ignored encoding on R3000A. */
+            cpu->gpr[0] = 0;
+            return 0;
         case 0x0C: /* SYSCALL */
             cpu->pc = pc;
             psx_syscall(cpu, (insn >> 6) & 0xFFFFFu);
@@ -2383,6 +2398,59 @@ static int exec_one_fetched_inner(CPUState *cpu, uint32_t pc, uint32_t insn,
 
 static int dirty_ram_dispatch_inner(CPUState* cpu, uint32_t addr, uint32_t stop_addr);
 
+/* Record a dirty_ram_dispatch_inner return-0 into the reject ring. Gathers
+ * the gate predicates at log time (they are cheap range/bitmap tests and
+ * this only runs on the reject paths). reason: 1 = dirty-page gate,
+ * 2 = first instruction undecodable. */
+static void dirty_ram_reject_log(CPUState *cpu, uint32_t addr, uint32_t reason,
+                                 int clean_miss) {
+    uint32_t phys = addr & 0x1FFFFFFFu;
+    DirtyRamRejectEntry *e =
+        &g_dirty_ram_reject_log[g_dirty_ram_reject_log_seq &
+                                (DIRTY_RAM_REJECT_LOG_CAP - 1u)];
+    uint32_t flags = 0;
+    uint32_t word = 0;
+    int native_ok = 0, in_text = 0, dirty = 0, ovl = 0, decodable = 0, in2mb = 0;
+#ifdef PSX_HAS_GAME_DISPATCH
+    native_ok = psx_game_text_native_ok(addr);
+    in_text   = psx_game_address_in_text(addr);
+#endif
+    dirty = dirty_ram_is_dirty(phys);
+    ovl   = phys_is_overlay_region(phys);
+    in2mb = phys < (2u * 1024u * 1024u);
+    if (in2mb) {
+        word = fetch_word(phys);
+        decodable = dirty_ram_word_looks_decodable(word);
+    }
+    if (native_ok) flags |= 1u;
+    if (in_text)   flags |= 2u;
+    if (clean_miss) flags |= 4u;
+    if (dirty)     flags |= 8u;
+    if (ovl)       flags |= 16u;
+    if (decodable) flags |= 32u;
+    if (in2mb)     flags |= 64u;
+    e->seq    = g_dirty_ram_reject_log_seq++;
+    e->addr   = addr;
+    e->phys   = phys;
+    e->word   = word;
+    e->flags  = flags;
+    e->reason = reason;
+    e->unsup_pc   = g_unsupported_pc;
+    e->unsup_insn = g_unsupported_insn;
+    e->unsup_id   = 0;
+    if (reason == 2 && g_unsupported_reason) {
+        if (!strcmp(g_unsupported_reason, "primary opcode"))                    e->unsup_id = 6;
+        else if (!strcmp(g_unsupported_reason, "SPECIAL funct"))                e->unsup_id = 2;
+        else if (!strcmp(g_unsupported_reason, "REGIMM rt"))                    e->unsup_id = 3;
+        else if (!strcmp(g_unsupported_reason, "COP0 op"))                      e->unsup_id = 4;
+        else if (!strcmp(g_unsupported_reason, "COP2 op"))                      e->unsup_id = 5;
+        else if (!strcmp(g_unsupported_reason, "control-transfer in delay slot")) e->unsup_id = 1;
+        else                                                                     e->unsup_id = 0xFFu;
+    }
+    e->ra     = cpu->gpr[31];
+    e->frame  = (uint32_t)s_frame_count;
+}
+
 /* Public entry point.  Caller (psx_dispatch) has translated `addr` to a
  * KSEG-stripped form already in some cases, so accept any address and
  * mask. Returns 1 if interpretation handled the basic block; 0 if the
@@ -2911,6 +2979,7 @@ static int dirty_ram_dispatch_inner(CPUState* cpu, uint32_t addr, uint32_t stop_
             dirty_ram_word_looks_decodable(fetch_word(phys))) {
             dirty_ram_mark_executable_range(phys, 4u);
         } else {
+            dirty_ram_reject_log(cpu, addr, 1u, clean_game_text_miss);
             return 0;
         }
     }
@@ -3144,6 +3213,7 @@ static int dirty_ram_dispatch_inner(CPUState* cpu, uint32_t addr, uint32_t stop_
                  * code (stale data, return-target into save area, etc.).
                  * Hand off to psx_unknown_dispatch which has its own
                  * pattern-matching trampoline resolver. */
+                dirty_ram_reject_log(cpu, addr, 2u, clean_game_text_miss);
                 return 0;
             }
             /* Made some progress, then hit unknown.  Treat as a no-op
