@@ -656,9 +656,18 @@ static int psx_change_thread_fiber(CPUState* cpu, uint32_t target_tcb)
     extern void* g_exception_owner_fiber;
     extern int   g_pending_exception_longjmp;
     extern jmp_buf exception_jmpbuf;
+    extern int   psx_exception_jmpbuf_live(void);
     if (g_pending_exception_longjmp && psx_fiber_current() == g_exception_owner_fiber) {
         int code = g_pending_exception_longjmp;
         g_pending_exception_longjmp = 0;
+        /* Dead-frame guard (same as deferred_exception_longjmp): the jmp_buf
+         * bytes may be stale if the owning setjmp frame already returned —
+         * never longjmp into it. The escape's cpu->pc/GPR commit already
+         * happened, so declining just lets this thread continue. */
+        if (!psx_exception_jmpbuf_live()) {
+            extern uint64_t g_stale_exc_longjmp;
+            g_stale_exc_longjmp++;
+        } else {
         /* Same shadow-frame hardening as deferred_exception_longjmp: this is
          * the deferred-honor site — the actual unwind of the OWNER fiber's
          * frames happens here, so a live shadow frame on this stack must have
@@ -667,6 +676,7 @@ static int psx_change_thread_fiber(CPUState* cpu, uint32_t target_tcb)
         extern void overlay_loader_shadow_escape_fixup(uint64_t target_epoch);
         overlay_loader_shadow_escape_fixup(g_exc_setjmp_epoch);
         longjmp(exception_jmpbuf, code);
+        }
     }
 
     debug_server_log_thread_event(9, cpu, target_tcb, current_tcb, 0);

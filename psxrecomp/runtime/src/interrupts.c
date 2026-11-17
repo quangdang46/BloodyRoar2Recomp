@@ -116,6 +116,7 @@ uint64_t g_esc_decline_nopending= 0;
 uint64_t g_esc_decline_noexc    = 0;
 uint64_t g_esc_decline_sentinel = 0;
 uint64_t g_esc_decline_fiber    = 0;
+uint64_t g_esc_decline_deadframe= 0;   /* armed RFE but exception_jmpbuf frame is dead */
 int      g_esc_decline_latched  = 0;
 uint32_t g_esc_l_pc             = 0;
 uint32_t g_esc_l_curfiber       = 0;
@@ -763,6 +764,36 @@ void* g_exception_owner_fiber = NULL;
 int   g_pending_exception_longjmp = 0;
 extern int g_psx_dispatch_depth;
 
+/* Liveness token paired with exception_jmpbuf. A jmp_buf is a valid longjmp
+ * target ONLY while the setjmp frame that filled it is still on a live host
+ * stack. psx_check_interrupts arms exception_jmpbuf once per delivery and
+ * that frame dies when the activation returns — but the jmp_buf BYTES stay
+ * in the global afterwards (the epilogue memcpy restores whatever was there
+ * before arming: dead content for an outermost delivery). Without this token
+ * a late deferred_exception_longjmp / traps.c pending-honor /
+ * psx_rfe_escape_check could resurrect that dead frame: stale SP plus stale
+ * callee-saved x19-x28 (the -O2 compiler legitimately parks globals/ring
+ * bases in those registers across the setjmp), delivering a foreign register
+ * file into game code and poisoning TCB saved-PC slots (the frame-1899
+ * battle_intro_flow crash / cpu.pc=0 RestoreState wedge).
+ *
+ * s_exc_jmpbuf_live is saved/restored in lockstep with the jmp_buf memcpy
+ * pair in psx_check_interrupts, so it always describes the frame the CURRENT
+ * exception_jmpbuf content belongs to: 1 = live setjmp frame on some host
+ * stack, 0 = bytes are stale and MUST NOT be longjmp'd to. s_exc_jmpbuf_tag
+ * is a unique arm id for diagnostics/ABA. */
+static int      s_exc_jmpbuf_live   = 0;
+static uint64_t s_exc_jmpbuf_tag    = 0;
+static uint64_t s_exc_jmpbuf_armseq = 0;
+/* Stale-longjmp refusals: incremented when an escape was requested against a
+ * dead exception_jmpbuf frame (the faithful action is to let dispatch
+ * continue — the RFE/RestoreState already committed cpu->pc/GPRs and there
+ * is no handler call tree left to unwind). */
+uint64_t g_stale_exc_longjmp        = 0;
+/* Nonzero while exception_jmpbuf describes a live setjmp frame. */
+int      psx_exception_jmpbuf_live(void) { return s_exc_jmpbuf_live; }
+uint64_t psx_exception_jmpbuf_tag(void)  { return s_exc_jmpbuf_tag; }
+
 /* Set by psx_check_interrupts_at while a compiled block-leader interrupt check
  * is in progress. If the delivered handler later RFEs to the sentinel outside
  * the synchronous host window, dirty_ram_dispatch can resume at this guest PC
@@ -987,6 +1018,7 @@ void psx_rfe_escape_check(CPUState* cpu) {
         int sent = (cpu->pc == PSX_EXC_SENTINEL_PC);
         void *curf = psx_fiber_current();
         int fibmis = (curf != g_exception_owner_fiber);
+        int dead   = !s_exc_jmpbuf_live;
         if (pend && iexc && !sent) {
             if (fibmis) {
                 g_esc_decline_fiber++;
@@ -997,6 +1029,8 @@ void psx_rfe_escape_check(CPUState* cpu) {
                     g_esc_l_ownfiber  = (uint32_t)(uintptr_t)g_exception_owner_fiber;
                     g_esc_l_reason    = (uint32_t)g_exc_escape_reason;
                 }
+            } else if (dead) {
+                g_esc_decline_deadframe++;
             } else {
                 g_esc_fired++;
             }
@@ -1008,6 +1042,7 @@ void psx_rfe_escape_check(CPUState* cpu) {
     }
     if (g_rfe_escape_pending && in_exception &&
         cpu->pc != PSX_EXC_SENTINEL_PC &&
+        s_exc_jmpbuf_live &&
         psx_fiber_current() == g_exception_owner_fiber) {
         g_rfe_escape_pending = 0;
         /* A LEGACY_SENTINEL delivery escaping to a NON-sentinel PC means the
@@ -1094,6 +1129,8 @@ void interrupts_init(void) {
     g_exc_escape_reason = PSX_EXC_ESCAPE_NONE;
     g_rfe_escape_pending = 0;
     g_pending_exception_longjmp = 0;
+    s_exc_jmpbuf_live = 0;   /* no exception setjmp frame survives a reset */
+    s_exc_jmpbuf_tag  = 0;
     s_fast_maintenance = 0;
     {
         extern uint32_t g_dirty_safe_resume_pc;
@@ -1132,6 +1169,10 @@ void interrupts_resync_after_restore(void) {
     g_exc_escape_reason = PSX_EXC_ESCAPE_NONE;
     g_rfe_escape_pending = 0;
     g_pending_exception_longjmp = 0;
+    /* The load longjmp abandoned every host stack that could hold a live
+     * exception setjmp frame — the jmp_buf bytes are stale from here on. */
+    s_exc_jmpbuf_live = 0;
+    s_exc_jmpbuf_tag  = 0;
     s_compiled_interrupt_resume_pc = 0;
     s_last_interrupt_check_pc = 0;
     /* De-dupe key for dispatch_entry: a stale absolute cycle from the pre-load
@@ -1203,6 +1244,19 @@ void interrupts_log_last_vblank_irqctx(const char *tag)
  * check in traps.c psx_change_thread_fiber executes the longjmp on the
  * correct stack. */
 static void deferred_exception_longjmp(int code) {
+    /* Dead-frame guard: exception_jmpbuf is only a valid target while the
+     * setjmp frame that armed it is still on a live host stack. Once every
+     * psx_check_interrupts activation has exited, the bytes are stale — a
+     * longjmp would resurrect a returned frame (foreign SP + callee-saved
+     * x19-x28, TCB saved-PC poisoning). The RFE/RestoreState that requested
+     * this escape already committed cpu->pc/GPRs, so with no handler call
+     * tree left to unwind the faithful action is to let dispatch continue.
+     * Checked BEFORE the shadow fixup: no unwind means no skipped epilogue
+     * to repair. */
+    if (!s_exc_jmpbuf_live) {
+        g_stale_exc_longjmp++;
+        return;
+    }
     /* If this unwind blows through a live shadow-diff frame (a frame armed
      * BEFORE the shadow started), restore the shadow-scoped globals its
      * skipped epilogue would have restored — otherwise the diff instrument
@@ -2056,8 +2110,16 @@ irq_deliver_eval:
      * and restore it in the epilogue so each nesting level's RFE lands in its
      * own live frame. */
     jmp_buf saved_exception_jmpbuf;
+    int      saved_exc_jmpbuf_live = s_exc_jmpbuf_live;
+    uint64_t saved_exc_jmpbuf_tag  = s_exc_jmpbuf_tag;
     memcpy(&saved_exception_jmpbuf, &exception_jmpbuf, sizeof(jmp_buf));
     g_exc_setjmp_epoch++;   /* new setjmp frame armed (see decl above) */
+    /* Arm the liveness token in lockstep with the setjmp below: while the
+     * for(;;) loop is inside its frame, exception_jmpbuf is a valid longjmp
+     * target; the epilogue restore rewinds both to the saved (outer or dead)
+     * state. */
+    s_exc_jmpbuf_live = 1;
+    s_exc_jmpbuf_tag  = ++s_exc_jmpbuf_armseq;
     int handler_jmp_val = -1;   /* diagnostic: how the handler dispatch exited */
     for (;;) {
         int jmp_val = setjmp(exception_jmpbuf);
@@ -2083,6 +2145,10 @@ irq_deliver_eval:
         /* jmp_val 0 (normal return) or 1 (ReturnFromException): done. */
         break;
     }
+    /* This delivery's setjmp frame has exited: exception_jmpbuf must not be
+     * longjmp'd to until the restore below reinstates the OUTER frame's
+     * (still-live) content or the dead pre-delivery state. */
+    s_exc_jmpbuf_live = 0;
     /* Restore previous exception-owner state. Supports nested exceptions
      * if they ever arise (uncommon but harmless). */
     g_exception_owner_fiber = prev_owner_fiber;
@@ -2090,8 +2156,12 @@ irq_deliver_eval:
     g_dirty_interp_active = prev_interp_active;
     /* Re-arm the OUTER frame's jmpbuf (see save at entry): after a nested
      * delivery returns, the outer handler is live again and its RFE must land
-     * in the outer setjmp frame, not this exited one. */
+     * in the outer setjmp frame, not this exited one. The liveness token is
+     * restored in lockstep: outermost deliveries rewind to live=0 (the saved
+     * pre-arm state), so the stale jmp_buf bytes can never be targeted. */
     memcpy(&exception_jmpbuf, &saved_exception_jmpbuf, sizeof(jmp_buf));
+    s_exc_jmpbuf_live = saved_exc_jmpbuf_live;
+    s_exc_jmpbuf_tag  = saved_exc_jmpbuf_tag;
     /* Ape memcard fix #3: restore the resume-PC latch cleared at handler entry
      * (see above). Sits with the other post-dispatch-loop restores so an
      * RFE/RestoreState longjmp — which lands in the setjmp loop above — can't

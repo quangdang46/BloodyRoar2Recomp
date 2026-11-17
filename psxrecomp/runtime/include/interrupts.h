@@ -145,6 +145,13 @@ void psx_irq_delivery_diag(uint32_t out[12]);
  * the exception handler to model real hardware's RFE+JR $k0 unwind. */
 void psx_exception_longjmp(void);
 
+/* Liveness token for exception_jmpbuf: nonzero only while the setjmp frame
+ * that armed it is still on a live host stack. Every longjmp consumer must
+ * refuse to target exception_jmpbuf when this returns 0 — the bytes are then
+ * stale and a jump would resurrect a dead frame (foreign SP/x19-x28). */
+int      psx_exception_jmpbuf_live(void);
+uint64_t psx_exception_jmpbuf_tag(void);
+
 /* longjmp back to psx_check_interrupts for RestoreState redirection.
  *
  * On real hardware, RestoreState (A0:0x14) restores all GPRs from a

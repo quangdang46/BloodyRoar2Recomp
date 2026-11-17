@@ -10236,7 +10236,8 @@ static void handle_freeze_check(int id, const char *json)
                     g_irqanom_cause;
     extern uint64_t g_esc_check_calls, g_esc_fired,
                     g_esc_decline_nopending, g_esc_decline_noexc,
-                    g_esc_decline_sentinel, g_esc_decline_fiber;
+                    g_esc_decline_sentinel, g_esc_decline_fiber,
+                    g_esc_decline_deadframe, g_stale_exc_longjmp;
     extern int      g_esc_decline_latched;
     extern uint32_t g_esc_l_pc, g_esc_l_curfiber, g_esc_l_ownfiber,
                     g_esc_l_reason;
@@ -10441,6 +10442,8 @@ static void handle_freeze_check(int id, const char *json)
                     "\"esc_dec_noexc\":%llu,"
                     "\"esc_dec_sentinel\":%llu,"
                     "\"esc_dec_fiber\":%llu,"
+                    "\"esc_dec_deadframe\":%llu,"
+                    "\"stale_exc_longjmp\":%llu,"
                     "\"esc_l_pc\":\"0x%08X\","
                     "\"esc_l_curfiber\":\"0x%08X\","
                     "\"esc_l_ownfiber\":\"0x%08X\","
@@ -10624,6 +10627,8 @@ static void handle_freeze_check(int id, const char *json)
                     (unsigned long long)g_esc_decline_noexc,
                     (unsigned long long)g_esc_decline_sentinel,
                     (unsigned long long)g_esc_decline_fiber,
+                    (unsigned long long)g_esc_decline_deadframe,
+                    (unsigned long long)g_stale_exc_longjmp,
                     g_esc_l_pc,
                     g_esc_l_curfiber,
                     g_esc_l_ownfiber,
