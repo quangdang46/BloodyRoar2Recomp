@@ -1078,14 +1078,20 @@ extern void script_move_timer_eval(void);
 extern void script_op_dispatch(void);
 extern void script_stream_tick(void);
 extern void scriptop_add(void);
+extern void scriptop_bra(void);
+extern void scriptop_bsr(void);
+extern void scriptop_camera(void);
+extern void scriptop_chk(void);
 extern void scriptop_cmp(void);
 extern void scriptop_div(void);
 extern void scriptop_end(void);
+extern void scriptop_gpad(void);
 extern void scriptop_move(void);
 extern void scriptop_mul(void);
 extern void scriptop_ret(void);
 extern void scriptop_sflag(void);
 extern void scriptop_sub(void);
+extern void scriptop_wait(void);
 extern void scroll_attr_100_update(void);
 extern void scroll_cfg_set(void);
 extern void scroll_offset_accumulate(void);
@@ -1910,8 +1916,12 @@ const Br2FnEnt fn_table[] = {
   { 0x80181db8, (void *)ani_fixup_guest },
   { 0x80181f20, (void *)fighter_script_fsm },
   { 0x80182f3c, (void *)scriptop_end },
+  { 0x80182f48, (void *)scriptop_bra },
+  { 0x80183248, (void *)scriptop_bsr },
   { 0x80183558, (void *)scriptop_ret },
+  { 0x80183664, (void *)scriptop_wait },
   { 0x80183bd0, (void *)scriptop_sflag },
+  { 0x80183c30, (void *)scriptop_chk },
   { 0x80184378, (void *)scriptop_cmp },
   { 0x8018444c, (void *)scriptop_move },
   { 0x80184710, (void *)scriptop_add },
@@ -1919,6 +1929,8 @@ const Br2FnEnt fn_table[] = {
   { 0x80184890, (void *)scriptop_mul },
   { 0x80184914, (void *)scriptop_div },
   { 0x8018499c, (void *)packet_timer_update },
+  { 0x80184aa0, (void *)scriptop_gpad },
+  { 0x80184d3c, (void *)scriptop_camera },
   { 0x80184f28, (void *)script_op_dispatch },
   { 0x80185048, (void *)part_matrix_compute },
   { 0x801851d8, (void *)anim_vec3_normalize },
