@@ -2194,10 +2194,9 @@ int32_t blk_io_retry(uint32_t param_1,void *param_2)
       cd_bitstream_decode(s0,*(uint32_t *)(s1 + idx * 4),
                    *(uint32_t *)guest_at(0x801f4758));
       cd_dir_entry_probe(s0);
-      (*(volatile uint32_t *)guest_at(0x801bce9c))++;
       return s0;
     }
-    if (--s2 == 0) { (*(volatile uint32_t *)guest_at(0x801bcea0))++; return -1; }
+    if (--s2 == 0) return -1;
   }
 }
 

@@ -49,9 +49,6 @@ extern uint8_t  br2_ld8p(uint32_t cell);
 extern uint16_t br2_ld16p(uint32_t cell);
 extern uint32_t br2_ld32p(uint32_t cell);
 
-#define CDDBG_INC(a) do{ (*(volatile uint32_t *)guest_at(a))++; }while(0)
-#define CDDBG_SET(a,v) do{ *(volatile uint32_t *)guest_at(a)=(uint32_t)(v); }while(0)
-
 /* DIAG: ring recording every write to resume stamp 0x801feb00.
  * tag 1 = cd_dir_entry_finalize (fc6), tag 2 = cd_dir_entry_store (bc6). */
 #define FEB00_TRACE_CAP 2048
@@ -422,8 +419,6 @@ undefined4 cd_cmd_issue_async(byte param_1,int param_2)
   int iVar2;
   int iVar3;
   
-  CDDBG_INC(0x801bce7c);
-  CDDBG_SET(0x801bce80, param_1);
   uVar1 = DAT_801bc848;
   iVar3 = 3;
   while( true ) {
@@ -469,7 +464,6 @@ undefined4 cd_read_open_clean(int param_1)
   uint uVar4;
   uint8_t *p18;
   
-  CDDBG_INC(0x801bce64);
   mc_session(0);
   mc_session_b(0);
   if ((DAT_801bc7b4 & 1) != 0) {
@@ -477,7 +471,7 @@ undefined4 cd_read_open_clean(int param_1)
   }
   uVar1 = cd_status_raw();
   if ((uVar1 & 0x10) != 0) {
-    CDDBG_INC(0x801bce68);   /* status bit4 early-return */
+    /* status bit4 early-return */
     uVar1 = cd_timer_read(0xffffffff);
     if ((uVar1 & 0x3f) == 0) {
       cd_str_print(0x80125ae0);
@@ -495,7 +489,7 @@ undefined4 cd_read_open_clean(int param_1)
     uVar2 = guest_of(cd_param_buf_get());
     iVar3 = cd_mode_flag_set(2,uVar2,0);
     if (iVar3 == 0) {
-      CDDBG_INC(0x801bce74);   /* mode_flag_set(2) fail */
+      /* mode_flag_set(2) fail */
       DAT_801bcb94 = 0xffffffff;
       return 0xffffffff;
     }
@@ -509,7 +503,7 @@ undefined4 cd_read_open_clean(int param_1)
   uVar1 = cd_mode_byte_read();
   if (((uVar4 != uVar1) || (param_1 != 0)) &&
       (iVar3 = cd_mode_flag_set(0xe,(int)(guest_sp() - 0x18),0), iVar3 == 0)) {
-    CDDBG_INC(0x801bce78);   /* mode_flag_set(0xe) fail */
+    /* mode_flag_set(0xe) fail */
     DAT_801bcb94 = 0xffffffff;
     return 0xffffffff;
   }
@@ -519,8 +513,8 @@ undefined4 cd_read_open_clean(int param_1)
     cd_cmd_dispatch3(0x80198838);
   }
   DAT_801bcb88 = DAT_801bcb84;
-  CDDBG_INC(0x801bce6c);              /* reached ReadN issue */
-  CDDBG_SET(0x801bce70, DAT_801bcb80);/* sector count bcb80 */
+  /* reached ReadN issue */
+  /* sector count bcb80 */
   cd_cmd_issue_async(6,0);
   DAT_801bcb94 = DAT_801bcb80;
   DAT_801bcb98 = cd_timer_read(0xffffffff);
@@ -684,7 +678,6 @@ bool cd_cmd_issue_sync(byte param_1,int param_2,undefined4 param_3)
   
   uVar1 = DAT_801bc848;
   iVar5 = 3;
-  CDDBG_INC(0x801bce20);
   do {
     DAT_801bc848 = 0;
     if ((param_1 != 1) && ((DAT_801bc854 & 0x10) != 0)) {
@@ -696,8 +689,7 @@ bool cd_cmd_issue_sync(byte param_1,int param_2,undefined4 param_3)
       iVar3 = cd_cmd_issue(param_1,param_2,param_3,0);
       iVar4 = 0;
       if (iVar3 == 0) break;
-      CDDBG_INC(0x801bce24);   /* cd_cmd_issue(param_1) returned nonzero */
-      CDDBG_SET(0x801bce28,iVar3);
+      /* cd_cmd_issue(param_1) returned nonzero */
     }
     iVar5 = iVar5 + -1;
     iVar4 = -1;
@@ -709,7 +701,6 @@ bool cd_cmd_issue_sync(byte param_1,int param_2,undefined4 param_3)
     iVar5 = cd_result_wait_a(0,param_3 ? (undefined1 *)guest_at(param_3)
                                       : (undefined1 *)0);
     bVar2 = iVar5 == 2;
-    CDDBG_SET(0x801bce2c,iVar5);
   }
   else {
     bVar2 = false;
@@ -1112,8 +1103,6 @@ uint32_t cd_dir_entry_probe(int32_t param_1)
   uint32_t *base, *rec;
   uint32_t table_guest;
   int64_t prod;
-  CDDBG_INC(0x801bcf24);              /* DIAG: probe calls */
-  CDDBG_SET(0x801bcf28, (uint32_t)param_1); /* DIAG: probe arg */
   /* param_1 and the table base are GUEST addresses (KSEG0). The index math
    * must run in guest-address space: subtracting the host pointer guest_at()
    * returns produces a wild idx and the cursor never advances. Keep the host
@@ -1136,8 +1125,7 @@ uint32_t cd_dir_entry_probe(int32_t param_1)
   }
   rec = base + (idx << 5) / 4;   /* idx*32 bytes = idx*8 u32 */
   rec = (uint32_t *)((uint8_t *)base + (idx << 5));
-  if (*(int16_t *)rec != 4) { CDDBG_SET(0x801bce8c,param_1); CDDBG_SET(0x801bce90,idx); CDDBG_SET(0x801bce94,1); CDDBG_SET(0x801bcf2c,idx); return 1; }
-  CDDBG_INC(0x801bcf30);              /* DIAG: probe freed entry */
+  if (*(int16_t *)rec != 4) { return 1; }
   count = (int16_t)*(uint16_t *)((uint8_t *)rec + 6);
   a0 = 0;   /* MIPS 0x801992D8: move a0,zero — cursor addend baseline */
   if (count > 0) {
@@ -1147,7 +1135,6 @@ uint32_t cd_dir_entry_probe(int32_t param_1)
     }
     a0 = count;   /* free-loop leaves a0 == count (0x801992E4 addiu) */
   }
-  CDDBG_SET(0x801bce8c,param_1); CDDBG_SET(0x801bce90,idx); CDDBG_SET(0x801bce94,*(uint32_t *)guest_at(0x801fc6ac)); CDDBG_SET(0x801bce98,(uint32_t)(a0+idx));
   *(uint32_t *)guest_at(0x801fc6ac) = (uint32_t)(a0 + idx);
   return 0;
 }
@@ -1314,14 +1301,6 @@ void bios_tramp_a044(void) { br2_bios_tramp(0xa0,0x44); }
 extern void cd_dir_reset(void);
 void cd_dir_table_set(uint32_t a0,uint32_t a1)
 {
-  /* DIAG: log every (a0,a1) plus live _DAT_801f4754 to find the fc6c0=0 call. */
-  static uint32_t n;
-  uint32_t slot = 0x801bcfa0 + (n & 7) * 0x10;
-  CDDBG_SET(slot + 0x00, a0);
-  CDDBG_SET(slot + 0x04, a1);
-  CDDBG_SET(slot + 0x08, *(uint32_t *)guest_at(0x801f4754));
-  CDDBG_SET(slot + 0x0c, n);
-  n++;
   *(uint32_t *)guest_at(0x801fc6c0) = a0;
   *(uint32_t *)guest_at(0x801fc6c4) = a1;
   cd_dir_reset();
@@ -1625,8 +1604,6 @@ int32_t cd_channel_poll(uint32_t *param_1, uint32_t *param_2)
   uint32_t base = *(uint32_t *)guest_at(0x801fc6c0);
   uint32_t idx = *(uint32_t *)guest_at(0x801fc6ac);
   uint8_t *e = (uint8_t *)guest_at(base + idx * 0x20);
-  CDDBG_INC(0x801bcf14);              /* DIAG: channel_poll calls */
-  CDDBG_SET(0x801bcf18, idx);         /* DIAG: poll idx seen */
   if (*(uint16_t *)e == 1) {
     /* Generated 0x8019938C-0x801993A4: the idx reset (0x801FC6AC=0) sits in
      * the delay slot of the 0x801FC6B4 test, so it runs UNCONDITIONALLY on
@@ -1637,8 +1614,7 @@ int32_t cd_channel_poll(uint32_t *param_1, uint32_t *param_2)
     idx = *(uint32_t *)guest_at(0x801fc6ac);
     e = (uint8_t *)guest_at(base + idx * 0x20);
   }
-  if (*(uint16_t *)e != 2) { CDDBG_SET(0x801bcf1c, *(uint16_t *)e); return 1; }
-  CDDBG_INC(0x801bcf20);              /* DIAG: poll found state2 */
+  if (*(uint16_t *)e != 2) { return 1; }
   *(uint16_t *)e = 4;
   *param_1 = base + *(uint32_t *)guest_at(0x801fc6c4) * 0x20 + idx * 0x7e0;
   *param_2 = base + idx * 0x20;
@@ -2991,18 +2967,6 @@ uint32_t cd_reg_window_op(uint32_t a0,uint32_t a1,uint32_t a2)
    * model progress during the wait — same contract as the other IRQ/MMIO-
    * boundary functions already delegated. */
   uint32_t ret = br2_call_generated(0x8019b944u,a0,a1,a2,0);
-  /* DIAG (guest-RAM counters on the 0x801bce30 diag page, read by the
-   * freeze dump): does op3 return -2 (poll timeout) and skip the ch4 kick?
-   * 0x801bce30=total calls, 34=op3 calls, 38=op3 -2 timeouts,
-   * 3c=last op3 ret, 40=last op3 a1, 44=last op. */
-  CDDBG_INC(0x801bce30);
-  CDDBG_SET(0x801bce44, a0);
-  if (a0 == 3u) {
-    CDDBG_INC(0x801bce34);
-    CDDBG_SET(0x801bce3c, ret);
-    CDDBG_SET(0x801bce40, a1);
-    if ((int32_t)ret == -2) CDDBG_INC(0x801bce38);
-  }
   return ret;
 }
 
@@ -3367,7 +3331,6 @@ extern void cd_dir_entry_finalize();
 
 void cd_mc_state_machine(void)
 {
-  CDDBG_INC(0x801bce88);   /* DIAG: invocation count */
   /* Delegate the whole body to generated MIPS (0x80199440). The clean-C
    * port cannot reserve the guest stack frame the cd_result_wait_b out
    * buffer needs: it passes guest_sp()-0x10 as param_2, but with no
@@ -3378,21 +3341,6 @@ void cd_mc_state_machine(void)
    * frame, placing the out buffer above the callee frame. Same contract
    * as cd_result_wait_b/cd_file_read_seq. */
   br2_call_generated(0x80199440u,0,0,0,0);
-  /* DIAG: histogram the status the generated body left at 0x801bcc88 so we
-   * can see which early-return path dominates (4=entry-busy, 8/9=claim-strand). */
-  {
-    uint32_t st = DB32(0x801bcc88) & 0xf;
-    if (st < 16) CDDBG_INC(0x801bcf34 + st * 4);
-    CDDBG_SET(0x801bcf78, DB32(0x801bcc88));
-    /* DIAG: entry state at the submit cursor + cursor value this call saw. */
-    {
-      uint32_t cur = DB32(0x801fc6a4);
-      uint32_t ent = DB32(0x801fc6c0) + cur * 0x20;
-      CDDBG_SET(0x801bcf7c, cur);
-      CDDBG_SET(0x801bcf80, *(uint16_t *)guest_at(ent));
-      CDDBG_SET(0x801bcf84, ent);
-    }
-  }
   return;
 }
 
@@ -3517,7 +3465,6 @@ int32_t cd_strcmp(const void *pa0,const void *pa1)
 void cd_dir_entry_finalize(void)
 {
   uint32_t idx = DB32(0x801fc6a8);
-  CDDBG_INC(0x801bcf08);              /* DIAG: finalize (state=2) calls */
   uint8_t *e = (uint8_t *)guest_at(DB32(0x801fc6c0) + (idx << 5));
   uint32_t t, fn;
   *(uint16_t *)e = 2;
@@ -3603,12 +3550,6 @@ uint32_t cd_chan_cmd_submit(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,
   uint32_t retry = 0;
   uint32_t fla, fpa;
   (void)a6;
-  CDDBG_INC(0x801bcf00);              /* DIAG: chan_cmd_submit calls */
-  if (s0 == 3) CDDBG_INC(0x801bcf04); /* DIAG: ch3 (CDROM) arms */
-  CDDBG_SET(0x801bcf88, a4);          /* DIAG: last CHCR arg */
-  CDDBG_SET(0x801bcf8c, a1);          /* DIAG: last MADR arg */
-  CDDBG_SET(0x801bcf90, a0);          /* DIAG: last channel arg */
-  CDDBG_SET(0x801bcf94, a3);          /* DIAG: last BCR-low arg */
 
   if (psx_read_word(base + 8) & 0x10000000u) {
     for (;;) {
@@ -3638,7 +3579,6 @@ uint32_t cd_chan_cmd_submit(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,
   fpa = DB32(0x801bcc40);
   while ((br2_ld8(fpa) & 0x40) == 0) { br2_irq_poll(); }
 
-  if (s0 == 3) CDDBG_INC(0x801bcf10); /* DIAG: ch3 CHCR kick reached */
   psx_write_word(base + 8, a4);                          /* CHCR: start */
   return psx_read_word(base + 8);                        /* CHCR readback */
 }
@@ -4455,7 +4395,6 @@ void cd_response_pump(void)
 {
   uint32_t s2 = DB8P(0x801bcb0c) & 3;
   uint32_t s0;
-  DB32(0x801bce04) = DB32(0x801bce04) + 1;   /* dbg: pump invocations */
   for (;;) {
     s0 = cd_response_process();
     if (s0 == 0) break;
@@ -4940,7 +4879,6 @@ void cd_dir_entry_store(uint32_t param_1,uint32_t param_2)
   uint8_t *e = (uint8_t *)guest_at(param_2 + ((uint32_t)param_1 << 5));
   uint32_t t;
   uint32_t fn;
-  CDDBG_INC(0x801bcf0c);              /* DIAG: store (state=2) calls */
   *(uint16_t *)e = 2;
   memcpy(&t,e + 0x1c,4);                     /* lwl/lwr unaligned u32 */
   *(uint32_t *)guest_at(0x801feb00) = t;
@@ -5483,9 +5421,6 @@ int cd_ctx_save(uint32_t a0)
  * Disasm 0x8019a8ec-0x8019aab8. */
 void cd_intc_dispatch(void)
 {
-  /* scratch debug counter @0x801bce00 — bumped on every clean-thunk entry so
-   * read_ram can confirm whether the CD IRQ dispatcher is ever invoked. */
-  DB32(0x801bce00) = DB32(0x801bce00) + 1;
   /* BIOS kernel boundary — run the recompiled guest body. */
   br2_call_generated(0x8019a8ec,0, 0, 0, 0);
 }
