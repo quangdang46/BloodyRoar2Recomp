@@ -947,14 +947,14 @@ uint32_t cd_xchg_bc850(uint32_t param_1)
   return old;
 }
 
-/* cd_file_open_b — CD file open: when flag @0x801ec6f8 clear, cd_stamp_to_sector
+/* cd_file_open_b — CD file open: when flag @0x801fc6f8 clear, cd_stamp_to_sector
  * on block @0x801feb00 then cd_file_open(fd+1,arg); returns u32
  * @0x801feb04, else -1. Disasm 0x8019917c-0x801991cc. */
 extern void cd_file_open(int32_t,uint8_t *);
 int32_t cd_file_open_b(uint32_t param_1)
 {
   int32_t v0;
-  if (*(uint32_t *)guest_at(0x801ec6f8) != 0) return -1;
+  if (*(uint32_t *)guest_at(0x801fc6f8) != 0) return -1;
   v0 = cd_stamp_to_sector(guest_at(0x801feb00));
   cd_seek_note(3, *(uint32_t *)guest_at(0x801feb00), (uint32_t)v0);
   cd_file_open(v0 + 1,(uint8_t *)guest_at(param_1));
@@ -997,15 +997,15 @@ void cd_subsystem_reset(void)
     cd_cmd_dispatch3(0);
     mc_session_b(0);
   }
-  p = (uint8_t *)guest_at(*(uint32_t *)guest_at(0x801b9bd0));
+  p = (uint8_t *)guest_at(*(uint32_t *)guest_at(0x801bcbd0));
   if (p) p[0] = 0;
-  p = (uint8_t *)guest_at(*(uint32_t *)guest_at(0x801b9bdc));
+  p = (uint8_t *)guest_at(*(uint32_t *)guest_at(0x801bcbdc));
   if (p) p[0] = 0;
   FUN_8018e310(0);
 }
 
 /* cd_probe_retry — CD probe retry: up to 5 cd_ready_probe attempts; on first
- * success installs fn-ptr triple @0x801bc848/4c/1b0 (+0 @0x801bc7b4)
+ * success installs fn-ptr triple @0x801bc858/5c/1b0 (+0 @0x801bc7b4)
  * and returns 1; else printf 0x80125638, returns 0. Disasm-verified. */
 extern int32_t cd_ready_probe(void);
 int32_t cd_probe_retry(void)
@@ -1013,8 +1013,8 @@ int32_t cd_probe_retry(void)
   int32_t s0;
   for (s0 = 4; s0 != -1; s0--) {
     if (cd_ready_probe() == 1) {
-      *(uint32_t *)guest_at(0x801bc848) = 0x80195b4c;
-      *(uint32_t *)guest_at(0x801bc84c) = 0x80195b74;
+      *(uint32_t *)guest_at(0x801bc858) = 0x80195b4c;
+      *(uint32_t *)guest_at(0x801bc85c) = 0x80195b74;
       *(uint32_t *)guest_at(0x801bc7b0) = 0x80195b9c;
       *(uint32_t *)guest_at(0x801bc7b4) = 0;
       return 1;
@@ -1362,12 +1362,14 @@ uint32_t cd_bzero(uint32_t a0,uint32_t a1)
 }
 
 /* cd_handler_pair_install — install handler pair: @0x801fefc0=0,
- * @0x801fefc4=0x801a189c, @0x801fefc8=0x801a1834. Disasm verified. */
+ * @0x801fefc4=0x801a189c, @0x801fefc8=0x801a1834, @0x801fefcc=0.
+ * Disasm verified. */
 void cd_handler_pair_install(void)
 {
   *(uint32_t *)guest_at(0x801fefc0) = 0;
   *(uint32_t *)guest_at(0x801fefc4) = 0x801a189c;
   *(uint32_t *)guest_at(0x801fefc8) = 0x801a1834;
+  *(uint32_t *)guest_at(0x801fefcc) = 0;
 }
 
 /* cd_handler_triple_install — install three handler addrs:
@@ -1727,13 +1729,13 @@ int32_t mc_chan_job_stable_poll(uint32_t a0,const void *a1,const void *a2,const 
   }
 }
 
-/* cd_range_table_member — range-table membership: a0 <<= shift@0x801bdee8, scan
+/* cd_range_table_member — range-table membership: a0 <<= shift@0x801bded8, scan
  * 8-byte entries @*(u32*)0x801bdf18; 0x80000000 -> skip, 0x40000000 ->
  * return 0; masked>=a0 or a0<masked+field4 -> return 1; else next.
  * Disasm 0x8019c060-0x8019c0e8. */
 int32_t cd_range_table_member(uint32_t a0)
 {
-  uint32_t sh = *(uint32_t *)guest_at(0x801bdee8);
+  uint32_t sh = *(uint32_t *)guest_at(0x801bded8);
   uint8_t *p = (uint8_t *)guest_at(*(uint32_t *)guest_at(0x801bdf18));
   uint32_t v1;
   if (p == NULL) return 0;
@@ -1819,7 +1821,7 @@ int32_t cd_seek_complete_poll(uint32_t a0)
 /* cd_dir_read — memcard dir read: mc_session(0) session, cmd 0x13
  * fetches BCD bounds into resp[1..2] (s0..s3), header record written,
  * then cmd 0x14 per index s0..s3 writes {resp[1],resp[2],0} entries.
- * Debug prints gated on @0x801cc850. Returns end-ptr (debug<2) or
+ * Debug prints gated on @0x801bc850. Returns end-ptr (debug<2) or
  * entry count (debug>=2) — guest quirk preserved. Disasm 0x80195854-0x80195a74. */
 uint32_t cd_dir_read(uint32_t a0,uint32_t a1)
 {
@@ -1838,7 +1840,7 @@ uint32_t cd_dir_read(uint32_t a0,uint32_t a1)
   if (!cd_cmd_issue_sync(0x13,0,(undefined4)(fr + 8))) goto fail;
   s0 = ((uint32_t)(resp[1] >> 4)) * 10 + (resp[1] & 0xf);
   s3 = ((uint32_t)(resp[2] >> 4)) * 10 + (resp[2] & 0xf);
-  dbg = *(uint32_t *)guest_at(0x801cc850);
+  dbg = *(uint32_t *)guest_at(0x801bc850);
   if (dbg >= 2)
     printf_forward((const char *)guest_at(0x801255f8),s0,s3);
   cmd[0] = 0;
@@ -1863,7 +1865,7 @@ uint32_t cd_dir_read(uint32_t a0,uint32_t a1)
     if (s3 < s0) break;
   }
 done:
-  dbg = *(uint32_t *)guest_at(0x801cc850);
+  dbg = *(uint32_t *)guest_at(0x801bc850);
   if (dbg >= 2) {
     int32_t n = (int32_t)s2 - 1;
     if (n >= 0) {
@@ -1881,7 +1883,7 @@ done:
   br2_guest_frame_free();
   return guest_of(s1p);
 fail:
-  if (*(uint32_t *)guest_at(0x801cc850) != 0)
+  if (*(uint32_t *)guest_at(0x801bc850) != 0)
     printf_forward((const char *)guest_at(0x80125624));
   mc_session(s6);
   br2_guest_frame_free();
@@ -2370,7 +2372,7 @@ int32_t cd_chan_job_pump(uint32_t a0,const void *a1,const void *a2,const void *a
   cd_file_header_copy(a0,blk);
   cd_strcat_guard(blk,a1v);
   s2 = 0; s1 = 0;
-  CDREG32(0x801febcc) |= 1u << (CDREG32(0x801febd0) & 31);  /* sllv */
+  CDREG32(0x801febec) |= 1u << (CDREG32(0x801febf0) & 31);  /* sllv */
   v0 = (int32_t)(fp + lim);
   if (v0 <= 0) goto done;
   s5 = 0; s4 = 0;
@@ -3631,7 +3633,7 @@ int32_t cd_ctx_set_28_34(uint32_t a0, uint32_t a1, int32_t a2)
 int32_t cd_ctx_cmd_submit(uint32_t a0, uint32_t a1)
 {
   uint8_t *ctx = (uint8_t *)guest_at(a0);
-  uint32_t fn = DB32(0x801be19c);
+  uint32_t fn = DB32(0x801be79c);
   uint32_t r = call_guest(fn, a0, a1);
   if (r != 0)
     return (int32_t)r;
@@ -4887,10 +4889,10 @@ void cd_dir_entry_store(uint32_t param_1,uint32_t param_2)
   *(uint32_t *)guest_at(0x801feb00) = t;
   *(uint32_t *)guest_at(0x801feb04) = *(uint32_t *)(e + 8);
   feb00_note(2, t);
-  DB32(0x801bc6a8) = DB32(0x801bc6a4);
+  DB32(0x801fc6a8) = DB32(0x801fc6a4);
   fn = DB32G(0x801feb10);
   if (fn != 0) call_guest(fn,fn,0);        /* jalr $a0: a0 = fn ptr */
-  DB32(0x801bc69c) = 0;
+  DB32(0x801fc69c) = 0;
 }
 
 /* ======== 0x8019d508 ======== */
@@ -5269,11 +5271,11 @@ void cd_guest_zero32_c(uint32_t a0,uint32_t a1)
   for (i = 0; i < a1; i++) p[i] = 0;
 }
 
-/* cd_state_store — store a0 into 0x801beee8 only when different.
+/* cd_state_store — store a0 into 0x801bdee8 only when different.
  * Disasm 0x8019d5c0-0x8019d5e0. */
 void cd_state_store(uint32_t a0)
 {
-  if (CDREG32(0x801beee8) != a0) CDREG32(0x801beee8) = a0;
+  if (CDREG32(0x801bdee8) != a0) CDREG32(0x801bdee8) = a0;
 }
 
 /* cd_queue_b_read — queue-B packed word (no side effects):
