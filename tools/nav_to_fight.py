@@ -13,14 +13,17 @@
 #          gs=8,ph==8 -> fight init reached; keep watching for frame advance
 # gs=8 ph=241 (0xF1) is a NORMAL transition stage, not a stall.
 # Active-low pad words. Requires p2_device set so both SIO pads connect.
-# KNOWN BLOCKER: the 2P VS path reaches gs=8,ph=8 then dies with
-#   FAIL-FAST unknown dispatch addr=0x01000000 ra=0x80126664
-# preceded by a massive BIOS TestEvent (B0:0B) spin inside the generated
-# cd_seek path (ra=0x8019D550) — versus file loading starves the deferred
-# interrupt/event delivery (see AGENTS.md §4/§8 CD-seek blocker). The
-# default/arcade path (sig 0,0) DOES reach a live fight and frames
-# advance. Do NOT treat ph=8 alone as success — verify the frame counter
-# keeps increasing after the gate.
+# STATUS (post CD-stall/ph=2/scriptop_ret fixes): attract demo (gs=6) now
+# executes a full fight round. Versus nav (gs=8) is UNVERIFIED on the
+# current build — needs a fresh run once the blocker below is fixed.
+# CURRENT shared blocker is the x28 callee-saved stale-restore crash at
+# battle_intro_flow state 0xf0 (game/menu.c ~1969) — hits attract
+# post-round and will hit versus the same way.
+# OLD blocker (resolved): FAIL-FAST unknown dispatch addr=0x01000000
+# ra=0x80126664 from a BIOS TestEvent spin in the cd_seek path — the CD
+# read-completion typos that caused it are fixed (see ACCURACY_BURNDOWN
+# N+36/N+37/N+105). Do NOT treat ph=8 alone as success — verify the frame
+# counter keeps increasing after the gate AND survives the 0xf0 round-end.
 import socket,json,time,sys
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 4370
 def cmd(c):
