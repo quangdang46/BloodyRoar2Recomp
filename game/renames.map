@@ -1681,6 +1681,9 @@
 80182f3c scriptop_end
 80183558 scriptop_ret
 80183bd0 scriptop_sflag
+80184378 scriptop_cmp
+8018444c scriptop_move
+80184710 scriptop_add
 80184810 scriptop_sub
 80184890 scriptop_mul
 80184914 scriptop_div

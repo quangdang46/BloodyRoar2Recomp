@@ -20,6 +20,8 @@
 
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
+extern uint32_t br2_call_generated(uint32_t fn, uint32_t a0, uint32_t a1,
+                                   uint32_t a2, uint32_t a3);
 
 /* ---- guest-offset accessors ---- */
 #define G16(p,o)   (*(const int16_t  *)((const uint8_t *)(p) + (o)))
@@ -43,6 +45,7 @@ extern uint32_t guest_of(const void *p);
 #define VX_RETD    0x6c   /* s16 return depth               */
 #define VX_DBG     0x6e
 #define VX_TRACE   0x78
+#define VX_ENDW    0x28   /* u16 cleared by the End epilogue */
 
 /* FighterCtrl offsets */
 #define FC_FOE     0x2c
@@ -539,4 +542,266 @@ int vm_run(uint8_t *ctx, uint8_t *ctrl, uint8_t *a3obj)
         if (++n >= 0x32)
             return 1;
     }
+}
+
+/* ================================================================== */
+/* ScriptVM opcode handlers — faithful ports of the guest functions     */
+/* behind the opcode jump table @0x801b5528 (19 entries). Each handler  */
+/* is invoked by script_op_dispatch (0x80184f28) as h(a0,a1,ctx,a3) and */
+/* returns the s16/v0 continuation flag: 0 = script over, 1 = continue.  */
+/* ctx arrives as a2 (gpr[6]); the clean_table wrapper guest_at()s it.  */
+/* ================================================================== */
+
+/* Shared decode for ops 08/09/0a (Sub/Mul/Div): insn word at ctx->pc,
+ * sub = hi byte, dst = sub>>4, src = sub&0xf.
+ *   src 0     -> sv = 0,            pc NOT advanced (guest hangs; kept)
+ *   src 1..5  -> sv = s16 reg[src], pc += 2
+ *   src 6..14 -> sv = src literal,  pc NOT advanced (guest hangs; kept)
+ *   src 15    -> sv = s16 imm @pc+2, pc += 4
+ * Returns sv and writes the guest pc advance (0 = leave ctx->pc alone). */
+static int32_t arith_src(uint8_t *ctx, uint8_t *pc, int src, uint32_t *adv)
+{
+    *adv = 0;
+    if (src >= 1 && src <= 5) {
+        *adv = 2;
+        return VREG(ctx, src);              /* lh: sign-extended s16 */
+    }
+    if (src == 15) {
+        *adv = 4;
+        return G16(pc, 2);                  /* lh imm16 */
+    }
+    return src;                             /* 0 -> 0, 6..14 -> literal */
+}
+
+/* op00 End — guest 0x80182f3c (also the Ret-underflow tail 0x801835c4):
+ *   sh zero, 0x28(a2);  v0 = 0;  jr ra */
+int scriptop_end(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
+{
+    (void)a0; (void)a1; (void)a3;
+    GS16(ctx, VX_ENDW) = 0;
+    return 0;
+}
+
+/* op03 Ret/Brr — guest 0x80183558. sub<10 = conditional return on
+ * ctx->cmp (s32 @0x38); sub 0/1 and sub>=10 = unconditional.
+ * Conditional-fail path: ctx->pc += 2, return 1.
+ * Unconditional: pop return stack; depth 1->0 runs the End epilogue
+ * (ctx+0x28 = 0, return 0); depth>1 resumes at retstk[depth-1]. */
+int scriptop_ret(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
+{
+    uint32_t pcg = GU32(ctx, VX_PC);
+    uint8_t *pc = (uint8_t *)guest_at(pcg);
+    int sub = GU8(pc, 1);
+    int32_t cmp;
+    int pop;
+    int d;
+    (void)a0; (void)a1; (void)a3;
+
+    if (sub < 10) {
+        cmp = GS32(ctx, VX_CMP);
+        switch (sub) {
+        case 0: case 1: pop = 1; break;
+        case 2: case 5: pop = cmp != 0; break;
+        case 3: case 4: pop = cmp == 0; break;
+        case 6:          pop = cmp >  0; break;
+        case 7:          pop = cmp >= 0; break;
+        case 8:          pop = cmp <  0; break;
+        default:         pop = cmp <= 0; break;      /* sub 9 */
+        }
+        if (!pop) {
+            GSU32(ctx, VX_PC) = pcg + 2;
+            return 1;
+        }
+    }
+    /* unconditional depth pop (guest block 0x80183594) */
+    d = (int32_t)(uint16_t)GU16(ctx, VX_RETD) - 1;
+    if (d == 0) {                    /* depth was 1 -> script over */
+        GS16(ctx, VX_ENDW) = 0;
+        return 0;
+    }
+    GS16(ctx, VX_RETD) = (int16_t)d;
+    GSU32(ctx, VX_PC) = GU32(ctx, VX_RETSTK + (d & 0xffff) * 4);
+    return 1;
+}
+
+/* op0c SFlg — guest 0x80183bd0. sub==1 -> flags &= mask; else flags |= mask.
+ * (vm.c's earlier model had set/clear inverted; this is the guest truth.) */
+int scriptop_sflag(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
+{
+    uint32_t pcg = GU32(ctx, VX_PC);
+    uint8_t *pc = (uint8_t *)guest_at(pcg);
+    uint16_t m = G16(pc, 2);
+    uint16_t f = GU16(ctx, VX_FLAGS);
+    int sub = GU8(pc, 1);
+    (void)a0; (void)a1; (void)a3;
+    GS16(ctx, VX_FLAGS) = (int16_t)((sub == 1) ? (f & m) : (f | m));
+    GSU32(ctx, VX_PC) = pcg + 4;
+    return 1;
+}
+
+/* op08 Sub — guest 0x80184810. dst read ZERO-extended (lhu),
+ * src sign-extended/literal; res = dst - src stored s16. */
+int scriptop_sub(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
+{
+    uint32_t pcg = GU32(ctx, VX_PC);
+    uint8_t *pc = (uint8_t *)guest_at(pcg);
+    int sub = GU8(pc, 1);
+    int dst = sub >> 4, src = sub & 0xf;
+    uint32_t adv;
+    int32_t sv = arith_src(ctx, pc, src, &adv);
+    uint32_t dv = GU16(ctx, VX_REGS + dst * 2);   /* lhu: zero-extend */
+    (void)a0; (void)a1; (void)a3;
+    if (adv) GSU32(ctx, VX_PC) = pcg + adv;
+    GS16(ctx, VX_REGS + dst * 2) = (int16_t)(dv - (uint32_t)sv);
+    return 1;
+}
+
+/* op09 Mul — guest 0x80184890. dst read SIGN-extended (lh),
+ * res = (s16)dst * sv, low 16 stored. */
+int scriptop_mul(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
+{
+    uint32_t pcg = GU32(ctx, VX_PC);
+    uint8_t *pc = (uint8_t *)guest_at(pcg);
+    int sub = GU8(pc, 1);
+    int dst = sub >> 4, src = sub & 0xf;
+    uint32_t adv;
+    int32_t sv = arith_src(ctx, pc, src, &adv);
+    int32_t dv = G16(ctx, VX_REGS + dst * 2);     /* lh: sign-extend */
+    (void)a0; (void)a1; (void)a3;
+    if (adv) GSU32(ctx, VX_PC) = pcg + adv;
+    GS16(ctx, VX_REGS + dst * 2) = (int16_t)((uint32_t)(dv * sv));
+    return 1;
+}
+
+/* op0a Div — guest 0x80184914. dst read SIGN-extended (lh).
+ * div-by-zero yields the MIPS LO result: dv>=0 -> -1, else 1
+ * (generated: lo = dv>=0 ? 0xFFFFFFFF : 1). */
+int scriptop_div(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
+{
+    uint32_t pcg = GU32(ctx, VX_PC);
+    uint8_t *pc = (uint8_t *)guest_at(pcg);
+    int sub = GU8(pc, 1);
+    int dst = sub >> 4, src = sub & 0xf;
+    uint32_t adv;
+    int32_t sv = arith_src(ctx, pc, src, &adv);
+    int32_t dv = G16(ctx, VX_REGS + dst * 2);     /* lh: sign-extend */
+    int32_t res;
+    (void)a0; (void)a1; (void)a3;
+    if (adv) GSU32(ctx, VX_PC) = pcg + adv;
+    if (sv != 0) res = dv / sv;
+    else         res = (dv >= 0) ? -1 : 1;
+    GS16(ctx, VX_REGS + dst * 2) = (int16_t)res;
+    return 1;
+}
+
+/* ---- guest-space scalar loads (a0/a3 arrive as guest addresses) ---- */
+static int32_t  gld_s16(uint32_t g) { return *(const int16_t  *)guest_at(g); }
+static uint32_t gld_u16(uint32_t g) { return *(const uint16_t *)guest_at(g); }
+static uint32_t gld_u32(uint32_t g) { return *(const uint32_t *)guest_at(g); }
+
+/* op01 Cmp — guest 0x80184378. sub = hi byte of insn: dst = sub>>4,
+ * src = sub&0xf. cmp = dv - sv stored s32 @ctx+0x38; returns 1.
+ *   src 1    -> sv = s16 reg[1]
+ *   src 8    -> sv = s16 foe->gauge        (foe = *(ctrl+0x2c))
+ *   src 10   -> sv = s16 foe->maxHP - s16 foe->hp
+ *   src 11   -> sv = s16 imm @pc+2, running pc += 2
+ *   src else -> sv = src literal (0 -> 0); pc untouched
+ *   dst 1..5 -> dv = s16 reg[dst], pc = runpc + 2
+ *   dst 15   -> dv = s16 imm @runpc+2, pc = runpc + 4
+ *   dst 6..14-> dv = dst literal, pc untouched (guest hangs; kept)
+ *   dst 0    -> cmp = -sv, pc untouched (guest hangs; kept)
+ * Note: the guest jump table only has 11 valid entries (src 12..15 read
+ * past it into string data and would vector into la-la land — real
+ * scripts never emit them; treated as literals here). */
+int scriptop_cmp(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
+{
+    uint32_t pcg = GU32(ctx, VX_PC);
+    uint8_t *pc = (uint8_t *)guest_at(pcg);
+    uint32_t foe_g = gld_u32(a0 + FC_FOE);
+    int sub = GU8(pc, 1);
+    int dst = sub >> 4, src = sub & 0xf;
+    int32_t sv = 0, dv = 0;
+    uint32_t runpc = pcg, npc = 0;
+    int have_pc = 0;
+    (void)a1; (void)a3;
+
+    switch (src) {
+    case 1:  sv = VREG(ctx, 1); break;
+    case 8:  sv = gld_s16(foe_g + FC_GAUGE); break;
+    case 10: sv = gld_s16(foe_g + FC_MAXHP) - gld_s16(foe_g + FC_HP); break;
+    case 11: sv = gld_s16(runpc + 2); runpc += 2; break;
+    default: sv = src; break;
+    }
+
+    if (dst >= 1 && dst <= 5) {
+        dv = VREG(ctx, dst);
+        npc = runpc + 2; have_pc = 1;
+    } else if (dst == 15) {
+        dv = gld_s16(runpc + 2);
+        npc = runpc + 4; have_pc = 1;
+    } else {
+        dv = dst;                    /* 0 or 6..14: literal, no pc */
+    }
+
+    if (have_pc) GSU32(ctx, VX_PC) = npc;
+    SETCMP(ctx, dv - sv);
+    return 1;
+}
+
+/* op07 Add — guest 0x80184710. reg[dst] = (u16)reg[dst] + sv, sh.
+ *   src 1..5  -> sv = s16 reg[src],            pc += 2
+ *   src 7     -> sv = s16 ctrl->distX,         pc += 2
+ *   src 8     -> sv = s16 ctrl->distY,         pc += 2
+ *   src 9     -> sv = u16 ctx+8 (VX_AUX8),     pc += 2
+ *   src 10    -> sv = u16 a3obj+0x94 & 0x7fff, pc += 2
+ *   src 11    -> sv = s16 ctrl->gauge,         pc += 2
+ *   src 12    -> sv = s16 foe->gauge,          pc += 2
+ *   src 13    -> sv = s16 ctrl->maxHP - ctrl->hp,  pc += 2
+ *   src 14    -> sv = s16 foe->maxHP - foe->hp,    pc += 2
+ *   src 15    -> sv = s16 imm @pc+2,           pc += 4
+ *   src 0/6   -> sv = 0 / 6 literal, pc untouched (guest hangs; kept)
+ * ctrl = param_1 (a0), a3obj = param_4 (a3). */
+int scriptop_add(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
+{
+    uint32_t pcg = GU32(ctx, VX_PC);
+    uint8_t *pc = (uint8_t *)guest_at(pcg);
+    uint32_t foe_g = gld_u32(a0 + FC_FOE);
+    int sub = GU8(pc, 1);
+    int dst = sub >> 4, src = sub & 0xf;
+    int32_t sv = 0;
+    uint32_t npc = 0;
+    int have_pc = 0;
+    (void)a1;
+
+    switch (src) {
+    case 1: case 2: case 3: case 4: case 5:
+        sv = VREG(ctx, src); npc = pcg + 2; have_pc = 1; break;
+    case 7:  sv = gld_s16(a0 + FC_DISTX); npc = pcg + 2; have_pc = 1; break;
+    case 8:  sv = gld_s16(a0 + FC_DISTY); npc = pcg + 2; have_pc = 1; break;
+    case 9:  sv = (int32_t)GU16(ctx, VX_AUX8); npc = pcg + 2; have_pc = 1; break;
+    case 10: sv = (int32_t)(gld_u16(a3 + MO_FLAGT) & 0x7fff);
+             npc = pcg + 2; have_pc = 1; break;
+    case 11: sv = gld_s16(a0 + FC_GAUGE); npc = pcg + 2; have_pc = 1; break;
+    case 12: sv = gld_s16(foe_g + FC_GAUGE); npc = pcg + 2; have_pc = 1; break;
+    case 13: sv = gld_s16(a0 + FC_MAXHP) - gld_s16(a0 + FC_HP);
+             npc = pcg + 2; have_pc = 1; break;
+    case 14: sv = gld_s16(foe_g + FC_MAXHP) - gld_s16(foe_g + FC_HP);
+             npc = pcg + 2; have_pc = 1; break;
+    case 15: sv = gld_s16(pcg + 2); npc = pcg + 4; have_pc = 1; break;
+    default: sv = src; break;      /* 0 -> 0, 6 -> 6: literal, no pc */
+    }
+
+    if (have_pc) GSU32(ctx, VX_PC) = npc;
+    GS16(ctx, VX_REGS + dst * 2) =
+        (int16_t)(uint16_t)(GU16(ctx, VX_REGS + dst * 2) + (uint32_t)sv);
+    return 1;
+}
+
+/* op05 Move — guest 0x8018444c. Large handler (operand tables
+ * @0x801236dc/0x801235b8/0x801236e4, trace ring @ctx+0x78, foe/object
+ * field writes). Not yet faithfully expressed in clean C — delegate the
+ * whole body to the generated implementation. */
+int scriptop_move(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
+{
+    return br2_call_generated(0x8018444c, a0, a1, guest_of(ctx), a3);
 }
