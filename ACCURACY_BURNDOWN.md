@@ -1387,3 +1387,17 @@ on AA94 — i.e., saved-PC corruption of the SAME unwind family, OR a
 recompiler discovery gap for an indirect target the analysis missed.
 Distinguish: if cpu->pc was SET to AA94 by runtime resume logic vs a
 genuine guest jalr — check dispatch_tail/xprobe in the run report.
+
+=== N+112 — unwind theories EXONERATED; crash is guest-data corruption ===
+ba9ede73's liveness fix committed (3fd28d2) but crash persists
+nondeterministically (frame 1899 OR 2195 across runs). freeze_check:
+stale_exc_longjmp=0, esc_dec_deadframe=0 — dead-frame guard NEVER fired;
+22K legit RFE escapes all healthy; thread_ctx_ring EMPTY (HLE scheduler,
+all longjmps same-fiber). Cross-fiber jmp_buf theory DEAD.
+NEW LEADING THEORY: 0x03FF0100 = low32 of a HOST pointer (host addrs
+~0x1xxxxxxxx) stored in guest RAM then used as jump target — AGENTS.md
+§5 host-pointer-where-guest-addr class. addr==a0 pattern = indirect
+call through corrupted fn-ptr/struct field. Nondeterminism fits a
+timing-dependent data race / heap overflow (N+102 heapB→heapA .ANI
+overwrite suspect). Agent b8f38c30 tracing the leaking write via
+guest_watch on the corrupted pointer's guest address.
