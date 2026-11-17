@@ -10275,3 +10275,22 @@ N+99b — REAL clean-coverage numbers (corrects earlier estimate):
   NOTE: ani.c is a .ANI file-format PARSER (not recompiled game code —
   nothing to port); fight.c has only ~2 guest fns (FUN_80176248,
   FUN_801787dc). vm.c is the real VM interpreter (moderate scope).
+
+N+100 — PORT WAVE 1+2 COMPLETE (5 agents, all committed + runtime-verified):
+  6fae410 ani.c   9 GTE/anim math fns (vec3 normalize, rsqrt, angle)
+  102a108 fight.c 2 dispatch regs (action_resolve, fighter_frame — were
+                  ported-but-unregistered)
+  4a7d036 vm.c    3 script opcodes (cmp/add/move-delegate) + helpers
+  68cda22 action.c 5 *_guest dispatch regs (apply/reset/entry_setup/
+                  ani_fixup/pending_gate — same ported-but-unregistered gap)
+  6f08b94 gfx.c   18 GTE/render ports (fixed 3 real bugs: mask-order,
+                  shift-dir, gte[6] src) + 2 delegates
+  5c5fe39 gen     clean_table 1113->1155 wrappers (+42), fnmap 1247
+  KEY INSIGHT: much "unported" work = already-ported code LACKING
+  renames.map/dispatch registration. Agents efficiently wire existing
+  clean C to guest addrs (near-dormant faithful coverage).
+  REMAINING named-unwrapped=123: ~50 cd_* are CORRECT delegates
+  (interrupt-bound), ~30 heap_serialize (agent 8af32e18 on it),
+  printf/mc_*/misc small clusters. 2679 unnamed FUN_ still the bulk.
+  ed5184f8: PSX_X28_WATCH instrumentation pinpointing x28 clobber
+  across interrupts.c/clean_bridge.c/game.c — fix pending.
