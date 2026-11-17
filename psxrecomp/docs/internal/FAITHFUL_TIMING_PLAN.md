@@ -10294,3 +10294,62 @@ N+100 — PORT WAVE 1+2 COMPLETE (5 agents, all committed + runtime-verified):
   printf/mc_*/misc small clusters. 2679 unnamed FUN_ still the bulk.
   ed5184f8: PSX_X28_WATCH instrumentation pinpointing x28 clobber
   across interrupts.c/clean_bridge.c/game.c — fix pending.
+
+=== SESSION N+101 — x28 SIGSEGV REPRODUCED + register-level pinpoint (crash_trace sig_regs) ===
+
+REPRO: plain HLE nav run SIGSEGV'd at frame 1562 (versus-init window,
+matches N+98 ~1571). Not every run — still flaky but reproduces.
+
+NEW TOOL (kept, crash_trace.c +54): sigaction ucontext now captures the
+FULL arm64 GP file (x0-x28,fp,lr,sp) into the crash JSON "sig_regs".
+This pinpoints the stale-register mechanism directly at the fault —
+strictly better than the boundary x28watch (which never fired).
+
+FAULT DECODE (psx_last_run_report.json):
+  fault_symbol = battle_flow_state_machine, fault_pc = bfsm+0x158
+  (image_base 0x1024D8000, fault_pc 0x103B317E4 -> file 0x10165982C,
+   the `ldrb w21,[x8]` after `bl _frame_tick`).
+  fault_addr = 0x100000407  (= [x28], the wild pointer dereferenced)
+  x28  = 0x113740000 runtime = FILE 0x111268000
+  CORRECT x28 = &_g__DAT_1f80000c = FILE 0x111274bc0 (runtime 0x11374CBC0)
+  Siblings x19/x24/x25/x26/x27 = 0x11374Bxxx/0x11374Cxxx = CORRECT bfsm
+  static bases. ONLY x28 is wrong -> single-register restore, not a
+  wholesale wrong-frame.
+
+WHAT 0x111268000 IS: inside the RUNTIME diagnostic-ring .bss region —
+_g_irqctx_ring(0x1111fa440,4096 entries),_g_disp_tail(0x11126bec0),
+_g_spdom_ring(0x11126cac0),_g_callret_ring,_g_pc0exc_ring,
+_g_nestgate_*/_g_sched_escape/_g_scheduler_jmpbuf(0x111271acc) all live
+0x11126xxxx-0x11127xxxx. So the donated x28 is a RUNTIME interrupt/
+exception/debug code adrp base (or ring pointer), NOT a game clean-C
+static. => the nonlocal unwind that restored it ran on a RUNTIME
+stack/context (psx_check_interrupts exception path / scheduler escape /
+fiber switch) whose x28 pointed into these rings.
+
+MECHANISM (confirmed, same class as dirty_ram_dispatch_inner 57e5a72):
+a host callee-saved register (x28) restored STALE across a
+setjmp/longjmp or fiber/context switch. Donor context = runtime code
+holding a ring-region base in x28. NOT data corruption (global itself
+is fine — watchpoint never fired in N+98), NOT guest/host confusion in
+menu.c (port faithful).
+
+REVERTED: the x28watch boundary instrumentation in interrupts.c
+(psx_check_interrupts body/wrapper split), clean_bridge.c (br2_irq_poll),
+game.c (frame_tick canary). It never fired and perturbs the hot
+interrupt path; superseded by sig_regs. crash_trace.c sig_regs KEPT.
+
+NEXT (needs lldb repro — it DOES reproduce ~frame1562):
+  break/watch to catch the unwind that leaves x28=0x111268000 in the
+  bfsm frame. Prime suspects (runtime, ring-adjacent): the
+  exception_jmpbuf setjmp/longjmp epilogue in psx_check_interrupts
+  (interrupts.c ~2063 + saved_exception_jmpbuf memcpy ~2055/2087),
+  deferred_exception_longjmp owner-fiber path (interrupts.c:1205-1221),
+  g_scheduler_jmpbuf escape (traps.c:858), or a generated block-leader
+  psx_check_interrupts_at whose inlined body keeps a ring base in x28.
+  The generic faithful fix = ensure the unwind boundary cannot deliver a
+  foreign callee-saved register file (per-context jmp_buf or explicit
+  x19-x28 save/restore around the escape), NOT a game-side workaround.
+
+SEPARATE BLOCKER (unchanged, deterministic): heapB cinematic staging
+overwrites heapA .ANI S0 -> wild ev_stream opcode -> unknown dispatch
+0x80122F0C (N+29b). Independent of this host-register bug.

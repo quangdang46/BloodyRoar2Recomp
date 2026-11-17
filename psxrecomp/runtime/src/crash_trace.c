@@ -129,6 +129,15 @@ static uintptr_t g_sig_fault_fbase = 0;
 #define CRASH_BT_MAX 24
 static void     *g_sig_bt[CRASH_BT_MAX];
 static int       g_sig_bt_n = 0;
+/* Full GP register file at the fault (arm64 ucontext __x[0..28] + fp/lr/sp).
+ * Captured so a host SIGSEGV inside clean-C can prove whether a callee-saved
+ * register (x19-x28) was restored stale by a setjmp/longjmp or context switch
+ * versus the pointed-to global simply being overwritten. */
+static volatile uint64_t g_sig_regs[31];
+static volatile uint64_t g_sig_sp   = 0;
+static volatile uint64_t g_sig_fp   = 0;
+static volatile uint64_t g_sig_lr   = 0;
+static volatile int      g_sig_regs_valid = 0;
 #endif
 
 /* Native dispatch nesting depth (generated/SCPH1001_dispatch.c). Incremented per
@@ -624,6 +633,41 @@ void psx_crash_trace_dump(const char *reason, void *seh_info) {
                                  ? pc - g_sig_fault_fbase : pc));
     }
     append_str(buf, sizeof(buf), &pos, "\n  ],\n");
+
+    /* arm64 GP register file at the fault — distinguishes a stale
+     * callee-saved register (x19-x28 restored by a mismatched
+     * setjmp/longjmp/context) from an overwritten pointer global. */
+    if (g_sig_regs_valid) {
+        append_str(buf, sizeof(buf), &pos, "  \"sig_regs\": {\n");
+        append_fmt(buf, sizeof(buf), &pos,
+            "    \"x0\":\"0x%llX\",\"x1\":\"0x%llX\",\"x2\":\"0x%llX\",\"x3\":\"0x%llX\",\n"
+            "    \"x4\":\"0x%llX\",\"x5\":\"0x%llX\",\"x6\":\"0x%llX\",\"x7\":\"0x%llX\",\n"
+            "    \"x8\":\"0x%llX\",\"x9\":\"0x%llX\",\"x10\":\"0x%llX\",\"x11\":\"0x%llX\",\n"
+            "    \"x12\":\"0x%llX\",\"x13\":\"0x%llX\",\"x14\":\"0x%llX\",\"x15\":\"0x%llX\",\n"
+            "    \"x16\":\"0x%llX\",\"x17\":\"0x%llX\",\"x18\":\"0x%llX\",\"x19\":\"0x%llX\",\n"
+            "    \"x20\":\"0x%llX\",\"x21\":\"0x%llX\",\"x22\":\"0x%llX\",\"x23\":\"0x%llX\",\n"
+            "    \"x24\":\"0x%llX\",\"x25\":\"0x%llX\",\"x26\":\"0x%llX\",\"x27\":\"0x%llX\",\n"
+            "    \"x28\":\"0x%llX\",\n"
+            "    \"fp\":\"0x%llX\",\"lr\":\"0x%llX\",\"sp\":\"0x%llX\"\n"
+            "  },\n",
+            (unsigned long long)g_sig_regs[0],  (unsigned long long)g_sig_regs[1],
+            (unsigned long long)g_sig_regs[2],  (unsigned long long)g_sig_regs[3],
+            (unsigned long long)g_sig_regs[4],  (unsigned long long)g_sig_regs[5],
+            (unsigned long long)g_sig_regs[6],  (unsigned long long)g_sig_regs[7],
+            (unsigned long long)g_sig_regs[8],  (unsigned long long)g_sig_regs[9],
+            (unsigned long long)g_sig_regs[10], (unsigned long long)g_sig_regs[11],
+            (unsigned long long)g_sig_regs[12], (unsigned long long)g_sig_regs[13],
+            (unsigned long long)g_sig_regs[14], (unsigned long long)g_sig_regs[15],
+            (unsigned long long)g_sig_regs[16], (unsigned long long)g_sig_regs[17],
+            (unsigned long long)g_sig_regs[18], (unsigned long long)g_sig_regs[19],
+            (unsigned long long)g_sig_regs[20], (unsigned long long)g_sig_regs[21],
+            (unsigned long long)g_sig_regs[22], (unsigned long long)g_sig_regs[23],
+            (unsigned long long)g_sig_regs[24], (unsigned long long)g_sig_regs[25],
+            (unsigned long long)g_sig_regs[26], (unsigned long long)g_sig_regs[27],
+            (unsigned long long)g_sig_regs[28],
+            (unsigned long long)g_sig_fp, (unsigned long long)g_sig_lr,
+            (unsigned long long)g_sig_sp);
+    }
 #endif
 
     /* DRAM around $ra-32 (catches jalr at ra-8) and $s0-16, plus the overlay
@@ -967,8 +1011,16 @@ static void psx_sigaction_handler(int sig, siginfo_t *si, void *uc_v) {
     if (si) {
         g_sig_fault_addr = (uintptr_t)si->si_addr;
 #if defined(__APPLE__) && defined(__aarch64__)
-        if (uc_v) g_sig_fault_pc =
-            (uint64_t)((ucontext_t *)uc_v)->uc_mcontext->__ss.__pc;
+        if (uc_v) {
+            ucontext_t *uc = (ucontext_t *)uc_v;
+            g_sig_fault_pc = (uint64_t)uc->uc_mcontext->__ss.__pc;
+            g_sig_sp  = (uint64_t)uc->uc_mcontext->__ss.__sp;
+            g_sig_fp  = (uint64_t)uc->uc_mcontext->__ss.__fp;
+            g_sig_lr  = (uint64_t)uc->uc_mcontext->__ss.__lr;
+            for (int i = 0; i < 29; i++)
+                g_sig_regs[i] = (uint64_t)uc->uc_mcontext->__ss.__x[i];
+            g_sig_regs_valid = 1;
+        }
 #elif defined(__APPLE__) && defined(__x86_64__)
         if (uc_v) g_sig_fault_pc =
             (uint64_t)((ucontext_t *)uc_v)->uc_mcontext->__ss.__rip;
