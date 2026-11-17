@@ -1519,3 +1519,21 @@ terrain_packet_gen non-faithful port (inlined phantom loops, param_6=-4
 VERIFIED: frame 123K+ advancing, kernel RAM intact, all poison counters
 clean. GAME SHOULD NOW BE PLAYABLE — attract retrigger + versus input
 alive. NEXT: full attract round + versus->fight verification.
+
+=== N+119 — game runs INDEFINITELY (frame 369K+); CD doorbell = THE blocker ===
+cc9eaa8e verified 822088f: frame ~369,480 sustained ~350-430fps, ZERO
+crash; kernel RAM intact, all poison counters clean, context switches
+resume every frame. Poisoning fix CONFIRMED end-to-end.
+NEW PARK STATE: attract cycles gs 3->4->5->6->5 then freezes at
+gs=5 ph=33 (0x21) from ~frame 4068 — real park (anim structs static).
+Versus UNTESTED (nav needs ph=1 which never recurs while parked).
+SINGLE REMAINING BLOCKER = known AGENTS.md section 8 CD deferred-command
+stall: cdrom_command_history frozen at frame ~3772 — last cmd=0x09
+(seek) pending active=0 phase=1 stat=0x02; ZERO CD commands for 124K+
+frames. Game thread sleeps in TestEvent (B0:11, frozen) waiting for CD
+event that never arrives; only live BIOS traffic = B0:0x17 x1/frame
+from ra=0x8019AA9C inside CD-channel fn 0x8019A8EC. Boot loads real
+Mode-2/XA fine (last_sector lba=6413 @ frame 3767) then NEXT file's
+command never reaches device — deferred command-issue / register-window
+doorbell in cd_seek_param_issue->cd_reg_window_op->worker.
+EVERYTHING downstream (attract fight data, versus, input) gated here.
