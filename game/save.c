@@ -1943,7 +1943,7 @@ void picker_table_shuffle(uint8_t *param_1)
  * ret_stub_b. */
 void mc_slot_action(uint8_t *param_1,int32_t param_2)
 {
-  uint8_t *s1 = (uint8_t *)guest_at(0x1f800e8);
+  uint8_t *s1 = (uint8_t *)guest_at(0x1f8000e8);
   uint8_t *s2 = (uint8_t *)guest_at(0x1f8001f0);
   uint8_t *q;
   int32_t iVar1;
