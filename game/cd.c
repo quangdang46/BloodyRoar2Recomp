@@ -5466,3 +5466,62 @@ void cd_hw_chan_init(void)
 {
   br2_call_generated(0x801a0be0u,0, 0, 0, 0);
 }
+
+/* ======== 0x8019ad60 ======== */
+
+/* bios_tramp_b017 — BIOS B0/0x17 trampoline (INTC enable; tail of
+ * cd_intc_dispatch). Guest: `addiu t2,zero,0xb0; jr t2; addiu t1,zero,
+ * 0x17` — forwards caller a0-a3 untouched, returns the service $v0.
+ * Disasm 0x8019ad60-0x8019ad6c. */
+uint32_t bios_tramp_b017(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
+{
+  extern uint32_t bios_svc6(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+  return bios_svc6(0xb0,0x17,a0,a1,a2,a3);
+}
+
+/* ======== 0x801a0af8 ======== */
+
+/* job_counter_sign — sign-bit read of the job-slot counter @0x801be768
+ * (the same cell cd_job_slot_alloc/cd_job_slots_reset maintain).
+ * Guest: `lui v0,0x801c; lw v0,-0x1898(v0); jr ra; srl v0,v0,0x1f` —
+ * returns 1 when the counter word is negative, else 0. Disasm
+ * 0x801a0af8-0x801a0b04. */
+uint32_t job_counter_sign(void)
+{
+  return (DB32(0x801be768) >> 31) & 1u;
+}
+
+/* ======== 0x801a0110 ======== */
+
+/* chan_job_pump — channel-block job pump, registered by
+ * cd_chan_block_boot via cd_chan_block_init(7,0x801a0110). When the job
+ * counter reads non-negative: op_chan_fn_invoke(), and if the counter
+ * then reads negative, arm flag @0x801febe8, move the 8-byte head pair
+ * 0x801febd0 <- block+0/+4, clear the source pair, and jalr the fn ptr
+ * @block+0x44 with (a0,a1) = the moved pair. Always bumps counters
+ * block+0x50/+0x54. Disasm 0x801a0110-0x801a01b8. */
+extern void op_chan_fn_invoke(void);
+void chan_job_pump(void)
+{
+  uint8_t *blk = (uint8_t *)guest_at(0x801febe0);
+  uint8_t *dst = (uint8_t *)guest_at(0x801febd0);
+  if (job_counter_sign() == 0) {
+    op_chan_fn_invoke();
+    if (job_counter_sign() != 0) {
+      uint32_t fn;
+      DB32(0x801febe8) = 1;
+      DB32(0x801febd0) = DB32(0x801febe0);
+      DB32(0x801febd4) = DB32(0x801febe4);
+      DB32(0x801febe0) = 0;
+      DB32(0x801febe4) = 0;
+      fn = *(uint32_t *)(blk + 0x44);
+      if (fn != 0) {
+        uint32_t a0 = *(uint32_t *)(dst + 0);
+        uint32_t a1 = *(uint32_t *)(dst + 4);
+        (void)call_guest(fn,a0,a1);
+      }
+    }
+  }
+  *(uint32_t *)(blk + 0x50) = *(uint32_t *)(blk + 0x50) + 1;
+  *(uint32_t *)(blk + 0x54) = *(uint32_t *)(blk + 0x54) + 1;
+}

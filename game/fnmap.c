@@ -116,6 +116,7 @@ extern void bios_table_tramp(void);
 extern void bios_tramp_a044(void);
 extern void bios_tramp_a070(void);
 extern void bios_tramp_b015(void);
+extern void bios_tramp_b017(void);
 extern void bios_tramp_b035(void);
 extern void bios_tramp_c002(void);
 extern void bios_tramp_c003(void);
@@ -406,6 +407,7 @@ extern void chan_attr_rec_a(void);
 extern void chan_attr_rec_b(void);
 extern void chan_blocks_reset(void);
 extern void chan_flag_toggle(void);
+extern void chan_job_pump(void);
 extern void chan_reset_clear(void);
 extern void chan_reset_register(void);
 extern void chan_sweep_flag100(void);
@@ -593,6 +595,7 @@ extern void gpu_coord_clamp_a(void);
 extern void gpu_coord_clamp_b(void);
 extern void gpu_coord_pack(void);
 extern void gpu_coord_pack_b(void);
+extern void gpu_data_reg_read(void);
 extern void gpu_disp_mask_set(void);
 extern void gpu_draw_env_put(void);
 extern void gpu_draw_otag(void);
@@ -612,12 +615,14 @@ extern void gpu_pkt_unlink_n(void);
 extern void gpu_prim8_emit(void);
 extern void gpu_prim_pkt_build(void);
 extern void gpu_rect_bounds_dbg(void);
+extern void gpu_reg_cells_init(void);
 extern void gpu_side_packet_emit(void);
 extern void gpu_sprite_rect_emit(void);
 extern void gpu_sprite_rect_emit_mode(void);
 extern void gpu_stat_sign(void);
 extern void gpu_state_patch_defer(void);
 extern void gpu_status_cmd(void);
+extern void gpu_tag_cmd_store(void);
 extern void gpu_texclut_pkt(void);
 extern void gpu_texpage_pack(void);
 extern void group_fx_spawn(void);
@@ -637,6 +642,7 @@ extern void gte_ofs_set(void);
 extern void gte_op_a00428(void);
 extern void gte_op_vec3_a(void);
 extern void gte_op_vec3_b(void);
+extern void gte_persp_batch(void);
 extern void gte_points_xform(void);
 extern void gte_quad_attr_emit(void);
 extern void gte_rot_load(void);
@@ -743,6 +749,7 @@ extern void iris_wipe_spawn(void);
 extern void iris_wipe_update(void);
 extern void isqrt(void);
 extern void isqrt_refine(void);
+extern void job_counter_sign(void);
 extern void job_pump_filter(void);
 extern void job_result_poll_stable(void);
 extern void job_state_query(void);
@@ -883,11 +890,14 @@ extern void op_field_store_idx(void);
 extern void op_flag_fn_check(void);
 extern void op_frame_advance(void);
 extern void op_globals_reset_shift(void);
+extern void op_gp_cond_store(void);
+extern void op_gp_dword_sub(void);
 extern void op_gpf14_a72a0(void);
 extern void op_gpf14_a72a0_b(void);
 extern void op_gpf14_anim_alloc(void);
 extern void op_gpf14_anim_alloc_b(void);
 extern void op_guarded_call(void);
+extern void op_hword_pair_add(void);
 extern void op_job_alloc_init(void);
 extern void op_job_submit_ab(void);
 extern void op_job_submit_init(void);
@@ -912,6 +922,7 @@ extern void op_tag_E_set(void);
 extern void op_tag_G_set(void);
 extern void op_tag_L_set(void);
 extern void op_tag_dispatch(void);
+extern void op_tbl_elem_copy(void);
 extern void op_trace_print_a(void);
 extern void op_trace_print_b(void);
 extern void op_walk_dispatch_a(void);
@@ -977,6 +988,7 @@ extern void pose_chain_build(void);
 extern void post_battle_dispatch(void);
 extern void post_battle_side_commit(void);
 extern void post_confirm_config_build(void);
+extern void prim_attr_repack(void);
 extern void prim_attr_word_set(void);
 extern void prim_batch_emit(void);
 extern void prim_group_alloc(void);
@@ -1964,6 +1976,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80186e64, (void *)gte_xform3_ip },
   { 0x80186f5c, (void *)gte_xform3_t_ip },
   { 0x801871bc, (void *)prim_list_gte_invoke },
+  { 0x80187dcc, (void *)gte_persp_batch },
   { 0x8018a4f8, (void *)prim_task_run },
   { 0x8018b050, (void *)vec2_rot },
   { 0x8018b0a0, (void *)angle_gte_vec },
@@ -2011,6 +2024,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8018d568, (void *)gte_xform_add_off },
   { 0x8018d5b4, (void *)rtps_pt_xform },
   { 0x8018d618, (void *)range_circle_test },
+  { 0x8018d69c, (void *)prim_attr_repack },
   { 0x8018d700, (void *)node_translate_tree },
   { 0x8018d788, (void *)node_xform_apply },
   { 0x8018d8e4, (void *)pad_record_init },
@@ -2093,7 +2107,10 @@ const Br2FnEnt fn_table[] = {
   { 0x801924e8, (void *)gpu_coord_clamp_b },
   { 0x80192580, (void *)gpu_coord_pack },
   { 0x8019259c, (void *)gpu_texpage_pack },
+  { 0x8019261c, (void *)gpu_data_reg_read },
   { 0x80192634, (void *)cd_cmd_queue_load },
+  { 0x80192e00, (void *)gpu_tag_cmd_store },
+  { 0x80192e78, (void *)gpu_reg_cells_init },
   { 0x80192ef0, (void *)cd_queue_push_wrap },
   { 0x80192f14, (void *)cd_queue_push },
   { 0x801931c4, (void *)cd_queue_drain },
@@ -2284,6 +2301,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8019ac04, (void *)cd_state_blk_restore },
   { 0x8019aca4, (void *)cd_state_blk_save },
   { 0x8019ad1c, (void *)cd_guest_zero32_a },
+  { 0x8019ad60, (void *)bios_tramp_b017 },
   { 0x8019ad90, (void *)cd_ctx_save },
   { 0x8019ae10, (void *)cd_init_stage_a },
   { 0x8019ae68, (void *)cd_cb8_dispatch },
@@ -2363,6 +2381,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8019fb9c, (void *)mc_file_cmd },
   { 0x8019ff4c, (void *)cd_mc_op_wait },
   { 0x801a00bc, (void *)cd_status_map },
+  { 0x801a0110, (void *)chan_job_pump },
   { 0x801a01bc, (void *)cd_file_header_copy },
   { 0x801a0280, (void *)cd_file_record_lookup },
   { 0x801a0530, (void *)cd_strcat_guard },
@@ -2377,6 +2396,7 @@ const Br2FnEnt fn_table[] = {
   { 0x801a0a00, (void *)cd_job_slots_reset },
   { 0x801a0a10, (void *)cd_job_slot_alloc },
   { 0x801a0a8c, (void *)op_chan_fn_invoke },
+  { 0x801a0af8, (void *)job_counter_sign },
   { 0x801a0bb0, (void *)cd_reset_trio },
   { 0x801a0be0, (void *)cd_hw_chan_init },
   { 0x801a0dbc, (void *)cd_tail_call_a },
@@ -2511,10 +2531,14 @@ const Br2FnEnt fn_table[] = {
   { 0x801ad4ac, (void *)op_job_submit_init },
   { 0x801ad59c, (void *)aux_tbl_store_a },
   { 0x801ad5d0, (void *)op_walk_dispatch_f },
+  { 0x801ad668, (void *)op_gp_cond_store },
   { 0x801ad6f0, (void *)op_ctx_fc_set },
+  { 0x801ad9d4, (void *)op_gp_dword_sub },
   { 0x801adc60, (void *)op_rand_i8 },
   { 0x801adca4, (void *)rand_lo16_store },
   { 0x801adccc, (void *)rand_word_store },
+  { 0x801add38, (void *)op_tbl_elem_copy },
+  { 0x801add84, (void *)op_hword_pair_add },
   { 0x801ae85c, (void *)op_cached_node_alloc },
   { 0x801ae8a8, (void *)op_call_ad38c },
   { 0x801ae8dc, (void *)op_ad38c_store },

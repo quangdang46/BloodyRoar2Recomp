@@ -3148,3 +3148,169 @@ void gpu_state_patch_defer(void)
   br2_bios_tramp(0xa0, 0x44);           /* jal 0x801957F0: BIOS A0 svc 0x44 */
   FUN_8018e310(0);                      /* jal 0x8018E310: ExitCriticalSection */
 }
+
+/* ======== 0x8019261c ======== */
+
+/* gpu_data_reg_read — read the register behind pointer cell
+ * @0x801b8428: guest `lui v0,0x801c; lw v0,-0x7bd8(v0); nop; lw v0,(v0);
+ * jr ra`. br2_ld32p resolves the cell then routes the pointed-to
+ * access through br2_ld32 (MMIO-safe — the cell can hold a 0x1F80xxxx
+ * hardware address). Disasm 0x8019261c-0x80192630. */
+uint32_t gpu_data_reg_read(void)
+{
+  return br2_ld32p(0x801b8428);
+}
+
+/* ======== 0x80192e00 ======== */
+
+/* gpu_tag_cmd_store — issue a0 through register cell @0x801b8428 and
+ * record a0's low byte in the 256-entry tag table @0x801fad68 indexed
+ * by a0>>24. Guest returns a0>>24 in $v0 (the srl result survives
+ * into the jr delay slot which performs the sb). Disasm
+ * 0x80192e00-0x80192e20. */
+uint32_t gpu_tag_cmd_store(uint32_t param_1)
+{
+  uint32_t idx = param_1 >> 24;
+  br2_st32p(0x801b8428, param_1);
+  GP8(0x801fad68 + idx) = (uint8_t)param_1;
+  return idx;
+}
+
+/* ======== 0x80192e78 ======== */
+
+/* gpu_reg_cells_init — quad register-cell init: writes 0x04000002,
+ * a0, 0 and 0x01000401 through pointer cells 0x801b8428/2c/30/34.
+ * Guest leaves $v0 = the last cell pointer (callers ignore it).
+ * Disasm 0x80192e78-0x80192ebc. */
+void gpu_reg_cells_init(uint32_t param_1)
+{
+  br2_st32p(0x801b8428, 0x04000002u);
+  br2_st32p(0x801b842c, param_1);
+  br2_st32p(0x801b8430, 0u);
+  br2_st32p(0x801b8434, 0x01000401u);
+}
+
+/* ======== 0x8018d69c ======== */
+
+/* prim_attr_repack — repack four u32 lanes from src into dst swapping
+ * the hi/lo u16 halves cyclically (t0..t3 = src+0/4/8/c):
+ *   dst+0  = (t1 hi)|(t0 lo)   dst+4  = (t0 hi)|(t3 lo)
+ *   dst+8  = (t3 hi)|(t2 lo)   dst+c  = (t2 hi)|(t1 lo)
+ * then copies the s16 at src+0x10 -> dst+0x10. The guest reads that
+ * halfword AFTER the first two dst stores (kept for aliasing fidelity)
+ * and returns dst in $v0. Disasm 0x8018d69c-0x8018d6fc. */
+uint32_t prim_attr_repack(uint32_t src_a, uint32_t dst_a)
+{
+  uint8_t *src = (uint8_t *)guest_at(src_a);
+  uint8_t *dst = (uint8_t *)guest_at(dst_a);
+  uint32_t t0 = *(uint32_t *)(src + 0x00);
+  uint32_t t1 = *(uint32_t *)(src + 0x04);
+  uint32_t t2 = *(uint32_t *)(src + 0x08);
+  uint32_t t3 = *(uint32_t *)(src + 0x0c);
+  int16_t  h;
+  *(uint32_t *)(dst + 0x00) = (t1 & 0xffff0000u) | (t0 & 0xffffu);
+  *(uint32_t *)(dst + 0x04) = (t0 & 0xffff0000u) | (t3 & 0xffffu);
+  h = *(int16_t *)(src + 0x10);
+  *(uint32_t *)(dst + 0x08) = (t3 & 0xffff0000u) | (t2 & 0xffffu);
+  *(uint32_t *)(dst + 0x0c) = (t2 & 0xffff0000u) | (t1 & 0xffffu);
+  *(int16_t *)(dst + 0x10) = h;
+  return dst_a;
+}
+
+/* ======== op_* leaf helpers (0x801ad3xx-0x801ad9xx) ======== */
+
+extern uint8_t  br2_ld8 (uint32_t a);
+extern uint16_t br2_ld16(uint32_t a);
+extern uint32_t br2_ld32(uint32_t a);
+extern void     br2_st16(uint32_t a, uint16_t v);
+extern void     br2_st32(uint32_t a, uint32_t v);
+extern uint32_t guest_gp(void);
+
+/* op_tbl_elem_copy — copy one u32 between two indexed tables.
+ * Guest: i = s16(a0+2)<<2, j = s16(a0+6)<<2;
+ *        v = *(u32*)(a2+j); *(u32*)(a1+i) = v; return v.
+ * Params arrive as guest addresses; the br2_ldN/br2_stN pair keeps the
+ * MMIO-capable access path. Disasm 0x801add38-0x801add58. */
+uint32_t op_tbl_elem_copy(uint32_t a0, uint32_t a1, uint32_t a2)
+{
+  uint32_t i = (uint32_t)(((int32_t)(int16_t)br2_ld16(a0 + 2)) << 2);
+  uint32_t j = (uint32_t)(((int32_t)(int16_t)br2_ld16(a0 + 6)) << 2);
+  uint32_t v = br2_ld32(a2 + j);
+  br2_st32(a1 + i, v);
+  return v;
+}
+
+/* op_hword_pair_add — add two u16 table entries and store back.
+ * Guest: da = a1 + s16(a0+2)*2, db = a2 + s16(a0+6)*2;
+ *        s = lhu(da) + lhu(db); sh s,(da); return s.
+ * Disasm 0x801add84-0x801addb0. */
+uint32_t op_hword_pair_add(uint32_t a0, uint32_t a1, uint32_t a2)
+{
+  uint32_t da = a1 + ((uint32_t)(((int32_t)(int16_t)br2_ld16(a0 + 2)) << 1));
+  uint32_t db = a2 + ((uint32_t)(((int32_t)(int16_t)br2_ld16(a0 + 6)) << 1));
+  uint32_t s = (uint32_t)br2_ld16(da) + (uint32_t)br2_ld16(db);
+  br2_st16(da, (uint16_t)s);
+  return s;
+}
+
+/* op_gp_dword_sub — v = *a1 - *(u32*)(a0+2); store v at
+ * *(*(u32*)(gp+0x4c)) + 0x14; return v. Disasm 0x801ad9d4-0x801ad9e8. */
+uint32_t op_gp_dword_sub(uint32_t a0, uint32_t a1)
+{
+  uint32_t base = br2_ld32((uint32_t)(guest_gp() + 0x4c));
+  uint32_t v = br2_ld32(a1) - br2_ld32(a0 + 2);
+  br2_st32(base + 0x14, v);
+  return v;
+}
+
+/* op_gp_cond_store — gp-relative conditional store.
+ * base = *(*(u32*)(gp+0x4c)); when *(base+0x14) != 0 the guest tail-
+ * dispatches to 0x801ad698 (`*a1 += 4` — a separate function entry,
+ * routed through call_guest to preserve the dispatch contract);
+ * otherwise *a1 = s16(*a0) + *(u32*)(gp+0x50). Returns the stored
+ * value. Disasm 0x801ad668-0x801ad694 + tail 0x801ad698-0x801ad6a8. */
+uint32_t op_gp_cond_store(uint32_t a0, uint32_t a1)
+{
+  uint32_t base = br2_ld32((uint32_t)(guest_gp() + 0x4c));
+  uint32_t v;
+  if (br2_ld32(base + 0x14) != 0) {
+    extern uint32_t call_guest(uint32_t,uint32_t,uint32_t);
+    return call_guest(0x801ad698u, a0, a1);
+  }
+  v = (uint32_t)(int32_t)(int16_t)br2_ld16(a0) +
+      br2_ld32((uint32_t)(guest_gp() + 0x50));
+  br2_st32(a1, v);
+  return v;
+}
+
+/* ======== 0x80187dcc ======== */
+
+/* gte_persp_batch — GTE batch transform over 16-byte records.
+ * Guest loop (a3 = count, a0 = cursor, returns end cursor):
+ *   per record: mtc2 gte[0]=rec[0], gte[1]=rec[1]; GTE cmd 0x4A6412;
+ *   swc2 gte[9] -> rec+8, mfc2 gte[10] -> h, swc2 gte[11] -> rec+12,
+ *   sh h -> rec+10; cursor += 0x10.
+ * The guest software-pipelines the next record's mtc2 loads after the
+ * GTE command — semantically identical to loading at loop top (the
+ * stores never overlap the next record's +0/+4 source words).
+ * Disasm 0x80187dcc-0x80187e14. */
+uint32_t gte_persp_batch(uint32_t cur, uint32_t a1, uint32_t a2,
+                         int32_t count)
+{
+  (void)a1; (void)a2;
+  while (count > 0) {
+    uint32_t t0 = DB32(cur);
+    uint32_t t1 = DB32(cur + 4);
+    uint32_t h;
+    setCopReg(2, GTE_DREG(0), t0);
+    setCopReg(2, GTE_DREG(1), t1);
+    count--;
+    copFunction(2, 0x4A6412u);
+    DB32(cur + 8)  = (uint32_t)getCopReg(2, GTE_DREG(9));
+    h = (uint32_t)getCopReg(2, GTE_DREG(10));
+    DB32(cur + 12) = (uint32_t)getCopReg(2, GTE_DREG(11));
+    GP16(cur + 10) = (uint16_t)h;
+    cur += 0x10;
+  }
+  return cur;
+}

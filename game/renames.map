@@ -1723,3 +1723,15 @@
 8019545c gte_op_vec3_b
 801954d0 gte_rtps_vec3
 80195710 gpu_state_patch_defer
+8019261c gpu_data_reg_read
+80192e00 gpu_tag_cmd_store
+80192e78 gpu_reg_cells_init
+8018d69c prim_attr_repack
+801add38 op_tbl_elem_copy
+801add84 op_hword_pair_add
+801ad9d4 op_gp_dword_sub
+801ad668 op_gp_cond_store
+8019ad60 bios_tramp_b017
+801a0af8 job_counter_sign
+801a0110 chan_job_pump
+80187dcc gte_persp_batch
