@@ -1440,3 +1440,20 @@ traps.c:378 / func_000029CC jr k0 / g_exception_real_epc interrupts.c:2492 /
 br2_irq_poll clean_bridge.c:319). ALSO audit other (int)(uintptr_t)
 host-ptr truncations in battle.c siblings (prim_packet_init_tex, hud_*,
 sprite_rect_*) — same bug class.
+
+=== N+115 — frame-2195 FIXED (MOVZ/MOVN) + host-ptr audit purge ===
+d963244: dirty-RAM interp SPECIAL decoder aborted on funct 0x0B (MOVN,
+MIPS32-only) in the delay slot at 0x8019AA98 after BIOS RestoreState
+resumed at the mid-block jal EPC 0x8019AA94. R3000A ignores undefined
+SPECIAL encodings (psx_interpreter.c:294 documents this); dirty decoder
+was stricter than HW. Now ignored. Permanent dirty_reject_log debug cmd
+added (ring buffer -> freeze_check/debug server) — pinpointed instantly.
+VERIFIED: frame 2195 -> 37,887+ still advancing, 0 rejects.
+5c0c7d4: audit agent f7a4b5b7 found+fixed ~17 more host-ptr-into-guest-
+addr bugs (battle.c sprite_rect/hud/prim_packet_init_tex; menu.c
+match_setup_apply/fighter_*/battle_hud_draw/status_text_display incl.
+restored dropped a1 arg; inverse-direction battle_camera_step/
+fighter_trail_emit). All vs generated oracle. Build green.
+SUSPECT-ONLY remaining: battle.c:594/633 indirect fn_lookup host-vs-guest
+ambiguity; task-node mixed host/guest field access — need runtime proof.
+NEXT GATE: attract full-round completion + versus->fight nav verify.
