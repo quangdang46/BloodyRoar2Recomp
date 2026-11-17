@@ -46,12 +46,15 @@ extern void LAB_80140510(void);
 extern void action_commit(void);
 extern void action_enter_fwd(void);
 extern void action_from_input(void);
+extern void action_resolve(void);
 extern void action_switch_guest(void);
 extern void always_one(void);
 extern void angle_from_xy(void);
 extern void angle_gte_vec(void);
 extern void angle_pair_rotmat(void);
 extern void angle_vec_build(void);
+extern void ani_fixup_guest(void);
+extern void anim_angle_approach(void);
 extern void anim_lerp_aux(void);
 extern void anim_lerp_packed3(void);
 extern void anim_lerp_packed4(void);
@@ -59,11 +62,14 @@ extern void anim_lerp_scalar(void);
 extern void anim_lerp_vec3(void);
 extern void anim_lerp_vec3_raw(void);
 extern void anim_node_alloc(void);
+extern void anim_ret_nop(void);
+extern void anim_vec3_normalize(void);
 extern void anim_wb_init_gate(void);
 extern void anim_workblock_init(void);
 extern void announce_param_block_init(void);
 extern void announce_param_block_init_alt(void);
 extern void announce_param_block_init_b(void);
+extern void apply_guest(void);
 extern void atan2_lut(void);
 extern void attr_flag_mask(void);
 extern void attr_records_scan(void);
@@ -433,6 +439,7 @@ extern void corner_emit_cond_offset(void);
 extern void corner_emit_variant(void);
 extern void countdown_display_sm(void);
 extern void counter_step_pad_c(void);
+extern void cpu_regs_snapshot(void);
 extern void ctr_clamp(void);
 extern void ctx_flag_set(void);
 extern void ctx_fn_send(void);
@@ -513,6 +520,7 @@ extern void empty_ret(void);
 extern void engine_record_pair_update(void);
 extern void engine_tables_restore(void);
 extern void entry_attr_bump_loop(void);
+extern void entry_setup_guest(void);
 extern void euler_rotmat(void);
 extern void ev5_action_select(void);
 extern void ev_cmd_dispatch(void);
@@ -528,6 +536,7 @@ extern void fighter_attach_run(void);
 extern void fighter_combat_reset(void);
 extern void fighter_contact_resolve(void);
 extern void fighter_flash_update(void);
+extern void fighter_frame(void);
 extern void fighter_frame_triple_emit(void);
 extern void fighter_height_check(void);
 extern void fighter_height_track(void);
@@ -553,6 +562,9 @@ extern void firework_spawn(void);
 extern void firework_task_update(void);
 extern void fixed_approach_s16(void);
 extern void fixed_point_divide(void);
+extern void fixed_recip_lut(void);
+extern void fixed_rsqrt_q12(void);
+extern void fixed_rsqrt_q12_ex(void);
 extern void flag_table_dump(void);
 extern void flow_cfg_init(void);
 extern void frame_advance_helper(void);
@@ -585,11 +597,15 @@ extern void gpu_disp_mask_set(void);
 extern void gpu_draw_env_put(void);
 extern void gpu_draw_otag(void);
 extern void gpu_draw_sync(void);
+extern void gpu_flag_8322_read(void);
 extern void gpu_graph_reset(void);
 extern void gpu_load_image_cmd(void);
 extern void gpu_mode_regs_apply(void);
 extern void gpu_pkt_attr_set(void);
+extern void gpu_pkt_low24_or(void);
+extern void gpu_pkt_merge24(void);
 extern void gpu_pkt_pack(void);
+extern void gpu_pkt_tag_0c3c(void);
 extern void gpu_pkt_tag_60(void);
 extern void gpu_pkt_tag_74(void);
 extern void gpu_pkt_unlink_n(void);
@@ -600,25 +616,39 @@ extern void gpu_side_packet_emit(void);
 extern void gpu_sprite_rect_emit(void);
 extern void gpu_sprite_rect_emit_mode(void);
 extern void gpu_stat_sign(void);
+extern void gpu_state_patch_defer(void);
 extern void gpu_status_cmd(void);
 extern void gpu_texclut_pkt(void);
 extern void gpu_texpage_pack(void);
 extern void group_fx_spawn(void);
+extern void gte_avsz3_wrap(void);
+extern void gte_avsz4_wrap(void);
 extern void gte_cw_d000_set(void);
+extern void gte_dpcl_vec3(void);
+extern void gte_dpct_vec3(void);
+extern void gte_intpl_vec3(void);
 extern void gte_light_load(void);
 extern void gte_light_set(void);
 extern void gte_mat_vec_swap(void);
 extern void gte_matrix_base_set(void);
 extern void gte_mvmva_add(void);
+extern void gte_mvmva_vec3(void);
+extern void gte_ofs_set(void);
 extern void gte_op_a00428(void);
+extern void gte_op_vec3_a(void);
+extern void gte_op_vec3_b(void);
 extern void gte_points_xform(void);
 extern void gte_quad_attr_emit(void);
 extern void gte_rot_load(void);
+extern void gte_rtps_vec3(void);
 extern void gte_rtps_xform1(void);
 extern void gte_rtps_xform1_raw(void);
 extern void gte_rtps_xform3(void);
 extern void gte_rtps_xform3_t(void);
+extern void gte_screen_init_defer(void);
+extern void gte_sqr_vec3_b(void);
 extern void gte_tr_load(void);
+extern void gte_vec3_normalize(void);
 extern void gte_vec_transform_emit(void);
 extern void gte_xform1_ir(void);
 extern void gte_xform3_ip(void);
@@ -626,6 +656,15 @@ extern void gte_xform3_nold(void);
 extern void gte_xform3_t_ip(void);
 extern void gte_xform_accum(void);
 extern void gte_xform_add_off(void);
+extern void gte_xform_norm3pts(void);
+extern void guard_callee_a0(void);
+extern void guard_callee_a1(void);
+extern void guard_callee_b0(void);
+extern void guard_callee_b1(void);
+extern void guard_callee_c0(void);
+extern void guard_callee_c1(void);
+extern void guard_callee_d0(void);
+extern void guard_callee_d1(void);
 extern void guard_dispatch_a(void);
 extern void guard_dispatch_b(void);
 extern void guard_dispatch_c(void);
@@ -893,6 +932,7 @@ extern void part_record_reset(void);
 extern void particle_burst_spawn(void);
 extern void particle_burst_update(void);
 extern void peak_track(void);
+extern void pending_gate_guest(void);
 extern void pending_hit_a_clear(void);
 extern void pending_hit_b_clear(void);
 extern void pending_work_drain(void);
@@ -964,6 +1004,7 @@ extern void rect_prim_spawn(void);
 extern void rect_prim_tick(void);
 extern void reset_combat_record(void);
 extern void reset_combat_slots(void);
+extern void reset_guest(void);
 extern void reset_sprite_ot_block(void);
 extern void resource_rebuild_a(void);
 extern void resource_rebuild_b(void);
@@ -1008,6 +1049,15 @@ extern void script_entry_walk(void);
 extern void script_move_timer_eval(void);
 extern void script_op_dispatch(void);
 extern void script_stream_tick(void);
+extern void scriptop_add(void);
+extern void scriptop_cmp(void);
+extern void scriptop_div(void);
+extern void scriptop_end(void);
+extern void scriptop_move(void);
+extern void scriptop_mul(void);
+extern void scriptop_ret(void);
+extern void scriptop_sflag(void);
+extern void scriptop_sub(void);
 extern void scroll_attr_100_update(void);
 extern void scroll_cfg_set(void);
 extern void scroll_offset_accumulate(void);
@@ -1173,6 +1223,9 @@ extern void vec2_rot(void);
 extern void vec2_rot_lut(void);
 extern void vec3_approach_step(void);
 extern void vec3_midpoint_angles(void);
+extern void vec3_s16_normalize(void);
+extern void vec3_s32_h_normalize(void);
+extern void vec3_s32_normalize(void);
 extern void vec3_step_toward(void);
 extern void vec3_step_toward_q(void);
 extern void vec3_step_toward_q_spd(void);
@@ -1755,15 +1808,21 @@ const Br2FnEnt fn_table[] = {
   { 0x80175708, (void *)sprite_rect_set_b },
   { 0x80175760, (void *)sprite_rect_set_c },
   { 0x801757b8, (void *)players_ctrl_init },
+  { 0x80175898, (void *)reset_guest },
+  { 0x80175a7c, (void *)entry_setup_guest },
   { 0x80175e08, (void *)slot_apply_guest },
   { 0x80175fec, (void *)action_enter_fwd },
+  { 0x80176248, (void *)action_resolve },
+  { 0x80178664, (void *)pending_gate_guest },
   { 0x80178754, (void *)fighter_combat_reset },
+  { 0x801787dc, (void *)fighter_frame },
   { 0x80179478, (void *)launch_vel_update },
   { 0x80179638, (void *)fighter_height_track },
   { 0x801796ec, (void *)motion_turn_update },
   { 0x80179964, (void *)part_link_unlink },
   { 0x80179a6c, (void *)part_record_reset },
   { 0x80179ae0, (void *)skeleton_init },
+  { 0x8017a05c, (void *)apply_guest },
   { 0x8017a6e8, (void *)action_switch_guest },
   { 0x8017a818, (void *)gte_quad_attr_emit },
   { 0x8017a8b4, (void *)desc_cursor_select },
@@ -1792,19 +1851,32 @@ const Br2FnEnt fn_table[] = {
   { 0x801809c8, (void *)fighter_pair_update },
   { 0x8018106c, (void *)record_struct_dump },
   { 0x8018123c, (void *)slot_action_dump },
+  { 0x80181db8, (void *)ani_fixup_guest },
   { 0x80181f20, (void *)fighter_script_fsm },
+  { 0x80182f3c, (void *)scriptop_end },
+  { 0x80183558, (void *)scriptop_ret },
+  { 0x80183bd0, (void *)scriptop_sflag },
+  { 0x80184378, (void *)scriptop_cmp },
+  { 0x8018444c, (void *)scriptop_move },
+  { 0x80184710, (void *)scriptop_add },
+  { 0x80184810, (void *)scriptop_sub },
+  { 0x80184890, (void *)scriptop_mul },
+  { 0x80184914, (void *)scriptop_div },
   { 0x8018499c, (void *)packet_timer_update },
   { 0x80184f28, (void *)script_op_dispatch },
   { 0x80185048, (void *)part_matrix_compute },
+  { 0x801851d8, (void *)anim_vec3_normalize },
   { 0x80185290, (void *)gte_mat_vec_swap },
   { 0x80185404, (void *)trig_cos },
   { 0x80185408, (void *)trig_sin },
+  { 0x80185444, (void *)anim_ret_nop },
   { 0x8018544c, (void *)skeleton_pose_step },
   { 0x80185568, (void *)anim_lerp_scalar },
   { 0x801855b4, (void *)anim_lerp_vec3 },
   { 0x80185680, (void *)anim_lerp_vec3_raw },
   { 0x8018572c, (void *)anim_lerp_packed3 },
   { 0x801857f0, (void *)anim_lerp_packed4 },
+  { 0x801858f8, (void *)anim_angle_approach },
   { 0x8018594c, (void *)anim_lerp_aux },
   { 0x80185998, (void *)keyframe_blend_apply },
   { 0x80185c70, (void *)motion_integrator_tail },
@@ -1908,6 +1980,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8018fe44, (void *)mdec_status_read },
   { 0x8018fe5c, (void *)mdec_error_reset },
   { 0x8018ff10, (void *)cd_bitstream_decode },
+  { 0x80190228, (void *)cpu_regs_snapshot },
   { 0x80190260, (void *)vram_tile_decode },
   { 0x80190350, (void *)text_line_select },
   { 0x80190390, (void *)text_win_init },
@@ -1917,6 +1990,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80190e00, (void *)gpu_graph_reset },
   { 0x80190f74, (void *)set_graph_debug },
   { 0x80190fd0, (void *)cd_gpu_call_34 },
+  { 0x80191074, (void *)gpu_flag_8322_read },
   { 0x80191084, (void *)cd_gpu_defer_set },
   { 0x801910e4, (void *)gpu_disp_mask_set },
   { 0x8019117c, (void *)gpu_draw_sync },
@@ -1971,10 +2045,13 @@ const Br2FnEnt fn_table[] = {
   { 0x80193f60, (void *)sprite_attr_init_b },
   { 0x80193fa0, (void *)gpu_bits_pack_a },
   { 0x80193fe0, (void *)gpu_coord_pack_b },
+  { 0x80194000, (void *)gpu_pkt_merge24 },
+  { 0x80194040, (void *)gpu_pkt_low24_or },
   { 0x80194060, (void *)spr_desc_b },
   { 0x80194090, (void *)spr_desc_c },
   { 0x801940c0, (void *)spr_prim_tag_a },
   { 0x801940e0, (void *)spr_desc_a },
+  { 0x80194100, (void *)gpu_pkt_tag_0c3c },
   { 0x80194120, (void *)gpu_pkt_tag_74 },
   { 0x80194140, (void *)gpu_pkt_tag_60 },
   { 0x80194160, (void *)spr_prim_tag_b },
@@ -1982,7 +2059,16 @@ const Br2FnEnt fn_table[] = {
   { 0x801941e0, (void *)prim_packet_init_tex },
   { 0x80194280, (void *)isqrt_refine },
   { 0x801943d4, (void *)isqrt },
+  { 0x80194478, (void *)gte_screen_init_defer },
+  { 0x80194500, (void *)fixed_rsqrt_q12 },
+  { 0x80194590, (void *)fixed_rsqrt_q12_ex },
+  { 0x8019461c, (void *)vec3_s32_h_normalize },
+  { 0x80194630, (void *)vec3_s32_normalize },
+  { 0x80194660, (void *)vec3_s16_normalize },
+  { 0x80194690, (void *)gte_vec3_normalize },
+  { 0x80194750, (void *)gte_xform_norm3pts },
   { 0x80194840, (void *)gte_xform_accum },
+  { 0x801948c0, (void *)fixed_recip_lut },
   { 0x80194960, (void *)gte_rtps_xform3 },
   { 0x80194b60, (void *)gte_xform3_nold },
   { 0x80194c50, (void *)gte_rtps_xform3_t },
@@ -1994,11 +2080,23 @@ const Br2FnEnt fn_table[] = {
   { 0x80195210, (void *)gte_rot_load },
   { 0x80195240, (void *)gte_light_load },
   { 0x80195270, (void *)gte_tr_load },
+  { 0x80195290, (void *)gte_ofs_set },
   { 0x801952b0, (void *)gte_cw_d000_set },
+  { 0x801952c0, (void *)gte_mvmva_vec3 },
+  { 0x801952e8, (void *)gte_dpcl_vec3 },
+  { 0x80195310, (void *)gte_dpct_vec3 },
+  { 0x8019534c, (void *)gte_intpl_vec3 },
+  { 0x80195370, (void *)gte_sqr_vec3_b },
   { 0x80195398, (void *)gte_op_a00428 },
+  { 0x801953c0, (void *)gte_avsz3_wrap },
+  { 0x801953e0, (void *)gte_avsz4_wrap },
+  { 0x80195404, (void *)gte_op_vec3_a },
+  { 0x8019545c, (void *)gte_op_vec3_b },
   { 0x801954b4, (void *)cop2_clz },
+  { 0x801954d0, (void *)gte_rtps_vec3 },
   { 0x80195500, (void *)gte_points_xform },
   { 0x80195570, (void *)rotate_xy_pairs },
+  { 0x80195710, (void *)gpu_state_patch_defer },
   { 0x801957f0, (void *)bios_tramp_a044 },
   { 0x80195800, (void *)cd_dir_table_set },
   { 0x80195830, (void *)cd_dir_read_wrap },
@@ -2268,6 +2366,14 @@ const Br2FnEnt fn_table[] = {
   { 0x801a51d0, (void *)op_dbg_dump_tbl },
   { 0x801a536c, (void *)op_node_count_flagged },
   { 0x801a53e8, (void *)op_dbg_dump_ring },
+  { 0x801a5bd0, (void *)guard_callee_a0 },
+  { 0x801a5d90, (void *)guard_callee_b0 },
+  { 0x801a5f50, (void *)guard_callee_c0 },
+  { 0x801a6150, (void *)guard_callee_d0 },
+  { 0x801a6350, (void *)guard_callee_c1 },
+  { 0x801a6538, (void *)guard_callee_a1 },
+  { 0x801a66dc, (void *)guard_callee_b1 },
+  { 0x801a6880, (void *)guard_callee_d1 },
   { 0x801a6a68, (void *)op_walk_dispatch_a },
   { 0x801a6ae8, (void *)gp_20_store_default },
   { 0x801a6b0c, (void *)op_job_submit_ab },
