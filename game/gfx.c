@@ -2739,8 +2739,9 @@ uint32_t gpu_flag_8322_read(void)
 }
 
 /* ======== 0x80194000 ======== */
-/* Exchange the packet-word fields of *a0 / *a1:
- *   *a1 = (*a1 & 0x00ffffff) | (*a0 & 0xff000000)
+/* Swap the low-24 payload fields of the two packet words while keeping
+ * each word's own top byte, then tag *a0 with the compressed a1 pointer:
+ *   *a1 = (*a1 & 0xff000000) | (*a0 & 0x00ffffff)
  *   *a0 = (*a0 & 0xff000000) | (a1_guest & 0x00ffffff)
  * The second store ORs the pointer-compressed form of a1 itself (the
  * & 0xffffff tag convention used throughout the OT packet code), not
@@ -2753,7 +2754,7 @@ void gpu_pkt_merge24(uint32_t a0g, uint32_t a1g)
   uint32_t *a1 = (uint32_t *)guest_at(a1g);
   uint32_t v1 = a1[0];
   uint32_t v0;
-  a1[0] = (v1 & 0x00ffffffu) | (a0[0] & 0xff000000u);
+  a1[0] = (v1 & 0xff000000u) | (a0[0] & 0x00ffffffu);
   v0 = a0[0];
   a0[0] = (v0 & 0xff000000u) | (a1g & 0x00ffffffu);
 }
@@ -2861,17 +2862,19 @@ void gte_dpcl_vec3(uint32_t vec, uint32_t scl_addr, uint32_t ir0,
 
 /* ======== 0x80195310 ======== */
 /* DPCT wrapper with three output pointers passed on the stack:
- *   lwc2 gte[20] = *a0, gte[21] = *a1, gte[22] = *a2, gte[6] = *a3,
- *   gte[8] = a3 (IR0), GTE cmd 0x0F8002A (DPCT),
+ *   lwc2 gte[20] = *a0, gte[21] = *a1, gte[22] = *a2, gte[6] = *a2,
+ *   gte[8] = a3 (IR0 — the raw 4th arg, NOT dereferenced),
+ *   GTE cmd 0x0F8002A (DPCT),
  *   swc2 gte[20..22] -> *stk0,*stk1,*stk2 (sp+16/20/24 args).
- * Disasm 0x80195310-0x8019534C. */
+ * Generated 0x80195310-0x8019534C loads gte[6] from $a2 (gpr6), the
+ * same pointer that fed gte[22]. */
 void gte_dpct_vec3(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3,
                    uint32_t o0, uint32_t o1, uint32_t o2)
 {
   gte_lwc2(a0 + 0, 20);
   gte_lwc2(a1 + 0, 21);
   gte_lwc2(a2 + 0, 22);
-  gte_lwc2(a3 + 0, 6);
+  gte_lwc2(a2 + 0, 6);
   setCopReg(2, GTE_DREG(8), a3);
   copFunction(2, 0x0F8002A);
   gte_swc2(o0 + 0, 20);
@@ -3127,7 +3130,12 @@ void gpu_state_patch_defer(void)
   br2_bios_tramp(0xb0, 0x56);           /* jalr 0xB0, $t1=0x56 — B0 svc 0x56 */
   v0 = c->gpr[2];                       /* BIOS $v0 */
   base = GP32(v0 + 24) + 40;
-  for (i = 0; i < 6; i++) {
+  /* Generated compares TWELVE words: table cursor runs
+   * 0x801957BC -> 0x801957EC (exclusive) against base+0..44. Only on a
+   * full 12-word match does it copy the SIX words @0x801957D4
+   * (-> 0x801957EC) over base+0..20 — the copy source overlaps the
+   * tail of the compare table. */
+  for (i = 0; i < 12; i++) {
     if (GP32(0x801957BCu + (uint32_t)i * 4u) != GP32(base + (uint32_t)i * 4u)) {
       same = 0;
       break;
