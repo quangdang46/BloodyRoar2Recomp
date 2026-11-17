@@ -1146,3 +1146,57 @@ Systematic grep for 7-hex-digit guest literals found a cluster of
   announce 0x80163634: lui 0x1F80; load +0xDC).
 Commits: 8c4e960, 49b6e49, 029f21b. Audit agent continuing the
 valid-but-wrong kernel-address sweep (0x801f4a8 class).
+
+=== N+103 — clean_table thunk-skip breakdown + unwrapped named census ===
+Regen at HEAD gives 1205 wrappers / 76 skipped (all "no-def" per generator,
+but the real cause is the br2_call_generated body-scan at gen_clean_table.py:
+125-130). Census of every fnmap addr lacking a wrapper:
+- 64 SELF-DELEGATING thunks — body is/ends-in br2_call_generated(own addr).
+  MUST stay unwrapped: clean_try_dispatch -> clean fn -> br2_call_generated
+  -> psx_dispatch_call -> dirty_ram_dispatch -> psx_dispatch_game_compiled ->
+  clean_try_dispatch(same addr) = infinite recursion. Includes all cd_*
+  interrupt-bound delegates (correct per AGENTS.md §4) + scriptop_chk,
+  mc_date_serial_cmp, impact_fx_update (0x80138CEC tail-self-call).
+- ~10 REAL clean bodies that merely CONTAIN br2_call_generated(variable) for
+  dynamic sub-dispatch (fn_g/_tf/h/fp args): player_light_apply,
+  camera_state_cache, fighter_trail_emit, ev_stream_dispatch,
+  script_op_dispatch, fighter_attach_run, op_cb{1,2,4}_store_ctx8,
+  LAB_80137acc. Wrapping is only safe if the variable can never resolve to
+  the fn's own guest addr — needs per-site proof, not blanket unwrap.
+- 2 literal OTHER-addr delegates (provably safe): LAB_80137cd0 and
+  op_wrap_acb08 -> br2_call_generated(0x801acb08). Marginal value (LAB_/op_
+  helpers likely reached via clean C anyway).
+CONCLUSION: the named-function well is ~dry. 73 renames.map names lack
+wrappers but ~85% are intentional delegates; true remaining named targets
+are single digits. The real coverage frontier is the ~2679 unnamed FUN_
+bodies in generated/SLES_017.22_full_*.c — needs subsystem-partitioned
+port agents, not generator tweaks.
+PROFILE: disp_ring (always-on per-dispatch ring, fntrace.c) works on live
+instances — port 4664 attract demo had 3.24G dispatches. Hot targets are
+dominated by CD/kernel loop (0x8019A460 cd_timer_read, 0x80198CEC,
+0x8019A5D8 vsync_wait_n) + low-mem kernel dispatches — attract spends most
+time in CD/VSYNC polling, so fight-path FUN_ bodies need versus/fight
+instances to profile. dispatch_tail/s_dispatch_seq only records BIOS-side
+dispatches (game path doesn't call debug_server_trace_dispatch) — use
+disp_ring, not dispatch_tail, for game coverage.
+
+=== N+104 — attract demo fight wedges at gs=6 ph=2 (clean repro of fight-init blocker) ===
+Fresh build (HEAD 108dbe8, post typo-fixes) boots past CD stall into ATTRACT
+FIGHT DEMO (gs=6) but the demo fight WEDGES at ph=2 (scratchpad 0x1f800001)
+~frame 1866 and never advances — frames keep ticking ~75fps, VBlank IRQs
+deliver normally (event_ring: ISTAT_RAISE bit0 -> IRQ_DELIVER 0x801B0E38
+every frame), CD goes IDLE at frame 1866 (last_sector lba 7349, pending
+Pause 0x09 phase1, i_stat=0). Game main loop is ALIVE in a vblank-driven
+wait — this is a GAME-LOGIC stall in fight init, NOT an IRQ/CD/hardware
+stall. ph=2 static >20s, fighter anim ptrs frozen.
+SIGNIFICANCE: the attract demo auto-plays a fight through the SAME
+battle/fight-init path versus->fight uses — ph=2 wedge is a CLEAN REPRO
+of the versus->fight blocker that does NOT need versus navigation or pad
+input. Debug here, not through nav_to_fight.
+pc at wedge ~0x801B0E38 (generated br2eu_func_801B0E60 — vblank/main-loop
+region). Suspect: fight-init state machine waits on a flag/timer/script
+event that a clean port or typo left unset — same bug class as N+36/N+37
+address typos. ph=2 handler lives in battle_flow_state_machine
+(0x8016FCC4, game/menu.c) / battle_intro_fsm path.
+NOTE: all pre-existing emus were on STALE binaries (built 17:01; emus
+started 15:32-16:53 pre-typo-fixes). Repro requires fresh build.
