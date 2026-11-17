@@ -297,6 +297,11 @@ static void gw_push_entry(void)
             for (int s=28;s>=0;s-=4) lb[o++]=H[(vals[i]>>s)&0xF];
             lb[o++]=' ';
         }
+        /* Host RIP is the authoritative writer attribution (atos/nm); the
+         * ring dies with the process on FAIL-FAST, so it must be in the
+         * crash-surviving stderr mirror too. */
+        memcpy(lb+o,"RP=",3); o+=3;
+        for (int s=60;s>=0;s-=4) lb[o++]=H[(uint32_t)((e->rip>>s)&0xFULL)];
         lb[o++]='\n';
         (void)!write(2,lb,(size_t)o);
     }
@@ -321,6 +326,132 @@ void guest_watch_block_tick(void)
 {
     if (!g_guest_watch_pending) return;
     gw_finish_pending();
+}
+
+/* ---- arm64 store emulation ---------------------------------------------
+ * The lazy pending window loses every watched write that lands between a
+ * fault and the next guest_at()/block_tick boundary — exactly the burst
+ * pattern clean-C cached-pointer writers produce (e.g. gs+ph written back to
+ * back). For the common A64 store encodings we instead perform the store in
+ * the handler itself: decode the insn at the fault PC, compute EA, require it
+ * to equal the fault address, write the Rt value, advance PC, re-protect —
+ * zero pending window, exact attribution. Unrecognized encodings (STP, SIMD,
+ * atomics, DC ops) return 0 and take the lazy path unchanged. */
+static uint64_t gw_xread(ucontext_t *uc, unsigned r)
+{
+#if defined(__APPLE__) && defined(__aarch64__)
+    if (r < 29) return (uint64_t)uc->uc_mcontext->__ss.__x[r];
+    if (r == 29) return (uint64_t)uc->uc_mcontext->__ss.__fp;
+    if (r == 30) return (uint64_t)uc->uc_mcontext->__ss.__lr;
+    return 0; /* r == 31 -> XZR/WZR */
+#elif defined(__linux__) && defined(__aarch64__)
+    if (r < 31) return (uint64_t)uc->uc_mcontext.regs[r];
+    return 0;
+#else
+    (void)uc; (void)r; return 0;
+#endif
+}
+
+static uint64_t gw_spread(ucontext_t *uc)
+{
+#if defined(__APPLE__) && defined(__aarch64__)
+    return (uint64_t)uc->uc_mcontext->__ss.__sp;
+#elif defined(__linux__) && defined(__aarch64__)
+    return (uint64_t)uc->uc_mcontext.sp;
+#else
+    (void)uc; return 0;
+#endif
+}
+
+static uint64_t gw_pcread(ucontext_t *uc)
+{
+#if defined(__APPLE__) && defined(__aarch64__)
+    return (uint64_t)uc->uc_mcontext->__ss.__pc;
+#elif defined(__linux__) && defined(__aarch64__)
+    return (uint64_t)uc->uc_mcontext.pc;
+#else
+    (void)uc; return 0;
+#endif
+}
+
+static void gw_pcadvance(ucontext_t *uc)
+{
+#if defined(__APPLE__) && defined(__aarch64__)
+    uc->uc_mcontext->__ss.__pc += 4;
+#elif defined(__linux__) && defined(__aarch64__)
+    uc->uc_mcontext.pc += 4;
+#endif
+}
+
+/* Decode + perform the store. Returns 1 when the faulting insn was a
+ * recognized store fully handled here (entry pushed, pages re-protected, PC
+ * advanced); 0 to fall back to the lazy pending path. s_pend_* must already
+ * hold the captured context (old[] pre-store, rip, regs, in_range). */
+static int gw_store_emu(ucontext_t *uc, uintptr_t fa)
+{
+#if defined(__aarch64__)
+    uint64_t pc = gw_pcread(uc);
+    uint32_t insn = *(volatile uint32_t *)(uintptr_t)pc;
+    unsigned kind = 0;      /* 0=uint-imm, 1=unscaled, 2=regoff */
+    unsigned scale = 0;
+    uint32_t top = insn & 0xFFC00000u;
+    if      (top == 0x39000000u) { kind = 0; scale = 0; }
+    else if (top == 0x79000000u) { kind = 0; scale = 1; }
+    else if (top == 0xB9000000u) { kind = 0; scale = 2; }
+    else if (top == 0xF9000000u) { kind = 0; scale = 3; }
+    else {
+        uint32_t m2 = insn & 0xFFE00C00u;
+        if      (m2 == 0x38000000u) { kind = 1; scale = 0; }
+        else if (m2 == 0x78000000u) { kind = 1; scale = 1; }
+        else if (m2 == 0xB8000000u) { kind = 1; scale = 2; }
+        else if (m2 == 0xF8000000u) { kind = 1; scale = 3; }
+        else if (m2 == 0x38200800u) { kind = 2; scale = 0; }
+        else if (m2 == 0x78200800u) { kind = 2; scale = 1; }
+        else if (m2 == 0xB8200800u) { kind = 2; scale = 2; }
+        else if (m2 == 0xF8200800u) { kind = 2; scale = 3; }
+        else return 0;
+    }
+    unsigned rt = insn & 0x1Fu;
+    unsigned rn = (insn >> 5) & 0x1Fu;
+    uint64_t base = (rn == 31) ? gw_spread(uc) : gw_xread(uc, rn);
+    uint64_t ea;
+    if (kind == 0) {
+        ea = base + ((uint64_t)((insn >> 10) & 0xFFFu) << scale);
+    } else if (kind == 1) {
+        int32_t simm = (int32_t)((insn >> 12) & 0x1FFu);
+        if (simm & 0x100) simm -= 0x200;
+        ea = base + (int64_t)simm;
+    } else {
+        unsigned rm = (insn >> 16) & 0x1Fu;
+        unsigned opt = (insn >> 13) & 7u;
+        unsigned S = (insn >> 12) & 1u;
+        uint64_t xm = gw_xread(uc, rm);
+        uint64_t off;
+        switch (opt) {
+        case 0: off = xm & 0xFFull; break;                    /* uxtb */
+        case 1: off = xm & 0xFFFFull; break;                  /* uxth */
+        case 2: off = xm & 0xFFFFFFFFull; break;              /* uxtw */
+        case 3: off = (uint64_t)(int64_t)(int32_t)xm; break;  /* sxtw */
+        case 6: off = xm; break;                              /* uxtx */
+        case 7: off = xm; break;                              /* sxtx (64b) */
+        default: return 0;
+        }
+        if (S) off <<= scale;
+        ea = base + off;
+    }
+    if (ea != (uint64_t)fa) return 0;   /* decode mismatch: not our store */
+
+    gw_protect_pages(PROT_READ | PROT_WRITE);
+    uint64_t v = gw_xread(uc, rt);
+    memcpy((void *)fa, &v, (size_t)1u << scale);
+    if (s_pend_in_range) gw_push_entry();
+    else s_oor_hits++;
+    gw_protect_pages(PROT_READ);
+    gw_pcadvance(uc);
+    return 1;
+#else
+    (void)uc; (void)fa; return 0;
+#endif
 }
 
 static void gw_segv_handler(int sig, siginfo_t *si, void *uc_v)
@@ -403,6 +534,11 @@ static void gw_segv_handler(int sig, siginfo_t *si, void *uc_v)
         memcpy(s_pend_old, (void *)fa, n);
         if (n < GW_WINDOW) memset(s_pend_old + n, 0, GW_WINDOW - n);
     }
+
+    /* Fast path: recognized store encodings are performed here — the entry is
+     * pushed with post-store new[] and NO pending window is opened, so a
+     * burst of watched writes can no longer merge into one entry. */
+    if (gw_store_emu(uc, fa)) return;
 
     /* arm64e W^X forbids writable+executable pages, so the post-store BRK
      * patch is impossible on Darwin. Instead: unprotect the watched pages,
