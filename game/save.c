@@ -6449,7 +6449,7 @@ init:
     goto ret0;
   scratch_013_set(0);
   {
-    uint8_t *s5 = (uint8_t *)guest_at(0x801f4a8);
+    uint8_t *s5 = (uint8_t *)guest_at(0x801f04a8);
     int32_t *tbl = (int *)tag_table_get();
     *(int16_t *)(s5 + 4) = 0;
 
