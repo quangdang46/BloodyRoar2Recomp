@@ -1372,3 +1372,18 @@ addr=0x8019AA94 ra=0x8019AA9C a1=0x1F801070 (MMIO), pc=0xB0 BIOS-svc
 context, epc=0x8018AA60. 0x8019AA94 sits in cd_chan_slot_set
 (0x8019AABC) region — CD-channel path, possibly same unwind class or a
 new port bug. Under investigation by ba9ede73.
+
+=== N+111a — frame-2195 blocker analysis (0x8019AA94 mid-block dispatch) ===
+0x8019AA94 is NOT a compiled block leader — dispatch table has
+0x8019AA90 (lui) and 0x8019AA9C (epilogue) bracketing it; AA94 is the
+`jal` insn inside br2eu_func_8019A8EC (CD-channel region, ra would be
+0x8019AA9C). No reference to AA94 exists anywhere in generated/,
+dispatch, recompiler seeds — nothing legitimately targets it statically.
+psx_slice_block is PARKED (g_psx_precise_slice off) so blocks run
+atomically — resume can't come from cycle slicing. Crash context:
+pc=0xB0 (BIOS svc), a1=0x1F801070 (MMIO), epc=0x8018AA60. Most likely:
+a guest indirect branch (jalr/jr/bcond) or exception/RFE resume landed
+on AA94 — i.e., saved-PC corruption of the SAME unwind family, OR a
+recompiler discovery gap for an indirect target the analysis missed.
+Distinguish: if cpu->pc was SET to AA94 by runtime resume logic vs a
+genuine guest jalr — check dispatch_tail/xprobe in the run report.
