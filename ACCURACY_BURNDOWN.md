@@ -1401,3 +1401,18 @@ call through corrupted fn-ptr/struct field. Nondeterminism fits a
 timing-dependent data race / heap overflow (N+102 heapB→heapA .ANI
 overwrite suspect). Agent b8f38c30 tracing the leaking write via
 guest_watch on the corrupted pointer's guest address.
+
+=== N+113 — crash = guest-memory ALIASING, not host-pointer leak ===
+b8f38c30 traced end-to-end: task_pools_tick (battle.c:8155) walks task
+node @0x801D0C20 whose node[2]/node[4]=0x03FF0100 (GTE data-reg contents)
+→ task_invoke→call_guest(0x03FF0100)→unknown dispatch. addr==a0==
+0x03FF0100 explains all crash fields.
+The write is FAITHFUL generated swc2 GTE stores in func_801A5A0C
+(full_50.c, PCs 0x801A5B40..80, frame 1898), s0=0x801D0C10, storing
+cpu->gte_data[12..14] over the live task node. Proven via PSX_GWATCH.
+Caller func_801A8BC8 iterates slot table *(0x801BEF24)=0x801E6260.
+Pool links to 0x801D0C20 at guest 0x1FF418/0x1FF420.
+Host-pointer-leak theory DEAD (bg_count=0; value deterministic, not ASLR).
+REAL BUG = memory aliasing: context-init writes into pool-owned memory.
+Either slot-table entry stale OR pool alloc/free double-booked block.
+Agent 710ceb0d determining which side diverges.
