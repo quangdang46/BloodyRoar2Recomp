@@ -8364,7 +8364,11 @@ undefined4 * prim_group_build(undefined4 param_1,int param_2,undefined4 param_3,
     uVar4 = 0;
     if (*(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x20) ))!= 0) {
       do {
-        unaff_s4 = prim_batch_emit((int)(uintptr_t)puVar3,*puVar3,*(undefined4 *)guest_at(g1 + 0x28),*(undefined4 *)guest_at(g1 + 0x2c),local_30,
+        /* puVar3 is a HOST pointer into the batch-descriptor table; the
+         * callee indexes it as a GUEST address via guest_at(param_1+off)
+         * (generated passes the descriptor's guest addr in $a0). Hand it the
+         * guest address, not the truncated host pointer. */
+        unaff_s4 = prim_batch_emit((int)(intptr_t)br2_gaddr(puVar3),*puVar3,*(undefined4 *)guest_at(g1 + 0x28),*(undefined4 *)guest_at(g1 + 0x2c),local_30,
                                 *(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x2c))),*(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x34))),
                                 *(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x30))),param_3,
                                 *(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x1c))),param_4);
