@@ -1271,3 +1271,39 @@ context-unwind corruption (saved-PC slot AND callee-saved x19-x28). Prior-art
 stopgap exists: menu.c:2794 frame_divisor_get bypasses a cached bound ptr for
 the identical symptom; faithful fix = runtime register preservation across
 the interrupt boundary (interrupts.c/psx_fiber.c/traps.c).
+
+=== N+108 — full clean-tree audit sweep launched (every game/*.c covered) ===
+Following the proven audit pattern (N+103 port waves; 1619f14 caught 4 real
+bugs in ani.c/gfx.c — recip-table base off 0x28, packet-mask swap,
+gte_dpct_vec3 a3-vs-a2 deref, 6-vs-12 compare loop), a complete audit of
+every clean source file vs generated/SLES_017.22_full_*.c was launched in
+parallel, partitioned by disjoint file sets:
+
+- menu.c (16K lines): CLEAN BILL — heap_serialize tag cluster + state
+  machines verified instruction-level (agent 35a3baac).
+- ani.c + gfx.c: DONE — 4 proven bugs fixed in 1619f14.
+- battle.c + fight.c + action.c: agent d7e74954 (running).
+- vm.c + ev.c: DONE — 8 proven bugs fixed in 545b0d5 (scriptop_cmp
+  src decode, scriptop_bsr sub-dispatch rewrite, bra_random_pick
+  off-by-one, bra_target sel==0 fallbacks, scriptop_gpad mask+shift,
+  ev_cmd_dispatch arg swap).
+- save.c (9.5K): CLEAN BILL — ~19 functions verified incl. memcard_tick,
+  memcard_slot_poll, save_slot_state_fixup block-level (7d0fef87).
+  Flagged: weak `return 0` stubs memcard_block_verify /
+  job_result_poll_stable remain a live stub risk (follow-up needed).
+- resolve.c + bind.c + game.c: DONE — 5 proven bugs fixed in 9ce6b9a
+  (task_table_init width, cd_channel_init_seq spurious calls,
+  memcard_info_query return, scratchpad u16 widths,
+  cd_seek_state_machine stub->B0:0B trampoline).
+- cd.c (5.5K): DONE — 10 proven address-typo bugs fixed in 156e2a1
+  (flag/pointer/state cell nibble typos; agent 00a13abf).
+
+Bug-class checklist per audit: hex/address typos, host->guest pointer
+domain leaks (guest_at vs br2_gaddr), MMIO via raw guest_at vs br2_ld*/st*,
+stack-depth off-by-one, G16-vs-GU16 signedness, loop-bound mismatch,
+wrong arg register. Delegated `br2_call_generated` thunks are correct by
+construction and skipped. Named-unwrapped census: 75 functions remain —
+64 self-delegates + 9 indirect-delegates + 2 allowlisted; all correctly
+unwrapped (would infinitely recurse through clean dispatch otherwise).
+FUN_ marathon (~2668 unnamed) deferred until the x28 gate falls and live
+combat is verified.
