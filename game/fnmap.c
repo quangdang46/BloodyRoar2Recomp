@@ -988,12 +988,13 @@ extern void prim_packet_init(void);
 extern void prim_packet_init_tex(void);
 extern void prim_tag_set(void);
 extern void prim_task_run(void);
-extern void print_dispatch(void);
-extern void print_dispatch_selfdesc(void);
+extern void print_dispatch_guest(void);
+extern void print_dispatch_selfdesc_guest(void);
 extern void print_mode_dispatch(void);
 extern void print_mode_dispatch_b(void);
+extern void print_mode_dispatch_guest(void);
 extern void printf_core(void);
-extern void printf_forward(void);
+extern void printf_forward_guest(void);
 extern void proj_coord_gte_emit(void);
 extern void pt_box_radius_test(void);
 extern void quad_fx_spawn(void);
@@ -1146,7 +1147,7 @@ extern void spr_prim_tag_b(void);
 extern void spr_slot_pkt_submit(void);
 extern void spr_tbl_init_a(void);
 extern void spr_tbl_init_b(void);
-extern void sprintf_core(void);
+extern void sprintf_core_guest(void);
 extern void sprite_9slice_build(void);
 extern void sprite_anim_chain_build(void);
 extern void sprite_attr_init_a(void);
@@ -1223,7 +1224,7 @@ extern void text_render_full(void);
 extern void text_render_simple(void);
 extern void text_widget_alloc(void);
 extern void text_win_init(void);
-extern void text_win_printf(void);
+extern void text_win_printf_guest(void);
 extern void tile_decode_wait(void);
 extern void tile_stream_job_init(void);
 extern void tile_stream_open(void);
@@ -1368,11 +1369,12 @@ const Br2FnEnt fn_table[] = {
   { 0x8012c0b4, (void *)intro_movie_state },
   { 0x8012c374, (void *)hud_gauge_render },
   { 0x8012cbc0, (void *)print_mode_dispatch_b },
-  { 0x8012cc6c, (void *)print_dispatch },
+  { 0x8012cc6c, (void *)print_dispatch_guest },
   { 0x8012cd9c, (void *)scroll_offset_set },
   { 0x8012cdd8, (void *)scroll_offset_accumulate },
+  { 0x8012ce30, (void *)print_mode_dispatch_guest },
   { 0x8012ce30, (void *)print_mode_dispatch },
-  { 0x8012cf64, (void *)print_dispatch_selfdesc },
+  { 0x8012cf64, (void *)print_dispatch_selfdesc_guest },
   { 0x8012d090, (void *)sprite_desc_table_init },
   { 0x8012d154, (void *)text_render_full },
   { 0x8012dce4, (void *)text_render_simple },
@@ -2023,7 +2025,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8018e490, (void *)guest_memcpy },
   { 0x8018e4d0, (void *)rand_lcg },
   { 0x8018e510, (void *)str_len },
-  { 0x8018e550, (void *)printf_forward },
+  { 0x8018e550, (void *)printf_forward_guest },
   { 0x8018e590, (void *)printf_core },
   { 0x8018eca0, (void *)strchr_bounded },
   { 0x8018ecf0, (void *)console_emit },
@@ -2031,7 +2033,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8018edf4, (void *)debug_line_flush },
   { 0x8018ee28, (void *)debug_line_putc },
   { 0x8018ef50, (void *)bios_tramp_b035 },
-  { 0x8018ef60, (void *)sprintf_core },
+  { 0x8018ef60, (void *)sprintf_core_guest },
   { 0x8018f7e0, (void *)mem_move },
   { 0x8018f850, (void *)cd_fileop_reset },
   { 0x8018f9b4, (void *)gpu_pkt_attr_set },
@@ -2053,7 +2055,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80190350, (void *)text_line_select },
   { 0x80190390, (void *)text_win_init },
   { 0x80190430, (void *)text_widget_alloc },
-  { 0x80190a04, (void *)text_win_printf },
+  { 0x80190a04, (void *)text_win_printf_guest },
   { 0x80190dd0, (void *)guest_memset_b },
   { 0x80190e00, (void *)gpu_graph_reset },
   { 0x80190f74, (void *)set_graph_debug },
