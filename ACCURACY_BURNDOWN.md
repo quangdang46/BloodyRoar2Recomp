@@ -1237,3 +1237,19 @@ This was a LATENT clean-port bug unreachable until ph=2 completed.
 Lesson: the coarse "uninitialized/edge-case in ported state machines"
 class — verify boundary (==0 vs ==1) against generated delay-slot/branch
 semantics, not intuition.
+
+=== N+106 — deterministic pc=0 crash isolated to TCB/RestoreState path ===
+Post-scriptop_ret-fix, attract fight crashes at IDENTICAL psx_cycle_count
+(~1289745198-201, ±3 cycles) every run: cpu.pc=0, epc=0x8019A600 (inside
+vsync_wait_n guest 0x8019A5D8 — VBlank coroutine boundary, correctly
+self-thunked), ra=0x801265F4 (main-loop ret after jal battle_intro_flow
+0x80167330), current_func=0x000029CC (BIOS RestoreState), last_store_pc
+0x80192EBC (cd_cmd_queue_load). wedge_kind=fatal.
+Mechanism (traps.c forensics): func_000029CC RestoreState reaches fatal via
+`jr $k0` where k0 = *(TCB+136) = saved-PC slot; TCB = *(*(0x108)) chain.
+pc=0 means the saved context's PC slot was 0/corrupt at restore — SAME
+class as N+101/N+102 callee-saved/unwind-context corruption. Deterministic
+cycle count = perfect repro for bisecting which save/restore path zeroes it.
+Suspect chain: VBlank IRQ fires inside vsync_wait_n's coroutine wait ->
+RestoreState resumes a TCB whose saved PC slot was never written (thread
+created but not yet Run, or slot offset wrong) -> jr to 0.
