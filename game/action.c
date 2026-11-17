@@ -201,11 +201,15 @@ static void apply(uint8_t *ctrl, uint8_t *motion)
         }
     }
 
-    /* ---- .ACT cursor share/mirror ---- */
+    /* ---- .ACT cursor share/mirror (generated 0x8017A388-0x8017A3E8) --
+     * player==0 or char differs: v = lh[*motion+0xac]; cursor += 4;
+     * motion+0xa4 = v.  Same char: mirror foe's cursor, +0xa4 = lh[cur-4]. */
     if (GU8(ctrl, FC_PLAYER) == 0 ||
         (foe && GU8(ctrl, FC_CHAR) != GU8(foe, FC_CHAR))) {
-        uint16_t v = GU16(motion, MO_AC);
-        GSU32(motion, MO_AC) += 8;
+        uint32_t cur_g = GU32(motion, MO_AC);
+        uint8_t *cur = (uint8_t *)guest_at(cur_g);
+        uint16_t v = GU16(cur, 0);
+        GSU32(motion, MO_AC) = cur_g + 4;
         GSU16(motion, 0xa4) = v;
     } else if (foe) {
         uint8_t *fm = ctrl_motion(foe);
@@ -216,73 +220,70 @@ static void apply(uint8_t *ctrl, uint8_t *motion)
         }
     }
 
-    /* ---- big transient reset (verified field list) ---- */
+    /* ---- big transient reset (generated 0x8017A4C4-0x8017A580).
+     * Byte offsets verified against the generated stores — the earlier
+     * int*-scaled "approx" offsets were wrong. */
     GSU32(ctrl, 0x58) = 0;  GSU32(ctrl, 0x5c) = 0;
     GSU32(ctrl, 0x60) = 0;  GSU32(ctrl, 0x64) = 0;
     GSU32(ctrl, 0x68) = 0;  GSU32(ctrl, 0x6c) = 0;
-    GS16(motion, 0x28) = 0;         /* param_2[5]  = +0x14? see note */
-    GSU32(motion, 0x18) = 0;        /* param_2[6]  = +0x18 */
-    GS16(motion, 0x1c) = 0xffff;    /* param_2[7]  = +0x1c */
-    GS16(motion, 0x78) = 0;         /* +0x1e */
-    GSU32(motion, 0x30) = 0;        /* param_2[0xc]= +0x30 */
-    GS16(motion, 0x34) = 0xffff;    /* param_2[0xd]= +0x34 */
-    GS16(motion, 0x4c) = 0;         /* +0x36 */
-    GSU32(motion, 0x20) = 0;        /* param_2[8]  = +0x20 */
-    GS16(motion, 0x24) = 0xffff;    /* param_2[9]  = +0x24 */
-    GS16(motion, 0x98) = 0;         /* +0x26 */
-    GS16(motion, 0x54) = 0xffff;    /* +0x2a */
-    GS8 (motion, 0x7c) = 0;         /* param_2+0x1f byte = +0x7c */
-    GS8 (motion, 0xf6) = 0xff;      /* +0x7d region approx */
-    GS8 (motion, 0xf7) = 0xff;      /* +0x7e */
-    GS16(motion, 0x90) = 0;         /* param_2+0x24 = +0x90 */
-    GS16(motion, 0x278) = 1;        /* +0x9e */
-    GS16(motion, 0x140) = 1;        /* param_2+0x28 = +0x140? approx */
-    GS16(motion, 0x180) = 1;        /* param_2+0x30 = +0x180? approx */
-    GSU32(motion, 0xb0) = 0;        /* param_2[0x2c] = +0xb0 */
-    /* NOTE: several motion offsets above are int*-scaled in the
-     * decompile; marked approx pending offset audit. */
-    GS16(ctrl, 0x88) = GS16(ctrl, 0x86);
-    GS16(motion, 0x268) = 0xffff;   /* param_2+0x9a = +0x268? approx */
-    GS8 (motion, 0x404) = 0xff;     /* +0x101 */
-    GS8 (motion, 0x405) = 0xff;
-    GS8 (motion, 0x406) = 0xff;
-    GS8 (motion, 0x408) = 0xff;     /* param_2+0x41 byte */
-    GS16(motion, 0x418) = 0;        /* +0x106 */
-    GS16(motion, 0x420) = 0;        /* param_2+0x42 */
-    GS16(motion, 0x428) = 0;        /* +0x10a */
-    GS8 (ctrl, 0x26) = 0xff;
+    GS16 (motion, 0x14)  = 0;
+    GSU32(motion, 0x18)  = 0;
+    GS16 (motion, 0x1c)  = 0xffff;
+    GS16 (motion, 0x1e)  = 0;
+    GSU32(motion, 0x30)  = 0;
+    GS16 (motion, 0x34)  = 0xffff;
+    GS16 (motion, 0x36)  = 0;
+    GSU32(motion, 0x20)  = 0;
+    GS16 (motion, 0x24)  = 0xffff;
+    GS16 (motion, 0x26)  = 0;
+    GS16 (motion, 0x2a)  = 0xffff;
+    GS8  (motion, 0x7c)  = 0;
+    GS8  (motion, 0x7d)  = 0;
+    GS8  (motion, 0x7e)  = 0xff;
+    GS16 (motion, 0x90)  = 0;
+    GS16 (motion, 0x9e)  = 1;
+    GS16 (motion, 0xa0)  = 1;
+    GS16 (motion, 0xc0)  = 1;
+    GSU32(motion, 0xb0)  = 0;
+    GS16 (ctrl, 0x88)   = GS16(ctrl, 0x86);
+    GS16 (motion, 0x9a)  = 0xffff;
+    GS8  (motion, 0x101) = 0xff;
+    GS8  (motion, 0x102) = 0xff;
+    GS8  (motion, 0x103) = 0xff;
+    GS8  (motion, 0x104) = 0xff;
+    GS16 (motion, 0x106) = 0;
+    GS16 (motion, 0x108) = 0;
+    GS16 (motion, 0x10a) = 0;
+    GS8  (ctrl, 0x26)   = 0xff;
+    /* 0x8017A55C-0x8017A568: byte[*ctrl+0x14] = 0xff — ONE guest
+     * dereference (same shape as action_switch_guest's ctrl+0x14 store). */
+    GS8((uint8_t *)guest_at(GU32(ctrl, 0x14)), 0) = 0xff;
+    GS8  (ctrl, 0x27)   = 0;
+    GS16 (motion, 0x10e) = 0xffff;
+    GS16 (motion, 0x110) = 0xffff;
+    GS16 (motion, 0x112) = 0xffff;
+    GS16 (motion, 0x114) = 0xffff;
+    GS16 (motion, 0x116) = 0;
+    /* part-table loops (generated 0x8017A584-0x8017A67C):
+     * tbl = *(ctrl+0x28); four sub-tables at tbl+{0x10,0x14,0x34,0x38};
+     * each is an array of 0x28-stride records whose +0xc halfword is:
+     *   k = 0..0x1a -> 0 ;  then ptr[0x14]+0x1c4 = 1 and
+     *   ptr[0x38]+0x23c = 1 ;  then k = 0xf..0x10 -> 1. */
     if (tbl) {
-        /* ctrl+0x14 -> struct A (guest ptr); A[0] -> byte target B (guest
-         * ptr); write 0xff to B[0]. Guest pointers are u32 — read the cell
-         * as a guest word and translate, never as a host uint8_t*. */
-        uint32_t a_g = GU32(ctrl, 0x14);
-        uint8_t *pa = a_g ? (uint8_t *)guest_at(a_g) : NULL;
-        uint32_t b_g = pa ? GU32(pa, 0) : 0;
-        uint8_t *pb = b_g ? (uint8_t *)guest_at(b_g) : NULL;
-        if (pb) GS8(pb, 0) = 0xff;
-    }
-    GS8 (ctrl, 0x27) = 0;
-    GS16(motion, 0x438) = 0xffff;   /* +0x10e */
-    GS16(motion, 0x440) = 0xffff;   /* param_2+0x44 */
-    GS16(motion, 0x444) = 0xffff;   /* +0x112 */
-    GS16(motion, 0x450) = 0xffff;   /* param_2+0x45 */
-    GS16(motion, 0x458) = 0;        /* +0x116 */
-    /* part-table loops (param_tbl+0x10/0x14/0x34/0x38 arrays,
-     * stride -0x28, count 0x1a then 0x11) — approximated as zero of
-     * +0xc fields; full semantics pending. */
-    if (tbl) {
-        static const uint8_t parr[] = {0x10,0x14,0x34,0x38};
+        static const uint8_t parr[] = {0x10, 0x14, 0x34, 0x38};
+        uint8_t *arr[4];
         for (unsigned a = 0; a < 4; a++) {
-            uint32_t arr_g = GU32(tbl, parr[a]);
-            uint8_t *arr = arr_g ? (uint8_t *)guest_at(arr_g) : NULL;
-            if (!arr) continue;
-            for (int i = 0; i < 0x1b; i++)
-                GSU16(arr + 0x258 + i * 0x28, 0xc) = 0;  /* approx stride */
-            GSU16(arr, 0x1c4) = 1;
-            for (int i = 0; i < 2; i++)
-                GSU16(arr + 0x258 + (0xf + i) * 0x28, 0xc) = 1;
-            GSU16(arr + 0x23c, 0xc) = 1;
+            uint32_t g = GU32(tbl, parr[a]);
+            arr[a] = g ? (uint8_t *)guest_at(g) : NULL;
         }
+        for (int k = 0; k < 0x1b; k++)
+            for (unsigned a = 0; a < 4; a++)
+                if (arr[a]) GSU16(arr[a] + k * 0x28, 0xc) = 0;
+        if (arr[1]) GSU16(arr[1], 0x1c4) = 1;
+        if (arr[3]) GSU16(arr[3], 0x23c) = 1;
+        for (int k = 0xf; k < 0x11; k++)
+            for (unsigned a = 0; a < 4; a++)
+                if (arr[a]) GSU16(arr[a] + k * 0x28, 0xc) = 1;
     }
 }
 
