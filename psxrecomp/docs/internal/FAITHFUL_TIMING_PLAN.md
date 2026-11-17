@@ -10253,3 +10253,13 @@ nested-exception saved_exception_jmpbuf guard (interrupts.c:1205/2051).
 INTEGRATION PLAN: agents port+build+verify on unique debug ports, commit only
 their game/*.c; parent runs central gen_clean_table.py + build + verify +
 commit clean_table.c once.
+
+N+99a — second crash site = same root cause (context corruption), NOT a port bug.
+  ed5184f8 lldb capture: EXC_BAD_ACCESS addr=0x0 in ev_stream_dispatch
+  (resolve.c) <- action_commit <- fighter_frame <- battle_frame_tick.
+  Checked PTR_FUN_801b4e68[24] (ev.c:1382): ALL 24 entries populated (w0-w23),
+  so NOT a null table entry. pc=0 arises inside a handler OR via
+  br2_call_generated(h) where h=*(guest 0x801b4e68+op*4) is garbage because
+  op/param_2+0x84 stream-pc was corrupted upstream. => SAME context-corruption
+  root cause as the x28 battle_flow_state_machine crash, manifesting at a
+  second clean site. Confirms: ONE runtime fix (ed5184f8) should clear both.
