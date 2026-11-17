@@ -710,19 +710,17 @@ extern void br2_st8 (uint32_t a, uint8_t  v);
 extern void br2_st16(uint32_t a, uint16_t v);
 
 /* op01 Cmp — guest 0x80184378. sub = hi byte of insn: dst = sub>>4,
- * src = sub&0xf. cmp = dv - sv stored s32 @ctx+0x38; returns 1.
- *   src 1    -> sv = s16 reg[1]
- *   src 8    -> sv = s16 foe->gauge        (foe = *(ctrl+0x2c))
- *   src 10   -> sv = s16 foe->maxHP - s16 foe->hp
- *   src 11   -> sv = s16 imm @pc+2, running pc += 2
- *   src else -> sv = src literal (0 -> 0); pc untouched
+ * src = sub&0xf. src dispatches through table @0x8012367C indexed by
+ * (src-1): src1-5 -> s16 reg[src]; src6-11 & src13 -> literal src;
+ * src12 -> s16 foe->gauge; src14 -> s16 foe->maxHP - s16 foe->hp;
+ * src15 -> s16 imm @pc+2 (runpc += 2). cmp = dv - sv stored s32
+ * @ctx+0x38; returns 1.
  *   dst 1..5 -> dv = s16 reg[dst], pc = runpc + 2
  *   dst 15   -> dv = s16 imm @runpc+2, pc = runpc + 4
  *   dst 6..14-> dv = dst literal, pc untouched (guest hangs; kept)
  *   dst 0    -> cmp = -sv, pc untouched (guest hangs; kept)
- * Note: the guest jump table only has 11 valid entries (src 12..15 read
- * past it into string data and would vector into la-la land — real
- * scripts never emit them; treated as literals here). */
+ * Note: the guest table has 15 entries covering src 1..15; src==0 skips
+ * it and uses sv = 0 literal. */
 int scriptop_cmp(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
 {
     uint32_t pcg = GU32(ctx, VX_PC);
@@ -736,10 +734,11 @@ int scriptop_cmp(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
     (void)a1; (void)a3;
 
     switch (src) {
-    case 1:  sv = VREG(ctx, 1); break;
-    case 8:  sv = gld_s16(foe_g + FC_GAUGE); break;
-    case 10: sv = gld_s16(foe_g + FC_MAXHP) - gld_s16(foe_g + FC_HP); break;
-    case 11: sv = gld_s16(runpc + 2); runpc += 2; break;
+    case 1: case 2: case 3: case 4: case 5:
+        sv = VREG(ctx, src); break;
+    case 12: sv = gld_s16(foe_g + FC_GAUGE); break;
+    case 14: sv = gld_s16(foe_g + FC_MAXHP) - gld_s16(foe_g + FC_HP); break;
+    case 15: sv = gld_s16(runpc + 2); runpc += 2; break;
     default: sv = src; break;
     }
 
@@ -849,19 +848,20 @@ static uint32_t bra_random_pick(uint8_t *ctx, uint8_t *pc, int n)
     /* mult lo = b*sum (both small); sra 8 */
     a0v = (int32_t)(((int64_t)b * sum) >> 8) - (n > 0 ? w[0] : 0);
     if (n > 0 && a0v >= 0) {
+        /* guest increments the pick counter in the bgez delay slot, so
+         * it counts the weight that drove the sum negative too. */
         for (i = 1;; i++) {
             a0v -= w[i];
-            if (a0v < 0) break;
             pick = i;
+            if (a0v < 0) break;
         }
     }
     return GU16(pc, ((n + 4) & 0x1fe) + pick * 2);
 }
 
-/* Conditional-jump target evaluation shared by Bra (op01) and the
- * Bsr low-sub entries that alias Bra's blocks (op02 sub 0..7). Returns
- * the new guest pc. sub is the raw insn byte1 (already remapped by
- * the caller for Bsr). cmp = ctx+0x38 s32. */
+/* Conditional-jump target evaluation for Bra (op01, table
+ * @0x801232E4). Returns the new guest pc. sub is the raw insn byte1.
+ * cmp = ctx+0x38 s32. */
 static uint32_t bra_target(uint8_t *ctx, uint8_t *pc, uint32_t pcg,
                            int sub, uint32_t base_g, int32_t cmp)
 {
@@ -872,7 +872,8 @@ static uint32_t bra_target(uint8_t *ctx, uint8_t *pc, uint32_t pcg,
         uint32_t sel;
         if (cmp > 0) sel = GU16(pc, 2);
         else { GS32(ctx, VX_CMP) = 0; sel = GU16(pc, 6); }
-        return base_g + sel;
+        /* guest tail 0x80183034: sel==0 -> pc+8 absolute, no base add */
+        return sel ? base_g + sel : pcg + 8;
     }
     case 2: case 5:                             /* jump if cmp != 0 */
         return cmp == 0 ? pcg + 4 : base_g + GU16(pc, 2);
@@ -889,9 +890,9 @@ static uint32_t bra_target(uint8_t *ctx, uint8_t *pc, uint32_t pcg,
     case 10: {                                  /* weighted random */
         int n = GU8(pc, 2);
         uint32_t sel = bra_random_pick(ctx, pc, n);
-        /* n==0 tail: guest stores pc + ((3n+4)&0x7fe) = pc+4 absolute
-         * (no base add); n>0 stores base + sel via the shared tail. */
-        return n ? base_g + sel : pcg + ((3 * n + 4) & 0x7fe);
+        /* guest tail 0x801831C0: sel==0 -> pc + ((3n+4)&0x7fe) absolute
+         * (no base add); sel!=0 -> base + sel. Applies for n==0 too. */
+        return sel ? base_g + sel : pcg + ((3 * n + 4) & 0x7fe);
     }
     case 11: {                                  /* if/else 6B */
         uint32_t sel = cmp ? GU16(pc, 2) : GU16(pc, 4);
@@ -933,10 +934,31 @@ int scriptop_bra(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
     return 1;
 }
 
-/* op02 Bsr — guest 0x80183248. sub 0..7 alias Bra's conditional-jump
- * blocks via table @0x801232F4 (remap below); sub 8 and sub>=12 are the
- * unconditional call; sub 9/10/11 are the conditional-call forms that
- * live in Bsr's own blocks. */
+/* Shared Bsr tail (guest 0x80183368, reached by sub1/10/11): the
+ * selected u16 was already stored to ctx->pc. sel==0 or a full return
+ * stack -> pc = ret absolute; otherwise push ret and pc = base+sel. */
+static uint32_t bsr_sel_call(uint8_t *ctx, uint32_t sel, uint32_t base_g,
+                             uint32_t ret)
+{
+    uint32_t depth;
+    if (sel == 0)
+        return ret;
+    depth = GU16(ctx, VX_RETD);             /* u16 depth, guest andi */
+    if (depth < 8) {
+        GSU32(ctx, VX_RETSTK + depth * 4) = ret;
+        GS16(ctx, VX_RETD) = (int16_t)(depth + 1);
+        return base_g + sel;
+    }
+    return ret;
+}
+
+/* op02 Bsr — guest 0x80183248. sub = insn byte1 indexes table
+ * @0x80183314 directly (12 entries; sub>=12 falls through to the sub0
+ * unconditional-call block). Every taken branch pushes a return
+ * address onto the ctx+0x4c stack (depth ctx+0x6c u16, max 8) and
+ * jumps to base + target; untaken/full-stack paths just advance pc.
+ * Return addresses: sub1 -> pc+8, sub10 -> pc+((3n+4)&0x7fe),
+ * sub11 -> pc+6, all others -> pc+4. */
 int scriptop_bsr(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
 {
     uint32_t pcg = GU32(ctx, VX_PC);
@@ -945,32 +967,42 @@ int scriptop_bsr(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
     uint32_t base_g = gld_u32(a0 + FC_ANI);
     int32_t cmp = GS32(ctx, VX_CMP);
     uint32_t npc;
-    static const uint8_t remap[8] = { 3, 1, 6, 7, 8, 9, 10, 11 };
+    int call;
     (void)a1; (void)a3;
 
-    if (sub <= 7) {                     /* conditional jump, no push */
-        npc = bra_target(ctx, pc, pcg, remap[sub], base_g, cmp);
-    } else if (sub == 9) {              /* call if/else: sel@2 / @6 */
+    switch (sub) {
+    case 1: {                                   /* if/else call, ret pc+8 */
         uint32_t sel;
         if (cmp > 0) sel = GU16(pc, 2);
         else { GS32(ctx, VX_CMP) = 0; sel = GU16(pc, 6); }
-        if (sel == 0) npc = pcg + 8;
-        else {
-            uint32_t depth = GU16(ctx, VX_RETD);   /* u16 depth, guest andi */
-            if (depth < 8) {
-                GSU32(ctx, VX_RETSTK + depth * 4) = pcg + 8;
-                GS16(ctx, VX_RETD) = (int16_t)(depth + 1);
-                npc = base_g + sel;
-            } else npc = pcg + 8;
+        npc = bsr_sel_call(ctx, sel, base_g, pcg + 8);
+        break;
+    }
+    case 10: {                                  /* weighted-random call */
+        int n = GU8(pc, 2);
+        uint32_t sel = bra_random_pick(ctx, pc, n);
+        npc = bsr_sel_call(ctx, sel, base_g,
+                           pcg + ((3 * n + 4) & 0x7fe));
+        break;
+    }
+    case 11:                                    /* if/else call, ret pc+6 */
+        npc = bsr_sel_call(ctx, cmp ? GU16(pc, 2) : GU16(pc, 4),
+                           base_g, pcg + 6);
+        break;
+    default:
+        /* sub2/5: call if cmp!=0 ; sub3/4: if cmp==0 ; sub6: cmp>0 ;
+         * sub7: cmp>=0 ; sub8: cmp<0 ; sub9: cmp<=0 ; sub0/>=12: uncond */
+        switch (sub) {
+        case 2: case 5: call = cmp != 0; break;
+        case 3: case 4: call = cmp == 0; break;
+        case 6:         call = cmp >  0; break;
+        case 7:         call = cmp >= 0; break;
+        case 8:         call = cmp <  0; break;
+        case 9:         call = cmp <= 0; break;
+        default:        call = 1; break;
         }
-    } else if (sub == 10) {             /* call if cmp != 0 */
-        npc = (cmp != 0) ? bsr_call(ctx, pcg, pc, base_g, pcg + 4)
-                         : pcg + 4;
-    } else if (sub == 11) {             /* call if cmp == 0 */
-        npc = (cmp == 0) ? bsr_call(ctx, pcg, pc, base_g, pcg + 4)
-                         : pcg + 4;
-    } else {                            /* sub 8 / >=12: uncond call */
-        npc = bsr_call(ctx, pcg, pc, base_g, pcg + 4);
+        npc = call ? bsr_call(ctx, pcg, pc, base_g, pcg + 4) : pcg + 4;
+        break;
     }
     GSU32(ctx, VX_PC) = npc;
     return 1;
@@ -1152,8 +1184,9 @@ int scriptop_gpad(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
 
     /* Path A: entered when guard/hit state bits are up. */
     if ((st0 & 0x10000000) || (st1 & 0x02000000)) {
-        /* deep path: state1 bit25 set + ctrl+0xcc < 97 + stream rand */
-        if ((st1 & 0x02000000) == 0x02000000 &&
+        /* deep path: guest tests (st1 & 0x02000080) == 0x02000000 —
+         * bit25 set AND bit7 clear — plus ctrl+0xcc < 97 + stream rand */
+        if ((st1 & 0x02000080) == 0x02000000 &&
             gld_s16(a0 + 0xcc) < 97) {
             uint32_t sbase = GU32(ctx, 0x00);
             uint32_t idx   = GU8(ctx, 0x04);
@@ -1185,8 +1218,9 @@ int scriptop_gpad(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
         uint32_t b0, b1;
         GSU8(ctx, 0x04) = (uint8_t)(idx + 1);
         b0 = gld_u8(sbase + (idx & 0xff));
-        /* guest adds (aux8 >> 10) to the ctx+0x1c pointer */
-        b1 = gld_u8(p1c + (GU16(ctx, VX_AUX8) >> 10));
+        /* guest adds (aux8 >> 4) — computed once at fn entry — to the
+         * ctx+0x1c pointer */
+        b1 = gld_u8(p1c + (GU16(ctx, VX_AUX8) >> 4));
         if (b0 < b1)
             GS16(ctx, VX_FLAGS) = (int16_t)(GU16(ctx, VX_FLAGS) | 2);
     }

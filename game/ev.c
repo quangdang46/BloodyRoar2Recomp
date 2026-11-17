@@ -1254,14 +1254,16 @@ ushort * ev_cmd_dispatch(int param_1,undefined4 param_2,ushort *param_3)
       triple_track_spawn(GU8(p1,2),uVar7 & 0xff,(int)(uVar7 << 0x10) >> 0x18);
       break;
     case 2:
+      /* guest @0x80141DF0: a2 = sx8(param>>8) = sx8(byte@pc+3),
+       * a3 = param&0xFF = byte@pc+2 — order matters, not swapped. */
       speech_bubble_spawn((undefined4 *)guest_at(GU32(p1, 0x20) + 0x124),
                    *(short *)(p1 + 0x4e) + -0x400,
-                   uVar7 & 0xff,(ushort)((int)(uVar7 << 0x10) >> 0x18));
+                   (int)(uVar7 << 0x10) >> 0x18,(ushort)(uVar7 & 0xff));
       break;
     case 3:
       speech_bubble_spawn((undefined4 *)guest_at(GU32(p1, 0x20) + 0x124),
                    *(short *)(p1 + 0x4e) + 0x400,
-                   uVar7 & 0xff,(ushort)((int)(uVar7 << 0x10) >> 0x18));
+                   (int)(uVar7 << 0x10) >> 0x18,(ushort)(uVar7 & 0xff));
       break;
     case 4:
       effect_arg_set(param_1);
