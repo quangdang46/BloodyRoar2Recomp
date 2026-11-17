@@ -1503,3 +1503,19 @@ feeding func_8018A9E8 (menu.c:14484 serializer emitter; battle.c
 prim_task_run/task node fields [2]/[3]/[4]; node_list_collect
 battle.c:17334 indirect fn(arg) path). Fixing it should resolve
 starvation + dead input + attract park + 0x27EC crash simultaneously.
+
+=== N+118 — ROOT CAUSE FIXED: register-file poisoning via dropped call args ===
+0a986712 found THE bug (822088f): prim_task_run (battle.c, guest
+0x8018A4F8) invoked each 16-byte record's fn ptr via call_guest(fn,
+arg, 0) — generated sets a0=rec[2], a1=param_2+lh(task+0xE), a2=param_3,
+a3=rec[1] before EVERY jalr. Dropping a2/a3 left STALE register-file
+values = truncated host pointers; serializer 0x8018A9E8 used them as
+guest cursors -> kernel RAM spray from frame 2198. ONE bug explained:
+TestEvent starvation, dead SIO/input, parked attract, 0x27EC livelock.
+Fixes: call_guest4 (full a0-a3 marshal, clean_bridge.c); prim_task_run
+exact ABI; ring_effect_task_update missing guest_at() (host segfault);
+terrain_packet_gen non-faithful port (inlined phantom loops, param_6=-4
+-> 4G-iter livelock) -> delegated per section 4.
+VERIFIED: frame 123K+ advancing, kernel RAM intact, all poison counters
+clean. GAME SHOULD NOW BE PLAYABLE — attract retrigger + versus input
+alive. NEXT: full attract round + versus->fight verification.
