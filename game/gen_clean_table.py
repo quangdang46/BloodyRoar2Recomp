@@ -184,7 +184,8 @@ def ret_kind(ret):
     if re.fullmatch(r'BR2_WEAK_UINT32_\d+', r): return 'u32'
     if r == 'void' or r.endswith(' void'): return 'void'
     if '*' in r: return 'ptr'
-    if re.search(r'\b(undefined8|long long|int64_t|uint64_t|double|float|int128)\b', r): return 'skip'
+    if re.search(r'\b(double|float|int128)\b', r): return 'skip'
+    if re.search(r'\b(undefined8|long long|int64_t|uint64_t)\b', r): return 'u64'
     if BAD_RET.search(r): return 'u32'
     return 'skip'
 
@@ -245,6 +246,9 @@ for addr, name in sorted(entries):
         body = f'    {call};\n'
     elif rk == 'u32':
         body = f'    cpu->gpr[2] = (uint32_t)({call});\n'
+    elif rk == 'u64':
+        body = (f'    {{ uint64_t _r = (uint64_t)({call});\n'
+                f'      cpu->gpr[2] = (uint32_t)_r; cpu->gpr[3] = (uint32_t)(_r >> 32); }}\n')
     else:  # ptr return -> guest addr
         body = f'    cpu->gpr[2] = guest_of((const void *)({call}));\n'
     wrappers.append(f'static void {wname}(CPUState *cpu) {{\n{decl}\n{body}}}\n')
