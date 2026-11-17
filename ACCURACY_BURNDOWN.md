@@ -1457,3 +1457,24 @@ fighter_trail_emit). All vs generated oracle. Build green.
 SUSPECT-ONLY remaining: battle.c:594/633 indirect fn_lookup host-vs-guest
 ambiguity; task-node mixed host/guest field access — need runtime proof.
 NEXT GATE: attract full-round completion + versus->fight nav verify.
+
+=== N+116 — runtime stable to ~frame 50K; TWO layered defects found ===
+Verification agent 604fcee7: ~270fps sustained to frame ~50-55K then
+deterministic freeze/crash. Attract completes ONE sequence (gs=3->5->6
+->5 by ~frame 4000) then parks at gs=5 ph=2 for 45K+ frames — attract
+retrigger dead. Versus nav BLOCKED at mode menu: input injection works
+at SIO layer but tx_writes frozen at 15556 — ZERO SIO transactions.
+DEFECT 1 (primary): kernel thread starvation after gs=6->5 (~frame
+2195). TestEvent(a0=0xF1000008,a2=0x01000201) waiter at ra=0x8019D550
+spins forever (1.46M TestEvent vs 96 DeliverEvent); sp_ring frozen at
+27303 — no context switches after ~2196; CPU sits in dirty-RAM interp
+(func=0x000027EC mode=INTERP) during every VBlank. Pad-driver/SIO-poll
+thread asleep -> dead input, dead attract.
+DEFECT 2 (secondary): terminal crash ~frame 38-55K nondeterministic:
+unknown dispatch addr=0x000027EC ra=0x000027EC a0=0x07DD6C94 — low-RAM
+BIOS/kernel code reachable only via dirty-RAM interp; a0 is a HOST
+pointer leaked as guest arg (same class as 5c0c7d4 purge; missed site).
+Port agent 53328f16 committed b34253b: 12 hot fn_stats functions ported
+(cd.c+3, gfx.c+9), clean_table 1220 wrappers, no regression.
+NEXT: agent on TestEvent/DeliverEvent starvation (critical); agent on
+0x27EC host-ptr leak.
