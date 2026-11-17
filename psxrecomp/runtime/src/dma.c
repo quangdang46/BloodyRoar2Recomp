@@ -142,6 +142,16 @@ typedef struct {
 
 static DMADelayedComplete delayed_complete[7];
 
+/* Channel-4 SPU transfer stalled waiting for the SPU's APPLIED sound-RAM
+ * transfer mode (SPUCNT bits 5-4 applied at the next 44.1 kHz sample
+ * boundary) to match the channel direction. While waiting, CHCR.24 stays
+ * set with no payload moved and no completion — the faithful "SPU DMA
+ * waits for transfer mode" behaviour. The countdown is serviced from
+ * dma_advance() and advertised through dma_cycles_to_internal_event() so
+ * the event scheduler wakes the DMA engine when the mode may apply. */
+static int      spu_wait_active;
+static uint32_t spu_wait_cycles_left;
+
 /* ---- Global registers ---- */
 
 static uint32_t dpcr;  /* 0x1F8010F0: DMA control (enable bits) */
@@ -392,6 +402,7 @@ static void complete_transfer(int ch) {
     uint32_t dicr_before = dicr;
     uint32_t i_stat_before = i_stat;
     channels[ch].chcr &= ~((1u << 24) | (1u << 28));
+    if (ch == 4) { spu_xfer_busy(0); spu_wait_active = 0; }
     /* Latch the done-flag whenever the per-channel mask is set, regardless
      * of master enable — faithful to hardware (see channel_irq_enabled).
      * raise_dma_irq_on_master_edge then fires IRQ3 only if the computed
@@ -946,6 +957,53 @@ static void execute_ch5_pio(void) {
     complete_transfer(5);
 }
 
+/* Arm/re-arm the channel-4 "waiting for SPU transfer mode" wakeup. The
+ * wait ends at the next SPUCNT bits-0-5 sample-boundary application, or
+ * after one full SPU sample period when no application is pending (the
+ * applied mode cannot change without a pending write, but re-checking each
+ * sample boundary also catches writes committed between polls). */
+static void spu_ch4_arm_mode_wait(void) {
+    uint64_t now = psx_get_cycle_count();
+    uint64_t nxt = spu_transfer_mode_apply_cycle();
+    uint64_t left = 768ull;   /* one SPU sample period (44.1 kHz @ 33.87 MHz) */
+    if (nxt != UINT64_MAX && nxt > now) {
+        uint64_t d = nxt - now;
+        if (d < left) left = d;
+    }
+    if (left == 0) left = 1;
+    if (left > 0xFFFFFFFFull) left = 0xFFFFFFFFull;
+    spu_wait_cycles_left = (uint32_t)left;
+    spu_wait_active = 1;
+}
+
+/* Wake from the mode wait: re-check the SPU applied mode for the pending
+ * ch4 kick. If it now matches the channel direction, run the transfer;
+ * otherwise re-arm. A channel cleared/reset while waiting is dropped. */
+static void spu_ch4_retry(void) {
+    spu_wait_active = 0;
+    if (!((channels[4].chcr >> 24) & 1u) || !channel_enabled(4)) {
+        spu_xfer_busy(0);    /* abandoned: no transfer will ever run */
+        return;
+    }
+    if (delayed_complete[4].active) return;   /* already running */
+    int to_spu = (channels[4].chcr & 1u) != 0;
+    if (spu_dma_mode_ready(to_spu)) {
+        schedule_delayed_complete(4, execute_ch4_spu(),
+                                  DMA_SPU_CYCLES_PER_WORD);
+        return;
+    }
+    spu_ch4_arm_mode_wait();
+}
+
+static void spu_ch4_mode_wait_advance(uint32_t cycles) {
+    if (!spu_wait_active) return;
+    if (cycles >= spu_wait_cycles_left) {
+        spu_ch4_retry();
+    } else {
+        spu_wait_cycles_left -= cycles;
+    }
+}
+
 static void try_execute(int ch) {
     uint32_t chcr = channels[ch].chcr;
 
@@ -986,10 +1044,26 @@ static void try_execute(int ch) {
         case 3:
             execute_ch3_cdrom();
             break;
-        case 4:
-            schedule_delayed_complete(4, execute_ch4_spu(),
-                                      DMA_SPU_CYCLES_PER_WORD);
+        case 4: {
+            /* Faithful SPU handshake: the DMA only runs while the SPU's
+             * applied sound-RAM transfer mode (SPUCNT bits 5-4, applied at
+             * the next 44.1 kHz sample boundary) matches the channel
+             * direction — mode 2 (0x20, DMA write) for CPU->SPU, mode 3
+             * (0x30, DMA read) for SPU->CPU. Kicked in any other mode the
+             * transfer stays busy with no payload until the mode applies.
+             * CHCR bit 28 bypasses the wait (HW test: a SyncMode-0
+             * transfer runs to completion even with the transfer mode
+             * stopped). */
+            int to_spu = (channels[4].chcr & 1u) != 0;
+            spu_xfer_busy(1);
+            if ((chcr & (1u << 28)) != 0 || spu_dma_mode_ready(to_spu)) {
+                schedule_delayed_complete(4, execute_ch4_spu(),
+                                          DMA_SPU_CYCLES_PER_WORD);
+            } else {
+                spu_ch4_arm_mode_wait();
+            }
             break;
+        }
         case 5:
             execute_ch5_pio();
             break;
@@ -1099,6 +1173,8 @@ uint32_t dma_cycles_to_internal_event(void) {
             delayed_complete[ch].cycles_remaining < best)
             best = delayed_complete[ch].cycles_remaining;
     }
+    if (spu_wait_active && spu_wait_cycles_left < best)
+        best = spu_wait_cycles_left;
     return best;
 }
 
@@ -1199,6 +1275,7 @@ void dma_advance(uint32_t cycles) {
      * delayed channel is covered automatically — inactive slots no-op). */
     for (int ch = 0; ch < 7; ch++)
         advance_delayed_complete(ch, cycles);
+    spu_ch4_mode_wait_advance(cycles);
     g_dma_cur_ch = -1;
     g_dma_exec_depth--;
 }
@@ -1209,6 +1286,8 @@ void dma_init(void) {
     memset(&cdrom_async, 0, sizeof(cdrom_async));
     memset(&gpu_linked_list, 0, sizeof(gpu_linked_list));
     memset(delayed_complete, 0, sizeof(delayed_complete));
+    spu_wait_active = 0;
+    spu_wait_cycles_left = 0;
     dpcr = 0x07654321u; /* default: priorities set, no channels enabled */
     dicr = 0;
     dma_debug_clear_trace();

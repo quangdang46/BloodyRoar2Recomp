@@ -130,6 +130,18 @@ void spu_dma_write(uint32_t word);
 uint32_t spu_dma_read(void);
 int spu_dma_ready(void);
 
+/* SPU sound-RAM transfer-mode handshake for DMA channel 4. SPUCNT bits 5-4
+ * select the transfer mode (0=stop, 1=manual write, 2=DMA write CPU->SPU,
+ * 3=DMA read SPU->CPU) and are applied by the DSP at the next 44.1 kHz
+ * sample boundary, not at the SPUCNT write. spu_dma_mode_ready reports
+ * whether the APPLIED mode currently accepts a ch4 transfer in the given
+ * direction; spu_transfer_mode_apply_cycle returns the guest cycle at
+ * which a pending mode application lands (UINT64_MAX if none); spu_xfer_busy
+ * drives SPUSTAT bit 10 from the DMA engine's ch4 state. */
+int      spu_dma_mode_ready(int to_spu);
+uint64_t spu_transfer_mode_apply_cycle(void);
+void     spu_xfer_busy(int on);
+
 /* CD-ROM XA/CDDA input path. Samples are stereo 44.1 kHz PCM entering the
  * SPU CD input bus; SPU control bit 0 and CD volume registers gate output. */
 void spu_cd_audio_push(const int16_t* stereo, int frames);

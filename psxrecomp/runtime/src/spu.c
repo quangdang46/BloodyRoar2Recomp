@@ -62,6 +62,35 @@ static uint32_t koff_latch;
 extern void psx_irq_raise(uint32_t bit, uint32_t detail);
 static uint8_t irq_flag;
 
+/* ---- Sound-RAM transfer mode (SPUCNT bits 5-4) ---------------------------
+ * SPUCNT bits 5-4 select how SPU sound RAM is accessed:
+ *   0 = stop, 1 = manual write (CPU -> SPU via 0x1F801DA8 FIFO),
+ *   2 = DMA write (CPU -> SPU via DMA channel 4),
+ *   3 = DMA read  (SPU -> CPU via DMA channel 4).
+ * SPUCNT itself reads back the last-written value immediately, but the DSP
+ * applies bits 0-5 only at the next 44.1 kHz sample boundary — 768 guest
+ * cycles at the 33.8688 MHz master clock. Hardware tests (psx-spx
+ * SPUSTAT notes) measured apply delays of ~61..765 cycles, i.e. exactly
+ * "next sample boundary". The APPLIED mode drives SPUSTAT bits 0-5 and
+ * gates DMA channel 4: a ch4 transfer kicked while the applied mode does
+ * not match its direction stays busy (CHCR.24 held, no payload, no
+ * completion IRQ) until a matching mode applies — the documented
+ * "transfer stays busy while the mode is stop, then completes once
+ * DMA-write mode is enabled" behaviour. */
+#define SPU_SAMPLE_CYCLES 768ull
+static uint32_t s_applied_low6;   /* SPUCNT bits 0-5 last applied by the DSP */
+static uint32_t s_pending_low6;   /* newest written bits 0-5 awaiting apply */
+static int      s_pending_valid;
+static uint64_t s_apply_cycle;    /* absolute guest cycle of the apply     */
+static int      s_xfer_busy;      /* SPUSTAT bit 10: transfer in flight    */
+
+static void spu_commit_applied(void) {
+    if (s_pending_valid && psx_get_cycle_count() >= s_apply_cycle) {
+        s_applied_low6   = s_pending_low6;
+        s_pending_valid  = 0;
+    }
+}
+
 /* ---- Noise generator ---------------------------------------------------
  * 16-bit LFSR clocked from SPUCNT bits 8-13 (bits 8-9 = frequency STEP
  * 4..7, bits 10-13 = frequency SHIFT 0..15). See noise_clock() for the
@@ -962,6 +991,11 @@ void spu_init(void) {
     kon_latch = 0;
     koff_latch = 0;
     irq_flag = 0;
+    s_applied_low6 = 0;
+    s_pending_low6 = 0;
+    s_pending_valid = 0;
+    s_apply_cycle = 0;
+    s_xfer_busy = 0;
     /* Hardware power-on LFSR value is undocumented; 0 is safe because the
      * xor-1 parity term self-starts the register within 16 clocks. */
     noise_lfsr = 0;
@@ -1383,20 +1417,30 @@ uint32_t spu_read(uint32_t addr) {
         uint32_t idx = reg_index(addr);
         if (idx < SPU_REG_COUNT) {
             if (addr == 0x1F801DAEu) {
-                /* SPUSTAT (psx-spx): bits 5-0 mirror SPUCNT bits 5-0 (the
-                 * current SPU mode), bit 6 is the IRQ flag (cleared by
-                 * writing SPUCNT with bit 6 clear), bit 7 follows SPUCNT.5
-                 * (DMA r/w request), bit 10 is the data-transfer busy flag —
-                 * 0 here because this runtime completes FIFO/DMA transfers
-                 * instantly. The old hardcoded 0x0400 held busy PERMANENTLY
-                 * asserted; Sony code paths never polled it to zero, but
-                 * OpenBIOS's shell MOD player waits for (SPUSTAT & 0x7FF)
-                 * == 0 after clearing SPUCNT and spun forever. Bit 11 is
-                 * "currently writing the SECOND half of the capture
-                 * buffers" (capture offset >= 0x200). */
-                uint16_t cnt = spu_regs[reg_index(0x1F801DAAu)];
-                uint32_t st = (uint32_t)((cnt & 0x3Fu) | (((cnt >> 5) & 1u) << 7));
+                /* SPUSTAT (psx-spx): bits 5-0 mirror the APPLIED SPUCNT
+                 * bits 5-0 (sound-RAM transfer mode + audio enables,
+                 * latched at the next 44.1 kHz sample boundary — NOT the
+                 * just-written value), bit 6 is the IRQ flag (cleared by
+                 * writing SPUCNT with bit 6 clear), bit 7 follows the
+                 * applied mode bit 5 (DMA r/w request), bits 8/9 are the
+                 * per-direction DMA request flags, bit 10 is the
+                 * data-transfer busy flag driven by the DMA engine, and
+                 * bit 11 is "currently writing the SECOND half of the
+                 * capture buffers" (capture offset >= 0x200).
+                 *
+                 * Bits 8/9 mapping is keyed to measured hardware values:
+                 * SPUCNT mode 0x20 (DMA write) produced SPUSTAT 0x02A0
+                 * (bit 9) and mode 0x30 (DMA read) produced 0x01B0
+                 * (bit 8), ~60-300 cycles after the SPUCNT write. */
+                spu_commit_applied();
+                uint32_t mode = s_applied_low6 & 0x3Fu;
+                uint32_t mdir = (mode >> 4) & 3u;
+                uint32_t st = mode;
+                if (mdir == 2u) st |= 0x200u;
+                if (mdir == 3u) st |= 0x100u;
+                if (mode & 0x20u) st |= 0x80u;
                 if (irq_flag) st |= 0x40u;
+                if (s_xfer_busy) st |= 0x400u;
                 if (capture_pos & 0x200u) st |= 0x800u;
                 return st;
             }
@@ -1579,7 +1623,26 @@ void spu_write(uint32_t addr, uint32_t value) {
                 /* SPUCNT: writing with bit 6 CLEAR acknowledges the IRQ
                  * latch and re-arms it; writing with bit 6 SET re-evaluates
                  * the compare against the resting transfer address (same
-                 * DOCUMENTED-GAP as the address-register writes above). */
+                 * DOCUMENTED-GAP as the address-register writes above).
+                 *
+                 * Bits 0-5 are NOT applied immediately: the DSP latches
+                 * them at the next 44.1 kHz sample boundary (768 guest
+                 * cycles). Schedule the pending application only when the
+                 * low 6 bits actually differ from what is pending/applied —
+                 * repeated SPUCNT writes that only toggle bit 6 (IRQ ack)
+                 * or leave the mode unchanged must not keep pushing the
+                 * apply deadline out, or the mode would never take effect
+                 * under write spam. */
+                uint32_t low6 = (uint32_t)(value & 0x3Fu);
+                uint32_t cur   = s_pending_valid ? s_pending_low6
+                                               : s_applied_low6;
+                if (low6 != cur) {
+                    uint64_t now = psx_get_cycle_count();
+                    s_pending_low6  = low6;
+                    s_pending_valid = 1;
+                    s_apply_cycle   = ((now / SPU_SAMPLE_CYCLES) + 1ull)
+                                      * SPU_SAMPLE_CYCLES;
+                }
                 if (!(value & 0x0040u)) {
                     irq_flag = 0;
                 } else {
@@ -1620,6 +1683,21 @@ uint32_t spu_dma_read(void) {
 
 int spu_dma_ready(void) {
     return 1;
+}
+
+int spu_dma_mode_ready(int to_spu) {
+    spu_commit_applied();
+    uint32_t m = (s_applied_low6 >> 4) & 3u;
+    return to_spu ? (m == 2u) : (m == 3u);
+}
+
+uint64_t spu_transfer_mode_apply_cycle(void) {
+    spu_commit_applied();
+    return s_pending_valid ? s_apply_cycle : UINT64_MAX;
+}
+
+void spu_xfer_busy(int on) {
+    s_xfer_busy = on ? 1 : 0;
 }
 
 const uint8_t* spu_get_ram(void) {
