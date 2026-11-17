@@ -20,6 +20,26 @@ for line in open(os.path.join(GAME, 'fnmap.c')):
     if m:
         entries.append((int(m.group(1), 16), m.group(2)))
 
+# Multiple fnmap names can alias one guest addr (e.g. a clean impl plus its
+# _guest ABI entry). Emit ONE wrapper per addr, preferring the renames.map
+# canonical name when present.
+_preferred = {}
+try:
+    for line in open(os.path.join(GAME, 'renames.map')):
+        line = line.strip()
+        if not line or line.startswith('#'):
+            continue
+        a, n = line.split(None, 1)
+        _preferred[int(a, 16)] = n
+except FileNotFoundError:
+    pass
+_by_addr = {}
+for addr, name in entries:
+    cur = _by_addr.get(addr)
+    if cur is None or (_preferred.get(addr) == name and cur[1] != name):
+        _by_addr[addr] = (addr, name)
+entries = sorted(_by_addr.values())
+
 # ---- per-function cycle cost from the generated oracle ----
 # Decode the actual MIPS words from the PS-X EXE so the clean dispatch charges
 # the same per-instruction base the recompiler folds in (psx_instr_base_cycles
@@ -198,8 +218,8 @@ for addr, name in sorted(entries):
         kinds.append(k)
     if not ok:
         skipped.append((addr, name, 'params')); continue
-    if len(kinds) > 8:
-        skipped.append((addr, name, 'nargs>8')); continue
+    if len(kinds) > 16:
+        skipped.append((addr, name, 'nargs>16')); continue
     nargs = 0 if kinds == [('void',)] else len(kinds)
     # build call args
     args = []
