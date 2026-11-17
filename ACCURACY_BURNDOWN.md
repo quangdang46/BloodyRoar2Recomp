@@ -1219,3 +1219,21 @@ blocked. Subagent 4473006d tracing the servicing mechanism + starvation
 point. NOTE: uncommitted game/menu.c decomp_trace_record probes +
 clean_table.c regen are sibling-agent debug instrumentation, NOT to be
 committed.
+
+=== N+105 — frame-1880 DISPATCH FATAL root-caused: scriptop_ret off-by-one ===
+Attract fight executes past ph=2 (post-120d72c) then crashes ~frame 1880:
+DISPATCH FATAL misaligned 0x00450802, $ra=0x801265F4. Host stack:
+script_op_dispatch -> br2_call_generated -> psx_unknown_dispatch -> fatal.
+script_op_dispatch read opcode 204 (0xCC) from fighter script stream.
+ROOT CAUSE (verified vs generated br2eu_func_80183558, full_38.c:20886+):
+clean scriptop_ret (game/vm.c, guest 0x80183558) tested `depth-1==0` for
+the return-stack epilogue — i.e. ended at RETD==1 and never popped slot 0.
+At RETD==0 it stored RETD=-1 (0xFFFF) and read RETSTK[0xffff] -> VX_PC =
+garbage (observed -> opcode stream desync -> 0xCC -> misaligned jalr).
+Generated block_80183594: `lh RETD; RETD==0 -> epilogue 0x801835C4;
+else RETD-- ; PC=RETSTK[(RETD-1)&0xffff]`. Fix (in tree, vm.c): test
+RETD==0 first, then d=RETD-1 index — matches generated exactly.
+This was a LATENT clean-port bug unreachable until ph=2 completed.
+Lesson: the coarse "uninitialized/edge-case in ported state machines"
+class — verify boundary (==0 vs ==1) against generated delay-slot/branch
+semantics, not intuition.
