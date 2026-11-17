@@ -10755,23 +10755,23 @@ void voice_desc_fill(uint32_t param_1,uint32_t param_2,int32_t param_3,
 }
 
 /* print_mode_dispatch — print-mode dispatch @0x8012ce30 (76 insns, 9
- * args). v1 = MB32(0x1f80384): ==1 -> text_win_printf(p1..p9);
+ * args). v1 = MB32(0x1f800384): ==1 -> text_win_printf(p1..p9);
  * ==2 -> sprintf(buf, p2..p9) into the guest stack buf ($sp+0x28,
  * frame -0x130 = entry_sp-0x108), init the
- * 0x1f8038c GPU block and text_render_simple(MB32(0x1f800008),
- * MB16(0x1f80000c), 0x1f8038c); else return. */
+ * 0x1f80038c GPU block and text_render_simple(MB32(0x1f800008),
+ * MB16(0x1f80000c), 0x1f80038c); else return. */
 void print_mode_dispatch(uint32_t param_1,uint32_t param_2,uint32_t param_3,
                   uint32_t param_4,uint32_t param_5,uint32_t param_6,
                   uint32_t param_7,uint32_t param_8,uint32_t param_9)
 {
-  uint32_t v1 = MB32(0x1f80384u);
+  uint32_t v1 = MB32(0x1f800384u);
   if (v1 == 1) {
     text_win_printf((int32_t)param_1, param_2, param_3, param_4,
                  param_5, param_6, param_7, param_8, param_9);
   } else if (v1 == 2) {
     /* sprintf buf = guest $sp+0x28 (frame -0x130) = entry_sp-0x108 */
     uint8_t *buf = (uint8_t *)guest_at(guest_sp() - 0x108);
-    uint32_t B = 0x1f8038cu;
+    uint32_t B = 0x1f80038cu;
     sprintf_core((char *)buf, (char *)guest_at(param_2),
                  param_3, param_4, param_5, param_6, param_7,
                  param_8, param_9);
@@ -11741,19 +11741,19 @@ void color_rec_table_init(uint32_t param_1,uint32_t param_2)
 /* ======== batch57 ======== */
 
 /* emitter_30_teardown — 30-slot emitter teardown @0x801411e8 (136
- * insns). Restores 8 halfwords 0x801b2320 -> 0x1f803f0. s5 =
+ * insns). Restores 8 halfwords 0x801b2320 -> 0x1f8003f0. s5 =
  * s4 + MB32(0x1f80000c)*1200. If MB16(0x1f800082)==0: decrement
  * MB32(s4+0x9f8), <0 -> task_slot_step + ret; else 30-iter decay:
  * MB16(s4+0x962+4i) -= MB8(s4+0x9d8+i), clamp <-0x40 -> 0x200 +
  * rand halfword at s4+0x960+4i. Emit loop (always): per i<30,
  * 8 halfword pairs from s4+0x960/0x962 (+0x18/+0x60 deltas, first
- * field palette-indexed via 0x1f803f0[(v&7)*2]) written at
+ * field palette-indexed via 0x1f8003f0[(v&7)*2]) written at
  * s5+0xe..+0x22 step 0x28, GPU link 0x90000000|field with
  * backlink s5&0xffffff into MB32(MB32(0x1f800008)+0x203c). */
 void emitter_30_teardown(uint32_t param_1)
 {
   uint32_t s4 = param_1;
-  uint32_t s7 = 0x1f803f0u;
+  uint32_t s7 = 0x1f8003f0u;
   uint32_t s5, s1, s0, s3, a1, v0, v1;
   int32_t s2, i;
   for (i = 0; i < 8; i++)
@@ -13723,7 +13723,7 @@ int32_t options_page_dispatch(int32_t param_1)
 }
 
 /* slot_attr_packet_build @0x8012ba04 — slot/attr packet builder (~260 insns).
- * State block T=0x1f8037c: +0xc sector, +4 u16 count (<0x190),
+ * State block T=0x1f80037c: +0xc sector, +4 u16 count (<0x190),
  * +0/+2 u16 cursor x/y. a0=headcell guest ptr, a1=sector, a2=attr
  * (hi nibble -> block-A code, bits3..7 -> block-B code), a3=x,
  * a4=y (stack arg5), a5=flags (stack arg6; bit0 shade/tab select,
@@ -13761,7 +13761,7 @@ static int32_t attr_code2(uint32_t v)
 int32_t slot_attr_packet_build(uint32_t param_1,uint32_t param_2,uint32_t param_3,
                      int32_t param_4,int32_t param_5,int32_t param_6)
 {
-  const uint32_t T = 0x1f8037cu;
+  const uint32_t T = 0x1f80037cu;
   int32_t shade, code1, code2;
   uint32_t t0, base, x, y;
   int drawA;

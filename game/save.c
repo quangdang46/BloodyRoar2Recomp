@@ -1823,7 +1823,7 @@ int slot_name_measure(void *param_1,int32_t param_2)
   return str_len((char *)param_1);
 }
 
-/* chan_blocks_reset — clear the 0x1f800e8/0x1f8001f0 channel blocks: zero
+/* chan_blocks_reset — clear the 0x1f8000e8/0x1f8001f0 channel blocks: zero
  * +0xe0..+0xec fields, store param_2 at +0xf0, then param_3 selects the
  * +0xec counter (0 -> clear, 1 -> increment, other -> untouched).
  * param_1 is a GUEST address (0x1f80xxx scratch). */
@@ -1984,9 +1984,9 @@ void mc_slot_action(uint8_t *param_1,int32_t param_2)
   q[0x19] = q[0x19] & 3;
   q[0x1a] = q[0x1a] & 3;
   picker_table_shuffle(param_1);
-  chan_blocks_reset(0x1f800e8,0,0);
+  chan_blocks_reset(0x1f8000e8,0,0);
   chan_blocks_reset(0x1f8001f0,0,0);
-  ret_stub_b(0x1f800e8 + (uint32_t)param_2 * 264,0);
+  ret_stub_b(0x1f8000e8 + (uint32_t)param_2 * 264,0);
 }
 
 /* chan_sweep_flag200 — sweep the 32-entry x6-byte channel table at guest
