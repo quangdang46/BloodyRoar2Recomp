@@ -1073,3 +1073,45 @@ to the *(0x801bcc40)&0x40 wait that gates ch3 in cd_chan_cmd_submit). Trace
 the in-fight streaming setup: which fn arms ch4 regs (the madr/bcr/chcr=0x201
 write DID happen) vs which fn should add the start bit, and what status bit
 that second write waits on. Compare vs oracle at versus->fight entry.
+
+=== N+33 — ch4 kick ROOT CAUSE found: SPUCNT bits4-5 handshake poll ===
+Debugger agent completed static+live diagnosis (no source edits):
+- Kick site = tail of generated br2eu_func_8019B954 (cd_reg_window_op
+  @0x8019B944 dispatcher). op-2 polls u16 @0x1F801DAA (SPUCNT) &0x30 for
+  0x20 (state@0x801BDF00!=1) or 0x30 (==1), cap 0xF01; timeout -> -2 ->
+  SKIPS MADR/BCR/CHCR writes -> ch4 never kicks -> no DeliverEvent ->
+  cd_seek_complete_poll TestEvent(F0000009/0x20) spins forever.
+- op-1 writes (old&0xFFCF)|0x20 (bit5); bit4 (0x10) must come from
+  SPU-side/transfer state. Our runtime has NO SPU CPU: spu.c models voice
+  regs only, spu_dma_ready()=1, spu_ta.total=0 -> 0x30 never appears.
+- Pointer cells verified live: 0x801BDEB0->0x1F801C00(SPU blk),
+  B4->0x1F8010C0(MADR), B8->0x1F8010C4(BCR), BC->0x1F8010C8(CHCR),
+  DF0->0x1F8010F4(DICR), 0x801BDE04->0x8019B7E0(cd_dma_chan_reset=handler[4]).
+- cd_dma_xfer_start @0x8019B89C is the OTHER kick path (no SPUCNT poll) —
+  explains the few DeliverEvents seen; streaming-chunk pump is op-2.
+- FIX SITE: psxrecomp/runtime/src/spu.c (+dma.c MMIO) — model SPU-side
+  streaming state so SPUCNT 0x30 reflects real transfer/CPU state.
+  Agent df54025e assigned.
+- CAVEAT: same race can strike EARLIER — a fresh run wedged at init with
+  i_mask=0x9 (CDROM IRQ bit2 disabled), cd_reg_window_op never called.
+
+=== N+34 — port wave 3 committed (7d2020c + cb6dc32) ===
+- bind.c: ~20 weak stubs -> clean C (GTE vec3 normalize/mag2 preserving
+  $v0=MAC1+2+3 contract, BIOS svc trampolines B0:0x08/0x0C/0x4C/0x56/0x57/
+  0x32-36/0x43, A0:0x72/0xAC, DI/EI wrappers, CD seq fns)
+- save.c: op_flag_fn_check, cd_channel_init, ret_zero_d expander
+- gfx.c: gpu_mode_regs_apply, gte_screen_init_defer, gpu_state_patch_defer
+- menu.c: heap_serialize_tag_01000000; battle.c: jalr fn_lookup fallbacks
+  (unported targets now call_guest/br2_call_generated instead of skip)
+- cd.c: cd_intc_busy_read, cd_init_done_cb leaf ports
+- clean_table: 1200 wrappers (was 1195), 82 skipped
+
+=== N+35 — pc=0 early wedge: NOT a wave-3 regression (probably) ===
+A/B test: pre-wave3 binary (f9eb255) reached gs=6 ph=240 (demo fight
+scene) then hit the SAME pc=0 kernel-trampoline crash (frame frozen
+12823, "jr 0xB0 t1=fn" null-fn signature from N+31). Wave-3 builds
+(3 runs) died earlier at gs=0/pc=0 — consistent with the N+33 caveat
+that the streaming/IRQ race can strike at multiple waits, but sample
+size is small; if wave-3 builds keep dying pre-title after the SPU fix
+lands, re-bisect {save.c,gfx.c,menu.c,battle.c} next.
+Last svc before wedge: B0:0x56 ra=0x80126260 (game main state machine).
