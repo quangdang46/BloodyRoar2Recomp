@@ -1966,7 +1966,10 @@ LAB_8016767c:
           blk_1f26c0_init();
           deferred_cmd_post(0x204,0,0);
           scroll_cfg_set(1,8);
-          DAT_1f800010 = 0;
+          /* Same bound-pointer register clobber as frame_divisor_get: the
+           * cached &g_DAT_1f800010 register goes stale across the calls
+           * above, so access the scratchpad byte directly. */
+          *(uint8_t *)guest_at(0x1f800010) = 0;
           DAT_1f80009e = 0;
           rgb_triple_store(0,0,0);
           DAT_1f800001 = DAT_1f800001 + 1;
@@ -13156,24 +13159,33 @@ int32_t attr_records_scan(uint32_t param_1,uint32_t param_2)
  * Returns pump status or -1. */
 int32_t memcard_block_verify(uint32_t param_1,uint32_t param_2,int32_t param_3)
 {
-  static uint32_t buf[0x20];
-  uint32_t gbuf = guest_of(buf);
+  /* job_wait_pump DMAs card data to a guest address, so the compare buffer
+   * must live in guest RAM — a host .bss array makes guest_of() return 0
+   * and the DMA lands at guest addr 0. br2_guest_frame mirrors the guest
+   * stack buffer. */
+  extern uint32_t br2_guest_frame(uint32_t);
+  extern void br2_guest_frame_free(void);
+  uint32_t fr = br2_guest_frame(0x80);
+  uint32_t gbuf = fr;
   uint32_t s1 = param_1;
   uint32_t s3 = param_2;
   int32_t  s2 = param_3;
-  if (s2 <= 0) return 0;
+  int32_t  rc = 0;
+  if (s2 <= 0) { br2_guest_frame_free(); return 0; }
   do {
     uint32_t r = job_wait_pump(gbuf, s3, 0x80u);
     uint32_t j;
-    if (r != 0) return (int32_t)r;
+    if (r != 0) { rc = (int32_t)r; break; }
     for (j = 0; j < 0x20; j++) {
-      if (MB32(s1) != MB32(gbuf + j * 4u)) return -1;
+      if (MB32(s1) != MB32(gbuf + j * 4u)) { rc = -1; goto out; }
       s1 += 4u;
     }
     s3 += 0x80u;
     s2 -= 4;
   } while (s2 > 0);
-  return 0;
+out:
+  br2_guest_frame_free();
+  return rc;
 }
 
 /* job_result_poll_stable @0x80168648 — poll cd_file_open_wait until two consecutive
