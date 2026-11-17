@@ -3785,10 +3785,24 @@ int mc_data_write(uint32_t p0,uint32_t p1,uint32_t p2,uint32_t p3,
                  uint32_t p8,uint32_t p9,uint32_t p10,uint32_t p11,
                  uint32_t p12)
 {
-  uint32_t in[3];
-  uint8_t buf18[0x28];
-  uint8_t b40[0x80];
-  uint8_t bc0[0x30];
+  /* Guest 0x80167d7c keeps these buffers in its stack frame (in@sp+0xf4,
+   * buf18/bc0/b40 in the 0xf0-byte frame). They cross guest-visible
+   * boundaries — mc_issue stores guest_of(a2) as the DMA target,
+   * cd_strcat_guard/cd_arg_ptr resolve a1, and mc_op_seq_probe forwards
+   * guest addresses to memcard_block_verify — so they must be guest RAM,
+   * not host stack. br2_guest_frame reserves real guest stack below $sp
+   * (same pattern as mc_op_dispatch_b/mc_file_cmd/cd_chan_job_pump).
+   * Layout: in@+0x00 (0x20: 3 header words + NUL pad for the strcat use),
+   * buf18@+0x20 (0x28), bc0@+0x50 (0x30), b40@+0x80 (0x1080 — the
+   * memcard_block_verify compare reads a4*0x20 = 0x1000 bytes for the
+   * 0x80-count call, matching the guest over-read into stack). */
+  extern uint32_t br2_guest_frame(uint32_t);
+  extern void br2_guest_frame_free(void);
+  uint32_t fr = br2_guest_frame(0x1100);
+  uint32_t *in = (uint32_t *)guest_at(fr + 0x00);
+  uint8_t *buf18 = (uint8_t *)guest_at(fr + 0x20);
+  uint8_t *bc0 = (uint8_t *)guest_at(fr + 0x50);
+  uint8_t *b40 = (uint8_t *)guest_at(fr + 0x80);
   int32_t s2 = (p0 != 0) ? 0x10 : 0;
   int32_t s4 = 0;
   int32_t ret;
@@ -3801,47 +3815,52 @@ int mc_data_write(uint32_t p0,uint32_t p1,uint32_t p2,uint32_t p3,
   uint32_t sel;
 
   in[0] = p1; in[1] = p2; in[2] = p3;
+  in[3] = 0; in[4] = 0; in[5] = 0; in[6] = 0; in[7] = 0;
 
 poll:
   ret = mc_op_result_poll((uint32_t)s2);
   if (ret == 3) {
     slot = 0x801b43e8 + ((p0 != 0) ? 4 : 0);
     *(uint32_t *)guest_at(slot) = (uint32_t)ret;
+    br2_guest_frame_free();
     return ret;
   }
   if ((uint32_t)ret < 4) {
     if (ret == 0) goto probe;
+    br2_guest_frame_free();
     return ret;
   }
-  if (ret != 4) return ret;
+  if (ret != 4) { br2_guest_frame_free(); return ret; }
   slot = 0x801b43e8 + ((p0 != 0) ? 4 : 0);
   *(uint32_t *)guest_at(slot) = 3;
+  br2_guest_frame_free();
   return 4;
 
 probe:
   ret = mc_chan_job_stable_poll((uint32_t)s2,in,buf18,bc0,0,1);
-  if (ret != 0) return ret;
+  if (ret != 0) { br2_guest_frame_free(); return ret; }
   st = *(uint32_t *)bc0;
   if (st != 0) {
     /* header already present: verify slot state then decompress */
     slot = 0x801b43e8 + ((p0 != 0) ? 4 : 0);
-    if (*(uint32_t *)guest_at(slot) == 3) return 0xf;
+    if (*(uint32_t *)guest_at(slot) == 3) { br2_guest_frame_free(); return 0xf; }
     ret = mc_job_a_result_poll((uint32_t)s2,in,b40,0x200,
                        *(uint32_t *)guest_at(slot));
-    if (ret != 0) return ret;
+    if (ret != 0) { br2_guest_frame_free(); return ret; }
     s4 = (*(uint8_t *)b40 < 1) ? 1 : 0;
     goto stage2;
   }
   ret = mc_file_cmd_stable_poll((uint32_t)s2,in,p7);
   if (ret == 4) goto poll;
   if ((uint32_t)ret < 5) {
-    if (ret != 0) return ret;
+    if (ret != 0) { br2_guest_frame_free(); return ret; }
     memset(b40,0,0x80);
     s4 = 0;
   } else if (ret == 6) {
     memset(b40,0,0x80);
     s4 = 0;
   } else {
+    br2_guest_frame_free();
     return ret;
   }
 
@@ -3852,13 +3871,13 @@ stage2:
     void *dp = mem_ptr(p10);
     void *dd = mem_ptr(p11);
     ret = mc_job_b_result_poll((uint32_t)s2,in,dp,0,0x200);
-    if (ret != 0) return ret;
+    if (ret != 0) { br2_guest_frame_free(); return ret; }
     ret = mc_op_seq_probe((uint32_t)s2,in,dp,0,0x200);
-    if (ret != 0) return ret;
+    if (ret != 0) { br2_guest_frame_free(); return ret; }
     ret = mc_job_b_result_poll((uint32_t)s2,in,dd,sel,asz);
-    if (ret != 0) return ret;
+    if (ret != 0) { br2_guest_frame_free(); return ret; }
     ret = mc_op_seq_probe((uint32_t)s2,in,dd,sel,asz);
-    if (ret != 0) return ret;
+    if (ret != 0) { br2_guest_frame_free(); return ret; }
     dat = (uint8_t *)dd;
     t0 = 0;
     if ((int32_t)p12 > 0) {
@@ -3867,12 +3886,13 @@ stage2:
     b40[0] = (uint8_t)s4;
     b40[(uint32_t)s4 + 1] = t0;
     ret = mc_job_b_result_poll((uint32_t)s2,in,b40,0x200,0x80);
-    if (ret != 0) return ret;
+    if (ret != 0) { br2_guest_frame_free(); return ret; }
     ret = mc_op_seq_probe((uint32_t)s2,in,b40,0x200,0x80);
-    if (ret != 0) return ret;
+    if (ret != 0) { br2_guest_frame_free(); return ret; }
   }
   slot = 0x801b43e8 + ((p0 != 0) ? 4 : 0);
   *(uint32_t *)guest_at(slot) = 0;
+  br2_guest_frame_free();
   return 0;
 }
 
@@ -3885,10 +3905,20 @@ int mc_data_read(uint32_t p0,uint32_t p1,uint32_t p2,uint32_t p3,
                  uint32_t p12)
 {
   /* guest frame: fp+0x44.. = {a1,a2,a3,p4..p12} = 12 words, indexed
-     by buf[0] up to 255 -> keep a wide zero-padded view. */
-  uint32_t in[280];
+     by buf[0] up to 255 -> keep a wide zero-padded view.
+     Both buffers must be guest RAM: `in` is strcat'd through
+     cd_arg_ptr and `buf` becomes the card-DMA target via
+     mc_issue's s1[8]=guest_of(a2) store — a host malloc/stack buffer
+     would store guest addr 0. br2_guest_frame reserves real guest
+     stack below $sp (same pattern as mc_data_write/mc_file_cmd).
+     Layout: in@+0x00 (0x470 slot), buf@+0x488 so buf-8 lands at
+     +0x480 inside the frame (the guest sp+0x10 outgoing-arg slot). */
+  extern uint32_t br2_guest_frame(uint32_t);
+  extern void br2_guest_frame_free(void);
+  uint32_t *in;
   uint8_t *buf;
   size_t asz;
+  uint32_t fr;
   int32_t s7 = (int32_t)p0;
   int32_t s4;
   int32_t ret;
@@ -3897,10 +3927,6 @@ int mc_data_read(uint32_t p0,uint32_t p1,uint32_t p2,uint32_t p3,
   uint32_t s3 = p11;
   uint8_t s6, s5;
   uint32_t i;
-
-  memset(in,0,sizeof(in));
-  in[0]=p1; in[1]=p2; in[2]=p3; in[3]=p4; in[4]=p5; in[5]=p6; in[6]=p7;
-  in[7]=p8; in[8]=p9; in[9]=p10; in[10]=p11; in[11]=p12;
 
   if (s0 == 0) return 0;
   s4 = (s7 != 0) ? -1 : 0;
@@ -3916,13 +3942,17 @@ int mc_data_read(uint32_t p0,uint32_t p1,uint32_t p2,uint32_t p3,
   }
 
   asz = ((uint32_t)(s0 + 0x7f)) & ~0x7fu;
-  buf = (uint8_t *)malloc((size_t)asz + 0x20);
-  if (buf == NULL) return -1;
-  buf += 0x18; /* s2 = sp+0x18 */
+  fr = br2_guest_frame(0x488 + (uint32_t)asz + 0x20);
+  in = (uint32_t *)guest_at(fr + 0x00);
+  buf = (uint8_t *)guest_at(fr + 0x488);
+
+  memset(in,0,0x470);
+  in[0]=p1; in[1]=p2; in[2]=p3; in[3]=p4; in[4]=p5; in[5]=p6; in[6]=p7;
+  in[7]=p8; in[8]=p9; in[9]=p10; in[10]=p11; in[11]=p12;
 
   *(uint32_t *)(buf - 8) = 0x80; /* sp+0x10 outgoing arg */
   ret = mc_job_a_result_poll((uint32_t)s4,in,buf,0x200,0x80);
-  if (ret != 0) { free(buf - 0x18); return ret; }
+  if (ret != 0) { br2_guest_frame_free(); return ret; }
 
   s6 = buf[0];
   s5 = buf[(uint8_t)s6 + 1];
@@ -3934,7 +3964,7 @@ int mc_data_read(uint32_t p0,uint32_t p1,uint32_t p2,uint32_t p3,
       uint32_t s1new;
       *(uint32_t *)(buf - 8) = asz;
       ret = mc_job_a_result_poll((uint32_t)s4,in,buf,a3v,asz);
-      if (ret != 0) { free(buf - 0x18); return ret; }
+      if (ret != 0) { br2_guest_frame_free(); return ret; }
       if ((int32_t)s0 > 0) {
         for (i = 0; i < s0; i++) sum ^= buf[i];
       }
@@ -3945,11 +3975,11 @@ int mc_data_read(uint32_t p0,uint32_t p1,uint32_t p2,uint32_t p3,
         for (i = 0; i < s0; i++) *dst++ = *src++;
         slot = 0x801b43e8 + ((s7 != 0) ? 4 : 0);
         *(uint32_t *)guest_at(slot) = 0;
-        free(buf - 0x18);
+        br2_guest_frame_free();
         return 0;
       }
       idx = s1new;
-      if (s6 == s1new) { free(buf - 0x18); return 2; }
+      if (s6 == s1new) { br2_guest_frame_free(); return 2; }
     }
   }
 }
@@ -5610,19 +5640,16 @@ int dialog_sel_dispatch_wide(uint32_t a0,uint32_t a1)
  * Declare the real signatures instead of conflicting stubs. descblk_variant_*
  * param_3 is void* in the callee; const void* here is ABI-identical and
  * accepts both const and non-const call arguments. */
-/* job_result_poll_stable/memcard_block_verify keep weak stubs for now: their
- * menu.c defs take guest u32 addrs (MB32/guest_at) but mc_op_seq_probe forwards
- * host buffer pointers (in/dp/dd/b40, incl. a stack array not in guest RAM) —
- * a deeper host/guest-pointer mistranslation needing dedicated RE, not a
- * prototype fix. Prototyping them surfaced the mismatch as a hard error. */
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int memcard_block_verify() { return 0; }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-int job_result_poll_stable() { return 0; }
+/* job_result_poll_stable/memcard_block_verify are guest-domain u32 functions
+ * (menu.c defs; verified against generated 0x80168648/0x8016827c). Their
+ * callers must therefore hand them guest addresses, not host pointers —
+ * mc_op_seq_probe normalises with br2_gaddr and mc_data_write stages its
+ * stack buffers into a br2_guest_frame so every pointer that crosses into
+ * these callees (directly or via mc_job_* / cd_chan_job_pump's guest_of
+ * stores) is guest-RAM-backed end to end. */
+extern int32_t memcard_block_verify(uint32_t,uint32_t,int32_t);
+extern int32_t job_result_poll_stable(uint32_t,uint32_t,uint32_t);
+extern uint32_t br2_gaddr(const void *);
 extern int32_t job_state_query(void);
 extern int32_t slot_attr_packet_build(uint32_t,uint32_t,uint32_t,
     int32_t,int32_t,int32_t);
@@ -5961,12 +5988,18 @@ same:
 
 /* ---- mc_op_seq_probe @0x8016831c (24 insns) ----
    memcard op wrapper: probe (job_result_poll_stable), on success memcard_block_verify then
-   job_state_query. a2/a3/stack-a4 forwarded to memcard_block_verify. */
+   job_state_query. a2/a3/stack-a4 forwarded to memcard_block_verify.
+   Guest contract (generated 0x8016831c-0x80168368): a0/a1 pass through to
+   job_result_poll_stable with a2=1; on rc==0, memcard_block_verify gets
+   (old a2, old a3, stack arg). Both callees are guest-domain u32 — the
+   buffer args arrive here as host pointers, so normalise to guest
+   addresses with br2_gaddr (guest RAM pointers map back; bare guest
+   u32s pass through). */
 int mc_op_seq_probe(uint32_t a0,const void *a1,void *a2,uint32_t a3,uint32_t a4)
 {
-  int32_t r = job_result_poll_stable(a0,a1,1);
+  int32_t r = job_result_poll_stable(a0,br2_gaddr(a1),1);
   if (r != 0) return r;
-  memcard_block_verify(a2,a3,a4);
+  memcard_block_verify(br2_gaddr(a2),a3,(int32_t)a4);
   return job_state_query();
 }
 

@@ -3831,7 +3831,7 @@ extern void cd_dir_entry_finalize(void);
 }
 static void wrap_80199100(CPUState *cpu) {
 extern void cd_dir_entry_store(uint32_t param_1,uint32_t param_2);
-    cd_dir_entry_store(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]));
+    cd_dir_entry_store(((uint32_t)cpu->gpr[2]), ((uint32_t)cpu->gpr[3]));
 }
 static void wrap_8019917c(CPUState *cpu) {
 extern uint32_t cd_file_open_b(uint32_t param_1);
@@ -3839,7 +3839,7 @@ extern uint32_t cd_file_open_b(uint32_t param_1);
 }
 static void wrap_80199184(CPUState *cpu) {
 extern uint32_t cd_file_open_seq(uint32_t param_1,uint32_t param_2);
-    cpu->gpr[2] = (uint32_t)(cd_file_open_seq(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
+    cpu->gpr[2] = (uint32_t)(cd_file_open_seq(((uint32_t)cpu->gpr[2]), ((uint32_t)cpu->gpr[4])));
 }
 static void wrap_801991e0(CPUState *cpu) {
 extern void cd_read_params_store(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,uint32_t s2);

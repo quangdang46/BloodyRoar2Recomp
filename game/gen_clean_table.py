@@ -223,6 +223,23 @@ HOST_PTR_PARAMS = {
     0x8016fcc4: {0},   # battle_flow_state_machine(intptr_t)-> host pad buf
 }
 
+# Guest addrs whose parameters arrive in NON-a0-a3 registers. These are
+# mid-function / alternate entries (or v0/v1-consuming continuations) where
+# the guest contract reads gpr[2]/gpr[3] (or other regs) instead of the
+# standard a0-a3 arg regs. Keyed by guest addr -> tuple of cpu->gpr indices,
+# one per clean-C parameter (positions past the tuple fall back to the
+# normal a0-a3/stack marshalling). Verified against generated bodies:
+#   0x80199100 cd_dir_entry_store: entry = v1 + (v0 << 5) — index in v0,
+#     table base in v1 (generated func_801990F0 falls through; v0/v1 are
+#     loaded from 0x801fc6a8/0x801fc6c0 by the finalize prologue).
+#   0x80199184 cd_file_open_seq: alternate entry into func_8019917C at +8 —
+#     the flag-cell load is skipped so the branch tests the CALLER's v0;
+#     path arg stays in a0.
+ARG_GPRS = {
+    0x80199100: (2, 3),
+    0x80199184: (2, 4),
+}
+
 wrappers, table, skipped = [], [], []
 for addr, name in sorted(entries):
     if name not in defs:
@@ -261,9 +278,13 @@ for addr, name in sorted(entries):
     # build call args
     args = []
     force_ptr = HOST_PTR_PARAMS.get(addr, set())
+    src_regs = ARG_GPRS.get(addr)
     for i, k in enumerate(kinds):
         if k[0] == 'void': break
-        raw = f'cpu->gpr[{4+i}]' if i < 4 else f'(uint32_t)cpu->read_word((cpu->gpr[29] + {16+4*(i-4)}) & 0xffffffffu)'
+        if src_regs is not None and i < len(src_regs):
+            raw = f'cpu->gpr[{src_regs[i]}]'
+        else:
+            raw = f'cpu->gpr[{4+i}]' if i < 4 else f'(uint32_t)cpu->read_word((cpu->gpr[29] + {16+4*(i-4)}) & 0xffffffffu)'
         if k[0] == 'ptr' or i in force_ptr:
             # 'ptr' params carry a declared C type; forced host-ptr scalars
             # (intptr_t) keep their declared type for the cast but still get

@@ -4812,16 +4812,22 @@ int cd_mmio_bit_wait(uint32_t param_1,uint32_t param_2)
 
 /* ======== 0x80199184 ======== */
 
+/* Alternate entry into cd_file_open_b (0x8019917c) at +8: the flag-cell
+ * load at 0x8019917c/0x80199180 is skipped, so the branch at 0x80199190
+ * tests the CALLER's v0, not *(0x801fc6f8). The rest of the body is
+ * identical: s0=a0 -> cd_file_open(cd_stamp_to_sector(0x801feb00)+1, a0)
+ * -> return *(0x801feb04). Guest contract: param_1 = incoming v0 (flag),
+ * param_2 = incoming a0 (path guest addr) — the clean_table wrapper
+ * marshals gpr[2]/gpr[4] for this addr (ARG_GPRS in gen_clean_table.py).
+ * Disasm 0x80199184-0x801991d0 (inside br2eu_func_8019917C). */
 int cd_file_open_seq(uint32_t param_1,uint32_t param_2)
 {
-  if (param_2 == 0) {
-    int32_t r = cd_stamp_to_sector(guest_at(0x801fcb00));
-    /* param_1 is a raw guest address; cd_file_open's uint8_t* is a host
-     * pointer it writes the sector bytes through — resolve it. */
-    cd_file_open(r + 1,(uint8_t *)guest_at(param_1));
-    return (int)*(int32_t *)guest_at(0x801feb04);
-  }
-  return -1;
+  int32_t v0;
+  if (param_1 != 0) return -1;
+  v0 = cd_stamp_to_sector(guest_at(0x801FEB00));
+  cd_seek_note(3, *(uint32_t *)guest_at(0x801FEB00), (uint32_t)v0);
+  cd_file_open(v0 + 1,(uint8_t *)guest_at(param_2));
+  return (int)*(int32_t *)guest_at(0x801feb04);
 }
 
 /* ======== 0x80191184 ======== */
