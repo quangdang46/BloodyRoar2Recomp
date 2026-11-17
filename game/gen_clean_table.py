@@ -123,11 +123,20 @@ for path in files:
         while j < len(code) and code[j] in ' \t\r\n': j += 1
         if j >= len(code) or code[j] != '{': continue
         # thunk bodies (br2_call_generated -> recompiled guest code) must
-        # NOT get a clean dispatch wrapper: the wrapper would re-enter the
-        # thunk and recurse forever through clean_try_dispatch.
+        # NOT get a clean dispatch wrapper when they delegate to THEMSELVES
+        # (wrap -> thunk -> br2_call_generated(self) -> clean_try_dispatch
+        # -> wrap = infinite recursion) or through an INDIRECT target that
+        # cannot be proven non-self. A LITERAL delegate to a DIFFERENT guest
+        # addr is safe: the callee's own dispatch decides clean-vs-generated,
+        # and a leaf generated callee cannot route back here. The guest addr
+        # is not known at def-scan time, so record each call's first arg and
+        # let the emit loop (which knows addr) apply the self/indirect check.
         bend = code.find('\n}', j)
-        if bend > 0 and 'br2_call_generated(' in code[j:bend]:
-            continue
+        gen_args = []
+        if bend > 0:
+            gen_args = [gm.group(1).strip() for gm in
+                        re.finditer(r'br2_call_generated\(\s*([^,]+)',
+                                    code[j:bend])]
         # exclude static defs (not callable cross-TU anyway, but be safe)
         k = m.start() - 1
         while k >= 0 and code[k] not in ';{}': k -= 1
@@ -140,7 +149,7 @@ for path in files:
         ret_raw = code[code.rfind('\n', 0, m.start(1))+1:m.start(2)].strip()
         # strip leading storage-class words
         ret_raw = re.sub(r'^(extern|static|inline|__inline)\s+', '', ret_raw).strip()
-        defs[name] = (ret_raw, params, os.path.basename(path))
+        defs[name] = (ret_raw, params, os.path.basename(path), gen_args)
 
 def split_params(p):
     """Split param list on top-level commas."""
@@ -207,7 +216,21 @@ wrappers, table, skipped = [], [], []
 for addr, name in sorted(entries):
     if name not in defs:
         skipped.append((addr, name, 'no-def')); continue
-    ret_raw, params, f = defs[name]
+    ret_raw, params, f, gen_args = defs[name]
+    # Self-delegation and indirect-delegation thunks stay unwrapped (see the
+    # def-scan comment): wrapping them recurses through clean_try_dispatch.
+    # Literal delegates to a different guest addr are safe to wrap.
+    deleg_bad = False
+    for ga in gen_args:
+        lit = re.fullmatch(r'0x[0-9a-fA-F]+[uUlL]*|\d+[uUlL]*', ga)
+        if lit is None:
+            skipped.append((addr, name, 'indirect-delegate')); deleg_bad = True; break
+        v = lit.group(0).rstrip('uUlL')
+        iv = int(v, 16) if v.lower().startswith('0x') else int(v, 10)
+        if iv == addr:
+            skipped.append((addr, name, 'self-delegate')); deleg_bad = True; break
+    if deleg_bad:
+        continue
     rk = ret_kind(ret_raw)
     if rk == 'skip':
         skipped.append((addr, name, 'ret:' + ret_raw)); continue
