@@ -10263,3 +10263,15 @@ N+99a — second crash site = same root cause (context corruption), NOT a port b
   op/param_2+0x84 stream-pc was corrupted upstream. => SAME context-corruption
   root cause as the x28 battle_flow_state_machine crash, manifesting at a
   second clean site. Confirms: ONE runtime fix (ed5184f8) should clear both.
+
+N+99b — REAL clean-coverage numbers (corrects earlier estimate):
+  clean_table.c wraps 1113 guest fns. generated/ has ~3878 fn syms.
+  renames.map names 1195 (the NAMED subset — ~93% of those are clean).
+  TRUE unported bodies = ~2797, spread across generated/full_00..full_54
+  (dispatch.c is the master symbol table, NOT bodies). Heaviest files:
+  full_35=183, full_53=162, full_00=150, full_01=182, full_39=98 unported.
+  => Mission is a LONG porting haul; wave-2 should target heaviest
+     generated files OR hot gameplay address ranges, partitioned disjoint.
+  NOTE: ani.c is a .ANI file-format PARSER (not recompiled game code —
+  nothing to port); fight.c has only ~2 guest fns (FUN_80176248,
+  FUN_801787dc). vm.c is the real VM interpreter (moderate scope).
