@@ -373,10 +373,12 @@ static void reset(uint8_t *ctrl, uint32_t sel)
  * 0x80181ee8 (cat+0x28=0), 0x80181ef0 (variant==2, unreachable),
  * 0x80181f10 (cat+0x28=9), 0x80181f18 (plain return).            */
 /* ------------------------------------------------------------------ */
-static void ani_fixup(uint8_t *ctrl, int variant)
+/* cat/battle arrive as guest arguments (a2/a3) — callers pass
+ * cat = *(ctrl+0x3c) and battle = the battle-context pointer; the
+ * ports below pass the same values action_enter derives. */
+static void ani_fixup(uint8_t *ctrl, int variant, uint8_t *cat,
+                      const uint8_t *battle)
 {
-    uint8_t *cat    = (uint8_t *)guest_at(GU32(ctrl, 0x3c));
-    const uint8_t *battle = (const uint8_t *)guest_at(0x1f800000);
     uint32_t base = GU32(ctrl, 0x30);
     uint8_t *tbl;
     int i;
@@ -734,7 +736,9 @@ uint32_t action_enter(void *battle, uint8_t *ctrl, uint32_t sel)
         apply_tail(motion, cls);
         reset(ctrl, sel);
         int variant = GU8(ctrl, 0x01) ? ((GU8(ctrl, 0x01) & 0x7f) - 1) : 0;
-        ani_fixup(ctrl, variant);
+        ani_fixup(ctrl, variant,
+                    (uint8_t *)guest_at(GU32(ctrl, 0x3c)),
+                    (const uint8_t *)guest_at(0x1f800000u));
         GS8(ctrl, FC_FLAGB) = 1;   /* guest: caller sets ctrl+0xb after fixup */
     } else {
         if (cls == 0) {
@@ -783,7 +787,9 @@ uint32_t action_enter(void *battle, uint8_t *ctrl, uint32_t sel)
         slot_apply(ctrl, b3 & 1);
 
         int variant = GU8(ctrl, 0x01) ? ((GU8(ctrl, 0x01) & 0x7f) - 1) : 0;
-        ani_fixup(ctrl, variant);
+        ani_fixup(ctrl, variant,
+                    (uint8_t *)guest_at(GU32(ctrl, 0x3c)),
+                    (const uint8_t *)guest_at(0x1f800000u));
         GS8(ctrl, 0x0b) = 1;
     }
 
@@ -945,4 +951,55 @@ LAB_80179a60:
   param_2[0x26] = 0;
   param_2[0x27] = 0;
   return;
+}
+
+/* ------------------------------------------------------------------ */
+/* Guest entry points (fnmap-dispatched). Each exposes the faithful    */
+/* static port above under the guest ABI the recompiler callers use.   */
+/* ------------------------------------------------------------------ */
+
+/* apply_guest — guest func_8017A05C (ctrl, motion, sel).
+ * The guest body ends in a class tail on sel&0xf: motion fields are
+ * cleared for every class except 1 and >=5 — exactly apply_tail's
+ * condition (verified against the 0x8017A680..0x8017A6B4 dispatch). */
+void apply_guest(uint8_t *ctrl, uint8_t *motion, uint32_t sel)
+{
+    apply(ctrl, motion);
+    apply_tail(motion, sel & 0xf);
+}
+
+/* reset_guest — guest func_80175898 (ctrl, sel). */
+void reset_guest(uint8_t *ctrl, uint32_t sel)
+{
+    reset(ctrl, sel);
+}
+
+/* entry_setup_guest — guest func_80175A7C (ctrl, group). */
+void entry_setup_guest(uint8_t *ctrl, uint32_t group)
+{
+    entry_setup(ctrl, group);
+}
+
+/* ani_fixup_guest — guest func_80181DB8 (ctrl, a1, cat, battle,
+ * variant@stack). The guest reads cat from a2, battle from a3 and the
+ * variant from caller stack arg5 (sp+16); a1 is unused. */
+void ani_fixup_guest(uint8_t *ctrl, uint32_t a1, uint8_t *cat,
+                     const uint8_t *battle, int32_t variant)
+{
+    (void)a1;   /* guest a1 is dead in func_80181DB8 */
+    ani_fixup(ctrl, variant, cat, battle);
+}
+
+/* pending_gate_guest — guest func_80178664 (motion, ctrl, reqA, reqB).
+ * Same gate body as fight.c's pending_gate; this is the dispatch entry
+ * (bind.c's pending_action_gate is excluded from fnmap scanning, so the
+ * guest address had no clean dispatch until now). motion arrives as a
+ * guest address and is translated here. */
+extern int32_t pending_gate(uint8_t *motion, uint8_t *ctrl,
+                            uint32_t req_a, uint32_t req_b);
+int32_t pending_gate_guest(uint32_t motion, uint8_t *ctrl,
+                           uint32_t req_a, uint32_t req_b)
+{
+    return pending_gate((uint8_t *)guest_at(motion), ctrl,
+                        req_a, req_b);
 }
