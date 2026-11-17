@@ -29,8 +29,8 @@
 80136d28 record_copy_1a
 80136fb0 task_table_init
 8012c0b4 intro_movie_state
-8012cc6c print_dispatch
-8012cf64 print_dispatch_selfdesc
+8012cc6c print_dispatch_guest
+8012cf64 print_dispatch_selfdesc_guest
 80129910 menu_row_paint
 80129944 menu_row_paint_b
 80129660 menu_stepper_redraw
@@ -263,7 +263,7 @@
 8018cd94 spr_tbl_init_b
 8018fb10 mdec_pump_a
 8018fc90 mdec_pump_b
-80190a04 text_win_printf
+80190a04 text_win_printf_guest
 80179ae0 skeleton_init
 80179a6c part_record_reset
 80179964 part_link_unlink
@@ -392,7 +392,7 @@
 80147cdc sprite_blit_center_a
 80147bb4 sprite_blit_center_b
 80157188 voice_desc_fill
-8012ce30 print_mode_dispatch
+8012ce30 print_mode_dispatch_guest
 8014b818 scroll_attr_100_update
 80158698 spr_attr_alloc_c
 8015e8c4 mode_select_commit
@@ -642,7 +642,7 @@
 801911e4 gpu_rect_bounds_dbg
 8019b1e4 gp_bde20_read
 8019b220 cd_chan_boot_init
-8018e550 printf_forward
+8018e550 printf_forward_guest
 8018fc00 mdec_decode_issue
 8018fd1c mdec_stat_wait_a
 8018fdb0 mdec_stat_wait_b
@@ -1614,7 +1614,7 @@
 
 8018df00 rotmat2_pair_build
 
-8018ef60 sprintf_core
+8018ef60 sprintf_core_guest
 
 80186d20 rtps_basis_xform
 

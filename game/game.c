@@ -1885,6 +1885,10 @@ LAB_8012c330:
 
 extern int      sprintf_core(char *,char *,...);
 extern int32_t   text_win_printf(int32_t,uint32_t,uint32_t,uint32_t,...);
+extern void     print_mode_dispatch(uint32_t,uint32_t,uint32_t,uint32_t,
+                                    uint32_t,uint32_t,uint32_t,uint32_t,
+                                    uint32_t);
+extern uint32_t printf_core(uint32_t,const uint8_t *,const uint32_t *);
 extern uint32_t guest_of(const void *);
 extern undefined4 text_render_full(uint *,uint,int);
 extern undefined4 text_render_simple(uint *,uint,int);
@@ -1970,6 +1974,104 @@ void print_dispatch_selfdesc(void *param_1,const char *param_2,...)
   b[12] = 0;
   text_render_simple((uint *)guest_at(BR2B32(0x1f800008)),
                BR2B16(0x1f80000c),(int)guest_of(b));
+}
+
+/* ---- guest-ABI entries for the varargs print/format front-ends ----
+ * The implementations above/below are host-varargs (they serve the many
+ * clean call sites); the generated->clean dispatch wrapper can only
+ * marshal a fixed arg list, so each *_guest entry re-emits the o32 arg
+ * slots (a0-a3 + caller stack words at entry_sp+0x10..) as fixed params
+ * and forwards them. The 8-param marshal window covers stack words
+ * +0x10..+0x1c; deeper caller stack words are recovered from the live
+ * guest stack via guest_sp()+0x20/+0x24 — the same slots the guest
+ * prologue loads unconditionally. Forwarded args are cast to uintptr_t
+ * so both va_arg(ap,uint32_t) and va_arg(ap,uintptr_t) consumers in the
+ * callees read the correct low-32 bits. */
+
+/* print_dispatch @0x8012cc6c — guest reads a0-a3 + 5 caller stack words
+ * (args 5-9); param_8 covers stack word 3, arg9 (+0x20) recovered. */
+void print_dispatch_guest(const char *param_1,uint32_t param_2,uint32_t param_3,
+                          uint32_t param_4,uint32_t param_5,uint32_t param_6,
+                          uint32_t param_7,uint32_t param_8)
+{
+  print_dispatch(param_1,(uintptr_t)param_2,(uintptr_t)param_3,
+                 (uintptr_t)param_4,(uintptr_t)param_5,(uintptr_t)param_6,
+                 (uintptr_t)param_7,(uintptr_t)param_8,
+                 (uintptr_t)BR2B32((uint32_t)(guest_sp() + 0x20)));
+}
+
+/* print_dispatch_selfdesc @0x8012cf64 — a0=self, a1=fmt, a2-a3 + 6 caller
+ * stack words are the 8 varargs; stack words 4-5 (+0x20/+0x24) recovered. */
+void print_dispatch_selfdesc_guest(void *param_1,const char *param_2,
+                                   uint32_t param_3,uint32_t param_4,
+                                   uint32_t param_5,uint32_t param_6,
+                                   uint32_t param_7,uint32_t param_8)
+{
+  print_dispatch_selfdesc(param_1,param_2,(uintptr_t)param_3,
+                          (uintptr_t)param_4,(uintptr_t)param_5,
+                          (uintptr_t)param_6,(uintptr_t)param_7,
+                          (uintptr_t)param_8,
+                          (uintptr_t)BR2B32((uint32_t)(guest_sp() + 0x20)),
+                          (uintptr_t)BR2B32((uint32_t)(guest_sp() + 0x24)));
+}
+
+/* print_mode_dispatch @0x8012ce30 — 9 fixed args; the clean impl is already
+ * fixed-arity but exceeds the 8-param marshal window, so arg9 (+0x20) is
+ * recovered from the caller stack here. */
+void print_mode_dispatch_guest(uint32_t param_1,uint32_t param_2,
+                               uint32_t param_3,uint32_t param_4,
+                               uint32_t param_5,uint32_t param_6,
+                               uint32_t param_7,uint32_t param_8)
+{
+  print_mode_dispatch(param_1,param_2,param_3,param_4,param_5,param_6,
+                      param_7,param_8,
+                      BR2B32((uint32_t)(guest_sp() + 0x20)));
+}
+
+/* printf_forward @0x8018e550 — packs a1-a3 + caller stack words into the
+ * arg array and calls printf_core(1, fmt, args); the guest body tail-
+ * propagates printf_core's v0, so the entry returns it. 8th vararg
+ * (+0x20) recovered. */
+uint32_t printf_forward_guest(const char *param_1,uint32_t param_2,
+                              uint32_t param_3,uint32_t param_4,
+                              uint32_t param_5,uint32_t param_6,
+                              uint32_t param_7,uint32_t param_8)
+{
+  uint32_t args[8];
+  args[0] = param_2; args[1] = param_3; args[2] = param_4;
+  args[3] = param_5; args[4] = param_6; args[5] = param_7;
+  args[6] = param_8;
+  args[7] = BR2B32((uint32_t)(guest_sp() + 0x20));
+  return printf_core(1,(const uint8_t *)param_1,args);
+}
+
+/* sprintf_core @0x8018ef60 — a0=dst, a1=fmt host pointers; a2-a3 + caller
+ * stack words are the varargs; stack words 4-5 (+0x20/+0x24) recovered.
+ * Returns the formatted length in v0 like the guest. */
+int sprintf_core_guest(char *param_1,char *param_2,uint32_t param_3,
+                       uint32_t param_4,uint32_t param_5,uint32_t param_6,
+                       uint32_t param_7,uint32_t param_8)
+{
+  return sprintf_core(param_1,param_2,(uintptr_t)param_3,(uintptr_t)param_4,
+                      (uintptr_t)param_5,(uintptr_t)param_6,(uintptr_t)param_7,
+                      (uintptr_t)param_8,
+                      (uintptr_t)BR2B32((uint32_t)(guest_sp() + 0x20)),
+                      (uintptr_t)BR2B32((uint32_t)(guest_sp() + 0x24)));
+}
+
+/* text_win_printf @0x80190a04 — a0..a3 are the four named params; caller
+ * stack words are the va_args; stack words 4-5 (+0x20/+0x24) recovered.
+ * Returns the window-write count / -1 in v0 like the guest. */
+int32_t text_win_printf_guest(int32_t param_1,uint32_t param_2,
+                              uint32_t param_3,uint32_t param_4,
+                              uint32_t param_5,uint32_t param_6,
+                              uint32_t param_7,uint32_t param_8)
+{
+  return text_win_printf(param_1,param_2,param_3,param_4,(uintptr_t)param_5,
+                         (uintptr_t)param_6,(uintptr_t)param_7,
+                         (uintptr_t)param_8,
+                         (uintptr_t)BR2B32((uint32_t)(guest_sp() + 0x20)),
+                         (uintptr_t)BR2B32((uint32_t)(guest_sp() + 0x24)));
 }
 
 /* menu_row_paint / menu_row_paint_b — menu cursor row painters: emit "  > "
