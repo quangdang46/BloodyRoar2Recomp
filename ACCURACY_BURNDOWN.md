@@ -1200,3 +1200,22 @@ address typos. ph=2 handler lives in battle_flow_state_machine
 (0x8016FCC4, game/menu.c) / battle_intro_fsm path.
 NOTE: all pre-existing emus were on STALE binaries (built 17:01; emus
 started 15:32-16:53 pre-typo-fixes). Repro requires fresh build.
+
+=== N+38 — pad/SIO channel-driver starvation (versus->fight gate) ===
+Navigation agent drove boot->title->attract on fresh instances
+(4694-4697): title can NEVER see START because the pad producer is dead.
+Pad records 0x801BEFA8/0x801BECA stay 0xFF+zeros boot->title->attract;
+decoded pad state 0x1f800068-0x80 never reflects input; sio_trace shows
+ZERO 0x42 pad-poll commands (only memcard 0x81/0x52/0x21/0x22/0x23);
+pad_buttons=0xFFFF frozen. The records live in the async-I/O channel
+driver: SIO fn-table @0x801BE780 (handlers 0x801A38B8/3850/39BC,
+generated-only), channel block @0x801FF080 (+0x30=0x801BEFA8), SIO regs
+0x1F801040/070. Same starvation class as the CD wedges: deferred-
+coroutine/IRQ service starved — clean C spins lack per-basic-block
+psx_check_interrupts_at + resumable guest PC, so the channel-driver
+service (IRQ- or frame-driven) never runs the pad job. versus->fight
+( gs=8 ph=6 ) unreachable without pad input -> SPU-fix verification
+blocked. Subagent 4473006d tracing the servicing mechanism + starvation
+point. NOTE: uncommitted game/menu.c decomp_trace_record probes +
+clean_table.c regen are sibling-agent debug instrumentation, NOT to be
+committed.
