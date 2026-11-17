@@ -2291,7 +2291,17 @@ void FUN_8019e55c(void)
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int32_t cd_seek_state_machine() { return 0; }
+int32_t cd_seek_state_machine(uint32_t a0)
+{
+    /* guest 0x8019D5B0: li t2,0xB0; li t1,0x0B; jr t2 — B0 svc 0x0B
+     * trampoline forwarding live a0-a3 (generated
+     * SLES_017.22_full_47.c br2eu_func_8019D5B0). ra already holds the
+     * caller's return address; record it as the svc return pc. */
+    CPUState *c = clean_cpu_state();
+    uint32_t ret = c ? c->gpr[31] : 0x8019d5bcu;
+    (void)a0;
+    return (int32_t)bind_bios_call_live(0x0b, ret);
+}
 
 /* ---- menu-agent callees (unported, weak until disasm-verified) ---- */
 

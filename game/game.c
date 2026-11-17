@@ -238,7 +238,7 @@ extern uint8_t  *_g_system_config_ptr;
 #define DAT_1f8000e4    (*(uint32_t *)g_DAT_1f8000e4)
 #define DAT_1f800092    (*(uint16_t *)g_DAT_1f800092)
 #define DAT_1f800088    (*(uint16_t *)g_DAT_1f800088)
-#define DAT_1f80008c    (*(uint32_t *)g_DAT_1f80008c)
+#define DAT_1f80008c    (*(uint16_t *)g_DAT_1f80008c)
 #define DAT_1f80008e    (*(uint16_t *)g_DAT_1f80008e)
 #define DAT_1f800084    (*(uint32_t *)g_DAT_1f800084)
 #define _DAT_1f800084   (*(uint32_t *)g_DAT_1f800084)
@@ -254,9 +254,9 @@ extern uint8_t  *_g_system_config_ptr;
 #define DAT_1f8000d2    (*(uint16_t *)g_DAT_1f8000d2)
 #define DAT_1f80001a    (*(uint16_t *)g_DAT_1f8001a)
 #define DAT_1f80001c    (*(uint16_t *)g_DAT_1f8001c)
-#define _DAT_1f800020  (*(uint32_t *)g_DAT_1f800020)
-#define _DAT_1f800022  (*(uint32_t *)g_DAT_1f800022)
-#define _DAT_1f800024  (*(uint32_t *)g_DAT_1f800024)
+#define _DAT_1f800020  (*(uint16_t *)g_DAT_1f800020)
+#define _DAT_1f800022  (*(uint16_t *)g_DAT_1f800022)
+#define _DAT_1f800024  (*(uint16_t *)g_DAT_1f800024)
 #define _DAT_1f80007c  (*(uint32_t *)g_DAT_1f80007c)
 #define DAT_801bef90    (*(uint8_t *)g_DAT_801bef90)
 #define DAT_801befa8    (*(uint8_t *)g_DAT_801befa8)
@@ -312,18 +312,18 @@ extern uint8_t *_g_system_config_ptr;
 #define _DAT_1f8000e4   (*(uint32_t *)g_DAT_1f8000e4)
 #define _DAT_1f800092   (*(uint16_t *)g_DAT_1f800092)
 #define _DAT_1f800088   (*(uint16_t *)g_DAT_1f800088)
-#define _DAT_1f80008c   (*(uint32_t *)g_DAT_1f80008c)
+#define _DAT_1f80008c   (*(uint16_t *)g_DAT_1f80008c)
 #define _DAT_1f80008e   (*(uint16_t *)g_DAT_1f80008e)
 #define _DAT_1f8000a8   (*(uint32_t *)g_DAT_1f8000a8)
 #define _DAT_1f8000ac   (*(uint32_t *)g_DAT_1f8000ac)
-#define _DAT_1f8000a4   (*(uint32_t *)g_DAT_1f8000a4)
-#define _DAT_1f8000a2   (*(uint32_t *)g_DAT_1f8000a2)
-#define _DAT_1f8000b2   (*(uint32_t *)g_DAT_1f8000b2)
-#define _DAT_1f800080   (*(uint32_t *)g_DAT_1f800080)
-#define _DAT_1f800078   (*(uint32_t *)g_DAT_1f800078)
+#define _DAT_1f8000a4   (*(uint16_t *)g_DAT_1f8000a4)
+#define _DAT_1f8000a2   (*(uint16_t *)g_DAT_1f8000a2)
+#define _DAT_1f8000b2   (*(uint16_t *)g_DAT_1f8000b2)
+#define _DAT_1f800080   (*(uint16_t *)g_DAT_1f800080)
+#define _DAT_1f800078   (*(uint16_t *)g_DAT_1f800078)
 #define _DAT_1f800070   (*(uint32_t *)g_DAT_1f800070)
 #define _DAT_1f80006c   (*(uint32_t *)g_DAT_1f80006c)
-#define _DAT_1f8000b8   (*(uint32_t *)g_DAT_1f8000b8)
+#define _DAT_1f8000b8   (*(uint16_t *)g_DAT_1f8000b8)
 #define _DAT_1f8000bc   (*(uint32_t *)g_DAT_1f8000bc)
 #define _DAT_1f8000cc   (*(uint32_t *)g_DAT_1f8000cc)
 #define _DAT_801c15f0   (*(uint32_t *)g_DAT_801c15f0)
@@ -971,8 +971,6 @@ int cd_file_pump(int param_1,int param_2)
 void cd_channel_init_seq(void)
 {
     cd_channel_table_init(g_DAT_801befa8,g_DAT_801befca);
-    cd_chan_init_wrap();
-    dbg_marker_mode_set(0);
 }
 
 void scratch_zero_reset(void)
@@ -1781,7 +1779,7 @@ void task_table_init(int32_t param_1)
 {
   (void)param_1;
   *(uint32_t *)guest_at(0x801f0738) = 0;
-  *(uint8_t  *)guest_at(0x801bef20) = 0;
+  *(uint32_t *)guest_at(0x801bef20) = 0;
   gp_20_store_default();
   aux_tbl_store_a(0x801c43a8,0);
   aux_tbl_store_b(0x801c44e8,0);
@@ -2380,8 +2378,10 @@ int32_t memcard_info_query(void)
   if (t == NULL) return -1;
   r = mc_data_read(0,t[0],t[1],t[2],t[3],t[4],t[5],t[6],t[7],t[8],t[9],
                    0x801c11e0,0x414);
-  if (r >= 8) return 0;
-  if (r != 0) return 1;
+  /* Generated 0x8015F590-0x8015F63C: every r!=0 path returns v0=0
+   * (li v0,0 in the 0x8015F610 delay slot); only r==0 clears
+   * 0x801c15f0 and returns the config byte. */
+  if (r != 0) return 0;
   *(uint32_t *)guest_at(0x801c15f0) = 0;
   return *(uint8_t *)guest_at(*(uint32_t *)guest_at(0x1f8000c0) + 0x22);
 }
