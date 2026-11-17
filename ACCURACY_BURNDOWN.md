@@ -1132,3 +1132,17 @@ Last svc before wedge: B0:0x56 ra=0x80126260 (game main state machine).
   frame 21000+ (~3.6min game time). First time past the CD wedge AND the
   early crash. versus->fight nav agent assigned (port 4680).
 - OPEN: audit agent hunting more wrong-address typos (same bug class).
+
+=== N+37 — missing-zero scratchpad typo sweep (same bug class) ===
+Systematic grep for 7-hex-digit guest literals found a cluster of
+"dropped a 0" typos, all verified against generated/sibling usage:
+- save.c mc_slot_action + chan_blocks_reset callers: 0x1f800e8 ->
+  0x1f8000e8 (side-A channel block; side-B 0x1f8001f0 already correct)
+- menu.c text-prim/GPU/state blocks: 0x1f803xx -> 0x1f8003xx
+  (0x1f80384/8c/f0/7c). Sibling code already used 0x1f80038c/3a8 for the
+  same descriptor -> confirms base. print_mode_dispatch flag verified vs
+  generated br2eu_func_8012CE30 (lui 0x1F80; load +0x384).
+- menu.c announce/champion flag: 0x1f80dc -> 0x1f8000dc (mode_name_
+  announce 0x80163634: lui 0x1F80; load +0xDC).
+Commits: 8c4e960, 49b6e49, 029f21b. Audit agent continuing the
+valid-but-wrong kernel-address sweep (0x801f4a8 class).
