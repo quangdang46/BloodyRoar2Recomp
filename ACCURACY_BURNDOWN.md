@@ -1253,3 +1253,21 @@ cycle count = perfect repro for bisecting which save/restore path zeroes it.
 Suspect chain: VBlank IRQ fires inside vsync_wait_n's coroutine wait ->
 RestoreState resumes a TCB whose saved PC slot was never written (thread
 created but not yet Run, or slot offset wrong) -> jr to 0.
+
+=== N+107 — x28 stale-restore repro found post-round (battle_intro_flow 0xf0) ===
+After c3b444e (scriptop_ret) the attract fight now COMPLETES A ROUND and
+reaches battle_intro_flow state 0xf0 (post-round banner), then dies at
+game/menu.c:1969 `DAT_1f800010 = 0` — host EXC_BAD_ACCESS at
+0x801fff7800000001 (lldb, ports 4755/4757/4759).
+Register forensics: faulting insn `ldr x8,[x28]; strb wzr,[x8]` — x28 should
+be &g_DAT_1f800010 (0x11127f8d8) but holds 0x111270000 = g_irqctx_ring .bss
+base (ring written by interrupts.c:1762). x25 same stale value; x19/x20/x22/
+x23/x27 correct. lldb watchpoint on g_DAT_1f800010 fired ONLY at bind —
+global NOT corrupted; x28 itself restored STALE across setjmp/longjmp or
+fiber/IRQ context switch. SAME class as N+101/N+102 + dirty_ram_interp.c:2788
+noinline fix + crash_trace.c:134 note.
+NOTE: may share root cause with N+106 pc=0/RestoreState crash — both are
+context-unwind corruption (saved-PC slot AND callee-saved x19-x28). Prior-art
+stopgap exists: menu.c:2794 frame_divisor_get bypasses a cached bound ptr for
+the identical symptom; faithful fix = runtime register preservation across
+the interrupt boundary (interrupts.c/psx_fiber.c/traps.c).
