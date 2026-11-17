@@ -413,11 +413,19 @@ static void ani_fixup(uint8_t *ctrl, int variant, uint8_t *cat,
     for (i = 0; i < 7; i++)
         GS16(cat, 0x3c + i * 2) = 0;
 
-    /* variant tail: 1 -> 9 ; bit6 set -> variant ; else untouched.
-     * (guest's ==2/==3 compares are unreachable — only variant<2
-     * reaches them and neither 0 nor 1 equals 2 or 3.) */
-    if (variant == 1)            GS16(cat, 0x28) = 9;
-    else if (variant & 0x40)     GS16(cat, 0x28) = (int16_t)variant;
+    /* variant tail (generated 0x80181EA4-0x80181EE4):
+     *   ==1 or ==3 -> cat+0x28 = 9   (both split to 0x80181F10)
+     *   ==2        -> cat+0x28 = 8 ; cat+0x24 = tbl[5] + base (0x80181EF0)
+     *   &0x40      -> cat+0x28 = variant (0x80181EE0)
+     *   else       -> untouched (0x80181F18)                          */
+    if (variant == 1 || variant == 3) {
+        GS16(cat, 0x28) = 9;
+    } else if (variant == 2) {
+        GS16(cat, 0x28) = 8;
+        GSU32(cat, 0x24) = GU32(tbl, 0x14) + base;
+    } else if (variant & 0x40) {
+        GS16(cat, 0x28) = (int16_t)variant;
+    }
 }
 
 /* ------------------------------------------------------------------ */
