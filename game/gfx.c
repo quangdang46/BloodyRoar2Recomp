@@ -9,6 +9,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+#include "cpu_state.h"
 
 typedef uint8_t  undefined;
 typedef uint8_t  undefined1;
@@ -27,6 +28,13 @@ typedef int      int32_t_ghidra;
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
 extern uint32_t guest_sp(void);
+extern CPUState *clean_cpu_state(void);
+extern void setCopReg(int,int,uint32_t);
+extern int  getCopReg(int,int);
+extern void setCopControlWord(int,int,uint32_t);
+extern int  getCopControlWord(int,int);
+extern void copFunction(int,int);
+extern void gte_vec3_normalize(void);
 extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern uint32_t br2_ld32p(uint32_t cell);
 extern void     br2_st32p(uint32_t cell, uint32_t v);
@@ -2625,4 +2633,426 @@ uint32_t gpu_texclut_pkt(uint32_t *t0, uint32_t *a1, uint32_t a2, uint32_t a3)
   t0[3] = a1[0];
   t0[5] = a1[1];
   return a1[1];
+}
+
+/* =====================================================================
+ * GTE / libgpu leaf helpers (0x80194xxx-0x80195xxx cluster).
+ *
+ * These are the game's embedded GTE library wrappers: lwc2/swc2 vector
+ * loads/stores around raw COP2 commands, AVSZ/RTPS/OP/INTPL/SQR/DPCL/
+ * DPCT entry points, and the fixed-point reciprocal LUT helpers. All are
+ * pure computation (no IRQ, no blocking waits, no live guest sp) so they
+ * port faithfully. COP2 register moves go through the bind.c helpers
+ * (setCopReg/getCopReg/setCopControlWord/getCopControlWord/copFunction),
+ * which route to gte_write_data/gte_read_data/gte_write_ctrl/
+ * gte_read_ctrl/gte_execute — the same helpers the generated code uses
+ * for every architecturally-visible COP2 access.
+ * ===================================================================== */
+
+#define GTE_DREG(n) ((n) * 0x800)   /* COP2 data-reg field encoding (bind.c) */
+#define GTE_CREG(n) ((n) * 0x800)   /* COP2 ctrl-reg field encoding        */
+
+/* lwc2 gte[reg], off(gaddr): guest word load into a GTE data register.
+ * setCopReg routes through gte_write_data which is exactly what the
+ * generated emitter uses for every MTC2/LWC2 (helper or raw write). */
+static uint32_t gte_lwc2(uint32_t gaddr, int reg)
+{
+  uint32_t v = DB32(gaddr);
+  setCopReg(2, GTE_DREG(reg), v);
+  return v;
+}
+
+/* swc2 gte[reg], off(gaddr): GTE data register store to guest RAM.
+ * getCopReg routes through gte_read_data — same value the generated
+ * emitter produces for both raw and helper-classified registers. */
+static void gte_swc2(uint32_t gaddr, int reg)
+{
+  DB32(gaddr) = (uint32_t)getCopReg(2, GTE_DREG(reg));
+}
+
+/* ======== 0x80190228 ======== */
+/* Debug/profiler snapshot: stores gpr[4],gpr[5],gpr[2],gpr[3],gpr[12],
+ * gpr[13],gpr[15],gpr[24],gpr[25] into the 9-word block @0x801b6904 and
+ * returns 1. Needs the live CPUState for the non-arg registers.
+ * Disasm 0x80190228-0x8019025C. */
+uint32_t cpu_regs_snapshot(void)
+{
+  CPUState *c = clean_cpu_state();
+  uint32_t *d;
+  if (c == NULL) return 1;
+  d = (uint32_t *)guest_at(0x801b6904);
+  d[0] = c->gpr[4];   /* a0 */
+  d[1] = c->gpr[5];   /* a1 */
+  d[2] = c->gpr[2];   /* v0 */
+  d[3] = c->gpr[3];   /* v1 */
+  d[4] = c->gpr[12];  /* t4 */
+  d[5] = c->gpr[13];  /* t5 */
+  d[6] = c->gpr[15];  /* t7 */
+  d[7] = c->gpr[24];  /* t8 */
+  d[8] = c->gpr[25];  /* t9 */
+  return 1;
+}
+
+/* ======== 0x80191074 ======== */
+/* Single-byte flag read @0x801c8322 (adjacent to the 0x801c8324/26
+ * screen-dimension words used by gpu_coord_clamp_*). Disasm
+ * 0x80191074-0x80191080. */
+uint32_t gpu_flag_8322_read(void)
+{
+  return (uint32_t)*(uint8_t *)guest_at(0x801c8322);
+}
+
+/* ======== 0x80194000 ======== */
+/* Exchange the packet-word fields of *a0 / *a1:
+ *   *a1 = (*a1 & 0x00ffffff) | (*a0 & 0xff000000)
+ *   *a0 = (*a0 & 0xff000000) | (a1_guest & 0x00ffffff)
+ * The second store ORs the pointer-compressed form of a1 itself (the
+ * & 0xffffff tag convention used throughout the OT packet code), not
+ * *a1's payload — the guest ANDs the a1 argument register, verified
+ * against the generated body (and $a1,$a1,$t2 @0x80194028).
+ * Disasm 0x80194000-0x8019403C. */
+void gpu_pkt_merge24(uint32_t a0g, uint32_t a1g)
+{
+  uint32_t *a0 = (uint32_t *)guest_at(a0g);
+  uint32_t *a1 = (uint32_t *)guest_at(a1g);
+  uint32_t v1 = a1[0];
+  uint32_t v0;
+  a1[0] = (v1 & 0x00ffffffu) | (a0[0] & 0xff000000u);
+  v0 = a0[0];
+  a0[0] = (v0 & 0xff000000u) | (a1g & 0x00ffffffu);
+}
+
+/* ======== 0x80194040 ======== */
+/* *a0 |= 0x00ffffff — set the low 24 payload bits of a packet word.
+ * Disasm 0x80194040-0x80194058. */
+void gpu_pkt_low24_or(uint32_t a0g)
+{
+  uint32_t *a0 = (uint32_t *)guest_at(a0g);
+  a0[0] |= 0x00ffffffu;
+}
+
+/* ======== 0x80194100 ======== */
+/* Packet tag byte pair: p[3]=0x0c, p[7]=0x3c. Sits between the
+ * spr_prim_tag_a/b helpers (0x801940c0/0x80194160). Disasm
+ * 0x80194100-0x80194114. */
+void gpu_pkt_tag_0c3c(uint32_t a0g)
+{
+  uint8_t *p = (uint8_t *)guest_at(a0g);
+  p[3] = 0x0c;
+  p[7] = 0x3c;
+}
+
+/* ======== 0x801948c0 ======== */
+/* Fixed-point reciprocal via the 0x801B8480 LUT — sibling of
+ * ani.c's fixed_rsqrt_q12 (0x80194500) but with a 0x13 (not 0x1F)
+ * exponent bias and a signed result: returns table_val << e for e>=0,
+ * table_val >> -e for e<0 (the 0x80194940 negative-exponent tail is
+ * inlined here; LZCR==32 returns 0 via the 0x8019494C tail).
+ * a0 is the LZCS source AND the value being normalized-shifted
+ * (sllv/srav $t4,$a0,$t3) — faithful to the guest.
+ * Disasm 0x801948c0-0x8019495C. */
+uint32_t fixed_recip_lut(uint32_t a0)
+{
+  uint32_t lz, sh, m, idx, v;
+  int32_t d;
+
+  setCopReg(2, GTE_DREG(30), a0);          /* LZCS: latch source */
+  lz = (uint32_t)getCopReg(2, GTE_DREG(31));
+  if (lz == 32) return 0;
+  lz &= 0xFFFFFFFEu;
+  sh = (uint32_t)(((int32_t)(0x13u - lz)) >> 1);   /* sra, bias 0x13 */
+
+  /* Mantissa extract (sllv/srav $t4,$a0,$t3): m = a0 << (lz-24) when
+   * lz-24 >= 0, else m = a0 >> (24-lz) arithmetic — the VALUE a0 is
+   * shifted by the exponent delta, same shape as ani.c's
+   * fixed_rsqrt_q12. */
+  d = (int32_t)lz - 24;
+  if (d < 0) {
+    m = (uint32_t)((int32_t)a0 >> ((24 - (int32_t)lz) & 31));  /* srav */
+  } else {
+    m = a0 << (d & 31);                                      /* sllv */
+  }
+  idx = (m - 64u) << 1;
+  v = (uint32_t)*(const int16_t *)guest_at(0x801B8480u + idx);
+
+  if ((int32_t)sh < 0) {
+    uint32_t e = (uint32_t)(-(int32_t)sh);
+    return v >> (e & 31);                  /* srlv — logical */
+  }
+  return v << (sh & 31);                   /* sllv */
+}
+
+/* ======== 0x80195290 ======== */
+/* GTE control offset pair: ctrl[24] = a0 << 16, ctrl[25] = a1 << 16
+ * (CTC2 writes; the <<16 happens in GPRs first). Disasm
+ * 0x80195290-0x801952A8. */
+void gte_ofs_set(int32_t a0, int32_t a1)
+{
+  setCopControlWord(2, GTE_CREG(24), (uint32_t)(a0 << 16));
+  setCopControlWord(2, GTE_CREG(25), (uint32_t)(a1 << 16));
+}
+
+/* ======== 0x801952c0 ======== */
+/* MVMVA vec3 wrapper: lwc2 gte[9..11] = in[0..2], GTE cmd 0x4DA412
+ * (MVMVA), swc2 gte[9..11] -> out[0..2]. in/out are guest addresses.
+ * Disasm 0x801952c0-0x801952E4. */
+void gte_mvmva_vec3(uint32_t in, uint32_t out)
+{
+  gte_lwc2(in + 0, 9);
+  gte_lwc2(in + 4, 10);
+  gte_lwc2(in + 8, 11);
+  copFunction(2, 0x4DA412);
+  gte_swc2(out + 0, 9);
+  gte_swc2(out + 4, 10);
+  gte_swc2(out + 8, 11);
+}
+
+/* ======== 0x801952e8 ======== */
+/* DPCL wrapper: lwc2 gte[9..11] = vec[0..2], lwc2 gte[6] = *scl_addr,
+ * gte[8] = a2 (IR0), GTE cmd 0x680029 (DPCL), swc2 gte[22] -> *out.
+ * Disasm 0x801952e8-0x8019530C. */
+void gte_dpcl_vec3(uint32_t vec, uint32_t scl_addr, uint32_t ir0,
+                   uint32_t out)
+{
+  gte_lwc2(vec + 0, 9);
+  gte_lwc2(vec + 4, 10);
+  gte_lwc2(vec + 8, 11);
+  gte_lwc2(scl_addr + 0, 6);
+  setCopReg(2, GTE_DREG(8), ir0);
+  copFunction(2, 0x680029);
+  gte_swc2(out + 0, 22);
+}
+
+/* ======== 0x80195310 ======== */
+/* DPCT wrapper with three output pointers passed on the stack:
+ *   lwc2 gte[20] = *a0, gte[21] = *a1, gte[22] = *a2, gte[6] = *a3,
+ *   gte[8] = a3 (IR0), GTE cmd 0x0F8002A (DPCT),
+ *   swc2 gte[20..22] -> *stk0,*stk1,*stk2 (sp+16/20/24 args).
+ * Disasm 0x80195310-0x8019534C. */
+void gte_dpct_vec3(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3,
+                   uint32_t o0, uint32_t o1, uint32_t o2)
+{
+  gte_lwc2(a0 + 0, 20);
+  gte_lwc2(a1 + 0, 21);
+  gte_lwc2(a2 + 0, 22);
+  gte_lwc2(a3 + 0, 6);
+  setCopReg(2, GTE_DREG(8), a3);
+  copFunction(2, 0x0F8002A);
+  gte_swc2(o0 + 0, 20);
+  gte_swc2(o1 + 0, 21);
+  gte_swc2(o2 + 0, 22);
+}
+
+/* ======== 0x8019534c ======== */
+/* INTPL wrapper: lwc2 gte[9..11] = vec[0..2], gte[8] = ir0,
+ * GTE cmd 0x0980011 (INTPL), swc2 gte[22] -> *out.
+ * Disasm 0x8019534C-0x80195370. */
+void gte_intpl_vec3(uint32_t vec, uint32_t ir0, uint32_t out)
+{
+  gte_lwc2(vec + 0, 9);
+  gte_lwc2(vec + 4, 10);
+  gte_lwc2(vec + 8, 11);
+  setCopReg(2, GTE_DREG(8), ir0);
+  copFunction(2, 0x0980011);
+  gte_swc2(out + 0, 22);
+}
+
+/* ======== 0x80195370 ======== */
+/* SQR wrapper (cmd 0x0A80428 — V-reg fields differ from the
+ * already-ported 0x80195398/0x80194xxx siblings): lwc2 gte[9..11] =
+ * in[0..2], SQR, swc2 gte[25..27] (MAC1..3) -> out[0..2].
+ * Returns out (guest addr) in v0 — `addu v0,a1,zr` in the delay slot.
+ * Disasm 0x80195370-0x80195398. */
+uint32_t gte_sqr_vec3_b(uint32_t in, uint32_t out)
+{
+  gte_lwc2(in + 0, 9);
+  gte_lwc2(in + 4, 10);
+  gte_lwc2(in + 8, 11);
+  copFunction(2, 0x0A80428);
+  gte_swc2(out + 0, 25);
+  gte_swc2(out + 4, 26);
+  gte_swc2(out + 8, 27);
+  return out;
+}
+
+/* ======== 0x801953c0 ======== */
+/* AVSZ3 wrapper: gte[17..19] = a0..a2, GTE cmd 0x158002D (AVSZ3),
+ * returns gte[7] (the single accumulator read-back).
+ * Disasm 0x801953C0-0x801953E0. */
+uint32_t gte_avsz3_wrap(uint32_t a0, uint32_t a1, uint32_t a2)
+{
+  setCopReg(2, GTE_DREG(17), a0);
+  setCopReg(2, GTE_DREG(18), a1);
+  setCopReg(2, GTE_DREG(19), a2);
+  copFunction(2, 0x158002D);
+  return (uint32_t)getCopReg(2, GTE_DREG(7));
+}
+
+/* ======== 0x801953e0 ======== */
+/* AVSZ4 wrapper: gte[16..19] = a0..a3, GTE cmd 0x168002E (AVSZ4),
+ * returns gte[7]. Disasm 0x801953E0-0x80195404. */
+uint32_t gte_avsz4_wrap(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
+{
+  setCopReg(2, GTE_DREG(16), a0);
+  setCopReg(2, GTE_DREG(17), a1);
+  setCopReg(2, GTE_DREG(18), a2);
+  setCopReg(2, GTE_DREG(19), a3);
+  copFunction(2, 0x168002E);
+  return (uint32_t)getCopReg(2, GTE_DREG(7));
+}
+
+/* ======== 0x80195404 ======== */
+/* OP-with-matrix wrapper (variant A, cmd 0x178000C): saves ctrl[0,2,4],
+ * loads them from mtx[0..2], lwc2 gte[9..11] = vec[8],vec[0],vec[4]
+ * (note the +8/+0/+4 order), OP, swc2 MAC1..3 -> out[0..2], restores
+ * ctrl[0,2,4]. Disasm 0x80195404-0x8019545C. */
+void gte_op_vec3_a(uint32_t mtx, uint32_t vec, uint32_t out)
+{
+  int32_t c0 = getCopControlWord(2, GTE_CREG(0));
+  int32_t c2 = getCopControlWord(2, GTE_CREG(2));
+  int32_t c4 = getCopControlWord(2, GTE_CREG(4));
+  setCopControlWord(2, GTE_CREG(0), DB32(mtx + 0));
+  setCopControlWord(2, GTE_CREG(2), DB32(mtx + 4));
+  setCopControlWord(2, GTE_CREG(4), DB32(mtx + 8));
+  gte_lwc2(vec + 8, 11);
+  gte_lwc2(vec + 0, 9);
+  gte_lwc2(vec + 4, 10);
+  copFunction(2, 0x178000C);
+  gte_swc2(out + 0, 25);
+  gte_swc2(out + 4, 26);
+  gte_swc2(out + 8, 27);
+  setCopControlWord(2, GTE_CREG(0), (uint32_t)c0);
+  setCopControlWord(2, GTE_CREG(2), (uint32_t)c2);
+  setCopControlWord(2, GTE_CREG(4), (uint32_t)c4);
+}
+
+/* ======== 0x8019545c ======== */
+/* OP-with-matrix wrapper (variant B, cmd 0x170000C — different OP
+ * operand fields than variant A). Identical ctrl save/set and
+ * vec load order. Disasm 0x8019545C-0x801954B4. */
+void gte_op_vec3_b(uint32_t mtx, uint32_t vec, uint32_t out)
+{
+  int32_t c0 = getCopControlWord(2, GTE_CREG(0));
+  int32_t c2 = getCopControlWord(2, GTE_CREG(2));
+  int32_t c4 = getCopControlWord(2, GTE_CREG(4));
+  setCopControlWord(2, GTE_CREG(0), DB32(mtx + 0));
+  setCopControlWord(2, GTE_CREG(2), DB32(mtx + 4));
+  setCopControlWord(2, GTE_CREG(4), DB32(mtx + 8));
+  gte_lwc2(vec + 8, 11);
+  gte_lwc2(vec + 0, 9);
+  gte_lwc2(vec + 4, 10);
+  copFunction(2, 0x170000C);
+  gte_swc2(out + 0, 25);
+  gte_swc2(out + 4, 26);
+  gte_swc2(out + 8, 27);
+  setCopControlWord(2, GTE_CREG(0), (uint32_t)c0);
+  setCopControlWord(2, GTE_CREG(2), (uint32_t)c2);
+  setCopControlWord(2, GTE_CREG(4), (uint32_t)c4);
+}
+
+/* ======== 0x801954d0 ======== */
+/* RTPS wrapper (the classic sceGteRTPS shape): lwc2 gte[0..1] =
+ * in[0..1], GTE cmd 0x0180001 (RTPS), swc2 gte[14] -> *out_sxy,
+ * gte[8] (sign-extended read) -> *out_mac, ctrl[31] -> *out_flag,
+ * returns gte[19] >> 2 (arithmetic). in/out_* are guest addresses.
+ * Disasm 0x801954D0-0x80195500. */
+uint32_t gte_rtps_vec3(uint32_t in, uint32_t out_sxy, uint32_t out_mac,
+                       uint32_t out_flag)
+{
+  gte_lwc2(in + 0, 0);
+  gte_lwc2(in + 4, 1);
+  copFunction(2, 0x0180001);
+  gte_swc2(out_sxy + 0, 14);
+  gte_swc2(out_mac + 0, 8);
+  DB32(out_flag + 0) = (uint32_t)getCopControlWord(2, GTE_CREG(31));
+  return (uint32_t)((int32_t)getCopReg(2, GTE_DREG(19)) >> 2);
+}
+
+/* ======== 0x80194750 ======== */
+/* Three-vector transform+normalize: a0 = 6 x s16 {t,r?}, a1 = 9 x s16 out.
+ * Saves ctrl[0,2,4]; loads ctrl[0,2,4]=a0[0..2] (s16), gte[9..11]=
+ * a0[3..5]; OP(0x178000C) -> MAC1 saved; ctrl[0,2,4]=a0[3..5];
+ * gte[0..2]=a0[3..5]; OP -> MAC2->t0..2; OP again -> MAC3->t0..2;
+ * restore ctrl; then three vec3_normalize passes (the shared
+ * 0x80194690 core in ani.c) writing normalized s16 triples to
+ * out[0..2], out[3..5], out[6..8] (last from the saved MAC1).
+ * Verified against generated br2eu_func_80194750. */
+void gte_xform_norm3pts(uint32_t a0g, uint32_t a1g)
+{
+  const int16_t *in = (const int16_t *)guest_at(a0g);
+  int16_t *out = (int16_t *)guest_at(a1g);
+  CPUState *c = clean_cpu_state();
+  int32_t c0, c2, c4;
+  uint32_t m0, m1, m2;
+  int i;
+
+  if (c == NULL) return;
+
+  c0 = getCopControlWord(2, GTE_CREG(0));
+  c2 = getCopControlWord(2, GTE_CREG(2));
+  c4 = getCopControlWord(2, GTE_CREG(4));
+
+  /* pass 1: ctrl = in[0..2], IR-vector = in[3..5] */
+  setCopControlWord(2, GTE_CREG(0), (uint32_t)in[0]);
+  setCopControlWord(2, GTE_CREG(2), (uint32_t)in[1]);
+  setCopControlWord(2, GTE_CREG(4), (uint32_t)in[2]);
+  setCopReg(2, GTE_DREG(9),  (uint32_t)in[3]);
+  setCopReg(2, GTE_DREG(10), (uint32_t)in[4]);
+  setCopReg(2, GTE_DREG(11), (uint32_t)in[5]);
+  copFunction(2, 0x178000C);
+  m0 = (uint32_t)getCopReg(2, GTE_DREG(25));
+  m1 = (uint32_t)getCopReg(2, GTE_DREG(26));
+  m2 = (uint32_t)getCopReg(2, GTE_DREG(27));
+
+  /* pass 2: ctrl = in[3..5], OP again; MAC -> t0..t2; then
+   * gte[0..2] = in[3..5] (IR0..2 for the later normalize read-back). */
+  setCopControlWord(2, GTE_CREG(0), (uint32_t)in[3]);
+  setCopControlWord(2, GTE_CREG(2), (uint32_t)in[4]);
+  setCopControlWord(2, GTE_CREG(4), (uint32_t)in[5]);
+  copFunction(2, 0x178000C);
+  setCopReg(2, GTE_DREG(0), (uint32_t)in[3]);
+  setCopReg(2, GTE_DREG(1), (uint32_t)in[4]);
+  setCopReg(2, GTE_DREG(2), (uint32_t)in[5]);
+
+  setCopControlWord(2, GTE_CREG(0), (uint32_t)c0);
+  setCopControlWord(2, GTE_CREG(2), (uint32_t)c2);
+  setCopControlWord(2, GTE_CREG(4), (uint32_t)c4);
+
+  /* normalize OP#2 MAC -> out[0..2] */
+  c->gpr[8]  = (uint32_t)getCopReg(2, GTE_DREG(25));
+  c->gpr[9]  = (uint32_t)getCopReg(2, GTE_DREG(26));
+  c->gpr[10] = (uint32_t)getCopReg(2, GTE_DREG(27));
+  gte_vec3_normalize();
+  for (i = 0; i < 3; i++) out[i] = (int16_t)c->gpr[8 + i];
+
+  /* normalize gte[0..2] (IR written above) -> out[3..5] */
+  c->gpr[8]  = (uint32_t)getCopReg(2, GTE_DREG(0));
+  c->gpr[9]  = (uint32_t)getCopReg(2, GTE_DREG(1));
+  c->gpr[10] = (uint32_t)getCopReg(2, GTE_DREG(2));
+  gte_vec3_normalize();
+  for (i = 0; i < 3; i++) out[3 + i] = (int16_t)c->gpr[8 + i];
+
+  /* normalize saved MAC1 -> out[6..8] */
+  c->gpr[8]  = m0;
+  c->gpr[9]  = m1;
+  c->gpr[10] = m2;
+  gte_vec3_normalize();
+  for (i = 0; i < 3; i++) out[6 + i] = (int16_t)c->gpr[8 + i];
+}
+
+/* ======== 0x80194478 / 0x80195710 ======== */
+/* Init-time helpers that issue BIOS calls (0x80195710 jalr's the 0xB0
+ * syscall vector) and mutate GTE control state — faithful clean ports
+ * would need live guest-sp/IRQ-expressible call sequences, so both
+ * delegate to the generated bodies per the delegation rule.
+ * 0x80194478: saves ra @0x801c8470, jal 0x80195710, then CTC2-writes
+ * GTE ctrl regs (0x155/0x100/0x3E8/0xEF9E/0x1400000 family).
+ * 0x80195710: BIOS B0:0x56 call + pointer-table patch + two jals. */
+uint32_t gte_screen_init_defer(void)
+{
+  return br2_call_generated(0x80194478u, 0, 0, 0, 0);
+}
+void gpu_state_patch_defer(void)
+{
+  br2_call_generated(0x80195710u, 0, 0, 0, 0);
 }
