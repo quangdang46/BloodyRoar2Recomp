@@ -1865,11 +1865,6 @@ void battle_intro_flow(int param_1)
   char cVar6;
   int unaff_s3;
   undefined4 unaff_s6;
-  static int s_last_sub = -1;
-  if ((int)DAT_1f800001 != s_last_sub) {
-    s_last_sub = (int)DAT_1f800001;
-    fprintf(stderr,"[BIF] sub=%d gs=%d\n",s_last_sub,(int)g_game_state); fflush(stderr);
-  }
   bVar1 = false;
   iVar4 = memcard_err_sentinel();
   uVar2 = DAT_1f80009b;
@@ -1953,7 +1948,6 @@ LAB_8016767c:
           _DAT_1f800090 = 0;
         }
         iVar4 = menu_res_load_sm(0x1f800000,&DAT_1f8000e8,&DAT_1f8001f0,0);
-        fprintf(stderr,"[BIF] res_load iVar4=%d f090=0x%x\n",iVar4,(unsigned)_DAT_1f800090); fflush(stderr);
         if ((iVar4 != 0) && (_DAT_1f800090 == 0)) {
           if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
             confirm_code_select(0x1f800000);
@@ -4579,7 +4573,6 @@ void battle_struct_init(uint32_t param_1, uint32_t param_2)
     0x42,0x44,0x46,0x4a,0x4c,0x4e,0x52,0x54,0x56,0x5a,0x5c,0x5e,0x60,
     0x64,0x66,0x68,0x6c,0x7e };
   unsigned i;
-  fprintf(stderr,"[BSI] battle_struct_init p1=0x%08x p2=0x%08x\n",param_1,param_2); fflush(stderr);
   for (i = 0; i < sizeof(zfld)/sizeof(zfld[0]); i++)
     *(uint16_t *)guest_at(param_1 + zfld[i]) = 0;
   *(uint32_t *)guest_at(param_2 + 0x5c) = 0;
@@ -6607,17 +6600,6 @@ int32_t post_battle_dispatch(uint8_t *param_1,uint8_t *param_2,uint32_t param_3)
   g_pbd_calls++;
   g_pbd_phase = MB8(s1 + 0x92);
   g_pbd_ctr   = (uint16_t)MBS16(s1 + 0x8c);
-  {
-    static int s_pbd_log = 0;
-    if (s_pbd_log < 6) {
-      s_pbd_log++;
-      fprintf(stderr,"[PBD] p1=%p p2=%p p3=%u s1bc=%x g2bc=%x f0bc=%x\n",
-              (void*)param_1,(void*)param_2,param_3,
-              (unsigned)MB32(s1+0xbc),(unsigned)MB32(g2+0xbc),
-              (unsigned)*(uint32_t*)guest_at(0x1f8000bc));
-      fflush(stderr);
-    }
-  }
 
   /* ---- preamble ---- */
   if ((int32_t)MB32(MB32(g2 + 0x20) + 0x38) > 0 ||
@@ -12092,12 +12074,6 @@ void stage_char_data_load(uint32_t param_1,uint32_t param_2)
   uint32_t K = param_2 * 23140u;
   { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
     decomp_trace_record(46,param_1,param_2,K,0); }
-  { static int s_scdl=0; if(s_scdl<8){s_scdl++;
-    fprintf(stderr,"[SCDL] p1=%x p2=%x K=%x src0=%08x src4=%08x s0cc=%x\n",
-      param_1,param_2,K,
-      (unsigned)*(uint32_t*)guest_at(0x80200000u+K),
-      (unsigned)*(uint32_t*)guest_at(0x80200004u+K),
-      (unsigned)MB32(param_1+0xcc)); fflush(stderr);} }
   uint32_t s0 = MB32(s1 + 0xcc);
   uint32_t r;
   blk_copy(0x801c15f8u, 0x80200000u + K, 0x2da8u);

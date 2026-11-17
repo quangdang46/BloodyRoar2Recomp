@@ -2418,7 +2418,6 @@ extern uint32_t guest_of(const void *);
 extern void record_copy_1a(int);
 void fighter_spawn_tail(uint8_t *s1,uint32_t s0)
 {
-  fprintf(stderr,"[FST] fighter_spawn_tail s1=%p s0=0x%x\n",(void*)s1,s0); fflush(stderr);
   flow_cfg_init(0);
   rec_timer_pair_clear((intptr_t)guest_of(s1));
   fighter_link_init(0x1f8000e8,0x1f8001f0,(uint8_t *)s1,*(uint32_t *)(s1 + 0xc0));
@@ -3694,7 +3693,6 @@ void battle_round_init(uint32_t a0,uint32_t a1)
   uint32_t w;
 
   w = *(uint32_t *)(s0 + 0xbc);
-  fprintf(stderr,"[BRI] battle_round_init a0=0x%x a1=0x%x bc=0x%x\n",a0,a1,w); fflush(stderr);
   s0[0x9d] = 0;
   s0[0x9e] = 0;
   s0[0x99] = 0;
