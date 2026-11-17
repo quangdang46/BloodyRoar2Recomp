@@ -1537,3 +1537,21 @@ Mode-2/XA fine (last_sector lba=6413 @ frame 3767) then NEXT file's
 command never reaches device — deferred command-issue / register-window
 doorbell in cd_seek_param_issue->cd_reg_window_op->worker.
 EVERYTHING downstream (attract fight data, versus, input) gated here.
+
+=== N+120 — CD stall = lost second Pause completion (IRQ accounting race) ===
+c087ee4e disproved the doorbell theory: CD device healthy/idle; last cmd
+seq478 Pause(0x09) @frame 3772 executed+acked device-side. Pattern: each
+file = Setloc+ReadN streamed, ended by IRQ-context Pause, then next
+file's Setloc 2-5 frames later. After seq477's IRQ-Pause @3767 the
+loader issued ANOTHER Pause (seq478, the per-file "ensure stopped"
+prologue cd_cmd_issue_sync(0x09)) @3772 — TWO Pause completions in close
+succession. Only ONE completion IRQ appears consumed; the main-context
+waiter for seq478 parked in TestEvent(0xF1000008) forever -> file-load
+SM never advances to Setloc. cd_seek_state_machine (cd.c:3531) spins
+1.68M TestEvents; no CD worker/seek/job fn ever runs again.
+HYPOTHESIS: completion-accounting race in runtime CD IRQ presentation —
+second CDIRQ_COMPLETE masked because irq_flag still set during first
+processing, or response channel drains only one queued response per IRQ.
+NEXT: verify double-completion IRQ accounting in runtime CD model
+(set_irq/present_cdrom_irq re-arm after ack); faithful fix = second
+completion must re-present, not game-side fake.
