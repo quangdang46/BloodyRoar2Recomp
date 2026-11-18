@@ -1947,3 +1947,21 @@ something reordered the chain or enabled VBLANK auto-ack. NOT a wedged
 SIO device, NOT wrong BIOS, NOT attract. Faithful fix target:
 interrupts.c IREG/IMASK/auto-ack semantics or recompiler COP0/exception
 path — NOT sio.c, NOT a shim.
+
+=== N+150 — pad death REFRAMED: downstream symptom of CD seek/event stall ===
+8ee50218 DISPROVED the IntRP-starvation hypothesis: interrupt chain is
+healthy (game's own cd_subchan_table_install record @0x801FEB40 fires,
+cd_intc_dispatch/cd_cb8_dispatch run every IRQ, vsync_wait_n advances).
+REAL stall: game wedged in cd_seek_complete_poll (0x8019d500, delegated)
+-> testEvent(0xF1000008) spins 2.18M times always v0=0; cdrom_state
+pending={cmd:0x09 Pause} stuck, irq_flag=0x03; cd_seek_trace shows 16
+identical seeks to LBA 208829 never reaching drive; commands stopped
+~frame 30665 in a 0x09/0x0E/0x02/0x06 file-load retry loop. Mechanism:
+Pause(0x09) pending completion blocked (irq_flag!=0) and/or INT2
+cancelled by next exec_command before pause_complete_delay elapses ->
+completion event never delivered -> game never exits CD poll -> never
+reaches frame_tick->pad/SIO polling -> tx_writes frozen @15556, mc_*
+frozen @114. This is the AGENTS.md §8 deferred-command-issue /
+register-window doorbell blocker surfacing as the "pad bug". Faithful
+fix belongs in runtime/src/cdrom.c timing/cancellation semantics vs
+Beetle oracle — NOT interrupts.c.
