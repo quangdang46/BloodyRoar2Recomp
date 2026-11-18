@@ -413,17 +413,25 @@ uint32_t call_guest4(uint32_t fn, uint32_t a0, uint32_t a1,
                      uint32_t a2, uint32_t a3)
 {
     CPUState *cpu = g_clean_cpu;
-    uint32_t r0, r1, r2, r3, ra, pc, v0;
+    uint32_t r0, r1, r2, r3, r8, ra, pc, v0;
     if (!cpu || fn == 0) return 0;
     r0 = cpu->gpr[4]; r1 = cpu->gpr[5];
     r2 = cpu->gpr[6]; r3 = cpu->gpr[7];
+    /* Guest `jalr` sites that reach here load the target into $t0 first
+     * (prim_task_run's `lw $t0,0xC($s2); jalr $ra,$t0`), so the callee
+     * observes $t0 == fn. Reproduce that: some emit entries are mid-function
+     * PCs (e.g. 0x8018A514 inside prim_task_run) whose first insn is
+     * `sw $s6,0x3E0($t0)` — a stale $t0 turns that into an AdES. */
+    r8 = cpu->gpr[8];
     ra = cpu->gpr[31]; pc = cpu->pc; v0 = cpu->gpr[2];
     cpu->gpr[4] = a0; cpu->gpr[5] = a1;
     cpu->gpr[6] = a2; cpu->gpr[7] = a3;
+    cpu->gpr[8] = fn;
     if (clean_try_dispatch(cpu, fn)) {
         uint32_t r = cpu->gpr[2];
         cpu->gpr[4] = r0; cpu->gpr[5] = r1;
         cpu->gpr[6] = r2; cpu->gpr[7] = r3;
+        cpu->gpr[8] = r8;
         cpu->gpr[31] = ra; cpu->pc = pc; cpu->gpr[2] = v0;
         return r;
     }
@@ -442,6 +450,7 @@ uint32_t call_guest4(uint32_t fn, uint32_t a0, uint32_t a1,
         uint32_t r = cpu->gpr[2];
         cpu->gpr[4] = r0; cpu->gpr[5] = r1;
         cpu->gpr[6] = r2; cpu->gpr[7] = r3;
+        cpu->gpr[8] = r8;
         cpu->gpr[31] = ra; cpu->pc = pc; cpu->gpr[2] = v0;
         return r;
     }
