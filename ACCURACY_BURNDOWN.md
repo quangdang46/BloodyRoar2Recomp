@@ -1655,3 +1655,20 @@ preservation across exception_jmpbuf — retires ENTIRE class (x28
 crashes + strb-w28 + memcmp). N+109 direction, still unfinished.
 OTHER DAT_1f800001 const-write sites (menu.c 1002/1148/1399/1736/1828,
 game.c 1458/1468/1524/1529) same latent hazard.
+
+=== N+127 — CLASS-LEVEL FIX: callee-saved preservation + ret_zero_d ===
+cbe71b39 landed fbc8d52, verified frame ~153,875:
+1. interrupts.c psx_check_interrupts wrapper snapshots ALL host
+   callee-saved regs (arm64 x19-x30 / x86-64 rbx,rbp,r12-r15) across the
+   setjmp/longjmp exception boundary, restores on return; fast-path
+   gate when no IRQ pending. RETIRES the entire stale-x28 class
+   (N+107/N+109/N+126): strb-w28 phase writes, wild file-static bases,
+   memcmp crashes. Composes with s_exc_jmpbuf_live token.
+2. save.c ret_zero_d: 3 semantic bugs vs generated 0x8016DADC (sel==t9
+   not sel==1; field-src a0+8+t9*8; centre cnt_b>>(t9&31) not cnt_b>>1)
+   — ~28,935 bogus records trashed RAM. PLUS br2_ldN/br2_stN conversion:
+   cached guest_at() host ptrs overflowed 2MB arena into .bss at
+   heap-A 0x801Cxxxx (frame-7869 wild memcmp root).
+NEXT: continue runtime verification — does attract now loop and
+versus->fight navigate? CD stall may also be resolved (it was gated
+behind corrupted state).
