@@ -1981,3 +1981,23 @@ via tool. Verified: tx_writes 15556->climbing, pad buffers update,
 CROSS/START reach guest. NOTE: separate CD seek/event stall (N+150)
 still under investigation by 9b4abe25 — may be the attract background
 load or a real cdrom.c bug.
+
+=== N+152 — CD "stall" disproven; real gate = DeliverEvent starvation ===
+9b4abe25: LBA-208829 seek EXECUTES+completes clean (Setloc 46:26:29 @
+frame 30477, mode-0xE0 + cmd 0x1B streaming); pending/irq lifecycle
+correct; testEvent spin RESOLVED (was slow not wedged). N+150's "CD
+stall" was the pad-death symptom + a transient. REAL blocker confirmed:
+run died frame 50831 starvation_watchdog + 0xFFE7 misaligned dispatch.
+Guest pinned at 0x8019A60C inside vsync_wait_n waiting on
+DAT_801BDDE0 (CD-coroutine seq counter advanced only via CD IRQ ->
+cd_intc_dispatch -> cd_cb8_dispatch). Documented chain (N+18/19,
+N+55-66): CDROM IRQs fire but file-complete DeliverEvent(0xF0000009,
+0x20) — sole source cd_dma_chan_reset @0x8019b7e8 via DMA-done
+dispatch — never arrives. cd_intc_dispatch runs ~1/frame but cb7_run
+(0x8019AF7C, tbl[3] for i_stat bit3=DMA) + 0x8019B7E0 get ZERO hits
+during active ch2/ch3/ch6 DMA. Open Q: deferred HookEntryInt coroutine
+doesn't resume on DMA IRQs, OR i_stat bit3 acked before coroutine
+samples it. Ordering fix belongs in interrupts.c deferred-resume /
+game INTC handler path. ALSO confirmed live: pad fix works — fresh
+build tx_writes climbing, pad_buttons=0xFFF7 read at title, but fps
+collapsed to ~0.5 (DeliverEvent starvation) so title won't advance.
