@@ -1623,3 +1623,21 @@ same CD/sound pipeline gated behind the event. All game threads ASLEEP
 callback slots 0x801BC848/4c=0 likely legit (no read session).
 NEXT: wtrace writes to 0x801BDF00/04/08 before frame 3772 on fresh run
 -> identify producer fn + its gate; compare vs Beetle oracle at ~3772.
+
+=== N+125 — REFRAME: game spins render loop, logic frozen at ph=0x21 ===
+91adcac3: NOT kernel deadlock — per-frame render loop alive (ch2 GPU +
+ch6 OTC DMA every frame) while ALL game-logic state frozen. Scratch:
+gs=5, DAT_1f800001=0x21(33), 0x801f80008e=199. battle_intro_flow
+(menu.c:1846) + match_loop (game.c:1434) both fall through on unhandled
+phase 0x21 -> frame_tick forever. cd_reg_window_op descriptor writes
+(0x801BDF00/04/08) all inside generated 0x8019B954 tail of cd_reg_
+window_op, called 3x/stream-chunk by func_0x801565EC (sound/stream
+driver CD->SPU poster, NOT file loader); last activity frame 3704.
+chan_reset ran frame 3705 delivering the event ONCE; no DeliverEvent
+since. decomp_trace: last loads file_id 0x2D/0x28/0x2C then silence.
+UNRESOLVED: who wrote 0x21 to DAT_1f800001 (no clean-C site; ~261
+candidate write_byte(+1) sites in generated, vm.c/demo territory);
+whether Pause@3772 completion should yield a 0xF0000003 DeliverEvent
+the script VM consumes (cls3 CD events from 0x80195B4C/B74/B9C).
+NEXT: gwatch 0x1F800001 early (~frame 3500) for the 0x21 writer; probe
+cls3 CD done->event chain in runtime cdrom.c/interrupts.c.
