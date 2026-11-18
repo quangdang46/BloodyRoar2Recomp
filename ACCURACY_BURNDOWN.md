@@ -1825,3 +1825,15 @@ battle_intro_flow (menu.c:1847) through state-dispatch trampoline.
 replay args, same family as nm/arg-order bugs. NEXT: fntrace_arm
 0x801876BC before frame 22000 to capture a0-a3; audit heap_serialize
 ctx-pointer relocation guard (menu.c:14258) for missed encoding.
+
+=== N+139 — emit-fn a1=0 kernel-RAM corruption FIXED (battle.c prim_list_gte_invoke) ===
+6a6dc3a7: bad a1 was NOT heap_serialize — prim_list_gte_invoke used
+task_invoke->call_guest(fn,arg,0) hardcoding a1=0/a2a3 stale. Generated
+0x801871BC jalr's full a0-a3 (a0=rec[2],a1=param_2+lh(param_1+0xE),
+a2=param_3,a3=rec[1]). call_guest4 fix verified: a1=real OT-base addrs.
+NEW crash @frame 11068: DISPATCH FATAL misaligned target 0x0000FFE7 —
+CPU in kernel/low-mem code jumped to misaligned addr; 0xFFE7 values in
+RAM @0x80049xxx-0x8004Dxxx (OT/heap data). Possibly masked before or
+nondeterministic. NEXT: fntrace/pc_probe kernel low-RAM range +
+0x801264E8 dispatcher family; determine if 0xFFE7 is corrupted OT
+entry / saved-context field / jump-table value.
