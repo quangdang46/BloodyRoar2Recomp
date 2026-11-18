@@ -10382,3 +10382,22 @@ N+102 — x28 bug narrowed to a frame_tick CALLEE (4 agents, still unfixed):
   link (handler 0x8019B7E0 / cd_dma_chan_reset 0x8019b7e8, EvCB
   0xF1000008). NOTE: pc=0 samples with advancing BIOS calls = normal
   idle park under HLE scheduler, not a crash.
+
+- **session (game bring-up — all crash gates cleared):** Massive
+  faithful-fix campaign took the game from frame-1899 crashes to
+  frame-30000+ clean. Root causes fixed: exception_jmpbuf liveness
+  (3fd28d2), prim_group_build host-ptr (ee5c6d1), dirty-RAM MOVZ/MOVN
+  (d963244), call_guest4 arg poisoning + $t0 (822088f/9f74a65),
+  ret_zero_d loop semantics (fbc8d52), callee-saved preservation
+  (interrupts.c), bail-unwind guard sweep all clean-C poll loops
+  (ced22d6+a639dbc), heap_serialize nm constants + tag mask
+  (ee57989/dcebda1), prim_list_gte_invoke a1=0 kernel corruption
+  (afd29f0), stepper cb guest addrs (4193975), camera/light host-ptr +
+  arg-order (f5cfd28), mode_name_announce v0=4 (8bc5e35). CD streams
+  real Mode-2/XA continuously; attract reaches gs=5 ph=1 title.
+  PSX_FAST_FORWARD_SPEED=max = ~100fps enables versus verification.
+  CURRENT BLOCKER: kernel SIO/pad driver (func ~0x27EC) stopped issuing
+  pad-read TX @byte_seq 15464 -> tx_writes frozen -> guest never sees
+  pad -> versus input dead (confirmed end-to-end: START injected,
+  title won't advance). Agents investigating why pad-poll thread
+  blocked/exited. Transcription audit swept constant tables clean.
