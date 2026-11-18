@@ -1903,3 +1903,12 @@ issuer (kernel pad driver / BIOS pad service) genuinely not running.
 NOT attract-legitimate-idle: a real dead path. Versus BLOCKED until
 the SIO TX issuer resumes. Agent 83b9504a tracing which guest fn
 should issue pad-read SIO TX and why it stopped.
+
+=== N+146 — SIO TX issuer = kernel func ~0x27EC stopped after byte_seq 15464 ===
+sio_pc_trace tail: last SIO IO was pc=0x00003650/0x00003640 func=
+0x000027EC writing SIO_CTRL(0x1F80104A)=0x1013 + SIO area — KERNEL/BIOS
+pad/SIO driver. byte_seq froze @15464. This kernel driver stopped
+issuing pad-read transactions -> tx_writes frozen -> guest never sees
+pad. BIOS has PAD driver @0x43D0 + PAD_init/PAD_dr services. The
+kernel pad-poll thread/driver exited or blocked. Agent 83b9504a
+tracing why the kernel SIO driver stopped (event/flag/thread state).
