@@ -1880,3 +1880,16 @@ unpaced w/ present-skip (s_turbo_present_skip). For versus verification:
 relaunch emu with fast-forward/turbo to get through title->menu->fight
 in reasonable wall-time, then nav_to_fight.py. Pad-input agent
 83b9504a determining if injection reaches guest at all.
+
+=== N+144 — pad-input chain mapped; upstream SIO issuer not running ===
+My probes: pad_status shows host pad connected, buttons=0xFFFF (idle),
+sticks centered — host side fine. pad_state_refresh (menu.c:2750) is
+clean-ported, runs per-frame from present path, but only DECODES
+DAT_801befa8/DAT_801befca (attr_word_decode) into pad-state struct —
+does NOT issue SIO TX. The actual pad-read/SIO-TX issuer is UPSTREAM
+(kernel pad driver / BIOS pad service filling those cells) and is NOT
+running -> tx_writes frozen. Game in ATTRACT (gs=3, auto-demo) — may
+legitimately not poll pads; open Q: does attract poll pads for
+START-to-skip? If yes+broken=bug; if no=versus needs attract timeout
+(300 frames) or attract is stuck. fntrace pad_state_refresh=0 hits is
+EXPECTED (clean-ported, bypasses psx_dispatch). Agent 83b9504a on it.
