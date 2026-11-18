@@ -1008,7 +1008,11 @@ LAB_8015c900:
         iVar2 = intro_movie_state(0);
         if (iVar2 != 0) {
           deferred_cmd_post(0x203,0,0);
-          local_54 = dialog_msg_dispatch;
+          /* desc+0xc is read by menu_stepper_state_advance as a u32 GUEST
+           * code address (fn_lookup -> call_guest fallback). Guest stores
+           * 0x8015CAA8 there (generated 0x8015C814); a host fn pointer
+           * would be truncated to garbage. */
+          local_54 = (code *)(uintptr_t)0x8015caa8;
           local_5a = 0xe;
           local_58 = 0xe;
           local_60 = 0;

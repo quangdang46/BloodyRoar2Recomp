@@ -703,7 +703,11 @@ int memcard_file_flow(int param_1)
           iVar1 = intro_movie_state(0);
           if (iVar1 != 0) {
             deferred_cmd_post(0x203,0,0);
-            local_b4 = (code *)dialog_sel_dispatch;
+            /* desc+0xc is read by menu_stepper_state_advance as a u32
+             * GUEST code address (fn_lookup -> call_guest fallback).
+             * Guest stores 0x80160598 (dialog_sel_dispatch); a host fn
+             * pointer would be truncated to garbage. */
+            local_b4 = (code *)(uintptr_t)0x80160598;
             local_ba = 4;
             local_b8 = 4;
             local_b0 = 0x10;
