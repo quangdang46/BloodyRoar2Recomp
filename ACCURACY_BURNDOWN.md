@@ -1592,3 +1592,20 @@ deferred CD coroutine (no guest resume PC) during the IRQ2-edge/DMA-done
 window. Faithful fix = delegate those bodies to br2_call_generated.
 SECONDARY: DMA done-interrupt possibly masked (DICR bit31=0, cd_intc_
 dispatch sees I_STAT=0 -> no handlers).
+
+=== N+123 — queue delegation done (7c3b5c6) but stall persists; ch5 arm missing ===
+eeda99c4 delegated cd_queue_push/drain per section 4 (clean busy-waits
+starved coroutine). Verified live but INSUFFICIENT: real missing link =
+whatever arms the channel-5 DMA transfer whose completion delivers
+DeliverEvent(0xF0000009). cb7_run slot tbl[5]=0x8019B7E0 fires only on
+DMA-ch5 (PSX PIO 0x1F8010D0) done; dma_state shows ch5 NEVER started.
+dma_trace: only per-frame ch2(GPU)+ch6(OTC 2080w driven by
+cd_cmd_queue_load) active. DMA IRQ path audited clean (complete_transfer
+-> mask -> psx_irq_raise(3) on 0->1 edge; DICR=0x00900000 = genuine
+ch4-only mask, not a bug).
+The arming is upstream, gated behind the same event -> deferred
+coroutine/job-pump path (cd_chan_full_init ctx @0x801BCD50, resume via
+B0/0x19; job slots @0x801BE768=-1 -> chan_job_pump no-op).
+NEXT: find who writes tbl[5] (@0x801BDE08) / owns ch5 object, and why
+the deferred job that arms it never fires. ALSO: remove env-gated
+fprintf diagnostics in cd.c (PSX_CB7) before final — no-fprintf rule.
