@@ -5309,37 +5309,16 @@ uint32_t cd_queue_b_read(void)
  * (head-tail)&0x3f (callers ignore it; declared void above). */
 void cd_queue_drain(void)
 {
-  if ((br2_ld32(DB32G(0x801b8434)) & 0x100000) != 0)
-    return;
-  DB32(0x801b8454) = cd_u16_swap_store(0);
-  if (DB32(0x801b8448) != DB32(0x801b844c)
-      && (br2_ld32(DB32G(0x801b8434)) & 0x100000) == 0) {
-    for (;;) {
-      uint32_t tail = DB32(0x801b844c);
-      uint32_t *e;
-      uint32_t fn, dp, arg;
-      if (((tail + 1) & 0x3f) == DB32(0x801b8448) && DB32(0x801b832c) == 0)
-        cd_dispatch_tbl4(2,0);
-      while ((br2_ld32(DB32G(0x801b8428)) & 0x04000000) == 0) { br2_irq_poll(); }
-      e = (uint32_t *)guest_at(0x801fae70 + tail * 96);
-      fn = e[0]; dp = e[1]; arg = e[2];
-      call_guest(fn,dp,arg);          /* jalr fn: a0=data a1=arg */
-      DB32(0x801b844c) = (tail + 1) & 0x3f;
-      if (DB32(0x801b8448) == DB32(0x801b844c)) break;
-      if ((br2_ld32(DB32G(0x801b8434)) & 0x100000) != 0) break;
-    }
-  }
-  cd_u16_swap_store((uint16_t)DB32(0x801b8454));
-  if (DB32(0x801b8448) == DB32(0x801b844c)
-      && (br2_ld32(DB32G(0x801b8434)) & 0x100000) == 0
-      && DB32(0x801b8328) != 0) {
-    uint32_t cb = DB32(0x801b832c);
-    if (cb != 0) {
-      DB32(0x801b8328) = 0;
-      call_guest(cb,cb,0);            /* jalr a0: a0 = cb ptr */
-    }
-  }
-  /* guest returns (head-tail)&0x3f; all callers ignore it. */
+  /* IRQ/coroutine-boundary function: the per-entry busy-wait on
+   * *0x801b8428 & 0x04000000 sits inside the CD-DMA completion window.
+   * A clean-C while+br2_irq_poll spin has no live guest resume PC, so the
+   * deferred CD coroutine (cd_ctx_save/cd_ctx_restore -> cd_intc_dispatch
+   * -> DeliverEvent) starves and the queued command's flush never runs --
+   * the observed stall where commands stage to the DMA regs but no
+   * 0x1F8018xx write ever follows. Delegate to the generated MIPS body,
+   * which supplies psx_check_interrupts_at at every basic-block boundary.
+   * Clean port preserved in git history. */
+  br2_call_generated(0x801931c4u, 0, 0, 0, 0);
 }
 
 /* cd_queue_push — CD command-queue push (0x80192f14-0x801931c0).
@@ -5355,53 +5334,16 @@ void cd_queue_drain(void)
 int cd_queue_push(uint32_t a0_fn,uint32_t a1_data,uint32_t a2_count,
                  uint32_t a3_arg)
 {
-  uint32_t head, tail, saved;
-  int direct;
-  cd_timeout_arm();
-  for (;;) {
-    head = DB32(0x801b8448);
-    tail = DB32(0x801b844c);
-    if (((head + 1) & 0x3f) != tail) break;
-    if (cd_pump_watchdog() != 0) return -1;
-    cd_queue_drain();
-  }
-  saved = cd_u16_swap_store(0);
-  DB32(0x801b8450) = saved;
-  DB32(0x801b8328) = 1;
-  direct = (*(uint8_t *)guest_at(0x801b8321) == 0);
-  if (!direct) {
-    head = DB32(0x801b8448);
-    tail = DB32(0x801b844c);
-    direct = (head == tail
-              && (br2_ld32(DB32G(0x801b8434)) & 0x100000) == 0
-              && DB32(0x801b832c) == 0);
-  }
-  if (direct) {
-    while ((br2_ld32(DB32G(0x801b8428)) & 0x04000000) == 0) { br2_irq_poll(); }
-    call_guest(a0_fn,a1_data,a3_arg);  /* jalr s3: a0=s0 a1=s2 */
-    cd_u16_swap_store((uint16_t)DB32(0x801b8450));
-    return 0;
-  }
-  cd_dispatch_tbl4(2,0x801931c4);
-  head = DB32(0x801b8448);
-  {
-    uint32_t *e = (uint32_t *)guest_at(0x801fae70 + head * 96);
-    if (a2_count != 0) {
-      int32_t n = (int32_t)a2_count / 4;  /* sra-adjusted: trunc to 0 */
-      uint32_t *src = (uint32_t *)guest_at(a1_data);
-      int32_t i;
-      for (i = 0; i < n; i++) e[3 + i] = src[i];
-      e[1] = 0x801fae7c + head * 96;      /* payload ptr (guest addr) */
-    } else {
-      e[1] = a1_data;
-    }
-    e[2] = a3_arg;
-    e[0] = a0_fn;
-  }
-  DB32(0x801b8448) = (head + 1) & 0x3f;
-  cd_u16_swap_store((uint16_t)DB32(0x801b8450));
-  cd_queue_drain();
-  return (int)((DB32(0x801b8448) - DB32(0x801b844c)) & 0x3f);
+  /* IRQ/coroutine-boundary function: the direct-path busy-wait on
+   * *0x801b8428 & 0x04000000 and the cd_queue_drain() call below sit on
+   * the same CD-DMA completion window as cd_queue_drain. A clean-C
+   * while+br2_irq_poll spin cannot supply the live guest resume PC the
+   * deferred CD coroutine needs, so the flush/DeliverEvent is missed and
+   * the staged command never reaches the 0x1F8018xx registers. Delegate
+   * to the generated MIPS body (per-block psx_check_interrupts_at).
+   * Clean port preserved in git history. */
+  return (int)br2_call_generated(0x80192f14u, a0_fn, a1_data, a2_count,
+                                 a3_arg);
 }
 
 /* cd_ctx_save — guest context save (0x8019ad90-0x8019adc8): stores
