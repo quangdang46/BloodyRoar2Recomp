@@ -472,8 +472,9 @@ extern void slot_triple_set(int param_1,int param_2,int param_3,int param_4);
     slot_triple_set(((int)cpu->gpr[4]), ((int)cpu->gpr[5]), ((int)cpu->gpr[6]), ((int)cpu->gpr[7]));
 }
 static void wrap_8012eaa8(CPUState *cpu) {
-extern void dual_axis_coord_xform(uint32_t param_1,uint32_t param_2,uint32_t param_3);
-    dual_axis_coord_xform(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]));
+extern void dual_axis_coord_xform(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+                  uint32_t param_4);
+    dual_axis_coord_xform(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]));
 }
 static void wrap_8012eb74(CPUState *cpu) {
 extern void proj_coord_gte_emit(uint32_t param_1,uint32_t param_2,uint32_t param_3,

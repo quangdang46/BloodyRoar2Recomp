@@ -10419,12 +10419,15 @@ uint32_t battle_reset_tail(uint32_t param_1,uint32_t param_2,uint32_t param_3)
  * sp[0]); FUN_80195370(&sp[0],&sp[0]) (ret discarded); r =
  * atan2_lut(-sp[1], FUN_801948c0(sp[0]+sp[2]));
  * s0=(s16)r, s1=(s16)s1; vec2_rot(s0,s1,a2+6);
- * angle_gte_vec(s0,s1,a2+0x20). */
-void dual_axis_coord_xform(uint32_t param_1,uint32_t param_2,uint32_t param_3)
+ * angle_gte_vec(s0,s1,a2+0x20).
+ * Generated reads the object through $a3 (gpr[7]) and the output base
+ * through $a2 (gpr[6]); $a0/$a1 are dead on entry. */
+void dual_axis_coord_xform(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+                  uint32_t param_4)
 {
-  uint32_t o = MB32(param_3 + 0x20);
+  uint32_t o = MB32(param_4 + 0x20);
   uint32_t sp[3];
-  uint32_t s0, s1, s2 = param_2;
+  uint32_t s0, s1, s2 = param_3;
   int32_t r;
   sp[0] = MB32(o + 0x174);
   s0 = MB32(o + 0x178) + 0xa00u;

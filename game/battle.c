@@ -587,7 +587,12 @@ void camera_state_cache(uint param_1,int param_2)
     uint32_t fn_g = *(uint32_t *)(&DAT_801b144c + *(char *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x98) ))* 4);
     void *fn = fn_lookup(fn_g);
     if (fn != (void *)0x0) {
-      ((void (*)(void *, void *, int))fn)(&DAT_1f8002f8,&DAT_801f0228,param_2);
+      /* Guest jalr @0x8012EF04 passes a0=0x1F8002F8, a1=0x801F0228,
+       * a2=param_2 — guest addresses. Clean callees in this table
+       * (dual_axis_coord_xform / proj_coord_gte_emit) take guest-u32
+       * params, so pass guest addresses, not &DAT_ host pointers. */
+      ((void (*)(uint32_t, uint32_t, uint32_t, uint32_t))fn)
+          (0x1f8002f8u,0x801f0228u,(uint32_t)param_2,0);
     }
     else {
       /* Unported jalr target: run the generated body with the same guest
@@ -626,7 +631,13 @@ void player_light_apply(byte *param_1,int param_2)
     uint32_t fn_g = *(uint32_t *)(&DAT_801b140c + ((int)((uint)DAT_1f800098 << 0x18) >> 0x16));
     void *fn = fn_lookup(fn_g);
     if (fn != (void *)0x0) {
-      ((void (*)(void *, void *, uint32_t, byte *))fn)(&DAT_1f8002f8,&DAT_801f0228,0x1f80033c,param_1);
+      /* Guest jalr @0x8012EDC4 passes a0=0x1F8002F8, a1=0x801F0228,
+       * a2=0x1F80033C, a3=param_1's guest address — all guest addrs.
+       * Clean callees (proj_coord_gte_emit / dual_axis_coord_xform)
+       * take guest-u32 params; param_1 is a host ptr here, so resolve
+       * it with guest_of like the generated fallback below. */
+      ((void (*)(uint32_t, uint32_t, uint32_t, uint32_t))fn)
+          (0x1f8002f8u,0x801f0228u,0x1f80033cu,guest_of(param_1));
     }
     else {
       /* Unported jalr target: guest args a0=0x1F8002F8, a1=0x801F0228,
