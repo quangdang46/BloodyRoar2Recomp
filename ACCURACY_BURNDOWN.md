@@ -1893,3 +1893,13 @@ legitimately not poll pads; open Q: does attract poll pads for
 START-to-skip? If yes+broken=bug; if no=versus needs attract timeout
 (300 frames) or attract is stuck. fntrace pad_state_refresh=0 hits is
 EXPECTED (clean-ported, bypasses psx_dispatch). Agent 83b9504a on it.
+
+=== N+145 — CONFIRMED: START injected but tx_writes frozen = real input bug ===
+My live probe on 4930 (attract gs=3, frame 29659): press START
+(0xFFF7,60f) -> ok:true, pad_buttons now shows 0xFFF7 (host override
+active) BUT tx_writes STILL 15556 — NO SIO TX even with button pressed.
+Guest NEVER reads pad via SIO regardless of input -> upstream pad-read
+issuer (kernel pad driver / BIOS pad service) genuinely not running.
+NOT attract-legitimate-idle: a real dead path. Versus BLOCKED until
+the SIO TX issuer resumes. Agent 83b9504a tracing which guest fn
+should issue pad-read SIO TX and why it stopped.
