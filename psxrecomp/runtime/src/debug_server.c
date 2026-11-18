@@ -2147,15 +2147,66 @@ int g_event_hook_armed = 0;
 typedef struct { uint32_t table_base; uint32_t index; uint64_t count; } BiosCallUnique;
 static PSX_BSS BiosCallUnique s_bioscall_unique[BIOSCALL_UNIQUE_CAP];
 static int s_bioscall_unique_count = 0;
+
+/* PSX_BIOSCALL_SUPPRESS="B0:0x0B,A0:0x17,..." — drop matching (table,index)
+ * pairs from the 64K entry ring while STILL accruing the unique-count
+ * histogram. The BR2 TestEvent poll spins issue ~85 calls/frame; over a
+ * multi-minute freeze they flush the whole ring in seconds, evicting the
+ * rare OpenEvent/CloseEvent/DeliverEvent lifecycle entries investigators
+ * need. Suppression is observability-only: no emulation state is touched. */
+#define BIOSCALL_SUPPRESS_MAX 16
+static uint32_t s_bioscall_suppress_tab[BIOSCALL_SUPPRESS_MAX];
+static uint32_t s_bioscall_suppress_idx[BIOSCALL_SUPPRESS_MAX];
+static int      s_bioscall_suppress_n = -1;   /* -1 = unparsed */
+
+static void bioscall_suppress_init(void)
+{
+    if (s_bioscall_suppress_n >= 0) return;
+    s_bioscall_suppress_n = 0;
+    const char *spec = getenv("PSX_BIOSCALL_SUPPRESS");
+    if (!spec || !*spec) return;
+    char buf[256];
+    size_t n = strlen(spec);
+    if (n >= sizeof(buf)) n = sizeof(buf) - 1;
+    memcpy(buf, spec, n);
+    buf[n] = '\0';
+    for (char *tok = strtok(buf, ",;"); tok && s_bioscall_suppress_n < BIOSCALL_SUPPRESS_MAX;
+         tok = strtok(NULL, ",;")) {
+        char *colon = strchr(tok, ':');
+        if (!colon) continue;
+        *colon = '\0';
+        uint32_t t = (uint32_t)strtoul(tok, NULL, 16);
+        uint32_t i = (uint32_t)strtoul(colon + 1, NULL, 16);
+        t &= 0xFFu;   /* normalize table to the physical vector */
+        s_bioscall_suppress_tab[s_bioscall_suppress_n] = t;
+        s_bioscall_suppress_idx[s_bioscall_suppress_n] = i;
+        s_bioscall_suppress_n++;
+    }
+}
+
+static int bioscall_suppressed(uint32_t table_base, uint32_t index)
+{
+    bioscall_suppress_init();
+    uint32_t t = table_base & 0xFFu;
+    for (int i = 0; i < s_bioscall_suppress_n; i++)
+        if (s_bioscall_suppress_tab[i] == t &&
+            s_bioscall_suppress_idx[i] == index) return 1;
+    return 0;
+}
+
 void psx_bioscall_record(uint32_t table_base, uint32_t index, uint32_t func_ptr,
                          uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t ra)
 {
+    /* Suppressed calls skip the ring entirely (no seq consumed) so the
+     * ring stays contiguous; the unique histogram below still accrues. */
+    if (!bioscall_suppressed(table_base, index)) {
     uint64_t seq = s_bioscall_seq++;
     BiosCallEntry *e = &s_bioscall_ring[seq & (BIOSCALL_RING_CAP - 1u)];
     e->seq = seq; e->table_base = table_base; e->index = index; e->func_ptr = func_ptr;
     e->a0 = a0; e->a1 = a1; e->a2 = a2; e->a3 = a3; e->ra = ra;
     e->current_func = g_debug_current_func_addr; e->frame = (uint32_t)s_frame_count;
     e->in_exception = (uint8_t)(psx_get_in_exception() ? 1u : 0u);
+    }
     uint32_t h = ((table_base >> 2) ^ (index * 2654435761u)) % BIOSCALL_UNIQUE_CAP;
     for (int i = 0; i < BIOSCALL_UNIQUE_CAP; i++) {
         uint32_t slot = (h + i) % BIOSCALL_UNIQUE_CAP;
