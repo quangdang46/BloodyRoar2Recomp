@@ -1690,3 +1690,19 @@ No context switches since ~frame 8090.
 NEXT: instrument frame-8092 boundary — what IRQ does game expect after
 Pause-INT2; check stop_read_stream() (cdrom.c:2261) suppressing INT1,
 or INTC mirror bit never latching for cd_intc_dispatch B0:0x17 wait.
+
+=== N+129 — frame-8092: lost wakeup = DeliverEvent to CLOSED EvCB ===
+d28e4419: CD side CLEAN (irq_flag=0, int1_lost=0, queue empty, Pause
+delivered INT3+INT2 correctly). NOT a suppressed INT1.
+REAL SUSPECT: DeliverEvent(0xF0000003,0x40) fired at freeze instant
+(ra=0x80198824 cd_read_finish_cb, rep=43) but EvCB table has NO
+0xF0000003 events — slots now hold 0xF4000001/0xF0000011 CALLBACK
+events; slot8 = only MARK event (0xF0000009 spec0x20 = ch4 xfer-done
+flag the waiter spins on). If the 0xF0000003 EvCBs were already CLOSED
+when delivery ran -> matched nothing -> file-load wakeup silently
+dropped -> main never proceeds -> never kicks next ch4 xfer -> waiter
+spins forever.
+NEXT: trace when/why 0xF0000003 EvCBs (specs 0x10/0x20/0x40/0x80/0x8000)
+close vs last DeliverEvent — evcb_walk_dump/fntrace on CloseEvent
+callers. If closed early due to spurious earlier completion our runtime
+delivered, that's the faithful fix site (upstream, not the drop).
