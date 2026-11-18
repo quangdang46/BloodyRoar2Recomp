@@ -1870,3 +1870,13 @@ didn't elapse enough guest-frames; NOT evidence of blocker. N+141's
 advancing because FRAMES barely advance (renderer-bound), not because
 game parked. REAL frontier: versus nav needs longer timeout OR faster
 renderer; pad-input agent 83b9504a determining if injection works.
+
+=== N+143 — versus-nav speedup path identified ===
+44ef3449: renderer is wall (98.6% GPU, ~0.2-1fps). Options found:
+PSX_FAST_FORWARD_SPEED env (2-16x or "max"/"0"=unbounded,
+manual_fast_forward_multiplier main.cpp:607) + g_turbo_loads_enabled
+(turbo_loads TCP cmd / per-game turbo_loads config) runs vblanks
+unpaced w/ present-skip (s_turbo_present_skip). For versus verification:
+relaunch emu with fast-forward/turbo to get through title->menu->fight
+in reasonable wall-time, then nav_to_fight.py. Pad-input agent
+83b9504a determining if injection reaches guest at all.
