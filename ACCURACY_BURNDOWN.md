@@ -1761,3 +1761,11 @@ FOLLOW-UP flagged: cd_queue_a/b_status spins lack br2_irq_poll entirely
 (pre-existing fidelity gap — generated runs psx_check_interrupts per
 iter); state-machine for(;;)+poll:->frame_tick pattern exists in
 battle.c/menu.c/game.c — same hazard if bail fires with them on stack.
+
+=== N+134 — host-ptr + arg-order bugs in camera/light path (f5cfd28) ===
+8ab3087f proved: camera_state_cache/player_light_apply passed &DAT_*
+HOST ptrs where clean callees take guest-u32 addrs (guest jalr passes
+0x1F8002F8/0x801F0228/0x1F80033C). dual_axis_coord_xform had arg-order
+bug — generated uses $a2=out-base/$a3=object ($a0/$a1 dead); clean read
+object from param_3/out from param_2. Fixed + clean_table regen.
+Static-proven vs generated; runtime verify pending (combat path).
