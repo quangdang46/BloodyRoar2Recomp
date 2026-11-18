@@ -200,6 +200,7 @@ extern uint8_t  *g_DAT_801b12e0;
 extern uint8_t  *g_DAT_801b12e6;
 extern uint8_t  *g_DAT_801b3ed8;   /* stage param table (0x1c stride) */
 extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+extern void br2_st8(uint32_t a, uint8_t v);
 extern uint32_t *g_PTR_DAT_801b5b94; /* file ptr table */
 extern uint8_t  *g_DAT_801b5b98;
 extern uint8_t  *g__DAT_801f68d8;
@@ -1538,7 +1539,10 @@ LAB_801472a4:
             DAT_1f800001 = DAT_1f800001 + 1;
         }
         else if ((DAT_1f800001 == 0xf1) && (iVar1 = frame_divisor_get(), iVar1 == 0)) {
-            DAT_1f800001 = 0xff;
+            /* Same stale-callee-saved hazard as battle_intro_flow: the hoisted
+             * 0xff can sit in a register the IRQ setjmp/longjmp restores
+             * stale. br2_st8 materializes the value in the arg register. */
+            br2_st8(0x1f800001, 0xff);
             goto joined_r0x801470b0;
         }
         frame_tick(0x1f800000);

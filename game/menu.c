@@ -28,6 +28,7 @@ typedef long long longlong;
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
 extern uint32_t br2_gaddr(const void *p);
+extern void br2_st8(uint32_t a, uint8_t v);
 extern uint32_t guest_sp(void);
 extern uint8_t *_g_system_config_ptr;
 extern uint8_t *_g_pad_buffer;
@@ -1977,7 +1978,12 @@ LAB_8016767c:
         else if (DAT_1f800001 != 0xf1) goto LAB_801677b4;
         iVar4 = frame_divisor_get();
         if (iVar4 == 0) {
-          DAT_1f800001 = 0xff;
+          /* The hoisted 0xff constant lives in callee-saved x28 across the
+           * whole do-while; the IRQ setjmp/longjmp path restores x28 stale
+           * (g_irqctx_ring base), so even a fresh-pointer store emitted
+           * strb w28. br2_st8 materializes the value in the arg register
+           * at the call — immune to the stale callee-saved restore. */
+          br2_st8(0x1f800001, 0xff);
           goto joined_r0x801673ac;
         }
       }
