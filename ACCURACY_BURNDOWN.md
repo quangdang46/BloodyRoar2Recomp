@@ -1769,3 +1769,17 @@ HOST ptrs where clean callees take guest-u32 addrs (guest jalr passes
 bug — generated uses $a2=out-base/$a3=object ($a0/$a1 dead); clean read
 object from param_3/out from param_2. Fixed + clean_table regen.
 Static-proven vs generated; runtime verify pending (combat path).
+
+=== N+135 — CD stall RESOLVED; new gate = prim_task_run record-list crash @8094 ===
+8549675d verified: bail-unwind fix WORKS — CD streams real Mode-2/XA
+(seq 9113), old stall gone. NEW deterministic crash @frame ~8094:
+Null-PC dispatch in prim_task_run record walk — fn=0x00000001 -> PC=0.
+Port verified faithful vs generated; corruption upstream: record-list
+base/count resolves wrong OR earlier writer sprayed list region.
+SUSPICIOUS: 4 consecutive record-fn targets 0x8018A514/518/51C/520 =
+MID-FUNCTION addrs inside func_8018A4F8 (not dispatch leaders) — walk
+reading a code-ptr/jump-table region as record fn fields. a0 data
+cursors 0x8003xxxx, a1=0x801E6158. Artifact /tmp/exit_trace_run2.json.
+NEXT: dump task+0x1C chain + record array @0x8003xxxx @frame ~8090.
+ALSO 8ab3087f: stepper-descriptor cb fields stored host fn ptrs ->
+committed guest literals (menu.c:1015->0x8015caa8, save.c:710->0x80160598).
