@@ -1920,3 +1920,14 @@ gs=5 ph=1 (TITLE) at frame ~5847, held START repeatedly, ph NEVER
 advanced to 2 — game cannot see pad input. CONFIRMS kernel SIO/pad
 driver (func ~0x27EC, stopped @byte_seq 15464) is THE versus blocker,
 not attract-idle. Fast-forward is the verification path forward.
+
+=== N+148 — transcription audit COMPLETE; constant-table surface clean ===
+cdcb9eb5 systematically verified ALL hand-transcribed tables vs
+generated+EXE: heap_serialize nm constants (84 values, exact multiset
+match), tag mask 0x0F04FFFF, jt tables (battle_state_gate,
+stage_fight_announce, post_battle_side_commit, mode_name jt1/jt2),
+flag_table_dump, task_invoke ABI, all br2_call_generated delegation
+addrs, section markers. ONE real bug fixed: mode_name_announce
+PRESS START flag v0=0->v0=4 (delay-slot li). The crash-causing
+transcription class is now swept clean — remaining un-audited surface
+is data-value switches + mask/compare constants (lower risk).
