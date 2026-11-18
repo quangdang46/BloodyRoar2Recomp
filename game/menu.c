@@ -4358,7 +4358,8 @@ void mode_name_announce(uint32_t param_1,uint32_t param_2,int32_t param_3)
     v0 = 1; a3 -= 0x39;
   } else {
     text = 0x80121eb8;  /* PRESS START */
-    a3 -= 0x21; v0 = 0;
+    a3 -= 0x21; v0 = 4;  /* guest leaves $v0=4 (delay-slot li at 0x801637EC);
+                         * only the AWAITING CHALLENGER path sets $v0=1 */
   }
 emit:
   a3 = (int32_t)(int16_t)a3;
