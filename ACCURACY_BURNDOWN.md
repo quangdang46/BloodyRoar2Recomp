@@ -1737,3 +1737,15 @@ NEXT PROBES: is cd_chan_job_submit called-and-rejected vs never called?
 mem_words @0x801febc0/0x801be768/0x801fef60/0x801fef20 at stall;
 fntrace on submit/pumps/0x80195b9c; confirm DeliverEvent(0xF0000003)
 fires @8092 + waiter wakes.
+
+=== N+132 — frame-8092 "stall" was an AdES crash; call_guest4 dropped $t0 ===
+72863a36: the deterministic freeze was a guest CRASH not a CD gate.
+prim_task_run record loop `lw $t0,0xC($s2); jalr $ra,$t0` -> callee sees
+$t0==fn; call_guest4 left $t0 stale (GTE data 0x00340216) -> emit entry
+0x8018A514 `sw $s6,0x3E0($t0)` -> unaligned AdES -> BIOS halt loop that
+LOOKED like CD stall (frame froze). Fix: call_guest4 sets gpr[8]=fn
+(jalr semantics), restores after. Verified frame 8094, emit clean.
+NOW UNMASKED: genuine CD-loader TestEvent(0xF1000008) wait — the real
+DeliverEvent(0xF0000003)->waiter chain is the actual remaining bug.
+NOTE: debug server lacks SIGPIPE ignore — repeated connect/disconnect
+kills runs (exit 141); worth a robustness fix.
