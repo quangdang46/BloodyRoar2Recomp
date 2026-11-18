@@ -3998,7 +3998,7 @@ void cd_chan_reset_b(void)
 
 uint32_t cd_init_stage_b(void)
 {
-  cd_guest_zero32_c(0x801bddf4,8);
+  cd_guest_zero32_c(0x801bddfc,8);
   br2_st32p(0x801bddf0, 0);
   cd_dispatch_tbl8(3,0x8019af7c);
   return 0x8019b0fc;
@@ -5075,7 +5075,7 @@ void cd_cb7_run(uint32_t param_1)
   uint32_t *tbl;
   while (s1 != 0) {
     dma = DB32G(0x801bddf0);
-    tbl = (uint32_t *)guest_at(0x801bddf4);
+    tbl = (uint32_t *)guest_at(0x801bddfc);
     s0 = 0;
     while (s1 != 0 && s0 < 7) {
       if ((s1 & 1) != 0) {
