@@ -1783,3 +1783,16 @@ cursors 0x8003xxxx, a1=0x801E6158. Artifact /tmp/exit_trace_run2.json.
 NEXT: dump task+0x1C chain + record array @0x8003xxxx @frame ~8090.
 ALSO 8ab3087f: stepper-descriptor cb fields stored host fn ptrs ->
 committed guest literals (menu.c:1015->0x8015caa8, save.c:710->0x80160598).
+
+=== N+136 — frame-8094 crash FIXED (ee57989); SIO TX stall is next gate ===
+8005551a root-caused: 4 mis-transcribed nm constants in heap_serialize
+(menu.c) — wrong values were MID-FUNCTION addrs inside prim_task_run
+(0x8018a514/664, 0x801894fc, 0x8018a3ac) -> psx_dispatch re-entered fn
+treating data cursor as task array -> garbage nested walk -> fn=1 -> PC=0.
+Fixed to real block leaders (0x8018a714/9f8, 0x80189500, 0x8018a2ac).
+RUNTIME VERIFIED: frame 16143+ past crash, attract progressing.
+NEW BLOCKER (a7124d65): SIO TX stall — tx_writes frozen @15556 since
+~frame<946; pad_buttons set host-side but NO SIO transmit -> guest never
+receives pad -> versus input dead. sio_stat=0x0005,sio_ctrl=0x0000,
+sio_rx=0x5A,tx_gated=0. Predates 8094 crash, independent. ALSO attract
+reaches gs=6 ph=2 then dies at 8094 (now fixed). NEXT: SIO TX resume.
