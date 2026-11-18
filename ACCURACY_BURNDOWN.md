@@ -1857,3 +1857,16 @@ crash-gates are cleared but the DEFERRED EVENT DELIVERY gap persists
 attract-deep. 44ef3449 characterizing; 83b9504a on pad-input (fresh
 4930 run @frame 739 progressing). NEXT: the recurring deferred
 channel-event producer gap — needs the same depth as original CD stall.
+
+=== N+142 — CORRECTION: "stall" @23247 was renderer-slowness, NOT a wedge ===
+44ef3449: 0xFFE7 crash CONFIRMED resolved — clean run to frame 27488,
+zero faults. The near-zero frame advance I saw was the HEADLESS OPENGL
+RENDERER bottleneck (~0.2-1fps effective, 98.6% GPU share), NOT a game
+wedge — frames/cycles/vsync all tick correctly (~677K cycles/frame =
+proper PAL budget). Attract reaches gs=5 ph=1 (title). Versus nav
+INCONCLUSIVE: at 0.22fps only ~33 guest frames in 150s — title window
+didn't elapse enough guest-frames; NOT evidence of blocker. N+141's
+"deferred channel-event wedge" was misdiagnosis — CD seq barely
+advancing because FRAMES barely advance (renderer-bound), not because
+game parked. REAL frontier: versus nav needs longer timeout OR faster
+renderer; pad-input agent 83b9504a determining if injection works.
