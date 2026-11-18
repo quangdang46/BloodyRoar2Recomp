@@ -1810,3 +1810,18 @@ ch4-xfer-done; if CD loads files but event never delivers -> deferred
 ch4-arm or DeliverEvent gap remains (same class as original stall but
 much later/deeper). NEXT: trace gs/ph progression + which ch4 transfer
 should fire the event.
+
+=== N+138 — game reaches frame ~22020 (attract battle intro); kernel-RAM corruption ===
+9f444b6e: NOT a CD wedge — hard halt. Game progressed to frame ~22020
+(attract battle intro via battle_intro_flow). CORRUPTION: guest SWL
+stores to BIOS kernel RAM 0x1AAC rewrote `jal DeliverEvent` -> garbage
+-> verifier fn jumped to 0x115DB0 pattern-fill -> PC=0x2934 FAIL-FAST.
+Writer: pc=0x80187774 psx_swl in generated br2eu_func_801876BC (GTE
+vertex/transform leaf) — store addr = a1+(gte_data[7]&0x1FFC), a1 was
+GARBAGE ~0x1AAA (base-ptr arg bad on entry). Called via tail-jump from
+battle_intro_flow (menu.c:1847) through state-dispatch trampoline.
+0x801876BC invoked via heap_serialize record path (menu.c:14291 case
+0x11, B7C0_EMIT nm=0x801876bc CORRECT) — bad a1 comes from record
+replay args, same family as nm/arg-order bugs. NEXT: fntrace_arm
+0x801876BC before frame 22000 to capture a0-a3; audit heap_serialize
+ctx-pointer relocation guard (menu.c:14258) for missed encoding.
