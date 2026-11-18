@@ -1796,3 +1796,17 @@ NEW BLOCKER (a7124d65): SIO TX stall — tx_writes frozen @15556 since
 receives pad -> versus input dead. sio_stat=0x0005,sio_ctrl=0x0000,
 sio_rx=0x5A,tx_gated=0. Predates 8094 crash, independent. ALSO attract
 reaches gs=6 ph=2 then dies at 8094 (now fixed). NEXT: SIO TX resume.
+
+=== N+137 — SIO TX stall = SYMPTOM not device bug; real wedge = CD channel-event wait ===
+7462b18e: sio.c/memcard.c device model FAITHFUL + idle (tx_gated=0,
+nothing pending/dropped). Guest stopped issuing SIO cmds because main
+thread parked in CD channel-event wait: cd_intc_dispatch B0:0x17 storm
+(~941K) + TestEvent(0xF1000008) spins. tx_writes frozen = downstream
+symptom. Game ALIVE: frame 35322+, CD still loading (lba advancing).
+Pad-poll path starved by the CD/event wait. Real question: is attract
+PROGRESSING (gs/ph advancing through demo fights) while CD-streams,
+or truly wedged on a missing ch4-DMA-done event? The 0xF1000008 flag =
+ch4-xfer-done; if CD loads files but event never delivers -> deferred
+ch4-arm or DeliverEvent gap remains (same class as original stall but
+much later/deeper). NEXT: trace gs/ph progression + which ch4 transfer
+should fire the event.
