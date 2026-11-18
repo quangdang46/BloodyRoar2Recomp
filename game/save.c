@@ -8934,6 +8934,7 @@ int mc_file_cmd(uint32_t a0,const void *a1,uint32_t a2)
   extern uint32_t br2_guest_frame(uint32_t);
   extern void br2_guest_frame_free(void);
   extern void br2_irq_poll(void);
+  extern int br2_bail_pending(void);
   uint32_t fr = br2_guest_frame(0x40);
   uint8_t *blk = (uint8_t *)guest_at(fr + 0x10);
   uint32_t a2hi;
@@ -8974,7 +8975,10 @@ int mc_file_cmd(uint32_t a0,const void *a1,uint32_t a2)
     }
     /* wait for state change */
     if (s0[0] == 0 && s0[2] == 0) {
-      while (*(uint32_t *)guest_at(0x801febe8) == 0) { br2_irq_poll(); }
+      while (*(uint32_t *)guest_at(0x801febe8) == 0) {
+        if (br2_bail_pending()) { br2_guest_frame_free(); return -1; }
+        br2_irq_poll();
+      }
     }
     st = *(uint32_t *)guest_at(0x801febd4);
     s0[2] = 0;

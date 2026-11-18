@@ -319,6 +319,17 @@ void br2_irq_poll(void)
     if (cpu) psx_check_interrupts_at(cpu, cpu->gpr[31]);
 }
 
+/* br2_bail_pending — nonzero while a generated-frame bail unwind
+ * (g_psx_call_bail) is in flight. Clean-C polling loops that wait on guest
+ * state through br2_call_generated / br2_irq_poll must test this and return
+ * early: br2_call_generated no-ops on bail (it hands back the stale $v0), so
+ * a `while(flag==0)` spin would keep "failing" forever and never let the
+ * unwind reach the psx_call_contract frame that resolves it — the exact
+ * wedge that froze mc_state_init's Pause retry (the frame ~8092 CD-loader
+ * stall). This mirrors the generated code's own early-return-on-bail
+ * contract, applied at the clean-C boundary. */
+int br2_bail_pending(void) { return g_psx_call_bail; }
+
 /* br2_guest_frame — guest stack frame for clean C. Guest code allocates
  * locals below $sp; clean ports must do the same whenever buffers cross
  * a guest-visible boundary (BIOS services, nested guest calls, IRQ

@@ -1681,13 +1681,20 @@ void cd_reg_win_rmw_cc_cd(uint32_t a0,uint32_t a1)
  * Disasm 0x80168424-0x801684c4. */
 extern int32_t cd_chan_job_submit(uint32_t);
 extern int32_t cd_job_result(uint32_t,uint32_t *,uint32_t *);
+extern int br2_bail_pending(void);
 int32_t mc_op_result_poll(uint32_t a0)
 {
   uint32_t s0 = 0, sp10 = 0, sp14 = 0, r;
   for (;;) {
-    while (cd_chan_job_submit(a0) == 0) { br2_irq_poll(); }
+    while (cd_chan_job_submit(a0) == 0) {
+      if (br2_bail_pending()) return 0;
+      br2_irq_poll();
+    }
     a0 = 0;
-    while ((r = cd_job_result(a0,&sp10,&sp14)) == 0) { br2_irq_poll(); a0 = 0; }
+    while ((r = cd_job_result(a0,&sp10,&sp14)) == 0) {
+      if (br2_bail_pending()) return 0;
+      br2_irq_poll(); a0 = 0;
+    }
     {
       uint32_t v1 = sp14;
       int imm = (v1 < 5 && (v1 == 0 || v1 == 3));
