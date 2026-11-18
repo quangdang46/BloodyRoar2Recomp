@@ -9713,11 +9713,14 @@ void one_shot_init(void)
 {
   uint32_t s0 = 0x801bef60u;
   int32_t v1;
+  extern int br2_bail_pending(void);
   if (MB8(s0 + 0xf) != 0) return;
   brightness_packet_send(0);
   v1 = MB8(s0 + 0xe) & 0xf;
   if (v1 > 0 && v1 < 3) {
-    while (cd_cmd_issue_sync(9, 0, 0) == 0) { }
+    while (cd_cmd_issue_sync(9, 0, 0) == 0) {
+      if (br2_bail_pending()) return;
+    }
   }
   MW8(s0 + 0xf, 1);
 }

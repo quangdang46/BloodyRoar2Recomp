@@ -41,6 +41,7 @@ int cd_chan_boot_init(int);
 void cd_result_wait_b_fwd(int,undefined4);
 void printf_forward(const char *, ...);
 extern void br2_irq_poll(void);
+extern int br2_bail_pending(void);
 extern uint32_t guest_of(const void *);
 extern uint32_t br2_gaddr(const void *);
 extern uint32_t br2_guest_frame(uint32_t);
@@ -1254,6 +1255,7 @@ int32_t cd_subsystem_init(void)
   cd_dispatch_tbl8(2,0x801979f8);
   br2_st8p(0x801bcb0c, 1);
   while ((br2_ld8p(0x801bcb18) & 7) != 0) {
+    if (br2_bail_pending()) return -1;
     br2_irq_poll();
     br2_st8p(0x801bcb0c, a0);
     br2_st8p(0x801bcb18, v1);
@@ -2295,7 +2297,10 @@ int32_t cd_job_result(uint32_t a0,uint32_t *a1,uint32_t *a2)
     if (v[2] == 0) {
       v += 2;                          /* +8 slot scan (guest quirk:
                                         * polls single next slot) */
-      while (*v == 0) { br2_irq_poll(); }
+      while (*v == 0) {
+        if (br2_bail_pending()) return 0;
+        br2_irq_poll();
+      }
     }
     if (a2) *a2 = CDREG32(0x801febd4);
     if (a1) *a1 = CDREG32(0x801febd0);
@@ -2333,7 +2338,10 @@ retry:
     uint32_t r;
     cd_pending_args_pump();
     FUN_801a05f0(CDREG32(0x801febf0));
-    do { br2_irq_poll(); } while (cd_queue_a_read() == 0);
+    do {
+      if (br2_bail_pending()) return -1;
+      br2_irq_poll();
+    } while (cd_queue_a_read() == 0);
     r = cd_queue_a_status();
     return (int32_t)cd_status_map(r);
   }
@@ -3273,6 +3281,7 @@ uint32_t cd_queue_a_status(void)
 {
   uint32_t s0;
   for (;;) {
+    if (br2_bail_pending()) return 0;
     s0 = CDREG32(0x801fef90)
        + (CDREG32(0x801fef94) << 1)
        + (CDREG32(0x801fef98) << 2)
@@ -3298,6 +3307,7 @@ uint32_t cd_queue_b_status(void)
 {
   uint32_t s0;
   for (;;) {
+    if (br2_bail_pending()) return 0;
     s0 = CDREG32(0x801fefa0)
        + (CDREG32(0x801fefa4) << 1)
        + (CDREG32(0x801fefa8) << 2)
@@ -3589,7 +3599,10 @@ uint32_t cd_chan_cmd_submit(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,
   psx_write_word(base + 4, (a2 << 16) | a3);             /* BCR  */
 
   fpa = DB32(0x801bcc40);
-  while ((br2_ld8(fpa) & 0x40) == 0) { br2_irq_poll(); }
+  while ((br2_ld8(fpa) & 0x40) == 0) {
+    if (br2_bail_pending()) return 0;
+    br2_irq_poll();
+  }
 
   psx_write_word(base + 8, a4);                          /* CHCR: start */
   return psx_read_word(base + 8);                        /* CHCR readback */
@@ -3950,7 +3963,10 @@ int32_t cd_reg_rw_d2(uint32_t param_1)
 
 void cd_block7_init(void)
 {
-  while (DB32(0x801febe0) != 0) { br2_irq_poll(); }
+  while (DB32(0x801febe0) != 0) {
+    if (br2_bail_pending()) return;
+    br2_irq_poll();
+  }
   cd_chan_block_init(7,0);
   FUN_8019a0ddc();
 }
@@ -4160,6 +4176,7 @@ uint32_t cd_prim_list_a(uint32_t param_1,uint32_t param_2)
 int32_t cd_gpu_call_18(uint32_t param_1)
 {
   for (;;) {
+    if (br2_bail_pending()) return -1;
     uint32_t st = br2_ld32(DB32G(0x801b8434));
     uint32_t o;
     int poll;
@@ -4387,6 +4404,7 @@ extern void cd_intc_dispatch(void);
 static int32_t cd_wait_stat(void)
 {
   for (;;) {
+    if (br2_bail_pending()) return -1;
     uint32_t st = br2_ld32(DB32G(0x801b8434));
     uint32_t o;
     int poll;
@@ -4408,6 +4426,7 @@ void cd_response_pump(void)
   uint32_t s2 = DB8P(0x801bcb0c) & 3;
   uint32_t s0;
   for (;;) {
+    if (br2_bail_pending()) return;
     s0 = cd_response_process();
     if (s0 == 0) break;
     if ((s0 & 4) != 0 && DB32G(0x801bc84c) != 0) {
@@ -4510,6 +4529,7 @@ int cd_queue_poll(uint32_t param_1)
   if (param_1 == 0) {
     cd_timeout_arm();
     while (DB32(0x801b8448) != DB32(0x801b844c)) {
+      if (br2_bail_pending()) return -1;
       cd_queue_drain();
       if (cd_pump_watchdog() != 0) return -1;
     }
@@ -4565,11 +4585,13 @@ int cd_job_sm5(uint32_t param_1)
       uint32_t *s0 = (uint32_t *)guest_at(0x801febf4);
       uint32_t want;
       for (;;) {
+        if (br2_bail_pending()) return 0;
         want = FUN_801a0230(s0[0],s0[1],0);
         if (want == s0[1]) break;
       }
       cd_pending_args_pump();
       for (;;) {
+        if (br2_bail_pending()) return 0;
         if (FUN_801a0240(s0[0],s0[3],s0[2]) == 0) break;
       }
       *s1 = 0x1e;
@@ -4612,11 +4634,13 @@ int cd_job_sm6(uint32_t param_1)
       uint32_t *s0 = (uint32_t *)guest_at(0x801febf4);
       uint32_t want;
       for (;;) {
+        if (br2_bail_pending()) return 0;
         want = FUN_801a0230(s0[0],s0[1],0);
         if (want == s0[1]) break;
       }
       cd_pending_args_pump();
       for (;;) {
+        if (br2_bail_pending()) return 0;
         if (bios_tramp_b035((int32_t)s0[0],guest_at(s0[3]),(int32_t)s0[2]) == 0) break;
       }
       *s1 = 0x1e;
@@ -4811,7 +4835,10 @@ uint32_t cd_vcall_18(uint32_t param_1,uint32_t param_2)
 int cd_mmio_bit_wait(uint32_t param_1,uint32_t param_2)
 {
   volatile uint8_t *p = (volatile uint8_t *)guest_at(param_2);
-  while ((*p & 0x40) == 0) { br2_irq_poll(); }
+  while ((*p & 0x40) == 0) {
+    if (br2_bail_pending()) return 0;
+    br2_irq_poll();
+  }
   br2_st32(DB32G(0x801bcb50), 0x11400100);
   (void)br2_ld32(DB32G(0x801bcb50));
   return 0;
@@ -5104,6 +5131,7 @@ int cd_file_open_wait(uint32_t param_1,uint32_t param_2,uint32_t param_3)
   cd_strcat_guard(s0,param_2);
   *(uint32_t *)guest_at(0x801febf0) = param_1;
   for (;;) {
+    if (br2_bail_pending()) return -1;
     v0 = FUN_801a0220(guest_of(s0),1,0);
     if (v0 >= 0) {
       FUN_801a0250((uint32_t)v0);

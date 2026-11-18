@@ -680,6 +680,7 @@ int memcard_file_flow(int param_1)
   int local_30;
   char *local_2c;
   
+  extern int br2_bail_pending(void);
   uVar7 = 0;
   uVar6 = 0;
   iVar4 = 0;
@@ -694,6 +695,7 @@ int memcard_file_flow(int param_1)
   local_30 = 0;
   _DAT_1f80008c = 0;
   do {
+    if (br2_bail_pending()) return local_34;
     if (uVar7 != 1) {
       if (uVar7 < 2) {
         if ((uVar7 == 0) && (iVar1 = frame_divisor_get(), iVar1 == 0)) {
@@ -1625,9 +1627,11 @@ void mc_confirm_dispatch(int32_t param_1,uint32_t param_2)
  * sync wait via cd_cmd_issue_sync(9), dialog-state globals cleared. */
 void mc_init_reset(void)
 {
+  extern int br2_bail_pending(void);
   int iVar1;
   brightness_packet_send(0);
   do {
+    if (br2_bail_pending()) return;
     iVar1 = cd_cmd_issue_sync(9,0,0);
   } while (iVar1 == 0);
   chan_sweep_flag100();
@@ -2071,6 +2075,7 @@ void datetime_confirm_a(int32_t param_1,uint32_t param_2)
  * then publishes like datetime_confirm_a with flag bits |2. */
 void datetime_confirm_b(int32_t param_1,uint32_t param_2)
 {
+  extern int br2_bail_pending(void);
   uint8_t *s1 = g_DAT_801bef60;
   uint8_t *s3;
   int32_t iVar1;
@@ -2095,6 +2100,7 @@ void datetime_confirm_b(int32_t param_1,uint32_t param_2)
   s1[0] = 1;
   s1[1] = (uint8_t)iVar2;
   do {
+    if (br2_bail_pending()) return;
     iVar3 = cd_cmd_issue_sync(0xd,(int)guest_of(s1),0);
   } while (iVar3 == 0);
   if ((int32_t)param_2 >= 0) {
@@ -2291,9 +2297,12 @@ extern void brightness_packet_send(int32_t);
 extern int32_t cd_cmd_issue_sync(int32_t,int32_t,int32_t);
 void mc_state_init(void)
 {
+  extern int br2_bail_pending(void);
   uint8_t *s0 = (uint8_t *)guest_at(0x801bef60);
   brightness_packet_send(0);
-  while (cd_cmd_issue_sync(9,0,0) == 0) { }
+  while (cd_cmd_issue_sync(9,0,0) == 0) {
+    if (br2_bail_pending()) return;
+  }
   if (s0 == NULL) return;
   s0[0xd] = 0;
   s0[0xf] = 0xff;
@@ -3355,6 +3364,7 @@ int menu_sprite_load_sm(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,uint32_t
    and persists across loop iterations (menu_stepper_state_advance may edit it). */
 int menu_stepper_sm(uint8_t *s0)
 {
+  extern int br2_bail_pending(void);
   uint8_t *s4 = (uint8_t *)guest_at(0x1f800000);
   uint8_t desc[0x38];
   int32_t s1 = 0;
@@ -3362,6 +3372,7 @@ int menu_stepper_sm(uint8_t *s0)
 
   memset(desc,0,sizeof(desc));
   for (;;) {
+    if (br2_bail_pending()) return s3;
     if (s1 == 1) goto body;
     if (s1 < 2) {
       if (s1 == 0) {
@@ -3613,6 +3624,7 @@ single:
    Entry clears 0x1f800001 and 0x1f80008c; exit clears 0x1f800001. */
 void card_fade_sm(uint32_t a0)
 {
+  extern int br2_bail_pending(void);
   static int32_t s1;
   static int32_t s2;
   uint8_t *s0 = (uint8_t *)guest_at(0x1f800000);
@@ -3624,6 +3636,7 @@ void card_fade_sm(uint32_t a0)
   s0[1] = 0;
   *(uint16_t *)(s0 + 0x8c) = 0;
   for (;;) {
+    if (br2_bail_pending()) return;
     int32_t st = s0[1];
     if (st == 1) goto tick;
     if (st < 2) {
@@ -3987,6 +4000,7 @@ int mc_data_read(uint32_t p0,uint32_t p1,uint32_t p2,uint32_t p3,
 /* ---- countdown_display_sm @0x8016ddf8 (264 insns) ---- */
 void countdown_display_sm(uint32_t a0)
 {
+  extern int br2_bail_pending(void);
   uint8_t *s2 = (uint8_t *)guest_at(0x1f800000);
   uint8_t *t1;
   int32_t s0;
@@ -4004,6 +4018,7 @@ void countdown_display_sm(uint32_t a0)
   rgb_triple_store(0,0,0);
   t1 = (uint8_t *)guest_at(0x1f800000 + (uint32_t)s0 * 2);
   for (;;) {
+    if (br2_bail_pending()) return;
     int32_t st;
     if (s5 == 1) goto body;
     if (s5 < 2) {
@@ -4134,6 +4149,7 @@ poll:
 /* ---- menu_res_load_sm @0x801709fc (206 insns) ---- */
 int32_t menu_res_load_sm(uint32_t a0,uint8_t *s4,uint8_t *s5,int32_t s2)
 {
+  extern int br2_bail_pending(void);
   uint8_t *s1 = (uint8_t *)guest_at(a0);
   int32_t s3 = 0;
   int32_t s0;
@@ -4152,6 +4168,7 @@ int32_t menu_res_load_sm(uint32_t a0,uint8_t *s4,uint8_t *s5,int32_t s2)
   s0 = (int32_t)*(int16_t *)(s1 + 0x8c);
 
   for (;;) {
+    if (br2_bail_pending()) return -1;
     if (s0 == 0x30) { s0 = 0x40; goto st40; }
     if (s0 < 0x31) {
       if (s0 == 0x10) goto st10;
@@ -4968,6 +4985,7 @@ static int32_t shr2_trunc(int32_t v)
 
 void hud_state_machine(uint32_t a0)
 {
+  extern int br2_bail_pending(void);
   uint8_t *g  = (uint8_t *)guest_at(0x1f800000);
   uint8_t *sp20, *sp24, *c0;
   uint32_t fp = 0, mode = a0;
@@ -4980,6 +4998,7 @@ void hud_state_machine(uint32_t a0)
 
   sp58 = (((uint32_t)*(uint16_t *)(g + 0x92) & 0xf00) ^ 0x100) == 0;
   for (;;) {
+    if (br2_bail_pending()) return;
     sp20 = (uint8_t *)guest_at(sp58 ? 0x1f8000e8 : 0x1f8001f0);
     sp24 = (uint8_t *)guest_at(*(uint32_t *)(sp20 + 0x2c));
     idx   = sp20[3];
@@ -6040,11 +6059,16 @@ int mc_file_cmd_stable_poll(uint32_t a0,const void *a1,uint32_t a2)
    result code (0 returns immediately). */
 int mc_job_a_result_poll(uint32_t a0,const void *a1,void *a2,uint32_t a3,uint32_t a4)
 {
+  extern int br2_bail_pending(void);
   uint32_t t1 = 0, code = 0;
   int32_t prev = 0;
   for (;;) {
-    while (mc_job_issue_a(a0,a1,a2,a3,a4) == 0) { }
-    while (cd_job_result(0,&t1,&code) == 0) { }
+    while (mc_job_issue_a(a0,a1,a2,a3,a4) == 0) {
+      if (br2_bail_pending()) return -1;
+    }
+    while (cd_job_result(0,&t1,&code) == 0) {
+      if (br2_bail_pending()) return -1;
+    }
     if (code == 0) return 0;
     if ((int32_t)code != prev) { prev = (int32_t)code; continue; }
     return (int32_t)code;
@@ -6054,11 +6078,16 @@ int mc_job_a_result_poll(uint32_t a0,const void *a1,void *a2,uint32_t a3,uint32_
 /* ---- mc_job_b_result_poll @0x801688f0 (45 insns) ---- same shape, mc_job_issue_b */
 int mc_job_b_result_poll(uint32_t a0,const void *a1,void *a2,uint32_t a3,uint32_t a4)
 {
+  extern int br2_bail_pending(void);
   uint32_t t1 = 0, code = 0;
   int32_t prev = 0;
   for (;;) {
-    while (mc_job_issue_b(a0,a1,a2,a3,a4) == 0) { }
-    while (cd_job_result(0,&t1,&code) == 0) { }
+    while (mc_job_issue_b(a0,a1,a2,a3,a4) == 0) {
+      if (br2_bail_pending()) return -1;
+    }
+    while (cd_job_result(0,&t1,&code) == 0) {
+      if (br2_bail_pending()) return -1;
+    }
     if (code == 0) return 0;
     if ((int32_t)code != prev) { prev = (int32_t)code; continue; }
     return (int32_t)code;
