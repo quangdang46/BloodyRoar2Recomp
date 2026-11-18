@@ -1912,3 +1912,11 @@ issuing pad-read transactions -> tx_writes frozen -> guest never sees
 pad. BIOS has PAD driver @0x43D0 + PAD_init/PAD_dr services. The
 kernel pad-poll thread/driver exited or blocked. Agent 83b9504a
 tracing why the kernel SIO driver stopped (event/flag/thread state).
+
+=== N+147 — END-TO-END CONFIRMED: versus blocked by dead kernel SIO driver ===
+PSX_FAST_FORWARD_SPEED=max gives ~102fps (vs 0.2fps renderer-bound) —
+versus nav now testable in seconds. nav_to_fight.py 5010: reached
+gs=5 ph=1 (TITLE) at frame ~5847, held START repeatedly, ph NEVER
+advanced to 2 — game cannot see pad input. CONFIRMS kernel SIO/pad
+driver (func ~0x27EC, stopped @byte_seq 15464) is THE versus blocker,
+not attract-idle. Fast-forward is the verification path forward.
