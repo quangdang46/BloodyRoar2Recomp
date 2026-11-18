@@ -1837,3 +1837,12 @@ RAM @0x80049xxx-0x8004Dxxx (OT/heap data). Possibly masked before or
 nondeterministic. NEXT: fntrace/pc_probe kernel low-RAM range +
 0x801264E8 dispatcher family; determine if 0xFFE7 is corrupted OT
 entry / saved-context field / jump-table value.
+
+=== N+140 — 0xFFE7 crash CLEARED; game deep in attract @frame 23000+ ===
+My probe of verify emu (port 4920, HEAD dcebda1): frame 22288->23235,
+PAST the 0xFFE7 @11068 crash AND past earlier 22020 point. CD seq
+421190 streaming Mode-2/XA continuously. gs=5 (title/attract area).
+SIO tx_writes STILL 15556 — pad input still dead (versus blocker
+remains, was symptom of CD wait; now CD healthy so input path itself
+needs re-investigation). Frame rate slow (~0.4fps) — heavy CD streaming
+or idle wait; agent 44ef3449 characterizing. CRASH GATE CLEARED.
