@@ -1931,3 +1931,19 @@ addrs, section markers. ONE real bug fixed: mode_name_announce
 PRESS START flag v0=0->v0=4 (delay-slot li). The crash-causing
 transcription class is now swept clean — remaining un-audited surface
 is data-value switches + mask/compare constants (lower risk).
+
+=== N+149 — pad+card input dead: IntRP verifier starvation (root cause) ===
+83b9504a traced the dead pad path end-to-end: at gs=5/ph=1 title, frame
+advances + VBLANK events deliver, but SIO tx_writes frozen @15556 AND
+memcard traffic frozen (@114) -> the ENTIRE BIOS sio0Handler is dormant.
+IntRP chain @0x800045E8 has 4 BIOS nodes; all verifiers run every IRQ
+(~11 hits) but only handler 0x1BD0 fires. Hypothesis: IRQVerifier/
+mcHandler runs BEFORE sio0Verifier in chain order and auto-acks the
+VBLANK IREG bit (s_IRQsAutoAck[VBLANK]) -> sio0Verifier sees bit cleared
+-> returns 0 -> sio0Handler (readPad x2 + readPadHighLevel +
+firstStageCardAction) never runs. Explains both pad AND card freeze,
+and why it worked early (15556 TX) then stopped mid-run (~frame 946):
+something reordered the chain or enabled VBLANK auto-ack. NOT a wedged
+SIO device, NOT wrong BIOS, NOT attract. Faithful fix target:
+interrupts.c IREG/IMASK/auto-ack semantics or recompiler COP0/exception
+path — NOT sio.c, NOT a shim.
