@@ -2001,3 +2001,22 @@ samples it. Ordering fix belongs in interrupts.c deferred-resume /
 game INTC handler path. ALSO confirmed live: pad fix works — fresh
 build tx_writes climbing, pad_buttons=0xFFF7 read at title, but fps
 collapsed to ~0.5 (DeliverEvent starvation) so title won't advance.
+
+=== N+153 — starvation ROOT: host-side NULL dispatch latches in_exception ===
+49d3d84c captured the fatal stall live (frame 22020): NOT a lost guest
+CD link — a HOST-SIDE wedge. in_exception=1 latched forever ->
+interrupts_service_scheduled_events() early-returns (interrupts.c:649)
+-> total CPU park (0.4% CPU, all counters frozen). pczero_count=1:
+pc=0x0 dispatched at addr=0x00115DB0, ra=0x00001AB4 (low kernel RAM),
+epc=0x8019A648 (VBlank IRQ preempting vsync_wait_n), ~342 cycles after
+last context switch, mid cd_intc_dispatch INTC re-arm (B0:0x17 tail
+@0x8019AA9C). Guest chain HEALTHY to the fatal IRQ: cd_intc_dispatch
+fires every vblank, channel table 0x801BCD18 intact, cb7 table
+0x801BDE04=0x8019B7E0 valid, DeliverEvent last fired normally, CDROM
+state clean. The NULL jalr is upstream of everything — either kernel
+INTC handler list (low RAM 0x0000xxxx) or cd_intc_dispatch channel
+tbl jalr @0x8019A9C0 read a zeroed slot, OR HLE-scheduler TCB resume
+PC=0. Same class as session-18 clean->generated->BIOS boundary value
+loss. Faithful fix target: interrupts.c deferred-resume/exception
+path — find which table slot gave NULL and why in_exception never
+clears.
