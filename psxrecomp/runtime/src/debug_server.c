@@ -14739,6 +14739,13 @@ void debug_server_init(int port)
 
     int yes = 1;
     setsockopt(s_listen, SOL_SOCKET, SO_REUSEADDR, (const char *)&yes, sizeof(yes));
+#ifdef SO_NOSIGPIPE
+    /* macOS/BSD: a client disconnecting mid-send raises SIGPIPE and kills
+     * the whole emulator (exit 141). SO_NOSIGPIPE makes send() return
+     * EPIPE instead; accepted sockets inherit it. Linux uses MSG_NOSIGNAL
+     * (send flags) — not needed here since send() callers pass 0. */
+    setsockopt(s_listen, SOL_SOCKET, SO_NOSIGPIPE, &yes, sizeof(yes));
+#endif
 
     struct sockaddr_in addr;
     memset(&addr, 0, sizeof(addr));
@@ -15129,6 +15136,9 @@ static int io_thread_main(void *arg)
         int clen = sizeof(caddr);
         sock_t c = accept(s_listen, (struct sockaddr *)&caddr, &clen);
         if (c == SOCK_INVALID) { if (!s_io_running) break; SDL_Delay(5); continue; }
+#ifdef SO_NOSIGPIPE
+        { int yn = 1; setsockopt(c, SOL_SOCKET, SO_NOSIGPIPE, &yn, sizeof(yn)); }
+#endif
 
         char req[RECV_BUF_SIZE];
         int rl = recv_line(c, req, sizeof(req));
