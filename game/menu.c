@@ -14276,7 +14276,11 @@ int32_t heap_serialize(uint32_t param_1,uint32_t param_2,uint32_t param_3,
       uint32_t tag   = MB32(rp);
       uint32_t f4    = MB16(rp + 4u);
       uint32_t param = MB16(rp + 6u) & 0x7fffu;
-      uint32_t v1    = tag & 0x0fffffffu;
+      uint32_t v1    = tag & 0x0f04ffffu;  /* generated @0x8016B848-864:
+                                          * lui 0x0F04/ori 0xFFFF/and — NOT
+                                          * 0x0FFFFFFF; strips flag bits
+                                          * 16,17,19-23 so tagged variants
+                                          * fold into the base cases */
       uint32_t src   = MB32(ctx + 4u) + MB32(rp + 8u) * 4u;
       rec = rp + 4u + f4 * 4u;      /* next record (stride at end) */
       switch (v1) {
