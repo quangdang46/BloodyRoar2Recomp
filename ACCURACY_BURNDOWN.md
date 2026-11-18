@@ -1641,3 +1641,17 @@ whether Pause@3772 completion should yield a 0xF0000003 DeliverEvent
 the script VM consumes (cls3 CD events from 0x80195B4C/B74/B9C).
 NEXT: gwatch 0x1F800001 early (~frame 3500) for the 0x21 writer; probe
 cls3 CD done->event chain in runtime cdrom.c/interrupts.c.
+
+=== N+126 — ph=0x21 freeze FIXED (70760d5); whole class = stale x28 restore ===
+ead766a5: DAT_1f800001=0xff compiled to strb w28 — constant hoisted into
+callee-saved x28, restored STALE by IRQ setjmp/longjmp (N+107/N+109
+class). gwatch proved f1->0x21 write at frame 3805 via strb w28.
+Fixed via br2_st8 (arg-reg materialization) at menu.c:1980 + game.c:1541.
+VERIFIED: past freeze to ~frame 7499. NEW SIGSEGV same class inside
+dirty_ram_text_native_ok_ranges_from (memory.c:543) — file-static base
+cached across setjmp boundary (the noinline hazard dirty_ram_interp.c:
+2855 documents). THE REAL FIX = runtime callee-saved register
+preservation across exception_jmpbuf — retires ENTIRE class (x28
+crashes + strb-w28 + memcmp). N+109 direction, still unfinished.
+OTHER DAT_1f800001 const-write sites (menu.c 1002/1148/1399/1736/1828,
+game.c 1458/1468/1524/1529) same latent hazard.
