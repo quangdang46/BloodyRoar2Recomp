@@ -1574,3 +1574,21 @@ didn't, OR that job is scheduled only on CD IRQ2 edges which stopped
 when drive idled.
 NEXT: instrument whether type-2 response handler posts the job, and
 whether the reg-window command worker is IRQ2-edge-scheduled only.
+
+=== N+122 — CD stall localized: staged cmd never flushed to 0x1F8018xx ===
+cf62c7bb: NOT a livelock-hang — frame counter advances; guest SM pinned
+mid-iteration (s3=1). Chain: state_machine->cd_cmd_queue_load->
+cd_cmd_issue->cd_result_wait_a->cd_timer_read->vsync poll. Command IS
+staged each frame (cd_cmd_queue_load writes queue regs -> 0x1F8010E0
+DMA channel shows start bits cleared = ran/completed) but ZERO
+0x1F8018xx writes after frame 3772 — flush via cd_reg_window_op/
+cd_seek_param_issue/cd_file_read_seq NEVER invoked (pc_probe=0 hits).
+SM waits on DeliverEvent(0xF0000009) that only comes via CD-DMA ch4
+completion -> cd_dma_chan_reset — never armed.
+PRIME SUSPECT: clean-C busy-waits in cd_queue_push (cd.c:5380) /
+cd_queue_drain (cd.c:5323): `while((br2_ld32(DB32G(0x801b8428)) &
+0x04000000)==0) br2_irq_poll();` — EXACT section-4 pattern starving the
+deferred CD coroutine (no guest resume PC) during the IRQ2-edge/DMA-done
+window. Faithful fix = delegate those bodies to br2_call_generated.
+SECONDARY: DMA done-interrupt possibly masked (DICR bit31=0, cd_intc_
+dispatch sees I_STAT=0 -> no handlers).
