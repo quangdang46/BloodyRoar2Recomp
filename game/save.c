@@ -5669,33 +5669,48 @@ extern int32_t attr_records_scan(uint32_t,uint32_t);
  * array at a1+8; each selector==1 writes one record at cursor a3+88+0x70*k
  * (t4 cursor a3+20 tracks it, +0x70 per record). No calls, no MMIO, no
  * IRQ-sensitive waits — clean C is faithful. a0-a4 are guest addresses
- * (heap cursors), dereferenced via guest_at. */
+ * (heap cursors). Every access goes through br2_ldN/br2_stN on the guest
+ * address, NOT a cached guest_at() host pointer: the record cursor can
+ * legitimately run past the 2MB RAM arena top (heap-A sits near
+ * 0x801Cxxxx), where the generated body's cpu->write_* mirrors/wraps the
+ * guest address while a raw host pointer would walk off `ram[]` and
+ * corrupt adjacent .bss (observed: text_ref_image/lo/hi trashed ->
+ * wild memcmp in dirty_ram_text_native_ok_ranges_from at frame 7869). */
+extern uint8_t  br2_ld8 (uint32_t a);
+extern uint16_t br2_ld16(uint32_t a);
+extern uint32_t br2_ld32(uint32_t a);
+extern void     br2_st8 (uint32_t a, uint8_t  v);
+extern void     br2_st16(uint32_t a, uint16_t v);
+extern void     br2_st32(uint32_t a, uint32_t v);
 uint32_t ret_zero_d(uint32_t a0, uint32_t a1, uint32_t a2,
                     uint32_t a3, uint32_t a4)
 {
-    uint8_t *P1 = (uint8_t *)guest_at(a0);
-    uint8_t *P2 = (uint8_t *)guest_at(a1);
-    uint8_t *P3 = (uint8_t *)guest_at(a2);
-    uint8_t *P4 = (uint8_t *)guest_at(a3);
-    uint8_t *cur = P4 + 20;              /* t4 cursor: a3+20, +0x70/record */
+    uint32_t curg = a3 + 20;           /* t4 cursor: a3+20, +0x70/record */
     uint32_t nrec = 0;
-    uint32_t N    = *(uint16_t *)(P1 + 4);   /* record-group count */
-    uint32_t cnt_a = *(uint8_t *)(P2 + 4);   /* inner bound  (a1 reg) */
-    uint32_t cnt_b = *(uint8_t *)(P2 + 5);   /* middle bound (s2)    */
-    uint32_t add6  = *(uint8_t *)(P2 + 6);   /* s6 */
-    uint32_t add7  = *(uint8_t *)(P2 + 7);   /* s5 */
-    uint32_t half_b = cnt_b >> 1;
+    uint32_t N    = br2_ld16(a0 + 4);  /* record-group count */
+    uint32_t cnt_a = br2_ld8(a1 + 4);  /* inner bound  (a1 reg) */
+    uint32_t cnt_b = br2_ld8(a1 + 5);  /* middle bound (s2)    */
+    uint32_t add6  = br2_ld8(a1 + 6);  /* s6 */
+    uint32_t add7  = br2_ld8(a1 + 7);  /* s5 */
     uint32_t t9;
+    { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+      decomp_trace_record(30,a0,a1,(uint8_t)cnt_a,N);
+      decomp_trace_record(31,(uint32_t)cnt_b,a2,(uint8_t)add6,add7); }
 
-    /* header at P4+0..16 (guest values stored are guest addresses) */
-    *(uint32_t *)(P4 + 0)  = 1;
-    *(uint32_t *)(P4 + 4)  = 0x00040051;
-    *(uint32_t *)(P4 + 12) = a3 + 20;
-    *(uint32_t *)(P4 + 16) = a4;
+    /* header at a3+0..16 (guest values stored are guest addresses) */
+    br2_st32(a3 + 0,  1u);
+    br2_st32(a3 + 4,  0x00040051u);
+    br2_st32(a3 + 12, a3 + 20);
+    br2_st32(a3 + 16, a4);
 
     for (t9 = 1; t9 < N; t9++) {
-        const uint8_t *src16 = P2 + 8;    /* t7: u16 selector stream */
-        const uint8_t *t1    = P1 + 16;   /* field source */
+        /* per-outer-iteration values (DB74-DBCC):
+         *   selector stream s7 = a1+8 (reset each t9, +2 per inner slot);
+         *   middle-loop centre = cnt_b >> (t9 & 31)  (DB80 srlv -> sp+8);
+         *   field-source ptr    = a0 + 8 + t9*8      (DB94 t9<<3 + DB40 a0+8). */
+        uint32_t srcg  = a1 + 8;         /* t7: u16 selector stream */
+        uint32_t half_b = cnt_b >> (t9 & 31u);
+        uint32_t t1g   = a0 + 8 + t9 * 8; /* per-group field source */
         uint32_t t3;
         if (cnt_b == 0) continue;         /* DB88: beqz s2 -> outer bottom */
         for (t3 = 0; t3 < cnt_b; t3++) {
@@ -5707,83 +5722,85 @@ uint32_t ret_zero_d(uint32_t a0, uint32_t a1, uint32_t a2,
             uint32_t t2;
             if (cnt_a == 0) continue;     /* DB9C: beqz a1 -> middle bottom */
             for (t2 = 0; t2 < cnt_a; t2++) {
-                uint32_t sel = *(const uint16_t *)src16;
-                src16 += 2;                /* delay-slot advance, every iter */
-                if (sel != 1) continue;    /* DD70: skip record, no cursor bump */
+                uint32_t sel = br2_ld16(srcg);
+                srcg += 2;                /* delay-slot advance, every iter */
+                if (sel != t9) continue;  /* DBD8: sel != t9(gpr[25]) -> skip */
                 {
-                    /* ==1 path: write one 0x70 record. D = t4+68 cursor. */
-                    uint8_t *D = cur + 68;
+                    /* ==1 path: write one 0x70 record. D = cur+68 cursor. */
+                    uint32_t dg = curg + 68;
                     int32_t di = (int32_t)t2 - (int32_t)(cnt_a >> 1);
                     uint32_t vi = (uint32_t)(di * 384);   /* inner v1 */
                     uint32_t w  = vi + 384u;              /* inner v0 */
                     uint16_t f2, f6;
                     uint32_t fl, b0, b1, c0, c1;
 
-                    D[-33] = 9;  D[-29] = 44;
-                    D[7]   = 9;  D[11] = 44;
-                    D[-32] = 128; D[-31] = 128; D[-30] = 128;
-                    D[8]   = 128; D[9]  = 128;  D[10] = 128;
-                    *(uint16_t *)(cur + 0) = (uint16_t)vi;
-                    *(uint16_t *)(D - 66) = 0;
-                    *(uint16_t *)(D - 64) = (uint16_t)tm5;
-                    *(uint16_t *)(D - 60) = (uint16_t)w;
-                    *(uint16_t *)(D - 58) = 0;
-                    *(uint16_t *)(D - 56) = (uint16_t)tm5;
-                    *(uint16_t *)(D - 52) = (uint16_t)vi;
-                    *(uint16_t *)(D - 50) = 0;
-                    *(uint16_t *)(D - 48) = (uint16_t)tm8;
-                    *(uint16_t *)(D - 44) = (uint16_t)w;
-                    *(uint16_t *)(D - 42) = 0;
-                    *(uint16_t *)(D - 40) = (uint16_t)tm8;
+                    br2_st8(dg - 33, 9);  br2_st8(dg - 29, 44);
+                    br2_st8(dg + 7, 9);   br2_st8(dg + 11, 44);
+                    br2_st8(dg - 32, 128); br2_st8(dg - 31, 128);
+                    br2_st8(dg - 30, 128);
+                    br2_st8(dg + 8, 128);  br2_st8(dg + 9, 128);
+                    br2_st8(dg + 10, 128);
+                    br2_st16(curg + 0, (uint16_t)vi);
+                    br2_st16(dg - 66, 0);
+                    br2_st16(dg - 64, (uint16_t)tm5);
+                    br2_st16(dg - 60, (uint16_t)w);
+                    br2_st16(dg - 58, 0);
+                    br2_st16(dg - 56, (uint16_t)tm5);
+                    br2_st16(dg - 52, (uint16_t)vi);
+                    br2_st16(dg - 50, 0);
+                    br2_st16(dg - 48, (uint16_t)tm8);
+                    br2_st16(dg - 44, (uint16_t)w);
+                    br2_st16(dg - 42, 0);
+                    br2_st16(dg - 40, (uint16_t)tm8);
 
-                    f2 = *(const uint16_t *)(t1 + 2);
-                    *(uint16_t *)(D + 18) = f2;
-                    *(uint16_t *)(D - 22) = f2;
-                    b0 = t1[0];
-                    D[32] = (uint8_t)b0; D[-8]  = (uint8_t)b0;
-                    D[16] = (uint8_t)b0; D[-24] = (uint8_t)b0;
-                    b1 = t1[1];
-                    D[25] = (uint8_t)b1; D[-15] = (uint8_t)b1;
-                    D[17] = (uint8_t)b1; D[-23] = (uint8_t)b1;
+                    f2 = br2_ld16(t1g + 2);
+                    br2_st16(dg + 18, f2);
+                    br2_st16(dg - 22, f2);
+                    b0 = br2_ld8(t1g);
+                    br2_st8(dg + 32, (uint8_t)b0); br2_st8(dg - 8,  (uint8_t)b0);
+                    br2_st8(dg + 16, (uint8_t)b0); br2_st8(dg - 24, (uint8_t)b0);
+                    b1 = br2_ld8(t1g + 1);
+                    br2_st8(dg + 25, (uint8_t)b1); br2_st8(dg - 15, (uint8_t)b1);
+                    br2_st8(dg + 17, (uint8_t)b1); br2_st8(dg - 23, (uint8_t)b1);
                     c0 = b0 + add6 - 1;
-                    D[40] = (uint8_t)c0; D[0]   = (uint8_t)c0;
-                    D[24] = (uint8_t)c0; D[-16] = (uint8_t)c0;
+                    br2_st8(dg + 40, (uint8_t)c0); br2_st8(dg + 0,  (uint8_t)c0);
+                    br2_st8(dg + 24, (uint8_t)c0); br2_st8(dg - 16, (uint8_t)c0);
                     c1 = b1 + add7 - 1;
-                    D[41] = (uint8_t)c1; D[1]   = (uint8_t)c1;
-                    D[33] = (uint8_t)c1; D[-7]  = (uint8_t)c1;
-                    f6 = *(const uint16_t *)(t1 + 6);
-                    *(uint16_t *)(D + 26) = f6;
-                    *(uint16_t *)(D - 14) = f6;
+                    br2_st8(dg + 41, (uint8_t)c1); br2_st8(dg + 1,  (uint8_t)c1);
+                    br2_st8(dg + 33, (uint8_t)c1); br2_st8(dg - 7,  (uint8_t)c1);
+                    f6 = br2_ld16(t1g + 6);
+                    br2_st16(dg + 26, f6);
+                    br2_st16(dg - 14, f6);
 
-                    fl = *(const uint16_t *)(t1 + 4);
+                    fl = br2_ld16(t1g + 4);
                     if (fl & 1) {           /* DCF0-0x8016DD1C fixup */
-                        uint32_t x = D[-23], y = D[-7];
-                        uint32_t z = D[1],  w2 = D[-15];
-                        D[33] = (uint8_t)x; D[-7]  = (uint8_t)x;
-                        D[17] = (uint8_t)y; D[-23] = (uint8_t)y;
-                        D[25] = (uint8_t)z; D[-15] = (uint8_t)z;
-                        D[41] = (uint8_t)w2; D[1] = (uint8_t)w2;
+                        uint32_t x = br2_ld8(dg - 23), y = br2_ld8(dg - 7);
+                        uint32_t z = br2_ld8(dg + 1),  w2 = br2_ld8(dg - 15);
+                        br2_st8(dg + 33, (uint8_t)x);  br2_st8(dg - 7,  (uint8_t)x);
+                        br2_st8(dg + 17, (uint8_t)y);  br2_st8(dg - 23, (uint8_t)y);
+                        br2_st8(dg + 25, (uint8_t)z);  br2_st8(dg - 15, (uint8_t)z);
+                        br2_st8(dg + 41, (uint8_t)w2); br2_st8(dg + 1,  (uint8_t)w2);
                     }
                     if (fl & 2) {           /* 0x8016DD34-0x8016DD60 fixup */
-                        uint32_t x = D[-24], y = D[-16];
-                        uint32_t z = D[0],  w2 = D[-8];
-                        D[24]  = (uint8_t)x; D[-16] = (uint8_t)x;
-                        D[16]  = (uint8_t)y; D[-24] = (uint8_t)y;
-                        D[32]  = (uint8_t)z; D[-8]  = (uint8_t)z;
-                        D[40]  = (uint8_t)w2; D[0]  = (uint8_t)w2;
+                        uint32_t x = br2_ld8(dg - 24), y = br2_ld8(dg - 16);
+                        uint32_t z = br2_ld8(dg + 0),  w2 = br2_ld8(dg - 8);
+                        br2_st8(dg + 24,  (uint8_t)x); br2_st8(dg - 16, (uint8_t)x);
+                        br2_st8(dg + 16,  (uint8_t)y); br2_st8(dg - 24, (uint8_t)y);
+                        br2_st8(dg + 32,  (uint8_t)z); br2_st8(dg - 8,  (uint8_t)z);
+                        br2_st8(dg + 40,  (uint8_t)w2); br2_st8(dg + 0, (uint8_t)w2);
                     }
                     nrec++;
-                    cur += 0x70;             /* s0++/a3+=0x70/t4+=0x70 */
+                    curg += 0x70;            /* s0++/a3+=0x70/t4+=0x70 */
                 }
             }
         }
     }
 
     /* epilogue 0x8016DDA4-0x8016DDF4 */
-    *(uint32_t *)(P4 + 8)  = nrec;
-    *(uint32_t *)(P3 + 28) = a3;
-    *(uint16_t *)(P3 + 12) = 0;
-    *(uint16_t *)(P3 + 14) = 0;
+    br2_st32(a3 + 8,  nrec);
+    br2_st32(a2 + 28, a3);
+    br2_st16(a2 + 12, 0);
+    br2_st16(a2 + 14, 0);
     { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
       decomp_trace_record(16,a3,(uint32_t)(a3 + 20 + nrec * 0x70),0,
                           nrec * 0x70); }

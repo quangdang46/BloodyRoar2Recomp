@@ -1374,7 +1374,7 @@ int psx_interrupt_delivery_needed(const CPUState* cpu) {
     return 1;
 }
 
-void psx_check_interrupts(CPUState* cpu) {
+void psx_check_interrupts_run(CPUState* cpu) {
     psx_cyc_batch_flush();
     extern int g_ls_suppress_record;
     extern int psx_netplay_active(void);
@@ -2510,6 +2510,102 @@ irq_deliver_eval:
     if (np_present_after_irq && !s_defer_switch_pending)
         gpu_vblank_flush_present();
 #undef PSX_CHECK_INTERRUPTS_RETURN
+}
+
+/* Host callee-saved register preservation across the exception boundary.
+ *
+ * psx_check_interrupts_run() arms exception_jmpbuf with setjmp() before it
+ * dispatches the recompiled exception handler, and ReturnFromException /
+ * RestoreState escape back through longjmp().  setjmp()/longjmp() restore the
+ * register file captured at the setjmp point, which is correct for resuming
+ * psx_check_interrupts_run itself — but the interrupted CALLER (compiled game
+ * code, the dirty-RAM interpreter, clean C) can legitimately keep
+ * guest-derived values or file-static base pointers live in host
+ * callee-saved registers (arm64 x19-x28/fp/lr, x86-64 rbx/rbp/r12-r15)
+ * across this call.  When the handler dispatch is inlined into a caller (or
+ * the resumed path reuses a callee-saved register as an adrp/file-static
+ * base), a value restored by the longjmp can be stale relative to what the
+ * resumed code expects — the documented N+107/N+109/N+126 class (stale x28
+ * phase writes, wild file-static bases in dirty_ram_text_native_ok_ranges).
+ *
+ * This wrapper makes the ABI callee-saved preservation contract explicit and
+ * unconditional: it snapshots every host callee-saved register on entry and
+ * restores them on return, so the interrupted context always resumes with the
+ * exact register file it had when it called in — independent of how the
+ * setjmp/longjmp path (or any inlined frame sharing it) left them.  The save
+ * area is a stack local so nested deliveries (a handler that itself reaches
+ * psx_check_interrupts_at) each keep their own snapshot.
+ *
+ * csr layout: arm64 stores x19..x30 as 6 stp pairs (96 bytes); x86-64 stores
+ * rbx,rbp,r12..r15 as 6 movq (48 bytes). */
+void psx_check_interrupts(CPUState* cpu) {
+    /* Fast path: no deliverable interrupt source, not inside an exception,
+     * and no deferred cooperative switch pending.  psx_check_interrupts_run()
+     * will return through one of its early gates WITHOUT arming
+     * exception_jmpbuf, so there is no setjmp/longjmp boundary for stale
+     * callee-saved registers to cross — skip the snapshot entirely.  This
+     * keeps the per-block-edge cost at a few loads+branches (the same gates
+     * run() itself evaluates first) instead of 12 register pairs of traffic.
+     * Any uncertainty falls through to the preserving path below. */
+    {
+        uint32_t swp = cpu->cop0[COP0_CAUSE] & cpu->cop0[COP0_SR] & 0x0300u;
+        if (!in_exception && (i_stat & i_mask) == 0 && swp == 0 &&
+            !s_defer_switch_pending) {
+            psx_check_interrupts_run(cpu);
+            return;
+        }
+    }
+#if defined(__aarch64__)
+    uint64_t csr[12];
+    /* Pin the snapshot pointer to a caller-saved scratch register (x9/t1) so
+     * it can never collide with the callee-saved file being preserved, and
+     * reload it after the run call (the call may clobber caller-saved regs). */
+    register uint64_t *b asm("x9");
+    b = csr;
+    __asm__ volatile(
+        "stp x19, x20, [%0]\n\t"
+        "stp x21, x22, [%0, #16]\n\t"
+        "stp x23, x24, [%0, #32]\n\t"
+        "stp x25, x26, [%0, #48]\n\t"
+        "stp x27, x28, [%0, #64]\n\t"
+        "stp x29, x30, [%0, #80]\n\t"
+        : : "r"(b) : "memory");
+    psx_check_interrupts_run(cpu);
+    b = csr;
+    __asm__ volatile(
+        "ldp x19, x20, [%0]\n\t"
+        "ldp x21, x22, [%0, #16]\n\t"
+        "ldp x23, x24, [%0, #32]\n\t"
+        "ldp x25, x26, [%0, #48]\n\t"
+        "ldp x27, x28, [%0, #64]\n\t"
+        "ldp x29, x30, [%0, #80]\n\t"
+        : : "r"(b) : "memory");
+#elif defined(__x86_64__)
+    uint64_t csr[6];
+    register uint64_t *b asm("r10");
+    b = csr;
+    __asm__ volatile(
+        "movq %%rbx, 0(%0)\n\t"
+        "movq %%rbp, 8(%0)\n\t"
+        "movq %%r12, 16(%0)\n\t"
+        "movq %%r13, 24(%0)\n\t"
+        "movq %%r14, 32(%0)\n\t"
+        "movq %%r15, 40(%0)\n\t"
+        : : "r"(b) : "memory");
+    psx_check_interrupts_run(cpu);
+    b = csr;
+    __asm__ volatile(
+        "movq 0(%0), %%rbx\n\t"
+        "movq 8(%0), %%rbp\n\t"
+        "movq 16(%0), %%r12\n\t"
+        "movq 24(%0), %%r13\n\t"
+        "movq 32(%0), %%r14\n\t"
+        "movq 40(%0), %%r15\n\t"
+        : : "r"(b) : "memory");
+#else
+    /* Portable fallback: rely on the normal ABI callee-saved contract. */
+    psx_check_interrupts_run(cpu);
+#endif
 }
 
 /* Compatibility shim: the ape-flavored generated code calls
