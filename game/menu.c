@@ -14289,7 +14289,7 @@ int32_t heap_serialize(uint32_t param_1,uint32_t param_2,uint32_t param_3,
       case 0x0000000eu: B7C0_EMIT(mode==1?0x80189428u:0x80187a48u); B7C0_CALL5(heap_serialize_tag_0e); break;
       case 0x00000010u: B7C0_EMIT(mode==1?0x80188dccu:0x80187378u); B7C0_CALL5(heap_serialize_tag_10); break;
       case 0x00000011u: B7C0_EMIT(mode==1?0x801890dcu:0x801876bcu); B7C0_CALL7(record_table_expand_b); break;
-      case 0x00000012u: B7C0_EMIT(mode==1?0x801894fcu:0x80187b20u); B7C0_CALL5(heap_serialize_tag_12); break;
+      case 0x00000012u: B7C0_EMIT(mode==1?0x80189500u:0x80187b20u); B7C0_CALL5(heap_serialize_tag_12); break;
       case 0x00000014u: B7C0_EMIT(mode==1?0x80188f40u:0x80187504u); B7C0_CALL5(heap_serialize_tag_14); break;
       case 0x00000015u: B7C0_EMIT(mode==1?0x8018926cu:0x8018786cu); B7C0_CALL7(quad_strip_emit_b); break;
       case 0x00000016u: B7C0_EMIT(mode==1?0x801895f8u:0x80187c10u); B7C0_CALL5(heap_serialize_tag_16); break;
@@ -14323,7 +14323,7 @@ int32_t heap_serialize(uint32_t param_1,uint32_t param_2,uint32_t param_3,
       case 0x0004004du: {   /* heap_serialize_tag_4004d, 7 args */
         uint32_t nm;
         if (mode == 3) nm = 0x8018a5dcu;
-        else if (mode < 4) nm = (mode == 1) ? 0x8018a3acu : 0x80188b8cu;
+        else if (mode < 4) nm = (mode == 1) ? 0x8018a2acu : 0x80188b8cu;
         else nm = (mode == 7) ? 0x8018a874u : 0x80188b8cu;
         B7C0_EMIT(nm); B7C0_CALL7(heap_serialize_tag_4004d); break; }
       case 0x00040050u: {   /* heap_serialize_tag_40050, 5 args */
@@ -14357,9 +14357,9 @@ int32_t heap_serialize(uint32_t param_1,uint32_t param_2,uint32_t param_3,
         B7C0_EMIT(nm); B7C0_CALL5(heap_serialize_tag_40054); break; }
       case 0x00040055u: {   /* heap_serialize_tag_40055, 7 args */
         uint32_t nm;
-        if (mode == 3) nm = 0x8018a514u;
+        if (mode == 3) nm = 0x8018a714u;
         else if (mode < 4) nm = (mode == 1) ? 0x8018a370u : 0x80188c64u;
-        else nm = (mode == 7) ? 0x8018a664u : 0x80188c64u;
+        else nm = (mode == 7) ? 0x8018a9f8u : 0x80188c64u;
         B7C0_EMIT(nm); B7C0_CALL7(heap_serialize_tag_40055); break; }
       /* ---- 0x010000xx family: ctx+0xc / ctx+0x14 args ---- */
       case 0x01000008u: B7C0_EMIT(mode==1?0x80189704u:0x80187e18u); B7C0_CALL5(heap_serialize_tag_01000008); break;
