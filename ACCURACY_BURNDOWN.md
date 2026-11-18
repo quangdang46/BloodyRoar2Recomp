@@ -1609,3 +1609,17 @@ B0/0x19; job slots @0x801BE768=-1 -> chan_job_pump no-op).
 NEXT: find who writes tbl[5] (@0x801BDE08) / owns ch5 object, and why
 the deferred job that arms it never fires. ALSO: remove env-gated
 fprintf diagnostics in cd.c (PSX_CB7) before final — no-fprintf rule.
+
+=== N+124 — ch4 (not ch5) is the CD-DMA channel; circular deadlock narrowed ===
+5ae4044c: ch5 irrelevant — ch4 (0x1F8010C0) is CD-DMA. tbl[4]=0x8019B7E0
+(cd_dma_chan_reset) sole DeliverEvent(0xF0000009) sender on ch4 done.
+Channel-xfer submit = func_0x8019B954 (programs 0x1F8010C0/C4/C8
+CHCR=0x01000201; last arm frame 3704). Driven by descriptor block
+0x801BDEA4-0x801BDF08; request-state cell 0x801BDF00=0 (no pending).
+DEADLOCK SHAPE: SM waits event 0x20 <- needs ch4 done <- needs 0x8019B954
+submit <- needs new request posted @0x801BDF00-08 <- poster upstream in
+same CD/sound pipeline gated behind the event. All game threads ASLEEP
+(only B0:0x17 RFE ~4-5/frame); coroutine alive but no work. Response-
+callback slots 0x801BC848/4c=0 likely legit (no read session).
+NEXT: wtrace writes to 0x801BDF00/04/08 before frame 3772 on fresh run
+-> identify producer fn + its gate; compare vs Beetle oracle at ~3772.
