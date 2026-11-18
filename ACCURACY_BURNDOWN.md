@@ -1749,3 +1749,15 @@ NOW UNMASKED: genuine CD-loader TestEvent(0xF1000008) wait — the real
 DeliverEvent(0xF0000003)->waiter chain is the actual remaining bug.
 NOTE: debug server lacks SIGPIPE ignore — repeated connect/disconnect
 kills runs (exit 141); worth a robustness fix.
+
+=== N+133 — bail-unwind guard sweep COMPLETE (a639dbc) ===
+27d32fdf swept ALL clean-C poll loops: cd.c 15 sites + save.c 8 sites +
+menu.c one_shot_init (added by me). Every loop waiting on guest/IRQ-
+mediated state now returns early on br2_bail_pending(), matching
+generated per-block `if (g_psx_call_bail) return;`. The wedge class is
+fully closed — br2_call_generated's stale-$v0 no-op during bail can no
+longer trap a clean-C spin. Dedup/bounded loops verified safe.
+FOLLOW-UP flagged: cd_queue_a/b_status spins lack br2_irq_poll entirely
+(pre-existing fidelity gap — generated runs psx_check_interrupts per
+iter); state-machine for(;;)+poll:->frame_tick pattern exists in
+battle.c/menu.c/game.c — same hazard if bail fires with them on stack.
