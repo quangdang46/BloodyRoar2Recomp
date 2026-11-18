@@ -1672,3 +1672,21 @@ cbe71b39 landed fbc8d52, verified frame ~153,875:
 NEXT: continue runtime verification — does attract now loop and
 versus->fight navigate? CD stall may also be resolved (it was gated
 behind corrupted state).
+
+=== N+128 — CD streaming UNBLOCKED (451 cmds, real sectors); new stall @8092 ===
+8f56592a verified c88581d: frame ~268K sustained ~460fps, no crashes.
+CD now streams correctly — 451 commands past old seq478 freeze, real
+Mode-2 sectors (lba 4644). Attract progressed gs5->gs6 ph2. versus
+untested (game parked before pad read).
+NEW DETERMINISTIC STALL frame 8092 (every run): Thread A file-load
+waiter TestEvent(0xF1000008) spins v0=0 forever; Thread B cd_intc_
+dispatch spins B0:0x17 waiting a CDROM IRQ that already fired+acked.
+INT2 Pause-complete WAS delivered+acked (irq_flag->0); game's
+completion path never issues next SetLoc/ReadN, never DeliverEvents.
+Suspect: game expects a SECOND CD interrupt (INT1 data-ready for tail
+sectors) the device model never raises because Pause cleared
+CDSTAT_READ/reading — lost/never-generated IRQ at file-tail boundary.
+No context switches since ~frame 8090.
+NEXT: instrument frame-8092 boundary — what IRQ does game expect after
+Pause-INT2; check stop_read_stream() (cdrom.c:2261) suppressing INT1,
+or INTC mirror bit never latching for cd_intc_dispatch B0:0x17 wait.
