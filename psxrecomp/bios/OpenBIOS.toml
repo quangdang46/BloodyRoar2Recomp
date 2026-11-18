@@ -43,9 +43,23 @@ text_size    = "0x80000"
 # Upstream's own comment states permissive mode "probably should remain 1".
 # Patched in place at file offset 0x7F24 (vaddr 0xBFC07F24):
 #   lw v0,0x4C70(v0)  ->  li v0,1        (g_patch_permissive forced true)
-# No code moves; all seeds/addresses unchanged. Original image sha256:
-# 6ad31beba3b1516e2f34014d1bfc678d9ef379711db6bf2facc0d70b217f0b7d
-sha256          = "7440f5e2694237b5e1df5b36cdbad618c2186b2d4e02468f614f2e1d87b37167"
+# LOCAL PATCH 2 vs upstream pin 55fbf04 (pcsx-redux / nugget openbios):
+# initCard (B0 index 0x48, RAM func 0x4278) ends with
+#   s_padStarted = padStarted;   /* sw $s0,-20760($v1) @ 0xBFC22320 */
+# where `padStarted` is whatever the CALLER left in $a0. Retail SCPH-1001
+# InitCARD has no pad side-effects at all, and no game can know the
+# BIOS-internal s_padStarted value to pass it. Bloody Roar 2 calls
+# InitCard with a0=0 (game func 0x8019E330, `move $a0,$s0` with s0=0)
+# immediately after PAD_init; upstream then zeroes s_padStarted, so the
+# still-enqueued sio0Handler (prio-2 VBlank IntRP) skips readPad() forever
+# and SIO pad traffic dies at tx_writes=15556 while the game spins on
+# TestEvent. NOP the store so InitCard preserves s_padStarted, matching
+# retail semantics. Patched in place at file offset 0x22320
+# (vaddr 0xBFC22320):
+#   sw $s0,-20760($v1)  ->  nop             (0xAC70AEE8 -> 0x00000000)
+# Prior image sha256 (after patch 1 only):
+# 7440f5e2694237b5e1df5b36cdbad618c2186b2d4e02468f614f2e1d87b37167
+sha256          = "d35c5f10372966ad78e323c3e487ab2c00bb4fe889d80fa42c8b1323ecf19f22"
 license         = "MIT"
 redistributable = true
 
