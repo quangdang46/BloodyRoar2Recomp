@@ -1965,3 +1965,19 @@ frozen @114. This is the AGENTS.md §8 deferred-command-issue /
 register-window doorbell blocker surfacing as the "pad bug". Faithful
 fix belongs in runtime/src/cdrom.c timing/cancellation semantics vs
 Beetle oracle — NOT interrupts.c.
+
+=== N+151 — PAD INPUT FIXED: OpenBIOS initCard zeroed s_padStarted ===
+8754bd36 root-caused + fixed the dead-pad path (the "versus blocker"
+that N+149/N+150 had reframed as CD-stall symptom — BOTH were real:
+pad driver died at frame ~171 AND a separate CD stall exists). OpenBIOS
+sio0Handler (prio-2 VBlank IntRP) calls readPad only if s_padStarted!=0.
+BR2 calls B0:0x48 initCard with a0=0 right after PAD_init; upstream
+initCard ends `s_padStarted = padStarted` (caller $a0) -> zeroed the
+flag -> handler kept firing but skipped readPad forever -> tx_writes
+froze @15556. Retail SCPH-1001 InitCARD has NO pad side-effects. Fix:
+NOP the store @file off 0x22320 (vaddr 0xBFC22320) in openbios.bin,
+documented LOCAL PATCH 2, sha256 repinned, OpenBIOS_full.c regenerated
+via tool. Verified: tx_writes 15556->climbing, pad buffers update,
+CROSS/START reach guest. NOTE: separate CD seek/event stall (N+150)
+still under investigation by 9b4abe25 — may be the attract background
+load or a real cdrom.c bug.
