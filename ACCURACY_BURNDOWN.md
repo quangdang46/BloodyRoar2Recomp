@@ -1846,3 +1846,14 @@ SIO tx_writes STILL 15556 — pad input still dead (versus blocker
 remains, was symptom of CD wait; now CD healthy so input path itself
 needs re-investigation). Frame rate slow (~0.4fps) — heavy CD streaming
 or idle wait; agent 44ef3449 characterizing. CRASH GATE CLEARED.
+
+=== N+141 — attract stalls @frame ~23247 (CD channel-event wedge recurs) ===
+4920 long-run: frame 23244->23247 over ~15min (~0.01fps). CD seq
+421190->421300 (+110 only) — device nearly idle. bioscall total 2M
+(TestEvent-dominated). SAME deferred channel-event wedge class as
+N+137: game thread parked waiting ch4-DMA-done/DeliverEvent that isn't
+firing for current transfer, even though CD device healthy. The
+crash-gates are cleared but the DEFERRED EVENT DELIVERY gap persists
+attract-deep. 44ef3449 characterizing; 83b9504a on pad-input (fresh
+4930 run @frame 739 progressing). NEXT: the recurring deferred
+channel-event producer gap — needs the same depth as original CD stall.
