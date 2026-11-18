@@ -11864,11 +11864,24 @@ int * prim_list_gte_invoke(int *param_1,undefined4 param_2,undefined4 param_3,in
           setCopControlWord(2,0x2800,uVar1);
           setCopControlWord(2,0x3000,uVar2);
           setCopControlWord(2,0x3800,uVar3);
-          do {
-            iVar5 = iVar5 + -1;
-            task_invoke((uint32_t)piVar4[3],(uint32_t)piVar4[2]);
-            piVar4 = piVar4 + 4;
-          } while (0 < iVar5);
+          /* Generated 0x801871BC jalr's each record fn with the full a0-a3
+           * set: a0 = record[2] (data cursor), a1 = param_2 + lh(param_1
+           * +0xE), a2 = param_3, a3 = record[1] (per-record field).
+           * task_invoke/call_guest only program $a0/$a1 — $a1 arrived as 0
+           * and $a2/$a3 stale, so the GTE emit leaf 0x801876BC used a1=0 as
+           * its OT/link-table base and SWL'd into BIOS kernel RAM
+           * (phys 0x0000-0x1FFC). call_guest4 reproduces the guest ABI
+           * exactly (same fix as prim_task_run). */
+          {
+            uint32_t prim_a1 = (uint32_t)param_2
+                + (uint32_t)(int)*(int16_t *)((char *)param_1 + 0xe);
+            do {
+              iVar5 = iVar5 + -1;
+              call_guest4((uint32_t)piVar4[3],(uint32_t)piVar4[2],prim_a1,
+                          (uint32_t)param_3,(uint32_t)piVar4[1]);
+              piVar4 = piVar4 + 4;
+            } while (0 < iVar5);
+          }
         }
       }
       param_4 = param_4 + -1;
