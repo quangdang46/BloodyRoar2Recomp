@@ -1722,3 +1722,18 @@ command-issue/doorbell path cd_seek_param_issue->cd_reg_window_op->
 worker — same coroutine/resume-PC starvation class that forced the
 br2_call_generated delegations.
 NEXT: trace why guest CD worker never doorbells cd_cmd_issue post-8092.
+
+=== N+131 — deferred-job chain mapped; probe points identified ===
+a3aa61f1 (read-only): cd_response_process = pure drainer (no job post).
+File-load completion chain: finish_cb tail -> mc_session(cd_init_done_cb)
+-> Pause -> (*DAT_801bc7b0=0x80195b9c cd_bios_cmd40_b) -> DeliverEvent
+(0xF0000003) -> wakes loader -> SHOULD submit next ch-job via
+cd_chan_job_submit (0x8019ea98, gated @0x801febc0 state + @0x801be768
+counter, 4-slot cap @0x801fef60/0x801fef20). Pumps cd_chan_job_pump
+(0x8019f80c)/chan_job_pump(0x801a0110) consume. DMA-done alt producer:
+cb7 tbl[4]=cd_dma_chan_reset.
+0x80125708-5C = CD diagnostic STRINGS (data, dead end).
+NEXT PROBES: is cd_chan_job_submit called-and-rejected vs never called?
+mem_words @0x801febc0/0x801be768/0x801fef60/0x801fef20 at stall;
+fntrace on submit/pumps/0x80195b9c; confirm DeliverEvent(0xF0000003)
+fires @8092 + waiter wakes.
