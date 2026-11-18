@@ -1706,3 +1706,19 @@ NEXT: trace when/why 0xF0000003 EvCBs (specs 0x10/0x20/0x40/0x80/0x8000)
 close vs last DeliverEvent — evcb_walk_dump/fntrace on CloseEvent
 callers. If closed early due to spurious earlier completion our runtime
 delivered, that's the faithful fix site (upstream, not the drop).
+
+=== N+130 — EvCB theory DISPROVEN; blocker = deferred cmd-issue (AGENTS.md §8) ===
+681d4dfb: 0xF0000003 EvCBs were KERNEL CD-driver events closed
+legitimately at frame 170 (~150f before game events opened @318, ~7900f
+before freeze). Game NEVER opens class-0xF0000003 EvCBs (all 21
+OpenEvent accounted: kernel CD + kernel 0x8DD8 + game's 9). The
+DeliverEvent(0xF0000003,0x40) drop is harmless by design. Real waiter
+slot8 (0xF0000009/0x20 ch4-done) open+enabled+receiving fine.
+TRUE BLOCKER (unchanged, sharper): at frame 8092 no command is even
+QUEUED to device — pending.active=0, cycles_to_next_event=UINT32_MAX,
+i_stat=0x3. Main spins TestEvent waiting DMA/seek completion that can't
+come because next command never reaches cd_cmd_issue. The deferred
+command-issue/doorbell path cd_seek_param_issue->cd_reg_window_op->
+worker — same coroutine/resume-PC starvation class that forced the
+br2_call_generated delegations.
+NEXT: trace why guest CD worker never doorbells cd_cmd_issue post-8092.
