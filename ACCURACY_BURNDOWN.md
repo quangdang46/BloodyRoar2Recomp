@@ -2120,3 +2120,17 @@ br2_call_generated one at a time to find the livelocking clean-C loop
 (AGENTS.md §4 diagnostic). ALSO: versus reads pad from 0x1f800070-0x8f
 which is a DIFFERENT published range than pad_state_refresh's
 0x1f80006C-0x80 — check if battle has its own pad publisher that's dead.
+
+=== N+159 — versus fight CRASHES: ev_stream_dispatch PC desync ===
+f34400b5: the gs=8 ph=8 "livelock" is actually a CRASH in
+ev_stream_dispatch (resolve.c:3094, guest 0x8017ea7c) FAIL-FAST
+unknown dispatch. Event-stream PC (motion+0x84) desyncs onto a bogus
+opcode >= handler-table size -> indexes past table 0x801b4e68 (~208
+entries, real ops <48) into DATA region 0x80122xxx (never compiled) ->
+jalr to 0x80122e50 -> FAIL-FAST. addr=0x80122E50 ra=0x8017EAE4
+fighter2. Clean op<24 handlers EXONERATED (full delegation reproduced
+identical crash) -> corruption is in STATE fed to handlers. motion+0x84
+F2 = 0x800d9f9c = .ANI base+4. pc from action_switch_guest (action.c:845):
+stream = ctrl+0x30 + u16(S0_table[action_idx]). NEXT: wtrace motion+0x84,
+verify S0-table lookup vs generated 0x8017a6e8, decode .ANI blob, audit
+clean writers of ctrl/motion fields.
