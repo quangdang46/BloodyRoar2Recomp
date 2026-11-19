@@ -2149,3 +2149,13 @@ opcodes where a clean handler writes wrong next-PC or corrupts
 ctrl/motion/foe state. NEXT: trace motion+0x84 advancement through
 ev_stream_dispatch op handlers; find which clean opcode handler
 desyncs the stream PC.
+
+=== N+161 — br2_irq_poll fix: versus nav reaches mode menu + gs=8 ===
+04ec03f: br2_irq_poll() at top of frame_tick restores per-frame
+interrupt checks clean-C loops starved (ev_stream PC-desync crash root
+cause). nav_to_fight.py now reaches gs=5 ph=2 (MODE MENU) then gs=8
+versus ph=241->0->3 — versus navigation WORKS. REMAINING: versus fight
+stalls at gs=8 ph=3 -> starvation_watchdog (fight-asset streaming slow
+patch or versus-specific deferred path). Attract demo fights run 65K
+frames clean. br2_irq_poll fix correct+committed; versus fight-load
+needs one more diagnosis pass.
