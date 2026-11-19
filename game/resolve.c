@@ -3100,8 +3100,11 @@ void ev_stream_dispatch(byte *param_1,byte *param_2)
   if (*(short *)(param_2 + 0x90) < 1) {
     for (;;) {
       uint8_t op = (uint8_t)*pbVar1;
+      uint32_t pcg = *(uint32_t *)(param_2 + 0x84);
+      uint32_t npc_g = 0;
       if (op < 24) {
         pbVar1 = (byte *)PTR_FUN_801b4e68[op]((uint8_t *)param_1,(uint8_t *)param_2);
+        npc_g = pbVar1 ? guest_of(pbVar1) : 0;
       } else {
         /* Opcodes >=24 have no clean-C port; the guest table at 0x801b4e68
          * holds their real handlers (48+ entries). Dispatch through the
@@ -3109,8 +3112,11 @@ void ev_stream_dispatch(byte *param_1,byte *param_2)
         uint32_t h = *(uint32_t *)guest_at(0x801b4e68u + (uint32_t)op * 4);
         uint32_t pc = *(uint32_t *)(param_2 + 0x84);
         uint32_t r = br2_call_generated(h, br2_gaddr(param_1), br2_gaddr(param_2), pc, 0);
+        npc_g = r;
         pbVar1 = r ? (byte *)guest_at(r) : (byte *)0;
       }
+      { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+        decomp_trace_record(60, pcg, (uint32_t)br2_gaddr(param_2), op, npc_g); }
       if (pbVar1 == (byte *)0x0) break;
       *(uint32_t *)(param_2 + 0x84) = guest_of(pbVar1);
     }

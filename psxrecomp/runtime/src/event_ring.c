@@ -183,6 +183,7 @@ static const char *decomp_tag_name(uint8_t t) {
         case 50: return "node_badlink";
         case 52: return "bone_idx";
         case 53: return "bone_write";
+        case 60: return "evop";
         default: return "?";
     }
 }

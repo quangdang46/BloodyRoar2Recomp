@@ -426,6 +426,7 @@ extern void game_globals_reset(void);
 extern void battle_session_arm(intptr_t,int);
 extern undefined4 scene_entry(int,int,int);
 extern void frame_tick(intptr_t);
+extern void br2_irq_poll(void);
 extern undefined4 memcard_poll_frame(void);
 extern void match_loop(void);
 extern void scratch_zero_reset(void);
@@ -1315,6 +1316,14 @@ void frame_tick(intptr_t param_1)
     int iVar7;
     int iVar8;
     int iVar9;
+
+    /* Clean-C frame loops (match_loop, battle_flow_state_machine, the
+     * g_game_state SM) never cross a generated-code boundary on idle or
+     * menu paths, so psx_check_interrupts_at -- and with it VBlank IRQ
+     * delivery, device deadlines and debug_server_poll -- starves. The
+     * guest equivalent checks interrupts at every basic-block boundary;
+     * br2_irq_poll supplies that once per frame_tick call (2x/frame). */
+    br2_irq_poll();
 
     param_1 = (intptr_t)guest_at((uint32_t)param_1);
     iVar8 = *(int *)(param_1 + 4);
