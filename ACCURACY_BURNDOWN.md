@@ -2295,3 +2295,25 @@ cycles persist: slot VALUES written to frame slots 0xa2-0xb2 by earlier
 writers; other OT writers (spr_draw_pair/cmd_queue_push/frame_present/
 descblk_variant_e menu.c:10823-10846,11771-11819 use &0xffffff direct).
 NEXT: runtime verify versus at PSX_GPU_TIMING=1.
+
+=== N+170 — post-mask-fix: versus now fails as string-table dispatch ===
+35807dd6 runtime verify (GPU_TIMING=1): versus gs=8 ph=8 frame 3732
+then FAIL-FAST unknown dispatch addr=0x80122E50 ra=0x80126664.
+0x80122E50 = ASCII string data ("OIUCHI"/"KICK"/"PUNCH"/"HIGH"/
+"MIDDLE"/"LOW"/"POW_S/M/W"/"A_HIGH"...). Pointer to it exists once at
+~0x801B51A4 inside string-pointer table 0x801B5190+ (holds
+0x80122E60/DE8/E5C/...). => some lw+jalr/jr fetched a STRING pointer as
+code addr — fn-ptr table access hit string table (wrong base/index/
+corrupted ptr). ra=0x80126664 stale (last jal 0x8012665C->0x8016FCC4).
+Last guest fn: br2eu_func_801AA244 (unnamed) — lhu/sh flag ops at
+obj+0x44, VECWR sh val=0x0827 hit phys 0x00000087 (obj ptr resolved to
+low RAM page 0 — corrupted object pointer?). GW attribution caveat:
+clean-C stores leave g_debug_last_store_pc stale -> 'PC=8019A48C'
+entries are misattributed ot_push writes, NOT generated. Versus OT now
+at 0x000425xx low-RAM heap (alternating 0x425D8/0x425DC per vblank) —
+different from engine embedded OTs; cyclic-chain hang did NOT reproduce
+this run (timing-dependent; two failure modes possibly share bad-ptr
+propagation root). gpu_clear_otag_r verified faithful vs 0x80191668.
+NEXT: watch string-ptr table 0x801B5190-1C0 + 0x801B51A4, find the
+jalr/jr consumer; suspect classes: host-ptr-as-guest-addr, OOB fn-ptr
+index, stack/struct corruption from versus OT path.
