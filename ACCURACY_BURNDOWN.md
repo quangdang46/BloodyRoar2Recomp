@@ -2250,3 +2250,18 @@ caller-leftover regs (harmless iff ClearOTagR ignores), guest_memcpy
 ret-type guest-addr vs host-ptr (callers unchecked), gpu_clear_image_cmd
 param_2 lbu-vs-u32 (safe via &0xff mask), ~25 fns not insn-audited
 (match_loop/scene_entry/battle_session_arm/frame_present/gfx helpers).
+
+=== N+167 — cd.c audit: 10 proven divergences fixed ===
+7173d5f8 (~219 bodies, 37 delegates skipped): cd_reg_init_seq phantom
+br2_ld8-gated cmd writes -> unconditional (guest has no readiness
+reads); +0x1b0/+0x1b2 always 0x3fff. cd_subsystem_init cmd_issue a3=0
++ return ignored. cd_status_shifted_read <=0x7efe8 boundary + sllv&31.
+cd_range_table_member NULL test on cell value (guest_at(0) non-NULL
+wild-read risk) + sllv&31. cd_chan_attr_apply sv<0 keeps 0x7f (x2).
+Bonus: cd_subsystem_reset mc_session_b join + u16 clears, cd_probe_retry
+ptr addrs, cd_cmd_issue zext opcode, cd_u16_table_store srlv&31,
+cd_chan_flags_to_dir lo||(a1&4) inversion, cd_reg_indexed_rw d==0
+models hi=a1, printf bound i<=n. UNPROVEN: cd_reg_window_rmw,
+cd_chan_mode_apply w[] index math, cd_curve_lookup, cd_bitstream_decode,
+~80 small helpers not individually diffed. Committed 2acfce8.
+AUDIT CAMPAIGN STATUS: all game/*.c swept; ~51 proven bugs total.
