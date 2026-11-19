@@ -5327,7 +5327,7 @@ int battle_init(uint32_t param_1, uint8_t *param_2, uint8_t *param_3)
         ib   = (uint32_t)((int32_t)MBS16(T + 4) << 2);
         baseA= MB32(param_1 + 8);
         arrC = MB32(0x801f10c0 + ic * 4);
-        MW32(baseA + ib, (arrC + ao) & 0xffffff00u);
+        MW32(baseA + ib, (arrC + ao) & 0x00ffffffu);
         if (i == 1) {
           /* trailing 0xf0 record (third slot, fixed offsets) */
           ic   = MB32(param_1 + 0xc);
@@ -5340,7 +5340,7 @@ int battle_init(uint32_t param_1, uint8_t *param_2, uint8_t *param_3)
           ib   = (uint32_t)((int32_t)MBS16(T + 4) << 2);
           baseA= MB32(param_1 + 8);
           arrC = MB32(0x801f10c0 + ic * 4);
-          MW32(baseA + ib, (arrC + 0xf0) & 0xffffff00u);
+          MW32(baseA + ib, (arrC + 0xf0) & 0x00ffffffu);
         }
         /* record B: idx T+0xa, OR-slot literal 0xa50, mask off to */
         ic   = MB32(param_1 + 0xc);
@@ -5353,7 +5353,7 @@ int battle_init(uint32_t param_1, uint8_t *param_2, uint8_t *param_3)
         ib   = (uint32_t)((int32_t)MBS16(T + 0xa) << 2);
         baseA= MB32(param_1 + 8);
         arrC = MB32(0x801f10c0 + ic * 4);
-        MW32(baseA + ib, (arrC + to) & 0xffffff00u);
+        MW32(baseA + ib, (arrC + to) & 0x00ffffffu);
         /* record C: idx T+0xa, OR-slot literal 0xaf0, mask off uo */
         ic   = MB32(param_1 + 0xc);
         ib   = (uint32_t)((int32_t)MBS16(T + 0xa) << 2);
@@ -5366,7 +5366,7 @@ int battle_init(uint32_t param_1, uint8_t *param_2, uint8_t *param_3)
         ib   = (uint32_t)((int32_t)MBS16(T + 0xa) << 2);
         baseA= MB32(param_1 + 8);
         arrC = MB32(0x801f10c0 + ic * 4);
-        MW32(baseA + ib, (arrC + uo) & 0xffffff00u);
+        MW32(baseA + ib, (arrC + uo) & 0x00ffffffu);
       }
       /* 16-record sweep: idx T+0x10, OR addr = j + arrC + 0x578,
        * mask off 0x578 + j*0x28 */
@@ -5385,7 +5385,7 @@ int battle_init(uint32_t param_1, uint8_t *param_2, uint8_t *param_3)
           id    = (uint32_t)((int32_t)MBS16(T + 0x10) << 2);
           baseA = MB32(param_1 + 8);
           arrC  = MB32(0x801f10c0 + ic * 4);
-          MW32(baseA + id, (arrC + a2o) & 0xffffff00u);
+          MW32(baseA + id, (arrC + a2o) & 0x00ffffffu);
           a2o += 0x28;
         }
       }
@@ -5402,7 +5402,7 @@ int battle_init(uint32_t param_1, uint8_t *param_2, uint8_t *param_3)
         id    = (uint32_t)((int32_t)MBS16(T + 0x12) << 2);
         baseA = MB32(param_1 + 8);
         arrC  = MB32(0x801f10c0 + ic * 4);
-        MW32(baseA + id, (arrC + 0xb68) & 0xffffff00u);
+        MW32(baseA + id, (arrC + 0xb68) & 0x00ffffffu);
         ko_count_announce(param_1, baseA + id);
       }
 
