@@ -2036,3 +2036,25 @@ REMAINING versus blocker: x28 callee-saved stale-restore crash at
 battle_intro_flow state 0xf0 (menu.c ~1969) at fight round-end — versus
 now INITIATES but crashes post-round. nav_to_fight.py also couldn't
 escape attract (input timing — needs tuning now that fps is fast).
+
+=== N+155 — x28 stale-restore ROOT: unsnapshotted IRQ via deferred cycle flush ===
+The fbc8d52 wrapper's fast-path gate skipped the callee-saved snapshot
+whenever no IRQ was visible at entry — but psx_cyc_batch_flush() runs at
+the TOP of psx_check_interrupts_run(), AFTER the gate. A pending
+g_psx_cyc_batch / *g_psx_cyc_local_acc (deferred block-cycle charges)
+advances guest time across a device deadline INSIDE run(), raising
+I_STAT there; run()'s own gates then deliver the IRQ and arm
+exception_jmpbuf with NO snapshot. The setjmp/longjmp epilogue returns
+the interrupted caller's x19-x30 clobbered by run()'s leftover register
+file — ring/base pointers (g_irqctx_ring) surfacing as stale x25/x28 in
+game code, the N+107/N+109/N+126 class reborn through the fast path.
+Idle-skip (psx_idle_note_check) is the same post-gate I_STAT mutator
+when enabled. Faithful fix (interrupts.c psx_check_interrupts gate):
+force the preserving path whenever cyc_pending || idle_armed; run()'s
+flush is idempotent so the slow path costs only the snapshot. All
+setjmp/longjmp consumers re-audited: exception_jmpbuf consumers all
+guard s_exc_jmpbuf_live+owner-fiber; g_scheduler_jmpbuf escapes are all
+gated !in_exception and an armed exception frame implies in_exception;
+ucontext fibers dormant under HLE TCB scheduler. No per-site workaround
+needed — the menu.c 0xf0/0xff stopgaps can be revisited later.
+UNCOMMITTED pending versus verification.

@@ -2549,7 +2549,30 @@ void psx_check_interrupts(CPUState* cpu) {
      * Any uncertainty falls through to the preserving path below. */
     {
         uint32_t swp = cpu->cop0[COP0_CAUSE] & cpu->cop0[COP0_SR] & 0x0300u;
-        if (!in_exception && (i_stat & i_mask) == 0 && swp == 0 &&
+        /* Deferred cycle charges are published by psx_cyc_batch_flush() at
+         * the TOP of psx_check_interrupts_run() — i.e. AFTER this gate. A
+         * pending g_psx_cyc_batch / *g_psx_cyc_local_acc can advance guest
+         * time across a device deadline inside run() and raise I_STAT there,
+         * so run()'s own gates then see a deliverable interrupt this gate
+         * could not. Taking the fast path in that case arms exception_jmpbuf
+         * with NO callee-saved snapshot and the ensuing setjmp/longjmp
+         * delivery returns the interrupted caller's x19-x30 clobbered by
+         * run()'s leftover register file (the stale-x28 class: ring/base
+         * pointers from the exception path surfacing in game code).
+         * Any pending deferred charge therefore forces the preserving path;
+         * run()'s flush is idempotent so the slow path costs only the
+         * snapshot when nothing was actually pending at delivery time. */
+        int cyc_pending = (g_psx_cyc_batch != 0u) ||
+                          (g_psx_cyc_local_acc != NULL &&
+                           *g_psx_cyc_local_acc != 0u);
+        /* Idle-skip is the second post-gate I_STAT mutator: when enabled,
+         * run()'s no-pending branch calls psx_idle_note_check(), which can
+         * fast-forward guest cycles across a device deadline and raise an
+         * interrupt the gate cannot see — same unsnapshotted-delivery hole.
+         * Force the preserving path whenever it is armed. */
+        int idle_armed = psx_idle_skip_is_enabled();
+        if (!cyc_pending && !idle_armed && !in_exception &&
+            (i_stat & i_mask) == 0 && swp == 0 &&
             !s_defer_switch_pending) {
             psx_check_interrupts_run(cpu);
             return;
