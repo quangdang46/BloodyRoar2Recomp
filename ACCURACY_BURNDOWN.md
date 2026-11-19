@@ -2281,3 +2281,17 @@ engine+0x20ec embedded OTs, submitted system_tick_frame menu.c:12300/
 12310, cleared ch6 OTC) are likely unbounded emit => GPU busy forever.
 NEXT: gwatch those packet-link words, find writer PC + OT base source —
 same stale-cell/cached-base class as f2eeb5f but on engine-embedded OT.
+
+=== N+169 — battle_init OT mask bug FIXED (prime versus-cycle suspect) ===
+e680e373: battle_init state-6 wrote OT head cells with &0xFFFFFF00;
+guest uses sll8/srl8 = &0x00FFFFFF (clears top tag byte) at all six sw
+sites (0x80150ABC/B30/BB0/C20/CBC/D44). Buggy value kept the address's
+top byte + cleared low addr byte -> cells held 0x801D6x00-style links
+into mid-packet -> corrupted chains at fight init (gs=8 ph=8). FIXED
+1a6d572 x6 sites. Task B: emit region menu.c:8336-8566 verified FULLY
+faithful vs br2eu_func_8014CDD0 (flag order, 20 push sites, eng-offset
+disjointness — no in-pass double-push possible). Remaining suspects if
+cycles persist: slot VALUES written to frame slots 0xa2-0xb2 by earlier
+writers; other OT writers (spr_draw_pair/cmd_queue_push/frame_present/
+descblk_variant_e menu.c:10823-10846,11771-11819 use &0xffffff direct).
+NEXT: runtime verify versus at PSX_GPU_TIMING=1.
