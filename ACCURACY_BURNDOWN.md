@@ -2265,3 +2265,19 @@ models hi=a1, printf bound i<=n. UNPROVEN: cd_reg_window_rmw,
 cd_chan_mode_apply w[] index math, cd_curve_lookup, cd_bitstream_decode,
 ~80 small helpers not individually diffed. Committed 2acfce8.
 AUDIT CAMPAIGN STATUS: all game/*.c swept; ~51 proven bugs total.
+
+=== N+168 — GPU backpressure bug FIXED; versus emission anomaly remains ===
+d357c381: guest libgpu queue push/drain busy-waits GPUSTAT bit26
+(0x04000000) via cell 0x801B8428=0x1F801814 (generated
+br2eu_func_80192F14 poll @0x80193000 + 12 more sites). Runtime hardwired
+bits 26/28 ready -> versus frame_tick free-ran ~800x/vblank, ~56K
+gp0_draw/vblank — impossible on HW. FIX 3c4d7ed: guest-cycle-charged
+busy model (per-word + per-prim raster px + VRAM xfer; env-tunable,
+PSX_GPU_TIMING=0 legacy). VERIFIED: GPUSTAT 0xC25C001A busy under load,
+guest stacks in queue poll. CAVEAT: faithful backpressure EXPOSED the
+real guest-side emission anomaly — versus ph=8 GPU-queue drain >15min/
+frame => cyclic OT walks at 0x801EC4C0-5B0 / 0x801E8618-8730 (per-side
+engine+0x20ec embedded OTs, submitted system_tick_frame menu.c:12300/
+12310, cleared ch6 OTC) are likely unbounded emit => GPU busy forever.
+NEXT: gwatch those packet-link words, find writer PC + OT base source —
+same stale-cell/cached-base class as f2eeb5f but on engine-embedded OT.
