@@ -12733,7 +12733,7 @@ uint32_t desc_opcode_dispatch(uint32_t param_1,uint32_t param_2,
 {
   uint32_t s1 = param_1, s2 = param_3;
   uint32_t a3 = MB16(s2 + 2);
-  uint32_t idx, p, rec, s0 = 0;
+  uint32_t idx, p, rec;
   int32_t sx8 = (int32_t)(int8_t)(a3 >> 8);
   int32_t sx16 = (int32_t)(int16_t)a3;
   /* case-12 vec = guest $sp+0x20 (frame -0x38) = entry_sp-0x18 */
@@ -12754,12 +12754,12 @@ uint32_t desc_opcode_dispatch(uint32_t param_1,uint32_t param_2,
   case 2:
     speech_bubble_spawn((undefined4 *)guest_at(MB32(s1 + 0x20) + 0x124u),
                  (uint32_t)(MBS16(s1 + 0x4e) - 0x400),
-                 a3 & 0xffu, (uint32_t)sx8);
+                 (uint32_t)sx8, a3 & 0xffu);
     break;
   case 3:
     speech_bubble_spawn((undefined4 *)guest_at(MB32(s1 + 0x20) + 0x124u),
                  (uint32_t)(MBS16(s1 + 0x4e) + 0x400),
-                 a3 & 0xffu, (uint32_t)sx8);
+                 (uint32_t)sx8, a3 & 0xffu);
     break;
   case 4:
     effect_arg_set(s1);
@@ -12777,18 +12777,19 @@ uint32_t desc_opcode_dispatch(uint32_t param_1,uint32_t param_2,
   case 8:
     iris_wipe_spawn(s1, (uint32_t)sx16);
     break;
-  case 9:
-    if (MB8(MB32(s1 + 0x38) + 0x100) != 0) {
-      s0 = MB8(0x801b180cu + (uint32_t)sx16);
-      p = fx_group_alloc(1, 1, 0, 0xf);
-      if (p != 0)
-        noop_b(p, MB32(s1 + 0x20) + s0 * 80u + 0x34u, 0x801f0760u);
-    } else {
-      p = fx_group_alloc(1, 1, 0, 0xf);
-      if (p != 0)
-        noop_b(p, MB32(s1 + 0x20) + s0 * 80u + 0x34u, 0x801f0760u);
-    }
+  case 9: {
+    /* guest: s0 = sx16(param) loaded in the branch delay slot
+     * (@0x80141f24 sra $16,$3,16); when mo+0x100 != 0 it is replaced by
+     * lbu(0x801b180c+s0) (@0x80141f28-34), else it stays sx16 — single
+     * convergent path, offset = s0*0x50 + 0x34 (@0x80141f5c-74). */
+    int32_t pi = sx16;
+    if (MB8(MB32(s1 + 0x38) + 0x100) != 0)
+      pi = (int32_t)MB8(0x801b180cu + (uint32_t)sx16);
+    p = fx_group_alloc(1, 1, 0, 0xf);
+    if (p != 0)
+      noop_b(p, MB32(s1 + 0x20) + (uint32_t)(pi * 0x50) + 0x34u, 0x801f0760u);
     break;
+  }
   case 10:
     color_rec_table_init(MB8(s1 + 3), (uint32_t)sx16);
     break;
