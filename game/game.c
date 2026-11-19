@@ -972,6 +972,11 @@ int cd_file_pump(int param_1,int param_2)
 void cd_channel_init_seq(void)
 {
     cd_channel_table_init(g_DAT_801befa8,g_DAT_801befca);
+    /* Guest 0x801267DC tail-calls 0x801A1250 -> cd_channel_main_init:
+     * Deq+Enq's pad/device IntRP 0x801FEFC0 into kernel queue 2 plus the
+     * two channel-init jalr's. Without it the IntRP never links and the
+     * per-interrupt channel poll never fills 0x801BEFA8/0x801BEFCA. */
+    call_guest(0x801a1250u,0,0);
 }
 
 void scratch_zero_reset(void)
