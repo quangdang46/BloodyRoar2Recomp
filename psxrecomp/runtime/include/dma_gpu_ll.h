@@ -38,6 +38,11 @@ typedef struct {
     int (*begin_node)(void *opaque, uint32_t address, uint32_t word_count);
     void (*emit_word)(void *opaque, uint32_t address, uint32_t word);
     void (*complete)(void *opaque, int hit_limit);
+    /* Optional GPU-side flow control (GPUSTAT "ready to receive DMA"
+     * backpressure): returns 0 when the next payload word may be clocked
+     * into the target, otherwise guest cycles until it may. NULL = the
+     * target accepts words unconditionally (legacy/test ops). */
+    uint32_t (*ready_cycles)(void *opaque);
 } DMAGPULinkedListOps;
 
 void dma_gpu_ll_start(DMAGPULinkedList *state, uint32_t start_addr,

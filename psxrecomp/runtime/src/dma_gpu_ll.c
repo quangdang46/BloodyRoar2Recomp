@@ -141,6 +141,24 @@ void dma_gpu_ll_advance(DMAGPULinkedList *state, uint32_t cycles,
             state->phase = DMA_GPU_LL_PHASE_PAYLOAD;
             state->cycles_remaining = 1u;
         } else if (state->phase == DMA_GPU_LL_PHASE_PAYLOAD) {
+            /* GPU-side flow control (GPUSTAT bit 28 "ready to receive DMA
+             * block"): channel-2 payload words are GP0 commands, and real
+             * hardware cannot clock them into the command processor while
+             * it is occupied. When the ops provide a readiness hook and it
+             * reports the GPU busy, the transfer STALLS — the word is not
+             * consumed (payload_index does not advance) and the wait is
+             * scheduled as device time, exactly like the CD-ROM channel's
+             * cdrom_dma_ready() gate. Without this the walker clocks the
+             * entire OT into the GPU regardless of backpressure; every
+             * raster charge lands up front, GPUSTAT bit26 never re-asserts,
+             * and the guest libgpu queue drain livelocks (versus ph=8). */
+            if (state->emit_node && ops->ready_cycles) {
+                uint32_t wait = ops->ready_cycles(opaque);
+                if (wait != 0) {
+                    state->cycles_remaining = wait;
+                    return;
+                }
+            }
             uint32_t word_addr = resolve_address(
                 ops, opaque, state->current_addr + 4u +
                              state->payload_index * 4u);

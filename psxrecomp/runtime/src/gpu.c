@@ -2783,6 +2783,18 @@ static int gpu_cmd_busy(void) {
            psx_get_cycle_count() < s_gpu_busy_until;
 }
 
+uint32_t gpu_dma_ready_cycles(void) {
+    if (!gpu_timing_enabled()) return 0u;
+    uint64_t now = psx_get_cycle_count();
+    if (now >= s_gpu_busy_until) return 0u;
+    uint64_t rem = s_gpu_busy_until - now;
+    /* Re-check granularity cap: the OT walker re-polls readiness after at
+     * most this many guest cycles even if the charge deadline is further
+     * out, so device scheduling never sleeps on a stale horizon. */
+    if (rem > 0x40000000ull) rem = 0x40000000ull;
+    return (uint32_t)rem;
+}
+
 /* Diagnostics for gpu_state: charged total + cycles of busy remaining. */
 void gpu_busy_debug(uint64_t *charged, uint64_t *until, uint64_t *now_out) {
     uint64_t now = psx_get_cycle_count();

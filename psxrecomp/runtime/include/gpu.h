@@ -91,6 +91,13 @@ void gpu_charge_cycles(uint64_t cost);
 void gpu_note_prim(int64_t pixels, int textured);
 void gpu_note_vram_px(int64_t pixels);
 void gpu_busy_debug(uint64_t *charged, uint64_t *until, uint64_t *now_out);
+/* GPUSTAT bit 28 flow control for channel-2 (GPU) DMA: returns 0 when the
+ * command processor can accept the next DMA'd GP0 word, otherwise the
+ * number of guest cycles until it is ready again (clamped). The OT
+ * linked-list walker stalls on this exactly like hardware — without it
+ * the whole OT is clocked into the GPU regardless of busy state and the
+ * busy charge ratchets forever (versus ph=8 livelock). */
+uint32_t gpu_dma_ready_cycles(void);
 
 typedef struct {
     uint32_t left, top, right, bottom;

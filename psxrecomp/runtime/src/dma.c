@@ -744,6 +744,16 @@ static void gpu_ll_emit_word(void *opaque, uint32_t address, uint32_t word) {
     gpu_write_gp0(word);
 }
 
+/* GPUSTAT bit 28 backpressure: channel-2 payload words are GP0 commands
+ * and cannot be clocked while the command processor is occupied. The OT
+ * walker stalls on this exactly like the CD-ROM channel's
+ * cdrom_dma_ready() gate; gpu_dma_ready_cycles() reports the guest-cycle
+ * wait (0 = ready, legacy always-ready when PSX_GPU_TIMING=0). */
+static uint32_t gpu_ll_ready_cycles(void *opaque) {
+    (void)opaque;
+    return gpu_dma_ready_cycles();
+}
+
 static void gpu_ll_complete(void *opaque, int hit_limit) {
     (void)opaque;
     gpu_ot_stats.completes++;
@@ -760,7 +770,8 @@ static const DMAGPULinkedListOps gpu_ll_ops = {
     gpu_ll_observe_header,
     gpu_ll_begin_node,
     gpu_ll_emit_word,
-    gpu_ll_complete
+    gpu_ll_complete,
+    gpu_ll_ready_cycles
 };
 
 static void start_async_gpu_linked_list(void) {
