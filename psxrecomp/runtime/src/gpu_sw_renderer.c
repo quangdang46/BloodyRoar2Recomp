@@ -1304,15 +1304,32 @@ static void raster_textured_rect(const RTarget *t, int x, int y, int w, int h,
                                  uint16_t clut_x, uint16_t clut_y,
                                  uint16_t texpage) {
     int s = t->s;
-    for (int row = 0; row < h; row++) {
+    /* Same upfront scissor clip as raster_textured_rect_scaled: rows/cols
+     * outside [row0,row1)/[col0,col1) produced no writes before (identical
+     * bounds to the per-pixel `continue`), so the result is unchanged. */
+    int row0 = 0, row1 = h;
+    {
+        int r_lo = t->cy1 - y;
+        int r_hi = t->cy2 - y + 1;
+        if (r_lo > row0) row0 = r_lo;
+        if (r_hi < row1) row1 = r_hi;
+        if (row0 >= row1) return;
+    }
+    int col0 = 0, col1 = w;
+    {
+        int c_lo = t->cx1 - x;
+        int c_hi = t->cx2 - x + 1;
+        if (c_lo > col0) col0 = c_lo;
+        if (c_hi < col1) col1 = c_hi;
+        if (col0 >= col1) return;
+    }
+    for (int row = row0; row < row1; row++) {
         int py = y + row;
-        if (py < t->cy1 || py > t->cy2) continue;
         int tv = (v + row / s) & 0xFF;
         float fv = (float)v + (float)row / (float)s;
 
-        for (int col = 0; col < w; col++) {
+        for (int col = col0; col < col1; col++) {
             int px = x + col;
-            if (px < t->cx1 || px > t->cx2) continue;
 
             uint16_t texel;
             if (g_texture_filter) {
@@ -1396,15 +1413,37 @@ static void raster_textured_rect_scaled(const RTarget *t, int x, int y,
     int du = u1 - u0;
     int dv = v1 - v0;
 
-    for (int row = 0; row < h; row++) {
+    /* Clip the footprint to the scissor rect up front. The per-pixel clip
+     * checks below used to iterate the full w*h span even when the rect was
+     * mostly off-screen; versus-mode fight scenes emit tens of thousands of
+     * large textured quads per frame and unclipped iteration cost ~10 s of
+     * wall time per guest frame under the software backend. Rows/cols outside
+     * [row0,row1)/[col0,col1) produced no writes before (the same bounds the
+     * per-pixel `continue` enforced), so the drawn result is identical. */
+    int row0 = 0, row1 = h;
+    {
+        int r_lo = t->cy1 - y;
+        int r_hi = t->cy2 - y + 1;
+        if (r_lo > row0) row0 = r_lo;
+        if (r_hi < row1) row1 = r_hi;
+        if (row0 >= row1) return;
+    }
+    int col0 = 0, col1 = w;
+    {
+        int c_lo = t->cx1 - x;
+        int c_hi = t->cx2 - x + 1;
+        if (c_lo > col0) col0 = c_lo;
+        if (c_hi < col1) col1 = c_hi;
+        if (col0 >= col1) return;
+    }
+
+    for (int row = row0; row < row1; row++) {
         int py = y + row;
-        if (py < t->cy1 || py > t->cy2) continue;
 
         int tv = (int)(v0 + ((int64_t)dv * row) / h) & 0xFF;
         float fv = (float)v0 + (float)dv * (float)row / (float)h;
-        for (int col = 0; col < w; col++) {
+        for (int col = col0; col < col1; col++) {
             int px = x + col;
-            if (px < t->cx1 || px > t->cx2) continue;
 
             uint16_t texel;
             if (g_texture_filter) {
