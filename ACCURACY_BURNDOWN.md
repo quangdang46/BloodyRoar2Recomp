@@ -2058,3 +2058,23 @@ gated !in_exception and an armed exception frame implies in_exception;
 ucontext fibers dormant under HLE TCB scheduler. No per-site workaround
 needed — the menu.c 0xf0/0xff stopgaps can be revisited later.
 UNCOMMITTED pending versus verification.
+
+=== N+156 — versus nav ROOT: pad distributor never fills game buffers ===
+896cf3e6 traced input end-to-end: SIO/BIOS pad path fully works —
+initPadHighLevel(0x20000000,0x801FEB28) live-reads START (0xFFF7) into
+0x801FEB28. BUT pad_state_refresh (menu.c:2750, guest 0x8012A72C) reads
+FULL 0x22-byte PAD-format buffers at 0x801BEFA8/0x801BEFCA via
+attr_word_decode (save.c:1553) -> publishes to 0x1f80006C-0x80. Those
+buffers are NEVER written (gwatch 0 writes; buffer[0]=0xFF stale; all
+published pad state = 0). Menus/attract see NO input -> title falls to
+attract loop. The missing link: the channel/device poll that invokes
+cd_bios16_status (0x80199F7C, reads B0:0x16 readPadHighLevel, returns
+~(*0x801FEB28)) and unpacks into 0x801BEFA8/0x801BEFCA is not running —
+a per-frame worker not scheduled (same class as CD deferred-coroutine
+starvation). Channel blocks 0x801FF0B0/0x801FF1A0 point buffer ptrs at
+those addrs (stride-0xF0 device-channel table). s_padBufferPtrs in
+OpenBIOS still points at its own statics -> game uses high-level API +
+own distributor, never low-level initPad. FIX: find the per-frame tick
+(frame_tick callees) that should drive the pad channel and why it
+starves — likely a delegated function starving the deferred-interrupt
+path (AGENTS.md §4) needing br2_call_generated delegation.
