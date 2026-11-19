@@ -2236,3 +2236,17 @@ $16=sx16(param) from delay-slot sra @0x80141F24; !=0 path replaces
 $16=lbu(0x801B180C+$16) @F28-34; single convergent offset=$16*0x50+0x34
 @F5C-74 — clean used s0=0 on the ==0 arm. FIXED 6f74887 (cases 2/3 arg
 order, case9 single-path pi=sx16->table lookup). Build green.
+
+=== N+166 — game.c/gfx.c audit: frame_tick 0x1F8000DC source fix ===
+3b979d7c insn-level audit: frame_tick (0x8012AEEC whole chain verified
+faithful incl. OT loops, unlink gate, draw-env, clear-image) had ONE
+divergence: _DAT_1f8000dc RMW read the absolute cell; guest loads
+*(u32*)(idx2*0x2150+0x801E40A0)+1 (lw v0,0(s2) @0x8012B1A4). Feeds
+match_end_check (dc>>4)&3 prompt gate + spr_desc generation tags —
+drift could surface as versus/menu prompt timing errors. FIXED 94399a4.
+gpu_pkt_unlink_n/gpu_clear_otag_r/match_end_check/ot_packet_chain_fixup
+all verified faithful. UNPROVEN leftovers: gpu_clear_otag_r a2/a3
+caller-leftover regs (harmless iff ClearOTagR ignores), guest_memcpy
+ret-type guest-addr vs host-ptr (callers unchecked), gpu_clear_image_cmd
+param_2 lbu-vs-u32 (safe via &0xff mask), ~25 fns not insn-audited
+(match_loop/scene_entry/battle_session_arm/frame_present/gfx helpers).
