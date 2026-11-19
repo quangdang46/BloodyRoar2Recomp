@@ -2336,3 +2336,17 @@ file loads (find_first_divergence). tools/versus_crash_watch.py =
 nav script that does NOT send quit (stock nav_to_fight.py:97 kills
 repro). Two failure modes (OT-cycle wedge + string dispatch) likely
 same CD-completion root.
+
+=== N+172 — versus wedge ROOT FIXED: ch2 DMA ignored GPUSTAT bit28 ===
+ca6becd4: NOT CD (disproven — CD state clean). dma_gpu_ll OT walker
+consumed payload words unconditionally ignoring GPUSTAT bit28 "ready to
+receive DMA block" -> whole OT clocked into GPU instantly -> busy charge
+ratcheted ~1e9 cyc -> bit26 never re-asserted -> libgpu cd_queue_drain
+livelock. FIX dad52ea: payload stalls via gpu_dma_ready_cycles()
+(PSX_GPU_TIMING=0 legacy). VERIFIED: versus gs=8 ph=8 sustains
+~120-175fps ~100K frames 25min, no wedge/crash, CD clean. REMAINING:
+fight gameplay liveness unconfirmed — fighter state static ~25min, no
+round-end; _DAT_1f800082 gate nonzero (0x801b0000) skipping
+fighter_contact_resolve/fighter_pair_update (menu.c:~756) — verify if
+expected versus-idle or separate battle-session go-live bug. op=207
+crash mode not re-observed post-fix.
