@@ -3460,7 +3460,9 @@ statef0:
     }
     goto check;
 poll:
-    frame_tick((intptr_t)s4);
+    /* guest a0 = 0x1f800000 (immediate) — frame_tick re-resolves via
+     * guest_at(); pass the guest address, not the host scratch ptr. */
+    frame_tick(0x1f800000);
 check:
     if (s1 != 0xff) continue;
     break;
@@ -3692,7 +3694,8 @@ tick:
     spr_slot_pkt_submit(*(uint32_t *)(s0 + 8) + 4,0xf00100,0xefff009b,0x7cc00000);
     goto poll;
 poll:
-    frame_tick((intptr_t)s0);
+    /* guest a0 = 0x1f800000 (immediate) — pass the guest address. */
+    frame_tick(0x1f800000);
 check:
     if (s0[1] != 0xff) continue;
     break;
@@ -4143,7 +4146,8 @@ icon:
       }
     }
 poll:
-    frame_tick((intptr_t)s2);
+    /* guest a0 = s2 = 0x1f800000 — pass the guest address, not host ptr. */
+    frame_tick(0x1f800000);
     if (s5 != 0xff) continue;
     break;
   }
