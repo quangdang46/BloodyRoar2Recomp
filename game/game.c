@@ -1400,7 +1400,7 @@ void frame_tick(intptr_t param_1)
     table_byte_next_a();
     uVar5 = *(uint *)(param_1 + 0xc) ^ 1;
     iVar4 = uVar5 * 0x2150;
-    _DAT_1f8000dc = _DAT_1f8000dc + 1;
+    _DAT_1f8000dc = *(uint32_t *)guest_at((uint32_t)(iVar4 + -0x7fe1bf60)) + 1;
     *(uint *)(param_1 + 0xc) = uVar5;
     *(int *)(param_1 + 4) = iVar4 + -0x7fe1bf60;
     *(int *)(param_1 + 8) = iVar4 + -0x7fe1bef0;
