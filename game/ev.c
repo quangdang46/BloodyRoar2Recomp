@@ -52,6 +52,9 @@ typedef uint64_t ulonglong;
 #define GSU32(p,o) (*(uint32_t *)((uint8_t *)(p) + (o)))
 #define GSU8(p,o)  (((uint8_t *)(p))[(o)])
 #define ST(s,o)    GU32(s, o)
+/* sign-extend low 12 bits — guest sll/sra pair truncating s16 params
+ * (ev8 @0x8017b6c0/0x8017b84c, ev9 op5 @0x8017b99c) */
+#define SX12(x)   ((int32_t)(((int32_t)(x)) << 20) >> 20)
 
 /* ctrl offsets */
 #define FC_FOE     0x2c
@@ -590,43 +593,47 @@ static uint8_t *ev8_motion_param(uint8_t *ctrl, uint8_t *motion,
 
     switch (op) {
     case 0:  GSU16(motion, MO_D0) = GU16(pc, 2); break;
-    case 1:  GS16(motion, MO_D0) = (int16_t)(G16(motion, MO_D0) + p); break;
+    /* guest stores sx12(sum) for every op except op0 (lhu->sh direct)
+     * and op8 (ret pc+4); see sll/sra 20 @0x8017b6c0,0x8017b84c */
+    case 1:  GS16(motion, MO_D0) = (int16_t)SX12(G16(motion, MO_D0) + p); break;
     case 2:  t = (uint8_t *)guest_at(GU32(ctrl, FC_FOE));
-             GS16(motion, MO_D0) = (int16_t)(G16(t, FC_4E) + p); break;
-    case 3:  GS16(motion, MO_E4) = (int16_t)(G16(ctrl, FC_DISTX) + p); break;
-    case 4:  GS16(motion, MO_E4) = (int16_t)(G16(ctrl, FC_C4)
+             GS16(motion, MO_D0) = (int16_t)SX12(G16(t, FC_4E) + p); break;
+    case 3:  GS16(motion, MO_E4) = (int16_t)SX12(G16(ctrl, FC_DISTX) + p); break;
+    case 4:  GS16(motion, MO_E4) = (int16_t)SX12(G16(ctrl, FC_C4)
                  - (G16(ctrl, FC_4E) - 0x800) + p); break;
-    case 5:  GS16(motion, MO_E4) = (int16_t)(G16(ctrl, FC_70) + p); break;
-    case 6:  /* facing decode via ctrl+0x6c bits */
+    case 5:  GS16(motion, MO_E4) = (int16_t)SX12(G16(ctrl, FC_70) + p); break;
+    case 6:  /* facing decode via ctrl+0x6c bits — guest assigns a3 per
+         * tested bit in order 0x10,0x20,0x40,0x80,0x01,0x02,0x04,0x08
+         * (last set bit wins; @0x8017b710-0x8017b77c) */
         f = ST(ctrl, FC_STATE5);
         dir = 0;
         if (f & 0x10) dir = -0x400;
-        if (f & 0x20) dir += 0x400;
+        if (f & 0x20) dir = 0x400;
         if (f & 0x40) dir = 0;
-        if (f & 0x80) dir += -0x800;
-        if (f & 0x01) dir += -0x400;
-        if (f & 0x02) dir += 0x400;
+        if (f & 0x80) dir = -0x800;
+        if (f & 0x01) dir = -0x400;
+        if (f & 0x02) dir = 0x400;
         if (f & 0x04) dir = 0;
-        if (f & 0x08) dir += -0x800;
-        GS16(motion, MO_E4) = (int16_t)(dir
+        if (f & 0x08) dir = -0x800;
+        GS16(motion, MO_E4) = (int16_t)SX12(dir
             - (G16(ctrl, FC_4E) - G16(motion, MO_E4)) + p);
         break;
     case 7:
         if (!(ST(ctrl, FC_STATE1) & 0x100000)) {
             d = G16(ctrl, FC_DISTX); e = G16(motion, MO_E4);
-            if (d < -p)      GS16(motion, MO_E4) = (int16_t)(e - p);
-            else if (p < d)  GS16(motion, MO_E4) = (int16_t)(e + p);
-            else             GS16(motion, MO_E4) = (int16_t)(e + d);
+            if (d < -p)      GS16(motion, MO_E4) = (int16_t)SX12(e - p);
+            else if (p < d)  GS16(motion, MO_E4) = (int16_t)SX12(e + p);
+            else             GS16(motion, MO_E4) = (int16_t)SX12(e + d);
         }
         break;
     case 8:  break;                                     /* nop */
     case 9:  t = (uint8_t *)guest_at(GU32(ctrl, 0x20));
         GS16(motion, MO_D4) = (int16_t)GU16(t, 0x174);
         GS16(motion, MO_D8) = (int16_t)GU16(t, 0x17c);
-        GS16(motion, MO_E4) = (int16_t)(G16(ctrl, FC_C4)
+        GS16(motion, MO_E4) = (int16_t)SX12(G16(ctrl, FC_C4)
             - (G16(ctrl, FC_4E) - 0x800) + p);
         break;
-    case 10: GS16(motion, MO_E4) = (int16_t)(G16(motion, MO_E4) + p); break;
+    case 10: GS16(motion, MO_E4) = (int16_t)SX12(G16(motion, MO_E4) + p); break;
     }
     return pc + 4;
 }
@@ -665,7 +672,7 @@ static uint8_t *ev9_physics(uint8_t *ctrl, uint8_t *motion,
         if (p1 < a1) a1 = p1;               /* a1 = min(p1, ctrl+0x76) */
         GS16(ctrl, FC_98) = (int16_t)(p2 ? ((a1 << 7) / p2) : -1);
         break;
-    case 5:  GS16(ctrl, FC_96) = (int16_t)(G16(ctrl, FC_70) + p1);
+    case 5:  GS16(ctrl, FC_96) = (int16_t)SX12(G16(ctrl, FC_70) + p1);
              GSU16(ctrl, FC_98) = GU16(pc, 4); break;
     case 6:  GSU16(ctrl, FC_96) = GU16(pc, 2); break;
     case 7:  GSU16(ctrl, FC_92) = GU16(pc, 2); break;
@@ -1174,22 +1181,25 @@ ushort * ev_spark_spawn(int param_1,undefined4 param_2,ushort *param_3)
   uint8_t *ti;
 
   if (*g_DAT_1f8000b1 == 0) {
-    iVar3 = (int)((uint)*param_3 << 0x10) >> 0x18;
-    if (-1 < iVar3) {
-      if (iVar3 < 3) {
-        iVar3 = fx_group_alloc(1,1,0,0);
-        if (iVar3 != 0) {
-          iVar2 = (int)noop_c(iVar3);
-          ti = (uint8_t *)guest_at((uint32_t)iVar2);
-          noop_a(iVar3,GU32(p1, 0x20) + 0x124,
-                       (uint32_t)param_1,guest_of(g_DAT_801f0760));
-          uVar1 = *param_3;
-          *(uint32_t *)(ti + 0x18) = 0x80140710;
-          *(uint32_t *)(ti + 0x1c) = 0;
-          *(int *)(ti + 0x14) = (int)((uint)uVar1 << 0x10) >> 0x18;
-        }
+    /* guest: s1 = sx8(byte@pc+1); slti s1,3 is SIGNED — negative
+     * opcodes still take the alloc path (@0x80141bb4-0x80141bc4) */
+    iVar3 = (int)(int8_t)(*param_3 >> 8);
+    if (iVar3 < 3) {
+      iVar3 = fx_group_alloc(1,1,0,0);
+      if (iVar3 != 0) {
+        iVar2 = (int)noop_c(iVar3);
+        ti = (uint8_t *)guest_at((uint32_t)iVar2);
+        noop_a(iVar3,GU32(p1, 0x20) + 0x124,
+                     (uint32_t)param_1,guest_of(g_DAT_801f0760));
+        uVar1 = *param_3;
+        *(uint32_t *)(ti + 0x18) = 0x80140710;
+        *(uint32_t *)(ti + 0x1c) = 0;
+        /* guest: sll16/sra24 -> sx8(byte@pc+1), sw @task+0x14
+         * (@0x80141c38-0x80141c44) */
+        *(int *)(ti + 0x14) = (int)(int8_t)(uVar1 >> 8);
       }
-      else if ((iVar3 == 3) &&
+    }
+    else if ((iVar3 == 3) &&
                (iVar3 = fx_group_alloc(1,1,GU8(p1,2) + 1,0), iVar3 != 0)) {
         iVar2 = (int)noop_c(iVar3);
         ti = (uint8_t *)guest_at((uint32_t)iVar2);
@@ -1201,12 +1211,13 @@ ushort * ev_spark_spawn(int param_1,undefined4 param_2,ushort *param_3)
              (uint32_t)GU8((uint8_t *)guest_at(GU32(p1, 0x38)), 0x100);
         if (*(int8_t *)(p1 + 3) == 3) {
           *(uint32_t *)(ti + 0x18) = 0x1f800000;
-          *(int *)(ti + 0x1c) = (int)*g__DAT_801f093a;
-          iVar3 = (int)*g__DAT_801f093e;
+          /* guest: lh @0x801f093a / lh @0x801f093e — signed 16-bit
+           * loads (@0x80141ce8/@0x80141cf8), not u32 */
+          *(int *)(ti + 0x1c) = (int)*(const int16_t *)g__DAT_801f093a;
+          iVar3 = (int)*(const int16_t *)g__DAT_801f093e;
           *(uint32_t *)(ti + 0x24) = 0x8013f178;
           *(int *)(ti + 0x20) = iVar3;
         }
-      }
     }
   }
   return param_3 + 1;
@@ -1229,9 +1240,7 @@ ushort * ev_cmd_dispatch(int param_1,undefined4 param_2,ushort *param_3)
   int iVar5;
   uint uVar6;
   uint uVar7;
-  undefined2 uStack_18;
-  undefined2 uStack_16;
-  undefined2 uStack_14;
+  undefined2 uStack_18[4];
   /* param_1 arrives as a guest address; param_3 is a host stream ptr. */
   uint8_t *p1 = (uint8_t *)guest_at((uint32_t)param_1);
   uint8_t *mo;
@@ -1248,22 +1257,22 @@ ushort * ev_cmd_dispatch(int param_1,undefined4 param_2,ushort *param_3)
       else {
         uVar6 = uVar7 & 0xff;
       }
-      hit_spark_spawn(param_1,uVar6,(int)(uVar7 << 0x10) >> 0x18);
+      hit_spark_spawn(param_1,uVar6,(int)(int8_t)(uVar7 >> 8));
       break;
     case 1:
-      triple_track_spawn(GU8(p1,2),uVar7 & 0xff,(int)(uVar7 << 0x10) >> 0x18);
+      triple_track_spawn(GU8(p1,2),uVar7 & 0xff,(int)(int8_t)(uVar7 >> 8));
       break;
     case 2:
       /* guest @0x80141DF0: a2 = sx8(param>>8) = sx8(byte@pc+3),
        * a3 = param&0xFF = byte@pc+2 — order matters, not swapped. */
       speech_bubble_spawn((undefined4 *)guest_at(GU32(p1, 0x20) + 0x124),
                    *(short *)(p1 + 0x4e) + -0x400,
-                   (int)(uVar7 << 0x10) >> 0x18,(ushort)(uVar7 & 0xff));
+                   (int)(int8_t)(uVar7 >> 8),(ushort)(uVar7 & 0xff));
       break;
     case 3:
       speech_bubble_spawn((undefined4 *)guest_at(GU32(p1, 0x20) + 0x124),
                    *(short *)(p1 + 0x4e) + 0x400,
-                   (int)(uVar7 << 0x10) >> 0x18,(ushort)(uVar7 & 0xff));
+                   (int)(int8_t)(uVar7 >> 8),(ushort)(uVar7 & 0xff));
       break;
     case 4:
       effect_arg_set(param_1);
@@ -1276,24 +1285,29 @@ ushort * ev_cmd_dispatch(int param_1,undefined4 param_2,ushort *param_3)
       break;
     case 7:
       if (*(int8_t *)((uint8_t *)guest_at(*g__DAT_1f8000c4) + 2) != 0) {
-        popup_spawn(param_1,(int)(uVar7 << 0x10) >> 0x18,uVar7 & 0xff);
+        popup_spawn(param_1,(int)(int8_t)(uVar7 >> 8),uVar7 & 0xff);
       }
       break;
     case 8:
       iris_wipe_spawn(param_1,(int)(short)uVar1);
       break;
-    case 9:
-      uVar7 = (uint)(short)uVar1;
+    case 9: {
+      /* guest: s0 = sx16(param); if mo+0x100: s0 = lbu(0x801b180c+s0);
+       * offset = s0*0x50 (@0x80141f24-0x80141f74). Index stays signed —
+       * guest adds sx16 to the table base, so negative params read
+       * before the table exactly like the guest does. */
+      int32_t pi = (int16_t)uVar1;
       mo = (uint8_t *)guest_at(GU32(p1, 0x38));
       if (*(int8_t *)(mo + 0x100) != 0) {
-        uVar7 = (uint)g_DAT_801b180c[uVar7];
+        pi = (int32_t)g_DAT_801b180c[pi];
       }
       iVar5 = fx_group_alloc(1,1,0,0xf);
       if (iVar5 != 0) {
-        noop_b(iVar5,GU32(p1, 0x20) + uVar7 * 0x50 + 0x34,
+        noop_b(iVar5,GU32(p1, 0x20) + (uint32_t)(pi * 0x50) + 0x34,
                      guest_of(g_DAT_801f0760));
       }
       break;
+    }
     case 10:
       color_rec_table_init(GU8(p1,3),(uint32_t)(int16_t)uVar1);
       break;
@@ -1303,7 +1317,7 @@ ushort * ev_cmd_dispatch(int param_1,undefined4 param_2,ushort *param_3)
       break;
     case 0xc: {
       uint8_t *obj;
-      uVar6 = (int)(uVar7 << 0x10) >> 0x18 & 0x7f;
+      uVar6 = (int)(int8_t)(uVar7 >> 8) & 0x7f;
       mo = (uint8_t *)guest_at(GU32(p1, 0x38));
       if ((*(int8_t *)(mo + 0x100) != 0) &&
          (((int)(uVar7 << 0x10) >> 0x10 & 0x8000U) != 0)) {
@@ -1311,11 +1325,15 @@ ushort * ev_cmd_dispatch(int param_1,undefined4 param_2,ushort *param_3)
       }
       iVar5 = uVar6 * 0x50;
       obj = (uint8_t *)guest_at(GU32(p1, 0x20));
-      uStack_18 = *(undefined2 *)(obj + iVar5 + 0x34);
-      uStack_16 = *(undefined2 *)(obj + iVar5 + 0x38);
-      uStack_14 = *(undefined2 *)(obj + iVar5 + 0x3c);
+      /* guest copies 3 u16 to its stack vec; emit_task_spawn_b reads
+       * 8 bytes — keep the host vec contiguous and padded like the
+       * guest frame (@0x80141e18-0x80141e50) */
+      uStack_18[0] = *(undefined2 *)(obj + iVar5 + 0x34);
+      uStack_18[1] = *(undefined2 *)(obj + iVar5 + 0x38);
+      uStack_18[2] = *(undefined2 *)(obj + iVar5 + 0x3c);
+      uStack_18[3] = 0;
       iVar5 = (uVar7 & 0xff) * 4;
-      emit_task_spawn_b((undefined4 *)&uStack_18,
+      emit_task_spawn_b((undefined4 *)uStack_18,
                    *(uint32_t *)((char *)g__DAT_801f0790 + iVar5),
                    *(uint32_t *)((char *)g__DAT_801f0780 + iVar5),0);
       break;
