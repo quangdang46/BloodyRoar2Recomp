@@ -10401,3 +10401,19 @@ N+102 — x28 bug narrowed to a frame_tick CALLEE (4 agents, still unfixed):
   pad -> versus input dead (confirmed end-to-end: START injected,
   title won't advance). Agents investigating why pad-poll thread
   blocked/exited. Transcription audit swept constant tables clean.
+
+- **session (versus fight UNBLOCKED — OT-cycle root cause fixed):**
+  Pad input FIXED via OpenBIOS initCard patch (NOP store of caller a0=0
+  to s_padStarted @BIOS+0x22320; regenerated openbios.bin sha256
+  d35c5f10...). Versus navigation reaches gs=8 ph=8 fight init. The
+  ph=8 GPU OT linked-list cycle wedge root-caused to a clean-port
+  miscompile: battle_flow_state_machine cached _DAT_1f800008/00c at
+  entry instead of reloading per-iteration like guest block_8016FD38
+  (lw $2C,0xC($16)/lw $2B,8($16) each pass) — pinned OT base, stale
+  cells, closed packet cycles (f2eeb5f). Versus fight now advances
+  past frame 6150. Audit campaign continued: BR2_RECIP_TABLE base
+  0x20 low (e7d646f), ev.c 4 divergences sx12/sx8/signed-idx (1626632),
+  desc_opcode_dispatch case2/3 arg-swap + case9 index (6f74887, alias
+  of ev_cmd_dispatch body). RESIDUAL: fight frames advance ~0.1fps,
+  gp0_draw ~70-80K/frame, emit:clear 64:21 — suspect frame-divisor
+  byte 0x1F800019 stuck 0 gating battle_frame emit. Agent on it.
