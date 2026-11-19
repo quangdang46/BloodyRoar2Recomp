@@ -2134,3 +2134,18 @@ F2 = 0x800d9f9c = .ANI base+4. pc from action_switch_guest (action.c:845):
 stream = ctrl+0x30 + u16(S0_table[action_idx]). NEXT: wtrace motion+0x84,
 verify S0-table lookup vs generated 0x8017a6e8, decode .ANI blob, audit
 clean writers of ctrl/motion fields.
+
+=== N+160 — action_switch_guest S0-lookup VERIFIED faithful ===
+Decoded generated 0x8017A6E8 vs clean action_switch_guest (action.c):
+faithful. Generated: sll a2,a2,1 (param_3*2); lw v0,0(a1)=*motion;
+lw v1,0x30(a0)=ctrl+.ANI base; addu a2,a2,v0; lhu v0,0(a2)=u16 at
+*motion+param_3*2; addu v0,v0,v1; sw v0,0x88(a1)=motion+0x88;
+sw v0,0x84(a1)=motion+0x84=stream PC. Clean matches exactly
+(param_2[0x22]=+0x88, [0x21]=+0x84; u16 at *param_2+param_3*2).
+=> initial stream PC = .ANI base + u16(S0[action_idx]) is CORRECT.
+motion+0x84=.ANI base+4 may be LEGIT (4-byte .ANI header). The desync
+is DOWNSTREAM — ev_stream_dispatch advancing motion+0x84 through
+opcodes where a clean handler writes wrong next-PC or corrupts
+ctrl/motion/foe state. NEXT: trace motion+0x84 advancement through
+ev_stream_dispatch op handlers; find which clean opcode handler
+desyncs the stream PC.
