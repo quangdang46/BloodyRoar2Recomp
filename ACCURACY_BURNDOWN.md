@@ -2020,3 +2020,19 @@ PC=0. Same class as session-18 clean->generated->BIOS boundary value
 loss. Faithful fix target: interrupts.c deferred-resume/exception
 path — find which table slot gave NULL and why in_exception never
 clears.
+
+=== N+154 — DeliverEvent starvation ROOT: GPU OT linked-list DMA runaway ===
+5894ca49 found the real cause of the "CD starvation": NOT a CD/IRQ bug —
+a porting bug in game/gfx.c spr_attr_alloc_a/b (0x8018CC6C/0x8018C71C).
+Clean wrote the OT link word (old_head|tag) into the HEAD CELL instead
+of packet[0], leaving node[0] uninitialised -> ch2 linked-list DMA
+followed a garbage next-pointer -> OT runaway (gpu_ot.nodes_max hit
+262144 cap, 60+ cancels) -> DMA never completes -> DeliverEvent starves
+-> vsync_wait_n spin -> fps collapse. Faithful fix: node[0]=old_head|tag,
+head=packet&0xFFFFFF (verified vs generated). PROOF: gpu_ot
+starts==completes (91867), nodes_max 2095, DAT_801BDDE0 advancing,
+~150fps through former stall zone, zero cancels. COMMITTED d7f41c2.
+REMAINING versus blocker: x28 callee-saved stale-restore crash at
+battle_intro_flow state 0xf0 (menu.c ~1969) at fight round-end — versus
+now INITIATES but crashes post-round. nav_to_fight.py also couldn't
+escape attract (input timing — needs tuning now that fps is fast).
