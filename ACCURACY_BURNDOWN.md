@@ -2159,3 +2159,30 @@ stalls at gs=8 ph=3 -> starvation_watchdog (fight-asset streaming slow
 patch or versus-specific deferred path). Attract demo fights run 65K
 frames clean. br2_irq_poll fix correct+committed; versus fight-load
 needs one more diagnosis pass.
+
+=== N+162 — versus ph=8 OT-cycle: mechanism PROVEN, root = stale OT cell ===
+5ae43ba4 (gwatch write-watchpoint + atexit ring): the closed packet-link
+cycle (0x1D683C->...->0x1D6724->0x1D683C, 8 nodes, ENG0-relative) is formed
+by ONE clean-C emit loop (host rip 0x1041c9df4, guest ra=0x80126664)
+writing link words of 8 contiguous 0x28-stride packets 0x801D6724..683C.
+DECISIVE: first push (6724.link=0x091d683c) read a STALE OT-CELL value
+pointing at packet 0x1d683c — a packet re-pushed LATER in the same seq.
+That cell value cannot come from a same-frame push => leftover packet
+pointer from a PREVIOUS frame's chain. So the per-frame OT-array reset
+did NOT cover that cell before this frame's pushes.
+RULED OUT (verified faithful): gpu_clear_otag_r->ClearOTagR
+(0x80191668 masks are correct: 0x1B83CC|0x04000000, OT[0]=0x1B83E0),
+gpu_pkt_unlink_n stop-on-0xffffff + never overwrites packet cells,
+pkt pool double-alloc (0 DUP), ot_push link math, ClearOTagagR DMA kick.
+REAL OT-ARRAY CLEARER = DMA ch6 OTC (execute_ch6_otc, dma.c:905) writing
+backward cell-link list base=0xFFFFFF; traces show ch6 OTC running for
+both OT tails (madr 0x801E618C/0x801E82DC count 0x820).
+PRIME REMAINING SUSPECT: a push targets an OT cell OUTSIDE the ch6-OTC
+cleared region. battle.c push sites use _DAT_1f800008 + slot*4 as OT
+base (battle.c ~13708/15726/15800/15906; menu.c ot_push MB32(0x1f800008)).
+If _DAT_1f800008 can point at an OT buffer ch6 OTC doesn't cover (versus
+stage/char OT), its cells keep stale packet pointers => exactly this wedge.
+NEXT: gwatch OT-cell region 0x801E4000-0x801E8400 to ID which cell held
+0x1d683c; check ch6-OTC coverage + what _DAT_1f800008 pointed to in versus.
+SECONDARY: runtime exits code 0 (no crash report) at wedge — exit path
+unidentified (possible _exit/quick_exit or non-main-loop shutdown).
