@@ -419,17 +419,22 @@ undefined4 cd_cmd_issue_async(byte param_1,int param_2)
   undefined4 uVar1;
   int iVar2;
   int iVar3;
-  
+  /* guest zero-extends the opcode byte (andi $s4,$s1,0xff @0x80195EF0)
+   * and uses that for the ==1 test, the 0x801bc7c0 table index and the
+   * final cd_cmd_issue opcode — a signed byte would sign-extend into a
+   * wild table index for opcodes >= 0x80. */
+  uint32_t p1 = (uint32_t)(uint8_t)param_1;
+
   uVar1 = DAT_801bc848;
   iVar3 = 3;
   while( true ) {
     DAT_801bc848 = 0;
-    if ((param_1 != 1) && ((DAT_801bc854 & 0x10) != 0)) {
+    if ((p1 != 1) && ((DAT_801bc854 & 0x10) != 0)) {
       cd_cmd_issue(1,0,0,0);
     }
-    if ((((param_2 == 0) || (I32AT(0x801bc7c0,(uint)param_1) == 0)) ||
+    if ((((param_2 == 0) || (I32AT(0x801bc7c0,p1) == 0)) ||
         (iVar2 = cd_cmd_issue(2,param_2,0,0), iVar2 == 0)) &&
-       (DAT_801bc848 = uVar1, iVar2 = cd_cmd_issue(param_1,param_2,0,1), iVar2 == 0)) break;
+       (DAT_801bc848 = uVar1, iVar2 = cd_cmd_issue((byte)p1,param_2,0,1), iVar2 == 0)) break;
     iVar3 = iVar3 + -1;
     if (iVar3 == -1) {
       DAT_801bc848 = uVar1;
@@ -626,8 +631,9 @@ undefined2 cd_intc_busy_read(void)
 
 {
   /* guest 0x8019A7D4: lui $v0,0x801C; lh $v0,-0x32E6($v0); jr $ra; nop
-   * -> signed halfword at guest 0x801BCD1A (lh sign-extends into $v0,
-   * but the undefined2 return truncates to the same 16 bits). */
+   * -> signed halfword at guest 0x801C0000-0x32E6 = 0x801BCD1A (lh
+   * sign-extends into $v0, but the undefined2 return truncates to the
+   * same 16 bits). */
   return (undefined2)br2_ld16(0x801bcd1a);
 }
 
@@ -679,18 +685,22 @@ bool cd_cmd_issue_sync(byte param_1,int param_2,undefined4 param_3)
   int iVar3;
   int iVar4;
   int iVar5;
-  
+  /* guest zero-extends the opcode byte (andi $s3,$s4,0xff @0x8019602C)
+   * for the ==1 test, the 0x801bc7c0 table index and the final
+   * cd_cmd_issue opcode — see cd_cmd_issue_async. */
+  uint32_t p1 = (uint32_t)(uint8_t)param_1;
+
   uVar1 = DAT_801bc848;
   iVar5 = 3;
   do {
     DAT_801bc848 = 0;
-    if ((param_1 != 1) && ((DAT_801bc854 & 0x10) != 0)) {
+    if ((p1 != 1) && ((DAT_801bc854 & 0x10) != 0)) {
       cd_cmd_issue(1,0,0,0);
     }
-    if (((param_2 == 0) || (I32AT(0x801bc7c0,(uint)param_1) == 0)) ||
+    if (((param_2 == 0) || (I32AT(0x801bc7c0,p1) == 0)) ||
        (iVar3 = cd_cmd_issue(2,param_2,param_3,0), iVar3 == 0)) {
       DAT_801bc848 = uVar1;
-      iVar3 = cd_cmd_issue(param_1,param_2,param_3,0);
+      iVar3 = cd_cmd_issue((byte)p1,param_2,param_3,0);
       iVar4 = 0;
       if (iVar3 == 0) break;
       /* cd_cmd_issue(param_1) returned nonzero */
@@ -981,32 +991,39 @@ void cd_chan_init_wrap(void)
 }
 
 /* cd_subsystem_reset — CD subsystem reset: FUN_8018e300, then mode dispatch on
- * *(u32*)0x801bc868 (==1 -> a120c/a11e4 else 961a8/95d78), zero two
- * indirect bytes, FUN_8018e310(0). Disasm 0x80199070-0x801990e8. */
+ * *(u32*)0x801bc868 (==1 -> a120c/a11e4 else 961a8; mc_session_b(0) joins
+ * both paths), zero two indirect u16s @0x801bcbd0/0x801bcbdc targets,
+ * FUN_8018e310(0). Disasm 0x80199070-0x801990e8. */
 extern void FUN_8018e300(void);
 extern void FUN_8018e310(uint32_t);
 extern void cd_tbl4_dispatch3(int32_t);
 extern uint32_t cd_xchg_fefb4(uint32_t);
 void cd_subsystem_reset(void)
 {
-  uint8_t *p;
+  uint16_t *p;
   FUN_8018e300();
+  /* generated reads mode @0x801BC868 (lui 0x801C + lw -0x3798), cells
+   * @0x801BCBD0/0x801BCBDC — br2eu_func_80199070. */
   if (*(uint32_t *)guest_at(0x801bc868) == 1) {
     cd_tbl4_dispatch3(0);
     cd_xchg_fefb4(0);
   } else {
     cd_cmd_dispatch3(0);
-    mc_session_b(0);
   }
-  p = (uint8_t *)guest_at(*(uint32_t *)guest_at(0x801bcbd0));
-  if (p) p[0] = 0;
-  p = (uint8_t *)guest_at(*(uint32_t *)guest_at(0x801bcbdc));
-  if (p) p[0] = 0;
+  /* mc_session_b(0) @0x80195D78 runs for BOTH mode paths (block_801990BC
+   * is the join point of the mode==1 j and the else fallthrough). */
+  mc_session_b(0);
+  /* generated sh zero,(ptr) — u16 clears, not bytes; cells are
+   * 0x801BCBD0/0x801BCBDC (lui 0x801C + lw -0x3430/-0x343C). */
+  p = (uint16_t *)guest_at(*(uint32_t *)guest_at(0x801bcbd0));
+  *p = 0;
+  p = (uint16_t *)guest_at(*(uint32_t *)guest_at(0x801bcbdc));
+  *p = 0;
   FUN_8018e310(0);
 }
 
 /* cd_probe_retry — CD probe retry: up to 5 cd_ready_probe attempts; on first
- * success installs fn-ptr triple @0x801bc858/5c/1b0 (+0 @0x801bc7b4)
+ * success installs fn-ptr triple @0x801bc848/4c/7b0 (+0 @0x801bc7b4)
  * and returns 1; else printf 0x80125638, returns 0. Disasm-verified. */
 extern int32_t cd_ready_probe(void);
 int32_t cd_probe_retry(void)
@@ -1014,8 +1031,10 @@ int32_t cd_probe_retry(void)
   int32_t s0;
   for (s0 = 4; s0 != -1; s0--) {
     if (cd_ready_probe() == 1) {
-      *(uint32_t *)guest_at(0x801bc858) = 0x80195b4c;
-      *(uint32_t *)guest_at(0x801bc85c) = 0x80195b74;
+      /* generated sw targets are 0x801BC848/0x801BC84C/0x801BC7B0/0x801BC7B4
+       * (br2eu_func_80195AA4: lui 0x801C + sw off -0x37B8/-0x37B4/-0x3850/-0x384C) */
+      *(uint32_t *)guest_at(0x801bc848) = 0x80195b4c;
+      *(uint32_t *)guest_at(0x801bc84c) = 0x80195b74;
       *(uint32_t *)guest_at(0x801bc7b0) = 0x80195b9c;
       *(uint32_t *)guest_at(0x801bc7b4) = 0;
       return 1;
@@ -1206,30 +1225,33 @@ int32_t cd_reg_init_seq(void)
    * indexed u16 accesses are MMIO and must use br2_ld/st, not guest_at. */
   uint32_t base;
   uint16_t v0;
-  uint8_t b[4];
   base = DB32G(0x801bcb20);
-  if (base == 0) return 0;
   v0 = br2_ld16(base + 0xdc * 2);        /* +0x1b8 */
   if (v0 == 0) {
     v0 = br2_ld16(base + 0xdd * 2);      /* +0x1ba */
     if (v0 == 0) {
-      v0 = 0x3fff;
-      br2_st16(base + 0xc0 * 2, v0);     /* +0x180 */
-      br2_st16(base + 0xc1 * 2, v0);     /* +0x182 */
+      /* every generated path reaching the +0x1b0/+0x1b2 stores reloads
+       * li v0,0x3fff (@0x801973A4 delay / @0x801973B8) — the stored value
+       * is ALWAYS 0x3fff, never the raw lh result (br2eu_func_8019737C). */
+      br2_st16(base + 0xc0 * 2, 0x3fff);  /* +0x180 */
+      br2_st16(base + 0xc1 * 2, 0x3fff);  /* +0x182 */
     }
-    v0 = 0x3fff;
   }
-  br2_st16(base + 0xd8 * 2, v0);         /* +0x1b0 */
-  br2_st16(base + 0xd9 * 2, v0);         /* +0x1b2 */
-  br2_st16(base + 0xd5 * 2, 0xc001);     /* +0x1aa */
-  b[2] = 0x80; b[0] = 0x80; b[3] = 0; b[1] = 0;
-  if (br2_ld8(DB32G(0x801bcb0c))) br2_st8p(0x801bcb0c, 2);
-  if (br2_ld8(DB32G(0x801bcb14))) br2_st8p(0x801bcb14, b[0]);
-  if (br2_ld8(DB32G(0x801bcb18))) br2_st8p(0x801bcb18, b[1]);
-  if (br2_ld8(DB32G(0x801bcb0c))) br2_st8p(0x801bcb0c, 3);
-  if (br2_ld8(DB32G(0x801bcb10))) br2_st8p(0x801bcb10, b[2]);
-  if (br2_ld8(DB32G(0x801bcb14))) br2_st8p(0x801bcb14, b[3]);
-  if (br2_ld8(DB32G(0x801bcb18))) br2_st8p(0x801bcb18, 0x20);
+  br2_st16(base + 0xd8 * 2, 0x3fff);      /* +0x1b0 */
+  br2_st16(base + 0xd9 * 2, 0x3fff);      /* +0x1b2 */
+  br2_st16(base + 0xd5 * 2, 0xc001);      /* +0x1aa */
+  /* command issue @0x801973CC-0x8019745C: the guest builds {0x80,0,0x80,0}
+   * on its stack and writes UNCONDITIONALLY through the pointer cells —
+   * cmd 2 -> *cb0c, params -> *cb14/*cb18/*cb10/*cb14, cmd 3 -> *cb0c,
+   * 0x20 -> *cb18. There are no readiness reads or conditionals; the old
+   * br2_ld8-gated form both issued extra MMIO reads and skipped writes. */
+  br2_st8p(0x801bcb0c, 2);
+  br2_st8p(0x801bcb14, 0x80);
+  br2_st8p(0x801bcb18, 0);
+  br2_st8p(0x801bcb0c, 3);
+  br2_st8p(0x801bcb10, 0x80);
+  br2_st8p(0x801bcb14, 0);
+  br2_st8p(0x801bcb18, 0x20);
   return 0;
 }
 
@@ -1267,10 +1289,13 @@ int32_t cd_subsystem_init(void)
     br2_st8p(0x801bcb0c, 0);
     br2_st8p(0x801bcb18, 0);
     br2_st32p(0x801bcb1c, 0x1325);
-    if (cd_cmd_issue(1,0,0,(int)*(uint32_t *)guest_at(0x801bcb0c)) != 0) return -1;
+    /* guest passes a3=0 (async flag clear) and IGNORES this call's return —
+     * there is no v0 test between the jal @0x80197600 and the 0x801bc854
+     * reload @0x80197604 (br2eu_func_801974B8). */
+    cd_cmd_issue(1,0,0,0);
   }
   if (*(uint32_t *)guest_at(0x801bc854) & 0x10) {
-    if (cd_cmd_issue(1,0,0,0) != 0) return -1;
+    cd_cmd_issue(1,0,0,0);   /* return also ignored @0x8019761C-0x8019762C */
   }
   if (cd_cmd_issue(0xa,0,0,0) != 0) return -1;
   if (cd_cmd_issue(0xc,0,0,0) != 0) return -1;
@@ -1325,7 +1350,9 @@ void cd_u16_table_store(uint32_t a0,uint32_t a1,int32_t a2)
   if (a2 == 0) {
     base[a0] = (uint16_t)a1;
   } else {
-    uint32_t sh = *(uint32_t *)guest_at(0x801c0000 - 0x2128);
+    /* srlv: shift amount is the cell value & 31 (br2eu_func_8019BCAC
+     * @0x8019BCE0 PGXP_ALU 0x00651806). */
+    uint32_t sh = *(uint32_t *)guest_at(0x801c0000 - 0x2128) & 31;
     base[a0] = (uint16_t)(a1 >> sh);
   }
 }
@@ -1557,13 +1584,17 @@ void cd_chan_flags_to_dir(uint32_t a0)
   int lo;
   if (b == NULL) return;
   a1 = *(uint32_t *)b;
-  lo = (int32_t)a1 < 1;
+  /* guest uses sltiu (unsigned a1<1 == a1==0) for the "all" flag, and the
+   * second block is gated by lo||(a1&4) — @0x8019CADC branches on lo!=0
+   * straight into the +0x186 block, skipping the &4 test (br2eu_func_
+   * 8019CAA0). The clean port had it inverted (!lo&&(a1&4)). */
+  lo = (a1 < 1u);
   if (lo || (a1 & 2)) {
     base = *(uint32_t *)guest_at(0x801bdeb0);
     CDMMIO16_ST(base,0xc2,*(uint16_t *)(b + 8));      /* +0x184 */
     *(uint16_t *)guest_at(0x801bde58) = *(uint16_t *)(b + 8);
   }
-  if (!lo && (a1 & 4)) {
+  if (lo || (a1 & 4)) {
     base = *(uint32_t *)guest_at(0x801bdeb0);
     CDMMIO16_ST(base,0xc3,*(uint16_t *)(b + 0xa));    /* +0x186 */
     *(uint16_t *)guest_at(0x801bde5a) = *(uint16_t *)(b + 0xa);
@@ -1744,11 +1775,17 @@ int32_t mc_chan_job_stable_poll(uint32_t a0,const void *a1,const void *a2,const 
  * Disasm 0x8019c060-0x8019c0e8. */
 int32_t cd_range_table_member(uint32_t a0)
 {
+  /* guest: v0=*(0x801bded8); a0 <<= v0&31 (sllv); table=*(0x801bdf18);
+   * if table==0 return 0 — the NULL test is on the CELL VALUE, not the
+   * host pointer (br2eu_func_8019C060 @0x8019C064-0x8019C07C). The cell is
+   * loaded once; the loop walks +8 without reloading it. */
   uint32_t sh = *(uint32_t *)guest_at(0x801bded8);
-  uint8_t *p = (uint8_t *)guest_at(*(uint32_t *)guest_at(0x801bdf18));
+  uint32_t cell = *(uint32_t *)guest_at(0x801bdf18);
+  uint8_t *p;
   uint32_t v1;
-  if (p == NULL) return 0;
-  a0 <<= sh;
+  if (cell == 0) return 0;
+  p = (uint8_t *)guest_at(cell);
+  a0 <<= (sh & 31);
   for (;;) {
     v1 = *(uint32_t *)p;
     if (v1 & 0x80000000) { p += 8; continue; }
@@ -1781,18 +1818,22 @@ uint32_t cd_seek_param_issue_clamped(uint32_t a0,uint32_t a1)
   return s0;
 }
 
-/* cd_status_shifted_read — status read: if (a0-0x1010) <u 0x7efe8 ->
+/* cd_status_shifted_read — status read: if (a0-0x1010) <=u 0x7efe8 ->
  * sh = cd_reg_indexed_rw(-1) @0x801bdec8; return sh << shift@0x801bded8;
  * else 0. Disasm 0x8019d470-0x8019d4c8. */
 extern int32_t cd_reg_indexed_rw(int32_t,uint32_t);
 uint32_t cd_status_shifted_read(uint32_t a0)
 {
-  if (a0 - 0x1010 < 0x7efe8) {
+  /* guest proceeds iff (a0-0x1010) <=u 0x7efe8 — sltu gives
+   * v0=(0x7efe8 < diff) and branches to ret 0 when set
+   * (br2eu_func_8019D470 @0x8019D484); the clean `< 0x7efe8` dropped the
+   * diff==0x7efe8 boundary case. Final shl is sllv: amount &31. */
+  if (a0 - 0x1010 <= 0x7efe8) {
     int32_t r = cd_reg_indexed_rw(-1,a0);
     uint32_t sh = (uint16_t)r;
     *(uint16_t *)guest_at(0x801bdec8) = (uint16_t)sh;
     sh = *(uint16_t *)guest_at(0x801bdec8);
-    return sh << *(uint32_t *)guest_at(0x801bded8);
+    return sh << (*(uint32_t *)guest_at(0x801bded8) & 31);
   }
   return 0;
 }
@@ -1879,7 +1920,10 @@ done:
     int32_t n = (int32_t)s2 - 1;
     if (n >= 0) {
       uint8_t *p = out;
-      for (i = 0; i < (uint32_t)n; i++) {
+      /* guest prints entries 0..n inclusive (n+1 = s2 entries: the header
+       * plus every dir entry written above); bound is i <= n, verified
+       * against br2eu_func_80195854 @0x80195A08 (beq on n<i exits). */
+      for (i = 0; i <= (uint32_t)n; i++) {
         printf_forward((const char *)guest_at(0x80125608),p[0],p[1]);
         p += 4;
       }
@@ -1954,11 +1998,12 @@ int32_t cd_reg_indexed_rw(int32_t a0,uint32_t a1)
   uint32_t a3;
   if (CDREG32(0x801bded4) != 0) {
     uint32_t d = CDREG32(0x801bdedc);
-    if (d != 0) {
-      uint32_t rem = a1 % d;              /* divu $zero,$a1,$d */
-      if (rem != 0)
-        a1 = (a1 + d) & ~CDREG32(0x801bdee0);
-    }
+    /* divu $zero,$a1,$d; on d==0 the guest models hi=a1 (dividend) and the
+     * break7 trap is a recompiler no-op (br2eu_func_8019BCF0 @0x8019BD10-
+     * 0x8019BD1C), so the round-up still runs with rem==a1. */
+    uint32_t rem = (d != 0) ? (a1 % d) : a1;
+    if (rem != 0)
+      a1 = (a1 + d) & ~CDREG32(0x801bdee0);
   }
   a3 = a1 >> (CDREG32(0x801bded8) & 31);   /* srlv: sa&31 */
   if (a0 == -2) return (int32_t)a1;
@@ -2036,8 +2081,10 @@ void cd_chan_attr_apply(uint32_t a0)
       if (idx >= 1 && idx < 8) {
         a1 = jt_mag[idx];
         sv = *(int16_t *)(p + 4); lu = *(uint16_t *)(p + 4);
+        /* guest: sv<0 -> a2 stays 0x7f (blt @0x8019D6A4 -> 0x8019D6B0),
+         * NOT 0 — the old (sv<0)?0:lu diverged (br2eu_func_8019D5F0). */
         a2 = 0x7f;
-        if (sv < 0x80) a2 = (sv < 0) ? 0 : lu;
+        if (sv < 0x80) a2 = (sv < 0) ? 0x7f : lu;
       } else {
         a2 = *(uint16_t *)(p + 4);
       }
@@ -2058,7 +2105,7 @@ void cd_chan_attr_apply(uint32_t a0)
         a1 = jt_mag[idx];
         sv = *(int16_t *)(p + 6); lu = *(uint16_t *)(p + 6);
         a2 = 0x7f;
-        if (sv < 0x80) a2 = (sv < 0) ? 0 : lu;
+        if (sv < 0x80) a2 = (sv < 0) ? 0x7f : lu;   /* same sv<0 fix */
       } else {
         a2 = *(uint16_t *)(p + 6);
       }
