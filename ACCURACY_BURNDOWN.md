@@ -2097,3 +2097,26 @@ cycle -> gs=8 (versus) -> ph progression 241->1->0->3->8 (fight init)
 DeliverEvent/CD streaming, OT DMA, x28 stale-restore ALL working
 together. The full versus->fight path is FUNCTIONAL. Remaining work is
 clean-port coverage (75 named delegates + 2668 FUN_) not correctness.
+
+=== N+158 — versus fight-init reached but battle SM livelocks (new gate) ===
+72c80692: nav reaches gs=8 ph=8 fight-init (even zero-input via attract
+self-nav), pad hardware live (injected buttons reach 0x801FEB28), but
+the ROUND NEVER STARTS. From ~frame 1575: gpu_ring newest_frame frozen,
+fighter records 0x1f8000e8-0x1f800308 byte-identical (md5 stable),
+post_battle_dispatch counter 0x1f80008c frozen 0xFFFF, published pad
+state 0x1f800070-0x8f FROZEN (pad_state_refresh writes 0x1f80006C-0x80,
+battle reads a DIFFERENT range), frame_divisor 0x1f800019=0. Frames
+advance ~4-5/s (vblank) but ZERO game-state progress; ~100% CPU in
+dev_byte_xfer->fifo_space_check SIO pad-poll spin. Interpretation:
+battle_flow_state_machine case-8 body never completes a productive
+iteration — stuck in a per-frame clean-C wait that never satisfies,
+while IRQ-side work continues. NOT a crash, NOT CD, NOT pad hardware —
+a clean-C livelock in the battle path with all battle-state writes
+frozen. x28 round-end never reached (round never starts). NEXT: gwatch
+0x1f800001/0x1f80008c + OT-submit to catch last writer before 1575, or
+bisect case-8 body by delegating suspects (post_battle_dispatch,
+battle_intro_fsm, fighter_pair_update, battle_config_eval) to
+br2_call_generated one at a time to find the livelocking clean-C loop
+(AGENTS.md §4 diagnostic). ALSO: versus reads pad from 0x1f800070-0x8f
+which is a DIFFERENT published range than pad_state_refresh's
+0x1f80006C-0x80 — check if battle has its own pad publisher that's dead.
