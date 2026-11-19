@@ -2350,3 +2350,21 @@ round-end; _DAT_1f800082 gate nonzero (0x801b0000) skipping
 fighter_contact_resolve/fighter_pair_update (menu.c:~756) — verify if
 expected versus-idle or separate battle-session go-live bug. op=207
 crash mode not re-observed post-fix.
+
+=== N+173 — versus 'static fighters' = CD seek wedge (AGENTS.md §8) ===
+c03754a2: versus gs=8 ph=8 frames advance ~120-175fps BUT main thread
+BLOCKED in cd_file_read_seq (save.c:2463 delegates 0x801565ec) ->
+cd_read_issue->cd_read_poll->cd_cmd_queue_load->cd_cmd_issue->
+cd_result_wait_a/b->cd_mode_flag_set chain (all generated LLE). Stack:
+game_state_step->battle_flow_state_machine->...->cd_file_read_seq seek-
+completion wait 0x80156628. cdrom_state: pending cmd=0x09 Seek STUCK
+phase=1 active=0 — never reaches device. CD dead ~573 BILLION cycles,
+no sector ~846K frames (last_sector frame=1566). bfrd_set=2048/
+bfrd_clear=13, ring_dropped=899. Exception storm 878959 entries
+pczero 423893 @0x8014AEF4/epc 0x8019A600 = IRQ machinery ticks while
+main spins. _DAT_1f800082 suspicion DISPROVEN (reads 0; 0x801b0000 is
+at 0x1f800084 different field). post_battle_dispatch counter=0 — SM
+blocked UPSTREAM in resource load before steady-state battle.
+ROOT = AGENTS.md §8 deferred command-issue / register-window doorbell:
+cd_seek_param_issue->cd_reg_window_op->worker never activates pending
+cmd. NEXT: instrument why pending 0x09 never transitions active:0->1.
