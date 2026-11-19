@@ -2186,3 +2186,24 @@ NEXT: gwatch OT-cell region 0x801E4000-0x801E8400 to ID which cell held
 0x1d683c; check ch6-OTC coverage + what _DAT_1f800008 pointed to in versus.
 SECONDARY: runtime exits code 0 (no crash report) at wedge — exit path
 unidentified (possible _exit/quick_exit or non-main-loop shutdown).
+
+=== N+163 — versus ph=8 OT-cycle ROOT CAUSE FIXED: OT base cache miscompile ===
+97861311: battle_flow_state_machine (menu.c, guest 0x8016FCC4) cached
+_DAT_1f800008/_DAT_1f80000c ONCE at entry and wrote them back at the loop
+head joined_r0x8016fd30. Guest block_8016FD38 instead does lw $2C,0xC($16)
++ lw $2B,8($16) FRESH every iteration ($16=0x1F800000), so frame_tick's
+double-buffer toggle (0x801E4110<->0x801E6260) is observed each pass and
+ch6 OTC clears the newly-selected buffer. The stale cache pinned
+_DAT_1f800008 to the entry OT forever => every ot_push appended to the
+same cells with no intervening clear => packet-chain tails linked to
+previous heads => closed GPU walk cycles (the N+162 mechanism). FIX
+f2eeb5f: read both cells fresh at loop head, no write-back (guest stores
+nothing). VERIFIED: versus fight reaches frame ~6150 advancing, OT bases
+alternate, ch6 OTC runs both tails ~21 starts/frame.
+RESIDUAL (unproven): frames advance but ~0.1fps wall; gp0_draw still
+~70-80K/frame; emit passes ~64/frame outnumber ch6 clears ~21/frame =>
+transient cyclic chains still form in memory. Suspect frame-divisor byte
+0x1F800019 (==0 => frame_divisor_get()==0 => battle_frame emit runs every
+iteration instead of render frames only). NEXT: trace writer/decrementer
+of 0x1F800019; verify vs docs/psx_bios_disasm.txt + Beetle oracle before
+touching gpu.c/dma.c. Do NOT patch without runtime proof.
