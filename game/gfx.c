@@ -1226,7 +1226,11 @@ uint32_t spr_attr_alloc_a(uint32_t param_1,int16_t param_2,int16_t param_3,
     prim_packet_init_tex((int)guest_of(puVar1 + 6),GB8(0x801e40b7),GB8(0x801e40b6),iVar3,0);
     uVar2 = 0;
     uint32_t *head = (uint32_t *)guest_at(param_1);
-    *head = *head | 0x5000000;
+    /* OT link word goes into the packet's first word (node[0] =
+     * old_head | 0x05000000), NOT into the head cell — writing *head
+     * here leaves node[0] uninitialised and the GPU linked-list DMA
+     * follows a garbage next-pointer (versus/attract OT runaway). */
+    puVar1[0] = *head | 0x05000000u;
     *head = guest_of(puVar1) & 0xffffff;
     puVar1[6] = guest_of(puVar1) & 0xffffff | 0x2000000;
     *head = guest_of(puVar1 + 6) & 0xffffff;
@@ -1273,7 +1277,9 @@ uint32_t spr_attr_alloc_b(uint32_t param_1,uint32_t param_2,uint32_t param_3,
     *(uint16_t *)(b + 0x22) = param_6;
     puVar1[1] = 0x2c808080;
     uint32_t *head = (uint32_t *)guest_at(param_1);
-    *head = *head | 0x9000000;
+    /* node[0] = old_head | 0x09000000 (link word into the packet, not
+     * the head cell) — same fix as spr_attr_alloc_a. */
+    puVar1[0] = *head | 0x09000000u;
     *head = guest_of(puVar1) & 0xffffff;
   }
   return uVar2;
