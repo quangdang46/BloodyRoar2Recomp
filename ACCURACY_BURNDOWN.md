@@ -2317,3 +2317,22 @@ propagation root). gpu_clear_otag_r verified faithful vs 0x80191668.
 NEXT: watch string-ptr table 0x801B5190-1C0 + 0x801B51A4, find the
 jalr/jr consumer; suspect classes: host-ptr-as-guest-addr, OOB fn-ptr
 index, stack/struct corruption from versus OT path.
+
+=== N+171 — wild dispatch ROOT: CD completion under versus load ===
+f946f119: 0x80122E50 dispatch = ev_stream_dispatch (resolve.c:3094,
+guest 0x8017ea7c) reading op=207 (0xCF) OOB — table 0x801B4E68 has 48
+entries; idx207 -> 0x801B51A4 -> 0x80122E50 string ptr. Guest ALSO has
+no bounds check (faithful — do NOT add one). Event stream corrupt <=
+CD file loads incomplete under versus heavier load. Unified root:
+cdrom.c command completion/IRQ not delivered (AGENTS.md §8 deferred
+command-issue blocker). Evidence: wedge = cd_queue_drain
+(br2eu_func_801931C4, delegated) spins on *0x801b8428&0x04000000 never
+clearing; crash = corrupt streams/kernel low-RAM callback nodes
+(node 0x801FEB40 {fn4=0x801AA244} mid-fn entries write phys 0x00000087
+corrupting callback list heads 0x100-0x118). br2eu_func_801AA244/2AC =
+CD file-slot flag-setters (cd_subchan_table_install verified faithful).
+NEXT: cdrom.c command-issue/completion/IRQ vs Beetle oracle on versus
+file loads (find_first_divergence). tools/versus_crash_watch.py =
+nav script that does NOT send quit (stock nav_to_fight.py:97 kills
+repro). Two failure modes (OT-cycle wedge + string dispatch) likely
+same CD-completion root.
