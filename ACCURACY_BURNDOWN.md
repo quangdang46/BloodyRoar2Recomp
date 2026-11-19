@@ -2078,3 +2078,22 @@ own distributor, never low-level initPad. FIX: find the per-frame tick
 (frame_tick callees) that should drive the pad channel and why it
 starves — likely a delegated function starving the deferred-interrupt
 path (AGENTS.md §4) needing br2_call_generated delegation.
+
+=== N+157 — VERSUS->FIGHT VERIFIED END-TO-END ===
+987af0bb fixed the pad-distributor root cause: clean
+cd_channel_init_seq (game/game.c) dropped the guest tail-call to
+cd_channel_main_init (0x801A1250) which Deq+Enqs pad/device IntRP
+0x801FEFC0 into kernel queue 2 + runs channel-init jalr's. Without it
+the IntRP never linked -> per-interrupt channel poll (0x801A1834/
+0x801A189C) never ran -> PAD buffers 0x801BEFA8/0x801BEFCA stayed 0xFF
+sentinel -> pad_state_refresh published zeros -> menus saw no input.
+Fix: call_guest(0x801a1250). COMMITTED 7f269c5. Runtime proof: IntRP
+installed, buffers get input-responsive writes (0xF7=~START),
+0x1F80006C publishes START, gs=8 versus menu reached.
+
+END-TO-END VERSUS VERIFIED (nav_to_fight.py port 5130): title->attract
+cycle -> gs=8 (versus) -> ph progression 241->1->0->3->8 (fight init)
+-> frames advancing 6073->6104+ (>30 past fight init). PAD INPUT,
+DeliverEvent/CD streaming, OT DMA, x28 stale-restore ALL working
+together. The full versus->fight path is FUNCTIONAL. Remaining work is
+clean-port coverage (75 named delegates + 2668 FUN_) not correctness.
