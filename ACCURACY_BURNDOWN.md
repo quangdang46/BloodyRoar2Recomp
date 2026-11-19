@@ -2207,3 +2207,19 @@ transient cyclic chains still form in memory. Suspect frame-divisor byte
 iteration instead of render frames only). NEXT: trace writer/decrementer
 of 0x1F800019; verify vs docs/psx_bios_disasm.txt + Beetle oracle before
 touching gpu.c/dma.c. Do NOT patch without runtime proof.
+
+=== N+164 — ev.c audit: 4 proven transcription divergences fixed ===
+fcd411ee (insn-level vs disc disasm): ev8_motion_param stored full s16
+where guest stores sx12(sum) for ops 1-7,9,10 (sll/sra 20); op6 facing
+decode assigns a3 per tested bit in order (last set wins) — clean used
++= for five bits. ev9_physics op5 missing sx12. ev_spark_spawn opcode
+decode is signed sx8 (slti s1,3 signed => negative ops take alloc path);
+task+0x14 sx8 not zext; task+0x1c/+0x20 are lh not u32. ev_cmd_dispatch
+5 sites zext-byte vs guest sx8 arg; op9 table index signed sx16 (neg
+params read before 0x801b180c); op12 stack vec needs contiguous 8B for
+emit_task_spawn_b. vm.c handlers carry prior-verification comments
+(spot-checked scriptop_end/sflag match); vm_step/vm_run are dead
+reference code. bind.c is bridge layer, no guest bodies to diff.
+FLAGGED for menu.c owner: desc_opcode_dispatch case 9 s0 handling
+suspicious (stale/0 index when mo+0x100==0 vs guest sx16 param).
+Committed 1626632. Runtime verification still owed (audit was static).
