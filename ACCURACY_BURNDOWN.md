@@ -2368,3 +2368,24 @@ blocked UPSTREAM in resource load before steady-state battle.
 ROOT = AGENTS.md §8 deferred command-issue / register-window doorbell:
 cd_seek_param_issue->cd_reg_window_op->worker never activates pending
 cmd. NEXT: instrument why pending 0x09 never transitions active:0->1.
+
+=== N+174 — CD 'stall' = circular wait: response path never invoked ===
+f6b45565 DISPROVED doorbell: cdrom.c healthy, all 234 cmds executed,
+Pauses acked, IRQs fire (irq_flag=0,i_stat=0x1). pending=0x09 phase1 is
+RESIDUE of last executed Pause not un-activated cmd. REAL: main thread
+blocked ~frame 3846 in TestEvent (B0:11 count 1,462,908) inside
+cd_file_read_seq chain. CIRCULAR WAIT: thread waits command-done event
+<- event needs cd_response_process (0x80196370, ZERO fntrace hits during
+wedge) <- no response in flight to trigger it. Guest byte 0x801bcb24=2
+stuck (cmd-in-flight marker set by cd.c ~1287, cleared by response
+processing). Frames advance (VBlank+deferred CD coroutine 0x8019A8EC/
+0x8019A87C+ch2 GPU DMA independent of blocked main). bfsm/pbd/post-bfsm
+pc_probe count=0 since wedge; post_battle_dispatch 0x1f80008c frozen
+0xFFFF. BREAK in game-side CD response/event chain: deferred CD
+coroutine dispatch gate stopped invoking cd_response_process/
+cd_intc_dispatch after last ack, OR final Pause DeliverEvent went to
+consumed/wrong EvCB. NEXT: capture TestEvent flag addr (bios_svc_trace/
+EvCB walk), trace which handler should DeliverEvent it — pinpoints
+game/cd.c coroutine glue vs missing CD-IRQ edge in interrupts.c/
+cdrom.c present_cdrom_irq(). ALSO: pre-existing CDDBG fprintf in
+cdrom.c still needs removal per no-printf rule.
