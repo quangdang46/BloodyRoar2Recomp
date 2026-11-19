@@ -558,14 +558,21 @@ void battle_flow_state_machine(intptr_t param_1)
   int iVar5;
   
   bVar2 = false;
-  iVar4 = _DAT_1f80000c;
-  iVar1 = _DAT_1f800008;
   { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
     if (DAT_1f800001 != 0 && DAT_1f800001 != 1)
       decomp_trace_record(60,(uint32_t)DAT_1f800001,(uint32_t)DAT_1f80009c,0,0); }
 joined_r0x8016fd30:
-  _DAT_1f800008 = iVar1;
-  _DAT_1f80000c = iVar4;
+  /* Guest block_8016FD38 (the loop head) reloads the OT base/index from
+   * scratchpad EVERY iteration: lw $2C,0xC($16) / lw $2B,8($16) where $16 =
+   * 0x1F800000. frame_tick's double-buffer toggle writes those cells at the
+   * end of each pass, and the next emit must observe the NEW buffer. The
+   * previous port cached them once at entry and wrote the stale values back,
+   * pinning _DAT_1f800008 to the entry buffer forever: every emit appended to
+   * the same OT cells with no intervening ch6 clear, so the second pass linked
+   * each packet chain's tail to the previous head and the GPU walked a closed
+   * cycle. Read them fresh here; the guest stores nothing back. */
+  iVar4 = _DAT_1f80000c;
+  iVar1 = _DAT_1f800008;
   if ((int8_t)DAT_1f800001 == -1) {
     if (g_game_state != '\t') {
       rec_timer_pair_clear(0x1f800000);
