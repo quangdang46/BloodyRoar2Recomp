@@ -82,6 +82,16 @@ void gpu_get_crtc_debug(uint32_t *x1, uint32_t *x2, uint32_t *y1, uint32_t *y2,
 uint64_t gpu_get_gp0_count(void);  /* Total GP0 writes since init */
 void gpu_get_gp0_stats(uint64_t* nop, uint64_t* fill, uint64_t* draw, uint64_t* env, uint64_t* copy);
 
+/* GPU command-processor busy model (GPUSTAT bits 26/28). The gr_* facade
+ * reports raster/transfer work here; gpu.c turns it into guest-cycle
+ * charges that make GPUSTAT "ready to receive" bits read 0 while the
+ * command processor is occupied — the backpressure PsyQ libgpu's command
+ * queue busy-waits on. Any pointer may be NULL. */
+void gpu_charge_cycles(uint64_t cost);
+void gpu_note_prim(int64_t pixels, int textured);
+void gpu_note_vram_px(int64_t pixels);
+void gpu_busy_debug(uint64_t *charged, uint64_t *until, uint64_t *now_out);
+
 typedef struct {
     uint32_t left, top, right, bottom;
     int32_t offset_x, offset_y;

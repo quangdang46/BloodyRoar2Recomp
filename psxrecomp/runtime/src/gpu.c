@@ -30,6 +30,7 @@
 #include "ws_aspect_cone_math.h"
 #include "ws_ui_group.h"
 #include "ws_prepass_guard.h"
+#include "psx_cycles.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -2689,6 +2690,107 @@ static int sq_cap_armed;
 static uint32_t gpustat_poll_count;
 uint64_t g_pollhack_vblank_count = 0;  /* instrumentation: poll-fallback VBlank IRQ count */
 
+/* ---- GPU command-processor busy model (GPUSTAT bits 26/28) ----
+ *
+ * The real GPU consumes the GP0 command stream asynchronously: it has a
+ * small command FIFO, and while the command processor is occupied
+ * GPUSTAT bit 26 ("ready to receive command word") and bit 28 ("ready
+ * to receive DMA block") read 0, which stalls GP0 writes and DMA-to-GPU
+ * transfers. PsyQ libgpu's command queue busy-waits on exactly these
+ * bits — the generated bodies of cd_queue_push (0x80192F14, poll loop
+ * at 0x80193000: `lw v0,0(*0x801b8428); andi v0,v0,0x04000000; beqz`
+ * back to itself) and cd_queue_drain/cd_queue_poll poll
+ * *0x1F801814 & 0x04000000 — so this bit is THE guest-visible
+ * backpressure that paces per-frame emit loops (frame_tick ->
+ * DrawOTag/LoadImage/ClearImage -> gpu_call -> libgpu queue) to real
+ * GPU throughput. Previously both bits were hardwired ready ("we
+ * process instantly"), which let the versus-mode frame loop free-run
+ * ~800 frame_tick iterations per vblank and flood the host rasterizer
+ * with ~56K draws/vblank — an impossible rate on hardware, where the
+ * GPU FIFO backpressure throttles submission to display rate.
+ *
+ * Model: submitted work is charged in guest cycles (33.8688 MHz) and
+ * the GPU is "busy" until the accumulated charge drains. Charges are
+ * serial — the command processor handles one primitive at a time —
+ * so s_gpu_busy_until only ever moves forward:
+ *   s_gpu_busy_until = max(now, s_gpu_busy_until) + cost.
+ * Raster cost is proportional to screen-space pixel count (flat ~1.5
+ * guest-cyc/px, textured ~3 — the GPU:CPU clock ratio is ~1.58 and a
+ * full 320x240 flat frame lands near 20% of a vblank, leaving the
+ * usual overdraw/texturing headroom); every GP0 word also pays a small
+ * fixed command-processing cost. All constants are env-tunable for
+ * A/B; PSX_GPU_TIMING=0 restores the legacy always-ready behavior. */
+static uint64_t s_gpu_busy_until;    /* absolute guest-cycle deadline */
+static uint64_t s_gpu_busy_charged;  /* total cycles charged (diagnostic) */
+static int      s_gpu_timing = -1;   /* -1 uninit / 0 off / 1 on */
+static double   s_gpu_px_flat   = 1.5;
+static double   s_gpu_px_tex    = 3.0;
+static double   s_gpu_px_vram   = 0.5;
+static uint64_t s_gpu_prim_overhead = 64;
+static uint64_t s_gpu_word_cost     = 4;
+#define GPU_PRIM_COST_CAP 400000ull /* per-primitive charge ceiling */
+
+static int gpu_timing_enabled(void) {
+    if (s_gpu_timing < 0) {
+        const char *e = getenv("PSX_GPU_TIMING");
+        s_gpu_timing = (e && e[0] == '0') ? 0 : 1;
+        const char *p;
+        if ((p = getenv("PSX_GPU_PX_FLAT")))   s_gpu_px_flat   = atof(p);
+        if ((p = getenv("PSX_GPU_PX_TEX")))    s_gpu_px_tex    = atof(p);
+        if ((p = getenv("PSX_GPU_PX_VRAM")))   s_gpu_px_vram   = atof(p);
+        if ((p = getenv("PSX_GPU_PRIM_OVH")))  s_gpu_prim_overhead = strtoull(p, NULL, 0);
+        if ((p = getenv("PSX_GPU_WORD_COST"))) s_gpu_word_cost     = strtoull(p, NULL, 0);
+    }
+    return s_gpu_timing;
+}
+
+/* Charge `cost` guest cycles of GPU command-processor work. */
+void gpu_charge_cycles(uint64_t cost) {
+    if (!gpu_timing_enabled() || cost == 0) return;
+    uint64_t now = psx_get_cycle_count();
+    if (s_gpu_busy_until < now) s_gpu_busy_until = now;
+    s_gpu_busy_until += cost;
+    s_gpu_busy_charged += cost;
+}
+
+/* Raster work done by one primitive: `pixels` is the clipped-ish
+ * screen-space coverage estimate, `textured` selects the textured rate. */
+void gpu_note_prim(int64_t pixels, int textured) {
+    if (!gpu_timing_enabled()) return;
+    if (pixels < 0) pixels = 0;
+    if (pixels > (int64_t)(1024 * 512)) pixels = 1024 * 512;
+    double c = (double)pixels * (textured ? s_gpu_px_tex : s_gpu_px_flat)
+             + (double)s_gpu_prim_overhead;
+    uint64_t cost = (uint64_t)(c + 0.5);
+    if (cost > GPU_PRIM_COST_CAP) cost = GPU_PRIM_COST_CAP;
+    gpu_charge_cycles(cost);
+}
+
+/* VRAM<->VRAM / CPU<->VRAM pixel movement (fills, copies, texture
+ * uploads) — bandwidth-bound, cheaper per pixel than shading. */
+void gpu_note_vram_px(int64_t pixels) {
+    if (!gpu_timing_enabled()) return;
+    if (pixels < 0) pixels = 0;
+    if (pixels > (int64_t)(1024 * 512)) pixels = 1024 * 512;
+    uint64_t cost = (uint64_t)((double)pixels * s_gpu_px_vram + 0.5)
+                  + s_gpu_prim_overhead;
+    if (cost > GPU_PRIM_COST_CAP) cost = GPU_PRIM_COST_CAP;
+    gpu_charge_cycles(cost);
+}
+
+static int gpu_cmd_busy(void) {
+    return gpu_timing_enabled() &&
+           psx_get_cycle_count() < s_gpu_busy_until;
+}
+
+/* Diagnostics for gpu_state: charged total + cycles of busy remaining. */
+void gpu_busy_debug(uint64_t *charged, uint64_t *until, uint64_t *now_out) {
+    uint64_t now = psx_get_cycle_count();
+    if (charged) *charged = s_gpu_busy_charged;
+    if (until)   *until   = s_gpu_busy_until;
+    if (now_out) *now_out = now;
+}
+
 /* ---- Initialization ---- */
 
 static void gpu_reset_state(int clear_vram) {
@@ -2768,6 +2870,9 @@ static void gpu_reset_state(int clear_vram) {
 
     gpuread_latch = 0;
     gpustat_poll_count = 0;
+    /* GP1(00h)/init reset clears the command FIFO — drop pending busy work
+     * so GPUSTAT reports ready immediately, as hardware does post-reset. */
+    s_gpu_busy_until = psx_get_cycle_count();
     s_ws_fmv_frame_cache = 0xFFFFFFFFu;
     s_ws_fmv_cached = 0;
     s_d24_upload_x1 = 0;
@@ -2856,15 +2961,19 @@ uint32_t gpu_read_gpustat(void) {
         case 3: stat |= (1u << 25); break; /* mirrors ready-to-send */
     }
 
-    /* Bit 26: ready to receive cmd word — 1 when not busy */
-    stat |= (1u << 26);
+    /* Bit 26: ready to receive cmd word — 0 while the command processor
+     * has outstanding raster work (see the busy model above). */
+    if (!gpu_cmd_busy())
+        stat |= (1u << 26);
 
     /* Bit 27: ready to send VRAM to CPU — 1 when VRAM read is active */
     if (vram_read_active)
         stat |= (1u << 27);
 
-    /* Bit 28: ready to receive DMA block — 1 when not busy */
-    stat |= (1u << 28);
+    /* Bit 28: ready to receive DMA block — same busy source as bit 26:
+     * a full command path stalls DMA-to-GPU as well as CPU GP0 writes. */
+    if (!gpu_cmd_busy())
+        stat |= (1u << 28);
 
     /* Bits 29-30: DMA direction */
     stat |= (dma_direction & 3) << 29;
@@ -5461,6 +5570,10 @@ uint16_t gpu_vram_peek(int x, int y) {
 
 static void gpu_write_gp0_body(uint32_t val) {
     gp0_write_count++;
+    /* Every GP0 word pays command-processor cost (FIFO drain + decode);
+     * primitives additionally charge raster work via gpu_note_prim at
+     * the gr_* facade. This is what makes GPUSTAT bit26/28 go busy. */
+    gpu_charge_cycles(s_gpu_word_cost);
 
     /* State: consuming pixel data for CPU→VRAM transfer */
     if (gp0_state == GP0_VRAM_WRITE) {
@@ -5497,6 +5610,7 @@ static void gpu_write_gp0_body(uint32_t val) {
                 vram_write_col = 0;
                 if (++vram_write_row == vram_write_h) {
                     /* Transfer complete */
+                    gpu_note_vram_px((int64_t)vram_write_w * vram_write_h);
                     gp0_commit_cpu_to_vram();
                     return;
                 }
@@ -5504,6 +5618,7 @@ static void gpu_write_gp0_body(uint32_t val) {
         }
 
         if (--vram_write_remaining == 0) {
+            gpu_note_vram_px((int64_t)vram_write_w * vram_write_h);
             gp0_commit_cpu_to_vram();
         }
 
@@ -5999,6 +6114,10 @@ int gpu_snapshot_read(const uint8_t *p, uint32_t len) {
      * on a stale draw area after savestate load. */
     gr_set_draw_area((int)draw_area_left, (int)draw_area_top,
                      (int)draw_area_right, (int)draw_area_bottom);
+    /* The snapshot format predates the busy model; a restored absolute
+     * deadline could sit far in the future. Rebase it to now — pending
+     * raster work is transient timing, not saved state. */
+    s_gpu_busy_until = psx_get_cycle_count();
     ws_nw_sync_target();
     return 1;
 }
