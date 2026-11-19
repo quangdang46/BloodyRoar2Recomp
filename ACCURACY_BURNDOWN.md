@@ -2223,3 +2223,16 @@ reference code. bind.c is bridge layer, no guest bodies to diff.
 FLAGGED for menu.c owner: desc_opcode_dispatch case 9 s0 handling
 suspicious (stale/0 index when mo+0x100==0 vs guest sx16 param).
 Committed 1626632. Runtime verification still owed (audit was static).
+
+=== N+165 — flagged menu.c desc_opcode_dispatch bugs PROVEN + FIXED ===
+Parent verification of the N+164 flag: desc_opcode_dispatch (0x80141D34)
+and ev_cmd_dispatch (0x80141D2C) are ALIAS ENTRIES into the same
+generated body (br2eu_func_80141D2C, full_11.c) — semantics identical.
+Generated proof: speech_bubble_spawn jal sites 0x80141DF0/0x80141E18
+set a2($6)=sx8(param>>8) [sll/sra 24] and a3($7)=param&0xFF [andi] —
+menu.c cases 2/3 passed them SWAPPED (its own comment even documented
+the correct order). Case9: beq mo[0x100]==0 -> block_80141F38 keeps
+$16=sx16(param) from delay-slot sra @0x80141F24; !=0 path replaces
+$16=lbu(0x801B180C+$16) @F28-34; single convergent offset=$16*0x50+0x34
+@F5C-74 — clean used s0=0 on the ==0 arm. FIXED 6f74887 (cases 2/3 arg
+order, case9 single-path pi=sx16->table lookup). Build green.
