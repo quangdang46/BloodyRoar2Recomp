@@ -141,10 +141,12 @@ extern void copFunction(int,int);
 #define GTE_REG(n) ((n) * 0x800)   /* COP2 reg field encoding used by bind.c */
 
 /* Shared s16 reciprocal/magnitude table used by the normalize core and
- * fixed_rsqrt_q12_ex. Guest RAM @0x801B85F4 — generated loads compute
- * 0x801C0000 + idx - 31212 (0x7A0C) at 0x801851D8/0x80194690/0x80194590 —
- * indexed by (m-64)*2 where m is the normalized mantissa. */
-#define BR2_RECIP_TABLE 0x801B85F4u
+ * fixed_rsqrt_q12_ex. Guest RAM @0x801B8614 — generated loads compute
+ * 0x801C0000 + idx - 31212 at 0x801851D8 (addiu @0x80185248, 0x25AD8614),
+ * 0x80194690 (lh offset @0x8019470C, 0x85AD8614) and 0x80194590
+ * (lh offset @0x801945FC, 0x85AD8614) — indexed by (m-64)*2 where m is the
+ * normalized mantissa. 0x801C0000 - 31212 == 0x801B8614. */
+#define BR2_RECIP_TABLE 0x801B8614u
 /* Second table used only by fixed_rsqrt_q12. Guest RAM @0x801B8480. */
 #define BR2_RSQRT_TABLE 0x801B8480u
 
