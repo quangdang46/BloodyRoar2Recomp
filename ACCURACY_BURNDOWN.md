@@ -2748,3 +2748,19 @@ CD-blocked mode-independent). REVERTED uncommitted analog experiment
 (game.toml default_mode + main.cpp effective_player_mode digital-
 force removal) — unproven, tree clean. NEXT: CD pending-command wedge
 at ph=6 gates battle_input_dispatch/round-timer/visible-play.
+
+=== N+192 — versus fight LIVE + PLAYING; CD wedge nondeterministic ===
+7727e47e: wedge did NOT reproduce — healthy live fight on port5540:
+gs=8 ph=8, frames advancing ~5400+, g_bce_calls ~7.5M growing, ch2 GPU
+OT streaming, pad edges firing (0x1f800070=0x80). CD pending_cmd=0x09
+was STALE DISPLAY (active=0, completion fired+cleared). Event/IRQ chain
+verified end-to-end faithful: handle 0xF1000008@0x801BDE38 -> EvCB
+0xF0000009/0x20; cd_dma_chan_reset DeliverEvent fired 6x; cb7/cb8 base
+0x801BDDF4 dispatching correctly. pc_probe/fntrace zeros = clean-C
+bypasses guest-PC hooks (g_bce_calls is reliable liveness). VERSUS
+FIGHT PLAYS. Remaining: nondeterministic CD wedge — 2 candidate
+mechanisms unproven: (1) cdrom.c process_pending BLOCK path :2580
+(completion due but irq_flag!=0 forever, guest never acks FIFO);
+(2) lost wakeup DeliverEvent fires but WaitEvent CD-worker thread never
+rescheduled (kernel iWakeupEvent). Need persistent pending.pending==1
+instance to isolate. Tree clean, nothing committed.
