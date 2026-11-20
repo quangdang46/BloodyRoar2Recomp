@@ -238,6 +238,13 @@ HOST_PTR_PARAMS = {
 ARG_GPRS = {
     0x80199100: (2, 3),
     0x80199184: (2, 4),
+    # record-copy family: second pointer arrives in $t0 (param index 3)
+    0x801639d8: (4, 5, 6, 8),
+    0x80163a20: (4, 5, 6, 8),
+    # part_flag100_set: count/base arg in $t0 (param index 3)
+    0x801796cc: (4, 5, 6, 8),
+    # part_desc_clear: descriptor base arrives in $t0 (param index 0)
+    0x8017a6b4: (8,),
 }
 
 wrappers, table, skipped = [], [], []

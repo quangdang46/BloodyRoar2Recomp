@@ -28,6 +28,7 @@
 #include <string.h>
 #include "types.h"
 #include "ani.h"
+#include "cpu_state.h"
 
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
@@ -1014,4 +1015,57 @@ int32_t pending_gate_guest(uint32_t motion, uint8_t *ctrl,
 {
     return pending_gate((uint8_t *)guest_at(motion), ctrl,
                         req_a, req_b);
+}
+
+/* part_flag100_set — guest func_801796CC (24B leaf before the shared
+ * `jr ra` at 0x801796E4): if ($t0 > 0) OR bit 0x100 into the u32 at
+ * a2+0x5c and return it; otherwise return $v0 unchanged (guest leaves
+ * v0 stale on the early-out path, so read it back from the live CPU).
+ * Disasm 0x801796cc-0x801796e0. */
+extern CPUState *clean_cpu_state(void);
+int32_t part_flag100_set(uint32_t a0, uint32_t a1, uint32_t a2, int32_t t0)
+{
+    uint32_t f;
+    (void)a0; (void)a1;
+    if (t0 <= 0) return (int32_t)clean_cpu_state()->gpr[2];
+    f = *(uint32_t *)guest_at(a2 + 0x5c);
+    f |= 0x100u;
+    *(uint32_t *)guest_at(a2 + 0x5c) = f;
+    return (int32_t)f;
+}
+
+/* part_desc_clear — guest func_8017A6B4 (44B leaf before the shared
+ * `jr ra` at 0x8017A6E0): zero two flag bytes and nine flag halfwords
+ * in the descriptor block whose base arrives in $t0.
+ * Disasm 0x8017a6b4-0x8017a6dc. */
+void part_desc_clear(uint32_t t0)
+{
+    uint8_t *d = (uint8_t *)guest_at(t0);
+    d[0x100] = 0;
+    d[0x09c] = 0;
+    *(uint16_t *)(d + 0x0d2) = 0;
+    *(uint16_t *)(d + 0x0d0) = 0;
+    *(uint16_t *)(d + 0x0e4) = 0;
+    *(uint16_t *)(d + 0x0d4) = 0;
+    *(uint16_t *)(d + 0x0d6) = 0;
+    *(uint16_t *)(d + 0x0d8) = 0;
+    *(uint16_t *)(d + 0x0dc) = 0;
+    *(uint16_t *)(d + 0x0de) = 0;
+    *(uint16_t *)(d + 0x0e0) = 0;
+}
+
+/* part_desc_clear_gate — guest func_8017A6A8 (12B): `slti v0,a2,5;
+ * beq v0,zero -> jr ra`. When a2 < 5 the guest falls through into
+ * func_8017A6B4's clear body; that fall-through is inlined here (the
+ * guest performs no call, and call_guest would clobber the $t0 base
+ * the clear body reads). $v0 on exit is the slti result: 1 on the
+ * clear path, 0 on the gate path.
+ * Disasm 0x8017a6a8-0x8017a6e0. */
+int32_t part_desc_clear_gate(uint32_t a0, uint32_t a1, int32_t a2,
+                             uint32_t a3)
+{
+    (void)a0; (void)a1; (void)a3;
+    if (a2 >= 5) return 0;
+    part_desc_clear(clean_cpu_state()->gpr[8]);
+    return 1;
 }

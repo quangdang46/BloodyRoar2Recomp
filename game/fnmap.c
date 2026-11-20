@@ -983,6 +983,9 @@ extern void page_table_ptr_set(void);
 extern void pair_depth_set(void);
 extern void paired_task_cb(void);
 extern void palette_attr_record_write(void);
+extern void part_desc_clear(void);
+extern void part_desc_clear_gate(void);
+extern void part_flag100_set(void);
 extern void part_link_unlink(void);
 extern void part_matrix_compute(void);
 extern void part_record_reset(void);
@@ -1050,6 +1053,11 @@ extern void rec_flag1_set(void);
 extern void rec_hibyte_pair_swap(void);
 extern void rec_slot_scan(void);
 extern void rec_sorted_lookup(void);
+extern void rec_tbl_copy_a0_a3(void);
+extern void rec_tbl_copy_a0_t0(void);
+extern void rec_tbl_copy_a3_a0(void);
+extern void rec_tbl_copy_dfl_a0(void);
+extern void rec_tbl_copy_t0_a0(void);
 extern void rec_timer_pair_clear(void);
 extern void rec_u32_store(void);
 extern void record_copy_1a(void);
@@ -1107,6 +1115,7 @@ extern void scratch_013_set(void);
 extern void scratch_zero_reset(void);
 extern void scratchpad_pair_init(void);
 extern void screen_flow_state_machine(void);
+extern void script_ctx28_clear(void);
 extern void script_entry_walk(void);
 extern void script_move_timer_eval(void);
 extern void script_op_dispatch(void);
@@ -1794,6 +1803,11 @@ const Br2FnEnt fn_table[] = {
   { 0x801638c0, (void *)FUN_801638c0 },
   { 0x801638c8, (void *)save_rec_table_copy },
   { 0x80163940, (void *)FUN_80163940 },
+  { 0x80163948, (void *)rec_tbl_copy_a0_a3 },
+  { 0x80163990, (void *)rec_tbl_copy_a3_a0 },
+  { 0x801639d8, (void *)rec_tbl_copy_a0_t0 },
+  { 0x80163a20, (void *)rec_tbl_copy_t0_a0 },
+  { 0x80163a68, (void *)rec_tbl_copy_dfl_a0 },
   { 0x80163ab4, (void *)save_tables_commit },
   { 0x80163b08, (void *)rec_find_lt_f8 },
   { 0x80163b40, (void *)FUN_80163b40 },
@@ -1922,11 +1936,14 @@ const Br2FnEnt fn_table[] = {
   { 0x801787dc, (void *)fighter_frame },
   { 0x80179478, (void *)launch_vel_update },
   { 0x80179638, (void *)fighter_height_track },
+  { 0x801796cc, (void *)part_flag100_set },
   { 0x801796ec, (void *)motion_turn_update },
   { 0x80179964, (void *)part_link_unlink },
   { 0x80179a6c, (void *)part_record_reset },
   { 0x80179ae0, (void *)skeleton_init },
   { 0x8017a05c, (void *)apply_guest },
+  { 0x8017a6a8, (void *)part_desc_clear_gate },
+  { 0x8017a6b4, (void *)part_desc_clear },
   { 0x8017a6e8, (void *)action_switch_guest },
   { 0x8017a818, (void *)gte_quad_attr_emit },
   { 0x8017a8b4, (void *)desc_cursor_select },
@@ -1961,6 +1978,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80182f48, (void *)scriptop_bra },
   { 0x80183248, (void *)scriptop_bsr },
   { 0x80183558, (void *)scriptop_ret },
+  { 0x801835c4, (void *)script_ctx28_clear },
   { 0x80183664, (void *)scriptop_wait },
   { 0x80183bd0, (void *)scriptop_sflag },
   { 0x80183c30, (void *)scriptop_chk },

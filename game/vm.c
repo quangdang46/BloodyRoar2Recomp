@@ -1428,3 +1428,13 @@ int scriptop_move(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
     GS16(ctx, VX_REGS + dst * 2) = (int16_t)sv;
     return 1;
 }
+
+/* script_ctx28_clear — guest func_801835C4, a standalone leaf between
+ * scriptop_ret and scriptop_bsr: `sh zero,0x28(a2); move v0,zero; jr ra`.
+ * Clears the u16 ctx field at +0x28 (VX_PC is +0x24). */
+int script_ctx28_clear(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
+{
+    (void)a0; (void)a1; (void)a3;
+    GS16(ctx, 0x28) = 0;
+    return 0;
+}

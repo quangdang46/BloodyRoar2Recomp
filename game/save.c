@@ -10033,3 +10033,60 @@ uint32_t FUN_8016fcb0(uint32_t a0)
   *(uint16_t *)guest_at(a0 + 0xec) = (uint16_t)r;
   return r;
 }
+
+/* ---- 16-byte record copy family, guest 0x80163948-0x80163aac ----
+ * Five leaf copies sharing one shape: `blez a2` tails to the shared
+ * `jr ra` at 0x80163940, else copy a2 records of four words (16 bytes).
+ * Direction/source differ per entry; two variants take the second
+ * pointer in $t0 (marshalled via ARG_GPRS in gen_clean_table.py).
+ * Disasm verified against generated/SLES_017.22_full_25.c. */
+
+static void rec16_copy(uint32_t dst, uint32_t src, int32_t n)
+{
+  uint32_t *d = (uint32_t *)guest_at(dst);
+  const uint32_t *s = (const uint32_t *)guest_at(src);
+  int32_t i;
+  for (i = 0; i < n; i++, s += 4, d += 4) {
+    d[0] = s[0]; d[1] = s[1]; d[2] = s[2]; d[3] = s[3];
+  }
+}
+
+/* 0x80163948 — copy a2 recs a0 -> a3 (guest moves a1=a3 as dst cursor). */
+void rec_tbl_copy_a0_a3(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
+{
+  (void)a1;
+  if ((int32_t)a2 <= 0) return;
+  rec16_copy(a3, a0, (int32_t)a2);
+}
+
+/* 0x80163990 — copy a2 recs a3 -> a0 (guest moves a1=a3 as src cursor). */
+void rec_tbl_copy_a3_a0(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
+{
+  (void)a1;
+  if ((int32_t)a2 <= 0) return;
+  rec16_copy(a0, a3, (int32_t)a2);
+}
+
+/* 0x801639d8 — copy a2 recs a0 -> $t0 (guest moves a1=t0 as dst cursor). */
+void rec_tbl_copy_a0_t0(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t t0)
+{
+  (void)a1;
+  if ((int32_t)a2 <= 0) return;
+  rec16_copy(t0, a0, (int32_t)a2);
+}
+
+/* 0x80163a20 — copy a2 recs $t0 -> a0 (guest moves a1=t0 as src cursor). */
+void rec_tbl_copy_t0_a0(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t t0)
+{
+  (void)a1;
+  if ((int32_t)a2 <= 0) return;
+  rec16_copy(a0, t0, (int32_t)a2);
+}
+
+/* 0x80163a68 — copy a2 recs from fixed table 0x801b431c -> a0. */
+void rec_tbl_copy_dfl_a0(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
+{
+  (void)a1; (void)a3;
+  if ((int32_t)a2 <= 0) return;
+  rec16_copy(a0, 0x801b431cu, (int32_t)a2);
+}
