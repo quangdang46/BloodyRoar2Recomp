@@ -3104,3 +3104,43 @@ unchanged: catch the GP1 0xBFC053C4 writer PC via gp1_dump on a
 crashing run, and fix the deferred command-issue/IRQ delivery that
 starves cd_intc_dispatch (AGENTS §8 CD blocker now shown to also gate
 versus fight-asset streaming).
+
+=== N+205 — versus CD-starvation escalates to HARD wedge → starvation_watchdog abort ===
+Reproduced versus on :4790 (fresh build incl. 90ef95d bail fix). Same
+non-deterministic family as N+202-204, this run manifesting as the
+starvation watchdog firing:
+
+- gs=8 ph=0 versus-init reached ~frame 3782; frames crawled
+  ~1.75fps (3821->3828 over ~4s wall) then STOPPED advancing entirely.
+- debug server went unresponsive (JSON decode errors) -> main emu loop
+  wedged. `starvation_watchdog: 4003657 us without heartbeat — ring
+  dumped to starvation_dump.jsonl, aborting`.
+- WHY the watchdog fires: heartbeat is refreshed in debug_server_poll()
+  (debug_server.c:15237), called once per main-loop iteration / frame
+  quantum. A guest infinite loop that never completes a frame -> no
+  poll -> no heartbeat -> 4s -> abort. So the ~1fps crawl (N+204) can
+  tip into a TRUE infinite guest loop, not merely slow progress.
+- psx_last_run_report.json: reason=atexit, frame=3835,
+  last_store_pc=0x8019AA98 — inside the CD cluster just before
+  cd_chan_slot_set (0x8019aabc). Confirms wedge PC parked in CD/IRQ
+  region, consistent with cd_intc_dispatch TestEvent spin.
+- starvation_dump.jsonl (5.9MB ring) tail shows the wedge is NOT a
+  silent CPU halt: BIOS SIO/memcard driver (pc=0xBFC21D3C, func
+  0x00003D1C) is actively polling — CTRL_WRITE/SELECT_DEASSERT with
+  in_exc=1, i_stat=0x1 i_mask=0xD during the stall, then final
+  PC_SAMPLE pc=0x8019AA98 i_stat=0x0. So versus fight-init interleaves
+  CD command issue + SIO pad/memcard polling + the starved deferred
+  coroutine; the IRQ that would satisfy the TestEvent wait never lands.
+- i_stat=0x0 at the final sample: NO interrupt pending at wedge — the
+  CD completion IRQ either never fired (device model didn't finish the
+  Pause 0x09 / seek) or was consumed without delivering the event flag
+  cd_intc_dispatch's B0:0x17 TestEvent polls for.
+CONCLUSION: versus blocker is unchanged in kind — deferred-IRQ/coroutine
+starvation (the cd.c delegate class) — but N+205 adds the escalation
+signature (~1fps crawl -> true infinite guest loop -> watchdog abort)
+and the key discriminator i_stat=0 at wedge: the missing piece is the
+CD-completion IRQ/event delivery, not CPU progress. Agent b5b23664 is
+root-causing why the deferred coroutine starves (IRQ-not-firing vs
+delivery-gated vs lost-wakeup). NEXT: prove which of the three, then
+the faithful core fix unblocks BOTH versus fight streaming AND the
+cd.c delegate burn-down (AGENTS §8).
