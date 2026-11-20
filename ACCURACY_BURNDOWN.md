@@ -3058,3 +3058,49 @@ the deferred-interrupt/coroutine path lands wrong. NEXT: catch the
 writer PC via gp1_dump on a crashing run; the pc/ra names the packet-
 building function; trace where its command source read the BIOS ptr.
 Versus agent d7cbd5ab on multi-attempt gp1 traces.
+
+=== N+204 — versus init VERIFIED complete; failure = ~1fps CD-starved frame loop (non-deterministic family) ===
+Fresh instrumented versus run (:4740, nav_to_fight_noquit, char pair
+P1=slot1 P2=slot8) — discharges the remaining bind-path question:
+- menu_res_load_sm ran to completion: s1+0x8c = 0xffff (stf00 done
+  marker), s1+0x8e alt-SM state reset per transition as designed.
+- save_state_machine_alt bound BOTH ctrls correctly. Post-crash
+  scratchpad dump (psx_last_run_report ram_peeks):
+    P1 +18=0x801beff0 +1C=0x801bf860 +30=0x800771d4  (s5==0 record set)
+    P2 +18=0x801c00d0 +1C=0x801c0940 +30=0x800d9f98  (s5!=0 record set)
+  These are exactly the heap_record_emit s1v addresses for the
+  s5==0/s5!=0 variants (game/save.c L10 tag0/tag1), and +0x30 is the
+  heapA cursor written at L30 after cd_file_load_sm(s6+s2+0x20) —
+  i.e. the .ANI blob. The versus bind chain is faithful end-to-end.
+- Live fight gs=8 ph=8 reached; frames ADVANCE but collapse to ~1 fps
+  wall (frame 3877->3991 over ~2 min; DAT_801bdde0 0xE71->0xE88 in
+  lockstep). NOT a hard hang this variant.
+- CD stream stalls at fight start: cdrom_command_history last exec
+  frame 3821 (sector LBA 8801, mode 0xA0); cdrom_state shows
+  pending={cmd 0x09 Pause, active=0, phase=1} frozen 170+ frames, no
+  new commands issued, reading=0.
+- Per-frame chain (sp_ring): battle_flow loop @0x80126664 ->
+  cd_timer_read(0x8019a460) -> vsync_wait_n(0x8019a5d8); plus
+  cd_chan_full_init(0x8019a814) -> cd_intc_dispatch(0x8019a8ec) ->
+  BIOS TestEvent B0:17 polling (bios_svc_trace ra=0x8019AA9C, ~119K
+  svc calls). Same deferred-IRQ/coroutine starvation class as cd.c's
+  documented delegates.
+- Registers still show t9=0x01000000 / epc=0x80126664 /
+  ra=0x8019A53C, BUT unknown_dispatch_log is EMPTY -> stale t9, not an
+  active bad dispatch. Consistent with N+202 non-determinism: this run
+  did NOT hit the GP1 0x3F crash either.
+- gwatch armed on all six ctrl addrs (0x1F800104/20C/118/220/108/210)
+  recorded ZERO in-range hits (58 out-of-range page spills prove the
+  mechanism fired), yet the dump shows the fields populated -> the
+  burst_slot_active block-copy stores use an encoding the watcher
+  doesn't decode, or landed before arm. Tooling gap vs N+201's 12
+  captured writes; not a game bug.
+CONCLUSION: no new clean-C defect in the versus bind path — N+201's
+burst_slot_active/slot_apply binding verified correct on a second
+character pair. The versus failure remains the timing-dependent
+IRQ/CD/GPU family (N+202/N+203); this run manifested as CD-stream
+starvation -> ~1fps frame loop instead of the GP1 crash. NEXT
+unchanged: catch the GP1 0xBFC053C4 writer PC via gp1_dump on a
+crashing run, and fix the deferred command-issue/IRQ delivery that
+starves cd_intc_dispatch (AGENTS §8 CD blocker now shown to also gate
+versus fight-asset streaming).
