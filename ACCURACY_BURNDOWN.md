@@ -2543,3 +2543,18 @@ starts). NEXT: identify versus SM guest fn driving gs=8 (generated,
 not bfsm case-8), arm fntrace/pc_probe on it, dump main-thread PC;
 check versus stage/char CD loads completed (ring_dropped, cdrom_trace).
 Emu live port5430.
+
+=== N+182b — final audit: save.c inverted compares + ev.c dead-path ===
+e3b2e6a9 last-surface audit: 3 proven fixes (04f5fe6). save.c
+rec_find_lt_f8 + rec_sorted_lookup had INVERTED slt/beq match (guest
+returns on f8>=a1/a1>=f_c via beq v0,0; clean returned opposite).
+rec_sorted_lookup feeds name_rec_gate->name_rec_insert — load-bearing
+for save/name records. ev.c ev5_action dead path: op5 param>=foe_count
+now returns pc+4 no-side-effects; reaction_load stub removed ->
+fighter_anim_advance (guest 0x8017b090). Live EV5 (w5->ev5_action_select)
+re-verified correct. VERIFIED CLEAN: vm.c all scriptops, resolve.c
+atan2/lut_cos/lut_sin/dir_rotate/hitrec/blk_io, cd.c stamp/swap/reset,
+bind.c glue. AUDIT CAMPAIGN COMPLETE: every game/*.c swept >=1x.
+FOLLOW-UP NEEDED: save.c has 262 fns, only ~12 insn-verified — inverted-
+compare bug class suggests sweeping remaining slt+beq find-first-match
+loops. entry_setup s4 caveat still unresolved (caller-saved passthrough).
