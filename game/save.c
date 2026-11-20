@@ -7739,8 +7739,11 @@ void op_wrap_ac9b8(int16_t *a0,int32_t a1)
   return;
 }
 
-/* 0x801af6a0 — FUN_801acb08(a1, a0[1], a0[2]) via fnmap (unported callee).
- * Guest: a0=a1, a1/a2 = sign-extended s16 fields, a3 = caller passthrough. */
+/* 0x801af6a0 — fighter_chan_delta_accum(a1, a0[1], a0[2]) via fnmap.
+ * Guest: a0=a1, a1/a2 = sign-extended s16 fields, a3 = caller passthrough.
+ * Callee is clean (battle.c) — fn_lookup resolves it; the fallback calls
+ * it directly too (never generated). */
+extern void fighter_chan_delta_accum(uint32_t,uint32_t,uint32_t,uint32_t);
 void op_wrap_acb08(int16_t *a0,uint32_t a1)
 {
   void *fn = fn_lookup(0x801acb08);
@@ -7752,7 +7755,7 @@ void op_wrap_acb08(int16_t *a0,uint32_t a1)
      * (sign-extended), a3 = caller's live $a3. */
     extern CPUState *clean_cpu_state(void);
     CPUState *cpu = clean_cpu_state();
-    br2_call_generated(0x801acb08u,a1,
+    fighter_chan_delta_accum(a1,
                        (uint32_t)(int32_t)a0[1],(uint32_t)(int32_t)a0[2],
                        cpu != NULL ? cpu->gpr[7] : 0u);
   }
@@ -8483,31 +8486,347 @@ void op_pair_store(int16_t *a0,uint32_t *a1)
 
 /* ======== batch35: 0x801a4b/0x801a50/0x801a53/0x801a86/0x801aa3/0x801ad4/0x801ad5/0x801aed ======== */
 
-/* guard_callee_a0/a1/b0/b1/c0/c1/d0/d1 — the guarded-dispatch targets
- * (guest 0x801a5bd0/6538/5d90/66dc/5f50/6350/6150/6880; generated bodies
- * are 0x1a4-0x200 bytes — real functions, NOT `jr ra`). They were weak
- * `return 0` stubs: a load-bearing guess. Delegate each to generated MIPS.
+/* guard_callee_a0/a1/b0/b1/c0/c1/d1/d0 — the guarded-dispatch targets
+ * (guest 0x801a5bd0/6538/5d90/66dc/5f50/6350/6150/6880). Faithful clean
+ * ports: each is a ~0x1c4-0x1d4-byte GTE emitter — index stream ->
+ * lwc2/mtc2 vertex loads -> RTPT/NCLIP -> SXY/SZ stores -> MAC0/H-gated
+ * ordering-table insert. Pure computation over guest RAM + COP2 regs:
+ * no calls, no blocking waits, no live guest sp, no IRQ/deferred-
+ * coroutine dependency -> portable per the delegation rule.
+ *
  * Args arrive as guest values; a2 is already a guest address (the macro
  * resolves the host object pointer via guest_of). a3 is the caller's
  * passthrough $a3 on the v1==0 path and the sign-extended slot index v1
- * on the v1!=0 path — matching the jal sites (e.g. 0x801a8708/0x801a8730
- * and siblings in 0x801a8744/0x801a87cc/0x801a8854). */
+ * on the v1!=0 path — dead inside the guest bodies (never read).
+ *
+ * Shared shape (verified insn-by-insn against the disc bytes +
+ * generated/SLES_017.22_full_50.c):
+ *   prologue spills ra/s0-s7 to scratchpad 0x1f8003dc-0x1f8003fc (the
+ *   epilogue reloads feed only callee-saved regs the clean body never
+ *   touches — cpu->gpr already holds the caller's values — so only the
+ *   stores are observable and are reproduced by guard_ctx_save).
+ *   a1 <<= 2; s0 = *(a2+a1*4); s4 = *(a2+a1*4+8); s1 = *(a2+0x10)
+ *   (vertex table); s2 = *(a2+0x18) (index stream); s3 = *(a2+0x24)
+ *   (flags); s5 = lh(a2+0x30) (signed count).
+ *   Per record: RTPT projects V0-V2 (V0 arrives via mtc2 of the a1/a2
+ *   word pair saved from the previous iteration — first iteration keeps
+ *   the pre-loop lwc2 loads), NCLIP, SXY0-2 -> record, MAC0 sign /
+ *   flags&0x200 gate, then an OT insert:
+ *     indexed variant (a0/b0/c0/d0 — FN_A): slot = a0 + (SZ3>>2)*4 with
+ *       the 10 <= idx < 0x800 window;
+ *     fixed variant   (a1/b1/c1/d1 — FN_B): push-front through *a0.
+ *   Both chain a second record (tag|0x1000000) when flags&0x100.
+ *   Guest v0 at jr ra = 0x00ffffff (the mask constant) — returned. */
+
+#define GTE_DREG(n) ((n) * 0x800)   /* COP2 data-reg field encoding (bind.c) */
+extern void setCopReg(int,int,uint32_t);
+extern int  getCopReg(int,int);
+extern void copFunction(int,uint32_t);
+extern CPUState *clean_cpu_state(void);
+
+/* lwc2 gte[reg], off(gaddr) — guest word load into a GTE data register.
+ * Same routing as gfx.c's gte_lwc2: setCopReg -> gte_write_data, exactly
+ * what the generated emitter calls for every MTC2/LWC2. */
+static uint32_t guard_lwc2(uint32_t gaddr,int reg)
+{
+  uint32_t v = *(uint32_t *)guest_at(gaddr);
+  setCopReg(2, GTE_DREG(reg), v);
+  return v;
+}
+
+/* swc2 gte[reg], off(gaddr) — GTE data register store to guest RAM.
+ * getCopReg -> gte_read_data, same value the generated emitter produces. */
+static void guard_swc2(uint32_t gaddr,int reg)
+{
+  *(uint32_t *)guest_at(gaddr) = (uint32_t)getCopReg(2, GTE_DREG(reg));
+}
+
+/* Reproduce the guest prologue's register spill: ra@0x3dc then
+ * s7,s6,s5,s4,s3,s2,s1,s0 @0x3e0..0x3fc — the live cpu->gpr values,
+ * same cells/values the generated stores write. */
+static void guard_ctx_save(void)
+{
+  CPUState *c = clean_cpu_state();
+  uint32_t *b;
+  if (c == NULL) return;
+  b = (uint32_t *)guest_at(0x1f8003dc);
+  b[0] = c->gpr[31];              /* ra */
+  b[1] = c->gpr[23];              /* s7 */
+  b[2] = c->gpr[22];              /* s6 */
+  b[3] = c->gpr[21];              /* s5 */
+  b[4] = c->gpr[20];              /* s4 */
+  b[5] = c->gpr[19];              /* s3 */
+  b[6] = c->gpr[18];              /* s2 */
+  b[7] = c->gpr[17];              /* s1 */
+  b[8] = c->gpr[16];              /* s0 */
+}
+
+/* Shared OT-insert tail for both variants. tag = the 0x4000000/0x5000000/
+ * 0x6000000/0x8000000 OR'd into the old head; 0x1000000 marks the chained
+ * second record; addresses are guest addresses end-to-end. */
+static void guard_ot_fixed(uint32_t a0,uint32_t s0,uint32_t s4,
+                           uint32_t s6,uint32_t tag,uint32_t *s4p)
+{
+  uint32_t t1;
+  uint32_t t5 = *(uint32_t *)guest_at(a0);
+  *(uint32_t *)guest_at(s0) = tag | t5;
+  t1 = s0 & 0xffffffu;
+  *(uint32_t *)guest_at(a0) = t1;
+  if ((s6 & 0x100) != 0) {
+    *(uint32_t *)guest_at(s4) = 0x1000000u | t1;
+    t1 = s4 & 0xffffffu;
+    *(uint32_t *)guest_at(a0) = t1;
+    *s4p = s4 + 8;
+  }
+}
+
+/* 3-vertex family: guest 0x801a5bd0/0x801a5d90 (indexed) and
+ * 0x801a6538/0x801a66dc (fixed). Index stream = lh triples, stride 6.
+ * tag/o1..o3/recsz select the per-function constants:
+ *   a0/a1: tag 0x4000000, offs 8/0xc/0x10, recsz 0x14
+ *   b0/b1: tag 0x6000000, offs 8/0x10/0x18, recsz 0x1c
+ * fixed!=0 selects the *a0 push-front variant (FN_B callees). */
+static int32_t guard_tri_emit(uint32_t a0,uint32_t a1,uint32_t a2,
+                              uint32_t tag,uint32_t o1,uint32_t o2,
+                              uint32_t o3,uint32_t recsz,int fixed)
+{
+  uint32_t s0,s1,s2,s3,s4,s6,s7,t1,t5,va0 = 0,va1 = 0;
+  int32_t  s5,i0,i1,i2,t1s,mac0;
+  uint32_t p;
+  int first = 1;
+
+  guard_ctx_save();
+  a1 <<= 2;
+  s0 = *(uint32_t *)guest_at(a1 + a2);
+  s4 = *(uint32_t *)guest_at(a1 + a2 + 8);
+  s1 = *(uint32_t *)guest_at(a2 + 0x10);
+  s2 = *(uint32_t *)guest_at(a2 + 0x18);
+  s3 = *(uint32_t *)guest_at(a2 + 0x24);
+  s5 = (int32_t)*(int16_t *)guest_at(a2 + 0x30);
+
+  /* pre-loop: first index triple -> V0,V1,V2 (GTE regs 0-5).
+   * word0 = idx0|idx1<<16 (u16, zero-extended); word1's low s16 = idx2
+   * (sign-extended lh). */
+  {
+    uint32_t w = *(uint32_t *)guest_at(s2);
+    i0 = (int32_t)(w & 0xffffu);
+    i1 = (int32_t)(w >> 16);
+    i2 = (int32_t)*(int16_t *)guest_at(s2 + 4);
+    p = s1 + ((uint32_t)i0 << 3);
+    guard_lwc2(p,0); guard_lwc2(p + 4,1);
+    p = s1 + ((uint32_t)i1 << 3);
+    guard_lwc2(p,2); guard_lwc2(p + 4,3);
+    p = (uint32_t)s1 + ((uint32_t)i2 << 3);
+    guard_lwc2(p,4); guard_lwc2(p + 4,5);
+  }
+
+  s5 -= 1;
+  if (s5 > 0) s2 += 6; else s2 -= 6;   /* bgtz/j delay slots */
+
+  for (;;) {
+    /* loop-back target 0x..84: mtc2 the saved a1/a2 pair into V0 —
+     * skipped on the first iteration (V0 keeps the pre-loop lwc2). */
+    if (!first) {
+      setCopReg(2, GTE_DREG(0), va0);
+      setCopReg(2, GTE_DREG(1), va1);
+    }
+    first = 0;
+    s5 -= 1;
+    copFunction(2, 0x0280030);              /* RTPT */
+    /* current triple: idx0 pair -> next-iteration V0 (GPRs), idx1/idx2
+     * -> V1/V2 via lwc2. All three indices are lh (sign-extended). */
+    i0 = (int32_t)*(int16_t *)guest_at((uint32_t)s2);
+    i1 = (int32_t)*(int16_t *)guest_at((uint32_t)s2 + 2);
+    i2 = (int32_t)*(int16_t *)guest_at(s2 + 4);
+    p = s1 + ((uint32_t)i0 << 3);
+    va0 = *(uint32_t *)guest_at(p);
+    va1 = *(uint32_t *)guest_at(p + 4);
+    p = s1 + ((uint32_t)i1 << 3);
+    guard_lwc2(p,2); guard_lwc2(p + 4,3);
+    t1 = (uint32_t)getCopReg(2, GTE_DREG(19));   /* SZ3 */
+    copFunction(2, 0x0400006);              /* NCLIP */
+    t1s = (int32_t)t1 >> 2;                 /* sra — value <= 0xffff */
+    p = (uint32_t)s1 + ((uint32_t)i2 << 3);
+    guard_lwc2(p,4); guard_lwc2(p + 4,5);
+    guard_swc2(s0 + o1,12);
+    guard_swc2(s0 + o2,13);
+    guard_swc2(s0 + o3,14);
+    mac0 = (int32_t)getCopReg(2, GTE_DREG(24));  /* MAC0 */
+    s6 = (uint32_t)*(int16_t *)guest_at(s3);   /* lh — sign-extended flags word */
+    /* bgez MAC0 -> insert path; else require flags&0x200. */
+    if (mac0 >= 0 || (s6 & 0x200) != 0) {
+      if (fixed) {
+        guard_ot_fixed(a0,s0,s4,s6,tag,&s4);
+      } else {
+        s7 = a0 + ((uint32_t)t1s << 2);
+        if (t1s >= 10) {
+          t5 = *(uint32_t *)guest_at(s7);
+          if (t1s < 0x800) {
+            *(uint32_t *)guest_at(s0) = tag | t5;
+            t1 = s0 & 0xffffffu;
+            *(uint32_t *)guest_at(s7) = t1;
+            if ((s6 & 0x100) != 0) {
+              *(uint32_t *)guest_at(s4) = 0x1000000u | t1;
+              t1 = s4 & 0xffffffu;
+              *(uint32_t *)guest_at(s7) = t1;
+              s4 += 8;
+            }
+          }
+        }
+      }
+    }
+    /* tail: s0+=recsz, s2+=6, s3+=2 (bgtz delay — always), then
+     * s5>0 -> next; s5<=0 -> s2-=6 (bgez delay — always) and s5==0 ->
+     * one final pass over the same triple, else exit. */
+    s0 += recsz;
+    s2 += 6;
+    s3 += 2;
+    if (s5 > 0) continue;
+    s2 -= 6;
+    if (s5 >= 0) continue;
+    break;
+  }
+  return 0x00ffffff;   /* guest v0 = the 0xffffff mask constant */
+}
+
+/* 4-vertex family: guest 0x801a5f50/0x801a6150 (indexed) and
+ * 0x801a6350/0x801a6880 (fixed). Index stream = 2 packed u32 words per
+ * record (4 x u16, zero-extended), stride 8. After the RTPT/NCLIP/SWc2
+ * triple, the previous record's 4th vertex (kept in t4, rotated from t5)
+ * is lwc2'd into V0 and projected with a second RTPS (cmd 0x0180001);
+ * its SXY2 lands at s0+extra. Same MAC0/flags gate + OT insert.
+ *   c0/c1: tag 0x5000000, offs 8/0xc/0x10, extra 0x14, recsz 0x18
+ *   d0/d1: tag 0x8000000, offs 8/0x10/0x18, extra 0x20, recsz 0x24
+ * Variant-A note: the *s7 slot load sits in a branch delay slot and runs
+ * unconditionally once the MAC0/flags gate passes (before the bounds
+ * checks decide the writes). */
+static int32_t guard_quad_emit(uint32_t a0,uint32_t a1,uint32_t a2,
+                               uint32_t tag,uint32_t o1,uint32_t o2,
+                               uint32_t o3,uint32_t extra,uint32_t recsz,
+                               int fixed)
+{
+  uint32_t s0,s1,s2,s3,s4,s6,s7,t1,t3,t4,t5,va0 = 0,va1 = 0;
+  int32_t  s5,t1s,mac0;
+  uint32_t w0,w1,p;
+  int first = 1;
+
+  guard_ctx_save();
+  a1 <<= 2;
+  s0 = *(uint32_t *)guest_at(a1 + a2);
+  s4 = *(uint32_t *)guest_at(a1 + a2 + 8);
+  s1 = *(uint32_t *)guest_at(a2 + 0x10);
+  s2 = *(uint32_t *)guest_at(a2 + 0x18);
+  s3 = *(uint32_t *)guest_at(a2 + 0x24);
+  s5 = (int32_t)*(int16_t *)guest_at(a2 + 0x30);
+
+  /* pre-loop: quad0 -> V0,V1,V2 via lwc2 (u16 halves, zero-extended);
+   * t4 = ptr to idx3's vertex entry (consumed by the in-loop RTPS). */
+  w0 = *(uint32_t *)guest_at(s2);
+  w1 = *(uint32_t *)guest_at(s2 + 4);
+  p = s1 + ((w0 & 0xffffu) << 3);
+  guard_lwc2(p,0); guard_lwc2(p + 4,1);
+  p = s1 + ((w0 >> 16) << 3);
+  guard_lwc2(p,2); guard_lwc2(p + 4,3);
+  p = s1 + ((w1 & 0xffffu) << 3);
+  guard_lwc2(p,4); guard_lwc2(p + 4,5);
+  t4 = s1 + ((w1 >> 16) << 3);
+
+  s5 -= 1;
+  if (s5 > 0) s2 += 8; else s2 -= 8;   /* bgtz/j delay slots */
+
+  for (;;) {
+    if (!first) {
+      setCopReg(2, GTE_DREG(0), va0);
+      setCopReg(2, GTE_DREG(1), va1);
+    }
+    first = 0;
+    s5 -= 1;
+    copFunction(2, 0x0280030);              /* RTPT */
+    w0 = *(uint32_t *)guest_at(s2);
+    w1 = *(uint32_t *)guest_at(s2 + 4);
+    /* idx0 pair -> next-iteration V0 (GPRs); idx1 -> V1, idx2 -> V2. */
+    p = s1 + ((w0 & 0xffffu) << 3);
+    va0 = *(uint32_t *)guest_at(p);
+    va1 = *(uint32_t *)guest_at(p + 4);
+    p = s1 + ((w0 >> 16) << 3);
+    guard_lwc2(p,2); guard_lwc2(p + 4,3);
+    t1 = (uint32_t)getCopReg(2, GTE_DREG(19));   /* SZ3 */
+    copFunction(2, 0x0400006);              /* NCLIP */
+    t1s = (int32_t)t1 >> 2;
+    p = s1 + ((w1 & 0xffffu) << 3);
+    guard_lwc2(p,4); guard_lwc2(p + 4,5);
+    t5 = (uint32_t)s1 + ((w1 >> 16) << 3);  /* idx3 ptr (rotates to t4) */
+    guard_swc2(s0 + o1,12);
+    guard_swc2(s0 + o2,13);
+    guard_swc2(s0 + o3,14);
+    mac0 = (int32_t)getCopReg(2, GTE_DREG(24));  /* MAC0 */
+    s6 = (uint32_t)*(int16_t *)guest_at(s3);   /* lh — sign-extended flags word */
+    if (mac0 >= 0 || (s6 & 0x200) != 0) {
+      /* V0 <- idx3 vertex, projected with a lone RTPS; its SXY2 is the
+       * 4th record slot. */
+      if (fixed) {
+        t3 = *(uint32_t *)guest_at(a0);
+        guard_lwc2(t4,0); guard_lwc2(t4 + 4,1);
+        copFunction(2, 0x0180001);          /* RTPS */
+        *(uint32_t *)guest_at(s0) = tag | t3;
+        t1 = s0 & 0xffffffu;
+        *(uint32_t *)guest_at(a0) = t1;
+        if ((s6 & 0x100) != 0) {
+          *(uint32_t *)guest_at(s4) = 0x1000000u | t1;
+          t1 = s4 & 0xffffffu;
+          *(uint32_t *)guest_at(a0) = t1;
+          s4 += 8;
+        }
+        guard_swc2(s0 + extra,14);
+      } else {
+        s7 = a0 + ((uint32_t)t1s << 2);
+        guard_lwc2(t4,0); guard_lwc2(t4 + 4,1);
+        copFunction(2, 0x0180001);          /* RTPS */
+        /* delay-slot load: unconditional once the gate passed. */
+        t3 = *(uint32_t *)guest_at(s7);
+        if (t1s >= 10 && t1s < 0x800) {
+          *(uint32_t *)guest_at(s0) = tag | t3;
+          t1 = s0 & 0xffffffu;
+          *(uint32_t *)guest_at(s7) = t1;
+          if ((s6 & 0x100) != 0) {
+            *(uint32_t *)guest_at(s4) = 0x1000000u | t1;
+            t1 = s4 & 0xffffffu;
+            *(uint32_t *)guest_at(s7) = t1;
+            s4 += 8;
+          }
+          guard_swc2(s0 + extra,14);
+        }
+      }
+    }
+    /* tail: t4=t5, s0+=recsz, s2+=8, s3+=2, same s5 branch shape. */
+    t4 = t5;
+    s0 += recsz;
+    s2 += 8;
+    s3 += 2;
+    if (s5 > 0) continue;
+    s2 -= 8;
+    if (s5 >= 0) continue;
+    break;
+  }
+  return 0x00ffffff;
+}
+
 int guard_callee_a0(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
-{ return (int)br2_call_generated(0x801a5bd0u,a0,a1,a2,a3); }
+{ (void)a3; return guard_tri_emit(a0,a1,a2,0x4000000u,8,0xc,0x10,0x14,0); }
 int guard_callee_a1(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
-{ return (int)br2_call_generated(0x801a6538u,a0,a1,a2,a3); }
+{ (void)a3; return guard_tri_emit(a0,a1,a2,0x4000000u,8,0xc,0x10,0x14,1); }
 int guard_callee_b0(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
-{ return (int)br2_call_generated(0x801a5d90u,a0,a1,a2,a3); }
+{ (void)a3; return guard_tri_emit(a0,a1,a2,0x6000000u,8,0x10,0x18,0x1c,0); }
 int guard_callee_b1(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
-{ return (int)br2_call_generated(0x801a66dcu,a0,a1,a2,a3); }
+{ (void)a3; return guard_tri_emit(a0,a1,a2,0x6000000u,8,0x10,0x18,0x1c,1); }
 int guard_callee_c0(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
-{ return (int)br2_call_generated(0x801a5f50u,a0,a1,a2,a3); }
+{ (void)a3; return guard_quad_emit(a0,a1,a2,0x5000000u,8,0xc,0x10,0x14,0x18,0); }
 int guard_callee_c1(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
-{ return (int)br2_call_generated(0x801a6350u,a0,a1,a2,a3); }
+{ (void)a3; return guard_quad_emit(a0,a1,a2,0x5000000u,8,0xc,0x10,0x14,0x18,1); }
 int guard_callee_d0(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
-{ return (int)br2_call_generated(0x801a6150u,a0,a1,a2,a3); }
+{ (void)a3; return guard_quad_emit(a0,a1,a2,0x8000000u,8,0x10,0x18,0x20,0x24,0); }
 int guard_callee_d1(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
-{ return (int)br2_call_generated(0x801a6880u,a0,a1,a2,a3); }
+{ (void)a3; return guard_quad_emit(a0,a1,a2,0x8000000u,8,0x10,0x18,0x20,0x24,1); }
 
 /* Live guest $a3 — the v1==0 jal path passes the caller's $a3 through
  * untouched (guard_dispatch never writes $a3 before the call). */
