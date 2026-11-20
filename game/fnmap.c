@@ -161,6 +161,7 @@ extern void cd_chan_block_boot(void);
 extern void cd_chan_block_init(void);
 extern void cd_chan_boot_fwd(void);
 extern void cd_chan_boot_init(void);
+extern void cd_chan_cb_set(void);
 extern void cd_chan_cmd_burst(void);
 extern void cd_chan_cmd_pump(void);
 extern void cd_chan_cmd_submit(void);
@@ -477,6 +478,7 @@ extern void descblk_variant_f(void);
 extern void descriptor_fetch(void);
 extern void descriptor_quad_dispatch(void);
 extern void dev_byte_xfer(void);
+extern void dev_cmd_commit(void);
 extern void dialog_mode_mirror(void);
 extern void dialog_msg_dispatch(void);
 extern void dialog_sel_dispatch(void);
@@ -527,9 +529,11 @@ extern void euler_rotmat(void);
 extern void ev5_action_select(void);
 extern void ev_cmd_dispatch(void);
 extern void ev_spark_spawn(void);
+extern void ev_step(void);
 extern void ev_stream_dispatch(void);
 extern void event_record_walk(void);
 extern void fifo_space_check(void);
+extern void fifo_space_sample(void);
 extern void fight_timer_announce(void);
 extern void fighter_anim_advance(void);
 extern void fighter_anim_table_init(void);
@@ -1009,6 +1013,7 @@ extern void printf_core(void);
 extern void printf_forward_guest(void);
 extern void proj_coord_gte_emit(void);
 extern void pt_box_radius_test(void);
+extern void qbyte_take(void);
 extern void quad_fx_spawn(void);
 extern void quad_fx_update(void);
 extern void quad_gauge_emit(void);
@@ -1964,6 +1969,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80185c70, (void *)motion_integrator_tail },
   { 0x80185ddc, (void *)keyframe_advance },
   { 0x80185e6c, (void *)fighter_anim_advance },
+  { 0x80185e6c, (void *)ev_step },
   { 0x80185f64, (void *)motion_blend_frame },
   { 0x801862a8, (void *)pose_chain_build },
   { 0x801863ac, (void *)guest_noop },
@@ -2309,6 +2315,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8019af00, (void *)cd_guest_zero32_b },
   { 0x8019af30, (void *)cd_init_stage_b },
   { 0x8019af84, (void *)cd_cb7_run },
+  { 0x8019b0fc, (void *)cd_chan_cb_set },
   { 0x8019b1a8, (void *)cd_guest_zero32_c },
   { 0x8019b1d0, (void *)cd_xchg_bde20 },
   { 0x8019b1e4, (void *)gp_bde20_read },
@@ -2422,6 +2429,7 @@ const Br2FnEnt fn_table[] = {
   { 0x801a1a40, (void *)cd_channel_main_init },
   { 0x801a1b0c, (void *)cd_channel_init },
   { 0x801a1f74, (void *)dev_byte_xfer },
+  { 0x801a23fc, (void *)dev_cmd_commit },
   { 0x801a24c0, (void *)cd_ctx_set_28_34 },
   { 0x801a24dc, (void *)op_tag_dispatch },
   { 0x801a2d7c, (void *)cd_ctx_cmd_submit },
@@ -2433,8 +2441,10 @@ const Br2FnEnt fn_table[] = {
   { 0x801a3088, (void *)op_tag_G_set },
   { 0x801a30c0, (void *)ctx_fn_send },
   { 0x801a36f0, (void *)cd_channel_table_init },
+  { 0x801a39ac, (void *)qbyte_take },
   { 0x801a3d50, (void *)cd_handler_triple_install },
   { 0x801a40f8, (void *)op_frame_advance },
+  { 0x801a4210, (void *)fifo_space_sample },
   { 0x801a4230, (void *)fifo_space_check },
   { 0x801a42d0, (void *)task_heads_clear },
   { 0x801a4308, (void *)task_node_alloc },

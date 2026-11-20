@@ -4054,6 +4054,48 @@ uint32_t cd_init_stage_b(void)
   return 0x8019b0fc;
 }
 
+/* ======== 0x8019b0fc ======== */
+
+/* cd_chan_cb_set — DMA-channel done-callback register/clear.
+ * a0 = slot index, a1 = handler guest address (0 = clear).
+ *
+ * Faithful port of generated 0x8019B0FC-0x8019B1A4 (5 blocks, no calls,
+ * no loops — a leaf, so the per-block psx_check_interrupts_at has no
+ * observable effect):
+ *   entry = 0x801BDDF4 + idx*4   (handler-table word; generated
+ *           0x8019B100-0x8019B10C: lui 0x801C + addiu -8716 =
+ *           0x801BDDF4, + a0*4 — same base as the cb7/cb8 dispatchers)
+ *   old   = *entry
+ *   if (a1 == old) return old;            (no DICR touch on no-op)
+ *   dicr  = *(u32*)0x801BDDF0             (pointer cell -> 0x1F8010F4
+ *                                          DICR; MMIO, so br2_ld/st)
+ *   flag  = *dicr
+ *   *entry = a1
+ *   flag  = (flag & 0x00FFFFFF) | 0x00800000
+ *   a1 != 0 -> flag |=  1 << ((idx+16) & 31)
+ *   a1 == 0 -> flag &= ~(1 << ((idx+16) & 31))
+ *   *dicr = flag
+ *   return old                            (v0 = old in every path,
+ *                                            incl. the equal early-out)
+ * Disasm verified against generated/SLES_017.22_full_46.c: beq a1,old
+ * @0x8019B118, beq a1,zero @0x8019B120, set path 0x8019B128-0x8019B160,
+ * clear path 0x8019B164-0x8019B19C, jr ra @0x8019B1A0. */
+uint32_t cd_chan_cb_set(uint32_t idx,uint32_t handler)
+{
+  uint32_t entry = 0x801bddf4u + idx * 4u;
+  uint32_t old   = br2_ld32(entry);
+  uint32_t dicr, flag, bit;
+  if (handler == old) return old;
+  dicr = br2_ld32(0x801bddf0u);            /* cell -> DICR addr (MMIO) */
+  flag = br2_ld32(dicr);
+  bit  = 1u << ((idx + 16u) & 31u);
+  br2_st32(entry, handler);
+  flag = (flag & 0x00ffffffu) | 0x00800000u;
+  if (handler != 0) flag |= bit; else flag &= ~bit;
+  br2_st32(dicr, flag);
+  return old;
+}
+
 /* ======== 0x8019ae10 ======== */
 
 uint32_t cd_init_stage_a(void)

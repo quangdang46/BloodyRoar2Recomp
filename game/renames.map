@@ -1735,3 +1735,7 @@
 801a0af8 job_counter_sign
 801a0110 chan_job_pump
 80187dcc gte_persp_batch
+8019b0fc cd_chan_cb_set
+801a4210 fifo_space_sample
+801a39ac qbyte_take
+801a23fc dev_cmd_commit

@@ -9481,6 +9481,36 @@ int32_t dev_byte_xfer(uint8_t *a0,int32_t a1)
                                      (uint32_t)a1, 0, 0);
 }
 
+/* fifo_space_sample — FIFO space baseline/limit setter (0x801A4210).
+ * Single block, no calls: v0 = lhu 0x1F801120 (hardware FIFO count,
+ * zero-extended), then *(u32*)0x801FF264 = a0 (limit) and
+ * *(u32*)0x801FF260 = v0 (count snapshot). Those are exactly the
+ * base/limit cells fifo_space_check @0x801A4230 consumes. The second
+ * store sits in the jr-ra delay slot — both stores complete before
+ * return, order between them is unobservable (distinct addresses).
+ * Disasm generated/SLES_017.22_full_50.c: lui/ori 0x1F801120, lhu,
+ * sw a0->0x801FF264, sw v0->0x801FF260 (delay slot), jr ra. */
+void fifo_space_sample(uint32_t limit)
+{
+  uint32_t cnt = (uint32_t)psx_read_half(0x1f801120);
+  *(uint32_t *)guest_at(0x801ff264) = limit;
+  *(uint32_t *)guest_at(0x801ff260) = cnt;
+}
+
+/* qbyte_take — guest 0x801A39AC (16 bytes, 1 block, leaf):
+ *   v0 = lb(a0+55); sb $zero -> a0+55; (jr-ra delay slot) sb v0 -> a0+56.
+ * Net effect: byte at +56 = old byte at +55, byte at +55 = 0 — a
+ * take-and-clear of a status/queue byte into its shadow slot.
+ * a0 is a guest address; lb is sign-extended but the stored byte is
+ * identical either way. Disasm generated/SLES_017.22_full_50.c. */
+void qbyte_take(uint32_t a0)
+{
+  uint8_t *p = (uint8_t *)guest_at(a0);
+  uint8_t t = p[55];
+  p[55] = 0;
+  p[56] = t;
+}
+
 /* fifo_space_check — FIFO space check. a0 = u16 count @0x1f801120 (+ u16
  * @0x1f801128, or +0x10000 when that is 0) when count < limit
  * @0x801ff260; then (a0 - base) compared against limit @0x801ff264,
@@ -9502,6 +9532,41 @@ int32_t fifo_space_check(void)
   if (((uint16_t)psx_read_half(0x1f801124) & 0x200) == 0)
     v0 >>= 3;
   return (v0 < lim2) ? 0 : 1;
+}
+
+/* dev_cmd_commit — SIO/device command commit (guest 0x801A23FC, 144B,
+ * 6 blocks). No args: works off the device pointer cells.
+ *   ctrl = *(u32*)0x801BE7E0  (-> 0x1F801070 SIO control, MMIO)
+ *   dev  = *(u32*)0x801BE7E4  (-> SIO register block, MMIO)
+ *   *ctrl = 0xFFFFFF7F                  (clear ctrl bit7)
+ *   while (lh(dev+4) & 0x80):           (TX-busy status bit)
+ *       r = fifo_space_check();  if (r) return r;
+ *       dev = *(u32*)0x801BE7E4;        (reload — callee may rewrite)
+ *   sh(dev+10, lh(dev+10) | 0x10)       (set command bit4)
+ *   return 1                            (li v0,1 in the delay-slot
+ *                                         sequence before jr ra)
+ * All register-block accesses go through br2_ldN/br2_stN — the cells
+ * resolve to 0x1F801xxx hardware, not guest RAM (same contract as
+ * dev_byte_xfer). The wait loop calls fifo_space_check which is itself
+ * clean; the generated body CPS-checks interrupts between the jal
+ * boundaries, and a clean call preserves that ordering exactly.
+ * Disasm generated/SLES_017.22_full_49.c: sw 0xFFFFFF7F @0x801A2418,
+ * lh+andi 0x80 loop @0x801A241C-0x801A2458, jal 0x801A4230 @0x801A2430,
+ * lh|0x10 sh @0x801A2460-0x801A2478, li v0,1 @0x801A2470. */
+uint32_t dev_cmd_commit(void)
+{
+  uint32_t ctrl = br2_ld32(0x801be7e0u);
+  uint32_t dev  = br2_ld32(0x801be7e4u);
+  uint32_t r;
+  br2_st32(ctrl, 0xffffff7fu);
+  while ((br2_ld16(dev + 4u) & 0x80u) != 0) {
+    r = (uint32_t)fifo_space_check();
+    if (r != 0) return r;
+    dev = br2_ld32(0x801be7e4u);
+  }
+  dev = br2_ld32(0x801be7e4u);   /* B2460 reloads the cell unconditionally */
+  br2_st16(dev + 10u, (uint16_t)(br2_ld16(dev + 10u) | 0x10u));
+  return 1;
 }
 
 /* ======================================================================
