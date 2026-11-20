@@ -2632,3 +2632,29 @@ reaches channel-completion (cd_intc_dispatch 0x8019A8EC/cd_cb7_run
 0x8019AF84/handler 0x8019B7E0) or SPU voice-end; investigate parked ch2
 DMA vs Beetle oracle. NOTE: game/cd.c has env-gated PSX_CB7 fprintf
 diagnostics (committed) — flag for cleanup. Emu live port5460.
+
+=== N+186 — versus wedge: TestEvent spin, SPU voices all inactive ===
+e95d702e: post_battle_dispatch ran ONCE (pbd_calls=1 pbd_exit=10) then
+frame froze 7485 — main loop never re-entered bfsm. Game IS in BIOS
+TestEvent spin (B0/0x0B=1,567,155 GROWING) — kernel event wait confirmed.
+Main loop 0x80126234 (generated-only, NOT in clean_table): calls
+0x80126170/0x80126684/memcard_info_query(0x8015f590), zeroes
+[0x1f80009b]/[0x1f80009c] per-frame (transient combat flags NOT mode
+selectors — earlier 09b/09c forcing was wrong), calls bfsm jal
+0x8016FCC4, loops on [0x1f800000]. Polls [0x1f8000c0]+0x20 state byte =
+0x01 NON-terminal (wants 7/8 from helper 0x80126640); [0x1f8000c0]=
+0x801c1200 -> stuck byte guest 0x801c1220=0x01. DMA CLEAN: ch4 SPU DMA
+completes+IRQ3, ch2/ch6 no IRQ because game didn't set DICR masks
+(dfic=0x00900000 bits18/22 clear — faithful dma.c:336-417). CD idle/done.
+SPU ALIVE but active_mask=0 ALL VOICES INACTIVE — versus expects
+streamed audio/voice that never kicks; voice8 ended w/o ENDX latch
+(plausible envelope-decay). Memcard 114 probes clean. BLOCKER: kernel
+event/semaphore wait (wrapper 0x8019AA80->BIOS TestEvent ra=0x8019AA9C)
+for object whose DeliverEvent never fires — versus-specific channel/hw
+or async-completion event (EvCB 0xF0000009/0x20, 0xF0000011,
+0xF1000008). Suspects: channel-script/task LAB_80137680/0x80137ACC
+cursor task in pool1, or versus-init async completion, or SPU voice
+kick that never starts. NEXT: find exact TCB wait-queue/EvCB + its
+DeliverEvent producer; determine what drives 0x80126640->result7/8;
+consider porting 0x80126234 main loop to clean C (unported top-level
+dispatcher gating everything). Emu live port5480 frame7485.
