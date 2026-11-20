@@ -2520,3 +2520,26 @@ never init before group dispatch — caller-saved passthrough, clean writes
 runtime verify not speculative change. STILL NOT AUDITED: resolve.c
 remainder, bind.c, save.c full insn audit, ev5 op bodies 0-7 deep,
 scriptop_bra/bsr/wait/gpad deep.
+
+=== N+182 — versus round does NOT play: pre-battle SM phase stalls ===
+eb4de41e: GPU livelock (c6e7361) FIXED — OT walks now complete, ch6 DMA
+cycles, static scene re-presented every frame. NEW BLOCKER: gs=8 ph=8
+reached frame~6129 but battle sim NEVER executes — post_battle_dispatch
+(game/menu.c:6605) pbd_calls=0 for 3200+ vblanks; anim PCs frozen
+(p1pc=0x800776ca p2pc=0x800defc4 identical); all battle structs
+byte-identical; no round timer; input does nothing. Main thread PC
+hovers 0x80126664 = return site of jal 0x8016FCC4 (bfsm) — bfsm runs
+(clean-C, fntrace-invisible) but case-8 dispatch body never reached.
+gs=8 is a versus SM phase that re-presents static frame but never
+launches battle. Versus SM is GENERATED-ONLY code (clean has only
+versus_state_init/versus_stage_commit* helpers; N+17: live battle path
+bypasses clean_table). gpu_state flipped video mode mid-run
+(512x476->256x240, disabled=1, gp0_draw=26.79M). SUSPECTS: (a) versus
+fight-start condition inside generated versus code (event/CD/timer wait
+— ring_dropped=2759 sectors during asset loads = possible corrupt
+versus stage/char data); (b) versus SM waits on ready/confirm mash
+doesn't satisfy. Rasterizer throughput NOT the blocker (sim never
+starts). NEXT: identify versus SM guest fn driving gs=8 (generated,
+not bfsm case-8), arm fntrace/pc_probe on it, dump main-thread PC;
+check versus stage/char CD loads completed (ring_dropped, cdrom_trace).
+Emu live port5430.
