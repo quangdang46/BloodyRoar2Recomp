@@ -10342,11 +10342,14 @@ uint32_t dev_cmd_round_dispatch(uint32_t ctx, uint32_t a2, uint32_t a3)
       run_jals = (*(volatile uint8_t *)guest_at(p) != 128);
     }
     if (run_jals) {
-      /* jal 0x801A4210 (a0=60) then jal 0x801A23FC — args a1-a3 live. */
-      br2_call_generated(0x801a4210u, 60u,
-                         c->gpr[5], c->gpr[6], c->gpr[7]);
-      r = br2_call_generated(0x801a23fcu,
-                             c->gpr[4], c->gpr[5], c->gpr[6], c->gpr[7]);
+      /* jal 0x801A4210 (a0=60) then jal 0x801A23FC — both callees are
+       * already clean ports in this file (fifo_space_sample /
+       * dev_cmd_commit); the guest jal would dispatch to them through
+       * clean_table anyway, so call them directly. a1-a3 are dead for
+       * both callees (neither reads them), matching the live-pass
+       * contract. */
+      fifo_space_sample(60u);
+      r = dev_cmd_commit();
       if (r == 0) {
         /* 0x801A1F18: error fn *@0x801BE780, a0 = -3,
          * ra = 0x801A1F2C (wrap-check continuation). */
