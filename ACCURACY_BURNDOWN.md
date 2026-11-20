@@ -2487,3 +2487,18 @@ ev.c EV4-21 bodies, vm.c scriptop_bra/bsr/wait/gpad deep, action.c
 entry_setup/reset constants. DEAD-CODE question: ev_step/vm_step/
 vm_run appear uncalled (live path = ev_stream_dispatch->wN +
 script_op_dispatch->scriptop_*) — confirm+delete or leave.
+
+=== N+180 — battle.c deep audit: trig_sin_lookup lh-vs-byte fix ===
+469e531a deep-audited battle.c: 10 fns verified clean insn-level
+(fighter_range_code, hit_scale_calc, hit_pose_swap, hit_elig_check,
+fighter_atk_dir full cond tree, rand_lcg, isqrt, trig_cos/sin,
+fixed_approach_s16, angle_from_xy). 1 proven bug fixed (bcf6252):
+trig_sin_lookup @0x8018D244 read DAT_80124048[uVar1] as 8-bit; guest
+does idx*2 + lh (signed 16-bit) @0x8018D26C. Battle math/trig path.
+PARTIAL: hitbox_pair_test, hit_react_apply(~600ln), fighter_state_tick,
+fighter_pair_update, hitbox_wall_collide, fighter_contact_resolve.
+NOT-YET: camera/HUD, GTE/vec (gte_rtps, rotmat, vec3, keyframe_cursor,
+tween, fixed_point_divide hand-ported Newton), FX/task/prim/emit/sprite,
+battle_frame_tick @0x80166544, other (&DAT_x)[idx] sites. Follow-up
+recommended: hit_react_apply, fighter_pair_update/state_tick,
+fixed_point_divide, keyframe_cursor_search (highest bug density).
