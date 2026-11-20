@@ -3460,3 +3460,206 @@ uint32_t prim_persp_ot_emit(uint32_t cur, uint32_t ot, uint32_t count,
   } while (cnt > 0);                             /* bgtz a3 -> loop */
   return cur;                                   /* move v0,a0 */
 }
+
+/* prim_persp_ot_emit_112 — guest 0x8018B98C (heap_serialize tag 0x40051
+ * mode-19 emit variant; sibling of prim_persp_ot_emit above). Identical
+ * RTPT -> cfc2-FLAG -> NCLIP -> conditional RTPS -> SXY0..2 store ->
+ * four-way screen cull -> AVSZ4/OTZ depth check -> swl OT link pipeline,
+ * specialized to fixed geometry: in-stride 112 (guest $t7), out-stride 8
+ * (guest $t8), and the out-record delta is 32 when a2==0 else 72
+ * (guest $t4 = 32 + (a2 ? 40 : 0)). Signed count in a3; returns the
+ * advanced input cursor in v0 (early-outs with the untouched a0 when
+ * count <= 0). Disasm generated/SLES_017.22_full_41.c 0x8018B98C-0x8018BAB8. */
+uint32_t prim_persp_ot_emit_112(uint32_t cur, uint32_t ot, uint32_t sel,
+                                int32_t count)
+{
+  int32_t cnt = count;
+  uint32_t delta, t1, t2, flag, out, sxy0, sxy1, sxy2, mac0;
+  uint32_t sx_ok, sy_ok, old, base;
+
+  if (cnt <= 0) return cur;                     /* blez a3 -> epilogue */
+  delta = (sel == 0) ? 32u : 72u;               /* t4 = 32 (+40 if a2) */
+
+  do {
+    /* lwc2 gte[0..5] <- cur[0..5] : V0/V1/V2 packed xy+z (3 verts). */
+    gte_lwc2(cur +  0, 0);
+    gte_lwc2(cur +  4, 1);
+    gte_lwc2(cur +  8, 2);
+    gte_lwc2(cur + 12, 3);
+    gte_lwc2(cur + 16, 4);
+    gte_lwc2(cur + 20, 5);
+    cnt--;                                       /* addiu a3,-1 */
+    copFunction(2, 0x0280030u);                  /* RTPT */
+    t1   = DB32(cur + 24);                       /* lw t1,0x18(a0) */
+    t2   = DB32(cur + 28);                       /* lw t2,0x1C(a0) */
+    flag = (uint32_t)getCopControlWord(2, GTE_CREG(31)); /* cfc2 FLAG */
+    copFunction(2, 0x1400006u);                  /* NCLIP */
+    base = cur + delta;                          /* t3 = a0 + t4 */
+    if ((flag & 0x7FC40000u) != 0) goto next;
+
+    out = base + 8;                              /* addiu t3,8 */
+    setCopReg(2, GTE_DREG(0), t1);               /* mtc2 V0.xy */
+    setCopReg(2, GTE_DREG(1), t2);               /* mtc2 V0.z  */
+    mac0 = (uint32_t)getCopReg(2, GTE_DREG(24)); /* mfc2 MAC0 */
+    sxy0 = (uint32_t)getCopReg(2, GTE_DREG(12)); /* mfc2 SXY0 */
+    DB32(out) = sxy0;   /* sw SXY0,(out) is the blez MAC0 DELAY SLOT —
+                         * unconditional even when mac0 <= 0. */
+    if ((int32_t)mac0 <= 0) goto next;
+    sxy1 = (uint32_t)getCopReg(2, GTE_DREG(13)); /* mfc2 SXY1 */
+    sxy2 = (uint32_t)getCopReg(2, GTE_DREG(14)); /* mfc2 SXY2 */
+    out += 8; DB32(out) = sxy1;
+    out += 8; DB32(out) = sxy2;
+    copFunction(2, 0x180001u);                   /* RTPS: V0 -> SXY0 */
+
+    /* Cull accumulation — identical op order to the sibling emit:
+     * sx tests ride the widescreen-aware sltiu helper, sy tests are
+     * plain sltiu 480 on the arithmetic-shifted high half. */
+    sx_ok = (uint32_t)psx_ws_cull_sltiu(sxy0 & 0xFFFFu, 512u);
+    sy_ok = ((uint32_t)((int32_t)sxy0 >> 16) < 480u) ? 1u : 0u;
+    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy1 & 0xFFFFu, 512u);
+    sy_ok += ((uint32_t)((int32_t)sxy1 >> 16) < 480u) ? 1u : 0u;
+    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xFFFFu, 512u);
+    sy_ok += ((uint32_t)((int32_t)sxy2 >> 16) < 480u) ? 1u : 0u;
+    sxy2 = (uint32_t)getCopReg(2, GTE_DREG(14)); /* post-RTPS SXY2 */
+    out += 8; DB32(out) = sxy2;
+    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xFFFFu, 512u);
+    if (sx_ok == 0) goto next;
+    sy_ok += ((uint32_t)((int32_t)sxy2 >> 16) < 480u) ? 1u : 0u;
+    if (sy_ok == 0) goto next;                   /* t3=a0+t4 recompute: dead */
+
+    copFunction(2, 0x168002Eu);                  /* AVSZ4 -> OTZ */
+    if ((int32_t)(uint32_t)getCopReg(2, GTE_DREG(7)) < 2048) goto next;
+
+    /* OT link tail: t3 was recomputed to base (a0+t4) in the branch delay
+     * slot, so the swl targets are base+2 / ot+2. */
+    old = DB32(ot);                              /* lw t0,(a1) */
+    swl_guest(ot + 2, base << 8);                /* swl (t3<<8),2(a1) */
+    swl_guest(base + 2, old << 8);               /* swl (t0<<8),2(t3) */
+
+  next:
+    cur += 112;                                  /* delay-slot a0 += t7 */
+  } while (cnt > 0);                             /* bgtz a3 -> loop */
+  return cur;                                   /* move v0,a0 */
+}
+
+/* prim_emit_tail_advance — guest 0x8018B884: shared loop tail of the
+ * prim_persp_ot_emit family (the generated body is a CPS split piece —
+ * see br2eu_func_8018B884 "fallthrough to split piece"). Semantics:
+ * a0 += $t7 unconditionally (delay slot), then if a3 > 0 re-enter the
+ * emit loop head 0x8018B76C with the live cursor/OT/count/delta/strides,
+ * else fall into the 0x8018B88C epilogue (v0 = a0, jr $ra). Ported as a
+ * tail call into prim_persp_ot_emit — identical observable behavior:
+ * the callee consumes the advanced cursor and returns the final one.
+ * Args arrive as (a0=cur, a1=ot, a3=count, $t4=delta, $t7=in_stride,
+ * $t8=out_stride) — same register contract as prim_persp_ot_emit. */
+uint32_t prim_emit_tail_advance(uint32_t cur, uint32_t ot, int32_t count,
+                                uint32_t delta, uint32_t in_stride,
+                                uint32_t out_stride)
+{
+  cur += in_stride;                             /* delay-slot a0 += t7 */
+  if (count > 0)
+    return prim_persp_ot_emit(cur, ot, (uint32_t)count, delta,
+                              in_stride, out_stride);
+  return cur;                                   /* move v0,a0 */
+}
+
+/* prim_depth_shade_emit — guest 0x8018A9E8 (heap_serialize tag 0x40051
+ * mode-7 emit variant; alias entry into the 0x8018A9C8 body). Same
+ * RTPT -> cfc2-FLAG -> NCLIP -> conditional RTPS -> SXY0..2 store ->
+ * screen-cull pipeline as prim_persp_ot_emit_112, specialized to
+ * in-stride 112 / out-stride 8 / delta 32|72, but the emit tail differs:
+ * instead of the plain OTZ>=2048 reject it runs AVSZ4 then computes a
+ * depth-shaded attribute word for base+12 from OTZ (GTE reg 7):
+ *   z < 256          -> attr = mem & ~0x03C00000
+ *   256 <= z < 1280  -> attr = (mem & ~0x03C00000) | (((z-256)<<16) & 0x03C00000)
+ *   z >= 1280        -> attr = mem | 0x03C00000
+ * then the usual swl OT link. Also wraps the loop in CTC2 ctrl30 writes:
+ * 256 before iterating, 1024 on normal exit (skipped on count<=0 early
+ * out). Disasm generated/SLES_017.22_full_41.c 0x8018A9E8-0x8018AB84. */
+uint32_t prim_depth_shade_emit(uint32_t cur, uint32_t ot, uint32_t sel,
+                               int32_t count)
+{
+  int32_t cnt = count;
+  uint32_t delta, t1, t2, flag, out, sxy0, sxy1, sxy2, mac0;
+  uint32_t sx_ok, sy_ok, old, base, z, mem, attr;
+
+  if (cnt <= 0) return cur;                     /* blez a3 -> epilogue */
+  setCopControlWord(2, GTE_CREG(30), 256u);     /* ctc2 ctrl30 = 256 */
+  delta = (sel == 0) ? 32u : 72u;               /* t4 = 32 (+40 if a2) */
+
+  do {
+    /* lwc2 gte[0..5] <- cur[0..5] : V0/V1/V2 packed xy+z (3 verts). */
+    gte_lwc2(cur +  0, 0);
+    gte_lwc2(cur +  4, 1);
+    gte_lwc2(cur +  8, 2);
+    gte_lwc2(cur + 12, 3);
+    gte_lwc2(cur + 16, 4);
+    gte_lwc2(cur + 20, 5);
+    cnt--;                                       /* addiu a3,-1 */
+    copFunction(2, 0x0280030u);                  /* RTPT */
+    t1   = DB32(cur + 24);                       /* lw t1,0x18(a0) */
+    t2   = DB32(cur + 28);                       /* lw t2,0x1C(a0) */
+    flag = (uint32_t)getCopControlWord(2, GTE_CREG(31)); /* cfc2 FLAG */
+    copFunction(2, 0x1400006u);                  /* NCLIP */
+    /* mtc2 gte[0]=t1 sits in the flag-branch DELAY SLOT — unconditional. */
+    setCopReg(2, GTE_DREG(0), t1);               /* mtc2 V0.xy */
+    if ((flag & 0x7FC40000u) != 0) goto next;
+
+    setCopReg(2, GTE_DREG(1), t2);               /* mtc2 V0.z  */
+    base = cur + delta;                          /* t3 = a0 + t4 */
+    out  = base + 8;                             /* addiu t3,8 */
+    mac0 = (uint32_t)getCopReg(2, GTE_DREG(24)); /* mfc2 MAC0 */
+    sxy0 = (uint32_t)getCopReg(2, GTE_DREG(12)); /* mfc2 SXY0 */
+    DB32(out) = sxy0;   /* sw SXY0,(out) is the blez MAC0 DELAY SLOT —
+                         * unconditional even when mac0 <= 0. */
+    if ((int32_t)mac0 <= 0) goto next;
+    sxy1 = (uint32_t)getCopReg(2, GTE_DREG(13)); /* mfc2 SXY1 */
+    sxy2 = (uint32_t)getCopReg(2, GTE_DREG(14)); /* mfc2 SXY2 */
+    out += 8; DB32(out) = sxy1;
+    out += 8; DB32(out) = sxy2;
+    copFunction(2, 0x180001u);                   /* RTPS: V0 -> SXY0 */
+
+    /* Cull accumulation — identical op order to the sibling emit:
+     * sx tests ride the widescreen-aware sltiu helper, sy tests are
+     * plain sltiu 480 on the arithmetic-shifted high half. */
+    sx_ok = (uint32_t)psx_ws_cull_sltiu(sxy0 & 0xFFFFu, 512u);
+    sy_ok = ((uint32_t)((int32_t)sxy0 >> 16) < 480u) ? 1u : 0u;
+    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy1 & 0xFFFFu, 512u);
+    sy_ok += ((uint32_t)((int32_t)sxy1 >> 16) < 480u) ? 1u : 0u;
+    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xFFFFu, 512u);
+    sy_ok += ((uint32_t)((int32_t)sxy2 >> 16) < 480u) ? 1u : 0u;
+    sxy2 = (uint32_t)getCopReg(2, GTE_DREG(14)); /* post-RTPS SXY2 */
+    out += 8; DB32(out) = sxy2;
+    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xFFFFu, 512u);
+    if (sx_ok == 0) goto next;
+    sy_ok += ((uint32_t)((int32_t)sxy2 >> 16) < 480u) ? 1u : 0u;
+    if (sy_ok == 0) goto next;                   /* t3=a0+t4 recompute: dead */
+
+    copFunction(2, 0x168002Eu);                  /* AVSZ4 -> OTZ */
+
+    /* Depth-shade attribute word at base+12 (lw t2,0xC(t3) — t3 was
+     * recomputed to base in the sy-branch delay slot). */
+    base = cur + delta;
+    mem  = DB32(base + 12);
+    z    = (uint32_t)getCopReg(2, GTE_DREG(7));  /* mfc2 OTZ (16-bit) */
+    if (z < 256u) {
+      attr = mem & ~0x03C00000u;
+    } else if (z - 256u < 1024u) {
+      attr = (mem & ~0x03C00000u) |
+             (((z - 256u) << 16) & 0x03C00000u);
+    } else {
+      attr = mem | 0x03C00000u;
+    }
+    DB32(base + 12) = attr;
+
+    /* OT link tail: identical swl pair to the sibling emit. */
+    old = DB32(ot);                              /* lw t0,(a1) */
+    swl_guest(ot + 2, base << 8);                /* swl (t3<<8),2(a1) */
+    swl_guest(base + 2, old << 8);               /* swl (t0<<8),2(t3) */
+
+  next:
+    cur += 112;                                  /* delay-slot a0 += t7 */
+  } while (cnt > 0);                             /* bgtz a3 -> loop */
+  setCopControlWord(2, GTE_CREG(30), 1024u);    /* ctc2 ctrl30 = 1024 */
+  return cur;                                   /* move v0,a0 */
+}

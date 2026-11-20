@@ -1767,3 +1767,6 @@
 8017a6b4 part_desc_clear
 8018b76c prim_persp_ot_emit
 801a1e84 dev_cmd_round_dispatch
+8018b98c prim_persp_ot_emit_112
+8018b884 prim_emit_tail_advance
+8018a9e8 prim_depth_shade_emit

@@ -254,6 +254,10 @@ ARG_GPRS = {
     # $t4, in-stride in $t7, out-stride in $t8 (verified vs generated body:
     # gpr[12]/[15]/[24] are read but never written inside 0x8018B76C).
     0x8018b76c: (4, 5, 7, 12, 15, 24),
+    # prim_emit_tail_advance: shared CPS-split loop tail — same live-reg
+    # contract as prim_persp_ot_emit (cur/ot/count/delta/in_stride/out_stride
+    # in a0/a1/a3/$t4/$t7/$t8); verified vs br2eu_func_8018B884.
+    0x8018b884: (4, 5, 7, 12, 15, 24),
     # dev_cmd_round_dispatch: a0 ctx, a2/a3 pass-through (a1 is overwritten
     # by the prologue's counter-cell pointer before any call).
     0x801a1e84: (4, 6, 7),

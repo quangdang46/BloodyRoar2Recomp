@@ -1013,6 +1013,8 @@ extern void post_confirm_config_build(void);
 extern void prim_attr_repack(void);
 extern void prim_attr_word_set(void);
 extern void prim_batch_emit(void);
+extern void prim_depth_shade_emit(void);
+extern void prim_emit_tail_advance(void);
 extern void prim_group_alloc(void);
 extern void prim_group_build(void);
 extern void prim_group_gc(void);
@@ -1021,6 +1023,7 @@ extern void prim_list_persp_step(void);
 extern void prim_packet_init(void);
 extern void prim_packet_init_tex(void);
 extern void prim_persp_ot_emit(void);
+extern void prim_persp_ot_emit_112(void);
 extern void prim_tag_set(void);
 extern void prim_task_run(void);
 extern void print_dispatch_guest(void);
@@ -2027,10 +2030,13 @@ const Br2FnEnt fn_table[] = {
   { 0x801871bc, (void *)prim_list_gte_invoke },
   { 0x80187dcc, (void *)gte_persp_batch },
   { 0x8018a4f8, (void *)prim_task_run },
+  { 0x8018a9e8, (void *)prim_depth_shade_emit },
   { 0x8018b050, (void *)vec2_rot },
   { 0x8018b0a0, (void *)angle_gte_vec },
   { 0x8018b208, (void *)prim_list_persp_step },
   { 0x8018b76c, (void *)prim_persp_ot_emit },
+  { 0x8018b884, (void *)prim_emit_tail_advance },
+  { 0x8018b98c, (void *)prim_persp_ot_emit_112 },
   { 0x8018babc, (void *)dbg_marker_mode_set },
   { 0x8018bb38, (void *)flag_801b55d0_set },
   { 0x8018bba8, (void *)pad_slot_state_walk },
