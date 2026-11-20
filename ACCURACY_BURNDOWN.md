@@ -3182,3 +3182,42 @@ br2_irq_poll caller active during versus fight-init (fntrace the
 transition into 0x8019AA98) and either delegate it to generated or make
 br2_irq_poll present a coherent guest context — the faithful fix that
 also unblocks the cd.c delegate burn-down.
+
+=== N+207 — CORRECTION: versus ~1fps was HOST SW-RASTER bottleneck, NOT IRQ starvation ===
+Commit 8bab534 (PSX_NULL_RASTER / GR_BACKEND_NULL) overturns the N+205/N+206
+IRQ-starvation diagnosis. Verified live on :4820 (PSX_NULL_RASTER=1):
+
+- Versus reaches gs=8 ph=8 and runs a LIVE fight at ~30-40fps guest —
+  frames 3900->6038+ over ~90s wall, DAT_801bdde0 (VBlank counter)
+  ~42/sec, ZERO crash/fatal/watchdog/GP1 over ~2000 frames. Previously
+  the same path crawled ~1fps then wedged (N+205) — ~40x speedup.
+- Root cause (agent runtime proof): guest cycle rate was ~0.27M/s
+  (0.8% real-time) because 2041/2050 host samples sat inside
+  sw_draw_textured_triangle->raster_textured_triangle (gpu-gp0 share
+  0.97). Versus submits ~37K textured quads/frame @512x480; the
+  synchronous SW rasterizer on the emu thread starved guest execution.
+  Headless requests OpenGL but has no GL context -> s_raster_ok=0 ->
+  EVERY draw fell back to SW raster. Arcade survives (lighter scenes).
+- IRQ delivery was HEALTHY all along: i_stat/i_mask normal, VBlank
+  raises+delivers, the deferred CD coroutine runs — simply starved of
+  guest cycles. The N+205/N+206 "wild store @0x8019AA98 / IRQ
+  starvation" reading was a RED HERRING: last_store_pc is just wherever
+  the last store happened to land as guest time crawled; the CD Pause
+  pending={0x09,active=0} is normal versus-streaming state, not a wedge.
+- Null raster keeps ALL guest-visible GPU semantics: GP0 parsing,
+  gpu_note_prim/gpu_note_vram_px cycle charges (GPUSTAT bit26/28
+  backpressure + OT-walk pacing unchanged), VRAM uploads/transfers/
+  fills/copies, all state. Only per-primitive screen-space pixel
+  rasterization is a no-op — correct for headless (no display) and for
+  logic/RE verification.
+CONCLUSION: versus fight WORKS — guest logic is faithful end-to-end
+(boot->title->select->fight->live combat). The blocker was a HOST
+performance bug in the SW rasterizer fallback, now bypassed by
+PSX_NULL_RASTER. For real visual output the SW/GL raster path still
+needs to be fast enough (or the GL backend actually engaged headless-
+less), but that is enhancement-phase, not a guest-correctness defect.
+NEXT: (a) confirm a full versus round completes (KO/victory) under
+null-raster; (b) the earlier 0x01000000-dispatch and GP1-0x3F crashes —
+re-test under null-raster; if gone they were raster-timing artifacts,
+if they persist they are separate guest bugs to chase; (c) continue
+clean-port burn-down now that versus is unblocked for verification.
