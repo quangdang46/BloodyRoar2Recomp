@@ -2730,3 +2730,21 @@ NEXT: instrument sio.c response write path for multitap bulk 0x42 vs
 direct 0x01, compare emitted layout vs pad_state_refresh/attr_word_
 decode acceptance. Fix in sio.c response formatting. Verify: buffers
 flip to "00 41", +0x6c nonzero, round plays.
+
+=== N+191 — pad "malformed buffer" was MISDIAGNOSIS; real gate = CD wedge ===
+1c7e5c69: ff 00 LL HH in 0x801befa8/0x801befca are TRANSIENT resets by
+game's own channel SM (op_frame_advance game/save.c, called 0x801a3550
+P1/0x801a1c98 P2) while awaiting response — NOT SIO corruption. During
+active poll writes correct 00 73(analog)/00 41(digital). Input REACHES
+decode: buffers=00 73 ff bf 80 80 80 80, +0x6c=0x0040 +0x74 edge fired.
+REACHED battle_flow_state_machine gs=8. REAL remaining blocker: CD
+pending_cmd=0x09 pending=1 since frame4115 — battle sub-phase
+0x1f800001 stuck at 6 (one-shot init transition match_setup_apply/
+battle_state_init/per_side_setup/action_enter_fwd/fighter_anim_table_
+init) blocked loading fighter/arena assets = documented CD blocker
+(AGENTS.md §8 cd_seek_param_issue->cd_reg_window_op->worker). Input
+layer WORKS (digital also writes valid 00 41 frames; ph=6 stall is
+CD-blocked mode-independent). REVERTED uncommitted analog experiment
+(game.toml default_mode + main.cpp effective_player_mode digital-
+force removal) — unproven, tree clean. NEXT: CD pending-command wedge
+at ph=6 gates battle_input_dispatch/round-timer/visible-play.
