@@ -2955,3 +2955,31 @@ Traced the record->ctrl binding path for the versus NULL-pointer bug:
   determine whether versus reaches that commit (a phase/flag gate) or it
   writes a wrong ctrl/offset (clean-port bug). Versus agent 507780ee
   live on :4724 (frozen ph=8 variant).
+
+=== N+200 — ctrl+0x1C/+0x20 WRITER IDENTIFIED: slot_apply via action_enter ===
+Static trace (clean source, proven): the fighter-ctrl +0x1C/+0x20 bind is
+slot_apply (game/action.c:439-479). It copies a per-form descriptor
+`d = ctrl_param(ctrl) + slot*0x24` (ctrl_param = ctrl+0x28's target table)
+into the ctrl:
+    ctrl+0x18 = d+0x10   ctrl+0x1c = d+0x14   (prim/display node ptr)
+    ctrl+0x20 = d+0x18   (fighter-state obj ptr)   ctrl+0x40 = d+0x1c
+Field map (action.c:58-65): FC_PARAM=+0x28, FC_FOE=+0x2c, FC_ANI=+0x30,
+FC_MOTION=+0x38, FC_VM=+0x3c — matches the versus dump where +0x28/+0x2c/
++0x38 are populated but +0x1c/+0x20/+0x30 are NULL.
+slot_apply is invoked ONLY from action_enter's "dual-form block"
+(action.c ~770-805): slot_apply(ctrl,0); skeleton_init_wrap; part_link;
+slot_apply(ctrl,1); ...; slot_apply(ctrl, b3&1). action_enter gates on
+cls = sel & 0xf: cls==1 takes a separate apply() path (NO slot_apply);
+cls>4 returns early; cls 0/2/3/4 reach the dual-form block. action_enter
+is reached per-side via action_enter_fwd(0x1f800000,&DAT_1f8000e8,
+DAT_1f80009a) / (&DAT_1f8001f0,...) in battle_flow_state_machine case 6
+(menu.c:743-744) and the intro path (menu.c:7786 sel=4).
+=> For versus ctrl+0x1c/+0x20 to stay NULL, one of: (a) action_enter took
+cls==1 or cls>4 (skipped dual-form), (b) slot_apply ran but the
+ctrl_param descriptor's d+0x14/d+0x18 fields are NULL (param/.ANI data
+not loaded for the versus character select), or (c) slot_apply wrote them
+then a later step cleared them. FC_ANI(+0x30) being NULL while FC_PARAM
+(+0x28)/FC_MOTION(+0x38) are set points at (b): the .ANI/param payload
+for the versus-selected fighter didn't fully commit. NEXT: runtime wtrace
+on ctrl+0x1c/+0x20 writers + read ctrl_param table d+0x14/d+0x18 during
+the versus transition; diff vs arcade. Versus agent d7cbd5ab on it.
