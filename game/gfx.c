@@ -35,7 +35,6 @@ extern void setCopControlWord(int,int,uint32_t);
 extern int  getCopControlWord(int,int);
 extern void copFunction(int,int);
 extern void gte_vec3_normalize(void);
-extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern uint32_t br2_ld32p(uint32_t cell);
 extern void     br2_st32p(uint32_t cell, uint32_t v);
 

@@ -25,10 +25,11 @@
 
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
-extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 /* faithful guest-verified ports living in menu.c (same (ctrl,motion,pc)
  * guest-addr calling convention, return = next stream guest addr) */
 extern uint32_t desc_cursor_select(uint32_t,uint32_t,uint32_t);
+extern uint32_t desc_transform_dispatch(uint32_t,uint32_t,uint32_t);
+extern uint32_t desc_slot_alloc(uint32_t,uint32_t,uint32_t);
 extern void slot_apply_guest(int,int);
 extern void slot_mark2_set(uint32_t);
 /* keyframe_advance @0x80185ddc — clean port in resolve.c; (ctrl,motion)
@@ -568,15 +569,15 @@ static uint8_t *ev6_guard_sync(uint8_t *ctrl, uint8_t *motion,
 
 /* ================================================================== */
 /* EV7 — position/physics command  (guest @0x8017b1ec)                 */
-/* 257-insn transform/effect dispatcher (10-way class tbl + nested    */
-/* op decode, live guest-stack/GTE-adjacent state). Delegated to the  */
-/* generated implementation — clean C cannot safely express it.       */
+/* 257-insn transform/effect dispatcher (10-way class tbl @0x801227d4 */
+/* + nested op decode, live guest-stack/GTE-adjacent state). Faithful */
+/* port lives in menu.c as desc_transform_dispatch — already the     */
+/* clean_table target for guest callers of 0x8017B1EC.                */
 /* ================================================================== */
 static uint8_t *ev7_position(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
 {
-    uint32_t r = br2_call_generated(0x8017b1ec,
-        (uint32_t)guest_of(ctrl), (uint32_t)guest_of(motion),
-        (uint32_t)guest_of(pc), 0);
+    uint32_t r = desc_transform_dispatch((uint32_t)guest_of(ctrl),
+        (uint32_t)guest_of(motion), (uint32_t)guest_of(pc));
     return r ? (uint8_t *)guest_at(r) : NULL;
 }
 
@@ -930,14 +931,15 @@ static uint8_t *ev12_damage(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
 
 /* ================================================================== */
 /* EV13 — hit-slot manager  (guest @0x8017bfb8)                        */
-/* ~232-insn slot-table allocator/commit. Delegated to generated.      */
+/* ~232-insn slot-table allocator/commit. Faithful port lives in      */
+/* menu.c as desc_slot_alloc — already the clean_table target for     */
+/* guest callers of 0x8017BFB8.                                       */
 /* ================================================================== */
 static uint8_t *ev13_hit_slots(uint8_t *ctrl, uint8_t *motion,
                                uint8_t *pc)
 {
-    uint32_t r = br2_call_generated(0x8017bfb8,
-        (uint32_t)guest_of(ctrl), (uint32_t)guest_of(motion),
-        (uint32_t)guest_of(pc), 0);
+    uint32_t r = desc_slot_alloc((uint32_t)guest_of(ctrl),
+        (uint32_t)guest_of(motion), (uint32_t)guest_of(pc));
     return r ? (uint8_t *)guest_at(r) : NULL;
 }
 

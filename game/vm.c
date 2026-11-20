@@ -20,8 +20,6 @@
 
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
-extern uint32_t br2_call_generated(uint32_t fn, uint32_t a0, uint32_t a1,
-                                   uint32_t a2, uint32_t a3);
 
 /* ---- guest-offset accessors ---- */
 #define G16(p,o)   (*(const int16_t  *)((const uint8_t *)(p) + (o)))
@@ -1152,23 +1150,226 @@ int scriptop_wait(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
 }
 
 /* ================================================================== */
-/* op04 Chk — guest 0x80183C30. cond = insn byte1 (table @0x801235CC,  */
-/* 45 entries). Result -> ctx+0x38 (u32), pc += 2 (mask conds += 6).   */
+/* op04 Chk — guest 0x80183C30. cond = insn byte1 (u16 pc >> 8).       */
+/* 45-entry dispatch table @0x801235C4; cond >= 0x2d aliases case 0.   */
 /* self = a0 (ctrl guest addr), foe = ctrl+0x2c.                       */
 /*                                                                     */
-/* DELEGATED: the 45-entry dispatch has branchy per-sub handlers       */
-/* (attack-window combos, mode-byte tests, signed compares, the       */
-/* 0x29/0x2a guard-reaction mask chain, and the 0x2b NULL vector /     */
-/* 0x2c+0x2d Cmp-alias entries that need caller-scratch regs). A       */
-/* partial clean decode risks poisoning ctx+0x38 — the value every     */
-/* Bra/Bsr conditional consumes — so the whole body stays             */
-/* generated-authoritative until each subblock is verified against    */
-/* the oracle.                                                        */
+/* Faithful port (disasm-verified insn-for-insn):                     */
+/*  - ctx+0x38 receives the RAW computed value — simple conds store   */
+/*    the masked state word / 0-1 result, mask conds (0x20-0x2a)      */
+/*    store state & operand (NOT normalised to boolean).               */
+/*  - ctx+0x24 advances +2, or +6 for the mask family (u32 operand    */
+/*    = lhu(pc+2) | lhu(pc+4)<<16).                                    */
+/*  - ctx+0x6e (lh) gates debug tracing: when set and the ctx+0x78    */
+/*    cursor sits inside [ctx+0x7c, ctx+0x138) the guest sprintf's    */
+/*    "(%s)"+cond-name @tbl 0x801b5440 pre-dispatch, and for the      */
+/*    mask family "%8X" of the trace arg post-store into               */
+/*    [ctx+0x7c, ctx+0x13b). sprintf_core_guest is the clean port of  */
+/*    guest 0x8018EF60; its return (formatted len) advances the       */
+/*    cursor exactly like the guest's `addu v1,v1,v0`.                */
+/*  - Return $v0 is 1 on every path EXCEPT the 0x2b/0x2c compound     */
+/*    sub-case where (state1 & 0x40080) != 0 — there the guest leaves */
+/*    v0 = that nonzero mask (bnez -> epilogue without reloading 1).  */
 /* ================================================================== */
+
+extern int sprintf_core_guest(char *param_1,char *param_2,uint32_t param_3,
+                              uint32_t param_4,uint32_t param_5,
+                              uint32_t param_6,uint32_t param_7,
+                              uint32_t param_8);
+
+/* cond-name strings for the "(%s)" debug trace — guest ptrs @0x801b5440 */
+static const uint32_t chk_cond_name[45] = {
+    0x801235ac,0x801235a0,0x80123598,0x80123590,0x80123588,0x80123580,
+    0x80123574,0x80123568,0x80123560,0x80123558,0x80123550,0x80123548,
+    0x80123540,0x80123538,0x80123530,0x80123528,0x80123520,0x80123518,
+    0x8012350c,0x80123500,0x801234f4,0x801234e8,0x801234e0,0x801234d8,
+    0x801234d0,0x801234c8,0x801234c0,0x801234b8,0x801234ac,0x801234a0,
+    0x80123494,0x80123488,0x80123484,0x80123480,0x8012347c,0x80123478,
+    0x80123474,0x80123470,0x8012346c,0x80123468,0x80123460,0x80123054,
+    0x8012345c,0x80123450,0x80123444
+};
+
+/* debug-window bounds reproduce the guest's `cur - 0x7c - ctx` slti
+ * range tests (signed): name trace <0xbc, result trace <0xbf. */
+static int chk_trace_open(uint8_t *ctx, uint32_t bound)
+{
+    uint32_t cur = GU32(ctx, VX_TRACE);
+    uint32_t cg  = (uint32_t)guest_of(ctx);
+    return (int32_t)(cur - 0x7cu - cg) < (int32_t)bound;
+}
 
 int scriptop_chk(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
 {
-    return br2_call_generated(0x80183C30, a0, a1, guest_of(ctx), a3);
+    uint32_t self = a0;
+    uint32_t foe  = gld_u32(self + 0x2c);          /* lw 0x2c(s3)  */
+    uint32_t pcg  = GU32(ctx, VX_PC);              /* lw 0x24(s2)  */
+    uint8_t *pc   = (uint8_t *)guest_at(pcg);
+    uint32_t cond = (uint32_t)(GU16(pc, 0) >> 8);  /* lhu; srl 8   */
+    uint32_t res  = 0;
+    uint32_t adv  = 2;
+    uint32_t rv   = 1;
+    uint32_t tr_arg = 0;        /* %8X vararg for mask-family trace   */
+    int      tr_res  = 0;       /* 0: none, 1: operand arg, 2: result */
+    uint32_t st;
+    int32_t  d;
+    (void)a1; (void)a3;
+
+    /* ---- pre-dispatch name trace (ctx+0x6e gate, s4 < 0x2d) ---- */
+    if (G16(ctx, VX_DBG) != 0 && cond < 0x2d && chk_trace_open(ctx, 0xbc)) {
+        uint32_t cur = GU32(ctx, VX_TRACE);
+        int n = sprintf_core_guest((char *)guest_at(cur),
+                                   (char *)guest_at(0x801235b8u),
+                                   chk_cond_name[cond],0,0,0,0,0);
+        GSU32(ctx, VX_TRACE) = cur + (uint32_t)n;
+    }
+
+    switch (cond) {
+    case 0:  /* + default (cond >= 0x2d aliases here) */
+        res = gld_u32(self + 0x58) & 0x8000; break;
+    case 1:  res = gld_u32(foe  + 0x58) & 0x8000; break;
+    case 2:  res = gld_u32(self + 0x58) & 0x10000000; break;
+    case 3:  res = gld_u32(foe  + 0x58) & 0x10000000; break;
+    case 4:  res = gld_u32(self + 0x58) & 0x800; break;
+    case 5:  res = gld_u32(foe  + 0x58) & 0x800; break;
+    case 6:  /* ((st >>u 11) ^ 1) & 1 — !(state0 bit11) */
+        res = ((gld_u32(self + 0x58) >> 11) ^ 1) & 1; break;
+    case 7:  res = ((gld_u32(foe  + 0x58) >> 11) ^ 1) & 1; break;
+    case 8:  res = gld_u32(self + 0x58) & 0x80000000; break;
+    case 9:  res = gld_u32(foe  + 0x58) & 0x80000000; break;
+    case 10: /* state0<0 && atkwin2 != 0 */
+        st = gld_u32(self + 0x58);
+        res = ((int32_t)st < 0 && gld_s16(self + 0xba) != 0) ? 1 : 0;
+        break;
+    case 11:
+        st = gld_u32(foe + 0x58);
+        res = ((int32_t)st < 0 && gld_s16(foe + 0xba) != 0) ? 1 : 0;
+        break;
+    case 12: /* state0<0 && atkwin2==0 && atkwin1!=0 */
+        st = gld_u32(self + 0x58);
+        res = ((int32_t)st < 0 && gld_s16(self + 0xba) == 0 &&
+               gld_s16(self + 0xb8) != 0) ? 1 : 0;
+        break;
+    case 13:
+        st = gld_u32(foe + 0x58);
+        res = ((int32_t)st < 0 && gld_s16(foe + 0xba) == 0 &&
+               gld_s16(foe + 0xb8) != 0) ? 1 : 0;
+        break;
+    case 14: /* state0<0 && 0 <s atkwin3 */
+        st = gld_u32(self + 0x58);
+        res = ((int32_t)st < 0 && gld_s16(self + 0xbc) > 0) ? 1 : 0;
+        break;
+    case 15:
+        st = gld_u32(foe + 0x58);
+        res = ((int32_t)st < 0 && gld_s16(foe + 0xbc) > 0) ? 1 : 0;
+        break;
+    case 16: res = gld_u8(self + 5) & 1; break;
+    case 17: res = gld_u8(foe  + 5) & 1; break;
+    case 18: /* state0<0 && (state5 & 0x01000000) != 0 */
+        st = gld_u32(self + 0x58);
+        res = ((int32_t)st < 0 &&
+               (gld_u32(self + 0x6c) & 0x01000000u) != 0) ? 1 : 0;
+        break;
+    case 19:
+        st = gld_u32(foe + 0x58);
+        res = ((int32_t)st < 0 &&
+               (gld_u32(foe + 0x6c) & 0x01000000u) != 0) ? 1 : 0;
+        break;
+    case 20: /* state0<0 && (state5 & 0x02000000) != 0 */
+        st = gld_u32(self + 0x58);
+        res = ((int32_t)st < 0 &&
+               (gld_u32(self + 0x6c) & 0x02000000u) != 0) ? 1 : 0;
+        break;
+    case 21:
+        st = gld_u32(foe + 0x58);
+        res = ((int32_t)st < 0 &&
+               (gld_u32(foe + 0x6c) & 0x02000000u) != 0) ? 1 : 0;
+        break;
+    case 22: res = gld_u32(self + 0x58) & 1; break;
+    case 23: res = gld_u32(foe  + 0x58) & 1; break;
+    case 24: res = gld_u32(self + 0x58) & 0x10; break;
+    case 25: res = gld_u32(foe  + 0x58) & 0x10; break;
+    case 26: res = gld_u32(self + 0x58) & 0x20; break;
+    case 27: res = gld_u32(foe  + 0x58) & 0x20; break;
+    case 28: /* !(state0<0) || atkwin3 > 0  (guest: bgez->1, else bc>0) */
+        st = gld_u32(self + 0x58);
+        res = ((int32_t)st >= 0 || gld_s16(self + 0xbc) > 0) ? 1 : 0;
+        break;
+    case 29:
+        st = gld_u32(foe + 0x58);
+        res = ((int32_t)st >= 0 || gld_s16(foe + 0xbc) > 0) ? 1 : 0;
+        break;
+    case 30: /* !(mode5&1) && gauge >=s 0x1e00 */
+        res = ((gld_u8(self + 5) & 1) == 0 &&
+               gld_s16(self + 0xd6) >= 0x1e00) ? 1 : 0;
+        break;
+    case 31:
+        res = ((gld_u8(foe + 5) & 1) == 0 &&
+               gld_s16(foe + 0xd6) >= 0x1e00) ? 1 : 0;
+        break;
+    /* ---- mask family 0x20-0x2a: operand u32 @pc+2, adv 6 ---- */
+    case 32: case 33: case 34: case 35:
+    case 36: case 37: case 38: case 39:
+    case 41: case 42: {
+        /* field by cond: even self / odd foe; +0x64,+0x5c,+0x58,+0x68,
+         * then 0x29/0x2a -> +0x6c. self-side paths (even, and the two
+         * +0x6c entries via 84260) differ in the %8X arg: the direct
+         * 84278 entries trace the raw operand, the 84260 entries trace
+         * the masked result — reproduced via tr_res. */
+        static const uint8_t fld_of[10] = {
+            0x64,0x64, 0x5c,0x5c, 0x58,0x58, 0x68,0x68, 0x6c,0x6c };
+        static const uint8_t self_of[10] = {
+            1,0, 1,0, 1,0, 1,0, 1,0 };
+        static const uint8_t argres_of[10] = {
+            1,2, 1,2, 1,2, 1,2, 2,2 };   /* operand vs result trace arg */
+        int mi = (cond >= 0x29) ? (cond - 0x29 + 8) : (cond - 0x20);
+        uint32_t who = self_of[mi] ? self : foe;
+        uint32_t operand = GU16(pc, 2) | ((uint32_t)GU16(pc, 4) << 16);
+        res = gld_u32(who + fld_of[mi]) & operand;
+        adv = 6;
+        tr_res = argres_of[mi];
+        tr_arg = (tr_res == 2) ? res : operand;
+        break;
+    }
+    case 40: /* |distX| >=s 0x6ab */
+        d = gld_s16(self + 0x74);
+        if (d < 0) d = -d;
+        res = (d >= 0x6ab) ? 1 : 0;
+        break;
+    case 43: case 44: {   /* guard-reaction compound (0x2b/0x2c) */
+        uint32_t who = (cond == 43) ? self : foe;
+        res = 0; rv = 1;
+        st = gld_u32(who + 0x58);
+        if ((int32_t)st < 0 && gld_s16(who + 0xba) > 0) {
+            uint32_t m = gld_u32(who + 0x5c) & 0x00040080u;
+            if (m != 0) {
+                /* guest: bnez -> epilogue with v0 = m (nonzero),
+                 * ctx+0x38 already stored 0 */
+                res = 0;
+                rv  = m;
+            } else {
+                res = ((gld_u32(who + 0x64) & 0x40002000u)
+                       == 0x40002000u) ? 1 : 0;
+            }
+        }
+        break;
+    }
+    default:
+        res = gld_u32(self + 0x58) & 0x8000; break;
+    }
+
+    GSU32(ctx, VX_CMP) = res;
+
+    /* ---- post-store result trace (mask family only, 0x20-0x2a) ---- */
+    if (tr_res != 0 && G16(ctx, VX_DBG) != 0 && chk_trace_open(ctx, 0xbf)) {
+        uint32_t cur = GU32(ctx, VX_TRACE);
+        int n = sprintf_core_guest((char *)guest_at(cur),
+                                   (char *)guest_at(0x801235c0u),
+                                   tr_arg,0,0,0,0,0);
+        GSU32(ctx, VX_TRACE) = cur + (uint32_t)n;
+    }
+
+    GSU32(ctx, VX_PC) = pcg + adv;
+    return (int)rv;
 }
 
 /* ================================================================== */
