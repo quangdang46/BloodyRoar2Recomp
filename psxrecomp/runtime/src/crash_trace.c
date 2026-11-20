@@ -919,7 +919,37 @@ void psx_crash_trace_dump(const char *reason, void *seh_info) {
                 e->target, e->ra, e->a0, e->a1, e->a2, e->a3,
                 e->sp, e->t0, e->t1, e->t2, e->frame);
         }
-        append_str(buf, sizeof(buf), &pos, "]\n  }\n");
+        append_str(buf, sizeof(buf), &pos, "]\n  },\n");
+    }
+
+    /* gwatch ring — mprotect guest-RAM write watch. This is the ONLY ring
+     * that sees stores issued by clean-C game/*.c ports (raw guest_at()
+     * stores bypass cpu->write_word and therefore wtrace_all/wtrace). Dump
+     * the newest entries so a post-mortem can name the writer (host RIP +
+     * guest store_pc/ra) of any watched cell that was never committed. */
+    {
+        extern int      guest_watch_dump(char *buf, size_t cap, int max, int newest_first);
+        extern uint64_t guest_watch_total(void);
+        extern int      guest_watch_range_count(void);
+        extern void     guest_watch_range(int i, uint32_t *lo, uint32_t *hi);
+        static char gw[4 * 1024 * 1024];
+        int gn = guest_watch_dump(gw, sizeof(gw), 1024, 1);
+        append_fmt(buf, sizeof(buf), &pos,
+            "  \"gwatch\": {\n"
+            "    \"total\": %llu,\n"
+            "    \"ranges\": %d,\n"
+            "    \"range_addrs\": [",
+            (unsigned long long)guest_watch_total(),
+            guest_watch_range_count());
+        for (int i = 0; i < guest_watch_range_count() && i < 8; i++) {
+            uint32_t glo = 0, ghi = 0;
+            guest_watch_range(i, &glo, &ghi);
+            append_fmt(buf, sizeof(buf), &pos, "%s\"0x%08X-0x%08X\"",
+                       i == 0 ? "" : ",", glo, ghi);
+        }
+        append_fmt(buf, sizeof(buf), &pos,
+            "],\n    \"entries\": %s\n  }\n",
+            gn > 0 ? gw : "[]");
     }
 
     append_str(buf, sizeof(buf), &pos, "}\n");

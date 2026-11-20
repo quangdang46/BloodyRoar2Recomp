@@ -143,6 +143,28 @@ uint32_t g_tpool_bad_count = 0;
 int32_t  g_tpool_bad_p1    = -1;
 int32_t  g_tpool_bad_p2    = -1;
 int32_t  g_tpool_bad_p3    = -1;
+/* task_pool_alloc give-up latch (written by game/battle.c): freelist head +
+ * head-block fields captured at the moment alloc returns 0. */
+uint32_t g_tpool_fail_count = 0;
+uint32_t g_tpool_fail_head  = 0;
+uint32_t g_tpool_fail_next  = 0;
+uint32_t g_tpool_fail_size  = 0;
+uint32_t g_tpool_fail_flag  = 0;
+int32_t  g_tpool_fail_p1    = -1;
+int32_t  g_tpool_fail_p2    = -1;
+int32_t  g_tpool_fail_p3    = -1;
+/* versus task_alloc_wrap_e / LAB_80137acc script-trampoline latches:
+ * prove whether the versus handshake task is ever allocated and whether its
+ * channel-script coroutine runs/completes during the gs=8 ph=8 wedge. */
+uint32_t g_wrape_calls      = 0;
+uint32_t g_wrape_last_ret   = 0;
+uint32_t g_wrape_p1         = 0;
+uint32_t g_wrape_p2         = 0;
+uint32_t g_wrape_p3         = 0;
+uint32_t g_tramp_calls      = 0;
+uint32_t g_tramp_last_node  = 0;
+uint32_t g_tramp_last_cur   = 0;
+uint32_t g_tramp_last_op    = 0;
 /* script_stream_tick dest-ptr anomaly latch (written by game/battle.c). */
 uint32_t g_sst_bad_state = 0, g_sst_bad_d0 = 0, g_sst_bad_d1 = 0;
 uint32_t g_sst_bad_sbase = 0, g_sst_bad_spc = 0, g_sst_bad_count = 0;

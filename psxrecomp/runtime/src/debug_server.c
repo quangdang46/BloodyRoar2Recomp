@@ -10404,6 +10404,12 @@ static void handle_freeze_check(int id, const char *json)
     extern uint32_t g_tpool_bad_prev, g_tpool_bad_cur, g_tpool_bad_link,
                     g_tpool_bad_count;
     extern int32_t  g_tpool_bad_p1, g_tpool_bad_p2, g_tpool_bad_p3;
+    extern uint32_t g_tpool_fail_count, g_tpool_fail_head, g_tpool_fail_next,
+                    g_tpool_fail_size, g_tpool_fail_flag;
+    extern int32_t  g_tpool_fail_p1, g_tpool_fail_p2, g_tpool_fail_p3;
+    extern uint32_t g_wrape_calls, g_wrape_last_ret, g_wrape_p1, g_wrape_p2,
+                    g_wrape_p3, g_tramp_calls, g_tramp_last_node,
+                    g_tramp_last_cur, g_tramp_last_op;
     extern uint32_t g_sst_bad_state, g_sst_bad_d0, g_sst_bad_d1;
     extern uint32_t g_sst_bad_sbase, g_sst_bad_spc, g_sst_bad_count;
     extern uint32_t g_sst_bad_d2, g_sst_bad_d3, g_sst_bad_d4, g_sst_bad_d6;
@@ -10618,6 +10624,19 @@ static void handle_freeze_check(int id, const char *json)
                     "\"tpool_bad_cur\":\"0x%08X\","
                     "\"tpool_bad_link\":\"0x%08X\","
                     "\"tpool_bad_p\":\"%d,%d,%d\","
+                    "\"tpool_fail_count\":%u,"
+                    "\"tpool_fail_head\":\"0x%08X\","
+                    "\"tpool_fail_next\":\"0x%08X\","
+                    "\"tpool_fail_size\":\"0x%08X\","
+                    "\"tpool_fail_flag\":\"0x%08X\","
+                    "\"tpool_fail_p\":\"%d,%d,%d\","
+                    "\"warpe_calls\":%u,"
+                    "\"warpe_last_ret\":\"0x%08X\","
+                    "\"warpe_p\":\"0x%08X,0x%08X,0x%08X\","
+                    "\"tramp_calls\":%u,"
+                    "\"tramp_last_node\":\"0x%08X\","
+                    "\"tramp_last_cur\":\"0x%08X\","
+                    "\"tramp_last_op\":\"0x%08X\","
                     "\"sst_bad_count\":%u,"
                     "\"sst_bad_state\":\"0x%08X\","
                     "\"sst_bad_d0\":\"0x%08X\","
@@ -10803,6 +10822,19 @@ static void handle_freeze_check(int id, const char *json)
                     g_tpool_bad_cur,
                     g_tpool_bad_link,
                     g_tpool_bad_p1, g_tpool_bad_p2, g_tpool_bad_p3,
+                    g_tpool_fail_count,
+                    g_tpool_fail_head,
+                    g_tpool_fail_next,
+                    g_tpool_fail_size,
+                    g_tpool_fail_flag,
+                    g_tpool_fail_p1, g_tpool_fail_p2, g_tpool_fail_p3,
+                    g_wrape_calls,
+                    g_wrape_last_ret,
+                    g_wrape_p1, g_wrape_p2, g_wrape_p3,
+                    g_tramp_calls,
+                    g_tramp_last_node,
+                    g_tramp_last_cur,
+                    g_tramp_last_op,
                     g_sst_bad_count,
                     g_sst_bad_state, g_sst_bad_d0, g_sst_bad_d1,
                     g_sst_bad_sbase, g_sst_bad_spc,

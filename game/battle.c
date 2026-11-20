@@ -8991,11 +8991,16 @@ int task_alloc_wrap_e(int param_1,int param_2,int param_3)
 {
   int iVar1;
   int *piVar2;
+  { extern uint32_t g_wrape_calls,g_wrape_last_ret,g_wrape_p1,g_wrape_p2,g_wrape_p3;
+    g_wrape_calls++; g_wrape_p1=(uint32_t)param_1;
+    g_wrape_p2=(uint32_t)param_2; g_wrape_p3=(uint32_t)param_3; }
   iVar1 = (int)(intptr_t)task_node_alloc(1,2,6,0x80137acc,0,param_1 + 0x14);
   if (iVar1 == 0) {
     iVar1 = 0;
+    { extern uint32_t g_wrape_last_ret; g_wrape_last_ret = 0; }
   }
   else {
+    { extern uint32_t g_wrape_last_ret; g_wrape_last_ret = (uint32_t)iVar1; }
     piVar2 = (int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0x10))));
     piVar2[1] = param_3;
     piVar2[2] = param_3;
@@ -11011,6 +11016,12 @@ void task_pool_init(int param_1,int param_2,int param_3,int param_4)
 extern uint32_t g_tpool_bad_prev,  g_tpool_bad_cur,   g_tpool_bad_link;
 extern uint32_t g_tpool_bad_count;
 extern int32_t  g_tpool_bad_p1,    g_tpool_bad_p2,    g_tpool_bad_p3;
+/* alloc-failure latch: records the freelist head + first-block fields at the
+ * moment task_pool_alloc gives up, so a versus-handshake wedge can be
+ * diagnosed post-mortem (the pool looks healthy again by the time we probe). */
+extern uint32_t g_tpool_fail_count, g_tpool_fail_head, g_tpool_fail_next,
+                g_tpool_fail_size, g_tpool_fail_flag;
+extern int32_t  g_tpool_fail_p1, g_tpool_fail_p2, g_tpool_fail_p3;
 
 int task_pool_alloc(int param_1,int param_2,int param_3)
 {
@@ -11037,6 +11048,16 @@ int task_pool_alloc(int param_1,int param_2,int param_3)
       g_tpool_bad_p1 = param_1; g_tpool_bad_p2 = param_2; g_tpool_bad_p3 = param_3;
     }
     if (iVar5 == iVar4) {
+      g_tpool_fail_count++;
+      g_tpool_fail_p1 = param_1; g_tpool_fail_p2 = param_2;
+      g_tpool_fail_p3 = param_3;
+      g_tpool_fail_head = (uint32_t)iVar4;
+      if (iVar4 >= 0x80100000 && iVar4 < 0x80200000) {
+        int *hb = (int *)guest_at((uint32_t)(uintptr_t)iVar4);
+        g_tpool_fail_next = (uint32_t)hb[1];
+        g_tpool_fail_size = (uint32_t)hb[2];
+        g_tpool_fail_flag = (uint32_t)(*(uint16_t *)guest_at((uint32_t)(uintptr_t)(iVar4 + 0xc)));
+      }
       return 0;
     }
     sVar1 = *(short *)guest_at((uint32_t)(uintptr_t)((iVar5 + 0xc)));
@@ -13579,9 +13600,18 @@ int * prim_list_persp_step(int *param_1,undefined4 param_2,undefined4 param_3,in
         iVar1 = *(int *)guest_at((uint32_t)(uintptr_t)(param_1[7]));
         piVar4 = (int *)guest_at((uint32_t)(uintptr_t)(param_1[7] ))+ 1;
         if (iVar1 != 0) {
+          /* Generated 0x8018B208 jalr's each record fn with the full a0-a3
+           * set, same {count,[x,a3field,arg0,func]} stride-16 table as
+           * prim_task_run: a0 = entry[+8] (data cursor), a1 = param_2,
+           * a2 = param_3 (both loaded once per node before the entry loop),
+           * a3 = entry[+4] (per-record field). task_invoke/call_guest only
+           * program $a0/$a1, leaving $a2/$a3 as stale register-file values
+           * the callee dereferences. call_guest4 reproduces the guest ABI
+           * exactly (same fix prim_task_run carries). */
           do {
             iVar1 = iVar1 + -1;
-            task_invoke((uint32_t)piVar4[3],(uint32_t)piVar4[2]);
+            call_guest4((uint32_t)piVar4[3],(uint32_t)piVar4[2],
+                        (uint32_t)param_2,(uint32_t)param_3,(uint32_t)piVar4[1]);
             piVar4 = piVar4 + 4;
           } while (0 < iVar1);
         }
@@ -16667,6 +16697,11 @@ void LAB_80137acc(int *param_1)
   short *psVar5;
   int *piVar6;
 
+  { extern uint32_t g_tramp_calls,g_tramp_last_node,g_tramp_last_cur,g_tramp_last_op;
+    g_tramp_calls++;
+    g_tramp_last_node = (uint32_t)(uintptr_t)guest_of(param_1);
+    g_tramp_last_cur  = (uint32_t)param_1[2];
+    g_tramp_last_op   = (uint32_t)*(unsigned char *)((intptr_t)param_1 + 0x10); }
   psVar5 = (short *)((intptr_t)param_1 + 0x10);
   piVar6 = param_1 + 2;
   if (_DAT_1f800082 != 0) {
