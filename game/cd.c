@@ -978,7 +978,7 @@ int32_t cd_file_open_b(uint32_t param_1)
 /* cd_read_param_set — CD read setup: arg -> @0x801feb38, -1 -> @0x801feb28,
  * cd_dispatch_tblc dispatch, cd_cmd_sequence(0x20000001,&block), bios_table_tramp(0).
  * Disasm 0x80199f30-0x80199f74. */
-extern void cd_cmd_sequence(uint32_t,uint32_t,uint32_t,uint32_t);
+extern uint32_t cd_cmd_sequence(uint32_t,uint32_t,uint32_t,uint32_t);
 void cd_read_param_set(uint32_t param_1)
 {
   /* gpr-forwarding trampoline calls inside need live cpu->gpr that clean
@@ -1098,7 +1098,7 @@ extern void cd_kobj_init_a(void);
 extern void cd_kobj_init_b(void);
 extern void cd_subchan_table_install(void);
 extern void bios_tramp_b015(uint32_t,uint32_t);
-void cd_cmd_sequence(uint32_t param_1,uint32_t param_2,uint32_t param_3,uint32_t param_4)
+uint32_t cd_cmd_sequence(uint32_t param_1,uint32_t param_2,uint32_t param_3,uint32_t param_4)
 {
   /* Faithful port of generated 0x8019a00c (CPS chain verified):
    * kobj_init_a, DI, kobj_init_b, EI, bios_table_tramp(0x80199fe0
@@ -1114,6 +1114,7 @@ void cd_cmd_sequence(uint32_t param_1,uint32_t param_2,uint32_t param_3,uint32_t
   cd_subchan_table_install();
   (void)bios_svc6(0xb0,0x15,param_1,param_2,param_3,param_4); /* 0x8019a320 */
   DB32(0x801bcc90) = 1;
+  return 1;                                     /* guest v0 = 1 */
 }
 
 /* cd_channel_main_init — CD channel main init: crit-in, flag=0, 9a340/9a330
@@ -1577,9 +1578,13 @@ void cd_chan_block_init(int32_t a0,uint32_t a1)
 extern void cd_mode_apply_wrap(void);
 void cd_mode_reset_seq(void)
 {
-  /* gpr-forwarding trampoline calls inside need live cpu->gpr that clean
-   * callers cannot supply; delegate whole body to generated MIPS. */
-  br2_call_generated(0x8019e39cu,0,0,0,0);
+  /* Faithful port of generated 0x8019e39c (CPS chain verified):
+   * DI, cd_mode_apply_wrap (0x8019e410 B0/0x4b), bios_table_tramp
+   * 0x80199fe0 with a0=0, EI. */
+  FUN_8018e300();                                /* DI */
+  cd_mode_apply_wrap();
+  (void)call_guest(0x80199fe0u,0,0);             /* bios_table_tramp, a0=0 */
+  FUN_8018e310(0);                               /* EI */
 }
 
 /* cd_dir_reset — CD dir reset: a1=*0x801fc6c4, clears
@@ -1609,9 +1614,20 @@ extern void FUN_8019e55c(void);
 extern int32_t cd_status_bcc90(void);
 void cd_mode_apply_seq(uint32_t a0)
 {
-  /* gpr-forwarding trampoline calls inside need live cpu->gpr that clean
-   * callers cannot supply; delegate whole body to generated MIPS. */
-  br2_call_generated(0x8019e330u,a0,0,0,0);
+  /* Faithful port of generated 0x8019e330 (CPS chain + branch verified):
+   * bios_table_tramp 0x80199fe0 (a0=0), DI, v0=cd_status_bcc90();
+   * if (!v0) arg=0; cd_mode_apply(arg) (0x8019e400 B0/0x4a),
+   * FUN_8019e5cc, FUN_8019e4c8, FUN_8019e55c, EI. */
+  uint32_t arg = a0;
+  (void)call_guest(0x80199fe0u,0,0);             /* bios_table_tramp, a0=0 */
+  FUN_8018e300();                                /* DI */
+  if (cd_status_bcc90() == 0)
+    arg = 0;
+  cd_mode_apply(arg);
+  FUN_8019e5cc();
+  FUN_8019e4c8();
+  FUN_8019e55c();
+  FUN_8018e310(0);                               /* EI */
 }
 
 /* bios_tramp_a070 — BIOS svc A0/0x70 trampoline. */
@@ -3950,9 +3966,13 @@ int cd_crit_c003(void)
 
 int cd_chan_init_trio(void)
 {
-  /* gpr-forwarding trampoline calls inside need live cpu->gpr that clean
-   * callers cannot supply; delegate whole body to generated MIPS. */
-  return (int)br2_call_generated(0x8019a12cu,0,0,0,0);
+  /* Faithful port of generated 0x8019a12c (CPS chain verified):
+   * FUN_8019a300 (B0/0x13), bios_table_tramp 0x80199fe0 with a0=0,
+   * FUN_8019a350 (indirect call through cell 0x801FEB58), return 1. */
+  FUN_8019a300();
+  (void)call_guest(0x80199fe0u,0,0);             /* bios_table_tramp, a0=0 */
+  FUN_8019a350();
+  return 1;                                     /* guest v0 = 1 */
 }
 
 /* ======== 0x80191978 ======== */
