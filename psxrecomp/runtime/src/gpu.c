@@ -2711,32 +2711,31 @@ uint64_t g_pollhack_vblank_count = 0;  /* instrumentation: poll-fallback VBlank 
  *
  * Model: submitted work is charged in guest cycles (33.8688 MHz) and
  * the GPU is "busy" until the accumulated charge drains. Charges are
- * serial — the command processor handles one primitive at a time —
+ * serial — the command processor handles one command at a time —
  * so s_gpu_busy_until only ever moves forward:
  *   s_gpu_busy_until = max(now, s_gpu_busy_until) + cost.
- * Raster cost is proportional to screen-space pixel count (flat ~1.5
- * guest-cyc/px, textured ~3 — the GPU:CPU clock ratio is ~1.58 and a
- * full 320x240 flat frame lands near 20% of a vblank, leaving the
- * usual overdraw/texturing headroom); every GP0 word also pays a small
- * fixed command-processing cost. All constants are env-tunable for
+ * Every GP0 word pays a small fixed decode cost; every emitted primitive
+ * pays a bounded per-command cost (rasterization overlaps intake — see
+ * gpu_note_prim); VRAM<->VRAM / CPU<->VRAM transfers pay a per-pixel
+ * bandwidth cost capped per transfer. All constants are env-tunable for
  * A/B; PSX_GPU_TIMING=0 restores the legacy always-ready behavior. */
 static uint64_t s_gpu_busy_until;    /* absolute guest-cycle deadline */
 static uint64_t s_gpu_busy_charged;  /* total cycles charged (diagnostic) */
 static int      s_gpu_timing = -1;   /* -1 uninit / 0 off / 1 on */
-static double   s_gpu_px_flat   = 1.5;
-static double   s_gpu_px_tex    = 3.0;
 static double   s_gpu_px_vram   = 0.5;
+static uint64_t s_gpu_prim_cmd_cost = 64; /* per-primitive command-path cost */
 static uint64_t s_gpu_prim_overhead = 64;
 static uint64_t s_gpu_word_cost     = 4;
-#define GPU_PRIM_COST_CAP 400000ull /* per-primitive charge ceiling */
+#define GPU_PRIM_COST_CAP 400000ull /* per-transfer charge ceiling */
 
 static int gpu_timing_enabled(void) {
     if (s_gpu_timing < 0) {
         const char *e = getenv("PSX_GPU_TIMING");
         s_gpu_timing = (e && e[0] == '0') ? 0 : 1;
         const char *p;
-        if ((p = getenv("PSX_GPU_PX_FLAT")))   s_gpu_px_flat   = atof(p);
-        if ((p = getenv("PSX_GPU_PX_TEX")))    s_gpu_px_tex    = atof(p);
+        if ((p = getenv("PSX_GPU_PRIM_CMD_COST"))) s_gpu_prim_cmd_cost = strtoull(p, NULL, 0);
+        /* Legacy per-pixel prim rates are accepted but no longer scale the
+         * prim charge (raster overlaps command intake — see gpu_note_prim). */
         if ((p = getenv("PSX_GPU_PX_VRAM")))   s_gpu_px_vram   = atof(p);
         if ((p = getenv("PSX_GPU_PRIM_OVH")))  s_gpu_prim_overhead = strtoull(p, NULL, 0);
         if ((p = getenv("PSX_GPU_WORD_COST"))) s_gpu_word_cost     = strtoull(p, NULL, 0);
@@ -2753,17 +2752,28 @@ void gpu_charge_cycles(uint64_t cost) {
     s_gpu_busy_charged += cost;
 }
 
-/* Raster work done by one primitive: `pixels` is the clipped-ish
- * screen-space coverage estimate, `textured` selects the textured rate. */
+/* Raster work done by one primitive.
+ *
+ * Faithfulness note (N+177 versus OT livelock): the real GPU does NOT
+ * serialize command intake behind a primitive's full screen-space raster
+ * time. Polygon rasterization runs in the GPU's drawing pipeline
+ * concurrently with command processing — GPUSTAT bit26/28 ("ready to
+ * receive command word / DMA block") reflect command-path readiness, i.e.
+ * the small command FIFO draining at decode/setup rate, not raster
+ * completion. Both emulation oracles agree: Beetle and DuckStation
+ * consume GP0 commands at command rate with no per-pixel blocking.
+ * Charging pixels*rate per prim made a single versus OT accumulate ~2G
+ * guest cycles of "GPU time" (~50x the game's ~43M-cycle OT-walk budget):
+ * every walk emitted a prefix, was cancelled at the budget, restarted and
+ * re-charged the same prims — a self-sustaining livelock with ch2 DMA
+ * pinned at remaining_words=9 and GPUSTAT 26/28 never re-asserting.
+ * The charge is therefore a bounded per-primitive command cost (decode +
+ * setup/clip), independent of coverage; `pixels`/`textured` are retained
+ * in the signature for the call sites but do not scale the charge. */
 void gpu_note_prim(int64_t pixels, int textured) {
+    (void)pixels; (void)textured;
     if (!gpu_timing_enabled()) return;
-    if (pixels < 0) pixels = 0;
-    if (pixels > (int64_t)(1024 * 512)) pixels = 1024 * 512;
-    double c = (double)pixels * (textured ? s_gpu_px_tex : s_gpu_px_flat)
-             + (double)s_gpu_prim_overhead;
-    uint64_t cost = (uint64_t)(c + 0.5);
-    if (cost > GPU_PRIM_COST_CAP) cost = GPU_PRIM_COST_CAP;
-    gpu_charge_cycles(cost);
+    gpu_charge_cycles(s_gpu_prim_cmd_cost);
 }
 
 /* VRAM<->VRAM / CPU<->VRAM pixel movement (fills, copies, texture
@@ -5583,8 +5593,9 @@ uint16_t gpu_vram_peek(int x, int y) {
 static void gpu_write_gp0_body(uint32_t val) {
     gp0_write_count++;
     /* Every GP0 word pays command-processor cost (FIFO drain + decode);
-     * primitives additionally charge raster work via gpu_note_prim at
-     * the gr_* facade. This is what makes GPUSTAT bit26/28 go busy. */
+     * primitives additionally charge their bounded command cost via
+     * gpu_note_prim at the gr_* facade. This is what makes GPUSTAT
+     * bit26/28 go busy. */
     gpu_charge_cycles(s_gpu_word_cost);
 
     /* State: consuming pixel data for CPU→VRAM transfer */

@@ -2445,3 +2445,30 @@ gates OT/DMA-done/GPU-ready on display_disabled -> faithful-core bug.
 CHECK: gpu.c display_disabled (set ~5819, GPUSTAT bit23 ~2960, exposed
 ~3398, gates ~469/2449/2546), ch2 DMA completion condition, and the
 status bit 0x8019A48C polls. Wedged emu live port5410.
+
+=== N+178 — N+177 RESOLVED: busy-model livelock, not display_disabled ===
+Verified on wedged emu: display_disabled is FAITHFUL — it feeds only
+GPUSTAT bit23 readback (gpu.c:2960) and present/viewport paths
+(gpu.c:469/2449/2546, debug_server screenshot paths). NO gate on GP0
+processing, ch2 DMA, or GPUSTAT bits 26/28. display_disabled=1 is normal
+in versus (runs the whole mode with display off).
+TRUE ROOT: gpu busy model (3c4d7ed) charged per-pixel RASTER time per
+prim (gpu_note_prim: pixels*(1.5|3.0)+64 cap 400k, UNCLIPPED coords).
+Versus OT (~1.7M words, ~200k prims) accumulated ~2G guest cycles of
+GPU time — ~50x the game's ~43M-cycle OT-walk patience (81 polls,
+0x8019A484-0x8019A49C loop inside cd_timer_read 0x8019A460 waiting on
+*ptr stability). Each walk emitted a prefix -> cancelled at 43M ->
+restarted -> re-charged same prims -> s_gpu_busy_until stayed ahead
+forever (measured: until chases now, ~102k cyc/draw emitted, ~633
+draws/s wall). GPUSTAT 26/28 never re-asserted -> cd_queue_push spin.
+FIX (faithful): raster overlaps command intake on real HW — GPUSTAT
+26/28 reflect command-FIFO readiness at decode/setup rate, matching
+Beetle/DuckStation (GP0 consumed at command rate, no per-pixel block).
+gpu_note_prim now charges bounded per-prim command cost
+(s_gpu_prim_cmd_cost=64, env PSX_GPU_PRIM_CMD_COST); per-word cost 4
+and per-pixel VRAM-transfer cost retained. Verified port5422: OT walks
+complete (completes~starts, cancels rare), ch2 drains, frames advance
+through versus fight (gs=8 ph=8), OT head cells mutate — versus round
+plays (slow wall-clock: host rasterizer eats ~55M gp0 writes/OT stream;
+guest-side no longer livelocks). gpu_state now exposes gpu_busy
+{charged,until,now,remain} via existing gpu_busy_debug().

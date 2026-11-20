@@ -5452,6 +5452,8 @@ static void handle_gpu_state(int id, const char *json)
     gpu_get_draw_area(&da);
     uint64_t nop, fill, draw, env, copy;
     gpu_get_gp0_stats(&nop, &fill, &draw, &env, &copy);
+    uint64_t busy_charged = 0, busy_until = 0, busy_now = 0;
+    gpu_busy_debug(&busy_charged, &busy_until, &busy_now);
     int split_active = 0, split_left_age = 0, split_right_age = 0;
     gpu_vertical_split_debug(&split_active, &split_left_age, &split_right_age);
     GpuWsDebug ws;
@@ -5465,6 +5467,7 @@ static void handle_gpu_state(int id, const char *json)
              "\"h_display\":[%u,%u],\"v_display\":[%u,%u],"
              "\"hres1\":%u,\"hres2\":%u,"
              "\"gpustat\":\"0x%08X\","
+             "\"gpu_busy\":{\"charged\":%llu,\"until\":%llu,\"now\":%llu,\"remain\":%llu},"
              "\"gp0_writes\":%llu,"
              "\"gp0_nop\":%llu,\"gp0_fill\":%llu,\"gp0_draw\":%llu,\"gp0_env\":%llu,\"gp0_copy\":%llu,"
              "\"draw_area\":[%u,%u,%u,%u],"
@@ -5493,6 +5496,10 @@ static void handle_gpu_state(int id, const char *json)
              di.disabled,
              hx1, hx2, hy1, hy2, hr1, hr2,
              gpustat,
+             (unsigned long long)busy_charged,
+             (unsigned long long)busy_until,
+             (unsigned long long)busy_now,
+             (unsigned long long)(busy_until > busy_now ? busy_until - busy_now : 0),
              (unsigned long long)gpu_get_gp0_count(),
              (unsigned long long)nop, (unsigned long long)fill,
              (unsigned long long)draw, (unsigned long long)env,
