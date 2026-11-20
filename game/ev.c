@@ -31,6 +31,9 @@ extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t)
 extern uint32_t desc_cursor_select(uint32_t,uint32_t,uint32_t);
 extern void slot_apply_guest(int,int);
 extern void slot_mark2_set(uint32_t);
+/* keyframe_advance @0x80185ddc — clean port in resolve.c; (ctrl,motion)
+ * host pointers into the guest arena, same convention as the callers. */
+extern void keyframe_advance(uint8_t *ctrl, uint8_t *motion);
 
 typedef uint8_t  byte;
 typedef uint16_t ushort;
@@ -759,16 +762,170 @@ static uint8_t *ev10_flags(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
 }
 
 /* ================================================================== */
-/* EV12 — damage ISA  (guest @0x8017bd94)                              */
-/* ~136-insn damage accumulator/state dispatcher. Delegated to the     */
-/* generated implementation.                                           */
+/* EV12 — damage ISA  (guest @0x8017bd94, stat_field_dispatch)         */
+/* 4-byte record. sub-op = sx8(pc[0]) (0..7) indexes the jump table    */
+/* @0x801228EC (8 entries, read live from guest RAM). Each case writes  */
+/* sx16/u16 fields into motion+0xc2..+0xcc (and ctrl+0x88 mirrors);    */
+/* case 1 (0x8017be38) additionally bumps motion+0xc6 and tail-calls   */
+/* keyframe_advance(ctrl,motion). Every path returns pc+4.             */
 /* ================================================================== */
 static uint8_t *ev12_damage(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
 {
-    uint32_t r = br2_call_generated(0x8017bd94,
-        (uint32_t)guest_of(ctrl), (uint32_t)guest_of(motion),
-        (uint32_t)guest_of(pc), 0);
-    return r ? (uint8_t *)guest_at(r) : NULL;
+    int32_t op = (int8_t)GU8(pc, 0);
+    uint32_t tgt;
+    if ((uint32_t)op >= 8) return pc + 4;      /* sltiu idx,8 -> BFA4 */
+    tgt = GU32((const uint8_t *)guest_at(0x801228ecu), (uint32_t)op * 4);
+
+    switch (tgt) {
+
+    /* ---- case 0: 0x8017BDE0 ---- operand = sx16(pc+2) -------------- */
+    case 0x8017bde0: {
+        int32_t a0 = G16(pc, 2);               /* lh */
+        int32_t c  = (a0 < 2);                 /* slti (pre-shift) */
+        a0 <<= 4;                              /* delay slot */
+        if (c == 0) {
+            /* BE18: op>=2 — mirror op*16 into +c8/+ca, fold into +c2 */
+            int32_t v1 = GU16(motion, MO_CA);
+            int32_t w0 = GU16(motion, 0xc2);
+            GSU16(motion, MO_C8) = (uint16_t)a0;
+            GSU16(motion, MO_CA) = (uint16_t)a0;
+            v1 = a0 - v1;
+            w0 = w0 + v1;
+            GSU16(motion, 0xc2) = (uint16_t)w0;
+        } else {
+            /* BDF4: op<2 — +c2 += ctrl88 - ca; then j BF4C whose delay
+             * slot stores ctrl88 into +c8 AND +ca (BF14/BF50). */
+            int32_t v1 = GU16(ctrl, FC_88);
+            int32_t t0 = GU16(motion, MO_CA);
+            int32_t w0 = GU16(motion, 0xc2);
+            v1 -= t0;
+            w0 += v1;
+            GSU16(motion, 0xc2) = (uint16_t)w0;
+            v1 = GU16(ctrl, FC_88);            /* BE0C reload */
+            GSU16(motion, MO_C8) = (uint16_t)v1;/* BE14 delay store */
+            GSU16(motion, MO_CA) = (uint16_t)v1;/* BF50 delay store */
+        }
+        return pc + 4;
+    }
+
+    /* ---- case 1: 0x8017BE38 ---- operand = u16(pc+2) --------------- */
+    case 0x8017be38: {
+        uint32_t v0 = GU16(pc, 2);             /* lhu */
+        int32_t  v1 = (int32_t)GU32(motion, MO_B4);
+        GSU16(motion, MO_C6) = (uint16_t)v0;   /* sh -> +c6 */
+        /* sll16/sra14 == sx16(v0)*4 */
+        v0 = (uint32_t)(((int32_t)(v0 << 16)) >> 14);
+        v0 = v0 + (uint32_t)v1;                /* record ptr (guest) */
+        {
+            const uint8_t *rec = (const uint8_t *)guest_at(v0);
+            int32_t a0 = G16(rec, 2);          /* lh 2(rec) */
+            int32_t c  = (a0 < 2);
+            a0 <<= 4;                          /* delay slot */
+            if (c != 0) {
+                /* BE64 (t<2): +c2 += ctrl88 - cc; +cc = ctrl88;
+                 * j BEA0 — the BE88 tail is NOT executed on this path. */
+                int32_t t1 = GU16(ctrl, FC_88);
+                int32_t t0 = GU16(motion, MO_CC);
+                int32_t w0 = GU16(motion, 0xc2);
+                t1 -= t0;
+                w0 += t1;
+                GSU16(motion, 0xc2) = (uint16_t)w0;
+                GSU16(motion, MO_CC) = GU16(ctrl, FC_88);
+            } else {
+                /* BE88 (t>=2): +cc = t*16; +c2 += t*16 - old_cc */
+                int32_t u1 = GU16(motion, MO_CC);
+                int32_t u0 = GU16(motion, 0xc2);
+                GSU16(motion, MO_CC) = (uint16_t)a0;
+                u1 = a0 - u1;
+                u0 += u1;
+                GSU16(motion, 0xc2) = (uint16_t)u0;
+            }
+        }
+        /* BEA0: +c6++ then keyframe_advance(ctrl,motion) */
+        GSU16(motion, MO_C6) = (uint16_t)(GU16(motion, MO_C6) + 1);
+        keyframe_advance(ctrl, motion);
+        return pc + 4;
+    }
+
+    /* ---- case 2: 0x8017BEBC ---- operand = sx16(ctrl+0xbe) --------- */
+    case 0x8017bebc: {
+        int32_t a0 = G16(ctrl, 0xbe);
+        int32_t c  = (a0 < 2);
+        int32_t v0 = a0 << 4;                 /* BECC delay slot -> v0 */
+        if (c == 0) {
+            /* BF48: +c8 = t*16, j BF4C -> +ca = t*16 (BF50 delay) */
+            GSU16(motion, MO_C8) = (uint16_t)v0;
+            GSU16(motion, MO_CA) = (uint16_t)v0;
+        } else {
+            /* BED0: +c8 = ctrl88 (BED8 delay), j BF4C -> +ca = ctrl88 */
+            uint16_t w = GU16(ctrl, FC_88);
+            GSU16(motion, MO_C8) = w;
+            GSU16(motion, MO_CA) = w;
+        }
+        return pc + 4;
+    }
+
+    /* ---- case 3: 0x8017BEDC ---- operand = sx16(pc+2) -------------- */
+    case 0x8017bedc: {
+        int32_t a0 = G16(pc, 2);
+        int32_t v1 = GU16(motion, MO_CC);
+        int32_t v0 = a0 << 4;
+        int32_t w0 = GU16(motion, 0xc2);
+        v1 += v0;
+        w0 += v0;
+        GSU16(motion, MO_CC) = (uint16_t)v1;
+        GSU16(motion, 0xc2)  = (uint16_t)w0;
+        return pc + 4;
+    }
+
+    /* ---- case 4: 0x8017BF00 ---- ctrl+0xb2 / pc+2 blend ------------ */
+    case 0x8017bf00: {
+        int32_t v1 = G16(ctrl, 0xb2);
+        int32_t a0, v0, c2;
+        if (v1 < 0) v1 += 511;                /* BF08 bgez / BF10 */
+        v1 >>= 9;                             /* sra */
+        a0 = v1 + G16(pc, 2);
+        if (a0 >= 16) {                       /* BF24 bne / BF2C clamp */
+            a0 = 15;
+            c2 = 0;
+        } else {
+            c2 = (a0 < 2);                    /* BF28 delay slti */
+        }
+        v0 = a0 << 4;                         /* BF38 delay slot */
+        if (c2 != 0) {
+            /* BF3C: v0 = ctrl88, j BF4C (delay stores +c8) */
+            v0 = GU16(ctrl, FC_88);
+        }
+        /* BF48 (c2==0) or BF44 delay (c2!=0): +c8 = v0 */
+        GSU16(motion, MO_C8) = (uint16_t)v0;
+        GSU16(motion, MO_CA) = (uint16_t)v0;   /* BF50 delay store */
+        return pc + 4;
+    }
+
+    /* ---- case 5: 0x8017BF54 ---- ctrl+0xc2 -> shared BF64 ---------- */
+    case 0x8017bf54:
+        GSU16(motion, MO_CC) = (uint16_t)(
+            GU16(motion, MO_CC) + ((uint32_t)G16(ctrl, 0xc2) << 4));
+        return pc + 4;
+
+    /* ---- case 6: 0x8017BF60 ---- ctrl+0xbe -> shared BF64 ---------- */
+    case 0x8017bf60:
+        GSU16(motion, MO_CC) = (uint16_t)(
+            GU16(motion, MO_CC) + ((uint32_t)G16(ctrl, 0xbe) << 4));
+        return pc + 4;
+
+    /* ---- case 7: 0x8017BF78 ---- operand = sx16(pc+2) -------------- */
+    case 0x8017bf78: {
+        int32_t a0 = G16(pc, 2) << 4;
+        GSU16(motion, MO_CA) = (uint16_t)(GU16(motion, MO_CA) + a0);
+        GSU16(motion, 0xc2)  = (uint16_t)(GU16(motion, 0xc2) + a0);
+        GSU16(motion, MO_C8) = (uint16_t)(GU16(motion, MO_C8) + a0);
+        return pc + 4;
+    }
+
+    default:
+        return pc + 4;
+    }
 }
 
 /* ================================================================== */
