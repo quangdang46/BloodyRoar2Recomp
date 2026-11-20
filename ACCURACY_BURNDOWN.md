@@ -2801,3 +2801,25 @@ ports5700-5720 detect persistent ph=6 + dump trace. Versus reaches
 ph=8 on 6/6 first-init boots (wedge rarer than ~1/6 or later cycle).
 NEXT: read trace tags70-74 on wedge -> pad path (_g_pad_buffer/PAD_dr/
 select_phase_gate) or confirm bookkeeping.
+
+=== N+195 — versus ph=8 is a FROZEN scene, not a live fight (CORRECTION) ===
+Direct live probe this session overturns N+193's "live fight plays"
+conclusion. On 3 steady versus emus (ports 5600/5620/5730, all gs=8
+ph=8): battle state is 100% FROZEN — ZERO byte diffs over 5-6s across
+battle struct 0x801F0270 (+0x200), fighter cat structs 0x801F55C0/
+0x801F5704 (+0x200 each), anim PCs 0x801F53AC/0x801F54C4, anim-obj
+timer +0xf0. ONLY pad-input scratchpad bytes 0x1f800004-0x1f80000c
+change (controller still polled). Yet battle_config_eval bce_calls
+grows ~6K/s (multi-million totals), cls=0x300, p3=1, fz0=132 frozen.
+Root cause of the MISREAD: earlier "fight is live" verdicts keyed on
+bce_calls growth + gs/ph=8/8 + GPU/frame advance — ALL of which stay
+hot while the battle NEVER commits state. This is exactly the
+"static scene with growing frames/GPU writes is insufficient proof"
+trap. ph=8 is a PRE-FIGHT/handshake state (or a battle_frame tick
+blocked on a gate) — battle_config_eval spins re-checking a condition
+that never satisfies; round timer never ticks, fighters never animate,
+HP/positions never change under mash input. TWO distinct versus
+gates now: (a) rare ph=6 select-confirm input race (agent 6e22e511),
+(b) SYSTEMATIC ph=8 frozen battle on EVERY run reaching ph=8 (agent
+8940a8d1) — (b) is the real gameplay blocker. NEXT: identify the ph=8
+gate owner + the single condition/event/flag that unblocks live combat.
