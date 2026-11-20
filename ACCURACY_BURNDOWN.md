@@ -3036,3 +3036,25 @@ NEXT: reproduce the GPU crash, gp1_dump the tail, identify the pc/ra
 that emitted 0xBFC053C4, trace that function's packet source. Likely a
 deferred IRQ/coroutine writing display-env with a stale fn ptr.
 Versus agent d7cbd5ab running multi-attempt traces.
+
+=== N+203 — GP1 crash word 0xBFC053C4 = pointer into OpenBIOS GPU_sync ===
+Identified the leaked value: 0xBFC053C4 is a CODE address inside
+OpenBIOS_func_1FC052F4 = BIOS `GPU_sync` (openbios.elf STT_FUNC symbol,
+seeds/openbios_elf_seeds.json). Specifically it is the entry of a
+basic block at 0xBFC053C4 (`addiu sp,-24; sw ra,20(sp)` prologue) —
+i.e. a BIOS code/branch pointer, NOT GPU command data. It reached the
+GP1 data port (0x1F801814) as a command word -> cmd=(val>>24)&0x3F=
+0x3F -> psx_fatal_halt.
+=> A BIOS code pointer leaked into the GPU command stream. This is
+memory corruption / wrong-pointer, NOT a missing GP1 opcode: real PSX
+HW does not halt on undefined GP1 commands (the GPU just doesn't
+decode them), so the recomp's psx_fatal_halt on unknown GP1 (gpu.c:5963)
+is stricter than hardware — BUT the upstream leak is the real bug and
+must be found first (do NOT just tolerate the command; that would mask
+the corruption and could desync display state).
+The leak is timing-dependent (N+202): a stale/uninitialized GPU packet
+slot holds a BIOS return/branch pointer that only gets submitted when
+the deferred-interrupt/coroutine path lands wrong. NEXT: catch the
+writer PC via gp1_dump on a crashing run; the pc/ra names the packet-
+building function; trace where its command source read the BIOS ptr.
+Versus agent d7cbd5ab on multi-attempt gp1 traces.
