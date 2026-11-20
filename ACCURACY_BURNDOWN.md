@@ -2410,3 +2410,22 @@ NEXT: fresh run + fntrace_arm on 0x80195BD0(DeliverEvent)/0x80196370
 check EvCB idx8 status + which TCB blocked on what handle. ALSO:
 pre-existing CDDBG fprintf in cdrom.c + PSX_CB7 in game/cd.c still
 need removal per no-printf rule.
+
+=== N+176 — wedge narrowed: game-side chunk-issue path not firing ===
+45941e9e: versus gs=8 ph=8 frame ~72154 (race — gets further than 3846).
+BIOS event layer EXONERATED (WaitEvent/TestEvent are poll loops can't
+miss persistent flag; DeliverEvent sets 0x4000 persistent). EvCB8 clean
+(enabled, no waiters). Device clean. REAL: loader stops issuing CD cmds
+after last Pause(0x09)@frame72111 — game re-arms SAME DMA request every
+frame (cd_cmd_queue_load 0x80192634 -> DPCR|0x08000000 + ch regs
+MADR=0x801e82dc BCR=0x820 armed never transferring) but never issues
+next Setloc+ReadN chunk. p1ani/p2ani loaded init but p1pc/p2pc anim PCs
+frozen 75K+ frames. Suspects: (a) cmd-issue path pc=0x80196FC4 stopped
+invoked after Pause; (b) deferred CD coroutine 0x801bcd50 (resume
+0x8019a87c) only polls status, gated on flag Pause-handler should set;
+(c) chan_job_pump/job counter @0x801be768=0xffffffff idle — neg->pos
+transition that fires deferred job fn @block+0x44; (d) asset descriptor
+table @0x801B8438 stride0x1C 'load complete' flag stuck. NEXT: find fn
+at 0x80196FC4 + its gate; trace job-counter transition; check whether
+Pause-completion handler sets the wake flag the next-chunk issue waits
+on. Wedge emu live port5410 frame~147000 post-mortem.
