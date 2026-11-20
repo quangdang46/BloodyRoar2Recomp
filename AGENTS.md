@@ -139,6 +139,25 @@ interrupt/guest-state behavior.
 A delegated function is **not finished** — it is "generated-authoritative,
 clean wrapper pending". Track it for later faithful porting.
 
+> **⚠ UNSAFE PORT PATTERN — do not reconstruct guest CPS frames around BIOS
+> services.** A clean port that rebuilds a whole guest function's prologue
+> (DI/EI crit sections, `$ra`-cell saves, kernel-object setup) and then
+> tail-calls BIOS services via `bios_svc6(...)` + `call_guest(0x80199fe0)`
+> + a synthetic `br2_guest_ra_set(<jal-link>)` token is **NOT faithful** and
+> has broken versus boot twice (commit `13576ce` reverted `cd_cmd_sequence`,
+> `cd_kobj_init_a/b`, `cd_subsys_init_full`, `cd_mode_reset_seq`,
+> `cd_mode_apply_seq`, `cd_chan_init_trio`). The generated CPS frame supplies
+> a live `$ra` caller-token **and** live `a0–a3` forwarding that clean C
+> cannot reproduce; OpenBIOS kernel-object/event services (`B0/0x57`,
+> `B0/0x15`, `B0/0x12`, event flags) reject or misbehave → deterministic
+> `FAIL-FAST unknown dispatch` or a `TestEvent` livelock. **Rule:** a port is
+> safe only if it is (a) pure guest logic with no BIOS/kernel boundary, or
+> (b) a *thin* trampoline that forwards straight to `bios_svc6` exactly like
+> the guest `FUN_…` trampoline does (see `game/bind.c` `FUN_8019b380` =
+> `bios_svc6(0xb0,0x08,…)`, and `bind_bios_call_live` which manages
+> `cpu->gpr[31]` per-jal). Anything that *sequences* BIOS kernel calls inside
+> a reconstructed guest frame stays `br2_call_generated`.
+
 ---
 
 ## 5. NO STUBS — the constitution applies here too
