@@ -399,7 +399,7 @@ static void freeze_dump_device_state_json(FILE *f) {
                        "\"irq_en\":\"0x%02X\",\"irq_fl\":\"0x%02X\",\"pend_cmd\":\"0x%02X\","
                        "\"pend_ph\":%d,\"pend_act\":%d,\"sec_avail\":%d,\"sec_pos\":%d,"
                        "\"sec_size\":%d,\"reading\":%d,\"last_lba\":%d,\"last_frame\":%u,"
-                       "\"ring_drop\":%llu,\"bfrd_set\":%llu,\"bfrd_clr\":%llu,"
+                       "\"ring_drop\":%llu,\"ring_part\":%llu,\"bfrd_set\":%llu,\"bfrd_clr\":%llu,"
                        "\"int1_pended\":%llu,\"int1_lost\":%llu},",
                     (unsigned long long)cd->seq, cd->stat_reg, cd->request_reg,
                     cd->irq_enable, cd->irq_flag, cd->pending_cmd,
@@ -407,6 +407,7 @@ static void freeze_dump_device_state_json(FILE *f) {
                     cd->sector_read_pos, cd->sector_size, cd->reading,
                     cd->last_sector_lba, (unsigned)cd->last_sector_frame,
                     (unsigned long long)cd->ring_dropped,
+                    (unsigned long long)cd->ring_partial,
                     (unsigned long long)cd->bfrd_set_count,
                     (unsigned long long)cd->bfrd_clear_count,
                     (unsigned long long)cd->int1_pended,

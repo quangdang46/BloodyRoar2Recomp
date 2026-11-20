@@ -188,7 +188,29 @@ typedef struct { uint8_t data[SECTOR_BUFFER_SIZE]; int size; int pos; } CdSector
 static CdSectorBuf s_sector_ring[CDROM_NUM_SECTOR_BUFFERS];
 static int s_ring_read;      /* slot the guest is draining */
 static int s_ring_write;     /* slot most recently filled */
+/* Overwrite accounting, split by how much of the previous occupant the
+ * guest actually consumed:
+ *
+ *   s_ring_dropped  -- slot overwritten with pos == 0: the guest never
+ *                      read a single byte of that sector. That is the only
+ *                      UNAMBIGUOUS loss -- a sector the drive delivered and
+ *                      the guest skipped entirely ("guest a ring behind").
+ *   s_ring_partial  -- slot overwritten mid-buffer (0 < pos < size).
+ *                      Dominated by a BENIGN case: whole-sector mode
+ *                      (SetMode bit5, e.g. BR2's 0xA0) hands the guest a
+ *                      2340-byte buffer of which the file reader consumes
+ *                      only header(12) + user data(2048) = 2060 bytes; the
+ *                      trailing 280-byte EDC/ECC tail is format padding the
+ *                      game never reads (same shape as Tomba's documented
+ *                      raw-sector path). Counting pos<size as "dropped"
+ *                      made ring_dropped ~= sectors delivered -- pure noise
+ *                      that masqueraded as drain starvation (N+183).
+ *
+ * Genuine mid-sector abandonment (guest started a sector, got lapped
+ * before finishing) also lands in s_ring_partial; it stays observable
+ * without false-alarming on every healthy whole-sector load. */
 static uint64_t s_ring_dropped;   /* unread slot overwritten: guest a ring behind */
+static uint64_t s_ring_partial;   /* partially-read slot overwritten (format tail) */
 
 
 #define RB_ (s_sector_ring[s_ring_read])
@@ -1508,7 +1530,10 @@ static int read_sector_at(int min, int sec, int sect) {
     if (delivery.data_delivered) {
         int wi = (s_ring_write + 1) % CDROM_NUM_SECTOR_BUFFERS;
         wb = &s_sector_ring[wi];
-        if (wb->size > 0 && wb->pos < wb->size) s_ring_dropped++;
+        if (wb->size > 0) {
+            if (wb->pos == 0) s_ring_dropped++;
+            else if (wb->pos < wb->size) s_ring_partial++;
+        }
         memset(wb->data, 0, sizeof(wb->data));
         if (mode_reg & 0x20) {
             if (have_raw) {
@@ -3223,6 +3248,7 @@ void cdrom_debug_snapshot(CDROMDebugState* out) {
     out->int1_lost = s_int1_lost;
     out->ring_starved = s_ring_starved;
     out->ring_dropped = s_ring_dropped;
+    out->ring_partial = s_ring_partial;
     out->accel_consumer_waits = s_accel_consumer_waits;
     out->accel_consumer_wait_cycles = s_accel_consumer_wait_cycles;
     out->int1_pending_now = pending_dataready;

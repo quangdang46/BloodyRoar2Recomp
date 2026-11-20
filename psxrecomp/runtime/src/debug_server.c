@@ -5714,7 +5714,7 @@ static void handle_cdrom_state(int id, const char *json)
              "\"read_hold_cycles\":%llu,\"read_hold_events\":%llu,"
              "\"int1_pended\":%llu,\"int1_lost\":%llu,\"int1_pending_now\":%u,"
              "\"accel_consumer_waits\":%llu,\"accel_consumer_wait_cycles\":%llu,"
-             "\"ring_starved\":%llu,\"ring_dropped\":%llu,"
+             "\"ring_starved\":%llu,\"ring_dropped\":%llu,\"ring_partial\":%llu,"
              "\"bfrd_set\":%llu,\"bfrd_clear\":%llu,"
              "\"filter_file\":%u,\"filter_channel\":%u,\"muted\":%u,"
              "\"seek_msf\":[%u,%u,%u],"
@@ -5738,6 +5738,7 @@ static void handle_cdrom_state(int id, const char *json)
              (unsigned long long)s.accel_consumer_wait_cycles,
              (unsigned long long)s.ring_starved,
              (unsigned long long)s.ring_dropped,
+             (unsigned long long)s.ring_partial,
              (unsigned long long)s.bfrd_set_count,
              (unsigned long long)s.bfrd_clear_count,
              s.filter_file, s.filter_channel, s.muted,

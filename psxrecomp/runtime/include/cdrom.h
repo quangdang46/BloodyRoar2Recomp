@@ -202,10 +202,13 @@ typedef struct CDROMDebugState {
      * Nonzero is healthy (the guest was busy and the enhancement waited);
      * int1_lost rising while the speed divisor != 1 is the regression. */
     /* Sector-ring tripwires: starved = a drain found its slot exhausted
-     * while the writer had moved on (must stay 0); dropped = an unread slot
-     * was overwritten because the guest fell a full ring behind. */
+     * while the writer had moved on (must stay 0); dropped = a slot was
+     * overwritten before the guest consumed ANY of it (skipped sector --
+     * guest a full ring behind). partial = slot overwritten mid-buffer;
+     * dominated by the benign whole-sector EDC-tail (see cdrom.c). */
     uint64_t ring_starved;
     uint64_t ring_dropped;
+    uint64_t ring_partial;
     uint64_t accel_consumer_waits;
     uint64_t accel_consumer_wait_cycles;
     uint8_t  int1_pending_now;
