@@ -772,12 +772,14 @@ undefined4 cd_busy_wait(int param_1)
 int cd_dispatch_tbl4(int param_1,uint32_t param_2)
 
 {
-  /* IRQ/coroutine-boundary function: clean-C body cannot supply the
-   * live guest register file the deferred CD coroutine needs, and its
-   * MMIO busy-waits lack per-block interrupt checks. Delegate to the
-   * generated MIPS (behavioral oracle) — same contract as the other
-   * read-path functions already delegated. */
-  return (int)br2_call_generated(0x8019a6e0u,param_1, param_2, 0, 0);
+  /* Faithful port of generated 0x8019a6e0 (CPS chain verified): pure
+   * indirect dispatch — tbl = *0x801BDDA0, fn = *(tbl+4), jalr fn with
+   * the caller's a0/a1 (a2/a3 are caller leftovers; call_guest zeroes
+   * them, identical to the old (p1,p2,0,0) thunk). No waits, no MMIO,
+   * no deferred-coroutine state — the IRQ-boundary comment was stale. */
+  uint32_t tbl = CDB32G(0x801bdda0);
+  uint32_t fn = br2_ld32(tbl + 4);
+  return (int)call_guest(fn,(uint32_t)param_1,param_2);
 }
 
 /* ======== 0x801985c4 ======== */
@@ -978,11 +980,12 @@ int32_t cd_file_open_b(uint32_t param_1)
 /* cd_read_param_set — CD read setup: arg -> @0x801feb38, -1 -> @0x801feb28,
  * cd_dispatch_tblc dispatch, cd_cmd_sequence(0x20000001,&block), bios_table_tramp(0).
  * Disasm 0x80199f30-0x80199f74. */
-extern uint32_t cd_cmd_sequence(uint32_t,uint32_t,uint32_t,uint32_t);
+extern void cd_cmd_sequence(uint32_t,uint32_t,uint32_t,uint32_t);
 void cd_read_param_set(uint32_t param_1)
 {
-  /* gpr-forwarding trampoline calls inside need live cpu->gpr that clean
-   * callers cannot supply; delegate whole body to generated MIPS. */
+  /* Tail-calls bios_table_tramp 0x80199fe0 (B0/0x5b) — the same BIOS
+   * trampoline boundary family that regressed boot in e9fc366/c784bf1.
+   * Delegate whole body to generated MIPS. */
   br2_call_generated(0x80199f30u,param_1,0,0,0);
 }
 
@@ -1098,23 +1101,15 @@ extern void cd_kobj_init_a(void);
 extern void cd_kobj_init_b(void);
 extern void cd_subchan_table_install(void);
 extern void bios_tramp_b015(uint32_t,uint32_t);
-uint32_t cd_cmd_sequence(uint32_t param_1,uint32_t param_2,uint32_t param_3,uint32_t param_4)
+void cd_cmd_sequence(uint32_t param_1,uint32_t param_2,uint32_t param_3,uint32_t param_4)
 {
-  /* Faithful port of generated 0x8019a00c (CPS chain verified):
-   * kobj_init_a, DI, kobj_init_b, EI, bios_table_tramp(0x80199fe0
-   * B0/0x5b with a0=0), cd_subchan_table_install, bios_tramp_b015
-   * (0x8019a320 B0/0x15) with the caller's a0-a3, flag @0x801bcc90=1,
-   * return 1. All callees are clean ports or bios_svc6 trampolines —
-   * no live-gpr or IRQ-boundary dependency remains. */
-  cd_kobj_init_a();
-  FUN_8018e300();                                /* DI */
-  cd_kobj_init_b();
-  FUN_8018e310(0);                               /* EI */
-  (void)call_guest(0x80199fe0u,0,0);             /* bios_table_tramp, a0=0 */
-  cd_subchan_table_install();
-  (void)bios_svc6(0xb0,0x15,param_1,param_2,param_3,param_4); /* 0x8019a320 */
-  DB32(0x801bcc90) = 1;
-  return 1;                                     /* guest v0 = 1 */
+  /* e9fc366 clean port of 0x8019a00c regressed early boot (unknown
+   * dispatch @0x80197028, frame ~171): the inline bios_svc6 B0/0x57
+   * kernel-object path with synthetic $ra tokens does not reproduce the
+   * generated caller-token/arg-forwarding semantics. Delegate whole
+   * body to generated MIPS until the BIOS kernel boundary is modeled
+   * faithfully. */
+  br2_call_generated(0x8019a00c,param_1,param_2,param_3,param_4);
 }
 
 /* cd_channel_main_init — CD channel main init: crit-in, flag=0, 9a340/9a330
@@ -1329,24 +1324,12 @@ int32_t cd_subsystem_init(void)
 extern void bios_tramp_a044(void);
 void cd_kobj_init_a(void)
 {
-  uint32_t ra0 = clean_caller_ra();
-  uint32_t obj, sub;
-  int i;
-  extern uint32_t bios_svc6(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
-  DB32(0x801feb60) = ra0;
-  FUN_8018e300();                                  /* DI */
-  br2_guest_ra_set(0x8019a410);                    /* jalr link addr */
-  /* a0-a3: the generated body forwarded whatever live regs the caller
-   * left; every existing caller reaches this via the (0,0,0,0) thunk,
-   * and B0/0x57 ignores them — pass 0 explicitly. */
-  obj = bios_svc6(0xb0,0x57,0,0,0,0);
-  sub = br2_ld32(obj + 0x16c);
-  for (i = 0; i < 9; i++)
-    br2_st32(sub + 0x62c + (uint32_t)i * 4, 0);
-  br2_guest_ra_set(0x8019a43c);                    /* jal link before 957f0 */
-  bios_tramp_a044();
-  FUN_8018e310(0);                                 /* EI */
-  br2_guest_ra_set(ra0);
+  /* e9fc366 clean port of 0x8019a3f0 regressed early boot: the inline
+   * bios_svc6 B0/0x57 kernel-object alloc with a synthetic $ra token
+   * corrupts kernel-object state (boot dies in the 0x801970xx CD-event
+   * wait -> unknown dispatch). Delegate whole body to generated MIPS —
+   * the BIOS kernel boundary needs live gpr/ra semantics clean C lacks. */
+  br2_call_generated(0x8019a3f0,0,0,0,0);
 }
 
 /* cd_kobj_init_b — kernel-object init B. Faithful port of generated
@@ -1358,21 +1341,8 @@ void cd_kobj_init_a(void)
  * for the OpenBIOS caller-token check, same as cd_kobj_init_a. */
 void cd_kobj_init_b(void)
 {
-  uint32_t ra0 = clean_caller_ra();
-  uint32_t obj, sub;
-  int i;
-  DB32(0x801feb50) = ra0;
-  FUN_8018e300();                                  /* DI */
-  br2_guest_ra_set(0x8019a398);                    /* jalr link addr */
-  obj = bios_svc6(0xb0,0x57,0,0,0,0);
-  sub = br2_ld32(obj + 0x16c);
-  DB32(0x801feb58) = sub + 0x884;
-  DB32(0x801feb5c) = sub + 0x894;
-  for (i = 0; i < 11; i++)
-    br2_st32(sub + 0x594 + (uint32_t)i * 4, 0);
-  br2_guest_ra_set(0x8019a3d4);                    /* jal link before 957f0 */
-  bios_tramp_a044();
-  br2_guest_ra_set(ra0);
+  /* Same e9fc366 regression as cd_kobj_init_a — delegate to generated. */
+  br2_call_generated(0x8019a378,0,0,0,0);
 }
 
 /* bios_tramp_a044 — BIOS svc A0/0x44 trampoline. */
@@ -1467,20 +1437,18 @@ void cd_handler_triple_install(void)
  * crit-in, cd_ext_table_init(0x8019b7e0), FUN_8019b380(0xf0000009,0x20,
  * 0x2000,0) -> FUN_8019b390 -> @0x801bde38, crit-out.
  * Disasm 0x8019b308-0x8019b370. */
-extern void cd_ext_table_init(uint32_t);
+extern int32_t cd_ext_table_init(uint32_t);
 extern uint32_t FUN_8019b380(uint32_t,uint32_t,uint32_t,uint32_t);
 extern void FUN_8019b390(uint32_t);
 extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
-/* cd_ext_init_once — delegate whole body to generated MIPS (0x8019b308).
- * Its FUN_8019b380 OpenEvent(B0/0x08) + FUN_8019b390 EnableEvent(B0/0x0C)
- * sequence must run with live guest gpr/ra: the BIOS `jr 0xB0` return value
- * ($v0 event handle) does not propagate correctly through the clean->
- * br2_call_generated->generated->BIOS-call boundary, so the CD event handle
- * stored @0x801bde38 came back as a code pointer (0x8019B0FC) instead of a
- * 0xF100000x EvCB handle -> TestEvent spins forever (session-18 finding). */
 void cd_ext_init_once(void)
 {
-  br2_call_generated(0x8019b308u,0, 0, 0, 0);
+  /* OpenEvent/EnableEvent via FUN_8019b380/390 -> bios_svc6 needs the
+   * guest $ra caller-token semantics the generated CPS frame supplies;
+   * the clean port livelocked versus boot in the CD-event wait. Delegate
+   * whole body to generated MIPS. (The 0x8019B7E0 callback arg was
+   * verified against generated: a0 = 0x801A0000-0x4820.) */
+  br2_call_generated(0x8019b308u,0,0,0,0);
 }
 
 /* cd_chan_block_boot — channel block @0x801febe0 init: clears +0/4/8/0xc/
@@ -1555,14 +1523,12 @@ void cd_read_param_block(uint32_t a0,uint32_t a1,uint32_t a2)
   *(uint32_t *)guest_at(0x801fc6b4) = a2;
 }
 
-/* cd_ext_table_init — delegate whole body to generated MIPS (0x8019bee0).
- * It is called from inside generated cd_ext_init_once's jal chain; routing it
- * through the clean cd_dispatch_tbl4 wrapper nests a clean->generated->clean
- * hop that loses the continuation back to block_8019B338 (the OpenEvent
- * call), so the CD event is never opened and TestEvent spins forever. */
-void cd_ext_table_init(uint32_t a0)
+/* cd_ext_table_init — faithful port of generated 0x8019bee0 (CPS chain
+ * verified): tail-dispatch cd_dispatch_tbl4(4, a0) — a0=4, a1=caller a0.
+ * Guest v0 = the dispatch result, propagated through the int return. */
+int32_t cd_ext_table_init(uint32_t a0)
 {
-  br2_call_generated(0x8019bee0u,a0, 0, 0, 0);
+  return cd_dispatch_tbl4(4,(uint32_t)a0);
 }
 
 /* cd_chan_block_init — indirect dispatch tbl+0x14: call_guest(fn,a0,a1). */
@@ -1578,13 +1544,10 @@ void cd_chan_block_init(int32_t a0,uint32_t a1)
 extern void cd_mode_apply_wrap(void);
 void cd_mode_reset_seq(void)
 {
-  /* Faithful port of generated 0x8019e39c (CPS chain verified):
-   * DI, cd_mode_apply_wrap (0x8019e410 B0/0x4b), bios_table_tramp
-   * 0x80199fe0 with a0=0, EI. */
-  FUN_8018e300();                                /* DI */
-  cd_mode_apply_wrap();
-  (void)call_guest(0x80199fe0u,0,0);             /* bios_table_tramp, a0=0 */
-  FUN_8018e310(0);                               /* EI */
+  /* c784bf1 clean port of 0x8019e39c regressed versus boot (same
+   * bios_table_tramp/BIOS-svc boundary family as the e9fc366 break):
+   * delegate whole body to generated MIPS. */
+  br2_call_generated(0x8019e39cu,0,0,0,0);
 }
 
 /* cd_dir_reset — CD dir reset: a1=*0x801fc6c4, clears
@@ -1614,20 +1577,9 @@ extern void FUN_8019e55c(void);
 extern int32_t cd_status_bcc90(void);
 void cd_mode_apply_seq(uint32_t a0)
 {
-  /* Faithful port of generated 0x8019e330 (CPS chain + branch verified):
-   * bios_table_tramp 0x80199fe0 (a0=0), DI, v0=cd_status_bcc90();
-   * if (!v0) arg=0; cd_mode_apply(arg) (0x8019e400 B0/0x4a),
-   * FUN_8019e5cc, FUN_8019e4c8, FUN_8019e55c, EI. */
-  uint32_t arg = a0;
-  (void)call_guest(0x80199fe0u,0,0);             /* bios_table_tramp, a0=0 */
-  FUN_8018e300();                                /* DI */
-  if (cd_status_bcc90() == 0)
-    arg = 0;
-  cd_mode_apply(arg);
-  FUN_8019e5cc();
-  FUN_8019e4c8();
-  FUN_8019e55c();
-  FUN_8018e310(0);                               /* EI */
+  /* c784bf1 clean port of 0x8019e330 regressed versus boot — delegate
+   * whole body to generated MIPS (BIOS trampoline boundary). */
+  (void)br2_call_generated(0x8019e330u,a0,0,0,0);
 }
 
 /* bios_tramp_a070 — BIOS svc A0/0x70 trampoline. */
@@ -3966,13 +3918,9 @@ int cd_crit_c003(void)
 
 int cd_chan_init_trio(void)
 {
-  /* Faithful port of generated 0x8019a12c (CPS chain verified):
-   * FUN_8019a300 (B0/0x13), bios_table_tramp 0x80199fe0 with a0=0,
-   * FUN_8019a350 (indirect call through cell 0x801FEB58), return 1. */
-  FUN_8019a300();
-  (void)call_guest(0x80199fe0u,0,0);             /* bios_table_tramp, a0=0 */
-  FUN_8019a350();
-  return 1;                                     /* guest v0 = 1 */
+  /* c784bf1 clean port of 0x8019a12c regressed versus boot — delegate
+   * whole body to generated MIPS (BIOS trampoline boundary). */
+  return (int)br2_call_generated(0x8019a12cu,0,0,0,0);
 }
 
 /* ======== 0x80191978 ======== */
@@ -4400,19 +4348,10 @@ extern void FUN_8019ad70(uint32_t);
 int cd_subsys_init_full(uint32_t param_1,uint32_t param_2,uint32_t param_3,
                  uint32_t param_4)
 {
-  /* Faithful port of generated 0x8019a09c (CPS chain verified):
-   * identical prologue sequence to cd_cmd_sequence but the tail call
-   * is 0x8019a2f0 (B0/0x12 trampoline) with the caller's a0-a3.
-   * Returns 1; flag @0x801bcc90 set. */
-  cd_kobj_init_a();
-  FUN_8018e300();                                /* DI */
-  cd_kobj_init_b();
-  FUN_8018e310(0);                               /* EI */
-  (void)call_guest(0x80199fe0u,0,0);             /* bios_table_tramp, a0=0 */
-  cd_subchan_table_install();
-  (void)bios_svc6(0xb0,0x12,param_1,param_2,param_3,param_4); /* 0x8019a2f0 */
-  DB32(0x801bcc90) = 1;
-  return 1;
+  /* e9fc366 clean port of 0x8019a09c regressed early boot (same root
+   * cause as cd_kobj_init_a/b — inline B0 BIOS svc6 path). Delegate
+   * whole body to generated MIPS. */
+  return (int)br2_call_generated(0x8019a09cu,param_1,param_2,param_3,param_4);
 }
 
 /* ======== 0x8019ac04 ======== */
