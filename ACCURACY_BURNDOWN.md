@@ -2687,3 +2687,24 @@ commit (5f3671d). LESSON: ported table/struct base constants need the
 same generated-diff rigor as the audit sweep — caught in review, not
 runtime. Left generated per §4: 0x801A2184 MMIO poll, GTE matrix/RTPS,
 SIO seq 0x801A1B50, indirect jalr. Renames/fnmap/clean_table regen.
+
+=== N+189 — clean-port regression scare: boot wedge is NONDETERMINISTIC ===
+4153e599 reported every fresh boot wedging at gs=0 in BIOS waitEvent
+during boot file loads, correlating with 5f3671d ports. INVESTIGATION:
+my own fresh boot on the SAME binary (14:12, includes ports) progressed
+past gs=0 to gs=3 frame~3311 healthy — NOT wedged. Agent's own run had
+reached frame 25K on the new binary earlier. CONCLUSION: gs=0 boot wedge
+is a PRE-EXISTING nondeterministic event-delivery race (this project's
+recurring class), NOT a deterministic regression from the 4 ports.
+cd_chan_cb_set base re-verified vs generated (0x801BDDF4 correct).
+CORRECTION from agent: gs=8 ph=8 is NOT bfsm phase — 0x1f800001 is a
+SHARED dispatcher byte; battle_frame @0x8014cdd0 owns it in steady
+fight (L_case8), calls battle_config_eval x2 per frame. pbd_calls=0 is
+EXPECTED (post_battle_dispatch unreachable while battle_frame owns byte).
+Earlier "frozen" dumps were FALSE NEGATIVES — side blocks/anim PCs are
+versus-SELECT state not fight state; g_bce_calls=1.44M proves sim was
+ALIVE. CORRECT fight monitors: battle_frame stack frame guest_sp-0x180
+(T records +0x40 flags/+0x10/+0x1c/+0x24 state, ctx +0x18, timer +0x2c
+÷50=sec), engine task pools 0x801f10c0/0x801f10c4, g_bce_calls/cls/p3,
+round-end = byte->0xf0/0xf1/0xff -> battle_frame returns -> gs trans.
+NEXT: versus round verify with CORRECT monitors + boot-retry on wedge.
