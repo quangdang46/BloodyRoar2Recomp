@@ -2983,3 +2983,30 @@ then a later step cleared them. FC_ANI(+0x30) being NULL while FC_PARAM
 for the versus-selected fighter didn't fully commit. NEXT: runtime wtrace
 on ctrl+0x1c/+0x20 writers + read ctrl_param table d+0x14/d+0x18 during
 the versus transition; diff vs arcade. Versus agent d7cbd5ab on it.
+
+=== N+201 — versus ctrl+0x1C/+0x20 ARE bound; new crash = GPU GP1 cmd 0x3F ===
+gwatch ring (mprotect guest-RAM write watch, catches clean-C guest_at()
+stores that wtrace misses) on versus run :4740, crash frame 1801:
+- ctrl+0x1C/+0x20 for BOTH sides WERE written during init — 12 writes to
+  0x1F800104/0x1F800108 (P1) and 0x1F80020C/0x1F800210 (P2) captured.
+  store_pc=0x80135764 = inside burst_slot_active (0x80135724) — a block
+  copy that commits the fighter record/state into the ctrl (values are
+  heap ptrs 0x801e1b3c/0x801e23ac/0x801e2c1c/0x801e348c). store_pc
+  0x8019A48C = CD-side path also writes the range.
+  => The earlier "ctrl+0x1C/+0x20 NULL" observation was the FROZEN
+  variant / a pre-bind frame, NOT the steady state. slot_apply
+  (action.c:439) remains the semantic binder; burst_slot_active is the
+  physical writer that lands the record bytes.
+- NEW crash signature (replaces 0x01000000 dispatch): `GPU GP1 unknown
+  command 0x3F (word 0xBFC053C4)` frame 1801, pc=0 epc=0x8019A600
+  ra=0x80126664 (vsync/BIOS ctx). last_func=0x1FC05190 last_store_pc=
+  0xBFC05194 (BIOS addrs). The GPU model rejects GP1 cmd 0x3F — versus
+  now reaches actual GPU command submission, i.e. PAST the prim-list
+  dispatch that used to FAIL-FAST. Whether this is progress (my 90ef95d
+  bail fix let the load complete -> ctrl bound -> reached rendering) or
+  a different versus path is TBD; the 0x01000000 dispatch is GONE in
+  this run.
+NEXT: identify GP1 cmd 0x3F source — is the game/BIOS writing a real
+GP1 command the model lacks, or a corrupted/misaligned GPU packet from
+the versus scene? Check gpu.c GP1 decode vs the 0xBFC053C4 word and the
+GPU command ring at crash. Versus agent d7cbd5ab instrumenting.
