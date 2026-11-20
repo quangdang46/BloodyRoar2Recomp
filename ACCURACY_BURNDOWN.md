@@ -2558,3 +2558,20 @@ bind.c glue. AUDIT CAMPAIGN COMPLETE: every game/*.c swept >=1x.
 FOLLOW-UP NEEDED: save.c has 262 fns, only ~12 insn-verified — inverted-
 compare bug class suggests sweeping remaining slt+beq find-first-match
 loops. entry_setup s4 caveat still unresolved (caller-saved passthrough).
+
+=== N+183 — versus wedge ROOT: CD buffer-drain ack starved ===
+89c54ee0: versus legitimately routes to post_battle_dispatch (09b=0x02,
+bfsm case-8 else branch menu.c:751) — NOT a dispatch bug. Battle sim
+never ticks because versus stage/char .STG/.ANI/.ACT CD loads never
+complete. Drive produces sectors (last_sector.lba=8769 normal stream)
+but guest drain starved: ring_dropped=523, bfrd_set=1274 vs bfrd_clear=13
+— clear_sector_buffer/cdrom_dma_read on request_reg&BFRD&&rb_available()
+(cdrom.c:3145) almost never runs -> ring slots overwritten unread ->
+corrupt records -> never-satisfied load-complete flag (wedge) OR
+0x01000000 heap-tag jump (crash frame1398). This is the documented
+CD-drain blocker (AGENTS.md §8, N+173/175/176/182). Fix in cdrom.c
+INT1/data-ready sequencing (deliver_read_sector 1920-1971,
+pending/present_pending_dataready 2760-2844, REQUEST BFRD 3038-3068,
+cdrom_dma_read/ready 3142-3169) OR deferred cd_ctx_restore->
+cd_chan_full_init->cd_intc_dispatch coroutine failing to resume during
+multi-file burst. Emu crashed pc=0 on port5440 (post-mortem available).
