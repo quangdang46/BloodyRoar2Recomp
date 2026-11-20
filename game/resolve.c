@@ -1452,7 +1452,7 @@ uint * matrix_vec3_apply(undefined4 *param_1,uint *param_2);
 extern uint8_t *g_DAT_1f8003a0,*g_DAT_1f8003c0;
 #define DAT_1f8003a0 (*g_DAT_1f8003a0)
 #define DAT_1f8003c0 (*g_DAT_1f8003c0)
-typedef uint8_t *evhandler_t(uint8_t *ctrl, uint8_t *motion);
+typedef uint8_t *evhandler_t(uint8_t *ctrl, uint8_t *motion, uint32_t pc_g);
 extern evhandler_t *PTR_FUN_801b4e68[];
 extern void FUN_801851d8();
 extern int trig_cos();
@@ -3096,29 +3096,31 @@ void ev_stream_dispatch(byte *param_1,byte *param_2)
   byte *pbVar1;
   extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
   extern uint32_t br2_gaddr(const void *p);
-  pbVar1 = (byte *)guest_at(*(uint32_t *)(param_2 + 0x84));
+  /* Guest 0x8017ea7c carries the stream pc in $a2/$v0 through the
+   * handler loop and NEVER writes motion+0x84 — that field is only
+   * updated by handlers themselves (EV3 wait resume, action_switch).
+   * Mirror that: keep pc in a local guest address, pass it to each
+   * handler explicitly, and leave motion+0x84 untouched here. */
+  uint32_t pc_g = *(uint32_t *)(param_2 + 0x84);
   if (*(short *)(param_2 + 0x90) < 1) {
     for (;;) {
-      uint8_t op = (uint8_t)*pbVar1;
-      uint32_t pcg = *(uint32_t *)(param_2 + 0x84);
+      uint8_t op = *(uint8_t *)guest_at(pc_g);
       uint32_t npc_g = 0;
       if (op < 24) {
-        pbVar1 = (byte *)PTR_FUN_801b4e68[op]((uint8_t *)param_1,(uint8_t *)param_2);
+        pbVar1 = (byte *)PTR_FUN_801b4e68[op]((uint8_t *)param_1,(uint8_t *)param_2, pc_g);
         npc_g = pbVar1 ? guest_of(pbVar1) : 0;
       } else {
         /* Opcodes >=24 have no clean-C port; the guest table at 0x801b4e68
          * holds their real handlers (48+ entries). Dispatch through the
          * recompiled guest code: h(ctrl,motion,pc) -> next pc in $v0. */
         uint32_t h = *(uint32_t *)guest_at(0x801b4e68u + (uint32_t)op * 4);
-        uint32_t pc = *(uint32_t *)(param_2 + 0x84);
-        uint32_t r = br2_call_generated(h, br2_gaddr(param_1), br2_gaddr(param_2), pc, 0);
-        npc_g = r;
-        pbVar1 = r ? (byte *)guest_at(r) : (byte *)0;
+        npc_g = br2_call_generated(h, br2_gaddr(param_1), br2_gaddr(param_2), pc_g, 0);
+        pbVar1 = npc_g ? (byte *)guest_at(npc_g) : (byte *)0;
       }
       { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-        decomp_trace_record(60, pcg, (uint32_t)br2_gaddr(param_2), op, npc_g); }
-      if (pbVar1 == (byte *)0x0) break;
-      *(uint32_t *)(param_2 + 0x84) = guest_of(pbVar1);
+        decomp_trace_record(60, pc_g, (uint32_t)br2_gaddr(param_2), op, npc_g); }
+      if (npc_g == 0) break;
+      pc_g = npc_g;
     }
   }
   else {

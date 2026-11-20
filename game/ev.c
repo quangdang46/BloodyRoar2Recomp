@@ -1137,12 +1137,15 @@ switchD_8017aedc_default:
 
 /* ---- guest dispatch table 0x801b4e68 ----
  * Guest handlers are called as h(ctrl, motion) with the stream ptr
- * passed residually in a2 = motion+0x84; return = next stream ptr
- * (stored back to motion+0x84) or NULL to end. Our handlers take pc
- * explicitly, so each table entry wraps the semantic handler reading
- * pc from motion+0x84 — identical semantics. Slots 22/23 are the
- * handlers 0x80141b78/0x80141d2c ported below. */
-typedef uint8_t *evhandler_t(uint8_t *ctrl, uint8_t *motion);
+ * passed residually in a2 (the stream pc); return = next stream ptr
+ * in $v0 or 0 to end. Our handlers take pc explicitly as pc_g —
+ * identical semantics, and motion+0x84 is left to the handlers.
+ * Slots 22/23 are the
+ * handlers 0x80141b78/0x80141d2c ported below.
+ * pc_g = guest stream pc passed explicitly like the guest's $a2 —
+ * the dispatcher does NOT mirror it into motion+0x84 (guest-faithful;
+ * only handlers themselves write +0x84, e.g. EV3 wait resume). */
+typedef uint8_t *evhandler_t(uint8_t *ctrl, uint8_t *motion, uint32_t pc_g);
 extern uint8_t *g_DAT_1f8000b1, *g_DAT_1f8000e8, *g_DAT_801f0760;
 extern uint32_t *g__DAT_801f093a, *g__DAT_801f093e;
 extern int fx_group_alloc(undefined4,undefined4,int,int);
@@ -1223,10 +1226,10 @@ ushort * ev_spark_spawn(int param_1,undefined4 param_2,ushort *param_3)
   return param_3 + 1;
 }
 
-static uint8_t *w22(uint8_t *c, uint8_t *m)
+static uint8_t *w22(uint8_t *c, uint8_t *m, uint32_t pc_g)
 {
     return (uint8_t *)ev_spark_spawn(
-        (int)guest_of(c), 0, (ushort *)guest_at(GU32(m, 0x84)));
+        (int)guest_of(c), 0, (ushort *)guest_at(pc_g));
 }
 
 /* ev_cmd_dispatch — EV23: event/sound/effect command dispatcher.
@@ -1361,33 +1364,33 @@ ushort * ev_cmd_dispatch(int param_1,undefined4 param_2,ushort *param_3)
   return param_3 + 2;
 }
 
-static uint8_t *w23(uint8_t *c, uint8_t *m)
+static uint8_t *w23(uint8_t *c, uint8_t *m, uint32_t pc_g)
 {
     return (uint8_t *)ev_cmd_dispatch(
-        (int)guest_of(c), 0, (ushort *)guest_at(GU32(m, 0x84)));
+        (int)guest_of(c), 0, (ushort *)guest_at(pc_g));
 }
 #define EVWRAP(nm, fn) \
-    static uint8_t *nm(uint8_t *c, uint8_t *m) \
-    { return fn(c, m, (uint8_t *)guest_at(GU32(m, 0x84))); }
+    static uint8_t *nm(uint8_t *c, uint8_t *m, uint32_t pc_g) \
+    { return fn(c, m, (uint8_t *)guest_at(pc_g)); }
 EVWRAP(w0,  ev0_branch)
-static uint8_t *w1(uint8_t *c, uint8_t *m)
-{ (void)c; return ev1_altstream(m, (uint8_t *)guest_at(GU32(m, 0x84))); }
+static uint8_t *w1(uint8_t *c, uint8_t *m, uint32_t pc_g)
+{ (void)c; return ev1_altstream(m, (uint8_t *)guest_at(pc_g)); }
 EVWRAP(w2,  ev2_hitstun_gate)
 EVWRAP(w3,  ev3_wait)
 EVWRAP(w4,  ev4_branch)
-static uint8_t *w5(uint8_t *c, uint8_t *m)
+static uint8_t *w5(uint8_t *c, uint8_t *m, uint32_t pc_g)
 {
     return (uint8_t *)ev5_action_select(
         (int)guest_of(c), (int)guest_of(m),
-        (ushort *)guest_at(GU32(m, 0x84)));
+        (ushort *)guest_at(pc_g));
 }
 EVWRAP(w6,  ev6_guard_sync)
 EVWRAP(w7,  ev7_position)
 EVWRAP(w8,  ev8_motion_param)
 EVWRAP(w9,  ev9_physics)
 EVWRAP(w10, ev10_flags)
-static uint8_t *w11(uint8_t *c, uint8_t *m)
-{ (void)c; return (uint8_t *)guest_at(GU32(m, 0x84) + 2); }
+static uint8_t *w11(uint8_t *c, uint8_t *m, uint32_t pc_g)
+{ (void)c; return (uint8_t *)guest_at(pc_g + 2); }
 EVWRAP(w12, ev12_damage)
 EVWRAP(w13, ev13_hit_slots)
 EVWRAP(w14, ev14_chip)
