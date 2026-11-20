@@ -2238,15 +2238,16 @@ int32_t mc_date_serial_cmp(uint8_t *param_1,void *param_2)
                                      guest_of(param_1), guest_of(param_2), 0, 0);
 }
 
-/* rec_find_lt_f8 — first 0x10-stride rec where f8==0 or f8<a1;
- * -1 if none. a0 host ptr, a1 u32, a2 count. Disasm 0x80163b08-40. */
+/* rec_find_lt_f8 — first 0x10-stride rec where f8==0 or f8>=a1;
+ * -1 if none. a0 host ptr, a1 u32, a2 count. Disasm 0x80163b08-40:
+ * slt v0,f8,a1 then beq -> return i, i.e. match on !(f8<a1). */
 int32_t rec_find_lt_f8(uint8_t *a0,uint32_t a1,int32_t a2)
 {
   int32_t i;
   if (a2 <= 0) return -1;
   for (i = 0; i < a2; i++, a0 += 0x10) {
     uint32_t f8 = *(uint32_t *)(a0 + 8);
-    if (f8 == 0 || f8 < a1) return i;
+    if (f8 == 0 || f8 >= a1) return i;
   }
   return -1;
 }
@@ -2649,8 +2650,10 @@ int32_t rec_sorted_lookup(uint8_t *a0,uint32_t a1,int32_t a2)
 {
   int32_t i;
   if (a2 <= 0) return -1;
+  /* guest 0x80163b48: lh s16(+0xc); slt v0,a1,f; beq -> ret i, i.e.
+   * match on a1 >= f (first record NOT greater than key). */
   for (i = 0; i < a2; i++, a0 += 0x10)
-    if ((int32_t)a1 < (int32_t)(int16_t)*(int16_t *)(a0 + 0xc)) return i;
+    if ((int32_t)a1 >= (int32_t)(int16_t)*(int16_t *)(a0 + 0xc)) return i;
   return -1;
 }
 

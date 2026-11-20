@@ -181,8 +181,9 @@ static uint8_t *ev21_skip(uint8_t*,uint8_t*,uint8_t*);
  * motion+0x84/+0x88, resets motion+0x90). Host supplies this — it
  * indexes the .ANI move table. */
 extern void action_select(uint8_t *ctrl, int idx);
-/* fighter_anim_advance: special-reaction loader (hit reaction by table entry). */
-extern void reaction_load(uint8_t *ctrl, uint32_t entry);
+/* fighter_anim_advance @0x80185e6c: guest calls it (a0=ctrl, a1=motion)
+ * at 0x8017b090 after storing the reaction entry at motion+0xb0. */
+extern void fighter_anim_advance(int,int);
 
 
 /* ================================================================== */
@@ -452,7 +453,7 @@ static uint8_t *ev5_action(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
             GSU32(motion, MO_B0) = eB;
         }
         GS16(motion, MO_A2) = (int16_t)idx;
-        reaction_load(ctrl, GSU32(motion, MO_B0));
+        fighter_anim_advance((int)guest_of(ctrl),(int)guest_of(motion));
         return pc + 4;
     fallback:
         GS16(motion, 0x80) = 1;
@@ -482,19 +483,23 @@ static uint8_t *ev5_action(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
         uint32_t fta = GU32(fm, MO_AC);
         uint8_t *ftab = fta ? (uint8_t *)guest_at(fta) : NULL;
         uint32_t e;
-        if (param < fcnt && ftab &&
-            (e = GU32(ftab, param * 4)) > 0x80000000u) {
-            GS16(motion, MO_BE) = G16(motion, MO_BC);
-            GSU32(motion, MO_B0) = e;
-            GS16(motion, MO_A2) = param;
-            reaction_load(ctrl, e);
-        } else {
-            GS16(motion, 0x80) = 1;
-            GS16(motion, MO_PREV) = 1;
-            action_select(swctrl, 1);
-            {
-                uint32_t s = GU32(motion, MO_STREAM);
-                return s ? (uint8_t *)guest_at(s) : NULL;
+        /* guest 0x8017b008-0x8017b00c: param >= foe count -> common
+         * return (pc+4), NO fallback side effects. Only an in-range
+         * entry <= 0x80000000 takes the action-1 fallback. */
+        if (param < fcnt) {
+            if (ftab && (e = GU32(ftab, param * 4)) > 0x80000000u) {
+                GS16(motion, MO_BE) = G16(motion, MO_BC);
+                GSU32(motion, MO_B0) = e;
+                GS16(motion, MO_A2) = param;
+                fighter_anim_advance((int)guest_of(ctrl),(int)guest_of(motion));
+            } else {
+                GS16(motion, 0x80) = 1;
+                GS16(motion, MO_PREV) = 1;
+                action_select(swctrl, 1);
+                {
+                    uint32_t s = GU32(motion, MO_STREAM);
+                    return s ? (uint8_t *)guest_at(s) : NULL;
+                }
             }
         }
         break;

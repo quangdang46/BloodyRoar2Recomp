@@ -888,7 +888,8 @@ void action_select(uint8_t *ctrl,int idx)
     if (!mg) return;
     action_switch_guest((int)guest_of(ctrl),(int *)guest_at(mg),idx);
 }
-void reaction_load(uint8_t *ctrl,uint32_t e){ (void)ctrl;(void)e; }
+/* reaction_load removed: the guest tail at 0x8017b090 calls
+ * fighter_anim_advance(ctrl,motion) directly; ev.c calls it now. */
 void trace_op(int op){ (void)op; }
 extern CPUState *clean_cpu_state(void);
 
