@@ -2823,3 +2823,21 @@ gates now: (a) rare ph=6 select-confirm input race (agent 6e22e511),
 (b) SYSTEMATIC ph=8 frozen battle on EVERY run reaching ph=8 (agent
 8940a8d1) — (b) is the real gameplay blocker. NEXT: identify the ph=8
 gate owner + the single condition/event/flag that unblocks live combat.
+
+=== N+195b — ph=8 freeze CONFIRMED at correct state addrs; pbd_calls=0 ===
+Follow-up probe corrects the record (first diff used suboptimal addrs;
+conclusion holds and is now proven at the LIVE state). battle_frame
+(menu.c:7903) owns ph=8 via its own L_case dispatcher writing the shared
+0x1f800001 byte; case-8 (menu.c:8281) calls battle_config_eval x2/iter —
+that is the bce_calls growth. post_battle_dispatch is NOT the ph=8 path
+(g_pbd_calls stays 0; it is the bfsm/arena path). FROZEN across 6s on
+port5730: per-side ctx records 0x1f8000e8/0x1f8001f0 (+0x200 each),
+their +0x20 fighter-state structs 0x801e1b3c/0x801e2c1c (+0x100 each,
+position/anim/HP), and task pools 0x801f10c0/0x801f10c4 -> 0x801d660c/
+0x801d71fc. battle_frame stack frame 0x801ffe00 shows only ~5 bookkeeping
+byte changes (OT/frame), NOT fighter state. VERDICT: battle_frame
+ticks + battle_config_eval evaluates, but NO fighter/task/round state
+mutates -> versus is a frozen pre-fight/handshake scene, round timer
+never starts, fighters never animate, input never consumed. The live
+battle progress addrs for future probes: per-side ctx 0x1f8000e8/
+0x1f8001f0, fighter structs via ctx+0x20, task pools 0x801f10c0/c4.
