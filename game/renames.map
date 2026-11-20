@@ -1770,3 +1770,14 @@
 8018b98c prim_persp_ot_emit_112
 8018b884 prim_emit_tail_advance
 8018a9e8 prim_depth_shade_emit
+801a3014 cd_cmd_rec_init
+801a3108 cd_cmd_flush_a
+801a31e0 cd_cmd_flush_b
+801a328c cd_cmd_issue_poll
+801a3850 cd_cmd_rec_clear
+801a38b8 cd_cmd_queue_drain
+801a39bc cd_cmd_data_byte
+801a3a78 cd_cmd_rec_scan
+801a3d84 cd_cmd_state_commit
+801a3e94 cd_cmd_state_rx
+801a189c cd_cmd_queue_service

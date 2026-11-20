@@ -184,17 +184,28 @@ extern void cd_channel_main_init(void);
 extern void cd_channel_poll(void);
 extern void cd_channel_table_init(void);
 extern void cd_cmd_bytes(void);
+extern void cd_cmd_data_byte(void);
 extern void cd_cmd_dispatch3(void);
+extern void cd_cmd_flush_a(void);
+extern void cd_cmd_flush_b(void);
 extern void cd_cmd_issue(void);
 extern void cd_cmd_issue_async(void);
 extern void cd_cmd_issue_b(void);
 extern void cd_cmd_issue_c(void);
+extern void cd_cmd_issue_poll(void);
 extern void cd_cmd_issue_sync(void);
+extern void cd_cmd_queue_drain(void);
 extern void cd_cmd_queue_load(void);
+extern void cd_cmd_queue_service(void);
+extern void cd_cmd_rec_clear(void);
+extern void cd_cmd_rec_init(void);
+extern void cd_cmd_rec_scan(void);
 extern void cd_cmd_reset_wrap(void);
 extern void cd_cmd_retry(void);
 extern void cd_cmd_sequence(void);
+extern void cd_cmd_state_commit(void);
 extern void cd_cmd_state_reset(void);
+extern void cd_cmd_state_rx(void);
 extern void cd_coord_pack_entry(void);
 extern void cd_copy_u32(void);
 extern void cd_crit_c003(void);
@@ -2485,6 +2496,7 @@ const Br2FnEnt fn_table[] = {
   { 0x801a169c, (void *)cd_ctx_set_fwd },
   { 0x801a1808, (void *)cd_handler_pair_install },
   { 0x801a1834, (void *)op_flag_fn_check },
+  { 0x801a189c, (void *)cd_cmd_queue_service },
   { 0x801a1a2c, (void *)cd_state_clear },
   { 0x801a1a40, (void *)cd_channel_main_init },
   { 0x801a1b0c, (void *)cd_channel_init },
@@ -2497,13 +2509,23 @@ const Br2FnEnt fn_table[] = {
   { 0x801a2de4, (void *)cd_ctx_cb_4d },
   { 0x801a2e00, (void *)cd_ctx_cb_scan },
   { 0x801a2fb4, (void *)op_state_dispatch },
+  { 0x801a3014, (void *)cd_cmd_rec_init },
   { 0x801a3034, (void *)op_tag_E_set },
   { 0x801a3048, (void *)op_tag_L_set },
   { 0x801a3088, (void *)op_tag_G_set },
   { 0x801a30c0, (void *)ctx_fn_send },
+  { 0x801a3108, (void *)cd_cmd_flush_a },
+  { 0x801a31e0, (void *)cd_cmd_flush_b },
+  { 0x801a328c, (void *)cd_cmd_issue_poll },
   { 0x801a36f0, (void *)cd_channel_table_init },
+  { 0x801a3850, (void *)cd_cmd_rec_clear },
+  { 0x801a38b8, (void *)cd_cmd_queue_drain },
   { 0x801a39ac, (void *)qbyte_take },
+  { 0x801a39bc, (void *)cd_cmd_data_byte },
+  { 0x801a3a78, (void *)cd_cmd_rec_scan },
   { 0x801a3d50, (void *)cd_handler_triple_install },
+  { 0x801a3d84, (void *)cd_cmd_state_commit },
+  { 0x801a3e94, (void *)cd_cmd_state_rx },
   { 0x801a40f8, (void *)op_frame_advance },
   { 0x801a4210, (void *)fifo_space_sample },
   { 0x801a4230, (void *)fifo_space_check },

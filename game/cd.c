@@ -5596,3 +5596,462 @@ void chan_job_pump(void)
   *(uint32_t *)(blk + 0x50) = *(uint32_t *)(blk + 0x50) + 1;
   *(uint32_t *)(blk + 0x54) = *(uint32_t *)(blk + 0x54) + 1;
 }
+
+/* ======== 0x801a3014 ======== */
+
+/* cd_cmd_rec_init — command-record slot init (0x801a3014-0x801a3034).
+ * Leaf: rec[55]=0x43 class tag, rec[44]=&rec[36] self-link stored as a
+ * GUEST address, rec[36]=param_2, rec[54]=1 armed (delay-slot store).
+ * Disasm verified insn-for-insn. */
+void cd_cmd_rec_init(uint32_t rec,uint32_t tag)
+{
+  uint8_t *r = (uint8_t *)guest_at(rec);
+  r[55] = 0x43;
+  *(uint32_t *)(r + 44) = rec + 36;
+  r[36] = (uint8_t)tag;
+  r[54] = 1;
+}
+
+/* ======== 0x801a3108 ======== */
+
+/* cd_cmd_flush_a — gated double indirect-call + issue (0x801a3108-0x801a31dc).
+ * When queue cursors BE7C0==BE7D0 and BE7BC armed: jalr BE7B0(rec,a1) then
+ * jalr BE7AC(rec,a1) through the driver fn-ptr table. When BE800 armed:
+ * jalr BE798(*(rec+12),a1) and jalr BE798(*(rec+12)+240,a1). Finally
+ * jal 0x801a2184(rec, rec[55]!=0 ? rec[55] : 66); returns its v0.
+ * jalr targets are runtime-loaded guest fn ptrs -> call_guest. */
+uint32_t cd_cmd_flush_a(uint32_t rec,uint32_t a1)
+{
+  uint8_t *s0 = (uint8_t *)guest_at(rec);
+  uint32_t sub, r;
+  if (DB32(0x801be7c0) == DB32(0x801be7d0)) {
+    if (DB32(0x801be7bc) != 0) {
+      (void)call_guest(DB32(0x801be7b0),rec,a1);
+      (void)call_guest(DB32(0x801be7ac),rec,a1);
+    }
+  }
+  if (DB32(0x801be800) != 0) {
+    sub = *(uint32_t *)(s0 + 12);
+    (void)call_guest(DB32(0x801be798),sub,a1);
+    sub = *(uint32_t *)(s0 + 12);
+    (void)call_guest(DB32(0x801be798),sub + 240,a1);
+  }
+  r = s0[55];
+  r = call_guest(0x801a2184u,rec,(r != 0) ? r : 66u);
+  return r;
+}
+
+/* ======== 0x801a31e0 ======== */
+
+/* cd_cmd_flush_b — flush variant issuing stat update (0x801a31e0-0x801a3288).
+ * BE800 gate -> jalr BE798(*(rec+12)+480,a1) and +720. Then
+ * jal 0x801a2184(rec, rec[55]!=0 ? 0 : BE7CC); negative result returns
+ * as-is, else (v0&0xf)<<1 is stored to BE7F8 (32 when zero) and 0
+ * returns. Disasm verified. */
+uint32_t cd_cmd_flush_b(uint32_t rec,uint32_t a1)
+{
+  uint8_t *s0 = (uint8_t *)guest_at(rec);
+  uint32_t sub, r, x;
+  if (DB32(0x801be800) != 0) {
+    sub = *(uint32_t *)(s0 + 12);
+    (void)call_guest(DB32(0x801be798),sub + 480,a1);
+    sub = *(uint32_t *)(s0 + 12);
+    (void)call_guest(DB32(0x801be798),sub + 720,a1);
+  }
+  r = call_guest(0x801a2184u,rec,(s0[55] != 0) ? 0u : DB32(0x801be7cc));
+  if ((int32_t)r < 0) return r;
+  x = (r & 0xf) << 1;
+  DB32(0x801be7f8) = x;
+  if (x == 0) DB32(0x801be7f8) = 32;
+  return 0;
+}
+
+/* ======== 0x801a328c ======== */
+
+/* cd_cmd_issue_poll — status-poll + dual jalr + issue (0x801a328c-0x801a334c).
+ * flag = (BE7CC!=0 && (*(u8*)*(rec+60))>>4 == 8 && rec[55]==0); stored to
+ * BE804. flag==0 -> jalr BE78C(rec,a1). Always jalr BE788(rec,BE804) then
+ * jal 0x801a2184(rec, ret&0xff); the tail compares are an identity
+ * normalization — v0 returns unchanged in every path (verified: the
+ * li -4 / move v0,v1 delay slots always leave v0==r). */
+uint32_t cd_cmd_issue_poll(uint32_t rec,uint32_t a1)
+{
+  uint8_t *s0 = (uint8_t *)guest_at(rec);
+  uint32_t flag = 0, r2, r;
+  if (DB32(0x801be7cc) != 0) {
+    uint32_t b = br2_ld8(*(uint32_t *)(s0 + 60));
+    if ((b >> 4) == 8) flag = (s0[55] < 1) ? 1 : 0;
+  }
+  DB32(0x801be804) = flag;
+  if (flag == 0) {
+    (void)call_guest(DB32(0x801be78c),rec,a1);
+  }
+  r2 = call_guest(DB32(0x801be788),rec,DB32(0x801be804));
+  r = call_guest(0x801a2184u,rec,r2 & 0xff);
+  return r;
+}
+
+/* ======== 0x801a3850 ======== */
+
+/* cd_cmd_rec_clear — conditional record scrub (0x801a3850-0x801a38b4).
+ * Runs only when rec[73]!=0: clears status/tag fields and fills the
+ * 6-byte aux window rec[93..98] with 0xff. Leaf, no calls. */
+void cd_cmd_rec_clear(uint32_t rec)
+{
+  uint8_t *r = (uint8_t *)guest_at(rec);
+  int i;
+  if (r[73] == 0) return;
+  r[73] = 0;
+  r[70] = 0;
+  *(uint16_t *)(r + 230) = 0;
+  *(uint32_t *)(r + 20) = 0;
+  *(uint32_t *)(r + 24) = 0;
+  r[227] = 0;
+  r[228] = 0;
+  *(uint16_t *)(r + 230) = 0;
+  r[233] = 0;
+  r[234] = 0;
+  *(uint32_t *)(r + 0) = 0;
+  *(uint32_t *)(r + 4) = 0;
+  *(uint32_t *)(r + 8) = 0;
+  for (i = 0; i < 6; i++) r[93 + i] = 0xff;
+}
+
+/* ======== 0x801a39bc ======== */
+
+/* cd_cmd_data_byte — indexed byte fetch (0x801a39bc-0x801a3a74).
+ * idx = rec[69]-3 (u32 wrap), mode = rec[55].
+ * mode==0: if idx<6 and aux rec[87+idx]==0 return 0; then if
+ *   (int32)idx < (int32)rec[52] return byte at ptr40+idx else 0.
+ * mode!=0 (0x4d and others share the tail): if (int32)idx <
+ *   (int32)rec[54] return byte at ptr44+idx else 0.
+ * slt is SIGNED — the wrapped idx must compare as int32 (verified vs
+ * 0x801a3a08/0x801a3a34/0x801a3a54 slt insns). */
+uint32_t cd_cmd_data_byte(uint32_t rec)
+{
+  uint8_t *r = (uint8_t *)guest_at(rec);
+  uint32_t idx = (uint32_t)r[69] - 3u;
+  uint32_t mode = r[55];
+  uint32_t p;
+  if (mode == 0) {
+    if (idx < 6u && r[idx + 87] == 0) return 0;
+    if ((int32_t)idx < (int32_t)r[52]) {
+      p = *(uint32_t *)(r + 40);
+      return br2_ld8(p + idx);
+    }
+    return 0;
+  }
+  if ((int32_t)idx < (int32_t)r[54]) {
+    p = *(uint32_t *)(r + 44);
+    return br2_ld8(p + idx);
+  }
+  return 0;
+}
+
+/* ======== 0x801a3d84 ======== */
+
+/* cd_cmd_state_commit — record state commit (0x801a3d84-0x801a3e90).
+ * cmd = **(rec+60); when cmd==0xf3 and rec[232]!=0 and
+ * (rec[70]==0xff || rec[73]==2): jalr BE784(rec,a1). Then dispatch on
+ * rec[70]: ==1 -> cd_cmd_rec_init(rec,1); ==254 -> cd_cmd_rec_init(rec,0);
+ * ==0 or ==255 -> bare return; others -> jalr rec[20](rec,a1) when nonzero
+ * else jal op_tag_dispatch(rec,a1). Every exit zeroes v0. */
+uint32_t cd_cmd_state_commit(uint32_t rec,uint32_t a1)
+{
+  uint8_t *s0 = (uint8_t *)guest_at(rec);
+  uint32_t cmd, b70, fn;
+  cmd = br2_ld8(*(uint32_t *)(s0 + 60));
+  if (cmd == 0xf3 && s0[232] != 0 &&
+      (s0[70] == 0xff || s0[73] == 2)) {
+    (void)call_guest(DB32(0x801be784),rec,a1);
+  }
+  b70 = s0[70];
+  if (b70 == 1) {
+    (void)call_guest(0x801a3014u,rec,1);
+    return 0;
+  }
+  if (b70 == 254) {
+    (void)call_guest(0x801a3014u,rec,0);
+    return 0;
+  }
+  if (b70 == 0 || b70 == 255) return 0;
+  fn = *(uint32_t *)(s0 + 20);
+  if (fn != 0) {
+    (void)call_guest(fn,rec,a1);
+  } else {
+    (void)call_guest(0x801a24dcu,rec,a1);
+  }
+  return 0;
+}
+
+/* ======== 0x801a3e94 ======== */
+
+/* cd_cmd_state_rx — command-record RX state machine (0x801a3e94-0x801a40f4).
+ * cmd = **(rec+60). High nibble==0: datptr=*(rec+48) gets [0]=0xff,[1]=0,
+ * rec[232]=rec[53]=0, jalr BE784(rec,a1) and return its v0.
+ * Else nib=cmd>>4: a1 becomes old rec[232]; rec[232]=nib (delay-slot store,
+ * restored when nib==15). datptr head reset + payload copy datptr[i]=cmd[i]
+ * for i=2..rec[68]-1 (rec[53]=rec[68] stored unconditionally in the delay
+ * slot). Then cmd[1]/rec[70]/rec[20]/rec[80] gating decides whether
+ * BE784(rec,a1) fires before the rec[70] state dispatch:
+ *   255 -> ret 255; byte55==0 -> ret b70-2; (b70-2)&0xff <252 &&
+ *   cmd[0]!=0xf3 -> jalr BE784 ret; ==1 -> rec[71]=0,rec[70]=2 ret 2;
+ *   ==0 -> rec[73]=1,rec[70]=1 ret 1; else jalr rec[24](rec,a1) or
+ *   jal 0x801a2560, rec[70]+=ret, ret v0.
+ * a1 register = param until 0x801a3efc, then old rec[232] (a1s). */
+uint32_t cd_cmd_state_rx(uint32_t rec,uint32_t a1)
+{
+  uint8_t *s0 = (uint8_t *)guest_at(rec);
+  uint32_t a1s = a1;
+  uint32_t cmd, nib, b70, fn, r, i;
+  uint32_t cmdptr, datptr;
+
+  cmdptr = *(uint32_t *)(s0 + 60);
+  cmd = br2_ld8(cmdptr);
+  if ((cmd & 0xf0) == 0) {
+    datptr = *(uint32_t *)(s0 + 48);
+    br2_st8(datptr,0xff);
+    br2_st8(datptr + 1,0);
+    s0[232] = 0;
+    s0[53] = 0;
+    return call_guest(DB32(0x801be784),rec,a1s);
+  }
+  nib = cmd >> 4;
+  a1s = s0[232];
+  s0[232] = (uint8_t)nib;
+  if (nib == 15) {
+    s0[232] = (uint8_t)a1s;
+    goto L_state;
+  }
+  datptr = *(uint32_t *)(s0 + 48);
+  br2_st8(datptr,0);
+  cmdptr = *(uint32_t *)(s0 + 60);
+  datptr = *(uint32_t *)(s0 + 48);
+  br2_st8(datptr + 1,br2_ld8(cmdptr));
+  s0[53] = s0[68];
+  if (2 < s0[68]) {
+    for (i = 2; i < s0[68]; i++) {
+      cmdptr = *(uint32_t *)(s0 + 60);
+      datptr = *(uint32_t *)(s0 + 48);
+      br2_st8(datptr + i,br2_ld8(cmdptr + i));
+    }
+  }
+L_state:
+  cmdptr = *(uint32_t *)(s0 + 60);
+  if (br2_ld8(cmdptr + 1) != 0) goto L_notify_chk;
+  b70 = s0[70];
+  if (b70 != 1) goto L_aux_chk;
+  if (*(uint32_t *)(s0 + 20) == 0) goto L_notify_chk;
+L_aux_chk:
+  if (s0[80] == 0) goto L_notify;
+L_notify_chk:
+  if (s0[232] == (uint8_t)a1s) goto L_dispatch;
+L_notify:
+  (void)call_guest(DB32(0x801be784),rec,a1s);
+L_dispatch:
+  b70 = s0[70];
+  s0[74] = 0;
+  if (b70 == 255) return 255;
+  if (b70 != 0 && s0[55] == 0) return b70 - 2;
+  if (((b70 - 2) & 0xff) < 252) {
+    cmdptr = *(uint32_t *)(s0 + 60);
+    if (br2_ld8(cmdptr) == 0xf3) goto L_b70_dispatch;
+    return call_guest(DB32(0x801be784),rec,a1s);
+  }
+L_b70_dispatch:
+  if (b70 == 1) {
+    s0[71] = 0;
+    s0[70] = 2;
+    return 2;
+  }
+  if (b70 < 2) {
+    s0[73] = 1;
+    s0[70] = 1;
+    return 1;
+  }
+  fn = *(uint32_t *)(s0 + 24);
+  if (fn != 0) {
+    r = call_guest(fn,rec,a1s);
+  } else {
+    r = call_guest(0x801a2560u,rec,a1s);
+  }
+  s0[70] = (uint8_t)(s0[70] + r);
+  return r;
+}
+
+/* ======== 0x801a3a78 ======== */
+
+/* cd_cmd_rec_scan — record scan/match pump (0x801a3a78-0x801a3cf0).
+ * cd_bzero(rec+87,6) first. Data path (lhu rec[230]!=0 && rec[40]!=0 &&
+ * rec[233]!=0): t1 = rec[52]<7 ? 6 : rec[52]; for t0 in 0..rec[233)-1,
+ * records are 5-byte slots at *(rec+4)+t2 (t2+=5): flag byte +2 picks
+ * a3 (0xff when set else 1); inner pass matches aux rec[93+i]==t0 against
+ * stream[i]&a3; on match the BE7C8 index byte (+3) is added to BE7C8 when
+ * <61 and aux rec[87+i]=1 is marked for every match. No-data path
+ * (3bf0): rec[232] in {4,5,7} && rec[230]==0 && rec[52]>=2 &&
+ * (*(rec+40)&0xc0)==0x40 && (*(rec+40)+1)&1 && BE7C8+10<61 ->
+ * rec[87]=rec[88]=1, BE7C8+=10; else rec[232]==3 -> rec[87]=1;
+ * else rec[230]==0 -> rec[87..92]=1. v0 return is dead in callers. */
+uint32_t cd_cmd_rec_scan(uint32_t rec)
+{
+  uint8_t *s0 = (uint8_t *)guest_at(rec);
+  uint32_t t0, t1, t2, a2, a3, v0, v1, i;
+  uint32_t aux93, aux87, stream, base;
+
+  (void)call_guest(0x801a09b0u,rec + 87,6);   /* cd_bzero(rec+87,6) */
+  v0 = *(uint16_t *)(s0 + 230);
+  if (v0 != 0 && *(uint32_t *)(s0 + 40) != 0) {
+    t1 = (s0[52] < 7) ? 6 : s0[52];
+    if (s0[233] == 0) return 0;
+    aux93 = rec + 93;
+    aux87 = rec + 87;
+    t0 = 0; t2 = 0;
+    do {
+      stream = *(uint32_t *)(s0 + 40);
+      base = *(uint32_t *)(s0 + 4);
+      a3 = (br2_ld8(base + t2 + 2) != 0) ? 0xff : 1;
+      a2 = 0;
+      if (t1 != 0) {
+        for (i = 0; i < t1; i++) {
+          if (br2_ld8(aux93 + i) == t0 &&
+              (br2_ld8(stream + i) & a3) != 0) {
+            a2 = 1;
+            break;
+          }
+        }
+      }
+      if (a2 != 0) {
+        base = *(uint32_t *)(s0 + 4);
+        v1 = br2_ld8(base + t2 + 3) + DB32(0x801be7c8);
+        if (v1 < 61) {
+          DB32(0x801be7c8) = v1;
+        } else {
+          a2 = 0;
+        }
+      }
+      if (a2 != 0) {
+        for (i = 0; i < t1; i++) {
+          if (br2_ld8(aux93 + i) == t0) br2_st8(aux87 + i,1);
+        }
+      }
+      t0++;
+      t2 += 5;
+    } while (t0 < s0[233]);
+    return 0;
+  }
+  /* no-data path (0x801a3bf0) */
+  v1 = s0[232];
+  if (!((v1 - 4) < 2u || v1 == 7)) goto L_c4;
+  if (*(uint16_t *)(s0 + 230) != 0) goto L_c4;
+  if (s0[52] < 2) goto L_c4;
+  stream = *(uint32_t *)(s0 + 40);
+  if ((br2_ld8(stream) & 0xc0) != 0x40) return (br2_ld8(stream) & 0xc0);
+  if ((br2_ld8(stream + 1) & 1) == 0) return 0;
+  v0 = DB32(0x801be7c8) + 10;
+  if (v0 >= 61) return 0;
+  s0[88] = 1;
+  s0[87] = 1;
+  DB32(0x801be7c8) = v0;
+  return v0;
+L_c4:
+  if (s0[232] == 3) {
+    s0[87] = 1;
+    return 1;
+  }
+  if (*(uint16_t *)(s0 + 230) != 0) return *(uint16_t *)(s0 + 230);
+  for (i = 0; i < 6; i++) s0[87 + (5 - i)] = 1;
+  return 1;
+}
+
+/* ======== 0x801a189c ======== */
+
+/* cd_cmd_queue_service — command-queue service pass (0x801a189c-0x801a1a28).
+ * Bit1 of *(BE7E4)+10 set -> clear it and return. Else BE7E8=1 (delay-slot
+ * store, unconditional), saturating +1 bumps on counters 0x801fefd0
+ * (when BE7D0!=0) and 0x801fefd4 (when BE7D4==0), gated by BE7B8.
+ * When BE7D4>=BE7D0: BE7C4=0, BE7C0=BE7D0, jal 0x801a1b50(table+BE7D0*
+ * 240); on 0 result jalr BE780(0xffff,a1). BE7C8=0 then drain loop:
+ * while BE7D4>=BE7C0 jal 0x801a1e84(table+BE7C0*240). Finally
+ * sh 0x88 -> *(BE7E4)+14. Returns 0 on every path. */
+uint32_t cd_cmd_queue_service(uint32_t a0,uint32_t a1)
+{
+  uint8_t *q;
+  uint32_t v0, v1, r;
+  (void)a0;
+  q = (uint8_t *)guest_at(DB32(0x801be7e4));
+  v0 = *(uint16_t *)(q + 10) & 2;
+  if (v0 != 0) {
+    *(uint16_t *)(q + 10) = 0;
+    return 0;
+  }
+  v1 = DB32(0x801be7d0);
+  DB32(0x801be7e8) = 1;
+  if (v1 != 0) {
+    v0 = DB32(0x801fefd0);
+    if ((int32_t)v0 < 150) DB32(0x801fefd0) = v0 + 1;
+  }
+  if (DB32(0x801be7d4) == 0) {
+    v0 = DB32(0x801fefd4);
+    if ((int32_t)v0 < 150) DB32(0x801fefd4) = v0 + 1;
+  }
+  if (DB32(0x801be7b8) == 0) return 0;
+  if ((int32_t)DB32(0x801be7d4) < (int32_t)DB32(0x801be7d0)) return 0;
+  v1 = DB32(0x801be7d0);
+  DB32(0x801be7c4) = 0;
+  DB32(0x801be7c0) = v1;
+  r = call_guest(0x801a1b50u,DB32(0x801be7b4) + v1 * 240,a1);
+  if (r == 0) {
+    (void)call_guest(DB32(0x801be780),0xffff,a1);
+  }
+  DB32(0x801be7c8) = 0;
+  if ((int32_t)DB32(0x801be7d4) >= (int32_t)DB32(0x801be7c0)) {
+    do {
+      v1 = DB32(0x801be7c0);
+      (void)call_guest(0x801a1e84u,DB32(0x801be7b4) + v1 * 240,a1);
+    } while ((int32_t)DB32(0x801be7d4) >= (int32_t)DB32(0x801be7c0));
+  }
+  q = (uint8_t *)guest_at(DB32(0x801be7e4));
+  *(uint16_t *)(q + 14) = 0x88;
+  return 0;
+}
+
+/* ======== 0x801a38b8 ======== */
+
+/* cd_cmd_queue_drain — queue drain loop (0x801a38b8-0x801a39a8).
+ * Per iteration on head=BE7C0, rec=0x801ff080+head*240: selector -9
+ * skips pre-ops; selector!=0 -> op_frame_advance(rec)+qbyte_take(rec);
+ * selector==0 -> BE7D8[head]=0. Then BE7C4=0, sh 0 -> *(BE828)+10,
+ * BE7C0++ and either return 1 when BE7D4<new head, or
+ * jal 0x801a1b50(0x801ff080+newhead*240) looping while it returns 0.
+ * a1 becomes 0xffff after the first iteration (delay-slot li). */
+uint32_t cd_cmd_queue_drain(uint32_t sel)
+{
+  uint32_t a1 = sel;
+  uint32_t v0, head, rec, p;
+  for (;;) {
+    head = DB32(0x801be7c0);
+    rec = 0x801ff080u + head * 240u;
+    if (a1 == 0xfffffff7u) {
+      /* selector -9: skip pre-ops */
+    } else if (a1 != 0) {
+      (void)call_guest(0x801a40f8u,rec,a1);
+      (void)call_guest(0x801a39acu,rec,a1);
+    } else {
+      DB32(0x801be7d8u + head * 4u) = 0;
+    }
+    p = DB32(0x801be828);
+    DB32(0x801be7c4) = 0;
+    br2_st16(p + 10,0);
+    head = DB32(0x801be7c0) + 1;
+    DB32(0x801be7c0) = head;
+    v0 = DB32(0x801be7d4);
+    if ((int32_t)v0 < (int32_t)head) {
+      a1 = 0xffff;
+      return 1;
+    }
+    rec = 0x801ff080u + head * 240u;
+    v0 = call_guest(0x801a1b50u,rec,a1);
+    a1 = 0xffff;
+    if (v0 != 0) return v0;
+  }
+}
