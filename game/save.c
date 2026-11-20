@@ -9888,6 +9888,92 @@ uint32_t dev_cmd_commit(void)
   return 1;
 }
 
+/* dev_cmd_round_dispatch — guest 0x801A1E84 (SIO command round-robin,
+ * spans the CPS-split pieces 0x801A1E84/1EDC/1EE0/1F38/1F50/1F64).
+ * Round counter cell @0x801BE7C4 indexes a guest fn-ptr table at
+ * 0x801BE808 (+idx*4 via the 0x801C0000-6136 window idiom); the counter is
+ * bumped BEFORE the call. The table fn is jalr'd with a1 = &counter and
+ * ra = 0x801A1EC0 (mid-function continuation — reproduced by parking
+ * $ra on that guest PC so br2_call_generated's dispatch stops there).
+ * On a negative result the error fn *@0x801BE780 runs with a0 = result,
+ * ra = 0x801A1F64 (function exit). Otherwise: counter==0 -> return -1;
+ * counter!=0 -> unless counter==3 AND ctx[60]->byte0 == 128, run
+ * fifo_space_sample(60) + dev_cmd_commit(); a zero commit result runs the
+ * error fn with a0 = -3, ra = 0x801A1F2C. Tail (0x801A1F38): v0 =
+ * counter-1 unconditionally (addiu delay slot); if counter < 5 (signed
+ * slti) return v0 with NO store, else store counter = v0 and return v0.
+ * a2/a3 pass through to every indirect call from the LIVE gpr file —
+ * br2_call_generated leaves callee-clobbered arg regs in place, matching
+ * the guest's caller-saved contract. a1 is likewise read live (the guest
+ * never rewrites it after the prologue, but callees may clobber it).
+ * Disasm generated/SLES_017.22_full_49.c 0x801A1E84-0x801A1F70. */
+uint32_t dev_cmd_round_dispatch(uint32_t ctx, uint32_t a2, uint32_t a3)
+{
+  CPUState *c = clean_cpu_state();
+  uint32_t idx, fn, r, v1, saved_ra;
+  if (!c) return 0;
+
+  idx = br2_ld32(0x801be7c4u);
+  fn  = br2_ld32(0x801c0000u + (idx << 2) - 6136u);  /* 0x801BE808+idx*4 */
+  br2_st32(0x801be7c4u, idx + 1u);
+
+  /* jalr table[idx] — ra = 0x801A1EC0 continuation. */
+  saved_ra = c->gpr[31];
+  c->gpr[31] = 0x801a1ec0u;
+  r = br2_call_generated(fn, ctx, 0x801be7c4u, a2, a3);
+  c->gpr[31] = saved_ra;
+
+  if ((int32_t)r < 0) {
+    /* 0x801A1F50: error fn *@0x801BE780, a0 = negative result,
+     * ra = 0x801A1F64 (epilogue). */
+    fn = br2_ld32(0x801be780u);
+    saved_ra = c->gpr[31];
+    c->gpr[31] = 0x801a1f64u;
+    r = br2_call_generated(fn, r, c->gpr[5], c->gpr[6], c->gpr[7]);
+    c->gpr[31] = saved_ra;
+    return r;
+  }
+
+  v1 = br2_ld32(0x801be7c4u);
+  if (v1 == 0) {
+    /* beq -> 0x801A1F38 with v1 still 0: v0 = v1-1 = -1, bne -> ret. */
+    return 0xffffffffu;
+  }
+
+  {
+    int run_jals = 1;
+    if (v1 == 3) {
+      /* lw v0,0x3C(s0); lbu v1,0(v0); beq v1,128 -> wrap (skip jals). */
+      uint32_t p = br2_ld32(ctx + 60u);
+      run_jals = (*(volatile uint8_t *)guest_at(p) != 128);
+    }
+    if (run_jals) {
+      /* jal 0x801A4210 (a0=60) then jal 0x801A23FC — args a1-a3 live. */
+      br2_call_generated(0x801a4210u, 60u,
+                         c->gpr[5], c->gpr[6], c->gpr[7]);
+      r = br2_call_generated(0x801a23fcu,
+                             c->gpr[4], c->gpr[5], c->gpr[6], c->gpr[7]);
+      if (r == 0) {
+        /* 0x801A1F18: error fn *@0x801BE780, a0 = -3,
+         * ra = 0x801A1F2C (wrap-check continuation). */
+        fn = br2_ld32(0x801be780u);
+        saved_ra = c->gpr[31];
+        c->gpr[31] = 0x801a1f2cu;
+        br2_call_generated(fn, 0xfffffffdu,
+                           c->gpr[5], c->gpr[6], c->gpr[7]);
+        c->gpr[31] = saved_ra;
+      }
+    }
+  }
+
+  /* 0x801A1F2C/0x801A1F38: reload counter; v0 = v1-1 always (delay slot).
+   * slti v1,5 -> return v0 untouched; else store counter = v0 first. */
+  v1 = br2_ld32(0x801be7c4u);
+  r = v1 - 1u;
+  if ((int32_t)v1 >= 5) br2_st32(0x801be7c4u, r);
+  return r;
+}
+
 /* ======================================================================
  * batch37: unnamed save-cluster leaf stubs & field ops @0x8015/0x8016.
  * All bodies decoded insn-by-insn from generated/SLES_017.22_full_*.c.

@@ -3358,3 +3358,105 @@ uint32_t rec_hibyte_pair_swap(uint32_t a0, uint32_t a1)
   GP16(a1 + 2) = (uint16_t)(t << 8);
   return a0;
 }
+
+/* ======== 0x8018b76c ======== */
+
+/* swl_guest — faithful SWL (store-word-left) on a guest address: merges the
+ * high bytes of v into the aligned word at addr&~3, exactly the merge table
+ * in generated/SLES_017.22_decls.h psx_swl. Used by the OT-link tail below
+ * (guest stores at +2 offsets are unaligned by design). */
+static void swl_guest(uint32_t addr, uint32_t v)
+{
+  uint32_t al = addr & ~3u;
+  uint32_t w = DB32(al);
+  switch (addr & 3u) {
+  case 0: w = (w & 0xFFFFFF00u) | (v >> 24); break;
+  case 1: w = (w & 0xFFFF0000u) | (v >> 16); break;
+  case 2: w = (w & 0xFF000000u) | (v >> 8);  break;
+  default: w = v; break;
+  }
+  DB32(al) = w;
+}
+
+extern int psx_ws_cull_sltiu(uint32_t sx, uint32_t imm);
+
+/* prim_persp_ot_emit — guest 0x8018B76C (hand-written leaf; args arrive in
+ * a0/a1/a3 plus hidden temps $t4/$t7/$t8 — see ARG_GPRS). Per record of
+ * `in_stride` bytes at `cur`: lwc2 V0..V2 (regs 0-5) <- cur[0..5], RTPT,
+ * NCLIP; when the PREVIOUS iteration's FLAG (cfc2 ctrl31 read before this
+ * NCLIP — faithful stale-by-one ordering) has no bits under 0x7FC40000 and
+ * MAC0 > 0, emit four SXY words into the out record at cur+delta
+ * (+8,+8+out_stride,+8+2*out_stride,+8+3*out_stride), RTPS the secondary
+ * vector cur[6..7], accumulate the four screen-cull tests (sx via
+ * psx_ws_cull_sltiu, sy via sltiu 480), AVSZ4 depth-check OTZ >= 2048, then
+ * swl-link the OT entry. do-while on signed count; returns final cur.
+ * Disasm generated/SLES_017.22_full_41.c 0x8018B76C-0x8018B890. */
+uint32_t prim_persp_ot_emit(uint32_t cur, uint32_t ot, uint32_t count,
+                            uint32_t delta, uint32_t in_stride,
+                            uint32_t out_stride)
+{
+  int32_t cnt = (int32_t)count;
+  uint32_t t1, t2, flag, out, sxy0, sxy1, sxy2, mac0;
+  uint32_t sx_ok, sy_ok, old, base;
+
+  do {
+    /* lwc2 gte[0..5] <- cur[0..5] : V0/V1/V2 packed xy+z (3 verts). */
+    gte_lwc2(cur +  0, 0);
+    gte_lwc2(cur +  4, 1);
+    gte_lwc2(cur +  8, 2);
+    gte_lwc2(cur + 12, 3);
+    gte_lwc2(cur + 16, 4);
+    gte_lwc2(cur + 20, 5);
+    cnt--;                                       /* addiu a3,-1 */
+    copFunction(2, 0x0280030u);                  /* RTPT */
+    t1   = DB32(cur + 24);                       /* lw t1,0x18(a0) */
+    t2   = DB32(cur + 28);                       /* lw t2,0x1C(a0) */
+    flag = (uint32_t)getCopControlWord(2, GTE_CREG(31)); /* cfc2 FLAG */
+    copFunction(2, 0x1400006u);                  /* NCLIP */
+    base = cur + delta;                          /* t3 = a0 + t4 */
+    if ((flag & 0x7FC40000u) != 0) goto next;
+
+    out = base + 8;                              /* addiu t3,8 */
+    setCopReg(2, GTE_DREG(0), t1);               /* mtc2 V0.xy */
+    setCopReg(2, GTE_DREG(1), t2);               /* mtc2 V0.z  */
+    mac0 = (uint32_t)getCopReg(2, GTE_DREG(24)); /* mfc2 MAC0 */
+    sxy0 = (uint32_t)getCopReg(2, GTE_DREG(12)); /* mfc2 SXY0 */
+    DB32(out) = sxy0;   /* sw SXY0,(out) is the blez MAC0 DELAY SLOT —
+                         * unconditional even when mac0 <= 0. */
+    if ((int32_t)mac0 <= 0) goto next;
+    sxy1 = (uint32_t)getCopReg(2, GTE_DREG(13)); /* mfc2 SXY1 */
+    sxy2 = (uint32_t)getCopReg(2, GTE_DREG(14)); /* mfc2 SXY2 */
+    out += out_stride; DB32(out) = sxy1;
+    out += out_stride; DB32(out) = sxy2;
+    copFunction(2, 0x180001u);                   /* RTPS: V0 -> SXY0 */
+
+    /* Cull accumulation — same ops/order as the guest: sx tests ride the
+     * widescreen-aware sltiu helper, sy tests are plain sltiu 480 on the
+     * arithmetic-shifted high half. */
+    sx_ok = (uint32_t)psx_ws_cull_sltiu(sxy0 & 0xFFFFu, 512u);
+    sy_ok = ((uint32_t)((int32_t)sxy0 >> 16) < 480u) ? 1u : 0u;
+    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy1 & 0xFFFFu, 512u);
+    sy_ok += ((uint32_t)((int32_t)sxy1 >> 16) < 480u) ? 1u : 0u;
+    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xFFFFu, 512u);
+    sy_ok += ((uint32_t)((int32_t)sxy2 >> 16) < 480u) ? 1u : 0u;
+    sxy2 = (uint32_t)getCopReg(2, GTE_DREG(14)); /* post-RTPS SXY2 */
+    out += out_stride; DB32(out) = sxy2;
+    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xFFFFu, 512u);
+    if (sx_ok == 0) goto next;
+    sy_ok += ((uint32_t)((int32_t)sxy2 >> 16) < 480u) ? 1u : 0u;
+    if (sy_ok == 0) goto next;                   /* t3=a0+t4 recompute: dead */
+
+    copFunction(2, 0x168002Eu);                  /* AVSZ4 -> OTZ */
+    if ((int32_t)(uint32_t)getCopReg(2, GTE_DREG(7)) < 2048) goto next;
+
+    /* OT link tail: t3 was recomputed to base (a0+t4) in the branch delay
+     * slot, so the swl targets are base+2 / ot+2. */
+    old = DB32(ot);                              /* lw t0,(a1) */
+    swl_guest(ot + 2, base << 8);                /* swl (t3<<8),2(a1) */
+    swl_guest(base + 2, old << 8);               /* swl (t0<<8),2(t3) */
+
+  next:
+    cur += in_stride;                           /* delay-slot a0 += t7 */
+  } while (cnt > 0);                             /* bgtz a3 -> loop */
+  return cur;                                   /* move v0,a0 */
+}

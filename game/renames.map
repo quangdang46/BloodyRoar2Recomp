@@ -1765,3 +1765,5 @@
 801796cc part_flag100_set
 8017a6a8 part_desc_clear_gate
 8017a6b4 part_desc_clear
+8018b76c prim_persp_ot_emit
+801a1e84 dev_cmd_round_dispatch

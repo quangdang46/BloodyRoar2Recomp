@@ -481,6 +481,7 @@ extern void descriptor_fetch(void);
 extern void descriptor_quad_dispatch(void);
 extern void dev_byte_xfer(void);
 extern void dev_cmd_commit(void);
+extern void dev_cmd_round_dispatch(void);
 extern void dialog_mode_mirror(void);
 extern void dialog_msg_dispatch(void);
 extern void dialog_sel_dispatch(void);
@@ -1019,6 +1020,7 @@ extern void prim_list_gte_invoke(void);
 extern void prim_list_persp_step(void);
 extern void prim_packet_init(void);
 extern void prim_packet_init_tex(void);
+extern void prim_persp_ot_emit(void);
 extern void prim_tag_set(void);
 extern void prim_task_run(void);
 extern void print_dispatch_guest(void);
@@ -2028,6 +2030,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8018b050, (void *)vec2_rot },
   { 0x8018b0a0, (void *)angle_gte_vec },
   { 0x8018b208, (void *)prim_list_persp_step },
+  { 0x8018b76c, (void *)prim_persp_ot_emit },
   { 0x8018babc, (void *)dbg_marker_mode_set },
   { 0x8018bb38, (void *)flag_801b55d0_set },
   { 0x8018bba8, (void *)pad_slot_state_walk },
@@ -2479,6 +2482,7 @@ const Br2FnEnt fn_table[] = {
   { 0x801a1a2c, (void *)cd_state_clear },
   { 0x801a1a40, (void *)cd_channel_main_init },
   { 0x801a1b0c, (void *)cd_channel_init },
+  { 0x801a1e84, (void *)dev_cmd_round_dispatch },
   { 0x801a1f74, (void *)dev_byte_xfer },
   { 0x801a23fc, (void *)dev_cmd_commit },
   { 0x801a24c0, (void *)cd_ctx_set_28_34 },
