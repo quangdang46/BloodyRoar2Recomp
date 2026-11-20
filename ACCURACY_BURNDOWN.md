@@ -2910,3 +2910,26 @@ commit; rides with the versus investigation.
 NEXT: runtime-prove whether heap_serialize runs for the versus prim
 records and what dst+0x1c/cur/s3 it produces vs arcade; diff the blk
 record tags versus vs arcade to find the divergent serializer/record.
+
+=== N+198 — versus root REFRAMED: ctx+0x1C prim-node ptrs are NULL, not garbage tables ===
+Live dump on frozen versus instance (port 4724, gs=8 ph=8 stalled):
+_DAT_1f800104 (sideA ctx+0x1C prim-list node ptr) = 0x00000000 and
+_DAT_1f80020c (sideB ctx+0x1C) = 0x00000000. These cells live INSIDE the
+per-side fighter-ctrl structs (0x1F8000E8 +0x1C, 0x1F8001F0 +0x1C, each
+0x108B). Neighboring ctx fields ctx+0x28/+0x2C ARE populated
+(0x801F5258/0x1F8001F0 etc.) but ctx+0x1C (prim node) and ctx+0x20
+(fighter-state ptr) are BOTH 0 -> the battle context is only PARTIALLY
+initialized for versus. RECONCILES both versus symptoms: with node ptr=0,
+prim_list_persp_step(guest_at(0)) reads *(0x1c) as the "task table" ->
+whatever low-memory bytes sit there become count/func. Frozen variant:
+count happens to be 0/bad -> battle_config_eval spins forever (ph=8
+stall). Crashed variant: count>0, func=0x01000000 -> FAIL-FAST. SAME root
+cause: the record/image commit that binds each side's prim-list display
+node into ctx+0x1C never ran (or wrote a different ctx/offset) for
+versus. save_state_machine_alt builds the node records (0x801bf860/
+0x801c0940) and binds them via *(p+0x14)=s1v into a PARAM block p=
+*(s4+0x28) — that p is NOT ctx+0x1C directly; a downstream consumer must
+copy it into the fighter-ctrl +0x1C. NEXT: find the ctx+0x1C writer
+(fighter-ctrl init / record-commit consumer in fight/battle init) and
+check whether versus reaches it; likely a versus-specific gate or a
+clean-port wrong-offset/ctx bug in the fighter-ctrl bind.
