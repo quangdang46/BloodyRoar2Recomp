@@ -3320,3 +3320,41 @@ uint32_t gte_persp_batch(uint32_t cur, uint32_t a1, uint32_t a2,
   }
   return cur;
 }
+
+/* ======== 0x8018d5fc ======== */
+
+/* gte_lwc2_r0_r1 — paired GTE vector load: lwc2 gte[0] <- (u32*)a0,
+ * lwc2 gte[1] <- (u32*)(a0+4). Leaf (jr ra, v0 untouched -> void).
+ * Disasm 0x8018d5fc-0x8018d610 (lwc2 x2, jr ra). */
+void gte_lwc2_r0_r1(uint32_t a0)
+{
+  gte_lwc2(a0 + 0, 0);
+  gte_lwc2(a0 + 4, 1);
+}
+
+/* ======== 0x8018bb38 ======== */
+
+/* flag_801b55d0_set — sets the flag word @0x801b55d0 to 1 and returns 1.
+ * The flag is polled as (DAT_801b55d0 & 1) by the record/string emit
+ * paths (battle.c). Disasm 0x8018bb38-0x8018bb44 (lui v1,0x801b;
+ * li v0,1; sw v0,0x55d0(v1); jr ra). */
+uint32_t flag_801b55d0_set(void)
+{
+  DB32(0x801b55d0) = 1;
+  return 1;
+}
+
+/* ======== 0x8018bd24 ======== */
+
+/* rec_hibyte_pair_swap — cross record high-byte store: t = *(u32*)a0;
+ * *(u16*)(a0+2) = (u16)(a1 << 8); *(u16*)(a1+2) = (u16)(t << 8);
+ * returns a0. Each sh keeps only the source low byte in the halfword's
+ * high byte (low byte zeroed). Disasm 0x8018bd24-0x8018bd3c
+ * (lw, sll x2, sh x2, jr ra with v0=a0 in the delay slot). */
+uint32_t rec_hibyte_pair_swap(uint32_t a0, uint32_t a1)
+{
+  uint32_t t = DB32(a0);
+  GP16(a0 + 2) = (uint16_t)(a1 << 8);
+  GP16(a1 + 2) = (uint16_t)(t << 8);
+  return a0;
+}

@@ -446,6 +446,8 @@ extern void cpu_regs_snapshot(void);
 extern void ctr_clamp(void);
 extern void ctx_flag_set(void);
 extern void ctx_fn_send(void);
+extern void ctype_adj_m32(void);
+extern void ctype_adj_p32(void);
 extern void cursor_advance_thunk(void);
 extern void cursor_sprite_anim(void);
 extern void data_relocate(void);
@@ -564,6 +566,7 @@ extern void fighter_state_tick(void);
 extern void fighter_tint_fade(void);
 extern void fighter_trail_emit(void);
 extern void file_op_dispatch(void);
+extern void file_rec_size_get(void);
 extern void file_state_bit24_query(void);
 extern void file_state_bit29_query(void);
 extern void firework_spawn(void);
@@ -573,6 +576,7 @@ extern void fixed_point_divide(void);
 extern void fixed_recip_lut(void);
 extern void fixed_rsqrt_q12(void);
 extern void fixed_rsqrt_q12_ex(void);
+extern void flag_801b55d0_set(void);
 extern void flag_table_dump(void);
 extern void flow_cfg_init(void);
 extern void frame_advance_helper(void);
@@ -640,6 +644,7 @@ extern void gte_dpct_vec3(void);
 extern void gte_intpl_vec3(void);
 extern void gte_light_load(void);
 extern void gte_light_set(void);
+extern void gte_lwc2_r0_r1(void);
 extern void gte_mat_vec_swap(void);
 extern void gte_matrix_base_set(void);
 extern void gte_mvmva_add(void);
@@ -768,6 +773,8 @@ extern void ko_count_announce(void);
 extern void launch_vel_update(void);
 extern void lazy_node_wrap(void);
 extern void lut_cos_q12(void);
+extern void lut_mask_clear(void);
+extern void lut_mask_or(void);
 extern void lut_sin_q12(void);
 extern void lzss_decode(void);
 extern void lzss_trap(void);
@@ -1031,6 +1038,7 @@ extern void queue_slot_peek(void);
 extern void radial_glow_draw(void);
 extern void rand_lcg(void);
 extern void rand_lo16_store(void);
+extern void rand_seed(void);
 extern void rand_word_store(void);
 extern void range_circle_test(void);
 extern void rec16_fill(void);
@@ -1039,6 +1047,7 @@ extern void rec_copy_init(void);
 extern void rec_find_ge_e(void);
 extern void rec_find_lt_f8(void);
 extern void rec_flag1_set(void);
+extern void rec_hibyte_pair_swap(void);
 extern void rec_slot_scan(void);
 extern void rec_sorted_lookup(void);
 extern void rec_timer_pair_clear(void);
@@ -1273,6 +1282,7 @@ extern void tween_track_alloc(void);
 extern void u16_counter_step_pad_a(void);
 extern void u16_counter_step_pad_b(void);
 extern void u16_lut_lookup(void);
+extern void u16_lut_slot_clear(void);
 extern void u16_step_toward(void);
 extern void u16_tbl_copy(void);
 extern void u16_wrap_counter_step(void);
@@ -2001,7 +2011,9 @@ const Br2FnEnt fn_table[] = {
   { 0x8018b0a0, (void *)angle_gte_vec },
   { 0x8018b208, (void *)prim_list_persp_step },
   { 0x8018babc, (void *)dbg_marker_mode_set },
+  { 0x8018bb38, (void *)flag_801b55d0_set },
   { 0x8018bba8, (void *)pad_slot_state_walk },
+  { 0x8018bd24, (void *)rec_hibyte_pair_swap },
   { 0x8018bd40, (void *)bitfield_or_write },
   { 0x8018bd50, (void *)gpu_pkt_unlink_n },
   { 0x8018bda4, (void *)corner_emit_cond_offset },
@@ -2026,6 +2038,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8018cd94, (void *)spr_tbl_init_b },
   { 0x8018cdf8, (void *)sprite_node_alloc },
   { 0x8018ce70, (void *)sprite_node_emit_a },
+  { 0x8018cfb4, (void *)file_rec_size_get },
   { 0x8018cfdc, (void *)cd_file_load_sm },
   { 0x8018d150, (void *)cd_read_issue },
   { 0x8018d1bc, (void *)atan2_lut },
@@ -2042,6 +2055,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8018d540, (void *)rtps_point_xform2 },
   { 0x8018d568, (void *)gte_xform_add_off },
   { 0x8018d5b4, (void *)rtps_pt_xform },
+  { 0x8018d5fc, (void *)gte_lwc2_r0_r1 },
   { 0x8018d618, (void *)range_circle_test },
   { 0x8018d69c, (void *)prim_attr_repack },
   { 0x8018d700, (void *)node_translate_tree },
@@ -2055,11 +2069,17 @@ const Br2FnEnt fn_table[] = {
   { 0x8018e028, (void *)angle_vec_build },
   { 0x8018e2f0, (void *)guest_bzero },
   { 0x8018e3bc, (void *)u16_lut_lookup },
+  { 0x8018e3f4, (void *)lut_mask_or },
+  { 0x8018e424, (void *)lut_mask_clear },
+  { 0x8018e458, (void *)u16_lut_slot_clear },
   { 0x8018e490, (void *)guest_memcpy },
   { 0x8018e4d0, (void *)rand_lcg },
+  { 0x8018e500, (void *)rand_seed },
   { 0x8018e510, (void *)str_len },
   { 0x8018e550, (void *)printf_forward_guest },
   { 0x8018e590, (void *)printf_core },
+  { 0x8018ec30, (void *)ctype_adj_m32 },
+  { 0x8018ec64, (void *)ctype_adj_p32 },
   { 0x8018eca0, (void *)strchr_bounded },
   { 0x8018ecf0, (void *)console_emit },
   { 0x8018edec, (void *)console_pct },

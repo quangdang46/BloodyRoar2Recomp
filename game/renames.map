@@ -1746,3 +1746,13 @@
 80138c6c node_list_walk_c
 8013e374 node_list_walk_d
 8013f7a8 node_list_walk_e
+8018e3f4 lut_mask_or
+8018e424 lut_mask_clear
+8018e458 u16_lut_slot_clear
+8018e500 rand_seed
+8018ec30 ctype_adj_m32
+8018ec64 ctype_adj_p32
+8018cfb4 file_rec_size_get
+8018d5fc gte_lwc2_r0_r1
+8018bb38 flag_801b55d0_set
+8018bd24 rec_hibyte_pair_swap

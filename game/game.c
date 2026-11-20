@@ -2365,6 +2365,85 @@ uint32_t u16_lut_lookup(uint32_t param_1)
   return *(uint16_t *)guest_at(tbl + idx * 0x10);
 }
 
+/* u16_lut_slot_clear — sibling of u16_lut_lookup: idx=a0&0xffff; <3
+ * clears the u16 at *(u32*)0x801b66e4 + idx*0x10 and returns 1, else 0.
+ * Disasm 0x8018e458-0x8018e488 (lui/addiu base, sll idx,4, sh $zero). */
+uint32_t u16_lut_slot_clear(uint32_t param_1)
+{
+  uint32_t idx = param_1 & 0xffff;
+  uint32_t tbl;
+  if (idx >= 3) return 0;
+  tbl = *(uint32_t *)guest_at(0x801b66e4);
+  *(uint16_t *)guest_at(tbl + idx * 0x10) = 0;
+  return 1;
+}
+
+/* lut_mask_or — per-index attribute mask OR: idx=a0&0xffff;
+ * mask = *(u32*)(0x801b66e8 + idx*4); base = *(u32*)0x801b66e0;
+ * *(u32*)(base+4) |= mask; returns (int32)idx < 3.
+ * Disasm 0x8018e3f4-0x8018e420. */
+uint32_t lut_mask_or(uint32_t param_1)
+{
+  uint32_t idx = param_1 & 0xffff;
+  uint32_t base = *(uint32_t *)guest_at(0x801b66e0);
+  uint32_t mask = *(uint32_t *)guest_at(0x801b66e8 + idx * 4);
+  uint32_t flags = *(uint32_t *)guest_at(base + 4);
+  *(uint32_t *)guest_at(base + 4) = flags | mask;
+  return (uint32_t)((int32_t)idx < 3);
+}
+
+/* lut_mask_clear — same table walk as lut_mask_or but clears the mask:
+ * *(u32*)(base+4) &= ~mask; always returns 1.
+ * Disasm 0x8018e424-0x8018e454 (not + and+slti absent). */
+uint32_t lut_mask_clear(uint32_t param_1)
+{
+  uint32_t idx = param_1 & 0xffff;
+  uint32_t base = *(uint32_t *)guest_at(0x801b66e0);
+  uint32_t mask = *(uint32_t *)guest_at(0x801b66e8 + idx * 4);
+  uint32_t flags = *(uint32_t *)guest_at(base + 4);
+  *(uint32_t *)guest_at(base + 4) = flags & ~mask;
+  return 1;
+}
+
+/* rand_seed — LCG state seed: *(u32*)0x801f68e0 = a0 (the state word
+ * rand_lcg @0x8018e4d0 advances as state*0x41c64e6d+0x3039).
+ * Disasm 0x8018e500-0x8018e510 (lui 0x801f, sw a0, +0x68e0). */
+void rand_seed(uint32_t param_1)
+{
+  *(uint32_t *)guest_at(0x801f68e0) = param_1;
+}
+
+/* ctype_adj_m32 — printf ctype-table adjust: c = ctype_tbl[a0 & 0xff]
+ * (@0x801b6701); when (c & 2) returns (int8_t)(a0 - 32), else (int8_t)a0.
+ * Disasm 0x8018ec30-0x8018ec60 (lb, andi 2, a0-32 vs a0, <<24 >>24). */
+int32_t ctype_adj_m32(uint32_t param_1)
+{
+  uint8_t c = *(uint8_t *)guest_at(0x801b6701 + (param_1 & 0xff));
+  int32_t r = (c & 2) ? (int32_t)(param_1 - 32) : (int32_t)param_1;
+  return (int8_t)r;
+}
+
+/* ctype_adj_p32 — printf ctype-table adjust: c = ctype_tbl[a0 & 0xff];
+ * when (c & 1) returns (int8_t)(a0 + 32), else (int8_t)a0.
+ * Disasm 0x8018ec64-0x8018ec94 (lb, andi 1, a0+32 vs a0, <<24 >>24). */
+int32_t ctype_adj_p32(uint32_t param_1)
+{
+  uint8_t c = *(uint8_t *)guest_at(0x801b6701 + (param_1 & 0xff));
+  int32_t r = (c & 1) ? (int32_t)(param_1 + 32) : (int32_t)param_1;
+  return (int8_t)r;
+}
+
+/* file_rec_size_get — CD file-record size getter: a0 < 0 (signed) -> 0;
+ * else returns word1 of the 8-byte record @0x801b5b94 + a0*8 (the
+ * (size+0x7ff)>>0xb page count written by pad_record_init).
+ * Disasm 0x8018cfb4-0x8018cfd0 (bltz a0 -> shared ret-0 tail 0x8018cfd4,
+ * sll a0,3, lw +4). */
+uint32_t file_rec_size_get(int32_t param_1)
+{
+  if (param_1 < 0) return 0;
+  return *(uint32_t *)guest_at(0x801b5b98 + (uint32_t)param_1 * 8);
+}
+
 /* set_graph_debug — SetGraphDebug level setter: byte @0x801b8322 = arg;
  * when nonzero calls PTR_FUN_801b831c (text_win_printf text-window printf)
  * with "SetGraphDebug:level:%d,type:%d reverse:%d". Returns old byte.
