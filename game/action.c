@@ -600,7 +600,10 @@ static void entry_setup(uint8_t *ctrl, uint32_t group)
             z = 0x400;
             if (chr == 2)           x = -0x600;
             else if (chr == 7 || chr == 8) x = -0x400;
-            else if (chr == 4 || chr == 5) x = -0x300;
+            /* guest @0x80175d24: beq chr,v0 with v0==1 (set @0x80175cfc,
+             * the slot==1 path skips the v0=4 reload @0x80175d04) ->
+             * chr==1 gets x=-0x300, NOT chr4/5. */
+            else if (chr == 1)      x = -0x300;
         } else { z = 0xfc00; x = 0; }
     } else {                                /* group 0 / >=4 */
         if (slot == 0)      { x = -0x100; z = 0x400;  }

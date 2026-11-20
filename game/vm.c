@@ -834,27 +834,31 @@ static uint32_t vm_stream_byte(uint8_t *ctx)
  * the n==0 tail (pc + ((3n+4)&0x7fe) = pc+4 absolute). */
 static uint32_t bra_random_pick(uint8_t *ctx, uint8_t *pc, int n)
 {
-    uint16_t w[256];
+    /* guest 0x8018310C..0x801831DC: n weight bytes @pc+3 are stored as
+     * u16 on the stack; X = ((stream_byte*sum)>>8) - w[0]. pick counts
+     * how many times the SECOND weight w[1] must be subtracted before
+     * X goes negative — the guest loop re-reads the same stack slot
+     * every iteration (a1 = sp+18 never advances, @0x80183190-0x801831a0;
+     * v1++ sits in the bgez delay slot so it counts the final subtract).
+     * For n<2 the guest reads an uninitialised stack slot; GU8(pc,4) is
+     * the deterministic stream-byte approximation. n==0 leaves w[0]
+     * uninitialised too — treated as pick 0 (real scripts never emit it). */
     int32_t sum = 0;
     int i, pick = 0;
     int32_t a0v;
     uint32_t b;
 
-    for (i = 0; i < n; i++) {
-        w[i] = GU8(pc, 3 + i);
-        sum += w[i];
-    }
+    for (i = 0; i < n; i++)
+        sum += GU8(pc, 3 + i);
     b = vm_stream_byte(ctx);
     /* mult lo = b*sum (both small); sra 8 */
-    a0v = (int32_t)(((int64_t)b * sum) >> 8) - (n > 0 ? w[0] : 0);
+    a0v = (int32_t)(((int64_t)b * sum) >> 8) - (n > 0 ? GU8(pc, 3) : 0);
     if (n > 0 && a0v >= 0) {
-        /* guest increments the pick counter in the bgez delay slot, so
-         * it counts the weight that drove the sum negative too. */
-        for (i = 1;; i++) {
-            a0v -= w[i];
-            pick = i;
-            if (a0v < 0) break;
-        }
+        int32_t w1 = GU8(pc, 4);
+        do {
+            a0v -= w1;
+            pick++;
+        } while (a0v >= 0);
     }
     return GU16(pc, ((n + 4) & 0x1fe) + pick * 2);
 }
@@ -1237,10 +1241,11 @@ int scriptop_gpad(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
             if (st3 & 0x80) {
                 GS16(ctx, VX_WAIT) = (int16_t)(w & 0x9fff);
             } else if (st3 & 0x40) {
-                /* guest stores the andi result (0x40); the
-                 * (w&0xdfff)|0x4000 value computed in the delay slot
-                 * is dead — reproduced literally. */
-                GS16(ctx, VX_WAIT) = 0x40;
+                /* guest @0x80184c88-0x80184c94: beq tests st3&0x40, then
+                 * the delay-slot ori v0,a1,0x4000 overwrites v0 with
+                 * (w&0xdfff)|0x4000 BEFORE the sh — the stored value is
+                 * the ori result, not 0x40. */
+                GS16(ctx, VX_WAIT) = (int16_t)(w1 | 0x4000);
             }
         }
     }

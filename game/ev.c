@@ -414,8 +414,10 @@ static uint8_t *ev5_action(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
     uint8_t *swctrl = foe ? foe_of(ctrl) : ctrl;
     int16_t  idx;
 
-    if (mode == 1) return pc + 4;                    /* guest: both
-        branches -> skip; suspicious merge, kept literal */
+    /* guest @0x8017ae88: mode1 tests ctrl+5&1 — flag SET -> pc+4,
+     * flag CLEAR -> fall through to op dispatch @0x8017aebc.
+     * (Same gate shape as EV8/EV9 mode1.) */
+    if (mode == 1 && (GU8(ctrl, FC_MODE5) & 1)) return pc + 4;
     if (mode == 2 && !(GU8(ctrl, FC_MODE5) & 1))
         return pc + 4;
 
@@ -857,7 +859,13 @@ chip_path:
         else if (chip >= 0x15) v = 0x4c;
         else                   v = 0x4b;
     }
-    GS16(fm, MO_114) = (int16_t)v;
+    /* guest @0x8017c4f4-0x8017c5ac: every +0x114 store uses
+     * lw 56(a3) = SELF motion (ctrl+0x38), not the foe motion used
+     * for +0x112 above. */
+    {
+        uint8_t *sm = (uint8_t *)guest_at(GU32(ctrl, 0x38));
+        GS16(sm, MO_114) = (int16_t)v;
+    }
     return pc + 4;
 }
 
