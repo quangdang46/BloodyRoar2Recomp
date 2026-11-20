@@ -3010,3 +3010,29 @@ NEXT: identify GP1 cmd 0x3F source — is the game/BIOS writing a real
 GP1 command the model lacks, or a corrupted/misaligned GPU packet from
 the versus scene? Check gpu.c GP1 decode vs the 0xBFC053C4 word and the
 GPU command ring at crash. Versus agent d7cbd5ab instrumenting.
+
+=== N+202 — versus is NON-DETERMINISTIC; gp1_dump exposes GP1 writer PCs ===
+Versus runs diverge run-to-run on the SAME build/nav:
+- run A (:4740 first pass): GPU GP1 unknown cmd 0x3F (word 0xBFC053C4 =
+  a BIOS pointer) fatal at frame ~1801.
+- run B (:4740 relaunch): clean atexit/tcp_quit at frame 4048 — NO crash,
+  frames advancing through versus init. gp1_trace shows only normal
+  per-frame GP1 writes (cmd 0x05 display-area @pc 0x8019A5A4, cmd 0x04
+  DMA-dir @pc 0x80192FA4/0x80193334/0x80193210) — the 0xBFC053C4 write
+  never appears in the clean run.
+=> The versus GPU crash is TIMING/RACE dependent, consistent with the
+deferred-interrupt/coroutine delivery problem (the same class behind
+cd.c's IRQ-boundary delegates). A stale/corrupt pointer leaks into the
+GP1 command stream only when interrupt timing lands wrong. NOT a
+clean-port logic bug — ctrl bind (burst_slot_active) and slot_apply
+verified correct.
+TOOLING: `gp1_dump` debug cmd dumps the dedicated GP1-write ring
+(s_gp1_trace, every 0x1F801814 write with seq/val/pc/ra/func/frame/epc)
+— supports frame_lo/frame_hi/newest/count. This is THE instrument to
+catch the 0xBFC053C4 writer's exact PC on a crashing run; needs several
+versus attempts since the crash is intermittent. mmio_dump covers all
+MMIO writes similarly.
+NEXT: reproduce the GPU crash, gp1_dump the tail, identify the pc/ra
+that emitted 0xBFC053C4, trace that function's packet source. Likely a
+deferred IRQ/coroutine writing display-env with a stale fn ptr.
+Versus agent d7cbd5ab running multi-attempt traces.
