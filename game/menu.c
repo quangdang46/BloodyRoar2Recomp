@@ -8209,8 +8209,12 @@ L_st1:                                         /* 0x8014d8f8 */
           goto L_next;
         }
         if (*(uint32_t *)(s0 + 0x10) == 1) {
-          /* gate on T+0x30 rec: f24>0 or (f0>>1)&1 */
-          uint8_t *a2r = T + 0x30;
+          /* gate on the OPPONENT record T+(s3^1)*0x30: f24>0 or
+           * (f0>>1)&1 (generated 0x8014DAC4: xori $2,$s3,1 -> *3 ->
+           * <<4 -> +T). Hardcoding T+0x30 only matches s3==0; for the
+           * P2 pass it must read P1's record or P2's confirm is
+           * gated on its own not-yet-ready f24 and never completes. */
+          uint8_t *a2r = T + (uint32_t)(s3 ^ 1) * 0x30;
           if ((int32_t)*(uint32_t *)(a2r + 0x24) <= 0 &&
               ((*(uint32_t *)(a2r + 0) >> 1) & 1u) == 0) goto L_next;
           {
