@@ -493,7 +493,9 @@ extern void descriptor_quad_dispatch(void);
 extern void dev_byte_xfer(void);
 extern void dev_cmd_byte_send(void);
 extern void dev_cmd_commit(void);
+extern void dev_cmd_process(void);
 extern void dev_cmd_round_dispatch(void);
+extern void dev_cmd_seq(void);
 extern void dev_stat_bit1_wait(void);
 extern void dialog_mode_mirror(void);
 extern void dialog_msg_dispatch(void);
@@ -2502,6 +2504,7 @@ const Br2FnEnt fn_table[] = {
   { 0x801a1a2c, (void *)cd_state_clear },
   { 0x801a1a40, (void *)cd_channel_main_init },
   { 0x801a1b0c, (void *)cd_channel_init },
+  { 0x801a1b50, (void *)dev_cmd_seq },
   { 0x801a1e84, (void *)dev_cmd_round_dispatch },
   { 0x801a1f74, (void *)dev_byte_xfer },
   { 0x801a2184, (void *)dev_cmd_byte_send },
@@ -2521,6 +2524,7 @@ const Br2FnEnt fn_table[] = {
   { 0x801a3108, (void *)cd_cmd_flush_a },
   { 0x801a31e0, (void *)cd_cmd_flush_b },
   { 0x801a328c, (void *)cd_cmd_issue_poll },
+  { 0x801a3350, (void *)dev_cmd_process },
   { 0x801a36f0, (void *)cd_channel_table_init },
   { 0x801a3850, (void *)cd_cmd_rec_clear },
   { 0x801a38b8, (void *)cd_cmd_queue_drain },

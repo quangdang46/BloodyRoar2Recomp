@@ -9909,6 +9909,379 @@ uint32_t dev_stat_bit1_wait(void)
   return v0;
 }
 
+/* dev_cmd_seq — SIO/memory-card per-slot command sequencer (guest
+ * 0x801A1B50, ~205 insns spanning CPS pieces 1B50/1BC4/1BEC/1C48/1C58/
+ * 1C90/1CAC/1CCC/1D4C/1D50/1D54/1D5C/1D98/1DC8/1DD4/1DD8/1E3C/1E4C/1E58/
+ * 1E5C/1E70). a0 = 240-byte queue record (0x801FF080+slot*240), a1 passes
+ * through live to every indirect call.
+ *
+ * Phase 1 — device setup + pending-record drain:
+ *   dev = *0x801BE7E4; sh 0x40->dev+10, sh 0->dev+10, sh 0xd->dev+8,
+ *   sh 0x88->dev+14 (all 16-bit stores, unconditional order).
+ *   fifo_space_sample(rec[0xE8]==8 ? 0x50 : 0x91).
+ *   slot = *0x801BE7C0; dev->h10 = (slot==0 ? 0x1003 : 0x3003).
+ *   n = *(0x801BE7D8 + slot*4)  (signed pending count).
+ *   n < 0  -> skip drain AND the -1/callback pair, go to send phase.
+ *   n > 0  -> drain loop: while tbl[slot] > 0 { tbl[slot]--; jalr
+ *     *0x801BE7A0( rec->fC + (old-1)*240 ) with ra=0x801A1C34 } — the
+ *     record stride is 240 (v0*15<<4). tbl[slot] and slot are RELOADED
+ *     from their cells every iteration (the callback may rewrite them).
+ *   n <= 0 -> recheck tbl[slot]: nonzero -> send phase; zero -> store
+ *     -1 into tbl[slot] (jalr delay slot, BEFORE the call), then
+ *     jalr *0x801BE7A0(rec) ra=0x801A1C98 and jalr *0x801BE7A4(rec)
+ *     ra=0x801A1CAC. a1-a3 pass through live (br2_call_generated leaves
+ *     caller-saved regs as the callee left them — the guest contract).
+ *
+ * Phase 2 — command send (only when dev status lhu(dev+4) & 0x200):
+ *   dev->h10 |= 0x10; if bit9 cleared meanwhile -> *0x801BE7E0 =
+ *   0xFFFFFF7F and tail. Else while (fifo_space_check()==0) retry
+ *   (a0=2000 from the branch delay slot — dead: clean fifo_space_check
+ *   reads the hardware counters itself). dev->b0 = 1 (delay-slot store
+ *   ahead of the call), fifo_space_sample(2000), dev_cmd_commit();
+ *   commit==0 -> return 0. dev_stat_bit1_wait(); fifo_space_sample(0x1ae)
+ *   (preceded by a dead lbu dev->b0 — reproduced: the read itself may
+ *   matter on MMIO, the value is discarded by the jal return).
+ *
+ * Phase 3/4 — two identical wait+send rounds: while !(*ctrl & 0x80)
+ *   { if (fifo_space_check()!=0) return 0 } (a0=60, dead arg);
+ *   round A sends dev->b0='B' then sample(60)/commit/stat_wait/
+ *   sample(0x1ae); round B sends dev->b0=1 then sample(60)/commit/
+ *   stat_wait and returns 0. Every commit failure returns 0.
+ *
+ * Tail (0x801A1E4C, reached when bit9 was clear or after phase 4):
+ *   rec->f50==0 -> return 1; else rec->f37!=0 -> return 0; else 1.
+ * Callers (cd_cmd_queue_service / cd_cmd_queue_drain) treat 0 as
+ * "still busy, call again" — the whole send path returns 0.
+ * Disasm: capstone of disc/SLES_017.22 @0x801A1B50-0x801A1E80,
+ * cross-checked vs generated/SLES_017.22_full_49.c. */
+uint32_t dev_cmd_seq(uint32_t rec, uint32_t a1)
+{
+  extern int br2_bail_pending(void);
+  extern void br2_irq_poll(void);
+  CPUState *c = clean_cpu_state();
+  uint32_t dev, slot, n, fn, saved_ra;
+  (void)a1;
+  if (!c) return 0;
+
+  dev = br2_ld32(0x801be7e4u);
+  br2_st16(dev + 10u, 0x40u);
+  br2_st16(dev + 10u, 0);
+  br2_st16(dev +  8u, 0x0du);
+  br2_st16(dev + 14u, 0x88u);
+
+  fifo_space_sample((br2_ld8(rec + 0xe8u) == 8u) ? 0x50u : 0x91u);
+
+  slot = br2_ld32(0x801be7c0u);
+  dev  = br2_ld32(0x801be7e4u);              /* reload (B1BB0) */
+  br2_st16(dev + 10u, (slot == 0u) ? 0x1003u : 0x3003u);
+
+  n = (uint32_t)(int32_t)br2_ld32(0x801be7d8u + (slot << 2));
+  if ((int32_t)n < 0) goto L_send;         /* bltz -> 0x801A1CAC */
+  if (n != 0) {
+    /* drain loop 0x801A1BEC-0x801A1C54: exits when tbl[slot] <= 0 and
+     * FALLS THROUGH to the 0x801A1C58 recheck below (not straight to
+     * send) — a drained-to-zero slot still runs the -1 + callbacks. */
+    for (;;) {
+      uint32_t s  = br2_ld32(0x801be7c0u);
+      uint32_t tp = 0x801be7d8u + (s << 2);
+      uint32_t cnt = (uint32_t)(int32_t)br2_ld32(tp);
+      uint32_t idx = cnt - 1u;
+      uint32_t arg;
+      br2_st32(tp, idx);                    /* tbl[slot] = count-1 */
+      arg = br2_ld32(rec + 0xcu) + idx * 240u;
+      fn = br2_ld32(0x801be7a0u);
+      saved_ra = c->gpr[31];
+      c->gpr[31] = 0x801a1c34u;              /* jalr return PC */
+      br2_call_generated(fn, arg, c->gpr[5], c->gpr[6], c->gpr[7]);
+      c->gpr[31] = saved_ra;
+      cnt = (uint32_t)(int32_t)
+          br2_ld32(0x801be7d8u + (br2_ld32(0x801be7c0u) << 2));
+      if ((int32_t)cnt <= 0) break;
+    }
+  }
+  /* 0x801A1C58 recheck: tbl[slot]!=0 -> send; ==0 -> -1 store + cbs. */
+  slot = br2_ld32(0x801be7c0u);
+  n    = br2_ld32(0x801be7d8u + (slot << 2));
+  if (n != 0) goto L_send;
+  br2_st32(0x801be7d8u + (slot << 2), 0xffffffffu);   /* jalr delay slot */
+  fn = br2_ld32(0x801be7a0u);
+  saved_ra = c->gpr[31];
+  c->gpr[31] = 0x801a1c98u;
+  br2_call_generated(fn, rec, c->gpr[5], c->gpr[6], c->gpr[7]);
+  c->gpr[31] = saved_ra;
+  fn = br2_ld32(0x801be7a4u);
+  saved_ra = c->gpr[31];
+  c->gpr[31] = 0x801a1cacu;
+  br2_call_generated(fn, rec, c->gpr[5], c->gpr[6], c->gpr[7]);
+  c->gpr[31] = saved_ra;
+
+L_send:
+  dev = br2_ld32(0x801be7e4u);
+  if ((br2_ld16(dev + 4u) & 0x200u) == 0) goto L_tail;
+  br2_st16(dev + 10u, (uint16_t)(br2_ld16(dev + 10u) | 0x10u));
+  /* 0x801A1CDC-0x801A1CE8: second bit9 test reuses the same dev (v1). */
+  if ((br2_ld16(dev + 4u) & 0x200u) == 0) {
+    /* 0x801A1E3C: *ctrl = 0xFFFFFF7F (v0 = -129 from the delay slot) */
+    br2_st32(br2_ld32(0x801be7e0u), 0xffffff7fu);
+    goto L_tail;
+  }
+  /* 0x801A1CF0: retry fifo_space_check until nonzero (a0=2000 in the
+   * branch delay slot is dead — the clean check reads hw counters). */
+  while (fifo_space_check() == 0) {
+    if (br2_bail_pending()) return 0;
+    br2_irq_poll();
+  }
+  dev = br2_ld32(0x801be7e4u);
+  br2_st8(dev, 1);                           /* delay-slot sb, pre-call */
+  fifo_space_sample(2000);
+  if (dev_cmd_commit() == 0) return 0;
+  (void)dev_stat_bit1_wait();
+  dev = br2_ld32(0x801be7e4u);
+  (void)br2_ld8(dev);                        /* dead lbu dev->b0 */
+  fifo_space_sample(0x1aeu);
+
+  /* wait loop A (0x801A1D5C): while !(*ctrl & 0x80) { check!=0 -> ret 0 } */
+  for (;;) {
+    uint32_t ctrl = br2_ld32(0x801be7e0u);
+    if ((br2_ld32(ctrl) & 0x80u) != 0) break;
+    if (fifo_space_check() != 0) return 0;
+    if (br2_bail_pending()) return 0;
+    br2_irq_poll();
+  }
+  dev = br2_ld32(0x801be7e4u);
+  br2_st8(dev, 0x42u);                        /* 'B', delay-slot store */
+  fifo_space_sample(60);
+  if (dev_cmd_commit() == 0) return 0;
+  (void)dev_stat_bit1_wait();
+  dev = br2_ld32(0x801be7e4u);
+  (void)br2_ld8(dev);                        /* dead lbu dev->b0 */
+  fifo_space_sample(0x1aeu);
+
+  /* wait loop B (0x801A1DD8): identical shape */
+  for (;;) {
+    uint32_t ctrl = br2_ld32(0x801be7e0u);
+    if ((br2_ld32(ctrl) & 0x80u) != 0) break;
+    if (fifo_space_check() != 0) return 0;
+    if (br2_bail_pending()) return 0;
+    br2_irq_poll();
+  }
+  dev = br2_ld32(0x801be7e4u);
+  br2_st8(dev, 1);                           /* delay-slot sb, pre-call */
+  fifo_space_sample(60);
+  if (dev_cmd_commit() == 0) return 0;
+  (void)dev_stat_bit1_wait();
+  /* 0x801A1E24-0x801A1E38: dev reload + dead lbu dev->b0 into v1,
+   * v0 = 0 -> return. */
+  (void)br2_ld8(br2_ld32(0x801be7e4u));
+  return 0;
+
+L_tail:
+  /* 0x801A1E4C: rec->f50==0 -> 1; else rec->f37!=0 -> 0; else 1. */
+  if (br2_ld8(rec + 0x50u) == 0) return 1;
+  if (br2_ld8(rec + 0x37u) != 0) return 0;
+  return 1;
+}
+
+/* dev_cmd_process — memcard/SIO command processor (guest 0x801A3350,
+ * 300B/75 blocks, single entry; CPS pieces 3350-36E0). a0 = command ctx
+ * record (same 240-byte family as dev_cmd_seq's rec). Cell map:
+ *   *0x801BE804 = enable flag / s4 arg source (reloaded after first cb)
+ *   *0x801BE78C = per-record cb, *0x801BE788 = byte-request cb (a1 = arg),
+ *   *0x801BE7A0/*0x801BE7A4 = drain/ctx cbs (same pair as dev_cmd_seq),
+ *   *0x801BE780 = completion cb, *0x801BE7B4 = record-table base,
+ *   *0x801BE7C0 = slot, *0x801BE7D8 = per-slot count tbl,
+ *   *0x801BE7F8 = transaction counter, *0x801BE7FC = status ptr (+0xE h).
+ * Every jalr parks $ra on its guest return PC so br2_call_generated's
+ * nested dispatch stops at the mid-function continuation; a1-a3 pass
+ * through live. Direct jals go to already-clean dev_byte_xfer /
+ * fifo_space_sample / dev_cmd_commit / dev_stat_bit1_wait.
+ * Disasm: capstone disc/SLES_017.22 @0x801A3350-0x801A36E0. */
+uint32_t dev_cmd_process(uint32_t ctx)
+{
+  CPUState *c = clean_cpu_state();
+  uint32_t s0, s1, s2, s3, s4, fn, r, saved_ra;
+  if (!c) return 0;
+  s1 = ctx;
+
+  /* 0x801A3350: if (*BE804) cb78C(ctx); s4 = *BE804 (reload). */
+  if (br2_ld32(0x801be804u) != 0) {
+    fn = br2_ld32(0x801be78cu);
+    saved_ra = c->gpr[31];
+    c->gpr[31] = 0x801a3394u;
+    br2_call_generated(fn, ctx, c->gpr[5], c->gpr[6], c->gpr[7]);
+    c->gpr[31] = saved_ra;
+  }
+  s4 = br2_ld32(0x801be804u);
+  s0 = 0xffffffffu;                            /* s0 = -1 */
+  s2 = 0xfffffff0u;                            /* s2 = -0xf0 */
+
+  if (s4 != 0) {
+    /* send loop 0x801A33AC-0x801A3434: cell-- unconditional (delay
+     * slot), exit when <=0; up to 4 record sends (s0=-1..3, s2 step
+     * 0xF0). bltz s0 skips the cb78C call on the first pass only. */
+    for (;;) {
+      uint32_t v = br2_ld32(0x801be7f8u) - 1u;
+      br2_st32(0x801be7f8u, v);                /* delay-slot store */
+      if ((int32_t)v <= 0) break;
+      if ((int32_t)s0 >= 0) {
+        uint32_t a = br2_ld32(s1 + 0xcu) + s2;
+        fn = br2_ld32(0x801be78cu);
+        saved_ra = c->gpr[31];
+        c->gpr[31] = 0x801a33e8u;
+        br2_call_generated(fn, a, c->gpr[5], c->gpr[6], c->gpr[7]);
+        c->gpr[31] = saved_ra;
+      }
+      /* 0x801A33E8: cb788(ctx,1) then byte_xfer(ctx, ret&0xff). */
+      fn = br2_ld32(0x801be788u);
+      saved_ra = c->gpr[31];
+      c->gpr[31] = 0x801a3400u;
+      r = br2_call_generated(fn, s1, 1u, c->gpr[6], c->gpr[7]);
+      c->gpr[31] = saved_ra;
+      r = (uint32_t)dev_byte_xfer((uint8_t *)guest_at(s1),
+                                  (int32_t)(r & 0xffu));
+      if ((int32_t)r < 0) return r;            /* -> epilogue v0=r */
+      fifo_space_sample(60);
+      if (dev_cmd_commit() == 0) return 0xfffffffdu;   /* -3 */
+      s0 += 1u;                                /* delay slot: always */
+      if ((int32_t)s0 >= 4) break;
+      s2 += 0xf0u;                             /* delay slot on loop */
+    }
+  }
+
+  /* 0x801A3438: slot-based dispatch setup. */
+  s0 = 0;
+  {
+    uint32_t slot = br2_ld32(0x801be7c0u);
+    uint32_t cnt  = br2_ld32(0x801be7f8u);
+    uint32_t a0i;
+    if ((int32_t)cnt < 2) goto L_collect;      /* bnez -> 0x801A35DC */
+    a0i = (slot < 1u) ? 1u : 0u;               /* sltiu a0,slot,1 */
+    s2 = 0x801be7d8u + (a0i << 2);             /* &tbl[a0i] */
+    s3 = a0i * 240u;
+    /* s5 = 3 (guest li) — the ==3 state compare below is literal. */
+  }
+
+  /* 0x801A347C: per-slot state dispatch (outer loop via 0x801A35B8). */
+  for (;;) {
+    int32_t st = (int32_t)br2_ld32(s2);
+    if (st < 0) goto L_collect;
+    if (st > 0) {
+      /* drain one record: ptr = *BE7B4 + s3; arg = ptr->fC + st*240
+       * - 0xF0 == ptr->fC + (st-1)*240; s0 = arg (persists). */
+      uint32_t base = br2_ld32(0x801be7b4u) + s3;
+      uint32_t arg  = br2_ld32(base + 0xcu) + (uint32_t)st * 240u - 0xf0u;
+      s0 = arg;
+      fn = br2_ld32(0x801be7a0u);
+      saved_ra = c->gpr[31];
+      c->gpr[31] = 0x801a34c8u;
+      br2_call_generated(fn, arg, c->gpr[5], c->gpr[6], c->gpr[7]);
+      c->gpr[31] = saved_ra;
+    }
+    /* 0x801A34C8: reload state, dispatch on value. */
+    st = (int32_t)br2_ld32(s2);
+    if (st == 3) {
+      /* 0x801A3510: cb7A0(s0-0xF0); then *s2 = 1 (via 0x801A3568). */
+      fn = br2_ld32(0x801be7a0u);
+      saved_ra = c->gpr[31];
+      c->gpr[31] = 0x801a3524u;
+      br2_call_generated(fn, s0 - 0xf0u, c->gpr[5], c->gpr[6], c->gpr[7]);
+      c->gpr[31] = saved_ra;
+      br2_st32(s2, 1u);
+      goto L_commitA;
+    }
+    if (st >= 0 && st < 2) {
+      /* 0x801A352C: s0 = *BE7B4 + s3; cb7A0(s0); cb7A4(s0); *s2 = -1. */
+      s0 = br2_ld32(0x801be7b4u) + s3;
+      fn = br2_ld32(0x801be7a0u);
+      saved_ra = c->gpr[31];
+      c->gpr[31] = 0x801a3550u;
+      br2_call_generated(fn, s0, c->gpr[5], c->gpr[6], c->gpr[7]);
+      c->gpr[31] = saved_ra;
+      fn = br2_ld32(0x801be7a4u);
+      saved_ra = c->gpr[31];
+      c->gpr[31] = 0x801a3564u;
+      br2_call_generated(fn, s0, c->gpr[5], c->gpr[6], c->gpr[7]);
+      c->gpr[31] = saved_ra;
+      br2_st32(s2, 0xffffffffu);
+      goto L_commitA;
+    }
+    if (st == 4) {
+      /* 0x801A34FC-0x801A350C: *s2 = 3 (delay-slot store) then send. */
+      br2_st32(s2, 3u);
+    }
+    /* all other states (2, >4, negative recheck) -> 0x801A3570 send. */
+L_commitA:
+    /* 0x801A3570: cb788(ctx, s4); byte_xfer(ctx, ret&0xff). */
+    fn = br2_ld32(0x801be788u);
+    saved_ra = c->gpr[31];
+    c->gpr[31] = 0x801a3584u;
+    r = br2_call_generated(fn, s1, s4, c->gpr[6], c->gpr[7]);
+    c->gpr[31] = saved_ra;
+    r = (uint32_t)dev_byte_xfer((uint8_t *)guest_at(s1),
+                                (int32_t)(r & 0xffu));
+    if ((int32_t)r < 0) return r;
+    fifo_space_sample(60);
+    if (dev_cmd_commit() == 0) return 0xfffffffdu;
+    /* 0x801A35B8: cell-- unconditional; >=2 -> loop 0x801A347C. */
+    {
+      uint32_t v = br2_ld32(0x801be7f8u) - 1u;
+      br2_st32(0x801be7f8u, v);
+      if ((int32_t)v >= 2) continue;
+    }
+    break;
+  }
+
+L_collect:
+  /* 0x801A35DC: response-collection loop while cell > 0. */
+  {
+    uint32_t v = br2_ld32(0x801be7f8u) - 1u;
+    br2_st32(0x801be7f8u, v);                  /* delay-slot store */
+    if ((int32_t)v > 0) {
+      s0 = 0x22;
+      for (;;) {
+        /* 0x801A35FC: cb788(ctx,s4); byte_xfer(ctx,ret&0xff). */
+        fn = br2_ld32(0x801be788u);
+        saved_ra = c->gpr[31];
+        c->gpr[31] = 0x801a3614u;
+        r = br2_call_generated(fn, s1, s4, c->gpr[6], c->gpr[7]);
+        c->gpr[31] = saved_ra;
+        r = (uint32_t)dev_byte_xfer((uint8_t *)guest_at(s1),
+                                    (int32_t)(r & 0xffu));
+        if ((int32_t)r < 0) return r;
+        /* 0x801A3628: lhu (*BE7FC)+0xE == 0x22 -> skip commit. */
+        {
+          uint32_t sp = br2_ld32(0x801be7fcu);
+          if (br2_ld16(sp + 0xeu) != s0) {
+            fifo_space_sample(60);
+            if (dev_cmd_commit() == 0) return 0xfffffffdu;
+          }
+        }
+        /* 0x801A365C: cell-- unconditional; >0 -> loop. */
+        v = br2_ld32(0x801be7f8u) - 1u;
+        br2_st32(0x801be7f8u, v);
+        if ((int32_t)v <= 0) break;
+      }
+    }
+  }
+
+  /* 0x801A3678: stat wait, bump ctx->f44, stash *BE7FC status byte0 at
+   * ctx->f3C + old_f44, then cb780(0); return 0. */
+  (void)dev_stat_bit1_wait();
+  {
+    uint32_t old = br2_ld8(s1 + 0x44u);
+    uint32_t sp  = br2_ld32(0x801be7fcu);   /* status ptr (0x801A3694) */
+    uint32_t b   = br2_ld8(sp);             /* lbu (v0) -> status byte0 */
+    br2_st8(s1 + 0x44u, (uint8_t)(old + 1u));
+    br2_st8(br2_ld32(s1 + 0x3cu) + old, (uint8_t)b);
+    fn = br2_ld32(0x801be780u);
+    saved_ra = c->gpr[31];
+    c->gpr[31] = 0x801a36bcu;
+    br2_call_generated(fn, 0u, c->gpr[5], c->gpr[6], c->gpr[7]);
+    c->gpr[31] = saved_ra;
+  }
+  return 0;
+}
+
 /* dev_cmd_round_dispatch — guest 0x801A1E84 (SIO command round-robin,
  * spans the CPS-split pieces 0x801A1E84/1EDC/1EE0/1F38/1F50/1F64).
  * Round counter cell @0x801BE7C4 indexes a guest fn-ptr table at
