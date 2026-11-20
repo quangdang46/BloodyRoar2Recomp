@@ -13734,7 +13734,7 @@ int trig_sin_lookup(uint param_1)
     uVar1 = (param_1 & 0x400) - uVar1;
   }
   if ((int)(uVar1 - 0x3af) < 0) {
-    iVar2 = (int)(short)(&DAT_80124048)[uVar1];
+    iVar2 = (int)*(short *)(&DAT_80124048 + uVar1 * 2);
   }
   else {
     iVar2 = 0x7fff;
