@@ -3144,3 +3144,41 @@ root-causing why the deferred coroutine starves (IRQ-not-firing vs
 delivery-gated vs lost-wakeup). NEXT: prove which of the three, then
 the faithful core fix unblocks BOTH versus fight streaming AND the
 cd.c delegate burn-down (AGENTS §8).
+
+=== N+206 — versus wedge last_store_pc 0x8019AA98 == documented cd_intc_dispatch wild store (stale-gpr IRQ delivery) ===
+Deep trace of the :4790 versus wedge (starvation_dump.jsonl, 16K ring
+entries) pinpoints the EXACT corruption and refines the mechanism:
+
+- PC_SAMPLE histogram: guest spins at 0x8019A60C (47/68 samples) —
+  inside GENERATED vsync_wait_n (0x8019a5d8, delegated via save.c:1496)
+  block_8019A600, the DAT_801bdde0 poll body. So the wait itself is
+  faithful generated code WITH per-block psx_check_interrupts_at —
+  IRQs ARE being delivered during the spin. NOT a clean-C no-check spin.
+- DAT_801bdde0 is the VBLANK frame counter (save.c:1483), incremented
+  by cd_cb8_run_param (0x8019ae70) reached via the VBLANK-IRQ chain
+  cd_ctx_restore -> cd_intc_dispatch(0x8019a8ec) -> cd_cb8_dispatch
+  (0x8019ae68, registered by cd_dispatch_tbl8 @cd.c:4106). NOT a CD IRQ.
+- psx_last_run_report last_store_pc = 0x8019AA98 — byte-exact the
+  documented "cd_intc_dispatch wild store" from cd.c:182. Generated
+  body @0x8019AA98 is `sh $zero,-13030($at)` (A420CD1A): stores 0 to
+  gpr[1]($at)-13030. With a STALE $at this is a wild store. This is the
+  smoking gun: a br2_irq_poll call delivered the VBLANK IRQ against a
+  cpu->gpr whose $at/$ra do not form a coherent interrupted-guest
+  context -> cd_intc_dispatch wild-stored -> the frame-counter/callback
+  path corrupted -> DAT_801bdde0 froze -> vsync_wait_n spun forever.
+- starvation_dump also shows SIO/memcard driver (BIOS pc 0xBFC21D3C)
+  actively polling through the wedge (STAT_READ/RX_READ/TX_WRITE/
+  SHIFT_*/ACK_FIRE, in_exc=1, i_stat=0x1 i_mask=0xD) — SIO IRQs ARE
+  serviced; only the deferred-coroutine frame-counter path is broken.
+  i_stat bit0 (VBLANK) was pending in the in-exception samples.
+CONCLUSION: versus blocker = a clean-C br2_irq_poll wait-loop on the
+versus path coinciding with a VBLANK IRQ -> IRQ delivered against stale
+cpu->gpr -> cd_intc_dispatch wild store @0x8019AA98 -> VBlank counter
+freeze -> wedge. SAME documented hazard class as cd_init_session
+(cd.c:179-186) but triggered by a DIFFERENT, still-clean-C poll site
+(versus does extra CD+SIO work arcade doesn't, raising the collision
+odds -> the N+202 non-determinism). NEXT: identify the exact clean-C
+br2_irq_poll caller active during versus fight-init (fntrace the
+transition into 0x8019AA98) and either delegate it to generated or make
+br2_irq_poll present a coherent guest context — the faithful fix that
+also unblocks the cd.c delegate burn-down.
