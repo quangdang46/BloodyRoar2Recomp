@@ -2778,3 +2778,26 @@ end unverified (agent ae40f52b empty report; its emu likely died). Next:
 catch a persistent pending.pending==1 instance to isolate which of the
 2 CD mechanisms fires; that's the last versus gate for deterministic
 round-play.
+
+=== N+194 — versus ph=6 stall REFRAMED: select-screen confirm, not CD ===
+696a66f2: pending.pending==1 CD hypothesis DISPROVEN — pending.active=0
+in ALL states (wedged+healthy); Pause 2nd-response completed/cancelled;
+CD fully idle during stall (irq_flag=0,i_stat=0,no pending IRQ). CD
+state was RED HERRING (same "stuck" signature on unrelated wedges).
+REAL: gs=8 -> entry_0x80126234 case8 -> bfsm -> ph=6 is the CHAR/ STAGE-
+SELECT screen inside select_screen_tick (menu.c:2987) via case01->
+select_screen_tick(3) when sub=3. select_screen_tick runs own
+0x1f800001 SM; 6=select loop, exits to 0xf0 only when both player recs
+state2 AND local_94[0]==2 && local_94[0xc]==2 (menu.c:3089). Mechanism:
+fighter_spawn_setup merges pad u16s from 0x1f800068-77 into per-player
++8; confirm bits trigger select_confirm_handler -> rec+0x24 1->2. If
+pad words stay 0 (dead input) or confirm stalls -> infinite ph=6 frames
+advancing (matches ALL evidence: CD idle, ~60fps, bone_write/evop anim,
+normal IRQ traffic). NONDETERMINISM = pad/SIO input race (hybrid-pad
+weakest axis), NOT CD timing. Agent added UNCOMMITTED decomp_trace_
+record markers tags70-74 in menu.c (~3020-3091) to discriminate dead-
+input vs confirm-logic on next wedge; hunt scripts cycling boots on
+ports5700-5720 detect persistent ph=6 + dump trace. Versus reaches
+ph=8 on 6/6 first-init boots (wedge rarer than ~1/6 or later cycle).
+NEXT: read trace tags70-74 on wedge -> pad path (_g_pad_buffer/PAD_dr/
+select_phase_gate) or confirm bookkeeping.
