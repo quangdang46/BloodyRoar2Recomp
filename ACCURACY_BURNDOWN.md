@@ -2472,3 +2472,18 @@ through versus fight (gs=8 ph=8), OT head cells mutate — versus round
 plays (slow wall-clock: host rasterizer eats ~55M gp0 writes/OT stream;
 guest-side no longer livelocks). gpu_state now exposes gpu_busy
 {charged,until,now,remain} via existing gpu_busy_debug().
+
+=== N+179 — second-pass audit: ev_stream_dispatch +0x84 store removed ===
+1c2168a8 second-pass sweep: 1 proven bug fixed (5949245). Guest
+0x8017ea7c carries stream pc in $a2/$v0, NEVER stores motion+0x84 —
+clean port stored handler-return pc every iteration (stale last-return
+where guest leaves entry/handler-written pc). Handler ABI now
+explicit pc_g like guest $a2; all 24 wN wrappers + EVWRAP updated.
+Verified vs generated br2eu_func_8017EA7C. CLEAN: fight.c pending_gate,
+ani.c all GTE/rsqrt ports insn-level, vm.c scriptop handlers,
+action.c apply/reset/ani_fixup, ev.c EV1/2/3 handlers. COVERAGE GAPS
+remain: battle.c(17.9K), save.c(9.6K), bind.c, resolve.c remainder,
+ev.c EV4-21 bodies, vm.c scriptop_bra/bsr/wait/gpad deep, action.c
+entry_setup/reset constants. DEAD-CODE question: ev_step/vm_step/
+vm_run appear uncalled (live path = ev_stream_dispatch->wN +
+script_op_dispatch->scriptop_*) — confirm+delete or leave.
