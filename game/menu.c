@@ -2997,9 +2997,12 @@ int32_t select_screen_tick(int32_t param_1)
   /* sp+0x18 (frame 0xf8) -> guest_sp()-0xe0; guest RAM backing so the
    * 0x801f10bc cell carries a real guest address. */
   uint8_t *auStack_e0 = (uint8_t *)guest_at(guest_sp() - 0xe0);
-  uint8_t auStack_b8[0x60];
-  int32_t local_a8[0x18];
-  int32_t local_94[0x30];
+  /* auStack_b8 = two 0x30-byte player records at caller_sp-0xb8 (s7);
+   * local_a8/local_94 are Ghidra aliases into that same guest record
+   * array (+0x10 / +0x24), not separate host storage. */
+  uint8_t *auStack_b8 = (uint8_t *)guest_at(guest_sp() - 0xb8);
+  int32_t *local_a8 = (int32_t *)guest_at(guest_sp() - 0xa8);
+  int32_t *local_94 = (int32_t *)guest_at(guest_sp() - 0x94);
   int32_t local_38 = 0;
   int32_t local_34, local_30, local_2c = 0;
   uint8_t *local_40 = (uint8_t *)guest_at(0x1f8000e8);
@@ -3007,9 +3010,6 @@ int32_t select_screen_tick(int32_t param_1)
   *(uint32_t *)guest_at(0x801f10bc) = guest_of(auStack_e0);
   local_a8[3] = 0;
   local_94[10] = 0;
-  memset(local_a8,0,sizeof(local_a8));
-  memset(local_94,0,sizeof(local_94));
-  memset(auStack_b8,0,sizeof(auStack_b8));
   hud_sprite_desc_init();
   rgb_triple_store(0,0,0);
   flow_cfg_init(0);
