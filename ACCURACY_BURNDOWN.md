@@ -2588,3 +2588,26 @@ fns partially verified (bounds/polarity spot-check) — recommend follow-up
 on op_anim_delta_walk, mc_data_read/write, lzss_decode, dialog_*/menu_*
 state machines. Audit campaign: all game/*.c swept; save.c deepest file
 (262 fns) now has targeted bug-class pass.
+
+=== N+184 — versus wedge REFRAMED: kernel channel-event deadlock (N+44) ===
+8e579b1a: CD drain starvation DISPROVEN — CD path faithful/healthy, drive
+idle cleanly frame8422 (Setloc->ReadN->Pause done, INT2 acked, no reg
+activity 4600 frames), DMA drains correctly (full 512-word sectors).
+REAL: game main thread BLOCKED in kernel wait — sp_ring shows ONLY
+tcb=0x8FE0 idle/IRQ thread runs (targets 0x8019A87C cd deferred,
+0x8019A460/53C cd_timer_read, kernel sched 0x00002xxx); ZERO
+frame_tick/bfsm/pbd/select/match/battle_frame entries. bioscall_dump:
+only B0:0x17 INTC-enable tail grows — main thread made ONE blocking call
+suspended, no TestEvent/WaitEvent/WaitSema/SleepThread repeats -> waits
+on kernel object whose DeliverEvent never arrives. Anim PCs frozen,
+frame advances ~1.4fps via VBlank only = hollow-fight. ROOT = documented
+N+44 deferred-IRQ/kernel channel-event deadlock: versus heavier resource
+load waits on channel/hw or CD/SPU-done event (0xF0000009/0x20 ch4-DMA,
+0xF0000011 channel/hw, 0xF1000008) whose DeliverEvent producer
+(cd_dma_chan_reset 0x8019b7e8 / SPU ch4 kick audio_seq_reset/slot-9
+0x801bdeec) never fires. Matches N+41 unified root: SPU ch4 stream never
+kicked -> kernel channel events starve -> async file-load never
+completes. 0x1f800019==0 is GO state (frame_divisor_get()==0 runs work),
+NOT blocker. Emu live port5450 hollow-fight frame~12300. NEXT: find
+exact waited kernel object (dynamic TCB via wait-queue/EvCB), check
+DeliverEvent producer for that class — SPU ch4 kick vs versus init.
