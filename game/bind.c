@@ -989,6 +989,7 @@ extern void FUN_8018e300(void);
 extern void FUN_8018e310(uint32_t);
 extern int psx_syscall(CPUState *cpu, uint32_t code);
 uint32_t br2_ld32(uint32_t a);
+uint16_t br2_ld16(uint32_t a);
 
 /* COP2 register field encoding shared with ani.c/gfx.c: reg n -> n*0x800. */
 #define BR2_GTE_REG(n) ((n) * 0x800)
@@ -1859,16 +1860,121 @@ int FUN_801468ec(uint32_t a0,uint32_t a1,uint32_t a2,const void *a3,int32_t a4)
     br2_guest_frame_free();
     return r;
 }
+/* FUN_8018b100 — guest 0x8018B100 (264B, sibling of battle.c's
+ * prim_list_persp_step). Dual-buffer primitive-list transform: walks
+ * `count` 0x28-byte records at guest addr a0; for each record with
+ * sx16(rec+0xC)==0 and lw(rec)!=0 it runs gte_xform3_t_ip twice around
+ * an RTPS-class GTE cmd, then jalr's the record's 16-byte task entries.
+ * Faithful port notes:
+ *  - scratchpad context save/restore at 0x1F8003E0..0x3FC (caller
+ *    s0-s6+ra) and the 0x1F8003C0..0x3DC block (live t4-t8 + GTE
+ *    MAC1-3 results) are observable guest state — reproduced via
+ *    br2_st32/live cpu->gpr reads exactly as generated.
+ *  - the inner jalr loop propagates callee-clobbered $a1/$a2 across
+ *    iterations (only $a0=entry[8], $a3=entry[4] are rewritten). The
+ *    br2_call_generated bridge does NOT restore $a0-$a3, so reading
+ *    cpu->gpr[5]/[6] before each call yields the same stale-register
+ *    semantics the guest register file produces; $t0 is loaded with the
+ *    jump target first, matching `lw $t0,0xC($s2); jalr $ra,$t0`.
+ *  - $v0 = final record pointer (a0 advanced by 0x28*count), or a0
+ *    unchanged when count <= 0 (shared epilogue `move $v0,$a0`). */
 int FUN_8018b100(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,
                  uint32_t a4,uint32_t a5)
 {
-    uint32_t fr = br2_guest_frame(0x20);
-    int r;
-    br2_st32(fr + 0x10, a4);
-    br2_st32(fr + 0x14, a5);
-    r = (int)br2_call_generated(0x8018b100u,a0,a1,a2,a3);
-    br2_guest_frame_free();
-    return r;
+    CPUState *c = clean_cpu_state();
+    uint32_t s0, s1, s4, s5, s2, ep;
+    int32_t cnt;
+    if (!c) {
+        uint32_t fr = br2_guest_frame(0x20);
+        int r;
+        br2_st32(fr + 0x10, a4);
+        br2_st32(fr + 0x14, a5);
+        r = (int)br2_call_generated(0x8018b100u,a0,a1,a2,a3);
+        br2_guest_frame_free();
+        return r;
+    }
+    if ((int32_t)a3 <= 0) return (int)a0;      /* blez -> shared epilogue */
+
+    /* Guest entry register state: $a2/$a3 arrive in $a2/$a3; mirror them
+     * so the first xform call sees the same live $a2/$a3 the guest does. */
+    c->gpr[4] = a0; c->gpr[5] = a1; c->gpr[6] = a2; c->gpr[7] = a3;
+
+    /* save caller s0-s6 + ra into scratchpad (0x1F8003E0..0x3FC) */
+    br2_st32(0x1f8003fcu, c->gpr[31]);
+    br2_st32(0x1f8003f8u, c->gpr[16]);
+    br2_st32(0x1f8003f4u, c->gpr[17]);
+    br2_st32(0x1f8003f0u, c->gpr[18]);
+    br2_st32(0x1f8003ecu, c->gpr[19]);
+    br2_st32(0x1f8003e8u, c->gpr[20]);
+    br2_st32(0x1f8003e4u, c->gpr[21]);
+    br2_st32(0x1f8003e0u, c->gpr[22]);
+
+    s0 = a0; s1 = a1; s4 = a4; s5 = a5;
+    cnt = (int32_t)a3;
+    do {
+        int32_t t0v = (int16_t)br2_ld16(s0 + 0xcu);
+        uint32_t prim = br2_ld32(s0);          /* lw $a1,0($s0) */
+        c->gpr[8] = (uint32_t)t0v;              /* $t0 = lh result */
+        c->gpr[4] = s5;                         /* delay-slot move $a0,$s5 */
+        if (t0v == 0 && prim != 0) {
+            /* jal 0x80186F5C (gte_xform3_t_ip): $a0=$s5,
+             * $a1=prim+0x20, $a2/$a3 = live leftovers. */
+            c->gpr[5] = prim + 0x20;
+            br2_call_generated(0x80186f5cu, s5, prim + 0x20,
+                               c->gpr[6], c->gpr[7]);
+            /* lwc2 gte[0]=rec[1], gte[1]=rec[2]; GTE cmd 0x0480012 */
+            setCopReg(2, BR2_GTE_REG(0),  br2_ld32(s0 + 4));
+            setCopReg(2, BR2_GTE_REG(1),  br2_ld32(s0 + 8));
+            copFunction(2, 0x480012);
+            /* stash live t4-t8 + MAC1-3 into scratchpad 0x1F8003C0..3DC */
+            br2_st32(0x1f8003c0u, c->gpr[14]);
+            br2_st32(0x1f8003c4u, c->gpr[12]);
+            br2_st32(0x1f8003c8u, c->gpr[15]);
+            br2_st32(0x1f8003ccu, c->gpr[24]);
+            br2_st32(0x1f8003d0u, c->gpr[13]);
+            br2_st32(0x1f8003d4u, (uint32_t)getCopReg(2, BR2_GTE_REG(25)));
+            br2_st32(0x1f8003d8u, (uint32_t)getCopReg(2, BR2_GTE_REG(26)));
+            br2_st32(0x1f8003dcu, (uint32_t)getCopReg(2, BR2_GTE_REG(27)));
+            /* jal 0x80186F5C again: $a0=$s4, $a1=0x1F8003C0. */
+            c->gpr[5] = 0x1f8003c0u;
+            c->gpr[4] = s4;
+            br2_call_generated(0x80186f5cu, s4, 0x1f8003c0u,
+                               c->gpr[6], c->gpr[7]);
+            /* task-entry loop: s2 = lw(rec+0x1C) -> [count][16B entries] */
+            s2 = br2_ld32(s0 + 0x1c);
+            c->gpr[5] = s1;                     /* move $a1,$s1 once */
+            {
+                int32_t n = (int32_t)br2_ld32(s2);
+                ep = s2 + 4;
+                /* guest guards with beqz/bgtz: any n != 0 runs >=1 entry */
+                if (n != 0) do {
+                    uint32_t a3v = br2_ld32(ep + 4);
+                    uint32_t a0v = br2_ld32(ep + 8);
+                    uint32_t fn  = br2_ld32(ep + 12);
+                    c->gpr[7] = a3v;
+                    c->gpr[8] = fn;             /* $t0 = jalr target */
+                    c->gpr[4] = a0v;
+                    br2_call_generated(fn, a0v, c->gpr[5], c->gpr[6], a3v);
+                    n--;
+                    ep += 16;
+                } while (n > 0);
+            }
+        }
+        cnt--;
+        s0 += 0x28;                             /* delay-slot advance */
+    } while (cnt > 0);
+
+    /* epilogue: $a0 = final record ptr (-> $v0), restore saved regs */
+    c->gpr[4] = s0;
+    c->gpr[31] = br2_ld32(0x1f8003fcu);
+    c->gpr[16] = br2_ld32(0x1f8003f8u);
+    c->gpr[17] = br2_ld32(0x1f8003f4u);
+    c->gpr[18] = br2_ld32(0x1f8003f0u);
+    c->gpr[19] = br2_ld32(0x1f8003ecu);
+    c->gpr[20] = br2_ld32(0x1f8003e8u);
+    c->gpr[21] = br2_ld32(0x1f8003e4u);
+    c->gpr[22] = br2_ld32(0x1f8003e0u);
+    return (int)s0;
 }
 
 __attribute__((constructor))
