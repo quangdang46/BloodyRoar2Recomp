@@ -9888,6 +9888,27 @@ uint32_t dev_cmd_commit(void)
   return 1;
 }
 
+/* dev_stat_bit1_wait — SIO status bit1 poll (guest 0x801A248C, 40B/3
+ * blocks, leaf). dev = *0x801BE7E4 loaded once; loop { v0 = lhu(dev+4)
+ * & 2; while v0 == 0 repeat } — exits when status bit1 sets, returns
+ * the masked value (always 2). The poll is hardware-timed, so each
+ * pass goes through br2_irq_poll + br2_bail_pending (same contract as
+ * dev_cmd_byte_send's identical wait). Disasm mipsel objdump:
+ * lui/lw 0x801BE7E4, lhu+andi 0x2 @+4, beqz back-edge, jr ra. */
+uint32_t dev_stat_bit1_wait(void)
+{
+  extern int br2_bail_pending(void);
+  uint32_t dev = br2_ld32(0x801be7e4u);
+  uint32_t v0;
+  for (;;) {
+    v0 = (uint32_t)br2_ld16(dev + 4u) & 2u;
+    if (v0 != 0) break;
+    if (br2_bail_pending()) return v0;
+    br2_irq_poll();
+  }
+  return v0;
+}
+
 /* dev_cmd_round_dispatch — guest 0x801A1E84 (SIO command round-robin,
  * spans the CPS-split pieces 0x801A1E84/1EDC/1EE0/1F38/1F50/1F64).
  * Round counter cell @0x801BE7C4 indexes a guest fn-ptr table at
@@ -9972,6 +9993,106 @@ uint32_t dev_cmd_round_dispatch(uint32_t ctx, uint32_t a2, uint32_t a3)
   r = v1 - 1u;
   if ((int32_t)v1 >= 5) br2_st32(0x801be7c4u, r);
   return r;
+}
+
+/* dev_cmd_byte_send — SIO/memory-card command-byte exchange (guest
+ * 0x801A2184, 632B/33 blocks, single-entry — the hottest unnamed device
+ * fn in the versus fight: ~348 dispatches/45s, always jalr'd through the
+ * dev_cmd_round_dispatch table with a0 = device ctx (0x801FF080/170),
+ * a1 = command byte).
+ *
+ * Body decoded insn-by-insn (mipsel objdump of disc/SLES_017.22 .text):
+ *   s0 = a0 ctx, s3 = a1 cmd byte.
+ *   buf = lw(ctx+0x3C); nib = lbu(buf)>>4 (sra, but lbu <= 0xFF so == lsr).
+ *   s1 = 136; the li s1,136 delay slot of the nib!=8 branch is
+ *   UNCONDITIONAL, then s1 = 34 only when nib==8 AND lbu(ctx+0x44) >= 9.
+ *   dev = *0x801BE7E4; poll lhu(dev+4)&2 == 0 (SIO status bit1, same
+ *   wait as dev_stat_bit1_wait @0x801A248C) -> fifo_space_sample(400).
+ *   dev reloaded; s2 = lbu(dev+0) & 0xFF (always — the andi is the bnez
+ *   delay slot); cmd = (lbu(ctx+0x44) != 0) ? s1
+ *        : ((s2 >> 4) == 8 ? 34 : s1);  sh cmd,14(dev).
+ *   ctrl = *0x801BE7E0; if ((*ctrl & 0x80) == 0) loop { fifo space
+ *   exhausted -> return -2; until *ctrl & 0x80 } — the space test is
+ *   fifo_space_check() inlined against the same 0x801FF260/64 cells and
+ *   0x1F801120/124/128 regs, so the clean helper is reused verbatim.
+ *   if (lbu(ctx+0xE8) != 8 && *0x801BE7C4 == 2) { fifo_space_sample(60);
+ *   while (!fifo_space_check()) }.
+ *   dev reloaded; sb s3,0(dev) — command byte out.
+ *   if (*0x801BE7C4 == 3 && s2 == 128) { *ctrl = 0xFFFFFF7F;
+ *   dev[10] |= 0x10 } (same commit tail as dev_cmd_commit).
+ *   ctx[0x45]++; if (ctx[0x44] != 255) buf[ctx[0x44]] = s2;
+ *   ctx[0x44]++; return s2 (v0 = -2 on the fifo-exhausted bail).
+ *
+ * The status polls are hardware-timed waits: each iteration goes through
+ * br2_irq_poll (advance_cycles + psx_check_interrupts_at) plus the
+ * br2_bail_pending early-out — the established cd.c/dev_cmd_commit
+ * contract; a raw clean-C spin would starve the deferred CD/SIO
+ * coroutine. */
+int32_t dev_cmd_byte_send(void *a0_ctx,int32_t a1_byte)
+{
+  extern int br2_bail_pending(void);
+  uint8_t *s = (uint8_t *)a0_ctx;
+  uint32_t buf = *(uint32_t *)(s + 0x3c);
+  uint32_t dev, ctrl;
+  uint32_t s1, cmd, b44;
+  int32_t s2;
+
+  /* nibble test: buf[0]>>4 == 8 && ctx[0x44] >= 9 -> cmd id 34 else 136 */
+  s1 = (((uint32_t)(int32_t)br2_ld8(buf) >> 4) == 8u &&
+        (uint32_t)*(uint8_t *)(s + 0x44) >= 9u) ? 34u : 136u;
+
+  /* SIO status bit1 wait (identical poll to 0x801A248C) */
+  dev = br2_ld32(0x801be7e4u);
+  while ((br2_ld16(dev + 4u) & 2u) == 0) {
+    if (br2_bail_pending()) return -1;
+    br2_irq_poll();
+  }
+  fifo_space_sample(400u);
+
+  /* response byte + command select; s2 is captured unconditionally */
+  dev = br2_ld32(0x801be7e4u);
+  s2 = (int32_t)(br2_ld8(dev) & 0xffu);
+  b44 = (uint32_t)*(uint8_t *)(s + 0x44);
+  cmd = (b44 != 0u) ? s1 : (((uint32_t)s2 >> 4) == 8u ? 34u : s1);
+  br2_st16(dev + 14u, (uint16_t)cmd);
+
+  /* FIFO-space / ctrl-bit7 wait; exhausted -> v0 = -2 */
+  ctrl = br2_ld32(0x801be7e0u);
+  if ((br2_ld32(ctrl) & 0x80u) == 0) {
+    for (;;) {
+      if (fifo_space_check() != 0) return -2;
+      if ((br2_ld32(ctrl) & 0x80u) != 0) break;
+      if (br2_bail_pending()) return -1;
+      br2_irq_poll();
+    }
+  }
+
+  if ((uint32_t)*(uint8_t *)(s + 0xe8) != 8u &&
+      br2_ld32(0x801be7c4u) == 2u) {
+    fifo_space_sample(60u);
+    while (fifo_space_check() == 0) {
+      if (br2_bail_pending()) return -1;
+      br2_irq_poll();
+    }
+  }
+
+  /* command byte out, then the conditional commit tail */
+  dev = br2_ld32(0x801be7e4u);
+  br2_st8(dev, (uint8_t)a1_byte);
+  if (br2_ld32(0x801be7c4u) == 3u && s2 == 128) {
+    ctrl = br2_ld32(0x801be7e0u);
+    br2_st32(ctrl, 0xffffff7fu);
+    dev = br2_ld32(0x801be7e4u);
+    br2_st16(dev + 10u, (uint16_t)(br2_ld16(dev + 10u) | 0x10u));
+  }
+
+  /* ring-buffer bookkeeping: ctx[0x45] seq++, buf[ctx[0x44]] = reply,
+   * ctx[0x44] index++ (skipped at the 255 wrap). */
+  *(uint8_t *)(s + 0x45) = (uint8_t)(*(uint8_t *)(s + 0x45) + 1u);
+  b44 = (uint32_t)*(uint8_t *)(s + 0x44);
+  if (b44 != 255u) br2_st8(buf + b44, (uint8_t)s2);
+  *(uint8_t *)(s + 0x44) = (uint8_t)(b44 + 1u);
+  return s2;
 }
 
 /* ======================================================================

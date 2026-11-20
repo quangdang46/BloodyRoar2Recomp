@@ -1781,3 +1781,5 @@
 801a3d84 cd_cmd_state_commit
 801a3e94 cd_cmd_state_rx
 801a189c cd_cmd_queue_service
+801a2184 dev_cmd_byte_send
+801a248c dev_stat_bit1_wait

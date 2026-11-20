@@ -491,8 +491,10 @@ extern void descblk_variant_f(void);
 extern void descriptor_fetch(void);
 extern void descriptor_quad_dispatch(void);
 extern void dev_byte_xfer(void);
+extern void dev_cmd_byte_send(void);
 extern void dev_cmd_commit(void);
 extern void dev_cmd_round_dispatch(void);
+extern void dev_stat_bit1_wait(void);
 extern void dialog_mode_mirror(void);
 extern void dialog_msg_dispatch(void);
 extern void dialog_sel_dispatch(void);
@@ -2502,7 +2504,9 @@ const Br2FnEnt fn_table[] = {
   { 0x801a1b0c, (void *)cd_channel_init },
   { 0x801a1e84, (void *)dev_cmd_round_dispatch },
   { 0x801a1f74, (void *)dev_byte_xfer },
+  { 0x801a2184, (void *)dev_cmd_byte_send },
   { 0x801a23fc, (void *)dev_cmd_commit },
+  { 0x801a248c, (void *)dev_stat_bit1_wait },
   { 0x801a24c0, (void *)cd_ctx_set_28_34 },
   { 0x801a24dc, (void *)op_tag_dispatch },
   { 0x801a2d7c, (void *)cd_ctx_cmd_submit },
