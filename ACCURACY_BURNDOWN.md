@@ -2867,3 +2867,46 @@ prim_list_persp_step. NEXT: find who writes node+0x1c task table +
 fills entries during versus battle init; check whether the versus CD
 stream (extra fighter assets vs arcade) completes before
 battle_flow_state_machine reaches prim_list_persp_step.
+
+=== N+197 — populate mechanism PINNED: node+0x1c task table = heap_serialize scratch append; prim_list_persp_step ABI fixed to call_guest4 ===
+Static trace of the populate chain (game/menu.c heap_serialize @0x8016b7c0,
+heap_record_emit @0x8016cc5c, save_state_machine_alt @0x80171890):
+- heap_record_emit serializes one heap record into a 0x28 dst record. It
+  writes +0x00=0, +0x04/+0x06/+0x08/+0x0c/+0x0e=0, +0x20=src, +0x24=size —
+  it does NOT touch +0x1c.
+- heap_serialize walks the blk record list, per-tag dispatches to a
+  heap_serialize_tag_* serializer, and collects a 16-byte scratch entry
+  per handled record {tag, param, cur-before-call, serializer-func}. Its
+  epilogue writes MW32(dst+0x1c, cur); MW32(outp,s3); MW32(cur,s3); then
+  appends s3 x 16B entries at cur. => node+0x1c IS the task table
+  prim_list_persp_step walks: *(+0x1c)=count, entries {+0 tag,+4 param,
+  +8 data-cursor,+0xC func} stride 16 — EXACTLY the jalr ABI.
+- save_state_machine_alt binds prim-list node addrs 0x801bf860 (one side)
+  / 0x801c0940 (other) into pl+0x14 while building records via
+  heap_record_emit<-heap_serialize. These are the SAME nodes dumped live
+  in versus: sideA node 0x801bf860 -> +0x1c=0x8005d88c (TEXT/font data,
+  count=1213422682), sideB node 0x801c0940 -> +0x1c=0x800c2dc4
+  (0xffffffff fill). => For versus the +0x1c pointer does NOT reference a
+  valid heap_serialize scratch append. Either (a) heap_serialize never
+  ran for that record so +0x1c kept uninitialized heap garbage, (b) the
+  versus CD stream produced a wrong blk/ctx so `cur`/`s3` landed on
+  non-table data, or (c) versus uses a different prim-list builder that
+  does not populate +0x1c as a task table. CD state at the freeze:
+  reading=0, last_sector lba=8801 delivered ~250 frames prior,
+  ring_partial=1826 — reads COMPLETED, so this is a populate/emit bug or
+  wrong-record selection, not an active CD stall.
+ABI FIX (faithful, build green): prim_list_persp_step (0x8018B208) inner
+entry loop now uses call_guest4(func=entry[+0xC], a0=entry[+8],
+a1=param_2, a2=param_3, a3=entry[+4]) instead of task_invoke(fn,arg).
+Verified vs generated br2eu_func_8018B208: a0=*(entry+8), a3=*(entry+4),
+a1=s1=param_2, a2=s4=param_3 (a1/a2 loaded once per node at
+0x8018B314/0x8018B31C). Matches prim_task_run's proven call_guest4
+pattern. NOTE: does NOT fix the 0x01000000 crash (bad table data is
+upstream); prevents the stale-a2/a3 latent corruption once the table is
+populated. UNCOMMITTED — battle.c also carries sibling g_tpool_fail/
+g_wrape/g_tramp instrumentation (defined in uncommitted interrupts.c),
+so the file can't be committed alone without a broken intermediate
+commit; rides with the versus investigation.
+NEXT: runtime-prove whether heap_serialize runs for the versus prim
+records and what dst+0x1c/cur/s3 it produces vs arcade; diff the blk
+record tags versus vs arcade to find the divergent serializer/record.
