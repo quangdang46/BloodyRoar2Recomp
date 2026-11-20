@@ -2044,13 +2044,19 @@ void datetime_confirm_a(int32_t param_1,uint32_t param_2)
   uint8_t bVar2;
   const uint8_t *puVar3;
 
-  *(int16_t *)(s0 + 0x12) = (int16_t)param_1;
+  /* disasm: guest stores are sb (byte) at +0x12 — 0x801575D0/0x801575F8/
+   * 0x80157614 `A6020012`/`A6040012`; reads are lh — 0x801575FC `86020012`,
+   * 0x80157628 `86040012`. +0x16/+0x14/+0x10 are also sb — 0x80157638/
+   * 0x8015763C/0x80157678. */
+  s0[0x12] = (uint8_t)param_1;
+  /* guest compares against sign-extended param_1 in-register (sll/sra at
+   * 0x801575D4/0x801575DC), not a reload of the halfword. */
   iVar1 = (int32_t)(int16_t)param_1;
   if (s0[0xc] < iVar1) {
-    *(int16_t *)(s0 + 0x12) = (int16_t)(iVar1 % s0[0xc]);
+    s0[0x12] = (uint8_t)(iVar1 % s0[0xc]);
   }
   if (*(int16_t *)(s0 + 0x12) == 0) {
-    *(int16_t *)(s0 + 0x12) = (int16_t)s0[0xc];
+    s0[0x12] = s0[0xc];
   }
   if ((int32_t)param_2 >= 0) {
     mc_dialog_bit4((int32_t)param_2);
@@ -2058,8 +2064,8 @@ void datetime_confirm_a(int32_t param_1,uint32_t param_2)
   iVar1 = *(int16_t *)(s0 + 0x12);
   s0[0xd] = 0x10;
   bVar2 = s0[0xe];
-  *(int16_t *)(s0 + 0x16) = 0;
-  *(int16_t *)(s0 + 0x14) = 0;
+  s0[0x16] = 0;
+  s0[0x14] = 0;
   s0[0xf] = 0;
   puVar3 = s0 + 0x2c + iVar1 * 4;
   s0[0xe] = (uint8_t)((bVar2 & 0xf0) | 1);
@@ -2068,13 +2074,13 @@ void datetime_confirm_a(int32_t param_1,uint32_t param_2)
   *(uint32_t *)(s0 + 0x20) = (uint32_t)iVar1;
   *(uint32_t *)(s0 + 0x28) = 0xffffffffu;
   *(uint32_t *)(s0 + 0x18) = 0;
-  *(int16_t *)(s0 + 0x10) = 0x7f;
+  s0[0x10] = 0x7f;
 }
 
 /* datetime_confirm_b — date/time dialog confirm path B. param_1 = packed
  * date value (param_1 % 8 -> weekday nibble at +1); looks up the
- * date-string pointer in the table @0x801b5b94 (8-byte entries,
- * index = param_1/8), resolves it and the +0x12-indexed string at
+ * date-string pointer in the table @0x801b5b94 (u32 entries,
+ * index = param_1/8 — guest sll $3,$3,2 at 0x801576DC), resolves it and the +0x12-indexed string at
  * guest 0x801b3310 via cd_stamp_to_sector, waits on cd_cmd_issue_sync(0xd),
  * then publishes like datetime_confirm_a with flag bits |2. */
 void datetime_confirm_b(int32_t param_1,uint32_t param_2)
@@ -2099,7 +2105,7 @@ void datetime_confirm_b(int32_t param_1,uint32_t param_2)
   mc_state_init();
   iVar3 = cd_stamp_to_sector(s3);
   iVar3 = iVar3 + cd_stamp_to_sector((const void *)guest_at(
-      0x801b3310u + (uint32_t)(*(int16_t *)(s1 + 0x12)) * 4)) * 2;
+      0x801b3310u + (uint32_t)*(uint16_t *)(s1 + 0x12) * 4)) * 2;
   *(uint32_t *)(s1 + 0x28) = (uint32_t)iVar3;
   s1[0] = 1;
   s1[1] = (uint8_t)iVar2;
@@ -2110,9 +2116,12 @@ void datetime_confirm_b(int32_t param_1,uint32_t param_2)
   if ((int32_t)param_2 >= 0) {
     mc_dialog_bit4((int32_t)param_2);
   }
+  /* disasm: +0x16/+0x14/+0x10 are sb — 0x80157764/0x80157768/0x80157794;
+   * +0x12 is sh — 0x801576E4 `A6240012`; +0x12 read is lhu — 0x80157704
+   * `86230012`, so the index read must be unsigned. */
   bVar4 = s1[0xe];
-  *(int16_t *)(s1 + 0x16) = 0;
-  *(int16_t *)(s1 + 0x14) = 0;
+  s1[0x16] = 0;
+  s1[0x14] = 0;
   s1[0xf] = 0;
   s1[0xd] = 0x10;
   s1[0xe] = (uint8_t)((bVar4 & 0xf0) | 2);
@@ -2120,7 +2129,7 @@ void datetime_confirm_b(int32_t param_1,uint32_t param_2)
   *(uint32_t *)(s1 + 0x24) = (uint32_t)iVar3;
   *(uint32_t *)(s1 + 0x20) = (uint32_t)iVar3;
   *(uint32_t *)(s1 + 0x18) = 0;
-  *(int16_t *)(s1 + 0x10) = 0x7f;
+  s1[0x10] = 0x7f;
 }
 
 /* slot_display_pos — save-slot display-position helper. Gates on the
@@ -2538,18 +2547,19 @@ int hud_name_fixup(char *t1)
 }
 
 /* name_rec_insert — name-record insert: tab = 16-byte records, idx a1,
- * count = stack arg. idx out of range -> fill tail u16s from src +0xe0/+0xe6.
- * Else shift records [idx..count-2] up one and fill slot: name[0..3],
- * src[3]->+4, u32 src+0xf0->+8, u16 src+0xe0->+0xc, u16 src+0xe6->+0xe.
- * Disasm 0x80163bf4-0x80163cb4. */
+ * count = stack arg. Disasm 0x80163bf4-0x80163cb4: idx out of range
+ * (a1 >= count || a1 < 0) returns immediately — branches at 0x80163C04
+ * (beq on slt==0) and 0x80163C0C (blt) both target block_80163CB4, the
+ * bare jr-$ra epilogue with NO stores; the +0xc/+0xe tail u16s are only
+ * written on the in-range fill path. Else shift records [idx..count-2]
+ * up one and fill slot: name[0..3], src[3]->+4, u32 src+0xf0->+8,
+ * u16 src+0xe0->+0xc, u16 src+0xe6->+0xe. */
 void name_rec_insert(uint8_t *a0,int32_t a1,uint8_t *a2,const void *a3_,int32_t count)
 {
   uint8_t *t0 = a0 + a1 * 16;
   const uint8_t *a3 = (const uint8_t *)a3_;
   int32_t v1;
   if (a1 >= count || a1 < 0) {
-    *(uint16_t *)(t0 + 0xc) = *(uint16_t *)(a2 + 0xe0);
-    *(uint16_t *)(t0 + 0xe) = *(uint16_t *)(a2 + 0xe6);
     return;
   }
   for (v1 = count - 2; v1 >= a1; v1--)
