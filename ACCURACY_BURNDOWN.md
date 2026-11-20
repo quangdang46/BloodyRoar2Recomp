@@ -2429,3 +2429,19 @@ table @0x801B8438 stride0x1C 'load complete' flag stuck. NEXT: find fn
 at 0x80196FC4 + its gate; trace job-counter transition; check whether
 Pause-completion handler sets the wake flag the next-chunk issue waits
 on. Wedge emu live port5410 frame~147000 post-mortem.
+
+=== N+177 — wedge ROOT: GPU display-off stalls OT/DMA completion ===
+4c442271: NOT CD/BIOS — per-frame task spins in cd_queue_push
+(0x80192F14) queue-full loop; match_mode_set/battle_flow_state_machine
+NEVER entered (versus chunk path behind bfsm starved). ch2 DMA stays
+active=1 remaining_words=9; OT walk @0x8019A48C cancels after 81
+polls/~43M cyc retries — gpu_ot cancels=2897 identical (nodes~2483
+words~6299). SMOKING GUN: gpu_state display_disabled=1 (GP1 bit0=1,
+game turned display OFF), last_3d_frame=70241 vs cur~270000 — GPU has
+NOT completed a 3D frame in ~200K frames; gp0_writes still +27k/3s
+(retry loop re-feeds). On real HW GP0 processing CONTINUES with display
+off (GP1 bit0 gates display output/GPUSTAT bit23 only). Suspect: runtime
+gates OT/DMA-done/GPU-ready on display_disabled -> faithful-core bug.
+CHECK: gpu.c display_disabled (set ~5819, GPUSTAT bit23 ~2960, exposed
+~3398, gates ~469/2449/2546), ch2 DMA completion condition, and the
+status bit 0x8019A48C polls. Wedged emu live port5410.
