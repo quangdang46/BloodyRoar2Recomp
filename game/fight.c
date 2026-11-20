@@ -95,3 +95,156 @@ accept:
     hit_chain_clear(ctrl);
     return (int32_t)pend + 0x90;
 }
+
+/* ================================================================== */
+/* fighter_hud_emit_pair — per-frame dual-fighter HUD/status emit        */
+/*                                                                    */
+/* Faithful port of guest 0x801343BC (652B, 25 blocks). Emits five       */
+/* prim_task_run channel-script records against the caller's emit      */
+/* bases (p1+0x2048 / p1+0x2074), fills the record's transform fields    */
+/* from the +0xbc-linked status struct, runs gte_xform3_t_ip on the     */
+/* record's +0x74 matrix, then for BOTH fighter status structs          */
+/* (scratchpad 0x1F8000E8 / 0x1F8001F0) conditionally allocates a       */
+/* gauge-bar FX group and posts deferred_cmd_post(0x400,0x84,0).        */
+/*                                                                    */
+/* Guest ABI: a0=emit base, a1=script ctx, a2=record (guest addr),      */
+/* a3=ctx whose +0xbc is a guest status-struct ptr, stack arg = xform   */
+/* target (guest addr). Clean wrapper marshals a0-a3 + stack arg.       */
+/* ================================================================== */
+
+extern void *guest_at(uint32_t addr);
+extern int prim_task_run(int param_1, uint32_t param_2, uint32_t param_3, int param_4);
+extern uint32_t *gte_xform3_t_ip(uint32_t *param_1, uint16_t *param_2);
+extern int fx_group_alloc(uint32_t param_1, uint32_t param_2, int param_3, int param_4);
+extern uint32_t noop_c(int param_1);
+extern void deferred_cmd_post(uint32_t param_1, int param_2, int16_t param_3);
+
+/* Absolute guest-address cell access (guest addr -> host mirror). */
+#define GA8(a)   (*(const int8_t  *)guest_at(a))
+#define GA16(a)  (*(const int16_t  *)guest_at(a))
+#define GA32(a)  (*(const uint32_t *)guest_at(a))
+#define GAS32(a) (*(int32_t  *)guest_at(a))
+#define GASU32(a) (*(uint32_t *)guest_at(a))
+
+/* One fighter status block — guest duplicates this body verbatim for
+ * s6=0x1F8000E8 then s7=0x1F8001F0; a helper keeps the port auditable.
+ * fb is the guest address of the fighter status struct. */
+static void fighter_hud_gauge_block(uint32_t fb)
+{
+    /* (flags & 0x00080080) == 0x00080000  and  h94 > 0 (signed) */
+    if ((GA32(fb + 0x5c) & 0x00080080u) != 0x00080000u) return;
+    if ((int32_t)GA16(fb + 0x94) <= 0) return;
+    if ((GA32(fb + 0x60) & 0x2u) == 0) {
+        int alloc = fx_group_alloc(2, 1, 3, 0);
+        if (alloc != 0) {
+            uint32_t rec = noop_c(alloc);          /* guest addr */
+            uint32_t src = GA32(fb + 0x20);        /* guest addr */
+            GASU32(rec + 4)  = GA32(src + 0x174);
+            GASU32(rec + 8)  = GA32(src + 0x178);
+            GASU32(rec + 0xc)= GA32(src + 0x17c);
+        }
+        /* jal delay slot sets a2=0 on BOTH the alloc==0 and fall-through
+         * paths -> deferred_cmd_post(0x400,0x84,0) unconditionally here. */
+        deferred_cmd_post(0x400, 0x84, 0);
+    }
+    GASU32(fb + 0x60) = GA32(fb + 0x60) | 0x2u;
+}
+
+void fighter_hud_emit_pair(uint32_t p1, uint32_t p2, uint32_t p3,
+                           uint32_t p4, uint32_t p5)
+{
+    uint32_t rec = p3;                    /* s0 — guest record addr */
+    uint32_t s4  = GA32(p4 + 0xbc);       /* guest status-struct ptr */
+    uint32_t base1 = p1 + 0x2048;         /* s1 */
+    uint32_t base2;                       /* s2 after update */
+
+    /* Five prim_task_run emits (guest jal 0x8018A4F8). a1 = emit base,
+     * a2 = script ctx (p2), a3 = channel/stride literal. The guest
+     * reloads lw a0,8(s0) before EVERY call — rec+8 may be rewritten
+     * by the callee, so it is re-read each time, not CSE'd. */
+    prim_task_run((int)GA32(rec + 0x00), base1, p2, 1);
+    prim_task_run((int)(GA32(rec + 8) + 0xc8), base1, p2, 1);
+    base2 = p1 + 0x2074;
+    prim_task_run((int)(GA32(rec + 8) + 0xf0), base2, p2, 3);
+    prim_task_run((int)(GA32(rec + 8) + 0xa0), base2, p2, 1);
+
+    /* Record scalar fields + transform. lh sign-extends into sw. */
+    GASU32(rec + 0x8c) = 0;
+    GAS32 (rec + 0x88) = GA16(s4 + 0x4a);
+    GAS32 (rec + 0x90) = GA16(s4 + 0x4e);
+    gte_xform3_t_ip((uint32_t *)guest_at(p5),
+                    (uint16_t *)guest_at(rec + 0x74));
+    prim_task_run((int)(GA32(rec + 8) + 0x168), base2, p2, 1);
+
+    /* Dual fighter gauge blocks (guest order: 0x1F8000E8 then 0x1F8001F0). */
+    fighter_hud_gauge_block(0x1f8000e8u);
+    fighter_hud_gauge_block(0x1f8001f0u);
+}
+
+/* ================================================================== */
+/* node_list_walk_* — intrusive linked-list apply, 5 identical guest    */
+/* template instances (0x80137600 / 0x801387DC / 0x80138C6C /           */
+/* 0x8013E374 / 0x8013F7A8 — byte-identical modulo branch targets).     */
+/*                                                                    */
+/* Guest body (verified insn-by-insn on all five):                      */
+/*   do {                                                              */
+/*     head  = *list_holder;         // lw v0,(s1)                     */
+/*     next  = *node;                // lw s0,(a1)  (node->next @ +0)  */
+/*     head->back = node;            // sw a1,0x40(v0)                  */
+/*     if (*(s8)(node+0x17) != 0) {                                   */
+/*       if (*(s8)(node+0x18) != 0) task_slot_step();                 */
+/*       else call node->fn8(node->f10, node, a2, a3)  // jalr v0      */
+/*     }                                                               */
+/*     node = next;                                                    */
+/*   } while (next != 0);                                              */
+/*                                                                    */
+/* The indirect jalr target is a guest fn ptr read from node+8 with    */
+/* a0=node+0x10 field, a1=node, a2/a3 = the caller's untouched a2/a3   */
+/* (nothing in the loop writes them) -> call_guest4 reproduces the     */
+/* jalr ABI exactly, including the $t0=target convention.              */
+/* ================================================================== */
+
+extern void task_slot_step(void);
+extern uint32_t call_guest4(uint32_t fn, uint32_t a0, uint32_t a1,
+                            uint32_t a2, uint32_t a3);
+
+static void node_list_walk_core(uint32_t list_holder, uint32_t node,
+                                uint32_t a2, uint32_t a3)
+{
+    for (;;) {
+        uint32_t head = GA32(list_holder);
+        uint32_t next = GA32(node);
+        GASU32(head + 0x40) = node;
+        if (GA8(node + 0x17) != 0) {        /* lb — only ==0 tested */
+            if (GA8(node + 0x18) != 0) {
+                task_slot_step();
+            } else {
+                uint32_t fn = GA32(node + 8);
+                uint32_t arg0 = GA32(node + 0x10);
+                call_guest4(fn, arg0, node, a2, a3);
+            }
+        }
+        if (next == 0) break;
+        node = next;
+    }
+}
+
+void node_list_walk_a(uint32_t list_holder, uint32_t node,
+                      uint32_t a2, uint32_t a3)
+{ node_list_walk_core(list_holder, node, a2, a3); }
+
+void node_list_walk_b(uint32_t list_holder, uint32_t node,
+                      uint32_t a2, uint32_t a3)
+{ node_list_walk_core(list_holder, node, a2, a3); }
+
+void node_list_walk_c(uint32_t list_holder, uint32_t node,
+                      uint32_t a2, uint32_t a3)
+{ node_list_walk_core(list_holder, node, a2, a3); }
+
+void node_list_walk_d(uint32_t list_holder, uint32_t node,
+                      uint32_t a2, uint32_t a3)
+{ node_list_walk_core(list_holder, node, a2, a3); }
+
+void node_list_walk_e(uint32_t list_holder, uint32_t node,
+                      uint32_t a2, uint32_t a3)
+{ node_list_walk_core(list_holder, node, a2, a3); }

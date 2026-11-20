@@ -1740,3 +1740,9 @@
 801a39ac qbyte_take
 801a23fc dev_cmd_commit
 801acb08 fighter_chan_delta_accum
+801343bc fighter_hud_emit_pair
+80137600 node_list_walk_a
+801387dc node_list_walk_b
+80138c6c node_list_walk_c
+8013e374 node_list_walk_d
+8013f7a8 node_list_walk_e

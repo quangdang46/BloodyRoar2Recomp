@@ -547,6 +547,7 @@ extern void fighter_frame(void);
 extern void fighter_frame_triple_emit(void);
 extern void fighter_height_check(void);
 extern void fighter_height_track(void);
+extern void fighter_hud_emit_pair(void);
 extern void fighter_link_init(void);
 extern void fighter_pair_update(void);
 extern void fighter_range_code(void);
@@ -849,6 +850,11 @@ extern void name_rec_insert(void);
 extern void node_distance_check(void);
 extern void node_lazy_attach(void);
 extern void node_list_collect(void);
+extern void node_list_walk_a(void);
+extern void node_list_walk_b(void);
+extern void node_list_walk_c(void);
+extern void node_list_walk_d(void);
+extern void node_list_walk_e(void);
 extern void node_param_quad_set(void);
 extern void node_table_lookup_emit(void);
 extern void node_translate_tree(void);
@@ -1447,6 +1453,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80134128, (void *)channel_script_emit_pair_2gate },
   { 0x801341a0, (void *)channel_script_emit_triple },
   { 0x80134234, (void *)channel_script_emit_chain_triple },
+  { 0x801343bc, (void *)fighter_hud_emit_pair },
   { 0x80134b34, (void *)channel_script_emit_chain_tick },
   { 0x80134e44, (void *)channel_script_emit_chain },
   { 0x80134f2c, (void *)channel_script_emit_chain_gate },
@@ -1471,6 +1478,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80137578, (void *)rec16_fill },
   { 0x80137590, (void *)LAB_80137590 },
   { 0x801375e8, (void *)slot_mark2_set },
+  { 0x80137600, (void *)node_list_walk_a },
   { 0x80137680, (void *)LAB_80137680 },
   { 0x80137824, (void *)script_stream_tick },
   { 0x80137acc, (void *)LAB_80137acc },
@@ -1481,10 +1489,12 @@ const Br2FnEnt fn_table[] = {
   { 0x80138040, (void *)task_alloc_wrap_f },
   { 0x801380e4, (void *)radial_glow_draw },
   { 0x801385dc, (void *)orbit_fx_spawn },
+  { 0x801387dc, (void *)node_list_walk_b },
   { 0x8013885c, (void *)slot_triple_tick },
   { 0x8013893c, (void *)xform_accum_tick },
   { 0x80138a24, (void *)triple_track_spawn },
   { 0x80138b00, (void *)xform_accum_spawn },
+  { 0x80138c6c, (void *)node_list_walk_c },
   { 0x80138cec, (void *)impact_fx_update },
   { 0x80139e0c, (void *)impact_fx_emit_tick },
   { 0x80139fd0, (void *)impact_fx_spawn },
@@ -1498,6 +1508,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8013d6b0, (void *)emit_task_spawn },
   { 0x8013d7e4, (void *)confetti_burst_update },
   { 0x8013da2c, (void *)confetti_burst_spawn },
+  { 0x8013e374, (void *)node_list_walk_d },
   { 0x8013e3f4, (void *)paired_task_cb },
   { 0x8013e558, (void *)LAB_8013e558 },
   { 0x8013eb04, (void *)LAB_8013eb04 },
@@ -1509,6 +1520,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8013f5f8, (void *)effect_arg_set },
   { 0x8013f648, (void *)task_cb_voice_line },
   { 0x8013f714, (void *)task_node_alloc_init },
+  { 0x8013f7a8, (void *)node_list_walk_e },
   { 0x801401c8, (void *)anim_wb_init_gate },
   { 0x801401d0, (void *)anim_workblock_init },
   { 0x80140510, (void *)LAB_80140510 },
