@@ -2933,3 +2933,25 @@ copy it into the fighter-ctrl +0x1C. NEXT: find the ctx+0x1C writer
 (fighter-ctrl init / record-commit consumer in fight/battle init) and
 check whether versus reaches it; likely a versus-specific gate or a
 clean-port wrong-offset/ctx bug in the fighter-ctrl bind.
+
+=== N+199 — fighter-ctrl +0x1C/+0x20 bind chain traced (versus partial-init) ===
+Traced the record->ctrl binding path for the versus NULL-pointer bug:
+- fighter ctrl = per-side 0x1F8000E8/0x1F8001F0 (0x108B). Fields
+  +0x1C=prim/display node ptr, +0x20=fighter-state obj ptr — BOTH 0 in
+  versus while +0x28/+0x2C are set => ctrl only partially initialized.
+- Record supply chain (all clean-ported): save_state_machine_alt L10
+  cd_file_load_sm(s6+s2+0xc0)->heap_alloc54->heap_record_emit->
+  heap_serialize builds node records (0x801bf860/0x801c0940) and binds
+  them into a PARAM block via *(p+0x14)=s1v. fighter_record_apply ->
+  fighter_rec_fetch_apply -> fighter_record_build + cd_file_read_seq
+  fetches the per-fighter CD record. fighter_link_init writes ctrl
+  +0xde/+0x54/+0x86/+0x94/+0x96 (NOT +0x1c/+0x20). fighter_spawn_setup
+  writes cfg-record +0x1c=char-id (different struct, param_4+0x28).
+- The +0x1C/+0x20 writer is DOWNSTREAM of these: the fighter visual/
+  display spawn that copies the built node+state pointers into the ctrl.
+  Candidates: fighter_spawn_tail(0x80166398), fighter_attach_run
+  (0x80186b2c), or the .ANI/model commit inside battle init. NEXT:
+  grep generated for `sw rx,0x1C/0x20(ctrl)` in the spawn/attach path;
+  determine whether versus reaches that commit (a phase/flag gate) or it
+  writes a wrong ctrl/offset (clean-port bug). Versus agent 507780ee
+  live on :4724 (frozen ph=8 variant).
