@@ -4045,7 +4045,10 @@ void cd_chan_reset_b(void)
 
 uint32_t cd_init_stage_b(void)
 {
-  cd_guest_zero32_c(0x801bddfc,8);
+  /* Generated zeroes 8 handler-table words at 0x801BDDF4 (0x801C0000-8716),
+   * indices 0-7. 0x801BDDFC is index 2 — starting there would skip slots
+   * 0-1 and wrongly clear 0x801BDE14/0x801BDE18 past the table end. */
+  cd_guest_zero32_c(0x801bddf4,8);
   br2_st32p(0x801bddf0, 0);
   cd_dispatch_tbl8(3,0x8019af7c);
   return 0x8019b0fc;
@@ -5122,15 +5125,17 @@ void cd_cb7_run(uint32_t param_1)
   uint32_t *tbl;
   while (s1 != 0) {
     dma = DB32G(0x801bddf0);
-    tbl = (uint32_t *)guest_at(0x801bddfc);
+    tbl = (uint32_t *)guest_at(0x801bddf4);
     s0 = 0;
     while (s1 != 0 && s0 < 7) {
       if ((s1 & 1) != 0) {
         br2_st32(dma, br2_ld32(dma) & ((1u << (s0 + 0x18)) | s3));
         /* tbl is a moving cursor (generated gpr[18] += 4, reads *cursor):
-         * dereference *tbl, NOT tbl[s0] — the latter double-indexes to
-         * base+s0*8 and reads the wrong slot (ch4 -> 0x801BDE14 MMIO junk
-         * instead of the 0x801BDE04 handler), so DeliverEvent never fires. */
+         * dereference *tbl, NOT tbl[s0] — the latter double-indexes and
+         * reads the wrong slot. Table base is 0x801BDDF4 (generated cursor
+         * = 0x801C0000-8716), NOT 0x801BDDFC: with the wrong base ch4's
+         * done bit reads slot 4 at 0x801BDE0C (=0) instead of 0x801BDE04
+         * (=0x8019B7E0 cd_dma_chan_reset), so DeliverEvent never fires. */
         uint32_t h = *tbl;
         {
           static int cb7_dbg2 = -1;
