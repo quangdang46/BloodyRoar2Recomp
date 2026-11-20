@@ -2658,3 +2658,19 @@ kick that never starts. NEXT: find exact TCB wait-queue/EvCB + its
 DeliverEvent producer; determine what drives 0x80126640->result7/8;
 consider porting 0x80126234 main loop to clean C (unported top-level
 dispatcher gating everything). Emu live port5480 frame7485.
+
+=== N+187 — VERSUS WEDGE FIXED: DMA handler-table base off by 8 ===
+42396781 ROOT CAUSE + FIX (d2dcecc): versus wedged in BIOS TestEvent
+spin on event 0xF1000008 (EvCB8 class 0xF0000009 spec 0x20) = DMA ch4
+(SPU) transfer-done event. DeliverEvent producer = cd_dma_chan_reset
+(0x8019B7E0) dispatched by cd_cb7_run walking per-channel handler table.
+BUG: clean used table base 0x801BDDFC; generated bases cursor at
+0x801C0000-8716 = 0x801BDDF4 (+=4/channel). ch4 done bit read slot4 at
+0x801BDE0C (=0) instead of 0x801BDE04 (=0x8019B7E0 handler) -> h==0 ->
+no DeliverEvent -> eternal TestEvent spin. Hardware faithful throughout
+(ch4 DMA completes, DICR bit28, IRQ3, cb7 acks). cd_init_stage_b same
+wrong base (zeroed 0x801BDDFC..0x801BDE1B vs generated 0x801BDDF4 8
+words). SPU active_mask=0 was DOWNSTREAM symptom (completion event gates
+versus stream bring-up), not spu.c bug. VERIFIED port5490: gs=8 ph=8
+sustained, TestEvent frozen, versus init completes, all per-frame state
+mutates. ~64 proven bugs fixed. VERSUS FIGHT NOW LAUNCHES.
