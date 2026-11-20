@@ -2674,3 +2674,16 @@ words). SPU active_mask=0 was DOWNSTREAM symptom (completion event gates
 versus stream bring-up), not spu.c bug. VERIFIED port5490: gs=8 ph=8
 sustained, TestEvent frozen, versus init completes, all per-frame state
 mutates. ~64 proven bugs fixed. VERSUS FIGHT NOW LAUNCHES.
+
+=== N+188 — clean-port marathon: 4 hot fns + cb_set base caught+fixed ===
+a5485efc ported 4 phase_hot leaf fns insn-verified: cd_chan_cb_set
+(0x8019B0FC DMA cb register), fifo_space_sample (0x801A4210),
+qbyte_take (0x801A39AC), dev_cmd_commit (0x801A23FC SIO commit).
+REVIEW CATCH: cd_chan_cb_set used base 0x801BDDFC — generated computes
+lui 0x801C+addiu-8716 = 0x801BDDF4 +a0*4 (same as cb7/cb8 dispatchers).
++8 offset would write handlers 2 slots high, invisible to fixed
+dispatcher = reintroduce d2dcecc wedge. FIXED to 0x801BDDF4 before
+commit (5f3671d). LESSON: ported table/struct base constants need the
+same generated-diff rigor as the audit sweep — caught in review, not
+runtime. Left generated per §4: 0x801A2184 MMIO poll, GTE matrix/RTPS,
+SIO seq 0x801A1B50, indirect jalr. Renames/fnmap/clean_table regen.
