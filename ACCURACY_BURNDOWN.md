@@ -2502,3 +2502,21 @@ tween, fixed_point_divide hand-ported Newton), FX/task/prim/emit/sprite,
 battle_frame_tick @0x80166544, other (&DAT_x)[idx] sites. Follow-up
 recommended: hit_react_apply, fighter_pair_update/state_tick,
 fixed_point_divide, keyframe_cursor_search (highest bug density).
+
+=== N+181 — second-pass audit (save/bind/resolve/ev4-21/vm/action): 5 fixes ===
+3a1477ed: 5 proven divergences fixed (0d9d049). vm.c bra_random_pick
+weighted-loop reload (guest re-reads same w[1], v1++ in bgez delay slot)
++ scriptop_gpad foe-state-3 mask (delay-slot ori overwrites v0 -> stores
+(w&0xdfff)|0x4000 not dead 0x40). ev.c ev5_action mode-1 gate was
+unconditional -> now flag-gated (ctrl+5&1); ev14_chip +0x114 stores to
+SELF motion (ctrl+0x38) not foe. action.c entry_setup group-3 slot-1
+chr==1 (not chr4/5) gets x=-0x300. AUDITED CLEAN: ev4_branch, ev6_guard,
+ev8_motion_param, ev9_physics, ev10_flags, ev15/16/17/18/19/20/21,
+action.c reset (24 sh+4 sb offsets, magic-div /100). DEAD CODE confirmed:
+ev_step/vm_step/vm_run uncalled (live=ev_stream_dispatch->wN +
+script_op_dispatch->scriptop_*). CAVEAT flagged: entry_setup s4 z/spawn
+never init before group dispatch — caller-saved passthrough, clean writes
+0xfc00 uniformly; faithful value is caller-context-dependent, needs
+runtime verify not speculative change. STILL NOT AUDITED: resolve.c
+remainder, bind.c, save.c full insn audit, ev5 op bodies 0-7 deep,
+scriptop_bra/bsr/wait/gpad deep.
