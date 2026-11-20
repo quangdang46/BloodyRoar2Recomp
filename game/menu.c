@@ -705,6 +705,14 @@ switchD_8016fd64_caseD_3:
       _DAT_1f800090 = 0;
     }
     iVar5 = menu_res_load_sm(0x1f800000,&DAT_1f8000e8,&DAT_1f8001f0,0);
+    /* menu_res_load_sm returns -1 both for "already done" (s1+0x8c<0
+     * stored marker) and for a br2_bail_pending unwind. Only the bail case
+     * must NOT advance the phase — the load is mid-flight and the fighter
+     * model (ctrl+0x18/+0x1c/+0x20/+0x30) is still unbound. Propagate the
+     * bail so the unwind reaches the contract frame and the next frame
+     * resumes the load instead of entering battle on a NULL node. */
+    { extern int br2_bail_pending(void);
+      if (br2_bail_pending()) return; }
     if ((iVar5 != 0) && (_DAT_1f800090 == 0)) goto switchD_8016fd64_caseD_5;
     break;
   case '\x05':
@@ -1952,6 +1960,10 @@ LAB_8016767c:
           _DAT_1f800090 = 0;
         }
         iVar4 = menu_res_load_sm(0x1f800000,&DAT_1f8000e8,&DAT_1f8001f0,0);
+        /* Same -1 ambiguity as battle_flow_state_machine: a br2_bail_pending
+         * unwind must propagate, not be read as "load done". */
+        { extern int br2_bail_pending(void);
+          if (br2_bail_pending()) return; }
         if ((iVar4 != 0) && (_DAT_1f800090 == 0)) {
           if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
             confirm_code_select(0x1f800000);
