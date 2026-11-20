@@ -107,6 +107,9 @@ extern void     br2_st8(uint32_t a, uint8_t v);
 extern void     br2_st16(uint32_t a, uint16_t v);
 extern void     br2_st32(uint32_t a, uint32_t v);
 extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+extern uint32_t bios_svc6(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+extern uint32_t clean_caller_ra(void);
+extern void     br2_guest_ra_set(uint32_t);
 
 /* MMIO register-block accessors. The pointer cells 0x801bdeb0,
  * 0x801bdec0 and 0x801bdec4 resolve to HARDWARE addresses — the SPU
@@ -1097,8 +1100,20 @@ extern void cd_subchan_table_install(void);
 extern void bios_tramp_b015(uint32_t,uint32_t);
 void cd_cmd_sequence(uint32_t param_1,uint32_t param_2,uint32_t param_3,uint32_t param_4)
 {
-  /* BIOS kernel-object boundary — run the recompiled guest body. */
-  br2_call_generated(0x8019a00c,param_1,param_2,param_3,param_4);
+  /* Faithful port of generated 0x8019a00c (CPS chain verified):
+   * kobj_init_a, DI, kobj_init_b, EI, bios_table_tramp(0x80199fe0
+   * B0/0x5b with a0=0), cd_subchan_table_install, bios_tramp_b015
+   * (0x8019a320 B0/0x15) with the caller's a0-a3, flag @0x801bcc90=1,
+   * return 1. All callees are clean ports or bios_svc6 trampolines —
+   * no live-gpr or IRQ-boundary dependency remains. */
+  cd_kobj_init_a();
+  FUN_8018e300();                                /* DI */
+  cd_kobj_init_b();
+  FUN_8018e310(0);                               /* EI */
+  (void)call_guest(0x80199fe0u,0,0);             /* bios_table_tramp, a0=0 */
+  cd_subchan_table_install();
+  (void)bios_svc6(0xb0,0x15,param_1,param_2,param_3,param_4); /* 0x8019a320 */
+  DB32(0x801bcc90) = 1;
 }
 
 /* cd_channel_main_init — CD channel main init: crit-in, flag=0, 9a340/9a330
@@ -1302,25 +1317,61 @@ int32_t cd_subsystem_init(void)
   return cd_result_wait_a(0,0) == 2 ? 0 : -1;
 }
 
-/* cd_kobj_init_a — kernel-object init A: crit-in, BIOS svc B0/0x57 ->
- * object ptr, clears 9 u32 at obj+0x62c, bios_tramp_a044, crit-out.
- * Disasm 0x8019a3f0-0x8019a450. */
+/* cd_kobj_init_a — kernel-object init A. Faithful port of generated
+ * 0x8019a3f0: saves $ra to cell 0x801FEB60, DI, inline BIOS tramp
+ * (t1=0x57, t2=0xB0, jalr t2 -> B0/0x57 kernel-object alloc, forwards
+ * live a0-a3), loads sub=*(obj+0x16c), clears 9 words at sub+0x62c,
+ * bios_tramp_a044, EI, restores $ra from the cell. The BIOS svc runs
+ * through bios_svc6 -> psx_dispatch_call on the real recompiled BIOS;
+ * $ra is set to the guest jalr link 0x8019A410 because OpenBIOS kernel
+ * calls validate $ra as a caller-code token. */
 extern void bios_tramp_a044(void);
-extern void br2_guest_ra_set(uint32_t);
 void cd_kobj_init_a(void)
 {
-  /* BIOS svc B0/0x57 kernel-object boundary — run the recompiled guest body. */
-  br2_call_generated(0x8019a3f0,0,0,0,0);
+  uint32_t ra0 = clean_caller_ra();
+  uint32_t obj, sub;
+  int i;
+  extern uint32_t bios_svc6(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+  DB32(0x801feb60) = ra0;
+  FUN_8018e300();                                  /* DI */
+  br2_guest_ra_set(0x8019a410);                    /* jalr link addr */
+  /* a0-a3: the generated body forwarded whatever live regs the caller
+   * left; every existing caller reaches this via the (0,0,0,0) thunk,
+   * and B0/0x57 ignores them — pass 0 explicitly. */
+  obj = bios_svc6(0xb0,0x57,0,0,0,0);
+  sub = br2_ld32(obj + 0x16c);
+  for (i = 0; i < 9; i++)
+    br2_st32(sub + 0x62c + (uint32_t)i * 4, 0);
+  br2_guest_ra_set(0x8019a43c);                    /* jal link before 957f0 */
+  bios_tramp_a044();
+  FUN_8018e310(0);                                 /* EI */
+  br2_guest_ra_set(ra0);
 }
 
-/* cd_kobj_init_b — kernel-object init B: crit-in, BIOS svc B0/0x57 ->
- * obj, sub = *(u32*)(obj+0x16c); stores sub+0x884 -> @0x801feb58,
- * sub+0x894 -> @0x801feb5c, clears 11 u32 at sub+0x594, bios_tramp_a044.
- * No crit-out (matches guest). Disasm 0x8019a378-0x8019a3e0. */
+/* cd_kobj_init_b — kernel-object init B. Faithful port of generated
+ * 0x8019a378: saves $ra to cell 0x801FEB50, DI, inline BIOS tramp
+ * (t1=0x57, t2=0xB0 -> B0/0x57, live a0-a3), sub=*(obj+0x16c),
+ * stores sub+0x884 -> @0x801FEB58 and sub+0x894 -> @0x801FEB5C,
+ * clears 11 words at sub+0x594, bios_tramp_a044, restores $ra.
+ * No crit-out (matches guest). $ra set to the jalr link 0x8019A398
+ * for the OpenBIOS caller-token check, same as cd_kobj_init_a. */
 void cd_kobj_init_b(void)
 {
-  /* BIOS svc B0/0x57 kernel-object boundary — run the recompiled guest body. */
-  br2_call_generated(0x8019a378,0,0,0,0);
+  uint32_t ra0 = clean_caller_ra();
+  uint32_t obj, sub;
+  int i;
+  DB32(0x801feb50) = ra0;
+  FUN_8018e300();                                  /* DI */
+  br2_guest_ra_set(0x8019a398);                    /* jalr link addr */
+  obj = bios_svc6(0xb0,0x57,0,0,0,0);
+  sub = br2_ld32(obj + 0x16c);
+  DB32(0x801feb58) = sub + 0x884;
+  DB32(0x801feb5c) = sub + 0x894;
+  for (i = 0; i < 11; i++)
+    br2_st32(sub + 0x594 + (uint32_t)i * 4, 0);
+  br2_guest_ra_set(0x8019a3d4);                    /* jal link before 957f0 */
+  bios_tramp_a044();
+  br2_guest_ra_set(ra0);
 }
 
 /* bios_tramp_a044 — BIOS svc A0/0x44 trampoline. */
@@ -4329,9 +4380,19 @@ extern void FUN_8019ad70(uint32_t);
 int cd_subsys_init_full(uint32_t param_1,uint32_t param_2,uint32_t param_3,
                  uint32_t param_4)
 {
-  /* gpr-forwarding trampoline calls inside need live cpu->gpr that clean
-   * callers cannot supply; delegate whole body to generated MIPS. */
-  return (int)br2_call_generated(0x8019a09cu,param_1,param_2,param_3,param_4);
+  /* Faithful port of generated 0x8019a09c (CPS chain verified):
+   * identical prologue sequence to cd_cmd_sequence but the tail call
+   * is 0x8019a2f0 (B0/0x12 trampoline) with the caller's a0-a3.
+   * Returns 1; flag @0x801bcc90 set. */
+  cd_kobj_init_a();
+  FUN_8018e300();                                /* DI */
+  cd_kobj_init_b();
+  FUN_8018e310(0);                               /* EI */
+  (void)call_guest(0x80199fe0u,0,0);             /* bios_table_tramp, a0=0 */
+  cd_subchan_table_install();
+  (void)bios_svc6(0xb0,0x12,param_1,param_2,param_3,param_4); /* 0x8019a2f0 */
+  DB32(0x801bcc90) = 1;
+  return 1;
 }
 
 /* ======== 0x8019ac04 ======== */
