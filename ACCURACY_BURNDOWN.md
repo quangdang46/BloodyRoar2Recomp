@@ -2575,3 +2575,16 @@ pending/present_pending_dataready 2760-2844, REQUEST BFRD 3038-3068,
 cdrom_dma_read/ready 3142-3169) OR deferred cd_ctx_restore->
 cd_chan_full_init->cd_intc_dispatch coroutine failing to resume during
 multi-file burst. Emu crashed pc=0 on port5440 (post-mortem available).
+
+=== N+183b — save.c bug-class sweep: 3 store-width/phantom-write fixes ===
+e9b0e10f: 3 proven divergences (d6f9c87). datetime_confirm_a/b: guest
+stores +0x10/+0x12/+0x14/+0x16 are sb bytes, clean wrote int16_t
+clobbering adjacent byte; confirm_b +0x12 index read is lhu unsigned.
+name_rec_insert: out-of-range path returns bare jr-$ra no stores — clean
+wrote phantom +0xc/+0xe u16s. VERIFIED CLEAN ~25 fns insn-level
+(deferred_cmd_exec sltu/beq correct, rec_find_*, name_rec_gate,
+save_rec_table_copy, picker_table_shuffle, hud_name_fixup, etc). ~230
+fns partially verified (bounds/polarity spot-check) — recommend follow-up
+on op_anim_delta_walk, mc_data_read/write, lzss_decode, dialog_*/menu_*
+state machines. Audit campaign: all game/*.c swept; save.c deepest file
+(262 fns) now has targeted bug-class pass.
