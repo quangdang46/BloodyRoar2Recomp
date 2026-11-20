@@ -2708,3 +2708,25 @@ ALIVE. CORRECT fight monitors: battle_frame stack frame guest_sp-0x180
 ÷50=sec), engine task pools 0x801f10c0/0x801f10c4, g_bce_calls/cls/p3,
 round-end = byte->0xf0/0xf1/0xff -> battle_frame returns -> gs trans.
 NEXT: versus round verify with CORRECT monitors + boot-retry on wedge.
+
+=== N+190 — versus round BLOCKED: SIO pad-buffer format divergence ===
+7a499e20: versus DOES reach steady fight (battle_frame stage8, engine
+alive, g_bce_calls growing, ~1fps renderer). REAL BLOCKER: controller
+input DISCARDED before battle logic. SIO pad buffers 0x801befa8(P1)/
+0x801befca(P2) hold "ff 00 LL HH" — wrong header; game expects "00 41"
+(digital-pad marker+type). pad_state_refresh (menu.c:2768) byte[0]!=0
+short-circuits->0 AND attr_word_decode type-nibble rejects -> +0x68/
++0x6c/+0x70/+0x74 all 0. No input edges -> battle_input_dispatch starves
+-> per-player phase 0x1f8000b4=0x0300/0x0000 (sideB 0x000=pre-fight
+ready/wait-confirm needs START edge, never gets one). Round timer frozen
+(battle_frame +0x2c~4997), byte stuck 0x08 stage8. Engine alive not hung.
+ROOT: sio.c pad-response format wrong for versus/multitap path —
+sio.c:247-263 documents digital="0x41 0x5A btnL btnH"+0xFF pad; observed
+"ff 00" matches neither direct-digital(00 41) nor multitap-block layout.
+Earlier wtrace captured CORRECT "00 41 ff df" at same addr -> format
+regressed OR different writer/path (multitap bulk 0x42 vs direct poll
+0x01). This is the CLAUDE.md Axis-5 "hybrid-pad bug" (weakest axis).
+NEXT: instrument sio.c response write path for multitap bulk 0x42 vs
+direct 0x01, compare emitted layout vs pad_state_refresh/attr_word_
+decode acceptance. Fix in sio.c response formatting. Verify: buffers
+flip to "00 41", +0x6c nonzero, round plays.
