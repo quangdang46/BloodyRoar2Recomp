@@ -2389,3 +2389,24 @@ EvCB walk), trace which handler should DeliverEvent it — pinpoints
 game/cd.c coroutine glue vs missing CD-IRQ edge in interrupts.c/
 cdrom.c present_cdrom_irq(). ALSO: pre-existing CDDBG fprintf in
 cdrom.c still needs removal per no-printf rule.
+
+=== N+175 — CD 'stall' = missed-wakeup RACE at file-chunk boundary ===
+28482fe1 DISPROVED circular wait: Pause completion WAS delivered
+correctly (seq42308 set_irq 0x02 + fire_irq frame 1516, response FIFO
+drained, IRQ acked irq_flag->0). cdrom.c process_pending/pending_arm/
+cdrom_cycles_to_irq all HEALTHY. REAL: loader stops issuing CD cmds
+after frame ~1516 — goes to sleep on wakeup that never comes; p1ani/
+p2ani=0 (fighter resources never arrive). RACE (nondeterministic: one
+run wedged, control run reached LIVE FIGHT). Mechanism candidates:
+(a) Pause DeliverEvent(0xF0000009,0x20) fired before loader armed wait
+-> flag consumed/cleared; (b) delivered to stale/wrong EvCB; (c) loader
+waits different flag than cd_response_process sets. SAME boundary race
+as cdrom.c:2086-2101 comment (Ape Escape memcard loader wedged randomly
+— 'CPU-visible ordering contract'). bfsm task 0x8015B810 dispatches
+every ~360cyc on BOTH runs (versus SM running, just resource-starved).
+NEXT: fresh run + fntrace_arm on 0x80195BD0(DeliverEvent)/0x80196370
+(cd_response_process)/0x8019A8EC+0x8019A87C(CD coroutine)/0x801565EC
+(loader wait); compare wedged vs healthy DeliverEvent seq at boundary;
+check EvCB idx8 status + which TCB blocked on what handle. ALSO:
+pre-existing CDDBG fprintf in cdrom.c + PSX_CB7 in game/cd.c still
+need removal per no-printf rule.
