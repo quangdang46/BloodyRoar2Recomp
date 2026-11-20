@@ -2611,3 +2611,24 @@ completes. 0x1f800019==0 is GO state (frame_divisor_get()==0 runs work),
 NOT blocker. Emu live port5450 hollow-fight frame~12300. NEXT: find
 exact waited kernel object (dynamic TCB via wait-queue/EvCB), check
 DeliverEvent producer for that class — SPU ch4 kick vs versus init.
+
+=== N+185 — versus wedge REFRAMED AGAIN: SPU sequencer poll + parked GPU DMA ===
+5cab28c3: NOT kernel-event wait — BIOS calls COMPLETELY frozen (game
+thread zero BIOS calls, pure game-code poll). Spin site = guest
+0x80126234 (br2eu_func_80126234, SPU/audio channel sequencer pump):
+loads s0=0x1C7F0000 + base near 0x1F801Cxx (SPU reg space), iterates
+slots lbu[slot+0xC0]->ptr, lbu[ptr+0x20]=per-slot STATE byte, waits for
+terminal value posted by helper 0x80126640 (codes 7/8 = result posting,
+the take_pc hotspot). EvCB healthy but irrelevant (no BIOS calls). SPU
+ALIVE (key_on_count=30, audio rendering every frame) but sequencer SM
+stuck on a channel/slot state. KEY ANOMALY: dma_state ch2 GPU OT
+active=1 remaining_words=9 chcr=0x01000401 cycles_accum=49 + gpu_ot
+active=1 — small GPU DMA PARKED mid-transfer; if SM completion depends
+on DMA/GPU-done IRQ that never asserts -> hardware-side suspect one
+level below event. IRQ take_pc alternates 0x80126664(game)/0x8019A648
+(kernel->0x8019A87C). NEXT: dump slot-table base + each slot+0x20 state
+byte to find stuck slot; trace whether IRQ chain 0x8019A648->0x8019A87C
+reaches channel-completion (cd_intc_dispatch 0x8019A8EC/cd_cb7_run
+0x8019AF84/handler 0x8019B7E0) or SPU voice-end; investigate parked ch2
+DMA vs Beetle oracle. NOTE: game/cd.c has env-gated PSX_CB7 fprintf
+diagnostics (committed) — flag for cleanup. Emu live port5460.
