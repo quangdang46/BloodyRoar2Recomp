@@ -2764,3 +2764,17 @@ mechanisms unproven: (1) cdrom.c process_pending BLOCK path :2580
 (2) lost wakeup DeliverEvent fires but WaitEvent CD-worker thread never
 rescheduled (kernel iWakeupEvent). Need persistent pending.pending==1
 instance to isolate. Tree clean, nothing committed.
+
+=== N+193 — versus two-state: live fight OR nondeterministic ph=6 CD wedge ===
+Direct probe port5530 (64min emu): gs=8, 0x1f800001=0x06 = STUCK at
+battle init transition (NOT steady fight stage8). bce_calls=224300 low.
+vs healthy port5540 run: gs=8 ph=8 steady fight g_bce_calls~7.5M.
+So versus has TWO outcomes from the SAME build: (a) CD wedge misses ->
+live fight plays; (b) CD wedge hits -> ph=6 init stall on asset load.
+The nondeterministic CD pending-command wedge (pending.pending==1,
+process_pending BLOCK :2580 OR lost-wakeup iWakeupEvent) is THE
+remaining versus blocker — determines live-fight vs ph=6-stall. Round-
+end unverified (agent ae40f52b empty report; its emu likely died). Next:
+catch a persistent pending.pending==1 instance to isolate which of the
+2 CD mechanisms fires; that's the last versus gate for deterministic
+round-play.
