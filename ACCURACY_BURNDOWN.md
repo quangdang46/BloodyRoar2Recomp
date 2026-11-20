@@ -2841,3 +2841,29 @@ mutates -> versus is a frozen pre-fight/handshake scene, round timer
 never starts, fighters never animate, input never consumed. The live
 battle progress addrs for future probes: per-side ctx 0x1f8000e8/
 0x1f8001f0, fighter structs via ctx+0x20, task pools 0x801f10c0/c4.
+
+=== N+196 — versus ph=8 "freeze" = FAIL-FAST unknown dispatch 0x01000000 via prim_list_persp_step task_invoke ===
+Live stack-sample + psx_last_run_report.json (frame 1424) resolve the
+"frozen scene" misread: the process is NOT spinning — it reaches
+psx_fatal_halt (0.3% CPU while writing the ~97MB freeze dump). Host
+chain: battle_flow_state_machine(gs=8,menu.c:814) ->
+prim_list_persp_step(battle.c:13605) -> call_guest ->
+psx_unknown_dispatch(traps.c:1499) -> psx_fatal_halt. Crash:
+addr=0x01000000 ra=0x80126664 a0=a1=0, cpu.epc=0x8019A648
+(CD-driver region), last_store_pc=0x8019A48C.
+prim_list_persp_step (guest 0x8018B208) walks a per-node task table at
+param_1[7] (=node+0x1c): count=*table, entries stride 16B,
+func=entry[+12], arg0=entry[+8]. VERIFIED the clean port's indexing is
+faithful vs generated br2eu_func_8018B208 (gpr18=param_1[7],
+*gpr18=count, jalr target=*(entry+12), a0=*(entry+8), gpr18+=16).
+NOTE: generated also loads a3=*(entry+4) and a1/a2 from s-regs before
+the jalr — clean task_invoke(fn,arg) only programs a0/a1, a fidelity
+gap to revisit (does not cause THIS crash). CONCLUSION: the crash is a
+task-table entry whose func field is literally 0x01000000 — i.e. the
+versus fight-init did NOT populate the primitive/task list (upstream
+CD fighter-asset load or task-spawn starvation), leaving an
+uninitialized slot. NOT a clean-port indexing bug in
+prim_list_persp_step. NEXT: find who writes node+0x1c task table +
+fills entries during versus battle init; check whether the versus CD
+stream (extra fighter assets vs arcade) completes before
+battle_flow_state_machine reaches prim_list_persp_step.
