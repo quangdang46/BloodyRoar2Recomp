@@ -1739,3 +1739,4 @@
 801a4210 fifo_space_sample
 801a39ac qbyte_take
 801a23fc dev_cmd_commit
+801acb08 fighter_chan_delta_accum

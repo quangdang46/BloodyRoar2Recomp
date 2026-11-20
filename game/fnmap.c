@@ -539,6 +539,7 @@ extern void fighter_anim_advance(void);
 extern void fighter_anim_table_init(void);
 extern void fighter_atk_dir(void);
 extern void fighter_attach_run(void);
+extern void fighter_chan_delta_accum(void);
 extern void fighter_combat_reset(void);
 extern void fighter_contact_resolve(void);
 extern void fighter_flash_update(void);
@@ -2519,6 +2520,7 @@ const Br2FnEnt fn_table[] = {
   { 0x801ac334, (void *)prim_group_alloc },
   { 0x801ac758, (void *)node_tree_free },
   { 0x801ac9b8, (void *)prim_attr_word_set },
+  { 0x801acb08, (void *)fighter_chan_delta_accum },
   { 0x801acd3c, (void *)op_walk_dispatch_e },
   { 0x801acdbc, (void *)rect_prim_tick },
   { 0x801ace48, (void *)rect_prim_spawn },

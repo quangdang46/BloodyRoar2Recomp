@@ -4642,6 +4642,131 @@ void node_translate_tree(int param_1,int param_2,int param_3,int param_4)
 
 }
 
+/* guest byte add: lbu + addu + sb — only the low 8 bits survive. */
+static void chan_byte_add(uint32_t addr, uint32_t delta)
+{
+  *(uint8_t *)guest_at(addr) =
+      (uint8_t)(*(uint8_t *)guest_at(addr) + delta);
+}
+
+/* guest 0x801ACB08 — fighter channel delta accumulator (pure computation:
+ * bounded loops over guest RAM, no calls / waits / IRQ deps -> faithful
+ * clean port).
+ *
+ * param_1 = fighter record (guest addr).  param_2/param_3 = the two delta
+ * values the guest adds into the record bytes (a1 -> even offset, a2 ->
+ * odd offset of each pair).  param_4 (a3) is dead in the guest body — it is
+ * overwritten with the inner-loop counter before first use.
+ *
+ * Guest register map (verified against generated/SLES_017.22_full_53.c):
+ *   t4 = *(u32*)(param_1+8)   count-table base, fixed all function
+ *   t0 = *(u32*)(param_1+16)  ptr-table base, +4 after each chan 4/5/6 pass
+ *   t3 = t4 + 4*i             count cell = *(u32*)(t3+0x5c), +4 every i
+ *   i  = t2 = 0..7 outer index; only i == 4,5,6 own record arrays.
+ * Per channel i in {4,5,6}:
+ *   q   = *(u32*)(t0)                 ptr-table entry
+ *   n   = *(u32*)(t4 + 0x6c/0x70/0x74) pair count (same cell as t3+0x5c)
+ *   arr = *(u32*)(*(u32*)(q+0x10))    record array base
+ *   if ((n << 1) != 0): for j = 0; j < (*(u32*)(t3+0x5c) << 1); j++
+ *       apply byte-pair deltas to record j (stride below).
+ *   t0 += 4; t3 += 4;
+ * All other i (and i with count cell == 0): t3 += 4 only — t0 does NOT
+ * advance, matching the guest delay-slot / block_801ACD20 split. */
+void fighter_chan_delta_accum(uint32_t param_1, uint32_t param_2,
+                              uint32_t param_3, uint32_t param_4)
+{
+  uint32_t i = 0;
+  uint32_t t4 = *(uint32_t *)guest_at(param_1 + 8);
+  uint32_t t0 = *(uint32_t *)guest_at(param_1 + 16);
+  uint32_t t3 = t4;
+  (void)param_4;
+
+  for (;;) {
+    uint32_t cnt = *(uint32_t *)guest_at(t3 + 0x5c);
+    if (cnt != 0) {
+      if (i == 5) {
+        /* chan 5: count cell t4+0x70, 40-byte records, base +0x25,
+         * pairs at record offsets {0xC,0xE,0x1C,0x24}. */
+        uint32_t q = *(uint32_t *)guest_at(t0);
+        uint32_t n = *(uint32_t *)guest_at(t4 + 0x70);
+        uint32_t arr = *(uint32_t *)guest_at(*(uint32_t *)guest_at(q + 0x10));
+        uint32_t t1 = t3;
+        if ((n << 1) != 0) {
+          uint32_t p = arr + 0x25;
+          uint32_t j = 0;
+          do {
+            j++;
+            chan_byte_add(p - 25, param_2); chan_byte_add(p - 24, param_3);
+            chan_byte_add(p - 17, param_2); chan_byte_add(p - 16, param_3);
+            chan_byte_add(p - 9,  param_2); chan_byte_add(p - 8,  param_3);
+            chan_byte_add(p - 1,  param_2); chan_byte_add(p,      param_3);
+            p += 0x28;
+          } while (j < (*(uint32_t *)guest_at(t1 + 0x5c) << 1));
+        }
+        t0 += 4;
+        t3 += 4;
+      }
+      else if (i >= 6) {
+        if (i == 6) {
+          /* chan 6: count cell t4+0x74, 40-byte records, base +0x25,
+           * pairs at record offsets {0xC,0x18,0x24}. */
+          uint32_t q = *(uint32_t *)guest_at(t0);
+          uint32_t n = *(uint32_t *)guest_at(t4 + 0x74);
+          uint32_t arr = *(uint32_t *)guest_at(*(uint32_t *)guest_at(q + 0x10));
+          uint32_t t1 = t3;
+          if ((n << 1) != 0) {
+            uint32_t p = arr + 0x25;
+            uint32_t j = 0;
+            do {
+              j++;
+              chan_byte_add(p - 25, param_2); chan_byte_add(p - 24, param_3);
+              chan_byte_add(p - 13, param_2); chan_byte_add(p - 12, param_3);
+              chan_byte_add(p - 1,  param_2); chan_byte_add(p,      param_3);
+              p += 0x28;
+            } while (j < (*(uint32_t *)guest_at(t1 + 0x5c) << 1));
+          }
+          t0 += 4;
+          t3 += 4;
+        }
+        else {
+          t3 += 4;
+        }
+      }
+      else if (i == 4) {
+        /* chan 4: count cell t4+0x6c, 32-byte records, base +0x1d,
+         * pairs at record offsets {0xC,0x14,0x1C}. */
+        uint32_t q = *(uint32_t *)guest_at(t0);
+        uint32_t n = *(uint32_t *)guest_at(t4 + 0x6c);
+        uint32_t arr = *(uint32_t *)guest_at(*(uint32_t *)guest_at(q + 0x10));
+        uint32_t t1 = t3;
+        if ((n << 1) != 0) {
+          uint32_t p = arr + 0x1d;
+          uint32_t j = 0;
+          do {
+            j++;
+            chan_byte_add(p - 17, param_2); chan_byte_add(p - 16, param_3);
+            chan_byte_add(p - 9,  param_2); chan_byte_add(p - 8,  param_3);
+            chan_byte_add(p - 1,  param_2); chan_byte_add(p,      param_3);
+            p += 0x20;
+          } while (j < (*(uint32_t *)guest_at(t1 + 0x5c) << 1));
+        }
+        t0 += 4;
+        t3 += 4;
+      }
+      else {
+        t3 += 4;
+      }
+    }
+    else {
+      t3 += 4;
+    }
+    i++;
+    if (i >= 8) break;
+  }
+  return;
+
+}
+
 void fighter_attach_run(int param_1)
 {
   int iVar1;
@@ -4661,7 +4786,18 @@ void fighter_attach_run(int param_1)
       {
         uint32_t fn_idx = *(ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0x18) )))& 0xf;
         uint32_t fn_g = *(uint32_t *)guest_at(0x801b55c0u + fn_idx * 4);
-        br2_call_generated(fn_g,(uint32_t)param_1,(uint32_t)iVar4,(uint32_t)iVar1,(uint32_t)iVar2);
+        void *fn = fn_lookup(fn_g);
+        if (fn != (void *)0x0) {
+          /* Guest jalr passes a0=param_1, a1=iVar4, a2=iVar1, a3=iVar2 —
+           * all guest addresses/values; clean callees take guest-u32 args. */
+          ((void (*)(uint32_t, uint32_t, uint32_t, uint32_t))fn)
+              ((uint32_t)param_1,(uint32_t)iVar4,(uint32_t)iVar1,(uint32_t)iVar2);
+        }
+        else {
+          /* Unported jalr target: run the generated body with the same
+           * guest args. */
+          br2_call_generated(fn_g,(uint32_t)param_1,(uint32_t)iVar4,(uint32_t)iVar1,(uint32_t)iVar2);
+        }
       }
       iVar1 = iVar1 + 0x1c;
       iVar2 = iVar3;
