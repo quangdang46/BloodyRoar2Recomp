@@ -20,7 +20,8 @@ extern "C" {
 typedef enum {
     GR_BACKEND_SOFTWARE = 0,
     GR_BACKEND_OPENGL   = 1,
-    GR_BACKEND_VULKAN   = 2
+    GR_BACKEND_VULKAN   = 2,
+    GR_BACKEND_NULL     = 3   /* command-faithful, pixel-free raster */
 } GrBackend;
 
 void      gr_set_backend(GrBackend backend);  /* call before gr_init() */

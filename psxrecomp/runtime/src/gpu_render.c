@@ -64,10 +64,115 @@ extern const GpuRenderBackend *gl_backend_get(void);
  * ready (init succeeded). When Vulkan isn't compiled in it returns NULL. */
 extern const GpuRenderBackend *vk_backend_get(void);
 
+/* ---- NULL raster backend -------------------------------------------------
+ *
+ * Command-faithful, pixel-free rasterizer. Every GP0 command is still parsed,
+ * every gr_* wrapper still runs its gpu_note_prim/gpu_note_vram_px guest-cycle
+ * charge BEFORE dispatch (so GPUSTAT bit26/28 backpressure and the OT-walk
+ * pacing are bit-identical to the software backend), and all VRAM-level
+ * transfers (CPU->VRAM uploads, VRAM<->VRAM rect moves, fills/copies) still
+ * execute — but the per-primitive screen-space rasterizers are no-ops.
+ *
+ * Why this exists: rasterization is DEVICE work. On hardware the GPU draws
+ * concurrently with the CPU; the guest never waits for pixels. Our software
+ * backend rasterizes synchronously on the emu thread inside
+ * dma_advance -> gpu_write_gp0, so a polygon-heavy scene (versus mode's
+ * ~37K textured quads/frame at a 512x480 draw area) pins ~99% of emu-thread
+ * wall time in raster_textured_triangle and collapses guest-cycle throughput
+ * to <1% of real time — VBlank (guest-cycle derived) then fires ~1x/sec and
+ * the whole game crawls. The OpenGL backend already establishes the precedent
+ * that CPU vram[] need not contain drawn pixels during normal operation
+ * (drawn content lives in the FBO; gl_renderer_sync_cpu() materializes it
+ * only for savestate/netplay readback).
+ *
+ * Guest-visible divergence is limited to vram[] pixels that only rasterized
+ * output would have produced: GPU VRAM-read operations and framebuffer
+ * screenshots/fingerprints see pre-draw VRAM (identical to the GL backend's
+ * unsynced state). Guest timing, command consumption, GPUSTAT, and every
+ * non-pixel device behavior are unchanged.
+ *
+ * Select with GR_BACKEND_NULL, or PSX_NULL_RASTER=1 to redirect a software
+ * request here (e.g. for --headless runs where no present surface exists).
+ * PSX_NULL_RASTER=0 forces the real software rasterizer. */
+
+static void null_draw_flat_triangle(int x0,int y0,int x1,int y1,int x2,int y2,uint16_t c){(void)x0;(void)y0;(void)x1;(void)y1;(void)x2;(void)y2;(void)c;}
+static void null_draw_gouraud_triangle(int x0,int y0,uint16_t c0,int x1,int y1,uint16_t c1,int x2,int y2,uint16_t c2){(void)x0;(void)y0;(void)c0;(void)x1;(void)y1;(void)c1;(void)x2;(void)y2;(void)c2;}
+static void null_draw_textured_triangle(int x0,int y0,int u0,int v0,int x1,int y1,int u1,int v1,int x2,int y2,int u2,int v2,uint16_t cx,uint16_t cy,uint16_t tp){(void)x0;(void)y0;(void)u0;(void)v0;(void)x1;(void)y1;(void)u1;(void)v1;(void)x2;(void)y2;(void)u2;(void)v2;(void)cx;(void)cy;(void)tp;}
+static void null_draw_shaded_textured_triangle(int x0,int y0,int u0,int v0,uint32_t c0,int x1,int y1,int u1,int v1,uint32_t c1,int x2,int y2,int u2,int v2,uint32_t c2,uint16_t cx,uint16_t cy,uint16_t tp,int raw){(void)x0;(void)y0;(void)u0;(void)v0;(void)c0;(void)x1;(void)y1;(void)u1;(void)v1;(void)c1;(void)x2;(void)y2;(void)u2;(void)v2;(void)c2;(void)cx;(void)cy;(void)tp;(void)raw;}
+static void null_draw_flat_rect(int x,int y,int w,int h,uint16_t c){(void)x;(void)y;(void)w;(void)h;(void)c;}
+static void null_draw_textured_rect(int x,int y,int w,int h,int u,int v,uint16_t cx,uint16_t cy,uint16_t tp){(void)x;(void)y;(void)w;(void)h;(void)u;(void)v;(void)cx;(void)cy;(void)tp;}
+static void null_draw_textured_rect_scaled(int x,int y,int w,int h,int u0,int v0,int u1,int v1,uint16_t cx,uint16_t cy,uint16_t tp){(void)x;(void)y;(void)w;(void)h;(void)u0;(void)v0;(void)u1;(void)v1;(void)cx;(void)cy;(void)tp;}
+static void null_draw_line(int x0,int y0,int x1,int y1,uint16_t c){(void)x0;(void)y0;(void)x1;(void)y1;(void)c;}
+static void null_draw_shaded_line(int x0,int y0,uint16_t c0,int x1,int y1,uint16_t c1){(void)x0;(void)y0;(void)c0;(void)x1;(void)y1;(void)c1;}
+
+static const GpuRenderBackend NULL_BACKEND = {
+    .name                          = "null-raster",
+    .init                          = sw_renderer_init,
+    .set_scale                     = sw_renderer_set_scale,
+    .scale                         = sw_renderer_scale,
+    .set_texture_filter            = sw_set_texture_filter,
+    .texture_filter                = sw_texture_filter,
+    .set_semi_transparency         = sw_set_semi_transparency,
+    .set_mask_bits                 = sw_set_mask_bits,
+    .set_texture_window            = sw_set_texture_window,
+    .set_color_modulation          = sw_set_color_modulation,
+    .set_precise_triangle          = sw_set_precise_triangle,
+    .set_perspective_triangle      = sw_set_perspective_triangle,
+    .fill_rect                     = sw_fill_rect,
+    .copy_rect                     = sw_copy_rect,
+    .draw_flat_triangle            = null_draw_flat_triangle,
+    .draw_gouraud_triangle         = null_draw_gouraud_triangle,
+    .draw_textured_triangle        = null_draw_textured_triangle,
+    .draw_shaded_textured_triangle = null_draw_shaded_textured_triangle,
+    .draw_flat_rect                = null_draw_flat_rect,
+    .draw_textured_rect            = null_draw_textured_rect,
+    .draw_textured_rect_scaled     = null_draw_textured_rect_scaled,
+    .draw_line                     = null_draw_line,
+    .draw_shaded_line              = null_draw_shaded_line,
+    .render_display                = sw_render_display,
+    .render_display_hires          = sw_render_display_hires,
+    .vram_write                    = sw_vram_write,
+    .vram_read                     = sw_vram_read,
+    .vram_transfer_in              = sw_vram_transfer_in,
+    .vram_transfer_out             = sw_vram_transfer_out,
+    .set_draw_area                 = sw_set_draw_area,
+    .get_draw_area                 = sw_get_draw_area,
+    .set_draw_offset               = sw_set_draw_offset,
+    .wide_configure                = sw_wide_configure,
+    .wide_set_target               = sw_wide_set_target,
+    .wide_disable_target           = sw_wide_disable_target,
+    .wide_clear                    = sw_wide_clear,
+    .wide_clear_margins            = sw_wide_clear_margins,
+    .render_wide_display           = sw_render_wide_display,
+    .wide_dump_full                = sw_wide_dump_full,
+};
+
+static int null_raster_env(void) {
+    static int cached = -1;
+    if (cached < 0) {
+        const char *e = getenv("PSX_NULL_RASTER");
+        cached = (e && e[0] == '1') ? 1 : 0;
+    }
+    return cached;
+}
+
 static const GpuRenderBackend *g_b         = &SW_BACKEND;
 static GrBackend               g_effective = GR_BACKEND_SOFTWARE;
 
 void gr_set_backend(GrBackend backend) {
+    /* PSX_NULL_RASTER=1 redirects ANY backend request to the null rasterizer
+     * (headless / CI fast path — see NULL_BACKEND above). This matters most
+     * for --headless: game.toml requests OpenGL, gl_backend_get() supplies a
+     * table, but with no GL context s_raster_ok stays 0 and EVERY draw falls
+     * back to the software rasterizer anyway — the worst of both worlds.
+     * Explicit GR_BACKEND_NULL always selects it regardless of the env var. */
+    if (backend == GR_BACKEND_NULL || null_raster_env()) {
+        g_b = &NULL_BACKEND;
+        g_effective = GR_BACKEND_NULL;
+        fprintf(stdout, "psxrecomp: renderer = null-raster (command-faithful, "
+                        "pixel-free; vram[] holds no drawn output)\n");
+        return;
+    }
     if (backend == GR_BACKEND_OPENGL) {
         const GpuRenderBackend *gl = gl_backend_get();
         if (gl) {
