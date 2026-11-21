@@ -1,0 +1,6 @@
+settings set auto-confirm true
+run --disc /Users/tranguangdang21/Projects/bloody-roar-2/Game.cue --debug-port 5401 --headless
+bt 20
+register read x28 x0 x1 x2 x3 pc
+p g_x28_bad_site
+image lookup -a $pc

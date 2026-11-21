@@ -485,3 +485,31 @@ starved for input (busy=0, input consumed); CD issued Pause and no more
 reads for ~350k frames. The CD->MDEC stream controller stopped issuing
 reads — same DeliverEvent(0xF0000009)/channel-flag family, consumer is
 MDEC not SPU.
+
+=== SESSION — dormant DeliverEvent producer chain + channel-table stall ===
+
+fntrace on wedged :6091 (attract FMV, TestEvent spin on 0xF0000009):
+- ZERO hits on the ENTIRE audio/DeliverEvent producer chain:
+  dialog_msg_dispatch 0x8015caa8, save_flow_state_machine 0x8015d420,
+  audio_seq_reset 0x80158244, chan_reset_register 0x801582c0,
+  cd_dma_xfer_start 0x8019b89c — all dormant (matches burndown N+42).
+- Only cd_cb8_dispatch / cd_intc_dispatch / record-machine fns cycle.
+
+menu.c:1054 — dialog_msg_dispatch (0x8015caa8) is stored as the intro-movie
+STEP CALLBACK (local_54 -> step_desc+0xc) invoked by menu_stepper_state_advance
+as a guest code addr. It never runs => the stepper/movie SM never reaches the
+step that arms audio init => ch4 never kicked => no DeliverEvent.
+
+SEPARATE active stall: movie/file stream in blk_io_retry -> mc_date_serial_cmp
+(delegated 0x80159ab4) -> cd_channel_poll polls channel-table entry for
+state==2. Live: base@0x801fc6c0=0x80010000, idx@0x801fc6ac=0x1e,
+entry@0x800103c0 state word = 0x0000050A (never 2) => poll returns 1 forever.
+
+UNIFIED: both consumers starve because CD read-completion bookkeeping does not
+advance the game's higher-level state (channel-table state==2 AND ch4/audio
+DeliverEvent). ch3 sector DMA completes 1064x (low-level works); the missing
+link is the completion->game-state transition.
+
+NEXT: trace WHY channel-table entries never reach state==2 — which generated/
+clean fn writes entry state on CD read completion (record machine state_commit
+-> channel mark), and why it doesn't fire for this read.

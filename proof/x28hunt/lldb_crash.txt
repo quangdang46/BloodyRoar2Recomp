@@ -1,0 +1,7 @@
+settings set auto-confirm true
+run --disc /Users/tranquangdang21/Projects/bloody-roar-2/Game.cue --debug-port 5399 --headless
+bt 30
+register read x28 x0 x1 x2 x3 x4 x5 pc sp lr
+image lookup -a $pc
+disassemble -p -c 30 $pc
+memory read -f x -s 8 -c 4 $x28
