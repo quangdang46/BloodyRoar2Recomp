@@ -233,3 +233,28 @@ fighter_spawn_setup) are invisible to it; use decomp_trace tags or a
 clean-entry probe. `gwatch` cannot watch `0x1f800001` (scratchpad
 mirror). Frame-audit sweep DONE (002997d) — ~20 sp-frame bugs fixed;
 none was the binding wedge.
+
+## Wedge A investigation result (agent 474880e3 — exhaustive, NO fix)
+
+Versus-screen confirm path is FULLY SYMMETRIC pad-driven — zero CPU
+branch anywhere: post_battle_dispatch→battle_config_eval→bcfg_step_a
+needs `(flags&0x800)` on `battle+0x6a`. `pad_state_refresh`
+(menu.c:2888-2913) is the ONLY writer to `+0x68`/`+0x6a` (one u32 store
+of both edge words) and reads ONLY physical pad buffers
+`0x801befa8`/`0x801befca` via `attr_word_decode`. Device records
+`0x801ff080`/`0x801ff170` are byte-identical physical SIO pad pollers.
+`pad_hist_record` (battle.c:5878) is the IN-FIGHT CPU/demo playback —
+bypasses pad, produces fighter words not `+0x6a`. NO guest routine found
+that synthesizes a CPU pad report for the versus screen.
+
+ players_ctrl_init (game.c:2542) builds per-player descriptor vtables
+0x801f5258(P0)/0x801f52a0(P1) with DIFFERENT fn-ptrs — the
+controller-type binding layer, unresolved.
+
+REFINED HYPOTHESIS (not yet tested): `+0xb6` may need to be SEEDED to
+0x100 (or higher) during match_setup/select so it bypasses the
+cls-0x000 pad-confirm path — vs synthesizing a pad edge. Check who
+writes the INITIAL phase to +0xb4/+0xb6 (bcfg_step_c/d write 0x100) and
+whether the CPU side is skipped. ALSO untested: compare ATTRACT's
+versus-screen flow (reaches combat) vs arcade — does attract pre-arm or
+bypass the CPU confirm via pad_hist_record/AI?
