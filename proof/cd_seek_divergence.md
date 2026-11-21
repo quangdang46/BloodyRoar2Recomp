@@ -282,3 +282,24 @@ there is nothing for intc_dispatch->cb7_run to dispatch. Next: inspect the
 DMA channel done-bit path — why the completed transfer at frame 3885 did
 not leave a pending DICR done bit / raise the channel IRQ that cb7_run
 consumes (psxrecomp DMA ch3/ch4 completion -> INTC/DICR).
+
+### CD hardware proven CLEAN — wedge is downstream in game event/SPU layer
+
+cdrom_state on wedged 6091:
+- irq_enable=0x07 (all reasons enabled), irq_flag=0x00 (HINTSTS fully acked)
+- int1_pended=0, int1_lost=0, int1_pending_now=0 — NO data-ready IRQ lost
+- reading=0, pending={cmd:0x09,active:0,phase:1} — no active CD transfer
+- sector_read_pos=2060/2340 — a sector buffer partially consumed via PIO
+- seq frozen at 81861; last device cmd exec frame 3885
+
+=> Every CD interrupt WAS generated, presented (i_stat bit2), delivered to
+the game ISR, and acked (irq_flag=0). The "CD IRQ never fires" hypothesis is
+DISPROVEN. The CD subsystem is idle with all work acked.
+
+The wedge is therefore NOT a missing CD IRQ. It is that the game's
+DeliverEvent(0xF0000009,0x20) -> TestEvent unblock never happens even though
+CD data+IRQ completed. Per ACCURACY_BURNDOWN the event couples CD-read to
+SPU-stream drain; DICR showed only ch4(SPU) IRQ enabled, no done bits. The
+remaining suspect is the SPU/audio DMA channel (ch4) completion ->
+cd_dma_chan_reset -> DeliverEvent path, OR the game's record/event state
+machine observing a completion flag the clean-C port sets wrong.
