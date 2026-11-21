@@ -231,3 +231,37 @@ Entry dump (base + idx*0x20, 8 words): entry30 @0x800103c0 reads all-zero
 wrapped past. Whether this is normal ring wraparound the consumer must
 chase, or a genuine cursor desync, is the open question agent 40dd14de
 is resolving with a live time-series.
+
+## BREAKTHROUGH — completion-callback dispatcher never runs (agent 4811f2fb + live :7400)
+
+CORRECTION: 0x8019A87C is the normal per-IRQ trampoline (BIOS EntryInt
+restore sets v0=1 -> jal cd_intc_dispatch -> ReturnFromException). The
+deferred-coroutine contract WORKS. cd_ctx_restore=0 / 0x8019A88C=0 are
+expected steady-state, NOT a stuck predicate.
+
+REAL mechanism (generated cd_response_process 0x80196370):
+- reads I_STAT idx via 0x1F801800, response bytes via 0x1F801801,
+  IRQ reason via 0x1F801803 (&7), ACKs via 0x1F801803 write
+- writes status -> 0x801BC854 (=response[0]&0x1D, =cd_status_raw),
+  param -> 0x801BC858, class byte -> 0x801BCB24 ((s1==0)?2:5)
+- game gates command-completion on *(u32)0x801BC854 & 0x10 (bit4 busy)
+
+THE BREAK: cd_response_pump (0x801979F8) is handler[2] in the
+cd_intc_dispatch table @0x801bcd1c, gated on
+  mask = *I_STAT(0x1F801070) & *I_MASK(0x1F801074) & u16@0x801bcd48(0xD)
+It is the IRQ-context dispatcher that fires completion callbacks
+(s0&4->0x801BC84C, s0&2->0x801BC848) which mark channel entries state=2
+and set the event flags TestEvent waits on. LIVE: cd_response_pump = 0 hits.
+
+I_STAT bit2 (CDROM=0x04) IS set transiently on command completion
+(command_history i_stat=0x04) and I_MASK=0xD + sw mask=0xD both have bit2.
+So bit2 is generated but NOT seen by cd_intc_dispatch's poll -> the IRQ
+status is cleared/consumed before the dispatch reads it (INTC ack ordering)
+OR the CD IRQ never reaches the poll window. cd_response_process still
+runs 1127x via cd_result_wait_b->0x80196B4C (direct, non-IRQ path) so
+status/class bytes ARE written (live 0x801BC854=0x02, 0x801BCB24=0x02)
+but the CALLBACK dispatch that finalizes entries never happens.
+
+Guest spins B0/0x11 TestEvent = 2,053,416 calls; CD device idle
+(reading=0, pending.active=0, i_stat=0). Channel cursors frozen
+prod=2/fin=0/cons=30 over 48s = HARD wedge (not slow streaming).
