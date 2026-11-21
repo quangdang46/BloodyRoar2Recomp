@@ -93,3 +93,53 @@ cd_channel_poll is never reached. The finalize predicate (+4 received vs
 satisfied for the streaming/battle-init entries -> the machine spins
 producing/issuing without completing. This is narrower than "coroutine
 starved": the machine RUNS but its per-entry completion condition fails.
+
+## Mechanism map (clean+generated, verified in source)
+
+Deferred-coroutine chain that must mark channel entries state==2:
+  CD IRQ (INT1, bit2) -> cd_ctx_restore(0x8019adcc) -> re-enter
+  cd_chan_full_init(0x8019a814) -> cd_intc_dispatch(0x8019a8ec)
+  -> cd_response_pump(0x801979f8, clean cd.c:4540)
+  -> cd_response_process(0x80196370, GENERATED 1372-byte response SM)
+  -> on flags&4 call DB32G(0x801bc84c)=cd_read_step_cb;
+     on flags&2 call DB32G(0x801bc848)=cd_read_finish_cb
+  -> those drive cd_mc_state_machine(0x80199440, GENERATED)
+  -> entry.state -> 2 -> cd_channel_poll(0x80199360, CLEAN cd.c:1663)
+     returns ready.
+
+cd_channel_poll semantics (clean cd.c:1663-1683, disasm-verified):
+  entry = base@0x801fc6c0 + consume@0x801fc6ac *0x20 ; state=u16@+0.
+  state==1 -> consume=0, maybe clear, recheck entry[0].
+  state==2 -> state=4, *p1=base+fc6c4*0x20+idx*0x7e0 (data), *p2=entry, ret 0.
+  else -> ret 1 (keep polling).
+
+Consumer chain (FMV/memcard block IO):
+  scene_entry(0x80159028) -> blk_io_retry(0x80159a14, clean save.c:2228)
+  -> mc_date_serial_cmp(0x80159ab4, DELEGATED save.c:2270) whose generated
+     body loops cd_channel_poll with per-block psx_check_interrupts_at —
+     the yields that let the CD coroutine mark state==2.
+  Delegation comment (save.c:2254-2269) documents this is REQUIRED: a
+  clean-C poll cannot advance guest time / supply a resume PC, so the CD
+  stream never delivers -> blk_io_retry livelocks.
+
+NOTE: cd_channel_poll=0 hits on :6900/:7100 is EXPECTED when the instance
+is past the FMV wedge into attract-demo streaming (which uses the
+cd_read_poll/cd_file_load_sm path, not blk_io_retry->cd_channel_poll).
+A 0-hit cd_channel_poll alone is NOT proof of the wedge — must probe
+during the actual FMV/boot window or a player-combat battle-init load.
+
+## Live wedge signature (fresh :7100, frame ~4800)
+
+  cursors 0x801fc6a4/a8/ac = prod=2, fin=0, cons=30 (0x1E)  [FROZEN]
+  entry30 @0x800103C0 state u16=0 (empty) -> poll would return 1 forever
+  read-session 0x801bcb94 progress=0 (reads DO complete); bcb80 total and
+    dest change each sample -> new sessions issue (pipeline not dead)
+  MDEC output_pos ~10.83M/12.4M (~87%), decode_input_pos 3796/3840
+    (input nearly exhausted), dma_in_words frozen, busy=0
+  movie state 0x1f80008c low16=0xFFFF(-1); decode cursor 0x801c47b8
+    stuck at 0x80010000 (never advanced)
+
+Interpretation: CD reads complete and new sessions issue, but the
+channel-entry finalize (state->2) never happens for the streaming
+consumer, so blk_io_retry/mc_date_serial_cmp starve and the MDEC feed
+stops -> FMV truncates ~87% then state machine exits to demo fight.
