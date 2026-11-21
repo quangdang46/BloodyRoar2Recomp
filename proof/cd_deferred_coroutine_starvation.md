@@ -215,3 +215,19 @@ the coroutine (cd_chan_full_init->0x8019A87C) waits for the prior stage's
 done-signal that cd_response_process/cd_mc_state_machine never sets.
 Ready path 0x8019A88C -> cd_init_stage_a(0x8019AE10) is the NEXT init
 stage, confirming this is the CD subsystem init sequence stalling.
+
+## Update — channel table is a 32-entry RING buffer (live :7400, frame ~3400-8700)
+
+Pointer cells (verified live):
+- `*(u32)0x801fc6c0` = `0x80010000` = entry-array base (scratchpad)
+- `0x801fc6c4` = `0x20` = **capacity 32** (ring size, NOT stride)
+- `0x801fc6c8` = producer cursor, `0x801fc6cc` = finalize cursor,
+  `0x801fc6ac` = consume cursor
+- Observed wedge cursors: prod=2, fin=0, **cons=30** — consumer sits near
+  ring end (idx 30 of 32) while producer has wrapped to 2.
+
+Entry dump (base + idx*0x20, 8 words): entry30 @0x800103c0 reads all-zero
+(state=0) — the consume cursor points at a slot the producer already
+wrapped past. Whether this is normal ring wraparound the consumer must
+chase, or a genuine cursor desync, is the open question agent 40dd14de
+is resolving with a live time-series.
