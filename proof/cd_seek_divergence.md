@@ -513,3 +513,34 @@ link is the completion->game-state transition.
 NEXT: trace WHY channel-table entries never reach state==2 — which generated/
 clean fn writes entry state on CD read completion (record machine state_commit
 -> channel mark), and why it doesn't fire for this read.
+
+=== SESSION — ROOT CAUSE: CD consumer task starved (data-ready backlog) ===
+
+Agent a967ee56 proved: channel-table state==2 writer = cd_dir_entry_finalize
+(0x801990f0, clean cd.c:3553), gated by 0x801FC69C which needs
+entry+4(progress)==entry+6(expected)-1. entry+4 gets ZERO writes — the
+per-sector accounting consumer is dead. fntrace unreliable for coroutine
+re-entry (continuation blocks), but live IRQ/cdrom state is decisive:
+
+LIVE on wedged :6091 (cdrom_state):
+- sector_available=1  BUT sector_read_pos=2060/2340, reading=0
+  => CD delivered a sector; NOTHING is consuming it.
+- bfrd_set=3931 vs bfrd_clear=14  => data-ready signaled ~4000x, acked 14x
+  => massive unconsumed backlog.
+- int1_pending_now=0, irq_flag=0, irq_enable=0x07
+  => drive already signaled + is waiting for the game to PULL; no IRQ pending.
+- pending cmd Pause(0x09) phase=1 = stale residue (completed earlier).
+- fntrace cycles ONLY cb8_dispatch/intc_dispatch/record-machine; the
+  response_pump->state_machine->finalize + audio/DeliverEvent chain absent.
+
+ROOT CAUSE (high confidence): the game's CD stream-CONSUMER task — the one
+that reads the available sector, credits channel-entry +4 progress, marks
+state==2, and kicks ch4/audio->DeliverEvent — is NEVER SCHEDULED. This is the
+N+42 cooperative-scheduler starvation: a TestEvent-spinning thread holds the
+CPU so the producer/consumer task never runs. Data piles up unconsumed
+(bfrd 3931:14), channel entry never reaches state==2, DeliverEvent never fires.
+
+NEXT (faithful): find WHY the consumer task isn't scheduled — is it (a) not in
+the ready queue (never woken / lost wakeup), (b) starved by a non-yielding
+TestEvent loop that should yield/sleep, or (c) blocked on a different event.
+Inspect the kernel TCB/ready-queue state + which thread owns the CD consumer.
