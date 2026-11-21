@@ -80,3 +80,44 @@ cd_seek_blocker.md, versus_framedivisor_post_cd.md (frame-divisor resolved).
 - `0x801bcd18` = [0x00000001, 0x8019AE68] → cd_intc_dispatch state: in-service
   flag=1, handler table base 0x8019AE68
 - `0x801bcd48` = 0x0000000D → the mask cell cd_intc_dispatch ANDs in
+
+## LEADING HYPOTHESIS — Pause drops pending INT1 data-ready (added analysis)
+
+`stop_read_stream()` (cdrom.c:1764) — called by Pause(0x09) handler
+(cdrom.c:2303) and other stop paths — does:
+```
+reading=0; read_cmd=0; read_delay=0; s_cd_timing_next_due=0;
+cdrom_clear_pending_dataready();   // clears pending_dataready/_stat/_due/seq
+```
+`cdrom_clear_pending_dataready` (cdrom.c:1674) drops a pending INT1
+sector-ready announcement with NO delivery and NO read-abort/read-done
+event to the guest.
+
+Wedge state is consistent: `sector_available=1`, `sector_read_pos=2060`
+(game consumed this sector's 2060 useful bytes of 2340, leaves EDC/ECC
+tail), `int1_pended=0`, `int1_pending_now=0`. If the ReadN had the NEXT
+sector's data-ready INT1 pending when Pause hit, that INT1 was silently
+dropped -> the game's read consumer finishes this sector then waits
+forever for a data-ready that never arrives -> cd_cmd_sequence TestEvent
+spin (B0:11 = 1.4M).
+
+The game ISSUED Pause deliberately, but the read consumer may be a
+separate deferred coroutine that never learns the read stopped — classic
+reader-thread/producer race. cd_intc_dispatch runs every frame finding
+mask empty (no pending completion to dispatch).
+
+## Faithfulness question to resolve (needs oracle/hw doc, NOT a guess)
+Does real PS1 hardware retract a not-yet-presented INT1 (sector data-ready)
+when Pause/Stop is issued mid-read? The sector data already sits in the
+drive buffer; INT1 is a status the guest polls/gets IRQ'd for. If real HW
+keeps the data-ready status (or delivers a read-abort), then
+cdrom_clear_pending_dataready dropping it is UNFAITHFUL. If real HW clears
+it, the bug is elsewhere (game should get a pause/read-end event instead).
+
+Verify against Beetle oracle (psx-beetleoracle.exe) or psx docs:
+- Issue ReadN then Pause mid-stream; check whether INT1/data-ready status
+  survives the Pause, and what completion/status the game observes.
+- Compare pending_dataready lifecycle vs real drive behavior.
+
+Also check: does Pause need to DeliverEvent a distinct "read stopped /
+session end" flag the read consumer awaits (separate from CDIRQ_COMPLETE)?
