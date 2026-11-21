@@ -5324,10 +5324,22 @@ extern void ko_count_announce(uint32_t,uint32_t);
 extern void victory_jingle_schedule(uint32_t,uint32_t);
 int battle_init(uint32_t param_1, uint8_t *param_2, uint8_t *param_3)
 {
-  /* sp+0x18 .. sp+0x170 image (frame 0x168) -> guest_sp()-0x150;
-   * guest RAM backing so the 0x801f10bc cell carries a real guest
-   * address aliasing the same bytes. */
-  uint8_t  *auStack_18 = (uint8_t *)guest_at(guest_sp() - 0x150);
+  /* guest sp-0x168..sp frame image (frame 0x168). Reserve the window on
+   * the live guest sp (br2_guest_frame mirrors it into cpu->gpr[29]) so
+   * every nested guest call inside the init loop — battle_bringup_a,
+   * task_pool_*, record_init_sweep, frame_tick — allocates BELOW this
+   * frame instead of overwriting the sp+0x18 argblock that 0x801f10bc
+   * and battle_bringup_a's sp+0x118 pointer alias; without the
+   * reservation each callee frame landed in this window and the
+   * bring-up state corrupted, wedging arcade battle-init at DAT1=3.
+   * frame 0x168 is 8 mod 16 so the reservation aligns to 0x170 and
+   * guest sp+N maps to sst_frm + N + 8; sp+0x18 -> sst_frm+0x20. */
+  extern uint32_t br2_guest_frame(uint32_t);
+  extern void br2_guest_frame_free(void);
+  uint32_t sst_frm = br2_guest_frame(0x168);
+  /* sp+0x18 -> sst_frm+0x20; guest RAM backing so the 0x801f10bc cell
+   * carries a real guest address aliasing the same bytes. */
+  uint8_t  *auStack_18 = (uint8_t *)guest_at(sst_frm + 0x20);
   uint32_t cnt   = 0;                   /* sp+0x130 */
   uint32_t p134  = 0x801b2604;          /* sp+0x134: lh-pair cursor */
   uint32_t p138  = 0xa50;               /* sp+0x138: record offset A */
@@ -5566,6 +5578,7 @@ L_tail:
     frame_tick((intptr_t)param_1);
     if (s6 == 0xff) break;
   }
+  br2_guest_frame_free();
   return 0xff;
 }
 
