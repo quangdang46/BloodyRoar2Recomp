@@ -144,3 +144,18 @@ DMA destination address for the sector writes hitting 0x80010000.
 => Remaining: runtime TIMING (IRQ delivery vs guest ack/dispatch ordering) or
    sector DATA CONTENT correctness (wrong LBA delivered). Agents:
    6f7d7f6e=interrupts.c/cdrom.c IRQ timing; ef8202ef=CD read data correctness.
+
+## ROOT CAUSE CONFIRMED (wtrace, live :7500 frame 147705)
+CD DMA channel 3 writes SECTOR PAYLOAD into the channel-entry table.
+Filtered wtrace on guest 0x800103C0-0x800103DC (masked 0x103C0-0x103FF):
+  dma_ch:3, ra=0x801986EC, pc=0x801978AC wrote:
+    0x800103C0 old=0x80010001 new=0xFFFF0000
+    0x800103C4 old=0x00050000 new=0x0000FF00
+    0x800103C8 old=0x00002711 new=0xFFFFFFFF
+    ... (all 8 words of the awaited entry overwritten with sector/pixel data)
+The awaited consumer entry (cursor=30 -> 0x800103C0) is clobbered by CD DMA,
+so u16[+4]/u16[+6] hold disc bytes, never satisfying the gate.
+=> CD read DMA destination (ch3 MADR) points INTO the descriptor table.
+   Either dest addr derived from already-corrupt entry field, OR runtime
+   DMA address translation off. NEXT: find where ch3 MADR is programmed
+   for a read and what value it gets.
