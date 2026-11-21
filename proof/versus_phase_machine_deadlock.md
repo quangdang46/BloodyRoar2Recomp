@@ -169,3 +169,28 @@ versus/arcade-gated branch that skips the second side's phase init, in
 match_setup_apply / per_side_setup / battle_sides_commit / battle_state_init
 callers. Trace which function writes battle+0xb6 (and +0xb4) during the
 select->battle transition and why the idx==1 write is absent.
+
+## ROOT CAUSE PINNED (2026-11-22) — arcade CPU-opponent phase never init; versus WORKS
+
+Live A/B on fresh instances:
+- :8600 VERSUS (proper dual-pad): DAT1=6, b4=b6=0x0300 — BOTH human players
+  confirm via pad -> both battle phases init -> progressing through intro.
+  Mode bytes 9b=2/9c=1. P2 record+1=0 (human).
+- :8400 ARCADE (arcade_fight_mash, 1P vs CPU): DAT1 stuck=3,
+  b4=0x0300 (human ok), b6=0x0000 (CPU NEVER init). Mode 9b=0/9c=0.
+  P2 record+1=1 (CPU-opponent flag).
+
+=> NOT a shared bug, NOT input starvation on versus. The wedge is
+ARCADE-SPECIFIC: the CPU opponent (slot1) never gets its battle phase
+initialized because its char-select confirm doesn't run the human
+select_confirm_handler path (no pad). bcfg_step_a then gates phase 0->0x700
+on flag 0x800 @ battle+0x6a which stays clear; fighter_spawn_setup (case3)
+waits for phase 0x700 forever.
+
+Phase machine decoded (battle_config_eval menu.c:3974):
+  cls=ph&0xf00; idx=B[0x9b]. 0x000->L_state0->bcfg_step_a->0x700;
+  0x100->0x200; 0x200->wait; 0x300->announce stage/fight (stable until
+  intro completes); 0x600->continue_countdown->0x700/0x800; 0x700->bcfg_step_c
+  (reset 0x100); 0x800->0x900->tick->0.
+Per-player words: phase u16 @ battle+0xb4+slot*2, flag u16 @ battle+0x68+slot*2
+(=0x1f800068/0x6a, cleared by clear_battle_counters at battle init).
