@@ -389,3 +389,27 @@ i_stat=0x1 — identical signature to arcade ph=3 wedge. Versus progressed
 further (ph=6 char-select) only because it loaded different resources
 before hitting the same DeliverEvent(0xF0000009) starvation. Confirms a
 single root cause gates ALL CD-completion-dependent progression.
+
+---
+
+## CONVERGED ROOT CAUSE (agents d5cfe31a + 74ecd030) — game-side, not runtime
+
+Runtime agent (d5cfe31a): NO runtime IRQ/DMA bug. complete_transfer,
+raise_dma_irq_on_master_edge, psx_irq_raise, I_STAT ack all correct.
+CDROM IRQ delivers+acks; ch3 CD-DMA completes but game doesn't enable its
+IRQ (faithful — game uses CDROM IRQ). ch4 SPU kick (cd_dma_xfer_start_b)
+never happens because its producer never runs. cd_reg_window_op(0x8019B944)
++ cd_dma_chan_reset(0x8019B7E0) + cb7_run(0x8019AF84) NEVER entered.
+
+Versus agent (74ecd030): controllers+char-lock RULED OUT (both pads work,
+phase words 0x300 locked). Stall = versus handshake select_screen_tick needs
+the deferred task/interrupt path starved by the same CD wedge. Points to
+cd_seek_param_issue->cd_reg_window_op->worker doorbell (AGENTS.md §8).
+
+SYNTHESIS: After the last completed CD command (Pause), the game's
+deferred command-issue / record-commit path never produces the NEXT op or
+the DeliverEvent(0xF0000009). fntrace: queue_drain+state_rx run; queue_service
++state_commit+op_frame_advance+reg_window_op+dma_chan_reset+cb7_run never.
+The break is the clean-C record-machine commit/issue GATING — a mistranslated
+compare/condition or a delegated wrapper dropping a side-effect. Fresh agent
+cadad74f tracing the exact flush->state_commit->DeliverEvent trigger.
