@@ -228,3 +228,32 @@ the named button.)
 => The core game (menu -> mode select -> versus/arcade combat) WORKS on
 HEAD. The attract-FMV `cd_read_finish_cb` gap is a fidelity issue (intro
 video doesn't complete), NOT a gameplay blocker.
+
+## cd_mc_state_machine invocation map (agent 18c5088f, live :6100)
+
+`cd_mc_state_machine` (0x80199440) is invoked via exactly 3 gated paths —
+all closed when no read session is active (current menu/idle state, which
+is why pc_probe=0 now; earlier 136 hits were during active reads):
+
+1. `tile_stream_pump`/`hp_bar_tick` — require `fc68c!=0`, but `fc68c` is
+   set ONLY inside the machine itself (`0x8019949C`) → chicken-and-egg.
+2. `cd_mc_sm_wrap` (`0x80198FE4`) — unconditional, but only called from
+   `cd_response_pump` when `cd_response_process()` returns `s0&4` AND
+   `*(u32*)0x801BC84C != 0`. `bc84c`=0 now (no read session).
+
+`bc84c` (`0x801BC84C`) is the per-sector response callback slot — should
+be `0x801985c4` (cd_read_step_cb) during a read, installed by the
+read-open path. Entry predicates: `fc69c==1`→finalize tail; `fc688==0`→
+idle; **G3**: `*(0x1F801098)`(DMA ch1 CHCR) bit24 must be set else idle.
+
+Exhaustive store audit: NO `+4/+6` store exists in the state machine —
+only entry+0 (state). The `+4/+6` are seeded by the `0x80199ADC` bulk copy
+from a source descriptor. `cd_read_step_cb` writes only session fields,
+never dir entries. `elem_pair_field_set`(+0x44/46/48) is the ANIMATION
+element system, NOT the CD dir table (prior "+68/+70/+72" notes were these).
+
+**Root cause chain:** no read session → nothing kicks the machine. CD sits
+in Pause(0x09)-retry (`stat=0x02`). `tile_stream_open` ran (set
+fc6c0/fc6c4/fc688) but the first Read was never issued/completed. NEXT:
+trace `blk_io_retry`/`cd_stream_mode_init`/`cd_mode_flag_set` for where
+the first Read should issue + why pending Pause never completes.
