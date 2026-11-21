@@ -159,3 +159,21 @@ so u16[+4]/u16[+6] hold disc bytes, never satisfying the gate.
    Either dest addr derived from already-corrupt entry field, OR runtime
    DMA address translation off. NEXT: find where ch3 MADR is programmed
    for a read and what value it gets.
+
+## REFRAME #2 — table writes are INTENTIONAL paired CD DMA (not clobber)
+dma_cdrom_history shows each stream LBA does TWO ch3 transfers:
+  - 8-word (0x20B) DESCRIPTOR write -> 0x10060+idx*0x20  (pc=0x80199694, mode 0xE0)
+    first_word=0x80010160 (a pointer). THIS IS the channel entry being filled
+    BY CD DMA — entries are DISC-DATA descriptors, not CPU-built.
+  - 504-word (~0x7E0) DATA write -> 0x11BA0+idx*0x7e0 (pc=0x80199CEC/0x80199C50)
+    = base+capacity*0x20+idx*0x7e0 data buffer (matches cd_channel_poll formula).
+Entry idx <-> data idx correspond (entry3<->0x11BA0, entry4<->0x12380, entry5<->0x12B60).
+LBAs consecutive (209047/8/9). mode=0xE0 (streaming/FMV), vs 0xA0 file-load.
+
+=> +4/+6 are SEQUENCE TAGS stored in the disc stream; gate u16[+4]==u16[+6]-1
+   validates consecutive delivery. cd_read_step_cb does NOT write them.
+=> WEDGE = a sector SEQUENCE BREAK: a skipped/duplicated/out-of-order/wrong
+   sector makes the disc sequence non-consecutive -> gate never passes.
+   This is a CD DATA-CORRECTNESS bug (ef8202ef's domain), NOT a table clobber.
+   pump=0 is likely pc_probe FALSE-NEGATIVE (clean-ported host C) + moot
+   because cd_result_wait_b does the same callback dispatch synchronously.
