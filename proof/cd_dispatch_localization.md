@@ -93,3 +93,23 @@ Why do **type-2** (command-response) events never fire? Candidates:
   (latent bug corrupting `rtps_basis_xform` extern).
 - Regenerated `src/clean_table.c`; full build clean; fresh instance
   reaches identical wedge (no regression).
+
+## Registration mechanism (decoded from generated 0x8019AABC)
+
+`cd_dispatch_tbl8(type,handler)` → `*(tbl+8)=0x8019AABC(type,handler)`:
+
+- stores `handler` into slot `0x801BCD0C + type*4` (table base
+  `0x801C0000-13028 = 0x801BCD0C`)
+- sets bit `1<<type` in an enable mask at table `+44/+48`
+- calls BIOS trampolines `0x80199FE0` (B0/0x5b) and `0x8019A670`
+  (C0/0x0a) to **arm the kernel interrupt source** for that type
+
+So type-0 (`cd_cb8_dispatch`) and type-2 (`cd_response_pump`) are
+separately-registered, separately-enabled IRQ handler slots. Type-0's
+IRQ fires (382×); type-2's never does → `cd_response_pump` starves.
+
+The type→IRQ-source mapping is armed via C0/0x0a (kernel INTC/CD
+event enable). Next step: identify which `CDIRQ_*` (`DATA_READY`/
+`DATA_END`/`ACK`/`ERROR` in `cdrom.c set_irq`) the runtime must raise
+to trip the type-2 slot, and confirm it isn't being raised for the
+stalled read session.
