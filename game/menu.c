@@ -440,16 +440,16 @@ extern char *s_time_out_in_decoding___80120e90;
 #define _DAT_1f8000bc   (*(uint32_t *)g__DAT_1f8000bc)
 #define _DAT_1f8000c4   (*(uint32_t *)g__DAT_1f8000c4)
 #define _DAT_1f8000dc   (*(uint8_t *)g__DAT_1f8000dc)
-#define _DAT_1f800100   (*(uint8_t *)g__DAT_1f800100)
+#define _DAT_1f800100   (*(uint32_t *)g__DAT_1f800100)
 #define _DAT_1f800104   (*(uint32_t *)g__DAT_1f800104)
 #define _DAT_1f800110   (*(uint32_t *)g__DAT_1f800110)
-#define _DAT_1f800148   (*(uint8_t *)g__DAT_1f800148)
-#define _DAT_1f800154   (*(uint8_t *)g__DAT_1f800154)
+#define _DAT_1f800148   (*(uint32_t *)g__DAT_1f800148)
+#define _DAT_1f800154   (*(uint32_t *)g__DAT_1f800154)
 #define _DAT_1f800208   (*(uint32_t *)g__DAT_1f800208)
 #define _DAT_1f80020c   (*(uint32_t *)g__DAT_1f80020c)
 #define _DAT_1f800218   (*(uint32_t *)g__DAT_1f800218)
-#define _DAT_1f800250   (*(uint8_t *)g__DAT_1f800250)
-#define _DAT_1f80025c   (*(uint8_t *)g__DAT_1f80025c)
+#define _DAT_1f800250   (*(uint32_t *)g__DAT_1f800250)
+#define _DAT_1f80025c   (*(uint32_t *)g__DAT_1f80025c)
 #define _DAT_801c15f0   (*(uint8_t *)g__DAT_801c15f0)
 #define _DAT_801c43a0   (*(uint8_t *)g__DAT_801c43a0)
 #define _DAT_801c4578   (*(uint8_t *)g__DAT_801c4578)
@@ -798,22 +798,30 @@ switchD_8016fd64_caseD_8:
           if ((_DAT_1f800154 & 0x200) == 0) {
             if (((_DAT_1f800154 & 0x8000000) == 0) || (iVar4 == 0)) {
               player_light_apply(&DAT_1f8000e8,1);
-              iVar5 = (int)DAT_1f8000ee;
+              iVar5 = (int)(int8_t)DAT_1f8000ee;
               uVar3 = _DAT_1f800100;
             }
             else {
               player_light_apply(&DAT_1f8000e8,1);
-              iVar5 = (int)((uint32_t *)guest_at(_DAT_1f800110))[0x24];
-              uVar3 = *(undefined4 *)((uint32_t *)guest_at(_DAT_1f800110) + 0x34);
+              /* Guest 0x80170430/0x8017043C: lb 0x24($v0) / lw 0x34($v0) —
+               * BYTE offsets into the 0x24-byte render-record table at
+               * _DAT_1f800110 (record[1]: count byte +0x24, prim hdr +0x34).
+               * The decompiler's +0x24/+0x34 were element indices on a
+               * uint32_t*, i.e. byte offsets 4x too far. */
+              iVar5 = (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800110 + 0x24);
+              uVar3 = *(undefined4 *)guest_at(_DAT_1f800110 + 0x34);
             }
           }
           else {
             player_light_apply(&DAT_1f8000e8,1);
-            prim_list_gte_invoke((int *)guest_at(*(uint32_t *)((uint32_t *)guest_at(_DAT_1f800110) + 0x10)),iVar1 + 0x40,iVar4,
-                         (int)*(uint32_t *)guest_at(_DAT_1f800110),0x1f800028,0x1f80033c);
+            /* Guest 0x80170414/0x80170404: lw 0x10($v0) / lb 0($v0) —
+             * param_1 = record[0] prim hdr (byte +0x10), param_4 = signed
+             * count byte at struct +0. */
+            prim_list_gte_invoke((int *)guest_at(*(uint32_t *)guest_at(_DAT_1f800110 + 0x10)),iVar1 + 0x40,iVar4,
+                         (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800110),0x1f800028,0x1f80033c);
             if (iVar4 == 0) goto LAB_801704bc;
-            iVar5 = (int)((uint32_t *)guest_at(_DAT_1f800110))[0x24];
-            uVar3 = *(undefined4 *)((uint32_t *)guest_at(_DAT_1f800110) + 0x34);
+            iVar5 = (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800110 + 0x24);
+            uVar3 = *(undefined4 *)guest_at(_DAT_1f800110 + 0x34);
           }
           prim_list_gte_invoke((int *)guest_at(uVar3),iVar1 + 0x40,iVar4,iVar5,0x1f800028,0x1f80033c);
         }
@@ -839,22 +847,22 @@ LAB_80170524:
           if ((_DAT_1f80025c & 0x200) == 0) {
             if (((_DAT_1f80025c & 0x8000000) == 0) || (iVar4 == 0)) {
               player_light_apply(&DAT_1f8001f0,2);
-              iVar5 = (int)DAT_1f8001f6;
+              iVar5 = (int)(int8_t)DAT_1f8001f6;
               uVar3 = _DAT_1f800208;
             }
             else {
               player_light_apply(&DAT_1f8001f0,2);
-              iVar5 = (int)((uint32_t *)guest_at(_DAT_1f800218))[0x24];
-              uVar3 = *(undefined4 *)((uint32_t *)guest_at(_DAT_1f800218) + 0x34);
+              iVar5 = (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800218 + 0x24);
+              uVar3 = *(undefined4 *)guest_at(_DAT_1f800218 + 0x34);
             }
           }
           else {
             player_light_apply(&DAT_1f8001f0,2);
-            prim_list_gte_invoke((int *)guest_at(*(uint32_t *)((uint32_t *)guest_at(_DAT_1f800218) + 0x10)),iVar1 + 0x40,iVar4,
-                         (int)*(uint32_t *)guest_at(_DAT_1f800218),0x1f800028,0x1f80033c);
+            prim_list_gte_invoke((int *)guest_at(*(uint32_t *)guest_at(_DAT_1f800218 + 0x10)),iVar1 + 0x40,iVar4,
+                         (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800218),0x1f800028,0x1f80033c);
             if (iVar4 == 0) goto LAB_801706ac;
-            iVar5 = (int)((uint32_t *)guest_at(_DAT_1f800218))[0x24];
-            uVar3 = *(undefined4 *)((uint32_t *)guest_at(_DAT_1f800218) + 0x34);
+            iVar5 = (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800218 + 0x24);
+            uVar3 = *(undefined4 *)guest_at(_DAT_1f800218 + 0x34);
           }
           prim_list_gte_invoke((int *)guest_at(uVar3),iVar1 + 0x40,iVar4,iVar5,0x1f800028,0x1f80033c);
         }
