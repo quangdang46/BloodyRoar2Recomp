@@ -261,3 +261,23 @@ register-window doorbell blocker (cd_seek_param_issue->cd_reg_window_op).
   cd_mc_state_machine gate 0x80199BB8) fire so cursors converge + blk_io_retry
   exits BEFORE attract_stage_load_step. The missed ReadS descriptor (LBA~208850,
   deferred cmd-issue cd_seek_param_issue->cd_reg_window_op->worker) is the trigger.
+
+## EVENT-ORDERING EVIDENCE (conservative A/B)
+- psx_cycles.c has TWO device-advance paths: production fast deadline-servicing
+  (psx_devices_service_to_now, event-bounded chunks) vs exact per-cycle
+  (psx_advance_cycles_exact, g_event_step_conservative / PSX_EVENT_STEP_CONSERVATIVE).
+  Diagnostic comment: "if X clears with this on, root cause is per-block
+  event-ordering." Runtime toggle: overlay_native_event_granularity {mode}.
+- CONTROL :7700 booted PSX_EVENT_STEP_CONSERVATIVE=1: frame 12081+ advancing ~40fps,
+  multiple CD mode transitions (0xE0 stream at ~5635 consumer draining cons20/prod23;
+  0x00 at ~7986), NO stall — vs fast-mode :7500 wedged ~frame 5556. STRONG evidence
+  the wedge is event-ordering in the fast deadline path, not CD data/logic.
+- RULED OUT this session: warm_route_consumer_blocked + accelerated_consumer_blocked
+  are INERT for BR2 (all counters 0 on :6100; warm_route never registered; mode 0xA0/0xE0
+  both fail accelerated_read_active's mode&0x68 gate). read_delay clamp not hit
+  (LBAs consecutive). Sector delivery faithful + unimpeded.
+- REMAINING SUSPECT: IRQ coalescing/ordering — fast path runs
+  interrupts_service_scheduled_events ONCE per event-bounded chunk; multiple device
+  IRQs due inside one chunk may collapse into one delivery vs conservative's
+  per-cycle exceptions. A missed/coalesced CD data-ready or command-complete IRQ
+  would skip a guest callback -> descriptor/state not finalized -> consumer parks.
