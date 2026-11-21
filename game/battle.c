@@ -1245,18 +1245,18 @@ void battle_camera_step(uint param_1,byte *param_2,byte *param_3,int param_4)
   undefined4 uVar12;
   short unaff_s2;
   uint unaff_s5;
-  short local_98;
-  short local_96;
-  short local_94;
-  int local_90;
-  int local_8c;
-  int local_88;
-  int local_80;
-  int local_7c;
-  int local_78;
-  int local_70;
-  int local_6c;
-  int local_68;
+  /* Guest vec3 slots: target_angles_depth_set / target_depth_set read
+   * 3 contiguous s16 through local_98; FUN_80194630, pair_depth_set and
+   * midpoint_angles_set read/write 3 contiguous u32 through local_90,
+   * local_80 and local_70. The decompiler split each vec3 into scalars.
+   * local_98[0..2] = old local_98/local_96/local_94;
+   * local_90[0..2] = old local_90/local_8c/local_88;
+   * local_80[0..2] = old local_80/local_7c/local_78;
+   * local_70[0..2] = old local_70/local_6c/local_68. */
+  short local_98 [3];
+  int local_90 [3];
+  int local_80 [3];
+  int local_70 [3];
   undefined1 auStack_60 [8];
   undefined1 auStack_58 [8];
   undefined1 auStack_50 [8];
@@ -1334,15 +1334,15 @@ LAB_8012fec0:
       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x46) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((cVar1 * 0x50 + iVar9 + 0x3c)));
     }
     else {
-      local_80 = *(int *)guest_at((uint32_t)(uintptr_t)((iVar9 * 0x50 + *(int *)(param_2 + 0x20) + 0x34)));
-      local_70 = *(int *)guest_at((uint32_t)(uintptr_t)((*(char *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x81) ))* 0x50 + *(int *)(param_3 + 0x20) + 0x34)));
-      *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x42) ))= (short)((local_80 + local_70) / 2);
-      local_7c = *(int *)guest_at((uint32_t)(uintptr_t)((*(char *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x80) ))* 0x50 + *(int *)(param_2 + 0x20) + 0x38)));
-      local_6c = *(int *)guest_at((uint32_t)(uintptr_t)((*(char *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x81) ))* 0x50 + *(int *)(param_3 + 0x20) + 0x38)));
-      *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x44) ))= (short)((local_7c + local_6c) / 2);
-      local_78 = *(int *)guest_at((uint32_t)(uintptr_t)((*(char *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x80) ))* 0x50 + *(int *)(param_2 + 0x20) + 0x3c)));
-      local_68 = *(int *)guest_at((uint32_t)(uintptr_t)((*(char *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x81) ))* 0x50 + *(int *)(param_3 + 0x20) + 0x3c)));
-      *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x46) ))= (short)((local_78 + local_68) / 2);
+      local_80[0] = *(int *)guest_at((uint32_t)(uintptr_t)((iVar9 * 0x50 + *(int *)(param_2 + 0x20) + 0x34)));
+      local_70[0] = *(int *)guest_at((uint32_t)(uintptr_t)((*(char *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x81) ))* 0x50 + *(int *)(param_3 + 0x20) + 0x34)));
+      *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x42) ))= (short)((local_80[0] + local_70[0]) / 2);
+      local_80[1] = *(int *)guest_at((uint32_t)(uintptr_t)((*(char *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x80) ))* 0x50 + *(int *)(param_2 + 0x20) + 0x38)));
+      local_70[1] = *(int *)guest_at((uint32_t)(uintptr_t)((*(char *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x81) ))* 0x50 + *(int *)(param_3 + 0x20) + 0x38)));
+      *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x44) ))= (short)((local_80[1] + local_70[1]) / 2);
+      local_80[2] = *(int *)guest_at((uint32_t)(uintptr_t)((*(char *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x80) ))* 0x50 + *(int *)(param_2 + 0x20) + 0x3c)));
+      local_70[2] = *(int *)guest_at((uint32_t)(uintptr_t)((*(char *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x81) ))* 0x50 + *(int *)(param_3 + 0x20) + 0x3c)));
+      *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x46) ))= (short)((local_80[2] + local_70[2]) / 2);
     }
     if ((*(ushort *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x76) ))& 0x80) == 0) {
       vec3_step_toward_spd(auStack_60,(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3a))),(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x42))),4);
@@ -1368,7 +1368,7 @@ LAB_8012fec0:
           puVar10 = auStack_30;
         }
         else {
-          pair_depth_set(&local_80,&local_70,param_1);
+          pair_depth_set((short *)local_80,(short *)local_70,param_1);
           puVar10 = auStack_30;
         }
       }
@@ -1391,7 +1391,7 @@ LAB_8013049c:
           target_depth_set((short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3a))),param_1);
         }
         else {
-          pair_depth_set(&local_80,&local_70,param_1);
+          pair_depth_set((short *)local_80,(short *)local_70,param_1);
         }
       }
       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x5c) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 100)));
@@ -1429,16 +1429,16 @@ LAB_801302d0:
         uVar5 = (sVar6 + 0x1000) - sVar2;
       }
       else {
-        local_80 = *(int *)guest_at((uint32_t)(uintptr_t)((iVar9 * 0x50 + *(int *)(param_2 + 0x20) + 0x34)));
-        local_70 = *(int *)guest_at((uint32_t)(uintptr_t)((*(char *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x81) ))* 0x50 + *(int *)(param_3 + 0x20) + 0x34)));
-        *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x42) ))= (short)((local_80 + local_70) / 2);
-        local_7c = *(int *)guest_at((uint32_t)(uintptr_t)((*(char *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x80) ))* 0x50 + *(int *)(param_2 + 0x20) + 0x38)));
-        local_6c = *(int *)guest_at((uint32_t)(uintptr_t)((*(char *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x81) ))* 0x50 + *(int *)(param_3 + 0x20) + 0x38)));
-        *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x44) ))= (short)((local_7c + local_6c) / 2);
-        local_78 = *(int *)guest_at((uint32_t)(uintptr_t)((*(char *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x80) ))* 0x50 + *(int *)(param_2 + 0x20) + 0x3c)));
-        local_68 = *(int *)guest_at((uint32_t)(uintptr_t)((*(char *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x81) ))* 0x50 + *(int *)(param_3 + 0x20) + 0x3c)));
+        local_80[0] = *(int *)guest_at((uint32_t)(uintptr_t)((iVar9 * 0x50 + *(int *)(param_2 + 0x20) + 0x34)));
+        local_70[0] = *(int *)guest_at((uint32_t)(uintptr_t)((*(char *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x81) ))* 0x50 + *(int *)(param_3 + 0x20) + 0x34)));
+        *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x42) ))= (short)((local_80[0] + local_70[0]) / 2);
+        local_80[1] = *(int *)guest_at((uint32_t)(uintptr_t)((*(char *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x80) ))* 0x50 + *(int *)(param_2 + 0x20) + 0x38)));
+        local_70[1] = *(int *)guest_at((uint32_t)(uintptr_t)((*(char *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x81) ))* 0x50 + *(int *)(param_3 + 0x20) + 0x38)));
+        *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x44) ))= (short)((local_80[1] + local_70[1]) / 2);
+        local_80[2] = *(int *)guest_at((uint32_t)(uintptr_t)((*(char *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x80) ))* 0x50 + *(int *)(param_2 + 0x20) + 0x3c)));
+        local_70[2] = *(int *)guest_at((uint32_t)(uintptr_t)((*(char *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x81) ))* 0x50 + *(int *)(param_3 + 0x20) + 0x3c)));
         uVar5 = *(ushort *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x8a)));
-        *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x46) ))= (short)((local_78 + local_68) / 2);
+        *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x46) ))= (short)((local_80[2] + local_70[2]) / 2);
       }
       *(ushort *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x32) ))= uVar5 & 0xfff;
     }
@@ -1470,7 +1470,7 @@ LAB_801302d0:
             puVar10 = auStack_38;
           }
           else {
-            pair_depth_set(&local_80,&local_70,param_1);
+            pair_depth_set((short *)local_80,(short *)local_70,param_1);
             puVar10 = auStack_38;
           }
         }
@@ -1499,7 +1499,7 @@ LAB_80130048:
           target_depth_set((short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3a))),param_1);
         }
         else {
-          pair_depth_set(&local_80,&local_70,param_1);
+          pair_depth_set((short *)local_80,(short *)local_70,param_1);
         }
       }
       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x5c) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 100)));
@@ -1744,19 +1744,19 @@ LAB_80131b40:
           *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4c) ))= *(undefined2 *)(&DAT_8011f9c6 + (uVar7 & 7) * 8);
           uVar7 = table_byte_next_a();
           *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4e) ))= *(undefined2 *)(&DAT_8011f9c8 + (uVar7 & 7) * 8);
-          local_80 = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_2 + 0x20) + 0x174)));
-          local_7c = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_2 + 0x20) + 0x178)));
-          local_78 = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_2 + 0x20) + 0x17c)));
-          if (-0x100 < local_7c) {
-            local_7c = -0x100;
+          local_80[0] = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_2 + 0x20) + 0x174)));
+          local_80[1] = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_2 + 0x20) + 0x178)));
+          local_80[2] = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_2 + 0x20) + 0x17c)));
+          if (-0x100 < local_80[1]) {
+            local_80[1] = -0x100;
           }
-          local_70 = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_3 + 0x20) + 0x174)));
-          local_6c = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_3 + 0x20) + 0x178)));
-          local_68 = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_3 + 0x20) + 0x17c)));
-          if (-0x100 < local_6c) {
-            local_6c = -0x100;
+          local_70[0] = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_3 + 0x20) + 0x174)));
+          local_70[1] = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_3 + 0x20) + 0x178)));
+          local_70[2] = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_3 + 0x20) + 0x17c)));
+          if (-0x100 < local_70[1]) {
+            local_70[1] = -0x100;
           }
-          midpoint_angles_set(&local_80,&local_70,param_1);
+          midpoint_angles_set(local_80,local_70,param_1);
           *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x78) ))= 1;
           *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3a) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x42)));
           *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3c) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x44)));
@@ -1846,37 +1846,37 @@ LAB_80131b40:
       }
     case 1:
 switchD_801306ac_caseD_1:
-      local_80 = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_2 + 0x20) + 0x174)));
-      local_7c = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_2 + 0x20) + 0x178)));
-      local_78 = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_2 + 0x20) + 0x17c)));
-      if (((*(uint *)(param_2 + 0x5c) & 0x80000) == 0) && (-0x100 < local_7c)) {
-        local_7c = -0x100;
+      local_80[0] = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_2 + 0x20) + 0x174)));
+      local_80[1] = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_2 + 0x20) + 0x178)));
+      local_80[2] = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_2 + 0x20) + 0x17c)));
+      if (((*(uint *)(param_2 + 0x5c) & 0x80000) == 0) && (-0x100 < local_80[1])) {
+        local_80[1] = -0x100;
       }
-      local_70 = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_3 + 0x20) + 0x174)));
-      local_6c = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_3 + 0x20) + 0x178)));
-      local_68 = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_3 + 0x20) + 0x17c)));
-      if (((*(uint *)(param_3 + 0x5c) & 0x80000) == 0) && (-0x100 < local_6c)) {
-        local_6c = -0x100;
+      local_70[0] = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_3 + 0x20) + 0x174)));
+      local_70[1] = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_3 + 0x20) + 0x178)));
+      local_70[2] = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_3 + 0x20) + 0x17c)));
+      if (((*(uint *)(param_3 + 0x5c) & 0x80000) == 0) && (-0x100 < local_70[1])) {
+        local_70[1] = -0x100;
       }
-      *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x42) ))= (short)((local_80 + local_70) / 2);
-      *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x44) ))= (short)((local_7c + local_6c) / 2);
-      *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x46) ))= (short)((local_78 + local_68) / 2);
-      local_90 = (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x42) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3a)));
-      local_8c = (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x44) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3c)));
-      local_88 = (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x46) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3e)));
-      iVar9 = FUN_80194630(&local_90,&local_90);
+      *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x42) ))= (short)((local_80[0] + local_70[0]) / 2);
+      *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x44) ))= (short)((local_80[1] + local_70[1]) / 2);
+      *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x46) ))= (short)((local_80[2] + local_70[2]) / 2);
+      local_90[0] = (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x42) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3a)));
+      local_90[1] = (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x44) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3c)));
+      local_90[2] = (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x46) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3e)));
+      iVar9 = FUN_80194630((undefined4 *)local_90,(undefined4 *)local_90);
       if (iVar9 != 0) {
         iVar9 = FUN_80194500(iVar9);
         *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3a) ))=
-             *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3a) ))+ (short)((uint)(local_90 * iVar9) >> 0x10);
+             *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3a) ))+ (short)((uint)(local_90[0] * iVar9) >> 0x10);
         *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3c) ))=
-             *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3c) ))+ (short)((uint)(local_8c * iVar9) >> 0x10);
+             *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3c) ))+ (short)((uint)(local_90[1] * iVar9) >> 0x10);
         *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3e) ))=
-             *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3e) ))+ (short)((uint)(local_88 * iVar9) >> 0x10);
+             *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3e) ))+ (short)((uint)(local_90[2] * iVar9) >> 0x10);
       }
       target_angles_set((short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3a))),param_1);
       vec3_step_toward_q(auStack_60,(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x28))),(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x30))),0x40);
-      pair_depth_set(&local_80,&local_70,param_1);
+      pair_depth_set((short *)local_80,(short *)local_70,param_1);
       if (*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x7c) ))== 0) goto LAB_80131e94;
       iVar11 = (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x60)));
       iVar8 = (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x68)));
@@ -2038,19 +2038,19 @@ code_r0x8013065c:
     *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x60) ))= 0;
     goto LAB_80131e98;
   case 0x1c:
-    local_98 = *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_2 + 0x20) + 0x174)));
-    local_96 = *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_2 + 0x20) + 0x178)));
-    local_94 = *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_2 + 0x20) + 0x17c)));
+    local_98[0] = *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_2 + 0x20) + 0x174)));
+    local_98[1] = *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_2 + 0x20) + 0x178)));
+    local_98[2] = *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_2 + 0x20) + 0x17c)));
     uVar7 = *(uint *)(param_2 + 0x5c);
     goto LAB_80131c60;
   case 0x1d:
-    local_98 = *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_3 + 0x20) + 0x174)));
-    local_96 = *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_3 + 0x20) + 0x178)));
-    local_94 = *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_3 + 0x20) + 0x17c)));
+    local_98[0] = *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_3 + 0x20) + 0x174)));
+    local_98[1] = *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_3 + 0x20) + 0x178)));
+    local_98[2] = *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_3 + 0x20) + 0x17c)));
     uVar7 = *(uint *)(param_3 + 0x5c);
 LAB_80131c60:
-    if (((uVar7 & 0x80000) == 0) && (-0x100 < local_96)) {
-      local_96 = -0x100;
+    if (((uVar7 & 0x80000) == 0) && (-0x100 < local_98[1])) {
+      local_98[1] = -0x100;
     }
     if (*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x78) ))== 0) {
       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4a) ))= (&DAT_8011f944)[*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x7e) ))* 4];
@@ -2058,7 +2058,7 @@ LAB_80131c60:
            *(undefined2 *)(&DAT_8011f946 + *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x7e) ))* 8);
       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4e) ))=
            *(undefined2 *)(&DAT_8011f948 + *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x7e) ))* 8);
-      target_angles_depth_set(&local_98,param_1);
+      target_angles_depth_set(local_98,param_1);
       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3a) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x42)));
       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3c) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x44)));
       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3e) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x46)));
@@ -2071,25 +2071,25 @@ LAB_80131c60:
       *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x78) ))= *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x78) ))+ 1;
     }
     else if (*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x78) ))== 1) {
-      *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x42) ))= local_98;
-      local_90 = (int)local_98 - (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3a)));
-      *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x44) ))= local_96;
-      local_8c = (int)local_96 - (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3c)));
-      *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x46) ))= local_94;
-      local_88 = (int)local_94 - (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3e)));
-      iVar9 = FUN_80194630(&local_90,&local_90);
+      *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x42) ))= local_98[0];
+      local_90[0] = (int)local_98[0] - (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3a)));
+      *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x44) ))= local_98[1];
+      local_90[1] = (int)local_98[1] - (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3c)));
+      *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x46) ))= local_98[2];
+      local_90[2] = (int)local_98[2] - (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3e)));
+      iVar9 = FUN_80194630((undefined4 *)local_90,(undefined4 *)local_90);
       if (iVar9 != 0) {
         iVar9 = FUN_80194500(iVar9);
         *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3a) ))=
-             *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3a) ))+ (short)((uint)(local_90 * iVar9) >> 0x10);
+             *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3a) ))+ (short)((uint)(local_90[0] * iVar9) >> 0x10);
         *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3c) ))=
-             *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3c) ))+ (short)((uint)(local_8c * iVar9) >> 0x10);
+             *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3c) ))+ (short)((uint)(local_90[1] * iVar9) >> 0x10);
         *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3e) ))=
-             *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3e) ))+ (short)((uint)(local_88 * iVar9) >> 0x10);
+             *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3e) ))+ (short)((uint)(local_90[2] * iVar9) >> 0x10);
       }
       target_angles_set((short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3a))),param_1);
       vec3_step_toward_q(auStack_60,(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x28))),(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x30))),0x40);
-      target_depth_set(&local_98,param_1);
+      target_depth_set(local_98,param_1);
       if (*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x7c) ))== 0) {
 LAB_80131e94:
         *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x60) ))= 0;
@@ -2153,24 +2153,24 @@ LAB_8013129c:
     break;
   case 0x20:
     if (*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x78) ))== 0) {
-      local_80 = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_2 + 0x20) + 0x174)));
-      local_7c = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_2 + 0x20) + 0x178)));
-      local_78 = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_2 + 0x20) + 0x17c)));
-      if (((*(uint *)(param_2 + 0x5c) & 0x80000) == 0) && (-0x100 < local_7c)) {
-        local_7c = -0x100;
+      local_80[0] = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_2 + 0x20) + 0x174)));
+      local_80[1] = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_2 + 0x20) + 0x178)));
+      local_80[2] = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_2 + 0x20) + 0x17c)));
+      if (((*(uint *)(param_2 + 0x5c) & 0x80000) == 0) && (-0x100 < local_80[1])) {
+        local_80[1] = -0x100;
       }
-      local_70 = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_3 + 0x20) + 0x174)));
-      local_6c = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_3 + 0x20) + 0x178)));
-      local_68 = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_3 + 0x20) + 0x17c)));
-      if (((*(uint *)(param_3 + 0x5c) & 0x80000) == 0) && (-0x100 < local_6c)) {
-        local_6c = -0x100;
+      local_70[0] = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_3 + 0x20) + 0x174)));
+      local_70[1] = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_3 + 0x20) + 0x178)));
+      local_70[2] = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)(param_3 + 0x20) + 0x17c)));
+      if (((*(uint *)(param_3 + 0x5c) & 0x80000) == 0) && (-0x100 < local_70[1])) {
+        local_70[1] = -0x100;
       }
       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4a) ))= (&DAT_8011f944)[*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x7e) ))* 4];
       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4c) ))=
            *(undefined2 *)(&DAT_8011f946 + *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x7e) ))* 8);
       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4e) ))=
            *(undefined2 *)(&DAT_8011f948 + *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x7e) ))* 8);
-      midpoint_angles_set(&local_80,&local_70,param_1);
+      midpoint_angles_set(local_80,local_70,param_1);
       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3a) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x42)));
       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3c) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x44)));
       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3e) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x46)));
@@ -5668,9 +5668,10 @@ undefined4 sphere_pt_hit(int param_1,int param_2,int *param_3,int *param_4,short
   int iVar2;
   int iVar3;
   int iVar4;
-  int local_30;
-  int local_2c;
-  int local_28;
+  /* Guest vec3 slot: gte_op_a00428 reads/writes 3 contiguous u32
+   * through local_30; the decompiler split the 12-byte vec3 into
+   * scalars. local_30[0..2] = old local_30/local_2c/local_28. */
+  int local_30 [3];
   param_1 = param_1 + param_2;
   iVar4 = *param_3 - *param_4;
   iVar1 = iVar4;
@@ -5690,8 +5691,8 @@ undefined4 sphere_pt_hit(int param_1,int param_2,int *param_3,int *param_4,short
         iVar1 = -iVar3;
       }
       if ((iVar1 < param_1) &&
-         (local_30 = iVar4, local_2c = iVar2, local_28 = iVar3, gte_op_a00428(&local_30,&local_30),
-         local_30 + local_2c + local_28 < param_1 * param_1)) {
+         (local_30[0] = iVar4, local_30[1] = iVar2, local_30[2] = iVar3, gte_op_a00428((undefined4 *)local_30,(undefined4 *)local_30),
+         local_30[0] + local_30[1] + local_30[2] < param_1 * param_1)) {
         *param_5 = (short)*param_4 + (short)(iVar4 / 2);
         param_5[1] = (short)param_4[1] + (short)(iVar2 / 2);
         param_5[2] = (short)param_4[2] + (short)(iVar3 / 2);
@@ -5706,17 +5707,18 @@ undefined4 sphere_pt_hit(int param_1,int param_2,int *param_3,int *param_4,short
 void debug_strike_fx_a(short *param_1,int param_2,int param_3,undefined4 param_4,int param_5)
 {
   int iVar1;
-  int local_28;
-  int local_24;
-  int local_20;
+  /* Guest vec3 slot: quad_fx_spawn reads param_3[0..2] as 3
+   * contiguous u32; the decompiler split the 12-byte vec3 into
+   * scalars. local_28[0..2] = old local_28/local_24/local_20. */
+  int local_28 [3];
   if ((((DAT_1f8000b1 == '\0') && (iVar1 = always_one(8), iVar1 != 0)) &&
       ((*(ushort *)(_g_pad_buffer + 2) >> 4 & 1) != 0)) && (DAT_1f8000b1 == '\0')) {
     impact_fx_spawn(param_1,0x40000001,0,0,0);
     if ((*(uint *)guest_at((uint32_t)(uintptr_t)((param_5 + 100) ))& 0x20000) != 0) {
-      local_28 = (int)*param_1;
-      local_24 = (int)param_1[1];
-      local_20 = (int)param_1[2];
-      quad_fx_spawn(param_5,0x13,&local_28,800,0x1000,0,1);
+      local_28[0] = (int)*param_1;
+      local_28[1] = (int)param_1[1];
+      local_28[2] = (int)param_1[2];
+      quad_fx_spawn(param_5,0x13,(undefined4 *)local_28,800,0x1000,0,1);
       emit_task_spawn(param_1,6,param_2,param_3,0x18,1);
       emit_task_spawn(param_1,6,param_2 + 0x800,0x800 - param_3,0xc,1);
     }
@@ -6412,35 +6414,36 @@ bool pt_box_radius_test(int param_1,int param_2,int *param_3,int *param_4)
 {
   int iVar1;
   int iVar2;
-  int local_18;
-  int local_14;
-  int local_10;
+  /* Guest vec3 slot: gte_op_a00428 reads/writes 3 contiguous u32
+   * through local_18; the decompiler split the 12-byte vec3 into
+   * scalars. local_18[0..2] = old local_18/local_14/local_10. */
+  int local_18 [3];
   param_1 = param_1 + param_2;
-  local_18 = *param_4 - *param_3;
-  iVar2 = local_18;
-  if (local_18 < 0) {
-    iVar2 = -local_18;
+  local_18[0] = *param_4 - *param_3;
+  iVar2 = local_18[0];
+  if (local_18[0] < 0) {
+    iVar2 = -local_18[0];
   }
   if (iVar2 < param_1) {
-    local_14 = param_4[1] - param_3[1];
-    iVar2 = local_14;
-    if (local_14 < 0) {
-      iVar2 = -local_14;
+    local_18[1] = param_4[1] - param_3[1];
+    iVar2 = local_18[1];
+    if (local_18[1] < 0) {
+      iVar2 = -local_18[1];
     }
     if (iVar2 < param_1) {
-      local_10 = param_4[2] - param_3[2];
-      iVar2 = local_10;
-      if (local_10 < 0) {
-        iVar2 = -local_10;
+      local_18[2] = param_4[2] - param_3[2];
+      iVar2 = local_18[2];
+      if (local_18[2] < 0) {
+        iVar2 = -local_18[2];
       }
       iVar1 = param_1 * param_1;
       if (iVar2 < param_1) {
-        gte_op_a00428(&local_18,&local_18);
-        if (iVar1 <= local_18) {
+        gte_op_a00428((undefined4 *)local_18,(undefined4 *)local_18);
+        if (iVar1 <= local_18[0]) {
           return false;
         }
-        if (local_18 + local_14 < iVar1) {
-          return local_18 + local_14 + local_10 < iVar1;
+        if (local_18[0] + local_18[1] < iVar1) {
+          return local_18[0] + local_18[1] + local_18[2] < iVar1;
         }
       }
     }
@@ -7111,22 +7114,23 @@ undefined4 * vec3_step_toward(undefined4 *param_1,short *param_2,short *param_3,
   short sVar3;
   short sVar4;
   int iVar5;
-  int local_40;
-  int local_3c;
-  int local_38;
-  int local_30;
-  int local_2c;
-  int local_28;
+  /* Guest vec3 slots: FUN_80194630 reads/writes 3 contiguous u32 through
+   * local_40 (delta) and local_30 (normalized out); the decompiler split
+   * each 12-byte vec3 into scalars. local_40[0..2] = old
+   * local_40/local_3c/local_38; local_30[0..2] = old
+   * local_30/local_2c/local_28. */
+  int local_40 [3];
+  int local_30 [3];
   undefined4 local_20;
   undefined4 local_1c;
-  local_40 = (int)*param_3 - (int)*param_2;
-  local_3c = (int)param_3[1] - (int)param_2[1];
-  local_38 = (int)param_3[2] - (int)param_2[2];
+  local_40[0] = (int)*param_3 - (int)*param_2;
+  local_40[1] = (int)param_3[1] - (int)param_2[1];
+  local_40[2] = (int)param_3[2] - (int)param_2[2];
   if (param_4 == 0) {
     param_4 = 1;
   }
   iVar5 = (int)param_4;
-  uVar1 = FUN_80194630(&local_40,&local_30);
+  uVar1 = FUN_80194630((undefined4 *)local_40,(undefined4 *)local_30);
   iVar2 = FUN_80194500(uVar1);
   if (iVar2 < iVar5) {
     *param_2 = *param_3;
@@ -7134,12 +7138,12 @@ undefined4 * vec3_step_toward(undefined4 *param_1,short *param_2,short *param_3,
     param_2[2] = param_3[2];
   }
   else {
-    sVar3 = (short)(local_30 * iVar5 >> 0xc);
+    sVar3 = (short)(local_30[0] * iVar5 >> 0xc);
     *param_2 = *param_2 + sVar3;
-    sVar4 = (short)(local_2c * iVar5 >> 0xc);
+    sVar4 = (short)(local_30[1] * iVar5 >> 0xc);
     local_20 = CONCAT22(sVar4,sVar3);
     param_2[1] = param_2[1] + sVar4;
-    sVar3 = (short)(local_28 * iVar5 >> 0xc);
+    sVar3 = (short)(local_30[2] * iVar5 >> 0xc);
     local_1c = CONCAT22((local_1c >> 16),sVar3);
     param_2[2] = param_2[2] + sVar3;
   }
@@ -7156,18 +7160,19 @@ undefined4 * vec3_step_toward_spd(undefined4 *param_1,short *param_2,short *para
   uint uVar3;
   undefined2 uVar4;
   uint uVar5;
-  int local_38;
-  int local_34;
-  int local_30;
-  int local_28 = 0;
-  int local_24 = 0;
-  int local_20 = 0;
+  /* Guest vec3 slots: FUN_80194630 reads/writes 3 contiguous u32 through
+   * local_38 (delta) and local_28 (normalized out); the decompiler split
+   * each 12-byte vec3 into scalars. local_38[0..2] = old
+   * local_38/local_34/local_30; local_28[0..2] = old
+   * local_28/local_24/local_20. */
+  int local_38 [3];
+  int local_28 [3] = {0, 0, 0};
   undefined4 local_18;
   undefined4 local_14;
-  local_38 = (int)*param_3 - (int)*param_2;
-  local_34 = (int)param_3[1] - (int)param_2[1];
-  local_30 = (int)param_3[2] - (int)param_2[2];
-  iVar2 = FUN_80194630(&local_38,&local_28);
+  local_38[0] = (int)*param_3 - (int)*param_2;
+  local_38[1] = (int)param_3[1] - (int)param_2[1];
+  local_38[2] = (int)param_3[2] - (int)param_2[2];
+  iVar2 = FUN_80194630((undefined4 *)local_38,(undefined4 *)local_28);
   if (iVar2 == 0) {
     local_14 = (uint)(local_14 >> 16) << 0x10;
     local_18 = 0;
@@ -7175,18 +7180,18 @@ undefined4 * vec3_step_toward_spd(undefined4 *param_1,short *param_2,short *para
   else {
     iVar2 = FUN_80194500((uint)iVar2);
     uVar3 = (param_4 + 0xc) * 0x10000 >> 0x10;
-    uVar5 = local_28 * iVar2 >> (uVar3 & 0x1f);
-    uVar4 = (undefined2)(local_24 * iVar2 >> (uVar3 & 0x1f));
+    uVar5 = local_28[0] * iVar2 >> (uVar3 & 0x1f);
+    uVar4 = (undefined2)(local_28[1] * iVar2 >> (uVar3 & 0x1f));
     local_18 = CONCAT22(uVar4,(short)uVar5);
-    sVar1 = (short)(local_20 * iVar2 >> (uVar3 & 0x1f));
+    sVar1 = (short)(local_28[2] * iVar2 >> (uVar3 & 0x1f));
     local_14 = CONCAT22((local_14 >> 16),sVar1);
-    if (((uVar5 & 0xffff) == 0) && (local_28 != 0)) {
+    if (((uVar5 & 0xffff) == 0) && (local_28[0] != 0)) {
       local_18 = CONCAT22(uVar4,1);
     }
-    if (((local_18 >> 16) == 0) && (local_24 != 0)) {
+    if (((local_18 >> 16) == 0) && (local_28[1] != 0)) {
       local_18 = CONCAT22(1,(short)local_18);
     }
-    if ((sVar1 == 0) && (local_20 != 0)) {
+    if ((sVar1 == 0) && (local_28[2] != 0)) {
       local_14 = CONCAT22((local_14 >> 16),1);
     }
     *param_2 = *param_2 + (short)local_18;
@@ -7206,28 +7211,30 @@ undefined4 * vec3_step_toward_q(undefined4 *param_1,short *param_2,short *param_
   short sVar3;
   short sVar4;
   int iVar5;
-  undefined4 local_28;
-  undefined4 local_24;
-  short local_20;
-  short local_1e;
-  short local_1c;
-  local_28 = CONCAT22((short)((param_3[1] - param_2[1]) * 0x10) >> 4,
+  /* Guest vec3 slots: FUN_80194660 (vec3_s16_normalize) reads 3
+   * contiguous s16 through local_28 (packed into the two u32 halves of
+   * local_28[0] plus the high half of local_28[1]) and writes 3
+   * contiguous s16 through local_20. The decompiler split the s16 vec3
+   * into scalars. local_20[0..2] = old local_20/local_1e/local_1c. */
+  undefined4 local_28 [2];
+  short local_20 [3];
+  local_28[0] = CONCAT22((short)((param_3[1] - param_2[1]) * 0x10) >> 4,
                       (short)((*param_3 - *param_2) * 0x10) >> 4);
-  local_24 = CONCAT22((local_24 >> 16),(short)((param_3[2] - param_2[2]) * 0x10) >> 4);
+  local_28[1] = CONCAT22((local_28[1] >> 16),(short)((param_3[2] - param_2[2]) * 0x10) >> 4);
   if (param_4 == 0) {
     param_4 = 1;
   }
   iVar5 = (int)param_4;
-  uVar1 = FUN_80194660(&local_28,&local_20);
+  uVar1 = FUN_80194660((undefined2 *)local_28,(undefined2 *)local_20);
   iVar2 = FUN_80194500(uVar1);
   if (iVar5 < iVar2) {
-    sVar3 = (short)(local_20 * iVar5 >> 0xc);
+    sVar3 = (short)(local_20[0] * iVar5 >> 0xc);
     *param_2 = *param_2 + sVar3;
-    sVar4 = (short)(local_1e * iVar5 >> 0xc);
-    local_28 = CONCAT22(sVar4,sVar3);
+    sVar4 = (short)(local_20[1] * iVar5 >> 0xc);
+    local_28[0] = CONCAT22(sVar4,sVar3);
     param_2[1] = param_2[1] + sVar4;
-    sVar3 = (short)(local_1c * iVar5 >> 0xc);
-    local_24 = CONCAT22((local_24 >> 16),sVar3);
+    sVar3 = (short)(local_20[2] * iVar5 >> 0xc);
+    local_28[1] = CONCAT22((local_28[1] >> 16),sVar3);
     param_2[2] = param_2[2] + sVar3;
   }
   else {
@@ -7235,8 +7242,8 @@ undefined4 * vec3_step_toward_q(undefined4 *param_1,short *param_2,short *param_
     param_2[1] = param_3[1];
     param_2[2] = param_3[2];
   }
-  *param_1 = local_28;
-  param_1[1] = local_24;
+  *param_1 = local_28[0];
+  param_1[1] = local_28[1];
   return param_1;
 
 }
@@ -7248,42 +7255,44 @@ undefined4 * vec3_step_toward_q_spd(undefined4 *param_1,short *param_2,short *pa
   uint uVar3;
   undefined2 uVar4;
   uint uVar5;
-  undefined4 local_20;
-  undefined4 local_1c;
-  short local_18;
-  short local_16;
-  short local_14;
-  local_20 = CONCAT22((short)((param_3[1] - param_2[1]) * 0x10) >> 4,
+  /* Guest vec3 slots: FUN_80194660 (vec3_s16_normalize) reads 3
+   * contiguous s16 packed through local_20[0] plus the high half of
+   * local_20[1], and writes 3 contiguous s16 through local_18. The
+   * decompiler split the s16 vec3 into scalars. local_18[0..2] = old
+   * local_18/local_16/local_14. */
+  undefined4 local_20 [2];
+  short local_18 [3];
+  local_20[0] = CONCAT22((short)((param_3[1] - param_2[1]) * 0x10) >> 4,
                       (short)((*param_3 - *param_2) * 0x10) >> 4);
-  local_1c = (local_1c & 0xffff0000) | (uint16_t)((short)((param_3[2] - param_2[2]) * 0x10) >> 4);
-  iVar2 = FUN_80194660(&local_20,&local_18);
+  local_20[1] = (local_20[1] & 0xffff0000) | (uint16_t)((short)((param_3[2] - param_2[2]) * 0x10) >> 4);
+  iVar2 = FUN_80194660((undefined2 *)local_20,(undefined2 *)local_18);
   if (iVar2 == 0) {
-    local_1c = (uint)(local_1c >> 16) << 0x10;
-    local_20 = 0;
+    local_20[1] = (uint)(local_20[1] >> 16) << 0x10;
+    local_20[0] = 0;
   }
   else {
     iVar2 = FUN_80194500((uint)iVar2);
     uVar3 = (param_4 + 0xc) * 0x10000 >> 0x10;
-    uVar5 = local_18 * iVar2 >> (uVar3 & 0x1f);
-    uVar4 = (undefined2)(local_16 * iVar2 >> (uVar3 & 0x1f));
-    local_20 = CONCAT22(uVar4,(short)uVar5);
-    sVar1 = (short)(local_14 * iVar2 >> (uVar3 & 0x1f));
-    local_1c = CONCAT22((local_1c >> 16),sVar1);
-    if (((uVar5 & 0xffff) == 0) && (local_18 != 0)) {
-      local_20 = CONCAT22(uVar4,1);
+    uVar5 = local_18[0] * iVar2 >> (uVar3 & 0x1f);
+    uVar4 = (undefined2)(local_18[1] * iVar2 >> (uVar3 & 0x1f));
+    local_20[0] = CONCAT22(uVar4,(short)uVar5);
+    sVar1 = (short)(local_18[2] * iVar2 >> (uVar3 & 0x1f));
+    local_20[1] = CONCAT22((local_20[1] >> 16),sVar1);
+    if (((uVar5 & 0xffff) == 0) && (local_18[0] != 0)) {
+      local_20[0] = CONCAT22(uVar4,1);
     }
-    if (((local_20 >> 16) == 0) && (local_16 != 0)) {
-      local_20 = CONCAT22(1,(short)local_20);
+    if (((local_20[0] >> 16) == 0) && (local_18[1] != 0)) {
+      local_20[0] = CONCAT22(1,(short)local_20[0]);
     }
-    if ((sVar1 == 0) && (local_14 != 0)) {
-      local_1c = CONCAT22((local_1c >> 16),1);
+    if ((sVar1 == 0) && (local_18[2] != 0)) {
+      local_20[1] = CONCAT22((local_20[1] >> 16),1);
     }
-    *param_2 = *param_2 + (short)local_20;
-    param_2[1] = param_2[1] + (local_20 >> 16);
-    param_2[2] = param_2[2] + (short)local_1c;
+    *param_2 = *param_2 + (short)local_20[0];
+    param_2[1] = param_2[1] + (local_20[0] >> 16);
+    param_2[2] = param_2[2] + (short)local_20[1];
   }
-  *param_1 = local_20;
-  param_1[1] = local_1c;
+  *param_1 = local_20[0];
+  param_1[1] = local_20[1];
   return param_1;
 
 }
@@ -9812,12 +9821,14 @@ void dual_target_track(int param_1,int param_2,int param_3)
   int iVar9;
   int iVar10;
   int iVar11;
-  int local_48;
-  int local_44;
-  int local_40;
-  int local_38;
-  int local_34;
-  int local_30;
+  /* Guest vec3 slots: FUN_80194630 / pair_depth_set read and write 3
+   * contiguous u32 through local_48 (delta / first target pos) and
+   * local_38 (normalized out / second target pos); the decompiler
+   * split each 12-byte vec3 into scalars. local_48[0..2] = old
+   * local_48/local_44/local_40; local_38[0..2] = old
+   * local_38/local_34/local_30. */
+  int local_48 [3];
+  int local_38 [3];
   iVar3 = *(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x20)));
   iVar11 = *(int *)guest_at((uint32_t)(uintptr_t)((iVar3 + 0x178)));
   if ((*(uint *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x5c) ))& 0x40000) == 0) {
@@ -9846,19 +9857,19 @@ void dual_target_track(int param_1,int param_2,int param_3)
     *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x54) ))= 0xff00;
   }
   *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x56) ))= (short)((iVar4 + iVar3) / 2);
-  local_48 = (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x52) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4a)));
-  local_44 = (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x54) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4c)));
-  local_40 = (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x56) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4e)));
-  iVar2 = FUN_80194630(&local_48,&local_38);
+  local_48[0] = (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x52) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4a)));
+  local_48[1] = (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x54) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4c)));
+  local_48[2] = (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x56) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4e)));
+  iVar2 = FUN_80194630((undefined4 *)local_48,(undefined4 *)local_38);
   iVar7 = iVar4 - iVar3;
   if (iVar2 != 0) {
     iVar2 = FUN_80194500((uint)iVar2);
     *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4a) ))=
-         *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4a) ))+ (short)((uint)(local_38 * iVar2) >> 0x10);
+         *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4a) ))+ (short)((uint)(local_38[0] * iVar2) >> 0x10);
     *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4c) ))=
-         *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4c) ))+ (short)((uint)(local_34 * iVar2) >> 0x10);
+         *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4c) ))+ (short)((uint)(local_38[1] * iVar2) >> 0x10);
     *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4e) ))=
-         *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4e) ))+ (short)((uint)(local_30 * iVar2) >> 0x10);
+         *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4e) ))+ (short)((uint)(local_38[2] * iVar2) >> 0x10);
   }
   iVar5 = iVar8 - iVar10;
   iVar2 = FUN_80194500(iVar7 * iVar7 + iVar5 * iVar5);
@@ -9907,13 +9918,13 @@ void dual_target_track(int param_1,int param_2,int param_3)
   if (-0x80 < iVar9) {
     iVar9 = -0x80;
   }
-  local_48 = iVar10;
-  local_44 = iVar11;
-  local_40 = iVar3;
-  local_38 = iVar8;
-  local_34 = iVar9;
-  local_30 = iVar4;
-  pair_depth_set(&local_48,&local_38,param_1);
+  local_48[0] = iVar10;
+  local_48[1] = iVar11;
+  local_48[2] = iVar3;
+  local_38[0] = iVar8;
+  local_38[1] = iVar9;
+  local_38[2] = iVar4;
+  pair_depth_set((short *)local_48,(short *)local_38,param_1);
   iVar3 = (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x60) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x68)));
   if ((int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x60) ))< (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x68)))) {
     if (iVar3 < 0) {
@@ -9952,12 +9963,13 @@ void dual_target_track_b(int param_1,int param_2,int param_3)
   int iVar10;
   int iVar11;
   int iVar12;
-  int local_48;
-  int local_44;
-  int local_40;
-  int local_38;
-  int local_34;
-  int local_30;
+  /* Guest vec3 slots: pair_depth_set reads 3 contiguous u32 through
+   * local_48 (first target pos) and local_38 (second target pos); the
+   * decompiler split each 12-byte vec3 into scalars. local_48[0..2] =
+   * old local_48/local_44/local_40; local_38[0..2] = old
+   * local_38/local_34/local_30. */
+  int local_48 [3];
+  int local_38 [3];
   iVar4 = *(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x20)));
   iVar12 = *(int *)guest_at((uint32_t)(uintptr_t)((iVar4 + 0x178)));
   if ((*(uint *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x5c) ))& 0x40000) == 0) {
@@ -10039,13 +10051,13 @@ LAB_80132f50:
   if (-0x80 < iVar10) {
     iVar10 = -0x80;
   }
-  local_48 = iVar11;
-  local_44 = iVar12;
-  local_40 = iVar4;
-  local_38 = iVar9;
-  local_34 = iVar10;
-  local_30 = iVar5;
-  pair_depth_set(&local_48,&local_38,param_1);
+  local_48[0] = iVar11;
+  local_48[1] = iVar12;
+  local_48[2] = iVar4;
+  local_38[0] = iVar9;
+  local_38[1] = iVar10;
+  local_38[2] = iVar5;
+  pair_depth_set((short *)local_48,(short *)local_38,param_1);
   *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x5c) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 100)));
   *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x5e) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x66)));
   *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x60) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x68)));
@@ -10059,9 +10071,10 @@ void camera_track_shot(int param_1,int param_2,int param_3)
   short sVar2;
   uint uVar3;
   int iVar4;
-  int local_30;
-  int local_2c;
-  int local_28;
+  /* Guest vec3 slot: FUN_80194630 reads/writes 3 contiguous u32
+   * through local_30 in place; the decompiler split the 12-byte vec3
+   * into scalars. local_30[0..2] = old local_30/local_2c/local_28. */
+  int local_30 [3];
   if (*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x78) ))== 0) {
     *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4a) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x20) ))+ 0x174)));
     *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4c) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x20) ))+ 0x178)));
@@ -10102,18 +10115,18 @@ void camera_track_shot(int param_1,int param_2,int param_3)
   if (-0x80 < *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x54)))) {
     *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x54) ))= 0xff80;
   }
-  local_30 = (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x52) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4a)));
-  local_2c = (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x54) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4c)));
-  local_28 = (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x56) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4e)));
-  iVar4 = FUN_80194630(&local_30,&local_30);
+  local_30[0] = (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x52) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4a)));
+  local_30[1] = (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x54) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4c)));
+  local_30[2] = (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x56) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4e)));
+  iVar4 = FUN_80194630((undefined4 *)local_30,(undefined4 *)local_30);
   if (iVar4 != 0) {
     iVar4 = FUN_80194500(iVar4);
     *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4a) ))=
-         *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4a) ))+ (short)((uint)(local_30 * iVar4) >> 0x10);
+         *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4a) ))+ (short)((uint)(local_30[0] * iVar4) >> 0x10);
     *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4c) ))=
-         *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4c) ))+ (short)((uint)(local_2c * iVar4) >> 0x10);
+         *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4c) ))+ (short)((uint)(local_30[1] * iVar4) >> 0x10);
     *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4e) ))=
-         *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4e) ))+ (short)((uint)(local_28 * iVar4) >> 0x10);
+         *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4e) ))+ (short)((uint)(local_30[2] * iVar4) >> 0x10);
   }
   pair_depth_set((short *)(uintptr_t)(*(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x20) ))+ 0x174),(short *)(uintptr_t)(*(int *)guest_at((uint32_t)(uintptr_t)((param_3 + 0x20) ))+ 0x174),(int)(uintptr_t)param_1);
   sVar2 = *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x68) ))+ -0x100;
@@ -10159,13 +10172,15 @@ void camera_track_step(int param_1,int param_2,int param_3)
   int iVar9;
   int iVar10;
   int iVar11;
-  int local_50;
-  int local_4c;
-  int local_48;
-  int local_40;
-  int local_3c;
-  int local_38;
   int local_30;
+  /* Guest vec3 slots: FUN_80194630 / pair_depth_set read and write 3
+   * contiguous u32 through local_50 (delta / first target pos) and
+   * local_40 (normalized out / second target pos); the decompiler
+   * split each 12-byte vec3 into scalars. local_50[0..2] = old
+   * local_50/local_4c/local_48; local_40[0..2] = old
+   * local_40/local_3c/local_38. local_30 stays a scalar. */
+  int local_50 [3];
+  int local_40 [3];
   iVar7 = *(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x20)));
   iVar5 = *(int *)guest_at((uint32_t)(uintptr_t)((param_3 + 0x20)));
   iVar11 = *(int *)guest_at((uint32_t)(uintptr_t)((iVar7 + 0x174)));
@@ -10181,15 +10196,15 @@ void camera_track_step(int param_1,int param_2,int param_3)
     *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x54) ))= 0xff00;
   }
   *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x56) ))= (short)((iVar5 + iVar7) / 2);
-  local_50 = (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x52) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4a)));
-  local_4c = (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x54) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4c)));
-  local_48 = (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x56) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4e)));
-  iVar3 = FUN_80194630(&local_50,&local_40);
+  local_50[0] = (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x52) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4a)));
+  local_50[1] = (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x54) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4c)));
+  local_50[2] = (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x56) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4e)));
+  iVar3 = FUN_80194630((undefined4 *)local_50,(undefined4 *)local_40);
   if (iVar3 != 0) {
     iVar3 = FUN_80194500(iVar3);
-    *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4a) ))= *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4a) ))+ (short)(local_40 * iVar3 >> 0xc);
-    *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4c) ))= *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4c) ))+ (short)(local_3c * iVar3 >> 0xc);
-    *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4e) ))= *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4e) ))+ (short)(local_38 * iVar3 >> 0xc);
+    *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4a) ))= *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4a) ))+ (short)(local_40[0] * iVar3 >> 0xc);
+    *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4c) ))= *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4c) ))+ (short)(local_40[1] * iVar3 >> 0xc);
+    *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4e) ))= *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4e) ))+ (short)(local_40[2] * iVar3 >> 0xc);
   }
   iVar3 = iVar5 - iVar7;
   iVar8 = local_30 - iVar11;
@@ -10257,13 +10272,13 @@ void camera_track_step(int param_1,int param_2,int param_3)
   if (-0x80 < iVar9) {
     iVar9 = -0x80;
   }
-  local_40 = local_30;
-  local_50 = iVar11;
-  local_4c = iVar10;
-  local_48 = iVar7;
-  local_3c = iVar9;
-  local_38 = iVar5;
-  pair_depth_set(&local_50,&local_40,param_1);
+  local_40[0] = local_30;
+  local_50[0] = iVar11;
+  local_50[1] = iVar10;
+  local_50[2] = iVar7;
+  local_40[1] = iVar9;
+  local_40[2] = iVar5;
+  pair_depth_set((short *)local_50,(short *)local_40,param_1);
   iVar5 = (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x60) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x68)));
   if ((int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x60) ))< (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x68)))) {
     if (iVar5 < 0) {
@@ -10366,9 +10381,10 @@ void fighter_trail_emit(undefined4 *param_1,undefined4 param_2,int param_3,int p
   undefined1 *puVar9;
   int iVar10;
   undefined4 uVar11;
-  undefined4 local_44;
-  undefined4 local_40;
-  undefined4 local_3c;
+  /* Guest vec3 slot: gte_xform_add_off writes param_3[0..2] as 3
+   * contiguous int; the decompiler split the 12-byte vec3 into
+   * scalars. local_44[0..2] = old local_44/local_40/local_3c. */
+  undefined4 local_44 [3];
   short local_38 [4];
   uint local_30;
   uint local_2c;
@@ -10503,10 +10519,10 @@ LAB_801354fc:
             }
           }
 LAB_80135504:
-          gte_xform_add_off((int)guest_of(param_1),&local_38,(int *)&local_44);
-          setCopControlWord(2,0x2800,local_44);
-          setCopControlWord(2,0x3000,local_40);
-          setCopControlWord(2,0x3800,local_3c);
+          gte_xform_add_off((int)guest_of(param_1),(undefined4 *)local_38,(int *)local_44);
+          setCopControlWord(2,0x2800,local_44[0]);
+          setCopControlWord(2,0x3000,local_44[1]);
+          setCopControlWord(2,0x3800,local_44[2]);
           if (*(char *)guest_at((uint32_t)(uintptr_t)((param_4 + 0x9f) ))== '\0') {
             unaff_s3 = (int)*(short *)(puVar9 + 0x34);
             if (((unaff_s3 < 0) || (iVar4 = _DAT_801f04b0 + unaff_s3 * 0x28, _DAT_801f04c6 != 0)) ||
@@ -12969,14 +12985,11 @@ void particle_burst_update(int param_1,undefined4 param_2,undefined4 param_3,int
   undefined1 *puVar5;
   short *psVar6;
   int iVar7;
-  undefined4 local_48;
-  undefined4 local_44;
-  undefined4 local_40;
-  undefined4 local_3c;
-  undefined4 local_38;
-  undefined4 local_34;
-  undefined4 local_30;
-  undefined4 local_2c;
+  /* Guest GTE output slot: gte_rtps_xform3_t writes param_3[0..7] as
+   * 8 contiguous u32; the decompiler split them into scalars.
+   * local_48[0..7] = old local_48/local_44/local_40/local_3c/
+   * local_38/local_34/local_30/local_2c. */
+  undefined4 local_48 [8];
   if (_DAT_801f04a0 == 1) {
     deferred_cmd_post(0x400,0x80,0);
 LAB_8013663c:
@@ -13097,15 +13110,15 @@ LAB_8013683c:
           }
           angle_pair_rotmat((int)*(short *)(puVar5 + 0x28),(int)*(short *)(puVar5 + 0x2a),puVar5);
         }
-        gte_rtps_xform3_t((undefined4 *)(uintptr_t)param_3,(ushort *)(uintptr_t)puVar5,(uint *)(uintptr_t)&local_48);
-        setCopControlWord(2,0,local_48);
-        setCopControlWord(2,0x800,local_44);
-        setCopControlWord(2,0x1000,local_40);
-        setCopControlWord(2,0x1800,local_3c);
-        setCopControlWord(2,0x2000,local_38);
-        setCopControlWord(2,0x2800,local_34);
-        setCopControlWord(2,0x3000,local_30);
-        setCopControlWord(2,0x3800,local_2c);
+        gte_rtps_xform3_t((undefined4 *)(uintptr_t)param_3,(ushort *)(uintptr_t)puVar5,(uint *)local_48);
+        setCopControlWord(2,0,local_48[0]);
+        setCopControlWord(2,0x800,local_48[1]);
+        setCopControlWord(2,0x1000,local_48[2]);
+        setCopControlWord(2,0x1800,local_48[3]);
+        setCopControlWord(2,0x2000,local_48[4]);
+        setCopControlWord(2,0x2800,local_48[5]);
+        setCopControlWord(2,0x3000,local_48[6]);
+        setCopControlWord(2,0x3800,local_48[7]);
         prim_task_run(_DAT_801f04b8 + iVar7 * 0x28,param_1 + 0x2068,param_2,1);
         if (*psVar6 == 0) {
           *psVar6 = 1;
