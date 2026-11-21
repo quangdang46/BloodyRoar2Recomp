@@ -48,3 +48,31 @@ The combat CD stall (sector unconsumed) is the SAME consumer-starvation as
 the FMV wedge. Failed/incomplete resource loads leave packet-pool slots
 uninitialized -> stale coordinate word -> 0xFE1F220E. Fixing the CD
 consumer likely fixes BOTH the FMV stall AND the GPU corruption.
+
+## POST-CD-FIX STATUS (session update)
+
+The CD consumer-starvation wedge was root-caused and fixed in `be17669`
+(`cdrom_cycles_to_irq` under-advertised the armed i_stat-bit2 presentation
+deadline → fast chunker stepped over CD IRQ boundaries → deferred
+command-issue missed its doorbell → stream/file-load producer starved).
+
+**Unified theory now testable:** incomplete resource loads were leaving
+`sprite_pool_a/b` packet slots uninitialized → stale coordinate word →
+stray GP0 command. With CD fixed, loads complete → pools initialize.
+
+**Evidence gathered on live versus combat (`:8125`, gs=8, ~340fps):**
+- Fight runs cleanly at full speed — NO CD stall (the trigger condition
+  for incomplete loads is gone).
+- `gpu_opcodes` cumulative histogram across the ENTIRE run (incl. all
+  versus combat): only standard GP0 opcodes 0x00-0xE6; **zero entries in
+  the 0xE7-0xFF NOP/reserved range** where stray `0xFE1F220E`-class words
+  would appear. No anomalous opcode distribution.
+- `gpu_frame_dump` sample combat frame: 0 anomalous entries.
+
+**Verdict: LIKELY RESOLVED as CD-wedge fallout.** Not 100% conclusive —
+the stray word is intermittent, value-varying (stale pool data), and
+combat-specific, so absence in one histogram window isn't proof of absence
+forever. If it recurs: re-run the documented next step (gpu_frame_dump the
+stray frame → src_addr/pc/func/ra → wtrace_arm/gwatch the writer). The
+packet-pool recycling hypothesis (spr_pool_a/b_alloc uninitialized slots)
+remains the leading mechanism if a stray reappears.
