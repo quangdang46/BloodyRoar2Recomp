@@ -121,3 +121,28 @@ Verify against Beetle oracle (psx-beetleoracle.exe) or psx docs:
 
 Also check: does Pause need to DeliverEvent a distinct "read stopped /
 session end" flag the read consumer awaits (separate from CDIRQ_COMPLETE)?
+
+## CORRECTION — pending_dataready drop is likely FAITHFUL (psx-spx)
+
+PSX-SPX CDROM read-command doc: ReadN "repeatedly sends INT1 per sector,
+continued even after a successful read; **use the Pause command to
+terminate the repeated INT1 responses**." So real hardware ALSO stops
+INT1 generation on Pause — `cdrom_clear_pending_dataready` dropping the
+pending INT1 is consistent with HW, NOT the bug. Also: buffer holds "one
+undelivered INT1"; sectors not taken in time are lost without notice.
+
+Every command answers INT3 (result/status) first, then INT2 when the
+operation finishes. Our Pause: set_irq(CDIRQ_ACK)=INT3 on issue,
+pending_arm->process_pending->set_irq(CDIRQ_COMPLETE)=INT2 on finish.
+
+=> Refocus: the game is NOT missing a sector INT1 (HW stops those on
+Pause too). It is waiting for the **Pause INT2-complete event** (or a
+response read) that cd_cmd_sequence polls via TestEvent. cd_intc_dispatch
+runs every frame but finds mask empty — either INT2 already consumed, or
+INT2's DeliverEvent targets a flag this waiter doesn't poll, or the game
+is waiting on a RESPONSE (response_count=1 unread) not an event.
+
+NEXT precise question: which DeliverEvent flag / response does the
+cd_cmd_sequence TestEvent(0x801bde38-family) actually await, and did
+Pause's INT2 produce it? Trace fntrace on cd_cmd_sequence to name the
+exact bios_svc/TestEvent arg + the DeliverEvent call that should fire.
