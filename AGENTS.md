@@ -218,10 +218,20 @@ phase). "It compiled" and "it returns plausible values" are not done.
 
 - `game/` clean tree is substantial (~63K LOC) but `generated/` is still
   load-bearing for many paths — **expanding clean coverage is the mission.**
-- CD-ROM path is *nearly* working: file loads deliver real Mode-2/XA data at
-  correct MSF/LBA, mode `0xA0`, reads complete. Active blocker: the next
-  file's seek never reaches the device (deferred command-issue / register-
-  window doorbell in `cd_seek_param_issue`→`cd_reg_window_op`→worker).
+- CD-ROM path delivers byte-exact Mode-2/XA data (right LBA/mode/sector slices
+  verified vs `Game.bin`). **Active blocker — ROOT-CAUSED** (see
+  `proof/cd_response_path_decode.md`): the tile/FMV stream and transient file
+  loads SHARE the CD scratch arena `0x80010000`. `tile_stream_open`→
+  `cd_dir_table_set` puts the 32-slot channel-entry table there; file loads
+  (`cd_file_load_sm`→`cd_read_issue`→`cd_read_setup`→`bcb84`) DMA payload into
+  the same arena and overwrite live descriptor `+4`/`+6` sequence tags →
+  `cd_mc_state_machine`'s `u16@+6==u16@+4+1` gate never passes → MDEC/FMV
+  starves (recurring wedge, self-heals on next descriptor). Safe on real HW
+  only if the stream fully drains/is torn down before the file load reuses the
+  arena → the enabler is a **missed stream-completion/teardown event in the
+  deferred-IRQ/TestEvent path** (`interrupts.c`/`cdrom.c`), not the data path.
+  NOTE: `cd_response_pump` pc_probe "0 hits" was a FALSE NEGATIVE (clean-ported
+  host C); `cd_result_wait_b` does the same callback dispatch synchronously.
 - After CD stabilizes: continue clean-port sweeps across fighters,
   animation (`.ANI`/`.ACT`), the event/script VM, combat, input, memory
   card, and timing — until `generated/` is no longer required at runtime.
