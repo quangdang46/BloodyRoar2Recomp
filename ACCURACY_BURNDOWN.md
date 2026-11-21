@@ -3676,3 +3676,27 @@ that guest used as contiguous vec3 arrays, passed by pointer to 3-element
 callees (pair_depth_set, midpoint_angles_set, vec3_s32/s16_normalize) —
 ~15 sites in battle.c. Works only if compiler orders the scalars adjacently.
 Converting to real arrays (subagent in flight).
+
+=== N+221 — _DAT/DAT define access-width+signedness audit (88 fixes, 6 files) ===
+
+Decompiler typed guest-global DAT/_DAT fields as uint8_t/uint32_t (or left
+bare *g__DAT untyped) regardless of the real MIPS access width. Systematic
+opcode-verified audit of all 783 typed defines across battle/cd/game/gfx/
+menu/resolve/save recovered each field's true width+signedness from
+generated psx_cyc_load/write_{byte,half,word} sites (lh vs lhu distinguished
+by the emitted (int16_t) cast). 88 defines corrected (commit 57aef5b):
+
+- uint8_t on lh/lhu/lw fields truncated reads; high-bit flag tests
+  (&0x840, &0x8e0, &0x850) became dead branches.
+- uint32_t on lh/sh fields pulled neighbor bytes into compares/indices and
+  turned guest halfword stores into 4-byte writes clobbering adjacent
+  fields — e.g. DAT_801c4580 (guest sb) was u32, clobbering 0x801c4581/82.
+- bare *g__DAT on battle.c i16 arrays (e.g. _DAT_801f04e4..04fa, 12-field)
+  defaulted to the wrong element type.
+- _DAT_1f80007c resolved: lhu in all using fns -> uint16_t in BOTH game.c
+  and menu.c (was u32 in game.c, u8 in menu.c — inconsistent).
+
+Ambiguous mixed-width fields (observed both 16- and 32-bit accesses) skipped
+per no-guess rule; &DAT_x pointer-arithmetic bases left alone (u8 type is
+load-bearing for deliberate byte indexing). Runtime-verified: versus reaches
+fight and sustains combat (gs=8, ph cycling) with no crash/fail-fast.
