@@ -221,6 +221,26 @@ WRAP_OK_DELEGATE = {
                   # same bypass argument as dev_cmd_round_dispatch.
     0x801a3350,   # dev_cmd_process: jalr targets are runtime-loaded guest
                   # fn ptrs (*0x801BE78C/88/A0/A4/80); same bypass argument.
+    0x80137acc,   # LAB_80137acc channel-cmd interpreter: jalr target is a
+                  # runtime-loaded guest fn ptr from the handler table
+                  # (param_1[3] + op*4); same bypass argument — the inner
+                  # br2_call_generated runs the generated body directly and
+                  # can never re-enter this wrapper.
+    0x8012ecbc,   # player_light_apply: jalr target from light-fn table
+                  # DAT_801b140c; same bypass argument.
+    0x8012ee48,   # camera_state_cache: jalr target from camera-fn table
+                  # DAT_801b144c; same bypass argument.
+    0x80135180,   # fighter_trail_emit: jalr target from trail-fn table
+                  # guest RAM 0x801b1734 (PTR_FUN_801b1734 fix); same bypass.
+    0x80184f28,   # script_op_dispatch: opcode handlers via guest table
+                  # 0x801b5528; same bypass argument (op>=table reads are
+                  # faithful OOB, see N+84 — no bounds check added).
+    0x80186b2c,   # fighter_attach_run: part-attach handlers via guest table
+                  # 0x801b55c0; same bypass argument.
+    # NOTE: 0x80138cec impact_fx_update is intentionally NOT here — its clean
+    # body self-delegates (br2_call_generated(0x80138CECu)) into a
+    # mid-function CPS continuation that consumes live s-regs; wrapping it
+    # would recurse. It stays generated-authoritative per the delegation rule.
 }
 
 # Guest addrs whose leading param is a HOST pointer even though declared as a
