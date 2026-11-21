@@ -145,3 +145,32 @@ Two candidate breaks (next session):
 - The runtime raises the CD IRQ on a line the game's mask/handler
   indexing doesn't map to slot 2 (INTC bit assignment / CD IRQ routing
   in `cdrom.c` `psx_irq_raise` vs the game's `0x801bdda4/b` ptr cells).
+
+## IRQ line verification (live `:6100`)
+
+- `0x1F801070` = `i_stat`, `0x1F801074` = `i_mask` (memory.c:854-855).
+  `cd_intc_dispatch` mask = `i_stat & i_mask & local(0x801bcd48=0xD)`.
+- `irq_state`: `i_mask=0xD` (bits 0,2,3 unmasked) — CDROM bit2 enabled.
+- 40-sample `i_stat` poll: only `0x0`/`0x1` seen — bit0=VBLANK; bit2 is
+  a brief per-IRQ pulse (AND-ack clears it), so sampling misses it.
+- `cdrom_timing_dump`: recent sectors `intc_seen:1` — CD IRQs DO reach
+  INTC and fire `psx_irq_raise(2)` (i_stat bit2) per sector.
+
+## Conclusion
+
+`i_stat` bit2 (CDROM) **is** asserted per CD IRQ, `cd_intc_dispatch`
+runs 609×, `cd_cb8_dispatch` (handler[0]) fires 411× — but
+`cd_response_pump` (handler[2]) gets **0 hits**. The dispatch mask never
+contains bit2 at read time ⇒ **i_stat bit2 is cleared before
+`cd_intc_dispatch` samples it** — an IRQ ack-ordering/timing defect in
+the interrupt path (consistent with the documented "i_stat bit2"
+wedge class in `cdrom.c` comments, lines 92-142).
+
+Prime suspects for next session:
+1. BIOS/kernel INTC prologue acks `i_stat` bit2 before the game's
+   `cd_intc_dispatch` reads `i_stat&i_mask&local` — ordering bug in the
+   recompiled-BIOS exception path or the game's ack placement.
+2. `i_mask` bit2 transiently cleared during CD IRQs (game masks it
+   around command issue) so the mask AND drops bit2.
+3. `cd_response_pump` registered on the wrong slot — but table[2]=
+   `0x801979F8` and bit2==CDROM match, so this is least likely.
