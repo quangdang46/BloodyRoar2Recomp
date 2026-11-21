@@ -76,3 +76,26 @@ completing: the game's CD command-issue path stalls after Pause, so the
 `caseD_6` fighter/stage asset load never finishes -> `DAT1` stuck at 6.
 Distinct trigger from be17669 (that was stream chunk-deadline
 advertising; this is post-Pause command-issue / coroutine resume).
+
+## INTC dispatch state at wedge (:8910, gs=8 DAT1=6)
+
+Guest CD INTC dispatcher state block @0x801bcd18:
+- +0 u16 in-service flag = **0x0001 (SET)** — cd_intc_dispatch entered and
+  is stuck mid re-poll loop.
+- +2 u16 busy flag = 0x0000.
+- handler table @0x801bcd1c: [0]=0x8019ae68 = cd_cb8_dispatch.
+- software mask @0x801bcd48 = 0x000d (bits 0,2,3).
+- ptrA=0x1f801070, ptrB=0x1f801074 (CD IRQ flag/enable regs).
+- mask = *ptrA & *ptrB & 0x000d.
+
+cd_intc_dispatch re-polls until the interrupt mask drains (clears each
+set bit in *ptrA then calls tbl[i]); tail bumps "intr timeout" counter
+@0x801bddb0 when a bit never clears. In-service stuck SET + coroutine
+spinning in cd_timer_read => the CD-complete interrupt bit is not being
+cleared/dispatched, so the completion flags the post-Pause wait needs
+never get set -> next command never issues.
+
+Device side verified correct: process_pending case 0x09 clears pending,
+response_clear, pushes status, set_irq(CDIRQ_COMPLETE)->INT2,
+fire_cdrom_irq. pause_complete_delay ~1.1M cycles (~2 frames) per
+psx-spx. So INT2 IS generated; the guest INTC dispatch is not draining it.
