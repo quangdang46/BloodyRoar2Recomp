@@ -52,3 +52,14 @@ bios event/kobject services (bios_hle.c / psx_bios_backend.c /
 event_ring.c). NOT game/*.c, NOT generated/ (read-only).
 
 Agent 6f7d7f6e investigating the precise starving function/flag.
+
+## Precise failing operation: Pause(0x09) completion event
+
+pending_cmd=0x09 = CD Pause. cd_read_open/cd_init_session issue
+Pause(9) then wait for its completion event (BIOS WaitEvent/TestEvent)
+before SetLoc/Setmode/ReadN. The Pause EXECUTES at device level (seen in
+cdrom_command_history) and raises CD IRQ bit2, but the deferred coroutine
+that runs DeliverEvent on pause-done is starved -> the game's TestEvent
+poll spins -> read sequence stalls -> channel entry never state==2 /
+battle-init file load wedges. Attract demo avoids it (resident data, no
+streaming Pause+read cycle).
