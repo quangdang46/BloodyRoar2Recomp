@@ -315,3 +315,20 @@ fields all change (e.g. +0x24 vel 0xE4077DFF, +0x60..+0x68 records rewrite,
 linked-list ptrs @+0x78.. stable). Phase ptr alternates 0x801E40A0<->
 0x801E61F0 = the battle update loop. Frames ~170/s. => the attract demo is
 REAL CPU-vs-CPU combat simulation, not a stuck attract screen.
+
+## FMV feed path precisely mapped (the REAL wedge locus)
+
+`scene_entry` (game.c:1574) is the FMV/tile video player. Per frame:
+`blk_io_retry(0x801f4700,piVar5)` -> `mc_date_serial_cmp` (delegated
+0x80159ab4) -> `cd_channel_poll` waits for a CHANNEL-TABLE entry to reach
+state==2 (data-ready), set by the CD IRQ/response path
+(cd_response_pump->cd_mc_state_machine). On ready it toggles the stream
+buffer index, runs cd_bitstream_decode + cd_dir_entry_probe, returns
+handle; -1 after 2000 polls -> scene_entry retries via cd_stream_mode_init.
+
+KEY: the FMV stream tracks progress in the CHANNEL TABLE + stream job
+@0x801f4700 — NOT the 0x801FC6C0 dir-entry table (+4/+6). That is why the
+dir-entry cursors looked healthy (10/10/10) while the FMV starved: I was
+watching the wrong structure. The wedge = the FMV channel entry never
+reaches state==2 (or serial/date compare fails), so cd_channel_poll never
+returns a handle -> MDEC input starves -> video stalls ~87%.
