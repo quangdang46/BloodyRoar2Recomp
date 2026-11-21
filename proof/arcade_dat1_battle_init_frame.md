@@ -258,3 +258,26 @@ writes the INITIAL phase to +0xb4/+0xb6 (bcfg_step_c/d write 0x100) and
 whether the CPU side is skipped. ALSO untested: compare ATTRACT's
 versus-screen flow (reaches combat) vs arcade — does attract pre-arm or
 bypass the CPU confirm via pad_hist_record/AI?
+
+## ⚠⚠ ROOT CAUSE (agent 4e176c55, port 8932) — stalled CD streaming read, NOT phase logic
+
+Spawn-phase starvation is a DOWNSTREAM SYMPTOM. Main thread parked in
+CD deferred coroutine `cd_timer_read(0x8019a460)→kernel yield→
+cd_chan_full_init(0x8019a814)` once/frame, waiting for a `0x09` CDREAD
+completion that never arrives.
+
+cdrom_state frozen: seq stuck, `pending{cmd:0x09,active:0,phase:1}`,
+`reading:0`, `sector_read_pos:2060/2340`, `request:0x80`(BFRD stuck),
+`irq_flag:0`. **Ring/BFRD counters expose the bug**: `ring_dropped:29`,
+`ring_partial:22918`, `bfrd_set:45373` vs `bfrd_clear:41`,
+`irq_present_late:29720` — sector ring OVERFLOWED, IRQs landing late at
+scale. First SUSTAINED streaming read; earlier "CD healthy" covered
+simpler reads. `cd_cb8_dispatch` alive (DAT_801bdde0 advances) — stall is
+this read's data-phase completion.
+
+=> REAL BUG is in `psxrecomp/runtime/src/cdrom.c`: sector ring-buffer
+flow-control / BFRD / IRQ-present scheduling. Both "CD stall" and
+"spawn starvation" are the SAME root cause seen from two angles; Wedge
+A (+0xb6 seeding) may ALSO be downstream (resources not loaded). Battle
+side exhaustively ruled out (no 0x300→0x700 driver exists; intro_fsm
+done; task callbacks post-spawn only).
