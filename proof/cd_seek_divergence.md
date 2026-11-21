@@ -441,3 +441,29 @@ OPEN: which guest path should kick the awaited ch4/SPU transfer (likely
 CD-audio/XA streaming for versus/attract) whose done delivers the event?
 Agent 5da22cd8 tracing the ch4 kick producer + whether versus/arcade
 enables CD-audio streaming via SPU ch4.
+
+---
+
+## IDENTIFIED: stall is the CD-XA AUDIO stream, not file-load
+
+Live decode on wedged arcade 6091 (frame ~350k):
+- cdrom_state: last_sector lba=8801 mode=0xA0 (Mode2-Form2 = XA) size=2340,
+  sector_read_pos=2060/2340 (mid-sector), reading=0, pending.cmd=0x09
+  (Pause, completed), ring_partial=1824, bfrd_set=3931.
+- spu_status: active_mask=0 (NO voices), cd_l=cd_r=0, cd_frames=0,
+  cd_push_frames=0, nonzero_frames=7053/318M (only early boot SFX),
+  last_peak=0 -> SPU/CD-audio path fully starved, silent now.
+- dma_state: ch4 (SPU) madr=0x4F6E0 bcr=0x0F930010 chcr=0x201 bit24=0
+  (configured, NOT started); DICR=0x00900000 no done bits; DPCR all-on.
+- Pending-args cells 0x801fef70-8c = event flags 0xF1000000..0xF1000007
+  (8 per-channel stream flags) + 0xF1000008 (=0xF0000009 CD flag @0x801bde38).
+  cd_pending_args_pump/queue_a/b_status call cd_seek_state_machine->
+  TestEvent(B0:0x0B) on each -> the 1.46M TestEvent count is the per-frame
+  CD-stream service poll (NORMAL), not the block.
+
+CONCLUSION: game streams XA music CD->RAM->ch4DMA->SPU. Stream stalled at
+sector 2060/2340; SPU starved; ch4 never kicked/completed -> no
+DeliverEvent(0xF0000009) -> stream controller never issues next read.
+The block is the game's audio-stream kick/completion path (likely
+sound-driver, possibly still generated/), NOT the file-load record machine
+(which is terminal/healthy) and NOT the runtime (agent d5cfe31a clean).
