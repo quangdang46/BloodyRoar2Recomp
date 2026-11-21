@@ -3526,3 +3526,41 @@ heap_serialize serializer audit in progress (mode3_dispatch default->0 fix
 STATUS: versus resource-load is faithful-but-slow, not stalled. Focus shifts
 to (a) heap-A high-water vs faithful (serializer over-production) and (b)
 the fighter_flash_update wild deref once FC_ANI lands valid.
+
+=== N+217 — versus STALL FIXED (select_screen_tick mistranslation); remaining crash = x28 callee-saved clobber ===
+
+ROOT CAUSE OF STALL (FIXED, in 1aaa7d4): select_screen_tick (game/menu.c,
+guest 0x8014f260) had a mistranslated early return. Clean code had
+`goto LAB_80150558_2` -> `spr_attr_alloc_b(...); return 0;` inside the
+P2-render branch, fabricating an early return with DAT_1f800001=6. Faithful
+generated br2eu_func_8014F260 has exactly ONE jr $ra (epilogue 0x801506C8)
+reachable only via DAT_1f800001==0xff; block_80150558 is an in-loop
+jal spr_attr_alloc_b continuing to the loop tail. Fix: inlined the P2
+spr_attr_alloc_b args (menu.c:3333) and deleted the dead
+LAB_80150558_2/return-0 block. Regenerated clean_table.c, rebuilt.
+
+VERIFIED: versus now reaches battle_flow phase 4 (menu_res_load_sm loads
+fighter resources) — the "stall" is gone. Arcade/attract unaffected (gs=8
+ph=8 fight still works). FC_ANI=0 was a red herring.
+
+REMAINING CRASH (precisely diagnosed via lldb): SIGSEGV in
+fighter_flash_update (battle.c:834) <- battle_flow_state_machine
+(menu.c:796/837) during versus phase 8. param_4 should be
+&DAT_1f8000e8 = g_DAT_1f8000e8 = guest_scratch+0xe8. lldb proof:
+- g_DAT_1f8000e8 global NOT corrupted (watchpoint fired only at init).
+- x28 (ARM64 callee-saved) is CLOBBERED: battle_flow_state_machine caches
+  &g_DAT_1f8000e8 in x28 at entry (~0x10165e838), later `ldr x3,[x28]`
+  before `bl fighter_flash_update`. At use site x28 = non-deterministic
+  garbage (0x100000000=_mh_execute_header, 0x801fff7800000001).
+- Crash at *(byte*)(param_4+2) wild deref.
+
+MECHANISM (open): x28 clobber in versus phase-8 path. Suspects:
+(a) callee-saved violation in generated/delegated code or clean-C path;
+(b) context-switch (fiber/ucontext for BIOS kernel threads, or
+setjmp/longjmp scheduler escape in psxrecomp/runtime/src/traps.c +
+psx_fiber.c) restoring a stale register file mid-battle_flow_state_machine;
+(c) stack smash overwriting battle_flow_state_machine's spilled x28.
+Versus-only => path-specific. Agents hunting the exact clobbering callee.
+
+STATUS: versus fight-entry unblocked through resource load; final blocker
+is the x28 clobber -> fighter_flash_update wild param_4. No live fight yet.
