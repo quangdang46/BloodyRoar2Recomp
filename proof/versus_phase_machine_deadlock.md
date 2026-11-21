@@ -131,3 +131,41 @@ select→fight with `press` (Start `0x0008`, Cross `0x4000`), and arm:
 `mem_words`/`read_ram` on `0x1f800000` region, `0x801FC680` ring
 globals, `0x80010000` ring base, `0xA0000108`/`0x8FE0` kernel PCB/TCB,
 side records `0x1f8000e8`/`0x1f8001f0`, char table `0x801C1200`.
+
+## UPDATE — reproduces on ARCADE too (shared battle-init bug, not versus-specific)
+
+Fresh instance :8400 driven by tools/arcade_fight_mash.py (ARCADE = 1P vs
+CPU, P2 auto-confirms — NOT 2P human) reaches gs=8 ph=3 and deadlocks
+IDENTICALLY: b4=0x0300, b6=0x0000, +0x92=0x0100, 9b=9c=0. Persists >24s.
+Both P1(0x1f8000e8)/P2(0x1f8001f0) select records populated (chars picked).
+
+=> The phase deadlock is NOT a versus/2P-input issue. It hits the SHARED
+battle-entry path for combatant index 1 (+0xb6) in arcade AND versus.
+
+## Mechanism pinned (menu.c)
+
+- battle_state_init (0x80151328, menu.c:4538): writes phase 0x300 to
+  +0xb4 (P0) and +0xb6 (P1) ONLY when select_phase_gate(a2,idx)==0.
+  Wedge: P0->0x300 written, P1->0 skipped because select_phase_gate(a2,1)
+  returned 1 — P1's phase was 0x000, NOT in a select class.
+- select_phase_gate (menu.c:3572) returns 0 only for phase classes
+  {0x100,0x200,0x300,0x400,0x700}. P1=0x000 -> gate=1 -> no write.
+- select_confirm_handler (menu.c:3541-3551): advances a player's phase
+  0x200->0x300 on confirm. P0 did; P1 never reached 0x200/0x300.
+- battle_sides_commit (menu.c:4763) runs battle_config_eval(s2)+
+  battle_config_eval(s3) for both sides and drives the +0x92 setup
+  sub-state machine (cases 0-4) — candidate site for the missing P1
+  phase-class init.
+- The per-player phase word lives at battle+0xb4+idx*2 (idx0=+0xb4 P0,
+  idx1=+0xb6 P1). Initial select-class value (0x100/0x200) must be written
+  during the char-select->battle handoff for EACH combatant.
+
+## Sharp question for the fix
+
+WHERE is each combatant's phase first set to a select class
+(0x100/0x200) during battle entry? For P0 it happened; for P1 (+0xb6)
+it did not. Likely a per-side loop that only processes index 0, or a
+versus/arcade-gated branch that skips the second side's phase init, in
+match_setup_apply / per_side_setup / battle_sides_commit / battle_state_init
+callers. Trace which function writes battle+0xb6 (and +0xb4) during the
+select->battle transition and why the idx==1 write is absent.
