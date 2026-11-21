@@ -3221,3 +3221,38 @@ null-raster; (b) the earlier 0x01000000-dispatch and GP1-0x3F crashes —
 re-test under null-raster; if gone they were raster-timing artifacts,
 if they persist they are separate guest bugs to chase; (c) continue
 clean-port burn-down now that versus is unblocked for verification.
+
+=== N+208 — versus sel2->ph=8 mode=2 STALL reproduced on fixed build; pc=0x29CC + exception storm ===
+After the cd.c BIOS-trampoline revert (13576ce) and AGENTS.md §4 unsafe-pattern
+doc (deb41c6), versus is re-verified via tools/versus_nav_final.py (7d1652f,
+committed menu map). Menu structure is now fully mapped: title gs=5 ph=1 ->
+mode menu gs=5 ph=2 (match_loop stepper, sd.max=7) -> sel2 "2P VS" commits
+mode byte 0x9b=2 / sub 0x9c=1 -> gs=8 ph=6 CROSS both / ph=7 START both ->
+ph=8. NOTE: versus entry is mode=2, NOT 4 — mode 4 is only reachable via the
+OPTIONS dialog (dialog_sel_dispatch_wide save.c:5516); whether versus
+char-select upgrades 9b->4 in generated code is UNVERIFIED.
+
+REPRO on current build (port 4940): versus_nav_final reaches gs=8 ph=8
+mode=2 sub=1 at frame 3939 then FREEZES — frame counter never advances,
+process ~0.6% CPU (genuinely blocked, NOT the raster bottleneck). freeze_check
+on the stalled instance: current_func=0x000029CC (executing a LOW non-kernel
+address — bad jump/return target), last_store_pc=0x8019A48C (CD cluster),
+exception_entries=23049 / exception_reentry_blocks=2756 (exception/reentry
+storm), psx_cycle_count=2.67e9 but frame_count frozen, dispatch_count=0.
+irq_state: i_stat=0, i_mask=0xD, pending=0 — no IRQ pending. cdrom_state:
+stat=0x02 irq_enable=0x07 irq_flag=0x00 reading=0 sector_available=1
+sector_read_pos=2060 — CD idle, one sector delivered, nothing in flight.
+
+This CONTRADICTS N+207's "versus fight WORKS end-to-end" — versus is
+NON-DETERMINISTIC: sometimes reaches a live fight (N+207 frames 3900->6038),
+sometimes stalls at ph=8. The stall signature (pc=0x29CC + 23K exception
+entries + no pending IRQ + CD idle) points to a corrupted function pointer /
+return address or a versus-specific task/prim-table entry landing in low
+memory during char-select->fight transition — same bug CLASS as the earlier
+0x01000000 prim-list dispatch crash. mode=0 arcade fights are unaffected.
+
+NEXT (agent 6f4499b3 running): trace the origin of the pc=0x29CC bad jump
+(sp_ring/dispatch_tail/fn_entry_tail/pc_probe on the transition), check the
+versus task/prim tables (0x801bf860/0x801c0940) and fighter-ctrl +0x1c/+0x20/
++0x30 binds for a versus-specific bad pointer, and diff the starved-event
+wait against the working arcade ph=8 path.
