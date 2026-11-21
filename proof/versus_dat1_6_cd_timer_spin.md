@@ -120,3 +120,26 @@ Next: determine whether the CD-complete INT2 reaches the CPU INTC as a
 pending bit at all (present_cdrom_irq -> i_stat bit2), and whether the
 deferred cd_ctx_restore->cd_intc_dispatch path is what consumes it vs
 the normal INTC dispatch. in-service flag @0x801bcd18 stuck 0x0001.
+
+## Response FIFO never drains => CD IRQ handler chain not running
+
+cdrom_state on wedged :8910: response_count=1 PERSISTS — the Pause
+COMPLETE status byte is never consumed. cd_response_pump(0x801979f8)
+-> cd_response_process(0x80196370, 1372B IRQ SM, generated) is what
+drains the FIFO and sets bcb24/25/26 + invokes session callbacks
+(@0x801bc848/@0x801bc84c, both currently NULL — normal for sync path).
+
+Handler table @0x801bcd1c: [0]=cd_cb8_dispatch(VBLANK),
+[2]=0x801979f8=cd_response_pump(CD bit2), [3]=0x8019af7c.
+cd_intc_dispatch mask = i_stat & i_mask & 0x000d.
+
+Since the FIFO byte is never drained, cd_response_pump is NOT being
+reached => the break is UPSTREAM of the response pump:
+CD IRQ(bit2) -> BIOS/kernel -> cd_ctx_restore(0x8019adcc) ->
+cd_chan_full_init(0x8019a814) resume -> cd_intc_dispatch ->
+cd_response_pump. The deferred coroutine resume (cd_ctx_save frame
+registered via B0/0x19 -> mem[0x4C18]) is not firing on the CD IRQ, OR
+cd_intc_dispatch is not dispatching bit2 to cd_response_pump.
+
+in-service flag @0x801bcd18 stuck 0x0001 corroborates dispatch entered
+but never completed the bit2->cd_response_pump handoff.
