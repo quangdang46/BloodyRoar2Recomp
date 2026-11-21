@@ -281,3 +281,18 @@ register-window doorbell blocker (cd_seek_param_issue->cd_reg_window_op).
   IRQs due inside one chunk may collapse into one delivery vs conservative's
   per-cycle exceptions. A missed/coalesced CD data-ready or command-complete IRQ
   would skip a guest callback -> descriptor/state not finalized -> consumer parks.
+
+## CONSERVATIVE CONTROL FINAL — :7700 clean to frame ~30000
+- PSX_EVENT_STEP_CONSERVATIVE=1 instance ran frame 29881+ at steady ~40fps,
+  ~5.4x past the fast-mode wedge point (~5556), multiple 0xE0 stream phases
+  with consumer draining correctly. ZERO stalls. vs fast-mode recurring wedge.
+- idle_skip DISABLED (enabled:0 skips:0) — ruled out. s_int1_lost=0 — no lost INTs.
+- CONCLUSION: bug is definitively EVENT-ORDERING in psx_devices_service_to_now
+  fast chunk-replay vs psx_advance_cycles_exact per-cycle stepping. The fast
+  path batches device advancement into event-bounded chunks; some CD/deferred-
+  coroutine event ordering diverges. Fix agent 394634f3 implementing.
+- PRIOR-ART: FAITHFUL_TIMING_PLAN.md documents this wedge class was hit before
+  (2026-11-11): game installs own low-mem kernel; IRQ->IntRP Queue3 func 0x16E4
+  -> kernel-object invoke 0x2610; deferred IRQ coroutine cd_ctx_restore->
+  cd_chan_full_init->cd_intc_dispatch->cd_response_pump. MMIO-deref-via-guest_at
+  bug class already fixed (br2_ld/st routing); ~50 sites were open for audit.
