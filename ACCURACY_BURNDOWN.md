@@ -3458,3 +3458,35 @@ STATUS: faithful reload PROVEN; clean ports verified faithful at fn level.
 Bug is runtime sequencing (A) or heap placement (B). Versus instances
 wedge at gs=8 (86% CPU spin, debug server starves) before ring can be
 read; system load ~44 throttles repro. Agents 3858e66e/4390b7bd continue.
+
+=== N+215 — versus stall ROOT CAUSE: menu_res_load_sm stuck at st50 (P2 save_state_machine_alt) ===
+
+Runtime decomp_trace on a live versus run (port 5320) captured the decisive
++0x8c progression inside menu_res_load_sm (tag61/62 len field = v0 = +0x8c):
+
+  +0x8c=0x10 (st10 channel init) -> 0x20 (st20 stage) -> 0x40 (st40 P1 bind)
+  -> 0x50 (st50 P2 bind)  *** STUCK — never reaches stf00 (+0x8c=-1) ***
+
+P1's save_state_machine_alt completed all states L00->L40; its FC_ANI bind
+(tag63) fired once at seq1641 dst=0x1F8000E8 heapA=0x80071604. P2's tag63
+bind NEVER fired -> save_state_machine_alt(P2, s4=0x1f8001f0) parks at an
+EARLY state (L00/L10/L20) whose cd_file_load_sm(s6+off) returns 0 forever.
+
+Mechanism: menu_res_load_sm st50 calls save_state_machine_alt(a0=0x1f800000,
+s5=P2) which is resumable via fp+0x8e (=0x1f80008e, reset to 0 at save.c:4296
+before st50 — faithful). It returns 0 each frame -> +0x8c stays 0x50 ->
+case4 (menu.c:723 iVar5==0 -> break) retries forever -> versus hangs at
+case4, P2 FC_ANI never re-binds -> stays stale 0x800D9F98 -> fight crashes.
+
+File-load provenance: P1's st40 window loaded fighter files
+0xB0,0x88,0xC4,0xC0,0x25,0x20(.ANI->0x80071604),0x24,0xEC. P2's st50 window
+(seq>1750) shows NO fighter-file loads — only stage files 0x4D/0x48 via
+caller 0x80126664. So P2 parks BEFORE issuing its fighter cd_file_load_sm,
+or that load is internally waiting (cd_file_load_sm is DELEGATED generated
+0x8018cfdc — the CD coroutine boundary).
+
+OPEN: which save_state_machine_alt state (+0x8e value) and which
+cd_file_load_sm param (s6=g8(0x801b49f8+s4[3]), s4[3]=P2 char index).
+Hypotheses: (a) P2 char-index/ctrl fields unset for versus -> bad s6/file;
+(b) CD channel starvation vs concurrent versus stage streaming;
+(c) cd_file_load_sm coroutine never completing for the Nth sequential load.
