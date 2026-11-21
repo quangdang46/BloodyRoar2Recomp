@@ -31,3 +31,27 @@ never satisfies.
 
 Versus is FURTHER along — fixing its `caseD_6` hang may reach
 `caseD_8` combat independently of the arcade phase-init bug.
+
+## Precise stall signature (:8903, frozen over 9s+)
+
+`cdrom_state` at the wedge:
+```
+reading=0  sector_read_pos=2060/2340  sector_size=2340
+pending={cmd:0x09, active:0, delay:0, phase:1}
+seq=30599 (frozen)  irq_flag=0x00  irq_present_max_late=0
+last_sector lba=8769 mode=0xA0
+```
+
+`2060 = 12-byte header + 2048 data` — the useful payload is fully read;
+the trailing 280 bytes are EDC/ECC. The sector delivered its data, but
+the NEXT command (`0x09`) sits `active=0` in `pending` and never issues
+— `seq` and `sector_read_pos` are both frozen. The deferred
+command-issue coroutine (`cd_chan_full_init`, spinning in
+`cd_timer_read`/`vsync_wait_n`) is not resuming to push `0x09` to the
+drive.
+
+So versus `caseD_6` hangs because a fighter/stage CD read's *follow-up*
+command never issues — same deferred-coroutine/command-issue family as
+be17669 and the AGENTS.md §8 `cd_seek_param_issue->cd_reg_window_op`
+blocker, but a distinct trigger (post-sector command-issue, not stream
+chunk delivery).
