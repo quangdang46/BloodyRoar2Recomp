@@ -296,3 +296,20 @@ register-window doorbell blocker (cd_seek_param_issue->cd_reg_window_op).
   -> kernel-object invoke 0x2610; deferred IRQ coroutine cd_ctx_restore->
   cd_chan_full_init->cd_intc_dispatch->cd_response_pump. MMIO-deref-via-guest_at
   bug class already fixed (br2_ld/st routing); ~50 sites were open for audit.
+
+## FINAL NARROWING — delivery is faithful in BOTH modes; bug is guest-side deferred coroutine
+- cdrom_timing_dump on :6100 (FAST, healthy) and :7700 (CONSERVATIVE, clean) show
+  IDENTICAL structure: sequential LBAs, due==buffer==irq_arm, intc=+5000cyc,
+  irq_armed:1, intc_seen:1, lost:0. Sector->DMA->IRQ->INTC pipeline is faithful
+  in BOTH event-step modes. dispatch_stats on :6100: 926M hits, 0 misses.
+- => The bug is NOT in device event delivery/timing. It is in the GUEST-SIDE
+  deferred-IRQ coroutine that converts a CD IRQ into descriptor finalization:
+  cd_response_pump(0x801979F8)/cd_result_wait_b callback -> cd_mc_state_machine
+  (0x80199440) gate -> cd_dir_entry_finalize -> consumer advance.
+  Under fast-path chunked servicing this coroutine resumes/processes at a
+  different interleaving vs per-cycle conservative, so an entry's +4/+6 gate
+  is evaluated against stale/wrong state -> consumer parks -> arena clobber.
+- Mechanism to fix: the deferred IRQ save/restore coroutine
+  (cd_ctx_restore->cd_chan_full_init->cd_intc_dispatch, exception_jmpbuf/
+  RestoreState in interrupts.c) must observe the same resume ordering under
+  fast chunk-replay as under per-cycle stepping. Agent 394634f3 instrumenting.
