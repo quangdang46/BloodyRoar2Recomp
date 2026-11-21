@@ -107,21 +107,40 @@ gets a `0x800` rising edge → `bcfg_step_a` returns 0 → `+0xb6` stays 0.
   `arcade_fight_mash.py` presses slot1 but comments "harmless if ignored"
   — external pad1 input does not reach the CPU's input source.
 
-### Open question (agent 42283317 tracing)
+## Sharpened wedge — CD Pause(0x09) completion starved (deferred coroutine)
 
-What writes `0x801befca+2/+3` for a CPU slot, and what per-slot
-controller-type/mode flag selects "physical pad" vs "CPU-AI" as the input
-source? Candidates: the channel-poll pad driver (IntRP 0x801FEFC0 → kernel
-queue 2, wired by `call_guest(0x801a1250)` in `cd_channel_init_seq`,
-game.c:979-987), a per-slot function-pointer table, or a fight-AI brain
-that emits pad words. `players_ctrl_init` (game.c:2542) builds per-player
-descriptor tables @0x801f5258/0x801f52a0 (resource/channel ptrs, dumped —
-no obvious input mux). The AI/controller is generated code; needs live
-write-tracing on `0x801befca+2/+3` to catch the writer (or prove absence)
-and the gate that should enable it for arcade slot1.
+Live re-diagnosis (port 8915) corrected two earlier readings:
 
-Delegated to agent 42283317 (CPU-select/phase trace) alongside the
-frame audit agent 251d7926.
+- `+0xb6` (CPU phase) self-resolved to `0x0300` — the per-frame
+  `battle_config_eval`→`bcfg_step_a` phase machine armed it once resource
+  streaming progressed. NOT the wedge (pad-input/`+0x6a` was transient).
+- REAL wedge: `DAT1=3` = caseD_3 → `battle_init` blocked in `cd_file_load_sm`.
+  `frame_divisor_get()` (byte@0x1f800019) returns 0 → caseD_3 entered
+  battle_init; it never returns because a CD load never completes.
+
+CD stall (cdrom_command_history + cdrom_state + irq_state, frozen):
+- Last command seq316 = **Pause `0x09`, pending=1, pending_cmd=0x09**,
+  stat=0x02, request=0x80, device i_stat=0x00000004 (CD IRQ bit2 set).
+- INTC irq_state: i_stat=0x0, pending=0x0, i_mask flickers 0x0/0xD —
+  the CD-complete IRQ is NOT reaching the CPU dispatch.
+- cdrom_state: seq=120699 static, sector_read_pos=2060/2340 (read
+  delivered 88% then stopped, reading=0), response_count=1 undrained.
+- decomp_trace: dispatch→lzss→blk_ret→heapA_w_menu heap writes STOPPED
+  (frontier static @0x800e1064).
+
+So a sector READ delivered most of a Mode-2 sector then a Pause was
+issued; the Pause-completion response byte sits in the FIFO undrained and
+the deferred coroutine (cd_ctx_restore→cd_chan_full_init→cd_intc_dispatch
+→cd_response_pump) that should consume it + fire the user callback is
+STARVED — no INTC IRQ pending. Same deferred-coroutine family as the
+versus wedge (8d84f45/5034ff2 frame reservations), but a different
+resume/IRQ-delivery link. `i_mask` flicker (0x0↔0xD) suggests DI/EI crit
+sections may be masking the CD IRQ at the sample instant, or the IRQ2
+entry acks i_stat before cd_intc_dispatch polls (AND-ack ordering), or
+the deferred frame was never registered/resumed.
+
+Delegated to agent 7f928e12 (CD sector-read/Pause stall) alongside frame
+audit 251d7926 and CPU-phase 42283317 (moot — +0xb6 self-resolved).
 
 ## Residual / open
 `battle_init` fix is faithful and verified (bringup completes, battle_frame
