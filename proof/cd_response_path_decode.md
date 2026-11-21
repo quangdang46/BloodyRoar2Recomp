@@ -127,3 +127,20 @@ PRIMARY break is CD read delivering incorrect data / clobbering the table.
 NEXT: verify what LBA/mode/size the guest requests vs what runtime delivers
 for the streaming reads (cdrom command_history vs guest intent); check the
 DMA destination address for the sector writes hitting 0x80010000.
+
+## RULED OUT (clean-C layer + sector format are correct)
+- Entire streaming read path is DELEGATED to generated (faithful):
+  cd_read_open(0x80198908), cd_read_step_cb(0x801985c4) [MSF-stamp verify],
+  cd_read_finish_cb(0x80198838), cd_cmd_issue(0x80196e14),
+  cd_cmd_issue_b/c(0x80197800/0x80197900), cd_read_setup(0x80198c90).
+  => NOT a clean-port bug.
+- cd_cmd_issue_async (clean cd.c:419) uses 0x801BC854&0x10 busy gate correctly.
+- mode_reg set by Setmode(0x0E)->param_fifo[0]=0xA0 (cdrom.c:2348); 0xA0&0x20
+  => whole-sector path.
+- MSF stamp REGENERATED from read position via bin_to_bcd for whole-sector
+  (cdrom.c:1551-1553) — already the faithful fix for corrupt stored MSF.
+- DMA ch3 targets CD-driver buffers (0x801BDCE8/0x5D434), not obviously wrong.
+
+=> Remaining: runtime TIMING (IRQ delivery vs guest ack/dispatch ordering) or
+   sector DATA CONTENT correctness (wrong LBA delivered). Agents:
+   6f7d7f6e=interrupts.c/cdrom.c IRQ timing; ef8202ef=CD read data correctness.
