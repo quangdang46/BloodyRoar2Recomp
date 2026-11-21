@@ -70,3 +70,30 @@ entry-claim bulk copy; no per-sector progress RMW exists in any clean or
 generated path examined. Next: find the consumer that reads channel-entry
 ready flags `+68/+70/+72` and bridges them into dir-entry `+4/+6` — likely a
 computed-pointer store in generated code (invisible to literal-offset grep).
+
+## Bisect result (2026-11-21): NOT a regression — wedge predates 57aef5b
+
+Built a clean-source worktree @57aef5b (the commit runtime-verified
+"versus reaches fight and sustains combat") and ran it headless. It shows
+the IDENTICAL wedge as HEAD:
+
+```
+0x801FC6A4=2 (produce)  0x801FC6A8=0 (finalize)  0x801FC6AC=30 (consume)
+MDEC output_pos frozen ~10.8M/12.4M, decode_macroblocks ~17118, busy=0
+```
+
+=> The attract-FMV dir-entry +4/+6 gap is a LONG-STANDING unresolved RE
+issue, not introduced by the post-57aef5b cd.c/save.c/menu.c/gfx.c commits
+(all of which were verified faithful fixes — e.g. cd_cmd_rec_scan ternary
+confirmed against generated 0x801A3AB4-0x801A3ACC: rec[52]<7->t1=rec[52],
+else t1=6, matching HEAD).
+
+=> versus combat is proven reachable (57aef5b) via a path that does NOT
+require this attract-FMV dir-entry completion. blk_io_retry returns -1
+after 2000 failed cd_channel_poll tries, so the game fails gracefully past
+the FMV rather than hard-hanging — the attract FMV is a visual/resource
+stall, not a hard gameplay deadlock.
+
+NEXT: verify versus/arcade reach combat on HEAD (the attract FMV wedge is
+a separate, narrower issue — the +4/+6 credit consumer at 0x801AA4FC
+family per agent 62e13f70).
