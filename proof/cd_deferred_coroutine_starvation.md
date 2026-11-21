@@ -179,3 +179,29 @@ Two candidate root causes (runtime agent to discriminate):
      issues the B0/0x19 arm-call never runs (CPS resume-PC broken).
   B) B0/0x19 arm ran but the kernel IRQ->cd_ctx_restore dispatch is broken
      (INT1 handler doesn't route to the registered restore frame).
+
+## REFINED: coroutine spins in cd_intc_dispatch poll; completion flag never set
+
+br2eu_func_8019A87C (cd_chan_full_init continuation) decoded:
+  block_8019A87C (entry):  if (gpr[2]==gpr[0]) -> block_8019A88C (READY)
+                          else -> block_8019A884
+  block_8019A884:          jal-link 0x8019A88C; CPS jal -> cd_intc_dispatch
+                           (0x8019A8EC) -> loops back to re-check
+  block_8019A88C (READY):  s0=0x801BCD54; calls 0x8019AD80, 0x8019AE10
+
+Live probe: 0x8019A87C + 0x8019A884 = 2315 hits each; 0x8019A88C+ = 0.
+=> the deferred coroutine is ALIVE and polling: each iteration calls
+   cd_intc_dispatch to drain CD responses, then re-checks gpr[2]==gpr[0].
+   The completion condition NEVER becomes true -> infinite poll -> wedge.
+   cd_intc_dispatch runs ~2479x (matches the 2315 poll iterations + other
+   callers) but never sets whatever flag gpr[2] tracks.
+
+So the break is NOT "coroutine starved / IRQ not delivered" — the
+coroutine RUNS and dispatches interrupts every iteration. The break is
+that cd_intc_dispatch -> cd_response_process -> cd_mc_state_machine does
+not produce the completion the coroutine waits for (the specific CD
+response/event for THIS operation is never recognized/completed).
+
+This points INTO the generated cd_response_process(0x80196370)/
+cd_mc_state_machine(0x80199440) response-classification: they run but
+do not match/complete the pending op's response -> flag stays unset.
