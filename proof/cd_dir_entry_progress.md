@@ -308,3 +308,10 @@ i.e. core gameplay/attract/combat all work end-to-end on HEAD.
 Remaining fidelity bug to fix: WHY the decompressed FMV stream stops
 reaching MDEC input (mdec_pump_b / lzss_decode / stream_block_decode feed
 path), so the intro video renders fully instead of stalling at ~87%.
+
+### Demo-fight liveness confirmed (:6800)
+Battle struct @0x801E40A0 diffed 4s apart: fighter position/velocity/action
+fields all change (e.g. +0x24 vel 0xE4077DFF, +0x60..+0x68 records rewrite,
+linked-list ptrs @+0x78.. stable). Phase ptr alternates 0x801E40A0<->
+0x801E61F0 = the battle update loop. Frames ~170/s. => the attract demo is
+REAL CPU-vs-CPU combat simulation, not a stuck attract screen.
