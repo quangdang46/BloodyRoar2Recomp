@@ -3364,3 +3364,34 @@ so the missing re-bind is silent (preview model reused), not a hard gate.
 NEXT: focused agent 4390b7bd live-tracing whether versus issues a
 cd_file_load_sm for P2's fighter file and whether it reaches 0x8018D120 with
 the P2 ctrl base; compare the file_id/record-slot versus passes vs arcade.
+
+=== N+212 — versus FC_ANI = orphaned heap-epoch alloc; staging collision mapped ===
+decomp_trace ring on frozen versus instance :5120 (frame 3965, mode9b=2)
+gives the definitive file->address provenance:
+
+FIGHTER .ANI ORIGIN (earlier load epoch):
+  P1 ctrl+0x30 = 0x800771D4  <- file 0x28  (file_load seq1211, caller 0x801265F4)
+  P2 ctrl+0x30 = 0x800D9F98  <- file 0x60  (file_load seq1776, caller 0x801265F4)
+  (seq1807 = the save_state_machine_alt L30 FC_ANI bind record for P2;
+   heapA=0x800D9F98 proves _DAT_801c47b8 reached 0x800dxxxx that epoch)
+
+VERSUS BATTLE-INIT LOADS (caller 0x80126664 = generated battle-init):
+  seq2081 file 0x14 -> dst 0x800D0000   (staging)
+  seq2115 file 0x8B -> dst 0x800D0000   (staging)
+  seq2116 file 0x16 -> dst 0x800D0000   (staging)
+  => stage/battle files ONLY; fighter .ANI files 0x28/0x60 are NEVER reloaded.
+
+ONLY ONE FC_ANI bind in the whole versus window (seq1807, the frame-1850
+preview bind). NEITHER fighter re-bound during versus. battle_bringup_b
+reset _DAT_801c47b8=0x80010000 and re-grew only to ~0x800680DC, so the
+previous-epoch .ANI allocs are orphaned: P1's 0x800771D4 survives (below the
+0x800D0000 staging floor), P2's 0x800D9F98 lies INSIDE the staging range the
+versus 0x14/0x8B/0x16 loads overwrite -> .ANI header destroyed -> ev_stream
+opcode 0xCF -> string-table jalr -> FAIL-FAST.
+
+OPEN (agents 3858e66e + 4390b7bd): does faithful versus re-bind/re-load the
+fighter .ANI before ph=8 (our clean path skips a record-commit = port/scheduling
+bug), or does faithful keep these allocs live and our _DAT_801e3cfc staging
+cursor / heap epoch diverged so 0x800D0000 collides where faithful's doesn't
+(heap over-production class)? menu_res_load_sm/save_state_machine_alt coverage
+now instrumented (decomp tags 61/62/63/70) to diff versus vs arcade.
