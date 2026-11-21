@@ -83,3 +83,34 @@ fires thousands of counts on both — probe path confirmed live.
 Evidence collected in `/tmp/poll_fntargets.log` (fn_entry_tail diff between
 instances during attract demo fights). See session notes / commit message
 for the final verdict.
+
+## Runtime verdict (2026-11-22)
+
+- Both instances boot cleanly and advance: title → attract cycle
+  (gs 3/4/5/6) → versus mode-select. Frames advance ~50fps, CD idle,
+  no crashes, no dispatch misses — **no regression** from the 6 new wraps.
+- `pc_probe` sanity: `vsync_wait_n` (0x8019A5D8, still generated) counted
+  360,078 hits on :8301 — probe path live.
+- `fn_entry_dump` addr-filtered scans over the full recorded ring
+  (~93K entries on :8301) show **zero battle-function entries** — neither
+  instance reached a fight.
+- Root cause of missing fight coverage is the **pre-existing, documented
+  CD wedge**: versus/arcade stall deterministically at `gs=8 ph=3`
+  (input-dead versus mode-select) / `ph=6` (char select) on
+  DeliverEvent(0xF0000009) starvation — see `proof/cd_seek_divergence.md`
+  ("unified wedge for arcade ph=3 + versus", converged root cause
+  game-side). This is Bucket-A CD-boundary territory, unrelated to the
+  Bucket-B wraps: none of the 6 wrapped functions execute in
+  menu/versus-select paths, so wedged-state behavior is bit-identical
+  pre/post change.
+- Partial live-body evidence: `camera_state_cache` and
+  `player_light_apply` clean bodies are invoked by **direct C calls** from
+  clean render paths (`game/menu.c:794,800-816`, `game/battle.c:363-402`)
+  that run during menus/attract today — those bodies are proven executing
+  in the current build; the wrap extends the same bodies to the
+  generated-`jal` dispatch path used inside battle.
+
+In-fight dispatch-path verification of all 6 remains pending the CD
+DeliverEvent wedge fix; the wrappers are compile-verified, pattern-
+identical to the 4 already-accepted `WRAP_OK_DELEGATE` entries, and safe
+to leave enabled (CLEAN_EXCLUDE can veto any of them at runtime).
