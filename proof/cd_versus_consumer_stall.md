@@ -71,3 +71,12 @@ completion event before issuing the fighter-asset read.
 ## Prior proof refs
 cd_dispatch_localization.md, cd_wedge_mistranslation.md,
 cd_seek_blocker.md, versus_framedivisor_post_cd.md (frame-divisor resolved).
+
+## Guest callback/mask cells at wedge (port 8125)
+- `0x801bdee8` = 0 → cd_dma_chan_reset takes DeliverEvent(0xF0000009) fallback
+- `0x801bc848` = 0 → **INT2 command-complete callback is NULL** (no async
+  completion callback registered)
+- `0x801bcba4` = 0
+- `0x801bcd18` = [0x00000001, 0x8019AE68] → cd_intc_dispatch state: in-service
+  flag=1, handler table base 0x8019AE68
+- `0x801bcd48` = 0x0000000D → the mask cell cd_intc_dispatch ANDs in
