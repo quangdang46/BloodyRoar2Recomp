@@ -10448,3 +10448,20 @@ N+102 — x28 bug narrowed to a frame_tick CALLEE (4 agents, still unfixed):
   post-fix versus fights (gs=8) run at full speed with divisor=0 across
   multiple instances. Game now runs boot->title->attract demos->versus
   combat cleanly. proof/cd_dispatch_localization.md has the full chain.
+
+- **session (CD-ROM ring/BFRD/IRQ-late hypothesis DISPROVEN):** Live
+  debug-port-8934 capture shows the sustained Mode-2 stream completed:
+  Setloc 1:58:70 -> ReadN -> Pause through LBA 8801, Pause completed at
+  frame 57005, CD IRQ2 set/fire consumed at frame 57007, then CD state
+  frozen idle (`reading=0`, `pending.active=0`, `irq_flag=0`,
+  `irq_present_max_late=0`). `sector_read_pos=2060/2340` is the normal
+  Mode-2 payload boundary (12B header + 2048B payload; 280B EDC/ECC tail
+  intentionally unread), not consumer starvation; `ring_partial` is ECC
+  residue. ch4 DMA finished (`chcr=0x201`, `remaining=0`, DICR no pending
+  done bits), CD seek gate `0x801BDEE4=1`, EvCB slot8 `0xF1000008` =
+  `OpenEvent(0xF0000009,0x20)`. Residual wedge is post-CD kernel/event
+  scheduling: frames advance, GPU/OTC DMA cycles, `pc=0` idle, B0 TestEvent
+  frozen while B0 ReturnFromException climbs and `sp_ring` repeats
+  `0x801FFE18<->0x00008548<->0x801BDD30` toward `0x8019A87C`/`0x8019A53C`.
+  No `cdrom.c`/`dma.c`/IRQ-timing patch is justified; proof:
+  proof/cdrom_ring_bfrd_stall.md.
