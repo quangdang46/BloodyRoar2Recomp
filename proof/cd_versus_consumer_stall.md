@@ -146,3 +146,50 @@ NEXT precise question: which DeliverEvent flag / response does the
 cd_cmd_sequence TestEvent(0x801bde38-family) actually await, and did
 Pause's INT2 produce it? Trace fntrace on cd_cmd_sequence to name the
 exact bios_svc/TestEvent arg + the DeliverEvent call that should fire.
+
+## REFINEMENT — the spinner is cd_timer_read (GPUSTAT+vsync pacer), not cd_cmd_sequence
+
+sp_ring per-frame PCs decode (renames.map):
+- 0x8019A53C -> inside **cd_timer_read** (0x8019a460), NOT cd_cmd_sequence.
+  cd_cmd_sequence (0x8019a00c, 144B) is the ONE-TIME CD init seq — misidentified earlier.
+- 0x8019A87C -> inside **cd_chan_full_init** (0x8019a814) = deferred CD coroutine.
+- 0x2924 -> BIOS kernel (TestEvent sleep primitive inside vsync_wait_n).
+
+cd_timer_read generated body (SLES_017.22_full_46.c @0x8019A460):
+- reads DAT_801bdde0 (CD-IRQ-driven frame counter — VERIFIED ADVANCING
+  0x67A2D->0x67B16->0x67C02 on :8125, so cd_cb8_dispatch/deferred coroutine WORKS)
+- calls vsync_wait_n(0x8019A5D8) for 1 tick; vsync_wait_n loops calling the
+  BIOS trampoline 0x80199FE0 (TestEvent) — that is the 1.4M-count spin. NORMAL pacing.
+- then polls **GPUSTAT 0x1F801814 bit22 (0x400000)** + a bit31-change detector
+  (block_8019A54C/56C XOR loop). GPUSTAT is display config, not a busy flag —
+  likely normal per-frame GPU-sync, NOT the stall. cd_timer_read returns each frame.
+
+## THE ACTUAL GATE — spawn phase machine (menu.c battle_config_eval 0x80153544)
+
+Per-player phase = u16 @ battle+idx*2+0xb4, hi-nibble classes:
+0x100->0x200->0x300->...->0x600->0x700->0x800->0x900.
+- phase 0x300 = L_state3 -> dispatch on battle+0x9b -> L_B0/L_B0_774/L_B0_7cc
+  -> stage_fight_announce/fight_timer_announce only. **NO self-path to 0x700.**
+- L_set700 (0x801538a4, sets phase=0x700) is reached ONLY from:
+  * L_A0_body (phase 0x000, bcfg_step_a returns !=0)
+  * L_600 (phase 0x600, continue_countdown>0 && select_phase_gate!=0)
+- fighter_spawn_setup (0x801487ac) is the CONSUMER: needs rec+0x10==1 && phase==0x700.
+
+=> phase stuck 0x300 means the ASSET-LOAD completion never advanced an
+intermediate phase. The producer is the fighter-asset CD read finishing and
+its completion callback advancing the phase — which never happens because
+the CD read is never issued after Pause(0x09) completes.
+
+## bioscall histogram wedge-vs-healthy (:8125 vs :8200)
+B0/0x07 DeliverEvent 82 vs 6870; B0/0x0A 7 vs 2367; B0/0x35 3 vs 222.
+TestEvent B0/0x0B spins in BOTH (normal wait primitive). => the game is not
+delivering/completing CD events at anywhere near normal rate — consistent
+with "no command in flight -> no completion -> no DeliverEvent".
+
+## OPEN QUESTION (sharp): WHO issues the fighter-asset CD read, and what
+unblocks it after Pause? The Pause->INT2->DeliverEvent(0xF0000009) path is
+verified working (cd_intc_dispatch runs/frame, cd_dma_chan_reset fallback
+armed, DAT_801bdee8==0). Either (a) the DeliverEvent fired but the asset-load
+state machine waits on a DIFFERENT flag, or (b) the next read's issue is gated
+on a load-state cell that Pause left stale. Trace the caller that should
+cd_read_open/cd_file_load the fighter assets — find its gate cell.
