@@ -194,3 +194,22 @@ Phase machine decoded (battle_config_eval menu.c:3974):
   (reset 0x100); 0x800->0x900->tick->0.
 Per-player words: phase u16 @ battle+0xb4+slot*2, flag u16 @ battle+0x68+slot*2
 (=0x1f800068/0x6a, cleared by clear_battle_counters at battle init).
+
+## CORRECTION — neither mode confirmed in sustained combat yet
+
+State-model refinement (battle_frame menu.c:7995 dispatches DAT_1f800001):
+- gs=8 = match flow (select + battle). DAT1 sub-states: 6=char-select cursor
+  (case6 has select-cursor/button-mask logic), 3=fighter_spawn_setup battle
+  init, 0xf0/0xf1=exit/transition.
+- :8600 VERSUS sits at DAT1=6 = CHARACTER SELECT (both phases 0x300 are
+  select-phase values, NOT battle). Has NOT reached battle/combat — versus
+  is stuck in char-select, likely awaiting confirm progression.
+- :8400/:8700 ARCADE sits at DAT1=3 = battle-init fighter_spawn_setup, past
+  select, CPU phase +0xb6=0 -> spawn gate fails.
+
+=> Two DISTINCT stuck points, same family:
+  versus: char-select confirm/cursor not advancing DAT1 6->7->8
+  arcade:  CPU opponent battle-phase never initialized (past select)
+Neither instance has reached sustained combat. Battle-engine health is
+UNPROVEN — no gs=8 DAT1>=8 fight observed on any instance yet.
+Attract (:8200) cycled gs 3/4/5/6 menus for 90s without a demo fight.
