@@ -136,25 +136,42 @@ CD stall (cdrom_command_history + cdrom_state + irq_state, frozen):
 - decomp_trace: dispatch→lzss→blk_ret→heapA_w_menu heap writes STOPPED
   (frontier static @0x800e1064).
 
-So a sector READ delivered most of a Mode-2 sector then a Pause was
-issued; the Pause-completion response byte sits in the FIFO undrained.
+Early read (superseded — see REFINED AGAIN below): a sector READ
+delivered most of a Mode-2 sector then a Pause was issued; the
+Pause-completion response byte appeared to sit in the FIFO undrained.
 REFINED (live mask-input trace): `cd_intc_dispatch` mask =
 `*(u16*)0x1F801070(i_stat) & *(u16*)0x1F801074(i_mask) & 0xD`; with
-INTC i_stat=0 the mask drains → dispatch EXITS cleanly. Its
-`in-service` flag @0x801bcd18=1 is normal post-dispatch state, NOT the
-active wedge (native stack spins in the cd_timer_read/deferred pacer,
-not cd_intc_dispatch). The CD IRQ WAS delivered (command_history seq316
-i_stat=0x4 at Pause exec) and consumed — but `cd_response_pump` /
-`cd_response_process` never drained the FIFO (response_count=1), so the
-deferred coroutine that should fire the Pause user-callback is starved
-UPSTREAM of dispatch: the resume link `BIOS/kernel → cd_ctx_restore →
-cd_chan_full_init` either never runs or its saved frame (@0x4C18,
-registered via B0/0x19) is absent/stale. Same deferred-coroutine family
-as the versus wedge but the break is the RESUME/registration link, not
-IRQ presentation timing.
+INTC i_stat=0 the mask drains → dispatch EXITS cleanly.
 
-Delegated to agent 7f928e12 (CD sector-read/Pause stall) alongside frame
-audit 251d7926 and CPU-phase 42283317 (moot — +0xb6 self-resolved).
+REFINED AGAIN (frame-audit agent 251d7926, commit 002997d): the Pause
+0x09 actually COMPLETED device-side — response pushed, IRQ presented
+AND acked (irq_flag=0, FIFO drained). "response_count=1 undrained" was
+transient. The REAL stall is game-side, precisely located:
+
+- `cd_state_blk_save` (0x8019aca4, game/cd.c:4329) sets in-service
+  `*(u16*)0x801bcd18=1`, masks IRQs via `FUN_8018e310`, stashes mask to
+  0x801bdda8/0x801bddac, and calls `FUN_8019ad80`=B0:0x19.
+- `cd_state_blk_restore` (0x8019ac04, game/cd.c:4363) unmasks via
+  `FUN_8018e300`, restores regs, calls `FUN_8019ad70`=B0:0x18, clears
+  in-service=0.
+- LIVE: `0x801bcd18=0x00000001` STUCK — save ran (~frame 3904) but
+  **restore NEVER ran**. This is a nested critical-section /
+  deferred-dispatch window that never closed → IRQs stayed masked → CD
+  IRQ starved → `cd_file_load_sm`/`battle_init` blocks forever.
+  decomp_trace froze ~cycle 2.6e9; vblank ticks, no game code runs.
+
+This sits inside the `cd_chan_full_init` deferred-coroutine contract
+(game/cd.c:4604): `cd_ctx_save(0x801bcd50)` snapshots gpr + registers
+the frame via B0/0x19→mem[0x4C18]; on CD IRQ kernel calls
+`cd_ctx_restore`(0x8019adcc)→re-enters→`cd_intc_dispatch`. The open
+question for agent 7f928e12: which caller pairs state_blk_save→dispatch
+→state_blk_restore, and why the restore `jal` is skipped (early-return /
+exception / nested reentry leaving in-service set).
+
+Active workstreams: agent 7f928e12 owns Wedge B (this CD
+save/restore imbalance — the binding DAT1=3 constraint); agent
+474880e3 owns Wedge A (CPU press-start / slot1 controller-type, see
+"Sharpened wedge" above); frame-audit agent 251d7926 DONE (002997d).
 
 ## Residual / open
 `battle_init` fix is faithful and verified (bringup completes, battle_frame
