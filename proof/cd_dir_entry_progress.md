@@ -184,6 +184,32 @@ copies sector data out of the read buffer and marks the final sector done.
 Circular-suspect: MDEC frozen may be cause OR symptom — needs the
 finish-callback trigger identified, not assumed.
 
+## cd_read_poll mechanism mapped (static, gen SLES_017.22_full_46.c:7029)
+
+`cd_read_poll(0x80198e2c)` is a **timeout-guarded one-shot status poll**,
+NOT a data pump:
+- ctx base `gpr[17]=0x801BCB9C` (read-start timestamp `DAT_801bcb9c`),
+  `gpr[18]=0x801BCBA4` (session flag).
+- calls `cd_timer_read(-1)` (`0x8019A460`) for current frame count.
+- deadline math: `*(0x801BCB9C) + 0x4B0` vs now → timeout path.
+- Returns busy/done/timeout; the CALLER (`cd_file_load_sm` read loop)
+  re-polls. Actual data movement is IRQ/DMA-callback-driven
+  (INT2/step/finish), not inside the poll.
+
+=> The wedge is that the read never reaches "done": the INT2/step
+callbacks fire (`cd_read_step_cb` 329×) but the completion callback
+`cd_read_finish_cb` (read-ctx `0x801CCB80`: `ctx+8+=ctx+0x10*4`,
+`ctx+0x14--` remaining, `ctx+0x20++` done) never fires → `cd_read_poll`
+returns busy until the `0x4B0`-frame timeout → read aborts/retries.
+
+`cd_read_finish_cb` registration is conditional: `cd_read_open` calls
+`cd_cmd_dispatch3(0x80198838)` ONLY if `(DAT_801bc7b4 & 1)!=0`
+(`cd.c:521`); `DAT_801bc7b4=0` live (set to 0 by handler-triple-install
+`cd.c:1049`). Either finish_cb legitimately isn't used (polling covers
+completion) OR the flag should be 1 for this read type — the agents are
+determining which. The REAL completion trigger to find: what marks the
+read's last sector consumed (the channel-drain / MDEC-feed handoff).
+
 ## VERDICT (2026-11-21, agent 224c8e29): versus/arcade COMBAT reachable on HEAD
 
 Runtime-verified on a dedicated instance (port 6400). `g_game_state=8`,
