@@ -90,3 +90,40 @@ NEXT: instrument the actual mask value + per-bit dispatch decision inside
 cd_intc_dispatch (needs a targeted watch/probe on the mask computation
 block, or runtime IRQ-delivery-vs-ack ordering trace). Runtime agent
 6f7d7f6e owns interrupts.c/cdrom.c IRQ timing.
+
+## REFRAME (agent 40dd14de, live :7300) — wedge is recurring phase; break is entry-validation gate fed by bad/clobbered CD data
+
+The "wedge" ALTERNATES stall<->healthy (prod=fin=cons advancing e.g. 6/5/5).
+Not a hard deadlock — each new segment re-enters the broken path.
+
+REAL mechanism (all live-measured):
+- cd_mc_state_machine(0x80199440) issues next read ONLY when
+  u16[entry+6] == u16[entry+4]+1  (block 0x80199BB8-0x80199BD4).
+  Wait path 0x80199C78=97 hits, issue path 0x80199BD8=18 hits — gate rarely passes.
+- finalize (0x80199D44 jal 0x801990F0) gated on *(u32)0x801FC69C!=0; that flag
+  reads 0 throughout stalls -> cd_dir_entry_finalize never runs -> no state=2.
+- Walking entry ptr *(0x801FEB18) pinned at entry1 (0x80010020); its +4/+6
+  hold DISC PAYLOAD (0x1800/0x0421, 0xffff/0xff40...) not stable counters.
+
+ROOT: the 0x20B channel entries are being OVERWRITTEN by CD DMA — two writers
+to 0x80010000-0x800103FF:
+  pc 0x80199694 (cd_mc_state_machine via cd_chan_cmd_submit ch=3): structured
+    8-word descriptors, LBA ~208829+, mode 0xE0, wrapping all 32 slots.
+  pc 0x801978AC (cd_cmd_issue_b kick, ra=0x801986EC cd_read_step_cb): raw
+    sector payload FFFF0000/0000FF40/FFFFFFFF into SAME slots.
+So u16@entry+0 "state" and +4/+6 are disc bytes, rewritten every DMA pass —
+state==2 only in a narrow window AND finalize can't run (69c stuck 0).
+
+The +4/+6 gate fails because reads deliver WRONG/STALE sectors (record-content
+mismatch) — consistent with AGENTS.md §8 CD command-sequencing blocker
+(cd_seek_param_issue->cd_reg_window_op->worker, deferred command issue).
+Two live streams read very different regions: ~208829+ mode 0xE0 vs
+~280/8535/9268/9534 mode 0xA0.
+
+RECONCILE with pump/i_stat findings: cd_response_pump=0 and the i_stat-bit2
+dispatch gap are likely DOWNSTREAM symptoms — if command completion/data is
+misclassified or sectors are wrong, the entry-validation never passes. The
+PRIMARY break is CD read delivering incorrect data / clobbering the table.
+NEXT: verify what LBA/mode/size the guest requests vs what runtime delivers
+for the streaming reads (cdrom command_history vs guest intent); check the
+DMA destination address for the sector writes hitting 0x80010000.
