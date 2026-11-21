@@ -62,6 +62,27 @@ battle_flow_state_machine (menu.c:605, DAT_1f80009c switch case 0)
 - ~half the samples sit in frame_tick->cd_timer_read->IRQ->cdrom service;
   the other half in battle_frame's own per-frame work. Frames advance.
 
+## Residual root-cause localization — CPU phase +0xb6 never armed
+
+Traced the `+0xb6=0` wedge through source:
+
+- `battle_state_init` (menu.c:4552) writes `+0xb4`/`+0xb6 = 0x300` ONLY
+  when `select_phase_gate(a2,idx)==0` (menu.c:3586), i.e. the phase
+  hi-nibble is ALREADY in {0x100,0x200,0x300,0x400,0x700}. `+0xb6`=0 ->
+  gate fails -> never armed.
+- `match_setup_apply` (save.c:3260) does NOT touch phases (rules/timer/
+  stage/chars only). The initial `0x100` arm must come from select /
+  CPU-confirm, upstream of battle_state_init.
+- Phase machine: `vs_confirm_b` (menu.c:9253) / `vs_confirm_e` (7843/7845,
+  a3=0/1 per side). `+0xb4`/`+0xb6`->`0x100` arms at ~9303/9337 (guarded
+  `MBS16!=0`) and `L_2f74`/`L_3094` (~9370/9394).
+- Versus arms BOTH sides (2 human pads). Arcade's CPU opponent uses an
+  auto-confirm path that apparently never arms `+0xb6` — game-logic or
+  CPU-record issue, possibly distinct from frame corruption.
+
+Delegated to agent 42283317 (CPU-select/phase trace) alongside the
+frame audit agent 251d7926.
+
 ## Residual / open
 `battle_init` fix is faithful but did NOT alone unblock arcade. The
 same `cd_intc_dispatch` in-service-stuck signature persists, so either
