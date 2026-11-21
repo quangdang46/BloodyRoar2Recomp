@@ -13750,8 +13750,7 @@ void iris_wipe_update(int *param_1)
   uint *puVar13;
   short *psVar14;
   int iVar15;
-  short local_88 [12];
-  short asStack_70 [12];
+  short local_88 [24];
   undefined1 auStack_58 [24];
   ushort local_40 [12];
   if (DAT_801bef20 == 0) {
@@ -13862,7 +13861,7 @@ void iris_wipe_update(int *param_1)
     } while (iVar2 < 5);
     iVar7 = iVar7 + 1;
     iVar2 = _DAT_1f80000c * 0x5a + 0x4a;
-    psVar14 = asStack_70;
+    psVar14 = local_88 + 12;
     if (1 < iVar7) {
       return;
     }
