@@ -143,3 +143,39 @@ Interpretation: CD reads complete and new sessions issue, but the
 channel-entry finalize (state->2) never happens for the streaming
 consumer, so blk_io_retry/mc_date_serial_cmp starve and the MDEC feed
 stops -> FMV truncates ~87% then state machine exits to demo fight.
+
+## DECISIVE: cd_ctx_restore NEVER fires (live :7200, FMV window)
+
+pc_probe during active FMV wedge (frame ~11000, movie state 0x00C5FFFF):
+  cd_ctx_restore   0x8019ADCC : 0 hits   <-- IRQ-resume DEAD
+  cd_chan_full_init 0x8019A814 : 1 hit @3361 (ran once, set up coroutine)
+  cd_intc_dispatch 0x8019A8EC : 2479 hits (runs via NON-restore/poll path)
+  cd_response_process 0x80196370 : 1127 hits
+  cd_mc_state_machine 0x80199440 : 196 hits
+  cd_channel_poll  0x80199360 : 0 hits
+  cd_response_pump 0x801979F8 : 0 hits
+
+cd_chan_full_init (generated 0x8019A814, CPS) flow:
+  setup (0x33333333 marker) -> cd_guest_zero32_a(0x41A)
+  -> CPS jal cd_ctx_save(s0+0x38) -> yields (cpu->pc=0x8019AD90; return)
+cd_ctx_save(0x8019AD90) dumps ra/s0-s7/fp/sp/gp into ctx frame.
+  LIVE frame @0x801bcd50 VERIFIED VALID: +0 ra=0x8019A87C (the jal-link
+  back into cd_chan_full_init continuation), +4 sp=0x801BDD30, etc.
+
+So the context IS saved correctly, but on CD IRQ the kernel NEVER calls
+cd_ctx_restore(0x8019ADCC) to reload it -> the deferred coroutine never
+resumes -> whatever it was waiting to complete (channel-ready / response
+drain that marks entries state==2) never happens.
+
+BREAK LOCATION narrowed to the IRQ->registered-callback dispatch:
+  cd_ctx_save/registration is via "B0/0x19 -> mem[0x4C18]" (BIOS/kernel).
+  Live mem[0x4C18]=0x0000330C,0x00002B5C (NOT code ptrs -> either wrong
+  slot interpretation or registration stores indices/flags, OR the B0/0x19
+  arm never ran because cd_chan_full_init's post-save continuation never
+  executed).
+
+Two candidate root causes (runtime agent to discriminate):
+  A) cd_chan_full_init yields at cd_ctx_save and its continuation that
+     issues the B0/0x19 arm-call never runs (CPS resume-PC broken).
+  B) B0/0x19 arm ran but the kernel IRQ->cd_ctx_restore dispatch is broken
+     (INT1 handler doesn't route to the registered restore frame).
