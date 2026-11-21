@@ -3564,3 +3564,60 @@ Versus-only => path-specific. Agents hunting the exact clobbering callee.
 
 STATUS: versus fight-entry unblocked through resource load; final blocker
 is the x28 clobber -> fighter_flash_update wild param_4. No live fight yet.
+
+=== N+218 — x28 "IRQ clobber" ROOT CAUSE: clean-C stack-buffer overflow (NOT setjmp/IRQ) ===
+
+The versus fighter_flash_update SIGSEGV was NEVER an IRQ/setjmp/fiber
+register bug. It is a decompiler local-split STACK BUFFER OVERFLOW in
+clean C that smashed a host-saved callee-saved register.
+
+ROOT CAUSE (fighter_pair_update, game/battle.c ~666, guest 0x801809C8):
+The guest allocates TWO 8-byte hitbox-result slots at sp+0x18 / sp+0x20.
+hitbox_pair_test / seg_sphere_hit / sphere_pt_hit write result shorts at
+indices 0..2 (6 bytes). The decompiler split each 8-byte slot into a
+`short x[2]` (4B) + a trailing scalar, so the index-2 write ran 2 bytes
+past the array and overwrote fighter_pair_update's saved x28 on the host
+stack. Epilogue restored the corrupted x28 -> propagated into
+battle_flow_state_machine (`ldr x3,[x28]` -> param_4) ->
+fighter_flash_update wild deref -> SIGSEGV.
+
+The "x28 = g_irqctx_ring + 453472" observation was a COINCIDENCE:
+&g_DAT_1f8001f0 (0x11128aec8) with its low16 overwritten by a guest hit
+short (0xaec8 -> 0x0494 = 0x111280494) happens to land inside the 448KB
+g_irqctx_ring BSS array. Two different crash param_4 values
+(0x801fff78... and 0x100000000) = different hit-coordinate shorts in the
+low16 — non-deterministic because hit positions vary per frame.
+
+PROOF (lldb + instrumentation): x28_chk(site) latched g_x28_bad_site=6
+(immediately AFTER fighter_pair_update) with g_x28_bad_val=0x111280494.
+chk(5) before it passed. Stack-layout disasm showed saved-x28 at sp+0x10
+== hitbox_pair_test buffer+4. Guest disasm confirmed 8-byte slots.
+
+FIX (game/battle.c): model each slot as `short local_38[4]` /
+`short local_30[4]` (was [2]+scalar); local_34->local_38[2],
+local_2c->local_30[2]. ALSO a semantic fix: the index-2 z-coordinate was
+previously lost to the overflow (local_34 never received it), so
+hit-reaction/wall-collide z positions were computed from stale data.
+
+SAME-CLASS SECOND INSTANCE (camera_aim_offset, ~4453): rtps_pt_xform /
+FUN_80194660 (vec3_s16_normalize) / gte_rtps_xform1 write THREE
+contiguous s16 through local_70 / local_68. Decompiler split each 6-byte
+vec3 into scalars + short[2]; index-2 writes overflowed. Fixed to
+`short local_70[3]` / `short local_68[3]` with local_70->local_70[0],
+local_6e->local_70[1], local_6c->local_70[2], local_68[0..1]+local_64->
+local_68[0..2].
+
+VERIFIED: rebuilt; versus to ph=8 on :5601 -> g_x28_bad_site=0 through
+the whole fight. fighter_flash_update SIGSEGV gone.
+
+GENERAL LESSON / sweep needed: ANY clean-C function that passes a stack
+buffer to a callee writing more elements than the decompiler-sized array
+is a latent host-stack smash. The signature is a guest multi-element
+stack slot split into `T name[N]` + trailing `T name2` scalars. Audit
+all `guest_at`-buffer / vec3 / hit-result ports for the same pattern.
+
+STATUS: x28 blocker RESOLVED. Next blocker = versus FAIL-FAST
+`unknown dispatch addr=0x01000000 ra=0x80126664` (guest wild jump after
+battle_flow_state_machine returns into the g_game_state SM) — suspected
+3rd instance of the split-buffer class corrupting GUEST state, or an
+unrelated versus-path bug. Under investigation.
