@@ -219,18 +219,26 @@ phase). "It compiled" and "it returns plausible values" are not done.
 - `game/` clean tree is substantial (~63K LOC) but `generated/` is still
   load-bearing for many paths — **expanding clean coverage is the mission.**
 - CD-ROM path delivers byte-exact Mode-2/XA data (right LBA/mode/sector slices
-  verified vs `Game.bin`). **Active blocker — ROOT-CAUSED** (see
-  `proof/cd_response_path_decode.md`): the tile/FMV stream and transient file
+  verified vs `Game.bin`). **FMV/streaming wedge FIXED** (commit `be17669`,
+  `proof/cd_dispatch_localization.md`): the tile/FMV stream and transient file
   loads SHARE the CD scratch arena `0x80010000`. `tile_stream_open`→
   `cd_dir_table_set` puts the 32-slot channel-entry table there; file loads
   (`cd_file_load_sm`→`cd_read_issue`→`cd_read_setup`→`bcb84`) DMA payload into
   the same arena and overwrite live descriptor `+4`/`+6` sequence tags →
-  `cd_mc_state_machine`'s `u16@+6==u16@+4+1` gate never passes → MDEC/FMV
-  starves (recurring wedge, self-heals on next descriptor). Safe on real HW
-  only if the stream fully drains/is torn down before the file load reuses the
-  arena → the enabler is a **missed stream-completion/teardown event in the
-  deferred-IRQ/TestEvent path** (`interrupts.c`/`cdrom.c`), not the data path.
-  NOTE: `cd_response_pump` pc_probe "0 hits" was a FALSE NEGATIVE (clean-ported
+  `cd_mc_state_machine`'s `u16@+6==u16@+4+1` gate never passes → producer
+  starves → MDEC/FMV wedges. Root cause was NOT the arena sharing (intentional)
+  nor delivery (byte-exact) — it was `cdrom_cycles_to_irq()` under-advertising
+  the armed i_stat-bit2 presentation deadline to the fast chunker: it tested
+  live `irq_flag`, but `present_cdrom_irq()` raises for `s_irq_i_stat_reason`
+  while `s_irq_i_stat_armed`. A HINTSTS ack inside the 5000-cycle present
+  window zeroed `irq_flag` without cancelling the owed presentation → chunks
+  stepped up to `PSX_DEADLINE_HARD_CAP` (16384) cycles over the CD IRQ boundary
+  → the deferred command-issue/stream-completion path missed its doorbell.
+  Fix: deadline predicate now matches `present_cdrom_irq` exactly, plus
+  due-now coverage (queued cmd / XA+CD-DA data-end / lid) and `cdda_delay`.
+  Verified: `irq_present_max_late` 15539→0 cycles; fast instances clean past
+  the ~frame-5556 wedge (75k+ frames) matching conservative control.
+  `cd_response_pump` pc_probe "0 hits" was a FALSE NEGATIVE (clean-ported
   host C); `cd_result_wait_b` does the same callback dispatch synchronously.
 - After CD stabilizes: continue clean-port sweeps across fighters,
   animation (`.ANI`/`.ACT`), the event/script VM, combat, input, memory
