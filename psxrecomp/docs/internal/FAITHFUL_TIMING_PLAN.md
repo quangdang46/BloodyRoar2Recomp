@@ -10417,3 +10417,34 @@ N+102 — x28 bug narrowed to a frame_tick CALLEE (4 agents, still unfixed):
   of ev_cmd_dispatch body). RESIDUAL: fight frames advance ~0.1fps,
   gp0_draw ~70-80K/frame, emit:clear 64:21 — suspect frame-divisor
   byte 0x1F800019 stuck 0 gating battle_frame emit. Agent on it.
+
+- **session (CD/FM V streaming wedge ROOT-CAUSED + FIXED; versus 0.1fps
+  RESOLVED as wedge fallout):** The recurring intermittent FMV/tile-stream
+  wedge (consumer parks, attract_stage_load_step clobbers shared arena
+  0x80010000) was exhaustively exonerated on the delivery side — sector data
+  byte-exact vs Game.bin, LBAs consecutive, paired CD-DMA descriptor/data
+  destinations correct, flow-control gates inert, s_int1_lost=0, idle_skip
+  off, dispatch 0 misses, and cdrom_timing_dump IDENTICAL fast vs
+  conservative. Decisive A/B: PSX_EVENT_STEP_CONSERVATIVE=1 control ran
+  clean to frame ~57k (7.5x past the ~5556 fast-mode wedge). Root cause was
+  NOT the arena sharing (intentional guest design) nor a delivery gap — it
+  was cdrom_cycles_to_irq() UNDER-ADVERTISING the armed i_stat-bit2 IRQ
+  presentation deadline to the fast deadline-chunker: it tested live
+  irq_flag, but present_cdrom_irq() raises for s_irq_i_stat_reason while
+  s_irq_i_stat_armed. A HINTSTS ack inside the 5000-cycle
+  CDROM_IRQ_PRESENT_DELAY window zeroed irq_flag without cancelling the
+  owed presentation -> chunks stepped up to PSX_DEADLINE_HARD_CAP (16384)
+  cycles over the CD IRQ boundary -> deferred command-issue
+  (cd_seek_param_issue->cd_reg_window_op->worker) missed its doorbell ->
+  cd_mc_state_machine producer starved -> file load reused the dead arena.
+  FIX (be17669, faithful — deadline predicate now byte-identical to
+  present_cdrom_irq: s_irq_i_stat_armed?s_irq_i_stat_reason:irq_flag, plus
+  due-now coverage for queued_cmd/xa_data_end/cdda_data_end/lid and
+  cdda_delay advertisement). New cdrom_state irq_present_late/max_late:
+  max_late 15539->0 cycles over 2210+ presents. Fast instances clean past
+  the wedge to 144k+ frames at ~300-400fps. The frame-divisor 0x1F800019
+  "stuck 0 -> 0.1fps" RESIDUAL is RESOLVED as wedge fallout: player combat
+  wedged in battle-init CD loads so the scroll/divisor path never engaged;
+  post-fix versus fights (gs=8) run at full speed with divisor=0 across
+  multiple instances. Game now runs boot->title->attract demos->versus
+  combat cleanly. proof/cd_dispatch_localization.md has the full chain.
