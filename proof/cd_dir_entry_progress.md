@@ -269,3 +269,19 @@ CORRECTION: `0x1f80001c` is a **u16 vblank timestamp** (`game.c:91,257`),
 NOT a round timer — the "frozen 0x3a=58" seen earlier is a sampled
 timestamp, not a stall indicator. The 2-value phase cycle is the normal
 battle update loop, not a stuck intro. Combat is real simulation.
+
+## cd_read_poll done-predicate (gen SLES_017.22_full_46.c:7029-7700)
+
+`cd_read_poll` reads the CD read-session block at `0x801BCB80`-family:
+- `0x801BCB80` = total sectors requested (`DAT_801bcb80`, loaded into s0)
+- `0x801BCB94` = progress/status counter (`DAT_801bcb94`; `<0` = error,
+  set to sector-count on open, `0xffffffff` on open-error)
+- `0x801BCB98`/`0x801BCB9C` = start timestamps (sub-timeout `+0x3C`,
+  overall `+0x4B0` frame ticks)
+- `0x801BCBA4` = session-active flag
+
+Done-condition compares progress vs total + session flag + timeouts.
+`cd_read_step_cb` (firing 329×) should decrement `bcb94` per sector; if it
+doesn't reach the target the poll returns busy→timeout→retry. NEXT live
+check on attract instance: read `0x801BCB80/94/98/9C/A4` to see whether
+`bcb94` is decrementing (sectors consumed) or frozen (consumer stalled).
