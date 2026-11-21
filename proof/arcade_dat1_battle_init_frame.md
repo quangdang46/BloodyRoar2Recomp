@@ -64,33 +64,75 @@ battle_flow_state_machine (menu.c:605, DAT_1f80009c switch case 0)
 
 ## Residual root-cause localization — CPU phase +0xb6 never armed
 
-Traced the `+0xb6=0` wedge through source:
+Traced the `+0xb6=0` wedge through source AND live guest RAM. Full causal
+chain now proven:
 
-- `battle_state_init` (menu.c:4552) writes `+0xb4`/`+0xb6 = 0x300` ONLY
-  when `select_phase_gate(a2,idx)==0` (menu.c:3586), i.e. the phase
-  hi-nibble is ALREADY in {0x100,0x200,0x300,0x400,0x700}. `+0xb6`=0 ->
-  gate fails -> never armed.
-- `match_setup_apply` (save.c:3260) does NOT touch phases (rules/timer/
-  stage/chars only). The initial `0x100` arm must come from select /
-  CPU-confirm, upstream of battle_state_init.
-- Phase machine: `vs_confirm_b` (menu.c:9253) / `vs_confirm_e` (7843/7845,
-  a3=0/1 per side). `+0xb4`/`+0xb6`->`0x100` arms at ~9303/9337 (guarded
-  `MBS16!=0`) and `L_2f74`/`L_3094` (~9370/9394).
-- Versus arms BOTH sides (2 human pads). Arcade's CPU opponent uses an
-  auto-confirm path that apparently never arms `+0xb6` — game-logic or
-  CPU-record issue, possibly distinct from frame corruption.
+Per-frame driver: `post_battle_dispatch` (menu.c:6746, guest 0x80154930)
+calls `battle_config_eval(param_1/param_2, s1, 0)` for BOTH side records
+(menu.c:6764-6765). Each side record's `AB[2]` = slot index (verified live:
+P0 rec 0x1f8000e8 byte+2=0, P1 rec 0x1f8001f0 byte+2=1 — both correct).
+
+For CPU slot (`+0xb6`=0 → phase cls=0x000):
+`battle_config_eval` → `L_state0` → `B[0x9b]`=0 → `L_A0` → reads global
+`+0x92` (live byte=0 → `gcls` passes) → `bcfg_step_a(s1, slot=1, +0x6a)`.
+
+`bcfg_step_a` (menu.c:4187) returns nonzero iff ALL of:
+  1. `battle_state_gate(s1,0) != 0`  — live `+0x92` byte=0 → jt_kind[0]=1 → PASSES
+  2. `(param_3 & 0x800) != 0`        — param_3 = u16 @ battle+0x6a = P1 edge word
+  3. `ret_zero_b(slot) >= 0`
+
+**The sole failing condition is #2: `+0x6a & 0x800 == 0`.**
+
+`+0x6a` is the P1 rising-edge word produced by `pad_state_refresh`
+(menu.c:2850): `attr_word_decode(&DAT_801befca)` → packed into `+0x6c`,
+edge into `+0x68`(P0)/`+0x6a`(P1). `attr_word_decode` (save.c:1604) reads
+the per-player device struct: `+1`=type nibble (`0x40`=digital pad),
+`+2/+3`=buttons (active-low, inverted on decode → `0x800` = confirm).
+
+Live `DAT_801befca` (0x801befca): `+0=0x00`(present), `+1=0x41`(digital),
+`+2/+3=0xFF,0xFF` = all-released → decode 0. **Static across frames — the
+CPU-AI never writes a confirm into the P1 pad struct.** So `+0x6a` never
+gets a `0x800` rising edge → `bcfg_step_a` returns 0 → `+0xb6` stays 0.
+
+### Mode comparison (decisive)
+
+- ATTRACT (CPU-vs-CPU): real fight sim works (proof/cd_dir_entry_progress.md)
+  → the CPU-input path CAN feed a CPU slot. AI proven.
+- VERSUS: harness injects BOTH pads — `press(CROSS/START,…,slot=1)` in
+  tools/versus_*.py. Slot1 is driven as a *human pad2*, NOT the CPU AI.
+  So versus armed `+0xb6` via injected input; it did NOT exercise the
+  CPU-opponent path. (Correction to earlier "both human confirm" note —
+  versus is human-vs-human driven by the debug `press` command.)
+- ARCADE (human-vs-CPU): first mode with a REAL CPU opponent on slot1.
+  `arcade_fight_mash.py` presses slot1 but comments "harmless if ignored"
+  — external pad1 input does not reach the CPU's input source.
+
+### Open question (agent 42283317 tracing)
+
+What writes `0x801befca+2/+3` for a CPU slot, and what per-slot
+controller-type/mode flag selects "physical pad" vs "CPU-AI" as the input
+source? Candidates: the channel-poll pad driver (IntRP 0x801FEFC0 → kernel
+queue 2, wired by `call_guest(0x801a1250)` in `cd_channel_init_seq`,
+game.c:979-987), a per-slot function-pointer table, or a fight-AI brain
+that emits pad words. `players_ctrl_init` (game.c:2542) builds per-player
+descriptor tables @0x801f5258/0x801f52a0 (resource/channel ptrs, dumped —
+no obvious input mux). The AI/controller is generated code; needs live
+write-tracing on `0x801befca+2/+3` to catch the writer (or prove absence)
+and the gate that should enable it for arcade slot1.
 
 Delegated to agent 42283317 (CPU-select/phase trace) alongside the
 frame audit agent 251d7926.
 
 ## Residual / open
-`battle_init` fix is faithful but did NOT alone unblock arcade. The
-same `cd_intc_dispatch` in-service-stuck signature persists, so either
-(a) another unreserved `guest_at(guest_sp()-N)` site in the active
-battle_init→frame_tick→CD-wait call tree is still clobbering state, or
-(b) a genuine deferred-coroutine resume defect remains that versus
-avoided via timing. ~35 unreserved sites exist across game/*.c
-(menu.c, save.c, game.c, cd.c, battle.c, gfx.c) — audit in progress.
+`battle_init` fix is faithful and verified (bringup completes, battle_frame
+live, CD IRQs fire). The earlier "cd_intc_dispatch in-service-stuck" reading
+was a downstream symptom of the live battle loop's CD-timer pacer, NOT the
+root cause — native `sample` proved the game sits in
+`battle_flow_state_machine→battle_frame→frame_tick→cd_timer_read` with
+`present_cdrom_irq`/`cdrom_advance` active. The REAL residual wedge is the
+CPU-opponent input path above (`+0xb6`/`+0x6a` 0x800 edge). ~35 unreserved
+`guest_at(guest_sp()-N)` sites remain across game/*.c — audit in progress
+(agent 251d7926) in case one still corrupts the CPU record/input path.
 Active-path suspects already cleared: frame_tick, battle_bringup_a,
 deferred_cmd_drain (all clean). cd.c:509 is inside a `#if 0` reference
 body (not compiled).
