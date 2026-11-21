@@ -256,3 +256,31 @@ cd_response_pump flag-4, or hp_bar_tick gate 0x801fc68c). Whether it
 runs-and-fails vs never-runs is unresolved (br2_call_generated hides
 it from pc_probe). Next: instrument cd_mc_state_machine entry via a
 side-effect counter or fntrace on a NON-delegated inner address.
+
+## 2026-… refinement — producer starvation, not delivery gap
+
+Re-verified exhaustively this session (all live, both fast :6100/:7800 and
+conservative :7700):
+- cdrom_timing_dump IDENTICAL fast vs conservative: sequential LBAs,
+  due==buffer==irq_arm, intc_seen=1, lost=0.
+- s_int1_lost=0, flow-control counters 0, idle_skip disabled,
+  dispatch_stats 0 misses (926M hits).
+- PSX_ENABLE_BLOCK_CYCLES=1 → cdrom_tick() in fire_vblank_edge compiled OUT.
+- process_pending is absolute-deadline ((void)cycles) → granularity-immune.
+- warm_route_consumer_blocked/accelerated_consumer_blocked both inert for BR2
+  (no warm routes configured; accel counters 0).
+- cdrom_cycles_to_irq advertises every CD deadline incl. read_delay,
+  pending.due_cyc, pending_present_due, due-now work → chunks never skip a
+  CD event. process_read_stream backlog-clamp (cdrom.c:2861) cannot fire —
+  verified LBAs consecutive, zero gaps, so NO sector is skipped.
+
+CONCLUSION: device delivery + IRQ delivery are byte/timing-exact in BOTH
+modes. The divergence is purely guest-side: the producer
+(cd_mc_state_machine) is STARVED — it only ran ~2 entry issues while the
+consumer parked at 30. It is invoked only via cd_response_pump flag-4 or the
+hp_bar_tick gate @0x801fc68c. The deferred-IRQ coroutine
+(cd_ctx_save/restore → cd_chan_full_init → cd_intc_dispatch → callback →
+mc_state_machine) fails to re-drive the producer under the fast
+deadline-serviced path vs per-cycle stepping. Fast mode is INTERMITTENT
+(:6100 healthy @1.4M frames demo, :7800 healthy @165k) — :7700 conservative
+clean @57k+ frames, 4 clean 0xE0 stream phases, 0 stalls.
