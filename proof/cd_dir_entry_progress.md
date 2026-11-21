@@ -129,3 +129,30 @@ entry-claim path. The `+4/+6` fields are seeded by the claim bulk-copy
 `0x80199ADC` from a source descriptor — the missing link is whatever
 should trigger the claim (a channel/sector-ready bridge or a
 read-descriptor builder), NOT a per-sector `+4++`.
+
+## CRITICAL refinement (2026-11-21): the `+4/+6` mechanism WORKS — wedge is FMV-pattern-specific
+
+After the attract exited to menu (scene `DAT_1f800001`=2, `g_game_state`=5),
+the SAME dir-entry pipeline is **healthy**:
+
+```
+produce=finalize=consume=0xA   (all converged — 10 entries fully processed)
+active_entry *0x801FEB18 = 0x80010120  (index 9)
+MDEC: output_pos=230400/246528, decode_macroblocks=321  (small menu stream,
+      NOT the frozen 10.8M/12.4M attract FMV)
+CD: lba=9246 streaming normally
+```
+
+=> `cd_dir_entry_finalize`/`cd_channel_poll`/`+4/+6` credit **function
+correctly for normal whole-file reads** (menu resources complete,
+finalize cursor advances). The wedge is **specific to the attract-FMV
+streaming read** — likely `cd_file_load_sm`/`stream_block_decode`
+incremental consumption where the credit path differs, OR the FMV read
+was issued with `+6`/`+4` params the consumer never satisfies. The
+attract→menu transition (button/timeout) abandons the wedged FMV read and
+starts a fresh pipeline — which is why the game still reaches menu/combat
+despite the FMV stall.
+
+NEXT: compare the attract-FMV read's entry params (`+4/+6/+8`) vs a
+working menu read's — find which field/pattern the FMV sets that the
+credit path can't satisfy.
