@@ -3087,15 +3087,28 @@ int32_t select_screen_tick(int32_t param_1)
   uint32_t *puVar7;
   uint32_t unaff_s2;
   int32_t local_c8 = 0, local_c0 = 0;
-  /* sp+0x18 (frame 0xf8) -> guest_sp()-0xe0; guest RAM backing so the
-   * 0x801f10bc cell carries a real guest address. */
-  uint8_t *auStack_e0 = (uint8_t *)guest_at(guest_sp() - 0xe0);
-  /* auStack_b8 = two 0x30-byte player records at caller_sp-0xb8 (s7);
+  /* guest sp-0xf8..sp frame image (prologue @0x8014f260: addiu sp,-0xf8,
+   * s7=sp+0x40, sp+0x18 -> cell 0x801f10bc). Reserve the window on the
+   * live guest sp (br2_guest_frame mirrors it into cpu->gpr[29]) so every
+   * nested guest call inside the select loop allocates BELOW this frame
+   * instead of overwriting the two 0x30-byte player records (sp+0x40) and
+   * the sp+0x18 param block — without the reservation each callee frame
+   * landed in this window and the +0x10/+0x24 select-state fields were
+   * clobbered, wedging versus select at state 6. The reservation aligns
+   * up to 0x100; the offsets below keep the guest's absolute local
+   * addresses (sp+0x18/+0x40/+0x50/+0x64). */
+  extern uint32_t br2_guest_frame(uint32_t);
+  extern void br2_guest_frame_free(void);
+  uint32_t sst_frm = br2_guest_frame(0xf8);
+  /* sp+0x18 -> sst_frm+0x20; guest RAM backing so the 0x801f10bc cell
+   * carries a real guest address. */
+  uint8_t *auStack_e0 = (uint8_t *)guest_at(sst_frm + 0x20);
+  /* auStack_b8 = two 0x30-byte player records at sp+0x40 (s7);
    * local_a8/local_94 are Ghidra aliases into that same guest record
    * array (+0x10 / +0x24), not separate host storage. */
-  uint8_t *auStack_b8 = (uint8_t *)guest_at(guest_sp() - 0xb8);
-  int32_t *local_a8 = (int32_t *)guest_at(guest_sp() - 0xa8);
-  int32_t *local_94 = (int32_t *)guest_at(guest_sp() - 0x94);
+  uint8_t *auStack_b8 = (uint8_t *)guest_at(sst_frm + 0x48);
+  int32_t *local_a8 = (int32_t *)guest_at(sst_frm + 0x58);
+  int32_t *local_94 = (int32_t *)guest_at(sst_frm + 0x6c);
   int32_t local_38 = 0;
   int32_t local_34, local_30, local_2c = 0;
   uint8_t *local_40 = (uint8_t *)guest_at(0x1f8000e8);
@@ -3468,6 +3481,7 @@ LAB_80150610:
       }
       DAT_1f800001 = 0;
       if (local_c0 == 0) local_c0 = 0;
+      br2_guest_frame_free();
       return local_c0;
     }
   } while (1);
@@ -7994,11 +8008,20 @@ static void copy8_rec(uint32_t e0, uint32_t e1, uint32_t s1,
 
 int battle_frame(void)
 {
-  /* guest sp .. sp+0x17f frame image (frame 0x180) -> guest_sp()-0x180;
+  /* guest sp .. sp+0x17f frame image (frame 0x180). The guest prologue
+   * does `addiu sp,-0x180`; reserve the same window on the live guest sp
+   * (br2_guest_frame mirrors it into cpu->gpr[29]) so every nested guest
+   * call inside the battle loop allocates BELOW this frame instead of
+   * overwriting the argblock-pointer slots at +0x130/+0x134 — without
+   * the reservation those slots held callee-frame leftovers
+   * (0x801bcb80/0x801fc6d0) and player-1's phase word never armed.
    * guest RAM backing so pointers stored into the frame (0x801f10bc,
    * slots 0x140/0x144) are real guest addresses that alias the same
    * bytes the host-pointer accesses below use. */
-  uint32_t *b36_sp = (uint32_t *)guest_at(guest_sp() - 0x180);
+  extern uint32_t br2_guest_frame(uint32_t);
+  extern void br2_guest_frame_free(void);
+  uint32_t b36_frm = br2_guest_frame(0x180);
+  uint32_t *b36_sp = (uint32_t *)guest_at(b36_frm);
   uint8_t *T;                               /* record table = sp+0x40 */
   uint8_t *ctx;                             /* context base = sp+0x18 */
   uint32_t st;
@@ -8679,11 +8702,12 @@ L_aeec:                                       /* 0x8014f164 */
     break;
   }
 
-  /* exit @0x8014f17c */
+  /* exit @0x8014f17c — guest epilogue `addiu sp,+0x180` */
   MW8(0x1f800001,0);
   {
     uint32_t ret = B36_32(0x38);
     if (ret == 0) MW8(0x1f800098, B36_8(0x30));
+    br2_guest_frame_free();
     return (int32_t)ret;
   }
 }
