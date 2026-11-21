@@ -263,3 +263,22 @@ c784bf1, 13576ce, 2acfce8, 50376cc/d2dcecc (handler-table base), plus
 2894c11/a729431 cd.c+save.c record-machine edits. Next: bisect or fntrace
 the IRQ jmp_buf resume (0x8019A87C) + DeliverEvent call sites to find
 which commit broke the resume->DeliverEvent->TestEvent-unblock chain.
+
+### IRQ-resume link verified — break is at DMA-done dispatch
+
+fntrace round-2 (armed resume/handler PCs):
+- 0x8019A87C jmpbuf_resume  x572  — IRQ coroutine resume RUNS every cycle
+  (f019a17 HookEntryInt fix is effective; the deferred coroutine IS resumed)
+- 0x8019A8EC intc_dispatch  x572  — reached from the resume path
+- 0x8019AF84 cb7_run, 0x8019B7E0 spu_done_hdlr, 0x8019B7E8 dma_chan_reset
+  = 0 hits — the DMA-channel-done walker + DeliverEvent NEVER fire.
+
+So the resume->intc_dispatch link works; intc_dispatch simply finds NO
+DMA-done interrupt pending (irq_state i_stat=0/pending=0, DICR done bits
+clear) so cb7_run is never invoked and DeliverEvent(0xF0000009) never
+fires. The break is UPSTREAM of the BIOS fix: the CD/SPU DMA channel is
+not signaling completion (ch4 SPU active=0 / no done bit set in DICR), so
+there is nothing for intc_dispatch->cb7_run to dispatch. Next: inspect the
+DMA channel done-bit path — why the completed transfer at frame 3885 did
+not leave a pending DICR done bit / raise the channel IRQ that cb7_run
+consumes (psxrecomp DMA ch3/ch4 completion -> INTC/DICR).
