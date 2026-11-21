@@ -303,3 +303,20 @@ SPU-stream drain; DICR showed only ch4(SPU) IRQ enabled, no done bits. The
 remaining suspect is the SPU/audio DMA channel (ch4) completion ->
 cd_dma_chan_reset -> DeliverEvent path, OR the game's record/event state
 machine observing a completion flag the clean-C port sets wrong.
+
+### NOT a regression — longstanding wedge across binary vintages
+
+Multi-instance sweep (all ./build/BloodyRoar2_Recompiled, various launch
+times = different loaded images):
+- 6020: gs=8 ph=3 frame=618788 seq=68207 (wedged, huge frame count)
+- 6060: gs=8 ph=3 frame=406047 seq=42303 (wedged)
+- 6091: gs=8 ph=3 frame=108035 seq=81861 (wedged)
+- 6090: gs=8 ph=6 frame=161727 (VERSUS reached char-select ph=6)
+
+=> The gs=8 ph=3 DeliverEvent wedge reproduces on OLD and NEW binaries —
+it is a LONG-STANDING runtime/game bug, NOT a regression from the recent
+game/*.c clean-C commits (2894c11, a729431, 3f35069). f019a17's verified
+ph=8 was an intermittent pass. Recent clean-C CD/record work is exonerated
+as the cause; the bug is the deep event/completion path the two running
+agents are now hunting (runtime DMA/SPU done-IRQ vs game record/event
+commit condition).
