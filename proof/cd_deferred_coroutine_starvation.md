@@ -78,3 +78,18 @@ delivered event wakes a thread that then fails to advance
 cd_mc_state_machine / mark channel entries state==2. TestEvent spin alone
 is not proof — need to identify WHICH event spec the wedged wait polls vs
 which spec DeliverEvent targets.
+
+## Probe refinement — state machine RUNS but does not finalize
+
+pc_probe_arm on wedged :6900 (~10s window):
+  0x80199440 cd_mc_state_machine : 196 hits  (RUNS — not kick-starved)
+  0x80199360 cd_channel_poll     : 0 hits    (never invoked)
+  0x80198BC4 bc84c resp callback : 4 hits
+  0x80198E2C cd_read_poll        : 349 hits, v0=2 every sample (busy)
+
+So cd_mc_state_machine executes ~20/s yet entries never reach state==2 and
+cd_channel_poll is never reached. The finalize predicate (+4 received vs
++6 expected, or the mode/state gate inside the generated body) is not
+satisfied for the streaming/battle-init entries -> the machine spins
+producing/issuing without completing. This is narrower than "coroutine
+starved": the machine RUNS but its per-entry completion condition fails.
