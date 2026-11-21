@@ -398,6 +398,22 @@ static void validate_transfer_length(int ch) {
     }
 }
 
+static int s_dmaprobe = -1;
+static void dmaprobe(const char *kind, int ch, uint32_t a, uint32_t b, uint32_t c)
+{
+    if (s_dmaprobe < 0) {
+        const char *e = getenv("PSX_DMAPROBE");
+        s_dmaprobe = (e && e[0] && e[0] != '0') ? 1 : 0;
+    }
+    if (!s_dmaprobe) return;
+    extern uint32_t psx_read_word(uint32_t);
+    fprintf(stderr, "[dmaprobe] f=%llu %s ch%d a=0x%08X b=0x%08X c=0x%08X dicr=0x%08X istat=0x%08X flag_bdf00=0x%08X dee8=0x%08X pc=0x%08X\n",
+            (unsigned long long)s_frame_count, kind, ch, a, b, c,
+            dicr_read_value(dicr), i_stat,
+            psx_read_word(0x801BDF00u), psx_read_word(0x801BDEE8u),
+            g_debug_last_store_pc);
+}
+
 static void complete_transfer(int ch) {
     uint32_t dicr_before = dicr;
     uint32_t i_stat_before = i_stat;
@@ -411,6 +427,7 @@ static void complete_transfer(int ch) {
         dicr |= (1u << (24 + ch));
     }
     raise_dma_irq_on_master_edge(dicr_before);
+    if (ch == 3 || ch == 4) dmaprobe("done", ch, channels[ch].madr, channels[ch].bcr, channels[ch].chcr);
     trace_dma('C', ch, 0, dicr_before, i_stat_before);
     event_ring_record_aux(EV_DMA_DONE, (uint8_t)ch, channels[ch].chcr);
     event_ring_record_aux(EV_DEQ, (uint8_t)(SRC_DMA0 + ch), channels[ch].chcr);
@@ -1023,6 +1040,7 @@ static void try_execute(int ch) {
     if (!channel_enabled(ch)) return;
 
     channels[ch].chcr &= ~(1u << 28);
+    if (ch == 3 || ch == 4) dmaprobe("kick", ch, channels[ch].madr, channels[ch].bcr, channels[ch].chcr);
     trace_dma('S', ch, transfer_word_count(ch), dicr, i_stat);
     event_ring_record_aux(EV_DMA_KICK, (uint8_t)ch, channels[ch].chcr);
     event_ring_record_aux(EV_ENQ, (uint8_t)(SRC_DMA0 + ch), transfer_word_count(ch));
@@ -1371,6 +1389,7 @@ void dma_write_masked(uint32_t addr, uint32_t val, uint32_t mask) {
         dicr = (dicr & ~write_mask) | (val & write_mask);
         dicr &= ~(val & reset_mask);
         raise_dma_irq_on_master_edge(dicr_before);
+        if (val & 0x7F80FFFu) dmaprobe("dicrwr", -1, val, mask, dicr_before);
         trace_dma_reg_write(addr, val, mask, dicr_before, i_stat_before);
         return;
     }
