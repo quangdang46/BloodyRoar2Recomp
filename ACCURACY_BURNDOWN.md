@@ -3395,3 +3395,19 @@ bug), or does faithful keep these allocs live and our _DAT_801e3cfc staging
 cursor / heap epoch diverged so 0x800D0000 collides where faithful's doesn't
 (heap over-production class)? menu_res_load_sm/save_state_machine_alt coverage
 now instrumented (decomp tags 61/62/63/70) to diff versus vs arcade.
+
+=== N+213 — P2 FC_ANI target confirmed = compressed staging garbage (stale ptr) ===
+Direct mem read on frozen versus :5120:
+  P2 ctrl+0x30 -> 0x800D9F98 = F203020E 1E2F11CF DE220023 0FA4201D ...
+      => high-entropy COMPRESSED staging payload (versus file 0x16 data),
+         NOT an .ANI header. FC_ANI is a stale previous-epoch pointer.
+  P1 ctrl+0x30 -> 0x800771D4 = 0000B064 00007AF4 000000E4 00007F38 ...
+      => structured small offsets = VALID .ANI section table (file 0x28).
+
+So versus P2's animation base points into the middle of compressed versus
+stage/battle data. The faithful question is what P2's FC_ANI SHOULD reference:
+a re-loaded persistent .ANI (like P1's file-0x28 path) or a decoded offset
+inside the versus 0x8B/0x16 container. versus_nav uses default char select
+(CROSS confirms cursor); P2's .ANI came from file 0x60 in the preview epoch.
+Awaiting agents' versus-vs-arcade menu_res_load_sm/save_state_machine_alt
+coverage diff (decomp tags 61/62/63/70) to name the missing re-bind.
