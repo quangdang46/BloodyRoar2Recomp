@@ -13906,46 +13906,248 @@ blockB:
   return 0;
 }
 
-/* terrain_packet_gen @0x80135a14 — terrain/grid packet header emitter.
- * DELEGATED to generated: the guest body is a ~111-insn function that
- * writes the param_1 header (+0x1c = out cursor, +0xc/+0xe = 0), emits
- * two 0x14-byte record headers at the param_2 cursor (fn ptrs
- * 0x8019ab84 / 0x8019ac54 do the per-cell work later during serialize),
- * and returns the advanced cursor. The previous clean port inlined a
- * param_6*param_7 grid-emit loop that does not exist in the guest code —
- * for negative grid dims (param_6 = -4) the unsigned-bound loop ran ~4G
- * iterations and livelocked the whole emulator inside one clean call.
+/* terrain_packet_gen @0x80135a14 — terrain/grid packet emitter.
+ * Faithful clean port of guest 0x80135A14 plus its CPS split pieces
+ * 0x80135BD0/0x80135BF8/0x80135C04/0x80135C3C/0x80135D14/0x80135D1C/
+ * 0x80135D28/0x80135DE4/0x80135DE8/0x80135DF0/0x80135F00/0x80135F08/
+ * 0x80135F10/0x80135FB8/0x80135FF0/0x8013602C/0x80136074 (verified
+ * insn-by-insn against generated/SLES_017.22_full_06.c).
  *
- * The pointer args (param_3/4/5/8) may be host pointers (save.c's blk[]
- * is a host stack array) or guest_at() aliases; the generated body reads
- * them as guest addresses, so each triple is staged into a guest frame
- * and the guest addresses are passed instead. The guest function treats
- * all four as read-only inputs (verified against generated/SLES_017.22
- * _full_06.c: all stores target param_1/param_2 or the local frame). */
+ * Guest contract: a0 = packet header (guest addr), a1 = out cursor
+ * (guest addr), a2 = u16 triple ptr, a3 = s16 triple ptr, stack args
+ * arg5 = s16 triple ptr, arg6 = col count/divisor, arg7 = row
+ * count/divisor, arg8 = u8 triple ptr. The pointer params arrive here
+ * as host pointers (save.c blk[] or guest_at() aliases from the
+ * gen_clean_table wrapper) — the triple loads are plain host reads,
+ * matching the guest lh/lhu/lbu semantics (param_4/5 signed, param_3
+ * unsigned, param_8 bytes).
+ *
+ * The guest body keeps its scratch halfword frame at sp+0..0x1c and
+ * two record cursors in s-registers: g10 = 72-byte-record cursor,
+ * g11 = 48-byte-record cursor (both advanced in lockstep with their
+ * +20/+12 aliases g6/g7). All frame reloads are lhu; the only lh
+ * loads are the two divisor triples. Loop bounds are sltu (unsigned)
+ * against param_6/param_7; the cell-shape selects use signed diff
+ * compares. Returns the 72-byte cursor (guest $v0 = $t2). */
+
+/* MIPS div lo semantics as modelled by the generated body: signed
+ * quotient, and on divide-by-zero lo = -1 when dividend >= 0 else 1.
+ * int64 division keeps INT32_MIN / -1 defined. */
+static int32_t tpg_idiv(int32_t a, int32_t d)
+{
+  if (d != 0) return (int32_t)((int64_t)a / (int64_t)d);
+  return a >= 0 ? -1 : 1;
+}
+
+/* 72-byte grid-cell record. Byte section identical for both variants
+ * (blocks 0x80135C04+0x80135C3C and 0x80135DF0): tag bytes 5/72 at
+ * +27/+31 and +51/+55, 0x55555555 words at +44/+68, the u8 triple
+ * duplicated at +28..30 and +52..54. The halfword section differs:
+ * v1 (col >= row) writes the raw triple then col-quotient sums then
+ * row+col sums; v2 (col < row / col == row tail) writes row+col sums,
+ * row sums, then the raw triple. r = record base (guest $t2/g10). */
+static void tpg_cell72_v1(uint32_t r, const uint16_t *fr,
+                          uint8_t b0, uint8_t b1, uint8_t b2)
+{
+  uint32_t c = r + 20u;                    /* guest $a2 = r+20 alias */
+  MW8(c + 7u,  5u);  MW8(c + 11u, 72u);
+  MW32(c + 24u, 0x55555555u);
+  MW8(c + 31u, 5u);  MW8(c + 35u, 72u);
+  MW32(c + 48u, 0x55555555u);
+  MW8(c + 8u, b0);  MW8(c + 9u, b1);  MW8(c + 10u, b2);
+  MW8(c + 32u, b0); MW8(c + 33u, b1); MW8(c + 34u, b2);
+  MW16(r + 0u,  fr[0]);
+  MW16(r + 2u,  fr[1]);
+  MW16(r + 4u,  fr[2]);
+  MW16(r + 8u,  (uint16_t)(fr[0]  + fr[8]));
+  MW16(r + 10u, (uint16_t)(fr[1]  + fr[9]));
+  MW16(r + 12u, (uint16_t)(fr[2]  + fr[10]));
+  MW16(r + 16u, (uint16_t)(fr[12] + fr[0] + fr[8]));
+  MW16(r + 18u, (uint16_t)(fr[13] + fr[1] + fr[9]));
+  MW16(r + 20u, (uint16_t)(fr[14] + fr[2] + fr[10]));
+}
+
+static void tpg_cell72_v2(uint32_t r, const uint16_t *fr,
+                          uint8_t b0, uint8_t b1, uint8_t b2)
+{
+  uint32_t c = r + 20u;
+  MW8(c + 7u,  5u);  MW8(c + 11u, 72u);
+  MW32(c + 24u, 0x55555555u);
+  MW8(c + 31u, 5u);  MW8(c + 35u, 72u);
+  MW32(c + 48u, 0x55555555u);
+  MW8(c + 8u, b0);  MW8(c + 9u, b1);  MW8(c + 10u, b2);
+  MW8(c + 32u, b0); MW8(c + 33u, b1); MW8(c + 34u, b2);
+  MW16(r + 0u,  (uint16_t)(fr[12] + fr[0] + fr[8]));
+  MW16(r + 2u,  (uint16_t)(fr[13] + fr[1] + fr[9]));
+  MW16(r + 4u,  (uint16_t)(fr[14] + fr[2] + fr[10]));
+  MW16(r + 8u,  (uint16_t)(fr[0]  + fr[12]));
+  MW16(r + 10u, (uint16_t)(fr[1]  + fr[13]));
+  MW16(r + 12u, (uint16_t)(fr[2]  + fr[14]));
+  MW16(r + 16u, fr[0]);
+  MW16(r + 18u, fr[1]);
+  MW16(r + 20u, fr[2]);
+}
+
+/* 48-byte edge record (blocks 0x80135D28 and 0x80135F10+0x80135FB8).
+ * Byte section identical: tag bytes 3/64 at +19/+23 and +35/+39, the
+ * u8 triple duplicated at +20..22 and +36..38. Halfword section:
+ * v1 (block 0x80135D28) = raw triple, col sums, col+row sums;
+ * v2 (block 0x80135F10) = row+col sums, row sums, col+row sums.
+ * r = record base (guest $t3/g11). */
+static void tpg_cell48_v1(uint32_t r, const uint16_t *fr,
+                          uint8_t b0, uint8_t b1, uint8_t b2)
+{
+  uint32_t c = r + 12u;                    /* guest $a3 = r+12 alias */
+  MW8(c + 7u,  3u);  MW8(c + 11u, 64u);
+  MW8(c + 23u, 3u);  MW8(c + 27u, 64u);
+  MW8(c + 8u, b0);  MW8(c + 9u, b1);  MW8(c + 10u, b2);
+  MW8(c + 24u, b0); MW8(c + 25u, b1); MW8(c + 26u, b2);
+  MW16(r + 0u,  fr[0]);
+  MW16(r + 2u,  fr[1]);
+  MW16(r + 4u,  fr[2]);
+  MW16(r + 8u,  (uint16_t)(fr[0] + fr[8]));
+  MW16(r + 10u, (uint16_t)(fr[1] + fr[9]));
+  MW16(r + 12u, (uint16_t)(fr[2] + fr[10]));
+}
+
+static void tpg_cell48_v2(uint32_t r, const uint16_t *fr,
+                          uint8_t b0, uint8_t b1, uint8_t b2)
+{
+  uint32_t c = r + 12u;
+  MW8(c + 7u,  3u);  MW8(c + 11u, 64u);
+  MW8(c + 23u, 3u);  MW8(c + 27u, 64u);
+  MW8(c + 8u, b0);  MW8(c + 9u, b1);  MW8(c + 10u, b2);
+  MW8(c + 24u, b0); MW8(c + 25u, b1); MW8(c + 26u, b2);
+  MW16(r + 0u,  (uint16_t)(fr[12] + fr[0] + fr[8]));
+  MW16(r + 2u,  (uint16_t)(fr[13] + fr[1] + fr[9]));
+  MW16(r + 4u,  (uint16_t)(fr[14] + fr[2] + fr[10]));
+  MW16(r + 8u,  (uint16_t)(fr[0] + fr[12]));
+  MW16(r + 10u, (uint16_t)(fr[1] + fr[13]));
+  MW16(r + 12u, (uint16_t)(fr[2] + fr[14]));
+}
+
 uint32_t terrain_packet_gen(uint32_t param_1,uint32_t param_2,
                       const uint16_t *param_3,const int16_t *param_4,
                       const int16_t *param_5,int32_t param_6,
                       int32_t param_7,const uint8_t *param_8)
 {
-  extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
-  extern uint32_t br2_guest_frame(uint32_t);
-  extern void br2_guest_frame_free(void);
-  extern void br2_st32(uint32_t,uint32_t);
-  uint32_t fr = br2_guest_frame(0x40);
-  uint8_t *gb = (uint8_t *)guest_at(fr + 0x20);
-  uint32_t r;
-  memcpy(gb + 0x00, param_3, 8);   /* u16 triple  */
-  memcpy(gb + 0x08, param_4, 8);   /* s16 triple  */
-  memcpy(gb + 0x10, param_5, 8);   /* s16 triple  */
-  memcpy(gb + 0x18, param_8, 8);   /* u8 triple   */
-  br2_st32(fr + 0x10, fr + 0x30);  /* arg5 = param_5 guest addr */
-  br2_st32(fr + 0x14, (uint32_t)param_6);
-  br2_st32(fr + 0x18, (uint32_t)param_7);
-  br2_st32(fr + 0x1c, fr + 0x38);  /* arg8 = param_8 guest addr */
-  r = br2_call_generated(0x80135a14u, param_1, param_2,
-                         fr + 0x20, fr + 0x28);
-  br2_guest_frame_free();
-  return r;
+  uint32_t hdr = param_1;              /* guest $a0 */
+  uint32_t cur = param_2;              /* guest $a1 */
+  int32_t  sx  = param_6;              /* guest $s6: col count + p4 divisor */
+  int32_t  sy  = param_7;              /* guest $s7: row count + p5 divisor */
+  uint32_t prod, r48, r72;             /* mult lo; g11/g10 cursors */
+  uint16_t fr[16];                     /* guest sp+0..0x1c frame (lhu) */
+  int32_t  col, row;                   /* g8/g12 loop counters */
+  int32_t  diff;                       /* g24 = sx - sy (signed) */
+  uint8_t  b0 = param_8[0], b1 = param_8[1], b2 = param_8[2];
+  int i;
+
+  /* ---- block_80135A14: header ---- */
+  MW32(hdr + 0x1cu, cur);              /* hdr->out_cursor = param_2 */
+  MW16(hdr + 0x0cu, 0);
+  MW16(hdr + 0x0eu, 0);
+
+  /* mult lo: (sy<sx) ? sx*(sy+1) : (sx+1)*sy — 32-bit product low.
+   * u32 arithmetic reproduces the guest 32-bit wrap exactly. */
+  prod = (sy < sx)
+       ? (uint32_t)sx * ((uint32_t)sy + 1u)
+       : ((uint32_t)sx + 1u) * (uint32_t)sy;
+  diff = (int32_t)((uint32_t)sx - (uint32_t)sy);
+
+  if (diff == 0) {
+    /* block_80135A70: single header record, cursors cur+8.. */
+    MW32(cur + 0x00u, 1u);
+    MW32(cur + 0x04u, 0x00140000u);
+    MW32(cur + 0x10u, 0x8018ac54u);
+    MW32(cur + 0x0cu, cur + 20u);
+    MW32(cur + 0x08u, prod);
+    r48 = 0;
+    r72 = cur + 20u;
+  } else {
+    /* blocks 80135AA0/80135AAC/80135AB0: two header records */
+    uint32_t ud  = (uint32_t)diff;
+    uint32_t ad  = (diff >= 0) ? ud : (0u - ud);   /* |diff| */
+    uint32_t p36 = cur + 36u;
+    uint32_t p72 = p36 + ad * 48u;
+    MW32(cur + 0x00u, 2u);
+    MW32(cur + 0x04u, 0x00140000u);
+    MW32(cur + 0x10u, 0x8018ab84u);
+    MW32(cur + 0x08u, ad);
+    MW32(cur + 0x0cu, p36);
+    MW32(cur + 0x14u, 0x00140000u);
+    MW32(cur + 0x20u, 0x8018ac54u);
+    MW32(cur + 0x1cu, p72);
+    MW32(cur + 0x18u, prod - ad);
+    r48 = p36;
+    r72 = p72;
+  }
+
+  /* ---- block_80135B00: scaled triples into the sp frame ----
+   * sp+16..20 = lh(param_4)/sx, sp+24..28 = lh(param_5)/sy,
+   * sp+0..4 = lhu(param_3). Frame reloads everywhere below are lhu. */
+  for (i = 0; i < 3; i++) {
+    fr[8  + i] = (uint16_t)tpg_idiv((int32_t)param_4[i], sx);
+    fr[12 + i] = (uint16_t)tpg_idiv((int32_t)param_5[i], sy);
+  }
+  fr[0] = param_3[0];
+  fr[1] = param_3[1];
+  fr[2] = param_3[2];
+
+  if (sy == 0) return r72;             /* block_80135BB0 -> epilogue */
+
+  row = 0;
+  for (;;) {                           /* block_80135BD0: row head */
+    fr[4] = fr[0]; fr[5] = fr[1]; fr[6] = fr[2];  /* snapshot sp+8..12 */
+    col = 0;                           /* g8 */
+    if (sx != 0) {                     /* block_80135BE8 guard */
+      /* block_80135BF0: g6 = g10+20, g7 = g11+12 — the +20/+12 aliases
+       * stay locked to the record cursors because both advance by the
+       * record stride together, so the emit helpers derive them from
+       * r72/r48 at each call. */
+      for (;;) {                       /* block_80135BF8: col head */
+        if ((uint32_t)col < (uint32_t)row) {
+          /* block_80135D14: lower-triangle column.
+           * emit48 iff diff<0 && col==sx-1 (blocks 80135D1C/80135D28);
+           * the 48B cursor then always falls into the v2 72B emit. */
+          if (diff < 0 && (uint32_t)col == (uint32_t)sx - 1u) {
+            tpg_cell48_v1(r48, fr, b0, b1, b2);
+            r48 += 48u;
+          }
+          tpg_cell72_v2(r72, fr, b0, b1, b2);
+          r72 += 72u;
+        } else {
+          /* block_80135C04/80135C3C: upper-triangle column, v1 72B. */
+          tpg_cell72_v1(r72, fr, b0, b1, b2);
+          r72 += 72u;
+          if ((uint32_t)row < (uint32_t)col) {
+            /* blocks 80135F00/80135F08: last row of a wide grid also
+             * emits a v2 48B edge record iff diff>0 && row==sy-1. */
+            if (diff > 0 && (uint32_t)row == (uint32_t)sy - 1u) {
+              tpg_cell48_v2(r48, fr, b0, b1, b2);
+              r48 += 48u;
+            }
+          } else {
+            /* row == col: block_80135DE8 g2=0 -> block_80135DF0 v2. */
+            tpg_cell72_v2(r72, fr, b0, b1, b2);
+            r72 += 72u;
+          }
+        }
+        /* block_80135FF0: next column + accumulate col quotients */
+        col++;
+        fr[0] = (uint16_t)(fr[0] + fr[8]);
+        fr[1] = (uint16_t)(fr[1] + fr[9]);
+        fr[2] = (uint16_t)(fr[2] + fr[10]);
+        if (!((uint32_t)col < (uint32_t)sx)) break;
+      }
+    }
+    /* block_8013602C: next row + accumulate row quotients */
+    row++;
+    fr[0] = (uint16_t)(fr[4] + fr[12]);
+    fr[1] = (uint16_t)(fr[5] + fr[13]);
+    fr[2] = (uint16_t)(fr[6] + fr[14]);
+    if (!((uint32_t)row < (uint32_t)sy)) break;
+  }
+  return r72;                          /* $v0 = $t2 (block_80136074) */
 }
 
 
