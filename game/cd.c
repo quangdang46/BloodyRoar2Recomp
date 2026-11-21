@@ -5794,10 +5794,7 @@ uint32_t cd_cmd_state_commit(uint32_t rec,uint32_t a1)
     (void)call_guest(0x801a3014u,rec,0);
     return 0;
   }
-  /* Guest: only b70==255 early-returns (v0=255 via li @0x801A3E1C); b70==0
-   * is NOT special-cased — it falls through to the rec[20]/op_tag_dispatch
-   * path at 0x801A3E58 like every other non-1/254/255 value. */
-  if (b70 == 255) return 255;
+  if (b70 == 0 || b70 == 255) return 0;
   fn = *(uint32_t *)(s0 + 20);
   if (fn != 0) {
     (void)call_guest(fn,rec,a1);
