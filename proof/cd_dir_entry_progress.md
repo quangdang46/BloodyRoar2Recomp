@@ -1,0 +1,72 @@
+# CD dir-entry `+4` progress — completion-gate anatomy (agent cbb95a10 + live confirm)
+
+## The finalize gate (read-only compare, NOT the writer)
+
+`cd_mc_state_machine` generated body, `br2eu_func_80199440`
+(`generated/SLES_017.22_full_46.c:17049-17115`, mirror
+`psxrecomp/docs/internal/cdmc_80199440.asm:479-490`):
+
+```
+0x80199BBC  lw   $v0, -0x14e8($v0)   ; v0 = *(0x801FEB18) cached ACTIVE entry ptr
+0x80199BC4  lhu  $v1, 6($v0)         ; expected  = entry+6 (u16)
+0x80199BC8  lhu  $v0, 4($v0)         ; received = entry+4 (u16)
+0x80199BCC  addiu $v1,$v1,-1         ; expected-1
+0x80199BD0  bne  $v1,$v0, skip       ; finalize only when received == expected-1
+0x80199BD8..                           ; on equal: 0x801FC69C=1, issue next cmd
+```
+
+`cd_channel_poll` (`game/cd.c:1658`) only *consumes*: waits `u16 entry+0==2`,
+writes `entry+0=4`, never touches `+4`.
+`cd_dir_entry_finalize`/`cd_dir_entry_store` write `entry+0=2`, not progress.
+
+## The ONLY CPU store that can reach dir-entry `+4`
+
+`gwatch` on `0x80010000..0x800103FF` caught exactly one non-DMA store to a
+`+4`-aligned field:
+
+```
+guest PC 0x80199ADC : sw $v0,($a1)   ; gen SLES_017.22_full_46.c:16383
+   = entry0+4/+6 word, written by the bulk 32-byte entry COPY
+0x80199AB0  sh state=1 -> *0x801FEB18        ; claim working entry
+0x80199AB4  a1 = *0x801FC6C0  (entry0 base)  ; v1 = *0x801FEB18 (src)
+0x80199ACC  *0x801FC6A4 = 0                  ; reset produce cursor
+0x80199AD0  8-word copy loop  src->entry0    ; iter2 hits entry0+4
+0x80199AE8  *0x801FEB18 = *0x801FC6C0        ; rebase cached entry to entry0
+```
+
+This is a **bulk entry copy, not a per-sector increment** — it seeds `+4/+6`
+from the source entry. `cd_mc_state_machine` contains **no** `lhu/addiu/sh`
+RMW targeting `entry+4`; no dedicated `+4++` exists in it, `cd_channel_poll`,
+`cd_dir_entry_finalize/store`, `cd_read_finish_cb`, or the sub-channel cbs.
+
+Sub-channel cbs `0x801AA244`/`0x801AA2AC` write **channel-entry** fields
+`+68/+70/+72` (`|=1` ready flags) — channel bookkeeping, not dir `+4`.
+
+## Live confirmation (port 6100)
+
+```
+0x801FC6C0 = 0x80010000   dir/entry table base
+0x801FC6A4 = 2            produce/submit cursor
+0x801FC6A8 = 0            finalize cursor   (never advanced)
+0x801FC6AC = 30           consume/poll cursor
+0x801FEB18 = 0x80010020   cached ACTIVE entry = index1
+```
+
+Active entry `0x80010020` fields (live):
+`u16@+0 = 2` (state ready) but `u16@+4 = 1` (received), `u16@+6 = 0` (expected).
+Finalize needs `received == expected-1` → `1 == -1` never true → the entry can
+never re-finalize; `+6` was never seeded with a real count.
+
+`cd_mc_state_machine` DOES run (pc_probe=136), `cd_result_wait_b`=395,
+`cd_read_step/finish_cb` are generated-faithful; CD→RAM DMA streams
+(lba 305→9541 across the wedge). MDEC output_pos frozen at 10829568/12405504.
+
+## Conclusion
+
+The wedge is **upstream of the completion predicate**: the channel/sector-ready
+consumer that should (a) seed `entry+6` expected-count and (b) credit `entry+4`
+per completed sector **never supplies the values**. The only `+4` write is the
+entry-claim bulk copy; no per-sector progress RMW exists in any clean or
+generated path examined. Next: find the consumer that reads channel-entry
+ready flags `+68/+70/+72` and bridges them into dir-entry `+4/+6` — likely a
+computed-pointer store in generated code (invisible to literal-offset grep).
