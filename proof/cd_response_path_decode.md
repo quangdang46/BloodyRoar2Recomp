@@ -313,3 +313,27 @@ register-window doorbell blocker (cd_seek_param_issue->cd_reg_window_op).
   (cd_ctx_restore->cd_chan_full_init->cd_intc_dispatch, exception_jmpbuf/
   RestoreState in interrupts.c) must observe the same resume ordering under
   fast chunk-replay as under per-cycle stepping. Agent 394634f3 instrumenting.
+
+## FIX TARGET — SaveState/RestoreState deferred coroutine resume ordering
+- cd_chan_full_init (0x8019a814, delegated): calls cd_ctx_save(0x801bcd50)
+  which snapshots LIVE cpu->gpr {ra,sp,fp,s0-s7,gp} into a 12-word frame,
+  registers via B0/0x19, then spins in vsync_wait_n. On CD IRQ the kernel
+  calls cd_ctx_restore (0x8019adcc) -> reloads frame -> re-enters
+  cd_chan_full_init -> runs cd_intc_dispatch (0x8019a8ec).
+- cd_intc_dispatch: mask=*I_STAT&*I_MASK&u16@0x801bcd48; per set bit i<11
+  clears *ptrA bit i, calls tbl[i]@0x801bcd1c (cd_response_pump=tbl[2]=
+  0x801979F8 -> cd_mc_state_machine finalize). Re-polls until mask drains.
+- TIMING SENSITIVITY: cd_ctx_save captures gpr at SAVE time; cd_ctx_restore
+  reloads it at IRQ time and cd_intc_dispatch reads CURRENT i_stat/memory.
+  Under fast chunk-replay, IRQ delivery lands at a different guest-cycle
+  interleaving vs per-cycle stepping -> the vsync_wait_n spin sees a different
+  iteration count -> restore resumes cd_chan_full_init at a different logical
+  point -> cd_intc_dispatch processes handlers against advanced memory with a
+  stale saved frame -> an entry's +4/+6 gate fails -> consumer parks.
+- The coroutine is DESIGNED timing-robust (resume anywhere); the bug is a
+  specific case where fast-path coalescing/batching makes the resume observe
+  a different i_stat/memory snapshot than the saved frame expects. Fix =
+  make fast-path IRQ delivery preserve the same save/restore interleaving as
+  per-cycle stepping (likely: don't coalesce multiple CD IRQ-present events
+  into one i_stat assertion window, or service CD IRQ-present at exact
+  due-cycle like conservative).
