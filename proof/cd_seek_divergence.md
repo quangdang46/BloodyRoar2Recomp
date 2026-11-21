@@ -231,3 +231,35 @@ record machine — in the device command issue / DMA fill / IRQ delivery
 path (the cd_dma_chan_reset->DeliverEvent gap in proof/cd_seek_blocker.md),
 NOT in state_rx/state_commit/queue_drain (all verified faithful vs
 generated this session).
+
+---
+
+## WEDGE = DeliverEvent(0xF0000009) starvation — REGRESSION since f019a17
+
+Live diagnosis on 6091 (arcade, HEAD=2894c11+): deterministic stall at
+gs=8 ph=3, frames advance, cdrom seq frozen at 81861.
+
+- bioscall_dump: B0/0x0B TestEvent = 1,462,829 (the spin) — game waits on
+  event 0xF0000009 spec 0x20 (EvCB 0xF1000008), the CD/SPU-done event.
+- fntrace: cb8_dispatch->queue_drain(sel=0)->state_rx run EVERY frame on
+  records 0x801FF080/0x801FF170; cd_intc_dispatch (0x8019a8ec, generated)
+  runs x500 as the cb8 POLL path. cb7_run (0x8019af84) and
+  cd_dma_chan_reset (0x8019b7e8 -> DeliverEvent) NEVER fire.
+- irq_state: i_stat=0, i_mask=0, pending=0 — no INTC line pending.
+- cdrom_command_history: LAST device command exec at frame 3885 (cmd 0x09);
+  nothing since — device did its work, completion event was LOST.
+
+The game's deferred CD coroutine (cd_chan_full_init -> cd_ctx_save jmp_buf
+-> on-IRQ cd_ctx_restore -> 0x8019A87C -> cd_intc_dispatch -> DeliverEvent)
+never gets resumed, so DeliverEvent(0xF0000009) never fires and TestEvent
+spins. This is the f019a17 HookEntryInt bug class — f019a17 IS in HEAD and
+psxrecomp/bios/openbios.bin (sha256 d35c5f10, includes f019a17+c74f4db+
+84ca34a) shows NOP'd returnFromException prologues at 0xBFC1E9E8/EA24.
+
+=> The wedge is a REGRESSION (or uncovered path) introduced between
+f019a17 (verified gs=8/ph=8) and HEAD. Suspect commits touching the
+CD/event/coroutine path: aeed967 (11 CD record/queue ports), e9fc366,
+c784bf1, 13576ce, 2acfce8, 50376cc/d2dcecc (handler-table base), plus
+2894c11/a729431 cd.c+save.c record-machine edits. Next: bisect or fntrace
+the IRQ jmp_buf resume (0x8019A87C) + DeliverEvent call sites to find
+which commit broke the resume->DeliverEvent->TestEvent-unblock chain.
