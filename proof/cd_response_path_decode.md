@@ -246,3 +246,18 @@ register-window doorbell blocker (cd_seek_param_issue->cd_reg_window_op).
   that delays cd_intc_dispatch past the completion window.
 - Probe idea: pc_probe on cd_reg_window_op return / the -2 path, and
   cdrom_timing_dump to compare scheduled vs actual completion cycles.
+
+## GUEST-SIDE VERDICT (agent 01a87a57) — collision is symptom, fix is upstream
+- 0x80010000 = heap-A base shared by tile-stream dir-table AND file 0x8a load
+  (attract_stage_load_step, menu.c:2699 -> cd_file_load_sm(0x8a, heapA)).
+  Intentional guest arena-sharing; on real HW stream drains first.
+- attract_stage_load_step state0 calls cd_file_load_sm(-1,0) = abort+cd_init_session
+  but does NOT reset 0x801FC6xx cursors (only cd_dir_reset via next tile_stream_open).
+- NO driver-level gate prevents ReadN file-load DMA onto live table — relies on
+  game sequencing: stream consumer drains -> scene exits -> attract load reuses arena.
+- cd_cmd_issue_async (cd.c:419) is ONLY clean port in issue path; pure guest logic,
+  no IRQ-starving spin. All load-bearing fns correctly delegated.
+- FIX = upstream: make stream completion (cd_response_pump->0x801BC84C->
+  cd_mc_state_machine gate 0x80199BB8) fire so cursors converge + blk_io_retry
+  exits BEFORE attract_stage_load_step. The missed ReadS descriptor (LBA~208850,
+  deferred cmd-issue cd_seek_param_issue->cd_reg_window_op->worker) is the trigger.
