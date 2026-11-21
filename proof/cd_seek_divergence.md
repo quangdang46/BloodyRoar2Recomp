@@ -341,3 +341,25 @@ ROOT CAUSE CANDIDATE: psxrecomp/runtime/src/dma.c ch4/SPU channel — a
 started CHCR whose transfer does not execute/complete (direction, BCR
 count decode, or SPU-side handshake stalls it), leaving CHCR.start set,
 active=0, no done bit. This is the unified wedge for arcade ph=3 + versus.
+
+### Command history + DMA trace refine the picture
+
+cdrom_command_history (last entries):
+- seq227 frame3871: cmd 0x09 Pause
+- seq228 frame3874: cmd 0x02 SetLoc [1,58,70]
+- seq229 frame3874: cmd 0x06 ReadN reading=1 irq_flag=0x03
+- seq230 frame3885: cmd 0x09 Pause  <- LAST command; then SILENCE ~100k frames
+
+dma_trace_dump: ch2(GPU/OT) very active (233k starts/completes = normal
+rendering); ch4(SPU) has ZERO recent kicks; ch3(CDROM) idle CHCR=0.
+No DMA done-bits pending on any channel.
+
+=> The game completed a ReadN sector load then a Pause, delivered+acked all
+CD IRQs, and STOPPED issuing CD commands. It is NOT waiting on a ch4 kick
+(it never made one recently) nor on more CD commands. The DeliverEvent
+(0xF0000009) that should unblock TestEvent is simply never produced by
+whatever completion the game believes is outstanding. Open question for
+the agents: which guest path is SUPPOSED to call DeliverEvent here —
+cb7_run/ch4 (not kicked), the CD ISR channel-dispatch inside
+cd_intc_dispatch, or a game coroutine that polls a completion flag the
+clean-C record machine sets wrong (state_rx runs, state_commit never).
