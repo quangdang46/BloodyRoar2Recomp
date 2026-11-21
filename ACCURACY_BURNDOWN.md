@@ -3411,3 +3411,50 @@ inside the versus 0x8B/0x16 container. versus_nav uses default char select
 (CROSS confirms cursor); P2's .ANI came from file 0x60 in the preview epoch.
 Awaiting agents' versus-vs-arcade menu_res_load_sm/save_state_machine_alt
 coverage diff (decomp tags 61/62/63/70) to name the missing re-bind.
+
+=== N+214 — faithful versus RELOAD proven via generated disasm; bug = +0x8c=-1 survives to menu_res_load_sm ===
+
+GENERATED-DISASM PROOF (SLES_017.22_full_31.c, br2eu_func_8016FCC4):
+battle_flow_state_machine case3->4 transition (block_8017008C) writes
+  +0x88=0 (0x80170094), +0x8C=0 (0x80170098), +0x8E=0, +0x90=0,
+  DAT_1f800001=4 (0x801700A8), then dispatches; case4 (block_801700C0)
+  sets a0=0x1f800000,s4,s5,s2=0 and `jal 0x801709FC` = menu_res_load_sm.
+=> Faithful versus DOES reset the shared +0x8c done/state byte and DOES
+   reload fighter resources. Clean menu.c:692 `_DAT_1f80008c=0` is faithful.
+
+menu_res_load_sm (save.c:4171 / gen br2eu_func_801709FC) is a RESUMABLE SM
+keyed on battle+0x8c: entry `lh v0,0x8C(s1); bltz -> return v0` (gen
+0x80170A2C, clean is faithful). States: st00 resets BOTH heap cursors
+  _DAT_801c47b8=0x80010000 AND _DAT_801e3cfc=0x800f0000  <-- ABOVE the
+  0x800D0000 staging zone; st10 save_channel_init_commit; st20
+  save_load_state_machine; st40 save_state_machine_alt(s4)=P1 FC_ANI bind;
+  st50 save_state_machine_alt(s5)=P2 FC_ANI bind; stf00 +0x8c=-1,ret 1.
+
+CURSOR FORENSICS (decisive): versus intro/movie loads went to 0x800D0000,
+but menu_res_load_sm st00 would have moved _DAT_801e3cfc to 0x800f0000.
+Observed staging at 0x800D0000 => st00 NEVER RAN => menu_res_load_sm
+early-returned on +0x8c<0. P2 FC_ANI=0x800D9F98 (streaming) never
+re-bound (only frame-1850 preview write) confirms st50 never ran.
+
+SHARED-FIELD HAZARD: +0x8c (0x1f80008c) is reused by intro_movie_state
+(VS preview cinematic, game.c:1812) which sets +0x8c=-1 on completion and
+binds FC_ANI into STREAMING via fighter_record_apply(_DAT_801e3cfc,slot).
+intro_movie_state runs inside select_screen_tick (versus char-select,
+menu.c:3356). Faithful sequences preview(-1) -> case3->4 reset(0) ->
+menu_res_load_sm(0). Our versus reaches case4 with +0x8c still -1.
+
+TWO TESTABLE HYPOTHESES (need one decisive datapoint each):
+(A) PHASE DIVERGENCE: versus reaches DAT_1f800001=4 without case3->4's
+    +0x8c=0 (clean phase-progression bug) OR intro_movie_state re-sets -1
+    in the case3->4->case4 gap. Needs DAT_1f800001/+0x8c runtime trace.
+(B) HEAP OVER-PRODUCTION: persistent cursor _DAT_801c47b8 grew to
+    0x800D9F98 during attract preview (~825KB), crossing into the
+    0x800D0000 staging zone. If faithful keeps high-water <0x800D0000,
+    P2 .ANI placement is the bug, not the reload. Needs generated-vs-clean
+    allocation-path comparison (intro_movie_state decode loop,
+    stream_block_decode, heap_record_emit, save_state_machine_alt).
+
+STATUS: faithful reload PROVEN; clean ports verified faithful at fn level.
+Bug is runtime sequencing (A) or heap placement (B). Versus instances
+wedge at gs=8 (86% CPU spin, debug server starves) before ring can be
+read; system load ~44 throttles repro. Agents 3858e66e/4390b7bd continue.
