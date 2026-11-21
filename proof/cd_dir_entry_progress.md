@@ -97,3 +97,35 @@ stall, not a hard gameplay deadlock.
 NEXT: verify versus/arcade reach combat on HEAD (the attract FMV wedge is
 a separate, narrower issue — the +4/+6 credit consumer at 0x801AA4FC
 family per agent 62e13f70).
+
+## Refinement (2026-11-21, agent 18c5088f + live gwatch)
+
+- `0x801AA4FC` is a **false lead** — `game/fnmap.c` maps it to
+  `tween_seq_step`, an animation task registered via `task_node_alloc`
+  (`game/battle.c:11789`). It reads `+68/+70/+72` on a *different* struct.
+  Not the CD consumer. No edit made.
+- `gwatch` armed on active entry `0x80010020` (`*0x801FEB18`) captured
+  **zero CPU writes** over ~7s → the cached active entry is **stale**, not
+  the live write target. The claim/copy path `0x80199AB0`/`0x80199ADC`
+  (which would rebase `*0x801FEB18→entry0` and seed `+4/+6`) is **not
+  running** — pc_probe 0 hits for `0x80199AB0`, `0x80199ADC`, `0x80199BC4`,
+  `cd_dir_entry_finalize 0x801990F0`, `cd_read_finish_cb 0x80198838`.
+- `cd_read_step_cb 0x801985C4` fires ~329×/window — sectors step
+  continuously but never reach finish/claim. `cd_mc_state_machine` runs
+  (pc_probe 136 in an earlier window, 0 in a later one — probe-window and
+  `br2_call_generated` visibility dependent) but is **gated before the
+  claim path** — likely on a pending-response / command-status /
+  `0x801FC6B0` mode flag, not on entry `+4/+6`.
+- Menu IS reachable: injected START → `scene_byte` (`DAT_1f800001`)=2,
+  `g_game_state`=5 (`0x1f800000` byte0). `attract_menu_dispatch`
+  (`menu.c:2715`) `param_2`=1..6 are **button-derived action codes**
+  (via `menu_stepper_button_wait`/`fn_lookup`), not cursor positions;
+  confirm → `mc_pad_button_handler` → `g_game_state=8` (combat). Versus
+  nav is a multi-step stepper sequence — versus combat already proven
+  @`57aef5b`, HEAD = 57aef5b + verified fixes only.
+
+**Revised wedge model:** `cd_mc_state_machine` is gated *upstream* of the
+entry-claim path. The `+4/+6` fields are seeded by the claim bulk-copy
+`0x80199ADC` from a source descriptor — the missing link is whatever
+should trigger the claim (a channel/sector-ready bridge or a
+read-descriptor builder), NOT a per-sector `+4++`.
