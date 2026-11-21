@@ -227,3 +227,22 @@ register-window doorbell blocker (cd_seek_param_issue->cd_reg_window_op).
    arena before the prior stream fully drains (missed completion/teardown in
    the deferred-IRQ path). NOT a wrong constant, NOT a data bug, NOT a port bug.
    Fix = IRQ/completion serialization (agent 6f7d7f6e + 01a87a57).
+
+## TECHNICAL LEAD for the IRQ/cycle-timing fix
+- cd_reg_window_op (0x8019b944) op3 = sector-read setup; busy-waits on CD status
+  (CDMMIO16 0xd3/0xd5) with 0xf01-iteration cap, returns -2 on timeout.
+  Delegated because clean-C br2_ld16 doesn't advance guest cycles -> CD model
+  (CYCLE-DRIVEN: completions scheduled at due_cyc) can't progress -> op3 times
+  out -> sector read not kicked -> descriptor DMA missing -> entry stale ->
+  consumer parks -> wedge. SAME contract for cd_reg_stream_push (0x8019b620).
+- cd_seek_param_issue (cd.c:1998, clean) -> cd_reg_window_op(2/1/3) when
+  0x801bdecc==0 else cd_reg_stream_push. The deferred command-issue path.
+- HYPOTHESIS to verify: during a stream, a seek/param or read-setup hits the
+  op3 busy-wait; if guest-cycle accounting or IRQ delivery is off, the CD
+  status bits don't advance within the cap -> -2 -> command dropped -> the
+  stream's next sector/descriptor never arrives. Check: (a) are CD status
+  updates driven by psx_cycle_count deadlines that can be starved by long
+  clean-C/GPU stretches; (b) is there an IRQ-delivery gap at the CPS boundary
+  that delays cd_intc_dispatch past the completion window.
+- Probe idea: pc_probe on cd_reg_window_op return / the -2 path, and
+  cdrom_timing_dump to compare scheduled vs actual completion cycles.
