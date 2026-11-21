@@ -7048,6 +7048,9 @@ int save_state_machine_alt(uint32_t a0, uint8_t *s4, int32_t a2)
   uint32_t s5 = s4[2];
   uint32_t s2 = s4[4] & 3;
   uint32_t s6 = g8(0x801b49f8u + s4[3]);
+  /* DIAG: log each entry — resume state (fp+0x8e) in dst, s4 block in src,
+     char index s4[3] in mode, s2 (s4[4]&3) in len. */
+  decomp_trace_record(86,(uint32_t)s0,(uint32_t)s4,(uint8_t)s4[3],s2);
   int32_t saved8;
   uint8_t sp28 = 0;
   uint32_t heapB, heapA, sz, s1v, p, v1, i;
@@ -7068,6 +7071,7 @@ L00:
   /* state 0: quick commit, requires a2 == 0 */
   if (a2 != 0) goto ret0;
   heapB = g32(0x801e3cfc);
+  decomp_trace_record(81,(uint32_t)(s6 + 0xc4),s6,(uint8_t)s4[3],s2); /* L00 gate */
   if (cd_file_load_sm((int32_t)(s6 + 0xc4), heapB) == 0) goto ret0;
   if (s5 == 0) {
     fighter_record_apply(heapB, 3);
@@ -7082,6 +7086,7 @@ L00:
 
 L10:
   /* state 0x10: build image (two variants on s5) */
+  decomp_trace_record(82,(uint32_t)(s6 + s2 + 0xc0),s6,(uint8_t)s4[3],s2); /* L10 gate */
   if (cd_file_load_sm((int32_t)(s6 + s2 + 0xc0),
                    guest_of(tag_table_get())) == 0) goto ret0;
   saved8 = (int32_t)g8(0x1f800013);
@@ -7211,6 +7216,7 @@ L10:
 
 L20:
   /* state 0x20 */
+  decomp_trace_record(83,(uint32_t)(s6 + 0x25),s6,(uint8_t)s4[3],s2); /* L20 gate */
   if (cd_file_load_sm((int32_t)(s6 + 0x25),
                    guest_of(tag_table_get())) == 0) goto ret0;
   saved8 = (int32_t)g8(0x1f800013);
@@ -7251,6 +7257,7 @@ L30:
   /* state 0x30 */
   heapA = (g32(0x801c47b8) + 3) & ~3u;
   BR2_W32(0x801c47b8, heapA);
+  decomp_trace_record(84,(uint32_t)(s6 + s2 + 0x20),s6,(uint8_t)s4[3],s2); /* L30 gate */
   if (cd_file_load_sm((int32_t)(s6 + s2 + 0x20), heapA) == 0) goto ret0;
   saved8 = (int32_t)g8(0x1f800013);
   scratch_013_set(0);
@@ -7272,6 +7279,7 @@ L40:
     if (s4[3] == *(uint8_t *)guest_at(q + 3)) return 1;
   }
   heapA = g32(0x801c47b8);
+  decomp_trace_record(85,(uint32_t)(s6 + 0x24),s6,(uint8_t)s4[3],s2); /* L40 gate */
   if (cd_file_load_sm((int32_t)(s6 + 0x24), heapA) == 0) goto ret0;
   heapA = g32(0x801c47b8);
   sz = *(uint32_t *)guest_at(heapA);

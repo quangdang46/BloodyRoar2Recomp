@@ -842,10 +842,12 @@ void fighter_flash_update(uint param_1,uint param_2,int param_3,byte *param_4)
   int iVar7;
   undefined4 uVar8;
   short *psVar9;
-  
   uVar5 = (uint)*(byte *)(param_4 + 2);
   iVar1 = uVar5 * 0xbc;
   psVar9 = (short *)(&DAT_801f4d70 + iVar1);
+  { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+    decomp_trace_record(80,(uint32_t)param_1,uVar5,
+        (uint8_t)((void*)param_4==(void*)g_DAT_1f8001f0?2:1),(uint32_t)param_3); }
   if (*(short *)guest_at((uint32_t)(uintptr_t)((param_3 + 0x82) ))== 0) {
     if (0 < *psVar9) {
       *psVar9 = *psVar9 + -1;

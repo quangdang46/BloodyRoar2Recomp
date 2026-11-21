@@ -184,6 +184,13 @@ static const char *decomp_tag_name(uint8_t t) {
         case 52: return "bone_idx";
         case 53: return "bone_write";
         case 60: return "evop";
+        case 80: return "battle80";
+        case 81: return "ssm_L00";
+        case 82: return "ssm_L10";
+        case 83: return "ssm_L20";
+        case 84: return "ssm_L30";
+        case 85: return "ssm_L40";
+        case 86: return "ssm_enter";
         default: return "?";
     }
 }

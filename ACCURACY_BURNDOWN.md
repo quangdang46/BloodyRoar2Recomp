@@ -3490,3 +3490,39 @@ cd_file_load_sm param (s6=g8(0x801b49f8+s4[3]), s4[3]=P2 char index).
 Hypotheses: (a) P2 char-index/ctrl fields unset for versus -> bad s6/file;
 (b) CD channel starvation vs concurrent versus stage streaming;
 (c) cd_file_load_sm coroutine never completing for the Nth sequential load.
+
+=== N+216 — versus "stall" REVISED: P2 reaches L40; real crash = fighter_flash_update SEGV ===
+
+Instrumented save_state_machine_alt (tags 81-86 ssm_L00..L40/ssm_enter in
+game/save.c + event_ring.c names) + two live versus runs (ports 5400/5401,
+/tmp/trace_540{0,1}.jsonl) overturn N+215's "parks pre-.ANI" read:
+
+- ssm_enter src = host ctrl ptr (0x..0E8=P1, 0x..1F0=P2); mode = s4[3]
+  char-index; gate records src = s6 file-group base.
+- P1 (s4[3]=1, s6=0x08): completed L00->L40 cleanly (fids 0xCC/0xC8/0x2D/
+  0x28/0x2C). P2 (s4[3]=8 run5400 / 0 run5401, s6=0x40/0x00): progressed
+  L00->L10->L20->L30->L40. Reaching L40 means the L30 FC_ANI bind block
+  (save.c:7265) EXECUTED for P2 — contradicts "never binds".
+- char-index s4[3] is written by select_confirm_handler (menu.c:3466-7,
+  s1[3]=rec[0x1c]/tbl[..], block 0x1f8000e8+player*0x108). Both values are
+  VALID cursor-dependent picks; table 0x801b49f8 maps char->file-group byte
+  (char1->0x08, char8->0x40, char0->0x00). NO versus record-setup bug.
+- cd_file_load_sm is delegated generated 0x8018CFDC; each gate is a real
+  resumable disc read ~4-22M guest cycles. "st50 forever" = sum of ~5
+  sequential reads/fighter + externally-killed instances (pkill), NOT a
+  hard CD deadlock. Every P2 fid validated against filetab @0x801b5b94.
+
+REAL BLOCKER (downstream): crash reports show SIGSEGV in
+fighter_flash_update <- battle_flow_state_machine AFTER resources load —
+wild addr 0x1d5e000000012f8b. fighter_flash_update (battle.c:834) indexes
+&DAT_801f4d70 + (param_4[2])*0xbc (bounded to guest RAM) then derefs a
+pointer field from loaded fighter/node resource -> corrupt .ANI/node data.
+Consistent with FC_ANI bound into staging (P2 heapA ~0x800DD6A0/0x800E91F8
+>0x800D0000) while P1 lands valid (~0x80071604). Root = heap-A over-
+production pushing P2's persistent allocs into the 0x800D0000 staging zone;
+heap_serialize serializer audit in progress (mode3_dispatch default->0 fix
+2cafafe already landed).
+
+STATUS: versus resource-load is faithful-but-slow, not stalled. Focus shifts
+to (a) heap-A high-water vs faithful (serializer over-production) and (b)
+the fighter_flash_update wild deref once FC_ANI lands valid.

@@ -560,7 +560,8 @@ void battle_flow_state_machine(intptr_t param_1)
   bVar2 = false;
   { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
     if (DAT_1f800001 != 0 && DAT_1f800001 != 1)
-      decomp_trace_record(60,(uint32_t)DAT_1f800001,(uint32_t)DAT_1f80009c,0,0); }
+      decomp_trace_record(60,(uint32_t)DAT_1f800001,(uint32_t)DAT_1f80009c,0,0);
+    decomp_trace_record(70,(uint32_t)DAT_1f800001,(uint32_t)DAT_1f80009c,(uint8_t)DAT_1f80009b,0); }
 joined_r0x8016fd30:
   /* Guest block_8016FD38 (the loop head) reloads the OT base/index from
    * scratchpad EVERY iteration: lw $2C,0xC($16) / lw $2B,8($16) where $16 =
@@ -618,6 +619,8 @@ joined_r0x8016fd30:
       case 2:
         _DAT_1f8000c4 = guest_of(_g_system_config_ptr + 0x2c);
         iVar4 = select_screen_tick(1);
+        { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+          decomp_trace_record(74,0xf00d,(uint32_t)iVar4,(uint8_t)DAT_1f800001,(uint32_t)DAT_1f80009c); }
         if (iVar4 != 0) {
           DAT_1f800001 = -1;
         }
@@ -673,6 +676,8 @@ switchD_8016fd64_caseD_2:
         scratchpad_pair_init();
         DAT_1f80009e = '\0';
         DAT_1f800001 = '\x03';
+        { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+          decomp_trace_record(73,0xcafe,(uint32_t)DAT_1f800001,(uint8_t)DAT_1f80009b,(uint32_t)DAT_1f80009c); }
 switchD_8016fd64_caseD_3:
         iVar4 = frame_divisor_get();
         if (iVar4 == 0) {
@@ -701,6 +706,8 @@ switchD_8016fd64_caseD_3:
   case '\x03':
     goto switchD_8016fd64_caseD_3;
   case '\x04':
+    { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+      decomp_trace_record(71,0xdead,(uint32_t)DAT_1f800001,(uint8_t)DAT_1f80009b,(uint32_t)DAT_1f80009c); }
     if (_DAT_1f800090 != 0) {
       _DAT_1f800090 = 0;
     }
@@ -752,6 +759,8 @@ switchD_8016fd64_caseD_7:
     if (iVar5 == 0) {
       DAT_1f800001 = '\b';
 switchD_8016fd64_caseD_8:
+      { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+        decomp_trace_record(72,0xbeef,(uint32_t)DAT_1f800001,(uint8_t)DAT_1f80009b,(uint32_t)DAT_1f80009c); }
       if (DAT_1f80009b == '\x04') {
         battle_sides_commit(&DAT_1f8000e8,&DAT_1f8001f0,0x1f800000);
       }
@@ -3321,7 +3330,7 @@ LAB_80150558:
                 uVar8 = (uint32_t)_DAT_1f800022 * 0x10000 + 0xfe700000 | ((iVar10 - 200U) & 0xffff);
                 iVar3 = (int16_t)_DAT_1f800022 + -200;
               }
-              goto LAB_80150558_2;
+              spr_attr_alloc_b((uint32_t)iVar2,uVar8,uVar5,(uint32_t)iVar4,iVar10,iVar3);
             }
           }
         }
@@ -3390,9 +3399,6 @@ LAB_80150610:
       return local_c0;
     }
   } while (1);
-LAB_80150558_2:
-  spr_attr_alloc_b((uint32_t)iVar2,uVar8,uVar5,(uint32_t)iVar4,iVar10,iVar3);
-  return 0;
 }
 
 /* select_cursor_step — select-screen cursor step: walks the 4x4 cell grid
