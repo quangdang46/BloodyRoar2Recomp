@@ -3343,3 +3343,24 @@ to 0x1F800220/0x1F800118 during versus; identify the exact function+guest-addr
 that sets P2 ctrl+0x30 and whether faithful versus re-binds it to persistent
 heap (port bug) or legitimately streams it (cursor divergence). Broad agent
 3858e66e still tracing on ports 4940/4950/4960.
+
+=== N+211 — FC_ANI writer IDENTIFIED: cd_file_load_sm record-commit @0x8018D120 ===
+gwatch on port 4950 (armed 0x1F800220 = P2 ctrl+0x30) captured the ONLY write
+in the entire run: frame 1850, store_pc=0x8018D120. Decoded generated
+SLES_017.22_full_41.c block_8018D120: `sw v0, 0x55EC(s2)` then `li v0,1`,
+reached via a bgez-style conditional from block_8018D104. Dispatch table maps
+0x8018D104-0x8018D130 -> br2eu_func_8018CFDC = **cd_file_load_sm** (guest
+0x8018CFDC, spans to cd_read_issue@0x8018D150). So cd_file_load_sm's
+record-commit tail writes the .ANI base into the fighter ctrl +0x30 (record
+base + 0x55EC aliases ctrl+0x30).
+
+CONCLUSION: P2's FC_ANI was bound ONCE at frame 1850 by the attract/preview
+cd_file_load_sm and NEVER re-written during the versus fight. P1's +0x30 IS
+persistent (0x800771D4) so P1's versus cd_file_load_sm DID reach the store.
+Therefore during versus, P2's fighter-file cd_file_load_sm either (a) never
+ran, (b) ran but took a path that skips block_8018D120, or (c) ran with s2
+pointing at a different record/ctrl. The versus fight still reached ph=8 —
+so the missing re-bind is silent (preview model reused), not a hard gate.
+NEXT: focused agent 4390b7bd live-tracing whether versus issues a
+cd_file_load_sm for P2's fighter file and whether it reaches 0x8018D120 with
+the P2 ctrl base; compare the file_id/record-slot versus passes vs arcade.
