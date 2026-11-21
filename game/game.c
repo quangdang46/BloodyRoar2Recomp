@@ -1451,10 +1451,11 @@ void match_loop(void)
     int iVar1;
     int unaff_s2;
     struct match_stepper_desc sd;
-    undefined4 local_40;
-    undefined4 local_3c;
-    undefined4 local_38;
-    undefined4 local_34;
+    /* Guest: attract_stage_load_step writes 4 contiguous words at
+     * sp+0x68..0x77 (a1 = sp+0x68); spr_draw_pair then loads
+     * sp+0x68/0x6c/0x70/0x74. Ghidra split the block into 4 scalars —
+     * keep it one array (local_40[i] == old local_4X). */
+    undefined4 local_40[4];
     undefined4 local_30;
     undefined4 local_2c;
     undefined4 local_28;
@@ -1500,7 +1501,7 @@ LAB_801472f8:
                 iVar1 = frame_divisor_get();
                 if (iVar1 == 0) {
                     spr_attr_alloc_a(_DAT_1f800008,0,0,(int)_DAT_1f800020,(int)_DAT_1f800022,0,0);
-                    iVar1 = attract_stage_load_step(0x1f800000,&local_40);
+                    iVar1 = attract_stage_load_step(0x1f800000,local_40);
                     if (iVar1 != 0) {
                         deferred_cmd_post(0x204,0,0);
                         print_mode_dispatch_b(2,0,0);
@@ -1518,10 +1519,10 @@ LAB_801472f8:
                         sd.unk10 = 0xffff;
                         sd.unk12 = 0xffff;
                         scratch_013_set(0);
-                        spr_draw_pair(local_40,0,0x1f0,1,0x200,0,1);
-                        spr_draw_pair(local_3c,0,0x1f1,1,0x280,0,1);
-                        spr_draw_pair(local_38,0,0x1f2,1,0x240,0x100,1);
-                        spr_draw_pair(local_34,0,499,1,0x2c0,0x100,1);
+                        spr_draw_pair(local_40[0],0,0x1f0,1,0x200,0,1);
+                        spr_draw_pair(local_40[1],0,0x1f1,1,0x280,0,1);
+                        spr_draw_pair(local_40[2],0,0x1f2,1,0x240,0x100,1);
+                        spr_draw_pair(local_40[3],0,499,1,0x2c0,0x100,1);
                         cd_timer_read(0);
                         scratch_013_set(1);
                         _DAT_1f80008c = 0;

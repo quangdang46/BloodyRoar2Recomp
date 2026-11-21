@@ -315,9 +315,10 @@ void memcard_tick(void)
   ushort uVar1;
   uint uVar2;
   int iVar3;
-  undefined1 local_18;
-  byte local_17;
-  undefined1 local_16;
+  /* Guest builds a 3-byte BCD timestamp at sp+0x10..0x12 (sb @0x10,
+   * 0x11, 0x12) and passes sp+0x10 to cd_stamp_to_sector, which reads
+   * s[0..2]. Ghidra split it into 3 scalars — keep it one array. */
+  undefined1 local_18[3];
   
   if (DAT_801bef6f != '\0') {
     return;
@@ -531,10 +532,10 @@ void memcard_tick(void)
       if ((DAT_801bef68 & 0x80) != 0) {
         return;
       }
-      local_18 = DAT_801bef67;
-      local_17 = DAT_801bef68;
-      local_16 = DAT_801bef69;
-      DAT_801bef80 = cd_stamp_to_sector(&local_18);
+      local_18[0] = DAT_801bef67;
+      local_18[1] = DAT_801bef68;
+      local_18[2] = DAT_801bef69;
+      DAT_801bef80 = cd_stamp_to_sector(local_18);
       return;
     }
     if (iVar3 != 4) {
@@ -656,24 +657,31 @@ int memcard_file_flow(int param_1)
   int iVar5;
   uint uVar6;
   uint uVar7;
-  undefined2 local_c0;
-  undefined1 local_be;
-  char local_bd;
-  undefined1 local_bc;
-  undefined1 local_bb;
-  ushort local_ba;
-  ushort local_b8;
-  code *local_b4;
-  undefined2 local_b0;
-  undefined2 local_ae;
-  undefined2 local_ac;
-  short local_aa;
-  short local_a8;
-  undefined2 local_a6;
-  undefined2 local_a4;
-  undefined2 local_a2;
-  undefined2 local_a0;
-  undefined2 local_9e;
+  /* Guest stepper descriptor: one contiguous 0x24-byte block at
+   * sp+0x38..0x5b passed to menu_stepper_state_advance (a0 = sp+0x38);
+   * the +0xc callback is a u32 GUEST code address (fn_lookup), stored
+   * as uint32_t — a host code* would write 8 bytes and clobber +0x10.
+   * Ghidra split the block into scalars; local_XX names keep their sp
+   * offsets via macros (local_c0[i] == old local_X). */
+  uint8_t step_desc[0x24];
+#define local_c0 (*(uint16_t *)&step_desc[0x00])
+#define local_be (*(uint8_t  *)&step_desc[0x02])
+#define local_bd (*(char     *)&step_desc[0x03])
+#define local_bc (*(uint8_t  *)&step_desc[0x04])
+#define local_bb (*(uint8_t  *)&step_desc[0x05])
+#define local_ba (*(uint16_t *)&step_desc[0x06])
+#define local_b8 (*(uint16_t *)&step_desc[0x08])
+#define local_b4 (*(uint32_t *)&step_desc[0x0c])
+#define local_b0 (*(uint16_t *)&step_desc[0x10])
+#define local_ae (*(uint16_t *)&step_desc[0x12])
+#define local_ac (*(uint16_t *)&step_desc[0x14])
+#define local_aa (*(int16_t  *)&step_desc[0x16])
+#define local_a8 (*(int16_t  *)&step_desc[0x18])
+#define local_a6 (*(uint16_t *)&step_desc[0x1a])
+#define local_a4 (*(uint16_t *)&step_desc[0x1c])
+#define local_a2 (*(uint16_t *)&step_desc[0x1e])
+#define local_a0 (*(uint16_t *)&step_desc[0x20])
+#define local_9e (*(uint16_t *)&step_desc[0x22])
   char *acStack_78;   /* guest-backed staging buffer: $sp+0x80, frame -0xf8 */
   undefined4 local_38;
   int local_34;
@@ -707,7 +715,7 @@ int memcard_file_flow(int param_1)
              * GUEST code address (fn_lookup -> call_guest fallback).
              * Guest stores 0x80160598 (dialog_sel_dispatch); a host fn
              * pointer would be truncated to garbage. */
-            local_b4 = (code *)(uintptr_t)0x80160598;
+            local_b4 = 0x80160598;
             local_ba = 4;
             local_b8 = 4;
             local_b0 = 0x10;
@@ -1129,6 +1137,24 @@ LAB_80160558:
     }
   } while( true );
 }
+#undef local_c0
+#undef local_be
+#undef local_bd
+#undef local_bc
+#undef local_bb
+#undef local_ba
+#undef local_b8
+#undef local_b4
+#undef local_b0
+#undef local_ae
+#undef local_ac
+#undef local_aa
+#undef local_a8
+#undef local_a6
+#undef local_a4
+#undef local_a2
+#undef local_a0
+#undef local_9e
 
 /* ======== 0x80156ff0 ======== */
 
@@ -6530,7 +6556,10 @@ int save_load_state_machine(uint32_t a0, int32_t a1)
   int32_t t1 = a1;
   int32_t saved8 = (int32_t)g8(0x1f800013);
   uint8_t blk[0x20];           /* sp+0x28..0x47 block for terrain_packet_gen */
-  uint16_t sp48 = 0, sp4c = 0;
+  /* heap_record_emit's param_6 is a uint32_t* out-count (*s5 = 0; ++*s5)
+   * — the guest slots are words; u16 locals would be overflowed by the
+   * 4-byte store. */
+  uint32_t sp48 = 0, sp4c = 0;
   int32_t i, sel, ret;
   uint32_t heapB, heapA, sz, z0, z1, zsum, old, s7, s3n, s0v, h;
   uint8_t *s2h;
@@ -7052,7 +7081,8 @@ int save_state_machine_alt(uint32_t a0, uint8_t *s4, int32_t a2)
      char index s4[3] in mode, s2 (s4[4]&3) in len. */
   decomp_trace_record(86,(uint32_t)s0,(uint32_t)s4,(uint8_t)s4[3],s2);
   int32_t saved8;
-  uint8_t sp28 = 0;
+  /* guest sp+0x28 word — heap_record_emit param_6 out-count is u32* */
+  uint32_t sp28 = 0;
   uint32_t heapB, heapA, sz, s1v, p, v1, i;
   int *tbl = (int *)tag_table_get();   /* tag table; pure getter */
 #define H90W16(a,v) BR2_WS16(a,v)

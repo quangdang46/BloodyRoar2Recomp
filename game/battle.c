@@ -3513,9 +3513,11 @@ undefined4 hitbox_pair_test(int param_1,int param_2,undefined2 *param_3)
   int iVar6;
   int iVar7;
   int iVar8;
-  int local_60;
-  int local_5c;
-  int local_58;
+  /* Guest stores the sign-extended hit-sphere center as 3 contiguous
+   * words at sp+0x18/0x1c/0x20 and passes sp+0x18 to seg_sphere_hit,
+   * which reads param_4[0..2]. Ghidra split the vec3 into 3 scalars —
+   * keep it one array (local_60[i] == old local_5X). */
+  int local_60[3];
   int local_50;
   int local_4c;
   int local_48;
@@ -3548,9 +3550,9 @@ undefined4 hitbox_pair_test(int param_1,int param_2,undefined2 *param_3)
     }
     if ((cVar1 != -2) && ((local_48 == 0 || (local_44 != 0)))) {
       iVar3 = *(char *)guest_at((uint32_t)(uintptr_t)((iVar5 + 1) ))* 0x1c;
-      local_60 = (int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar3 + *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x40) ))+ 0xe)));
-      local_5c = (int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar3 + *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x40) ))+ 0x10)));
-      local_58 = (int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar3 + *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x40) ))+ 0x12)));
+      local_60[0] = (int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar3 + *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x40) ))+ 0xe)));
+      local_60[1] = (int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar3 + *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x40) ))+ 0x10)));
+      local_60[2] = (int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar3 + *(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x40) ))+ 0x12)));
       iVar3 = local_3c + *(char *)guest_at((uint32_t)(uintptr_t)((iVar5 + 1) ))* 0x50 + 0x34;
       if (iVar3 != 0) {
         if (*(short *)guest_at((uint32_t)(uintptr_t)((iVar5 + 2) ))== 1) {
@@ -3576,7 +3578,7 @@ undefined4 hitbox_pair_test(int param_1,int param_2,undefined2 *param_3)
               if (iVar4 != 0) {
                 if ((*(uint *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x6c) ))& 0x800) == 0) {
                   iVar4 = seg_sphere_hit((int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar5 + 2))),(int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar6 + 2))),(int *)guest_at((uint32_t)(uintptr_t)(iVar3)),
-                                       &local_60,(int *)guest_at((uint32_t)(uintptr_t)(iVar4)),local_30);
+                                       local_60,(int *)guest_at((uint32_t)(uintptr_t)(iVar4)),local_30);
                 }
                 else {
                   iVar4 = sphere_pt_hit((int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar5 + 2))),(int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar6 + 2))),(int *)guest_at((uint32_t)(uintptr_t)(iVar3)),
@@ -7811,7 +7813,14 @@ int sprintf_core(char *param_1,char *param_2,...)
   int iVar8;
   char *local_res4;
   va_list ap;
-  byte local_39;
+  /* Guest: one 0x200-byte digit scratch at sp+0x10..0x20f; the byte
+   * cursor starts at sp+0x210 (one past the top, adjacent to the
+   * local_38 flags word) and walks down. %c stores its byte at the
+   * scratch top-1 (sp+0x20f == old local_39). Ghidra split the scratch
+   * into &local_38/&local_39 scalars, so digits written pbVar6-1 ran
+   * off into unrelated host stack — keep it one array. */
+  byte sc_buf[0x200];
+#define local_39 sc_buf[0x1ff]
   undefined4 local_38;
   uint local_34;
   uint local_30;
@@ -7890,7 +7899,7 @@ joined_r0x8018efa8:
           local_38 = local_38 | 0x10;
         }
       }
-      pbVar6 = (byte *)&local_38;
+      pbVar6 = sc_buf + sizeof(sc_buf);
       if ((local_38 & 1) != 0) {
         local_38 = local_38 & 0xfffffff7;
       }
@@ -8109,6 +8118,7 @@ LAB_8018f78c:
   goto joined_r0x8018efa8;
 
 }
+#undef local_39
 
 uint * rtps_basis_xform(undefined4 *param_1,undefined2 *param_2,uint *param_3)
 {

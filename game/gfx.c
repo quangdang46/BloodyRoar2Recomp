@@ -181,10 +181,10 @@ void gpu_pkt_unlink_n(uint *param_1,int param_2)
 void spr_draw_off(int param_1,short param_2,short param_3,int param_4)
 
 {
-  short local_10;
-  short local_e;
-  undefined2 local_c;
-  undefined2 local_a;
+  /* Guest builds one contiguous 8-byte RECT at sp+0x10..0x17
+   * (sh @0x10,@0x12,@0x14,@0x16) and gpu_rect() memcpy's all 8 bytes —
+   * the decompiler split it into 4 scalar locals; keep it one array. */
+  uint16_t local_10[4];
   uint8_t *hp;
   
   /* param_1 is a guest address (callers pass the heap cursor
@@ -195,15 +195,15 @@ void spr_draw_off(int param_1,short param_2,short param_3,int param_4)
     param_1 = param_1 + *(int *)(hp + 8);
     hp = (uint8_t *)guest_at((uint32_t)param_1);
   }
-  local_10 = param_2;
-  local_e = param_3;
+  local_10[0] = (uint16_t)param_2;
+  local_10[1] = (uint16_t)param_3;
   if (param_4 == 0) {
-    local_10 = *(short *)(hp + 0xc) + param_2;
-    local_e = *(short *)(hp + 0xe) + param_3;
+    local_10[0] = (uint16_t)(*(short *)(hp + 0xc) + param_2);
+    local_10[1] = (uint16_t)(*(short *)(hp + 0xe) + param_3);
   }
-  local_c = *(undefined2 *)(hp + 0x10);
-  local_a = *(undefined2 *)(hp + 0x12);
-  gpu_load_image_cmd(gpu_rect(&local_10),(undefined4)(param_1 + 0x14));
+  local_10[2] = *(undefined2 *)(hp + 0x10);
+  local_10[3] = *(undefined2 *)(hp + 0x12);
+  gpu_load_image_cmd(gpu_rect(local_10),(undefined4)(param_1 + 0x14));
   return;
 }
 
@@ -212,24 +212,21 @@ void spr_draw_off(int param_1,short param_2,short param_3,int param_4)
 void spr_draw_cond(int param_1,short param_2,short param_3,int param_4)
 
 {
-  short local_10;
-  short local_e;
-  undefined2 local_c;
-  undefined2 local_a;
+  uint16_t local_10[4];
   uint8_t *hp;
   
   /* param_1 is a guest address; see spr_draw_off. */
   hp = (uint8_t *)guest_at((uint32_t)param_1);
   if ((*(uint *)(hp + 4) & 8) != 0) {
-    local_10 = param_2;
-    local_e = param_3;
+    local_10[0] = (uint16_t)param_2;
+    local_10[1] = (uint16_t)param_3;
     if (param_4 == 0) {
-      local_10 = *(short *)(hp + 0xc) + param_2;
-      local_e = *(short *)(hp + 0xe) + param_3;
+      local_10[0] = (uint16_t)(*(short *)(hp + 0xc) + param_2);
+      local_10[1] = (uint16_t)(*(short *)(hp + 0xe) + param_3);
     }
-    local_c = *(undefined2 *)(hp + 0x10);
-    local_a = *(undefined2 *)(hp + 0x12);
-    gpu_load_image_cmd(gpu_rect(&local_10),(undefined4)(param_1 + 0x14));
+    local_10[2] = *(undefined2 *)(hp + 0x10);
+    local_10[3] = *(undefined2 *)(hp + 0x12);
+    gpu_load_image_cmd(gpu_rect(local_10),(undefined4)(param_1 + 0x14));
   }
   return;
 }
@@ -1501,10 +1498,9 @@ uint32_t printf_core(uint32_t param_1,const uint8_t *param_2,const uint32_t *par
   const uint8_t *pbVar20;
   int32_t iVar21;
   intptr_t local_40, local_3c, local_38, local_34;
-  char local_68[38];
+  char local_68[40];
   intptr_t puVar17i;
   char *pcVar15w;
-  char **ppuVar14;
   (void)param_1;
   if (param_2 == 0) return 0;
   const char *local_30 = s_0123456789abcdef_80124fe8;
@@ -1692,32 +1688,36 @@ LAB_8018e95c_d:
   local_3c = (intptr_t)puVar17i;
   if (-1 < (int)puVar17i) uVar16 &= ~0x20;
   {
-    pcVar15w = (char *)&local_40;
-    if (uVar9 != 0 || (puVar19 = (uint32_t *)(uintptr_t)(local_68 - (intptr_t)pcVar15w), puVar17i != 0))
+    /* Guest digit scratch = sp+0x10..0x37, i.e. local_68[40]; the cursor
+     * s2 starts one past the top (sp+0x38, adjacent to the local_40 char
+     * counter) and walks down storing digits. The emitted string starts
+     * at the final cursor and its length is top - cursor. Ghidra split
+     * the scratch into &local_40/local_68 scalars and emitted pointer
+     * arithmetic that wrote digits below the pcVar15w variable itself and
+     * never assigned pcVar15 — rebuild it as one real buffer. */
+    pcVar15w = local_68 + sizeof(local_68);
+    if (uVar9 != 0 || puVar17i != 0)
       goto LAB_8018e984_d;
-    goto LAB_8018e9f8_d;
+    pcVar15 = pcVar15w;
+    puVar19 = (uint32_t *)0;
+    goto LAB_8018e9fc_d;
   }
 LAB_8018e984_d:
   do {
-    ppuVar14 = (char **)&pcVar15w;
     uVar22 = uVar9 / uVar10;
-    if (uVar10 == 0) { /* guest trap(0x1c00) — div-by-zero */ }
+    if (uVar10 == 0) { /* guest break 7 — div-by-zero */ }
     cVar3 = local_30[uVar9 % uVar10];
-    pcVar15w = (char *)((intptr_t)ppuVar14 - 1);
+    pcVar15w = pcVar15w - 1;
     *pcVar15w = cVar3;
     uVar9 = uVar22;
   } while (uVar22 != 0);
   local_30 = s_0123456789abcdef_80124fe8;
-  if (bVar7) {
-    puVar19 = (uint32_t *)(uintptr_t)(local_68 - (intptr_t)pcVar15w);
-    if (uVar10 != 8 || (puVar19 = (uint32_t *)(uintptr_t)(local_68 - (intptr_t)pcVar15w), cVar3 == '0'))
-      goto LAB_8018e9f8_d;
-    pcVar15w = (char *)((intptr_t)ppuVar14 - 2);
+  if (bVar7 && uVar10 == 8 && cVar3 != '0') {
+    pcVar15w = pcVar15w - 1;
     *pcVar15w = '0';
   }
-  puVar19 = (uint32_t *)(uintptr_t)(local_68 - (intptr_t)pcVar15w);
-LAB_8018e9f8_d:
-  puVar19 = (uint32_t *)((intptr_t)puVar19 + 0x38);
+  pcVar15 = pcVar15w;
+  puVar19 = (uint32_t *)(uintptr_t)((local_68 + sizeof(local_68)) - pcVar15w);
 LAB_8018e9fc_d:
   param_3 = (const uint32_t *)((const uint32_t *)puVar13 + 1);
   puVar17 = (uint32_t *)((intptr_t)puVar19 + local_38);

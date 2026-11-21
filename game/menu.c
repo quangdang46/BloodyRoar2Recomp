@@ -960,30 +960,37 @@ undefined4 system_config_menu_a(void)
   short *psVar1;
   intptr_t iVar2;
   undefined4 uVar3;
-  undefined2 local_60;
-  undefined1 local_5e;
-  undefined1 local_5d;
-  undefined1 local_5c;
-  undefined1 local_5b;
-  short local_5a;
-  short local_58;
-  code *local_54;
-  undefined2 local_50;
-  undefined2 local_4e;
-  undefined2 local_4c;
-  undefined2 local_4a;
-  ushort local_48;
-  ushort local_46;
-  ushort local_44;
-  ushort local_42;
-  ushort local_40;
-  ushort local_3e;
-  undefined2 local_3c;
-  undefined2 local_3a;
-  undefined2 local_38;
-  ushort local_36;
-  undefined2 local_34;
-  undefined2 local_32;
+  /* Guest stepper descriptor: one contiguous 0x30-byte block at
+   * sp+0x10..0x3f passed to menu_stepper_state_advance / menu_stepper_sm
+   * (a0 = sp+0x10); the +0xc callback is a u32 GUEST code address
+   * (fn_lookup), stored as uint32_t — a host code* would write 8 bytes
+   * and clobber +0x10..0x13. Ghidra split the block into scalars;
+   * local_XX names keep their sp offsets via macros. */
+  uint8_t step_desc_a[0x30];
+#define local_60 (*(uint16_t *)&step_desc_a[0x00])
+#define local_5e (*(uint8_t  *)&step_desc_a[0x02])
+#define local_5d (*(uint8_t  *)&step_desc_a[0x03])
+#define local_5c (*(uint8_t  *)&step_desc_a[0x04])
+#define local_5b (*(uint8_t  *)&step_desc_a[0x05])
+#define local_5a (*(int16_t  *)&step_desc_a[0x06])
+#define local_58 (*(int16_t  *)&step_desc_a[0x08])
+#define local_54 (*(uint32_t *)&step_desc_a[0x0c])
+#define local_50 (*(uint16_t *)&step_desc_a[0x10])
+#define local_4e (*(uint16_t *)&step_desc_a[0x12])
+#define local_4c (*(uint16_t *)&step_desc_a[0x14])
+#define local_4a (*(uint16_t *)&step_desc_a[0x16])
+#define local_48 (*(uint16_t *)&step_desc_a[0x18])
+#define local_46 (*(uint16_t *)&step_desc_a[0x1a])
+#define local_44 (*(uint16_t *)&step_desc_a[0x1c])
+#define local_42 (*(uint16_t *)&step_desc_a[0x1e])
+#define local_40 (*(uint16_t *)&step_desc_a[0x20])
+#define local_3e (*(uint16_t *)&step_desc_a[0x22])
+#define local_3c (*(uint16_t *)&step_desc_a[0x24])
+#define local_3a (*(uint16_t *)&step_desc_a[0x26])
+#define local_38 (*(uint16_t *)&step_desc_a[0x28])
+#define local_36 (*(uint16_t *)&step_desc_a[0x2a])
+#define local_34 (*(uint16_t *)&step_desc_a[0x2c])
+#define local_32 (*(uint16_t *)&step_desc_a[0x2e])
   
   psVar1 = _g_pad_buffer;
   uVar3 = 0;
@@ -1044,7 +1051,7 @@ LAB_8015c900:
            * code address (fn_lookup -> call_guest fallback). Guest stores
            * 0x8015CAA8 there (generated 0x8015C814); a host fn pointer
            * would be truncated to garbage. */
-          local_54 = (code *)(uintptr_t)0x8015caa8;
+          local_54 = 0x8015caa8;
           local_5a = 0xe;
           local_58 = 0xe;
           local_60 = 0;
@@ -1082,6 +1089,30 @@ LAB_8015ca68:
     frame_tick(0x1f800000);
   } while( true );
 }
+#undef local_60
+#undef local_5e
+#undef local_5d
+#undef local_5c
+#undef local_5b
+#undef local_5a
+#undef local_58
+#undef local_54
+#undef local_50
+#undef local_4e
+#undef local_4c
+#undef local_4a
+#undef local_48
+#undef local_46
+#undef local_44
+#undef local_42
+#undef local_40
+#undef local_3e
+#undef local_3c
+#undef local_3a
+#undef local_38
+#undef local_36
+#undef local_34
+#undef local_32
 
 /* ======== 0x8015b9a0 ======== */
 
@@ -1096,26 +1127,35 @@ undefined4 system_config_menu_b(void)
   byte *pbVar4;
   uint uVar5;
   undefined4 uVar6;
-  undefined2 local_68;
-  undefined1 local_66;
-  undefined1 local_65;
-  undefined1 local_64;
-  undefined1 local_63;
-  short local_62;
-  short local_60;
-  code *local_5c;
-  undefined2 local_58;
-  undefined2 local_56;
-  ushort local_54;
-  ushort local_52;
-  ushort local_50;
-  ushort local_4e;
-  ushort local_4c;
-  ushort local_4a;
-  ushort local_48;
-  ushort local_46;
-  ushort local_44;
-  undefined2 local_42;
+  /* Guest stepper descriptor: one contiguous 0x28-byte block at
+   * sp+0x10..0x37 passed to menu_stepper_button_wait (a0 = sp+0x10).
+   * The +0xc callback is a u32 GUEST code address like every other
+   * stepper desc (guest stores 0x8015BDC0 = dialog_sel_dispatch_wide);
+   * menu_stepper_button_wait/masked_sweep dispatch it via fn_lookup,
+   * so it is stored as uint32_t — a host code* would write 8 bytes and
+   * clobber +0x10..0x13. Ghidra split the block into scalars;
+   * local_XX names keep their sp offsets via macros. */
+  uint8_t step_desc_b[0x28];
+#define local_68 (*(uint16_t *)&step_desc_b[0x00])
+#define local_66 (*(uint8_t  *)&step_desc_b[0x02])
+#define local_65 (*(uint8_t  *)&step_desc_b[0x03])
+#define local_64 (*(uint8_t  *)&step_desc_b[0x04])
+#define local_63 (*(uint8_t  *)&step_desc_b[0x05])
+#define local_62 (*(int16_t  *)&step_desc_b[0x06])
+#define local_60 (*(int16_t  *)&step_desc_b[0x08])
+#define local_5c (*(uint32_t *)&step_desc_b[0x0c])
+#define local_58 (*(uint16_t *)&step_desc_b[0x10])
+#define local_56 (*(uint16_t *)&step_desc_b[0x12])
+#define local_54 (*(uint16_t *)&step_desc_b[0x14])
+#define local_52 (*(uint16_t *)&step_desc_b[0x16])
+#define local_50 (*(uint16_t *)&step_desc_b[0x18])
+#define local_4e (*(uint16_t *)&step_desc_b[0x1a])
+#define local_4c (*(uint16_t *)&step_desc_b[0x1c])
+#define local_4a (*(uint16_t *)&step_desc_b[0x1e])
+#define local_48 (*(uint16_t *)&step_desc_b[0x20])
+#define local_46 (*(uint16_t *)&step_desc_b[0x22])
+#define local_44 (*(uint16_t *)&step_desc_b[0x24])
+#define local_42 (*(uint16_t *)&step_desc_b[0x26])
   
   iVar1 = (intptr_t)_g_system_config_ptr;
   uVar6 = 0;
@@ -1188,7 +1228,7 @@ LAB_8015bbd8:
       if (((DAT_1f800001 == 0) && (iVar2 = frame_divisor_get(), iVar2 == 0)) &&
          (iVar2 = intro_movie_state(0), iVar2 != 0)) {
         deferred_cmd_post(0x203,0,0);
-        local_5c = dialog_sel_dispatch_wide;
+        local_5c = 0x8015bdc0;   /* dialog_sel_dispatch_wide, guest addr */
         local_62 = 0xb;
         local_58 = 0x10;
         local_68 = 0;
@@ -1224,6 +1264,26 @@ LAB_8015bd78:
     frame_tick(0x1f800000);
   } while( true );
 }
+#undef local_68
+#undef local_66
+#undef local_65
+#undef local_64
+#undef local_63
+#undef local_62
+#undef local_60
+#undef local_5c
+#undef local_58
+#undef local_56
+#undef local_54
+#undef local_52
+#undef local_50
+#undef local_4e
+#undef local_4c
+#undef local_4a
+#undef local_48
+#undef local_46
+#undef local_44
+#undef local_42
 
 /* ======== 0x8016362c ======== */
 
@@ -1499,8 +1559,12 @@ void player_name_entry(void)
   undefined1 local_6e;
   undefined1 local_68;
   undefined1 local_67;
-  undefined1 local_60;
-  undefined1 local_5f;
+  /* Guest string slot at sp+0x30..0x37 (8-byte stride like the sibling
+   * slots at sp+0x20/0x28): announce_param_block_init_alt reads it as a
+   * NUL-terminated string ("A\0" -> per-frame name char + NUL).
+   * Ghidra split the slot's first two bytes into scalars — keep the
+   * whole slot contiguous. local_60[i] == old local_6X. */
+  undefined1 local_60[8];
   /* sprintf dst = guest $sp+0x38 (frame -0x90) = entry_sp-0x58 */
   undefined1 *auStack_58 = (undefined1 *)guest_at(guest_sp() - 0x58);
   int local_50;
@@ -1524,8 +1588,8 @@ void player_name_entry(void)
   local_6e = DAT_80122076;
   local_68 = DAT_80122078;
   local_67 = DAT_80122079;
-  local_60 = DAT_8012207c;
-  local_5f = DAT_8012207d;
+  local_60[0] = DAT_8012207c;
+  local_60[1] = DAT_8012207d;
   iVar10 = 0;
   if (DAT_1f80009c == 3) {
     local_38 = (undefined1 *)guest_at(0x801c13a4);
@@ -1618,8 +1682,8 @@ LAB_801654c0:
                 bVar1 = true;
                 while (bVar1) {
                   if ((iVar5 != iVar10) || ((_DAT_1f8000dc & 8) != 0)) {
-                    local_60 = *(undefined1 *)((char *)local_30 + iVar5);
-                    announce_param_block_init_alt(_DAT_1f800008,_DAT_1f80000c,&local_60,iVar6,0x1000,0);
+                    local_60[0] = *(undefined1 *)((char *)local_30 + iVar5);
+                    announce_param_block_init_alt(_DAT_1f800008,_DAT_1f80000c,local_60,iVar6,0x1000,0);
                   }
                   iVar5 = iVar5 + 1;
                   iVar6 = iVar6 + 0x10;
@@ -4542,8 +4606,8 @@ void record_state_stepper(uint32_t param_1)
 }
 
 /* menu_stepper_button_wait — menu stepper with button-wait: struct p (host ptr;
- * +2 state u8, +3 gate u8, +6 u16 max, +8 u16 cursor/timer, +0xc host
- * callback). param_2 = u32 button mask. If p[3]==0 runs menu_stepper_input
+ * +2 state u8, +3 gate u8, +6 u16 max, +8 u16 cursor/timer, +0xc u32 GUEST
+ * callback addr). param_2 = u32 button mask. If p[3]==0 runs menu_stepper_input
  * input then spins on pad flags @0x1f80007e updating the timer
  * (0x4000 set: timer++ wraps 1..max; clear: timer-- wraps to max)
  * until bit `param_2 >> (timer&31)` fires, invokes cb(p,timer), then
@@ -4579,9 +4643,15 @@ void menu_stepper_button_wait(void *param_1, uint32_t param_2)
   }
 L_cb:
   {
-    void (*cb)(void *,uint16_t);
-    memcpy(&cb,p + 0xc,sizeof cb);
-    cb(param_1,*(uint16_t *)(p + 8));
+    /* p+0xc is a u32 GUEST code address (guest lw/jalr), same field
+     * menu_stepper_state_advance/menu_stepper_redraw resolve via
+     * fn_lookup — not a host pointer. */
+    uint32_t cb_g = *(uint32_t *)(p + 0xc);
+    void *cb = fn_lookup(cb_g);
+    if (cb != NULL)
+      ((void (*)(void *,uint16_t))cb)(param_1,*(uint16_t *)(p + 8));
+    else
+      call_guest(cb_g,guest_of(param_1),(uint32_t)*(uint16_t *)(p + 8));
   }
 L_tail:
   menu_stepper_masked_sweep(param_1,param_2);
@@ -4913,29 +4983,37 @@ void battle_subrecord_set1(uint32_t param_1)
 /* menu_stepper_masked_sweep — masked menu-stepper sweep: cb(+0xc)(p,0x100); for
  * s0 = 1..u16(p+6): if bit (param_2 >> s0) set, paint row
  * (menu_row_paint when s0 == u16(p+8) else menu_row_paint_b) and
- * cb(p,(s0+0x100)&0xffff); finally cb(p,0x1ff). p = host struct. */
+ * cb(p,(s0+0x100)&0xffff); finally cb(p,0x1ff). p+0xc = u32 guest cb. */
 extern void menu_row_paint(void *);
 extern void menu_row_paint_b(void *);
 void menu_stepper_masked_sweep(void *param_1, uint32_t param_2)
 {
   uint8_t *p = (uint8_t *)param_1;
-  void (*cb)(void *,uint32_t);
+  /* p+0xc is a u32 GUEST code address (guest lw/jalr) — resolve via
+   * fn_lookup like menu_stepper_redraw, not a host pointer. */
+  uint32_t cb_g = *(uint32_t *)(p + 0xc);
+  void (*cb)(void *,uint32_t) =
+      (void (*)(void *,uint32_t))fn_lookup(cb_g);
   uint32_t s0;
-  memcpy(&cb,p + 0xc,sizeof cb);
-  cb(param_1,0x100);
+#define CB_CALL(code_) do { \
+    if (cb != NULL) cb(param_1,(code_)); \
+    else            call_guest(cb_g,guest_of(param_1),(code_)); \
+  } while (0)
+  CB_CALL(0x100);
   if (*(uint16_t *)(p + 6) == 0) goto L_tail;
   s0 = 1;
   for (;;) {
     if (((param_2 >> (s0 & 31)) & 1) != 0) {
       if (s0 != *(uint16_t *)(p + 8)) menu_row_paint_b(param_1);
       else                            menu_row_paint(param_1);
-      cb(param_1,(s0 + 0x100) & 0xffff);
+      CB_CALL((s0 + 0x100) & 0xffff);
     }
     s0++;
     if (*(uint16_t *)(p + 6) < s0) break;
   }
 L_tail:
-  cb(param_1,0x1ff);
+  CB_CALL(0x1ff);
+#undef CB_CALL
 }
 
 /* u16_counter_step_pad_a — saturating u16 counter @guest a0 with pad-edge
