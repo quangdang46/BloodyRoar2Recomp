@@ -177,3 +177,25 @@ LBAs consecutive (209047/8/9). mode=0xE0 (streaming/FMV), vs 0xA0 file-load.
    This is a CD DATA-CORRECTNESS bug (ef8202ef's domain), NOT a table clobber.
    pump=0 is likely pc_probe FALSE-NEGATIVE (clean-ported host C) + moot
    because cd_result_wait_b does the same callback dispatch synchronously.
+
+## ROOT CAUSE — COMPLETE CAUSAL CHAIN (live-proven, agent ef8202ef + parent)
+Sector data is BYTE-EXACT vs Game.bin (right LBA/mode/sector slices). The wedge
+is a GUEST-MEMORY COLLISION:
+
+  tile_stream_open (menu.c:2244) -> cd_dir_table_set(_DAT_801f4754=0x80010000,0x20)
+    => channel-entry table lives at guest 0x80010000 (32 desc x 0x20 + data ring).
+  File loads ALSO DMA payload into 0x80010000:
+    cd_file_load_sm(file_id,dest) -> cd_read_issue(0x8018d150) ->
+    cd_read_setup(0x80198c90) -> DAT_801bcb84=dest=0x80010000 -> ch3 DMA.
+  CAUGHT LIVE (wtrace :7500 f311728): bcb84 0x800F0000->0x80010000,
+    pc=0x80198D98, ra=0x8018D198(cd_read_issue), func=0x29CC, a1=0x80010000.
+  b88 cursor swept ~168KB (0x80010000->0x8003A800) overwriting ALL 32 desc slots.
+  File payload in entry+4/+6 => cd_mc_state_machine gate fails => wedge.
+
+=> 0x80010000 is a SHARED CD scratch/stream arena (guest-authentic reuse).
+   Safe on real HW ONLY if the tile stream fully drains/is torn down before
+   the file load reuses the arena. The overlap => a stream-completion /
+   teardown event is MISSED => deferred-IRQ/TestEvent timing bug.
+   FIX LIVES in the IRQ/completion path (agent 6f7d7f6e), NOT the data path.
+   Descriptor format decoded: +4=u16 pos-in-group(0-4), +6=u16 group-size(5);
+   gate fires on 5th sector of each 5-sector group.
