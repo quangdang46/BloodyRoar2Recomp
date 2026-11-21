@@ -1141,7 +1141,10 @@ int32_t text_widget_alloc(uint16_t param_1,uint16_t param_2,int32_t param_3,
                      uint16_t param_4,int32_t param_5,int32_t param_6)
 {
   int32_t iVar1, iVar2;
-  uint16_t local_30, local_2e, local_2c, local_2a;
+  /* guest sp-0x30..-0x28 is one contiguous 8-byte texcoord buffer read by
+   * prim_packet_init_tex as bytes 0..7 (param_5[0..2] + shorts +4/+6).
+   * Ghidra split the four halfwords into scalars; keep them contiguous. */
+  uint16_t local_30[4];
   uint32_t slot;
 
   if ((int32_t)GB8(0x801b78c0) < 8) {
@@ -1150,10 +1153,10 @@ int32_t text_widget_alloc(uint16_t param_1,uint16_t param_2,int32_t param_3,
     GB32(0x801b7740 + slot + 0x2c) = (param_3 == 0);
     iVar2 = (int32_t)GB32(0x801b82c8);
     if (0x400 < iVar2 + param_6) param_6 = 0x400 - iVar2;
-    local_2c = 0x100; local_2a = 0x100;
-    local_30 = 0;     local_2e = 0;
+    local_30[2] = 0x100; local_30[3] = 0x100;
+    local_30[0] = 0;     local_30[1] = 0;
     prim_packet_init_tex((int)(0x801b7750 + slot),0,0,(uint32_t)GB32(0x801fad10),
-                 (byte *)&local_30);
+                 (byte *)local_30);
     if (param_5 != 0) {
       gpu_pkt_tag_60(0x801b7740 + slot);
       GB8(0x801b7744 + slot) = 0;
