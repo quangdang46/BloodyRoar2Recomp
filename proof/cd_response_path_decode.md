@@ -212,3 +212,18 @@ register-window doorbell blocker (cd_seek_param_issue->cd_reg_window_op).
 => Two coupled defects: (1) occasional missed stream descriptor/seek leaves an
    entry stale -> consumer parks; (2) file loads reuse the arena and keep the
    dead table clobbered. Fix centers on the deferred CD command/IRQ path.
+
+## ARENA SEMANTICS — 0x80010000 is the shared CD scratch/heap base (intentional)
+- _DAT_801c47b8 (bump-heap cursor) RESETS to 0x80010000 (game.c:868,
+  menu.c:5639/8790, save.c:3384/3617/4247) — heap allocates upward from it.
+- scene_entry(0x80010000,mode,flag) explicitly loads scenes/levels into it
+  (game.c:677, menu.c:534/538/639).
+- tile_stream_open -> cd_dir_table_set(_DAT_801f4754=0x80010000,0x20) puts the
+  channel-entry table at the SAME base.
+=> 0x80010000 is the game's designated CD streaming/scratch arena, time-
+   multiplexed between tile-FMV descriptors, heap file buffers, and scene
+   loads. ALL uses are guest-authentic/intentional.
+=> The wedge is PURELY a sequencing/timing defect: a scene/file DMA reuses the
+   arena before the prior stream fully drains (missed completion/teardown in
+   the deferred-IRQ path). NOT a wrong constant, NOT a data bug, NOT a port bug.
+   Fix = IRQ/completion serialization (agent 6f7d7f6e + 01a87a57).
