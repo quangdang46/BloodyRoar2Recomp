@@ -55,3 +55,24 @@ command never issues — same deferred-coroutine/command-issue family as
 be17669 and the AGENTS.md §8 `cd_seek_param_issue->cd_reg_window_op`
 blocker, but a distinct trigger (post-sector command-issue, not stream
 chunk delivery).
+
+## Mechanism refinement (:8903 live wedge)
+
+cmd `0x09` = **CD Pause**. Sequence at the wedge:
+- Game read sector LBA 8769 to `2060/2340` (header+2048 data = full
+  payload; trailing 280 = EDC/ECC), then issued **Pause** to flush
+  before the next asset load.
+- Pause ran `stop_read_stream`/`set_irq(CDIRQ_ACK)`/`pending_arm(0x09)`;
+  `pending` cleared (`active=0`) => Pause-complete fired.
+- **No follow-up command ever issues**: `seq` frozen, `reading=0`,
+  `pending.cmd` stays `0x09`, `i_stat=0x01` (VBLANK only — no CD IRQ
+  bit2), BIOS histogram idle (no TestEvent spin).
+- The deferred coroutine `cd_chan_full_init` spins in
+  `cd_timer_read`/`vsync_wait_n` — frames advance, but it never drains
+  the command queue to push the next read.
+
+So the guest's post-Pause CD-wait / deferred-coroutine resume is not
+completing: the game's CD command-issue path stalls after Pause, so the
+`caseD_6` fighter/stage asset load never finishes -> `DAT1` stuck at 6.
+Distinct trigger from be17669 (that was stream chunk-deadline
+advertising; this is post-Pause command-issue / coroutine resume).
