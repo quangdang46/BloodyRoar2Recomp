@@ -363,3 +363,21 @@ the agents: which guest path is SUPPOSED to call DeliverEvent here —
 cb7_run/ch4 (not kicked), the CD ISR channel-dispatch inside
 cd_intc_dispatch, or a game coroutine that polls a completion flag the
 clean-C record machine sets wrong (state_rx runs, state_commit never).
+
+### sp_ring: the exact wedge loop (kernel-thread coroutine)
+
+sp_ring tail shows a repeating per-frame cycle on tcb=0x8FE0:
+  cd_timer_read region (0x8019A53C, fn 0x8019a460)
+    -> kernel stub 0x00002924 (ra 0x0000282C)   [kernel wait/sleep]
+    -> 0x8019A87C jmpbuf_resume -> cd_intc_dispatch
+    -> repeat every frame
+
+cd_timer_read (0x8019a460, generated) dereferences CD-state pointers
+(0x801C0000 table -> struct -> MMIO reads) each iteration — the deferred
+CD coroutine is a KERNEL THREAD polling CD timer/status, then kernel-wait,
+resumed by IRQ jmp_buf each frame. It never observes the completion
+condition, so it never reaches the DeliverEvent(0xF0000009) that unblocks
+TestEvent. The missing piece is WHAT flag/register cd_timer_read's caller
+checks to decide "done" — that is the completion the runtime/game fails to
+produce. Agents d5cfe31a (runtime DMA/SPU done) + 74ecd030 (game record/
+event path) are tracing this.
