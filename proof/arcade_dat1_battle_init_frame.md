@@ -129,15 +129,21 @@ CD stall (cdrom_command_history + cdrom_state + irq_state, frozen):
   (frontier static @0x800e1064).
 
 So a sector READ delivered most of a Mode-2 sector then a Pause was
-issued; the Pause-completion response byte sits in the FIFO undrained and
-the deferred coroutine (cd_ctx_restore→cd_chan_full_init→cd_intc_dispatch
-→cd_response_pump) that should consume it + fire the user callback is
-STARVED — no INTC IRQ pending. Same deferred-coroutine family as the
-versus wedge (8d84f45/5034ff2 frame reservations), but a different
-resume/IRQ-delivery link. `i_mask` flicker (0x0↔0xD) suggests DI/EI crit
-sections may be masking the CD IRQ at the sample instant, or the IRQ2
-entry acks i_stat before cd_intc_dispatch polls (AND-ack ordering), or
-the deferred frame was never registered/resumed.
+issued; the Pause-completion response byte sits in the FIFO undrained.
+REFINED (live mask-input trace): `cd_intc_dispatch` mask =
+`*(u16*)0x1F801070(i_stat) & *(u16*)0x1F801074(i_mask) & 0xD`; with
+INTC i_stat=0 the mask drains → dispatch EXITS cleanly. Its
+`in-service` flag @0x801bcd18=1 is normal post-dispatch state, NOT the
+active wedge (native stack spins in the cd_timer_read/deferred pacer,
+not cd_intc_dispatch). The CD IRQ WAS delivered (command_history seq316
+i_stat=0x4 at Pause exec) and consumed — but `cd_response_pump` /
+`cd_response_process` never drained the FIFO (response_count=1), so the
+deferred coroutine that should fire the Pause user-callback is starved
+UPSTREAM of dispatch: the resume link `BIOS/kernel → cd_ctx_restore →
+cd_chan_full_init` either never runs or its saved frame (@0x4C18,
+registered via B0/0x19) is absent/stale. Same deferred-coroutine family
+as the versus wedge but the break is the RESUME/registration link, not
+IRQ presentation timing.
 
 Delegated to agent 7f928e12 (CD sector-read/Pause stall) alongside frame
 audit 251d7926 and CPU-phase 42283317 (moot — +0xb6 self-resolved).
