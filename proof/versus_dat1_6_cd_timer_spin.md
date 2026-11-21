@@ -99,3 +99,24 @@ Device side verified correct: process_pending case 0x09 clears pending,
 response_clear, pushes status, set_irq(CDIRQ_COMPLETE)->INT2,
 fire_cdrom_irq. pause_complete_delay ~1.1M cycles (~2 frames) per
 psx-spx. So INT2 IS generated; the guest INTC dispatch is not draining it.
+
+## ptrA/ptrB identified = CPU INTC regs (memory.c:854-855,1107-1109)
+
+0x1F801070 = i_stat (interrupt status, AND-acknowledge),
+0x1F801074 = i_mask (interrupt enable). So cd_intc_dispatch mask =
+i_stat & i_mask & 0x000d — it watches GLOBAL IRQ bits 0,2,3, not a
+CD-private INTC.
+
+Live irq_state on wedged :8910: i_stat oscillates 0x00->0x01 (bit0 =
+VBLANK re-fires each frame and is consumed normally), i_mask=0x000D
+(bits 0,2,3 enabled), IM2=1 IEc=1. **bit2 (CD-ROM IRQ line) is NEVER
+pending in i_stat** — only bit0 flickers. So the CD-complete interrupt
+either already fired+consumed without reaching cd_intc_dispatch, or is
+never presented as a pending INTC bit. cd_intc_dispatch's completion
+handler therefore never runs -> the flags cd_result_wait_b waits on
+(~0x801bcb25/26) never set -> post-Pause next command never issues.
+
+Next: determine whether the CD-complete INT2 reaches the CPU INTC as a
+pending bit at all (present_cdrom_irq -> i_stat bit2), and whether the
+deferred cd_ctx_restore->cd_intc_dispatch path is what consumes it vs
+the normal INTC dispatch. in-service flag @0x801bcd18 stuck 0x0001.
