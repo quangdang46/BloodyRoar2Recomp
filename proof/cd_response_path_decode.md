@@ -57,3 +57,36 @@ in CD-IRQ context? Next probe: rtrace_dump on 0x1F801070 reads (PC+value)
 during a FRESH FMV wedge to see i_stat bit2 at cd_intc_dispatch read-time.
 Runtime lever if timing: CDROM_IRQ_PRESENT_DELAY / ack ordering in
 cdrom.c+interrupts.c (agent 6f7d7f6e scope).
+
+## UPDATE — i_stat bit2 IS visible; break is in dispatch decision, not delivery
+
+Live rtrace on fresh :7500 wedge (frame ~9600, cursors prod2/fin0/cons30):
+- irqctx_ring: 743 IRQ deliveries with istat=0x04 (CDROM bit2) at
+  take_pc=0x8019A600/0x8019A648 -> CD IRQs ARE taken as exceptions.
+- rtrace i_stat(0x1F801070) reads: bit2 set+returned 13689x in 6s window.
+  cd_intc_dispatch-range readers see bit2 (e.g. 244 hits). => i_stat bit2
+  IS guest-visible during CD IRQs.
+- i_mask(0x1F801074)=0xD (bit2 set) 5896x; sw-mask u16@0x801bcd48=0xD;
+  handler tbl @0x801bcd1c[2]=0x801979F8=cd_response_pump (verified
+  renames.map/fnmap.c).
+- mask = i_stat & i_mask & 0xD -> bit2 SHOULD be set -> tbl[2]=pump.
+- YET pc_probe: cd_response_pump(0x801979F8)=0 hits across FMV+post-FMV.
+  cd_intc_dispatch(0x8019A8EC)=7373 hits (v0=1 IRQ-trampoline ctx).
+  cd_response_process(0x80196370)=7325 via cd_result_wait_b(0x80196b4c).
+
+CONCLUSION: every operand of cd_intc_dispatch's dispatch mask is correct
+and bit2-visible, yet the bit->handler loop never selects i=2->pump.
+Remaining hypotheses:
+  (a) cd_intc_dispatch reads i_stat/i_mask at a CPS point where the values
+      differ from the rtrace-sampled reads (block-attributed PC is fuzzy);
+  (b) the bit-iteration/dispatch in generated CPS has a subtlety
+      (continuation/ordering) that skips i=2;
+  (c) IRQ-timing: the cd_intc_dispatch invocation that sees i_stat bit2
+      runs in poll-context AFTER the IRQ handler already acked i_stat bit2
+      (the *ptrA=~(1<<i) ack inside cd_intc_dispatch itself, or kernel ack),
+      so mask bit2 is transiently present in i_stat reads but the SAME
+      invocation's i_mask/sw-mask read catches a cleared state.
+NEXT: instrument the actual mask value + per-bit dispatch decision inside
+cd_intc_dispatch (needs a targeted watch/probe on the mask computation
+block, or runtime IRQ-delivery-vs-ack ordering trace). Runtime agent
+6f7d7f6e owns interrupts.c/cdrom.c IRQ timing.
