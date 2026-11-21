@@ -9178,14 +9178,17 @@ void op_frame_advance(uint8_t *s0)
         uint8_t t = *(uint8_t *)(s0 + 0x4a);
         if ((uint32_t)t < 0xb) {
           *(uint8_t *)(s0 + 0x4a) = (uint8_t)(t + 1);
+          return;   /* rec70==1, rec74<11 -> END (no clear-tail) */
         } else {
           *(uint8_t *)(s0 + 0x49) = 2;
           *(uint8_t *)(s0 + 0x46) = 0xff;
+          return;   /* rec70==1 exhaust -> END (no clear-tail) */
         }
       } else {
         uint8_t t = *(uint8_t *)(s0 + 0x4a);
         if ((uint32_t)t < 0xb) {
           *(uint8_t *)(s0 + 0x4a) = (uint8_t)(t + 1);
+          return;   /* rec70>=2, rec74<11 -> END (no clear-tail) */
         } else if (*(uint8_t *)(s0 + 0x49) != 0) {
           uint32_t fp = *(uint32_t *)guest_at(0x801be784);
           void *fn = fn_lookup(fp);

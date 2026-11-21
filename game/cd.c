@@ -5754,7 +5754,9 @@ uint32_t cd_cmd_data_byte(uint32_t rec)
   uint32_t mode = r[55];
   uint32_t p;
   if (mode == 0) {
-    if (idx < 6u && r[idx + 87] == 0) return 0;
+    /* Guest @0x801A39E4 uses signed slti(idx,6): idx wraps negative when
+     * rec[69]<3, so it still takes the aux rec[87+idx] guard. */
+    if ((int32_t)idx < 6 && r[idx + 87] == 0) return 0;
     if ((int32_t)idx < (int32_t)r[52]) {
       p = *(uint32_t *)(r + 40);
       return br2_ld8(p + idx);
@@ -5765,7 +5767,9 @@ uint32_t cd_cmd_data_byte(uint32_t rec)
     p = *(uint32_t *)(r + 44);
     return br2_ld8(p + idx);
   }
-  return 0;
+  /* Guest: mode==0x4d returns 0xFF on out-of-bounds (sentinel, li @3A3C);
+   * other nonzero modes return 0. (blocks 801A3A2C vs 801A3A4C) */
+  return (mode == 0x4d) ? 0xffu : 0u;
 }
 
 /* ======== 0x801a3d84 ======== */
@@ -5925,7 +5929,7 @@ uint32_t cd_cmd_rec_scan(uint32_t rec)
   (void)call_guest(0x801a09b0u,rec + 87,6);   /* cd_bzero(rec+87,6) */
   v0 = *(uint16_t *)(s0 + 230);
   if (v0 != 0 && *(uint32_t *)(s0 + 40) != 0) {
-    t1 = (s0[52] < 7) ? 6 : s0[52];
+    t1 = (s0[52] < 7) ? s0[52] : 6;
     if (s0[233] == 0) return 0;
     aux93 = rec + 93;
     aux87 = rec + 87;
