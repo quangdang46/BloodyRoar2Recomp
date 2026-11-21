@@ -355,3 +355,29 @@ issue bug, mode-independent, fires on stage/fighter file loads.
 This is THE critical blocker for player gameplay. It likely shares the
 CD-command machinery with the FMV wedge (both stall in CD command/seek
 issue, not in sector delivery — sectors flow fine to 2060).
+
+## CD command/IRQ live evidence (:6900 FMV wedge, :6700 battle-init wedge)
+
+cdrom_command_history (2614 cmds) shows a REPEATING device-level cycle:
+  0x02=seek(SetLoc) -> 0x09 -> 0x06=read -> repeat. Commands DO reach the
+  device and EXECUTE; i_stat=0x04 (CDROM IRQ bit2) fires transiently per
+  command then clears. Sectors deliver and are consumed to byte 2060
+  (12hdr+2048data = expected Mode-2 consumption, NOT a stall).
+
+irq_state sampled between commands: i_stat=0x01 pending=0x01 (VBLANK only);
+int1_pended=0 int1_lost=0 int1_pending_now=0.
+
+CONCLUSION: the CD device + IRQ delivery WORK. The wedge is GUEST-SIDE in
+the deferred-interrupt coroutine / BIOS-event path: the completion event is
+raised but the coroutine that runs cd_intc_dispatch -> cd_response_pump ->
+cd_mc_state_machine (which marks channel entries state==2 and advances the
+dir-entry cursors) is STARVED. This is the AGENTS.md section4 scenario:
+generated per-block psx_check_interrupts_at must resume the deferred CD
+coroutine; when the guest sits in a clean-C/delegated poll loop the
+coroutine's resume PC / BIOS WaitEvent-TestEvent delivery fails -> the
+state machine never marks entries ready -> cd_channel_poll/blk_io_retry
+starve -> FMV truncates at ~87%, battle-init file loads wedge.
+
+FIX LOCATION: psxrecomp runtime deferred-coroutine + BIOS event scheduling
+(interrupts.c / event delivery), NOT game/*.c. Both FMV and player-combat
+share this single root cause.
