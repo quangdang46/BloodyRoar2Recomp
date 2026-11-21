@@ -37,6 +37,31 @@ single `return 0xff`.
   mask `0x801bcd48=0x000d`; `i_stat=0`. Identical signature to the
   versus wedge before `8d84f45`.
 
+## Update — native stack sample re-scopes the wedge (post-fix, :8915)
+
+`sample` on the live PID shows the game is NOT inside battle_init —
+battle_init already returned. Real call path:
+
+```
+battle_flow_state_machine (menu.c:605, DAT_1f80009c switch case 0)
+  -> battle_frame (menu.c:8713)          <- the per-frame battle tick
+    -> frame_tick (game.c:1352)
+      -> br2_call_generated -> guest 0x8019A5D8 (cd_timer_read region)
+        -> psx_check_interrupts_at -> IRQ -> cdrom_advance -> present_cdrom_irq
+```
+
+- `DAT_1f80009c=0` + `DAT_1f80009b=0` selects `battle_frame()` (case 0),
+  which runs every frame regardless of the `DAT_1f800001` sub-state.
+- `battle+0x8c=0xffff` (bringup done) but caseD_3's reset never ran ->
+  consistent with battle_init having returned on an earlier pass.
+- CD IRQs ARE being delivered (`present_cdrom_irq`/`cdrom_advance` hot).
+- Remaining symptom: per-side phase words `battle+0xb4`(P0)=0x300 armed,
+  `battle+0xb6`(CPU/P1)=0x0000 NOT armed. `select_phase_gate` needs the
+  hi-nibble in {0x100..0x700}. Arcade is 1P-vs-CPU so the CPU opponent's
+  record/AI path is the suspect — versus armed both sides (both human).
+- ~half the samples sit in frame_tick->cd_timer_read->IRQ->cdrom service;
+  the other half in battle_frame's own per-frame work. Frames advance.
+
 ## Residual / open
 `battle_init` fix is faithful but did NOT alone unblock arcade. The
 same `cd_intc_dispatch` in-service-stuck signature persists, so either
