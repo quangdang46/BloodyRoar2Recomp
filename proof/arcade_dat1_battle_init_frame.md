@@ -111,10 +111,18 @@ gets a `0x800` rising edge → `bcfg_step_a` returns 0 → `+0xb6` stays 0.
 
 Live re-diagnosis (port 8915) corrected two earlier readings:
 
-- `+0xb6` (CPU phase) self-resolved to `0x0300` — the per-frame
-  `battle_config_eval`→`bcfg_step_a` phase machine armed it once resource
-  streaming progressed. NOT the wedge (pad-input/`+0x6a` was transient).
-- REAL wedge: `DAT1=3` = caseD_3 → `battle_init` blocked in `cd_file_load_sm`.
+- `+0xb6` (CPU phase) reached `0x0300` on 8915 — BUT agent 42283317's
+  controlled fresh-instance run (port 8920) proved this was MY earlier
+  `press(slot=1)` injection arming it, NOT self-resolution. On a clean
+  instance `+0xb6` stays `0x0000`. CORRECTED below.
+- REAL wedge A (CPU confirm): `battle+0x6a` (P1 pad edge word) never
+  gets the `0x800` Start edge because slot1 is registered as a PHYSICAL
+  pad and no CPU/AI injector writes `0x801befca`. `bcfg_step_a` needs
+  `(flags&0x800)` → `+0xb6` stuck 0 → `select_phase_gate(s1,1)` fails →
+  `post_battle_dispatch` armed path spins at the 10-tick wait.
+  `press(slot=1,START)` → `+0xb6=0x0300` proves downstream works.
+- REAL wedge B (CD load): `DAT1=3` = caseD_3 → `battle_init` blocked in
+  `cd_file_load_sm` on a starved Pause(0x09) completion (below).
   `frame_divisor_get()` (byte@0x1f800019) returns 0 → caseD_3 entered
   battle_init; it never returns because a CD load never completes.
 
