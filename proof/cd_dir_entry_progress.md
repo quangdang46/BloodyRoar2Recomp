@@ -257,3 +257,15 @@ in Pause(0x09)-retry (`stat=0x02`). `tile_stream_open` ran (set
 fc6c0/fc6c4/fc688) but the first Read was never issued/completed. NEXT:
 trace `blk_io_retry`/`cd_stream_mode_init`/`cd_mode_flag_set` for where
 the first Read should issue + why pending Pause never completes.
+
+## Combat re-confirmed on persistent :6100 + timestamp correction
+
+Second independent instance (:6100) reached combat via 3× START (`0xFFF7`
+active-low): `gs=8 scene=3`, phase `0x1f800004` cycling
+`0x801e40a0<->0x801e61f0`, frames advancing ~50fps, sustained. `config
++0x10`=8 / `9b`=0 / `9c`=0 → menu option param_2==1 (first/default mode).
+
+CORRECTION: `0x1f80001c` is a **u16 vblank timestamp** (`game.c:91,257`),
+NOT a round timer — the "frozen 0x3a=58" seen earlier is a sampled
+timestamp, not a stall indicator. The 2-value phase cycle is the normal
+battle update loop, not a stuck intro. Combat is real simulation.
