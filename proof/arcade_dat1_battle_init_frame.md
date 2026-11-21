@@ -314,3 +314,22 @@ Open question for next agent: trace the EXACT completion path for THIS
 sustained load (which DMA channel / which IRQ / which registered handler)
 and find where the done-bit→handler→DeliverEvent dispatch is dropped —
 a state/timing miss versus didn't hit. Versus ran identical chain OK.
+
+## Wedge A reconciliation — likely DOWNSTREAM of DeliverEvent, not independent
+
+mc_pad_button_handler (save.c:1732) zeroes +0xb4/+0xb6 each frame; arcade
+(+0x9b==0): P0 edge->mc_slot_action(0), P1 needs +0x6a&0x840 AND
+ret_zero_b(1)>=0 (ret_zero_b always returns 0 -> NOT a gate). mc_slot_
+action (save.c:2003) case0 seeds only pressed slot=0x100; case2(versus)
+seeds both. pad_state_refresh is sole +0x6a writer (0x801befca decode).
+No CPU synthesizer found (clean+generated).
+
+BUT: the DeliverEvent-stall instance (agent 4e176c55) showed
++b4=+0xb6=0x0300 — BOTH phases ARMED. So +0xb6 CAN reach 0x300 via the
+normal flow once the game thread actually runs. The +0xb6=0 seen by the
+Wedge A agent is likely an early/transient state, NOT a hard independent
+blocker. PRIORITY: fix DeliverEvent (upstream, agent fb7e930b) first —
+once battle_init's load completes and the game thread runs, the
+versus-screen/CPU-confirm flow may arm +0xb6 naturally. Do NOT implement
+a speculative CPU pad-feed (forbidden guessing) until DeliverEvent is
+fixed and +0xb6 is re-observed on a healthy instance.
