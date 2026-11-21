@@ -174,3 +174,37 @@ Prime suspects for next session:
    around command issue) so the mask AND drops bit2.
 3. `cd_response_pump` registered on the wrong slot — but table[2]=
    `0x801979F8` and bit2==CDROM match, so this is least likely.
+
+## CORRECTION — IRQ path works; cd_response_pump RUNS (was probe-blind)
+
+`event_ring_tail` on live `:6100` shows the full CD IRQ path is HEALTHY:
+- `ISTAT_RAISE istat=0x00000004` → `IRQ_DELIVER` — i_stat bit2 (CDROM)
+  raised AND delivered to the CPU on every CD IRQ. My earlier 40-sample
+  `i_stat` poll only saw 0x0/0x1 because bit2 is a brief per-IRQ pulse.
+- `ISTAT_RAISE` at pc=0x8019A9AC (inside cd_intc_dispatch) — it runs
+  during the CD IRQ with istat=0x4 present and acks bit2.
+
+**cd_response_pump is clean-ported** (`wrap_801979f8`→host C), so guest
+PC 0x801979F8 never executes → `pc_probe` "0 hits" was a FALSE negative.
+It IS invoked as handler[2] each CD IRQ.
+
+cd_response_pump → cd_response_process reads the response FIFO; only on a
+flag-&4 response does it call_guest(0x801bc84c=cd_mc_sm_wrap) →
+cd_mc_state_machine. Live: `response_count=1, response_read=1` = FIFO
+EMPTY → no flag-4 response → cd_mc_state_machine (generated, probe-
+reliable) genuinely 0 hits.
+
+## Actual wedge: sector read stalls at RB_.pos=2060/2340
+
+- `cdrom_state`: reading=0, sector_available=1, read_pos=2060/2340,
+  irq_flag=0, response FIFO empty, pending.cmd=0x09.
+- Sector bytes consumed via DMA ch3 → `cdrom_dma_read()` (4B/word).
+  DMA ch3 live: chcr=0, active=0, remaining=0 — IDLE. 515 words (2060B)
+  transferred, 70 words (280B) left in RB_.
+- `cdrom_dma_ready()` would still return true (BFRD set, pos+4<=size), so
+  the drive side is ready — the GAME stopped driving ch3 / never re-kicked
+  it for the remainder, and no read-complete response was produced.
+
+Open question: does the game need those last 280 bytes (mid-sector stall)
+or did it consume what it needed and is blocked waiting for the next
+command/state-machine step that never fires?
