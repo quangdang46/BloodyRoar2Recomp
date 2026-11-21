@@ -281,3 +281,36 @@ flow-control / BFRD / IRQ-present scheduling. Both "CD stall" and
 A (+0xb6 seeding) may ALSO be downstream (resources not loaded). Battle
 side exhaustively ruled out (no 0x300→0x700 driver exists; intro_fsm
 done; task callbacks post-spawn only).
+
+## ⚠ ROOT CAUSE v3 (agents 9463bc49 + live EvCB/Bioscall) — CD-load-complete DeliverEvent never fires
+
+CD read COMPLETED fully (Setloc 1:58:70→ReadN→Pause thru LBA 8801,
+IRQ2 fired+consumed frame 57007, irq_present_max_late=0). Ring/BFRD/
+IRQ-late hypotheses DISPROVEN (proof/cdrom_ring_bfrd_stall.md). sector_
+read_pos=2060/2340 is the normal Mode-2 boundary (12B hdr+2048B payload;
+280B ECC tail unread). ring_partial=BFRD skew are NORMAL lifecycle.
+
+REAL wedge = kernel event-thread scheduling stall AFTER CD completes:
+- EvCB slot8 = OpenEvent(0xF0000009,0x20) MARK, status ENABLED — the
+  CD-load-complete flag. ONLY armed event (slots 9-15 free).
+- A thread is blocked waiting for DeliverEvent(0xF0000009,0x20) to set
+  it READY. B0 bioscall: TestEvent(11)/DeliverEvent(7)/WaitEvent(10)
+  counts FROZEN; ReturnFromException(23) climbs; pc=0 idle sentinel;
+  VBlank/GPU DMA keep cycling; sp_ring ping-pongs kernel scheduler +
+  cd_ctx_restore resume region (0x8019A87C) finding no pending work.
+- Producer chain that SHOULD DeliverEvent: CD/DMA completion →
+  cd_cb7_run(0x8019af84, DMA-done dispatch) → ch4 handler 0x8019B7E0 =
+  cd_dma_chan_reset(0x8019b7e8) → 0x801bdee8==0 → cd_bios_svc_07
+  (0xF0000009,0x20)=DeliverEvent. Both cd_cb7_run + cd_dma_chan_reset
+  are FULL clean-C ports (worked in versus).
+- DMA ch4 completed (chcr=0x201,remaining=0) but DICR done bits already
+  cleared (dicr=0x00900000 enable-only). cd_cb7_run either saw s1=0 or
+  the done-bit/handler dispatch missed for THIS load.
+- bios_hle=true: HLE handles DeliverEvent/TestEvent/OpenEvent (MARK→
+  READY). If cd_bios_svc_07 reached HLE it WOULD set slot8 READY — so
+  the break is UPSTREAM: cd_dma_chan_reset/DeliverEvent never invoked.
+
+Open question for next agent: trace the EXACT completion path for THIS
+sustained load (which DMA channel / which IRQ / which registered handler)
+and find where the done-bit→handler→DeliverEvent dispatch is dropped —
+a state/timing miss versus didn't hit. Versus ran identical chain OK.
