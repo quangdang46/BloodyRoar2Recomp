@@ -63,3 +63,18 @@ that runs DeliverEvent on pause-done is starved -> the game's TestEvent
 poll spins -> read sequence stalls -> channel entry never state==2 /
 battle-init file load wedges. Attract demo avoids it (resident data, no
 streaming Pause+read cycle).
+
+## Correction/nuance — DeliverEvent DOES fire (~per command)
+
+bioscall_dump on wedged :6900:
+  B0/11 TestEvent = 5,138,859  (hot poll — likely normal per-frame event wait)
+  B0/07 DeliverEvent = 2,494   (~once per CD command; 2614 cmds total)
+  B0/08 OpenEvent=19, B0/09 CloseEvent=5, B0/12 EnableEvent=19
+
+So CD IRQ -> guest handler -> DeliverEvent DOES run (~per command). The
+starvation is NOT "no DeliverEvent." It is narrower: either the SPECIFIC
+event flag the CD-wait thread polls is not the one being Delivered, OR the
+delivered event wakes a thread that then fails to advance
+cd_mc_state_machine / mark channel entries state==2. TestEvent spin alone
+is not proof — need to identify WHICH event spec the wedged wait polls vs
+which spec DeliverEvent targets.
