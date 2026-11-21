@@ -199,3 +199,16 @@ is a GUEST-MEMORY COLLISION:
    FIX LIVES in the IRQ/completion path (agent 6f7d7f6e), NOT the data path.
    Descriptor format decoded: +4=u16 pos-in-group(0-4), +6=u16 group-size(5);
    gate fires on 5th sector of each 5-sector group.
+
+## REFINEMENT — file-load hits a DEAD table (symptom), trigger is upstream
+Live poll :7500: bcb84=0x80010000 coincides with FROZEN cursors [prod=2,fin=0,
+cons=30] — the stream consumer is already parked on a bad entry, NOT live.
+So file-load DMA into 0x80010000 piles onto an already-dead table (keeps it
+stuck) rather than killing a live stream. The PRIMARY trigger is upstream:
+an entry whose descriptor was never correctly written. Agent ef8202ef noted
+LBA 208850 produced NO descriptor DMA while neighbors did — a MISSED
+ReadS/descriptor consistent with the AGENTS.md §8 deferred-command-issue /
+register-window doorbell blocker (cd_seek_param_issue->cd_reg_window_op).
+=> Two coupled defects: (1) occasional missed stream descriptor/seek leaves an
+   entry stale -> consumer parks; (2) file loads reuse the arena and keep the
+   dead table clobbered. Fix centers on the deferred CD command/IRQ path.
