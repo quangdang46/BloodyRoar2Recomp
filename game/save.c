@@ -2354,25 +2354,26 @@ void se_value_select(uint32_t a0)
 }
 
 /* mode3_dispatch — mode dispatch on *(u32*)a1: 0->632e4, 1->63314,
- * 2->63320, else break. Disasm 0x8016325c-0x801632dc.
- * Returns v0 like the MIPS original: block_copy_ret_len/lzss_decode length,
- * or 2 for unhandled mode words (li v0,2 survives to the epilogue). */
+ * 2->63320, else -> move v0,zero. Disasm 0x8016325c-0x801632dc.
+ * Returns v0 like the MIPS original:
+ *  - v1==0 -> block_copy_ret_len length
+ *  - v1==1 -> jal 0x80163314 = `break 1031; jr ra`; break is a no-op in the
+ *    recompiler and v0 (=1, the slti result) survives -> returns 1
+ *  - v1==2 -> lzss_decode length
+ *  - default -> 0x801632D0 `move v0,zero` -> returns 0
+ * (An earlier port returned 2 for the default and halted via lzss_trap on
+ * mode-1; both diverge from generated and inflate heap-A / desync records.) */
 extern uint32_t block_copy_ret_len(uint32_t,uint32_t);
-/* lzss_trap — guest `break 1,7; jr ra`: debug breakpoint stub.
- * Faithful port traps instead of silently returning. */
-extern void lzss_trap(uint32_t,uint32_t);
-
 extern uint32_t lzss_decode(uint32_t,uint32_t);
 uint32_t mode3_dispatch(uint32_t a0,uint32_t a1)
 {
   uint32_t v1 = *(uint32_t *)guest_at(a1);
   (void)a0;
   decomp_trace_record(0,a0,a1,(uint8_t)v1,0);
-  if (v1 == 1) { lzss_trap(a0,a1); return 0; }
-  if (v1 < 2) {
-    if (v1 == 0) return block_copy_ret_len(a0,a1);
-  } else if (v1 == 2) return lzss_decode(a0,a1);
-  return 2;
+  if (v1 == 0) return block_copy_ret_len(a0,a1);
+  if (v1 == 1) return 1;
+  if (v1 == 2) return lzss_decode(a0,a1);
+  return 0;
 }
 
 /* slot_status_fill — 24-slot status byte fill: for i<24, rec =
@@ -4171,12 +4172,17 @@ poll:
 int32_t menu_res_load_sm(uint32_t a0,uint8_t *s4,uint8_t *s5,int32_t s2)
 {
   extern int br2_bail_pending(void);
+  extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
   uint8_t *s1 = (uint8_t *)guest_at(a0);
   int32_t s3 = 0;
   int32_t s0;
   int32_t v0;
 
   v0 = (int32_t)*(int16_t *)(s1 + 0x8c);
+  /* DIAG: record every menu_res_load_sm entry (a0, s4 guest, s5 guest, s2,
+   * incoming s1+0x8c state) so versus-vs-arcade load coverage is provable. */
+  decomp_trace_record(61,a0,s4?guest_of(s4):0,(uint8_t)s2,(uint32_t)v0);
+  decomp_trace_record(62,a0,s5?guest_of(s5):0,(uint8_t)s2,(uint32_t)v0);
   s3 = 0;
   if (v0 < 0) return v0;
   *(int16_t *)(s1 + 0xd2) = 0;
@@ -7251,6 +7257,9 @@ L30:
   heapA = g32(0x801c47b8);
   s4[0xb] = 0;
   *(uint32_t *)(s4 + 0x30) = heapA;
+  /* DIAG: FC_ANI bind — record which fighter block gets which heap ptr. */
+  { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+    decomp_trace_record(63,guest_of(s4),guest_of(s4)+0x30,0,heapA); }
   sz = *(uint32_t *)guest_at(heapA);   /* lw (v0): size at heap head */
   BR2_W32(0x801c47b8, heapA + sz);
   s0 = 0x40;
