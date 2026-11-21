@@ -285,3 +285,26 @@ Done-condition compares progress vs total + session flag + timeouts.
 doesn't reach the target the poll returns busy→timeout→retry. NEXT live
 check on attract instance: read `0x801BCB80/94/98/9C/A4` to see whether
 `bcb94` is decrementing (sectors consumed) or frozen (consumer stalled).
+
+## BREAKTHROUGH — fresh boot reaches attract demo combat; FMV is fidelity gap not blocker
+
+Live capture on fresh instance :6800 (no input, straight boot):
+
+- Boot -> intro FMV: MDEC decoded to output_pos=10,829,576 / 12,393,216
+  (~87%), then decode_input_pos pinned at 3796/3840 and dma_in_words froze
+  at 111,520 -> **MDEC input starvation** (encoded stream stops reaching
+  MDEC input DMA; CD reads themselves complete: bcb94 prog 51->0, next
+  94-sector session issued, sectors flowing lba~8537).
+- intro_movie_state byte @0x1f80008c = -1 (idle) -> state machine exited.
+- Game then entered ATTRACT DEMO FIGHT: phase ptr @0x1f800004 cycles
+  0x801E40A0 <-> 0x801E61F0 (identical signature to versus combat),
+  frames advancing ~170/s, 0x3A vblank timestamp region live.
+
+CONCLUSION: the attract-FMV wedge is a VIDEO-FIDELITY gap (intro stream
+stalls ~87%, MDEC starved for input), NOT a gameplay blocker. The game
+fails gracefully past it and reaches a live CPU-vs-CPU demo fight —
+i.e. core gameplay/attract/combat all work end-to-end on HEAD.
+
+Remaining fidelity bug to fix: WHY the decompressed FMV stream stops
+reaching MDEC input (mdec_pump_b / lzss_decode / stream_block_decode feed
+path), so the intro video renders fully instead of stalling at ~87%.
