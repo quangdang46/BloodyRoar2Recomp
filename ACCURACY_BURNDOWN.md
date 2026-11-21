@@ -3256,3 +3256,54 @@ NEXT (agent 6f4499b3 running): trace the origin of the pc=0x29CC bad jump
 versus task/prim tables (0x801bf860/0x801c0940) and fighter-ctrl +0x1c/+0x20/
 +0x30 binds for a versus-specific bad pointer, and diff the starved-event
 wait against the working arcade ph=8 path.
+
+=== N+209 — versus ph=8 stall ROOT-CAUSED: dangling FC_ANI into reused staging buffer ===
+Agent 6f4499b3 proved the versus stall is a FAIL-FAST unknown dispatch, NOT an
+IRQ/event starvation and NOT the pc=0x29CC low-memory jump (that was a
+red-herring symptom of the halted dispatcher). Full causal chain verified
+live (port 4950, same frame-3939 stall):
+
+- Host stack: ... battle_flow_state_machine -> fighter_frame -> action_commit
+  -> ev_stream_dispatch -> br2_call_generated -> psx_unknown_dispatch ->
+  psx_fatal_halt. psx_last_run_report: FAIL-FAST unknown dispatch
+  addr=0x80122E50 ra=0x80126664 — 0x80122E50 is inside a STRING table
+  ("QUICK","PUNCH","HIGH"...), not code.
+- ev_stream_dispatch (resolve.c:3094): op>=24 -> h=*(0x801b4e68+op*4) ->
+  br2_call_generated(h). Guest handler table 0x801B4E68 has ~48 real
+  handlers; entries 48+ point into 0x80122bxx string/data; index 207 =
+  0x80122E50. Guest does lbu op -> op*4 -> +0x801B4E68 -> lw -> jalr with NO
+  bounds check (faithful — real HW would jump there too; this op combo
+  never legitimately occurs).
+- decomp_trace: P2 motion 0x801F5440 last good op=14; byte at stream pc
+  0x800D9F9C = 0xCF (207) -> table[207]=0x80122E50 -> jalr -> fatal. Stream
+  pc points into BINARY PACKED DATA, not an event stream.
+- WHY stream pc is bad — DANGLING FC_ANI: P2 ctrl=0x1F8001F0, motion=
+  0x801F5440, ctrl+0x30 (FC_ANI)=0x800D9F98 does NOT contain an .ANI header
+  (P1's real one at 0x800771D4 does). apply() (action.c:92) faithfully
+  relocated garbage section offsets -> action_switch_guest computed
+  stream ~= FC_ANI = 0x800D9F98.
+- gwatch on 0x1F800220 (P2 ctrl+0x30): EXACTLY ONE write in the whole run —
+  frame 1850, save_state_machine_alt+0x4d8 L30 store during an earlier
+  resource load (attract/preview). The versus ph=8 fight NEVER re-bound
+  FC_ANI.
+- The versus fight's own loads (file_load tag-10 records, caller ra
+  0x80126664/0x80126594 = generated battle-init, NOT menu_res_load_sm /
+  save_state_machine_alt) fetched file_ids 0x14/0x8B/0x16 all to staging
+  0x800D0000 (~80KB covering 0x800D0000-0x800E4000) — OVERWRITING the .ANI
+  bytes at 0x800D9F98 that FC_ANI still points to.
+
+CONCLUSION: P2's FC_ANI dangles into the 0x800d0000 staging buffer — bound
+once at frame 1850, trashed by versus stage/fighter loads, never re-bound.
+apply() parses foreign file data as an .ANI header -> garbage event-stream
+pc -> opcode 0xCF -> jalr into string table -> FAIL-FAST. Matches N+202
+non-determinism (whether the versus resource commit completes/rebinds before
+fighters animate varies per run — N+207 saw a live fight). The clean ports
+(ev_stream_dispatch, action_switch_guest, apply, save_state_machine_alt) are
+faithful — verified instruction-level vs generated. OPEN QUESTION is upstream
+in generated battle-init (ra 0x801266xx): does faithful versus re-bind FC_ANI
+before ph=8 (scheduling/bail issue), or does the recomp heap cursor diverge so
+the preview .ANI lands inside the staging range (heap over-production class)?
+NEXT: gwatch 0x801C47B8 (heap-A cursor) + menu_res_load_sm /
+save_state_machine_alt entry during versus; diff heap layout vs arcade.
+Repro instance left live: port 4950 (pid 1527), stalled frame 3939, gwatch
+armed on 0x1F800220.
