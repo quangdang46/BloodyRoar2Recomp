@@ -1,4 +1,17 @@
-# Arcade DAT1=3 wedge — battle_init guest-frame fix + residual CD-dispatch stall
+# Arcade DAT1=3 wedge — battle_init frame fix + spawn-phase starvation (CD is HEALTHY)
+
+## ⚠ CORRECTION (agent 7f928e12, port 8930) — CD is NOT the bug
+All earlier "CD stall" theories in this doc were WRONG. Live evidence:
+- CD finished ALL reads correctly and is **idle/healthy**: `reading=0`,
+  `response_count=1/1` (the last Pause response legitimately resident),
+  `irq_flag=0`, `i_stat=0`, `cd_intc_dispatch` (0x8019A8EC) ticks EVERY
+  frame → **IRQs are NOT masked**; the `cd_state_blk_save` in-service
+  flag @0x801bcd18=1 is normal/benign, not an open critical section.
+- `sector_read_pos=2060/2340` is NORMAL Mode-2 layout (12B header +
+  2048B user consumed; 280B EDC/ECC tail intentionally unread).
+- The wedge is **game-logic spawn-phase starvation** in `battle_frame`
+  DAT1=3, detailed below. Treat every "CD deferred-coroutine / IRQ /
+  response-FIFO" hypothesis in this file as SUPERSEDED.
 
 ## Status
 - HEAD before: `8d84f45` (versus fix). This change adds the same
@@ -173,16 +186,50 @@ save/restore imbalance — the binding DAT1=3 constraint); agent
 474880e3 owns Wedge A (CPU press-start / slot1 controller-type, see
 "Sharpened wedge" above); frame-audit agent 251d7926 DONE (002997d).
 
-## Residual / open
-`battle_init` fix is faithful and verified (bringup completes, battle_frame
-live, CD IRQs fire). The earlier "cd_intc_dispatch in-service-stuck" reading
-was a downstream symptom of the live battle loop's CD-timer pacer, NOT the
-root cause — native `sample` proved the game sits in
-`battle_flow_state_machine→battle_frame→frame_tick→cd_timer_read` with
-`present_cdrom_irq`/`cdrom_advance` active. The REAL residual wedge is the
-CPU-opponent input path above (`+0xb6`/`+0x6a` 0x800 edge). ~35 unreserved
-`guest_at(guest_sp()-N)` sites remain across game/*.c — audit in progress
-(agent 251d7926) in case one still corrupts the CPU record/input path.
-Active-path suspects already cleared: frame_tick, battle_bringup_a,
-deferred_cmd_drain (all clean). cd.c:509 is inside a `#if 0` reference
-body (not compiled).
+## Residual / open — spawn-phase starvation (the REAL wedge)
+
+`battle_init` fix is faithful and verified (bringup completes,
+`battle_frame` live, CD IRQs fire every frame). The wedge is now
+precisely the **inner `battle_frame` spawn gate**, NOT CD:
+
+- `battle_frame` DAT1=3 → `fighter_spawn_setup` (game/menu.c:3767). Per
+  player it commits spawn only when `*(u32*)(rec+0x10)==1 &&
+  (phase@0x1f8000b4/b6 & 0xf00)==0x700` (menu.c:3786-3789). On commit it
+  writes `s3[1]=2` (DAT1 3→2→case2→3, one player per pass, then return).
+- `battle_config_eval` (menu.c:4007) advances per-player phase u16
+  through classes 0x100/0x200/0x300/0x600/0x700/0x800/0x900. Phase-0x300
+  with intro-class `+0x92==0x100` only ANNOUNCES (`L_B0_774`,
+  menu.c:4104-4116) and waits for `+0x92` to progress — it does NOT
+  advance to 0x700 on its own.
+- `battle+0x92` intro class set once by `confirm_bookkeeping`
+  (menu.c:3937-3978, values 0x100-0x400 from select_phase_gate); low
+  byte ticked by `battle_sides_commit`/post-battle (menu.c:4860-4877).
+- LIVE blocked state: `+0x92=0x0100` (intro class 0x100 substate 0),
+  `+0x9b=0`, `+0x9c=0`, phases `+0xb4=0x0300` `+0xb6=0x0000`, fighter
+  recs `0x801C1200`/`0x801C122C`. P0 armed to 0x300; P1 (CPU) phase
+  record never seeded.
+
+Circular-wait hypothesis (agent 7f928e12): spawn waits phase==0x700;
+phase-0x300 advance waits `+0x92` progression; `+0x92` progression may
+depend on `battle_intro_fsm` (`_DAT_801f0738`, game/battle.c:8827) which
+only runs inside the fight-render path AFTER spawn — OR on a
+task/script callback (`0x801b2ed8`/`0x801b2ef4`, allocated menu.c:3818)
+silently not running.
+
+Two sub-wedges now distinguished:
+- **Wedge A (seeding):** P1 `+0xb6` never leaves 0 — CPU press-start
+  edge never synthesized (slot1 = physical pad, no AI feed). Agent
+  474880e3 owns this.
+- **Wedge C (advancement):** BOTH players stuck at phase 0x300 →
+  `+0x92` intro class stuck 0x100 → never reach spawn's required 0x700.
+  Affects P0 too, so INDEPENDENT of Wedge A. Candidates to trace:
+  `battle_intro_fsm`, `select_phase_update`,
+  `engine_record_pair_update` (generated 0x8014a708), channel-cursor
+  task callbacks `0x801b2ed8`/`0x801b2ef4`.
+
+Note: fntrace only observes generated-dispatch entries — clean-ported
+battle functions (battle_frame/frame_tick/battle_config_eval/
+fighter_spawn_setup) are invisible to it; use decomp_trace tags or a
+clean-entry probe. `gwatch` cannot watch `0x1f800001` (scratchpad
+mirror). Frame-audit sweep DONE (002997d) — ~20 sp-frame bugs fixed;
+none was the binding wedge.
