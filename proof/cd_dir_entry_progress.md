@@ -332,3 +332,26 @@ dir-entry cursors looked healthy (10/10/10) while the FMV starved: I was
 watching the wrong structure. The wedge = the FMV channel entry never
 reaches state==2 (or serial/date compare fails), so cd_channel_poll never
 returns a handle -> MDEC input starves -> video stalls ~87%.
+
+## CORRECTION (agent a7c1e09f) — player combat does NOT reach real fighting
+
+Earlier "combat works" observations (gs=8 scene=3, phase cycling
+0x801E40A0<->0x801E61F0, mutating battle struct) were the battle-INIT
+state machine, NOT actual fighting. Rigorous check:
+
+- Arcade-1P and versus BOTH wedge inside battle-init CD-ROM loads.
+- `battle_init`/`menu_res_load_sm` -> `cd_stream_mode_init`/`cd_file_load_sm`
+  retry `cd_mode_flag_set`/`cd_mode_set_0e` forever; `cd_seek_trace` shows
+  19 IDENTICAL seeks; `pending_cmd=0x09 active=0 phase=1` frozen;
+  fighters hp=-1, posx=+-1024 spawn, action/motion static; inputs ignored.
+- ATTRACT DEMO (CPU-vs-CPU) DOES run real fight sim (decomp_trace evop/
+  battle80 records, fighter act/mpos change) because its data is resident.
+
+ROOT BLOCKER = AGENTS.md section8: "next file's seek never reaches the
+device — deferred command-issue / register-window doorbell in
+cd_seek_param_issue -> cd_reg_window_op -> worker." A RUNTIME/CD-command-
+issue bug, mode-independent, fires on stage/fighter file loads.
+
+This is THE critical blocker for player gameplay. It likely shares the
+CD-command machinery with the FMV wedge (both stall in CD command/seek
+issue, not in sector delivery — sectors flow fine to 2060).
