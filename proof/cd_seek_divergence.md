@@ -467,3 +467,21 @@ DeliverEvent(0xF0000009) -> stream controller never issues next read.
 The block is the game's audio-stream kick/completion path (likely
 sound-driver, possibly still generated/), NOT the file-load record machine
 (which is terminal/healthy) and NOT the runtime (agent d5cfe31a clean).
+
+---
+
+## CORRECTION: stall is an FMV (MDEC video), not XA audio
+
+fmv_state/mdec_state on wedged 6091:
+- mdec_decode_count=34257, decode_macroblocks=17103, dma_out_words=2892483
+- output_size=12394752, output_pos=10829580 (~87% decoded)
+- busy=0 (MDEC idle), decode_input_pos=3796/3840 (input consumed)
+- xa_stream_active=0, cd_dataready_fires=2410, cd_irq_delivered=2708
+- last_sector lba=8801 mode=0xA0 size=2340, sector_read_pos=2060/2340
+
+So the game is mid-FMV (vs-intro/attract movie): CD streams video sectors
+-> MDEC decodes -> framebuffer. Stream stalled at sector 2060/2340; MDEC
+starved for input (busy=0, input consumed); CD issued Pause and no more
+reads for ~350k frames. The CD->MDEC stream controller stopped issuing
+reads — same DeliverEvent(0xF0000009)/channel-flag family, consumer is
+MDEC not SPU.
