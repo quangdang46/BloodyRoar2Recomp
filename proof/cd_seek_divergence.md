@@ -413,3 +413,31 @@ the DeliverEvent(0xF0000009). fntrace: queue_drain+state_rx run; queue_service
 The break is the clean-C record-machine commit/issue GATING — a mistranslated
 compare/condition or a delegated wrapper dropping a side-effect. Fresh agent
 cadad74f tracing the exact flush->state_commit->DeliverEvent trigger.
+
+---
+
+## CORRECTION (agent cadad74f): record machine is HEALTHY, not stuck
+
+fntrace "state_commit/queue_service never fire" was a LOGGING ARTIFACT —
+call_guest/clean-table paths don't emit fntrace entries; only
+br2_call_generated callees are logged. Live fntrace (correct targets)
+shows the FULL round-robin every frame per record: ctx_fn_send, flush_a,
+flush_b, issue_poll, dev_cmd_process -> state_rx -> queue_drain. The two
+records (0x801FF080/0x801FF170) are in a legitimate TERMINAL state:
+rec[70]=0xFF, rec[73]=2, rec[232]=4 -> state_rx ret 255, state_commit ret 0
+(verified faithful vs generated full_50.c:6245+). op_frame_advance
+starvation is consistent with idle queue, not a mistranslation.
+
+REAL remaining gap: DeliverEvent(0xF0000009,0x20) has ONE emitter —
+cd_dma_chan_reset via cb7_run walking DICR done-bits -> cb7 table @0x801BDDF4
+which has a handler ONLY at index4 (ch4/SPU -> 0x8019B7E0). All done bits
+are 0 (DICR=0x00900000). So the awaited event needs a PSX DMA ch4 done
+that never arrives. ch4 regs (MADR=0x4F6E0 BCR=0x0F930010 CHCR=0x201,
+bit24=0) look like stale residue of an old RAM->SPU sound upload OR an
+un-kicked transfer. The CD data path uses the CD's INTERNAL engine
+(cd_dma_xfer_start_b reg-window strobe), NOT PSX DMA ch3.
+
+OPEN: which guest path should kick the awaited ch4/SPU transfer (likely
+CD-audio/XA streaming for versus/attract) whose done delivers the event?
+Agent 5da22cd8 tracing the ch4 kick producer + whether versus/arcade
+enables CD-audio streaming via SPU ch4.
