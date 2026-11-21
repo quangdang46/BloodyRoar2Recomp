@@ -16863,8 +16863,9 @@ void LAB_80137cd0(int *param_1)
           ((void (*)(uint32_t,int,int))fn)((uint32_t)param_1[0],(int)*psVar4,(int)psVar4[1]);
         }
         else {
-          br2_call_generated(0x801acb08u,(uint32_t)param_1[0],
-                             (uint32_t)(int)*psVar4,(uint32_t)(int)psVar4[1],0);
+          fighter_chan_delta_accum((uint32_t)param_1[0],
+                                   (uint32_t)(int)*psVar4,
+                                   (uint32_t)(int)psVar4[1],0);
         }
       }
     }

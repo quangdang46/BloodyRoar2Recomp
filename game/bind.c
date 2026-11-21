@@ -983,6 +983,7 @@ extern void gte_ofs_set(int32_t,int32_t);
 extern uint32_t gte_screen_init_defer(void);
 extern uint32_t gte_sqr_vec3_b(uint32_t,uint32_t);
 extern uint32_t bios_svc6(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+extern uint32_t * gte_xform3_t_ip(uint32_t *param_1, uint16_t *param_2);
 extern void br2_bios_tramp(uint32_t,uint32_t);
 extern void gpu_state_patch_defer(void);
 extern void FUN_8018e300(void);
@@ -1920,8 +1921,8 @@ int FUN_8018b100(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,
             /* jal 0x80186F5C (gte_xform3_t_ip): $a0=$s5,
              * $a1=prim+0x20, $a2/$a3 = live leftovers. */
             c->gpr[5] = prim + 0x20;
-            br2_call_generated(0x80186f5cu, s5, prim + 0x20,
-                               c->gpr[6], c->gpr[7]);
+            gte_xform3_t_ip((uint32_t *)guest_at(s5),
+                            (uint16_t *)guest_at(prim + 0x20));
             /* lwc2 gte[0]=rec[1], gte[1]=rec[2]; GTE cmd 0x0480012 */
             setCopReg(2, BR2_GTE_REG(0),  br2_ld32(s0 + 4));
             setCopReg(2, BR2_GTE_REG(1),  br2_ld32(s0 + 8));
@@ -1938,8 +1939,8 @@ int FUN_8018b100(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,
             /* jal 0x80186F5C again: $a0=$s4, $a1=0x1F8003C0. */
             c->gpr[5] = 0x1f8003c0u;
             c->gpr[4] = s4;
-            br2_call_generated(0x80186f5cu, s4, 0x1f8003c0u,
-                               c->gpr[6], c->gpr[7]);
+            gte_xform3_t_ip((uint32_t *)guest_at(s4),
+                            (uint16_t *)guest_at(0x1f8003c0u));
             /* task-entry loop: s2 = lw(rec+0x1C) -> [count][16B entries] */
             s2 = br2_ld32(s0 + 0x1c);
             c->gpr[5] = s1;                     /* move $a1,$s1 once */
