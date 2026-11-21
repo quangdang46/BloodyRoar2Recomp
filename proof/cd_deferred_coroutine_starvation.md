@@ -205,3 +205,13 @@ response/event for THIS operation is never recognized/completed).
 This points INTO the generated cd_response_process(0x80196370)/
 cd_mc_state_machine(0x80199440) response-classification: they run but
 do not match/complete the pending op's response -> flag stays unset.
+
+## Channel-state region live (:7200)
+
+cd_intc_dispatch reads channel globals ~0x801BDD44/48 (cd_chan_mode_set
+region). Live dump: 0x801bdd40-0x801bdd7c ALL ZERO; 0x801bde44/48=0,
+0x801bde4c=0x0000FFFE. Consistent with a CD init stage never completing —
+the coroutine (cd_chan_full_init->0x8019A87C) waits for the prior stage's
+done-signal that cd_response_process/cd_mc_state_machine never sets.
+Ready path 0x8019A88C -> cd_init_stage_a(0x8019AE10) is the NEXT init
+stage, confirming this is the CD subsystem init sequence stalling.
