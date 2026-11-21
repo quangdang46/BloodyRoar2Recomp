@@ -492,7 +492,7 @@ extern int blk_io_retry(int,int*);
 extern void cd_stream_mode_init(uint32_t);
 extern void gpu_clear_image_cmd2(undefined4,int,int,int);
 extern void gpu_pkt_attr_set(int,int);
-extern void cd_fileop_forward(int,int);
+extern void cd_fileop_forward(uint32_t,uint32_t);
 extern void tile_decode_wait(int,int);
 extern void display_frame_present(int*,int);
 extern int  cd_cmd_issue_sync(int,int,int);

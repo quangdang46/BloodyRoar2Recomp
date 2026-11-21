@@ -126,7 +126,7 @@ extern uint32_t spr_attr_alloc_a(uint32_t,int16_t,int16_t,int16_t,int16_t,uint32
 extern int cd_file_load_sm();
 extern int printf_forward();
 extern int cd_fileop_reset();
-extern int cd_fileop_forward();
+extern void cd_fileop_forward(uint32_t,uint32_t);
 extern int cd_fileop_dispatch();
 extern int gpu_disp_mask_set();
 extern int gpu_draw_sync();
@@ -11474,8 +11474,10 @@ void hp_bar_tick(void)
     adj = cnt - 1;
     if ((int32_t)adj < 0) adj = cnt + 0xe;
     prod = (uint32_t)((int32_t)(v1 * ((adj >> 4) + 1)));
+    /* cd_fileop_forward forwards only a0/a1 to mdec_pump_b; cnt/prod
+     * (a2/a3) are dead registers in the guest thunk. */
     cd_fileop_forward(MB32(a1 + (MB32(a1 + 0x14) * 4u) + 0xc),
-                 prod >> 1, cnt, prod);
+                 prod >> 1);
   } else {
     /* a0 still = lh(entry+0x1c): unsigned idx<a0 flag, +0x34 and
      * the 0x801f473c gate store that sx16 value. */

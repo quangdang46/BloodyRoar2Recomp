@@ -107,6 +107,10 @@ for path in files:
     src = open(path).read()
     code = re.sub(r'/\*.*?\*/', lambda m: '\n' * m.group(0).count('\n') + ' ' * (len(m.group(0)) - m.group(0).count('\n')), src, flags=re.S)
     code = re.sub(r'//[^\n]*', '', code)
+    # Blank preprocessor-directive lines (#undef/#define/#if/...): their text
+    # (e.g. "undef local_39") is not a C prototype and otherwise leaks into the
+    # preceding function's return-type capture, corrupting the emitted extern.
+    code = re.sub(r'(?m)^[ \t]*#[^\n]*', '', code)
     for m in re.finditer(r'([A-Za-z_][\w\s\*]*?)\b([A-Za-z_]\w*)\s*\(', code):
         name = m.group(2)
         if name in defs:

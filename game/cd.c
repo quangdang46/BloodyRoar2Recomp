@@ -884,7 +884,7 @@ uint32_t cd_cmd_retry(uintptr_t param_1)
 }
 
 /* ---- batch30: file-pump dispatch wrappers ---- */
-extern void mdec_pump_b(void);
+extern void mdec_pump_b(uint32_t,uint32_t);
 extern void mdec_pump_a(int32_t);
 extern void cd_dispatch_tblc(void);
 
@@ -894,10 +894,14 @@ void cd_fileop_dispatch(uint32_t param_1)
   cd_dispatch_tbl4(1,param_1);
 }
 
-/* cd_fileop_forward — forward to mdec_pump_b. */
-void cd_fileop_forward(void)
+/* cd_fileop_forward — forward to mdec_pump_b. The generated body
+ * (0x8018FA30) is a pure thunk: it saves ra and jal's mdec_pump_b with the
+ * caller's a0-a3 still live in gpr[4..7], so mdec_pump_b sees the original
+ * arguments. mdec_pump_b only consumes a0/a1 (gpr[4]/gpr[5]); a2/a3 are
+ * dead. Faithful signature is therefore (a0,a1). */
+void cd_fileop_forward(uint32_t param_1,uint32_t param_2)
 {
-  mdec_pump_b();
+  mdec_pump_b(param_1,param_2);
 }
 
 /* cd_fileop_reset — param_1==0 resets via cd_dispatch_tblc, then mdec_pump_a. */

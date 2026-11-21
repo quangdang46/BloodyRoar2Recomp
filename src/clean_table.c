@@ -3254,8 +3254,8 @@ extern void gpu_pkt_attr_set(uint32_t param_1,int param_2);
     gpu_pkt_attr_set(((uint32_t)cpu->gpr[4]), ((int)cpu->gpr[5]));
 }
 static void wrap_8018fa30(CPUState *cpu) {
-extern void cd_fileop_forward(void);
-    cd_fileop_forward();
+extern void cd_fileop_forward(uint32_t param_1,uint32_t param_2);
+    cd_fileop_forward(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]));
 }
 static void wrap_8018fa50(CPUState *cpu) {
 extern uint32_t file_state_bit29_query(int param_1);
@@ -3956,8 +3956,8 @@ extern uint32_t cd_strncmp(undefined4 param_1,undefined4 param_2,undefined4 para
     cpu->gpr[2] = (uint32_t)(cd_strncmp(((undefined4)cpu->gpr[4]), ((undefined4)cpu->gpr[5]), ((undefined4)cpu->gpr[6])));
 }
 static void wrap_80198590(CPUState *cpu) {
-extern uint32_t cd_init_done_cb(void);
-    cpu->gpr[2] = (uint32_t)(cd_init_done_cb());
+extern void cd_init_done_cb(void);
+    cd_init_done_cb();
 }
 static void wrap_80198fe4(CPUState *cpu) {
 extern void cd_mc_sm_wrap(void);
