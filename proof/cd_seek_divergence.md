@@ -320,3 +320,24 @@ ph=8 was an intermittent pass. Recent clean-C CD/record work is exonerated
 as the cause; the bug is the deep event/completion path the two running
 agents are now hunting (runtime DMA/SPU done-IRQ vs game record/event
 commit condition).
+
+### PRECISE BREAKPOINT: ch4/SPU DMA never completes -> no DICR done-bit28
+
+Handler table @0x801BDDF4 (indexed by DICR done-bit position = HW ch):
+- ch0..ch3,ch5,ch6 = 0 (ch3/CDROM NULL, ch6 OTC NULL)
+- ch4 @0x801BDE04 = 0x8019B7E0 -> cd_dma_chan_reset -> DeliverEvent
+- callback ptr 0x801bdee8 = 0 -> DeliverEvent path (not callback)
+
+DICR=0x00900000: IME4 (ch4 IRQ enable, bit20) SET, master-enable bit23 SET,
+but done-bits24-30 ALL CLEAR -> ch4 done-bit28 never latched.
+
+=> The ONLY path to DeliverEvent(0xF0000009,0x20) is ch4 DMA completion.
+ch4 (SPU) CHCR=0x201 (start+chopping) but active=0 and BCR=0x0F930010 —
+the transfer never runs to completion in the sim, so complete_transfer()
+never latches DICR bit28 -> IRQ3 never fires -> intc_dispatch->cb7_run
+never dispatches -> DeliverEvent never fires -> TestEvent spins.
+
+ROOT CAUSE CANDIDATE: psxrecomp/runtime/src/dma.c ch4/SPU channel — a
+started CHCR whose transfer does not execute/complete (direction, BCR
+count decode, or SPU-side handshake stalls it), leaving CHCR.start set,
+active=0, no done bit. This is the unified wedge for arcade ph=3 + versus.
