@@ -208,3 +208,51 @@ reliable) genuinely 0 hits.
 Open question: does the game need those last 280 bytes (mid-sector stall)
 or did it consume what it needed and is blocked waiting for the next
 command/state-machine step that never fires?
+
+## FURTHER CORRECTION — cd_mc_state_machine pc_probe was ALSO a false negative
+
+`cd_mc_state_machine` (0x80199440) is clean-DECLARED but its body is
+`br2_call_generated(0x80199440)` — a HOST-side call into the generated
+function that bypasses the instrumented cpu->pc block-dispatch loop.
+Like clean-C functions, `pc_probe` on 0x80199440 shows 0 hits even when
+it RUNS. "Never runs" was not proven.
+
+## The real wedge (agent 21d332ad + live cursors)
+
+Movie loop = `scene_entry` (0x80159028): per frame it calls
+gpu_pkt_attr_set→mdec_decode_issue (feed MDEC) BEFORE blk_io_retry
+(CD chunk wait). MDEC starves because blk_io_retry never returns:
+
+  blk_io_retry(0x80159a14) → mc_date_serial_cmp(0x80159ab4, generated)
+    → cd_channel_poll(0x80199360) waits dir/channel entry state==2
+    → cd_dir_entry_finalize(0x801990f0) sets state=2, gated by
+      entry[+6]-1 == entry[+4]  (progress vs expected)
+
+Live cursors @0x801fc6a0:
+  submit 0x801fc6a4 = 2     (producer issued ~2 entries)
+  finalize 0x801fc6a8 = 0
+  poll/consume 0x801fc6ac = 30 (0x1E)  → entry 0x80010000+30*0x20
+  table base 0x801fc6c0 = 0x80010000, stride 0x20
+
+MISMATCH: consumer cursor=30 but producer only issued ~2 entries.
+Entry 30 @0x800103C0 content is not a clean dir-entry (first word
+0x80010000 = table base, rest looks like stream data) → the producer
+never created entries the consumer is waiting on.
+
+## Open question (faithful fix target)
+
+Who advances the consume cursor 0x801fc6ac to 30 and who is supposed to
+create dir-entries 3..30? Two candidates:
+  a) cd_dir_entry_probe (0x80199270) sets the consume cursor via its
+     magic-div — verified faithful, so cursor=30 is "correct" per game
+     math → producer is simply BEHIND (cd_mc_state_machine not issuing
+     enough reads because it early-outs / isn't driven).
+  b) The per-sector progress credit entry+4 comes from the CD
+     response→channel-ready consumer, not yet identified.
+
+cd_mc_state_machine DOES run the entry walk + issue reads + call
+cd_dir_entry_finalize — but only when invoked (cd_mc_sm_wrap via
+cd_response_pump flag-4, or hp_bar_tick gate 0x801fc68c). Whether it
+runs-and-fails vs never-runs is unresolved (br2_call_generated hides
+it from pc_probe). Next: instrument cd_mc_state_machine entry via a
+side-effect counter or fntrace on a NON-delegated inner address.
