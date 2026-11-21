@@ -184,7 +184,7 @@ extern uint8_t  *g_DAT_801b43f0;
 #define DAT_801b55d0   (*(uint8_t *)g_DAT_801b55d0)
 #define DAT_801bdde0   (*(uint32_t *)g_DAT_801bdde0)
 #define DAT_801bef60   (*(uint8_t *)g_DAT_801bef60)
-#define DAT_801bef64   (*(uint32_t *)g_DAT_801bef64)
+#define DAT_801bef64   (*(uint8_t *)g_DAT_801bef64) /* guest lbu @0x801bef64 (0x80157a00) */
 #define DAT_801bef67   (*(uint8_t *)g_DAT_801bef67)
 #define DAT_801bef68   (*(uint8_t *)g_DAT_801bef68)
 #define DAT_801bef69   (*(uint8_t *)g_DAT_801bef69)
@@ -193,7 +193,7 @@ extern uint8_t  *g_DAT_801b43f0;
 #define DAT_801bef6e   (*(uint8_t *)g_DAT_801bef6e)
 #define DAT_801bef6f   (*(uint8_t *)g_DAT_801bef6f)
 #define DAT_801bef72   (*(uint16_t *)g_DAT_801bef72)
-#define DAT_801bef74   (*(uint32_t *)g_DAT_801bef74)
+#define DAT_801bef74   (*(uint16_t *)g_DAT_801bef74) /* guest lhu/sh @0x801bef74 (0x80157a00) */
 #define DAT_801bef76   (*(uint16_t *)g_DAT_801bef76)
 #define DAT_801bef78   (*(uint32_t *)g_DAT_801bef78)
 #define DAT_801bef80   (*(uint32_t *)g_DAT_801bef80)
@@ -232,10 +232,10 @@ extern uint8_t  *g_DAT_801b43f0;
 #define PTR_DAT_801b4618   (*(uint32_t *)g_PTR_DAT_801b4618)
 #define _DAT_1f800008   (*(uint32_t *)g__DAT_1f800008)
 #define _DAT_1f80000c   (*(uint32_t *)g__DAT_1f80000c)
-#define _DAT_1f80007c   (*(uint32_t *)g__DAT_1f80007c)
-#define _DAT_1f800082   (*(uint32_t *)g__DAT_1f800082)
+#define _DAT_1f80007c   (*(uint16_t *)g__DAT_1f80007c) /* guest lhu @0x1f80007c (0x8015f6a0) */
+#define _DAT_1f800082   (*(uint16_t *)g__DAT_1f800082) /* guest sh @0x1f800082 (0x8012b49c) */
 #define _DAT_1f800084   (*(uint32_t *)g__DAT_1f800084)
-#define _DAT_1f80008c   (*(uint32_t *)g__DAT_1f80008c)
+#define _DAT_1f80008c   (*(int16_t *)g__DAT_1f80008c) /* guest sh/lh @0x1f80008c */
 #define _DAT_1f8000b8   (*(uint32_t *)g__DAT_1f8000b8)
 #define _DAT_801c15f0   (*(uint32_t *)g__DAT_801c15f0)
 #define _DAT_801e8508   (*(uint32_t *)g__DAT_801e8508)
@@ -255,7 +255,7 @@ extern uint8_t  *g_DAT_801b43f0;
 #define _DAT_801f26a0   (*(uint16_t *)g__DAT_801f26a0)
 #define _DAT_801f26a2   (*(uint16_t *)g__DAT_801f26a2)
 #define _DAT_801f26a8   (*(uint32_t *)g__DAT_801f26a8)
-#define _DAT_801f36c0   (*(uint32_t *)g__DAT_801f36c0)
+#define _DAT_801f36c0   (*(uint16_t *)g__DAT_801f36c0) /* guest sh @0x801f36c0 (0x801561c8) */
 #define PTR_s___BloodyRoar2__byRAIZINGver1_60_801b43f0 ((uint8_t *)guest_at(*(uint32_t *)g_DAT_801b43f0))
 #define SLOTSTR(i) ((char *)guest_at(g_PTR_u32_801b4160[i]))
 

@@ -129,7 +129,7 @@ extern uint32_t *g__DAT_801f022c;
 #define DAT_801b140c   (*g_DAT_801b140c)
 #define DAT_1f800098   (*g_DAT_1f800098)
 #define DAT_801f0228   (*g_DAT_801f0228)
-#define _DAT_801f022c  (*g__DAT_801f022c)
+#define _DAT_801f022c  (*(int16_t *)g__DAT_801f022c) /* guest lh/sh @0x801f022c (0x8012ee48,0x8012ecbc) */
 
 /* host hooks (guest-faithful names; runtime binds implementations) */
 extern void fighter_frame(byte*,uint8_t*);
@@ -1119,14 +1119,14 @@ extern uint8_t *g_DAT_8011f944, *g_DAT_8011f946, *g_DAT_8011f948, *g_DAT_8011f9c
 #define _DAT_1f8003f8   (*g__DAT_1f8003f8)
 #define _DAT_1f8003fc   (*g__DAT_1f8003fc)
 #define _DAT_801c4508   (*g__DAT_801c4508)
-#define _DAT_801f0298   (*g__DAT_801f0298)
-#define _DAT_801f029a   (*g__DAT_801f029a)
-#define _DAT_1f80038e   (*g__DAT_1f80038e)
-#define _DAT_1f800392   (*g__DAT_1f800392)
-#define _DAT_1f800396   (*g__DAT_1f800396)
-#define _DAT_1f80039a   (*g__DAT_1f80039a)
-#define _DAT_1f80039e   (*g__DAT_1f80039e)
-#define _DAT_1f8003a2   (*g__DAT_1f8003a2)
+#define _DAT_801f0298   (*(int16_t *)g__DAT_801f0298) /* guest lh @0x801f0298 (0x80137098) */
+#define _DAT_801f029a   (*(int16_t *)g__DAT_801f029a) /* guest lh @0x801f029a */
+#define _DAT_1f80038e   (*(uint16_t *)g__DAT_1f80038e) /* guest sh @0x1f80038e */
+#define _DAT_1f800392   (*(uint16_t *)g__DAT_1f800392) /* guest sh @0x1f800392 */
+#define _DAT_1f800396   (*(uint16_t *)g__DAT_1f800396) /* guest sh @0x1f800396 */
+#define _DAT_1f80039a   (*(uint16_t *)g__DAT_1f80039a) /* guest sh @0x1f80039a */
+#define _DAT_1f80039e   (*(uint16_t *)g__DAT_1f80039e) /* guest sh @0x1f80039e */
+#define _DAT_1f8003a2   (*(uint16_t *)g__DAT_1f8003a2) /* guest sh @0x1f8003a2 */
 #define _DAT_801f0228   (*g__DAT_801f0228)
 #define _DAT_801f04b0   (*g__DAT_801f04b0)
 #define _DAT_801f04c0   (*g__DAT_801f04c0)
@@ -1139,18 +1139,18 @@ extern uint8_t *g_DAT_8011f944, *g_DAT_8011f946, *g_DAT_8011f948, *g_DAT_8011f9c
 #define _DAT_801f0758   (*g__DAT_801f0758)
 #define _DAT_801f075c   (*g__DAT_801f075c)
 #define _DAT_801f0930   (*g__DAT_801f0930)
-#define _DAT_801f0938   (*g__DAT_801f0938)
+#define _DAT_801f0938   (*(int16_t *)g__DAT_801f0938) /* guest lh/sh @0x801f0938 */
 #define _DAT_801f093a   (*g__DAT_801f093a)
-#define _DAT_801f093c   (*g__DAT_801f093c)
+#define _DAT_801f093c   (*(int16_t *)g__DAT_801f093c) /* guest lh/sh @0x801f093c */
 #define _DAT_801f093e   (*g__DAT_801f093e)
 #define _DAT_801f0940   (*g__DAT_801f0940)
 #define _DAT_801f0944   (*g__DAT_801f0944)
-#define _DAT_801f4cb4   (*g__DAT_801f4cb4)
-#define _DAT_801f4cb8   (*g__DAT_801f4cb8)
-#define _DAT_801f4cba   (*g__DAT_801f4cba)
-#define _DAT_1f80037c   (*g__DAT_1f80037c)
-#define _DAT_1f80037e   (*g__DAT_1f80037e)
-#define _DAT_1f800380   (*g__DAT_1f800380)
+#define _DAT_801f4cb4   (*(int16_t *)g__DAT_801f4cb4) /* guest lh/sh @0x801f4cb4 (0x8016d244) */
+#define _DAT_801f4cb8   (*(int16_t *)g__DAT_801f4cb8) /* guest lh/sh @0x801f4cb8 */
+#define _DAT_801f4cba   (*(int16_t *)g__DAT_801f4cba) /* guest lh/sh @0x801f4cba */
+#define _DAT_1f80037c   (*(int16_t *)g__DAT_1f80037c) /* guest lh/sh @0x1f80037c (0x8012d154,0x8012dce4) */
+#define _DAT_1f80037e   (*(int16_t *)g__DAT_1f80037e) /* guest lh/sh @0x1f80037e */
+#define _DAT_1f800380   (*(int16_t *)g__DAT_1f800380) /* guest lh/sh @0x1f800380 */
 #define _DAT_1f800388   (*g__DAT_1f800388)
 #define _DAT_1f8003cc   (*g__DAT_1f8003cc)
 #define _DAT_1f8003d0   (*g__DAT_1f8003d0)
@@ -1187,14 +1187,14 @@ extern uint8_t *g_DAT_8011f944, *g_DAT_8011f946, *g_DAT_8011f948, *g_DAT_8011f9c
 #define DAT_801f5218   (*g_DAT_801f5218)
 extern uint32_t *g__DAT_801f4f20, *g__DAT_801f50c0, *g__DAT_801f50d0, *g__DAT_801f50e4, *g__DAT_801f50f4, *g__DAT_801f5150, *g__DAT_801f5160, *g__DAT_801f5174, *g__DAT_801f5184, *g__DAT_801f5210, *g__DAT_801f5214;
 #define _DAT_801f4f20   (*g__DAT_801f4f20)
-#define _DAT_801f50c0   (*g__DAT_801f50c0)
-#define _DAT_801f50d0   (*g__DAT_801f50d0)
-#define _DAT_801f50e4   (*g__DAT_801f50e4)
-#define _DAT_801f50f4   (*g__DAT_801f50f4)
-#define _DAT_801f5150   (*g__DAT_801f5150)
-#define _DAT_801f5160   (*g__DAT_801f5160)
-#define _DAT_801f5174   (*g__DAT_801f5174)
-#define _DAT_801f5184   (*g__DAT_801f5184)
+#define _DAT_801f50c0   (*(uint16_t *)g__DAT_801f50c0) /* guest sh @0x801f50c0 (0x801737ec) */
+#define _DAT_801f50d0   (*(uint16_t *)g__DAT_801f50d0) /* guest sh @0x801f50d0 */
+#define _DAT_801f50e4   (*(uint16_t *)g__DAT_801f50e4) /* guest sh @0x801f50e4 */
+#define _DAT_801f50f4   (*(uint16_t *)g__DAT_801f50f4) /* guest sh @0x801f50f4 */
+#define _DAT_801f5150   (*(uint16_t *)g__DAT_801f5150) /* guest sh @0x801f5150 */
+#define _DAT_801f5160   (*(uint16_t *)g__DAT_801f5160) /* guest sh @0x801f5160 */
+#define _DAT_801f5174   (*(uint16_t *)g__DAT_801f5174) /* guest sh @0x801f5174 */
+#define _DAT_801f5184   (*(uint16_t *)g__DAT_801f5184) /* guest sh @0x801f5184 */
 #define _DAT_801f5210   (*g__DAT_801f5210)
 #define _DAT_801f5214   (*g__DAT_801f5214)
 extern code    **g_PTR_FUN_801b55c0;
@@ -3134,20 +3134,20 @@ extern uint8_t *g_DAT_801b1590, *g_DAT_801b1592, *g_DAT_801b55d0, *g_DAT_801f596
 #define DAT_801f5971   (*g_DAT_801f5971)
 extern uint32_t *g__DAT_801f0292, *g__DAT_801f02f6, *g__DAT_801f02f8, *g__DAT_801f04e4, *g__DAT_801f04e6, *g__DAT_801f04e8, *g__DAT_801f04ea, *g__DAT_801f04ec, *g__DAT_801f04ee, *g__DAT_801f04f0, *g__DAT_801f04f2, *g__DAT_801f04f4, *g__DAT_801f04f6, *g__DAT_801f04f8, *g__DAT_801f04fa;
 #define _DAT_801f0292   (*g__DAT_801f0292)
-#define _DAT_801f02f6   (*g__DAT_801f02f6)
-#define _DAT_801f02f8   (*g__DAT_801f02f8)
-#define _DAT_801f04e4   (*g__DAT_801f04e4)
-#define _DAT_801f04e6   (*g__DAT_801f04e6)
-#define _DAT_801f04e8   (*g__DAT_801f04e8)
-#define _DAT_801f04ea   (*g__DAT_801f04ea)
-#define _DAT_801f04ec   (*g__DAT_801f04ec)
-#define _DAT_801f04ee   (*g__DAT_801f04ee)
-#define _DAT_801f04f0   (*g__DAT_801f04f0)
-#define _DAT_801f04f2   (*g__DAT_801f04f2)
-#define _DAT_801f04f4   (*g__DAT_801f04f4)
-#define _DAT_801f04f6   (*g__DAT_801f04f6)
-#define _DAT_801f04f8   (*g__DAT_801f04f8)
-#define _DAT_801f04fa   (*g__DAT_801f04fa)
+#define _DAT_801f02f6   (*(uint16_t *)g__DAT_801f02f6) /* guest sh @0x801f02f6 (0x80143d38) */
+#define _DAT_801f02f8   (*(uint16_t *)g__DAT_801f02f8) /* guest sh @0x801f02f8 */
+#define _DAT_801f04e4   (*(int16_t *)g__DAT_801f04e4) /* guest lh/sh @0x801f04e4 (0x8014642c) */
+#define _DAT_801f04e6   (*(int16_t *)g__DAT_801f04e6) /* guest lh/sh @0x801f04e6 */
+#define _DAT_801f04e8   (*(int16_t *)g__DAT_801f04e8) /* guest lh/sh @0x801f04e8 */
+#define _DAT_801f04ea   (*(int16_t *)g__DAT_801f04ea) /* guest lh/sh @0x801f04ea */
+#define _DAT_801f04ec   (*(int16_t *)g__DAT_801f04ec) /* guest sh @0x801f04ec */
+#define _DAT_801f04ee   (*(int16_t *)g__DAT_801f04ee) /* guest sh @0x801f04ee */
+#define _DAT_801f04f0   (*(int16_t *)g__DAT_801f04f0) /* guest sh @0x801f04f0 */
+#define _DAT_801f04f2   (*(int16_t *)g__DAT_801f04f2) /* guest sh @0x801f04f2 */
+#define _DAT_801f04f4   (*(int16_t *)g__DAT_801f04f4) /* guest lh/sh @0x801f04f4 */
+#define _DAT_801f04f6   (*(int16_t *)g__DAT_801f04f6) /* guest lh/sh @0x801f04f6 */
+#define _DAT_801f04f8   (*(int16_t *)g__DAT_801f04f8) /* guest lh/sh @0x801f04f8 */
+#define _DAT_801f04fa   (*(int16_t *)g__DAT_801f04fa) /* guest lh/sh @0x801f04fa */
 extern void trig_lut_read(uint32_t,byte *);
 extern void trig_vel_flat(uint32_t,byte *);
 extern void trig_vel_up(uint32_t,byte *);

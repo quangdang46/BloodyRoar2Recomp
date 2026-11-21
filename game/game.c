@@ -258,7 +258,7 @@ extern uint8_t  *_g_system_config_ptr;
 #define _DAT_1f800020  (*(uint16_t *)g_DAT_1f800020)
 #define _DAT_1f800022  (*(uint16_t *)g_DAT_1f800022)
 #define _DAT_1f800024  (*(uint16_t *)g_DAT_1f800024)
-#define _DAT_1f80007c  (*(uint32_t *)g_DAT_1f80007c)
+#define _DAT_1f80007c  (*(uint16_t *)g_DAT_1f80007c) /* guest lhu @0x1f80007c (0x80147034,0x80159028,0x8015f6a0) */
 #define DAT_801bef90    (*(uint8_t *)g_DAT_801bef90)
 #define DAT_801befa8    (*(uint8_t *)g_DAT_801befa8)
 #define DAT_801befca    (*(uint8_t *)g_DAT_801befca)
@@ -271,7 +271,7 @@ extern uint8_t *_g_system_config_ptr;
 #define DAT_801c43a0    (*(uint32_t *)g_DAT_801c43a0)
 #define DAT_801c4578    (*(uint32_t *)g_DAT_801c4578)
 #define DAT_801c457c    (*(uint32_t *)g_DAT_801c457c)
-#define DAT_801c4580    (*(uint32_t *)g_DAT_801c4580)
+#define DAT_801c4580    (*(uint8_t *)g_DAT_801c4580) /* guest sb @0x801c4580 (0x80159028) */
 #define _DAT_801f68d8   (*(int32_t *)g__DAT_801f68d8)
 #define DAT_801b55ec    (*(uint8_t *)g_DAT_801b55ec)
 #define DAT_801c4581    (*g_DAT_801c4581)
@@ -295,8 +295,8 @@ extern uint8_t *_g_system_config_ptr;
 #define _DAT_801f4700   (*(uint32_t *)g_DAT_801f4700)
 #define _DAT_801f4708   (*(uint32_t *)g_DAT_801f4708)
 #define _DAT_801f4714   (*(uint32_t *)g_DAT_801f4714)
-#define _DAT_801f4730   (*(int32_t *)g_DAT_801f4730)
-#define _DAT_801f4732   (*(int32_t *)g_DAT_801f4732)
+#define _DAT_801f4730   (*(int16_t *)g_DAT_801f4730) /* guest lh @0x801f4730 (0x80159028) */
+#define _DAT_801f4732   (*(int16_t *)g_DAT_801f4732) /* guest lh @0x801f4732 */
 #define _DAT_801f473c   (*(uint32_t *)g_DAT_801f473c)
 #define _DAT_801f4740   (*(uint32_t *)g_DAT_801f4740)
 #define _DAT_801f4744   (*(uint32_t *)g_DAT_801f4744)
@@ -313,7 +313,7 @@ extern uint8_t *_g_system_config_ptr;
 #define _DAT_1f8000e4   (*(uint32_t *)g_DAT_1f8000e4)
 #define _DAT_1f800092   (*(uint16_t *)g_DAT_1f800092)
 #define _DAT_1f800088   (*(uint16_t *)g_DAT_1f800088)
-#define _DAT_1f80008c   (*(uint16_t *)g_DAT_1f80008c)
+#define _DAT_1f80008c   (*(int16_t *)g_DAT_1f80008c) /* guest sh/lh @0x1f80008c (-1 idle; cf. int16_t derefs below) */
 #define _DAT_1f80008e   (*(uint16_t *)g_DAT_1f80008e)
 #define _DAT_1f8000a8   (*(uint32_t *)g_DAT_1f8000a8)
 #define _DAT_1f8000ac   (*(uint32_t *)g_DAT_1f8000ac)

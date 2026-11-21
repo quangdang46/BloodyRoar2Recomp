@@ -150,7 +150,7 @@ extern uint8_t  *g_DAT_801bc7c0;
 #define DAT_801bcba8   (*(int32_t  *)g_DAT_801bcba8)
 #define DAT_801bcbac   (*(int32_t  *)g_DAT_801bcbac)
 #define DAT_801bcbb0   (*(int32_t  *)g_DAT_801bcbb0)
-#define DAT_801bc854   (*(uint32_t *)g_DAT_801bc854)
+#define DAT_801bc854   (*(uint8_t *)g_DAT_801bc854) /* guest lbu @0x801bc854 (0x80195be0) */
 #define DAT_801bc848   (*(uint32_t *)g_DAT_801bc848)
 #define DAT_801bc7c0   ((int32_t  *)g_DAT_801bc7c0)
 

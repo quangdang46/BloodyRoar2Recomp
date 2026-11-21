@@ -424,22 +424,22 @@ extern char *s_time_out_in_decoding___80120e90;
 #define PTR_DAT_801b4254   (*(uint32_t *)g_PTR_DAT_801b4254)
 #define _DAT_1f800004   (*(uint32_t *)g__DAT_1f800004)
 #define _DAT_1f800008   (*(uint32_t *)g__DAT_1f800008)
-#define _DAT_1f80000c   (*(uint8_t *)g__DAT_1f80000c)
-#define _DAT_1f800020   (*(uint8_t *)g__DAT_1f800020)
-#define _DAT_1f800022   (*(uint8_t *)g__DAT_1f800022)
-#define _DAT_1f80007c   (*(uint8_t *)g__DAT_1f80007c)
-#define _DAT_1f800080   (*(uint8_t *)g__DAT_1f800080)
-#define _DAT_1f800082   (*(uint8_t *)g__DAT_1f800082)
-#define _DAT_1f800088   (*(uint8_t *)g__DAT_1f800088)
-#define _DAT_1f80008c   (*(int16_t *)guest_at(0x1f80008c))
-#define _DAT_1f80008e   (*(uint8_t *)guest_at(0x1f80008e))
-#define _DAT_1f800090   (*(uint8_t *)guest_at(0x1f800090))
-#define _DAT_1f8000a4   (*(uint8_t *)g__DAT_1f8000a4)
+#define _DAT_1f80000c   (*(uint32_t *)g__DAT_1f80000c) /* guest lw/sw @0x1f80000c (e.g. 0x8014f260,0x80164ea4,0x801594a4) */
+#define _DAT_1f800020   (*(uint16_t *)g__DAT_1f800020) /* guest lhu @0x1f800020 (0x8014f260 et al) */
+#define _DAT_1f800022   (*(uint16_t *)g__DAT_1f800022) /* guest lhu @0x1f800022 */
+#define _DAT_1f80007c   (*(uint16_t *)g__DAT_1f80007c) /* guest lhu @0x1f80007c (0x80164ea4:0x801657d4 lhu) */
+#define _DAT_1f800080   (*(uint16_t *)g__DAT_1f800080) /* guest lhu @0x1f800080 (0x8015c754) */
+#define _DAT_1f800082   (*(uint16_t *)g__DAT_1f800082) /* guest lhu @0x1f800082 (0x8016fcc4) */
+#define _DAT_1f800088   (*(uint16_t *)g__DAT_1f800088) /* guest sh @0x1f800088 (0x8016fcc4) */
+#define _DAT_1f80008c   (*(int16_t *)guest_at(0x1f80008c)) /* guest sh/lh @0x1f80008c (-1 idle state, cf. game.c int16 deref) */
+#define _DAT_1f80008e   (*(uint16_t *)guest_at(0x1f80008e)) /* guest lhu/sh @0x1f80008e */
+#define _DAT_1f800090   (*(uint16_t *)guest_at(0x1f800090)) /* guest lhu/sh @0x1f800090 */
+#define _DAT_1f8000a4   (*(uint16_t *)g__DAT_1f8000a4) /* guest lhu @0x1f8000a4 (0x80167840) */
 #define _DAT_1f8000b4   (*(uint16_t *)g__DAT_1f8000b4)
 #define _DAT_1f8000b6   (*(uint16_t *)g__DAT_1f8000b6)
 #define _DAT_1f8000bc   (*(uint32_t *)g__DAT_1f8000bc)
 #define _DAT_1f8000c4   (*(uint32_t *)g__DAT_1f8000c4)
-#define _DAT_1f8000dc   (*(uint8_t *)g__DAT_1f8000dc)
+#define _DAT_1f8000dc   (*(uint32_t *)g__DAT_1f8000dc) /* guest lw/sw @0x1f8000dc (0x801594a4,0x80164ea4,0x8014f260) */
 #define _DAT_1f800100   (*(uint32_t *)g__DAT_1f800100)
 #define _DAT_1f800104   (*(uint32_t *)g__DAT_1f800104)
 #define _DAT_1f800110   (*(uint32_t *)g__DAT_1f800110)
@@ -450,34 +450,34 @@ extern char *s_time_out_in_decoding___80120e90;
 #define _DAT_1f800218   (*(uint32_t *)g__DAT_1f800218)
 #define _DAT_1f800250   (*(uint32_t *)g__DAT_1f800250)
 #define _DAT_1f80025c   (*(uint32_t *)g__DAT_1f80025c)
-#define _DAT_801c15f0   (*(uint8_t *)g__DAT_801c15f0)
-#define _DAT_801c43a0   (*(uint8_t *)g__DAT_801c43a0)
-#define _DAT_801c4578   (*(uint8_t *)g__DAT_801c4578)
+#define _DAT_801c15f0   (*(uint32_t *)g__DAT_801c15f0) /* guest sw @0x801c15f0 (0x80167840,0x8016fcc4) */
+#define _DAT_801c43a0   (*(uint32_t *)g__DAT_801c43a0) /* guest sw @0x801c43a0 (0x80146e38) */
+#define _DAT_801c4578   (*(uint32_t *)g__DAT_801c4578) /* guest lw @0x801c4578 (0x80165cb4) */
 #define _DAT_801c47b8   (*(uint32_t *)g__DAT_801c47b8)
 #define _DAT_801e3cfc   (*(uint32_t *)g__DAT_801e3cfc)
-#define _DAT_801e8508   (*(uint8_t *)g__DAT_801e8508)
+#define _DAT_801e8508   (*(uint32_t *)g__DAT_801e8508) /* guest sw @0x801e8508 (0x80164ea4,0x8015c754,0x8015b9a0,0x8014f260) */
 #define _DAT_801e850c   (*(uint32_t *)g__DAT_801e850c)
-#define _DAT_801e8518   (*(uint8_t *)g__DAT_801e8518)
-#define _DAT_801e851c   (*(uint8_t *)g__DAT_801e851c)
+#define _DAT_801e8518   (*(uint32_t *)g__DAT_801e8518) /* guest sw @0x801e8518 */
+#define _DAT_801e851c   (*(uint32_t *)g__DAT_801e851c) /* guest sw @0x801e851c (0x80164ea4) */
 #define _DAT_801f2650   (*(uint32_t *)g__DAT_801f2650)
 #define _DAT_801f2654   (*(uint32_t *)g__DAT_801f2654)
-#define _DAT_801f2658   (*(uint8_t *)g__DAT_801f2658)
-#define _DAT_801f265a   (*(uint8_t *)g__DAT_801f265a)
-#define _DAT_801f265c   (*(uint8_t *)g__DAT_801f265c)
-#define _DAT_801f265e   (*(uint8_t *)g__DAT_801f265e)
-#define _DAT_801f2664   (*(uint8_t *)g__DAT_801f2664)
-#define _DAT_801f2674   (*(uint8_t *)g__DAT_801f2674)
-#define _DAT_801f2678   (*(uint8_t *)g__DAT_801f2678)
-#define _DAT_801f267c   (*(uint8_t *)g__DAT_801f267c)
+#define _DAT_801f2658   (*(uint16_t *)g__DAT_801f2658) /* guest sh @0x801f2658 (0x80155f64) */
+#define _DAT_801f265a   (*(uint16_t *)g__DAT_801f265a) /* guest sh @0x801f265a */
+#define _DAT_801f265c   (*(uint16_t *)g__DAT_801f265c) /* guest sh @0x801f265c */
+#define _DAT_801f265e   (*(uint16_t *)g__DAT_801f265e) /* guest sh @0x801f265e */
+#define _DAT_801f2664   (*(uint16_t *)g__DAT_801f2664) /* guest sh @0x801f2664 */
+#define _DAT_801f2674   (*(uint32_t *)g__DAT_801f2674) /* guest sw @0x801f2674 (0x80155f64) */
+#define _DAT_801f2678   (*(uint32_t *)g__DAT_801f2678) /* guest sw @0x801f2678 */
+#define _DAT_801f267c   (*(uint32_t *)g__DAT_801f267c) /* guest sw @0x801f267c */
 #define _DAT_801f36c2   (*(uint16_t *)g__DAT_801f36c2)
 #define _DAT_801f4714   (*(uint32_t *)g__DAT_801f4714)
 #define _DAT_801f4728   (*(uint32_t *)g__DAT_801f4728)
-#define _DAT_801f472c   (*(uint32_t *)g__DAT_801f472c)
-#define _DAT_801f4730   (*(uint32_t *)g__DAT_801f4730)
+#define _DAT_801f472c   (*(uint16_t *)g__DAT_801f472c) /* guest lh/lhu/sh @0x801f472c (0x80159864) */
+#define _DAT_801f4730   (*(uint16_t *)g__DAT_801f4730) /* guest lh/lhu @0x801f4730 (0x80159864) */
 #define _DAT_801f4732   (*(uint16_t *)g__DAT_801f4732)
 #define _DAT_801f4734   (*(uint8_t *)g__DAT_801f4734)
-#define _DAT_801f4738   (*(uint8_t *)g__DAT_801f4738)
-#define _DAT_801f473c   (*(uint8_t *)g__DAT_801f473c)
+#define _DAT_801f4738   (*(uint32_t *)g__DAT_801f4738) /* guest lw @0x801f4738 (0x80159864) */
+#define _DAT_801f473c   (*(uint32_t *)g__DAT_801f473c) /* guest lw/sw @0x801f473c (0x80159864) */
 #define _DAT_801f4744   (*(uint32_t *)g__DAT_801f4744)
 #define _DAT_801f4748   (*(uint32_t *)g__DAT_801f4748)
 #define _DAT_801f474c   (*(uint32_t *)g__DAT_801f474c)
@@ -485,7 +485,7 @@ extern char *s_time_out_in_decoding___80120e90;
 #define _DAT_801f4754   (*(uint32_t *)g__DAT_801f4754)
 #define _DAT_801f4cb2   (*(uint8_t *)g__DAT_801f4cb2)
 #define _DAT_801f4cb6   (*(uint32_t *)g__DAT_801f4cb6)
-#define _DAT_801fc68c   (*(uint8_t *)g__DAT_801fc68c)
+#define _DAT_801fc68c   (*(uint32_t *)g__DAT_801fc68c) /* guest lw/sw @0x801fc68c (0x80159864) */
 
 /* ======== 0x80167840 ======== */
 
