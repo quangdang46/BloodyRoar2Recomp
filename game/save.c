@@ -359,9 +359,17 @@ void memcard_tick(void)
       iVar3 = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
       if (iVar3 == 2) {
         /* disasm-verified: sprintf/cd buf = $sp+0x10, frame -0x28
-         * (0x80157b44/0x80157f3c) -> entry_sp - 0x18. */
-        cd_file_open(DAT_801bef80,(uint8_t *)guest_at(guest_sp() - 0x18));
-        cd_cmd_issue_async(2,(int)(guest_sp() - 0x18));
+         * (0x80157b44/0x80157f3c) -> entry_sp - 0x18. The buf is handed
+         * to cd_cmd_issue_async as a guest param address that generated
+         * CD frames read after pushing below $sp, so reserve the frame
+         * window (sp+0x10 -> frm+0x18) or callee frames overwrite it. */
+        extern uint32_t br2_guest_frame(uint32_t);
+        extern void br2_guest_frame_free(void);
+        uint32_t mct_frm = br2_guest_frame(0x28);
+        uint32_t mct_buf = mct_frm + 0x18;
+        cd_file_open(DAT_801bef80,(uint8_t *)guest_at(mct_buf));
+        cd_cmd_issue_async(2,(int)mct_buf);
+        br2_guest_frame_free();
         DAT_801bef6d = DAT_801bef6d + '\x01';
         return;
       }
@@ -495,9 +503,16 @@ void memcard_tick(void)
     iVar3 = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
     if (iVar3 == 2) {
       /* disasm-verified: sprintf/cd buf = $sp+0x10, frame -0x28
-       * (0x80157b44/0x80157f3c) -> entry_sp - 0x18. */
-      cd_file_open(DAT_801bef80,(uint8_t *)guest_at(guest_sp() - 0x18));
-      cd_cmd_issue_async(2,(int)(guest_sp() - 0x18));
+       * (0x80157b44/0x80157f3c) -> entry_sp - 0x18. Same guest-frame
+       * reservation as the mode-2 branch above: generated CD frames
+       * would otherwise overwrite the param buf before it is read. */
+      extern uint32_t br2_guest_frame(uint32_t);
+      extern void br2_guest_frame_free(void);
+      uint32_t mct_frm = br2_guest_frame(0x28);
+      uint32_t mct_buf = mct_frm + 0x18;
+      cd_file_open(DAT_801bef80,(uint8_t *)guest_at(mct_buf));
+      cd_cmd_issue_async(2,(int)mct_buf);
+      br2_guest_frame_free();
       DAT_801bef6d = DAT_801bef6d + '\x01';
     }
     else if (iVar3 == 5) {
@@ -687,7 +702,16 @@ int memcard_file_flow(int param_1)
   int local_34;
   int local_30;
   char *local_2c;
-  
+  /* guest sp-0xf8..sp frame image (frame 0xf8). acStack_78 is written by
+   * sprintf_core and re-read by announce_param_block_init* across the
+   * whole state loop; without the reservation every nested guest call
+   * lands its frame on top of the buffer. frame 0xf8 is 8 mod 16 so the
+   * reservation aligns to 0x100 and guest sp+N maps to frm + N + 8;
+   * sp+0x80 -> frm+0x88. */
+  extern uint32_t br2_guest_frame(uint32_t);
+  extern void br2_guest_frame_free(void);
+  uint32_t mff_frm = br2_guest_frame(0xf8);
+
   extern int br2_bail_pending(void);
   uVar7 = 0;
   uVar6 = 0;
@@ -697,13 +721,13 @@ int memcard_file_flow(int param_1)
    * back both with the guest stack buffer ($sp+0x80, frame -0xf8 ->
    * entry_sp - 0x78, disasm-verified @0x8015f96c/0x8015fc68+) so one buffer
    * serves both. */
-  acStack_78 = (char *)guest_at(guest_sp() - 0x78);
+  acStack_78 = (char *)guest_at(mff_frm + 0x88);
   local_2c = acStack_78;
   local_34 = -1;
   local_30 = 0;
   _DAT_1f80008c = 0;
   do {
-    if (br2_bail_pending()) return local_34;
+    if (br2_bail_pending()) { br2_guest_frame_free(); return local_34; }
     if (uVar7 != 1) {
       if (uVar7 < 2) {
         if ((uVar7 == 0) && (iVar1 = frame_divisor_get(), iVar1 == 0)) {
@@ -798,24 +822,24 @@ LAB_8015fbfc:
       scroll_offset_set(0x10,0x68);
       switch(iVar4) {
       case 0:
-        sprintf_core((char *)guest_at(guest_sp() - 0x78),s_LOAD_FROM_MEMORY_CARD__s___80121788,
+        sprintf_core(acStack_78,s_LOAD_FROM_MEMORY_CARD__s___80121788,
                      SLOTSTR(iVar5));
         break;
       case 2:
-        sprintf_core((char *)guest_at(guest_sp() - 0x78),s_FORMAT_MEMORY_CARD__s___801217d8,SLOTSTR(iVar5));
+        sprintf_core(acStack_78,s_FORMAT_MEMORY_CARD__s___801217d8,SLOTSTR(iVar5));
         break;
       case 3:
-        sprintf_core((char *)guest_at(guest_sp() - 0x78),s_SAVING_TO_MEMORY_CARD__s__801217f0,SLOTSTR(iVar5));
+        sprintf_core(acStack_78,s_SAVING_TO_MEMORY_CARD__s__801217f0,SLOTSTR(iVar5));
         announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,local_2c,0x10,0x1000,0);
         scroll_offset_accumulate(0,0x10);
-        sprintf_core((char *)guest_at(guest_sp() - 0x78),s_OVER_WRITE_OK___8012180c);
+        sprintf_core(acStack_78,s_OVER_WRITE_OK___8012180c);
       default:
         break;
       case 5:
         announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_MEMORY_CARD_CHANGED__801217a4,0x10,0x1000,2);
         scroll_offset_accumulate(0,0x10);
       case 1:
-        sprintf_core((char *)guest_at(guest_sp() - 0x78),s_SAVE_TO_MEMORY_CARD__s___801217bc,SLOTSTR(iVar5))
+        sprintf_core(acStack_78,s_SAVE_TO_MEMORY_CARD__s___801217bc,SLOTSTR(iVar5))
         ;
       }
       announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,acStack_78,0x10,0x1000,0);
@@ -891,7 +915,7 @@ LAB_8015fc08:
       default:
         goto switchD_8015fc3c_default;
       }
-      sprintf_core((char *)guest_at(guest_sp() - 0x78),pcVar3,puVar2);
+      sprintf_core(acStack_78,pcVar3,puVar2);
 switchD_8015fc3c_default:
       announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,acStack_78,0x10,0x1000,0);
       scroll_offset_accumulate(0,0x10);
@@ -962,7 +986,7 @@ code_r0x8015ffac:
       default:
         goto switchD_8015ffe4_default;
       }
-      sprintf_core((char *)guest_at(guest_sp() - 0x78),pcVar3,puVar2);
+      sprintf_core(acStack_78,pcVar3,puVar2);
 switchD_8015ffe4_default:
       announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,local_2c,0x10,0x1000,0);
       scroll_offset_accumulate(0,0x10);
@@ -1052,7 +1076,7 @@ LAB_8016028c:
         }
         announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_NO_MEMORY_CARD_IS_INSERTED_IN_80121960,0x10,
                      0x1000,2);
-        sprintf_core((char *)guest_at(guest_sp() - 0x78),s_MEMORY_CARD__s___80121980,SLOTSTR(iVar5));
+        sprintf_core(acStack_78,s_MEMORY_CARD__s___80121980,SLOTSTR(iVar5));
         pcVar3 = local_2c;
       }
       else if (unaff_s2 == 7) {
@@ -1133,6 +1157,7 @@ LAB_80160550:
     frame_tick(0x1f800000);
 LAB_80160558:
     if (uVar7 == 0xff) {
+      br2_guest_frame_free();
       return local_34;
     }
   } while( true );
@@ -5640,24 +5665,33 @@ int dialog_sel_dispatch_wide(uint32_t a0,uint32_t a1)
       scroll_offset_accumulate(0,0xc);
       return 0;
     case 0x105: {
+        /* buf = $sp+0x18, frame -0x48 -> entry_sp-0x30; sprintf writes it
+         * and BDC0_E58C reads it through nested frames, so reserve the
+         * guest frame (sp+0x18 -> frm+0x20) for the write->read span. */
+        extern uint32_t br2_guest_frame(uint32_t);
+        extern void br2_guest_frame_free(void);
+        uint32_t dsw_frm = br2_guest_frame(0x48);
+        uint32_t dsw_buf = dsw_frm + 0x20;
         BDC0_E58C(0x801212bc,0x1000,flag);
       round_announce_block(ctx8,ctxc,(const void *)guest_at(0x801212cc),0x140,0x1000,flag);
-      sprintf_core((char *)guest_at(guest_sp() - 0x30),(char *)guest_at(0x801212d0),
+      sprintf_core((char *)guest_at(dsw_buf),(char *)guest_at(0x801212d0),
                    (int32_t)*(int16_t *)(s4 + 0x1c));
-      /* disasm-verified: buf = $sp+0x18, frame -0x48 (0x8015c3a4/0x8015c3b8)
-       * -> entry_sp - 0x30. */
-      BDC0_E58C(guest_sp() - 0x30,0x140,flag);
+      BDC0_E58C(dsw_buf,0x140,flag);
+      br2_guest_frame_free();
       scroll_offset_accumulate(0,0xc);
       return 0;
     }
     case 0x106: {
+      extern uint32_t br2_guest_frame(uint32_t);
+      extern void br2_guest_frame_free(void);
+      uint32_t dsw_frm = br2_guest_frame(0x48);
+      uint32_t dsw_buf = dsw_frm + 0x20;
       BDC0_E58C(0x801212d4,0x1000,flag);
       round_announce_block(ctx8,ctxc,(const void *)guest_at(0x801212cc),0x140,0x1000,flag);
-      sprintf_core((char *)guest_at(guest_sp() - 0x30),(char *)guest_at(0x801212d0),
+      sprintf_core((char *)guest_at(dsw_buf),(char *)guest_at(0x801212d0),
                    (int32_t)*(int16_t *)(s4 + 0x1e));
-      /* disasm-verified: buf = $sp+0x18, frame -0x48 (0x8015c3a4/0x8015c3b8)
-       * -> entry_sp - 0x30. */
-      BDC0_E58C(guest_sp() - 0x30,0x140,flag);
+      BDC0_E58C(dsw_buf,0x140,flag);
+      br2_guest_frame_free();
       scroll_offset_accumulate(0,0xc);
       return 0;
     }

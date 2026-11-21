@@ -16478,8 +16478,14 @@ void hud_time_score_draw(uint32_t param_1,uint16_t param_2,int32_t param_3,int32
   int16_t sVar3;
   uint32_t uVar8;
   /* auStack_48 = sp+0x18 (frame 0x60) -> guest_sp()-0x48;
-   * `addiu $a0,$sp,0x18` before sprintf jal in 0x80163e38. */
-  char *auStack_48 = (char *)guest_at((uint32_t)(guest_sp() - 0x48));
+   * `addiu $a0,$sp,0x18` before sprintf jal in 0x80163e38. The string is
+   * re-read by announce_param_block_init_b / hud_text_* / slot_name_measure
+   * across many nested calls, so reserve the guest frame window
+   * (sp+0x18 -> frm+0x18) or callee frames overwrite it. */
+  extern uint32_t br2_guest_frame(uint32_t);
+  extern void br2_guest_frame_free(void);
+  uint32_t htsd_frm = br2_guest_frame(0x60);
+  char *auStack_48 = (char *)guest_at(htsd_frm + 0x18);
   iVar5 = *(int32_t *)(param_5 + 8) / 0x32;
   iVar6 = iVar5 / 0x3c;
   iVar5 = iVar5 % 0x3c;
@@ -16573,6 +16579,7 @@ LAB_801645f8:
     slot_name_measure(auStack_48,*(uint8_t *)(param_5 + 4));
     announce_param_block_init(param_1,param_2,auStack_48,(uint16_t)((param_3 + 0xf8) * 0x10000 >> 0x10),(uint16_t)sVar3,2);
   }
+  br2_guest_frame_free();
 }
 
 extern void flow_cfg_init(int);
@@ -17461,9 +17468,16 @@ int cd_search_file(undefined4 *param_1,uint32_t param_2)
   const uint8_t *s0;
   uint8_t *s1;
   /* token buffer must live in guest RAM: cd_file_rec_find/cd_strncmp12_eq
-   * receive it as a u32 guest address (cd_arg_ptr). Stage 64 bytes below
-   * guest_sp (gpu_rect uses sp-0x10..sp-1, so sp-0x50..sp-0x11 is free). */
-  uint32_t lbuf_g = (uint32_t)(guest_sp() - 0x50);
+   * receive it as a u32 guest address (cd_arg_ptr). Guest frame is 0x50
+   * (addiu sp,-0x50 @0x80197b40) with the 64-byte token buf at sp+0, so
+   * reserve the window on the live guest sp — callee frames would
+   * otherwise land on lbuf between the per-token rebuild and the
+   * cd_strncmp12_eq scan. gpu_rect uses sp-0x10..sp-1, so the guest's
+   * own sp-0x50..sp-0x11 scratch is reproduced by frm+0..frm+0x3f. */
+  extern uint32_t br2_guest_frame(uint32_t);
+  extern void br2_guest_frame_free(void);
+  uint32_t csf_frm = br2_guest_frame(0x50);
+  uint32_t lbuf_g = csf_frm;
   char *lbuf = (char *)guest_at(lbuf_g);
   int s2;
   int a0v;
@@ -17473,11 +17487,13 @@ int cd_search_file(undefined4 *param_1,uint32_t param_2)
 
   if (*(uint32_t *)guest_at(0x801ccb74) != *(uint32_t *)guest_at(0x801cc85c)) {
     if (call_guest(0x80197e28,guest_of(param_1),param_2) == 0) {
+      br2_guest_frame_free();
       return 0;
     }
     *(uint32_t *)guest_at(0x801ccb74) = *(uint32_t *)guest_at(0x801cc85c);
   }
   if (*name != 0x5c) {
+    br2_guest_frame_free();
     return 0;
   }
   lbuf[0] = 0;
@@ -17514,6 +17530,7 @@ have:
       if (0 < (int)*(int32_t *)guest_at(0x801cc850)) {
         printf_forward((const char *)guest_at(0x801258f4),(const char *)name);
       }
+      br2_guest_frame_free();
       return 0;
     }
     *s1 = 0;
@@ -17522,6 +17539,7 @@ have:
       if (0 < (int)*(int32_t *)guest_at(0x801cc850)) {
         printf_forward((const char *)guest_at(0x8012590c));
       }
+      br2_guest_frame_free();
       return 0;
     }
     s2 = 0;
@@ -17537,17 +17555,20 @@ have:
           printf_forward((const char *)guest_at(0x80125948),lbuf);
         }
         memcpy(param_1,rec,0x18);
+        br2_guest_frame_free();
         return (int)(uint32_t)(0x801fc700 + i * 0x18);
       }
     }
     if (0 < (int)*(int32_t *)guest_at(0x801cc850)) {
       printf_forward((const char *)guest_at(0x80125954),lbuf);
     }
+    br2_guest_frame_free();
     return 0;
 many:
     if (0 < (int)*(int32_t *)guest_at(0x801cc850)) {
       printf_forward((const char *)guest_at(0x801258d8),(const char *)name,s2);
     }
+    br2_guest_frame_free();
     return 0;
   }
 }
@@ -17615,7 +17636,16 @@ void corner_emit_cond_offset(int param_1,int param_2,int param_3,int param_4,int
   asStack_10[2] = (short)param_6;
   asStack_10[3] = (short)param_7;
   iVar1 = iVar1 + ((param_4 + param_5 * (int)*(short *)guest_at((uint32_t)(uintptr_t)(iVar1 + 0x10))) << 1) + 0x14;
-  gpu_load_image_cmd(gpu_rect(asStack_10),iVar1);
+  /* guest rect = $sp+0x10 (frame 0x20, disasm 0x8018bda4) -> frm+0x10;
+   * reserved frame staging, see spr_draw_off in gfx.c. */
+  {
+    extern uint32_t br2_guest_frame(uint32_t);
+    extern void br2_guest_frame_free(void);
+    uint32_t cec_frm = br2_guest_frame(0x20);
+    memcpy(guest_at(cec_frm + 0x10), asStack_10, 8);
+    gpu_load_image_cmd(cec_frm + 0x10,iVar1);
+    br2_guest_frame_free();
+  }
   return;
 }
 
@@ -17639,7 +17669,16 @@ void corner_emit_variant(int param_1,int param_2,int param_3,int param_4,int par
   }
   asStack_10[2] = (short)(*(ushort *)guest_at((uint32_t)(uintptr_t)(iVar1 + 0x10)) + param_4);
   asStack_10[3] = (short)(*(ushort *)guest_at((uint32_t)(uintptr_t)(iVar1 + 0x12)) + param_5);
-  gpu_load_image_cmd(gpu_rect(asStack_10),iVar1 + 0x14);
+  /* guest rect = $sp+0x10 (frame 0x20, disasm 0x8018be28) -> frm+0x10;
+   * reserved frame staging, see spr_draw_off in gfx.c. */
+  {
+    extern uint32_t br2_guest_frame(uint32_t);
+    extern void br2_guest_frame_free(void);
+    uint32_t cev_frm = br2_guest_frame(0x20);
+    memcpy(guest_at(cev_frm + 0x10), asStack_10, 8);
+    gpu_load_image_cmd(cev_frm + 0x10,iVar1 + 0x14);
+    br2_guest_frame_free();
+  }
   return;
 }
 

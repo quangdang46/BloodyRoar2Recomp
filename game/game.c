@@ -593,8 +593,14 @@ void entry_0x80126234(void)
      * stack at sp_old-0x30 (generated 0x80126234: addiu sp,-64; buffer at
      * sp+16). The pad driver is generated/BIOS code that writes guest RAM, so
      * _g_pad_buffer must alias that guest buffer — a host stack array would
-     * never receive the controller data. */
-    ushort *auStack_30 = (ushort *)guest_at((uint32_t)(guest_sp() - 0x30));
+     * never receive the controller data. main() never returns, so the
+     * reservation is never freed: it reproduces the guest's permanent
+     * 0x40-byte main frame and keeps every nested call's frame below the
+     * pad buffer instead of overwriting it (frame 0x40 -> sp+0x10 maps to
+     * frm+0x10). */
+    extern uint32_t br2_guest_frame(uint32_t);
+    uint32_t mn_frm = br2_guest_frame(0x40);
+    ushort *auStack_30 = (ushort *)guest_at(mn_frm + 0x10);
 
     func_0x80126170();
     uVar6 = 0;
@@ -1580,17 +1586,24 @@ undefined4 scene_entry(int param_1,int param_2,int param_3)
     int *piVar5;
     undefined4 *puVar6;
     undefined4 uVar7;
-    /* local_48 = sp+0x18 (frame 0x60) -> guest_sp()-0x48;
+    /* guest sp-0x60..sp frame image (frame 0x60). local_48/local_40/
+     * local_38 are read and written across blk_io_retry/cd_stream_mode_init/
+     * gpu_clear_image_cmd2 nested calls, so reserve the window on the live
+     * guest sp: sp+0x18 -> frm+0x18, sp+0x20 -> frm+0x20, sp+0x28 -> frm+0x28. */
+    extern uint32_t br2_guest_frame(uint32_t);
+    extern void br2_guest_frame_free(void);
+    uint32_t se_frm = br2_guest_frame(0x60);
+    /* local_48 = sp+0x18 (frame 0x60);
      * `sb $v0,0x18($sp)` + `addiu $a1,$sp,0x18` in 0x80159028. */
-    undefined1 *local_48 = (undefined1 *)guest_at((uint32_t)(guest_sp() - 0x48));
-    /* ClearImage rect = sp+0x20..0x27 (frame 0x60) -> guest_sp()-0x40.
+    undefined1 *local_48 = (undefined1 *)guest_at(se_frm + 0x18);
+    /* ClearImage rect = sp+0x20..0x27 (frame 0x60) -> frm+0x20.
      * gpu_clear_image_cmd2 forwards param_1 to generated GPU code as a
      * raw guest address, so the rect must live in the guest frame —
      * host stack locals are invisible to it. */
-    uint16_t *local_40 = (uint16_t *)guest_at((uint32_t)(guest_sp() - 0x40));
-    /* local_38 = sp+0x28 (frame 0x60) -> guest_sp()-0x38;
+    uint16_t *local_40 = (uint16_t *)guest_at(se_frm + 0x20);
+    /* local_38 = sp+0x28 (frame 0x60) -> frm+0x28;
      * `swl/swr $t2,0x28($sp)` + `addiu $a0,$sp,0x28` in 0x80159028. */
-    undefined4 *local_38 = (undefined4 *)guest_at((uint32_t)(guest_sp() - 0x38));
+    undefined4 *local_38 = (undefined4 *)guest_at(se_frm + 0x28);
 
     uVar7 = 0;
     DAT_801c43a0 = 0;
@@ -1644,7 +1657,7 @@ undefined4 scene_entry(int param_1,int param_2,int param_3)
     local_40[3] = (undefined2)(*(int *)((char *)g_DAT_801b3ed8 + 0x18 + iVar1) << 1);
     /* param_1 is a raw guest address (the sp+0x20 rect), matching the
      * callee's undefined4 signature — not a host pointer. */
-    gpu_clear_image_cmd2((undefined4)(guest_sp() - 0x40),0,0,0);
+    gpu_clear_image_cmd2((undefined4)(se_frm + 0x20),0,0,0);
     do {
         uVar3 = 2;
         if (*piVar5 != 0) {
@@ -1686,6 +1699,7 @@ LAB_801593a8:
     frame_tick(0x1f800000);
     frame_advance_helper();
     frame_tick(0x1f800000);
+    br2_guest_frame_free();
     return uVar7;
 }
 
@@ -1938,9 +1952,10 @@ void print_dispatch(const char *param_1,...)
 {
   __builtin_va_list ap;
   uint32_t v[8];
-  /* buf = sp+0x28 (frame 0x130) -> guest_sp()-0x108;
-   * `addiu $a0/$v0,$sp,0x28` in 0x8012cc6c (stored to block+0x1c). */
-  uint8_t *buf = (uint8_t *)guest_at((uint32_t)(guest_sp() - 0x108));
+  /* buf = sp+0x28 (frame 0x130); assigned inside the reserved frame in
+   * the mode==2 path below (`addiu $a0/$v0,$sp,0x28` in 0x8012cc6c,
+   * stored to block+0x1c). */
+  uint8_t *buf;
   uint16_t *b;
   uint32_t mode = BR2B32(0x1f800384);
   int i;
@@ -1950,15 +1965,26 @@ void print_dispatch(const char *param_1,...)
   if (mode == 1) { text9_dbg(param_1,v); return; }
   if ((int32_t)mode < 2) return;
   if (mode != 2) return;
-  text9_spr(guest_of(buf),param_1,v);
-  b = (uint16_t *)guest_at(0x1f80038c);
-  b[3] = 0x1000; b[4] = 0x1000;
-  b[5] = 8; b[6] = 8; b[7] = 8; b[8] = 8;
-  b[0] = 0; b[1] = 0; b[2] = 0; b[9] = 0; b[10] = 0;
-  b[11] = 0x78df; b[13] = 0;
-  *(uint32_t *)(b + 14) = guest_of(buf);   /* +0x1c */
-  text_render_simple((uint *)guest_at(BR2B32(0x1f800008)),
-               BR2B16(0x1f80000c),(int)guest_of(b));
+  {
+    /* buf = sp+0x28 (frame 0x130) -> guest_sp()-0x108. sprintf_core writes
+     * it and text_render_simple re-reads it through the 0x1f80038c block
+     * pointer, so reserve the guest frame window (sp+0x28 -> frm+0x28)
+     * for the write->draw span. */
+    extern uint32_t br2_guest_frame(uint32_t);
+    extern void br2_guest_frame_free(void);
+    uint32_t pd_frm = br2_guest_frame(0x130);
+    buf = (uint8_t *)guest_at(pd_frm + 0x28);
+    text9_spr(guest_of(buf),param_1,v);
+    b = (uint16_t *)guest_at(0x1f80038c);
+    b[3] = 0x1000; b[4] = 0x1000;
+    b[5] = 8; b[6] = 8; b[7] = 8; b[8] = 8;
+    b[0] = 0; b[1] = 0; b[2] = 0; b[9] = 0; b[10] = 0;
+    b[11] = 0x78df; b[13] = 0;
+    *(uint32_t *)(b + 14) = guest_of(buf);   /* +0x1c */
+    text_render_simple((uint *)guest_at(BR2B32(0x1f800008)),
+                 BR2B16(0x1f80000c),(int)guest_of(b));
+    br2_guest_frame_free();
+  }
 }
 
 /* print_dispatch_selfdesc — same dispatcher but self-describing: mode 2 copies
@@ -1967,9 +1993,10 @@ void print_dispatch_selfdesc(void *param_1,const char *param_2,...)
 {
   __builtin_va_list ap;
   uint32_t v[8];
-  /* buf = sp+0x28 (frame 0x138) -> guest_sp()-0x110;
-   * `addiu $a0/$v0,$sp,0x28` in 0x8012cf64 (stored to block+0x1c). */
-  uint8_t *buf = (uint8_t *)guest_at((uint32_t)(guest_sp() - 0x110));
+  /* buf = sp+0x28 (frame 0x138); assigned inside the reserved frame in
+   * the mode==2 path below (`addiu $a0/$v0,$sp,0x28` in 0x8012cf64,
+   * stored to block+0x1c). */
+  uint8_t *buf;
   uint16_t *b;
   uint8_t *self = (uint8_t *)param_1;
   uint32_t mode = BR2B32(0x1f800384);
@@ -1980,18 +2007,28 @@ void print_dispatch_selfdesc(void *param_1,const char *param_2,...)
   if (mode == 1) { text9_dbg(param_2,v); return; }
   if ((int32_t)mode < 2) return;
   if (mode != 2) return;
-  text9_spr(guest_of(buf),param_2,v);
-  b = (uint16_t *)guest_at(0x1f80038c);
-  b[0] = 0;
-  b[1] = *(uint16_t *)(self + 0x10);
-  b[2] = *(uint16_t *)(self + 0x12);
-  b[3] = 0x1000; b[4] = 0x1000;
-  b[5] = 8; b[6] = 8; b[7] = 8; b[8] = 8;
-  b[11] = 0x78df; b[9] = 0; b[10] = 0;
-  *(uint32_t *)(b + 14) = guest_of(buf);   /* +0x1c */
-  b[12] = 0;
-  text_render_simple((uint *)guest_at(BR2B32(0x1f800008)),
-               BR2B16(0x1f80000c),(int)guest_of(b));
+  {
+    /* buf = sp+0x28 (frame 0x138) -> guest_sp()-0x110. Same guest-frame
+     * reservation as print_dispatch: sprintf writes, text_render_simple
+     * re-reads through the 0x1f80038c block (sp+0x28 -> frm+0x28). */
+    extern uint32_t br2_guest_frame(uint32_t);
+    extern void br2_guest_frame_free(void);
+    uint32_t pds_frm = br2_guest_frame(0x138);
+    buf = (uint8_t *)guest_at(pds_frm + 0x28);
+    text9_spr(guest_of(buf),param_2,v);
+    b = (uint16_t *)guest_at(0x1f80038c);
+    b[0] = 0;
+    b[1] = *(uint16_t *)(self + 0x10);
+    b[2] = *(uint16_t *)(self + 0x12);
+    b[3] = 0x1000; b[4] = 0x1000;
+    b[5] = 8; b[6] = 8; b[7] = 8; b[8] = 8;
+    b[11] = 0x78df; b[9] = 0; b[10] = 0;
+    *(uint32_t *)(b + 14) = guest_of(buf);   /* +0x1c */
+    b[12] = 0;
+    text_render_simple((uint *)guest_at(BR2B32(0x1f800008)),
+                 BR2B16(0x1f80000c),(int)guest_of(b));
+    br2_guest_frame_free();
+  }
 }
 
 /* ---- guest-ABI entries for the varargs print/format front-ends ----

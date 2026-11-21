@@ -1309,8 +1309,14 @@ void results_scoreboard(int param_1)
   int iVar7;
   undefined1 *puVar8;
   uint32_t *ppuVar9;
-  /* sprintf dst = guest $sp+0x18 (frame -0x88) = entry_sp-0x70 */
-  undefined1 *auStack_70 = (undefined1 *)guest_at(guest_sp() - 0x70);
+  /* sprintf dst = guest $sp+0x18 (frame -0x88) = entry_sp-0x70; the
+   * rank strings are re-read by announce_param_block_init_b/hud_time_score_draw
+   * across the whole tally loop, so reserve the guest frame window
+   * (sp+0x18 -> frm+0x20) for the function's lifetime. */
+  extern uint32_t br2_guest_frame(uint32_t);
+  extern void br2_guest_frame_free(void);
+  uint32_t rsb_frm = br2_guest_frame(0x88);
+  undefined1 *auStack_70 = (undefined1 *)guest_at(rsb_frm + 0x20);
   int local_60 [6];
   int local_48;
   int local_44;
@@ -1533,6 +1539,7 @@ LAB_80164e34:
     g_game_state = 5;
   }
   DAT_1f800001 = 0;
+  br2_guest_frame_free();
   return;
 }
 
@@ -1565,8 +1572,14 @@ void player_name_entry(void)
    * Ghidra split the slot's first two bytes into scalars — keep the
    * whole slot contiguous. local_60[i] == old local_6X. */
   undefined1 local_60[8];
-  /* sprintf dst = guest $sp+0x38 (frame -0x90) = entry_sp-0x58 */
-  undefined1 *auStack_58 = (undefined1 *)guest_at(guest_sp() - 0x58);
+  /* sprintf dst = guest $sp+0x38 (frame -0x90) = entry_sp-0x58; the name
+   * strings are re-read by announce_param_block_init / rec_u32_store
+   * across the entry loop, so reserve the guest frame window
+   * (sp+0x38 -> frm+0x38) for the function's lifetime. */
+  extern uint32_t br2_guest_frame(uint32_t);
+  extern void br2_guest_frame_free(void);
+  uint32_t pne_frm = br2_guest_frame(0x90);
+  undefined1 *auStack_58 = (undefined1 *)guest_at(pne_frm + 0x38);
   int local_50;
   undefined1 *local_4c;
   undefined1 *local_48;
@@ -1839,6 +1852,7 @@ LAB_801651e8:
     } while (DAT_1f800001 != 0xff);
   }
   DAT_1f800001 = 0;
+  br2_guest_frame_free();
   return;
 }
 
@@ -2293,10 +2307,15 @@ void tile_stream_pump(void)
   }
   { uint32_t rect[2] = { local_18, local_14 };
     /* guest rect lives at $sp+0x10 (frame -0x28) = entry_sp-0x18;
-     * gpu_load_image_cmd takes the guest address of the 8-byte rect. */
-    uint32_t gaddr = (uint32_t)(guest_sp() - 0x18);
+     * gpu_load_image_cmd reads it through nested frames, so stage it in
+     * a reserved guest frame (sp+0x10 -> frm+0x18). */
+    extern uint32_t br2_guest_frame(uint32_t);
+    extern void br2_guest_frame_free(void);
+    uint32_t tsp_frm = br2_guest_frame(0x28);
+    uint32_t gaddr = tsp_frm + 0x18;
     memcpy(guest_at(gaddr), rect, 8);
-    gpu_load_image_cmd(gaddr,*(undefined4 *)guest_at((uint32_t)(iVar2 * 4 + -0x7fe0b8f4))); }
+    gpu_load_image_cmd(gaddr,*(undefined4 *)guest_at((uint32_t)(iVar2 * 4 + -0x7fe0b8f4)));
+    br2_guest_frame_free(); }
   return;
 }
 
@@ -4270,8 +4289,11 @@ void fight_timer_announce(uint32_t param_1,uint8_t *param_2,int32_t param_3)
   int32_t s2, s0;
   uint32_t a1v;
   int32_t q, r, t0, v1;
-  /* sprintf buf = guest $sp+0x18 (frame -0x38) = entry_sp-0x20 */
-  uint8_t *buf = (uint8_t *)guest_at(guest_sp() - 0x20);
+  /* sprintf buf = guest $sp+0x18 (frame -0x38) = entry_sp-0x20; the
+   * string is re-read by hud_text_blk through nested frames, so the
+   * write->draw span below runs inside a reserved guest frame
+   * (sp+0x18 -> frm+0x20). */
+  uint8_t *buf;
   if (((*(uint16_t *)(cr + 2) >> 0xb) & 1) == 0) return;
   if (s1[0xb0] != 0) return;
   if (*(int16_t *)guest_at(*(uint32_t *)(s1 + 0xcc) + (0xa)) != 0) return;
@@ -4293,15 +4315,22 @@ void fight_timer_announce(uint32_t param_1,uint8_t *param_2,int32_t param_3)
     v1 = ((hi + q) >> 5) - (q >> 31);   /* q/60 = minutes */
   }
   t0 = q - v1 * 60;                     /* seconds */
-  if (v1 == 0) {
-    s0 += 0x20;
-    sprintf_core((char *)buf,(const char *)guest_at(0x80120928),t0,r);
-  } else {
-    if (v1 >= 0x64) { v1 = 0x63; t0 = 0x3b; r = 0x63; }
-    s0 += 8;
-    sprintf_core((char *)buf,(const char *)guest_at(0x80120934),v1,t0,r);
+  {
+    extern uint32_t br2_guest_frame(uint32_t);
+    extern void br2_guest_frame_free(void);
+    uint32_t fta_frm = br2_guest_frame(0x38);
+    buf = (uint8_t *)guest_at(fta_frm + 0x20);
+    if (v1 == 0) {
+      s0 += 0x20;
+      sprintf_core((char *)buf,(const char *)guest_at(0x80120928),t0,r);
+    } else {
+      if (v1 >= 0x64) { v1 = 0x63; t0 = 0x3b; r = 0x63; }
+      s0 += 8;
+      sprintf_core((char *)buf,(const char *)guest_at(0x80120934),v1,t0,r);
+    }
+    hud_text_blk(*(uint32_t *)(s1 + 8),*(uint32_t *)(s1 + 0xc),fta_frm + 0x20,s0,0x20,s2);
+    br2_guest_frame_free();
   }
-  hud_text_blk(*(uint32_t *)(s1 + 8),*(uint32_t *)(s1 + 0xc),guest_sp() - 0x20,s0,0x20,s2);
 }
 
 /* stage_fight_announce — round/stage announce selector. Gates on char-record
@@ -4316,12 +4345,18 @@ void stage_fight_announce(uint32_t param_1,uint8_t *param_2)
   uint8_t *s0 = (uint8_t *)guest_at(param_1);
   uint8_t *s1 = param_2;
   uint8_t *v1, *c0;
-  /* sprintf buf = guest $sp+0x18 (frame -0x38) = entry_sp-0x20 */
-  uint8_t *buf = (uint8_t *)guest_at(guest_sp() - 0x20);
+  /* sprintf buf = guest $sp+0x18 (frame -0x38) = entry_sp-0x20; hud_text_blk_alt
+   * re-reads it through nested frames, so the write->draw span inside the
+   * v1[1]!=0 branch runs inside a reserved guest frame (sp+0x18 -> frm+0x20). */
+  uint8_t *buf;
   int32_t a2, a3;
   if (((*(uint16_t *)guest_at(*(uint32_t *)(s0 + 0xc8) + (2)) >> 0xb) & 1) == 0) return;
   v1 = (uint8_t *)guest_at(*(uint32_t *)(s1 + 0x2c));
   if (v1[1] != 0) {
+    extern uint32_t br2_guest_frame(uint32_t);
+    extern void br2_guest_frame_free(void);
+    uint32_t sfa_frm = br2_guest_frame(0x38);
+    buf = (uint8_t *)guest_at(sfa_frm + 0x20);
     static const uint32_t jt[6] = {
       0x80151e4c,0x80151ed0,0x80151ed0,0x80151ea8,0x80151ea8,0x80151ed0 };
     a2 = (int32_t)*(int16_t *)(s0 + 0xa2) + 1;
@@ -4358,6 +4393,7 @@ void stage_fight_announce(uint32_t param_1,uint8_t *param_2)
       hud_text_blk_alt(*(uint32_t *)(s0 + 8),*(uint32_t *)(s0 + 0xc),
                    buf,a3,0x20,7);
     }
+    br2_guest_frame_free();
     return;
   }
   /* obj+1 clear path */
@@ -4384,8 +4420,10 @@ void champion_win_announce(uint32_t param_1,uint8_t *param_2,int32_t param_3)
 {
   uint8_t *s0 = (uint8_t *)guest_at(param_1);
   /* guest sprintf/draw buffer is a stack slot: $sp+0x18 post-prologue
-   * (frame -0x40) = entry_sp-0x28 = guest_sp()-0x28. */
-  uint8_t *buf = (uint8_t *)guest_at(guest_sp() - 0x28);
+   * (frame -0x40) = entry_sp-0x28; str_len/hud_text_blk_alt re-read it
+   * through nested frames, so the write->draw span runs inside a
+   * reserved guest frame (sp+0x18 -> frm+0x18). */
+  uint8_t *buf;
   int32_t cnt, a2, a3;
   uint32_t dc = *(uint32_t *)guest_at(0x1f8000dc);
   if (((dc >> 4) & 3) == 0) return;
@@ -4394,20 +4432,27 @@ void champion_win_announce(uint32_t param_1,uint8_t *param_2,int32_t param_3)
   if (cnt < 0) { *(int16_t *)(param_2 + 0xe2) = 0; return; }
   if (cnt == 0) return;
   if (cnt >= 0x3e8) { cnt = 0x3e7; *(int16_t *)(param_2 + 0xe2) = (int16_t)cnt; }
-  if (cnt == 1) {
-    sprintf_core((char *)buf,(const char *)guest_at(0x8012089c));
-    a2 = 0xe;
-  } else {
-    sprintf_core((char *)buf,(const char *)guest_at(0x801208ac),cnt);
-    a2 = str_len((char *)buf);
+  {
+    extern uint32_t br2_guest_frame(uint32_t);
+    extern void br2_guest_frame_free(void);
+    uint32_t cwa_frm = br2_guest_frame(0x40);
+    buf = (uint8_t *)guest_at(cwa_frm + 0x18);
+    if (cnt == 1) {
+      sprintf_core((char *)buf,(const char *)guest_at(0x8012089c));
+      a2 = 0xe;
+    } else {
+      sprintf_core((char *)buf,(const char *)guest_at(0x801208ac),cnt);
+      a2 = str_len((char *)buf);
+    }
+    if (param_3 != 0) {
+      a3 = (int16_t)(*(int16_t *)(s0 + 0x20) - (a2 * 3 + 0x50));
+    } else {
+      a3 = (int16_t)(0x50 - a2 * 3);
+    }
+    hud_text_blk_alt(*(uint32_t *)(s0 + 8),*(uint32_t *)(s0 + 0xc),
+                 (const void *)buf,a3,0x20,1);
+    br2_guest_frame_free();
   }
-  if (param_3 != 0) {
-    a3 = (int16_t)(*(int16_t *)(s0 + 0x20) - (a2 * 3 + 0x50));
-  } else {
-    a3 = (int16_t)(0x50 - a2 * 3);
-  }
-  hud_text_blk_alt(*(uint32_t *)(s0 + 8),*(uint32_t *)(s0 + 0xc),
-               (const void *)buf,a3,0x20,1);
 }
 
 /* mode_name_announce — mode-name announce ("V.S./WATCH/SURVIVAL/STORY/
@@ -4490,8 +4535,11 @@ int32_t continue_countdown(uint32_t param_1,uint32_t param_2)
 {
   uint8_t *s0 = (uint8_t *)guest_at(param_1);
   uint32_t s1 = param_2;
-  /* sprintf buf = guest $sp+0x18 (frame -0x38) = entry_sp-0x20 */
-  uint8_t *buf = (uint8_t *)guest_at(guest_sp() - 0x20);
+  /* sprintf buf = guest $sp+0x18 (frame -0x38) = entry_sp-0x20; str_len/
+   * hud_text_blk_alt re-read it through nested frames, so the
+   * write->draw span below runs inside a reserved guest frame
+   * (sp+0x18 -> frm+0x20). */
+  uint8_t *buf;
   int32_t v0 = 0;
   uint32_t dc;
   if (battle_state_gate(param_1,1) == 0) return 0;
@@ -4504,6 +4552,10 @@ int32_t continue_countdown(uint32_t param_1,uint32_t param_2)
     int32_t q = (int32_t)(((int32_t)(m >> 32) << 0xb) >> 0x10); /* hi>>5 */
     int32_t rem = 9 - q;
     int w;
+    extern uint32_t br2_guest_frame(uint32_t);
+    extern void br2_guest_frame_free(void);
+    uint32_t ccd_frm = br2_guest_frame(0x38);
+    buf = (uint8_t *)guest_at(ccd_frm + 0x20);
     sprintf_core((char *)buf,(char *)guest_at(0x80120824),rem);
     w = str_len((char *)buf);
     {
@@ -4514,6 +4566,7 @@ int32_t continue_countdown(uint32_t param_1,uint32_t param_2)
       hud_text_blk_alt(*(uint32_t *)(s0 + 8),*(uint32_t *)(s0 + 0xc),
                    buf,(int16_t)y,0x20,1);
     }
+    br2_guest_frame_free();
   }
   if (*(int16_t *)(s0 + 0xb2) == 0) ret_zero_a(s1);
   {
@@ -10933,8 +10986,14 @@ void print_mode_dispatch(uint32_t param_1,uint32_t param_2,uint32_t param_3,
     text_win_printf((int32_t)param_1, param_2, param_3, param_4,
                  param_5, param_6, param_7, param_8, param_9);
   } else if (v1 == 2) {
-    /* sprintf buf = guest $sp+0x28 (frame -0x130) = entry_sp-0x108 */
-    uint8_t *buf = (uint8_t *)guest_at(guest_sp() - 0x108);
+    /* sprintf buf = guest $sp+0x28 (frame -0x130) = entry_sp-0x108;
+     * text_render_simple re-reads it through the 0x1f80038c block
+     * pointer, so reserve the guest frame window (sp+0x28 -> frm+0x28)
+     * for the write->draw span. */
+    extern uint32_t br2_guest_frame(uint32_t);
+    extern void br2_guest_frame_free(void);
+    uint32_t pmd_frm = br2_guest_frame(0x130);
+    uint8_t *buf = (uint8_t *)guest_at(pmd_frm + 0x28);
     uint32_t B = 0x1f80038cu;
     sprintf_core((char *)buf, (char *)guest_at(param_2),
                  param_3, param_4, param_5, param_6, param_7,
@@ -10951,10 +11010,11 @@ void print_mode_dispatch(uint32_t param_1,uint32_t param_2,uint32_t param_3,
     MW16(B + 0x12, 0);
     MW16(B + 0x14, 0);
     MW16(B + 0x16, 0x78dfu);
-    MW32(B + 0x1c, guest_sp() - 0x108);
+    MW32(B + 0x1c, pmd_frm + 0x28);
     MW16(B + 0x18, 0);
     text_render_simple((uint32_t *)guest_at(MB32(0x1f800008u)),
                  MB16(0x1f80000cu), (int32_t)B);
+    br2_guest_frame_free();
   }
 }
 
@@ -11478,15 +11538,22 @@ void hp_bar_tick(void)
   uint32_t a0 = 0x801f4700u;
   uint32_t a1 = a0;
   uint32_t s0, v1, a2, v0, idx, flag, sum, prod, cnt, adj;
+  /* guest rect = $sp+0x10 (frame -0x28) = entry_sp-0x18; it is filled
+   * near the top and re-read by gpu_load_image_cmd at the bottom across
+   * cd_mc_state_machine/cd_fileop_forward nested frames, so reserve the
+   * guest frame window (sp+0x10 -> frm+0x18) for the function's
+   * lifetime. */
+  extern uint32_t br2_guest_frame(uint32_t);
+  extern void br2_guest_frame_free(void);
+  uint32_t hpb_frm = br2_guest_frame(0x28);
+  uint32_t hpb_rect = hpb_frm + 0x18;
   if (MB32(0x801f4738u) != 0) {
     if (MB32(0x801fc68cu) != 0) {
       cd_mc_state_machine();
       MW32(0x801fc68cu, 0);
     }
   }
-  /* guest rect = $sp+0x10 (frame -0x28) = entry_sp-0x18; the 8-byte
-   * copy and the gpu_load_image_cmd guest addr both target it. */
-  memcpy(guest_at((uint32_t)(guest_sp() - 0x18)), guest_at(a0 + 0x2c), 8);
+  memcpy(guest_at(hpb_rect), guest_at(a0 + 0x2c), 8);
   s0 = MB32(a0 + 0x14);
   MW32(a0 + 0x14, s0 < 1u ? 1u : 0u);
   if (MB32(0x801f473cu) != 0) {
@@ -11528,7 +11595,8 @@ void hp_bar_tick(void)
     MW32(0x801f473cu, lim);
   }
   idx = 0x801f4700u + s0 * 4u;
-  gpu_load_image_cmd((uint32_t)(guest_sp() - 0x18), MB32(idx + 0xc));
+  gpu_load_image_cmd(hpb_rect, MB32(idx + 0xc));
+  br2_guest_frame_free();
 }
 
 /* ======== batch52 ======== */
@@ -12283,8 +12351,14 @@ void event_record_walk(uint32_t param_1)
   uint32_t s0 = param_1;
   uint32_t p, hw, hi, lo, v0, v1, a3;
   int32_t den;
-  /* emit vec = guest $sp+0x10 (frame -0x30) = entry_sp-0x20 */
-  uint32_t gbuf = (uint32_t)(guest_sp() - 0x20);
+  /* emit vec = guest $sp+0x10 (frame -0x30) = entry_sp-0x20; it is filled
+   * in the emit phase and re-read by gte_xform_accum through nested
+   * frames, so reserve the guest frame window (sp+0x10 -> frm+0x10) for
+   * the function's lifetime. */
+  extern uint32_t br2_guest_frame(uint32_t);
+  extern void br2_guest_frame_free(void);
+  uint32_t erw_frm = br2_guest_frame(0x30);
+  uint32_t gbuf = erw_frm + 0x10;
   uint8_t *buf = (uint8_t *)guest_at(gbuf);
   uint32_t d0, d1;
   if (MBS16(s0 + 0x18) != 0) {
@@ -12367,6 +12441,7 @@ emit:
   MW8(d1 + 4, buf[0]);
   MW8(d1 + 5, buf[2]);
   MW8(d1 + 6, buf[4]);
+  br2_guest_frame_free();
 }
 
 /* ======== batch62 ======== */
@@ -12883,8 +12958,8 @@ uint32_t desc_opcode_dispatch(uint32_t param_1,uint32_t param_2,
   uint32_t idx, p, rec;
   int32_t sx8 = (int32_t)(int8_t)(a3 >> 8);
   int32_t sx16 = (int32_t)(int16_t)a3;
-  /* case-12 vec = guest $sp+0x20 (frame -0x38) = entry_sp-0x18 */
-  uint8_t *buf = (uint8_t *)guest_at(guest_sp() - 0x18);
+  /* case-12 vec = guest $sp+0x20 (frame -0x38) = entry_sp-0x18; staged
+   * inside a reserved guest frame in the case-12 block below. */
   if (v0in != 0) return s2 + 4;
   idx = (uint32_t)(int32_t)(int8_t)(MB16(s2) >> 8);
   if (idx >= 0x10) return s2 + 4;
@@ -12944,17 +13019,25 @@ uint32_t desc_opcode_dispatch(uint32_t param_1,uint32_t param_2,
     firework_spawn((undefined2 *)guest_at(MB32(s1 + 0x20) + (uint32_t)sx16 * 80u + 0x34u));
     break;
   case 12: {
+    /* vec = guest $sp+0x20 (frame -0x38) = entry_sp-0x18; emit_task_spawn_b
+     * re-reads it through nested frames, so stage it in a reserved guest
+     * frame (sp+0x20 -> frm+0x28). */
+    extern uint32_t br2_guest_frame(uint32_t);
+    extern void br2_guest_frame_free(void);
+    uint32_t dod_frm = br2_guest_frame(0x38);
+    uint32_t dod_vec = dod_frm + 0x28;
     uint32_t i2 = (uint32_t)(sx8 & 0x7f);
     if (MB8(MB32(s1 + 0x38) + 0x100) != 0 && (sx16 & 0x8000))
       i2 = MB8(0x801b180cu + i2);
     rec = MB32(s1 + 0x20) + i2 * 80u;
-    MW16((uint32_t)(guest_sp() - 0x18) + 0, MB16(rec + 0x34));
-    MW16((uint32_t)(guest_sp() - 0x18) + 2, MB16(rec + 0x38));
-    MW16((uint32_t)(guest_sp() - 0x18) + 4, MB16(rec + 0x3c));
+    MW16(dod_vec + 0, MB16(rec + 0x34));
+    MW16(dod_vec + 2, MB16(rec + 0x38));
+    MW16(dod_vec + 4, MB16(rec + 0x3c));
     /* emit_task_spawn_b takes a host pointer to the 8-byte vec */
-    emit_task_spawn_b((undefined4 *)buf,
+    emit_task_spawn_b((undefined4 *)guest_at(dod_vec),
                  MB32(0x801f0790u + (a3 & 0xffu) * 4u),
                  MB32(0x801f0780u + (a3 & 0xffu) * 4u), 0);
+    br2_guest_frame_free();
     break;
   }
   case 13:
