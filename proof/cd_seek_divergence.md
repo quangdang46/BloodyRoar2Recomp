@@ -381,3 +381,11 @@ TestEvent. The missing piece is WHAT flag/register cd_timer_read's caller
 checks to decide "done" — that is the completion the runtime/game fails to
 produce. Agents d5cfe31a (runtime DMA/SPU done) + 74ecd030 (game record/
 event path) are tracing this.
+
+### Versus also wedged — ONE unified bug across both modes
+
+6090 (versus): gs=8 ph=6 frame=230567 seq=147953 FROZEN, DICR=0x00900000,
+i_stat=0x1 — identical signature to arcade ph=3 wedge. Versus progressed
+further (ph=6 char-select) only because it loaded different resources
+before hitting the same DeliverEvent(0xF0000009) starvation. Confirms a
+single root cause gates ALL CD-completion-dependent progression.
