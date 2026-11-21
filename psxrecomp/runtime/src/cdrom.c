@@ -62,6 +62,12 @@ static uint8_t stat_reg;
 static uint8_t request_reg;
 static uint64_t s_bfrd_set_count;   /* DIAG: REQUEST writes with BFRD bit7 */
 static uint64_t s_bfrd_clear_count; /* DIAG: clear_sector_buffer BFRD clears */
+/* i_stat bit2 presentation lateness vs cdrom_irq_present_due. Per-cycle
+ * stepping raises at exactly due; the deadline-chunk fast path can only be
+ * late when an event deadline was not advertised to the chunker. Nonzero
+ * max_late = a chunk stepped over the presentation boundary. */
+static uint64_t s_irq_present_late_count;
+static uint64_t s_irq_present_max_late;
 static uint8_t irq_enable;
 static uint8_t irq_flag;
 static CdromLidState s_lid;
@@ -1044,6 +1050,15 @@ static void present_cdrom_irq(void) {
     if (cdrom_irq_mask_matches_reason(irq_enable, reason) &&
         !cdrom_intc_request_latched) {
         psx_irq_raise(2, reason); /* IRQ_CDROM; detail = CD response/IRQ type */
+        /* First presentation of an armed generation only: re-arms (level-
+         * triggered i_stat re-raise of an unacked irq_flag) reuse the stale
+         * original due and would swamp the metric. */
+        if (s_irq_i_stat_armed && cdrom_irq_present_due != 0 &&
+            psx_cycle_count >= cdrom_irq_present_due) {
+            uint64_t late = psx_cycle_count - cdrom_irq_present_due;
+            s_irq_present_late_count++;
+            if (late > s_irq_present_max_late) s_irq_present_max_late = late;
+        }
         cdrom_intc_request_latched = 1;
         cdrom_intc_latched_generation = cdrom_irq_generation;
         s_irq_i_stat_armed = 0;
@@ -3108,8 +3123,17 @@ void cdrom_write(uint32_t addr, uint32_t value) {
 uint32_t cdrom_cycles_to_irq(uint32_t i_mask) {
     if (!(i_mask & (1u << 2))) return 0xFFFFFFFFu;   /* IRQ_CDROM masked */
     uint32_t best = 0xFFFFFFFFu;
-    /* Armed response awaiting presentation (raises bit2 at present_due). */
-    if (cdrom_irq_mask_matches_reason(irq_enable, irq_flag)) {
+    /* Armed response awaiting presentation (raises bit2 at present_due).
+     * The predicate MUST match present_cdrom_irq(): the owed reason is
+     * s_irq_i_stat_reason while s_irq_i_stat_armed, falling back to live
+     * irq_flag. A HINTSTS ack inside the CDROM_IRQ_PRESENT_DELAY window
+     * zeroes irq_flag but does NOT cancel the owed i_stat presentation —
+     * testing irq_flag here under-advertised the deadline, so the fast
+     * deadline path could step a whole chunk over it and raise bit2 up to
+     * PSX_DEADLINE_HARD_CAP cycles late (per-cycle mode never does). */
+    uint8_t present_reason = s_irq_i_stat_armed ? s_irq_i_stat_reason
+                                                : irq_flag;
+    if (cdrom_irq_mask_matches_reason(irq_enable, present_reason)) {
         int rem = irq_present_rem_cycles();
         uint32_t d = rem > 0 ? (uint32_t)rem : 0u;
         if (d < best) best = d;
@@ -3130,10 +3154,27 @@ uint32_t cdrom_cycles_to_irq(uint32_t i_mask) {
         uint32_t d = (uint32_t)cycles_until_due(pending_present_due);
         if (d < best) best = d;
     }
+    /* Due-now work gated only on irq_flag == 0: cdrom_advance services all
+     * of these on its NEXT call, so they are events at distance ~0 — without
+     * advertising them a chunk can carry the IRQ raise a full chunk late.
+     * (Each clears its flag when it fires, so this cannot spin.) */
+    if (irq_flag == 0 &&
+        (queued_cmd.pending || xa_data_end_pending ||
+         cdda_data_end_pending || s_lid_irq_pending)) {
+        if (0u < best) best = 0u;
+    }
     /* Active sector read: next data-ready in read_delay cycles. */
     if (reading && !warm_route_consumer_blocked() &&
         read_delay > 0 && (uint32_t)read_delay < best)
         best = (uint32_t)read_delay;
+    /* CD-DA stream: process_cdda_stream decrements cdda_delay and delivers
+     * a sector (SPU push + possible report/data-end IRQ) when it reaches
+     * zero. Not covered by any countdown above — advertise the raw
+     * deadline so chunks land on the boundary like read_delay does. */
+    if (cdda_playing) {
+        uint32_t d = cdda_delay > 0 ? (uint32_t)cdda_delay : 0u;
+        if (d < best) best = d;
+    }
     return best;
 }
 
@@ -3254,6 +3295,8 @@ void cdrom_debug_snapshot(CDROMDebugState* out) {
     out->int1_pending_now = pending_dataready;
     out->bfrd_set_count = s_bfrd_set_count;
     out->bfrd_clear_count = s_bfrd_clear_count;
+    out->irq_present_late_count = s_irq_present_late_count;
+    out->irq_present_max_late = s_irq_present_max_late;
     out->pending_pending = pending.pending;
     out->pending_delay = pending_rem_cycles();
     out->pending_phase = pending.phase;

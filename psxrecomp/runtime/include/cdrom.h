@@ -214,6 +214,11 @@ typedef struct CDROMDebugState {
     uint8_t  int1_pending_now;
     uint64_t bfrd_set_count;    /* DIAG: REQUEST writes with BFRD bit7 */
     uint64_t bfrd_clear_count;  /* DIAG: clear_sector_buffer BFRD clears */
+    /* i_stat bit2 presentation lateness vs cdrom_irq_present_due (cycles).
+     * count>0 with max_late>0 = deadline-chunk overshoot of an unadvertised
+     * CD IRQ presentation (fast path only; per-cycle stepping stays ~0). */
+    uint64_t irq_present_late_count;
+    uint64_t irq_present_max_late;
 } CDROMDebugState;
 
 typedef struct CDROMSectorDebugState {
