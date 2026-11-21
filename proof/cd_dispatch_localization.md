@@ -113,3 +113,35 @@ event enable). Next step: identify which `CDIRQ_*` (`DATA_READY`/
 `DATA_END`/`ACK`/`ERROR` in `cdrom.c set_irq`) the runtime must raise
 to trip the type-2 slot, and confirm it isn't being raised for the
 stalled read session.
+
+## Handler table + INTC decode (live `:6100`)
+
+`cd_intc_dispatch` (0x8019a8ec, delegated) is the real IRQ dispatcher:
+mask = `*ptrA(0x1F801070=INTC_STAT) & *ptrB(0x1F801074=INTC_MASK) &
+u16@0x801bcd48`, then calls `handler_table[i]` @`0x801bcd1c+i*4` for
+each set bit i<11.
+
+Live handler table `0x801bcd1c`:
+```
+[0]=0x8019AE68 cd_cb8_dispatch   <- FIRES (382x)
+[1]=0
+[2]=0x801979F8 cd_response_pump  <- 0 hits  (INTC bit2 = CDROM)
+[3]=0x8019AF7C                   <- 0 hits
+[4..10]=0
+```
+local mask `0x801bcd48=0xD` (bits 0,2,3 enabled); `irq_state`:
+`i_mask=0xD`, `i_stat=0`, `pending=0`.
+
+So `cd_response_pump` is the **CDROM (INTC bit 2)** handler and it is
+enabled, but INTC bit2 is never observed pending at dispatch time even
+though CD data-ready IRQs fire `cd_cb8_dispatch` (index 0) ~382x.
+
+Two candidate breaks (next session):
+- The CD data-ready IRQ is being routed to handler index 0 rather than
+  index 2 — i.e. the game's INTC/CD-IRQ source mapping differs from a
+  naive bit==index assumption, OR `cd_cb8_dispatch` is invoked by a
+  different path (not the bit-table) and INTC bit2 genuinely never
+  asserts.
+- The runtime raises the CD IRQ on a line the game's mask/handler
+  indexing doesn't map to slot 2 (INTC bit assignment / CD IRQ routing
+  in `cdrom.c` `psx_irq_raise` vs the game's `0x801bdda4/b` ptr cells).
