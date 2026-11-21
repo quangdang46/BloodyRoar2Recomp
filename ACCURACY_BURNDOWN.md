@@ -3621,3 +3621,58 @@ STATUS: x28 blocker RESOLVED. Next blocker = versus FAIL-FAST
 battle_flow_state_machine returns into the g_game_state SM) — suspected
 3rd instance of the split-buffer class corrupting GUEST state, or an
 unrelated versus-path bug. Under investigation.
+
+=== N+219 — versus FAIL-FAST 0x01000000 ROOT CAUSE: bfsm prim-list arg mistranslations ===
+
+The remaining versus blocker `FAIL-FAST unknown dispatch addr=0x01000000
+ra=0x80126664` was NOT another split-buffer smash — it was THREE
+decompiler-port mistranslations in battle_flow_state_machine (guest
+0x8016FCC4) feeding prim_list_gte_invoke bad arguments, so it iterated a
+garbage record list until call_guest4(0x01000000) fail-fasted. 0x01000000
+is a heap record TAG, never a func ptr — the "func" came from reading the
+wrong record field.
+
+Three mistranslation classes, all in the case-D_8 prim-list path (P1 block
+_DAT_1f800110 and P2 mirror _DAT_1f800218):
+1. WORD cells defined uint8_t — _DAT_1f800100/148/154/250/25c are lw-accessed.
+   _DAT_1f800100 holds a POINTER (0x801beff0); as uint8_t it read 0xF0 ->
+   guest_at(0xF0) wild record list. The 0x200/0x400/0x8000000 flag tests were
+   also dead (a byte can't hold those bits).
+2. Byte offsets used as uint32_t* ELEMENT indices — the render-record table
+   has 0x24-byte stride; guest uses lw/lb 0x10/0x24/0x34/0x00($v0) BYTE
+   offsets, port used them as indices (4x too far). e.g. prim_list_gte_invoke
+   param_1 read +0x40 instead of +0x10.
+3. param_4 width — guest passes a signed byte (lb+sll24/sra24); port passed
+   the whole word (0x09140F13 -> 152M instead of 19).
+
+Guest-disasm proof: generated/SLES_017.22_full_31.c 0x80170414 (lw +0x10),
+0x80170404 (lb +0), 0x80170430 (lb +0x24), 0x8017043C (lw +0x34), plus P2
+0x80170660/0x80170670.
+
+FIX (commit 1aac895, game/menu.c): widened the 5 defines uint8_t->uint32_t;
+corrected 4 prim_list_gte_invoke call sites to byte-offset indexing with
+(int8_t) count bytes. VERIFIED: fresh instance sustained 35,000+ frames of
+versus combat, multiple completed rounds (ph cycling 8->0/1->3/4->8), gs=8
+throughout, NO 0x01000000 dispatch / SIGSEGV. Pre-fix died at frame 10268.
+
+GENERAL LESSON: TWO decompiler mistranslation classes to sweep for tree-wide:
+(a) a guest lw/lh cell typed uint8_t in a #define (byte can't hold the bits
+    the flag tests need); (b) a byte offset applied as a typed-pointer element
+    index ((u32*)p)[N] or (u32*)p + N instead of byte p+N. battle.c already
+    uses the correct uint32_t defines + guest_at(addr+byte_off) idiom.
+
+=== N+220 — iris_wipe_update: merge split 48-byte gte_points_xform buffer ===
+
+gte_points_xform (battle.c ~14496) writes 12 x undefined4 = 48 bytes to
+param_2, but iris_wipe_update's caller storage had the guest's contiguous
+sp-0x88..-0x58 buffer split into two short[12] arrays (local_88 +
+asStack_70). Second half only correct if the compiler happened to place
+asStack_70 immediately after local_88 — same latent split-buffer class as
+N+218. FIX (commit fad0f18): merged into short local_88[24]; second half
+now local_88+12. Only caller of gte_points_xform.
+
+SYSTEMIC LATENT PATTERN (audit, in progress): scalar-triple int/short locals
+that guest used as contiguous vec3 arrays, passed by pointer to 3-element
+callees (pair_depth_set, midpoint_angles_set, vec3_s32/s16_normalize) —
+~15 sites in battle.c. Works only if compiler orders the scalars adjacently.
+Converting to real arrays (subagent in flight).
