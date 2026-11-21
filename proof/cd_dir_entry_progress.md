@@ -156,3 +156,49 @@ despite the FMV stall.
 NEXT: compare the attract-FMV read's entry params (`+4/+6/+8`) vs a
 working menu read's — find which field/pattern the FMV sets that the
 credit path can't satisfy.
+
+## FMV read path identified (2026-11-21)
+
+`intro_movie_state` (`game.c:1817`) → `cd_file_load_sm` (`game.c:1703`,
+thin wrapper → generated `0x8018cfdc`) → calls `cd_read_issue`/`cd_read_setup`/
+`cd_read_poll`/`cd_init_session`/`cd_mode_flag_set` — **all delegated to
+generated** (IRQ/deferred-coroutine boundary, `cd.c:162-303`). This is a
+DIFFERENT read mechanism than the menu's `cd_channel_poll`/`blk_io_retry`/
+`cd_dir_entry_probe` path.
+
+`cd_read_setup` (`cd.c:290`, comment 293-300) registers the INT2/step
+callbacks via `mc_session(_b)` and its own doc names the wedge symptom:
+*"the consumer stops mid-sector and the completion event never fires."*
+
+Live probe correlation:
+- `cd_read_step_cb` `0x801985C4` = **329 hits** (sectors stepping)
+- `cd_read_finish_cb` `0x80198838` = **0 hits** (read never finishes)
+- => the per-sector step callback runs but the read-completion callback
+  never fires → `+4/+6` never credited → dir-entry never finalizes.
+
+The missing link is whatever should trigger `cd_read_finish_cb` — the
+sector-data consumer that drains the read buffer to completion. For menu
+reads an equivalent consumer runs (entries reach 10/10/10); for the FMV's
+`cd_read_*` sequence it does not. Likely the MDEC-feed/channel-drain that
+copies sector data out of the read buffer and marks the final sector done.
+Circular-suspect: MDEC frozen may be cause OR symptom — needs the
+finish-callback trigger identified, not assumed.
+
+## VERDICT (2026-11-21, agent 224c8e29): versus/arcade COMBAT reachable on HEAD
+
+Runtime-verified on a dedicated instance (port 6400). `g_game_state=8`,
+`scene=3`, phase pointer `0x1f800004` cycling `0x801E40A0<->0x801E61F0` —
+the exact "gs=8 ph cycling" signature proven at 57aef5b. Sustained ~4min,
+frames advancing ~50fps, wc/mmio/mc counters live. The attract-FMV wedge
+is bypassed by a single correct START tap; menu needs no directional input
+(repeated START confirms through to battle).
+
+INPUT ENCODING (corrected): `press`/`set_input` `buttons` is the RAW
+active-low pad word written to `sio_set_pad_state_slot` — pressed = bit
+CLEARED. START-only = `0xFFFF & ~0x0008 = 0xFFF7`; CROSS-only =
+`0xFFFF & ~0x4000 = 0xBFFF`. (Active-high masks press everything EXCEPT
+the named button.)
+
+=> The core game (menu -> mode select -> versus/arcade combat) WORKS on
+HEAD. The attract-FMV `cd_read_finish_cb` gap is a fidelity issue (intro
+video doesn't complete), NOT a gameplay blocker.
