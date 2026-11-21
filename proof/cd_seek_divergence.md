@@ -544,3 +544,35 @@ NEXT (faithful): find WHY the consumer task isn't scheduled — is it (a) not in
 the ready queue (never woken / lost wakeup), (b) starved by a non-yielding
 TestEvent loop that should yield/sleep, or (c) blocked on a different event.
 Inspect the kernel TCB/ready-queue state + which thread owns the CD consumer.
+
+=== SESSION — scheduler verdict CORRECTED + dead +4-progress consumer ===
+
+Agent 1d9a11a0 proved the scheduler is COOPERATIVE and FAITHFUL (matches real
+PSX: kernel never preempts; threads switch only on ChangeThread/RFE —
+traps.c:862-977, psx_request_thread_switch only from syscall case3).
+The TestEvent spin loop (cd_seek_complete_poll, delegated/generated) has NO
+yield — faithful to the binary; real HW would starve identically. My earlier
+"scheduler starvation" framing was WRONG.
+
+CORRECTED MODEL: the CD deferred coroutine is NOT thread-scheduled — it
+resumes inside the CD IRQ via jmp_buf (cd_ctx_save/restore -> cd_chan_full_init
+-> cd_intc_dispatch), and IRQs fire at generated basic-block boundaries.
+sp_ring confirms it cycles EVERY FRAME on tcb 0x8FE0:
+  0x8019A53C -> kernel-wait 0x00002924 -> resume 0x8019A87C -> repeat.
+bioscall_dump: TestEvent B0:0x0B = 1,462,829 spins; DeliverEvent B0:0x07 = 111.
+
+So the coroutine RUNS but never observes its completion flag. The dead link
+(agent a967ee56): channel-entry +4 progress receives ZERO writes — the
+per-sector accounting consumer is dead. cd_dir_entry_finalize (0x801990f0)
+needs entry+4==entry+6-1 to set fc69c->state==2.
+
+CONCRETE LEAD: sub-channel dispatch cells 0x801feb44/48 are WRITTEN by
+cd_subchan_table_install (cd.c:1199-1204 -> 0x801aa244/0x801aa2ac) but NO code
+in game/*.c OR generated/*.c READS them — the sub-channel/per-sector consumer
+that would credit dir-entry +4 is never invoked. Likely the reader is reached
+via computed address / BIOS sub-channel IRQ dispatch, OR the callbacks are
+genuinely orphaned (never installed into the live dispatch path).
+
+NEXT: find the invocation path for 0x801feb44/48 (sub-channel IRQ handler /
+computed-address reader) and why it doesn't run; OR find the alternate
+per-sector +4 credit path. This is the precise dead link.
