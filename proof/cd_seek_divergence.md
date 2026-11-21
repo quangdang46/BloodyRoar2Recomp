@@ -204,3 +204,30 @@ Commit 2975467 applied the wrong "b70==0→fn path" reading and caused a
 deterministic early-boot `unknown dispatch 0x294C` crash (rec[20] is not a
 valid callable pointer on that path); it was reverted in a729431. The
 slti(b70,2) delay-slot split is what makes b70==0 a return, not a fallthrough.
+
+---
+
+## fntrace wedge localization (6091, commit 2894c11+)
+
+Armed fntrace over the CD record machine at the gs=8 ph=3 wedge. Per-frame
+counts over a 6s window (frames ~35152-35153):
+
+- `0x8019AE68` cd_cb8_dispatch  x800   (the per-frame CD pump, runs)
+- `0x801A38B8` cd_cmd_queue_drain x1600 (selector a0=0 -> BE7D8[head]=0 path;
+  op_frame_advance/qbyte_take NOT reached)
+- `0x801A3E94` cd_cmd_state_rx   x1600 (a0=0x801FF080/0x801FF170 records,
+  ra=0x801A3550 — runs every drain pass)
+
+**Never observed:** `0x801A3D84` state_commit, `0x801A189C` queue_service,
+`0x801A1B50` dev_cmd_seq, `0x801A1E84` dev_cmd_round, `0x801A40F8`
+op_frame_advance.
+
+Conclusion: the record machine IS invoked correctly each frame; state_rx
+re-processes the same armed records but never satisfies the commit
+transition. seq (cdrom_state) frozen => the CD DEVICE command is not
+completing, so the record response buffer never receives fresh data and
+the record waits forever. The mistranslation is therefore UPSTREAM of the
+record machine — in the device command issue / DMA fill / IRQ delivery
+path (the cd_dma_chan_reset->DeliverEvent gap in proof/cd_seek_blocker.md),
+NOT in state_rx/state_commit/queue_drain (all verified faithful vs
+generated this session).
