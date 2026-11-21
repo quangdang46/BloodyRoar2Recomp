@@ -3307,3 +3307,39 @@ NEXT: gwatch 0x801C47B8 (heap-A cursor) + menu_res_load_sm /
 save_state_machine_alt entry during versus; diff heap layout vs arcade.
 Repro instance left live: port 4950 (pid 1527), stalled frame 3939, gwatch
 armed on 0x1F800220.
+
+=== N+210 — versus FC_ANI divergence narrowed: deterministic + bring-up completed ===
+Queried the preserved crash instances (ports 4940 frame3939 / 4950 frame3939 /
+4960 frame4264) directly — P2's bad FC_ANI is DETERMINISTIC, not random:
+
+- P1 ctrl 0x1F8000E8 +0x30 FC_ANI = 0x800771D4  (persistent heap, valid .ANI)
+- P2 ctrl 0x1F8001F0 +0x30 FC_ANI = 0x800D9F98  (streaming/staging 0x800dxxxx)
+- cursors: _DAT_801c47b8 (persistent heap) = 0x800680DC;
+           _DAT_801e3cfc (streaming)      = 0x800D0001
+
+KEY DEDUCTION: the crash is AT ph=8 with fighters animating, so the battle
+bring-up MUST have completed (battle_frame's L_case0 retries while
+battle_bringup_b returns 0; reaching the fight means it returned 1). Therefore
+battle_bringup_b's fighter_record_apply(heap,slot) DID run for both slots —
+yet P2's +0x30 still points into streaming memory. So the divergence is NOT a
+skipped bring-up; it is one of:
+  (a) slot->ctrl mapping: bring-up slot2 bound a different ctrl than P2's
+      0x1F8001F0 (versus player/slot index offset),
+  (b) the .ANI payload for P2's character decoded into the streaming range
+      (_DAT_801e3cfc) instead of persistent heap (_DAT_801c47b8), or
+  (c) a later versus stream overwrote the persistent .ANI and +0x30 was
+      re-pointed at the staging copy.
+
+Bring-up slot map (verified): battle_bringup_b @menu.c:8669 (guest 0x80147df4)
+state4 cd_file_load_sm(0x8b,heap)->fighter_record_apply(heap,1); state8
+cd_file_load_sm(0x8c,heap)->fighter_record_apply(heap,2). save_state_machine_alt
+@save.c:7038 uses slots 3/4 (fighter_record_apply(heapB,3/4)) and writes
+s4+0x30=heapA at state0x30 (~save.c:7253) — candidate +0x30 writer. Fighter
+ctrls are 0x1F8000E8 (P1) / 0x1F8001F0 (P2); attract preview binds via
+intro_movie_state fighter_record_apply(_DAT_801e3cfc,...) = streaming.
+
+NEXT (agent 4390b7bd running, fresh port, read-only source): gwatch the WRITE
+to 0x1F800220/0x1F800118 during versus; identify the exact function+guest-addr
+that sets P2 ctrl+0x30 and whether faithful versus re-binds it to persistent
+heap (port bug) or legitimately streams it (cursor divergence). Broad agent
+3858e66e still tracing on ports 4940/4950/4960.
