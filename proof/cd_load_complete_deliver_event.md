@@ -281,3 +281,78 @@ between FSM wait-condition and loader pump. NOT a CD hardware/IRQ bug.
 
 cd_dma_chan_reset faithfulness fix committed: delay_3c gate is mem32[0x801BDF00]
 ==0 (generated 0x8019B7E4 lw + bnez), NOT param_1 (never read by guest body).
+
+## Session-6 update — CD EXONERATED; wedge is battle_frame case3 (DAT1=3 spawn phase)
+
+Live wedged instance (port 8976, frame ~302k) dissected with pc_probe armed on
+every delegated/generated CD entry PC. Result: the game is NOT in any CD path.
+
+### pc_probe histogram (12 delegated CD/generated entry PCs, ~8 s window)
+
+- Per frame the ONLY guest-visible CD calls are: `cd_cmd_queue_load`
+  (0x80192634) ×1, `cd_timer_read` (0x8019a460) ×~4, `vsync_wait_n`
+  (0x8019a5d8) ×2 — all delegated, all faithful.
+- ZERO hits: `cd_file_load_sm` (0x8018cfdc), `cd_file_read_seq` (0x801565ec),
+  `cd_cmd_issue` (0x80196e14), `cd_result_wait_a` (0x801968cc),
+  `cd_reg_window_op` (0x8019b944), `chan_job_pump` (0x801a0110),
+  `op_chan_fn_invoke` (0x801a0a8c), `cd_response_pump` (0x801979f8),
+  `cd_cb8_run_param` (0x8019ae70). The earlier stack sightings of
+  `cd_file_read_seq+0x3c`/`cd_cmd_issue+0xc8`/`cd_result_wait_a+0x88` on
+  0x801ffdf8.. were STALE residues — current sp 0x801FFDF8 sits in the
+  BIOS/kernel idle loop (ra 0x8019A53C, epc inside vsync_wait_n).
+
+### Which function is looping — PROVEN battle_frame
+
+- `DAT_1f800001 = 3` (spawn/select phase).
+- `0x801f10bc = 0x801FFE58` = battle_frame's ctx slot (b36_sp+0x18).
+- b36_sp = 0x801FFE40: prologue slots verified live —
+  `*(0x801FFE40+0x130)=0x1f8000e8`, `*(+0x134)=0x1f8001f0`
+  (battle_frame stores exactly those at B36_32(0x130/0x134)).
+- task pools allocated: `0x801f10c0=0x801D660C`, `0x801f10c4=0x801D71FC`.
+- `battle_flow_state_machine` tag70 decomp_trace FROZEN (seq 2533) → the
+  flow SM is blocked inside the nested battle_frame for(;;) call, as designed.
+
+### Live record state (T = b36_sp+0x40 = 0x801FFE80, stride 0x30)
+
+- P1 rec (T+0):   f8=0x1b, f1c=0, f10=0, f24=1
+- P2 rec (T+0x30): f8=0,   f1c=1, f10=1, f24=0xb
+
+`fighter_spawn_setup` early path needs `rec+0x10==1 &&
+(bp[0xb4/2+s1]&0xf00)==0x700` to arm the spawn task pair
+(task_alloc_wrap_c → 0x801b2ed8/0x801b2ef4 descriptors) and post
+`deferred_cmd_post(0x400,0x41)`. P2 has f10=1 but f24=0xb (not the
+spawn-complete marker); the phase word gate has not fired, so DAT1 stays 3
+and battle_frame case3 → L_tail → frame_tick loops forever.
+
+### CD-side state (all idle/normal, NOT the bug)
+
+- command queue BE7C0(head)=2 > BE7D4(tail)=1 → drained/empty.
+- job counter 0x801BE768=-1 = all 4 job slots free (chan_job_pump correctly
+  idles; job_counter_sign()==1).
+- ring cursors 0x801FC6C8=2 / 0x801FC6CC=0 — produced!=finished is the
+  NORMAL steady state when no channel command is in flight.
+- DAT_801bdde0 vsync counter advancing (0x49B34→0x49C7B); frames advancing;
+  B0/0x0B TestEvent frozen at 1,462,829 (no CD poll — correct, nothing to poll).
+- cdrom_command_history: last device command frame ~3860 (cmd 0x09 Pause);
+  the 3 completed read_seq batches were the bringup loads — bringup_a is
+  DONE (+0x8c halfword = 0xFFFF = -1, verified live).
+
+### Revised conclusion
+
+The "cd_file_load_sm stalls after 3 read_seq batches" premise is DISPROVEN
+for this wedge: the bringup loads completed; no loader is running or needed.
+The wedge is the battle_frame DAT1=3 spawn/select phase never advancing —
+either (a) the P2 spawn task/phase-0x700 gate isn't being satisfied
+(task_pools_tick → task fn mistranslation or missing fighter data), or
+(b) the pad-edge/confirm path (the previously-documented arcade
+controller-2 0x840 edge requirement, commit 078147d) isn't being fed in
+this headless run.
+
+### Next step
+
+Diff the P2 record fields + phase words (0x1f8000b4/0xb6, rec+0x10/+0x24)
+against a WORKING versus/arcade instance at the same DAT1=3 frame, and
+fntrace `task_pools_tick`'s task callbacks (0x801b2ed8/0x801b2ef4 descriptor
+targets, task_node fn ptrs) to see whether the spawn task runs and where it
+stops. If the task fn is clean-ported and mistranslated → fix C; if it needs
+the deferred-coroutine → delegate.
