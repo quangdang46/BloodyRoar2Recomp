@@ -178,3 +178,13 @@ end: epilogue
   flag for the channel-entry machinery.
 - Wedge dump: `0x801FC6F0..0x801FC70C` **all zero** — flag clear,
   consistent with drained state + orphaned pending entries.
+
+## Wedge spin-site identified
+
+Per-frame spin (sp_ring, tcb 0x8FE0): BIOS-side wait →
+`br2eu_func_8019A460` (**cd_timer_read**, entered via alias 0x8019A53C)
++ `br2eu_func_8019A87C` — a tiny dispatcher: `if ($v0==0) {struct-call
+path @0x801CD54C} else jal cd_intc_dispatch (0x8019A8EC)`. So the
+wedged task is the CD worker polling its deferred queue each frame;
+it is *supposed* to be idle once the load completes — the missing piece
+remains the event/entry work upstream, not this loop itself.
