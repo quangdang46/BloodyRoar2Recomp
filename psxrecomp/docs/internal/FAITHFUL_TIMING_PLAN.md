@@ -10465,3 +10465,25 @@ N+102 — x28 bug narrowed to a frame_tick CALLEE (4 agents, still unfixed):
   `0x801FFE18<->0x00008548<->0x801BDD30` toward `0x8019A87C`/`0x8019A53C`.
   No `cdrom.c`/`dma.c`/IRQ-timing patch is justified; proof:
   proof/cdrom_ring_bfrd_stall.md.
+
+- **session (arcade CD wedge narrowed to session-callback loss):**
+  proof/cd_event_drop_point.md had localized the drop to channel-entry
+  finalize starvation after a mid-ReadN Pause(0x09). Live descriptor dump
+  (proof/cd_finalize_gate.md) shows the 0x80010000 arena IS overwritten by
+  ch3 stream DMA (known §8 recurrence) BUT the initiating defect is
+  producer starvation: session callback cells 0x801bc848/0x801bc84c AND
+  parked saves 0x801bcba8/0x801bcbac are all 0, so cd_response_pump has
+  nothing to invoke and cd_mc_state_machine (0x80199440, correctly
+  delegated) never runs. Clearers identified: cd_chan_reset_b (0x8019746C,
+  via cd_init_mode_dispatch mode==2, 0x80195C1C) and cd_subsystem_init
+  (0x801974B8) both zero the cells; installer is cd_probe_retry
+  (0x80195AA4 -> 0x80195b4c/0x80195b74). Static agent tracing the exact
+  loss sequence. Separately documented (proof/cd_pause_sector_semantics.md)
+  a REAL psx-spx divergence in exec_command case 0x09: hardware keeps
+  delivering buffered-sector INT1s after Pause (response queue), while our
+  stop_read_stream()+cdrom_clear_pending_dataready() kills them at
+  dispatch and the ACK reports READ already cleared (hw shows 0x22 then
+  0x02). Not the wedge cause here, but a faithfulness fix candidate.
+  proof/dat1_writer_audit.md resolved the battle_frame state-3 question:
+  escape is async resource_rebuild_a(->5) via task_pools_tick; the ==3
+  freeze is downstream of this CD stall.
