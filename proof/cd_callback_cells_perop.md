@@ -225,3 +225,12 @@ was of a different region or a transient state. The pending work
 (producer=2/finalize=0) refers to indices into machinery elsewhere;
 the directory itself looks intact. Driver starvation remains the
 primary defect.
+
+## Regression check @ HEAD (25be552: Pause fix + bind ports)
+
+Fresh instance port 8990, arcade nav: identical progression
+(gs=8 ph=03 b4=0300 in ~8s) and identical wedge signature
+(stat=0x02, reading=0, idle CD, seq frozen) — **no regression** from
+the cdrom.c Pause/Stop rewrite or the bind.c state-machine ports; the
+wedge remains deterministic and unchanged. Instance left running on
+8990 as a spare wedge for post-fix verification.
