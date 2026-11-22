@@ -91,3 +91,165 @@ python3 tools/arcade_fight_mash.py 8941 > /tmp/mash_8941.log 2>&1 &
 
 Wedge reproduces deterministically (same LBA-8801 signature); probe tail
 in `/tmp/br2_8941.log` ends at `[dmaprobe] f=1551`.
+
+---
+
+## Session-2 update — blocked call-site + completion-flag pinpointed
+
+Fresh instance (port 8950, `PSX_DMAPROBE=1 PSX_CB7=1 PSX_CDPROBE=1`,
+`fn_filter lo=0x80140000 hi=0x801A1000` armed at boot + `fn_clear`,
+`arcade_fight_mash.py 8950`). Game wedged at `gs=8 ph=3` (battle-init),
+frame ~88000+, still advancing.
+
+### The blocked thread is inside `cd_file_read_seq`'s seek-complete poll
+
+Live guest stack of the spinning thread (TCB 0x8FE0, sp≈0x801FFDF8):
+
+- `0x801FFE1C = 0x80156628` → return into `cd_file_read_seq`
+  (`0x801565EC`+0x3C = the `jal 0x8019D500` loop-back edge, block
+  `0x80156628`).
+- `0x801FFE18 = 0x801926AC` → `cd_cmd_queue_load`+0x78 (`cd_timer_read`
+  call site inside the poll's inner wait `0x8019D5B0`).
+
+`cd_file_read_seq` (generated `br2eu_func_801565EC`, 100 B) is:
+`mode_store(0)` → `status_shifted_read` → `seek_param_issue_clamped`
+(`0x8019D410`→`0x8019BBC4`→`cd_reg_window_op` ops 2/1/3 since
+`0x801BDECC==0`) → **loop `cd_seek_complete_poll` (`0x8019D500`) until
+nonzero**.
+
+### The exact wait condition
+
+`cd_seek_complete_poll` loops until `*(u32*)0x801BDE40 == 1` (early-out)
+or the `0x8019D5B0` event wait returns. Live wedge values:
+
+- `0x801BDE38 = 0xF1000008` (the F0000009 event handle — armed, waiting)
+- `0x801BDE40 = 0`  ← the flag the completion path must set
+- `0x801BDF84 = 0`
+- `0x801BDEE8 = 0`  (so `cd_dma_chan_reset` would take the
+  `DeliverEvent(0xF0000009,0x20)` branch if reached)
+
+### Completion inputs all idle/empty
+
+- CD command queue empty (`0x801B8448==0x801B844C==0xD`, head==tail).
+- `chan_job_pump` runs every IRQ2 but job counter `0x801BE768=0xFFFFFFFF`
+  (no pending job); job slots hold only stale fns `0x8019F474/0x8019E798`.
+- IRQ2 cb8 table `0x801BDDC0[0..7]` = all 0 except slot7 `chan_job_pump`.
+- INTC handler table `0x801BCD1C` populated: bit0→`cb8_dispatch`,
+  bit2→`cd_response_pump`, bit3→`cb7_run`.
+- CD device idle: last command `0x09`(Pause) at cyc≈1.13G; no new
+  seek/read commands since → the load never reached CD-command issue;
+  it is stuck at the **channel/seek-complete** stage.
+
+### Interpretation
+
+The dropped link is the **per-command completion callback registration**
+into `tbl[0..7]` (`0x801BDDC0`) via registrar `0x8019AED4`. With all
+slots empty, the IRQ2 `cd_cb8_dispatch`/`cd_cb8_run_param` calls nothing,
+so the in-flight command's "transfer/seek complete" step never runs →
+`0x801BDE40` never set → `DeliverEvent(F0000009)` never fires →
+`cd_file_read_seq` polls forever. This matches hypothesis (a) in the
+previous section and is consistent with the loader being parked *before*
+any new CD device command is issued.
+
+### Next instrumentation needed
+
+Arm `fn_entry`/`fntrace` on `0x8019AED4` (registrar), `0x8019AE70`
+(`cd_cb8_run_param`), `0x80196370` (`cd_response_process`), and the
+command-issue path on a **fresh** run, filtered to `0x80150000-0x80190000`
+(excludes the per-frame IRQ2 spam `0x8019A460/0x8019A5D8/0x8019A87C/
+0x8019A8EC/0x8019AE68/0x80192634/0x80192F14/0x801A0110` so the ring
+retains the whole run). Determine which command's done-callback slot
+should be non-empty and which registration call is missing.
+
+## Session-3 update — spin localized to TestEvent poll; completion ran but DeliverEvent dropped
+
+Parent live-trace on wedged instance (port 8941) + B0 table decode:
+
+- `cd_seek_state_machine(a0)` = `bios_svc(0xb0,0x0b,a0,0)` = **B0 svc 0x0B =
+  TestEvent** (B0_Table index 11; DeliverEvent=0x07, OpenEvent=0x08,
+  WaitEvent=0x0A, TestEvent=0x0B, EnableEvent=0x0C). Two defs exist:
+  cd.c:3618 `bios_svc(0xb0,0x0b,a0,0)` and bind.c:2402 `bind_bios_call_live(0x0b,ret)`.
+- `cd_seek_complete_poll` (0x8019d500, delegated) → `cd_seek_state_machine(@0x801bde38)`
+  = **TestEvent(flag)** spins until nonzero. `@0x801bde38=0xF1000008`, `@0x801bde40=0`.
+- So `cd_file_read_seq` busy-polls **TestEvent** waiting for the matching
+  DeliverEvent. Command queue EMPTY (`0x801B8448==0x801B844C==0xD`), CD idle,
+  last device cmd Pause(0x09). ALL commands completed — the final DeliverEvent
+  step was dropped, not an in-flight command.
+- cb8 table `0x801BDDC0`: only slot7=`chan_job_pump`(0x801A0110); slots0-6=0.
+  chan_job_pump runs every IRQ2 (~37k, counter 0x801BDDE0=0x921F).
+- Job system RAN to completion: `@0x801BE768`=-1; slots `0x801fef60`=[cd_job_submit5
+  0x8019F474, gen 0x8019E798,0,0]; entries [0xA,..],[0xB,..].
+- `cd_dma_chan_reset`(0x8019b7e8) would DeliverEvent(0xF0000009,0x20) when
+  `0x801bdee8==0` (confirmed 0) — but it's a tbl4[4]/cb7-DMA handler and this
+  load is all-ch3 (zero ch4), so it is NOT this load's producer.
+- File-read completion path: `cd_read_step_cb`(0x801985c4)+`cd_read_finish_cb`
+  (0x80198838) both delegated; finish fires user cb `0x801bc7b0`→DeliverEvent.
+- `bios_hle` DeliverEvent anchor UNAVAILABLE on OPENBIOS → kernel calls LLE.
+
+OPEN: which completion callback was SUPPOSED to DeliverEvent and why it didn't
+run/finish. Clean-port coroutine-starvation suspects in chain: chan_job_pump,
+op_chan_fn_invoke(save.c:8438), cd_job_slot_alloc, cd_cb8_run_param. cb8 slots
+0-6 empty may be NORMAL (only chan_job_pump needed) — do NOT assume agent's
+cb8-registration theory without proof.
+
+## Session-4 — decisive fresh-run trace (build ecedbb2 + PSX_DMAPROBE, ports 8960/8971)
+
+Live wedge reproduced deterministically on TWO fresh processes; CD freezes at
+identical state: `seq=81861`, `last_sector lba=8801` (Mode2/XA), `sector_read_pos=2060`
+of 2340, `ring_dropped=2`, `ring_partial=1824`, `bfrd_set=3931` vs `bfrd_clear=14`,
+`pending cmd=0x09(Pause) active=0`, `i_stat=0x01`, `I_MASK=0xD`. Game state `gs=8 ph=3`
+(battle-load phase); frame counter keeps advancing (loading screen spins) while the
+CD/load pipeline is hard-frozen. `cdrom_state.seq` identical across runs => deterministic
+logic stall, not a timing race.
+
+### Answers to the four posed questions (fntrace ring, 93061 entries)
+
+- (a) `cd_read_step_cb` `0x801985C4` ran **324x then STOPPED** (delta 0 over 4 s).
+  `cd_read_finish_cb` `0x80198838` ran **0x** — BUT this is EXPECTED, not a drop:
+  `cd_read_open` only registers it via `cd_cmd_dispatch3(0x80198838)` when
+  `DAT_801bc7b4 & 1`; live `0x801bc7b4 = 0`, so the finish-cb was never armed for
+  this read. Read counters: `0x801bcb94` (sectors-remaining) = **0** => the read is
+  COMPLETE from the driver's view.
+- (b) user cb `0x801bc7b0` region holds `0x80195B9C`; the INT2 completion callbacks
+  are the fn-ptr triple `0x801bc848/0x801bc84c/0x801bc7b0`, fired by
+  `cd_response_pump` (INTC handler[2] @0x801bcd1c, verified live in table).
+- (c) `DeliverEvent` B0/7 total = **111**; the F0000009/F1000008 flag IS delivered —
+  last at frame ~3797, driven by a **ch4 DMA doorbell** (`done ch4` -> cb7 tbl[4]
+  `cd_dma_chan_reset` -> `DeliverEvent(0xF0000009,0x20)`). This REVISES the earlier
+  "all-ch3, cd_dma_chan_reset not the producer" note: ch4 doorbells DID fire 4x
+  (dmaprobe frames 1865/3496/3746/3793->3797).
+- (d) Thread is parked in `cd_file_read_seq`->`cd_seek_complete_poll`, spinning
+  **B0/11 TestEvent = 1,462,829 calls** on `0x801BDE38=0xF1000008`/`flag@0x801BDE40=0`.
+
+### The precise dropped link
+
+Each load ends with a **ch4 DMA "doorbell"** whose done-IRQ -> `cd_dma_chan_reset`
+-> `DeliverEvent(F0000009)` wakes the TestEvent poll. dmaprobe shows **zero ch4
+kick/done after frame 3797** while ch3 sector DMA streamed to LBA 8801 (frame ~3909).
+Channel-command ring cursors frozen: prod `0x801fc6c8`=2, fin `0x801fc6cc`=0.
+Job counter `0x801BE768`=-1 (no active job); job slots hold stale
+`0x8019F474`/`0x8019E798`, entries state 0xA/0xB. => the final doorbell channel
+command was never produced/executed, so no DeliverEvent, so the poll spins forever.
+
+### Fix attempt + result
+
+Delegated `cd_response_pump` (`0x801979f8`, the IRQ2 CDROM completion dispatcher)
+to `br2_call_generated` — it is a clean `for(;;)+br2_bail_pending` frame sandwiched
+between generated `cd_intc_dispatch` and generated `cd_response_process`/callback
+`call_guest`s (deferred-coroutine contract). Regenerated `src/clean_table.c`
+(1284 wrappers), rebuilt OK. **Fresh arcade DAT1=3 run reproduced the IDENTICAL
+wedge** (same seq/LBA/sector_read_pos=2060/ring_dropped=2). => cd_response_pump is
+NOT the dropped link (kept the delegation — it is faithful regardless).
+
+### Narrowed suspect set (clean frames still on the IRQ2->job->DMA->doorbell path)
+
+`cd_cb8_run_param` (0x8019ae70), `chan_job_pump` (0x801a0110, cb8 slot7),
+`op_chan_fn_invoke` (0x801a0a8c), `cd_job_slot_alloc` (0x801a0a10),
+`cd_chan_job_submit` (0x8019ea98 -> allocs job fn `0x8019eb00`),
+`cd_chan_job_pump` (0x8019f80c), `cd_pending_args_pump` (0x801a0e90),
+`cd_svc_dual` (0x801a0620), `cd_status_map` (0x801a00bc), `cd_job_result`,
+`cd_mc_op_wait`. The doorbell command producer is the job SM; prod cursor frozen
+means no new channel command was submitted after read completion. Next step:
+determine which submit path (read-completion cb @0x801bc848/4c -> channel cmd ->
+job alloc) fails to enqueue the ch4 doorbell, then delegate that clean frame.
+`ring_dropped=2` + `sector_read_pos=2060` may be symptom (consumer stopped) not cause.

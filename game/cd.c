@@ -4537,22 +4537,19 @@ static int32_t cd_wait_stat(void)
 
 /* ======== 0x801979f8 ======== */
 
+/* 0x801979f8 — IRQ2-context CD response/completion dispatcher (INTC
+ * handler[2] @0x801bcd1c, gated on I_STAT bit2 CDROM). It loops
+ * cd_response_process (MMIO + deferred-coroutine resume) and fires the
+ * registered completion callbacks @0x801bc84c/@0x801bc848 that advance the
+ * read/channel state and submit the ch4 doorbell -> DeliverEvent(F0000009).
+ * The clean for(;;)+br2_bail_pending loop cannot supply the per-block
+ * psx_check_interrupts_at / live guest continuation the generated body has
+ * across cd_response_process and the callback call_guests — the same
+ * deferred-coroutine starvation contract as cd_intc_dispatch/cd_cb8_dispatch.
+ * Delegate to generated MIPS (behavioral oracle). */
 void cd_response_pump(void)
 {
-  uint32_t s2 = DB8P(0x801bcb0c) & 3;
-  uint32_t s0;
-  for (;;) {
-    if (br2_bail_pending()) return;
-    s0 = cd_response_process();
-    if (s0 == 0) break;
-    if ((s0 & 4) != 0 && DB32G(0x801bc84c) != 0) {
-      call_guest(DB32G(0x801bc84c),DB8(0x801bcb25),0x801fc6d0);
-    }
-    if ((s0 & 2) != 0 && DB32G(0x801bc848) != 0) {
-      call_guest(DB32G(0x801bc848),DB8(0x801bcb24),0x801fc6c8);
-    }
-  }
-  br2_st8p(0x801bcb0c, (uint8_t)s2);
+  br2_call_generated(0x801979f8u,0,0,0,0);
 }
 
 /* ======== 0x80192634 ======== */
