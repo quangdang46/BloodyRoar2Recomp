@@ -98,6 +98,28 @@ So the announce→spawn stall is really: **`battle_init` (DAT1=3) is parked in a
 channel/deferred path never delivers.** `post_battle_dispatch` never runs
 because DAT1 never reaches 8.
 
+### Decompression-starvation mechanism (refined)
+
+The `decomp_trace` ring shows the load that stalls is a **bulk LZSS
+decompression into heapA** (`heapA_w_menu` → `dispatch`/`lzss`/`blk_ret`),
+consuming compressed blocks from a source buffer in the `0x801CAxxx–0x801D1xxx`
+region and writing sequentially `0x800B…→0x800E1064`. It then **stops producing
+entries** (ring frozen at seq 213) while `TestEvent` keeps spinning — i.e. the
+decompressor is starved of compressed input mid-stream.
+
+The compressed source is CD-delivered data. `cdrom_state` on the same instance
+shows the delivery-side divergence: **`bfrd_set=2047` vs `bfrd_clear=13`**,
+**`ring_partial=898`**, **`ring_dropped=1`**. Sectors were lost/partial-delivered
+during the sustained asset stream, so the compressed buffer has gaps → the
+decompressor can never reach its terminator → the "load done" event never fires
+→ `battle_init`'s `TestEvent` spins forever → DAT1 stays 3.
+
+This makes the downstream wedge the **same root cause as the earlier CD
+ring/DMA starvation** (`cd_finalize_gate.md`, `cd_dma_dispatch_channel.md`):
+the runtime's CD sector ring / BFRD flow-control drops or re-orders delivery
+under sustained load. The faithful fix belongs in `psxrecomp/runtime/src/cdrom.c`
+(ring/BFRD/sector accounting), not in `game/*.c`.
+
 ## Next steps (handed to runtime agent)
 
 1. Identify WHICH event the `TestEvent` (B0:0x0B) spin waits on inside
