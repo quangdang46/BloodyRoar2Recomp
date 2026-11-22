@@ -1,0 +1,121 @@
+# CD deferred-interrupt starvation — consolidated evidence (arcade spawn wedge)
+
+Status: **root cause narrowed to the CD response/result pipeline; the deferred
+coroutine runs but is never fed a command-complete interrupt after the last
+sector stream.** Deterministic across instances. Not yet fixed.
+
+This consolidates three independent instrumented runs (ports 9200 subagent,
+9810 main) plus static decode of the generated CD driver.
+
+## The visible wedge
+
+Arcade path (with slot-1 CPU confirm injection to pass the *separate*
+CPU-phase-seeding wedge) reaches `gs=8 ph=03 b4=0300 b6=0300 +92=0100` and
+freezes. `DAT1=3` (`0x1F800001` byte = 3). Fighter spawn never happens.
+
+## Confirmed blocked thread
+
+Codec/file-load thread parked in `cd_result_wait_a` (`0x801968CC`), polling
+result flag bytes `0x801BCB25`/`0x801BCB26` (near response byte
+`0x801BCB24`). Live read at wedge: `0x801BCB24..27 = 02 00 00 00` —
+**both result-flag bytes stay 0 forever.** The function is correctly
+`br2_call_generated`-delegated; the stall is in guest logic, not a clean-port
+defect in the wait itself.
+
+`cd_result_wait_a` loop (decoded from `generated/SLES_017.22_full_45.c`):
+- `s2 = 0x801BCB24`; reads `lbu a0,0(s2)` (response) and `lbu v0,1(s2)`/`2(s2)`
+  (the two flag bytes), indexes a result table at `0x801BC8EC` by flag byte,
+  calls `cd_response_process` (`0x80196370`), then yields via
+  `cd_timer_read`/`vsync_wait_n`.
+
+## The deferred coroutine runs — but is never fed
+
+`fntrace_arm` on the wedged instance (9810):
+
+- `cd_intc_dispatch` (`0x8019A8EC`) **runs every frame** (~1/frame), called
+  from `cd_chan_full_init` resume path (`ra=0x8019A88C`, `a0=0x801BCD50`,
+  `a1=1`, `a3=0x4000` constant).
+- `cd_response_process` (`0x80196370`) **does NOT run at all** in the last
+  256+ frames (both targets armed; only `0x8019A8EC` entries present).
+
+`cd_intc_dispatch` decoded (`generated/SLES_017.22_full_46.c`):
+- Gate: `lhu v0, 0(s1)` where `s1=0x801BCD18` → value **1** (nonzero → "has work" path).
+- Dispatch predicate: `result = i_mask & i_stat & 0x000D` where
+  - `0x801BDDA4 → 0x1F801070` = **I_STAT**, `0x801BDDA8 → 0x1F801074` = **I_MASK**
+  - mask `0x801BCD48 = 0x000D` = bits {VBLANK=0, CDROM=2, DMA=3}
+- At wedge `irq_state`: `i_stat=0x00000000`, `i_mask=0x0000000D`,
+  `pending=0`, `cop0_sr=0x40000401` (IE on). → `result=0` → takes the
+  no-dispatch branch (`block_8019AA0C`) every frame. **Correct idle.**
+
+## The IRQ timeline — CDROM IRQs fire during streaming, then stop dead
+
+`cdrom_trace_dump` (healthy tail, frames ~1617-1618): `set_irq`/
+`fire_irq` events show `i_stat=0x00000004` (**CDROM bit2 raised**) on every
+sector `DATA_READY`, reads/writes of `0x1F801800`/`0x1F801803` (HINTSTS)
+acking each. `read_cmd=0x06` (ReadN), `reading=1`, `pending_cmd=0x09` (Pause
+queued).
+
+`event_ring_tail` during the wedge: **only `istat=0x00000001` (VBLANK)
+ISTAT_RAISE/IRQ_DELIVER events, ~1/frame, `pc=0x8019A60C`. No CDROM (bit2)
+raise has occurred since the stream ended.** i_stat stays 0 between VBLANKs.
+
+`cdrom_state` at wedge: `pending.cmd=0x09 active=0` (Pause already consumed by
+`process_pending` → `case 0x09` cleared READ, pushed response, `set_irq
+(CDIRQ_COMPLETE)`, `fire_cdrom_irq`), `response_read=1`, `irq_flag=0`,
+`reading=0`, last LBA 8801 all `data_delivered`, `irq_present_late=1519`,
+`ring_dropped=1`, `ring_partial=898`, `bfrd_set=2047` vs `bfrd_clear=13`.
+
+## bc84c / SM-driver lifecycle (independent instrumentation)
+
+`cdfn_dump` + `bc84c_seq`/`bc84c_caller` rings (new this session —
+`mc_session_b` is the only clean-C writer of `0x801BC84C`; ring records
+`(new,old,caller_ra)` per write):
+
+- `bc84c` cycles `0 ↔ 0x801985C4` (`cd_read_step_cb`) across read sessions —
+  park (`cd_read_setup`/`cd_read_open`) → install read cb → teardown clear.
+- `sm_wrap` (`0x80198FE4` = `cd_mc_sm_wrap`) written **exactly once** as a
+  `new` value (caller in `cd_mode_set_0e` region `0x80198FC4`), then cleared
+  once, **never restored**. After that only the read-cb cycle remains.
+- Caveat: `caller_ra` (`clean_caller_ra` = live guest `$ra`) is precise for
+  generated→clean calls but coarse for clean→clean calls (holds the outer
+  invoker's ra). The `(new,old)` sequence itself is exact.
+
+## Refined causal model
+
+Two symptoms, one pipeline:
+
+1. The channel-finalize state machine (`cd_mc_state_machine`) loses its
+   `bc84c=sm_wrap` IRQ driver → `scan>finalize` orphaned entries → the
+   doorbell/DMA-completion `DeliverEvent` the battle-init waits on never fires.
+2. The codec thread waits in `cd_result_wait_a` for `0x801BCB25/26`, which
+   only `cd_response_process` writes — and `cd_response_process` is never
+   reached because `cd_intc_dispatch` sees `i_stat&0xD==0` (no CDROM IRQ
+   pending) every frame.
+
+Both reduce to: **after the last ReadN+Pause stream, no CDROM interrupt
+(i_stat bit2) is ever raised again**, so neither the deferred-coroutine
+dispatch nor the SM finalize is re-triggered. The Pause completion's
+`CDIRQ_COMPLETE` was consumed (`process_pending` ran, response read) but the
+guest-side result/flag bookkeeping for it never ran.
+
+## Open question (next experiment)
+
+Did the Pause's `CDIRQ_COMPLETE` i_stat-bit2 raise get (a) consumed by the
+generic IRQ handler without routing to `cd_response_process`, or (b) never
+presented because `irq_flag`/`s_irq_i_stat_reason` was cleared by a HINTSTS
+ack inside the present window (the exact bug class `cdrom.c:1028-1069` was
+written to prevent — `irq_present_late=1519` shows lateness still occurs)?
+
+Lead: correlate `event_ring` `ISTAT_RAISE`/`IRQ_DELIVER` for `istat&0x4`
+around the last `set_irq(CDIRQ_COMPLETE)` with `fntrace` on
+`cd_intc_dispatch`/`cd_response_process`/`cd_response_pump`, and dump the
+`0x801BCD18`-gate + `0x801BCB80` session block vs an earlier *successful*
+file load.
+
+## Artifacts
+
+- `proof/battle_dat1_3_codec_wait.md` — subagent f8f0de08 codec-thread trace.
+- `proof/cd_callback_cells_perop.md`, `cd_finalize_gate.md`,
+  `cd_dma_dispatch_channel.md` — earlier SM/callback lifecycle proofs.
+- Instrumentation: `game/cd.c` `CDFN_*` counters + `g_bc84c_seq`/`g_bc84c_caller`
+  rings; `cdfn_dump` debug command (`debug_server.c`); arrays in `interrupts.c`.

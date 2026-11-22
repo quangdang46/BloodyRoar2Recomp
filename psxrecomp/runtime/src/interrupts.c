@@ -194,6 +194,17 @@ uint32_t g_pbd_calls=0, g_pbd_phase=0, g_pbd_ctr=0, g_pbd_exit=0, g_pbd_writes=0
  * driver), bce_fzN = param_3!=0 calls (announce). bce_cls latches last phase
  * class (ph&0xf00) seen; bce_p3 latches last param_3. */
 uint32_t g_bce_calls=0, g_bce_fz0=0, g_bce_fzN=0, g_bce_cls=0, g_bce_p3=0;
+/* Clean-C CD function entry counters (game/cd.c g_cdfn_*). These functions use
+ * DB32()/guest_at() host pointers, invisible to wtrace/fntrace — this is the
+ * only observability into the bc84c/mode/session lifecycle. Dumped by the
+ * debug "cdfn_dump" command. Index order matches the CDFN_* enum in cd.c. */
+uint32_t g_cdfn_log[24] = {0};
+uint32_t g_cdfn_arg[24] = {0};
+/* bc84c write sequence ring (game/cd.c mc_session_b): 64 (new,old) pairs,
+ * plus a parallel caller-$ra ring to name each writer's call site. */
+uint32_t g_bc84c_seq[192] = {0};
+uint32_t g_bc84c_seq_n = 0;
+uint32_t g_bc84c_caller[64] = {0};
 /* Name the function whose dispatch produced the FIRST cpu->pc==0 while inside
  * an exception (the wedge's root). `addr` is the just-executed block leader;
  * a ring keeps the last few so the producing insn's neighbourhood is visible. */

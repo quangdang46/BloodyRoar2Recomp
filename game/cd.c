@@ -42,6 +42,32 @@ void cd_result_wait_b_fwd(int,undefined4);
 void printf_forward(const char *, ...);
 extern void br2_irq_poll(void);
 extern int br2_bail_pending(void);
+
+/* Diagnostic: clean-C CD function entry counters. These functions access guest
+ * state through DB32()/guest_at() host pointers, which bypass the generated
+ * store path — so their calls AND their writes to cells like 0x801bc84c are
+ * invisible to wtrace/fntrace. These counters (dumped via debug "cdfn_dump")
+ * are the only observability into that lifecycle. Index = CDFN_* below. */
+extern uint32_t g_cdfn_log[24];   /* defined in runtime interrupts.c */
+extern uint32_t g_cdfn_arg[24];
+#define CDFN(n,a) do { g_cdfn_log[(n)]++; g_cdfn_arg[(n)]=(uint32_t)(a); } while(0)
+/* bc84c write sequence: mc_session_b is the ONLY clean-C writer of the SM-driver
+ * cell; generated writers (mode_set_0e sm_wrap install, chan_reset_b clear) are
+ * invisible here. Record (new,old) pairs to see the park/install/restore/clear
+ * ordering that decides whether sm_wrap survives. Ring of 96 pairs. */
+extern uint32_t g_bc84c_seq[192];
+extern uint32_t g_bc84c_seq_n;
+extern uint32_t g_bc84c_caller[64];
+enum {
+  CDFN_READ_SETUP=0, CDFN_INIT_DONE_CB, CDFN_READ_FINISH_CB,
+  CDFN_SUBSYS_RESET, CDFN_SUBSYS_INIT, CDFN_DIR_TABLE_SET,
+  CDFN_MODE_SET_0E, CDFN_DIR_RESET, CDFN_MODE_APPLY_DEFERRED,
+  CDFN_MC_SM, CDFN_CHAN_RESET_B, CDFN_INIT_MODE_DISPATCH,
+  CDFN_SEEK_STEP, CDFN_TILE_STREAM_PUMP, CDFN_STREAM_MODE_INIT,
+  CDFN_FILE_LOAD_SM, CDFN_MC_SESSION_B, CDFN_READ_OPEN,
+  CDFN_RESP_PUMP, CDFN_BLK_IO_RETRY, CDFN_READ_STEP_CB,
+  CDFN_INIT_SESSION, CDFN_PROBE_RETRY, CDFN_MODE_FLAG_SET
+};
 extern uint32_t guest_of(const void *);
 extern uint32_t br2_gaddr(const void *);
 extern uint32_t br2_guest_frame(uint32_t);
@@ -298,6 +324,7 @@ bool cd_read_setup(undefined4 param_1,undefined4 param_2,uint param_3)
    * stops mid-sector and the completion event never fires (0x60a wedge).
    * It also sits on the IRQ/deferred-coroutine boundary like the other
    * read-path functions already delegated. Delegate to generated. */
+  CDFN(CDFN_READ_SETUP,(uint32_t)param_1);
   return (bool)br2_call_generated(0x80198c90u,(uint32_t)param_1,
                                   (uint32_t)param_2,(uint32_t)param_3,0);
 }
@@ -409,8 +436,14 @@ undefined4 mc_session_b(undefined4 param_1)
 {
   undefined4 uVar1;
   
+  CDFN(CDFN_MC_SESSION_B,param_1);
   uVar1 = DAT_801bc84c;
   DAT_801bc84c = param_1;
+  { uint32_t i = g_bc84c_seq_n & 63u;
+    g_bc84c_seq[i*2]   = (uint32_t)param_1;  /* new */
+    g_bc84c_seq[i*2+1] = uVar1;              /* old (pre-write bc84c) */
+    g_bc84c_caller[i]  = clean_caller_ra();  /* guest $ra = calling fn */
+    g_bc84c_seq_n++; }
   return uVar1;
 }
 
@@ -541,6 +574,7 @@ void cd_init_done_cb(void)
    * so the store clears the read-session completion flag @0x801BCBA4 —
    * NOT 0x801BFFFC (earlier mis-decode; that left bcba4=1 forever and
    * cd_read_poll reported busy -> infinite 37-sector read retry). */
+  CDFN(CDFN_INIT_DONE_CB,0);
   mc_session(DB32(0x801bcba8));
   DB32(0x801bcba4) = 0;
 }
@@ -813,6 +847,7 @@ void cd_read_step_cb(uint32_t param_1,undefined4 param_2)
  * recompiled 0x80198838 so the Pause + DeliverEvent fire faithfully. */
 void cd_read_finish_cb(void)
 {
+  CDFN(CDFN_READ_FINISH_CB,0);
   br2_call_generated(0x80198838u,0,0,0,0);
 }
 
@@ -1011,6 +1046,7 @@ extern uint32_t cd_xchg_fefb4(uint32_t);
 void cd_subsystem_reset(void)
 {
   uint16_t *p;
+  CDFN(CDFN_SUBSYS_RESET,0);
   FUN_8018e300();
   /* generated reads mode @0x801BC868 (lui 0x801C + lw -0x3798), cells
    * @0x801BCBD0/0x801BCBDC — br2eu_func_80199070. */
@@ -1279,6 +1315,7 @@ int32_t cd_subsystem_init(void)
 {
   uint8_t a0 = 1, a1 = 0, v1 = 7;
   uint8_t *c;
+  CDFN(CDFN_SUBSYS_INIT,0);
   cd_str_print(0x80125898);
   printf_forward((const char *)guest_at(0x801258a4),
                (void *)guest_at(0x801bcb28));
@@ -1357,6 +1394,7 @@ void bios_tramp_a044(void) { br2_bios_tramp(0xa0,0x44); }
 extern void cd_dir_reset(void);
 void cd_dir_table_set(uint32_t a0,uint32_t a1)
 {
+  CDFN(CDFN_DIR_TABLE_SET,a0);
   *(uint32_t *)guest_at(0x801fc6c0) = a0;
   *(uint32_t *)guest_at(0x801fc6c4) = a1;
   cd_dir_reset();
@@ -1495,6 +1533,7 @@ void cd_chan_block_boot(void)
  * Delegate the whole body so the param byte lands in real guest RAM. */
 void cd_mode_set_0e(uint32_t s0)
 {
+  CDFN(CDFN_MODE_SET_0E,s0);
   (void)br2_call_generated(0x80198f60u, s0, 0, 0, 0);
 }
 
@@ -1561,6 +1600,7 @@ extern void cd_dir_clear(uint32_t,uint32_t);
 void cd_dir_reset(void)
 {
   uint32_t a1 = *(uint32_t *)guest_at(0x801fc6c4);
+  CDFN(CDFN_DIR_RESET,0);
   *(uint32_t *)guest_at(0x801fc6ac) = 0;
   *(uint32_t *)guest_at(0x801fc6a8) = 0;
   *(uint32_t *)guest_at(0x801fc6a4) = 0;
@@ -3109,6 +3149,7 @@ void cd_field_copy_gated(void *a0)
  * Disasm 0x8019ce10-0x8019cfa0. */
 int32_t cd_mode_apply_deferred(uint32_t a0)
 {
+  CDFN(CDFN_MODE_APPLY_DEFERRED,a0);
   /* BIOS kernel boundary — run the recompiled guest body. */
   return (int32_t)br2_call_generated(0x8019ce10,a0,0,0,0);
 }
@@ -3423,6 +3464,7 @@ extern void cd_dir_entry_finalize();
 
 void cd_mc_state_machine(void)
 {
+  CDFN(CDFN_MC_SM,0);
   /* Delegate the whole body to generated MIPS (0x80199440). The clean-C
    * port cannot reserve the guest stack frame the cd_result_wait_b out
    * buffer needs: it passes guest_sp()-0x10 as param_2, but with no
@@ -4065,6 +4107,7 @@ void cd_pending_release(void)
 
 void cd_chan_reset_b(void)
 {
+  CDFN(CDFN_CHAN_RESET_B,0);
   DB32(0x801bc84c) = 0;
   DB32(0x801bc848) = 0;
   DB32(0x801bc858) = 0;
@@ -4255,6 +4298,7 @@ int cd_job_start_e(uint32_t param_1)
 
 int cd_init_mode_dispatch(uint32_t param_1)
 {
+  CDFN(CDFN_INIT_MODE_DISPATCH,param_1);
   if (param_1 == 2) {
     cd_chan_reset_b();
     return 1;
@@ -5063,6 +5107,7 @@ extern int32_t cd_seek_state_machine(uint32_t);
 
 int32_t cd_seek_step(uint32_t param_1,uint32_t param_2)
 {
+  CDFN(CDFN_SEEK_STEP,param_1);
   /* IRQ-poll spin on TestEvent(0x801bde38) — DeliverEvent needs the deferred
    * CD coroutine resumed on IRQ, which a clean-C spin cannot drive. Delegate
    * to generated (same contract as cd_seek_complete_poll 0x8019d500). */

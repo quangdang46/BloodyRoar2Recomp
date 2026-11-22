@@ -1724,7 +1724,9 @@ int cd_file_load_sm(int param_1,uint32_t param_2)
    * livelock does not flood the 16K ring and evict the pump decode history. */
   { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
     extern uint32_t clean_caller_ra(void);
+    extern uint32_t g_cdfn_log[24];
     static uint32_t last_f=-1,last_d=-1;
+    g_cdfn_log[15]++;   /* CDFN_FILE_LOAD_SM */
     if((uint32_t)param_1!=last_f||param_2!=last_d){
       last_f=(uint32_t)param_1;last_d=param_2;
       /* len field carries the generated caller's $ra (post-jal addr) so the

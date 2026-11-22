@@ -2273,6 +2273,8 @@ void tile_stream_pump(void)
   int iVar3;
   undefined4 local_18;
   undefined4 local_14;
+  extern uint32_t g_cdfn_log[24];
+  g_cdfn_log[13]++;   /* CDFN_TILE_STREAM_PUMP */
   
   if ((_DAT_801f4738 != 0) && (_DAT_801fc68c != 0)) {
     cd_mc_state_machine();
@@ -2357,7 +2359,9 @@ void cd_stream_mode_init(undefined4 param_1)
   undefined1 local_18 [8];
   extern void cd_seek_note(uint32_t,uint32_t,uint32_t);
   extern int  cd_stamp_to_sector(const void *);
+  extern uint32_t g_cdfn_log[24];
   uint32_t _st = *(uint32_t *)guest_at(param_1);
+  g_cdfn_log[14]++;   /* CDFN_STREAM_MODE_INIT */
   cd_seek_note(4, _st, (uint32_t)cd_stamp_to_sector(guest_at(param_1)));
 
   local_18[0] = 0x80;

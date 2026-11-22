@@ -5753,6 +5753,57 @@ static void handle_cdrom_state(int id, const char *json)
              s.i_stat);
 }
 
+/* cdfn_dump — clean-C CD function entry counters (game/cd.c g_cdfn_log /
+ * g_cdfn_arg). These functions use DB32()/guest_at() host pointers, so their
+ * calls AND guest-cell writes are invisible to wtrace/fntrace; this is the
+ * only observability into the bc84c/mode/session lifecycle. Indices match the
+ * CDFN_* enum in game/cd.c. */
+static void handle_cdfn_dump(int id, const char *json)
+{
+    (void)json;
+    extern uint32_t g_cdfn_log[24];
+    extern uint32_t g_cdfn_arg[24];
+    extern uint32_t g_bc84c_seq[192];
+    extern uint32_t g_bc84c_seq_n;
+    extern uint32_t g_bc84c_caller[64];
+    static const char *names[24] = {
+        "read_setup","init_done_cb","read_finish_cb","subsys_reset",
+        "subsys_init","dir_table_set","mode_set_0e","dir_reset",
+        "mode_apply_deferred","mc_sm","chan_reset_b","init_mode_dispatch",
+        "seek_step","tile_stream_pump","stream_mode_init","file_load_sm",
+        "mc_session_b","read_open","resp_pump","blk_io_retry",
+        "read_step_cb","init_session","probe_retry","mode_flag_set"
+    };
+    char buf[6144];
+    int off = snprintf(buf, sizeof(buf), "{\"id\":%d,\"ok\":true,\"fns\":[", id);
+    for (int i = 0; i < 24 && off < (int)sizeof(buf) - 80; i++) {
+        off += snprintf(buf + off, sizeof(buf) - off,
+                        "%s{\"n\":\"%s\",\"c\":%u,\"a\":\"0x%08X\"}",
+                        i ? "," : "", names[i], g_cdfn_log[i], g_cdfn_arg[i]);
+    }
+    /* append the bc84c (new,old) write ring, oldest->newest */
+    uint32_t total = g_bc84c_seq_n;
+    uint32_t start = (total > 64u) ? (total - 64u) : 0u;
+    off += snprintf(buf + off, sizeof(buf) - off, "],\"bc84c_seq\":[");
+    int first = 1;
+    for (uint32_t s = start; s < total && off < (int)sizeof(buf) - 40; s++) {
+        uint32_t i = (s & 63u) * 2u;
+        off += snprintf(buf + off, sizeof(buf) - off, "%s[\"0x%08X\",\"0x%08X\"]",
+                        first ? "" : ",", g_bc84c_seq[i], g_bc84c_seq[i+1]);
+        first = 0;
+    }
+    off += snprintf(buf + off, sizeof(buf) - off, "],\"bc84c_caller\":[");
+    first = 1;
+    for (uint32_t s = start; s < total && off < (int)sizeof(buf) - 40; s++) {
+        uint32_t i = (s & 63u);
+        off += snprintf(buf + off, sizeof(buf) - off, "%s\"0x%08X\"",
+                        first ? "" : ",", g_bc84c_caller[i]);
+        first = 0;
+    }
+    off += snprintf(buf + off, sizeof(buf) - off, "]}");
+    send_fmt("%s", buf);
+}
+
 static void handle_cdrom_sector_dump(int id, const char *json)
 {
     int offset = json_get_int(json, "offset", 0);
@@ -14386,6 +14437,7 @@ static const CmdEntry s_commands[] = {
     { "cycles_to_next_event", handle_cycles_to_next_event },
     { "timers_state",      handle_timers_state },
     { "cdrom_state",       handle_cdrom_state },
+    { "cdfn_dump",         handle_cdfn_dump },
     { "cdrom_sector_dump", handle_cdrom_sector_dump },
     { "cdrom_sector_history", handle_cdrom_sector_history },
     { "cdrom_sector_history_clear", handle_cdrom_sector_history_clear },
