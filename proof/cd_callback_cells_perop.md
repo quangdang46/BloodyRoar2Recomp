@@ -206,3 +206,22 @@ payload writes before the SM finalizes the entries, the `u16@+6 ==
 u16@+4+1` seq-tag gate fails permanently → producer>finalize forever.
 This is a *timing* divergence candidate in `cdrom.c`, distinct from the
 callback-starvation chain — the oracle run on :4999 discriminates.
+
+## Entry-table contents at wedge (live dump 0x80010000, 256B)
+
+NOT random stream payload — structured data:
+
+- `+0x00`: `0x1d` then `0xFFFFFFFF` fill (header/count + empty slots)
+- `+0x44`: monotonically increasing offsets `0x0000C22C, 0x00018458,
+  0x00024684, 0x000308B0, 0x0003CADC, 0x00048D08, 0x00054F34,
+  0x00061160, 0x0006D38C, 0x000795B8, 0x000857E4` (~0xC22C stride —
+  file offset/LBA table)
+- `+0x7C+`: second small table (`0xC220` repeats, `0x10`, `0x9`, `0x20C`)
+- `+0x88+`: dense u16-pair records (directory entries)
+
+So `0x80010000` holds a **parsed file directory**, not corrupted
+channel descriptors — the earlier "stream payload overwrite" reading
+was of a different region or a transient state. The pending work
+(producer=2/finalize=0) refers to indices into machinery elsewhere;
+the directory itself looks intact. Driver starvation remains the
+primary defect.
