@@ -128,19 +128,74 @@ presented, both starve and the codec thread spins forever. Confirms the wedge
 is entirely upstream: **the CDROM device must keep i_stat bit2 asserted
 until the IRQ exception dispatches `handler[2]`.**
 
-## Open question (next experiment)
+## ⚠ CORRECTION (live trace, port 9200) — the CDROM IRQ path is NOT broken
 
-Did the Pause's `CDIRQ_COMPLETE` i_stat-bit2 raise get (a) consumed by the
-generic IRQ handler without routing to `cd_response_process`, or (b) never
-presented because `irq_flag`/`s_irq_i_stat_reason` was cleared by a HINTSTS
-ack inside the present window (the exact bug class `cdrom.c:1028-1069` was
-written to prevent — `irq_present_late=1519` shows lateness still occurs)?
+A full `cdrom_trace_dump` tail (seq 42233→42299, frames 1556→1558) **disproves
+the "no i_stat bit2" hypothesis.** The final Pause (`0x09`) command's
+`CDIRQ_COMPLETE` interrupt fired and was processed end-to-end:
 
-Lead: correlate `event_ring` `ISTAT_RAISE`/`IRQ_DELIVER` for `istat&0x4`
-around the last `set_irq(CDIRQ_COMPLETE)` with `fntrace` on
-`cd_intc_dispatch`/`cd_response_process`/`cd_response_pump`, and dump the
-`0x801BCD18`-gate + `0x801BCB80` session block vs an earlier *successful*
-file load.
+- `42283 set_irq val=0x02` (CDIRQ_COMPLETE) → `42284/42285 fire_irq` →
+  `i_stat=0x04` (bit2 raised).
+- `42286-42291`: guest runs `cd_response_pump` (`pc 0x80197A1C`) →
+  `cd_response_process` (`pc 0x8019638C/0x801963A8/0x80196420/0x80196464/
+  0x80196474/0x80196484` — all inside `0x80196370-0x801968CC`), reads the
+  Pause response byte `0x02` (`resp_read 0→1`).
+- `42294-42295`: HINTSTS ack `0x07` → `irq_flag 0x02→0x00`; `42299` i_stat
+  bit2 cleared. **Interrupt fully serviced.**
+
+So `cd_response_process` DID run for the last command — the earlier
+"never runs" was an fntrace-window artifact (armed after frame 1558). The
+codec thread is *not* starved of CD IRQs.
+
+## Live wedge state (port 9200 `mem_words`)
+
+- `0x801bc848`/`0x801bc84c` = **0** — both session/completion callbacks cleared.
+- `0x801fc68c` = **0** — `cd_mc_state_machine` dormant; `0x801fc6a4`(scan)=2,
+  `0x801fc6a8`(finalize)=0 → orphaned channel entries.
+- `0x801bcb24..27` = `02 00 00 00` — result byte present, awaited flags 25/26=0.
+- INTC handler table `0x801bcd1c`: `[2]=0x801979F8` (cd_response_pump)
+  **correctly installed**; enable mask `0x801bcd48=0xD` (bit2 CDROM enabled).
+
+## Refined causal model (corrected)
+
+The codec thread's awaited signal is produced by the **channel-entry
+finalize / read-session-done path**, not by the raw CD IRQ. Sequence:
+
+1. Read session streams sectors → game issues Pause → `CDIRQ_COMPLETE`
+   processed correctly (above).
+2. `cd_response_pump` fires the `bc848`/`bc84c` completion callbacks — but
+   both are **0** (cleared by session teardown before the final IRQ), so the
+   callback that advances channel state / produces the codec-done flag never
+   runs.
+3. `cd_mc_state_machine` stays dormant (`fc68c=0`, no `bc84c=sm_wrap` driver)
+   → `scan=2 > finalize=0` orphaned → the doorbell `DeliverEvent` and the
+   codec's awaited result flag never materialize → `cd_result_wait_a` spins.
+
+**Root cause is therefore the `bc848`/`bc84c` callback lifecycle + SM driver
+starvation — a guest-side teardown/re-arm ordering issue (or a faithful-port
+defect in `game/cd.c` session handling), NOT a `cdrom.c` IRQ-presentation bug.**
+
+## Open question (next experiment — supersedes the IRQ-presentation hypotheses above)
+
+The CDROM IRQ path is verified working. The live question is the
+**`bc848`/`bc84c` completion-callback + `cd_mc_state_machine` driver
+lifecycle**: at the Pause-complete IRQ (frame 1558) both callback cells were
+already 0, so the read-session finalize never ran. Determine:
+
+- (a) Was a valid callback *supposed* to still be installed at Pause-complete
+  (i.e., session teardown cleared it too early — a faithful-port ordering bug
+  in `game/cd.c`), or does real hardware also clear it and produce the codec's
+  awaited flag via a different path (the SM tick / `fc68c`) that our runtime
+  fails to re-arm?
+- (b) Which exact write zeroes `bc848`/`bc84c`/`bcbac` between the last
+  `cd_read_step_cb` and the Pause-complete IRQ — the `bc84c_seq`/`bc84c_caller`
+  ring on a *fresh instrumented* repro (port with current build) names the
+  clearers.
+- (c) Does `cd_mc_state_machine` need `bc84c=sm_wrap` re-installed by
+  `cd_mode_set_0e` after the read session, and is that reinstall being skipped?
+
+Discriminator: compare against the Beetle oracle — does the channel-entry
+finalize run after the equivalent Pause on real hardware?
 
 ## Artifacts
 
