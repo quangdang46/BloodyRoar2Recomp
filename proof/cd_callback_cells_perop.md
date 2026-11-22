@@ -83,3 +83,24 @@ or if $a0 happens to be 0 on the hp_bar_tick path.
 Open: what $a0 is at each SM entry, and which caller leaves fc68c set.
 Runtime wtrace on 0x801FC68C during a fresh repro is the decisive probe
 (agent 516f0e6e).
+
+## SM driver identified: cd_mc_sm_wrap is installed as a session callback
+
+In `generated/SLES_017.22_full_46.c` (~pc 0x80198FAC-0x80198FC4, inside
+the read-session setup path):
+
+- 0x80198FB4: `$a0 = 0x801A0000-28432 = 0x801990F0` (**cd_dir_entry_finalize**)
+  → `jal 0x801961A8` (session-callback installer A)
+- 0x80198FC0: `$a0 = 0x801A0000-28700 = 0x80198FE4` (**cd_mc_sm_wrap**)
+  → `jal 0x80195D78` (**mc_session_b** — installs into the bc84c-family
+  per-event callback cell)
+
+So `cd_mc_state_machine` runs as the **per-CD-IRQ step callback** while a
+read session is active (bc84c = cd_mc_sm_wrap), PLUS opportunistically
+per-frame via hp_bar_tick/tile-pump when fc68c is set. Between sessions
+(bc84c restored to parked=0) the SM is dormant **by design** — the wedge
+is therefore upstream: the game never started the next read session,
+because it is waiting for `DeliverEvent(0xF0000009)` that only the SM's
+channel-entry finalize produces. The question reduces to: why didn't the
+SM get invoked once more (via tick with fc68c set, or a new session)
+after seq-1093 `init_done_cb`?
