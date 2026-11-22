@@ -3804,9 +3804,10 @@ void fighter_spawn_setup(uint32_t param_1,uint8_t *param_2,uint8_t *param_3,
           *(uint32_t *)(s0 + 0x24) = 0;
           *(uint32_t *)(s0 + 0x10) = 0;
           *(uint32_t *)(s0 + 0x1c) = ch;
+          /* disasm 0x801488fc-0x80148924: DAT1==3 -> 2, DAT1==6 -> 5,
+           * otherwise the store is skipped entirely (j 0x80148924). */
           if (s3[1] == 3) s3[1] = 2;
-          else if (s3[1] == 6) s3[1] = 6;
-          else s3[1] = 5;
+          else if (s3[1] == 6) s3[1] = 5;
           {
             uint32_t *c = (uint32_t *)s2;
             if (c[1] != 0) { task_node_free(c[1]); c[1] = 0; }
