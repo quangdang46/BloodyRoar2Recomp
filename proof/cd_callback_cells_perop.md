@@ -188,3 +188,21 @@ path @0x801CD54C} else jal cd_intc_dispatch (0x8019A8EC)`. So the
 wedged task is the CD worker polling its deferred queue each frame;
 it is *supposed* to be idle once the load completes — the missing piece
 remains the event/entry work upstream, not this loop itself.
+
+## Wait primitive + ordering hypothesis
+
+B0 table decode (psx_bios_disasm.txt): index 11 = **WaitEvent** — the
+wedge task is *blocked* in WaitEvent (1.46M calls), not spinning
+TestEvent. It waits on a flag delivered by the CD completion path —
+consistent with "event only SM finalize produces". Trace tail shows
+normal per-frame `PAD_dr` (B0/0x17) pad polling from ra=0x8019AA9C.
+
+Ordering hypothesis to test against the Beetle oracle: the 32-slot
+channel-entry table lives at `0x80010000` — the SAME scratch arena the
+read path DMAs file payload into (stream DMAs from pc=0x801978ac in
+0x800B blocks, observed overwriting entries). Faithful design likely
+sequences finalize-before-payload; if our sector/DMA delivery lands
+payload writes before the SM finalizes the entries, the `u16@+6 ==
+u16@+4+1` seq-tag gate fails permanently → producer>finalize forever.
+This is a *timing* divergence candidate in `cdrom.c`, distinct from the
+callback-starvation chain — the oracle run on :4999 discriminates.
