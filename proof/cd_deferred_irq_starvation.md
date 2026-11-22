@@ -252,6 +252,37 @@ EvCB snapshot: slot 8 `class=0xF0000009 spec=0x20 mode=0x2000(MARK)
 status=0x2000(ENABLED)` — the CD-DMA-done event is armed but never PENDING
 because no channel-4 DMA completion has fired since the CD went idle.
 
+## Synthesis with downstream_spawn_commit.md (consumer-side view)
+
+`proof/downstream_spawn_commit.md` (port 9045) isolates the same wedge from
+the consumer side and they **reconcile into one causal chain**:
+
+- Spawn commit needs `record[i]+0x10==1 && phase[i]==0x700`. Live: rec1 armed
+  (`+0x10==1`), rec0 not; both phases `0x300`.
+- `0x300` is terminal announce in `battle_config_eval`; the `0x300→0x700`
+  write comes from the **intro/"FIGHT" script-VM sequence**, gated on
+  **fighter model/anim assets being resident** — delivered by the CD
+  decompress stream.
+- `decomp_trace` froze at `seq 213` mid-LZSS; `cdrom_state` shows
+  `ring_dropped=1`, `bfrd_set=2047`/`bfrd_clear=13`, last sector LBA 8801
+  @frame ~1539 then CD idle.
+
+**Reconciliation:** the CD *command/IRQ* path is healthy (mechanism A —
+Pause completed + serviced). What is missing is the **data-completion /
+load-done edge** the decompressor and the channel SM both wait on: the last
+requested sector (8801) was consumed to byte 2060 (the expected
+header+data tail for whole-sector mode), the game then issued Pause and went
+idle — but the *stream-finalize / channel-entry `state==2`* signal that would
+flush the decompressor's last LZSS block and write `phase=0x700` is produced
+only by `cd_mc_state_machine` finalize, which is dormant (`bc848=bc84c=0`,
+`fc68c=0`, all drivers silent, table overwritten by dir data).
+
+So producer-side (this doc: SM/callback dormancy) and consumer-side
+(downstream_spawn_commit: decompressor starved) are the **same defect** — the
+channel-copy finalize never runs. The open faithful-vs-divergent question is
+*why* the SM lost its driver: a runtime IRQ/callback-timing miss, or a
+guest-side ordering the clean port must reproduce.
+
 ## Open question (next experiment — supersedes the IRQ-presentation hypotheses above)
 
 The CDROM IRQ path is verified working. The live question is the
