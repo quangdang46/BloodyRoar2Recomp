@@ -179,3 +179,30 @@ Armed: `mc_session_b`(0x80195D78 bc84c), `mc_session`(0x80195D64 bc848),
 - The `fifo_space_check` spin: which queue/device is it gating, and which
   completion event should release it (read-done callback? SM finalize?).
 - The `0x801BCC58` pointer-table target for the cmd-submit control RMW.
+
+## 9. Third capture — the wedge thread identified (port 8997)
+
+The frozen `clean_trace` loop resolves to **`battle_flow_state_machine`**
+(0x8016FCC4, invoked per-frame via dispatcher 0x80126640 which also calls
+`match_mode_set` 0x801560F8). Inside it, the 0x80192xxx-0x801A4xxx
+**device-command queue layer** runs every frame:
+
+- `dev_byte_xfer` (0x801A1F74) fntrace: ~4 calls/frame, ra=0x801A1EC0
+  (`dev_cmd_round_dispatch`+0x3C), alternating two contexts:
+  - `a0=0x801FF080, a1=0xFFFFFFFE(-2)` and `a0=0x801FF080, a1=0`
+  - `a0=0x801FF170, a1=0xFFFFFFFE(-2)` and `a0=0x801FF170, a1=0`
+- Two device contexts at 0x801FF080 / 0x801FF170 (mostly-zero structs;
+  +0x10 self-ptr, +0x24=1, +0x2C→0x801FF0A4/0x801FF194,
+  +0x30→0x801BEFA8/0x801BEFCA = bitmask table in the DMA-handler region,
+  +0x34=0x10400, +0x3C→0x801FEFF0/0x801FF013).
+- Occupancy/timestamp cells: 0x801FF260 = live T2-derived timestamp
+  (0x19A9→0x7BAD across probes), 0x801FF264 = 0x3C limit,
+  0x801FE380 = 0.
+- `fifo_space_check` (0x801A4230) reads T2_COUNT(0x1F801120),
+  T2_COMP(0x1F801128), guest cell — T2 verified LIVE (ch2 counter
+  advancing, mode 0x0400). "Space exhausted" is computed from live
+  timestamps, not stale zeros — the queue genuinely never drains.
+- psx-spx confirms our timer model is correct (T2 = 0x120 count /
+  0x124 mode / 0x128 comp, sysclk, optional /8).
+- The drain side (who consumes the two queues / posts completion) is the
+  open question — delegated to runtime RE agent.
