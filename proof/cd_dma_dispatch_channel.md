@@ -1,0 +1,119 @@
+# CD wedge — DMA dispatcher / channel-submit / mode-setter RE + live wtrace capture
+
+Combines the static RE of the DMA dispatch path (subagent report) with a
+fresh always-on `wtrace` capture on port 8994 (arena `0x80010000-0x800103FF`,
+SM control block `0x801FC680-0x801FC6FF` armed before boot).
+
+## 1. DMA dispatcher `0x8019AF7C`
+
+- `0x8019AF80`: `lw v0,-0x2210(v0)` → pointer cell `0x801BDDF0`; `0x8019AFA4`:
+  `lw v0,(v0)` → `*(0x801BDDF0)=0x1F8010F4` = **DICR**.
+- `0x8019AFAC-0x8019AFB4`: `srl v0,0x18; andi s1,v0,0x7F` → pending done mask
+  = DICR bits 24..30 (per-channel IRQ flags).
+- Handler table base `0x801BDDF4`, slot `s0` ↔ DICR bit `24+s0`; cursor `s4`
+  walks `+4` per channel, `s0` 0..6.
+- Per set bit: AND-write DICR ack (`v0=(1<<(s0+24))|0x00FFFFFF`), then
+  `jalr *s4` at `0x8019B01C` (link `ra=0x8019B024`) if handler nonzero.
+- `0x8019B034-0x8019B050`: re-reads DICR; loops while bits 24..30 nonzero.
+- Tail `0x8019B058+`: if `(DICR&0xFF000000)==0x80000000 || (DICR&0x8000)` →
+  debug print via `0x8018E550`.
+- Handler `a0` at `jalr` is a side effect (`0x1F8010F4`), not an argument.
+
+## 2. Channel submit `0x80199D88` (clean: `game/cd.c` `cd_chan_cmd_submit`)
+
+- Channel index `a0`; regs at `0x1F801080 + a0*0x10` (MADR/BCR/CHCR=+8).
+- Busy poll on CHCR bit `0x01000000`, cap `0x10000` iterations → printf
+  `0x80125B18` on overflow.
+- Flag byte `*(*(0x801BCC5C))+2` bit `1<<a0`; control RMW
+  `1<<(a0*4+3)` OR'd into `*(*(0x801BCC58))`.
+- Writes MADR=`a1`, BCR=`(a2<<16)|a3`, waits `*(*(0x801BCC40))&0x40`, writes
+  CHCR=stack arg5, returns. Does NOT wait for completion.
+- SM payload copies pass `a0=3` at `0x80199690/0x80199C4C/0x80199CE8` →
+  **channel index 3** (CDROM DMA channel on real HW layout).
+- SM defer-path busy test `*(*(0x801BCC60))&0x01000000` resolves to
+  `0x1F801098` = **channel-1 CHCR** ("MDEC-out" is a doc-level label only).
+
+## 3. `cd_mode_set_0e` `0x80198F60` (clean wrapper `game/cd.c:1496`)
+
+- Sole found caller: `cd_stream_mode_init` (`0x80159CE4`) with `a0=0x1E0`
+  (clean `game/menu.c:2363` `cd_stream_mode_init` loop).
+- `(s0&0x100)!=0` → `0x801FC6F8 = (s0&0x20)==0`; installs
+  `cd_dir_entry_finalize`(`0x801990F0`) via `0x801961A8` and
+  `cd_mc_sm_wrap`(`0x80198FE4`) via `0x80195D78` into bc84c-family cell.
+- Then `cd_mode_flag_set(0x1B,0,0)`.
+
+## 4. `0x801BC84C` lifecycle (generated store/load PCs)
+
+- Stores: `0x80195AC0`(gpr3), `0x80195D88`(gpr4), `0x80197478`(0),
+  `0x801974F8`(0). Loads: `0x80195D7C`, `0x80196A54`, `0x80196CD4`,
+  `0x80197130`, `0x80197A4C` (inside `cd_response_pump`).
+- Park/restore protocol (`proof/cd_callback_cells_perop.md`): `read_setup`
+  parks bc848/bc84c→bcba8/bcbac and zeroes live cells; `read_open` installs
+  `read_step_cb`; `init_done_cb` restores. Zero bc84c at idle is normal.
+
+## 5. Live wtrace capture — port 8994 (fresh boot → arcade wedge)
+
+Ranges armed pre-boot: arena phys `0x00010000-0x00010400`,
+`0x001FC680-0x001FC700`. Nav reached `gs=8 ph=03 b4=0300` and wedged.
+
+### SM drive pattern (healthy, f3350–f3441)
+
+- SM invoked via **`ra=0x80197A6C`** (inside `cd_response_pump` IRQ path —
+  i.e. `bc84c=sm_wrap` firing on CD IRQs), ~once per 2–3 frames.
+- Each pass walks 4 entry-groups `{0x02-0x05},{0x0B-0x0E},{0x11-0x14},{0x1A-0x1D}`
+  (= decimal {2-5},{11-14},{17-20},{26-29}); per group `FC684` u16 sub-cursor
+  steps 1→2→3→4 then resets (pc `0x80199B48`/`0x80199C60`), `FC6A4` group index
+  ++ (pc `0x80199D2C`).
+- Every SM entry arms `FC68C 0→1` at `0x8019949C` (defer path, ch1 busy).
+- SM writes entry records itself: pc `0x80199694` writes entry fields
+  (e.g. `0x80010160, 0x00050001, 0x00002710, 0x00000A98, 0x00F00140,
+  0x38000720, 0x00020001` at f3441 into entry@0x80010340).
+- `FC6A8` (finalize idx) last written **f3360** → `0x19`; never advanced again.
+
+### The stop (f3441 → wedge)
+
+- Last SM-driven write: f3441 `FC6A4 0x1C→0x1D`, `FC684 3→4`, `FC68C 0→1`.
+- **Zero** further writes to FC684/FC6A4/FC68C/FC69C/FC6A8 for the rest of the
+  run (verified: ring total 43723 < cap 262144, no eviction).
+- CDROM-DMA (ch3) bursts of 256 words each at **f3464, f3625, f3639, f3689**
+  wrote disc file data into `0x80010000-0x800103FF` (pc recorded
+  `0x801978AC`, ra `0x801986EC`, dma_ch=3) — overwriting live entry slots.
+- Current wedge state: `FC6A4=2, FC6A8=0, FC68C=0, FC684=2, FC6C0=0x80010000,
+  FC6C4=0x20, FC6AC=0x1E`.
+
+### Invisible-writer discovery (tooling gap)
+
+`FC6A4` last *recorded* write = `0x1D` @f3441, yet reads `2` at the wedge;
+`FC68C` last recorded `0→1` @f3441, yet reads `0`. The writes that produced the
+current values **bypassed wtrace** — clean-C `game/cd.c` accesses these cells
+through `*(uint32_t *)guest_at(0x801fc6xx)` host pointers (e.g. `cd_dir_reset`
+`game/cd.c:1557-1571` zeroes FC6AC/A8/A4/69C/68C/684/680; `cd_dir_table_set`
+`:1355-1361`; `cd_channel_poll` `:1658+`; `cd_dir_entry_finalize` `:3552+`).
+Host-pointer stores are invisible to the write-trace ring — a real observability
+gap for exactly this class of bug.
+
+## 6. Interpretation
+
+- SM was healthy while `bc84c=sm_wrap` was installed (mode-0x0E window via
+  `cd_stream_mode_init(0x1E0)`) and CD IRQs flowed through `cd_response_pump`.
+- At ~f3441 the session transitioned: `cd_dir_reset`/table re-init (clean-C,
+  invisible) reset FC6A4/FC684/FC68C; ch3 DMA delivered the next file payload
+  into the shared arena f3464–3689.
+- The new pending work never got an SM driver: `bc84c` no longer `sm_wrap`,
+  `fc68c` cleared by reset and never re-armed (SM is its only writer), and
+  `tile_stream_pump` is not running in this phase (poke of `fc68c=1` on 8993
+  was never consumed).
+- Game spins `B0:0x0B TestEvent` (~1.46M calls) for the finalize-produced event
+  → deterministic wedge at `gs=8 ph=03 b4=0300`, identical across instances.
+
+## 7. Open questions
+
+- Exactly which clean-C call reset the FC block after f3441 (candidate:
+  `cd_dir_reset` via `cd_dir_table_set` for the versus-spawn file session) and
+  whether the *generated* path would have re-armed `bc84c=sm_wrap` there —
+  i.e. is the missing re-arm a port divergence or faithful guest behavior
+  gated on an event we drop?
+- Whether `tile_stream_pump` (`0x80159864`) should be running in this phase —
+  find its runtime caller (no direct `jal`/data ref in the EXE; reached via
+  computed dispatch/fnmap).
+- The `0x801BCC58` pointer-table target for the cmd-submit control RMW.
