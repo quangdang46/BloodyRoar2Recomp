@@ -456,3 +456,43 @@ Capture the **write sequence to `0x801BC84C`** across a fresh repro from
 held at the corresponding park. That pins whether the loss is a
 runtime-divergent clear (IRQ/callback edge dropped) or a faithful
 ordering the clean port must preserve.
+
+## Runtime confirmation — NO CD session transitions occur during the wedge
+
+Fresh repro on port 9300 (`game_1pad.toml`, slot-1 CROSS+START injection to
+seed `battle+0xb6=0x300`; both phases then `0x0300/0x0300`, DAT1=3 — the
+exact announce→spawn wedge). Armed `gwatch` (mprotect page watch, catches
+clean-C `guest_at` stores that `wtrace` misses) on the CD callback-cell
+page `0x801BC000` and the SM scratchpad page `0x801FC000` **before** the
+battle load (~frame 2077; last CD sector landed frame 3832).
+
+Result: **zero writes to `0x801BC848`, `0x801BC84C`, `0x801BCBA8`,
+`0x801BCBAC`, `0x801FC68C`, `0x801FC6F8`, `0x801FC6C0`, `0x801FC6AC`,
+`0x801FC6A4`, `0x801FC6A8` for the entire armed window.** The page watch
+did capture hundreds of writes to *other* cells in the same page
+(`0x801BCCB0`, `0x801BCD1A`, …) by the CD worker's per-op stores, so the
+watch is live and sensitive — the callback cells are genuinely untouched.
+
+Consequences:
+
+- `cd_mode_set_0e(0x1e0)` → `mc_session_b(cd_mc_sm_wrap)` is **never
+  invoked** during this battle load — not once. The SM driver is not
+  "lost mid-stream"; it is **never installed**.
+- `cd_read_open`/`cd_read_setup`/`cd_init_session`/`cd_subsystem_reset`
+  likewise never write `bc84c` — **no file-read session runs either**.
+- `cdrom_state`: `reading=0`, last sector LBA 8801 at frame 3832, `Pause`
+  pending, `seq` frozen — **no CD commands are issued after ~frame 3832**.
+- `sp_ring` tail shows only the CD idle worker
+  (`0x8019A53C → kernel → 0x8019A87C`) once per frame — the main task is
+  parked in a kernel wait, NOT spinning in `blk_io_retry`.
+
+**Reframed wedge:** the game is blocked *upstream* of the CD path. It is
+waiting for a non-CD completion signal (timer / animation-end / script /
+input edge) that would trigger the stage-asset load; because that load is
+never issued, no `bc84c` callback is ever installed, no channel entries are
+created, and the SM stays dormant. The orphaned `scan=2>finalize=0` table
+and zeroed driver cells are *leftover* state, not the active blocker.
+
+Next step: identify the main task's blocked PC / wait-event (kernel TCB or
+`fntrace` on `scene_entry`/`tile_stream_*`/`cd_file_load_sm` across a fresh
+repro) to find which completion signal never arrives.
