@@ -104,3 +104,46 @@ because it is waiting for `DeliverEvent(0xF0000009)` that only the SM's
 channel-entry finalize produces. The question reduces to: why didn't the
 SM get invoked once more (via tick with fc68c set, or a new session)
 after seq-1093 `init_done_cb`?
+
+## bc84c invocation signature + fc68c lifecycle (generated 0x80197A5C-6C)
+
+`cd_response_pump` invokes `bc84c` as:
+
+```
+$v0 = *(0x801BC84C);  if ($v0 == 0) skip;
+$a0 = lbu (*$s1);                    // CD status/IRQ reason byte
+$a1 = 0x801FC6D0;                    // channel-state block +0x10
+jalr $v0                            // -> 0x80197A6C
+```
+
+fntrace confirms: `read_step_cb` saw `a0=0x1` (data-ready byte). When
+`bc84c = cd_mc_sm_wrap`, the SM entry therefore writes
+`fc68c = a0 = small nonzero` — **the flag persists after the IRQ returns
+(nobody clears it in IRQ context)**, so the next `tile_stream_pump`/
+`hp_bar_tick` tick sees `fc68c != 0` and runs the SM once more, then
+clears it. `0x801F4738` (pump gate) verified = **1** at the wedge, so the
+tick path is armed — `fc68c = 0` is the ONLY blocker.
+
+## Refined deadlock model
+
+1. During a read session `bc84c` cycles: `read_setup` parks old bc84c →
+   `read_open` installs `read_step_cb` → its tail restores bc84c from the
+   parked cell. If the parked value was `cd_mc_sm_wrap` (installed at
+   session setup pc 0x80198FC0), IRQs keep driving the SM between reads.
+2. Each IRQ-driven SM run leaves `fc68c = nonzero` → per-frame tick runs
+   SM → SM drains channel entries → finalize → ch4 → `DeliverEvent`.
+3. At the wedge: `bc84c = 0`, `bcbac = 0`, `fc68c = 0`, producer=2,
+   finalize=0, `0x801FC6A0` seq=0, flag `0x801FC6B0`=0 — the whole
+   park/restore chain restored zeros, so no IRQ driver AND no tick
+   driver. The pending entries (producer 2 > finalize 0) never process.
+4. Game spins in BIOS `B0:11` event wait (1.46M calls) on a task
+   (tcb 0x8FE0) looping `0x8019A87C`/`0x8019A53C` per frame — waiting
+   for the event only SM finalize produces. Circular: new session needs
+   the event; the event needs the SM; the SM needs a session or fc68c.
+
+## Remaining unknown (runtime)
+
+Why the parked `bcbac` was 0 — i.e., whether `cd_mc_sm_wrap` was ever
+installed into the live bc84c chain this session, or whether an extra
+`read_setup` parked a zero. wtrace on `0x801BC84C`/`0x801BCBAC`/
+`0x801FC68C` across a fresh repro gives the exact write sequence.
