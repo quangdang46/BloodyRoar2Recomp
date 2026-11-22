@@ -213,3 +213,36 @@ whether the break is (A) the SM never re-driven after the last session
 done-IRQ→`cd_dma_chan_reset`→`DeliverEvent` edge dropped in the runtime,
 or (C) `Pause 0x09` truncating a read the game expected to finish
 (psx-spx/Beetle Pause semantics).
+
+## DMA-done callback registration — the producer side (this session)
+
+`cd_dma_chan_reset` is reached through the game's DMA-channel done-callback
+table, NOT a direct call:
+
+- `cd_chan_cb_set` (`0x8019B0FC`, `game/cd.c:4115`) registers a per-channel
+  done-handler at `0x801BDDF4 + idx*4` and sets the matching DICR IRQ-enable
+  bit `1 << ((idx+16)&31)` in the DICR register (`0x1F8010F4`, pointer cell
+  `0x801BDDF0`).
+- **Live on the wedged instance:** handler table `0x801BDDF4..` is all zero
+  EXCEPT `0x801bde04 = 0x8019B7E0` (= `cd_dma_chan_reset` prologue;
+  clean port registered at `0x8019b7e8`). So **channel-table index 4 has
+  `cd_dma_chan_reset` armed** → its completion calls
+  `cd_bios_svc_07(0xf0000009,0x20)` = `bios_svc(0xb0,7,…)` = **B0/0x07
+  DeliverEvent(0xF0000009,0x20)** — exactly the awaited event.
+- `dicr=0x00900000` → bits 20 and 23 set = DICR IRQ enabled for idx 4
+  (bit `(4+16)=20`) and idx 7 (bit 23, handler[7]=0 — enabled but no
+  handler). So channel-4 completion IRQ is armed and would dispatch to
+  `cd_dma_chan_reset`.
+- `cd_dma_chan_reset` itself (`game/cd.c:5113`): if the per-channel
+  callback cell `0x801bdee8 != 0` it calls that instead; else it calls
+  `cd_bios_svc_07(0xf0000009,0x20)`. Live `0x801bdee8=0` → DeliverEvent path.
+
+**So the missing edge is concrete:** a DMA transfer on the channel-index-4
+slot must run to completion → DICR IRQ → `cb`-dispatch →
+`cd_dma_chan_reset` → `DeliverEvent(0xF0000009)` → `TestEvent(0xF1000008)`
+satisfied. `dma_state` shows that channel `active=0 remaining=0` — either
+the transfer completed without its IRQ reaching the dispatcher, or it was
+never submitted because the channel-SM/finalize path that arms it is dormant
+(`fc68c=0`, `bc84c=0`, `scan=2>finalize=0`). `dma_trace_dump` tail is flooded
+with unrelated per-frame ch2 GPU-OT DMAs; isolating the idx-4 submit/complete
+pair around frame ~1583 is the subagent's live-trace target.
