@@ -98,6 +98,36 @@ dispatch nor the SM finalize is re-triggered. The Pause completion's
 `CDIRQ_COMPLETE` was consumed (`process_pending` ran, response read) but the
 guest-side result/flag bookkeeping for it never ran.
 
+## Guest-side call chain (decoded `generated/SLES_017.22_full_45.c`, this session)
+
+Precise structure of the two `cd_response_process` (`0x80196370`) feeders —
+both are gated on the CDROM IRQ line, so **no i_stat bit2 ⇒ no flags, ever**:
+
+- `cd_result_wait_a` (`0x801968CC`, codec thread): loop calls
+  `cd_intc_busy_read` (`0x8019A7D4`) which returns the pending-INTC-IRQ
+  status. `block_80196A14` tests `ret==0`:
+  - **ret≠0 (CD IRQ pending)** → `block_80196A1C`: loads the response-table
+    pointer at `0x801BCB04`, `lbu`s its flag byte, `&3`, then `jal
+    cd_response_process` — this is the only in-loop path that sets flags.
+  - **ret==0** → `block_80196ABC`: polls the awaited result-flag byte
+    (`lbu` at `$s2`, compare vs `$s3`, special-case `==5`), then yields via
+    `cd_timer_read` and repeats. **No `cd_response_process` here.**
+- `cd_response_pump` (`0x801979F8`) = **INTC handler[2] @`0x801bcd1c`**, the
+  CDROM IRQ-exception handler (gated on I_STAT bit2). On entry it loads the
+  same `0x801BCB04` pointer → `lbu` → `&3` → **unconditional `jal
+  cd_response_process`** at `block_80197A2C`, then fires the `bc84c`/`bc848`
+  completion callbacks. It only runs when the CPU takes the CDROM IRQ.
+- `cd_intc_dispatch` (`0x8019A8EC`) is the *deferred-coroutine* poll — it
+  computes `i_mask & i_stat & 0x000D` and early-outs on 0 (correct idle),
+  resuming `cd_chan_full_init`. It is **not** the flag setter.
+
+Net: `0x801BCB25/26` can only be written while i_stat bit2 is observable —
+either by the IRQ handler (`cd_response_pump`) or by the wait loop's
+`cd_intc_busy_read`-gated `cd_response_process` call. With bit2 never
+presented, both starve and the codec thread spins forever. Confirms the wedge
+is entirely upstream: **the CDROM device must keep i_stat bit2 asserted
+until the IRQ exception dispatches `handler[2]`.**
+
 ## Open question (next experiment)
 
 Did the Pause's `CDIRQ_COMPLETE` i_stat-bit2 raise get (a) consumed by the
