@@ -120,6 +120,36 @@ the runtime's CD sector ring / BFRD flow-control drops or re-orders delivery
 under sustained load. The faithful fix belongs in `psxrecomp/runtime/src/cdrom.c`
 (ring/BFRD/sector accounting), not in `game/*.c`.
 
+## DECISIVE reframe: the CPU-phase-seed is NOT the blocker
+
+A **no-injection** arcade run (fresh instance port 9060, slot-1 present but
+NEVER pressed — `/tmp/nav_arcade_noinject.py`) reproduced the **identical**
+wedge:
+
+```
+t=30.0 gs=8 DAT1/ph=f1 9b=0 9c=0 b4=0100 b6=0000
+t=39.3 gs=8 DAT1/ph=03 9b=0 9c=0 b4=0300 b6=0000   <- same DAT1=3 wedge
+```
+
+`cdrom_state` on 9060: `reading=0`, `pending.cmd=0x09 Pause`,
+`last_sector lba=8801 frame=1583`, `ring_dropped=1`, `ring_partial=898` —
+byte-for-byte the same signature as the injected instance (9045).
+
+**Conclusion:** `battle_state_init` (DAT1=2) advances DAT1→3 regardless of
+whether `battle+0xb6` seeded — it only *conditionally* promotes phases
+(`select_phase_gate==0`). The DAT1=3 CD/decompression event-wedge is reached
+with or without the CPU confirm. The earlier "CPU-phase-seed wedge" was a
+**misdiagnosis**: `b6=0` is just the not-yet-confirmed CPU state and does NOT
+block reaching battle bring-up. It may matter later at DAT1=8
+(`post_battle_dispatch`, actual fighter spawn), but that is downstream of —
+and secondary to — the DAT1=3 CD wedge that blocks ALL modes.
+
+**Reprioritization:** the ONLY critical-path bug is the DAT1=3
+`battle_init`/`frame_tick` event-wait (a completion event the CD/deferred
+path never delivers). Fix that first; re-evaluate whether the CPU side needs
+a literal pad-2 edge afterwards (likely only for versus modes, and possibly
+resolved by battle-spawn logic once assets load).
+
 ## Next steps (handed to runtime agent)
 
 1. Identify WHICH event the `TestEvent` (B0:0x0B) spin waits on inside
