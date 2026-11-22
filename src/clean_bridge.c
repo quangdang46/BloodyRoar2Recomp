@@ -543,6 +543,25 @@ void FUN_8018e310(uint32_t unused)
     psx_syscall(cpu, 0);
 }
 
+/* PSX_CDEVDBG=1: dedup event/kernel svc tracing — logs each distinct
+ * (svc,a0,a1) tuple once so OpenEvent/DeliverEvent/TestEvent args are
+ * captured without flooding on TestEvent spins. Diagnostic only. */
+static void br2_svc_dedup_log(uint32_t svc, uint32_t a0, uint32_t a1,
+                              uint32_t v)
+{
+    static int en = -1;
+    static uint32_t ls, la0, la1, ln;
+    if (en < 0) { const char *e = getenv("PSX_CDEVDBG"); en = (e && e[0] && e[0] != '0') ? 1 : 0; }
+    if (!en) return;
+    if (svc != 0x07u && svc != 0x08u && svc != 0x09u && svc != 0x0au &&
+        svc != 0x0bu && svc != 0x0cu) return;
+    if (svc == ls && a0 == la0 && a1 == la1 && ln < 3) { ln++; return; }
+    if (ln >= 3 && svc == ls && a0 == la0 && a1 == la1) return;
+    ls = svc; la0 = a0; la1 = a1; ln = 1;
+    fprintf(stderr, "[cdevsvc] B0/%02X a0=0x%08X a1=0x%08X -> v0=0x%08X cyc=%llu\n",
+            svc, a0, a1, v, (unsigned long long)psx_cycle_count);
+}
+
 uint32_t bios_svc(uint32_t table, uint32_t svc, uint32_t a0, uint32_t a1)
 {
     uint32_t ra;
@@ -553,6 +572,7 @@ uint32_t bios_svc(uint32_t table, uint32_t svc, uint32_t a0, uint32_t a1)
     {
         uint32_t v = svc_call(table, svc, a0, a1, cpu->gpr[6], cpu->gpr[7]);
         g_svc_ring[(g_svc_ring_n - 1) % BR2_SVC_RING].v0 = v;
+        if (table == 0xb0u) br2_svc_dedup_log(svc, a0, a1, v);
         return v;
     }
 }
@@ -571,6 +591,7 @@ uint32_t bios_svc6(uint32_t table, uint32_t svc,
     {
         uint32_t v = svc_call(table, svc, a0, a1, a2, a3);
         g_svc_ring[(g_svc_ring_n - 1) % BR2_SVC_RING].v0 = v;
+        if (table == 0xb0u) br2_svc_dedup_log(svc, a0, a1, v);
         return v;
     }
 }

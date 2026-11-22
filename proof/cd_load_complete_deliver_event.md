@@ -253,3 +253,31 @@ means no new channel command was submitted after read completion. Next step:
 determine which submit path (read-completion cb @0x801bc848/4c -> channel cmd ->
 job alloc) fails to enqueue the ch4 doorbell, then delegate that clean frame.
 `ring_dropped=2` + `sector_read_pos=2060` may be symptom (consumer stopped) not cause.
+
+## Session-5 update — DOORBELL HYPOTHESIS REFUTED; wedge is battle-FSM wait state
+
+Agent fresh-run (port 8976, seq 81861) overturns the doorbell theory:
+
+- `cd_file_read_seq` (0x801565EC) ran exactly 3× (frames ~3496/3697/3744). EACH
+  completed the full ch4 doorbell -> cb7 slot4 -> cd_dma_chan_reset(0x8019B7E0)
+  -> DeliverEvent(F0000009,0x20) -> TestEvent(0xF1000008)=1. **Event path WORKS.**
+- After 3rd read_seq returned (~f3748), battle FSM parked; NOTHING in armed CD
+  path ran for ~70k frames. cd_cb7_run last f3864, cd_seek_complete_poll last f3748.
+- TestEvent B0/0x0B count FROZEN at 1,462,829 — **NO TestEvent spin** (earlier
+  spin observation was a different/stale instance). Thread is in a game-level
+  cooperative wait, not a BIOS block.
+- Callers: br2eu_func_80126640(ret 0x80126664)/0x8012657C -> match_mode_set
+  (0x801560F8) + battle_flow_state_machine (0x8016FCC4) = battle FSM file-load
+  phase. After 3rd read_seq the FSM parked, never issued another read.
+- CD device idle (pending.cmd=0x09 but active:0 = stale display). cmd-ring prod
+  0x801FC6C8=2 / fin 0x801FC6CC=0; job ctr -1; sectors-remaining 0; flag7b4=0.
+- Only ONE active TCB (0x8FE0); frames+VBlank IRQ advance normally.
+
+CONCLUSION: CD/DeliverEvent/doorbell all WORK. The wedge is UPSTREAM — the
+battle FSM (match_mode_set / battle_flow_state_machine, both CLEAN-PORTED in
+game.c/menu.c) parked in a wait state that stopped driving cd_file_read_seq.
+Load incomplete (280B + subsequent) but FSM isn't issuing reads = deadlock
+between FSM wait-condition and loader pump. NOT a CD hardware/IRQ bug.
+
+cd_dma_chan_reset faithfulness fix committed: delay_3c gate is mem32[0x801BDF00]
+==0 (generated 0x8019B7E4 lw + bnez), NOT param_1 (never read by guest body).

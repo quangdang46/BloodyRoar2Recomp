@@ -3813,7 +3813,16 @@ void ret_zero_f(void);
 
 /* 0x80195bd0 — BIOS vector trampoline: jr $t2=0xb0, t1=7; a0/a1 fwd. */
 uint32_t cd_bios_svc_07(uint32_t a0,uint32_t a1)
-{ return bios_svc(0xb0,7,a0,a1); }
+{
+  static int cdev_dbg = -1;
+  if (cdev_dbg < 0) { const char *e = getenv("PSX_CDEV"); cdev_dbg = (e && e[0] && e[0] != '0') ? 1 : 0; }
+  if (cdev_dbg) {
+    extern uint64_t psx_cycle_count;
+    fprintf(stderr, "[cdev] DeliverEvent a0=0x%08X a1=0x%08X cyc=%llu\n",
+            a0, a1, (unsigned long long)psx_cycle_count);
+  }
+  return bios_svc(0xb0,7,a0,a1);
+}
 
 /* 0x80199fd0 — BIOS vector trampoline: jr $t2=0xb0, t1=0x16. */
 uint32_t cd_bios_svc_16(uint32_t a0,uint32_t a1)
@@ -5104,7 +5113,14 @@ void cd_gpu_call_2c(uint32_t param_1,uint32_t param_2,uint32_t param_3)
 void cd_dma_chan_reset(uint32_t param_1)
 {
   int i;
-  if (param_1 == 0) cd_delay_3c();
+  /* Generated 0x8019B7E0: the delay_3c gate is mem32[0x801BDF00] == 0
+   * (lw $v0,-0x2100($v0) @B7E4; bnez $v0 skips the jal @B7EC), NOT the
+   * a0 argument — a0 is never read by the guest body. BDF00 is the DMA
+   * callback-arm cell written by cd_dma_xfer_start_b (1) / cleared at
+   * 0x8019B9E8 (0); when a ch4 callback is armed the reset skips the
+   * ~3-scanline settle delay. */
+  (void)param_1;
+  if (DB32G(0x801bdf00) == 0) cd_delay_3c();
   {
     /* w[0xd5] is the CD channel status register at blk+0x1aa — MMIO via the
      * 0x801bdeb0 pointer cell, must use CDMMIO16 not guest_at (open-bus). */
@@ -5120,8 +5136,9 @@ void cd_dma_chan_reset(uint32_t param_1)
   {
     static int cr_dbg = -1;
     if (cr_dbg < 0) { const char *e = getenv("PSX_CB7"); cr_dbg = (e && e[0] && e[0] != '0') ? 1 : 0; }
-    if (cr_dbg) fprintf(stderr, "[chanreset] dee8=0x%08X -> %s\n",
-                        DB32G(0x801bdee8), DB32G(0x801bdee8) ? "callback" : "DeliverEvent(0xF0000009,0x20)");
+    if (cr_dbg) fprintf(stderr, "[chanreset] bdf00=0x%08X dee8=0x%08X -> %s\n",
+                        DB32G(0x801bdf00), DB32G(0x801bdee8),
+                        DB32G(0x801bdee8) ? "callback" : "DeliverEvent(0xF0000009,0x20)");
   }
   if (DB32G(0x801bdee8) != 0) {
     call_guest(DB32G(0x801bdee8),0xf0000000,0);
