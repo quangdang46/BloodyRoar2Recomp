@@ -352,3 +352,32 @@ return a handle and the wedge moved to a later battle-init stage? The
 `sp_ring` shows only the CD-idle loop (`0x8019A53C→kernel→0x8019A87C`)
 per frame — consistent with `scene_entry` parked in a wait, not in the
 retry loop.
+
+## Nuance — `DeliverEvent(0xF0000009)` keeps firing on the wedged instance
+
+`inst_9020.log` shows `DeliverEvent a0=0xF0000009 a1=0x20` (and
+`0xF0000003/0x40`) still firing at cyc≈243B, long after the CD went idle
+at frame ~1583/6276. Since `reading=0` and no CD commands are pending,
+these ch4 completions are **not** CD-sector doorbells — channel 4 is the
+SPU/audio DMA, so this is the **audio/ADPCM stream** draining to SPU and
+delivering the shared `0xF0000009` class. Two consequences:
+
+1. `0xF0000009` is a *shared* "DMA-channel-done" event class consumed by
+   both the CD-doorbell path (`cd_dma_chan_reset` slot 4) and the SPU
+   stream. `TestEvent(0xF1000008)` therefore is **not** a reliable
+   blocker signal — it likely already returned true from an earlier
+   delivery, which is consistent with the svc-delta probe showing
+   `B0:0x0B TestEvent` is **no longer spinning** (only `B0:0x17` IRQ
+   epilogue ~50/s remains).
+2. The wedge is therefore **not** "waiting for the doorbell event" in the
+   `TestEvent` sense — the game has moved past that poll. The real stall
+   is the channel-table entries never reaching `state==2`, so
+   `cd_channel_poll`/`blk_io_retry`/`scene_entry` cannot observe stream
+   progress and the battle-stage load never completes → `DAT1` pinned at
+   3, phase `0x300`.
+
+Net: the awaited signal is the **channel-entry `state==2` transition**
+produced by `cd_mc_state_machine` finalize — not the BIOS event flag.
+The fix remains "drive the SM / restore its driver," but the symptom to
+watch is `cd_channel_poll` timing out inside `blk_io_retry`, not
+`TestEvent`.
