@@ -325,3 +325,60 @@ The 0xF0000009 events that DID fire (seq 13-14,18-19,21-22) prove the
 channel mechanism worked during the run — the last group is the first to
 produce none. Whether the channel work was submitted-but-unserviced or
 never submitted is the remaining unknown (subagent tracing the done path).
+
+## 12. DMA-done dispatch architecture fully decoded (port 9002/9003)
+
+### The event chain (proven)
+
+- `0x801BDDF0` = pointer cell → **`0x1F8010F4` = DICR** (DMA interrupt ctrl).
+- `0x801BDDF4+idx*4` = per-channel done-handler table (8 slots), written by
+  `cd_chan_cb_set` (0x8019B0FC) which also sets DICR bit `16+idx`.
+- `cd_init_stage_b` (0x8019AF30) zeroes the table, then registers
+  **`cb7_run` (0x8019AF7C) at idx3** = the CDROM-DMA (ch3) done handler.
+- Live table dump: **only idx4 = `0x8019B7E0` (`cd_dma_chan_reset`)** — the
+  ch4 (0x1F8010C0) done handler → `DeliverEvent(0xF0000009,0x20)`.
+- `cb7_run` reads DICR, walks pending channel bits, `jalr`s the registered
+  handler (`_jt_8019B01C`, ra=0x8019B024). Two `jal 0x8018E550`
+  (printf_forward) = debug prints only.
+
+### Runtime capture (PSX_CDPROBE+PSX_CDEV, port 9002)
+
+- `cb7_run` fired **1101×**, last cyc=1095644803 (ch3 file-read DMAs healthy).
+- `cd_dma_chan_reset` fired **9×**, last cyc=**1017279208** — ~80M cycles
+  before cb7_run's last hit. **ch4 submissions stopped ~cyc 1017M** while
+  ch3 file reads continued to ~1092M.
+- DeliverEvent trace: last group = `F0000003/40` ×2 (file reads) then
+  **zero `F0000009/0x20`** → wedge.
+- ch4 DMA idle: `madr=0x4F6E0 bcr=0x0F930010 chcr=0x201` (not busy).
+
+### SM reachability — ALL drivers dead
+
+- `tile_stream_pump` (0x80159864, clean C in game/menu.c) is a
+  stream-session callback (`tile_stream_open` reg, game.c:1639). Its SM
+  gate: `if (f4738 && fc68c) { cd_mc_state_machine(); fc68c=0; }`.
+- **Poke test:** wrote `fc68c=1` on wedged 9002 → stayed 1 for 277+ frames
+  → **pump is never invoked** (stream session inactive). `f4738=1` fine.
+- `bc84c=sm_wrap` cleared; SM not in DMA handler table (only idx4=chan_reset).
+- ⇒ `cd_mc_state_machine` (0x80199440) is **unreachable**: no ch3 submits,
+  no entry finalize, no ch4 submits, no `F0000009`.
+
+### Kernel state
+
+- `evcb_snapshot`: EvCB i=8 = `class=0xF0000009 spec=0x20` exists;
+  flag never set.
+- `bioscall_dump`: **B0:0x0B TestEvent frozen** (1,402,471 cumulative, delta
+  0) — game thread blocked in kernel sleep (WaitEvent), not spinning.
+  B0:0x17 (INTC tail) still increments — system alive.
+
+### Refined causal model
+
+The versus-spawn stream session ended (or was never fully armed) before
+submitting the last group's ch4 work. The game still WaitEvents on
+`F0000009/0x20` — it expects N channel-chunk completions. Either:
+(a) the stream session should still be active (pump dead = upstream bug —
+    a missed re-arm / dropped event that would have kept it alive), or
+(b) a ch4 DMA completed but its DICR/IRQ edge was dropped (runtime bug —
+    same class as the earlier `cdrom_cycles_to_irq` fix).
+
+Discriminator in flight: fresh run (9003) polling `dma_trace_dump` for
+ch=4 start/complete vs `chanreset` hits across the wedge window.
