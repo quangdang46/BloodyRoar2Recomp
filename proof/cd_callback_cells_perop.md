@@ -147,3 +147,13 @@ Why the parked `bcbac` was 0 — i.e., whether `cd_mc_sm_wrap` was ever
 installed into the live bc84c chain this session, or whether an extra
 `read_setup` parked a zero. wtrace on `0x801BC84C`/`0x801BCBAC`/
 `0x801FC68C` across a fresh repro gives the exact write sequence.
+
+## Install site owner: cd_mode_set_0e (0x80198F60)
+
+The `bc84c = cd_mc_sm_wrap` + finalize-callback installs (pcs
+0x80198FAC-0x80198FC4) live inside **`cd_mode_set_0e`** — they run on a
+CD mode transition to 0x0E, not per-read. So `sm_wrap` occupies bc84c
+for the whole 0x0E mode window; `cd_read_setup`/`cd_read_open` park and
+restore around it per file read. If a mode transition away from 0x0E (or
+a reset path) clears bc84c without reinstalling, the SM loses its IRQ
+driver — matching the all-zero wedge state.
