@@ -190,7 +190,7 @@ static int response_count;
  * presentation moves the read pointer to exactly that slot -- never to
  * "newest". */
 #define CDROM_NUM_SECTOR_BUFFERS 8
-typedef struct { uint8_t data[SECTOR_BUFFER_SIZE]; int size; int pos; } CdSectorBuf;
+typedef struct { uint8_t data[SECTOR_BUFFER_SIZE]; int size; int pos; int lba; } CdSectorBuf;
 static CdSectorBuf s_sector_ring[CDROM_NUM_SECTOR_BUFFERS];
 static int s_ring_read;      /* slot the guest is draining */
 static int s_ring_write;     /* slot most recently filled */
@@ -217,6 +217,23 @@ static int s_ring_write;     /* slot most recently filled */
  * without false-alarming on every healthy whole-sector load. */
 static uint64_t s_ring_dropped;   /* unread slot overwritten: guest a ring behind */
 static uint64_t s_ring_partial;   /* partially-read slot overwritten (format tail) */
+
+/* Drop forensic ring: every slot overwritten with pos == 0 gets an entry so
+ * the lost sector's LBA is identifiable after the fact. */
+static CDROMDropEntry s_drop_history[CDROM_DROP_HISTORY_CAP];
+static uint64_t s_drop_history_seq;
+static void note_sector_drop(int old_lba, int new_lba, int slot) {
+    CDROMDropEntry *e = &s_drop_history[s_drop_history_seq % CDROM_DROP_HISTORY_CAP];
+    memset(e, 0, sizeof(*e));
+    e->seq = s_drop_history_seq++;
+    e->cycle = psx_cycle_count;
+    e->frame = (uint32_t)s_frame_count;
+    e->old_lba = old_lba;
+    e->new_lba = new_lba;
+    e->slot = slot;
+    e->ring_read = s_ring_read;
+    e->ring_write = s_ring_write;
+}
 
 
 #define RB_ (s_sector_ring[s_ring_read])
@@ -1547,8 +1564,12 @@ static int read_sector_at(int min, int sec, int sect) {
         int wi = (s_ring_write + 1) % CDROM_NUM_SECTOR_BUFFERS;
         wb = &s_sector_ring[wi];
         if (wb->size > 0) {
-            if (wb->pos == 0) s_ring_dropped++;
-            else if (wb->pos < wb->size) s_ring_partial++;
+            if (wb->pos == 0) {
+                s_ring_dropped++;
+                note_sector_drop(wb->lba, lba, wi);
+            } else if (wb->pos < wb->size) {
+                s_ring_partial++;
+            }
         }
         memset(wb->data, 0, sizeof(wb->data));
         if (mode_reg & 0x20) {
@@ -1581,6 +1602,7 @@ static int read_sector_at(int min, int sec, int sect) {
             wb->size = SECTOR_SIZE;
         }
         wb->pos = 0;
+        wb->lba = lba;
         s_ring_write = wi;
         history_bytes = wb->data;
         history_size = wb->size;
@@ -2914,6 +2936,7 @@ void cdrom_init(const char* cue_path) {
     memset(param_fifo, 0, sizeof(param_fifo));
     memset(response_fifo, 0, sizeof(response_fifo));
     memset(s_sector_ring, 0, sizeof(s_sector_ring));
+    for (int i = 0; i < CDROM_NUM_SECTOR_BUFFERS; i++) s_sector_ring[i].lba = -1;
     s_ring_read = 0;
     s_ring_write = 0;
     memset(last_sector_buffer, 0, sizeof(last_sector_buffer));
@@ -2987,6 +3010,7 @@ void cdrom_init(const char* cue_path) {
     s_warm_route_consumer_waits = 0;
     s_warm_route_consumer_wait_cycles = 0;
     cdrom_debug_clear_sector_history();
+    cdrom_debug_clear_drop_history();
 
     if (cue_path) {
         /* Rematch re-opens the same disc; close the prior handle first. */
@@ -3365,6 +3389,16 @@ void cdrom_debug_clear_sector_history(void) {
     sector_history_seq = 0;
 }
 
+uint64_t cdrom_debug_get_drop_history(const CDROMDropEntry** out_entries) {
+    if (out_entries) *out_entries = s_drop_history;
+    return s_drop_history_seq;
+}
+
+void cdrom_debug_clear_drop_history(void) {
+    memset(s_drop_history, 0, sizeof(s_drop_history));
+    s_drop_history_seq = 0;
+}
+
 uint32_t cdrom_debug_copy_last_sector(uint32_t offset, uint32_t len,
                                       uint8_t* out,
                                       CDROMSectorDebugState* state) {
@@ -3563,9 +3597,12 @@ static int cdrom_snap_parse(PstR *r) {
     RI(s_sector_ring[0].pos);
     { int avail; RI(avail); (void)avail; }   /* derived from pos < size now */
     RI(s_sector_ring[0].size);
-    for (int slot = 1; slot < CDROM_NUM_SECTOR_BUFFERS; slot++) {
-        s_sector_ring[slot].size = 0;
-        s_sector_ring[slot].pos = 0;
+    for (int slot = 0; slot < CDROM_NUM_SECTOR_BUFFERS; slot++) {
+        s_sector_ring[slot].lba = -1;
+        if (slot > 0) {
+            s_sector_ring[slot].size = 0;
+            s_sector_ring[slot].pos = 0;
+        }
     }
     s_ring_read = 0;
     s_ring_write = 0;

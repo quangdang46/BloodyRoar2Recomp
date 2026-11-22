@@ -330,6 +330,24 @@ uint32_t cdrom_debug_copy_last_sector(uint32_t offset, uint32_t len,
 uint64_t cdrom_debug_get_sector_history(const CDROMSectorHistoryEntry** out_entries);
 void cdrom_debug_clear_sector_history(void);
 
+/* Ring-overwrite log: one entry per slot clobbered before the guest consumed
+ * it (pos==0 at overwrite = s_ring_dropped). Carries the overwritten sector's
+ * LBA so a single lost sector can be identified and correlated with the
+ * sector/command history rings. */
+typedef struct CDROMDropEntry {
+    uint64_t seq;
+    uint64_t cycle;
+    uint32_t frame;
+    int old_lba;      /* sector that was overwritten unread (-1 = none) */
+    int new_lba;      /* sector that took the slot */
+    int slot;         /* ring slot index */
+    int ring_read;
+    int ring_write;
+} CDROMDropEntry;
+#define CDROM_DROP_HISTORY_CAP 64
+uint64_t cdrom_debug_get_drop_history(const CDROMDropEntry** out_entries);
+void cdrom_debug_clear_drop_history(void);
+
 #ifdef __cplusplus
 }
 #endif

@@ -5925,6 +5925,48 @@ static void handle_cdrom_sector_history_clear(int id, const char *json)
     send_ok(id);
 }
 
+static void handle_cdrom_drop_history(int id, const char *json)
+{
+    (void)json;
+    const CDROMDropEntry *entries = NULL;
+    uint64_t total = cdrom_debug_get_drop_history(&entries);
+    uint64_t oldest = (total > CDROM_DROP_HISTORY_CAP)
+        ? total - CDROM_DROP_HISTORY_CAP : 0;
+
+    size_t bufsz = 256u + (size_t)CDROM_DROP_HISTORY_CAP * 200u;
+    char *buf = (char *)malloc(bufsz);
+    if (!buf) { send_err(id, "oom"); return; }
+
+    size_t pos = 0;
+    pos += snprintf(buf + pos, bufsz - pos,
+                    "{\"id\":%d,\"ok\":true,\"total\":%llu,"
+                    "\"oldest\":%llu,\"entries\":[",
+                    id, (unsigned long long)total,
+                    (unsigned long long)oldest);
+
+    uint64_t seq = total;
+    int emitted = 0;
+    while (seq > oldest && pos < bufsz - 220) {
+        seq--;
+        const CDROMDropEntry *e =
+            &entries[seq % CDROM_DROP_HISTORY_CAP];
+        if (e->seq != seq) continue;
+        pos += snprintf(buf + pos, bufsz - pos,
+                        "%s{\"seq\":%llu,\"cycle\":%llu,\"frame\":%u,"
+                        "\"old_lba\":%d,\"new_lba\":%d,\"slot\":%d,"
+                        "\"ring_read\":%d,\"ring_write\":%d}",
+                        emitted ? "," : "",
+                        (unsigned long long)e->seq,
+                        (unsigned long long)e->cycle, e->frame,
+                        e->old_lba, e->new_lba, e->slot,
+                        e->ring_read, e->ring_write);
+        emitted++;
+    }
+    pos += snprintf(buf + pos, bufsz - pos, "],\"emitted\":%d}", emitted);
+    debug_server_send_line(buf);
+    free(buf);
+}
+
 static const char *cdrom_command_kind_name(uint8_t kind)
 {
     switch (kind) {
@@ -14441,6 +14483,7 @@ static const CmdEntry s_commands[] = {
     { "cdrom_sector_dump", handle_cdrom_sector_dump },
     { "cdrom_sector_history", handle_cdrom_sector_history },
     { "cdrom_sector_history_clear", handle_cdrom_sector_history_clear },
+    { "cdrom_drop_history", handle_cdrom_drop_history },
     { "cdrom_command_history", handle_cdrom_command_history },
     { "cdrom_command_history_clear", handle_cdrom_command_history_clear },
     { "cdrom_trace_dump",  handle_cdrom_trace_dump },
