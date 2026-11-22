@@ -270,3 +270,58 @@ the done-path never runs → WaitEvent forever → deterministic wedge.
   completion, and which cell/flag gates it (fntrace can't see clean-C
   calls — need wtrace on the event-flag cell or bios_svc DeliverEvent
   args filtered by svc=0x07).
+
+## 11. Decisive capture — PSX_CDEV DeliverEvent trace (port 9001)
+
+Launched fresh instance with `PSX_CDEV=1` (the `cd_bios_svc_07` debug
+fprintf logs every DeliverEvent) + arcade nav. Reproduced the wedge at
+gs=8/ph=03/b4=0300 in ~14s. The DeliverEvent log shows the exact missing
+signal:
+
+```
+seq 17: F0000003/40  cyc=1002388441   <- file-read done
+seq 18: F0000009/20  cyc=1004052679   <- channel complete x2
+seq 19: F0000009/20  cyc=1004702619
+seq 20: F0000003/40  cyc=1034185844   <- file-read done
+seq 21: F0000009/20  cyc=1035889325   <- channel complete x2
+seq 22: F0000009/20  cyc=1038955400
+seq 23: F0000003/40  cyc=1105310342   <- file-read done
+seq 24: F0000003/40  cyc=1114467082   <- file-read done
+        (NO F0000009 events after — WEDGE)
+```
+
+**Pattern:** each load group = file-read-done (`0xF0000003/0x40`) followed
+by TWO channel completions (`0xF0000009/0x20`). The last group delivered
+its file reads but **zero channel completions** → the game WaitEvents on
+`0xF0000009/0x20` forever.
+
+Wedge state identical to 8997: `FC6A4=2 FC6A8=0 FC68C=0 bc84c=bc848=
+bcbac=0`, CD idle-paused, all DMA idle, `i_stat=0 i_mask=0xD`.
+
+### Mechanism (refined)
+
+`0xF0000009/0x20` is delivered by the channel/stream completion path —
+`cd_bios_svc_07(0xf0000009,0x20)` at game/cd.c:5146 (the ch4-doorbell /
+channel-reset-complete path; also `call_guest(DB32G(0x801bdee8))` when a
+ch4 callback is armed). These events do NOT require the directory SM —
+they are ch4-DMA/session completions.
+
+The file-read sessions park `bc84c`→`bcbac` (saving sm_wrap) and install
+`read_step_cb`; `cd_read_finish_cb` (0x80198838) restores both callbacks
+on the final sector (`mc_session_b`+`mc_session` calls confirmed in its
+generated body). At wedge `bcbac=0` → the value parked was already 0 →
+**bc84c was already dead when the file-read batch parked it** (~f1171-1194
+gap, after SM last ran f1171).
+
+### The real question
+
+Between SM-last-run (~f1171) and the first file-read park (~f1194),
+`bc84c` lost `sm_wrap` (0x80198FE4). Candidates: a mode/session teardown
+that legitimately ended the channel session (in which case the LATER
+channel work used a different driver — the per-frame fc68c pump or DMA
+dispatcher — and THAT driver is what died), or a missed restore.
+
+The 0xF0000009 events that DID fire (seq 13-14,18-19,21-22) prove the
+channel mechanism worked during the run — the last group is the first to
+produce none. Whether the channel work was submitted-but-unserviced or
+never submitted is the remaining unknown (subagent tracing the done path).
