@@ -156,24 +156,63 @@ codec thread is *not* starved of CD IRQs.
 - INTC handler table `0x801bcd1c`: `[2]=0x801979F8` (cd_response_pump)
   **correctly installed**; enable mask `0x801bcd48=0xD` (bit2 CDROM enabled).
 
+## bc84c write ring — the SM-driver smoking gun (fresh repro, port 9850)
+
+`cdfn_dump` `bc84c_seq`/`bc84c_caller` (new instrumentation) captured the full
+`0x801BC84C` lifecycle across the wedge. Decisive entries:
+
+- Per read session: `0x80198A88` installs `read_step_cb`(`0x801985C4`),
+  `0x801987B8` clears it — normal park/install cycle, repeats ~20×.
+- **`sm_wrap`(`0x80198FE4`) installed exactly once** — `new=0x80198FE4
+  caller=0x80198FC4` (`cd_mode_set_0e`) — then **cleared one entry later**:
+  `new=0 old=0x80198FE4 caller=0x801264E0`.
+- `0x801264E0` is the return-addr inside generated `br2eu_func_801264B4`,
+  which tail-calls **`scene_entry`(`0x80159028`)** with `a0=0x80010000` —
+  i.e. the battle/scene loader cleared `sm_wrap` mid-load and it was **never
+  reinstalled**. After that only the `read_step_cb` cycle remains.
+
+`scene_entry` (`game/game.c:1580`) is the battle/arena loader: `blk_io_retry`
+loops → `cd_stream_mode_init` → `cd_subsystem_reset` → `cd_cmd_issue_sync(9)`
+(Pause) → `battle_session_arm`. The `mc_session_b(0)` that zeroed `bc84c`
+ran inside its call tree.
+
+## Wedge is NOT a CD spin on this instance (fntrace, port 9850)
+
+Armed `blk_io_retry`/`cd_mc_state_machine`/`cd_result_wait_a`/
+`cd_response_pump`/`cd_intc_dispatch` for ~4 s at the wedge:
+
+- **Only `cd_intc_dispatch`(`0x8019A8EC`) fires — once/frame** from
+  `cd_chan_full_init` (`ra=0x8019A88C`), the idle INTC poll (`i_stat&0xD=0`).
+- `blk_io_retry`, `cd_mc_state_machine`, `cd_result_wait_a`,
+  `cd_response_pump`: **0 hits.** The codec/file-load threads are *idle*, not
+  spinning — the earlier "codec starves in `cd_result_wait_a`" was a different
+  (older-binary) instance's transient, not the steady-state wedge.
+
+So the CD subsystem is healthy-and-idle; the freeze is the **game-state /
+battle spawn path** waiting on the channel-entry `state==2` finalize that the
+dormant SM (`fc68c=0`, `bc84c=0`, `scan=2>finalize=0`) never produces.
+
 ## Refined causal model (corrected)
 
-The codec thread's awaited signal is produced by the **channel-entry
-finalize / read-session-done path**, not by the raw CD IRQ. Sequence:
+The freeze is the **battle-spawn / channel-entry-finalize path**, not the CD
+IRQ and not an actively-spinning codec thread. Sequence:
 
-1. Read session streams sectors → game issues Pause → `CDIRQ_COMPLETE`
-   processed correctly (above).
-2. `cd_response_pump` fires the `bc848`/`bc84c` completion callbacks — but
-   both are **0** (cleared by session teardown before the final IRQ), so the
-   callback that advances channel state / produces the codec-done flag never
-   runs.
-3. `cd_mc_state_machine` stays dormant (`fc68c=0`, no `bc84c=sm_wrap` driver)
-   → `scan=2 > finalize=0` orphaned → the doorbell `DeliverEvent` and the
-   codec's awaited result flag never materialize → `cd_result_wait_a` spins.
+1. `scene_entry` loads battle/arena assets; per-read-session `bc84c` cycles
+   `read_step_cb` normally and `cd_mode_set_0e` installs `sm_wrap` once.
+2. A nested call inside `scene_entry` (`0x801264E0` region) runs
+   `mc_session_b(0)`, clearing `bc84c` — `sm_wrap` is **never reinstalled**.
+3. `cd_mc_state_machine` loses its IRQ driver (`bc84c≠sm_wrap`), `fc68c=0`,
+   and the DMA-dispatch driver is idle → SM dormant → `scan=2>finalize=0`
+   orphaned channel entries.
+4. The spawn-commit predicate (`channel entry state==2`, produced only by SM
+   finalize) never becomes true → the battle/game-state SM waits forever at
+   `gs=8 ph=03` (`cls 0x300` announce is terminal; `0x300→0x700` needs the
+   finalized asset). CD idles healthily in the background.
 
-**Root cause is therefore the `bc848`/`bc84c` callback lifecycle + SM driver
-starvation — a guest-side teardown/re-arm ordering issue (or a faithful-port
-defect in `game/cd.c` session handling), NOT a `cdrom.c` IRQ-presentation bug.**
+**Root cause is the `bc84c`/`sm_wrap` callback lifecycle being cleared by
+`scene_entry`'s nested teardown without re-arm — a guest-side ordering issue
+(or faithful-port defect in `game/cd.c`/`game/game.c` session handling), NOT
+a `cdrom.c` IRQ-presentation bug and NOT a codec-thread stall.**
 
 ## Open question (next experiment — supersedes the IRQ-presentation hypotheses above)
 
