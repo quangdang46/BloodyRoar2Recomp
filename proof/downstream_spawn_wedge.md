@@ -381,3 +381,78 @@ produced by `cd_mc_state_machine` finalize — not the BIOS event flag.
 The fix remains "drive the SM / restore its driver," but the symptom to
 watch is `cd_channel_poll` timing out inside `blk_io_retry`, not
 `TestEvent`.
+
+## bc84c lifecycle fully decoded (static, generated `0x80198F60`)
+
+`cd_mode_set_0e(s0)` (guest `0x80198F60`, clean wrapper delegates at
+`game/cd.c:1496`) branch-decodes the mode arg:
+
+- `(s0 & 0x100) == 0` → `cd_mode_flag_set(0x1b,0,0)` only; **does not touch
+  bc84c or FC6F8**.
+- `(s0 & 0x100) != 0` → calls `0x801961A8` with `a0=0x801990F0`
+  (`cd_dir_entry_finalize`, installs the bc848-side finalize cb), then
+  `mc_session_b(0x80198FE4)` → **`bc84c = cd_mc_sm_wrap`**, and sets
+  `0x801FC6F8 = ((s0 & 0x20) == 0)` (work/lock flag; `0x1e0` → 0).
+
+`cd_stream_mode_init` → `cd_mode_set_0e(0x1e0)` therefore **must** leave
+`bc84c = cd_mc_sm_wrap` while the tile stream is armed. `0x1e0 & 0x100`
+is deterministically nonzero, so the install path always runs — there is
+no arg-dependent skip.
+
+### All `mc_session_b` (0x80195D78 → bc84c get/set) callers
+
+| Caller | a0 | Effect |
+|---|---|---|
+| `cd_read_open` `0x80198908` (entry) | `0` | **clear** (park: live cb saved to session ctx) |
+| `cd_read_open` `0x80198908` (late) | read-step cb | **install** read cb for ReadN completion |
+| `cd_read_setup` `0x80198C90` | `0` | **clear** |
+| `cd_init_session` `0x80198AF0` | `[s3]` | install from session struct |
+| `cd_read_step_cb` `0x801985C4` | `[s0+0x2C]` | **restore** saved cb |
+| `cd_read_finish_cb` `0x80198838` | `[s0+0x2C]` | **restore** saved cb |
+| `cd_mode_set_0e` `0x80198F60` | `0x80198FE4` | **install sm_wrap** |
+| `cd_subsystem_reset` `0x80199070` | `0` | **clear** |
+
+The restore path (`cd_read_step_cb`/`cd_read_finish_cb`) reads the saved
+callback from **`session_ctx+0x2C`**, not from the global `bcba8/bcbac`
+park cells — those globals are a *separate* park used by the
+`cd_read_setup`-family entry (`game/cd.c:332-333`). At the wedge
+`bcba8=bcbac=0`, consistent with "parked while already clear."
+
+## Deadlock mechanism (refined)
+
+`scene_entry` (`game/game.c:1641,1673`) loops:
+`while (blk_io_retry(0x801f4700,…) == -1) cd_stream_mode_init(…)`.
+
+- `blk_io_retry` (`game/save.c:2253`) calls `mc_date_serial_cmp` up to
+  2000×; each call runs `cd_channel_poll` (delegated, interrupt-driven)
+  waiting for a channel-table entry to reach `state==2`.
+- That `state==2` transition is produced **only** by
+  `cd_mc_state_machine` finalize → ch4 DMA submit → completion.
+- The SM is driven by IRQ via `bc84c=sm_wrap` (needs a CD IRQ edge) or by
+  the per-frame `fc68c` gate (which the SM itself sets — circular).
+
+So the invariant the stream depends on: **while `blk_io_retry` waits,
+`bc84c` must be `sm_wrap`.** A nested file read (`cd_read_setup`→
+`cd_read_open`) clears `bc84c`, runs its own read cb, then
+`cd_read_finish_cb` restores `session_ctx+0x2C`. If that saved slot held
+`0` (because `bc84c` was already clear when the read parked — e.g. an
+earlier clear won the race), the restore writes `0` back and `sm_wrap`
+is lost for the rest of the stream.
+
+With `bc84c=0` and `fc68c=0`, the SM is dormant; entries never finalize;
+`cd_channel_poll` never sees `state==2`. Whether `blk_io_retry` then
+hard-blocks inside `mc_date_serial_cmp` or livelocks through
+`-1 → cd_stream_mode_init → reinstall` depends on whether
+`cd_channel_poll`'s wait is bounded — either way `bc84c` reads `0` at the
+observed wedge only if the reinstall path is not reached, i.e. the wait
+is effectively unbounded inside a single `mc_date_serial_cmp` call.
+
+## Decisive open question for the live trace
+
+Capture the **write sequence to `0x801BC84C`** across a fresh repro from
+`tile_stream_open` onward: confirm (a) `cd_mode_set_0e(0x1e0)` installs
+`0x80198FE4`, (b) which of `cd_read_setup`/`cd_read_open`/`cd_init_session`/
+`cd_subsystem_reset` next writes `0`, and (c) what `session_ctx+0x2C`
+held at the corresponding park. That pins whether the loss is a
+runtime-divergent clear (IRQ/callback edge dropped) or a faithful
+ordering the clean port must preserve.
