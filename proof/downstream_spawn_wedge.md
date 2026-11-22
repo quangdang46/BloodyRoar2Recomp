@@ -246,3 +246,41 @@ never submitted because the channel-SM/finalize path that arms it is dormant
 (`fc68c=0`, `bc84c=0`, `scan=2>finalize=0`). `dma_trace_dump` tail is flooded
 with unrelated per-frame ch2 GPU-OT DMAs; isolating the idx-4 submit/complete
 pair around frame ~1583 is the subagent's live-trace target.
+
+## REFINEMENT — the awaited channel is ch4 = SPU, not CD file data
+
+`cd_cb7_run` (`0x8019af84`, `game/cd.c:5189`) is the DICR walker: it reads
+`(DICR>>24)&0x7f` (per-channel done flags at DICR bits 24-30, matching
+`complete_transfer`'s `dicr |= 1<<(24+ch)`) and calls `handler[ch]` at
+`0x801BDDF4+ch*4`. So handler-table **index == hardware DMA channel**.
+handler[4]=`cd_dma_chan_reset` therefore fires **only on DMA channel 4 =
+the SPU channel** completion.
+
+Consequence: `DeliverEvent(0xF0000009)` requires a **ch4 (SPU) DMA
+completion** — i.e. the game is waiting for a sound-data upload / SPU-RAM
+transfer to finish during battle bring-up, NOT for CD file sectors (those
+all completed). This widens the wedge from "CD stream" to **the game's
+DMA-channel orchestration**: the channel-finalize SM that submits channel
+transfers (CD-data via ch3 AND SPU/sound via ch4) is dormant, so whichever
+transfer the current load phase needs never gets kicked.
+
+Live SPU state confirms no transfer is in flight or stalled:
+- `spu_status`: `ctrl=0xC001` (SPUCNT transfer-mode bits5:4 = 0 = STOP),
+  `active_mask=0`, `cd_frames=0`/`cd_push_frames=0` (CD-audio path idle),
+  `render_frames≈59.8M` (SPU IS clocking → sample boundaries advance, so a
+  mode-gated `spu_wait` would resolve if a transfer were pending).
+- `spu_events`: only 54 events, all `KEYON` at frame 318 (boot init) — no
+  SPU DMA/voice activity during the wedge.
+- `audio_events` tail: only per-frame `RENDER`, zero `DMA_WRITE` — **no ch4
+  transfer has run recently at all.**
+- ch4 `chcr=0x201` (direction=to-SPU, busy bit24 CLEAR) → not in
+  `spu_ch4_arm_mode_wait`; simply **never submitted**.
+
+So hypothesis (A) is confirmed by elimination: **the game-side submitter
+never kicked the awaited ch4 transfer** because the upstream channel-SM /
+load coordinator is dormant (`fc68c=0`, `bc84c=0`, `scan=2>finalize=0`).
+This is faithful-game-state starvation, not a runtime IRQ/DMA drop — the
+runtime correctly reports "no ch4 transfer pending." The faithful fix is to
+find why the SM's drivers were cleared and not re-armed for this load
+phase (the `cd_chan_reset_b` mode-2 teardown vs the `cd_mode_set_0e`
+`sm_wrap` reinstall ordering), NOT to fake a completion.
