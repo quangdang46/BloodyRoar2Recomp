@@ -283,6 +283,43 @@ channel-copy finalize never runs. The open faithful-vs-divergent question is
 *why* the SM lost its driver: a runtime IRQ/callback-timing miss, or a
 guest-side ordering the clean port must reproduce.
 
+## Decompressor freeze pinpointed (decomp_trace, port 9850)
+
+`decomp_trace` tail: the asset stream decompresses heap blocks
+(`heapA_w_menu` → `dispatch` → `lzss` → `blk_ret`) into sequential dst
+addresses (`0x800C7014`→`0x800CF028`→`0x800D703C`→`0x800DC800`→`0x800E1064`…).
+**The last entry is seq 213 `heapA_w_menu` dst=`0x800E1064` src=`0x800E9078`
+len=`0x22F2` at cycle ~1044005062 — with NO following `dispatch`/`lzss`/
+`blk_ret`.** The heap block was allocated and a decompress was requested, but
+the LZSS pass never ran → the decompressor is **waiting for the compressed
+source bytes of block 213**, which arrive via the CD stream. This is a
+*data-starvation* stall, not a logic stall.
+
+## cdrom.c ring/BFRD accounting — the concrete anomalies
+
+`cdrom_state` (authentic cadence — `mode_reg=0xA0`, `xa_stream_active` off,
+`accelerated_read_active()=0` because `mode_reg&0x68 != 0`; `accel_consumer_
+waits=0` confirms the accel guard never engaged):
+
+- `ring_dropped=1` — exactly **one** sector was overwritten with `pos==0`
+  (guest never read a byte) = "guest a ring behind". At authentic speed the
+  guest has a full sector period per sector, so a single drop is anomalous.
+- `ring_partial=898` — matches sector count; dominated by the documented
+  benign format-tail (game reads 2060/2340). Not the defect.
+- `ring_starved=0` — the O(1) tripwire never fired.
+- `bfrd_set=2047` vs `bfrd_clear=13` — heavily asymmetric REQUEST/BFRD
+  accounting (guest wrote BFRD-request 2047×, cleared 13×). Worth auditing
+  whether these counters reflect real flow-control desync or just asymmetric
+  instrumentation.
+
+**Working root-cause hypothesis (faithful-core, cdrom.c):** under the
+sustained whole-sector decompress stream, the ring delivers sectors but the
+BFRD/consume accounting loses sync once (`ring_dropped=1`) — the dropped
+sector carried compressed input for decompress-block 213 (or its completion
+edge), so the decompressor never gets the bytes → `phase` never reaches
+`0x700` → spawn never commits. The SM/callback dormancy documented above is
+the *producer-side symptom* of the same missing finalize edge.
+
 ## Open question (next experiment — supersedes the IRQ-presentation hypotheses above)
 
 The CDROM IRQ path is verified working. The live question is the
