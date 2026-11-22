@@ -4,17 +4,32 @@
 
 #include <stdint.h>
 
+extern void FUN_80152260(void);
+extern void FUN_80152264(void);
+extern void FUN_80153534(void);
+extern void FUN_8015353c(void);
+extern void FUN_80156458(void);
+extern void FUN_80156470(void);
+extern void FUN_8015647c(void);
+extern void FUN_80156d90(void);
 extern void FUN_80157358(void);
 extern void FUN_801573dc(void);
 extern void FUN_80157444(void);
+extern void FUN_801574cc(void);
 extern void FUN_80157574(void);
 extern void FUN_80158274(void);
+extern void FUN_80158514(void);
+extern void FUN_801597e0(void);
+extern void FUN_80159f44(void);
 extern void FUN_80159f54(void);
 extern void FUN_80159f58(void);
 extern void FUN_80159f60(void);
 extern void FUN_80159f7c(void);
 extern void FUN_8015a1dc(void);
+extern void FUN_801631b4(void);
+extern void FUN_801631d0(void);
 extern void FUN_801631fc(void);
+extern void FUN_80163220(void);
 extern void FUN_80163248(void);
 extern void FUN_80163250(void);
 extern void FUN_80163840(void);
@@ -31,9 +46,14 @@ extern void FUN_801638b0(void);
 extern void FUN_801638b8(void);
 extern void FUN_801638c0(void);
 extern void FUN_80163940(void);
+extern void FUN_80163b10(void);
+extern void FUN_80163b20(void);
+extern void FUN_80163b28(void);
 extern void FUN_80163b40(void);
 extern void FUN_80163b7c(void);
 extern void FUN_80163bb8(void);
+extern void FUN_80167b00(void);
+extern void FUN_80167b20(void);
 extern void FUN_8016fca8(void);
 extern void FUN_8016fcb0(void);
 extern void LAB_80137590(void);
@@ -1664,6 +1684,8 @@ const Br2FnEnt fn_table[] = {
   { 0x80151dc8, (void *)stage_fight_announce },
   { 0x8015200c, (void *)fight_timer_announce },
   { 0x801521a4, (void *)battle_state_gate },
+  { 0x80152260, (void *)FUN_80152260 },
+  { 0x80152264, (void *)FUN_80152264 },
   { 0x8015226c, (void *)continue_countdown },
   { 0x801524b0, (void *)please_wait_announce },
   { 0x80152548, (void *)bcfg_step_b },
@@ -1679,6 +1701,8 @@ const Br2FnEnt fn_table[] = {
   { 0x801533e0, (void *)bcfg_step_a },
   { 0x8015343c, (void *)gate_read_ec },
   { 0x80153484, (void *)select_phase_gate },
+  { 0x80153534, (void *)FUN_80153534 },
+  { 0x8015353c, (void *)FUN_8015353c },
   { 0x80153544, (void *)battle_config_eval },
   { 0x80153984, (void *)post_battle_side_commit },
   { 0x80153ab0, (void *)vs_confirm_a },
@@ -1704,6 +1728,9 @@ const Br2FnEnt fn_table[] = {
   { 0x80156344, (void *)rec_clear_irq },
   { 0x80156404, (void *)chan_attr_block_write },
   { 0x8015643c, (void *)attr_records_scan },
+  { 0x80156458, (void *)FUN_80156458 },
+  { 0x80156470, (void *)FUN_80156470 },
+  { 0x8015647c, (void *)FUN_8015647c },
   { 0x80156484, (void *)fighter_record_build },
   { 0x801565ec, (void *)cd_file_read_seq },
   { 0x80156650, (void *)fighter_rec_fetch_apply },
@@ -1713,6 +1740,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80156c60, (void *)mc_action_dispatch },
   { 0x80156cf4, (void *)mc_action_dispatch_b },
   { 0x80156d88, (void *)ret_one },
+  { 0x80156d90, (void *)FUN_80156d90 },
   { 0x80156d98, (void *)deferred_cmd_drain },
   { 0x80156ef4, (void *)deferred_cmd_post },
   { 0x80156ff0, (void *)memcard_slot_poll },
@@ -1727,6 +1755,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80157444, (void *)FUN_80157444 },
   { 0x80157458, (void *)mc_mode_nibble_rw },
   { 0x801574b4, (void *)mc_dialog_bit4 },
+  { 0x801574cc, (void *)FUN_801574cc },
   { 0x801574fc, (void *)one_shot_init },
   { 0x80157574, (void *)FUN_80157574 },
   { 0x801575bc, (void *)datetime_confirm_a },
@@ -1740,6 +1769,7 @@ const Br2FnEnt fn_table[] = {
   { 0x801582c0, (void *)chan_reset_register },
   { 0x80158358, (void *)chan_reset_clear },
   { 0x801583cc, (void *)peak_track },
+  { 0x80158514, (void *)FUN_80158514 },
   { 0x80158528, (void *)quad_gauge_emit },
   { 0x80158698, (void *)spr_attr_alloc_c },
   { 0x80158da8, (void *)bcd_time_frame_print },
@@ -1747,6 +1777,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80159028, (void *)scene_entry },
   { 0x801594a4, (void *)display_frame_present },
   { 0x80159734, (void *)tile_stream_job_init },
+  { 0x801597e0, (void *)FUN_801597e0 },
   { 0x801597ec, (void *)tile_stream_open },
   { 0x80159864, (void *)tile_stream_pump },
   { 0x8015986c, (void *)hp_bar_tick },
@@ -1757,6 +1788,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80159d78, (void *)slot_icon_nibble_resolve },
   { 0x80159dac, (void *)gauge_leaf_update },
   { 0x80159eec, (void *)ctr_clamp },
+  { 0x80159f44, (void *)FUN_80159f44 },
   { 0x80159f54, (void *)FUN_80159f54 },
   { 0x80159f58, (void *)FUN_80159f58 },
   { 0x80159f60, (void *)FUN_80159f60 },
@@ -1792,8 +1824,11 @@ const Br2FnEnt fn_table[] = {
   { 0x80162280, (void *)pad_handler_b },
   { 0x80162838, (void *)pad_handler_c },
   { 0x80163154, (void *)stream_block_decode },
+  { 0x801631b4, (void *)FUN_801631b4 },
+  { 0x801631d0, (void *)FUN_801631d0 },
   { 0x801631fc, (void *)FUN_801631fc },
   { 0x80163204, (void *)offset_table_lookup },
+  { 0x80163220, (void *)FUN_80163220 },
   { 0x80163248, (void *)FUN_80163248 },
   { 0x80163250, (void *)FUN_80163250 },
   { 0x8016325c, (void *)mode3_dispatch },
@@ -1830,6 +1865,9 @@ const Br2FnEnt fn_table[] = {
   { 0x80163a68, (void *)rec_tbl_copy_dfl_a0 },
   { 0x80163ab4, (void *)save_tables_commit },
   { 0x80163b08, (void *)rec_find_lt_f8 },
+  { 0x80163b10, (void *)FUN_80163b10 },
+  { 0x80163b20, (void *)FUN_80163b20 },
+  { 0x80163b28, (void *)FUN_80163b28 },
   { 0x80163b40, (void *)FUN_80163b40 },
   { 0x80163b48, (void *)rec_sorted_lookup },
   { 0x80163b7c, (void *)FUN_80163b7c },
@@ -1858,6 +1896,8 @@ const Br2FnEnt fn_table[] = {
   { 0x80167840, (void *)unlock_progress_scene_entry },
   { 0x80167a64, (void *)save_block_init },
   { 0x80167ae8, (void *)save_blk_cmp32 },
+  { 0x80167b00, (void *)FUN_80167b00 },
+  { 0x80167b20, (void *)FUN_80167b20 },
   { 0x80167b34, (void *)mc_op_dispatch },
   { 0x80167bd8, (void *)mc_op_dispatch_b },
   { 0x80167ce4, (void *)mc_read_queue },

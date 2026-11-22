@@ -10757,3 +10757,239 @@ void rec_tbl_copy_dfl_a0(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
   if ((int32_t)a2 <= 0) return;
   rec16_copy(a0, 0x801b431cu, (int32_t)a2);
 }
+
+/* ======================================================================
+ * batch38: remaining save-cluster leaf entries @0x8015/0x8016.
+ * All bodies decoded insn-by-insn from generated/SLES_017.22_full_*.c.
+ * FUN_ names are deliberate — renames.map has no entries for these guest
+ * addresses; gen_fnmap maps the FUN_<addr> spelling automatically.
+ * Functions whose live inputs arrive in NON-a0-a3 registers ($v0/$v1/$t0/
+ * $a3/$t3/$a2) are marshalled via ARG_GPRS in gen_clean_table.py — each
+ * entry verified against the generated body cited per function.
+ * ====================================================================== */
+
+/* 0x80152260 — `li v0,1` then falls through into 0x80152264's `jr ra;nop`:
+ * returns 1. (generated/SLES_017.22_full_17.c) */
+int32_t FUN_80152260(void) { return 1; }
+/* 0x80152264 — bare `jr ra; nop`: v0 passes through untouched. */
+void FUN_80152264(void) { }
+/* 0x80153534 — `jr ra; move v0,zero` (delay slot): faithful return-0. */
+int32_t FUN_80153534(void) { return 0; }
+/* 0x8015353c — bare `jr ra; nop`: v0 passes through untouched. */
+void FUN_8015353c(void) { }
+/* 0x80156d90 — `jr ra; li v0,1` (delay slot): returns 1. */
+int32_t FUN_80156d90(void) { return 1; }
+/* 0x8015647c — `jr ra; li v0,1` (delay slot): scan-exhausted exit of the
+ * 0x80156458 record-flag scan, returns 1. */
+int32_t FUN_8015647c(void) { return 1; }
+
+/* 0x80156458 — stride-0x10 record flag scan. Live inputs: a0 = running
+ * index, a1 = signed limit, $v1 = table base (NOT an a0-a3 arg —
+ * ARG_GPRS (4,5,3)). Each pass: b = lbu 0(v1); a0++ (unconditional,
+ * delay slot of the beq); b!=0 -> return 0; else v1 += 0x10 and loop
+ * while a0 < a1 (signed slt); on exhaustion tail into 0x8015647c ->
+ * return 1. Always examines >=1 record (no pre-test). a0/v1 mutations
+ * are call-clobbered and unobservable post-return. Leaf: guest RAM
+ * loads only, bounded by a1-a0 — no IRQ/coroutine interaction.
+ * Disasm generated/SLES_017.22_full_19.c:0x80156458-0x80156483. */
+uint32_t FUN_80156458(uint32_t a0, uint32_t a1, uint32_t v1)
+{
+  uint8_t *p = (uint8_t *)guest_at(v1);
+  for (;;) {
+    uint32_t b = p[0];
+    a0++;
+    if (b != 0) return 0;
+    p += 0x10;
+    if ((int32_t)a0 < (int32_t)a1) continue;
+    return 1;
+  }
+}
+
+/* 0x80156470 — scan loop latch / re-entry. slt v0,a0,a1; delay slot
+ * v1 += 0x10 (unconditional); a0<a1 -> branch back to 0x80156458 with
+ * the bumped v1, else -> 0x8015647c return 1. Same live-reg contract
+ * as FUN_80156458 (ARG_GPRS (4,5,3)). Disasm full_19:0x80156470-0x80156483. */
+uint32_t FUN_80156470(uint32_t a0, uint32_t a1, uint32_t v1)
+{
+  v1 += 0x10;
+  if ((int32_t)a0 < (int32_t)a1)
+    return FUN_80156458(a0, a1, v1);
+  return 1;
+}
+
+/* 0x80158514 — field hand-off leaf. Live inputs: $v0 = source struct
+ * (ARG_GPRS (2,4) param0), a0 = dest struct. v1 = *(u32*)(v0+0x36e8);
+ * *(u32*)(a0+0x3ed4) = 0; *(u32*)0x801f46f0 = v1 (the lui'd v0 base +
+ * 0x46f0, stored in the jr-ra delay slot); returns 0x801f0000.
+ * Disasm generated/SLES_017.22_full_20.c:0x80158514-0x80158527. */
+uint32_t FUN_80158514(uint32_t v0, uint32_t a0)
+{
+  uint32_t v1 = *(uint32_t *)guest_at(v0 + 0x36e8);
+  *(uint32_t *)guest_at(a0 + 0x3ed4) = 0;
+  *(uint32_t *)guest_at(0x801f46f0) = v1;
+  return 0x801f0000u;
+}
+
+/* 0x80163220 — offset-table entry resolve (sibling of the 0x801631d0
+ * record chase). Live inputs: $v0 = base index, a0 = addend, a2 = slot
+ * (ARG_GPRS (2,4,6)). base = v0+a0; v1 = *(u32*)(base+4); v1 == -1 ->
+ * tail 0x80163248 -> return 0; else return a0 + ((a2+1)<<2) + v1 + 12
+ * (the +12 sits in the jr-ra delay slot, applied to the updated a0).
+ * Disasm generated/SLES_017.22_full_25.c:0x80163220-0x80163247. */
+uint32_t FUN_80163220(uint32_t v0, uint32_t a0, uint32_t a2)
+{
+  uint32_t v1 = *(uint32_t *)guest_at(v0 + a0 + 4u);
+  if (v1 == 0xffffffffu) return 0;
+  return a0 + (((a2 + 1u) << 2) + v1) + 12u;
+}
+
+/* 0x801631b4 — guarded head of the 0x801631d0 record chase. a2 =
+ * *(u32*)a0 (entry count); slt v0,a1,a2 signed decides the branch —
+ * the delay slot sll v0,a1,2 supplies the offset the chase consumes.
+ * a1 >= count -> return 0 (0x801631c8 tail); else chase with
+ * offset = a1*4 and slot = count. Disasm full_25:0x801631b4-0x801631cf. */
+uint32_t FUN_801631b4(uint32_t a0, uint32_t a1)
+{
+  uint32_t cnt = *(uint32_t *)guest_at(a0);
+  uint32_t v0, v1;
+  if ((int32_t)a1 >= (int32_t)cnt) return 0;
+  v0 = a1 << 2;
+  /* == 0x801631D0 body with a2 = cnt */
+  v0 += a0;
+  v1 = *(uint32_t *)guest_at(v0 + 4u);
+  if (v1 == 0xffffffffu) return 0;      /* -> 0x801631fc tail */
+  a0 += (((cnt + 1u) << 2) + v1);
+  return *(uint32_t *)guest_at(a0 + 8u);
+}
+
+/* 0x801631d0 — record chase continuation. Live inputs: $v0 = pre-shifted
+ * offset (a1*4 from the 0x801631b4 delay slot, or caller-supplied on a
+ * direct entry), a0 = base, a2 = slot (ARG_GPRS (2,4,6)). v0 += a0;
+ * v1 = *(u32*)(v0+4); v1 == -1 -> 0x801631fc -> return 0; else
+ * a0 += ((a2+1)<<2) + v1 and return *(u32*)(a0+8) (jr-ra delay slot
+ * is a nop — the load IS the return value).
+ * Disasm full_25:0x801631d0-0x801631fb. */
+uint32_t FUN_801631d0(uint32_t v0, uint32_t a0, uint32_t a2)
+{
+  uint32_t v1;
+  v0 += a0;
+  v1 = *(uint32_t *)guest_at(v0 + 4u);
+  if (v1 == 0xffffffffu) return 0;
+  a0 += (((a2 + 1u) << 2) + v1);
+  return *(uint32_t *)guest_at(a0 + 8u);
+}
+
+/* 0x80163b10 — 0x10-stride record scan head (sibling of the ported
+ * rec_find_lt_f8 @0x80163b08). Live inputs: a0 = cursor, a1 = signed
+ * field limit, a2 = count, $v1 = running index (ARG_GPRS (4,5,6,3)).
+ * Loop: f = *(u32*)(a0+8); f==0 -> return v1; f>=a1 (signed slt in the
+ * delay slot, tested at 0x80163b28) -> return v1; else v1++, a0 += 0x10
+ * and continue while v1 < a2; exhausted -> 0x80163b40 -> return -1.
+ * Disasm full_25:0x80163b10-0x80163b3f. */
+int32_t FUN_80163b10(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t v1)
+{
+  for (;;) {
+    uint32_t f = *(uint32_t *)guest_at(a0 + 8u);
+    if (f == 0) return (int32_t)v1;
+    if ((int32_t)f >= (int32_t)a1) return (int32_t)v1;
+    v1++;
+    a0 += 0x10;
+    if ((int32_t)v1 >= (int32_t)a2) return -1;
+  }
+}
+
+/* 0x80163b20 — `jr ra; move v0,v1` (delay slot): returns $v1 verbatim
+ * (the not-found/early-exit tail of the 0x80163b10 scan).
+ * ARG_GPRS (3,). Disasm full_25:0x80163b20-0x80163b27. */
+uint32_t FUN_80163b20(uint32_t v1)
+{
+  return v1;
+}
+
+/* 0x80163b28 — scan latch / re-entry. Live inputs: $v0 = the slt result
+ * computed at 0x80163b1c (f<a1), $v1 = index, a0 = cursor, a1 = field
+ * limit, a2 = count (ARG_GPRS (2,3,4,5,6)). beq v0,zero -> 0x80163b20
+ * return v1; else v1++, a0 += 0x10 (delay slot) and loop back through
+ * the 0x80163b10 head while v1 < a2; exhausted -> 0x80163b40 -> -1.
+ * Disasm full_25:0x80163b28-0x80163b3f. */
+int32_t FUN_80163b28(uint32_t v0, uint32_t v1, uint32_t a0,
+                     uint32_t a1, uint32_t a2)
+{
+  if (v0 == 0) return (int32_t)v1;
+  for (;;) {
+    uint32_t f;
+    v1++;
+    a0 += 0x10;
+    if ((int32_t)v1 >= (int32_t)a2) return -1;
+    /* == 0x80163B10 loop head */
+    f = *(uint32_t *)guest_at(a0 + 8u);
+    if (f == 0) return (int32_t)v1;
+    if ((int32_t)f >= (int32_t)a1) return (int32_t)v1;
+  }
+}
+
+/* 0x80159f44 — conditional +0xa0 u16 field set (same family as the
+ * ported FUN_80159f54/60/7c). Live inputs: $v0 = select flag, a0 =
+ * struct, a1 = value (ARG_GPRS (2,4,5)). v0!=0 -> store a1 at a0+0xa0
+ * (the 0x80159f54 tail); v0==0 -> store 0xff. Delay slot li v0,0xff
+ * leaves v0 = 0xff on BOTH paths -> return 0xff.
+ * Disasm generated/SLES_017.22_full_21.c:0x80159f44-0x80159f53. */
+uint32_t FUN_80159f44(uint32_t v0, uint32_t a0, uint32_t a1)
+{
+  if (v0 != 0) {
+    *(uint16_t *)guest_at(a0 + 0xa0) = (uint16_t)a1;
+  } else {
+    *(uint16_t *)guest_at(a0 + 0xa0) = 0xff;
+  }
+  return 0xff;
+}
+
+/* 0x801574cc — +0xe flag-nibble rw on the struct in $v1 (ARG_GPRS
+ * (4,3): a0 = set/clear flag). a0!=0 -> f[0xe] |= 0x10; a0==0 ->
+ * f[0xe] &= 0xef; then reload and return the byte (zero-extended).
+ * Disasm generated/SLES_017.22_full_20.c:0x801574cc-0x801574fb. */
+uint32_t FUN_801574cc(uint32_t a0, uint32_t v1)
+{
+  uint8_t *f = (uint8_t *)guest_at(v1 + 0xe);
+  uint32_t b;
+  if (a0 != 0) b = (uint32_t)(*f | 0x10);
+  else         b = (uint32_t)(*f & 0xef);
+  *f = (uint8_t)b;
+  return (uint32_t)*f;
+}
+
+/* 0x801597e0 — u16 pair store: sh a3,0x2c(t0); sh t3,0x2e(t0) (the
+ * second store is the jr-ra delay slot — both complete). Live inputs
+ * in $t0/$a3/$t3 (ARG_GPRS (8,7,11)). No return value (v0 passthrough).
+ * Disasm generated/SLES_017.22_full_20.c:0x801597e0-0x801597eb. */
+void FUN_801597e0(uint32_t t0, uint32_t a3, uint32_t t3)
+{
+  *(uint16_t *)guest_at(t0 + 0x2c) = (uint16_t)a3;
+  *(uint16_t *)guest_at(t0 + 0x2e) = (uint16_t)t3;
+}
+
+/* 0x80167b20 — byte-range compare driver. Live inputs: a1 = start
+ * index, a2 = srcA base, a3 = srcB base (ARG_GPRS (5,6,7)).
+ * sltiu v0,a1,32 unsigned: a1 >= 32 -> return 0; else per index compare
+ * byte[a3+i] vs byte[a2+i] (lbu both), equal -> i++ loop, differ ->
+ * return 1. Disasm generated/SLES_017.22_full_27.c:0x80167b20-0x80167b33. */
+uint32_t FUN_80167b20(uint32_t a1, uint32_t a2, uint32_t a3)
+{
+  while (a1 < 32) {
+    if (*(uint8_t *)guest_at(a3 + a1) != *(uint8_t *)guest_at(a2 + a1))
+      return 1;
+    a1++;
+  }
+  return 0;
+}
+
+/* 0x80167b00 — loop-body entry of the 0x80167b20 compare. Same live
+ * regs (ARG_GPRS (5,6,7)). One compare at the CURRENT a1: differ ->
+ * return 1; equal -> a1++ (delay slot) and continue via 0x80167b20.
+ * Disasm full_27:0x80167b00-0x80167b1f. */
+uint32_t FUN_80167b00(uint32_t a1, uint32_t a2, uint32_t a3)
+{
+  if (*(uint8_t *)guest_at(a3 + a1) != *(uint8_t *)guest_at(a2 + a1))
+    return 1;
+  return FUN_80167b20(a1 + 1, a2, a3);
+}

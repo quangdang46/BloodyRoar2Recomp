@@ -290,6 +290,39 @@ ARG_GPRS = {
     # dev_cmd_round_dispatch: a0 ctx, a2/a3 pass-through (a1 is overwritten
     # by the prologue's counter-cell pointer before any call).
     0x801a1e84: (4, 6, 7),
+    # stride-0x10 record flag scan family @0x80156458/70: table base in
+    # $v1 (param 2); a0/a1 stay running index/limit (verified vs
+    # generated/SLES_017.22_full_19.c:0x80156458-0x80156483).
+    0x80156458: (4, 5, 3),
+    0x80156470: (4, 5, 3),
+    # FUN_80158514 field hand-off: source struct base in $v0 (param 0),
+    # dest in a0 (verified vs full_20:0x80158514 — lw v1,0x36e8(v0)).
+    0x80158514: (2, 4),
+    # FUN_80163220 offset resolve: base index in $v0 (param 0), addend
+    # in a0, slot index in a2 (verified vs full_25:0x80163220).
+    0x80163220: (2, 4, 6),
+    # FUN_801631d0 record chase: pre-shifted offset in $v0 (param 0),
+    # base in a0, slot in a2 (verified vs full_25:0x801631d0).
+    0x801631d0: (2, 4, 6),
+    # rec scan head @0x80163b10: cursor a0, field limit a1, count a2,
+    # running index in $v1 (param 3) (verified vs full_25:0x80163b10).
+    0x80163b10: (4, 5, 6, 3),
+    # rec scan latch @0x80163b28: slt result in $v0 (param 0), index in
+    # $v1, cursor a0, field limit a1, count a2 (verified vs full_25).
+    0x80163b28: (2, 3, 4, 5, 6),
+    # FUN_80159f44 +0xa0 field set: select flag in $v0 (param 0),
+    # struct a0, value a1 (verified vs full_21:0x80159f44).
+    0x80159f44: (2, 4, 5),
+    # FUN_801574cc +0xe nibble rw: set/clear flag in a0, struct ptr in
+    # $v1 (param 1) (verified vs full_20:0x801574cc — lbu/sb v1+0xe).
+    0x801574cc: (4, 3),
+    # FUN_801597e0 u16 pair store: dest in $t0 (param 0), values in
+    # $a3/$t3 (params 1/2) (verified vs full_20:0x801597e0).
+    0x801597e0: (8, 7, 11),
+    # byte-range compare pair @0x80167b00/20: start index in a1,
+    # src bases in a2/a3 (verified vs full_27:0x80167b00-0x80167b33).
+    0x80167b00: (5, 6, 7),
+    0x80167b20: (5, 6, 7),
 }
 
 wrappers, table, skipped = [], [], []
