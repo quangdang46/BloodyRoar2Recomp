@@ -106,14 +106,76 @@ gap for exactly this class of bug.
 - Game spins `B0:0x0B TestEvent` (~1.46M calls) for the finalize-produced event
   → deterministic wedge at `gs=8 ph=03 b4=0300`, identical across instances.
 
-## 7. Open questions
+## 7. Second capture — port 8997 (fntrace on callback primitives)
+
+Armed: `mc_session_b`(0x80195D78 bc84c), `mc_session`(0x80195D64 bc848),
+`cd_chan_reset_b`, `cd_cmd_dispatch3`, `cd_chan_cb_set`, `tile_stream_pump`,
+`cd_mc_sm_wrap`, `cd_mc_state_machine`, `cd_response_pump`, `cd_mode_set_0e`,
+`cd_stream_mode_init`.
+
+### bc84c lifecycle (complete)
+
+- **f1080**: `mc_session_b(0x80198FE4)` from ra `0x80198FC4` — **sm_wrap
+  installed exactly once** by `cd_mode_set_0e(0x1E0)` (the bit8 path).
+- f1080–f1148: SM runs via `resp_pump→bc84c` (CD IRQ cadence ~2–3 frames).
+- **f1148**: last `resp_pump`, last `cd_mc_sm_wrap`, last `SM`, last
+  `tile_stream_pump` (via DMA dispatcher `ra=0x8019B024`) — the entire CD IRQ
+  callback chain goes silent.
+- f1194–f1521: seven file-read sessions (Setloc/ReadN/Pause pairs). Each does
+  `mc_session_b(0x801985C4)` [install read_step_cb] + clears; bc848 gets
+  `0x80198590` at f1194. **No bc84c/bc848 writes after f1194** — sessions reuse
+  the installed callbacks.
+- **f1521**: last CD command (Pause 0x09); `mc_session_b(0)` last bc84c write.
+- Wedge: bc848=bc84c=bcba8=bcbac=0 — sm_wrap **lost** (never restored; parked
+  save also 0 because bc84c was already dead when first parked).
+
+### Wedge steady-state (8997)
+
+- Only BIOS activity: B0:0x17 CD-worker poll (~96/s). **B0:0x0B frozen at
+  1,402,471 — NOT spinning** (earlier "TestEvent spin" was historical).
+- `i_stat=0, pending=0, i_mask=0xD`; CD idle-paused at MSF [1,59,23] LBA 8801;
+  `pending.cmd=0x09` already fired (process_pending clears correctly).
+- All DMA channels idle, `dicr=0x00900000`; game fully blocked — no CD commands
+  issued for thousands of frames.
+- `clean_trace` spin = `fifo_space_check`(0x801A4230)←`dev_cmd_*`/`cd_cmd_*`
+  queue layer — a **queued CD/device command that can never be sent** because
+  its completion event never arrived.
+- FC block frozen: `FC6A4=2, FC6A8=0, FC68C=0, FC684=2`; FEB10=0; arena holds
+  the file directory (entries overwritten by file-load payloads).
+
+### Revised causal model
+
+1. Versus-spawn file loads (f1194–1521) share arena `0x80010000` with the
+   channel-entry table — by design (AGENTS.md §8).
+2. The last read session's completion path should deliver an event that
+   unblocks the command-queue layer (`fifo_space_check` spin) AND/OR resumes
+   the stream session (`cd_stream_mode_init`→`mode_set_0e`→reinstall sm_wrap).
+3. That event never fires → game idle-waits; SM starves (no driver); the
+   pending channel entries are the *symptom*, not the cause.
+4. `resp_pump` dying at f1148 (before the read sessions) means the CD IRQ→
+   callback chain broke first — the read sessions then ran on the
+   read_step_cb path which does not need resp_pump.
+
+### Observability gaps found (tooling bugs, rule 15)
+
+- `wtrace` only sees generated-code + DMA writes; clean-C `guest_at()`/
+  `DB32()` host-pointer stores are **invisible** (the FC-block reset and all
+  bc84c writes via `mc_session*` evade it).
+- `fntrace` only records **guest-dispatched** entries; clean→clean C calls
+  (`tile_stream_open`→`cd_dir_table_set`, `cd_stream_mode_init`→
+  `cd_mode_set_0e`) are invisible — `mode_set_0e`/`stream_mode_init`/
+  `dir_table_set`/`dir_reset` showed zero entries despite necessarily running.
+
+## 8. Open questions
 
 - Exactly which clean-C call reset the FC block after f3441 (candidate:
   `cd_dir_reset` via `cd_dir_table_set` for the versus-spawn file session) and
   whether the *generated* path would have re-armed `bc84c=sm_wrap` there —
   i.e. is the missing re-arm a port divergence or faithful guest behavior
   gated on an event we drop?
-- Whether `tile_stream_pump` (`0x80159864`) should be running in this phase —
-  find its runtime caller (no direct `jal`/data ref in the EXE; reached via
-  computed dispatch/fnmap).
+- Why `resp_pump` stopped at f1148 — was the CD IRQ line still firing and the
+  tbl8 dispatch broken, or did the peripheral legitimately go quiet while the
+  read-step path polled?
+- The `fifo_space_check` spin: which queue/device is it gating, and which
+  completion event should release it (read-done callback? SM finalize?).
 - The `0x801BCC58` pointer-table target for the cmd-submit control RMW.
