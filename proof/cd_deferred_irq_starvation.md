@@ -312,13 +312,27 @@ waits=0` confirms the accel guard never engaged):
   whether these counters reflect real flow-control desync or just asymmetric
   instrumentation.
 
-**Working root-cause hypothesis (faithful-core, cdrom.c):** under the
-sustained whole-sector decompress stream, the ring delivers sectors but the
-BFRD/consume accounting loses sync once (`ring_dropped=1`) — the dropped
-sector carried compressed input for decompress-block 213 (or its completion
-edge), so the decompressor never gets the bytes → `phase` never reaches
-`0x700` → spawn never commits. The SM/callback dormancy documented above is
-the *producer-side symptom* of the same missing finalize edge.
+**Correction to the ring/BFRD emphasis above:** the decompressor's compressed
+source is *not* read via the BFRD byte/word path — asset files are loaded by
+`cd_file_load_sm` (`0x8018CFDC`, game/game.c:1717, generated-delegated) →
+`cd_read_issue` → the **channel-DMA + `cd_mc_state_machine` finalize** path.
+So the missing edge for decompress-block-213's source is the **channel-copy
+finalize / "file loaded" signal the SM produces** — `ring_dropped`/`bfrd_*`
+are almost certainly unrelated noise on this path. The decompressor waits on
+the same SM finalize that the spawn-commit predicate (`channel entry
+state==2`) waits on.
+
+**Working root-cause hypothesis (faithful-core):** the channel-copy SM
+(`cd_mc_state_machine`) is dormant because all three drivers are silent —
+`bc84c`/`bc848` session callbacks NULL (cleared inside `scene_entry`,
+`sm_wrap` never reinstalled), `fc68c=0`, DMA dispatcher idle. Whatever should
+re-arm the SM (the next session setup, a DMA-completion edge, or a parked
+`session_ctx+0x2C` restore) did not run → pending channel copies never
+finalize → decompress source never marked ready → `phase` never `0x700` →
+spawn never commits. The faithful fix is in the **`bc84c`/`sm_wrap` /
+session-callback lifecycle** (`game/cd.c` `mc_session_b` park/restore
+discipline, or the `scene_entry` teardown ordering in `game/game.c`) — NOT
+cdrom.c IRQ, NOT OpenBIOS events, NOT game spawn logic.
 
 ## Open question (next experiment — supersedes the IRQ-presentation hypotheses above)
 
