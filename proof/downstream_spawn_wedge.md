@@ -160,3 +160,56 @@ resolved by battle-spawn logic once assets load).
    (`bfrd_set=2047` vs `bfrd_clear=13`, `ring_partial=898`, `ring_dropped=1`).
 3. The faithful fix is in the runtime CD model or a clean-port callback —
    never a direct DAT1/phase poke.
+
+## DECISIVE mechanism pin-down (this session, live on port 9060)
+
+The awaited event and the starving producer are now identified exactly:
+
+- **The spin is `TestEvent(0xF1000008)` inside `cd_seek_step` /
+  `cd_seek_complete_poll`** (guest `0x8019d508`/`0x8019d500`, both delegated to
+  generated). `0xF1000008` = EvCB slot8 = `OpenEvent(0xF0000009,0x20)` — the
+  **CD-DMA-done** flag. B0 table decode: `0x0B`=TestEvent (the 1.4M-call
+  spin), `0x17`=ReturnFromException (the constant IRQ-epilogue calls —
+  normal, not the stall).
+- **`DeliverEvent(0xF0000009)` is produced by `cd_dma_chan_reset`**
+  (`0x8019b7e8`, clean `game/cd.c:5113`) on a DMA-channel completion when the
+  per-channel callback cell `0x801bdee8==0`. Live: `0x801bdee8=0` → the
+  DeliverEvent path is the armed one; the event simply never gets produced
+  because the completing channel work never runs.
+- **All requested CD sectors WERE delivered.** `cdrom_sector_history`: every
+  LBA through 8801 `data_delivered=1`. `dma_cdrom_history` tail (game path
+  `func=0x2970 pc=0x801978AC`): each sector = a 3-word header DMA + a
+  512-word (2048 B) payload DMA, ALL `completed=1`, frames 1581–1583. Last
+  CD command = `Pause 0x09` (seq144, frame 1583). So the ch3 CD→scratch feed
+  is complete and correct; nothing is still streaming.
+- **The channel-finalize SM is dormant with orphaned work.** `0x801fc68c=0`
+  (per-frame gate), `0x801bc848=0`/`0x801bc84c=0` (session callbacks —
+  `cd_mc_sm_wrap` NOT installed), `0x801fc6a0=0`/`fc6a4=2`/`fc6a8=0`
+  (scan=2 finalize=0 → two scanned entries never finalized). Table base
+  `0x801fc6c0=0x80010000`, 32 slots (`0x801fc6c4=0x20`); slot head
+  `0x80010000=0x1D` then `0xFFFFFFFF` empties, entry payloads ~`0x80010b00`.
+  `0x801bcb24=2` (cmd-done flag SET).
+- **DMA channels all idle:** `active=0 remaining=0` everywhere; ch4
+  `madr=0x4F6E0 bcr=0x0F930010 chcr=0x201`, `dicr=0x00900000`.
+
+### Refined causal chain
+
+The game finished reading every requested sector into scratch (ch3 DMA all
+`completed`), then needs the channel/finalize path to turn the buffered
+payload into the completion that fires `DeliverEvent(0xF0000009)`. That path
+is the `cd_mc_state_machine` ring-walker, driven by (a) the per-frame
+`fc68c` gate, (b) the IRQ `bc84c=cd_mc_sm_wrap` session callback, and (c) a
+DMA dispatcher. At the wedge **all three drivers are zero** while
+`scan=2 > finalize=0` entries remain → the SM never runs → the ch4/doorbell
+completion never submits → `DeliverEvent(0xF0000009)` never fires →
+`TestEvent(0xF1000008)` spins forever inside `battle_init` → DAT1 stuck at 3.
+
+This is the same channel-finalize starvation class as
+`cd_finalize_gate.md`/`cd_dma_dispatch_channel.md`, now localized to the
+precise awaited event (`F0000009`/handle `F1000008`) and the precise spin
+site (`cd_seek_step`). The open sub-question handed to the runtime agent:
+whether the break is (A) the SM never re-driven after the last session
+(driver cells cleared and not reinstalled), (B) a submitted ch4 DMA whose
+done-IRQ→`cd_dma_chan_reset`→`DeliverEvent` edge dropped in the runtime,
+or (C) `Pause 0x09` truncating a read the game expected to finish
+(psx-spx/Beetle Pause semantics).
