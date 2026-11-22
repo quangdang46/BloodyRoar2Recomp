@@ -284,3 +284,37 @@ runtime correctly reports "no ch4 transfer pending." The faithful fix is to
 find why the SM's drivers were cleared and not re-armed for this load
 phase (the `cd_chan_reset_b` mode-2 teardown vs the `cd_mode_set_0e`
 `sm_wrap` reinstall ordering), NOT to fake a completion.
+
+## SM driver bootstrap — the deadlock is now fully mapped
+
+`cd_mc_state_machine` (`0x80199440`, delegated to generated) has exactly
+three drivers, and at the wedge ALL are silent:
+
+1. **Per-frame gate** — `tile_stream_pump` (`0x80159864`, `menu.c:2277`) and
+   `hp_bar_tick` (`0x8015986c`, `menu.c:11552`) both do:
+   `if (MB32(0x801f4738) && MB32(0x801fc68c)) { cd_mc_state_machine();
+   MB32(0x801fc68c)=0; }`. Live: **gate `0x801f4738 = 1 (OPEN)** but
+   **`fc68c = 0`** → the SM does not run even though the pump gate is open.
+2. **IRQ callback** — `cd_mc_sm_wrap` (`0x80198FE4`) installed at
+   `0x801bc84c`; live `bc84c = 0` → no CD-session IRQ driver.
+3. **`fc68c` self-flag** — set ONLY by SM entry itself (`sw $a0`); it is the
+   "work pending" flag the per-frame drivers consume. With `fc68c=0` there
+   is no work flag AND no way to bootstrap one without an external driver.
+
+Generated-code callers of `0x80199440` are ONLY `tile_stream_pump`
+(`full_21.c:200`) and `cd_mc_sm_wrap` (`full_46.c:8588`) — there is **no
+synchronous/direct SM call in the file-load path**. So the SM can only be
+bootstrapped by (a) a CD-session IRQ via `bc84c`, or (b) `fc68c` already
+set. With `bc84c=0` the SM is in a **stable dormant state**: gate open,
+no work flag, no IRQ driver, orphaned `scan=2>finalize=0` entries it can
+never reach.
+
+**Caveat / open sub-question:** `cd_mc_state_machine` is the *tile/FMV
+channel-stream* walker (entries at `0x80010000`, driven by `cd_fileop_*`),
+which may be ORTHOGONAL to the battle_init resource load that actually
+wedges (`cd_file_load_sm`→`stream_block_decode`→heapA LZSS). The orphaned
+SM entries might be leftover tile-stream state, not the awaited ch4 submit.
+The decisive discriminator — whether the awaited ch4 transfer is submitted
+by the channel SM, the file-load path, or the sound streamer — is exactly
+what the runtime agent's `fntrace` on `0x80159864`/`0x80199440`/`0x80199BB8`
+captures on a fresh repro.
