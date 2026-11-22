@@ -206,3 +206,67 @@ The frozen `clean_trace` loop resolves to **`battle_flow_state_machine`**
   0x124 mode / 0x128 comp, sysclk, optional /8).
 - The drain side (who consumes the two queues / posts completion) is the
   open question — delegated to runtime RE agent.
+
+## 10. Correction — dev_byte_xfer is the SIO pad-poll path, NOT the wedge
+
+Follow-up decode of `dev_byte_xfer` (0x801A1F74) instruction stream +
+live probes overturn §9's hypothesis:
+
+- `0x801BE7E0`/`0x801BE7E4` hold **0x1F801070 (I_STAT) / 0x1F801040
+  (SIO_DATA)** — dev_byte_xfer is the **SIO byte-transfer state machine**
+  (state byte <9 at ctx+0x44, flag test `I_STAT & 0x80` = IRQ_SIO0 bit7).
+- It writes the pacing cells 0x801FF260/0x801FF264 itself
+  (`sw 0x1FAE→0x801FF264`, `sw a0→0x801FF260`) and reads T2_COUNT for
+  pacing — `fifo_space_check` "space exhausted" is normal flow control,
+  retried next frame.
+- Live `sio_trace` (1.9M entries): continuous healthy 5-byte pad polls
+  `tx 01 42 00 00 00 → rx FF 41 5A FF FF`, dev state cycling 0→1,
+  mc_state=0 (MC_IDLE) — **SIO/memcard fully healthy**, pads connected,
+  mc_reads=111 vs mc_read_done=108 gap is historical, not live.
+- The two "contexts" 0x801FF080/0x801FF170 are the two SIO channel
+  endpoints (com1/com2 or pad/memcard split), polled ~4x/frame by
+  `dev_cmd_round_dispatch` — this runs every frame in ALL phases,
+  healthy or wedged. **Red herring — not the blocker.**
+
+### What the wedge actually is (refined)
+
+- Game is ~100% idle: only B0:0x17 CD-worker poll (~96/s), the per-frame
+  `battle_flow_state_machine`→pad-poll path, and VBlank run. All game
+  tasks asleep in kernel WaitEvent (B0:0x0B TestEvent frozen at
+  1,402,471 — cumulative, not spinning).
+- CD went silent after the last read session: Setloc[1,58,70]+ReadN
+  (f1510) → Pause (f1521) → no further commands ever.
+- SM last ran **f1171** on this instance — the IRQ-driven SM path
+  (`resp_pump`→`bc84c`=sm_wrap) died BEFORE the file-read sessions
+  (f1194+) even started; those sessions ran via the synchronous/poll
+  read path (`cd_result_wait_*`), which does not need resp_pump.
+- `bc848`/`bc84c`/`bcba8`/`bcbac` all 0 at wedge — session callbacks
+  cleared by the last teardown.
+- `cd_init_done_cb` (0x80198590, the bc848 session callback) is just a
+  52-byte trampoline → `mc_session` (0x80195D64); `cd_read_step_cb`
+  (0x801985C4) drives per-sector session state and re-installs/clears
+  the callback cells.
+
+### The missing event
+
+The game waits (WaitEvent) for the completion signal of the last
+file-load session. That signal is produced by the read-session
+done-path — either a final `cd_read_step_cb` step gated on the last
+sector's data-ready, or the session-teardown DeliverEvent. Both depend
+on the CD IRQ→callback chain (`resp_pump`→`bc84c`) that went silent at
+~f1148-1171. If the last sector's data-ready/completion IRQ found
+`bc84c` already cleared (or resp_pump not re-armed for the session),
+the done-path never runs → WaitEvent forever → deterministic wedge.
+
+### Open (next session)
+
+- Whether the last ReadN (f1510, seek [1,58,70]) delivered its full
+  sector count before Pause (f1521) — compare `s_read_sectors`/
+  delivered-sector count vs the game's expected count.
+- Whether `resp_pump` is clean-ported (fntrace-invisible) and actually
+  ran during f1194-1521 sessions — arm `call_focus`/`pc_probe` on its
+  entry PC rather than fntrace.
+- The session done-path: which function DeliverEvents on read
+  completion, and which cell/flag gates it (fntrace can't see clean-C
+  calls — need wtrace on the event-flag cell or bios_svc DeliverEvent
+  args filtered by svc=0x07).
