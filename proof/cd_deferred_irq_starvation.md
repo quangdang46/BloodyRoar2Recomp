@@ -226,6 +226,32 @@ codec-thread IRQ starvation.** Open sub-question (agent `311baba4`): the exact
 whether the awaited result needs a command the dormant SM never issues, or a
 response whose flag-write was skipped on a NULL callback.
 
+## Live driver audit (port 9850, ~frame 34k, wedge steady-state)
+
+fntrace armed on all SM drivers + loaders for ~256 entries: **only
+`cd_intc_dispatch`(`0x8019A8EC`) fires — once/frame** (the deferred-coroutine
+idle poll). **Zero hits** on `cd_mc_state_machine`(`0x80199440`),
+`cd_mc_sm_wrap`(`0x80198FE4`), DMA dispatch(`0x8019AF7C`), and
+`scene_entry`(`0x80159028`). `cd_result_wait_a`(`0x801968CC`) also 0 hits on
+*this* instance (the codec/load thread is parked, not spinning — instance
+dependent; agent `2bdfd8d5` saw it hot-loop on 9830).
+
+SM state block `0x801FC680`: `fc68c=0` (work flag), `fc6a4=2` (scan idx),
+`fc6a8=0` (finalize idx), `fc6a0=0` (seq), `fc6c0=0x80010000`/`fc6c4=0x20`
+(table base/32 entries), `fc6f8=0` (work-pending).
+
+**Channel table `0x80010000` does NOT hold channel entries** — it contains a
+parsed file directory (offset table `+0x44..` stepping ~`0xC22C`, then
+u16-pair records `+0x90..`). The 32-slot entry table the SM scans has been
+overwritten by file-load payload in the shared scratch arena — consistent
+with the documented arena-sharing (`AGENTS.md` §8). Whether the SM *should*
+still have live entries here (i.e. a finalize was owed before the overwrite)
+is the faithful-vs-divergent discriminator.
+
+EvCB snapshot: slot 8 `class=0xF0000009 spec=0x20 mode=0x2000(MARK)
+status=0x2000(ENABLED)` — the CD-DMA-done event is armed but never PENDING
+because no channel-4 DMA completion has fired since the CD went idle.
+
 ## Open question (next experiment — supersedes the IRQ-presentation hypotheses above)
 
 The CDROM IRQ path is verified working. The live question is the
