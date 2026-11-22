@@ -157,3 +157,24 @@ for the whole 0x0E mode window; `cd_read_setup`/`cd_read_open` park and
 restore around it per file read. If a mode transition away from 0x0E (or
 a reset path) clears bc84c without reinstalling, the SM loses its IRQ
 driver — matching the all-zero wedge state.
+
+## cd_mode_set_0e decoded (0x80198F60, 132B/9 blocks — port candidate)
+
+```
+s0 = a0;
+cd_mode_flag_set(0x0E, &s0_lo_byte, 0);        // jal 0x80195D8C
+if ((s0 & 0x0100) == 0) goto end;             // bit8 = "install SM cbs"
+if ((s0 & 0x0020) == 0) *(0x801FC6F8) = 1;    // bit5 clear -> flag=1
+else               *(0x801FC6F8) = 0;         // bit5 set  -> flag=0
+install finalize cb: a0=0x801990F0 -> jal 0x801961A8
+install sm_wrap cb:  a0=0x80198FE4 -> jal 0x80195D78 (bc84c)
+end: epilogue
+```
+
+- Caller: `tile_stream_pump` path, `cd_mode_set_0e(0x1e0)` (menu.c:2375)
+  → 0x1e0 has bits 0x100+0x20 → installs cbs, `0x801FC6F8 = 0`.
+- `0x801FC6F8` is read by the finalize path (pc 0x80199180, gates a
+  branch) and by the SM (pc ~0x80199A19 area) — a shared "work pending"
+  flag for the channel-entry machinery.
+- Wedge dump: `0x801FC6F0..0x801FC70C` **all zero** — flag clear,
+  consistent with drained state + orphaned pending entries.
