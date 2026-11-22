@@ -192,27 +192,39 @@ So the CD subsystem is healthy-and-idle; the freeze is the **game-state /
 battle spawn path** waiting on the channel-entry `state==2` finalize that the
 dormant SM (`fc68c=0`, `bc84c=0`, `scan=2>finalize=0`) never produces.
 
-## Refined causal model (corrected)
+## Refined causal model (corrected — mechanism A confirmed)
 
-The freeze is the **battle-spawn / channel-entry-finalize path**, not the CD
-IRQ and not an actively-spinning codec thread. Sequence:
+Subagent `2bdfd8d5` (proof/cd_pause_completion_irq.md, commit `1aae6f3`)
+proved **mechanism A**: the final Pause `CDIRQ_COMPLETE` was raised,
+delivered to INTC, and fully serviced — `cd_response_pump`→`cd_response_process`
+read HINTSTS `0xE2` + response byte `0x02` and acked, entry-for-entry
+identical to a healthy Pause completion. **No IRQ edge was dropped.**
 
-1. `scene_entry` loads battle/arena assets; per-read-session `bc84c` cycles
+The freeze is therefore **guest-side result-flag routing**, downstream of a
+healthy CD command path:
+
+1. `scene_entry` loads battle/arena assets; per-read `bc84c` cycles
    `read_step_cb` normally and `cd_mode_set_0e` installs `sm_wrap` once.
-2. A nested call inside `scene_entry` (`0x801264E0` region) runs
-   `mc_session_b(0)`, clearing `bc84c` — `sm_wrap` is **never reinstalled**.
-3. `cd_mc_state_machine` loses its IRQ driver (`bc84c≠sm_wrap`), `fc68c=0`,
-   and the DMA-dispatch driver is idle → SM dormant → `scan=2>finalize=0`
-   orphaned channel entries.
-4. The spawn-commit predicate (`channel entry state==2`, produced only by SM
-   finalize) never becomes true → the battle/game-state SM waits forever at
-   `gs=8 ph=03` (`cls 0x300` announce is terminal; `0x300→0x700` needs the
-   finalized asset). CD idles healthily in the background.
+2. A nested call inside `scene_entry` (`0x801264E0`) runs `mc_session_b(0)`,
+   clearing `bc84c` — `sm_wrap` never reinstalled → SM dormant
+   (`fc68c=0`, `bc848=bc84c=0`, `scan=2>finalize=0`).
+3. Final Pause completes cleanly, but the game **never issues the next
+   Seek/ReadN** — a thread hot-loops in `cd_result_wait_a` polling result
+   flags `0x801BCB25/26` that stay `0`.
+4. Those flags are written by the deferred-IRQ coroutine when it processes a
+   pending CD response; with CD idle and the session callbacks NULL, the
+   awaited result never materializes → `cd_result_wait_a` spins → channel
+   entries never finalize → spawn-commit (`state==2`) never true → the
+   battle/game-state SM waits forever at `gs=8 ph=03`.
 
-**Root cause is the `bc84c`/`sm_wrap` callback lifecycle being cleared by
-`scene_entry`'s nested teardown without re-arm — a guest-side ordering issue
-(or faithful-port defect in `game/cd.c`/`game/game.c` session handling), NOT
-a `cdrom.c` IRQ-presentation bug and NOT a codec-thread stall.**
+**Root cause is the `bc84c`/`sm_wrap` (and `bc848`) session-callback
+lifecycle being cleared inside `scene_entry` without re-arm — a guest-side
+ordering issue in the clean-port session handling (`game/cd.c`/`game/game.c`),
+NOT a `cdrom.c` IRQ-presentation bug, NOT an OpenBIOS event bug, and NOT a
+codec-thread IRQ starvation.** Open sub-question (agent `311baba4`): the exact
+`cd_result_wait_a` exit predicate and the `0x801BCB25/26` writer's gating —
+whether the awaited result needs a command the dormant SM never issues, or a
+response whose flag-write was skipped on a NULL callback.
 
 ## Open question (next experiment — supersedes the IRQ-presentation hypotheses above)
 
