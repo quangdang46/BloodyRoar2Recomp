@@ -66,12 +66,45 @@ game counts is not being produced by the runtime's CD ring/DMA model.
 - NOT a missing controller — both phases are seeded; input is no longer the
   blocker at this state.
 
+## Refinement (this session): the wedge is DAT1=3 inside `battle_init`, an event-wait
+
+Live probes on the wedged instance (port 9045) narrowed the stall precisely:
+
+- **DAT1 (`0x1f800001`) is stable at `0x03`** across repeated samples — the
+  battle bring-up state, NOT the announce substate. (`battle+0xb4/b6=0x300`,
+  `+0x8c=0xffff`, `+0x92=0x0100` all confirmed.)
+- **`post_battle_dispatch` (`0x80154930`, the `+0x92` substate machine that
+  would advance announce→spawn) has `pbd_calls = 0`** — it is only invoked
+  from `battle_flow_state_machine` case `DAT1=='\b'` (state 8), which is never
+  reached. `battle_config_eval` still runs 53814× via `fighter_spawn_setup`,
+  always seeing class `0x300`.
+- DAT1 flow (`battle_flow_state_machine` `0x8016fcc4`): `2`→`battle_state_init`
+  (seeds phases)→`3`→`battle_init` (internal `for(;;)` bring-up loop)→`4`→
+  `menu_res_load_sm`→`5`→`battle_session_arm`→`6/7`→`8`→`post_battle_dispatch`.
+  DAT1=3 calls `battle_init` once `frame_divisor_get()` (`0x1f800019` byte)
+  returns 0 — confirmed 0 — then `battle_init` loops internally on `frame_tick`
+  until `s6==0xff`. `+0x8c=0xffff` is `battle_bringup_a`'s done marker, so the
+  CD `cd_file_load_sm` bring-up completed; the stall is LATER in `battle_init`.
+- **`bioscall_dump`: B0:0x0B (`TestEvent`) = 1,402,471 calls** — the game is
+  spinning on an event flag that never gets set. This is the same
+  deferred-completion wedge *class* as the earlier CD finalize starvation
+  (`cd_finalize_gate.md`): a completion edge the loader counts is not produced.
+- The `decomp_trace` ring (LZSS `heapA_w_menu`/`lzss`/`blk_ret`) filled heapA
+  `0x800B…→0x800E1064` then **froze at seq 213** — a large decompression/load
+  ran to a point and stopped, consistent with a load that never signalled done.
+
+So the announce→spawn stall is really: **`battle_init` (DAT1=3) is parked in a
+`TestEvent` wait for an asset/decompression completion event that the CD
+channel/deferred path never delivers.** `post_battle_dispatch` never runs
+because DAT1 never reaches 8.
+
 ## Next steps (handed to runtime agent)
 
-1. Trace what writes `battle+0xb4/b6` OUT of `0x300` (target `0x500`/`0x700`) —
-   find the spawn-commit / asset-ready predicate.
-2. Correlate with the CD ring: was the fighter-asset file load issued, did its
-   done-event fire, and did `ring_partial`/`bfrd` starvation lose it?
-3. Compare against Beetle oracle for the same spawn window if needed.
-4. Fix must be faithful (runtime CD ring/BFRD model or a clean-port callback),
-   never a direct phase poke.
+1. Identify WHICH event the `TestEvent` (B0:0x0B) spin waits on inside
+   `battle_init`'s DAT1=3 path — the asset/decompression completion flag.
+2. Determine whether that event is produced by the CD channel/deferred path
+   (`cd_file_load_sm`/`cd_mc_state_machine`/DMA-done `DeliverEvent`) and which
+   edge is dropped — compare against `psxrecomp/runtime/src/cdrom.c` ring/BFRD
+   (`bfrd_set=2047` vs `bfrd_clear=13`, `ring_partial=898`, `ring_dropped=1`).
+3. The faithful fix is in the runtime CD model or a clean-port callback —
+   never a direct DAT1/phase poke.
