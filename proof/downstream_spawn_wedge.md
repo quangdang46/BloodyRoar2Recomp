@@ -496,3 +496,35 @@ and zeroed driver cells are *leftover* state, not the active blocker.
 Next step: identify the main task's blocked PC / wait-event (kernel TCB or
 `fntrace` on `scene_entry`/`tile_stream_*`/`cd_file_load_sm` across a fresh
 repro) to find which completion signal never arrives.
+
+## Session update — load machinery confirmed COMPLETE; stall is purely spawn-phase task/script
+
+CDFN counters sampled twice ~3 s apart on wedged port 9850 — **all frozen**
+(no increments):
+
+- `file_load_sm` = 293, `mc_sm` = 474, `tile_stream_pump` = 1002,
+  `blk_io_retry`/`seek_step`/`read_setup`/`read_finish_cb`/`resp_pump` = 0.
+
+`cd_file_load_sm` is **not being called** — no file load is pending/retrying.
+`cd_mc_state_machine` ran 474× during bringup then went idle (its work is
+done). The decompressor (`decomp_trace`) decoded **53 blocks** then its last
+record is a `heapA_w_menu` cursor-advance with no decode — i.e. the decode
+loop **finished** (the tag table `0x801c47c0` count=54 has `-1` offsets at
+blocks 13-32/38 = legitimately-absent sparse slots, skipped by
+`stream_block_decode`'s `param_2[i+1]==-1` early-out).
+
+`battle_frame` `case0`→`battle_bringup_b` (asset bringup) **completed**
+(DAT1 advanced 0→1→2→3; `battle+0x8c` bringup state = `0xFFFF`=-1). Per-frame
+`L_tail` runs `task_pools_tick(1)`+`task_pools_tick(2)` every frame, so the
+task scheduler is live.
+
+**Sharpened wedge:** it is NOT asset starvation — all requested loads +
+decompression finished. `battle_frame` `case3` calls `fighter_spawn_setup`
+each frame, which needs `record+0x10==1 && phase==0x700`. The phase
+`0x300→0x700` advance + `record+0x10` arm are produced by the intro /
+ROUND-FIGHT **script-VM task** (`script_stream_tick` 0x80137824 /
+`task_alloc_wrap_e` cb 0x80137acc, scheduled via `task_node_alloc` into pool
+1/2). That task is either not scheduled, not running, or blocked on a
+predicate — the single remaining unknown. This matches the older "waiting
+for a non-CD completion signal" reframing, now narrowed to the spawn-phase
+script/task specifically.
