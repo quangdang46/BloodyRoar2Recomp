@@ -991,6 +991,9 @@ extern void FUN_8018e310(uint32_t);
 extern int psx_syscall(CPUState *cpu, uint32_t code);
 uint32_t br2_ld32(uint32_t a);
 uint16_t br2_ld16(uint32_t a);
+uint8_t  br2_ld8 (uint32_t a);
+void     br2_st8 (uint32_t a, uint8_t  v);
+void     br2_st16(uint32_t a, uint16_t v);
 
 /* COP2 register field encoding shared with ani.c/gfx.c: reg n -> n*0x800. */
 #define BR2_GTE_REG(n) ((n) * 0x800)
@@ -1848,18 +1851,275 @@ char *s_TIME_ATTACK_80122050;
 char *s_VS_RANKING_80122068;
 char *s_time_out_in_decoding___80120e90;
 
+/* ---- faithful `jal` from clean C ------------------------------------
+ * Args are already live in cpu->gpr[4..7] (caller writes them explicitly);
+ * caller-saved regs are left holding callee leftovers exactly like the
+ * guest, $ra is set to the guest link address so BIOS/kernel services
+ * inside the callee see the same caller token the generated CPS frame
+ * would present, and $v0 comes back in gpr[2]. Mirrors the nested-dispatch
+ * contract of call_guest/call_guest4 (clean targets via clean_try_dispatch,
+ * everything else via psx_dispatch_call) minus the arg-reg restore and the
+ * jalr-style $t0 target write — a guest `jal` does neither. */
+extern int clean_try_dispatch(CPUState *cpu, uint32_t addr);
+extern void psx_dispatch_call(CPUState *cpu, uint32_t target_addr,
+                              uint32_t return_addr);
+extern int br2_bail_pending(void);
+static uint32_t bind_jal(uint32_t fn, uint32_t link)
+{
+    CPUState *cpu = clean_cpu_state();
+    uint32_t ra, pc, sp;
+    if (!cpu || fn == 0) return 0;
+    if (br2_bail_pending()) return cpu->gpr[2];
+    ra = cpu->gpr[31]; pc = cpu->pc; sp = cpu->gpr[29];
+    cpu->gpr[31] = link;
+    if (clean_try_dispatch(cpu, fn)) {
+        uint32_t r = cpu->gpr[2];
+        cpu->gpr[31] = ra; cpu->pc = pc;
+        return r;
+    }
+    psx_dispatch_call(cpu, fn, link);
+    cpu->gpr[29] = sp;
+    {
+        uint32_t r = cpu->gpr[2];
+        cpu->gpr[31] = ra; cpu->pc = pc;
+        return r;
+    }
+}
+
 /* menu.c callees — weak fallbacks that delegate to the generated
  * guest bodies. Args 5+ travel on the guest stack (o32), staged via
  * br2_guest_frame; pointer args arrive as host pointers and are
  * converted with guest_of. */
 int FUN_801468ec(uint32_t a0,uint32_t a1,uint32_t a2,const void *a3,int32_t a4)
 {
-    uint32_t fr = br2_guest_frame(0x20);
-    int r;
-    br2_st32(fr + 0x10, (uint32_t)a4);
-    r = (int)br2_call_generated(0x801468ecu,a0,a1,a2,guest_of(a3));
+    /* guest 0x801468EC — fighter emit state machine. Loads the 8-word
+     * matrix at a2 into GTE CT0..CT7, normalizes the mode index a4
+     * through the 6-entry jr table at 0x801202CC ({0,4,2,6,1,7}), then
+     * runs three bit-selected emit sections (bit0/bit1/bit2 of the
+     * normalized mode) that walk 4-byte record lists hanging off the
+     * FighterCtrl at a3 and jal the 8-byte jr-$ra padding stubs
+     * 0x80136F70/0x80136F80 (interrupt-check waypoints; the args are
+     * dead but reproduced faithfully). Faithful notes:
+     *  - guest frame is exactly 0x60; incoming arg5 (a4) is already
+     *    marshalled at old_sp+0x10 by the dispatch wrapper; outgoing
+     *    arg5/arg6 land at fr+0x10/0x14 and the 3-word vector at
+     *    fr+0x18 is passed by guest pointer — all via br2_guest_frame.
+     *  - the prologue spills s0-s7/fp/ra + the a0/a1 home slots into
+     *    the frame so the stack image matches generated.
+     *  - the ctc2 sequence mirrors generated: direct gte_ctrl[] stores
+     *    for CT0-3 and CT5-7, gte_write_ctrl() for CT4 (16-bit reg). */
+    CPUState *c = clean_cpu_state();
+    uint32_t fr, s4, P, L2, T, fp, s0;
+    int32_t s6, s2, s3, s5v, s7, ret = 0;
+    if (!c) {
+        uint32_t fr0 = br2_guest_frame(0x20);
+        int r;
+        br2_st32(fr0 + 0x10, (uint32_t)a4);
+        r = (int)br2_call_generated(0x801468ecu,a0,a1,a2,guest_of(a3));
+        br2_guest_frame_free();
+        return r;
+    }
+    s4 = guest_of(a3);
+    s6 = a4;
+    c->gpr[4] = a0; c->gpr[5] = a1; c->gpr[6] = a2; c->gpr[7] = s4;
+    fr = br2_guest_frame(0x60);
+    br2_st32(fr + 0x38, c->gpr[16]);
+    br2_st32(fr + 0x3c, c->gpr[17]);
+    br2_st32(fr + 0x40, c->gpr[18]);
+    br2_st32(fr + 0x44, c->gpr[19]);
+    br2_st32(fr + 0x48, c->gpr[20]);
+    br2_st32(fr + 0x4c, c->gpr[21]);
+    br2_st32(fr + 0x50, c->gpr[22]);
+    br2_st32(fr + 0x54, c->gpr[23]);
+    br2_st32(fr + 0x58, c->gpr[30]);
+    br2_st32(fr + 0x5c, c->gpr[31]);
+    br2_st32(fr + 0x60, a0);
+    br2_st32(fr + 0x64, a1);
+    P  = br2_ld32(s4 + 0x2c); br2_st32(fr + 0x28, P);
+    L2 = br2_ld32(s4 + 0x10); br2_st32(fr + 0x2c, L2);
+    T  = br2_ld32(s4 + 0x14); br2_st32(fr + 0x30, T);
+    fp = br2_ld32(s4 + 0x20);
+    s0 = br2_ld32(s4 + 0x0c);
+
+    /* GTE CT0..CT7 <- 8 matrix words at a2 (generated order preserved) */
+    {
+        uint32_t m0 = br2_ld32(a2 + 0x00), m1 = br2_ld32(a2 + 0x04);
+        uint32_t m2 = br2_ld32(a2 + 0x08), m3 = br2_ld32(a2 + 0x0c);
+        uint32_t m4 = br2_ld32(a2 + 0x10), m5 = br2_ld32(a2 + 0x14);
+        uint32_t m6 = br2_ld32(a2 + 0x18), m7 = br2_ld32(a2 + 0x1c);
+        c->gte_ctrl[0] = m0; c->gte_ctrl[1] = m1;
+        c->gte_ctrl[2] = m2; c->gte_ctrl[3] = m3;
+        gte_write_ctrl(c, 4, m4);
+        c->gte_ctrl[5] = m5; c->gte_ctrl[6] = m6; c->gte_ctrl[7] = m7;
+    }
+    /* jr-table mode normalize (table at 0x801202CC): input 0..5 ->
+     * {0,4,2,6,1,7}; inputs >=6 keep the raw index. */
+    if ((uint32_t)s6 < 6u) {
+        static const int8_t mode_map[6] = {0, 4, 2, 6, 1, 7};
+        s6 = mode_map[s6];
+    }
+
+    /* 0x801469E0: s6 != 0 -> waypoint call, arg5 = 26 */
+    if (s6 != 0) {
+        c->gpr[4] = a0; c->gpr[5] = a1;
+        c->gpr[6] = fp + 0x34; c->gpr[7] = 0;
+        br2_st32(fr + 0x10, 26);
+        (void)bind_jal(0x80136f70u, 0x80146a00u);
+    }
+
+    /* ---- bit0 section (0x80146A00..0x80146AE4) ---- */
+    if (s6 & 1) {
+        uint32_t f60 = br2_ld32(s4 + 0x60);
+        if (!(f60 & 0x200000u)) {
+            uint32_t f58 = br2_ld32(s4 + 0x58);
+            int32_t single;
+            /* flag pair on st_58, else on partner ctrl P+0x58:
+             * "hit" = (f & 0x30000) && !(f & 0x8000000) */
+            if ((f58 & 0x30000u) != 0 && (f58 & 0x08000000u) == 0) {
+                single = 1;
+            } else {
+                uint32_t fP = br2_ld32(P + 0x58);
+                single = (fP & 0x30000u) != 0 && (fP & 0x08000000u) == 0;
+            }
+            if (single) { s2 = 0; s3 = 1; }
+            else        { s2 = 1; s3 = (int8_t)br2_ld8(s4 + 9); }
+            while (s2 < s3) {
+                uint32_t e = s0 + (uint32_t)s2 * 4u;
+                int32_t idx = (int8_t)br2_ld8(e + 1);
+                int32_t val = (int16_t)br2_ld16(e + 2);
+                c->gpr[4] = a0; c->gpr[5] = a1;
+                c->gpr[6] = fp + 0x34 + (uint32_t)((int32_t)idx * 0x50);
+                c->gpr[7] = 2;
+                br2_st32(fr + 0x10, (uint32_t)(val << 1));
+                (void)bind_jal(0x80136f70u, 0x80146ad8u);
+                s2++;
+            }
+        }
+    }
+
+    /* ---- bit1 section (0x80146AE4..0x80146C24) ---- */
+    if (((uint32_t)s6 >> 1) & 1u) {
+        int8_t b27 = (int8_t)br2_ld8(s4 + 0x27);
+        if (b27 >= 0) {
+            uint32_t f58 = br2_ld32(s4 + 0x58);
+            s7 = 0;
+            if (f58 & 0x40000u) {
+                s7 = 1;
+            } else if (f58 & 0x30000u) {
+                if (!(f58 & 0x08000000u)) {
+                    uint32_t f5c = br2_ld32(s4 + 0x5c);
+                    if ((f5c & 0x80000080u) != 0x80u) s7 = 1;
+                }
+            }
+            {
+                uint32_t p64 = br2_ld32(P + 0x64);
+                s5v = (int32_t)(p64 & 0x1000u);
+                s3 = (int8_t)br2_ld8(s4 + 0x0a);
+                if (s7 == 0 || s5v != 0) {
+                    if (s3 > 0) {
+                        uint32_t cur = L2;
+                        int32_t n = 0;
+                        do {
+                            int32_t idx = (int8_t)br2_ld8(cur + 1);
+                            int32_t val = (int16_t)br2_ld16(cur + 2);
+                            cur += 4; n++;
+                            c->gpr[4] = a0; c->gpr[5] = a1;
+                            c->gpr[6] = fp + 0x34 + (uint32_t)((int32_t)idx * 0x50);
+                            c->gpr[7] = 1;
+                            br2_st32(fr + 0x10, (uint32_t)(val << 1));
+                            (void)bind_jal(0x80136f70u, 0x80146bb8u);
+                        } while (n < s3);
+                    }
+                }
+            }
+        }
+        /* BC8: bit1 still set -> st_5c & 0x2000 gates the stub80 call */
+        if (br2_ld32(s4 + 0x5c) & 0x2000u) {
+            int32_t x = (((int32_t)(int16_t)br2_ld16(s4 + 0x4e) - 0x400) << 20) >> 20;
+            int32_t y = (((int32_t)(int16_t)br2_ld16(s4 + 0xc4) - 0x400) << 20) >> 20;
+            c->gpr[4] = a0; c->gpr[5] = a1;
+            c->gpr[6] = fp + 0x34; c->gpr[7] = (uint32_t)y;
+            br2_st32(fr + 0x10, 0x400);
+            br2_st32(fr + 0x14, (uint32_t)x);
+            (void)bind_jal(0x80136f80u, 0x80146c24u);
+            ret = x;
+        } else {
+            ret = 0;
+        }
+    }
+
+    /* ---- bit2 section (0x80146C24..0x80146E00) ---- */
+    if (((uint32_t)s6 >> 2) & 1u) {
+        int8_t b26 = (int8_t)br2_ld8(s4 + 0x26);
+        if (b26 >= 0) {
+            uint32_t f58 = br2_ld32(s4 + 0x58);
+            s7 = 0;
+            if (f58 & 0x40000u) {
+                s7 = 1;
+            } else if (f58 & 0x30000u) {
+                if (!(f58 & 0x08000000u)) {
+                    uint32_t f5c = br2_ld32(s4 + 0x5c);
+                    if ((f5c & 0x80000080u) != 0x80u) s7 = 1;
+                }
+            }
+            /* guest s2/s3 are 0 on every path reaching the scan loop */
+            {
+                uint32_t p64 = br2_ld32(P + 0x64);
+                s5v = (int32_t)(p64 & 0x1000u);
+                uint32_t cur = T;
+                int32_t n;
+                for (n = 0; n < 8; n++, cur += 4) {
+                    int32_t cmd = (int8_t)br2_ld8(cur);
+                    int32_t idx, val;
+                    if (cmd == -1) break;                    /* -> D94 */
+                    if (cmd == -2) continue;                 /* -> D80 */
+                    if ((s7 != 0) != (s5v != 0)) continue;   /* flag gate */
+                    idx = (int8_t)br2_ld8(cur + 1);
+                    val = (int16_t)br2_ld16(cur + 2);
+                    c->gpr[4] = a0; c->gpr[5] = a1;
+                    c->gpr[6] = fp + 0x34 + (uint32_t)((int32_t)idx * 0x50);
+                    c->gpr[7] = 3;
+                    br2_st32(fr + 0x10, (uint32_t)(val << 1));
+                    (void)bind_jal(0x80136f70u, 0x80146d20u);
+                    if (!(br2_ld32(s4 + 0x6c) & 0x800u)) {
+                        /* second waypoint: 3-word vector at fr+0x18 */
+                        uint32_t rec = br2_ld32(s4 + 0x40) +
+                                       (uint32_t)((int32_t)cmd * 0x1c);
+                        int32_t v2 = (int16_t)br2_ld16(cur + 2);
+                        br2_st32(fr + 0x18, (uint32_t)(int32_t)(int16_t)br2_ld16(rec + 0x0e));
+                        br2_st32(fr + 0x1c, (uint32_t)(int32_t)(int16_t)br2_ld16(rec + 0x10));
+                        br2_st32(fr + 0x20, (uint32_t)(int32_t)(int16_t)br2_ld16(rec + 0x12));
+                        c->gpr[4] = a0; c->gpr[5] = a1;
+                        c->gpr[6] = fr + 0x18; c->gpr[7] = 5;
+                        br2_st32(fr + 0x10, (uint32_t)(v2 << 1));
+                        (void)bind_jal(0x80136f70u, 0x80146d80u);
+                    }
+                }
+            }
+        }
+        /* D94: bit2 retest (always set on this path) + st_58 sign gate */
+        {
+            int32_t f58s = (int32_t)br2_ld32(s4 + 0x58);
+            if (f58s < 0) {
+                int32_t x = (((int32_t)(int16_t)br2_ld16(s4 + 0x4e)
+                            + (int32_t)(int16_t)br2_ld16(s4 + 0xc6) - 0x400) << 20) >> 20;
+                int32_t z = (((int32_t)(int16_t)br2_ld16(s4 + 0x4e) - 0x400) << 20) >> 20;
+                c->gpr[4] = a0; c->gpr[5] = a1;
+                c->gpr[6] = fp + 0x34; c->gpr[7] = (uint32_t)x;
+                br2_st32(fr + 0x10, (uint32_t)((uint32_t)(uint8_t)br2_ld8(s4 + 0xdb) << 4));
+                br2_st32(fr + 0x14, (uint32_t)z);
+                (void)bind_jal(0x80136f80u, 0x80146e00u);
+                ret = z;
+            } else {
+                ret = f58s;
+            }
+        }
+    }
+
+    /* 0x80146E00: trailing waypoint (jr-$ra stub), then epilogue */
+    (void)bind_jal(0x80136f78u, 0x80146e08u);
     br2_guest_frame_free();
-    return r;
+    return ret;
 }
 /* FUN_8018b100 — guest 0x8018B100 (264B, sibling of battle.c's
  * prim_list_persp_step). Dual-buffer primitive-list transform: walks
@@ -2453,7 +2713,295 @@ __attribute__((weak))
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int ret_zero_e(int32_t a0) { return (int)br2_call_generated(0x80161630u,(uint32_t)a0,0,0,0); }
+int ret_zero_e(int32_t a0)
+{
+    /* guest 0x80161630 — debug/service state machine. Frame is 0xa0;
+     * state lives at sp+0x58 (0=init, 1=announce loop, 0xf0=table
+     * reset, 0xf1=exit request, 0xff=done), flag at sp+0x50 is the
+     * return value. All frame traffic goes through br2_guest_frame so
+     * sprintf/announce callees see the real guest stack; guest
+     * registers are host vars. bind_jal supplies the per-site link
+     * address as $ra (the generated CPS `jal link` contract). */
+    CPUState *c = clean_cpu_state();
+    uint32_t fr;
+    int ret;
+    if (!c) {
+        return (int)br2_call_generated(0x80161630u,(uint32_t)a0,0,0,0);
+    }
+    c->gpr[4] = (uint32_t)a0;
+    fr = br2_guest_frame(0xa0);
+    /* prologue spills + a0 home slot (observable stack image) */
+    br2_st32(fr + 0x78, c->gpr[16]);
+    br2_st32(fr + 0x7c, c->gpr[17]);
+    br2_st32(fr + 0x80, c->gpr[18]);
+    br2_st32(fr + 0x84, c->gpr[19]);
+    br2_st32(fr + 0x88, c->gpr[20]);
+    br2_st32(fr + 0x8c, c->gpr[21]);
+    br2_st32(fr + 0x90, c->gpr[22]);
+    br2_st32(fr + 0x94, c->gpr[23]);
+    br2_st32(fr + 0x98, c->gpr[30]);
+    br2_st32(fr + 0x9c, c->gpr[31]);
+    br2_st32(fr + 0xa0, (uint32_t)a0);
+    br2_st32(fr + 0x50, 0);
+    br2_st32(fr + 0x58, 0);
+    br2_st16(0x1f80008c, 0);
+    for (;;) {
+        uint32_t t0 = br2_ld32(fr + 0x58);
+        if (t0 == 1) goto L_announce;
+        if ((int32_t)t0 < 2) {
+            if (t0 == 0) goto L_init;
+            goto L_tick;                    /* negative state */
+        }
+        if (t0 == 0xf0u) goto L_reset;
+        if (t0 == 0xf1u) { br2_st32(fr + 0x58, 0xffu); goto L_check; }
+        goto L_tick;                        /* unknown state */
+
+    L_init:
+        /* 0x801616B4: a0==0 -> frame_divisor gate + intro sequence */
+        if (br2_ld32(fr + 0xa0) == 0) {
+            bind_jal(0x8012aaa8u, 0x801616ccu);      /* frame_divisor_get */
+            if ((int32_t)c->gpr[2] == 0) {
+                c->gpr[4] = 2; c->gpr[5] = 0; c->gpr[6] = 0;
+                bind_jal(0x8012cbc0u, 0x801616e0u);  /* print_mode_dispatch_b */
+                c->gpr[4] = 0;
+                bind_jal(0x8012c0b4u, 0x801616e8u);  /* intro_movie_state */
+                if ((int32_t)c->gpr[2] != 0) {
+                    c->gpr[4] = 0x203; c->gpr[5] = 0; c->gpr[6] = 0;
+                    bind_jal(0x80156ef4u, 0x801616fcu); /* deferred_cmd_post */
+                }
+            }
+        }
+        /* 0x80161700: clear cells, build 2x8 slot-index table at fr+0x30 */
+        br2_st16(fr + 0x1a, 0);
+        br2_st16(fr + 0x18, 0);
+        {
+            int32_t s5, s1, s2;
+            for (s5 = 0; s5 < 2; s5++) {
+                uint32_t a0v = (uint32_t)s5 << 4;
+                for (s1 = 0; s1 < 8; s1++, a0v += 2) {
+                    uint32_t fid = br2_ld16(0x801c11e0u + a0v + 0x3f0u);
+                    uint32_t tp = 0x801b41d4u;
+                    s2 = 0;
+                    for (;;) {
+                        if (fid == br2_ld16(tp)) break;
+                        s2++;
+                        if (s2 >= 9) break;
+                        tp += 2;
+                    }
+                    br2_st16(fr + 0x30 + a0v, (uint16_t)s2);
+                }
+            }
+        }
+        /* state = old+1 (=1); globals 0x801F8508=0, 0x801F8518=0x30 */
+        br2_st32(fr + 0x58, br2_ld32(fr + 0x58) + 1u);
+        br2_st32(0x801f8508u, 0);
+        br2_st32(0x801f8518u, 0x30);
+        /* fall through into the announce body */
+
+    L_announce:
+        /* 0x80161794: announce + banner + optional deferred post */
+        c->gpr[4] = br2_ld32(0x1f800008); c->gpr[5] = br2_ld32(0x1f80000c);
+        c->gpr[6] = 0x8012136c; c->gpr[7] = 0x30;
+        br2_st32(fr + 0x10, 0x30); br2_st32(fr + 0x14, 0);
+        bind_jal(0x8012e58cu, 0x801617b8u);             /* announce_param_block_init */
+        c->gpr[4] = 5; c->gpr[5] = 0; c->gpr[6] = 4; c->gpr[7] = 7;
+        bind_jal(0x8012bf0cu, 0x801617ccu);             /* banner_stripe_scroll */
+        if (br2_ld16(0x1f80007c) & 0x800) {
+            c->gpr[4] = 0x400; c->gpr[5] = 0xc; c->gpr[6] = 0;
+            bind_jal(0x80156ef4u, 0x801617ecu);         /* deferred_cmd_post */
+            br2_st32(fr + 0x58, 0xf0u);
+            br2_st32(fr + 0x50, 1);
+        }
+        /* 0x801617FC: sprintf + announce pass, s5 = 0..1 */
+        {
+            uint32_t c64 = 0x300000u, c68 = 0x600000u;
+            uint32_t c6c = 0x1f800000u, c70 = 0x20u;
+            int32_t fpv = 0;
+            int32_t s5;
+            br2_st32(fr + 0x5c, fr + 0x20);             /* buf ptr cell */
+            for (s5 = 0; s5 < 2; s5++) {
+                int32_t s3v = 0x60;
+                /* sprintf(buf, 0x80121D1C, s5+1) */
+                c->gpr[4] = fr + 0x20;
+                c->gpr[5] = 0x80121d1c;
+                c->gpr[6] = (uint32_t)(s5 + 1);
+                bind_jal(0x8018ef60u, 0x8016183cu);     /* sprintf_core_guest */
+                /* announce(buf-string, ...) arg5=0x60 arg6=0 */
+                c->gpr[4] = br2_ld32(0x1f800008);
+                c->gpr[5] = br2_ld32(0x1f80000c);
+                c->gpr[6] = fr + 0x20;
+                c->gpr[7] = (uint32_t)((int32_t)c64 >> 16);
+                br2_st32(fr + 0x10, 0x60); br2_st32(fr + 0x14, 0);
+                bind_jal(0x8012e58cu, 0x80161860u);
+                /* pad dispatch: (lhu(c6c+0x6c) & 0xc) == 0xc ? */
+                {
+                    uint32_t pad = br2_ld16(c6c + 0x6c);
+                    int32_t s1 = 0, s2;
+                    if ((pad & 0xc) == 0xc) {
+                        /* 0x8016187C: map 8 entries 0x801B3F78.. via table */
+                        uint32_t a0p = 0x801b3f78u, a3p = 0x801b3f88u;
+                        uint32_t a2o = 0;
+                        for (;;) {
+                            uint32_t fid = br2_ld16(a0p);
+                            uint32_t tp = 0x801b41d4u;
+                            int32_t k = 0;
+                            for (;;) {
+                                if (fid == br2_ld16(tp)) break;
+                                k++;
+                                if (k >= 9) break;
+                                tp += 2;
+                            }
+                            br2_st16(fr + 0x30 + fpv + a2o, (uint16_t)k);
+                            a0p += 2;
+                            if (a0p >= a3p) break;
+                            a2o += 2;
+                        }
+                        s2 = -1;
+                    } else {
+                        /* 0x80161918: first set bit of pad & 8-entry mask tbl */
+                        uint32_t a0p = 0x801b419cu;
+                        for (; s1 < 8; s1++, a0p += 2) {
+                            if (br2_ld16(a0p) & pad) {
+                                uint32_t cell = fr + 0x30 + fpv + (uint32_t)(s1 * 2);
+                                int32_t idx = (int16_t)br2_ld16(cell);
+                                c->gpr[4] = (uint32_t)idx;
+                                c->gpr[5] = 9;
+                                c->gpr[6] = (uint32_t)s5;
+                                c->gpr[7] = 1;
+                                bind_jal(0x80129c10u, 0x80161900u); /* counter_step_pad_c */
+                                br2_st16(cell, (uint16_t)c->gpr[2]);
+                                br2_st32(0x801c11f0u, 1);
+                                break;
+                            }
+                        }
+                        s2 = s1;
+                    }
+                    /* 0x8016194C: per-column announce loop s1 = 0..7 */
+                    {
+                        int32_t s3w = s3v + 0x20;          /* guest s3 += 0x20 */
+                        uint32_t s4v = (uint32_t)s3w << 16;/* sll s4,s3,16 */
+                        uint32_t s6p = 0x801b417cu;
+                        uint32_t t54 = c70 + 0x50;
+                        uint32_t t60 = c68;
+                        int32_t s1i;
+                        for (s1i = 0; s1i < 8; s1i++) {
+                            int32_t s3a;
+                            uint32_t s0v;
+                            if (s1i == s2) {
+                                /* 0x8016197C: special announce (arg6=3) */
+                                c->gpr[4] = br2_ld32(0x1f800008);
+                                c->gpr[5] = br2_ld32(0x1f80000c);
+                                c->gpr[6] = 0x80121d28;
+                                c->gpr[7] = (uint32_t)((int32_t)t60 >> 16);
+                                br2_st32(fr + 0x10, (uint32_t)((int32_t)s4v >> 16));
+                                br2_st32(fr + 0x14, 3);
+                                bind_jal(0x8012e58cu, 0x801619a8u);
+                                s3a = 3;
+                            } else {
+                                s3a = 0;
+                            }
+                            /* 0x801619A8: announce(lw(s6p++), a3=s16(c64>>16),
+                             * arg5=s4>>16, arg6=8) */
+                            c->gpr[4] = br2_ld32(0x1f800008);
+                            c->gpr[5] = br2_ld32(0x1f80000c);
+                            c->gpr[6] = br2_ld32(s6p); s6p += 4;
+                            c->gpr[7] = (uint32_t)((int32_t)c64 >> 16);
+                            s0v = (uint32_t)((int32_t)s4v >> 16);
+                            br2_st32(fr + 0x10, s0v);
+                            br2_st32(fr + 0x14, 8);
+                            bind_jal(0x8012e58cu, 0x801619d4u);
+                            /* 0x801619D4: announce(string tbl[idx], a3=s16(t54),
+                             * arg5=s4>>16, arg6=s3a) */
+                            {
+                                uint32_t cell = fr + 0x30 + fpv + (uint32_t)(s1i * 2);
+                                int32_t idx = (int16_t)br2_ld16(cell);
+                                c->gpr[4] = br2_ld32(0x1f800008);
+                                c->gpr[5] = br2_ld32(0x1f80000c);
+                                c->gpr[6] = br2_ld32(0x801b41acu + (uint32_t)idx * 4u);
+                                c->gpr[7] = (uint32_t)(int32_t)(int16_t)t54;
+                                br2_st32(fr + 0x10, s0v);
+                                br2_st32(fr + 0x14, (uint32_t)s3a);
+                                bind_jal(0x8012e58cu, 0x80161a1cu);
+                            }
+                            s4v += 0x180000u;
+                        }
+                    }
+                }
+                /* 0x80161A30: per-s5 cell updates (lui 0x100 = 0x01000000) */
+                c64 += 0x01000000u; c68 += 0x01000000u;
+                c6c += 2;           c70 += 0x01000000u;
+                fpv += 0x10;
+            }
+        }
+        /* 0x80161A74: hud_text_d + announce tail + spr submit */
+        {
+            int32_t lhu22 = (int32_t)br2_ld16(0x1f800022);
+            int32_t s16a = (int32_t)(int16_t)(lhu22 - 0x38);
+            int32_t s16b = (int32_t)(int16_t)(lhu22 - 0x3c);
+            uint32_t a0p = br2_ld32(0x1f800008) + 4;
+            uint32_t a1p = br2_ld32(0x1f80000c);
+            c->gpr[4] = a0p; c->gpr[5] = a1p;
+            c->gpr[6] = 0x80121d38; c->gpr[7] = 0x98;
+            br2_st32(fr + 0x10, (uint32_t)s16a); br2_st32(fr + 0x14, 0);
+            bind_jal(0x8012e7ccu, 0x80161aa8u);             /* hud_text_d */
+            c->gpr[4] = a0p; c->gpr[5] = a1p;
+            c->gpr[6] = 0x80121d48; c->gpr[7] = 0xdc;
+            br2_st32(fr + 0x10, (uint32_t)s16b); br2_st32(fr + 0x14, 8);
+            bind_jal(0x8012e58cu, 0x80161ae0u);
+            c->gpr[4] = a0p; c->gpr[5] = a1p;
+            c->gpr[6] = 0x80121318; c->gpr[7] = 0x120;
+            br2_st32(fr + 0x10, (uint32_t)s16a); br2_st32(fr + 0x14, 0);
+            bind_jal(0x8012e7ccu, 0x80161b14u);
+            c->gpr[4] = a0p;
+            c->gpr[5] = ((uint32_t)lhu22 << 16) + 0xffc40148u;
+            c->gpr[6] = 0x0f17001eu; c->gpr[7] = 0x7a16d8e0u;
+            bind_jal(0x8018c824u, 0x80161b44u);             /* spr_slot_pkt_submit */
+        }
+        /* 0x80161B44: saved-a0 dispatch -> hud_gauge_render or tick */
+        if (br2_ld32(fr + 0xa0) == 0) {
+            c->gpr[4] = 0x1f800000; c->gpr[5] = br2_ld32(0x1f800008);
+            c->gpr[6] = 0x24;
+            bind_jal(0x8012c374u, 0x80161b70u);             /* hud_gauge_render */
+        } else if (br2_ld32(fr + 0xa0) == 1) {
+            c->gpr[4] = 0x1f800000; c->gpr[5] = br2_ld32(0x1f800008);
+            c->gpr[6] = 0x34;
+            bind_jal(0x8012c374u, 0x80161b84u);
+        }
+        goto L_tick;
+
+    L_reset:
+        /* 0x80161B90: state==0xf0 -> rewrite fighter-id table, state=0xff */
+        {
+            uint32_t v0 = br2_ld32(0x1f8000c0);
+            br2_st8(v0 + 0x17, 0);
+            br2_st8(v0 + 0x18, 0);
+            {
+                int32_t s5, s1;
+                for (s5 = 0; s5 < 2; s5++) {
+                    uint32_t a0v = (uint32_t)s5 << 4;
+                    for (s1 = 0; s1 < 8; s1++, a0v += 2) {
+                        int32_t idx = (int16_t)br2_ld16(fr + 0x30 + a0v);
+                        br2_st16(0x801c11e0u + a0v + 0x3f0u,
+                                 br2_ld16(0x801b41d4u + (uint32_t)idx * 2u));
+                    }
+                }
+            }
+            br2_st32(fr + 0x58, 0xffu);
+            goto L_check;
+        }
+
+    L_tick:
+        /* 0x80161C08: frame_tick(0x1f800000) then re-check state */
+        c->gpr[4] = 0x1f800000;
+        bind_jal(0x8012aeecu, 0x80161c10u);                 /* frame_tick */
+    L_check:
+        if (br2_ld32(fr + 0x58) != 0xffu) continue;
+        break;
+    }
+    ret = (int)br2_ld32(fr + 0x50);
+    br2_guest_frame_free();
+    return ret;
+}
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
