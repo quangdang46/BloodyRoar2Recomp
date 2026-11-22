@@ -309,12 +309,46 @@ set. With `bc84c=0` the SM is in a **stable dormant state**: gate open,
 no work flag, no IRQ driver, orphaned `scan=2>finalize=0` entries it can
 never reach.
 
-**Caveat / open sub-question:** `cd_mc_state_machine` is the *tile/FMV
-channel-stream* walker (entries at `0x80010000`, driven by `cd_fileop_*`),
-which may be ORTHOGONAL to the battle_init resource load that actually
-wedges (`cd_file_load_sm`→`stream_block_decode`→heapA LZSS). The orphaned
-SM entries might be leftover tile-stream state, not the awaited ch4 submit.
-The decisive discriminator — whether the awaited ch4 transfer is submitted
-by the channel SM, the file-load path, or the sound streamer — is exactly
-what the runtime agent's `fntrace` on `0x80159864`/`0x80199440`/`0x80199BB8`
-captures on a fresh repro.
+**Caveat resolved — the SM IS the wedge path (scene_entry tile-stream).**
+
+The full causal chain is now mapped end-to-end:
+
+- `scene_entry` (`game.c:1580`) loads the **battle stage** via the
+  tile/FMV stream: `tile_stream_job_init(0x801f4700,…)`,
+  `tile_stream_open(…, tile_stream_pump=0x80159864, …)`, then a
+  synchronous `while (blk_io_retry(0x801f4700,piVar5)==-1)
+  { cd_stream_mode_init(…); }` retry loop (`game.c:1641`, second loop
+  `game.c:1673`).
+- `blk_io_retry` (`save.c:2253`) → `mc_date_serial_cmp` →
+  `cd_channel_poll` waits for a **channel-table entry `state==2`**
+  (data-ready). Those entries are the same `0x20`-stride table at
+  `0x80010000` that `cd_mc_state_machine` walks; only the SM marks them
+  `state==2` after finalizing + submitting their DMA.
+- `cd_stream_mode_init` (`menu.c:2375`) calls
+  `cd_mode_set_0e(0x1e0)`; `0x1e0 & 0x100 != 0` so the generated
+  `cd_mode_set_0e` body runs the `961a8`/`95d78` pair that installs
+  **`cd_mc_sm_wrap` (`0x80198FE4`) into `bc84c`** — the IRQ driver.
+- At the wedge `bc84c=0`, `bc848=0`, `fc68c=0`, `0x801f4738=1` (pump
+  gate OPEN), `scan=2 > finalize=0` orphaned. No ch4 DMA pending, no
+  new CD commands since **frame 1583** (last cmd `Pause 0x09`), CD
+  `i_stat=0`, only `B0:0x17` (IRQ epilogue) ~50/s — every thread idle.
+
+**Revised wedge model:** `scene_entry`'s `blk_io_retry` is stuck because
+the channel-table entries never reach `state==2`. The SM that would
+finalize+submit them is dormant: the IRQ driver `bc84c` is `0` (the
+`sm_wrap` install from `cd_mode_set_0e(0x1e0)` was cleared or never
+re-armed for this stream), and the per-frame `fc68c` work-flag is `0`
+(only set by SM entry itself → circular). `cd_stream_mode_init`'s
+`do{…}while(cd_mode_set_0e(0x1e0)==0)` retry is the self-heal path — if
+it were running it would reinstall `sm_wrap`; its absence (no CD
+commands since f1583) means the stall is **upstream of the next
+`blk_io_retry`/`cd_stream_mode_init` iteration**, i.e. the loop exited
+the retry and a higher stage is parked awaiting the doorbell/phase
+signal the SM was supposed to produce.
+
+Open discriminator for the live trace: does `blk_io_retry` still return
+`-1` each frame (SM never driven → `cd_channel_poll` timeout), or did it
+return a handle and the wedge moved to a later battle-init stage? The
+`sp_ring` shows only the CD-idle loop (`0x8019A53C→kernel→0x8019A87C`)
+per frame — consistent with `scene_entry` parked in a wait, not in the
+retry loop.
