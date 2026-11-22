@@ -334,6 +334,26 @@ session-callback lifecycle** (`game/cd.c` `mc_session_b` park/restore
 discipline, or the `scene_entry` teardown ordering in `game/game.c`) — NOT
 cdrom.c IRQ, NOT OpenBIOS events, NOT game spawn logic.
 
+## Input exonerated (proof/cpu_input_source_arcade.md, commit 4e2b77d)
+
+Subagent `f508a763` definitively ruled out the input hypothesis:
+
+- No non-SIO CPU-input writer exists; `pad_state_refresh` is the sole writer
+  of `battle+0x68..0x80`, fed only by `attr_word_decode` of the two pad
+  records. No CPU/AI synthesizer, versus preset, or auto-confirm timer.
+- Unconnected slot-1 returns `0xFF`→`attr_word_decode`→`-1`→zero words —
+  faithful true absence, identical to real arcade HW with no controller 2.
+- `battle_state_init` force-seeds **both** `+0xb4`/`+0xb6` to `0x300` via
+  `select_phase_gate==0` — no pad involved. The only `0x700` store is
+  reachable from phase class `0x000`/`0x600`, **not** `0x300`.
+- Runtime-proven: a *complete* slot-1 confirm sequence (Cross, Start,
+  held+release, L1+R1) leaves `+0xb4/+0xb6=0x0300` and the identical CD
+  anomaly — the wedge persists regardless of input.
+
+**The wedge is 100% the CD asset-data path.** The missing edge is the
+channel-copy/file-load completion that supplies decompress-block-213's
+source and the `state==2` spawn predicate.
+
 ## Open question (next experiment — supersedes the IRQ-presentation hypotheses above)
 
 The CDROM IRQ path is verified working. The live question is the
