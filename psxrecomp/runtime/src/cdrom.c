@@ -260,6 +260,7 @@ static int read_min, read_sec, read_sect;
 static uint8_t mode_reg;
 static uint8_t read_cmd;
 static int read_delay;
+static uint32_t s_read_sectors;   /* sectors read since stream start (Beetle SectorsRead) */
 
 /* ---- Sector deadline/exposure telemetry (L1.5, passive) -----------------
  * One record per physical sector deadline. It separates drive scheduling
@@ -1728,6 +1729,7 @@ static void start_read_stream(uint8_t cmd) {
     read_sec = seek_sec;
     read_sect = seek_sect;
     read_cmd = cmd;
+    s_read_sectors = 0;
     read_delay = initial_read_delay_cycles();
     s_cd_probe_read_start_count++;
     s_cd_probe_read_start_cycles += (uint64_t)read_delay;
@@ -1765,6 +1767,7 @@ static void stop_read_stream(void) {
     reading = 0;
     read_cmd = 0;
     read_delay = 0;
+    s_read_sectors = 0;
     s_cd_timing_next_due = 0;
     cdrom_clear_pending_dataready();
 }
@@ -1960,6 +1963,7 @@ uint64_t cdrom_get_dataready_fires(void) { return s_dataready_fires; }
 static int deliver_read_sector(void) {
     int delivered = read_sector_at(read_min, read_sec, read_sect);
     advance_msf(&read_min, &read_sec, &read_sect);
+    s_read_sectors++;
     if (xa_data_end_pending) {
         xa_data_end_pending = 0;
         response_clear();
@@ -1994,6 +1998,7 @@ static int deliver_read_sector(void) {
 static int deliver_read_sector_without_irq(void) {
     int delivered = read_sector_at(read_min, read_sec, read_sect);
     advance_msf(&read_min, &read_sec, &read_sect);
+    s_read_sectors++;
     if (delivered) {
         /* Seamless refill for an in-flight multi-sector DMA: no INT1 is
          * raised because this is a CONTINUATION of the drain already in
@@ -2283,13 +2288,15 @@ static void exec_command(uint8_t cmd) {
                 * change then waits for the Stop completion IRQ never sees it and
                 * hangs: Tsumu Light's CD library retries Stop forever (~90-frame
                 * timeout) and never advances past its first content load. */
+        /* Beetle Command_Stop ACKs with the PRE-change status (MakeStatus
+         * runs before DriveStatus=DS_STOPPED): push before clearing. */
+        response_push(stat_reg);
+        set_irq(CDIRQ_ACK);
         stop_read_stream();
         stop_cdda_playback();
         xa_reset_decode();
         spu_cd_audio_reset();
         stat_reg &= ~(CDSTAT_READ | CDSTAT_PLAY | CDSTAT_SEEK);
-        response_push(stat_reg);
-        set_irq(CDIRQ_ACK);
         {
             int lat = apply_speed(30000); /* motor spin-down */
             pending_arm(0x08, lat, 1);
@@ -2299,14 +2306,33 @@ static void exec_command(uint8_t cmd) {
         break;
 
     case 0x09: { /* Pause */
-        int complete_delay = pause_complete_delay_cycles();
+        int complete_delay;
+        /* Beetle Command_Pause ordering: the ACK (INT3) carries the
+         * PRE-change status — while streaming it still shows READ set
+         * (psx-spx measured stat=0x22 on the ACK, 0x02 on the INT2).
+         * Then: head rewinds up to 4 already-read sectors (Bedlam /
+         * Rise 2 quirk), the sector pipe is reset, CLEAR_AIP drops the
+         * pended data-ready, and the drive hovers at the rewound
+         * position — no further INT1s while paused. Beetle adds a
+         * PSX_GetRandU32(0,100000) term to the completion latency for
+         * Colony Wars / Army Men hangs; omitted here to keep the
+         * runtime deterministic. */
+        if (reading) {
+            int n = (int)s_read_sectors;
+            if (n > 4) n = 4;
+            if (n > 0) {
+                int lba = msf_to_lba(read_min, read_sec, read_sect) - n;
+                lba_to_msf(lba, 150, &read_min, &read_sec, &read_sect);
+            }
+        }
+        complete_delay = pause_complete_delay_cycles();
+        response_push(stat_reg);
+        set_irq(CDIRQ_ACK);
         stop_read_stream();
         stop_cdda_playback();
         xa_reset_decode();
         spu_cd_audio_reset();
         stat_reg &= ~(CDSTAT_READ | CDSTAT_PLAY);
-        response_push(stat_reg);
-        set_irq(CDIRQ_ACK);
         pending_arm(0x09, complete_delay, 1);
         s_cd_probe_pause_count++;
         s_cd_probe_pause_cycles += (uint64_t)complete_delay;
@@ -2632,6 +2658,7 @@ static void process_pending(uint32_t cycles) {
         if (reading) {
             int delivered = read_sector_at(read_min, read_sec, read_sect);
             advance_msf(&read_min, &read_sec, &read_sect);
+            s_read_sectors++;
             if (delivered) {
                 response_push(stat_reg);
                 s_ring_read = s_ring_write;
