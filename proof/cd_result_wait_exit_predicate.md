@@ -116,60 +116,47 @@ So CB25/26 are 0 because **no DATA_READY/DATA_END/ERROR CD interrupt has been
 presented since they were last consumed** — the drive went idle after the
 Pause. That part is faithful guest behavior, not a dropped write.
 
-## 5. The ACTUAL blocked site (live guest stack, sp≈0x801FFDF8, TCB 0x8FE0)
+## 5. The ACTUAL blocked site — REFUTED by pc_probe (stale stack residue)
 
-Code-pointer cells on the codec thread's guest stack (9850):
+**§5's original "blocked in `cd_file_read_seq → cd_seek_complete_poll →
+TestEvent`" conclusion is WRONG — it read stale stack residues.** Decisive
+`pc_probe_arm` on the live wedged instance (port 9850, ~5 s window,
+`n=48`) recorded **zero hits on every CD-path entry PC**:
 
-```
-0x801FFE10 = 0x8019A53C   ra → cd_timer_read (0x8019A460)+0xDC — return addr
-                          of `jal vsync_wait_n` (0x8019A5D8) at 0x8019A534,
-                          i.e. the a0>0 "wait ~1 tick + GPUSTAT(0x1F801814)
-                          bit22/bit31 flip" path. Innermost game frame.
-0x801FFE18 = 0x801926AC   ra → cd_cmd_queue_load (0x80192634)+0x78 — return
-                          addr of `jal cd_timeout_arm` (0x801936B0).
-0x801FFE1C = 0x80156628   ra → cd_file_read_seq (0x801565EC)+0x3C — return
-                          addr of `jal cd_seek_param_issue_clamped`
-                          (0x8019D410) at 0x80156620.
-0x801FFE38/3C = 0x80126664 → inside the battle/scene state machine
-                          (ret of `jal 0x8016FCC4` at 0x8012665C).
-```
+| PC | function | hits |
+|----|----------|------|
+| `0x801565EC` | `cd_file_read_seq` | **0** |
+| `0x8019D500` | `cd_seek_complete_poll` | **0** |
+| `0x8019D5B0` | `cd_seek_state_machine` (B0/0x0B) | **0** |
+| `0x8018CFDC` | `cd_file_load_sm` | **0** |
+| `0x801968CC` | `cd_result_wait_a` | **0** |
 
-Frame-layout caveat: intermediate ra cells are consistent with
-`cd_file_read_seq → cd_seek_param_issue_clamped → cd_seek_param_issue
-(0x8019BBC4) → cd_cmd_queue_load → cd_timeout_arm → cd_timer_read →
-vsync_wait_n`, with `cd_seek_complete_poll`/`cd_seek_state_machine`
-(B0/0x0B trampoline) frames interleaved per the loop structure below.
+The `cd_file_read_seq`/`cd_seek_complete_poll` return-addresses on
+`sp≈0x801FFDF8` are leftovers from the last *completed* read (~frame 3748) —
+the exact stale-residue trap `cd_load_complete_deliver_event.md` session-6
+warned about ("current sp 0x801FFDF8 sits in the BIOS/kernel idle loop").
+The cumulative `B0/0x0B = 1,402,471` count is frozen history, not a live spin.
 
-Decoded flow (`disc/SLES_017.22` disasm):
+**Convergent, pc_probe-verified conclusion** (`cd_load_complete_deliver_event`
+sessions 5/6/7 + this probe + `cpu_input_source_arcade.md` +
+`cdrom_ring_bfrd_rootcause.md`):
 
-- `cd_file_read_seq` (0x801565EC): `cd_mode_store(0)` → `cd_status_shifted_read`
-  (0x8019D470) → `cd_seek_param_issue_clamped` (0x8019D410 → clamps a1 to
-  ≤0x7FEFF0, calls `cd_seek_param_issue` 0x8019BBC4, clears `0x801BDEE4`)
-  → **`do { cd_seek_complete_poll(0) } while (!v0)`** (`0x80156628` jal /
-  `beq v0` loop at `0x80156630`).
-- `cd_seek_complete_poll` (0x8019D500): early-out if `*(0x801BDE40)==1` or
-  `*(0x801BDEE4)==1`; else `a0=*(0x801BDE38)=0xF1000008`, loop
-  `cd_seek_state_machine(0x8019D5B0)` = **BIOS B0/0x0B trampoline**
-  (`jr 0xB0`, `t1=0xB`) = TestEvent on the channel/SPU doorbell event;
-  result stored to `0x801BDEE4`.
-- `bioscall_dump`: **B0/0x0B = 1,402,471 calls** — the TestEvent spin.
-  (`bios_svc_trace` tail is all `B0:0x17` from `0x8019AA9C` = the healthy
-  per-frame `cd_intc_dispatch` idle path.)
+- CD device / IRQ / event / doorbell path: **fully WORKING, EXONERATED.** All
+  sectors delivered; all 3 `cd_file_read_seq` batches completed their ch4
+  doorbell → `cd_dma_chan_reset` → `DeliverEvent(F0000009)` → `TestEvent`.
+- Input: **exonerated.** cdrom.c ring/BFRD: **exonerated** (the one
+  `ring_dropped` was a guest-side XA-skip on an unrelated stream).
+- The wedge is **`battle_frame` `case3` (DAT1=3) spawn/select phase never
+  advancing** — a cooperative game-logic wait, not a kernel block, not CD.
+  Spawn commit needs `record+0x10==1 && (phase&0xF00)==0x700`; the
+  `0x300→0x700` phase advance + spawn-task arm are not firing. The
+  decompressor freeze at seq 213 is the same game-logic starvation (decompress
+  task not scheduled), not missing CD data.
 
-Live flag cells (9850): `0x801BDE38=0xF1000008` (armed), `0x801BDE40=0`,
-`0x801BDF84=0`, `0x801BDEE8=0`, `0x801BE768=0xFFFFFFFF` (no active job),
-IRQ2 cb8 table `0x801BDDC0[0..6]=0`, `[7]=0x801A0110` (`chan_job_pump`).
-Channel ring cursors: `0x801FC6C8(prod)=2`, `0x801FC6CC(fin)=0`.
-
-This is the SAME wedge pinpointed in `proof/cd_load_complete_deliver_event.md`
-(session-2) and `proof/cd_read_done_event.md`: the codec thread waits for the
-**final ch4 (SPU) DMA "doorbell"** whose done-IRQ → `cd_dma_chan_reset` →
-`DeliverEvent(0xF0000009,0x20)` should set the event flag and wake
-TestEvent. The doorbell channel command was produced (prod=2) but never
-finalized (fin=0); no ch4 kick/done after ~frame 3797 while ch3 sector DMA
-streamed to LBA 8801. The per-command completion-callback table
-`0x801BDDC0[0..6]` is empty, so the IRQ2 dispatch has nothing to run the
-completion step that would produce the doorbell.
+**Real open question (upstream of CD entirely):** what writes the `0x700`
+phase word and sets `record+0x10==1`, and why isn't it running? That is the
+spawn-phase / intro-script / task-scheduling path in
+`game/menu.c`/`game/fight.c`/`game/battle.c`.
 
 ## 6. Answers to the posed questions — summary
 
@@ -186,11 +173,7 @@ completion step that would produce the doorbell.
    `bc848/bc84c` are downstream session callbacks, not the writers.
 3. **Why they stay 0:** no DATA_READY/DATA_END/ERROR interrupt since last
    consume — drive idle post-Pause(COMPLETE→CB24=2). Faithful, not a dropped
-   write. **And the codec thread isn't waiting on them anyway** — it is in
-   `cd_seek_complete_poll`'s B0/0x0B TestEvent on `0xF1000008`/
-   `0x801BDE40`, starved by the missing ch4-doorbell completion
-   (channel ring prod=2/fin=0, empty `0x801BDDC0` callback slots) — the
-   previously-documented wedge, unchanged.
+   write. **And no CD wait is live at the wedge** (§5 refuted) — the codec
+   thread is in `battle_frame` `case3`, a game-logic spawn-phase wait.
 
-No speculative fix implemented; this is faithful guest behavior downstream of
-the missing doorbell production (tracked in cd_load_complete_deliver_event.md).
+§1–§4 predicate/writer decodes remain valid and useful.
