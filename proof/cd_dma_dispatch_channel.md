@@ -382,3 +382,36 @@ submitting the last group's ch4 work. The game still WaitEvents on
 
 Discriminator in flight: fresh run (9003) polling `dma_trace_dump` for
 ch=4 start/complete vs `chanreset` hits across the wedge window.
+
+## 13. ch4 DMA submit/complete sequence — NO dropped IRQ (port 9004)
+
+`dma_trace_dump` polled every 2s through a fresh nav repro; every ch=4
+entry captured (submit pc=`0x8019BBAC` inside the channel-entry SM body;
+complete raises `dicr→0x90900000`, `i_stat→0x8` every time):
+
+| seq | frame | words | src→dst | result |
+|-----|-------|-------|---------|--------|
+| 2351/2 | 318 | 32 | 0x801BDF20→0x1BDFA0 | ok |
+| 2961/2 | 348 | 32 | small | ok |
+| 2967/8 | 348 | 10560 | 0x800403FC→0x4A8FC | ok |
+| 26147/8 | 1226 | 32 | small | ok |
+| 26153/4 | 1226 | 44048 | 0x80010C20→0x3BC60 | ok |
+| 30090/1 | 1414 | 32 | small | ok |
+| 30096/7 | 1414 | 13456 | 0x80010C20→0x1DE60 | ok |
+| 32092/3 | 1461 | 32 | small | ok |
+| 32098/9 | 1461 | **63792** | 0x80011220→0x4F6E0 | ok (last) |
+
+**Every ch4 DMA completed AND raised its IRQ** (`dicr_after=0x90900000`,
+`i_stat_after=0x8`) → `chan_reset`×9 → 9× `DeliverEvent(F0000009)`. **No
+IRQ/DMA drop.** Pattern per group: a 32-word descriptor DMA
+(0x801BDF20→0x1BDFA0) + a big arena→workbuf data DMA (src in the
+0x8001xxxx channel-entry table region).
+
+After the 9th completion (frame 1465): **zero further ch4 submits** while
+ch3 file reads continue to ~frame 1613, then the game blocks on EvCB
+`F0000009/0x20`. ⇒ The game expected a 10th+ channel transfer that the
+channel-entry path never submitted — the submitter stopped being driven,
+not an IRQ loss.
+
+Open: was the SM/channel-entry invoked after frame 1465 at all? (fntrace
+armed on 0x80199440/0x80199BB8/0x80198FE4/0x80159864 in run 9005.)
