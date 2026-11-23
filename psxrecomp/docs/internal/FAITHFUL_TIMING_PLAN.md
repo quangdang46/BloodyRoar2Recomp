@@ -10628,3 +10628,21 @@ N+102 — x28 bug narrowed to a frame_tick CALLEE (4 agents, still unfixed):
   handler — g__DAT_1f8000b4/0xb6 bindings in bind.c exist for generated
   script code. Generated-side grep for the phase writer in flight.
   Rule stands: do NOT fake the phase write in game/*.c.
+
+- **session (0x700 writer RESOLVED + arcade stall localized to BFSM ph=0):**
+  Exhaustive generated scan (55 files): the ONLY instruction producing 0x700
+  in phase cells 0x1f8000b4/b6 is `sh $v1,0xB4($v0)` @ guest PC 0x801538B8 in
+  battle_config_eval (0x80153544, clean menu.c:4093, L_set700 :4235), gated
+  behind cls 0x000/0x600 — faithful wait, NOT a missing fn. Slot is runtime-
+  variable (AB[2]) so no literal +182 store exists. Alias-table bypass
+  analyzed: 5 mid-fn aliases (0x8015364C/6D8/730/7B0/7CC) absent from
+  clean_table but clean port uses C switch (no call_guest) — not a bug.
+  NEW TOOLING GAP: wtrace hooks cpu->write_* (generated path) only — clean-C
+  host-pointer writes to scratchpad are INVISIBLE (0 in-range writes across
+  a full arcade run). Use bound-global counters / read_ram polling instead.
+  ARCADE BLOCKER localized: battle_flow_state_machine (menu.c:553) drives
+  ph=0x1f800001 0->1->2->3->4 switching on DAT_1f80009c (mode/sub). Arcade
+  pins at gs=8 ph=0 before phase cells engage. Prime suspect: br2_bail_pending
+  reset loop (menu.c:583/630) or select_screen_tick/battle_frame not
+  returning. Versus reaches real combat (rounds resolve). Full writeup:
+  proof/arcade_fight_entry_phase_analysis.md. Next: call_bail at stall.
