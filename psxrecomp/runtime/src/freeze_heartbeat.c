@@ -419,6 +419,29 @@ static void freeze_dump_device_state_json(FILE *f) {
         fputs("]},", f);
     }
 
+    /* recvalring: stores of a CD-session-pointer value (0x801BCxxx) into the
+     * device-command record/kernel region (0x801FFxxx) — the bad rec+0x14/+0x18
+     * handler source for the state_commit/state_rx wild dispatch. */
+    {
+        typedef struct { uint32_t seq, frame, pc, gaddr, val; } FdRecVal;
+        extern FdRecVal   g_recval_ring[];
+        extern uint64_t   g_recval_seq;
+        fputs("\"recvalring\":{\"seq\":\"0x", f);
+        fprintf(f, "%llX\",\"tail\":[", (unsigned long long)g_recval_seq);
+        uint64_t total = g_recval_seq;
+        uint32_t avail = total < 64ull ? (uint32_t)total : 64u;
+        uint32_t n = avail < 16u ? avail : 16u;
+        for (uint32_t j = 0; j < n; j++) {
+            if (j) fputs(",", f);
+            uint64_t idx2 = total - 1 - j;
+            FdRecVal *e = &g_recval_ring[idx2 & 63u];
+            fprintf(f, "{\"seq\":%u,\"frame\":%u,\"pc\":\"0x%08X\","
+                       "\"gaddr\":\"0x%08X\",\"val\":\"0x%08X\"}",
+                    e->seq, e->frame, e->pc, e->gaddr, e->val);
+        }
+        fputs("]},", f);
+    }
+
     /* badctxring: the exact context-restore commits that produced a bogus
      * resume-PC in the CD data block (traps.c psx_syscall case-3). Each row
      * = {seq, target_tcb, *(0x108), ctx_base, save_area, saved_epc, pc, ra}.

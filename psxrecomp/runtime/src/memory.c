@@ -1022,6 +1022,31 @@ static inline void wval_note_write(uint32_t gaddr, uint32_t val) {
     g_wval_seq++;
 }
 
+/* ---- record-handler corruption watch (dev_cmd rec+0x14/+0x18) ----
+ * Narrow high-signal ring: a store into the device-command record / kernel
+ * region (0x801FF000-0x801FFFFF, home of the 240-byte records at 0x801FF080)
+ * whose VALUE is a pointer into the CD read-session block (0x801BC000-
+ * 0x801CD000). cd_cmd_state_commit/state_rx jalr *(rec+0x14)/*(rec+0x18) as a
+ * function; a CD-session data pointer there is the wild-dispatch source
+ * (proof/dev_cmd_record_handler_wild_dispatch.md). Records writer PC +
+ * target + value so the fatal dump names the exact store. 64 entries is
+ * plenty — this pattern is rare. */
+#define RECVAL_RING_CAP 64u
+typedef struct { uint32_t seq, frame, pc, gaddr, val; } RecValEntry;
+RecValEntry g_recval_ring[RECVAL_RING_CAP];
+uint64_t    g_recval_seq = 0;
+static inline void recval_note_write(uint32_t gaddr, uint32_t val) {
+    if (gaddr < 0x801FF000u || gaddr >= 0x801FFFFFu) return;
+    if (val < WVAL_LO || val >= WVAL_HI) return;
+    RecValEntry *e = &g_recval_ring[g_recval_seq & (RECVAL_RING_CAP - 1u)];
+    e->seq   = (uint32_t)g_recval_seq;
+    e->frame = (uint32_t)s_frame_count;
+    e->pc    = effective_store_pc();
+    e->gaddr = gaddr;
+    e->val   = val;
+    g_recval_seq++;
+}
+
 /* Card-byte destination capture (Phase 3 audit). Always-on. */
 extern int card_data_writes_check(uint32_t phys, uint32_t value, uint8_t width);
 
@@ -1732,6 +1757,7 @@ static void psx_write_word_raw(uint32_t addr, uint32_t val) {
         debug_server_trace_write_check(phys, read_ram_word(phys), val, 4);
         parity_trace_note_write(phys, 4, effective_store_pc());
         wval_note_write(addr, val);
+        recval_note_write(addr, val);
         card_data_writes_check(phys, val, 4);
         dirty_ram_mark_kernel_write(phys);
         text_guard_note_write(phys, val, 4);

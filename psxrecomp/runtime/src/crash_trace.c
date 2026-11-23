@@ -730,6 +730,32 @@ void psx_crash_trace_dump(const char *reason, void *seh_info) {
         append_str(buf, sizeof(buf), &pos, "},\n");
     }
 
+    /* recvalring: stores of a CD-session-pointer value (0x801BCxxx) into the
+     * device-command record/kernel region (0x801FFxxx). Names the writer PC +
+     * target that plants the bad rec+0x14/+0x18 handler the state_commit/state_rx
+     * jalr then dispatches (proof/dev_cmd_record_handler_wild_dispatch.md). */
+    {
+        typedef struct { uint32_t seq, frame, pc, gaddr, val; } FdRecVal;
+        extern FdRecVal   g_recval_ring[];
+        extern uint64_t   g_recval_seq;
+        uint64_t total = g_recval_seq;
+        uint32_t avail = total < 64ull ? (uint32_t)total : 64u;
+        append_str(buf, sizeof(buf), &pos, "  \"recvalring\": {\"seq\":\"");
+        append_fmt(buf, sizeof(buf), &pos, "0x%llX\",\"tail\":[",
+                   (unsigned long long)total);
+        uint32_t n = avail < 16u ? avail : 16u;
+        for (uint32_t j = 0; j < n; j++) {
+            if (j) append_str(buf, sizeof(buf), &pos, ",");
+            uint64_t idx2 = total - 1 - j;
+            FdRecVal *e = &g_recval_ring[idx2 & 63u];
+            append_fmt(buf, sizeof(buf), &pos,
+                       "{\"seq\":%u,\"frame\":%u,\"pc\":\"0x%08X\","
+                       "\"gaddr\":\"0x%08X\",\"val\":\"0x%08X\"}",
+                       e->seq, e->frame, e->pc, e->gaddr, e->val);
+        }
+        append_str(buf, sizeof(buf), &pos, "]},\n");
+    }
+
     /* Host overlay-DLL / resim gate at FAIL-FAST. Distinguishes "CD DMA never
      * finished" from "rollback froze registration mid-splash load". */
     {
