@@ -83,11 +83,14 @@ def run(port, env_extra, tag):
 def main():
     # args: pairs of tag:PORT:K=V,K=V
     for spec in sys.argv[1:]:
-        parts = spec.split(":")
+        parts = [p for p in spec.split(":") if p != ""]
+        if len(parts) < 2:
+            print("skip malformed spec: %r" % spec, flush=True)
+            continue
         tag, port = parts[0], int(parts[1])
         env = {}
-        for kv in (parts[2] if len(parts)>2 else "").split(","):
-            if kv:
+        for kv in (parts[2] if len(parts) > 2 else "").split(","):
+            if "=" in kv:
                 k, v = kv.split("=", 1); env[k] = v
         run(port, env, tag)
 
