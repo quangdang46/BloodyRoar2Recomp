@@ -10602,3 +10602,29 @@ N+102 — x28 bug narrowed to a frame_tick CALLEE (4 agents, still unfixed):
   Verification: debug :9804 at frame 1,000,182 (~25x prior crash window),
   :9806 636k, :9807 175k, :9808 (pointer-fix binary) 71k cycling gs=6 battle
   states — all unknown_dispatch_log total=0.
+
+- **session (pointer-bug class CLOSED + versus reaches real combat):**
+  All 4 audit clusters in proof/host_buffer_guest_addr_bugs.md now fixed:
+  stepper-desc callback ABI (6 sites menu.c+save.c, commit 03ada72) —
+  descriptors guest-frame-backed at real prologue sizes + dialog_*
+  _dispatch callees normalised via br2_gaddr dual-ABI; player_name_entry
+  name buffer (4 contiguous 8B slots @sp+0x18, scalar macros -> pne_slots);
+  sprite_slot_commit + hud_announce (7672085); brightness_packet_send
+  (28fa473). Named-function clean coverage ~95.7% (1318/1377 fnmap;
+  remainder correctly BIOS/IRQ-delegated). Mapper confirmed residual is
+  unnamed CPS-split blocks; small gfx/game leaf candidates handed to a
+  port agent (0x80194A70/0x8018D408/0x80192EC0 + 4 jr$ra leaves).
+
+  COMBAT — versus path CONFIRMED reaching real fights: 2-player instance
+  (game.toml players=2, :9810) + versus_fight_mash + :9809 versus gs=8 both
+  cycle select->intro->round->RESULT with phase win/lose transitions
+  (0x1f8000b4/b6: 0300->1400/0500->1100/0100->0300). Win/lose phases prove
+  rounds resolve = combat executes on the versus path (post_battle_dispatch/
+  vs_confirm_b, all clean). NO 0x80122DC8 wedge this build (pointer fixes may
+  have cleared it). The 0x300->0x700 blocker is ARCADE-SPECIFIC: the
+  announce->fight phase write is NOT in clean C and NOT in script2 handlers
+  (9 handlers fully decoded: cosmetic OT bits + DAT1=9/0xF0 only). Prime
+  suspect now EV/event-script opcode or unported channel-script/task
+  handler — g__DAT_1f8000b4/0xb6 bindings in bind.c exist for generated
+  script code. Generated-side grep for the phase writer in flight.
+  Rule stands: do NOT fake the phase write in game/*.c.
