@@ -279,7 +279,7 @@ static uint32_t s_rwatch_lo = 0, s_rwatch_hi = 0;
  * func,frame) for main-RAM loads inside [lo,hi). Used to catch which
  * `lw ra, off(sp)` epilogue consumes a poisoned stack slot. Flag-gated;
  * zero cost when disarmed. */
-#define RWPC_RING_CAP 8192
+#define RWPC_RING_CAP (1 << 17)
 int      g_rwatchpc_active = 0;
 uint32_t g_rwatchpc_lo = 0, g_rwatchpc_hi = 0;
 uint32_t g_rwatchpc_rt = 0;   /* optional rt filter (e.g. 31 = only $ra loads) */
@@ -10133,7 +10133,8 @@ static void handle_rwatchpc_dump(int id, const char *json)
     (void)json;
     int max_out = json_get_int(json, "count", 512);
     if (max_out < 1) max_out = 1;
-    if (max_out > 4096) max_out = 4096;
+    if (max_out > 65536) max_out = 65536;
+    int newest_first = json_get_int(json, "newest", 0) != 0;
     uint32_t avail = (s_rwpc_total < RWPC_RING_CAP) ? s_rwpc_total : RWPC_RING_CAP;
     uint32_t start = (s_rwpc_total < RWPC_RING_CAP) ? 0 : s_rwpc_head;
     const size_t BUF_SZ = 256u + (size_t)max_out * 200u;
@@ -10144,7 +10145,13 @@ static void handle_rwatchpc_dump(int id, const char *json)
                     "{\"id\":%d,\"ok\":true,\"total\":%u,\"available\":%u,\"entries\":[",
                     id, s_rwpc_total, avail);
     for (uint32_t i = 0; i < avail && emitted < (uint32_t)max_out && pos < BUF_SZ - 200; i++) {
-        uint32_t idx = (start + i) % RWPC_RING_CAP;
+        uint32_t idx;
+        if (newest_first) {
+            uint32_t newest = (s_rwpc_head + RWPC_RING_CAP - 1u) % RWPC_RING_CAP;
+            idx = (newest + RWPC_RING_CAP - (i % RWPC_RING_CAP)) % RWPC_RING_CAP;
+        } else {
+            idx = (start + i) % RWPC_RING_CAP;
+        }
         RwPcEntry *e = &s_rwpc[idx];
         pos += snprintf(buf + pos, BUF_SZ - pos,
                         "%s{\"seq\":%u,\"phys\":\"0x%08X\",\"val\":\"0x%08X\","

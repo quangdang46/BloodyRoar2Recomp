@@ -322,3 +322,55 @@ whose saved-`$ra` slot (`ctx+124 = 0x801FFE58`) is exactly `cd_timer_read`'s
 `sp+16` spill. The faithful fix must keep the exception context off the
 transient kernel stack (or give the deferred-coroutine frame a non-overlapping
 stack), in `interrupts.c`/`traps.c` context management — not in game code.
+
+## ROOT-CAUSE REFINEMENT (crash_9990-9995, wtrace/rwatchpc stack-window capture)
+
+The earlier "`0x29CC` restores a kernel-stack ctx frame" reading was a
+**stale-attribution artifact**: `rwatchpc`/`wtrace` stamp `func` from
+`g_debug_current_func_addr`, which game code never updates — `cpu_pc` is
+`0x00000000` on every generated load/store, so `func=0x29CC` only means
+"last BIOS entry was 0x29CC", NOT that the access ran inside it.
+`func_000029CC`'s prologue can only ever read `k1+124 = 0x9064` (main TCB);
+it provably did (`gwatch` shows **zero** writes to `0x108`/`0x8FD0`/`0x8FC0`
+pages after frame 28, and the rt=27 k1-chain always resolves
+`0x108→0x8FD0→0x8FE0→0x9054` cleanly at the crash frame).
+
+**The real reader** is `vsync_wait_n` (`0x8019A5D8`, `game` CD/timer module)
+epilogue at `0x8019A660`: `lw $ra,24($sp); addiu $sp,$sp,32; jr $ra`.
+With `sp=0x801FFE40` the saved-ra slot is exactly `0x801FFE58` — matching
+the crash `sp=0x801FFE60` (= caller sp after the `+32`).
+
+**The writer** is `cd_timer_read` (`0x8019A460`) `sw $v0,16($sp)` at
+`0x8019A48C`: with `sp=0x801FFE48` it writes the T2 timer count
+(`a1=0x1F801110`) to `0x801FFE58`. `wtrace` on the tight slot
+(`0x1FFE50–0x1FFE64`) captured every hit: timer-count writes at frames
+320/454/666/872/1194 (`0xB8A9,0x5DEF,0x6354,0x618D,0xEE93`); `0xEE93` then
+sat untouched ~400 frames until `vsync_wait_n`'s epilogue read it at the
+crash frame (~1560–1620, 6/6 identical signature).
+
+**Call geometry:** `cd_timer_read` `jal`s `vsync_wait_n` (ra=`0x8019A53C`),
+and both run on the **kernel stack** (top-of-RAM `0x801FFE…`) as BIOS
+IntRP/callback frames — `cd_timer_read@sp=0x801FFE60` →
+`vsync_wait_n@sp=0x801FFE40` (ra slot `0x801FFE58`). A second,
+shallower `cd_timer_read` activation at `sp=0x801FFE48` (ra=
+`0x80196908/0x80196954`, a different caller) overlaps the same slot.
+The overlap requires **nested-exception frame reuse of `KernelSp`**: the
+BIOS `ExceptionHandler` does `sp = KernelSp` for every delivery, so a
+nested IRQ taken while `vsync_wait_n`'s frame is live re-uses the same
+kernel-stack addresses and the nested callback's spill clobbers the
+outer callback's saved `$ra`.
+
+**Faithfulness status:** nested IRQ delivery when the guest re-enables
+`IEc` inside a handler is *intentional* (`interrupts.c:1742-1786`,
+Tomba2 precedent). The collision is genuine guest stack behavior *given*
+the delivery cycle — so the defect is most likely **IRQ delivery timing**
+(a nested timer/vblank IRQ landing inside the `vsync_wait_n` wait window
+at a cycle real HW would not take it), not a context-pointer bug. The
+`func=0x29CC` trail was a red herring.
+
+**Next step for the fix:** compare IRQ delivery cycles against the Beetle
+oracle (`find_first_divergence`) around frame ~1194/1560, or audit whether
+the timer-1 (`0x1F801110`) IRQ that drives the nested `cd_timer_read`
+activation is delivered at a hardware-accurate deadline vs the
+root-counter model — the flaky ~frame-1560 alignment is a cycle-timing
+race, not a logic error in `interrupts.c`/`traps.c` context management.
