@@ -257,22 +257,61 @@ CD-read burst (frame 46594): thread-B resumes at DEEP sp
 All `tcb=0x8FE0`. The crash-time `sp=0x8548`/`s0`/`s1` anomaly was the **BIOS
 IRQ stack context**, not register corruption — `0x8548` is the exception stack.
 
+## Resolved memory model (subagent be7180ce — decisive)
+
+There is **no per-coroutine stack allocator** and nothing "placed the records
+inside a stack". The map is:
+
+- `0x801FFxxx` = the game's **single top-of-RAM main/kernel stack**
+  (`stack_base=0x801FFFF0` from the PS-X EXE header, `game_1pad.toml:14`).
+- `0x801FF080–0x801FF260` = the 2×`0xF0` device-command records; `0x801FF268+`
+  = task_pool descriptor + bucket-head tables (`game/battle.c:11059/8271`).
+  All are **static BSS ~3.4–4 KB below the stack top, directly in its growth
+  path** — they cannot coexist with deep frames on real HW either.
+- `0x801BDxxx` = the **CD deferred-coroutine stack** (`cd_ctx_save` snapshots
+  `{ra,sp,fp,s0-s7,gp}` to jmp_buf `0x801BCD50`, arms BIOS `B0/0x19`; on CD IRQ
+  `cd_ctx_restore` reloads `sp=0x801BDD30` → `cd_chan_full_init` →
+  `cd_intc_dispatch` → handler tbl `@0x801BCD1C[2]=cd_response_pump`).
+  Verified faithful (`proof/crash_defer_switch_ab.md`).
+- `0x00008548` = BIOS exception/idle stack (`sp_ring` target `0x2924`).
+
+So the spilling CD functions (`cd_response_pump`→`cd_cmd_issue`,
+`cd_init_session`, `cd_read_open`, `mc_session`, `cd_timer_read`) running at
+`sp=0x801FF130–0x801FF1C8` are on the **main/kernel stack, ~3.7 KB deep** —
+far below the ~`0x801FF260` collision threshold. On HW the same BSS is there,
+so these frames must either run shallower or on the `0x801BDxxx` coroutine
+stack. Reaching the record table = **anomalously deep IRQ-side / nested CD
+activations on the shared kernel stack**.
+
+## Same bug family as crash_defer_switch_ab.md
+
+`game_1pad.toml:57-63` already documents this class: *"the deferred
+in-exception thread-switch honor corrupts the shared kernel-stack coroutine
+frames — vsync_wait_n's saved `$ra` slot at `0x801FFE58` is overwritten by a
+later IRQ-side `cd_timer_read` activation."* `defer_switch=false` fixed that
+frame-~1600 saved-`$ra` clobber (immediate RFE-boundary honor survives 60k+
+frames). The present crash at frame 46595 is the **deeper manifestation of the
+same mechanism**: nested IRQ-side CD call chains now reach ~3.7 KB into the
+record-table BSS instead of ~0.4 KB into a saved-`$ra` slot.
+
 ## Refined suspect ranking
 
-1. **CD coroutine/task stack allocated overlapping the static record table**
-   (`0x801FF080`) — the game's task-stack allocator or our coroutine-stack
-   placement puts a live stack where records live. The deep `0x801FF1xx` frames
-   during CD reads are the spill source. Highest suspicion.
-2. TCB/IRQ context-restore committing a wrong `gpr[]` — now LESS likely (the
-   0x8548 was just the IRQ stack).
-3. Faithful game layout where timing prevents the overlap on HW (the record's
-   `+0x14`/`rec[70]` are layout-inherent; on HW `state_commit` may simply not
-   run while the fields hold these values).
+1. **IRQ-side/nested CD activations nest too deep on the shared main/kernel
+   stack** (`0x801FFxxx`), colliding with the record-table/task-table BSS.
+   Faithful question: should these run on the `0x801BDxxx` coroutine stack, or
+   is extra depth coming from our IRQ delivery (`interrupts.c` nested-exception
+   / `PSX_DEFER_SWITCH` path) vs HW? Discriminator: dump `sp` distribution on
+   a healthy non-CD-reading run — if it never drops below `0x801FF260`, the
+   deep frames are CD-burst-specific.
+2. Faithful game layout where HW timing prevents the overlap (records are
+   static BSS; HW stack may simply never reach them while records are live).
+3. TCB/IRQ context-restore committing a wrong `gpr[]` — unlikely (sp is a
+   faithful guest value; `0x8548` is just the IRQ stack).
 
-Next: find the game's coroutine/task stack allocator (the structures at
-`0x801FF260+` look like task save areas with self-links `0x801FF330→0x801FF3B0`)
-and determine whether `0x801FFxxx` is the intended stack base or a
-misallocation.
+Next: determine whether the deep `0x801FF1xx` CD frames are IRQ-side
+activations that should run on the `0x801BDxxx` coroutine stack (a skipped/
+mistimed stack-switch in the kernel trampoline or BIOS IntRP path) or carry
+extra nesting depth from our IRQ delivery vs HW.
 
 ## recvalring sp+ra — the writers are a deep CD call chain (frame 46594/46595)
 
