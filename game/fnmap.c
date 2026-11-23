@@ -458,6 +458,7 @@ extern void clear_f0300_records(void);
 extern void clear_f4ee8_u16s(void);
 extern void cmd_input_parse(void);
 extern void cmd_queue_push(void);
+extern void cmd_queue_slot_next(void);
 extern void color_rec_table_init(void);
 extern void cond_triple_spawn(void);
 extern void condition_word_dispatch(void);
@@ -575,6 +576,19 @@ extern void ev2_hitstun_gate_dispatch(void);
 extern void ev4_branch_dispatch(void);
 extern void ev5_action_select(void);
 extern void ev6_guard_sync_dispatch(void);
+extern void ev_aux_byte_op(void);
+extern void ev_cam_op00(void);
+extern void ev_cam_op01(void);
+extern void ev_cam_op02(void);
+extern void ev_cam_op03(void);
+extern void ev_cam_op04(void);
+extern void ev_cam_op05(void);
+extern void ev_cam_op06(void);
+extern void ev_cam_op07(void);
+extern void ev_cam_op08(void);
+extern void ev_cam_op09(void);
+extern void ev_cam_param_dispatch(void);
+extern void ev_cam_ret_pc2(void);
 extern void ev_cmd_dispatch(void);
 extern void ev_spark_spawn(void);
 extern void ev_step(void);
@@ -1451,6 +1465,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8012a0f0, (void *)sprite_rect_table_init },
   { 0x8012a30c, (void *)ot_packet_chain_fixup },
   { 0x8012a4b4, (void *)queue_slot_peek },
+  { 0x8012a4dc, (void *)cmd_queue_slot_next },
   { 0x8012a504, (void *)sprite_slot_commit },
   { 0x8012a5b8, (void *)cmd_queue_push },
   { 0x8012a650, (void *)attr_word_decode },
@@ -2060,6 +2075,19 @@ const Br2FnEnt fn_table[] = {
   { 0x8017e138, (void *)desc_cmd_map },
   { 0x8017e46c, (void *)desc_cursor_advance },
   { 0x8017e77c, (void *)battle_reset_tail },
+  { 0x8017e840, (void *)ev_cam_param_dispatch },
+  { 0x8017e87c, (void *)ev_cam_op00 },
+  { 0x8017e88c, (void *)ev_cam_op01 },
+  { 0x8017e8b4, (void *)ev_cam_op02 },
+  { 0x8017e8e0, (void *)ev_cam_op03 },
+  { 0x8017e908, (void *)ev_cam_op04 },
+  { 0x8017e930, (void *)ev_cam_op05 },
+  { 0x8017e960, (void *)ev_cam_op06 },
+  { 0x8017e970, (void *)ev_cam_op07 },
+  { 0x8017e980, (void *)ev_cam_op08 },
+  { 0x8017e990, (void *)ev_cam_op09 },
+  { 0x8017e9ec, (void *)ev_cam_ret_pc2 },
+  { 0x8017e9f4, (void *)ev_aux_byte_op },
   { 0x8017ea7c, (void *)ev_stream_dispatch },
   { 0x8017eb10, (void *)hit_pose_swap },
   { 0x8017eb78, (void *)action_commit },

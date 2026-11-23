@@ -367,6 +367,7 @@
 8012e45c descblk_variant_c
 801582c0 chan_reset_register
 8012a4b4 queue_slot_peek
+8012a4dc cmd_queue_slot_next
 8012a504 sprite_slot_commit
 8014cb64 menu_quad_reset_redraw
 8017a818 gte_quad_attr_emit
@@ -1806,3 +1807,16 @@
 8017b0d4 ev6_guard_sync_dispatch
 8017c9d4 ev20_timer_dispatch
 8017bad4 desc_flagbit_dispatch
+8017e840 ev_cam_param_dispatch
+8017e87c ev_cam_op00
+8017e88c ev_cam_op01
+8017e8b4 ev_cam_op02
+8017e8e0 ev_cam_op03
+8017e908 ev_cam_op04
+8017e930 ev_cam_op05
+8017e960 ev_cam_op06
+8017e970 ev_cam_op07
+8017e980 ev_cam_op08
+8017e990 ev_cam_op09
+8017e9ec ev_cam_ret_pc2
+8017e9f4 ev_aux_byte_op

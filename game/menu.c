@@ -10382,6 +10382,17 @@ int32_t queue_slot_peek(void)
   return (a0 < 5) ? a0 : 0;
 }
 
+/* cmd_queue_slot_next — command-queue slot advance leaf @0x8012a4dc (10
+ * insns, no prologue): v0 = lh(0x1f8000d0)+1; return v0 < 9 (signed) ? v0
+ * : 0. Sole jal caller is cmd_queue_push @0x8012a5b8, which inlines this
+ * same sequence; kept as a real function so any generated-path jal to the
+ * leaf dispatches clean. Args unused. */
+int32_t cmd_queue_slot_next(void)
+{
+  int32_t a0 = (int32_t)MBS16(0x1f8000d0u) + 1;
+  return (a0 < 9) ? a0 : 0;
+}
+
 /* sprite_slot_commit — sprite-slot commit @0x8012a504 (44 insns):
  * s0 = queue_slot_peek(); if 0 return 0. slot = MB32(0x1f800004) +
  * s0*24 + 0x20d8; MW16(0x1f8000d2, s0); stack buf = four u16s

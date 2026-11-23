@@ -706,6 +706,7 @@ static uint32_t gld_u32(uint32_t g) { return *(const uint32_t *)guest_at(g); }
 static uint32_t gld_u8 (uint32_t g) { return *(const uint8_t  *)guest_at(g); }
 extern void br2_st8 (uint32_t a, uint8_t  v);
 extern void br2_st16(uint32_t a, uint16_t v);
+extern void br2_st32(uint32_t a, uint32_t v);
 
 /* op01 Cmp — guest 0x80184378. sub = hi byte of insn: dst = sub>>4,
  * src = sub&0xf. src dispatches through table @0x8012367C indexed by
@@ -1777,4 +1778,178 @@ uint32_t desc_flagbit_dispatch(uint32_t a0, uint32_t a1, uint32_t a2,
     return call_guest4(
         GU32((const uint8_t *)guest_at(0x80122814u), op * 4),
         a0, a1, a2, a3);
+}
+
+/* ================================================================== */
+/* EV46 camera-param op family — guest 0x8017E840 dispatcher plus the  */
+/* ten table handlers @0x80122B1C (idx 0..9) it tail-calls. CameraObj */
+/* = *(u32*)0x1F8000BC; the dispatcher overwrites a1 with it before   */
+/* the jr, so handlers see (a0=ctrl, a1=cam, a2=stream pc, a3=aux).   */
+/* Semantics cross-checked against scriptop_camera (VM1 op11 twin,    */
+/* same cam field map).                                               */
+/* ================================================================== */
+
+/* ev_cam_param_dispatch — guest @0x8017E840 (EV op 46).
+ * sub = sx8(pc[1]); (u32)sub >= 10 -> pc+2. Else tail-jr through
+ * table 0x80122B1C[sub] with a1 = cam. Table: idx0 ev_cam_op00,
+ * idx1..9 ev_cam_op01..09. */
+uint32_t ev_cam_param_dispatch(uint32_t a0, uint32_t a1, uint32_t a2,
+                               uint32_t a3)
+{
+    (void)a1;
+    int32_t sub = (int8_t)gld_u8(a2 + 1);
+    uint32_t cam_g = gld_u32(0x1f8000bc);
+    if ((uint32_t)sub >= 10u) return a2 + 2;
+    return call_guest4(
+        gld_u32(0x80122b1c + (uint32_t)sub * 4),
+        a0, cam_g, a2, a3);
+}
+
+/* ev_cam_op00 — guest @0x8017E87C. cam+0x76 = u16@pc+2; ret pc+4. */
+uint32_t ev_cam_op00(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
+{
+    (void)a0; (void)a3;
+    br2_st16(a1 + 0x76, (uint16_t)gld_u16(a2 + 2));
+    return a2 + 4;
+}
+
+/* ev_cam_op01 — guest @0x8017E88C. cam+0x52/54/56 = u16@pc+2/4/6;
+ * ret pc+8. */
+uint32_t ev_cam_op01(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
+{
+    (void)a0; (void)a3;
+    br2_st16(a1 + 0x52, (uint16_t)gld_u16(a2 + 2));
+    br2_st16(a1 + 0x54, (uint16_t)gld_u16(a2 + 4));
+    br2_st16(a1 + 0x56, (uint16_t)gld_u16(a2 + 6));
+    return a2 + 8;
+}
+
+/* ev_cam_op02 — guest @0x8017E8B4. cam+0x30=u16@2, +0x32=u16@4,
+ * +0x8a=u16@4 (same operand stored twice), +0x34=u16@6; ret pc+8. */
+uint32_t ev_cam_op02(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
+{
+    (void)a0; (void)a3;
+    uint16_t v4 = (uint16_t)gld_u16(a2 + 4);
+    br2_st16(a1 + 0x30, (uint16_t)gld_u16(a2 + 2));
+    br2_st16(a1 + 0x32, v4);
+    br2_st16(a1 + 0x8a, v4);
+    br2_st16(a1 + 0x34, (uint16_t)gld_u16(a2 + 6));
+    return a2 + 8;
+}
+
+/* ev_cam_op03 — guest @0x8017E8E0. cam+0x64/66/68 = u16@pc+2/4/6;
+ * ret pc+8. */
+uint32_t ev_cam_op03(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
+{
+    (void)a0; (void)a3;
+    br2_st16(a1 + 0x64, (uint16_t)gld_u16(a2 + 2));
+    br2_st16(a1 + 0x66, (uint16_t)gld_u16(a2 + 4));
+    br2_st16(a1 + 0x68, (uint16_t)gld_u16(a2 + 6));
+    return a2 + 8;
+}
+
+/* ev_cam_op04 — guest @0x8017E908. cam+0x42/44/46 = u16@pc+2/4/6;
+ * ret pc+8. */
+uint32_t ev_cam_op04(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
+{
+    (void)a0; (void)a3;
+    br2_st16(a1 + 0x42, (uint16_t)gld_u16(a2 + 2));
+    br2_st16(a1 + 0x44, (uint16_t)gld_u16(a2 + 4));
+    br2_st16(a1 + 0x46, (uint16_t)gld_u16(a2 + 6));
+    return a2 + 8;
+}
+
+/* ev_cam_op05 — guest @0x8017E930. Per-fighter cam byte pair:
+ * cam[0x80 + ctrl.b2] = pc[2]; cam[0x80 + foe.b2] = pc[3]
+ * (foe = *(ctrl+0x2c); second index lbu(foe+2), value is the high
+ * byte of u16@pc+2 == pc[3]); ret pc+4. */
+uint32_t ev_cam_op05(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
+{
+    (void)a3;
+    uint32_t foe_g = gld_u32(a0 + FC_FOE);
+    br2_st8(a1 + 0x80 + gld_u8(a0 + 2), (uint8_t)gld_u8(a2 + 2));
+    br2_st8(a1 + 0x80 + gld_u8(foe_g + 2),
+            (uint8_t)(gld_u16(a2 + 2) >> 8));
+    return a2 + 4;
+}
+
+/* ev_cam_op06 — guest @0x8017E960. cam+0x5a = u16@pc+2; ret pc+4. */
+uint32_t ev_cam_op06(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
+{
+    (void)a0; (void)a3;
+    br2_st16(a1 + 0x5a, (uint16_t)gld_u16(a2 + 2));
+    return a2 + 4;
+}
+
+/* ev_cam_op07 — guest @0x8017E970. cam+0x38 = u16@pc+2; ret pc+4. */
+uint32_t ev_cam_op07(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
+{
+    (void)a0; (void)a3;
+    br2_st16(a1 + 0x38, (uint16_t)gld_u16(a2 + 2));
+    return a2 + 4;
+}
+
+/* ev_cam_op08 — guest @0x8017E980. cam+0x6c = u16@pc+2; ret pc+4. */
+uint32_t ev_cam_op08(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
+{
+    (void)a0; (void)a3;
+    br2_st16(a1 + 0x6c, (uint16_t)gld_u16(a2 + 2));
+    return a2 + 4;
+}
+
+/* ev_cam_op09 — guest @0x8017E990. Preset vector: idx = sx16(u16@pc+2);
+ * cam+0x7e = idx (u16); rec = 0x8011F944 + idx*8 (8-byte records);
+ * cam+0x4a/4c/4e = u16@rec+0/+2/+4; ret pc+4. The guest recomputes the
+ * record pointer three times, reloading cam+0x7e with lh each time —
+ * same value, single computation is faithful. */
+uint32_t ev_cam_op09(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
+{
+    (void)a0; (void)a3;
+    int32_t idx = (int16_t)gld_u16(a2 + 2);
+    uint32_t e = 0x8011f944 + (uint32_t)(idx * 8);
+    br2_st16(a1 + 0x7e, (uint16_t)idx);
+    br2_st16(a1 + 0x4a, (uint16_t)gld_u16(e));
+    br2_st16(a1 + 0x4c, (uint16_t)gld_u16(e + 2));
+    br2_st16(a1 + 0x4e, (uint16_t)gld_u16(e + 4));
+    return a2 + 4;
+}
+
+/* ev_cam_ret_pc2 — guest @0x8017E9EC. `jr ra` with v0 = a2+2 in the
+ * delay slot: the EV46 out-of-range / shared skip-2 leaf. */
+uint32_t ev_cam_ret_pc2(uint32_t a0, uint32_t a1, uint32_t a2,
+                        uint32_t a3)
+{
+    (void)a0; (void)a1; (void)a3;
+    return a2 + 2;
+}
+
+/* ev_aux_byte_op — guest @0x8017E9F4 (EV op 47, table 0x801B4F24).
+ * sub = sx8(pc[1]); only 0/1/2 act, everything else ret pc+4:
+ *   0: ctrl[0xdf] = pc[2]
+ *   1: ctrl[0xdf] = ctrl[0xdf] + pc[2]   (u8 wrap)
+ *   2: *(u32*)(a1+0x94) = ctrl[0xdf] - sx16(pc+2)  (32-bit subu,
+ *      negative wraps into the u32 store exactly like the guest) */
+uint32_t ev_aux_byte_op(uint32_t a0, uint32_t a1, uint32_t a2,
+                        uint32_t a3)
+{
+    (void)a3;
+    int32_t sub = (int8_t)gld_u8(a2 + 1);
+    uint32_t c_g = a0;
+    switch (sub) {
+    case 0:
+        GSU8((uint8_t *)guest_at(c_g), 0xdf) = gld_u8(a2 + 2);
+        break;
+    case 1:
+        GSU8((uint8_t *)guest_at(c_g), 0xdf) =
+            (uint8_t)(gld_u8(c_g + 0xdf) + gld_u8(a2 + 2));
+        break;
+    case 2: {
+        int32_t d = (int32_t)gld_u8(c_g + 0xdf) - gld_s16(a2 + 2);
+        br2_st32(a1 + 0x94, (uint32_t)d);
+        break;
+    }
+    default:
+        break;
+    }
+    return a2 + 4;
 }
