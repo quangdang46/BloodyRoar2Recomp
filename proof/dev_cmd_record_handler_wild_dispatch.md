@@ -186,3 +186,44 @@ Find why the CD-command-processing context's `gpr[29]` lands at
 `recvalring` now records `sp` per write (`273d95d`) to name the exact stack
 frame. Next: dump `sp` for the `0x801FF184` write and trace which thread/TCB
 owns that stack vs the record-table owner.
+
+## Crash-time register anomaly (frame-28800 freeze CPU state)
+
+The frozen CPU state at the wedge shows a **corrupted register file**, not a
+normal dispatch context:
+
+```
+gpr[4]  (a0)  = 0x801FF170   <- the record (correct)
+gpr[29] (sp)  = 0x00008548   <- INVALID (not 0x801FFxxx, not a RAM stack)
+gpr[16] (s0)  = 0x801A189C   <- cd_cmd_queue_service CODE addr in s0
+gpr[17] (s1)  = 0x801A1834   <- CODE addr in s1
+gpr[31] (ra)  = 0x801A1EC0   <- dev_cmd_round_dispatch return (correct)
+epc          = 0x8019A648   <- cd_timer_read region
+```
+
+`s0`/`s1` holding code addresses and `sp` a tiny non-stack value are NOT what
+a healthy `dev_cmd_round_dispatch`→`state_commit` frame looks like — this
+smells like a **TCB context-restore loading the wrong register set** (BIOS
+`0x29CC` ReturnFromException/ChangeThread restores `gpr[]` from the TCB save
+area; `interrupts.c` already latches `tcb88`/`saved_gpr` for the pc=0 wedge
+family). If the restored `sp`/`s0`/`s1` are wrong, the *next* generated
+prologue spills land wherever the bad `sp` points — consistent with frames at
+`sp≈0x801FF168` inside the record table.
+
+Note `call_guest`/`call_guest4`/`br2_call_generated` (`src/clean_bridge.c`)
+only save+restore `gpr[29]` around `psx_dispatch_call`; they do NOT fabricate a
+frame, so a generated callee's prologue spills use whatever `gpr[29]` the last
+context restore left live. `ctx_fn_send` (`game/save.c:7972`) is confirmed
+**unconditional** — it always dispatches `cd_cmd_state_commit(rec)` for
+whatever record the round-robin selects, no record-type gate.
+
+## Refined suspect ranking
+
+1. **TCB/IRQ context-restore committing a wrong `gpr[]`** (sp→0x801FFxxx or
+   the 0x8548 anomaly) — would explain BOTH the stack-into-record spills AND
+   the corrupted crash-time s0/s1/sp. Highest suspicion given the register
+   evidence.
+2. Thread stack allocator handing the CD-command thread a base that overlaps
+   the static `0x801FF080` table.
+3. Faithful game layout where timing prevents the overlap on HW (least likely
+   given the deterministic-looking crash window).
