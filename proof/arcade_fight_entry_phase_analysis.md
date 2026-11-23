@@ -200,3 +200,21 @@ Discriminator: find the CPU cursor/auto-confirm writer in the select-screen
 call tree (`select_screen_tick` 0x8014f260 → `select_cursor_step`
 0x8014f1c8 → `select_confirm_handler` 0x80148528) or consult the Beetle
 oracle for arcade-mode pad-2 behaviour.
+
+### Two distinct phase gates in the select path (clean-verified)
+
+1. **`0x100` seed** — `mc_pad_button_handler`/`mc_slot_action` (`save.c`),
+   runs every menu frame, needs the slot's pad **edge** (`+0x68`/`+0x6a`).
+   Arcade case-0 seeds only the pressed slot → CPU slot-1 needs a pad-2 edge.
+   **This is the first blocker.**
+2. **`0x300` confirm** — `select_confirm_handler` (`menu.c:3669`) writes
+   `ph[param_2]=…|0x300`, driven by `select_screen_tick` (`menu.c:3185`)
+   iterating both slots' `puVar6+8` button flags. Whether the CPU slot's
+   `puVar6+8` is fed by an internal CPU-select cursor (→ works without
+   pad-2) or also needs pad-2 is **unresolved** — needs a runtime trace of
+   the CPU record's button-flag source, or the Beetle oracle.
+
+If the CPU select cursor is internal, the *only* pad-2 dependency is the
+`0x100` seed — a single edge the device model could supply faithfully
+(e.g. a virtual controller-2 that the game's own CPU-select logic drives,
+or confirming the real-hardware pad-2 requirement via oracle).
