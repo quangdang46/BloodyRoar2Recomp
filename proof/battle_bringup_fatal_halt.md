@@ -144,3 +144,52 @@ restore; identify whether the poisoned value came from a stale
 `cpu->pc`, a corrupted TCB slot, or a wrong-TCB selection
 (`psx_current_tcb_ptr`). The fix is in the runtime's resume-PC selection
 for IRQ delivery inside nested clean→generated calls — not game logic.
+
+## Live-specimen forensics (ports 9942 + fresh 9960, frame ~1650)
+
+Both instances reproduce identically and are caught LIVE-SPINNING at
+`current_func=0x29CC` (`dispatch_count=0`, `pc=0`, dirty-RAM blocks still
+advancing) — the fatal `jr` has not fired yet; `$ra` already holds the
+wild value.
+
+`get_registers` (9960): `$ra(gpr31)=0x0000EE93`, `$sp=0x801FFE60`,
+`$k0=0`, `$k1=0`, `cop0_epc=0x8019A648`, `sr=0x40000401`.
+Stack `0x801FFE58 = 0x0000EE93` — the exact same value as `$ra`, i.e.
+`$ra` was loaded from this slot (`sp-8`). Neighbors are a clean BIOS
+call chain: `0x801FFE40=0xBFC09B83`, `0x801FFE4C=0xBFC049E0`,
+`0x801FFE54=0xBFC04D74`, `0x801FFE7C=0xBFC00000` — so `0x801FFE58`
+should hold another `0xBFC0xxxx`/`0x801xxxxx` return address. Prior run
+(9942) had `0x0000E23E` at the same slot — value nondeterministic,
+location + timing deterministic.
+
+`sp_ring` shows the per-frame cooperative schedule: main thread resumes
+at `0x8019A53C` (= `cd_timer_read` generated body, the
+`DAT_801bdde0`/`vsync_wait_n` frame-wait loop) on stack `0x801FFE18+`,
+TCB `0x8FE0`. The current TCB save area (`0x8FE8+`) is CLEAN:
+`resume_pc=0x8019A648`, saved `ra=0x8019A53C` — so the wild `$ra` is
+NOT from a poisoned TCB restore; it is written into the main thread's
+stack frame downstream of resume.
+
+`thread_ctx_ring` total=0 → host `psx_save/restore_context_to_tcb` never
+ran; the whole path is guest-side (recompiled OpenBIOS + generated game).
+
+## Narrowed conclusion
+
+The defect is a **full-word write of a ~`0x0000Exxx` value into the
+saved-`$ra` slot `0x801FFE58`** of the main thread's frame inside the
+`cd_timer_read → vsync_wait_n → BIOS-wait` call chain, at ~frame 1650
+during `battle_frame` DAT1=3 bring-up. `0xExxx` ≈ low-16 of an
+`0x801FExxx` stack/code address → candidate shapes: (a) u16-truncated
+pointer store, (b) `sh`-for-`sw` codegen width bug, (c) sp/frame drift
+making `lw ra` read a data slot, (d) faithful guest read of upstream-
+corrupted data. NOT a TCB/resume_pc/kernel-restore fault (that path is
+clean and unused here).
+
+## Next decisive step
+
+Catch the writer of `0x801FFE58`: needs a conditional memory-write
+breakpoint (value in `0x0000E000–0x0000EFFF`, high16==0) or a
+`sw`-site audit of the generated epilogues in the `0x8019A4xx–0x8019A8xx`
+cluster + the OpenBIOS wait/ChangeThread frames that own stack
+`0x801FFE18–0x801FFE60`. Repro is deterministic (~frame 1650) on a
+fresh `game_1pad.toml` + `arcade_fight_mash.py` drive.
