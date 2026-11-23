@@ -167,3 +167,36 @@ gaps**, not porting defects:
   coroutine resume so command-complete `DeliverEvent` reaches the waiter.
 - Do **not** fake the `0x700`/phase writes or inject CPU confirms in
   `game/*.c` — that would mask the real device/runtime gaps.
+
+## 7. Refinement — pad-2 is needed ONLY for the select-screen confirm, NOT fight inputs
+
+Live watch on attract instance (:9811, `game.toml` players=2) through a full
+demo cycle (`gs=3→4→5→6`): **`DAT_801befca` (pad-2 buttons) stayed constant
+`…41ffff…` (no-controller sentinel) the entire time, including during `gs=6`
+demo fights that run REAL CPU-vs-CPU combat.** `battle+0xb4/b6` read `0`
+between demos.
+
+⇒ **CPU/demo FIGHT inputs do NOT travel the pad-2 hardware channel.** The
+per-fighter AI/demo input is merged into the fighter input structs directly
+(`battle_input_dispatch`→`pad_handler_*` consume a per-fighter button mask
+computed by `battle_config_eval`'s callees). Attract CPU-vs-CPU works with
+zero pad-2 traffic.
+
+⇒ The pad-2 dependency is **narrowly the SELECT-screen opponent confirm**:
+`mc_pad_button_handler` (`save.c:1732`) seeds a slot's phase only on that
+slot's pad **edge** (`+0x68` P0 / `+0x6a` P1), and `mc_slot_action`
+(`save.c:2003`) case-0 (arcade `9b=0`) writes `phase[param_2]=0x100` for the
+single pressed slot only. The CPU slot (1) reaches `0x100` solely via a
+`battle+0x6a` (pad-2) edge — which `pad_state_refresh` derives solely from
+`DAT_801befca` (SIO controller-2). No clean- OR generated-literal writer
+feeds `DAT_801befca`/`battle+0x6a` for CPU.
+
+**Open question (next session):** on real hardware, does the select-screen
+CPU opponent's confirm come from (a) an internal CPU-select-AI that writes
+pad-2/synthetic input — in which case it lives in generated/unported code
+and porting/fixing that path is the answer, or (b) a genuine second
+controller — in which case the fix is a device-model virtual controller-2.
+Discriminator: find the CPU cursor/auto-confirm writer in the select-screen
+call tree (`select_screen_tick` 0x8014f260 → `select_cursor_step`
+0x8014f1c8 → `select_confirm_handler` 0x80148528) or consult the Beetle
+oracle for arcade-mode pad-2 behaviour.
