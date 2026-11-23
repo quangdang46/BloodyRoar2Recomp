@@ -26,6 +26,8 @@ typedef void code(void);
 
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
+extern uint32_t br2_guest_frame(uint32_t);
+extern void br2_guest_frame_free(void);
 extern uint32_t bios_svc(uint32_t table,uint32_t svc,uint32_t a0,uint32_t a1);
 extern uint32_t guest_sp(void);
 extern uint16_t psx_read_half(uint32_t addr);
@@ -6459,7 +6461,7 @@ void hud_announce(uint32_t a0,uint32_t a1,uint32_t a2)
   uint32_t sel = a1;
   uint32_t r8, rc;
   int32_t x2, y2, y3;
-  char buf[16];
+  char *buf;
   (void)a2;
 
   r8 = g32(a0 + 0xc8);
@@ -6487,8 +6489,12 @@ void hud_announce(uint32_t a0,uint32_t a1,uint32_t a2)
                  (int16_t)(x2 - 0x79), y3, 0xe);
     return;
   case 3: {
-    char *bp = buf;
+    char *bp;
     int32_t v;
+    /* sprintf'd string is handed to descblk_variant_e -> guest_of(param_3);
+     * a host stack buffer yields 0. Back it with a guest frame. */
+    buf = (char *)guest_at(br2_guest_frame(0x20) + 0x10);
+    bp = buf;
     descblk_variant_e(r8, rc, (const void *)guest_at(0x801207a0),
                  (int16_t)(x2 - 0x4d), y3, 0xe);
     sprintf_core(bp, (char *)guest_at(0x801207a8),
@@ -6497,6 +6503,7 @@ void hud_announce(uint32_t a0,uint32_t a1,uint32_t a2)
     if (v < 0) v += 7;
     v >>= 3;
     descblk_variant_e(r8, rc, bp, 0x1000, v, 0xe);
+    br2_guest_frame_free();
     return;
   }
   case 4:
@@ -6562,11 +6569,15 @@ void hud_announce(uint32_t a0,uint32_t a1,uint32_t a2)
     int32_t hi = (int32_t)(m >> 32);
     int32_t num = 9 - (int32_t)(((int32_t)(hi << 11)) >> 16);
     int32_t v;
+    /* sprintf'd string is handed to descblk_variant_e -> guest_of(param_3);
+     * a host stack buffer yields 0. Back it with a guest frame. */
+    buf = (char *)guest_at(br2_guest_frame(0x20) + 0x10);
     sprintf_core(buf, (char *)guest_at(0x80120824), num);
     v = (*(int16_t *)(s0 + 0x22) * 3);
     if (v < 0) v += 3;
     v = hud_div4(v) - 0x30;
     descblk_variant_e(r8, rc, buf, 0, (int16_t)v, 8);
+    br2_guest_frame_free();
     return;
   }
   case 22:

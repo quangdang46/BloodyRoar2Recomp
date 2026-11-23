@@ -30,6 +30,8 @@ extern uint32_t guest_of(const void *p);
 extern uint32_t br2_gaddr(const void *p);
 extern void br2_st8(uint32_t a, uint8_t v);
 extern uint32_t guest_sp(void);
+extern uint32_t br2_guest_frame(uint32_t);
+extern void br2_guest_frame_free(void);
 extern uint8_t *_g_system_config_ptr;
 extern uint8_t *_g_pad_buffer;
 /* g_game_state/g_sub_state are guest scratchpad bytes at 0x1f800000/0x1f800002
@@ -10359,14 +10361,21 @@ int32_t sprite_slot_commit(uint32_t param_1,uint32_t param_2,uint32_t param_3,
                      uint32_t param_4,uint32_t param_5,uint32_t param_6)
 {
   uint32_t s0 = (uint32_t)queue_slot_peek();
-  uint32_t blk[2];
+  uint32_t *gbuf;
   if (s0 == 0) return 0;
-  blk[0] = (param_1 & 0xffffu) | ((param_2 & 0xffffu) << 16);
-  blk[1] = (param_3 & 0xffffu) | ((param_4 & 0xffffu) << 16);
+  /* The four-u16 packet buf is handed to gpu_texclut_pkt, which resolves
+   * a1 via guest_of()/guest_at(): a host stack buffer yields guest_of()==0
+   * and the fallback reads the host pointer bits as a guest address
+   * (garbage). Back it with a guest frame so guest_of() resolves it like
+   * the generated guest-stack buffer. */
+  gbuf = (uint32_t *)guest_at(br2_guest_frame(0x20) + 0x10);
+  gbuf[0] = (param_1 & 0xffffu) | ((param_2 & 0xffffu) << 16);
+  gbuf[1] = (param_3 & 0xffffu) | ((param_4 & 0xffffu) << 16);
   MW16(0x1f8000d2u, s0);
   gpu_texclut_pkt((uint32_t *)guest_at(MB32(0x1f800004u) + s0 * 24u
                                       + 0x20d8u),
-               blk, param_5, param_6);
+               gbuf, param_5, param_6);
+  br2_guest_frame_free();
   return (int32_t)s0;
 }
 
