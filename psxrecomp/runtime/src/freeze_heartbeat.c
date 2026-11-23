@@ -423,7 +423,7 @@ static void freeze_dump_device_state_json(FILE *f) {
      * device-command record/kernel region (0x801FFxxx) — the bad rec+0x14/+0x18
      * handler source for the state_commit/state_rx wild dispatch. */
     {
-        typedef struct { uint32_t seq, frame, pc, gaddr, val, sp; } FdRecVal;
+        typedef struct { uint32_t seq, frame, pc, gaddr, val, sp, ra; } FdRecVal;
         extern FdRecVal   g_recval_ring[];
         extern uint64_t   g_recval_seq;
         fputs("\"recvalring\":{\"seq\":\"0x", f);
@@ -436,8 +436,9 @@ static void freeze_dump_device_state_json(FILE *f) {
             uint64_t idx2 = total - 1 - j;
             FdRecVal *e = &g_recval_ring[idx2 & 63u];
             fprintf(f, "{\"seq\":%u,\"frame\":%u,\"pc\":\"0x%08X\","
-                       "\"gaddr\":\"0x%08X\",\"val\":\"0x%08X\",\"sp\":\"0x%08X\"}",
-                    e->seq, e->frame, e->pc, e->gaddr, e->val, e->sp);
+                       "\"gaddr\":\"0x%08X\",\"val\":\"0x%08X\",\"sp\":\"0x%08X\","
+                       "\"ra\":\"0x%08X\"}",
+                    e->seq, e->frame, e->pc, e->gaddr, e->val, e->sp, e->ra);
         }
         fputs("]},", f);
     }

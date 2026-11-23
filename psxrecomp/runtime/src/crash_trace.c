@@ -735,7 +735,7 @@ void psx_crash_trace_dump(const char *reason, void *seh_info) {
      * target that plants the bad rec+0x14/+0x18 handler the state_commit/state_rx
      * jalr then dispatches (proof/dev_cmd_record_handler_wild_dispatch.md). */
     {
-        typedef struct { uint32_t seq, frame, pc, gaddr, val, sp; } FdRecVal;
+        typedef struct { uint32_t seq, frame, pc, gaddr, val, sp, ra; } FdRecVal;
         extern FdRecVal   g_recval_ring[];
         extern uint64_t   g_recval_seq;
         uint64_t total = g_recval_seq;
@@ -750,8 +750,9 @@ void psx_crash_trace_dump(const char *reason, void *seh_info) {
             FdRecVal *e = &g_recval_ring[idx2 & 63u];
             append_fmt(buf, sizeof(buf), &pos,
                        "{\"seq\":%u,\"frame\":%u,\"pc\":\"0x%08X\","
-                       "\"gaddr\":\"0x%08X\",\"val\":\"0x%08X\",\"sp\":\"0x%08X\"}",
-                       e->seq, e->frame, e->pc, e->gaddr, e->val, e->sp);
+                       "\"gaddr\":\"0x%08X\",\"val\":\"0x%08X\",\"sp\":\"0x%08X\","
+                       "\"ra\":\"0x%08X\"}",
+                       e->seq, e->frame, e->pc, e->gaddr, e->val, e->sp, e->ra);
         }
         append_str(buf, sizeof(buf), &pos, "]},\n");
     }

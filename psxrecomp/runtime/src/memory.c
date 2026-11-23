@@ -1032,7 +1032,7 @@ static inline void wval_note_write(uint32_t gaddr, uint32_t val) {
  * target + value so the fatal dump names the exact store. 64 entries is
  * plenty — this pattern is rare. */
 #define RECVAL_RING_CAP 64u
-typedef struct { uint32_t seq, frame, pc, gaddr, val, sp; } RecValEntry;
+typedef struct { uint32_t seq, frame, pc, gaddr, val, sp, ra; } RecValEntry;
 RecValEntry g_recval_ring[RECVAL_RING_CAP];
 uint64_t    g_recval_seq = 0;
 static inline void recval_note_write(uint32_t gaddr, uint32_t val) {
@@ -1045,6 +1045,7 @@ static inline void recval_note_write(uint32_t gaddr, uint32_t val) {
     e->gaddr = gaddr;
     e->val   = val;
     e->sp    = debug_cpu_ptr ? debug_cpu_ptr->gpr[29] : 0;
+    e->ra    = debug_cpu_ptr ? debug_cpu_ptr->gpr[31] : 0;
     g_recval_seq++;
 }
 
