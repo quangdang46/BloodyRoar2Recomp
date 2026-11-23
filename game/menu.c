@@ -1818,7 +1818,7 @@ LAB_80165090:
           }
           else if (DAT_1f800001 < 2) {
             if (((DAT_1f800001 != 0) || (iVar2 = frame_divisor_get(), iVar2 != 0)) ||
-               (iVar2 = intro_movie_state(), iVar2 == 0)) goto LAB_801658b4;
+               (iVar2 = intro_movie_state(0), iVar2 == 0)) goto LAB_801658b4;
             sprite_desc_table_init(1);
             print_mode_dispatch_b(2,0,0);
             _DAT_1f80008c = 0;
