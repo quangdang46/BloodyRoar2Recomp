@@ -270,3 +270,21 @@ saved-ra slot genuinely overlaps cd_timer_read's spill. The decisive
 missing datum is the crash-time value of `*(*0x108)` / `k1` inside
 `0x29CC` — needs a k1 watchpoint or an `rwatchpc`-style recorder on the
 `lw k1,8(0x108)` / `lw k1,0(k1)` loads (phys `0x108`, `*(0x108)`).
+
+## CRASH IS FLAKY / TIMING-DEPENDENT (port 9980)
+
+A fresh run with `wtrace` on `0x8FD0` + `rwatchpc` on `0x8FD0`(rt=27)
++ `0x801FFE58`(rt=31) armed **did NOT crash** — sailed past frame ~1630
+to `FIGHT REACHED` @3852 and was still advancing @4202 (battle phase
+`0x1F8000B4=0x0300`). `rwatchpc` on the current-TCB slot `0x8FD0`
+recorded **4264 reads, ALL `val=0x00008FE0`** (clean TCB) from
+`func=0x29CC` — the context-restore runs every frame for scheduling and
+always resolved cleanly this run.
+
+So the `*(*0x108) → stack-pointer` corruption is **transient/racy**,
+not deterministic logic — consistent with a timing-sensitive overlap
+between the deferred-IRQ coroutine's guest frames and the BIOS
+context-save area (an IRQ landing at the unlucky sp). Three prior runs
+crashed ~frame 1630; this instrumented run dodged it (instrumentation
+perturbs timing → Heisenbug). The faithful fix is still required — the
+collision is real when the timing hits.
