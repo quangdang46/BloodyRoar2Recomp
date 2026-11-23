@@ -288,3 +288,37 @@ context-save area (an IRQ landing at the unlucky sp). Three prior runs
 crashed ~frame 1630; this instrumented run dodged it (instrumentation
 perturbs timing → Heisenbug). The faithful fix is still required — the
 collision is real when the timing hits.
+
+## CRASH-MOMENT READ TRACE (crash_9990.json, deterministic repro)
+
+`tools/crash_hunt.py` reproduced the halt **6/6** at frame ~1560-1600 with
+identical signature (`ra=0x0000EE93`, `sp=0x801FFE60`, `epc=0x8019A648`).
+Not flaky under this harness — the earlier "flaky" read was instrumentation
+perturbation on a different path.
+
+`rwatchpc` newest entries (func=`0x29CC`, rt=31 = `$ra` restores), frame 1572:
+
+```
+seq  phys      val        note
+33002 0x1FFE18 0x801926AC valid saved-ra
+33006 0x1FFE10 0x8019A518 valid saved-ra
+33007 0x1FFE10 0x8019A53C valid saved-ra
+33009 0x1FFE10 0x80192F40 valid saved-ra
+33013 0x1FFE18 0x801926AC valid saved-ra
+33015 0x1FFE58 0x0000EE93  <-- WILD (timer spill)
+```
+
+The restore walks a **kernel-stack context frame** (~`0x801FFE00`–`0x801FFE60`)
+and every saved-reg slot returns a plausible return address EXCEPT `0x1FFE58`,
+which `cd_timer_read`'s `sw v0,16(sp)` overwrote with a T2 count. So both the
+SAVE (`0x27AC`) and RESTORE (`0x29CC`) used the SAME transient stack-addr
+context pointer `*(*0x108)` — i.e. during this exception/IRQ window the
+current-context chain is redirected onto the kernel stack, and the BIOS
+context-save area collides with a live `cd_timer_read` frame.
+
+This refines the model: it is NOT the main TCB (`0x8FE0`) and NOT a one-off
+bad pointer — it is a **nested/temporary context living on the kernel stack**
+whose saved-`$ra` slot (`ctx+124 = 0x801FFE58`) is exactly `cd_timer_read`'s
+`sp+16` spill. The faithful fix must keep the exception context off the
+transient kernel stack (or give the deferred-coroutine frame a non-overlapping
+stack), in `interrupts.c`/`traps.c` context management — not in game code.
