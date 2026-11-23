@@ -111,3 +111,40 @@ round-robin counter (idx=1, table intact) and NOT a handler-table read.
 - The `func=0x00001B7C` SIO poll routine and the IRQ restore path are the
   two halves to join: which TCB/context does the restore pick, and does it
   match the interrupted SIO-poll thread?
+
+## Mechanism nailed down — TCB saved-PC slot (traps.c / interrupts.c)
+
+The dispatch target `cpu->pc = 0x801BCBA0` is produced by the guest/host
+**context restore** `jr $k0`, where `k0 = *(TCB + 0x88)` = the thread's
+saved resume-PC. Layout (`psx_save_context_to_tcb`, traps.c:356):
+`save = tcb+8`; GPRs→`save+i*4`; **`resume_pc → save+128 = tcb+0x88`**;
+hi/lo/SR/CAUSE follow. `psx_restore_context_from_tcb` reads it back into
+`gpr[26]` (k0) and the recompiled ChangeThread/RFE (func `0x29CC`) ends
+`jr $k0` → cpu->pc = saved resume_pc.
+
+So `*(TCB+0x88) = 0x801BCBA0` — a CD-command-block field ADDRESS stored
+where a code resume-PC belongs. Written either by:
+- `psx_save_context_to_tcb(cpu, tcb, resume_pc)` with a bad `resume_pc`
+  (callers pass `cpu->gpr[31]`=$ra at traps.c:629/750, or
+  `s_last_interrupt_check_pc` at interrupts.c:1752), or
+- the guest kernel's own SaveContext writing a corrupted pc, or
+- a data write clobbering the TCB+0x88 slot (CD/SIO block is adjacent BSS).
+
+The `rfe29cc`/`irqanom` null-PC latches in the freeze dump are all ZERO —
+this is NOT the "restore jumps to pc==0" case; it's a restore to a
+non-zero garbage resume-PC. `in_exception=1` at crash means the bad
+`jr $k0` fired inside the exception/IRQ handler's ChangeThread path.
+
+`defer_switch=false` is active → genuine cross-thread switches take the
+immediate `longjmp(g_scheduler_jmpbuf)` → `psx_scheduler_run` resume path
+(interrupts.c:2573-2592), NOT the deferred honor path (inactive).
+
+## Open question for the fix
+Is `0x801BCBA0` a *legit* saved-PC that is simply not dispatchable (a
+kernel idle/wait trampoline living in BSS that the static pass never
+seeded — i.e. a recompiler discovery gap), or a *corrupted* slot?
+Discriminator: check whether ANY guest code legitimately resides at / is
+entered via 0x801BCBA0, and whether the TCB that produced it was mid-SIO-
+poll (its $ra/resume should be a code addr). If legit-but-undiscovered →
+seed it; if corrupted → find the bad resume_pc source (the $ra /
+interrupt_check_pc latch that captured 0x801BCBA0).
