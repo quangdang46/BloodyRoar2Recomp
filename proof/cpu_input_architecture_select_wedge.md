@@ -85,3 +85,29 @@ responsive through attract cycles AND the versus fight on 9821, where the
 clean-C `for(;;)` previously starved it permanently (the earlier 9820 wedge
 showed `battle_intro_flow→battle_frame_tick→ev_stream_dispatch→ev5_action_select`
 in `sample` with a dead server).
+
+## UPDATE — versus-1P reaches sustained CPU combat with ONLY P1 input
+
+`tools/versus_p1only.py` (new) navigates to versus (`9b=2`) injecting ONLY
+slot-0 — never slot-1. Observed on port 9830:
+
+- Reached "FIGHT" at t=4s with zero slot-1 injection.
+- Slot phases `0x1f8000b4`/`b6` cycled `0x0300`(announce) →
+  `0x1400`/`0x0500`(in-fight) → `0x1100`/`0x0100`(round end) → `0x0300`
+  repeatedly over 30+s — **multiple rounds resolving**.
+- `gs/ph` cycled `8`(battle)↔`3`/`4`(transitions) as rounds ended/re-entered.
+
+**Conclusion: versus mode on a 1-player instance auto-drives the slot-1 CPU
+opponent through BOTH select-confirm AND fight — no pad-2 needed.** The
+CPU-select/CPU-input machinery is fully functional in versus (`9b=2`).
+
+Reconciliation with `mc_slot_action`: case-2 (versus) seeds BOTH `+0xb4`
+and `+0xb6` to `0x100` on ANY confirm press — so versus never needed pad-2
+for the *seed*; and the slot-1 cursor/confirm is evidently CPU-driven when
+no pad-2 is present (the versus_fight_mash's slot-1 injection was
+unnecessary for CPU play).
+
+**=> The wedge is ARCADE-SPECIFIC (`9b=0`).** Versus-1P is a fully working
+CPU-opponent mode — a live, faithful testbed for the clean tree. Arcade
+uses `mc_slot_action` case-0 (per-slot pad seed) + `battle_frame`, a
+different select flow that is the actual broken path.
