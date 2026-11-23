@@ -274,6 +274,40 @@ static uint32_t  s_rec_overflow = 0;
 int             g_ram_read_watch_active = 0;
 static uint32_t s_rwatch_lo = 0, s_rwatch_hi = 0;
 
+/* ---- Load-side PC watch (ra-from-stack-slot forensics) ----
+ * Mirrors wtrace but for READS: records (phys,val,cpu->pc block leader,
+ * func,frame) for main-RAM loads inside [lo,hi). Used to catch which
+ * `lw ra, off(sp)` epilogue consumes a poisoned stack slot. Flag-gated;
+ * zero cost when disarmed. */
+#define RWPC_RING_CAP 8192
+int      g_rwatchpc_active = 0;
+uint32_t g_rwatchpc_lo = 0, g_rwatchpc_hi = 0;
+uint32_t g_rwatchpc_rt = 0;   /* optional rt filter (e.g. 31 = only $ra loads) */
+typedef struct {
+    uint32_t seq, phys, val, cpu_pc, func, frame, rt;
+} RwPcEntry;
+static RwPcEntry s_rwpc[RWPC_RING_CAP];
+static uint32_t  s_rwpc_head = 0, s_rwpc_total = 0;
+
+void debug_server_rwatchpc_note(uint32_t phys, uint32_t val, uint32_t rt, CPUState *cpu)
+{
+    if (!g_rwatchpc_active) return;
+    if (phys < g_rwatchpc_lo || phys >= g_rwatchpc_hi) return;
+    if (g_rwatchpc_rt && rt != g_rwatchpc_rt) return;
+    extern uint32_t g_debug_current_func_addr;
+    extern uint64_t s_frame_count;
+    RwPcEntry *e = &s_rwpc[s_rwpc_head];
+    e->seq    = s_rwpc_total;
+    e->phys   = phys;
+    e->val    = val;
+    e->cpu_pc = cpu ? cpu->pc : 0;
+    e->func   = g_debug_current_func_addr;
+    e->frame  = (uint32_t)s_frame_count;
+    e->rt     = rt;
+    s_rwpc_head = (s_rwpc_head + 1) % RWPC_RING_CAP;
+    s_rwpc_total++;
+}
+
 static inline void rec_event(uint8_t kind, uint32_t addr, uint32_t val,
                              uint32_t pc, uint32_t ra)
 {
@@ -10072,6 +10106,58 @@ static void handle_wtrace_ranges(int id, const char *json)
     free(buf);
 }
 
+/* ---- rwatchpc: load-side PC watch ---- */
+static void handle_rwatchpc_arm(int id, const char *json)
+{
+    char lo_str[32], hi_str[32];
+    if (!json_get_str(json, "lo", lo_str, sizeof(lo_str))) { send_err(id, "missing lo"); return; }
+    if (!json_get_str(json, "hi", hi_str, sizeof(hi_str))) { send_err(id, "missing hi"); return; }
+    g_rwatchpc_lo = hex_to_u32(lo_str) & 0x1FFFFFFFu;
+    g_rwatchpc_hi = hex_to_u32(hi_str) & 0x1FFFFFFFu;
+    g_rwatchpc_rt = (uint32_t)json_get_int(json, "rt", 0);
+    s_rwpc_head = 0; s_rwpc_total = 0;
+    g_rwatchpc_active = (g_rwatchpc_hi > g_rwatchpc_lo) ? 1 : 0;
+    send_fmt("{\"id\":%d,\"ok\":true,\"lo\":\"0x%08X\",\"hi\":\"0x%08X\",\"rt\":%u,\"active\":%d}",
+             id, g_rwatchpc_lo, g_rwatchpc_hi, g_rwatchpc_rt, g_rwatchpc_active);
+}
+
+static void handle_rwatchpc_disarm(int id, const char *json)
+{
+    (void)json;
+    g_rwatchpc_active = 0;
+    send_ok(id);
+}
+
+static void handle_rwatchpc_dump(int id, const char *json)
+{
+    (void)json;
+    int max_out = json_get_int(json, "count", 512);
+    if (max_out < 1) max_out = 1;
+    if (max_out > 4096) max_out = 4096;
+    uint32_t avail = (s_rwpc_total < RWPC_RING_CAP) ? s_rwpc_total : RWPC_RING_CAP;
+    uint32_t start = (s_rwpc_total < RWPC_RING_CAP) ? 0 : s_rwpc_head;
+    const size_t BUF_SZ = 256u + (size_t)max_out * 200u;
+    char *buf = (char *)malloc(BUF_SZ);
+    if (!buf) { send_err(id, "oom"); return; }
+    size_t pos = 0; uint32_t emitted = 0;
+    pos += snprintf(buf + pos, BUF_SZ - pos,
+                    "{\"id\":%d,\"ok\":true,\"total\":%u,\"available\":%u,\"entries\":[",
+                    id, s_rwpc_total, avail);
+    for (uint32_t i = 0; i < avail && emitted < (uint32_t)max_out && pos < BUF_SZ - 200; i++) {
+        uint32_t idx = (start + i) % RWPC_RING_CAP;
+        RwPcEntry *e = &s_rwpc[idx];
+        pos += snprintf(buf + pos, BUF_SZ - pos,
+                        "%s{\"seq\":%u,\"phys\":\"0x%08X\",\"val\":\"0x%08X\","
+                        "\"cpu_pc\":\"0x%08X\",\"func\":\"0x%08X\",\"frame\":%u,\"rt\":%u}",
+                        (emitted == 0) ? "" : ",",
+                        e->seq, e->phys, e->val, e->cpu_pc, e->func, e->frame, e->rt);
+        emitted++;
+    }
+    pos += snprintf(buf + pos, BUF_SZ - pos, "]}");
+    debug_server_send_line(buf);
+    free(buf);
+}
+
 /* ---- cyc_watch command handlers (see cyc_watch_observe above) ---- */
 
 /* cyc_watch — arm an anchor PC. {"pc":"0x...","n":16}. Clears the ring,
@@ -14581,6 +14667,9 @@ static const CmdEntry s_commands[] = {
     { "wtrace_trans_dump",   handle_wtrace_trans_dump },
     { "wtrace_trans_stats",  handle_wtrace_trans_stats },
     { "wtrace_trans_reset",  handle_wtrace_trans_reset },
+    { "rwatchpc_arm",        handle_rwatchpc_arm },
+    { "rwatchpc_disarm",     handle_rwatchpc_disarm },
+    { "rwatchpc_dump",       handle_rwatchpc_dump },
     { "call_focus_dump",     handle_call_focus_dump },
     { "call_focus_stats",    handle_call_focus_stats },
     { "call_focus_reset",    handle_call_focus_reset },

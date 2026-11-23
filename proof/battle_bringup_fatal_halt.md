@@ -193,3 +193,54 @@ breakpoint (value in `0x0000E000–0x0000EFFF`, high16==0) or a
 cluster + the OpenBIOS wait/ChangeThread frames that own stack
 `0x801FFE18–0x801FFE60`. Repro is deterministic (~frame 1650) on a
 fresh `game_1pad.toml` + `arcade_fight_mash.py` drive.
+
+## WRITER + READER CAUGHT (rwatchpc + wtrace, port 9970, frame ~1632)
+
+New instrumentation (`rwatchpc_arm/rt` read-PC recorder + existing
+`wtrace`) caught both sides on a live repro:
+
+**WRITER — `sw v0,16(sp)` at guest `0x8019A48C`** (cd_timer_read
+prologue, `generated/SLES_017.22_full_46.c:24180`, opcode `0xAFA20010`).
+cd_timer_read frame `sp=0x801FFE48`; `sp+16 = 0x801FFE58`. It spills
+`v0 = **0x801CCCAC` — a double-deref whose final pointer is
+`a1 = *0x801CCCAC = 0x1F801110` = **T2_COUNT** (PSX timer-2 counter).
+So `v0 = *0x1F801110` = a raw timer count (`0x0000EE93`, `0x0000618D`,
+`0x00006354` — all benign timer snapshots). **The spill itself is
+faithful and harmless; the value is NOT a corrupted pointer.**
+
+wtrace shows `0x801FFE58` received ONLY these v0 spills (4 writes total:
+seq 133/134 @f872 `0x6354→0x618D`, seq 1881/1882 @f1194 `0x618D→0xEE93`).
+**No context-save ever wrote a real ra there** → the restore reads a
+slot that never held a return address.
+
+**READER — `lw $ra` (rt=31) inside `OpenBIOS_func_000029CC`**
+(context restore / ReturnFromException-ChangeThread tail). rwatchpc
+recorded exactly ONE ra-load of `0x801FFE58` in the whole run — the
+crash consumer (cpu_pc=0, func=0x29CC, frame 1632).
+
+**Mechanism — kernel-stack/context-frame collision:**
+`sp_ring` shows the cooperative schedule cycling sp across
+`0x801FFE18 / 0x801FFDF8` (kernel stack, top-of-RAM), `0x801BDD30`
+(game/CD stack), and `0x00008548` (low-mem BIOS trampoline stack),
+all under `tcb=0x8FE0`. The 0x29CC restore resolves its context base
+`k1 = *(*0x108)` → thread kernel-stack context ≈ `0x801FFDDC`, whose
+saved-ra slot lands at `0x801FFE58` — **the same address cd_timer_read
+uses for its v0 spill**. cd_timer_read runs inside the CD/IRQ deferred
+coroutine on the kernel stack; its 40-byte frame overlaps the
+exception/context save area. When the coroutine yields/switches, the
+context restore reads the spill (timer count) as `$ra` → wild PC →
+`0x29CC` livelock.
+
+**This is a stack-frame overlap between the deferred-IRQ coroutine's
+guest frames and the kernel exception/context save area — a runtime
+stack-management defect, not game logic and not a TCB-resume_pc fault.**
+
+## Refined next step
+
+Determine why cd_timer_read's frame (`sp=0x801FFE48`) overlaps the
+kernel context-save slot (`0x801FFE58`): trace the context-base `k1`
+resolution in `0x29CC` at the crash and the kernel-stack pointer stored
+in the TCB (`0x8FE0` region) vs the sp the deferred coroutine runs at.
+Candidate fixes live in `interrupts.c`/`traps.c` deferred-coroutine
+stack selection — the guest frames and the BIOS context frames must
+not share addresses.

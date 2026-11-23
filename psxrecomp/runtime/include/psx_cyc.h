@@ -39,6 +39,13 @@
 extern "C" {
 #endif
 
+/* Load-side PC watch (debug_server.c): when armed, record (phys,val,rt,
+ * block-leader cpu->pc) for main-RAM loads so a poisoned stack slot's
+ * consuming `lw ra` can be attributed. Flag is 0 in normal runs. */
+extern int      g_rwatchpc_active;
+extern uint32_t g_rwatchpc_lo, g_rwatchpc_hi;
+void debug_server_rwatchpc_note(uint32_t phys, uint32_t val, uint32_t rt, CPUState *cpu);
+
 /* Load-charge batching (MotK VLC): cache the nearer of the next device
  * deadline or a 64-cycle soft publication limit once per batch. Generated
  * GCC/Clang blocks may defer to their IRQ edge; MMIO also flushes. Pipeline
@@ -251,6 +258,8 @@ static inline uint32_t psx_cyc_load_word(CPUState* cpu, uint32_t addr,
         }
         uint32_t value;
         memcpy(&value, g_psx_ram + (phys & 0x1FFFFFu), sizeof(value));
+        if (g_rwatchpc_active && phys >= g_rwatchpc_lo && phys < g_rwatchpc_hi)
+            debug_server_rwatchpc_note(phys, value, rt, cpu);
         return value;
     }
     return psx_cyc_load_word_slow(cpu, addr, rt, reg_mask);
