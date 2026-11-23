@@ -460,6 +460,9 @@ static RuntimeConfig parse_runtime_block(const toml::value& cfg, const fs::path&
     if (runtime.contains("hle_scheduler")) {
         rt.hle_scheduler = toml::find<bool>(runtime, "hle_scheduler");
     }
+    if (runtime.contains("defer_switch")) {
+        rt.defer_switch = toml::find<bool>(runtime, "defer_switch");
+    }
     if (runtime.contains("overlay_cache")) {
         rt.overlay_cache = toml::find<bool>(runtime, "overlay_cache");
     }

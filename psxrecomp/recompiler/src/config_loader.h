@@ -260,6 +260,17 @@ struct RuntimeConfig {
     // env wins over this key. Runtime: traps.c psx_hle_scheduler_enabled().
     bool                  hle_scheduler = true;
 
+    // defer_switch: honor in-exception thread switches (PCB[0] moves inside
+    // the IRQ handler's RFE) at the next outermost block-leader boundary
+    // instead of immediately. Default ON (the Ape-memcard poisoned-save fix);
+    // PSX_DEFER_SWITCH env wins. Runtime: interrupts.c
+    // defer_switch_enabled(). Bloody Roar II sets this false: the deferred
+    // re-save captures the outgoing thread at a shallow shared-kernel-stack
+    // point whose frame slots are then reused by later IRQ-side activations,
+    // producing the deterministic vsync_wait_n/cd_timer_read ra clobber at
+    // ~frame 1600 (proof/crash_defer_switch_ab.md).
+    bool                  defer_switch = true;
+
     // overlay_cache: enable the overlay DLL cache + capture (Layer A). Off by
     // default. When true the runtime scans cache/<game_id>/ for precompiled
     // overlay DLLs (loaded ahead of the dirty-RAM interpreter) and records

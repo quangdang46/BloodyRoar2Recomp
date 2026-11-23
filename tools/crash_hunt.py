@@ -85,9 +85,21 @@ def dump_diag(port, tag):
     # stack-window probes (armed below): every write + every $ra load in the
     # kernel-frame collision zone around 0x801FFE58.
     d["wtrace_stack"] = cmd(port, {"cmd": "wtrace_dump",
-        "addr_lo": "0x1FFE50", "addr_hi": "0x1FFE64", "newest": 1, "count": 512}, 30)
+        "addr_lo": "0x1FFE40", "addr_hi": "0x1FFE80", "newest": 1, "count": 1024}, 30)
+    d["disp_ring"] = cmd(port, {"cmd": "disp_ring", "count": 128}, 20)
     d["wtrace_all_stack"] = cmd(port, {"cmd": "wtrace_all_dump",
         "addr_lo": "0x1FFE58", "addr_hi": "0x1FFE5C", "newest": 1, "count": 64}, 60)
+    # cd_ctx_save frame 0x801BCD40-0x801BCD80: writes to saved-sp cell
+    # 0x1BCD54 carry new_val = the SP the CD coroutine is resumed on.
+    d["wtrace_ctx"] = cmd(port, {"cmd": "wtrace_dump",
+        "addr_lo": "0x1BCD40", "addr_hi": "0x1BCD80", "newest": 1, "count": 512}, 30)
+    d["wtrace_all_ctx"] = cmd(port, {"cmd": "wtrace_all_dump",
+        "addr_lo": "0x1BCD40", "addr_hi": "0x1BCD80", "newest": 1, "count": 256}, 60)
+    # postmortem RAM reads (may fail if the debug server is already dead).
+    d["mem_ctx"] = cmd(port, {"cmd": "mem_words",
+        "addr": "0x801bcd50", "count": 16}, 10)
+    d["mem_stkwin"] = cmd(port, {"cmd": "mem_words",
+        "addr": "0x801ffe40", "count": 16}, 10)
     path = os.path.join(OUTDIR, "crash_%d.json" % port)
     with open(path, "w") as f:
         json.dump(d, f, indent=1)
@@ -104,9 +116,18 @@ def arm(port):
     # window 0x1FFE00-0x1FFE80. vsync_wait_n's `lw ra,24(sp)` lands here; the
     # crash-time entries show which load returned the wild 0xEE93-class value.
     cmd(port, {"cmd": "rwatchpc_arm", "lo": "0x1FFE00", "hi": "0x1FFE80", "rt": 31})
-    # wtrace the TIGHT collision slot 0x1FFE50-0x1FFE64: cold enough to retain
-    # the fatal write to the saved-ra slot at 0x1FFE58 for the whole run.
-    cmd(port, {"cmd": "wtrace_arm", "lo": "0x1FFE50", "hi": "0x1FFE64"})
+    # decisive #2 (cd_ctx_save hypothesis — FALSIFIED on crash_9101: saved sp
+    # is 0x801BDD30 thread stack). Keep the ctx write watch anyway.
+    cmd(port, {"cmd": "wtrace_arm", "lo": "0x1BCD40", "hi": "0x1BCD80"})
+    # decisive #3: EVERY $ra load (rt=31) sourced from the whole collision
+    # lane 0x1FFE40-0x1FFE80 — catches vsync_wait_n's epilogue lw ra,24(sp)
+    # AND any other frame's ra restore in the zone, with cpu_pc attribution.
+    cmd(port, {"cmd": "rwatchpc_arm", "lo": "0x1FFE40", "hi": "0x1FFE80", "rt": 31})
+    # wtrace the collision lane 0x1FFE40-0x1FFE80: captures BOTH cd_timer_read
+    # lanes' spills (FFE58/60 @sp=FFE48; FFE70/78 @sp=FFE60), vsync_wait_n's
+    # ra save (FFE58 @pc=8019A5F8 IF it ever runs at sp=FFE40), and s0/ra
+    # slots of the FFE60-lane activation.
+    cmd(port, {"cmd": "wtrace_arm", "lo": "0x1FFE40", "hi": "0x1FFE80"})
     # gwatch: mprotect page-watch on the two kernel cells — catches
     # UNTRACED writes (clean-C guest_at stores, DMA) that wtrace misses.
     cmd(port, {"cmd": "gwatch", "addr": "0x80000100", "len": 16})

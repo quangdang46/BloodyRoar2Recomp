@@ -1000,10 +1000,19 @@ static uint32_t s_defer_switch_from    = 0;  /* the interrupted thread to re-sav
 /* A/B toggle: PSX_DEFER_SWITCH=0 forces the legacy immediate-switch behavior
  * (longjmp the instant a mid-exception ChangeThread is detected, regardless of
  * nesting) so the deferred-switch fix can be compared against the baseline
- * without a rebuild. Default ON. Latched at first query. */
+ * without a rebuild. Default ON (config [runtime] defer_switch via
+ * psx_defer_switch_set_default; env wins). Latched at first query. */
+static int s_defer_switch_default = 1;
+
+void psx_defer_switch_set_default(int on)
+{
+    s_defer_switch_default = on ? 1 : 0;
+}
+
 static int defer_switch_enabled(void) {
     static int s = -1;
-    if (s < 0) { const char *e = getenv("PSX_DEFER_SWITCH"); s = (e && e[0] == '0') ? 0 : 1; }
+    if (s < 0) { const char *e = getenv("PSX_DEFER_SWITCH");
+                 s = (e && e[0]) ? ((e[0] == '0') ? 0 : 1) : s_defer_switch_default; }
     return s;
 }
 

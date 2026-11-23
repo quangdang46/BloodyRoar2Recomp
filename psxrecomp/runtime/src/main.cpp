@@ -12946,6 +12946,9 @@ int main(int argc, char** argv) {
             /* HLE-tier scheduler subsystem replacement default (env
              * PSX_HLE_SCHEDULER still wins; latched at first dispatch). */
             psx_hle_scheduler_set_default(gc.runtime.hle_scheduler ? 1 : 0);
+            /* Deferred in-exception thread-switch honor default (env
+             * PSX_DEFER_SWITCH still wins; latched at first query). */
+            psx_defer_switch_set_default(gc.runtime.defer_switch ? 1 : 0);
             /* Pin the overlay-region floor to THIS game's main-EXE text end so
              * runtime-loaded overlays (which load just above it) are dispatched
              * via in-interpreter local-flow chaining, NOT the slow block-by-block

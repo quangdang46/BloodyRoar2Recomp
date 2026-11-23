@@ -72,6 +72,11 @@ int psx_interrupts_checked_at_current_cycle(uint32_t resume_pc);
  * their explicit checks while dirty/interp-to-static entries get a boundary. */
 void psx_check_interrupts_dispatch_entry(struct CPUState* cpu, uint32_t resume_pc);
 
+/* Config default for the deferred in-exception thread-switch honor
+ * (interrupts.c s_defer_switch_*). PSX_DEFER_SWITCH env still wins;
+ * latched at first query. Default ON. */
+void psx_defer_switch_set_default(int on);
+
 /* Accumulate emitted PSX cycles toward the next VBlank trigger.
  * Called from psx_advance_cycles() so the VBlank rate is gated on
  * guest cycles (correct PSX timing) rather than block-dispatch

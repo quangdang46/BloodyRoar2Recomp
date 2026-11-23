@@ -54,6 +54,13 @@ memcard_dir = "saves"
 # init to the game EXE, skipping the BIOS/PlayStation intro. Complements the
 # Skip Intro FMVs mod. Set to false to play the authentic BIOS boot.
 bios_hle = true
+# Bloody Roar II: the deferred in-exception thread-switch honor corrupts the
+# shared kernel-stack coroutine frames — vsync_wait_n's saved $ra slot at
+# 0x801FFE58 is overwritten by a later IRQ-side cd_timer_read activation,
+# producing the deterministic fatal dispatch at ~frame 1600. The immediate
+# (guest-faithful RFE-boundary) honor survives 60k+ frames under mash.
+# See proof/crash_defer_switch_ab.md. PSX_DEFER_SWITCH env still overrides.
+defer_switch = false
 
 [video]
 renderer = "opengl"
