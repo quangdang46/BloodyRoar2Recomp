@@ -10519,3 +10519,23 @@ N+102 — x28 bug narrowed to a frame_tick CALLEE (4 agents, still unfixed):
   or the IRQ dispatch should never coincide with the corruption window.
   A/B test `PSX_DEFER_SWITCH=0` (legacy immediate cooperative switch) launched
   on :9795 to discriminate the deferred-switch frontier. proof/cd_cmd_ack_delay.md.
+
+- **session (defer_state instrumentation + cooperative-switch RULED OUT for
+  this crash):** added `defer_state` debug cmd exposing
+  `psx_irq_delivery_diag` out[3,4,5] = s_defer_switch_pending/target/from.
+  On the record-table crash (9796, frame 6897, same 0x801BCB94) the latch
+  reads `defer_pending=0 target=0 from=0` — no BIOS cooperative ChangeThread
+  was armed at crash time (caveat: latch is transient, 3s poll could miss an
+  arm→consume). IMPORTANT distinction: the game's CD deferred-coroutine
+  (0x801BDxxx stack) is a SEPARATE mechanism from the BIOS s_defer_switch —
+  it runs via `cd_ctx_save`/`cd_ctx_restore` (jmp-buf 0x801BCD50={ra=0x8019A87C,
+  sp=0x801BDD30}) and is what increments DAT_801bdde0 to release the
+  cd_result_wait_a/cd_timer_read polls (cd.c:376-389). PSX_DEFER_SWITCH=0 A/B
+  crashed differently (0x80196BD4 timer/ctx-restore @5789) — timing-sensitive
+  but not a clean discriminator. The record-table crash is therefore an
+  IRQ-presentation race: cd_intc_dispatch's record dispatch reads
+  0x801FF080+slot*240 records at the instant the main thread's faithful
+  cd_file_load_sm nesting (sp→0x801FF0F0) has spilled session ptrs onto
+  rec+0x14. Next faithful lever: CD IRQ/HINT presentation timing vs the
+  deep-stack window — does the IRQ that runs record-dispatch fire while the
+  wait-loop stack is still deep on HW, or is it presented after unwind?
