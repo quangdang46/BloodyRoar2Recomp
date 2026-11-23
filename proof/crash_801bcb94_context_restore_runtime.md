@@ -97,3 +97,39 @@ Correct the **context ownership / save timing**, not the symptom:
 - `freeze_heartbeat.c` — `tctxring`, `badvalcdptr` (RAM scan),
   `wvalring`, `badctxring`, `ctxchain` dump sections.
 - `traps.c` — `g_badctx_ring` latch on the case-3 path (proved negative).
+
+## Update — restore stub identified statically (OpenBIOS_func_00003554)
+
+The guest kernel commit path is `OpenBIOS_func_00003554`
+(`generated/OpenBIOS_full.c` ~line 232872; referenced ROM addrs
+`0xBFC2167C`–`0xBFC2169C`). It is a minimal IRQ/exception-return
+trampoline that restores only the clobbered regs and jumps to the saved
+resume PC:
+
+```
+k0 = 0x100                      ; gpr[0]+256  ($zero+0x100)
+k0 = *(k0 + 8)                  ; = *(0x108)  -> TCBH cell
+k0 = *(k0 + 0)                  ; = *(*(0x108)) -> current ctx base
+at = *(ctx + 12)
+v0 = *(ctx + 16)
+v1 = *(ctx + 20)
+ra = *(ctx + 132)
+k0 = *(ctx + 136)               ; = *(ctx + 0x88)  <- resume PC slot
+pc = k0                         ; jr $k0
+```
+
+So the committed PC is `*(*(*(0x108)) + 0x88)`. The `ctxchain` dump reads
+exactly this chain (`p108=*(0x108)`, `pcb=*p108`, `epcslot=pcb+0x88`,
+`epcval=*(pcb+0x88)`).
+
+`wvalring` shows `cd_timer_read`'s prologue (`0x8019A478/7C`) storing
+`$s0/$s1` (CD-block pointers `0x801BCB80/8C`) into the kernel-stack
+region `0x801FFxxx`. Hypothesis to confirm via `ctxchain.pcb`: the
+resolved `*(*(0x108))` context base lands in the `0x801FFxxx`
+kernel-stack/exception-frame region (where a nested IRQ frame overlaps
+the CD-pointer spill) rather than a real TCB-table entry (`0x8FExx`),
+so `+0x88` reads a CD data pointer instead of a code resume-PC.
+
+9774 repro instance (ctxchain-armed) is live in `battle_frame_tick`
+verified via stack sample; awaiting the ~30-60k-frame crash window to
+capture `ctxchain`.
