@@ -996,6 +996,32 @@ static inline uint32_t effective_store_pc(void) {
                                                         : g_debug_last_store_pc;
 }
 
+/* ---- bad-PC-value write watch (0x801BCBA0 context-restore corruption) ----
+ * Always-on ring: every main-RAM word store whose VALUE is a pointer into
+ * the CD read-session data block — the addresses observed being committed
+ * as a bogus thread-context saved-PC (TCB+0x88) and dispatched as code
+ * (proof/crash_801bcba0_dispatch_rootcause.md). Records writer PC + target
+ * guest addr + value so the freeze dump names the store that plants the
+ * value and the container it lands in. Range covers the CD session fields
+ * seen as bogus PCs (0x801BCB98 / 0x801BCBA0) plus neighbors. */
+#define WVAL_RING_CAP 256u
+#define WVAL_LO 0x801BC000u
+#define WVAL_HI 0x801CD000u
+typedef struct { uint32_t seq, frame, pc, gaddr, val; } WValEntry;
+WValEntry g_wval_ring[WVAL_RING_CAP];
+uint64_t  g_wval_seq = 0;
+extern uint64_t s_frame_count;
+static inline void wval_note_write(uint32_t gaddr, uint32_t val) {
+    if (val < WVAL_LO || val >= WVAL_HI) return;
+    WValEntry *e = &g_wval_ring[g_wval_seq & (WVAL_RING_CAP - 1u)];
+    e->seq   = (uint32_t)g_wval_seq;
+    e->frame = (uint32_t)s_frame_count;
+    e->pc    = effective_store_pc();
+    e->gaddr = gaddr;
+    e->val   = val;
+    g_wval_seq++;
+}
+
 /* Card-byte destination capture (Phase 3 audit). Always-on. */
 extern int card_data_writes_check(uint32_t phys, uint32_t value, uint8_t width);
 
@@ -1705,6 +1731,7 @@ static void psx_write_word_raw(uint32_t addr, uint32_t val) {
         if (phys == D44_PHYS) d44_note(phys, read_ram_word(phys), val);
         debug_server_trace_write_check(phys, read_ram_word(phys), val, 4);
         parity_trace_note_write(phys, 4, effective_store_pc());
+        wval_note_write(addr, val);
         card_data_writes_check(phys, val, 4);
         dirty_ram_mark_kernel_write(phys);
         text_guard_note_write(phys, val, 4);

@@ -355,34 +355,61 @@ static void freeze_dump_device_state_json(FILE *f) {
         fputs("]},", f);
     }
 
-    /* badval scan: locate every guest-RAM word holding the fatal dispatch
-     * target 0x801BCBA0 (a CD read-session data field used as a code PC).
-     * The container address names the structure that stored it — a real TCB
-     * +0x88 saved-PC slot, a CD/SIO channel descriptor, or a PCB chain —
-     * which discriminates "corrupted TCB" vs "wrong context block". Capped
-     * at 24 hits; count reports the true total. */
+    /* badval scan: locate every guest-RAM word whose VALUE is a pointer into
+     * the CD read-session data block 0x801BC000-0x801CD000 — the bogus
+     * saved-PC candidates (observed dispatched as code: 0x801BCB98,
+     * 0x801BCBA0). Reports each container guest-addr -> stored value so the
+     * dump names the structure holding the bad PC (real TCB+0x88 slot vs
+     * CD/SIO descriptor). Capped at 32 hits; count = true total. */
     {
-        fputs("\"badval801bcba0\":{\"count\":", f);
+        fputs("\"badvalcdptr\":{\"count\":", f);
         uint32_t hits = 0, shown = 0;
         if (g_psx_ram) {
             for (uint32_t p = 0; p + 4 <= 0x00200000u; p += 4) {
                 uint32_t v; memcpy(&v, g_psx_ram + p, 4);
-                if (v == 0x801BCBA0u) hits++;
+                if (v >= 0x801BC000u && v < 0x801CD000u) hits++;
             }
-            fprintf(f, "%u,\"addrs\":[", hits);
-            for (uint32_t p = 0; p + 4 <= 0x00200000u && shown < 24; p += 4) {
+            fprintf(f, "%u,\"cells\":[", hits);
+            for (uint32_t p = 0; p + 4 <= 0x00200000u && shown < 32; p += 4) {
                 uint32_t v; memcpy(&v, g_psx_ram + p, 4);
-                if (v == 0x801BCBA0u) {
+                if (v >= 0x801BC000u && v < 0x801CD000u) {
                     if (shown) fputs(",", f);
-                    fprintf(f, "\"0x%08X\"", 0x80000000u | p);
+                    fprintf(f, "{\"a\":\"0x%08X\",\"v\":\"0x%08X\"}",
+                            0x80000000u | p, v);
                     shown++;
                 }
             }
             fputs("]}", f);
         } else {
-            fputs("0,\"addrs\":[]}", f);
+            fputs("0,\"cells\":[]}", f);
         }
         fputs(",", f);
+    }
+
+    /* wvalring: always-on store watch (memory.c wval_note_write). Every
+     * main-RAM word store whose VALUE is a pointer into the CD read-session
+     * block 0x801BC000-0x801CD000 - the bogus saved-PC candidates. Each
+     * entry names the writer PC (effective_store_pc) and the target guest
+     * address, so the dump shows which store plants 0x801BCBA0/0x801BCB98
+     * and whether the container is a TCB+0x88 slot or a CD descriptor. */
+    {
+        typedef struct { uint32_t seq, frame, pc, gaddr, val; } FdWVal;
+        extern FdWVal   g_wval_ring[];
+        extern uint64_t g_wval_seq;
+        fputs("\"wvalring\":{\"seq\":\"0x", f);
+        fprintf(f, "%llX\",\"tail\":[", (unsigned long long)g_wval_seq);
+        uint64_t total = g_wval_seq;
+        uint32_t avail = total < 256ull ? (uint32_t)total : 256u;
+        uint32_t n = avail < 24 ? avail : 24;
+        for (uint32_t j = 0; j < n; j++) {
+            if (j) fputs(",", f);
+            uint64_t idx2 = total - 1 - j;
+            FdWVal *e = &g_wval_ring[idx2 & 255u];
+            fprintf(f, "{\"seq\":%u,\"frame\":%u,\"pc\":\"0x%08X\","
+                       "\"gaddr\":\"0x%08X\",\"val\":\"0x%08X\"}",
+                    e->seq, e->frame, e->pc, e->gaddr, e->val);
+        }
+        fputs("]},", f);
     }
 
     /* pc=0 / null-jr $k0 wedge latches (interrupts.c): the kernel
