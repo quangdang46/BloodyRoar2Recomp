@@ -390,6 +390,27 @@ nest deeper / preempt differently? Decisive instrument: **Beetle oracle**
 same CD-read window, OR a `sp`-distribution histogram on a healthy
 non-crashing CD run to see if `sp<0x801FF260` ever occurs without corruption.
 
+## BIOS stack map — the spill is MAIN-THREAD work, not IRQ
+
+`psx_bios_disasm.txt`: `KernelSp = 0x85D8` (line 1180); exception/IRQ entry
+does `sp = KernelSp` (line 1276); thread restore does `sp = TCB->reg[R_SP]`
+(line 1401); exception jmp-buf does `sp = JmpBuf[JB_SP]` (line 1309). So on HW:
+
+- **IRQ/exception handlers → `0x85xx` kernel stack** (sp_ring `0x8548` matches).
+- **CD deferred coroutine → `0x801BDxxx`** (jmp-buf `sp=0x801BDD30`).
+- **Main thread → `0x801FFxxx`** top-of-RAM stack.
+
+The spilling CD functions run at `sp=0x801FF130–0x801FF1C8` — the **main
+thread stack**, not `0x85xx` (IRQ) and not `0x801BDxxx` (coroutine). So this
+is **synchronous main-thread CD processing** nesting ~3.7 KB deep into the
+record-table BSS — NOT IRQ-handler work. The faithful question sharpens: the
+game's `cd_ctx_save`/`B0/0x19` deferral exists precisely to move CD work off
+the main thread; if our runtime runs this CD chain synchronously on the main
+thread (where HW would have deferred it to the coroutine/IRQ path), that is
+the divergence. Verify: trace the call path that reaches
+`cd_response_pump`/`cd_cmd_issue` at `sp≈0x801FFxxx` — is it a synchronous
+main-thread caller, or an IRQ-side activation that failed to switch stacks?
+
 ## recvalring sp+ra — the writers are a deep CD call chain (frame 46594/46595)
 
 Crash `addr=0x801BCBA0 ra=0x801A1EC0 a0=0x801FF170`. The ring now records
