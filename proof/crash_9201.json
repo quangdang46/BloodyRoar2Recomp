@@ -1,0 +1,28 @@
+{
+ "tag": "emu_exit",
+ "t": 1795416186.798273,
+ "port": 9201,
+ "regs": {},
+ "chain": {
+  "w108": null,
+  "kernel_low": "",
+  "stack": ""
+ },
+ "irqctx": {},
+ "sp_ring": {},
+ "tcb_ring": {},
+ "dispatch": {},
+ "fn_entry": {},
+ "wtrace_108": {},
+ "wtrace_8fd0": {},
+ "wtrace_all_8fd0": {},
+ "rwatchpc": {},
+ "gwatch": {},
+ "wtrace_stack": {},
+ "disp_ring": {},
+ "wtrace_all_stack": {},
+ "wtrace_ctx": {},
+ "wtrace_all_ctx": {},
+ "mem_ctx": {},
+ "mem_stkwin": {}
+}

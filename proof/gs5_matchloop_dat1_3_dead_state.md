@@ -80,3 +80,22 @@ consume it. Candidates:
   and not a fight-engine call the clean port dropped.
 
 Do **not** hardcode a phase write. Find the faithful owner of DAT1==3.
+
+## Generated-body confirmation (this session)
+
+Traced the generated `match_loop` fall-through path in
+`generated/SLES_017.22_full_*.c`:
+
+- `block_80147104` (the `DAT1>=3 && !=0xf0/0xf1` landing pad) has **no**
+  conditional on DAT1 — it unconditionally `goto block_801474E4`.
+- `block_801474E4` calls `0x8012AEEC` (= `frame_tick`), reloads
+  `DAT_1f800001`, compares against `0xff`, and branches back to
+  `block_801470C0` (the top-level dispatch) — which sees `3` again and
+  re-enters the same path.
+
+So on the **generated authoritative body**, `DAT1==3` is also a bare
+`frame_tick` spin with no fight-engine call and no sub-dispatch. The clean
+port is faithful to the generated body; `3` is genuinely outside the
+match_loop machine. This rules out "clean port dropped a fight-engine case" —
+the writer of `3` (or the missing external advancer) is the defect, not the
+dispatch.
