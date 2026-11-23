@@ -166,8 +166,15 @@ extern int str_len(char *param_1);
 extern char * strchr_bounded(char *param_1,char param_2,int param_3);
 extern undefined1 * mem_move(undefined1 *param_1,undefined1 *param_2,int param_3);
 extern undefined1 FUN_801b0db8[];
-extern uint32_t *g__DAT_1f800082, *g__DAT_801f0654, *g__DAT_801f0656;
-#define _DAT_1f800082   (*g__DAT_1f800082)
+extern uint32_t *g__DAT_801f0654, *g__DAT_801f0656;
+extern uint8_t  *g__DAT_1f800082;
+/* guest lh/lhu @0x1f800082 — a u16 sim/pause gate, NOT a u32. Reading
+ * 4 bytes at the unaligned address picks up the low half of the pointer
+ * stored at 0x1f800084 (0x801BEF90 -> 0xEF900000) and the gate reads
+ * nonzero forever, freezing every channel-script task (LAB_80137acc et
+ * al.) so the ROUND-FIGHT phase never advances past 0x300. menu.c:432
+ * and save.c:236 already bind it as u16. */
+#define _DAT_1f800082   (*(uint16_t *)g__DAT_1f800082)
 extern void script_stream_tick(int *param_1);
 extern undefined4 always_one(int);
 extern void triple_track_spawn(int,undefined2,int);
