@@ -371,6 +371,25 @@ collision. Next: trace `exception_jmpbuf` arm/longjmp + `g_esc_decline_deadframe
 around frame 46594, and whether `cd_ctx_restore` (`0x8019ADCC`) executes for
 the crashing IRQ.
 
+## exception_jmpbuf edge — RULED OUT (freeze_check on wedged 9792)
+
+`freeze_check` @frame 46595: `esc_calls=78.5M`, `esc_fired=112470`,
+`esc_dec_nopend=78.4M`, **`esc_dec_noexc=0`, `esc_dec_sentinel=0`,
+`esc_dec_fiber=0`, `esc_dec_deadframe=0`**, `irqanom_count=0`,
+`in_exception=1`, `exception_entries=112471`. The deadframe/fiber/sentinel
+decline edges **never fired** — the host `exception_jmpbuf` + RFE honor is
+healthy; hypothesis (a) is falsified. `cd_ctx_save`/`B0/0x19` arm is intact
+(live jmp-buf `sp=0x801BDD30`).
+
+So the spilling CD chain runs on the main/kernel stack with **faithful guest
+`sp`** — the only remaining faithful-vs-bug axis is **stack depth / IRQ
+timing vs hardware**: does HW's kernel stack reach `0x801FF130` during a CD
+burst (it cannot, or records would corrupt there too), or does our runtime
+nest deeper / preempt differently? Decisive instrument: **Beetle oracle**
+`emu_read_ram`/`emu_trace_addr` on `cpu.gpr[29]` + `0x801BCD50` during the
+same CD-read window, OR a `sp`-distribution histogram on a healthy
+non-crashing CD run to see if `sp<0x801FF260` ever occurs without corruption.
+
 ## recvalring sp+ra — the writers are a deep CD call chain (frame 46594/46595)
 
 Crash `addr=0x801BCBA0 ra=0x801A1EC0 a0=0x801FF170`. The ring now records
