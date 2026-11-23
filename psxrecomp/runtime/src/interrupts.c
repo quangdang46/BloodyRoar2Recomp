@@ -365,12 +365,77 @@ void psx_irq_raise(uint32_t bit, uint32_t detail)
 /* Dispatch counter for vblank scheduling. */
 #define VBLANK_INTERVAL 50000        /* legacy: dispatch-count fallback (unused for VBlank gating now) */
 #define VBLANK_DEFER_STALE_CYCLES (vblank_cycles * 10ull)
-uint32_t vblank_cycles = 564480u;    /* 33.8688 MHz / 60 Hz — real PSX NTSC VBlank period */
+uint32_t vblank_cycles = 564480u;    /* nominal period (legacy consumers); real threshold is s_vblank_cur_period */
 static uint32_t dispatch_count;
 static uint64_t total_checks;
 static uint32_t cycles_since_vblank;  /* incremented by interrupts_advance_cycles */
 extern uint64_t g_vblank_raise_count;
 extern int g_cosim_dirty_pump_site;
+
+/* Faithful VBlank period — CRTC-derived, rational.
+ *
+ * One VBlank IRQ per video frame. The frame is
+ * horizontal_total * vertical_total GPU-CRTC ticks; converted into the
+ * 33.8688 MHz master-clock units psx_cycle_count counts by the
+ * DuckStation-verified ratio sysclk_per_crtc = 451584 / den:
+ *   NTSC: 3413 ticks/line * 263 lines, den = 715909  -> 566203.78 cycles
+ *   PAL:  3406 ticks/line * 314 lines, den = 709379  -> 680823.46 cycles
+ * (gpu.cpp NTSC/PAL_TICKS_PER_LINE, NTSC/PAL_TOTAL_LINES,
+ *  CRTCTicksToSystemTicks; timers.cpp feeds the same CRTC to timer 1.)
+ *
+ * The true period is NOT an integer number of cycles, so a fixed
+ * vblank_cycles=677376 (PAL, nominal 50 Hz) ran ~0.5% fast — ~3447 cycles
+ * of drift PER FRAME. Over ~1500 frames that is >5M cycles of accumulated
+ * phase error versus every cycle-accurate device deadline (CD-ROM, DMA),
+ * so VBlank IRQs landed at guest points real hardware never reaches.
+ * The integer-Hz approximations also broke the NTSC case (564480 vs the
+ * faithful 566203.78, ~0.3% fast).
+ *
+ * Bresenham carry: each fired frame consumes s_vblank_cur_period cycles,
+ * then the next period is floor+1 on the frames where the remainder
+ * accumulator crosses the denominator — identical in structure to
+ * psx_vblank_clock (psx_vblank_clock.c). */
+static uint64_t s_vblank_period_num = 897419ull * 451584ull; /* NTSC 3413*263 */
+static uint32_t s_vblank_period_den = 715909u;
+static uint64_t s_vblank_frac;        /* sub-period remainder, < den */
+static uint32_t s_vblank_floor, s_vblank_rem;
+static uint32_t s_vblank_cur_period;  /* period of the frame being counted */
+static int      s_vblank_period_ready;
+
+static void vblank_period_recompute(void) {
+    s_vblank_floor = (uint32_t)(s_vblank_period_num / s_vblank_period_den);
+    s_vblank_rem   = (uint32_t)(s_vblank_period_num % s_vblank_period_den);
+    vblank_cycles  = s_vblank_floor;   /* legacy consumers see ~the period */
+}
+
+/* Advance the Bresenham sequence and return the NEXT frame's period. */
+static uint32_t vblank_period_next(void) {
+    uint64_t f = s_vblank_frac + s_vblank_rem;
+    uint32_t p = s_vblank_floor;
+    if (f >= s_vblank_period_den) { f -= s_vblank_period_den; p += 1u; }
+    s_vblank_frac = f;
+    return p;
+}
+
+static void vblank_period_ensure(void) {
+    if (s_vblank_period_ready) return;
+    s_vblank_period_ready = 1;
+    vblank_period_recompute();
+    s_vblank_cur_period = vblank_period_next();
+}
+
+/* Configure the CRTC-derived VBlank period (num/den guest cycles per
+ * frame). Called once at disc identification; NTSC is the compiled-in
+ * default. Resets the phase accumulator — mid-run calls are only valid
+ * at boot before the first frame. */
+void psx_vblank_period_configure(uint64_t num, uint32_t den) {
+    if (num == 0 || den == 0) return;
+    s_vblank_period_num = num;
+    s_vblank_period_den = den;
+    s_vblank_frac = 0;
+    s_vblank_period_ready = 0;
+    vblank_period_ensure();
+}
 
 /* Reentrancy guard: prevent interrupt handler from triggering interrupts. */
 static int in_exception;
@@ -657,14 +722,18 @@ void psx_spu_sample_event_service(void) {
 static void fire_vblank_edge(void) {
     /* Subtract one VBlank period rather than reset to 0 so cycle overshoot
      * carries forward. Prevents long-running blocks from rounding multiple
-     * VBlanks together. */
-    cycles_since_vblank -= vblank_cycles;
+     * VBlanks together. The period is the rational CRTC-derived value
+     * (s_vblank_cur_period); after consuming it, advance the Bresenham
+     * carry so floor+1 periods land on the correct frames. */
+    vblank_period_ensure();
+    cycles_since_vblank -= s_vblank_cur_period;
+    s_vblank_cur_period = vblank_period_next();
     dispatch_count = 0;
     /* DEQUEUE: this VBlank fired. ENQUEUE: next VBlank scheduled one period out. */
     event_ring_record_aux(EV_DEQ, (uint8_t)SRC_VBLANK,
                           (uint32_t)psx_get_cycle_count());
     event_ring_record_aux(EV_ENQ, (uint8_t)SRC_VBLANK,
-                          (uint32_t)(psx_get_cycle_count() + vblank_cycles));
+                          (uint32_t)(psx_get_cycle_count() + s_vblank_cur_period));
     psx_irq_raise(IRQ_VBLANK, 0);
     g_vblank_raise_count++;
     event_ring_record(EV_ISTAT_RAISE, IRQ_VBLANK);
@@ -680,15 +749,17 @@ static void fire_vblank_edge(void) {
 void interrupts_service_scheduled_events(void) {
     note_sio_progress_cycle();
     if (in_exception) return;
-    while (cycles_since_vblank >= vblank_cycles) {
+    vblank_period_ensure();
+    while (cycles_since_vblank >= s_vblank_cur_period) {
         if (should_defer_vblank_for_sio()) return;
         fire_vblank_edge();
     }
 }
 
 uint32_t interrupts_cycles_to_vblank(void) {
-    if (cycles_since_vblank >= vblank_cycles) return 0;
-    return vblank_cycles - cycles_since_vblank;
+    vblank_period_ensure();
+    if (cycles_since_vblank >= s_vblank_cur_period) return 0;
+    return s_vblank_cur_period - cycles_since_vblank;
 }
 
 uint32_t interrupts_get_cycles_since_vblank(void) {
@@ -1139,6 +1210,12 @@ void interrupts_init(void) {
     exception_entries_total = 0;
     exception_reentry_blocks = 0;
     cycles_since_vblank = 0;
+    /* Restart the CRTC VBlank Bresenham phase for the new session; the
+     * configured num/den (region) survives — only the phase accumulator
+     * resets, exactly like cycles_since_vblank above. */
+    s_vblank_frac = 0;
+    s_vblank_period_ready = 0;
+    vblank_period_ensure();
     /* Rematch / session_reboot re-enters bring-up without process exit.
      * Stale I_STAT/I_MASK from the prior match (e.g. VBlank pending + game
      * mask) makes boot take a phantom IRQ at ~cycle 4 and wedge under
@@ -1341,8 +1418,7 @@ uint32_t cycles_to_next_event(void) {
      * card-SIO case only pushes VBlank LATER, so this estimate stays a safe
      * under-estimate. */
     if (i_mask & (1u << IRQ_VBLANK)) {
-        uint32_t d = (cycles_since_vblank >= vblank_cycles)
-                       ? 0u : (vblank_cycles - cycles_since_vblank);
+        uint32_t d = interrupts_cycles_to_vblank();
         if (d < best) best = d;
     }
     uint32_t t = timers_cycles_to_irq(i_mask); if (t < best) best = t;

@@ -217,6 +217,10 @@ extern "C" void     memory_init(const char* bios_path);
 extern "C" void     memory_set_sr_ptr(const uint32_t *p);
 /* interrupts.c */
 extern "C" void     psx_irq_set_cause_ptr(uint32_t *p);
+/* interrupts.c — CRTC-derived VBlank period (region-configured). */
+extern "C" void     psx_vblank_period_configure(uint64_t num, uint32_t den);
+/* timers.c — CRTC-derived HBlank line period for timer 1. */
+extern "C" void     timers_hblank_period_configure(uint64_t num, uint32_t den);
 extern "C" void     psx_set_midframe_audio_pump(void (*fn)(void));
 extern "C" uint32_t memory_get_bios_checksum(void);
 extern "C" void     dirty_ram_register_text_image(uint32_t phys_lo,
@@ -14909,8 +14913,15 @@ session_reboot:
             cdrom_set_disc_scex("SCEE");
 
             /* We need to adjust the frame pacing for PAL games to run at the
-             * correct speed */
-            vblank_cycles = 677376u;
+             * correct speed. Faithful CRTC-derived periods (DuckStation
+             * gpu.cpp/timers.cpp): PAL = 3406 ticks/line * 314 lines/frame,
+             * sysclk-per-CRTC-tick = 451584/709379 -> 680823.46 guest cycles
+             * per VBlank (49.76 Hz real, NOT nominal 50 Hz), and timer 1's
+             * external clock ticks once per scanline = 3406*451584/709379
+             * cycles. NTSC defaults are compiled into interrupts.c/timers.c. */
+            psx_vblank_period_configure(3406ull * 314ull * 451584ull, 709379u);
+            timers_hblank_period_configure(3406ull * 451584ull, 709379u);
+            vblank_cycles = 680823u;
             if (!g_mod_native_vblank_rate) {
                 g_guest_frame_period_ms = 1000.0 / 50.0;  /* 50hz refresh rate */
                 g_frame_period_ms = g_guest_frame_period_ms;

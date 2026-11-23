@@ -49,6 +49,35 @@ typedef struct {
 static Timer timers[3];
 static uint32_t timer_frac[3];
 
+/* Faithful timer-1 HBlank clock — CRTC-derived, rational.
+ *
+ * Timer 1's external input (mode CLK_SRC 1/3) ticks once per scanline,
+ * and scanlines are produced by the same GPU CRTC that paces VBlank
+ * (DuckStation timers.cpp: HBLANK_TIMER_INDEX advances on the CRTC
+ * horizontal-active-end crossing; the CRTC->sysclk ratio is
+ * 451584/den, gpu.cpp CRTCTicksToSystemTicks). One HBlank tick therefore
+ * costs horizontal_total CRTC ticks = HNUM/HDEN guest cycles:
+ *   NTSC: 3413 * 451584 / 715909  = 2152.87 cycles/line
+ *   PAL:  3406 * 451584 / 709379  = 2168.23 cycles/line
+ *
+ * The old fixed 2146-cycle divisor was ~0.3% fast on NTSC and ~1% fast on
+ * PAL AND — worse — spread ticks uniformly across the frame instead of
+ * locking them to the CRTC line grid, so root-counter reads and timer-1
+ * IRQs landed at cycles real hardware never produces.
+ *
+ * Accumulator: s_hblank_carry holds the fractional progress in units of
+ * cycles*den; each tick consumes s_hblank_num units. */
+static uint64_t s_hblank_num = 3413ull * 451584ull; /* NTSC horizontal_total*451584 */
+static uint32_t s_hblank_den = 715909u;
+static uint64_t s_hblank_carry;
+
+void timers_hblank_period_configure(uint64_t num, uint32_t den) {
+    if (num == 0 || den == 0) return;
+    s_hblank_num = num;
+    s_hblank_den = den;
+    s_hblank_carry = 0;
+}
+
 /* Always-on RootCounter/Timer IRQ-fire telemetry (Tomba 2 RCnt-wait diag):
  * counts how many times each timer raised its IRQ. If a game spins on an
  * RCnt-based wait that never completes, the matching counter here stays flat
@@ -73,6 +102,7 @@ extern void psx_irq_raise(uint32_t bit, uint32_t detail);
 void timers_init(void) {
     memset(timers, 0, sizeof(timers));
     memset(timer_frac, 0, sizeof(timer_frac));
+    s_hblank_carry = 0;
 }
 
 void timers_get_snapshot(uint16_t counter[3], uint32_t mode[3],
@@ -199,6 +229,16 @@ static void timer_advance_divided(int t, uint32_t cycles, uint32_t divisor) {
         timer_advance_counts(t, ticks);
 }
 
+/* Timer 1 HBlank: rational CRTC line period (see s_hblank_* above).
+ * cycles*den can reach ~1e15 for large advances — u64 throughout. */
+static void timer_advance_hblank(int t, uint32_t cycles) {
+    uint64_t acc = s_hblank_carry + (uint64_t)cycles * (uint64_t)s_hblank_den;
+    uint32_t ticks = (uint32_t)(acc / s_hblank_num);
+    s_hblank_carry = acc % s_hblank_num;
+    if (ticks != 0)
+        timer_advance_counts(t, ticks);
+}
+
 void timers_advance(uint32_t cycles) {
     if (cycles == 0) return;
 
@@ -209,8 +249,8 @@ void timers_advance(uint32_t cycles) {
         } else if (timer_uses_sysclk(t)) {
             timer_advance_counts(t, cycles);
         } else if (t == 1) {
-            /* Timer 1 HBlank clock. NTSC has about 263 HBlanks per frame. */
-            timer_advance_divided(t, cycles, 2146);
+            /* Timer 1 HBlank clock: one tick per CRTC scanline. */
+            timer_advance_hblank(t, cycles);
         } else if (t == 0) {
             /* Timer 0 dotclock approximation; exact divider depends on GPU mode. */
             timer_advance_divided(t, cycles, 5);
@@ -223,7 +263,7 @@ static uint32_t timer_divisor(int t) {
     int src = (timers[t].mode >> 8) & 3;
     if (t == 2 && (src == 2 || src == 3)) return 8;   /* sysclk/8 */
     if (timer_uses_sysclk(t))             return 1;   /* 1 cycle = 1 tick */
-    if (t == 1)                           return 2146; /* HBlank approximation */
+    if (t == 1)                           return 2146; /* unused for HBlank (rational path in cycles_to_irq) */
     if (t == 0)                           return 5;    /* dotclock approximation */
     return 1;
 }
@@ -259,9 +299,19 @@ uint32_t timers_cycles_to_irq(uint32_t i_mask) {
         uint32_t div = timer_divisor(t);
         /* cycles = ticks*div - frac (frac cycles already accumulated toward the
          * next tick on divided timers; 0 on sysclk timers). Clamp on overflow. */
-        uint64_t cyc = (uint64_t)ticks * (uint64_t)div;
-        if (cyc > (uint64_t)timer_frac[t]) cyc -= (uint64_t)timer_frac[t];
-        else cyc = 0;
+        uint64_t cyc;
+        if (t == 1 && !timer_uses_sysclk(t)) {
+            /* Rational HBlank period: acc units are cycles*den; each tick
+             * consumes s_hblank_num units, s_hblank_carry already banked.
+             * Floor = conservative under-estimate (slice earlier, never late). */
+            uint64_t units = (uint64_t)ticks * s_hblank_num;
+            cyc = (units <= s_hblank_carry) ? 0
+                  : (units - s_hblank_carry) / s_hblank_den;
+        } else {
+            cyc = (uint64_t)ticks * (uint64_t)div;
+            if (cyc > (uint64_t)timer_frac[t]) cyc -= (uint64_t)timer_frac[t];
+            else cyc = 0;
+        }
         if (cyc > 0xFFFFFFFFu) cyc = 0xFFFFFFFFu;
         if ((uint32_t)cyc < best) best = (uint32_t)cyc;
     }

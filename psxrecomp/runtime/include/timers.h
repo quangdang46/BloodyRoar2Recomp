@@ -25,6 +25,11 @@ void     timers_write(uint32_t addr, uint32_t value);
 /* Advance all timers by guest CPU cycles. Used by native block-cycle builds. */
 void timers_advance(uint32_t cycles);
 
+/* Configure the CRTC-derived HBlank line period for timer 1's external
+ * clock (num/den guest cycles per scanline). Called at disc identification;
+ * NTSC is the compiled-in default. */
+void timers_hblank_period_configure(uint64_t num, uint32_t den);
+
 /* Cycle-budgeted precise event slicing: guest CPU cycles until a timer raises a
  * DELIVERABLE IRQ (unmasked in i_mask + mode-armed). UINT32_MAX if none. */
 uint32_t timers_cycles_to_irq(uint32_t i_mask);
