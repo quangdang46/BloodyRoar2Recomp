@@ -133,3 +133,44 @@ so `+0x88` reads a CD data pointer instead of a code resume-PC.
 9774 repro instance (ctxchain-armed) is live in `battle_frame_tick`
 verified via stack sample; awaiting the ~30-60k-frame crash window to
 capture `ctxchain`.
+
+## Update — save-side + nested-IRQ mechanism (subagent static analysis)
+
+**Save side (who writes ctx+0x88):** exactly two writers.
+- `0xBFC207EC` (`sw $v1,128($k0)`, OpenBIOS_func_000027AC/00002810,
+  interrupt/exception ENTRY): stores COP0.EPC (+4 syscall fixup) — always
+  a code addr on real HW.
+- `0xBFC068D8` (OpenTh/get_free_TCB_slot): stores caller-supplied entry
+  PC `a0` — a raw arg store; a bad `a0` seeds a data ptr that persists
+  until first real exception save.
+
+**Ownership:** `*(*(0x108))` = `TCBH_Ptr[0].entry` is architecturally
+ALWAYS a TCB-table entry in `[*(0x110), *(0x110)+*(0x114))`
+(`[0x8FE0,+0x300)`, 0xC0-stride). Never kernel-stack. So a stack/CD base
+in `ctxchain.pcb` means `TCBH[0].entry` itself was corrupted by a bad
+store, not a deref-mechanics error.
+
+**Nested-IRQ mechanism (prime suspect):** host delivers nested IRQs —
+`interrupts.c:1484-1490` only blocks at `nest_depth>=2`, so depth 1->2
+IS allowed. The guest exception-entry context save
+(func_000027AC->func_00002810) keeps the ctx base in `k0`/`k1` across
+`psx_check_interrupts_at` block boundaries (~200-insn window). A nested
+IRQ2 mid-save re-runs the SAME save into the SAME TCB, and IRQ2's RFE
+(func_000029CC `lw $k0,128($k1); jr k0`) CLOBBERS k0 — IRQ1's remaining
+stores then write to the wrong base. On real HW the exception entry
+clears SR.IE so this window is non-interruptible until the handler
+re-enables; **if the host delivers depth 1->2 inside the save window,
+that is itself a faithfulness bug producing the TCB clobber.**
+
+**Faithful fix direction (not a clamp):** make the exception-entry
+context-save window non-interruptible to match SR.IE semantics — either
+the guest handler genuinely re-enables IE only after save completes
+(then host must honor that) or host must not deliver nested IRQ while
+the outer handler's save is mid-flight. Audit `psx_check_interrupts_at`
+nesting vs the guest SR/IE state; preserve k0/k1 context base across any
+legitimate nested delivery.
+
+**Next instrumentation:** watchpoint on writes to `TCB[i]+0x88` for all
+4 slots to catch the exact writer (EPC-save vs thread-init vs wild
+store); `ctxchain.intable` on next crash distinguishes TCB-entry
+corruption from slot overwrite.
