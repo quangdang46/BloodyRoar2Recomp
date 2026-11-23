@@ -313,6 +313,38 @@ activations that should run on the `0x801BDxxx` coroutine stack (a skipped/
 mistimed stack-switch in the kernel trampoline or BIOS IntRP path) or carry
 extra nesting depth from our IRQ delivery vs HW.
 
+## cd_chan_full_init resume contract (generated 0x8019A814)
+
+`cd_chan_full_init` prologue `addiu sp,-24`, saves s0/ra, loads flag
+`*(0x801CDDA8)`→v0 and branches (`0x8019A830`): the flag selects first-call
+(`cd_ctx_save(0x801bcd50)` snapshot + `B0/0x19` jmp-buf arm + wait) vs resume
+(`v0!=0` → `cd_intc_dispatch`). On CD IRQ the game's low-mem kernel trampoline
+invokes `cd_ctx_restore` (`0x8019ADCC`), which reloads `{ra,sp,fp,s0-s7,gp}`
+from the saved frame — `sp=0x801BDD30` — and re-enters `cd_chan_full_init` on
+the **`0x801BDxxx` coroutine stack**. `cd_intc_dispatch`→handler tbl
+`@0x801BCD1C[2]=cd_response_pump`→`cd_cmd_issue`/`cd_init_session`/
+`cd_read_open`/`mc_session`/`cd_timer_read` should therefore ALL run at
+`sp≈0x801BDxxx`.
+
+The `recvalring` writers instead run at `sp=0x801FF130–0x801FF1C8` with
+callers inside `cd_response_pump` (`ra=0x80198AC0/AD0/A3C/C5C/DDC`) — so for
+this activation `cd_response_pump`/`cd_intc_dispatch` executed on the **main
+kernel stack**, i.e. the `cd_ctx_restore`→`0x801BDxxx` stack-switch did NOT
+engage. Two candidate faithful divergences:
+
+- **(a) Resume not taken:** the BIOS `B0/0x19` exception-jmp-buf
+  (`mem[0x4C18]`)→`cd_ctx_restore` path is not invoked for this CD IRQ, so the
+  handler chain falls through on the interrupted main-stack context. Check
+  `irq_state`/`bioscall_dump` for `B0/0x19` arm + the `0x4C18` cell, and
+  whether `cd_ctx_restore` (`0x8019ADCC`) ever runs near frame 46594.
+- **(b) Synchronous second path:** a non-coroutine caller reaches
+  `cd_intc_dispatch`/`cd_response_pump` on the main stack (deep legit chain
+  that HW never makes because the IRQ always defers first).
+
+Beetle-oracle discriminator: `emu_trace_addr`/`emu_read_ram` on `cpu.gpr[29]`
++ `0x801BCD50` jmp-buf during the same CD-read window gives the HW sp and
+whether `cd_ctx_restore` fires.
+
 ## recvalring sp+ra — the writers are a deep CD call chain (frame 46594/46595)
 
 Crash `addr=0x801BCBA0 ra=0x801A1EC0 a0=0x801FF170`. The ring now records
