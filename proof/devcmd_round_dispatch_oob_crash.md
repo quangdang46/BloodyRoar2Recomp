@@ -41,3 +41,26 @@ guest postcondition the generated CPS frame would have run."
 - Faithful fix direction: preserve the guest counter wrap semantics across
   bail (bound/restore idx), NOT a hardcoded clamp — must match what the
   generated CPS frame does on unwind.
+
+## Correction — counter is NOT drifted (live dump on crashed 9741)
+`*(0x801be7c4) = 0x00000001` on the frozen crash instance — inside the
+valid 0–4 range, and the table @0x801BE808 is intact (5 code handlers then
+zeros). So simple counter-drift is RULED OUT: with idx=1 the read yields
+`0x801A3108` (valid code), not `0x801BCBA0`.
+
+Revised possibilities:
+- `fn=0x801BCBA0` did not come from THIS table read — the wild dispatch may
+  be deeper: `br2_call_generated(fn=0x801A30C0/…)` internally dispatched
+  to 0x801BCBA0, with `ra=0x801A1EC0` only the outer frame. Check whether
+  the handler at table[idx] itself contains a bad indirect call, OR whether
+  a `g_psx_call_bail` unwind corrupted `cpu->pc`/`ra` to the data addr.
+- The error-handler path reads `fn = *(0x801be780)` (different table) —
+  verify which table slot actually held 0x801BCBA0 by dumping 0x801BE780
+  region and the exact read address at crash time.
+- `bail_flattened=8` in the freeze dump — bail unwinds were active; a
+  bail-forced return inside the handler could leave `cpu->pc`/guest state
+  pointing at a data addr that the next dispatch treats as code.
+
+Next instrumentation: record the actual table-read address + loaded `fn`
+value + `cpu->pc` at the moment of the wild dispatch (wtrace/pc_probe on
+0x801A1EB8 jalr and on the dispatch of 0x801BCBA0).
