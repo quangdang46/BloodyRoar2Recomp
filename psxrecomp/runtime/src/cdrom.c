@@ -123,6 +123,21 @@ static uint32_t cdrom_intc_latched_generation;
 static uint8_t s_irq_i_stat_reason;
 static int     s_irq_i_stat_armed;
 
+/* DuckStation-faithful async-interrupt spacing (cdrom.cpp
+ * QueueDeliverAsyncInterrupt / DeliverAsyncInterrupt): an async CD INT
+ * (INT1 data-ready, INT2 complete, INT4 data-end) is delivered immediately
+ * only when >= MINIMUM_INTERRUPT_DELAY cycles have elapsed since the guest
+ * last acknowledged the controller (HINTSTS -> 0); otherwise it is scheduled
+ * INTERRUPT_DELAY_CYCLES later so the just-run ISR can finish reading the
+ * prior response. s_cd_last_interrupt_time is stamped on that ack. Sync
+ * responses (INT3 ACK / INT5 error raised inside exec_command) need no such
+ * spacing: command execution is already deferred by cmd_ack_delay
+ * (25000 cy with disc), so the issuing ISR returned long before the response
+ * presents — matching DuckStation's SetInterrupt (assert IRQ same tick). */
+#define CDROM_MIN_INT_DELAY   1000u
+#define CDROM_INT_DELAY_CYC   500u
+static uint64_t s_cd_last_interrupt_time;
+
 /* CD response presentation latency.
  *
  * Real CD hardware does not produce a command's first response instantly: the
@@ -994,11 +1009,24 @@ static void set_irq(int type) {
     cdrom_intc_request_latched = 0;
     s_irq_i_stat_reason = (uint8_t)type;
     s_irq_i_stat_armed = 1;
-    /* Arm the presentation latency: this response must NOT be presented to INTC
-     * synchronously inside the guest store that triggered it (see the
-     * CDROM_IRQ_PRESENT_DELAY note). Absolute due — not a slice-relative
-     * countdown (see pending.due_cyc). */
-    cdrom_irq_present_due = psx_cycle_count + (uint64_t)CDROM_IRQ_PRESENT_DELAY;
+    /* Arm the presentation latency. DuckStation-faithful two-tier model:
+     * sync responses (INT3 ACK / INT5 error) present immediately — command
+     * execution is already deferred cmd_ack_delay cycles past the issue, so
+     * the issuing ISR is long gone (SetInterrupt asserts the IRQ line the
+     * same tick ExecuteCommand runs). Async responses (INT1/INT2/INT4)
+     * follow QueueDeliverAsyncInterrupt: deliver now if >=1000 cy since the
+     * last HINTSTS ack, else schedule +500 so the running ISR finishes.
+     * Absolute due — not a slice-relative countdown (see pending.due_cyc). */
+    {
+        uint64_t _now = psx_cycle_count;
+        if (type == CDIRQ_ACK || type == CDIRQ_ERROR) {
+            cdrom_irq_present_due = _now;
+        } else {
+            uint64_t _diff = _now - s_cd_last_interrupt_time;
+            cdrom_irq_present_due = _now +
+                (_diff >= CDROM_MIN_INT_DELAY ? 0u : CDROM_INT_DELAY_CYC);
+        }
+    }
     trace_cdrom('I', 0, (uint32_t)type, 0);
     /* DEQUEUE: CD response/data event fired (aux = CD irq type). */
     event_ring_record_aux(EV_DEQ, (uint8_t)SRC_CD_IRQ, (uint32_t)type);
@@ -3160,6 +3188,10 @@ void cdrom_write(uint32_t addr, uint32_t value) {
             irq_flag &= ~(val & 0x1F);
             if (had_active_irq && (irq_flag & 0x1F) == 0) {
                 cdrom_intc_request_latched = 0;
+                /* DuckStation stamps last_interrupt_time when the guest's
+                 * HINTSTS ack drives the interrupt flag to 0 — the async-INT
+                 * 1000/500 spacing rule measures from this point. */
+                s_cd_last_interrupt_time = psx_cycle_count;
                 present_lid_open_irq_if_ready();
             }
             if (val & 0x40) {
