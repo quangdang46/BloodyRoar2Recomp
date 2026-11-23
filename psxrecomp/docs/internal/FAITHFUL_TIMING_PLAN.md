@@ -10565,3 +10565,40 @@ N+102 — x28 bug narrowed to a frame_tick CALLEE (4 agents, still unfixed):
   it held cd_intc_dispatch's record reads ~5000cy later, inside the
   file-load deep-stack spill window; faithful timing moves the dispatch out
   of the corruption window. Commit 206ad35.
+
+- **session (clean-port wave + host-buffer->guest-addr bug class fixed):**
+  After the IRQ-timing crash fix, ported 14 unported guest fns to clean C
+  (commit f02418a): fight.c ret_zero_g/ret_nop/part_link_tail/
+  ev2_hitstun_gate_dispatch; menu.c width3_num_space_pad/width3_num_zero_pad/
+  sprite_record_tick/3x task_node_cb_noop_*/sprite_slot_commit-adjacent;
+  vm.c ev4_branch_dispatch/ev6_guard_sync_dispatch/ev20_timer_dispatch/
+  desc_flagbit_dispatch. Correctly LEFT generated: vm.c desc_op_head/
+  desc_small/desc_op_e/desc_op_d/cond_eval_f/desc_op_c/desc_eval_largest
+  (live $v0/$v1/$t0/$t1 or CPS-split $ra semantics), and 0x8015607C
+  (CPS-split continuation inside gauge_scale_fixed, not standalone).
+  clean_table.c now 1318 wrappers.
+
+  Then fixed a SYSTEMIC host-buffer->guest-address bug class found by audit
+  (proof/host_buffer_guest_addr_bugs.md): clean ports kept guest-stack
+  buffers/structs as host C locals (often Ghidra-split scalars) and handed
+  them to callees doing guest_of()/guest_at() -> guest_of(host-stack)=0 ->
+  garbage/blank. Fixed so far: brightness_packet_send (28fa473, host buf[4]
+  -> cd_cmd_retry guest-addr), sprite_slot_commit + hud_announce cases 3/21
+  (7672085, host blk/buf -> gpu_texclut_pkt/descblk_variant_e). In flight:
+  player_name_entry name-buffer + 6 stepper-descriptor callback sites
+  (menu.c + save.c) where call_guest(cb, guest_of(host-desc)=0) starves
+  generated dialog callees (dialog_sel_dispatch/_wide/msg_dispatch).
+
+  COMBAT STATUS (unchanged, now precisely scoped): NO run has reached actual
+  combat. gs=6 = battle intro/results only. Live fight needs announce phase
+  0x300->0x700 (or DAT1->9); writer unidentified — prime suspect is script2
+  handler table 0x801B2820 (handlers 0x8014cd48..0x8014cdbc, last tick 0x51
+  ->0x8014cdbc) driven by channel-script task LAB_80137acc/script_stream_tick.
+  Phase globals at scratchpad 0x1f8000b4/0x1f8000b6. Versus path (2P,
+  game.toml players=2) reaches gs=8 differently but wedges on wild-dispatch
+  0x80122DC8 (not a fn entry — corruption-class, separate bug). Static audit
+  of script2 handlers launched.
+
+  Verification: debug :9804 at frame 1,000,182 (~25x prior crash window),
+  :9806 636k, :9807 175k, :9808 (pointer-fix binary) 71k cycling gs=6 battle
+  states — all unknown_dispatch_log total=0.
