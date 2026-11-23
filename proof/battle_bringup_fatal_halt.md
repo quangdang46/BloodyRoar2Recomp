@@ -374,3 +374,43 @@ the timer-1 (`0x1F801110`) IRQ that drives the nested `cd_timer_read`
 activation is delivered at a hardware-accurate deadline vs the
 root-counter model — the flaky ~frame-1560 alignment is a cycle-timing
 race, not a logic error in `interrupts.c`/`traps.c` context management.
+
+## Session update — GPU/DMA timing hypothesis FALSIFIED; deferred-CD ctx SP identified as prime suspect
+
+**A/B results (all reproduce the identical signature, ra=timer-count →
+FAIL-FAST unknown dispatch, epc=0x8019A648):**
+- baseline: crash ~frame 1567
+- `PSX_GPU_TIMING=0`: crash frame 1657
+- faithful DuckStation v2-GPU command-tick model (per-prim setup 50–495 +
+  per-triangle raster `pixels*quarters/4 + rows*row_ticks`, rect/line/blit
+  formulas — implemented in `gpu_note_prim`/`gpu_note_vram_px`, then
+  REVERTED because it did not fix the crash and reintroduces the known
+  versus-OT livelock risk of pixel-proportional charges): crash ~frame
+  1622 on 3/3 instances (proof/crash_9997-9999.json)
+- earlier `PSX_GPU_PRIM_CMD_COST=100000` survival to frame 8872 was
+  input-timing luck, not causation — the crash frame is invariant (~1560–
+  1622) across a 1000x GPU-cost swing, so the trigger is a deterministic
+  game-state sequence, not a cycle-level IRQ race.
+
+**New mechanism detail (proof/crash_9994.json, irqaudit_9996.json):**
+- `cd_ctx_save` (0x8019ad90) stores ra@+0, **sp@+4**, fp@+8, s0–s7@+12..40,
+  gp@+44 into guest ctx `0x801bcd50`; `cd_ctx_restore` (0x8019adcc)
+  reloads all of them — including SP — on CD IRQ, resuming
+  `cd_chan_full_init` mid-body. The deferred CD coroutine therefore
+  resumes on whatever SP was live at save time.
+- `sp_ring` shows the CD deferred path: IRQ entry on top-of-RAM kernel
+  stack (`0x801FFDF8`/`0x801FFE18`, tcb=0x8FE0) → BIOS trampoline
+  `0x2924` with `sp=0x8548` (low KernelSp) → `cd_chan_full_init`
+  (0x8019A87C) → back to thread stack `0x801BDD30`.
+- Postmortem stack (crash_9994): `RAM[0x801FFE58]=0x0000E69E`,
+  epc=0x8019A648 — same collision slot.
+
+**Open question for next session:** read ctx `0x801bcd50+4` (saved SP)
+postmortem and compare with the IRQ-stack region `0x801FFE40-60`. If the
+saved SP is an IRQ-stack address (i.e., `cd_chan_full_init`'s first
+`cd_ctx_save` ran inside IRQ/exception context in our runtime but in
+thread context on HW), every subsequent `cd_ctx_restore` resumes the CD
+coroutine onto the live IRQ stack → the observed `sw v0,16(sp)` clobber.
+That would make the faithful fix "ensure `cd_chan_full_init`'s ctx_save
+captures the thread-context SP" — an IRQ-delivery/context-class issue,
+not a cycle-timing one.
