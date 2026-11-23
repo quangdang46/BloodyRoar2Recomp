@@ -501,3 +501,53 @@ the floor when SP returns above `0x801FFD00`. This distinguishes a GRADUAL
 leak (progressive new-lows across frames) from a SINGLE deep chain (one jump),
 and names the functions (`target`/`ra`/`frame`) at each depth. Exposed as the
 `spdepth` debug command. Built into `build/BloodyRoar2_Recompiled`.
+
+## spdepth ring — deep excursions are faithful CD-wait nesting, NOT a leak (frame 104292-110665)
+
+New `spdepth` debug command (fntrace.c excursion tracker: records each new-low
+main-stack SP below 0x801FF400, floor resets above 0x801FFD00). Live capture on
+port 9793 during arcade battle-init CD streaming (gs=8):
+
+```
+frame 104292:  sp=0x801FF3F0  tgt=cd_timer_read(0x8019A460) ra=0x80196908
+frame 107942:  0x801FF3C0 cd_file_load_sm(0x8018CFDC) ra=0x80126664
+               0x801FF390 mc_init_reset(0x80157368)   ra=0x8018D020
+               0x801FF358 cd_result_wait_a(0x801968CC) ra=0x80196EDC
+               0x801FF318..0x801FF270 cd_timer_read x5 ra=0x80196908 (nested)
+frame 110665:  0x801FF240 cd_file_load_sm -> 0x801FF0F0 cd_timer_read
+               (deepest = 0x801FF0F0, INSIDE record table 0x801FF080-0x801FF260)
+```
+
+Decisive conclusions:
+
+- **NOT a gradual sp leak.** Each frame's excursion descends then unwinds;
+  the floor resets between frames. The deep sp is a SINGLE per-frame call
+  chain, recurring identically (~3600 frames apart) during file loads.
+- **The chain is faithful generated code**: `cd_file_load_sm` (battle asset
+  load) -> `mc_init_reset` (memcard) -> `cd_result_wait_a` (0x801968CC, a
+  640-byte generated wait fn calling cd_timer_read at 3+ sites) ->
+  `cd_timer_read` nested via the wait/poll structure. All `br2_call_generated`
+  delegations running real MIPS semantics.
+- **sp reaches 0x801FF0F0** — below the record-table TOP, overwriting
+  0x801FF080-0x801FF260 every file-load frame. The records are trashed
+  transiently but re-init before reuse, so survival is the norm.
+- **Crash/wedge is timing-dependent, not depth-dependent.** 9793 survived
+  multiple excursions reaching deeper sp than the 9792 crash (0x801FF1F8)
+  without wild dispatch — then wedged at frame 110666 in a kernel exception
+  re-entry loop (current_func=0x1B7C, in_exception=1,
+  exception_reentry_blocks=2910), the documented post-CD scheduling wedge.
+
+So the record-table overlap is a REAL hazard inherent to the game's layout
+(static records in the main stack's growth path) that HW survives through
+precise IRQ/cycle timing. Our runtime's divergence is in WHEN the CD-completion
+IRQ / record dispatch fires relative to the deep file-load windows — the
+faithful-timing frontier, not a cd.c logic bug and not a stack allocator bug.
+
+## Unified failure model
+
+Both observed terminal states share the root cause (record-table BSS corrupted
+by deep main-stack CD-wait frames):
+- **wild-dispatch crash** (9792, frame 46595): IRQ-side `state_commit` reads a
+  record mid-corruption with `rec[70]`=dispatch-state and `+0x14`=data ptr.
+- **stall/wedge** (9793, frame 110666): corrupted record/queue state or lost
+  CD-completion event leaves the kernel in exception re-entry.
