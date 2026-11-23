@@ -73,13 +73,67 @@ submitter/record-build copied a session pointer into the handler field, or the
 record reached `state_commit`'s "others" dispatch with `rec[70]` in a state the
 real hardware path would not produce there.
 
-## Pending decisive datum
+## Decisive datum — `recvalring` + `rec_*` peeks (commit `ae268fb`, frame 31204)
 
-Fatal-path `rec_*` RAM peeks (`crash_trace.c`, commit `2fdd514`) dump the full
-240-byte record at `a0` on the next crash: `+0x14/+0x18` handler values, `+0x0C`
-sub-record ptr, `+0x3C` cmd ptr, `rec[70]`/`rec[73]` state bytes, `rec[232]`.
-This names whether `+0x14` is isolated corruption vs a mis-populated field and
-which command type/state triggered the dispatch.
+`recvalring` (record-region store watch, `memory.c`) captured the writers that
+populate the record with CD-session pointers. Newest tail at crash frame 31203:
+
+```
+seq  pc         gaddr      val        field
+73957 0x80196E38 0x801FF184 0x801BCB8C  rec+0x14   <- the handler slot
+73956 0x80196E20 0x801FF180 0x801BCB80  rec+0x10
+73955 0x80196E28 0x801FF160 0x801BC7F8  (rec-0x10)
+73954 0x80195D90 0x801FF17C 0x801BCB8C  rec+0x0C
+73953 0x80198924 0x801FF1B8 0x801BCB80  rec+0x48
+73959 0x8019A47C 0x801FF190 0x801BCB80  rec+0x20
+73958 0x8019A478 0x801FF194 0x801BCB8C  rec+0x24
+```
+
+Writer PCs cluster in the **CD read/issue path**: `0x80196E*` (`cd_cmd_issue`
+`0x80196e14`, delegated→generated), `0x8019A4*` (`cd_timer_read` region),
+`0x80195D90` (`mc_session`), `0x80198924` (`cd_read_open`). NB the recorded `pc`
+is `effective_store_pc()` = last `g_debug_last_store_pc`; several hits
+(`0x80196E20/28/38`) are prologue `sw $sN,off($sp)` that store to the *stack*,
+so the PC attribution is **stale/misattributed** — but `gaddr`/`val` are the
+real store. The pattern is unambiguous: generated read-path code fills the
+record's `+0x0C/+0x10/+0x14/+0x20/+0x24` with session-block pointers.
+
+`rec_*` peeks of the full 240-byte record at `0x801FF170` confirm it is a
+**CD read/data command record**:
+
+- `+0x0C=0x801BCB8C`, `+0x10=0x801BCB80`, `+0x14=0x801BCB8C`, `+0x20=0x801BCB80`,
+  `+0x24=0x801BCB8C` — **five** fields hold session-block pointers.
+- `+0x18=0x0000B0C7` (not a pointer at all).
+- Function pointers elsewhere: `+0x28=0x80198AD0`, `+0x2C=0x80198AC0`,
+  `+0x44=0x80195E74`, `+0x54=0x80198E08`, `+0x9C=0x8018D0CC`, `+0xA0=0x8019A53C`,
+  `+0xC8/+0xCC=0x80126664`, `+0xF8=0x80196954`.
+- `+0x3C` (cmd ptr) = 0; `rec[70]` (byte `+0x46`) = `0x19`.
+
+## Revised conclusion
+
+`+0x14` is **not** an isolated corruption — it is one of several session-data
+pointers the read-command builder legitimately stores. This record's handler
+slots are *data*, and `cd_cmd_state_commit`'s "others" jalr treats `+0x14` as a
+function because `rec[70]=0x19` routes there. On real hardware this record must
+NOT reach that jalr — either `rec[70]` should be a terminal/in-flight value
+that returns early, or the record should be claimed by `state_rx`/a read
+handler rather than `state_commit`.
+
+The `0x801BCB98` vs peeked `0x801BCB8C` delta is explained by `+0x14` being a
+**live session sub-pointer rewritten every frame** as the read progresses;
+`recvalring` retains only the last write per slot.
+
+`cd_cmd_flush_a` (`game/cd.c:5716`) compounds it: `sub=*(rec+0x0C)=0x801BCB8C`
+then `state_commit(sub)` reads `*(0x801BCB8C+0x14)=*(0x801BCBA0)` — directly
+producing target `0x801BCBA0` when the session block is mistaken for a record.
+
+## Open question (subagent analyzing)
+
+Whether `rec[70]=0x19` is a faithful mid-read state (→ bug is handler routing:
+read records must not reach `state_commit` "others") or a divergence planted by
+an earlier clean port (→ `cd_cmd_state_rx`'s `s0[70]+=r` advancing wrong, or a
+submitter writing the wrong field). Determining which fixes whether the change
+belongs in `game/cd.c` state routing or upstream record construction.
 
 ## Faithful fix direction (do NOT clamp 0x801BCBxx)
 
