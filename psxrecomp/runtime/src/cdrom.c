@@ -806,6 +806,7 @@ typedef struct {
     uint8_t params[PARAM_FIFO_SIZE];
     int param_count;
     int pending;
+    uint64_t exec_due;
 } QueuedCmd;
 static QueuedCmd queued_cmd;
 
@@ -2113,8 +2114,23 @@ static void cd_bisect_cmd_log(const char *kind, uint8_t cmd,
     fflush(stderr);
 }
 
+/* Command-issue -> execution delay. DuckStation CDROM::BeginCommand schedules
+ * command_event at GetAckDelayForCommand(): the sub-CPU does not run the
+ * command (or emit its ACK/INT3) until this many cycles after the FIFO write.
+ * Init is slower; a disc in the drive makes the controller busier. Our prior
+ * model ran exec_command synchronously on the command-byte store, so HINTSTS
+ * and the response FIFO became visible ~0 cycles after issue -- far earlier
+ * than hardware, which let the game's synchronous cd_response_process drain
+ * ACKs instantly and nest cd_result_wait_a deeper than real timing allows. */
+static uint64_t cmd_ack_delay(uint8_t cmd) {
+    if (cmd == 0x0A) /* Init */
+        return 80000;
+    return has_disc() ? 25000 : 15000;
+}
+
 static void try_execute_queued_command(void) {
     if (!queued_cmd.pending || irq_flag != 0) return;
+    if (psx_cycle_count < queued_cmd.exec_due) return;
 
     uint8_t cmd = queued_cmd.cmd;
     int count = queued_cmd.param_count;
@@ -2133,16 +2149,18 @@ static void try_execute_queued_command(void) {
 }
 
 static void queue_or_exec_command(uint8_t cmd) {
-    if (irq_flag == 0) {
-        exec_command(cmd);
-        return;
-    }
-
+    /* Always defer: the CD sub-CPU does not execute (or ACK) a command until
+     * cmd_ack_delay() cycles after the command-byte store. Route every command
+     * through queued_cmd so try_execute_queued_command runs it on schedule,
+     * once the delay has elapsed and any prior response is consumed. A command
+     * issued while one is still pending replaces it (DuckStation BeginCommand
+     * cancels/overrides the in-flight command the same way). */
     queued_cmd.cmd = cmd;
     queued_cmd.param_count = param_count;
     if (queued_cmd.param_count < 0) queued_cmd.param_count = 0;
     if (queued_cmd.param_count > PARAM_FIFO_SIZE) queued_cmd.param_count = PARAM_FIFO_SIZE;
     memcpy(queued_cmd.params, param_fifo, (size_t)queued_cmd.param_count);
+    queued_cmd.exec_due = psx_cycle_count + cmd_ack_delay(cmd);
     queued_cmd.pending = 1;
     param_count = 0;
     trace_cdrom('Q', 0, cmd, 0);
