@@ -127,19 +127,62 @@ The `0x801BCB98` vs peeked `0x801BCB8C` delta is explained by `+0x14` being a
 then `state_commit(sub)` reads `*(0x801BCB8C+0x14)=*(0x801BCBA0)` — directly
 producing target `0x801BCBA0` when the session block is mistaken for a record.
 
-## Open question (subagent analyzing)
+## CORRECTED root cause — stack spills overwrite the record (frame ~28800/31204)
 
-Whether `rec[70]=0x19` is a faithful mid-read state (→ bug is handler routing:
-read records must not reach `state_commit` "others") or a divergence planted by
-an earlier clean port (→ `cd_cmd_state_rx`'s `s0[70]+=r` advancing wrong, or a
-submitter writing the wrong field). Determining which fixes whether the change
-belongs in `game/cd.c` state routing or upstream record construction.
+`recvalring` writer-PC disassembly proves the `0x801FF184`-region stores are
+**NOT record-field writes — they are stack spills**. Every captured `pc` is a
+prologue `sw $sN,off($sp)` (`write_word(gpr[29]+off, gpr[sN])`):
 
-## Faithful fix direction (do NOT clamp 0x801BCBxx)
+```
+0x80196E38 = sw $s1,28($sp)  -> 0x801FF184   (sp = 0x801FF168)
+0x80196E20 = sw $s0,24($sp)  -> 0x801FF180   (sp = 0x801FF168)
+0x80196E28 = sw $s6,48($sp)  -> 0x801FF160   (sp = 0x801FF130)
+0x8019A478 = sw $s1,28($sp)  -> 0x801FF194   (sp = 0x801FF178)
+0x8019A47C = sw $s0,24($sp)  -> 0x801FF190   (sp = 0x801FF178)
+0x80195D90 = sw $s1,20($sp)  -> 0x801FF17C   (sp = 0x801FF168)
+0x80198924 = sw $s0,24($sp)  -> 0x801FF1B8   (sp = 0x801FF1A0)
+```
 
-Find the writer that places `&DAT_801bcb9x` into `rec+0x14`/`+0x18` (or the
-state divergence that routes a data-pointer record into the handler jalr) and
-fix the clean port / record-build faithfully. Candidates: a submitter copying
-the wrong descriptor field, an adjacent-record overflow, or a `rec[70]` state
-byte diverging from hardware so `state_commit` takes "others" on a record whose
-`+0x14` legitimately holds a data pointer.
+All in the CD read/issue path (`cd_cmd_issue` `0x80196e14`, `cd_timer_read`
+`0x8019a460`, `cd_read_open` `0x80198908`, `mc_session`). The spilled values
+(`0x801BCB80/8C/A4`, `0x801BC7C8/7F8`) are **saved registers holding
+session-block pointers** — the functions' own locals, not record data.
+
+`0x801FFxxx` is the game's **dense top-of-RAM kernel stack/scratch region**:
+the freeze dump shows dozens of distinct `sp` values from `0x801FF108` to
+`0x801FFF30`, many *inside* the 480-byte record table (`0x801FF080–0x801FF260`,
+`cd_bzero(0x801ff080,0x1e0)` = exactly 2 records). Thread stacks legitimately
+coexist there — but a frame at `sp≈0x801FF168` writes `sp+20/24/28` =
+`0x801FF17C/180/184` = **record slot1 `+0x0C/+0x10/+0x14`**.
+
+## Mechanism (final)
+
+1. A CD read command occupies record slot1 (`0x801FF170`); its fields are
+   legitimately populated with session pointers by the generated read path.
+2. CD-path functions run with `sp` inside the record-table region; prologue
+   `sw $sN,off($sp)` spills saved-register values (session/function pointers)
+   onto the record's `+0x0C/+0x10/+0x14/+0x20/+0x24` and the `+0x44` word that
+   `rec[70]` (`+0x46`) reads as `0x19`.
+3. `ctx_fn_send`→`cd_cmd_state_commit` reads `rec[70]=0x19` → "others" →
+   `call_guest(*(rec+0x14))` where `+0x14` now holds a spilled session pointer
+   (`0x801BCB8C/98`) → `unknown_dispatch`.
+
+On real hardware the same code does not crash, so the guest `sp` for this
+context must NOT reach into the record table — i.e. our runtime places a stack
+frame lower than the game's real layout (faithful-core stack/context bug), or a
+context/IRQ restore sets `gpr[29]` wrong. `g_guest_sp` default `0x801ff000`
+(`game/bind.c:46`) sits right at the table base.
+
+## Faithful fix direction (do NOT clamp 0x801BCBxx, do NOT patch state_commit)
+
+Find why the CD-command-processing context's `gpr[29]` lands at
+`~0x801FF168` (inside the record table) instead of a proper stack base. Suspects:
+- thread/TCB stack allocation overlapping the game's static `0x801FF080` table
+  (BIOS/kernel stack allocator or memory map),
+- a context/IRQ restore committing a wrong `sp` (the earlier `ctxchain`/`badctx`
+  machinery),
+- a clean→generated boundary failing to preserve `gpr[29]`.
+
+`recvalring` now records `sp` per write (`273d95d`) to name the exact stack
+frame. Next: dump `sp` for the `0x801FF184` write and trace which thread/TCB
+owns that stack vs the record-table owner.
