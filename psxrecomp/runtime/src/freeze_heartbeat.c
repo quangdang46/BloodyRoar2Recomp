@@ -315,6 +315,76 @@ static void freeze_dump_device_state_json(FILE *f) {
         fputs("]},", f);
     }
 
+    /* thread_ctx_ring tail: cooperative thread context save/restore ledger
+     * (traps.c). Each entry is one psx_save_context_to_tcb (op=0) or
+     * psx_restore_context_from_tcb (op=1) with the TCB base and the
+     * resume_pc saved/read at TCB+0x88. This is the decisive record for a
+     * context-restore saved-PC corruption: the save that wrote the bad
+     * resume_pc (e.g. a CD/SIO data address like 0x801BCBA0) and the
+     * restore that resumed it are both here, tagged by TCB + frame. */
+    {
+        typedef struct {
+            uint32_t seq;
+            uint32_t frame;
+            uint8_t  op;
+            uint8_t  pad0[3];
+            uint32_t tcb;
+            uint32_t resume_pc;
+            uint32_t gpr_29;
+            uint32_t gpr_31;
+            uint32_t cop0_sr;
+            uint32_t cop0_epc;
+        } FdThreadCtx;
+        extern FdThreadCtx g_thread_ctx_ring[];
+        extern uint64_t     g_thread_ctx_ring_seq;
+        fputs("\"tctxring\":{\"seq\":\"0x", f);
+        fprintf(f, "%llX\",\"tail\":[", (unsigned long long)g_thread_ctx_ring_seq);
+        uint64_t total = g_thread_ctx_ring_seq;
+        uint32_t avail = total < 256ull ? (uint32_t)total : 256u;
+        uint32_t n = avail < 16 ? avail : 16;
+        for (uint32_t j = 0; j < n; j++) {
+            if (j) fputs(",", f);
+            uint64_t idx = total - 1 - j;
+            FdThreadCtx *e = &g_thread_ctx_ring[idx & 255u];
+            fprintf(f, "{\"seq\":%u,\"frame\":%u,\"op\":%u,\"tcb\":\"0x%08X\","
+                       "\"resume_pc\":\"0x%08X\",\"sp\":\"0x%08X\","
+                       "\"ra\":\"0x%08X\",\"sr\":\"0x%08X\",\"epc\":\"0x%08X\"}",
+                    e->seq, e->frame, (unsigned)e->op, e->tcb, e->resume_pc,
+                    e->gpr_29, e->gpr_31, e->cop0_sr, e->cop0_epc);
+        }
+        fputs("]},", f);
+    }
+
+    /* badval scan: locate every guest-RAM word holding the fatal dispatch
+     * target 0x801BCBA0 (a CD read-session data field used as a code PC).
+     * The container address names the structure that stored it — a real TCB
+     * +0x88 saved-PC slot, a CD/SIO channel descriptor, or a PCB chain —
+     * which discriminates "corrupted TCB" vs "wrong context block". Capped
+     * at 24 hits; count reports the true total. */
+    {
+        fputs("\"badval801bcba0\":{\"count\":", f);
+        uint32_t hits = 0, shown = 0;
+        if (g_psx_ram) {
+            for (uint32_t p = 0; p + 4 <= 0x00200000u; p += 4) {
+                uint32_t v; memcpy(&v, g_psx_ram + p, 4);
+                if (v == 0x801BCBA0u) hits++;
+            }
+            fprintf(f, "%u,\"addrs\":[", hits);
+            for (uint32_t p = 0; p + 4 <= 0x00200000u && shown < 24; p += 4) {
+                uint32_t v; memcpy(&v, g_psx_ram + p, 4);
+                if (v == 0x801BCBA0u) {
+                    if (shown) fputs(",", f);
+                    fprintf(f, "\"0x%08X\"", 0x80000000u | p);
+                    shown++;
+                }
+            }
+            fputs("]}", f);
+        } else {
+            fputs("0,\"addrs\":[]}", f);
+        }
+        fputs(",", f);
+    }
+
     /* pc=0 / null-jr $k0 wedge latches (interrupts.c): the kernel
      * ReturnFromException/ChangeThread at 0x29CC ends `jr $k0` where
      * k0 = *(current_TCB + 0x88) saved-PC. When that slot is 0 the restore
