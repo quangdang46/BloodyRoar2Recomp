@@ -244,5 +244,34 @@ phase). "It compiled" and "it returns plausible values" are not done.
   animation (`.ANI`/`.ACT`), the event/script VM, combat, input, memory
   card, and timing — until `generated/` is no longer required at runtime.
 
+### Session update (arcade combat + delegation audit)
+
+- **Arcade combat is REAL** (`proof/arcade_combat_verified.md`): P2 fighter
+  ctrl (`0x1f8001f0`, stride `0x108`, `FC_FOE=+0x2c` cross-linked to P1
+  `0x1f8000e8`) mutates every frame with ZERO pad-2 input → CPU-driven live
+  fighter. `battle+0xb6==0` is the arcade single-player-vs-CPU phase
+  encoding, NOT a missing opponent (versus uses the same ctrls/engine).
+  Versus instance cycles real round phases (`b4b6` `00030003`→`00050014`→
+  `00010011`). Earlier "no CPU-input synthesizer" proofs applied to the
+  pre-fix hard-wedge, now resolved.
+- **Bug fix `475e316`**: `player_name_entry` called `intro_movie_state()`
+  with no arg; guest passes `a0=0`. Dropped param → returned 0 forever →
+  `gs=9` wedge. Now name-entry progresses and arcade battles cycle
+  `gs=8→9→5→8`.
+- **Delegation audit** (`proof/delegation_wrapper_audit.md`): all 55
+  whole-function `br2_call_generated` wrappers classified — 53/55 correctly
+  MUST-DELEGATE per §4; only 2 borderline CD candidates (`cd_channel_table_
+  init` `0x801A36F0`, `cd_dma_xfer_start` `0x8019b89c`), both complex MMIO/
+  table fns that work correctly delegated. **Easy-wrapper surface exhausted.**
+- **Real frontier**: ~995 generated functions with NO clean port at all —
+  attack per-subsystem, NOT by auditing wrappers.
+- **⚠ Background subagents stall on exec approvals** — `is_background=true`
+  auto-denies tool approval, so build/launch/debug-server work hangs. Run
+  port/verify sweeps as FOREGROUND (`is_background=false`) or do them
+  directly. (Two bg agents produced zero output over many turns.)
+- **Kill orphaned headless instances** — dozens of `BloodyRoar2_Recompiled`
+  zombies (old `disc/` path, hours-old) starve the CPU and crawl build/
+  verify cycles. Check `ps aux | grep BloodyRoar` and kill stale PIDs.
+
 **Bottom line: parallel subagents, clean named C in `game/`, generated only
 as a temporary faithful fallback, runtime-verified, one unified source.**
