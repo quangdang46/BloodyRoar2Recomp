@@ -566,9 +566,19 @@ joined_r0x8016fd30:
   /* Bail-unwind in flight (g_psx_call_bail): this is a clean-C mega-loop
    * (goto joined_r0x8016fd30 every iteration) with no dispatch boundary —
    * return so the unwind reaches the psx_dispatch_impl frame above, exactly
-   * like a generated CPS frame's `if (g_psx_call_bail) return;`. */
+   * like a generated CPS frame's `if (g_psx_call_bail) return;`.
+   *
+   * DAT1 exit invariant: on real HW this function's ONLY return path is the
+   * DAT1==-1 branch below, which writes DAT_1f800001 = 0 before returning.
+   * A bail-forced return bypasses that write and would leak a BFSM-private
+   * DAT1 substate (e.g. battle_frame's parked 3) into the caller — the
+   * generated top-level SM then transitions gs 8->5 and match_loop, whose
+   * DAT1 machine knows only {0,1,2,0xf0,0xf1,0xff}, dead-loops forever on the
+   * foreign value (proof/gs5_matchloop_dat1_3_dead_state.md). Restore the
+   * canonical post-BFSM state so the gs->5 handoff sees exactly what the
+   * guest guarantees. */
   { extern int br2_bail_pending(void);
-    if (br2_bail_pending()) return; }
+    if (br2_bail_pending()) { DAT_1f800001 = 0; return; } }
   /* Guest block_8016FD38 (the loop head) reloads the OT base/index from
    * scratchpad EVERY iteration: lw $2C,0xC($16) / lw $2B,8($16) where $16 =
    * 0x1F800000. frame_tick's double-buffer toggle writes those cells at the
@@ -611,9 +621,11 @@ joined_r0x8016fd30:
           iVar4 = battle_frame();
           /* battle_frame returns early on a bail unwind — propagate it so
            * the unwind reaches the dispatch boundary instead of continuing
-           * this clean-C loop with every generated fallback dropped. */
+           * this clean-C loop with every generated fallback dropped.
+           * Same DAT1 exit invariant as the loop head: a bail-forced return
+           * must not leak BFSM-private DAT1 into match_loop (see above). */
           { extern int br2_bail_pending(void);
-            if (br2_bail_pending()) return; }
+            if (br2_bail_pending()) { DAT_1f800001 = 0; return; } }
           if (iVar4 < 0) {
             DAT_1f800001 = -1;
           }
@@ -728,9 +740,11 @@ switchD_8016fd64_caseD_3:
      * must NOT advance the phase — the load is mid-flight and the fighter
      * model (ctrl+0x18/+0x1c/+0x20/+0x30) is still unbound. Propagate the
      * bail so the unwind reaches the contract frame and the next frame
-     * resumes the load instead of entering battle on a NULL node. */
+     * resumes the load instead of entering battle on a NULL node.
+     * DAT1 exit invariant (see loop head): a bail-forced return must not
+     * leak BFSM-private DAT1 into match_loop — restore canonical 0. */
     { extern int br2_bail_pending(void);
-      if (br2_bail_pending()) return; }
+      if (br2_bail_pending()) { DAT_1f800001 = 0; return; } }
     if ((iVar5 != 0) && (_DAT_1f800090 == 0)) goto switchD_8016fd64_caseD_5;
     break;
   case '\x05':

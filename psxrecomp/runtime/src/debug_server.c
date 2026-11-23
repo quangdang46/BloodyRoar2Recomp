@@ -12204,6 +12204,12 @@ static void handle_call_bail(int id, const char *json) {
     extern uint32_t g_bail_first_site_ra, g_bail_first_wild_pc;
     extern uint32_t g_bail_first_site_sp, g_bail_first_guest_sp;
     extern uint32_t g_bail_first_frame, g_bail_first_in_exc;
+    extern void psx_bail_ledger_top(uint32_t *site_ra, uint32_t *wild_pc,
+                                    uint32_t *site_sp, uint32_t *guest_sp,
+                                    uint64_t *count, uint32_t *unique);
+    uint32_t lt_ra = 0, lt_wild = 0, lt_ssp = 0, lt_gsp = 0, lt_uniq = 0;
+    uint64_t lt_count = 0;
+    psx_bail_ledger_top(&lt_ra, &lt_wild, &lt_ssp, &lt_gsp, &lt_count, &lt_uniq);
     CPUState *cpu = debug_cpu_ptr;
     send_fmt("{\"id\":%d,\"ok\":true,"
              "\"bail\":%d,"
@@ -12214,6 +12220,9 @@ static void handle_call_bail(int id, const char *json) {
              "\"site_ra\":\"0x%08X\",\"wild_pc\":\"0x%08X\","
              "\"site_sp\":\"0x%08X\",\"guest_sp\":\"0x%08X\","
              "\"first_frame\":%u,\"in_exc\":%u,"
+             "\"ledger_top_fn\":\"0x%08X\",\"ledger_top_wild\":\"0x%08X\","
+             "\"ledger_top_site_sp\":\"0x%08X\",\"ledger_top_guest_sp\":\"0x%08X\","
+             "\"ledger_top_count\":%llu,\"ledger_unique\":%u,"
              "\"pc\":\"0x%08X\",\"ra\":\"0x%08X\",\"sp\":\"0x%08X\",\"v0\":\"0x%08X\"}\n",
              id, g_psx_call_bail,
              (unsigned long long)g_psx_bail_first,
@@ -12226,6 +12235,8 @@ static void handle_call_bail(int id, const char *json) {
              g_bail_first_site_ra, g_bail_first_wild_pc,
              g_bail_first_site_sp, g_bail_first_guest_sp,
              g_bail_first_frame, g_bail_first_in_exc,
+             lt_ra, lt_wild, lt_ssp, lt_gsp,
+             (unsigned long long)lt_count, lt_uniq,
              cpu ? cpu->pc : 0u, cpu ? cpu->gpr[31] : 0u,
              cpu ? cpu->gpr[29] : 0u, cpu ? cpu->gpr[2] : 0u);
 }
