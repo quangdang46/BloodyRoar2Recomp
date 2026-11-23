@@ -10539,3 +10539,29 @@ N+102 — x28 bug narrowed to a frame_tick CALLEE (4 agents, still unfixed):
   rec+0x14. Next faithful lever: CD IRQ/HINT presentation timing vs the
   deep-stack window — does the IRQ that runs record-dispatch fire while the
   wait-loop stack is still deep on HW, or is it presented after unwind?
+
+- **session (record-table wild-dispatch crash FIXED via faithful IRQ
+  timing; clean-frame model landed but OFF):** Two parallel tracks.
+  (a) CLEAN-FRAME MODEL — `gen_clean_table.py::clean_frame` decodes each
+  clean fn's `addiu sp,sp,-N` prologue into a new `CleanDispatchEnt.frame`;
+  `clean_try_dispatch` charges it bail-aware. A/B (PSX_CLEAN_FRAME) showed
+  frames-ON livelocks the CD path (cd_mc_state_machine spin→watchdog): the
+  clean ports' br2_guest_frame/guest_sp usage is calibrated around frame-less
+  sp, so faithful sp needs the ports reworked stack-aware first. Landed
+  default-OFF behind `PSX_CLEAN_FRAME=1`; proof/clean_sp_frame_model.md.
+  (b) IRQ TIMING — DuckStation cdrom.cpp diff (subagent) showed our flat
+  `CDROM_IRQ_PRESENT_DELAY=5000` put EVERY CD IRQ ~+5000cy late vs DS's
+  sync-immediate/async-1000-500 model, and that the 5000 guard was sized for
+  the OLD synchronous-exec model (now moot: cmd_ack_delay defers exec 25000cy
+  past issue so the issuing ISR is gone). Implemented the two-tier model in
+  cdrom.c `set_irq`: ACK/ERROR present due=now; DATA_READY/COMPLETE/DATA_END
+  follow QueueDeliverAsyncInterrupt (deliver now if >=1000cy since last
+  HINTSTS ack else +500); `s_cd_last_interrupt_time` stamped on the
+  0x1F801803.1 ack that drives irq_flag->0. Re-arm latch + s_irq_i_stat_reason
+  preserve lost-IRQ protection. **VERIFIED: port 9804 ran to frame 91136+
+  with continuous mode-0xA0 file-loads, unknown_dispatch_log total=0 (zero
+  wild dispatches), int1_lost=0, irq_present_max_late=0 — previously crashed
+  ~39-46k with the 0x801BCB94 wild dispatch.** The +5000 skew was the lever:
+  it held cd_intc_dispatch's record reads ~5000cy later, inside the
+  file-load deep-stack spill window; faithful timing moves the dispatch out
+  of the corruption window. Commit 206ad35.
