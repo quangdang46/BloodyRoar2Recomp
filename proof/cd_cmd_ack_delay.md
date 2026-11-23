@@ -70,3 +70,29 @@ seq 818 queued 0x09 @ 6074503749 → seq 819 exec @ 6074528749  (+25000)
 Game boots, streams CD, and advances through menus normally — commands
 complete, just on the hardware schedule. `exec_command` is now reachable
 only via `try_execute_queued_command`, so no path bypasses the delay.
+
+## Result — faithful but NOT the crash fix
+
+Driven to `arcade_init` (gs=8) on port 9794, the **same** wild dispatch
+recurred at frame 38987: `addr=0x801BCB94 ra=0x801A1EC0 a0=0x801FF170`.
+`spdepth` shows the descent is **unchanged** — still reaches `0x801FF0F0`
+via the identical `cd_file_load_sm→mc_init_reset→cd_result_wait_a→
+cd_cmd_issue→cd_timer_read` chain. The nesting depth is **structural**
+(a fixed number of in-flight CD ops per file-load), not ACK-rate-driven,
+so slowing command issue did not shallow it.
+
+Record layout confirmed fixed: `rec = 0x801FF080 + slot*240`
+(`cd.c:6124`), `cd_bzero(0x801ff080,0x1e0)` — two 240-byte device-command
+records the game itself places at `0x801FF080`/`0x801FF170`. `a0=0x801FF170`
+is slot 1, not a corrupted pointer.
+
+**Remaining faithful question:** on HW the same generated wait/issue code
+runs, so either (a) HW's main stack genuinely reaches `0x801FF0F0` and the
+records are consumed/cleared before the deep window (an IRQ-vs-main-stack
+scheduling difference), or (b) the deep CD response/callback processing
+runs on the IRQ (`0x85xx`) or deferred-coroutine (`0x801BDxxx`) stack on HW
+but synchronously nests on the main stack here. The `cd_result_wait_a →
+cd_response_process → cd_mc_state_machine → cd_cmd_issue` recursion runs
+inside the main-thread poll loop; if HW services those callbacks from the
+CD interrupt context instead, the nesting would live on `0x85xx` and never
+touch `0x801FFxxx`.
