@@ -712,6 +712,21 @@ void psx_crash_trace_dump(const char *reason, void *seh_info) {
                         0x801BE7C0u, 64, 1);
         append_ram_peek(buf, sizeof(buf), &pos, "devcmd_rr_c",
                         0x801BE800u, 48, 1);
+        /* The 240-byte device-command record at a0 (=rec) — cd_cmd_state_commit
+         * / cd_cmd_state_rx jalr *(rec+0x14)/*(rec+0x18) as the per-record state
+         * handler. Peek all four 64B windows so the +0x14 handler, +0x0C sub-ptr,
+         * rec[70]/rec[73] state bytes and rec[232] are all visible at the fatal
+         * moment (names whether the handler cell held a CD data ptr vs a real fn). */
+        {
+            uint32_t rec = 0;
+            if (debug_cpu_ptr) rec = debug_cpu_ptr->gpr[4] & ~3u;
+            if (rec >= 0x10000u) {
+                append_ram_peek(buf, sizeof(buf), &pos, "rec_00", rec + 0x00u, 64, 1);
+                append_ram_peek(buf, sizeof(buf), &pos, "rec_40", rec + 0x40u, 64, 1);
+                append_ram_peek(buf, sizeof(buf), &pos, "rec_80", rec + 0x80u, 64, 1);
+                append_ram_peek(buf, sizeof(buf), &pos, "rec_c0", rec + 0xc0u, 64, 1);
+            }
+        }
         append_str(buf, sizeof(buf), &pos, "},\n");
     }
 
