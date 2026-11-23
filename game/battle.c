@@ -16311,7 +16311,7 @@ extern void bitfield_or_write(void *, uint32_t);
 extern void spr_desc_a(uint32_t);
 extern void spr_desc_b(uint32_t,uint32_t);
 extern void spr_desc_c(uint32_t,uint32_t);
-extern void cd_cmd_retry(void *);
+extern uint32_t cd_cmd_retry(uintptr_t);
 
 /* announce_param_block_init — round/announce parameter block init @0x1f80038c.
  * All fields u16 (sh) except +0x1c u32 (sw); verified vs disasm. */
@@ -16378,7 +16378,14 @@ void rgb_triple_store(uint8_t param_1,uint8_t param_2,uint8_t param_3)
  * scaled (x*63/127) encoding. Verified vs disasm incl. stack buf. */
 void brightness_packet_send(int32_t param_1)
 {
-  uint8_t buf[4];
+  /* Generated 0x80156114: addiu sp,sp,-32; the 4-byte packet lives at
+   * sp+0x10 and a0=sp+0x10 — a GUEST stack address — is passed to
+   * cd_cmd_retry -> cd_cmd_bytes -> guest_at(a0). A host stack buffer
+   * would be truncated to a garbage guest address, so the packet must
+   * sit in guest-visible memory. Reserve the same 0x20 guest frame and
+   * use the sp+0x10 slot exactly like the MIPS body. */
+  uint32_t frm = br2_guest_frame(0x20);
+  uint8_t *buf = (uint8_t *)guest_at(frm + 0x10);
   if (param_1 == 0) {
     buf[0] = buf[1] = buf[2] = buf[3] = 0;
   } else {
@@ -16392,7 +16399,8 @@ void brightness_packet_send(int32_t param_1)
       buf[0] = buf[1] = buf[2] = buf[3] = (uint8_t)r;
     }
   }
-  cd_cmd_retry(buf);
+  cd_cmd_retry((uintptr_t)(frm + 0x10));
+  br2_guest_frame_free();
 }
 
 /* hud_sprite_desc_init — HUD/sprite descriptor block init @0x801f0660.
