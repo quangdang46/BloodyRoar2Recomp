@@ -273,3 +273,35 @@ Next: find the game's coroutine/task stack allocator (the structures at
 `0x801FF260+` look like task save areas with self-links `0x801FF330→0x801FF3B0`)
 and determine whether `0x801FFxxx` is the intended stack base or a
 misallocation.
+
+## recvalring sp+ra — the writers are a deep CD call chain (frame 46594/46595)
+
+Crash `addr=0x801BCBA0 ra=0x801A1EC0 a0=0x801FF170`. The ring now records
+caller `ra`; decoding the spill entries:
+
+```
+pc=0x80196E38  gaddr=0x801FF184(=rec+0x14) val=0x801BCB8C sp=0x801FF168 ra=0x80198AC0
+   -> cd_cmd_issue prologue, called FROM cd_response_pump (0x80198AC0)
+pc=0x8019A478  gaddr=0x801FF194            val=0x801BCB8C sp=0x801FF178 ra=0x80198AD0
+   -> cd_timer_read prologue, caller 0x80198AD0 (cd_response_pump region)
+pc=0x80195D90  gaddr=0x801FF17C            val=0x801BCB8C sp=0x801FF168 ra=0x80198A3C
+   -> mc_session prologue, caller 0x80198A3C
+pc=0x80198924  gaddr=0x801FF1B8            val=0x801BCB80 sp=0x801FF1A0 ra=0x80198928
+   -> cd_read_open prologue, caller 0x80198928
+pc=0x8019A478  gaddr=0x801FF1E4            val=0x801BCBA4 sp=0x801FF1C8 ra=0x80198C5C (xN)
+   -> cd_init_session prologue in a poll loop, caller 0x80198C5C
+```
+
+These are **ordinary generated `jal` call chains** (ra = caller function), not
+context restores — `cd_response_pump → cd_cmd_issue`, `cd_init_session`,
+`cd_read_open`, `mc_session`, `cd_timer_read` all nest deeply enough that `sp`
+reaches `0x801FF130`–`0x801FF1C8`, inside the record table
+(`0x801FF080`–`0x801FF260`). The spilled values are the functions' saved
+session-block registers.
+
+So the overlap is a **genuine deep call chain on the CD coroutine stack**,
+not a register-restore fault. Whether `sp≈0x801FF130` is faithful depends on
+the intended stack base/size for this coroutine — the subagent is tracing the
+game's task-stack allocator. If HW runs the same chain to the same depth, the
+record table would overlap there too, meaning either the table is placed to
+avoid it or the timing differs.
