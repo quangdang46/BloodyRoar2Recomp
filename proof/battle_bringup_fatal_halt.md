@@ -105,3 +105,42 @@ disagrees with. Suspect the same guest-frame/`$ra` contract that
 `br2_guest_frame`/`br2_call_generated` manage — a nested generated call
 inside the clean battle loop may leave `$ra`/`sp` inconsistent for the
 IRQ coroutine's restore.
+
+## Mechanism assessment — REFINED (same session, deeper trace)
+
+`freeze_check` on the halted instance showed `current_func=0x000029CC` —
+the CPU died **inside the kernel context-restore** (`ReturnFromException`/
+`ChangeThread` epilogue at guest `0x29CC`), which ends `jr $k0` where
+`k0 = *(TCB + 0x88)` = the saved `resume_pc`
+(`psx_restore_context_from_tcb`, traps.c:399 `gpr[26]=read_word(save+128)`).
+
+- `pczero_count=4`, `pczero_addr=0x8014AEF4` (epilogue of generated fn
+  `br2eu_func_8014AAE0`, `lw ra,0x54(sp); jr ra`), `pczero_epc=0x80193184`
+  (CD region). The restore jumped to `pc=0` **four times and recovered**,
+  then once produced `0xE23E` → `misaligned target` → fatal.
+- All dedicated latches read zero: `rfe29cc_null_count=0`,
+  `irqanom_count=0`, `tcbsave_zero_count=0` — so the poisoned save had a
+  **nonzero, non-sentinel** `resume_pc` (`0xE23E`), slipping past both
+  guards in `psx_save_context_to_tcb` (traps.c:346).
+- Wild values `0xE23E`/`0xEE93` are ~`0xExxx` — suspiciously like the low
+  16 bits of `0x801FExxx` stack addresses; a truncated/stack-derived PC
+  is a candidate shape.
+- traps.c:411-414 already documents this failure class: *"Switching
+  mid-nest saves a poisoned TCB context (latched PC ahead of the live
+  registers) → the resumed thread dispatches a jumptable with a smeared
+  index → misaligned DISPATCH FATAL."* The deferred-switch fix covers the
+  known path; this crash is a residual variant — likely a `resume_pc`
+  sourced from `g_dirty_safe_resume_pc` /
+  `s_compiled_interrupt_resume_pc` while the interrupted context was a
+  **clean-C call** (`task_pools_tick → call_guest → vsync_wait_n`) whose
+  guest `cpu->pc`/resume state is not a normal block boundary.
+
+## Next step
+
+Trace which save produced `resume_pc=0xE23E`: arm the
+`psx_save_context_to_tcb`/`psx_restore_context_from_tcb` path (or
+`thread_ctx_ring`) on a repro and dump the TCB + resume_pc at the fatal
+restore; identify whether the poisoned value came from a stale
+`cpu->pc`, a corrupted TCB slot, or a wrong-TCB selection
+(`psx_current_tcb_ptr`). The fix is in the runtime's resume-PC selection
+for IRQ delivery inside nested clean→generated calls — not game logic.
