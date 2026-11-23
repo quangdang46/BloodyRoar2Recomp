@@ -144,3 +144,51 @@ Menu map (live probe): mode options cycle `(2,1)`=versus → `(1,4)` →
 - Next discriminator: feed slot-1 CONTINUOUSLY through arcade's real select
   window (arcade_pad2spam.py spams both slots every frame in gs=8/9) OR dump
   the TestEvent event-flag index to classify the wait as CD vs select.
+
+## UPDATE 3 — arcade wedge root-caused to CD event-flag starvation (0xF0000009)
+
+Live reproduction on port 9840 (`tools/arcade_pad2spam.py`, continuous
+both-slot injection through gs=8/9):
+
+- Arcade (`9b=0`) navigates fine to select (`sig=(0,3)`), P1 `b4` advances
+  `0x100→0x300→0x500→0x0a00`, then freezes at **gs=9 ph=0**.
+- **`b6` stays `0x0000` even under continuous pad-2 spam** — arcade's CPU
+  opponent is NOT pad-2-driven; versus's slot-1 auto-confirm does not apply.
+- `bioscall_dump`: **B0/0x0B TestEvent = 1,575,861** spinning (vs DeliverEvent
+  ~224). Frames ~frozen (10883→10884). CD idle (`reading=0`, `irq_flag=0`,
+  last CD cmd frame 7128 — ~12000 frames before wedge).
+
+### Mechanism (traced in clean tree)
+- The spinning syscall is kernel **TestEvent** — clean wrapper
+  `cd_seek_state_machine` (cd.c:3660 → `bios_svc(0xb0,0x0b,a0,0)`), guest
+  0x8019d5b0. Its callers are the `while(v0==0)` seek/state retry loops.
+- The awaited flag is the **CD channel completion event `0xF0000009`**.
+- Producer chain: CD DMA done → INTC/CD IRQ (i_stat bit2) → `cd_cb7_run`
+  (cd.c:5234, DICR done-mask dispatch) → per-channel reset →
+  `cd_dma_chan_reset` (cd.c:5188) → `cd_bios_svc_07(0xF0000009,0x20)`
+  (DeliverEvent) or callback `0x801bdee8`.
+- `cd_seek_step` (0x8019d508) is ALREADY `br2_call_generated`-delegated
+  (cd.c:5114) for exactly this class: "IRQ-poll spin on TestEvent …
+  DeliverEvent needs the deferred CD coroutine resumed on IRQ, which a
+  clean-C spin cannot drive."
+
+### Where it stands
+- Scheduler/kernel threads are ALIVE (`sp_ring` shows TCB 0x8FE0 cycling
+  BIOS DMA servicing every VBLANK; `event_ring_tail` shows DMA_DONE/ENQ/DEQ/
+  ISTAT_RAISE flowing). This is NOT a dead scheduler.
+- The wedge is the **producer side**: DeliverEvent(0xF0000009) never fires
+  because either (a) the CD IRQ bit2 never reaches `cd_cb7_run`, or (b)
+  `cd_cb7_run`/`cd_dma_chan_reset` (both clean ports) run without the
+  dispatch boundary the deferred coroutine needs.
+- pc_probe cannot observe the clean producers (no guest block PCs) — count 0
+  is a false negative for clean-C functions, same class as the earlier
+  cd_response_pump pc_probe false-negative.
+
+### Faithful next step
+Determine whether the CD IRQ (i_stat bit2) reaches `cd_cb7_run` during the
+wedge — i.e. instrument the INTC→cd_cb7_run dispatch boundary, or add a
+debug-server PC/regs dump (none exists: `regs`/`cpu_state`/`pc`/`current_tcb`
+all "unknown command"). If `cd_cb7_run` is clean-C and its DICR `while`
+loops lack the per-block IRQ resume the generated body had, the §4 fix is to
+delegate it (or the spinning consumer) to generated. Versus-1P avoids this
+path entirely (different asset-load/seek timing), which is why it fights.
