@@ -244,3 +244,29 @@ in the TCB (`0x8FE0` region) vs the sp the deferred coroutine runs at.
 Candidate fixes live in `interrupts.c`/`traps.c` deferred-coroutine
 stack selection — the guest frames and the BIOS context frames must
 not share addresses.
+
+## Context-restore layout decoded (OpenBIOS_full.c)
+
+`0x29CC` (`OpenBIOS_func_000029CC`) is the FULL kernel-context restore:
+`k1 = *(*0x108)` → `k1 += 8` → reads saved GPRs/status/EPC at
+`k1+4..k1+144`, `lw $ra` at `k1+124`, `jr $k0` at `k1+128`, then `rfe`.
+Its counterpart `0x27AC` (`OpenBIOS_func_000027AC`) is the SAVE side —
+same `*(*0x108)` chain, `sw` regs to `k0+8+offsets`. Both match the
+host `psx_save/restore_context_from_tcb` layout (traps.c:346-404):
+`save=tcb+8`, gpr[i]@`save+i*4`, resume_pc@`save+128`, sp=gpr[29]@`save+116`.
+
+Live TCB dump (port 9970, `0x8FE0`): **the main-thread saved context is
+CLEAN** — saved sp `0x905C=0x801FFDF8`, ra `0x9064=0x8019A53C`,
+resume_pc/k0 `0x9068=0x8019A600`, status `0x9074=0x40000404`. So the
+wild restore is NOT the main TCB thread-switch.
+
+For the wild `lw ra`@`0x801FFE58`, `k1+124 = 0x801FFE58` →
+`k1 = 0x801FFDDC` → `*(*0x108) = 0x801FFDD4` — i.e. the current-context
+pointer resolved to a **kernel-stack address**, not the `0x8FE0` TCB.
+Either (a) the current-TCB slot (`0x8FD0`) transiently held a stack
+pointer (deferred-coroutine/exception temporary context), or (b) a
+nested IRQ frame on the kernel stack is the restore target and its
+saved-ra slot genuinely overlaps cd_timer_read's spill. The decisive
+missing datum is the crash-time value of `*(*0x108)` / `k1` inside
+`0x29CC` — needs a k1 watchpoint or an `rwatchpc`-style recorder on the
+`lw k1,8(0x108)` / `lw k1,0(k1)` loads (phys `0x108`, `*(0x108)`).
