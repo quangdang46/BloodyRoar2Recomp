@@ -8231,6 +8231,13 @@ undefined4 * rotmat2_build(uint param_1,undefined4 *param_2)
  * the guest jalr through the generated dispatcher. */
 void task_invoke(uint32_t fn_guest, uint32_t arg_guest)
 {
+  /* Bail-unwind in flight (g_psx_call_bail): generated CPS frames return
+   * immediately without running their continuation; the clean-C equivalent
+   * is to skip the callback entirely. Invoking now would run guest code the
+   * wild flow already bypassed, and any br2_call_generated/call_guest inside
+   * would silently drop anyway. */
+  { extern int br2_bail_pending(void);
+    if (br2_bail_pending()) return; }
   void *fn = fn_lookup(fn_guest);
   if (fn == (void *)0x0) {
     /* Unported target: reproduce the guest jalr — a0 = arg_guest (a guest
@@ -8354,6 +8361,11 @@ void task_pools_tick(int param_1)
           else {
             task_slot_step();
           }
+          /* Bail-unwind in flight: stop ticking the remaining nodes — the
+           * generated task runner's CPS frames would all return immediately,
+           * and clean callbacks invoked now would run dead guest code. */
+          { extern int br2_bail_pending(void);
+            if (br2_bail_pending()) return; }
         }
         piVar2 = piVar3;
       } while (nextg != 0);
@@ -16746,6 +16758,14 @@ void LAB_80137acc(int *param_1)
   short *psVar5;
   int *piVar6;
 
+  /* Bail-unwind in flight (g_psx_call_bail): the generated interpreter's CPS
+   * frames return immediately without consuming script records. Checking
+   * here keeps the cursor/tick untouched so the pending records re-fire
+   * once the unwind resolves — otherwise every handler below would be
+   * silently dropped by br2_call_generated while the cursor still advanced
+   * (the announce-wedge DAT1=9/0xF0 loss, proof/announce_script_handler_drop.md). */
+  { extern int br2_bail_pending(void);
+    if (br2_bail_pending()) return; }
   { extern uint32_t g_tramp_calls,g_tramp_last_node,g_tramp_last_cur,g_tramp_last_op;
     g_tramp_calls++;
     g_tramp_last_node = (uint32_t)(uintptr_t)guest_of(param_1);
@@ -16814,6 +16834,12 @@ LAB_80137c14:
               psVar3 = (short *)guest_at((uint32_t)*piVar6);
             } while (iVar4 < psVar3[1]);
           }
+          /* A handler began a bail unwind: do NOT advance the script cursor
+           * or tick — the generated frame would return here and the record
+           * group re-fires on the next invocation after the unwind resolves.
+           * Advancing now would consume records whose handlers were dropped. */
+          { extern int br2_bail_pending(void);
+            if (br2_bail_pending()) return; }
           iVar4 = *piVar6;
           psVar3 = (short *)guest_at((uint32_t)(iVar4 + 6));
           *piVar6 = (int)guest_of(psVar3);

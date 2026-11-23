@@ -563,6 +563,12 @@ void battle_flow_state_machine(intptr_t param_1)
       decomp_trace_record(60,(uint32_t)DAT_1f800001,(uint32_t)DAT_1f80009c,0,0);
     decomp_trace_record(70,(uint32_t)DAT_1f800001,(uint32_t)DAT_1f80009c,(uint8_t)DAT_1f80009b,0); }
 joined_r0x8016fd30:
+  /* Bail-unwind in flight (g_psx_call_bail): this is a clean-C mega-loop
+   * (goto joined_r0x8016fd30 every iteration) with no dispatch boundary —
+   * return so the unwind reaches the psx_dispatch_impl frame above, exactly
+   * like a generated CPS frame's `if (g_psx_call_bail) return;`. */
+  { extern int br2_bail_pending(void);
+    if (br2_bail_pending()) return; }
   /* Guest block_8016FD38 (the loop head) reloads the OT base/index from
    * scratchpad EVERY iteration: lw $2C,0xC($16) / lw $2B,8($16) where $16 =
    * 0x1F800000. frame_tick's double-buffer toggle writes those cells at the
@@ -603,6 +609,11 @@ joined_r0x8016fd30:
         _DAT_1f8000c4 = guest_of(_g_system_config_ptr + 0x2c);
         if ((DAT_1f80009b == '\0') && (*(char *)(_g_system_config_ptr + 0x11) != '\x01')) {
           iVar4 = battle_frame();
+          /* battle_frame returns early on a bail unwind — propagate it so
+           * the unwind reaches the dispatch boundary instead of continuing
+           * this clean-C loop with every generated fallback dropped. */
+          { extern int br2_bail_pending(void);
+            if (br2_bail_pending()) return; }
           if (iVar4 < 0) {
             DAT_1f800001 = -1;
           }
@@ -996,6 +1007,8 @@ undefined4 system_config_menu_a(void)
   uVar3 = 0;
   _DAT_1f80008c = 0;
 joined_r0x8015c784:
+  { extern int br2_bail_pending(void);
+    if (br2_bail_pending()) return uVar3; }
   do {
     if (DAT_1f800001 == 0xff) {
       DAT_1f800001 = 0;
@@ -1163,6 +1176,8 @@ undefined4 system_config_menu_b(void)
   _DAT_1f80008c = 0;
   pbVar4 = (byte *)(_g_system_config_ptr + 0x38);
 joined_r0x8015b9e0:
+  { extern int br2_bail_pending(void);
+    if (br2_bail_pending()) return uVar6; }
   do {
     if (DAT_1f800001 == 0xff) {
       DAT_1f800001 = 0;
@@ -1348,6 +1363,8 @@ LAB_80164714:
   if (iVar1 < 0) {
     _DAT_1f80008c = 0;
 joined_r0x80164744:
+    { extern int br2_bail_pending(void);
+      if (br2_bail_pending()) return; }
     if (DAT_1f800001 != 0xff) {
       if (DAT_1f800001 == 1) {
 LAB_80164830:
@@ -1978,6 +1995,8 @@ void battle_intro_flow(int param_1)
   if (iVar4 < 0) {
     DAT_1f80009b = 3;
 joined_r0x801673ac:
+    { extern int br2_bail_pending(void);
+      if (br2_bail_pending()) return; }
     if (DAT_1f800001 != 0xff) {
       if (DAT_1f800001 == 2) {
 LAB_80167620:
@@ -8114,6 +8133,19 @@ int battle_frame(void)
   B36_32(0x140) = guest_of(T);
 
   for (;;) {
+    /* Bail-unwind in flight (g_psx_call_bail): this function is ONE clean-C
+     * activation for the whole battle — there is no dispatch boundary until
+     * it returns, so a latched bail can never reach the psx_dispatch_impl
+     * frame that resolves/flattens it (every br2_call_generated inside would
+     * silently drop — the announce-wedge DAT1=8 stall,
+     * proof/announce_script_handler_drop.md). The generated CPS equivalent
+     * returns immediately; do the same. The guest epilogue does NOT run on a
+     * bail exit (no MW8(0x1f800001,0), no sp restore): abandon only the
+     * host-side frame record so $sp keeps the un-returned frame, exactly as
+     * generated code leaves it. */
+    { extern int br2_bail_pending(void);
+      extern void br2_guest_frame_abandon(void);
+      if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; } }
     /* dispatcher @0x8014ce80 */
     st = MB8(0x1f800001);
     if (st == 0xff) break;

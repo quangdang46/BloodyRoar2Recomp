@@ -530,6 +530,10 @@ static void entry_0x80126178(void)
     size = (lit - v1) - 0x1ff650u;            /* guest subu wraps identically */
     guest_bzero(0x801ff654, size);
     entry_0x80126234();
+    /* main() returned early on a bail unwind — propagate it to _start's
+     * dispatch frame instead of running the guest trap(1) epilogue. */
+    { extern int br2_bail_pending(void);
+      if (br2_bail_pending()) return; }
     trap(1);
     halt_baddata();
 }
@@ -633,6 +637,16 @@ void entry_0x80126234(void)
     frame_advance_helper();
     func_0x80163840(0);
 switchD_80126370_caseD_80126344:
+    /* Bail-unwind in flight (g_psx_call_bail): main() is a clean-C
+     * mega-loop — every state dispatch re-enters here. Return so the
+     * unwind reaches the outermost psx_dispatch_impl (which flattens the
+     * wild flow) instead of latching the flag forever while every
+     * br2_call_generated below silently drops. Abandon only the host-side
+     * frame record: the guest never ran main's epilogue, so $sp keeps the
+     * frame exactly as generated CPS bail-returns leave it. */
+    { extern int br2_bail_pending(void);
+      extern void br2_guest_frame_abandon(void);
+      if (br2_bail_pending()) { br2_guest_frame_abandon(); return; } }
     uVar4 = (uint)g_game_state;
 code_r0x8012634c:
     bVar1 = uVar4 < 0xe;
@@ -1475,6 +1489,8 @@ void match_loop(void)
     local_24 = *(undefined4 *)g_DAT_801202f0;
     local_20 = *(undefined4 *)g_DAT_801202f4;
 joined_r0x801470b0:
+    { extern int br2_bail_pending(void);
+      if (br2_bail_pending()) return; }
     do {
         if (DAT_1f800001 == 0xff) {
             DAT_1f800001 = 0;

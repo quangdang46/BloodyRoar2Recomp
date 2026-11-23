@@ -12188,6 +12188,48 @@ static void handle_dispatch_check(int id, const char *json) {
         id, addr, found ? "true" : "false", (unsigned long long)s_dispatch_seq);
 }
 
+/* call_bail: live wild-flow bail/unwind state. Surfaces g_psx_call_bail
+ * (latched = every br2_call_generated silently drops its call), the
+ * br2_call_generated drop/unwind counters from src/clean_bridge.c, the
+ * bail-source ledger (traps.c), and the live wild pc/ra/sp so a wedged
+ * clean-C activation can be proven to be starving on a latched bail.
+ * {"cmd":"call_bail"} */
+static void handle_call_bail(int id, const char *json) {
+    (void)json;
+    extern int      g_psx_call_bail;
+    extern uint64_t g_psx_bail_first, g_psx_bail_resolved;
+    extern uint64_t g_psx_bail_flattened, g_psx_bail_anomaly;
+    extern uint64_t g_br2_bail_drops, g_br2_bail_unwinds;
+    extern uint32_t g_br2_bail_last_fn, g_br2_bail_last_ra;
+    extern uint32_t g_bail_first_site_ra, g_bail_first_wild_pc;
+    extern uint32_t g_bail_first_site_sp, g_bail_first_guest_sp;
+    extern uint32_t g_bail_first_frame, g_bail_first_in_exc;
+    CPUState *cpu = debug_cpu_ptr;
+    send_fmt("{\"id\":%d,\"ok\":true,"
+             "\"bail\":%d,"
+             "\"bail_first\":%llu,\"bail_resolved\":%llu,"
+             "\"bail_flattened\":%llu,\"bail_anomaly\":%llu,"
+             "\"drops\":%llu,\"unwinds\":%llu,"
+             "\"last_fn\":\"0x%08X\",\"last_ra\":\"0x%08X\","
+             "\"site_ra\":\"0x%08X\",\"wild_pc\":\"0x%08X\","
+             "\"site_sp\":\"0x%08X\",\"guest_sp\":\"0x%08X\","
+             "\"first_frame\":%u,\"in_exc\":%u,"
+             "\"pc\":\"0x%08X\",\"ra\":\"0x%08X\",\"sp\":\"0x%08X\",\"v0\":\"0x%08X\"}\n",
+             id, g_psx_call_bail,
+             (unsigned long long)g_psx_bail_first,
+             (unsigned long long)g_psx_bail_resolved,
+             (unsigned long long)g_psx_bail_flattened,
+             (unsigned long long)g_psx_bail_anomaly,
+             (unsigned long long)g_br2_bail_drops,
+             (unsigned long long)g_br2_bail_unwinds,
+             g_br2_bail_last_fn, g_br2_bail_last_ra,
+             g_bail_first_site_ra, g_bail_first_wild_pc,
+             g_bail_first_site_sp, g_bail_first_guest_sp,
+             g_bail_first_frame, g_bail_first_in_exc,
+             cpu ? cpu->pc : 0u, cpu ? cpu->gpr[31] : 0u,
+             cpu ? cpu->gpr[29] : 0u, cpu ? cpu->gpr[2] : 0u);
+}
+
 /* dispatch_tail: dump the last N dispatched function addresses */
 static void handle_dispatch_tail(int id, const char *json) {
     int count = 64;
@@ -14772,6 +14814,7 @@ static const CmdEntry s_commands[] = {
     { "dispatch_stats",    handle_dispatch_stats },
     { "dispatch_check",    handle_dispatch_check },
     { "dispatch_tail",     handle_dispatch_tail },
+    { "call_bail",         handle_call_bail },
     { "card_mgr_trace",    handle_card_mgr_trace },
     { "card_mgr_clear",    handle_card_mgr_clear },
     { "fn_filter",         handle_fn_filter },

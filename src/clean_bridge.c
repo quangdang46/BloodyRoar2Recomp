@@ -365,6 +365,18 @@ void br2_guest_frame_free(void)
     guest_sp_set(sp);
 }
 
+/* br2_guest_frame_abandon — pop the frame record WITHOUT restoring $sp.
+ * Used on a g_psx_call_bail early-return: the guest function did NOT
+ * execute its epilogue (generated CPS frames skip it the same way —
+ * `if (g_psx_call_bail) return;`), so the guest stack must keep the
+ * frame: $sp stays where the un-returned function left it and the wild
+ * flow the outermost dispatch flattens to sees the true guest sp. Only
+ * the host-side LIFO record is discarded so later frames stay balanced. */
+void br2_guest_frame_abandon(void)
+{
+    if (g_frm_depth > 0) g_frm_depth--;
+}
+
 /* call_guest — synchronous guest-function call from clean C. The guest
  * semantics are `jalr` with a0/a1 loaded and $ra = the post-call site; in
  * clean C the "post-call site" is this C frame, so the contract is:
@@ -467,6 +479,20 @@ uint32_t call_guest4(uint32_t fn, uint32_t a0, uint32_t a1,
     }
 }
 
+/* Bail-drop telemetry (announce-wedge proof, proof/announce_script_handler_drop.md):
+ * the g_psx_call_bail early-return below is the ONLY silent no-dispatch path in
+ * this function. Count every dropped call and remember the last dropped target
+ * + caller $ra so the debug server "call_bail" command can prove a latched
+ * bail is eating legitimate generated fallbacks. g_br2_bail_unwinds counts the
+ * OTHER bail path — the call DID dispatch and the callee began an unwind
+ * (normal propagation, not a drop). Defined in runtime/src/traps.c so targets
+ * that do not compile this file (psx-runtime-us/-japan/-universal) still link
+ * the debug server's references. */
+extern uint64_t g_br2_bail_drops;
+extern uint64_t g_br2_bail_unwinds;
+extern uint32_t g_br2_bail_last_fn;
+extern uint32_t g_br2_bail_last_ra;
+
 /* br2_call_generated — invoke the recompiled (generated) implementation of
  * a guest function, bypassing clean_try_dispatch entirely.  Used by clean
  * ports whose guest counterpart crosses BIOS kernel-call boundaries that
@@ -485,7 +511,12 @@ uint32_t br2_call_generated(uint32_t fn, uint32_t a0, uint32_t a1,
      * OpenEvent never ran because a null jalr in cd_chan_boot_init's sibling
      * left bail set). Return $v0 untouched so the unwind's cpu->pc / $ra /
      * $sp survive intact up to the flatten point. */
-    if (g_psx_call_bail) return cpu->gpr[2];
+    if (g_psx_call_bail) {
+        g_br2_bail_drops++;
+        g_br2_bail_last_fn = fn;
+        g_br2_bail_last_ra = cpu->gpr[31];
+        return cpu->gpr[2];
+    }
     ra = cpu->gpr[31]; pc = cpu->pc; sp = cpu->gpr[29];
     s0 = cpu->gpr[16]; s1 = cpu->gpr[17]; s2 = cpu->gpr[18]; s3 = cpu->gpr[19];
     cpu->gpr[4] = a0; cpu->gpr[5] = a1;
@@ -501,7 +532,10 @@ uint32_t br2_call_generated(uint32_t fn, uint32_t a0, uint32_t a1,
      * now holds the wild-flow target the outermost dispatch must resume at.
      * Restoring the saved pc/ra/sp here would clobber that target and strand
      * the unwind, so leave every guest register exactly as the unwind left it. */
-    if (g_psx_call_bail) return cpu->gpr[2];
+    if (g_psx_call_bail) {
+        g_br2_bail_unwinds++;
+        return cpu->gpr[2];
+    }
     cpu->gpr[31] = ra; cpu->gpr[29] = sp; cpu->pc = pc;
     cpu->gpr[16] = s0; cpu->gpr[17] = s1;
     cpu->gpr[18] = s2; cpu->gpr[19] = s3;

@@ -122,6 +122,16 @@ uint64_t g_psx_bail_resolved  = 0;
 uint64_t g_psx_bail_flattened = 0;
 uint64_t g_psx_bail_anomaly   = 0;
 
+/* br2_call_generated bail telemetry — defined HERE (runtime) rather than in
+ * src/clean_bridge.c so every game target links them: the EU target compiles
+ * clean_bridge.c, but psx-runtime-us/-japan/-universal do not, and the debug
+ * server's "call_bail" command references these unconditionally. clean_bridge.c
+ * externs and increments them. */
+uint64_t g_br2_bail_drops    = 0;
+uint64_t g_br2_bail_unwinds  = 0;
+uint32_t g_br2_bail_last_fn  = 0;
+uint32_t g_br2_bail_last_ra  = 0;
+
 /* ---- Deduped bail-source ledger (Tomba 2 wild-return / splash-spin diag) ----
  * psx_call_contract (cpu_state.h) calls psx_bail_record() at each FIRST-detected
  * contract violation with the call site's expected return address (site_ra — the
