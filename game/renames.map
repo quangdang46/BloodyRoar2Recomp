@@ -31,6 +31,7 @@
 80136f70 empty_leaf_a
 80136f78 empty_leaf_b
 80136f80 empty_leaf_c
+80126170 empty_leaf_e
 8012c0b4 intro_movie_state
 8012cc6c print_dispatch_guest
 8012cf64 print_dispatch_selfdesc_guest
@@ -719,6 +720,7 @@
 80133944 vec3_approach_step
 8013f490 task_alloc_setup
 8013e3f4 paired_task_cb
+8013e0f0 task_packet_emit
 8018694c sprite_prim_update
 80195570 rotate_xy_pairs
 80134234 channel_script_emit_chain_triple

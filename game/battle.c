@@ -17942,6 +17942,129 @@ void paired_task_cb(int param_1)
   return;
 }
 
+/* guest task_packet_emit @0x8013e0f0 — allocates a type-0xb task node
+ * (callback 0x8014dbd8, args 0/0xc4) and fills the node's +0x10 packet
+ * buffer: u16 angle fields from lut_cos/lut_sin(ang+0x400)>>6 at +0xb8/+0xbc,
+ * a 3x3 u16 matrix copied column-wise from param_2 (+0xa0..+0xb4) with the
+ * two middle entries scaled by the trig results <<2, then two passes of
+ * four 0x28-byte packet records (tag 0x09000000) whose byte fields depend
+ * on the u8 flag at param_1+2. Disasm 0x8013e0f0-0x8013e370. */
+void task_packet_emit(int param_1,int param_2,int param_3)
+{
+  int iVar1;
+  int iVar2;
+  uint32_t uVar3;
+  uint32_t uVar4;
+  int iVar5;
+  int iVar6;
+
+  iVar1 = (int)(intptr_t)task_node_alloc(1,2,0xb,0x8014dbd8,0,0xc4);
+  if (iVar1 == 0) {
+    return;
+  }
+  uVar3 = *(uint32_t *)guest_at((uint32_t)(uintptr_t)(iVar1 + 0x10));
+  *(short *)guest_at(uVar3 + 0xc2) = (short)param_3;
+  *(short *)guest_at(uVar3 + 0xc0) = (short)param_3;
+  iVar2 = (int)*(short *)guest_at((uint32_t)(uintptr_t)(param_1 + 0x4e));
+  *(short *)guest_at(uVar3 + 0xb8) =
+    (short)(lut_cos_q12(iVar2 + 0x400) >> 6);
+  *(short *)guest_at(uVar3 + 0xbc) =
+    (short)(lut_sin_q12(iVar2 + 0x400) >> 6);
+  /* 3x3 u16 matrix at uVar3+0xa0: column j = u16 of param_2 word j
+   * (guest reads lhu at +0/+4/+8, writes sh at row/col strides 8/2). */
+  *(ushort *)guest_at(uVar3 + 0xa0) =
+    *(ushort *)guest_at((uint32_t)(uintptr_t)(param_2 + 0));
+  *(ushort *)guest_at(uVar3 + 0xa8) =
+    *(ushort *)guest_at((uint32_t)(uintptr_t)(param_2 + 0));
+  *(ushort *)guest_at(uVar3 + 0xb0) =
+    *(ushort *)guest_at((uint32_t)(uintptr_t)(param_2 + 0));
+  *(ushort *)guest_at(uVar3 + 0xa2) =
+    *(ushort *)guest_at((uint32_t)(uintptr_t)(param_2 + 4));
+  *(ushort *)guest_at(uVar3 + 0xaa) =
+    *(ushort *)guest_at((uint32_t)(uintptr_t)(param_2 + 4));
+  *(ushort *)guest_at(uVar3 + 0xb2) =
+    *(ushort *)guest_at((uint32_t)(uintptr_t)(param_2 + 4));
+  *(ushort *)guest_at(uVar3 + 0xa4) =
+    *(ushort *)guest_at((uint32_t)(uintptr_t)(param_2 + 8));
+  *(ushort *)guest_at(uVar3 + 0xac) =
+    *(ushort *)guest_at((uint32_t)(uintptr_t)(param_2 + 8));
+  *(ushort *)guest_at(uVar3 + 0xb4) =
+    *(ushort *)guest_at((uint32_t)(uintptr_t)(param_2 + 8));
+  *(ushort *)guest_at(uVar3 + 0xa8) =
+    (ushort)(*(ushort *)guest_at(uVar3 + 0xa8) +
+             (*(ushort *)guest_at(uVar3 + 0xb8) << 2));
+  *(ushort *)guest_at(uVar3 + 0xac) =
+    (ushort)(*(ushort *)guest_at(uVar3 + 0xac) +
+             (*(ushort *)guest_at(uVar3 + 0xbc) << 2));
+  /* two outer passes of two 0x28-byte records each (guest a2/t1 += 0x50) */
+  for (iVar5 = 0; iVar5 < 2; iVar5++) {
+    uVar4 = uVar3 + iVar5 * 0x50;
+    for (iVar6 = 0; iVar6 < 2; iVar6++) {
+      uint32_t uVar7 = uVar4 + iVar6 * 0x28;
+      *(uint32_t *)guest_at(uVar7) = 0x09000000;
+      *(byte *)guest_at(uVar7 + 7) = 44;
+      *(short *)guest_at(uVar7 + 0x16) = 63;
+    }
+    {
+      byte bVar9 = *(byte *)guest_at((uint32_t)(uintptr_t)(param_1 + 2));
+      if (bVar9 == 0) {
+      for (iVar6 = 0; iVar6 < 2; iVar6++) {
+        *(short *)guest_at(uVar4 + iVar6 * 0x28 + 0xe) = 0x7846;
+      }
+      /* variant B: rec0 bytes, rec1 head, shared rec1 tail */
+      *(byte *)guest_at(uVar4 + 0xc)  = 144;
+      *(byte *)guest_at(uVar4 + 0x1c) = 144;
+      *(byte *)guest_at(uVar4 + 0xd)  = 0;
+      *(byte *)guest_at(uVar4 + 0x14) = 160;
+      *(byte *)guest_at(uVar4 + 0x15) = 0;
+      *(byte *)guest_at(uVar4 + 0x1d) = 32;
+      *(byte *)guest_at(uVar4 + 0x24) = 160;
+      *(byte *)guest_at(uVar4 + 0x25) = 32;
+      *(byte *)guest_at(uVar4 + 0x28 + 0xc)  = 160;
+      *(byte *)guest_at(uVar4 + 0x28 + 0xd)  = 0;
+      *(byte *)guest_at(uVar4 + 0x28 + 0x14) = 192;
+      *(byte *)guest_at(uVar4 + 0x28 + 0x15) = 0;
+      }
+    else {
+      for (iVar6 = 0; iVar6 < 2; iVar6++) {
+        *(short *)guest_at(uVar4 + iVar6 * 0x28 + 0xe) = 0x7847;
+      }
+      /* variant C: same layout, colour bytes 64/96 */
+      *(byte *)guest_at(uVar4 + 0xc)  = 144;
+      *(byte *)guest_at(uVar4 + 0x1c) = 144;
+      *(byte *)guest_at(uVar4 + 0xd)  = 64;
+      *(byte *)guest_at(uVar4 + 0x14) = 160;
+      *(byte *)guest_at(uVar4 + 0x15) = 64;
+      *(byte *)guest_at(uVar4 + 0x1d) = 96;
+      *(byte *)guest_at(uVar4 + 0x24) = 160;
+      *(byte *)guest_at(uVar4 + 0x25) = 96;
+      *(byte *)guest_at(uVar4 + 0x28 + 0xc)  = 160;
+      *(byte *)guest_at(uVar4 + 0x28 + 0xd)  = 64;
+      *(byte *)guest_at(uVar4 + 0x28 + 0x14) = 192;
+      *(byte *)guest_at(uVar4 + 0x28 + 0x15) = 64;
+    }
+    /* shared tail on rec1 (uVar4+0x28): +0x1c=160, +0x1d=variant,
+     * +0x24=192, +0x25=variant — emitted identically in both variants
+     * with the variant byte in a0 (32 / 96). */
+    *(byte *)guest_at(uVar4 + 0x28 + 0x1c) = 160;
+    *(byte *)guest_at(uVar4 + 0x28 + 0x1d) = (bVar9 == 0) ? 32 : 96;
+    *(byte *)guest_at(uVar4 + 0x28 + 0x24) = 192;
+    *(byte *)guest_at(uVar4 + 0x28 + 0x25) = (bVar9 == 0) ? 32 : 96;
+    /* both records: colour bytes +4..+6 = 127, tag byte +7 RMW */
+    for (iVar6 = 0; iVar6 < 2; iVar6++) {
+      uint32_t uVar7 = uVar4 + iVar6 * 0x28;
+      byte bVar8;
+      *(byte *)guest_at(uVar7 + 4) = 127;
+      *(byte *)guest_at(uVar7 + 5) = 127;
+      *(byte *)guest_at(uVar7 + 6) = 127;
+      bVar8 = *(byte *)guest_at(uVar7 + 7);
+      *(byte *)guest_at(uVar7 + 7) = (byte)((bVar8 & 0xfe) | 2);
+    }
+    }
+  }
+  return;
+}
+
 /* guest sprite_prim_update @0x8018694c — sprite/prim update: GTE transform via
  * rtps_point_xform2, copies 3 hwords from *(p3+0x18)+4 into p3+0..4 (h6=0),
  * calls part_matrix_compute, decrements/adjusts counters h0e/h10/h12 with

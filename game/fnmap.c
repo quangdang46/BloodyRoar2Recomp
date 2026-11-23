@@ -565,6 +565,7 @@ extern void empty_leaf_a(void);
 extern void empty_leaf_b(void);
 extern void empty_leaf_c(void);
 extern void empty_leaf_d(void);
+extern void empty_leaf_e(void);
 extern void empty_ret(void);
 extern void engine_record_pair_update(void);
 extern void engine_tables_restore(void);
@@ -1324,6 +1325,7 @@ extern void task_node_cb_noop_b(void);
 extern void task_node_cb_noop_c(void);
 extern void task_node_free(void);
 extern void task_object_spawn(void);
+extern void task_packet_emit(void);
 extern void task_pool_alloc(void);
 extern void task_pool_free(void);
 extern void task_pool_init(void);
@@ -1408,6 +1410,7 @@ extern void xform_accum_tick(void);
 typedef struct { uint32_t addr; void *fn; } Br2FnEnt;
 
 const Br2FnEnt fn_table[] = {
+  { 0x80126170, (void *)empty_leaf_e },
   { 0x80126720, (void *)versus_state_init },
   { 0x801267dc, (void *)cd_channel_init_seq },
   { 0x80126848, (void *)scratch_zero_reset },
@@ -1608,6 +1611,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8013d6b0, (void *)emit_task_spawn },
   { 0x8013d7e4, (void *)confetti_burst_update },
   { 0x8013da2c, (void *)confetti_burst_spawn },
+  { 0x8013e0f0, (void *)task_packet_emit },
   { 0x8013e374, (void *)node_list_walk_d },
   { 0x8013e3f4, (void *)paired_task_cb },
   { 0x8013e558, (void *)LAB_8013e558 },

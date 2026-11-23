@@ -538,8 +538,11 @@ static void entry_0x80126178(void)
     halt_baddata();
 }
 
-/* func_0x80126170 / func_0x80163840 — jr-ra thunks (empty) */
-static void func_0x80126170(void) { }
+/* func_0x80126170 / func_0x80163840 — jr-ra thunks (empty).
+ * empty_leaf_e is the renames.map-registered form of guest 0x80126170
+ * (`jr ra; nop`, 8-byte body — a bind_jal waypoint slot). */
+void empty_leaf_e(void) { }
+static void func_0x80126170(void) { empty_leaf_e(); }
 static void func_0x80163840(int p) { (void)p; }
 
 /* apply_saved_settings_or_defaults @0x80126720 */
