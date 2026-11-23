@@ -9093,6 +9093,67 @@ L_mode2:                                      /* 0x80148e00 */
   return;
 }
 
+/* width3_num_space_pad — CPS-split continuation of width3_num_format
+ * @0x80148d80 (mode a2==1, space-padded 3-digit field). Reached in the
+ * guest by a `j` from 0x80148cf0 with the reduced value already in
+ * $a1 and the output buffer moved to $a3; $a0/$a2 are dead on entry
+ * ($a2 is reloaded with the loop count 2). value==0 emits "  0" style
+ * (0x20,0x20,'0'); otherwise digits fill buf[2..0] right-to-left and
+ * leading positions that outlive the value become 0x20. NUL at buf[3]
+ * comes from the shared 0x80148e60 tail in the guest. */
+void width3_num_space_pad(int32_t param_1,int32_t param_2,int32_t param_3,
+                    uint8_t *param_4)
+{
+  uint8_t *buf = param_4;
+  int32_t v = param_2;
+  int32_t q, i;
+  (void)param_1;
+  (void)param_3;
+
+  if (v == 0) {
+    buf[0] = 0x20; buf[1] = 0x20; buf[2] = '0';
+    buf[3] = 0;
+    return;
+  }
+  for (i = 2; i >= 0; i--) {
+    if (v != 0) {
+      int32_t hi = (int32_t)(((int64_t)v * 0x66666667LL) >> 32);
+      q = (hi >> 2) - (v >> 31);                /* v / 10 */
+      buf[i] = (uint8_t)(v - q * 10 + 0x30);
+      v = q;
+    } else {
+      buf[i] = 0x20;
+    }
+  }
+  buf[3] = 0;
+}
+
+/* width3_num_zero_pad — CPS-split continuation of width3_num_format
+ * @0x80148e00 (mode a2==2, zero-padded 3-digit field). Same entry ABI
+ * as width3_num_space_pad (value in $a1, buf in $a3). buf[0..2] are
+ * pre-filled with '0' so positions that outlive the value stay zero;
+ * NUL at buf[3] via the shared 0x80148e60 tail. */
+void width3_num_zero_pad(int32_t param_1,int32_t param_2,int32_t param_3,
+                   uint8_t *param_4)
+{
+  uint8_t *buf = param_4;
+  int32_t v = param_2;
+  int32_t q, i;
+  (void)param_1;
+  (void)param_3;
+
+  buf[0] = '0'; buf[1] = '0'; buf[2] = '0';
+  for (i = 2; i >= 0; i--) {
+    if (v != 0) {
+      int32_t hi = (int32_t)(((int64_t)v * 0x66666667LL) >> 32);
+      q = (hi >> 2) - (v >> 31);                /* v / 10 */
+      buf[i] = (uint8_t)(v - q * 10 + 0x30);
+      v = q;
+    }
+  }
+  buf[3] = 0;
+}
+
 /* packed_field_store — packed-field writer @0x80148f30 (9 insns).
  * 0x801f10b8 = ((a0 & 0x3ff) << 3); the store is the beqz delay
  * slot so it always runs, then (a0 & 0x400) rewrites it |4. */
@@ -10572,6 +10633,151 @@ uint32_t task_spawn_var_b(uint32_t param_1,uint32_t param_2,uint32_t param_3,
   MW16(v0 + 0x1a, 0);
   MW16(v0 + 0x1e, 0);
   return blk;
+}
+
+/* task_node_cb_noop_a/b/c — 8-byte `jr $ra; nop` task-node callbacks
+ * @0x8014af04 / @0x8014b2c4 / @0x8014b73c. task_node_alloc() takes the
+ * step/destroy callback as a guest address, and task_spawn_var_b /
+ * task_spawn_var_a / task_object_spawn install exactly these three
+ * addresses as the inert callback slots; the guest bodies are verified
+ * to be a bare jr $ra with a nop delay slot, so the faithful port is an
+ * empty body. */
+void task_node_cb_noop_a(void) { }
+void task_node_cb_noop_b(void) { }
+void task_node_cb_noop_c(void) { }
+
+extern void task_slot_step(void);
+extern uint8_t *g__DAT_1f800082;   /* u16 sim/pause gate (see battle.c) */
+static int32_t tpg_idiv(int32_t,int32_t);   /* defined in batch47 */
+
+/* sprite_record_tick — tagged sprite-record stepper @0x8014aae0 (284
+ * guest insns, 36 blocks). a0 = guest record R (created by
+ * task_spawn_var_a / task_spawn_var_b: +0x00/+0x04 are the two sprite
+ * heads, +0x08 is the tag-entry base, +0x0c the sx16 table base,
+ * +0x10 the tag cursor). Gate phase: u16 @R+0x18 counts down while the
+ * 0x1f800082 sim/pause gate is clear (u16 @R+0x14 ticks down in
+ * parallel); the tag-list walk only runs once sx16 @R+0x14 <= 0.
+ * The cursor walks 4-byte entries {u16 tag, u16 val} dispatched on
+ * (tag & 0xff00): 0xFCxx = counted skip when val < sx16 @R+0x16 else
+ * increment @R+0x16 and jump to base+sx16(val)*4; 0xFDxx = unconditional
+ * jump; 0xFExx = @R+0x18 = u16 val, advance 4; 0xFFxx = past-end marker
+ * (@R+0x1e=1, @R+0x14=0, cursor -= 4); hi==0 = terminator which fills
+ * @R+0x1a = u16 val, @R+0x14 = u16 val and @R+0x1c = (sx16 val <= 0).
+ * Tail always runs: eight sx16 coords are pulled from u32 @R+0x0c + sx16(cursor)*16 into
+ * arr[0..7]; when sx16 @R+0x1c != 0 arr[0,1,4,5] +=
+ * (arr[2,3,6,7]*sx16@R+0x14)/sx16@R+0x1a, else the same with
+ * (sx16@R+0x1a - sx16@R+0x14) as numerator; then
+ * sprite_place_centered fires twice (heads @R+0/+4 against 0x1f800000)
+ * and task_slot_step() runs when sx16 @R+0x1e != 0. */
+void sprite_record_tick(uint32_t param_1)
+{
+  uint32_t s0 = param_1;
+  int32_t arr[8];
+  uint32_t cur, tag, hi, lo, q, src;
+  int32_t i, idx, f14, f1a, d, prod;
+
+  if (MBS16(s0 + 0x18u) != 0) {
+    MW16(s0 + 0x18u, (uint16_t)(MB16(s0 + 0x18u) - 1u));
+    goto L_tail;
+  }
+  if (*(uint16_t *)g__DAT_1f800082 == 0)
+    MW16(s0 + 0x14u, (uint16_t)(MB16(s0 + 0x14u) - 1u));
+  if (MBS16(s0 + 0x14u) > 0) goto L_tail;
+
+  cur = MB32(s0 + 0x10u);
+  MW32(s0 + 0x10u, cur + 4u);
+  if ((MB16(cur + 4u) & 0xff00u) == 0) goto L_scan_done;
+
+L_scan_loop:                                    /* 0x8014ab60 */
+  q   = MB32(s0 + 0x10u);
+  tag = MB16(q);
+  hi  = tag & 0xff00u;
+  lo  = tag & 0x00ffu;
+  if (hi == 0xfd00u) goto L_tag_fd;
+  if (hi > 0xfd00u) {
+    if (hi == 0xfe00u) goto L_tag_fe;
+    if (hi == 0xff00u) goto L_tag_ff;
+    goto L_next;
+  }
+  if (hi == 0xfc00u) goto L_tag_fc;
+  goto L_next;
+
+L_tag_fd:                                       /* 0x8014abb4 */
+  MB32(s0 + 0x10u) = MB32(s0 + 0x08u) +
+                     ((uint32_t)MBS16(q + 2u) << 2);
+  goto L_next;
+
+L_tag_fe:                                       /* 0x8014abc0 */
+  MW16(s0 + 0x18u, MB16(q + 2u));
+  MB32(s0 + 0x10u) = q + 4u;
+  goto L_next;
+
+L_tag_fc:                                       /* 0x8014abd4 */
+  if ((int32_t)lo < (int32_t)MBS16(s0 + 0x16u)) {
+    MB32(s0 + 0x10u) = q + 4u;                  /* 0x8014ac24 */
+    goto L_next;
+  }
+  MW16(s0 + 0x16u, (uint16_t)(MB16(s0 + 0x16u) + 1u));
+  MB32(s0 + 0x10u) = MB32(s0 + 0x08u) +
+                     ((uint32_t)MBS16(q + 2u) << 2);
+  goto L_next;
+
+L_tag_ff:                                       /* 0x8014ac10 */
+  if ((int32_t)lo < (int32_t)MBS16(s0 + 0x16u)) {
+    MB32(s0 + 0x10u) = q + 4u;
+    goto L_next;
+  }
+  MW16(s0 + 0x1eu, 1u);
+  MW16(s0 + 0x14u, 0u);
+  MB32(s0 + 0x10u) = MB32(s0 + 0x10u) - 4u;
+  goto L_tail;
+
+L_next:                                        /* 0x8014ac28 */
+  q = MB32(s0 + 0x10u);
+  if ((MB16(q) & 0xff00u) != 0) goto L_scan_loop;
+L_scan_done:                                    /* 0x8014ac44 */
+  cur = MB32(s0 + 0x10u);
+  MW16(s0 + 0x1au, MB16(cur + 2u));
+  MW16(s0 + 0x14u, MB16(cur + 2u));
+  MW16(s0 + 0x1cu, (uint16_t)(MBS16(cur + 2u) <= 0 ? 1u : 0u));
+
+L_tail:                                         /* 0x8014ac9c */
+  cur = MB32(s0 + 0x10u);
+  idx = (int32_t)MBS16(cur);
+  src = MB32(s0 + 0x0cu) + (uint32_t)idx * 16u;
+  for (i = 0; i < 8; i++)
+    arr[i] = (int32_t)MBS16(src + (uint32_t)i * 2u);
+
+  f14 = (int32_t)MBS16(s0 + 0x14u);
+  f1a = (int32_t)MBS16(s0 + 0x1au);
+  if (MBS16(s0 + 0x1cu) != 0) {
+    prod = (int32_t)((int64_t)arr[2] * (int64_t)f14);
+    arr[0] += tpg_idiv(prod, f1a);
+    prod = (int32_t)((int64_t)arr[3] * (int64_t)f14);
+    arr[1] += tpg_idiv(prod, f1a);
+    prod = (int32_t)((int64_t)arr[6] * (int64_t)f14);
+    arr[4] += tpg_idiv(prod, f1a);
+    prod = (int32_t)((int64_t)arr[7] * (int64_t)f14);
+    arr[5] += tpg_idiv(prod, f1a);
+  } else {
+    d = f1a - f14;
+    prod = (int32_t)((int64_t)arr[2] * (int64_t)d);
+    arr[0] += tpg_idiv(prod, f1a);
+    prod = (int32_t)((int64_t)arr[3] * (int64_t)d);
+    arr[1] += tpg_idiv(prod, f1a);
+    prod = (int32_t)((int64_t)arr[6] * (int64_t)d);
+    arr[4] += tpg_idiv(prod, f1a);
+    prod = (int32_t)((int64_t)arr[7] * (int64_t)d);
+    arr[5] += tpg_idiv(prod, f1a);
+  }
+
+  sprite_place_centered(MB32(s0 + 0x00u), 0x1f800000u,
+                        (int16_t)arr[0], (int16_t)arr[1],
+                        (int16_t)arr[4], (int16_t)arr[5]);
+  sprite_place_centered(MB32(s0 + 0x04u), 0x1f800000u,
+                        (int16_t)arr[0], (int16_t)arr[1],
+                        (int16_t)arr[4], (int16_t)arr[5]);
+  if (MBS16(s0 + 0x1eu) != 0) task_slot_step();
 }
 
 /* bcd_time_frame_print — BCD time -> frame count print @0x80158da8 (44

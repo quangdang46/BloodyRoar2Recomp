@@ -18,6 +18,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include "cpu_state.h"
 
 #define G8(p,o)   (((const uint8_t *)(p))[(o)])
 #define G16(p,o)  (*(const int16_t  *)((const uint8_t *)(p) + (o)))
@@ -125,6 +126,9 @@ extern void deferred_cmd_post(uint32_t param_1, int param_2, int16_t param_3);
 #define GA32(a)  (*(const uint32_t *)guest_at(a))
 #define GAS32(a) (*(int32_t  *)guest_at(a))
 #define GASU32(a) (*(uint32_t *)guest_at(a))
+/* unsigned variants + halfword access for lhu/sh guest accesses */
+#define GAU16(a)  (*(const uint16_t *)guest_at(a))
+#define GASU16(a) (*(uint16_t *)guest_at(a))
 
 /* One fighter status block — guest duplicates this body verbatim for
  * s6=0x1F8000E8 then s7=0x1F8001F0; a helper keeps the port auditable.
@@ -248,3 +252,117 @@ void node_list_walk_d(uint32_t list_holder, uint32_t node,
 void node_list_walk_e(uint32_t list_holder, uint32_t node,
                       uint32_t a2, uint32_t a3)
 { node_list_walk_core(list_holder, node, a2, a3); }
+
+/* ================================================================== */
+/* Shared return stubs (hit_elig_check / hitbox predicate region).     */
+/*                                                                    */
+/* ret_zero_g — guest 0x80145924: `jr $ra` with delay-slot            */
+/* `addu $v0,$zero,$zero` -> returns 0. Shared false-exit reached by   */
+/* j from hit_elig_check (0x801458AC) and the 0x8014592C predicate.    */
+/* ret_nop — guest 0x80145968: `jr $ra; nop` -> returns with $v0        */
+/* unchanged (callers preset it, e.g. `li $v0,1` at 0x80145964).        */
+/* ================================================================== */
+
+uint32_t ret_zero_g(void)
+{
+    return 0;
+}
+
+void ret_nop(void)
+{
+}
+
+/* ================================================================== */
+/* part_link_tail — guest 0x80179A0C (80B): CPS tail fragment of       */
+/* part_link_unlink's link-mode (param_3 != 3) path. Entered with      */
+/* a0 = source rec, a1 = dest rec, a3 = link key; the generated caller */
+/* jumps here after the param_3==3 branch fails. Record layout:        */
+/*   +0x00 u16 state tag, +0x44 chain link, +0x48 next, +0x4c flags.    */
+/*                                                                    */
+/* Guest flow (verified insn-by-insn vs full_34):                      */
+/*   v1 = lhu(a0); v0 = 4;                                             */
+/*   if (v1 == a3 || v1 == 4) -> splice:                               */
+/*       chain = lw(a0+0x44);                                          */
+/*       sw lw(chain+0x48) -> a1+0x48;  sw a1 -> chain+0x48;           */
+/*       -> tail A60: sw 0 -> a1+0x4c; jr ra  (v0 = chain)             */
+/*   else if (v1 == 0):                                                */
+/*       sh 1 -> a0+0;  -> tail A5C: sw a1 -> a0+0x44;                 */
+/*       -> A60: sw 0 -> a1+0x4c; jr ra  (v0 = 1)                      */
+/*   else:                                                             */
+/*       sw lw(a0+0x44) -> a1+0x48;  -> A5C: sw a1 -> a0+0x44;         */
+/*       -> A60: sw 0 -> a1+0x4c; jr ra  (v0 = old a0+0x44)            */
+/* The A5C/A60 tails are inlined (unconditional j/fallthrough within   */
+/* this fragment); they remain generated entries for other callers.    */
+/* ================================================================== */
+
+uint32_t part_link_tail(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
+{
+    uint32_t v1;
+    (void)a2;                       /* guest a2 is dead in this fragment */
+
+    v1 = GAU16(a0);                 /* lhu v1, 0(a0) — rec state tag */
+    if (v1 == a3 || v1 == 4u) {
+        uint32_t chain = GA32(a0 + 0x44);
+        GASU32(a1 + 0x48) = GA32(chain + 0x48);
+        GASU32(chain + 0x48) = a1;
+        GASU32(a1 + 0x4c) = 0;
+        return GA32(a0 + 0x44);     /* $v0 = reloaded chain ptr */
+    }
+    if (v1 == 0) {
+        GASU16(a0) = 1;             /* sh $v0(=1), 0(a0) */
+        GASU32(a0 + 0x44) = a1;
+        GASU32(a1 + 0x4c) = 0;
+        return 1;
+    }
+    {
+        uint32_t next = GA32(a0 + 0x44);
+        GASU32(a1 + 0x48) = next;
+        GASU32(a0 + 0x44) = a1;
+        GASU32(a1 + 0x4c) = 0;
+        return next;
+    }
+}
+
+/* ================================================================== */
+/* ev2_hitstun_gate_dispatch — guest 0x8017AA0C (292B): the negative-  */
+/* operand arm of the EV2 hitstun/counter gate (head @0x8017A9D0).      */
+/*                                                                    */
+/* Entry contract (verified vs full_34): $v1 = sign-extended stream    */
+/* byte b (loaded by the EV2 head, which branches here on b < 0);       */
+/* a0 = ctrl, a1 = motion, a2 = pc. The clean wrapper marshals only    */
+/* a0-a3, so $v1 is read from the live CPUState — identical to the     */
+/* generated body's gpr[3] read.                                       */
+/*                                                                    */
+/* Guest flow:                                                         */
+/*   v1 += 7;  v0 = sltiu(v1,7);  v1 <<= 2;                             */
+/*   if (v0 == 0) -> jr ra with v0 = 0        (b outside -7..-1)       */
+/*   v0 = lw(0x8012270C + v1);  jr v0          (7-entry case table)     */
+/*                                                                    */
+/* The seven case targets (0x8017AA38/60/84/A8/C4/EC/04 alias entries) */
+/* stay generated-authoritative: they are separate dispatch entries    */
+/* and remain so. call_guest4 reproduces the `jr $v0` tail dispatch —   */
+/* the cases are leaf (a0-a3 untouched, exit via j/jr ra stubs that    */
+/* return v0 = pc+2 or 0), so the call/return register image matches   */
+/* the tail jump exactly.                                              */
+/* ================================================================== */
+
+extern CPUState *clean_cpu_state(void);
+
+uint32_t ev2_hitstun_gate_dispatch(uint32_t ctrl, uint32_t motion,
+                                   uint32_t pc, uint32_t a3)
+{
+    /* addiu $v1,$v1,7 + sltiu $v0,$v1,7 — unsigned wrap-safe. The
+     * delay-slot `sll $v1,$v1,2` executes on BOTH exits, and the
+     * dispatch path then does `addu $v1,$v1,$v0` with $v0 = 0x8012270C;
+     * mirror the scratch writes so $v1 matches generated on return. */
+    CPUState *c = clean_cpu_state();
+    uint32_t idx = c->gpr[3] + 7u;
+    uint32_t target;
+
+    c->gpr[3] = idx << 2;
+    if (idx >= 7u)
+        return 0;                   /* sltiu/beqz -> jr ra, $v0 = 0 */
+    c->gpr[3] = 0x8012270Cu + c->gpr[3];
+    target = GA32(c->gpr[3]);       /* lw $v0, 0($v1) — case ptr */
+    return call_guest4(target, ctrl, motion, pc, a3);
+}

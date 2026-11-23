@@ -1639,3 +1639,142 @@ int script_ctx28_clear(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
     GS16(ctx, 0x28) = 0;
     return 0;
 }
+
+/* ================================================================== */
+/* Event-VM descriptor opcode guest entries (0x8017AB74..0x8017D758    */
+/* region). These are the table-dispatched handlers reached through    */
+/* ev_stream_dispatch / sibling split-jumps. Convention: a0=ctrl,      */
+/* a1=motion, a2=record-stream pc (guest addrs), a3=aux/target ctrl   */
+/* selected by the caller; return value is the next stream guest addr */
+/* in $v0. Indirect `jr table[i]` tails become call_guest4 so the     */
+/* callee's `jr $ra` lands back here and its $v0 propagates.          */
+/* ================================================================== */
+extern uint32_t call_guest4(uint32_t fn, uint32_t a0, uint32_t a1,
+                            uint32_t a2, uint32_t a3);
+
+/* ev4_branch_dispatch — guest @0x8017AB74 (EV4 conditional branch).
+ * cls = pc[1] & 0xc0 selects the compared ctrl: 0x40 proceeds only
+ * when !(ctrl+5 & 1), 0x80 only when (ctrl+5 & 1), 0xc0 uses the foe
+ * ctrl (ctrl+0x2c), 0x00 uses ctrl. op = pc[1] & 0x3f indexes table
+ * 0x8012272c (27 entries); op >= 27 takes the fail path
+ * ctrl+0x30 (.ANI base) + sx16(pc+2). */
+uint32_t ev4_branch_dispatch(uint32_t ctrl, uint32_t motion, uint32_t pc)
+{
+    uint8_t *c = (uint8_t *)guest_at(ctrl);
+    uint8_t *p = (uint8_t *)guest_at(pc);
+    uint32_t cls = GU8(p, 1) & 0xc0;
+    uint32_t a3;
+    uint32_t op;
+
+    if (cls == 0x40) {
+        if (GU8(c, FC_MODE5) & 1) return pc + 4;
+        a3 = ctrl;
+    } else if (cls == 0x80) {
+        if (!(GU8(c, FC_MODE5) & 1)) return pc + 4;
+        a3 = ctrl;
+    } else if (cls == 0xc0) {
+        a3 = GU32(c, FC_FOE);
+    } else {
+        a3 = ctrl;
+    }
+    op = GU8(p, 1) & 0x3f;
+    if (op >= 27u) {
+        /* 0x8017AE00: v0 = sx16(pc+2) + lw(ctrl+0x30), jr $ra */
+        return (uint32_t)(int16_t)G16(p, 2) + GU32(c, FC_ANI);
+    }
+    /* 0x8017AC18: jr lw(0x8012272c + op*4) with a3 = selected ctrl */
+    return call_guest4(GU32((const uint8_t *)guest_at(0x8012272cu), op * 4),
+                       ctrl, motion, pc, a3);
+}
+
+/* ev6_guard_sync_dispatch — guest @0x8017B0D4 (EV6 guard/counter sync).
+ * b = sx8(pc[1]); index b+4 into table 0x801227bc covers -4..1:
+ *  -4: if motion+0x9c == 0 -> pc+2, else fall into -1
+ *  -1: motion+0x9c = 0; motion+0x100 ^= 1
+ *  -3: copy foe-motion (foe=ctrl+0x2c -> +0x38) +0x9c -> motion+0x9c;
+ *      if motion+0x100 == foe+0x100 -> pc+2 else copy foe+0x100
+ *  -2: motion+0x9c = 0; if motion+0x100 == 0 -> pc+2 else = 0
+ *   0/1: motion+0x9c = pc[1]
+ *  other: pc+2. Surviving cases run the common tail swapping the u16
+ *  pairs at sub=ctrl+0x18 offsets 0x1c4<->0x23c and 0x264<->0x28c. */
+uint32_t ev6_guard_sync_dispatch(uint32_t ctrl, uint32_t motion,
+                                 uint32_t pc)
+{
+    uint8_t *c = (uint8_t *)guest_at(ctrl);
+    uint8_t *m = (uint8_t *)guest_at(motion);
+    uint8_t *p = (uint8_t *)guest_at(pc);
+    int8_t b = (int8_t)GU8(p, 1);
+    uint8_t *sub;
+    uint32_t foe, fm;
+    uint16_t a, d;
+
+    switch (b) {
+    case -4:                                    /* 0x8017B174 */
+        if (GU8(m, 0x9c) == 0) return pc + 2;
+        /* fall through */
+    case -1:                                    /* 0x8017B184 */
+        GSU8(m, 0x9c)  = 0;
+        GSU8(m, 0x100) = GU8(m, 0x100) ^ 1;
+        break;
+    case -3: {                                  /* 0x8017B114 */
+        foe = GU32(c, FC_FOE);
+        fm  = GU32((const uint8_t *)guest_at(foe), FC_MOTION);
+        GSU8(m, 0x9c) = GU8((const uint8_t *)guest_at(fm), 0x9c);
+        if (GU8(m, 0x100) ==
+            GU8((const uint8_t *)guest_at(fm), 0x100))
+            return pc + 2;
+        GSU8(m, 0x100) = GU8((const uint8_t *)guest_at(fm), 0x100);
+        break;
+    }
+    case -2:                                    /* 0x8017B15C */
+        GSU8(m, 0x9c) = 0;
+        if (GU8(m, 0x100) == 0) return pc + 2;
+        GSU8(m, 0x100) = 0;
+        break;
+    case 0: case 1:                             /* 0x8017B1D4 */
+        GSU8(m, 0x9c) = GU8(p, 1);
+        return pc + 2;
+    default:
+        return pc + 2;
+    }
+    /* 0x8017B194 common tail: swap u16 pairs in ctrl+0x18 sub-struct */
+    sub = (uint8_t *)guest_at(GU32(c, 0x18));
+    a = GU16(sub, 0x1c4); d = GU16(sub, 0x23c);
+    GSU16(sub, 0x1c4) = d; GSU16(sub, 0x23c) = a;
+    a = GU16(sub, 0x264); d = GU16(sub, 0x28c);
+    GSU16(sub, 0x264) = d; GSU16(sub, 0x28c) = a;
+    return pc + 2;
+}
+
+/* ev20_timer_dispatch — guest @0x8017C9D4 (EV20 x16 timers).
+ * op = sx8(pc[1]); op < 5 (unsigned) indexes table 0x8012294c:
+ *   0 -> 0x8017CA0C (store only if ctrl+0xc0 >= 0) then +0xc0
+ *   1 -> ctrl+0xd0, 2 -> ctrl+0xd2, 3 -> ctrl+0xcc, 4 -> ctrl+0xd4
+ * each writes sx16(pc+2) << 4. All paths return pc+4. */
+uint32_t ev20_timer_dispatch(uint32_t ctrl, uint32_t motion, uint32_t pc,
+                             uint32_t a3)
+{
+    (void)motion;
+    {
+        int8_t op = (int8_t)GU8((const uint8_t *)guest_at(pc), 1);
+        if ((uint32_t)op >= 5u) return pc + 4;
+        return call_guest4(
+            GU32((const uint8_t *)guest_at(0x8012294cu), (uint32_t)op * 4),
+            ctrl, motion, pc, a3);
+    }
+}
+
+/* desc_flagbit_dispatch — guest @0x8017BAD4 (descriptor flag-bit ops).
+ * op = pc[1] & 0x3f; op < 35 indexes table 0x80122814 (entries 0-17
+ * reach sibling handlers incl. blocks inside 0x8017B668's range,
+ * 18-34 reach this function's own flag-op blocks). op >= 35 -> pc+6.
+ * The selected handler returns the next stream addr in $v0. */
+uint32_t desc_flagbit_dispatch(uint32_t a0, uint32_t a1, uint32_t a2,
+                               uint32_t a3)
+{
+    uint32_t op = GU8((const uint8_t *)guest_at(a2), 1) & 0x3f;
+    if (op >= 35u) return a2 + 6;
+    return call_guest4(
+        GU32((const uint8_t *)guest_at(0x80122814u), op * 4),
+        a0, a1, a2, a3);
+}

@@ -1785,3 +1785,17 @@
 801a189c cd_cmd_queue_service
 801a2184 dev_cmd_byte_send
 801a248c dev_stat_bit1_wait
+80145924 ret_zero_g
+80145968 ret_nop
+80179a0c part_link_tail
+8017aa0c ev2_hitstun_gate_dispatch
+8014aae0 sprite_record_tick
+80148d80 width3_num_space_pad
+80148e00 width3_num_zero_pad
+8014af04 task_node_cb_noop_a
+8014b2c4 task_node_cb_noop_b
+8014b73c task_node_cb_noop_c
+8017ab74 ev4_branch_dispatch
+8017b0d4 ev6_guard_sync_dispatch
+8017c9d4 ev20_timer_dispatch
+8017bad4 desc_flagbit_dispatch
