@@ -345,6 +345,32 @@ Beetle-oracle discriminator: `emu_trace_addr`/`emu_read_ram` on `cpu.gpr[29]`
 + `0x801BCD50` jmp-buf during the same CD-read window gives the HW sp and
 whether `cd_ctx_restore` fires.
 
+## Crash CPU state — confirms IRQ/exception context
+
+`cpu.epc=0x8019A600` (inside `cd_timer_read`/`vsync_wait_n`), `cpu.cause=
+0x400`, `cpu.sr=0x40000404`, `dispatch_tail` = all BIOS low-mem (`0x2B20`,
+`0x3CB4`, `0x3E14`…) — the wild dispatch fired during heavy BIOS IRQ/exception
+dispatch while `cd_timer_read` was the interrupted frame. The spilling CD
+chain is IRQ-side, on the shared kernel stack.
+
+Live jmp-buf check (9792 @frame 46595): `0x801BCD50` frame = `{ra=0x8019A87C,
+sp=0x801BDD30, fp, s0=0x801BCD18}` — **the coroutine IS armed correctly**.
+So `cd_ctx_save`/`B0/0x19` works; the failing activation is one where the
+resume did not take the `0x801BDxxx` stack.
+
+## Faithful-core lead — exception_jmpbuf edge
+
+`interrupts.c` implements the BIOS exception-jmp-buf as a host
+`setjmp`/`longjmp` (`exception_jmpbuf`, ~line 853) plus a known edge
+`g_esc_decline_deadframe` (~line 119: "armed RFE but exception_jmpbuf frame
+is dead"). If the CD IRQ's RFE/exception path hits a dead-or-mismatched
+jmp_buf frame, `cd_ctx_restore` is skipped and the INTC handler chain
+(`cd_intc_dispatch`→`cd_response_pump`→`cd_cmd_issue`…) runs on the
+interrupted kernel-stack context → deep `0x801FF1xx` frames → record-table
+collision. Next: trace `exception_jmpbuf` arm/longjmp + `g_esc_decline_deadframe`
+around frame 46594, and whether `cd_ctx_restore` (`0x8019ADCC`) executes for
+the crashing IRQ.
+
 ## recvalring sp+ra — the writers are a deep CD call chain (frame 46594/46595)
 
 Crash `addr=0x801BCBA0 ra=0x801A1EC0 a0=0x801FF170`. The ring now records
