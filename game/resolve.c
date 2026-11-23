@@ -3102,6 +3102,7 @@ void ev_stream_dispatch(byte *param_1,byte *param_2)
    * Mirror that: keep pc in a local guest address, pass it to each
    * handler explicitly, and leave motion+0x84 untouched here. */
   uint32_t pc_g = *(uint32_t *)(param_2 + 0x84);
+  uint32_t _dbsp_n = 0;
   if (*(short *)(param_2 + 0x90) < 1) {
     for (;;) {
       uint8_t op = *(uint8_t *)guest_at(pc_g);
@@ -3121,6 +3122,16 @@ void ev_stream_dispatch(byte *param_1,byte *param_2)
         decomp_trace_record(60, pc_g, (uint32_t)br2_gaddr(param_2), op, npc_g); }
       if (npc_g == 0) break;
       pc_g = npc_g;
+      /* The generated body reaches debug_server_poll via
+       * psx_check_interrupts_at at every block boundary (~16k checks);
+       * this clean-C loop has no dispatch boundary, so a long or
+       * non-terminating stream starves the debug socket permanently.
+       * Poll periodically — host-side socket service only, no guest
+       * interrupt/resume semantics. */
+      if (((++_dbsp_n) & 0x3FFu) == 0) {
+        extern void debug_server_poll(void);
+        debug_server_poll();
+      }
     }
   }
   else {
