@@ -88,6 +88,7 @@ fight_frame = None; last_fr = None; last_chg = time.time()
 prev_b11 = prev_fr = prev_ls = prev_t = None
 ls_last_change = time.time(); last_ls_val = None
 mash_i = 0; last_sample = 0.0
+unreach_since = None
 print("arcade fight mash watch start port=%d" % PORT, flush=True)
 while time.time() - t0 < 1800:
     st = rd(0x1f800000, 0x9d)
@@ -98,7 +99,18 @@ while time.time() - t0 < 1800:
             if fr is not None: ok = True; break
             time.sleep(1.0)
         if not ok:
-            print("EMULATOR UNREACHABLE t=%.0f" % (time.time()-t0), flush=True); break
+            # Debug server starves while the emu thread is buried in a tight
+            # compiled-battle dispatch (commands execute on the emu thread at
+            # debug_server_poll safe points). Do NOT bail on the first starve —
+            # the fight keeps running and the server recovers between matches.
+            # Give up only after a long continuous outage (likely a real hang).
+            if unreach_since is None:
+                unreach_since = time.time()
+                print("EMU STARVED t=%.0f (retrying)" % (time.time()-t0), flush=True)
+            elif time.time() - unreach_since > 240:
+                print("EMULATOR UNREACHABLE t=%.0f" % (time.time()-t0), flush=True); break
+            time.sleep(3.0); continue
+        unreach_since = None
         time.sleep(0.4); continue
     gs, ph, sub = st[0], st[1], st[0x9C]; sig = (st[0x9B], st[0x9C])
     fr = cmd({"cmd": "frame"}, 5).get("frame")
