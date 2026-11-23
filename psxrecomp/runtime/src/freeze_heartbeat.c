@@ -1119,6 +1119,13 @@ static int hb_format_cpu_scratchpad(char *out, size_t cap) {
         m = snprintf(out + n, cap - (size_t)n, ",\"overlay_80165000\":");
         if (m > 0) n += m;
         n = hb_append_ram_peek(out, n, cap, 0x80165000u, 64);
+        /* dev_cmd_round_dispatch state: round-robin counter @0x801BE7C4 and
+         * the fn-ptr table @0x801BE808 (5 slots + slack). A wild fn like
+         * 0x801BCBA0 means either a corrupted counter index (OOB read) or an
+         * overwritten slot — this captures which at freeze time. */
+        m = snprintf(out + n, cap - (size_t)n, ",\"devcmd_rr\":");
+        if (m > 0) n += m;
+        n = hb_append_ram_peek(out, n, cap, 0x801BE7C4u, 96);
         if ((size_t)(n + 2) < cap) out[n++] = '}';
     }
 
