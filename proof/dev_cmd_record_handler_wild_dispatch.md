@@ -217,13 +217,59 @@ context restore left live. `ctx_fn_send` (`game/save.c:7972`) is confirmed
 **unconditional** — it always dispatches `cd_cmd_state_commit(rec)` for
 whatever record the round-robin selects, no record-type gate.
 
+## Live RAM dump — the record is a real CD-read record (frame ~46595)
+
+`read_ram` of `0x801FF000–0x801FF400` on a live CD-reading instance shows the
+region is a dense array of ~`0xF0`-stride device-command records interleaved
+with task/coroutine context saves. Slot1 (`0x801FF170`, the crash record)
+contains a **legitimate CD-read record**:
+
+```
++0x0C=0x801BCB8C  +0x10=0x801BCB80  +0x14=0x801BCB8C  +0x20=0x801BCB80
++0x24=0x801BCB8C   (session-descriptor context pointers — consistent pattern)
++0x28=0x80198AD0 (cd_response_pump)  +0x2C=0x80198AC0 (cd_response_pump)
++0x44=0x80195E74 (cd_mode_flag_set jal-link)  -> rec[70]=byte2=0x19
++0x54/+0xC8/+0xF8 region: cd_read_issue / cd_file_load_sm / cd_timer_read /
+                        gpu_state_patch_defer fn-ptrs
+```
+
+Slot0 (`0x801FF080`) has `rec[70]=0xFF` (gating → `state_commit` early-returns).
+So `+0x14`=session-ptr and `rec[70]`=0x19 are **record-layout-inherent** for an
+active read record — `+0x14` is the documented handler slot
+(`cd_ctx_cmd_submit` sets it to a fn) but read records repurpose the low
+context fields for session pointers. `state_commit` jalr's `+0x14` as code
+when `rec[70]` isn't gating — faithful to generated `func_801A3D84`.
+
+## sp_ring — the CD coroutine stacks live in the record region
+
+`sp_ring` (64KB-domain transitions = genuine stack/context switches) shows the
+CD-subsystem coroutines running on guest stacks that overlap the record table:
+
+```
+per-frame: 0x801FF398 (cd_timer_read resume 0x8019A53C)
+          ↔ 0x801BDD30 (cd_chan_full_init resume 0x8019A87C)
+          ↔ 0x00008548  (BIOS IRQ stack, target 0x2924)
+CD-read burst (frame 46594): thread-B resumes at DEEP sp
+          0x801FF130/180/1A0/1D8/1F0/1F8 via cd_result_wait_b (0x80197030),
+          cd_init_session (0x80198C5C), cd_intc_busy_read (0x8019A7D4)
+```
+
+All `tcb=0x8FE0`. The crash-time `sp=0x8548`/`s0`/`s1` anomaly was the **BIOS
+IRQ stack context**, not register corruption — `0x8548` is the exception stack.
+
 ## Refined suspect ranking
 
-1. **TCB/IRQ context-restore committing a wrong `gpr[]`** (sp→0x801FFxxx or
-   the 0x8548 anomaly) — would explain BOTH the stack-into-record spills AND
-   the corrupted crash-time s0/s1/sp. Highest suspicion given the register
-   evidence.
-2. Thread stack allocator handing the CD-command thread a base that overlaps
-   the static `0x801FF080` table.
-3. Faithful game layout where timing prevents the overlap on HW (least likely
-   given the deterministic-looking crash window).
+1. **CD coroutine/task stack allocated overlapping the static record table**
+   (`0x801FF080`) — the game's task-stack allocator or our coroutine-stack
+   placement puts a live stack where records live. The deep `0x801FF1xx` frames
+   during CD reads are the spill source. Highest suspicion.
+2. TCB/IRQ context-restore committing a wrong `gpr[]` — now LESS likely (the
+   0x8548 was just the IRQ stack).
+3. Faithful game layout where timing prevents the overlap on HW (the record's
+   `+0x14`/`rec[70]` are layout-inherent; on HW `state_commit` may simply not
+   run while the fields hold these values).
+
+Next: find the game's coroutine/task stack allocator (the structures at
+`0x801FF260+` look like task save areas with self-links `0x801FF330→0x801FF3B0`)
+and determine whether `0x801FFxxx` is the intended stack base or a
+misallocation.
