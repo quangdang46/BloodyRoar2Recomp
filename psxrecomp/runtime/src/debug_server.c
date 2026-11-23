@@ -15412,6 +15412,61 @@ static int recv_line(sock_t c, char *buf, int cap)
     return cap - 1;   /* over-long line: take what we have */
 }
 
+/* Input injection is a host-side test hook: real controllers deliver button
+ * state asynchronously, independent of emu scheduling. handle_press /
+ * handle_set_input / handle_clear_input only write the s_input_override /
+ * s_input_frames / s_axis_* globals that the pad-poll reads — no emu state.
+ * Running them on the I/O thread lets injected input flow while the emu
+ * thread is buried in a long compiled-battle dispatch (debug_server_poll
+ * starves for minutes otherwise), matching real asynchronous pad delivery.
+ * Returns 1 if `req` was an input command (state applied; caller replies),
+ * 0 otherwise. */
+static int io_apply_input_cmd(const char *req)
+{
+    int slot, frames, buttons;
+    int ax[4];
+
+    if (strstr(req, "\"clear_input\"")) {
+        s_input_route_active = 0;
+        s_input_route_index = 0;
+        s_input_route_remaining = 0;
+        for (int i = 0; i < INPUT_OVERRIDE_SLOTS; i++) {
+            s_input_override[i] = -1;
+            s_input_frames[i]   = 0;
+            s_axis_override[i]  = 0;
+            s_axis_st[i][0] = s_axis_st[i][1] = s_axis_st[i][2] = s_axis_st[i][3] = 0x80;
+        }
+        return 1;
+    }
+
+    ax[0] = json_get_int(req, "lx", -1); ax[1] = json_get_int(req, "ly", -1);
+    ax[2] = json_get_int(req, "rx", -1); ax[3] = json_get_int(req, "ry", -1);
+    slot = json_get_int(req, "slot", 0);
+    if (slot < 0 || slot >= INPUT_OVERRIDE_SLOTS) slot = 0;
+
+    if (strstr(req, "\"set_input\"")) {
+        char val_str[32];
+        if (!json_get_str(req, "buttons", val_str, sizeof(val_str))) return 0;
+        buttons = (int)hex_to_u32(val_str);
+        frames = 0;
+    } else if (strstr(req, "\"press\"")) {
+        buttons = json_get_int(req, "buttons", -1);
+        if (buttons < 0) return 0;
+        frames = json_get_int(req, "frames", 2);
+    } else {
+        return 0;
+    }
+
+    s_input_override[slot] = buttons;
+    s_input_frames[slot]   = frames;
+    s_axis_override[slot]  = (ax[0] >= 0 || ax[1] >= 0 || ax[2] >= 0 || ax[3] >= 0);
+    for (int i = 0; i < 4; i++) {
+        int v = ax[i] < 0 ? 0x80 : (ax[i] > 255 ? 255 : ax[i]);
+        s_axis_st[slot][i] = (uint8_t)v;
+    }
+    return 1;
+}
+
 /* The TCP I/O thread: owns accept/recv/send. Hands each request to the emu
  * thread (processed in debug_server_poll at a safe point) and sends the
  * buffered response. `ping` is answered directly here so liveness is queryable
@@ -15437,6 +15492,20 @@ static int io_thread_main(void *arg)
         if (strstr(req, "\"ping\"")) {
             const char *pong = "{\"id\":0,\"ok\":true,\"pong\":true,\"io_thread\":true}\n";
             send_all_blocking(c, pong, strlen(pong));
+            sock_close(c);
+            continue;
+        }
+
+        /* Input-injection fast-path: press/set_input/clear_input only write
+         * host pad-override globals (no emu state), so apply them here and
+         * reply directly — keeps injected input flowing while the emu thread
+         * is buried in a long compiled dispatch and debug_server_poll starves. */
+        if (io_apply_input_cmd(req)) {
+            int id = json_get_int(req, "id", 0);
+            char resp[96];
+            int rl2 = snprintf(resp, sizeof(resp),
+                               "{\"id\":%d,\"ok\":true,\"io_thread\":true}\n", id);
+            if (rl2 > 0) send_all_blocking(c, resp, (size_t)rl2);
             sock_close(c);
             continue;
         }

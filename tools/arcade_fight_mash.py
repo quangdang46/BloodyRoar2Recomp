@@ -109,7 +109,16 @@ while time.time() - t0 < 1800:
                 print("EMU STARVED t=%.0f (retrying)" % (time.time()-t0), flush=True)
             elif time.time() - unreach_since > 240:
                 print("EMULATOR UNREACHABLE t=%.0f" % (time.time()-t0), flush=True); break
-            time.sleep(3.0); continue
+            # Blind-mash while starved: press/set_input now run on the debug
+            # server's I/O thread (no emu-thread poll needed), so injected
+            # input still reaches the pad override during battle dispatch.
+            if stage == "fight":
+                now = time.time()
+                if int(now * 2) != mash_i:
+                    mash_i = int(now * 2)
+                    press(ATK[mash_i % len(ATK)], 4, 0)
+                    press(ATK[(mash_i + 1) % len(ATK)], 4, 1)
+            time.sleep(0.5); continue
         unreach_since = None
         time.sleep(0.4); continue
     gs, ph, sub = st[0], st[1], st[0x9C]; sig = (st[0x9B], st[0x9C])
