@@ -523,6 +523,7 @@ extern void dialog_msg_dispatch(void);
 extern void dialog_sel_dispatch(void);
 extern void dialog_sel_dispatch_wide(void);
 extern void dir_rotate_acc(void);
+extern void dir_rotate_pair(void);
 extern void dir_rotate_set(void);
 extern void dir_rotate_wrap(void);
 extern void display_cur_invalidate(void);
@@ -559,6 +560,10 @@ extern void elem_pair_flag8_wrap(void);
 extern void emit_task_spawn(void);
 extern void emit_task_spawn_b(void);
 extern void emitter_30_teardown(void);
+extern void empty_leaf_a(void);
+extern void empty_leaf_b(void);
+extern void empty_leaf_c(void);
+extern void empty_leaf_d(void);
 extern void empty_ret(void);
 extern void engine_record_pair_update(void);
 extern void engine_tables_restore(void);
@@ -667,6 +672,7 @@ extern void gpu_prim8_emit(void);
 extern void gpu_prim_pkt_build(void);
 extern void gpu_rect_bounds_dbg(void);
 extern void gpu_reg_cells_init(void);
+extern void gpu_reg_cmd_commit(void);
 extern void gpu_side_packet_emit(void);
 extern void gpu_sprite_rect_emit(void);
 extern void gpu_sprite_rect_emit_mode(void);
@@ -698,6 +704,7 @@ extern void gte_persp_batch(void);
 extern void gte_points_xform(void);
 extern void gte_quad_attr_emit(void);
 extern void gte_rot_load(void);
+extern void gte_rtps3_sxy_pack(void);
 extern void gte_rtps_vec3(void);
 extern void gte_rtps_xform1(void);
 extern void gte_rtps_xform1_raw(void);
@@ -1544,6 +1551,9 @@ const Br2FnEnt fn_table[] = {
   { 0x80136b64, (void *)slot_height_proj },
   { 0x80136d28, (void *)record_copy_1a },
   { 0x80136ddc, (void *)hud_sprite_desc_init },
+  { 0x80136f70, (void *)empty_leaf_a },
+  { 0x80136f78, (void *)empty_leaf_b },
+  { 0x80136f80, (void *)empty_leaf_c },
   { 0x80136fb0, (void *)task_table_init },
   { 0x80137048, (void *)vec_emit_spawn },
   { 0x80137098, (void *)battle_intro_fsm },
@@ -1593,6 +1603,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8013f5f8, (void *)effect_arg_set },
   { 0x8013f648, (void *)task_cb_voice_line },
   { 0x8013f714, (void *)task_node_alloc_init },
+  { 0x8013f7a0, (void *)empty_leaf_d },
   { 0x8013f7a8, (void *)node_list_walk_e },
   { 0x801401c8, (void *)anim_wb_init_gate },
   { 0x801401d0, (void *)anim_workblock_init },
@@ -2157,6 +2168,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8018d29c, (void *)lut_sin_q12 },
   { 0x8018d2ec, (void *)gte_light_set },
   { 0x8018d300, (void *)fixed_point_divide },
+  { 0x8018d408, (void *)dir_rotate_pair },
   { 0x8018d444, (void *)dir_rotate_acc },
   { 0x8018d468, (void *)dir_rotate_set },
   { 0x8018d484, (void *)dir_rotate_wrap },
@@ -2260,6 +2272,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80192634, (void *)cd_cmd_queue_load },
   { 0x80192e00, (void *)gpu_tag_cmd_store },
   { 0x80192e78, (void *)gpu_reg_cells_init },
+  { 0x80192ec0, (void *)gpu_reg_cmd_commit },
   { 0x80192ef0, (void *)cd_queue_push_wrap },
   { 0x80192f14, (void *)cd_queue_push },
   { 0x801931c4, (void *)cd_queue_drain },
@@ -2306,6 +2319,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80194840, (void *)gte_xform_accum },
   { 0x801948c0, (void *)fixed_recip_lut },
   { 0x80194960, (void *)gte_rtps_xform3 },
+  { 0x80194a70, (void *)gte_rtps3_sxy_pack },
   { 0x80194b60, (void *)gte_xform3_nold },
   { 0x80194c50, (void *)gte_rtps_xform3_t },
   { 0x80194db0, (void *)gte_mvmva_add },

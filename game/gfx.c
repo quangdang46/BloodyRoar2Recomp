@@ -37,6 +37,8 @@ extern void copFunction(int,int);
 extern void gte_vec3_normalize(void);
 extern uint32_t br2_ld32p(uint32_t cell);
 extern void     br2_st32p(uint32_t cell, uint32_t v);
+extern uint32_t br2_ld32(uint32_t a);
+extern void     br2_st32(uint32_t a, uint32_t v);
 
 void gpu_load_image_cmd(undefined4,undefined4);
 void prim_packet_init_tex(int,int,int,uint,byte *);
@@ -3051,6 +3053,57 @@ uint32_t gte_rtps_vec3(uint32_t in, uint32_t out_sxy, uint32_t out_mac,
   return (uint32_t)((int32_t)getCopReg(2, GTE_DREG(19)) >> 2);
 }
 
+/* ======== 0x80194a70 ======== */
+/* Vertex screen-projection pack: three RTPS passes (cmd 0x0486012)
+ * over the s16 coord fields of the 20-byte record at a0, with the
+ * SXY read-backs (gte data 9/10/11) of each pass saved in GPRs and
+ * repacked — as (hi<<16 | lo&0xffff) u32 words — into +0/+4/+8/+12,
+ * then swc2 gte[11] -> +16. Returns a0 ($v0 = $a0 in the delay-slot
+ * move). Verified against generated br2eu_func_80194A70:
+ *   pass1 in : d0=(w@0&ffff)|(w@4&ffff0000) d1=w@12
+ *   pass2 in : d0=s16@2|(w@8<<16)               d1=s16@14
+ *   pass3 in : d0=s16@4|(w@8&ffff0000)          d1=w@16
+ *   stores   : +0 =(d9_2<<16)|(d9_1&ffff)   +4 =(d9_3&ffff)|(d10_1<<16)
+ *              +8 =(d10_3<<16)|(d10_2&ffff) +12=(d11_2<<16)|(d11_1&ffff)
+ *              +16= d11_3 (swc2) */
+uint32_t gte_rtps3_sxy_pack(uint32_t a0g)
+{
+  uint8_t *r = (uint8_t *)guest_at(a0g);
+  uint32_t d9_1, d10_1, d11_1, d9_2, d10_2, d11_2;
+  uint32_t d9_3, d10_3;
+
+  setCopReg(2, GTE_DREG(0),
+            (DB32(a0g + 0) & 0xffffu) | (DB32(a0g + 4) & 0xffff0000u));
+  setCopReg(2, GTE_DREG(1), DB32(a0g + 12));
+  copFunction(2, 0x0486012);                    /* RTPS */
+  d9_1  = (uint32_t)getCopReg(2, GTE_DREG(9));
+  d10_1 = (uint32_t)getCopReg(2, GTE_DREG(10));
+  d11_1 = (uint32_t)getCopReg(2, GTE_DREG(11));
+
+  setCopReg(2, GTE_DREG(0),
+            (uint32_t)(int32_t)*(int16_t *)(r + 2) | (DB32(a0g + 8) << 16));
+  setCopReg(2, GTE_DREG(1), (uint32_t)(int32_t)*(int16_t *)(r + 14));
+  copFunction(2, 0x0486012);                    /* RTPS */
+  d9_2  = (uint32_t)getCopReg(2, GTE_DREG(9));
+  d10_2 = (uint32_t)getCopReg(2, GTE_DREG(10));
+  d11_2 = (uint32_t)getCopReg(2, GTE_DREG(11));
+
+  setCopReg(2, GTE_DREG(0),
+            (uint32_t)(int32_t)*(int16_t *)(r + 4) |
+            (DB32(a0g + 8) & 0xffff0000u));
+  setCopReg(2, GTE_DREG(1), DB32(a0g + 16));
+  copFunction(2, 0x0486012);                    /* RTPS */
+  d9_3  = (uint32_t)getCopReg(2, GTE_DREG(9));
+  d10_3 = (uint32_t)getCopReg(2, GTE_DREG(10));
+
+  DB32(a0g + 0)  = (d9_2  << 16) | (d9_1  & 0xffffu);
+  DB32(a0g + 12) = (d11_2 << 16) | (d11_1 & 0xffffu);
+  DB32(a0g + 4)  = (d9_3  & 0xffffu) | (d10_1 << 16);
+  DB32(a0g + 8)  = (d10_3 << 16) | (d10_2 & 0xffffu);
+  gte_swc2(a0g + 16, 11);
+  return a0g;
+}
+
 /* ======== 0x80194750 ======== */
 /* Three-vector transform+normalize: a0 = 6 x s16 {t,r?}, a1 = 9 x s16 out.
  * Saves ctrl[0,2,4]; loads ctrl[0,2,4]=a0[0..2] (s16), gte[9..11]=
@@ -3232,6 +3285,49 @@ void gpu_reg_cells_init(uint32_t param_1)
   br2_st32p(0x801b842c, param_1);
   br2_st32p(0x801b8430, 0u);
   br2_st32p(0x801b8434, 0x01000401u);
+}
+
+/* ======== 0x80192ec0 ======== */
+
+/* gpu_reg_cmd_commit — issue param_1 | 0x10000000 through the pointer
+ * cell @0x801b8428, then return *(*0x801b8424) & 0x00FFFFFF. The cell
+ * contents are device/register addresses (can be 0x1F80xxxx MMIO), so
+ * both dereferences go through br2_ld32/br2_st32. Disasm
+ * 0x80192EC0-0x80192EF0. */
+uint32_t gpu_reg_cmd_commit(uint32_t param_1)
+{
+  uint32_t dst = br2_ld32(0x801b8428u);
+  br2_st32(dst, param_1 | 0x10000000u);
+  return br2_ld32(br2_ld32(0x801b8424u)) & 0x00ffffffu;
+}
+
+/* ======== 0x8018d408 ======== */
+
+/* dir_rotate_pair — Q12 rotate pair via the sin/cos LUTs.
+ * Guest CPS chain (verified against generated br2eu_func_8018D408):
+ *   t0 = ra; a0 += a1; jal lut_sin_q12        -> v0 = sin(a0+a1)
+ *   LO = low32(a2 * v0)  (mult; LO survives the next jal — the LUT
+ *   bodies contain no mult/div)
+ *   jal lut_cos_q12      -> v0 = cos(a0+a1)   [0x8018D298 adds the
+ *   +0x400 phase inside; clean lut_cos_q12 already folds it in]
+ *   v1 = sra(LO + 0x800, 12)
+ *   v0 = sra(low32(a2 * -v0) + 0x800, 12); jr t0
+ * Live-outs: $v0 = return, $v1 = first product, $a0 = a0+a1+0x400
+ * (the cos helper's addiu). */
+uint32_t dir_rotate_pair(uint32_t a0, uint32_t a1, uint32_t a2)
+{
+  CPUState *c = clean_cpu_state();
+  uint32_t ang = a0 + a1;
+  uint32_t lo1 = a2 * (uint32_t)lut_sin_q12(ang);
+  int32_t  cs  = lut_cos_q12((int32_t)ang);
+  uint32_t lo2 = a2 * (0u - (uint32_t)cs);
+  uint32_t v1o = (uint32_t)((int32_t)(lo1 + 0x800u) >> 12);
+  uint32_t v0o = (uint32_t)((int32_t)(lo2 + 0x800u) >> 12);
+  if (c) {
+    c->gpr[3] = v1o;                    /* $v1 live-out */
+    c->gpr[4] = ang + 0x400u;           /* $a0 post-call guest value */
+  }
+  return v0o;
 }
 
 /* ======== 0x8018d69c ======== */

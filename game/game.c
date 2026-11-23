@@ -2696,6 +2696,14 @@ void sprite_rect_table_init(int32_t param_1,int32_t param_2,int32_t param_3)
 /* empty_ret — empty function (guest: jr ra; nop). */
 void empty_ret(void) { }
 
+/* empty_leaf_a/b/c/d — standalone `jr ra; nop` function heads
+ * (verified F-records + generated bodies): bind_jal waypoint/callback
+ * slots that intentionally do nothing. */
+void empty_leaf_a(void) { }
+void empty_leaf_b(void) { }
+void empty_leaf_c(void) { }
+void empty_leaf_d(void) { }
+
 /* clear_f0300_records — clear 0x34-stride records @0x801f0300, count =
  * s16 @0x801f04a8+0x14. Disasm 0x801360cc-0x80136108+. */
 void clear_f0300_records(void)

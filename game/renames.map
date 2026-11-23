@@ -28,6 +28,9 @@
 80155e6c blk_1f26c0_init_c
 80136d28 record_copy_1a
 80136fb0 task_table_init
+80136f70 empty_leaf_a
+80136f78 empty_leaf_b
+80136f80 empty_leaf_c
 8012c0b4 intro_movie_state
 8012cc6c print_dispatch_guest
 8012cf64 print_dispatch_selfdesc_guest
@@ -665,6 +668,7 @@
 80193424 gpu_mode_regs_apply
 80193d30 bios_call_a0
 8018d444 dir_rotate_acc
+8018d408 dir_rotate_pair
 8018d468 dir_rotate_set
 8018d484 dir_rotate_wrap
 8017ae18 ev5_action_select
@@ -697,6 +701,7 @@
 80134e44 channel_script_emit_chain
 80132128 vec3_midpoint_angles
 8013f714 task_node_alloc_init
+8013f7a0 empty_leaf_d
 8013f648 task_cb_voice_line
 80134b34 channel_script_emit_chain_tick
 8018499c packet_timer_update
@@ -1105,6 +1110,7 @@
 80194960 gte_rtps_xform3
 
 80194b60 gte_xform3_nold
+80194a70 gte_rtps3_sxy_pack
 
 80194db0 gte_mvmva_add
 
@@ -1726,6 +1732,7 @@
 8019261c gpu_data_reg_read
 80192e00 gpu_tag_cmd_store
 80192e78 gpu_reg_cells_init
+80192ec0 gpu_reg_cmd_commit
 8018d69c prim_attr_repack
 801add38 op_tbl_elem_copy
 801add84 op_hword_pair_add
