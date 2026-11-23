@@ -442,3 +442,62 @@ the intended stack base/size for this coroutine — the subagent is tracing the
 game's task-stack allocator. If HW runs the same chain to the same depth, the
 record table would overlap there too, meaning either the table is placed to
 avoid it or the timing differs.
+
+## disp_ring — the crash dispatch runs on the IRQ stack; spills are main-thread (frame 46595)
+
+`disp_ring` (always-on 128-entry dispatch tail, seq 78749327-78749454) captured
+the exact terminal sequence. Oldest→newest, `sp`/`target`/`ra`:
+
+```
+78749347  0x000027AC (BIOS)  sp=0x801FF1F8  ra=0x8019A53C   <- main stack, cd_timer_read calls BIOS kernel fn
+78749348-52  BIOS 0x279C/27EC/2818/3554/369C  sp=0x801FF1F8 (constant) <- seq'd kernel calls, same depth
+78749353+  BIOS IRQ dispatch  sp=0x00008548                  <- IRQ stack takes over
+...  (BIOS handlers on 0x85xx) ...
+78749393  0x801A30C0 (ctx_fn_send)      sp=0x8548 ra=0x801A1EC0
+78749435  0x801A3108 (cd_cmd_flush_a)  sp=0x8548 ra=0x801A1EC0
+78749436  0x801A31E0 (cd_cmd_flush_b)  sp=0x8548 ra=0x801A1EC0
+78749437  0x801A328C (cd_cmd_issue_poll) sp=0x8548 ra=0x801A1EC0
+78749438  0x801A3350 (dev_cmd_process) sp=0x8548 ra=0x801A1EC0
+78749439  0x801A3E94 (cd_cmd_state_rx) sp=0x8548 ra=0x801A3550
+78749447  0x801A38B8 (cd_cmd_queue_drain) sp=0x8548 ra=0x801A36BC
+78749448  0x801A30C0 (ctx_fn_send)      sp=0x8548 ra=0x801A1EC0
+78749449  0x801BCB8C  <- WILD dispatch into CD session data
+78749450  0x801BCB90
+78749451  0x801BCB94
+78749452  0x801BCB98
+78749453  0x801BCB9C
+78749454  0x801BCBA0  <- FAIL-FAST (unknown dispatch)
+```
+
+Decisive corrections to the earlier framing:
+
+- **The crash dispatch is IRQ-side, on `sp=0x8548`** (BIOS KernelSp), NOT the
+  main stack. `cd_cmd_queue_drain → dev_cmd_round_dispatch(0x801A1EC0) →
+  ctx_fn_send(0x801A30C0) → cd_cmd_state_commit → jalr rec+0x14`. The wild
+  target `0x801BCB8C` then "executes" session data `0x801BCB8C→0x801BCBA0`
+  (+4 stride = data-as-code) until `0x801BCBA0` trips unknown-dispatch.
+- **The record corruption source is the MAIN thread**: seq 347-352 show main-
+  stack `sp=0x801FF1F8` (inside record-table BSS `0x801FF080-0x801FF260`)
+  while `cd_timer_read`(ra 0x8019A53C) drives BIOS kernel calls
+  (0x27AC/279C/27EC/2818/3554/369C — kernel thread/event fns) at constant
+  depth. Those frames spill session pointers onto `rec+0x14`/`+0x44`.
+- So: **main-thread synchronous CD+kernel work nests ~3.7 KB deep into the
+  record-table BSS and corrupts a record; a subsequent CD IRQ dispatches the
+  now-corrupt record on the IRQ stack → wild jalr.** Two faithful-looking
+  halves that only collide because of timing/depth.
+
+The remaining faithful question is unchanged but now precisely scoped: does
+HW's main stack reach `sp≈0x801FF1F8` during this CD+kernel-call burst? If
+HW defers the CD work to the `0x801BDxxx` coroutine / `0x85xx` IRQ stack (as
+`cd_ctx_save`/`B0/0x19` intends), our runtime running it synchronously on the
+main stack IS the divergence.
+
+## New instrumentation: `spdepth` ring (fntrace.c / debug_server.c)
+
+Added an always-on excursion tracker to `fntrace_record`: for main-stack SP
+(`0x801F0000-0x801FFFFF`, excludes coroutine `0x801BDxxx` and IRQ `0x85xx`)
+it records each dispatch where SP hits a new low below `0x801FF400`, resetting
+the floor when SP returns above `0x801FFD00`. This distinguishes a GRADUAL
+leak (progressive new-lows across frames) from a SINGLE deep chain (one jump),
+and names the functions (`target`/`ra`/`frame`) at each depth. Exposed as the
+`spdepth` debug command. Built into `build/BloodyRoar2_Recompiled`.

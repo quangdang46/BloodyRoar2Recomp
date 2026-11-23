@@ -10501,6 +10501,39 @@ static void handle_disp_ring(int id, const char *json)
     free(buf);
 }
 
+/* spdepth — dump the always-on stack-depth excursion ring (fntrace.c).
+ * Each entry is a dispatch where main-stack SP reached a new low below the
+ * anomalous-depth gate: the descent path into the record-table BSS region. */
+static void handle_spdepth(int id, const char *json)
+{
+    extern SpDepthEntry g_spdepth_ring[]; extern uint64_t g_spdepth_seq;
+    int count = json_get_int(json, "count", 256);
+    if (count < 1) count = 1;
+    if (count > (int)SPDEPTH_RING_CAP) count = (int)SPDEPTH_RING_CAP;
+    uint64_t total = g_spdepth_seq;
+    uint32_t avail = total < SPDEPTH_RING_CAP ? (uint32_t)total : SPDEPTH_RING_CAP;
+    uint32_t n = (uint32_t)count < avail ? (uint32_t)count : avail;
+    size_t BUF_SZ = 256u + (size_t)n * 200u;
+    char *buf = (char *)malloc(BUF_SZ); if (!buf) { send_err(id, "oom"); return; }
+    size_t pos = 0;
+    pos += snprintf(buf + pos, BUF_SZ - pos,
+                    "{\"id\":%d,\"ok\":true,\"total\":%llu,\"entries\":[",
+                    id, (unsigned long long)total);
+    for (uint32_t i = 0; i < n && pos < BUF_SZ - 256; i++) {
+        uint64_t idx = total - n + i;
+        SpDepthEntry *e = &g_spdepth_ring[idx % SPDEPTH_RING_CAP];
+        pos += snprintf(buf + pos, BUF_SZ - pos,
+            "%s{\"seq\":%llu,\"cycle\":%llu,\"frame\":%u,"
+            "\"sp\":\"0x%08X\",\"target\":\"0x%08X\","
+            "\"ra\":\"0x%08X\",\"tcb\":\"0x%08X\"}",
+            i ? "," : "", (unsigned long long)e->seq, (unsigned long long)e->cycle,
+            e->frame, e->sp, e->target, e->ra, e->tcb);
+    }
+    pos += snprintf(buf + pos, BUF_SZ - pos, "]}");
+    debug_server_send_line(buf);
+    free(buf);
+}
+
 static void handle_freeze_check(int id, const char *json)
 {
     int window = json_get_int(json, "window", 256);
@@ -14749,6 +14782,7 @@ static const CmdEntry s_commands[] = {
     { "irqctx_ring",       handle_irqctx_ring },
     { "sp_ring",           handle_sp_ring },
     { "disp_ring",         handle_disp_ring },
+    { "spdepth",           handle_spdepth },
     { "cyc_watch",         handle_cyc_watch },
     { "cyc_watch_dump",    handle_cyc_watch_dump },
     { "cyc_watch_clear",   handle_cyc_watch_clear },

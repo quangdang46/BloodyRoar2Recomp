@@ -129,6 +129,15 @@ static uint32_t s_spdom_prev_sp = 0;
 DispTailEntry g_disp_tail[DISP_TAIL_CAP];
 uint64_t      g_disp_tail_seq = 0;
 
+PSX_BSS SpDepthEntry g_spdepth_ring[SPDEPTH_RING_CAP];
+uint64_t            g_spdepth_seq = 0;
+/* Per-excursion floor: lowest main-stack SP seen since the stack last
+ * returned to shallow operating depth. Reset on SP >= SP_SHALLOW_WATER so
+ * each deep excursion records its own descent path. */
+static uint32_t s_spdepth_floor = 0xFFFFFFFFu;
+#define SP_SHALLOW_WATER 0x801FFD00u   /* normal main-stack floor ~0x801FFE18 */
+#define SP_DEPTH_GATE   0x801FF400u    /* only record SP below this (anomalous) */
+
 void fntrace_record(CPUState* cpu, uint32_t target) {
     /* The BIOS has completed the PS-X EXE load by the time it dispatches the
      * entry point. Apply the validated plan before the first guest instruction. */
@@ -141,6 +150,34 @@ void fntrace_record(CPUState* cpu, uint32_t target) {
         t->sp     = cpu->gpr[29];
         t->cycle  = psx_get_cycle_count();
         g_disp_tail_seq++;
+    }
+    {
+        /* Stack-depth excursion tracker. Main-stack SP lives in the top-of-RAM
+         * region (>= 0x801F0000); coroutine (~0x801BDxxx) and BIOS IRQ (~0x85xx)
+         * stacks are excluded by that floor. Record each new-low SP below the
+         * anomalous-depth gate so a gradual leak shows as progressive lows and a
+         * single deep chain shows as one jump. Floor resets once SP returns to
+         * shallow water, giving each excursion its own descent path. */
+        uint32_t sp_now = cpu->gpr[29];
+        if (sp_now >= 0x801F0000u && sp_now < 0x80200000u) {
+            if (sp_now >= SP_SHALLOW_WATER) {
+                s_spdepth_floor = 0xFFFFFFFFu;
+            } else if (sp_now < SP_DEPTH_GATE && sp_now < s_spdepth_floor) {
+                s_spdepth_floor = sp_now;
+                extern uint64_t psx_get_cycle_count(void);
+                extern uint32_t psx_read_word(uint32_t addr);
+                SpDepthEntry *e = &g_spdepth_ring[g_spdepth_seq % SPDEPTH_RING_CAP];
+                uint32_t pcb = psx_read_word(0x108u);
+                e->seq     = g_spdepth_seq;
+                e->cycle   = psx_get_cycle_count();
+                e->sp      = sp_now;
+                e->target  = target;
+                e->ra      = cpu->gpr[31];
+                e->tcb     = pcb ? psx_read_word(pcb & 0x1FFFFFFFu) : 0u;
+                e->frame   = (uint32_t)s_frame_count;
+                g_spdepth_seq++;
+            }
+        }
     }
     {
         uint32_t sp_now = cpu->gpr[29];

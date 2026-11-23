@@ -83,6 +83,27 @@ typedef struct {
 extern DispTailEntry g_disp_tail[DISP_TAIL_CAP];
 extern uint64_t      g_disp_tail_seq;
 
+/* Stack-depth excursion ring (ALWAYS-ON). Records each dispatch where the
+ * main-stack guest SP (0x801xxxxx game RAM, below the heap) reaches a new
+ * low within the current excursion. Answers "is the anomalous deep SP a
+ * gradual leak (progressive new-lows across frames) or a single deep call
+ * chain" — the Bloody Roar 2 record-table collision (sp reaching 0x801FF1xx
+ * inside static BSS records at 0x801FF080-0x801FF260). Quiet in normal play
+ * (main-stack SP stays above ~0x801FFD00); fires only on anomalous depth.
+ * Dumped via `spdepth`. */
+#define SPDEPTH_RING_CAP 512u
+typedef struct {
+    uint64_t seq;
+    uint64_t cycle;
+    uint32_t sp;        /* guest SP at this new-low dispatch */
+    uint32_t target;    /* dispatch target (function entered) */
+    uint32_t ra;        /* caller return PC */
+    uint32_t tcb;       /* kernel current-TCB */
+    uint32_t frame;
+} SpDepthEntry;
+extern SpDepthEntry g_spdepth_ring[SPDEPTH_RING_CAP];
+extern uint64_t     g_spdepth_seq;
+
 /* Hot path. Called from psx_dispatch on every entry. Inlinable. */
 void fntrace_record(CPUState* cpu, uint32_t target);
 /* Register the game's text range for one-shot game-start detection.
