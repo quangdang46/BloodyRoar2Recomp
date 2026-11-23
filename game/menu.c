@@ -1021,8 +1021,12 @@ undefined4 system_config_menu_a(void)
   uVar3 = 0;
   _DAT_1f80008c = 0;
 joined_r0x8015c784:
+  /* Bail-unwind exit must preserve the DAT1 exit invariant: the 0xff exit
+   * below writes DAT_1f800001 = 0 before returning; a bail-forced return
+   * would leak a private substate into match_loop after gs->5 (same hazard
+   * as battle_flow_state_machine). */
   { extern int br2_bail_pending(void);
-    if (br2_bail_pending()) return uVar3; }
+    if (br2_bail_pending()) { DAT_1f800001 = 0; return uVar3; } }
   do {
     if (DAT_1f800001 == 0xff) {
       DAT_1f800001 = 0;
@@ -1190,8 +1194,10 @@ undefined4 system_config_menu_b(void)
   _DAT_1f80008c = 0;
   pbVar4 = (byte *)(_g_system_config_ptr + 0x38);
 joined_r0x8015b9e0:
+  /* Bail-unwind exit must preserve the DAT1 exit invariant (0xff exit
+   * writes DAT_1f800001 = 0); see system_config_menu_a. */
   { extern int br2_bail_pending(void);
-    if (br2_bail_pending()) return uVar6; }
+    if (br2_bail_pending()) { DAT_1f800001 = 0; return uVar6; } }
   do {
     if (DAT_1f800001 == 0xff) {
       DAT_1f800001 = 0;
@@ -1377,8 +1383,13 @@ LAB_80164714:
   if (iVar1 < 0) {
     _DAT_1f80008c = 0;
 joined_r0x80164744:
+    /* Bail-unwind exit must preserve the DAT1 exit invariant: every normal
+     * exit of this DAT1 state machine writes DAT_1f800001 = 0 before
+     * returning; a bail-forced return would leak a private substate into
+     * match_loop after the caller's gs->5 transition (same hazard as
+     * battle_flow_state_machine — see its loop head). */
     { extern int br2_bail_pending(void);
-      if (br2_bail_pending()) return; }
+      if (br2_bail_pending()) { DAT_1f800001 = 0; return; } }
     if (DAT_1f800001 != 0xff) {
       if (DAT_1f800001 == 1) {
 LAB_80164830:
@@ -2009,8 +2020,11 @@ void battle_intro_flow(int param_1)
   if (iVar4 < 0) {
     DAT_1f80009b = 3;
 joined_r0x801673ac:
+    /* Bail-unwind exit must preserve the DAT1 exit invariant (normal exits
+     * write DAT_1f800001 = 0); see battle_flow_state_machine / results_
+     * scoreboard for the full rationale. */
     { extern int br2_bail_pending(void);
-      if (br2_bail_pending()) return; }
+      if (br2_bail_pending()) { DAT_1f800001 = 0; return; } }
     if (DAT_1f800001 != 0xff) {
       if (DAT_1f800001 == 2) {
 LAB_80167620:
@@ -2089,9 +2103,12 @@ LAB_8016767c:
         }
         iVar4 = menu_res_load_sm(0x1f800000,&DAT_1f8000e8,&DAT_1f8001f0,0);
         /* Same -1 ambiguity as battle_flow_state_machine: a br2_bail_pending
-         * unwind must propagate, not be read as "load done". */
+         * unwind must propagate, not be read as "load done". Restore the
+         * DAT1 exit invariant (normal exits leave DAT_1f800001 = 0) so the
+         * caller's gs->5 handoff can't leak a private substate to
+         * match_loop. */
         { extern int br2_bail_pending(void);
-          if (br2_bail_pending()) return; }
+          if (br2_bail_pending()) { DAT_1f800001 = 0; return; } }
         if ((iVar4 != 0) && (_DAT_1f800090 == 0)) {
           if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
             confirm_code_select(0x1f800000);
