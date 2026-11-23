@@ -10660,3 +10660,35 @@ N+102 — x28 bug narrowed to a frame_tick CALLEE (4 agents, still unfixed):
   IRQ/event starvation in psxrecomp runtime. Clean C tree is faithful; the
   blockers are faithful-core runtime (input-device model + CD coroutine
   scheduling). Updated proof/arcade_fight_entry_phase_analysis.md.
+
+- **session N+101 (arcade wedge deep-dive; CORRECTION + mechanism pinned):**
+  CORRECTION to my earlier "versus reaches real combat": the 0x700 combat
+  phase NEVER fired on versus either — the 0300->0500/1400->1100->0100
+  transitions I logged are pre-combat announce/round-boundary phases, not
+  combat. Consistent with N+40/N+81/N+88: NO mode reaches sustained 0x700.
+  RESOLVED this session: the ONLY 0x700 phase-cell writer is `sh`@guest
+  0x801538B8 inside battle_config_eval (clean menu.c:~4235), gated behind
+  phase classes 0x000/0x600 — a faithful wait on upstream progression, NOT
+  a missing function (proof/arcade_fight_entry_phase_analysis.md).
+  Wedge A narrowed to TWO clean-verified phase gates in the select path:
+  (1) 0x100 seed via mc_slot_action case-0 needs the slot's pad EDGE
+  (+0x68/+0x6a) — CPU slot-1 needs pad-2; (2) 0x300 confirm via
+  select_confirm_handler from select_screen_tick per-slot puVar6+8 flags —
+  CPU record's button-flag source (internal cursor-AI vs pad-2) UNRESOLVED.
+  Wedge B mechanism pinned deeper: deferred cooperative switch
+  (interrupts.c:1748-1793) requires s_last_interrupt_check_pc to be a
+  materialized, 4-aligned, psx_is_dispatchable block-leader PC; br2_irq_poll
+  passes cpu->gpr[31] ($ra, a call-site return addr — NOT dispatchable) and
+  clean-C has no mid-body guest resume point, so a deferred ChangeThread
+  detected while a clean-C loop polls can never be honored -> the CD/BIOS
+  kernel thread starves. Reconciles with cd_deferred_coroutine_starvation:
+  cd_response_pump (handler[2]) = 0 hits — CD IRQ bit2 raised but cleared
+  before cd_intc_dispatch polls (INTC ack ordering) OR IRQ never reaches
+  the poll window; TestEvent spins 2M+; channel cursors frozen.
+  NEXT (faithful, high-risk — interrupts.c/cdrom.c): reproduce the wedge
+  via versus-CPU (9b=1, same CD path as arcade, easier nav than 1P) then
+  audit (a) INTC I_STAT ack ordering so cd_response_pump sees bit2, and
+  (b) whether the deferred-switch resume-PC requirement can be satisfied
+  for the kernel thread (NOT the clean-C game thread) or needs the §0
+  cooperative-scheduler HLE replacement. Do NOT fake phase writes or
+  inject CPU confirms. Instances healthy: 9804 @1.80M fr, 9811 @370k fr.
