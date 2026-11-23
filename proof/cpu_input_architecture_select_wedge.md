@@ -192,3 +192,41 @@ all "unknown command"). If `cd_cb7_run` is clean-C and its DICR `while`
 loops lack the per-block IRQ resume the generated body had, the §4 fix is to
 delegate it (or the spinning consumer) to generated. Versus-1P avoids this
 path entirely (different asset-load/seek timing), which is why it fights.
+
+## UPDATE 4 — CPU permanently parked in BIOS kernel bottom-half (irqctx proof)
+
+`get_registers` / `irqctx_ring` / `restore_trace` on the wedged instance:
+
+- `get_registers`: `cop0_epc=0x8019A648`, `ra=0x8019A53C`, `sp=0x801FFEE8`
+  (kernel stack), `s0`-region points at CD INTC state block `0x801BCD18`.
+- `irqctx_ring` (last 6 VBLANK entries, frames 105408-105413): EVERY
+  interrupt has `take_pc=real_epc=exit_pc=0x8019A648`, `same_thread=1`,
+  `restored=1`, `entry_sp=0x801FFEE8`. The interrupted context is ALWAYS the
+  same BIOS kernel bottom-half — the game thread never regains the CPU.
+- `restore_trace`: `cd_intc_dispatch` (state block `0x801BCD18`) runs each
+  IRQ → `cd_cb7_run`/`cd_cb8_dispatch` DICR path is reached. `defer_state`:
+  VBLANK `raise≈deliver` (98128/97957), `defer_pending=0`.
+- `bios_svc_trace` last-256: ALL `B0/0x17` (kernel DMA/IRQ bottom-half,
+  `ra=0x8019AA9C` BIOS-internal). The 1.5M `TestEvent` count is cumulative;
+  the *live* hot loop is the kernel thread, not the game thread.
+
+### Refined mechanism
+The game thread is BLOCKED in a BIOS wait (its TCB resume_pc is not in any
+ring — `thread_ctx_ring` empty, `thread_trace` empty). The kernel/IRQ
+bottom-half runs every VBLANK servicing DMA/INTC but never produces the
+event flag the game thread waits on, AND the scheduler never selects a
+ready thread that would. Two sub-cases remain open:
+  (a) the awaited event is a CD-channel completion (`0xF0000009`) whose
+      DeliverEvent producer is a clean-C function (`cd_cb7_run` /
+      `cd_dma_chan_reset`) that ran without the deferred-coroutine resume
+      boundary → flag never set;
+  (b) the awaited event is a thread-signal/frame-sync produced by a second
+      game thread that is itself blocked → genuine deadlock needing the
+      game thread's blocked resume_pc to identify.
+
+### Blocking diagnostic gap
+No debug command exposes a BLOCKED thread's saved PC. `get_registers` only
+shows the currently-running (kernel) context; `thread_ctx_ring`/
+`thread_trace` are unpopulated. To identify the exact guest wait, either
+(a) populate thread_ctx_ring on thread-block, or (b) walk the kernel TCB
+wait-queue in guest RAM via `read_ram` and decode the saved context.
