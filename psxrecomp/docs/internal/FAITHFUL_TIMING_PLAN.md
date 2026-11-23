@@ -10692,3 +10692,45 @@ N+102 — x28 bug narrowed to a frame_tick CALLEE (4 agents, still unfixed):
   for the kernel thread (NOT the clean-C game thread) or needs the §0
   cooperative-scheduler HLE replacement. Do NOT fake phase writes or
   inject CPU confirms. Instances healthy: 9804 @1.80M fr, 9811 @370k fr.
+
+- **session N+102 (versus-1P live repro + CPU-input architecture traced; wedge
+  isolated to SELECT-screen pad-2, NOT fight input):**
+  HEADLINE CORRECTION to N+101: versus mode (DAT_1f80009b==2) DOES reach
+  REAL sustained combat when both pad slots are fed — versus_fight_mash
+  injects slot-0 AND slot-1 via the debug press command. Observed on 9821:
+  slot phase cells 0x1f8000b4/b6 cycle 0x0300(announce)->0x1400/0x0500
+  (in-fight)->0x1100/0x0100(round boundary)->0x0300(next round); rounds
+  resolve. CD healthy: reading=1, ring_partial=19517, irq_present_max_late=0,
+  ring_starved=0; bioscall B0/0x07 DeliverEvent=770 (events flowing — NOT the
+  CD-starvation signature). frame advanced 29k->86k+. The 0x700 cell is a
+  specific sub-state, not the whole combat phase — the 0x1400/0x1100 family
+  are the real in-fight/round-boundary phases. (proof/
+  cpu_input_architecture_select_wedge.md)
+  CPU-INPUT ARCHITECTURE (all clean-ported, faithful): FIGHT input for
+  CPU/demo fighters comes from fighter_script_fsm (battle.c:5927), a
+  per-fighter script/AI state machine reading the fighter's +0xf script
+  buffer and emitting command words -> fighter+0x7a/+0x7c -> pad_edge_scan/
+  action_from_input. It BYPASSES pad-2 entirely — CPU fight input needs no
+  controller-2 (attract demos fight autonomously). SELECT input is the
+  opposite: pad_state_refresh decodes only the two hardware pad records
+  (DAT_801befa8 pad-1 / DAT_801befca pad-2) — no CPU branch;
+  mc_slot_action case-0 seeds only the pressed slot (+0xb4 pad-1 / +0xb6
+  pad-2 edge 0x840) — no CPU auto-seed; fighter_spawn_setup case-0 builds
+  slot-1 select buttons from battle+0x76/0x6e/0x6a = pad-2 words only.
+  => The wedge is PRECISELY the select-screen slot-1 confirm requiring a
+  pad-2 edge. No CPU-select mechanism exists in the clean tree.
+  RESOLUTION candidates: (a) a GENERATED/unported function synthesizing
+  pad-2 record data or calling mc_slot_action(1)/seeding +0xb6 for CPU;
+  (b) real arcade HW providing pad-2; (c) a select-screen CPU cursor in
+  generated code not yet ported. press(slot=1) works end-to-end (proven),
+  so the pad-2->select->fight->combat chain is functional once slot-1
+  input exists.
+  OBSERVABILITY: ev_stream_dispatch now calls debug_server_poll() every
+  0x400 opcodes (580f274) — server stayed responsive through attract AND
+  the versus fight on 9821 (previously the clean-C for(;;) starved it
+  permanently; sample showed battle_intro_flow->battle_frame_tick->
+  ev_stream_dispatch->ev5_action_select hot loop).
+  NEXT: find the CPU-select generator — grep generated/ for writers of the
+  pad-2 record (0x801befca region) or +0x1f8000b6 seeding, and disassemble
+  the pad-poll/SIO path for a CPU/demo-input branch. If found in generated,
+  port it clean (it is the game's own faithful mechanism, not a fake).
