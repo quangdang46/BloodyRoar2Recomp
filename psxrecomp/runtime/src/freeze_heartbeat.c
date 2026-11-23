@@ -1126,13 +1126,15 @@ static int hb_format_cpu_scratchpad(char *out, size_t cap) {
         m = snprintf(out + n, cap - (size_t)n, ",\"overlay_80165000\":");
         if (m > 0) n += m;
         n = hb_append_ram_peek(out, n, cap, 0x80165000u, 64);
-        /* dev_cmd_round_dispatch state: round-robin counter @0x801BE7C4 and
-         * the fn-ptr table @0x801BE808 (5 slots + slack). A wild fn like
-         * 0x801BCBA0 means either a corrupted counter index (OOB read) or an
-         * overwritten slot — this captures which at freeze time. */
+        /* dev_cmd_round_dispatch state: the whole driver fn-ptr/callback
+         * block 0x801BE780-0x801BE830 — error fn @0x801BE780, per-op callback
+         * cells @0x801BE784..0x801BE7B4, round-robin counter @0x801BE7C4 and
+         * the 5-slot handler table @0x801BE808. A wild fn like 0x801BCB98 is a
+         * CD command-block field address; dumping the full block names which
+         * callback slot held the data pointer. */
         m = snprintf(out + n, cap - (size_t)n, ",\"devcmd_rr\":");
         if (m > 0) n += m;
-        n = hb_append_ram_peek(out, n, cap, 0x801BE7C4u, 96);
+        n = hb_append_ram_peek(out, n, cap, 0x801BE780u, 0xB0);
         /* Last dev_cmd_round_dispatch table reads: {idx, table_addr, fn}.
          * The entry whose fn is the wild dispatch target names whether the
          * counter went OOB (tbl far from 0x801BE808) or a slot was bad. */

@@ -701,6 +701,17 @@ void psx_crash_trace_dump(const char *reason, void *seh_info) {
             if (nsp > 0) append_hex_bytes(buf, sizeof(buf), &pos, spad, nsp);
             append_str(buf, sizeof(buf), &pos, "\"}");
         }
+        /* dev_cmd_round_dispatch driver block 0x801BE780-0x801BE830: error fn,
+         * per-op callback cells, round-robin counter, handler table. A wild
+         * fn like 0x801BCB98 is a CD command-block field addr; this names the
+         * guilty callback slot at the exact fatal moment. (append_ram_peek's
+         * staging buffer is 64B — keep each want <= 64.) */
+        append_ram_peek(buf, sizeof(buf), &pos, "devcmd_rr_a",
+                        0x801BE780u, 64, 1);
+        append_ram_peek(buf, sizeof(buf), &pos, "devcmd_rr_b",
+                        0x801BE7C0u, 64, 1);
+        append_ram_peek(buf, sizeof(buf), &pos, "devcmd_rr_c",
+                        0x801BE800u, 48, 1);
         append_str(buf, sizeof(buf), &pos, "},\n");
     }
 
