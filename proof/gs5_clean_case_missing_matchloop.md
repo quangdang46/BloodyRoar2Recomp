@@ -53,3 +53,17 @@ Fix the clean gs=5 case to the faithful order above **when**
 `entry_0x80126234` is wired into clean_table (i.e. when main() itself is
 clean-ported). Until then it is dormant; do not "fix" by reordering
 runtime behavior — the generated path is authoritative.
+
+## RESOLVED (commit pending)
+
+Clean gs=5 case (`game/game.c` `switchD_80126370_caseD_80126534`) rewritten
+to the faithful generated order — `match_mode_set, display_mode_setup,
+frame_tick, frame_advance_helper, frame_tick, memcard_poll_frame,
+match_loop()` — verified block-by-block against
+`generated/SLES_017.22_full_00.c` `block_80126534`→`…8C`→`…594`. The prior
+body had `memcard_poll_frame` twice, `frame_advance_helper` out of order,
+and no `match_loop`. `match_loop(void)` reads scratchpad/globals (not $a0),
+so the generated `move $a0,$zero` delay-slot arg is immaterial to the clean
+port. Still dormant (entry_0x80126234 absent from clean_table); generated
+main remains authoritative at runtime — this makes the clean source faithful
+for when main is clean-ported.

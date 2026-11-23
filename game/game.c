@@ -775,11 +775,16 @@ switchD_80126370_caseD_80126534:
     uVar6 = uVar6 + 1;
     match_mode_set(uVar5);
     display_mode_setup(*(undefined1 *)(_g_system_config_ptr + 0xb));
+    /* Faithful call order (generated block_80126534 chain): frame_tick,
+     * frame_advance_helper, frame_tick, memcard_poll_frame, then match_loop
+     * as the last call before the g_game_state re-check at block_80126594.
+     * match_loop runs the whole match and only returns when DAT1 hits 0xff;
+     * omitting it dead-loops gs=5 with no combat. */
     frame_tick(0x1f800000);
-    memcard_poll_frame();
     frame_advance_helper();
     frame_tick(0x1f800000);
     memcard_poll_frame();
+    match_loop();
     uVar4 = (uint)g_game_state;
     bVar1 = uVar4 < 0xe;
     if (uVar4 == 5) {
