@@ -230,3 +230,42 @@ shows the currently-running (kernel) context; `thread_ctx_ring`/
 `thread_trace` are unpopulated. To identify the exact guest wait, either
 (a) populate thread_ctx_ring on thread-block, or (b) walk the kernel TCB
 wait-queue in guest RAM via `read_ram` and decode the saved context.
+
+## UPDATE 5 — CORRECTION: live frame loop, wedge is game-logic b6=0 (not kernel deadlock)
+
+`pc_probe_arm` on the GENERATED dispatch entries (observable, unlike clean fns)
+during the wedge — decisive reframe:
+
+- `vsync_wait_n` (0x8019a5d8): **1056 hits** — normal per-frame pacing.
+- `cd_intc_dispatch` (0x8019a8ec): **528 hits**; `cd_cb8_dispatch`
+  (0x8019ae68): **528 hits** — exactly 2:1 vsync:intc = healthy VBLANK→INTC→
+  cb8→`cd_cb8_run_param`(increments DAT_801bdde0 + fires frame callbacks).
+- **`cd_result_wait_a` (0x801968cc): 0 hits** — NOT the active wait. The
+  earlier stack hits were stale frames.
+- `DAT_801bdde0` (frame counter) advances ~150/s; `irqctx_ring` shows VBLANK
+  IRQs deliver every frame. CD command history: **no CD cmd since frame
+  ~7128** — CD is idle, not the blocker.
+
+### Actual mechanism (clean-verified)
+- `vsync_wait_n` (save.c:1554, delegated) waits `DAT_801bdde0 >= a0`; counter
+  advances fine → returns each frame. The CPU spends its time here because
+  it's the per-frame yield/pump, NOT because it's the bug.
+- The game is in a LIVE frame loop stuck at **gs=9, b4=0x0a00, b6=0x0000**.
+- `b6` = CPU side's select/battle phase cell (`_DAT_1f8000b6`).
+- `battle_state_init` (menu.c:4706) seeds `b6→0x300` ONLY IF
+  `select_phase_gate(a2,1)==0`, which requires `b6 & 0xf00 ∈
+  {0x100,0x200,0x300,0x400,0x700}` (menu.c:3695). **b6=0 → gate=1 → skip.**
+- Chicken-and-egg: `b6` must reach a valid phase class during SELECT (via the
+  per-side state machine at menu.c:9607/9613/9640 writing 0x100/0x600/0xa00,
+  gated on side-selector `a3`) BEFORE battle_state_init. Those transitions
+  never ran for the CPU side → b6 stays 0 → battle_state_init skips it →
+  gs=9 waits forever for a side that was never seeded.
+
+### Conclusion
+NOT a kernel/CD/scheduler wedge. The arcade CPU opponent's SELECT-phase
+transitions never execute — the same "CPU select-confirm missing" root
+isolate from UPDATE 1, now pinned to the exact cell (`b6`) and gate
+(`select_phase_gate`). versus-1P avoids it because its select path
+auto-seeds both sides. The fix is in the select state machine's CPU-side
+(a3=1) handling for arcade mode — find why the CPU side's phase transitions
+(0x100 arm etc.) don't fire.
