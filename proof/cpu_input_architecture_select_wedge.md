@@ -111,3 +111,36 @@ unnecessary for CPU play).
 CPU-opponent mode — a live, faithful testbed for the clean tree. Arcade
 uses `mc_slot_action` case-0 (per-slot pad seed) + `battle_frame`, a
 different select flow that is the actual broken path.
+
+## UPDATE 2 — arcade wedge reproduced live; versus-vs-arcade select divergence
+
+Menu map (live probe): mode options cycle `(2,1)`=versus → `(1,4)` →
+**`(0,3)`=arcade (`9b=0`,`9c=3`)** → `(3,2)` → wrap. Arcade `9c=3` →
+`select_screen_tick(3)` (versus `9c=1` → `select_screen_tick(1)`).
+
+`tools/arcade_p1only.py` (P1-only, target `(0,3)`), port 9831:
+- P1 (`b4`) progressed `0x100`→`0x300`→`0x500`→`0x0a00`; **CPU slot `b6`
+  stayed `0x0000` — never seeded** (mc_slot_action case-0 needs pad-2 edge).
+- Reached `gs=9 ph=0` then FROZE (frames tick via VBLANK only).
+- `bioscall_dump`: **B0/0x0B TestEvent = 1,632,362** spinning (DeliverEvent
+  only 224) — kernel-event starvation at gs=9.
+- `cdrom_state`: idle; `irq_state`: VBLANK only.
+
+`tools/arcade_both.py` (both-slot injection, target `(0,3)`), port 9832:
+- Reached FIGHT then same `gs=9 ph=0`, `b6` still 0 — BUT injection fired on
+  versus phases (`ph==6/7`) which do NOT match arcade's select flow, so
+  slot-1 was never fed during arcade's actual select window. Inconclusive.
+
+### Interpretation
+- versus (`select_screen_tick(1)`) auto-handles the missing-pad-2 slot-1
+  (CPU opponent fully works — proven). arcade (`select_screen_tick(3)` /
+  `battle_frame`) does NOT seed `b6` without pad-2 and wedges at gs=9 on a
+  kernel event (TestEvent spin).
+- Two candidate roots, not yet separated:
+  (a) arcade CPU-select is a generated/unported path that should auto-assign
+      CPU (like versus) but is missing/broken;
+  (b) `b6=0` is normal for arcade and the real wedge is kernel-event/CD
+      starvation at gs=9 (same deferred-coroutine issue).
+- Next discriminator: feed slot-1 CONTINUOUSLY through arcade's real select
+  window (arcade_pad2spam.py spams both slots every frame in gs=8/9) OR dump
+  the TestEvent event-flag index to classify the wait as CD vs select.
