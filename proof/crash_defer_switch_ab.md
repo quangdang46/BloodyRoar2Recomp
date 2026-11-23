@@ -87,3 +87,14 @@ interrupt-time context instead of the boundary-time re-save).
   `psxrecomp/runtime/include/interrupts.h`,
   `psxrecomp/recompiler/src/config_loader.{h,cpp}`,
   `psxrecomp/runtime/src/main.cpp`, `game_1pad.toml`, `tools/crash_hunt.py`.
+
+## POST-FIX END-TO-END (port 9701, game_1pad.toml defer_switch=false)
+
+Fresh run + arcade_fight_mash: **stable past the crash window** — frame
+27906+ and climbing (vs deterministic FAIL-FAST ~1560-1642 before). The
+defer_switch=false fix holds under real gameplay input. `call_bail` shows
+the single boot bail flattened cleanly (bail=0, drops=9).
+
+Residual: game parks at DAT1=3 / phase 0x300+0x000 — the battle bring-up
+spawn stage, NOT the crash. This is the next blocker (battle progression,
+not stability). Tracked separately.
