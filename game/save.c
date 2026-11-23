@@ -10385,6 +10385,17 @@ L_collect:
  * the guest's caller-saved contract. a1 is likewise read live (the guest
  * never rewrites it after the prologue, but callees may clobber it).
  * Disasm generated/SLES_017.22_full_49.c 0x801A1E84-0x801A1F70. */
+
+/* Per-call trace ring for the round-robin table read. Records the index,
+ * resolved table address and loaded fn pointer for the most recent calls so
+ * a freeze dump can show whether a wild fn (e.g. 0x801BCBA0) came from an
+ * out-of-bounds counter index or an overwritten table slot. Diagnostic only —
+ * no behaviour change. */
+extern uint32_t g_drr_idx_ring[64];   /* defined in runtime freeze_heartbeat.c */
+extern uint32_t g_drr_tbl_ring[64];
+extern uint32_t g_drr_fn_ring[64];
+extern volatile uint32_t g_drr_ring_pos;
+
 uint32_t dev_cmd_round_dispatch(uint32_t ctx, uint32_t a2, uint32_t a3)
 {
   CPUState *c = clean_cpu_state();
@@ -10393,6 +10404,13 @@ uint32_t dev_cmd_round_dispatch(uint32_t ctx, uint32_t a2, uint32_t a3)
 
   idx = br2_ld32(0x801be7c4u);
   fn  = br2_ld32(0x801c0000u + (idx << 2) - 6136u);  /* 0x801BE808+idx*4 */
+  {
+    uint32_t pos = g_drr_ring_pos & 63u;
+    g_drr_idx_ring[pos] = idx;
+    g_drr_tbl_ring[pos] = 0x801c0000u + (idx << 2) - 6136u;
+    g_drr_fn_ring[pos]  = fn;
+    g_drr_ring_pos = pos + 1u;
+  }
   br2_st32(0x801be7c4u, idx + 1u);
 
   /* jalr table[idx] — ra = 0x801A1EC0 continuation. */

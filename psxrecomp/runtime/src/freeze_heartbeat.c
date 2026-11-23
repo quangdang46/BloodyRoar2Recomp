@@ -84,6 +84,13 @@ extern int      g_present_vsync_disabled;
  * (gpr[32], pc) in cpu_state.h — both already included above. */
 extern uint8_t *memory_get_scratchpad_ptr(void);   /* memory.c */
 extern uint8_t *g_psx_ram;                         /* memory.c — 2 MiB DRAM */
+/* dev_cmd_round_dispatch per-call trace ring (game/save.c) — last {idx,tbl,fn}.
+ * Defined here (runtime, always linked) because the USA target does not compile
+ * game/save.c; save.c writes them via extern. */
+uint32_t g_drr_idx_ring[64];
+uint32_t g_drr_tbl_ring[64];
+uint32_t g_drr_fn_ring[64];
+volatile uint32_t g_drr_ring_pos;
 
 /* Device-state capture for wedge dumps: CD / DMA / SPU / EvCB / the CD
  * coroutine's frame counter + VBlank callback table. These are the structures
@@ -1126,6 +1133,26 @@ static int hb_format_cpu_scratchpad(char *out, size_t cap) {
         m = snprintf(out + n, cap - (size_t)n, ",\"devcmd_rr\":");
         if (m > 0) n += m;
         n = hb_append_ram_peek(out, n, cap, 0x801BE7C4u, 96);
+        /* Last dev_cmd_round_dispatch table reads: {idx, table_addr, fn}.
+         * The entry whose fn is the wild dispatch target names whether the
+         * counter went OOB (tbl far from 0x801BE808) or a slot was bad. */
+        {
+            uint32_t pos = g_drr_ring_pos;
+            int shown = 0;
+            m = snprintf(out + n, cap - (size_t)n, ",\"drr_ring\":[");
+            if (m > 0) n += m;
+            for (int k = 0; k < 16 && (size_t)(n + 48) < cap; k++) {
+                uint32_t i = (pos - 1u - (uint32_t)k) & 63u;
+                m = snprintf(out + n, cap - (size_t)n,
+                             "%s{\"idx\":\"0x%08X\",\"tbl\":\"0x%08X\",\"fn\":\"0x%08X\"}",
+                             shown ? "," : "",
+                             g_drr_idx_ring[i], g_drr_tbl_ring[i], g_drr_fn_ring[i]);
+                if (m > 0) n += m;
+                shown++;
+            }
+            m = snprintf(out + n, cap - (size_t)n, "]");
+            if (m > 0) n += m;
+        }
         if ((size_t)(n + 2) < cap) out[n++] = '}';
     }
 
