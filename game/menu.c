@@ -992,8 +992,14 @@ undefined4 system_config_menu_a(void)
    * (a0 = sp+0x10); the +0xc callback is a u32 GUEST code address
    * (fn_lookup), stored as uint32_t — a host code* would write 8 bytes
    * and clobber +0x10..0x13. Ghidra split the block into scalars;
-   * local_XX names keep their sp offsets via macros. */
-  uint8_t step_desc_a[0x30];
+   * local_XX names keep their sp offsets via macros.
+   * The block must live in guest RAM: menu_stepper_state_advance hands
+   * guest_of(desc) to generated callbacks (dialog_msg_dispatch guest_at's
+   * it), which is 0 for a host stack array. Reserve the real 0x70-byte
+   * guest frame (prologue addiu sp,-0x70) and place the desc at
+   * sp+0x10 -> frm+0x10. */
+  uint32_t sca_frm = br2_guest_frame(0x70);
+  uint8_t *step_desc_a = (uint8_t *)guest_at(sca_frm + 0x10);
 #define local_60 (*(uint16_t *)&step_desc_a[0x00])
 #define local_5e (*(uint8_t  *)&step_desc_a[0x02])
 #define local_5d (*(uint8_t  *)&step_desc_a[0x03])
@@ -1028,10 +1034,12 @@ joined_r0x8015c784:
    * would leak a private substate into match_loop after gs->5 (same hazard
    * as battle_flow_state_machine). */
   { extern int br2_bail_pending(void);
-    if (br2_bail_pending()) { DAT_1f800001 = 0; return uVar3; } }
+    extern void br2_guest_frame_abandon(void);
+    if (br2_bail_pending()) { DAT_1f800001 = 0; br2_guest_frame_abandon(); return uVar3; } }
   do {
     if (DAT_1f800001 == 0xff) {
       DAT_1f800001 = 0;
+      br2_guest_frame_free();
       return uVar3;
     }
     if (DAT_1f800001 == 1) {
@@ -1167,8 +1175,14 @@ undefined4 system_config_menu_b(void)
    * menu_stepper_button_wait/masked_sweep dispatch it via fn_lookup,
    * so it is stored as uint32_t — a host code* would write 8 bytes and
    * clobber +0x10..0x13. Ghidra split the block into scalars;
-   * local_XX names keep their sp offsets via macros. */
-  uint8_t step_desc_b[0x28];
+   * local_XX names keep their sp offsets via macros.
+   * The block must live in guest RAM: the stepper helpers hand
+   * guest_of(desc) to generated callbacks (dialog_sel_dispatch_wide
+   * guest_at's it), which is 0 for a host stack array. Reserve the real
+   * 0x78-byte guest frame (prologue addiu sp,-0x78) and place the desc
+   * at sp+0x10 -> frm+0x10. */
+  uint32_t scb_frm = br2_guest_frame(0x78);
+  uint8_t *step_desc_b = (uint8_t *)guest_at(scb_frm + 0x10);
 #define local_68 (*(uint16_t *)&step_desc_b[0x00])
 #define local_66 (*(uint8_t  *)&step_desc_b[0x02])
 #define local_65 (*(uint8_t  *)&step_desc_b[0x03])
@@ -1199,10 +1213,12 @@ joined_r0x8015b9e0:
   /* Bail-unwind exit must preserve the DAT1 exit invariant (0xff exit
    * writes DAT_1f800001 = 0); see system_config_menu_a. */
   { extern int br2_bail_pending(void);
-    if (br2_bail_pending()) { DAT_1f800001 = 0; return uVar6; } }
+    extern void br2_guest_frame_abandon(void);
+    if (br2_bail_pending()) { DAT_1f800001 = 0; br2_guest_frame_abandon(); return uVar6; } }
   do {
     if (DAT_1f800001 == 0xff) {
       DAT_1f800001 = 0;
+      br2_guest_frame_free();
       return uVar6;
     }
     if (DAT_1f800001 == 1) {
@@ -1604,18 +1620,16 @@ void player_name_entry(void)
   uint32_t *ppuVar8;
   undefined1 *puVar9;
   int iVar10;
-  undefined4 local_78;
-  undefined1 local_70;
-  undefined1 local_6f;
-  undefined1 local_6e;
-  undefined1 local_68;
-  undefined1 local_67;
-  /* Guest string slot at sp+0x30..0x37 (8-byte stride like the sibling
-   * slots at sp+0x20/0x28): announce_param_block_init_alt reads it as a
-   * NUL-terminated string ("A\0" -> per-frame name char + NUL).
-   * Ghidra split the slot's first two bytes into scalars — keep the
-   * whole slot contiguous. local_60[i] == old local_6X. */
-  undefined1 local_60[8];
+  /* Guest string slots at sp+0x18/0x20/0x28/0x30 (8-byte stride, offsets
+   * verified against the generated body's sp accesses): slot0 @sp+0x18 is
+   * the name buffer — local_78 u32 at +0 with name chars appended through
+   * local_30 = &local_78 + iVar10 — and slot3 @sp+0x30 is the local_60
+   * per-char display slot ("A\0" -> char + NUL). announce_param_block_init_alt
+   * stores guest_of(param_3) into the text prim, so both must live in guest
+   * RAM (guest_of is 0 for host locals); name_rec_insert/name_rec_gate/
+   * hud_name_fixup/rec_u32_store read the same bytes through host pointers,
+   * which guest_at() backing satisfies. Keep the whole 0x20-byte run inside
+   * the reserved frame: pne_slots[i] == old local_XX. */
   /* sprintf dst = guest $sp+0x38 (frame -0x90) = entry_sp-0x58; the name
    * strings are re-read by announce_param_block_init / rec_u32_store
    * across the entry loop, so reserve the guest frame window
@@ -1624,6 +1638,14 @@ void player_name_entry(void)
   extern void br2_guest_frame_free(void);
   uint32_t pne_frm = br2_guest_frame(0x90);
   undefined1 *auStack_58 = (undefined1 *)guest_at(pne_frm + 0x38);
+  uint8_t *pne_slots = (uint8_t *)guest_at(pne_frm + 0x18);
+#define local_78   (*(uint32_t *)pne_slots)
+#define local_70   pne_slots[8]
+#define local_6f   pne_slots[9]
+#define local_6e   pne_slots[10]
+#define local_68   pne_slots[16]
+#define local_67   pne_slots[17]
+#define local_60   (pne_slots + 24)
   int local_50;
   undefined1 *local_4c;
   undefined1 *local_48;
@@ -1899,6 +1921,13 @@ LAB_801651e8:
   br2_guest_frame_free();
   return;
 }
+#undef local_78
+#undef local_70
+#undef local_6f
+#undef local_6e
+#undef local_68
+#undef local_67
+#undef local_60
 
 /* ======== 0x80165cb4 ======== */
 
@@ -13759,10 +13788,18 @@ int32_t job_state_query(void)
  * sp+0x10..0x37 passed to menu_stepper_state_advance. */
 int32_t save_flow_state_machine(void)
 {
-  uint8_t blk[0x28];
+  /* blk mirrors the guest sp+0x10..0x37 stepper descriptor handed to
+   * menu_stepper_state_advance; its +0xc callback is a u32 guest code
+   * address and generated callees receive a0 = guest_of(blk), which is
+   * 0 for a host stack array — back it with the real 0x68-byte guest
+   * frame (prologue addiu sp,-0x68), blk at sp+0x10 -> frm+0x10. */
+  extern uint32_t br2_guest_frame(uint32_t);
+  extern void br2_guest_frame_free(void);
+  uint32_t sff_frm = br2_guest_frame(0x68);
+  uint8_t *blk = (uint8_t *)guest_at(sff_frm + 0x10);
   int32_t s0 = 0;
   MW16(0x1f80008cu, 0);
-  memset(blk, 0, sizeof blk);
+  memset(blk, 0, 0x28);
   for (;;) {
     int do_checks = 0;
     if (s0 == 0) {
@@ -13827,7 +13864,7 @@ int32_t save_flow_state_machine(void)
       }
       frame_tick(0x1f800000);
     }
-    if (s0 == 0xff) return 1;
+    if (s0 == 0xff) { br2_guest_frame_free(); return 1; }
   }
 }
 
@@ -13836,12 +13873,19 @@ int32_t save_flow_state_machine(void)
  * 0x8016ee40) and tail uses display_cur_invalidate/5e88c + c374 mode 6. */
 int32_t options_state_machine(void)
 {
-  uint8_t blk[0x28];
+  /* Same guest-RAM requirement as save_flow_state_machine: blk is the
+   * sp+0x10..0x37 stepper descriptor whose +0xc callback reaches
+   * generated callees as a0 = guest_of(blk). Reserve the real 0x80-byte
+   * guest frame (prologue addiu sp,-0x80), blk at sp+0x10 -> frm+0x10. */
+  extern uint32_t br2_guest_frame(uint32_t);
+  extern void br2_guest_frame_free(void);
+  uint32_t osf_frm = br2_guest_frame(0x80);
+  uint8_t *blk = (uint8_t *)guest_at(osf_frm + 0x10);
   int32_t s0 = 0;
   int32_t s3 = 0;
   MW16(0x1f80008cu, 0);
   MW16(0x1f80008eu, 0);
-  memset(blk, 0, sizeof blk);
+  memset(blk, 0, 0x28);
   for (;;) {
     int do_checks = 0;
     if (s0 == 0) {
@@ -13907,7 +13951,7 @@ int32_t options_state_machine(void)
       }
       frame_tick(0x1f800000);
     }
-    if (s0 == 0xff) return s3;
+    if (s0 == 0xff) { br2_guest_frame_free(); return s3; }
   }
 }
 
@@ -13915,11 +13959,18 @@ int32_t options_state_machine(void)
  * fields differ, cb 0x80160a64, tail c374 mode 5, ret s2. */
 int32_t screen_flow_state_machine(void)
 {
-  uint8_t blk[0x28];
+  /* Same guest-RAM requirement as save_flow_state_machine: blk is the
+   * sp+0x10..0x37 stepper descriptor whose +0xc callback reaches
+   * generated callees as a0 = guest_of(blk). Reserve the real 0x70-byte
+   * guest frame (prologue addiu sp,-0x70), blk at sp+0x10 -> frm+0x10. */
+  extern uint32_t br2_guest_frame(uint32_t);
+  extern void br2_guest_frame_free(void);
+  uint32_t scf_frm = br2_guest_frame(0x70);
+  uint8_t *blk = (uint8_t *)guest_at(scf_frm + 0x10);
   int32_t s0 = 0;
   int32_t s2 = 0;
   MW16(0x1f80008cu, 0);
-  memset(blk, 0, sizeof blk);
+  memset(blk, 0, 0x28);
   for (;;) {
     int do_checks = 0;
     if (s0 == 0) {
@@ -13970,7 +14021,7 @@ int32_t screen_flow_state_machine(void)
       }
       frame_tick(0x1f800000);
     }
-    if (s0 == 0xff) return s2;
+    if (s0 == 0xff) { br2_guest_frame_free(); return s2; }
   }
 }
 

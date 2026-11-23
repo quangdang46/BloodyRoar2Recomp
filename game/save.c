@@ -297,7 +297,7 @@ extern void scroll_offset_accumulate();
 extern void print_mode_dispatch_b();
 extern int intro_movie_state();
 extern void deferred_cmd_post();
-extern int dialog_sel_dispatch(uint32_t,uint32_t);
+extern int dialog_sel_dispatch(intptr_t,uint32_t);
 extern void menu_stepper_state_advance();
 extern void hud_gauge_render();
 extern void empty_ret();
@@ -679,8 +679,10 @@ int memcard_file_flow(int param_1)
    * the +0xc callback is a u32 GUEST code address (fn_lookup), stored
    * as uint32_t — a host code* would write 8 bytes and clobber +0x10.
    * Ghidra split the block into scalars; local_XX names keep their sp
-   * offsets via macros (local_c0[i] == old local_X). */
-  uint8_t step_desc[0x24];
+   * offsets via macros (local_c0[i] == old local_X).
+   * The block is backed by the mff_frm guest frame (sp+0x38 -> frm+0x40)
+   * so guest_of(&local_c0) resolves for the stepper's call_guest path. */
+  uint8_t *step_desc;
 #define local_c0 (*(uint16_t *)&step_desc[0x00])
 #define local_be (*(uint8_t  *)&step_desc[0x02])
 #define local_bd (*(char     *)&step_desc[0x03])
@@ -724,6 +726,9 @@ int memcard_file_flow(int param_1)
    * entry_sp - 0x78, disasm-verified @0x8015f96c/0x8015fc68+) so one buffer
    * serves both. */
   acStack_78 = (char *)guest_at(mff_frm + 0x88);
+  /* stepper descriptor at sp+0x38 -> frm+0x40 (0x24 bytes, ends 0x64,
+   * clear of the acStack_78 string buffer at frm+0x88). */
+  step_desc = (uint8_t *)guest_at(mff_frm + 0x40);
   local_2c = acStack_78;
   local_34 = -1;
   local_30 = 0;
@@ -3437,13 +3442,18 @@ int menu_stepper_sm(uint8_t *s0)
 {
   extern int br2_bail_pending(void);
   uint8_t *s4 = (uint8_t *)guest_at(0x1f800000);
-  uint8_t desc[0x38];
+  /* The 0x38-byte stepper descriptor must be guest-resident: the +0xc
+   * callback (0x8015b190, unported) is dispatched via
+   * call_guest(cb, guest_of(desc), arg) — a host stack desc makes
+   * guest_of()==0 and the generated callee reads a0=0. */
+  uint8_t *desc;
   int32_t s1 = 0;
   int32_t s3 = 0;
 
-  memset(desc,0,sizeof(desc));
+  desc = (uint8_t *)guest_at(br2_guest_frame(0x40));
+  memset(desc,0,0x38);
   for (;;) {
-    if (br2_bail_pending()) return s3;
+    if (br2_bail_pending()) { br2_guest_frame_free(); return s3; }
     if (s1 == 1) goto body;
     if (s1 < 2) {
       if (s1 == 0) {
@@ -3534,6 +3544,7 @@ check:
     if (s1 != 0xff) continue;
     break;
   }
+  br2_guest_frame_free();
   return s3;
 }
 
@@ -3542,9 +3553,14 @@ check:
 extern void hud_text_b();
 extern int u16_counter_step_pad_a();
 extern void banner_stripe_scroll();
-int dialog_sel_dispatch(uint32_t a0,uint32_t a1)
+int dialog_sel_dispatch(intptr_t a0,uint32_t a1)
 {
-  uint8_t *s3 = (uint8_t *)guest_at(a0);
+  /* a0 is a guest address when reached via clean_table, but the menu
+   * stepper's fn_lookup leg passes the descriptor as a host pointer
+   * into guest RAM — br2_gaddr normalises both to the guest address. */
+  extern uint32_t br2_gaddr(const void *);
+  a0 = (intptr_t)br2_gaddr((const void *)a0);
+  uint8_t *s3 = (uint8_t *)guest_at((uint32_t)a0);
   uint8_t *s2 = (uint8_t *)guest_at(0x1f800000);
   int32_t s0 = 0;
   int32_t s1;
@@ -5528,9 +5544,14 @@ extern int u16_counter_step_pad_b();
 extern void round_announce_block();
 extern void mc_slot_action(uint8_t *,int);
 
-int dialog_sel_dispatch_wide(uint32_t a0,uint32_t a1)
+int dialog_sel_dispatch_wide(intptr_t a0,uint32_t a1)
 {
-  uint8_t *s4 = (uint8_t *)guest_at(a0);
+  /* Same dual ABI as dialog_sel_dispatch: guest addr via clean_table,
+   * host-into-guest desc pointer via the stepper fn_lookup leg.
+   * a0 is reused below as a guest address (a0+0xNN counter addrs). */
+  extern uint32_t br2_gaddr(const void *);
+  a0 = (intptr_t)br2_gaddr((const void *)a0);
+  uint8_t *s4 = (uint8_t *)guest_at((uint32_t)a0);
   uint8_t *g  = (uint8_t *)guest_at(0x1f800000);
   uint32_t ctx8 = *(uint32_t *)(g + 8);
   uint32_t ctxc = *(uint32_t *)(g + 0xc);
@@ -6877,9 +6898,14 @@ ret0:
    Dialog/message dispatcher. a0 = guest dialog-state ptr (fields
    lhu@+8, lbu/lh@+0x18..0x2a), a1 = selector (low16 dispatched).
    Sibling of dialog_sel_dispatch_wide. Status flag @0x801c15f0 (=0x801c11e0+0x410). */
-int dialog_msg_dispatch(uint32_t a0, uint32_t a1)
+int dialog_msg_dispatch(intptr_t a0, uint32_t a1)
 {
-  uint8_t *s3 = (uint8_t *)guest_at(a0);
+  /* Same dual ABI as dialog_sel_dispatch: guest addr via clean_table,
+   * host-into-guest desc pointer via the stepper fn_lookup leg.
+   * a0 is reused below as a guest address (a0+0xNN counter addrs). */
+  extern uint32_t br2_gaddr(const void *);
+  a0 = (intptr_t)br2_gaddr((const void *)a0);
+  uint8_t *s3 = (uint8_t *)guest_at((uint32_t)a0);
   uint8_t *g  = (uint8_t *)guest_at(0x1f800000);
   uint32_t ctx8 = *(uint32_t *)(g + 8);
   uint32_t ctxc = *(uint32_t *)(g + 0xc);
