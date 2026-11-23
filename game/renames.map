@@ -683,6 +683,7 @@
 8012e58c announce_param_block_init
 8012cdd8 scroll_offset_accumulate
 8012cd9c scroll_offset_set
+8012ce20 scroll_offset_y_get
 801274fc rgb_triple_store
 80156114 brightness_packet_send
 80136ddc hud_sprite_desc_init

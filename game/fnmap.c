@@ -1208,6 +1208,7 @@ extern void scroll_attr_100_update(void);
 extern void scroll_cfg_set(void);
 extern void scroll_offset_accumulate(void);
 extern void scroll_offset_set(void);
+extern void scroll_offset_y_get(void);
 extern void se_value_select(void);
 extern void seg_sphere_hit(void);
 extern void select_confirm_handler(void);
@@ -1491,6 +1492,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8012cc6c, (void *)print_dispatch_guest },
   { 0x8012cd9c, (void *)scroll_offset_set },
   { 0x8012cdd8, (void *)scroll_offset_accumulate },
+  { 0x8012ce20, (void *)scroll_offset_y_get },
   { 0x8012ce30, (void *)print_mode_dispatch_guest },
   { 0x8012ce30, (void *)print_mode_dispatch },
   { 0x8012cf64, (void *)print_dispatch_selfdesc_guest },

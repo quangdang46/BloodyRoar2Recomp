@@ -16366,6 +16366,16 @@ void scroll_offset_set(int32_t param_1,int32_t param_2)
   if (0 <= param_2) BA16(0x1f80037e) = (uint16_t)param_2;
 }
 
+/* scroll_offset_y_get — scroll-offset Y-component read leaf @0x8012ce20
+ * (4 insns, no prologue): v0 = lh(0x1f80037e); jr ra. 0x1f80037e is the
+ * second (param_2) half of the scroll-offset u16 pair @0x1f80037c/0x37e
+ * written by scroll_offset_set/accumulate. Hot leaf — many jal callers.
+ * Args unused. */
+int32_t scroll_offset_y_get(void)
+{
+  return _DAT_1f80037e;
+}
+
 /* rgb_triple_store — RGB triple store (two mirrored triples). */
 void rgb_triple_store(uint8_t param_1,uint8_t param_2,uint8_t param_3)
 {
