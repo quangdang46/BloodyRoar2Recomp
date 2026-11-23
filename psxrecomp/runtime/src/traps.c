@@ -306,6 +306,15 @@ typedef struct ThreadCtxRingEntry {
 PSX_BSS ThreadCtxRingEntry g_thread_ctx_ring[THREAD_CTX_RING_CAP];
 uint64_t g_thread_ctx_ring_seq = 0;
 
+/* bad-epc latch ring (psx_syscall case-3 manual TCB restore): each row is
+ * {seq, target_tcb(gpr5), tcb_ptr_addr=*(0x108), ctx_base=*tcb_ptr_addr,
+ *  save_area=ctx_base+8, saved_epc=*(save_area+128), cpu->pc, ra} captured
+ * when the committed resume-PC lands in the CD read-session data block
+ * 0x801BC000-0x801CD000 — the 0x801BCB98/0x801BCBA0 wild-dispatch family.
+ * 16-deep rolling ring; dumped by freeze_heartbeat. */
+uint64_t g_badctx_seq = 0;
+uint32_t g_badctx_ring[16][8];
+
 extern uint64_t s_frame_count;
 
 static void thread_ctx_ring_log(CPUState* cpu, uint32_t tcb,
@@ -1061,9 +1070,28 @@ int psx_syscall(CPUState* cpu, uint32_t code) {
             if (tcb_ptr_addr != 0) {
                 uint32_t save_area = cpu->read_word(tcb_ptr_addr);
                 if (save_area != 0) {
+                    uint32_t ctx_base = save_area;      /* *( *(0x108) )  */
                     save_area += 8; /* handler adds 8 before saving */
                     uint32_t saved_epc = cpu->read_word(save_area + 128);
                     uint32_t saved_sr  = cpu->read_word(save_area + 140);
+                    /* bad-epc latch: a CD read-session data address committed as
+                     * the thread resume-PC (proof/crash_801bcba0_dispatch_rootcause.md).
+                     * Record the full *(0x108)->ctx->+0x88 chain + writer-side
+                     * state at the exact commit so the freeze dump names the
+                     * guilty context block. */
+                    if (saved_epc >= 0x801BC000u && saved_epc < 0x801CD000u) {
+                        extern uint64_t g_badctx_seq; extern uint32_t g_badctx_ring[][8];
+                        uint32_t i = (uint32_t)(g_badctx_seq & 15u);
+                        g_badctx_ring[i][0] = (uint32_t)g_badctx_seq;
+                        g_badctx_ring[i][1] = cpu->gpr[5];      /* target_tcb */
+                        g_badctx_ring[i][2] = tcb_ptr_addr;     /* *(0x108) */
+                        g_badctx_ring[i][3] = ctx_base;         /* save_area raw */
+                        g_badctx_ring[i][4] = save_area;        /* +8 */
+                        g_badctx_ring[i][5] = saved_epc;        /* +0x88 read */
+                        g_badctx_ring[i][6] = cpu->pc;          /* syscall site */
+                        g_badctx_ring[i][7] = cpu->gpr[31];     /* ra */
+                        g_badctx_seq++;
+                    }
                     /* Restore ALL GPRs from TCB save area.
                      * Layout: offset 0 = $zero (skip), 4 = $at, ... 124 = $ra,
                      *         128 = EPC, 132 = HI, 136 = LO, 140 = SR. */

@@ -412,6 +412,57 @@ static void freeze_dump_device_state_json(FILE *f) {
         fputs("]},", f);
     }
 
+    /* badctxring: the exact context-restore commits that produced a bogus
+     * resume-PC in the CD data block (traps.c psx_syscall case-3). Each row
+     * = {seq, target_tcb, *(0x108), ctx_base, save_area, saved_epc, pc, ra}.
+     * This names the guilty context block (real TCB vs CD/SIO struct) at the
+     * precise commit, independent of store-ring wrap. */
+    {
+        extern uint64_t g_badctx_seq;
+        extern uint32_t g_badctx_ring[][8];
+        fputs("\"badctxring\":{\"seq\":\"0x", f);
+        fprintf(f, "%llX\",\"tail\":[", (unsigned long long)g_badctx_seq);
+        uint64_t total = g_badctx_seq;
+        uint32_t n = total < 16ull ? (uint32_t)total : 16u;
+        for (uint32_t j = 0; j < n; j++) {
+            if (j) fputs(",", f);
+            uint64_t ridx = total - 1 - j;
+            uint32_t *e = g_badctx_ring[ridx & 15u];
+            fprintf(f, "{\"seq\":%u,\"tcb\":\"0x%08X\",\"p108\":\"0x%08X\","
+                       "\"ctx\":\"0x%08X\",\"sv\":\"0x%08X\","
+                       "\"epc\":\"0x%08X\",\"pc\":\"0x%08X\",\"ra\":\"0x%08X\"}",
+                    e[0], e[1], e[2], e[3], e[4], e[5], e[6], e[7]);
+        }
+        fputs("]},", f);
+    }
+
+    /* ctxchain: the guest-kernel thread-context chain at freeze time.
+     * The 0x801BCB94/98/A0 wild-dispatch is a guest-kernel ChangeThread /
+     * ReturnFromException `jr $k0` committing *(ctx+0x88) as the resume PC
+     * (badctxring proved the host case-3 path is NOT the commit). This reads
+     * the live *(0x108)->TCBH->TCB->+0x88 chain from guest RAM so the dump
+     * names the resolved context base and whether it is a real TCB-table
+     * entry or a stack/CD-block address. TCB pointers are physical/low. */
+    {
+        uint32_t p108 = fd_guest_rd32(0x00000108u);   /* TCBH cell addr   */
+        uint32_t pcb  = p108 ? fd_guest_rd32(p108) : 0; /* current ctx/TCB */
+        uint32_t tb   = fd_guest_rd32(0x00000110u);   /* TCB table base   */
+        uint32_t ts   = fd_guest_rd32(0x00000114u);   /* TCB table size   */
+        uint32_t epc_slot = pcb ? (pcb + 0x88u) : 0;
+        uint32_t epc_val  = epc_slot ? fd_guest_rd32(epc_slot) : 0;
+        uint32_t tcb0 = pcb ? fd_guest_rd32(pcb) : 0;      /* ctx[0] state/next */
+        int in_table = 0;
+        if (pcb && tb && ts) {
+            uint32_t off = pcb - tb;
+            in_table = (off < ts) && ((off % 0xC0u) == 0u);
+        }
+        fprintf(f, "\"ctxchain\":{\"p108\":\"0x%08X\",\"pcb\":\"0x%08X\","
+                   "\"tcbbase\":\"0x%08X\",\"tcbsize\":\"0x%08X\","
+                   "\"intable\":%d,\"epcslot\":\"0x%08X\","
+                   "\"epcval\":\"0x%08X\",\"ctx0\":\"0x%08X\"},",
+                p108, pcb, tb, ts, in_table, epc_slot, epc_val, tcb0);
+    }
+
     /* pc=0 / null-jr $k0 wedge latches (interrupts.c): the kernel
      * ReturnFromException/ChangeThread at 0x29CC ends `jr $k0` where
      * k0 = *(current_TCB + 0x88) saved-PC. When that slot is 0 the restore
