@@ -5664,6 +5664,24 @@ static void handle_irq_state(int id, const char *json)
              dma_get_dpcr(), dma_get_dicr());
 }
 
+/* defer_state: expose the deferred cooperative IRQ/thread-switch latch
+ * (interrupts.c s_defer_switch_pending/target/from) plus the IRQ delivery
+ * counters, to tell whether a mid-exception ChangeThread was armed and then
+ * dropped (current_tcb != from_tcb) during a CD file-load window. */
+static void handle_defer_state(int id, const char *json)
+{
+    (void)json;
+    extern void psx_irq_delivery_diag(uint32_t out[12]);
+    uint32_t d[12];
+    psx_irq_delivery_diag(d);
+    send_fmt("{\"id\":%d,\"ok\":true,"
+             "\"i_stat\":\"0x%08X\",\"i_mask\":\"0x%08X\",\"in_exception\":%u,"
+             "\"defer_pending\":%u,\"defer_target\":\"0x%08X\",\"defer_from\":\"0x%08X\","
+             "\"dispatch_count\":%u,\"exception_entries\":%u,"
+             "\"vblank_raise\":%u,\"vblank_deliver\":%u,\"vblank_ack\":%u}",
+             id, d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7], d[9], d[10], d[11]);
+}
+
 /* vblank_rate: report the ONE cycle-paced VBlank authority's raise/deliver
  * counts, the (normally-off) GPUSTAT-poll fallback raise count, and the
  * per-frame GP0(E5) draw-offset-Y range/count. Used to confirm the guest is
@@ -14654,6 +14672,7 @@ static const CmdEntry s_commands[] = {
     { "gl_fbo_peek",       handle_gl_fbo_peek },
     { "gl_vram_diff",      handle_gl_vram_diff },
     { "irq_state",         handle_irq_state },
+    { "defer_state",       handle_defer_state },
     { "vblank_rate",       handle_vblank_rate },
     { "cycles_to_next_event", handle_cycles_to_next_event },
     { "timers_state",      handle_timers_state },
