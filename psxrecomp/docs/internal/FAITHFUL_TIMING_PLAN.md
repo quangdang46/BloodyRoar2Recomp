@@ -10646,3 +10646,17 @@ N+102 — x28 bug narrowed to a frame_tick CALLEE (4 agents, still unfixed):
   reset loop (menu.c:583/630) or select_screen_tick/battle_frame not
   returning. Versus reaches real combat (rounds resolve). Full writeup:
   proof/arcade_fight_entry_phase_analysis.md. Next: call_bail at stall.
+
+- **session CORRECTION (arcade wedge = runtime gaps, NOT game/*.c):**
+  Re-read prior proof docs — arcade fight-entry is a documented multi-wedge
+  chain already root-caused, and it is NOT a clean-port defect. Wedge A
+  (arcade_cpu_phase_seeding, H1 CONFIRMED): CPU opponent phase battle+0xb6
+  stays 0 because its select-confirm rides the pad-2 decode channel
+  (0x801befca->battle+0x6a edges); headless has no controller-2. Only
+  two-human versus (9b=2, seeds both slots) works; every CPU mode wedges
+  identically. Wedge B (cd_deferred_irq_starvation): after phases hit 0x300,
+  a battle-asset streaming read's DeliverEvent never reaches cd_result_wait_a
+  -> TestEvent spins -> battle_init never returns; CD deferred-coroutine
+  IRQ/event starvation in psxrecomp runtime. Clean C tree is faithful; the
+  blockers are faithful-core runtime (input-device model + CD coroutine
+  scheduling). Updated proof/arcade_fight_entry_phase_analysis.md.

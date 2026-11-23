@@ -108,15 +108,62 @@ Versus reaches `gs=8` and cycles `ph` through real fight phases
 `post_battle_dispatch`/`vs_confirm_b`). The `0x700` announce class appears
 arcade-specific; versus uses a different announce path.
 
-## 5. Next steps (fresh session)
+## 5. CORRECTED root cause — NOT a game/*.c bug (see prior proof docs)
 
-- Re-drive arcade to `gs=8 ph=0`; query **`call_bail`** — if
-  `g_br2_bail_unwinds`/`drops` climbs and `g_psx_call_bail` latches, the
-  stall is a CPS/bail starvation in the `sub=0→battle_frame` or
-  `select_screen_tick` path. `g_br2_bail_last_fn/ra` names the culprit.
-- If not bail: check `frame_divisor_get()` and which `sub` (`0x1f80009c`)
-  arcade selects; trace `select_screen_tick` return / `battle_frame` entry.
-- Expose `g_bce_cls`/`g_bce_calls` via debug server to confirm whether
-  `battle_config_eval` runs at all during arcade (it shouldn't until a
-  battle phase cell is live).
-- Do **not** fake the `0x700` write or the ph transition — faithful wait.
+This session's `gs=8 ph=0` observation is an *early* symptom of a
+**documented multi-wedge chain** already root-caused in prior sessions.
+The clean C source is faithful; the blockers are **runtime/device-model
+gaps**, not porting defects:
+
+**Wedge A — CPU-phase-seeding / missing controller-2 feed**
+(`proof/arcade_cpu_phase_seeding.md`, `arcade_cpu_phase_init.md`,
+`arcade_cpu_confirm.md` — H1 CONFIRMED, disasm-verified):
+
+- `mc_pad_button_handler` (`save.c:1732`) zeroes `+0xb4..+0xb7` each menu
+  frame, re-seeds only slots whose pad **edge** fires: `+0x68&0x840`→slot0
+  (P0/human), `+0x6a&0x840`→slot1 (P1/CPU).
+- `mc_slot_action` (`save.c:2003`) on `battle+0x9b`: case0 (arcade `9b=0`)
+  seeds ONLY the pressed slot `0x100`; **case2 (versus `9b=2`) seeds BOTH
+  `0x100`** — the only reason two-human versus works.
+- The CPU opponent's select-confirm is consumed through the **same pad-2
+  decode channel** as a physical controller-2 (`0x801befca`→`battle+0x6a`
+  edges→`bcfg_step_a`). **Headless has no controller-2** → `battle+0xb6`
+  stays `0` → `battle_state_init` gate `{0x100..0x400,0x700}` skips it →
+  CPU fighter never spawns.
+- Verified: every CPU mode wedges identically (`9b=0` arcade, `9b=1`
+  versus-CPU); only `9b=2` two-human versus works. Injecting slot-1 `press`
+  advances the CPU phase exactly like a physical pad-2.
+- **Verdict (prior docs): "not a clean-port mistranslation — the missing
+  controller-2 input feed for the CPU opponent. No faithful game/*.c phase
+  patch exists."**
+
+**Wedge B — CD deferred-coroutine / BIOS-event starvation**
+(`proof/cd_deferred_irq_starvation.md`, `cd_deferred_coroutine_starvation.md`,
+`arcade_residual_wedge.md`, `arcade_spawn_phase_starvation.md`):
+
+- After both phases reach `0x300` (via injected pad-2), a battle-asset
+  streaming read (`CDREAD 0x09`/`ReadN`) completes device-side but its
+  `DeliverEvent` never reaches the flag `cd_cmd_sequence`/`cd_result_wait_a`
+  (`0x801968CC`) polls → result bytes `0x801BCB25/26` stay `0` → `TestEvent`
+  (B0:11) spins ~7×/frame → `battle_init` never returns → `DAT1` frozen.
+- `cd_intc_dispatch` runs every frame but sees `i_stat=0` after the last
+  sector — the deferred coroutine that presents the command-complete IRQ is
+  starved. **psxrecomp runtime IRQ/coroutine scheduling bug** — fix in
+  `interrupts.c`/`cdrom.c`/BIOS event services, NOT `game/*.c`/`generated/`.
+- Doc: "single runtime bug underlying ALL remaining fidelity/gameplay gaps."
+
+## 6. Implications for the mission
+
+- The clean C tree is **not** the arcade blocker. Both wedges are faithful-
+  core runtime issues: (A) headless lacks the controller-2/CPU-input feed
+  the game expects on the pad-2 decode channel; (B) CD deferred-coroutine
+  IRQ/event delivery starves after streaming.
+- Versus works because `9b=2` seeds both phase slots from real pad-1+pad-2
+  input — no CPU feed needed, and (on current build) its CD path completes.
+- Next frontier is **runtime**, not porting: (A) emulate/feed the CPU
+  opponent's select-confirm through the pad-2 channel the way the game
+  expects (verify whether the game's own CPU-AI writes that buffer vs. a
+  genuine hardware controller-2 requirement); (B) fix the CD deferred-
+  coroutine resume so command-complete `DeliverEvent` reaches the waiter.
+- Do **not** fake the `0x700`/phase writes or inject CPU confirms in
+  `game/*.c` — that would mask the real device/runtime gaps.
