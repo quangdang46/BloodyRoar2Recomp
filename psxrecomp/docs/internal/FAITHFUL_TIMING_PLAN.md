@@ -10487,3 +10487,35 @@ N+102 — x28 bug narrowed to a frame_tick CALLEE (4 agents, still unfixed):
   proof/dat1_writer_audit.md resolved the battle_frame state-3 question:
   escape is async resource_rebuild_a(->5) via task_pools_tick; the ==3
   freeze is downstream of this CD stall.
+
+- **session (record-table wild-dispatch crash — IRQ-vs-main-stack race,
+  ack_delay faithful fix landed):** FAIL-FAST `addr=0x801BCB94
+  ra=0x801A1EC0 a0=0x801FF170` reproduces during battle CD streaming
+  (frame ~39-46k). Full chain pinned: CD IRQ → `cd_intc_dispatch`
+  (0x8019a8ec, IRQ stack 0x85xx, delegated) → `cd_cmd_queue_service`
+  (0x801a189c)/`cd_cmd_queue_drain` (0x801a38b8) → `dev_cmd_round_dispatch`
+  (0x801a1e84) on `rec=0x801FF080+head*240` → `cd_cmd_state_commit`
+  (0x801a3d84) reads `rec[70]` state → jalr `*(rec+0x14)` handler. Records
+  are FIXED 240-byte BSS slots the game places (`cd_bzero(0x801ff080,0x1e0)`),
+  shared CD/SIO/memcard; `a0=0x801FF170`=slot1. `recvalring` shows main-thread
+  `sw $sN` spills writing session ptrs (0x801BCB8C) onto rec+0x14 while
+  `cd_file_load_sm→mc_init_reset→cd_result_wait_a→cd_cmd_issue→cd_timer_read`
+  nests the main stack to `sp=0x801FF0F0` (INSIDE the record table). New
+  `spdepth` debug ring (fntrace.c) proves excursions are faithful per-frame
+  generated wait/poll nesting (same tcb=0x8FE0, clean unwind), NOT a leak —
+  `br2_call_generated` preserves guest sp exactly. **Faithful fix landed
+  faa6a76:** `exec_command` ran synchronously on the command-byte store so
+  HINTSTS/response FIFO were visible ~0 cycles after issue; DuckStation
+  `cdrom.cpp BeginCommand→GetAckDelayForCommand` schedules execution at
+  Init=80000 / disc=25000 / no-disc=15000 cycles. Now every command routes
+  through `queued_cmd` with `exec_due`; verified every command execs exactly
+  +25000 cycles after queue, game boots/streams normally. **Did NOT fix the
+  crash** — spdepth descent unchanged (structural depth = fixed in-flight CD
+  ops/file-load, not ACK-rate). Crash is a genuine RACE: IRQ record-dispatch
+  reads a record at the instant main-stack spills leave rec[70]=dispatch-state
+  + rec+0x14=session-ptr. On HW the same depth occurs, so the divergence is
+  IRQ/cooperative-switch TIMING — whether the CD-completion/callback work
+  that nests on the main stack should be deferred to the 0x801BDxxx coroutine
+  or the IRQ dispatch should never coincide with the corruption window.
+  A/B test `PSX_DEFER_SWITCH=0` (legacy immediate cooperative switch) launched
+  on :9795 to discriminate the deferred-switch frontier. proof/cd_cmd_ack_delay.md.
