@@ -174,3 +174,24 @@ legitimate nested delivery.
 4 slots to catch the exact writer (EPC-save vs thread-init vs wild
 store); `ctxchain.intable` on next crash distinguishes TCB-entry
 corruption from slot overwrite.
+
+## Update — IEc gating IS modeled (narrows the bug)
+
+`interrupts.c` faithfully models SR IEc: exception entry bit-shifts
+IE→IEp and clears IEc (`:1970`), IRQ delivery requires IEc(bit0)+IM2
+(`:1887-1900`), RFE restores IEc (`:2466-2468`). So the raw context-save
+window in func_000027AC/func_00002810 runs with IEc=0 → nested IRQ is
+architecturally blocked there, matching real HW. The subagent's
+"nesting during save" is therefore NOT the direct cause unless the
+guest legitimately re-enables IEc first.
+
+**Refined suspect:** `wvalring` shows BIOS stores of CD-pointer values
+INTO the TCB table (`pc=0xBFC207A8 -> 0x8FEC val=0x801C0000`,
+`pc=0x28D0 -> 0x9058`). `0xBFC207A8` is inside the exception-save
+function — consistent with the context base `k0` being clobbered so the
+register-save `sw`s scatter CD-pointer-valued regs across TCB slots,
+one landing on a `+0x88`. The clobber likely happens at a LEGITIMATE
+IEc-re-enable point or via thread-switch/syscall inside the handler
+window, not raw nested IRQ during the IEc=0 save. Next: catch the exact
+`k0`/`TCBH[0].entry` corruption — watch stores to `TCB[i]+0x88` and to
+the `*(*(0x108))` pointer itself.
