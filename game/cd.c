@@ -629,8 +629,77 @@ undefined4 cd_cmd_issue_async(byte param_1,int param_2)
  * computed mode and wedged the read retry loop. */
 undefined4 cd_read_open(int param_1)
 {
-  /* BISECT: temporarily re-delegated to isolate menu regression. */
-  return (undefined4)br2_call_generated(0x80198908u,(uint32_t)param_1,0,0,0);
+  /* Faithful port of 0x80198908-0x80198AE4 (36 blocks, all leaves clean).
+   * Guest frame is 0x28; the Setmode param byte lives at sp+0x10, i.e.
+   * fr+0x10 on a real br2_guest_frame — the earlier guest_sp()-0x18
+   * version resolved to a stale address and decoded mode 0x1C, wedging
+   * the read retry. fr+0x10 is a live guest address so generated
+   * cd_cmd_issue sees the same buffer the guest's sp+0x10 produces. */
+  uint32_t fr = br2_guest_frame(0x28);
+  uint8_t *p18;
+  undefined4 uVar2;
+  int iVar3;
+  uint32_t uVar1, uVar4;
+
+  mc_session(0);
+  mc_session_b(0);
+  if ((DAT_801bc7b4 & 1) != 0) {
+    cd_cmd_dispatch3(0);
+  }
+  uVar1 = cd_status_raw();
+  if ((uVar1 & 0x10) != 0) {
+    /* status bit4 early-return */
+    uVar1 = cd_timer_read(0xffffffff);
+    if ((uVar1 & 0x3f) == 0) {
+      cd_str_print(0x80125ae0);
+    }
+    cd_cmd_issue_async(1,0);
+    DAT_801bcb9c = cd_timer_read(0xffffffff);
+    DAT_801bcb94 = 0xffffffff;
+    br2_guest_frame_free();
+    return 0xffffffff;
+  }
+  if (param_1 != 0) {
+    cd_str_print(0x80125af8);
+    cd_mode_flag_set(9,0,0);
+    /* cd_mode_flag_set -> cd_cmd_issue treats param_2 as a guest address;
+     * cd_param_buf_get returns a host pointer into guest RAM. */
+    uVar2 = guest_of(cd_param_buf_get());
+    iVar3 = cd_mode_flag_set(2,(int)uVar2,0);
+    if (iVar3 == 0) {
+      /* mode_flag_set(2) fail */
+      DAT_801bcb94 = 0xffffffff;
+      br2_guest_frame_free();
+      return 0xffffffff;
+    }
+  }
+  cd_cmd_reset_wrap();
+  /* stack buf = sp+0x10 (frame 0x28) -> fr+0x10; verified
+   * `sb $s0,0x10($sp)` / `addiu $a1,$sp,0x10` in 0x80198908. */
+  p18 = (uint8_t *)guest_at(fr + 0x10);
+  p18[0] = (uint8_t)DAT_801bcb8c;
+  uVar4 = DAT_801bcb8c & 0xff;
+  uVar1 = cd_mode_byte_read();
+  if (((uVar4 != uVar1) || (param_1 != 0)) &&
+      (iVar3 = cd_mode_flag_set(0xe,(int)(fr + 0x10),0), iVar3 == 0)) {
+    /* mode_flag_set(0xe) fail */
+    DAT_801bcb94 = 0xffffffff;
+    br2_guest_frame_free();
+    return 0xffffffff;
+  }
+  DAT_801bcba0 = cd_stamp_to_sector(cd_param_buf_get());
+  mc_session_b(0x801985c4);
+  if ((DAT_801bc7b4 & 1) != 0) {
+    cd_cmd_dispatch3(0x80198838);
+  }
+  DAT_801bcb88 = DAT_801bcb84;
+  /* reached ReadN issue */
+  /* sector count bcb80 */
+  cd_cmd_issue_async(6,0);
+  DAT_801bcb94 = DAT_801bcb80;
+  DAT_801bcb98 = cd_timer_read(0xffffffff);
+  br2_guest_frame_free();
+  return DAT_801bcb94;
 }
 
 /* ======== 0x80198590 ======== */
@@ -3311,11 +3380,87 @@ void cd_delay_3c(void)
  * Disasm 0x8019b620-0x8019b7dc. */
 void cd_reg_stream_push(uint32_t a0,uint32_t a1)
 {
-  /* Delegate whole body to generated MIPS (0x8019b620). The clean port's
-   * CDMMIO16 busy-waits do not advance guest cycles, so the CD/SPU status
-   * handshake cannot progress during the spin (same contract as
-   * cd_reg_window_op). */
-  br2_call_generated(0x8019b620u,a0,a1,0,0);
+  /* Clean port of 0x8019b620-0x8019b7dc (re-verified against generated).
+   * b = *cell 0x801bdeb0 (reg block); dec8 = u16 @0x801bdec8 is staged
+   * into b+0x1a6 before the first cd_delay_3c. Outer loop: chunk =
+   * min(cnt,64) u16s copied src->b+0x1a8, +0x1aa pulsed ((h&~0x30)|0x10),
+   * delay, bounded poll for +0x1ae bit 0x400 clear (0xf01 cap ->
+   * printf 0x8018e550 fmt 0x80125be8 arg 0x80125c08), cnt -= chunk,
+   * two more delays. Tail: +0x1aa &= ~0x30, bounded poll for
+   * (+0x1ae & 0x7ff) == saved status (cap -> printf arg 0x80125c1c).
+   * Polls use br2_irq_poll so the CD device model advances guest cycles;
+   * printf goes through a real guest frame + call_guest4. */
+  extern uint32_t call_guest4(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+  extern CPUState *clean_cpu_state(void);
+  extern void br2_guest_frame_abandon(void);
+  uint32_t b    = br2_ld32(0x801bdeb0);
+  uint32_t dec8 = (uint32_t)br2_ld16(0x801bdec8);
+  uint32_t cnt  = a1;                          /* s1: byte count */
+  uint32_t src  = a0;                          /* s2: guest src ptr */
+  uint32_t want = (uint32_t)br2_ld16(b + 0x1ae) & 0x7ffu;  /* s3 */
+  uint32_t chunk, i, v1, h;
+
+  br2_st16(b + 0x1a6, (uint16_t)dec8);
+  cd_delay_3c();
+
+  while (cnt != 0) {
+    chunk = (cnt < 65u) ? cnt : 64u;
+    i = 0;
+    if ((int32_t)chunk > 0) {
+      do {
+        uint32_t w = (uint32_t)br2_ld16(src);
+        src += 2;
+        i += 2;
+        br2_st16(b + 0x1a8, (uint16_t)w);
+      } while (i < chunk);
+    }
+    h = (uint32_t)br2_ld16(b + 0x1aa);
+    br2_st16(b + 0x1aa, (uint16_t)((h & 0xffcfu) | 0x10u));
+    cd_delay_3c();
+    if (((uint32_t)br2_ld16(b + 0x1ae) & 0x400u) != 0) {
+      v1 = 0;
+      for (;;) {
+        v1++;
+        if (v1 >= 3841u) {
+          uint32_t fr = br2_guest_frame(0x28);
+          br2_st32(fr + 0x20, clean_cpu_state()->gpr[31]);
+          (void)call_guest4(0x8018e550, 0x80125be8u, 0x80125c08u, 0, 0);
+          if (br2_bail_pending()) { br2_guest_frame_abandon(); return; }
+          br2_guest_frame_free();
+          break;
+        }
+        b = br2_ld32(0x801bdeb0);
+        if (((uint32_t)br2_ld16(b + 0x1ae) & 0x400u) == 0) break;
+        if (br2_bail_pending()) return;
+        br2_irq_poll();
+      }
+    }
+    cnt -= chunk;
+    cd_delay_3c();
+    cd_delay_3c();
+    b = br2_ld32(0x801bdeb0);
+  }
+
+  h = (uint32_t)br2_ld16(b + 0x1aa);
+  br2_st16(b + 0x1aa, (uint16_t)(h & 0xffcfu));
+  if (((uint32_t)br2_ld16(b + 0x1ae) & 0x7ffu) != (want & 0xffffu)) {
+    v1 = 0;
+    for (;;) {
+      v1++;
+      if (v1 >= 3841u) {
+        uint32_t fr = br2_guest_frame(0x28);
+        br2_st32(fr + 0x20, clean_cpu_state()->gpr[31]);
+        (void)call_guest4(0x8018e550, 0x80125be8u, 0x80125c1cu, 0, 0);
+        if (br2_bail_pending()) { br2_guest_frame_abandon(); return; }
+        br2_guest_frame_free();
+        break;
+      }
+      b = br2_ld32(0x801bdeb0);
+      if (((uint32_t)br2_ld16(b + 0x1ae) & 0x7ffu) == (want & 0xffffu)) break;
+      if (br2_bail_pending()) return;
+      br2_irq_poll();
+    }
+  }
 }
 
 /* cd_reg_window_op — register-window op dispatch (ops 0..3), returns 0 or
@@ -5003,12 +5148,33 @@ void cd_response_pump(void)
 
 int cd_cmd_queue_load(uint32_t param_1,uint32_t param_2)
 {
-  /* IRQ/coroutine-boundary function: clean-C body cannot supply the
-   * live guest register file the deferred CD coroutine needs, and its
-   * MMIO busy-waits lack per-block interrupt checks. Delegate to the
-   * generated MIPS (behavioral oracle) — same contract as the other
-   * read-path functions already delegated. */
-  return (int)br2_call_generated(0x80192634u,param_1, param_2, 0, 0);
+  /* 0x80192634-0x80192710. DMA-descriptor arm for the cmd queue:
+   * P1=*cell8444: *P1 |= 0x08000000; P2=*cell8440: *P2 = 0;
+   * P3=*cell8438: *P3 = a0 + (a1<<2) - 4  (param_1 + param_2*4 - 4 —
+   * the descriptor END pointer derived from the caller's base arg,
+   * NOT from cell8440's pointer value); P4=*cell843C: *P4 = a1;
+   * *P2 = 0x11000002; cd_timeout_arm; then while *P2 & 0x01000000:
+   * cd_pump_watchdog (ret!=0 -> -1) + irq poll. Returns s0=a1
+   * (param_2); -1 on pump failure. */
+  uint32_t n = param_2;
+  uint32_t p;
+  p = DB32(0x801b8444);
+  br2_st32(p, br2_ld32(p) | 0x08000000u);
+  p = DB32(0x801b8440);
+  br2_st32(p, 0);
+  br2_st32(DB32(0x801b8438), param_1 + (n << 2) - 4u);
+  br2_st32(DB32(0x801b843c), n);
+  p = DB32(0x801b8440);
+  br2_st32(p, 0x11000002u);
+  cd_timeout_arm();
+  p = DB32(0x801b8440);
+  while ((br2_ld32(p) & 0x01000000u) != 0) {
+    if (cd_pump_watchdog() != 0) return -1;
+    if (br2_bail_pending()) return -1;
+    br2_irq_poll();
+    p = DB32(0x801b8440);
+  }
+  return (int)n;
 }
 
 /* ======== 0x801938c8 ======== */
@@ -5080,7 +5246,7 @@ void cd_prim_emit_a(uint32_t param_1,uint32_t param_2)
 
 /* ======== batch_mass8 ======== */
 
-extern void cd_queue_drain(void);
+extern uint32_t cd_queue_drain(void);
 
 /* ======== 0x80193574 ======== */
 
@@ -5997,25 +6163,52 @@ uint32_t cd_queue_b_read(void)
 /* cd_queue_drain — CD command-queue drain (0x801931c4-0x80193420).
  * Ring of 64 entries @0x801fae70, stride 96: +0 fn, +4 data, +8 arg;
  * head=0x801b8448, tail=0x801b844c (mod 64). Early-outs: hw status
- * bit 0x100000 set -> 1; empty queue -> epilogue only. Per entry:
+ * bit 0x01000000 set -> 1; empty queue -> epilogue only. Per entry:
  * reschedule via cd_dispatch_tbl4(2,0) when one slot remains and
  * 0x801b832c==0, busy-wait *0x801b8428 & 0x400000, dispatch
  * fn(data,arg), advance tail; loop while queue non-empty and status
  * bit clear. Epilogue restores cd_u16_swap_store save @0x801b8454, fires
  * pending cb @0x801b832c once (clearing flag @0x801b8328), returns
- * (head-tail)&0x3f (callers ignore it; declared void above). */
-void cd_queue_drain(void)
+ * 1 on the entry status early-out else (head-tail)&0x3f. */
+uint32_t cd_queue_drain(void)
 {
-  /* IRQ/coroutine-boundary function: the per-entry busy-wait on
-   * *0x801b8428 & 0x04000000 sits inside the CD-DMA completion window.
-   * A clean-C while+br2_irq_poll spin has no live guest resume PC, so the
-   * deferred CD coroutine (cd_ctx_save/cd_ctx_restore -> cd_intc_dispatch
-   * -> DeliverEvent) starves and the queued command's flush never runs --
-   * the observed stall where commands stage to the DMA regs but no
-   * 0x1F8018xx write ever follows. Delegate to the generated MIPS body,
-   * which supplies psx_check_interrupts_at at every basic-block boundary.
-   * Clean port preserved in git history. */
-  br2_call_generated(0x801931c4u, 0, 0, 0, 0);
+  /* Re-verified against generated 0x801931C4-0x80193420: status mask is
+   * 0x01000000 (lui 0x0100), not 0x100000 — earlier clean body had the
+   * wrong bit. Busy-waits now bail-poll like every other clean-C spin. */
+  if ((br2_ld32(DB32G(0x801b8434)) & 0x01000000u) != 0)
+    return 1;
+  DB32(0x801b8454) = cd_u16_swap_store(0);
+  if (DB32(0x801b8448) != DB32(0x801b844c)
+      && (br2_ld32(DB32G(0x801b8434)) & 0x01000000u) == 0) {
+    for (;;) {
+      uint32_t tail = DB32(0x801b844c);
+      uint32_t *e;
+      uint32_t fn, dp, arg;
+      if (((tail + 1) & 0x3f) == DB32(0x801b8448) && DB32(0x801b832c) == 0)
+        cd_dispatch_tbl4(2,0);
+      while ((br2_ld32(DB32G(0x801b8428)) & 0x04000000u) == 0) {
+        if (br2_bail_pending()) return 0;
+        br2_irq_poll();
+      }
+      e = (uint32_t *)guest_at(0x801fae70 + tail * 96);
+      fn = e[0]; dp = e[1]; arg = e[2];
+      call_guest(fn,dp,arg);          /* jalr fn: a0=data a1=arg */
+      DB32(0x801b844c) = (tail + 1) & 0x3f;
+      if (DB32(0x801b8448) == DB32(0x801b844c)) break;
+      if ((br2_ld32(DB32G(0x801b8434)) & 0x01000000u) != 0) break;
+    }
+  }
+  cd_u16_swap_store((uint16_t)DB32(0x801b8454));
+  if (DB32(0x801b8448) == DB32(0x801b844c)
+      && (br2_ld32(DB32G(0x801b8434)) & 0x01000000u) == 0
+      && DB32(0x801b8328) != 0) {
+    uint32_t cb = DB32(0x801b832c);
+    if (cb != 0) {
+      DB32(0x801b8328) = 0;
+      call_guest(cb,cb,0);            /* jalr a0: a0 = cb ptr */
+    }
+  }
+  return (DB32(0x801b8448) - DB32(0x801b844c)) & 0x3f;
 }
 
 /* cd_queue_push — CD command-queue push (0x80192f14-0x801931c0).
@@ -6025,22 +6218,66 @@ void cd_queue_drain(void)
  * pump + cd_queue_drain drain, -1 on pump failure. Saves hw reg via
  * cd_u16_swap_store(0) -> 0x801b8450, sets flag @0x801b8328. Direct-call
  * fast path when byte @0x801b8321==0, or queue empty + status bit
- * 0x100000 clear + @0x801b832c==0: busy-wait *0x801b8428 & 0x400000,
+ * 0x01000000 clear + @0x801b832c==0: busy-wait *0x801b8428 & 0x400000,
  * fn(data,arg), restore reg, return 0. Otherwise enqueue entry,
  * head=(head+1)&0x3f, restore reg, cd_queue_drain(), return depth. */
 int cd_queue_push(uint32_t a0_fn,uint32_t a1_data,uint32_t a2_count,
                  uint32_t a3_arg)
 {
-  /* IRQ/coroutine-boundary function: the direct-path busy-wait on
-   * *0x801b8428 & 0x04000000 and the cd_queue_drain() call below sit on
-   * the same CD-DMA completion window as cd_queue_drain. A clean-C
-   * while+br2_irq_poll spin cannot supply the live guest resume PC the
-   * deferred CD coroutine needs, so the flush/DeliverEvent is missed and
-   * the staged command never reaches the 0x1F8018xx registers. Delegate
-   * to the generated MIPS body (per-block psx_check_interrupts_at).
-   * Clean port preserved in git history. */
-  return (int)br2_call_generated(0x80192f14u, a0_fn, a1_data, a2_count,
-                                 a3_arg);
+  /* Re-verified against generated 0x80192F14-0x801931C0: status mask is
+   * 0x01000000 (lui 0x0100), not 0x100000. Busy-waits bail-poll. */
+  uint32_t head, tail, saved;
+  int direct;
+  cd_timeout_arm();
+  for (;;) {
+    head = DB32(0x801b8448);
+    tail = DB32(0x801b844c);
+    if (((head + 1) & 0x3f) != tail) break;  /* guest: addiu+andi 0x3f+beq */
+    if (cd_pump_watchdog() != 0) return -1;
+    cd_queue_drain();
+    if (br2_bail_pending()) return -1;
+    br2_irq_poll();
+  }
+  saved = cd_u16_swap_store(0);
+  DB32(0x801b8450) = saved;
+  DB32(0x801b8328) = 1;
+  direct = (DB8(0x801b8321) == 0);
+  if (!direct) {
+    head = DB32(0x801b8448);
+    tail = DB32(0x801b844c);
+    direct = (head == tail
+              && (br2_ld32(DB32G(0x801b8434)) & 0x01000000u) == 0
+              && DB32(0x801b832c) == 0);
+  }
+  if (direct) {
+    while ((br2_ld32(DB32G(0x801b8428)) & 0x04000000u) == 0) {
+      if (br2_bail_pending()) return -1;
+      br2_irq_poll();
+    }
+    call_guest(a0_fn,a1_data,a3_arg);  /* jalr s3: a0=s0 a1=s2 */
+    cd_u16_swap_store((uint16_t)DB32(0x801b8450));
+    return 0;
+  }
+  cd_dispatch_tbl4(2,0x801931c4);
+  head = DB32(0x801b8448);
+  {
+    uint32_t *e = (uint32_t *)guest_at(0x801fae70 + head * 96);
+    if (a2_count != 0) {
+      int32_t n = (int32_t)a2_count / 4;  /* sra-adjusted: trunc to 0 */
+      uint32_t *src = (uint32_t *)guest_at(a1_data);
+      int32_t i;
+      for (i = 0; i < n; i++) e[3 + i] = src[i];
+      e[1] = 0x801fae7c + head * 96;      /* payload ptr (guest addr) */
+    } else {
+      e[1] = a1_data;
+    }
+    e[2] = a3_arg;
+    e[0] = a0_fn;
+  }
+  DB32(0x801b8448) = (head + 1) & 0x3f;
+  cd_u16_swap_store((uint16_t)DB32(0x801b8450));
+  cd_queue_drain();
+  return (int)((DB32(0x801b8448) - DB32(0x801b844c)) & 0x3f);
 }
 
 /* cd_ctx_save — guest context save (0x8019ad90-0x8019adc8): stores
