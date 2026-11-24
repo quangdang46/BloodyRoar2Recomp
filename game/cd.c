@@ -3530,22 +3530,135 @@ void cd_reg_stream_push(uint32_t a0,uint32_t a1)
 }
 
 /* cd_reg_window_op — register-window op dispatch (ops 0..3), returns 0 or
- * -2 on poll timeout. Stack args a1/a2 land at saved slots; op2 shifts
- * a1 right by @0x801bdee8 into dec8/+0x1a6; op3 runs the sector-read
- * setup through MMIO cells 0x801bdeb4/8/c and cmd 0x801bdebc.
- * Disasm 0x8019b944-0x8019bbc0. */
+ * -2 on poll timeout. Faithful port of generated 0x8019B944 (16B thunk
+ * spilling a0-a3 to the caller arg-save area) + 0x8019B954 (624B / 32
+ * blocks, decoded insn-by-insn against generated/SLES_017.22_full_47.c).
+ *
+ * Frame: callee sp-=0x18, s0@16/ra@20/a0@24; s0=sp+28 points at the
+ * thunk-saved a1 (param a1), +4 more reaches saved a2 — reproduced as
+ * direct param use since nothing else consumes the spill slots.
+ *
+ * Dispatch (a2 is preset to 1 and doubles as the op-1 compare, the
+ * op-0 DF00 store value, and the op-3 "==1" test):
+ *   a0==0 -> op0  a0==1 -> op1  a0==2 -> op2  a0==3 -> op3  else ret 0.
+ *
+ * op1 (B9D0): sw 0 -> 0x801BDF00; poll lhu(blk+0x1a6)==lhu(0x801BDEC8)
+ *   (blk = *(u32*)0x801BDEB0, cached in-reg across the loop, cap 3841
+ *   -> -2); tail: v = lhu(blk2+0x1aa); sh (v & 0xFFCF) | 0x20.
+ * op0 (BA3C): identical except sw 1 -> 0x801BDF00 and tail sh v | 0x30.
+ * op2 (B9A4): v = a1_param >> (*(u32*)0x801BDED8 & 31) [srlv];
+ *   sh v -> 0x801BDEC8 and -> blk+0x1a6.
+ * op3 (BAA4): sel = (*(u32*)0x801BDF00 != 1) ? 32 : 48; poll
+ *   (lhu(blk+0x1aa) & 0x30) == sel (cap 3841 -> -2); then jal
+ *   cd_mmio_strobe_22 (DF00==1, ra=0x8019BB18) or cd_mmio_strobe_20
+ *   (!=1, ra=0x8019BB28); tail BB2C programs the sector-read cells:
+ *   *(u32*)0x801BDF04 = a1_param; v = (a2_param>>6) + ((a2_param&0x3f)!=0);
+ *   *(u32*)0x801BDF08 = v; *(u32*)*(u32*)0x801BDEB4 = a1_param;
+ *   *(u32*)*(u32*)0x801BDEB8 = (v<<16)|0x10; cmd = (DF00==1) ?
+ *   0x01000200 : 0x01000201; *(u32*)*(u32*)0x801BDEBC = cmd; ret 0.
+ *
+ * The three 3841-iteration waits are device-deadline polls on the SPU
+ * register window (blk resolves to the 0x1F801C00-family MMIO) — the
+ * proven br2_irq_poll quantum advances guest cycles so the CD deferred
+ * coroutine can move the status bits, exactly like the generated
+ * per-block psx_check_interrupts. blk-relative u16s go through
+ * CDMMIO16* (never guest_at — the block base is a hardware address);
+ * the 0x801BDExx cells are plain guest RAM via the br2_ldN/br2_stN
+ * accessors. */
 uint32_t cd_reg_window_op(uint32_t a0,uint32_t a1,uint32_t a2)
 {
-  /* The op0/op1/op3 bodies busy-wait on live CD drive status (CDMMIO16
-   * 0xd3/0xd5) with a 0xf01-iteration cap. br2_ld16 does NOT advance guest
-   * cycles, so the clean-C spin burns all 0xf01 polls in native time before
-   * the cycle-driven CD model can move the status bits — op3 can then return
-   * -2 without kicking the ch4 transfer its caller armed. Delegate the whole
-   * body to generated MIPS, whose per-instruction cycle accounting lets the CD
-   * model progress during the wait — same contract as the other IRQ/MMIO-
-   * boundary functions already delegated. */
-  uint32_t ret = br2_call_generated(0x8019b944u,a0,a1,a2,0);
-  return ret;
+  uint32_t fr = br2_guest_frame(0x18);
+  uint32_t blk, v, i, tgt, sel, cmd;
+  (void)fr;
+
+  if (a0 == 0u || a0 == 1u) {
+    /* op0/op1 — blocks B9D0/BA3C entry + B9F4..BA14/BA60..BA80 poll/tail.
+     * Guest order: blk=*(DEB0); tgt=lhu(DEC8); v=lhu(blk+0x1a6);
+     * sw (a0?1:0) -> DF00; if v!=tgt poll {i++; i>=3841 -> -2;
+     * irq_poll; v=lhu(blk+0x1a6)} while v!=tgt; then tail on blk2. */
+    blk = br2_ld32(0x801BDEB0u);
+    tgt = br2_ld16(0x801BDEC8u);              /* lhu — cell is RAM */
+    v = CDMMIO16(blk,0xd3);                   /* blk+0x1a6 */
+    br2_st32(0x801BDF00u, a0 == 0u ? 1u : 0u);/* sw a2reg(=1)/zero */
+    if (v != tgt) {
+      i = 0;
+      for (;;) {
+        i++;
+        if (i >= 3841u) { br2_guest_frame_free(); return 0xFFFFFFFEu; }
+        if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; }
+        br2_irq_poll();
+        v = CDMMIO16(blk,0xd3);
+        if (v == tgt) break;
+      }
+    }
+    blk = br2_ld32(0x801BDEB0u);              /* tail reloads the cell */
+    v = CDMMIO16(blk,0xd5);                   /* blk+0x1aa */
+    if (a0 == 1u) v = (v & 0xFFCFu) | 0x20u;  /* op1: (v&~0x30)|0x20 */
+    else         v = v | 0x30u;              /* op0: v|0x30 */
+    CDMMIO16_ST(blk,0xd5,(uint16_t)v);
+    br2_guest_frame_free();
+    return 0;
+  }
+
+  if (a0 == 2u) {
+    /* op2 — block B9A4: v = a1 >> (*(u32*)0x801BDED8 & 31); sh to
+     * 0x801BDEC8 and blk+0x1a6. */
+    uint32_t sh = br2_ld32(0x801BDED8u);
+    uint32_t w = a1 >> (sh & 31u);            /* srlv — logical */
+    blk = br2_ld32(0x801BDEB0u);
+    br2_st16(0x801BDEC8u, (uint16_t)w);
+    CDMMIO16_ST(blk,0xd3,(uint16_t)w);
+    br2_guest_frame_free();
+    return 0;
+  }
+
+  if (a0 == 3u) {
+    /* op3 — blocks BAA4/BABC/BAFC + strobe jal + BB2C tail. */
+    sel = (br2_ld32(0x801BDF00u) != 1u) ? 32u : 48u;
+    blk = br2_ld32(0x801BDEB0u);
+    v = CDMMIO16(blk,0xd5) & 0x30u;
+    if (v != sel) {
+      i = 0;
+      for (;;) {
+        i++;
+        if (i >= 3841u) { br2_guest_frame_free(); return 0xFFFFFFFEu; }
+        if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; }
+        br2_irq_poll();
+        v = CDMMIO16(blk,0xd5) & 0x30u;
+        if (v == sel) break;
+      }
+    }
+    /* jal cd_mmio_strobe_22 (DF00==1, ra=0x8019BB18) /
+     *     cd_mmio_strobe_20 (!=1, ra=0x8019BB28); a2 := 0x01000000. */
+    if (br2_ld32(0x801BDF00u) == 1u)
+      (void)cd_jal(0x8019BE50u, 0x8019BB18u);
+    else
+      (void)cd_jal(0x8019BE28u, 0x8019BB28u);
+    if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; }
+    /* BB2C tail — sector-read cell programming. */
+    br2_st32(0x801BDF04u, a1);
+    {
+      uint32_t q = a2 >> 6;
+      uint32_t r = a2 & 0x3Fu;
+      uint32_t w = q + (r != 0u ? 1u : 0u);
+      uint32_t p;
+      br2_st32(0x801BDF08u, w);
+      p = br2_ld32(0x801BDEB4u);
+      br2_st32(p, a1);                          /* sw a1 -> *DEB4 ptr */
+      v = br2_ld32(0x801BDF08u);
+      p = br2_ld32(0x801BDEB8u);
+      br2_st32(p, (v << 16) | 0x10u);
+      cmd = (br2_ld32(0x801BDF00u) == 1u) ? 0x01000200u : 0x01000201u;
+      p = br2_ld32(0x801BDEBCu);
+      br2_st32(p, cmd);
+    }
+    br2_guest_frame_free();
+    return 0;
+  }
+
+  /* invalid op — v0=0 epilogue (blocks B984/B99C). */
+  br2_guest_frame_free();
+  return 0;
 }
 
 /* cd_field_copy_gated — gated u16 field copy: fl = *(u32*)a0; fl==0 applies
