@@ -180,7 +180,32 @@ static void apply(uint8_t *ctrl, uint8_t *motion)
             GSU32(tbl, toffs[i]) += base;
     }
 
-    /* ---- .ACT once-relocation (ctrl+0xb == 0) ----
+    /* ---- .ACT cursor share/mirror (generated 0x8017A388-0x8017A3E8) --
+     * player==0 or char differs: v = lh[*motion+0xac]; cursor += 4;
+     * motion+0xa4 = v.  Same char: mirror foe's cursor, +0xa4 = lh[cur-4].
+     * NOTE: this runs BEFORE the .ACT once-relocation below — the guest
+     * reads the RAW (unrelocated) u32 at the cursor, so +0xa4 gets the
+     * .ACT field1 count, not a relocated pointer's low half. */
+    if (GU8(ctrl, FC_PLAYER) == 0 ||
+        (foe && GU8(ctrl, FC_CHAR) != GU8(foe, FC_CHAR))) {
+        uint32_t cur_g = GU32(motion, MO_AC);
+        uint8_t *cur = (uint8_t *)guest_at(cur_g);
+        uint16_t v = GU16(cur, 0);
+        GSU32(motion, MO_AC) = cur_g + 4;
+        GSU16(motion, 0xa4) = v;
+    } else if (foe) {
+        uint8_t *fm = ctrl_motion(foe);
+        if (fm) {
+            uint32_t cur = GU32(fm, MO_AC);
+            GSU32(motion, MO_AC) = cur;
+            GSU16(motion, 0xa4) = GU16(guest_at(cur - 4), 0);
+        }
+    }
+
+    /* ---- .ACT once-relocation (ctrl+0xb == 0), generated
+     * 0x8017A3F8-0x8017A4C4 — runs AFTER the cursor-share and walks
+     * from the POST-share motion+0xac (act_base+8 = sec_off[0]), so
+     * the field1 count u32 at act_base+4 is never relocated.
      * motion+0xac: u32 list, -1 term, positive += base+size (.ACT base)
      * motion+0xa8: u32 list, -1 term, positive += pa8_g-8 (list-relative) */
     if (GU8(ctrl, FC_FLAGB) == 0) {
@@ -199,25 +224,6 @@ static void apply(uint8_t *ctrl, uint8_t *motion)
                 if ((int32_t)*p > 0) *p = (uint32_t)((int32_t)*p + (int32_t)pa8_g - 8);
                 p++;
             } while (*p != 0xffffffffu);
-        }
-    }
-
-    /* ---- .ACT cursor share/mirror (generated 0x8017A388-0x8017A3E8) --
-     * player==0 or char differs: v = lh[*motion+0xac]; cursor += 4;
-     * motion+0xa4 = v.  Same char: mirror foe's cursor, +0xa4 = lh[cur-4]. */
-    if (GU8(ctrl, FC_PLAYER) == 0 ||
-        (foe && GU8(ctrl, FC_CHAR) != GU8(foe, FC_CHAR))) {
-        uint32_t cur_g = GU32(motion, MO_AC);
-        uint8_t *cur = (uint8_t *)guest_at(cur_g);
-        uint16_t v = GU16(cur, 0);
-        GSU32(motion, MO_AC) = cur_g + 4;
-        GSU16(motion, 0xa4) = v;
-    } else if (foe) {
-        uint8_t *fm = ctrl_motion(foe);
-        if (fm) {
-            uint32_t cur = GU32(fm, MO_AC);
-            GSU32(motion, MO_AC) = cur;
-            GSU16(motion, 0xa4) = GU16(guest_at(cur - 4), 0);
         }
     }
 
