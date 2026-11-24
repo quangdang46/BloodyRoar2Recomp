@@ -100,7 +100,11 @@ static void apply(uint8_t *ctrl, uint8_t *motion)
     uint32_t vm_g  = GU32(ctrl, FC_VM);
     uint8_t *vm  = vm_g ? (uint8_t *)guest_at(vm_g) : NULL;
     uint32_t foe_g = GU32(ctrl, FC_FOE);
-    uint8_t *foe = foe_g ? (uint8_t *)guest_at(foe_g) : NULL;
+    /* The guest never NULL-checks foe: lbu 3(foe) at 0x8017A0C4 and
+     * 0x8017A3A0 reads guest addr 3 when FC_FOE==0, and the mirror tail
+     * lw's *(foe+0x38)+0xac unconditionally. guest_at(0) is the arena
+     * base, so dereferencing it reproduces those low-memory reads. */
+    uint8_t *foe = (uint8_t *)guest_at(foe_g);
     uint32_t base = ani_g;                   /* guest pointer value   */
 
     uint32_t *h = (uint32_t *)ani;            /* [0]=size [1..8]=sec  */
@@ -117,8 +121,9 @@ static void apply(uint8_t *ctrl, uint8_t *motion)
     uint32_t *s6 = (uint32_t *)(ani + h[7]);  /* S6: 4 u32 -> +0xe8.. */
     for (int i = 0; i < 4; i++) GSU32(motion, 0xe8 + i * 4) = s6[i];
 
-    /* motion+4 = u32 inside S1 indexed by FOE char id. */
-    if (foe) GSU32(motion, 0x04) = GU32(ani + h[2] + GU8(foe, FC_CHAR) * 4, 0);
+    /* motion+4 = u32 inside S1 indexed by FOE char id (0x8017A0BC-0x8017A0DC;
+     * foe char read is unconditional — foe==0 indexes by guest byte @3). */
+    GSU32(motion, 0x04) = GU32(ani + h[2] + GU8(foe, FC_CHAR) * 4, 0);
 
     /* ---- post-header param block at blob+0x24 (u32-indexed) ---- */
     /* piVar7[9..0xe] = blob +0x24..0x38 */
@@ -183,23 +188,25 @@ static void apply(uint8_t *ctrl, uint8_t *motion)
     /* ---- .ACT cursor share/mirror (generated 0x8017A388-0x8017A3E8) --
      * player==0 or char differs: v = lh[*motion+0xac]; cursor += 4;
      * motion+0xa4 = v.  Same char: mirror foe's cursor, +0xa4 = lh[cur-4].
-     * NOTE: this runs BEFORE the .ACT once-relocation below — the guest
-     * reads the RAW (unrelocated) u32 at the cursor, so +0xa4 gets the
-     * .ACT field1 count, not a relocated pointer's low half. */
+     * The foe char compare reads foe+3 unconditionally (foe==0 -> guest
+     * byte @3), so there is NO skip path: cursor-share always runs and
+     * the once-relocation below always starts at act_base+8 (self) —
+     * the field1 count u32 at act_base+4 must stay raw. */
     if (GU8(ctrl, FC_PLAYER) == 0 ||
-        (foe && GU8(ctrl, FC_CHAR) != GU8(foe, FC_CHAR))) {
+        GU8(ctrl, FC_CHAR) != GU8(foe, FC_CHAR)) {
         uint32_t cur_g = GU32(motion, MO_AC);
         uint8_t *cur = (uint8_t *)guest_at(cur_g);
         uint16_t v = GU16(cur, 0);
         GSU32(motion, MO_AC) = cur_g + 4;
         GSU16(motion, 0xa4) = v;
-    } else if (foe) {
-        uint8_t *fm = ctrl_motion(foe);
-        if (fm) {
-            uint32_t cur = GU32(fm, MO_AC);
-            GSU32(motion, MO_AC) = cur;
-            GSU16(motion, 0xa4) = GU16(guest_at(cur - 4), 0);
-        }
+    } else {
+        /* mirror: guest lw's *(foe+0x38) then +0xac with no NULL checks
+         * (0x8017A3B0-0x8017A3CC); guest_at keeps every deref valid. */
+        uint32_t fm_g = GU32(foe, FC_MOTION);
+        uint8_t *fm = (uint8_t *)guest_at(fm_g);
+        uint32_t cur = GU32(fm, MO_AC);
+        GSU32(motion, MO_AC) = cur;
+        GSU16(motion, 0xa4) = GU16((uint8_t *)guest_at(cur - 4), 0);
     }
 
     /* ---- .ACT once-relocation (ctrl+0xb == 0), generated
