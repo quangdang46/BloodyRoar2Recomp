@@ -4193,7 +4193,7 @@ static uint32_t cd_gpu_call(uint32_t off,uint32_t a0,uint32_t a1,
 }
 extern void gpu_rect_bounds_dbg(undefined4,short *);
 extern int cd_pump_watchdog(void);
-extern void cd_dma_xfer_start(uint32_t,uint32_t,uint32_t);
+extern uint32_t cd_dma_xfer_start(uint32_t,uint32_t,uint32_t);
 extern void FUN_8019ad80(uint32_t);
 
 /* ======== 0x80191714 ======== */
@@ -4439,15 +4439,33 @@ uint32_t cd_state_blk_restore(void)
 
 /* ======== 0x8019b89c ======== */
 
-void cd_dma_xfer_start(uint32_t param_1,uint32_t param_2,uint32_t param_3)
+uint32_t cd_dma_xfer_start(uint32_t param_1,uint32_t param_2,uint32_t param_3)
 {
-  /* Delegate whole body to generated MIPS (0x8019b89c). The prior clean port
-   * mistranslated a store as DB32(0x801bdea0)=1 — that address is
-   * cd_ext_init_once's one-shot init guard, not a DMA flag (generated writes
-   * 0x801bdf00 there). Setting it early made cd_ext_init_once skip the CD
-   * OpenEvent(0xF0000009) so TestEvent(0) spun forever. */
-  br2_call_generated(0x8019b89cu,param_1, param_2, param_3, 0);
-  return;
+  /* Faithful port of generated 0x8019B89C. Straight-line MMIO sequence with
+   * three calls to already-clean leaves (cd_delay_3c x2, cd_mmio_strobe_22);
+   * no loops, no BIOS/kernel boundary, no gpr snapshot, no indirect dispatch.
+   * Body mirrors the runtime-verified mid-entry port cd_dma_xfer_start_b
+   * (0x8019B8A4), plus the prologue's blk = *0x801bdeb0 load and the
+   * arg->s0/s1 renaming (a0->s1, a1->sh, a2->s0). The sll $s0,16 sits in the
+   * delay slot of the second cd_delay_3c jal — before the callee runs — but
+   * $s0 is callee-saved and never an arg, so placement is unobservable.
+   * Returns $v0 = 1 (li v0,1 @0x8019B920 is the last v0 write). */
+  uint32_t blk = DB32G(0x801bdeb0);
+  uint32_t s0;
+  CDMMIO16_ST(blk,0xd3,(uint16_t)param_2);          /* sh a1,0x1a6(blk) */
+  s0 = param_3;
+  cd_delay_3c();
+  blk = DB32G(0x801bdeb0);
+  CDMMIO16_ST(blk,0xd5,(uint16_t)(CDMMIO16(blk,0xd5) | 0x30));
+  s0 <<= 16;
+  cd_delay_3c();
+  cd_mmio_strobe_22();
+  s0 |= 0x10;
+  br2_st32(DB32G(0x801bdeb4), param_1);            /* sw s1,0(*0x801bdeb4) */
+  br2_st32(DB32G(0x801bdeb8), s0);                 /* sw s0,0(*0x801bdeb8) */
+  DB32(0x801bdf00) = 1;                            /* DMA callback-arm cell */
+  br2_st32(DB32G(0x801bdebc), 0x01000200);         /* sw a0=0x01000200 */
+  return 1;
 }
 
 /* ======== batch_mass5 ======== */
