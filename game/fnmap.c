@@ -133,12 +133,32 @@ extern void bcfg_step_d(void);
 extern void bios_call_a0(void);
 extern void bios_kobj_tramp(void);
 extern void bios_table_tramp(void);
+extern void bios_tramp_a033(void);
 extern void bios_tramp_a044(void);
 extern void bios_tramp_a070(void);
+extern void bios_tramp_a072(void);
+extern void bios_tramp_a0ab(void);
+extern void bios_tramp_a0ac(void);
+extern void bios_tramp_b008(void);
+extern void bios_tramp_b009(void);
 extern void bios_tramp_b00a(void);
+extern void bios_tramp_b00c(void);
+extern void bios_tramp_b012(void);
+extern void bios_tramp_b013(void);
+extern void bios_tramp_b014(void);
 extern void bios_tramp_b015(void);
 extern void bios_tramp_b017(void);
+extern void bios_tramp_b018(void);
+extern void bios_tramp_b019(void);
+extern void bios_tramp_b032(void);
+extern void bios_tramp_b033(void);
+extern void bios_tramp_b034(void);
 extern void bios_tramp_b035(void);
+extern void bios_tramp_b036(void);
+extern void bios_tramp_b042(void);
+extern void bios_tramp_b043(void);
+extern void bios_tramp_b045(void);
+extern void bios_tramp_b04c(void);
 extern void bios_tramp_c002(void);
 extern void bios_tramp_c003(void);
 extern void bitfield_or_write(void);
@@ -261,6 +281,7 @@ extern void cd_dma_xfer_start_b(void);
 extern void cd_drain_dispatch(void);
 extern void cd_ext_init_once(void);
 extern void cd_ext_table_init(void);
+extern void cd_extent_len(void);
 extern void cd_field_copy_gated(void);
 extern void cd_file_header_copy(void);
 extern void cd_file_load_sm(void);
@@ -322,8 +343,10 @@ extern void cd_mc_state_machine(void);
 extern void cd_mmio_bit_wait(void);
 extern void cd_mmio_strobe_20(void);
 extern void cd_mmio_strobe_22(void);
+extern void cd_mode_apply(void);
 extern void cd_mode_apply_deferred(void);
 extern void cd_mode_apply_seq(void);
+extern void cd_mode_apply_wrap(void);
 extern void cd_mode_byte_read(void);
 extern void cd_mode_flag_set(void);
 extern void cd_mode_reset_seq(void);
@@ -476,6 +499,8 @@ extern void corner_emit_cond_offset(void);
 extern void corner_emit_variant(void);
 extern void countdown_display_sm(void);
 extern void counter_step_pad_c(void);
+extern void cpu_critical_enter(void);
+extern void cpu_critical_exit(void);
 extern void cpu_regs_snapshot(void);
 extern void ctr_clamp(void);
 extern void ctx_flag_set(void);
@@ -2286,6 +2311,8 @@ const Br2FnEnt fn_table[] = {
   { 0x8018df00, (void *)rotmat2_pair_build },
   { 0x8018e028, (void *)angle_vec_build },
   { 0x8018e2f0, (void *)guest_bzero },
+  { 0x8018e300, (void *)cpu_critical_enter },
+  { 0x8018e310, (void *)cpu_critical_exit },
   { 0x8018e3bc, (void *)u16_lut_lookup },
   { 0x8018e3f4, (void *)lut_mask_or },
   { 0x8018e424, (void *)lut_mask_clear },
@@ -2533,6 +2560,9 @@ const Br2FnEnt fn_table[] = {
   { 0x8019a20c, (void *)cd_crit_c003 },
   { 0x8019a244, (void *)cd_hdr_clear_fixed },
   { 0x8019a24c, (void *)cd_hdr_clear },
+  { 0x8019a2f0, (void *)bios_tramp_b012 },
+  { 0x8019a300, (void *)bios_tramp_b013 },
+  { 0x8019a310, (void *)bios_tramp_b014 },
   { 0x8019a320, (void *)bios_tramp_b015 },
   { 0x8019a330, (void *)bios_tramp_c002 },
   { 0x8019a340, (void *)bios_tramp_c003 },
@@ -2562,7 +2592,10 @@ const Br2FnEnt fn_table[] = {
   { 0x8019ac04, (void *)cd_state_blk_restore },
   { 0x8019aca4, (void *)cd_state_blk_save },
   { 0x8019ad1c, (void *)cd_guest_zero32_a },
+  { 0x8019ad48, (void *)bios_tramp_a072 },
   { 0x8019ad60, (void *)bios_tramp_b017 },
+  { 0x8019ad70, (void *)bios_tramp_b018 },
+  { 0x8019ad80, (void *)bios_tramp_b019 },
   { 0x8019ad90, (void *)cd_ctx_save },
   { 0x8019ae10, (void *)cd_init_stage_a },
   { 0x8019ae68, (void *)cd_cb8_dispatch },
@@ -2578,6 +2611,8 @@ const Br2FnEnt fn_table[] = {
   { 0x8019b220, (void *)cd_chan_boot_init },
   { 0x8019b308, (void *)cd_ext_init_once },
   { 0x8019b310, (void *)cd_dma_chan_init },
+  { 0x8019b380, (void *)bios_tramp_b008 },
+  { 0x8019b390, (void *)bios_tramp_b00c },
   { 0x8019b3a0, (void *)cd_chan_reg_init },
   { 0x8019b620, (void *)cd_reg_stream_push },
   { 0x8019b7e8, (void *)cd_dma_chan_reset },
@@ -2624,6 +2659,9 @@ const Br2FnEnt fn_table[] = {
   { 0x8019e330, (void *)cd_mode_apply_seq },
   { 0x8019e39c, (void *)cd_mode_reset_seq },
   { 0x8019e3d4, (void *)ret_zero_f },
+  { 0x8019e400, (void *)cd_mode_apply },
+  { 0x8019e410, (void *)cd_mode_apply_wrap },
+  { 0x8019e420, (void *)bios_tramp_b04c },
   { 0x8019e680, (void *)cd_chan_block_boot },
   { 0x8019e6f0, (void *)cd_block7_init },
   { 0x8019e730, (void *)cd_job_start_e },
@@ -2646,8 +2684,17 @@ const Br2FnEnt fn_table[] = {
   { 0x801a00bc, (void *)cd_status_map },
   { 0x801a0110, (void *)chan_job_pump },
   { 0x801a01bc, (void *)cd_file_header_copy },
+  { 0x801a0220, (void *)bios_tramp_b032 },
+  { 0x801a0230, (void *)bios_tramp_b033 },
+  { 0x801a0240, (void *)bios_tramp_b034 },
+  { 0x801a0250, (void *)bios_tramp_b036 },
+  { 0x801a0260, (void *)bios_tramp_b043 },
+  { 0x801a0270, (void *)bios_tramp_b045 },
   { 0x801a0280, (void *)cd_file_record_lookup },
+  { 0x801a0520, (void *)bios_tramp_b042 },
   { 0x801a0530, (void *)cd_strcat_guard },
+  { 0x801a05e0, (void *)bios_tramp_a0ab },
+  { 0x801a05f0, (void *)bios_tramp_a0ac },
   { 0x801a0600, (void *)cd_svc_4e },
   { 0x801a0610, (void *)cd_svc_50 },
   { 0x801a0620, (void *)cd_svc_dual },
@@ -2669,6 +2716,7 @@ const Br2FnEnt fn_table[] = {
   { 0x801a1070, (void *)cd_queue_b_status },
   { 0x801a1148, (void *)cd_queue_a_read },
   { 0x801a1184, (void *)cd_queue_b_read },
+  { 0x801a11c0, (void *)bios_tramp_b009 },
   { 0x801a11e4, (void *)cd_xchg_fefb4 },
   { 0x801a11f8, (void *)cd_xchg_fefb8 },
   { 0x801a120c, (void *)cd_tbl4_dispatch3 },
@@ -2693,6 +2741,7 @@ const Br2FnEnt fn_table[] = {
   { 0x801a248c, (void *)dev_stat_bit1_wait },
   { 0x801a24c0, (void *)cd_ctx_set_28_34 },
   { 0x801a24dc, (void *)op_tag_dispatch },
+  { 0x801a27d0, (void *)cd_extent_len },
   { 0x801a2d7c, (void *)cd_ctx_cmd_submit },
   { 0x801a2de4, (void *)cd_ctx_cb_4d },
   { 0x801a2e00, (void *)cd_ctx_cb_scan },
@@ -2741,6 +2790,7 @@ const Br2FnEnt fn_table[] = {
   { 0x801a51d0, (void *)op_dbg_dump_tbl },
   { 0x801a536c, (void *)op_node_count_flagged },
   { 0x801a53e8, (void *)op_dbg_dump_ring },
+  { 0x801a54c8, (void *)bios_tramp_a033 },
   { 0x801a5bd0, (void *)guard_callee_a0 },
   { 0x801a5d90, (void *)guard_callee_b0 },
   { 0x801a5f50, (void *)guard_callee_c0 },

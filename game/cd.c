@@ -1592,6 +1592,73 @@ void bios_tramp_c003(uint32_t a0,uint32_t a1) { bios_svc(0xc0,3,a0,a1); }
  * Sole caller: cd_mode_apply_deferred's chunk loop (jal, ra=0x8019CF48). */
 uint32_t bios_tramp_b00a(uint32_t a0,uint32_t a1) { return bios_svc(0xb0,0x0a,a0,a1); }
 
+/* ---- BIOS kernel-vector trampolines (16B `li t2,<vec>; jr t2; li t1,<svc>`) ----
+ * Guest shape (e.g. 0x8019B380): t2 = vector (0xB0/0xA0), t1 = service, jr t2
+ * with the caller's a0-a3 forwarded untouched; BIOS $v0 comes back in $v0.
+ * bios_svc6 re-publishes t0/t1/t2 and runs the real BIOS through svc_call, so
+ * the four-arg forward below is exact for both the clean_table wrapper
+ * (gpr[4..7] marshalled) and direct C callers. */
+uint32_t bios_tramp_b008(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3) { return bios_svc6(0xb0,0x08,a0,a1,a2,a3); }
+uint32_t bios_tramp_b009(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3) { return bios_svc6(0xb0,0x09,a0,a1,a2,a3); }
+uint32_t bios_tramp_b00c(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3) { return bios_svc6(0xb0,0x0c,a0,a1,a2,a3); }
+uint32_t bios_tramp_b012(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3) { return bios_svc6(0xb0,0x12,a0,a1,a2,a3); }
+uint32_t bios_tramp_b013(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3) { return bios_svc6(0xb0,0x13,a0,a1,a2,a3); }
+uint32_t bios_tramp_b014(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3) { return bios_svc6(0xb0,0x14,a0,a1,a2,a3); }
+uint32_t bios_tramp_b018(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3) { return bios_svc6(0xb0,0x18,a0,a1,a2,a3); }
+uint32_t bios_tramp_b019(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3) { return bios_svc6(0xb0,0x19,a0,a1,a2,a3); }
+uint32_t bios_tramp_b032(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3) { return bios_svc6(0xb0,0x32,a0,a1,a2,a3); }
+uint32_t bios_tramp_b033(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3) { return bios_svc6(0xb0,0x33,a0,a1,a2,a3); }
+uint32_t bios_tramp_b034(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3) { return bios_svc6(0xb0,0x34,a0,a1,a2,a3); }
+uint32_t bios_tramp_b036(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3) { return bios_svc6(0xb0,0x36,a0,a1,a2,a3); }
+uint32_t bios_tramp_b042(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3) { return bios_svc6(0xb0,0x42,a0,a1,a2,a3); }
+uint32_t bios_tramp_b043(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3) { return bios_svc6(0xb0,0x43,a0,a1,a2,a3); }
+uint32_t bios_tramp_b045(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3) { return bios_svc6(0xb0,0x45,a0,a1,a2,a3); }
+uint32_t bios_tramp_b04c(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3) { return bios_svc6(0xb0,0x4c,a0,a1,a2,a3); }
+uint32_t bios_tramp_a033(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3) { return bios_svc6(0xa0,0x33,a0,a1,a2,a3); }
+uint32_t bios_tramp_a072(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3) { return bios_svc6(0xa0,0x72,a0,a1,a2,a3); }
+uint32_t bios_tramp_a0ab(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3) { return bios_svc6(0xa0,0xab,a0,a1,a2,a3); }
+uint32_t bios_tramp_a0ac(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3) { return bios_svc6(0xa0,0xac,a0,a1,a2,a3); }
+
+/* cd_mode_apply / cd_mode_apply_wrap — 0x8019E400 / 0x8019E410, B0 svc
+ * 0x4A / 0x4B trampolines (renames.map canonical names; bind.c carries weak
+ * C-call fallbacks for the standalone selftest). */
+uint32_t cd_mode_apply(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3) { return bios_svc6(0xb0,0x4a,a0,a1,a2,a3); }
+uint32_t cd_mode_apply_wrap(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3) { return bios_svc6(0xb0,0x4b,a0,a1,a2,a3); }
+
+/* cpu_critical_enter / cpu_critical_exit — 0x8018E300 / 0x8018E310:
+ * `li a0,1|2; syscall 0` (EnterCriticalSection/DI, ExitCriticalSection/EI).
+ * Routed through the real psx_syscall via the clean_bridge FUN_ wrappers so
+ * COP0 SR IEc/IM[2] change exactly as generated. DI returns old IEc in $v0;
+ * EI preserves $v0 — both return the live gpr[2] for faithfulness. */
+uint32_t cpu_critical_enter(void)
+{
+  CPUState *c = clean_cpu_state();
+  FUN_8018e300();
+  return c ? c->gpr[2] : 0;
+}
+uint32_t cpu_critical_exit(uint32_t a0)
+{
+  CPUState *c = clean_cpu_state();
+  (void)a0;
+  FUN_8018e310(0);
+  return c ? c->gpr[2] : 0;
+}
+
+/* cd_extent_len — 0x801A27D0: leaf span calc over a ctx/extent record.
+ * a0 = record guest addr:
+ *   v0 = lbu(rec+0xE3); a1 = lbu(rec+0xE9); a0 = lhu(rec+0xEC)
+ *   ret = (((v0+1)>>1)<<2) + ((((a1*5+3)&0xFFC)+4)) + a0
+ * Decode verified insn-for-insn against generated full_49. */
+uint32_t cd_extent_len(uint32_t a0)
+{
+  uint32_t b3  = br2_ld8(a0 + 0xe3u);
+  uint32_t b9  = br2_ld8(a0 + 0xe9u);
+  uint32_t hec = br2_ld16(a0 + 0xecu);
+  uint32_t t   = ((b3 + 1u) >> 1) << 2;
+  uint32_t u   = (((b9 * 5u) + 3u) & 0xffcu) + 4u;
+  return t + u + hec;
+}
+
 /* cd_subchan_table_install — CD sub-channel table install: crit-in, stores code
  * addrs 0x801aa244/0x801aa2ac into dispatch cells @0x801feb44/48,
  * clears @0x801feb40/@0x801feb4c, then
@@ -1960,7 +2027,7 @@ void cd_chan_block_init(int32_t a0,uint32_t a1)
 
 /* cd_mode_reset_seq — 99fe0(0), 9e410, 8e310 sequence wrapper.
  * Disasm 0x8019e39c-0x8019e3cc. */
-extern void cd_mode_apply_wrap(void);
+extern uint32_t cd_mode_apply_wrap(uint32_t,uint32_t,uint32_t,uint32_t);
 void cd_mode_reset_seq(void)
 {
   /* c784bf1 clean port of 0x8019e39c regressed versus boot (same
@@ -1990,7 +2057,7 @@ void cd_dir_reset(void)
 /* cd_mode_apply_seq — CD mode apply: 99fe0(0), 8e300, v0=99ffc();
  * if !v0 arg=0; 9e400(arg), 9e5cc, 9e4c8, 9e55c, 8e310(0).
  * Disasm 0x8019e330-0x8019e394. */
-extern void cd_mode_apply(uint32_t);
+extern uint32_t cd_mode_apply(uint32_t,uint32_t,uint32_t,uint32_t);
 extern void FUN_8019e5cc(void);
 extern void FUN_8019e4c8(void);
 extern void FUN_8019e55c(void);
