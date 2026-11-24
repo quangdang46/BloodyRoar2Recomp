@@ -304,5 +304,53 @@ phase). "It compiled" and "it returns plausible values" are not done.
   starvation.md`) — distinct from the solved frame_tick wedge; needs its
   own look. Versus/arcade/attract/options are the verified-good modes.
 
+### Session update 3 (coverage + faithfulness sweep — ROW5/ATTRACT fixed)
+
+- **Mode sweep re-verified** (`proof/post_d11b51d_mode_verify.md`):
+  VERSUS, ARCADE, row1, OPTIONS, ATTRACT all WORK on current master.
+  ATTRACT reached 184k+ frames no freeze (f1d0894/800e54c foe-NULL +
+  guard-removal fixes hold). ROW5 select now completes (records +0x24
+  promote 0→1→2). **Only ROW3 `(1,4)` still wedges.**
+- **Faithfulness bug class — defensive guards the guest lacks.** Clean
+  ports added NULL/zero guards on guest pointers/values the generated MIPS
+  dereferences unconditionally → divergence → freezes. `guest_at(x)` NEVER
+  returns NULL (guest addr 0 = arena base = guest RAM[0]). Two sub-patterns:
+  dead `if(guest_at()==NULL)` (benign) vs LIVE `x ? guest_at(x) : NULL` /
+  `if(x==0)return` on a guest-address u32 the guest derefs anyway (BUG).
+  Audited ani/cd/gfx/resolve/fight/game — all suspects verified FAITHFUL
+  (guest libc string/memset fns DO have real arg null-checks; confirmed vs
+  generated). The foe-NULL `.ACT` corruption (f1d0894) was the real instance.
+- **Faithfulness bug class — MIPS `div` vs C `/`.** Guest `div` by zero
+  yields LO=(dividend<0)?1:-1, NO trap; C `/` SIGFPEs. Added
+  `mips_div_lo(num,den)` helper in `game/resolve.c` and applied at
+  `keyframe_blend_apply` (@0x801859F8) + 8 `trig_*` sites (divisor
+  `field24+4000`). Idiom elsewhere: `den!=0 ? n/den : (n>=0?-1:1)`.
+  Verify each `/` site against generated before assuming it's a guest div.
+- **ROW5 wedge FIXED `d11b51d`**: `fighter_spawn_setup` mode-3 had inverted
+  compare — guest `beq +0x24==0 → merge`, clean had `!=0`. Pad-bit merge
+  never ran → rec+0x24 never seeded → select deadlock.
+- **ROW3 wedge — NOT a mistranslation** (`proof/hud_state_machine_row3_
+  wedge.md`): `hud_state_machine(1)` port is instruction-faithful. Stall =
+  `sp48 = (sp24[+0xe4] >= sp20[+0xe4])` = per-side round-win counters
+  (3v2 from prior CPU/demo rounds) → sp48=0 → poll forever. Upstream state
+  divergence. Also fixed a real polarity bug `dcbb43c` (save.c row-select
+  `sp58` inverse at 4 sites — doesn't fix wedge). Next: trace `g+0xb4/+0xb6`
+  writers between last round and `DAT1=0x0b` arming (if guest re-arms both
+  sides → ph=0x300+ → sp20 picks loser block → tally proceeds), or Beetle
+  A/B for ground truth (oracle binary not in this repo).
+- **Ports landed `1d252aa`**: `cd_dir_scan` (0x80197E28 — replaces live
+  call_guest on media-rescan path), `gte_rtps3_sxy_pack_ctrl` (0x80194F40
+  GTE leaf), `op_tag_F_set`/`op_tag_K_set`/`op_node_rebucket` (0x801A
+  task/record region). clean_table ~1347 wrappers.
+- **Port frontier now small** (per `a587b873` manifest): remaining =
+  0x801A GTE cluster (54F8/5698/5878/5A0C — lwc2/swC2 bulk loops),
+  0x801A2808/0x801A2EC8 (jalr fn-ptr via 0x801BE79C), delegates
+  0x8013C9CC/0x801587C0 (large CPS emitters), 0x801A0520/05E0 (BIOS
+  trampolines — §4 risk, skip). Easy surface essentially exhausted.
+- **⚠ subagent_explore can't see generated/** (gitignored) — its NULL-guard
+  audit produced false-positive UNCERTAINs; only foreground/general agents
+  or direct work can diff vs generated. Prefer foreground for anything
+  needing generated verification.
+
 **Bottom line: parallel subagents, clean named C in `game/`, generated only
 as a temporary faithful fallback, runtime-verified, one unified source.**
