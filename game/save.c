@@ -10081,27 +10081,105 @@ int op_node_alloc_init(int32_t a0,int32_t a1,int32_t a2,int32_t a3,uint32_t a4)
   return (int)r;
 }
 
-/* dev_byte_xfer — SIO/memory-card byte send/recv (0x801a1f74). a0 = host ctx
- * (fields +0x3c buf ptr, +0x40 alt ptr, +0x44/+0x45 counters); a1 = byte
- * (-2 = query/flush path). Globals: dev struct @0x801be7e4 -> SIO regs
- * 0x1F801040 (byte buf, +4 status u16, +0xe u16 cmd, +0xa u16), ctrl
- * @0x801be7e0 -> 0x1F801070 (u32 status bit7/bit2).
- *
- * The device pointers are MMIO addresses (SIO_DATA / I_STAT), and the body
- * busy-polls hardware FIFO status in `while` loops whose exit depends on
- * interrupt/DMA-driven state changes. Clean-C cannot express that faithfully:
- * mem_ptr() routes 0x1F801xxx to the open-bus mirror (guest_at has no MMIO
- * backing) and a raw spin never yields to psx_check_interrupts_at, so the
- * status bits would never update -> livelock. Same contract as
- * cd_timer_read/cd_mc_state_machine/cd_channel_init: delegate the whole body
- * to generated MIPS so the recompiled SIO accesses and CPS interrupt checks
- * run verbatim. a0 arrives as a host pointer into guest RAM; guest_of()
- * recovers the guest address the generated prologue expects in $a0. */
+/* dev_byte_xfer — SIO/memory-card byte send/recv (0x801a1f74, 528B/20
+ * blocks). a0 = host ctx (fields +0x3c buf guest ptr, +0x40 alt guest
+ * ptr, +0x44/+0x45 counters — ctx itself is a host pointer into guest
+ * RAM); a1 = byte (-2 = query/flush path). Globals: dev ptr cell
+ * 0x801BE7E4 -> SIO regs 0x1F801040 (byte buf +0, u16 status +4,
+ * u16 cmd +0xe, u16 +0xa), ctrl ptr cell 0x801BE7E0 -> 0x1F801070
+ * (u32 status bit7). All register-block accesses go through
+ * br2_ldN/br2_stN — the cells resolve to 0x1F801xxx hardware, not
+ * guest RAM (same contract as dev_cmd_seq/dev_cmd_commit). The three
+ * status polls are hardware-timed, so each pass runs br2_irq_poll +
+ * br2_bail_pending exactly like the generated body's per-block
+ * psx_check_interrupts_at. The 0x1F801120 FIFO-count read +
+ * 0x801FF260/64 base/limit stores at 0x801A2054-0x801A2078 are the
+ * inlined fifo_space_sample(0x1AE) — identical order (hw read, lim
+ * store, count store), so the clean helper is called directly.
+ * Disasm generated/SLES_017.22_full_49.c:0x801A1F74-0x801A2180. */
+extern void fifo_space_sample(uint32_t);
 int32_t dev_byte_xfer(uint8_t *a0,int32_t a1)
 {
-  return (int32_t)br2_call_generated(0x801a1f74u,
-                                     guest_of((const void *)a0),
-                                     (uint32_t)a1, 0, 0);
+  extern int br2_bail_pending(void);
+  uint8_t *s0 = a0;
+  uint32_t dev, ctrl, buf;
+  int32_t s1, s2;
+  if (a1 < 0) {
+    /* query/flush path 0x801A1F98-0x801A2018. */
+    dev = br2_ld32(0x801be7e4u);                    /* 0x801A1F9C */
+    buf = *(uint32_t *)(s0 + 0x40);                 /* 0x801A1FA0 alt ptr */
+    s2 = (int32_t)br2_ld8(dev);                     /* 0x801A1FA4 lbu dev[0] */
+    s0[0x44] = 0xff;                                /* 0x801A1FAC */
+    s0[0x45] = 1;                                   /* 0x801A1FB4 */
+    br2_st8(buf, (uint8_t)~a1);                     /* 0x801A1FBC *alt=~a1 */
+    dev = br2_ld32(0x801be7e4u);                    /* 0x801A1FC4 reload */
+    /* 0x801A1FE0: wait while (lhu(dev+4) & 1) == 0. */
+    while ((br2_ld16(dev + 4u) & 1u) == 0) {
+      if (br2_bail_pending()) return -20;
+      br2_irq_poll();
+    }
+    /* 0x801A1FF4/0x801A1FFC: retry fifo_space_check until nonzero. */
+    while (fifo_space_check() == 0) {
+      if (br2_bail_pending()) return -20;
+      br2_irq_poll();
+    }
+    dev = br2_ld32(0x801be7e4u);                    /* 0x801A2008 reload */
+    br2_st8(dev, (uint8_t)~a1);                     /* 0x801A2010 dev[0]=~a1 */
+    return s2;                                      /* v0=s2 @0x801A2018 */
+  }
+  /* send path 0x801A201C-0x801A2164. */
+  buf = *(uint32_t *)(s0 + 0x3c);                   /* 0x801A201C buf ptr */
+  s1 = 0x88;                                        /* 0x801A2034 li s1,0x88 */
+  /* 0x801A2024-0x801A204C: nib = lbu(buf)>>4; s1=0x22 iff nib==8 and
+   * ctx->f44 >= 9 (sltiu), else stays 0x88. */
+  if (((int32_t)br2_ld8(buf) >> 4) == 8 &&
+      (uint32_t)(uint8_t)s0[0x44] >= 9u)
+    s1 = 0x22;
+  fifo_space_sample(0x1aeu);                        /* 0x801A2054-78 inline */
+  dev = br2_ld32(0x801be7e4u);                      /* 0x801A205C */
+  /* 0x801A2088: wait while (lhu(dev+4) & 2) == 0. */
+  while ((br2_ld16(dev + 4u) & 2u) == 0) {
+    if (br2_bail_pending()) return -20;
+    br2_irq_poll();
+  }
+  /* 0x801A209C: dev/ctrl reload, capture dev[0], program cmd reg. */
+  dev  = br2_ld32(0x801be7e4u);                     /* 0x801A20A0 */
+  ctrl = br2_ld32(0x801be7e0u);                     /* 0x801A20A8 */
+  s2 = (int32_t)br2_ld8(dev);                       /* 0x801A20AC lbu dev[0] */
+  br2_st16(dev + 0xeu, (uint16_t)s1);               /* 0x801A20B0 sh cmd */
+  /* 0x801A20B4-0x801A20C4: if ((*ctrl & 0x80) == 0) enter the
+   * fifo_space_check/ctrl-bit7 wait loop 0x801A20C8-0x801A20F4. */
+  if ((br2_ld32(ctrl) & 0x80u) == 0) {
+    for (;;) {
+      if (fifo_space_check() != 0) return -20;      /* 0x801A20D0 -> -0x14 */
+      ctrl = br2_ld32(0x801be7e0u);                 /* 0x801A20DC reload */
+      if ((br2_ld32(ctrl) & 0x80u) != 0) break;     /* 0x801A20F0 */
+      if (br2_bail_pending()) return -20;
+      br2_irq_poll();
+    }
+  }
+  /* 0x801A20F8: dev[0] = a1 (delay-slot byte store ahead of the s1 test). */
+  dev = br2_ld32(0x801be7e4u);                      /* 0x801A20FC reload */
+  br2_st8(dev, (uint8_t)a1);                        /* 0x801A2104 */
+  if (s1 == 0x22) {                                 /* 0x801A210C-0x801A2114 */
+    ctrl = br2_ld32(0x801be7e0u);                   /* 0x801A2118 */
+    dev  = br2_ld32(0x801be7e4u);                   /* 0x801A2120 */
+    br2_st32(ctrl, 0xffffff7fu);                    /* 0x801A2124 *ctrl */
+    br2_st16(dev + 0xau,
+             (uint16_t)(br2_ld16(dev + 0xau) | 0x10u)); /* 0x801A2128-134 */
+  }
+  /* 0x801A2138-0x801A2164: advance counters; buf[c44] = old dev[0]. */
+  {
+    uint32_t c45 = (uint32_t)(uint8_t)s0[0x45];    /* 0x801A2138 lbu */
+    uint32_t c44 = (uint32_t)(uint8_t)s0[0x44];    /* 0x801A213C lbu */
+    buf = *(uint32_t *)(s0 + 0x3c);                 /* 0x801A2140 reload */
+    s0[0x45] = (uint8_t)(c45 + 1u);                 /* 0x801A214C */
+    br2_st8(buf + c44, (uint8_t)s2);                /* 0x801A2150 sb s2 */
+    /* 0x801A2154: guest RELOADS s0[0x44] after the buf store — the sb
+     * above can alias s0+0x44, so do not reuse the stale c44. */
+    s0[0x44] = (uint8_t)((uint32_t)(uint8_t)s0[0x44] + 1u); /* 0x801A2160 */
+  }
+  return s2;                                        /* v0=s2 @0x801A2164 */
 }
 
 /* fifo_space_sample — FIFO space baseline/limit setter (0x801A4210).
