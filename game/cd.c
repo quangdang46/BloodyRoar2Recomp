@@ -4483,9 +4483,33 @@ int cd_crit_c003(void)
 
 int cd_chan_init_trio(void)
 {
-  /* c784bf1 clean port of 0x8019a12c regressed versus boot — delegate
-   * whole body to generated MIPS (BIOS trampoline boundary). */
-  return (int)br2_call_generated(0x8019a12cu,0,0,0,0);
+  /* Faithful port of generated 0x8019A12C (48B / 4 blocks, decoded
+   * insn-by-insn against generated/SLES_017.22_full_46.c:21253):
+   *   frame 0x18 (sp-=0x18, ra saved at sp+0x10 — dead slot, kept via
+   *   br2_guest_frame so nested generated calls see the same $sp)
+   *   jal 0x8019A300  (B0/0x13 CD channel init tramp)   ra=0x8019A13C
+   *   a0=0 (delay slot), jal bios_table_tramp 0x80199FE0 (B0/0x5b)
+   *                                                    ra=0x8019A144
+   *   jal 0x8019A350  (kobj method tail-call via *0x801FEB58)
+   *                                                    ra=0x8019A14C
+   *   epilogue: lw ra,16(sp); sp+=0x18; v0=1; jr ra.
+   * All three jals are BIOS-adjacent thin tramps — exactly the class the
+   * delegation rule permits as jal TARGETS — driven through cd_jal so
+   * a0-a3 keep callee leftovers like the guest. c784bf1's regression was
+   * a reconstructed guest frame around the BIOS boundary; this port has
+   * no BIOS/kernel work in its OWN flow, only trampoline jals. */
+  uint32_t fr = br2_guest_frame(0x18);
+  CPUState *cpu = clean_cpu_state();
+  (void)fr;
+  (void)cd_jal(0x8019A300u, 0x8019A13Cu);          /* jal B0/0x13 tramp */
+  if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; }
+  cpu->gpr[4] = 0;                                 /* move a0,$0 delay slot */
+  (void)cd_jal(0x80199FE0u, 0x8019A144u);          /* jal bios_table_tramp */
+  if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; }
+  (void)cd_jal(0x8019A350u, 0x8019A14Cu);          /* jal kobj method tramp */
+  if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; }
+  br2_guest_frame_free();
+  return 1;
 }
 
 /* ======== 0x80191978 ======== */
