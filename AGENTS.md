@@ -413,6 +413,39 @@ phase). "It compiled" and "it returns plausible values" are not done.
   (ret_zero_e, impact_fx_update). That is a runtime/recompiler capability
   gap (§4) — coroutine-ification or a scheduler-aware clean-call bridge —
   NOT incremental porting.
+- **★ PROFILE-DRIVEN PORTING — the methodology that broke the delegate
+  wall (session 6, through `98c0bc7`)**: static delegate-triage was
+  exhausted, but profiling the fn_entry ring revealed the REAL hot
+  generated surface is **unnamed per-frame game functions**, not the CD
+  delegates. Recipe (reusable):
+  1. Launch `PSX_FN_FILTER="0x80010000:0x80200000" ./build/BloodyRoar2_Recompiled
+     --disc "disc/…cue" --debug-port P --headless --game game_1pad.toml`.
+     `func_addr` is GUEST VIRTUAL (0x80xxxxxx), NOT physical — the
+     `0x0000xxxx`/`0x1FCxxxxx` entries are kernel/BIOS (always-generated
+     faithful core, ignore them; game range is 0x80010000–0x80200000).
+  2. Drive gameplay: `python3 tools/versus_fight_mash.py P` (versus combat
+     = heaviest per-frame coverage) or let attract play.
+  3. `{"cmd":"fn_stats"}` then `{"cmd":"fn_entry_dump","seq_lo":S,"seq_hi":E,"count":N}`
+     in chunks; aggregate `func` counts → hot-body histogram. Group
+     `br2eu_psx_alias_body_*` entries (CPS aliases share one body).
+  4. The ring holds last 262144 entries — kernel/BIOS IRQ noise floods it,
+     so the game-range FN_FILTER is REQUIRED or you get 0 game hits.
+  - Clean-ported fns are INVISIBLE to fn_entry (host C doesn't fire
+    debug_server_log_call_entry) — so the histogram shows ONLY generated.
+  - **Result**: ported ~50 hot unnamed fns this way — the whole
+    `0x80187xxx`/`0x80188xxx` GTE `prim_emit_*`/`prim_cull*_emit` family,
+    `prim_tri_batch_rtpt`, `desc_frag_*`, `op_dword_*`, `dev_byte_xfer`,
+    `cd_seek_complete_poll`, `bios_tramp_b00a`, etc. Per-frame render/
+    combat/game code is now CLEAN; the only hot generated left is the
+    CD coroutine/BIOS/fn-ptr §4 class + `_start` boot artifact (2048×2
+    `0x80126188/94` = BSS-clear loop, boot-only, ignore) + `0x801AA1E4`
+    callback aliases (0x801AA244/2AC = mid-function alternate entries,
+    need RECOMPILER alternate-entry support, not clean_table).
+  - **Remaining generated hot = §4 CD coroutine**: cd_response_process
+    (1372B/70blk), cd_response_pump (has jalr×2 + BIOS jals), cd_intc_
+    dispatch, cd_read_step_cb, vsync_wait_n, cd_file_load_sm, cd_read_poll,
+    cd_result_wait_a/b, cd_cmd_issue, cd_read_issue/setup, cd_file_read_seq.
+    All confirmed coroutine-resume/BIOS-frame/fn-ptr — the §4 wall.
 - **`cd_read_poll` PROVEN MUST-DELEGATE** (`4d347c4`,
   `proof/cd_read_poll_wedge.md`): faithful CFG port wedged the CD file-load
   path twice — the clean poll can't give the INT2 completion coroutine a
