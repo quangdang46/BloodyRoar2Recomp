@@ -353,24 +353,35 @@ phase). "It compiled" and "it returns plausible values" are not done.
   0x801A2808/0x801A2EC8 (jalr fn-ptr via 0x801BE79C), delegates
   0x8013C9CC/0x801587C0 (large CPS emitters), 0x801A0520/05E0 (BIOS
   trampolines — §4 risk, skip). Easy surface essentially exhausted.
-- **CD delegate frontier EXHAUSTED (session 4, `51d7bf0`)**: all ~55 pure
-  `br2_call_generated` delegates were classified by TWO independent agents —
-  every one is legitimately delegated (BIOS/kernel boundary, hardware
-  status-poll loop, live `cpu->gpr` coroutine snapshot, or fn-ptr-table
-  jalr). Even the "portable" re-check candidates (cd_read_open,
-  cd_file_read_seq, cd_channel_table_init, cd_mode_apply_deferred,
-  cd_reg_bit40_ctrl, cd_reg_stream_push, cd_queue_push/drain,
-  cd_response_pump) all have a hard disqualifier on inspection. The named
-  portable surface is DONE. Verified CD ports landed: cd_dma_xfer_start,
-  cd_read_finish_cb, cd_mode_flag_set, cd_file_record_lookup.
-- **The real "generated→zero" blocker is §4, not porting effort**: the ~50
-  remaining delegates need clean C to express live-guest-register +
-  per-block `psx_check_interrupts_at` + BIOS-frame `$ra`/`a0-a3` forwarding.
-  That is a runtime/recompiler capability gap. CD register-block poll family
-  (`cd_reg_bit40_ctrl`/`cd_reg_stream_push`/`cd_reg_window_op`) specifically
-  needs a runtime experiment: does `br2_irq_poll` inside a bounded poll let
-  the CD model advance the `*(0x801BDED0)` CDMMIO16 status bits? If yes, a
-  class of polls becomes portable; if no, they stay delegated by design.
+- **§4 UNLOCKED for two classes (session 5, through `4d347c4`)** — the
+  "EXHAUSTED" verdict above was too pessimistic. Two mechanisms are now
+  PROVEN faithful and portable a real class of delegates:
+  1. **Poll loops**: `while(cond){ if(br2_bail_pending())return <ret>;
+     br2_irq_poll(); <guest stores> }` — `br2_irq_poll` (clean_bridge.c:308)
+     advances 256 guest cycles + fires pending IRQs, so IRQ/device-deadline
+     completion IS delivered. Ports: `cd_cmd_state_reset` (145a52d),
+     `cd_cmd_issue_b`/`cd_cmd_issue_c` (753d03d).
+  2. **Nested `jal`**: `call_guest4(fn,a0,a1,a2,a3)` / `call_guest` /
+     `br2_call_generated` reproduce a guest `jal` (a0-a3 + `$t0=fn` +
+     nested `psx_dispatch_call`; callee `jr $ra` returns to the boundary →
+     back to clean caller). Same mechanism battle.c uses for prim_task_run
+     jalr. Ports: `cd_timer_read` (8663946), `cd_busy_wait` (9091c92 — even
+     reproduces a guest printf frame via br2_guest_frame).
+  clean_table now **1356 wrappers**. Remaining ~49 skipped = the TRUE §4
+  hard class: BIOS/kernel-boundary ($ra-inspecting), fn-ptr `jalr`, live
+  `cpu->gpr` coroutine resume, deferred-INT2-coroutine starvation.
+- **`cd_read_poll` PROVEN MUST-DELEGATE** (`4d347c4`,
+  `proof/cd_read_poll_wedge.md`): faithful CFG port wedged the CD file-load
+  path twice — the clean poll can't give the INT2 completion coroutine a
+  live guest resume PC, so `cd_ctx_restore→cd_chan_full_init→cd_intc_dispatch`
+  resumes against stale `cpu->gpr` → truncated host pointers at `0x801B563C`
+  → tag-table load corrupts → `vsync_wait_n` spins at `0x8019A600`,
+  `DAT_801bdde0` stalls. Needs a RUNTIME mechanism (re-enter generated
+  dispatch for the IRQ window), not more clean-C restructuring.
+- **The real "generated→zero" blocker is now NARROW**: not "all delegates"
+  but specifically the deferred-coroutine-resume + BIOS-frame + fn-ptr-jalr
+  subset. That is a runtime/recompiler capability gap (§4). Everything
+  poll-shaped or simple-nested-call-shaped is now portable and largely ported.
 - **⚠ subagent_explore can't see generated/** (gitignored) — its NULL-guard
   audit produced false-positive UNCERTAINs; only foreground/general agents
   or direct work can diff vs generated. Prefer foreground for anything
