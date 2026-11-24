@@ -609,10 +609,32 @@ void cd_str_print(uint32_t param_1)
 void cd_cmd_state_reset(void)
 
 {
-  /* IRQ-poll wait for the CD response channel (0x801bcb18&7) to drain —
-   * drained only by the IRQ-driven cd_response_process, which a clean-C
-   * spin cannot resume. Delegate to generated. */
-  br2_call_generated(0x801972a8u,0,0,0,0);
+  /* Faithful port of generated 0x801972a8 (4 blocks). Issues reset params
+   * through the channel pointer cells — *0x801bcb0c=1, *0x801bcb18=7,
+   * *0x801bcb14=7 — then spins until the response channel drains:
+   * (*(u8*)*0x801bcb18 & 7)==0. The drain is driven by the IRQ-side
+   * response coroutine; br2_irq_poll() delivers pending IRQs against the
+   * live CPUState exactly like the guest's per-block psx_check_interrupts,
+   * the same mechanism the verified identical loop in cd_subsystem_init
+   * (0x801974b8) already uses. Exit block pokes the 0x801bcb24 scratch
+   * {2,0,0}, clears *0x801bcb0c and *0x801bcb18, and stores 0x1325 through
+   * *0x801bcb1c — byte-for-byte the generated tail @0x8019732C-0x80197378. */
+  uint8_t *q;
+  br2_st8p(0x801bcb0c, 1);
+  while ((br2_ld8p(0x801bcb18) & 7) != 0) {
+    if (br2_bail_pending()) return;
+    br2_irq_poll();
+    br2_st8p(0x801bcb0c, 1);
+    br2_st8p(0x801bcb18, 7);
+    br2_st8p(0x801bcb14, 7);
+  }
+  q = (uint8_t *)guest_at(0x801bcb24);
+  q[2] = 0;
+  q[1] = q[2];
+  q[0] = 2;
+  br2_st8p(0x801bcb0c, 0);
+  br2_st8p(0x801bcb18, 0);
+  br2_st32p(0x801bcb1c, 0x1325);
   return;
 }
 
