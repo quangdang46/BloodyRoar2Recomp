@@ -221,15 +221,48 @@ void cd_init_session(void)
 
 /* ======== 0x80198e2c ======== */
 
+/* cd_read_poll — CD read-session poll (0x80198e2c, 18 blocks verified
+ * insn-by-insn against generated/SLES_017.22_full_46.c:7029).
+ *
+ * Session struct base s1 = 0x801BCB9C; s2 = 0x801BCBA4 (completion flag,
+ * set to 1 by cd_read_finish_cb, cleared by cd_init_done_cb). Loop:
+ *   E5C  jal cd_timer_read(-1)          ; delay slot: s0 = -1 (every pass)
+ *   E64  if ((int32)(bcb9c + 0x4B0) < now) -> exit with s0 = -1
+ *   E7C  if ((int32)bcb94 < 0) -> reopen
+ *   E8C  else jal cd_timer_read(-1); if ((int32)(bcb98 + 0x3C) < now2)
+ *        -> reopen; else s0 = bcb94
+ *   EAC  reopen: jal cd_read_open(1); s0 = bcb80
+ *   EC4  if param_1 != 0 -> exit
+ *   ECC/EDC/EE4: continue iff s0 > 0 || (bcba4 != 0 && s0 == 0)
+ *   EEC  exit: jal cd_result_wait_b_fwd(1, param_2)
+ *   EF4  v0 = bcba4; return bcba4==0 ? 0 : (s0!=0 ? bcba4 : 1)
+ *        (bcba4 is only ever 0/1 -> effectively returns bcba4 != 0)
+ *
+ * The faithful CFG port (br2_irq_poll + br2_bail_pending per iteration,
+ * both nested jals delegated) compiled and ran ~1519 frames, then died
+ * deterministically: FAIL-FAST unknown dispatch 0x8019A5D8 (vsync_wait_n)
+ * with ra=0x801265F4. Post-mortem (gwatch mprotect watch + decomp_trace)
+ * showed the poll loop's IRQ delivery is NOT equivalent to the generated
+ * per-block psx_check_interrupts_at: the CD deferred coroutine
+ * (cd_ctx_restore -> cd_chan_full_init -> cd_intc_dispatch) resumes
+ * against stale cpu->gpr, the INT2 completion for cd_file_load_sm(0x13)
+ * (battle-intro resource load via battle_intro_flow -> menu_res_load_sm
+ * -> save_channel_init_commit) lands wrong/late, the tag-table file
+ * region keeps stale host-pointer garbage, stream_block_decode ->
+ * mode3_dispatch -> block_copy_ret_len decodes host pointers into heap
+ * blocks at ~0x801B563C, and data_relocate's fixup loops then spray
+ * `+= base` writes over ~600KB of guest RAM — overwriting code at
+ * 0x8019A5D8 and the frame counter at 0x801BDDE0 (both verified via
+ * gwatch rip->save.c:9623 and read_ram vs master). This is exactly the
+ * §4 deferred-coroutine starvation class: a clean-C poll loop cannot
+ * supply the live $ra/resume-PC the generated CPS frame provides, so
+ * IRQ-adjacent waits on the CD read path must stay delegated.
+ * Faithful port preserved in git history (stash "cd_read_poll port wip"). */
 int cd_read_poll(int param_1,undefined4 param_2)
-
 {
-  /* IRQ/coroutine-boundary function: clean-C body cannot supply the
-   * live guest register file the deferred CD coroutine needs, and its
-   * MMIO busy-waits lack per-block interrupt checks. Delegate to the
-   * generated MIPS (behavioral oracle) — same contract as the other
-   * read-path functions already delegated. */
-  return (int)br2_call_generated(0x80198e2cu,param_1, param_2, 0, 0);
+  (void)param_1; (void)param_2;
+  return (int)br2_call_generated(0x80198e2cu, (uint32_t)param_1,
+                                 (uint32_t)param_2, 0, 0);
 }
 
 /* ======== 0x80195d8c ======== */
