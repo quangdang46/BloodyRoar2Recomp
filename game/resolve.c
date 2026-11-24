@@ -114,6 +114,16 @@ undefined8 vec2_rot_lut(undefined4,int);
 void dir_rotate_acc(int,int,byte*,byte*);
 void dir_rotate_set(int,int,byte*,byte*);
 
+/* Faithful signed 32/32 `div` LO result. Guest div-by-zero yields
+ * LO = (dividend<0) ? 1 : -1 (no trap); INT_MIN/-1 yields INT_MIN.
+ * Use wherever the guest emits `div`/`break 7`-free signed divide. */
+static int32_t mips_div_lo(int32_t num, int32_t den)
+{
+    if (den == 0) return num >= 0 ? -1 : 1;
+    if (num == (int32_t)0x80000000 && den == -1) return (int32_t)0x80000000;
+    return num / den;
+}
+
 int32_t action_resolve(byte *param_1, uint8_t *param_2)
 {
 
@@ -2179,9 +2189,9 @@ void trig_lut_read(uint32_t param_1, byte *param_2)
     *(short *)(param_2 + 0x90) = (short)((uint)iVar1 >> 8);
   }
   *(short *)(param_2 + 0x90) =
-       (short)((*(short *)(param_2 + 0x90) * 0x12c0) / (*(short *)(param_2 + 0x24) + 4000));
+       (short)mips_div_lo(*(short *)(param_2 + 0x90) * 0x12c0, *(short *)(param_2 + 0x24) + 4000);
   *(short *)(param_2 + 0x98) =
-       (short)((*(short *)(param_2 + 0x98) * 0x12c0) / (*(short *)(param_2 + 0x24) + 4000));
+       (short)mips_div_lo(*(short *)(param_2 + 0x98) * 0x12c0, *(short *)(param_2 + 0x24) + 4000);
   return;
 
 }
@@ -2202,7 +2212,7 @@ void trig_vel_flat(uint32_t param_1, byte *param_2)
   sVar1 = (short)(iVar2 / 2);
   *(short *)(param_2 + 0x90) = sVar1;
   *(undefined2 *)(param_2 + 0x98) = 0;
-  *(short *)(param_2 + 0x90) = (short)((sVar1 * 0x12c0) / (*(short *)(param_2 + 0x24) + 4000));
+  *(short *)(param_2 + 0x90) = (short)mips_div_lo(sVar1 * 0x12c0, *(short *)(param_2 + 0x24) + 4000);
   return;
 
 }
@@ -2225,9 +2235,9 @@ void trig_vel_up(uint32_t param_1, byte *param_2)
     *(short *)(param_2 + 0x98) = sVar2 * -2 + -0x2000;
   }
   *(short *)(param_2 + 0x90) =
-       (short)((*(short *)(param_2 + 0x90) * 0x12c0) / (*(short *)(param_2 + 0x24) + 4000));
+       (short)mips_div_lo(*(short *)(param_2 + 0x90) * 0x12c0, *(short *)(param_2 + 0x24) + 4000);
   *(short *)(param_2 + 0x98) =
-       (short)((*(short *)(param_2 + 0x98) * 0x12c0) / (*(short *)(param_2 + 0x24) + 4000));
+       (short)mips_div_lo(*(short *)(param_2 + 0x98) * 0x12c0, *(short *)(param_2 + 0x24) + 4000);
   return;
 
 }
@@ -2247,9 +2257,9 @@ void trig_vel_diag(uint32_t param_1, byte *param_2)
   sVar2 = lut_sin_q12(iVar3);
   *(short *)(param_2 + 0x98) = -sVar2;
   *(short *)(param_2 + 0x90) =
-       (short)((*(short *)(param_2 + 0x90) * 0x12c0) / (*(short *)(param_2 + 0x24) + 4000));
+       (short)mips_div_lo(*(short *)(param_2 + 0x90) * 0x12c0, *(short *)(param_2 + 0x24) + 4000);
   *(short *)(param_2 + 0x98) =
-       (short)((*(short *)(param_2 + 0x98) * 0x12c0) / (*(short *)(param_2 + 0x24) + 4000));
+       (short)mips_div_lo(*(short *)(param_2 + 0x98) * 0x12c0, *(short *)(param_2 + 0x24) + 4000);
   return;
 
 }
@@ -2750,7 +2760,9 @@ void keyframe_blend_apply(byte *param_1,byte *param_2)
   uVar13 = (uint)*(byte *)(param_2 + 0x100);
   iVar14 = *(int *)(param_2 + uVar13 * 4 + 0xf8);
   if ((int)*(short *)(param_2 + 0xce) < (int)*(short *)(param_2 + 0xca)) {
-    iVar12 = ((int)*(short *)(param_2 + 0xce) << 0xc) / (int)*(short *)(param_2 + 0xca);
+    /* guest div @0x801859F8: ca==0 -> LO = (dividend<0)?1:-1, no trap */
+    iVar12 = mips_div_lo((int)*(short *)(param_2 + 0xce) << 0xc,
+                         (int)*(short *)(param_2 + 0xca));
   }
   else {
     iVar12 = 0x1000;
