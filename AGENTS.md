@@ -382,6 +382,24 @@ phase). "It compiled" and "it returns plausible values" are not done.
   but specifically the deferred-coroutine-resume + BIOS-frame + fn-ptr-jalr
   subset. That is a runtime/recompiler capability gap (§4). Everything
   poll-shaped or simple-nested-call-shaped is now portable and largely ported.
+- **§4 mechanism — precise wall (session 5 analysis)**: cooperative thread
+  switch `psx_request_thread_switch` (traps.c:726) does
+  `psx_save_context_to_tcb(current, gpr[31])` then `longjmp(g_scheduler_jmpbuf)`
+  to `psx_scheduler_run` — it **abandons the ENTIRE host call stack**. The
+  invariant (traps.c:721): "all guest thread context lives in CPUState/RAM/TCB
+  — never in a host stack." So a clean-C `br2_irq_poll` loop CANNOT be the
+  preempted thread: if its IRQ fires ChangeThread, the longjmp destroys the
+  clean frame and the thread resumes at guest `$ra` in generated code, never
+  returning to the clean fn. IRQ handlers DEFER the switch to the next dispatch
+  boundary, so clean polls survive ONLY when completion needs no OTHER thread.
+  `cd_read_poll` needs the CD INT2 coroutine thread to run → deadlock. The fix
+  is coroutine-ification of clean code (or a scheduler-aware clean-call bridge)
+  — a dedicated runtime-design effort, NOT incremental porting.
+- **BIOS trampolines already done**: `cd_mode_apply`/`cd_mode_apply_wrap`
+  (0x8019E400/410) are weak `br2_bios_tramp(0xb0,0x4a/0x4b)` forwards in
+  bind.c (the §4-rule-b thin-trampoline pattern) — they show "unwrapped" in
+  clean_table only because bind.c is excluded from gen_fnmap. True delegate
+  count ≈ 51, all hard class.
 - **⚠ subagent_explore can't see generated/** (gitignored) — its NULL-guard
   audit produced false-positive UNCERTAINs; only foreground/general agents
   or direct work can diff vs generated. Prefer foreground for anything
