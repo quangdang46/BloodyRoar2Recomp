@@ -593,7 +593,6 @@ extern void ev_cam_param_dispatch(void);
 extern void ev_cam_ret_pc2(void);
 extern void ev_cmd_dispatch(void);
 extern void ev_spark_spawn(void);
-extern void ev_step(void);
 extern void ev_stream_dispatch(void);
 extern void event_record_walk(void);
 extern void fifo_space_check(void);
@@ -1096,7 +1095,6 @@ extern void prim_tag_set(void);
 extern void prim_task_run(void);
 extern void print_dispatch_guest(void);
 extern void print_dispatch_selfdesc_guest(void);
-extern void print_mode_dispatch(void);
 extern void print_mode_dispatch_b(void);
 extern void print_mode_dispatch_guest(void);
 extern void printf_core(void);
@@ -1502,7 +1500,6 @@ const Br2FnEnt fn_table[] = {
   { 0x8012cdd8, (void *)scroll_offset_accumulate },
   { 0x8012ce20, (void *)scroll_offset_y_get },
   { 0x8012ce30, (void *)print_mode_dispatch_guest },
-  { 0x8012ce30, (void *)print_mode_dispatch },
   { 0x8012cf64, (void *)print_dispatch_selfdesc_guest },
   { 0x8012d090, (void *)sprite_desc_table_init },
   { 0x8012d154, (void *)text_render_full },
@@ -2148,7 +2145,6 @@ const Br2FnEnt fn_table[] = {
   { 0x80185c70, (void *)motion_integrator_tail },
   { 0x80185ddc, (void *)keyframe_advance },
   { 0x80185e6c, (void *)fighter_anim_advance },
-  { 0x80185e6c, (void *)ev_step },
   { 0x80185f64, (void *)motion_blend_frame },
   { 0x801862a8, (void *)pose_chain_build },
   { 0x801863ac, (void *)guest_noop },
