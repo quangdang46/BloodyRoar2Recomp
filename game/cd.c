@@ -2286,21 +2286,52 @@ void cd_mode_store(uint32_t a0)
  * cd_seek_state_machine(@0x801bde38) then stores @0x801bdee4; a0!=1 stores only
  * when result==1. Returns the sample. Disasm 0x8019d500-0x8019d5a0. */
 extern int32_t cd_seek_state_machine(uint32_t);
-/* cd_seek_complete_poll — delegate the whole body to generated MIPS
- * (0x8019d500). Its a0==1 seek-completion wait loop crosses a basic-block
- * boundary every iteration, so psx_check_interrupts_at runs per pass with a
- * real guest resume PC. That is what lets the CD deferred-interrupt
- * coroutine (cd_ctx_restore -> cd_chan_full_init -> cd_intc_dispatch)
- * resume and DeliverEvent the 0xf0000009 flag TestEvent polls. A clean-C
- * while+br2_irq_poll cannot supply a dispatchable resume PC for the
- * deferred switch, so the coroutine starves and TestEvent spins forever —
- * the same reason cd_file_read_seq/cd_result_wait_a/b were delegated.
- * br2_call_generated also makes gen_clean_table skip 0x8019d500 so
- * generated callers dispatch straight to the generated body. */
+/* cd_seek_complete_poll — faithful port of 0x8019d500-0x8019d5a0.
+ * Early-outs (D51C/D530 -> D538 `li v0,1`): *0x801bde40==1 or
+ * *0x801bdee4==1 return 1 without touching anything else.
+ * Otherwise a0 = *0x801bde38 (event idx, reloaded before EVERY jal —
+ * D544/D564) and the 0x8019d5b0 leaf tramp (`li t1,0x0B; jr 0xB0` =
+ * kernel TestEvent) is called through cd_jal so $ra carries the real
+ * guest link token (0x8019d550 first call / 0x8019d570 spin calls).
+ *  - a0==1 (D558/D560/D570): ret!=0 -> D588 stores the DELAY-SLOT v0=1
+ *    (D55C/D574 overwrite the raw TestEvent ret) to *0x801bdee4 and
+ *    returns 1; ret==0 spins D560->D570. The spin crosses a block
+ *    boundary per pass in generated code (psx_check_interrupts_at), so
+ *    the clean port calls br2_irq_poll() each iteration — that is what
+ *    lets the CD IRQ coroutine DeliverEvent the flag TestEvent polls.
+ *  - a0!=1 (D580): ret!=1 -> D590 returns the RAW v0 (delay slot is a
+ *    nop, v0 untouched); ret==1 -> D588 stores v0(==1) to *0x801bdee4
+ *    then returns it.
+ * No guest frame needed: the body only touches absolute cells
+ * 0x801bde38/40/e4 and the BIOS tramp manages its own $sp. */
 int32_t cd_seek_complete_poll(uint32_t a0)
 {
-  (void)cd_seek_state_machine;
-  return (int32_t)br2_call_generated(0x8019d500, a0, 0, 0, 0);
+  CPUState *cpu = clean_cpu_state();
+  uint32_t v;
+
+  if (DB32(0x801bde40) == 1) return 1;
+  if (DB32(0x801bdee4) == 1) return 1;
+
+  if (a0 == 1) {
+    if (cpu) cpu->gpr[4] = DB32(0x801bde38);
+    v = cd_jal(0x8019D5B0u, 0x8019D550u);
+    if (v == 0) {
+      for (;;) {
+        if (br2_bail_pending()) return 0;
+        br2_irq_poll();
+        if (cpu) cpu->gpr[4] = DB32(0x801bde38);
+        v = cd_jal(0x8019D5B0u, 0x8019D570u);
+        if (v != 0) break;
+      }
+    }
+    DB32(0x801bdee4) = 1;
+    return 1;
+  }
+
+  if (cpu) cpu->gpr[4] = DB32(0x801bde38);
+  v = cd_jal(0x8019D5B0u, 0x8019D550u);
+  if (v == 1) DB32(0x801bdee4) = v;
+  return (int32_t)v;
 }
 
 /* cd_dir_read — memcard dir read: mc_session(0) session, cmd 0x13
