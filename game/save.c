@@ -5499,6 +5499,13 @@ tail194:
 }
 
 mode1body:
+    /* guest 0x8016F100-0x8016F108: li $t5,2; sw $t5,0x98($sp) sits in the
+     * DELAY SLOT of the sp48==0 test, so mode is set to 2 unconditionally on
+     * entry; the sp48!=0 path (0x8016F138) then overwrites it with 0.
+     * mode==2 routes modechk -> mode2sel -> fp=0xf0/0xff -> return (tally
+     * exit). Omitting the mode=2 store left mode==1 -> mode1body forever
+     * (the row-3 mode-(1,4) tally wedge). */
+    mode = 2;
     if (sp48 == 0) goto poll;
     mode = 0;
     *(uint16_t *)(g + 0x8e) = 0;
