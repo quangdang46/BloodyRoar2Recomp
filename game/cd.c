@@ -398,18 +398,100 @@ LAB_80198d0c:
 /* ======== 0x8019a460 ======== */
 
 /* cd_timer_read — frame/timer read + DAT_801bdde0 waits (0x8019a460).
- * This is the resumable half of the same deferred-IRQ contract as
- * cd_chan_full_init/cd_intc_dispatch: its vsync_wait_n spins must let the CD
- * IRQ drive cd_ctx_restore -> cd_intc_dispatch -> cd_cb8_dispatch (which
- * increments DAT_801bdde0). That save/restore operates on cpu->gpr, which a
- * clean-C body does not own — the host stack is invisible to it, so the
- * deferred coroutine cannot resume and the frame counter freezes (observed:
- * DAT_801bdde0 stalls -> vsync_wait_n timeout -> BIOS-tramp crash). The whole
- * function therefore runs generated; the thunk keeps direct C callers correct
- * and makes gen_clean_table skip the address. */
+ * Faithful port of generated 0x8019A460 (19 blocks, verified insn-by-insn).
+ * Samples the tick counter *(*0x801bccac) under a seqlock against
+ * *0x801bccb0, derives s1 = (snap - *0x801bccb0) & 0xffff, then:
+ *   param_1 < 0  -> return *0x801bdde0 (VBlank frame count)
+ *   param_1 == 1 -> return s1
+ *   param_1 == 0 -> vsync_wait_n(*0x801bccb4, 0)
+ *   param_1 >= 2 -> vsync_wait_n(*0x801bccb4 + param_1 - 1, param_1 - 1)
+ * then vsync_wait_n(*0x801bdde0 + 1, 1), a sign-bit flip wait on the
+ * *(*0x801bcca8) counter (only when the pre-wait sample has bit
+ * 0x00400000 set), and a second seqlock publish of the tick into
+ * 0x801bccb0. Returns s1.
+ *
+ * Both `jal vsync_wait_n` sites stay on the GENERATED body
+ * (br2_call_generated 0x8019a5d8): its timeout path tail-calls
+ * bios_table_tramp/bios_kobj_tramp — a $ra/kern boundary clean C cannot
+ * reproduce (same contract as every BIOS-adjacent delegate). The
+ * seqlock/frame-wait spins use the proven br2_irq_poll pattern: the VBlank
+ * IRQ coroutine (cd_cb8_run_param -> DAT_801bdde0, the *0x801bcca8/
+ * *0x801bccac counters) is driven by psx_check_interrupts exactly like
+ * the generated per-block checks. The guest sp-0x28 frame is reserved via
+ * br2_guest_frame so nested generated calls observe the same $sp. */
 uint cd_timer_read(int param_1)
 {
-  return (uint)br2_call_generated(0x8019a460u, (uint32_t)param_1, 0, 0, 0);
+  uint32_t fr = br2_guest_frame(0x28);
+  uint32_t p_cnt  = br2_ld32(0x801bcca8);
+  uint32_t p_tick = br2_ld32(0x801bccac);
+  uint32_t s0, s1, snap, cur, v0, a0v, a1v;
+  (void)fr;
+
+  s0 = br2_ld32(p_cnt);                       /* *(*0x801bcca8) */
+
+  /* seqlock @0x8019A484: sample *p_tick until two reads agree */
+  for (;;) {
+    snap = br2_ld32(p_tick);
+    cur  = br2_ld32(p_tick);
+    if (snap == cur) break;
+    if (br2_bail_pending()) { br2_guest_frame_free(); return 0; }
+    br2_irq_poll();
+  }
+
+  s1 = (snap - br2_ld32(0x801bccb0)) & 0xffffu;
+
+  if (param_1 < 0) {
+    v0 = br2_ld32(0x801bdde0);
+    br2_guest_frame_free();
+    return v0;
+  }
+  if (param_1 == 1) {
+    br2_guest_frame_free();
+    return s1;
+  }
+  if (param_1 <= 0) {                          /* == 0 */
+    v0  = br2_ld32(0x801bccb4);
+    a1v = 0;
+  } else {                                     /* >= 2 */
+    v0  = br2_ld32(0x801bccb4) - 1u + (uint32_t)param_1;
+    a1v = (uint32_t)param_1 - 1u;
+  }
+  a0v = v0;
+  br2_call_generated(0x8019a5d8u, a0v, a1v, 0, 0);   /* jal vsync_wait_n */
+
+  s0 = br2_ld32(br2_ld32(0x801bcca8));         /* reload counter sample */
+  br2_call_generated(0x8019a5d8u,
+                     br2_ld32(0x801bdde0) + 1u, 1u, 0, 0); /* jal vsync_wait_n */
+
+  /* @0x8019A53C: if bit 0x00400000 of the sample is set, wait for the
+   * counter's sign bit (vs s0) to flip — @0x8019A54C/0x8019A56C loop. */
+  if (s0 & 0x00400000u) {
+    uint32_t pp = br2_ld32(0x801bcca8);
+    for (;;) {
+      cur = br2_ld32(pp);
+      if (((s0 ^ cur) & 0x80000000u) != 0) break;
+      if (br2_bail_pending()) { br2_guest_frame_free(); return 0; }
+      br2_irq_poll();
+    }
+  }
+
+  /* @0x8019A584: publish *0x801bdde0 into 0x801bccb4, then seqlock-copy
+   * *(*0x801bccac) into 0x801bccb0 — @0x8019A59C loop. */
+  v0     = br2_ld32(0x801bdde0);
+  p_tick = br2_ld32(0x801bccac);
+  br2_st32(0x801bccb4, v0);
+  for (;;) {
+    v0  = br2_ld32(p_tick);
+    br2_st32(0x801bccb0, v0);
+    cur = br2_ld32(0x801bccb0);
+    v0  = br2_ld32(p_tick);
+    if (cur == v0) break;
+    if (br2_bail_pending()) { br2_guest_frame_free(); return 0; }
+    br2_irq_poll();
+  }
+
+  br2_guest_frame_free();
+  return s1;
 }
 
 /* ======== 0x80195d44 ======== */
