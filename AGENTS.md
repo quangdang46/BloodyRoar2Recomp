@@ -367,9 +367,52 @@ phase). "It compiled" and "it returns plausible values" are not done.
      back to clean caller). Same mechanism battle.c uses for prim_task_run
      jalr. Ports: `cd_timer_read` (8663946), `cd_busy_wait` (9091c92 — even
      reproduces a guest printf frame via br2_guest_frame).
-  clean_table now **1356 wrappers**. Remaining ~49 skipped = the TRUE §4
-  hard class: BIOS/kernel-boundary ($ra-inspecting), fn-ptr `jalr`, live
-  `cpu->gpr` coroutine resume, deferred-INT2-coroutine starvation.
+  clean_table was 1356 wrappers after those two unlocks.
+- **§4 UNLOCKED for a THIRD class + the cascade (session 6, through
+  `08f68a2`)** — the unlocks compound: as callees get clean-ported, their
+  callers' `jal` targets become all-clean → more delegates become portable.
+  Two more mechanisms proven:
+  3. **Live `a1-a3` `jal` forwarding — `cd_jal(link,fn)`** (cd.c:63, static;
+     clone of bind.c `bind_jal`): sets `gpr[31]=link`, dispatches via
+     `clean_try_dispatch`→`psx_dispatch_call`, does NOT restore arg regs
+     (callee leftovers preserved like real MIPS `jal`), no `$t0` write
+     (correct for `jalr $v0`). Solves the case where a `jal` must forward
+     live caller registers the callee will consume. `call_guest`/`call_guest4`
+     restore args — use `cd_jal` when the guest relies on leftover a1-a3.
+  4. **Live `cpu->gpr[]` as DATA** — clean C CAN read/write the guest
+     register file for register-file→memory ops (e.g. `cd_ctx_save` stores
+     gpr[16-31] to a ctx struct). The "no guest register file" assumption was
+     wrong; `clean_cpu_state()->gpr[N]` is live at the call boundary.
+     Port: `cd_ctx_save` (ee1d892). The paired `cd_ctx_restore` is NOT
+     portable (needs `jr $ra`→mid-fn PC via `psx_restore_state_escape`).
+  **Cascade ports landed (~20 this session)**: cd_cmd_state_reset,
+  cd_cmd_issue_b/c, cd_timer_read, cd_busy_wait, cd_ctx_save,
+  cd_mode_set_0e, cd_reg_bit40_ctrl, mc_date_serial_cmp, cd_cmd_queue_load,
+  cd_queue_push, cd_queue_drain, cd_reg_stream_push, cd_read_open,
+  cd_read_param_set, cd_cb8_dispatch, cd_chan_init_trio, cd_reg_window_op,
+  cd_mode_apply_deferred. clean_table now **1370 wrappers / 39 delegates**.
+- **⚠ INSN-BY-INSN RE-DECODE before porting (session 6 lesson)**: two
+  transcription bugs slipped past review and only runtime caught them —
+  (a) `cd_cmd_queue_load` wrote `*cell = *cell2 + n*4 - 4` but guest computes
+  `param_1 + param_2*4 - 4` (wild pointer → heap-PC dispatch 0x27AC);
+  (b) `cd_queue_push` full-test is `(head+1)&0x3f==tail` not raw compare;
+  (c) `cd_mode_apply_deferred` `0x10000-ent` not `-ent` (underflow → 4M
+  iters). ALWAYS re-decode the generated block offsets/masks/shifts exactly.
+- **Remaining ~39 delegates = the TRUE §4 hard class** (verified from every
+  angle): BIOS/kernel-boundary ($ra-inspecting B0/C0 trampolines, e.g.
+  cd_kobj_init_a/b, cd_dma_chan_init, cd_seek_step), fn-ptr `jalr`
+  (op_cb*_store_ctx8, impact_fx_update), live `cpu->gpr` coroutine-resume
+  (cd_ctx_restore, cd_read_poll, the 0x801BCBA4 done-flag wait family:
+  cd_init_session/cd_read_setup/cd_read_step_cb/cd_result_wait_a/b/
+  cd_cmd_issue/cd_response_process/pump/cd_file_load_sm/cd_file_read_seq/
+  cd_read_issue/cd_mc_state_machine/cd_chan_full_init/cd_intc_dispatch/
+  cd_chan_slot_set/cd_ext_init_once/cd_chan_cmd_pump/cd_hw_chan_init/
+  cd_channel_main_init/cd_channel_table_init/cd_cmd_sequence/
+  cd_subsys_init_full/vsync_wait_n/cd_mode_apply*/cd_seek_complete_poll/
+  cd_dma_chan_init/dev_byte_xfer), and the big state machines
+  (ret_zero_e, impact_fx_update). That is a runtime/recompiler capability
+  gap (§4) — coroutine-ification or a scheduler-aware clean-call bridge —
+  NOT incremental porting.
 - **`cd_read_poll` PROVEN MUST-DELEGATE** (`4d347c4`,
   `proof/cd_read_poll_wedge.md`): faithful CFG port wedged the CD file-load
   path twice — the clean poll can't give the INT2 completion coroutine a
