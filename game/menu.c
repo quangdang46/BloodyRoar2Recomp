@@ -11889,7 +11889,13 @@ void hp_bar_tick(void)
   if (MB32(0x801f473cu) != 0) {
     int32_t rem;
     idx = MB32(a0 + 0x28) * 8u + a0;
-    rem = MBS16(idx + 0x1c) % MBS16(a0 + 0x30);
+    /* guest div @0x801598F8 + mfhi: HI = lh(+0x1c) % lh(+0x30);
+     * divisor 0 -> HI = dividend (no trap). */
+    {
+      int32_t _dn = MBS16(a0 + 0x30);
+      int32_t _nm = MBS16(idx + 0x1c);
+      rem = _dn == 0 ? _nm : _nm % _dn;
+    }
     if (rem != 0) {
       MW32(0x801f473cu, 0);
       MW16(a0 + 0x2c, MB16(a0 + 0x2c) + (uint16_t)rem);

@@ -647,7 +647,11 @@ joined_r0x80157c80:
     }
     DAT_801bef6c = (byte)uVar2;
     if ((int)(uVar2 & 0xff) < (int)(short)DAT_801bef72) {
-      DAT_801bef72 = (ushort)((int)(short)DAT_801bef72 % (int)(uVar2 & 0xff));
+      /* guest div @0x80157E2C + mfhi: signed div HI = nm % dv;
+       * dv==0 -> HI = dividend (recompiler no-trap semantics). */
+      int32_t _dv = (int32_t)(uVar2 & 0xff);
+      int32_t _nm = (int32_t)(short)DAT_801bef72;
+      DAT_801bef72 = (ushort)(_dv == 0 ? _nm : _nm % _dv);
     }
     if (DAT_801bef72 == 0) {
       DAT_801bef72 = (ushort)DAT_801bef6c;
@@ -2111,7 +2115,9 @@ void datetime_confirm_a(int32_t param_1,uint32_t param_2)
    * 0x801575D4/0x801575DC), not a reload of the halfword. */
   iVar1 = (int32_t)(int16_t)param_1;
   if (s0[0xc] < iVar1) {
-    s0[0x12] = (uint8_t)(iVar1 % s0[0xc]);
+    /* guest div @0x801575EC + mfhi: HI = iVar1 % s0[0xc];
+     * divisor 0 -> HI = dividend (no trap). */
+    s0[0x12] = (uint8_t)(s0[0xc] == 0 ? iVar1 : iVar1 % s0[0xc]);
   }
   if (*(int16_t *)(s0 + 0x12) == 0) {
     s0[0x12] = s0[0xc];
@@ -9916,8 +9922,17 @@ int op_anim_delta_walk(uint32_t a0,int32_t a1)
       int32_t quo, q2;
       dv = *(int16_t *)(s0 + 0xc);
       a3u += ev;
-      if (dv == 0) break;              /* guest break 7 trap */
-      quo = (int32_t)((a3u << 12)) / dv;
+      if (dv == 0) break;
+      /* NOTE: guest div @0x801A9904 + break7 @0x801A9910 (recompiler
+       * no-op) actually CONTINUES with LO = num>=0 ? -1 : 1 — this early
+       * break is a known divergence kept because the faithful path wedges
+       * downstream (row1 confirm stall). Pending full-function audit.
+       * INT_MIN/-1 -> LO = INT_MIN per MIPS (no trap). */
+      {
+        int32_t _num = (int32_t)(a3u << 12);
+        quo = (_num == (int32_t)0x80000000 && dv == -1)
+              ? (int32_t)0x80000000 : _num / dv;
+      }
       if (!(quo < s2)) {
         /* t0 is provably 0 here; kept literal for fidelity */
         int32_t t0 = 0;
