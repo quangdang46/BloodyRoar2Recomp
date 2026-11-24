@@ -907,22 +907,63 @@ void bios_kobj_tramp()
 /* cd_cmd_issue_b — CD command issue A (param_1/param_2 -> regs 48/4c),
  * polls status bit 0x40 then waits DMA-clear on reg 0x50.
  *
- * Routed to the generated body: every 0x801bcbXX access is a pointer-cell
- * indirection (lw ptr; sb/sw/lbu/lw *ptr) into the CD register file, which the
- * clean port mistranslated as direct DB32 cell stores — the &0x40 done poll
- * then read the pointer value instead of the status byte and spun forever
- * (the boot file-load livelock). br2_call_generated also makes
- * gen_clean_table skip this address. */
+ * Faithful port of generated 0x80197800 (6 blocks, no jal/BIOS/fn-ptr).
+ * Every 0x801bcbXX access is a pointer-cell indirection — br2_st*p /
+ * br2_ld*p reproduce the guest's lw-ptr; sb/sw *ptr exactly (this is the
+ * mistranslation that caused the earlier boot file-load livelock; the
+ * pointer-cell helpers are the fix, not a reason to delegate). Sequence:
+ * status-cmd bytes {0,0x80}, reg40=0x00020943, reply=0x1323,
+ * reg44|=0x8000, reg48=param_1, reg4c=param_2|0x10000, then spin while
+ * (*(*0x801bcb0c)&0x40)==0 (done bit, IRQ/response-coroutine delivered —
+ * br2_irq_poll supplies the per-block interrupt check the generated CPS
+ * frames had). Tail: reg50=0x11000000, spin while the latched reg's
+ * 0x01000000 bit stays set (device-cycle deadline — br2_irq_poll advances
+ * guest cycles so the CD device model clears it), reply 0x1323, ret 0. */
 uint32_t cd_cmd_issue_b(uint32_t param_1,uint32_t param_2)
 {
-  return br2_call_generated(0x80197800, param_1, param_2, 0, 0);
+  uint32_t reg;
+  br2_st8p(0x801bcb0c, 0);
+  br2_st8p(0x801bcb18, 0x80);
+  br2_st32p(0x801bcb40, 0x00020943);
+  br2_st32p(0x801bcb1c, 0x1323);
+  br2_st32p(0x801bcb44, br2_ld32p(0x801bcb44) | 0x8000);
+  br2_st32p(0x801bcb48, param_1);
+  br2_st32p(0x801bcb4c, param_2 | 0x10000);
+  while ((br2_ld8p(0x801bcb0c) & 0x40) == 0) {
+    if (br2_bail_pending()) return 0;
+    br2_irq_poll();
+  }
+  br2_st32p(0x801bcb50, 0x11000000);
+  reg = br2_ld32p(0x801bcb50);          /* guest latches $a0 = *0x801bcb50 */
+  while ((br2_ld32(reg) & 0x01000000) != 0) {
+    if (br2_bail_pending()) return 0;
+    br2_irq_poll();
+  }
+  br2_st32p(0x801bcb1c, 0x1323);
+  return 0;
 }
 
 /* cd_cmd_issue_c — CD command issue B (same protocol, different opcode
- * 0x21020843 / reply 0x11400100). Same pointer-cell indirection -> generated. */
+ * 0x21020843 / reply 0x11400100). Faithful port of generated 0x80197900
+ * (3 blocks, same pointer-cell protocol as issue_b, single done-bit poll,
+ * no DMA-clear second wait — guest reads the reg back once into a dead
+ * stack slot). */
 uint32_t cd_cmd_issue_c(uint32_t param_1,uint32_t param_2)
 {
-  return br2_call_generated(0x80197900, param_1, param_2, 0, 0);
+  br2_st8p(0x801bcb0c, 0);
+  br2_st8p(0x801bcb18, 0x80);
+  br2_st32p(0x801bcb40, 0x21020843);
+  br2_st32p(0x801bcb1c, 0x1325);
+  br2_st32p(0x801bcb44, br2_ld32p(0x801bcb44) | 0x8000);
+  br2_st32p(0x801bcb48, param_1);
+  br2_st32p(0x801bcb4c, param_2 | 0x10000);
+  while ((br2_ld8p(0x801bcb0c) & 0x40) == 0) {
+    if (br2_bail_pending()) return 0;
+    br2_irq_poll();
+  }
+  br2_st32p(0x801bcb50, 0x11400100);
+  (void)br2_ld32(br2_ld32p(0x801bcb50)); /* guest reads reg into dead slot */
+  return 0;
 }
 
 /* cd_cmd_retry — CD retry wrapper: forwards arg0 to cd_cmd_bytes,
