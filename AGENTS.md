@@ -329,15 +329,21 @@ phase). "It compiled" and "it returns plausible values" are not done.
 - **ROW5 wedge FIXED `d11b51d`**: `fighter_spawn_setup` mode-3 had inverted
   compare — guest `beq +0x24==0 → merge`, clean had `!=0`. Pad-bit merge
   never ran → rec+0x24 never seeded → select deadlock.
-- **ROW3 wedge — NOT a mistranslation** (`proof/hud_state_machine_row3_
-  wedge.md`): `hud_state_machine(1)` port is instruction-faithful. Stall =
-  `sp48 = (sp24[+0xe4] >= sp20[+0xe4])` = per-side round-win counters
-  (3v2 from prior CPU/demo rounds) → sp48=0 → poll forever. Upstream state
-  divergence. Also fixed a real polarity bug `dcbb43c` (save.c row-select
-  `sp58` inverse at 4 sites — doesn't fix wedge). Next: trace `g+0xb4/+0xb6`
-  writers between last round and `DAT1=0x0b` arming (if guest re-arms both
-  sides → ph=0x300+ → sp20 picks loser block → tally proceeds), or Beetle
-  A/B for ground truth (oracle binary not in this repo).
+- **ROW3 wedge — RESOLVED, was a REAL bug `b88ea82`** (supersedes the earlier
+  "faithful, input-layer gap" verdict in `proof/hud_state_machine_row3_wedge.md`
+  and `proof/row3_b6_phase_arm_trace.md` — those were WRONG): `hud_state_machine`
+  `mode1body` (game/save.c) was missing the guest's unconditional `mode=2`
+  delay-slot store at `0x8016F100` (`sw $t5,0x98($sp)`); clean wrote `mode=0`
+  only on the `sp48!=0` path, so `sp48==0` left `mode==1` → infinite
+  `modechk→mode1body` loop at tally `dat1=0x0b`. Fix: `mode=2` before the
+  sp48 test → `mode2sel→fp=0xf0→fp=0xff→return`. Verified: tally cycles
+  `03→04→08→0b→03`. See `proof/mode_1_4_resolution.md`.
+- **Mode (1,4) match-end — FAITHFUL, no bug** (`proof/mode_1_4_matchend.md`,
+  `8a219f5`): matches DO end via `case 11` (menu.c ~7177), NOT the
+  `vs_confirm_c` tail gate (menu.c ~7888) which legitimately never runs in
+  the CPU/demo path. rounds-to-win=2 (`MB8(MB32(0x1f8000c0)+4)`); full cycle
+  1-1→2-2 draw→3-2→tiebreak→victory seq→results→next match. `gs=8` persisting
+  = versus-attract demo loop, correct. **ALL 6 menu modes now verified WORKING.**
 - **Ports landed `1d252aa`**: `cd_dir_scan` (0x80197E28 — replaces live
   call_guest on media-rescan path), `gte_rtps3_sxy_pack_ctrl` (0x80194F40
   GTE leaf), `op_tag_F_set`/`op_tag_K_set`/`op_node_rebucket` (0x801A
