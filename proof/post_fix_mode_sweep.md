@@ -65,9 +65,13 @@ Root mechanism — **same bug as `proof/versus_eventvm_actsel_deadlock.md`**:
 
 `d20db90` fixed the versus path's `.ACT` relocation ordering, but the
 attract demo battle still produces a corrupt `.ACT` reaction-table count
-(`+0xa4`). Repro attempt on fresh instance 9970 was still in the gs=3→6
-attract cycle at t≈240 s (demo battle not yet reached) — watch
-`/tmp/drv_9970.log`.
+(`+0xa4`). Repro attempt: fresh instance 9970 idled **~78k frames / ~1000 s**
+in pure gs=3→4→5→6 attract cycling and never entered `gs=8` — the freeze
+is real but its trigger is rare or timing-sensitive (possibly needs the
+attract timer to select the demo-battle branch, or a specific stage/
+fighter pairing). Worth re-running attract watches longer or arming
+`fntrace` on `ev_stream_dispatch`/`ev5_action_select` to catch the next
+occurrence.
 
 ## 2. VERSUS `(9b=2,9c=1)` — WORKS (was wedged pre-d20db90)
 
