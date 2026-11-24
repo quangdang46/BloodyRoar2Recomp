@@ -3616,6 +3616,341 @@ void gte_lwc2_r0_r1(uint32_t a0)
   gte_lwc2(a0 + 4, 1);
 }
 
+/* ======== 0x801A54F8 / 0x801A5698 / 0x801A5878 / 0x801A5A0C ======== */
+
+/* RTPT/NCLIP primitive-record emitters — the four-entry GTE family that
+ * prim-list walkers invoke per record batch. Shared prologue spills
+ * ra/s0-s7 to scratchpad 0x1f8003dc-0x1f8003fc (same cells the generated
+ * bodies use; epilogue reloads only feed callee-saved regs the clean body
+ * never touches). a1 selects the output-record slot (a1 <<= 2 indexes a
+ * 4-byte table at a2), a2 is the record descriptor:
+ *   +0x10 vertex table (8-byte xy/z pairs), +0x18 index stream,
+ *   +0x24 flags words, +0x30 signed record count (lh).
+ * Per record: lwc2/mtc2 vertex loads -> RTPT -> NCLIP -> SXY stores ->
+ * MAC0/flags gate -> ordering-table insert. Pure guest-RAM + COP2 state:
+ * no calls, no blocking waits, no live guest sp -> portable per §4.
+ * Verified insn-by-insn against disc/SLES_017.22 and
+ * generated/SLES_017.22_full_50.c.
+ *
+ *   0x801A54F8 tri indexed OT, tag 0x07000000, rec 0x20
+ *   0x801A5698 quad indexed OT, tag 0x09000000, rec 0x28
+ *   0x801A5878 tri fixed OT head, tag 0x07000000, rec 0x20
+ *   0x801A5A0C quad fixed OT head, tag 0x09000000, rec 0x28
+ * Guest v0 at jr ra = 0x00ffffff (the mask constant) — returned. */
+static void prim_emit_ctx_save(void)
+{
+  CPUState *c = clean_cpu_state();
+  uint32_t *b;
+  if (c == NULL) return;
+  b = (uint32_t *)guest_at(0x1f8003dc);
+  b[0] = c->gpr[31];              /* ra  */
+  b[1] = c->gpr[23];              /* s7  */
+  b[2] = c->gpr[22];              /* s6  */
+  b[3] = c->gpr[21];              /* s5  */
+  b[4] = c->gpr[20];              /* s4  */
+  b[5] = c->gpr[19];              /* s3  */
+  b[6] = c->gpr[18];              /* s2  */
+  b[7] = c->gpr[17];              /* s1  */
+  b[8] = c->gpr[16];              /* s0  */
+}
+
+/* Shared descriptor preamble for all four emitters. */
+static void prim_emit_desc(uint32_t a1,uint32_t a2,
+                           uint32_t *s0,uint32_t *s4,uint32_t *s1,
+                           uint32_t *s2,uint32_t *s3,int32_t *s5)
+{
+  a1 <<= 2;
+  *s0 = DB32(a1 + a2);
+  *s4 = DB32(a1 + a2 + 8);        /* dead in these bodies (no 0x100 chain) */
+  *s1 = DB32(a2 + 0x10);
+  *s2 = DB32(a2 + 0x18);
+  *s3 = DB32(a2 + 0x24);
+  *s5 = (int32_t)*(int16_t *)guest_at(a2 + 0x30);
+}
+
+/* 3-index record stream: packed u16 idx0/idx1 + lh idx2, stride 6.
+ * Pre-loop reads idx0/idx1 as u16 (zero-extended) and idx2 as lh; the
+ * in-loop stream re-reads all three as lh (sign-extended). idx0's vertex
+ * pair is kept in GPRs (va0/va1) and mtc2'd into V0 on the next pass. */
+uint32_t prim_emit_tri_ot_idx(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
+{
+  uint32_t s0,s1,s2,s3,s4,va0 = 0,va1 = 0;
+  int32_t  s5;
+  uint32_t w,i0,i1,i2,p,slot,old,sz3;
+  int32_t  t1s,mac0,flags;
+  int first = 1;
+  (void)a3;
+
+  prim_emit_ctx_save();
+  prim_emit_desc(a1,a2,&s0,&s4,&s1,&s2,&s3,&s5);
+  (void)s4;
+
+  w  = DB32(s2);
+  i0 = w & 0xffffu;
+  i1 = w >> 16;
+  i2 = (uint32_t)(int32_t)*(int16_t *)guest_at(s2 + 4);
+  p  = s1 + (i0 << 3); gte_lwc2(p,0);     gte_lwc2(p + 4,1);
+  p  = s1 + (i1 << 3); gte_lwc2(p,2);     gte_lwc2(p + 4,3);
+  p  = s1 + (i2 << 3); gte_lwc2(p,4);     gte_lwc2(p + 4,5);
+
+  s5 -= 1;
+  if (s5 > 0) s2 += 6; else s2 -= 6;
+
+  for (;;) {
+    if (!first) {
+      setCopReg(2, GTE_DREG(0), va0);
+      setCopReg(2, GTE_DREG(1), va1);
+    }
+    first = 0;
+    s5 -= 1;
+    copFunction(2, 0x0280030);                  /* RTPT */
+
+    i0 = (uint32_t)(int32_t)*(int16_t *)guest_at(s2);
+    i1 = (uint32_t)(int32_t)*(int16_t *)guest_at(s2 + 2);
+    i2 = (uint32_t)(int32_t)*(int16_t *)guest_at(s2 + 4);
+    p  = s1 + (i0 << 3);
+    va0 = DB32(p); va1 = DB32(p + 4);
+    p  = s1 + (i1 << 3); gte_lwc2(p,2); gte_lwc2(p + 4,3);
+    sz3 = (uint32_t)getCopReg(2, GTE_DREG(19));       /* SZ3 (pre-NCLIP) */
+    copFunction(2, 0x0400006);                        /* NCLIP */
+    t1s = (int32_t)sz3 >> 2;
+    p  = s1 + (i2 << 3); gte_lwc2(p,4); gte_lwc2(p + 4,5);
+    gte_swc2(s0 + 8, 12);
+    gte_swc2(s0 + 0x10, 13);
+    mac0   = (int32_t)getCopReg(2, GTE_DREG(24));
+    flags  = (int32_t)*(int16_t *)guest_at(s3);
+    if (mac0 >= 0 || (flags & 0x200) != 0) {
+      slot = a0 + ((uint32_t)t1s << 2);
+      if (t1s >= 10) {
+        old = DB32(slot);               /* delay-slot load: t1s>=0x800 too */
+        if (t1s < 0x800) {
+          gte_swc2(s0 + 0x18, 14);
+          DB32(s0)   = 0x07000000u | old;
+          DB32(slot) = s0 & 0x00ffffffu;
+        }
+      }
+    }
+    s0 += 0x20; s2 += 6; s3 += 2;
+    if (s5 > 0) continue;
+    s2 -= 6;
+    if (s5 >= 0) continue;
+    break;
+  }
+  return 0x00ffffffu;
+}
+
+/* 0x801A5878 — same tri stream, fixed OT head at *a0 (no slot bounds). */
+uint32_t prim_emit_tri_ot_fix(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
+{
+  uint32_t s0,s1,s2,s3,s4,va0 = 0,va1 = 0,old;
+  int32_t  s5;
+  uint32_t w,i0,i1,i2,p;
+  int32_t  mac0,flags;
+  int first = 1;
+  (void)a3;
+
+  prim_emit_ctx_save();
+  prim_emit_desc(a1,a2,&s0,&s4,&s1,&s2,&s3,&s5);
+  (void)s4;
+
+  w  = DB32(s2);
+  i0 = w & 0xffffu;
+  i1 = w >> 16;
+  i2 = (uint32_t)(int32_t)*(int16_t *)guest_at(s2 + 4);
+  p  = s1 + (i0 << 3); gte_lwc2(p,0);     gte_lwc2(p + 4,1);
+  p  = s1 + (i1 << 3); gte_lwc2(p,2);     gte_lwc2(p + 4,3);
+  p  = s1 + (i2 << 3); gte_lwc2(p,4);     gte_lwc2(p + 4,5);
+
+  s5 -= 1;
+  if (s5 > 0) s2 += 6; else s2 -= 6;
+
+  for (;;) {
+    if (!first) {
+      setCopReg(2, GTE_DREG(0), va0);
+      setCopReg(2, GTE_DREG(1), va1);
+    }
+    first = 0;
+    s5 -= 1;
+    copFunction(2, 0x0280030);                  /* RTPT */
+
+    i0 = (uint32_t)(int32_t)*(int16_t *)guest_at(s2);
+    i1 = (uint32_t)(int32_t)*(int16_t *)guest_at(s2 + 2);
+    i2 = (uint32_t)(int32_t)*(int16_t *)guest_at(s2 + 4);
+    p  = s1 + (i0 << 3);
+    va0 = DB32(p); va1 = DB32(p + 4);
+    p  = s1 + (i1 << 3); gte_lwc2(p,2); gte_lwc2(p + 4,3);
+    (void)getCopReg(2, GTE_DREG(19));           /* SZ3 — dead here */
+    copFunction(2, 0x0400006);                  /* NCLIP */
+    p  = s1 + (i2 << 3); gte_lwc2(p,4); gte_lwc2(p + 4,5);
+    gte_swc2(s0 + 8, 12);
+    gte_swc2(s0 + 0x10, 13);
+    mac0  = (int32_t)getCopReg(2, GTE_DREG(24));
+    flags = (int32_t)*(int16_t *)guest_at(s3);
+    old   = DB32(a0);                    /* guest loads *a0 on pass AND fail */
+    if (mac0 >= 0 || (flags & 0x200) != 0) {
+      gte_swc2(s0 + 0x18, 14);
+      DB32(s0) = 0x07000000u | old;
+      DB32(a0) = s0 & 0x00ffffffu;
+    }
+    s0 += 0x20; s2 += 6; s3 += 2;
+    if (s5 > 0) continue;
+    s2 -= 6;
+    if (s5 >= 0) continue;
+    break;
+  }
+  return 0x00ffffffu;
+}
+
+/* 4-index record stream: two packed u32 words (4 x u16, zero-extended),
+ * stride 8. idx3's vertex ptr (t4) is rotated to t5 each pass and only
+ * projected by the gated RTPS — its SXY2 lands at s0+0x20. */
+uint32_t prim_emit_quad_ot_idx(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
+{
+  uint32_t s0,s1,s2,s3,s4,t4 = 0,t5,va0 = 0,va1 = 0;
+  int32_t  s5;
+  uint32_t w0,w1,i0,i1,i2,p,slot,old,sz3;
+  int32_t  t1s,mac0,flags;
+  int first = 1;
+  (void)a3;
+
+  prim_emit_ctx_save();
+  prim_emit_desc(a1,a2,&s0,&s4,&s1,&s2,&s3,&s5);
+  (void)s4;
+
+  w0 = DB32(s2); w1 = DB32(s2 + 4);
+  i0 = w0 & 0xffffu; i1 = w0 >> 16;
+  i2 = w1 & 0xffffu;
+  p  = s1 + (i0 << 3); gte_lwc2(p,0);     gte_lwc2(p + 4,1);
+  p  = s1 + (i1 << 3); gte_lwc2(p,2);     gte_lwc2(p + 4,3);
+  p  = s1 + (i2 << 3); gte_lwc2(p,4);     gte_lwc2(p + 4,5);
+  t4 = s1 + ((w1 >> 16) << 3);
+
+  s5 -= 1;
+  if (s5 > 0) s2 += 8; else s2 -= 8;
+
+  for (;;) {
+    if (!first) {
+      setCopReg(2, GTE_DREG(0), va0);
+      setCopReg(2, GTE_DREG(1), va1);
+    }
+    first = 0;
+    s5 -= 1;
+    copFunction(2, 0x0280030);                  /* RTPT */
+
+    w0 = DB32(s2); w1 = DB32(s2 + 4);
+    i0 = w0 & 0xffffu;
+    p  = s1 + (i0 << 3);
+    va0 = DB32(p); va1 = DB32(p + 4);
+    i1 = w0 >> 16;
+    p  = s1 + (i1 << 3); gte_lwc2(p,2); gte_lwc2(p + 4,3);
+    sz3 = (uint32_t)getCopReg(2, GTE_DREG(19));       /* SZ3 (pre-NCLIP) */
+    copFunction(2, 0x0400006);                        /* NCLIP */
+    t1s = (int32_t)sz3 >> 2;
+    i2 = w1 & 0xffffu;
+    p  = s1 + (i2 << 3); gte_lwc2(p,4); gte_lwc2(p + 4,5);
+    t5 = s1 + ((w1 >> 16) << 3);
+    gte_swc2(s0 + 8, 12);
+    gte_swc2(s0 + 0x10, 13);
+    gte_swc2(s0 + 0x18, 14);
+    mac0  = (int32_t)getCopReg(2, GTE_DREG(24));
+    flags = (int32_t)*(int16_t *)guest_at(s3);
+    if (mac0 >= 0 || (flags & 0x200) != 0) {
+      slot = a0 + ((uint32_t)t1s << 2);
+      gte_lwc2(t4,0); gte_lwc2(t4 + 4,1);
+      copFunction(2, 0x0180001);                /* RTPS — 4th vertex */
+      old = DB32(slot);                 /* unconditional once gate passed */
+      if (t1s >= 10 && t1s < 0x800) {
+        DB32(s0)   = 0x09000000u | old;
+        DB32(slot) = s0 & 0x00ffffffu;
+        gte_swc2(s0 + 0x20, 14);
+      }
+    }
+    t4 = t5;
+    s0 += 0x28; s2 += 8; s3 += 2;
+    if (s5 > 0) continue;
+    s2 -= 8;
+    if (s5 >= 0) continue;
+    break;
+  }
+  return 0x00ffffffu;
+}
+
+/* 0x801A5A0C — same quad stream, fixed OT head. Unlike the indexed twin
+ * the idx3 RTPS and the *a0 link word are computed BEFORE the MAC0/flags
+ * gate every pass (guest order: lw *a0, lwc2 idx3, or tag, mfc2 MAC0,
+ * RTPS, lh flags, then bgez/(flags+0x200)!=0). */
+uint32_t prim_emit_quad_ot_fix(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
+{
+  uint32_t s0,s1,s2,s3,s4,t4 = 0,t5,va0 = 0,va1 = 0;
+  int32_t  s5;
+  uint32_t w0,w1,i0,i1,i2,p,old,link;
+  int32_t  mac0,flags;
+  int first = 1;
+  (void)a3;
+
+  prim_emit_ctx_save();
+  prim_emit_desc(a1,a2,&s0,&s4,&s1,&s2,&s3,&s5);
+  (void)s4;
+
+  w0 = DB32(s2); w1 = DB32(s2 + 4);
+  i0 = w0 & 0xffffu; i1 = w0 >> 16;
+  i2 = w1 & 0xffffu;
+  p  = s1 + (i0 << 3); gte_lwc2(p,0);     gte_lwc2(p + 4,1);
+  p  = s1 + (i1 << 3); gte_lwc2(p,2);     gte_lwc2(p + 4,3);
+  p  = s1 + (i2 << 3); gte_lwc2(p,4);     gte_lwc2(p + 4,5);
+  t4 = s1 + ((w1 >> 16) << 3);
+
+  s5 -= 1;
+  if (s5 > 0) s2 += 8; else s2 -= 8;
+
+  for (;;) {
+    if (!first) {
+      setCopReg(2, GTE_DREG(0), va0);
+      setCopReg(2, GTE_DREG(1), va1);
+    }
+    first = 0;
+    s5 -= 1;
+    copFunction(2, 0x0280030);                  /* RTPT */
+
+    w0 = DB32(s2); w1 = DB32(s2 + 4);
+    i0 = w0 & 0xffffu;
+    p  = s1 + (i0 << 3);
+    va0 = DB32(p); va1 = DB32(p + 4);
+    i1 = w0 >> 16;
+    p  = s1 + (i1 << 3); gte_lwc2(p,2); gte_lwc2(p + 4,3);
+    (void)getCopReg(2, GTE_DREG(19));           /* SZ3 — dead here */
+    copFunction(2, 0x0400006);                  /* NCLIP */
+    i2 = w1 & 0xffffu;
+    p  = s1 + (i2 << 3); gte_lwc2(p,4); gte_lwc2(p + 4,5);
+    t5 = s1 + ((w1 >> 16) << 3);
+    gte_swc2(s0 + 8, 12);
+    gte_swc2(s0 + 0x10, 13);
+    gte_swc2(s0 + 0x18, 14);
+
+    old  = DB32(a0);
+    gte_lwc2(t4,0); gte_lwc2(t4 + 4,1);
+    link = 0x09000000u | old;
+    mac0 = (int32_t)getCopReg(2, GTE_DREG(24)); /* pre-RTPS MAC0 */
+    copFunction(2, 0x0180001);                  /* RTPS — unconditional */
+    flags = (int32_t)*(int16_t *)guest_at(s3);
+    /* Guest stores the link word unconditionally here: it sits in the
+     * delay-slot path shared by the mac0>=0 pass and the (flags+0x200)!=0
+     * pass, ahead of the *a0/swc2+0x20 stores that stay gated. */
+    DB32(s0) = link;
+    if (mac0 >= 0 || (flags + 0x200) != 0) {
+      DB32(a0) = s0 & 0x00ffffffu;
+      gte_swc2(s0 + 0x20, 14);
+    }
+    t4 = t5;
+    s0 += 0x28; s2 += 8; s3 += 2;
+    if (s5 > 0) continue;
+    s2 -= 8;
+    if (s5 >= 0) continue;
+    break;
+  }
+  return 0x00ffffffu;
+}
+
 /* ======== 0x8018bb38 ======== */
 
 /* flag_801b55d0_set — sets the flag word @0x801b55d0 to 1 and returns 1.

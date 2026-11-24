@@ -1139,7 +1139,11 @@ extern void prim_emit_a8(void);
 extern void prim_emit_ptr_50(void);
 extern void prim_emit_ptr_54(void);
 extern void prim_emit_ptr_68(void);
+extern void prim_emit_quad_ot_fix(void);
+extern void prim_emit_quad_ot_idx(void);
 extern void prim_emit_tail_advance(void);
+extern void prim_emit_tri_ot_fix(void);
+extern void prim_emit_tri_ot_idx(void);
 extern void prim_group_alloc(void);
 extern void prim_group_build(void);
 extern void prim_group_gc(void);
@@ -2791,6 +2795,10 @@ const Br2FnEnt fn_table[] = {
   { 0x801a536c, (void *)op_node_count_flagged },
   { 0x801a53e8, (void *)op_dbg_dump_ring },
   { 0x801a54c8, (void *)bios_tramp_a033 },
+  { 0x801a54f8, (void *)prim_emit_tri_ot_idx },
+  { 0x801a5698, (void *)prim_emit_quad_ot_idx },
+  { 0x801a5878, (void *)prim_emit_tri_ot_fix },
+  { 0x801a5a0c, (void *)prim_emit_quad_ot_fix },
   { 0x801a5bd0, (void *)guard_callee_a0 },
   { 0x801a5d90, (void *)guard_callee_b0 },
   { 0x801a5f50, (void *)guard_callee_c0 },

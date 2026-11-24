@@ -1465,6 +1465,14 @@
 
 801ae91c op_ad38c_ctx_store
 
+801a54f8 prim_emit_tri_ot_idx
+
+801a5698 prim_emit_quad_ot_idx
+
+801a5878 prim_emit_tri_ot_fix
+
+801a5a0c prim_emit_quad_ot_fix
+
 801a5bd0 guard_callee_a0
 
 801a6538 guard_callee_a1
