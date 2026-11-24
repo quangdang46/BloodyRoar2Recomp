@@ -4696,7 +4696,10 @@ void fighter_anim_table_init(int32_t a0)
     *(uint16_t *)(d + 0x12) = v;
     {
       int32_t dv = (int32_t)gs16(s0 + 0xb0);
-      uint32_t q = (dv == 0) ? 0xffffffffu : (uint32_t)(100 / dv);
+      /* guest @0x801736C8-0x801736E8: lh dv,[s0+0xb0]; lui v1,0x64
+       * (num = 100<<16, 16.16 fixed-point); div; mflo; sw -> 0x801f5228[i].
+       * dv==0 -> LO = num>=0 ? -1 : 1 = 0xffffffff (num is positive). */
+      uint32_t q = (dv == 0) ? 0xffffffffu : (uint32_t)((100 << 16) / dv);
       *(uint32_t *)guest_at(0x801f5228 + (uint32_t)i * 4) = q;
       *(uint16_t *)guest_at(0x801f524c + (uint32_t)i * 2) = 0;
     }
@@ -9899,55 +9902,67 @@ int anim_node_alloc(uint32_t a0,int32_t a1)
  * Disasm 0x801a984c-0x801a99dc. */
 int op_anim_delta_walk(uint32_t a0,int32_t a1)
 {
-  uint8_t *s3 = (uint8_t *)guest_at(a0);
-  int32_t s2 = a1;
+  uint8_t *s3;
+  int32_t s2;
   int32_t s1;
-  if (s3 == (uint8_t *)0x0) return 0;
+  if (a0 == 0) return 0;
+  s3 = (uint8_t *)guest_at(a0);
+  s2 = a1;
   if (s2 < 0) s2 = 0;
   if (s2 >= 0x1001) s2 = 0x1000;
-  for (s1 = 0; s1 < 2; s1++) {
+  s1 = 0;
+  for (;;) {
+    /* 0x801A988C slot head: s1==0 -> [s3+0x34], s1==1 -> [s3+0x38]. */
     uint32_t arr = *(uint32_t *)(s3 + (s1 == 0 ? 0x34 : 0x38));
     uint32_t s0g = *(uint32_t *)guest_at(arr);
     uint8_t *s0;
     int32_t cnt, a1c = 0, a2c = 0;
     uint32_t a0o = 0, a3u = 0;
-    int32_t dv;
-    if (s0g == 0) continue;
+    if (s0g == 0) goto slot_done;              /* beqz s0 -> 0x801A99B4 */
     s0 = (uint8_t *)guest_at(s0g);
-    cnt = *(int16_t *)(s0 + 6);
-    if (cnt < 0) continue;
-    for (;;) {
+    cnt = *(int16_t *)(s0 + 6);                /* lh cnt,[s0+6] */
+    if (cnt < 0) goto slot_done;               /* bltz -> 0x801A99B4 */
+    for (;;) {                                 /* 0x801A98E8 loop top */
       uint32_t ev = *(uint32_t *)guest_at(
           *(uint32_t *)(s0 + 0x18) + a0o + 4);
-      int32_t quo, q2;
-      dv = *(int16_t *)(s0 + 0xc);
-      a3u += ev;
-      if (dv == 0) break;
-      /* NOTE: guest div @0x801A9904 + break7 @0x801A9910 (recompiler
-       * no-op) actually CONTINUES with LO = num>=0 ? -1 : 1 — this early
-       * break is a known divergence kept because the faithful path wedges
-       * downstream (row1 confirm stall). Pending full-function audit.
+      int32_t dv = *(int16_t *)(s0 + 0xc);     /* lh -> sign-extended */
+      int32_t num, quo;
+      a3u += ev;                               /* gpr[7] += ev (wraps) */
+      num = (int32_t)(a3u << 12);              /* sll v0,a3,12 */
+      /* div @0x801A9904 + break @0x801A9910 (recompiler no-op): dv==0
+       * FALLS THROUGH with LO = num>=0 ? -1 : 1 into the normal
+       * mflo/slt/advance path — it does NOT exit the loop.
        * INT_MIN/-1 -> LO = INT_MIN per MIPS (no trap). */
-      {
-        int32_t _num = (int32_t)(a3u << 12);
-        quo = (_num == (int32_t)0x80000000 && dv == -1)
-              ? (int32_t)0x80000000 : _num / dv;
+      if (dv != 0) {
+        quo = (num == (int32_t)0x80000000 && dv == -1)
+              ? (int32_t)0x80000000 : num / dv;
+      } else {
+        quo = (num >= 0) ? -1 : 1;
       }
-      if (!(quo < s2)) {
-        /* t0 is provably 0 here; kept literal for fidelity */
-        int32_t t0 = 0;
-        q2 = ((s2 - t0) << 12) / (1 - t0);
+      /* mflo @0x801A992C; slt quo<s2; xori 1; beqz -> advance @0x801A9998,
+       * else finish @0x801A9944 (i.e. quo >= s2). */
+      if (quo < s2) {
+        /* advance: a1c++, a2c++, a0o += 0x14; cnt reloaded each step. */
+        a1c++;
+        a2c++;
+        a0o += 0x14;
+        cnt = *(int16_t *)(s0 + 6);
+        if (cnt < a2c) break;                  /* -> 0x801A99B4 slot_done */
+        continue;
+      }
+      /* finish @0x801A9944-0x801A998C: t0 (gpr[8]) provably 0, so
+       * q2 = (s2<<12)/1; +0xfff only if negative (impossible, s2>=0);
+       * a2 = sra(q2,12) = s2; jal tween_apply(s0, a1c, s2). */
+      {
+        int32_t q2 = s2 << 12;
         if (q2 < 0) q2 += 0xfff;
         tween_apply((short *)s0,a1c,q2 >> 12);
-        break;
       }
-      /* advance: a1++, a2++, a0 += 0x14 */
-      a1c++;
-      a2c++;
-      a0o += 0x14;
-      cnt = *(int16_t *)(s0 + 6);
-      if (cnt < a2c) break;
+      break;                                   /* -> 0x801A9990 s1++ */
     }
+  slot_done:
+    s1++;                                      /* 0x801A99B4 */
+    if (s1 >= 2) break;                        /* slti s1,2 @0x801A99B8 */
   }
   return 0;
 }
