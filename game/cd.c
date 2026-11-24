@@ -1745,18 +1745,33 @@ void cd_chan_block_boot(void)
 /* cd_mode_set_0e — CD mode/flag set: cd_mode_flag_set(0xe,&byte,0);
  * when bit 0x100 set, clears @0x801fc6f8 and runs 961a8/95d78 pair;
  * always cd_mode_flag_set(0x1b,0,0). Disasm 0x80198f60-0x80198fdc.
- * The generated body builds the Setmode param byte on the GUEST stack
- * (sp+16 after a 32-byte frame) and passes that guest address as param_2
- * to cd_mode_flag_set -> cd_cmd_issue. A clean C `&b` is a host stack
- * pointer that generated cd_cmd_issue reads as a guest address -> out of
- * guest RAM -> delivers mode 0x00 instead of the computed byte -> drive
- * stays in user-data mode (mode_reg&0x20==0), never delivers the per-sector
- * MSF stamp cd_read_step_cb verifies -> "sector error" -> retry livelock.
- * Delegate the whole body so the param byte lands in real guest RAM. */
-void cd_mode_set_0e(uint32_t s0)
+ * Faithful port: the Setmode param byte lives on a real guest frame
+ * (br2_guest_frame 0x20, byte at sp+16 = low8(a0)) so generated
+ * cd_cmd_issue sees the same guest address the guest's sp+0x10 produces —
+ * a host stack &b was the original wedge (mode 0x00 delivered instead of
+ * the computed byte). Returns v0 = final cd_mode_flag_set(0x1b,0,0). */
+int cd_mode_set_0e(uint32_t s0)
 {
+  uint32_t fr;
+  int ret;
   CDFN(CDFN_MODE_SET_0E,s0);
-  (void)br2_call_generated(0x80198f60u, s0, 0, 0, 0);
+  fr = br2_guest_frame(0x20);
+  br2_st8(fr + 16, (uint8_t)s0);
+  (void)cd_mode_flag_set(14, (int)(fr + 16), 0);
+  if (br2_bail_pending()) { br2_guest_frame_free(); return 0; }
+  if ((s0 & 0x100u) == 0) {
+    ret = (int)cd_mode_flag_set(27, 0, 0);
+  } else {
+    /* guest: v0 = (s0 & 0x20) ? 0 : 1 -> sw @0x8020c6f8 (delay-slot li 1) */
+    br2_st32(0x8020c6f8, (s0 & 0x20u) ? 0u : 1u);
+    (void)cd_cmd_dispatch3(0x801990f0u);
+    if (br2_bail_pending()) { br2_guest_frame_free(); return 0; }
+    (void)mc_session_b(0x80198fe4u);
+    if (br2_bail_pending()) { br2_guest_frame_free(); return 0; }
+    ret = (int)cd_mode_flag_set(27, 0, 0);
+  }
+  br2_guest_frame_free();
+  return ret;
 }
 
 /* cd_read_params_store — CD read param block: cd_read_param_block(1), stores
@@ -5093,16 +5108,89 @@ int cd_queue_poll(uint32_t param_1)
   }
 }
 
-/* cd_reg_bit40_ctrl — CD register bit40 control @0x8019d030. The param_1==0/1/3
- * paths busy-wait on live CD/MMIO status with a 0xf01-iteration cap; br2_ld16
- * does not advance guest cycles, so a clean-C spin can burn the whole cap in
- * native time before the cycle-driven CD model moves the status bits. It runs
- * inside chan_reset_register/chan_reset_clear during versus->fight; delegate
- * to generated MIPS so the wait crosses basic-block boundaries with
- * psx_check_interrupts_at, same contract as cd_reg_window_op. */
+/* cd_reg_bit40_ctrl — CD register bit40 control @0x8019d030 (21 blocks,
+ * disasm-verified). cell = *0x801DDEB0 (reloaded every poll — the guest
+ * re-reads the pointer cell each iteration); status half at cell+0x1AA,
+ * bit 0x40.
+ *
+ *   p1==0 or p1==3: clear bit6 (h&=0xFFBF, store, reload); if still set,
+ *     bounded poll (~3840 iters, $v1 counter cap 0xF01) for bit6 to read
+ *     CLEAR. Timeout -> printf_forward_guest(0x8018E550)
+ *     (0x80125C38, 0x80125C48) then return -1.
+ *   p1==1 or p1==3: set bit6 (h|=0x40, store, reload); if readback clear,
+ *     bounded poll for bit6 to read SET. Timeout -> printf
+ *     (0x80125C38, 0x80125C58) then return -1.
+ *   All other p1 (and p1==0 after the clear phase): return p1.
+ *
+ * The polls are device-deadline waits (the bit is cleared/set by the CD
+ * status path), so br2_irq_poll per iteration is the faithful completion
+ * contract — same as cd_busy_wait/cd_timer_read. The jal 0x8018E550 is
+ * printf_forward_guest (non-BIOS varargs): reproduced with a real 0x18
+ * guest frame (saved-ra slot at fr+0x10 like the guest prologue) +
+ * call_guest4; a2/a3 are never written by this function so the live
+ * caller gpr[6]/gpr[7] are forwarded exactly. */
 int cd_reg_bit40_ctrl(uint32_t param_1)
 {
-  return (int)br2_call_generated(0x8019d030u,param_1,0,0,0);
+  extern uint32_t call_guest4(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+  extern CPUState *clean_cpu_state(void);
+  extern void br2_guest_frame_abandon(void);
+  uint32_t cell, h, cnt, a1v = 0;
+
+  if (param_1 == 0 || param_1 == 3) {
+    /* @0x8019D048: h = lh(cell+0x1AA) & ~0x40; store; reload; test bit6 */
+    cell = br2_ld32(0x801ddeb0);
+    h = (uint32_t)br2_ld16(cell + 0x1aau) & 0xffbfu;
+    br2_st16(cell + 0x1aau, (uint16_t)h);
+    h = (uint32_t)br2_ld16(cell + 0x1aau);
+    if ((h & 0x40u) != 0) {
+      /* @0x8019D078..0x8019D0B8: cnt=1; while(cnt<0xF01){reload,test,
+       * cnt++}; bit still set -> @0x8019D088 timeout printf(…5C48) -1 */
+      cnt = 1;
+      for (;;) {
+        if (cnt >= 3841u) { a1v = 0x80125c48u; goto timeout; }
+        cell = br2_ld32(0x801ddeb0);
+        cnt++;
+        if (((uint32_t)br2_ld16(cell + 0x1aau) & 0x40u) == 0) break;
+        if (br2_bail_pending()) return -1;
+        br2_irq_poll();
+      }
+    }
+  }
+  if (param_1 == 1 || param_1 == 3) {
+    /* @0x8019D0D4: h = lh(cell+0x1AA) | 0x40; store; reload; test bit6 —
+     * set already -> return p1 (@0x8019D158); clear -> bounded poll for
+     * bit6 to read SET, timeout printf(…5C58) -1 (@0x8019D114). */
+    cell = br2_ld32(0x801ddeb0);
+    h = (uint32_t)br2_ld16(cell + 0x1aau) | 0x40u;
+    br2_st16(cell + 0x1aau, (uint16_t)h);
+    h = (uint32_t)br2_ld16(cell + 0x1aau);
+    if ((h & 0x40u) == 0) {
+      cnt = 1;
+      for (;;) {
+        if (cnt >= 3841u) { a1v = 0x80125c58u; goto timeout; }
+        cell = br2_ld32(0x801ddeb0);
+        cnt++;
+        if (((uint32_t)br2_ld16(cell + 0x1aau) & 0x40u) != 0) break;
+        if (br2_bail_pending()) return -1;
+        br2_irq_poll();
+      }
+    }
+    return (int)param_1;                        /* @0x8019D158: v0 = a0 */
+  }
+  return (int)param_1;                          /* @0x8019D15C: v0 = a0 */
+
+timeout:                                        /* @0x8019D124: jal 0x8018E550 */
+  {
+    uint32_t fr = br2_guest_frame(0x18);
+    /* guest frame is 0x18 with ra saved at sp+0x10 — the printf vararg
+     * wrapper's first stack-arg slot reads that same cell; mirror it. */
+    br2_st32(fr + 0x10, clean_cpu_state()->gpr[31]);
+    (void)call_guest4(0x8018e550, 0x80125c38u, a1v,
+                      clean_cpu_state()->gpr[6], clean_cpu_state()->gpr[7]);
+    if (br2_bail_pending()) { br2_guest_frame_abandon(); return -1; }
+    br2_guest_frame_free();
+    return -1;                                  /* @0x8019D130: v0 = -1 */
+  }
 }
 
 /* ======== batch_mass9 ======== */
@@ -5599,10 +5687,28 @@ void cd_prim_list_b(uint32_t param_1,uint32_t param_2,uint32_t param_3)
 
 /* ======== 0x8019aabc ======== */
 
+/* cd_chan_slot_set — per-channel slot table update @0x8019AABC (20 blocks,
+ * disasm-verified). Table base 0x801C0000-0x32E4 = 0x801BCD1C, 4-byte slots
+ * indexed by param_1; returns the PREVIOUS slot word (v0 = old tbl[param_1]).
+ *
+ * Flow: slot=base+p1*4; old=*slot; if param_2==old return old; if
+ * lh(0x801BCD18)==0 return old; cell=*(0x801DDDA8); tmp=lh(*cell); *cell=0
+ * (half); bits=gpr19 accumulates the channel bit 1<<p1 into/out of the
+ * halfword @0x801BCD48 (base+44) — set when param_2!=0 (slot<-param_2),
+ * cleared when param_2==0 (slot<-0). Then BIOS-trampoline jals:
+ *   p1==0: B0/0x5b tramp(0x80199FE0)(aux, a1=base, a2=base-4, a3=cur)
+ *          then C0/0x0a tramp(0x8019A670)(3, aux, ...)
+ *   p1==4: C0/0x0a(0, aux); p1==5: (1, aux); p1==6: (2, aux)
+ *   aux = (param_2==0) ? 1 : 0  (guest sltiu p2<1)
+ * a1/a2/a3 stay LIVE guest regs at every jal — values that depend on the
+ * guest's full register state at the jal boundary, which clean C cannot
+ * reproduce faithfully (a clean port that forwarded guessed constants
+ * regressed boot to a gs=0 cd_cmd_issue wedge — verified by bisect).
+ * The body sequences BIOS kernel-object calls (B0/0x5b, C0/0x0a) inside a
+ * guest CPS frame — the exact UNSAFE PORT PATTERN in AGENTS.md §4. Keep
+ * delegated to generated MIPS. */
 uint32_t cd_chan_slot_set(uint32_t param_1,uint32_t param_2)
 {
-  /* gpr-forwarding trampoline calls inside need live cpu->gpr that clean
-   * callers cannot supply; delegate whole body to generated MIPS. */
   return (uint32_t)br2_call_generated(0x8019aabcu,param_1,param_2,0,0);
 }
 

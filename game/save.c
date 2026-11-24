@@ -2289,26 +2289,92 @@ int32_t blk_io_retry(uint32_t param_1,void *param_2)
  * record and stores scaled halves into s2 @+0x1c/1e/24/26/32.
  * Disasm 0x80159ab4-0x80159c1c. */
 extern int32_t cd_channel_poll(uint32_t *,uint32_t *);
-/* mc_date_serial_cmp — delegate the whole body to the generated MIPS
- * (0x80159ab4). Its cd_channel_poll wait loop crosses a basic-block
- * boundary every iteration, so psx_advance_cycles +
- * psx_check_interrupts_at run per pass with a live guest resume PC. That is
- * what lets the CD deferred-interrupt coroutine (cd_ctx_restore ->
- * cd_intc_dispatch -> cd_response_pump -> cd_mc_state_machine) resume on
- * INT1 and mark the channel-table entry state==2 that cd_channel_poll waits
- * for. A clean-C poll cannot advance guest time or supply a dispatchable
- * resume PC, so the CD read stream never delivers and blk_io_retry livelocks
- * re-issuing SetLoc/SetMode/ReadS — the same reason cd_file_read_seq,
- * cd_result_wait_a/b and cd_init_session were delegated. The two pointer
- * params arrive as guest_at() host pointers; guest_of() recovers the guest
- * addresses the generated body expects in a0/a1. br2_call_generated also
- * makes gen_clean_table skip 0x80159ab4 so generated callers dispatch
- * straight to the generated body (no clean_table wrap -> thunk -> generated
- * recursion). Disasm 0x80159ab4-0x80159c1c. */
+/* History: this body was delegated to generated (0x80159ab4) because the
+ * cd_channel_poll wait needs per-iteration guest-cycle advance + IRQ
+ * delivery — now supplied by br2_irq_poll inside the retry loop (the
+ * proven cd_timer_read contract), so the clean port below is faithful.
+ * Disasm 0x80159ab4-0x80159c1c. */
+/* mc_date_serial_cmp — Faithful clean port of 0x80159ab4-0x80159c1c.
+ * The cd_channel_poll wait is a device-deadline poll: br2_irq_poll per
+ * retry advances guest cycles + delivers pending IRQs (the proven
+ * cd_timer_read/cd_busy_wait contract), so the CD deferred coroutine can
+ * mark the channel entry state==2 exactly like the generated per-block
+ * psx_check_interrupts_at did. The two RTC out-params live on a real
+ * 0x30 guest frame (br2_guest_frame) because cd_channel_poll writes guest
+ * addresses through them. param_1/param_2 arrive as host pointers into
+ * guest RAM (blk_io_retry passes guest_at()/table ptrs) — dereferenced
+ * directly per file convention; the channel-entry pointer read back from
+ * the frame is a GUEST address and goes through br2_ldN/br2_stN helpers. */
 int32_t mc_date_serial_cmp(uint8_t *param_1,void *param_2)
 {
-  return (int32_t)br2_call_generated(0x80159ab4u,
-                                     guest_of(param_1), guest_of(param_2), 0, 0);
+  extern int32_t cd_channel_poll(uint32_t *,uint32_t *);
+  extern void br2_irq_poll(void);
+  extern int br2_bail_pending(void);
+  extern uint16_t br2_ld16(uint32_t a);
+  extern uint32_t br2_ld32(uint32_t a);
+  extern void     br2_st16(uint32_t a, uint16_t v);
+  extern void     br2_st32(uint32_t a, uint32_t v);
+  uint32_t fr = br2_guest_frame(0x30);
+  uint8_t *s1 = param_1;
+  uint8_t *s2 = (uint8_t *)param_2;
+  uint32_t tries = 2000, w24, w28, a0v, a3v;
+
+  /* @0x80159AD8 loop: poll up to 2000x; rc==0 -> compare, exhausted -> 0.
+   * Guest decrements the counter in the branch delay slot (always), but
+   * it is dead on the success path — observable behavior identical. */
+  for (;;) {
+    int32_t rc = cd_channel_poll((uint32_t *)guest_at(fr + 24),
+                                 (uint32_t *)guest_at(fr + 28));
+    if (rc == 0) break;
+    if (--tries == 0) { br2_guest_frame_free(); return 0; }
+    if (br2_bail_pending()) { br2_guest_frame_free(); return 0; }
+    br2_irq_poll();
+  }
+
+  w28 = br2_ld32(fr + 28);              /* P = channel entry (guest addr) */
+  /* @0x80159AF8: if lw(P+8) >= lw(s1+8) -> *0x801F4740 = 1 (@0x80159B14) */
+  if (br2_ld32(w28 + 8) >= *(uint32_t *)(s1 + 8))
+    br2_st32(0x801f4740, 1);
+
+  /* @0x80159B24/@0x80159B38: mismatch on either date half -> @0x80159B4C
+   * writeback; both match -> skip straight to @0x80159BB8 tail. */
+  if (br2_ld32(0x801b3f68) != (uint32_t)br2_ld16(w28 + 0x10) ||
+      br2_ld32(0x801b3f6c) != (uint32_t)br2_ld16(w28 + 0x12)) {
+    uint32_t x, t;
+    br2_st16(fr + 16, 0);                          /* dead frame stores */
+    br2_st16(fr + 18, 0);
+    if (*(uint32_t *)(s1 + 0) == 0) {
+      a3v = (uint32_t)*(int16_t *)(s1 + 0x14);     /* lh — low16 stored */
+    } else {
+      x = *(uint32_t *)(s1 + 0x14);                /* @0x80159B64: 3x/2 */
+      t = x * 3u;
+      a3v = (t + (t >> 31)) >> 1;                  /* srl pair, exact */
+    }
+    br2_st16(fr + 20, (uint16_t)a3v);
+    br2_st16(fr + 22, (uint16_t)(*(uint32_t *)(s1 + 0x18) << 1));
+    /* @0x80159BA8/@0x80159BB4: publish the entry's date halves */
+    br2_st32(0x801b3f68, (uint32_t)br2_ld16(w28 + 0x10));
+    br2_st32(0x801b3f6c, (uint32_t)br2_ld16(w28 + 0x12));
+  }
+
+  /* @0x80159BB8 tail (both paths converge): year-ish value into s2
+   * +0x1c/+0x24, month-ish global into s2 +0x1e/+0x26/+0x32. */
+  if (*(uint32_t *)(s1 + 0) == 0) {
+    a0v = (uint32_t)br2_ld16(0x801b3f68);         /* @0x80159BE8: lhu */
+  } else {
+    uint32_t x = br2_ld32(0x801b3f68);            /* @0x80159BC8: 3x/2 */
+    uint32_t t = x * 3u;
+    a0v = (t + (t >> 31)) >> 1;
+  }
+  a3v = (uint32_t)br2_ld16(0x801b3f6c);
+  w24 = br2_ld32(fr + 24);                        /* v0 = *sp+24 = buf addr */
+  *(uint16_t *)(s2 + 0x24) = (uint16_t)a0v;
+  *(uint16_t *)(s2 + 0x1c) = (uint16_t)a0v;
+  *(uint16_t *)(s2 + 0x26) = (uint16_t)a3v;
+  *(uint16_t *)(s2 + 0x1e) = (uint16_t)a3v;
+  *(uint16_t *)(s2 + 0x32) = (uint16_t)a3v;
+  br2_guest_frame_free();
+  return (int32_t)w24;
 }
 
 /* rec_find_lt_f8 — first 0x10-stride rec where f8==0 or f8>=a1;
