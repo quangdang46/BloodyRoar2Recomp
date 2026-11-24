@@ -115,3 +115,33 @@ shows only the four row-select fixes.
   session), ports 9945/9955/9960/9971 earlier captures.
 - Generated reference: `generated/SLES_017.22_full_30.c`
   `0x8016E21C`–`0x8016EB00` (hud_state_machine body).
+
+## Fresh-boot reproduction (session cont.) — deterministic, NOT test artifact
+
+Drove a FRESH instance (port 9950) directly to menu row3 via
+`tools/mode_monitor.py 9950 row3 300`. Reached `dat1=0x0b` tally and wedged
+identically — live dump at the park:
+
+- `P1+0xe4 @0x1f8001cc = 0x03`, `P2+0xe4 @0x1f8002d4 = 0x02` (3v2)
+- `b4 @0x1f8000b4 = 0x0100` (side0 phase ARMED), `b6 @0x1f8000b6 = 0x0000`
+  (**side1 phase NEVER armed**)
+- `0x92 @0x1f800092 = bytes 0e 01`, `gs/dat1 = 0x0b`, `9b=01 9c=04`
+
+Because scratchpad_pair_init clears +0xe4 on every fighter_spawn, the 3v2
+is produced WITHIN mode (1,4)'s own internal round sequence (dat1 hit 0b
+only ~13 s after battle entry — fast, CPU-resolved rounds). Deterministic
+across fresh boots → real behavioral divergence, not leftover state.
+
+Refined hypothesis (agent + this data): side1's `+0xb6` phase never reaches
+the armed class, so the tally's side-block selection (driven by the 0x92
+nibble / +0xb4/+0xb6 phase) picks the WINNER's block as `sp20` and the
+loser's as `sp24` → `sp48 = (loser.e4 >= winner.e4) = (2>=3) = 0` → poll.
+For the tally to proceed, EITHER side1 must be armed (b6→0x0100+) flipping
+the selection, OR the counters must compare the other direction. The
+`battle_state_init` +0xb4/+0xb6→0x300 writes are gated by
+`select_phase_gate` reading the OLD +0xb4/+0xb6 class — a chicken-and-egg
+that may leave side1 unarmed if its prior class was invalid.
+
+NEXT: trace every writer of battle+0xb6 (guest 0x1f8000b6) and the
+0x1f800092 nibble producer across the mode-(1,4) battle→tally transition;
+find where clean diverges from generated on the side-arm/selection path.
