@@ -3954,11 +3954,12 @@ void fighter_spawn_setup(uint32_t param_1,uint8_t *param_2,uint8_t *param_3,
       return;
     }
     case 3: {
-      /* if any player rec+0x24 set: combine BOTH players' bits into
-       * that player's +8; else nothing */
+      /* guest @0x80148C64: merge BOTH players' bits into the FIRST record
+       * whose +0x24 == 0 (beq -> merge); if both confirmed (+0x24!=0) do
+       * nothing. Loop i<2 then return. */
       for (i = 0; i < 2; i++) {
         uint8_t *a2 = s6 + i * 0x30;
-        if (*(uint32_t *)(a2 + 0x24) != 0) {
+        if (*(uint32_t *)(a2 + 0x24) == 0) {
           uint32_t v = (bp[0x74/2] & 0xf00f) | (bp[0x6c/2] & 0xffff0700) |
                        (bp[0x68/2] & 0x8f0);
           v |= (bp[0x76/2] & 0xf00f) | (bp[0x6e/2] & 0xffff0700) |
