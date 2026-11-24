@@ -848,15 +848,69 @@ uint cd_result_wait_b(int param_1,undefined1 *param_2)
 
 /* ======== 0x80197698 ======== */
 
+/* cd_busy_wait — CD busy/timeout poll (0x80197698, 14 blocks verified).
+ * Arms a deadline at *0x801fc6e0 = cd_timer_read(-1) + 960, zeroes the
+ * iteration counter *0x801fc6e4 and plants 0x801258b0 at *0x801fc6e8,
+ * then loops: cd_timer_read(-1) -> bail to the timeout path when the
+ * deadline passes (signed slt) or the counter exceeds 0x003c0000;
+ * otherwise poll the CD status channel **(u32*)*0x801bcb50 & 0x01000000
+ * (device-deadline bit — br2_irq_poll advances guest cycles so the CD
+ * device model clears it, same contract as cd_cmd_issue_b's reg50 wait).
+ * Bit clear -> return 0; param_1 != 0 -> return 1; param_1 == 0 -> loop.
+ * Timeout path: cd_str_print("CD timeout"), then printf_forward_guest
+ * (0x8018e550) with fmt 0x801257b4, a1=*0x801fc6e8, a2=*(*0x801bc86c +
+ * lbu(0x801bc865)*4), a3=*(*0x801bc8ec + lbu(0x801bcb24)*4), stack arg
+ * *( *0x801bc8ec + lbu(0x801bcb25)*4 ) at sp+0x10 — reproduced through a
+ * real 0x30 guest frame + call_guest4 so the vararg wrapper reads the
+ * same stack slots — then cd_cmd_state_reset() and return -1.
+ * cd_timer_read is now clean (8663946); cd_str_print/cd_cmd_state_reset
+ * were already clean; only the printf jal needed call_guest4. */
 undefined4 cd_busy_wait(int param_1)
-
 {
-  /* IRQ/coroutine-boundary function: clean-C body cannot supply the
-   * live guest register file the deferred CD coroutine needs, and its
-   * MMIO busy-waits lack per-block interrupt checks. Delegate to the
-   * generated MIPS (behavioral oracle) — same contract as the other
-   * read-path functions already delegated. */
-  return (undefined4)br2_call_generated(0x80197698u,param_1, 0, 0, 0);
+  extern uint32_t call_guest4(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+  uint32_t fr = br2_guest_frame(0x30);
+  const uint32_t s0 = 0x801bc8ec, s1 = 0x801bcb24, s3 = 0x801bc86c;
+  const uint32_t s4 = 0x003c0000;
+  uint32_t s2 = (uint32_t)param_1;
+  uint32_t v0, cnt, status, b1, b2, b3, a2v, a3v;
+
+  v0 = cd_timer_read(-1) + 960u;
+  br2_st32(0x801fc6e0, v0);
+  br2_st32(0x801fc6e4, 0);
+  br2_st32(0x801fc6e8, 0x801258b0);
+
+  for (;;) {
+    v0 = cd_timer_read(-1);
+    if ((int32_t)br2_ld32(0x801fc6e0) < (int32_t)v0) goto timeout;
+    cnt = br2_ld32(0x801fc6e4);
+    br2_st32(0x801fc6e4, cnt + 1u);            /* delay-slot store */
+    if ((int32_t)s4 < (int32_t)cnt) goto timeout;
+    status = br2_ld32p(0x801bcb50) & 0x01000000u;
+    if (status == 0) { br2_guest_frame_free(); return 0; }
+    if (s2 != 0)     { br2_guest_frame_free(); return 1; }
+    /* param_1 == 0: keep waiting for the busy bit to clear */
+  }
+
+timeout:
+  cd_str_print(0x801257a4);
+  b1  = br2_ld8(s1);                            /* lbu 0x801bcb24 */
+  b2  = br2_ld8(s1 + 1);                        /* lbu 0x801bcb25 */
+  v0  = br2_ld32(s0 + (b2 << 2));               /* stack arg -> sp+0x10 */
+  b3  = br2_ld8(0x801bc865);
+  a2v = br2_ld32(s3 + (b3 << 2));
+  a3v = br2_ld32(s0 + (b1 << 2));
+  /* mirror the guest frame stores the printf vararg wrapper reads:
+   * sp+0x18=s0, sp+0x1c=s1, sp+0x20=s2(param), sp+0x24=s3, sp+0x28=s4. */
+  br2_st32(fr + 0x10, v0);
+  br2_st32(fr + 0x18, s0);
+  br2_st32(fr + 0x1c, s1);
+  br2_st32(fr + 0x20, s2);
+  br2_st32(fr + 0x24, s3);
+  br2_st32(fr + 0x28, s4);
+  (void)call_guest4(0x8018e550, 0x801257b4, br2_ld32(0x801fc6e8), a2v, a3v);
+  cd_cmd_state_reset();
+  br2_guest_frame_free();
+  return (undefined4)0xffffffffu;
 }
 
 /* ======== 0x8019a6e0 ======== */
