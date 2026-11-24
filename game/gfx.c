@@ -3487,6 +3487,92 @@ uint32_t op_gp_cond_store(uint32_t a0, uint32_t a1)
   return v;
 }
 
+/* ======== 0x801ad698 ======== */
+
+/* op_dword_add4 — *a1 += 4; returns the stored value. Leaf tail shared by
+ * the gp-relative conditional-store family. Disasm
+ * 0x801ad698-0x801ad6a8 (lw/addiu/sw through gpr5). */
+uint32_t op_dword_add4(uint32_t a0, uint32_t a1)
+{
+  uint32_t v;
+  (void)a0;
+  v = br2_ld32(a1) + 4;
+  br2_st32(a1, v);
+  return v;
+}
+
+/* ======== 0x801ad6ac ======== */
+
+/* op_gp_cond_add — gp-relative conditional add-store, inverse polarity of
+ * op_gp_cond_store. If *(*(gp+0x4c)+0x14) == 0 the tail path performs
+ * *a1 += 4 (0x801ad6dc); otherwise *a1 = s16(*(u16*)a0) + *(gp+0x50).
+ * Returns the stored value. Disasm 0x801ad6ac-0x801ad6d8 + tail
+ * 0x801ad6dc-0x801ad6ec. */
+uint32_t op_gp_cond_add(uint32_t a0, uint32_t a1)
+{
+  uint32_t base = br2_ld32((uint32_t)(guest_gp() + 0x4c));
+  uint32_t v;
+  if (br2_ld32(base + 0x14) == 0) {
+    v = br2_ld32(a1) + 4;
+    br2_st32(a1, v);
+    return v;
+  }
+  v = (uint32_t)(int32_t)(int16_t)br2_ld16(a0) +
+      br2_ld32((uint32_t)(guest_gp() + 0x50));
+  br2_st32(a1, v);
+  return v;
+}
+
+/* ======== 0x801ad6dc ======== */
+
+/* op_dword_add4_entry — standalone entry for the *a1 += 4 tail reached by
+ * the conditional-store family. Identical body to op_dword_add4; kept as a
+ * separate clean entry because the guest exposes it as its own jal target.
+ * Disasm 0x801ad6dc-0x801ad6ec. */
+uint32_t op_dword_add4_entry(uint32_t a0, uint32_t a1)
+{
+  return op_dword_add4(a0, a1);
+}
+
+/* ======== 0x801ad920 ======== */
+
+/* op_dword_add_field2 — *a1 += *(u32*)(a0+2); returns the stored value.
+ * Disasm 0x801ad920-0x801ad934 (lw v0,(a1); lw v1,2(a0); add; sw; jr). */
+uint32_t op_dword_add_field2(uint32_t a0, uint32_t a1)
+{
+  uint32_t v = br2_ld32(a1) + br2_ld32(a0 + 2);
+  br2_st32(a1, v);
+  return v;
+}
+
+/* ======== 0x801ad994 ======== */
+
+/* op_gp_deref_store14 — *(*(gp+0x4c)+0x14) = *a1; returns *a1.
+ * Disasm 0x801ad994-0x801ad9a0 (lw v1,0x4c(gp); lw v0,(a1); sw v0,0x14(v1);
+ * jr ra with v0 = loaded value). */
+uint32_t op_gp_deref_store14(uint32_t a0, uint32_t a1)
+{
+  uint32_t base = br2_ld32((uint32_t)(guest_gp() + 0x4c));
+  uint32_t v = br2_ld32(a1);
+  (void)a0;
+  br2_st32(base + 0x14, v);
+  return v;
+}
+
+/* ======== 0x801ae490 ======== */
+
+/* op_gp_indexed_byte_store — idx = s16(*(u16*)(a0+2)); v = *(u8*)(a1+idx);
+ * *(*(gp+0x4c)+0x14) = v; returns v. Disasm 0x801ae490-0x801ae4a4
+ * (lh a0+2 -> add to a1 -> lbu -> sw into gp-deref +0x14). */
+uint32_t op_gp_indexed_byte_store(uint32_t a0, uint32_t a1)
+{
+  int32_t idx = (int32_t)(int16_t)br2_ld16(a0 + 2);
+  uint32_t base = br2_ld32((uint32_t)(guest_gp() + 0x4c));
+  uint32_t v = br2_ld8(a1 + (uint32_t)idx);
+  br2_st32(base + 0x14, v);
+  return v;
+}
+
 /* ======== 0x80187dcc ======== */
 
 /* gte_persp_batch — GTE batch transform over 16-byte records.
@@ -3574,6 +3660,694 @@ static void swl_guest(uint32_t addr, uint32_t v)
   default: w = v; break;
   }
   DB32(al) = w;
+}
+
+/* prim_ot_link_indexed — shared OT-link tail of the 0x801872cc-0x8018786c
+ * emit family: slot = ot + (OTZ & 0x1ffc); old = *slot; swl slot+2 <-
+ * out<<8; swl out+2 <- old<<8. Disasm pattern at e.g. 0x80187344-0x80187364. */
+static void prim_ot_link_indexed(uint32_t ot, uint32_t out, uint32_t otz)
+{
+  uint32_t slot = ot + (otz & 0x1ffcu);
+  uint32_t old  = DB32(slot);
+  swl_guest(slot + 2, out << 8);
+  swl_guest(out + 2, old << 8);
+}
+
+/* ======== 0x801872cc ======== */
+
+/* prim_emit_4c — record-fn GTE emitter, input stride 0x4c. a0=cursor,
+ * a1=OT base, a2=variant select, a3=signed count; returns advanced cursor.
+ * Per record: lwc2 V0-V2, RTPT, NCLIP; MAC0>0 gates AVSZ3 + one extra
+ * transformed vector + NCCS color, then the indexed OT link. Disasm
+ * 0x801872cc-0x80187374. */
+uint32_t prim_emit_4c(uint32_t cur, uint32_t ot, uint32_t sel,
+                      int32_t count)
+{
+  int32_t cnt = count;
+  if (cnt <= 0) return cur;
+  do {
+    uint32_t delta = (sel == 0) ? 0x24u : 0x38u;
+    uint32_t out, w18, w1c, w20, mac0, otz;
+    gte_lwc2(cur +  0, 0);
+    gte_lwc2(cur +  4, 1);
+    gte_lwc2(cur +  8, 2);
+    gte_lwc2(cur + 12, 3);
+    gte_lwc2(cur + 16, 4);
+    gte_lwc2(cur + 20, 5);
+    cnt--;
+    copFunction(2, 0x0280030u);                  /* RTPT */
+    w18 = DB32(cur + 0x18);
+    w1c = DB32(cur + 0x1c);
+    w20 = DB32(cur + 0x20);
+    (void)getCopControlWord(2, GTE_CREG(31));    /* cfc2 FLAG (dead) */
+    copFunction(2, 0x1400006u);                  /* NCLIP */
+    mac0 = (uint32_t)getCopReg(2, GTE_DREG(24)); /* MAC0 */
+    out  = cur + delta;
+    if ((int32_t)mac0 > 0) {
+      copFunction(2, 0x158002du);                /* AVSZ3 */
+      setCopReg(2, GTE_DREG(6), w18);
+      setCopReg(2, GTE_DREG(0), w1c);
+      setCopReg(2, GTE_DREG(1), w20);
+      DB32(out + 8) = (uint32_t)getCopReg(2, GTE_DREG(12));
+      copFunction(2, 0x108041bu);                /* NCCS */
+      DB32(out + 0x0c) = (uint32_t)getCopReg(2, GTE_DREG(13));
+      DB32(out + 0x10) = (uint32_t)getCopReg(2, GTE_DREG(14));
+      otz = (uint32_t)getCopReg(2, GTE_DREG(7)); /* OTZ */
+      prim_ot_link_indexed(ot, out, otz);
+      DB32(out + 4) = (uint32_t)getCopReg(2, GTE_DREG(22));
+    }
+    cur += 0x4c;
+  } while (cnt > 0);
+  return cur;
+}
+
+/* ======== 0x80187378 ======== */
+
+/* prim_emit_5c — input stride 0x5c. Same RTPT/NCLIP/MAC0 gate as prim_emit_4c,
+ * then stores SXY0, projects one extra vector (RTPS), runs AVSZ4 + NCCS and
+ * links OT. Disasm 0x80187378-0x80187438. */
+uint32_t prim_emit_5c(uint32_t cur, uint32_t ot, uint32_t sel,
+                      int32_t count)
+{
+  int32_t cnt = count;
+  if (cnt <= 0) return cur;
+  do {
+    uint32_t delta = (sel == 0) ? 0x2cu : 0x44u;
+    uint32_t out, w18, w1c, w20, w24, w28, mac0, otz;
+    gte_lwc2(cur +  0, 0);
+    gte_lwc2(cur +  4, 1);
+    gte_lwc2(cur +  8, 2);
+    gte_lwc2(cur + 12, 3);
+    gte_lwc2(cur + 16, 4);
+    gte_lwc2(cur + 20, 5);
+    cnt--;
+    copFunction(2, 0x0280030u);                  /* RTPT */
+    w18 = DB32(cur + 0x18);
+    w1c = DB32(cur + 0x1c);
+    w20 = DB32(cur + 0x20);
+    (void)getCopControlWord(2, GTE_CREG(31));
+    copFunction(2, 0x1400006u);                  /* NCLIP */
+    mac0 = (uint32_t)getCopReg(2, GTE_DREG(24));
+    out  = cur + delta;
+    if ((int32_t)mac0 > 0) {
+      DB32(out + 8) = (uint32_t)getCopReg(2, GTE_DREG(12));
+      setCopReg(2, GTE_DREG(0), w18);
+      setCopReg(2, GTE_DREG(1), w1c);
+      setCopReg(2, GTE_DREG(6), w20);
+      copFunction(2, 0x0180001u);                /* RTPS */
+      w24 = DB32(cur + 0x24);
+      w28 = DB32(cur + 0x28);
+      copFunction(2, 0x168002eu);                /* AVSZ4 */
+      setCopReg(2, GTE_DREG(0), w24);
+      setCopReg(2, GTE_DREG(1), w28);
+      DB32(out + 0x0c) = (uint32_t)getCopReg(2, GTE_DREG(12));
+      copFunction(2, 0x108041bu);                /* NCCS */
+      DB32(out + 0x10) = (uint32_t)getCopReg(2, GTE_DREG(13));
+      DB32(out + 0x14) = (uint32_t)getCopReg(2, GTE_DREG(14));
+      otz = (uint32_t)getCopReg(2, GTE_DREG(7));
+      prim_ot_link_indexed(ot, out, otz);
+      DB32(out + 4) = (uint32_t)getCopReg(2, GTE_DREG(22));
+    }
+    cur += 0x5c;
+  } while (cnt > 0);
+  return cur;
+}
+
+/* ======== 0x8018743c ======== */
+
+/* prim_emit_6c — input stride 0x6c. RTPT/NCLIP/MAC0 gate, AVSZ3, loads a
+ * second vertex triple into GTE 0-5 and runs NCCT; stores three color words.
+ * Disasm 0x8018743c-0x80187500. */
+uint32_t prim_emit_6c(uint32_t cur, uint32_t ot, uint32_t sel,
+                      int32_t count)
+{
+  int32_t cnt = count;
+  if (cnt <= 0) return cur;
+  do {
+    uint32_t delta = (sel == 0) ? 0x34u : 0x50u;
+    uint32_t out, w18, w1c, w20, w24, mac0, otz;
+    gte_lwc2(cur +  0, 0);
+    gte_lwc2(cur +  4, 1);
+    gte_lwc2(cur +  8, 2);
+    gte_lwc2(cur + 12, 3);
+    gte_lwc2(cur + 16, 4);
+    gte_lwc2(cur + 20, 5);
+    cnt--;
+    copFunction(2, 0x0280030u);                  /* RTPT */
+    w18 = DB32(cur + 0x18);
+    w1c = DB32(cur + 0x1c);
+    w20 = DB32(cur + 0x20);
+    (void)getCopControlWord(2, GTE_CREG(31));
+    copFunction(2, 0x1400006u);                  /* NCLIP */
+    w24 = DB32(cur + 0x24);
+    mac0 = (uint32_t)getCopReg(2, GTE_DREG(24));
+    out  = cur + delta;
+    if ((int32_t)mac0 > 0) {
+      copFunction(2, 0x158002du);                /* AVSZ3 */
+      setCopReg(2, GTE_DREG(6), w18);
+      setCopReg(2, GTE_DREG(0), w1c);
+      setCopReg(2, GTE_DREG(1), w20);
+      setCopReg(2, GTE_DREG(2), w24);
+      gte_lwc2(cur + 0x28, 3);
+      gte_lwc2(cur + 0x2c, 4);
+      gte_lwc2(cur + 0x30, 5);
+      DB32(out + 8) = (uint32_t)getCopReg(2, GTE_DREG(12));
+      copFunction(2, 0x118043fu);                /* NCCT */
+      DB32(out + 0x10) = (uint32_t)getCopReg(2, GTE_DREG(13));
+      DB32(out + 0x18) = (uint32_t)getCopReg(2, GTE_DREG(14));
+      otz = (uint32_t)getCopReg(2, GTE_DREG(7));
+      prim_ot_link_indexed(ot, out, otz);
+      DB32(out + 4)  = (uint32_t)getCopReg(2, GTE_DREG(20));
+      DB32(out + 0x0c) = (uint32_t)getCopReg(2, GTE_DREG(21));
+      DB32(out + 0x14) = (uint32_t)getCopReg(2, GTE_DREG(22));
+    }
+    cur += 0x6c;
+  } while (cnt > 0);
+  return cur;
+}
+
+/* ======== 0x80187504 ======== */
+
+/* prim_emit_8c — input stride 0x8c. Longest member of the 0x801872cc family:
+ * RTPT/NCLIP/MAC0 gate, two projected vectors, AVSZ4 + NCCT + NCCS color
+ * groups and the indexed OT link. Disasm 0x80187504-0x801875f8. */
+uint32_t prim_emit_8c(uint32_t cur, uint32_t ot, uint32_t sel,
+                      int32_t count)
+{
+  int32_t cnt = count;
+  if (cnt <= 0) return cur;
+  do {
+    uint32_t delta = (sel == 0) ? 0x44u : 0x68u;
+    uint32_t out, w18, w1c, w20, w2c, w3c, w40, g14, mac0, otz;
+    gte_lwc2(cur +  0, 0);
+    gte_lwc2(cur +  4, 1);
+    gte_lwc2(cur +  8, 2);
+    gte_lwc2(cur + 12, 3);
+    gte_lwc2(cur + 16, 4);
+    gte_lwc2(cur + 20, 5);
+    cnt--;
+    copFunction(2, 0x0280030u);                  /* RTPT */
+    w20 = DB32(cur + 0x20);
+    w18 = DB32(cur + 0x18);
+    w1c = DB32(cur + 0x1c);
+    (void)getCopControlWord(2, GTE_CREG(31));
+    copFunction(2, 0x1400006u);                  /* NCLIP */
+    w2c = DB32(cur + 0x2c);
+    mac0 = (uint32_t)getCopReg(2, GTE_DREG(24));
+    out  = cur + delta;
+    if ((int32_t)mac0 > 0) {
+      DB32(out + 8) = (uint32_t)getCopReg(2, GTE_DREG(12));
+      setCopReg(2, GTE_DREG(0), w18);
+      setCopReg(2, GTE_DREG(1), w1c);
+      setCopReg(2, GTE_DREG(6), w20);
+      copFunction(2, 0x0180001u);                /* RTPS */
+      setCopReg(2, GTE_DREG(2), w2c);
+      gte_lwc2(cur + 0x30, 3);
+      gte_lwc2(cur + 0x34, 4);
+      gte_lwc2(cur + 0x38, 5);
+      gte_lwc2(cur + 0x24, 0);
+      gte_lwc2(cur + 0x28, 1);
+      g14 = (uint32_t)getCopReg(2, GTE_DREG(14));
+      copFunction(2, 0x118043fu);                /* NCCT */
+      w3c = DB32(cur + 0x3c);
+      w40 = DB32(cur + 0x40);
+      DB32(out + 0x10) = (uint32_t)getCopReg(2, GTE_DREG(12));
+      DB32(out + 0x18) = (uint32_t)getCopReg(2, GTE_DREG(13));
+      DB32(out + 0x20) = g14;
+      copFunction(2, 0x168002eu);                /* AVSZ4 */
+      DB32(out + 4) = (uint32_t)getCopReg(2, GTE_DREG(20));
+      setCopReg(2, GTE_DREG(0), w3c);
+      setCopReg(2, GTE_DREG(1), w40);
+      copFunction(2, 0x108041bu);                /* NCCS */
+      otz = (uint32_t)getCopReg(2, GTE_DREG(7));
+      prim_ot_link_indexed(ot, out, otz);
+      DB32(out + 0x0c) = (uint32_t)getCopReg(2, GTE_DREG(20));
+      DB32(out + 0x14) = (uint32_t)getCopReg(2, GTE_DREG(21));
+      DB32(out + 0x1c) = (uint32_t)getCopReg(2, GTE_DREG(22));
+    }
+    cur += 0x8c;
+  } while (cnt > 0);
+  return cur;
+}
+
+/* ======== 0x801875fc ======== */
+
+/* prim_emit_60 — input stride 0x60. RTPT/NCLIP gate with the attribute byte
+ * at out+7 folded into GTE6 ((b<<24)|0x808080), AVSZ3 + NCCS, OT link.
+ * Disasm 0x801875fc-0x801876b8. */
+uint32_t prim_emit_60(uint32_t cur, uint32_t ot, uint32_t sel,
+                      int32_t count)
+{
+  int32_t cnt = count;
+  if (cnt <= 0) return cur;
+  do {
+    uint32_t delta = (sel == 0) ? 0x20u : 0x40u;
+    uint32_t out, attr, w18, w1c, mac0, otz;
+    gte_lwc2(cur +  0, 0);
+    gte_lwc2(cur +  4, 1);
+    gte_lwc2(cur +  8, 2);
+    gte_lwc2(cur + 12, 3);
+    gte_lwc2(cur + 16, 4);
+    gte_lwc2(cur + 20, 5);
+    cnt--;
+    copFunction(2, 0x0280030u);                  /* RTPT */
+    out  = cur + delta;
+    attr = ((uint32_t)GP8(out + 7) << 24) | 0x00808080u;
+    w18  = DB32(cur + 0x18);
+    w1c  = DB32(cur + 0x1c);
+    (void)getCopControlWord(2, GTE_CREG(31));
+    copFunction(2, 0x1400006u);                  /* NCLIP */
+    setCopReg(2, GTE_DREG(6), attr);
+    setCopReg(2, GTE_DREG(0), w18);
+    setCopReg(2, GTE_DREG(1), w1c);
+    mac0 = (uint32_t)getCopReg(2, GTE_DREG(24));
+    if ((int32_t)mac0 > 0) {
+      copFunction(2, 0x158002du);                /* AVSZ3 */
+      DB32(out + 8)  = (uint32_t)getCopReg(2, GTE_DREG(12));
+      DB32(out + 0x10) = (uint32_t)getCopReg(2, GTE_DREG(13));
+      DB32(out + 0x18) = (uint32_t)getCopReg(2, GTE_DREG(14));
+      copFunction(2, 0x108041bu);                /* NCCS */
+      otz = (uint32_t)getCopReg(2, GTE_DREG(7));
+      prim_ot_link_indexed(ot, out, otz);
+      DB32(out + 4) = (uint32_t)getCopReg(2, GTE_DREG(22));
+    }
+    cur += 0x60;
+  } while (cnt > 0);
+  return cur;
+}
+
+/* ======== 0x801876bc ======== */
+
+/* prim_emit_78 — input stride 0x78. RTPT/NCLIP gate, attribute-byte GTE6,
+ * one RTPS vector, AVSZ4 + NCCS, OT link; also stores the pre-branch SXY0
+ * read (gte12) as a GPR word at out+8. Disasm 0x801876bc-0x80187790. */
+uint32_t prim_emit_78(uint32_t cur, uint32_t ot, uint32_t sel,
+                      int32_t count)
+{
+  int32_t cnt = count;
+  if (cnt <= 0) return cur;
+  do {
+    uint32_t delta = (sel == 0) ? 0x28u : 0x50u;
+    uint32_t out, attr, w18, w1c, w20, w24, mac0, sxy0, otz;
+    gte_lwc2(cur +  0, 0);
+    gte_lwc2(cur +  4, 1);
+    gte_lwc2(cur +  8, 2);
+    gte_lwc2(cur + 12, 3);
+    gte_lwc2(cur + 16, 4);
+    gte_lwc2(cur + 20, 5);
+    cnt--;
+    copFunction(2, 0x0280030u);                  /* RTPT */
+    out  = cur + delta;
+    attr = ((uint32_t)GP8(out + 7) << 24) | 0x00808080u;
+    w18  = DB32(cur + 0x18);
+    w1c  = DB32(cur + 0x1c);
+    (void)getCopControlWord(2, GTE_CREG(31));
+    copFunction(2, 0x1400006u);                  /* NCLIP */
+    setCopReg(2, GTE_DREG(6), attr);
+    setCopReg(2, GTE_DREG(0), w18);
+    setCopReg(2, GTE_DREG(1), w1c);
+    mac0 = (uint32_t)getCopReg(2, GTE_DREG(24));
+    sxy0 = (uint32_t)getCopReg(2, GTE_DREG(12));
+    if ((int32_t)mac0 > 0) {
+      copFunction(2, 0x0180001u);                /* RTPS */
+      w20 = DB32(cur + 0x20);
+      w24 = DB32(cur + 0x24);
+      DB32(out + 0x20) = (uint32_t)getCopReg(2, GTE_DREG(14));
+      setCopReg(2, GTE_DREG(0), w20);
+      setCopReg(2, GTE_DREG(1), w24);
+      DB32(out + 8) = sxy0;
+      copFunction(2, 0x168002eu);                /* AVSZ4 */
+      DB32(out + 0x10) = (uint32_t)getCopReg(2, GTE_DREG(12));
+      DB32(out + 0x18) = (uint32_t)getCopReg(2, GTE_DREG(13));
+      copFunction(2, 0x108041bu);                /* NCCS */
+      otz = (uint32_t)getCopReg(2, GTE_DREG(7));
+      prim_ot_link_indexed(ot, out, otz);
+      DB32(out + 4) = (uint32_t)getCopReg(2, GTE_DREG(22));
+    }
+    cur += 0x78;
+  } while (cnt > 0);
+  return cur;
+}
+
+/* ======== 0x80187794 ======== */
+
+/* prim_emit_80 — input stride 0x80. RTPT/NCLIP gate, attribute-byte GTE6,
+ * AVSZ3 + NCCT color triple, OT link. Disasm 0x80187794-0x80187868. */
+uint32_t prim_emit_80(uint32_t cur, uint32_t ot, uint32_t sel,
+                      int32_t count)
+{
+  int32_t cnt = count;
+  if (cnt <= 0) return cur;
+  do {
+    uint32_t delta = (sel == 0) ? 0x30u : 0x58u;
+    uint32_t out, attr, w18, w1c, w20, mac0, otz;
+    gte_lwc2(cur +  0, 0);
+    gte_lwc2(cur +  4, 1);
+    gte_lwc2(cur +  8, 2);
+    gte_lwc2(cur + 12, 3);
+    gte_lwc2(cur + 16, 4);
+    gte_lwc2(cur + 20, 5);
+    cnt--;
+    copFunction(2, 0x0280030u);                  /* RTPT */
+    out  = cur + delta;
+    attr = ((uint32_t)GP8(out + 7) << 24) | 0x00808080u;
+    w18  = DB32(cur + 0x18);
+    w1c  = DB32(cur + 0x1c);
+    (void)getCopControlWord(2, GTE_CREG(31));
+    copFunction(2, 0x1400006u);                  /* NCLIP */
+    setCopReg(2, GTE_DREG(0), w18);
+    setCopReg(2, GTE_DREG(1), w1c);
+    w20 = DB32(cur + 0x20);
+    mac0 = (uint32_t)getCopReg(2, GTE_DREG(24));
+    setCopReg(2, GTE_DREG(6), attr);
+    if ((int32_t)mac0 > 0) {
+      copFunction(2, 0x158002du);                /* AVSZ3 */
+      setCopReg(2, GTE_DREG(2), w20);
+      gte_lwc2(cur + 0x24, 3);
+      gte_lwc2(cur + 0x28, 4);
+      gte_lwc2(cur + 0x2c, 5);
+      DB32(out + 8) = (uint32_t)getCopReg(2, GTE_DREG(12));
+      copFunction(2, 0x118043fu);                /* NCCT */
+      DB32(out + 0x14) = (uint32_t)getCopReg(2, GTE_DREG(13));
+      DB32(out + 0x20) = (uint32_t)getCopReg(2, GTE_DREG(14));
+      otz = (uint32_t)getCopReg(2, GTE_DREG(7));
+      prim_ot_link_indexed(ot, out, otz);
+      DB32(out + 4)   = (uint32_t)getCopReg(2, GTE_DREG(20));
+      DB32(out + 0x10) = (uint32_t)getCopReg(2, GTE_DREG(21));
+      DB32(out + 0x1c) = (uint32_t)getCopReg(2, GTE_DREG(22));
+    }
+    cur += 0x80;
+  } while (cnt > 0);
+  return cur;
+}
+
+/* ======== 0x8018786c ======== */
+
+/* prim_emit_a8 — input stride 0xa8. Largest member of the family: RTPT/NCLIP
+ * gate, attribute-byte GTE6, RTPS + NCCT + AVSZ4 + NCCS color groups and
+ * the indexed OT link. Disasm 0x8018786c-0x8018797c. */
+uint32_t prim_emit_a8(uint32_t cur, uint32_t ot, uint32_t sel,
+                      int32_t count)
+{
+  int32_t cnt = count;
+  if (cnt <= 0) return cur;
+  do {
+    uint32_t delta = (sel == 0) ? 0x40u : 0x74u;
+    uint32_t out, attr, w18, w1c, w28, w38, w3c, mac0, sxy0, g14, c0, c1, c2, otz;
+    gte_lwc2(cur +  0, 0);
+    gte_lwc2(cur +  4, 1);
+    gte_lwc2(cur +  8, 2);
+    gte_lwc2(cur + 12, 3);
+    gte_lwc2(cur + 16, 4);
+    gte_lwc2(cur + 20, 5);
+    cnt--;
+    copFunction(2, 0x0280030u);                  /* RTPT */
+    out  = cur + delta;
+    attr = ((uint32_t)GP8(out + 7) << 24) | 0x00808080u;
+    w18  = DB32(cur + 0x18);
+    w1c  = DB32(cur + 0x1c);
+    (void)getCopControlWord(2, GTE_CREG(31));
+    copFunction(2, 0x1400006u);                  /* NCLIP */
+    setCopReg(2, GTE_DREG(0), w18);
+    setCopReg(2, GTE_DREG(1), w1c);
+    w28 = DB32(cur + 0x28);
+    mac0 = (uint32_t)getCopReg(2, GTE_DREG(24));
+    sxy0 = (uint32_t)getCopReg(2, GTE_DREG(12));
+    if ((int32_t)mac0 > 0) {
+      copFunction(2, 0x0180001u);                /* RTPS */
+      setCopReg(2, GTE_DREG(6), attr);
+      setCopReg(2, GTE_DREG(2), w28);
+      gte_lwc2(cur + 0x2c, 3);
+      gte_lwc2(cur + 0x30, 4);
+      gte_lwc2(cur + 0x34, 5);
+      gte_lwc2(cur + 0x20, 0);
+      gte_lwc2(cur + 0x24, 1);
+      g14 = (uint32_t)getCopReg(2, GTE_DREG(14));
+      copFunction(2, 0x118043fu);                /* NCCT */
+      w38 = DB32(cur + 0x38);
+      w3c = DB32(cur + 0x3c);
+      DB32(out + 8)    = sxy0;
+      DB32(out + 0x2c) = g14;
+      DB32(out + 0x14) = (uint32_t)getCopReg(2, GTE_DREG(12));
+      DB32(out + 0x20) = (uint32_t)getCopReg(2, GTE_DREG(13));
+      copFunction(2, 0x168002eu);                /* AVSZ4 */
+      c0 = (uint32_t)getCopReg(2, GTE_DREG(20));
+      c1 = (uint32_t)getCopReg(2, GTE_DREG(21));
+      c2 = (uint32_t)getCopReg(2, GTE_DREG(22));
+      setCopReg(2, GTE_DREG(0), w38);
+      setCopReg(2, GTE_DREG(1), w3c);
+      DB32(out + 4)    = c0;
+      copFunction(2, 0x108041bu);                /* NCCS */
+      DB32(out + 0x10) = c1;
+      DB32(out + 0x1c) = c2;
+      otz = (uint32_t)getCopReg(2, GTE_DREG(7));
+      prim_ot_link_indexed(ot, out, otz);
+      DB32(out + 0x28) = (uint32_t)getCopReg(2, GTE_DREG(22));
+    }
+    cur += 0xa8;
+  } while (cnt > 0);
+  return cur;
+}
+
+/* ======== 0x80187d14 ======== */
+
+/* prim_tri_batch_rtpt — stride-0x30 triangle batch RTPT. a0=record cursor,
+ * a3=signed vertex count (consumed in groups of 3); returns advanced cursor.
+ * Each record carries six input words at +0/+4/+0x10/+0x14/+0x20/+0x24
+ * (loaded into GTE V0-V2) and receives the transformed SXY pairs at
+ * +8/+0xc, +0x18/+0x1c, +0x28/+0x2c — partial tails store only the leading
+ * pairs (count mod 3). Disasm 0x80187d14-0x80187dc8. */
+uint32_t prim_tri_batch_rtpt(uint32_t cur, uint32_t a1, uint32_t a2,
+                             int32_t count)
+{
+  int32_t rem = count;
+  (void)a1; (void)a2;
+  if (rem <= 0) return cur;
+  do {
+    uint32_t w0 = DB32(cur + 0x00);
+    uint32_t w1 = DB32(cur + 0x04);
+    uint32_t w2 = DB32(cur + 0x10);
+    uint32_t w3 = DB32(cur + 0x14);
+    uint32_t w4 = DB32(cur + 0x20);
+    uint32_t w5 = DB32(cur + 0x24);
+    int32_t verts = (rem < 3) ? rem : 3;
+    setCopReg(2, GTE_DREG(0), w0);
+    setCopReg(2, GTE_DREG(1), w1);
+    setCopReg(2, GTE_DREG(2), w2);
+    setCopReg(2, GTE_DREG(3), w3);
+    setCopReg(2, GTE_DREG(4), w4);
+    setCopReg(2, GTE_DREG(5), w5);
+    rem -= 3;
+    copFunction(2, 0x0280030u);                  /* RTPT */
+    if (verts >= 1) {
+      DB32(cur + 0x08) = (uint32_t)getCopReg(2, GTE_DREG(12));
+      DB32(cur + 0x0c) = (uint32_t)getCopReg(2, GTE_DREG(17));
+    }
+    if (verts >= 2) {
+      DB32(cur + 0x18) = (uint32_t)getCopReg(2, GTE_DREG(13));
+      DB32(cur + 0x1c) = (uint32_t)getCopReg(2, GTE_DREG(18));
+    }
+    if (verts >= 3) {
+      DB32(cur + 0x28) = (uint32_t)getCopReg(2, GTE_DREG(14));
+      DB32(cur + 0x2c) = (uint32_t)getCopReg(2, GTE_DREG(19));
+    }
+    cur += 0x30;
+  } while (rem > 0);
+  return cur;
+}
+
+/* ======== 0x80187ee0 ======== */
+
+/* prim_emit_ptr_54 — pointer-chase emit variant, stride 0x54. a0=cursor,
+ * a1=OT base, a2=variant select, a3=count; returns advanced cursor. The
+ * first three record words are vertex POINTERS: their pointees feed
+ * NCLIP via GTE12-14 and are also copied to out+8/+0x10/+0x18. When MAC0>0
+ * three pointer-pairs (cur+0x10/0x14/0x18 -> attr/UV words) drive the
+ * 0x138041c shade ops with AVSZ3 depth before the indexed OT link.
+ * Disasm 0x80187ee0-0x80187ff8. */
+uint32_t prim_emit_ptr_54(uint32_t cur, uint32_t ot, uint32_t sel,
+                          int32_t count)
+{
+  int32_t cnt = count;
+  if (cnt <= 0) return cur;
+  do {
+    uint32_t delta = (sel == 0) ? 0x1cu : 0x38u;
+    uint32_t p0 = DB32(cur + 0x00);
+    uint32_t p1 = DB32(cur + 0x04);
+    uint32_t p2 = DB32(cur + 0x08);
+    uint32_t w0 = DB32(p0);
+    uint32_t w1 = DB32(p1);
+    uint32_t w2 = DB32(p2);
+    uint32_t out, pa, pb, pc, t2, otz;
+    int32_t mac0;
+    setCopReg(2, GTE_DREG(12), w0);
+    setCopReg(2, GTE_DREG(13), w1);
+    setCopReg(2, GTE_DREG(14), w2);
+    cnt--;
+    out = cur + delta;
+    copFunction(2, 0x1400006u);                  /* NCLIP */
+    pa = DB32(cur + 0x10);
+    DB32(out + 0x08) = w0;
+    DB32(out + 0x10) = w1;
+    mac0 = (int32_t)getCopReg(2, GTE_DREG(24));
+    DB32(out + 0x18) = w2;
+    if (mac0 > 0) {
+      t2 = DB32(pa);
+      gte_lwc2(cur + 0x0c, 6);
+      setCopReg(2, GTE_DREG(9),  t2 & 0xffffu);
+      setCopReg(2, GTE_DREG(10), t2 >> 16);
+      gte_lwc2(pa + 4, 11);
+      gte_lwc2(p0 + 4, 17);
+      copFunction(2, 0x138041cu);
+      DB32(out + 4) = (uint32_t)getCopReg(2, GTE_DREG(22));
+
+      pb = DB32(cur + 0x14);
+      gte_lwc2(p1 + 4, 18);
+      t2 = DB32(pb);
+      setCopReg(2, GTE_DREG(9),  t2 & 0xffffu);
+      setCopReg(2, GTE_DREG(10), t2 >> 16);
+      gte_lwc2(pb + 4, 11);
+      copFunction(2, 0x138041cu);
+      DB32(out + 0x0c) = (uint32_t)getCopReg(2, GTE_DREG(22));
+
+      pc = DB32(cur + 0x18);
+      gte_lwc2(p2 + 4, 19);
+      t2 = DB32(pc);
+      copFunction(2, 0x158002du);                /* AVSZ3 */
+      setCopReg(2, GTE_DREG(9),  t2 & 0xffffu);
+      setCopReg(2, GTE_DREG(10), t2 >> 16);
+      gte_lwc2(pc + 4, 11);
+      otz = (uint32_t)getCopReg(2, GTE_DREG(7));
+      copFunction(2, 0x138041cu);
+      prim_ot_link_indexed(ot, out, otz);
+      DB32(out + 0x14) = (uint32_t)getCopReg(2, GTE_DREG(22));
+    }
+    cur += 0x54;
+  } while (cnt > 0);
+  return cur;
+}
+
+/* ======== 0x80187ffc ======== */
+
+/* prim_emit_ptr_50 — pointer-chase emit variant, stride 0x50. Same NCLIP
+ * pointer preamble as prim_emit_ptr_54 but a single shade pointer at
+ * cur+0xc; MAC0>0 folds the out+7 attribute byte into GTE6, runs AVSZ3 +
+ * one 0x138041c shade and the indexed OT link. Disasm
+ * 0x80187ffc-0x801880d0. */
+uint32_t prim_emit_ptr_50(uint32_t cur, uint32_t ot, uint32_t sel,
+                          int32_t count)
+{
+  int32_t cnt = count;
+  if (cnt <= 0) return cur;
+  do {
+    uint32_t delta = (sel == 0) ? 0x10u : 0x30u;
+    uint32_t p0 = DB32(cur + 0x00);
+    uint32_t p1 = DB32(cur + 0x04);
+    uint32_t p2 = DB32(cur + 0x08);
+    uint32_t w0 = DB32(p0);
+    uint32_t w1 = DB32(p1);
+    uint32_t w2 = DB32(p2);
+    uint32_t out, pn, attr, t2, otz;
+    int32_t mac0;
+    setCopReg(2, GTE_DREG(12), w0);
+    setCopReg(2, GTE_DREG(13), w1);
+    setCopReg(2, GTE_DREG(14), w2);
+    cnt--;
+    out = cur + delta;
+    copFunction(2, 0x1400006u);                  /* NCLIP */
+    DB32(out + 0x08) = w0;
+    DB32(out + 0x10) = w1;
+    DB32(out + 0x18) = w2;
+    mac0 = (int32_t)getCopReg(2, GTE_DREG(24));
+    if (mac0 > 0) {
+      pn   = DB32(cur + 0x0c);
+      attr = ((uint32_t)GP8(out + 7) << 24) | 0x00808080u;
+      t2   = DB32(pn);
+      setCopReg(2, GTE_DREG(6), attr);
+      gte_lwc2(p0 + 4, 17);
+      gte_lwc2(p1 + 4, 18);
+      gte_lwc2(p2 + 4, 19);
+      copFunction(2, 0x158002du);                /* AVSZ3 */
+      setCopReg(2, GTE_DREG(9),  t2 & 0xffffu);
+      setCopReg(2, GTE_DREG(10), t2 >> 16);
+      gte_lwc2(pn + 4, 11);
+      otz = (uint32_t)getCopReg(2, GTE_DREG(7));
+      copFunction(2, 0x138041cu);
+      prim_ot_link_indexed(ot, out, otz);
+      DB32(out + 4) = (uint32_t)getCopReg(2, GTE_DREG(22));
+    }
+    cur += 0x50;
+  } while (cnt > 0);
+  return cur;
+}
+
+/* ======== 0x801880d4 ======== */
+
+/* prim_emit_ptr_68 — pointer-chase emit variant, stride 0x68. prim_emit_ptr_50
+ * widened to three shade pointers at cur+0xc/0x10/0x14 with wider output
+ * slots (+8/+0x14/+0x20 stores, colors at +4/+0x10/+0x1c). Disasm
+ * 0x801880d4-0x801881fc. */
+uint32_t prim_emit_ptr_68(uint32_t cur, uint32_t ot, uint32_t sel,
+                          int32_t count)
+{
+  int32_t cnt = count;
+  if (cnt <= 0) return cur;
+  do {
+    uint32_t delta = (sel == 0) ? 0x18u : 0x40u;
+    uint32_t p0 = DB32(cur + 0x00);
+    uint32_t p1 = DB32(cur + 0x04);
+    uint32_t p2 = DB32(cur + 0x08);
+    uint32_t w0 = DB32(p0);
+    uint32_t w1 = DB32(p1);
+    uint32_t w2 = DB32(p2);
+    uint32_t out, pa, pb, pc, attr, t2, otz;
+    int32_t mac0;
+    setCopReg(2, GTE_DREG(12), w0);
+    setCopReg(2, GTE_DREG(13), w1);
+    setCopReg(2, GTE_DREG(14), w2);
+    cnt--;
+    out = cur + delta;
+    copFunction(2, 0x1400006u);                  /* NCLIP */
+    DB32(out + 0x08) = w0;
+    DB32(out + 0x14) = w1;
+    DB32(out + 0x20) = w2;
+    mac0 = (int32_t)getCopReg(2, GTE_DREG(24));
+    if (mac0 > 0) {
+      pa   = DB32(cur + 0x0c);
+      attr = ((uint32_t)GP8(out + 7) << 24) | 0x00808080u;
+      t2   = DB32(pa);
+      setCopReg(2, GTE_DREG(6), attr);
+      setCopReg(2, GTE_DREG(9),  t2 & 0xffffu);
+      setCopReg(2, GTE_DREG(10), t2 >> 16);
+      gte_lwc2(pa + 4, 11);
+      gte_lwc2(p0 + 4, 17);
+      copFunction(2, 0x138041cu);
+
+      pb = DB32(cur + 0x10);
+      gte_lwc2(p1 + 4, 18);
+      t2 = DB32(pb);
+      DB32(out + 4) = (uint32_t)getCopReg(2, GTE_DREG(22));
+      setCopReg(2, GTE_DREG(9),  t2 & 0xffffu);
+      setCopReg(2, GTE_DREG(10), t2 >> 16);
+      gte_lwc2(pb + 4, 11);
+      copFunction(2, 0x138041cu);
+
+      pc = DB32(cur + 0x14);
+      gte_lwc2(p2 + 4, 19);
+      t2 = DB32(pc);
+      DB32(out + 0x10) = (uint32_t)getCopReg(2, GTE_DREG(22));
+      copFunction(2, 0x158002du);                /* AVSZ3 */
+      setCopReg(2, GTE_DREG(9),  t2 & 0xffffu);
+      setCopReg(2, GTE_DREG(10), t2 >> 16);
+      gte_lwc2(pc + 4, 11);
+      otz = (uint32_t)getCopReg(2, GTE_DREG(7));
+      copFunction(2, 0x138041cu);
+      prim_ot_link_indexed(ot, out, otz);
+      DB32(out + 0x1c) = (uint32_t)getCopReg(2, GTE_DREG(22));
+    }
+    cur += 0x68;
+  } while (cnt > 0);
+  return cur;
 }
 
 extern int psx_ws_cull_sltiu(uint32_t sx, uint32_t imm);

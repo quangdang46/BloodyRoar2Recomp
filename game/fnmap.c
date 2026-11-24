@@ -500,6 +500,9 @@ extern void desc_cmd_map(void);
 extern void desc_cursor_advance(void);
 extern void desc_cursor_select(void);
 extern void desc_flagbit_dispatch(void);
+extern void desc_frag_scale_store(void);
+extern void desc_frag_sum_store(void);
+extern void desc_frag_tail(void);
 extern void desc_opcode_dispatch(void);
 extern void desc_slot_alloc(void);
 extern void desc_slot_fill_x15(void);
@@ -968,12 +971,18 @@ extern void op_dbg_dump5(void);
 extern void op_dbg_dump_node(void);
 extern void op_dbg_dump_ring(void);
 extern void op_dbg_dump_tbl(void);
+extern void op_dword_add4(void);
+extern void op_dword_add4_entry(void);
+extern void op_dword_add_field2(void);
 extern void op_field_store_idx(void);
 extern void op_flag_fn_check(void);
 extern void op_frame_advance(void);
 extern void op_globals_reset_shift(void);
+extern void op_gp_cond_add(void);
 extern void op_gp_cond_store(void);
+extern void op_gp_deref_store14(void);
 extern void op_gp_dword_sub(void);
+extern void op_gp_indexed_byte_store(void);
 extern void op_gpf14_a72a0(void);
 extern void op_gpf14_a72a0_b(void);
 extern void op_gpf14_anim_alloc(void);
@@ -1081,6 +1090,17 @@ extern void prim_attr_repack(void);
 extern void prim_attr_word_set(void);
 extern void prim_batch_emit(void);
 extern void prim_depth_shade_emit(void);
+extern void prim_emit_4c(void);
+extern void prim_emit_5c(void);
+extern void prim_emit_60(void);
+extern void prim_emit_6c(void);
+extern void prim_emit_78(void);
+extern void prim_emit_80(void);
+extern void prim_emit_8c(void);
+extern void prim_emit_a8(void);
+extern void prim_emit_ptr_50(void);
+extern void prim_emit_ptr_54(void);
+extern void prim_emit_ptr_68(void);
 extern void prim_emit_tail_advance(void);
 extern void prim_group_alloc(void);
 extern void prim_group_build(void);
@@ -1093,6 +1113,7 @@ extern void prim_persp_ot_emit(void);
 extern void prim_persp_ot_emit_112(void);
 extern void prim_tag_set(void);
 extern void prim_task_run(void);
+extern void prim_tri_batch_rtpt(void);
 extern void print_dispatch_guest(void);
 extern void print_dispatch_selfdesc_guest(void);
 extern void print_mode_dispatch_b(void);
@@ -2078,6 +2099,9 @@ const Br2FnEnt fn_table[] = {
   { 0x8017cf14, (void *)descriptor_fetch },
   { 0x8017cfe0, (void *)cursor_advance_thunk },
   { 0x8017d008, (void *)descriptor_quad_dispatch },
+  { 0x8017d198, (void *)desc_frag_scale_store },
+  { 0x8017d19c, (void *)desc_frag_sum_store },
+  { 0x8017d1c4, (void *)desc_frag_tail },
   { 0x8017d378, (void *)condition_word_dispatch },
   { 0x8017d7f4, (void *)button_cond_eval },
   { 0x8017e138, (void *)desc_cmd_map },
@@ -2157,7 +2181,19 @@ const Br2FnEnt fn_table[] = {
   { 0x80186e64, (void *)gte_xform3_ip },
   { 0x80186f5c, (void *)gte_xform3_t_ip },
   { 0x801871bc, (void *)prim_list_gte_invoke },
+  { 0x801872cc, (void *)prim_emit_4c },
+  { 0x80187378, (void *)prim_emit_5c },
+  { 0x8018743c, (void *)prim_emit_6c },
+  { 0x80187504, (void *)prim_emit_8c },
+  { 0x801875fc, (void *)prim_emit_60 },
+  { 0x801876bc, (void *)prim_emit_78 },
+  { 0x80187794, (void *)prim_emit_80 },
+  { 0x8018786c, (void *)prim_emit_a8 },
+  { 0x80187d14, (void *)prim_tri_batch_rtpt },
   { 0x80187dcc, (void *)gte_persp_batch },
+  { 0x80187ee0, (void *)prim_emit_ptr_54 },
+  { 0x80187ffc, (void *)prim_emit_ptr_50 },
+  { 0x801880d4, (void *)prim_emit_ptr_68 },
   { 0x8018a4f8, (void *)prim_task_run },
   { 0x8018a9e8, (void *)prim_depth_shade_emit },
   { 0x8018b050, (void *)vec2_rot },
@@ -2756,13 +2792,19 @@ const Br2FnEnt fn_table[] = {
   { 0x801ad59c, (void *)aux_tbl_store_a },
   { 0x801ad5d0, (void *)op_walk_dispatch_f },
   { 0x801ad668, (void *)op_gp_cond_store },
+  { 0x801ad698, (void *)op_dword_add4 },
+  { 0x801ad6ac, (void *)op_gp_cond_add },
+  { 0x801ad6dc, (void *)op_dword_add4_entry },
   { 0x801ad6f0, (void *)op_ctx_fc_set },
+  { 0x801ad920, (void *)op_dword_add_field2 },
+  { 0x801ad994, (void *)op_gp_deref_store14 },
   { 0x801ad9d4, (void *)op_gp_dword_sub },
   { 0x801adc60, (void *)op_rand_i8 },
   { 0x801adca4, (void *)rand_lo16_store },
   { 0x801adccc, (void *)rand_word_store },
   { 0x801add38, (void *)op_tbl_elem_copy },
   { 0x801add84, (void *)op_hword_pair_add },
+  { 0x801ae490, (void *)op_gp_indexed_byte_store },
   { 0x801ae85c, (void *)op_cached_node_alloc },
   { 0x801ae8a8, (void *)op_call_ad38c },
   { 0x801ae8dc, (void *)op_ad38c_store },

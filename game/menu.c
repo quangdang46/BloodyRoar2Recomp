@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "cpu_state.h"
 
 typedef uint8_t  undefined;
 typedef uint8_t  undefined1;
@@ -34,6 +35,7 @@ extern uint32_t br2_guest_frame(uint32_t);
 extern void br2_guest_frame_free(void);
 extern uint8_t *_g_system_config_ptr;
 extern uint8_t *_g_pad_buffer;
+extern CPUState *clean_cpu_state(void);
 /* g_game_state/g_sub_state are guest scratchpad bytes at 0x1f800000/0x1f800002
  * (the top-level mode SM read by entry_0x80126234 in game.c). They must alias
  * the SAME guest storage — declaring them `extern int` bound them to throwaway
@@ -5046,6 +5048,52 @@ void pad_slot_state_walk(void)
    ({uint32_t _bv=(uint32_t)(v);uint32_t *_bp=(uint32_t *)guest_at(0x801c47b8u);uint32_t _bo=*_bp;*_bp=_bv; \
      {extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);decomp_trace_record(20,_bo,_bv,0,__LINE__);} _bv;}) \
    : (*(uint32_t *)guest_at(a) = (uint32_t)(v)))
+
+/* ======== 0x8017d198 / 0x8017d19c / 0x8017d1c4 ======== */
+/* Descriptor-fragment halfword pair writer. The three guest entries share
+ * one tail: they compute a record offset from the live v0/v1 pair, load
+ * u16 src+2 (a2), and store it at +0x0c into BOTH table pointers held at
+ * a3+0x18 and a3+0x1c; the tail returns a2+4.
+ *   0x8017d198: v0 = v1<<2 then falls through -> off = v1*40.
+ *   0x8017d19c: off = (v0+v1)<<3 (direct entry uses live v0/v1).
+ *   0x8017d1c4: standalone tail -> return a2+4.
+ * Disasm generated/SLES_017.22_full_35.c @0x8017d198/0x8017d19c/0x8017d1c4. */
+static uint32_t desc_frag_store_pair(uint32_t off, uint32_t src,
+                                     uint32_t owner)
+{
+  uint32_t h  = MB16(src + 2);                  /* lhu a2+2 */
+  uint32_t t1 = MB32(owner + 0x18);
+  uint32_t t2 = MB32(owner + 0x1c);
+  MW16(t1 + off + 0x0c, h);
+  MW16(t2 + off + 0x0c, h);
+  return src + 4;
+}
+
+uint32_t desc_frag_scale_store(uint32_t a0, uint32_t a1, uint32_t a2,
+                               uint32_t a3)
+{
+  CPUState *c = clean_cpu_state();
+  uint32_t off;
+  (void)a0; (void)a1;
+  off = (uint32_t)c->gpr[3] * 40u;              /* (v1<<2 + v1) << 3 */
+  return desc_frag_store_pair(off, a2, a3);
+}
+
+uint32_t desc_frag_sum_store(uint32_t a0, uint32_t a1, uint32_t a2,
+                             uint32_t a3)
+{
+  CPUState *c = clean_cpu_state();
+  uint32_t off;
+  (void)a0; (void)a1;
+  off = (uint32_t)(c->gpr[2] + c->gpr[3]) << 3;
+  return desc_frag_store_pair(off, a2, a3);
+}
+
+uint32_t desc_frag_tail(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
+{
+  (void)a0; (void)a1; (void)a3;
+  return a2 + 4;
+}
 
 /* 16-byte-block guest copy; lwl/lwr vs lw/sw in the original is only an
  * alignment variant of the same memcpy. */
