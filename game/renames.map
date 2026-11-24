@@ -1893,3 +1893,4 @@
 8018e300 cpu_critical_enter
 8018e310 cpu_critical_exit
 801a27d0 cd_extent_len
+801aae08 gte_xform_packet

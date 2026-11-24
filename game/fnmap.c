@@ -768,6 +768,7 @@ extern void gte_xform3_t_ip(void);
 extern void gte_xform_accum(void);
 extern void gte_xform_add_off(void);
 extern void gte_xform_norm3pts(void);
+extern void gte_xform_packet(void);
 extern void guard_callee_a0(void);
 extern void guard_callee_a1(void);
 extern void guard_callee_b0(void);
@@ -2846,6 +2847,7 @@ const Br2FnEnt fn_table[] = {
   { 0x801aad04, (void *)gte_matrix_base_set },
   { 0x801aad24, (void *)op_ctx_node_attach },
   { 0x801aadc4, (void *)op_ctx_guard_call },
+  { 0x801aae08, (void *)gte_xform_packet },
   { 0x801ac070, (void *)lazy_node_wrap },
   { 0x801ac0d4, (void *)op_walk_dispatch_d },
   { 0x801ac154, (void *)prim_group_gc },
