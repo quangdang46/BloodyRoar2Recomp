@@ -7064,12 +7064,18 @@ L_case1:
       if (MB8(g2 + 0) == 1) MW8(g2 + 0,2);
       if (MB8(g3 + 0) == 1) MW8(g3 + 0,2);
       battle_subrecord_set2(s1);
-      dd = MBS16(g2 + 0xb0);
-      d2 = dd ? (int32_t)((int32_t)((uint32_t)(MBS16(g2 + 0xb0) -
-             MBS16(g2 + 0xac)) << 12) / dd) : 0;
-      dd = MBS16(g3 + 0xb0);
-      d3 = dd ? (int32_t)((int32_t)((uint32_t)(MBS16(g3 + 0xb0) -
-             MBS16(g3 + 0xac)) << 12) / dd) : 0;
+      /* guest 0x8015500C/0x80155028: lh/lh/subu/sll12/div with NO
+       * den==0 branch — MIPS div-by-zero yields LO = num>=0 ? -1 : 1. */
+      {
+        int32_t n2 = (int32_t)((uint32_t)(MBS16(g2 + 0xb0) -
+                        MBS16(g2 + 0xac)) << 12);
+        dd = MBS16(g2 + 0xb0);
+        d2 = dd != 0 ? n2 / dd : (n2 >= 0 ? -1 : 1);
+        n2 = (int32_t)((uint32_t)(MBS16(g3 + 0xb0) -
+                        MBS16(g3 + 0xac)) << 12);
+        dd = MBS16(g3 + 0xb0);
+        d3 = dd != 0 ? n2 / dd : (n2 >= 0 ? -1 : 1);
+      }
       if (d2 == d3) {
         MW16(s1 + 0x8c,0);
         MW16(s1 + 0x92,(MB16(s1 + 0x92) & 0xff00) | 8);
@@ -12749,13 +12755,20 @@ emit:
   MW16(gbuf + 6, MB16(v1 + 6));
   MW16(gbuf + 8, MB16(v1 + 8));
   MW16(gbuf + 10, MB16(v1 + 0xa));
-  if (MBS16(s0 + 0x1c) == 0) {
-    den = MBS16(s0 + 0x1a);
-    a3 = den != 0 ? (uint32_t)(((int32_t)MBS16(s0 + 0x14) << 12) / den) : 0;
-  } else {
-    den = MBS16(s0 + 0x1a);
-    v0 = den != 0 ? (uint32_t)(((int32_t)MBS16(s0 + 0x14) << 12) / den) : 0;
-    a3 = 0x1000u - v0;
+  /* guest 0x8014B208/0x8014B228: lh/lh/sll12/div unconditional —
+   * MIPS div-by-zero LO = num>=0 ? 0xFFFFFFFF : 1 (mflo raw u32). */
+  {
+    int32_t num = (int32_t)MBS16(s0 + 0x14) << 12;
+    if (MBS16(s0 + 0x1c) == 0) {
+      den = MBS16(s0 + 0x1a);
+      a3 = den != 0 ? (uint32_t)(num / den)
+                    : (num >= 0 ? 0xFFFFFFFFu : 1u);
+    } else {
+      den = MBS16(s0 + 0x1a);
+      v0 = den != 0 ? (uint32_t)(num / den)
+                    : (num >= 0 ? 0xFFFFFFFFu : 1u);
+      a3 = 0x1000u - v0;
+    }
   }
   gte_xform_accum(buf, buf + 8, 1, a3);
   MW8(d0 + 4, buf[0]);
@@ -12909,8 +12922,11 @@ uint32_t desc_cmd_map(uint32_t param_1,uint32_t param_2,
   a3 = t0 & 0xf;
   if (a3 == 0) {
     int32_t c = MBS16(s0 + 2);
+    int32_t n4 = (int32_t)MBS16(s0 + 4) << 4;
     den = MBS16(a0 + 0x88);
-    q = den != 0 ? ((int32_t)MBS16(s0 + 4) << 4) / den : 0;
+    /* guest 0x8017E22C/0x8017E254: lh/lh/sll4/div unconditional —
+     * MIPS div-by-zero LO = num>=0 ? -1 : 1. */
+    q = den != 0 ? n4 / den : (n4 >= 0 ? -1 : 1);
     deferred_cmd_post(0x400, c + (c >= 0xc0 && a2 != 0 ? 0x40 : 0), q);
     return s0 + 6;
   }
