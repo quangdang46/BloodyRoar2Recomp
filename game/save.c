@@ -2531,6 +2531,8 @@ extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t)
  * (no clean_table wrap -> thunk -> generated recursion). */
 uint32_t cd_file_read_seq(uint32_t a0,uint32_t a1,uint32_t a2)
 {
+  /* BISECT: temporarily re-delegated to isolate menu regression — the
+   * seek-completion wait loop needs live-gpr coroutine resume. */
   return br2_call_generated(0x801565ec, a0, a1, a2, 0);
 }
 

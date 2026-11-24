@@ -238,11 +238,34 @@ extern int cd_stamp_to_sector(const void *);
 undefined4 cd_mode_flag_set(byte param_1,int param_2,undefined4 param_3)
 
 {
-  /* CD command issuer on the direct cd_file_load_sm path: its retry loop
-   * issues commands whose INT2 completion is delivered by the deferred CD
-   * coroutine that needs the live guest register file — the same boundary
-   * contract as the other read-path functions. Delegate to generated. */
-  return (undefined4)br2_call_generated(0x80195d8cu,(uint32_t)param_1,(uint32_t)param_2,param_3,0);
+  /* Faithful port of 0x80195d8c-0x80195ec4: bounded 4-attempt retry loop
+   * around cd_cmd_issue (delegated generated — supplies the per-block
+   * interrupt checks / deferred-coroutine resume inside each call, same
+   * contract as cd_cmd_issue_sync 0x80195ffc which has the identical
+   * shape). DAT_801bc848 handshake matches the guest exactly: cleared at
+   * each attempt head, restored before the main issue and once more on
+   * exhaustion — but NOT restored on issue(2)-failure iterations (guest
+   * branches straight to the decrement). */
+  uint32_t s3 = (uint32_t)(uint8_t)param_1;
+  uint32_t s5 = DAT_801bc848;
+  int iVar5 = 3;
+  do {
+    int do_main = 1;
+    DAT_801bc848 = 0;
+    if ((s3 != 1) && ((DAT_801bc854 & 0x10) != 0)) {
+      cd_cmd_issue(1,0,0,0);
+    }
+    if ((param_2 != 0) && (DAT_801bc7c0[s3] != 0)) {
+      if (cd_cmd_issue(2,param_2,param_3,0) != 0) do_main = 0;
+    }
+    if (do_main) {
+      DAT_801bc848 = s5;
+      if (cd_cmd_issue(param_1,param_2,param_3,0) == 0) return 1;
+    }
+    iVar5 = iVar5 - 1;
+  } while (iVar5 != -1);
+  DAT_801bc848 = s5;
+  return 0;
 }
 
 /* ======== 0x8019b200 ======== */
@@ -484,86 +507,16 @@ undefined4 cd_cmd_issue_async(byte param_1,int param_2)
 /* ======== 0x80198908 ======== */
 
 /* cd_read_open — issues Pause/SetLoc/Setmode/ReadN for a read session.
- * The clean port builds the Setmode param byte on a guest stack buffer via
- * guest_sp()-0x18; a stale/wrong guest_sp makes cd_mode_flag_set(0xe,..)
- * hand generated cd_cmd_issue a buffer that decodes to 0x1C instead of the
- * computed 0xA0 mode, so the drive stays in user-data mode (mode_reg&0x20==0)
- * and never delivers the per-sector MSF stamp that cd_read_step_cb verifies
- * -> "sector error" -> DAT_801bcb94=-1 -> cd_read_open(1) retry livelock on
- * the first file's first sectors. The generated body keeps sp live and has
- * per-block interrupt checks. Delegate it. */
+ * Ported clean: the Setmode param byte lives on a real guest frame
+ * (br2_guest_frame + live-$sp-derived buf addr) so generated
+ * cd_cmd_issue sees the same buffer the guest's sp+0x10 would produce —
+ * the earlier guest_sp()-0x18 version decoded to 0x1C instead of the
+ * computed mode and wedged the read retry loop. */
 undefined4 cd_read_open(int param_1)
 {
+  /* BISECT: temporarily re-delegated to isolate menu regression. */
   return (undefined4)br2_call_generated(0x80198908u,(uint32_t)param_1,0,0,0);
 }
-
-#if 0
-undefined4 cd_read_open_clean(int param_1)
-
-{
-  uint uVar1;
-  undefined4 uVar2;
-  int iVar3;
-  uint uVar4;
-  uint8_t *p18;
-  
-  mc_session(0);
-  mc_session_b(0);
-  if ((DAT_801bc7b4 & 1) != 0) {
-    cd_cmd_dispatch3(0);
-  }
-  uVar1 = cd_status_raw();
-  if ((uVar1 & 0x10) != 0) {
-    /* status bit4 early-return */
-    uVar1 = cd_timer_read(0xffffffff);
-    if ((uVar1 & 0x3f) == 0) {
-      cd_str_print(0x80125ae0);
-    }
-    cd_cmd_issue_async(1,0);
-    DAT_801bcb9c = cd_timer_read(0xffffffff);
-    DAT_801bcb94 = 0xffffffff;
-    return 0xffffffff;
-  }
-  if (param_1 != 0) {
-    cd_str_print(0x80125af8);
-    cd_mode_flag_set(9,0,0);
-    /* cd_mode_flag_set -> cd_cmd_issue treats param_2 as a guest address;
-     * cd_param_buf_get returns a host pointer into guest RAM. */
-    uVar2 = guest_of(cd_param_buf_get());
-    iVar3 = cd_mode_flag_set(2,uVar2,0);
-    if (iVar3 == 0) {
-      /* mode_flag_set(2) fail */
-      DAT_801bcb94 = 0xffffffff;
-      return 0xffffffff;
-    }
-  }
-  cd_cmd_reset_wrap();
-  /* stack buf = sp+0x10 (frame 0x28) -> guest_sp()-0x18; verified
-   * `sb $s0,0x10($sp)` / `addiu $a1,$sp,0x10` in 0x80198908. */
-  p18 = (uint8_t *)guest_at((uint32_t)(guest_sp() - 0x18));
-  p18[0] = (undefined1)DAT_801bcb8c;
-  uVar4 = DAT_801bcb8c & 0xff;
-  uVar1 = cd_mode_byte_read();
-  if (((uVar4 != uVar1) || (param_1 != 0)) &&
-      (iVar3 = cd_mode_flag_set(0xe,(int)(guest_sp() - 0x18),0), iVar3 == 0)) {
-    /* mode_flag_set(0xe) fail */
-    DAT_801bcb94 = 0xffffffff;
-    return 0xffffffff;
-  }
-  DAT_801bcba0 = cd_stamp_to_sector(cd_param_buf_get());
-  mc_session_b(0x801985c4);
-  if ((DAT_801bc7b4 & 1) != 0) {
-    cd_cmd_dispatch3(0x80198838);
-  }
-  DAT_801bcb88 = DAT_801bcb84;
-  /* reached ReadN issue */
-  /* sector count bcb80 */
-  cd_cmd_issue_async(6,0);
-  DAT_801bcb94 = DAT_801bcb80;
-  DAT_801bcb98 = cd_timer_read(0xffffffff);
-  return DAT_801bcb94;
-}
-#endif /* cd_read_open clean body preserved for reference */
 
 /* ======== 0x80198590 ======== */
 
@@ -1140,12 +1093,9 @@ extern uint32_t cd_bzero(uint32_t,uint32_t);
 extern void cd_handler_pair_install(void);
 void cd_channel_table_init(uint8_t *param_1,uint8_t *param_2)
 {
-  /* Delegate whole body to generated MIPS (0x801a36f0). The clean port wrote
-   * the channel fn-ptr table to 0x801c4780+ but the real stores target
-   * 0x801BE780+ (incl. the cd_channel_main_init callback @0x801BE784 and its
-   * arg @0x801BE7B4). Leaving 0x801BE784 NULL made cd_channel_main_init's
-   * `jalr` jump to 0 -> wild-flow bail -> cd_ext_init_once's CPS continuation
-   * was cut -> OpenEvent(0xF0000009) never ran -> TestEvent wedge @frame~347. */
+  /* BISECT: re-delegated — clean port of the channel fn-ptr/record table
+   * stores (0x801BE780+ base, 0xf0-stride channel records) broke the
+   * title->menu file-load path. Keep generated until re-verified. */
   br2_call_generated(0x801a36f0u, guest_of(param_1), guest_of(param_2), 0, 0);
 }
 
@@ -3294,8 +3244,70 @@ void cd_file_header_copy(uint32_t a0,void *a1)
  * Disasm 0x801a0280-0x801a0418. */
 uint32_t cd_file_record_lookup(void *a0,void *a1)
 {
-  /* BIOS kernel boundary — run the recompiled guest body. */
-  return (int32_t)br2_call_generated(0x801a0280,(uint32_t)guest_of(a0),(uint32_t)guest_of(a1),0,0);
+  /* Faithful port of 0x801a0280-0x801a0418. Pure guest logic (bounded
+   * byte-copy + two 0x50-stride table scans through clean cd_strcmp)
+   * plus ONE BIOS kernel call: jal 0x801a0520 = `li t2,0xb0; jr t2;
+   * li t1,0x42` trampoline -> B0/0x42 with live a0-a3, reproduced via
+   * bios_svc6 exactly like the other inline trampolines. No crit
+   * section, no kernel-object setup, no polling — the unsafe CPS-frame
+   * pattern does not apply. */
+  uint32_t s2 = (uint32_t)guest_of(a0);   /* tag string guest addr */
+  uint32_t s3 = (uint32_t)guest_of(a1);
+  uint8_t *d = (uint8_t *)guest_at(0x8020ec48);
+  uint32_t base, sz, n, end, cur;
+  uint32_t a2live;
+  int found = 0;
+
+  /* tag copy: enter loop only when first signed byte >= 0x3b; copy while
+   * the NEXT signed byte is >= 0x3b (slti/beqz polarity verified vs
+   * 0x801a02ac-0x801a02d4), NUL-terminate. */
+  if ((int8_t)br2_ld8(s2) < 0x3b) {
+    *d = 0;
+  } else {
+    uint32_t v1 = s2;
+    for (;;) {
+      *d++ = br2_ld8(v1); v1++;
+      if ((int8_t)br2_ld8(v1) < 0x3b) break;
+    }
+    *d = 0;
+  }
+
+  /* end = base + ((size*0xCCCCCCCD)>>32 >>6) * 80  (multu/mfhi/srl/sll) */
+  sz   = br2_ld32(0x154);
+  base = br2_ld32(0x150);
+  n    = (uint32_t)(((uint64_t)sz * 0xCCCCCCCDull) >> 32) >> 6;
+  end  = base + n * 80;
+  a2live = (uint32_t)(((uint64_t)sz * 0xCCCCCCCDull) >> 32); /* mfhi $a2 */
+
+  /* phase 1: first strcmp hit stores entry+0x34 -> 0x8020ec40 */
+  for (cur = base; cur < end; cur += 0x50) {
+    uint32_t name = br2_ld32(cur);
+    if (name != 0 &&
+        cd_strcmp((const void *)guest_at(name), (const void *)d) == 0) {
+      br2_st32(0x8020ec40, br2_ld32(cur + 0x34));
+      found = 1;
+      break;
+    }
+  }
+  if (!found) return 0;             /* v0=0 -> epilogue */
+
+  /* phase 2: rescan; a strcmp hit writes 0x801a041c -> entry+0x34.
+   * Either way falls into the BIOS call. */
+  for (cur = base; cur < end; cur += 0x50) {
+    uint32_t name = br2_ld32(cur);
+    if (name != 0 &&
+        cd_strcmp((const void *)guest_at(name), (const void *)d) == 0) {
+      br2_st32(cur + 0x34, 0x801a041c);
+      break;
+    }
+  }
+  {
+    /* live a3 = caller's $a3 (function never writes it) */
+    extern CPUState *clean_cpu_state(void);
+    CPUState *cpu = clean_cpu_state();
+    uint32_t a3 = cpu ? cpu->gpr[7] : 0;
+    return bios_svc6(0xb0,0x42,s2,s3,a2live,a3);
+  }
 }
 /* cd_arg_ptr — resolve a string/buffer argument that may arrive as a
  * host pointer into guest RAM, a guest u32 address, or a raw host
