@@ -43,6 +43,44 @@ void cd_result_wait_b_fwd(int,undefined4);
 void printf_forward(const char *, ...);
 extern void br2_irq_poll(void);
 extern int br2_bail_pending(void);
+extern uint32_t br2_guest_frame(uint32_t);
+extern void br2_guest_frame_free(void);
+extern void br2_guest_frame_abandon(void);
+extern CPUState *clean_cpu_state(void);
+extern int clean_try_dispatch(CPUState *cpu, uint32_t addr);
+extern void psx_dispatch_call(CPUState *cpu, uint32_t target_addr,
+                              uint32_t return_addr);
+
+/* cd_jal — faithful guest `jal`/`jalr` from clean C (same contract as
+ * bind.c's bind_jal): args are already live in cpu->gpr[4..7] (the caller
+ * writes them explicitly), caller-saved regs keep callee leftovers exactly
+ * like the guest (NO arg-reg restore — call_guest/call_guest4 would restore
+ * a0/a1 and feed downstream BIOS tramps stale args), $ra is set to the
+ * guest link address so BIOS/kernel services inside the callee see the
+ * same caller token the generated CPS frame presents, and $v0 comes back
+ * in gpr[2]. clean targets run through clean_try_dispatch; everything else
+ * goes through psx_dispatch_call. */
+static uint32_t cd_jal(uint32_t fn, uint32_t link)
+{
+    CPUState *cpu = clean_cpu_state();
+    uint32_t ra, pc, sp;
+    if (!cpu || fn == 0) return 0;
+    if (br2_bail_pending()) return cpu->gpr[2];
+    ra = cpu->gpr[31]; pc = cpu->pc; sp = cpu->gpr[29];
+    cpu->gpr[31] = link;
+    if (clean_try_dispatch(cpu, fn)) {
+        uint32_t r = cpu->gpr[2];
+        cpu->gpr[31] = ra; cpu->pc = pc;
+        return r;
+    }
+    psx_dispatch_call(cpu, fn, link);
+    cpu->gpr[29] = sp;
+    {
+        uint32_t r = cpu->gpr[2];
+        cpu->gpr[31] = ra; cpu->pc = pc;
+        return r;
+    }
+}
 
 /* Diagnostic: clean-C CD function entry counters. These functions access guest
  * state through DB32()/guest_at() host pointers, which bypass the generated
@@ -1316,10 +1354,38 @@ int32_t cd_file_open_b(uint32_t param_1)
 extern void cd_cmd_sequence(uint32_t,uint32_t,uint32_t,uint32_t);
 void cd_read_param_set(uint32_t param_1)
 {
-  /* Tail-calls bios_table_tramp 0x80199fe0 (B0/0x5b) — the same BIOS
-   * trampoline boundary family that regressed boot in e9fc366/c784bf1.
-   * Delegate whole body to generated MIPS. */
-  br2_call_generated(0x80199f30u,param_1,0,0,0);
+  /* Faithful port of generated 0x80199F30 (76B / 4 blocks, decoded
+   * insn-by-insn against generated/SLES_017.22_full_46.c:19617):
+   *   frame 0x18 (sp-=0x18, ra saved at sp+0x10 — dead slot, kept via
+   *   br2_guest_frame so nested generated calls see the same $sp)
+   *   v0 = -1
+   *   *(u32*)0x801FEB38 = a0                    // @0x80199F40 sw a0
+   *   *(u32*)0x801FEB28 = 0xFFFFFFFF            // @0x80199F4C sw v0,
+   *                                             //   jal cd_dispatch_tblc
+   *                                             //   delay slot, ra=0x80199F50
+   *   a0=0x20000001, a1=0x801FEB28 (a2/a3 live leftovers)
+   *   jal cd_cmd_sequence (0x8019A00C)         // ra=0x80199F64
+   *   a0=0 (delay slot), a1..a3 = cd_cmd_sequence leftovers
+   *   jal bios_table_tramp (0x80199FE0)        // B0/0x5b, ra=0x80199F6C
+   *   epilogue: lw ra,16(sp); sp+=0x18; jr ra — BIOS $v0 propagates.
+   * All three jals go through cd_jal so a0-a3 keep callee leftovers
+   * exactly like the guest: the B0/0x5b tramp forwards live a1-a3, which
+   * call_guest/call_guest4 would have restored to pre-call values. */
+  uint32_t fr = br2_guest_frame(0x18);
+  CPUState *cpu = clean_cpu_state();
+  (void)fr;
+  br2_st32(0x801FEB38u, param_1);
+  br2_st32(0x801FEB28u, 0xFFFFFFFFu);
+  (void)cd_jal(0x8019A680u, 0x80199F50u);          /* jal cd_dispatch_tblc */
+  if (br2_bail_pending()) { br2_guest_frame_abandon(); return; }
+  cpu->gpr[4] = 0x20000001u;
+  cpu->gpr[5] = 0x801FEB28u;
+  (void)cd_jal(0x8019A00Cu, 0x80199F64u);          /* jal cd_cmd_sequence */
+  if (br2_bail_pending()) { br2_guest_frame_abandon(); return; }
+  cpu->gpr[4] = 0;
+  (void)cd_jal(0x80199FE0u, 0x80199F6Cu);          /* jal bios_table_tramp */
+  if (br2_bail_pending()) { br2_guest_frame_abandon(); return; }
+  br2_guest_frame_free();
 }
 
 /* cd_chan_init_wrap — thin wrapper over cd_channel_main_init. Disasm verified. */
@@ -4686,10 +4752,38 @@ void cd_hdr_clear_fixed(void)
 
 void cd_cb8_dispatch(void)
 {
-  /* IRQ-path function: clean-C body cannot supply the live guest
-   * register file / MMIO ack semantics the deferred interrupt path needs.
-   * Delegate to generated MIPS (behavioral oracle). */
-  br2_call_generated(0x8019ae68u,0, 0, 0, 0);
+  /* Faithful port of generated 0x8019AE68 (108B / 5 blocks, decoded
+   * insn-by-insn against generated/SLES_017.22_full_46.c:31795):
+   *   v0 = *(u32*)0x801BDDE0; *(u32*)0x801BDDE0 = v0 + 1   // frame tick++
+   *   frame 0x20 (s0/s1/ra spills — dead slots, kept via br2_guest_frame)
+   *   s0 = 0x801BDDC0; s1 = 0
+   *   loop i = 0..7:  fn = *(u32*)(0x801BDDC0 + i*4)
+   *     if (fn != 0) jalr $ra,$v0  — ra = 0x8019AEB0, a0-a3 = live
+   *       leftovers (first call sees this fn's incoming regs, later calls
+   *       see the previous callee's leftovers — cd_jal preserves both).
+   *   exit: v0 = 0 (the slti s1,8 result), epilogue jr ra.
+   * The callback table entries are runtime-installed guest fn ptrs, so the
+   * jalr goes through cd_jal (clean_try_dispatch first, generated
+   * fallback) — same contract as bind_jal, minus the $t0 write since the
+   * guest target arrives in $v0 (`jalr $ra,$v0`, not `jalr $t0`). */
+  uint32_t fr = br2_guest_frame(0x20);
+  uint32_t i, tbl;
+  (void)fr;
+  br2_st32(0x801BDDE0u, br2_ld32(0x801BDDE0u) + 1u);
+  i = 0;
+  tbl = 0x801BDDC0u;
+  for (;;) {
+    uint32_t fn = br2_ld32(tbl);
+    if (fn != 0) {
+      (void)cd_jal(fn, 0x8019AEB0u);
+      if (br2_bail_pending()) { br2_guest_frame_abandon(); return; }
+    }
+    i++;
+    tbl += 4u;
+    if (i >= 8u) break;
+  }
+  clean_cpu_state()->gpr[2] = 0;   /* exit-path $v0 = slti(s1,8) = 0 */
+  br2_guest_frame_free();
 }
 
 /* ======== 0x8019bc48 ======== */
