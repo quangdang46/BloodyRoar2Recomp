@@ -8,6 +8,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "cpu_state.h"
 
 typedef uint8_t  undefined;
 typedef uint8_t  undefined1;
@@ -845,10 +846,49 @@ void cd_read_step_cb(uint32_t param_1,undefined4 param_2)
  * guest register file / frame the generated MIPS keeps. DAT_801bcba4 stayed 0
  * at the stall (completion branch never ran) — delegate the whole body to the
  * recompiled 0x80198838 so the Pause + DeliverEvent fire faithfully. */
-void cd_read_finish_cb(void)
+uint32_t cd_read_finish_cb(void)
 {
+  /* Faithful port of generated 0x80198838 (decoded insn-by-insn):
+   *   s0 = 0x801BCB80 (lui/addiu — a fixed session struct, args unused)
+   *   *(s0+8)  |= *(s0+0x10) << 2        // bcb88 += bcb90*4
+   *   --*(s0+0x14); ++*(s0+0x20)         // bcb94--, bcba0++
+   *   if (*(s0+0x14) != 0) return 1-ish  // bne -> epilogue, v0 untouched-ish
+   *   mc_session_b(*(s0+0x2C))
+   *   if (*(0x801BC7B4) & 1) cd_cmd_dispatch3(*(s0+0x30))
+   *   mc_session(0x80198590)             // = &cd_init_done_cb
+   *   cd_cmd_issue_async(9, 0)           // Pause
+   *   *(s0+0x24) = 1                     // bcba4 completion flag (delay slot
+   *                                      // of the cb-null beq — always runs)
+   *   cb = *(0x801BC7B0); if (cb) return call_guest(cb,2,*(s0+0x34));
+   *   return 1;
+   * All calls are ordinary guest `jal`/`jalr` — reproduced via call_guest,
+   * which supplies the nested-dispatch contract (caller $ra stop, a2/a3
+   * leftovers preserved). For the 1-arg calls guest leaves $a1 as a caller
+   * leftover, so the live gpr[5] is passed back unchanged. The dynamic
+   * callback's $ra token is the epilogue itself — reproduced by returning
+   * the call_guest result straight to the wrapper. No loops, no BIOS/kernel
+   * boundary inside this body, no gpr-file snapshot. */
+  extern CPUState *clean_cpu_state(void);
+  uint32_t s0 = 0x801bcb80;
+  uint32_t cb, r, cnt;
   CDFN(CDFN_READ_FINISH_CB,0);
-  br2_call_generated(0x80198838u,0,0,0,0);
+  DB32(s0 + 0x08) = DB32(s0 + 0x08) | (DB32(s0 + 0x10) << 2);
+  DB32(s0 + 0x14) = DB32(s0 + 0x14) - 1;
+  DB32(s0 + 0x20) = DB32(s0 + 0x20) + 1;
+  cnt = DB32(s0 + 0x14);               /* lw $v0,+0x14 reload — bne $v0 */
+  if (cnt != 0) return cnt;
+  (void)call_guest(0x80195d78, DB32(s0 + 0x2c), clean_cpu_state()->gpr[5]);
+  if ((DB32(0x801bc7b4) & 1) != 0)
+    (void)call_guest(0x801961a8, DB32(s0 + 0x30), clean_cpu_state()->gpr[5]);
+  (void)call_guest(0x80195d64, 0x80198590, clean_cpu_state()->gpr[5]);
+  (void)call_guest(0x80195ec8, 9, 0);
+  DB32(s0 + 0x24) = 1;
+  cb = DB32(0x801bc7b0);
+  if (cb != 0) {
+    r = call_guest(cb, 2, DB32(s0 + 0x34));
+    return r;
+  }
+  return 1;
 }
 
 /* ---- batch28: CD sync-wait wrappers + BIOS trampolines ---- */
