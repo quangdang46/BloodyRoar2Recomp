@@ -682,7 +682,10 @@ static uint8_t *ev9_physics(uint8_t *ctrl, uint8_t *motion,
         GSU16(ctrl, FC_96) = GU16(ctrl, FC_DISTX);
         a1 = G16(ctrl, FC_76);
         if (p1 < a1) a1 = p1;               /* a1 = min(p1, ctrl+0x76) */
-        GS16(ctrl, FC_98) = (int16_t)(p2 ? ((a1 << 7) / p2) : -1);
+        /* guest div @0x8017B97C: p2==0 -> LO = (dividend>=0 ? -1 : +1),
+         * dividend = a1<<7 whose sign is a1's sign (a1 is s16-range). */
+        GS16(ctrl, FC_98) = (int16_t)(p2 ? ((a1 << 7) / p2)
+                                       : (a1 < 0 ? 1 : -1));
         break;
     case 5:  GS16(ctrl, FC_96) = (int16_t)SX12(G16(ctrl, FC_70) + p1);
              GSU16(ctrl, FC_98) = GU16(pc, 4); break;

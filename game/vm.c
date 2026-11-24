@@ -1681,8 +1681,10 @@ uint32_t ev4_branch_dispatch(uint32_t ctrl, uint32_t motion, uint32_t pc)
     }
     op = GU8(p, 1) & 0x3f;
     if (op >= 27u) {
-        /* 0x8017AE00: v0 = sx16(pc+2) + lw(ctrl+0x30), jr $ra */
-        return (uint32_t)(int16_t)G16(p, 2) + GU32(c, FC_ANI);
+        /* 0x8017AE00: v0 = lhu(pc+2) + lw(ctrl+0x30), jr $ra.
+         * The guest load is LHU (0x94C30002, opcode 0x25) — zero-extend;
+         * sx16 would subtract 0x10000 for offsets >= 0x8000. */
+        return (uint32_t)GU16(p, 2) + GU32(c, FC_ANI);
     }
     /* 0x8017AC18: jr lw(0x8012272c + op*4) with a3 = selected ctrl */
     return call_guest4(GU32((const uint8_t *)guest_at(0x8012272cu), op * 4),
