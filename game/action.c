@@ -78,13 +78,16 @@ typedef uint64_t ulonglong;
 
 static uint8_t *ctrl_motion(uint8_t *ctrl)
 {
-    uint32_t a = GU32(ctrl, FC_MOTION);
-    return a ? (uint8_t *)guest_at(a) : NULL;
+    /* Guest loads ctrl+0x38 and dereferences it unconditionally
+     * (slot_apply/entry_setup/action_enter). guest_at(0) is the arena
+     * base, so a zero field still produces a valid low-memory pointer —
+     * never collapse it to NULL. */
+    return (uint8_t *)guest_at(GU32(ctrl, FC_MOTION));
 }
 static uint8_t *ctrl_param(uint8_t *ctrl)
 {
-    uint32_t a = GU32(ctrl, FC_PARAM);
-    return a ? (uint8_t *)guest_at(a) : NULL;
+    /* Same rule for ctrl+0x28 (param/form table): unconditional lw. */
+    return (uint8_t *)guest_at(GU32(ctrl, FC_PARAM));
 }
 
 /* ------------------------------------------------------------------ */
@@ -94,11 +97,13 @@ static uint8_t *ctrl_param(uint8_t *ctrl)
 static void apply(uint8_t *ctrl, uint8_t *motion)
 {
     uint32_t ani_g = GU32(ctrl, FC_ANI);
-    uint8_t *ani = ani_g ? (uint8_t *)guest_at(ani_g) : NULL;
-    if (!ani || !motion) return;
+    /* func_8017A05C: lw a3,0x30(ctrl) then lw 0(a3)/lw 4(a3)/... with no
+     * zero test — ani==0 reads/writes guest low memory via guest_at(0). */
+    uint8_t *ani = (uint8_t *)guest_at(ani_g);
     uint8_t *tbl = ctrl_param(ctrl);
     uint32_t vm_g  = GU32(ctrl, FC_VM);
-    uint8_t *vm  = vm_g ? (uint8_t *)guest_at(vm_g) : NULL;
+    /* lw v1,0x3c(ctrl); sw sec[4],0xc(v1) @0x8017A090 — unconditional. */
+    uint8_t *vm  = (uint8_t *)guest_at(vm_g);
     uint32_t foe_g = GU32(ctrl, FC_FOE);
     /* The guest never NULL-checks foe: lbu 3(foe) at 0x8017A0C4 and
      * 0x8017A3A0 reads guest addr 3 when FC_FOE==0, and the mirror tail
@@ -115,7 +120,7 @@ static void apply(uint8_t *ctrl, uint8_t *motion)
     GSU32(motion, 0x04)    = h[2];            /* S1 (overridden)      */
     GSU32(motion, 0x08)    = h[3];            /* S2 */
     GSU32(motion, 0x0c)    = h[4];            /* S3 */
-    if (vm) GSU32(vm, 0x0c) = h[5];           /* S4 cat tab -> VM ctx */
+    GSU32(vm, 0x0c) = h[5];                 /* S4 cat tab -> VM ctx */
     GSU32(motion, MO_AC)   = size + 4;        /* .ACT hdr +4          */
     GSU32(motion, MO_S5)   = h[6];            /* S5 skeleton desc     */
     uint32_t *s6 = (uint32_t *)(ani + h[7]);  /* S6: 4 u32 -> +0xe8.. */
@@ -127,12 +132,10 @@ static void apply(uint8_t *ctrl, uint8_t *motion)
 
     /* ---- post-header param block at blob+0x24 (u32-indexed) ---- */
     /* piVar7[9..0xe] = blob +0x24..0x38 */
-    if (tbl) {
-        GS8 (tbl, 0x02) = (int8_t)GU8(ani, 0x24);          /* (char)piVar7[9] */
-        GS8 (tbl, 0x26) = GU8(ani, 0x26);
-        GS16(tbl, 0x20) = (int16_t)GU32(ani, 0x28);        /* (short)piVar7[10] */
-        GSU16(tbl, 0x44) = GU16(ani, 0x2a);
-    }
+    GS8 (tbl, 0x02) = (int8_t)GU8(ani, 0x24);          /* (char)piVar7[9] */
+    GS8 (tbl, 0x26) = GU8(ani, 0x26);
+    GS16(tbl, 0x20) = (int16_t)GU32(ani, 0x28);        /* (short)piVar7[10] */
+    GSU16(tbl, 0x44) = GU16(ani, 0x2a);
     GS16(ctrl, 0xb0)  = (int16_t)GU16(ani, 0x2e);
     GS16(ctrl, 0xfc)  = (int16_t)GU16(ani, 0x32);
     GS16(ctrl, 0xfe)  = (int16_t)GU32(ani, 0x34);          /* (short)piVar7[13] */
@@ -146,7 +149,8 @@ static void apply(uint8_t *ctrl, uint8_t *motion)
      * Guest hangs if cfgbyte==0 (j back to bnez); treat as 0 here. */
     {
         uint32_t cfg_g = *(const uint32_t *)guest_at(0x1f8000c4);
-        uint32_t cfgbyte = cfg_g ? GU8((const uint8_t *)guest_at(cfg_g), 4) : 0;
+        /* lbu v0,4(v1) @0x8017A22C is unconditional even when cfg_g==0. */
+        uint32_t cfgbyte = GU8((const uint8_t *)guest_at(cfg_g), 4);
         if (cfgbyte) {
             int32_t div = (int16_t)GU16(ani, 0x2c);
             GS16(ctrl, 0xf8) = div ? (int16_t)((int32_t)(cfgbyte << 8) / div + 1) : 0;
@@ -157,16 +161,14 @@ static void apply(uint8_t *ctrl, uint8_t *motion)
 
     /* ---- S7 template -> param_tbl (0x18-byte record at ani+h[8]) -- */
     uint8_t *s7 = ani + h[8];
-    if (tbl) {
-        GS8 (tbl, 0x03)  = (int8_t)GU8(s7, 0x00);
-        GS8 (tbl, 0x04)  = GU8(s7, 0x04);
-        GS8 (tbl, 0x27)  = GU8(s7, 0x02);
-        GS8 (tbl, 0x28)  = GU8(s7, 0x06);
-        GSU32(tbl, 0x08) = GU32(s7, 0x08);
-        GSU32(tbl, 0x0c) = GU32(s7, 0x10);
-        GSU32(tbl, 0x2c) = GU32(s7, 0x0c);
-        GSU32(tbl, 0x30) = GU32(s7, 0x14);
-    }
+    GS8 (tbl, 0x03)  = (int8_t)GU8(s7, 0x00);
+    GS8 (tbl, 0x04)  = GU8(s7, 0x04);
+    GS8 (tbl, 0x27)  = GU8(s7, 0x02);
+    GS8 (tbl, 0x28)  = GU8(s7, 0x06);
+    GSU32(tbl, 0x08) = GU32(s7, 0x08);
+    GSU32(tbl, 0x0c) = GU32(s7, 0x10);
+    GSU32(tbl, 0x2c) = GU32(s7, 0x0c);
+    GSU32(tbl, 0x30) = GU32(s7, 0x14);
 
     /* ---- relocate all stored pointers (file off -> absolute) ---- */
     static const uint8_t moffs[] = {0x00,0x04,0x08,0x0c,0x10,0xac,0xe8,0xec,0xf0,0xf4};
@@ -179,7 +181,7 @@ static void apply(uint8_t *ctrl, uint8_t *motion)
      * cat_tab = sec_off[4] + 2*base (e.g. 0x000eacec), which then feeds
      * garbage cat_tab[1]/[2]/[5] into the ScriptVM and wild-dispatches.
      * (N+85) */
-    if (tbl) {
+    {
         static const uint8_t toffs[] = {0x08,0x0c,0x2c,0x30};
         for (unsigned i = 0; i < sizeof toffs; i++)
             GSU32(tbl, toffs[i]) += base;
@@ -218,15 +220,16 @@ static void apply(uint8_t *ctrl, uint8_t *motion)
     if (GU8(ctrl, FC_FLAGB) == 0) {
         uint32_t ac_g = GU32(motion, MO_AC);
         uint32_t pa8_g = GU32(motion, MO_PA8);
-        uint32_t *p = ac_g ? (uint32_t *)guest_at(ac_g) : NULL;
-        if (p) {
-            while (*p != 0xffffffffu) {
-                if ((int32_t)*p > 0) *p += base + size;
-                p++;
-            }
+        /* lw a0,0xac(t0)/lw a1,0xa8(t0) then lw 0(a0)/lw 0(a1) are
+         * unconditional (@0x8017A3F8/@0x8017A470): zero list ptrs walk
+         * guest low memory exactly like any other address. */
+        uint32_t *p = (uint32_t *)guest_at(ac_g);
+        while (*p != 0xffffffffu) {
+            if ((int32_t)*p > 0) *p += base + size;
+            p++;
         }
-        p = pa8_g ? (uint32_t *)guest_at(pa8_g) : NULL;
-        if (p && *p != 0xffffffffu) {
+        p = (uint32_t *)guest_at(pa8_g);
+        if (*p != 0xffffffffu) {
             do {
                 if ((int32_t)*p > 0) *p = (uint32_t)((int32_t)*p + (int32_t)pa8_g - 8);
                 p++;
@@ -283,21 +286,19 @@ static void apply(uint8_t *ctrl, uint8_t *motion)
      * each is an array of 0x28-stride records whose +0xc halfword is:
      *   k = 0..0x1a -> 0 ;  then ptr[0x14]+0x1c4 = 1 and
      *   ptr[0x38]+0x23c = 1 ;  then k = 0xf..0x10 -> 1. */
-    if (tbl) {
+    {
         static const uint8_t parr[] = {0x10, 0x14, 0x34, 0x38};
         uint8_t *arr[4];
-        for (unsigned a = 0; a < 4; a++) {
-            uint32_t g = GU32(tbl, parr[a]);
-            arr[a] = g ? (uint8_t *)guest_at(g) : NULL;
-        }
+        for (unsigned a = 0; a < 4; a++)
+            arr[a] = (uint8_t *)guest_at(GU32(tbl, parr[a]));
         for (int k = 0; k < 0x1b; k++)
             for (unsigned a = 0; a < 4; a++)
-                if (arr[a]) GSU16(arr[a] + k * 0x28, 0xc) = 0;
-        if (arr[1]) GSU16(arr[1], 0x1c4) = 1;
-        if (arr[3]) GSU16(arr[3], 0x23c) = 1;
+                GSU16(arr[a] + k * 0x28, 0xc) = 0;
+        GSU16(arr[1], 0x1c4) = 1;
+        GSU16(arr[3], 0x23c) = 1;
         for (int k = 0xf; k < 0x11; k++)
             for (unsigned a = 0; a < 4; a++)
-                if (arr[a]) GSU16(arr[a] + k * 0x28, 0xc) = 1;
+                GSU16(arr[a] + k * 0x28, 0xc) = 1;
     }
 }
 
@@ -453,7 +454,8 @@ static void slot_apply(uint8_t *ctrl, uint32_t slot)
 {
     uint8_t *tbl = ctrl_param(ctrl);
     uint8_t *motion = ctrl_motion(ctrl);
-    if (!tbl || !motion) return;
+    /* func_80175E08 lws tbl/motion/old+new part+mat ptrs and memcpy's
+     * unconditionally — zero fields copy through guest low memory. */
     uint8_t *d = tbl + slot * 0x24;
 
     GS8(ctrl, 0x06) = (int8_t)GU8(d, 0x00);
@@ -461,20 +463,18 @@ static void slot_apply(uint8_t *ctrl, uint32_t slot)
     uint32_t op_g = GU32(ctrl, 0x20);
     uint32_t np_g = GU32(d, 0x18);
     uint32_t om_g = GU32(ctrl, 0x40);
-    uint8_t *old_parts = op_g ? (uint8_t *)guest_at(op_g) : NULL;
-    uint8_t *new_parts = np_g ? (uint8_t *)guest_at(np_g) : NULL;
-    uint8_t *old_mats  = om_g ? (uint8_t *)guest_at(om_g) : NULL;
+    uint8_t *old_parts = (uint8_t *)guest_at(op_g);
+    uint8_t *new_parts = (uint8_t *)guest_at(np_g);
+    uint8_t *old_mats  = (uint8_t *)guest_at(om_g);
 
     GSU32(ctrl, 0x18) = GU32(d, 0x10);
     GSU32(ctrl, 0x1c) = GU32(d, 0x14);
     GSU32(ctrl, 0x20) = GU32(d, 0x18);
     GSU32(ctrl, 0x40) = GU32(d, 0x1c);
 
-    if (old_parts && new_parts) {
-        memcpy(new_parts + 0x20, old_parts + 0x20, 0x20);
-        memcpy(new_parts + 0x160, old_parts + 0x160, 0x10);
-        memcpy(new_parts + 0x170, old_parts + 0x170, 0x10);
-    }
+    memcpy(new_parts + 0x20, old_parts + 0x20, 0x20);
+    memcpy(new_parts + 0x160, old_parts + 0x160, 0x10);
+    memcpy(new_parts + 0x170, old_parts + 0x170, 0x10);
     GSU32(motion, 0xf8) = GU32(motion, 0xe8 + slot * 8);
     GSU32(motion, 0xfc) = GU32(motion, 0xec + slot * 8);
     GS8 (ctrl, 0x09) = GU8(d, 0x03);
@@ -483,9 +483,9 @@ static void slot_apply(uint8_t *ctrl, uint32_t slot)
     GSU32(ctrl, 0x10) = GU32(d, 0x0c);
     GS16(ctrl, 0x24) = (int16_t)GU16(d, 0x20);
 
-    if (old_mats) {
+    {
         uint32_t nm_g = GU32(ctrl, 0x40);
-        uint8_t *nm = nm_g ? (uint8_t *)guest_at(nm_g) : NULL;
+        uint8_t *nm = (uint8_t *)guest_at(nm_g);
         for (int i = 0; i < 0x13; i++)
             memcpy(nm + i * 0x1c, old_mats + i * 0x1c, 0x1c);
     }
@@ -564,8 +564,9 @@ static void entry_setup(uint8_t *ctrl, uint32_t group)
 {
     uint8_t *motion = ctrl_motion(ctrl);
     uint32_t fobj_g = GU32(ctrl, 0x20);
-    uint8_t *fobj = fobj_g ? (uint8_t *)guest_at(fobj_g) : NULL;
-    if (!motion || !fobj) return;
+    /* entry_setup lws ctrl+0x38/+0x20/+0x18/+0x1c and dereferences them
+     * unconditionally (@0x80175AAC/@0x80175B08/@0x80175B60/@0x80175DAC). */
+    uint8_t *fobj = (uint8_t *)guest_at(fobj_g);
 
     /* part-record resets (loops over ctrl+8 / ctrl+6 counts) */
     int n = (int8_t)GU8(ctrl, 0x08) - 1;
@@ -574,12 +575,10 @@ static void entry_setup(uint8_t *ctrl, uint32_t group)
     }
     int pc = (int8_t)GU8(ctrl, 0x06) - 1;
     for (int i = pc; i >= 0; i--) {
-        uint32_t p18_g = GU32(ctrl, 0x18);
-        uint32_t p1c_g = GU32(ctrl, 0x1c);
-        uint8_t *p18 = p18_g ? (uint8_t *)guest_at(p18_g) : NULL;
-        uint8_t *p1c = p1c_g ? (uint8_t *)guest_at(p1c_g) : NULL;
-        if (p18) { GSU32(p18,0)=0; GSU32(p18,0x10)=0; GSU32(p18,0x14)=0; GSU32(p18,0x18)=0; }
-        if (p1c) { GSU32(p1c,0)=0; GSU32(p1c,0x10)=0; GSU32(p1c,0x14)=0; GSU32(p1c,0x18)=0; }
+        uint8_t *p18 = (uint8_t *)guest_at(GU32(ctrl, 0x18));
+        uint8_t *p1c = (uint8_t *)guest_at(GU32(ctrl, 0x1c));
+        GSU32(p18,0)=0; GSU32(p18,0x10)=0; GSU32(p18,0x14)=0; GSU32(p18,0x18)=0;
+        GSU32(p1c,0)=0; GSU32(p1c,0x10)=0; GSU32(p1c,0x14)=0; GSU32(p1c,0x18)=0;
     }
 
     /* ---- group switch (guest constants, verbatim) ---- */
@@ -701,13 +700,12 @@ done:
 /* (euler_rotmat euler->matrix, part_link_unlink part-copy) are host      */
 /* hooks pending their own decode.                                     */
 /* ------------------------------------------------------------------ */
-static void skeleton_init_wrap(uint8_t *ctrl, const uint8_t *desc)
+static void skeleton_init_wrap(uint8_t *ctrl, uint32_t desc_g)
 {
-    /* canonical disasm-verified port is skeleton_init in menu.c;
-     * delegate with guest addresses (host ptrs -> guest via
-     * guest_of). The older inline approximation was removed —
-     * it read euler seeds from the wrong desc field. */
-    skeleton_init(guest_of(ctrl), guest_of(desc), 0);
+    /* func_80179AE0 is invoked unconditionally with a1 = lw 0x10(motion)
+     * (+0x1c on the second call). Pass the raw guest descriptor address
+     * through so desc==0 hits guest low memory exactly like the guest. */
+    skeleton_init(guest_of(ctrl), desc_g, 0);
 }
 
 /* ------------------------------------------------------------------ */
@@ -717,7 +715,8 @@ void action_switch_guest(int param_1,int *param_2,int param_3);
 void part_record_reset(undefined2 *param_1);
 static void action_switch(uint8_t *ctrl, uint8_t *motion, int32_t idx)
 {
-    if (!ctrl || !motion) return;
+    /* func_8017A6E8 has no zero tests — ctrl/motion are always live guest
+     * objects here (guest_at(0) for a zero field is still a pointer). */
     action_switch_guest((int)guest_of(ctrl),(int *)motion,idx);
     return;
 #if 0
@@ -795,17 +794,17 @@ uint32_t action_enter(void *battle, uint8_t *ctrl, uint32_t sel)
          *   e08(1) -> 5a7c(group) -> 79ae0(S5+0x1c) -> 862a8
          *   ctrl+5 = (saved5&0x10)?0x11:0
          *   e08(ctrl+5 & 1) -> fixup -> ctrl+0xb=1                  */
-        uint32_t s5_g = motion ? GU32(motion, MO_S5) : 0;
-        uint8_t *s5 = s5_g ? (uint8_t *)guest_at(s5_g) : NULL;
+        /* lw a1,0x10(s2) @0x801760DC/@0x80176114 is unconditional —
+         * skeleton_init runs even when motion+0x10 == 0. */
         slot_apply(ctrl, 0);
         entry_setup(ctrl, sel >> 4);
-        if (s5) skeleton_init_wrap(ctrl, s5);
+        skeleton_init_wrap(ctrl, GU32(motion, MO_S5));
         part_link(ctrl);
 
         GS8(ctrl, 0x05) = 0x11;
         slot_apply(ctrl, 1);
         entry_setup(ctrl, sel >> 4);
-        if (s5) skeleton_init_wrap(ctrl, s5 + 0x1c);
+        skeleton_init_wrap(ctrl, GU32(motion, MO_S5) + 0x1c);
         part_link(ctrl);
 
         uint8_t b3 = (saved5 & 0x10) ? 0x11 : 0;
@@ -819,12 +818,11 @@ uint32_t action_enter(void *battle, uint8_t *ctrl, uint32_t sel)
         GS8(ctrl, 0x0b) = 1;
     }
 
-    /* shared tail */
-    if (motion) {
-        GSU16(motion, MO_PREV) = GU16(motion, MO_ACT);
-        action_switch(ctrl, motion, (int16_t)GU16(motion, MO_ACT));
-        /* step 6: ev_dispatch — caller runs ev_step(ctrl, motion) */
-    }
+    /* shared tail — guest @0x80176208 derefs motion+0x80/+0x82 and calls
+     * action_switch/ev dispatch unconditionally (motion==0 -> low RAM). */
+    GSU16(motion, MO_PREV) = GU16(motion, MO_ACT);
+    action_switch(ctrl, motion, (int16_t)GU16(motion, MO_ACT));
+    /* step 6: ev_dispatch — caller runs ev_step(ctrl, motion) */
     return cls;
 }
 

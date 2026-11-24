@@ -80,8 +80,9 @@ extern uint32_t guest_of(const void *p);
 
 static uint8_t *foe_of(uint8_t *ctrl)
 {
-    uint32_t a = GU32(ctrl, FC_FOE);
-    return a ? (uint8_t *)guest_at(a) : NULL;
+    /* ScriptVM source decoders lw ctrl+0x2c and dereference it with no
+     * zero test; guest_at(0) reproduces the low-memory read. */
+    return (uint8_t *)guest_at(GU32(ctrl, FC_FOE));
 }
 
 /* RNG hook: host supplies 0..99 for weighted Bra. */
@@ -412,11 +413,11 @@ int vm_step(uint8_t *ctx, uint8_t *ctrl, uint8_t *a3obj)
             w = G16(pc,2); break;                       /* frame wait */
         case 1: {   /* random wait: 3 operand bytes via ctx+0 stream */
             uint32_t sbaseg = GU32(ctx, 0);
-            uint8_t *sbase = sbaseg ? (uint8_t *)guest_at(sbaseg) : NULL;
+            uint8_t *sbase = (uint8_t *)guest_at(sbaseg);
             int idx = GU8(ctx, 4);
-            int b0 = sbase ? GU8(sbase, idx)   : 0;
-            int b1 = sbase ? GU8(sbase, idx+1) : 0;
-            int b2 = sbase ? GU8(sbase, idx+2) : 0;
+            int b0 = GU8(sbase, idx);
+            int b1 = GU8(sbase, idx+1);
+            int b2 = GU8(sbase, idx+2);
             w = (int)(((b0 + b1 + b2) * (0x100 - GU8(ctx,8))) >> 13);
             len2 = 2; break;
         }
@@ -476,9 +477,9 @@ int vm_step(uint8_t *ctx, uint8_t *ctrl, uint8_t *a3obj)
     case 18: {                                          /* Camera */
         /* cam = *(void**)0x1F8000BC in guest space */
         uint32_t camg = GU32(guest_at(0x1f8000bc), 0);
-        uint8_t *cam = camg ? (uint8_t *)guest_at(camg) : NULL;
+        uint8_t *cam = (uint8_t *)guest_at(camg);
         int csub = (int8_t)sub;
-        if (csub < 0 || csub > 9 || !cam) {
+        if (csub < 0 || csub > 9) {
             SETPC(ctx, pc + 2);
             return 1;
         }

@@ -885,7 +885,8 @@ void action_select(uint8_t *ctrl,int idx)
     uint32_t mg;
     if (!ctrl) return;
     mg = *(const uint32_t *)(ctrl + 0x38);   /* ctrl -> motion obj */
-    if (!mg) return;
+    /* action_switch_guest has no zero test; guest_at(0) is still a
+     * valid low-memory object, so do not skip on mg==0. */
     action_switch_guest((int)guest_of(ctrl),(int *)guest_at(mg),idx);
 }
 /* reaction_load removed: the guest tail at 0x8017b090 calls

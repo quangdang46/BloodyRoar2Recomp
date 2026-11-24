@@ -149,13 +149,13 @@ typedef uint64_t ulonglong;
 
 static uint8_t *foe_of(uint8_t *ctrl)
 {
-    uint32_t a = GU32(ctrl, FC_FOE);
-    return a ? (uint8_t *)guest_at(a) : NULL;
+    /* Guest handlers lw ctrl+0x2c and dereference it unconditionally;
+     * guest_at(0) reproduces the low-memory read, never return NULL. */
+    return (uint8_t *)guest_at(GU32(ctrl, FC_FOE));
 }
 static uint8_t *mof(uint8_t *ctrl)
 {
-    uint32_t a = GU32(ctrl, 0x38);
-    return a ? (uint8_t *)guest_at(a) : NULL;
+    return (uint8_t *)guest_at(GU32(ctrl, 0x38));
 }
 
 
@@ -440,11 +440,12 @@ static uint8_t *ev5_action(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
         {
             uint32_t ta = GU32(motion, MO_A8);
             uint32_t tb = GU32(motion, MO_AC);
-            tabA = ta ? (uint8_t *)guest_at(ta) : NULL;
-            tabB = tb ? (uint8_t *)guest_at(tb) : NULL;
+            /* guest lws +0xa8/+0xac and reads the indexed u32 unconditionally */
+            tabA = (uint8_t *)guest_at(ta);
+            tabB = (uint8_t *)guest_at(tb);
         }
-        eA = tabA ? GU32(tabA, idx * 4) : 0;
-        eB = tabB ? GU32(tabB, idx * 4) : 0;
+        eA = GU32(tabA, idx * 4);
+        eB = GU32(tabB, idx * 4);
         /* guest tests tabB(+0xac) entry first: <0x80000001 -> use
          * tabA(+0xa8) entry as data ptr (0 -> fallback action 1);
          * >=0x80000001 -> tabB entry IS the ptr, be=0x80. */
@@ -485,13 +486,13 @@ static uint8_t *ev5_action(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
         uint8_t *fm = mof(foe_ctrl);
         int16_t fcnt = G16(fm, MO_A4);
         uint32_t fta = GU32(fm, MO_AC);
-        uint8_t *ftab = fta ? (uint8_t *)guest_at(fta) : NULL;
+        uint8_t *ftab = (uint8_t *)guest_at(fta);
         uint32_t e;
         /* guest 0x8017b008-0x8017b00c: param >= foe count -> common
          * return (pc+4), NO fallback side effects. Only an in-range
          * entry <= 0x80000000 takes the action-1 fallback. */
         if (param < fcnt) {
-            if (ftab && (e = GU32(ftab, param * 4)) > 0x80000000u) {
+            if ((e = GU32(ftab, param * 4)) > 0x80000000u) {
                 GS16(motion, MO_BE) = G16(motion, MO_BC);
                 GSU32(motion, MO_B0) = e;
                 GS16(motion, MO_A2) = param;
@@ -1093,7 +1094,7 @@ static uint8_t *ev16_atkwin_init(uint8_t *ctrl, uint8_t *motion,
     b3 = (int8_t)GU8(pc, 3);
     GS16(ctrl, FC_ATK1) = (b3 < 0) ? -1 : (int16_t)(b3 << 4);
     mo = mof(ctrl);
-    if (mo) GS16(mo, MO_116) = GU16(ctrl, FC_ATK2);
+    GS16(mo, MO_116) = GU16(ctrl, FC_ATK2);
     return pc + 4;
 }
 
@@ -1288,7 +1289,10 @@ LAB_8017b034:
       *(undefined2 *)(m5 + 0x82) = 1;
 LAB_8017b044:
       action_switch_guest(iVar10,(int *)m5,(int)sVar1);
-      return (ushort *)guest_at(GU32(p2, 0x84));
+      {
+        uint32_t ns = GU32(p2, 0x84);
+        return ns ? (ushort *)guest_at(ns) : (ushort *)0;
+      }
     }
     break;
   case 6:
