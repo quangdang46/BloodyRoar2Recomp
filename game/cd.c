@@ -5942,13 +5942,26 @@ int cd_queue_push(uint32_t a0_fn,uint32_t a1_data,uint32_t a2_count,
  * restore is 0x8019adcc (returns a1 via register reload). This is the
  * deferred-interrupt save half: it must capture the live GUEST register
  * file so cd_ctx_restore can later resume cd_chan_full_init mid-body.
- * A clean C port has no guest register file (host stack is not cpu->gpr),
- * so delegate to the recompiled body which performs the real sw sequence.
- * br2_call_generated in the body also makes gen_clean_table skip this
- * address, so jal 0x8019ad90 runs generated code directly. */
+ * The register file IS live in cpu->gpr at the clean-call boundary —
+ * clean_try_dispatch/call_guest preserve s0-s7/gp/sp/fp/ra, so reading
+ * clean_cpu_state()->gpr[] reproduces the guest sw sequence exactly. */
 int cd_ctx_save(uint32_t a0)
 {
-  return (int)br2_call_generated(0x8019ad90, a0, 0, 0, 0);
+  extern CPUState *clean_cpu_state(void);
+  CPUState *c = clean_cpu_state();
+  br2_st32(a0 +  0, c->gpr[31]);  /* sw $ra,  0(a0)  */
+  br2_st32(a0 + 44, c->gpr[28]);  /* sw $gp, 44(a0)  */
+  br2_st32(a0 +  4, c->gpr[29]);  /* sw $sp,  4(a0)  */
+  br2_st32(a0 +  8, c->gpr[30]);  /* sw $fp,  8(a0)  */
+  br2_st32(a0 + 12, c->gpr[16]);  /* sw $s0, 12(a0)  */
+  br2_st32(a0 + 16, c->gpr[17]);  /* sw $s1, 16(a0)  */
+  br2_st32(a0 + 20, c->gpr[18]);  /* sw $s2, 20(a0)  */
+  br2_st32(a0 + 24, c->gpr[19]);  /* sw $s3, 24(a0)  */
+  br2_st32(a0 + 28, c->gpr[20]);  /* sw $s4, 28(a0)  */
+  br2_st32(a0 + 32, c->gpr[21]);  /* sw $s5, 32(a0)  */
+  br2_st32(a0 + 36, c->gpr[22]);  /* sw $s6, 36(a0)  */
+  br2_st32(a0 + 40, c->gpr[23]);  /* sw $s7, 40(a0)  */
+  return 0;                       /* move $v0,$zero ; jr $ra */
 }
 
 /* cd_intc_dispatch — CD interrupt dispatch (0x8019a8ec-0x8019aab8).
