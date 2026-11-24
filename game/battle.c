@@ -1236,6 +1236,17 @@ extern int lut_cos_q12();
 extern int lut_sin_q12();
 extern int FUN_80194500(uint32_t a0, ...);
 
+/* Faithful signed 32/32 `div` LO result (same idiom as resolve.c).
+ * Guest div has NO trap: div-by-zero yields LO = (dividend>=0) ? -1 : 1,
+ * INT_MIN/-1 yields INT_MIN. C / would SIGFPE — use wherever the guest
+ * emits `div`/`break`-free signed divide. */
+static int32_t mips_div_lo(int32_t num, int32_t den)
+{
+    if (den == 0) return num >= 0 ? -1 : 1;
+    if (num == (int32_t)0x80000000 && den == -1) return (int32_t)0x80000000;
+    return num / den;
+}
+
 void battle_camera_step(uint param_1,byte *param_2,byte *param_3,int param_4)
 {
   char cVar1;
@@ -2306,7 +2317,7 @@ LAB_80131f4c:
   *(int *)guest_at((uint32_t)(uintptr_t)((param_4 + 0x3c) ))= (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x5c) ))+ (int)sVar2;
   *(int *)guest_at((uint32_t)(uintptr_t)((param_4 + 0x40) ))= (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x5e) ))+ ((int)sVar6 << 8) / 10000;
   *(int *)guest_at((uint32_t)(uintptr_t)((param_4 + 0x44) ))=
-       ((int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x60) ))<< 0xc) / (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x7a)));
+       mips_div_lo((int32_t)((int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x60) ))<< 0xc),(int32_t)(int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x7a)))); /* guest div @0x80132030 */
   rtps_basis_xform((undefined4 *)guest_at((uint32_t)iVar9),(undefined2 *)guest_at((uint32_t)(param_4 + 0x48)),(uint *)guest_at((uint32_t)iVar9));
   rtps_basis_xform((undefined4 *)guest_at((uint32_t)param_1),(undefined2 *)guest_at((uint32_t)iVar9),(uint *)guest_at((uint32_t)iVar9));
   return;
@@ -2496,8 +2507,7 @@ LAB_80173de8:
         if (-1 < iVar19) {
           *(undefined2 *)(puVar13 + 4) = *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*piVar10 + 0xac)));
           iVar19 = sprite_rect_set_b((int)guest_of(puVar16),(int)*psVar15,(int)psVar17[-2],
-                                ((int)psVar17[-1] * (*(short *)guest_at((uint32_t)(uintptr_t)((*piVar10 + 0xb0) ))- iVar19)) /
-                                (int)*(short *)guest_at((uint32_t)(uintptr_t)((*piVar10 + 0xb0))),(int)*psVar17);
+                                mips_div_lo((int32_t)((int)psVar17[-1] * (*(short *)guest_at((uint32_t)(uintptr_t)((*piVar10 + 0xb0) ))- iVar19)),(int32_t)(int)*(short *)guest_at((uint32_t)(uintptr_t)((*piVar10 + 0xb0)))), (int)*psVar17);
           if (iVar19 == 0) {
             if (iVar18 == 0) {
               _DAT_801f50c0 = (short)puVar5[-6] + -1;
@@ -2564,9 +2574,8 @@ LAB_80173de8:
             }
             local_30 = (uint *)(uintptr_t)puVar8;
             sprite_rect_set_a((int)guest_of(puVar16),(int)*psVar15,(int)psVar17[-2],
-                         ((int)psVar17[-1] *
-                         ((int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar18 + 0xb0) ))- *(int *)(puVar13 + 8))) /
-                         (int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar18 + 0xb0))),(int)*psVar17);
+                         mips_div_lo((int32_t)((int)psVar17[-1] *
+                         ((int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar18 + 0xb0) ))- *(int *)(puVar13 + 8))),(int32_t)(int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar18 + 0xb0)))), (int)*psVar17); /* guest div @0x80174294 */
             puVar8[uVar3 * 0x30 + -0x1ff82c19] = puVar14[-1];
             puVar8[uVar3 * 0x30 + -0x1ff82c17] = puVar14[1];
             puVar9 = local_30;
@@ -2607,9 +2616,8 @@ LAB_80173de8:
           *(undefined2 *)(puVar13 + 0x10) = *(undefined2 *)guest_at((uint32_t)(uintptr_t)((iVar18 + 0xaa)));
           local_30 = (uint *)(uintptr_t)puVar5;
           sprite_rect_set_a((int)guest_of(puVar16),(int)*psVar15,(int)psVar17[-2],
-                       ((int)psVar17[-1] *
-                       ((int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar18 + 0xb0) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar18 + 0xaa))))) /
-                       (int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar18 + 0xb0))),(int)*psVar17);
+                       mips_div_lo((int32_t)((int)psVar17[-1] *
+                       ((int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar18 + 0xb0) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar18 + 0xaa))))),(int32_t)(int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar18 + 0xb0)))), (int)*psVar17); /* guest div @0x80174448 */
           *(uint *)guest_at((uint32_t)(uintptr_t)((iVar20 + 8) ))= puVar8[1];
           *(uint *)guest_at((uint32_t)(uintptr_t)((iVar20 + 0xc) ))= puVar8[2];
           *(uint *)guest_at((uint32_t)(uintptr_t)((iVar20 + 0x10) ))= puVar8[3];
@@ -3849,7 +3857,7 @@ LAB_80144ac4:
     if ((*(uint *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x58) ))& 0x800) != 0) {
       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x90) ))= 0xfd60;
       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x92) ))= 0xe0;
-      sVar4 = (short)((*(short *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x90) ))* 1000) / (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x24))));
+      sVar4 = (short)mips_div_lo((int32_t)(*(short *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x90) ))* 1000),(int32_t)(int)*(short *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x24)))); /* guest div @0x80144C14 */
       *(short *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x90) ))= sVar4;
       if ((*(byte *)guest_at((uint32_t)(uintptr_t)((param_1 + 5) ))& 0x10) != 0) {
         *(short *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x90) ))= (short)((sVar4 * 3) / 2);
@@ -4253,10 +4261,10 @@ LAB_80144d0c:
       iVar5 = (uint)*(ushort *)guest_at((uint32_t)(uintptr_t)((param_2 + 0xb2) ))<< 0x10;
       *(short *)guest_at((uint32_t)(uintptr_t)((param_2 + 0xb2) ))= (short)(((iVar5 >> 0x10) - (iVar5 >> 0x1f)) >> 1);
       *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0xb2) ))=
-           (short)((*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0xb2) ))* 500) / (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x24))));
+           (short)mips_div_lo((int32_t)(*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0xb2) ))* 500),(int32_t)(int)*(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x24)))); /* guest div @0x80144EB0 */
     }
     *(short *)guest_at((uint32_t)(uintptr_t)((param_2 + 0xb2) ))=
-         (short)((*(short *)guest_at((uint32_t)(uintptr_t)((param_2 + 0xb2) ))* 500) / (int)*(short *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x24))));
+         (short)mips_div_lo((int32_t)(*(short *)guest_at((uint32_t)(uintptr_t)((param_2 + 0xb2) ))* 500),(int32_t)(int)*(short *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x24)))); /* guest div @0x80144EE0 */
     if (0x6000 < *(short *)guest_at((uint32_t)(uintptr_t)((param_2 + 0xb2)))) {
       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0xb2) ))= 0x6000;
     }
@@ -4600,13 +4608,13 @@ void camera_aim_offset(int param_1,int param_2,undefined4 param_3)
         local_70[2] = *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x40) ))+ 0x12) ))-
                    *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x40) ))+ 0x12)));
         FUN_80194660(local_70,local_68);
-        iVar10 = (iVar9 * iVar10) / (int)uVar11;
+        iVar10 = mips_div_lo((int32_t)(iVar9 * iVar10),(int32_t)(int)uVar11); /* guest div @0x80146268 */
         iVar3 = local_68[0] * iVar10;
         iVar10 = local_68[2] * iVar10;
         local_70[0] = (short)(iVar3 >> 0x13);
         local_70[2] = (short)(iVar10 >> 0x13);
         node_translate_tree(*(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x20))),-(iVar3 >> 0x13),0,-(iVar10 >> 0x13));
-        iVar10 = (int)(iVar9 * uVar8) / (int)uVar11;
+        iVar10 = mips_div_lo((int32_t)(iVar9 * uVar8),(int32_t)(int)uVar11); /* guest div @0x801462C8 */
         *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x38) ))+ 0xd4) ))=
              *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x38) ))+ 0xd4) ))- local_70[0];
         *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x38) ))+ 0xd8) ))=
@@ -6059,7 +6067,7 @@ LAB_80182d20:
     case 4:
       *(ushort *)(param_3 + 10) = *(ushort *)(param_3 + 10) | 0x18;
       if (((((*(int *)guest_at((uint32_t)(uintptr_t)((iVar12 + 0x58) ))< 0) && (*(short *)guest_at((uint32_t)(uintptr_t)((iVar12 + 0x76) ))< 0x400)) &&
-           (0xb < (int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar12 + 0xba) ))/ (int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar12 + 0x88))))) &&
+           (0xb < mips_div_lo((int32_t)(int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar12 + 0xba) )),(int32_t)(int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar12 + 0x88)))))) && /* guest div @0x80182B00 */
           ((*(short *)guest_at((uint32_t)(uintptr_t)((iVar12 + 0xbc) ))< 1 && ((*(uint *)guest_at((uint32_t)(uintptr_t)((iVar12 + 100) ))& 0x40) != 0)))) &&
          (bVar10 = *(byte *)(param_3 + 1), *(byte *)(param_3 + 1) = bVar10 + 1,
          (*(byte *)guest_at((uint32_t)(uintptr_t)((*param_3 + (uint)bVar10) ))& 3) == 0)) goto LAB_80182b6c;
@@ -6336,7 +6344,7 @@ LAB_80182ee0:
     *(ushort *)((intptr_t)param_3 + 10) = *(ushort *)((intptr_t)param_3 + 10) & 0xfffe;
     if ((0x400 < *(short *)guest_at((uint32_t)(uintptr_t)((iVar12 + 0x76)))) || ((*(uint *)guest_at((uint32_t)(uintptr_t)((iVar12 + 100) ))& 0x80) == 0))
     goto switchD_80181ff0_caseD_9;
-    iVar12 = (int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar12 + 0xba) ))/ (int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar12 + 0x88)));
+    iVar12 = mips_div_lo((int32_t)(int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar12 + 0xba) )),(int32_t)(int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar12 + 0x88)))); /* guest div @0x8018235C */
     if (iVar12 == 5) {
       bVar10 = *(byte *)(param_3 + 1);
       *(byte *)(param_3 + 1) = bVar10 + 1;
@@ -13876,7 +13884,7 @@ void iris_wipe_update(int *param_1)
     do {
       if ((short)param_1[0xd2] <= iVar2) break;
       uVar8 = angle_from_xy((int)psVar11[-1] - (int)*psVar14,(int)*psVar11 - (int)psVar11[-2]);
-      iVar3 = ((int)((uint)_DAT_1f800024 << 0x10) >> 0xc) / (int)((uint)local_40[0] << 2);
+      iVar3 = mips_div_lo((int32_t)((int)((uint)_DAT_1f800024 << 0x10) >> 0xc),(int32_t)(int)((uint)local_40[0] << 2)); /* guest div @0x8013B3F0 */
       iVar15 = lut_cos_q12(uVar8);
       psVar12[-0xd] = *psVar14 + (short)(iVar3 * iVar15 >> 0xc);
       iVar15 = lut_cos_q12(uVar8);
@@ -16088,11 +16096,13 @@ void firework_task_update(int param_1)
     _DAT_1f8003f8 = (uint32_t)getCopReg(2,0x9800);
     _DAT_1f8003f8 = _DAT_1f8003f8 >> 2;
     sVar1 = *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x3c0)));
-    iVar12 = (int)_DAT_1f800024;
+    /* guest @0x80140F70-0x80140F7C: lhu @0x1f800024 then sll16/sra16 =
+     * sext16 of the low halfword only — NOT the full u32 cell. */
+    iVar12 = (int)(int16_t)(uint16_t)_DAT_1f800024;
     iVar4 = _DAT_1f8003f8 << 2;
     psVar9[-0xd] = (short)_DAT_1f8003fc;
     psVar9[-0xc] = _DAT_1f8003fe;
-    sVar1 = (short)((sVar1 * iVar12) / iVar4);
+    sVar1 = (short)mips_div_lo((int32_t)(sVar1 * iVar12),iVar4); /* guest div @0x80140F94 */
     psVar9[-9] = (short)_DAT_1f8003fc + sVar1;
     psVar9[-8] = _DAT_1f8003fe;
     psVar9[-5] = (short)_DAT_1f8003fc;
