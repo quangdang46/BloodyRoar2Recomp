@@ -3699,20 +3699,101 @@ void cd_field_copy_gated(void *a0)
     CDMMIO16_ST(blk,0xff,*(uint16_t *)(p + 0x42));      /* +0x1fe */
 }
 
-/* cd_mode_apply_deferred — mode apply with deferred-pause save/restore:
- * mode a0 indexes u32 table @0x801be440 (+a0*4); cd_range_table_member must
- * return 0. s0==0 -> s1=0x10<<sh, s2=0xfff0<<sh; else s1=(-ent)<<sh,
- * s2=ent<<sh (sh=@0x801bdee8). Saves/restores @0x801bdecc (when 1) and
- * @0x801bdee8 pending value. Chunk loop drives cd_reg_window_op ops
- * 2/1/3 then BIOS svc B0/0xa trampoline (FUN_8019cfb0) per 0x400 chunk.
- * NOTE: a1/a2 into the first two b944 calls are caller-carryover regs
- * in the guest (unused by those op paths); approximated as s2/0.
- * Disasm 0x8019ce10-0x8019cfa0. */
+/* cd_mode_apply_deferred — mode apply with deferred-pause save/restore.
+ * Faithful port of generated 0x8019CE10 (404B / 24 blocks, decoded
+ * insn-by-insn against generated/SLES_017.22_full_47.c:16787).
+ *
+ * Frame 0x38 (s0-s5 + ra + a zero slot @16(sp) = saved DEE8, reproduced
+ * as a C local — nothing external reads the spill). Prologue: mode a0
+ * must be <10u (sltiu) else ret -1; ent = *(u32*)(0x801BE440 + mode*4);
+ * jal cd_range_table_member(ent) — nonzero -> ret -1.
+ *
+ * s1/s2 init (sh = *(u32*)0x801BDED8, sllv &31):
+ *   mode==0: s1 = 0x10<<sh,        s2 = 0xFFF0<<sh
+ *   mode!=0: v0 = 0x10000 - ent    (CE70 delay slot lui v0,1 then subu
+ *           v0,v0,a0 — NOT -ent),  s1 = (0x10000-ent)<<sh, s2 = ent<<sh
+ *           (ent reloaded like guest)
+ * Deferred-pause save: s4 = *(0x801BDECC); if ==1 { s5=1; DECC=0 }.
+ * s3=1 always; pend = *(0x801BDEE8); if !=0 { saved=pend; DEE8=0 }.
+ *
+ * Chunk loop (back-edge CF48->CEFC while s3!=0):
+ *   s0c = (s1 < 1025u) ? s1 : 0x400   [sltiu; s3=0 only on last chunk]
+ *   jal cd_reg_window_op(2, s2, ?)     ra=0x8019CF18 — a1=s2, a2 leftover
+ *   jal cd_reg_window_op(1, ?, ?)      ra=0x8019CF20 — only a0 set;
+ *                                      a1/a2 are callee leftovers exactly
+ *                                      like the guest (op2 writes neither)
+ *   jal cd_reg_window_op(3, 0x801BDF20, s0c)  ra=0x8019CF34
+ *   a0 = *(0x801BDE38); s1 -= 0x400; s2 += 0x400 (delay slot of next jal)
+ *   jal 0x8019CFB0 (BIOS B0/0xa tramp) ra=0x8019CF48
+ * Epilogue: if (s5) DECC = s4; if (saved) DEE8 = saved; ret 0.
+ * All jals go through cd_jal so a0-a3 keep callee leftovers like real
+ * MIPS jal; the B0/0xa tramp is a BIOS-adjacent jal TARGET (allowed). */
 int32_t cd_mode_apply_deferred(uint32_t a0)
 {
+  uint32_t fr = br2_guest_frame(0x38);
+  uint32_t mode = a0;
+  uint32_t ent, sh, s1, s2, s0c, s3, s4, s5, saved;
+  CPUState *cpu = clean_cpu_state();
+  (void)fr;
   CDFN(CDFN_MODE_APPLY_DEFERRED,a0);
-  /* BIOS kernel boundary — run the recompiled guest body. */
-  return (int32_t)br2_call_generated(0x8019ce10,a0,0,0,0);
+
+  if (mode >= 10u) { br2_guest_frame_free(); return -1; }
+  ent = br2_ld32(0x801BE440u + (mode << 2));
+  cpu->gpr[4] = ent;
+  (void)cd_jal(0x8019C060u, 0x8019CE60u);        /* jal cd_range_table_member */
+  if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; }
+  if (cpu->gpr[2] != 0) { br2_guest_frame_free(); return -1; }
+
+  sh = br2_ld32(0x801BDED8u);
+  if (mode == 0u) {
+    s1 = 16u << (sh & 31u);
+    s2 = 0xFFF0u << (sh & 31u);
+  } else {
+    ent = br2_ld32(0x801BE440u + (mode << 2));  /* guest reloads table[mode] */
+    s1 = (0x10000u - ent) << (sh & 31u);        /* (0x10000-ent)<<sh */
+    s2 = ent << (sh & 31u);
+  }
+
+  s4 = br2_ld32(0x801BDECCu);
+  s5 = 0;
+  if (s4 == 1u) { s5 = 1; br2_st32(0x801BDECCu, 0); }
+  s3 = 1;
+  saved = 0;
+  {
+    uint32_t pend = br2_ld32(0x801BDEE8u);
+    if (pend != 0) { saved = pend; br2_st32(0x801BDEE8u, 0); }
+  }
+
+  for (;;) {
+    /* CEFC/CF04: chunk size + last-chunk flag (s3=0 when s1<1025). */
+    if (s1 < 1025u) { s0c = s1; s3 = 0; } else { s0c = 1024u; }
+    /* CF0C: op2 with a1=s2 (a2 = live leftover, untouched like guest). */
+    cpu->gpr[4] = 2; cpu->gpr[5] = s2;
+    (void)cd_jal(0x8019B944u, 0x8019CF18u);
+    if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; }
+    /* CF18: op1 — only a0 is set; a1/a2 keep call1 leftovers (guest op2
+     * leaves both untouched, and so does the clean port). */
+    cpu->gpr[4] = 1;
+    (void)cd_jal(0x8019B944u, 0x8019CF20u);
+    if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; }
+    /* CF20: op3 — a1=0x801BDF20, a2=s0c (chunk), a0=3. */
+    cpu->gpr[4] = 3; cpu->gpr[5] = 0x801BDF20u; cpu->gpr[6] = s0c;
+    (void)cd_jal(0x8019B944u, 0x8019CF34u);
+    if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; }
+    /* CF34: a0=*(0x801BDE38); s1-=0x400; s2+=0x400 (jal delay slot). */
+    cpu->gpr[4] = br2_ld32(0x801BDE38u);
+    s1 -= 0x400u;
+    s2 += 0x400u;
+    (void)cd_jal(0x8019CFB0u, 0x8019CF48u);        /* jal B0/0xa BIOS tramp */
+    if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; }
+    if (s3 != 0) continue;                        /* CF48: loop while s3 */
+    break;
+  }
+  /* CF50/CF58: restore DECC when it was saved; CF60/CF70: restore DEE8. */
+  if (s5 != 0) br2_st32(0x801BDECCu, s4);
+  if (saved != 0) br2_st32(0x801BDEE8u, saved);
+  br2_guest_frame_free();
+  return 0;
 }
 /* cd_curve_lookup — 4-nibble curve lookup: combines a3+a1, derives a
  * signed mod-3 index into u16 table @0x801be320 and a 7-bit index into
