@@ -1311,12 +1311,11 @@ switchD_8017aedc_default:
  * Guest handlers are called as h(ctrl, motion) with the stream ptr
  * passed residually in a2 (the stream pc); return = next stream ptr
  * in $v0 or 0 to end. Our handlers take pc explicitly as pc_g —
- * identical semantics, and motion+0x84 is left to the handlers.
+ * identical semantics; the dispatcher mirrors each nonzero next-pc
+ * into motion+0x84 exactly like the guest's sw @0x8017EAF4.
  * Slots 22/23 are the
  * handlers 0x80141b78/0x80141d2c ported below.
- * pc_g = guest stream pc passed explicitly like the guest's $a2 —
- * the dispatcher does NOT mirror it into motion+0x84 (guest-faithful;
- * only handlers themselves write +0x84, e.g. EV3 wait resume). */
+ * pc_g = guest stream pc passed explicitly like the guest's $a2. */
 typedef uint8_t *evhandler_t(uint8_t *ctrl, uint8_t *motion, uint32_t pc_g);
 extern uint8_t *g_DAT_1f8000b1, *g_DAT_1f8000e8, *g_DAT_801f0760;
 extern uint32_t *g__DAT_801f093a, *g__DAT_801f093e;

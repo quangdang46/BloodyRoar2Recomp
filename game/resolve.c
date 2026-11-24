@@ -3097,10 +3097,15 @@ void ev_stream_dispatch(byte *param_1,byte *param_2)
   extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
   extern uint32_t br2_gaddr(const void *p);
   /* Guest 0x8017ea7c carries the stream pc in $a2/$v0 through the
-   * handler loop and NEVER writes motion+0x84 — that field is only
-   * updated by handlers themselves (EV3 wait resume, action_switch).
-   * Mirror that: keep pc in a local guest address, pass it to each
-   * handler explicitly, and leave motion+0x84 untouched here. */
+   * handler loop AND mirrors every nonzero next-pc into motion+0x84
+   * (block_8017EAF0: sw v0,0x84(s0) @0x8017EAF4, executed on every
+   * iteration before the next op fetch). Handlers that fall back to
+   * `return motion+0x84` (EV5 action_switch paths) and the post-
+   * dispatch resume point both depend on that store — without it
+   * +0x84 stays at whatever action_switch/EV3 last wrote and every
+   * resume/fallback reads a stale pc. Keep pc in a local guest
+   * address for the a2-residual AND mirror it into +0x84 like the
+   * guest does. */
   uint32_t pc_g = *(uint32_t *)(param_2 + 0x84);
   uint32_t _dbsp_n = 0;
   if (*(short *)(param_2 + 0x90) < 1) {
@@ -3121,6 +3126,7 @@ void ev_stream_dispatch(byte *param_1,byte *param_2)
       { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
         decomp_trace_record(60, pc_g, (uint32_t)br2_gaddr(param_2), op, npc_g); }
       if (npc_g == 0) break;
+      *(uint32_t *)(param_2 + 0x84) = npc_g;   /* guest sw @0x8017EAF4 */
       pc_g = npc_g;
       /* The generated body reaches debug_server_poll via
        * psx_check_interrupts_at at every block boundary (~16k checks);
