@@ -5342,8 +5342,12 @@ after678:
     if (to_s16(*(uint16_t *)(g + 0x8e)) >= 0) goto poll;
     if (sp50 != 0) goto poll;
     if (sp54 != 0) goto poll;
+    /* Guest stores flag F = ((lhu(g+0x92)&0xf00)^0x100)!=0 at sp+0x58 and
+     * indexes the side row as g + F*2 (0x8016EA8C: lw sp+0x58; sll 1;
+     * addu 0x1f800000). Clean sp58 is the INVERSE ((x)==0x100) — correct
+     * for the sp20 side select above, wrong here: row select needs F. */
     {
-      uint8_t *r = g + sp58 * 2;
+      uint8_t *r = g + (sp58 ^ 1) * 2;
       if ((*(uint16_t *)(r + 0x6c) & 0xf) != 0) goto poll;
     }
     /* HUD body */
@@ -5414,7 +5418,8 @@ mode2body:
 afterdraw:
     /* 6ee7c : lhu 0x68 flag checks + nibble state advance */
     {
-      uint8_t *r = g + sp58 * 2;
+      /* same guest flag F = sp58^1 row select as the +0x6c gate above */
+      uint8_t *r = g + (sp58 ^ 1) * 2;
       uint32_t f68 = *(uint16_t *)(r + 0x68);
       if ((f68 & 0x800) == 0) {
         if ((f68 & 0xe0) == 0) goto poll;
@@ -5476,7 +5481,8 @@ mode0body: {
       deferred_cmd_post(0x204,0,0);
       scroll_cfg_set(2,8);
       {
-        uint8_t *r = g + sp58 * 2;
+        /* guest flag F = sp58^1 row select (see afterdraw gate above) */
+        uint8_t *r = g + (sp58 ^ 1) * 2;
         uint32_t b4 = *(uint16_t *)(r + 0xb4);
         *(uint16_t *)(r + 0xb4) = (uint16_t)((b4 & 0xf000) | 0xa00);
       }
@@ -5521,7 +5527,8 @@ case2:
     hud_announce(0x1f800000,0x16,(uint32_t)s7);
     s7--;
     if (s7 != -1) {
-      uint8_t *r = g + sp58 * 2;
+      /* guest flag F = sp58^1 row select (see afterdraw gate above) */
+      uint8_t *r = g + (sp58 ^ 1) * 2;
       if ((*(uint16_t *)(r + 0x68) & 0xe0) == 0) goto poll;
     }
     deferred_cmd_post(0x204,0,0);
