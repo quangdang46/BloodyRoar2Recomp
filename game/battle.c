@@ -17304,6 +17304,7 @@ void task_cb_voice_line(int param_1)
 extern int  cd_search_file(undefined4 *param_1,uint32_t param_2);  /* guest 0x80197b30 — battle.c */
 extern int cd_file_rec_find(uint32_t param_1,uint32_t param_2);  /* cd.c 0x801980ec */
 extern int cd_strncmp12_eq(uint32_t param_1,uint32_t param_2);  /* cd.c 0x80197e08 */
+extern uint32_t cd_dir_scan(uint32_t param_1,uint32_t param_2);  /* cd.c 0x80197e28 */
 extern int  cd_mode_flag_set(int param_1,void *param_2,int param_3);
 extern int  cd_timer_read(int param_1);
 extern uint32_t call_guest(uint32_t fn, uint32_t a, uint32_t b);
@@ -17537,7 +17538,7 @@ int cd_search_file(undefined4 *param_1,uint32_t param_2)
   uint32_t r;
 
   if (*(uint32_t *)guest_at(0x801ccb74) != *(uint32_t *)guest_at(0x801cc85c)) {
-    if (call_guest(0x80197e28,guest_of(param_1),param_2) == 0) {
+    if (cd_dir_scan((uint32_t)guest_of(param_1),param_2) == 0) {
       br2_guest_frame_free();
       return 0;
     }

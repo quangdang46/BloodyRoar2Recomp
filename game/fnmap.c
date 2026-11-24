@@ -247,6 +247,7 @@ extern void cd_dir_entry_store(void);
 extern void cd_dir_read(void);
 extern void cd_dir_read_wrap(void);
 extern void cd_dir_reset(void);
+extern void cd_dir_scan(void);
 extern void cd_dir_table_set(void);
 extern void cd_dispatch_tbl4(void);
 extern void cd_dispatch_tbl8(void);
@@ -720,6 +721,7 @@ extern void gte_points_xform(void);
 extern void gte_quad_attr_emit(void);
 extern void gte_rot_load(void);
 extern void gte_rtps3_sxy_pack(void);
+extern void gte_rtps3_sxy_pack_ctrl(void);
 extern void gte_rtps_vec3(void);
 extern void gte_rtps_xform1(void);
 extern void gte_rtps_xform1_raw(void);
@@ -988,6 +990,7 @@ extern void op_node_alloc_init(void);
 extern void op_node_attach_store(void);
 extern void op_node_count16(void);
 extern void op_node_count_flagged(void);
+extern void op_node_rebucket(void);
 extern void op_node_register(void);
 extern void op_pair_f0f8_store(void);
 extern void op_pair_store(void);
@@ -1000,7 +1003,9 @@ extern void op_set_gp14_alias(void);
 extern void op_slot_free(void);
 extern void op_state_dispatch(void);
 extern void op_tag_E_set(void);
+extern void op_tag_F_set(void);
 extern void op_tag_G_set(void);
+extern void op_tag_K_set(void);
 extern void op_tag_L_set(void);
 extern void op_tag_dispatch(void);
 extern void op_tbl_elem_copy(void);
@@ -2358,6 +2363,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80194c50, (void *)gte_rtps_xform3_t },
   { 0x80194db0, (void *)gte_mvmva_add },
   { 0x80194f10, (void *)gte_xform1_ir },
+  { 0x80194f40, (void *)gte_rtps3_sxy_pack_ctrl },
   { 0x80195050, (void *)matrix_vec3_apply },
   { 0x80195160, (void *)gte_rtps_xform1_raw },
   { 0x801951b0, (void *)gte_rtps_xform1 },
@@ -2428,6 +2434,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80197ad0, (void *)cd_str_print },
   { 0x80197b30, (void *)cd_search_file },
   { 0x80197e08, (void *)cd_strncmp12_eq },
+  { 0x80197e28, (void *)cd_dir_scan },
   { 0x801980ec, (void *)cd_file_rec_find },
   { 0x8019842c, (void *)cd_file_load_sync },
   { 0x801984a0, (void *)cd_strcmp },
@@ -2635,7 +2642,9 @@ const Br2FnEnt fn_table[] = {
   { 0x801a3014, (void *)cd_cmd_rec_init },
   { 0x801a3034, (void *)op_tag_E_set },
   { 0x801a3048, (void *)op_tag_L_set },
+  { 0x801a3068, (void *)op_tag_F_set },
   { 0x801a3088, (void *)op_tag_G_set },
+  { 0x801a30a8, (void *)op_tag_K_set },
   { 0x801a30c0, (void *)ctx_fn_send },
   { 0x801a3108, (void *)cd_cmd_flush_a },
   { 0x801a31e0, (void *)cd_cmd_flush_b },
@@ -2656,6 +2665,7 @@ const Br2FnEnt fn_table[] = {
   { 0x801a42d0, (void *)task_heads_clear },
   { 0x801a4308, (void *)task_node_alloc },
   { 0x801a4414, (void *)node_lazy_attach },
+  { 0x801a46c8, (void *)op_node_rebucket },
   { 0x801a482c, (void *)task_slot_step },
   { 0x801a48fc, (void *)task_node_free },
   { 0x801a49d0, (void *)task_pools_tick },

@@ -3104,6 +3104,70 @@ uint32_t gte_rtps3_sxy_pack(uint32_t a0g)
   return a0g;
 }
 
+/* ======== 0x80194f40 ======== */
+/* Ctrl-word variant of gte_rtps3_sxy_pack: a0 = ptr to five u32 GTE
+ * control words (loaded into ctc2 ctrl 0-4 on entry), a1 = ptr to the
+ * packed vertex block (same s16/u32 field layout as 0x80194a70's
+ * record). Three RTPS passes (cop2 func 0x0486012) with SXY read-backs
+ * (data 9/10/11) repacked as (hi<<16 | lo&0xffff) u32 words and written
+ * back into ctc2 ctrl 0-4 — NOT to memory. Returns a0 ($v0 = $a0).
+ * Verified against generated br2eu_func_80194F40 + EXE disasm:
+ *   entry ctc2 : ctrl0..4 = a0[0..4]
+ *   pass1 in   : d0=lhu@0|(w@4&ffff0000)   d1=w@0xc   (lhu = zero-ext)
+ *   pass2 in   : d0=lhu@2|(w@8<<16)         d1=lh@0xe  (lh = sign-ext)
+ *   pass3 in   : d0=lhu@4|(w@8&ffff0000)    d1=w@0x10
+ *   exit ctc2  : ctrl0=(d9_2<<16)|(d9_1&ffff)  ctrl1=(d9_3&ffff)|(d10_1<<16)
+ *                ctrl2=(d10_3<<16)|(d11_2&ffff) ctrl3=(d11_2<<16)|(d11_1&ffff)
+ *                ctrl4=d11_3 (raw v2 SXY2) */
+uint32_t gte_rtps3_sxy_pack_ctrl(uint32_t a0g, uint32_t a1g)
+{
+  uint8_t *v = (uint8_t *)guest_at(a1g);
+  uint32_t d9_1, d10_1, d11_1, d9_2, d10_2, d11_2;
+  uint32_t d9_3, d10_3, d11_3;
+
+  /* entry: five control words a0[0..4] -> ctc2 ctrl 0..4 */
+  setCopControlWord(2, GTE_CREG(0), DB32(a0g + 0));
+  setCopControlWord(2, GTE_CREG(1), DB32(a0g + 4));
+  setCopControlWord(2, GTE_CREG(2), DB32(a0g + 8));
+  setCopControlWord(2, GTE_CREG(3), DB32(a0g + 12));
+  setCopControlWord(2, GTE_CREG(4), DB32(a0g + 16));
+
+  /* pass 1: vertex @a1+0 */
+  setCopReg(2, GTE_DREG(0),
+            (uint32_t)*(uint16_t *)(v + 0) | (DB32(a1g + 4) & 0xffff0000u));
+  setCopReg(2, GTE_DREG(1), DB32(a1g + 12));
+  copFunction(2, 0x0486012);                    /* RTPS */
+  d9_1  = (uint32_t)getCopReg(2, GTE_DREG(9));
+  d10_1 = (uint32_t)getCopReg(2, GTE_DREG(10));
+  d11_1 = (uint32_t)getCopReg(2, GTE_DREG(11));
+
+  /* pass 2: vertex @a1+2 (lh @+0xe sign-extends) */
+  setCopReg(2, GTE_DREG(0),
+            (uint32_t)*(uint16_t *)(v + 2) | (DB32(a1g + 8) << 16));
+  setCopReg(2, GTE_DREG(1), (uint32_t)(int32_t)*(int16_t *)(v + 14));
+  copFunction(2, 0x0486012);                    /* RTPS */
+  d9_2  = (uint32_t)getCopReg(2, GTE_DREG(9));
+  d10_2 = (uint32_t)getCopReg(2, GTE_DREG(10));
+  d11_2 = (uint32_t)getCopReg(2, GTE_DREG(11));
+
+  /* pass 3: vertex @a1+4 */
+  setCopReg(2, GTE_DREG(0),
+            (uint32_t)*(uint16_t *)(v + 4) | (DB32(a1g + 8) & 0xffff0000u));
+  setCopReg(2, GTE_DREG(1), DB32(a1g + 16));
+  copFunction(2, 0x0486012);                    /* RTPS */
+  d9_3  = (uint32_t)getCopReg(2, GTE_DREG(9));
+  d10_3 = (uint32_t)getCopReg(2, GTE_DREG(10));
+  d11_3 = (uint32_t)getCopReg(2, GTE_DREG(11));
+
+  /* repack SXY pairs -> ctc2 ctrl 0..4 (guest ctc2 order: t6,t0,t1,t8,t2) */
+  setCopControlWord(2, GTE_CREG(0), (d9_2  << 16) | (d9_1  & 0xffffu));
+  setCopControlWord(2, GTE_CREG(1), (d9_3  & 0xffffu) | (d10_1 << 16));
+  setCopControlWord(2, GTE_CREG(2), (d10_3 << 16) | (d11_2 & 0xffffu));
+  setCopControlWord(2, GTE_CREG(3), (d11_2 << 16) | (d11_1 & 0xffffu));
+  setCopControlWord(2, GTE_CREG(4), d11_3);
+  return a0g;
+}
+
 /* ======== 0x80194750 ======== */
 /* Three-vector transform+normalize: a0 = 6 x s16 {t,r?}, a1 = 9 x s16 out.
  * Saves ctrl[0,2,4]; loads ctrl[0,2,4]=a0[0..2] (s16), gte[9..11]=

@@ -566,7 +566,10 @@
 801aef18 op_cb4_store_ctx8
 801a3034 op_tag_E_set
 801a3048 op_tag_L_set
+801a3068 op_tag_F_set
 801a3088 op_tag_G_set
+801a30a8 op_tag_K_set
+801a46c8 op_node_rebucket
 801a984c op_anim_delta_walk
 801aad24 op_ctx_node_attach
 801ad2e8 op_node_alloc_init
@@ -608,6 +611,7 @@
 80195bd0 cd_bios_svc_07
 80199fd0 cd_bios_svc_16
 80197e08 cd_strncmp12_eq
+80197e28 cd_dir_scan
 80198fe4 cd_mc_sm_wrap
 8019a774 cd_ind_dispatch_10
 8019a7a4 cd_ind_dispatch_18
@@ -1115,6 +1119,7 @@
 
 80194b60 gte_xform3_nold
 80194a70 gte_rtps3_sxy_pack
+80194f40 gte_rtps3_sxy_pack_ctrl
 
 80194db0 gte_mvmva_add
 

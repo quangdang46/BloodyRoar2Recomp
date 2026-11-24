@@ -4470,6 +4470,83 @@ uint32_t cd_gpu_call_34(uint32_t param_1,uint32_t param_2,uint32_t param_3,
   return s2;
 }
 
+/* ======== 0x80197e28 ======== */
+
+/* cd_dir_scan — CD_newmedia directory scan: loads the PVD (sector 0x10)
+ * into 0x801fe300 via cd_file_load_sync, checks the "CD001" signature at
+ * buf+1 (cd_strncmp, 5 bytes), then loads the root-dir extent (unaligned
+ * u32 @buf+0x8c, lwl/lwr pair) into the same buffer. It then walks ISO
+ * dir records — len@+0, extent u32@+2 (lwl/lwr), id byte@+6, name@+8,
+ * stride 8+len+(len&1), bounded by buf+0x800 and 0x80 entries — into the
+ * 0x801fcd00 table (stride 0x2c: +0 entry no., +4 id/parent byte, +8
+ * extent, +0xc NUL-terminated name). The first empty +4 field terminates
+ * the table for cd_file_rec_find, and 0x801ccb70 is cleared. Debug
+ * prints gated on @0x801bc850 (>0 read errors, >=2 per-entry + count).
+ * Returns 1 on success, 0 on read/format error. Disasm
+ * 0x80197e28-0x801980eb. */
+uint32_t cd_dir_scan(uint32_t param_1,uint32_t param_2)
+{
+  uint32_t s1, lba, cur, end, i;
+  (void)param_1;
+  (void)param_2;
+
+  /* a0=1 (mode), a1=0x10 (PVD sector), a2=0x801fe300 (dest buffer);
+   * incoming a0/a1 are overwritten before any use. */
+  s1 = (uint32_t)cd_file_load_sync(1,0x10,0x801fe300);
+  if (s1 != 1) {
+    if ((int32_t)*(uint32_t *)guest_at(0x801bc850) <= 0) return 0;
+    printf_forward((const char *)guest_at(0x80125964));
+    return 0;
+  }
+  if (cd_strncmp(0x801fe301,0x80125990,5) != 0) {
+    if ((int32_t)*(uint32_t *)guest_at(0x801bc850) <= 0) return 0;
+    printf_forward((const char *)guest_at(0x80125998));
+    return 0;
+  }
+  /* root-dir extent LBA @buf+0x8c — lwl/lwr pair (addr is 4-aligned) */
+  memcpy(&lba,(const void *)guest_at(0x801fe38c),4);
+  if ((uint32_t)cd_file_load_sync(1,lba,0x801fe300) != s1) {
+    if ((int32_t)*(uint32_t *)guest_at(0x801bc850) <= 0) return 0;
+    printf_forward((const char *)guest_at(0x801259c8),lba);
+    return 0;
+  }
+  if ((int32_t)*(uint32_t *)guest_at(0x801bc850) >= 2)
+    printf_forward((const char *)guest_at(0x801259ec));
+
+  cur = 0x801fe300;              /* s1 = s0 = dir buffer */
+  end = cur + 0x800;              /* s5 = cursor bound */
+  i = 0;                          /* a3 = entry index */
+  while (cur < end) {
+    uint32_t len = DB8(cur);
+    uint32_t idx, xv, fl, nid, nm, adv;
+    if (len == 0) break;
+    idx = i * 0x2c;
+    /* record extent u32 @cur+2 (lwl/lwr) -> table entry +8 */
+    memcpy(&xv,(const void *)guest_at(cur + 2),4);
+    *(uint32_t *)guest_at(0x801fcd08 + idx) = xv;
+    nm = 0x801fcd0c + idx;        /* s2 = name dst (guest addr) */
+    fl = DB8(cur + 6);
+    nid = i + 1;                  /* s3 = entry no. */
+    *(uint32_t *)guest_at(0x801fcd00 + idx) = nid;
+    *(uint32_t *)guest_at(0x801fcd04 + idx) = fl;
+    guest_memcpy((uint32_t *)nm,(uint32_t *)(uintptr_t)(cur + 8),(int)len);
+    DB8(nm + len) = 0;            /* NUL-terminate copied name */
+    adv = len + ((len & 1) + 8);  /* record stride: 8+len rounded even */
+    cur += adv;
+    i = nid;
+    if ((int32_t)*(uint32_t *)guest_at(0x801bc850) >= 2)
+      printf_forward((const char *)guest_at(0x80125a0c),xv,nid,fl,nm);
+    if (i >= 0x80) goto dir_done; /* table full: skip terminator store */
+  }
+  if (i < 0x80)
+    *(uint32_t *)guest_at(0x801fcd04 + i * 0x2c) = 0;  /* end marker */
+dir_done:
+  *(uint32_t *)guest_at(0x801ccb70) = 0;
+  if ((int32_t)*(uint32_t *)guest_at(0x801bc850) >= 2)
+    printf_forward((const char *)guest_at(0x80125a20),i);
+  return 1;
+}
+
 /* ======== 0x801980ec ======== */
 
 int cd_file_rec_find(uint32_t param_1,uint32_t param_2)

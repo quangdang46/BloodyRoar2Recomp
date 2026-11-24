@@ -8998,6 +8998,48 @@ int op_node_count16(uint32_t a0)
   return s0;
 }
 
+/* 0x801a46c8 — node bucket move: unlink guest node a0 from the chain
+ * headed at table[lb(a0+0x14)*72 + lb(a0+0x16)*4] (table base
+ * 0x801ff398, 16 buckets x 4B per 72B type slot) and push it as head of
+ * bucket a1 (a1 >= 0x10 or a0 == 0 -> no-op). Node links: +0 = next,
+ * +4 = prev; +0x16 = sub-bucket index (byte). Disasm
+ * 0x801a46c8-0x801a4784. */
+void op_node_rebucket(uint32_t a0,uint32_t a1)
+{
+  int32_t tidx;
+  uint32_t a2, v1, v0, slot;
+  /* guest reads lb(a0+0x14) and forms a2 before the a0/a1 guards */
+  tidx = *(int8_t *)guest_at(a0 + 0x14);
+  a2 = 0x801ff398 + (uint32_t)(tidx * 72);
+  if (a0 == 0) return;
+  if (a1 >= 0x10) return;
+  v1 = *(uint32_t *)guest_at(a0 + 0);
+  if (v1 != 0) {
+    v0 = *(uint32_t *)guest_at(a0 + 4);
+    *(uint32_t *)guest_at(v1 + 4) = v0;
+  }
+  v1 = *(uint32_t *)guest_at(a0 + 4);
+  if (v1 != 0) {
+    v0 = *(uint32_t *)guest_at(a0 + 0);
+    *(uint32_t *)guest_at(v1 + 0) = v0;
+  } else {
+    v0 = (uint32_t)*(int8_t *)guest_at(a0 + 0x16) * 4 + a2;
+    v1 = *(uint32_t *)guest_at(a0 + 0);
+    *(uint32_t *)guest_at(v0) = v1;
+  }
+  slot = a2 + a1 * 4;
+  v0 = *(uint32_t *)guest_at(slot);
+  if (v0 != 0) {
+    *(uint32_t *)guest_at(v0 + 4) = a0;
+    *(uint32_t *)guest_at(a0 + 0) = v0;
+  } else {
+    *(uint32_t *)guest_at(a0 + 0) = 0;
+  }
+  *(uint32_t *)guest_at(a0 + 4) = 0;
+  *(uint32_t *)guest_at(slot) = a0;
+  *(uint8_t *)guest_at(a0 + 0x16) = (uint8_t)a1;
+}
+
 /* 0x801a536c — count flagged (fC!=0) nodes; text_win_printf(fmt, a1, cnt). */
 void op_node_count_flagged(uint32_t a0,uint32_t a1)
 {
@@ -9363,6 +9405,30 @@ void op_tag_G_set(uint8_t *a0,uint32_t a1)
   *(uint32_t *)(a0 + 0x2c) = guest_of(a0 + 0x24);
   a0[0x24] = (uint8_t)a1;
   a0[0x36] = 1;
+}
+
+/* 0x801a3068 — tag 0x46 ('F'): same shape as op_tag_L/G_set —
+ * a0[0x37]=0x46, a0[0x2c]=guest(a0+0x24), a0[0x24]=a1, a0[0x36]=1.
+ * Guest leaves v0=1 (addiu v0,zero,1 @0x801a3078). */
+uint32_t op_tag_F_set(uint8_t *a0,uint32_t a1)
+{
+  a0[0x37] = 0x46;
+  *(uint32_t *)(a0 + 0x2c) = guest_of(a0 + 0x24);
+  a0[0x24] = (uint8_t)a1;
+  a0[0x36] = 1;
+  return 1;
+}
+
+/* 0x801a30a8 — tag 0x4b ('K'): same shape as op_tag_E_set —
+ * a0[0x37]=0x4b, a0[0x2c]=0, a0[0x36]=0, a1 unused.
+ * Guest leaves v0=0x4b (addiu v0,zero,0x4b @0x801a30a8). */
+uint32_t op_tag_K_set(uint8_t *a0,uint32_t a1)
+{
+  (void)a1;
+  a0[0x37] = 0x4b;
+  *(uint32_t *)(a0 + 0x2c) = 0;
+  a0[0x36] = 0;
+  return 0x4b;
 }
 
 /* ======== batch_mass17: disasm-verified ports ======== */
