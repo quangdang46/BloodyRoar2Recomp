@@ -58,3 +58,34 @@ guest @0x801736C8–0x801736E8 does `lh dv,[s0+0xb0]`; `lui v1,0x64`
 `div; mflo; sw → 0x801f5228[i]`. Clean had `100 / dv` — off by 65536×.
 dv==0 arm `0xffffffff` was coincidentally correct (LO=-1). Fixed to
 `(100 << 16) / dv`. Verified: row1 monitor still healthy after change.
+
+## Masked div-by-zero sweep — additional sites FIXED (same class)
+
+`trap()` in game/bind.c:930 is a no-op (matches recompiler break
+semantics), but the Ghidra-ported tween/prim family kept raw C `/`
+divisions behind `if (den==0) trap()` guards — a real SIGFPE crash +
+semantic divergence (guest LO = num>=0 ? -1 : 1) if the zero divisor
+ever occurs. All verified against generated div/break sites:
+
+- `tween_seek` (0x801A99E0) game/battle.c ~14236: `(iVar7<<12)/iVar2`
+  dv==0 → LO=±1; breaks @0x801A9A68/@0x801A9A80 no-ops. FIXED.
+- `tween_seq_step` (0x801AA4FC→0x801AA55C) ~14347: `0x1000/(p1[5]+1)`
+  den==0 → LO=-1; breaks @0x801AA768/@0x801AA7A8 no-ops. FIXED.
+- `prim_group_alloc` (0x801AC334) ~11905: `0x1000000/param_6`
+  den==0 → LO=-1 → u16 0xffff; break @0x801AC42C no-op. FIXED.
+
+Already-faithful divisor guards (verified, no change):
+- save.c:654 (0x80157E2C mfhi path — HI=dividend on dv==0 ✓)
+- save.c:2120 (datetime_confirm_a, same mfhi pattern ✓)
+- menu.c:7069/11897/12766/12935/13206 — annotated MIPS div-by-zero LO ✓
+- resolve.c:118 — annotated LO semantics ✓
+- save.c:2424-2440 mode3_dispatch — break(1031) documented, returns 1 ✓
+- lzss_trap — deliberate diagnostic halt, unreachable on real data ✓
+
+Remaining `==0 break/return` sites reviewed (battle.c:17604 flag-scan
+sentinel, fight.c:231 list terminator, save.c:9014/10140/10234 linked-
+list/poll exits, cd.c MMIO polls) — all correspond to real guest
+branches, NOT masked traps. Low suspicion.
+
+Runtime: attract mode 60s/19k frames healthy gs 3→4→5→6 cycling with
+all battle.c fixes (tween paths exercised in demo battles).

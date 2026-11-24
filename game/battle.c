@@ -11899,11 +11899,12 @@ int prim_group_alloc(undefined4 param_1,int param_2,int param_3,int param_4,int 
       *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar7 + 4) ))= 0;
     }
     else {
-      if (param_6 == 0) {
-        trap(0x1c00);
-      }
+      /* guest @0x801AC41C-0x801AC430: num=0x01000000, div param_6;
+       * break @0x801AC42C is a no-op -> dv==0 yields LO=-1 (num>=0),
+       * stored truncated to u16. C /0 would SIGFPE — guard faithfully. */
       *(int *)guest_at((uint32_t)(uintptr_t)((iVar7 + 4) ))= iVar7 + 0x4c;
-      uVar1 = (undefined2)(0x1000000 / param_6);
+      uVar1 = (undefined2)(param_6 == 0 ? (int32_t)0xffffffff
+                                      : 0x1000000 / param_6);
       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((iVar7 + 0x4c) ))= uVar1;
       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((iVar7 + 0x54) ))= uVar1;
       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((iVar7 + 4) ))+ 0x10) ))= uVar1;
@@ -14234,13 +14235,21 @@ void tween_seek(int param_1,int param_2)
         do {
           iVar2 = (int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar3 + 0xc)));
           iVar7 = iVar7 + *(int *)guest_at((uint32_t)(uintptr_t)((iVar5 + *(int *)guest_at((uint32_t)(uintptr_t)((iVar3 + 0x18) ))+ 4)));
-          if (iVar2 == 0) {
-            trap(0x1c00);
+          /* guest div @0x801A9A5C: num = acc<<12, den = dv (lh).
+           * break @0x801A9A68 (dv==0) and @0x801A9A80 (INT_MIN/-1) are
+           * recompiler no-ops -> LO = dv==0 ? (num>=0?-1:1)
+           * : (INT_MIN/-1 ? INT_MIN : num/dv). C /0 would SIGFPE. */
+          {
+            int32_t _num = (int32_t)((uint32_t)iVar7 << 12);
+            int32_t _quo;
+            if (iVar2 != 0) {
+              _quo = (_num == (int32_t)0x80000000 && iVar2 == -1)
+                   ? (int32_t)0x80000000 : _num / iVar2;
+            } else {
+              _quo = (_num >= 0) ? -1 : 1;
+            }
+            uVar1 = (uint)((_quo < iVar4) ^ 1);
           }
-          if ((iVar2 == -1) && (iVar7 * 0x1000 == -0x80000000)) {
-            trap(0x1800);
-          }
-          uVar1 = ((iVar7 * 0x1000) / iVar2 < iVar4) ^ 1;
           if (uVar1 != 0) {
             iVar6 = (iVar4 * 0x1000) / (int)uVar1;
             if (uVar1 == 0) {
@@ -14332,18 +14341,17 @@ LAB_801aa65c:
           *(undefined4 *)(param_1 + 0x14) =
                *(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_1[7] * 0x14 + *(int *)(param_1 + 0xc) + 0xc)));
           if (param_1[1] == 1) {
+            /* guest div @0x801AA75C/0x801AA79C: num=0x1000, den=lh[p1+0xa]+1;
+             * break @0x801AA768/@0x801AA7A8 (den==0) are recompiler no-ops
+             * -> LO = den==0 ? -1 : 0x1000/den. C /0 would SIGFPE. */
+            int32_t _den = (int32_t)param_1[5] + 1;
+            int32_t _q = (_den == 0) ? -1 : 0x1000 / _den;
             if (param_1[0x1f] < 1) {
-              if (param_1[5] + 1 == 0) {
-                trap(0x1c00);
-              }
               param_1[0x20] = 0x1000;
-              sVar1 = -(short)(0x1000 / (param_1[5] + 1));
+              sVar1 = -(short)_q;
             }
             else {
-              if (param_1[5] + 1 == 0) {
-                trap(0x1c00);
-              }
-              sVar1 = (short)(0x1000 / (param_1[5] + 1));
+              sVar1 = (short)_q;
               param_1[0x20] = 0;
             }
             param_1[0x21] = sVar1;
