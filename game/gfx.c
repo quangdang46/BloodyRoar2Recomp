@@ -4109,6 +4109,293 @@ uint32_t prim_emit_a8(uint32_t cur, uint32_t ot, uint32_t sel,
   return cur;
 }
 
+/* ======== 0x80187980 ======== */
+
+/* prim_emit_64 — input stride 0x64. Same RTPT/NCLIP/MAC0 gate as the rest
+ * of the family; three NCCS color groups (cur+0x18/+0x1c/+0x20 attribute
+ * bytes via gte6) interleaved with AVSZ3 and the indexed OT link.
+ * a2==0 -> out delta 0x2c, else 0x48. Disasm 0x80187980-0x80187a46. */
+uint32_t prim_emit_64(uint32_t cur, uint32_t ot, uint32_t sel,
+                      int32_t count)
+{
+  int32_t cnt = count;
+  uint32_t delta;
+  if (cnt <= 0) return cur;
+  delta = (sel == 0) ? 0x2cu : 0x48u;
+  do {
+    uint32_t out, mac0, otz;
+    gte_lwc2(cur +  0, 0);
+    gte_lwc2(cur +  4, 1);
+    gte_lwc2(cur +  8, 2);
+    gte_lwc2(cur + 12, 3);
+    gte_lwc2(cur + 16, 4);
+    gte_lwc2(cur + 20, 5);
+    cnt--;
+    copFunction(2, 0x0280030u);                  /* RTPT */
+    (void)getCopControlWord(2, GTE_CREG(31));
+    copFunction(2, 0x1400006u);                  /* NCLIP */
+    mac0 = (uint32_t)getCopReg(2, GTE_DREG(24));
+    out  = cur + delta;
+    if ((int32_t)mac0 > 0) {
+      gte_lwc2(cur + 0x18, 6);
+      gte_lwc2(cur + 0x24, 0);
+      gte_lwc2(cur + 0x28, 1);
+      copFunction(2, 0x108041Bu);                /* NCCS */
+      gte_swc2(out + 0x08, 12);
+      gte_swc2(out + 0x10, 13);
+      gte_swc2(out + 0x18, 14);
+      gte_swc2(out + 0x04, 22);
+      gte_lwc2(cur + 0x1c, 6);
+      copFunction(2, 0x108041Bu);                /* NCCS */
+      copFunction(2, 0x158002Du);                /* AVSZ3 */
+      gte_lwc2(cur + 0x20, 6);
+      gte_swc2(out + 0x0c, 22);
+      otz = (uint32_t)getCopReg(2, GTE_DREG(7));
+      copFunction(2, 0x108041Bu);                /* NCCS */
+      prim_ot_link_indexed(ot, out, otz);
+      gte_swc2(out + 0x14, 22);
+    }
+    cur += 0x64;
+  } while (cnt > 0);
+  return cur;
+}
+
+/* ======== 0x80187a48 ======== */
+
+/* prim_emit_74 — input stride 0x74. Same skeleton as prim_emit_64 but each
+ * NCCS group reloads gte6/gte0/gte1 from a wider set of record fields
+ * (+0x18/+0x24/+0x28, +0x1c/+0x2c/+0x30, +0x20/+0x34/+0x38). a2==0 ->
+ * delta 0x3c, else 0x58. Disasm 0x80187a48-0x80187b1e. */
+uint32_t prim_emit_74(uint32_t cur, uint32_t ot, uint32_t sel,
+                      int32_t count)
+{
+  int32_t cnt = count;
+  uint32_t delta;
+  if (cnt <= 0) return cur;
+  delta = (sel == 0) ? 0x3cu : 0x58u;
+  do {
+    uint32_t out, mac0, otz;
+    gte_lwc2(cur +  0, 0);
+    gte_lwc2(cur +  4, 1);
+    gte_lwc2(cur +  8, 2);
+    gte_lwc2(cur + 12, 3);
+    gte_lwc2(cur + 16, 4);
+    gte_lwc2(cur + 20, 5);
+    cnt--;
+    copFunction(2, 0x0280030u);                  /* RTPT */
+    (void)getCopControlWord(2, GTE_CREG(31));
+    copFunction(2, 0x1400006u);                  /* NCLIP */
+    mac0 = (uint32_t)getCopReg(2, GTE_DREG(24));
+    out  = cur + delta;
+    if ((int32_t)mac0 > 0) {
+      gte_lwc2(cur + 0x18, 6);
+      gte_lwc2(cur + 0x24, 0);
+      gte_lwc2(cur + 0x28, 1);
+      copFunction(2, 0x108041Bu);                /* NCCS */
+      gte_swc2(out + 0x08, 12);
+      gte_swc2(out + 0x10, 13);
+      gte_swc2(out + 0x18, 14);
+      gte_swc2(out + 0x04, 22);
+      gte_lwc2(cur + 0x1c, 6);
+      gte_lwc2(cur + 0x2c, 0);
+      gte_lwc2(cur + 0x30, 1);
+      copFunction(2, 0x108041Bu);                /* NCCS */
+      copFunction(2, 0x158002Du);                /* AVSZ3 */
+      gte_lwc2(cur + 0x20, 6);
+      gte_lwc2(cur + 0x34, 0);
+      gte_lwc2(cur + 0x38, 1);
+      gte_swc2(out + 0x0c, 22);
+      otz = (uint32_t)getCopReg(2, GTE_DREG(7));
+      copFunction(2, 0x108041Bu);                /* NCCS */
+      prim_ot_link_indexed(ot, out, otz);
+      gte_swc2(out + 0x14, 22);
+    }
+    cur += 0x74;
+  } while (cnt > 0);
+  return cur;
+}
+
+/* ======== 0x80187b20 ======== */
+
+/* prim_emit_80b — input stride 0x80, sibling of prim_emit_80 (0x80187794)
+ * but with a richer tail: saves pre-RTPS SXY0 to out+8 via GPR, projects a
+ * second vertex (RTPS on cur+0x18/+0x1c), AVSZ4 + four NCCS color groups
+ * and the indexed OT link. a2==0 -> delta 0x38, else 0x5c.
+ * Disasm 0x80187b20-0x80187c0e. */
+uint32_t prim_emit_80b(uint32_t cur, uint32_t ot, uint32_t sel,
+                       int32_t count)
+{
+  int32_t cnt = count;
+  uint32_t delta;
+  if (cnt <= 0) return cur;
+  delta = (sel == 0) ? 0x38u : 0x5cu;
+  do {
+    uint32_t out, mac0, otz, sxy0;
+    gte_lwc2(cur +  0, 0);
+    gte_lwc2(cur +  4, 1);
+    gte_lwc2(cur +  8, 2);
+    gte_lwc2(cur + 12, 3);
+    gte_lwc2(cur + 16, 4);
+    gte_lwc2(cur + 20, 5);
+    cnt--;
+    copFunction(2, 0x0280030u);                  /* RTPT */
+    (void)getCopControlWord(2, GTE_CREG(31));
+    copFunction(2, 0x1400006u);                  /* NCLIP */
+    mac0 = (uint32_t)getCopReg(2, GTE_DREG(24));
+    out  = cur + delta;
+    if ((int32_t)mac0 > 0) {
+      sxy0 = (uint32_t)getCopReg(2, GTE_DREG(12));
+      gte_lwc2(cur + 0x18, 0);
+      gte_lwc2(cur + 0x1c, 1);
+      copFunction(2, 0x0180001u);                /* RTPS */
+      DB32(out + 0x08) = sxy0;
+      gte_swc2(out + 0x20, 14);
+      gte_lwc2(cur + 0x20, 6);
+      gte_lwc2(cur + 0x30, 0);
+      gte_lwc2(cur + 0x34, 1);
+      copFunction(2, 0x108041Bu);                /* NCCS */
+      gte_swc2(out + 0x10, 12);
+      gte_swc2(out + 0x18, 13);
+      gte_swc2(out + 0x04, 22);
+      gte_lwc2(cur + 0x24, 6);
+      copFunction(2, 0x108041Bu);                /* NCCS */
+      copFunction(2, 0x168002Eu);                /* AVSZ4 */
+      gte_lwc2(cur + 0x28, 6);
+      gte_swc2(out + 0x0c, 22);
+      otz = (uint32_t)getCopReg(2, GTE_DREG(7));
+      copFunction(2, 0x108041Bu);                /* NCCS */
+      prim_ot_link_indexed(ot, out, otz);
+      gte_swc2(out + 0x14, 22);
+      gte_lwc2(cur + 0x2c, 6);
+      copFunction(2, 0x108041Bu);                /* NCCS */
+      gte_swc2(out + 0x1c, 22);
+    }
+    cur += 0x80;
+  } while (cnt > 0);
+  return cur;
+}
+
+/* ======== 0x80187c10 ======== */
+
+/* prim_emit_98 — input stride 0x98, largest of the cluster: stores the
+ * pre-block SXY0 (gte12) to out+8 first, then RTPS on cur+0x18/+0x1c,
+ * AVSZ4 and four NCCS groups whose gte0/gte1 pairs walk +0x30/+0x34,
+ * +0x38/+0x3c, +0x40/+0x44, +0x48/+0x4c. a2==0 -> delta 0x50, else 0x74.
+ * Disasm 0x80187c10-0x80187d12. */
+uint32_t prim_emit_98(uint32_t cur, uint32_t ot, uint32_t sel,
+                      int32_t count)
+{
+  int32_t cnt = count;
+  uint32_t delta;
+  if (cnt <= 0) return cur;
+  delta = (sel == 0) ? 0x50u : 0x74u;
+  do {
+    uint32_t out, mac0, otz;
+    gte_lwc2(cur +  0, 0);
+    gte_lwc2(cur +  4, 1);
+    gte_lwc2(cur +  8, 2);
+    gte_lwc2(cur + 12, 3);
+    gte_lwc2(cur + 16, 4);
+    gte_lwc2(cur + 20, 5);
+    cnt--;
+    copFunction(2, 0x0280030u);                  /* RTPT */
+    (void)getCopControlWord(2, GTE_CREG(31));
+    copFunction(2, 0x1400006u);                  /* NCLIP */
+    mac0 = (uint32_t)getCopReg(2, GTE_DREG(24));
+    out  = cur + delta;
+    if ((int32_t)mac0 > 0) {
+      gte_swc2(out + 0x08, 12);
+      gte_lwc2(cur + 0x18, 0);
+      gte_lwc2(cur + 0x1c, 1);
+      copFunction(2, 0x0180001u);                /* RTPS */
+      gte_lwc2(cur + 0x20, 6);
+      gte_lwc2(cur + 0x30, 0);
+      gte_lwc2(cur + 0x34, 1);
+      copFunction(2, 0x108041Bu);                /* NCCS */
+      gte_swc2(out + 0x10, 12);
+      gte_swc2(out + 0x18, 13);
+      gte_swc2(out + 0x20, 14);
+      gte_swc2(out + 0x04, 22);
+      gte_lwc2(cur + 0x24, 6);
+      gte_lwc2(cur + 0x38, 0);
+      gte_lwc2(cur + 0x3c, 1);
+      copFunction(2, 0x108041Bu);                /* NCCS */
+      copFunction(2, 0x168002Eu);                /* AVSZ4 */
+      gte_lwc2(cur + 0x28, 6);
+      gte_lwc2(cur + 0x40, 0);
+      gte_lwc2(cur + 0x44, 1);
+      gte_swc2(out + 0x0c, 22);
+      otz = (uint32_t)getCopReg(2, GTE_DREG(7));
+      copFunction(2, 0x108041Bu);                /* NCCS */
+      prim_ot_link_indexed(ot, out, otz);
+      gte_swc2(out + 0x14, 22);
+      gte_lwc2(cur + 0x2c, 6);
+      gte_lwc2(cur + 0x48, 0);
+      gte_lwc2(cur + 0x4c, 1);
+      copFunction(2, 0x108041Bu);                /* NCCS */
+      gte_swc2(out + 0x1c, 22);
+    }
+    cur += 0x98;
+  } while (cnt > 0);
+  return cur;
+}
+
+/* ======== 0x80187e18 ======== */
+
+/* prim_emit_3c — input stride 0x3c. Per record three pointer words at
+ * cur+0/+4/+8 are dereferenced into GTE SXY0-2 (regs 12-14) and NCLIP'd;
+ * MAC0 gates a gouraud/color tail: second words of the three pointers
+ * feed gte17-19, a fourth pointer at cur+16 supplies the packed color
+ * (split lo/hi16 into gte9/gte10), AVSZ3, CC (func 0x1C) and the indexed
+ * OT link. Stores the three raw pointer-deref words to out+8/+0xc/+0x10
+ * unconditionally. a2==0 -> delta 0x14, else 0x28.
+ * Disasm 0x80187e18-0x80187ede. */
+uint32_t prim_emit_3c(uint32_t cur, uint32_t ot, uint32_t sel,
+                      int32_t count)
+{
+  int32_t cnt = count;
+  uint32_t delta;
+  if (cnt <= 0) return cur;
+  delta = (sel == 0) ? 0x14u : 0x28u;
+  do {
+    uint32_t out, pa, pb, pc, pd, mac0, otz, col, v8, v9, v10;
+    pa = DB32(cur + 0x00);
+    pb = DB32(cur + 0x04);
+    pc = DB32(cur + 0x08);
+    v8 = DB32(pa);
+    v9 = DB32(pb);
+    v10 = DB32(pc);
+    setCopReg(2, GTE_DREG(12), v8);
+    setCopReg(2, GTE_DREG(13), v9);
+    setCopReg(2, GTE_DREG(14), v10);
+    cnt--;
+    out = cur + delta;
+    copFunction(2, 0x1400006u);                  /* NCLIP */
+    pd  = DB32(cur + 0x10);
+    DB32(out + 0x08) = v8;
+    DB32(out + 0x0c) = v9;
+    mac0 = (uint32_t)getCopReg(2, GTE_DREG(24));
+    DB32(out + 0x10) = v10;
+    if ((int32_t)mac0 > 0) {
+      gte_lwc2(pa + 4, 17);
+      gte_lwc2(pb + 4, 18);
+      gte_lwc2(pc + 4, 19);
+      col = DB32(pd);
+      copFunction(2, 0x158002Du);                /* AVSZ3 */
+      gte_lwc2(cur + 0x0c, 6);
+      setCopReg(2, GTE_DREG(9),  col & 0xffffu);
+      setCopReg(2, GTE_DREG(10), col >> 16);
+      gte_lwc2(pd + 4, 11);
+      otz = (uint32_t)getCopReg(2, GTE_DREG(7));
+      copFunction(2, 0x138041Cu);                /* CC */
+      prim_ot_link_indexed(ot, out, otz);
+      gte_swc2(out + 0x04, 22);
+    }
+    cur += 0x3c;
+  } while (cnt > 0);
+  return cur;
+}
+
 /* ======== 0x80187d14 ======== */
 
 /* prim_tri_batch_rtpt — stride-0x30 triangle batch RTPT. a0=record cursor,
@@ -4633,5 +4920,162 @@ uint32_t prim_depth_shade_emit(uint32_t cur, uint32_t ot, uint32_t sel,
     cur += 112;                                  /* delay-slot a0 += t7 */
   } while (cnt > 0);                             /* bgtz a3 -> loop */
   setCopControlWord(2, GTE_CREG(30), 1024u);    /* ctc2 ctrl30 = 1024 */
+  return cur;                                   /* move v0,a0 */
+}
+
+/* ======== 0x8018ab84 / 0x8018ac54 family ======== */
+
+/* prim_cull3_emit — shared body of the five-entry 0x8018AC54 stub family
+ * (heap emit variants; each stub only loads $s6/$s7/$t8 then falls into
+ * the common loop). Per record of `in_stride` bytes at `cur`: lwc2
+ * V0..V2 (regs 0-5) <- cur[0..5], RTPT, then the SAME post-RTPT FLAG gate
+ * as the prim_persp_ot_emit family — cfc2 ctrl31 & 0x7FC40000 rejects —
+ * but NO NCLIP, NO MAC0 check, NO RTPS secondary vector, NO AVSZ depth
+ * test. On pass it reads SXY0..2 (GTE data 12-14) and accumulates the
+ * three screen culls independently: sx_ok = sum of
+ * psx_ws_cull_sltiu(sxyN & 0xFFFF, 512), sy_ok = sum of
+ * ((int32)sxyN >> 16) < 480. Emit requires sx_ok > 0 AND sy_ok > 0.
+ * SXY0 is stored at out+0 unconditionally once sx_ok > 0 (it sits in the
+ * sy-branch DELAY SLOT); SXY1/SXY2 land at out+out_stride /
+ * out+2*out_stride only when sy_ok > 0. The OT link uses `ot` DIRECTLY
+ * as the slot (no OTZ indexing — a1 is already the resolved slot):
+ * old = *ot; swl ot+2 <- out_base<<8; swl out_base+2 <- old<<8.
+ * out_base = cur + delta where delta = 24 (+ d_extra when sel != 0).
+ * Signed count in a3; returns advanced cursor. Disasm
+ * generated/SLES_017.22_full_41.c 0x8018AC54-0x8018AD80. */
+static uint32_t prim_cull3_emit(uint32_t cur, uint32_t ot, uint32_t sel,
+                                int32_t count, uint32_t d_extra,
+                                uint32_t in_stride, uint32_t out_stride)
+{
+  int32_t cnt = count;
+  uint32_t delta, base, out, sxy0, sxy1, sxy2;
+  uint32_t sx_ok, sy_ok, old, flag;
+
+  if (cnt <= 0) return cur;                     /* blez a3 -> epilogue */
+  delta = (sel == 0) ? 24u : 24u + d_extra;     /* t4 = 24 (+s6 if a2) */
+
+  do {
+    /* lwc2 gte[0..5] <- cur[0..5] : V0/V1/V2 packed xy+z (3 verts). */
+    gte_lwc2(cur +  0, 0);
+    gte_lwc2(cur +  4, 1);
+    gte_lwc2(cur +  8, 2);
+    gte_lwc2(cur + 12, 3);
+    gte_lwc2(cur + 16, 4);
+    gte_lwc2(cur + 20, 5);
+    cnt--;                                       /* addiu a3,-1 */
+    copFunction(2, 0x0280030u);                  /* RTPT */
+    flag = (uint32_t)getCopControlWord(2, GTE_CREG(31)); /* cfc2 FLAG */
+    base = cur + delta;                          /* t3 = a0 + t4 */
+    if ((flag & 0x7FC40000u) != 0) goto next;
+
+    sxy0 = (uint32_t)getCopReg(2, GTE_DREG(12)); /* mfc2 SXY0 */
+    sxy1 = (uint32_t)getCopReg(2, GTE_DREG(13)); /* mfc2 SXY1 */
+    sxy2 = (uint32_t)getCopReg(2, GTE_DREG(14)); /* mfc2 SXY2 */
+    sx_ok  = (uint32_t)psx_ws_cull_sltiu(sxy0 & 0xFFFFu, 512u);
+    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy1 & 0xFFFFu, 512u);
+    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xFFFFu, 512u);
+    if (sx_ok == 0) goto next;
+
+    /* sy0 is computed in the sx-branch DELAY SLOT — live whenever the
+     * branch is not taken. */
+    sy_ok  = (((uint32_t)((int32_t)sxy0 >> 16)) < 480u) ? 1u : 0u;
+    sy_ok += (((uint32_t)((int32_t)sxy1 >> 16)) < 480u) ? 1u : 0u;
+    sy_ok += (((uint32_t)((int32_t)sxy2 >> 16)) < 480u) ? 1u : 0u;
+    DB32(base) = sxy0;   /* sw SXY0,(t3) is the sy-cull DELAY SLOT —
+                          * unconditional once sx_ok > 0. */
+    if (sy_ok == 0) goto next;
+
+    out = base + out_stride; DB32(out) = sxy1;
+    out += out_stride;      DB32(out) = sxy2;
+
+    /* OT link tail: t3 recomputed to base (a0+t4) in the guest, so the
+     * swl targets are base+2 / ot+2 with ot used directly as the slot. */
+    old = DB32(ot);                              /* lw t0,(a1) */
+    swl_guest(ot + 2, base << 8);                /* swl (t3<<8),2(a1) */
+    swl_guest(base + 2, old << 8);               /* swl (t0<<8),2(t3) */
+
+  next:
+    cur += in_stride;                           /* delay-slot a0 += s7 */
+  } while (cnt > 0);                             /* bgtz a3 -> loop */
+  return cur;                                   /* move v0,a0 */
+}
+
+/* The five stubs differ only in $s6/$s7/$t8 (d_extra/in_stride/out_stride):
+ *   0x8018AC54: s6=24 s7=72  t8=4    0x8018AC74: s6=28 s7=80  t8=8
+ *   0x8018AC64: s6=20 s7=64  t8=4    0x8018AC84: s6=32 s7=88  t8=8
+ *   0x8018AC94: s6=40 s7=104 t8=12 */
+uint32_t prim_cull3_emit_48(uint32_t cur, uint32_t ot, uint32_t sel,
+                            int32_t count)
+{ return prim_cull3_emit(cur, ot, sel, count, 24u, 72u, 4u); }
+uint32_t prim_cull3_emit_40(uint32_t cur, uint32_t ot, uint32_t sel,
+                            int32_t count)
+{ return prim_cull3_emit(cur, ot, sel, count, 20u, 64u, 4u); }
+uint32_t prim_cull3_emit_50(uint32_t cur, uint32_t ot, uint32_t sel,
+                            int32_t count)
+{ return prim_cull3_emit(cur, ot, sel, count, 28u, 80u, 8u); }
+uint32_t prim_cull3_emit_58(uint32_t cur, uint32_t ot, uint32_t sel,
+                            int32_t count)
+{ return prim_cull3_emit(cur, ot, sel, count, 32u, 88u, 8u); }
+uint32_t prim_cull3_emit_68(uint32_t cur, uint32_t ot, uint32_t sel,
+                            int32_t count)
+{ return prim_cull3_emit(cur, ot, sel, count, 40u, 104u, 12u); }
+
+/* prim_cull2_emit_30 — guest 0x8018AB84: the two-vertex sibling of the
+ * prim_cull3_emit family (fixed geometry: in-stride 48 = 0x30, out-stride
+ * 4, delta = 16 when sel==0 else 32 — the guest loads t4=16 then adds
+ * $s6=16 on the sel!=0 path). Input setup differs: V0.xy/V0.z come from
+ * plain `lw` of cur[0]/cur[4] written via mtc2, V1.xy/V1.z via lwc2 of
+ * cur[8]/cur[12], and V2 is an exact copy of V0 (mtc2 of the same two
+ * loaded words). Same RTPT -> cfc2 FLAG & 0x7FC40000 gate -> two-way SXY
+ * screen cull (sx_ok/sy_ok over SXY0/SXY1 only) -> SXY0 store (delay
+ * slot, unconditional once sx_ok>0) + SXY1 at base+4 + direct-slot OT
+ * link. Signed count in a3; returns advanced cursor. Disasm
+ * generated/SLES_017.22_full_41.c 0x8018AB84-0x8018AC54. */
+uint32_t prim_cull2_emit_30(uint32_t cur, uint32_t ot, uint32_t sel,
+                            int32_t count)
+{
+  int32_t cnt = count;
+  uint32_t delta, base, sxy0, sxy1;
+  uint32_t sx_ok, sy_ok, old, flag, w0, w4;
+
+  if (cnt <= 0) return cur;                     /* blez a3 -> epilogue */
+  delta = (sel == 0) ? 16u : 32u;               /* t4 = 16 (+s6=16 if a2) */
+
+  do {
+    w0 = DB32(cur + 0);                         /* lw t0,(a0)   */
+    w4 = DB32(cur + 4);                         /* lw t1,4(a0)   */
+    setCopReg(2, GTE_DREG(0), w0);              /* mtc2 V0.xy    */
+    setCopReg(2, GTE_DREG(1), w4);              /* mtc2 V0.z     */
+    gte_lwc2(cur + 8, 2);                       /* lwc2 V1.xy    */
+    gte_lwc2(cur + 12, 3);                      /* lwc2 V1.z     */
+    setCopReg(2, GTE_DREG(4), w0);              /* mtc2 V2.xy = V0.xy */
+    setCopReg(2, GTE_DREG(5), w4);              /* mtc2 V2.z  = V0.z  */
+    cnt--;                                       /* addiu a3,-1 */
+    copFunction(2, 0x0280030u);                  /* RTPT */
+    flag = (uint32_t)getCopControlWord(2, GTE_CREG(31)); /* cfc2 FLAG */
+    base = cur + delta;                          /* t3 = a0 + t4 */
+    if ((flag & 0x7FC40000u) != 0) goto next;
+
+    sxy0 = (uint32_t)getCopReg(2, GTE_DREG(12)); /* mfc2 SXY0 */
+    sxy1 = (uint32_t)getCopReg(2, GTE_DREG(13)); /* mfc2 SXY1 */
+    sx_ok  = (uint32_t)psx_ws_cull_sltiu(sxy0 & 0xFFFFu, 512u);
+    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy1 & 0xFFFFu, 512u);
+    if (sx_ok == 0) goto next;
+
+    sy_ok  = (((uint32_t)((int32_t)sxy0 >> 16)) < 480u) ? 1u : 0u;
+    sy_ok += (((uint32_t)((int32_t)sxy1 >> 16)) < 480u) ? 1u : 0u;
+    DB32(base) = sxy0;   /* sw SXY0,(t3) is the sy-cull DELAY SLOT. */
+    if (sy_ok == 0) goto next;
+
+    DB32(base + 4) = sxy1;                       /* t3 += t8(4); sw */
+
+    /* OT link tail: direct slot (a1), same swl pair as the cull3 family. */
+    old = DB32(ot);                              /* lw t0,(a1) */
+    swl_guest(ot + 2, base << 8);                /* swl (t3<<8),2(a1) */
+    swl_guest(base + 2, old << 8);               /* swl (t0<<8),2(t3) */
+
+  next:
+    cur += 48;                                   /* delay-slot a0 += s7 */
+  } while (cnt > 0);                             /* bgtz a3 -> loop */
   return cur;                                   /* move v0,a0 */
 }

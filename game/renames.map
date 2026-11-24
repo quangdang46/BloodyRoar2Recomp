@@ -1849,3 +1849,16 @@
 801ad920 op_dword_add_field2
 801ad994 op_gp_deref_store14
 801ae490 op_gp_indexed_byte_store
+80187980 prim_emit_64
+80187a48 prim_emit_74
+80187b20 prim_emit_80b
+80187c10 prim_emit_98
+80187e18 prim_emit_3c
+8019cfb0 bios_tramp_b00a
+8018ab84 prim_cull2_emit_30
+8018ac54 prim_cull3_emit_48
+8018ac64 prim_cull3_emit_40
+8018ac74 prim_cull3_emit_50
+8018ac84 prim_cull3_emit_58
+8018ac94 prim_cull3_emit_68
+8017d0b0 desc_frag_op_dispatch

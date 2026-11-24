@@ -1587,6 +1587,10 @@ uint32_t bios_svc(uint32_t,uint32_t,uint32_t,uint32_t);
 void bios_tramp_b015(uint32_t a0,uint32_t a1) { bios_svc(0xb0,0x15,a0,a1); }
 void bios_tramp_c002(uint32_t a0,uint32_t a1) { bios_svc(0xc0,2,a0,a1); }
 void bios_tramp_c003(uint32_t a0,uint32_t a1) { bios_svc(0xc0,3,a0,a1); }
+/* 0x8019CFB0: `li t2,0xB0; li t1,0x0A; jr t2` — B0 svc 0x0A kernel-call
+ * trampoline forwarding live a0-a3 (svc_call re-publishes t1/t2 itself).
+ * Sole caller: cd_mode_apply_deferred's chunk loop (jal, ra=0x8019CF48). */
+uint32_t bios_tramp_b00a(uint32_t a0,uint32_t a1) { return bios_svc(0xb0,0x0a,a0,a1); }
 
 /* cd_subchan_table_install — CD sub-channel table install: crit-in, stores code
  * addrs 0x801aa244/0x801aa2ac into dispatch cells @0x801feb44/48,

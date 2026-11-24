@@ -135,6 +135,7 @@ extern void bios_kobj_tramp(void);
 extern void bios_table_tramp(void);
 extern void bios_tramp_a044(void);
 extern void bios_tramp_a070(void);
+extern void bios_tramp_b00a(void);
 extern void bios_tramp_b015(void);
 extern void bios_tramp_b017(void);
 extern void bios_tramp_b035(void);
@@ -500,6 +501,7 @@ extern void desc_cmd_map(void);
 extern void desc_cursor_advance(void);
 extern void desc_cursor_select(void);
 extern void desc_flagbit_dispatch(void);
+extern void desc_frag_op_dispatch(void);
 extern void desc_frag_scale_store(void);
 extern void desc_frag_sum_store(void);
 extern void desc_frag_tail(void);
@@ -1089,14 +1091,25 @@ extern void post_confirm_config_build(void);
 extern void prim_attr_repack(void);
 extern void prim_attr_word_set(void);
 extern void prim_batch_emit(void);
+extern void prim_cull2_emit_30(void);
+extern void prim_cull3_emit_40(void);
+extern void prim_cull3_emit_48(void);
+extern void prim_cull3_emit_50(void);
+extern void prim_cull3_emit_58(void);
+extern void prim_cull3_emit_68(void);
 extern void prim_depth_shade_emit(void);
+extern void prim_emit_3c(void);
 extern void prim_emit_4c(void);
 extern void prim_emit_5c(void);
 extern void prim_emit_60(void);
+extern void prim_emit_64(void);
 extern void prim_emit_6c(void);
+extern void prim_emit_74(void);
 extern void prim_emit_78(void);
 extern void prim_emit_80(void);
+extern void prim_emit_80b(void);
 extern void prim_emit_8c(void);
+extern void prim_emit_98(void);
 extern void prim_emit_a8(void);
 extern void prim_emit_ptr_50(void);
 extern void prim_emit_ptr_54(void);
@@ -2099,6 +2112,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8017cf14, (void *)descriptor_fetch },
   { 0x8017cfe0, (void *)cursor_advance_thunk },
   { 0x8017d008, (void *)descriptor_quad_dispatch },
+  { 0x8017d0b0, (void *)desc_frag_op_dispatch },
   { 0x8017d198, (void *)desc_frag_scale_store },
   { 0x8017d19c, (void *)desc_frag_sum_store },
   { 0x8017d1c4, (void *)desc_frag_tail },
@@ -2189,13 +2203,24 @@ const Br2FnEnt fn_table[] = {
   { 0x801876bc, (void *)prim_emit_78 },
   { 0x80187794, (void *)prim_emit_80 },
   { 0x8018786c, (void *)prim_emit_a8 },
+  { 0x80187980, (void *)prim_emit_64 },
+  { 0x80187a48, (void *)prim_emit_74 },
+  { 0x80187b20, (void *)prim_emit_80b },
+  { 0x80187c10, (void *)prim_emit_98 },
   { 0x80187d14, (void *)prim_tri_batch_rtpt },
   { 0x80187dcc, (void *)gte_persp_batch },
+  { 0x80187e18, (void *)prim_emit_3c },
   { 0x80187ee0, (void *)prim_emit_ptr_54 },
   { 0x80187ffc, (void *)prim_emit_ptr_50 },
   { 0x801880d4, (void *)prim_emit_ptr_68 },
   { 0x8018a4f8, (void *)prim_task_run },
   { 0x8018a9e8, (void *)prim_depth_shade_emit },
+  { 0x8018ab84, (void *)prim_cull2_emit_30 },
+  { 0x8018ac54, (void *)prim_cull3_emit_48 },
+  { 0x8018ac64, (void *)prim_cull3_emit_40 },
+  { 0x8018ac74, (void *)prim_cull3_emit_50 },
+  { 0x8018ac84, (void *)prim_cull3_emit_58 },
+  { 0x8018ac94, (void *)prim_cull3_emit_68 },
   { 0x8018b050, (void *)vec2_rot },
   { 0x8018b0a0, (void *)angle_gte_vec },
   { 0x8018b208, (void *)prim_list_persp_step },
@@ -2575,6 +2600,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8019cb20, (void *)cd_reg_win_rmw_cc_cd },
   { 0x8019cb50, (void *)cd_reg_window_rmw },
   { 0x8019ce10, (void *)cd_mode_apply_deferred },
+  { 0x8019cfb0, (void *)bios_tramp_b00a },
   { 0x8019cfc0, (void *)cd_dma_xfer_mode },
   { 0x8019d030, (void *)cd_reg_bit40_ctrl },
   { 0x8019d170, (void *)cd_reg_rw_d2 },

@@ -5095,6 +5095,81 @@ uint32_t desc_frag_tail(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
   return a2 + 4;
 }
 
+/* desc_frag_op_dispatch — guest 0x8017D0B0 (CPS-split head of the
+ * desc_frag_* family; the 0x8017d198/19c/1c4 pieces above are its tail).
+ * Reads op = (lhu src >> 8) & 0xFF and flag = lbu(flags+0x100), then
+ * dispatches:
+ *   op==15 -> single store t1+0x28C (flag!=0) or pair-store idx0
+ *   op<16  -> op==11: t1+0x23C / op==14: t1+0x1C4 / else pair-store idx
+ *   op>=16 -> op==16: t1+0x264 / op==128: 27-entry stride-(-40) fill of
+ *             t1+12+{1040..0} / else pair-store idx
+ * where "pair-store idx" = desc_frag_store_pair(idx*40, src, owner) and
+ * the single stores hit only t1 = *(owner+0x18) with h = lhu(src+2).
+ * flag==0 on ops 11/14/15/16 jumps into the 0x8017d198 piece with
+ * v1 = flag&0xFF = 0 -> pair-store at offset 0. Every path returns
+ * src+4 in v0. Disasm generated/SLES_017.22_full_35.c
+ * 0x8017D0B0-0x8017D198 + pieces 0x8017D198/19C/1C4. */
+uint32_t desc_frag_op_dispatch(uint32_t owner, uint32_t flags, uint32_t src)
+{
+  uint32_t op   = ((uint32_t)*(const uint16_t *)guest_at(src) >> 8) & 0xFFu;
+  uint32_t flag = (uint32_t)*(const uint8_t *)guest_at(flags + 0x100u);
+  uint32_t idx, t1, h, cnt, off, dst;
+
+  if (op == 15u) goto op15;                     /* beq -> 0x8017D13C */
+  if (op >= 16u) goto op_ge16;                  /* slti op<16 == 0 -> D0F0 */
+  /* op < 16 && op != 15 */
+  if (op == 11u) goto op11;                     /* -> 0x8017D10C */
+  if (op == 14u) goto op14;                     /* -> 0x8017D124 */
+  idx = flag & 0xFFu;                           /* D0E8: v1 &= 0xFF */
+  return desc_frag_store_pair(idx * 40u, src, owner);   /* -> D198 piece */
+
+op_ge16:                                         /* 0x8017D0F0 */
+  if (op == 16u) goto op16;                     /* -> 0x8017D154 */
+  if (op == 128u) goto op128;                   /* -> 0x8017D16C */
+  idx = flag & 0xFFu;                           /* D100 delay-slot mask */
+  return desc_frag_store_pair(idx * 40u, src, owner);   /* D104 -> D19C */
+
+op11:                                            /* 0x8017D10C */
+  if (flag == 0)                                /* beq a1,zero -> D198 */
+    return desc_frag_store_pair(0, src, owner);
+  t1 = MB32(owner + 0x18);                       /* lw v1,0x18(s7) */
+  MW16(t1 + 0x23Cu, MB16(src + 2));              /* sh v0,0x23C(v1) */
+  return src + 4;                               /* -> D1C4 tail */
+
+op14:                                            /* 0x8017D124 */
+  if (flag == 0)
+    return desc_frag_store_pair(0, src, owner);
+  t1 = MB32(owner + 0x18);
+  MW16(t1 + 0x1C4u, MB16(src + 2));
+  return src + 4;
+
+op15:                                            /* 0x8017D13C */
+  if (flag == 0)
+    return desc_frag_store_pair(0, src, owner);
+  t1 = MB32(owner + 0x18);
+  MW16(t1 + 0x28Cu, MB16(src + 2));
+  return src + 4;
+
+op16:                                            /* 0x8017D154 */
+  if (flag == 0)
+    return desc_frag_store_pair(0, src, owner);
+  t1 = MB32(owner + 0x18);
+  MW16(t1 + 0x264u, MB16(src + 2));
+  return src + 4;
+
+op128:                                           /* 0x8017D16C fill loop */
+  cnt = 26; off = 1040;
+  do {
+    cnt--;
+    t1 = MB32(owner + 0x18);                     /* lw v0,0x18(s7) — live reload */
+    h  = MB16(src + 2);                          /* lhu v1,2(a2) — live reload */
+    dst = off + t1;
+    off -= 40;
+    MW16(dst + 12, h);                           /* sh v1,0xC(v0) delay slot */
+  } while ((int32_t)cnt >= 0);                   /* bgez a1 -> loop */
+  return src + 4;                               /* D190 tail: v0 = a2+4 */
+}
+
 /* 16-byte-block guest copy; lwl/lwr vs lw/sw in the original is only an
  * alignment variant of the same memcpy. */
 static void blk_copy(uint32_t dst, uint32_t src, uint32_t len)
