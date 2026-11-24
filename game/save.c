@@ -5531,7 +5531,12 @@ case2:
     goto poll;
 
 poll:
-    frame_tick((intptr_t)g);
+    /* frame_tick re-resolves its arg via guest_at((uint32_t)param_1), so it
+     * must receive the GUEST address 0x1f800000 -- passing the host pointer
+     * g truncated to 32 bits and made pad_state_refresh write the held/edge
+     * words to a phantom arena slot, leaving 0x1f800068..0x77 stale forever
+     * (the afterdraw pad-edge gate then spins in poll -> WEDGE-A). */
+    frame_tick(0x1f800000);
     if (fp != 0xff) continue;
     return;
   }
