@@ -263,8 +263,12 @@ phase). "It compiled" and "it returns plausible values" are not done.
   MUST-DELEGATE per §4; only 2 borderline CD candidates (`cd_channel_table_
   init` `0x801A36F0`, `cd_dma_xfer_start` `0x8019b89c`), both complex MMIO/
   table fns that work correctly delegated. **Easy-wrapper surface exhausted.**
-- **Real frontier**: ~995 generated functions with NO clean port at all —
-  attack per-subsystem, NOT by auditing wrappers.
+- **Real frontier** (corrected measure): the ~2586 raw `br2eu_func_*`
+  generated entries are mostly CPS **split-fragments**, not logical fns.
+  The true unported surface = **~101 `jal`-target fns** lacking clean_table
+  coverage: ~55 correctly-delegated IRQ/CD/device fns + **~45 unnamed fns**
+  (the real port targets). Easy unnamed leaves now ported; remaining are
+  large (38-67 blk) or IRQ/CD-bound. Attack per-subsystem, NOT wrappers.
 - **⚠ Background subagents stall on exec approvals** — `is_background=true`
   auto-denies tool approval, so build/launch/debug-server work hangs. Run
   port/verify sweeps as FOREGROUND (`is_background=false`) or do them
@@ -272,6 +276,33 @@ phase). "It compiled" and "it returns plausible values" are not done.
 - **Kill orphaned headless instances** — dozens of `BloodyRoar2_Recompiled`
   zombies (old `disc/` path, hours-old) starve the CPU and crawl build/
   verify cycles. Check `ps aux | grep BloodyRoar` and kill stale PIDs.
+
+### Session update 2 (mode wedges SOLVED + versus combat restored)
+
+- **Mode sweep** (`proof/non_arcade_mode_sweep.md`): ATTRACT demo + OPTIONS
+  menu healthy. Corrected active-low pad map (old notes hit L1/L2/R1/R2):
+  UP `0xFFEF` DOWN `0xFFBF` LEFT `0xFF7F` RIGHT `0xFFDF` SELECT `0xFFFE`.
+- **WEDGE-A SOLVED `e9be0fe`**: `hud_state_machine` poll loop passed
+  `frame_tick((intptr_t)guest_at(0x1f800000))` — a HOST pointer that
+  `frame_tick` re-resolves via `guest_at()` → pad edge words wrote to a
+  phantom slot → `afterdraw` gate never saw input → infinite poll. THE
+  guest-vs-host pointer bug class (see §5). Fixed: pass guest const
+  `0x1f800000`. NOTE: `pending {cmd:0x09,phase:1}` in cdrom_state is a
+  COMPLETED Pause's stale residue (`active=0`), NOT a stuck command.
+- **WEDGE-B / versus regression SOLVED `d20db90`**: `apply()` in action.c
+  ran `.ACT` once-relocation BEFORE cursor-share; generated does it AFTER.
+  Wrong order corrupted `field1` count → broke `ev5_action_select` gate →
+  infinite `[EV5][EV2][EV1]` event loop → `gs=8 ph=8` freeze. Reordered to
+  match generated. **Versus combat restored: 157k+ frames real fight**
+  (was wedged ~frame 52k). `9c92faf` also added faithful `motion+0x84`
+  next-pc mirror in ev_stream_dispatch.
+- **Ports landed**: `cmd_queue_slot_next`, `scroll_offset_y_get`,
+  `task_packet_emit`, `empty_leaf_e`, EV46 camera-op family (13 fns),
+  `ev_stream_dispatch` +0x84. clean_table now ~1342 wrappers.
+- **Remaining known issue**: mode `(1,4)` may still hit a separate CD
+  `pending 0x09` starvation variant (`proof/cd_deferred_coroutine_
+  starvation.md`) — distinct from the solved frame_tick wedge; needs its
+  own look. Versus/arcade/attract/options are the verified-good modes.
 
 **Bottom line: parallel subagents, clean named C in `game/`, generated only
 as a temporary faithful fallback, runtime-verified, one unified source.**
