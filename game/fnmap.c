@@ -579,11 +579,13 @@ extern void effect_arg_set(void);
 extern void elapsed_tick_clamp(void);
 extern void elem_field_set(void);
 extern void elem_field_set_wrap(void);
+extern void elem_flag1(void);
 extern void elem_flag100(void);
 extern void elem_flag100_wrap(void);
 extern void elem_flag8(void);
 extern void elem_flag8_wrap(void);
 extern void elem_pair_field_set(void);
+extern void elem_pair_field_set_alt(void);
 extern void elem_pair_field_set_wrap(void);
 extern void elem_pair_flag100(void);
 extern void elem_pair_flag100_wrap(void);
@@ -2846,6 +2848,8 @@ const Br2FnEnt fn_table[] = {
   { 0x801aa0e4, (void *)elem_pair_flag100 },
   { 0x801aa168, (void *)elem_pair_flag8 },
   { 0x801aa1e4, (void *)elem_pair_field_set },
+  { 0x801aa244, (void *)elem_pair_field_set_alt },
+  { 0x801aa2ac, (void *)elem_flag1 },
   { 0x801aa2c8, (void *)elem_flag100 },
   { 0x801aa320, (void *)elem_flag8 },
   { 0x801aa374, (void *)elem_field_set },

@@ -9847,6 +9847,65 @@ void elem_field_set(void *a0,int32_t a1,int32_t a2,int32_t a3)
   }
 }
 
+/* 0x801AA2AC — elem_flag1: leaf alias tail-entry of elem_pair_field_set.
+ * Entered via fn-ptr (BIOS CD sub-channel callback @0x801FEB48) with the
+ * element pointer already live in $v1 (gpr[3]):
+ *   v0 = lhu(elem+0x44) | 1 ; sh(elem+0x44) = v0 ; jr $ra
+ * The flag load is LHU (insn 0x94620044, opcode 0x25) — zero-extended.
+ * gpr[2] write-back preserved (caller may read $v0); gpr[3] untouched.
+ * Disasm generated/SLES_017.22_full_52.c block_801AA2AC (0x801AA2B0-2BC). */
+void elem_flag1(uint32_t elem)
+{
+  uint32_t f = (uint32_t)br2_ld16(elem + 0x44) | 1u;
+  br2_st16(elem + 0x44, (uint16_t)f);
+  {
+    extern CPUState *clean_cpu_state(void);
+    CPUState *cpu = clean_cpu_state();
+    if (cpu != NULL) cpu->gpr[2] = f;
+  }
+}
+
+/* 0x801AA244 — elem_pair_field_set_alt: alias entry into the shared tail
+ * of elem_pair_field_set (canonical 0x801AA1E4), reached via fn-ptr
+ * (BIOS CD sub-channel callback @0x801FEB44). Live-gpr contract — NO a0-a3
+ * marshalling applies; the guest reads:
+ *   v0 = base of the first element array (caller pre-loaded),
+ *   a0 = ctx (second array ptr at a0+0x38),
+ *   a1 = index*4 byte offset (pre-shifted by the caller),
+ *   a2/a3 = field values for elem+0x46/+0x48.
+ * Flow (all addrs guest):
+ *   e1 = lw(a1+v0) -> $v1 ; flag-set e1: lhu(e1+0x44)|1 -> sh(e1+0x44)
+ *   e2 = lw(a1 + lw(a0+0x38)) ; if e2==0 return early ($v0=0,$v1=e1)
+ *   sh(e2+0x46)=a2 ; e2 reloaded ; sh(e2+0x48)=a3 ; e2 reloaded -> $v1
+ *   flag-set e2 (shared 0x801AA2AC tail) ; return ($v0=flag|1,$v1=e2)
+ * Leaf (jr $ra). Element ptrs are re-loaded between every store exactly as
+ * the generated body does. Disasm generated ...:15441-15760. */
+void elem_pair_field_set_alt(uint32_t v0,uint32_t a0,uint32_t a1,
+                             uint32_t a2,uint32_t a3)
+{
+  uint32_t e1 = br2_ld32(a1 + v0);
+  uint32_t f1 = (uint32_t)br2_ld16(e1 + 0x44) | 1u;
+  br2_st16(e1 + 0x44, (uint16_t)f1);
+  uint32_t e2 = br2_ld32(a1 + br2_ld32(a0 + 0x38));
+  {
+    extern CPUState *clean_cpu_state(void);
+    CPUState *cpu = clean_cpu_state();
+    if (e2 == 0) {
+      if (cpu != NULL) { cpu->gpr[2] = 0; cpu->gpr[3] = e1; }
+      return;
+    }
+    br2_st16(e2 + 0x46, (uint16_t)a2);
+    e2 = br2_ld32(a1 + br2_ld32(a0 + 0x38));
+    br2_st16(e2 + 0x48, (uint16_t)a3);
+    e2 = br2_ld32(a1 + br2_ld32(a0 + 0x38));   /* -> $v1 */
+    {
+      uint32_t f2 = (uint32_t)br2_ld16(e2 + 0x44) | 1u;
+      br2_st16(e2 + 0x44, (uint16_t)f2);
+      if (cpu != NULL) { cpu->gpr[2] = f2; cpu->gpr[3] = e2; }
+    }
+  }
+}
+
 /* mat3x3_build — build 3x3 fixed-point matrix @a3 (9 s16, /4096)
  * from sin/cos table lookups lut_sin_q12/lut_cos_q12 of a0,a1,a2
  * (caller passes raw s16 angles). Returns a3.

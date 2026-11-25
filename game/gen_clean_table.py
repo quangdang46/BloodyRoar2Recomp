@@ -346,6 +346,12 @@ ARG_GPRS = {
     # src bases in a2/a3 (verified vs full_27:0x80167b00-0x80167b33).
     0x80167b00: (5, 6, 7),
     0x80167b20: (5, 6, 7),
+    # elem_pair_field_set alias mid-entries (BIOS CD sub-channel cbs
+    # @0x801FEB44/@0x801FEB48): 0x801AA244 reads v0=elem-array base,
+    # a0=ctx, a1=idx*4, a2/a3=fields; 0x801AA2AC reads v1=elem ptr.
+    # Verified insn-by-insn vs generated/SLES_017.22_full_52.c:15441-15760.
+    0x801aa244: (2, 4, 5, 6, 7),
+    0x801aa2ac: (3,),
 }
 
 wrappers, table, skipped = [], [], []

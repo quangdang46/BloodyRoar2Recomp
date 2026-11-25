@@ -1506,6 +1506,10 @@
 
 801aa1e4 elem_pair_field_set
 
+801aa244 elem_pair_field_set_alt
+
+801aa2ac elem_flag1
+
 801aa2c8 elem_flag100
 
 801aa320 elem_flag8
