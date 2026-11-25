@@ -944,13 +944,195 @@ undefined2 cd_intc_busy_read(void)
 
 /* ======== 0x80196370 ======== */
 
+/* cd_response_process — CD response-byte state machine (0x80196370-
+ * 0x801968C8, 343 insns decoded insn-by-insn from disc/SLES_017.22).
+ * IRQ2-context leaf called by cd_response_process's only caller
+ * cd_response_pump (and inlined into cd_result_wait_b's generated twin).
+ *
+ * Wait classification (the §4 test): the ONLY unbounded wait is the
+ * status-stabilize loop @0x801963C4-0x801963E4, which polls
+ * lbu[*0x801bcb18]&7 until two consecutive reads agree — a CD-hardware
+ * status byte advanced by the CD device model / INT1 coroutine, i.e.
+ * IRQ-handler-updated, NOT a separate cooperative thread. Same class as
+ * the proven cd_cmd_state_reset drain loop (0x801972a8) and
+ * vsync_wait_n. The 8-byte response read @0x801963EC is bounded (s0<8)
+ * and gated on (*0x801bcb0c)&0x20. Everything else is straight-line
+ * state-machine work + rare printf paths. PORTABLE.
+ *
+ * Guest layout: frame 0x30; locals sp+0x10=status&7, sp+0x18..0x1F =
+ * 8-byte response buffer (private — IRQ handlers never read caller
+ * frames, so a host buffer is faithful). Pointer cells are re-loaded
+ * every access exactly like the guest's lw-ptr; pointee accesses go
+ * through br2_ld8p/br2_st8p/br2_st32p so MMIO pointees route correctly.
+ * s0 = response-byte count, s1 = buf[0]&0x1D reply-class flags.
+ *
+ * Jump table @0x80125818 (status-1 -> case): verified against the disc:
+ *   [0] status1 -> 0x80196718  ret 4  (CB25 = s1?5:1 after s0==1 clear,
+ *                                 copy->C6D0, *CB0C-ptr=0, *CB18-ptr=0)
+ *   [1] status2 -> 0x801966CC  ret 2  (CB24 = s1?5:2, copy->C6C8)
+ *   [2] status3 -> 0x801965CC  ret 1/2 (s1!=0: CB24=5 ret2;
+ *                                 s1==0: tblB[0x801bc924+idx*4]?CB24=3
+ *                                 ret1 : CB24=2 ret2; copy->C6C8)
+ *   [3] status4 -> 0x80196798  ret 4  (CB26=4,CB25=4, copy->C6D8,
+ *                                 copy->C6D0)
+ *   [4] status5 -> 0x80196818  ret 6  (CB25=5,CB24=5, copy->C6C8,
+ *                                 copy->C6D0)
+ *   default    -> 0x80196898  ret 0  (cd_str_print+printf, status>=6)
+ * The dead `beq $v1,$zr` guards before each copy test a constant
+ * 0x8020C6Cx (never zero) — the guest always copies; reproduced as
+ * unconditional 8-byte copies. */
 undefined4 cd_response_process(void)
-
 {
-  /* 1372-byte response state machine — IRQ-context coroutine semantics and
-   * per-type dispatch are exactly reproduced only by the recompiled body.
-   * Delegate to generated (same contract as the other IRQ-wait CD fns). */
-  return (undefined4)br2_call_generated(0x80196370u,0,0,0,0);
+  uint32_t fr = br2_guest_frame(0x30);
+  uint8_t buf[8];
+  uint32_t status, stored, cur, idx, s1 = 0;
+  int s0 = 0, i;
+  CPUState *cpu = clean_cpu_state();
+  (void)fr;
+
+  /* @0x8019638C: *(*0x801bcb0c) = 1 — doorbell byte via pointer cell */
+  br2_st8p(0x801bcb0c, 1);
+  /* @0x80196390-0x801963A8: status = lbu[*0x801bcb18] & 7 -> sp+0x10 */
+  status = (uint32_t)br2_ld8p(0x801bcb18) & 7u;
+  if (status == 0) { br2_guest_frame_free(); return 0; }   /* @0x801963B4 */
+
+  /* @0x801963C4-0x801963E4 stabilize: exit when two consecutive
+   * (lbu[*0x801bcb18]&7) reads agree. Entry jumps to the compare with
+   * sp+0x10 = initial status; each failed compare stores a fresh read
+   * (block C4) then compares another fresh read (block D4). s0 is
+   * zeroed by the D4 delay slot on every pass -> stays 0. */
+  stored = status;
+  for (;;) {
+    cur = (uint32_t)br2_ld8p(0x801bcb18) & 7u;   /* D4 read */
+    if (cur == stored) break;
+    if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; }
+    br2_irq_poll();
+    stored = (uint32_t)br2_ld8p(0x801bcb18) & 7u; /* C4 read+store */
+    status = stored;
+    if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; }
+    br2_irq_poll();
+  }
+  status = stored;                                /* sp+0x10 final value */
+
+  /* @0x801963E8-0x8019642C: while s0<8 && (*CB0C)&0x20:
+   * buf[s0++] = lbu[*0x801bcb10]. Gate re-read each pass; bounded. */
+  for (;;) {
+    if ((br2_ld8p(0x801bcb0c) & 0x20u) == 0) break;
+    buf[s0] = br2_ld8p(0x801bcb10);
+    s0++;
+    if (s0 >= 8) break;
+    if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; }
+    br2_irq_poll();
+  }
+  /* @0x80196430-0x80196454: zero-fill buf[s0..7] */
+  for (i = s0; i < 8; i++) buf[i] = 0;
+
+  /* @0x80196458-0x80196484: re-arm doorbell, issue read-response cmd */
+  br2_st8p(0x801bcb0c, 1);
+  br2_st8p(0x801bcb18, 7);
+  br2_st8p(0x801bcb14, 7);
+
+  /* @0x80196488-0x80196524: reply-class bookkeeping.
+   * status==3 && tblA[0x801bca04+idx*4]==0 skips the store block
+   * entirely (s1 stays 0, BC854/BC858 untouched). */
+  if (status == 3) {
+    idx = (uint32_t)br2_ld8(0x801bc865);
+    if (br2_ld32(0x801bca04 + (idx << 2)) != 0) goto reply_store;
+    goto status5_check;
+  }
+reply_store:
+  /* @0x801964C0-0x801964E4: if !(*0x801bc854 & 0x10) && buf[0]&0x10
+   * -> ++*0x801bc85c (delay-slot store @0x80196500 always runs when
+   * the branch is taken) */
+  if ((br2_ld32(0x801bc854) & 0x10u) == 0 && (buf[0] & 0x10u) != 0) {
+    br2_st32(0x801bc85c, br2_ld32(0x801bc85c) + 1u);
+  }
+  /* @0x80196504-0x80196520: *0x801bc854 = buf[0]; *0x801bc858 = buf[1];
+   * s1 = buf[0] & 0x1d */
+  br2_st32(0x801bc854, (uint32_t)buf[0]);
+  br2_st32(0x801bc858, (uint32_t)buf[1]);
+  s1 = (uint32_t)buf[0] & 0x1du;
+
+status5_check:
+  /* @0x80196524-0x80196598: status==5 error-report path */
+  if (status == 5 && (int32_t)br2_ld32(0x801bc850) > 0) {
+    if (cpu) {
+      cpu->gpr[4] = 0x801257d0u;
+      (void)cd_jal(0x8018e550u, 0x80196554u);   /* jal printf_forward_guest */
+      if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; }
+    }
+    if ((int32_t)br2_ld32(0x801bc850) > 0 && cpu) {
+      idx = (uint32_t)br2_ld8(0x801bc865);
+      cpu->gpr[4] = 0x801257dcu;
+      cpu->gpr[5] = br2_ld32(0x801bc86c + (idx << 2));
+      cpu->gpr[6] = br2_ld32(0x801bc854);
+      cpu->gpr[7] = br2_ld32(0x801bc858);
+      (void)cd_jal(0x8018e550u, 0x8019659cu);   /* jal printf_forward_guest */
+      if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; }
+    }
+  }
+
+  /* @0x8019659C-0x801965C4: jump table on (status-1) < 5 */
+  if ((uint32_t)(status - 1u) >= 5u) goto resp_default;
+  switch (status) {
+  case 1:                                        /* -> 0x80196718, ret 4 */
+    if (s1 != 0 && s0 == 1) s1 = 0;
+    br2_st8(0x801bcb25, (uint8_t)((s1 != 0) ? 5u : 1u));
+    for (i = 0; i < 8; i++) br2_st8(0x8020c6d0u + i, buf[i]);
+    br2_st8p(0x801bcb0c, 0);                     /* *(*CB0C) = 0 */
+    br2_st8p(0x801bcb18, 0);                     /* *(*CB18) = 0 */
+    br2_guest_frame_free();
+    return 4;
+  case 2:                                        /* -> 0x801966CC, ret 2 */
+    br2_st8(0x801bcb24, (uint8_t)((s1 != 0) ? 5u : 2u));
+    for (i = 0; i < 8; i++) br2_st8(0x8020c6c8u + i, buf[i]);
+    br2_guest_frame_free();
+    return 2;
+  case 3:                                        /* -> 0x801965CC, ret 1/2 */
+    if (s1 != 0) {
+      br2_st8(0x801bcb24, 5);
+      for (i = 0; i < 8; i++) br2_st8(0x8020c6c8u + i, buf[i]);
+      br2_guest_frame_free();
+      return 2;
+    }
+    idx = (uint32_t)br2_ld8(0x801bc865);
+    if (br2_ld32(0x801bc924 + (idx << 2)) != 0) {
+      br2_st8(0x801bcb24, 3);
+      for (i = 0; i < 8; i++) br2_st8(0x8020c6c8u + i, buf[i]);
+      br2_guest_frame_free();
+      return 1;
+    }
+    br2_st8(0x801bcb24, 2);
+    for (i = 0; i < 8; i++) br2_st8(0x8020c6c8u + i, buf[i]);
+    br2_guest_frame_free();
+    return 2;
+  case 4:                                        /* -> 0x80196798, ret 4 */
+    br2_st8(0x801bcb26, 4);
+    br2_st8(0x801bcb25, br2_ld8(0x801bcb26));
+    for (i = 0; i < 8; i++) br2_st8(0x8020c6d8u + i, buf[i]);
+    for (i = 0; i < 8; i++) br2_st8(0x8020c6d0u + i, buf[i]);
+    br2_guest_frame_free();
+    return 4;
+  case 5:                                        /* -> 0x80196818, ret 6 */
+    br2_st8(0x801bcb25, 5);
+    br2_st8(0x801bcb24, br2_ld8(0x801bcb25));
+    for (i = 0; i < 8; i++) br2_st8(0x8020c6c8u + i, buf[i]);
+    for (i = 0; i < 8; i++) br2_st8(0x8020c6d0u + i, buf[i]);
+    br2_guest_frame_free();
+    return 6;
+  }
+resp_default:                                    /* -> 0x80196898, ret 0 */
+  if (cpu) {
+    cpu->gpr[4] = 0x801257f8u;
+    (void)cd_jal(0x80197ad0u, 0x801968a4u);       /* jal cd_str_print */
+    if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; }
+    cpu->gpr[4] = 0x8012580cu;
+    cpu->gpr[5] = status;
+    (void)cd_jal(0x8018e550u, 0x801968b4u);       /* jal printf_forward_guest */
+    if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; }
+  }
+  br2_guest_frame_free();
+  return 0;
 }
 
 /* ======== small getters ======== */
@@ -1140,20 +1322,131 @@ int cd_dispatch_tbl4(int param_1,uint32_t param_2)
 
 /* ======== 0x801985c4 ======== */
 
+/* cd_read_step_cb — per-sector read-step callback (0x801985C4-0x80198834,
+ * 0x274 bytes decoded insn-by-insn). Session struct S = 0x801CCB80:
+ *   +0x10 mode (==0x200 gate), +0x14 sector count (int, -1 = error/reopen),
+ *   +0x18 last timer snapshot, +0x1C deadline base (+0x4B0 = deadline),
+ *   +0x20 expected sector (= *0x801CCBA0), +0x24 completion flag,
+ *   +0x2C mc_session_b arg, +0x30 cd_cmd_dispatch3 arg, +0x34 param_2.
+ * Wait classification: NO wait of its own — every blocking call
+ * (cd_sync_wait_b/c -> cd_cmd_issue_b/c, cd_busy_wait, cd_timer_read,
+ * cd_read_open, cd_cmd_issue_async) is already clean and polls
+ * IRQ/hardware-updated flags via br2_irq_poll. Event-driven step ->
+ * PORTABLE. The sp+0x10 stamp buffer is a real guest frame (reg48 gets
+ * the guest address; the CD response writes the stamp there and
+ * cd_stamp_to_sector reads it back). */
 void cd_read_step_cb(uint32_t param_1,undefined4 param_2)
-
 {
-  /* Per-sector read-step callback: MSF stamp-verify into a guest stack buf,
-   * buffer advance, sync-wait issue of the next sector, and the read-complete
-   * Pause + user callback. Its stack-buf address is guest_sp()-0x20, which only
-   * reproduces the MIPS frame if the clean frame model is exact; a mismatch
-   * reads a wrong stamp -> "sector error" -> abort -> the completion event
-   * never fires -> TestEvent spins (the 0x60a wedge). It also drives the
-   * cd_sync_wait and cd_cmd_issue helpers which cross the deferred-IRQ
-   * coroutine boundary. Delegate to generated for a faithful SP/frame + IRQ path.
-   * param_1 taken as a full word (was char) so a0 is not truncated. */
-  br2_call_generated(0x801985c4u,param_1,param_2,0,0);
-  return;
+  const uint32_t S = 0x801ccb80;
+  CPUState *cpu = clean_cpu_state();
+  uint32_t fr = br2_guest_frame(0x30);
+  uint32_t bufg = fr + 0x10;          /* guest sp+0x10 stamp buffer */
+  uint32_t s1 = (uint32_t)param_2;
+  uint32_t v0, cb, a0v;
+  (void)fr;
+
+  br2_st32(S + 0x34, s1);                          /* @0x801985E8 */
+  if ((param_1 & 0xffu) == 1) {                    /* @0x801985EC */
+    if ((int32_t)br2_ld32(S + 0x14) > 0) {         /* @0x801985F4 blez */
+      if (br2_ld32(S + 0x10) == 0x200) {           /* @0x80198604-0x0C */
+        if ((br2_ld8(0x801bc7b4) & 1) != 0) {      /* @0x80198614-0x24 */
+          /* @0x8019862C-0x80198654: dispatch3(0), sync_wait_c(buf,3),
+           * busy_wait(0), dispatch3(0x801A8838). The a0 values live in
+           * each jal's DELAY SLOT — they must be in gpr[4] BEFORE cd_jal
+           * dispatches (cd_jal does not write arg regs). */
+          if (cpu) cpu->gpr[4] = 0;                /* delay @0x80198630 */
+          (void)cd_jal(0x801961a8u, 0x80198634u);  /* cd_cmd_dispatch3(0) */
+          /* @0x80198634/0x8019863C: a0=sp+0x10, a1=3 */
+          if (cpu) { cpu->gpr[4] = bufg; cpu->gpr[5] = 3; }
+          (void)cd_jal(0x80196188u, 0x80198640u);  /* cd_sync_wait_c */
+          if (cpu) cpu->gpr[4] = 0;                /* delay @0x80198644 */
+          (void)cd_jal(0x801961ccu, 0x80198648u);  /* cd_busy_wait_fwd(0) */
+          if (cpu) cpu->gpr[4] = 0x801a8838u;      /* delay @0x80198650 */
+          (void)cd_jal(0x801961a8u, 0x80198654u);  /* cd_cmd_dispatch3 */
+        } else {
+          /* @0x8019865C: cd_sync_wait_b(buf,3); a0=sp+0x10 from the
+           * beq delay slot @0x80198628 */
+          if (cpu) { cpu->gpr[4] = bufg; cpu->gpr[5] = 3; }
+          (void)cd_jal(0x80196168u, 0x80198664u);  /* cd_sync_wait_b */
+        }
+        /* @0x80198664: stamp-verify the just-read sector (a0=sp+0x10 in
+         * the jal delay slot @0x80198668) */
+        if (cpu) cpu->gpr[4] = bufg;
+        v0 = cd_jal(0x801962f0u, 0x8019866cu);      /* cd_stamp_to_sector */
+        if (v0 != br2_ld32(0x801ccba0)) {          /* @0x80198674-0x7C */
+          if (cpu) cpu->gpr[4] = 0x80125ac8u;
+          (void)cd_jal(0x80197ad0u, 0x80198690u);  /* cd_str_print */
+          br2_st32(S + 0x14, 0xffffffffu);         /* @0x80198698 */
+        }
+      }
+      /* @0x8019869C: session-callback sync + cursor advance */
+      if ((br2_ld8(0x801bc7b4) & 1) != 0) {
+        if (cpu) {
+          cpu->gpr[4] = br2_ld32(0x801ccb88);
+          cpu->gpr[5] = br2_ld32(0x801ccb90);
+        }
+        (void)cd_jal(0x80196188u, 0x801986ccu);    /* cd_sync_wait_c */
+      } else {
+        if (cpu) {
+          cpu->gpr[4] = br2_ld32(0x801ccb88);
+          cpu->gpr[5] = br2_ld32(0x801ccb90);
+        }
+        (void)cd_jal(0x80196168u, 0x801986ecu);    /* cd_sync_wait_b */
+        /* @0x801986EC-0x80198724: *0x801ccb88 += *0x801ccb90 << 2;
+         * --*(S+0x14); ++*(S+0x20) */
+        br2_st32(0x801ccb88,
+                 br2_ld32(0x801ccb88) + (br2_ld32(0x801ccb90) << 2));
+        br2_st32(S + 0x14, br2_ld32(S + 0x14) - 1u);
+        br2_st32(S + 0x20, br2_ld32(S + 0x20) + 1u);
+      }
+    }
+  } else {
+    br2_st32(S + 0x14, 0xffffffffu);              /* @0x80198728 */
+  }
+
+  /* @0x8019872C timer/deadline tail */
+  if (cpu) cpu->gpr[4] = 0xffffffffu;             /* a0=-1 delay @0x80198730 */
+  v0 = cd_jal(0x8019a460u, 0x80198734u);          /* cd_timer_read(-1) */
+  br2_st32(S + 0x18, v0);                         /* @0x8019873C */
+  if ((int32_t)br2_ld32(S + 0x14) < 0) {          /* @0x80198748 bgez */
+    if (cpu) cpu->gpr[4] = 1;
+    (void)cd_jal(0x80198908u, 0x80198758u);       /* cd_read_open(1) */
+  }
+  if (cpu) cpu->gpr[4] = 0xffffffffu;             /* @0x8019875C */
+  v0 = cd_jal(0x8019a460u, 0x80198760u);          /* cd_timer_read(-1) */
+  /* @0x80198760-0x80198778: if (*(S+0x1C)+0x4B0) < now -> count=-1 */
+  if ((int32_t)(br2_ld32(S + 0x1c) + 0x4b0u) < (int32_t)v0)
+    br2_st32(S + 0x14, 0xffffffffu);
+  /* @0x8019877C-0x801987A8: count==0 -> finalize; count!=0 -> re-check
+   * deadline, return early while still inside the window */
+  if (br2_ld32(S + 0x14) != 0) {
+    if (cpu) cpu->gpr[4] = 0xffffffffu;
+    v0 = cd_jal(0x8019a460u, 0x80198794u);        /* cd_timer_read(-1) */
+    if (!((int32_t)(br2_ld32(S + 0x1c) + 0x4b0u) < (int32_t)v0))
+      { br2_guest_frame_free(); return; }        /* @0x80198824 epilogue */
+  }
+  /* @0x801987AC finalize: session teardown + Pause + user callback */
+  if (cpu) cpu->gpr[4] = br2_ld32(S + 0x2c);
+  (void)cd_jal(0x80195d78u, 0x801987b8u);         /* mc_session_b */
+  if ((br2_ld8(0x801bc7b4) & 1) != 0) {
+    if (cpu) cpu->gpr[4] = br2_ld32(S + 0x30);
+    (void)cd_jal(0x801961a8u, 0x801987dcu);       /* cd_cmd_dispatch3 */
+  }
+  if (cpu) { cpu->gpr[4] = 0x801a8590u; cpu->gpr[5] = 0; }
+  (void)cd_jal(0x80195d64u, 0x801987e8u);         /* mc_session(0x801A8590) */
+  if (cpu) { cpu->gpr[4] = 9; cpu->gpr[5] = 0; }
+  (void)cd_jal(0x80195ec8u, 0x801987f4u);         /* cd_cmd_issue_async(9,0) */
+  br2_st32(S + 0x24, 1);                          /* @0x80198804 delay slot */
+  cb = br2_ld32(0x801bc7b0);
+  if (cb == 0) {                                /* beq -> ret v0=1 */
+    if (cpu) cpu->gpr[2] = 1;
+    br2_guest_frame_free();
+    return;
+  }
+  a0v = (br2_ld32(S + 0x14) != 0) ? 5u : 2u;      /* @0x80198808-0x818 */
+  if (cpu) { cpu->gpr[4] = a0v; cpu->gpr[5] = s1; }
+  (void)cd_jal(cb, 0x80198820u);                  /* jalr $ra,$v1 */
+  br2_guest_frame_free();
 }
 
 /* ======== 0x80198838 ======== */
@@ -5614,18 +5907,61 @@ static int32_t cd_wait_stat(void)
 /* ======== 0x801979f8 ======== */
 
 /* 0x801979f8 — IRQ2-context CD response/completion dispatcher (INTC
- * handler[2] @0x801bcd1c, gated on I_STAT bit2 CDROM). It loops
- * cd_response_process (MMIO + deferred-coroutine resume) and fires the
- * registered completion callbacks @0x801bc84c/@0x801bc848 that advance the
- * read/channel state and submit the ch4 doorbell -> DeliverEvent(F0000009).
- * The clean for(;;)+br2_bail_pending loop cannot supply the per-block
- * psx_check_interrupts_at / live guest continuation the generated body has
- * across cd_response_process and the callback call_guests — the same
- * deferred-coroutine starvation contract as cd_intc_dispatch/cd_cb8_dispatch.
- * Delegate to generated MIPS (behavioral oracle). */
+ * handler[2] @0x801bcd1c, gated on I_STAT bit2 CDROM). Faithful port of
+ * generated 0x801979f8-0x80197ACC (54 insns, decoded insn-by-insn):
+ *
+ *   s2 = lbu[*0x801bcb0c] & 3            // saved doorbell low bits
+ *   loop @0x80197A2C:
+ *     s0 = cd_response_process()          // jal 0x80196370, ra=0x80197A30
+ *     if (s0 == 0) break                  // -> exit @0x80197AA4
+ *     if (s0 & 4):                        // delay-slot andi @0x80197A3C
+ *       cb = *0x801bc84c; if (cb)
+ *         jalr cb(a0=lbu[0x801bcb25], a1=0x8020c6d0)  // ra=0x80197A68
+ *     if (s0 & 2):                        // recomputed @0x80197A6C (jalr
+ *       cb = *0x801bc848; if (cb)         //  clobbered $v0)
+ *         jalr cb(a0=lbu[0x801bcb24], a1=0x8020c6c8)  // ra=0x80197A98
+ *     goto loop
+ *   exit: *(*0x801bcb0c) = s2; return
+ *
+ * No wait of its own — the only blocking work is inside
+ * cd_response_process, whose status waits are CD-hardware/IRQ-updated
+ * (same class as cd_cmd_state_reset's proven br2_irq_poll drain loop).
+ * The two jalr callbacks are ordinary guest fn ptrs invoked with live
+ * a2/a3 leftovers -> cd_jal (faithful jalr: no arg-reg restore, $ra =
+ * the guest link token). Guest frame 0x28 reserved so nested calls see
+ * the same $sp the MIPS prologue produced. */
 void cd_response_pump(void)
 {
-  br2_call_generated(0x801979f8u,0,0,0,0);
+  CPUState *cpu = clean_cpu_state();
+  uint32_t fr = br2_guest_frame(0x28);
+  uint32_t s2, s0, cb;
+  (void)fr;
+  s2 = (uint32_t)br2_ld8p(0x801bcb0c) & 3u;
+  for (;;) {
+    s0 = cd_jal(0x80196370u, 0x80197A30u);       /* jal cd_response_process */
+    if (br2_bail_pending()) { br2_guest_frame_abandon(); return; }
+    if (s0 == 0) break;
+    if ((s0 & 4u) != 0) {
+      cb = br2_ld32(0x801bc84c);
+      if (cb != 0 && cpu) {
+        cpu->gpr[4] = (uint32_t)br2_ld8(0x801bcb25);
+        cpu->gpr[5] = 0x8020c6d0u;
+        (void)cd_jal(cb, 0x80197A68u);          /* jalr $ra,$v0 */
+        if (br2_bail_pending()) { br2_guest_frame_abandon(); return; }
+      }
+    }
+    if ((s0 & 2u) != 0) {
+      cb = br2_ld32(0x801bc848);
+      if (cb != 0 && cpu) {
+        cpu->gpr[4] = (uint32_t)br2_ld8(0x801bcb24);
+        cpu->gpr[5] = 0x8020c6c8u;
+        (void)cd_jal(cb, 0x80197A98u);          /* jalr $ra,$v0 */
+        if (br2_bail_pending()) { br2_guest_frame_abandon(); return; }
+      }
+    }
+  }
+  br2_st8p(0x801bcb0c, (uint8_t)s2);             /* sb $s2,0(*0x801bcb0c) */
+  br2_guest_frame_free();
 }
 
 /* ======== 0x80192634 ======== */
@@ -6805,8 +7141,77 @@ int cd_ctx_save(uint32_t a0)
  * Disasm 0x8019a8ec-0x8019aab8. */
 void cd_intc_dispatch(void)
 {
-  /* BIOS kernel boundary — run the recompiled guest body. */
-  br2_call_generated(0x8019a8ec,0, 0, 0, 0);
+  /* Faithful port of generated 0x8019A8EC-0x8019AAB8 (0x1CC bytes).
+   * State block @0x801BCD18: +0 u16 in-service flag (first-entry check),
+   * +2 u16 busy flag, +0x30 u16 local mask @0x801BCD48, handler table
+   * u32[11] @0x801BCD1C. Pending = lhu[*0x801CDDA4] & lhu[0x801BCD48] &
+   * lhu[*0x801CDDA8]; per set bit i<11: sh ~（1<<i) -> [*0x801CDDA4]
+   * (clear cause bit), jalr tbl[i] with live/stale a0-a3 (cd_jal keeps
+   * gpr[4..7] — faithful to the guest jalr which sets no args).
+   * Re-polls until pending drains. Tail: while lhu[*A]&lhu[*B] != 0 bump
+   * counter @0x801CDDB0; at old>=0x801 print "intr timeout" fmt
+   * 0x80125B98, reset counter, sh 0 -> [*0x801CDDA4]. pending==0 at the
+   * tail also clears the counter. Ends busy=0 + BIOS svc B0/0x17
+   * (bios_tramp_b017). NO waits — pure IRQ-dispatch logic, every call is
+   * a leaf/printf/BIOS-tramp -> PORTABLE per the IRQ-poll criterion. */
+  CPUState *cpu = clean_cpu_state();
+  uint32_t pend, fn, cnt;
+  uint32_t i;
+
+  /* @0x8019A910-0x8019A944: unexpected-interrupt banner + intc enable */
+  if (br2_ld16(0x801bcd18u) == 0) {
+    if (cpu) {
+      cpu->gpr[4] = 0x80125b7cu;                       /* fmt */
+      cpu->gpr[5] = br2_ld16(br2_ld32(0x801cdda4u));   /* cause u16 */
+    }
+    (void)cd_jal(0x8018e550u, 0x8019a944u);           /* printf_forward_guest */
+    (void)cd_jal(0x8019ad60u, 0x8019a944u);           /* bios_tramp_b017 */
+  }
+  /* @0x8019A944-0x8019A970: busy=1; pending = *A & mask & *B */
+  br2_st16(0x801bcd1au, 1);
+  pend = (uint32_t)br2_ld16(br2_ld32(0x801cdda4u))
+       & (uint32_t)br2_ld16(0x801bcd48u)
+       & (uint32_t)br2_ld16(br2_ld32(0x801cdda8u));
+  while (pend != 0) {                                 /* outer @0x8019A980 */
+    /* inner scan @0x8019A98C-0x8019A9D8: i=0..0xA over low 16 bits */
+    for (i = 0; i < 0xb; i++) {
+      if ((pend & 1u) != 0) {                         /* @0x8019A994 */
+        br2_st16(br2_ld32(0x801cdda4u),
+                 (uint16_t)~(1u << i));              /* @0x8019A9AC */
+        fn = br2_ld32(0x801bcd1cu + i * 4u);         /* @0x8019A9B0 */
+        if (fn != 0)
+          (void)cd_jal(fn, 0x8019a9c4u);             /* jalr $ra,$v0 */
+      }
+      pend >>= 1;                                     /* srl @0x8019A9CC */
+      if ((pend & 0xffffu) == 0) break;               /* @0x8019A9D4 bne */
+    }
+    /* @0x8019A9DC-0x8019AA08: re-poll pending; loop while nonzero */
+    pend = (uint32_t)br2_ld16(br2_ld32(0x801cdda4u))
+         & (uint32_t)br2_ld16(0x801bcd48u)
+         & (uint32_t)br2_ld16(br2_ld32(0x801cdda8u));
+  }
+  /* @0x8019AA0C-0x8019AA8C: timeout counter on residual *A & *B */
+  if ((br2_ld16(br2_ld32(0x801cdda4u))
+       & br2_ld16(br2_ld32(0x801cdda8u))) != 0) {
+    cnt = br2_ld32(0x801cddb0u);
+    if ((int32_t)cnt < 0x801) {                      /* @0x8019AA4C slti */
+      br2_st32(0x801cddb0u, cnt + 1u);               /* @0x8019AA54 */
+    } else {
+      if (cpu) {
+        cpu->gpr[4] = 0x80125b98u;                    /* "intr timeout" fmt */
+        cpu->gpr[5] = br2_ld16(br2_ld32(0x801cdda4u));
+        cpu->gpr[6] = br2_ld16(br2_ld32(0x801cdda8u));
+      }
+      (void)cd_jal(0x8018e550u, 0x8019aa70u);        /* printf_forward_guest */
+      br2_st32(0x801cddb0u, 0);                       /* @0x8019AA7C */
+      br2_st16(br2_ld32(0x801cdda4u), 0);             /* @0x8019AA84 */
+    }
+  } else {
+    br2_st32(0x801cddb0u, 0);                         /* @0x8019AA8C */
+  }
+  /* @0x8019AA90-0x8019AA98: busy=0 (jal delay slot) then BIOS B0/0x17 */
+  br2_st16(0x801bcd1au, 0);
+  (void)cd_jal(0x8019ad60u, 0x8019aa9cu);             /* bios_tramp_b017 */
 }
 /* bios_tramp_b035 — BIOS trampoline only (0x8018ef50-0x8018ef58):
  * addiu t2,0xb0; jr t2; t1=0x35. Kernel svc 0x35 (line-buffer
