@@ -481,10 +481,10 @@ LAB_80198d0c:
  * 0x00400000 set), and a second seqlock publish of the tick into
  * 0x801bccb0. Returns s1.
  *
- * Both `jal vsync_wait_n` sites stay on the GENERATED body
- * (br2_call_generated 0x8019a5d8): its timeout path tail-calls
- * bios_table_tramp/bios_kobj_tramp — a $ra/kern boundary clean C cannot
- * reproduce (same contract as every BIOS-adjacent delegate). The
+ * Both `jal vsync_wait_n` sites dispatch to the CLEAN body below
+ * (0x8019a5d8): its frame-counter poll uses the same br2_irq_poll contract
+ * as the spins here, and its timeout path sequences the three jals through
+ * cd_jal. The
  * seqlock/frame-wait spins use the proven br2_irq_poll pattern: the VBlank
  * IRQ coroutine (cd_cb8_run_param -> DAT_801bdde0, the *0x801bcca8/
  * *0x801bccac counters) is driven by psx_check_interrupts exactly like
@@ -563,6 +563,76 @@ uint cd_timer_read(int param_1)
 
   br2_guest_frame_free();
   return s1;
+}
+
+/* ======== 0x8019a5d8 ======== */
+
+/* vsync_wait_n — bounded VBlank-frame wait (0x8019a5d8, 152B/9blk/3jal,
+ * decoded insn-by-insn against generated/SLES_017.22_full_46.c:25152).
+ *
+ * Guest semantics:
+ *   sp -= 0x20; ctr = param_2 << 15                 // @A5DC/A5E0 -> sp+0x10
+ *   v0 = *0x801BDDE0 (VBlank frame counter, advanced by the cd_cb8 VBlank
+ *        IRQ coroutine); if !((int32)v0 < param_1) -> return  // @A5F0 slt/beq
+ *   a3 = -1                                          // @A5FC
+ *   loop @A600: ctr--; if ctr == -1 -> timeout @A620 // @A608-A618
+ *               @A648: if !((int32)*0x801BDDE0 < param_1) -> return
+ *                      else loop                     // @A64C-A658
+ *   timeout @A620: a0=0x80125B38 ("VSync timeout"); jal cd_str_print
+ *                  ra=0x8019A62C; a0=0 (delay @A630); jal bios_table_tramp
+ *                  B0/0x5b ra=0x8019A634; a0=3, a1=0 (delay @A63C); jal
+ *                  bios_kobj_tramp C0/0x0a ra=0x8019A640; return.
+ *
+ * The frame-counter poll is the same IRQ-coroutine-driven flag class as
+ * cd_timer_read's spins: br2_irq_poll supplies the per-block-boundary
+ * psx_check_interrupts the generated CPS frame had, so the VBlank IRQ
+ * advances *0x801BDDE0 while we spin. param_2==0 makes ctr 0 -> first
+ * decrement hits -1 -> the timeout/yield path runs immediately (the common
+ * cd_timer_read(param_1==0/1) shape). The three timeout jals go through
+ * cd_jal so a0-a3 keep callee leftovers exactly like the guest (the BIOS
+ * tramps forward live a1-a3). Guest frame reserved via br2_guest_frame so
+ * nested guest calls see the same $sp; the ctr/ra spills are purely local
+ * to this body so they stay C locals/regs. */
+void vsync_wait_n(int param_1,int param_2)
+{
+  uint32_t fr = br2_guest_frame(0x20);
+  CPUState *cpu = clean_cpu_state();
+  uint32_t counter = (uint32_t)param_2 << 15;
+  (void)fr;
+  /* @A5F0: slt v0,*0x801BDDE0,a0 (signed); beq v0,zero -> epilogue */
+  if (!((int32_t)br2_ld32(0x801BDDE0u) < param_1)) {
+    br2_guest_frame_free();
+    return;
+  }
+  for (;;) {
+    counter = counter - 1u;                        /* @A608-A60C */
+    if (counter == 0xFFFFFFFFu) break;             /* @A618 -> @A620 */
+    /* @A654: slt v0,*0x801BDDE0,a0; @A658 bne -> @A600, else return */
+    if (!((int32_t)br2_ld32(0x801BDDE0u) < param_1)) {
+      br2_guest_frame_free();
+      return;
+    }
+    if (br2_bail_pending()) { br2_guest_frame_abandon(); return; }
+    br2_irq_poll();
+  }
+  /* timeout path @A620 — guest register state entering the first jal:
+   * a0=0x80125B38, a1=param_2<<15 (prologue shift, untouched by loop),
+   * a2=caller leftover (live in gpr[6] already), a3=-1 (@A5FC). */
+  if (cpu) {
+    cpu->gpr[5] = (uint32_t)param_2 << 15;
+    cpu->gpr[7] = 0xFFFFFFFFu;
+    cpu->gpr[4] = 0x80125B38u;
+    (void)cd_jal(0x80197AD0u, 0x8019A62Cu);          /* jal cd_str_print */
+    if (br2_bail_pending()) { br2_guest_frame_abandon(); return; }
+    cpu->gpr[4] = 0;                                /* delay slot @A630 */
+    (void)cd_jal(0x80199FE0u, 0x8019A634u);          /* jal bios_table_tramp */
+    if (br2_bail_pending()) { br2_guest_frame_abandon(); return; }
+    cpu->gpr[4] = 3;                                /* @A634 */
+    cpu->gpr[5] = 0;                                /* delay slot @A63C */
+    (void)cd_jal(0x8019A670u, 0x8019A640u);          /* jal bios_kobj_tramp */
+    if (br2_bail_pending()) { br2_guest_frame_abandon(); return; }
+  }
+  br2_guest_frame_free();
 }
 
 /* ======== 0x80195d44 ======== */

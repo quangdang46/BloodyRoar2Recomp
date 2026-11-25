@@ -1539,28 +1539,11 @@ void scroll_cfg_set(undefined1 param_1,int param_2)
 
 /* ======== 0x8019a5d8 ======== */
 
-extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
-
-/* vsync_wait_n — delegate the whole body to the generated MIPS (0x8019a5d8).
- * It busy-waits on DAT_801bdde0, the VBlank frame counter advanced by
- * cd_cb8_dispatch on the VBlank IRQ. The generated body runs
- * psx_check_interrupts_at at every basic-block boundary, so the pending VBlank
- * is delivered and the counter advances while it spins. A clean-C spin has no
- * guest resume PC to offer the deferred interrupt coroutine, so the counter
- * never moves, the wait always times out and falls into bios_table_tramp /
- * bios_kobj_tramp -> unknown dispatch (the L10 save_state_machine_alt freeze).
- * This is the same reason cd_file_read_seq, cd_result_wait_a/b,
- * cd_init_session and mc_date_serial_cmp were delegated. The two params are
- * plain ints (frame target, timeout), passed raw — no guest_of. The
- * br2_call_generated call also makes gen_clean_table skip 0x8019a5d8 so
- * generated callers dispatch straight to the generated body (no clean_table
- * wrap -> thunk -> generated recursion). Disasm 0x8019a5d8-0x8019a670. */
-void vsync_wait_n(int param_1,int param_2)
-
-{
-  br2_call_generated(0x8019a5d8u,(uint32_t)param_1,(uint32_t)param_2,0,0);
-  return;
-}
+/* vsync_wait_n — clean port now lives in game/cd.c next to cd_jal /
+ * cd_timer_read (it needs cd_jal for the timeout path's three-jal
+ * sequence and br2_irq_poll for the frame-counter spin). The fnmap /
+ * clean_table entries are unchanged: the definition is still named
+ * vsync_wait_n(int,int) at guest 0x8019a5d8. */
 
 /* ======== 0x8012b49c ======== */
 
