@@ -28,6 +28,9 @@ DROP_SUBSTR = [
     'psx_cyc_step', 'psx_icache_fetch', 'cosim_', 'debug_server',
     'PGXP_', 'psx_slice_block', 'psx_cyc_bb', 'psx_store_cycle_barrier',
     'g_debug_last_store_pc', 'psx_vsync_query', 'debug_server_log_call_entry',
+    # stale-static guard: clean cps_ siblings are always "native", so the
+    # guarded direct-call (next line) is always the correct path.
+    'psx_game_text_native_ok',
 ]
 DROP_LINE_RE = [
     re.compile(r'^\s*#'),                 # all preprocessor directives
@@ -49,9 +52,24 @@ _LOAD_RE = re.compile(
 # memory for MMIO (guest_at aliases 0x1F801xxx into low RAM).
 _LOAD_RD = {'word': 'cpu->read_word', 'byte': 'cpu->read_byte', 'half': 'cpu->read_half'}
 
+# MIPS unaligned word ops. psx_lwl/lwr(cpu, addr, rtval, rt, mask) merge an
+# aligned word into rt; psx_swl/swr(cpu, addr, rtval) store part of rtval.
+# br2_* equivalents use the MMIO-aware cpu->read/write accessors (no per-access
+# cycle charge — clean_cost is the sole timing model).
+_UNAL_RE = re.compile(
+    r'psx_(lwl|lwr|swl|swr)\s*\(\s*cpu\s*,\s*(.+?)\s*,\s*(.+?)\s*'
+    r'(?:\s*,\s*\d+\s*,\s*0x[0-9a-fA-F]+u?\s*)?\s*\)')
+# split-piece fallthrough: br2eu_func_<entry>(cpu) / br2eu_psx_alias_body_<e>(cpu)
+# is a synchronous call to the next CPS split piece of the same logical fn.
+_FT_RE = re.compile(
+    r'\b(?:br2eu_func_|br2eu_psx_alias_body_)([0-9a-fA-F]{8})\s*\(\s*cpu\s*\)')
+
 
 def _sub_loads(s):
-    return _LOAD_RE.sub(lambda m: f'{_LOAD_RD[m.group(1)]}({m.group(2).strip()})', s)
+    s = _LOAD_RE.sub(lambda m: f'{_LOAD_RD[m.group(1)]}({m.group(2).strip()})', s)
+    s = _UNAL_RE.sub(lambda m: f'br2_{m.group(1)}(cpu, {m.group(2).strip()}, {m.group(3).strip()})', s)
+    s = _FT_RE.sub(lambda m: f'cps_{m.group(1).lower()}()', s)
+    return s
 
 
 def rewrite_op(op):
@@ -147,6 +165,49 @@ FILE_HDR = '''/* cps_clean.c — AUTO-GENERATED clean CPS transliterations.
 
 extern CPUState *clean_cpu_state(void);
 extern void psx_check_interrupts_at(CPUState *cpu, uint32_t resume_pc);
+
+/* MIPS unaligned word accessors — faithful to psx_lwl/lwr/swl/swr but on the
+ * MMIO-aware cpu read/write accessor path (no per-access cycle charge). */
+static inline uint32_t br2_lwl(CPUState *cpu, uint32_t addr, uint32_t rt_value) {
+    uint32_t word = cpu->read_word(addr & ~3u);
+    switch (addr & 3u) {
+        case 0: return (rt_value & 0x00FFFFFFu) | (word << 24);
+        case 1: return (rt_value & 0x0000FFFFu) | (word << 16);
+        case 2: return (rt_value & 0x000000FFu) | (word << 8);
+        default: return word;
+    }
+}
+static inline uint32_t br2_lwr(CPUState *cpu, uint32_t addr, uint32_t rt_value) {
+    uint32_t word = cpu->read_word(addr & ~3u);
+    switch (addr & 3u) {
+        case 0: return word;
+        case 1: return (rt_value & 0xFF000000u) | (word >> 8);
+        case 2: return (rt_value & 0xFFFF0000u) | (word >> 16);
+        default: return (rt_value & 0xFFFFFF00u) | (word >> 24);
+    }
+}
+static inline void br2_swl(CPUState *cpu, uint32_t addr, uint32_t rt_value) {
+    uint32_t aligned = addr & ~3u;
+    uint32_t word = cpu->read_word(aligned);
+    switch (addr & 3u) {
+        case 0: word = (word & 0xFFFFFF00u) | (rt_value >> 24); break;
+        case 1: word = (word & 0xFFFF0000u) | (rt_value >> 16); break;
+        case 2: word = (word & 0xFF000000u) | (rt_value >> 8); break;
+        default: word = rt_value; break;
+    }
+    cpu->write_word(aligned, word);
+}
+static inline void br2_swr(CPUState *cpu, uint32_t addr, uint32_t rt_value) {
+    uint32_t aligned = addr & ~3u;
+    uint32_t word = cpu->read_word(aligned);
+    switch (addr & 3u) {
+        case 0: word = rt_value; break;
+        case 1: word = (word & 0x000000FFu) | (rt_value << 8); break;
+        case 2: word = (word & 0x0000FFFFu) | (rt_value << 16); break;
+        default: word = (word & 0x00FFFFFFu) | (rt_value << 24); break;
+    }
+    cpu->write_word(aligned, word);
+}
 '''
 
 
@@ -166,12 +227,18 @@ def emit_fn(addr):
 if __name__ == '__main__':
     args = sys.argv[1:]
     if args and args[0] == '--file':
-        out = [FILE_HDR]
-        for a in args[1:]:
-            r = emit_fn(int(a, 16))
+        addrs = [int(a, 16) for a in args[1:]]
+        # two passes: emit prototypes for every cps_ sym first (split-piece
+        # fallthroughs call siblings defined later in the file).
+        fns = []
+        syms = []
+        for a in addrs:
+            r = emit_fn(a)
             if r:
-                out.append(r)
-        sys.stdout.write(''.join(out))
+                fns.append(r)
+                syms.append(f'cps_{a:08x}')
+        protos = ''.join(f'void {s}(void);\n' for s in syms)
+        sys.stdout.write(FILE_HDR + protos + ''.join(fns))
     else:
         for a in args:
             addr = int(a, 16)
