@@ -7213,6 +7213,49 @@ void cd_intc_dispatch(void)
   br2_st16(0x801bcd1au, 0);
   (void)cd_jal(0x8019ad60u, 0x8019aa9cu);             /* bios_tramp_b017 */
 }
+
+/* cd_intc_dispatch_b — INTC dispatch wrapper + channel-init tail
+ * (0x8019a87c-0x8019a8dc). Reads incoming v0 (gpr[2], caller-set): if
+ * nonzero runs cd_intc_dispatch first; both paths then run a fixed
+ * sequence — store handler-table ptr @0x801bcd4c, flag u16 @0x801bcd10,
+ * stage results @0x801c0014/@0x801c0004, BIOS tramps b019/a072,
+ * cpu_critical_exit (EI); returns 0x801bcd10. All callees clean; the
+ * delay-slot stores run BEFORE each jal exactly like the guest.
+ * Disasm 0x8019a87c-0x8019a8dc. */
+uint32_t cd_intc_dispatch_b(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  uint32_t s0, v0;
+
+  /* @0x8019A87C: if (v0==0) skip cd_intc_dispatch, else call it */
+  v0 = cpu ? cpu->gpr[2] : 0;
+  if (v0 != 0)
+    (void)cd_jal(0x8019a8ecu, 0x8019a88cu);           /* cd_intc_dispatch */
+  /* @0x8019A88C: s0 = 0x801C0000 - 12972 = 0x801BCD4C */
+  s0 = 0x801c0000u - 12972u;
+  if (cpu) cpu->gpr[4] = s0 - 4u;                      /* a0 = 0x801BCD48 */
+  v0 = s0 + 4060u;                                     /* 0x801BDD28 */
+  /* delay slot @0x8019A8A0: *(s0) = v0 BEFORE jal bios_tramp_b019 */
+  br2_st32(s0, v0);
+  (void)cd_jal(0x8019ad80u, 0x8019a8a4u);             /* bios_tramp_b019 */
+  /* @0x8019A8A4: v0=1; delay slot *(s0-60)=1 BEFORE jal cd_init_stage_a */
+  if (cpu) cpu->gpr[2] = 1;
+  br2_st16(s0 - 60u, 1);                               /* @0x801BCD10 = 1 */
+  v0 = cd_jal(0x8019ae10u, 0x8019a8b0u);              /* cd_init_stage_a */
+  /* @0x8019A8B0: v1=0x801C0000; delay slot *(0x801C0014)=v0 */
+  br2_st32(0x801c0014u, v0);                           /* stage_a result */
+  v0 = cd_jal(0x8019af30u, 0x8019a8c0u);              /* cd_init_stage_b */
+  /* @0x8019A8C0: a0=0x801C0000; delay slot *(0x801C0004)=v0 */
+  if (cpu) cpu->gpr[4] = 0x801c0000u;
+  br2_st32(0x801c0004u, v0);                           /* stage_b result */
+  (void)cd_jal(0x8019ad48u, 0x8019a8d0u);             /* bios_tramp_a072 */
+  /* @0x8019A8D0: s0 -= 60 -> 0x801BCD10; jal cpu_critical_exit */
+  s0 -= 60u;
+  (void)cd_jal(0x8018e310u, 0x8019a8d8u);             /* cpu_critical_exit */
+  /* @0x8019A8D8: v0 = s0; return */
+  if (cpu) cpu->gpr[2] = s0;
+  return s0;
+}
 /* bios_tramp_b035 — BIOS trampoline only (0x8018ef50-0x8018ef58):
  * addiu t2,0xb0; jr t2; t1=0x35. Kernel svc 0x35 (line-buffer
  * flush used by the printf emit layer). a2 is dropped at the

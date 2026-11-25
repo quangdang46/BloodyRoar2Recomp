@@ -327,6 +327,7 @@ extern void cd_init_stage_a(void);
 extern void cd_init_stage_b(void);
 extern void cd_intc_busy_read(void);
 extern void cd_intc_dispatch(void);
+extern void cd_intc_dispatch_b(void);
 extern void cd_job_result(void);
 extern void cd_job_slot_alloc(void);
 extern void cd_job_slots_reset(void);
@@ -2619,6 +2620,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8019a7d4, (void *)cd_intc_busy_read },
   { 0x8019a7fc, (void *)cd_u16_swap_store },
   { 0x8019a814, (void *)cd_chan_full_init },
+  { 0x8019a87c, (void *)cd_intc_dispatch_b },
   { 0x8019a8ec, (void *)cd_intc_dispatch },
   { 0x8019aabc, (void *)cd_chan_slot_set },
   { 0x8019ac04, (void *)cd_state_blk_restore },
