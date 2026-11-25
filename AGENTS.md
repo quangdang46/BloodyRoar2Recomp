@@ -804,3 +804,65 @@ isolated-transform targets.
 §4 self-delegates; the rest are fragments. Next step is cluster-level analysis:
 identify self-contained coroutine clusters (closed resume graph) before
 transforming — do NOT transform individual fragments.
+
+### Session update 14 (bulk clean-CPS sweep landed — 76 fns, transformer mature)
+
+The "fragment-isolation" worry above was **overstated**: the real discriminator
+is not fragment-vs-whole but **WHO owns the resume graph**. `cd_chan_full_init`
+starved because it is the *resumable half* of the `cd_ctx_save→cd_ctx_restore`
+KERNEL coroutine — the kernel snapshots the live `cpu->gpr` file via B0/0x19 and
+`cd_ctx_restore` reloads + re-enters with `v0!=0`, a DIFFERENT resume mechanism
+than `psx_check_interrupts_at`. Normal jal'd CPS subroutines and INTC-handler
+roots resume via `psx_check_interrupts_at` and transform cleanly.
+
+**Landed (all versus-verified, clean_table 1491→1997):**
+- 4 CD coroutines: `cd_response_process` (70 blk), `cd_mc_state_machine`
+  (19 split pieces/91 addrs), `cd_read_poll`, `cd_read_step_cb`.
+- 15 math/mem: `fixed_point_divide`, `mem_move`, `guest_memcpy`,
+  `strchr_bounded`, `gte_mvmva_add`, `rotmat2_build`, `angle_pair_rotmat`,
+  `vec2_rot`, `vec2_rot_lut`, `dir_rotate_wrap`, `angle_gte_vec`,
+  `rotmat_rtps_build`, `rotmat2_pair_build`, `angle_vec_build`,
+  `vec3_step_toward`.
+- 57 GTE/RTPS/vec/renderer/alloc primitives incl. multi-piece clusters
+  (`vec3_step_toward_{spd,q,q_spd}`, `rtps_point_xform{,2}`+`euler_rotmat`,
+  `pad_hist_record`), the GTE transform family, prim builders, node/sprite/
+  pool allocators, `op_wrap_*` trampolines, small utils.
+
+**Transformer now handles:** `psx_lwl/lwr/swl/swr`→`br2_*` MMIO-safe inlines;
+split-piece `br2eu_func_X(cpu)` fallthroughs→`cps_X()` + forward prototypes;
+`psx_game_text_native_ok` stale-static guards dropped; **COP2 lwc2/swc2** —
+`unwrap_pgx_group` records `_pgxa/_pgxv` block-temp exprs (resolving earlier
+temps, `psx_cyc_lwc2_read`→`cpu->read_word`) and substitutes them into the
+surviving `cpu->gte_data`/`gte_write_data`/`cpu->write_word`/
+`gte_precision_store_word` real ops (previously dropped lwc2 loads or left
+undeclared temps). `gte_*`/`psx_gte_*`/`psx_muldiv_*`/`psx_mult_latency_*`
+hardware ops kept verbatim (declared in `cpu_state.h`).
+
+**SAFE transform domain (verified):** normal jal'd CPS subroutines +
+INTC-handler roots resumed via `psx_check_interrupts_at`. **UNSAFE (must stay
+delegated/generated):** `cd_ctx_save`/`cd_ctx_restore` kernel coroutines and
+their chain members (`cd_chan_full_init` 0x8019A814 — verified A/B starvation),
+BIOS-boundary (`jr 0xB0` OpenEvent/EnableEvent svc), `cd_result_wait_a/b`,
+`cd_init_session`, `cd_read_setup`, `cd_cmd_issue_sync`, `cd_intc_busy_read`,
+and the `ev_*` event coroutines (IRQ/coroutine risk — not yet proven safe).
+
+**How to port a new batch:**
+1. Pick candidates = named fns in `renames.map` with a CPS `br2eu_func` body but
+   NO clean def (pure generated). Exclude `cd_ctx_*`/BIOS/`ev_*`/INTC delegates.
+2. Compute each fn's **fallthrough-closure piece set** (follow ONLY
+   `br2eu_func_X(cpu)` same-fn split calls + internal `cpu->pc` split-dispatches,
+   NOT jal subroutine calls — scope `gpr[31]` per basic block). Require the set
+   be CLOSED (no fallthrough escapes) before registering.
+3. `python3 game/gen_cps_clean.py --file <all piece entry addrs>` → write
+   `game/cps_clean.c`. Regenerate includes ALL prior entries (file is a single
+   accumulation point).
+4. Append `addr cps_<entry>` lines to `game/clean_cps.map` for EVERY case addr
+   of EVERY piece; `python3 game/gen_clean_table.py`; rebuild; versus-verify.
+5. **cmake `file(GLOB)` caches** — re-run cmake configure when adding .c files.
+
+**Remaining named surface is mostly the risky set** (cd_ctx chain, BIOS svc,
+`cd_read_setup`, `cd_cmd_issue_sync`, `cd_intc_busy_read`, `ev_cmd_dispatch`,
+`ev5_action_select`, `ev_spark_spawn`, CD MMIO readers) — these need the §4
+delegation analysis, NOT blind transform. The ~400 unnamed CPS fragments that
+remain are mostly split-pieces/sub-fragments of already-covered functions or
+independent small leaf coroutines — lower value, higher analysis cost.
