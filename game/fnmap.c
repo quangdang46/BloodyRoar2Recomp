@@ -523,6 +523,7 @@ extern void deferred_cmd_drain(void);
 extern void deferred_cmd_exec(void);
 extern void deferred_cmd_post(void);
 extern void deferred_cmd_reset(void);
+extern void desc_cmd_interp(void);
 extern void desc_cmd_map(void);
 extern void desc_cursor_advance(void);
 extern void desc_cursor_select(void);
@@ -2179,6 +2180,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8017d1c4, (void *)desc_frag_tail },
   { 0x8017d378, (void *)condition_word_dispatch },
   { 0x8017d7f4, (void *)button_cond_eval },
+  { 0x8017db88, (void *)desc_cmd_interp },
   { 0x8017e138, (void *)desc_cmd_map },
   { 0x8017e46c, (void *)desc_cursor_advance },
   { 0x8017e77c, (void *)battle_reset_tail },

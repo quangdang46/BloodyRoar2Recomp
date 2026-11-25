@@ -1926,3 +1926,4 @@
 801afd50 op_hpair_store_0e_36
 801aff20 op_pair_rec_init
 8017cf6c byte2_probe_commit
+8017db88 desc_cmd_interp
