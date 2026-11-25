@@ -981,158 +981,16 @@ undefined2 cd_intc_busy_read(void)
  * The dead `beq $v1,$zr` guards before each copy test a constant
  * 0x8020C6Cx (never zero) — the guest always copies; reproduced as
  * unconditional 8-byte copies. */
+/* cd_response_process — CD response-byte state machine. DELEGATED to
+ * generated (0x80196370): the clean port wedged attract/boot at ~frame
+ * 15k with pending-cmd-0x0A starvation — the response bytes are produced
+ * by the deferred-coroutine chain (cd_ctx_restore->cd_chan_full_init->
+ * cd_intc_dispatch) that needs the generated CPS live-resume-PC, which
+ * clean C cannot supply. Per AGENTS.md §4 this stays generated-
+ * authoritative until the coroutine runtime exists. */
 undefined4 cd_response_process(void)
 {
-  uint32_t fr = br2_guest_frame(0x30);
-  uint8_t buf[8];
-  uint32_t status, stored, cur, idx, s1 = 0;
-  int s0 = 0, i;
-  CPUState *cpu = clean_cpu_state();
-  (void)fr;
-
-  /* @0x8019638C: *(*0x801bcb0c) = 1 — doorbell byte via pointer cell */
-  br2_st8p(0x801bcb0c, 1);
-  /* @0x80196390-0x801963A8: status = lbu[*0x801bcb18] & 7 -> sp+0x10 */
-  status = (uint32_t)br2_ld8p(0x801bcb18) & 7u;
-  if (status == 0) { br2_guest_frame_free(); return 0; }   /* @0x801963B4 */
-
-  /* @0x801963C4-0x801963E4 stabilize: exit when two consecutive
-   * (lbu[*0x801bcb18]&7) reads agree. Entry jumps to the compare with
-   * sp+0x10 = initial status; each failed compare stores a fresh read
-   * (block C4) then compares another fresh read (block D4). s0 is
-   * zeroed by the D4 delay slot on every pass -> stays 0. */
-  stored = status;
-  for (;;) {
-    cur = (uint32_t)br2_ld8p(0x801bcb18) & 7u;   /* D4 read */
-    if (cur == stored) break;
-    if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; }
-    br2_irq_poll();
-    stored = (uint32_t)br2_ld8p(0x801bcb18) & 7u; /* C4 read+store */
-    status = stored;
-    if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; }
-    br2_irq_poll();
-  }
-  status = stored;                                /* sp+0x10 final value */
-
-  /* @0x801963E8-0x8019642C: while s0<8 && (*CB0C)&0x20:
-   * buf[s0++] = lbu[*0x801bcb10]. Gate re-read each pass; bounded. */
-  for (;;) {
-    if ((br2_ld8p(0x801bcb0c) & 0x20u) == 0) break;
-    buf[s0] = br2_ld8p(0x801bcb10);
-    s0++;
-    if (s0 >= 8) break;
-    if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; }
-    br2_irq_poll();
-  }
-  /* @0x80196430-0x80196454: zero-fill buf[s0..7] */
-  for (i = s0; i < 8; i++) buf[i] = 0;
-
-  /* @0x80196458-0x80196484: re-arm doorbell, issue read-response cmd */
-  br2_st8p(0x801bcb0c, 1);
-  br2_st8p(0x801bcb18, 7);
-  br2_st8p(0x801bcb14, 7);
-
-  /* @0x80196488-0x80196524: reply-class bookkeeping.
-   * status==3 && tblA[0x801bca04+idx*4]==0 skips the store block
-   * entirely (s1 stays 0, BC854/BC858 untouched). */
-  if (status == 3) {
-    idx = (uint32_t)br2_ld8(0x801bc865);
-    if (br2_ld32(0x801bca04 + (idx << 2)) != 0) goto reply_store;
-    goto status5_check;
-  }
-reply_store:
-  /* @0x801964C0-0x801964E4: if !(*0x801bc854 & 0x10) && buf[0]&0x10
-   * -> ++*0x801bc85c (delay-slot store @0x80196500 always runs when
-   * the branch is taken) */
-  if ((br2_ld32(0x801bc854) & 0x10u) == 0 && (buf[0] & 0x10u) != 0) {
-    br2_st32(0x801bc85c, br2_ld32(0x801bc85c) + 1u);
-  }
-  /* @0x80196504-0x80196520: *0x801bc854 = buf[0]; *0x801bc858 = buf[1];
-   * s1 = buf[0] & 0x1d */
-  br2_st32(0x801bc854, (uint32_t)buf[0]);
-  br2_st32(0x801bc858, (uint32_t)buf[1]);
-  s1 = (uint32_t)buf[0] & 0x1du;
-
-status5_check:
-  /* @0x80196524-0x80196598: status==5 error-report path */
-  if (status == 5 && (int32_t)br2_ld32(0x801bc850) > 0) {
-    if (cpu) {
-      cpu->gpr[4] = 0x801257d0u;
-      (void)cd_jal(0x8018e550u, 0x80196554u);   /* jal printf_forward_guest */
-      if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; }
-    }
-    if ((int32_t)br2_ld32(0x801bc850) > 0 && cpu) {
-      idx = (uint32_t)br2_ld8(0x801bc865);
-      cpu->gpr[4] = 0x801257dcu;
-      cpu->gpr[5] = br2_ld32(0x801bc86c + (idx << 2));
-      cpu->gpr[6] = br2_ld32(0x801bc854);
-      cpu->gpr[7] = br2_ld32(0x801bc858);
-      (void)cd_jal(0x8018e550u, 0x8019659cu);   /* jal printf_forward_guest */
-      if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; }
-    }
-  }
-
-  /* @0x8019659C-0x801965C4: jump table on (status-1) < 5 */
-  if ((uint32_t)(status - 1u) >= 5u) goto resp_default;
-  switch (status) {
-  case 1:                                        /* -> 0x80196718, ret 4 */
-    if (s1 != 0 && s0 == 1) s1 = 0;
-    br2_st8(0x801bcb25, (uint8_t)((s1 != 0) ? 5u : 1u));
-    for (i = 0; i < 8; i++) br2_st8(0x8020c6d0u + i, buf[i]);
-    br2_st8p(0x801bcb0c, 0);                     /* *(*CB0C) = 0 */
-    br2_st8p(0x801bcb18, 0);                     /* *(*CB18) = 0 */
-    br2_guest_frame_free();
-    return 4;
-  case 2:                                        /* -> 0x801966CC, ret 2 */
-    br2_st8(0x801bcb24, (uint8_t)((s1 != 0) ? 5u : 2u));
-    for (i = 0; i < 8; i++) br2_st8(0x8020c6c8u + i, buf[i]);
-    br2_guest_frame_free();
-    return 2;
-  case 3:                                        /* -> 0x801965CC, ret 1/2 */
-    if (s1 != 0) {
-      br2_st8(0x801bcb24, 5);
-      for (i = 0; i < 8; i++) br2_st8(0x8020c6c8u + i, buf[i]);
-      br2_guest_frame_free();
-      return 2;
-    }
-    idx = (uint32_t)br2_ld8(0x801bc865);
-    if (br2_ld32(0x801bc924 + (idx << 2)) != 0) {
-      br2_st8(0x801bcb24, 3);
-      for (i = 0; i < 8; i++) br2_st8(0x8020c6c8u + i, buf[i]);
-      br2_guest_frame_free();
-      return 1;
-    }
-    br2_st8(0x801bcb24, 2);
-    for (i = 0; i < 8; i++) br2_st8(0x8020c6c8u + i, buf[i]);
-    br2_guest_frame_free();
-    return 2;
-  case 4:                                        /* -> 0x80196798, ret 4 */
-    br2_st8(0x801bcb26, 4);
-    br2_st8(0x801bcb25, br2_ld8(0x801bcb26));
-    for (i = 0; i < 8; i++) br2_st8(0x8020c6d8u + i, buf[i]);
-    for (i = 0; i < 8; i++) br2_st8(0x8020c6d0u + i, buf[i]);
-    br2_guest_frame_free();
-    return 4;
-  case 5:                                        /* -> 0x80196818, ret 6 */
-    br2_st8(0x801bcb25, 5);
-    br2_st8(0x801bcb24, br2_ld8(0x801bcb25));
-    for (i = 0; i < 8; i++) br2_st8(0x8020c6c8u + i, buf[i]);
-    for (i = 0; i < 8; i++) br2_st8(0x8020c6d0u + i, buf[i]);
-    br2_guest_frame_free();
-    return 6;
-  }
-resp_default:                                    /* -> 0x80196898, ret 0 */
-  if (cpu) {
-    cpu->gpr[4] = 0x801257f8u;
-    (void)cd_jal(0x80197ad0u, 0x801968a4u);       /* jal cd_str_print */
-    if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; }
-    cpu->gpr[4] = 0x8012580cu;
-    cpu->gpr[5] = status;
-    (void)cd_jal(0x8018e550u, 0x801968b4u);       /* jal printf_forward_guest */
-    if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; }
-  }
-  br2_guest_frame_free();
-  return 0;
+  return (undefined4)br2_call_generated(0x80196370u,0,0,0,0);
 }
 
 /* ======== small getters ======== */
@@ -1335,118 +1193,14 @@ int cd_dispatch_tbl4(int param_1,uint32_t param_2)
  * PORTABLE. The sp+0x10 stamp buffer is a real guest frame (reg48 gets
  * the guest address; the CD response writes the stamp there and
  * cd_stamp_to_sector reads it back). */
+/* cd_read_step_cb — per-sector read-step callback (0x801985C4).
+ * DELEGATED to generated: part of the 16c4e96 CD-port batch that wedged
+ * attract/boot. The mode-0x200 command sequencing + session teardown +
+ * user-callback jalr need generated CPS state; stays generated-
+ * authoritative per AGENTS.md §4. */
 void cd_read_step_cb(uint32_t param_1,undefined4 param_2)
 {
-  const uint32_t S = 0x801ccb80;
-  CPUState *cpu = clean_cpu_state();
-  uint32_t fr = br2_guest_frame(0x30);
-  uint32_t bufg = fr + 0x10;          /* guest sp+0x10 stamp buffer */
-  uint32_t s1 = (uint32_t)param_2;
-  uint32_t v0, cb, a0v;
-  (void)fr;
-
-  br2_st32(S + 0x34, s1);                          /* @0x801985E8 */
-  if ((param_1 & 0xffu) == 1) {                    /* @0x801985EC */
-    if ((int32_t)br2_ld32(S + 0x14) > 0) {         /* @0x801985F4 blez */
-      if (br2_ld32(S + 0x10) == 0x200) {           /* @0x80198604-0x0C */
-        if ((br2_ld8(0x801bc7b4) & 1) != 0) {      /* @0x80198614-0x24 */
-          /* @0x8019862C-0x80198654: dispatch3(0), sync_wait_c(buf,3),
-           * busy_wait(0), dispatch3(0x801A8838). The a0 values live in
-           * each jal's DELAY SLOT — they must be in gpr[4] BEFORE cd_jal
-           * dispatches (cd_jal does not write arg regs). */
-          if (cpu) cpu->gpr[4] = 0;                /* delay @0x80198630 */
-          (void)cd_jal(0x801961a8u, 0x80198634u);  /* cd_cmd_dispatch3(0) */
-          /* @0x80198634/0x8019863C: a0=sp+0x10, a1=3 */
-          if (cpu) { cpu->gpr[4] = bufg; cpu->gpr[5] = 3; }
-          (void)cd_jal(0x80196188u, 0x80198640u);  /* cd_sync_wait_c */
-          if (cpu) cpu->gpr[4] = 0;                /* delay @0x80198644 */
-          (void)cd_jal(0x801961ccu, 0x80198648u);  /* cd_busy_wait_fwd(0) */
-          if (cpu) cpu->gpr[4] = 0x801a8838u;      /* delay @0x80198650 */
-          (void)cd_jal(0x801961a8u, 0x80198654u);  /* cd_cmd_dispatch3 */
-        } else {
-          /* @0x8019865C: cd_sync_wait_b(buf,3); a0=sp+0x10 from the
-           * beq delay slot @0x80198628 */
-          if (cpu) { cpu->gpr[4] = bufg; cpu->gpr[5] = 3; }
-          (void)cd_jal(0x80196168u, 0x80198664u);  /* cd_sync_wait_b */
-        }
-        /* @0x80198664: stamp-verify the just-read sector (a0=sp+0x10 in
-         * the jal delay slot @0x80198668) */
-        if (cpu) cpu->gpr[4] = bufg;
-        v0 = cd_jal(0x801962f0u, 0x8019866cu);      /* cd_stamp_to_sector */
-        if (v0 != br2_ld32(0x801ccba0)) {          /* @0x80198674-0x7C */
-          if (cpu) cpu->gpr[4] = 0x80125ac8u;
-          (void)cd_jal(0x80197ad0u, 0x80198690u);  /* cd_str_print */
-          br2_st32(S + 0x14, 0xffffffffu);         /* @0x80198698 */
-        }
-      }
-      /* @0x8019869C: session-callback sync + cursor advance */
-      if ((br2_ld8(0x801bc7b4) & 1) != 0) {
-        if (cpu) {
-          cpu->gpr[4] = br2_ld32(0x801ccb88);
-          cpu->gpr[5] = br2_ld32(0x801ccb90);
-        }
-        (void)cd_jal(0x80196188u, 0x801986ccu);    /* cd_sync_wait_c */
-      } else {
-        if (cpu) {
-          cpu->gpr[4] = br2_ld32(0x801ccb88);
-          cpu->gpr[5] = br2_ld32(0x801ccb90);
-        }
-        (void)cd_jal(0x80196168u, 0x801986ecu);    /* cd_sync_wait_b */
-        /* @0x801986EC-0x80198724: *0x801ccb88 += *0x801ccb90 << 2;
-         * --*(S+0x14); ++*(S+0x20) */
-        br2_st32(0x801ccb88,
-                 br2_ld32(0x801ccb88) + (br2_ld32(0x801ccb90) << 2));
-        br2_st32(S + 0x14, br2_ld32(S + 0x14) - 1u);
-        br2_st32(S + 0x20, br2_ld32(S + 0x20) + 1u);
-      }
-    }
-  } else {
-    br2_st32(S + 0x14, 0xffffffffu);              /* @0x80198728 */
-  }
-
-  /* @0x8019872C timer/deadline tail */
-  if (cpu) cpu->gpr[4] = 0xffffffffu;             /* a0=-1 delay @0x80198730 */
-  v0 = cd_jal(0x8019a460u, 0x80198734u);          /* cd_timer_read(-1) */
-  br2_st32(S + 0x18, v0);                         /* @0x8019873C */
-  if ((int32_t)br2_ld32(S + 0x14) < 0) {          /* @0x80198748 bgez */
-    if (cpu) cpu->gpr[4] = 1;
-    (void)cd_jal(0x80198908u, 0x80198758u);       /* cd_read_open(1) */
-  }
-  if (cpu) cpu->gpr[4] = 0xffffffffu;             /* @0x8019875C */
-  v0 = cd_jal(0x8019a460u, 0x80198760u);          /* cd_timer_read(-1) */
-  /* @0x80198760-0x80198778: if (*(S+0x1C)+0x4B0) < now -> count=-1 */
-  if ((int32_t)(br2_ld32(S + 0x1c) + 0x4b0u) < (int32_t)v0)
-    br2_st32(S + 0x14, 0xffffffffu);
-  /* @0x8019877C-0x801987A8: count==0 -> finalize; count!=0 -> re-check
-   * deadline, return early while still inside the window */
-  if (br2_ld32(S + 0x14) != 0) {
-    if (cpu) cpu->gpr[4] = 0xffffffffu;
-    v0 = cd_jal(0x8019a460u, 0x80198794u);        /* cd_timer_read(-1) */
-    if (!((int32_t)(br2_ld32(S + 0x1c) + 0x4b0u) < (int32_t)v0))
-      { br2_guest_frame_free(); return; }        /* @0x80198824 epilogue */
-  }
-  /* @0x801987AC finalize: session teardown + Pause + user callback */
-  if (cpu) cpu->gpr[4] = br2_ld32(S + 0x2c);
-  (void)cd_jal(0x80195d78u, 0x801987b8u);         /* mc_session_b */
-  if ((br2_ld8(0x801bc7b4) & 1) != 0) {
-    if (cpu) cpu->gpr[4] = br2_ld32(S + 0x30);
-    (void)cd_jal(0x801961a8u, 0x801987dcu);       /* cd_cmd_dispatch3 */
-  }
-  if (cpu) { cpu->gpr[4] = 0x801a8590u; cpu->gpr[5] = 0; }
-  (void)cd_jal(0x80195d64u, 0x801987e8u);         /* mc_session(0x801A8590) */
-  if (cpu) { cpu->gpr[4] = 9; cpu->gpr[5] = 0; }
-  (void)cd_jal(0x80195ec8u, 0x801987f4u);         /* cd_cmd_issue_async(9,0) */
-  br2_st32(S + 0x24, 1);                          /* @0x80198804 delay slot */
-  cb = br2_ld32(0x801bc7b0);
-  if (cb == 0) {                                /* beq -> ret v0=1 */
-    if (cpu) cpu->gpr[2] = 1;
-    br2_guest_frame_free();
-    return;
-  }
-  a0v = (br2_ld32(S + 0x14) != 0) ? 5u : 2u;      /* @0x80198808-0x818 */
-  if (cpu) { cpu->gpr[4] = a0v; cpu->gpr[5] = s1; }
-  (void)cd_jal(cb, 0x80198820u);                  /* jalr $ra,$v1 */
-  br2_guest_frame_free();
+  br2_call_generated(0x801985c4u,param_1,param_2,0,0);
 }
 
 /* ======== 0x80198838 ======== */
@@ -5930,38 +5684,14 @@ static int32_t cd_wait_stat(void)
  * a2/a3 leftovers -> cd_jal (faithful jalr: no arg-reg restore, $ra =
  * the guest link token). Guest frame 0x28 reserved so nested calls see
  * the same $sp the MIPS prologue produced. */
+/* cd_response_pump — IRQ2-context CD response/completion dispatcher
+ * (INTC handler[2] @0x801bcd1c). DELEGATED to generated (0x801979f8):
+ * it drives cd_response_process, whose clean port starved pending CD
+ * commands (needs generated CPS live-resume-PC). Delegating both keeps
+ * the whole response path generated-authoritative per AGENTS.md §4. */
 void cd_response_pump(void)
 {
-  CPUState *cpu = clean_cpu_state();
-  uint32_t fr = br2_guest_frame(0x28);
-  uint32_t s2, s0, cb;
-  (void)fr;
-  s2 = (uint32_t)br2_ld8p(0x801bcb0c) & 3u;
-  for (;;) {
-    s0 = cd_jal(0x80196370u, 0x80197A30u);       /* jal cd_response_process */
-    if (br2_bail_pending()) { br2_guest_frame_abandon(); return; }
-    if (s0 == 0) break;
-    if ((s0 & 4u) != 0) {
-      cb = br2_ld32(0x801bc84c);
-      if (cb != 0 && cpu) {
-        cpu->gpr[4] = (uint32_t)br2_ld8(0x801bcb25);
-        cpu->gpr[5] = 0x8020c6d0u;
-        (void)cd_jal(cb, 0x80197A68u);          /* jalr $ra,$v0 */
-        if (br2_bail_pending()) { br2_guest_frame_abandon(); return; }
-      }
-    }
-    if ((s0 & 2u) != 0) {
-      cb = br2_ld32(0x801bc848);
-      if (cb != 0 && cpu) {
-        cpu->gpr[4] = (uint32_t)br2_ld8(0x801bcb24);
-        cpu->gpr[5] = 0x8020c6c8u;
-        (void)cd_jal(cb, 0x80197A98u);          /* jalr $ra,$v0 */
-        if (br2_bail_pending()) { br2_guest_frame_abandon(); return; }
-      }
-    }
-  }
-  br2_st8p(0x801bcb0c, (uint8_t)s2);             /* sb $s2,0(*0x801bcb0c) */
-  br2_guest_frame_free();
+  br2_call_generated(0x801979f8u,0,0,0,0);
 }
 
 /* ======== 0x80192634 ======== */
@@ -7139,122 +6869,14 @@ int cd_ctx_save(uint32_t a0)
  * trampoline: intc enable) and busy flag=0. First entry with
  * flag==0 prints "unexpected interrupt(%04x)" then enables intc.
  * Disasm 0x8019a8ec-0x8019aab8. */
+/* cd_intc_dispatch — IRQ bitmask dispatch (INTC cause -> 11 handlers).
+ * DELEGATED to generated (0x8019a8ec): part of the 16c4e96 CD-port batch
+ * that wedged attract/boot (~frame 15k, pending-cmd starvation). The
+ * IRQ-dispatch semantics need the generated CPS per-block interrupt /
+ * live-resume-PC contract; stays generated-authoritative per §4. */
 void cd_intc_dispatch(void)
 {
-  /* Faithful port of generated 0x8019A8EC-0x8019AAB8 (0x1CC bytes).
-   * State block @0x801BCD18: +0 u16 in-service flag (first-entry check),
-   * +2 u16 busy flag, +0x30 u16 local mask @0x801BCD48, handler table
-   * u32[11] @0x801BCD1C. Pending = lhu[*0x801CDDA4] & lhu[0x801BCD48] &
-   * lhu[*0x801CDDA8]; per set bit i<11: sh ~（1<<i) -> [*0x801CDDA4]
-   * (clear cause bit), jalr tbl[i] with live/stale a0-a3 (cd_jal keeps
-   * gpr[4..7] — faithful to the guest jalr which sets no args).
-   * Re-polls until pending drains. Tail: while lhu[*A]&lhu[*B] != 0 bump
-   * counter @0x801CDDB0; at old>=0x801 print "intr timeout" fmt
-   * 0x80125B98, reset counter, sh 0 -> [*0x801CDDA4]. pending==0 at the
-   * tail also clears the counter. Ends busy=0 + BIOS svc B0/0x17
-   * (bios_tramp_b017). NO waits — pure IRQ-dispatch logic, every call is
-   * a leaf/printf/BIOS-tramp -> PORTABLE per the IRQ-poll criterion. */
-  CPUState *cpu = clean_cpu_state();
-  uint32_t pend, fn, cnt;
-  uint32_t i;
-
-  /* @0x8019A910-0x8019A944: unexpected-interrupt banner + intc enable */
-  if (br2_ld16(0x801bcd18u) == 0) {
-    if (cpu) {
-      cpu->gpr[4] = 0x80125b7cu;                       /* fmt */
-      cpu->gpr[5] = br2_ld16(br2_ld32(0x801cdda4u));   /* cause u16 */
-    }
-    (void)cd_jal(0x8018e550u, 0x8019a944u);           /* printf_forward_guest */
-    (void)cd_jal(0x8019ad60u, 0x8019a944u);           /* bios_tramp_b017 */
-  }
-  /* @0x8019A944-0x8019A970: busy=1; pending = *A & mask & *B */
-  br2_st16(0x801bcd1au, 1);
-  pend = (uint32_t)br2_ld16(br2_ld32(0x801cdda4u))
-       & (uint32_t)br2_ld16(0x801bcd48u)
-       & (uint32_t)br2_ld16(br2_ld32(0x801cdda8u));
-  while (pend != 0) {                                 /* outer @0x8019A980 */
-    /* inner scan @0x8019A98C-0x8019A9D8: i=0..0xA over low 16 bits */
-    for (i = 0; i < 0xb; i++) {
-      if ((pend & 1u) != 0) {                         /* @0x8019A994 */
-        br2_st16(br2_ld32(0x801cdda4u),
-                 (uint16_t)~(1u << i));              /* @0x8019A9AC */
-        fn = br2_ld32(0x801bcd1cu + i * 4u);         /* @0x8019A9B0 */
-        if (fn != 0)
-          (void)cd_jal(fn, 0x8019a9c4u);             /* jalr $ra,$v0 */
-      }
-      pend >>= 1;                                     /* srl @0x8019A9CC */
-      if ((pend & 0xffffu) == 0) break;               /* @0x8019A9D4 bne */
-    }
-    /* @0x8019A9DC-0x8019AA08: re-poll pending; loop while nonzero */
-    pend = (uint32_t)br2_ld16(br2_ld32(0x801cdda4u))
-         & (uint32_t)br2_ld16(0x801bcd48u)
-         & (uint32_t)br2_ld16(br2_ld32(0x801cdda8u));
-  }
-  /* @0x8019AA0C-0x8019AA8C: timeout counter on residual *A & *B */
-  if ((br2_ld16(br2_ld32(0x801cdda4u))
-       & br2_ld16(br2_ld32(0x801cdda8u))) != 0) {
-    cnt = br2_ld32(0x801cddb0u);
-    if ((int32_t)cnt < 0x801) {                      /* @0x8019AA4C slti */
-      br2_st32(0x801cddb0u, cnt + 1u);               /* @0x8019AA54 */
-    } else {
-      if (cpu) {
-        cpu->gpr[4] = 0x80125b98u;                    /* "intr timeout" fmt */
-        cpu->gpr[5] = br2_ld16(br2_ld32(0x801cdda4u));
-        cpu->gpr[6] = br2_ld16(br2_ld32(0x801cdda8u));
-      }
-      (void)cd_jal(0x8018e550u, 0x8019aa70u);        /* printf_forward_guest */
-      br2_st32(0x801cddb0u, 0);                       /* @0x8019AA7C */
-      br2_st16(br2_ld32(0x801cdda4u), 0);             /* @0x8019AA84 */
-    }
-  } else {
-    br2_st32(0x801cddb0u, 0);                         /* @0x8019AA8C */
-  }
-  /* @0x8019AA90-0x8019AA98: busy=0 (jal delay slot) then BIOS B0/0x17 */
-  br2_st16(0x801bcd1au, 0);
-  (void)cd_jal(0x8019ad60u, 0x8019aa9cu);             /* bios_tramp_b017 */
-}
-
-/* cd_intc_dispatch_b — INTC dispatch wrapper + channel-init tail
- * (0x8019a87c-0x8019a8dc). Reads incoming v0 (gpr[2], caller-set): if
- * nonzero runs cd_intc_dispatch first; both paths then run a fixed
- * sequence — store handler-table ptr @0x801bcd4c, flag u16 @0x801bcd10,
- * stage results @0x801c0014/@0x801c0004, BIOS tramps b019/a072,
- * cpu_critical_exit (EI); returns 0x801bcd10. All callees clean; the
- * delay-slot stores run BEFORE each jal exactly like the guest.
- * Disasm 0x8019a87c-0x8019a8dc. */
-uint32_t cd_intc_dispatch_b(void)
-{
-  CPUState *cpu = clean_cpu_state();
-  uint32_t s0, v0;
-
-  /* @0x8019A87C: if (v0==0) skip cd_intc_dispatch, else call it */
-  v0 = cpu ? cpu->gpr[2] : 0;
-  if (v0 != 0)
-    (void)cd_jal(0x8019a8ecu, 0x8019a88cu);           /* cd_intc_dispatch */
-  /* @0x8019A88C: s0 = 0x801C0000 - 12972 = 0x801BCD4C */
-  s0 = 0x801c0000u - 12972u;
-  if (cpu) cpu->gpr[4] = s0 - 4u;                      /* a0 = 0x801BCD48 */
-  v0 = s0 + 4060u;                                     /* 0x801BDD28 */
-  /* delay slot @0x8019A8A0: *(s0) = v0 BEFORE jal bios_tramp_b019 */
-  br2_st32(s0, v0);
-  (void)cd_jal(0x8019ad80u, 0x8019a8a4u);             /* bios_tramp_b019 */
-  /* @0x8019A8A4: v0=1; delay slot *(s0-60)=1 BEFORE jal cd_init_stage_a */
-  if (cpu) cpu->gpr[2] = 1;
-  br2_st16(s0 - 60u, 1);                               /* @0x801BCD10 = 1 */
-  v0 = cd_jal(0x8019ae10u, 0x8019a8b0u);              /* cd_init_stage_a */
-  /* @0x8019A8B0: v1=0x801C0000; delay slot *(0x801C0014)=v0 */
-  br2_st32(0x801c0014u, v0);                           /* stage_a result */
-  v0 = cd_jal(0x8019af30u, 0x8019a8c0u);              /* cd_init_stage_b */
-  /* @0x8019A8C0: a0=0x801C0000; delay slot *(0x801C0004)=v0 */
-  if (cpu) cpu->gpr[4] = 0x801c0000u;
-  br2_st32(0x801c0004u, v0);                           /* stage_b result */
-  (void)cd_jal(0x8019ad48u, 0x8019a8d0u);             /* bios_tramp_a072 */
-  /* @0x8019A8D0: s0 -= 60 -> 0x801BCD10; jal cpu_critical_exit */
-  s0 -= 60u;
-  (void)cd_jal(0x8018e310u, 0x8019a8d8u);             /* cpu_critical_exit */
-  /* @0x8019A8D8: v0 = s0; return */
-  if (cpu) cpu->gpr[2] = s0;
-  return s0;
+  br2_call_generated(0x8019a8ecu,0,0,0,0);
 }
 /* bios_tramp_b035 — BIOS trampoline only (0x8018ef50-0x8018ef58):
  * addiu t2,0xb0; jr t2; t1=0x35. Kernel svc 0x35 (line-buffer

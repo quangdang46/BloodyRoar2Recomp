@@ -94,7 +94,6 @@
 8019a6e0 cd_dispatch_tbl4
 80192f14 cd_queue_push
 801931c4 cd_queue_drain
-8019a87c cd_intc_dispatch_b
 8019a8ec cd_intc_dispatch
 8019ad90 cd_ctx_save
 801a0be0 cd_hw_chan_init
