@@ -481,5 +481,55 @@ phase). "It compiled" and "it returns plausible values" are not done.
   or direct work can diff vs generated. Prefer foreground for anything
   needing generated verification.
 
+### Session update 7 (profile-driven porting round 2 — gameplay generated ≈ §4 CD only)
+
+clean_table **1361 → 1461 wrappers**. Continued the profile→port loop; each
+cycle re-profiled versus combat (`PSX_FN_FILTER` + `versus_fight_mash.py` +
+`fn_entry_dump` histogram) and ported the new hot set. All pushed through
+`0c4e7b8`. **The per-frame render/combat/game/op/scene code is now fully
+clean C** — remaining generated gameplay traffic is ~90% the §4 CD coroutine
+subsystem.
+
+- **★ `fn-ptr jalr` IS portable via `call_guest4`** — corrected an over-
+  broad §4 classification. `scene_node_walk` (`0x801B0DB8`, gfx.c:4497) was
+  ~60% of ALL generated gameplay traffic (fn_entry ~20k/capture): a
+  scene-graph dispatcher doing `type&0xFF`→handler-table→`jalr`. The jalr
+  target is a dynamic guest addr — `call_guest4(handler,a0-a3)` handles it
+  (saves gpr[31]/pc/v0, sets `BR2_NESTED_RA`, restores on `jr $ra`); the
+  "continuation" is clean control flow, not a guest `$ra` jump. Multi-entry
+  CPS families port as ONE clean body at the canonical entry.
+- **Ports landed**: `scene_node_walk`, `gte_xform_packet` (0x801AAE08,
+  ~2000 calls — GTE matrix/vertex transform-packet executor), `part_skin_
+  emit` (0x801864DC), `prim_emit_{tri,quad}_{ot,fix}` + `prim_emit_{tri,
+  quad}_tex_ot` + `gpu_draw_env_dma` (GTE polygon emitters), 18 BIOS kernel-
+  vector trampolines + DI/EI + `cd_extent_len`, `elem_pair_field_set_alt`/
+  `elem_flag1` (0x801AA244/2AC — mid-function ALIAS entries, BIOS CD
+  sub-channel callbacks), 18 `op_*`/scene-handler leaves (0x801B0xxx +
+  0x801ADxxx/0x801AFxxx).
+- **New mechanisms**: `ARG_GPRS` in `gen_clean_table.py` (~line 353) marshals
+  live `cpu->gpr[]` for functions entered via fn-ptr with non-standard
+  register state (v0/v1 carry data) — e.g. `0x801aa244:(2,4,5,6,7)`.
+- **★ `clean_trace` debug cmd + `CLEAN_RANGES`/`CLEAN_EXCLUDE` env vars** —
+  THE verification probe for clean ports. fntrace/pc_probe show 0 for clean
+  fns (they bypass `psx_dispatch_impl`); `clean_trace` records every
+  `clean_try_dispatch` hit into a 512-ring. `CLEAN_RANGES` isolates a subset
+  to clean while rest stays generated = ground-truth A/B.
+- **Multi-entry check (learned hard way)**: before porting, grep
+  `generated/SLES_017.22_dispatch.c` for MULTIPLE entry addrs → same
+  `br2eu_func_*`. `gpu_img_boot_copy` (0x8019E5CC had entries E5CC/E0/F8)
+  wedged at frame 195 when ported single-entry — reverted. CPS split
+  fragments (cpu->pc= within one logical fn) are fine as one clean body;
+  independent jal-targets to fragments are NOT.
+- **§4-unsafe BIOS-frame pattern**: clean ports that rebuild a guest CPS
+  prologue (DI/EI crit, $ra-cell saves) then sequence `bios_svc6`+`call_guest`
+  tail-calls BREAK (cd_chan_signal_all, cd_ctx_cmd_submit_b/c reverted).
+  Prefer `br2_call_generated` for BIOS-sequencing fns.
+- **Final versus-combat fn_entry hot list** (all §4 CD coroutine):
+  vsync_wait_n 0x8019A5D8, cd_intc_dispatch 0x8019A8EC/87C,
+  cd_response_process 0x80196370, cd_response_pump 0x801979F8,
+  cd_read_step_cb 0x80196718/85C4, cd_file_load_sm/read_poll/result_wait_*/
+  cmd_issue/read_setup/file_read_seq + `_start` BSS artifact (0x80126188/94,
+  boot-only) + tiny jalr stragglers (0x801421C4 battle, 0x8017DB88 event).
+
 **Bottom line: parallel subagents, clean named C in `game/`, generated only
 as a temporary faithful fallback, runtime-verified, one unified source.**
