@@ -727,3 +727,32 @@ bCONT1: /* continuation block */ ...
 **Next targets** (biggest §4 hot set): `cd_response_pump` 0x801979F8 (14
 yield pts), `cd_response_process` state machine, `cd_read_step_cb`,
 file-load chain. Same recipe; register every yield-capable block-leader addr.
+
+### Session update 12 (cd_response_pump clean CPS + ★ sp-ownership fix)
+
+Second clean CPS coroutine landed and verified: `cd_response_pump`
+(0x801979F8, INTC handler[2] @0x801bcd1c) — the hot CD deferred-work pump.
+12 blocks, guest 0x28 frame, drives already-clean `cd_response_process`,
+two runtime fn-ptr `jalr` handlers. Replaces its §4 delegate. Versus
+reaches/sustains FIGHT (`gs=8`, frame 199k). Committed `6252c2f`.
+
+**★ CPS dispatch bug fixed — coroutines must OWN gpr[29].**
+`clean_try_dispatch` saved `gpr[29]` before every wrapper and restored it
+after (`cpu->gpr[29]=_saved_sp`) to emulate a skipped MIPS prologue. For a
+CPS coroutine that manages its own frame this is fatal: the entry's
+`sp-=40` was undone on return, and the epilogue's `sp+=40` + frame-slot
+reads (`[sp+16..32]` for s0-s3/ra) hit wrong addresses -> `jr $ra` to
+garbage -> deterministic boot crash (PC=0, ~4.1M insns). `cd_irq_init_seq`
+survived only because it's a leaf that never touches sp.
+Fix in `gen_clean_table.py`: `_cps` entries skip BOTH the frame
+decrement AND the sp restore — `gpr[29]` is guest state that persists
+across yields like every other `gpr[]`. Ordinary clean fns unchanged.
+**Rule for CPS ports: if the generated body has a stack frame
+(`sp±N`/`sw s-reg`/`lw s-reg`), the wrapper MUST NOT touch gpr[29] — the
+coroutine owns it. Verify the prologue/epilogue restore offsets match the
+generated saves exactly.**
+
+**Indirect `jalr` in CPS:** a fn-ptr call is `gpr[31]=continuation;
+psx_check_interrupts_at(c, target); c->pc=target; return` where target =
+the live `c->gpr[rs]` — same tail-dispatch as a fixed jal, callee returns
+to the continuation block via `jr ra`.
