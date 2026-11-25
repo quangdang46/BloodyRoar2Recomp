@@ -4717,6 +4717,354 @@ L_exit:                                               /* 801B1124 epilogue */
   return;
 }
 
+/* ======== 0x801B0240 ======== */
+
+/* scene_emit_xform — GTE point transform + emit-record writer. Faithful
+ * clean port of the CPS family br2eu_func_801B0240 (internal continuations
+ * 0x801B02C4..0x801B03CC are part of the same logical function). Entry args
+ * arrive in live regs, NOT a0-a3: $v0 = source vertex record, $v1 = packed
+ * input halfword, $a1 = emit-context base (record table stride 40).
+ * Allocates a real guest frame because the GTE result halfword pair and
+ * the slot index live at sp+8/+16 across the signed divide.
+ * Disasm-verified insn-by-insn vs generated/SLES_017.22_full_54.c. */
+void scene_emit_xform(void)
+{
+  CPUState *c = clean_cpu_state();
+  uint32_t sp;
+  int32_t dvd, dvs;
+  extern uint32_t br2_guest_frame(uint32_t);
+  extern void br2_guest_frame_free(void);
+  extern void gte_precision_store_word(uint32_t, uint8_t);
+  if (!c) return;
+#define XF_G(n)     (c->gpr[n])
+#define XF_LD16S(a) ((uint32_t)(int32_t)(int16_t)br2_ld16((uint32_t)(a)))
+#define XF_LDH(a)   ((uint32_t)br2_ld16((uint32_t)(a)))
+#define XF_SH(a,v)  br2_st16((uint32_t)(a), (uint16_t)(v))
+
+  sp = br2_guest_frame(24);                       /* addiu sp,sp,-24 */
+  XF_SH(sp + 0, XF_G(3));                         /* sh v1,0(sp)      */
+  XF_G(3) = XF_LD16S(XF_G(2) + 6);                /* lh v1,6(v0)      */
+  XF_SH(sp + 2, XF_G(3));                         /* sh v1,2(sp)      */
+  XF_G(2) = XF_LD16S(XF_G(2) + 10);               /* lh v0,10(v0)     */
+  XF_G(3) = br2_ld32(0x801bef00u);                /* lw v1,0x801BEF00 */
+  XF_G(7) = XF_G(5);                              /* move a3,a1       */
+  XF_SH(sp + 4, XF_G(2));                         /* sh v0,4(sp)      */
+  XF_G(2) = XF_G(3) << 2;                         /* sll v0,v1,2      */
+  XF_G(2) += XF_G(3);                             /* addu v0,v0,v1    */
+  XF_G(2) <<= 3;                                  /* sll v0,v0,3 (*40)*/
+  XF_G(6) = XF_G(7) + XF_G(2);                    /* a2 = a1 + idx*40 */
+
+  /* GTE sequence: lwc2 gte[0] <- word(sp) is a raw gte_data write in the
+   * generated emitter; lwc2 gte[1] routes through gte_write_data which
+   * masks &0xFFFF so only the lh10 halfword lands. cmd 0x0180001,
+   * swc2 gte[14] -> sp+8, mfc2 gte[19] -> t4 = (sra 2) -> sp+16. */
+  c->gte_data[0] = br2_ld32(sp);                  /* lwc2 gte[0] raw  */
+  setCopReg(2, GTE_DREG(1), br2_ld32(sp + 4));    /* lwc2 gte[1]      */
+  copFunction(2, 0x0180001u);                     /* gte cmd 0x01     */
+  br2_st32(sp + 8, c->gte_data[14]);              /* swc2 gte[14]     */
+  gte_precision_store_word(sp + 8, 14);
+  XF_G(12) = (uint32_t)getCopReg(2, GTE_DREG(19));/* mfc2 gte[19]     */
+  XF_G(12) = (uint32_t)((int32_t)XF_G(12) >> 2);  /* sra t4,t4,2      */
+  br2_st32(sp + 16, XF_G(12));                    /* sw t4,16(sp)     */
+
+  XF_G(2) = br2_ld32(sp + 16);                    /* lw v0,16(sp)     */
+  XF_G(5) = (uint32_t)((int32_t)XF_G(2) >> 2);    /* sra a1,v0,2      */
+  XF_G(2) = XF_G(5) - 17u;                        /* addiu v0,a1,-17  */
+  XF_G(2) = (XF_G(2) < 2063u) ? 1u : 0u;          /* sltiu v0,v0,2063 */
+  br2_st32(sp + 16, XF_G(5));                     /* delay: sw a1,16  */
+  if (XF_G(2) == 0) goto L_emit_ret;              /* beqz -> 801B03D0 */
+
+  /* 0x801B02C4: signed divide (lh(a3+0x50)<<9) / (a1<<2). The div-by-zero
+   * and break(7168)/break(6144) trap paths are no-ops that all converge on
+   * 0x801B02F8; the `at` compares leave $at = 0x80000000 (delay slot). */
+  XF_G(4) = XF_LD16S(XF_G(7) + 0x50);             /* lh a0,0x50(a3)    */
+  XF_G(5) <<= 2;                                  /* sll a1,a1,2       */
+  XF_G(4) <<= 9;                                  /* sll a0,a0,9       */
+  dvd = (int32_t)XF_G(4);
+  dvs = (int32_t)XF_G(5);
+  if (dvs != 0) {
+    c->lo = (uint32_t)(dvd / dvs);
+    c->hi = (uint32_t)(dvd % dvs);
+  } else {
+    c->lo = (dvd >= 0) ? 0xffffffffu : 1u;
+    c->hi = (uint32_t)dvd;
+  }
+  XF_G(1) = 0x80000000u;                          /* delay: at=0x8000..*/
+  XF_G(4) = c->lo;                                /* mflo a0           */
+  XF_G(2) = XF_LDH(sp + 8);                       /* lhu v0,8(sp)      */
+  XF_G(3) = XF_G(4) >> 31;                        /* srl v1,a0,31      */
+  XF_G(3) = XF_G(4) + XF_G(3);                    /* addu v1,a0,v1     */
+  XF_G(3) = (uint32_t)((int32_t)XF_G(3) >> 1);    /* sra v1,v1,1       */
+  /* four corner pairs around the swc2 result halfwords; h = (a0+sign)>>1 */
+  XF_G(2) -= XF_G(3); XF_SH(XF_G(6) + 8, XF_G(2));    /* +8  = u8 -h    */
+  XF_G(2) = XF_LDH(sp + 10);
+  XF_G(2) -= XF_G(3); XF_SH(XF_G(6) + 10, XF_G(2));   /* +10 = u10-h    */
+  XF_G(2) = XF_LDH(sp + 8);
+  XF_G(2) -= XF_G(3); XF_G(2) += XF_G(4);
+  XF_SH(XF_G(6) + 16, XF_G(2));                        /* +16 = u8 -h+a0 */
+  XF_G(2) = XF_LDH(sp + 10);
+  XF_G(2) -= XF_G(3); XF_SH(XF_G(6) + 18, XF_G(2));   /* +18 = u10-h    */
+  XF_G(2) = XF_LDH(sp + 8);
+  XF_G(2) -= XF_G(3); XF_SH(XF_G(6) + 24, XF_G(2));   /* +24 = u8 -h    */
+  XF_G(2) = XF_LDH(sp + 10);
+  XF_G(2) -= XF_G(3); XF_G(2) += XF_G(4);
+  XF_SH(XF_G(6) + 26, XF_G(2));                        /* +26 = u10-h+a0 */
+  XF_G(2) = XF_LDH(sp + 8);
+  XF_G(2) -= XF_G(3); XF_G(2) += XF_G(4);
+  XF_SH(XF_G(6) + 32, XF_G(2));                        /* +32 = u8 -h+a0 */
+  XF_G(2) = XF_LDH(sp + 10);
+  XF_G(2) -= XF_G(3); XF_G(2) += XF_G(4);
+  XF_SH(XF_G(6) + 34, XF_G(2));                        /* +34 = u10-h+a0 */
+
+  /* tag word + slot pointer: tbl24 = lw 0x801BEF24; a1 += tbl24;
+   * a2[0] = lw(a1) | 0x09000000; slot tbl24+idx*4 = a2 & 0xFFFFFF. */
+  XF_G(3) = br2_ld32(0x801bef24u);                /* lw v1,0x801BEF24 */
+  XF_G(5) += XF_G(3);                             /* a1 += tbl24      */
+  XF_G(2) = br2_ld32(XF_G(5));                    /* lw v0,(a1)       */
+  XF_G(3) = 0x09000000u;
+  XF_G(2) |= XF_G(3);                             /* v0 |= 0x09000000 */
+  br2_st32(XF_G(6), XF_G(2));                     /* sw v0,0(a2)      */
+  XF_G(3) = br2_ld32(sp + 16);                    /* lw v1,16(sp) idx */
+  XF_G(2) = br2_ld32(0x801bef24u);                /* lw v0,0x801BEF24 */
+  XF_G(3) <<= 2;                                  /* sll v1,v1,2      */
+  XF_G(3) += XF_G(2);                             /* v1 += tbl24      */
+  XF_G(2) = XF_G(6) << 8;                         /* sll v0,a2,8      */
+  XF_G(2) = XF_G(2) >> 8;                         /* srl v0,v0,8      */
+  br2_st32(XF_G(3), XF_G(2));                     /* sw v0,(v1)       */
+
+L_emit_ret:                                       /* 0x801B03D0 */
+  br2_guest_frame_free();                         /* addiu sp,+24;jr  */
+#undef XF_G
+#undef XF_LD16S
+#undef XF_LDH
+#undef XF_SH
+  return;
+}
+
+/* ======== 0x801B0228 ======== */
+
+/* scene_emit_setup — arg-shuffle trampoline into scene_emit_xform
+ * (0x801B0240, tail-jump). Guest: v0 = *(*(gp+0x4C)+8) + lh(a0+2);
+ * v1 = lh(v0+2); then enters the emitter with $v0 = resolved record ptr,
+ * $v1 = packed input half, $a1 passthrough. Disasm 0x801B0228-0x801B023C. */
+void scene_emit_setup(void)
+{
+  CPUState *c = clean_cpu_state();
+  uint32_t v0, v1;
+  if (!c) return;
+  v0 = br2_ld32((uint32_t)(c->gpr[28] + 0x4c));    /* lw v0,0x4C(gp)    */
+  v1 = (uint32_t)(int32_t)(int16_t)br2_ld16(c->gpr[4] + 2); /* lh v1,2(a0) */
+  v0 = br2_ld32(v0 + 8);                           /* lw v0,8(v0)      */
+  v0 += v1;                                        /* addu v0,v0,v1    */
+  v1 = (uint32_t)(int32_t)(int16_t)br2_ld16(v0 + 2);/* lh v1,2(v0)     */
+  c->gpr[2] = v0;
+  c->gpr[3] = v1;
+  scene_emit_xform();                              /* j 0x801B0240     */
+}
+
+/* ======== 0x801B07D0 ======== */
+
+/* scene_leaf_ret — shared `jr $ra` thunk for the op-stream cluster.
+ * Leaves every register untouched. Disasm 0x801B07D0-0x801B07D4. */
+void scene_leaf_ret(void)
+{
+}
+
+/* ======== 0x801B06A4 ======== */
+
+/* scene_op_flush — op-stream terminator: copies the 4-byte record
+ * {b0,b1,b2,b3} at *(a1+0x54) + lhu(cursor)*4 into the t0 output struct
+ * (byte pairs at +0x0C/+0x14/+0x1C/+0x24/+0x34/+0x3C/+0x44/+0x4C with the
+ * guest's exact per-field add pattern), then stores lhu(cursor+2) into
+ * a1+0x60 and returns. Disasm-verified vs generated/SLES_017.22_full_54.c
+ * (all loads are LBU; the final `lb v1,3(v1)` clobbers $v1 with b3). */
+void scene_op_flush(void)
+{
+  CPUState *c = clean_cpu_state();
+  uint32_t a1, t0;
+  if (!c) return;
+  a1 = c->gpr[5];
+  t0 = c->gpr[8];
+  c->gpr[2] = (uint32_t)br2_ld16(br2_ld32(a1 + 0x58)); /* lhu(lw cur) */
+  c->gpr[3] = br2_ld32(a1 + 0x54);                     /* lw v1,0x54(a1) */
+  c->gpr[2] <<= 2;                                     /* sll v0,v0,2   */
+  c->gpr[3] += c->gpr[2];                              /* v1 += v0=rec  */
+#define FLUSH_LB(off) br2_ld8(c->gpr[3] + (off))
+  /* stores interleaved with loads exactly as the guest emits them so an
+   * aliased rec/t0 still observes identical ordering. */
+  c->gpr[2] = FLUSH_LB(0); br2_st8(t0 + 0x0c, (uint8_t)c->gpr[2]);
+  c->gpr[2] = FLUSH_LB(1); br2_st8(t0 + 0x0d, (uint8_t)c->gpr[2]);
+  c->gpr[2] = FLUSH_LB(0); c->gpr[4] = FLUSH_LB(2); c->gpr[2] += c->gpr[4];
+  br2_st8(t0 + 0x14, (uint8_t)c->gpr[2]);
+  c->gpr[2] = FLUSH_LB(1); br2_st8(t0 + 0x15, (uint8_t)c->gpr[2]);
+  c->gpr[2] = FLUSH_LB(0); br2_st8(t0 + 0x1c, (uint8_t)c->gpr[2]);
+  c->gpr[2] = FLUSH_LB(1); c->gpr[4] = FLUSH_LB(3); c->gpr[2] += c->gpr[4];
+  br2_st8(t0 + 0x1d, (uint8_t)c->gpr[2]);
+  c->gpr[2] = FLUSH_LB(0); c->gpr[4] = FLUSH_LB(2); c->gpr[2] += c->gpr[4];
+  br2_st8(t0 + 0x24, (uint8_t)c->gpr[2]);
+  c->gpr[2] = FLUSH_LB(1); c->gpr[4] = FLUSH_LB(3); c->gpr[2] += c->gpr[4];
+  br2_st8(t0 + 0x25, (uint8_t)c->gpr[2]);
+  c->gpr[2] = FLUSH_LB(0); br2_st8(t0 + 0x34, (uint8_t)c->gpr[2]);
+  c->gpr[2] = FLUSH_LB(1); br2_st8(t0 + 0x35, (uint8_t)c->gpr[2]);
+  c->gpr[2] = FLUSH_LB(0); c->gpr[4] = FLUSH_LB(2); c->gpr[2] += c->gpr[4];
+  br2_st8(t0 + 0x3c, (uint8_t)c->gpr[2]);
+  c->gpr[2] = FLUSH_LB(1); br2_st8(t0 + 0x3d, (uint8_t)c->gpr[2]);
+  c->gpr[2] = FLUSH_LB(0); br2_st8(t0 + 0x44, (uint8_t)c->gpr[2]);
+  c->gpr[2] = FLUSH_LB(1); c->gpr[4] = FLUSH_LB(3); c->gpr[2] += c->gpr[4];
+  br2_st8(t0 + 0x45, (uint8_t)c->gpr[2]);
+  c->gpr[2] = FLUSH_LB(0); c->gpr[4] = FLUSH_LB(2); c->gpr[2] += c->gpr[4];
+  br2_st8(t0 + 0x4c, (uint8_t)c->gpr[2]);
+  c->gpr[2] = FLUSH_LB(1); c->gpr[3] = FLUSH_LB(3); c->gpr[2] += c->gpr[3];
+  br2_st8(t0 + 0x4d, (uint8_t)c->gpr[2]);
+#undef FLUSH_LB
+  /* tail: a1[0x60] = lhu(cursor+2); j 0x801B07D0 (jr ra) */
+  c->gpr[2] = br2_ld32(a1 + 0x58);                  /* lw v0,0x58(a1)   */
+  c->gpr[2] = (uint32_t)br2_ld16(c->gpr[2] + 2);    /* lhu v0,2(v0)     */
+  br2_st16(a1 + 0x60, (uint16_t)c->gpr[2]);         /* sh v0,0x60(a1)   */
+}
+
+/* ======== 0x801B05D8/0684/0688 ======== */
+
+/* scene_op_loop — the op-stream step/next interpreter shared by three CPS
+ * entry points (heads 0x801B05D8 step, 0x801B0684 cursor-store frag,
+ * 0x801B0688 next-dispatch frag). The fragments loop back into each other
+ * (step -> next -> step) once per stream record, so they are one clean CFG
+ * with an entry selector — guest CPS resume addresses are internal-only.
+ * $a1 = stream ctx (+0x54 record table, +0x58 cursor, +0x5C index table,
+ * +0x60 counter, +0x62 byte index); $t0 = output struct (set by caller);
+ * $t1/$t2 = tag bounds 0xFE00/0x8000 (set by scene_op_tick). */
+static void scene_op_loop(uint32_t entry)
+{
+  CPUState *c = clean_cpu_state();
+  uint32_t a1, a2;
+  if (!c) return;
+  a1 = c->gpr[5];
+  if (entry == 0x801b0684u) goto L_cursor_set;      /* frag 0x801B0684  */
+  if (entry == 0x801b0688u) goto L_op_next;         /* frag 0x801B0688  */
+
+L_step_head:                                         /* 0x801B05D8 */
+  a2 = br2_ld32(a1 + 0x58);                          /* lw a2,0x58(a1)  */
+  c->gpr[6] = a2;
+  c->gpr[2] = (uint32_t)br2_ld16(a2);                /* lhu v0,0(a2)    */
+  c->gpr[3] = c->gpr[2] & 0xff00u;                   /* v1 = tag & FF00 */
+  c->gpr[7] = c->gpr[2] & 0x00ffu;                   /* delay: a3=&FF  */
+  if (c->gpr[3] == c->gpr[9]) goto L_idx;            /* beq v1,t1->0620 */
+  c->gpr[2] = ((int32_t)c->gpr[9] < (int32_t)c->gpr[3]) ? 1u : 0u; /* slt */
+  {
+    uint32_t take = (c->gpr[2] != 0u);
+    c->gpr[2] = 0xff00u;                             /* delay: v0=FF00  */
+    if (take) goto L_ff00_chk;                       /* bnez -> 0610    */
+  }
+  if (c->gpr[3] == c->gpr[10]) goto L_cond_adv;      /* beq v1,t2->062C */
+  goto L_op_next;                                    /* j 0x801B0688    */
+
+L_ff00_chk:                                          /* 0x801B0610 */
+  if (c->gpr[3] == c->gpr[2]) goto L_ff00_body;      /* beq v1,FF00    */
+  goto L_op_next;                                    /* j 0x801B0688    */
+
+L_idx:                                               /* 0x801B0620 */
+  c->gpr[2] = (uint32_t)br2_ld16(a2 + 2);             /* lhu v0,2(a2)    */
+  goto L_emit_idx;                                   /* j 0x801B0650    */
+
+L_cond_adv:                                          /* 0x801B062C */
+  c->gpr[4] = (uint32_t)br2_ld16(a1 + 0x62);          /* lhu a0,0x62(a1) */
+  c->gpr[2] = (c->gpr[7] < c->gpr[4]) ? 1u : 0u;      /* sltu v0,a3,a0   */
+  {
+    uint32_t take = (c->gpr[2] != 0u);
+    c->gpr[2] = a2 + 4u;                              /* delay: v0=a2+4  */
+    if (take) goto L_cursor_set;                      /* -> 0x801B0684   */
+  }
+  /* 0x801B0640: index++ then emit via cursor+2 halfword */
+  c->gpr[3] = br2_ld32(a1 + 0x58);                    /* lw v1,0x58(a1)  */
+  c->gpr[2] = c->gpr[4] + 1u;                         /* v0 = a0+1       */
+  br2_st16(a1 + 0x62, (uint16_t)c->gpr[2]);           /* sh v0,0x62(a1)  */
+  c->gpr[2] = (uint32_t)br2_ld16(c->gpr[3] + 2);      /* lhu v0,2(v1)    */
+  /* fall through to 0x801B0650 */
+L_emit_idx:                                          /* 0x801B0650 */
+  c->gpr[3] = br2_ld32(a1 + 0x5c);                    /* lw v1,0x5C(a1)  */
+  c->gpr[2] <<= 2;                                    /* sll v0,v0,2     */
+  c->gpr[3] += c->gpr[2];                             /* v1 += v0        */
+  br2_st32(a1 + 0x58, c->gpr[3]);                     /* delay: sw cur   */
+  goto L_op_next;                                    /* j 0x801B0688    */
+
+L_ff00_body:                                         /* 0x801B0664 */
+  c->gpr[2] = (uint32_t)br2_ld16(a1 + 0x62);          /* lhu v0,0x62(a1) */
+  c->gpr[2] = (c->gpr[2] < c->gpr[7]) ? 1u : 0u;      /* sltu v0,v0,a3   */
+  {
+    uint32_t take = (c->gpr[2] != 0u);
+    c->gpr[2] = a2 + 4u;                              /* delay: v0=a2+4  */
+    if (take) goto L_cursor_set;                      /* -> 0x801B0684   */
+  }
+  /* 0x801B0678: *(gp_cache+0x14) = 0; jr ra */
+  c->gpr[2] = br2_ld32((uint32_t)(c->gpr[28] + 0x4c));
+  br2_st32(c->gpr[2] + 0x14, 0u);                     /* delay slot      */
+  return;
+
+L_cursor_set:                                        /* 0x801B0684 */
+  br2_st32(a1 + 0x58, c->gpr[2]);                     /* sw v0,0x58(a1)  */
+  /* fall through */
+L_op_next:                                           /* 0x801B0688 */
+  c->gpr[2] = br2_ld32(a1 + 0x58);                    /* lw v0,0x58(a1)  */
+  c->gpr[2] = (uint32_t)br2_ld16(c->gpr[2]);          /* lhu v0,0(v0)    */
+  c->gpr[2] &= 0xff00u;                               /* andi v0,FF00    */
+  if (c->gpr[2] != 0u) goto L_step_head;              /* bnez -> 05D8    */
+  scene_op_flush();                                  /* -> 0x801B06A4   */
+  return;
+}
+
+/* scene_op_step — entry 0x801B05D8 (op-stream step dispatch). */
+void scene_op_step(void)
+{
+  scene_op_loop(0x801b05d8u);
+}
+
+/* scene_cursor_set — entry 0x801B0684 (store $v0 as cursor, then next). */
+void scene_cursor_set(void)
+{
+  scene_op_loop(0x801b0684u);
+}
+
+/* scene_op_next — entry 0x801B0688 (next-record dispatch). */
+void scene_op_next(void)
+{
+  scene_op_loop(0x801b0688u);
+}
+
+/* ======== 0x801B0584 ======== */
+
+/* scene_op_tick — op-stream per-frame tick + dispatch head. Decrements
+ * the a1+0x60 counter (lhu-- / lh reload / bgtz early-out through the
+ * 0x801B07D0 jr-ra thunk), publishes 1 into gp_cache+0x14, advances the
+ * a1+0x58 cursor by 4, then either flushes (next tag&0xFF00 == 0) or arms
+ * t1=0xFE00/t2=0x8000 and enters the step loop. $t0 = a1 in the delay
+ * slot on every path. Disasm-verified vs generated/SLES_017.22_full_54.c. */
+void scene_op_tick(void)
+{
+  CPUState *c = clean_cpu_state();
+  uint32_t a1, cur, tag;
+  if (!c) return;
+  a1 = c->gpr[5];
+  {
+    uint32_t t = (uint32_t)br2_ld16(a1 + 0x60);       /* lhu v0,0x60(a1) */
+    uint32_t base = br2_ld32((uint32_t)(c->gpr[28] + 0x4c));
+    br2_st16(a1 + 0x60, (uint16_t)(t - 1u));          /* sh v0-1,0x60    */
+    br2_st32(base + 0x14, 1u);                        /* gp_cache[5]=1  */
+    c->gpr[2] = (uint32_t)(int32_t)(int16_t)br2_ld16(a1 + 0x60); /* lh */
+    if ((int32_t)c->gpr[2] > 0) return;               /* bgtz -> 07D0   */
+  }
+  cur = br2_ld32(a1 + 0x58);                          /* lw v1,0x58(a1) */
+  br2_st32(a1 + 0x58, cur + 4u);                      /* cursor += 4    */
+  tag = (uint32_t)br2_ld16(cur + 4u) & 0xff00u;      /* lhu cur+4&FF00 */
+  c->gpr[8] = a1;                                      /* delay: t0=a1   */
+  if (tag == 0) {                                     /* beqz -> 06A4   */
+    scene_op_flush();
+    return;
+  }
+  c->gpr[9]  = 0xfe00u;                                /* t1 = 0xFE00    */
+  c->gpr[10] = 0x8000u;                                /* t2 = 0x8000    */
+  scene_op_loop(0x801b05d8u);                         /* -> 0x801B05D8  */
+}
+
 /* ======== 0x8019261c ======== */
 
 /* gpu_data_reg_read — read the register behind pointer cell
@@ -4978,6 +5326,213 @@ uint32_t op_gp_indexed_byte_store(uint32_t a0, uint32_t a1)
   uint32_t v = br2_ld8(a1 + (uint32_t)idx);
   br2_st32(base + 0x14, v);
   return v;
+}
+
+/* ======== 0x801AD984 ======== */
+
+/* op_s16_store14 — *(gp_cache+0x14) = sext16(lh(a1)); returns the
+ * sign-extended halfword (guest $v0). Disasm 0x801AD984-0x801AD990 —
+ * the gp-cell store sits in the jr delay slot and always executes. */
+uint32_t op_s16_store14(uint32_t a0, uint32_t a1)
+{
+  uint32_t base = br2_ld32((uint32_t)(guest_gp() + 0x4c));
+  uint32_t v = (uint32_t)(int32_t)(int16_t)br2_ld16(a1);
+  (void)a0;
+  br2_st32(base + 0x14, v);
+  return v;
+}
+
+/* ======== 0x801ADA24 ======== */
+
+/* op_dword_mul_store — *a1 = lo32(*(u32*)a1 * *(u32*)(a0+2)); the product
+ * also lands in $a2 and $lo/$hi. Returns *(a0+2) (guest $v0 keeps the
+ * multiplier loaded before the mult). Disasm 0x801ADA24-0x801ADA38. */
+uint32_t op_dword_mul_store(uint32_t a0, uint32_t a1)
+{
+  CPUState *c = clean_cpu_state();
+  uint32_t x = br2_ld32(a1);              /* v1 = *a1            */
+  uint32_t y = br2_ld32(a0 + 2);          /* v0 = *(a0+2)        */
+  int64_t p = (int64_t)(int32_t)x * (int64_t)(int32_t)y; /* mult */
+  uint32_t lo = (uint32_t)p;
+  if (c) {
+    c->lo = lo;
+    c->hi = (uint32_t)(p >> 32);
+    c->gpr[6] = lo;                       /* mflo -> a2          */
+    c->gpr[2] = y;                        /* v0 unchanged        */
+  }
+  br2_st32(a1, lo);                       /* delay: sw a2,(a1)   */
+  return y;
+}
+
+/* ======== 0x801ADAA4 ======== */
+
+/* op_hmask_and_store — *a1 = lhu(a1) & lhu(a0+2); gp_cache[5] =
+ * sext16(result); returns sext16(result). Disasm 0x801ADAA4-0x801ADAC4 —
+ * the sll16+sra16 sign-extend and the gp-cell store are the jr delay. */
+uint32_t op_hmask_and_store(uint32_t a0, uint32_t a1)
+{
+  uint32_t m = (uint32_t)br2_ld16(a1);        /* lhu v0,(a1)     */
+  uint32_t k = (uint32_t)br2_ld16(a0 + 2);    /* lhu v1,2(a0)    */
+  uint32_t r = m & k;
+  uint32_t sx = (uint32_t)(int32_t)(int16_t)r;/* sll16+sra16     */
+  uint32_t base = br2_ld32((uint32_t)(guest_gp() + 0x4c));
+  br2_st16(a1, (uint16_t)r);                  /* sh v0,(a1)      */
+  br2_st32(base + 0x14, sx);                  /* delay: sw gp+14 */
+  return sx;
+}
+
+/* ======== 0x801ADAC8 ======== */
+
+/* op_dword_and_store — *a1 &= *(u32*)(a0+2); gp_cache[5] = result;
+ * returns result. Disasm 0x801ADAC8-0x801ADAE0 — gp-cell store is the
+ * jr delay slot. */
+uint32_t op_dword_and_store(uint32_t a0, uint32_t a1)
+{
+  uint32_t x = br2_ld32(a1);
+  uint32_t y = br2_ld32(a0 + 2);
+  uint32_t r = x & y;
+  uint32_t base = br2_ld32((uint32_t)(guest_gp() + 0x4c));
+  br2_st32(a1, r);
+  br2_st32(base + 0x14, r);                   /* delay slot      */
+  return r;
+}
+
+/* ======== 0x801ADC48 ======== */
+
+/* op_dword_shl_field — *a1 = *a1 << (sext16(lh(a0+2)) & 0x1F);
+ * returns the shifted value. Disasm 0x801ADC48-0x801ADC5C — the store
+ * is the jr delay slot. */
+uint32_t op_dword_shl_field(uint32_t a0, uint32_t a1)
+{
+  uint32_t sh = (uint32_t)(int32_t)(int16_t)br2_ld16(a0 + 2);
+  uint32_t x = br2_ld32(a1);
+  uint32_t r = x << (sh & 0x1fu);
+  br2_st32(a1, r);                            /* delay slot      */
+  return r;
+}
+
+/* ======== 0x801ADDB4 ======== */
+
+/* op_dword_add_idx2 — p1 = a1 + sext16(lh(a0+2))*4;
+ * p2 = a2 + sext16(lh(a0+6))*4; *p1 += *p2; returns the sum.
+ * Disasm 0x801ADDB4-0x801ADDE0 — the *p1 store is the jr delay slot;
+ * $a3 keeps p1 and $v1 keeps *p2 for callers that inspect them. */
+uint32_t op_dword_add_idx2(uint32_t a0, uint32_t a1, uint32_t a2)
+{
+  CPUState *c = clean_cpu_state();
+  uint32_t i1 = (uint32_t)(((int32_t)(int16_t)br2_ld16(a0 + 2)) << 2);
+  uint32_t i2 = (uint32_t)(((int32_t)(int16_t)br2_ld16(a0 + 6)) << 2);
+  uint32_t p1 = a1 + i1;
+  uint32_t p2 = a2 + i2;
+  uint32_t va = br2_ld32(p1);
+  uint32_t vb = br2_ld32(p2);
+  uint32_t s = va + vb;
+  br2_st32(p1, s);                            /* delay slot      */
+  if (c) {
+    c->gpr[7] = p1;                           /* a3 = p1          */
+    c->gpr[3] = vb;                           /* v1 = *p2         */
+    c->gpr[2] = s;                            /* v0 = sum         */
+  }
+  return s;
+}
+
+/* ======== 0x801AEA94 ======== */
+
+/* op_ctx_chain3 — ret = call_guest(0x801AD284 = noop_c, *a1, a1); then a
+ * three-level pointer chase anchored at e0 = *(*(gp_cache+8) + lh(a0+2)):
+ *   ret[1] = *(e0 + lh(a0+4)*4)
+ *   ret[2] = *(e0 + ret[1]*4 + 4)
+ *   ret[3] = *(e0 + ret[2]*4 + 8)
+ * The guest saves/restores s0+ra around the jal and reloads lh(a0+4)
+ * before each chase level (dead loads that still write $a1). Disasm
+ * 0x801AEA94-0x801AEB20. */
+uint32_t op_ctx_chain3(uint32_t a0, uint32_t a1)
+{
+  CPUState *c = clean_cpu_state();
+  uint32_t s0, ctx, e0, i2, e1, e2, e3, ret;
+  extern uint32_t call_guest(uint32_t, uint32_t, uint32_t);
+  extern int br2_bail_pending(void);
+  if (!c) return 0;
+  s0 = a0;
+  ret = call_guest(0x801ad284u, br2_ld32(a1), a1);
+  c->gpr[2] = ret;                             /* jal result -> v0  */
+  if (br2_bail_pending()) return ret;
+  ctx = br2_ld32((uint32_t)(guest_gp() + 0x4c));/* lw v1,gp+0x4C    */
+  i2  = (uint32_t)(int32_t)(int16_t)br2_ld16(s0 + 2);
+  e0  = br2_ld32(br2_ld32(ctx + 8) + i2);      /* *(ctx8 + lh(s0+2))*/
+  i2  = (uint32_t)(int32_t)(int16_t)br2_ld16(s0 + 4);
+  e1  = br2_ld32(e0 + (i2 << 2));
+  br2_st32(ret + 4, e1);                       /* ret[1] = e1       */
+  i2  = (uint32_t)(int32_t)(int16_t)br2_ld16(s0 + 4); /* guest reload */
+  e2  = br2_ld32(e0 + (e1 << 2) + 4);
+  br2_st32(ret + 8, e2);                       /* ret[2] = e2       */
+  i2  = (uint32_t)(int32_t)(int16_t)br2_ld16(s0 + 4); /* guest reload */
+  e3  = br2_ld32(e0 + (e2 << 2) + 8);
+  br2_st32(ret + 12, e3);                      /* ret[3] = e3       */
+  c->gpr[5] = i2;                              /* last lh -> a1     */
+  return ret;
+}
+
+/* ======== 0x801AFD38 ======== */
+
+/* op_hpair_store_16_3e — a1[0x16] = a1[0x3E] = lhu(a0+2); the guest
+ * reloads the source halfword for the delay-slot store. Returns the
+ * halfword. Disasm 0x801AFD38-0x801AFD4C. */
+uint32_t op_hpair_store_16_3e(uint32_t a0, uint32_t a1)
+{
+  uint32_t h = (uint32_t)br2_ld16(a0 + 2);     /* lhu v0,2(a0)      */
+  br2_st16(a1 + 0x16, (uint16_t)h);
+  h = (uint32_t)br2_ld16(a0 + 2);              /* reload for delay  */
+  br2_st16(a1 + 0x3e, (uint16_t)h);            /* delay: sh ->+0x3E */
+  return h;
+}
+
+/* ======== 0x801AFD50 ======== */
+
+/* op_hpair_store_0e_36 — a1[0x0E] = a1[0x36] = lhu(a0+2); same shape as
+ * op_hpair_store_16_3e with the sibling offset pair. Disasm
+ * 0x801AFD50-0x801AFD64. */
+uint32_t op_hpair_store_0e_36(uint32_t a0, uint32_t a1)
+{
+  uint32_t h = (uint32_t)br2_ld16(a0 + 2);     /* lhu v0,2(a0)      */
+  br2_st16(a1 + 0x0e, (uint16_t)h);
+  h = (uint32_t)br2_ld16(a0 + 2);              /* reload for delay  */
+  br2_st16(a1 + 0x36, (uint16_t)h);            /* delay: sh ->+0x36 */
+  return h;
+}
+
+/* ======== 0x801AFF20 ======== */
+
+/* op_pair_rec_init — initialize two 40-byte records at a1 (and a1+40)
+ * with the fixed tag bytes {+3=9, +7=46, +4..+6=128}, then copy
+ * lhu(a0+2)->a1+0x50 and lhu(a0+4)->a1+0x52. The 2-iteration loop and
+ * the jr-delay halfword load are reproduced exactly; $a2 ends at 2,
+ * $a3=128, $t0=46, $t1=9, $v1=a1+80. Disasm 0x801AFF20-0x801AFF6C. */
+uint32_t op_pair_rec_init(uint32_t a0, uint32_t a1)
+{
+  CPUState *c = clean_cpu_state();
+  uint32_t v1, i;
+  if (!c) return 0;
+  c->gpr[6] = 0;                               /* a2 counter         */
+  c->gpr[9] = 9;                               /* t1 = 9             */
+  c->gpr[8] = 46;                              /* t0 = 46            */
+  c->gpr[7] = 128;                             /* a3 = 128           */
+  v1 = a1;
+  for (i = 0; i < 2; i++) {
+    br2_st8(v1 + 3, 9);
+    br2_st8(v1 + 7, 46);
+    br2_st8(v1 + 4, 128);
+    br2_st8(v1 + 5, 128);
+    br2_st8(v1 + 6, 128);
+    v1 += 40;                                  /* delay: v1 += 0x28  */
+  }
+  c->gpr[6] = 2;                               /* a2 = 2             */
+  c->gpr[3] = v1;                              /* v1 = a1+80         */
+  c->gpr[2] = (uint32_t)br2_ld16(a0 + 2);      /* lhu v0,2(a0)       */
+  br2_st16(a1 + 0x50, (uint16_t)c->gpr[2]);    /* sh -> +0x50        */
+  c->gpr[2] = (uint32_t)br2_ld16(a0 + 4);      /* delay: lhu v0,4(a0)*/
+  br2_st16(a1 + 0x52, (uint16_t)c->gpr[2]);    /* delay: sh -> +0x52 */
+  return c->gpr[2];
 }
 
 /* ======== 0x80187dcc ======== */

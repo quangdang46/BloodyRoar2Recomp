@@ -993,6 +993,7 @@ extern void op_cond_call_store(void);
 extern void op_ctx8_cell_free(void);
 extern void op_ctx8_cell_free_b(void);
 extern void op_ctx8_lazy_fill(void);
+extern void op_ctx_chain3(void);
 extern void op_ctx_fc_set(void);
 extern void op_ctx_guard_call(void);
 extern void op_ctx_node_attach(void);
@@ -1005,6 +1006,10 @@ extern void op_dbg_dump_tbl(void);
 extern void op_dword_add4(void);
 extern void op_dword_add4_entry(void);
 extern void op_dword_add_field2(void);
+extern void op_dword_add_idx2(void);
+extern void op_dword_and_store(void);
+extern void op_dword_mul_store(void);
+extern void op_dword_shl_field(void);
 extern void op_field_store_idx(void);
 extern void op_flag_fn_check(void);
 extern void op_frame_advance(void);
@@ -1019,6 +1024,9 @@ extern void op_gpf14_a72a0_b(void);
 extern void op_gpf14_anim_alloc(void);
 extern void op_gpf14_anim_alloc_b(void);
 extern void op_guarded_call(void);
+extern void op_hmask_and_store(void);
+extern void op_hpair_store_0e_36(void);
+extern void op_hpair_store_16_3e(void);
 extern void op_hword_pair_add(void);
 extern void op_job_alloc_init(void);
 extern void op_job_submit_ab(void);
@@ -1032,11 +1040,13 @@ extern void op_node_count_flagged(void);
 extern void op_node_rebucket(void);
 extern void op_node_register(void);
 extern void op_pair_f0f8_store(void);
+extern void op_pair_rec_init(void);
 extern void op_pair_store(void);
 extern void op_pick_a74xx(void);
 extern void op_rand_i8(void);
 extern void op_s16_d298_store(void);
 extern void op_s16_d29c_store(void);
+extern void op_s16_store14(void);
 extern void op_set_gp14(void);
 extern void op_set_gp14_alias(void);
 extern void op_slot_free(void);
@@ -1253,8 +1263,16 @@ extern void save_rec_table_copy(void);
 extern void save_slot_state_fixup(void);
 extern void save_state_machine_alt(void);
 extern void save_tables_commit(void);
+extern void scene_cursor_set(void);
+extern void scene_emit_setup(void);
+extern void scene_emit_xform(void);
 extern void scene_entry(void);
+extern void scene_leaf_ret(void);
 extern void scene_node_walk(void);
+extern void scene_op_flush(void);
+extern void scene_op_next(void);
+extern void scene_op_step(void);
+extern void scene_op_tick(void);
 extern void scratch_013_set(void);
 extern void scratch_zero_reset(void);
 extern void scratchpad_pair_init(void);
@@ -2896,19 +2914,26 @@ const Br2FnEnt fn_table[] = {
   { 0x801ad6dc, (void *)op_dword_add4_entry },
   { 0x801ad6f0, (void *)op_ctx_fc_set },
   { 0x801ad920, (void *)op_dword_add_field2 },
+  { 0x801ad984, (void *)op_s16_store14 },
   { 0x801ad994, (void *)op_gp_deref_store14 },
   { 0x801ad9d4, (void *)op_gp_dword_sub },
+  { 0x801ada24, (void *)op_dword_mul_store },
+  { 0x801adaa4, (void *)op_hmask_and_store },
+  { 0x801adac8, (void *)op_dword_and_store },
+  { 0x801adc48, (void *)op_dword_shl_field },
   { 0x801adc60, (void *)op_rand_i8 },
   { 0x801adca4, (void *)rand_lo16_store },
   { 0x801adccc, (void *)rand_word_store },
   { 0x801add38, (void *)op_tbl_elem_copy },
   { 0x801add84, (void *)op_hword_pair_add },
+  { 0x801addb4, (void *)op_dword_add_idx2 },
   { 0x801ae490, (void *)op_gp_indexed_byte_store },
   { 0x801ae85c, (void *)op_cached_node_alloc },
   { 0x801ae8a8, (void *)op_call_ad38c },
   { 0x801ae8dc, (void *)op_ad38c_store },
   { 0x801ae91c, (void *)op_ad38c_ctx_store },
   { 0x801aea20, (void *)op_pair_store },
+  { 0x801aea94, (void *)op_ctx_chain3 },
   { 0x801aebd0, (void *)op_field_store_idx },
   { 0x801aec10, (void *)op_guarded_call },
   { 0x801aec40, (void *)op_ctx8_lazy_fill },
@@ -2959,6 +2984,17 @@ const Br2FnEnt fn_table[] = {
   { 0x801afa30, (void *)op_s16_d29c_store },
   { 0x801afa80, (void *)op_s16_d298_store },
   { 0x801afad0, (void *)op_pair_f0f8_store },
+  { 0x801afd38, (void *)op_hpair_store_16_3e },
+  { 0x801afd50, (void *)op_hpair_store_0e_36 },
+  { 0x801aff20, (void *)op_pair_rec_init },
+  { 0x801b0228, (void *)scene_emit_setup },
+  { 0x801b0240, (void *)scene_emit_xform },
+  { 0x801b0584, (void *)scene_op_tick },
+  { 0x801b05d8, (void *)scene_op_step },
+  { 0x801b0684, (void *)scene_cursor_set },
+  { 0x801b0688, (void *)scene_op_next },
+  { 0x801b06a4, (void *)scene_op_flush },
+  { 0x801b07d0, (void *)scene_leaf_ret },
   { 0x801b0db8, (void *)scene_node_walk },
   { 0x801b1140, (void *)mat3x3_build },
 };
