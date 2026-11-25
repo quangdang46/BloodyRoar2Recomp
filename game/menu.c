@@ -10160,6 +10160,30 @@ int32_t descriptor_fetch(uint32_t param_1,uint32_t param_2,uint32_t param_3)
   return (int32_t)(s0 + 4u);
 }
 
+/* byte2_probe_commit — signed-byte gate @0x8017cf6c (116B, 9 blocks):
+ * s3 = sx8(MB8(a2+2)) [lhu(a2+2)<<16, sra 24]. If s3==1: when
+ * MBS8(0x1f8000b1)!=0 ret 0x801f0000; else MW16(0x801f02f4,
+ * MB16(a0+36)) and ret 0x801f0000. If s3!=1: slti(s3,2)==0 -> ret 0;
+ * s3!=0 -> ret 0x801f0000; only s3==0 falls through: h=MBS16(a0+36),
+ * if h<0 h+=15, MW16(0x801f02f6, h>>4); ret 0x801f0000. a1 dead. */
+int32_t byte2_probe_commit(uint32_t param_1,uint32_t param_2,uint32_t param_3)
+{
+  int32_t s3 = (int32_t)MBS8(param_3 + 2);
+  if (s3 == 1) {
+    if (MBS8(0x1f8000b1u) != 0) return 0x801f0000;
+    MW16(0x801f02f4u, MB16(param_1 + 36));
+    return 0x801f0000;
+  }
+  if (!(s3 < 2)) return 0;
+  if (s3 != 0) return 0x801f0000;
+  {
+    int32_t h = (int32_t)MBS16(param_1 + 36);
+    if (h < 0) h += 15;
+    MW16(0x801f02f6u, (uint16_t)(h >> 4));
+  }
+  return 0x801f0000;
+}
+
 /* desc_cursor_advance — cursor advance @0x8017e46c (23 insns): s0 =
  * MB16(a2) >> 8; if (table_byte_next_a() < s0 signed) return a2+4, else
  * return MB16(a2+2) + MB32(a0+0x30). a1 dead. */

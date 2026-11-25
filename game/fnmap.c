@@ -173,6 +173,7 @@ extern void brightness_commit(void);
 extern void brightness_packet_send(void);
 extern void burst_slot_active(void);
 extern void button_cond_eval(void);
+extern void byte2_probe_commit(void);
 extern void camera_aim_offset(void);
 extern void camera_scroll_adjust(void);
 extern void camera_state_cache(void);
@@ -2169,6 +2170,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8017c97c, (void *)slot_byte_commit },
   { 0x8017c9d4, (void *)ev20_timer_dispatch },
   { 0x8017cf14, (void *)descriptor_fetch },
+  { 0x8017cf6c, (void *)byte2_probe_commit },
   { 0x8017cfe0, (void *)cursor_advance_thunk },
   { 0x8017d008, (void *)descriptor_quad_dispatch },
   { 0x8017d0b0, (void *)desc_frag_op_dispatch },
