@@ -756,3 +756,51 @@ generated saves exactly.**
 psx_check_interrupts_at(c, target); c->pc=target; return` where target =
 the live `c->gpr[rs]` — same tail-dispatch as a fixed jal, callee returns
 to the continuation block via `jr ra`.
+
+### Session update 13 (mechanical CPS transformer built + fragment-isolation finding)
+
+Built `game/gen_cps_clean.py` — a source-to-source transformer that converts a
+generated `br2eu_func_*`/`br2eu_psx_alias_body_*` CPS body into a clean
+`game/cps_clean.c` coroutine. The generated CPS code is already the right shape
+(pc-switch prologue, `block_*` labels + `goto`, `psx_check_interrupts_at` yield
+checks, `cpu->pc=X; return` tail-dispatches), so the transform is:
+
+- keeps `cpu->gpr[]`/`cpu->pc`/`psx_check_interrupts_at`/`goto`/`case` verbatim,
+- drops ALL cycle/icache/cosim/debug/PGXP instrumentation + `#ifdef` guards,
+- unwraps `{ uint32_t _pgx* = ...; REAL_OP; PGXP_*(...); }` temporaries,
+- emits `void cps_<addr>(void)` + `CPUState *cpu = clean_cpu_state();`.
+
+**★ MMIO-safe memory ops (critical correctness fix):** do NOT map
+`psx_cyc_load_*`/`cpu->write_*` to `br2_ld*`/`br2_st*`. `br2_ld32`→`guest_at`
+aliases `0x1F801xxx` hardware regs into low main RAM (WRONG for CD/DMA regs).
+Instead map `psx_cyc_load_word/half/byte(cpu,A,rt,c)` → `cpu->read_word/
+read_half/read_byte(A)` and keep `cpu->write_word/half/byte` verbatim — these
+are function pointers bound to the MMIO-aware `psx_*` accessors, correct for
+BOTH main RAM and hardware. Verified: `cps_clean.c` compiles clean incl. the
+70-block `cd_response_process`.
+
+**★ FRAGMENT-ISOLATION FINDING (why bulk CPS transform is not yet safe):**
+CPS "functions" are often FRAGMENTS of a larger multi-fragment coroutine, not
+self-contained units. Experiment: transformed `cd_chan_full_init` (0x8019A814,
+3 blocks) + registered its 3 addrs in clean_cps.map → **CD starvation wedge**
+(seq stalled ~6138, pending cmd 0x09). Root cause: `cd_chan_full_init` is "the
+resumable half" of the `cd_ctx_restore→cd_chan_full_init→cd_intc_dispatch`
+chain — a segment of a bigger coroutine whose resume graph spans sibling
+`br2eu_func_*` fragments. Reverting restored health (seq 2.0M+).
+
+**Rule: only transform SELF-CONTAINED coroutine clusters** — a `br2eu_func_*`
+whose CPS continuation `case` addrs AND internal resume graph close entirely
+within itself (like `cd_irq_init_seq` 8-addr and `cd_response_pump` 12-addr,
+both verified). A fragment that is entered/resumed as part of a parent's
+coroutine must be transformed TOGETHER with the whole connected cluster, or
+left generated. The named multi-block CD fns (`cd_chan_full_init`,
+`cd_read_poll`, `cd_intc_dispatch`, `cd_cmd_issue`, `cd_mc_state_machine`,
+`cd_response_process`, …) are almost all `br2_call_generated` SELF-DELEGATES
+(§4 BIOS/kernel boundary) AND/OR coroutine fragments — they are NOT safe
+isolated-transform targets.
+
+**Target landscape (CD range 0x8018–0x801B):** ~461 uncovered CPS `br2eu_func_*`
+— 296 tiny (1–4 blk), 133 medium (5–19), 32 large (20+). Most named entries are
+§4 self-delegates; the rest are fragments. Next step is cluster-level analysis:
+identify self-contained coroutine clusters (closed resume graph) before
+transforming — do NOT transform individual fragments.
