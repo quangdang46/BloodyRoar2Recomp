@@ -1051,6 +1051,142 @@ b8D8:
   return c->gpr[2];
 }
 
+/* ======== 0x801979F8 ======== */
+
+/* cd_response_pump — CD deferred-work pump loop (0x801979F8-0x80197ACB,
+ * 12 CPS blocks). The hot coroutine that drives cd_response_process
+ * (0x80196370, already clean-ported): each iteration tail-calls it, reads
+ * the returned status in s0, and dispatches on status bits —
+ *   s0==0        -> exit (commit state byte, restore frame, jr ra)
+ *   s0&4 & *handlerA!=0 -> jalr handlerA(stateA, 0x801FC6D0) -> A6C
+ *   s0&2 & *handlerB!=0 -> jalr handlerB(stateB, 0x801FC6D0) -> A9C -> loop
+ *   else         -> loop back to A2C.
+ * Prologue builds a 0x28 guest frame (sp-=40, saves s0-s3+ra); the frame
+ * lives in guest RAM so it survives scheduler longjmps — all mutable state
+ * stays in cpu->gpr[]/guest memory, never host locals. The two jalr targets
+ * are runtime fn-ptrs tail-dispatched (cpu->pc=target) like generated CPS
+ * jalr, returning to the gpr[31] continuation block.
+ * clean_cps.map registers entry + all 11 continuation addrs. */
+uint32_t cd_response_pump(void)
+{
+  extern void psx_check_interrupts_at(CPUState *cpu, uint32_t resume_pc);
+  CPUState *c = clean_cpu_state();
+  uint32_t pc;
+  if (!c) return 0;
+  pc = c->pc;
+  if (pc != 0u && pc != 0x801979F8u) {
+    switch (pc) {
+    case 0x80197A2Cu: goto bA2C;
+    case 0x80197A34u: goto bA34;
+    case 0x80197A40u: goto bA40;
+    case 0x80197A48u: goto bA48;
+    case 0x80197A5Cu: goto bA5C;
+    case 0x80197A6Cu: goto bA6C;
+    case 0x80197A70u: goto bA70;
+    case 0x80197A78u: goto bA78;
+    case 0x80197A8Cu: goto bA8C;
+    case 0x80197A9Cu: goto bA9C;
+    case 0x80197AA4u: goto bAA4;
+    default: break;
+    }
+  }
+
+  /* block_801979F8 — entry: build frame, load state byte */
+  c->gpr[2]  = 0x801C0000u;
+  c->gpr[2]  = br2_ld32(c->gpr[2] - 13556u);   /* v0 = *(u32*)state-cell = ptr */
+  c->gpr[29] = c->gpr[29] - 40u;               /* sp -= 0x28 */
+  br2_st32(c->gpr[29] + 20u, c->gpr[17]);      /* save s1 */
+  c->gpr[17] = 0x801C0000u;
+  c->gpr[17] = c->gpr[17] - 13531u;            /* s1 = state-byte table base */
+  br2_st32(c->gpr[29] + 32u, c->gpr[31]);      /* save ra */
+  br2_st32(c->gpr[29] + 28u, c->gpr[19]);      /* save s3 */
+  br2_st32(c->gpr[29] + 24u, c->gpr[18]);      /* save s2 */
+  br2_st32(c->gpr[29] + 16u, c->gpr[16]);      /* save s0 */
+  c->gpr[2]  = br2_ld8(c->gpr[2]);             /* v0 = *(u8*)ptr = state byte */
+  c->gpr[19] = c->gpr[17] - 1u;                /* s3 = s1-1 */
+  c->gpr[18] = c->gpr[2] & 3u;                 /* s2 = state & 3 */
+  /* fall through */
+
+bA2C:
+  c->gpr[31] = 0x80197A34u;                    /* jal link */
+  psx_check_interrupts_at(c, 0x80196370u);
+  c->pc = 0x80196370u;                         /* tail-call cd_response_process */
+  return c->gpr[2];
+
+bA34:
+  c->gpr[16] = c->gpr[2];                      /* s0 = status (v0) */
+  { int _bc = (c->gpr[16] == c->gpr[0]);       /* s0 == 0 ? */
+    c->gpr[2] = c->gpr[16] & 4u;               /* delay: v0 = s0&4 */
+    if (_bc) { psx_check_interrupts_at(c, 0x80197AA4u); goto bAA4; }
+    psx_check_interrupts_at(c, 0x80197A40u); goto bA40; }
+
+bA40:
+  { int _bc = (c->gpr[2] == c->gpr[0]);        /* (s0&4) == 0 ? */
+    c->gpr[2] = c->gpr[16] & 2u;               /* delay: v0 = s0&2 */
+    if (_bc) { psx_check_interrupts_at(c, 0x80197A70u); goto bA70; }
+    psx_check_interrupts_at(c, 0x80197A48u); goto bA48; }
+
+bA48:
+  c->gpr[2] = 0x801C0000u;
+  c->gpr[2] = br2_ld32(c->gpr[2] - 14260u);    /* v0 = *(u32*)handlerA cell */
+  { int _bc = (c->gpr[2] == c->gpr[0]);        /* handlerA == NULL ? */
+    if (_bc) { psx_check_interrupts_at(c, 0x80197A6Cu); goto bA6C; }
+    psx_check_interrupts_at(c, 0x80197A5Cu); goto bA5C; }
+
+bA5C:
+  c->gpr[4] = br2_ld8(c->gpr[17]);             /* a0 = *(u8*)s1 = state byte A */
+  c->gpr[5] = 0x80200000u;                     /* a1 base (delay slot) */
+  c->gpr[5] = c->gpr[5] - 14640u;              /* a1 = 0x801FC6D0 */
+  c->gpr[31] = 0x80197A6Cu;                    /* jalr link */
+  { uint32_t _jt = c->gpr[2];                  /* handlerA fn-ptr */
+    psx_check_interrupts_at(c, _jt);
+    c->pc = _jt; return c->gpr[2]; }           /* jalr -> handlerA */
+
+bA6C:
+  c->gpr[2] = c->gpr[16] & 2u;                 /* v0 = s0&2 */
+  /* fall through */
+
+bA70:
+  { int _bc = (c->gpr[2] == c->gpr[0]);        /* (s0&2) == 0 ? */
+    if (_bc) { psx_check_interrupts_at(c, 0x80197A2Cu); goto bA2C; }  /* loop */
+    psx_check_interrupts_at(c, 0x80197A78u); goto bA78; }
+
+bA78:
+  c->gpr[2] = 0x801C0000u;
+  c->gpr[2] = br2_ld32(c->gpr[2] - 14264u);    /* v0 = *(u32*)handlerB cell */
+  { int _bc = (c->gpr[2] == c->gpr[0]);        /* handlerB == NULL ? */
+    if (_bc) { psx_check_interrupts_at(c, 0x80197A2Cu); goto bA2C; }  /* loop */
+    psx_check_interrupts_at(c, 0x80197A8Cu); goto bA8C; }
+
+bA8C:
+  c->gpr[4] = br2_ld8(c->gpr[19]);             /* a0 = *(u8*)s3 = state byte B */
+  c->gpr[5] = 0x80200000u;                     /* a1 base (delay slot) */
+  c->gpr[5] = c->gpr[5] - 14640u;              /* a1 = 0x801FC6D0 */
+  c->gpr[31] = 0x80197A9Cu;                    /* jalr link */
+  { uint32_t _jt = c->gpr[2];                  /* handlerB fn-ptr */
+    psx_check_interrupts_at(c, _jt);
+    c->pc = _jt; return c->gpr[2]; }           /* jalr -> handlerB */
+
+bA9C:
+  psx_check_interrupts_at(c, 0x80197A2Cu);
+  goto bA2C;                                   /* loop */
+
+bAA4:
+  /* s0 == 0 — exit: commit state byte, restore frame, jr ra */
+  c->gpr[2] = 0x801C0000u;
+  c->gpr[2] = br2_ld32(c->gpr[2] - 13556u);    /* v0 = state ptr (reload) */
+  br2_st8(c->gpr[2], (uint8_t)c->gpr[18]);     /* sb s2,0(ptr) — commit state */
+  c->gpr[31] = br2_ld32(c->gpr[29] + 32u);     /* restore ra */
+  c->gpr[19] = br2_ld32(c->gpr[29] + 28u);     /* restore s3 */
+  c->gpr[18] = br2_ld32(c->gpr[29] + 24u);     /* restore s2 */
+  c->gpr[17] = br2_ld32(c->gpr[29] + 20u);     /* restore s1 */
+  c->gpr[16] = br2_ld32(c->gpr[29] + 16u);     /* restore s0 */
+  c->gpr[29] = c->gpr[29] + 40u;               /* sp += 0x28 */
+  { uint32_t _jt = c->gpr[31];                 /* jr ra */
+    psx_check_interrupts_at(c, _jt);
+    c->pc = _jt; return c->gpr[2]; }
+}
+
 /* ======== 0x80196370 ======== */
 
 /* cd_response_process — CD response-byte state machine (0x80196370-
@@ -5794,14 +5930,9 @@ static int32_t cd_wait_stat(void)
  * the guest link token). Guest frame 0x28 reserved so nested calls see
  * the same $sp the MIPS prologue produced. */
 /* cd_response_pump — IRQ2-context CD response/completion dispatcher
- * (INTC handler[2] @0x801bcd1c). DELEGATED to generated (0x801979f8):
- * it drives cd_response_process, whose clean port starved pending CD
- * commands (needs generated CPS live-resume-PC). Delegating both keeps
- * the whole response path generated-authoritative per AGENTS.md §4. */
-void cd_response_pump(void)
-{
-  br2_call_generated(0x801979f8u,0,0,0,0);
-}
+ * (INTC handler[2] @0x801bcd1c). Faithful clean CPS port lives beside
+ * cd_irq_init_seq near the top of this file (0x801979F8 block); it yields/
+ * resumes through the CLEAN_ENT_CPS dispatch contract. */
 
 /* ======== 0x80192634 ======== */
 

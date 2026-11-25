@@ -574,8 +574,15 @@ int clean_try_dispatch(CPUState *cpu, uint32_t addr) {
         const char *_s = getenv("PSX_CLEAN_FRAME");
         _clean_frame_en = (_s && _s[0] == '1');
     }
+    int _cps = (e->flags & CLEAN_ENT_CPS) != 0;
     uint32_t _saved_sp = cpu->gpr[29];
-    int _framed = (_clean_frame_en && e->frame);
+    /* CPS coroutine entries own gpr[29] end-to-end: their prologue/epilogue
+     * manage the guest frame and it must persist across yields/continuations.
+     * The save/restore below emulates a prologue for ordinary clean fns that
+     * skip it — applying it to a CPS fn would undo sp-=N on entry-return and
+     * force sp back over the epilogue's sp+=N, corrupting the frame (reads of
+     * the saved s0-s3/ra slots then hit wrong addresses -> jr $ra to garbage). */
+    int _framed = (!_cps && _clean_frame_en && e->frame);
     if (_framed) cpu->gpr[29] = _saved_sp - e->frame;
     guest_sp_set(cpu->gpr[29]);
     clean_bridge_set_cpu(cpu);
@@ -587,10 +594,9 @@ int clean_try_dispatch(CPUState *cpu, uint32_t addr) {
      * untouched on entry and always rewritten to $ra on return — BIOS/kernel
      * services and generated callees read the stale pc, so setting it here for
      * every wrapper broke boot. */
-    int _cps = (e->flags & CLEAN_ENT_CPS) != 0;
     if (_cps) cpu->pc = addr;
     e->fn(cpu);
-    if (!_framed || !br2_bail_pending()) cpu->gpr[29] = _saved_sp;
+    if (!_cps && (!_framed || !br2_bail_pending())) cpu->gpr[29] = _saved_sp;
     guest_sp_set(cpu->gpr[29]);
     if (_cps) {
         if (cpu->pc == addr) cpu->pc = cpu->gpr[31];

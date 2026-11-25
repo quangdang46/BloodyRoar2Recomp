@@ -15,3 +15,19 @@
 8019a8c0 cd_irq_init_seq
 8019a8d0 cd_irq_init_seq
 8019a8d8 cd_irq_init_seq
+
+# cd_response_pump (guest 0x801979F8) — CD deferred-work pump coroutine.
+# Entry + 11 CPS continuation/branch-target blocks; drives clean
+# cd_response_process. INTC handler[2] @0x801bcd1c.
+801979f8 cd_response_pump
+80197a2c cd_response_pump
+80197a34 cd_response_pump
+80197a40 cd_response_pump
+80197a48 cd_response_pump
+80197a5c cd_response_pump
+80197a6c cd_response_pump
+80197a70 cd_response_pump
+80197a78 cd_response_pump
+80197a8c cd_response_pump
+80197a9c cd_response_pump
+80197aa4 cd_response_pump
