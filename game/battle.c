@@ -8261,6 +8261,7 @@ void task_invoke(uint32_t fn_guest, uint32_t arg_guest)
   case 0x80140d38:   /* firework_task_update(int)      — guest u32 arg */
   case 0x80141610:   /* quad_fx_update(int)      — guest u32 arg */
   case 0x801ac154:   /* prim_group_gc(int)      — guest u32 arg */
+  case 0x801b0db8:   /* scene_node_walk(uint32_t ctx) — guest u32 arg */
   case 0x8014b37c:   /* script_move_timer_eval(uint32) — MB32/MBS16 guest accessors need raw guest u32, not guest_at() host ptr */
     ((void (*)(uint32_t))fn)(arg_guest);
     break;

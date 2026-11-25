@@ -1252,6 +1252,7 @@ extern void save_slot_state_fixup(void);
 extern void save_state_machine_alt(void);
 extern void save_tables_commit(void);
 extern void scene_entry(void);
+extern void scene_node_walk(void);
 extern void scratch_013_set(void);
 extern void scratch_zero_reset(void);
 extern void scratchpad_pair_init(void);
@@ -2954,6 +2955,7 @@ const Br2FnEnt fn_table[] = {
   { 0x801afa30, (void *)op_s16_d29c_store },
   { 0x801afa80, (void *)op_s16_d298_store },
   { 0x801afad0, (void *)op_pair_f0f8_store },
+  { 0x801b0db8, (void *)scene_node_walk },
   { 0x801b1140, (void *)mat3x3_build },
 };
 

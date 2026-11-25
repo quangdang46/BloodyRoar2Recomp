@@ -4478,6 +4478,245 @@ L_801ABEC8u:
     return g[2];
 }
 
+/* ======== 0x801B0DB8 ======== */
+
+/* scene_node_walk — scene-graph node dispatcher / render-callback walker.
+ * Faithful clean port of the CPS-split generated family br2eu_func_801B0DB8
+ * plus its internal continuation fragments (0x801B0E60..0x801B0F4 / shared
+ * tails 0x801B0E24,0x801B10CC,0x801B10FC,0x801B1124). The fragments are
+ * internal CPS/jump-table continuations only: no generated source jal's to
+ * them directly, so one clean CFG covers the whole logical function.
+ *
+ * Guest shape: a0 is the walk context; gp+0x4C/+0x50 cache a0/a0[1]. The
+ * loop reads a 32-bit node word at s2, takes opcode = word&0xFF (must be
+ * <17) and sub = word>>8, then either updates s2 through a per-opcode
+ * {fn,delta} table or tail-dispatches through one of the 0x801CExxx
+ * handler tables. Handler calls are guest jalr's reproduced with
+ * call_guest(); their delay-slot register updates are applied BEFORE the
+ * synchronous call, matching MIPS jalr semantics. */
+void scene_node_walk(uint32_t a0)
+{
+  CPUState *c = clean_cpu_state();
+  uint32_t sp, lt12;
+  extern uint32_t call_guest(uint32_t,uint32_t,uint32_t);
+  extern uint32_t br2_guest_frame(uint32_t);
+  extern void br2_guest_frame_free(void);
+  extern void br2_guest_frame_abandon(void);
+  extern int br2_bail_pending(void);
+  extern void br2_irq_poll(void);
+  if (!c) return;
+  c->gpr[4] = a0;   /* guest $a0: ctx guest addr (task/save callers pass it raw) */
+#define SCN_GPR(n)   (c->gpr[n])
+#define SCN_LD32(a)  br2_ld32((uint32_t)(a))
+#define SCN_LD16S(a) ((uint32_t)(int32_t)(int16_t)br2_ld16((uint32_t)(a)))
+#define SCN_ST32(a,v) br2_st32((uint32_t)(a),(uint32_t)(v))
+#define SCN_SRA16(x) ((uint32_t)((int32_t)(uint32_t)(x) >> 16))
+#define SCN_CALL(fn) do { \
+    (void)call_guest((uint32_t)(fn), SCN_GPR(4), SCN_GPR(5)); \
+    if (br2_bail_pending()) { br2_guest_frame_abandon(); return; } \
+  } while (0)
+
+  /* addiu sp,sp,-0x30 + sw ra/s3/s2/s1/s0 (801B0DB8-0x801B0DCC). The guest
+   * frame is real because the type-7/8/9/12 handlers receive sp+0x10 as an
+   * out-param and nested guest calls must not land on it. */
+  sp = br2_guest_frame(0x30);
+  SCN_ST32(sp + 0x28, SCN_GPR(31));
+  SCN_ST32(sp + 0x24, SCN_GPR(19));
+  SCN_ST32(sp + 0x20, SCN_GPR(18));
+  SCN_ST32(sp + 0x1c, SCN_GPR(17));
+  SCN_ST32(sp + 0x18, SCN_GPR(16));
+
+  SCN_GPR(5)  = SCN_LD32(SCN_GPR(4) + 4);            /* lw a1,4(a0) */
+  SCN_GPR(2)  = SCN_LD32(0x801bef20u);               /* flag cell */
+  SCN_GPR(19) = SCN_LD32(SCN_GPR(4) + 8);            /* s3 = a0[2] base */
+  SCN_GPR(3)  = 1;
+  SCN_ST32(SCN_GPR(28) + 0x4c, SCN_GPR(4));          /* gp cache: ctx */
+  SCN_ST32(SCN_GPR(28) + 0x50, SCN_GPR(5));          /* gp cache: a0[1] */
+
+  {
+    int ne = (SCN_GPR(2) != SCN_GPR(3));
+    SCN_GPR(2) = SCN_GPR(5);                          /* bne delay: v0=a1 */
+    if (ne) {                                         /* 801B0E20 */
+      SCN_GPR(18) = SCN_LD32(SCN_GPR(4) + 0xc);       /* s2 = a0[3] */
+      goto L_loop;
+    }
+  }
+  /* flag == 1: resolve the first node through a1's header (801B0DF4). */
+  SCN_GPR(6) = SCN_LD32(SCN_GPR(2) + 0x14);           /* a2 = *(a1+0x14) */
+  if (SCN_GPR(6) == 0) goto L_exit;                   /* beqz a2 -> 801B1124 */
+  SCN_GPR(2) = SCN_LD32(SCN_GPR(2));                  /* v0 = *a1 */
+  SCN_GPR(3) = SCN_LD32(SCN_GPR(4) + 0xc);            /* v1 = a0[3] */
+  SCN_GPR(2) = SCN_GPR(5) + SCN_GPR(2);               /* v0 = a1 + *a1 */
+  SCN_GPR(18) = SCN_GPR(5) + SCN_GPR(6);              /* delay: s2 = a1+a2 */
+  if (SCN_GPR(3) == SCN_GPR(2)) goto L_exit;          /* beq v1,v0 */
+  goto L_loop;                                        /* j 801B0E24 */
+
+L_loop:                                               /* 801B0E24 */
+  SCN_GPR(5)  = SCN_LD32(SCN_GPR(18));                /* a1 = *s2 node word */
+  SCN_GPR(4)  = SCN_GPR(18) + 2;                      /* a0 = s2+2 (lh base) */
+  SCN_GPR(3)  = SCN_GPR(5) & 0x00ff;                  /* opcode */
+  SCN_GPR(2)  = (SCN_GPR(3) < 17u) ? 1u : 0u;         /* sltiu v0,17 */
+  SCN_GPR(16) = SCN_GPR(5) >> 8;                      /* delay: s0 = word>>8 */
+  if (SCN_GPR(2) == 0) {                              /* beqz -> self-loop */
+    for (;;) br2_irq_poll();                          /* guest spins w/ IRQs */
+  }
+  switch (SCN_GPR(3)) {
+  case 0x00:                                          /* 801B0E60 */
+    SCN_GPR(5) = SCN_GPR(19) + SCN_SRA16(SCN_GPR(5));
+    SCN_GPR(3) = 0x801be8ccu;
+    goto L_table_call;
+  case 0x01:                                          /* 801B0E74 */
+    SCN_GPR(2) = SCN_GPR(19) + SCN_SRA16(SCN_GPR(5));
+    SCN_GPR(5) = SCN_LD32(SCN_GPR(2));
+    SCN_GPR(2) = (SCN_GPR(16) & 0xffu) << 3;
+    SCN_GPR(3) = SCN_GPR(19) + SCN_LD16S(SCN_GPR(4) + 4);
+    SCN_GPR(6) = SCN_LD32(SCN_GPR(3));                /* a2 */
+    SCN_GPR(3) = 0x801bea1cu;
+    SCN_GPR(2) += SCN_GPR(3);
+    SCN_GPR(3) = SCN_LD32(SCN_GPR(2) + 4);            /* delta */
+    SCN_GPR(2) = SCN_LD32(SCN_GPR(2));                /* fn */
+    SCN_GPR(18) += SCN_GPR(3);                        /* jalr delay: s2 += d */
+    SCN_CALL(SCN_GPR(2));
+    goto L_loop;
+  case 0x02:                                          /* 801B0EBC */
+    SCN_GPR(2) = SCN_GPR(19) + SCN_SRA16(SCN_GPR(5));
+    SCN_GPR(5) = SCN_LD32(SCN_GPR(2));
+    SCN_GPR(3) = 0x801beaf4u;
+    goto L_table_call;
+  case 0x03:                                          /* 801B0ED4 */
+    SCN_GPR(2) = SCN_GPR(19) + SCN_SRA16(SCN_GPR(5));
+    SCN_GPR(5) = SCN_LD32(SCN_GPR(2));
+    SCN_GPR(3) = 0x801bece4u;
+    goto L_table_call;
+  case 0x04:                                          /* 801B0EEC */
+    SCN_GPR(3) = ((SCN_GPR(16) & 0xffu) << 3) + 0x801bedb4u;
+    SCN_GPR(2) = SCN_GPR(19) + SCN_SRA16(SCN_GPR(5));
+    SCN_GPR(5) = SCN_LD32(SCN_GPR(2));
+    SCN_GPR(6) = SCN_LD32(SCN_GPR(3) + 4);            /* s2 delta */
+    SCN_GPR(18) += SCN_GPR(6);
+    SCN_GPR(6) = SCN_GPR(19) + SCN_LD16S(SCN_GPR(4) + 2);
+    SCN_GPR(2) = SCN_LD32(SCN_GPR(3));                /* fn */
+    SCN_CALL(SCN_GPR(2));                             /* delay: a2 = s3+lh */
+    goto L_loop;
+  case 0x05:                                          /* 801B0F30 */
+    SCN_GPR(5) = SCN_GPR(19) + SCN_SRA16(SCN_GPR(5));
+    SCN_GPR(3) = 0x801bee3cu;
+    goto L_table_call;
+  case 0x06:                                          /* 801B0F44 */
+    SCN_GPR(2) = SCN_GPR(19) + SCN_SRA16(SCN_GPR(5));
+    SCN_GPR(5) = SCN_LD32(SCN_GPR(2));
+    SCN_GPR(3) = 0x801bebecu;
+    goto L_table_call;
+  case 0x07:                                          /* 801B0F5C */
+    SCN_GPR(3) = SCN_GPR(16) & 0xffu;
+    if (SCN_GPR(3) == 11u) goto L_exit;               /* sub 0xB: done */
+    lt12 = ((int32_t)SCN_GPR(3) < 12) ? 1u : 0u;      /* slti (delay) */
+    SCN_GPR(2) = 4;                                   /* delay: v0=4 */
+    if (lt12 == 0) goto L_f84;
+    if (SCN_GPR(3) == 4u) goto L_f98;
+    SCN_GPR(2) = 0x801be89cu;                         /* j FC4 table */
+    goto L_fc_call;
+L_f84:
+    if (SCN_GPR(3) == 12u) {                          /* sub 0xC: jal helper */
+      SCN_CALL(0x801a482cu);
+      goto L_exit;
+    }
+    SCN_GPR(2) = 0x801be89cu;
+    SCN_GPR(3) = SCN_GPR(16) & 0xffu;                 /* FC0 refresh */
+    goto L_fc_call;
+L_f98:                                                /* sub 4: commit s2 */
+    SCN_GPR(2) = SCN_SRA16(SCN_GPR(5));
+    SCN_GPR(3) = SCN_LD32(SCN_GPR(28) + 0x50);
+    SCN_GPR(4) = SCN_LD32(SCN_GPR(28) + 0x4c);
+    SCN_GPR(18) = SCN_GPR(3) + SCN_GPR(2);
+    SCN_ST32(SCN_GPR(4) + 0xc, SCN_GPR(18));
+    goto L_exit;
+  case 0x08:                                          /* 801B0FE8 */
+    SCN_GPR(5) = SCN_GPR(19) + SCN_SRA16(SCN_GPR(5));
+    SCN_GPR(3) = 0x801bebd4u;
+    goto L_table_call;
+  case 0x09:                                          /* 801B0FFC */
+    SCN_GPR(2) = 0x801bec24u;
+    SCN_GPR(3) = ((SCN_GPR(16) & 0xffu) << 3) + SCN_GPR(2);
+    SCN_GPR(2) = SCN_LD32(SCN_GPR(3) + 4);            /* s2 delta */
+    SCN_GPR(5) = SCN_LD16S(SCN_GPR(4) + 8);           /* a1 = lh a0+8 */
+    SCN_GPR(18) += SCN_GPR(2);
+    SCN_GPR(2) = SCN_LD32(SCN_GPR(3));                /* fn */
+    SCN_GPR(5) = SCN_GPR(19) + SCN_GPR(5);           /* delay: a1=s3+lh */
+    SCN_CALL(SCN_GPR(2));
+    goto L_loop;
+  case 0x0a:                                          /* 801B1034 */
+    SCN_GPR(5) = SCN_GPR(19) + SCN_SRA16(SCN_GPR(5));
+    SCN_GPR(3) = 0x801bec44u;
+    goto L_table_call;
+  case 0x0b:                                          /* 801B1048 */
+    SCN_GPR(3) = 0x801bec7cu;
+    goto L_table_call;
+  case 0x0c:                                          /* 801B1054 */
+    SCN_GPR(5) = SCN_GPR(19) + SCN_SRA16(SCN_GPR(5));
+    SCN_GPR(6) = SCN_GPR(4) + 2;                      /* a2 = s2+4 */
+    SCN_GPR(2) = 0x801bec8cu;
+    SCN_GPR(16) = ((SCN_GPR(16) & 0xffu) << 3) + SCN_GPR(2);
+    SCN_GPR(2) = SCN_LD32(SCN_GPR(16));               /* fn */
+    SCN_GPR(17) = SCN_LD32(SCN_GPR(28) + 0x4c);       /* s1 = ctx */
+    SCN_GPR(7)  = SCN_GPR(19);                        /* delay: a3 = s3 */
+    SCN_CALL(SCN_GPR(2));
+    SCN_GPR(2) = SCN_LD32(SCN_GPR(16) + 4);           /* s2 delta */
+    SCN_GPR(3) = SCN_LD32(SCN_GPR(17) + 4);           /* ctx[1] refresh */
+    SCN_ST32(SCN_GPR(28) + 0x4c, SCN_GPR(17));
+    SCN_ST32(SCN_GPR(28) + 0x50, SCN_GPR(3));
+    SCN_GPR(18) += SCN_GPR(2);                        /* j delay: s2 += d */
+    goto L_loop;
+  case 0x0d:                                          /* 801B109C */
+    SCN_GPR(5) = SCN_GPR(19) + SCN_SRA16(SCN_GPR(5));
+    SCN_GPR(3) = 0x801becccu;
+    goto L_table_call;
+  case 0x0e:                                          /* 801B10B0 */
+    SCN_GPR(3) = 0x801bee34u;
+    goto L_table_call;
+  case 0x0f:                                          /* 801B10BC */
+    SCN_GPR(5) = SCN_GPR(19) + SCN_SRA16(SCN_GPR(5));
+    SCN_GPR(3) = 0x801beeb4u;
+    goto L_table_call;
+  case 0x10:                                          /* 801B10F4 */
+    SCN_GPR(3) = 0x801becb4u;
+    goto L_table_call;
+  }
+
+L_table_call:                                         /* 801B10CC/10FC */
+  SCN_GPR(2) = (SCN_GPR(16) & 0xffu) << 3;
+  SCN_GPR(2) += SCN_GPR(3);                           /* entry = base + sub*8 */
+  SCN_GPR(3) = SCN_LD32(SCN_GPR(2) + 4);              /* delta */
+  SCN_GPR(2) = SCN_LD32(SCN_GPR(2));                  /* fn */
+  SCN_GPR(18) += SCN_GPR(3);                          /* jalr delay: s2 += d */
+  SCN_CALL(SCN_GPR(2));
+  goto L_loop;
+
+L_fc_call:                                            /* 801B0FC4 */
+  SCN_GPR(3) = (SCN_GPR(3) << 2) + SCN_GPR(2);        /* base + sub*4 */
+  SCN_GPR(2) = SCN_LD32(SCN_GPR(3));                  /* fn */
+  SCN_GPR(5) = sp + 0x10;                             /* a1 = &stack_out */
+  SCN_ST32(sp + 0x10, SCN_GPR(18));                   /* jalr delay: *out=s2 */
+  SCN_CALL(SCN_GPR(2));
+  SCN_GPR(18) = SCN_LD32(sp + 0x10);                  /* s2 = *out */
+  goto L_loop;
+
+L_exit:                                               /* 801B1124 epilogue */
+  SCN_GPR(31) = SCN_LD32(sp + 0x28);
+  SCN_GPR(19) = SCN_LD32(sp + 0x24);
+  SCN_GPR(18) = SCN_LD32(sp + 0x20);
+  SCN_GPR(17) = SCN_LD32(sp + 0x1c);
+  SCN_GPR(16) = SCN_LD32(sp + 0x18);
+  br2_guest_frame_free();                             /* addiu sp,+0x30; jr ra */
+#undef SCN_GPR
+#undef SCN_LD32
+#undef SCN_LD16S
+#undef SCN_ST32
+#undef SCN_SRA16
+#undef SCN_CALL
+  return;
+}
+
 /* ======== 0x8019261c ======== */
 
 /* gpu_data_reg_read — read the register behind pointer cell
