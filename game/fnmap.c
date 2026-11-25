@@ -608,6 +608,7 @@ extern void entry_attr_bump_loop(void);
 extern void entry_setup_guest(void);
 extern void euler_rotmat(void);
 extern void ev20_timer_dispatch(void);
+extern void ev24_fx_spawn(void);
 extern void ev2_hitstun_gate_dispatch(void);
 extern void ev4_branch_dispatch(void);
 extern void ev5_action_select(void);
@@ -1745,6 +1746,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80141d2c, (void *)ev_cmd_dispatch },
   { 0x80141d34, (void *)desc_opcode_dispatch },
   { 0x80142108, (void *)group_fx_spawn },
+  { 0x801421c4, (void *)ev24_fx_spawn },
   { 0x80142b3c, (void *)angle_from_xy },
   { 0x80142c5c, (void *)reset_combat_record },
   { 0x80142c9c, (void *)hitrec_table_clear },

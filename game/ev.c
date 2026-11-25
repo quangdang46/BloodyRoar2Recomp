@@ -22,6 +22,7 @@
 #include <string.h>
 #include "types.h"
 #include "lut.h"
+#include "cpu_state.h"
 
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
@@ -1585,3 +1586,1455 @@ evhandler_t *PTR_FUN_801b4e68[24] = {
     w8, w9, w10, w11, w12, w13, w14, w15,
     w16, w17, w18, w19, w20, w21, w22, w23
 };
+
+/* ==========================================================================
+ * ev24_fx_spawn — event opcode 24 handler @0x801421C4.
+ *
+ * ONE logical guest function split by CPS into host pieces
+ * (br2eu_func_801421C4 2172B / br2eu_func_80142A40 204B /
+ * br2eu_func_80142B0C 48B epilogue). Verified vs disc/SLES_017.22:
+ * the only pointers into [0x801421C4,0x80142B3C) are the 9-entry
+ * jump table @0x80120228 ({0x80142ac4,0x80142b00 x3,0x801429f4,
+ * 0x80142a44,0x80142b00,0x801428d4,0x80142954}) consumed by the
+ * single `jr $v0` @0x801428CC, plus the ev-handler table slot
+ * 0x801b4ec8 (opcode 24). No external jal/jalr targets the interior
+ * alias addresses, so they live inside this one clean frame.
+ *
+ * Faithful port: single clean function, block_* labels + goto,
+ * live cpu->gpr[] mirroring, real 88-byte guest frame reproduced
+ * on $sp (prologue spills s0-s7/fp/ra @sp+48..84; epilogue
+ * 0x80142B0C reloads them, sp+=88, jr ra). The `jr $v0` @0x801428CC
+ * became a switch->goto on the resolved table target (all six are
+ * interior; default tail-dispatches via call_guest4). Each `jal`
+ * became br2_jal(target,link)+goto-resume — synchronous, identical
+ * register image. `lw t2,0x60(sp)` @0x80142B00 reads the caller
+ * frame exactly like the guest (frame is live, not elided).
+ * ======================================================================== */
+
+extern uint32_t br2_ld8(uint32_t);
+extern uint16_t br2_ld16(uint32_t);
+extern uint32_t br2_ld32(uint32_t);
+extern void br2_st16(uint32_t, uint16_t);
+extern void br2_st32(uint32_t, uint32_t);
+extern int br2_bail_pending(void);
+extern uint32_t call_guest4(uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
+extern CPUState *clean_cpu_state(void);
+extern int clean_try_dispatch(CPUState *cpu, uint32_t addr);
+extern void psx_dispatch_call(CPUState *cpu, uint32_t target_addr,
+                              uint32_t return_addr);
+
+/* br2_jal — faithful guest `jal` from clean C (same contract as
+ * bind.c bind_jal / cd.c cd_jal): args already live in gpr[4..7],
+ * caller-saved regs keep callee leftovers, $ra = guest link so BIOS
+ * services inside the callee see the same caller token, $v0 returns
+ * in gpr[2]. */
+static uint32_t br2_jal(uint32_t fn, uint32_t link)
+{
+    CPUState *cpu = clean_cpu_state();
+    uint32_t ra, pc, sp;
+    if (!cpu || fn == 0) return 0;
+    if (br2_bail_pending()) return cpu->gpr[2];
+    ra = cpu->gpr[31]; pc = cpu->pc; sp = cpu->gpr[29];
+    cpu->gpr[31] = link;
+    if (clean_try_dispatch(cpu, fn)) {
+        uint32_t r = cpu->gpr[2];
+        cpu->gpr[31] = ra; cpu->pc = pc;
+        return r;
+    }
+    psx_dispatch_call(cpu, fn, link);
+    cpu->gpr[29] = sp;
+    {
+        uint32_t r = cpu->gpr[2];
+        cpu->gpr[31] = ra; cpu->pc = pc;
+        return r;
+    }
+}
+
+static uint32_t ev24_cluster(uint32_t entry)
+{
+  CPUState *cpu = clean_cpu_state();
+  switch (entry) {
+  case 0x801421C4u: goto block_801421C4;
+  case 0x801428D4u: goto block_801428D4;
+  case 0x80142954u: goto block_80142954;
+  case 0x801429F4u: goto block_801429F4;
+  case 0x80142A40u: goto block_80142A40;
+  case 0x80142A44u: goto block_80142A44;
+  case 0x80142AC4u: goto block_80142AC4;
+  case 0x80142B00u: goto block_80142B00;
+  case 0x80142B0Cu: goto block_80142B0C;
+  default: return cpu->gpr[2];
+  }
+block_801421C4:
+    { uint32_t _pgx1 = cpu->gpr[29]; cpu->gpr[29] = cpu->gpr[29] + -88;
+    }  /* 0x801421C4: 0x27BDFFA8 */
+    { uint32_t _pgxa = cpu->gpr[29] + 56; br2_st32(cpu->gpr[29] + 56, cpu->gpr[18]);
+    }  /* 0x801421C8: 0xAFB20038 */
+    { uint32_t _pgx1 = cpu->gpr[4]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[18] = cpu->gpr[4];  /* move */
+    }  /* 0x801421CC: 0x00809021 */
+    { uint32_t _pgxa = cpu->gpr[29] + 84; br2_st32(cpu->gpr[29] + 84, cpu->gpr[31]);
+    }  /* 0x801421D0: 0xAFBF0054 */
+    { uint32_t _pgxa = cpu->gpr[29] + 80; br2_st32(cpu->gpr[29] + 80, cpu->gpr[30]);
+    }  /* 0x801421D4: 0xAFBE0050 */
+    { uint32_t _pgxa = cpu->gpr[29] + 76; br2_st32(cpu->gpr[29] + 76, cpu->gpr[23]);
+    }  /* 0x801421D8: 0xAFB7004C */
+    { uint32_t _pgxa = cpu->gpr[29] + 72; br2_st32(cpu->gpr[29] + 72, cpu->gpr[22]);
+    }  /* 0x801421DC: 0xAFB60048 */
+    { uint32_t _pgxa = cpu->gpr[29] + 68; br2_st32(cpu->gpr[29] + 68, cpu->gpr[21]);
+    }  /* 0x801421E0: 0xAFB50044 */
+    { uint32_t _pgxa = cpu->gpr[29] + 64; br2_st32(cpu->gpr[29] + 64, cpu->gpr[20]);
+    }  /* 0x801421E4: 0xAFB40040 */
+    { uint32_t _pgxa = cpu->gpr[29] + 60; br2_st32(cpu->gpr[29] + 60, cpu->gpr[19]);
+    }  /* 0x801421E8: 0xAFB3003C */
+    { uint32_t _pgxa = cpu->gpr[29] + 52; br2_st32(cpu->gpr[29] + 52, cpu->gpr[17]);
+    }  /* 0x801421EC: 0xAFB10034 */
+    { uint32_t _pgxa = cpu->gpr[29] + 48; br2_st32(cpu->gpr[29] + 48, cpu->gpr[16]);
+    }  /* 0x801421F0: 0xAFB00030 */
+    { uint32_t _pgxa = cpu->gpr[29] + 96; br2_st32(cpu->gpr[29] + 96, cpu->gpr[6]);
+    }  /* 0x801421F4: 0xAFA60060 */
+    { uint32_t _pgxa = cpu->gpr[6] + 2; cpu->gpr[17] = br2_ld16(cpu->gpr[6] + 2);
+    }  /* 0x801421F8: 0x94D10002 */
+    { uint32_t _pgxa = cpu->gpr[6]; cpu->gpr[2] = br2_ld16(cpu->gpr[6]);
+    }  /* 0x801421FC: 0x94C20000 */
+    { uint32_t _pgxa = cpu->gpr[6] + 4; cpu->gpr[16] = br2_ld16(cpu->gpr[6] + 4);
+    }  /* 0x80142200: 0x94D00004 */
+    cpu->gpr[21] = cpu->gpr[17] & 0x00FF;  /* 0x80142204: 0x323500FF */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] << 16;
+    }  /* 0x80142208: 0x00021400 */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[4] = (int32_t)cpu->gpr[2] >> 24;
+    }  /* 0x8014220C: 0x00022603 */
+    { uint32_t _pgx1 = cpu->gpr[4]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[19] = cpu->gpr[4];  /* move */
+    }  /* 0x80142210: 0x00809821 */
+    { uint32_t _pgx1 = cpu->gpr[17]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[5] = cpu->gpr[17];  /* move */
+    }  /* 0x80142214: 0x02202821 */
+    { uint32_t _pgx1 = cpu->gpr[16]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[22] = cpu->gpr[16];  /* move */
+    }  /* 0x80142218: 0x0200B021 */
+    { uint32_t _pgx1 = cpu->gpr[16]; cpu->gpr[2] = (uint32_t)cpu->gpr[16] >> 8;
+    }  /* 0x8014221C: 0x00101202 */
+    cpu->gpr[30] = cpu->gpr[2] & 0x000F;  /* 0x80142220: 0x305E000F */
+    cpu->gpr[2] = 0x1F80 << 16;  /* 0x1F800000 */
+    { uint32_t _pgxa = cpu->gpr[2] + 177; cpu->gpr[2] = (int32_t)(int8_t)br2_ld8(cpu->gpr[2] + 177);
+    }  /* 0x80142228: 0x804200B1 */
+    int _bc_80142230 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    cpu->gpr[23] = cpu->gpr[16] & 0x00FF;  /* 0x80142234: 0x321700FF */
+    if (_bc_80142230) {
+        goto block_80142240;  /* taken */
+    } else {
+        goto block_80142238;  /* not taken */
+    }
+block_80142238:
+    { uint32_t _pgx1 = cpu->gpr[6]; cpu->gpr[2] = cpu->gpr[6] + 6;
+    }  /* 0x8014223C: 0x24C20006 */
+    goto block_80142B0C;
+block_80142240:
+    { uint32_t _pgxa = cpu->gpr[18] + 56; cpu->gpr[2] = br2_ld32(cpu->gpr[18] + 56);
+    }  /* 0x80142240: 0x8E420038 */
+    { uint32_t _pgxa = cpu->gpr[2] + 256; cpu->gpr[2] = br2_ld8(cpu->gpr[2] + 256);
+    }  /* 0x80142248: 0x90420100 */
+    int _bc_80142250 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    cpu->gpr[2] = cpu->gpr[4] & 0x0080;  /* 0x80142254: 0x30820080 */
+    if (_bc_80142250) {
+        goto block_80142270;  /* taken */
+    } else {
+        goto block_80142258;  /* not taken */
+    }
+block_80142258:
+    ;
+    int _bc_80142258 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    cpu->gpr[3] = 0x801B << 16;  /* 0x801B0000 */
+    if (_bc_80142258) {
+        goto block_80142270;  /* taken */
+    } else {
+        goto block_80142260;  /* not taken */
+    }
+block_80142260:
+    { uint32_t _pgx1 = cpu->gpr[3]; cpu->gpr[3] = cpu->gpr[3] + 6156;
+    }  /* 0x80142260: 0x2463180C */
+    cpu->gpr[2] = cpu->gpr[4] & 0x007F;  /* 0x80142264: 0x3082007F */
+    { uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[2] + cpu->gpr[3];
+    }  /* 0x80142268: 0x00431021 */
+    { uint32_t _pgxa = cpu->gpr[2]; cpu->gpr[19] = br2_ld8(cpu->gpr[2]);
+    }  /* 0x8014226C: 0x90530000 */
+    /* fall through to block_80142270 */
+block_80142270:
+    cpu->gpr[19] = cpu->gpr[19] & 0x007F;  /* 0x80142274: 0x3273007F */
+    cpu->gpr[3] = cpu->gpr[5] & 0xF000;  /* 0x80142278: 0x30A3F000 */
+    { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 0x8000;
+    }  /* 0x8014227C: 0x34028000 */
+    int _bc_80142280 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
+    { uint32_t _pgx1 = cpu->gpr[5]; cpu->gpr[20] = cpu->gpr[5] << 16;
+    }  /* 0x80142284: 0x0005A400 */
+    if (_bc_80142280) {
+        goto block_80142884;  /* taken */
+    } else {
+        goto block_80142288;  /* not taken */
+    }
+block_80142288:
+    cpu->gpr[2] = ((int32_t)cpu->gpr[2] < (int32_t)cpu->gpr[3]) ? 1 : 0;  /* 0x80142288: 0x0043102A */
+    int _bc_8014228C = (cpu->gpr[2] != cpu->gpr[0]);  /* save branch cond before delay slot */
+    { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 0xB000;
+    }  /* 0x80142290: 0x3402B000 */
+    if (_bc_8014228C) {
+        goto block_801422F8;  /* taken */
+    } else {
+        goto block_80142294;  /* not taken */
+    }
+block_80142294:
+    { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 12288;
+    }  /* 0x80142294: 0x24023000 */
+    int _bc_80142298 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
+    cpu->gpr[2] = ((int32_t)cpu->gpr[3] < 12289) ? 1 : 0;  /* 0x8014229C: 0x28623001 */
+    if (_bc_80142298) {
+        goto block_80142434;  /* taken */
+    } else {
+        goto block_801422A0;  /* not taken */
+    }
+block_801422A0:
+    ;
+    int _bc_801422A0 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 4096;
+    }  /* 0x801422A4: 0x24021000 */
+    if (_bc_801422A0) {
+        goto block_801422C0;  /* taken */
+    } else {
+        goto block_801422A8;  /* not taken */
+    }
+block_801422A8:
+    ;
+    int _bc_801422A8 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
+    { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 8192;
+    }  /* 0x801422AC: 0x24022000 */
+    if (_bc_801422A8) {
+        goto block_80142358;  /* taken */
+    } else {
+        goto block_801422B0;  /* not taken */
+    }
+block_801422B0:
+    ;
+    int _bc_801422B0 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
+    { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1;
+    }  /* 0x801422B4: 0x24040001 */
+    if (_bc_801422B0) {
+        goto block_801423A8;  /* taken */
+    } else {
+        goto block_801422B8;  /* not taken */
+    }
+block_801422B8:
+    goto block_80142B00;
+block_801422C0:
+    { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 20480;
+    }  /* 0x801422C0: 0x24025000 */
+    int _bc_801422C4 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
+    cpu->gpr[2] = ((int32_t)cpu->gpr[3] < 20481) ? 1 : 0;  /* 0x801422C8: 0x28625001 */
+    if (_bc_801422C4) {
+        goto block_801424DC;  /* taken */
+    } else {
+        goto block_801422CC;  /* not taken */
+    }
+block_801422CC:
+    ;
+    int _bc_801422CC = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 16384;
+    }  /* 0x801422D0: 0x24024000 */
+    if (_bc_801422CC) {
+        goto block_801422E4;  /* taken */
+    } else {
+        goto block_801422D4;  /* not taken */
+    }
+block_801422D4:
+    ;
+    int _bc_801422D4 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
+    { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1;
+    }  /* 0x801422D8: 0x24040001 */
+    if (_bc_801422D4) {
+        goto block_80142484;  /* taken */
+    } else {
+        goto block_801422DC;  /* not taken */
+    }
+block_801422DC:
+    goto block_80142B00;
+block_801422E4:
+    { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 24576;
+    }  /* 0x801422E4: 0x24026000 */
+    int _bc_801422E8 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
+    { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1;
+    }  /* 0x801422EC: 0x24040001 */
+    if (_bc_801422E8) {
+        goto block_8014256C;  /* taken */
+    } else {
+        goto block_801422F0;  /* not taken */
+    }
+block_801422F0:
+    goto block_80142B00;
+block_801422F8:
+    ;
+    int _bc_801422F8 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
+    cpu->gpr[2] = ((int32_t)cpu->gpr[2] < (int32_t)cpu->gpr[3]) ? 1 : 0;  /* 0x801422FC: 0x0043102A */
+    if (_bc_801422F8) {
+        goto block_8014269C;  /* taken */
+    } else {
+        goto block_80142300;  /* not taken */
+    }
+block_80142300:
+    ;
+    int _bc_80142300 = (cpu->gpr[2] != cpu->gpr[0]);  /* save branch cond before delay slot */
+    { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 0xD000;
+    }  /* 0x80142304: 0x3402D000 */
+    if (_bc_80142300) {
+        goto block_80142324;  /* taken */
+    } else {
+        goto block_80142308;  /* not taken */
+    }
+block_80142308:
+    { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 0x9000;
+    }  /* 0x80142308: 0x34029000 */
+    int _bc_8014230C = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
+    { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 0xA000;
+    }  /* 0x80142310: 0x3402A000 */
+    if (_bc_8014230C) {
+        goto block_801427FC;  /* taken */
+    } else {
+        goto block_80142314;  /* not taken */
+    }
+block_80142314:
+    ;
+    int _bc_80142314 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
+    cpu->gpr[16] = cpu->gpr[17] & 0x00FF;  /* 0x80142318: 0x323000FF */
+    if (_bc_80142314) {
+        goto block_8014263C;  /* taken */
+    } else {
+        goto block_8014231C;  /* not taken */
+    }
+block_8014231C:
+    goto block_80142B00;
+block_80142324:
+    ;
+    int _bc_80142324 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
+    cpu->gpr[2] = ((int32_t)cpu->gpr[2] < (int32_t)cpu->gpr[3]) ? 1 : 0;  /* 0x80142328: 0x0043102A */
+    if (_bc_80142324) {
+        goto block_801426F8;  /* taken */
+    } else {
+        goto block_8014232C;  /* not taken */
+    }
+block_8014232C:
+    ;
+    int _bc_8014232C = (cpu->gpr[2] != cpu->gpr[0]);  /* save branch cond before delay slot */
+    { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 0xE000;
+    }  /* 0x80142330: 0x3402E000 */
+    if (_bc_8014232C) {
+        goto block_80142348;  /* taken */
+    } else {
+        goto block_80142334;  /* not taken */
+    }
+block_80142334:
+    { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 0xC000;
+    }  /* 0x80142334: 0x3402C000 */
+    int _bc_80142338 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
+    if (_bc_80142338) {
+        goto block_801428A0;  /* taken */
+    } else {
+        goto block_80142340;  /* not taken */
+    }
+block_80142340:
+    goto block_80142B00;
+block_80142348:
+    ;
+    int _bc_80142348 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
+    cpu->gpr[2] = cpu->gpr[19] & 0x00FF;  /* 0x8014234C: 0x326200FF */
+    if (_bc_80142348) {
+        goto block_80142734;  /* taken */
+    } else {
+        goto block_80142350;  /* not taken */
+    }
+block_80142350:
+    goto block_80142B00;
+block_80142358:
+    { uint32_t _pgx1 = cpu->gpr[18]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[4] = cpu->gpr[18];  /* move */
+    }  /* 0x80142358: 0x02402021 */
+    { uint32_t _pgx1 = cpu->gpr[20]; cpu->gpr[5] = (int32_t)cpu->gpr[20] >> 24;
+    }  /* 0x8014235C: 0x00142E03 */
+    cpu->gpr[5] = cpu->gpr[5] & 0x000F;  /* 0x80142360: 0x30A5000F */
+    { uint32_t _pgx1 = cpu->gpr[5]; cpu->gpr[5] = cpu->gpr[5] | 0x0010;
+    }  /* 0x80142364: 0x34A50010 */
+    { uint32_t _pgx1 = cpu->gpr[21]; cpu->gpr[7] = cpu->gpr[21] << 4;
+    }  /* 0x80142368: 0x00153900 */
+    { uint32_t _pgx1 = cpu->gpr[22]; cpu->gpr[2] = cpu->gpr[22] << 16;
+    }  /* 0x8014236C: 0x00161400 */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = (int32_t)cpu->gpr[2] >> 16;
+    }  /* 0x80142370: 0x00021403 */
+    { uint32_t _pgxa = cpu->gpr[4] + 32; cpu->gpr[6] = br2_ld32(cpu->gpr[4] + 32);
+    }  /* 0x80142374: 0x8C860020 */
+    cpu->gpr[3] = cpu->gpr[19] & 0x00FF;  /* 0x80142378: 0x326300FF */
+    { uint32_t _pgxa = cpu->gpr[29] + 16; br2_st32(cpu->gpr[29] + 16, cpu->gpr[2]);
+    }  /* 0x8014237C: 0xAFA20010 */
+    { uint32_t _pgx1 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[3] << 2;
+    }  /* 0x80142380: 0x00031080 */
+    { uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[2] + cpu->gpr[3];
+    }  /* 0x80142384: 0x00431021 */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] << 4;
+    }  /* 0x80142388: 0x00021100 */
+    { uint32_t _pgxa = cpu->gpr[29] + 20; br2_st32(cpu->gpr[29] + 20, cpu->gpr[23]);
+    }  /* 0x8014238C: 0xAFB70014 */
+    { uint32_t _pgxa = cpu->gpr[29] + 24; br2_st32(cpu->gpr[29] + 24, cpu->gpr[30]);
+    }  /* 0x80142390: 0xAFBE0018 */
+    { uint32_t _pgx1 = cpu->gpr[6]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[6] = cpu->gpr[6] + cpu->gpr[2];
+    }  /* 0x80142394: 0x00C23021 */
+    { uint32_t _pgx1 = cpu->gpr[6]; cpu->gpr[6] = cpu->gpr[6] + 52;
+    }  /* 0x8014239C: 0x24C60034 */
+    cpu->gpr[2] = br2_jal(0x80141814u, 0x801423A0u);
+    if (br2_bail_pending()) return cpu->gpr[2];
+    goto block_801423A0;
+block_801423A0:
+    goto block_80142B00;
+block_801423A8:
+    { uint32_t _pgx1 = cpu->gpr[4]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[5] = cpu->gpr[4];  /* move */
+    }  /* 0x801423A8: 0x00802821 */
+    { uint32_t _pgx1 = cpu->gpr[0]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[6] = cpu->gpr[0];  /* move */
+    }  /* 0x801423AC: 0x00003021 */
+    { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[7] = 11;
+    }  /* 0x801423B4: 0x2407000B */
+    cpu->gpr[2] = br2_jal(0x801AD38Cu, 0x801423B8u);
+    if (br2_bail_pending()) return cpu->gpr[2];
+    goto block_801423B8;
+block_801423B8:
+    { uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[16] = cpu->gpr[2];  /* move */
+    }  /* 0x801423B8: 0x00408021 */
+    int _bc_801423BC = (cpu->gpr[16] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    if (_bc_801423BC) {
+        goto block_80142B00;
+    } else {
+        goto block_801423C4;  /* not taken */
+    }
+block_801423C4:
+    { uint32_t _pgx1 = cpu->gpr[16]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[4] = cpu->gpr[16];  /* move */
+    }  /* 0x801423C8: 0x02002021 */
+    cpu->gpr[2] = br2_jal(0x801AD284u, 0x801423CCu);
+    if (br2_bail_pending()) return cpu->gpr[2];
+    goto block_801423CC;
+block_801423CC:
+    { uint32_t _pgx1 = cpu->gpr[16]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[4] = cpu->gpr[16];  /* move */
+    }  /* 0x801423CC: 0x02002021 */
+    { uint32_t _pgx1 = cpu->gpr[18]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[5] = cpu->gpr[18];  /* move */
+    }  /* 0x801423D0: 0x02402821 */
+    cpu->gpr[6] = 0x801F << 16;  /* 0x801F0000 */
+    { uint32_t _pgx1 = cpu->gpr[6]; cpu->gpr[6] = cpu->gpr[6] + 1888;
+    }  /* 0x801423D8: 0x24C60760 */
+    { uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[16] = cpu->gpr[2];  /* move */
+    }  /* 0x801423E0: 0x00408021 */
+    cpu->gpr[2] = br2_jal(0x801AD224u, 0x801423E4u);
+    if (br2_bail_pending()) return cpu->gpr[2];
+    goto block_801423E4;
+block_801423E4:
+    { uint32_t _pgx1 = cpu->gpr[20]; cpu->gpr[2] = (int32_t)cpu->gpr[20] >> 24;
+    }  /* 0x801423E4: 0x00141603 */
+    cpu->gpr[2] = cpu->gpr[2] & 0x000F;  /* 0x801423E8: 0x3042000F */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] + 25;
+    }  /* 0x801423EC: 0x24420019 */
+    { uint32_t _pgxa = cpu->gpr[16] + 12; br2_st32(cpu->gpr[16] + 12, cpu->gpr[2]);
+    }  /* 0x801423F0: 0xAE02000C */
+    { uint32_t _pgxa = cpu->gpr[18] + 32; cpu->gpr[4] = br2_ld32(cpu->gpr[18] + 32);
+    }  /* 0x801423F4: 0x8E440020 */
+    { uint32_t _pgx1 = cpu->gpr[21]; cpu->gpr[2] = cpu->gpr[21] << 4;
+    }  /* 0x801423F8: 0x00151100 */
+    { uint32_t _pgxa = cpu->gpr[16] + 20; br2_st32(cpu->gpr[16] + 20, cpu->gpr[2]);
+    }  /* 0x801423FC: 0xAE020014 */
+    { uint32_t _pgx1 = cpu->gpr[22]; cpu->gpr[2] = cpu->gpr[22] << 16;
+    }  /* 0x80142400: 0x00161400 */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = (int32_t)cpu->gpr[2] >> 16;
+    }  /* 0x80142404: 0x00021403 */
+    cpu->gpr[3] = cpu->gpr[19] & 0x00FF;  /* 0x80142408: 0x326300FF */
+    { uint32_t _pgxa = cpu->gpr[16] + 24; br2_st32(cpu->gpr[16] + 24, cpu->gpr[2]);
+    }  /* 0x8014240C: 0xAE020018 */
+    { uint32_t _pgx1 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[3] << 2;
+    }  /* 0x80142410: 0x00031080 */
+    { uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[2] + cpu->gpr[3];
+    }  /* 0x80142414: 0x00431021 */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] << 4;
+    }  /* 0x80142418: 0x00021100 */
+    { uint32_t _pgxa = cpu->gpr[16] + 28; br2_st32(cpu->gpr[16] + 28, cpu->gpr[23]);
+    }  /* 0x8014241C: 0xAE17001C */
+    { uint32_t _pgxa = cpu->gpr[16] + 32; br2_st32(cpu->gpr[16] + 32, cpu->gpr[30]);
+    }  /* 0x80142420: 0xAE1E0020 */
+    { uint32_t _pgx1 = cpu->gpr[4]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[4] = cpu->gpr[4] + cpu->gpr[2];
+    }  /* 0x80142424: 0x00822021 */
+    { uint32_t _pgx1 = cpu->gpr[4]; cpu->gpr[4] = cpu->gpr[4] + 32;
+    }  /* 0x80142428: 0x24840020 */
+    { uint32_t _pgxa = cpu->gpr[16] + 16; br2_st32(cpu->gpr[16] + 16, cpu->gpr[4]);
+    }  /* 0x80142430: 0xAE040010 */
+    goto block_80142B00;
+block_80142434:
+    { uint32_t _pgx1 = cpu->gpr[18]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[4] = cpu->gpr[18];  /* move */
+    }  /* 0x80142434: 0x02402021 */
+    { uint32_t _pgx1 = cpu->gpr[20]; cpu->gpr[5] = (int32_t)cpu->gpr[20] >> 24;
+    }  /* 0x80142438: 0x00142E03 */
+    cpu->gpr[5] = cpu->gpr[5] & 0x000F;  /* 0x8014243C: 0x30A5000F */
+    { uint32_t _pgx1 = cpu->gpr[5]; cpu->gpr[5] = cpu->gpr[5] + 26;
+    }  /* 0x80142440: 0x24A5001A */
+    { uint32_t _pgx1 = cpu->gpr[21]; cpu->gpr[7] = cpu->gpr[21] << 4;
+    }  /* 0x80142444: 0x00153900 */
+    { uint32_t _pgx1 = cpu->gpr[22]; cpu->gpr[2] = cpu->gpr[22] << 16;
+    }  /* 0x80142448: 0x00161400 */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = (int32_t)cpu->gpr[2] >> 16;
+    }  /* 0x8014244C: 0x00021403 */
+    { uint32_t _pgxa = cpu->gpr[4] + 32; cpu->gpr[6] = br2_ld32(cpu->gpr[4] + 32);
+    }  /* 0x80142450: 0x8C860020 */
+    cpu->gpr[3] = cpu->gpr[19] & 0x00FF;  /* 0x80142454: 0x326300FF */
+    { uint32_t _pgxa = cpu->gpr[29] + 16; br2_st32(cpu->gpr[29] + 16, cpu->gpr[2]);
+    }  /* 0x80142458: 0xAFA20010 */
+    { uint32_t _pgx1 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[3] << 2;
+    }  /* 0x8014245C: 0x00031080 */
+    { uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[2] + cpu->gpr[3];
+    }  /* 0x80142460: 0x00431021 */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] << 4;
+    }  /* 0x80142464: 0x00021100 */
+    { uint32_t _pgxa = cpu->gpr[29] + 20; br2_st32(cpu->gpr[29] + 20, cpu->gpr[23]);
+    }  /* 0x80142468: 0xAFB70014 */
+    { uint32_t _pgxa = cpu->gpr[29] + 24; br2_st32(cpu->gpr[29] + 24, cpu->gpr[30]);
+    }  /* 0x8014246C: 0xAFBE0018 */
+    { uint32_t _pgx1 = cpu->gpr[6]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[6] = cpu->gpr[6] + cpu->gpr[2];
+    }  /* 0x80142470: 0x00C23021 */
+    { uint32_t _pgx1 = cpu->gpr[6]; cpu->gpr[6] = cpu->gpr[6] + 52;
+    }  /* 0x80142478: 0x24C60034 */
+    cpu->gpr[2] = br2_jal(0x80142108u, 0x8014247Cu);
+    if (br2_bail_pending()) return cpu->gpr[2];
+    goto block_8014247C;
+block_8014247C:
+    goto block_80142B00;
+block_80142484:
+    { uint32_t _pgx1 = cpu->gpr[4]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[5] = cpu->gpr[4];  /* move */
+    }  /* 0x80142484: 0x00802821 */
+    { uint32_t _pgx1 = cpu->gpr[0]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[6] = cpu->gpr[0];  /* move */
+    }  /* 0x80142488: 0x00003021 */
+    { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[7] = 13;
+    }  /* 0x80142490: 0x2407000D */
+    cpu->gpr[2] = br2_jal(0x801AD38Cu, 0x80142494u);
+    if (br2_bail_pending()) return cpu->gpr[2];
+    goto block_80142494;
+block_80142494:
+    { uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[16] = cpu->gpr[2];  /* move */
+    }  /* 0x80142494: 0x00408021 */
+    int _bc_80142498 = (cpu->gpr[16] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    if (_bc_80142498) {
+        goto block_80142B00;
+    } else {
+        goto block_801424A0;  /* not taken */
+    }
+block_801424A0:
+    { uint32_t _pgx1 = cpu->gpr[16]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[4] = cpu->gpr[16];  /* move */
+    }  /* 0x801424A4: 0x02002021 */
+    cpu->gpr[2] = br2_jal(0x801AD284u, 0x801424A8u);
+    if (br2_bail_pending()) return cpu->gpr[2];
+    goto block_801424A8;
+block_801424A8:
+    { uint32_t _pgx1 = cpu->gpr[16]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[4] = cpu->gpr[16];  /* move */
+    }  /* 0x801424A8: 0x02002021 */
+    { uint32_t _pgx1 = cpu->gpr[18]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[5] = cpu->gpr[18];  /* move */
+    }  /* 0x801424AC: 0x02402821 */
+    cpu->gpr[6] = 0x801F << 16;  /* 0x801F0000 */
+    { uint32_t _pgx1 = cpu->gpr[6]; cpu->gpr[6] = cpu->gpr[6] + 1888;
+    }  /* 0x801424B4: 0x24C60760 */
+    { uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[16] = cpu->gpr[2];  /* move */
+    }  /* 0x801424BC: 0x00408021 */
+    cpu->gpr[2] = br2_jal(0x801AD224u, 0x801424C0u);
+    if (br2_bail_pending()) return cpu->gpr[2];
+    goto block_801424C0;
+block_801424C0:
+    { uint32_t _pgx1 = cpu->gpr[20]; cpu->gpr[2] = (int32_t)cpu->gpr[20] >> 24;
+    }  /* 0x801424C0: 0x00141603 */
+    cpu->gpr[2] = cpu->gpr[2] & 0x000F;  /* 0x801424C4: 0x3042000F */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] + 28;
+    }  /* 0x801424C8: 0x2442001C */
+    { uint32_t _pgxa = cpu->gpr[16] + 12; br2_st32(cpu->gpr[16] + 12, cpu->gpr[2]);
+    }  /* 0x801424CC: 0xAE02000C */
+    { uint32_t _pgxa = cpu->gpr[18] + 32; cpu->gpr[4] = br2_ld32(cpu->gpr[18] + 32);
+    }  /* 0x801424D0: 0x8E440020 */
+    { uint32_t _pgx1 = cpu->gpr[21]; cpu->gpr[2] = cpu->gpr[21] << 4;
+    }  /* 0x801424D8: 0x00151100 */
+    goto block_80142534;  /* j */
+block_801424DC:
+    { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1;
+    }  /* 0x801424DC: 0x24040001 */
+    { uint32_t _pgx1 = cpu->gpr[4]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[5] = cpu->gpr[4];  /* move */
+    }  /* 0x801424E0: 0x00802821 */
+    { uint32_t _pgx1 = cpu->gpr[0]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[6] = cpu->gpr[0];  /* move */
+    }  /* 0x801424E4: 0x00003021 */
+    { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[7] = 14;
+    }  /* 0x801424EC: 0x2407000E */
+    cpu->gpr[2] = br2_jal(0x801AD38Cu, 0x801424F0u);
+    if (br2_bail_pending()) return cpu->gpr[2];
+    goto block_801424F0;
+block_801424F0:
+    { uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[16] = cpu->gpr[2];  /* move */
+    }  /* 0x801424F0: 0x00408021 */
+    int _bc_801424F4 = (cpu->gpr[16] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    if (_bc_801424F4) {
+        goto block_80142B00;
+    } else {
+        goto block_801424FC;  /* not taken */
+    }
+block_801424FC:
+    { uint32_t _pgx1 = cpu->gpr[16]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[4] = cpu->gpr[16];  /* move */
+    }  /* 0x80142500: 0x02002021 */
+    cpu->gpr[2] = br2_jal(0x801AD284u, 0x80142504u);
+    if (br2_bail_pending()) return cpu->gpr[2];
+    goto block_80142504;
+block_80142504:
+    { uint32_t _pgx1 = cpu->gpr[16]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[4] = cpu->gpr[16];  /* move */
+    }  /* 0x80142504: 0x02002021 */
+    { uint32_t _pgx1 = cpu->gpr[18]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[5] = cpu->gpr[18];  /* move */
+    }  /* 0x80142508: 0x02402821 */
+    cpu->gpr[6] = 0x801F << 16;  /* 0x801F0000 */
+    { uint32_t _pgx1 = cpu->gpr[6]; cpu->gpr[6] = cpu->gpr[6] + 1888;
+    }  /* 0x80142510: 0x24C60760 */
+    { uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[16] = cpu->gpr[2];  /* move */
+    }  /* 0x80142518: 0x00408021 */
+    cpu->gpr[2] = br2_jal(0x801AD224u, 0x8014251Cu);
+    if (br2_bail_pending()) return cpu->gpr[2];
+    goto block_8014251C;
+block_8014251C:
+    { uint32_t _pgx1 = cpu->gpr[20]; cpu->gpr[2] = (int32_t)cpu->gpr[20] >> 24;
+    }  /* 0x8014251C: 0x00141603 */
+    cpu->gpr[2] = cpu->gpr[2] & 0x000F;  /* 0x80142520: 0x3042000F */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] + 29;
+    }  /* 0x80142524: 0x2442001D */
+    { uint32_t _pgxa = cpu->gpr[16] + 12; br2_st32(cpu->gpr[16] + 12, cpu->gpr[2]);
+    }  /* 0x80142528: 0xAE02000C */
+    { uint32_t _pgxa = cpu->gpr[18] + 32; cpu->gpr[4] = br2_ld32(cpu->gpr[18] + 32);
+    }  /* 0x8014252C: 0x8E440020 */
+    { uint32_t _pgx1 = cpu->gpr[21]; cpu->gpr[2] = cpu->gpr[21] << 6;
+    }  /* 0x80142530: 0x00151180 */
+    /* fall through to block_80142534 */
+block_80142534:
+    { uint32_t _pgxa = cpu->gpr[16] + 20; br2_st32(cpu->gpr[16] + 20, cpu->gpr[2]);
+    }  /* 0x80142534: 0xAE020014 */
+    { uint32_t _pgx1 = cpu->gpr[22]; cpu->gpr[2] = cpu->gpr[22] << 16;
+    }  /* 0x80142538: 0x00161400 */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = (int32_t)cpu->gpr[2] >> 16;
+    }  /* 0x8014253C: 0x00021403 */
+    cpu->gpr[3] = cpu->gpr[19] & 0x00FF;  /* 0x80142540: 0x326300FF */
+    { uint32_t _pgxa = cpu->gpr[16] + 24; br2_st32(cpu->gpr[16] + 24, cpu->gpr[2]);
+    }  /* 0x80142544: 0xAE020018 */
+    { uint32_t _pgx1 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[3] << 2;
+    }  /* 0x80142548: 0x00031080 */
+    { uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[2] + cpu->gpr[3];
+    }  /* 0x8014254C: 0x00431021 */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] << 4;
+    }  /* 0x80142550: 0x00021100 */
+    { uint32_t _pgxa = cpu->gpr[16] + 28; br2_st32(cpu->gpr[16] + 28, cpu->gpr[23]);
+    }  /* 0x80142554: 0xAE17001C */
+    { uint32_t _pgxa = cpu->gpr[16] + 32; br2_st32(cpu->gpr[16] + 32, cpu->gpr[30]);
+    }  /* 0x80142558: 0xAE1E0020 */
+    { uint32_t _pgx1 = cpu->gpr[4]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[4] = cpu->gpr[4] + cpu->gpr[2];
+    }  /* 0x8014255C: 0x00822021 */
+    { uint32_t _pgx1 = cpu->gpr[4]; cpu->gpr[4] = cpu->gpr[4] + 52;
+    }  /* 0x80142560: 0x24840034 */
+    { uint32_t _pgxa = cpu->gpr[16] + 16; br2_st32(cpu->gpr[16] + 16, cpu->gpr[4]);
+    }  /* 0x80142568: 0xAE040010 */
+    goto block_80142B00;
+block_8014256C:
+    { uint32_t _pgx1 = cpu->gpr[4]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[5] = cpu->gpr[4];  /* move */
+    }  /* 0x8014256C: 0x00802821 */
+    { uint32_t _pgx1 = cpu->gpr[0]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[6] = cpu->gpr[0];  /* move */
+    }  /* 0x80142570: 0x00003021 */
+    { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[7] = 10;
+    }  /* 0x80142578: 0x2407000A */
+    cpu->gpr[2] = br2_jal(0x801AD38Cu, 0x8014257Cu);
+    if (br2_bail_pending()) return cpu->gpr[2];
+    goto block_8014257C;
+block_8014257C:
+    ;
+    int _bc_8014257C = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    if (_bc_8014257C) {
+        goto block_80142B00;
+    } else {
+        goto block_80142584;  /* not taken */
+    }
+block_80142584:
+    { uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[4] = cpu->gpr[2];  /* move */
+    }  /* 0x80142588: 0x00402021 */
+    cpu->gpr[2] = br2_jal(0x801AD284u, 0x8014258Cu);
+    if (br2_bail_pending()) return cpu->gpr[2];
+    goto block_8014258C;
+block_8014258C:
+    { uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[5] = cpu->gpr[2];  /* move */
+    }  /* 0x8014258C: 0x00402821 */
+    { uint32_t _pgx1 = cpu->gpr[17]; cpu->gpr[3] = cpu->gpr[17] << 16;
+    }  /* 0x80142590: 0x00111C00 */
+    { uint32_t _pgx1 = cpu->gpr[3]; cpu->gpr[2] = (int32_t)cpu->gpr[3] >> 12;
+    }  /* 0x80142594: 0x00031303 */
+    { uint32_t _pgxa = cpu->gpr[5] + 4; br2_st32(cpu->gpr[5] + 4, cpu->gpr[18]);
+    }  /* 0x80142598: 0xACB20004 */
+    { uint32_t _pgxa = cpu->gpr[18] + 32; cpu->gpr[4] = br2_ld32(cpu->gpr[18] + 32);
+    }  /* 0x8014259C: 0x8E440020 */
+    cpu->gpr[2] = cpu->gpr[2] & 0x0F00;  /* 0x801425A0: 0x30420F00 */
+    { uint32_t _pgxa = cpu->gpr[5] + 12; br2_st32(cpu->gpr[5] + 12, cpu->gpr[2]);
+    }  /* 0x801425A4: 0xACA2000C */
+    cpu->gpr[2] = cpu->gpr[17] & 0x000F;  /* 0x801425A8: 0x3222000F */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] << 8;
+    }  /* 0x801425AC: 0x00021200 */
+    { uint32_t _pgxa = cpu->gpr[5] + 16; br2_st32(cpu->gpr[5] + 16, cpu->gpr[2]);
+    }  /* 0x801425B0: 0xACA20010 */
+    { uint32_t _pgx1 = cpu->gpr[16]; cpu->gpr[2] = cpu->gpr[16] << 3;
+    }  /* 0x801425B4: 0x001010C0 */
+    cpu->gpr[2] = cpu->gpr[2] & 0x0780;  /* 0x801425B8: 0x30420780 */
+    { uint32_t _pgxa = cpu->gpr[5] + 24; br2_st32(cpu->gpr[5] + 24, cpu->gpr[2]);
+    }  /* 0x801425BC: 0xACA20018 */
+    { uint32_t _pgx1 = cpu->gpr[22]; cpu->gpr[2] = cpu->gpr[22] << 16;
+    }  /* 0x801425C0: 0x00161400 */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = (int32_t)cpu->gpr[2] >> 16;
+    }  /* 0x801425C4: 0x00021403 */
+    { uint32_t _pgxa = cpu->gpr[5] + 28; br2_st32(cpu->gpr[5] + 28, cpu->gpr[2]);
+    }  /* 0x801425C8: 0xACA2001C */
+    cpu->gpr[2] = cpu->gpr[23] & 0x000F;  /* 0x801425CC: 0x32E2000F */
+    { uint32_t _pgx1 = cpu->gpr[3]; cpu->gpr[3] = (int32_t)cpu->gpr[3] >> 24;
+    }  /* 0x801425D0: 0x00031E03 */
+    cpu->gpr[3] = cpu->gpr[3] & 0x000F;  /* 0x801425D4: 0x3063000F */
+    { uint32_t _pgxa = cpu->gpr[5] + 36; br2_st32(cpu->gpr[5] + 36, cpu->gpr[3]);
+    }  /* 0x801425D8: 0xACA30024 */
+    cpu->gpr[3] = cpu->gpr[19] & 0x00FF;  /* 0x801425DC: 0x326300FF */
+    { uint32_t _pgxa = cpu->gpr[5] + 32; br2_st32(cpu->gpr[5] + 32, cpu->gpr[2]);
+    }  /* 0x801425E0: 0xACA20020 */
+    { uint32_t _pgx1 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[3] << 2;
+    }  /* 0x801425E4: 0x00031080 */
+    { uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[2] + cpu->gpr[3];
+    }  /* 0x801425E8: 0x00431021 */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] << 4;
+    }  /* 0x801425EC: 0x00021100 */
+    { uint32_t _pgx1 = cpu->gpr[4]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[4] = cpu->gpr[4] + cpu->gpr[2];
+    }  /* 0x801425F0: 0x00822021 */
+    { uint32_t _pgx1 = cpu->gpr[4]; cpu->gpr[4] = cpu->gpr[4] + 52;
+    }  /* 0x801425F4: 0x24840034 */
+    { uint32_t _pgxa = cpu->gpr[5] + 8; br2_st32(cpu->gpr[5] + 8, cpu->gpr[4]);
+    }  /* 0x801425F8: 0xACA40008 */
+    { uint32_t _pgxa = cpu->gpr[18] + 56; cpu->gpr[2] = br2_ld32(cpu->gpr[18] + 56);
+    }  /* 0x801425FC: 0x8E420038 */
+    { uint32_t _pgxa = cpu->gpr[2] + 256; cpu->gpr[2] = br2_ld8(cpu->gpr[2] + 256);
+    }  /* 0x80142604: 0x90420100 */
+    int _bc_8014260C = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    cpu->gpr[3] = cpu->gpr[16] & 0x0F00;  /* 0x80142610: 0x32030F00 */
+    if (_bc_8014260C) {
+        goto block_80142634;  /* taken */
+    } else {
+        goto block_80142614;  /* not taken */
+    }
+block_80142614:
+    { uint32_t _pgxa = cpu->gpr[29] + 96; cpu->gpr[10] = br2_ld32(cpu->gpr[29] + 96);
+    }  /* 0x80142614: 0x8FAA0060 */
+    { uint32_t _pgxa = cpu->gpr[10]; cpu->gpr[2] = (int32_t)(int16_t)br2_ld16(cpu->gpr[10]);
+    }  /* 0x8014261C: 0x85420000 */
+    cpu->gpr[2] = cpu->gpr[2] & 0x8000;  /* 0x80142624: 0x30428000 */
+    int _bc_80142628 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 4096;
+    }  /* 0x8014262C: 0x24021000 */
+    if (_bc_80142628) {
+        goto block_80142634;  /* taken */
+    } else {
+        goto block_80142630;  /* not taken */
+    }
+block_80142630:
+    { uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[3] = cpu->gpr[2] - cpu->gpr[3];
+    }  /* 0x80142630: 0x00431823 */
+    /* fall through to block_80142634 */
+block_80142634:
+    { uint32_t _pgxa = cpu->gpr[5] + 20; br2_st32(cpu->gpr[5] + 20, cpu->gpr[3]);
+    }  /* 0x80142638: 0xACA30014 */
+    goto block_80142B00;
+block_8014263C:
+    cpu->gpr[5] = 0x8000 << 16;  /* 0x80000000 */
+    { uint32_t _pgx1 = cpu->gpr[16]; uint32_t _pgx2 = cpu->gpr[5]; cpu->gpr[5] = cpu->gpr[16] | cpu->gpr[5];
+    }  /* 0x80142640: 0x02052825 */
+    { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[6] = 127;
+    }  /* 0x80142644: 0x2406007F */
+    { uint32_t _pgx1 = cpu->gpr[6]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[7] = cpu->gpr[6];  /* move */
+    }  /* 0x80142648: 0x00C03821 */
+    cpu->gpr[3] = cpu->gpr[19] & 0x00FF;  /* 0x8014264C: 0x326300FF */
+    { uint32_t _pgx1 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[3] << 2;
+    }  /* 0x80142650: 0x00031080 */
+    { uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[2] + cpu->gpr[3];
+    }  /* 0x80142654: 0x00431021 */
+    { uint32_t _pgxa = cpu->gpr[18] + 32; cpu->gpr[4] = br2_ld32(cpu->gpr[18] + 32);
+    }  /* 0x80142658: 0x8E440020 */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] << 4;
+    }  /* 0x8014265C: 0x00021100 */
+    { uint32_t _pgxa = cpu->gpr[29] + 16; br2_st32(cpu->gpr[29] + 16, cpu->gpr[0]);
+    }  /* 0x80142660: 0xAFA00010 */
+    { uint32_t _pgx1 = cpu->gpr[4]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[4] = cpu->gpr[4] + cpu->gpr[2];
+    }  /* 0x80142664: 0x00822021 */
+    { uint32_t _pgx1 = cpu->gpr[4]; cpu->gpr[4] = cpu->gpr[4] + 52;
+    }  /* 0x8014266C: 0x24840034 */
+    cpu->gpr[2] = br2_jal(0x80139FD0u, 0x80142670u);
+    if (br2_bail_pending()) return cpu->gpr[2];
+    goto block_80142670;
+block_80142670:
+    ;
+    int _bc_80142670 = (cpu->gpr[16] != cpu->gpr[0]);  /* save branch cond before delay slot */
+    if (_bc_80142670) {
+        goto block_80142B00;
+    } else {
+        goto block_80142678;  /* not taken */
+    }
+block_80142678:
+    { uint32_t _pgxa = cpu->gpr[18] + 88; cpu->gpr[2] = br2_ld32(cpu->gpr[18] + 88);
+    }  /* 0x80142678: 0x8E420058 */
+    cpu->gpr[2] = cpu->gpr[2] & 0x8000;  /* 0x80142680: 0x30428000 */
+    int _bc_80142684 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    cpu->gpr[2] = 0x801F << 16;  /* 0x801F0000 */
+    if (_bc_80142684) {
+        goto block_801427D4;  /* taken */
+    } else {
+        goto block_8014268C;  /* not taken */
+    }
+block_8014268C:
+    { uint32_t _pgxa = cpu->gpr[18] + 2; cpu->gpr[3] = br2_ld8(cpu->gpr[18] + 2);
+    }  /* 0x8014268C: 0x92430002 */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] + 2368;
+    }  /* 0x80142690: 0x24420940 */
+    cpu->gpr[3] = cpu->gpr[3] ^ 0x0001;  /* 0x80142698: 0x38630001 */
+    goto block_801427E0;  /* j */
+block_8014269C:
+    { uint32_t _pgx1 = cpu->gpr[0]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[5] = cpu->gpr[0];  /* move */
+    }  /* 0x8014269C: 0x00002821 */
+    cpu->gpr[2] = cpu->gpr[17] & 0x00FF;  /* 0x801426A0: 0x322200FF */
+    cpu->gpr[6] = 0x8000 << 16;  /* 0x80000000 */
+    { uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[6]; cpu->gpr[6] = cpu->gpr[2] | cpu->gpr[6];
+    }  /* 0x801426A8: 0x00463025 */
+    cpu->gpr[7] = cpu->gpr[16] & 0x00FF;  /* 0x801426AC: 0x320700FF */
+    { uint32_t _pgx1 = cpu->gpr[16]; cpu->gpr[3] = cpu->gpr[16] << 16;
+    }  /* 0x801426B0: 0x00101C00 */
+    { uint32_t _pgx1 = cpu->gpr[3]; cpu->gpr[3] = (int32_t)cpu->gpr[3] >> 24;
+    }  /* 0x801426B4: 0x00031E03 */
+    cpu->gpr[4] = cpu->gpr[19] & 0x00FF;  /* 0x801426B8: 0x326400FF */
+    { uint32_t _pgx1 = cpu->gpr[4]; cpu->gpr[2] = cpu->gpr[4] << 2;
+    }  /* 0x801426BC: 0x00041080 */
+    { uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[4]; cpu->gpr[2] = cpu->gpr[2] + cpu->gpr[4];
+    }  /* 0x801426C0: 0x00441021 */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] << 4;
+    }  /* 0x801426C4: 0x00021100 */
+    { uint32_t _pgxa = cpu->gpr[18] + 32; cpu->gpr[4] = br2_ld32(cpu->gpr[18] + 32);
+    }  /* 0x801426C8: 0x8E440020 */
+    { uint32_t _pgx1 = cpu->gpr[3]; cpu->gpr[3] = cpu->gpr[3] << 2;
+    }  /* 0x801426CC: 0x00031880 */
+    { uint32_t _pgx1 = cpu->gpr[4]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[4] = cpu->gpr[4] + cpu->gpr[2];
+    }  /* 0x801426D0: 0x00822021 */
+    cpu->gpr[2] = 0x801B << 16;  /* 0x801B0000 */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] + 7480;
+    }  /* 0x801426D8: 0x24421D38 */
+    { uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[2];
+    }  /* 0x801426DC: 0x00621821 */
+    { uint32_t _pgxa = cpu->gpr[3]; cpu->gpr[2] = br2_ld32(cpu->gpr[3]);
+    }  /* 0x801426E0: 0x8C620000 */
+    { uint32_t _pgx1 = cpu->gpr[4]; cpu->gpr[4] = cpu->gpr[4] + 52;
+    }  /* 0x801426E4: 0x24840034 */
+    { uint32_t _pgxa = cpu->gpr[29] + 16; br2_st32(cpu->gpr[29] + 16, cpu->gpr[2]);
+    }  /* 0x801426EC: 0xAFA20010 */
+    cpu->gpr[2] = br2_jal(0x8013B088u, 0x801426F0u);
+    if (br2_bail_pending()) return cpu->gpr[2];
+    goto block_801426F0;
+block_801426F0:
+    goto block_80142B00;
+block_801426F8:
+    cpu->gpr[2] = cpu->gpr[17] & 0x00FF;  /* 0x801426F8: 0x322200FF */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] << 6;
+    }  /* 0x801426FC: 0x00021180 */
+    { uint32_t _pgx1 = cpu->gpr[17]; cpu->gpr[3] = (uint32_t)cpu->gpr[17] >> 8;
+    }  /* 0x80142700: 0x00111A02 */
+    cpu->gpr[3] = cpu->gpr[3] & 0x000F;  /* 0x80142704: 0x3063000F */
+    { uint32_t _pgx1 = cpu->gpr[3]; cpu->gpr[3] = cpu->gpr[3] << 17;
+    }  /* 0x80142708: 0x00031C40 */
+    { uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[2] + cpu->gpr[3];
+    }  /* 0x8014270C: 0x00431021 */
+    { uint32_t _pgxa = cpu->gpr[29] + 16; br2_st32(cpu->gpr[29] + 16, cpu->gpr[2]);
+    }  /* 0x80142710: 0xAFA20010 */
+    { uint32_t _pgx1 = cpu->gpr[18]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[4] = cpu->gpr[18];  /* move */
+    }  /* 0x80142714: 0x02402021 */
+    cpu->gpr[5] = cpu->gpr[19] & 0x00FF;  /* 0x80142718: 0x326500FF */
+    cpu->gpr[6] = cpu->gpr[16] & 0x00FF;  /* 0x8014271C: 0x320600FF */
+    { uint32_t _pgx1 = cpu->gpr[16]; cpu->gpr[7] = cpu->gpr[16] << 16;
+    }  /* 0x80142720: 0x00103C00 */
+    { uint32_t _pgx1 = cpu->gpr[7]; cpu->gpr[7] = (uint32_t)cpu->gpr[7] >> 24;
+    }  /* 0x80142728: 0x00073E02 */
+    cpu->gpr[2] = br2_jal(0x801401C8u, 0x8014272Cu);
+    if (br2_bail_pending()) return cpu->gpr[2];
+    goto block_8014272C;
+block_8014272C:
+    goto block_80142B00;
+block_80142734:
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[3] = cpu->gpr[2] << 2;
+    }  /* 0x80142734: 0x00021880 */
+    { uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[2];
+    }  /* 0x80142738: 0x00621821 */
+    { uint32_t _pgxa = cpu->gpr[18] + 32; cpu->gpr[2] = br2_ld32(cpu->gpr[18] + 32);
+    }  /* 0x8014273C: 0x8E420020 */
+    { uint32_t _pgx1 = cpu->gpr[3]; cpu->gpr[3] = cpu->gpr[3] << 4;
+    }  /* 0x80142740: 0x00031900 */
+    { uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[3] + cpu->gpr[2];
+    }  /* 0x80142744: 0x00621021 */
+    { uint32_t _pgxa = cpu->gpr[2] + 52; cpu->gpr[2] = br2_ld16(cpu->gpr[2] + 52);
+    }  /* 0x80142748: 0x94420034 */
+    { uint32_t _pgxa = cpu->gpr[29] + 32; br2_st16(cpu->gpr[29] + 32, (uint16_t)cpu->gpr[2]);
+    }  /* 0x80142750: 0xA7A20020 */
+    { uint32_t _pgxa = cpu->gpr[18] + 32; cpu->gpr[2] = br2_ld32(cpu->gpr[18] + 32);
+    }  /* 0x80142754: 0x8E420020 */
+    { uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[3] + cpu->gpr[2];
+    }  /* 0x8014275C: 0x00621021 */
+    { uint32_t _pgxa = cpu->gpr[2] + 56; cpu->gpr[2] = br2_ld16(cpu->gpr[2] + 56);
+    }  /* 0x80142760: 0x94420038 */
+    { uint32_t _pgx1 = cpu->gpr[29]; cpu->gpr[4] = cpu->gpr[29] + 32;
+    }  /* 0x80142764: 0x27A40020 */
+    { uint32_t _pgxa = cpu->gpr[29] + 34; br2_st16(cpu->gpr[29] + 34, (uint16_t)cpu->gpr[2]);
+    }  /* 0x80142768: 0xA7A20022 */
+    { uint32_t _pgxa = cpu->gpr[18] + 32; cpu->gpr[2] = br2_ld32(cpu->gpr[18] + 32);
+    }  /* 0x8014276C: 0x8E420020 */
+    cpu->gpr[6] = cpu->gpr[16] & 0x000F;  /* 0x80142770: 0x3206000F */
+    { uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[2];
+    }  /* 0x80142774: 0x00621821 */
+    { uint32_t _pgxa = cpu->gpr[3] + 60; cpu->gpr[2] = br2_ld16(cpu->gpr[3] + 60);
+    }  /* 0x80142778: 0x9462003C */
+    { uint32_t _pgx1 = cpu->gpr[6]; cpu->gpr[6] = cpu->gpr[6] << 8;
+    }  /* 0x8014277C: 0x00063200 */
+    { uint32_t _pgxa = cpu->gpr[29] + 36; br2_st16(cpu->gpr[29] + 36, (uint16_t)cpu->gpr[2]);
+    }  /* 0x80142780: 0xA7A20024 */
+    { uint32_t _pgx1 = cpu->gpr[16]; cpu->gpr[2] = cpu->gpr[16] << 16;
+    }  /* 0x80142784: 0x00101400 */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[7] = (int32_t)cpu->gpr[2] >> 24;
+    }  /* 0x80142788: 0x00023E03 */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = (int32_t)cpu->gpr[2] >> 12;
+    }  /* 0x8014278C: 0x00021303 */
+    cpu->gpr[2] = cpu->gpr[2] & 0x0F00;  /* 0x80142790: 0x30420F00 */
+    { uint32_t _pgxa = cpu->gpr[18] + 78; cpu->gpr[5] = (int32_t)(int16_t)br2_ld16(cpu->gpr[18] + 78);
+    }  /* 0x80142794: 0x8645004E */
+    { uint32_t _pgxa = cpu->gpr[18] + 116; cpu->gpr[3] = (int32_t)(int16_t)br2_ld16(cpu->gpr[18] + 116);
+    }  /* 0x80142798: 0x86430074 */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] + -1024;
+    }  /* 0x8014279C: 0x2442FC00 */
+    { uint32_t _pgxa = cpu->gpr[29] + 16; br2_st32(cpu->gpr[29] + 16, cpu->gpr[18]);
+    }  /* 0x801427A0: 0xAFB20010 */
+    { uint32_t _pgx1 = cpu->gpr[5]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[5] = cpu->gpr[5] + cpu->gpr[3];
+    }  /* 0x801427A4: 0x00A32821 */
+    { uint32_t _pgx1 = cpu->gpr[5]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[5] = cpu->gpr[5] + cpu->gpr[2];
+    }  /* 0x801427AC: 0x00A22821 */
+    cpu->gpr[2] = br2_jal(0x8013EE40u, 0x801427B0u);
+    if (br2_bail_pending()) return cpu->gpr[2];
+    goto block_801427B0;
+block_801427B0:
+    { uint32_t _pgxa = cpu->gpr[18] + 88; cpu->gpr[2] = br2_ld32(cpu->gpr[18] + 88);
+    }  /* 0x801427B0: 0x8E420058 */
+    cpu->gpr[2] = cpu->gpr[2] & 0x8000;  /* 0x801427B8: 0x30428000 */
+    int _bc_801427BC = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    cpu->gpr[2] = 0x801F << 16;  /* 0x801F0000 */
+    if (_bc_801427BC) {
+        goto block_801427D4;  /* taken */
+    } else {
+        goto block_801427C4;  /* not taken */
+    }
+block_801427C4:
+    { uint32_t _pgxa = cpu->gpr[18] + 2; cpu->gpr[3] = br2_ld8(cpu->gpr[18] + 2);
+    }  /* 0x801427C4: 0x92430002 */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] + 2368;
+    }  /* 0x801427C8: 0x24420940 */
+    cpu->gpr[3] = cpu->gpr[3] ^ 0x0001;  /* 0x801427D0: 0x38630001 */
+    goto block_801427E0;  /* j */
+block_801427D4:
+    cpu->gpr[2] = 0x801F << 16;  /* 0x801F0000 */
+    { uint32_t _pgxa = cpu->gpr[18] + 2; cpu->gpr[3] = br2_ld8(cpu->gpr[18] + 2);
+    }  /* 0x801427D8: 0x92430002 */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] + 2368;
+    }  /* 0x801427DC: 0x24420940 */
+    /* fall through to block_801427E0 */
+block_801427E0:
+    { uint32_t _pgx1 = cpu->gpr[3]; cpu->gpr[3] = cpu->gpr[3] << 2;
+    }  /* 0x801427E0: 0x00031880 */
+    { uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[2];
+    }  /* 0x801427E4: 0x00621821 */
+    { uint32_t _pgxa = cpu->gpr[3]; cpu->gpr[2] = br2_ld32(cpu->gpr[3]);
+    }  /* 0x801427E8: 0x8C620000 */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] + 1;
+    }  /* 0x801427F0: 0x24420001 */
+    { uint32_t _pgxa = cpu->gpr[3]; br2_st32(cpu->gpr[3], cpu->gpr[2]);
+    }  /* 0x801427F8: 0xAC620000 */
+    goto block_80142B00;
+block_801427FC:
+    { uint32_t _pgx1 = cpu->gpr[29]; cpu->gpr[4] = cpu->gpr[29] + 40;
+    }  /* 0x801427FC: 0x27A40028 */
+    { uint32_t _pgx1 = cpu->gpr[16]; cpu->gpr[6] = cpu->gpr[16] << 16;
+    }  /* 0x80142800: 0x00103400 */
+    cpu->gpr[2] = cpu->gpr[19] & 0x00FF;  /* 0x80142804: 0x326200FF */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[3] = cpu->gpr[2] << 2;
+    }  /* 0x80142808: 0x00021880 */
+    { uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[2];
+    }  /* 0x8014280C: 0x00621821 */
+    { uint32_t _pgx1 = cpu->gpr[3]; cpu->gpr[3] = cpu->gpr[3] << 4;
+    }  /* 0x80142810: 0x00031900 */
+    { uint32_t _pgx1 = cpu->gpr[6]; cpu->gpr[5] = (uint32_t)cpu->gpr[6] >> 24;
+    }  /* 0x80142814: 0x00062E02 */
+    cpu->gpr[7] = cpu->gpr[16] & 0x000F;  /* 0x80142818: 0x3207000F */
+    { uint32_t _pgx1 = cpu->gpr[7]; cpu->gpr[7] = cpu->gpr[7] << 8;
+    }  /* 0x8014281C: 0x00073A00 */
+    { uint32_t _pgxa = cpu->gpr[18] + 32; cpu->gpr[2] = br2_ld32(cpu->gpr[18] + 32);
+    }  /* 0x80142820: 0x8E420020 */
+    { uint32_t _pgxa = cpu->gpr[18] + 78; cpu->gpr[8] = (int32_t)(int16_t)br2_ld16(cpu->gpr[18] + 78);
+    }  /* 0x80142824: 0x8648004E */
+    { uint32_t _pgxa = cpu->gpr[18] + 116; cpu->gpr[9] = (int32_t)(int16_t)br2_ld16(cpu->gpr[18] + 116);
+    }  /* 0x80142828: 0x86490074 */
+    { uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[3] + cpu->gpr[2];
+    }  /* 0x8014282C: 0x00621021 */
+    { uint32_t _pgxa = cpu->gpr[2] + 52; cpu->gpr[2] = br2_ld16(cpu->gpr[2] + 52);
+    }  /* 0x80142830: 0x94420034 */
+    { uint32_t _pgx1 = cpu->gpr[6]; cpu->gpr[6] = (int32_t)cpu->gpr[6] >> 12;
+    }  /* 0x80142834: 0x00063303 */
+    { uint32_t _pgxa = cpu->gpr[29] + 40; br2_st16(cpu->gpr[29] + 40, (uint16_t)cpu->gpr[2]);
+    }  /* 0x80142838: 0xA7A20028 */
+    { uint32_t _pgxa = cpu->gpr[18] + 32; cpu->gpr[2] = br2_ld32(cpu->gpr[18] + 32);
+    }  /* 0x8014283C: 0x8E420020 */
+    cpu->gpr[6] = cpu->gpr[6] & 0x0F00;  /* 0x80142840: 0x30C60F00 */
+    { uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[3] + cpu->gpr[2];
+    }  /* 0x80142844: 0x00621021 */
+    { uint32_t _pgxa = cpu->gpr[2] + 56; cpu->gpr[2] = br2_ld16(cpu->gpr[2] + 56);
+    }  /* 0x80142848: 0x94420038 */
+    { uint32_t _pgx1 = cpu->gpr[6]; uint32_t _pgx2 = cpu->gpr[8]; cpu->gpr[6] = cpu->gpr[6] + cpu->gpr[8];
+    }  /* 0x8014284C: 0x00C83021 */
+    { uint32_t _pgxa = cpu->gpr[29] + 42; br2_st16(cpu->gpr[29] + 42, (uint16_t)cpu->gpr[2]);
+    }  /* 0x80142850: 0xA7A2002A */
+    { uint32_t _pgxa = cpu->gpr[18] + 32; cpu->gpr[2] = br2_ld32(cpu->gpr[18] + 32);
+    }  /* 0x80142854: 0x8E420020 */
+    { uint32_t _pgx1 = cpu->gpr[6]; uint32_t _pgx2 = cpu->gpr[9]; cpu->gpr[6] = cpu->gpr[6] + cpu->gpr[9];
+    }  /* 0x80142858: 0x00C93021 */
+    { uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[2];
+    }  /* 0x8014285C: 0x00621821 */
+    { uint32_t _pgxa = cpu->gpr[3] + 60; cpu->gpr[2] = br2_ld16(cpu->gpr[3] + 60);
+    }  /* 0x80142860: 0x9462003C */
+    { uint32_t _pgx1 = cpu->gpr[6]; cpu->gpr[6] = cpu->gpr[6] + -1024;
+    }  /* 0x80142864: 0x24C6FC00 */
+    { uint32_t _pgxa = cpu->gpr[29] + 44; br2_st16(cpu->gpr[29] + 44, (uint16_t)cpu->gpr[2]);
+    }  /* 0x80142868: 0xA7A2002C */
+    cpu->gpr[2] = cpu->gpr[17] & 0x00FF;  /* 0x8014286C: 0x322200FF */
+    { uint32_t _pgxa = cpu->gpr[29] + 16; br2_st32(cpu->gpr[29] + 16, cpu->gpr[2]);
+    }  /* 0x80142870: 0xAFA20010 */
+    { uint32_t _pgxa = cpu->gpr[29] + 20; br2_st32(cpu->gpr[29] + 20, cpu->gpr[0]);
+    }  /* 0x80142878: 0xAFA00014 */
+    cpu->gpr[2] = br2_jal(0x8013D6B0u, 0x8014287Cu);
+    if (br2_bail_pending()) return cpu->gpr[2];
+    goto block_8014287C;
+block_8014287C:
+    goto block_80142B00;
+block_80142884:
+    { uint32_t _pgx1 = cpu->gpr[18]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[4] = cpu->gpr[18];  /* move */
+    }  /* 0x80142884: 0x02402021 */
+    cpu->gpr[5] = cpu->gpr[19] & 0x00FF;  /* 0x80142888: 0x326500FF */
+    { uint32_t _pgx1 = cpu->gpr[16]; cpu->gpr[6] = cpu->gpr[16] << 16;
+    }  /* 0x8014288C: 0x00103400 */
+    { uint32_t _pgx1 = cpu->gpr[6]; cpu->gpr[6] = (int32_t)cpu->gpr[6] >> 16;
+    }  /* 0x80142894: 0x00063403 */
+    cpu->gpr[2] = br2_jal(0x8013F714u, 0x80142898u);
+    if (br2_bail_pending()) return cpu->gpr[2];
+    goto block_80142898;
+block_80142898:
+    goto block_80142B00;
+block_801428A0:
+    { uint32_t _pgxa = cpu->gpr[18] + 3; cpu->gpr[2] = br2_ld8(cpu->gpr[18] + 3);
+    }  /* 0x801428A0: 0x92420003 */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[3] = cpu->gpr[2] + -1;
+    }  /* 0x801428A8: 0x2443FFFF */
+    cpu->gpr[2] = (cpu->gpr[3] < (uint32_t)9) ? 1 : 0;  /* 0x801428AC: 0x2C620009 */
+    int _bc_801428B0 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    cpu->gpr[2] = 0x8012 << 16;  /* 0x80120000 */
+    if (_bc_801428B0) {
+        goto block_80142B00;
+    } else {
+        goto block_801428B8;  /* not taken */
+    }
+block_801428B8:
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] + 552;
+    }  /* 0x801428B8: 0x24420228 */
+    { uint32_t _pgx1 = cpu->gpr[3]; cpu->gpr[3] = cpu->gpr[3] << 2;
+    }  /* 0x801428BC: 0x00031880 */
+    { uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[2];
+    }  /* 0x801428C0: 0x00621821 */
+    { uint32_t _pgxa = cpu->gpr[3]; cpu->gpr[2] = br2_ld32(cpu->gpr[3]);
+    }  /* 0x801428C4: 0x8C620000 */
+    uint32_t _jt_801428CC = cpu->gpr[2];  /* latch indirect target before delay slot */
+    switch (_jt_801428CC) {
+    case 0x80142AC4u: goto block_80142AC4;
+    case 0x80142B00u: goto block_80142B00;
+    case 0x801429F4u: goto block_801429F4;
+    case 0x80142A44u: goto block_80142A44;
+    case 0x801428D4u: goto block_801428D4;
+    case 0x80142954u: goto block_80142954;
+    default:
+        return call_guest4(_jt_801428CC, cpu->gpr[4], cpu->gpr[5], cpu->gpr[6], cpu->gpr[7]);
+    }
+block_801428D4:
+    cpu->gpr[2] = 0x801F << 16;  /* 0x801F0000 */
+    { uint32_t _pgxa = cpu->gpr[18] + 2; cpu->gpr[3] = br2_ld8(cpu->gpr[18] + 2);
+    }  /* 0x801428D8: 0x92430002 */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] + 1872;
+    }  /* 0x801428DC: 0x24420750 */
+    { uint32_t _pgx1 = cpu->gpr[3]; cpu->gpr[3] = cpu->gpr[3] << 2;
+    }  /* 0x801428E0: 0x00031880 */
+    { uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[2];
+    }  /* 0x801428E4: 0x00621821 */
+    { uint32_t _pgxa = cpu->gpr[3]; cpu->gpr[4] = br2_ld32(cpu->gpr[3]);
+    }  /* 0x801428E8: 0x8C640000 */
+    cpu->gpr[2] = br2_jal(0x801AD284u, 0x801428F4u);
+    if (br2_bail_pending()) return cpu->gpr[2];
+    goto block_801428F4;
+block_801428F4:
+    { uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[4] = cpu->gpr[2];  /* move */
+    }  /* 0x801428F4: 0x00402021 */
+    cpu->gpr[3] = cpu->gpr[17] & 0x00FF;  /* 0x801428F8: 0x322300FF */
+    { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 254;
+    }  /* 0x801428FC: 0x240200FE */
+    int _bc_80142900 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
+    cpu->gpr[2] = ((int32_t)cpu->gpr[3] < 255) ? 1 : 0;  /* 0x80142904: 0x286200FF */
+    if (_bc_80142900) {
+        goto block_8014294C;  /* taken */
+    } else {
+        goto block_80142908;  /* not taken */
+    }
+block_80142908:
+    ;
+    int _bc_80142908 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 255;
+    }  /* 0x8014290C: 0x240200FF */
+    if (_bc_80142908) {
+        goto block_80142920;  /* taken */
+    } else {
+        goto block_80142910;  /* not taken */
+    }
+block_80142910:
+    ;
+    int _bc_80142910 = (cpu->gpr[3] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    { uint32_t _pgx1 = cpu->gpr[16]; cpu->gpr[2] = cpu->gpr[16] << 16;
+    }  /* 0x80142914: 0x00101400 */
+    if (_bc_80142910) {
+        goto block_80142930;  /* taken */
+    } else {
+        goto block_80142918;  /* not taken */
+    }
+block_80142918:
+    goto block_80142B00;
+block_80142920:
+    ;
+    int _bc_80142920 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
+    { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 1;
+    }  /* 0x80142924: 0x24020001 */
+    if (_bc_80142920) {
+        goto block_80142944;  /* taken */
+    } else {
+        goto block_80142928;  /* not taken */
+    }
+block_80142928:
+    goto block_80142B00;
+block_80142930:
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = (int32_t)cpu->gpr[2] >> 24;
+    }  /* 0x80142930: 0x00021603 */
+    { uint32_t _pgxa = cpu->gpr[4] + 12; br2_st32(cpu->gpr[4] + 12, cpu->gpr[2]);
+    }  /* 0x80142934: 0xAC82000C */
+    cpu->gpr[2] = cpu->gpr[16] & 0x00FF;  /* 0x80142938: 0x320200FF */
+    { uint32_t _pgxa = cpu->gpr[4] + 16; br2_st32(cpu->gpr[4] + 16, cpu->gpr[2]);
+    }  /* 0x80142940: 0xAC820010 */
+    goto block_80142B00;
+block_80142944:
+    { uint32_t _pgxa = cpu->gpr[4] + 20; br2_st32(cpu->gpr[4] + 20, cpu->gpr[2]);
+    }  /* 0x80142948: 0xAC820014 */
+    goto block_80142B00;
+block_8014294C:
+    { uint32_t _pgxa = cpu->gpr[4] + 20; br2_st32(cpu->gpr[4] + 20, cpu->gpr[0]);
+    }  /* 0x80142950: 0xAC800014 */
+    goto block_80142B00;
+block_80142954:
+    cpu->gpr[3] = cpu->gpr[17] & 0x00FF;  /* 0x80142954: 0x322300FF */
+    int _bc_80142958 = (cpu->gpr[3] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 1;
+    }  /* 0x8014295C: 0x24020001 */
+    if (_bc_80142958) {
+        goto block_80142970;  /* taken */
+    } else {
+        goto block_80142960;  /* not taken */
+    }
+block_80142960:
+    ;
+    int _bc_80142960 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
+    { uint32_t _pgx1 = cpu->gpr[18]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[4] = cpu->gpr[18];  /* move */
+    }  /* 0x80142964: 0x02402021 */
+    if (_bc_80142960) {
+        goto block_801429C4;  /* taken */
+    } else {
+        goto block_80142968;  /* not taken */
+    }
+block_80142968:
+    goto block_80142B00;
+block_80142970:
+    { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1;
+    }  /* 0x80142970: 0x24040001 */
+    { uint32_t _pgx1 = cpu->gpr[4]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[5] = cpu->gpr[4];  /* move */
+    }  /* 0x80142974: 0x00802821 */
+    { uint32_t _pgxa = cpu->gpr[18] + 2; cpu->gpr[6] = br2_ld8(cpu->gpr[18] + 2);
+    }  /* 0x80142978: 0x92460002 */
+    { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[7] = 8;
+    }  /* 0x8014297C: 0x24070008 */
+    { uint32_t _pgx1 = cpu->gpr[6]; uint32_t _pgx2 = cpu->gpr[4]; cpu->gpr[6] = cpu->gpr[6] + cpu->gpr[4];
+    }  /* 0x80142984: 0x00C43021 */
+    cpu->gpr[2] = br2_jal(0x801AD38Cu, 0x80142988u);
+    if (br2_bail_pending()) return cpu->gpr[2];
+    goto block_80142988;
+block_80142988:
+    ;
+    int _bc_80142988 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    if (_bc_80142988) {
+        goto block_80142B00;
+    } else {
+        goto block_80142990;  /* not taken */
+    }
+block_80142990:
+    { uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[4] = cpu->gpr[2];  /* move */
+    }  /* 0x80142994: 0x00402021 */
+    cpu->gpr[2] = br2_jal(0x801AD284u, 0x80142998u);
+    if (br2_bail_pending()) return cpu->gpr[2];
+    goto block_80142998;
+block_80142998:
+    { uint32_t _pgxa = cpu->gpr[18] + 2; cpu->gpr[3] = br2_ld8(cpu->gpr[18] + 2);
+    }  /* 0x80142998: 0x92430002 */
+    cpu->gpr[4] = cpu->gpr[19] & 0x00FF;  /* 0x8014299C: 0x326400FF */
+    { uint32_t _pgxa = cpu->gpr[2] + 4; br2_st32(cpu->gpr[2] + 4, cpu->gpr[3]);
+    }  /* 0x801429A0: 0xAC430004 */
+    { uint32_t _pgx1 = cpu->gpr[4]; cpu->gpr[3] = cpu->gpr[4] << 2;
+    }  /* 0x801429A4: 0x00041880 */
+    { uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[4]; cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[4];
+    }  /* 0x801429A8: 0x00641821 */
+    { uint32_t _pgxa = cpu->gpr[18] + 32; cpu->gpr[4] = br2_ld32(cpu->gpr[18] + 32);
+    }  /* 0x801429AC: 0x8E440020 */
+    { uint32_t _pgx1 = cpu->gpr[3]; cpu->gpr[3] = cpu->gpr[3] << 4;
+    }  /* 0x801429B0: 0x00031900 */
+    { uint32_t _pgx1 = cpu->gpr[4]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[4] = cpu->gpr[4] + cpu->gpr[3];
+    }  /* 0x801429B4: 0x00832021 */
+    { uint32_t _pgx1 = cpu->gpr[4]; cpu->gpr[4] = cpu->gpr[4] + 52;
+    }  /* 0x801429B8: 0x24840034 */
+    { uint32_t _pgxa = cpu->gpr[2] + 8; br2_st32(cpu->gpr[2] + 8, cpu->gpr[4]);
+    }  /* 0x801429C0: 0xAC440008 */
+    goto block_80142B00;
+block_801429C4:
+    { uint32_t _pgx1 = cpu->gpr[16]; cpu->gpr[6] = cpu->gpr[16] << 16;
+    }  /* 0x801429C4: 0x00103400 */
+    { uint32_t _pgx1 = cpu->gpr[6]; cpu->gpr[6] = (int32_t)cpu->gpr[6] >> 16;
+    }  /* 0x801429C8: 0x00063403 */
+    cpu->gpr[3] = cpu->gpr[19] & 0x00FF;  /* 0x801429CC: 0x326300FF */
+    { uint32_t _pgx1 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[3] << 2;
+    }  /* 0x801429D0: 0x00031080 */
+    { uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[2] + cpu->gpr[3];
+    }  /* 0x801429D4: 0x00431021 */
+    { uint32_t _pgxa = cpu->gpr[4] + 32; cpu->gpr[5] = br2_ld32(cpu->gpr[4] + 32);
+    }  /* 0x801429D8: 0x8C850020 */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] << 4;
+    }  /* 0x801429DC: 0x00021100 */
+    { uint32_t _pgx1 = cpu->gpr[5]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[5] = cpu->gpr[5] + cpu->gpr[2];
+    }  /* 0x801429E0: 0x00A22821 */
+    { uint32_t _pgx1 = cpu->gpr[5]; cpu->gpr[5] = cpu->gpr[5] + 52;
+    }  /* 0x801429E8: 0x24A50034 */
+    cpu->gpr[2] = br2_jal(0x8013E0F0u, 0x801429ECu);
+    if (br2_bail_pending()) return cpu->gpr[2];
+    goto block_801429EC;
+block_801429EC:
+    goto block_80142B00;
+block_801429F4:
+    cpu->gpr[2] = cpu->gpr[17] & 0x00FF;  /* 0x801429F4: 0x322200FF */
+    int _bc_801429F8 = (cpu->gpr[2] != cpu->gpr[0]);  /* save branch cond before delay slot */
+    cpu->gpr[3] = 0x1F80 << 16;  /* 0x1F800000 */
+    if (_bc_801429F8) {
+        goto block_80142B00;
+    } else {
+        goto block_80142A00;  /* not taken */
+    }
+block_80142A00:
+    { uint32_t _pgx1 = cpu->gpr[3]; cpu->gpr[3] = cpu->gpr[3] | 0x00E8;
+    }  /* 0x80142A00: 0x346300E8 */
+    { uint32_t _pgx1 = cpu->gpr[16]; cpu->gpr[4] = cpu->gpr[16] << 16;
+    }  /* 0x80142A04: 0x00102400 */
+    { uint32_t _pgx1 = cpu->gpr[4]; cpu->gpr[4] = (int32_t)cpu->gpr[4] >> 27;
+    }  /* 0x80142A08: 0x000426C3 */
+    { uint32_t _pgxa = cpu->gpr[18] + 2; cpu->gpr[2] = br2_ld8(cpu->gpr[18] + 2);
+    }  /* 0x80142A0C: 0x92420002 */
+    cpu->gpr[5] = cpu->gpr[16] & 0x07FF;  /* 0x80142A10: 0x320507FF */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[6] = cpu->gpr[2] << 5;
+    }  /* 0x80142A14: 0x00023140 */
+    { uint32_t _pgx1 = cpu->gpr[6]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[6] = cpu->gpr[6] + cpu->gpr[2];
+    }  /* 0x80142A18: 0x00C23021 */
+    { uint32_t _pgx1 = cpu->gpr[6]; cpu->gpr[6] = cpu->gpr[6] << 3;
+    }  /* 0x80142A1C: 0x000630C0 */
+    { uint32_t _pgx1 = cpu->gpr[6]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[6] = cpu->gpr[6] + cpu->gpr[3];
+    }  /* 0x80142A20: 0x00C33021 */
+    cpu->gpr[2] = cpu->gpr[2] ^ 0x0001;  /* 0x80142A24: 0x38420001 */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[7] = cpu->gpr[2] << 5;
+    }  /* 0x80142A28: 0x00023940 */
+    { uint32_t _pgx1 = cpu->gpr[7]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[7] = cpu->gpr[7] + cpu->gpr[2];
+    }  /* 0x80142A2C: 0x00E23821 */
+    { uint32_t _pgx1 = cpu->gpr[7]; cpu->gpr[7] = cpu->gpr[7] << 3;
+    }  /* 0x80142A30: 0x000738C0 */
+    { uint32_t _pgx1 = cpu->gpr[7]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[7] = cpu->gpr[7] + cpu->gpr[3];
+    }  /* 0x80142A38: 0x00E33821 */
+    cpu->gpr[2] = br2_jal(0x8013C9CCu, 0x80142A3Cu);
+    if (br2_bail_pending()) return cpu->gpr[2];
+    goto block_80142A3C;
+block_80142A3C:
+    goto block_80142B00;
+block_80142A40:
+block_80142A44:
+    cpu->gpr[17] = cpu->gpr[17] & 0x00FF;  /* 0x80142A44: 0x323100FF */
+    cpu->gpr[2] = ((int32_t)cpu->gpr[17] < 2) ? 1 : 0;  /* 0x80142A48: 0x2A220002 */
+    int _bc_80142A4C = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    if (_bc_80142A4C) {
+        goto block_80142B00;  /* taken */
+    } else {
+        goto block_80142A54;  /* not taken */
+    }
+block_80142A54:
+    ;
+    int _bc_80142A54 = ((int32_t)cpu->gpr[17] < 0);  /* save branch cond before delay slot */
+    { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1;
+    }  /* 0x80142A58: 0x24040001 */
+    if (_bc_80142A54) {
+        goto block_80142B00;  /* taken */
+    } else {
+        goto block_80142A5C;  /* not taken */
+    }
+block_80142A5C:
+    { uint32_t _pgx1 = cpu->gpr[4]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[5] = cpu->gpr[4];  /* move */
+    }  /* 0x80142A5C: 0x00802821 */
+    { uint32_t _pgxa = cpu->gpr[18] + 2; cpu->gpr[6] = br2_ld8(cpu->gpr[18] + 2);
+    }  /* 0x80142A60: 0x92460002 */
+    { uint32_t _pgx1 = cpu->gpr[16]; cpu->gpr[7] = cpu->gpr[16] << 16;
+    }  /* 0x80142A64: 0x00103C00 */
+    { uint32_t _pgx1 = cpu->gpr[7]; cpu->gpr[7] = (int32_t)cpu->gpr[7] >> 16;
+    }  /* 0x80142A68: 0x00073C03 */
+    { uint32_t _pgx1 = cpu->gpr[6]; uint32_t _pgx2 = cpu->gpr[4]; cpu->gpr[6] = cpu->gpr[6] + cpu->gpr[4];
+    }  /* 0x80142A70: 0x00C43021 */
+    cpu->gpr[2] = br2_jal(0x801AD38Cu, 0x80142A74u);
+    if (br2_bail_pending()) return cpu->gpr[2];
+    goto block_80142A74;
+block_80142A74:
+    { uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[16] = cpu->gpr[2];  /* move */
+    }  /* 0x80142A74: 0x00408021 */
+    int _bc_80142A78 = (cpu->gpr[16] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    { uint32_t _pgx1 = cpu->gpr[16]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[4] = cpu->gpr[16];  /* move */
+    }  /* 0x80142A7C: 0x02002021 */
+    if (_bc_80142A78) {
+        goto block_80142B00;  /* taken */
+    } else {
+        goto block_80142A80;  /* not taken */
+    }
+block_80142A80:
+    { uint32_t _pgx1 = cpu->gpr[18]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[5] = cpu->gpr[18];  /* move */
+    }  /* 0x80142A80: 0x02402821 */
+    cpu->gpr[3] = cpu->gpr[19] & 0x00FF;  /* 0x80142A84: 0x326300FF */
+    { uint32_t _pgx1 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[3] << 2;
+    }  /* 0x80142A88: 0x00031080 */
+    { uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[2] + cpu->gpr[3];
+    }  /* 0x80142A8C: 0x00431021 */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] << 4;
+    }  /* 0x80142A90: 0x00021100 */
+    { uint32_t _pgxa = cpu->gpr[18] + 2; cpu->gpr[6] = br2_ld8(cpu->gpr[18] + 2);
+    }  /* 0x80142A94: 0x92460002 */
+    { uint32_t _pgxa = cpu->gpr[5] + 32; cpu->gpr[7] = br2_ld32(cpu->gpr[5] + 32);
+    }  /* 0x80142A98: 0x8CA70020 */
+    { uint32_t _pgx1 = cpu->gpr[6]; cpu->gpr[6] = cpu->gpr[6] + 1;
+    }  /* 0x80142A9C: 0x24C60001 */
+    { uint32_t _pgx1 = cpu->gpr[7]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[7] = cpu->gpr[7] + cpu->gpr[2];
+    }  /* 0x80142AA0: 0x00E23821 */
+    { uint32_t _pgx1 = cpu->gpr[7]; cpu->gpr[7] = cpu->gpr[7] + 52;
+    }  /* 0x80142AA8: 0x24E70034 */
+    cpu->gpr[2] = br2_jal(0x801AD240u, 0x80142AACu);
+    if (br2_bail_pending()) return cpu->gpr[2];
+    goto block_80142AAC;
+block_80142AAC:
+    ;
+    int _bc_80142AAC = (cpu->gpr[17] != cpu->gpr[0]);  /* save branch cond before delay slot */
+    { uint32_t _pgx1 = cpu->gpr[16]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[4] = cpu->gpr[16];  /* move */
+    }  /* 0x80142AB0: 0x02002021 */
+    if (_bc_80142AAC) {
+        goto block_80142B00;  /* taken */
+    } else {
+        goto block_80142AB4;  /* not taken */
+    }
+block_80142AB4:
+    { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[5] = 2;
+    }  /* 0x80142AB8: 0x24050002 */
+    cpu->gpr[2] = br2_jal(0x801A46C8u, 0x80142ABCu);
+    if (br2_bail_pending()) return cpu->gpr[2];
+    goto block_80142ABC;
+block_80142ABC:
+    goto block_80142B00;  /* j */
+block_80142AC4:
+    cpu->gpr[2] = cpu->gpr[17] & 0x00FF;  /* 0x80142AC4: 0x322200FF */
+    int _bc_80142AC8 = (cpu->gpr[2] != cpu->gpr[0]);  /* save branch cond before delay slot */
+    cpu->gpr[3] = 0x1F80 << 16;  /* 0x1F800000 */
+    if (_bc_80142AC8) {
+        goto block_80142B00;  /* taken */
+    } else {
+        goto block_80142AD0;  /* not taken */
+    }
+block_80142AD0:
+    { uint32_t _pgxa = cpu->gpr[18] + 2; cpu->gpr[2] = br2_ld8(cpu->gpr[18] + 2);
+    }  /* 0x80142AD0: 0x92420002 */
+    { uint32_t _pgx1 = cpu->gpr[3]; cpu->gpr[3] = cpu->gpr[3] | 0x00E8;
+    }  /* 0x80142AD4: 0x346300E8 */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[4] = cpu->gpr[2] << 5;
+    }  /* 0x80142AD8: 0x00022140 */
+    { uint32_t _pgx1 = cpu->gpr[4]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[4] = cpu->gpr[4] + cpu->gpr[2];
+    }  /* 0x80142ADC: 0x00822021 */
+    { uint32_t _pgx1 = cpu->gpr[4]; cpu->gpr[4] = cpu->gpr[4] << 3;
+    }  /* 0x80142AE0: 0x000420C0 */
+    { uint32_t _pgx1 = cpu->gpr[4]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[4] = cpu->gpr[4] + cpu->gpr[3];
+    }  /* 0x80142AE4: 0x00832021 */
+    cpu->gpr[2] = cpu->gpr[2] ^ 0x0001;  /* 0x80142AE8: 0x38420001 */
+    { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[5] = cpu->gpr[2] << 5;
+    }  /* 0x80142AEC: 0x00022940 */
+    { uint32_t _pgx1 = cpu->gpr[5]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[5] = cpu->gpr[5] + cpu->gpr[2];
+    }  /* 0x80142AF0: 0x00A22821 */
+    { uint32_t _pgx1 = cpu->gpr[5]; cpu->gpr[5] = cpu->gpr[5] << 3;
+    }  /* 0x80142AF4: 0x000528C0 */
+    { uint32_t _pgx1 = cpu->gpr[5]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[5] = cpu->gpr[5] + cpu->gpr[3];
+    }  /* 0x80142AFC: 0x00A32821 */
+    cpu->gpr[2] = br2_jal(0x8013F7A0u, 0x80142B00u);
+    if (br2_bail_pending()) return cpu->gpr[2];
+    goto block_80142B00;
+block_80142B00:
+    { uint32_t _pgxa = cpu->gpr[29] + 96; cpu->gpr[10] = br2_ld32(cpu->gpr[29] + 96);
+    }  /* 0x80142B00: 0x8FAA0060 */
+    { uint32_t _pgx1 = cpu->gpr[10]; cpu->gpr[2] = cpu->gpr[10] + 6;
+    }  /* 0x80142B08: 0x25420006 */
+block_80142B0C:
+    { uint32_t _pgxa = cpu->gpr[29] + 84; cpu->gpr[31] = br2_ld32(cpu->gpr[29] + 84);
+    }  /* 0x80142B0C: 0x8FBF0054 */
+    { uint32_t _pgxa = cpu->gpr[29] + 80; cpu->gpr[30] = br2_ld32(cpu->gpr[29] + 80);
+    }  /* 0x80142B10: 0x8FBE0050 */
+    { uint32_t _pgxa = cpu->gpr[29] + 76; cpu->gpr[23] = br2_ld32(cpu->gpr[29] + 76);
+    }  /* 0x80142B14: 0x8FB7004C */
+    { uint32_t _pgxa = cpu->gpr[29] + 72; cpu->gpr[22] = br2_ld32(cpu->gpr[29] + 72);
+    }  /* 0x80142B18: 0x8FB60048 */
+    { uint32_t _pgxa = cpu->gpr[29] + 68; cpu->gpr[21] = br2_ld32(cpu->gpr[29] + 68);
+    }  /* 0x80142B1C: 0x8FB50044 */
+    { uint32_t _pgxa = cpu->gpr[29] + 64; cpu->gpr[20] = br2_ld32(cpu->gpr[29] + 64);
+    }  /* 0x80142B20: 0x8FB40040 */
+    { uint32_t _pgxa = cpu->gpr[29] + 60; cpu->gpr[19] = br2_ld32(cpu->gpr[29] + 60);
+    }  /* 0x80142B24: 0x8FB3003C */
+    { uint32_t _pgxa = cpu->gpr[29] + 56; cpu->gpr[18] = br2_ld32(cpu->gpr[29] + 56);
+    }  /* 0x80142B28: 0x8FB20038 */
+    { uint32_t _pgxa = cpu->gpr[29] + 52; cpu->gpr[17] = br2_ld32(cpu->gpr[29] + 52);
+    }  /* 0x80142B2C: 0x8FB10034 */
+    { uint32_t _pgxa = cpu->gpr[29] + 48; cpu->gpr[16] = br2_ld32(cpu->gpr[29] + 48);
+    }  /* 0x80142B30: 0x8FB00030 */
+    uint32_t _jt_80142B34 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    { uint32_t _pgx1 = cpu->gpr[29]; cpu->gpr[29] = cpu->gpr[29] + 88;
+    }  /* 0x80142B38: 0x27BD0058 */
+    return cpu->gpr[2];
+
+}
+
+/* Public clean entry — ev handler table slot 0x801b4ec8 (opcode 24).
+ * a0=ctrl, a1=motion, a2=stream pc (all guest addrs in gpr[4..7]). */
+uint32_t ev24_fx_spawn(uint32_t param_1, uint32_t param_2,
+                       uint32_t param_3, uint32_t param_4)
+{
+  (void)param_1; (void)param_2; (void)param_3; (void)param_4;
+  return ev24_cluster(0x801421C4u);
+}

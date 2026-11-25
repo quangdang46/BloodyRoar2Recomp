@@ -281,6 +281,7 @@
 80178664 pending_gate_guest
 80141b78 ev_spark_spawn
 80141d2c ev_cmd_dispatch
+801421c4 ev24_fx_spawn
 8017ea7c ev_stream_dispatch
 80144f8c trig_lut_read
 80178664 pending_action_gate

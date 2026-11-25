@@ -3128,11 +3128,12 @@ void ev_stream_dispatch(byte *param_1,byte *param_2)
         pbVar1 = (byte *)PTR_FUN_801b4e68[op]((uint8_t *)param_1,(uint8_t *)param_2, pc_g);
         npc_g = pbVar1 ? guest_of(pbVar1) : 0;
       } else {
-        /* Opcodes >=24 have no clean-C port; the guest table at 0x801b4e68
-         * holds their real handlers (48+ entries). Dispatch through the
-         * recompiled guest code: h(ctrl,motion,pc) -> next pc in $v0. */
+        /* Opcodes >=24 dispatch through the guest handler table; try the
+         * clean-room port first (call_guest4 -> clean_try_dispatch), with
+         * the same generated fallback br2_call_generated used. */
         uint32_t h = *(uint32_t *)guest_at(0x801b4e68u + (uint32_t)op * 4);
-        npc_g = br2_call_generated(h, br2_gaddr(param_1), br2_gaddr(param_2), pc_g, 0);
+        extern uint32_t call_guest4(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+        npc_g = call_guest4(h, br2_gaddr(param_1), br2_gaddr(param_2), pc_g, 0);
         pbVar1 = npc_g ? (byte *)guest_at(npc_g) : (byte *)0;
       }
       { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
