@@ -1862,8 +1862,12 @@
 801ad6ac op_gp_cond_add
 801ad6dc op_dword_add4_entry
 801ad920 op_dword_add_field2
+801ad964 op_hword_clear
+801ad96c op_dword_clear
 801ad994 op_gp_deref_store14
 801ae490 op_gp_indexed_byte_store
+801ae65c op_gp_deref18_add_s16
+801ae68c op_gp_deref8_s16_add
 80187980 prim_emit_64
 80187a48 prim_emit_74
 80187b20 prim_emit_80b

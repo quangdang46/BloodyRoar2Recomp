@@ -5342,6 +5342,62 @@ uint32_t op_s16_store14(uint32_t a0, uint32_t a1)
   return v;
 }
 
+/* ======== 0x801AD964 ======== */
+
+/* op_hword_clear — *(u16*)a1 = 0; $v0 passes through unchanged (the guest
+ * never writes v0). Disasm 0x801AD964-0x801AD96C: jr $ra with the
+ * delay-slot `sh $0,0(a1)` always executing. */
+uint32_t op_hword_clear(uint32_t a0, uint32_t a1)
+{
+  CPUState *c = clean_cpu_state();
+  (void)a0;
+  br2_st16(a1, 0);
+  return c ? c->gpr[2] : 0;
+}
+
+/* ======== 0x801AD96C ======== */
+
+/* op_dword_clear — *(u32*)a1 = 0; $v0 passes through unchanged. Disasm
+ * 0x801AD96C-0x801AD974: jr $ra with the delay-slot `sw $0,0(a1)`. */
+uint32_t op_dword_clear(uint32_t a0, uint32_t a1)
+{
+  CPUState *c = clean_cpu_state();
+  (void)a0;
+  br2_st32(a1, 0);
+  return c ? c->gpr[2] : 0;
+}
+
+/* ======== 0x801AE68C ======== */
+
+/* op_gp_deref8_s16_add — *a1 = *(*(gp+0x4c)+8) + sext16(*(u16*)(a0+2));
+ * returns the stored sum in $v0. Disasm 0x801AE68C-0x801AE6A8:
+ * lw v0,0x4c(gp); lh v1,2(a0); lw v0,8(v0); addu v0,v0,v1; delay-slot
+ * sw v0,0(a1); jr ra. */
+uint32_t op_gp_deref8_s16_add(uint32_t a0, uint32_t a1)
+{
+  uint32_t base = br2_ld32((uint32_t)(guest_gp() + 0x4c));
+  int32_t idx  = (int32_t)(int16_t)br2_ld16(a0 + 2);
+  uint32_t v   = br2_ld32(base + 8) + (uint32_t)idx;
+  br2_st32(a1, v);
+  return v;
+}
+
+/* ======== 0x801AE65C ======== */
+
+/* op_gp_deref18_add_s16 — s = sext16(*(u16*)a0); *(*(gp+0x4c)+0x18) =
+ * *(gp+0x50) + s; returns s in $v0. Disasm 0x801AE65C-0x801AE674:
+ * lh v0,0(a0); lw v1,0x50(gp); lw a0,0x4c(gp); addu v1,v1,v0;
+ * delay-slot sw v1,0x18(a0); jr ra. */
+uint32_t op_gp_deref18_add_s16(uint32_t a0, uint32_t a1)
+{
+  uint32_t s    = (uint32_t)(int32_t)(int16_t)br2_ld16(a0);
+  uint32_t acc  = br2_ld32((uint32_t)(guest_gp() + 0x50));
+  uint32_t base = br2_ld32((uint32_t)(guest_gp() + 0x4c));
+  (void)a1;
+  br2_st32(base + 0x18, acc + s);
+  return s;
+}
+
 /* ======== 0x801ADA24 ======== */
 
 /* op_dword_mul_store — *a1 = lo32(*(u32*)a1 * *(u32*)(a0+2)); the product

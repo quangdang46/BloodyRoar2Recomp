@@ -1008,6 +1008,7 @@ extern void op_dword_add4_entry(void);
 extern void op_dword_add_field2(void);
 extern void op_dword_add_idx2(void);
 extern void op_dword_and_store(void);
+extern void op_dword_clear(void);
 extern void op_dword_mul_store(void);
 extern void op_dword_shl_field(void);
 extern void op_field_store_idx(void);
@@ -1016,6 +1017,8 @@ extern void op_frame_advance(void);
 extern void op_globals_reset_shift(void);
 extern void op_gp_cond_add(void);
 extern void op_gp_cond_store(void);
+extern void op_gp_deref18_add_s16(void);
+extern void op_gp_deref8_s16_add(void);
 extern void op_gp_deref_store14(void);
 extern void op_gp_dword_sub(void);
 extern void op_gp_indexed_byte_store(void);
@@ -1027,6 +1030,7 @@ extern void op_guarded_call(void);
 extern void op_hmask_and_store(void);
 extern void op_hpair_store_0e_36(void);
 extern void op_hpair_store_16_3e(void);
+extern void op_hword_clear(void);
 extern void op_hword_pair_add(void);
 extern void op_job_alloc_init(void);
 extern void op_job_submit_ab(void);
@@ -2914,6 +2918,8 @@ const Br2FnEnt fn_table[] = {
   { 0x801ad6dc, (void *)op_dword_add4_entry },
   { 0x801ad6f0, (void *)op_ctx_fc_set },
   { 0x801ad920, (void *)op_dword_add_field2 },
+  { 0x801ad964, (void *)op_hword_clear },
+  { 0x801ad96c, (void *)op_dword_clear },
   { 0x801ad984, (void *)op_s16_store14 },
   { 0x801ad994, (void *)op_gp_deref_store14 },
   { 0x801ad9d4, (void *)op_gp_dword_sub },
@@ -2928,6 +2934,8 @@ const Br2FnEnt fn_table[] = {
   { 0x801add84, (void *)op_hword_pair_add },
   { 0x801addb4, (void *)op_dword_add_idx2 },
   { 0x801ae490, (void *)op_gp_indexed_byte_store },
+  { 0x801ae65c, (void *)op_gp_deref18_add_s16 },
+  { 0x801ae68c, (void *)op_gp_deref8_s16_add },
   { 0x801ae85c, (void *)op_cached_node_alloc },
   { 0x801ae8a8, (void *)op_call_ad38c },
   { 0x801ae8dc, (void *)op_ad38c_store },
