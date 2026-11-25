@@ -65,6 +65,62 @@ _FT_RE = re.compile(
     r'\b(?:br2eu_func_|br2eu_psx_alias_body_)([0-9a-fA-F]{8})\s*\(\s*cpu\s*\)')
 
 
+# COP2 lwc2: psx_cyc_lwc2_read(cpu, addr) is a 32-bit GTE load == cpu->read_word
+# (the cycle accounting is instrumentation; clean_cost is the timing model).
+_LWC2_RE = re.compile(r'psx_cyc_lwc2_read\s*\(\s*cpu\s*,\s*(.+?)\s*\)')
+# temp decl inside a _pgx brace group:  uint32_t _pgxa = EXPR;  /  _pgxv = ...
+_PGX_DECL_RE = re.compile(r'uint32_t\s+(_pgx\w+)\s*=\s*([^;]+);')
+
+
+def _sub_temps(expr, tmap):
+    """Replace _pgx* identifiers in expr with their (already-resolved) values."""
+    for name in sorted(tmap, key=len, reverse=True):
+        expr = re.sub(r'\b' + re.escape(name) + r'\b', '(' + tmap[name] + ')', expr)
+    return expr
+
+
+def _conv(expr):
+    """Apply load/store semantic rewrites to an expression/statement."""
+    expr = _LWC2_RE.sub(lambda m: f'cpu->read_word({m.group(1).strip()})', expr)
+    return _sub_loads(expr)
+
+
+def unwrap_pgx_group(text):
+    """Unwrap a `{ ... _pgx ... PGXP_* ... }` instrumentation group.
+
+    The generated code declares block-scoped `uint32_t _pgxa/_pgxv = EXPR;`
+    temps, runs the real op using them, then a PGXP_* probe. We record each
+    temp's resolved expr (substituting earlier temps + lwc2->read_word), drop
+    the decls/probes/barriers, and emit the surviving real op(s) with temps
+    substituted. Handles COP2 lwc2/swc2 (cpu->gte_data / gte_write_data /
+    gte_precision_store_word) which REAL_OP_RE alone would drop or leave
+    undeclared."""
+    tmap = {}
+    # resolve temp decls in order (exprs may reference earlier temps)
+    for m in _PGX_DECL_RE.finditer(text):
+        name, expr = m.group(1), m.group(2).strip()
+        expr = _sub_temps(expr, tmap)
+        tmap[name] = _conv(expr).strip()
+    # strip temp decls, PGXP_* probes, debug/barrier lines
+    body = _PGX_DECL_RE.sub('', text)
+    body = re.sub(r'PGXP_\w+\s*\([^;]*\)\s*;?', '', body)
+    body = re.sub(r'g_debug_last_store_pc\s*=\s*[^;]+;', '', body)
+    body = re.sub(r'psx_store_cycle_barrier\s*\(\s*\)\s*;?', '', body)
+    body = re.sub(r'psx_cyc_step\s*\([^;]*\)\s*;?', '', body)
+    # drop stray braces / whitespace
+    body = body.replace('{', ' ').replace('}', ' ')
+    # keep only real statements: gpr/gte_data assign, cpu->read/write_*,
+    # gte_write_data / gte_precision_store_word / gte_read_data calls, cps_ fallthrough
+    stmts = []
+    for st in body.split(';'):
+        st = st.strip()
+        if not st:
+            continue
+        if re.match(r'^(cpu->gpr\[|cpu->gte_data\[|cpu->(?:read|write)_(?:word|half|byte)\s*\(|gte_write_data\s*\(|gte_precision_store_word\s*\(|gte_read_data\s*\(|cps_[0-9a-f]|br2_lw|br2_sw)', st):
+            stmts.append(_sub_loads(_sub_temps(st, tmap)).strip() + ';')
+    return stmts
+
+
 def _sub_loads(s):
     s = _LOAD_RE.sub(lambda m: f'{_LOAD_RD[m.group(1)]}({m.group(2).strip()})', s)
     s = _UNAL_RE.sub(lambda m: f'br2_{m.group(1)}(cpu, {m.group(2).strip()}, {m.group(3).strip()})', s)
@@ -124,18 +180,16 @@ def transform(body):
     while i < n:
         ln = lines[i]
         s = ln.strip()
-        # _pgx / PGXP wrapped op (spans up to ~4 lines until '}')
+        # _pgx / PGXP wrapped op (spans up to ~5 lines until '}')
         if '{' in ln and ('_pgx' in ln or 'PGXP' in ln or 'g_debug' in ln
                           or 'psx_store_cycle_barrier' in ln):
             grp = [ln]
             j = i
-            while '}' not in grp[-1] and j + 1 < n and j - i < 5:
+            while '}' not in grp[-1] and j + 1 < n and j - i < 6:
                 j += 1
                 grp.append(lines[j])
-            text = '\n'.join(grp)
-            m = REAL_OP_RE.search(text)
-            if m:
-                out.append('    ' + rewrite_op(m.group(1)))
+            for st in unwrap_pgx_group('\n'.join(grp)):
+                out.append('    ' + st)
             i = j + 1
             continue
         # bare PGXP continuation line (safety)

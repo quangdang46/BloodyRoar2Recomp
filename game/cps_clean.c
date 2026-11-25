@@ -94,6 +94,63 @@ void cps_8018de6c(void);
 void cps_8018df00(void);
 void cps_8018e028(void);
 void cps_80133aa0(void);
+void cps_80127680(void);
+void cps_801289b4(void);
+void cps_801289d0(void);
+void cps_80129f78(void);
+void cps_80129fc4(void);
+void cps_8012aaa8(void);
+void cps_80133c08(void);
+void cps_80133c9c(void);
+void cps_80133ce8(void);
+void cps_80133db0(void);
+void cps_80133ebc(void);
+void cps_80133ef0(void);
+void cps_80133f30(void);
+void cps_80134080(void);
+void cps_801340a8(void);
+void cps_801340b4(void);
+void cps_801340c4(void);
+void cps_80135724(void);
+void cps_80143ac8(void);
+void cps_80145c90(void);
+void cps_801560f8(void);
+void cps_80172a04(void);
+void cps_80186d20(void);
+void cps_80186e64(void);
+void cps_80186f5c(void);
+void cps_801871bc(void);
+void cps_8018b208(void);
+void cps_8018c0a8(void);
+void cps_8018c18c(void);
+void cps_8018cbfc(void);
+void cps_8018cdf8(void);
+void cps_8018d538(void);
+void cps_8018d540(void);
+void cps_8018d568(void);
+void cps_8018d5b4(void);
+void cps_8018dc18(void);
+void cps_8018dc20(void);
+void cps_80194960(void);
+void cps_80194b60(void);
+void cps_80194c50(void);
+void cps_80194f10(void);
+void cps_80195050(void);
+void cps_80195160(void);
+void cps_801951b0(void);
+void cps_80195398(void);
+void cps_801a4308(void);
+void cps_801a4414(void);
+void cps_801a6bd0(void);
+void cps_801ad424(void);
+void cps_801af804(void);
+void cps_801af828(void);
+void cps_801af84c(void);
+void cps_801af870(void);
+void cps_801af89c(void);
+void cps_801af8c0(void);
+void cps_801af8e4(void);
+void cps_801af908(void);
 
 /* cps_80196370 — clean CPS transliteration of br2eu_func_80196370 (guest 0x80196370)
  * from SLES_017.22_full_45.c. */
@@ -5026,4 +5083,4720 @@ block_80133BC8:
     cpu->gpr[29] = cpu->gpr[29] + 80;
     psx_check_interrupts_at(cpu, _jt_80133C00);
     cpu->pc = _jt_80133C00; return;  /* CPS: jr $ra */
+}
+
+/* cps_80127680 — clean CPS transliteration of br2eu_func_80127680 (guest 0x80127680)
+ * from SLES_017.22_full_00.c. */
+void cps_80127680(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x80127680, Size: 12 bytes, Blocks: 1 */
+
+block_80127680:
+    cpu->gpr[2] = 0x801C << 16;  /* 0x801C0000 */
+    uint32_t _jt_80127684 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[2] + 18368;
+    psx_check_interrupts_at(cpu, _jt_80127684);
+    cpu->pc = _jt_80127684; return;  /* CPS: jr $ra */
+}
+
+/* cps_801289b4 — clean CPS transliteration of br2eu_func_801289B4 (guest 0x801289b4)
+ * from SLES_017.22_full_00.c. */
+void cps_801289b4(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x801289B4, Size: 28 bytes, Blocks: 1 */
+
+block_801289B4:
+    cpu->gpr[7] = cpu->read_word(cpu->gpr[4] + 204);
+    cpu->gpr[9] = cpu->gpr[5];
+    cpu->gpr[3] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[7]);
+    /* nop */  /* 0x801289C0: 0x00000000 */
+    cpu->gpr[2] = (cpu->gpr[3] < (uint32_t)6) ? 1 : 0;  /* 0x801289C4: 0x2C620006 */
+    int _bc_801289C8 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[8] = cpu->gpr[6];
+    if (_bc_801289C8) {
+        psx_check_interrupts_at(cpu, 0x801289F0u);
+        cpu->pc = 0x801289F0u; return;  /* CPS taken: split */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801289D0u);
+        cpu->pc = 0x801289D0u; return;  /* CPS not taken: split */
+    }
+    cps_801289d0();  /* fallthrough to next function */
+}
+
+/* cps_801289d0 — clean CPS transliteration of br2eu_func_801289D0 (guest 0x801289d0)
+ * from SLES_017.22_full_00.c. */
+void cps_801289d0(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x801289F0u: goto block_801289F0;
+            default: break;
+        }
+    }
+    /* Address: 0x801289D0, Size: 40 bytes, Blocks: 2 */
+
+block_801289D0:
+    cpu->gpr[2] = 0x8012 << 16;  /* 0x80120000 */
+    cpu->gpr[2] = cpu->gpr[2] + -5112;
+    cpu->gpr[3] = cpu->gpr[3] << 2;
+    cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[2];
+    cpu->gpr[2] = cpu->read_word(cpu->gpr[3]);
+    /* nop */  /* 0x801289E4: 0x00000000 */
+    uint32_t _jt_801289E8 = cpu->gpr[2];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x801289EC: 0x00000000 */
+    psx_check_interrupts_at(cpu, _jt_801289E8);
+    cpu->pc = _jt_801289E8; return;  /* CPS: jr cpu->gpr[2] */
+
+block_801289F0:
+    uint32_t _jt_801289F0 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[8] & 0xFFFF;  /* 0x801289F4: 0x3102FFFF */
+    psx_check_interrupts_at(cpu, _jt_801289F0);
+    cpu->pc = _jt_801289F0; return;  /* CPS: jr $ra */
+}
+
+/* cps_80129f78 — clean CPS transliteration of br2eu_func_80129F78 (guest 0x80129f78)
+ * from SLES_017.22_full_01.c. */
+void cps_80129f78(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x80129F78, Size: 48 bytes, Blocks: 1 */
+
+block_80129F78:
+    cpu->gpr[4] = 0x801F << 16;  /* 0x801F0000 */
+    cpu->gpr[3] = cpu->read_byte(cpu->gpr[4] + -31830);
+    /* nop */  /* 0x80129F80: 0x00000000 */
+    cpu->gpr[2] = cpu->gpr[3] + 1;
+    cpu->write_byte(cpu->gpr[4] + -31830, (uint8_t)cpu->gpr[2]);
+    cpu->gpr[2] = 0x8012 << 16;  /* 0x80120000 */
+    cpu->gpr[2] = cpu->gpr[2] + -5056;
+    cpu->gpr[3] = cpu->gpr[3] & 0x00FF;  /* 0x80129F94: 0x306300FF */
+    cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[2];
+    cpu->gpr[2] = cpu->read_byte(cpu->gpr[3]);
+    uint32_t _jt_80129FA0 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x80129FA4: 0x00000000 */
+    psx_check_interrupts_at(cpu, _jt_80129FA0);
+    cpu->pc = _jt_80129FA0; return;  /* CPS: jr $ra */
+}
+
+/* cps_80129fc4 — clean CPS transliteration of br2eu_func_80129FC4 (guest 0x80129fc4)
+ * from SLES_017.22_full_01.c. */
+void cps_80129fc4(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x80129FC4, Size: 48 bytes, Blocks: 1 */
+
+block_80129FC4:
+    cpu->gpr[4] = 0x801F << 16;  /* 0x801F0000 */
+    cpu->gpr[3] = cpu->read_byte(cpu->gpr[4] + -31824);
+    /* nop */  /* 0x80129FCC: 0x00000000 */
+    cpu->gpr[2] = cpu->gpr[3] + 1;
+    cpu->write_byte(cpu->gpr[4] + -31824, (uint8_t)cpu->gpr[2]);
+    cpu->gpr[2] = 0x801F << 16;  /* 0x801F0000 */
+    cpu->gpr[2] = cpu->gpr[2] + -31744;
+    cpu->gpr[3] = cpu->gpr[3] & 0x00FF;  /* 0x80129FE0: 0x306300FF */
+    cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[2];
+    cpu->gpr[2] = cpu->read_byte(cpu->gpr[3]);
+    uint32_t _jt_80129FEC = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x80129FF0: 0x00000000 */
+    psx_check_interrupts_at(cpu, _jt_80129FEC);
+    cpu->pc = _jt_80129FEC; return;  /* CPS: jr $ra */
+}
+
+/* cps_8012aaa8 — clean CPS transliteration of br2eu_func_8012AAA8 (guest 0x8012aaa8)
+ * from SLES_017.22_full_01.c. */
+void cps_8012aaa8(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x8012AAA8, Size: 16 bytes, Blocks: 1 */
+
+block_8012AAA8:
+    cpu->gpr[2] = 0x1F80 << 16;  /* 0x1F800000 */
+    cpu->gpr[2] = cpu->read_byte(cpu->gpr[2] + 25);
+    uint32_t _jt_8012AAB0 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x8012AAB4: 0x00000000 */
+    psx_check_interrupts_at(cpu, _jt_8012AAB0);
+    cpu->pc = _jt_8012AAB0; return;  /* CPS: jr $ra */
+}
+
+/* cps_80133c08 — clean CPS transliteration of br2eu_func_80133C08 (guest 0x80133c08)
+ * from SLES_017.22_full_06.c. */
+void cps_80133c08(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x80133C64u: goto block_80133C64;
+            case 0x80133C78u: goto block_80133C78;
+            case 0x80133C70u: goto block_80133C70;
+            default: break;
+        }
+    }
+    /* Address: 0x80133C08, Size: 148 bytes, Blocks: 4 */
+
+block_80133C08:
+    cpu->gpr[29] = cpu->gpr[29] + -72;
+    cpu->write_word(cpu->gpr[29] + 64, cpu->gpr[18]);
+    cpu->gpr[18] = cpu->gpr[4];
+    cpu->write_word(cpu->gpr[29] + 56, cpu->gpr[16]);
+    cpu->gpr[16] = cpu->gpr[5];
+    cpu->write_word(cpu->gpr[29] + 68, cpu->gpr[31]);
+    cpu->write_word(cpu->gpr[29] + 60, cpu->gpr[17]);
+    cpu->gpr[2] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[6]);
+    cpu->gpr[3] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[16]);
+    cpu->gpr[17] = cpu->gpr[7];
+    cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
+    cpu->write_word(cpu->gpr[29] + 16, cpu->gpr[2]);
+    cpu->gpr[2] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[6] + 2);
+    cpu->gpr[3] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[16] + 2);
+    cpu->gpr[4] = cpu->gpr[29] + 16;
+    cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
+    cpu->write_word(cpu->gpr[29] + 20, cpu->gpr[2]);
+    cpu->gpr[2] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[6] + 4);
+    cpu->gpr[3] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[16] + 4);
+    cpu->gpr[5] = cpu->gpr[29] + 32;
+    cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
+    cpu->gpr[31] = 0x80133C64u;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    cpu->write_word(cpu->gpr[29] + 24, cpu->gpr[2]);
+    psx_check_interrupts_at(cpu, 0x80194630u);
+    cpu->pc = 0x80194630u; return;  /* CPS jal -> 0x80194630 */
+
+block_80133C64:
+    cpu->gpr[4] = cpu->gpr[2];
+    int _bc_80133C68 = (cpu->gpr[4] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x80133C6C: 0x00000000 */
+    if (_bc_80133C68) {
+        psx_check_interrupts_at(cpu, 0x80133D68u);
+        cpu->pc = 0x80133D68u; return;  /* CPS taken: split */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80133C70u);
+        goto block_80133C70;  /* not taken */
+    }
+
+block_80133C70:
+    cpu->gpr[31] = 0x80133C78u;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x80133C74: 0x00000000 */
+    psx_check_interrupts_at(cpu, 0x80194500u);
+    cpu->pc = 0x80194500u; return;  /* CPS jal -> 0x80194500 */
+
+block_80133C78:
+    cpu->gpr[6] = cpu->read_word(cpu->gpr[29] + 32);
+    cpu->gpr[4] = cpu->gpr[2];
+    { int64_t result = (int64_t)(int32_t)cpu->gpr[6] * (int64_t)(int32_t)cpu->gpr[2]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
+    psx_muldiv_set(cpu, psx_mult_latency_s(cpu->gpr[6]));
+    cpu->gpr[12] = cpu->lo;
+    psx_muldiv_stall(cpu);
+    cpu->gpr[2] = cpu->read_word(cpu->gpr[29] + 36);
+    /* nop */  /* 0x80133C8C: 0x00000000 */
+    { int64_t result = (int64_t)(int32_t)cpu->gpr[2] * (int64_t)(int32_t)cpu->gpr[4]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
+    psx_muldiv_set(cpu, psx_mult_latency_s(cpu->gpr[2]));
+    cpu->gpr[3] = cpu->lo;
+    psx_muldiv_stall(cpu);
+    cpu->gpr[2] = cpu->read_word(cpu->gpr[29] + 40);
+    cps_80133c9c(); return;  /* fallthrough to split piece */
+}
+
+/* cps_80133c9c — clean CPS transliteration of br2eu_func_80133C9C (guest 0x80133c9c)
+ * from SLES_017.22_full_06.c. */
+void cps_80133c9c(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x80133CD4u: goto block_80133CD4;
+            case 0x80133CDCu: goto block_80133CDC;
+            case 0x80133CE0u: goto block_80133CE0;
+            default: break;
+        }
+    }
+    /* Address: 0x80133C9C, Size: 76 bytes, Blocks: 4 */
+
+block_80133C9C:
+    /* nop */  /* 0x80133C9C: 0x00000000 */
+    { int64_t result = (int64_t)(int32_t)cpu->gpr[2] * (int64_t)(int32_t)cpu->gpr[4]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
+    psx_muldiv_set(cpu, psx_mult_latency_s(cpu->gpr[2]));
+    cpu->gpr[2] = cpu->gpr[17] + 12;
+    cpu->gpr[2] = cpu->gpr[2] << 16;
+    cpu->gpr[2] = (int32_t)cpu->gpr[2] >> 16;
+    cpu->gpr[4] = (int32_t)cpu->gpr[12] >> (cpu->gpr[2] & 0x1F);
+    cpu->gpr[3] = (int32_t)cpu->gpr[3] >> (cpu->gpr[2] & 0x1F);
+    cpu->write_half(cpu->gpr[29] + 48, (uint16_t)cpu->gpr[4]);
+    cpu->gpr[4] = cpu->gpr[4] << 16;
+    cpu->write_half(cpu->gpr[29] + 50, (uint16_t)cpu->gpr[3]);
+    cpu->gpr[5] = cpu->lo;
+    psx_muldiv_stall(cpu);
+    cpu->gpr[2] = (int32_t)cpu->gpr[5] >> (cpu->gpr[2] & 0x1F);
+    int _bc_80133CCC = (cpu->gpr[4] != cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->write_half(cpu->gpr[29] + 52, (uint16_t)cpu->gpr[2]);
+    if (_bc_80133CCC) {
+        psx_check_interrupts_at(cpu, 0x80133CE0u);
+        goto block_80133CE0;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80133CD4u);
+        goto block_80133CD4;  /* not taken */
+    }
+
+block_80133CD4:
+    int _bc_80133CD4 = (cpu->gpr[6] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = 1;
+    if (_bc_80133CD4) {
+        psx_check_interrupts_at(cpu, 0x80133CE0u);
+        goto block_80133CE0;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80133CDCu);
+        goto block_80133CDC;  /* not taken */
+    }
+
+block_80133CDC:
+    cpu->write_half(cpu->gpr[29] + 48, (uint16_t)cpu->gpr[2]);
+    /* fall through to block_80133CE0 */
+
+block_80133CE0:
+    cpu->gpr[2] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[29] + 50);
+    /* nop */  /* 0x80133CE4: 0x00000000 */
+    cps_80133ce8(); return;  /* fallthrough to split piece */
+}
+
+/* cps_80133ce8 — clean CPS transliteration of br2eu_func_80133CE8 (guest 0x80133ce8)
+ * from SLES_017.22_full_06.c. */
+void cps_80133ce8(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x80133CF0u: goto block_80133CF0;
+            case 0x80133D00u: goto block_80133D00;
+            case 0x80133D04u: goto block_80133D04;
+            case 0x80133D14u: goto block_80133D14;
+            case 0x80133D24u: goto block_80133D24;
+            case 0x80133D28u: goto block_80133D28;
+            default: break;
+        }
+    }
+    /* Address: 0x80133CE8, Size: 128 bytes, Blocks: 7 */
+
+block_80133CE8:
+    int _bc_80133CE8 = (cpu->gpr[2] != cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x80133CEC: 0x00000000 */
+    if (_bc_80133CE8) {
+        psx_check_interrupts_at(cpu, 0x80133D04u);
+        goto block_80133D04;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80133CF0u);
+        goto block_80133CF0;  /* not taken */
+    }
+
+block_80133CF0:
+    cpu->gpr[2] = cpu->read_word(cpu->gpr[29] + 36);
+    /* nop */  /* 0x80133CF4: 0x00000000 */
+    int _bc_80133CF8 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = 1;
+    if (_bc_80133CF8) {
+        psx_check_interrupts_at(cpu, 0x80133D04u);
+        goto block_80133D04;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80133D00u);
+        goto block_80133D00;  /* not taken */
+    }
+
+block_80133D00:
+    cpu->write_half(cpu->gpr[29] + 50, (uint16_t)cpu->gpr[2]);
+    /* fall through to block_80133D04 */
+
+block_80133D04:
+    cpu->gpr[2] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[29] + 52);
+    /* nop */  /* 0x80133D08: 0x00000000 */
+    int _bc_80133D0C = (cpu->gpr[2] != cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x80133D10: 0x00000000 */
+    if (_bc_80133D0C) {
+        psx_check_interrupts_at(cpu, 0x80133D28u);
+        goto block_80133D28;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80133D14u);
+        goto block_80133D14;  /* not taken */
+    }
+
+block_80133D14:
+    cpu->gpr[2] = cpu->read_word(cpu->gpr[29] + 40);
+    /* nop */  /* 0x80133D18: 0x00000000 */
+    int _bc_80133D1C = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = 1;
+    if (_bc_80133D1C) {
+        psx_check_interrupts_at(cpu, 0x80133D28u);
+        goto block_80133D28;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80133D24u);
+        goto block_80133D24;  /* not taken */
+    }
+
+block_80133D24:
+    cpu->write_half(cpu->gpr[29] + 52, (uint16_t)cpu->gpr[2]);
+    /* fall through to block_80133D28 */
+
+block_80133D28:
+    cpu->gpr[2] = cpu->read_half(cpu->gpr[16]);
+    cpu->gpr[3] = cpu->read_half(cpu->gpr[29] + 48);
+    /* nop */  /* 0x80133D30: 0x00000000 */
+    cpu->gpr[2] = cpu->gpr[2] + cpu->gpr[3];
+    cpu->write_half(cpu->gpr[16], (uint16_t)cpu->gpr[2]);
+    cpu->gpr[2] = cpu->read_half(cpu->gpr[16] + 2);
+    cpu->gpr[3] = cpu->read_half(cpu->gpr[29] + 50);
+    /* nop */  /* 0x80133D44: 0x00000000 */
+    cpu->gpr[2] = cpu->gpr[2] + cpu->gpr[3];
+    cpu->write_half(cpu->gpr[16] + 2, (uint16_t)cpu->gpr[2]);
+    cpu->gpr[2] = cpu->read_half(cpu->gpr[16] + 4);
+    cpu->gpr[3] = cpu->read_half(cpu->gpr[29] + 52);
+    /* nop */  /* 0x80133D58: 0x00000000 */
+    cpu->gpr[2] = cpu->gpr[2] + cpu->gpr[3];
+    /* delay slot (always executes) */
+    cpu->write_half(cpu->gpr[16] + 4, (uint16_t)cpu->gpr[2]);
+    psx_check_interrupts_at(cpu, 0x80133D74u);
+    cpu->pc = 0x80133D74u; return;  /* CPS j: split */
+}
+
+/* cps_80133db0 — clean CPS transliteration of br2eu_func_80133DB0 (guest 0x80133db0)
+ * from SLES_017.22_full_06.c. */
+void cps_80133db0(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x80133E40u: goto block_80133E40;
+            case 0x80133E48u: goto block_80133E48;
+            case 0x80133E28u: goto block_80133E28;
+            case 0x80133E2Cu: goto block_80133E2C;
+            case 0x80133E54u: goto block_80133E54;
+            case 0x80133E78u: goto block_80133E78;
+            default: break;
+        }
+    }
+    /* Address: 0x80133DB0, Size: 268 bytes, Blocks: 7 */
+
+block_80133DB0:
+    cpu->gpr[29] = cpu->gpr[29] + -56;
+    cpu->write_word(cpu->gpr[29] + 36, cpu->gpr[17]);
+    cpu->gpr[17] = cpu->gpr[5];
+    cpu->write_word(cpu->gpr[29] + 40, cpu->gpr[18]);
+    cpu->gpr[18] = cpu->gpr[6];
+    cpu->write_word(cpu->gpr[29] + 48, cpu->gpr[31]);
+    cpu->write_word(cpu->gpr[29] + 44, cpu->gpr[19]);
+    cpu->write_word(cpu->gpr[29] + 32, cpu->gpr[16]);
+    cpu->gpr[2] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[18]);
+    cpu->gpr[3] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[17]);
+    cpu->gpr[19] = cpu->gpr[4];
+    cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
+    cpu->gpr[2] = cpu->gpr[2] << 20;
+    cpu->gpr[2] = (int32_t)cpu->gpr[2] >> 20;
+    cpu->write_half(cpu->gpr[29] + 16, (uint16_t)cpu->gpr[2]);
+    cpu->gpr[2] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[18] + 2);
+    cpu->gpr[3] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[17] + 2);
+    cpu->gpr[5] = cpu->gpr[7];
+    cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
+    cpu->gpr[2] = cpu->gpr[2] << 20;
+    cpu->gpr[2] = (int32_t)cpu->gpr[2] >> 20;
+    cpu->write_half(cpu->gpr[29] + 18, (uint16_t)cpu->gpr[2]);
+    cpu->gpr[2] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[18] + 4);
+    cpu->gpr[3] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[17] + 4);
+    cpu->gpr[7] = cpu->gpr[7] << 16;
+    cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
+    cpu->gpr[2] = cpu->gpr[2] << 20;
+    cpu->gpr[2] = (int32_t)cpu->gpr[2] >> 20;
+    int _bc_80133E20 = (cpu->gpr[7] != cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->write_half(cpu->gpr[29] + 20, (uint16_t)cpu->gpr[2]);
+    if (_bc_80133E20) {
+        psx_check_interrupts_at(cpu, 0x80133E2Cu);
+        goto block_80133E2C;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80133E28u);
+        goto block_80133E28;  /* not taken */
+    }
+
+block_80133E28:
+    cpu->gpr[5] = 1;
+    /* fall through to block_80133E2C */
+
+block_80133E2C:
+    cpu->gpr[4] = cpu->gpr[29] + 16;
+    cpu->gpr[2] = cpu->gpr[5] << 16;
+    cpu->gpr[16] = (int32_t)cpu->gpr[2] >> 16;
+    cpu->gpr[31] = 0x80133E40u;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[5] = cpu->gpr[29] + 24;
+    psx_check_interrupts_at(cpu, 0x80194660u);
+    cpu->pc = 0x80194660u; return;  /* CPS jal -> 0x80194660 */
+
+block_80133E40:
+    cpu->gpr[31] = 0x80133E48u;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[4] = cpu->gpr[2];
+    psx_check_interrupts_at(cpu, 0x80194500u);
+    cpu->pc = 0x80194500u; return;  /* CPS jal -> 0x80194500 */
+
+block_80133E48:
+    cpu->gpr[2] = ((int32_t)cpu->gpr[16] < (int32_t)cpu->gpr[2]) ? 1 : 0;  /* 0x80133E48: 0x0202102A */
+    int _bc_80133E4C = (cpu->gpr[2] != cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x80133E50: 0x00000000 */
+    if (_bc_80133E4C) {
+        psx_check_interrupts_at(cpu, 0x80133E78u);
+        goto block_80133E78;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80133E54u);
+        goto block_80133E54;  /* not taken */
+    }
+
+block_80133E54:
+    cpu->gpr[2] = cpu->read_half(cpu->gpr[18]);
+    /* nop */  /* 0x80133E58: 0x00000000 */
+    cpu->write_half(cpu->gpr[17], (uint16_t)cpu->gpr[2]);
+    cpu->gpr[2] = cpu->read_half(cpu->gpr[18] + 2);
+    /* nop */  /* 0x80133E64: 0x00000000 */
+    cpu->write_half(cpu->gpr[17] + 2, (uint16_t)cpu->gpr[2]);
+    cpu->gpr[2] = cpu->read_half(cpu->gpr[18] + 4);
+    /* delay slot (always executes) */
+    cpu->write_half(cpu->gpr[17] + 4, (uint16_t)cpu->gpr[2]);
+    psx_check_interrupts_at(cpu, 0x80133EF0u);
+    cpu->pc = 0x80133EF0u; return;  /* CPS j: split */
+
+block_80133E78:
+    cpu->gpr[2] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[29] + 24);
+    /* nop */  /* 0x80133E7C: 0x00000000 */
+    { int64_t result = (int64_t)(int32_t)cpu->gpr[2] * (int64_t)(int32_t)cpu->gpr[16]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
+    psx_muldiv_set(cpu, psx_mult_latency_s(cpu->gpr[2]));
+    cpu->gpr[8] = cpu->lo;
+    psx_muldiv_stall(cpu);
+    cpu->gpr[3] = (int32_t)cpu->gpr[8] >> 12;
+    cpu->write_half(cpu->gpr[29] + 16, (uint16_t)cpu->gpr[3]);
+    cpu->gpr[2] = cpu->read_half(cpu->gpr[17]);
+    /* nop */  /* 0x80133E94: 0x00000000 */
+    cpu->gpr[2] = cpu->gpr[2] + cpu->gpr[3];
+    cpu->write_half(cpu->gpr[17], (uint16_t)cpu->gpr[2]);
+    cpu->gpr[2] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[29] + 26);
+    /* nop */  /* 0x80133EA4: 0x00000000 */
+    { int64_t result = (int64_t)(int32_t)cpu->gpr[2] * (int64_t)(int32_t)cpu->gpr[16]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
+    psx_muldiv_set(cpu, psx_mult_latency_s(cpu->gpr[2]));
+    cpu->gpr[8] = cpu->lo;
+    psx_muldiv_stall(cpu);
+    cpu->gpr[3] = (int32_t)cpu->gpr[8] >> 12;
+    cpu->write_half(cpu->gpr[29] + 18, (uint16_t)cpu->gpr[3]);
+    cpu->gpr[2] = cpu->read_half(cpu->gpr[17] + 2);
+    cps_80133ebc(); return;  /* fallthrough to split piece */
+}
+
+/* cps_80133ebc — clean CPS transliteration of br2eu_func_80133EBC (guest 0x80133ebc)
+ * from SLES_017.22_full_06.c. */
+void cps_80133ebc(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x80133EBC, Size: 52 bytes, Blocks: 1 */
+
+block_80133EBC:
+    /* nop */  /* 0x80133EBC: 0x00000000 */
+    cpu->gpr[2] = cpu->gpr[2] + cpu->gpr[3];
+    cpu->write_half(cpu->gpr[17] + 2, (uint16_t)cpu->gpr[2]);
+    cpu->gpr[2] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[29] + 28);
+    /* nop */  /* 0x80133ECC: 0x00000000 */
+    { int64_t result = (int64_t)(int32_t)cpu->gpr[2] * (int64_t)(int32_t)cpu->gpr[16]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
+    psx_muldiv_set(cpu, psx_mult_latency_s(cpu->gpr[2]));
+    cpu->gpr[8] = cpu->lo;
+    psx_muldiv_stall(cpu);
+    cpu->gpr[3] = (int32_t)cpu->gpr[8] >> 12;
+    cpu->write_half(cpu->gpr[29] + 20, (uint16_t)cpu->gpr[3]);
+    cpu->gpr[2] = cpu->read_half(cpu->gpr[17] + 4);
+    /* nop */  /* 0x80133EE4: 0x00000000 */
+    cpu->gpr[2] = cpu->gpr[2] + cpu->gpr[3];
+    cpu->write_half(cpu->gpr[17] + 4, (uint16_t)cpu->gpr[2]);
+    cps_80133ef0(); return;  /* fallthrough to split piece */
+    cps_80133ef0();  /* fallthrough to next function */
+}
+
+/* cps_80133ef0 — clean CPS transliteration of br2eu_func_80133EF0 (guest 0x80133ef0)
+ * from SLES_017.22_full_06.c. */
+void cps_80133ef0(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x80133EF0, Size: 64 bytes, Blocks: 1 */
+
+block_80133EF0:
+    cpu->gpr[2] = cpu->gpr[19];
+    cpu->gpr[9] = br2_lwl(cpu, cpu->gpr[29] + 19, cpu->gpr[9]);
+    cpu->gpr[9] = br2_lwr(cpu, cpu->gpr[29] + 16, cpu->gpr[9]);
+    cpu->gpr[10] = br2_lwl(cpu, cpu->gpr[29] + 23, cpu->gpr[10]);
+    cpu->gpr[10] = br2_lwr(cpu, cpu->gpr[29] + 20, cpu->gpr[10]);
+    cpu->gpr[31] = cpu->read_word(cpu->gpr[29] + 48);
+    cpu->gpr[19] = cpu->read_word(cpu->gpr[29] + 44);
+    cpu->gpr[18] = cpu->read_word(cpu->gpr[29] + 40);
+    cpu->gpr[17] = cpu->read_word(cpu->gpr[29] + 36);
+    cpu->gpr[16] = cpu->read_word(cpu->gpr[29] + 32);
+    uint32_t _jt_80133F28 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[29] = cpu->gpr[29] + 56;
+    psx_check_interrupts_at(cpu, _jt_80133F28);
+    cpu->pc = _jt_80133F28; return;  /* CPS: jr $ra */
+}
+
+/* cps_80133f30 — clean CPS transliteration of br2eu_func_80133F30 (guest 0x80133f30)
+ * from SLES_017.22_full_06.c. */
+void cps_80133f30(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x80133FA4u: goto block_80133FA4;
+            case 0x80133FB8u: goto block_80133FB8;
+            case 0x80133FB0u: goto block_80133FB0;
+            case 0x80134014u: goto block_80134014;
+            case 0x8013401Cu: goto block_8013401C;
+            case 0x80134020u: goto block_80134020;
+            case 0x80134030u: goto block_80134030;
+            case 0x80134040u: goto block_80134040;
+            case 0x80134044u: goto block_80134044;
+            case 0x80134054u: goto block_80134054;
+            case 0x80134064u: goto block_80134064;
+            case 0x80134068u: goto block_80134068;
+            default: break;
+        }
+    }
+    /* Address: 0x80133F30, Size: 336 bytes, Blocks: 13 */
+
+block_80133F30:
+    cpu->gpr[29] = cpu->gpr[29] + -48;
+    cpu->write_word(cpu->gpr[29] + 40, cpu->gpr[18]);
+    cpu->gpr[18] = cpu->gpr[4];
+    cpu->write_word(cpu->gpr[29] + 32, cpu->gpr[16]);
+    cpu->gpr[16] = cpu->gpr[5];
+    cpu->write_word(cpu->gpr[29] + 44, cpu->gpr[31]);
+    cpu->write_word(cpu->gpr[29] + 36, cpu->gpr[17]);
+    cpu->gpr[2] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[6]);
+    cpu->gpr[3] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[16]);
+    cpu->gpr[17] = cpu->gpr[7];
+    cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
+    cpu->gpr[2] = cpu->gpr[2] << 20;
+    cpu->gpr[2] = (int32_t)cpu->gpr[2] >> 20;
+    cpu->write_half(cpu->gpr[29] + 16, (uint16_t)cpu->gpr[2]);
+    cpu->gpr[2] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[6] + 2);
+    cpu->gpr[3] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[16] + 2);
+    cpu->gpr[4] = cpu->gpr[29] + 16;
+    cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
+    cpu->gpr[2] = cpu->gpr[2] << 20;
+    cpu->gpr[2] = (int32_t)cpu->gpr[2] >> 20;
+    cpu->write_half(cpu->gpr[29] + 18, (uint16_t)cpu->gpr[2]);
+    cpu->gpr[2] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[6] + 4);
+    cpu->gpr[3] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[16] + 4);
+    cpu->gpr[5] = cpu->gpr[29] + 24;
+    cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
+    cpu->gpr[2] = cpu->gpr[2] << 20;
+    cpu->gpr[2] = (int32_t)cpu->gpr[2] >> 20;
+    cpu->gpr[31] = 0x80133FA4u;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    cpu->write_half(cpu->gpr[29] + 20, (uint16_t)cpu->gpr[2]);
+    psx_check_interrupts_at(cpu, 0x80194660u);
+    cpu->pc = 0x80194660u; return;  /* CPS jal -> 0x80194660 */
+
+block_80133FA4:
+    cpu->gpr[4] = cpu->gpr[2];
+    int _bc_80133FA8 = (cpu->gpr[4] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x80133FAC: 0x00000000 */
+    if (_bc_80133FA8) {
+        psx_check_interrupts_at(cpu, 0x801340A8u);
+        cpu->pc = 0x801340A8u; return;  /* CPS taken: split */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80133FB0u);
+        goto block_80133FB0;  /* not taken */
+    }
+
+block_80133FB0:
+    cpu->gpr[31] = 0x80133FB8u;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x80133FB4: 0x00000000 */
+    psx_check_interrupts_at(cpu, 0x80194500u);
+    cpu->pc = 0x80194500u; return;  /* CPS jal -> 0x80194500 */
+
+block_80133FB8:
+    cpu->gpr[6] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[29] + 24);
+    cpu->gpr[4] = cpu->gpr[2];
+    { int64_t result = (int64_t)(int32_t)cpu->gpr[6] * (int64_t)(int32_t)cpu->gpr[2]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
+    psx_muldiv_set(cpu, psx_mult_latency_s(cpu->gpr[6]));
+    cpu->gpr[12] = cpu->lo;
+    psx_muldiv_stall(cpu);
+    cpu->gpr[2] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[29] + 26);
+    /* nop */  /* 0x80133FCC: 0x00000000 */
+    { int64_t result = (int64_t)(int32_t)cpu->gpr[2] * (int64_t)(int32_t)cpu->gpr[4]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
+    psx_muldiv_set(cpu, psx_mult_latency_s(cpu->gpr[2]));
+    cpu->gpr[3] = cpu->lo;
+    psx_muldiv_stall(cpu);
+    cpu->gpr[2] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[29] + 28);
+    /* nop */  /* 0x80133FDC: 0x00000000 */
+    { int64_t result = (int64_t)(int32_t)cpu->gpr[2] * (int64_t)(int32_t)cpu->gpr[4]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
+    psx_muldiv_set(cpu, psx_mult_latency_s(cpu->gpr[2]));
+    cpu->gpr[2] = cpu->gpr[17] + 12;
+    cpu->gpr[2] = cpu->gpr[2] << 16;
+    cpu->gpr[2] = (int32_t)cpu->gpr[2] >> 16;
+    cpu->gpr[4] = (int32_t)cpu->gpr[12] >> (cpu->gpr[2] & 0x1F);
+    cpu->gpr[3] = (int32_t)cpu->gpr[3] >> (cpu->gpr[2] & 0x1F);
+    cpu->write_half(cpu->gpr[29] + 16, (uint16_t)cpu->gpr[4]);
+    cpu->gpr[4] = cpu->gpr[4] << 16;
+    cpu->write_half(cpu->gpr[29] + 18, (uint16_t)cpu->gpr[3]);
+    cpu->gpr[5] = cpu->lo;
+    psx_muldiv_stall(cpu);
+    cpu->gpr[2] = (int32_t)cpu->gpr[5] >> (cpu->gpr[2] & 0x1F);
+    int _bc_8013400C = (cpu->gpr[4] != cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->write_half(cpu->gpr[29] + 20, (uint16_t)cpu->gpr[2]);
+    if (_bc_8013400C) {
+        psx_check_interrupts_at(cpu, 0x80134020u);
+        goto block_80134020;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80134014u);
+        goto block_80134014;  /* not taken */
+    }
+
+block_80134014:
+    int _bc_80134014 = (cpu->gpr[6] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = 1;
+    if (_bc_80134014) {
+        psx_check_interrupts_at(cpu, 0x80134020u);
+        goto block_80134020;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8013401Cu);
+        goto block_8013401C;  /* not taken */
+    }
+
+block_8013401C:
+    cpu->write_half(cpu->gpr[29] + 16, (uint16_t)cpu->gpr[2]);
+    /* fall through to block_80134020 */
+
+block_80134020:
+    cpu->gpr[2] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[29] + 18);
+    /* nop */  /* 0x80134024: 0x00000000 */
+    int _bc_80134028 = (cpu->gpr[2] != cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x8013402C: 0x00000000 */
+    if (_bc_80134028) {
+        psx_check_interrupts_at(cpu, 0x80134044u);
+        goto block_80134044;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80134030u);
+        goto block_80134030;  /* not taken */
+    }
+
+block_80134030:
+    cpu->gpr[2] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[29] + 26);
+    /* nop */  /* 0x80134034: 0x00000000 */
+    int _bc_80134038 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = 1;
+    if (_bc_80134038) {
+        psx_check_interrupts_at(cpu, 0x80134044u);
+        goto block_80134044;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80134040u);
+        goto block_80134040;  /* not taken */
+    }
+
+block_80134040:
+    cpu->write_half(cpu->gpr[29] + 18, (uint16_t)cpu->gpr[2]);
+    /* fall through to block_80134044 */
+
+block_80134044:
+    cpu->gpr[2] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[29] + 20);
+    /* nop */  /* 0x80134048: 0x00000000 */
+    int _bc_8013404C = (cpu->gpr[2] != cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x80134050: 0x00000000 */
+    if (_bc_8013404C) {
+        psx_check_interrupts_at(cpu, 0x80134068u);
+        goto block_80134068;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80134054u);
+        goto block_80134054;  /* not taken */
+    }
+
+block_80134054:
+    cpu->gpr[2] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[29] + 28);
+    /* nop */  /* 0x80134058: 0x00000000 */
+    int _bc_8013405C = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = 1;
+    if (_bc_8013405C) {
+        psx_check_interrupts_at(cpu, 0x80134068u);
+        goto block_80134068;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80134064u);
+        goto block_80134064;  /* not taken */
+    }
+
+block_80134064:
+    cpu->write_half(cpu->gpr[29] + 20, (uint16_t)cpu->gpr[2]);
+    /* fall through to block_80134068 */
+
+block_80134068:
+    cpu->gpr[2] = cpu->read_half(cpu->gpr[16]);
+    cpu->gpr[3] = cpu->read_half(cpu->gpr[29] + 16);
+    /* nop */  /* 0x80134070: 0x00000000 */
+    cpu->gpr[2] = cpu->gpr[2] + cpu->gpr[3];
+    cpu->write_half(cpu->gpr[16], (uint16_t)cpu->gpr[2]);
+    cpu->gpr[2] = cpu->read_half(cpu->gpr[16] + 2);
+    cps_80134080(); return;  /* fallthrough to split piece */
+}
+
+/* cps_80134080 — clean CPS transliteration of br2eu_func_80134080 (guest 0x80134080)
+ * from SLES_017.22_full_06.c. */
+void cps_80134080(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x80134080, Size: 40 bytes, Blocks: 1 */
+
+block_80134080:
+    cpu->gpr[3] = cpu->read_half(cpu->gpr[29] + 18);
+    /* nop */  /* 0x80134084: 0x00000000 */
+    cpu->gpr[2] = cpu->gpr[2] + cpu->gpr[3];
+    cpu->write_half(cpu->gpr[16] + 2, (uint16_t)cpu->gpr[2]);
+    cpu->gpr[2] = cpu->read_half(cpu->gpr[16] + 4);
+    cpu->gpr[3] = cpu->read_half(cpu->gpr[29] + 20);
+    /* nop */  /* 0x80134098: 0x00000000 */
+    cpu->gpr[2] = cpu->gpr[2] + cpu->gpr[3];
+    /* delay slot (always executes) */
+    cpu->write_half(cpu->gpr[16] + 4, (uint16_t)cpu->gpr[2]);
+    psx_check_interrupts_at(cpu, 0x801340B4u);
+    cpu->pc = 0x801340B4u; return;  /* CPS j: split */
+    cps_801340a8();  /* fallthrough to next function */
+}
+
+/* cps_801340a8 — clean CPS transliteration of br2eu_func_801340A8 (guest 0x801340a8)
+ * from SLES_017.22_full_06.c. */
+void cps_801340a8(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x801340A8, Size: 12 bytes, Blocks: 1 */
+
+block_801340A8:
+    cpu->write_half(cpu->gpr[29] + 20, (uint16_t)cpu->gpr[0]);
+    cpu->write_half(cpu->gpr[29] + 18, (uint16_t)cpu->gpr[0]);
+    cpu->write_half(cpu->gpr[29] + 16, (uint16_t)cpu->gpr[0]);
+    cps_801340b4(); return;  /* fallthrough to split piece */
+    cps_801340b4();  /* fallthrough to next function */
+}
+
+/* cps_801340b4 — clean CPS transliteration of br2eu_func_801340B4 (guest 0x801340b4)
+ * from SLES_017.22_full_06.c. */
+void cps_801340b4(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x801340B4, Size: 16 bytes, Blocks: 1 */
+
+block_801340B4:
+    cpu->gpr[2] = cpu->gpr[18];
+    cpu->gpr[8] = br2_lwl(cpu, cpu->gpr[29] + 19, cpu->gpr[8]);
+    cpu->gpr[8] = br2_lwr(cpu, cpu->gpr[29] + 16, cpu->gpr[8]);
+    cpu->gpr[9] = br2_lwl(cpu, cpu->gpr[29] + 23, cpu->gpr[9]);
+    cps_801340c4(); return;  /* fallthrough to split piece */
+    cps_801340c4();  /* fallthrough to next function */
+}
+
+/* cps_801340c4 — clean CPS transliteration of br2eu_func_801340C4 (guest 0x801340c4)
+ * from SLES_017.22_full_06.c. */
+void cps_801340c4(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x801340C4, Size: 44 bytes, Blocks: 1 */
+
+block_801340C4:
+    cpu->gpr[9] = br2_lwr(cpu, cpu->gpr[29] + 20, cpu->gpr[9]);
+    cpu->gpr[31] = cpu->read_word(cpu->gpr[29] + 44);
+    cpu->gpr[18] = cpu->read_word(cpu->gpr[29] + 40);
+    cpu->gpr[17] = cpu->read_word(cpu->gpr[29] + 36);
+    cpu->gpr[16] = cpu->read_word(cpu->gpr[29] + 32);
+    uint32_t _jt_801340E8 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[29] = cpu->gpr[29] + 48;
+    psx_check_interrupts_at(cpu, _jt_801340E8);
+    cpu->pc = _jt_801340E8; return;  /* CPS: jr $ra */
+}
+
+/* cps_80135724 — clean CPS transliteration of br2eu_func_80135724 (guest 0x80135724)
+ * from SLES_017.22_full_06.c. */
+void cps_80135724(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x80135724, Size: 28 bytes, Blocks: 1 */
+
+block_80135724:
+    cpu->gpr[2] = 0x801F << 16;  /* 0x801F0000 */
+    cpu->gpr[2] = cpu->gpr[2] + 1192;
+    cpu->gpr[4] = cpu->gpr[4] << 1;
+    cpu->gpr[4] = cpu->gpr[4] + cpu->gpr[2];
+    cpu->gpr[2] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[4] + 60);
+    uint32_t _jt_80135738 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = (cpu->gpr[0] < cpu->gpr[2]) ? 1 : 0;  /* 0x8013573C: 0x0002102B */
+    psx_check_interrupts_at(cpu, _jt_80135738);
+    cpu->pc = _jt_80135738; return;  /* CPS: jr $ra */
+}
+
+/* cps_80143ac8 — clean CPS transliteration of br2eu_func_80143AC8 (guest 0x80143ac8)
+ * from SLES_017.22_full_11.c. */
+void cps_80143ac8(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x80143AFCu: goto block_80143AFC;
+            case 0x80143B08u: goto block_80143B08;
+            case 0x80143B14u: goto block_80143B14;
+            case 0x80143B24u: goto block_80143B24;
+            case 0x80143B2Cu: goto block_80143B2C;
+            case 0x80143B3Cu: goto block_80143B3C;
+            case 0x80143B44u: goto block_80143B44;
+            case 0x80143B54u: goto block_80143B54;
+            case 0x80143B5Cu: goto block_80143B5C;
+            case 0x80143B6Cu: goto block_80143B6C;
+            case 0x80143B74u: goto block_80143B74;
+            case 0x80143B84u: goto block_80143B84;
+            case 0x80143B8Cu: goto block_80143B8C;
+            case 0x80143B9Cu: goto block_80143B9C;
+            case 0x80143BA4u: goto block_80143BA4;
+            case 0x80143BB0u: goto block_80143BB0;
+            default: break;
+        }
+    }
+    /* Address: 0x80143AC8, Size: 240 bytes, Blocks: 17 */
+
+block_80143AC8:
+    cpu->gpr[4] = cpu->gpr[4] & 0x00FF;  /* 0x80143AC8: 0x308400FF */
+    cpu->gpr[3] = 0x1F80 << 16;  /* 0x1F800000 */
+    cpu->gpr[2] = cpu->gpr[4] << 1;
+    cpu->gpr[2] = cpu->gpr[2] + cpu->gpr[3];
+    cpu->gpr[5] = cpu->read_half(cpu->gpr[2] + 108);
+    cpu->gpr[4] = cpu->gpr[4] << 4;
+    cpu->gpr[2] = 0x801F << 16;  /* 0x801F0000 */
+    cpu->gpr[2] = cpu->gpr[2] + 18304;
+    cpu->gpr[4] = cpu->gpr[4] + cpu->gpr[2];
+    cpu->gpr[6] = cpu->gpr[5] & 0xF000;  /* 0x80143AEC: 0x30A6F000 */
+    cpu->gpr[2] = cpu->gpr[5] & 0x0080;  /* 0x80143AF0: 0x30A20080 */
+    int _bc_80143AF4 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[3] = cpu->gpr[6];
+    if (_bc_80143AF4) {
+        psx_check_interrupts_at(cpu, 0x80143B08u);
+        goto block_80143B08;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80143AFCu);
+        goto block_80143AFC;  /* not taken */
+    }
+
+block_80143AFC:
+    cpu->gpr[2] = cpu->read_half(cpu->gpr[4]);
+    /* nop */  /* 0x80143B00: 0x00000000 */
+    cpu->gpr[3] = cpu->gpr[2] | cpu->gpr[6];
+    /* fall through to block_80143B08 */
+
+block_80143B08:
+    cpu->gpr[2] = cpu->gpr[5] & 0x0040;  /* 0x80143B08: 0x30A20040 */
+    int _bc_80143B0C = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[5] & 0x0020;  /* 0x80143B10: 0x30A20020 */
+    if (_bc_80143B0C) {
+        psx_check_interrupts_at(cpu, 0x80143B24u);
+        goto block_80143B24;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80143B14u);
+        goto block_80143B14;  /* not taken */
+    }
+
+block_80143B14:
+    cpu->gpr[2] = cpu->read_half(cpu->gpr[4] + 2);
+    /* nop */  /* 0x80143B18: 0x00000000 */
+    cpu->gpr[3] = cpu->gpr[3] | cpu->gpr[2];
+    cpu->gpr[2] = cpu->gpr[5] & 0x0020;  /* 0x80143B20: 0x30A20020 */
+    /* fall through to block_80143B24 */
+
+block_80143B24:
+    int _bc_80143B24 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[5] & 0x0010;  /* 0x80143B28: 0x30A20010 */
+    if (_bc_80143B24) {
+        psx_check_interrupts_at(cpu, 0x80143B3Cu);
+        goto block_80143B3C;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80143B2Cu);
+        goto block_80143B2C;  /* not taken */
+    }
+
+block_80143B2C:
+    cpu->gpr[2] = cpu->read_half(cpu->gpr[4] + 4);
+    /* nop */  /* 0x80143B30: 0x00000000 */
+    cpu->gpr[3] = cpu->gpr[3] | cpu->gpr[2];
+    cpu->gpr[2] = cpu->gpr[5] & 0x0010;  /* 0x80143B38: 0x30A20010 */
+    /* fall through to block_80143B3C */
+
+block_80143B3C:
+    int _bc_80143B3C = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[5] & 0x0008;  /* 0x80143B40: 0x30A20008 */
+    if (_bc_80143B3C) {
+        psx_check_interrupts_at(cpu, 0x80143B54u);
+        goto block_80143B54;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80143B44u);
+        goto block_80143B44;  /* not taken */
+    }
+
+block_80143B44:
+    cpu->gpr[2] = cpu->read_half(cpu->gpr[4] + 6);
+    /* nop */  /* 0x80143B48: 0x00000000 */
+    cpu->gpr[3] = cpu->gpr[3] | cpu->gpr[2];
+    cpu->gpr[2] = cpu->gpr[5] & 0x0008;  /* 0x80143B50: 0x30A20008 */
+    /* fall through to block_80143B54 */
+
+block_80143B54:
+    int _bc_80143B54 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[5] & 0x0002;  /* 0x80143B58: 0x30A20002 */
+    if (_bc_80143B54) {
+        psx_check_interrupts_at(cpu, 0x80143B6Cu);
+        goto block_80143B6C;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80143B5Cu);
+        goto block_80143B5C;  /* not taken */
+    }
+
+block_80143B5C:
+    cpu->gpr[2] = cpu->read_half(cpu->gpr[4] + 8);
+    /* nop */  /* 0x80143B60: 0x00000000 */
+    cpu->gpr[3] = cpu->gpr[3] | cpu->gpr[2];
+    cpu->gpr[2] = cpu->gpr[5] & 0x0002;  /* 0x80143B68: 0x30A20002 */
+    /* fall through to block_80143B6C */
+
+block_80143B6C:
+    int _bc_80143B6C = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[5] & 0x0004;  /* 0x80143B70: 0x30A20004 */
+    if (_bc_80143B6C) {
+        psx_check_interrupts_at(cpu, 0x80143B84u);
+        goto block_80143B84;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80143B74u);
+        goto block_80143B74;  /* not taken */
+    }
+
+block_80143B74:
+    cpu->gpr[2] = cpu->read_half(cpu->gpr[4] + 10);
+    /* nop */  /* 0x80143B78: 0x00000000 */
+    cpu->gpr[3] = cpu->gpr[3] | cpu->gpr[2];
+    cpu->gpr[2] = cpu->gpr[5] & 0x0004;  /* 0x80143B80: 0x30A20004 */
+    /* fall through to block_80143B84 */
+
+block_80143B84:
+    int _bc_80143B84 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[5] & 0x0001;  /* 0x80143B88: 0x30A20001 */
+    if (_bc_80143B84) {
+        psx_check_interrupts_at(cpu, 0x80143B9Cu);
+        goto block_80143B9C;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80143B8Cu);
+        goto block_80143B8C;  /* not taken */
+    }
+
+block_80143B8C:
+    cpu->gpr[2] = cpu->read_half(cpu->gpr[4] + 12);
+    /* nop */  /* 0x80143B90: 0x00000000 */
+    cpu->gpr[3] = cpu->gpr[3] | cpu->gpr[2];
+    cpu->gpr[2] = cpu->gpr[5] & 0x0001;  /* 0x80143B98: 0x30A20001 */
+    /* fall through to block_80143B9C */
+
+block_80143B9C:
+    int _bc_80143B9C = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x80143BA0: 0x00000000 */
+    if (_bc_80143B9C) {
+        psx_check_interrupts_at(cpu, 0x80143BB0u);
+        goto block_80143BB0;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80143BA4u);
+        goto block_80143BA4;  /* not taken */
+    }
+
+block_80143BA4:
+    cpu->gpr[2] = cpu->read_half(cpu->gpr[4] + 14);
+    /* nop */  /* 0x80143BA8: 0x00000000 */
+    cpu->gpr[3] = cpu->gpr[3] | cpu->gpr[2];
+    /* fall through to block_80143BB0 */
+
+block_80143BB0:
+    uint32_t _jt_80143BB0 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[3] & 0xFFFF;  /* 0x80143BB4: 0x3062FFFF */
+    psx_check_interrupts_at(cpu, _jt_80143BB0);
+    cpu->pc = _jt_80143BB0; return;  /* CPS: jr $ra */
+}
+
+/* cps_80145c90 — clean CPS transliteration of br2eu_func_80145C90 (guest 0x80145c90)
+ * from SLES_017.22_full_12.c. */
+void cps_80145c90(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x80145D30u: goto block_80145D30;
+            case 0x80145CB4u: goto block_80145CB4;
+            case 0x80145CB8u: goto block_80145CB8;
+            case 0x80145CC4u: goto block_80145CC4;
+            case 0x80145CDCu: goto block_80145CDC;
+            case 0x80145CE0u: goto block_80145CE0;
+            case 0x80145CECu: goto block_80145CEC;
+            case 0x80145D04u: goto block_80145D04;
+            case 0x80145D08u: goto block_80145D08;
+            case 0x80145D14u: goto block_80145D14;
+            case 0x80145D44u: goto block_80145D44;
+            case 0x80145D5Cu: goto block_80145D5C;
+            case 0x80145D70u: goto block_80145D70;
+            case 0x80145D74u: goto block_80145D74;
+            default: break;
+        }
+    }
+    /* Address: 0x80145C90, Size: 244 bytes, Blocks: 15 */
+
+block_80145C90:
+    cpu->gpr[29] = cpu->gpr[29] + -40;
+    cpu->write_word(cpu->gpr[29] + 36, cpu->gpr[31]);
+    cpu->write_word(cpu->gpr[29] + 32, cpu->gpr[16]);
+    cpu->gpr[3] = cpu->read_word(cpu->gpr[7]);
+    cpu->gpr[2] = cpu->read_word(cpu->gpr[6]);
+    cpu->gpr[4] = cpu->gpr[4] + cpu->gpr[5];
+    cpu->gpr[8] = cpu->gpr[3] - cpu->gpr[2];
+    int _bc_80145CAC = ((int32_t)cpu->gpr[8] >= 0);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[8];
+    if (_bc_80145CAC) {
+        psx_check_interrupts_at(cpu, 0x80145CB8u);
+        goto block_80145CB8;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80145CB4u);
+        goto block_80145CB4;  /* not taken */
+    }
+
+block_80145CB4:
+    cpu->gpr[2] = cpu->gpr[0] - cpu->gpr[2];
+    /* fall through to block_80145CB8 */
+
+block_80145CB8:
+    cpu->gpr[2] = ((int32_t)cpu->gpr[2] < (int32_t)cpu->gpr[4]) ? 1 : 0;  /* 0x80145CB8: 0x0044102A */
+    int _bc_80145CBC = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[0];
+    if (_bc_80145CBC) {
+        psx_check_interrupts_at(cpu, 0x80145D74u);
+        goto block_80145D74;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80145CC4u);
+        goto block_80145CC4;  /* not taken */
+    }
+
+block_80145CC4:
+    cpu->gpr[3] = cpu->read_word(cpu->gpr[7] + 4);
+    cpu->gpr[2] = cpu->read_word(cpu->gpr[6] + 4);
+    /* nop */  /* 0x80145CCC: 0x00000000 */
+    cpu->gpr[5] = cpu->gpr[3] - cpu->gpr[2];
+    int _bc_80145CD4 = ((int32_t)cpu->gpr[5] >= 0);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[5];
+    if (_bc_80145CD4) {
+        psx_check_interrupts_at(cpu, 0x80145CE0u);
+        goto block_80145CE0;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80145CDCu);
+        goto block_80145CDC;  /* not taken */
+    }
+
+block_80145CDC:
+    cpu->gpr[2] = cpu->gpr[0] - cpu->gpr[2];
+    /* fall through to block_80145CE0 */
+
+block_80145CE0:
+    cpu->gpr[2] = ((int32_t)cpu->gpr[2] < (int32_t)cpu->gpr[4]) ? 1 : 0;  /* 0x80145CE0: 0x0044102A */
+    int _bc_80145CE4 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[0];
+    if (_bc_80145CE4) {
+        psx_check_interrupts_at(cpu, 0x80145D74u);
+        goto block_80145D74;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80145CECu);
+        goto block_80145CEC;  /* not taken */
+    }
+
+block_80145CEC:
+    cpu->gpr[3] = cpu->read_word(cpu->gpr[7] + 8);
+    cpu->gpr[2] = cpu->read_word(cpu->gpr[6] + 8);
+    /* nop */  /* 0x80145CF4: 0x00000000 */
+    cpu->gpr[3] = cpu->gpr[3] - cpu->gpr[2];
+    int _bc_80145CFC = ((int32_t)cpu->gpr[3] >= 0);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[3];
+    if (_bc_80145CFC) {
+        psx_check_interrupts_at(cpu, 0x80145D08u);
+        goto block_80145D08;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80145D04u);
+        goto block_80145D04;  /* not taken */
+    }
+
+block_80145D04:
+    cpu->gpr[2] = cpu->gpr[0] - cpu->gpr[2];
+    /* fall through to block_80145D08 */
+
+block_80145D08:
+    cpu->gpr[2] = ((int32_t)cpu->gpr[2] < (int32_t)cpu->gpr[4]) ? 1 : 0;  /* 0x80145D08: 0x0044102A */
+    int _bc_80145D0C = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    { int64_t result = (int64_t)(int32_t)cpu->gpr[4] * (int64_t)(int32_t)cpu->gpr[4]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
+    psx_muldiv_set(cpu, psx_mult_latency_s(cpu->gpr[4]));
+    if (_bc_80145D0C) {
+        psx_check_interrupts_at(cpu, 0x80145D70u);
+        goto block_80145D70;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80145D14u);
+        goto block_80145D14;  /* not taken */
+    }
+
+block_80145D14:
+    cpu->gpr[4] = cpu->gpr[29] + 16;
+    cpu->write_word(cpu->gpr[29] + 20, cpu->gpr[5]);
+    cpu->gpr[5] = cpu->gpr[4];
+    cpu->write_word(cpu->gpr[29] + 16, cpu->gpr[8]);
+    cpu->gpr[16] = cpu->lo;
+    psx_muldiv_stall(cpu);
+    cpu->gpr[31] = 0x80145D30u;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    cpu->write_word(cpu->gpr[29] + 24, cpu->gpr[3]);
+    psx_check_interrupts_at(cpu, 0x80195398u);
+    cpu->pc = 0x80195398u; return;  /* CPS jal -> 0x80195398 */
+
+block_80145D30:
+    cpu->gpr[4] = cpu->read_word(cpu->gpr[29] + 16);
+    /* nop */  /* 0x80145D34: 0x00000000 */
+    cpu->gpr[2] = ((int32_t)cpu->gpr[4] < (int32_t)cpu->gpr[16]) ? 1 : 0;  /* 0x80145D38: 0x0090102A */
+    int _bc_80145D3C = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[0];
+    if (_bc_80145D3C) {
+        psx_check_interrupts_at(cpu, 0x80145D74u);
+        goto block_80145D74;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80145D44u);
+        goto block_80145D44;  /* not taken */
+    }
+
+block_80145D44:
+    cpu->gpr[2] = cpu->read_word(cpu->gpr[29] + 20);
+    /* nop */  /* 0x80145D48: 0x00000000 */
+    cpu->gpr[4] = cpu->gpr[4] + cpu->gpr[2];
+    cpu->gpr[2] = ((int32_t)cpu->gpr[4] < (int32_t)cpu->gpr[16]) ? 1 : 0;  /* 0x80145D50: 0x0090102A */
+    int _bc_80145D54 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x80145D58: 0x00000000 */
+    if (_bc_80145D54) {
+        psx_check_interrupts_at(cpu, 0x80145D70u);
+        goto block_80145D70;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80145D5Cu);
+        goto block_80145D5C;  /* not taken */
+    }
+
+block_80145D5C:
+    cpu->gpr[2] = cpu->read_word(cpu->gpr[29] + 24);
+    /* nop */  /* 0x80145D60: 0x00000000 */
+    cpu->gpr[4] = cpu->gpr[4] + cpu->gpr[2];
+    /* delay slot (always executes) */
+    cpu->gpr[2] = ((int32_t)cpu->gpr[4] < (int32_t)cpu->gpr[16]) ? 1 : 0;  /* 0x80145D6C: 0x0090102A */
+    psx_check_interrupts_at(cpu, 0x80145D74u);
+    goto block_80145D74;  /* j */
+
+block_80145D70:
+    cpu->gpr[2] = cpu->gpr[0];
+    /* fall through to block_80145D74 */
+
+block_80145D74:
+    cpu->gpr[31] = cpu->read_word(cpu->gpr[29] + 36);
+    cpu->gpr[16] = cpu->read_word(cpu->gpr[29] + 32);
+    uint32_t _jt_80145D7C = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[29] = cpu->gpr[29] + 40;
+    psx_check_interrupts_at(cpu, _jt_80145D7C);
+    cpu->pc = _jt_80145D7C; return;  /* CPS: jr $ra */
+}
+
+/* cps_801560f8 — clean CPS transliteration of br2eu_func_801560F8 (guest 0x801560f8)
+ * from SLES_017.22_full_19.c. */
+void cps_801560f8(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x80156100u: goto block_80156100;
+            case 0x80156104u: goto block_80156104;
+            default: break;
+        }
+    }
+    /* Address: 0x801560F8, Size: 28 bytes, Blocks: 3 */
+
+block_801560F8:
+    int _bc_801560F8 = ((int32_t)cpu->gpr[4] < 0);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = 0x801F << 16;  /* 0x801F0000 */
+    if (_bc_801560F8) {
+        psx_check_interrupts_at(cpu, 0x80156104u);
+        goto block_80156104;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80156100u);
+        goto block_80156100;  /* not taken */
+    }
+
+block_80156100:
+    cpu->write_half(cpu->gpr[2] + 14018, (uint16_t)cpu->gpr[4]);
+    /* fall through to block_80156104 */
+
+block_80156104:
+    cpu->gpr[2] = 0x801F << 16;  /* 0x801F0000 */
+    cpu->gpr[2] = cpu->read_half(cpu->gpr[2] + 14018);
+    uint32_t _jt_8015610C = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x80156110: 0x00000000 */
+    psx_check_interrupts_at(cpu, _jt_8015610C);
+    cpu->pc = _jt_8015610C; return;  /* CPS: jr $ra */
+}
+
+/* cps_80172a04 — clean CPS transliteration of br2eu_func_80172A04 (guest 0x80172a04)
+ * from SLES_017.22_full_32.c. */
+void cps_80172a04(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x80172A18u: goto block_80172A18;
+            default: break;
+        }
+    }
+    /* Address: 0x80172A04, Size: 40 bytes, Blocks: 2 */
+
+block_80172A04:
+    cpu->gpr[2] = cpu->read_byte(cpu->gpr[4] + 5);
+    /* nop */  /* 0x80172A08: 0x00000000 */
+    cpu->gpr[2] = cpu->gpr[2] & 0x0010;  /* 0x80172A0C: 0x30420010 */
+    int _bc_80172A10 = (cpu->gpr[2] != cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x80172A14: 0x00000000 */
+    if (_bc_80172A10) {
+        psx_check_interrupts_at(cpu, 0x80172A2Cu);
+        cpu->pc = 0x80172A2Cu; return;  /* CPS taken: split */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80172A18u);
+        goto block_80172A18;  /* not taken */
+    }
+
+block_80172A18:
+    cpu->gpr[2] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[4] + 214);
+    /* nop */  /* 0x80172A1C: 0x00000000 */
+    cpu->gpr[2] = ((int32_t)cpu->gpr[2] < 7680) ? 1 : 0;  /* 0x80172A20: 0x28421E00 */
+    uint32_t _jt_80172A24 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[2] ^ 0x0001;  /* 0x80172A28: 0x38420001 */
+    psx_check_interrupts_at(cpu, _jt_80172A24);
+    cpu->pc = _jt_80172A24; return;  /* CPS: jr $ra */
+}
+
+/* cps_80186d20 — clean CPS transliteration of br2eu_func_80186D20 (guest 0x80186d20)
+ * from SLES_017.22_full_39.c. */
+void cps_80186d20(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x80186D20, Size: 324 bytes, Blocks: 1 */
+
+block_80186D20:
+    cpu->gpr[8] = cpu->read_word(cpu->gpr[4]);
+    cpu->gpr[9] = cpu->read_word(cpu->gpr[4] + 4);
+    cpu->gpr[10] = cpu->read_word(cpu->gpr[4] + 8);
+    cpu->gpr[11] = cpu->read_word(cpu->gpr[4] + 12);
+    cpu->gpr[12] = cpu->read_word(cpu->gpr[4] + 16);
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[0] = cpu->gpr[8];  /* ctc2 */  /* 0x80186D34: 0x48C80000 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[1] = cpu->gpr[9];  /* ctc2 */  /* 0x80186D38: 0x48C90800 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[2] = cpu->gpr[10];  /* ctc2 */  /* 0x80186D3C: 0x48CA1000 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[3] = cpu->gpr[11];  /* ctc2 */  /* 0x80186D40: 0x48CB1800 */
+    
+    psx_gte_stall(cpu);
+    gte_write_ctrl(cpu, 4, cpu->gpr[12]);  /* ctc2 */  /* 0x80186D44: 0x48CC2000 */
+    cpu->gpr[8] = cpu->read_half(cpu->gpr[5]);
+    cpu->gpr[9] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[5] + 6);
+    cpu->gpr[10] = cpu->read_word(cpu->gpr[5] + 12);
+    cpu->gpr[9] = cpu->gpr[9] << 16;
+    cpu->gpr[8] = cpu->gpr[8] | cpu->gpr[9];
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[0] = cpu->gpr[8];  /* mtc2 */
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 1, cpu->gpr[10]);  /* mtc2 */
+    cpu->gpr[10] = (uint32_t)cpu->gpr[10] >> 16;
+    gte_execute(cpu, 0x0486012);  /* gte cmd 0x12 */  /* 0x80186D68: 0x4A486012 */
+    cpu->gpr[9] = cpu->read_word(cpu->gpr[5] + 8);
+    cpu->gpr[8] = cpu->read_half(cpu->gpr[5] + 2);
+    cpu->gpr[11] = cpu->gpr[9] << 16;
+    cpu->gpr[8] = cpu->gpr[8] | cpu->gpr[11];
+    
+    psx_gte_read(cpu, 11);
+    cpu->gpr[11] = gte_read_data(cpu, 9);  /* mfc2 */
+    
+    psx_gte_read(cpu, 12);
+    cpu->gpr[12] = gte_read_data(cpu, 10);  /* mfc2 */
+    
+    psx_gte_read(cpu, 13);
+    cpu->gpr[13] = gte_read_data(cpu, 11);  /* mfc2 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[0] = cpu->gpr[8];  /* mtc2 */
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 1, cpu->gpr[10]);  /* mtc2 */
+    cpu->gpr[9] = (uint32_t)cpu->gpr[9] >> 16;
+    gte_execute(cpu, 0x0486012);  /* gte cmd 0x12 */  /* 0x80186D94: 0x4A486012 */
+    cpu->gpr[8] = cpu->read_half(cpu->gpr[5] + 4);
+    cpu->gpr[10] = cpu->read_word(cpu->gpr[5] + 16);
+    cpu->gpr[9] = cpu->gpr[9] << 16;
+    cpu->gpr[8] = cpu->gpr[8] | cpu->gpr[9];
+    cpu->gpr[11] = cpu->gpr[11] & 0xFFFF;  /* 0x80186DA8: 0x316BFFFF */
+    cpu->gpr[13] = cpu->gpr[13] & 0xFFFF;  /* 0x80186DAC: 0x31ADFFFF */
+    
+    psx_gte_read(cpu, 14);
+    cpu->gpr[14] = gte_read_data(cpu, 9);  /* mfc2 */
+    
+    psx_gte_read(cpu, 15);
+    cpu->gpr[15] = gte_read_data(cpu, 10);  /* mfc2 */
+    
+    psx_gte_read(cpu, 24);
+    cpu->gpr[24] = gte_read_data(cpu, 11);  /* mfc2 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[0] = cpu->gpr[8];  /* mtc2 */
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 1, cpu->gpr[10]);  /* mtc2 */
+    cpu->gpr[14] = cpu->gpr[14] << 16;
+    gte_execute(cpu, 0x0486012);  /* gte cmd 0x12 */  /* 0x80186DC8: 0x4A486012 */
+    cpu->gpr[11] = cpu->gpr[11] | cpu->gpr[14];
+    cpu->gpr[24] = cpu->gpr[24] << 16;
+    cpu->gpr[24] = cpu->gpr[24] | cpu->gpr[13];
+    cpu->gpr[13] = cpu->read_half(cpu->gpr[5] + 20);
+    cpu->gpr[14] = cpu->read_word(cpu->gpr[5] + 24);
+    cpu->gpr[10] = cpu->read_word(cpu->gpr[5] + 28);
+    cpu->write_word(cpu->gpr[6], cpu->gpr[11]);
+    cpu->write_word(cpu->gpr[6] + 12, cpu->gpr[24]);
+    
+    psx_gte_read(cpu, 8);
+    cpu->gpr[8] = gte_read_data(cpu, 9);  /* mfc2 */
+    
+    psx_gte_read(cpu, 9);
+    cpu->gpr[9] = gte_read_data(cpu, 10);  /* mfc2 */
+    
+    psx_gte_stall(cpu);
+    cpu->write_word((cpu->gpr[6] + 16), (gte_read_data(cpu, 11)));
+    gte_precision_store_word((cpu->gpr[6] + 16), 11);
+    cpu->gpr[14] = cpu->gpr[14] << 16;
+    cpu->gpr[13] = cpu->gpr[13] | cpu->gpr[14];
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[0] = cpu->gpr[13];  /* mtc2 */
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 1, cpu->gpr[10]);  /* mtc2 */
+    cpu->gpr[12] = cpu->gpr[12] << 16;
+    gte_execute(cpu, 0x0486012);  /* gte cmd 0x12 */  /* 0x80186E0C: 0x4A486012 */
+    cpu->gpr[8] = cpu->gpr[8] & 0xFFFF;  /* 0x80186E10: 0x3108FFFF */
+    cpu->gpr[8] = cpu->gpr[8] | cpu->gpr[12];
+    cpu->write_word(cpu->gpr[6] + 4, cpu->gpr[8]);
+    cpu->gpr[15] = cpu->gpr[15] & 0xFFFF;  /* 0x80186E1C: 0x31EFFFFF */
+    cpu->gpr[9] = cpu->gpr[9] << 16;
+    cpu->gpr[9] = cpu->gpr[9] | cpu->gpr[15];
+    cpu->write_word(cpu->gpr[6] + 8, cpu->gpr[9]);
+    
+    psx_gte_read(cpu, 8);
+    cpu->gpr[8] = cpu->gte_data[25];  /* mfc2 */
+    
+    psx_gte_read(cpu, 9);
+    cpu->gpr[9] = cpu->gte_data[26];  /* mfc2 */
+    
+    psx_gte_read(cpu, 10);
+    cpu->gpr[10] = cpu->gte_data[27];  /* mfc2 */
+    cpu->gpr[11] = cpu->read_word(cpu->gpr[4] + 20);
+    cpu->gpr[12] = cpu->read_word(cpu->gpr[4] + 24);
+    cpu->gpr[13] = cpu->read_word(cpu->gpr[4] + 28);
+    cpu->gpr[8] = cpu->gpr[8] + cpu->gpr[11];
+    cpu->gpr[9] = cpu->gpr[9] + cpu->gpr[12];
+    cpu->gpr[10] = cpu->gpr[10] + cpu->gpr[13];
+    cpu->write_word(cpu->gpr[6] + 20, cpu->gpr[8]);
+    cpu->write_word(cpu->gpr[6] + 24, cpu->gpr[9]);
+    cpu->write_word(cpu->gpr[6] + 28, cpu->gpr[10]);
+    uint32_t _jt_80186E5C = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[6];
+    psx_check_interrupts_at(cpu, _jt_80186E5C);
+    cpu->pc = _jt_80186E5C; return;  /* CPS: jr $ra */
+}
+
+/* cps_80186e64 — clean CPS transliteration of br2eu_func_80186E64 (guest 0x80186e64)
+ * from SLES_017.22_full_40.c. */
+void cps_80186e64(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x80186E64, Size: 248 bytes, Blocks: 1 */
+
+block_80186E64:
+    cpu->gpr[8] = cpu->read_word(cpu->gpr[4]);
+    cpu->gpr[9] = cpu->read_word(cpu->gpr[4] + 4);
+    cpu->gpr[10] = cpu->read_word(cpu->gpr[4] + 8);
+    cpu->gpr[11] = cpu->read_word(cpu->gpr[4] + 12);
+    cpu->gpr[12] = cpu->read_word(cpu->gpr[4] + 16);
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[0] = cpu->gpr[8];  /* ctc2 */  /* 0x80186E78: 0x48C80000 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[1] = cpu->gpr[9];  /* ctc2 */  /* 0x80186E7C: 0x48C90800 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[2] = cpu->gpr[10];  /* ctc2 */  /* 0x80186E80: 0x48CA1000 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[3] = cpu->gpr[11];  /* ctc2 */  /* 0x80186E84: 0x48CB1800 */
+    
+    psx_gte_stall(cpu);
+    gte_write_ctrl(cpu, 4, cpu->gpr[12]);  /* ctc2 */  /* 0x80186E88: 0x48CC2000 */
+    cpu->gpr[8] = cpu->read_half(cpu->gpr[5]);
+    cpu->gpr[9] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[5] + 6);
+    cpu->gpr[10] = cpu->read_word(cpu->gpr[5] + 12);
+    cpu->gpr[9] = cpu->gpr[9] << 16;
+    cpu->gpr[8] = cpu->gpr[8] | cpu->gpr[9];
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[0] = cpu->gpr[8];  /* mtc2 */
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 1, cpu->gpr[10]);  /* mtc2 */
+    cpu->gpr[10] = (uint32_t)cpu->gpr[10] >> 16;
+    gte_execute(cpu, 0x0486012);  /* gte cmd 0x12 */  /* 0x80186EAC: 0x4A486012 */
+    cpu->gpr[9] = cpu->read_word(cpu->gpr[5] + 8);
+    cpu->gpr[8] = cpu->read_half(cpu->gpr[5] + 2);
+    cpu->gpr[11] = cpu->gpr[9] << 16;
+    cpu->gpr[8] = cpu->gpr[8] | cpu->gpr[11];
+    
+    psx_gte_read(cpu, 11);
+    cpu->gpr[11] = gte_read_data(cpu, 9);  /* mfc2 */
+    
+    psx_gte_read(cpu, 12);
+    cpu->gpr[12] = gte_read_data(cpu, 10);  /* mfc2 */
+    
+    psx_gte_read(cpu, 13);
+    cpu->gpr[13] = gte_read_data(cpu, 11);  /* mfc2 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[0] = cpu->gpr[8];  /* mtc2 */
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 1, cpu->gpr[10]);  /* mtc2 */
+    cpu->gpr[9] = (uint32_t)cpu->gpr[9] >> 16;
+    gte_execute(cpu, 0x0486012);  /* gte cmd 0x12 */  /* 0x80186ED8: 0x4A486012 */
+    cpu->gpr[8] = cpu->read_half(cpu->gpr[5] + 4);
+    cpu->gpr[10] = cpu->read_word(cpu->gpr[5] + 16);
+    cpu->gpr[9] = cpu->gpr[9] << 16;
+    cpu->gpr[8] = cpu->gpr[8] | cpu->gpr[9];
+    
+    psx_gte_read(cpu, 14);
+    cpu->gpr[14] = gte_read_data(cpu, 9);  /* mfc2 */
+    
+    psx_gte_read(cpu, 15);
+    cpu->gpr[15] = gte_read_data(cpu, 10);  /* mfc2 */
+    
+    psx_gte_read(cpu, 24);
+    cpu->gpr[24] = gte_read_data(cpu, 11);  /* mfc2 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[0] = cpu->gpr[8];  /* mtc2 */
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 1, cpu->gpr[10]);  /* mtc2 */
+    cpu->gpr[11] = cpu->gpr[11] & 0xFFFF;  /* 0x80186F00: 0x316BFFFF */
+    gte_execute(cpu, 0x0486012);  /* gte cmd 0x12 */  /* 0x80186F04: 0x4A486012 */
+    cpu->gpr[14] = cpu->gpr[14] << 16;
+    cpu->gpr[14] = cpu->gpr[14] | cpu->gpr[11];
+    cpu->gpr[13] = cpu->gpr[13] & 0xFFFF;  /* 0x80186F10: 0x31ADFFFF */
+    cpu->gpr[24] = cpu->gpr[24] << 16;
+    cpu->gpr[24] = cpu->gpr[24] | cpu->gpr[13];
+    
+    psx_gte_read(cpu, 8);
+    cpu->gpr[8] = gte_read_data(cpu, 9);  /* mfc2 */
+    
+    psx_gte_read(cpu, 9);
+    cpu->gpr[9] = gte_read_data(cpu, 10);  /* mfc2 */
+    
+    psx_gte_read(cpu, 10);
+    cpu->gpr[10] = gte_read_data(cpu, 11);  /* mfc2 */
+    cpu->gpr[8] = cpu->gpr[8] & 0xFFFF;  /* 0x80186F28: 0x3108FFFF */
+    cpu->gpr[12] = cpu->gpr[12] << 16;
+    cpu->gpr[8] = cpu->gpr[8] | cpu->gpr[12];
+    cpu->gpr[15] = cpu->gpr[15] & 0xFFFF;  /* 0x80186F34: 0x31EFFFFF */
+    cpu->gpr[9] = cpu->gpr[9] << 16;
+    cpu->gpr[9] = cpu->gpr[9] | cpu->gpr[15];
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[8] = cpu->gpr[14];  /* ctc2 */  /* 0x80186F40: 0x48CE4000 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[9] = cpu->gpr[8];  /* ctc2 */  /* 0x80186F44: 0x48C84800 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[10] = cpu->gpr[9];  /* ctc2 */  /* 0x80186F48: 0x48C95000 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[11] = cpu->gpr[24];  /* ctc2 */  /* 0x80186F4C: 0x48D85800 */
+    
+    psx_gte_stall(cpu);
+    gte_write_ctrl(cpu, 12, cpu->gpr[10]);  /* ctc2 */  /* 0x80186F50: 0x48CA6000 */
+    uint32_t _jt_80186F54 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[4];
+    psx_check_interrupts_at(cpu, _jt_80186F54);
+    cpu->pc = _jt_80186F54; return;  /* CPS: jr $ra */
+}
+
+/* cps_80186f5c — clean CPS transliteration of br2eu_func_80186F5C (guest 0x80186f5c)
+ * from SLES_017.22_full_40.c. */
+void cps_80186f5c(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x80186F5C, Size: 328 bytes, Blocks: 1 */
+
+block_80186F5C:
+    cpu->gpr[8] = cpu->read_word(cpu->gpr[4]);
+    cpu->gpr[9] = cpu->read_word(cpu->gpr[4] + 4);
+    cpu->gpr[10] = cpu->read_word(cpu->gpr[4] + 8);
+    cpu->gpr[11] = cpu->read_word(cpu->gpr[4] + 12);
+    cpu->gpr[12] = cpu->read_word(cpu->gpr[4] + 16);
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[0] = cpu->gpr[8];  /* ctc2 */  /* 0x80186F70: 0x48C80000 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[1] = cpu->gpr[9];  /* ctc2 */  /* 0x80186F74: 0x48C90800 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[2] = cpu->gpr[10];  /* ctc2 */  /* 0x80186F78: 0x48CA1000 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[3] = cpu->gpr[11];  /* ctc2 */  /* 0x80186F7C: 0x48CB1800 */
+    
+    psx_gte_stall(cpu);
+    gte_write_ctrl(cpu, 4, cpu->gpr[12]);  /* ctc2 */  /* 0x80186F80: 0x48CC2000 */
+    cpu->gpr[8] = cpu->read_half(cpu->gpr[5]);
+    cpu->gpr[9] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[5] + 6);
+    cpu->gpr[10] = cpu->read_word(cpu->gpr[5] + 12);
+    cpu->gpr[9] = cpu->gpr[9] << 16;
+    cpu->gpr[8] = cpu->gpr[8] | cpu->gpr[9];
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[0] = cpu->gpr[8];  /* mtc2 */
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 1, cpu->gpr[10]);  /* mtc2 */
+    cpu->gpr[10] = (uint32_t)cpu->gpr[10] >> 16;
+    gte_execute(cpu, 0x0486012);  /* gte cmd 0x12 */  /* 0x80186FA4: 0x4A486012 */
+    cpu->gpr[9] = cpu->read_word(cpu->gpr[5] + 8);
+    cpu->gpr[8] = cpu->read_half(cpu->gpr[5] + 2);
+    cpu->gpr[11] = cpu->gpr[9] << 16;
+    cpu->gpr[8] = cpu->gpr[8] | cpu->gpr[11];
+    
+    psx_gte_read(cpu, 11);
+    cpu->gpr[11] = gte_read_data(cpu, 9);  /* mfc2 */
+    
+    psx_gte_read(cpu, 12);
+    cpu->gpr[12] = gte_read_data(cpu, 10);  /* mfc2 */
+    
+    psx_gte_read(cpu, 13);
+    cpu->gpr[13] = gte_read_data(cpu, 11);  /* mfc2 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[0] = cpu->gpr[8];  /* mtc2 */
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 1, cpu->gpr[10]);  /* mtc2 */
+    cpu->gpr[9] = (uint32_t)cpu->gpr[9] >> 16;
+    gte_execute(cpu, 0x0486012);  /* gte cmd 0x12 */  /* 0x80186FD0: 0x4A486012 */
+    cpu->gpr[8] = cpu->read_half(cpu->gpr[5] + 4);
+    cpu->gpr[10] = cpu->read_word(cpu->gpr[5] + 16);
+    cpu->gpr[9] = cpu->gpr[9] << 16;
+    cpu->gpr[8] = cpu->gpr[8] | cpu->gpr[9];
+    cpu->gpr[11] = cpu->gpr[11] & 0xFFFF;  /* 0x80186FE4: 0x316BFFFF */
+    cpu->gpr[13] = cpu->gpr[13] & 0xFFFF;  /* 0x80186FE8: 0x31ADFFFF */
+    
+    psx_gte_read(cpu, 14);
+    cpu->gpr[14] = gte_read_data(cpu, 9);  /* mfc2 */
+    
+    psx_gte_read(cpu, 15);
+    cpu->gpr[15] = gte_read_data(cpu, 10);  /* mfc2 */
+    
+    psx_gte_read(cpu, 24);
+    cpu->gpr[24] = gte_read_data(cpu, 11);  /* mfc2 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[0] = cpu->gpr[8];  /* mtc2 */
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 1, cpu->gpr[10]);  /* mtc2 */
+    cpu->gpr[14] = cpu->gpr[14] << 16;
+    gte_execute(cpu, 0x0486012);  /* gte cmd 0x12 */  /* 0x80187004: 0x4A486012 */
+    cpu->gpr[8] = cpu->read_half(cpu->gpr[5] + 20);
+    cpu->gpr[9] = cpu->read_word(cpu->gpr[5] + 24);
+    cpu->gpr[10] = cpu->read_word(cpu->gpr[5] + 28);
+    cpu->gpr[9] = cpu->gpr[9] << 16;
+    cpu->gpr[8] = cpu->gpr[8] | cpu->gpr[9];
+    cpu->gpr[14] = cpu->gpr[14] | cpu->gpr[11];
+    cpu->gpr[24] = cpu->gpr[24] << 16;
+    cpu->gpr[24] = cpu->gpr[24] | cpu->gpr[13];
+    
+    psx_gte_read(cpu, 9);
+    cpu->gpr[9] = gte_read_data(cpu, 9);  /* mfc2 */
+    
+    psx_gte_read(cpu, 11);
+    cpu->gpr[11] = gte_read_data(cpu, 10);  /* mfc2 */
+    
+    psx_gte_read(cpu, 13);
+    cpu->gpr[13] = gte_read_data(cpu, 11);  /* mfc2 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[0] = cpu->gpr[8];  /* mtc2 */
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 1, cpu->gpr[10]);  /* mtc2 */
+    cpu->gpr[9] = cpu->gpr[9] & 0xFFFF;  /* 0x8018703C: 0x3129FFFF */
+    gte_execute(cpu, 0x0486012);  /* gte cmd 0x12 */  /* 0x80187040: 0x4A486012 */
+    cpu->gpr[8] = cpu->read_word(cpu->gpr[4] + 20);
+    cpu->gpr[2] = cpu->read_word(cpu->gpr[4] + 24);
+    cpu->gpr[10] = cpu->read_word(cpu->gpr[4] + 28);
+    cpu->gpr[12] = cpu->gpr[12] << 16;
+    cpu->gpr[12] = cpu->gpr[9] | cpu->gpr[12];
+    cpu->gpr[15] = cpu->gpr[15] & 0xFFFF;  /* 0x80187058: 0x31EFFFFF */
+    cpu->gpr[11] = cpu->gpr[11] << 16;
+    cpu->gpr[15] = cpu->gpr[15] | cpu->gpr[11];
+    
+    psx_gte_read(cpu, 11);
+    cpu->gpr[11] = gte_read_data(cpu, 9);  /* mfc2 */
+    
+    psx_gte_read(cpu, 9);
+    cpu->gpr[9] = gte_read_data(cpu, 10);  /* mfc2 */
+    cpu->gpr[8] = cpu->gpr[8] + cpu->gpr[11];
+    
+    psx_gte_read(cpu, 11);
+    cpu->gpr[11] = gte_read_data(cpu, 11);  /* mfc2 */
+    cpu->gpr[9] = cpu->gpr[9] + cpu->gpr[2];
+    cpu->gpr[10] = cpu->gpr[10] + cpu->gpr[11];
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[0] = cpu->gpr[14];  /* ctc2 */  /* 0x8018707C: 0x48CE0000 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[1] = cpu->gpr[12];  /* ctc2 */  /* 0x80187080: 0x48CC0800 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[2] = cpu->gpr[15];  /* ctc2 */  /* 0x80187084: 0x48CF1000 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[3] = cpu->gpr[24];  /* ctc2 */  /* 0x80187088: 0x48D81800 */
+    
+    psx_gte_stall(cpu);
+    gte_write_ctrl(cpu, 4, cpu->gpr[13]);  /* ctc2 */  /* 0x8018708C: 0x48CD2000 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[5] = cpu->gpr[8];  /* ctc2 */  /* 0x80187090: 0x48C82800 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[6] = cpu->gpr[9];  /* ctc2 */  /* 0x80187094: 0x48C93000 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[7] = cpu->gpr[10];  /* ctc2 */  /* 0x80187098: 0x48CA3800 */
+    uint32_t _jt_8018709C = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[4];
+    psx_check_interrupts_at(cpu, _jt_8018709C);
+    cpu->pc = _jt_8018709C; return;  /* CPS: jr $ra */
+}
+
+/* cps_801871bc — clean CPS transliteration of br2eu_func_801871BC (guest 0x801871bc)
+ * from SLES_017.22_full_40.c. */
+void cps_801871bc(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x80187228u: goto block_80187228;
+            case 0x80187230u: goto block_80187230;
+            case 0x80187288u: goto block_80187288;
+            case 0x801871C4u: goto block_801871C4;
+            case 0x80187208u: goto block_80187208;
+            case 0x80187218u: goto block_80187218;
+            case 0x80187220u: goto block_80187220;
+            case 0x80187258u: goto block_80187258;
+            case 0x80187274u: goto block_80187274;
+            case 0x80187290u: goto block_80187290;
+            case 0x8018729Cu: goto block_8018729C;
+            case 0x801872C4u: goto block_801872C4;
+            default: break;
+        }
+    }
+    /* Address: 0x801871BC, Size: 272 bytes, Blocks: 13 */
+
+block_801871BC:
+    int _bc_801871BC = ((int32_t)cpu->gpr[7] <= 0);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[8] = 0x1F80 << 16;  /* 0x1F800000 */
+    if (_bc_801871BC) {
+        psx_check_interrupts_at(cpu, 0x801872C4u);
+        goto block_801872C4;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801871C4u);
+        goto block_801871C4;  /* not taken */
+    }
+
+block_801871C4:
+    cpu->write_word(cpu->gpr[8] + 1020, cpu->gpr[31]);
+    cpu->write_word(cpu->gpr[8] + 1016, cpu->gpr[16]);
+    cpu->write_word(cpu->gpr[8] + 1012, cpu->gpr[17]);
+    cpu->write_word(cpu->gpr[8] + 1008, cpu->gpr[18]);
+    cpu->write_word(cpu->gpr[8] + 1004, cpu->gpr[19]);
+    cpu->write_word(cpu->gpr[8] + 1000, cpu->gpr[20]);
+    cpu->write_word(cpu->gpr[8] + 996, cpu->gpr[21]);
+    cpu->write_word(cpu->gpr[8] + 992, cpu->gpr[22]);
+    cpu->gpr[8] = 1365;
+    
+    psx_gte_stall(cpu);
+    gte_write_ctrl(cpu, 29, cpu->gpr[8]);  /* ctc2 */  /* 0x801871E8: 0x48C8E800 */
+    cpu->gpr[8] = 1024;
+    
+    psx_gte_stall(cpu);
+    gte_write_ctrl(cpu, 30, cpu->gpr[8]);  /* ctc2 */  /* 0x801871F0: 0x48C8F000 */
+    cpu->gpr[16] = cpu->gpr[4];
+    cpu->gpr[17] = cpu->gpr[5];
+    cpu->gpr[19] = cpu->gpr[7];
+    cpu->gpr[20] = cpu->read_word(cpu->gpr[29] + 16);
+    cpu->gpr[21] = cpu->read_word(cpu->gpr[29] + 20);
+    /* fall through to block_80187208 */
+
+block_80187208:
+    cpu->gpr[8] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[16] + 12);
+    cpu->gpr[5] = cpu->read_word(cpu->gpr[16]);
+    int _bc_80187210 = (cpu->gpr[8] != cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[4] = cpu->gpr[21];
+    if (_bc_80187210) {
+        psx_check_interrupts_at(cpu, 0x80187290u);
+        goto block_80187290;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80187218u);
+        goto block_80187218;  /* not taken */
+    }
+
+block_80187218:
+    int _bc_80187218 = (cpu->gpr[5] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x8018721C: 0x00000000 */
+    if (_bc_80187218) {
+        psx_check_interrupts_at(cpu, 0x80187290u);
+        goto block_80187290;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80187220u);
+        goto block_80187220;  /* not taken */
+    }
+
+block_80187220:
+    cpu->gpr[31] = 0x80187228u;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[5] = cpu->gpr[5] + 32;
+    psx_check_interrupts_at(cpu, 0x80186E64u);
+    cpu->pc = 0x80186E64u; return;  /* CPS jal -> 0x80186E64 */
+
+block_80187228:
+    cpu->gpr[31] = 0x80187230u;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[4] = cpu->gpr[20];
+    psx_check_interrupts_at(cpu, 0x80186F5Cu);
+    cpu->pc = 0x80186F5Cu; return;  /* CPS jal -> 0x80186F5C */
+
+block_80187230:
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[0] = (cpu->read_word((cpu->gpr[16] + 4)));
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 1, (cpu->read_word((cpu->gpr[16] + 8))));
+    /* nop */  /* 0x80187238: 0x00000000 */
+    gte_execute(cpu, 0x0480012);  /* gte cmd 0x12 */  /* 0x8018723C: 0x4A480012 */
+    cpu->gpr[18] = cpu->read_word(cpu->gpr[16] + 28);
+    /* nop */  /* 0x80187244: 0x00000000 */
+    cpu->gpr[22] = cpu->read_word(cpu->gpr[18]);
+    
+    psx_gte_read(cpu, 8);
+    cpu->gpr[8] = cpu->gte_data[25];  /* mfc2 */
+    int _bc_80187250 = (cpu->gpr[22] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[18] = cpu->gpr[18] + 4;
+    if (_bc_80187250) {
+        psx_check_interrupts_at(cpu, 0x80187290u);
+        goto block_80187290;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80187258u);
+        goto block_80187258;  /* not taken */
+    }
+
+block_80187258:
+    
+    psx_gte_read(cpu, 9);
+    cpu->gpr[9] = cpu->gte_data[26];  /* mfc2 */
+    
+    psx_gte_read(cpu, 10);
+    cpu->gpr[10] = cpu->gte_data[27];  /* mfc2 */
+    cpu->gpr[11] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[16] + 14);
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[5] = cpu->gpr[8];  /* ctc2 */  /* 0x80187264: 0x48C82800 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[6] = cpu->gpr[9];  /* ctc2 */  /* 0x80187268: 0x48C93000 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[7] = cpu->gpr[10];  /* ctc2 */  /* 0x8018726C: 0x48CA3800 */
+    cpu->gpr[5] = cpu->gpr[17] + cpu->gpr[11];
+    /* fall through to block_80187274 */
+
+block_80187274:
+    cpu->gpr[7] = cpu->read_word(cpu->gpr[18] + 4);
+    cpu->gpr[8] = cpu->read_word(cpu->gpr[18] + 12);
+    cpu->gpr[4] = cpu->read_word(cpu->gpr[18] + 8);
+    uint32_t _jt_80187280 = cpu->gpr[8];  /* latch indirect target before delay slot */
+    cpu->gpr[31] = 0x80187288u;  /* jalr link before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[22] = cpu->gpr[22] + -1;
+    psx_check_interrupts_at(cpu, _jt_80187280);
+    cpu->pc = _jt_80187280; return;  /* CPS jalr */
+
+block_80187288:
+    int _bc_80187288 = ((int32_t)cpu->gpr[22] > 0);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[18] = cpu->gpr[18] + 16;
+    if (_bc_80187288) {
+        psx_check_interrupts_at(cpu, 0x80187274u);
+        goto block_80187274;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80187290u);
+        goto block_80187290;  /* not taken */
+    }
+
+block_80187290:
+    cpu->gpr[19] = cpu->gpr[19] + -1;
+    int _bc_80187294 = ((int32_t)cpu->gpr[19] > 0);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[16] = cpu->gpr[16] + 40;
+    if (_bc_80187294) {
+        psx_check_interrupts_at(cpu, 0x80187208u);
+        goto block_80187208;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018729Cu);
+        goto block_8018729C;  /* not taken */
+    }
+
+block_8018729C:
+    cpu->gpr[4] = cpu->gpr[16];
+    cpu->gpr[8] = 0x1F80 << 16;  /* 0x1F800000 */
+    cpu->gpr[31] = cpu->read_word(cpu->gpr[8] + 1020);
+    cpu->gpr[16] = cpu->read_word(cpu->gpr[8] + 1016);
+    cpu->gpr[17] = cpu->read_word(cpu->gpr[8] + 1012);
+    cpu->gpr[18] = cpu->read_word(cpu->gpr[8] + 1008);
+    cpu->gpr[19] = cpu->read_word(cpu->gpr[8] + 1004);
+    cpu->gpr[20] = cpu->read_word(cpu->gpr[8] + 1000);
+    cpu->gpr[21] = cpu->read_word(cpu->gpr[8] + 996);
+    cpu->gpr[22] = cpu->read_word(cpu->gpr[8] + 992);
+    /* fall through to block_801872C4 */
+
+block_801872C4:
+    uint32_t _jt_801872C4 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[4];
+    psx_check_interrupts_at(cpu, _jt_801872C4);
+    cpu->pc = _jt_801872C4; return;  /* CPS: jr $ra */
+}
+
+/* cps_8018b208 — clean CPS transliteration of br2eu_func_8018B208 (guest 0x8018b208)
+ * from SLES_017.22_full_41.c. */
+void cps_8018b208(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x8018B284u: goto block_8018B284;
+            case 0x8018B2BCu: goto block_8018B2BC;
+            case 0x8018B310u: goto block_8018B310;
+            case 0x8018B33Cu: goto block_8018B33C;
+            case 0x8018B210u: goto block_8018B210;
+            case 0x8018B264u: goto block_8018B264;
+            case 0x8018B274u: goto block_8018B274;
+            case 0x8018B27Cu: goto block_8018B27C;
+            case 0x8018B2C8u: goto block_8018B2C8;
+            case 0x8018B2F8u: goto block_8018B2F8;
+            case 0x8018B328u: goto block_8018B328;
+            case 0x8018B344u: goto block_8018B344;
+            case 0x8018B350u: goto block_8018B350;
+            case 0x8018B378u: goto block_8018B378;
+            default: break;
+        }
+    }
+    /* Address: 0x8018B208, Size: 376 bytes, Blocks: 15 */
+
+block_8018B208:
+    int _bc_8018B208 = ((int32_t)cpu->gpr[7] <= 0);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[8] = 0x1F80 << 16;  /* 0x1F800000 */
+    if (_bc_8018B208) {
+        psx_check_interrupts_at(cpu, 0x8018B378u);
+        goto block_8018B378;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018B210u);
+        goto block_8018B210;  /* not taken */
+    }
+
+block_8018B210:
+    cpu->write_word(cpu->gpr[8] + 1020, cpu->gpr[31]);
+    cpu->write_word(cpu->gpr[8] + 1016, cpu->gpr[16]);
+    cpu->write_word(cpu->gpr[8] + 1012, cpu->gpr[17]);
+    cpu->write_word(cpu->gpr[8] + 1008, cpu->gpr[18]);
+    cpu->write_word(cpu->gpr[8] + 1004, cpu->gpr[19]);
+    cpu->write_word(cpu->gpr[8] + 1000, cpu->gpr[20]);
+    cpu->write_word(cpu->gpr[8] + 996, cpu->gpr[21]);
+    cpu->write_word(cpu->gpr[8] + 992, cpu->gpr[22]);
+    cpu->write_word(cpu->gpr[8] + 988, cpu->gpr[23]);
+    cpu->gpr[16] = cpu->gpr[4];
+    cpu->gpr[20] = cpu->gpr[6];
+    cpu->gpr[19] = cpu->gpr[7];
+    cpu->gpr[9] = cpu->read_word(cpu->gpr[29] + 16);
+    cpu->gpr[21] = cpu->read_word(cpu->gpr[29] + 20);
+    cpu->gpr[10] = cpu->read_word(cpu->gpr[29] + 24);
+    cpu->gpr[11] = cpu->read_word(cpu->gpr[29] + 28);
+    cpu->gpr[23] = 0x1F80 << 16;  /* 0x1F800000 */
+    cpu->write_word(cpu->gpr[23] + 984, cpu->gpr[5]);
+    cpu->write_word(cpu->gpr[23] + 980, cpu->gpr[9]);
+    cpu->write_word(cpu->gpr[23] + 976, cpu->gpr[10]);
+    cpu->write_word(cpu->gpr[23] + 972, cpu->gpr[11]);
+    /* fall through to block_8018B264 */
+
+block_8018B264:
+    cpu->gpr[8] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[16] + 12);
+    cpu->gpr[5] = cpu->read_word(cpu->gpr[16]);
+    int _bc_8018B26C = (cpu->gpr[8] != cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[4] = cpu->gpr[21];
+    if (_bc_8018B26C) {
+        psx_check_interrupts_at(cpu, 0x8018B344u);
+        goto block_8018B344;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018B274u);
+        goto block_8018B274;  /* not taken */
+    }
+
+block_8018B274:
+    int _bc_8018B274 = (cpu->gpr[5] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x8018B278: 0x00000000 */
+    if (_bc_8018B274) {
+        psx_check_interrupts_at(cpu, 0x8018B344u);
+        goto block_8018B344;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018B27Cu);
+        goto block_8018B27C;  /* not taken */
+    }
+
+block_8018B27C:
+    cpu->gpr[31] = 0x8018B284u;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[5] = cpu->gpr[5] + 32;
+    psx_check_interrupts_at(cpu, 0x80186F5Cu);
+    cpu->pc = 0x80186F5Cu; return;  /* CPS jal -> 0x80186F5C */
+
+block_8018B284:
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[0] = (cpu->read_word((cpu->gpr[16] + 4)));
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 1, (cpu->read_word((cpu->gpr[16] + 8))));
+    gte_execute(cpu, 0x0480012);  /* gte cmd 0x12 */  /* 0x8018B28C: 0x4A480012 */
+    cpu->write_word(cpu->gpr[23] + 928, cpu->gpr[14]);
+    cpu->write_word(cpu->gpr[23] + 932, cpu->gpr[12]);
+    cpu->write_word(cpu->gpr[23] + 936, cpu->gpr[15]);
+    cpu->write_word(cpu->gpr[23] + 940, cpu->gpr[24]);
+    cpu->write_word(cpu->gpr[23] + 944, cpu->gpr[13]);
+    cpu->gpr[7] = cpu->read_word(cpu->gpr[5] + 24);
+    
+    psx_gte_read(cpu, 4);
+    cpu->gpr[4] = cpu->gte_data[25];  /* mfc2 */
+    
+    psx_gte_read(cpu, 5);
+    cpu->gpr[5] = cpu->gte_data[27];  /* mfc2 */
+    cpu->gpr[6] = cpu->read_word(cpu->gpr[23] + 976);
+    cpu->gpr[31] = 0x8018B2BCu;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x8018B2B8: 0x00000000 */
+    psx_check_interrupts_at(cpu, 0x8018D618u);
+    cpu->pc = 0x8018D618u; return;  /* CPS jal -> 0x8018D618 */
+
+block_8018B2BC:
+    cpu->gpr[17] = cpu->read_word(cpu->gpr[23] + 984);
+    int _bc_8018B2C0 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x8018B2C4: 0x00000000 */
+    if (_bc_8018B2C0) {
+        psx_check_interrupts_at(cpu, 0x8018B2F8u);
+        goto block_8018B2F8;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018B2C8u);
+        goto block_8018B2C8;  /* not taken */
+    }
+
+block_8018B2C8:
+    cpu->gpr[9] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[21] + 2);
+    cpu->gpr[8] = cpu->gpr[0] - cpu->gpr[2];
+    { int64_t result = (int64_t)(int32_t)cpu->gpr[9] * (int64_t)(int32_t)cpu->gpr[8]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
+    psx_muldiv_set(cpu, psx_mult_latency_s(cpu->gpr[9]));
+    cpu->gpr[10] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[21] + 14);
+    cpu->gpr[9] = cpu->lo;
+    psx_muldiv_stall(cpu);
+    cpu->gpr[9] = (int32_t)cpu->gpr[9] >> 12;
+    cpu->gpr[4] = cpu->gpr[4] + cpu->gpr[9];
+    { int64_t result = (int64_t)(int32_t)cpu->gpr[10] * (int64_t)(int32_t)cpu->gpr[8]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
+    psx_muldiv_set(cpu, psx_mult_latency_s(cpu->gpr[10]));
+    cpu->gpr[17] = cpu->read_word(cpu->gpr[23] + 972);
+    cpu->gpr[10] = cpu->lo;
+    psx_muldiv_stall(cpu);
+    cpu->gpr[10] = (int32_t)cpu->gpr[10] >> 12;
+    cpu->gpr[5] = cpu->gpr[5] + cpu->gpr[10];
+    /* fall through to block_8018B2F8 */
+
+block_8018B2F8:
+    cpu->write_word(cpu->gpr[23] + 948, cpu->gpr[4]);
+    cpu->write_word(cpu->gpr[23] + 952, cpu->gpr[2]);
+    cpu->write_word(cpu->gpr[23] + 956, cpu->gpr[5]);
+    cpu->gpr[4] = cpu->read_word(cpu->gpr[23] + 980);
+    cpu->gpr[31] = 0x8018B310u;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[5] = cpu->gpr[23] + 928;
+    psx_check_interrupts_at(cpu, 0x80186F5Cu);
+    cpu->pc = 0x80186F5Cu; return;  /* CPS jal -> 0x80186F5C */
+
+block_8018B310:
+    cpu->gpr[18] = cpu->read_word(cpu->gpr[16] + 28);
+    cpu->gpr[5] = cpu->gpr[17];
+    cpu->gpr[22] = cpu->read_word(cpu->gpr[18]);
+    cpu->gpr[6] = cpu->gpr[20];
+    int _bc_8018B320 = (cpu->gpr[22] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[18] = cpu->gpr[18] + 4;
+    if (_bc_8018B320) {
+        psx_check_interrupts_at(cpu, 0x8018B344u);
+        goto block_8018B344;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018B328u);
+        goto block_8018B328;  /* not taken */
+    }
+
+block_8018B328:
+    cpu->gpr[7] = cpu->read_word(cpu->gpr[18] + 4);
+    cpu->gpr[8] = cpu->read_word(cpu->gpr[18] + 12);
+    cpu->gpr[4] = cpu->read_word(cpu->gpr[18] + 8);
+    uint32_t _jt_8018B334 = cpu->gpr[8];  /* latch indirect target before delay slot */
+    cpu->gpr[31] = 0x8018B33Cu;  /* jalr link before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[22] = cpu->gpr[22] + -1;
+    psx_check_interrupts_at(cpu, _jt_8018B334);
+    cpu->pc = _jt_8018B334; return;  /* CPS jalr */
+
+block_8018B33C:
+    int _bc_8018B33C = ((int32_t)cpu->gpr[22] > 0);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[18] = cpu->gpr[18] + 16;
+    if (_bc_8018B33C) {
+        psx_check_interrupts_at(cpu, 0x8018B328u);
+        goto block_8018B328;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018B344u);
+        goto block_8018B344;  /* not taken */
+    }
+
+block_8018B344:
+    cpu->gpr[19] = cpu->gpr[19] + -1;
+    int _bc_8018B348 = ((int32_t)cpu->gpr[19] > 0);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[16] = cpu->gpr[16] + 40;
+    if (_bc_8018B348) {
+        psx_check_interrupts_at(cpu, 0x8018B264u);
+        goto block_8018B264;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018B350u);
+        goto block_8018B350;  /* not taken */
+    }
+
+block_8018B350:
+    cpu->gpr[4] = cpu->gpr[16];
+    cpu->gpr[31] = cpu->read_word(cpu->gpr[23] + 1020);
+    cpu->gpr[16] = cpu->read_word(cpu->gpr[23] + 1016);
+    cpu->gpr[17] = cpu->read_word(cpu->gpr[23] + 1012);
+    cpu->gpr[18] = cpu->read_word(cpu->gpr[23] + 1008);
+    cpu->gpr[19] = cpu->read_word(cpu->gpr[23] + 1004);
+    cpu->gpr[20] = cpu->read_word(cpu->gpr[23] + 1000);
+    cpu->gpr[21] = cpu->read_word(cpu->gpr[23] + 996);
+    cpu->gpr[22] = cpu->read_word(cpu->gpr[23] + 992);
+    cpu->gpr[23] = cpu->read_word(cpu->gpr[23] + 988);
+    /* fall through to block_8018B378 */
+
+block_8018B378:
+    uint32_t _jt_8018B378 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[4];
+    psx_check_interrupts_at(cpu, _jt_8018B378);
+    cpu->pc = _jt_8018B378; return;  /* CPS: jr $ra */
+}
+
+/* cps_8018c0a8 — clean CPS transliteration of br2eu_func_8018C0A8 (guest 0x8018c0a8)
+ * from SLES_017.22_full_41.c. */
+void cps_8018c0a8(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x8018C0E8u: goto block_8018C0E8;
+            case 0x8018C0F0u: goto block_8018C0F0;
+            default: break;
+        }
+    }
+    /* Address: 0x8018C0A8, Size: 80 bytes, Blocks: 3 */
+
+block_8018C0A8:
+    cpu->gpr[7] = 0x801B << 16;  /* 0x801B0000 */
+    cpu->gpr[2] = 0x801F << 16;  /* 0x801F0000 */
+    cpu->gpr[4] = cpu->gpr[2] + 24280;
+    cpu->gpr[3] = cpu->read_word(cpu->gpr[7] + 21980);
+    cpu->gpr[5] = 0x1F80 << 16;  /* 0x1F800000 */
+    cpu->gpr[5] = cpu->read_word(cpu->gpr[5] + 220);
+    cpu->gpr[2] = cpu->gpr[3] << 1;
+    cpu->gpr[2] = cpu->gpr[2] + cpu->gpr[3];
+    cpu->gpr[2] = cpu->gpr[2] << 2;
+    cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
+    cpu->gpr[2] = cpu->gpr[2] << 2;
+    cpu->gpr[6] = cpu->gpr[2] + cpu->gpr[4];
+    cpu->gpr[4] = cpu->read_word(cpu->gpr[6]);
+    /* nop */  /* 0x8018C0DC: 0x00000000 */
+    int _bc_8018C0E0 = (cpu->gpr[4] == cpu->gpr[5]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[5] + -1;
+    if (_bc_8018C0E0) {
+        psx_check_interrupts_at(cpu, 0x8018C0F0u);
+        goto block_8018C0F0;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018C0E8u);
+        goto block_8018C0E8;  /* not taken */
+    }
+
+block_8018C0E8:
+    int _bc_8018C0E8 = (cpu->gpr[4] != cpu->gpr[2]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[3] = cpu->gpr[3] + 1;
+    if (_bc_8018C0E8) {
+        psx_check_interrupts_at(cpu, 0x8018C0F8u);
+        cpu->pc = 0x8018C0F8u; return;  /* CPS taken: split */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018C0F0u);
+        goto block_8018C0F0;  /* not taken */
+    }
+
+block_8018C0F0:
+    uint32_t _jt_8018C0F0 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[0];
+    psx_check_interrupts_at(cpu, _jt_8018C0F0);
+    cpu->pc = _jt_8018C0F0; return;  /* CPS: jr $ra */
+}
+
+/* cps_8018c18c — clean CPS transliteration of br2eu_func_8018C18C (guest 0x8018c18c)
+ * from SLES_017.22_full_41.c. */
+void cps_8018c18c(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x8018C1C4u: goto block_8018C1C4;
+            case 0x8018C1CCu: goto block_8018C1CC;
+            default: break;
+        }
+    }
+    /* Address: 0x8018C18C, Size: 72 bytes, Blocks: 3 */
+
+block_8018C18C:
+    cpu->gpr[7] = 0x801B << 16;  /* 0x801B0000 */
+    cpu->gpr[2] = 0x801F << 16;  /* 0x801F0000 */
+    cpu->gpr[4] = cpu->gpr[2] + 25688;
+    cpu->gpr[3] = cpu->read_word(cpu->gpr[7] + 21984);
+    cpu->gpr[5] = 0x1F80 << 16;  /* 0x1F800000 */
+    cpu->gpr[5] = cpu->read_word(cpu->gpr[5] + 220);
+    cpu->gpr[2] = cpu->gpr[3] << 3;
+    cpu->gpr[2] = cpu->gpr[2] + cpu->gpr[3];
+    cpu->gpr[2] = cpu->gpr[2] << 2;
+    cpu->gpr[6] = cpu->gpr[2] + cpu->gpr[4];
+    cpu->gpr[4] = cpu->read_word(cpu->gpr[6]);
+    /* nop */  /* 0x8018C1B8: 0x00000000 */
+    int _bc_8018C1BC = (cpu->gpr[4] == cpu->gpr[5]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[5] + -1;
+    if (_bc_8018C1BC) {
+        psx_check_interrupts_at(cpu, 0x8018C1CCu);
+        goto block_8018C1CC;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018C1C4u);
+        goto block_8018C1C4;  /* not taken */
+    }
+
+block_8018C1C4:
+    int _bc_8018C1C4 = (cpu->gpr[4] != cpu->gpr[2]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[3] = cpu->gpr[3] + 1;
+    if (_bc_8018C1C4) {
+        psx_check_interrupts_at(cpu, 0x8018C1D4u);
+        cpu->pc = 0x8018C1D4u; return;  /* CPS taken: split */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018C1CCu);
+        goto block_8018C1CC;  /* not taken */
+    }
+
+block_8018C1CC:
+    uint32_t _jt_8018C1CC = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[0];
+    psx_check_interrupts_at(cpu, _jt_8018C1CC);
+    cpu->pc = _jt_8018C1CC; return;  /* CPS: jr $ra */
+}
+
+/* cps_8018cbfc — clean CPS transliteration of br2eu_func_8018CBFC (guest 0x8018cbfc)
+ * from SLES_017.22_full_41.c. */
+void cps_8018cbfc(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x8018CC18u: goto block_8018CC18;
+            case 0x8018CC1Cu: goto block_8018CC1C;
+            case 0x8018CC3Cu: goto block_8018CC3C;
+            case 0x8018CC44u: goto block_8018CC44;
+            default: break;
+        }
+    }
+    /* Address: 0x8018CBFC, Size: 80 bytes, Blocks: 5 */
+
+block_8018CBFC:
+    cpu->gpr[2] = 0x801F << 16;  /* 0x801F0000 */
+    cpu->gpr[7] = 0x801B << 16;  /* 0x801B0000 */
+    cpu->gpr[3] = cpu->read_word(cpu->gpr[7] + 21988);
+    cpu->gpr[6] = 0x1F80 << 16;  /* 0x1F800000 */
+    cpu->gpr[6] = cpu->read_word(cpu->gpr[6] + 220);
+    int _bc_8018CC10 = ((int32_t)cpu->gpr[3] >= 0);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[4] = cpu->gpr[2] + 22904;
+    if (_bc_8018CC10) {
+        psx_check_interrupts_at(cpu, 0x8018CC1Cu);
+        goto block_8018CC1C;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018CC18u);
+        goto block_8018CC18;  /* not taken */
+    }
+
+block_8018CC18:
+    cpu->gpr[3] = cpu->gpr[0];
+    /* fall through to block_8018CC1C */
+
+block_8018CC1C:
+    cpu->gpr[2] = cpu->gpr[3] << 2;
+    cpu->gpr[2] = cpu->gpr[2] + cpu->gpr[3];
+    cpu->gpr[2] = cpu->gpr[2] << 3;
+    cpu->gpr[5] = cpu->gpr[2] + cpu->gpr[4];
+    cpu->gpr[4] = cpu->read_word(cpu->gpr[5]);
+    /* nop */  /* 0x8018CC30: 0x00000000 */
+    int _bc_8018CC34 = (cpu->gpr[4] == cpu->gpr[6]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[6] + -1;
+    if (_bc_8018CC34) {
+        psx_check_interrupts_at(cpu, 0x8018CC44u);
+        goto block_8018CC44;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018CC3Cu);
+        goto block_8018CC3C;  /* not taken */
+    }
+
+block_8018CC3C:
+    int _bc_8018CC3C = (cpu->gpr[4] != cpu->gpr[2]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[3] = cpu->gpr[3] + 1;
+    if (_bc_8018CC3C) {
+        psx_check_interrupts_at(cpu, 0x8018CC4Cu);
+        cpu->pc = 0x8018CC4Cu; return;  /* CPS taken: split */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018CC44u);
+        goto block_8018CC44;  /* not taken */
+    }
+
+block_8018CC44:
+    uint32_t _jt_8018CC44 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[0];
+    psx_check_interrupts_at(cpu, _jt_8018CC44);
+    cpu->pc = _jt_8018CC44; return;  /* CPS: jr $ra */
+}
+
+/* cps_8018cdf8 — clean CPS transliteration of br2eu_func_8018CDF8 (guest 0x8018cdf8)
+ * from SLES_017.22_full_41.c. */
+void cps_8018cdf8(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x8018CE14u: goto block_8018CE14;
+            case 0x8018CE18u: goto block_8018CE18;
+            case 0x8018CE40u: goto block_8018CE40;
+            case 0x8018CE48u: goto block_8018CE48;
+            default: break;
+        }
+    }
+    /* Address: 0x8018CDF8, Size: 88 bytes, Blocks: 5 */
+
+block_8018CDF8:
+    cpu->gpr[2] = 0x801F << 16;  /* 0x801F0000 */
+    cpu->gpr[7] = 0x801B << 16;  /* 0x801B0000 */
+    cpu->gpr[3] = cpu->read_word(cpu->gpr[7] + 21992);
+    cpu->gpr[6] = 0x1F80 << 16;  /* 0x1F800000 */
+    cpu->gpr[6] = cpu->read_word(cpu->gpr[6] + 220);
+    int _bc_8018CE0C = ((int32_t)cpu->gpr[3] >= 0);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[4] = cpu->gpr[2] + 23864;
+    if (_bc_8018CE0C) {
+        psx_check_interrupts_at(cpu, 0x8018CE18u);
+        goto block_8018CE18;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018CE14u);
+        goto block_8018CE14;  /* not taken */
+    }
+
+block_8018CE14:
+    cpu->gpr[3] = cpu->gpr[0];
+    /* fall through to block_8018CE18 */
+
+block_8018CE18:
+    cpu->gpr[2] = cpu->gpr[3] << 1;
+    cpu->gpr[2] = cpu->gpr[2] + cpu->gpr[3];
+    cpu->gpr[2] = cpu->gpr[2] << 2;
+    cpu->gpr[2] = cpu->gpr[2] + cpu->gpr[3];
+    cpu->gpr[2] = cpu->gpr[2] << 2;
+    cpu->gpr[5] = cpu->gpr[2] + cpu->gpr[4];
+    cpu->gpr[4] = cpu->read_word(cpu->gpr[5]);
+    /* nop */  /* 0x8018CE34: 0x00000000 */
+    int _bc_8018CE38 = (cpu->gpr[4] == cpu->gpr[6]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[6] + -1;
+    if (_bc_8018CE38) {
+        psx_check_interrupts_at(cpu, 0x8018CE48u);
+        goto block_8018CE48;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018CE40u);
+        goto block_8018CE40;  /* not taken */
+    }
+
+block_8018CE40:
+    int _bc_8018CE40 = (cpu->gpr[4] != cpu->gpr[2]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[3] = cpu->gpr[3] + 1;
+    if (_bc_8018CE40) {
+        psx_check_interrupts_at(cpu, 0x8018CE50u);
+        cpu->pc = 0x8018CE50u; return;  /* CPS taken: split */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018CE48u);
+        goto block_8018CE48;  /* not taken */
+    }
+
+block_8018CE48:
+    uint32_t _jt_8018CE48 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[0];
+    psx_check_interrupts_at(cpu, _jt_8018CE48);
+    cpu->pc = _jt_8018CE48; return;  /* CPS: jr $ra */
+}
+
+/* cps_8018d538 — clean CPS transliteration of br2eu_func_8018D538 (guest 0x8018d538)
+ * from SLES_017.22_full_42.c. */
+void cps_8018d538(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x8018D538, Size: 8 bytes, Blocks: 1 */
+
+block_8018D538:
+    int _bc_8018D538 = (cpu->gpr[7] != cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x8018D53C: 0x00000000 */
+    if (_bc_8018D538) {
+        psx_check_interrupts_at(cpu, 0x8018D568u);
+        cpu->pc = 0x8018D568u; return;  /* CPS taken: split */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018D540u);
+        cpu->pc = 0x8018D540u; return;  /* CPS not taken: split */
+    }
+    cps_8018d540();  /* fallthrough to next function */
+}
+
+/* cps_8018d540 — clean CPS transliteration of br2eu_func_8018D540 (guest 0x8018d540)
+ * from SLES_017.22_full_42.c. */
+void cps_8018d540(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x8018D540, Size: 40 bytes, Blocks: 1 */
+
+block_8018D540:
+    cpu->gpr[8] = cpu->read_word(cpu->gpr[4]);
+    cpu->gpr[9] = cpu->read_word(cpu->gpr[4] + 4);
+    cpu->gpr[10] = cpu->read_word(cpu->gpr[4] + 8);
+    cpu->gpr[11] = cpu->read_word(cpu->gpr[4] + 12);
+    cpu->gpr[12] = cpu->read_word(cpu->gpr[4] + 16);
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[0] = cpu->gpr[8];  /* ctc2 */  /* 0x8018D554: 0x48C80000 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[1] = cpu->gpr[9];  /* ctc2 */  /* 0x8018D558: 0x48C90800 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[2] = cpu->gpr[10];  /* ctc2 */  /* 0x8018D55C: 0x48CA1000 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[3] = cpu->gpr[11];  /* ctc2 */  /* 0x8018D560: 0x48CB1800 */
+    
+    psx_gte_stall(cpu);
+    gte_write_ctrl(cpu, 4, cpu->gpr[12]);  /* ctc2 */  /* 0x8018D564: 0x48CC2000 */
+    cps_8018d568(); return;  /* fallthrough to split piece */
+    cps_8018d568();  /* fallthrough to next function */
+}
+
+/* cps_8018d568 — clean CPS transliteration of br2eu_func_8018D568 (guest 0x8018d568)
+ * from SLES_017.22_full_42.c. */
+void cps_8018d568(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x8018D568, Size: 76 bytes, Blocks: 1 */
+
+block_8018D568:
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[0] = (cpu->read_word((cpu->gpr[5])));
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 1, (cpu->read_word((cpu->gpr[5] + 4))));
+    /* nop */  /* 0x8018D570: 0x00000000 */
+    /* nop */  /* 0x8018D574: 0x00000000 */
+    gte_execute(cpu, 0x0486012);  /* gte cmd 0x12 */  /* 0x8018D578: 0x4A486012 */
+    cpu->gpr[8] = cpu->read_word(cpu->gpr[4] + 20);
+    cpu->gpr[9] = cpu->read_word(cpu->gpr[4] + 24);
+    cpu->gpr[10] = cpu->read_word(cpu->gpr[4] + 28);
+    
+    psx_gte_read(cpu, 11);
+    cpu->gpr[11] = gte_read_data(cpu, 9);  /* mfc2 */
+    
+    psx_gte_read(cpu, 12);
+    cpu->gpr[12] = gte_read_data(cpu, 10);  /* mfc2 */
+    
+    psx_gte_read(cpu, 13);
+    cpu->gpr[13] = gte_read_data(cpu, 11);  /* mfc2 */
+    cpu->gpr[8] = cpu->gpr[8] + cpu->gpr[11];
+    cpu->gpr[9] = cpu->gpr[9] + cpu->gpr[12];
+    cpu->gpr[10] = cpu->gpr[10] + cpu->gpr[13];
+    cpu->write_word(cpu->gpr[6], cpu->gpr[8]);
+    cpu->write_word(cpu->gpr[6] + 4, cpu->gpr[9]);
+    cpu->write_word(cpu->gpr[6] + 8, cpu->gpr[10]);
+    uint32_t _jt_8018D5AC = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[6];
+    psx_check_interrupts_at(cpu, _jt_8018D5AC);
+    cpu->pc = _jt_8018D5AC; return;  /* CPS: jr $ra */
+}
+
+/* cps_8018d5b4 — clean CPS transliteration of br2eu_func_8018D5B4 (guest 0x8018d5b4)
+ * from SLES_017.22_full_42.c. */
+void cps_8018d5b4(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x8018D5B4, Size: 72 bytes, Blocks: 1 */
+
+block_8018D5B4:
+    cpu->gpr[8] = cpu->read_half(cpu->gpr[4]);
+    cpu->gpr[9] = cpu->read_word(cpu->gpr[4] + 4);
+    cpu->gpr[10] = cpu->read_word(cpu->gpr[4] + 8);
+    cpu->gpr[9] = cpu->gpr[9] << 16;
+    cpu->gpr[8] = cpu->gpr[9] | cpu->gpr[8];
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[0] = cpu->gpr[8];  /* mtc2 */
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 1, cpu->gpr[10]);  /* mtc2 */
+    /* nop */  /* 0x8018D5D0: 0x00000000 */
+    /* nop */  /* 0x8018D5D4: 0x00000000 */
+    gte_execute(cpu, 0x0486012);  /* gte cmd 0x12 */  /* 0x8018D5D8: 0x4A486012 */
+    
+    psx_gte_read(cpu, 8);
+    cpu->gpr[8] = gte_read_data(cpu, 9);  /* mfc2 */
+    
+    psx_gte_read(cpu, 9);
+    cpu->gpr[9] = gte_read_data(cpu, 10);  /* mfc2 */
+    
+    psx_gte_read(cpu, 10);
+    cpu->gpr[10] = gte_read_data(cpu, 11);  /* mfc2 */
+    cpu->write_half(cpu->gpr[5], (uint16_t)cpu->gpr[8]);
+    cpu->write_half(cpu->gpr[5] + 2, (uint16_t)cpu->gpr[9]);
+    cpu->write_half(cpu->gpr[5] + 4, (uint16_t)cpu->gpr[10]);
+    uint32_t _jt_8018D5F4 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[5];
+    psx_check_interrupts_at(cpu, _jt_8018D5F4);
+    cpu->pc = _jt_8018D5F4; return;  /* CPS: jr $ra */
+}
+
+/* cps_8018dc18 — clean CPS transliteration of br2eu_func_8018DC18 (guest 0x8018dc18)
+ * from SLES_017.22_full_42.c. */
+void cps_8018dc18(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x8018DC18, Size: 8 bytes, Blocks: 1 */
+
+block_8018DC18:
+    cpu->gpr[15] = 0x8012 << 16;  /* 0x80120000 */
+    cpu->gpr[15] = cpu->gpr[15] + 18344;
+    cps_8018dc20(); return;  /* fallthrough to split piece */
+    cps_8018dc20();  /* fallthrough to next function */
+}
+
+/* cps_8018dc20 — clean CPS transliteration of br2eu_func_8018DC20 (guest 0x8018dc20)
+ * from SLES_017.22_full_42.c. */
+void cps_8018dc20(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x8018DC38u: goto block_8018DC38;
+            case 0x8018DC44u: goto block_8018DC44;
+            case 0x8018DC60u: goto block_8018DC60;
+            case 0x8018DC64u: goto block_8018DC64;
+            case 0x8018DC80u: goto block_8018DC80;
+            case 0x8018DC8Cu: goto block_8018DC8C;
+            case 0x8018DCA8u: goto block_8018DCA8;
+            case 0x8018DCACu: goto block_8018DCAC;
+            case 0x8018DCC8u: goto block_8018DCC8;
+            case 0x8018DCD4u: goto block_8018DCD4;
+            case 0x8018DCF0u: goto block_8018DCF0;
+            case 0x8018DCF4u: goto block_8018DCF4;
+            case 0x8018DD18u: goto block_8018DD18;
+            case 0x8018DD24u: goto block_8018DD24;
+            case 0x8018DD3Cu: goto block_8018DD3C;
+            case 0x8018DD40u: goto block_8018DD40;
+            case 0x8018DD5Cu: goto block_8018DD5C;
+            case 0x8018DD60u: goto block_8018DD60;
+            case 0x8018DD68u: goto block_8018DD68;
+            case 0x8018DD6Cu: goto block_8018DD6C;
+            case 0x8018DD8Cu: goto block_8018DD8C;
+            case 0x8018DD94u: goto block_8018DD94;
+            case 0x8018DD9Cu: goto block_8018DD9C;
+            case 0x8018DDA0u: goto block_8018DDA0;
+            case 0x8018DDDCu: goto block_8018DDDC;
+            case 0x8018DDE8u: goto block_8018DDE8;
+            case 0x8018DE08u: goto block_8018DE08;
+            case 0x8018DE0Cu: goto block_8018DE0C;
+            case 0x8018DE20u: goto block_8018DE20;
+            case 0x8018DE24u: goto block_8018DE24;
+            default: break;
+        }
+    }
+    /* Address: 0x8018DC20, Size: 584 bytes, Blocks: 31 */
+
+block_8018DC20:
+    cpu->gpr[2] = cpu->gpr[5] & 0x03FF;  /* 0x8018DC20: 0x30A203FF */
+    cpu->gpr[2] = cpu->gpr[2] << 1;
+    cpu->gpr[3] = cpu->gpr[0] - cpu->gpr[2];
+    cpu->gpr[1] = cpu->gpr[5] & 0x0400;  /* 0x8018DC2C: 0x30A10400 */
+    int _bc_8018DC30 = (cpu->gpr[1] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[3] = cpu->gpr[3] + 2048;
+    if (_bc_8018DC30) {
+        psx_check_interrupts_at(cpu, 0x8018DC44u);
+        goto block_8018DC44;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018DC38u);
+        goto block_8018DC38;  /* not taken */
+    }
+
+block_8018DC38:
+    cpu->gpr[2] = cpu->gpr[2] ^ cpu->gpr[3];  /* 0x8018DC38: 0x00431026 */
+    cpu->gpr[3] = cpu->gpr[2] ^ cpu->gpr[3];  /* 0x8018DC3C: 0x00431826 */
+    cpu->gpr[2] = cpu->gpr[2] ^ cpu->gpr[3];  /* 0x8018DC40: 0x00431026 */
+    /* fall through to block_8018DC44 */
+
+block_8018DC44:
+    cpu->gpr[3] = cpu->gpr[15] + cpu->gpr[3];
+    cpu->gpr[3] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[3]);
+    cpu->gpr[14] = cpu->gpr[4] + cpu->gpr[6];
+    cpu->gpr[1] = cpu->gpr[5] + 1024;
+    cpu->gpr[1] = cpu->gpr[1] & 0x0800;  /* 0x8018DC54: 0x30210800 */
+    int _bc_8018DC58 = (cpu->gpr[1] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[15] + cpu->gpr[2];
+    if (_bc_8018DC58) {
+        psx_check_interrupts_at(cpu, 0x8018DC64u);
+        goto block_8018DC64;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018DC60u);
+        goto block_8018DC60;  /* not taken */
+    }
+
+block_8018DC60:
+    cpu->gpr[3] = cpu->gpr[0] - cpu->gpr[3];
+    /* fall through to block_8018DC64 */
+
+block_8018DC64:
+    cpu->gpr[2] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[2]);
+    cpu->gpr[8] = cpu->gpr[4] & 0x03FF;  /* 0x8018DC68: 0x308803FF */
+    cpu->gpr[8] = cpu->gpr[8] << 1;
+    cpu->gpr[9] = cpu->gpr[0] - cpu->gpr[8];
+    cpu->gpr[1] = cpu->gpr[4] & 0x0400;  /* 0x8018DC74: 0x30810400 */
+    int _bc_8018DC78 = (cpu->gpr[1] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[9] = cpu->gpr[9] + 2048;
+    if (_bc_8018DC78) {
+        psx_check_interrupts_at(cpu, 0x8018DC8Cu);
+        goto block_8018DC8C;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018DC80u);
+        goto block_8018DC80;  /* not taken */
+    }
+
+block_8018DC80:
+    cpu->gpr[8] = cpu->gpr[8] ^ cpu->gpr[9];  /* 0x8018DC80: 0x01094026 */
+    cpu->gpr[9] = cpu->gpr[8] ^ cpu->gpr[9];  /* 0x8018DC84: 0x01094826 */
+    cpu->gpr[8] = cpu->gpr[8] ^ cpu->gpr[9];  /* 0x8018DC88: 0x01094026 */
+    /* fall through to block_8018DC8C */
+
+block_8018DC8C:
+    cpu->gpr[9] = cpu->gpr[15] + cpu->gpr[9];
+    cpu->gpr[9] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[9]);
+    cpu->gpr[10] = cpu->gpr[6] & 0x03FF;  /* 0x8018DC94: 0x30CA03FF */
+    cpu->gpr[1] = cpu->gpr[4] + 1024;
+    cpu->gpr[1] = cpu->gpr[1] & 0x0800;  /* 0x8018DC9C: 0x30210800 */
+    int _bc_8018DCA0 = (cpu->gpr[1] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[8] = cpu->gpr[15] + cpu->gpr[8];
+    if (_bc_8018DCA0) {
+        psx_check_interrupts_at(cpu, 0x8018DCACu);
+        goto block_8018DCAC;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018DCA8u);
+        goto block_8018DCA8;  /* not taken */
+    }
+
+block_8018DCA8:
+    cpu->gpr[9] = cpu->gpr[0] - cpu->gpr[9];
+    /* fall through to block_8018DCAC */
+
+block_8018DCAC:
+    { int64_t result = (int64_t)(int32_t)cpu->gpr[9] * (int64_t)(int32_t)cpu->gpr[3]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
+    psx_muldiv_set(cpu, psx_mult_latency_s(cpu->gpr[9]));
+    cpu->gpr[8] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[8]);
+    cpu->gpr[10] = cpu->gpr[10] << 1;
+    cpu->gpr[11] = cpu->gpr[0] - cpu->gpr[10];
+    cpu->gpr[1] = cpu->gpr[6] & 0x0400;  /* 0x8018DCBC: 0x30C10400 */
+    int _bc_8018DCC0 = (cpu->gpr[1] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[11] = cpu->gpr[11] + 2048;
+    if (_bc_8018DCC0) {
+        psx_check_interrupts_at(cpu, 0x8018DCD4u);
+        goto block_8018DCD4;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018DCC8u);
+        goto block_8018DCC8;  /* not taken */
+    }
+
+block_8018DCC8:
+    cpu->gpr[10] = cpu->gpr[10] ^ cpu->gpr[11];  /* 0x8018DCC8: 0x014B5026 */
+    cpu->gpr[11] = cpu->gpr[10] ^ cpu->gpr[11];  /* 0x8018DCCC: 0x014B5826 */
+    cpu->gpr[10] = cpu->gpr[10] ^ cpu->gpr[11];  /* 0x8018DCD0: 0x014B5026 */
+    /* fall through to block_8018DCD4 */
+
+block_8018DCD4:
+    cpu->gpr[11] = cpu->gpr[15] + cpu->gpr[11];
+    cpu->gpr[11] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[11]);
+    cpu->gpr[1] = cpu->gpr[6] + 1024;
+    cpu->gpr[1] = cpu->gpr[1] & 0x0800;  /* 0x8018DCE0: 0x30210800 */
+    cpu->gpr[9] = cpu->lo;
+    psx_muldiv_stall(cpu);
+    int _bc_8018DCE8 = (cpu->gpr[1] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[9] = (int32_t)cpu->gpr[9] >> 12;
+    if (_bc_8018DCE8) {
+        psx_check_interrupts_at(cpu, 0x8018DCF4u);
+        goto block_8018DCF4;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018DCF0u);
+        goto block_8018DCF0;  /* not taken */
+    }
+
+block_8018DCF0:
+    cpu->gpr[11] = cpu->gpr[0] - cpu->gpr[11];
+    /* fall through to block_8018DCF4 */
+
+block_8018DCF4:
+    { int64_t result = (int64_t)(int32_t)cpu->gpr[11] * (int64_t)(int32_t)cpu->gpr[3]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
+    psx_muldiv_set(cpu, psx_mult_latency_s(cpu->gpr[11]));
+    cpu->gpr[10] = cpu->gpr[15] + cpu->gpr[10];
+    cpu->gpr[10] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[10]);
+    cpu->gpr[12] = cpu->gpr[14] & 0x03FF;  /* 0x8018DD00: 0x31CC03FF */
+    cpu->gpr[12] = cpu->gpr[12] << 1;
+    cpu->gpr[13] = cpu->gpr[0] - cpu->gpr[12];
+    cpu->gpr[1] = cpu->gpr[14] & 0x0400;  /* 0x8018DD0C: 0x31C10400 */
+    int _bc_8018DD10 = (cpu->gpr[1] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[13] = cpu->gpr[13] + 2048;
+    if (_bc_8018DD10) {
+        psx_check_interrupts_at(cpu, 0x8018DD24u);
+        goto block_8018DD24;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018DD18u);
+        goto block_8018DD18;  /* not taken */
+    }
+
+block_8018DD18:
+    cpu->gpr[12] = cpu->gpr[12] ^ cpu->gpr[13];  /* 0x8018DD18: 0x018D6026 */
+    cpu->gpr[13] = cpu->gpr[12] ^ cpu->gpr[13];  /* 0x8018DD1C: 0x018D6826 */
+    cpu->gpr[12] = cpu->gpr[12] ^ cpu->gpr[13];  /* 0x8018DD20: 0x018D6026 */
+    /* fall through to block_8018DD24 */
+
+block_8018DD24:
+    cpu->gpr[13] = cpu->gpr[15] + cpu->gpr[13];
+    cpu->gpr[13] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[13]);
+    cpu->gpr[1] = cpu->gpr[4] & 0x0800;  /* 0x8018DD2C: 0x30810800 */
+    cpu->gpr[11] = cpu->lo;
+    psx_muldiv_stall(cpu);
+    int _bc_8018DD34 = (cpu->gpr[1] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[11] = (int32_t)cpu->gpr[11] >> 12;
+    if (_bc_8018DD34) {
+        psx_check_interrupts_at(cpu, 0x8018DD40u);
+        goto block_8018DD40;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018DD3Cu);
+        goto block_8018DD3C;  /* not taken */
+    }
+
+block_8018DD3C:
+    cpu->gpr[8] = cpu->gpr[0] - cpu->gpr[8];
+    /* fall through to block_8018DD40 */
+
+block_8018DD40:
+    { int64_t result = (int64_t)(int32_t)cpu->gpr[8] * (int64_t)(int32_t)cpu->gpr[3]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
+    psx_muldiv_set(cpu, psx_mult_latency_s(cpu->gpr[8]));
+    cpu->gpr[12] = cpu->gpr[15] + cpu->gpr[12];
+    cpu->gpr[12] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[12]);
+    cpu->gpr[1] = cpu->gpr[14] + 1024;
+    cpu->gpr[1] = cpu->gpr[1] & 0x0800;  /* 0x8018DD50: 0x30210800 */
+    int _bc_8018DD54 = (cpu->gpr[1] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[1] = cpu->gpr[6] & 0x0800;  /* 0x8018DD58: 0x30C10800 */
+    if (_bc_8018DD54) {
+        psx_check_interrupts_at(cpu, 0x8018DD60u);
+        goto block_8018DD60;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018DD5Cu);
+        goto block_8018DD5C;  /* not taken */
+    }
+
+block_8018DD5C:
+    cpu->gpr[13] = cpu->gpr[0] - cpu->gpr[13];
+    /* fall through to block_8018DD60 */
+
+block_8018DD60:
+    int _bc_8018DD60 = (cpu->gpr[1] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[1] = cpu->gpr[5] & 0x0800;  /* 0x8018DD64: 0x30A10800 */
+    if (_bc_8018DD60) {
+        psx_check_interrupts_at(cpu, 0x8018DD6Cu);
+        goto block_8018DD6C;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018DD68u);
+        goto block_8018DD68;  /* not taken */
+    }
+
+block_8018DD68:
+    cpu->gpr[10] = cpu->gpr[0] - cpu->gpr[10];
+    /* fall through to block_8018DD6C */
+
+block_8018DD6C:
+    cpu->write_half(cpu->gpr[7], (uint16_t)cpu->gpr[11]);
+    cpu->gpr[8] = cpu->lo;
+    psx_muldiv_stall(cpu);
+    cpu->gpr[8] = (int32_t)cpu->gpr[8] >> 12;
+    cpu->gpr[11] = cpu->gpr[0] - cpu->gpr[2];
+    { int64_t result = (int64_t)(int32_t)cpu->gpr[10] * (int64_t)(int32_t)cpu->gpr[3]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
+    psx_muldiv_set(cpu, psx_mult_latency_s(cpu->gpr[10]));
+    cpu->write_half(cpu->gpr[7] + 14, (uint16_t)cpu->gpr[8]);
+    int _bc_8018DD84 = (cpu->gpr[1] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[1] = cpu->gpr[14] & 0x0800;  /* 0x8018DD88: 0x31C10800 */
+    if (_bc_8018DD84) {
+        psx_check_interrupts_at(cpu, 0x8018DD94u);
+        goto block_8018DD94;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018DD8Cu);
+        goto block_8018DD8C;  /* not taken */
+    }
+
+block_8018DD8C:
+    cpu->gpr[11] = cpu->gpr[2];
+    cpu->gpr[2] = cpu->gpr[0] - cpu->gpr[2];
+    /* fall through to block_8018DD94 */
+
+block_8018DD94:
+    int _bc_8018DD94 = (cpu->gpr[1] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->write_half(cpu->gpr[7] + 12, (uint16_t)cpu->gpr[11]);
+    if (_bc_8018DD94) {
+        psx_check_interrupts_at(cpu, 0x8018DDA0u);
+        goto block_8018DDA0;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018DD9Cu);
+        goto block_8018DD9C;  /* not taken */
+    }
+
+block_8018DD9C:
+    cpu->gpr[12] = cpu->gpr[0] - cpu->gpr[12];
+    /* fall through to block_8018DDA0 */
+
+block_8018DDA0:
+    cpu->gpr[10] = cpu->lo;
+    psx_muldiv_stall(cpu);
+    cpu->gpr[10] = (int32_t)cpu->gpr[10] >> 12;
+    cpu->gpr[3] = cpu->gpr[2] + -4096;
+    { int64_t result = (int64_t)(int32_t)cpu->gpr[13] * (int64_t)(int32_t)cpu->gpr[3]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
+    psx_muldiv_set(cpu, psx_mult_latency_s(cpu->gpr[13]));
+    cpu->write_half(cpu->gpr[7] + 16, (uint16_t)cpu->gpr[9]);
+    cpu->gpr[8] = cpu->gpr[4] - cpu->gpr[6];
+    cpu->gpr[9] = cpu->gpr[8] & 0x03FF;  /* 0x8018DDB8: 0x310903FF */
+    cpu->write_half(cpu->gpr[7] + 6, (uint16_t)cpu->gpr[10]);
+    cpu->gpr[13] = cpu->lo;
+    psx_muldiv_stall(cpu);
+    cpu->gpr[9] = cpu->gpr[9] << 1;
+    cpu->gpr[11] = cpu->gpr[0] - cpu->gpr[9];
+    { int64_t result = (int64_t)(int32_t)cpu->gpr[12] * (int64_t)(int32_t)cpu->gpr[3]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
+    psx_muldiv_set(cpu, psx_mult_latency_s(cpu->gpr[12]));
+    cpu->gpr[1] = cpu->gpr[8] & 0x0400;  /* 0x8018DDD0: 0x31010400 */
+    int _bc_8018DDD4 = (cpu->gpr[1] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[11] = cpu->gpr[11] + 2048;
+    if (_bc_8018DDD4) {
+        psx_check_interrupts_at(cpu, 0x8018DDE8u);
+        goto block_8018DDE8;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018DDDCu);
+        goto block_8018DDDC;  /* not taken */
+    }
+
+block_8018DDDC:
+    cpu->gpr[9] = cpu->gpr[9] ^ cpu->gpr[11];  /* 0x8018DDDC: 0x012B4826 */
+    cpu->gpr[11] = cpu->gpr[9] ^ cpu->gpr[11];  /* 0x8018DDE0: 0x012B5826 */
+    cpu->gpr[9] = cpu->gpr[9] ^ cpu->gpr[11];  /* 0x8018DDE4: 0x012B4826 */
+    /* fall through to block_8018DDE8 */
+
+block_8018DDE8:
+    cpu->gpr[11] = cpu->gpr[15] + cpu->gpr[11];
+    cpu->gpr[11] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[11]);
+    cpu->gpr[1] = cpu->gpr[8] + 1024;
+    cpu->gpr[1] = cpu->gpr[1] & 0x0800;  /* 0x8018DDF4: 0x30210800 */
+    cpu->gpr[9] = cpu->gpr[15] + cpu->gpr[9];
+    cpu->gpr[12] = cpu->lo;
+    psx_muldiv_stall(cpu);
+    int _bc_8018DE00 = (cpu->gpr[1] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[10] = cpu->gpr[2] + 4096;
+    if (_bc_8018DE00) {
+        psx_check_interrupts_at(cpu, 0x8018DE0Cu);
+        goto block_8018DE0C;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018DE08u);
+        goto block_8018DE08;  /* not taken */
+    }
+
+block_8018DE08:
+    cpu->gpr[11] = cpu->gpr[0] - cpu->gpr[11];
+    /* fall through to block_8018DE0C */
+
+block_8018DE0C:
+    { int64_t result = (int64_t)(int32_t)cpu->gpr[11] * (int64_t)(int32_t)cpu->gpr[10]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
+    psx_muldiv_set(cpu, psx_mult_latency_s(cpu->gpr[11]));
+    cpu->gpr[9] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[9]);
+    cpu->gpr[1] = cpu->gpr[8] & 0x0800;  /* 0x8018DE14: 0x31010800 */
+    int _bc_8018DE18 = (cpu->gpr[1] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x8018DE1C: 0x00000000 */
+    if (_bc_8018DE18) {
+        psx_check_interrupts_at(cpu, 0x8018DE24u);
+        goto block_8018DE24;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018DE20u);
+        goto block_8018DE20;  /* not taken */
+    }
+
+block_8018DE20:
+    cpu->gpr[9] = cpu->gpr[0] - cpu->gpr[9];
+    /* fall through to block_8018DE24 */
+
+block_8018DE24:
+    cpu->gpr[11] = cpu->lo;
+    psx_muldiv_stall(cpu);
+    cpu->gpr[3] = cpu->gpr[13] + cpu->gpr[11];
+    cpu->gpr[3] = (int32_t)cpu->gpr[3] >> 13;
+    { int64_t result = (int64_t)(int32_t)cpu->gpr[9] * (int64_t)(int32_t)cpu->gpr[10]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
+    psx_muldiv_set(cpu, psx_mult_latency_s(cpu->gpr[9]));
+    cpu->write_half(cpu->gpr[7] + 4, (uint16_t)cpu->gpr[3]);
+    cpu->gpr[2] = cpu->gpr[11] - cpu->gpr[13];
+    cpu->gpr[2] = (int32_t)cpu->gpr[2] >> 13;
+    cpu->write_half(cpu->gpr[7] + 8, (uint16_t)cpu->gpr[2]);
+    cpu->gpr[9] = cpu->lo;
+    psx_muldiv_stall(cpu);
+    cpu->gpr[3] = cpu->gpr[12] + cpu->gpr[9];
+    cpu->gpr[3] = (int32_t)cpu->gpr[3] >> 13;
+    cpu->write_half(cpu->gpr[7] + 2, (uint16_t)cpu->gpr[3]);
+    cpu->gpr[8] = cpu->gpr[12] - cpu->gpr[9];
+    cpu->gpr[8] = (int32_t)cpu->gpr[8] >> 13;
+    cpu->write_half(cpu->gpr[7] + 10, (uint16_t)cpu->gpr[8]);
+    uint32_t _jt_8018DE60 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[7];
+    psx_check_interrupts_at(cpu, _jt_8018DE60);
+    cpu->pc = _jt_8018DE60; return;  /* CPS: jr $ra */
+}
+
+/* cps_80194960 — clean CPS transliteration of br2eu_func_80194960 (guest 0x80194960)
+ * from SLES_017.22_full_44.c. */
+void cps_80194960(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x80194960, Size: 268 bytes, Blocks: 1 */
+
+block_80194960:
+    cpu->gpr[8] = cpu->read_word(cpu->gpr[4]);
+    cpu->gpr[9] = cpu->read_word(cpu->gpr[4] + 4);
+    cpu->gpr[10] = cpu->read_word(cpu->gpr[4] + 8);
+    cpu->gpr[11] = cpu->read_word(cpu->gpr[4] + 12);
+    cpu->gpr[12] = cpu->read_word(cpu->gpr[4] + 16);
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[0] = cpu->gpr[8];  /* ctc2 */  /* 0x80194974: 0x48C80000 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[1] = cpu->gpr[9];  /* ctc2 */  /* 0x80194978: 0x48C90800 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[2] = cpu->gpr[10];  /* ctc2 */  /* 0x8019497C: 0x48CA1000 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[3] = cpu->gpr[11];  /* ctc2 */  /* 0x80194980: 0x48CB1800 */
+    
+    psx_gte_stall(cpu);
+    gte_write_ctrl(cpu, 4, cpu->gpr[12]);  /* ctc2 */  /* 0x80194984: 0x48CC2000 */
+    cpu->gpr[8] = cpu->read_half(cpu->gpr[5]);
+    cpu->gpr[9] = cpu->read_word(cpu->gpr[5] + 4);
+    cpu->gpr[10] = cpu->read_word(cpu->gpr[5] + 12);
+    cpu->gpr[1] = 0xFFFF << 16;  /* 0xFFFF0000 */
+    cpu->gpr[9] = cpu->gpr[9] & cpu->gpr[1];  /* 0x80194998: 0x01214824 */
+    cpu->gpr[8] = cpu->gpr[8] | cpu->gpr[9];
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[0] = cpu->gpr[8];  /* mtc2 */
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 1, cpu->gpr[10]);  /* mtc2 */
+    /* nop */  /* 0x801949A8: 0x00000000 */
+    gte_execute(cpu, 0x0486012);  /* gte cmd 0x12 */  /* 0x801949AC: 0x4A486012 */
+    cpu->gpr[8] = cpu->read_half(cpu->gpr[5] + 2);
+    cpu->gpr[9] = cpu->read_word(cpu->gpr[5] + 8);
+    cpu->gpr[10] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[5] + 14);
+    cpu->gpr[9] = cpu->gpr[9] << 16;
+    cpu->gpr[8] = cpu->gpr[8] | cpu->gpr[9];
+    
+    psx_gte_read(cpu, 11);
+    cpu->gpr[11] = gte_read_data(cpu, 9);  /* mfc2 */
+    
+    psx_gte_read(cpu, 12);
+    cpu->gpr[12] = gte_read_data(cpu, 10);  /* mfc2 */
+    
+    psx_gte_read(cpu, 13);
+    cpu->gpr[13] = gte_read_data(cpu, 11);  /* mfc2 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[0] = cpu->gpr[8];  /* mtc2 */
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 1, cpu->gpr[10]);  /* mtc2 */
+    /* nop */  /* 0x801949D8: 0x00000000 */
+    gte_execute(cpu, 0x0486012);  /* gte cmd 0x12 */  /* 0x801949DC: 0x4A486012 */
+    cpu->gpr[8] = cpu->read_half(cpu->gpr[5] + 4);
+    cpu->gpr[9] = cpu->read_word(cpu->gpr[5] + 8);
+    cpu->gpr[10] = cpu->read_word(cpu->gpr[5] + 16);
+    cpu->gpr[1] = 0xFFFF << 16;  /* 0xFFFF0000 */
+    cpu->gpr[9] = cpu->gpr[9] & cpu->gpr[1];  /* 0x801949F0: 0x01214824 */
+    cpu->gpr[8] = cpu->gpr[8] | cpu->gpr[9];
+    
+    psx_gte_read(cpu, 14);
+    cpu->gpr[14] = gte_read_data(cpu, 9);  /* mfc2 */
+    
+    psx_gte_read(cpu, 15);
+    cpu->gpr[15] = gte_read_data(cpu, 10);  /* mfc2 */
+    
+    psx_gte_read(cpu, 24);
+    cpu->gpr[24] = gte_read_data(cpu, 11);  /* mfc2 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[0] = cpu->gpr[8];  /* mtc2 */
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 1, cpu->gpr[10]);  /* mtc2 */
+    /* nop */  /* 0x80194A0C: 0x00000000 */
+    gte_execute(cpu, 0x0486012);  /* gte cmd 0x12 */  /* 0x80194A10: 0x4A486012 */
+    cpu->gpr[11] = cpu->gpr[11] & 0xFFFF;  /* 0x80194A14: 0x316BFFFF */
+    cpu->gpr[14] = cpu->gpr[14] << 16;
+    cpu->gpr[14] = cpu->gpr[14] | cpu->gpr[11];
+    cpu->write_word(cpu->gpr[6], cpu->gpr[14]);
+    cpu->gpr[13] = cpu->gpr[13] & 0xFFFF;  /* 0x80194A24: 0x31ADFFFF */
+    cpu->gpr[24] = cpu->gpr[24] << 16;
+    cpu->gpr[24] = cpu->gpr[24] | cpu->gpr[13];
+    cpu->write_word(cpu->gpr[6] + 12, cpu->gpr[24]);
+    
+    psx_gte_read(cpu, 8);
+    cpu->gpr[8] = gte_read_data(cpu, 9);  /* mfc2 */
+    
+    psx_gte_read(cpu, 9);
+    cpu->gpr[9] = gte_read_data(cpu, 10);  /* mfc2 */
+    cpu->gpr[8] = cpu->gpr[8] & 0xFFFF;  /* 0x80194A3C: 0x3108FFFF */
+    cpu->gpr[12] = cpu->gpr[12] << 16;
+    cpu->gpr[8] = cpu->gpr[8] | cpu->gpr[12];
+    cpu->write_word(cpu->gpr[6] + 4, cpu->gpr[8]);
+    cpu->gpr[15] = cpu->gpr[15] & 0xFFFF;  /* 0x80194A4C: 0x31EFFFFF */
+    cpu->gpr[9] = cpu->gpr[9] << 16;
+    cpu->gpr[9] = cpu->gpr[9] | cpu->gpr[15];
+    cpu->write_word(cpu->gpr[6] + 8, cpu->gpr[9]);
+    
+    psx_gte_stall(cpu);
+    cpu->write_word((cpu->gpr[6] + 16), (gte_read_data(cpu, 11)));
+    gte_precision_store_word((cpu->gpr[6] + 16), 11);
+    cpu->gpr[2] = cpu->gpr[6];
+    uint32_t _jt_80194A64 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x80194A68: 0x00000000 */
+    psx_check_interrupts_at(cpu, _jt_80194A64);
+    cpu->pc = _jt_80194A64; return;  /* CPS: jr $ra */
+}
+
+/* cps_80194b60 — clean CPS transliteration of br2eu_func_80194B60 (guest 0x80194b60)
+ * from SLES_017.22_full_44.c. */
+void cps_80194b60(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x80194B60, Size: 228 bytes, Blocks: 1 */
+
+block_80194B60:
+    cpu->gpr[8] = cpu->read_half(cpu->gpr[4]);
+    cpu->gpr[9] = cpu->read_word(cpu->gpr[4] + 4);
+    cpu->gpr[10] = cpu->read_word(cpu->gpr[4] + 12);
+    cpu->gpr[1] = 0xFFFF << 16;  /* 0xFFFF0000 */
+    cpu->gpr[9] = cpu->gpr[9] & cpu->gpr[1];  /* 0x80194B70: 0x01214824 */
+    cpu->gpr[8] = cpu->gpr[8] | cpu->gpr[9];
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[0] = cpu->gpr[8];  /* mtc2 */
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 1, cpu->gpr[10]);  /* mtc2 */
+    /* nop */  /* 0x80194B80: 0x00000000 */
+    gte_execute(cpu, 0x0486012);  /* gte cmd 0x12 */  /* 0x80194B84: 0x4A486012 */
+    cpu->gpr[8] = cpu->read_half(cpu->gpr[4] + 2);
+    cpu->gpr[9] = cpu->read_word(cpu->gpr[4] + 8);
+    cpu->gpr[10] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[4] + 14);
+    cpu->gpr[9] = cpu->gpr[9] << 16;
+    cpu->gpr[8] = cpu->gpr[8] | cpu->gpr[9];
+    
+    psx_gte_read(cpu, 11);
+    cpu->gpr[11] = gte_read_data(cpu, 9);  /* mfc2 */
+    
+    psx_gte_read(cpu, 12);
+    cpu->gpr[12] = gte_read_data(cpu, 10);  /* mfc2 */
+    
+    psx_gte_read(cpu, 13);
+    cpu->gpr[13] = gte_read_data(cpu, 11);  /* mfc2 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[0] = cpu->gpr[8];  /* mtc2 */
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 1, cpu->gpr[10]);  /* mtc2 */
+    /* nop */  /* 0x80194BB0: 0x00000000 */
+    gte_execute(cpu, 0x0486012);  /* gte cmd 0x12 */  /* 0x80194BB4: 0x4A486012 */
+    cpu->gpr[8] = cpu->read_half(cpu->gpr[4] + 4);
+    cpu->gpr[9] = cpu->read_word(cpu->gpr[4] + 8);
+    cpu->gpr[10] = cpu->read_word(cpu->gpr[4] + 16);
+    cpu->gpr[1] = 0xFFFF << 16;  /* 0xFFFF0000 */
+    cpu->gpr[9] = cpu->gpr[9] & cpu->gpr[1];  /* 0x80194BC8: 0x01214824 */
+    cpu->gpr[8] = cpu->gpr[8] | cpu->gpr[9];
+    
+    psx_gte_read(cpu, 14);
+    cpu->gpr[14] = gte_read_data(cpu, 9);  /* mfc2 */
+    
+    psx_gte_read(cpu, 15);
+    cpu->gpr[15] = gte_read_data(cpu, 10);  /* mfc2 */
+    
+    psx_gte_read(cpu, 24);
+    cpu->gpr[24] = gte_read_data(cpu, 11);  /* mfc2 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[0] = cpu->gpr[8];  /* mtc2 */
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 1, cpu->gpr[10]);  /* mtc2 */
+    /* nop */  /* 0x80194BE4: 0x00000000 */
+    gte_execute(cpu, 0x0486012);  /* gte cmd 0x12 */  /* 0x80194BE8: 0x4A486012 */
+    cpu->gpr[11] = cpu->gpr[11] & 0xFFFF;  /* 0x80194BEC: 0x316BFFFF */
+    cpu->gpr[14] = cpu->gpr[14] << 16;
+    cpu->gpr[14] = cpu->gpr[14] | cpu->gpr[11];
+    cpu->write_word(cpu->gpr[5], cpu->gpr[14]);
+    cpu->gpr[13] = cpu->gpr[13] & 0xFFFF;  /* 0x80194BFC: 0x31ADFFFF */
+    cpu->gpr[24] = cpu->gpr[24] << 16;
+    cpu->gpr[24] = cpu->gpr[24] | cpu->gpr[13];
+    cpu->write_word(cpu->gpr[5] + 12, cpu->gpr[24]);
+    
+    psx_gte_read(cpu, 8);
+    cpu->gpr[8] = gte_read_data(cpu, 9);  /* mfc2 */
+    
+    psx_gte_read(cpu, 9);
+    cpu->gpr[9] = gte_read_data(cpu, 10);  /* mfc2 */
+    cpu->gpr[8] = cpu->gpr[8] & 0xFFFF;  /* 0x80194C14: 0x3108FFFF */
+    cpu->gpr[12] = cpu->gpr[12] << 16;
+    cpu->gpr[8] = cpu->gpr[8] | cpu->gpr[12];
+    cpu->write_word(cpu->gpr[5] + 4, cpu->gpr[8]);
+    cpu->gpr[15] = cpu->gpr[15] & 0xFFFF;  /* 0x80194C24: 0x31EFFFFF */
+    cpu->gpr[9] = cpu->gpr[9] << 16;
+    cpu->gpr[9] = cpu->gpr[9] | cpu->gpr[15];
+    cpu->write_word(cpu->gpr[5] + 8, cpu->gpr[9]);
+    
+    psx_gte_stall(cpu);
+    cpu->write_word((cpu->gpr[5] + 16), (gte_read_data(cpu, 11)));
+    gte_precision_store_word((cpu->gpr[5] + 16), 11);
+    cpu->gpr[2] = cpu->gpr[5];
+    uint32_t _jt_80194C3C = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x80194C40: 0x00000000 */
+    psx_check_interrupts_at(cpu, _jt_80194C3C);
+    cpu->pc = _jt_80194C3C; return;  /* CPS: jr $ra */
+}
+
+/* cps_80194c50 — clean CPS transliteration of br2eu_func_80194C50 (guest 0x80194c50)
+ * from SLES_017.22_full_44.c. */
+void cps_80194c50(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x80194C50, Size: 352 bytes, Blocks: 1 */
+
+block_80194C50:
+    cpu->gpr[8] = cpu->read_word(cpu->gpr[4]);
+    cpu->gpr[9] = cpu->read_word(cpu->gpr[4] + 4);
+    cpu->gpr[10] = cpu->read_word(cpu->gpr[4] + 8);
+    cpu->gpr[11] = cpu->read_word(cpu->gpr[4] + 12);
+    cpu->gpr[12] = cpu->read_word(cpu->gpr[4] + 16);
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[0] = cpu->gpr[8];  /* ctc2 */  /* 0x80194C64: 0x48C80000 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[1] = cpu->gpr[9];  /* ctc2 */  /* 0x80194C68: 0x48C90800 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[2] = cpu->gpr[10];  /* ctc2 */  /* 0x80194C6C: 0x48CA1000 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[3] = cpu->gpr[11];  /* ctc2 */  /* 0x80194C70: 0x48CB1800 */
+    
+    psx_gte_stall(cpu);
+    gte_write_ctrl(cpu, 4, cpu->gpr[12]);  /* ctc2 */  /* 0x80194C74: 0x48CC2000 */
+    cpu->gpr[8] = cpu->read_half(cpu->gpr[5]);
+    cpu->gpr[9] = cpu->read_word(cpu->gpr[5] + 4);
+    cpu->gpr[10] = cpu->read_word(cpu->gpr[5] + 12);
+    cpu->gpr[1] = 0xFFFF << 16;  /* 0xFFFF0000 */
+    cpu->gpr[9] = cpu->gpr[9] & cpu->gpr[1];  /* 0x80194C88: 0x01214824 */
+    cpu->gpr[8] = cpu->gpr[8] | cpu->gpr[9];
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[0] = cpu->gpr[8];  /* mtc2 */
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 1, cpu->gpr[10]);  /* mtc2 */
+    /* nop */  /* 0x80194C98: 0x00000000 */
+    gte_execute(cpu, 0x0486012);  /* gte cmd 0x12 */  /* 0x80194C9C: 0x4A486012 */
+    cpu->gpr[8] = cpu->read_half(cpu->gpr[5] + 2);
+    cpu->gpr[9] = cpu->read_word(cpu->gpr[5] + 8);
+    cpu->gpr[10] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[5] + 14);
+    cpu->gpr[9] = cpu->gpr[9] << 16;
+    cpu->gpr[8] = cpu->gpr[8] | cpu->gpr[9];
+    
+    psx_gte_read(cpu, 11);
+    cpu->gpr[11] = gte_read_data(cpu, 9);  /* mfc2 */
+    
+    psx_gte_read(cpu, 12);
+    cpu->gpr[12] = gte_read_data(cpu, 10);  /* mfc2 */
+    
+    psx_gte_read(cpu, 13);
+    cpu->gpr[13] = gte_read_data(cpu, 11);  /* mfc2 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[0] = cpu->gpr[8];  /* mtc2 */
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 1, cpu->gpr[10]);  /* mtc2 */
+    /* nop */  /* 0x80194CC8: 0x00000000 */
+    gte_execute(cpu, 0x0486012);  /* gte cmd 0x12 */  /* 0x80194CCC: 0x4A486012 */
+    cpu->gpr[8] = cpu->read_half(cpu->gpr[5] + 4);
+    cpu->gpr[9] = cpu->read_word(cpu->gpr[5] + 8);
+    cpu->gpr[10] = cpu->read_word(cpu->gpr[5] + 16);
+    cpu->gpr[1] = 0xFFFF << 16;  /* 0xFFFF0000 */
+    cpu->gpr[9] = cpu->gpr[9] & cpu->gpr[1];  /* 0x80194CE0: 0x01214824 */
+    cpu->gpr[8] = cpu->gpr[8] | cpu->gpr[9];
+    
+    psx_gte_read(cpu, 14);
+    cpu->gpr[14] = gte_read_data(cpu, 9);  /* mfc2 */
+    
+    psx_gte_read(cpu, 15);
+    cpu->gpr[15] = gte_read_data(cpu, 10);  /* mfc2 */
+    
+    psx_gte_read(cpu, 24);
+    cpu->gpr[24] = gte_read_data(cpu, 11);  /* mfc2 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[0] = cpu->gpr[8];  /* mtc2 */
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 1, cpu->gpr[10]);  /* mtc2 */
+    /* nop */  /* 0x80194CFC: 0x00000000 */
+    gte_execute(cpu, 0x0486012);  /* gte cmd 0x12 */  /* 0x80194D00: 0x4A486012 */
+    cpu->gpr[11] = cpu->gpr[11] & 0xFFFF;  /* 0x80194D04: 0x316BFFFF */
+    cpu->gpr[14] = cpu->gpr[14] << 16;
+    cpu->gpr[14] = cpu->gpr[14] | cpu->gpr[11];
+    cpu->write_word(cpu->gpr[6], cpu->gpr[14]);
+    cpu->gpr[13] = cpu->gpr[13] & 0xFFFF;  /* 0x80194D14: 0x31ADFFFF */
+    cpu->gpr[24] = cpu->gpr[24] << 16;
+    cpu->gpr[24] = cpu->gpr[24] | cpu->gpr[13];
+    cpu->write_word(cpu->gpr[6] + 12, cpu->gpr[24]);
+    
+    psx_gte_read(cpu, 8);
+    cpu->gpr[8] = gte_read_data(cpu, 9);  /* mfc2 */
+    
+    psx_gte_read(cpu, 9);
+    cpu->gpr[9] = gte_read_data(cpu, 10);  /* mfc2 */
+    
+    psx_gte_stall(cpu);
+    cpu->write_word((cpu->gpr[6] + 16), (gte_read_data(cpu, 11)));
+    gte_precision_store_word((cpu->gpr[6] + 16), 11);
+    cpu->gpr[13] = cpu->read_half(cpu->gpr[5] + 20);
+    cpu->gpr[14] = cpu->read_word(cpu->gpr[5] + 24);
+    cpu->gpr[10] = cpu->read_word(cpu->gpr[5] + 28);
+    cpu->gpr[14] = cpu->gpr[14] << 16;
+    cpu->gpr[13] = cpu->gpr[13] | cpu->gpr[14];
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[0] = cpu->gpr[13];  /* mtc2 */
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 1, cpu->gpr[10]);  /* mtc2 */
+    /* nop */  /* 0x80194D4C: 0x00000000 */
+    gte_execute(cpu, 0x0486012);  /* gte cmd 0x12 */  /* 0x80194D50: 0x4A486012 */
+    cpu->gpr[12] = cpu->gpr[12] << 16;
+    cpu->gpr[8] = cpu->gpr[8] & 0xFFFF;  /* 0x80194D58: 0x3108FFFF */
+    cpu->gpr[8] = cpu->gpr[8] | cpu->gpr[12];
+    cpu->write_word(cpu->gpr[6] + 4, cpu->gpr[8]);
+    cpu->gpr[15] = cpu->gpr[15] & 0xFFFF;  /* 0x80194D64: 0x31EFFFFF */
+    cpu->gpr[9] = cpu->gpr[9] << 16;
+    cpu->gpr[9] = cpu->gpr[9] | cpu->gpr[15];
+    cpu->write_word(cpu->gpr[6] + 8, cpu->gpr[9]);
+    
+    psx_gte_read(cpu, 8);
+    cpu->gpr[8] = cpu->gte_data[25];  /* mfc2 */
+    
+    psx_gte_read(cpu, 9);
+    cpu->gpr[9] = cpu->gte_data[26];  /* mfc2 */
+    
+    psx_gte_read(cpu, 10);
+    cpu->gpr[10] = cpu->gte_data[27];  /* mfc2 */
+    cpu->gpr[11] = cpu->read_word(cpu->gpr[4] + 20);
+    cpu->gpr[12] = cpu->read_word(cpu->gpr[4] + 24);
+    cpu->gpr[13] = cpu->read_word(cpu->gpr[4] + 28);
+    cpu->gpr[8] = cpu->gpr[8] + cpu->gpr[11];
+    cpu->gpr[9] = cpu->gpr[9] + cpu->gpr[12];
+    cpu->gpr[10] = cpu->gpr[10] + cpu->gpr[13];
+    cpu->write_word(cpu->gpr[6] + 20, cpu->gpr[8]);
+    cpu->write_word(cpu->gpr[6] + 24, cpu->gpr[9]);
+    cpu->write_word(cpu->gpr[6] + 28, cpu->gpr[10]);
+    cpu->gpr[2] = cpu->gpr[6];
+    uint32_t _jt_80194DA8 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x80194DAC: 0x00000000 */
+    psx_check_interrupts_at(cpu, _jt_80194DA8);
+    cpu->pc = _jt_80194DA8; return;  /* CPS: jr $ra */
+}
+
+/* cps_80194f10 — clean CPS transliteration of br2eu_func_80194F10 (guest 0x80194f10)
+ * from SLES_017.22_full_44.c. */
+void cps_80194f10(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x80194F10, Size: 48 bytes, Blocks: 1 */
+
+block_80194F10:
+    cpu->gpr[8] = cpu->read_word(cpu->gpr[4]);
+    cpu->gpr[9] = cpu->read_word(cpu->gpr[4] + 4);
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[0] = cpu->gpr[8];  /* mtc2 */
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 1, cpu->gpr[9]);  /* mtc2 */
+    /* nop */  /* 0x80194F20: 0x00000000 */
+    gte_execute(cpu, 0x0486012);  /* gte cmd 0x12 */  /* 0x80194F24: 0x4A486012 */
+    
+    psx_gte_stall(cpu);
+    cpu->write_word((cpu->gpr[5]), (gte_read_data(cpu, 9)));
+    gte_precision_store_word((cpu->gpr[5]), 9);
+    
+    psx_gte_stall(cpu);
+    cpu->write_word((cpu->gpr[5] + 4), (gte_read_data(cpu, 10)));
+    gte_precision_store_word((cpu->gpr[5] + 4), 10);
+    
+    psx_gte_stall(cpu);
+    cpu->write_word((cpu->gpr[5] + 8), (gte_read_data(cpu, 11)));
+    gte_precision_store_word((cpu->gpr[5] + 8), 11);
+    cpu->gpr[2] = cpu->gpr[5];
+    uint32_t _jt_80194F38 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x80194F3C: 0x00000000 */
+    psx_check_interrupts_at(cpu, _jt_80194F38);
+    cpu->pc = _jt_80194F38; return;  /* CPS: jr $ra */
+}
+
+/* cps_80195050 — clean CPS transliteration of br2eu_func_80195050 (guest 0x80195050)
+ * from SLES_017.22_full_44.c. */
+void cps_80195050(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x80195050, Size: 268 bytes, Blocks: 1 */
+
+block_80195050:
+    cpu->gpr[8] = cpu->read_word(cpu->gpr[4]);
+    cpu->gpr[9] = cpu->read_word(cpu->gpr[4] + 4);
+    cpu->gpr[10] = cpu->read_word(cpu->gpr[4] + 8);
+    cpu->gpr[11] = cpu->read_word(cpu->gpr[4] + 12);
+    cpu->gpr[12] = cpu->read_word(cpu->gpr[4] + 16);
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[0] = cpu->gpr[8];  /* ctc2 */  /* 0x80195064: 0x48C80000 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[1] = cpu->gpr[9];  /* ctc2 */  /* 0x80195068: 0x48C90800 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[2] = cpu->gpr[10];  /* ctc2 */  /* 0x8019506C: 0x48CA1000 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[3] = cpu->gpr[11];  /* ctc2 */  /* 0x80195070: 0x48CB1800 */
+    
+    psx_gte_stall(cpu);
+    gte_write_ctrl(cpu, 4, cpu->gpr[12]);  /* ctc2 */  /* 0x80195074: 0x48CC2000 */
+    cpu->gpr[8] = cpu->read_half(cpu->gpr[5]);
+    cpu->gpr[9] = cpu->read_word(cpu->gpr[5] + 4);
+    cpu->gpr[10] = cpu->read_word(cpu->gpr[5] + 12);
+    cpu->gpr[1] = 0xFFFF << 16;  /* 0xFFFF0000 */
+    cpu->gpr[9] = cpu->gpr[9] & cpu->gpr[1];  /* 0x80195088: 0x01214824 */
+    cpu->gpr[8] = cpu->gpr[8] | cpu->gpr[9];
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[0] = cpu->gpr[8];  /* mtc2 */
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 1, cpu->gpr[10]);  /* mtc2 */
+    /* nop */  /* 0x80195098: 0x00000000 */
+    gte_execute(cpu, 0x0486012);  /* gte cmd 0x12 */  /* 0x8019509C: 0x4A486012 */
+    cpu->gpr[8] = cpu->read_half(cpu->gpr[5] + 2);
+    cpu->gpr[9] = cpu->read_word(cpu->gpr[5] + 8);
+    cpu->gpr[10] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[5] + 14);
+    cpu->gpr[9] = cpu->gpr[9] << 16;
+    cpu->gpr[8] = cpu->gpr[8] | cpu->gpr[9];
+    
+    psx_gte_read(cpu, 11);
+    cpu->gpr[11] = gte_read_data(cpu, 9);  /* mfc2 */
+    
+    psx_gte_read(cpu, 12);
+    cpu->gpr[12] = gte_read_data(cpu, 10);  /* mfc2 */
+    
+    psx_gte_read(cpu, 13);
+    cpu->gpr[13] = gte_read_data(cpu, 11);  /* mfc2 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[0] = cpu->gpr[8];  /* mtc2 */
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 1, cpu->gpr[10]);  /* mtc2 */
+    /* nop */  /* 0x801950C8: 0x00000000 */
+    gte_execute(cpu, 0x0486012);  /* gte cmd 0x12 */  /* 0x801950CC: 0x4A486012 */
+    cpu->gpr[8] = cpu->read_half(cpu->gpr[5] + 4);
+    cpu->gpr[9] = cpu->read_word(cpu->gpr[5] + 8);
+    cpu->gpr[10] = cpu->read_word(cpu->gpr[5] + 16);
+    cpu->gpr[1] = 0xFFFF << 16;  /* 0xFFFF0000 */
+    cpu->gpr[9] = cpu->gpr[9] & cpu->gpr[1];  /* 0x801950E0: 0x01214824 */
+    cpu->gpr[8] = cpu->gpr[8] | cpu->gpr[9];
+    
+    psx_gte_read(cpu, 14);
+    cpu->gpr[14] = gte_read_data(cpu, 9);  /* mfc2 */
+    
+    psx_gte_read(cpu, 15);
+    cpu->gpr[15] = gte_read_data(cpu, 10);  /* mfc2 */
+    
+    psx_gte_read(cpu, 24);
+    cpu->gpr[24] = gte_read_data(cpu, 11);  /* mfc2 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[0] = cpu->gpr[8];  /* mtc2 */
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 1, cpu->gpr[10]);  /* mtc2 */
+    /* nop */  /* 0x801950FC: 0x00000000 */
+    gte_execute(cpu, 0x0486012);  /* gte cmd 0x12 */  /* 0x80195100: 0x4A486012 */
+    cpu->gpr[11] = cpu->gpr[11] & 0xFFFF;  /* 0x80195104: 0x316BFFFF */
+    cpu->gpr[14] = cpu->gpr[14] << 16;
+    cpu->gpr[14] = cpu->gpr[14] | cpu->gpr[11];
+    cpu->write_word(cpu->gpr[5], cpu->gpr[14]);
+    cpu->gpr[13] = cpu->gpr[13] & 0xFFFF;  /* 0x80195114: 0x31ADFFFF */
+    cpu->gpr[24] = cpu->gpr[24] << 16;
+    cpu->gpr[24] = cpu->gpr[24] | cpu->gpr[13];
+    cpu->write_word(cpu->gpr[5] + 12, cpu->gpr[24]);
+    
+    psx_gte_read(cpu, 8);
+    cpu->gpr[8] = gte_read_data(cpu, 9);  /* mfc2 */
+    
+    psx_gte_read(cpu, 9);
+    cpu->gpr[9] = gte_read_data(cpu, 10);  /* mfc2 */
+    cpu->gpr[8] = cpu->gpr[8] & 0xFFFF;  /* 0x8019512C: 0x3108FFFF */
+    cpu->gpr[12] = cpu->gpr[12] << 16;
+    cpu->gpr[8] = cpu->gpr[8] | cpu->gpr[12];
+    cpu->write_word(cpu->gpr[5] + 4, cpu->gpr[8]);
+    cpu->gpr[15] = cpu->gpr[15] & 0xFFFF;  /* 0x8019513C: 0x31EFFFFF */
+    cpu->gpr[9] = cpu->gpr[9] << 16;
+    cpu->gpr[9] = cpu->gpr[9] | cpu->gpr[15];
+    cpu->write_word(cpu->gpr[5] + 8, cpu->gpr[9]);
+    
+    psx_gte_stall(cpu);
+    cpu->write_word((cpu->gpr[5] + 16), (gte_read_data(cpu, 11)));
+    gte_precision_store_word((cpu->gpr[5] + 16), 11);
+    cpu->gpr[2] = cpu->gpr[5];
+    uint32_t _jt_80195154 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x80195158: 0x00000000 */
+    psx_check_interrupts_at(cpu, _jt_80195154);
+    cpu->pc = _jt_80195154; return;  /* CPS: jr $ra */
+}
+
+/* cps_80195160 — clean CPS transliteration of br2eu_func_80195160 (guest 0x80195160)
+ * from SLES_017.22_full_44.c. */
+void cps_80195160(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x80195160, Size: 80 bytes, Blocks: 1 */
+
+block_80195160:
+    cpu->gpr[8] = cpu->read_word(cpu->gpr[4]);
+    cpu->gpr[9] = cpu->read_word(cpu->gpr[4] + 4);
+    cpu->gpr[10] = cpu->read_word(cpu->gpr[4] + 8);
+    cpu->gpr[11] = cpu->read_word(cpu->gpr[4] + 12);
+    cpu->gpr[12] = cpu->read_word(cpu->gpr[4] + 16);
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[0] = cpu->gpr[8];  /* ctc2 */  /* 0x80195174: 0x48C80000 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[1] = cpu->gpr[9];  /* ctc2 */  /* 0x80195178: 0x48C90800 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[2] = cpu->gpr[10];  /* ctc2 */  /* 0x8019517C: 0x48CA1000 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[3] = cpu->gpr[11];  /* ctc2 */  /* 0x80195180: 0x48CB1800 */
+    
+    psx_gte_stall(cpu);
+    gte_write_ctrl(cpu, 4, cpu->gpr[12]);  /* ctc2 */  /* 0x80195184: 0x48CC2000 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[0] = (cpu->read_word((cpu->gpr[5])));
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 1, (cpu->read_word((cpu->gpr[5] + 4))));
+    /* nop */  /* 0x80195190: 0x00000000 */
+    gte_execute(cpu, 0x0486012);  /* gte cmd 0x12 */  /* 0x80195194: 0x4A486012 */
+    
+    psx_gte_stall(cpu);
+    cpu->write_word((cpu->gpr[6]), (cpu->gte_data[25]));
+    gte_precision_store_word((cpu->gpr[6]), 25);
+    
+    psx_gte_stall(cpu);
+    cpu->write_word((cpu->gpr[6] + 4), (cpu->gte_data[26]));
+    gte_precision_store_word((cpu->gpr[6] + 4), 26);
+    
+    psx_gte_stall(cpu);
+    cpu->write_word((cpu->gpr[6] + 8), (cpu->gte_data[27]));
+    gte_precision_store_word((cpu->gpr[6] + 8), 27);
+    cpu->gpr[2] = cpu->gpr[6];
+    uint32_t _jt_801951A8 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x801951AC: 0x00000000 */
+    psx_check_interrupts_at(cpu, _jt_801951A8);
+    cpu->pc = _jt_801951A8; return;  /* CPS: jr $ra */
+}
+
+/* cps_801951b0 — clean CPS transliteration of br2eu_func_801951B0 (guest 0x801951b0)
+ * from SLES_017.22_full_44.c. */
+void cps_801951b0(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x801951B0, Size: 92 bytes, Blocks: 1 */
+
+block_801951B0:
+    cpu->gpr[8] = cpu->read_word(cpu->gpr[4]);
+    cpu->gpr[9] = cpu->read_word(cpu->gpr[4] + 4);
+    cpu->gpr[10] = cpu->read_word(cpu->gpr[4] + 8);
+    cpu->gpr[11] = cpu->read_word(cpu->gpr[4] + 12);
+    cpu->gpr[12] = cpu->read_word(cpu->gpr[4] + 16);
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[0] = cpu->gpr[8];  /* ctc2 */  /* 0x801951C4: 0x48C80000 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[1] = cpu->gpr[9];  /* ctc2 */  /* 0x801951C8: 0x48C90800 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[2] = cpu->gpr[10];  /* ctc2 */  /* 0x801951CC: 0x48CA1000 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_ctrl[3] = cpu->gpr[11];  /* ctc2 */  /* 0x801951D0: 0x48CB1800 */
+    
+    psx_gte_stall(cpu);
+    gte_write_ctrl(cpu, 4, cpu->gpr[12]);  /* ctc2 */  /* 0x801951D4: 0x48CC2000 */
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[0] = (cpu->read_word((cpu->gpr[5])));
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 1, (cpu->read_word((cpu->gpr[5] + 4))));
+    /* nop */  /* 0x801951E0: 0x00000000 */
+    gte_execute(cpu, 0x0486012);  /* gte cmd 0x12 */  /* 0x801951E4: 0x4A486012 */
+    
+    psx_gte_read(cpu, 8);
+    cpu->gpr[8] = gte_read_data(cpu, 9);  /* mfc2 */
+    
+    psx_gte_read(cpu, 9);
+    cpu->gpr[9] = gte_read_data(cpu, 10);  /* mfc2 */
+    
+    psx_gte_read(cpu, 10);
+    cpu->gpr[10] = gte_read_data(cpu, 11);  /* mfc2 */
+    cpu->write_half(cpu->gpr[6], (uint16_t)cpu->gpr[8]);
+    cpu->write_half(cpu->gpr[6] + 2, (uint16_t)cpu->gpr[9]);
+    cpu->write_half(cpu->gpr[6] + 4, (uint16_t)cpu->gpr[10]);
+    cpu->gpr[2] = cpu->gpr[6];
+    uint32_t _jt_80195204 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x80195208: 0x00000000 */
+    psx_check_interrupts_at(cpu, _jt_80195204);
+    cpu->pc = _jt_80195204; return;  /* CPS: jr $ra */
+}
+
+/* cps_80195398 — clean CPS transliteration of br2eu_func_80195398 (guest 0x80195398)
+ * from SLES_017.22_full_44.c. */
+void cps_80195398(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x80195398, Size: 40 bytes, Blocks: 1 */
+
+block_80195398:
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 9, (cpu->read_word((cpu->gpr[4]))));
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 10, (cpu->read_word((cpu->gpr[4] + 4))));
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 11, (cpu->read_word((cpu->gpr[4] + 8))));
+    /* nop */  /* 0x801953A4: 0x00000000 */
+    gte_execute(cpu, 0x0A00428);  /* gte cmd 0x28 */  /* 0x801953A8: 0x4AA00428 */
+    
+    psx_gte_stall(cpu);
+    cpu->write_word((cpu->gpr[5]), (cpu->gte_data[25]));
+    gte_precision_store_word((cpu->gpr[5]), 25);
+    
+    psx_gte_stall(cpu);
+    cpu->write_word((cpu->gpr[5] + 4), (cpu->gte_data[26]));
+    gte_precision_store_word((cpu->gpr[5] + 4), 26);
+    
+    psx_gte_stall(cpu);
+    cpu->write_word((cpu->gpr[5] + 8), (cpu->gte_data[27]));
+    gte_precision_store_word((cpu->gpr[5] + 8), 27);
+    uint32_t _jt_801953B8 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[5];
+    psx_check_interrupts_at(cpu, _jt_801953B8);
+    cpu->pc = _jt_801953B8; return;  /* CPS: jr $ra */
+}
+
+/* cps_801a4308 — clean CPS transliteration of br2eu_func_801A4308 (guest 0x801a4308)
+ * from SLES_017.22_full_50.c. */
+void cps_801a4308(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x801A4378u: goto block_801A4378;
+            case 0x801A4360u: goto block_801A4360;
+            case 0x801A436Cu: goto block_801A436C;
+            case 0x801A4384u: goto block_801A4384;
+            case 0x801A438Cu: goto block_801A438C;
+            case 0x801A43A0u: goto block_801A43A0;
+            case 0x801A43B0u: goto block_801A43B0;
+            case 0x801A43B4u: goto block_801A43B4;
+            case 0x801A43F0u: goto block_801A43F0;
+            default: break;
+        }
+    }
+    /* Address: 0x801A4308, Size: 268 bytes, Blocks: 10 */
+
+block_801A4308:
+    cpu->gpr[29] = cpu->gpr[29] + -48;
+    cpu->write_word(cpu->gpr[29] + 24, cpu->gpr[18]);
+    cpu->gpr[18] = cpu->gpr[4];
+    cpu->write_word(cpu->gpr[29] + 32, cpu->gpr[20]);
+    cpu->gpr[20] = cpu->gpr[5];
+    cpu->write_word(cpu->gpr[29] + 20, cpu->gpr[17]);
+    cpu->gpr[17] = cpu->gpr[6];
+    cpu->write_word(cpu->gpr[29] + 28, cpu->gpr[19]);
+    cpu->gpr[19] = cpu->gpr[7];
+    cpu->gpr[3] = cpu->gpr[18] << 3;
+    cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[18];
+    cpu->gpr[3] = cpu->gpr[3] << 3;
+    cpu->gpr[2] = 0x8020 << 16;  /* 0x80200000 */
+    cpu->write_word(cpu->gpr[29] + 36, cpu->gpr[21]);
+    cpu->gpr[21] = cpu->read_word(cpu->gpr[29] + 64);
+    cpu->gpr[6] = cpu->read_word(cpu->gpr[29] + 68);
+    cpu->gpr[2] = cpu->gpr[2] + -3176;
+    cpu->write_word(cpu->gpr[29] + 16, cpu->gpr[16]);
+    cpu->gpr[16] = cpu->gpr[3] + cpu->gpr[2];
+    cpu->write_word(cpu->gpr[29] + 40, cpu->gpr[31]);
+    int _bc_801A4358 = (cpu->gpr[19] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[0];
+    if (_bc_801A4358) {
+        psx_check_interrupts_at(cpu, 0x801A43F0u);
+        goto block_801A43F0;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801A4360u);
+        goto block_801A4360;  /* not taken */
+    }
+
+block_801A4360:
+    cpu->gpr[2] = (cpu->gpr[17] < (uint32_t)16) ? 1 : 0;  /* 0x801A4360: 0x2E220010 */
+    int _bc_801A4364 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[4] = cpu->gpr[18];
+    if (_bc_801A4364) {
+        psx_check_interrupts_at(cpu, 0x801A4384u);
+        goto block_801A4384;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801A436Cu);
+        goto block_801A436C;  /* not taken */
+    }
+
+block_801A436C:
+    cpu->gpr[5] = cpu->gpr[20];
+    cpu->gpr[31] = 0x801A4378u;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[6] = cpu->gpr[6] + 28;
+    psx_check_interrupts_at(cpu, 0x801A4EBCu);
+    cpu->pc = 0x801A4EBCu; return;  /* CPS jal -> 0x801A4EBC */
+
+block_801A4378:
+    cpu->gpr[4] = cpu->gpr[2];
+    int _bc_801A437C = (cpu->gpr[4] != cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[17] << 2;
+    if (_bc_801A437C) {
+        psx_check_interrupts_at(cpu, 0x801A438Cu);
+        goto block_801A438C;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801A4384u);
+        goto block_801A4384;  /* not taken */
+    }
+
+block_801A4384:
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[0];
+    psx_check_interrupts_at(cpu, 0x801A43F0u);
+    goto block_801A43F0;  /* j */
+
+block_801A438C:
+    cpu->gpr[2] = cpu->gpr[16] + cpu->gpr[2];
+    cpu->gpr[3] = cpu->read_word(cpu->gpr[2]);
+    /* nop */  /* 0x801A4394: 0x00000000 */
+    int _bc_801A4398 = (cpu->gpr[3] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x801A439C: 0x00000000 */
+    if (_bc_801A4398) {
+        psx_check_interrupts_at(cpu, 0x801A43B0u);
+        goto block_801A43B0;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801A43A0u);
+        goto block_801A43A0;  /* not taken */
+    }
+
+block_801A43A0:
+    cpu->write_word(cpu->gpr[4], cpu->gpr[3]);
+    cpu->gpr[2] = cpu->read_word(cpu->gpr[2]);
+    /* delay slot (always executes) */
+    cpu->write_word(cpu->gpr[2] + 4, cpu->gpr[4]);
+    psx_check_interrupts_at(cpu, 0x801A43B4u);
+    goto block_801A43B4;  /* j */
+
+block_801A43B0:
+    cpu->write_word(cpu->gpr[4], cpu->gpr[0]);
+    /* fall through to block_801A43B4 */
+
+block_801A43B4:
+    cpu->gpr[2] = cpu->gpr[4];
+    cpu->gpr[3] = cpu->gpr[17] << 2;
+    cpu->gpr[3] = cpu->gpr[16] + cpu->gpr[3];
+    cpu->write_word(cpu->gpr[3], cpu->gpr[2]);
+    cpu->gpr[3] = 1;
+    cpu->write_byte(cpu->gpr[2] + 23, (uint8_t)cpu->gpr[3]);
+    cpu->gpr[3] = cpu->gpr[2] + 28;
+    cpu->write_word(cpu->gpr[2] + 4, cpu->gpr[0]);
+    cpu->write_word(cpu->gpr[2] + 8, cpu->gpr[19]);
+    cpu->write_word(cpu->gpr[2] + 12, cpu->gpr[21]);
+    cpu->write_byte(cpu->gpr[2] + 20, (uint8_t)cpu->gpr[18]);
+    cpu->write_byte(cpu->gpr[2] + 21, (uint8_t)cpu->gpr[20]);
+    cpu->write_byte(cpu->gpr[2] + 22, (uint8_t)cpu->gpr[17]);
+    cpu->write_word(cpu->gpr[2] + 16, cpu->gpr[3]);
+    cpu->write_byte(cpu->gpr[2] + 24, (uint8_t)cpu->gpr[0]);
+    /* fall through to block_801A43F0 */
+
+block_801A43F0:
+    cpu->gpr[31] = cpu->read_word(cpu->gpr[29] + 40);
+    cpu->gpr[21] = cpu->read_word(cpu->gpr[29] + 36);
+    cpu->gpr[20] = cpu->read_word(cpu->gpr[29] + 32);
+    cpu->gpr[19] = cpu->read_word(cpu->gpr[29] + 28);
+    cpu->gpr[18] = cpu->read_word(cpu->gpr[29] + 24);
+    cpu->gpr[17] = cpu->read_word(cpu->gpr[29] + 20);
+    cpu->gpr[16] = cpu->read_word(cpu->gpr[29] + 16);
+    uint32_t _jt_801A440C = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[29] = cpu->gpr[29] + 48;
+    psx_check_interrupts_at(cpu, _jt_801A440C);
+    cpu->pc = _jt_801A440C; return;  /* CPS: jr $ra */
+}
+
+/* cps_801a4414 — clean CPS transliteration of br2eu_func_801A4414 (guest 0x801a4414)
+ * from SLES_017.22_full_50.c. */
+void cps_801a4414(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x801A4464u: goto block_801A4464;
+            case 0x801A4458u: goto block_801A4458;
+            case 0x801A4470u: goto block_801A4470;
+            case 0x801A4478u: goto block_801A4478;
+            case 0x801A4498u: goto block_801A4498;
+            case 0x801A44A0u: goto block_801A44A0;
+            case 0x801A44ACu: goto block_801A44AC;
+            case 0x801A44FCu: goto block_801A44FC;
+            default: break;
+        }
+    }
+    /* Address: 0x801A4414, Size: 260 bytes, Blocks: 9 */
+
+block_801A4414:
+    cpu->gpr[29] = cpu->gpr[29] + -40;
+    cpu->write_word(cpu->gpr[29] + 16, cpu->gpr[16]);
+    cpu->gpr[16] = cpu->gpr[4];
+    cpu->write_word(cpu->gpr[29] + 24, cpu->gpr[18]);
+    cpu->gpr[18] = cpu->gpr[5];
+    cpu->write_word(cpu->gpr[29] + 28, cpu->gpr[19]);
+    cpu->gpr[19] = cpu->gpr[6];
+    cpu->gpr[2] = 0x8020 << 16;  /* 0x80200000 */
+    cpu->write_word(cpu->gpr[29] + 32, cpu->gpr[31]);
+    cpu->write_word(cpu->gpr[29] + 20, cpu->gpr[17]);
+    cpu->gpr[4] = (int32_t)(int8_t)cpu->read_byte(cpu->gpr[16] + 20);
+    cpu->gpr[2] = cpu->gpr[2] + -3176;
+    cpu->gpr[3] = cpu->gpr[4] << 3;
+    cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[4];
+    cpu->gpr[3] = cpu->gpr[3] << 3;
+    int _bc_801A4450 = (cpu->gpr[18] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[17] = cpu->gpr[3] + cpu->gpr[2];
+    if (_bc_801A4450) {
+        psx_check_interrupts_at(cpu, 0x801A4470u);
+        goto block_801A4470;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801A4458u);
+        goto block_801A4458;  /* not taken */
+    }
+
+block_801A4458:
+    cpu->gpr[5] = (int32_t)(int8_t)cpu->read_byte(cpu->gpr[16] + 21);
+    cpu->gpr[31] = 0x801A4464u;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[6] = cpu->gpr[7] + 28;
+    psx_check_interrupts_at(cpu, 0x801A4EBCu);
+    cpu->pc = 0x801A4EBCu; return;  /* CPS jal -> 0x801A4EBC */
+
+block_801A4464:
+    cpu->gpr[4] = cpu->gpr[2];
+    int _bc_801A4468 = (cpu->gpr[4] != cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x801A446C: 0x00000000 */
+    if (_bc_801A4468) {
+        psx_check_interrupts_at(cpu, 0x801A4478u);
+        goto block_801A4478;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801A4470u);
+        goto block_801A4470;  /* not taken */
+    }
+
+block_801A4470:
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[0];
+    psx_check_interrupts_at(cpu, 0x801A44FCu);
+    goto block_801A44FC;  /* j */
+
+block_801A4478:
+    cpu->gpr[2] = (int32_t)(int8_t)cpu->read_byte(cpu->gpr[16] + 22);
+    /* nop */  /* 0x801A447C: 0x00000000 */
+    cpu->gpr[2] = cpu->gpr[2] << 2;
+    cpu->gpr[3] = cpu->gpr[17] + cpu->gpr[2];
+    cpu->gpr[2] = cpu->read_word(cpu->gpr[3]);
+    /* nop */  /* 0x801A448C: 0x00000000 */
+    int _bc_801A4490 = (cpu->gpr[2] != cpu->gpr[16]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x801A4494: 0x00000000 */
+    if (_bc_801A4490) {
+        psx_check_interrupts_at(cpu, 0x801A44A0u);
+        goto block_801A44A0;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801A4498u);
+        goto block_801A4498;  /* not taken */
+    }
+
+block_801A4498:
+    /* delay slot (always executes) */
+    cpu->write_word(cpu->gpr[3], cpu->gpr[4]);
+    psx_check_interrupts_at(cpu, 0x801A44ACu);
+    goto block_801A44AC;  /* j */
+
+block_801A44A0:
+    cpu->gpr[2] = cpu->read_word(cpu->gpr[16] + 4);
+    /* nop */  /* 0x801A44A4: 0x00000000 */
+    cpu->write_word(cpu->gpr[2], cpu->gpr[4]);
+    /* fall through to block_801A44AC */
+
+block_801A44AC:
+    cpu->write_word(cpu->gpr[4], cpu->gpr[16]);
+    cpu->gpr[2] = cpu->read_word(cpu->gpr[16] + 4);
+    /* nop */  /* 0x801A44B4: 0x00000000 */
+    cpu->write_word(cpu->gpr[4] + 4, cpu->gpr[2]);
+    cpu->write_word(cpu->gpr[16] + 4, cpu->gpr[4]);
+    cpu->write_word(cpu->gpr[4] + 8, cpu->gpr[18]);
+    cpu->write_word(cpu->gpr[4] + 12, cpu->gpr[19]);
+    cpu->gpr[2] = cpu->read_byte(cpu->gpr[16] + 20);
+    /* nop */  /* 0x801A44CC: 0x00000000 */
+    cpu->write_byte(cpu->gpr[4] + 20, (uint8_t)cpu->gpr[2]);
+    cpu->gpr[3] = cpu->read_byte(cpu->gpr[16] + 21);
+    cpu->gpr[2] = cpu->gpr[4];
+    cpu->write_byte(cpu->gpr[2] + 21, (uint8_t)cpu->gpr[3]);
+    cpu->gpr[4] = cpu->read_byte(cpu->gpr[16] + 22);
+    cpu->gpr[3] = 1;
+    cpu->write_byte(cpu->gpr[2] + 23, (uint8_t)cpu->gpr[3]);
+    cpu->gpr[3] = cpu->gpr[2] + 28;
+    cpu->write_word(cpu->gpr[2] + 16, cpu->gpr[3]);
+    cpu->write_byte(cpu->gpr[2] + 24, (uint8_t)cpu->gpr[0]);
+    cpu->write_byte(cpu->gpr[2] + 22, (uint8_t)cpu->gpr[4]);
+    /* fall through to block_801A44FC */
+
+block_801A44FC:
+    cpu->gpr[31] = cpu->read_word(cpu->gpr[29] + 32);
+    cpu->gpr[19] = cpu->read_word(cpu->gpr[29] + 28);
+    cpu->gpr[18] = cpu->read_word(cpu->gpr[29] + 24);
+    cpu->gpr[17] = cpu->read_word(cpu->gpr[29] + 20);
+    cpu->gpr[16] = cpu->read_word(cpu->gpr[29] + 16);
+    uint32_t _jt_801A4510 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[29] = cpu->gpr[29] + 40;
+    psx_check_interrupts_at(cpu, _jt_801A4510);
+    cpu->pc = _jt_801A4510; return;  /* CPS: jr $ra */
+}
+
+/* cps_801a6bd0 — clean CPS transliteration of br2eu_func_801A6BD0 (guest 0x801a6bd0)
+ * from SLES_017.22_full_51.c. */
+void cps_801a6bd0(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x801A6C30u: goto block_801A6C30;
+            case 0x801A6CA8u: goto block_801A6CA8;
+            case 0x801A6CF4u: goto block_801A6CF4;
+            case 0x801A6D04u: goto block_801A6D04;
+            case 0x801A6C3Cu: goto block_801A6C3C;
+            case 0x801A6C5Cu: goto block_801A6C5C;
+            case 0x801A6CB8u: goto block_801A6CB8;
+            case 0x801A6CCCu: goto block_801A6CCC;
+            case 0x801A6CDCu: goto block_801A6CDC;
+            case 0x801A6CFCu: goto block_801A6CFC;
+            case 0x801A6D0Cu: goto block_801A6D0C;
+            case 0x801A6D18u: goto block_801A6D18;
+            case 0x801A6D1Cu: goto block_801A6D1C;
+            default: break;
+        }
+    }
+    /* Address: 0x801A6BD0, Size: 376 bytes, Blocks: 14 */
+
+block_801A6BD0:
+    cpu->gpr[29] = cpu->gpr[29] + -96;
+    cpu->write_word(cpu->gpr[29] + 68, cpu->gpr[19]);
+    cpu->gpr[19] = cpu->gpr[4];
+    cpu->write_word(cpu->gpr[29] + 64, cpu->gpr[18]);
+    cpu->gpr[18] = cpu->gpr[5];
+    cpu->write_word(cpu->gpr[29] + 84, cpu->gpr[23]);
+    cpu->gpr[23] = cpu->gpr[6];
+    cpu->write_word(cpu->gpr[29] + 88, cpu->gpr[31]);
+    cpu->write_word(cpu->gpr[29] + 80, cpu->gpr[22]);
+    cpu->write_word(cpu->gpr[29] + 76, cpu->gpr[21]);
+    cpu->write_word(cpu->gpr[29] + 72, cpu->gpr[20]);
+    cpu->write_word(cpu->gpr[29] + 60, cpu->gpr[17]);
+    cpu->write_word(cpu->gpr[29] + 56, cpu->gpr[16]);
+    cpu->gpr[2] = cpu->read_word(cpu->gpr[18] + 36);
+    cpu->gpr[17] = cpu->read_word(cpu->gpr[18] + 128);
+    cpu->gpr[22] = cpu->gpr[7];
+    cpu->write_word(cpu->gpr[29] + 16, cpu->gpr[2]);
+    cpu->gpr[2] = cpu->read_word(cpu->gpr[18] + 24);
+    cpu->write_word(cpu->gpr[29] + 24, cpu->gpr[22]);
+    cpu->write_word(cpu->gpr[29] + 20, cpu->gpr[2]);
+    cpu->gpr[6] = cpu->read_word(cpu->gpr[18] + 32);
+    cpu->gpr[7] = cpu->read_word(cpu->gpr[18] + 40);
+    cpu->gpr[31] = 0x801A6C30u;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[4] = 2;
+    psx_check_interrupts_at(cpu, 0x801AC334u);
+    cpu->pc = 0x801AC334u; return;  /* CPS jal -> 0x801AC334 */
+
+block_801A6C30:
+    cpu->gpr[16] = cpu->gpr[2];
+    int _bc_801A6C34 = (cpu->gpr[16] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[16];
+    if (_bc_801A6C34) {
+        psx_check_interrupts_at(cpu, 0x801A6D1Cu);
+        goto block_801A6D1C;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801A6C3Cu);
+        goto block_801A6C3C;  /* not taken */
+    }
+
+block_801A6C3C:
+    cpu->gpr[21] = cpu->read_word(cpu->gpr[16] + 16);
+    cpu->gpr[2] = cpu->read_word(cpu->gpr[16] + 48);
+    cpu->write_word(cpu->gpr[16] + 8, cpu->gpr[18]);
+    cpu->write_word(cpu->gpr[16] + 12, cpu->gpr[19]);
+    cpu->gpr[3] = cpu->read_word(cpu->gpr[18] + 32);
+    cpu->gpr[19] = cpu->gpr[0];
+    int _bc_801A6C54 = (cpu->gpr[3] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->write_word(cpu->gpr[29] + 48, cpu->gpr[2]);
+    if (_bc_801A6C54) {
+        psx_check_interrupts_at(cpu, 0x801A6CCCu);
+        goto block_801A6CCC;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801A6C5Cu);
+        goto block_801A6C5C;  /* not taken */
+    }
+
+block_801A6C5C:
+    cpu->gpr[2] = cpu->gpr[29] + 48;
+    cpu->write_word(cpu->gpr[29] + 16, cpu->gpr[2]);
+    cpu->gpr[2] = cpu->read_word(cpu->gpr[18] + 44);
+    /* nop */  /* 0x801A6C68: 0x00000000 */
+    cpu->write_word(cpu->gpr[29] + 20, cpu->gpr[2]);
+    cpu->gpr[2] = cpu->read_word(cpu->gpr[18] + 52);
+    /* nop */  /* 0x801A6C74: 0x00000000 */
+    cpu->write_word(cpu->gpr[29] + 24, cpu->gpr[2]);
+    cpu->gpr[2] = cpu->read_word(cpu->gpr[18] + 48);
+    cpu->write_word(cpu->gpr[29] + 32, cpu->gpr[23]);
+    cpu->write_word(cpu->gpr[29] + 28, cpu->gpr[2]);
+    cpu->gpr[2] = cpu->read_word(cpu->gpr[18] + 28);
+    cpu->write_word(cpu->gpr[29] + 40, cpu->gpr[22]);
+    cpu->write_word(cpu->gpr[29] + 36, cpu->gpr[2]);
+    cpu->gpr[5] = cpu->read_word(cpu->gpr[17]);
+    cpu->gpr[6] = cpu->read_word(cpu->gpr[16] + 40);
+    cpu->gpr[7] = cpu->read_word(cpu->gpr[16] + 44);
+    cpu->gpr[31] = 0x801A6CA8u;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[4] = cpu->gpr[17];
+    psx_check_interrupts_at(cpu, 0x801A7570u);
+    cpu->pc = 0x801A7570u; return;  /* CPS jal -> 0x801A7570 */
+
+block_801A6CA8:
+    cpu->gpr[20] = cpu->gpr[2];
+    cpu->write_word(cpu->gpr[21], cpu->gpr[20]);
+    int _bc_801A6CB0 = (cpu->gpr[20] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[21] = cpu->gpr[21] + 4;
+    if (_bc_801A6CB0) {
+        psx_check_interrupts_at(cpu, 0x801A6CFCu);
+        goto block_801A6CFC;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801A6CB8u);
+        goto block_801A6CB8;  /* not taken */
+    }
+
+block_801A6CB8:
+    cpu->gpr[2] = cpu->read_word(cpu->gpr[18] + 32);
+    cpu->gpr[19] = cpu->gpr[19] + 1;
+    cpu->gpr[2] = (cpu->gpr[19] < cpu->gpr[2]) ? 1 : 0;  /* 0x801A6CC0: 0x0262102B */
+    int _bc_801A6CC4 = (cpu->gpr[2] != cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[17] = cpu->gpr[17] + 52;
+    if (_bc_801A6CC4) {
+        psx_check_interrupts_at(cpu, 0x801A6C5Cu);
+        goto block_801A6C5C;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801A6CCCu);
+        goto block_801A6CCC;  /* not taken */
+    }
+
+block_801A6CCC:
+    cpu->gpr[2] = cpu->read_word(cpu->gpr[18] + 32);
+    /* nop */  /* 0x801A6CD0: 0x00000000 */
+    int _bc_801A6CD4 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[4] = cpu->gpr[20];
+    if (_bc_801A6CD4) {
+        psx_check_interrupts_at(cpu, 0x801A6D18u);
+        goto block_801A6D18;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801A6CDCu);
+        goto block_801A6CDC;  /* not taken */
+    }
+
+block_801A6CDC:
+    cpu->gpr[2] = cpu->read_word(cpu->gpr[16] + 8);
+    /* nop */  /* 0x801A6CE0: 0x00000000 */
+    cpu->gpr[6] = cpu->read_word(cpu->gpr[2] + 16);
+    cpu->gpr[5] = cpu->read_word(cpu->gpr[16] + 4);
+    cpu->gpr[31] = 0x801A6CF4u;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[6] = (cpu->gpr[0] < cpu->gpr[6]) ? 1 : 0;  /* 0x801A6CF0: 0x0006302B */
+    psx_check_interrupts_at(cpu, 0x801AC070u);
+    cpu->pc = 0x801AC070u; return;  /* CPS jal -> 0x801AC070 */
+
+block_801A6CF4:
+    int _bc_801A6CF4 = (cpu->gpr[2] != cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->write_word(cpu->gpr[16] + 24, cpu->gpr[2]);
+    if (_bc_801A6CF4) {
+        psx_check_interrupts_at(cpu, 0x801A6D0Cu);
+        goto block_801A6D0C;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801A6CFCu);
+        goto block_801A6CFC;  /* not taken */
+    }
+
+block_801A6CFC:
+    cpu->gpr[31] = 0x801A6D04u;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[4] = cpu->gpr[16];
+    psx_check_interrupts_at(cpu, 0x801AC758u);
+    cpu->pc = 0x801AC758u; return;  /* CPS jal -> 0x801AC758 */
+
+block_801A6D04:
+    /* delay slot (always executes) */
+    cpu->gpr[2] = cpu->gpr[0];
+    psx_check_interrupts_at(cpu, 0x801A6D1Cu);
+    goto block_801A6D1C;  /* j */
+
+block_801A6D0C:
+    cpu->gpr[2] = cpu->read_word(cpu->gpr[2] + 16);
+    /* nop */  /* 0x801A6D10: 0x00000000 */
+    cpu->write_word(cpu->gpr[16], cpu->gpr[2]);
+    /* fall through to block_801A6D18 */
+
+block_801A6D18:
+    cpu->gpr[2] = cpu->gpr[16];
+    /* fall through to block_801A6D1C */
+
+block_801A6D1C:
+    cpu->gpr[31] = cpu->read_word(cpu->gpr[29] + 88);
+    cpu->gpr[23] = cpu->read_word(cpu->gpr[29] + 84);
+    cpu->gpr[22] = cpu->read_word(cpu->gpr[29] + 80);
+    cpu->gpr[21] = cpu->read_word(cpu->gpr[29] + 76);
+    cpu->gpr[20] = cpu->read_word(cpu->gpr[29] + 72);
+    cpu->gpr[19] = cpu->read_word(cpu->gpr[29] + 68);
+    cpu->gpr[18] = cpu->read_word(cpu->gpr[29] + 64);
+    cpu->gpr[17] = cpu->read_word(cpu->gpr[29] + 60);
+    cpu->gpr[16] = cpu->read_word(cpu->gpr[29] + 56);
+    uint32_t _jt_801A6D40 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[29] = cpu->gpr[29] + 96;
+    psx_check_interrupts_at(cpu, _jt_801A6D40);
+    cpu->pc = _jt_801A6D40; return;  /* CPS: jr $ra */
+}
+
+/* cps_801ad424 — clean CPS transliteration of br2eu_func_801AD424 (guest 0x801ad424)
+ * from SLES_017.22_full_53.c. */
+void cps_801ad424(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x801AD460u: goto block_801AD460;
+            case 0x801AD46Cu: goto block_801AD46C;
+            case 0x801AD494u: goto block_801AD494;
+            default: break;
+        }
+    }
+    /* Address: 0x801AD424, Size: 136 bytes, Blocks: 4 */
+
+block_801AD424:
+    cpu->gpr[29] = cpu->gpr[29] + -40;
+    cpu->write_word(cpu->gpr[29] + 24, cpu->gpr[16]);
+    cpu->gpr[16] = cpu->gpr[6];
+    cpu->write_word(cpu->gpr[29] + 28, cpu->gpr[17]);
+    cpu->gpr[17] = cpu->gpr[7];
+    cpu->gpr[2] = 0x801B << 16;  /* 0x801B0000 */
+    cpu->gpr[2] = cpu->gpr[2] + -11556;
+    cpu->write_word(cpu->gpr[29] + 16, cpu->gpr[2]);
+    cpu->gpr[2] = 28;
+    cpu->gpr[7] = 0x801B << 16;  /* 0x801B0000 */
+    cpu->gpr[6] = 4;
+    cpu->gpr[7] = cpu->gpr[7] + 3512;
+    cpu->write_word(cpu->gpr[29] + 32, cpu->gpr[31]);
+    cpu->gpr[31] = 0x801AD460u;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    cpu->write_word(cpu->gpr[29] + 20, cpu->gpr[2]);
+    psx_check_interrupts_at(cpu, 0x801A4308u);
+    cpu->pc = 0x801A4308u; return;  /* CPS jal -> 0x801A4308 */
+
+block_801AD460:
+    cpu->gpr[5] = cpu->gpr[2];
+    int _bc_801AD464 = (cpu->gpr[5] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x801AD468: 0x00000000 */
+    if (_bc_801AD464) {
+        psx_check_interrupts_at(cpu, 0x801AD494u);
+        goto block_801AD494;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801AD46Cu);
+        goto block_801AD46C;  /* not taken */
+    }
+
+block_801AD46C:
+    cpu->gpr[3] = cpu->read_word(cpu->gpr[5] + 16);
+    /* nop */  /* 0x801AD470: 0x00000000 */
+    cpu->write_word(cpu->gpr[3], cpu->gpr[17]);
+    cpu->gpr[2] = cpu->read_word(cpu->gpr[16] + 8);
+    /* nop */  /* 0x801AD47C: 0x00000000 */
+    cpu->write_word(cpu->gpr[3] + 8, cpu->gpr[2]);
+    cpu->gpr[2] = cpu->read_word(cpu->gpr[29] + 56);
+    cpu->gpr[4] = cpu->read_word(cpu->gpr[16] + 4);
+    cpu->write_word(cpu->gpr[3] + 12, cpu->gpr[2]);
+    cpu->write_word(cpu->gpr[3] + 4, cpu->gpr[4]);
+    /* fall through to block_801AD494 */
+
+block_801AD494:
+    cpu->gpr[31] = cpu->read_word(cpu->gpr[29] + 32);
+    cpu->gpr[17] = cpu->read_word(cpu->gpr[29] + 28);
+    cpu->gpr[16] = cpu->read_word(cpu->gpr[29] + 24);
+    cpu->gpr[2] = cpu->gpr[5];
+    uint32_t _jt_801AD4A4 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[29] = cpu->gpr[29] + 40;
+    psx_check_interrupts_at(cpu, _jt_801AD4A4);
+    cpu->pc = _jt_801AD4A4; return;  /* CPS: jr $ra */
+}
+
+/* cps_801af804 — clean CPS transliteration of br2eu_func_801AF804 (guest 0x801af804)
+ * from SLES_017.22_full_53.c. */
+void cps_801af804(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x801AF818u: goto block_801AF818;
+            default: break;
+        }
+    }
+    /* Address: 0x801AF804, Size: 36 bytes, Blocks: 2 */
+
+block_801AF804:
+    cpu->gpr[29] = cpu->gpr[29] + -24;
+    cpu->write_word(cpu->gpr[29] + 16, cpu->gpr[31]);
+    cpu->gpr[4] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[6]);
+    cpu->gpr[31] = 0x801AF818u;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x801AF814: 0x00000000 */
+    psx_check_interrupts_at(cpu, 0x8018DA2Cu);
+    cpu->pc = 0x8018DA2Cu; return;  /* CPS jal -> 0x8018DA2C */
+
+block_801AF818:
+    cpu->gpr[31] = cpu->read_word(cpu->gpr[29] + 16);
+    /* nop */  /* 0x801AF81C: 0x00000000 */
+    uint32_t _jt_801AF820 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[29] = cpu->gpr[29] + 24;
+    psx_check_interrupts_at(cpu, _jt_801AF820);
+    cpu->pc = _jt_801AF820; return;  /* CPS: jr $ra */
+}
+
+/* cps_801af828 — clean CPS transliteration of br2eu_func_801AF828 (guest 0x801af828)
+ * from SLES_017.22_full_53.c. */
+void cps_801af828(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x801AF83Cu: goto block_801AF83C;
+            default: break;
+        }
+    }
+    /* Address: 0x801AF828, Size: 36 bytes, Blocks: 2 */
+
+block_801AF828:
+    cpu->gpr[29] = cpu->gpr[29] + -24;
+    cpu->write_word(cpu->gpr[29] + 16, cpu->gpr[31]);
+    cpu->gpr[4] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[6]);
+    cpu->gpr[31] = 0x801AF83Cu;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x801AF838: 0x00000000 */
+    psx_check_interrupts_at(cpu, 0x8018DE6Cu);
+    cpu->pc = 0x8018DE6Cu; return;  /* CPS jal -> 0x8018DE6C */
+
+block_801AF83C:
+    cpu->gpr[31] = cpu->read_word(cpu->gpr[29] + 16);
+    /* nop */  /* 0x801AF840: 0x00000000 */
+    uint32_t _jt_801AF844 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[29] = cpu->gpr[29] + 24;
+    psx_check_interrupts_at(cpu, _jt_801AF844);
+    cpu->pc = _jt_801AF844; return;  /* CPS: jr $ra */
+}
+
+/* cps_801af84c — clean CPS transliteration of br2eu_func_801AF84C (guest 0x801af84c)
+ * from SLES_017.22_full_53.c. */
+void cps_801af84c(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x801AF860u: goto block_801AF860;
+            default: break;
+        }
+    }
+    /* Address: 0x801AF84C, Size: 36 bytes, Blocks: 2 */
+
+block_801AF84C:
+    cpu->gpr[29] = cpu->gpr[29] + -24;
+    cpu->write_word(cpu->gpr[29] + 16, cpu->gpr[31]);
+    cpu->gpr[4] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[6]);
+    cpu->gpr[31] = 0x801AF860u;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x801AF85C: 0x00000000 */
+    psx_check_interrupts_at(cpu, 0x8018E028u);
+    cpu->pc = 0x8018E028u; return;  /* CPS jal -> 0x8018E028 */
+
+block_801AF860:
+    cpu->gpr[31] = cpu->read_word(cpu->gpr[29] + 16);
+    /* nop */  /* 0x801AF864: 0x00000000 */
+    uint32_t _jt_801AF868 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[29] = cpu->gpr[29] + 24;
+    psx_check_interrupts_at(cpu, _jt_801AF868);
+    cpu->pc = _jt_801AF868; return;  /* CPS: jr $ra */
+}
+
+/* cps_801af870 — clean CPS transliteration of br2eu_func_801AF870 (guest 0x801af870)
+ * from SLES_017.22_full_53.c. */
+void cps_801af870(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x801AF88Cu: goto block_801AF88C;
+            default: break;
+        }
+    }
+    /* Address: 0x801AF870, Size: 44 bytes, Blocks: 2 */
+
+block_801AF870:
+    cpu->gpr[29] = cpu->gpr[29] + -24;
+    cpu->gpr[2] = cpu->gpr[5];
+    cpu->write_word(cpu->gpr[29] + 16, cpu->gpr[31]);
+    cpu->gpr[4] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[6]);
+    cpu->gpr[5] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[6] + 2);
+    cpu->gpr[31] = 0x801AF88Cu;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[6] = cpu->gpr[2];
+    psx_check_interrupts_at(cpu, 0x8018DAC0u);
+    cpu->pc = 0x8018DAC0u; return;  /* CPS jal -> 0x8018DAC0 */
+
+block_801AF88C:
+    cpu->gpr[31] = cpu->read_word(cpu->gpr[29] + 16);
+    /* nop */  /* 0x801AF890: 0x00000000 */
+    uint32_t _jt_801AF894 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[29] = cpu->gpr[29] + 24;
+    psx_check_interrupts_at(cpu, _jt_801AF894);
+    cpu->pc = _jt_801AF894; return;  /* CPS: jr $ra */
+}
+
+/* cps_801af89c — clean CPS transliteration of br2eu_func_801AF89C (guest 0x801af89c)
+ * from SLES_017.22_full_53.c. */
+void cps_801af89c(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x801AF8B0u: goto block_801AF8B0;
+            default: break;
+        }
+    }
+    /* Address: 0x801AF89C, Size: 36 bytes, Blocks: 2 */
+
+block_801AF89C:
+    cpu->gpr[29] = cpu->gpr[29] + -24;
+    cpu->write_word(cpu->gpr[29] + 16, cpu->gpr[31]);
+    cpu->gpr[4] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[4] + 2);
+    cpu->gpr[31] = 0x801AF8B0u;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x801AF8AC: 0x00000000 */
+    psx_check_interrupts_at(cpu, 0x8018DA2Cu);
+    cpu->pc = 0x8018DA2Cu; return;  /* CPS jal -> 0x8018DA2C */
+
+block_801AF8B0:
+    cpu->gpr[31] = cpu->read_word(cpu->gpr[29] + 16);
+    /* nop */  /* 0x801AF8B4: 0x00000000 */
+    uint32_t _jt_801AF8B8 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[29] = cpu->gpr[29] + 24;
+    psx_check_interrupts_at(cpu, _jt_801AF8B8);
+    cpu->pc = _jt_801AF8B8; return;  /* CPS: jr $ra */
+}
+
+/* cps_801af8c0 — clean CPS transliteration of br2eu_func_801AF8C0 (guest 0x801af8c0)
+ * from SLES_017.22_full_53.c. */
+void cps_801af8c0(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x801AF8D4u: goto block_801AF8D4;
+            default: break;
+        }
+    }
+    /* Address: 0x801AF8C0, Size: 36 bytes, Blocks: 2 */
+
+block_801AF8C0:
+    cpu->gpr[29] = cpu->gpr[29] + -24;
+    cpu->write_word(cpu->gpr[29] + 16, cpu->gpr[31]);
+    cpu->gpr[4] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[4] + 2);
+    cpu->gpr[31] = 0x801AF8D4u;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x801AF8D0: 0x00000000 */
+    psx_check_interrupts_at(cpu, 0x8018DE6Cu);
+    cpu->pc = 0x8018DE6Cu; return;  /* CPS jal -> 0x8018DE6C */
+
+block_801AF8D4:
+    cpu->gpr[31] = cpu->read_word(cpu->gpr[29] + 16);
+    /* nop */  /* 0x801AF8D8: 0x00000000 */
+    uint32_t _jt_801AF8DC = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[29] = cpu->gpr[29] + 24;
+    psx_check_interrupts_at(cpu, _jt_801AF8DC);
+    cpu->pc = _jt_801AF8DC; return;  /* CPS: jr $ra */
+}
+
+/* cps_801af8e4 — clean CPS transliteration of br2eu_func_801AF8E4 (guest 0x801af8e4)
+ * from SLES_017.22_full_53.c. */
+void cps_801af8e4(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x801AF8F8u: goto block_801AF8F8;
+            default: break;
+        }
+    }
+    /* Address: 0x801AF8E4, Size: 36 bytes, Blocks: 2 */
+
+block_801AF8E4:
+    cpu->gpr[29] = cpu->gpr[29] + -24;
+    cpu->write_word(cpu->gpr[29] + 16, cpu->gpr[31]);
+    cpu->gpr[4] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[4] + 2);
+    cpu->gpr[31] = 0x801AF8F8u;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x801AF8F4: 0x00000000 */
+    psx_check_interrupts_at(cpu, 0x8018E028u);
+    cpu->pc = 0x8018E028u; return;  /* CPS jal -> 0x8018E028 */
+
+block_801AF8F8:
+    cpu->gpr[31] = cpu->read_word(cpu->gpr[29] + 16);
+    /* nop */  /* 0x801AF8FC: 0x00000000 */
+    uint32_t _jt_801AF900 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[29] = cpu->gpr[29] + 24;
+    psx_check_interrupts_at(cpu, _jt_801AF900);
+    cpu->pc = _jt_801AF900; return;  /* CPS: jr $ra */
+}
+
+/* cps_801af908 — clean CPS transliteration of br2eu_func_801AF908 (guest 0x801af908)
+ * from SLES_017.22_full_53.c. */
+void cps_801af908(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x801AF928u: goto block_801AF928;
+            default: break;
+        }
+    }
+    /* Address: 0x801AF908, Size: 48 bytes, Blocks: 2 */
+
+block_801AF908:
+    cpu->gpr[29] = cpu->gpr[29] + -24;
+    cpu->gpr[2] = cpu->gpr[4];
+    cpu->gpr[6] = cpu->gpr[5];
+    cpu->write_word(cpu->gpr[29] + 16, cpu->gpr[31]);
+    cpu->gpr[4] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[2] + 2);
+    cpu->gpr[5] = (int32_t)(int16_t)cpu->read_half(cpu->gpr[2] + 4);
+    cpu->gpr[31] = 0x801AF928u;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x801AF924: 0x00000000 */
+    psx_check_interrupts_at(cpu, 0x8018DAC0u);
+    cpu->pc = 0x8018DAC0u; return;  /* CPS jal -> 0x8018DAC0 */
+
+block_801AF928:
+    cpu->gpr[31] = cpu->read_word(cpu->gpr[29] + 16);
+    /* nop */  /* 0x801AF92C: 0x00000000 */
+    uint32_t _jt_801AF930 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    cpu->gpr[29] = cpu->gpr[29] + 24;
+    psx_check_interrupts_at(cpu, _jt_801AF930);
+    cpu->pc = _jt_801AF930; return;  /* CPS: jr $ra */
 }
