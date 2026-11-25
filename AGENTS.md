@@ -560,5 +560,50 @@ subsystem.
   cmd_issue/read_setup/file_read_seq + `_start` BSS artifact (0x80126188/94,
   boot-only) + tiny jalr stragglers (0x801421C4 battle, 0x8017DB88 event).
 
+### Session update 8 (non-CD straggler sweep COMPLETE — only §4 CD remains)
+
+- **16c4e96 CD-port regression confirmed + fixed `402925b`**: all 4 CD ports
+  (cd_response_process/pump, cd_read_step_cb, cd_intc_dispatch) wedge the
+  game ~frame 15k (pending cmd 0x0A starvation). Bisected: `cd_intc_dispatch`
+  ALONE also wedges — the IRQ-dispatch itself needs generated CPS
+  interrupt-check/resume. ALL reverted to `br2_call_generated` delegates;
+  do NOT re-attempt any of them (or cd_intc_dispatch_b) as clean ports
+  without a scheduler-aware clean-call bridge. `vsync_wait_n` (23dd2af) is
+  the ONE retained CD-adjacent port — it polls IRQ-updated `*0x801BDDE0`
+  VBlank counter via `br2_irq_poll` (safe: IRQ-handler-updated flags are
+  portable; coroutine-resume is not).
+- **Non-CD straggler sweep — DONE** (clean_table 1462→1471 wrappers):
+  - `op_*` leaf helpers 0x801ad964/96c (hword/dword clear, v0 passthrough),
+    0x801ae65c/801ae68c (gp-deref s16 add) → `game/gfx.c`.
+  - `byte2_probe_commit` 0x8017cf6c → `game/menu.c`.
+  - `desc_cmd_interp` 0x8017db88 (~91-block descriptor command-stream
+    interpreter, 3 jump-table dispatches) → `game/menu.c:13161`.
+  - `ev24_fx_spawn` 0x801421c4 cluster (~2400B CPS fn covering
+    0x801421C4/42A40/42B0C + alias bodies) → `game/ev.c:1653`.
+  - `prim_poly_emit_6c`/`prim_poly_emit_88` 0x80188510/0x80188754 (GTE
+    polygon emitters) → `game/gfx.c`.
+- **★ `resolve.c` EV-opcode dispatch unlock**: `ev_stream_dispatch` opcode
+  ≥24 now uses `call_guest4(h,…)` (clean-table-first + generated fallback)
+  instead of `br2_call_generated` — ALL EV opcodes can now be clean-ported
+  incrementally. This is the template for unlocking other fn-ptr dispatch
+  tables.
+- **CPS multi-function clusters**: big generated "functions" like
+  0x801421C4 are ONE logical fn split across `br2eu_func_*`+`br2eu_psx_
+  alias_body_*` entries sharing a frame. Port as ONE clean body with an
+  `entry` param (`ev24_cluster(entry)`), register only real jal-target
+  entries in renames.map. Interior CPS pc-switch cases are suspend
+  continuations — no clean suspend points needed.
+- **Verified**: every port runtime-verified (versus FIGHT + 172k-360k
+  frames gs=8 cycling, CD seq climbing). Final versus fn_entry game-range
+  hot set = ~85-90% §4 CD coroutine family + kernel/BIOS low-addr
+  dispatches (0x2xxx runtime layer, not game code).
+
 **Bottom line: parallel subagents, clean named C in `game/`, generated only
 as a temporary faithful fallback, runtime-verified, one unified source.**
+
+**generated→zero status: ALL tractable non-CD gameplay code is now clean C.
+The only remaining load-bearing generated coverage is the §4 CD
+IRQ/coroutine/response subsystem (~90% of versus generated traffic) plus
+the kernel/BIOS runtime layer. Reaching generated→zero requires the
+psxrecomp scheduler-aware clean-call bridge (coroutine-ification) — a
+deliberate runtime-architecture project, not incremental porting.**
