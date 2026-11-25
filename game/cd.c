@@ -942,6 +942,115 @@ undefined2 cd_intc_busy_read(void)
   return (undefined2)br2_ld16(0x801bcd1a);
 }
 
+/* ======== 0x8019a87c ======== */
+
+/* cd_irq_init_seq — CD IRQ/init sequencing coroutine (0x8019A87C-0x8019A8DB,
+ * 8 CPS blocks). First clean-CPS port: proves the clean_cps.map resume
+ * mechanism — every continuation/branch-target addr is registered so a yield
+ * inside psx_check_interrupts_at re-dispatches back into THIS body with
+ * cpu->pc == that addr, and the pc-switch below picks the block. All mutable
+ * state lives in cpu->gpr[]/guest RAM (host locals die on the scheduler
+ * longjmp). Each "jal" is a tail-dispatch: $ra = continuation, interrupt
+ * check with the callee as resume_pc, cpu->pc = callee, return — the
+ * generated CPS contract, preserved by the CLEAN_ENT_CPS flag in
+ * clean_try_dispatch (which skips the forced cpu->pc = $ra epilogue).
+ *
+ * Block map (verified vs generated/SLES_017.22_full_46.c):
+ *   87C entry : v0==0 -> 88C ; v0!=0 -> 884 (call cd_intc_dispatch first)
+ *   884       : ra=88C, jal cd_intc_dispatch
+ *   88C       : s0=0x801C0000-12972, a0=s0-4, v0=s0+4060, sw v0,0(s0),
+ *               ra=8A4, jal bios_tramp_b019
+ *   8A4       : v0=1, sh v0,-60(s0), ra=8B0, jal cd_init_stage_a
+ *   8B0       : v1=*stash_ptr, sw v0,20(v1), ra=8C0, jal cd_init_stage_b
+ *   8C0       : a0=*stash_ptr, sw v0,4(a0), ra=8D0, jal bios_tramp_a072
+ *   8D0       : ra=8D8, s0-=60, jal cpu_critical_exit
+ *   8D8       : v0=s0, fallthrough -> next fn (stays generated)
+ * The sw/sh stores write the INTC/init results into the CD context block —
+ * omitting them starves pending CD commands (the wedge this port fixes).
+ */
+uint32_t cd_irq_init_seq(void)
+{
+  extern void psx_check_interrupts_at(CPUState *cpu, uint32_t resume_pc);
+  CPUState *c = clean_cpu_state();
+  uint32_t pc;
+  if (!c) return 0;
+  pc = c->pc;
+  if (pc != 0u && pc != 0x8019A87Cu) {
+    switch (pc) {
+    case 0x8019A884u: goto b884;
+    case 0x8019A88Cu: goto b88C;
+    case 0x8019A8A4u: goto b8A4;
+    case 0x8019A8B0u: goto b8B0;
+    case 0x8019A8C0u: goto b8C0;
+    case 0x8019A8D0u: goto b8D0;
+    case 0x8019A8D8u: goto b8D8;
+    default: break;
+    }
+  }
+  /* block_8019A87C — entry: branch on (v0 == 0) */
+  if (c->gpr[2] == c->gpr[0]) {
+    psx_check_interrupts_at(c, 0x8019A88Cu);
+    goto b88C;
+  }
+  psx_check_interrupts_at(c, 0x8019A884u);
+  goto b884;
+
+b884:
+  c->gpr[31] = 0x8019A88Cu;
+  psx_check_interrupts_at(c, 0x8019A8ECu);
+  c->pc = 0x8019A8ECu;
+  return c->gpr[2];
+
+b88C:
+  c->gpr[16] = 0x801C0000u;
+  c->gpr[16] = c->gpr[16] - 12972u;          /* s0 = ctx base */
+  c->gpr[4]  = c->gpr[16] - 4u;              /* a0  = s0-4 */
+  c->gpr[2]  = c->gpr[16] + 4060u;           /* v0  = s0+4060 */
+  br2_st32(c->gpr[16], c->gpr[2]);           /* sw v0,0(s0) */
+  c->gpr[31] = 0x8019A8A4u;
+  psx_check_interrupts_at(c, 0x8019AD80u);
+  c->pc = 0x8019AD80u;
+  return c->gpr[2];
+
+b8A4:
+  c->gpr[2] = 1u;
+  br2_st16(c->gpr[16] - 60u, (uint16_t)c->gpr[2]); /* sh v0,-60(s0) */
+  c->gpr[31] = 0x8019A8B0u;
+  psx_check_interrupts_at(c, 0x8019AE10u);
+  c->pc = 0x8019AE10u;
+  return c->gpr[2];
+
+b8B0:
+  c->gpr[3] = 0x801C0000u;
+  c->gpr[3] = br2_ld32(c->gpr[3] - 8800u);   /* v1 = stash ptr */
+  br2_st32(c->gpr[3] + 20u, c->gpr[2]);      /* sw v0,20(v1) */
+  c->gpr[31] = 0x8019A8C0u;
+  psx_check_interrupts_at(c, 0x8019AF30u);
+  c->pc = 0x8019AF30u;
+  return c->gpr[2];
+
+b8C0:
+  c->gpr[4] = 0x801C0000u;
+  c->gpr[4] = br2_ld32(c->gpr[4] - 8800u);   /* a0 = stash ptr */
+  br2_st32(c->gpr[4] + 4u, c->gpr[2]);       /* sw v0,4(a0) */
+  c->gpr[31] = 0x8019A8D0u;
+  psx_check_interrupts_at(c, 0x8019AD48u);
+  c->pc = 0x8019AD48u;
+  return c->gpr[2];
+
+b8D0:
+  c->gpr[31] = 0x8019A8D8u;
+  c->gpr[16] = c->gpr[16] - 60u;            /* delay-slot: s0 -= 60 */
+  psx_check_interrupts_at(c, 0x8018E310u);
+  c->pc = 0x8018E310u;
+  return c->gpr[2];
+
+b8D8:
+  c->gpr[2] = c->gpr[16];                    /* v0 = s0 */
+  c->pc = 0x8019A8DCu;                       /* fallthrough -> next fn */
+  return c->gpr[2];
+}
+
 /* ======== 0x80196370 ======== */
 
 /* cd_response_process — CD response-byte state machine (0x80196370-

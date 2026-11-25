@@ -1,0 +1,17 @@
+# Clean-CPS re-entry addrs: coroutine continuation / branch-target PCs that
+# are NOT function entries (no fnmap row) but must route to a clean body so a
+# yielded CD/IRQ coroutine resumes inside clean C. Multiple addrs may name the
+# same symbol; clean_try_dispatch hands the fn cpu->pc == the dispatched addr
+# so the body's pc-switch picks the right continuation block.
+#
+# cd_irq_init_seq (guest 0x8019A87C) — CD IRQ/init sequencing coroutine.
+# Entry + its 7 CPS continuation/branch-target blocks all re-enter the same
+# clean body; 0x8019A8DC is the NEXT function (stays generated).
+8019a87c cd_irq_init_seq
+8019a884 cd_irq_init_seq
+8019a88c cd_irq_init_seq
+8019a8a4 cd_irq_init_seq
+8019a8b0 cd_irq_init_seq
+8019a8c0 cd_irq_init_seq
+8019a8d0 cd_irq_init_seq
+8019a8d8 cd_irq_init_seq
