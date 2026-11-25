@@ -607,3 +607,37 @@ IRQ/coroutine/response subsystem (~90% of versus generated traffic) plus
 the kernel/BIOS runtime layer. Reaching generated→zero requires the
 psxrecomp scheduler-aware clean-call bridge (coroutine-ification) — a
 deliberate runtime-architecture project, not incremental porting.**
+
+### Session update 9 (refined §4 mechanism model — for the future bridge)
+
+Investigation this session refined WHY the CD ports wedge — it is NOT a
+simple "clean C can't yield" limitation:
+
+- **`psx_fiber_*` already preserves native stacks** — `psx_change_thread_fiber`
+  (traps.c) → `psx_fiber_switch` suspends/resumes the WHOLE host call stack
+  (ucontext on POSIX). A clean C frame on a BIOS thread's fiber survives a
+  cooperative thread switch intact.
+- **`br2_irq_poll` already does the full interrupt check** — it calls
+  `psx_advance_cycles(256)` + `psx_check_interrupts_at(cpu, gpr[31])`, the
+  SAME entry generated code uses at every CPS block boundary. So clean C
+  CAN trigger IRQ delivery AND cooperative thread-switch/fiber-switch.
+- **The real blocker is guest `resume_pc` tracking.** When a thread yields,
+  `psx_save_context_to_tcb` stores a GUEST resume PC (TCB+128) that the
+  scheduler uses to re-dispatch. Generated CPS code maintains `cpu->pc` per
+  basic block so the resume PC is always a valid continuation. Clean C does
+  not advance `cpu->pc` per-step — after a yield+resume, the guest-level
+  continuation is stale/wrong even though the host stack survives. The
+  deferred-CD-command doorbell needs that guest resume PC to re-enter the
+  coroutine at the exact CPS block → starvation.
+- **Implication for the bridge**: making clean C a coroutine citizen means
+  tracking a guest-visible resume point per yield (a "clean CPS" — either a
+  guest-PC sentinel the scheduler recognizes, or converting clean wait-loops
+  into explicit guest-resumable states). This is the scoped runtime work.
+- **Confirmed safe discriminator still holds**: functions that only POLL an
+  IRQ-handler-updated flag and return (vsync_wait_n) port fine; functions
+  that ARE the scheduled coroutine (cd_response_process/pump,
+  cd_intc_dispatch, cd_read_step_cb, file-load chain, cd_mc_state_machine)
+  do not — they must yield at guest-tracked points.
+- **Cold tail confirmed cold**: remaining unwrapped `br2eu_func_*` (~2444)
+  are CPS split-fragments + boot `_start` region (0x80126xxx) — not
+  independently portable and not hot. Attract+versus profiles agree.
