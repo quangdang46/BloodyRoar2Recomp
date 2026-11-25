@@ -1094,6 +1094,7 @@ extern void part_link_tail(void);
 extern void part_link_unlink(void);
 extern void part_matrix_compute(void);
 extern void part_record_reset(void);
+extern void part_skin_emit(void);
 extern void particle_burst_spawn(void);
 extern void particle_burst_update(void);
 extern void peak_track(void);
@@ -2217,6 +2218,7 @@ const Br2FnEnt fn_table[] = {
   { 0x801862a8, (void *)pose_chain_build },
   { 0x801863ac, (void *)guest_noop },
   { 0x801863b4, (void *)node_table_lookup_emit },
+  { 0x801864dc, (void *)part_skin_emit },
   { 0x8018694c, (void *)sprite_prim_update },
   { 0x80186aa8, (void *)gte_vec_transform_emit },
   { 0x80186b2c, (void *)fighter_attach_run },

@@ -6498,3 +6498,416 @@ uint32_t prim_cull2_emit_30(uint32_t cur, uint32_t ot, uint32_t sel,
   } while (cnt > 0);                             /* bgtz a3 -> loop */
   return cur;                                   /* move v0,a0 */
 }
+
+/* ======== 0x801864dc ======== */
+
+/* part_skin_emit — skinned part renderer / OT primitive emitter.
+ *
+ * a0 = part record, a1 = skin/pose source, a2 = out vertex block,
+ * a3 = scratch. Builds scratchpad work area at 0x1F800000+0x38C
+ * (u16 triples: transformed xy + packed attr), transforms the part's
+ * rtps point set via rtps_point_xform2, derives per-axis deltas with
+ * (prod + rounding)>>8 fixed-point math, angle-dispatches on the s16
+ * mode word at a1+2 (<6 / ==6 / ==9 / other) through atan2_lut +
+ * lut_cos/sin_q12 to fold hinge angles into the scratchpad angles,
+ * then runs part_matrix_compute + gte_rtps_xform1/xform3 to emit the
+ * final transformed vertices back through a0/a1. Hot path (~2.5k calls).
+ * Disasm 0x801864dc-0x8018694c. */
+
+extern int *rtps_point_xform2(undefined4 *, undefined4 *, int *);
+extern undefined2 *gte_rtps_xform1(undefined4 *, undefined4 *, undefined2 *);
+extern uint *gte_rtps_xform3(undefined4 *, ushort *, uint *);
+extern void part_matrix_compute(undefined4 *, byte *, short *, undefined4);
+extern int atan2_lut(int, int);
+extern int lut_cos_q12(int);
+extern int lut_sin_q12(uint);
+
+static void psk_mult_lo(CPUState *c, uint32_t x, uint32_t y)
+{
+  int64_t r = (int64_t)(int32_t)x * (int64_t)(int32_t)y;
+  c->lo = (uint32_t)r;
+  c->hi = (uint32_t)((uint64_t)r >> 32);
+}
+
+uint32_t part_skin_emit(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
+{
+  CPUState *c = clean_cpu_state();
+  uint32_t g[32];
+  uint32_t fr;
+  int i;
+
+  if (!c) return 0;
+  for (i = 0; i < 32; i++) g[i] = c->gpr[i];
+  g[0] = 0;
+  g[4] = a0; g[5] = a1; g[6] = a2; g[7] = a3;
+  fr = br2_guest_frame(0x70);
+
+  /* ---- prologue: save s0-s7/ra/fp, s2 = scratchpad base ---- */
+  br2_st32(fr + 96, g[22]);              /* sw s6 saved-incoming */
+  g[22] = g[5];                          /* s6 = a1 */
+  br2_st32(fr + 100, g[23]);             /* sw s7 saved-incoming */
+  g[23] = g[6];                          /* s7 = a2 */
+  br2_st32(fr + 80, g[18]);              /* sw s2 saved-incoming */
+  g[18] = 0x1F800000u;
+  g[5] = g[22] + 24;
+  g[6] = g[22] + 52;
+  br2_st32(fr + 108, g[31]);             /* ra */
+  br2_st32(fr + 104, g[30]);             /* fp */
+  br2_st32(fr + 92, g[21]);
+  br2_st32(fr + 88, g[20]);
+  br2_st32(fr + 84, g[19]);
+  br2_st32(fr + 76, g[17]);
+  br2_st32(fr + 72, g[16]);
+  br2_st32(fr + 112, g[4]);              /* a0 */
+  br2_st32(fr + 124, g[7]);              /* a3 */
+  g[8] = br2_ld32(g[22] + 64);
+  br2_st32(fr + 68, g[8]);
+  g[21] = g[23] + 28;
+  g[16] = br2_ld32(g[22] + 68);
+  g[2] = br2_ld16(g[22] + 52);           /* lhu */
+  g[30] = g[8] + 32;
+  br2_st16(g[23] + 8, (uint16_t)g[2]);
+  g[2] = br2_ld16(g[22] + 56);
+  br2_st16(g[23] + 10, (uint16_t)g[2]);
+  g[2] = br2_ld16(g[22] + 60);
+  g[8] = g[23] + (uint32_t)-28;
+  br2_st16(g[23] + 12, (uint16_t)g[2]);
+  br2_st32(fr + 64, g[8]);
+  g[20] = br2_ld32(g[23] + 24);
+
+  /* jal 0x80186564 -> rtps_point_xform2(a0=g30, a1=a1+24, a2=a1+52) */
+  g[4] = g[30];
+  g[2] = (uint32_t)guest_of(rtps_point_xform2(
+      (undefined4 *)guest_at(g[4]),
+      (undefined4 *)guest_at(g[5]),
+      (int *)guest_at(g[6])));
+
+L_80186568:
+  g[2] = br2_ld16(g[20]);                /* lhu */
+  g[18] |= 0x38Cu;                       /* delay slot: s2 += 0x38C */
+  g[2] &= 0x4000u;
+  if (g[2] != 0) goto L_8018691C;        /* flag set -> epilogue */
+
+  /* ---- axis delta pass 1: x (mult by lh(g20+4)) ---- */
+  g[3] = (int32_t)(int16_t)br2_ld16(g[21] + 8);   /* lh */
+  g[2] = br2_ld32(g[16] + 52);
+  g[17] = (int32_t)(int16_t)br2_ld16(g[20] + 4);  /* lh */
+  g[2] = g[2] - g[3];
+  psk_mult_lo(c, g[2], g[17]);
+  g[19] = (int32_t)(int16_t)br2_ld16(g[20] + 6);  /* lh */
+  g[2] = c->lo;
+  g[4] = (int32_t)g[2] >> 8;             /* delay slot sra */
+  if ((int32_t)g[2] < 0) {               /* bgez not taken -> round up */
+    g[2] += 0xFFu;
+    g[4] = (int32_t)g[2] >> 8;
+  }
+  g[2] = br2_ld16(g[16] + 52);           /* lhu */
+  g[3] = br2_ld16(g[22] + 52);           /* lhu */
+  g[2] = g[2] + g[4];
+  g[2] = g[2] - g[3];
+  br2_st16(g[18], (uint16_t)g[2]);       /* sh s2+0 */
+  g[3] = (int32_t)(int16_t)br2_ld16(g[21] + 10);  /* lh */
+  g[2] = br2_ld32(g[16] + 56);
+  /* 0x801865c4: nop */
+  g[2] = g[2] - g[3];
+  psk_mult_lo(c, g[2], g[17]);
+  g[3] = c->lo;
+  g[2] = g[19] << 2;                     /* delay slot */
+  if ((int32_t)g[3] < 0) g[3] += 0xFFu;  /* bgez not taken */
+  /* L_801865e0 */
+  g[2] = g[2] + g[19];
+  g[2] = g[2] << 3;
+  g[2] = g[2] + g[19];
+  g[4] = (int32_t)g[3] >> 8;             /* delay slot sra */
+  if ((int32_t)g[2] >= 0) goto L_801865F8;
+  g[2] += 0xFFu;
+L_801865F8:
+  g[3] = (int32_t)g[2] >> 8;
+  g[3] = g[4] + g[3];
+  g[2] = br2_ld16(g[16] + 56);           /* lhu */
+  g[4] = br2_ld16(g[22] + 56);           /* lhu */
+  g[2] = g[2] + g[3];
+  g[5] = g[2] - g[4];
+  br2_st16(g[18] + 2, (uint16_t)g[5]);   /* sh s2+2 */
+
+  /* ---- axis delta pass 2: z (mult by lh(g20+4)) ---- */
+  g[3] = (int32_t)(int16_t)br2_ld16(g[21] + 12);  /* lh */
+  g[2] = br2_ld32(g[16] + 60);
+  /* 0x8018661c: nop */
+  g[2] = g[2] - g[3];
+  psk_mult_lo(c, g[2], g[17]);
+  g[2] = c->lo;
+  g[4] = (int32_t)g[2] >> 8;             /* delay slot sra */
+  if ((int32_t)g[2] < 0) {
+    g[2] += 0xFFu;
+    g[4] = (int32_t)g[2] >> 8;
+  }
+  g[2] = br2_ld16(g[16] + 60);           /* lhu */
+  g[3] = br2_ld16(g[22] + 60);           /* lhu */
+  g[2] = g[2] + g[4];
+  g[2] = g[2] - g[3];
+  g[3] = g[5] << 16;                     /* s16 of stored delta */
+  g[3] = (int32_t)g[3] >> 16;
+  br2_st16(g[18] + 4, (uint16_t)g[2]);   /* sh s2+4 */
+  g[8] = br2_ld32(fr + 112);             /* reload saved a0 */
+  g[2] = br2_ld32(g[22] + 56);
+  g[4] = (int32_t)(int16_t)br2_ld16(g[8] + 148);  /* lh */
+  g[2] = g[2] + g[3];
+  g[17] = g[2] - g[4];
+  g[2] = g[5] - g[17];                   /* delay slot */
+  if ((int32_t)g[17] > 0)                /* blez not taken */
+    br2_st16(g[18] + 2, (uint16_t)g[2]);
+
+  /* jal 0x80186680 -> prim_attr_repack(a0=g30, a1=0x1F800394) */
+  g[4] = g[30];
+  g[5] = 0x1F800000u;
+  g[5] |= 0x394u;                        /* delay slot */
+  g[2] = prim_attr_repack(g[4], g[5]);
+
+  /* jal 0x8018669c -> gte_rtps_xform1(0x1F800394, 0x1F80038C, 0x1F80038C) */
+  g[4] = 0x1F800000u;
+  g[4] |= 0x394u;
+  g[5] = 0x1F800000u;
+  g[5] |= 0x38Cu;
+  g[6] = 0x1F800000u;
+  g[6] |= 0x38Cu;                        /* delay slot */
+  g[2] = (uint32_t)guest_of(gte_rtps_xform1(
+      (undefined4 *)guest_at(g[4]),
+      (undefined4 *)guest_at(g[5]),
+      (undefined2 *)guest_at(g[6])));
+
+  /* ---- flag halfword @ a2-part +0: 0x8000 -> zero out a2+6 ---- */
+  g[2] = (int32_t)(int16_t)br2_ld16(g[20]);       /* lh */
+  /* 0x801866a8/0x801866b4: nops */
+  g[2] &= 0x8000u;
+  if (g[2] != 0) br2_st16(g[23] + 6, 0);          /* beqz not taken */
+
+  /* ---- pack s16 triples: s2 area -> sp+48/56, then part_matrix ---- */
+  g[8] = br2_ld32(fr + 64);               /* saved a2-28 */
+  /* 0x801866c4: nop */
+  g[2] = br2_ld16(g[8] + 6);              /* lhu */
+  /* 0x801866cc: nop */
+  br2_st16(g[23] + 6, (uint16_t)g[2]);
+
+  g[3] = br2_ld16(g[20] + 8);             /* lhu */
+  g[2] = br2_ld16(g[18]);                 /* lhu */
+  g[4] = fr + 16;
+  g[2] = g[2] + g[3];
+  br2_st16(fr + 56, (uint16_t)g[3]);
+  br2_st16(fr + 48, (uint16_t)g[2]);
+  g[3] = br2_ld16(g[20] + 10);            /* lhu */
+  g[2] = br2_ld16(g[18] + 2);             /* lhu */
+  g[6] = fr + 56;
+  g[2] = g[2] + g[3];
+  br2_st16(fr + 58, (uint16_t)g[3]);
+  br2_st16(fr + 50, (uint16_t)g[2]);
+  g[3] = br2_ld16(g[20] + 12);            /* lhu */
+  g[2] = br2_ld16(g[18] + 4);             /* lhu */
+  g[8] = br2_ld32(fr + 124);              /* saved a3 */
+  g[2] = g[2] + g[3];
+  br2_st16(fr + 52, (uint16_t)g[2]);
+  g[2] = g[8] << 5;                       /* a3 << 5 */
+  br2_st16(fr + 60, (uint16_t)g[3]);
+  g[7] = br2_ld16(g[23] + 6);             /* lhu */
+  g[8] = br2_ld32(fr + 112);              /* saved a0 */
+  g[7] = g[7] << 16;
+  g[5] = br2_ld32(g[8] + 72);
+  g[7] = (int32_t)g[7] >> 17;             /* s16 << 16 >> 17 = s16 >> 1 */
+  /* jal 0x80186734 -> part_matrix_compute(sp+16, g5+g2, sp+56, g7) */
+  g[5] = g[5] + g[2];                     /* delay slot */
+  part_matrix_compute((undefined4 *)guest_at(g[4]),
+                      (byte *)guest_at(g[5]),
+                      (short *)guest_at(g[6]), g[7]);
+
+L_8018673C:
+  g[4] = fr + 16;
+  g[16] = g[18] + 8;                      /* s2 + 8 */
+  /* jal 0x80186744 -> prim_attr_repack(sp+16, s2+8) */
+  g[5] = g[16];                           /* delay slot */
+  g[2] = prim_attr_repack(g[4], g[5]);
+
+L_8018674C:
+  g[4] = g[16];                           /* s2 + 8 */
+  g[5] = fr + 48;
+  /* jal 0x80186754 -> gte_rtps_xform1(s2+8, sp+48, s2) */
+  g[6] = g[18];                           /* delay slot */
+  g[2] = (uint32_t)guest_of(gte_rtps_xform1(
+      (undefined4 *)guest_at(g[4]),
+      (undefined4 *)guest_at(g[5]),
+      (undefined2 *)guest_at(g[6])));
+
+  /* ---- mode dispatch on lh(a1+2) ---- */
+  g[3] = (int32_t)(int16_t)br2_ld16(g[20] + 2);   /* lh */
+  /* 0x80186760: nop */
+  g[2] = ((int32_t)g[3] < 6) ? 1u : 0u;
+  g[2] = 6;                               /* delay slot */
+  if (((int32_t)g[3] < 6)) goto L_801868D8;
+  /* beq g3,6 : delay slot g2 = 9 always executes */
+  g[2] = 9;
+  if (g[3] == 6) goto L_801867F8;
+  if (g[3] != 9) goto L_80186870;          /* _bc_80186778 */
+
+  /* ================= mode == 9 ================= */
+  /* atan2 pair #1: (s16)lhu(s2+2), lh(s2+0) */
+  g[4] = br2_ld16(g[18] + 2);             /* lhu */
+  g[5] = (int32_t)(int16_t)br2_ld16(g[18]);       /* lh */
+  g[4] = g[4] << 16;
+  /* jal atan2_lut, delay: g4 = (s32)g4 >> 16 */
+  g[4] = (int32_t)g[4] >> 16;
+  g[2] = (uint32_t)atan2_lut((int)g[4], (int)g[5]);
+L_80186794:
+  g[17] = g[2];
+  /* atan2 pair #2: (s16)lhu(s2+2), lh(s2+4) */
+  g[4] = br2_ld16(g[18] + 2);
+  g[5] = (int32_t)(int16_t)br2_ld16(g[18] + 4);
+  g[4] = g[4] << 16;
+  g[4] = (int32_t)g[4] >> 16;             /* delay slot */
+  g[2] = (uint32_t)atan2_lut((int)g[4], (int)g[5]);
+L_801867AC:
+  g[3] = (int32_t)(int16_t)br2_ld16(g[20] + 16);  /* lh */
+  g[19] = g[2];
+  g[2] = ((int32_t)g[3] < (int32_t)g[17]) ? 1u : 0u;
+  if (g[2] != 0) goto L_801867D4;          /* _bc_801867B8 taken */
+  g[3] = (int32_t)(int16_t)br2_ld16(g[20] + 14);  /* lh */
+  /* 0x801867c4: nop */
+  g[2] = ((int32_t)g[17] < (int32_t)g[3]) ? 1u : 0u;
+  if (g[2] == 0) goto L_801867D8;          /* _bc_801867CC taken */
+L_801867D4:
+  g[17] = g[3];
+L_801867D8:
+  g[3] = (int32_t)(int16_t)br2_ld16(g[20] + 20);  /* lh */
+  /* 0x801867dc: nop */
+  g[2] = ((int32_t)g[3] < (int32_t)g[19]) ? 1u : 0u;
+  if (g[2] != 0) goto L_8018686C;          /* _bc_801867E4 taken */
+  g[3] = (int32_t)(int16_t)br2_ld16(g[20] + 18);  /* lh */
+  /* 0x801867f0: j 0x80186864 ; delay slot slti */
+  g[2] = ((int32_t)g[19] < (int32_t)g[3]) ? 1u : 0u;
+  goto L_80186864;
+
+  /* ================= mode == 6 ================= */
+L_801867F8:
+  g[4] = br2_ld16(g[18] + 2);             /* lhu */
+  g[5] = (int32_t)(int16_t)br2_ld16(g[18]);       /* lh */
+  g[4] = g[4] << 16;
+  g[4] = (int32_t)g[4] >> 16;             /* delay slot */
+  g[2] = (uint32_t)atan2_lut((int)g[4], (int)g[5]);
+L_8018680C:
+  g[17] = g[2];
+  g[4] = br2_ld16(g[18] + 2);
+  g[5] = (int32_t)(int16_t)br2_ld16(g[18] + 4);
+  g[4] = g[4] << 16;
+  g[4] = (int32_t)g[4] >> 16;             /* delay slot */
+  g[2] = (uint32_t)atan2_lut((int)g[4], (int)g[5]);
+L_80186824:
+  g[19] = g[2];
+  g[3] = (int32_t)(int16_t)br2_ld16(g[20] + 14);  /* lh */
+  g[2] = ((int32_t)g[3] < (int32_t)g[17]) ? 1u : 0u;
+  g[4] = g[0] - g[3];                     /* delay slot: g4 = -g3 */
+  if (g[2] == 0) goto L_80186840;         /* _bc_80186830 taken */
+  /* 0x80186838: */
+  g[17] = g[3];
+  goto L_80186850;                        /* j */
+L_80186840:
+  g[2] = ((int32_t)g[17] < (int32_t)g[4]) ? 1u : 0u;
+  g[2] = ((int32_t)g[3] < (int32_t)g[19]) ? 1u : 0u;  /* delay slot */
+  if (((int32_t)g[17] < (int32_t)g[4]) == 0) goto L_80186854;
+  /* 0x8018684c: */
+  g[17] = g[4];
+L_80186850:
+  g[2] = ((int32_t)g[3] < (int32_t)g[19]) ? 1u : 0u;
+L_80186854:
+  if (g[2] != 0) goto L_8018686C;         /* _bc_80186854 taken */
+  /* 0x8018685c: */
+  g[3] = g[0] - g[3];                     /* g3 = -g3 */
+  g[2] = ((int32_t)g[19] < (int32_t)g[3]) ? 1u : 0u;
+L_80186864:
+  if (g[2] == 0) goto L_80186870;         /* _bc_80186864 taken */
+  /* fallthrough */
+L_8018686C:
+  g[19] = g[3];
+
+  /* ================= shared angle fold tail ================= */
+L_80186870:
+  /* jal -> lut_cos_q12(g17) */
+  g[4] = g[17];                           /* delay slot */
+  g[2] = (uint32_t)lut_cos_q12((int)g[4]);
+L_80186878:
+  g[4] = g[19];
+  g[16] = g[2];                           /* delay slot: save cos(g17) */
+  /* jal -> lut_cos_q12(g19) */
+  g[2] = (uint32_t)lut_cos_q12((int)g[4]);
+L_80186884:
+  g[4] = g[17];
+  g[16] = g[16] + g[2];
+  g[2] = (uint32_t)g[16] >> 31;
+  g[16] = g[16] + g[2];
+  g[16] = (int32_t)g[16] >> 1;            /* rounded average */
+  br2_st16(g[18] + 2, (uint16_t)g[16]);   /* delay slot of jal */
+  /* jal -> lut_sin_q12(g17) */
+  g[2] = (uint32_t)lut_sin_q12(g[4]);
+L_801868A0:
+  g[4] = g[19];
+  br2_st16(g[18], (uint16_t)g[2]);        /* delay slot: sh s2+0 */
+  /* jal -> lut_sin_q12(g19) */
+  g[2] = (uint32_t)lut_sin_q12(g[4]);
+L_801868AC:
+  g[5] = (int32_t)(int16_t)br2_ld16(g[18]);       /* lh */
+  g[4] = br2_ld16(g[18] + 2);             /* lhu */
+  br2_st16(g[18] + 4, (uint16_t)g[2]);    /* sh s2+4 = sin(g19) */
+  g[4] = g[4] << 16;
+  g[4] = (int32_t)g[4] >> 16;             /* delay slot */
+  g[2] = (uint32_t)atan2_lut((int)g[4], (int)g[5]);
+L_801868C4:
+  g[4] = br2_ld16(g[18] + 2);             /* lhu */
+  g[5] = (int32_t)(int16_t)br2_ld16(g[18] + 4);   /* lh */
+  g[4] = g[4] << 16;
+  g[4] = (int32_t)g[4] >> 16;             /* delay slot */
+  g[2] = (uint32_t)atan2_lut((int)g[4], (int)g[5]);
+
+  /* ================= mode < 6 / tail ================= */
+L_801868D8:
+  g[16] = g[22] + 4;
+  g[4] = g[16];
+  g[2] = br2_ld16(g[18]);                 /* lhu */
+  g[5] = fr + 16;
+  br2_st16(g[23], (uint16_t)g[2]);        /* sh a2+0 */
+  g[2] = br2_ld16(g[18] + 2);             /* lhu */
+  g[6] = g[23];
+  br2_st16(g[23] + 2, (uint16_t)g[2]);    /* sh a2+2 */
+  g[2] = br2_ld16(g[18] + 4);             /* lhu */
+  g[7] = 0;                               /* move zero */
+  /* jal 0x80186900 -> part_matrix_compute(a1+4, sp+16, a2, 0) */
+  br2_st16(g[23] + 4, (uint16_t)g[2]);    /* delay slot: sh a2+4 */
+  part_matrix_compute((undefined4 *)guest_at(g[4]),
+                      (byte *)guest_at(g[5]),
+                      (short *)guest_at(g[6]), g[7]);
+
+L_80186908:
+  g[5] = g[16];                           /* a1 + 4 */
+  g[8] = br2_ld32(fr + 68);               /* reload saved ptr */
+  g[6] = g[22] + 32;
+  /* jal 0x80186914 -> gte_rtps_xform3(g8+32, a1+4, a1+32) */
+  g[4] = g[8] + 32;                       /* delay slot */
+  g[2] = (uint32_t)guest_of(gte_rtps_xform3(
+      (undefined4 *)guest_at(g[4]),
+      (ushort *)guest_at(g[5]),
+      (uint *)guest_at(g[6])));
+
+  /* ================= epilogue ================= */
+L_8018691C:
+  g[31] = br2_ld32(fr + 108);
+  g[30] = br2_ld32(fr + 104);
+  g[23] = br2_ld32(fr + 100);
+  g[22] = br2_ld32(fr + 96);
+  g[21] = br2_ld32(fr + 92);
+  g[20] = br2_ld32(fr + 88);
+  g[19] = br2_ld32(fr + 84);
+  g[18] = br2_ld32(fr + 80);
+  g[17] = br2_ld32(fr + 76);
+  g[16] = br2_ld32(fr + 72);
+  /* sp += 0x70 via frame_free */
+  br2_guest_frame_free();
+  c->gpr[2] = g[2];
+  c->gpr[3] = g[3];
+  return g[2];
+}

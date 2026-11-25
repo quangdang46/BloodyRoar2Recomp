@@ -1894,3 +1894,4 @@
 8018e310 cpu_critical_exit
 801a27d0 cd_extent_len
 801aae08 gte_xform_packet
+801864dc part_skin_emit
