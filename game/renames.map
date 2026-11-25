@@ -253,6 +253,7 @@
 8018c1f4 sprite_9slice_build
 8018c31c sprite_quad_emit
 801863ac guest_noop
+80192944 gpu_draw_env_dma
 80192430 gpu_pkt_pack
 80192580 gpu_coord_pack
 8019259c gpu_texpage_pack
@@ -1472,6 +1473,8 @@
 801a5878 prim_emit_tri_ot_fix
 
 801a5a0c prim_emit_quad_ot_fix
+801a88dc prim_emit_tri_tex_ot
+801a8bc8 prim_emit_quad_tex_ot
 
 801a5bd0 guard_callee_a0
 

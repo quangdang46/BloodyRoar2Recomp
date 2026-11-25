@@ -50,6 +50,8 @@ undefined1 * guest_memcpy(uint32_t *,uint32_t *,int);
 void printf_forward(const char *, ...);
 void  guest_memset(uint32_t *,undefined1,int);
 void  cd_dispatch_tblc(void);
+void  cd_timeout_arm(void);
+int   cd_pump_watchdog(void);
 void  bios_call_a0(uint);
 undefined4 gpu_mode_regs_apply(uint);
 void  gpu_prim_pkt_build(int,ushort *);
@@ -2788,6 +2790,88 @@ uint32_t gpu_flag_8322_read(void)
   return (uint32_t)*(uint8_t *)guest_at(0x801c8322);
 }
 
+/* ======== 0x80192944 ======== */
+/* GPU display-environment DMA submit. a0 points at the env word pair
+ * (+0 tag word, +4 packed x/y hwords), a1 at the payload word list.
+ * Clamps +4/+6 against the 0x801c8324/26 dimension hwords, derives the
+ * transfer split from x*y, pumps the GPU status bit through
+ * cd_pump_watchdog, streams env+payload through the 0x801c8424 reg cell,
+ * then kicks the 0x801c8428/842c/8430/8434 DMA cells when the high chunk
+ * count is nonzero. Disasm 0x80192944-0x80192B7C. */
+uint32_t gpu_draw_env_dma(uint32_t envg, uint32_t listg)
+{
+  int32_t xs, ys, xv, yv, prod, p1, half, q5, rem;
+  uint32_t xu, yu, chunks, n, cell;
+  uint32_t w;
+
+  cd_timeout_arm();
+
+  xs = (int32_t)(int16_t)br2_ld16(envg + 4);
+  if (xs < 0) {
+    xu = 0;
+  } else {
+    int32_t bound = (int32_t)(int16_t)br2_ld16(0x801c8324u);
+    xu = br2_ld16(envg + 4);
+    if (bound < xs)
+      xu = br2_ld16(0x801c8324u);
+  }
+  br2_st16(envg + 4, (uint16_t)xu);
+
+  ys = (int32_t)(int16_t)br2_ld16(envg + 6);
+  if (ys < 0) {
+    yu = 0;
+  } else {
+    int32_t bound = (int32_t)(int16_t)br2_ld16(0x801c8326u);
+    yu = br2_ld16(envg + 6);
+    if (bound < ys)
+      yu = br2_ld16(0x801c8326u);
+  }
+  br2_st16(envg + 6, (uint16_t)yu);
+
+  xv = (int32_t)(int16_t)xu;
+  yv = (int32_t)(int16_t)yu;
+  prod = xv * yv;
+  p1 = prod + 1;
+  half = (p1 + (p1 >> 31)) >> 1;
+  if (half <= 0)
+    return 0xffffffffu;
+  q5 = (p1 + (p1 >> 31)) >> 5;
+  chunks = (uint32_t)q5;
+  rem = half - (q5 << 4);
+
+  for (;;) {
+    cell = br2_ld32(0x801c8428u);
+    w = br2_ld32(cell);
+    if ((w & 0x04000000u) != 0)
+      break;
+    if (cd_pump_watchdog() != 0)
+      return 0xffffffffu;
+  }
+
+  br2_st32(br2_ld32(0x801c8428u), 0x04000000u);
+  br2_st32(br2_ld32(0x801c8424u), 0x01000000u);
+  br2_st32(br2_ld32(0x801c8424u), 0xa0000000u);
+  br2_st32(br2_ld32(0x801c8424u), br2_ld32(envg));
+  br2_st32(br2_ld32(0x801c8424u), br2_ld32(envg + 4));
+
+  for (n = (uint32_t)rem; n != 0xffffffffu; n = (uint32_t)((int32_t)n - 1)) {
+    cell = br2_ld32(0x801c8424u);
+    br2_st32(cell, br2_ld32(listg));
+    listg += 4;
+  }
+
+  if (chunks != 0) {
+    uint32_t st;
+    cell = br2_ld32(0x801c8428u);
+    st = br2_ld32(cell);
+    br2_st32(cell, st | 0x00000002u);
+    br2_st32(br2_ld32(0x801c842cu), listg);
+    br2_st32(br2_ld32(0x801c8430u), (chunks << 16) | 0x00000010u);
+    br2_st32(br2_ld32(0x801c8434u), 0x01000201u);
+  }
+  return 0;
+}
+
 /* ======== 0x80194000 ======== */
 /* Swap the low-24 payload fields of the two packet words while keeping
  * each word's own top byte, then tag *a0 with the compressed a1 pointer:
@@ -5033,6 +5117,232 @@ uint32_t prim_emit_quad_ot_fix(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
     break;
   }
   return 0x00ffffffu;
+}
+
+/* ======== 0x801A88DC / 0x801A8BC8 ======== */
+
+/* Shared prologue for the textured tri/quad OT emitters. Returns the
+ * descriptor fields the loop needs; *mode_out is the raw +0x32 hword and
+ * *depth_out is the +0x14 stack cell (initialized to mode when nonzero,
+ * rewritten by AVSZ3 on the mode==0 path). */
+static int prim_emit_tex_desc(uint32_t desc, uint32_t *slotidx,
+                              uint32_t *out, uint32_t *flags,
+                              int32_t *mode_out, int32_t *depth_out)
+{
+  int32_t mode;
+  if ((int32_t)(int16_t)GP16(desc + 0x34) == 0)
+    return 0;
+  mode = (int32_t)(int16_t)GP16(desc + 0x32);
+  *slotidx = br2_ld32((uint32_t)(guest_gp() + 0x24));
+  *out     = DB32(desc + (*slotidx << 2));
+  *flags   = DB32(desc + 0x24);
+  *mode_out = mode;
+  *depth_out = mode;
+  return 1;
+}
+
+/* Load three 8-byte vertex records (V0,V1,V2) by signed index. */
+static void prim_emit_load_v012(int32_t i0, int32_t i1, int32_t i2,
+                                uint32_t vtab)
+{
+  uint32_t p;
+  p = vtab + ((uint32_t)i0 << 3); gte_lwc2(p,     0); gte_lwc2(p + 4, 1);
+  p = vtab + ((uint32_t)i1 << 3); gte_lwc2(p,     2); gte_lwc2(p + 4, 3);
+  p = vtab + ((uint32_t)i2 << 3); gte_lwc2(p,     4); gte_lwc2(p + 4, 5);
+}
+
+/* Indexed ordering-table insert used by both emitters: the OT slot is
+ * otbase + depth*4, the record word gets tag|old, and the slot receives
+ * the record's compressed 24-bit pointer. */
+static void prim_emit_tag_insert(uint32_t otbase, uint32_t out,
+                                 uint32_t depth, uint32_t tag)
+{
+  uint32_t slot = otbase + ((uint32_t)depth << 2);
+  uint32_t old  = DB32(slot);
+  DB32(out)  = tag | old;
+  DB32(slot) = out & 0x00ffffffu;
+}
+
+/* 0x801A88DC — textured triangle emitter. Descriptor layout matches the
+ * prim_emit_* family (+0x10 vertex table, +0x14 color stream, +0x18 index
+ * stream of 3xh16 stride 6, +0x1c 8-byte color table, +0x20 secondary
+ * index stream stride 2, +0x24 flag stream, +0x30 count, +0x32 mode,
+ * +0x34 gate). Per record it RTPT/NCLIPs three vertices, optionally runs
+ * AVSZ3 for the OT depth when mode==0, then emits a textured tri packet
+ * for flag&0xff==2 records whose depth/depth-flag gate passes. Disasm
+ * 0x801A88DC-0x801A8BC4. */
+uint32_t prim_emit_tri_tex_ot(uint32_t desc)
+{
+  uint32_t slotidx, out, flags, vtab, idxs, cols, cidxs, ctab;
+  int32_t  mode, depth, count, i;
+  int32_t  mac;
+  uint32_t otbase;
+
+  if (!prim_emit_tex_desc(desc, &slotidx, &out, &flags, &mode, &depth))
+    return 0;
+
+  if (DB32(desc + 0x1c) == 0) {
+    otbase = br2_ld32((uint32_t)(guest_gp() + 0x48));
+    if (mode != 0) {
+      uint32_t m = (uint32_t)mode;
+      if ((uint32_t)(m - 1) < 0x7ffu)
+        return prim_emit_tri_ot_fix(otbase + (m << 2), slotidx, desc, out);
+      return 0;
+    }
+    return prim_emit_tri_ot_idx(otbase, slotidx, desc, out);
+  }
+
+  vtab  = DB32(desc + 0x10);
+  idxs  = DB32(desc + 0x18);
+  cols  = DB32(desc + 0x14);
+  cidxs = desc + 0x20;
+  count = (int32_t)(int16_t)GP16(desc + 0x30);
+  if (count <= 0)
+    return (uint32_t)count;
+
+  for (i = 0; i < count; i++) {
+    int32_t i0 = (int32_t)(int16_t)GP16(idxs);
+    int32_t i1 = (int32_t)(int16_t)GP16(idxs + 2);
+    int32_t i2 = (int32_t)(int16_t)GP16(idxs + 4);
+    uint32_t f, attr;
+    int adv_idx = 0, adv_col = 0;
+
+    prim_emit_load_v012(i0, i1, i2, vtab);
+    copFunction(2, 0x0280030u);              /* RTPT */
+    copFunction(2, 0x1400006u);              /* NCLIP */
+    mac = (int32_t)getCopReg(2, GTE_DREG(24));
+    gte_swc2(out + 8,    12);
+    gte_swc2(out + 0x10, 13);
+    gte_swc2(out + 0x18, 14);
+    if (mode == 0) {
+      copFunction(2, 0x158002du);            /* AVSZ3 */
+      depth = (int32_t)getCopReg(2, GTE_DREG(19)) >> 2;
+    }
+
+    f    = GP16(flags);
+    attr = f & 0xffu;
+    if (attr == 0) {
+      cols += 4;
+    } else if (attr == 2) {
+      adv_idx = 1; adv_col = 1;
+      if (mac >= 0 || (f & 0x200u) != 0) {
+        if ((uint32_t)depth < 0x800u) {
+          int32_t ci = (int32_t)(int16_t)GP16(cidxs);
+          uint8_t ab;
+          ctab = DB32(desc + 0x1c) + ((uint32_t)ci << 3);
+          ab = GP8(out + 7);
+          gte_lwc2(ctab,     0);
+          gte_lwc2(ctab + 4, 1);
+          gte_lwc2(cols,     6);
+          copFunction(2, 0x108041bu);        /* NCCS */
+          gte_swc2(out + 4, 22);
+          GP8(out + 7) = ab;
+          otbase = br2_ld32((uint32_t)(guest_gp() + 0x48));
+          prim_emit_tag_insert(otbase, out, (uint32_t)depth, 0x07000000u);
+        }
+      }
+    }
+
+    if (adv_idx) cidxs += 2;
+    if (adv_col) cols += 4;
+    out += 0x20;
+    idxs += 6;
+    flags += 2;
+  }
+  return 0;
+}
+
+/* 0x801A8BC8 — textured quad emitter. Same descriptor contract as the
+ * tri twin but the index stream is 4xh16 stride 8, output records are
+ * 0x28 bytes, and each emitted quad first projects the fourth vertex
+ * (RTPS -> out+0x20) before the NCCS color/OT-link tail uses tag
+ * 0x09000000. Disasm 0x801A8BC8-0x801A8EDC. */
+uint32_t prim_emit_quad_tex_ot(uint32_t desc)
+{
+  uint32_t slotidx, out, flags, vtab, idxs, cols, cidxs, ctab;
+  int32_t  mode, depth, count, i;
+  int32_t  mac;
+  uint32_t otbase;
+
+  if (!prim_emit_tex_desc(desc, &slotidx, &out, &flags, &mode, &depth))
+    return 0;
+
+  if (DB32(desc + 0x1c) == 0) {
+    otbase = br2_ld32((uint32_t)(guest_gp() + 0x48));
+    if (mode != 0) {
+      uint32_t m = (uint32_t)mode;
+      if ((uint32_t)(m - 1) < 0x7ffu)
+        return prim_emit_quad_ot_fix(otbase + (m << 2), slotidx, desc, out);
+      return 0;
+    }
+    return prim_emit_quad_ot_idx(otbase, slotidx, desc, out);
+  }
+
+  vtab  = DB32(desc + 0x10);
+  idxs  = DB32(desc + 0x18);
+  cols  = DB32(desc + 0x14);
+  cidxs = desc + 0x20;
+  count = (int32_t)(int16_t)GP16(desc + 0x30);
+  if (count <= 0)
+    return (uint32_t)count;
+
+  for (i = 0; i < count; i++) {
+    int32_t i0 = (int32_t)(int16_t)GP16(idxs);
+    int32_t i1 = (int32_t)(int16_t)GP16(idxs + 2);
+    int32_t i2 = (int32_t)(int16_t)GP16(idxs + 4);
+    uint32_t f, attr;
+    int adv_idx = 0, adv_col = 0;
+
+    prim_emit_load_v012(i0, i1, i2, vtab);
+    copFunction(2, 0x0280030u);              /* RTPT */
+    copFunction(2, 0x1400006u);              /* NCLIP */
+    mac = (int32_t)getCopReg(2, GTE_DREG(24));
+    gte_swc2(out + 8,    12);
+    gte_swc2(out + 0x10, 13);
+    gte_swc2(out + 0x18, 14);
+    if (mode == 0) {
+      copFunction(2, 0x158002du);            /* AVSZ3 */
+      depth = (int32_t)getCopReg(2, GTE_DREG(19)) >> 2;
+    }
+
+    f    = GP16(flags);
+    attr = f & 0xffu;
+    if (attr == 0) {
+      cols += 4;
+    } else if (attr == 2) {
+      adv_idx = 1; adv_col = 1;
+      if (mac >= 0 || (f & 0x200u) != 0) {
+        if ((uint32_t)depth < 0x800u) {
+          int32_t i3 = (int32_t)(int16_t)GP16(idxs + 6);
+          int32_t ci;
+          uint32_t p, ab;
+          p = vtab + ((uint32_t)i3 << 3);
+          gte_lwc2(p,     0);
+          gte_lwc2(p + 4, 1);
+          copFunction(2, 0x0180001u);        /* RTPS — 4th vertex */
+          gte_swc2(out + 0x20, 14);
+          ci = (int32_t)(int16_t)GP16(cidxs);
+          ctab = DB32(desc + 0x1c) + ((uint32_t)ci << 3);
+          ab = GP8(out + 7);
+          gte_lwc2(ctab,     0);
+          gte_lwc2(ctab + 4, 1);
+          gte_lwc2(cols,     6);
+          copFunction(2, 0x108041bu);        /* NCCS */
+          gte_swc2(out + 4, 22);
+          GP8(out + 7) = (uint8_t)ab;
+          otbase = br2_ld32((uint32_t)(guest_gp() + 0x48));
+          prim_emit_tag_insert(otbase, out, (uint32_t)depth, 0x09000000u);
+        }
+      }
+    }
+
+    if (adv_idx) cidxs += 2;
+    if (adv_col) cols += 4;
+    out += 0x28;
+    idxs += 8;
+    flags += 2;
+  }
+  return 0;
 }
 
 /* ======== 0x8018bb38 ======== */

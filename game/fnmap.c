@@ -698,6 +698,7 @@ extern void gpu_coord_pack(void);
 extern void gpu_coord_pack_b(void);
 extern void gpu_data_reg_read(void);
 extern void gpu_disp_mask_set(void);
+extern void gpu_draw_env_dma(void);
 extern void gpu_draw_env_put(void);
 extern void gpu_draw_otag(void);
 extern void gpu_draw_sync(void);
@@ -1143,9 +1144,11 @@ extern void prim_emit_ptr_54(void);
 extern void prim_emit_ptr_68(void);
 extern void prim_emit_quad_ot_fix(void);
 extern void prim_emit_quad_ot_idx(void);
+extern void prim_emit_quad_tex_ot(void);
 extern void prim_emit_tail_advance(void);
 extern void prim_emit_tri_ot_fix(void);
 extern void prim_emit_tri_ot_idx(void);
+extern void prim_emit_tri_tex_ot(void);
 extern void prim_group_alloc(void);
 extern void prim_group_build(void);
 extern void prim_group_gc(void);
@@ -2400,6 +2403,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8019259c, (void *)gpu_texpage_pack },
   { 0x8019261c, (void *)gpu_data_reg_read },
   { 0x80192634, (void *)cd_cmd_queue_load },
+  { 0x80192944, (void *)gpu_draw_env_dma },
   { 0x80192e00, (void *)gpu_tag_cmd_store },
   { 0x80192e78, (void *)gpu_reg_cells_init },
   { 0x80192ec0, (void *)gpu_reg_cmd_commit },
@@ -2829,6 +2833,8 @@ const Br2FnEnt fn_table[] = {
   { 0x801a8744, (void *)guard_dispatch_b },
   { 0x801a87cc, (void *)guard_dispatch_c },
   { 0x801a8854, (void *)guard_dispatch_d },
+  { 0x801a88dc, (void *)prim_emit_tri_tex_ot },
+  { 0x801a8bc8, (void *)prim_emit_quad_tex_ot },
   { 0x801a953c, (void *)tween_track_alloc },
   { 0x801a9644, (void *)tween_seq_alloc },
   { 0x801a972c, (void *)keyframe_cursor_search },
