@@ -641,3 +641,32 @@ simple "clean C can't yield" limitation:
 - **Cold tail confirmed cold**: remaining unwrapped `br2eu_func_*` (~2444)
   are CPS split-fragments + boot `_start` region (0x80126xxx) — not
   independently portable and not hot. Attract+versus profiles agree.
+
+### Session update 10 (CPS-transform approach CHOSEN for §4 CD — user decision)
+
+User selected **CPS-transform clean CD functions** (keep deterministic
+scheduler; hand-write coroutines as guest-resumable CPS). Scoping findings:
+
+- **Yield is implicit**: CD coroutines have NO explicit switch call — they
+  yield inside `psx_check_interrupts_at` at every CPS block boundary when
+  the scheduler picks a target (e.g. `cd_response_pump` 0x801979F8 has 14
+  such checks, 0 explicit switches).
+- **★ resume-PC registration is the crux**: generated code passes EACH
+  block's own next-block guest addr to `psx_check_interrupts_at(cpu, pc)`
+  as the resume PC; on yield the scheduler longjmps then re-dispatches at
+  that guest addr. `br2_irq_poll` instead passes stale `cpu->gpr[31]` —
+  WRONG for CPS. A clean CPS port must call
+  `psx_advance_cycles` + `psx_check_interrupts_at(cpu, <next-block-guest-addr>)`
+  directly, AND every yield-capable block-leader guest addr must be
+  registered in clean_table → a clean continuation that resumes at the
+  right block with all state read back from `cpu->gpr[]`/guest RAM (host
+  C locals die on the longjmp — keep ALL mutable state guest-visible).
+- **Pattern**: per function = clean dispatcher reading `cpu->pc` (or entry
+  param) → `block_*` labels + `goto` (like `desc_cmd_interp`/`ev24_cluster`)
+  + per-yield-point resume-addr registration. Consider ONE clean fn per
+  function taking a resume-block selector, with renames.map entries for
+  each block-leader addr → thin wrappers passing that selector.
+- **Start with `cd_response_pump` 0x801979F8** (simplest — pump loop around
+  cd_response_process) before the 1372B `cd_response_process` state machine.
+- **Verify each**: versus FIGHT + attract must stay healthy; a wedge means
+  a resume-addr missed a yield point → bisect.
