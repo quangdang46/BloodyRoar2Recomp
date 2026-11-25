@@ -250,3 +250,154 @@
 80198818 cps_801985c4
 8019881c cps_801985c4
 80198824 cps_801985c4
+
+# --- math/GTE/mem primitives (clean CPS transform) ---
+# fixed_point_divide (guest 0x8018d300) — 10 CPS addrs
+8018d300 cps_8018d300
+8018d308 cps_8018d300
+8018d30c cps_8018d300
+8018d314 cps_8018d300
+8018d318 cps_8018d300
+8018d324 cps_8018d300
+8018d330 cps_8018d300
+8018d338 cps_8018d300
+8018d33c cps_8018d300
+8018d3ac cps_8018d300
+
+# mem_move (guest 0x8018f7e0) — 8 CPS addrs
+8018f7e0 cps_8018f7e0
+8018f7f0 cps_8018f7e0
+8018f7f8 cps_8018f7e0
+8018f814 cps_8018f7e0
+8018f81c cps_8018f7e0
+8018f824 cps_8018f7e0
+8018f840 cps_8018f7e0
+8018f844 cps_8018f7e0
+
+# guest_memcpy (guest 0x8018e490) — 5 CPS addrs
+8018e490 cps_8018e490
+8018e498 cps_8018e490
+8018e4a0 cps_8018e490
+8018e4b8 cps_8018e490
+8018e4bc cps_8018e490
+
+# strchr_bounded (guest 0x8018eca0) — 9 CPS addrs
+8018eca0 cps_8018eca0
+8018eca8 cps_8018eca0
+8018ecb0 cps_8018eca0
+8018ecb8 cps_8018eca0
+8018ecc0 cps_8018eca0
+8018ecc8 cps_8018eca0
+8018eccc cps_8018eca0
+8018ecdc cps_8018eca0
+8018ece8 cps_8018eca0
+
+# gte_mvmva_add (guest 0x80194db0) — 19 CPS addrs
+80194db0 cps_80194db0
+80194dec cps_80194db0
+80194e04 cps_80194db0
+80194e0c cps_80194db0
+80194e14 cps_80194db0
+80194e2c cps_80194db0
+80194e34 cps_80194db0
+80194e3c cps_80194db0
+80194e54 cps_80194db0
+80194e5c cps_80194db0
+80194e98 cps_80194db0
+80194ea8 cps_80194db0
+80194eac cps_80194db0
+80194eb4 cps_80194db0
+80194ec4 cps_80194db0
+80194ec8 cps_80194db0
+80194ed0 cps_80194db0
+80194ee0 cps_80194db0
+80194ee4 cps_80194db0
+
+# rotmat2_build (guest 0x8018da2c) — 7 CPS addrs
+8018da2c cps_8018da2c
+8018da54 cps_8018da2c
+8018da60 cps_8018da2c
+8018da78 cps_8018da2c
+8018da7c cps_8018da2c
+8018da90 cps_8018da2c
+8018da98 cps_8018da2c
+
+# angle_pair_rotmat (guest 0x8018dac0) — 13 CPS addrs
+8018dac0 cps_8018dac0
+8018dae0 cps_8018dac0
+8018daec cps_8018dac0
+8018db04 cps_8018dac0
+8018db08 cps_8018dac0
+8018db20 cps_8018dac0
+8018db2c cps_8018dac0
+8018db44 cps_8018dac0
+8018db48 cps_8018dac0
+8018db60 cps_8018dac0
+8018db64 cps_8018dac0
+8018db88 cps_8018dac0
+8018db8c cps_8018dac0
+
+# vec2_rot (guest 0x8018b050) — 5 CPS addrs
+8018b050 cps_8018b050
+8018b05c cps_8018b050
+8018b064 cps_8018b050
+8018b070 cps_8018b050
+8018b07c cps_8018b050
+
+# vec2_rot_lut (guest 0x8018d4fc) — 3 CPS addrs
+8018d4fc cps_8018d4fc
+8018d508 cps_8018d4fc
+8018d514 cps_8018d4fc
+
+# dir_rotate_wrap (guest 0x8018d484) — 2 CPS addrs
+8018d484 cps_8018d484
+8018d48c cps_8018d484
+
+# angle_gte_vec (guest 0x8018b0a0) — 4 CPS addrs
+8018b0a0 cps_8018b0a0
+8018b0ac cps_8018b0a0
+8018b0b8 cps_8018b0a0
+8018b0c4 cps_8018b0a0
+
+# rotmat_rtps_build (guest 0x8018de6c) — 7 CPS addrs
+8018de6c cps_8018de6c
+8018de94 cps_8018de6c
+8018dea0 cps_8018de6c
+8018deb8 cps_8018de6c
+8018dec0 cps_8018de6c
+8018ded4 cps_8018de6c
+8018dedc cps_8018de6c
+
+# rotmat2_pair_build (guest 0x8018df00) — 13 CPS addrs
+8018df00 cps_8018df00
+8018df20 cps_8018df00
+8018df2c cps_8018df00
+8018df44 cps_8018df00
+8018df48 cps_8018df00
+8018df60 cps_8018df00
+8018df6c cps_8018df00
+8018df84 cps_8018df00
+8018df88 cps_8018df00
+8018dfa0 cps_8018df00
+8018dfa4 cps_8018df00
+8018dfc8 cps_8018df00
+8018dfcc cps_8018df00
+
+# angle_vec_build (guest 0x8018e028) — 7 CPS addrs
+8018e028 cps_8018e028
+8018e050 cps_8018e028
+8018e05c cps_8018e028
+8018e074 cps_8018e028
+8018e078 cps_8018e028
+8018e08c cps_8018e028
+8018e094 cps_8018e028
+
+# vec3_step_toward (guest 0x80133aa0) — 8 CPS addrs
+80133aa0 cps_80133aa0
+80133b00 cps_80133aa0
+80133b04 cps_80133aa0
+80133b18 cps_80133aa0
+80133b20 cps_80133aa0
+80133b2c cps_80133aa0
+80133b50 cps_80133aa0
+80133bc8 cps_80133aa0
