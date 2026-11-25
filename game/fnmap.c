@@ -1177,6 +1177,8 @@ extern void prim_packet_init(void);
 extern void prim_packet_init_tex(void);
 extern void prim_persp_ot_emit(void);
 extern void prim_persp_ot_emit_112(void);
+extern void prim_poly_emit_6c(void);
+extern void prim_poly_emit_88(void);
 extern void prim_tag_set(void);
 extern void prim_task_run(void);
 extern void prim_tri_batch_rtpt(void);
@@ -2279,6 +2281,8 @@ const Br2FnEnt fn_table[] = {
   { 0x80187ee0, (void *)prim_emit_ptr_54 },
   { 0x80187ffc, (void *)prim_emit_ptr_50 },
   { 0x801880d4, (void *)prim_emit_ptr_68 },
+  { 0x80188510, (void *)prim_poly_emit_6c },
+  { 0x80188754, (void *)prim_poly_emit_88 },
   { 0x8018a4f8, (void *)prim_task_run },
   { 0x8018a9e8, (void *)prim_depth_shade_emit },
   { 0x8018ab84, (void *)prim_cull2_emit_30 },
