@@ -476,6 +476,28 @@ phase). "It compiled" and "it returns plausible values" are not done.
   bind.c (the §4-rule-b thin-trampoline pattern) — they show "unwrapped" in
   clean_table only because bind.c is excluded from gen_fnmap. True delegate
   count ≈ 51, all hard class.
+
+### Session update (16c4e96 CD-port REGRESSION found + reverted `402925b`)
+
+- **⚠ `16c4e96` faithfully ported 4 CD functions that WEDGE the game** —
+  `cd_response_process` (0x80196370), `cd_response_pump` (0x801979f8),
+  `cd_read_step_cb` (0x801985c4), `cd_intc_dispatch` (0x8019a8ec). Symptom:
+  attract/boot stalls ~frame 15k — `cdrom_state.seq` freezes, `gs` stays 0,
+  frames keep advancing (pending CD cmd `0x0A` phase-1 `active:0` starvation,
+  the deferred-coroutine pattern). Bisected: `e8fd9ce`+`23dd2af` healthy to
+  200k+ frames/3M+ seq; `16c4e96` wedges. **All four reverted to
+  `br2_call_generated` delegates** — the response-path coroutine pair
+  genuinely needs generated CPS live-resume-PC (§4), and the IRQ-dispatch/
+  read-step ports are entangled in the same deferred-command activation.
+  The agent's "verified 24k frames" claim was insufficient (didn't reach/
+  survive the wedge mode). **Do NOT re-attempt these four as clean ports**
+  without a scheduler-aware clean-call bridge. `vsync_wait_n` (23dd2af)
+  port retained — verified healthy in the same run.
+- **`cd_intc_dispatch_b` (0x8019a87c) port attempt ABANDONED** (was never
+  committed healthy): first version wrote stage results to absolute
+  `0x801c0014/0x801c0004` instead of `(*(0x801bdda0))+20/+4` (pointer
+  deref) — corrupted CD state. Fixed version exists only in git stash;
+  left generated-authoritative pending proper §4 review.
 - **⚠ subagent_explore can't see generated/** (gitignored) — its NULL-guard
   audit produced false-positive UNCERTAINs; only foreground/general agents
   or direct work can diff vs generated. Prefer foreground for anything
