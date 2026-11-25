@@ -490,9 +490,16 @@ phase). "It compiled" and "it returns plausible values" are not done.
   genuinely needs generated CPS live-resume-PC (§4), and the IRQ-dispatch/
   read-step ports are entangled in the same deferred-command activation.
   The agent's "verified 24k frames" claim was insufficient (didn't reach/
-  survive the wedge mode). **Do NOT re-attempt these four as clean ports**
-  without a scheduler-aware clean-call bridge. `vsync_wait_n` (23dd2af)
-  port retained — verified healthy in the same run.
+  survive the wedge mode). `vsync_wait_n` (23dd2af) port retained —
+  verified healthy in the same run.
+- **`cd_intc_dispatch` (0x8019a8ec) RE-CONFIRMED unsafe in isolation** —
+  re-added alone (other 3 stayed delegated) and it wedged identically
+  (seq froze ~5777, gs=0 ~frame 12k). The IRQ-dispatch itself needs the
+  generated CPS per-block interrupt-check/resume contract — it is NOT
+  safe even though its body is mechanical. Reverted; all four stay
+  delegated. **Do NOT re-attempt any of these four (or cd_intc_dispatch_b)
+  as clean ports** without a scheduler-aware clean-call bridge — the whole
+  CD IRQ/response dispatch path is confirmed §4.
 - **`cd_intc_dispatch_b` (0x8019a87c) port attempt ABANDONED** (was never
   committed healthy): first version wrote stage results to absolute
   `0x801c0014/0x801c0004` instead of `(*(0x801bdda0))+20/+4` (pointer
