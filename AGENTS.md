@@ -670,3 +670,60 @@ scheduler; hand-write coroutines as guest-resumable CPS). Scoping findings:
   cd_response_process) before the 1372B `cd_response_process` state machine.
 - **Verify each**: versus FIGHT + attract must stay healthy; a wedge means
   a resume-addr missed a yield point → bisect.
+
+### Session update 11 (CPS-transform PROVEN — cd_irq_init_seq clean + versus FIGHT)
+
+The CPS-transform mechanism is **implemented and runtime-verified**.
+`cd_irq_init_seq` (0x8019A87C) is now a clean CPS function and versus
+reaches/sustains FIGHT (`gs=8`, frame 659k, CD `seq` climbing). Committed
+`6a5a388`.
+
+**The mechanism (gen_clean_table.py + clean_cps.map):**
+- New `game/clean_cps.map` — `addr name` lines for CPS functions AND their
+  continuation addrs (continuations aren't in fnmap.c, so this file is the
+  only way to get wrappers for them). Each addr → its own `wrap_<addr>`.
+- `CleanDispatchEnt` gained a 5th field `flags`; `CLEAN_ENT_CPS=1` set for
+  every addr in clean_cps.map.
+- `clean_try_dispatch`: `if (_cps) cpu->pc = addr;` BEFORE `e->fn(cpu)` —
+  routes the continuation addr in (generated sets `cpu->pc=entry->resume_pc`
+  the same way). On return: `if (_cps) { if (cpu->pc==addr) cpu->pc=gpr[31]; }`
+  else unconditional `cpu->pc=gpr[31]` — so a clean CPS fn's deliberate
+  `cpu->pc=callee; return` tail-dispatch survives, while a normal return
+  still jr-ra's. Non-CPS entries are byte-identical (setting cpu->pc for all
+  1471 wrappers broke boot — BIOS/kernel services read it).
+- All nested-call helpers (`call_guest`, `call_guest4`, `br2_call_generated`,
+  `cd_jal`, `bind_jal`) save/restore `cpu->pc` around dispatches, so
+  `cpu->pc==addr` after return reliably means "no tail-dispatch".
+
+**Clean CPS fn recipe (verified):**
+```c
+uint32_t my_cps(void) {
+  CPUState *c = clean_cpu_state();
+  switch (c->pc) {            /* cpu->pc = the addr we were dispatched at */
+    case 0xADDR_CONT1: goto bCONT1; ...
+    default: goto bENTRY;
+  }
+bENTRY: /* entry block */ ...
+bCONT1: /* continuation block */ ...
+  /* tail-call a callee: */
+  c->gpr[31] = NEXT_CONT;                 /* jal link = continuation */
+  psx_check_interrupts_at(c, CALLEE);     /* yield check, resume=callee  */
+  c->pc = CALLEE; return c->gpr[2];       /* tail-dispatch -> next fn   */
+}
+```
+- `psx_check_interrupts_at` needs `extern void ...(CPUState*,uint32_t)` —
+  declared locally (it's in psxrecomp/runtime/src/interrupts.h).
+- Tail-dispatch targets can be generated fns (they re-enter via dispatch) or
+  other clean CPS fns (registered in clean_cps.map).
+- **★ STORE COMPLETENESS IS LOAD-BEARING**: the generated body hides `sw`/`sh`
+  stores inside `_pgx` instrumentation braces — a filtered read drops them.
+  `cd_irq_init_seq`'s four stores write INTC/init results into the CD
+  context block; omitting them starved pending CD commands → `gs=0` wedge.
+  ALWAYS dump the RAW generated ops (no filter) and transliterate EVERY
+  gpr write AND every memory store/load.
+- State must live in `cpu->gpr[]`/guest RAM — host C locals die on the
+  scheduler longjmp. Registers s0-s3 etc. are read live from `c->gpr[]`.
+
+**Next targets** (biggest §4 hot set): `cd_response_pump` 0x801979F8 (14
+yield pts), `cd_response_process` state machine, `cd_read_step_cb`,
+file-load chain. Same recipe; register every yield-capable block-leader addr.
