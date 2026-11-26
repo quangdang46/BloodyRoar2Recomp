@@ -93383,7 +93383,7 @@ block_8019E90C:
     int _bc_8019E924 = (v1 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v0 = 4;
-    if (cond_slot_pending) {
+    if (_bc_8019E924) {
         psx_check_interrupts_at(cpu, 0x8019E934u);
         goto block_8019E934;
     }
