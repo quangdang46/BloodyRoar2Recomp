@@ -15249,12 +15249,12 @@ int32_t options_menu_alloc(void)
  * a0 >= 0xc are no-ops. All task_object_spawn calls use a0=0,
  * a1=MB32(0x801f10c0)+off, a2=MB32(0x801f10c4)+off, a3=tag,
  * arg5=aux; task_spawn_var_b uses a0/a1 = the same pair, a2=tag, a3=aux. */
-int32_t options_page_dispatch(int32_t param_1)
+int32_t options_page_dispatch(int32_t page)
 {
   uint32_t P = MB32(0x801f10c0u);
   uint32_t Q = MB32(0x801f10c4u);
-  if ((uint32_t)param_1 >= 0xcu) return 0;
-  switch (param_1) {
+  if ((uint32_t)page >= 0xcu) return 0;
+  switch (page) {
   case 0:
     task_object_spawn(0, P + 0x118u, Q + 0x118u, 0x801b2980u, 0x801b2990u);
     task_object_spawn(0, P + 0x140u, Q + 0x140u, 0x801b2980u, 0x801b29a8u);
@@ -15353,36 +15353,36 @@ static int32_t attr_code2(uint32_t v)
   }
 }
 
-int32_t slot_attr_packet_build(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     int32_t param_4,int32_t param_5,int32_t param_6)
+int32_t slot_attr_packet_build(uint32_t head,uint32_t sector,uint32_t attr,
+                     int32_t cx,int32_t cy,int32_t flags)
 {
   const uint32_t T = 0x1f80037cu;
   int32_t shade, code1, code2;
   uint32_t t0, base, x, y;
   int drawA;
-  if (MB32(T + 0xcu) != param_2) {
-    MW32(T + 0xcu, param_2);
+  if (MB32(T + 0xcu) != sector) {
+    MW32(T + 0xcu, sector);
     MW16(T + 4u, 0);
   }
   if ((int16_t)MB16(T + 4u) >= 0x190) return 0;
-  base = param_2 * 16000u;
+  base = sector * 16000u;
   t0 = 0x801f8528u + base +
        (uint32_t)((int32_t)(int16_t)MB16(T + 4u) * 40);
-  if ((int16_t)param_4 < 0x1000) MW16(T + 0u, (uint16_t)param_4);
-  if ((int16_t)param_5 < 0x1000) MW16(T + 2u, (uint16_t)param_5);
-  shade = (param_6 & 1) ? 0xf : 8;
-  code1 = attr_code1(param_3 & 0xf000u);
-  code2 = attr_code2(param_3 & 0xe8u);
+  if ((int16_t)cx < 0x1000) MW16(T + 0u, (uint16_t)cx);
+  if ((int16_t)cy < 0x1000) MW16(T + 2u, (uint16_t)cy);
+  shade = (flags & 1) ? 0xf : 8;
+  code1 = attr_code1(attr & 0xf000u);
+  code2 = attr_code2(attr & 0xe8u);
 
   /* ---- block A ---- */
-  if ((param_6 & 0x10) != 0) {
+  if ((flags & 0x10) != 0) {
     if (code1 == 0) goto blockB;
     drawA = 1;
   } else {
     drawA = (base != 0 || code1 != 0);
   }
   if (drawA) {
-    uint32_t tab = (param_6 & 1) ? 0x801b1324u : 0x801b1300u;
+    uint32_t tab = (flags & 1) ? 0x801b1324u : 0x801b1300u;
     uint32_t p = tab + (uint32_t)code1 * 2u;
     uint8_t b0 = MB8(p), b1 = MB8(p + 1u);
     MW16(t0 + 0xeu, 0x799eu);
@@ -15400,8 +15400,8 @@ int32_t slot_attr_packet_build(uint32_t param_1,uint32_t param_2,uint32_t param_
     MW16(t0 + 0x1au, (uint16_t)(y + shade));
     MW16(t0 + 0x20u, (uint16_t)(x + shade));
     MW16(t0 + 0x22u, (uint16_t)(y + shade));
-    MW32(t0 + 0x00u, MB32(param_1) | 0x90000000u);
-    MW32(param_1, t0 & 0xffffffu);
+    MW32(t0 + 0x00u, MB32(head) | 0x90000000u);
+    MW32(head, t0 & 0xffffffu);
     {
       uint32_t c2 = (uint16_t)(MB16(T + 4u) + 1u);
       MW16(T + 4u, (uint16_t)c2);
@@ -15412,20 +15412,20 @@ int32_t slot_attr_packet_build(uint32_t param_1,uint32_t param_2,uint32_t param_
       return -1;
     }
   }
-  if ((param_6 & 0x10) == 0 || code1 == 0) {
+  if ((flags & 0x10) == 0 || code1 == 0) {
     /* skipped draw: still advance x cursor by shade */
     MW16(T + 0u, (uint16_t)(MB16(T + 0u) + shade));
   }
 blockB:
-  if ((param_6 & 1) != 0)
+  if ((flags & 1) != 0)
     MW16(T + 0u, (uint16_t)(MB16(T + 0u) - 8));
-  if ((param_6 & 0x10) != 0 && code2 == 0) {
+  if ((flags & 0x10) != 0 && code2 == 0) {
     MW16(T + 0u, (uint16_t)(MB16(T + 0u) + 8));
     return 0;
   }
-  if ((param_6 & 1) == 0 || code2 != 0) {
+  if ((flags & 1) == 0 || code2 != 0) {
     /* draw block B */
-    uint32_t tab = (param_6 & 1) ? 0x801b1338u : 0x801b1314u;
+    uint32_t tab = (flags & 1) ? 0x801b1338u : 0x801b1314u;
     uint32_t p = tab + (uint32_t)code2 * 2u;
     uint8_t b0 = MB8(p), b1 = MB8(p + 1u);
     MW16(t0 + 0xeu, 0x799eu);
@@ -15443,8 +15443,8 @@ blockB:
     MW16(t0 + 0x1au, (uint16_t)(y + shade));
     MW16(t0 + 0x20u, (uint16_t)(x + shade));
     MW16(t0 + 0x22u, (uint16_t)(y + shade));
-    MW32(t0 + 0x00u, MB32(param_1) | 0x90000000u);
-    MW32(param_1, t0 & 0xffffffu);
+    MW32(t0 + 0x00u, MB32(head) | 0x90000000u);
+    MW32(head, t0 & 0xffffffu);
     MW16(T + 4u, (uint16_t)(MB16(T + 4u) + 1u));
     MW16(T + 0u, (uint16_t)(MB16(T + 0u) + shade));
     MW16(T + 0u, (uint16_t)(MB16(T + 0u) + 8));
