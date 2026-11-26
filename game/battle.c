@@ -8143,7 +8143,7 @@ uint * rtps_basis_xform(undefined4 *rt,undefined2 *bas,uint *out)
   uint t0;
   int t1;
   uint t2;
-  int iVar6;
+  int t6;
   int t3;
   int in1;
   uint t4;
@@ -8186,10 +8186,10 @@ uint * rtps_basis_xform(undefined4 *rt,undefined2 *bas,uint *out)
   t1 = getCopReg(2,0xd000);
   in1 = getCopReg(2,0xd800);
   t5 = rt[6];
-  iVar6 = rt[7];
+  t6 = rt[7];
   out[5] = t3 + rt[5];
   out[6] = t1 + t5;
-  out[7] = in1 + iVar6;
+  out[7] = in1 + t6;
   return out;
 
 }
@@ -9736,17 +9736,17 @@ void target_angles_depth_set(short *dst,int idx)
   short dep;
   undefined2 ang;
   undefined4 d2;
-  int iVar4;
+  int t4;
   int dx;
   int dz;
   dx = (int)*dst - (int)*(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x4a)));
   _DAT_1f80038c = (undefined2)dx;
-  iVar4 = (int)dst[1] - (int)*(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x4c)));
-  _DAT_1f80038e = (undefined2)iVar4;
+  t4 = (int)dst[1] - (int)*(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x4c)));
+  _DAT_1f80038e = (undefined2)t4;
   dz = (int)dst[2] - (int)*(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x4e)));
   _DAT_1f800390 = (undefined2)dz;
   d2 = FUN_80194500(dx * dx + dz * dz);
-  ang = atan2_lut(d2,iVar4);
+  ang = atan2_lut(d2,t4);
   *(undefined2 *)guest_at((uint32_t)(uintptr_t)((idx + 0x30) ))= ang;
   ang = atan2_lut(dz,dx);
   *(undefined2 *)guest_at((uint32_t)(uintptr_t)((idx + 0x32) ))= ang;
@@ -9757,40 +9757,40 @@ void target_angles_depth_set(short *dst,int idx)
     gte_rtps_xform1_raw((undefined4 *)rm,(undefined4 *)(uintptr_t)&DAT_1f80038c,(undefined4 *)(uintptr_t)&DAT_1f800394);
   }
   dep = _DAT_1f80039c;
-  iVar4 = _DAT_1f800394;
+  t4 = _DAT_1f800394;
   if (_DAT_1f800394 < 0) {
-    iVar4 = -_DAT_1f800394;
+    t4 = -_DAT_1f800394;
   }
   *(undefined2 *)guest_at((uint32_t)(uintptr_t)((idx + 0x66) ))= 0;
   *(undefined2 *)guest_at((uint32_t)(uintptr_t)((idx + 100) ))= 0;
-  *(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x68) ))= (short)(((iVar4 + 0x180) * 0x168) / 0x140) - dep;
+  *(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x68) ))= (short)(((t4 + 0x180) * 0x168) / 0x140) - dep;
   return;
 
 }
 
 void midpoint_angles_set(int *pa,int *pb,int idx)
 {
-  short sVar1;
+  short s1;
   short mz;
   undefined2 ang;
   undefined4 d2;
   short my;
-  int iVar6;
-  int iVar7;
-  int iVar8;
-  sVar1 = (short)((*pa + *pb) / 2);
-  *(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x42) ))= sVar1;
-  iVar7 = (int)sVar1 - (int)*(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x4a)));
+  int ad2;
+  int ad;
+  int dep;
+  s1 = (short)((*pa + *pb) / 2);
+  *(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x42) ))= s1;
+  ad = (int)s1 - (int)*(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x4a)));
   my = (short)((pa[1] + pb[1]) / 2);
   *(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x44) ))= my;
   mz = (short)((pa[2] + pb[2]) / 2);
-  iVar8 = (int)mz - (int)*(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x4e)));
-  sVar1 = *(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x4c)));
+  dep = (int)mz - (int)*(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x4e)));
+  s1 = *(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x4c)));
   *(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x46) ))= mz;
-  d2 = FUN_80194500(iVar7 * iVar7 + iVar8 * iVar8);
-  ang = atan2_lut(d2,(int)my - (int)sVar1);
+  d2 = FUN_80194500(ad * ad + dep * dep);
+  ang = atan2_lut(d2,(int)my - (int)s1);
   *(undefined2 *)guest_at((uint32_t)(uintptr_t)((idx + 0x30) ))= ang;
-  ang = atan2_lut(iVar8,iVar7);
+  ang = atan2_lut(dep,ad);
   *(undefined2 *)guest_at((uint32_t)(uintptr_t)((idx + 0x32) ))= ang;
   *(undefined2 *)guest_at((uint32_t)(uintptr_t)((idx + 0x34) ))= 0;
   _DAT_1f80038c = (short)*pa - *(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x4a)));
@@ -9805,69 +9805,69 @@ void midpoint_angles_set(int *pa,int *pb,int idx)
     gte_rtps_xform1_raw((undefined4 *)rm,(undefined4 *)(uintptr_t)&DAT_1f80038c,(undefined4 *)(uintptr_t)&DAT_1f80039c);
   }
   gte_xform1_ir(&DAT_1f800394,&DAT_1f8003a8);
-  iVar7 = _DAT_1f80039c;
+  ad = _DAT_1f80039c;
   if (_DAT_1f80039c < 0) {
-    iVar7 = -_DAT_1f80039c;
+    ad = -_DAT_1f80039c;
   }
-  iVar8 = _DAT_1f8003a8;
+  dep = _DAT_1f8003a8;
   if (_DAT_1f8003a8 < 0) {
-    iVar8 = -_DAT_1f8003a8;
+    dep = -_DAT_1f8003a8;
   }
-  if (iVar8 <= iVar7) {
-    iVar8 = iVar7;
+  if (dep <= ad) {
+    dep = ad;
   }
-  iVar7 = _DAT_1f8003a0;
+  ad = _DAT_1f8003a0;
   if (_DAT_1f8003a0 < 0) {
-    iVar7 = -_DAT_1f8003a0;
+    ad = -_DAT_1f8003a0;
   }
-  iVar6 = _DAT_1f8003ac;
+  ad2 = _DAT_1f8003ac;
   if (_DAT_1f8003ac < 0) {
-    iVar6 = -_DAT_1f8003ac;
+    ad2 = -_DAT_1f8003ac;
   }
-  iVar8 = ((iVar8 * 2 + 0x180) * 0x168) / 0x140;
-  if (iVar6 <= iVar7) {
-    iVar6 = iVar7;
+  dep = ((dep * 2 + 0x180) * 0x168) / 0x140;
+  if (ad2 <= ad) {
+    ad2 = ad;
   }
-  iVar7 = ((iVar6 * 2 + 0x180) * 0x168) / 0xf0;
-  if (iVar7 <= iVar8) {
-    iVar7 = iVar8;
+  ad = ((ad2 * 2 + 0x180) * 0x168) / 0xf0;
+  if (ad <= dep) {
+    ad = dep;
   }
-  iVar8 = 0x4a4;
-  if (0x4a3 < iVar7) {
-    iVar8 = iVar7;
+  dep = 0x4a4;
+  if (0x4a3 < ad) {
+    dep = ad;
   }
   if (_DAT_1f8003a4 < _DAT_1f8003b0) {
-    sVar1 = _DAT_1f8003a4;
+    s1 = _DAT_1f8003a4;
   }
   else {
-    sVar1 = _DAT_1f8003b0;
+    s1 = _DAT_1f8003b0;
   }
-  *(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x68) ))= (short)iVar8 - sVar1;
+  *(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x68) ))= (short)dep - s1;
   return;
 
 }
 
 void dual_target_track(int tgt,int f_a,int f_b)
 {
-  short sVar1;
+  short my;
   int iVar2;
   int iVar3;
   int iVar4;
   int iVar5;
-  uint uVar6;
+  uint nang;
   int iVar7;
   int iVar8;
   int iVar9;
   int iVar10;
   int iVar11;
   /* Guest vec3 slots: FUN_80194630 / pair_depth_set read and write 3
-   * contiguous u32 through local_48 (delta / first target pos) and
-   * local_38 (normalized out / second target pos); the decompiler
-   * split each 12-byte vec3 into scalars. local_48[0..2] = old
-   * local_48/local_44/local_40; local_38[0..2] = old
-   * local_38/local_34/local_30. */
-  int local_48 [3];
-  int local_38 [3];
+   * contiguous u32 through tpa (delta / first target pos) and
+   * tpb (normalized out / second target pos); the decompiler
+   * split each 12-byte vec3 into scalars. tpa[0..2] = old
+   * tpa/local_44/local_40; tpb[0..2] = old
+   * tpb/local_34/local_30. */
+  int tpa [3];
+  int tpb [3];
   iVar3 = *(int *)guest_at((uint32_t)(uintptr_t)((f_a + 0x20)));
   iVar11 = *(int *)guest_at((uint32_t)(uintptr_t)((iVar3 + 0x178)));
   if ((*(uint *)guest_at((uint32_t)(uintptr_t)((f_a + 0x5c) ))& 0x40000) == 0) {
@@ -9889,44 +9889,44 @@ void dual_target_track(int tgt,int f_a,int f_b)
     iVar4 = *(int *)guest_at((uint32_t)(uintptr_t)((iVar4 + 0x17c)));
   }
   *(short *)guest_at((uint32_t)(uintptr_t)((tgt + 0x52) ))= (short)((iVar8 + iVar10) / 2);
-  sVar1 = (short)((iVar9 + iVar11) / 2);
-  *(short *)guest_at((uint32_t)(uintptr_t)((tgt + 0x54) ))= sVar1;
-  if (((-0x100 < sVar1) && ((*(uint *)guest_at((uint32_t)(uintptr_t)((f_a + 0x5c) ))& 0x80000) == 0)) &&
+  my = (short)((iVar9 + iVar11) / 2);
+  *(short *)guest_at((uint32_t)(uintptr_t)((tgt + 0x54) ))= my;
+  if (((-0x100 < my) && ((*(uint *)guest_at((uint32_t)(uintptr_t)((f_a + 0x5c) ))& 0x80000) == 0)) &&
      ((*(uint *)guest_at((uint32_t)(uintptr_t)((f_b + 0x5c) ))& 0x80000) == 0)) {
     *(undefined2 *)guest_at((uint32_t)(uintptr_t)((tgt + 0x54) ))= 0xff00;
   }
   *(short *)guest_at((uint32_t)(uintptr_t)((tgt + 0x56) ))= (short)((iVar4 + iVar3) / 2);
-  local_48[0] = (int)*(short *)guest_at((uint32_t)(uintptr_t)((tgt + 0x52) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((tgt + 0x4a)));
-  local_48[1] = (int)*(short *)guest_at((uint32_t)(uintptr_t)((tgt + 0x54) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((tgt + 0x4c)));
-  local_48[2] = (int)*(short *)guest_at((uint32_t)(uintptr_t)((tgt + 0x56) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((tgt + 0x4e)));
-  iVar2 = FUN_80194630((undefined4 *)local_48,(undefined4 *)local_38);
+  tpa[0] = (int)*(short *)guest_at((uint32_t)(uintptr_t)((tgt + 0x52) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((tgt + 0x4a)));
+  tpa[1] = (int)*(short *)guest_at((uint32_t)(uintptr_t)((tgt + 0x54) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((tgt + 0x4c)));
+  tpa[2] = (int)*(short *)guest_at((uint32_t)(uintptr_t)((tgt + 0x56) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((tgt + 0x4e)));
+  iVar2 = FUN_80194630((undefined4 *)tpa,(undefined4 *)tpb);
   iVar7 = iVar4 - iVar3;
   if (iVar2 != 0) {
     iVar2 = FUN_80194500((uint)iVar2);
     *(short *)guest_at((uint32_t)(uintptr_t)((tgt + 0x4a) ))=
-         *(short *)guest_at((uint32_t)(uintptr_t)((tgt + 0x4a) ))+ (short)((uint)(local_38[0] * iVar2) >> 0x10);
+         *(short *)guest_at((uint32_t)(uintptr_t)((tgt + 0x4a) ))+ (short)((uint)(tpb[0] * iVar2) >> 0x10);
     *(short *)guest_at((uint32_t)(uintptr_t)((tgt + 0x4c) ))=
-         *(short *)guest_at((uint32_t)(uintptr_t)((tgt + 0x4c) ))+ (short)((uint)(local_38[1] * iVar2) >> 0x10);
+         *(short *)guest_at((uint32_t)(uintptr_t)((tgt + 0x4c) ))+ (short)((uint)(tpb[1] * iVar2) >> 0x10);
     *(short *)guest_at((uint32_t)(uintptr_t)((tgt + 0x4e) ))=
-         *(short *)guest_at((uint32_t)(uintptr_t)((tgt + 0x4e) ))+ (short)((uint)(local_38[2] * iVar2) >> 0x10);
+         *(short *)guest_at((uint32_t)(uintptr_t)((tgt + 0x4e) ))+ (short)((uint)(tpb[2] * iVar2) >> 0x10);
   }
   iVar5 = iVar8 - iVar10;
   iVar2 = FUN_80194500(iVar7 * iVar7 + iVar5 * iVar5);
   if (0x80 < iVar2) {
     iVar2 = atan2_lut(iVar5,iVar7);
-    uVar6 = -iVar2;
+    nang = -iVar2;
     iVar2 = (*(short *)guest_at((uint32_t)(uintptr_t)((tgt + 0x2a) ))+ iVar2) * 0x100000 >> 0x14;
     if (iVar2 < 0) {
       iVar2 = -iVar2;
     }
     if (0x400 < iVar2) {
-      uVar6 = uVar6 + 0x800;
+      nang = nang + 0x800;
     }
-    iVar2 = (int)(((int)*(short *)guest_at((uint32_t)(uintptr_t)((tgt + 0x2a) ))- (uVar6 & 0xfff)) * 0x100000) >> 0x14;
+    iVar2 = (int)(((int)*(short *)guest_at((uint32_t)(uintptr_t)((tgt + 0x2a) ))- (nang & 0xfff)) * 0x100000) >> 0x14;
     if (iVar2 < 0) {
       iVar2 = -iVar2;
     }
-    *(short *)guest_at((uint32_t)(uintptr_t)((tgt + 0x32) ))= (short)(uVar6 & 0xfff);
+    *(short *)guest_at((uint32_t)(uintptr_t)((tgt + 0x32) ))= (short)(nang & 0xfff);
     if (iVar2 < 0) {
       iVar2 = iVar2 + 0x3f;
     }
@@ -9957,13 +9957,13 @@ void dual_target_track(int tgt,int f_a,int f_b)
   if (-0x80 < iVar9) {
     iVar9 = -0x80;
   }
-  local_48[0] = iVar10;
-  local_48[1] = iVar11;
-  local_48[2] = iVar3;
-  local_38[0] = iVar8;
-  local_38[1] = iVar9;
-  local_38[2] = iVar4;
-  pair_depth_set((short *)local_48,(short *)local_38,tgt);
+  tpa[0] = iVar10;
+  tpa[1] = iVar11;
+  tpa[2] = iVar3;
+  tpb[0] = iVar8;
+  tpb[1] = iVar9;
+  tpb[2] = iVar4;
+  pair_depth_set((short *)tpa,(short *)tpb,tgt);
   iVar3 = (int)*(short *)guest_at((uint32_t)(uintptr_t)((tgt + 0x60) ))- (int)*(short *)guest_at((uint32_t)(uintptr_t)((tgt + 0x68)));
   if ((int)*(short *)guest_at((uint32_t)(uintptr_t)((tgt + 0x60) ))< (int)*(short *)guest_at((uint32_t)(uintptr_t)((tgt + 0x68)))) {
     if (iVar3 < 0) {
@@ -9990,12 +9990,12 @@ void dual_target_track(int tgt,int f_a,int f_b)
 
 void dual_target_track_b(int a0,int a1,int a2)
 {
-  short sVar1;
-  ushort uVar2;
+  short s1;
+  ushort u2;
   int iVar3;
   int iVar4;
   int iVar5;
-  ushort uVar6;
+  ushort nang;
   int iVar7;
   int iVar8;
   int iVar9;
@@ -10003,12 +10003,12 @@ void dual_target_track_b(int a0,int a1,int a2)
   int iVar11;
   int iVar12;
   /* Guest vec3 slots: pair_depth_set reads 3 contiguous u32 through
-   * local_48 (first target pos) and local_38 (second target pos); the
-   * decompiler split each 12-byte vec3 into scalars. local_48[0..2] =
-   * old local_48/local_44/local_40; local_38[0..2] = old
-   * local_38/local_34/local_30. */
-  int local_48 [3];
-  int local_38 [3];
+   * tpa (first target pos) and tpb (second target pos); the
+   * decompiler split each 12-byte vec3 into scalars. tpa[0..2] =
+   * old tpa/local_44/local_40; tpb[0..2] = old
+   * tpb/local_34/local_30. */
+  int tpa [3];
+  int tpb [3];
   iVar4 = *(int *)guest_at((uint32_t)(uintptr_t)((a1 + 0x20)));
   iVar12 = *(int *)guest_at((uint32_t)(uintptr_t)((iVar4 + 0x178)));
   if ((*(uint *)guest_at((uint32_t)(uintptr_t)((a1 + 0x5c) ))& 0x40000) == 0) {
@@ -10030,10 +10030,10 @@ void dual_target_track_b(int a0,int a1,int a2)
     iVar5 = *(int *)guest_at((uint32_t)(uintptr_t)((iVar5 + 0x17c)));
   }
   *(short *)guest_at((uint32_t)(uintptr_t)((a0 + 0x4a) ))= (short)((iVar9 + iVar11) / 2);
-  sVar1 = (short)((iVar10 + iVar12) / 2);
-  *(short *)guest_at((uint32_t)(uintptr_t)((a0 + 0x4c) ))= sVar1;
+  s1 = (short)((iVar10 + iVar12) / 2);
+  *(short *)guest_at((uint32_t)(uintptr_t)((a0 + 0x4c) ))= s1;
   iVar8 = iVar5 - iVar4;
-  if (sVar1 < -0xff) {
+  if (s1 < -0xff) {
 LAB_80132e74:
     iVar3 = iVar8 * iVar8;
   }
@@ -10051,17 +10051,17 @@ LAB_80132e74:
   iVar3 = FUN_80194500(iVar3 + iVar7 * iVar7);
   if (iVar3 < 0x81) goto LAB_80132f50;
   iVar8 = atan2_lut(iVar7,iVar8);
-  uVar6 = -(short)iVar8;
-  sVar1 = *(short *)guest_at((uint32_t)(uintptr_t)((a0 + 0x82)));
-  if (sVar1 == -2) {
-    uVar2 = uVar6 + 0x800;
+  nang = -(short)iVar8;
+  s1 = *(short *)guest_at((uint32_t)(uintptr_t)((a0 + 0x82)));
+  if (s1 == -2) {
+    u2 = nang + 0x800;
 LAB_80132f40:
-    *(ushort *)guest_at((uint32_t)(uintptr_t)((a0 + 0x32) ))= uVar2;
-    *(ushort *)guest_at((uint32_t)(uintptr_t)((a0 + 0x2a) ))= uVar2;
+    *(ushort *)guest_at((uint32_t)(uintptr_t)((a0 + 0x32) ))= u2;
+    *(ushort *)guest_at((uint32_t)(uintptr_t)((a0 + 0x2a) ))= u2;
   }
   else {
-    if (sVar1 < -1) {
-      if (sVar1 != -3) {
+    if (s1 < -1) {
+      if (s1 != -3) {
         *(undefined2 *)guest_at((uint32_t)(uintptr_t)((a0 + 0x82) ))= 0;
         goto LAB_80132f50;
       }
@@ -10069,15 +10069,15 @@ LAB_80132f40:
       if (iVar8 < 0) {
         iVar8 = -iVar8;
       }
-      uVar2 = uVar6 & 0xfff;
+      u2 = nang & 0xfff;
       if (0x400 < iVar8) {
-        uVar2 = uVar6 + 0x800 & 0xfff;
+        u2 = nang + 0x800 & 0xfff;
       }
       goto LAB_80132f40;
     }
-    if (sVar1 == -1) {
-      *(ushort *)guest_at((uint32_t)(uintptr_t)((a0 + 0x32) ))= uVar6;
-      *(ushort *)guest_at((uint32_t)(uintptr_t)((a0 + 0x2a) ))= uVar6;
+    if (s1 == -1) {
+      *(ushort *)guest_at((uint32_t)(uintptr_t)((a0 + 0x32) ))= nang;
+      *(ushort *)guest_at((uint32_t)(uintptr_t)((a0 + 0x2a) ))= nang;
     }
   }
   *(undefined2 *)guest_at((uint32_t)(uintptr_t)((a0 + 0x82) ))= 0;
@@ -10090,13 +10090,13 @@ LAB_80132f50:
   if (-0x80 < iVar10) {
     iVar10 = -0x80;
   }
-  local_48[0] = iVar11;
-  local_48[1] = iVar12;
-  local_48[2] = iVar4;
-  local_38[0] = iVar9;
-  local_38[1] = iVar10;
-  local_38[2] = iVar5;
-  pair_depth_set((short *)local_48,(short *)local_38,a0);
+  tpa[0] = iVar11;
+  tpa[1] = iVar12;
+  tpa[2] = iVar4;
+  tpb[0] = iVar9;
+  tpb[1] = iVar10;
+  tpb[2] = iVar5;
+  pair_depth_set((short *)tpa,(short *)tpb,a0);
   *(undefined2 *)guest_at((uint32_t)(uintptr_t)((a0 + 0x5c) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((a0 + 100)));
   *(undefined2 *)guest_at((uint32_t)(uintptr_t)((a0 + 0x5e) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((a0 + 0x66)));
   *(undefined2 *)guest_at((uint32_t)(uintptr_t)((a0 + 0x60) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((a0 + 0x68)));
@@ -10917,12 +10917,12 @@ void gte_cw_d000_set(undefined4 cw)
 undefined4 * gte_op_a00428(undefined4 *in,undefined4 *out)
 {
   undefined4 res;
-  undefined4 in_t1;
-  undefined4 in_t2;
-  undefined4 in_t3;
-  setCopReg(2,in_t1,*in);
-  setCopReg(2,in_t2,in[1]);
-  setCopReg(2,in_t3,in[2]);
+  undefined4 r0;
+  undefined4 r1;
+  undefined4 r2;
+  setCopReg(2,r0,*in);
+  setCopReg(2,r1,in[1]);
+  setCopReg(2,r2,in[2]);
   copFunction(2,0xa00428);
   res = getCopReg(2,0x19);
   *out = res;
@@ -16531,7 +16531,7 @@ extern void slot_name_measure(char *,uint32_t);
 void hud_time_score_draw(uint32_t tbl,uint16_t a1,int32_t a2,int32_t a3,
                   uint8_t *arg5,int32_t arg6)
 {
-  int32_t iVar1, iVar2, iVar4, iVar5, iVar6, iVar7;
+  int32_t s1, s2, ff, t5, t6, fc;
   int16_t col;
   uint32_t fl;
   /* auStack_48 = sp+0x18 (frame 0x60) -> guest_sp()-0x48;
@@ -16543,26 +16543,26 @@ void hud_time_score_draw(uint32_t tbl,uint16_t a1,int32_t a2,int32_t a3,
   extern void br2_guest_frame_free(void);
   uint32_t htsd_frm = br2_guest_frame(0x60);
   char *auStack_48 = (char *)guest_at(htsd_frm + 0x18);
-  iVar5 = *(int32_t *)(arg5 + 8) / 0x32;
-  iVar6 = iVar5 / 0x3c;
-  iVar5 = iVar5 % 0x3c;
-  iVar4 = (*(int32_t *)(arg5 + 8) % 0x32) * 2;
-  if (99 < iVar6) { iVar4 = 99; iVar6 = 99; iVar5 = 0x3b; }
-  iVar7 = iVar4;
-  sprintf_core(auStack_48,(char *)guest_at(0x80121fa8),iVar6,iVar5,iVar4);
-  iVar2 = ((int32_t)*(int16_t *)(arg5 + 0xc) % 1000) * 0x10000 >> 0x10;
-  iVar1 = ((int32_t)*(int16_t *)(arg5 + 0xe) % 1000) * 0x10000 >> 0x10;
+  t5 = *(int32_t *)(arg5 + 8) / 0x32;
+  t6 = t5 / 0x3c;
+  t5 = t5 % 0x3c;
+  ff = (*(int32_t *)(arg5 + 8) % 0x32) * 2;
+  if (99 < t6) { ff = 99; t6 = 99; t5 = 0x3b; }
+  fc = ff;
+  sprintf_core(auStack_48,(char *)guest_at(0x80121fa8),t6,t5,ff);
+  s2 = ((int32_t)*(int16_t *)(arg5 + 0xc) % 1000) * 0x10000 >> 0x10;
+  s1 = ((int32_t)*(int16_t *)(arg5 + 0xe) % 1000) * 0x10000 >> 0x10;
   col = (int16_t)a3;
   switch (arg6) {
   case 0:
-    iVar5 = (int32_t)col;
-    announce_param_block_init_b(tbl,a1,auStack_48,(uint16_t)((a2 + 0x10) * 0x10000 >> 0x10),(uint16_t)iVar5,1);
+    t5 = (int32_t)col;
+    announce_param_block_init_b(tbl,a1,auStack_48,(uint16_t)((a2 + 0x10) * 0x10000 >> 0x10),(uint16_t)t5,1);
     slot_name_measure(auStack_48,*(uint8_t *)(arg5 + 4));
-    announce_param_block_init_b(tbl,a1,auStack_48,(uint16_t)((a2 + 0xa0) * 0x10000 >> 0x10),(uint16_t)iVar5,1);
-    announce_param_block_init_b(tbl,a1,arg5,(uint16_t)((a2 + 0x130) * 0x10000 >> 0x10),(uint16_t)iVar5,4);
+    announce_param_block_init_b(tbl,a1,auStack_48,(uint16_t)((a2 + 0xa0) * 0x10000 >> 0x10),(uint16_t)t5,1);
+    announce_param_block_init_b(tbl,a1,arg5,(uint16_t)((a2 + 0x130) * 0x10000 >> 0x10),(uint16_t)t5,4);
     break;
   case 1:
-    sprintf_core(auStack_48,(char *)guest_at(0x80121fb8),iVar6,iVar5,iVar4);
+    sprintf_core(auStack_48,(char *)guest_at(0x80121fb8),t6,t5,ff);
     print_dispatch((const char *)guest_at(0x80121fc8),(const char *)arg5,auStack_48);
     goto LAB_80164124;
   case 2:
@@ -16571,36 +16571,36 @@ void hud_time_score_draw(uint32_t tbl,uint16_t a1,int32_t a2,int32_t a3,
     announce_param_block_init_b(tbl,a1,auStack_48,(uint16_t)((a2 + 0xa0) * 0x10000 >> 0x10),(uint16_t)col,1);
     break;
   case 3:
-    print_dispatch((const char *)guest_at(0x80121fd4),(const char *)arg5,iVar2);
+    print_dispatch((const char *)guest_at(0x80121fd4),(const char *)arg5,s2);
 LAB_80164124:
     slot_name_measure(auStack_48,*(uint8_t *)(arg5 + 4));
     print_dispatch(auStack_48);
     break;
   case 4:
-    iVar5 = sprintf_core(auStack_48,(char *)guest_at(0x80121fe0),iVar2,iVar1,iVar7);
-    iVar6 = (int32_t)col;
-    announce_param_block_init_b(tbl,a1,auStack_48,(uint16_t)((a2 + (3 - iVar5) * 0x10) * 0x10000 >> 0x10),(uint16_t)iVar6,4);
-    announce_param_block_init_b(tbl,a1,guest_at(0x80121fe4),(uint16_t)((a2 + 0x30) * 0x10000 >> 0x10),(uint16_t)iVar6,1);
+    t5 = sprintf_core(auStack_48,(char *)guest_at(0x80121fe0),s2,s1,fc);
+    t6 = (int32_t)col;
+    announce_param_block_init_b(tbl,a1,auStack_48,(uint16_t)((a2 + (3 - t5) * 0x10) * 0x10000 >> 0x10),(uint16_t)t6,4);
+    announce_param_block_init_b(tbl,a1,guest_at(0x80121fe4),(uint16_t)((a2 + 0x30) * 0x10000 >> 0x10),(uint16_t)t6,1);
     slot_name_measure(auStack_48,*(uint8_t *)(arg5 + 4));
-    announce_param_block_init_b(tbl,a1,auStack_48,(uint16_t)((a2 + 0xa0) * 0x10000 >> 0x10),(uint16_t)iVar6,1);
-    announce_param_block_init_b(tbl,a1,arg5,(uint16_t)((a2 + 0x130) * 0x10000 >> 0x10),(uint16_t)iVar6,4);
+    announce_param_block_init_b(tbl,a1,auStack_48,(uint16_t)((a2 + 0xa0) * 0x10000 >> 0x10),(uint16_t)t6,1);
+    announce_param_block_init_b(tbl,a1,arg5,(uint16_t)((a2 + 0x130) * 0x10000 >> 0x10),(uint16_t)t6,4);
     break;
   case 5:
-    iVar5 = sprintf_core(auStack_48,(char *)guest_at(0x80121fe0),iVar1,iVar1,iVar7);
-    announce_param_block_init_b(tbl,a1,auStack_48,(uint16_t)((a2 + (3 - iVar5) * 0x10) * 0x10000 >> 0x10),(uint16_t)col,4);
-    iVar5 = (a3 + 10) * 0x10000 >> 0x10;
-    hud_text_a(tbl,a1,guest_at(0x80121fe4),(uint16_t)((a2 + 0x30) * 0x10000 >> 0x10),(uint16_t)iVar5,1);
+    t5 = sprintf_core(auStack_48,(char *)guest_at(0x80121fe0),s1,s1,fc);
+    announce_param_block_init_b(tbl,a1,auStack_48,(uint16_t)((a2 + (3 - t5) * 0x10) * 0x10000 >> 0x10),(uint16_t)col,4);
+    t5 = (a3 + 10) * 0x10000 >> 0x10;
+    hud_text_a(tbl,a1,guest_at(0x80121fe4),(uint16_t)((a2 + 0x30) * 0x10000 >> 0x10),(uint16_t)t5,1);
     slot_name_measure(auStack_48,*(uint8_t *)(arg5 + 4));
-    hud_text_a(tbl,a1,auStack_48,(uint16_t)((a2 + 0x74) * 0x10000 >> 0x10),(uint16_t)iVar5,1);
+    hud_text_a(tbl,a1,auStack_48,(uint16_t)((a2 + 0x74) * 0x10000 >> 0x10),(uint16_t)t5,1);
     announce_param_block_init_b(tbl,a1,arg5,(uint16_t)((a2 + 0xb4) * 0x10000 >> 0x10),(uint16_t)col,4);
     break;
   case 6:
-    iVar5 = sprintf_core(auStack_48,(char *)guest_at(0x80121fe0),iVar1,iVar1,iVar7);
-    announce_param_block_init_b(tbl,a1,auStack_48,(uint16_t)((a2 + (3 - iVar5) * 0x10) * 0x10000 >> 0x10),(uint16_t)col,4);
-    iVar5 = (a3 + 10) * 0x10000 >> 0x10;
-    hud_text_a(tbl,a1,guest_at(0x80121fe4),(uint16_t)((a2 + 0x30) * 0x10000 >> 0x10),(uint16_t)iVar5,1);
+    t5 = sprintf_core(auStack_48,(char *)guest_at(0x80121fe0),s1,s1,fc);
+    announce_param_block_init_b(tbl,a1,auStack_48,(uint16_t)((a2 + (3 - t5) * 0x10) * 0x10000 >> 0x10),(uint16_t)col,4);
+    t5 = (a3 + 10) * 0x10000 >> 0x10;
+    hud_text_a(tbl,a1,guest_at(0x80121fe4),(uint16_t)((a2 + 0x30) * 0x10000 >> 0x10),(uint16_t)t5,1);
     slot_name_measure(auStack_48,*(uint8_t *)(arg5 + 4));
-    hud_text_a(tbl,a1,auStack_48,(uint16_t)((a2 + 0x74) * 0x10000 >> 0x10),(uint16_t)iVar5,1);
+    hud_text_a(tbl,a1,auStack_48,(uint16_t)((a2 + 0x74) * 0x10000 >> 0x10),(uint16_t)t5,1);
     break;
   case 0x12:
     hud_text_b(tbl,a1,auStack_48,a2 + 0x10,(uint16_t)a3,5);
@@ -16610,15 +16610,15 @@ LAB_80164124:
     hud_text_c(tbl,a1,auStack_48,a2 + 0x10,(uint16_t)a3,fl);
     goto LAB_80164538;
   case 0x14:
-    iVar2 = iVar1;
+    s2 = s1;
     goto LAB_8016457c;
   case 0x15:
-    iVar5 = sprintf_core(auStack_48,(char *)guest_at(0x80121fe0),iVar1,iVar1,iVar7);
+    t5 = sprintf_core(auStack_48,(char *)guest_at(0x80121fe0),s1,s1,fc);
     if ((_DAT_1f8000dc & 4) == 0) {
-      hud_text_c(tbl,a1,auStack_48,a2 + (3 - iVar5) * 0x10 + 0x10,(uint16_t)a3,0);
+      hud_text_c(tbl,a1,auStack_48,a2 + (3 - t5) * 0x10 + 0x10,(uint16_t)a3,0);
       fl = 0;
     } else {
-      hud_text_c(tbl,a1,auStack_48,a2 + (3 - iVar5) * 0x10 + 0x10,(uint16_t)a3,5);
+      hud_text_c(tbl,a1,auStack_48,a2 + (3 - t5) * 0x10 + 0x10,(uint16_t)a3,5);
       fl = 5;
     }
     announce_param_block_init_alt(tbl,a1,guest_at(0x80121fe4),(uint16_t)(a2 + 0x40),(uint16_t)a3,fl);
@@ -16628,8 +16628,8 @@ LAB_80164538:
     break;
   case 0x16:
 LAB_8016457c:
-    iVar5 = sprintf_core(auStack_48,(char *)guest_at(0x80121fe0),iVar2,iVar1,iVar7);
-    hud_text_b(tbl,a1,auStack_48,a2 + (3 - iVar5) * 0x10 + 0x10,(uint16_t)a3,5);
+    t5 = sprintf_core(auStack_48,(char *)guest_at(0x80121fe0),s2,s1,fc);
+    hud_text_b(tbl,a1,auStack_48,a2 + (3 - t5) * 0x10 + 0x10,(uint16_t)a3,5);
     announce_param_block_init(tbl,a1,guest_at(0x80121fe4),(uint16_t)((a2 + 0x40) * 0x10000 >> 0x10),(uint16_t)col,5);
 LAB_801645f8:
     announce_param_block_init(tbl,a1,arg5,(uint16_t)((a2 + 0xa8) * 0x10000 >> 0x10),(uint16_t)col,0);
