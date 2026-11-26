@@ -5878,7 +5878,6 @@ int cd_submit6(uint32_t a0,uint32_t a1,uint32_t a2)
 extern void gpu_prim_pkt_build(int,ushort *);
 extern void cd_guest_zero32_a(uint32_t,uint32_t);
 extern int cd_ctx_save(uint32_t);
-extern void FUN_8019ad48(uint32_t);
 extern void cd_intc_dispatch(void);
 
 /* shared CD wait: poll **0x801b8434 bit23 / **0x801b8428 bit22 with
