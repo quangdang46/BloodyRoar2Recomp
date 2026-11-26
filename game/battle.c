@@ -11798,14 +11798,14 @@ switchD_801a776c_default:
 
 }
 
-void obj_flag34_clear(int a0)
+void obj_flag34_clear(int obj)
 {
-  int iVar1;
-  if ((a0 != 0) && (iVar1 = 0, 0 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 0x40))))) {
+  int i;
+  if ((obj != 0) && (i = 0, 0 < *(int *)guest_at((uint32_t)(uintptr_t)((obj + 0x40))))) {
     do {
-      *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((iVar1 * 4 + *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 0x10)))) ))+ 0x10) ))+ 0x34) ))= 0;
-      iVar1 = iVar1 + 1;
-    } while (iVar1 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 0x40))));
+      *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((i * 4 + *(int *)guest_at((uint32_t)(uintptr_t)((obj + 0x10)))) ))+ 0x10) ))+ 0x34) ))= 0;
+      i = i + 1;
+    } while (i < *(int *)guest_at((uint32_t)(uintptr_t)((obj + 0x40))));
   }
   return;
 
@@ -11813,63 +11813,63 @@ void obj_flag34_clear(int a0)
 
 int tween_seq_alloc(int a0,undefined2 a1,undefined4 a2,undefined4 a3,short arg5, undefined2 arg6,undefined4 arg7,undefined4 arg8)
 {
-  int iVar1;
-  undefined2 *puVar2;
-  iVar1 = (int)(intptr_t)task_node_alloc(arg8,2,3,0x801aa4fc,0,0x4c);
-  if (iVar1 == 0) {
-    iVar1 = 0;
+  int node;
+  undefined2 *pay;
+  node = (int)(intptr_t)task_node_alloc(arg8,2,3,0x801aa4fc,0,0x4c);
+  if (node == 0) {
+    node = 0;
   }
   else {
-    puVar2 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0x10))));
-    *puVar2 = (short)a0;
-    puVar2[1] = a1;
-    puVar2[2] = 1;
-    puVar2[3] = arg5 + -1;
-    *(undefined4 *)(puVar2 + 0xc) = a3;
-    puVar2[4] = arg6;
+    pay = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((node + 0x10))));
+    *pay = (short)a0;
+    pay[1] = a1;
+    pay[2] = 1;
+    pay[3] = arg5 + -1;
+    *(undefined4 *)(pay + 0xc) = a3;
+    pay[4] = arg6;
     if (a0 == 0) {
-      *(undefined4 *)(puVar2 + 0xe) = a2;
+      *(undefined4 *)(pay + 0xe) = a2;
     }
     else {
-      *(undefined4 *)(puVar2 + 0x10) = a2;
+      *(undefined4 *)(pay + 0x10) = a2;
     }
-    puVar2[5] = 0xffff;
-    *(undefined4 *)(puVar2 + 10) = 0;
-    puVar2[8] = 0;
-    puVar2[7] = 0;
-    puVar2[0x1c] = 0;
-    puVar2[0x1d] = 0xffff;
-    puVar2[0x22] = 0;
-    *(undefined4 *)(puVar2 + 0x1a) = arg7;
+    pay[5] = 0xffff;
+    *(undefined4 *)(pay + 10) = 0;
+    pay[8] = 0;
+    pay[7] = 0;
+    pay[0x1c] = 0;
+    pay[0x1d] = 0xffff;
+    pay[0x22] = 0;
+    *(undefined4 *)(pay + 0x1a) = arg7;
   }
-  return iVar1;
+  return node;
 
 }
 
-void gte_matrix_base_set(undefined4 a0,undefined4 a1)
+void gte_matrix_base_set(undefined4 mat,undefined4 aux)
 {
-  int unaff_gp = (int)guest_gp();
-  DAT_801be838 = a0;
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((unaff_gp + 0x34) ))= a1;
+  int gp_save = (int)guest_gp();
+  DAT_801be838 = mat;
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((gp_save + 0x34) ))= aux;
   return;
 
 }
 
 int lazy_node_wrap(undefined4 a0,undefined4 a1,undefined2 a2)
 {
-  int iVar1;
-  int iVar2;
-  iVar1 = (int)(uintptr_t)node_lazy_attach(a0,0x801aae08,0,0x2c);
-  if (iVar1 == 0) {
-    iVar1 = 0;
+  int node;
+  int pay;
+  node = (int)(uintptr_t)node_lazy_attach(a0,0x801aae08,0,0x2c);
+  if (node == 0) {
+    node = 0;
   }
   else {
-    iVar2 = *(int *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0x10)));
-    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x20) ))= a1;
-    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x24) ))= 0;
-    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x28) ))= a2;
+    pay = *(int *)guest_at((uint32_t)(uintptr_t)((node + 0x10)));
+    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((pay + 0x20) ))= a1;
+    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((pay + 0x24) ))= 0;
+    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((pay + 0x28) ))= a2;
   }
-  return iVar1;
+  return node;
 
 }
 
