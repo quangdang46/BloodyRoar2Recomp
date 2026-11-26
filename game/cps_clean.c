@@ -97675,7 +97675,10 @@ block_801A1EDC:
 }
 
 /* cps_801a1ee0 — clean CPS transliteration of br2eu_func_801A1EE0 (guest 0x801a1ee0)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * stream_status_pump: if byte@(*(s0+60))==0x80 skip to tail; else
+ * 0x801A4210(60) + 0x801A23FC, and on nonzero jalr cell @0x801BE840(-3).
+ * Tail loads cell @0x801BE854 into v1 for the split piece. */
 void cps_801a1ee0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -98315,7 +98318,10 @@ block_801A27C0:
 }
 
 /* cps_801a2808 — clean CPS transliteration of br2eu_func_801A2808 (guest 0x801a2808)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * cd_cmd_rec_arm_extent: gate jalr cell @0x801BE864 must return 0; then
+ * rec[73]=4, rec[70]=1, rec[20]=0x801A28F4, rec[24]=0x801A29A4, and the
+ * extent triple rec[0]/[4]/[8] from rec[227]/rec[233] (aligned &0xFFC). */
 void cps_801a2808(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -101375,7 +101381,10 @@ block_801A52BC:
 }
 
 /* cps_801a52d0 — clean CPS transliteration of br2eu_func_801A52D0 (guest 0x801a52d0)
- * from SLES_017.22_full_50.c. */
+ * from SLES_017.22_full_50.c.
+ * list_max_scan: node = *(a0*60 + a1*12 + @0x801FF2B8); walks next@+4
+ * chain skipping entries with s16@+12!=0, tracking max of *(node+8)+16;
+ * then jal 0x80190A04(fmt @0x80125FFC, a2=max); returns max. */
 void cps_801a52d0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -103302,7 +103311,10 @@ block_801A9B1C:
 }
 
 /* cps_801a9b20 — clean CPS transliteration of br2eu_func_801A9B20 (guest 0x801a9b20)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * pair_match_dispatch: for i in 0..1 over *(s1+52) ptr array, node matches
+ * when s16[node+14]==*(node+48) and s16[node+10]==*(node+44); on match
+ * jal 0x801A9C24(node, s2, s3). */
 void cps_801a9b20(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104539,7 +104551,10 @@ block_801AA558:
 }
 
 /* cps_801aa55c — clean CPS transliteration of br2eu_func_801AA55C (guest 0x801aa55c)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * stream_type_classify: idx1=s16[s0+56] into *(s0+52), idx2=s16[s0+58]*2
+ * into entry; reads byte@entry + half&0xFF00 classifying ranges
+ * (0x2000/256/512/0x4000/0x8000) into split-piece dispatches. */
 void cps_801aa55c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107068,7 +107083,10 @@ block_801AD2DC:
 }
 
 /* cps_801ad520 — clean CPS transliteration of br2eu_func_801AD520 (guest 0x801ad520)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * guarded_offset_call: validates a0!=0 && a1>=0; s1=*(a0+16); a1==0 →
+ * jal 0x801A4BE8; else offset = s16[*(s1[1]+24) + a1*2] added to s1[1],
+ * jal 0x801A4BE8, then restores s1+12. */
 void cps_801ad520(void)
 {
   CPUState *cpu = clean_cpu_state();
