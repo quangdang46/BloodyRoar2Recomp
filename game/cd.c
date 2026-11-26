@@ -260,6 +260,7 @@ uint32_t cd_read_issue(uint32_t a0,uint32_t a1,uint32_t a2)
  * -> infinite 100% CPU spin + repeated cmd=0x09 as boot retries init).
  * Same contract as cd_chan_full_init/cd_ctx_save (commit 15716b2): the
  * br2_call_generated thunk also makes gen_clean_table skip this address. */
+/* cd_init_session — delegate whole body to generated MIPS 0x80198AF0. */
 void cd_init_session(void)
 {
   call_guest4(0x80198af0, 0, 0, 0, 0);
@@ -1261,24 +1262,28 @@ uint32_t cd_response_process(void)
 
 /* ======== small getters ======== */
 
+/* cd_status_raw — return CD status register byte (CD_STATUS). */
 uint8_t cd_status_raw(void)
 
 {
   return (uint8_t)CD_STATUS;
 }
 
+/* cd_mode_byte_read — return mode byte @0x801BC864. */
 uint8_t cd_mode_byte_read(void)
 
 {
   return DB8(0x801bc864);
 }
 
+/* cd_param_buf_get — return param buffer guest ptr 0x801BC860. */
 uint8_t * cd_param_buf_get(void)
 
 {
   return (uint8_t *)guest_at(0x801bc860);
 }
 
+/* cd_cmd_reset_wrap — forward to cd_cmd_state_reset. */
 void cd_cmd_reset_wrap(void)
 
 {
@@ -1336,6 +1341,7 @@ bool cd_cmd_issue_sync(int8_t opcode,int param_addr,uint32_t param_val)
 
 /* ======== 0x801962f0 ======== */
 
+/* cd_stamp_to_sector — decode 3-byte BCD-ish timestamp stamp to sector number (-0x96 bias). */
 int cd_stamp_to_sector(const void *stamp)
 
 {
