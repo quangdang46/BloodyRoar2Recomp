@@ -10530,8 +10530,8 @@ extern uint32_t gpu_texclut_pkt(uint32_t *,uint32_t *,uint32_t,uint32_t);
  * Args unused. */
 int32_t queue_slot_peek(void)
 {
-  int32_t a0 = (int32_t)MBS16(0x1f8000d2u) + 1;
-  return (a0 < 5) ? a0 : 0;
+  int32_t next = (int32_t)MBS16(0x1f8000d2u) + 1;
+  return (next < 5) ? next : 0;
 }
 
 /* cmd_queue_slot_next — command-queue slot advance leaf @0x8012a4dc (10
@@ -10541,8 +10541,8 @@ int32_t queue_slot_peek(void)
  * leaf dispatches clean. Args unused. */
 int32_t cmd_queue_slot_next(void)
 {
-  int32_t a0 = (int32_t)MBS16(0x1f8000d0u) + 1;
-  return (a0 < 9) ? a0 : 0;
+  int32_t next = (int32_t)MBS16(0x1f8000d0u) + 1;
+  return (next < 9) ? next : 0;
 }
 
 /* sprite_slot_commit — sprite-slot commit @0x8012a504 (44 insns):
@@ -15720,31 +15720,31 @@ uint32_t terrain_packet_gen(uint32_t hdr,uint32_t cur,
  * left as the lui base). */
 uint32_t peak_track(void)
 {
-  uint32_t t2 = 0, t3 = 0;
-  uint32_t a2, t1, i;
-  if (MB32(0x801f46f4u) != 0) { a2 = 0x100; t1 = 0x200; }
-  else                        { a2 = 0;     t1 = 0x100; }
-  for (i = a2; i < t1; i++) {
+  uint32_t pk_a = 0, pk_b = 0;
+  uint32_t i_lo, i_hi, i;
+  if (MB32(0x801f46f4u) != 0) { i_lo = 0x100; i_hi = 0x200; }
+  else                        { i_lo = 0;     i_hi = 0x100; }
+  for (i = i_lo; i < i_hi; i++) {
     uint32_t p = 0x801f36f0u + i * 2u;
-    int32_t v0 = MBS16(p);
+    int32_t samp_a = MBS16(p);
     int32_t v1 = MBS16(p + 0x400u);
-    int32_t a0 = v0 < 0 ? -v0 : v0;
-    int32_t t0 = v1 < 0 ? -v1 : v1;
-    if ((uint16_t)t2 < (uint16_t)a0) t2 = (uint32_t)a0;
-    if ((uint16_t)t3 < (uint16_t)t0) t3 = (uint32_t)t0;
+    int32_t mag_a = samp_a < 0 ? -samp_a : samp_a;
+    int32_t mag_b = v1 < 0 ? -v1 : v1;
+    if ((uint16_t)pk_a < (uint16_t)mag_a) pk_a = (uint32_t)mag_a;
+    if ((uint16_t)pk_b < (uint16_t)mag_b) pk_b = (uint32_t)mag_b;
   }
   {
-    uint32_t a1 = t2 & 0xffffu;
-    uint32_t a0 = t3 & 0xffffu;
+    uint32_t pk_a16 = pk_a & 0xffffu;
+    uint32_t mag_a = pk_b & 0xffffu;
     uint32_t v1;
-    MW32(0x801f46f8u, a1);
-    if (MB32(0x801f36e4u) < a1) {
-      MW32(0x801f36e8u, a0);
-      MW32(0x801f36e4u, a1);
+    MW32(0x801f46f8u, pk_a16);
+    if (MB32(0x801f36e4u) < pk_a16) {
+      MW32(0x801f36e8u, mag_a);
+      MW32(0x801f36e4u, pk_a16);
       MW32(0x801b3ed0u, 0);
     }
-    if (MB32(0x801f46f0u) < a0) {
-      MW32(0x801f46f0u, a0);
+    if (MB32(0x801f46f0u) < mag_a) {
+      MW32(0x801f46f0u, mag_a);
       MW32(0x801b3ed4u, 0);
     }
     v1 = MB32(0x801b3ed0u);
@@ -15752,7 +15752,7 @@ uint32_t peak_track(void)
       MW32(0x801b3ed0u, v1 + 1);
     } else {
       MW32(0x801b3ed0u, 0);
-      MW32(0x801f36e4u, a1);
+      MW32(0x801f36e4u, pk_a16);
     }
     v1 = MB32(0x801b3ed4u);
     if (v1 < 0x78) {
