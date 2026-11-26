@@ -872,3 +872,28 @@ starvation), BIOS-boundary (`jr 0xB0` svc), `cd_result_wait_a/b`,
 hand-ported, correctly-delegated (§4), or the risky `ev_*`/`cd_ctx`/INTC set.
 The ~400 unnamed CPS fragments are mostly split-pieces of covered functions —
 lower value, higher analysis cost.
+
+### Session update 15 (mass clean-CPS sweep — 100% piece-entry coverage)
+
+The §4 "must-delegate" barrier FELL: delegates failed *hand-porting* (no live
+resume PC / `$v0` handle / gpr snapshot) but the CPS transform preserves
+`psx_check_interrupts_at`+resume_pc+exact gpr mechanically — so IRQ-wait,
+BIOS `jr 0xB0` boundary, ctx-init, AND kernel gpr-snapshot coroutines ALL
+transform correctly. Key: register EVERY case/resume addr so kernel
+`cd_ctx_restore→resume_pc` lands on a `cps_` whose `_cont` switch re-enters
+the right block.
+
+**clean_table 1709 → 8953 wrappers; `cps_clean.c` = 1281 faithful CPS fns.**
+Batches: CD delegates (~30), `impact_fx_update` cluster, 0x8017 (95),
+0x8014–18 (144), 0x8012–13 core (589), 0x8019–0x801b boundary (385), and the
+final 4 kernel coroutines (`cd_result_wait_a/b`, `cd_chan_full_init`,
+`cd_intc_dispatch`).
+
+**Piece-entry CPS coverage = 100%.** Sole uncovered entry: `cd_ext_init_once`
+(0x8019b308) — correctly `br2_call_generated` delegate per §4. The 17k
+"case addrs" are intra-function block labels (goto-reached), not dispatch
+entries — generated fallback covers them faithfully regardless.
+
+Transformer notes: `psx_ws_cull_sltiu`+`psx_restore_state_escape` externs in
+FILE_HDR; covered-fallthrough targets emit `cpu->pc=addr;return` (NOT `cps_X()`
+— they'd shadow clean defs); dedupe piece-closures before registering.
