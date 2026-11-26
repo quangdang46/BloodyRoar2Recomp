@@ -6187,6 +6187,9 @@ void cps_80128b9c(void)
     }
     /* Address: 0x80128B9C, Size: 80 bytes, Blocks: 4 */
 
+    /* 16B-stride copy loop tail (v0+3948/+3024 src, a1 dst,
+       t0-t3 words) -> epilogue: a2=half[v1+6], a1=3, pop ra,
+       sp+=24, jr ra. CPS-blocked. */
 block_80128B9C:
     v0 = v0 + 3948;
     a2 = v0 + 3024;
@@ -6254,6 +6257,7 @@ void cps_80128c10(void)
 
     /* Address: 0x80128C10, Size: 8 bytes, Blocks: 1 */
 
+    /* halfword[v0]=0; jr ra. */
 block_80128C10:
     uint32_t _jt_80128C10 = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
@@ -6307,6 +6311,8 @@ void cps_80128c88(void)
     }
     /* Address: 0x80128C88, Size: 112 bytes, Blocks: 7 */
 
+    /* bulk 16B copy s0+8664 -> 0x801E0F6C (loop), then
+       counter step s2+1, a1=half[s0+2]-1. CPS-blocked. */
 block_80128C88:
     v1 = v1 + 16;
     int _bc_80128C8C = (v1 != a0);  /* save branch cond before delay slot */
@@ -6394,6 +6400,7 @@ void cps_80128cf8(void)
 
     /* Address: 0x80128CF8, Size: 4 bytes, Blocks: 1 */
 
+    /* empty piece (branch joins only). */
 block_80128CF8:
     int _bc_80128CF8 = ((int32_t)a1 >= 0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -6417,6 +6424,7 @@ void cps_80128cfc(void)
 
     /* Address: 0x80128CFC, Size: 4 bytes, Blocks: 1 */
 
+    /* empty piece. */
 block_80128CFC:
     /* nop */  /* 0x80128CFC: 0x00000000 */
     cpu->pc = 0x80128d00u; return;  /* fallthrough to split piece */
@@ -6431,6 +6439,7 @@ void cps_80128d00(void)
 
     /* Address: 0x80128D00, Size: 4 bytes, Blocks: 1 */
 
+    /* a1=2; falls through. */
 block_80128D00:
     a1 = 2;
     cpu->pc = 0x80128d04u; return;  /* fallthrough to split piece */
@@ -6452,6 +6461,8 @@ void cps_80128d04(void)
     }
     /* Address: 0x80128D04, Size: 20 bytes, Blocks: 2 */
 
+    /* countdown/step: v1++, while v1<a0 a1-- else a1++;
+       CPS-blocked. */
 block_80128D04:
     v1 = v1 + 1;
     v0 = ((int32_t)v1 < (int32_t)a0) ? 1 : 0;  /* 0x80128D08: 0x0064102A */
@@ -6490,6 +6501,9 @@ void cps_80128d18(void)
     }
     /* Address: 0x80128D18, Size: 68 bytes, Blocks: 5 */
 
+    /* indexed halfword fetch: addr = s3 + a1*(9*8+1)*4
+       pattern (~a1*292-9052 stride walk), read half[v1],
+       a1-- loop. CPS-blocked. */
 block_80128D18:
     int _bc_80128D18 = ((int32_t)a1 <= 0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -6560,6 +6574,8 @@ void cps_80128d5c(void)
     }
     /* Address: 0x80128D5C, Size: 24 bytes, Blocks: 2 */
 
+    /* counter step: jal; half[s0+6]=v0-1; bound v0=599.
+       CPS-blocked. */
 block_80128D5C:
     ra = 0x80128D64u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -6679,6 +6695,9 @@ void cps_80128dec(void)
     }
     /* Address: 0x80128DEC, Size: 104 bytes, Blocks: 6 */
 
+    /* sibling of 0x80128C88: 16B copy s0+8664 ->
+       0x801E0F6C (t2-t5 regs), counter t0+1, a1=half[s0+2]-1.
+       CPS-blocked. */
 block_80128DEC:
     v1 = v1 + 16;
     int _bc_80128DF0 = (v1 != a3);  /* save branch cond before delay slot */
@@ -6768,6 +6787,7 @@ void cps_80128e54(void)
     }
     /* Address: 0x80128E54, Size: 16 bytes, Blocks: 3 */
 
+    /* loop step: a1=2 branch; v1++ counter. CPS-blocked. */
 block_80128E54:
     int _bc_80128E54 = ((int32_t)a1 >= 0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -6805,6 +6825,8 @@ void cps_80128e64(void)
     }
     /* Address: 0x80128E64, Size: 16 bytes, Blocks: 2 */
 
+    /* loop bound: while v1<a2 keep a1-- else a1++.
+       CPS-blocked. */
 block_80128E64:
     v0 = ((int32_t)v1 < (int32_t)a2) ? 1 : 0;  /* 0x80128E64: 0x0066102A */
     int _bc_80128E68 = (v0 != zero);  /* save branch cond before delay slot */
@@ -6841,6 +6863,9 @@ void cps_80128e74(void)
     }
     /* Address: 0x80128E74, Size: 64 bytes, Blocks: 4 */
 
+    /* indexed halfword fetch (sibling of 0x80128D18):
+       addr = t1 + a1*292-ish, read half[v1], a1-- walk -9052.
+       CPS-blocked. */
 block_80128E74:
     int _bc_80128E74 = ((int32_t)a1 <= 0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -6909,6 +6934,8 @@ void cps_80128eb4(void)
     }
     /* Address: 0x80128EB4, Size: 40 bytes, Blocks: 4 */
 
+    /* counter step (sibling of 0x80128D5C): jal;
+       half[s0+6]=v0-1; bound 599. CPS-blocked. */
 block_80128EB4:
     ra = 0x80128EBCu;  /* jal link before delay slot */
     /* delay slot (always executes) */
