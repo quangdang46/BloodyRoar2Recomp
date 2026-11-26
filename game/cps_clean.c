@@ -102245,6 +102245,11 @@ void cps_801a8ee0(void)
     }
     /* Address: 0x801A8EE0, Size: 768 bytes, Blocks: 21 */
 
+    /* GTE math routine on descriptor a0 (t2): gated by half(t2+52),
+       resolves table ptrs t2+24/+36 and index gp+36, then runs a conditional
+       sequence of GTE commands (0x30/0x06/0x2D/0x01/0x3F) writing data
+       regs 1/3/5 and reading SZ (data 12). Kept as CPS blocks: every branch
+       is a psx_check_interrupts_at resume point. */
 block_801A8EE0:
     sp = sp + -24;
     t2 = a0;
@@ -102691,6 +102696,9 @@ void cps_801a91e0(void)
     }
     /* Address: 0x801A91E0, Size: 860 bytes, Blocks: 21 */
 
+    /* GTE math routine on descriptor a0 (t2) — extended variant of
+       0x801A8EE0 with the same prologue/gates plus extra commands
+       (0x0180001, 0x108041B). CPS-blocked; do not restructure. */
 block_801A91E0:
     sp = sp + -24;
     t2 = a0;
@@ -103172,6 +103180,10 @@ void cps_801a972c(void)
     }
     /* Address: 0x801A972C, Size: 288 bytes, Blocks: 18 */
 
+    /* record scan/sync: gated by gp+68==1 and a0 != NULL; compares
+       half(a0+10) against word(a0+44), walks an index bounded by the
+       difference, decrements a counter, then stores half(a0+44) into
+       half(a0+10) and tail-calls 0x801A9C24. CPS-blocked. */
 block_801A972C:
     sp = sp + -24;
     v1 = cpu->read_word(gp + 68);
@@ -104835,6 +104847,10 @@ void cps_801aa618(void)
     }
     /* Address: 0x801AA618, Size: 464 bytes, Blocks: 24 */
 
+    /* state-field update on record s0: gated by half(s0+68), compares the
+       sign-extended byte a0 against half(s0+70), uses muldiv/div helpers,
+       contains break() traps, and writes results to half(s0+64/66) before
+       falling through to 0x801AA7E8. CPS-blocked. */
 block_801AA618:
     v0 = (int32_t)(int16_t)cpu->read_half(s0 + 68);
     /* nop */  /* 0x801AA61C: 0x00000000 */
@@ -105396,6 +105412,11 @@ void cps_801ab470(void)
     }
     /* Address: 0x801AB470, Size: 988 bytes, Blocks: 3 */
 
+    /* GTE vertex transform: gated by half(a0+40); loads a rotation matrix
+       from the table at gp+52 into GTE ctrl regs (ctc2), then for each of
+       ~9 points loads XYZ halves into data regs 9/10/11 (mtc2), runs GTE
+       command 0x12 (project), and reads back data 12/13/14. One giant
+       straight-line block — CPS-blocked. */
 block_801AB470:
     v0 = (int32_t)(int16_t)cpu->read_half(a0 + 40);
     /* nop */  /* 0x801AB474: 0x00000000 */
@@ -105866,6 +105887,10 @@ void cps_801ab84c(void)
     }
     /* Address: 0x801AB84C, Size: 1352 bytes, Blocks: 4 */
 
+    /* GTE vertex transform, two-stage variant of 0x801AB470: same matrix
+       load and per-point mtc2 + cmd-0x12 project loop, but with two
+       transform passes (two cmd-0x12 groups) over the point set.
+       CPS-blocked. */
 block_801AB84C:
     v0 = cpu->read_word(a0 + 36);
     /* nop */  /* 0x801AB850: 0x00000000 */
@@ -106501,6 +106526,9 @@ void cps_801abd94(void)
     }
     /* Address: 0x801ABD94, Size: 732 bytes, Blocks: 3 */
 
+    /* GTE vertex transform variant of 0x801AB470: same matrix load
+       (gp+52 -> ctc2) and per-point mtc2 + cmd-0x12 project/readback
+       pattern over ~6 points, ending with cmd 0x0480012. CPS-blocked. */
 block_801ABD94:
     v0 = (int32_t)(int16_t)cpu->read_half(a0 + 40);
     /* nop */  /* 0x801ABD98: 0x00000000 */
@@ -111984,6 +112012,12 @@ void cps_801afb28(void)
     }
     /* Address: 0x801AFB28, Size: 528 bytes, Blocks: 24 */
 
+    /* bytecode-op state machine: frame saves s0-s3; resolves three table
+       cursors (s1/s2/s3) from descriptor half offsets via v0+8; walks
+       script entries checking tag halfwords (0x2000 range), iterates
+       sub-lists bounded by half(+2) counts, calls 0x801B0DB8 per op, and
+       writes a result index to state->f20 ([gp+76]+20). CPS-blocked —
+       every block is an interrupt-resume point. */
 block_801AFB28:
     sp = sp + -40;
     cpu->write_word(sp + 32, ra);
