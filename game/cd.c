@@ -1248,24 +1248,28 @@ uint32_t cd_response_process(void)
 
 /* ======== small getters ======== */
 
+/* cd_status_raw — raw CD status byte @0x801bc854. */
 uint8_t cd_status_raw(void)
 
 {
   return (uint8_t)CD_STATUS;
 }
 
+/* cd_mode_byte_read — CD mode/state byte @0x801bc864. */
 uint8_t cd_mode_byte_read(void)
 
 {
   return DB8(0x801bc864);
 }
 
+/* cd_param_buf_get — pointer to the CD parameter buffer cell @0x801bc860. */
 uint8_t * cd_param_buf_get(void)
 
 {
   return (uint8_t *)guest_at(0x801bc860);
 }
 
+/* cd_cmd_reset_wrap — thin wrapper over cd_cmd_state_reset. */
 void cd_cmd_reset_wrap(void)
 
 {
