@@ -4595,3 +4595,27 @@
 8012a93c cps_8012a92c
 801298f8 cps_801298f8
 801268b8 cps_801268b8
+
+# --- w3_e00: leftover generated coverage (boot/init + display setup) ---
+# All ten are CPS piece-entries / alternate entries that tail-dispatch via
+# cpu->pc; bodies live in game/w3_e00.c.
+#
+# 0x80122170 — pointer-table DATA addr (not code); generated body is the
+# fail-closed psx_unknown_dispatch stub, reproduced faithfully.
+80122170 ptr_table_80122170
+#
+# 0x80126344 — alternate entry into main() (entry_0x80126234) state
+# dispatch: lbu v1,0(s1) then falls into cps_80126348 chain.
+80126344 main_state_byte_gate
+#
+# display_mode_setup (0x8012708C) switch-case trampolines: li v0,<width>
+# then j/fallthrough into the 0xf0-height (0x80127134) or 0x1e0-height
+# (0x8012714C) commit blocks.
+80127100 display_mode_w320_hf0
+80127108 display_mode_w320_h1e0
+80127110 display_mode_w384_hf0
+80127118 display_mode_w384_h1e0
+80127120 display_mode_w512_hf0
+80127128 display_mode_w512_h1e0
+80127130 display_mode_w640_hf0
+80127148 display_mode_w640_h1e0
