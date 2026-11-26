@@ -5037,7 +5037,9 @@ extern void FUN_8019e420(void);
 extern void FUN_8019e600(void);
 extern uint8_t *guest_memcpy(uint32_t *,uint32_t *,int);
 int cd_queue_push(uint32_t,uint32_t,uint32_t,uint32_t);
+/* cd_chan_reset_seq — kobj mcalls 0x8019A364/0x8019A310, cd_crit_c003, clear flag @0x801BCC90. */
 void cd_chan_reset_seq(void);
+/* cd_crit_c003 — DI; bios_tramp_c003(1,0x801FEB40); EI; return 1. */
 int cd_crit_c003(void);
 /* ret_zero_f — tail pair: FUN_8019E420 then FUN_8019E600 (CPS continuation chain). */
 void ret_zero_f(void);
@@ -5061,6 +5063,7 @@ uint32_t cd_bios_svc_16(uint32_t a0,uint32_t a1)
 
 /* ======== 0x80197e08 ======== */
 
+/* cd_strncmp12_eq — true when cd_strncmp(a0,a1,12)==0 (12-byte name compare). */
 int cd_strncmp12_eq(uint32_t a0,uint32_t a1)
 {
   return cd_strncmp(a0,a1,0xc) == 0;
@@ -5068,6 +5071,7 @@ int cd_strncmp12_eq(uint32_t a0,uint32_t a1)
 
 /* ======== 0x80198fe4 ======== */
 
+/* cd_mc_sm_wrap — forward to cd_mc_state_machine (memcard state step). */
 void cd_mc_sm_wrap(void)
 {
   cd_mc_state_machine();
@@ -5075,6 +5079,7 @@ void cd_mc_sm_wrap(void)
 
 /* ======== 0x80199fa4 ======== */
 
+/* cd_chan_reset_fwd — forward to cd_chan_reset_seq. */
 void cd_chan_reset_fwd(void)
 {
   cd_chan_reset_seq();
@@ -5082,6 +5087,7 @@ void cd_chan_reset_fwd(void)
 
 /* ======== 0x8019e300 ======== */
 
+/* cd_reset_chain_a — ret_zero_f() then return 0 (CPS chain tail). */
 int32_t cd_reset_chain_a(void)
 {
   ret_zero_f();
@@ -5090,6 +5096,7 @@ int32_t cd_reset_chain_a(void)
 
 /* ======== 0x80192ef0 ======== */
 
+/* cd_queue_push_wrap — cd_queue_push(a0,a1,0,a2) with mode slot fixed 0. */
 int cd_queue_push_wrap(uint32_t a0,uint32_t a1,uint32_t a2)
 {
   return cd_queue_push(a0,a1,0,a2);
@@ -5097,6 +5104,7 @@ int cd_queue_push_wrap(uint32_t a0,uint32_t a1,uint32_t a2)
 
 /* ======== 0x8019d1f0 ======== */
 
+/* cd_tbl8_dispatch9 — cd_dispatch_tbl8(9,a0): table-8 slot 9 dispatch. */
 int cd_tbl8_dispatch9(uint32_t a0)
 {
   return cd_dispatch_tbl8(9,a0);
@@ -5104,6 +5112,7 @@ int cd_tbl8_dispatch9(uint32_t a0)
 
 /* ======== 0x80193ce0 ======== */
 
+/* cd_drain_dispatch — cd_dispatch_tbl4(2,0x801931C4): drain-table slot 2 -> 0x801931C4. */
 int cd_drain_dispatch(void)
 {
   return cd_dispatch_tbl4(2,0x801931c4);
@@ -5111,6 +5120,7 @@ int cd_drain_dispatch(void)
 
 /* ======== 0x80195b4c ======== */
 
+/* cd_bios_cmd20 — BIOS svc 0x07 cmd 0x20 on object 0xF0000003. */
 uint32_t cd_bios_cmd20(void)
 {
   return cd_bios_svc_07(0xf0000003,0x20);
@@ -5118,6 +5128,7 @@ uint32_t cd_bios_cmd20(void)
 
 /* ======== 0x80195b74 ======== */
 
+/* cd_bios_cmd40 — BIOS svc 0x07 cmd 0x40 on object 0xF0000003. */
 uint32_t cd_bios_cmd40(void)
 {
   return cd_bios_svc_07(0xf0000003,0x40);
@@ -5125,6 +5136,7 @@ uint32_t cd_bios_cmd40(void)
 
 /* ======== 0x80195b9c ======== */
 
+/* cd_bios_cmd40_b — sibling entry, same svc 0x07 cmd 0x40 call. */
 uint32_t cd_bios_cmd40_b(void)
 {
   return cd_bios_svc_07(0xf0000003,0x40);
@@ -5132,6 +5144,7 @@ uint32_t cd_bios_cmd40_b(void)
 
 /* ======== 0x80199f7c ======== */
 
+/* cd_bios16_status — B0/0x16 status query then return ~*(u32*)0x801FEB28. */
 uint32_t cd_bios16_status(void)
 {
   cd_bios_svc_16(0,0);
