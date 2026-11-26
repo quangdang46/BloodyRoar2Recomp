@@ -565,3 +565,15 @@ clean_table: 8808 wrappers (+12), 5 skips unchanged.
 Remaining pool ~375 unrouted cps_ bodies >=0x8018.
 Verified: clean build EU + USA; headless :4961 frames 23830 -> 29198+
 attract CD streaming, no wedge.
+
+## Batch 22 (orch/w5/e05) — 12 more unrouted CD leaves -> cpst_
+
+cpst_801a1f64, cpst_801aa95c, cpst_8018def4, cpst_801a1b40,
+cpst_801aa0d4, cpst_801ad974, cpst_8018d27c, cpst_801a0b10,
+cpst_801a0b24, cpst_801a0b38, cpst_801a0b4c, cpst_801a0b60 (five
+sibling 0x801A0Bxx leaves) — 12/12 clean emits, entry-only rows.
+
+clean_table: 8820 wrappers (+12), 5 skips unchanged.
+Remaining pool ~363 unrouted cps_ bodies >=0x8018.
+Verified: clean build EU + USA; headless :4967 frames 24722 -> 29655+
+attract CD streaming, no wedge.
