@@ -7133,10 +7133,10 @@ undefined4 * vec3_step_toward(undefined4 *out,short *pos,short *dst,short a3)
   short dy;
   int step;
   /* Guest vec3 slots: FUN_80194630 reads/writes 3 contiguous u32 through
-   * delta (delta) and ndir (normalized out); the decompiler split
-   * each 12-byte vec3 into scalars. delta[0..2] = old
-   * delta/local_3c/local_38; ndir[0..2] = old
-   * ndir/local_2c/local_28. */
+   * delta (old local_40) and ndir (normalized out, old local_30); the
+   * decompiler split each 12-byte vec3 into scalars. delta[0..2] = old
+   * local_40/local_3c/local_38; ndir[0..2] = old
+   * local_30/local_2c/local_28. */
   int delta [3];
   int ndir [3];
   undefined4 step_a;
@@ -7179,10 +7179,10 @@ undefined4 * vec3_step_toward_spd(undefined4 *out,short *pos,short *dst,int spd)
   undefined2 ry;
   uint rx;
   /* Guest vec3 slots: FUN_80194630 reads/writes 3 contiguous u32 through
-   * delta (delta) and ndir (normalized out); the decompiler split
-   * each 12-byte vec3 into scalars. delta[0..2] = old
-   * delta/local_34/local_30; ndir[0..2] = old
-   * ndir/local_24/local_20. */
+   * delta (old local_38) and ndir (normalized out, old local_28); the
+   * decompiler split each 12-byte vec3 into scalars. delta[0..2] = old
+   * local_38/local_34/local_30; ndir[0..2] = old
+   * local_28/local_24/local_20. */
   int delta [3];
   int ndir [3] = {0, 0, 0};
   undefined4 res_a;
@@ -7222,96 +7222,96 @@ undefined4 * vec3_step_toward_spd(undefined4 *out,short *pos,short *dst,int spd)
 
 }
 
-undefined4 * vec3_step_toward_q(undefined4 *a0,short *a1,short *a2,short a3)
+undefined4 * vec3_step_toward_q(undefined4 *out,short *pos,short *dst,short a3)
 {
-  undefined4 uVar1;
-  int iVar2;
-  short sVar3;
-  short sVar4;
-  int iVar5;
+  undefined4 len2;
+  int len;
+  short dc;
+  short dy;
+  int step;
   /* Guest vec3 slots: FUN_80194660 (vec3_s16_normalize) reads 3
-   * contiguous s16 through local_28 (packed into the two u32 halves of
-   * local_28[0] plus the high half of local_28[1]) and writes 3
-   * contiguous s16 through local_20. The decompiler split the s16 vec3
-   * into scalars. local_20[0..2] = old local_20/local_1e/local_1c. */
-  undefined4 local_28 [2];
-  short local_20 [3];
-  local_28[0] = CONCAT22((short)((a2[1] - a1[1]) * 0x10) >> 4,
-                      (short)((*a2 - *a1) * 0x10) >> 4);
-  local_28[1] = CONCAT22((local_28[1] >> 16),(short)((a2[2] - a1[2]) * 0x10) >> 4);
+   * contiguous s16 through pk (old local_28, packed into the two u32
+   * halves of pk[0] plus the high half of pk[1]) and writes 3
+   * contiguous s16 through ndir (old local_20). The decompiler split
+   * the s16 vec3 into scalars. ndir[0..2] = old local_20/local_1e/local_1c. */
+  undefined4 pk [2];
+  short ndir [3];
+  pk[0] = CONCAT22((short)((dst[1] - pos[1]) * 0x10) >> 4,
+                      (short)((*dst - *pos) * 0x10) >> 4);
+  pk[1] = CONCAT22((pk[1] >> 16),(short)((dst[2] - pos[2]) * 0x10) >> 4);
   if (a3 == 0) {
     a3 = 1;
   }
-  iVar5 = (int)a3;
-  uVar1 = FUN_80194660((undefined2 *)local_28,(undefined2 *)local_20);
-  iVar2 = FUN_80194500(uVar1);
-  if (iVar5 < iVar2) {
-    sVar3 = (short)(local_20[0] * iVar5 >> 0xc);
-    *a1 = *a1 + sVar3;
-    sVar4 = (short)(local_20[1] * iVar5 >> 0xc);
-    local_28[0] = CONCAT22(sVar4,sVar3);
-    a1[1] = a1[1] + sVar4;
-    sVar3 = (short)(local_20[2] * iVar5 >> 0xc);
-    local_28[1] = CONCAT22((local_28[1] >> 16),sVar3);
-    a1[2] = a1[2] + sVar3;
+  step = (int)a3;
+  len2 = FUN_80194660((undefined2 *)pk,(undefined2 *)ndir);
+  len = FUN_80194500(len2);
+  if (step < len) {
+    dc = (short)(ndir[0] * step >> 0xc);
+    *pos = *pos + dc;
+    dy = (short)(ndir[1] * step >> 0xc);
+    pk[0] = CONCAT22(dy,dc);
+    pos[1] = pos[1] + dy;
+    dc = (short)(ndir[2] * step >> 0xc);
+    pk[1] = CONCAT22((pk[1] >> 16),dc);
+    pos[2] = pos[2] + dc;
   }
   else {
-    *a1 = *a2;
-    a1[1] = a2[1];
-    a1[2] = a2[2];
+    *pos = *dst;
+    pos[1] = dst[1];
+    pos[2] = dst[2];
   }
-  *a0 = local_28[0];
-  a0[1] = local_28[1];
-  return a0;
+  *out = pk[0];
+  out[1] = pk[1];
+  return out;
 
 }
 
-undefined4 * vec3_step_toward_q_spd(undefined4 *a0,short *a1,short *a2,int a3)
+undefined4 * vec3_step_toward_q_spd(undefined4 *out,short *pos,short *dst,int spd)
 {
-  short sVar1;
-  int iVar2;
-  uint uVar3;
-  undefined2 uVar4;
-  uint uVar5;
+  short rz;
+  int t;
+  uint sh;
+  undefined2 ry;
+  uint rx;
   /* Guest vec3 slots: FUN_80194660 (vec3_s16_normalize) reads 3
-   * contiguous s16 packed through local_20[0] plus the high half of
-   * local_20[1], and writes 3 contiguous s16 through local_18. The
-   * decompiler split the s16 vec3 into scalars. local_18[0..2] = old
-   * local_18/local_16/local_14. */
-  undefined4 local_20 [2];
-  short local_18 [3];
-  local_20[0] = CONCAT22((short)((a2[1] - a1[1]) * 0x10) >> 4,
-                      (short)((*a2 - *a1) * 0x10) >> 4);
-  local_20[1] = (local_20[1] & 0xffff0000) | (uint16_t)((short)((a2[2] - a1[2]) * 0x10) >> 4);
-  iVar2 = FUN_80194660((undefined2 *)local_20,(undefined2 *)local_18);
-  if (iVar2 == 0) {
-    local_20[1] = (uint)(local_20[1] >> 16) << 0x10;
-    local_20[0] = 0;
+   * contiguous s16 packed through pk[0] (old local_20) plus the high
+   * half of pk[1], and writes 3 contiguous s16 through ndir (old
+   * local_18). The decompiler split the s16 vec3 into scalars.
+   * ndir[0..2] = old local_18/local_16/local_14. */
+  undefined4 pk [2];
+  short ndir [3];
+  pk[0] = CONCAT22((short)((dst[1] - pos[1]) * 0x10) >> 4,
+                      (short)((*dst - *pos) * 0x10) >> 4);
+  pk[1] = (pk[1] & 0xffff0000) | (uint16_t)((short)((dst[2] - pos[2]) * 0x10) >> 4);
+  t = FUN_80194660((undefined2 *)pk,(undefined2 *)ndir);
+  if (t == 0) {
+    pk[1] = (uint)(pk[1] >> 16) << 0x10;
+    pk[0] = 0;
   }
   else {
-    iVar2 = FUN_80194500((uint)iVar2);
-    uVar3 = (a3 + 0xc) * 0x10000 >> 0x10;
-    uVar5 = local_18[0] * iVar2 >> (uVar3 & 0x1f);
-    uVar4 = (undefined2)(local_18[1] * iVar2 >> (uVar3 & 0x1f));
-    local_20[0] = CONCAT22(uVar4,(short)uVar5);
-    sVar1 = (short)(local_18[2] * iVar2 >> (uVar3 & 0x1f));
-    local_20[1] = CONCAT22((local_20[1] >> 16),sVar1);
-    if (((uVar5 & 0xffff) == 0) && (local_18[0] != 0)) {
-      local_20[0] = CONCAT22(uVar4,1);
+    t = FUN_80194500((uint)t);
+    sh = (spd + 0xc) * 0x10000 >> 0x10;
+    rx = ndir[0] * t >> (sh & 0x1f);
+    ry = (undefined2)(ndir[1] * t >> (sh & 0x1f));
+    pk[0] = CONCAT22(ry,(short)rx);
+    rz = (short)(ndir[2] * t >> (sh & 0x1f));
+    pk[1] = CONCAT22((pk[1] >> 16),rz);
+    if (((rx & 0xffff) == 0) && (ndir[0] != 0)) {
+      pk[0] = CONCAT22(ry,1);
     }
-    if (((local_20[0] >> 16) == 0) && (local_18[1] != 0)) {
-      local_20[0] = CONCAT22(1,(short)local_20[0]);
+    if (((pk[0] >> 16) == 0) && (ndir[1] != 0)) {
+      pk[0] = CONCAT22(1,(short)pk[0]);
     }
-    if ((sVar1 == 0) && (local_18[2] != 0)) {
-      local_20[1] = CONCAT22((local_20[1] >> 16),1);
+    if ((rz == 0) && (ndir[2] != 0)) {
+      pk[1] = CONCAT22((pk[1] >> 16),1);
     }
-    *a1 = *a1 + (short)local_20[0];
-    a1[1] = a1[1] + (local_20[0] >> 16);
-    a1[2] = a1[2] + (short)local_20[1];
+    *pos = *pos + (short)pk[0];
+    pos[1] = pos[1] + (pk[0] >> 16);
+    pos[2] = pos[2] + (short)pk[1];
   }
-  *a0 = local_20[0];
-  a0[1] = local_20[1];
-  return a0;
+  *out = pk[0];
+  out[1] = pk[1];
+  return out;
 
 }
 
