@@ -69,7 +69,6 @@ extern void action_from_input(void);
 extern void action_from_input_alias(void);
 extern void action_resolve(void);
 extern void action_switch_guest(void);
-extern void always_one(void);
 extern void angle_from_xy(void);
 extern void angle_gte_vec(void);
 extern void angle_pair_rotmat(void);
@@ -694,14 +693,12 @@ extern void fighter_attach_run(void);
 extern void fighter_chan_delta_accum(void);
 extern void fighter_combat_reset(void);
 extern void fighter_contact_resolve(void);
-extern void fighter_flash_update(void);
 extern void fighter_frame(void);
 extern void fighter_frame_triple_emit(void);
 extern void fighter_height_check(void);
 extern void fighter_height_track(void);
 extern void fighter_hud_emit_pair(void);
 extern void fighter_link_init(void);
-extern void fighter_pair_update(void);
 extern void fighter_range_code(void);
 extern void fighter_rec_fetch_apply(void);
 extern void fighter_record_apply(void);
@@ -709,7 +706,6 @@ extern void fighter_record_build(void);
 extern void fighter_reinit_tail(void);
 extern void fighter_reset_fx(void);
 extern void fighter_respawn_init(void);
-extern void fighter_script_fsm(void);
 extern void fighter_script_fsm_cps(void);
 extern void fighter_spawn_setup(void);
 extern void fighter_spawn_tail(void);
@@ -1702,7 +1698,6 @@ extern void trig_sin_lookup(void);
 extern void trig_vel_diag(void);
 extern void trig_vel_flat(void);
 extern void trig_vel_up(void);
-extern void triple_track_spawn(void);
 extern void tween_apply(void);
 extern void tween_chan_alloc(void);
 extern void tween_dur_spread(void);
@@ -1731,9 +1726,6 @@ extern void vec3_s32_h_normalize(void);
 extern void vec3_s32_h_normalize_store_tail(void);
 extern void vec3_s32_normalize(void);
 extern void vec3_step_toward(void);
-extern void vec3_step_toward_q(void);
-extern void vec3_step_toward_q_spd(void);
-extern void vec3_step_toward_spd(void);
 extern void vec_emit_spawn(void);
 extern void versus_stage_commit(void);
 extern void versus_stage_commit_b(void);
@@ -1898,9 +1890,6 @@ const Br2FnEnt fn_table[] = {
   { 0x801338c4, (void *)fixed_approach_s16 },
   { 0x80133944, (void *)vec3_approach_step },
   { 0x80133aa0, (void *)vec3_step_toward },
-  { 0x80133c08, (void *)vec3_step_toward_spd },
-  { 0x80133db0, (void *)vec3_step_toward_q },
-  { 0x80133f30, (void *)vec3_step_toward_q_spd },
   { 0x801340f0, (void *)mode_select_wrapper },
   { 0x80134128, (void *)channel_script_emit_pair_2gate },
   { 0x801341a0, (void *)channel_script_emit_triple },
@@ -1930,7 +1919,6 @@ const Br2FnEnt fn_table[] = {
   { 0x80137048, (void *)vec_emit_spawn },
   { 0x80137098, (void *)battle_intro_fsm },
   { 0x80137394, (void *)battle_intro_fsm_alias },
-  { 0x80137570, (void *)always_one },
   { 0x80137578, (void *)rec16_fill },
   { 0x80137590, (void *)LAB_80137590 },
   { 0x801375e8, (void *)slot_mark2_set },
@@ -1948,7 +1936,6 @@ const Br2FnEnt fn_table[] = {
   { 0x801387dc, (void *)node_list_walk_b },
   { 0x8013885c, (void *)slot_triple_tick },
   { 0x8013893c, (void *)xform_accum_tick },
-  { 0x80138a24, (void *)triple_track_spawn },
   { 0x80138b00, (void *)xform_accum_spawn },
   { 0x80138c6c, (void *)node_list_walk_c },
   { 0x80138cec, (void *)impact_fx_update },
@@ -2398,7 +2385,6 @@ const Br2FnEnt fn_table[] = {
   { 0x8016b7c0, (void *)heap_serialize },
   { 0x8016cb20, (void *)heap_ptr_fixup },
   { 0x8016cc5c, (void *)heap_record_emit },
-  { 0x8016cd8c, (void *)fighter_flash_update },
   { 0x8016d244, (void *)fighter_tint_fade },
   { 0x8016d478, (void *)sprite_anim_chain_build },
   { 0x8016dadc, (void *)ret_zero_d },
@@ -2501,7 +2487,6 @@ const Br2FnEnt fn_table[] = {
   { 0x801800a4, (void *)hitbox_xform_node_commit },
   { 0x801802cc, (void *)hitbox_xform_flag_pair },
   { 0x8018098c, (void *)hitbox_xform_epilogue },
-  { 0x801809c8, (void *)fighter_pair_update },
   { 0x80181000, (void *)pair_update_attach_tail },
   { 0x8018106c, (void *)record_struct_dump },
   { 0x8018123c, (void *)slot_action_dump },
@@ -2510,7 +2495,6 @@ const Br2FnEnt fn_table[] = {
   { 0x80181ef0, (void *)ani_cat_tail_v2 },
   { 0x80181f10, (void *)ani_cat_tail_nine },
   { 0x80181f18, (void *)ani_cat_tail_ret },
-  { 0x80181f20, (void *)fighter_script_fsm },
   { 0x80182960, (void *)fighter_script_fsm_cps },
   { 0x80182a58, (void *)fsm_script_vm_gate },
   { 0x80182ac0, (void *)fsm_combat_mode_eval },
