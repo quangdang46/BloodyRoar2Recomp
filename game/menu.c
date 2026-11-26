@@ -3631,9 +3631,9 @@ LAB_f208:
 }
 
 /* select_confirm_handler — select-screen confirm handler. param_1 = guest addr
- * of battle state (0x1f800000), param_2 = player slot, param_3 =
- * records base (host ptr, 0x30 stride), param_4 = button flags,
- * param_5 = stack arg (direct vs table char lookup). Writes chosen
+ * of battle state (0x1f800000), player = player slot, recs =
+ * records base (host ptr, 0x30 stride), btns = button flags,
+ * direct = stack arg (direct vs table char lookup). Writes chosen
  * char to battle+0xc0[player]+0x1b and anim state to
  * 0x1f8000e8+player*0x108+3/+4; gates on select_phase_gate then toggles
  * battle+0xb4 phase bits. Disasm-verified. */
@@ -3718,9 +3718,9 @@ void selection_stat_bump(uint8_t *state,int32_t unused)
   *(uint32_t *)(tbl + 0x410) = 1;
 }
 
-/* post_confirm_config_build — post-confirm battle-config builder. param_1 = guest
- * battle addr, param_2 = out record array (0x30 stride/player),
- * param_3 = direct-char flag. Per player: stores phase-gate results
+/* post_confirm_config_build — post-confirm battle-config builder. battle_g = guest
+ * battle addr, recs = out record array (0x30 stride/player),
+ * direct = direct-char flag. Per player: stores phase-gate results
  * (+0x38), flag word (+0x28), char id (+0x44), then mode-specific
  * (+0x3c/40/4c/48) fill. Disasm-verified. */
 extern int32_t gate_read_ec(uint32_t,uint32_t);
@@ -3842,9 +3842,9 @@ void post_confirm_config_build(uint32_t battle_g,uint8_t *recs,int32_t direct)
 }
 
 
-/* fighter_spawn_setup — fighter spawn/setup. param_1 = guest battle addr,
- * param_2/param_3 = per-side arg blocks passed to battle_config_eval,
- * param_4 = cfg base (records at +0x28, stride 0x30), param_5 = flag.
+/* fighter_spawn_setup — fighter spawn/setup. battle_g = guest battle addr,
+ * ab_a/ab_b = per-side arg blocks passed to battle_config_eval,
+ * cfg = cfg base (records at +0x28, stride 0x30), flag = flag.
  * Patches battle+0xb4/b6 phase 0x500->0x600, per-player record fill
  * when rec+0x10==1 && phase==0x700, then mode dispatch on battle+0x9b
  * (jump table 0x801204c0) merging packed button u16s into rec+8.
