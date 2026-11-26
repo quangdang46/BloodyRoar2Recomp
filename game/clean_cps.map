@@ -4595,3 +4595,29 @@
 8012a93c cps_8012a92c
 801298f8 cps_801298f8
 801268b8 cps_801268b8
+
+# --- w3_e05: page_table_ptr_set / confirm_code_select alias pieces ---
+# ptab_ptr_case_set (game/w3_e05.c) — alternate entries into the shared store
+# tail of page_table_ptr_set (0x801566D4): a2 = &DAT_801Bxxxx, then
+# 0x801F35E0[a1] = a2, jr ra. Continuations 0x801568E4/0x801568EC.
+80156864 ptab_ptr_case_set
+80156870 ptab_ptr_case_set
+80156888 ptab_ptr_case_set
+80156894 ptab_ptr_case_set
+801568e4 ptab_ptr_case_set
+801568ec ptab_ptr_case_set
+
+# confirm_code_tail_set (game/w3_e05.c) — alternate entries into the
+# mc_confirm_dispatch tail of confirm_code_select (0x8015787C): a1=N -> +20,
+# a0=a1, a1=1, jal 0x801577BC, epilogue lw ra,16(sp)/jr ra/sp+=24.
+80157910 confirm_code_tail_set
+80157918 confirm_code_tail_set
+80157920 confirm_code_tail_set
+80157928 confirm_code_tail_set
+80157930 confirm_code_tail_set
+80157938 confirm_code_tail_set
+80157940 confirm_code_tail_set
+80157964 confirm_code_tail_set
+801579e0 confirm_code_tail_set
+801579e4 confirm_code_tail_set
+801579f0 confirm_code_tail_set

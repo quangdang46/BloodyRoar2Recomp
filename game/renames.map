@@ -1971,3 +1971,14 @@
 8018b380 prim_nclip_cull_emit_48
 8018b4b8 prim_rtps_cull_emit_58
 8018b628 prim_avsz3_cull_emit_58
+80156864 page_table_ptr_set_alt_38d0
+80156870 page_table_ptr_set_alt_3968
+80156888 page_table_ptr_set_alt_3a84
+80156894 page_table_ptr_set_alt_3b08
+80157910 confirm_code_select_alt_0
+80157918 confirm_code_select_alt_1
+80157920 confirm_code_select_alt_2
+80157928 confirm_code_select_alt_5
+80157930 confirm_code_select_alt_3
+80157938 confirm_code_select_alt_6
+80157940 confirm_code_select_alt_4
