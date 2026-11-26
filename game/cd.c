@@ -6596,6 +6596,7 @@ void cd_dir_entry_store(uint32_t a0,uint32_t a1)
 
 extern int32_t cd_seek_state_machine(uint32_t);
 
+/* cd_seek_step — trace; delegate to generated 0x8019D508 (TestEvent IRQ-poll spin needs deferred CD coroutine). */
 int32_t cd_seek_step(uint32_t a0,uint32_t a1)
 {
   CDFN(CDFN_SEEK_STEP,a0);
