@@ -143,7 +143,6 @@ undefined8 vec2_rot_lut(undefined4,int);
 void dir_rotate_acc(int,int,byte*,byte*);
 void dir_rotate_set(int,int,byte*,byte*);
 
-
 /* ---- guest globals + prototypes (consolidated) ---- */
 extern uint8_t *g_DAT_801b4e2c, *g_DAT_801b4e38, *g_DAT_801b4e44,
               *g_DAT_801b4e50, *g_DAT_801b4e5c;
@@ -248,7 +247,6 @@ void anim_lerp_packed4(short*,ushort*,int,int);
 extern void anim_lerp_aux(byte*,int,int,int);
 void anim_lerp_packed3(short*,ushort*,int,int);
 uint *rotmat_rtps_build(uint,uint*);
-
 
 extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
 extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
@@ -1613,7 +1611,6 @@ LAB_80176d24:
   return (int)*(short *)(motion_p + 0x9a);
 }
 
-
 /* FUN_801787dc — per-fighter frame update. Calls the resolver and
  * applies its result to motion+0x80, then physics/anim tail. */
 /* fighter_frame - per-fighter frame update: resource drain,
@@ -2781,7 +2778,6 @@ int atan2_lut(int x,int y)
 
 }
 
-
 /* hitrec_table_clear - zero the 0x20 hit-record entries for a
  * fighter slot (DAT_801f0db0). */
 void hitrec_table_clear(int slot)
@@ -2800,7 +2796,6 @@ void hitrec_table_clear(int slot)
   return;
 
 }
-
 
 /* slot_mark2_set - set DAT_801f0ad8[slot] = 2. */
 void slot_mark2_set(int slot)
@@ -3245,7 +3240,6 @@ void anim_lerp_packed3(short *dst,ushort *src,int flip,int alpha)
 
 }
 
-
 undefined8 vec2_rot_lut(undefined4 angle,int mag)
 {
   int sn;
@@ -3437,7 +3431,6 @@ uint * matrix_vec3_apply(undefined4 *mat,uint *vec)
   return vec;
 
 }
-
 
 /* dir_rotate_acc/8d468 — verified against disasm 0x8018d444-0x8018d4f8.
  * Both tail-call dir_rotate_wrap (2D direction rotate+wrap, returns
