@@ -6567,261 +6567,261 @@ LAB_80138c24:
 
 void impact_fx_spawn(undefined4 *pos,uint fid,int ang,int aux,uint fl)
 {
-  undefined2 uVar1;
-  ushort uVar2;
-  short sVar3;
-  int iVar4;
-  int iVar5;
-  uint uVar6;
-  uint uVar7;
-  undefined *puVar8;
-  undefined4 *puVar9;
-  int iVar10;
-  short *psVar11;
-  undefined4 uVar12;
-  undefined2 *puVar13;
-  undefined4 *puVar14;
+  undefined2 hw;
+  ushort rw;
+  short dz;
+  int t0;
+  int t3;
+  uint r;
+  uint r2;
+  undefined *tp;
+  undefined4 *cur;
+  int t1;
+  short *mv;
+  undefined4 py;
+  undefined2 *cv;
+  undefined4 *rec;
   if (DAT_1f8000b1 != '\0') {
     return;
   }
-  iVar4 = always_one(1);
-  if (iVar4 == 0) {
+  t0 = always_one(1);
+  if (t0 == 0) {
     return;
   }
-  iVar4 = (int)(intptr_t)task_node_alloc(1,2,10,0x80138cec,0x80139e0c,
+  t0 = (int)(intptr_t)task_node_alloc(1,2,10,0x80138cec,0x80139e0c,
                        *(short *)(&DAT_801b1880 + (fid & 0xfffffff) * 2) + 0x68);
-  if (iVar4 == 0) {
+  if (t0 == 0) {
     return;
   }
-  puVar14 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar4 + 0x10))));
+  rec = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((t0 + 0x10))));
   { extern uint32_t g_pu_raw,g_pu_guestof,g_pu_gbuf,g_pu_node,g_pu_count;
-    uint32_t _gof = (uint32_t)guest_of(puVar14);
-    uint32_t _gbuf = *(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar4 + 0x10)));
+    uint32_t _gof = (uint32_t)guest_of(rec);
+    uint32_t _gbuf = *(uint32_t *)guest_at((uint32_t)(uintptr_t)((t0 + 0x10)));
     g_pu_count++;
-    g_pu_raw=(uint32_t)(uintptr_t)puVar14; g_pu_guestof=_gof;
-    g_pu_gbuf=_gbuf; g_pu_node=(uint32_t)iVar4;
+    g_pu_raw=(uint32_t)(uintptr_t)rec; g_pu_guestof=_gof;
+    g_pu_gbuf=_gbuf; g_pu_node=(uint32_t)t0;
   }
   if (((fid & 0xf0000000) == 0x40000000) || ((fid & 0xf0000000) != 0x80000000)) {
-    uVar12 = pos[1];
-    puVar14[0x16] = *pos;
-    puVar14[0x17] = uVar12;
+    py = pos[1];
+    rec[0x16] = *pos;
+    rec[0x17] = py;
   }
   else {
-    *(undefined2 *)(puVar14 + 0x16) = *(undefined2 *)pos;
-    *(undefined2 *)((intptr_t)puVar14 + 0x5a) = *(undefined2 *)(pos + 1);
-    *(undefined2 *)(puVar14 + 0x17) = *(undefined2 *)(pos + 2);
+    *(undefined2 *)(rec + 0x16) = *(undefined2 *)pos;
+    *(undefined2 *)((intptr_t)rec + 0x5a) = *(undefined2 *)(pos + 1);
+    *(undefined2 *)(rec + 0x17) = *(undefined2 *)(pos + 2);
   }
-  *(short *)(puVar14 + 0x19) = (short)fid;
-  puVar14[0x15] = (int)*(short *)(&DAT_801b18a8 + ((int)(fid << 0x10) >> 0xf));
-  if (*(short *)(&DAT_801b1880 + *(short *)(puVar14 + 0x19) * 2) == 0) {
-    puVar14[0x18] = 0;
+  *(short *)(rec + 0x19) = (short)fid;
+  rec[0x15] = (int)*(short *)(&DAT_801b18a8 + ((int)(fid << 0x10) >> 0xf));
+  if (*(short *)(&DAT_801b1880 + *(short *)(rec + 0x19) * 2) == 0) {
+    rec[0x18] = 0;
   }
   else {
-    puVar14[0x18] = *(int *)guest_at((uint32_t)(uintptr_t)((iVar4 + 0x10) ))+ 0x68;
+    rec[0x18] = *(int *)guest_at((uint32_t)(uintptr_t)((t0 + 0x10) ))+ 0x68;
   }
-  iVar10 = 0;
-  puVar14[0x14] = 1;
-  *puVar14 = 0x9000000;
-  *(undefined1 *)((intptr_t)puVar14 + 7) = 0x2c;
-  puVar14[10] = 0x9000000;
-  *(undefined1 *)((intptr_t)puVar14 + 0x2f) = 0x2c;
-  puVar9 = puVar14;
+  t1 = 0;
+  rec[0x14] = 1;
+  *rec = 0x9000000;
+  *(undefined1 *)((intptr_t)rec + 7) = 0x2c;
+  rec[10] = 0x9000000;
+  *(undefined1 *)((intptr_t)rec + 0x2f) = 0x2c;
+  cur = rec;
   do {
-    *(undefined2 *)((intptr_t)puVar9 + 0xe) =
-         *(undefined2 *)(&DAT_801b18d0 + *(short *)(puVar14 + 0x19) * 2);
-    uVar1 = *(undefined2 *)(&DAT_801b1904 + *(short *)(puVar14 + 0x19) * 2);
-    iVar10 = iVar10 + 1;
-    *(undefined1 *)(puVar9 + 1) = 0x7f;
-    *(undefined1 *)((intptr_t)puVar9 + 5) = 0x7f;
-    *(undefined1 *)((intptr_t)puVar9 + 6) = 0x7f;
-    *(byte *)((intptr_t)puVar9 + 7) = *(byte *)((intptr_t)puVar9 + 7) & 0xfe | 2;
-    *(undefined2 *)((intptr_t)puVar9 + 0x16) = uVar1;
-    iVar5 = _DAT_801c4578;
-    puVar9 = puVar9 + 10;
-  } while (iVar10 < 2);
-  switch(*(undefined2 *)(puVar14 + 0x19)) {
+    *(undefined2 *)((intptr_t)cur + 0xe) =
+         *(undefined2 *)(&DAT_801b18d0 + *(short *)(rec + 0x19) * 2);
+    hw = *(undefined2 *)(&DAT_801b1904 + *(short *)(rec + 0x19) * 2);
+    t1 = t1 + 1;
+    *(undefined1 *)(cur + 1) = 0x7f;
+    *(undefined1 *)((intptr_t)cur + 5) = 0x7f;
+    *(undefined1 *)((intptr_t)cur + 6) = 0x7f;
+    *(byte *)((intptr_t)cur + 7) = *(byte *)((intptr_t)cur + 7) & 0xfe | 2;
+    *(undefined2 *)((intptr_t)cur + 0x16) = hw;
+    t3 = _DAT_801c4578;
+    cur = cur + 10;
+  } while (t1 < 2);
+  switch(*(undefined2 *)(rec + 0x19)) {
   case 0:
-    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)br2_gaddr(puVar14 + 10),(undefined4)br2_gaddr(puVar14 + 0x14), (undefined4)br2_gaddr(&DAT_801b1b1c), (undefined4)br2_gaddr(&DAT_801b1ad8));
-    if (iVar10 != 0) {
+    t1 = task_alloc_wrap_d((undefined4)br2_gaddr(rec),(undefined4)br2_gaddr(rec + 10),(undefined4)br2_gaddr(rec + 0x14), (undefined4)br2_gaddr(&DAT_801b1b1c), (undefined4)br2_gaddr(&DAT_801b1ad8));
+    if (t1 != 0) {
       if (ang < 10) {
-        puVar14[0x15] = 0xa4;
+        rec[0x15] = 0xa4;
         return;
       }
       if (ang < 0xf) {
-        puVar14[0x15] = 200;
+        rec[0x15] = 200;
         return;
       }
-      puVar14[0x15] = 0x104;
+      rec[0x15] = 0x104;
       return;
     }
     break;
   case 1:
-    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)br2_gaddr(puVar14 + 10),(undefined4)br2_gaddr(puVar14 + 0x14), (undefined4)br2_gaddr(&DAT_801b1b78), (undefined4)br2_gaddr(&DAT_801b1b5c));
-    if (iVar10 != 0) {
-      puVar13 = (undefined2 *)guest_at((uint32_t)(uintptr_t)(puVar14[0x18]));
-      uVar1 = rand_lcg();
-      iVar4 = 0;
-      *puVar13 = uVar1;
-      puVar13[1] = 0x29a;
+    t1 = task_alloc_wrap_d((undefined4)br2_gaddr(rec),(undefined4)br2_gaddr(rec + 10),(undefined4)br2_gaddr(rec + 0x14), (undefined4)br2_gaddr(&DAT_801b1b78), (undefined4)br2_gaddr(&DAT_801b1b5c));
+    if (t1 != 0) {
+      cv = (undefined2 *)guest_at((uint32_t)(uintptr_t)(rec[0x18]));
+      hw = rand_lcg();
+      t0 = 0;
+      *cv = hw;
+      cv[1] = 0x29a;
       do {
-        *(undefined1 *)(puVar14 + 1) = 0xc0;
-        *(undefined1 *)((intptr_t)puVar14 + 5) = 0xc0;
-        *(undefined1 *)((intptr_t)puVar14 + 6) = 0xc0;
-        iVar4 = iVar4 + 1;
-        puVar14 = puVar14 + 10;
-      } while (iVar4 < 2);
+        *(undefined1 *)(rec + 1) = 0xc0;
+        *(undefined1 *)((intptr_t)rec + 5) = 0xc0;
+        *(undefined1 *)((intptr_t)rec + 6) = 0xc0;
+        t0 = t0 + 1;
+        rec = rec + 10;
+      } while (t0 < 2);
       return;
     }
     break;
   case 2:
   case 3:
-    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)br2_gaddr(puVar14 + 10),(undefined4)br2_gaddr(puVar14 + 0x14), (undefined4)br2_gaddr(&DAT_801b1a74), (undefined4)br2_gaddr(&DAT_801b1a50));
-    if (iVar10 != 0) {
-      *(uint32_t *)guest_at((uint32_t)(uintptr_t)(puVar14[0x18] ))= (uint32_t)guest_of(pos);
-      uVar6 = rand_lcg();
-      iVar4 = 0;
-      puVar14[0x15] = (uVar6 & 0x7f) + 0x60;
+    t1 = task_alloc_wrap_d((undefined4)br2_gaddr(rec),(undefined4)br2_gaddr(rec + 10),(undefined4)br2_gaddr(rec + 0x14), (undefined4)br2_gaddr(&DAT_801b1a74), (undefined4)br2_gaddr(&DAT_801b1a50));
+    if (t1 != 0) {
+      *(uint32_t *)guest_at((uint32_t)(uintptr_t)(rec[0x18] ))= (uint32_t)guest_of(pos);
+      r = rand_lcg();
+      t0 = 0;
+      rec[0x15] = (r & 0x7f) + 0x60;
       do {
-        *(undefined1 *)(puVar14 + 1) = 0xff;
-        *(undefined1 *)((intptr_t)puVar14 + 5) = 0xff;
-        *(undefined1 *)((intptr_t)puVar14 + 6) = 0xff;
+        *(undefined1 *)(rec + 1) = 0xff;
+        *(undefined1 *)((intptr_t)rec + 5) = 0xff;
+        *(undefined1 *)((intptr_t)rec + 6) = 0xff;
         if (ang != 0) {
-          *(ushort *)((intptr_t)puVar14 + 0xe) = ((short)ang + 0x1e0U & 0x1ff) * 0x40 + 0x1a;
+          *(ushort *)((intptr_t)rec + 0xe) = ((short)ang + 0x1e0U & 0x1ff) * 0x40 + 0x1a;
         }
-        iVar4 = iVar4 + 1;
-        puVar14 = puVar14 + 10;
-      } while (iVar4 < 2);
+        t0 = t0 + 1;
+        rec = rec + 10;
+      } while (t0 < 2);
       return;
     }
     break;
   case 4:
   case 9:
-    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)br2_gaddr(puVar14 + 10),(undefined4)br2_gaddr(puVar14 + 0x14), (undefined4)br2_gaddr(&DAT_801b1ab8), (undefined4)br2_gaddr(&DAT_801b1a94));
-    if (iVar10 != 0) {
+    t1 = task_alloc_wrap_d((undefined4)br2_gaddr(rec),(undefined4)br2_gaddr(rec + 10),(undefined4)br2_gaddr(rec + 0x14), (undefined4)br2_gaddr(&DAT_801b1ab8), (undefined4)br2_gaddr(&DAT_801b1a94));
+    if (t1 != 0) {
       return;
     }
     break;
   case 5:
-    puVar9 = puVar14 + 0x14;
-    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)br2_gaddr(puVar14 + 10),(undefined4)br2_gaddr(puVar9), (undefined4)br2_gaddr(&DAT_801b1bb4), (undefined4)br2_gaddr(&DAT_801b1b90));
-    if (iVar10 != 0) {
-      puVar13 = (undefined2 *)guest_at((uint32_t)(uintptr_t)(puVar14[0x18]));
-      puVar14[0x15] = (int)fl >> 0xf;
-      uVar6 = rand_lcg();
-      iVar10 = (int)((fl & 0xffff) * ((uVar6 & 0x7ff) + 0x400)) >> 0xc;
-      uVar6 = rand_lcg();
-      iVar5 = ang + -0x100 + (uVar6 & 0x1ff);
-      uVar6 = rand_lcg();
-      iVar4 = lut_cos_q12(iVar5);
-      *puVar13 = (short)(iVar4 * iVar10 >> 0xb);
-      iVar4 = lut_sin_q12(aux + -0x100 + (uVar6 & 0x1ff));
-      puVar13[1] = (short)(iVar4 * iVar10 >> 0xb);
-      iVar4 = lut_sin_q12(iVar5);
-      puVar13[2] = (short)(iVar4 * iVar10 >> 0xb);
+    cur = rec + 0x14;
+    t1 = task_alloc_wrap_d((undefined4)br2_gaddr(rec),(undefined4)br2_gaddr(rec + 10),(undefined4)br2_gaddr(cur), (undefined4)br2_gaddr(&DAT_801b1bb4), (undefined4)br2_gaddr(&DAT_801b1b90));
+    if (t1 != 0) {
+      cv = (undefined2 *)guest_at((uint32_t)(uintptr_t)(rec[0x18]));
+      rec[0x15] = (int)fl >> 0xf;
+      r = rand_lcg();
+      t1 = (int)((fl & 0xffff) * ((r & 0x7ff) + 0x400)) >> 0xc;
+      r = rand_lcg();
+      t3 = ang + -0x100 + (r & 0x1ff);
+      r = rand_lcg();
+      t0 = lut_cos_q12(t3);
+      *cv = (short)(t0 * t1 >> 0xb);
+      t0 = lut_sin_q12(aux + -0x100 + (r & 0x1ff));
+      cv[1] = (short)(t0 * t1 >> 0xb);
+      t0 = lut_sin_q12(t3);
+      cv[2] = (short)(t0 * t1 >> 0xb);
       do {
         if ((_DAT_801c4578 != 0) && (_DAT_801c4578 != 3)) {
-          *(byte *)((intptr_t)puVar14 + 7) = *(byte *)((intptr_t)puVar14 + 7) & 0xfd;
+          *(byte *)((intptr_t)rec + 7) = *(byte *)((intptr_t)rec + 7) & 0xfd;
         }
-        *(undefined1 *)(puVar14 + 1) = 0xa0;
-        *(undefined1 *)((intptr_t)puVar14 + 5) = 0xff;
-        *(undefined1 *)((intptr_t)puVar14 + 6) = 100;
-        puVar14 = puVar14 + 10;
-      } while ((intptr_t)puVar14 < (intptr_t)puVar9);
+        *(undefined1 *)(rec + 1) = 0xa0;
+        *(undefined1 *)((intptr_t)rec + 5) = 0xff;
+        *(undefined1 *)((intptr_t)rec + 6) = 100;
+        rec = rec + 10;
+      } while ((intptr_t)rec < (intptr_t)cur);
       return;
     }
     break;
   case 6:
-    iVar4 = 0;
-    *(undefined2 *)guest_at((uint32_t)(uintptr_t)(puVar14[0x18] ))= 0x20;
-    puVar9 = puVar14;
+    t0 = 0;
+    *(undefined2 *)guest_at((uint32_t)(uintptr_t)(rec[0x18] ))= 0x20;
+    cur = rec;
     do {
-      *(undefined1 *)(puVar9 + 1) = 0xa0;
-      *(undefined1 *)((intptr_t)puVar9 + 5) = 0xff;
-      *(undefined1 *)((intptr_t)puVar9 + 6) = 100;
-      *(undefined1 *)(puVar9 + 3) = 0xe0;
-      *(undefined1 *)((intptr_t)puVar9 + 0xd) = 0xb0;
-      *(undefined1 *)(puVar9 + 5) = 0xef;
-      *(undefined1 *)((intptr_t)puVar9 + 0x15) = 0xb0;
-      *(undefined1 *)(puVar9 + 7) = 0xe0;
-      *(undefined1 *)((intptr_t)puVar9 + 0x1d) = 0xbf;
-      *(undefined1 *)(puVar9 + 9) = 0xef;
-      *(undefined1 *)((intptr_t)puVar9 + 0x25) = 0xbf;
-      iVar4 = iVar4 + 1;
-      puVar9 = puVar9 + 10;
-    } while (iVar4 < 2);
+      *(undefined1 *)(cur + 1) = 0xa0;
+      *(undefined1 *)((intptr_t)cur + 5) = 0xff;
+      *(undefined1 *)((intptr_t)cur + 6) = 100;
+      *(undefined1 *)(cur + 3) = 0xe0;
+      *(undefined1 *)((intptr_t)cur + 0xd) = 0xb0;
+      *(undefined1 *)(cur + 5) = 0xef;
+      *(undefined1 *)((intptr_t)cur + 0x15) = 0xb0;
+      *(undefined1 *)(cur + 7) = 0xe0;
+      *(undefined1 *)((intptr_t)cur + 0x1d) = 0xbf;
+      *(undefined1 *)(cur + 9) = 0xef;
+      *(undefined1 *)((intptr_t)cur + 0x25) = 0xbf;
+      t0 = t0 + 1;
+      cur = cur + 10;
+    } while (t0 < 2);
     if (_DAT_801c4578 == 0) {
       return;
     }
     if (_DAT_801c4578 == 3) {
       return;
     }
-    puVar14[0x15] = 0x96;
+    rec[0x15] = 0x96;
     return;
   case 7:
-    psVar11 = (short *)guest_at((uint32_t)(uintptr_t)(puVar14[0x18]));
-    psVar11[4] = 0x20;
-    uVar12 = puVar14[0x17];
-    *(undefined4 *)psVar11 = puVar14[0x16];
-    *(undefined4 *)(psVar11 + 2) = uVar12;
-    if ((iVar5 != 0) && (iVar5 != 3)) {
-      puVar14[0x15] = 0x5a;
+    mv = (short *)guest_at((uint32_t)(uintptr_t)(rec[0x18]));
+    mv[4] = 0x20;
+    py = rec[0x17];
+    *(undefined4 *)mv = rec[0x16];
+    *(undefined4 *)(mv + 2) = py;
+    if ((t3 != 0) && (t3 != 3)) {
+      rec[0x15] = 0x5a;
     }
     if (ang == 1) {
-      sVar3 = psVar11[2] - *(short *)(puVar14 + 0x15);
+      dz = mv[2] - *(short *)(rec + 0x15);
     }
     else {
       if (ang < 2) {
         if (ang == 0) {
-          *psVar11 = *psVar11 - *(short *)(puVar14 + 0x15);
+          *mv = *mv - *(short *)(rec + 0x15);
         }
         goto LAB_8013a628;
       }
       if (ang == 2) {
-        *psVar11 = *psVar11 + *(short *)(puVar14 + 0x15);
+        *mv = *mv + *(short *)(rec + 0x15);
         goto LAB_8013a628;
       }
       if (ang != 3) goto LAB_8013a628;
-      sVar3 = psVar11[2] + *(short *)(puVar14 + 0x15);
+      dz = mv[2] + *(short *)(rec + 0x15);
     }
-    psVar11[2] = sVar3;
+    mv[2] = dz;
 LAB_8013a628:
-    iVar4 = 0;
-    psVar11[1] = psVar11[1] + *(short *)(puVar14 + 0x15);
+    t0 = 0;
+    mv[1] = mv[1] + *(short *)(rec + 0x15);
     do {
-      *(undefined1 *)(puVar14 + 1) = 0xa0;
-      *(undefined1 *)((intptr_t)puVar14 + 5) = 0xff;
-      *(undefined1 *)((intptr_t)puVar14 + 6) = 100;
-      *(undefined1 *)(puVar14 + 3) = 0xe0;
-      *(undefined1 *)((intptr_t)puVar14 + 0xd) = 0xb0;
-      *(undefined1 *)(puVar14 + 5) = 0xef;
-      *(undefined1 *)((intptr_t)puVar14 + 0x15) = 0xb0;
-      *(undefined1 *)(puVar14 + 7) = 0xe0;
-      *(undefined1 *)((intptr_t)puVar14 + 0x1d) = 0xbf;
-      *(undefined1 *)(puVar14 + 9) = 0xef;
-      *(undefined1 *)((intptr_t)puVar14 + 0x25) = 0xbf;
-      iVar4 = iVar4 + 1;
-      puVar14 = puVar14 + 10;
-    } while (iVar4 < 2);
+      *(undefined1 *)(rec + 1) = 0xa0;
+      *(undefined1 *)((intptr_t)rec + 5) = 0xff;
+      *(undefined1 *)((intptr_t)rec + 6) = 100;
+      *(undefined1 *)(rec + 3) = 0xe0;
+      *(undefined1 *)((intptr_t)rec + 0xd) = 0xb0;
+      *(undefined1 *)(rec + 5) = 0xef;
+      *(undefined1 *)((intptr_t)rec + 0x15) = 0xb0;
+      *(undefined1 *)(rec + 7) = 0xe0;
+      *(undefined1 *)((intptr_t)rec + 0x1d) = 0xbf;
+      *(undefined1 *)(rec + 9) = 0xef;
+      *(undefined1 *)((intptr_t)rec + 0x25) = 0xbf;
+      t0 = t0 + 1;
+      rec = rec + 10;
+    } while (t0 < 2);
     return;
   case 8:
   case 0x12:
-    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)br2_gaddr(puVar14 + 10),(undefined4)br2_gaddr(puVar14 + 0x14), (undefined4)br2_gaddr(&DAT_801b1c30), (undefined4)br2_gaddr(&DAT_801b1bfc));
-    if (iVar10 != 0) {
-      iVar5 = task_alloc_wrap_c((undefined4)(uintptr_t)((intptr_t)puVar14 + 0xe),(undefined4)(uintptr_t)((intptr_t)puVar14 + 0x36),(int)guest_of(&DAT_801b1c60),(int)guest_of(&DAT_801b1c74));
-      if (iVar5 != 0) {
-        if (*(short *)(puVar14 + 0x19) != 0x12) {
+    t1 = task_alloc_wrap_d((undefined4)br2_gaddr(rec),(undefined4)br2_gaddr(rec + 10),(undefined4)br2_gaddr(rec + 0x14), (undefined4)br2_gaddr(&DAT_801b1c30), (undefined4)br2_gaddr(&DAT_801b1bfc));
+    if (t1 != 0) {
+      t3 = task_alloc_wrap_c((undefined4)(uintptr_t)((intptr_t)rec + 0xe),(undefined4)(uintptr_t)((intptr_t)rec + 0x36),(int)guest_of(&DAT_801b1c60),(int)guest_of(&DAT_801b1c74));
+      if (t3 != 0) {
+        if (*(short *)(rec + 0x19) != 0x12) {
           return;
         }
-        puVar13 = (undefined2 *)guest_at((uint32_t)(uintptr_t)(puVar14[0x18]));
-        iVar4 = lut_cos_q12(aux);
-        *puVar13 = (short)(iVar4 >> 7);
-        iVar4 = lut_sin_q12(ang);
-        puVar13[1] = (short)(iVar4 >> 9);
-        iVar4 = lut_sin_q12(aux);
-        puVar13[2] = (short)(iVar4 >> 7);
+        cv = (undefined2 *)guest_at((uint32_t)(uintptr_t)(rec[0x18]));
+        t0 = lut_cos_q12(aux);
+        *cv = (short)(t0 >> 7);
+        t0 = lut_sin_q12(ang);
+        cv[1] = (short)(t0 >> 9);
+        t0 = lut_sin_q12(aux);
+        cv[2] = (short)(t0 >> 7);
         return;
       }
-      task_node_free((int *)(uintptr_t)iVar10);
+      task_node_free((int *)(uintptr_t)t1);
     }
     break;
   case 10:
@@ -6831,93 +6831,93 @@ LAB_8013a628:
     /* guest: lw aux, (0x801B19D4 + (idx-10)*4) — u32 table of guest addrs,
      * passed raw to task_alloc_wrap_d. g_PTR_DAT_801b19d4 is uint8_t** so
      * [&PTR][i] would read 8 bytes at i*8; index as u32 instead. */
-    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)br2_gaddr(puVar14 + 10),(undefined4)br2_gaddr(puVar14 + 0x14),(undefined4)((uint32_t *)&PTR_DAT_801b19d4)[*(short *)(puVar14 + 0x19) + -10], (undefined4)br2_gaddr(&DAT_801b192c));
-    if (iVar10 != 0) {
-      puVar13 = (undefined2 *)guest_at((uint32_t)(uintptr_t)(puVar14[0x18]));
-      uVar6 = rand_lcg();
-      iVar10 = (uVar6 & 0xc63) + 0x200;
-      uVar6 = rand_lcg();
-      uVar7 = rand_lcg();
-      iVar5 = ang + -0x400 + (uVar7 & 0x7ff);
-      uVar7 = rand_lcg();
-      iVar4 = lut_cos_q12(iVar5);
-      iVar4 = (iVar4 >> 7) * iVar10;
-      if (iVar4 < 0) {
-        iVar4 = iVar4 + 0xfff;
+    t1 = task_alloc_wrap_d((undefined4)br2_gaddr(rec),(undefined4)br2_gaddr(rec + 10),(undefined4)br2_gaddr(rec + 0x14),(undefined4)((uint32_t *)&PTR_DAT_801b19d4)[*(short *)(rec + 0x19) + -10], (undefined4)br2_gaddr(&DAT_801b192c));
+    if (t1 != 0) {
+      cv = (undefined2 *)guest_at((uint32_t)(uintptr_t)(rec[0x18]));
+      r = rand_lcg();
+      t1 = (r & 0xc63) + 0x200;
+      r = rand_lcg();
+      r2 = rand_lcg();
+      t3 = ang + -0x400 + (r2 & 0x7ff);
+      r2 = rand_lcg();
+      t0 = lut_cos_q12(t3);
+      t0 = (t0 >> 7) * t1;
+      if (t0 < 0) {
+        t0 = t0 + 0xfff;
       }
-      *puVar13 = (short)(iVar4 >> 0xc);
-      iVar4 = lut_sin_q12(iVar5);
-      iVar10 = (iVar4 >> 7) * iVar10;
-      if (iVar10 < 0) {
-        iVar10 = iVar10 + 0xfff;
+      *cv = (short)(t0 >> 0xc);
+      t0 = lut_sin_q12(t3);
+      t1 = (t0 >> 7) * t1;
+      if (t1 < 0) {
+        t1 = t1 + 0xfff;
       }
-      puVar13[2] = (short)(iVar10 >> 0xc);
+      cv[2] = (short)(t1 >> 0xc);
       if (fl == 0x10) {
-        uVar2 = rand_lcg();
-        sVar3 = (uVar2 & 0x3f) + 0x20;
+        rw = rand_lcg();
+        dz = (rw & 0x3f) + 0x20;
       }
       else {
-        iVar4 = lut_sin_q12(aux + -0x400 + (uVar7 & 0x7ff));
-        iVar4 = (iVar4 >> 7) * ((uVar6 & 0xc63) + 0x200);
-        if (iVar4 < 0) {
-          iVar4 = iVar4 + 0xfff;
+        t0 = lut_sin_q12(aux + -0x400 + (r2 & 0x7ff));
+        t0 = (t0 >> 7) * ((r & 0xc63) + 0x200);
+        if (t0 < 0) {
+          t0 = t0 + 0xfff;
         }
-        sVar3 = (short)(iVar4 >> 0xc);
+        dz = (short)(t0 >> 0xc);
       }
-      puVar13[1] = sVar3;
-      iVar4 = 0;
+      cv[1] = dz;
+      t0 = 0;
       do {
-        iVar4 = iVar4 + 1;
-        uVar1 = *(undefined2 *)(&DAT_801b18d0 + ((byte)(&DAT_801b18f8)[DAT_1f800098] + 10) * 2);
-        *(byte *)((intptr_t)puVar14 + 7) = *(byte *)((intptr_t)puVar14 + 7) & 0xfd;
-        *(undefined2 *)((intptr_t)puVar14 + 0xe) = uVar1;
-        puVar14 = puVar14 + 10;
-      } while (iVar4 < 2);
+        t0 = t0 + 1;
+        hw = *(undefined2 *)(&DAT_801b18d0 + ((byte)(&DAT_801b18f8)[DAT_1f800098] + 10) * 2);
+        *(byte *)((intptr_t)rec + 7) = *(byte *)((intptr_t)rec + 7) & 0xfd;
+        *(undefined2 *)((intptr_t)rec + 0xe) = hw;
+        rec = rec + 10;
+      } while (t0 < 2);
       return;
     }
     break;
   case 0xe:
   case 0xf:
-    if (*(short *)(puVar14 + 0x19) == 0xe) {
-      puVar8 = &DAT_801b1a18;
+    if (*(short *)(rec + 0x19) == 0xe) {
+      tp = &DAT_801b1a18;
     }
     else {
-      puVar8 = &DAT_801b1a3c;
+      tp = &DAT_801b1a3c;
     }
-    iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)br2_gaddr(puVar14 + 10),(undefined4)br2_gaddr(puVar14 + 0x14), (undefined4)br2_gaddr(&DAT_801b1a2c),(undefined4)br2_gaddr(puVar8));
-    if (iVar10 != 0) {
-      if (*(short *)(puVar14 + 0x19) != 0xe) {
+    t1 = task_alloc_wrap_d((undefined4)br2_gaddr(rec),(undefined4)br2_gaddr(rec + 10),(undefined4)br2_gaddr(rec + 0x14), (undefined4)br2_gaddr(&DAT_801b1a2c),(undefined4)br2_gaddr(tp));
+    if (t1 != 0) {
+      if (*(short *)(rec + 0x19) != 0xe) {
         return;
       }
-      puVar13 = (undefined2 *)guest_at((uint32_t)(uintptr_t)(puVar14[0x18]));
-      iVar4 = lut_cos_q12(ang);
-      iVar4 = (iVar4 >> 5) * fl;
-      if (iVar4 < 0) {
-        iVar4 = iVar4 + 0xfff;
+      cv = (undefined2 *)guest_at((uint32_t)(uintptr_t)(rec[0x18]));
+      t0 = lut_cos_q12(ang);
+      t0 = (t0 >> 5) * fl;
+      if (t0 < 0) {
+        t0 = t0 + 0xfff;
       }
-      *puVar13 = (short)(iVar4 >> 0xc);
-      iVar4 = lut_sin_q12(aux);
-      iVar4 = (iVar4 >> 5) * fl;
-      if (iVar4 < 0) {
-        iVar4 = iVar4 + 0xfff;
+      *cv = (short)(t0 >> 0xc);
+      t0 = lut_sin_q12(aux);
+      t0 = (t0 >> 5) * fl;
+      if (t0 < 0) {
+        t0 = t0 + 0xfff;
       }
-      puVar13[1] = (short)(iVar4 >> 0xc);
-      iVar4 = lut_sin_q12(ang);
-      iVar4 = (iVar4 >> 5) * fl;
-      if (iVar4 < 0) {
-        iVar4 = iVar4 + 0xfff;
+      cv[1] = (short)(t0 >> 0xc);
+      t0 = lut_sin_q12(ang);
+      t0 = (t0 >> 5) * fl;
+      if (t0 < 0) {
+        t0 = t0 + 0xfff;
       }
-      puVar13[2] = (short)(iVar4 >> 0xc);
-      iVar4 = rand_lcg();
-      *(uint *)(puVar13 + 4) = iVar4 >> 8 & 1;
-      *(undefined4 *)(puVar13 + 6) = 0;
+      cv[2] = (short)(t0 >> 0xc);
+      t0 = rand_lcg();
+      *(uint *)(cv + 4) = t0 >> 8 & 1;
+      *(undefined4 *)(cv + 6) = 0;
       return;
     }
     break;
   default:
     goto switchD_8013a1f8_caseD_10;
   }
-  task_node_free((int *)(uintptr_t)iVar4);
+  task_node_free((int *)(uintptr_t)t0);
 switchD_8013a1f8_caseD_10:
   return;
 
