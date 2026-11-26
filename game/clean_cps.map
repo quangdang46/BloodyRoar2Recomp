@@ -5859,3 +5859,24 @@
 801983d8 cps_80198190
 801983f0 cps_80198190
 80198404 cps_80198190
+
+# w5_e00 — CD kernel-object jal-targets (game/w5_e00.c). Entry addrs are
+# also in renames.map; every dispatch addr (entry + jal/jalr return pcs +
+# loop yield points) routes to the same clean CPS body via cpu->pc.
+8019a350 cd_kobj_mcall_58
+8019a364 cd_kobj_mcall_5c
+8019e4c8 cd_kobj_b56_commit
+8019e4d8 cd_kobj_b56_commit
+8019e4e8 cd_kobj_b56_commit
+8019e524 cd_kobj_b56_commit
+8019e53c cd_kobj_b56_commit
+8019e548 cd_kobj_b56_commit
+8019e55c cd_kobj_b57_commit
+8019e56c cd_kobj_b57_commit
+8019e57c cd_kobj_b57_commit
+8019e598 cd_kobj_b57_commit
+8019e5b0 cd_kobj_b57_commit
+8019e5b8 cd_kobj_b57_commit
+8019e5cc cd_kobj_param_copy
+8019e5e0 cd_kobj_param_copy
+8019e5f8 cd_kobj_param_copy

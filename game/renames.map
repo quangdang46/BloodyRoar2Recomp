@@ -71,6 +71,8 @@
 8019737c cd_reg_init_seq
 8019a3f0 cd_kobj_init_a
 8019a378 cd_kobj_init_b
+8019a350 cd_kobj_mcall_58
+8019a364 cd_kobj_mcall_5c
 801957f0 bios_tramp_a044
 80195800 cd_dir_table_set
 80195830 cd_dir_read_wrap
@@ -86,6 +88,9 @@
 80195d8c cd_mode_flag_set
 80199420 cd_read_param_block
 8019e410 cd_mode_apply_wrap
+8019e4c8 cd_kobj_b56_commit
+8019e55c cd_kobj_b57_commit
+8019e5cc cd_kobj_param_copy
 80199320 cd_dir_clear
 8019e400 cd_mode_apply
 8019e320 bios_tramp_a070
