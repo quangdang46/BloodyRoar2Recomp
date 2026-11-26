@@ -3807,9 +3807,9 @@ void post_confirm_config_build(uint32_t battle_g,uint8_t *recs,int32_t direct)
             }
           }
         } else if (v0 == (uint32_t)a2) {
-          uint32_t a1v = *(uint32_t *)(a0 + 0x28);
+          uint32_t fl_old = *(uint32_t *)(a0 + 0x28);
           uint32_t foe_bit;
-          *(uint32_t *)(a0 + 0x28) = a1v | 0x40;
+          *(uint32_t *)(a0 + 0x28) = fl_old | 0x40;
           foe_bit = ((*(uint32_t *)(s4 + (s1 ^ 1) * 0x30 + 0x28) >> 1) & 1);
           if (foe_bit != (uint32_t)a2) {
             /* 493c4: cr-based char select */
@@ -3818,7 +3818,7 @@ void post_confirm_config_build(uint32_t battle_g,uint8_t *recs,int32_t direct)
           } else {
             /* 49380: +0x28 = old|0x58, char via battle+0xa8 table */
             int16_t off;
-            *(uint32_t *)(a0 + 0x28) = a1v | 0x58;
+            *(uint32_t *)(a0 + 0x28) = fl_old | 0x58;
             off = *(int16_t *)(s3 + 0xa2);
             if (s5) *(uint32_t *)(a0 + 0x44) =
               *(uint8_t *)guest_at(*(uint32_t *)(s3 + 0xa8) + (uint32_t)off);
@@ -4377,7 +4377,7 @@ void fight_timer_announce(uint32_t battle_g,uint8_t *side,int32_t flag)
   uint8_t *s1 = (uint8_t *)guest_at(battle_g);
   uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(s1 + 0xc8));
   int32_t s2, s0;
-  uint32_t a1v;
+  uint32_t frame_cnt;
   int32_t secs, r, sec_rem, mins;
   /* sprintf buf = guest $sp+0x18 (frame -0x38) = entry_sp-0x20; the
    * string is re-read by hud_text_blk through nested frames, so the
@@ -4389,15 +4389,15 @@ void fight_timer_announce(uint32_t battle_g,uint8_t *side,int32_t flag)
   if (*(int16_t *)guest_at(*(uint32_t *)(s1 + 0xcc) + (0xa)) != 0) return;
   s2 = (*(uint8_t *)guest_at(*(uint32_t *)(s1 + 0xc0) + (0x21)) != 0) ? 6 : 5;
   s0 = flag ? ((int32_t)*(int16_t *)(s1 + 0x20) - 0x50) : 0x50;
-  a1v = *(uint32_t *)(side + 0xf0);
+  frame_cnt = *(uint32_t *)(side + 0xf0);
   /* frames/50 -> seconds (0x51eb851f magic, mulhi>>4), remainder*2 =
    * sub-frame count; seconds/60 -> min:sec (0x88888889 magic). */
   {
-    int64_t m = (int64_t)(int32_t)a1v * 0x51eb851f;
+    int64_t m = (int64_t)(int32_t)frame_cnt * 0x51eb851f;
     int32_t mulhi = (int32_t)(m >> 32);
-    secs = (mulhi >> 4) - ((int32_t)a1v >> 31);
+    secs = (mulhi >> 4) - ((int32_t)frame_cnt >> 31);
   }
-  r = (int32_t)(a1v - (uint32_t)secs * 50);
+  r = (int32_t)(frame_cnt - (uint32_t)secs * 50);
   r = r * 2;                            /* a3: sub-frame arg */
   {
     int64_t m = (int64_t)secs * 0x88888889;
@@ -5910,7 +5910,7 @@ int32_t battle_bringup_a(uint32_t battle,uint32_t sel_a,uint32_t sel_b,
                      void *unused)
 {
   uint32_t s5 = battle, s4 = sel_a, s2 = sel_b;
-  uint32_t s3, s0, s1, a0v;
+  uint32_t s3, s0, s1, res_id;
   int32_t  v1;
   (void)unused;
 
@@ -5938,17 +5938,17 @@ int32_t battle_bringup_a(uint32_t battle,uint32_t sel_a,uint32_t sel_b,
     s0 = 0x10;                            /* jal delay slot */
     page_table_ptr_set(0x11,2,(undefined *)0);
     cd_timer_read(0);
-    a0v = (uint32_t)(MB8(0x801b49f8 + s4) + 0xc7);
+    res_id = (uint32_t)(MB8(0x801b49f8 + s4) + 0xc7);
     goto L_bchk;
   case 0x10:
-    a0v = (uint32_t)(MB8(0x801b49f8 + s4) + 0xc7);
+    res_id = (uint32_t)(MB8(0x801b49f8 + s4) + 0xc7);
   L_bchk:
-    if (cd_file_load_sm(a0v, s3) == 0) goto L_store;
+    if (cd_file_load_sm(res_id, s3) == 0) goto L_store;
     goto L_mid;
   case 0x20:
-    a0v = (s2 == 8) ? 0x3f : MB8(0x801b49f8 + s2);
-    a0v += 0xc7;
-    if (cd_file_load_sm(a0v, s3) == 0) goto L_store;
+    res_id = (s2 == 8) ? 0x3f : MB8(0x801b49f8 + s2);
+    res_id += 0xc7;
+    if (cd_file_load_sm(res_id, s3) == 0) goto L_store;
     scratch_013_set(0);
     spr_draw_pair(s3,0,0x1f6,1,0x260,0,1);
     cd_timer_read(0);
@@ -6208,8 +6208,8 @@ int32_t pad_handler_a(uint32_t battle,uint32_t mask)
            (int32_t)(int16_t)(s5 + s2),(uint32_t)(lb2 ^ 2) < 1);
   {
     uint32_t c0 = MB32(s3 + 0xc0);
-    uint32_t a2v = MB32(0x801b4008 + (uint32_t)MB8(c0 + 0xb) * 4);
-    BR2_E078(s3,a2v,(int32_t)(int16_t)s0,
+    uint32_t dw_ent = MB32(0x801b4008 + (uint32_t)MB8(c0 + 0xb) * 4);
+    BR2_E078(s3,dw_ent,(int32_t)(int16_t)s0,
              (int32_t)(int16_t)(s5 + s4 * 4),(uint32_t)(lb2 ^ 3) < 1);
   }
   lb2 = MBS8(MB32(s3 + 0x84) + 2);
@@ -6476,7 +6476,7 @@ int32_t pad_handler_c(uint32_t battle,uint32_t mask)
   uint32_t fp = mask;                 /* pad mask */
   uint32_t a0 = 1;
   uint32_t s5, s4, s3, s6, s7 = 0, s1, s0;
-  uint32_t p84, a2v;
+  uint32_t p84, dw_ent;
   int32_t  lb2, lh12;
 
   /* first-use init: obj+0x84->6 == 0 -> seed flag halfwords from +0xd4 */
@@ -6523,32 +6523,32 @@ int32_t pad_handler_c(uint32_t battle,uint32_t mask)
   if (lb2 == 1) { s1 = 1; s7 = s4 + (s3 << 1); }
   BR2_E078(s2,0x80121ddc,(int32_t)(int16_t)(s5 + 8),
            (int32_t)(int16_t)(s4 + s3 * 2),s1);
-  a2v = MB32(0x801b41e8 + (uint32_t)MBS16(p84 + 8) * 4);
-  BR2_E078(s2,a2v,(int32_t)(int16_t)(s5 + 0x98),
+  dw_ent = MB32(0x801b41e8 + (uint32_t)MBS16(p84 + 8) * 4);
+  BR2_E078(s2,dw_ent,(int32_t)(int16_t)(s5 + 0x98),
            (int32_t)(int16_t)(s4 + s3 * 2),s1);
   lb2 = MBS8(MB32(s2 + 0x84) + 2);
   s1 = 0;
   if (lb2 == 2) { s1 = 1; s7 = s4 + s3 * 3; }
   BR2_E078(s2,0x80121de8,(int32_t)(int16_t)(s5 + 8),
            (int32_t)(int16_t)(s4 + s3 * 3),s1);
-  a2v = MB32(0x801b3f70 + (uint32_t)MBS16(p84 + 0xa) * 4);
-  BR2_E078(s2,a2v,(int32_t)(int16_t)(s5 + 0x98),
+  dw_ent = MB32(0x801b3f70 + (uint32_t)MBS16(p84 + 0xa) * 4);
+  BR2_E078(s2,dw_ent,(int32_t)(int16_t)(s5 + 0x98),
            (int32_t)(int16_t)(s4 + s3 * 3),s1);
   lb2 = MBS8(MB32(s2 + 0x84) + 2);
   s1 = 0;
   if (lb2 == 3) { s1 = 1; s7 = s4 + s3 * 4; }
   BR2_E078(s2,0x80121df4,(int32_t)(int16_t)(s5 + 8),
            (int32_t)(int16_t)(s4 + s3 * 4),s1);
-  a2v = MB32(0x801b3f70 + (uint32_t)MBS16(p84 + 0xc) * 4);
-  BR2_E078(s2,a2v,(int32_t)(int16_t)(s5 + 0x98),
+  dw_ent = MB32(0x801b3f70 + (uint32_t)MBS16(p84 + 0xc) * 4);
+  BR2_E078(s2,dw_ent,(int32_t)(int16_t)(s5 + 0x98),
            (int32_t)(int16_t)(s4 + s3 * 4),s1);
   lb2 = MBS8(MB32(s2 + 0x84) + 2);
   s1 = 0;
   if (lb2 == 4) { s1 = 1; s7 = s4 + s3 * 5; }
   BR2_E078(s2,0x80121e0c,(int32_t)(int16_t)(s5 + 8),
            (int32_t)(int16_t)(s4 + s3 * 5),s1);
-  a2v = MB32(0x801b3f70 + (uint32_t)MBS16(p84 + 0xe) * 4);
-  BR2_E078(s2,a2v,(int32_t)(int16_t)(s5 + 0x98),
+  dw_ent = MB32(0x801b3f70 + (uint32_t)MBS16(p84 + 0xe) * 4);
+  BR2_E078(s2,dw_ent,(int32_t)(int16_t)(s5 + 0x98),
            (int32_t)(int16_t)(s4 + s3 * 5),s1);
   lb2 = MBS8(MB32(s2 + 0x84) + 2);
   s1 = 0;
@@ -7916,7 +7916,7 @@ void vs_confirm_c(uint8_t *blk_a,uint8_t *blk_b,uint32_t battle,
   uint8_t *s2 = blk_a;
   uint8_t *s1 = blk_b;
   uint32_t s0 = battle;
-  uint32_t v1, a1v;
+  uint32_t v1, step;
   (void)unused;
 
   if (MBS16(s0 + 0x8c) == 0) {
@@ -7926,15 +7926,15 @@ void vs_confirm_c(uint8_t *blk_a,uint8_t *blk_b,uint32_t battle,
       v1 = MB16(s0 + 0x92) & 0xf00;
       if (v1 == 0x200 || v1 == 0x100) {
         if (MBS16(s0 + 0x94) == 0) {
-          a1v = (s2[1] != 0) ? (uint32_t)-10 : 10u;
+          step = (s2[1] != 0) ? (uint32_t)-10 : 10u;
         } else if (s2[0] == 0x81) {
-          a1v = (s2[1] != 0) ? (uint32_t)-10 : 10u;
+          step = (s2[1] != 0) ? (uint32_t)-10 : 10u;
         } else if (*(int16_t *)(s2 + 0xac) == 0) {
-          a1v = (s2[1] != 0) ? (uint32_t)-10 : 15u;
+          step = (s2[1] != 0) ? (uint32_t)-10 : 15u;
         } else {
-          a1v = (s2[1] != 0) ? (uint32_t)-10 : 10u;
+          step = (s2[1] != 0) ? (uint32_t)-10 : 10u;
         }
-        ctr_clamp(s0,(int32_t)a1v);
+        ctr_clamp(s0,(int32_t)step);
       }
     }
   }
