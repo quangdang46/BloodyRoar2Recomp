@@ -2084,7 +2084,7 @@ int32_t cd_reg_init_seq(void)
   br2_st16(base + 0xd5 * 2, 0xc001);      /* +0x1aa */
   /* command issue @0x801973CC-0x8019745C: the guest builds {0x80,0,0x80,0}
    * on its stack and writes UNCONDITIONALLY through the pointer cells —
-   * cmd 2 -> *cb0c, params -> *cb14/*cb18/*cb10/*cb14, cmd 3 -> *cb0c,
+   * cmd 2 -> *cb0c, params -> *cb14, *cb18, *cb10, *cb14, cmd 3 -> *cb0c,
    * 0x20 -> *cb18. There are no readiness reads or conditionals; the old
    * br2_ld8-gated form both issued extra MMIO reads and skipped writes. */
   br2_st8p(0x801bcb0c, 2);
@@ -5171,7 +5171,7 @@ int cd_chan_init_trio(void)
 
 uint32_t cd_blk5c_copy(uint32_t a0)
 {
-  guest_memcpy((uint32_t *)a0,(uint32_t *)0x801b8330,0x5c);
+  guest_memcpy((uint32_t *)(uintptr_t)a0,(uint32_t *)(uintptr_t)0x801b8330,0x5c);
   return a0;
 }
 
@@ -5179,7 +5179,7 @@ uint32_t cd_blk5c_copy(uint32_t a0)
 
 uint32_t cd_blk14_copy(uint32_t a0)
 {
-  guest_memcpy((uint32_t *)a0,(uint32_t *)0x801b838c,0x14);
+  guest_memcpy((uint32_t *)(uintptr_t)a0,(uint32_t *)(uintptr_t)0x801b838c,0x14);
   return a0;
 }
 
@@ -5764,7 +5764,7 @@ uint32_t cd_dir_scan(uint32_t a0,uint32_t a1)
     nid = i + 1;                  /* s3 = entry no. */
     *(uint32_t *)guest_at(0x801fcd00 + idx) = nid;
     *(uint32_t *)guest_at(0x801fcd04 + idx) = fl;
-    guest_memcpy((uint32_t *)nm,(uint32_t *)(uintptr_t)(cur + 8),(int)len);
+    guest_memcpy((uint32_t *)(uintptr_t)nm,(uint32_t *)(uintptr_t)(cur + 8),(int)len);
     DB8(nm + len) = 0;            /* NUL-terminate copied name */
     adv = len + ((len & 1) + 8);  /* record stride: 8+len rounded even */
     cur += adv;
@@ -6028,7 +6028,7 @@ void cd_prim_emit_a(uint32_t a0,uint32_t a1)
   tbl = DB32G(0x801b8318);
   gpu_invoke(*(uint32_t *)guest_at(tbl + 8),
                  *(uint32_t *)guest_at(tbl + 0x18),s0,0x40,0);
-  guest_memcpy((uint32_t *)0x801b8330,(uint32_t *)a1,0x5c);
+  guest_memcpy((uint32_t *)(uintptr_t)0x801b8330,(uint32_t *)(uintptr_t)a1,0x5c);
 }
 
 /* ======== batch_mass8 ======== */
