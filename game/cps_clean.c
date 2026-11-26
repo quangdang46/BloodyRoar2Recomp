@@ -80137,10 +80137,10 @@ void cps_8018d27c(void)
     /* Address: 0x8018D27C, Size: 8 bytes, Blocks: 1 */
 
     /* return -v0 */
-    uint32_t _jt_8018D27C = ra;  /* latch indirect target before delay slot */
+    uint32_t jt_8018D27C = ra;  /* latch indirect target before delay slot */
     v0 = zero - v0;                      /* delay slot: negate */
-    psx_check_interrupts_at(cpu, _jt_8018D27C);
-    cpu->pc = _jt_8018D27C; return;  /* CPS: jr $ra */
+    psx_check_interrupts_at(cpu, jt_8018D27C);
+    cpu->pc = jt_8018D27C; return;  /* CPS: jr $ra */
 block_8018D27C:
 }
 
@@ -80180,9 +80180,9 @@ void cps_8018d290(void)
     /* Address: 0x8018D290, Size: 8 bytes, Blocks: 1 */
 
     /* bare return (jr $ra, nop delay slot) */
-    uint32_t _jt_8018D290 = ra;  /* latch indirect target before delay slot */
-    psx_check_interrupts_at(cpu, _jt_8018D290);
-    cpu->pc = _jt_8018D290; return;  /* CPS: jr $ra */
+    uint32_t jt_8018D290 = ra;  /* latch indirect target before delay slot */
+    psx_check_interrupts_at(cpu, jt_8018D290);
+    cpu->pc = jt_8018D290; return;  /* CPS: jr $ra */
 block_8018D290:
 }
 
@@ -80196,9 +80196,9 @@ void cps_8018d2d8(void)
     /* Address: 0x8018D2D8, Size: 8 bytes, Blocks: 1 */
 
     /* bare return (jr $ra, nop delay slot) */
-    uint32_t _jt_8018D2D8 = ra;  /* latch indirect target before delay slot */
-    psx_check_interrupts_at(cpu, _jt_8018D2D8);
-    cpu->pc = _jt_8018D2D8; return;  /* CPS: jr $ra */
+    uint32_t jt_8018D2D8 = ra;  /* latch indirect target before delay slot */
+    psx_check_interrupts_at(cpu, jt_8018D2D8);
+    cpu->pc = jt_8018D2D8; return;  /* CPS: jr $ra */
 block_8018D2D8:
 }
 
@@ -80321,9 +80321,9 @@ void cps_8018d47c(void)
     /* Address: 0x8018D47C, Size: 8 bytes, Blocks: 1 */
 
     /* tail-dispatch: jr t5 (nop delay slot) */
-    uint32_t _jt_8018D47C = t5;  /* latch indirect target before delay slot */
-    psx_check_interrupts_at(cpu, _jt_8018D47C);
-    cpu->pc = _jt_8018D47C; return;  /* CPS: jr t5 */
+    uint32_t jt_8018D47C = t5;  /* latch indirect target before delay slot */
+    psx_check_interrupts_at(cpu, jt_8018D47C);
+    cpu->pc = jt_8018D47C; return;  /* CPS: jr t5 */
 block_8018D47C:
 }
 
@@ -80392,9 +80392,9 @@ void cps_8018d668(void)
     /* Address: 0x8018D668, Size: 8 bytes, Blocks: 1 */
 
     /* bare return (jr $ra, nop delay slot) */
-    uint32_t _jt_8018D668 = ra;  /* latch indirect target before delay slot */
-    psx_check_interrupts_at(cpu, _jt_8018D668);
-    cpu->pc = _jt_8018D668; return;  /* CPS: jr $ra */
+    uint32_t jt_8018D668 = ra;  /* latch indirect target before delay slot */
+    psx_check_interrupts_at(cpu, jt_8018D668);
+    cpu->pc = jt_8018D668; return;  /* CPS: jr $ra */
 block_8018D668:
 }
 
@@ -80444,10 +80444,10 @@ void cps_8018d694(void)
     /* Address: 0x8018D694, Size: 8 bytes, Blocks: 1 */
 
     /* return 0 */
-    uint32_t _jt_8018D694 = ra;  /* latch indirect target before delay slot */
+    uint32_t jt_8018D694 = ra;  /* latch indirect target before delay slot */
     v0 = zero;                           /* delay slot: ret 0 */
-    psx_check_interrupts_at(cpu, _jt_8018D694);
-    cpu->pc = _jt_8018D694; return;  /* CPS: jr $ra */
+    psx_check_interrupts_at(cpu, jt_8018D694);
+    cpu->pc = jt_8018D694; return;  /* CPS: jr $ra */
 block_8018D694:
 }
 
@@ -95002,7 +95002,7 @@ block_8019BB10:
 
 block_8019BB18:
     /* delay slot (always executes) */
-    a2 = 0x0100 << 16;                         /* 0x01000000 */
+    a2 = 0x01000000u;                         /* 0x01000000 */
     psx_check_interrupts_at(cpu, 0x8019BB2Cu);
     goto block_8019BB2C;  /* j */
 
@@ -95014,7 +95014,7 @@ block_8019BB20:
     cpu->pc = 0x8019BE28u; return;  /* CPS jal -> 0x8019BE28 */
 
 block_8019BB28:
-    a2 = 0x0100 << 16;                         /* 0x01000000 */
+    a2 = 0x01000000u;                         /* 0x01000000 */
     /* fall through to block_8019BB2C */
 
 block_8019BB2C:
@@ -95049,7 +95049,7 @@ block_8019BB2C:
     goto block_8019BB98;
 
 block_8019BB98:
-    a2 = 0x0100 << 16;                         /* 0x01000000 */
+    a2 = 0x01000000u;                         /* 0x01000000 */
     a2 = a2 | 0x0200;                          /* 0x01000200 */
     /* fall through to block_8019BBA0 */
 
