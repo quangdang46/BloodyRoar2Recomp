@@ -3861,82 +3861,82 @@ check:
 /* ---- battle_round_init @0x8016642c (69 insns) ---- */
 void battle_round_init(uint32_t a0,uint32_t a1)
 {
-  uint8_t *s0 = (uint8_t *)guest_at(a0);
-  int8_t s2 = (int8_t)s0[0x99];
+  uint8_t *ctx = (uint8_t *)guest_at(a0);
+  int8_t saved_99 = (int8_t)ctx[0x99];
   uint32_t w;
 
-  w = *(uint32_t *)(s0 + 0xbc);
-  s0[0x9d] = 0;
-  s0[0x9e] = 0;
-  s0[0x99] = 0;
+  w = *(uint32_t *)(ctx + 0xbc);
+  ctx[0x9d] = 0;
+  ctx[0x9e] = 0;
+  ctx[0x99] = 0;
   battle_struct_init(w,a0);
   perm_table_apply(table_byte_next_a());
   reset_sprite_ot_block(a0);
   task_table_init(0);
-  record_copy_1a((int32_t)(int8_t)s0[0x98]);
-  per_side_setup((int32_t)(int8_t)s0[0x98],(int32_t)(int8_t)s0[0x99]);
-  rec_copy_init((int32_t)(int8_t)s0[0x98],0x1f8000e8,0x1f8001f0);
+  record_copy_1a((int32_t)(int8_t)ctx[0x98]);
+  per_side_setup((int32_t)(int8_t)ctx[0x98],(int32_t)(int8_t)ctx[0x99]);
+  rec_copy_init((int32_t)(int8_t)ctx[0x98],0x1f8000e8,0x1f8001f0);
   clear_f4ee8_u16s(0x1f8000e8);
   clear_f4ee8_u16s(0x1f8001f0);
   reset_combat_slots();
   action_enter_fwd((void *)(uintptr_t)a0,(uint8_t *)guest_at(0x1f8000e8),a1);
   action_enter_fwd((void *)(uintptr_t)a0,(uint8_t *)guest_at(0x1f8001f0),a1);
-  fighter_anim_table_init((int32_t)(int8_t)s0[0x99]);
+  fighter_anim_table_init((int32_t)(int8_t)ctx[0x99]);
   sprite_anim_chain_build(a0);
   clear_f0300_records();
-  battle_struct_init(*(uint32_t *)(s0 + 0xbc),a0);
-  s0[0x99] = (uint8_t)s2;
+  battle_struct_init(*(uint32_t *)(ctx + 0xbc),a0);
+  ctx[0x99] = (uint8_t)saved_99;
 }
 
 /* ---- round_banner_draw @0x801670c8 (117 insns) ---- */
 void round_banner_draw(uint32_t a0,uint32_t a1)
 {
-  uint8_t *s0 = (uint8_t *)guest_at(a0);
-  int32_t s3 = (int32_t)a1;
+  uint8_t *ctx = (uint8_t *)guest_at(a0);
+  int32_t mode = (int32_t)a1;
   int32_t pos;
-  int32_t q;
-  int32_t a1v;
-  int32_t a3v;
+  int32_t quo;
+  int32_t attr;
+  int32_t txt_val;
 
-  if (s3 != 1) return;
-  pos = (int32_t)*(int16_t *)(s0 + 0x20);
-  if (*(uint8_t *)(s0 + 0x15) != 0) {
+  if (mode != 1) return;
+  pos = (int32_t)*(int16_t *)(ctx + 0x20);
+  if (*(uint8_t *)(ctx + 0x15) != 0) {
     /* sprite path: two sprite_quad_emit draws then hud_text_blk_alt */
-    q = (pos < 0) ? pos + 0x1f : pos;
-    q >>= 5;
-    a1v = ((pos - q) - 0x68) & 0xffff;
-    a1v |= 0x1a000000;
-    sprite_quad_emit(*(uint32_t *)(s0 + 8),a1v,0x1e7f000f,0x7adfe000,
+    quo = (pos < 0) ? pos + 0x1f : pos;
+    quo >>= 5;
+    attr = ((pos - quo) - 0x68) & 0xffff;
+    attr |= 0x1a000000;
+    sprite_quad_emit(*(uint32_t *)(ctx + 8),attr,0x1e7f000f,0x7adfe000,
                   0x1000,0x2000,0);
-    q = (pos < 0) ? pos + 0x1f : pos;
-    q >>= 5;
-    a1v = ((pos - q) - 0x14) & 0xffff;
-    a1v |= 0x19800000;
-    sprite_quad_emit(*(uint32_t *)(s0 + 8),a1v,0x2627000f,0x7adfd880,
+    quo = (pos < 0) ? pos + 0x1f : pos;
+    quo >>= 5;
+    attr = ((pos - quo) - 0x14) & 0xffff;
+    attr |= 0x19800000;
+    sprite_quad_emit(*(uint32_t *)(ctx + 8),attr,0x2627000f,0x7adfd880,
                   0x1000,0x2000,0);
-    a3v = (int32_t)*(int16_t *)(s0 + 0x20);
-    if (a3v < 0) a3v += 0xf;
-    hud_text_blk_alt(*(uint32_t *)(s0 + 8),*(uint32_t *)(s0 + 0xc),
+    txt_val = (int32_t)*(int16_t *)(ctx + 0x20);
+    if (txt_val < 0) txt_val += 0xf;
+    hud_text_blk_alt(*(uint32_t *)(ctx + 8),*(uint32_t *)(ctx + 0xc),
                   (const void *)guest_at(0x801220e4),
-                  a3v >> 4,0x20,s3);
+                  txt_val >> 4,0x20,mode);
     return;
   }
   /* plain path: two sprite_9slice_build draws then hud_text_blk_alt */
-  q = (pos < 0) ? pos + 0x1f : pos;
-  q >>= 5;
-  a1v = ((pos - q) - 0x68) & 0xffff;
-  a1v |= 0x00d00000;
-  sprite_9slice_build(*(uint32_t *)(s0 + 8),a1v,0x1e7f000f,0x7adfe000);
-  q = (pos < 0) ? pos + 0x1f : pos;
-  q >>= 5;
-  a1v = ((pos - q) - 0x14) & 0xffff;
-  a1v |= 0x00cc0000;
-  sprite_9slice_build(*(uint32_t *)(s0 + 8),a1v,0x2627000f,0x7adfd880);
-  a3v = (int32_t)*(int16_t *)(s0 + 0x20);
-  if (a3v < 0) a3v += 0xf;
-  hud_text_blk_alt(*(uint32_t *)(s0 + 8),*(uint32_t *)(s0 + 0xc),
+  quo = (pos < 0) ? pos + 0x1f : pos;
+  quo >>= 5;
+  attr = ((pos - quo) - 0x68) & 0xffff;
+  attr |= 0x00d00000;
+  sprite_9slice_build(*(uint32_t *)(ctx + 8),attr,0x1e7f000f,0x7adfe000);
+  quo = (pos < 0) ? pos + 0x1f : pos;
+  quo >>= 5;
+  attr = ((pos - quo) - 0x14) & 0xffff;
+  attr |= 0x00cc0000;
+  sprite_9slice_build(*(uint32_t *)(ctx + 8),attr,0x2627000f,0x7adfd880);
+  txt_val = (int32_t)*(int16_t *)(ctx + 0x20);
+  if (txt_val < 0) txt_val += 0xf;
+  hud_text_blk_alt(*(uint32_t *)(ctx + 8),*(uint32_t *)(ctx + 0xc),
                 (const void *)guest_at(0x801220e4),
-                a3v >> 4,0x10,s3);
+                txt_val >> 4,0x10,mode);
 }
 
 /* ---- mc_read_queue @0x80167ce4 (37 insns, 13-arg ABI) ---- */
