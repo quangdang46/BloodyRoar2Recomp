@@ -16274,46 +16274,46 @@ uint32_t NM(uint32_t a,uint32_t b,uint32_t c,uint32_t d,uint32_t e, \
  * src+4/+6/+8/+10 stride 0xc, src aux ptr src+10 stride 0xc.
  * Tag bytes 4/0x20 at dst+0x27/0x2b/0x3b/0x3f (a0 = cur+0x10).
  * Returns cur + count*0x4c. */
-uint32_t heap_serialize_tag_08(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t count,uint32_t unused6,
+uint32_t heap_serialize_tag_08(uint32_t wcur,uint32_t scur,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count,uint32_t unused6,
                      uint32_t unused7)
 {
 
 
 
 
-  uint32_t cur = a0;
+  uint32_t cur = wcur;
 
-  uint32_t src_cur = a1;
-  uint32_t v0, plo, phi;
+  uint32_t src_cur = scur;
+  uint32_t tp, plo, phi;
   (void)unused6; (void)unused7;
   if (count == 0) return cur;
-  a0 += 16; a1 += 10;
+  wcur += 16; scur += 10;
   do {
-    MW8(a0 + 23, 4);  MW8(a0 + 27, 32);
-    MW8(a0 + 43, 4);  MW8(a0 + 47, 32);
-    MW32(a0 + 8, MB32(src_cur));
+    MW8(wcur + 23, 4);  MW8(wcur + 27, 32);
+    MW8(wcur + 43, 4);  MW8(wcur + 47, 32);
+    MW32(wcur + 8, MB32(src_cur));
     src_cur += 12;
-    v0 = (uint32_t)MBS16(a1 - 6) << 3;
-    v0 += a3;
-    plo = MB32(v0);     phi = MB32(v0 + 4);
-    MW32(a0 + 12, plo); MW32(a0 + 16, phi);
-    v0 = (uint32_t)MBS16(a1 - 4) << 3;
+    tp = (uint32_t)MBS16(scur - 6) << 3;
+    tp += ptab2;
+    plo = MB32(tp);     phi = MB32(tp + 4);
+    MW32(wcur + 12, plo); MW32(wcur + 16, phi);
+    tp = (uint32_t)MBS16(scur - 4) << 3;
     count -= 1;
-    v0 += a2;
-    plo = MB32(v0);     phi = MB32(v0 + 4);
+    tp += ptab;
+    plo = MB32(tp);     phi = MB32(tp + 4);
     MW32(cur + 0, plo);  MW32(cur + 4, phi);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3;
+    tp = (uint32_t)MBS16(scur - 2) << 3;
     cur += 76;
-    v0 += a2;
-    plo = MB32(v0);     phi = MB32(v0 + 4);
-    MW32(a0 - 8, plo);  MW32(a0 - 4, phi);
-    v0 = (uint32_t)MBS16(a1 + 0) << 3;
-    a1 += 12;
-    v0 += a2;
-    plo = MB32(v0);     phi = MB32(v0 + 4);
-    MW32(a0 + 0, plo);  MW32(a0 + 4, phi);
-    a0 += 76;
+    tp += ptab;
+    plo = MB32(tp);     phi = MB32(tp + 4);
+    MW32(wcur - 8, plo);  MW32(wcur - 4, phi);
+    tp = (uint32_t)MBS16(scur + 0) << 3;
+    scur += 12;
+    tp += ptab;
+    plo = MB32(tp);     phi = MB32(tp + 4);
+    MW32(wcur + 0, plo);  MW32(wcur + 4, phi);
+    wcur += 76;
   } while (count != 0);
   return cur;
 }
@@ -16323,46 +16323,46 @@ uint32_t heap_serialize_tag_08(uint32_t a0,uint32_t a1,uint32_t a2,
  * src+4/+8, u16 index quads at src+12/+14/+16/+18 stride 0x14,
  * aux src+18 stride 0x14. Tag bytes 6/0x30 at dst+0x2f/0x33/0x4b/0x4f.
  * Returns cur + count*0x64. */
-uint32_t heap_serialize_tag_0a(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t count)
+uint32_t heap_serialize_tag_0a(uint32_t wcur,uint32_t scur,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count)
 {
 
 
 
 
-  uint32_t cur = a0;
+  uint32_t cur = wcur;
 
-  uint32_t src_cur = a1;
-  uint32_t v0, plo, phi;
+  uint32_t src_cur = scur;
+  uint32_t tp, plo, phi;
   if (count == 0) return cur;
-  a0 += 16; a1 += 18;
+  wcur += 16; scur += 18;
   do {
-    MW8(a0 + 31, 6);  MW8(a0 + 35, 48);
-    MW8(a0 + 59, 6);  MW8(a0 + 63, 48);
-    MW32(a0 + 8,  MB32(src_cur));
-    MW32(a0 + 12, MB32(a1 - 14));
-    MW32(a0 + 16, MB32(a1 - 10));
+    MW8(wcur + 31, 6);  MW8(wcur + 35, 48);
+    MW8(wcur + 59, 6);  MW8(wcur + 63, 48);
+    MW32(wcur + 8,  MB32(src_cur));
+    MW32(wcur + 12, MB32(scur - 14));
+    MW32(wcur + 16, MB32(scur - 10));
     src_cur += 20;
-    v0 = (uint32_t)MBS16(a1 - 6) << 3;
-    v0 += a3;
-    plo = MB32(v0);     phi = MB32(v0 + 4);
-    MW32(a0 + 20, plo); MW32(a0 + 24, phi);
-    v0 = (uint32_t)MBS16(a1 - 4) << 3;
+    tp = (uint32_t)MBS16(scur - 6) << 3;
+    tp += ptab2;
+    plo = MB32(tp);     phi = MB32(tp + 4);
+    MW32(wcur + 20, plo); MW32(wcur + 24, phi);
+    tp = (uint32_t)MBS16(scur - 4) << 3;
     count -= 1;
-    v0 += a2;
-    plo = MB32(v0);     phi = MB32(v0 + 4);
+    tp += ptab;
+    plo = MB32(tp);     phi = MB32(tp + 4);
     MW32(cur + 0, plo);  MW32(cur + 4, phi);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3;
+    tp = (uint32_t)MBS16(scur - 2) << 3;
     cur += 100;
-    v0 += a2;
-    plo = MB32(v0);     phi = MB32(v0 + 4);
-    MW32(a0 - 8, plo);  MW32(a0 - 4, phi);
-    v0 = (uint32_t)MBS16(a1 + 0) << 3;
-    a1 += 20;
-    v0 += a2;
-    plo = MB32(v0);     phi = MB32(v0 + 4);
-    MW32(a0 + 0, plo);  MW32(a0 + 4, phi);
-    a0 += 100;
+    tp += ptab;
+    plo = MB32(tp);     phi = MB32(tp + 4);
+    MW32(wcur - 8, plo);  MW32(wcur - 4, phi);
+    tp = (uint32_t)MBS16(scur + 0) << 3;
+    scur += 20;
+    tp += ptab;
+    plo = MB32(tp);     phi = MB32(tp + 4);
+    MW32(wcur + 0, plo);  MW32(wcur + 4, phi);
+    wcur += 100;
   } while (count != 0);
   return cur;
 }
@@ -16373,44 +16373,44 @@ uint32_t heap_serialize_tag_0a(uint32_t a0,uint32_t a1,uint32_t a2,
  * Six 8-byte table lookups alternating arg4/arg3 tables
  * (-10,-8,-6,-4,-2,0). Tag bytes 6/0x30 at dst+0x37/0x3b/0x5b/0x5f.
  * Returns cur + count*0x6c. */
-uint32_t heap_serialize_tag_0c(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t count)
+uint32_t heap_serialize_tag_0c(uint32_t wcur,uint32_t scur,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count)
 {
 
 
 
 
-  uint32_t cur = a0;
+  uint32_t cur = wcur;
 
-  uint32_t src_cur = a1;
-  uint32_t v0, plo, phi;
+  uint32_t src_cur = scur;
+  uint32_t tp, plo, phi;
   if (count == 0) return cur;
-  a0 += 16; a1 += 14;
+  wcur += 16; scur += 14;
   do {
-    MW8(a0 + 39, 6);  MW8(a0 + 43, 48);
-    MW8(a0 + 67, 6);  MW8(a0 + 71, 48);
-    MW32(a0 + 8, MB32(src_cur));
+    MW8(wcur + 39, 6);  MW8(wcur + 43, 48);
+    MW8(wcur + 67, 6);  MW8(wcur + 71, 48);
+    MW32(wcur + 8, MB32(src_cur));
     src_cur += 16;
-    v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
-    plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 + 12, plo); MW32(a0 + 16, phi);
-    v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
-    plo = MB32(v0); phi = MB32(v0 + 4);
+    tp = (uint32_t)MBS16(scur - 10) << 3; tp += ptab2;
+    plo = MB32(tp); phi = MB32(tp + 4);
+    MW32(wcur + 12, plo); MW32(wcur + 16, phi);
+    tp = (uint32_t)MBS16(scur - 8) << 3;  tp += ptab;
+    plo = MB32(tp); phi = MB32(tp + 4);
     MW32(cur + 0, plo); MW32(cur + 4, phi);
-    v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a3;
-    plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 + 20, plo); MW32(a0 + 24, phi);
-    v0 = (uint32_t)MBS16(a1 - 4) << 3;  count -= 1; v0 += a2;
-    plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 - 8, plo); MW32(a0 - 4, phi);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3;  v0 += a3;
-    plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 + 28, plo); MW32(a0 + 32, phi);
-    v0 = (uint32_t)MBS16(a1 + 0) << 3;  a1 += 16; v0 += a2;
-    plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 + 0, plo); MW32(a0 + 4, phi);
+    tp = (uint32_t)MBS16(scur - 6) << 3;  tp += ptab2;
+    plo = MB32(tp); phi = MB32(tp + 4);
+    MW32(wcur + 20, plo); MW32(wcur + 24, phi);
+    tp = (uint32_t)MBS16(scur - 4) << 3;  count -= 1; tp += ptab;
+    plo = MB32(tp); phi = MB32(tp + 4);
+    MW32(wcur - 8, plo); MW32(wcur - 4, phi);
+    tp = (uint32_t)MBS16(scur - 2) << 3;  tp += ptab2;
+    plo = MB32(tp); phi = MB32(tp + 4);
+    MW32(wcur + 28, plo); MW32(wcur + 32, phi);
+    tp = (uint32_t)MBS16(scur + 0) << 3;  scur += 16; tp += ptab;
+    plo = MB32(tp); phi = MB32(tp + 4);
+    MW32(wcur + 0, plo); MW32(wcur + 4, phi);
     cur += 108;
-    a0 += 108;
+    wcur += 108;
   } while (count != 0);
   return cur;
 }
@@ -16420,40 +16420,40 @@ uint32_t heap_serialize_tag_0c(uint32_t a0,uint32_t a1,uint32_t a2,
  * src+4/+6/+8/+10 stride 0x10, aux src+12 stride 0x10.
  * Tag bytes 5/0x28 at dst+0x27/0x2b/0x3b/0x3f (a0 = cur+0x18).
  * Returns cur + count*0x5c. */
-uint32_t heap_serialize_tag_10(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t count)
+uint32_t heap_serialize_tag_10(uint32_t wcur,uint32_t scur,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count)
 {
 
 
 
 
-  uint32_t cur = a0;
+  uint32_t cur = wcur;
 
-  uint32_t src_cur = a1;
-  uint32_t v0, plo, phi;
+  uint32_t src_cur = scur;
+  uint32_t tp, plo, phi;
   if (count == 0) return cur;
-  a0 += 24; a1 += 12;
+  wcur += 24; scur += 12;
   do {
-    MW8(a0 + 23, 5);  MW8(a0 + 27, 40);
-    MW8(a0 + 47, 5);  MW8(a0 + 51, 40);
-    MW32(a0 + 8, MB32(src_cur));
+    MW8(wcur + 23, 5);  MW8(wcur + 27, 40);
+    MW8(wcur + 47, 5);  MW8(wcur + 51, 40);
+    MW32(wcur + 8, MB32(src_cur));
     src_cur += 16;
-    v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a3;
-    plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 + 12, plo); MW32(a0 + 16, phi);
-    v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a2;
-    plo = MB32(v0); phi = MB32(v0 + 4);
+    tp = (uint32_t)MBS16(scur - 8) << 3;  tp += ptab2;
+    plo = MB32(tp); phi = MB32(tp + 4);
+    MW32(wcur + 12, plo); MW32(wcur + 16, phi);
+    tp = (uint32_t)MBS16(scur - 6) << 3;  tp += ptab;
+    plo = MB32(tp); phi = MB32(tp + 4);
     MW32(cur + 0, plo); MW32(cur + 4, phi);
-    v0 = (uint32_t)MBS16(a1 - 4) << 3;  count -= 1; v0 += a2;
-    plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 - 16, plo); MW32(a0 - 12, phi);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3;  cur += 92; v0 += a2;
-    plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 - 8, plo); MW32(a0 - 4, phi);
-    v0 = (uint32_t)MBS16(a1 + 0) << 3;  a1 += 16; v0 += a2;
-    plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 + 0, plo); MW32(a0 + 4, phi);
-    a0 += 92;
+    tp = (uint32_t)MBS16(scur - 4) << 3;  count -= 1; tp += ptab;
+    plo = MB32(tp); phi = MB32(tp + 4);
+    MW32(wcur - 16, plo); MW32(wcur - 12, phi);
+    tp = (uint32_t)MBS16(scur - 2) << 3;  cur += 92; tp += ptab;
+    plo = MB32(tp); phi = MB32(tp + 4);
+    MW32(wcur - 8, plo); MW32(wcur - 4, phi);
+    tp = (uint32_t)MBS16(scur + 0) << 3;  scur += 16; tp += ptab;
+    plo = MB32(tp); phi = MB32(tp + 4);
+    MW32(wcur + 0, plo); MW32(wcur + 4, phi);
+    wcur += 92;
   } while (count != 0);
   return cur;
 }
@@ -16464,49 +16464,49 @@ uint32_t heap_serialize_tag_10(uint32_t a0,uint32_t a1,uint32_t a2,
  * Eight 8-byte lookups alternating arg4/arg3 tables
  * (-14,-12,-10,-8,-6,-4,-2,0). Tag bytes 8/0x38 at
  * dst+0x3f/0x43/0x6b/0x6f (a0 = cur+0x18). Returns cur + count*0x8c. */
-uint32_t heap_serialize_tag_14(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t count)
+uint32_t heap_serialize_tag_14(uint32_t wcur,uint32_t scur,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count)
 {
 
 
 
 
-  uint32_t cur = a0;
+  uint32_t cur = wcur;
 
-  uint32_t src_cur = a1;
-  uint32_t v0, plo, phi;
+  uint32_t src_cur = scur;
+  uint32_t tp, plo, phi;
   if (count == 0) return cur;
-  a0 += 24; a1 += 18;
+  wcur += 24; scur += 18;
   do {
-    MW8(a0 + 47, 8);  MW8(a0 + 51, 56);
-    MW8(a0 + 83, 8);  MW8(a0 + 87, 56);
-    MW32(a0 + 8, MB32(src_cur));
+    MW8(wcur + 47, 8);  MW8(wcur + 51, 56);
+    MW8(wcur + 83, 8);  MW8(wcur + 87, 56);
+    MW32(wcur + 8, MB32(src_cur));
     src_cur += 20;
-    v0 = (uint32_t)MBS16(a1 - 14) << 3; v0 += a3;
-    plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 + 12, plo); MW32(a0 + 16, phi);
-    v0 = (uint32_t)MBS16(a1 - 12) << 3; v0 += a2;
-    plo = MB32(v0); phi = MB32(v0 + 4);
+    tp = (uint32_t)MBS16(scur - 14) << 3; tp += ptab2;
+    plo = MB32(tp); phi = MB32(tp + 4);
+    MW32(wcur + 12, plo); MW32(wcur + 16, phi);
+    tp = (uint32_t)MBS16(scur - 12) << 3; tp += ptab;
+    plo = MB32(tp); phi = MB32(tp + 4);
     MW32(cur + 0, plo); MW32(cur + 4, phi);
-    v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
-    plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 + 20, plo); MW32(a0 + 24, phi);
-    v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
-    plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 - 16, plo); MW32(a0 - 12, phi);
-    v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a3;
-    plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 + 28, plo); MW32(a0 + 32, phi);
-    v0 = (uint32_t)MBS16(a1 - 4) << 3;  count -= 1; v0 += a2;
-    plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 - 8, plo); MW32(a0 - 4, phi);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3;  cur += 140; v0 += a3;
-    plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 + 36, plo); MW32(a0 + 40, phi);
-    v0 = (uint32_t)MBS16(a1 + 0) << 3;  a1 += 20; v0 += a2;
-    plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 + 0, plo); MW32(a0 + 4, phi);
-    a0 += 140;
+    tp = (uint32_t)MBS16(scur - 10) << 3; tp += ptab2;
+    plo = MB32(tp); phi = MB32(tp + 4);
+    MW32(wcur + 20, plo); MW32(wcur + 24, phi);
+    tp = (uint32_t)MBS16(scur - 8) << 3;  tp += ptab;
+    plo = MB32(tp); phi = MB32(tp + 4);
+    MW32(wcur - 16, plo); MW32(wcur - 12, phi);
+    tp = (uint32_t)MBS16(scur - 6) << 3;  tp += ptab2;
+    plo = MB32(tp); phi = MB32(tp + 4);
+    MW32(wcur + 28, plo); MW32(wcur + 32, phi);
+    tp = (uint32_t)MBS16(scur - 4) << 3;  count -= 1; tp += ptab;
+    plo = MB32(tp); phi = MB32(tp + 4);
+    MW32(wcur - 8, plo); MW32(wcur - 4, phi);
+    tp = (uint32_t)MBS16(scur - 2) << 3;  cur += 140; tp += ptab2;
+    plo = MB32(tp); phi = MB32(tp + 4);
+    MW32(wcur + 36, plo); MW32(wcur + 40, phi);
+    tp = (uint32_t)MBS16(scur + 0) << 3;  scur += 20; tp += ptab;
+    plo = MB32(tp); phi = MB32(tp + 4);
+    MW32(wcur + 0, plo); MW32(wcur + 4, phi);
+    wcur += 140;
   } while (count != 0);
   return cur;
 }
@@ -16516,43 +16516,43 @@ uint32_t heap_serialize_tag_14(uint32_t a0,uint32_t a1,uint32_t a2,
  * src+4/+8/+12, u16 index quad at src+16/+18/+20/+22 stride 0x1c,
  * aux src+24 stride 0x1c. Tag bytes 8/0x38 at dst+0x33/0x37/0x57/0x5b
  * (a0 = cur+0x18). Returns cur + count*0x80. */
-uint32_t heap_serialize_tag_12(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t count)
+uint32_t heap_serialize_tag_12(uint32_t wcur,uint32_t scur,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count)
 {
 
 
 
 
-  uint32_t cur = a0;
+  uint32_t cur = wcur;
 
-  uint32_t src_cur = a1;
-  uint32_t v0, plo, phi;
+  uint32_t src_cur = scur;
+  uint32_t tp, plo, phi;
   if (count == 0) return cur;
-  a0 += 24; a1 += 24;
+  wcur += 24; scur += 24;
   do {
-    MW8(a0 + 35, 8);  MW8(a0 + 39, 56);
-    MW8(a0 + 71, 8);  MW8(a0 + 75, 56);
-    MW32(a0 + 8,  MB32(src_cur));
-    MW32(a0 + 12, MB32(a1 - 20));
-    MW32(a0 + 16, MB32(a1 - 16));
-    MW32(a0 + 20, MB32(a1 - 12));
+    MW8(wcur + 35, 8);  MW8(wcur + 39, 56);
+    MW8(wcur + 71, 8);  MW8(wcur + 75, 56);
+    MW32(wcur + 8,  MB32(src_cur));
+    MW32(wcur + 12, MB32(scur - 20));
+    MW32(wcur + 16, MB32(scur - 16));
+    MW32(wcur + 20, MB32(scur - 12));
     src_cur += 28;
-    v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a3;
-    plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 + 24, plo); MW32(a0 + 28, phi);
-    v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a2;
-    plo = MB32(v0); phi = MB32(v0 + 4);
+    tp = (uint32_t)MBS16(scur - 8) << 3;  tp += ptab2;
+    plo = MB32(tp); phi = MB32(tp + 4);
+    MW32(wcur + 24, plo); MW32(wcur + 28, phi);
+    tp = (uint32_t)MBS16(scur - 6) << 3;  tp += ptab;
+    plo = MB32(tp); phi = MB32(tp + 4);
     MW32(cur + 0, plo); MW32(cur + 4, phi);
-    v0 = (uint32_t)MBS16(a1 - 4) << 3;  count -= 1; v0 += a2;
-    plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 - 16, plo); MW32(a0 - 12, phi);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3;  cur += 128; v0 += a2;
-    plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 - 8, plo); MW32(a0 - 4, phi);
-    v0 = (uint32_t)MBS16(a1 + 0) << 3;  a1 += 28; v0 += a2;
-    plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 + 0, plo); MW32(a0 + 4, phi);
-    a0 += 128;
+    tp = (uint32_t)MBS16(scur - 4) << 3;  count -= 1; tp += ptab;
+    plo = MB32(tp); phi = MB32(tp + 4);
+    MW32(wcur - 16, plo); MW32(wcur - 12, phi);
+    tp = (uint32_t)MBS16(scur - 2) << 3;  cur += 128; tp += ptab;
+    plo = MB32(tp); phi = MB32(tp + 4);
+    MW32(wcur - 8, plo); MW32(wcur - 4, phi);
+    tp = (uint32_t)MBS16(scur + 0) << 3;  scur += 28; tp += ptab;
+    plo = MB32(tp); phi = MB32(tp + 4);
+    MW32(wcur + 0, plo); MW32(wcur + 4, phi);
+    wcur += 128;
   } while (count != 0);
   return cur;
 }
@@ -16563,52 +16563,52 @@ uint32_t heap_serialize_tag_12(uint32_t a0,uint32_t a1,uint32_t a2,
  * aux src+30 stride 0x20. Eight 8-byte lookups alternating
  * arg4/arg3 tables (-14..0 step 2). Tag bytes 8/0x38 at
  * dst+0x3b/0x3f/0x5f/0x63 (a0 = cur+0x18). Returns cur + count*0x98. */
-uint32_t heap_serialize_tag_16(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t count)
+uint32_t heap_serialize_tag_16(uint32_t wcur,uint32_t scur,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count)
 {
 
 
 
 
-  uint32_t cur = a0;
+  uint32_t cur = wcur;
 
-  uint32_t src_cur = a1;
-  uint32_t v0, plo, phi;
+  uint32_t src_cur = scur;
+  uint32_t tp, plo, phi;
   if (count == 0) return cur;
-  a0 += 24; a1 += 30;
+  wcur += 24; scur += 30;
   do {
-    MW8(a0 + 59, 8);  MW8(a0 + 63, 56);
-    MW8(a0 + 95, 8);  MW8(a0 + 99, 56);
-    MW32(a0 + 8,  MB32(src_cur));
-    MW32(a0 + 12, MB32(a1 - 26));
-    MW32(a0 + 16, MB32(a1 - 22));
-    MW32(a0 + 20, MB32(a1 - 18));
+    MW8(wcur + 59, 8);  MW8(wcur + 63, 56);
+    MW8(wcur + 95, 8);  MW8(wcur + 99, 56);
+    MW32(wcur + 8,  MB32(src_cur));
+    MW32(wcur + 12, MB32(scur - 26));
+    MW32(wcur + 16, MB32(scur - 22));
+    MW32(wcur + 20, MB32(scur - 18));
     src_cur += 32;
-    v0 = (uint32_t)MBS16(a1 - 14) << 3; v0 += a3;
-    plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 + 24, plo); MW32(a0 + 28, phi);
-    v0 = (uint32_t)MBS16(a1 - 12) << 3; v0 += a2;
-    plo = MB32(v0); phi = MB32(v0 + 4);
+    tp = (uint32_t)MBS16(scur - 14) << 3; tp += ptab2;
+    plo = MB32(tp); phi = MB32(tp + 4);
+    MW32(wcur + 24, plo); MW32(wcur + 28, phi);
+    tp = (uint32_t)MBS16(scur - 12) << 3; tp += ptab;
+    plo = MB32(tp); phi = MB32(tp + 4);
     MW32(cur + 0, plo); MW32(cur + 4, phi);
-    v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
-    plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 + 32, plo); MW32(a0 + 36, phi);
-    v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
-    plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 - 16, plo); MW32(a0 - 12, phi);
-    v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a3;
-    plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 + 40, plo); MW32(a0 + 44, phi);
-    v0 = (uint32_t)MBS16(a1 - 4) << 3;  count -= 1; v0 += a2;
-    plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 - 8, plo); MW32(a0 - 4, phi);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3;  cur += 152; v0 += a3;
-    plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 + 48, plo); MW32(a0 + 52, phi);
-    v0 = (uint32_t)MBS16(a1 + 0) << 3;  a1 += 32; v0 += a2;
-    plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 + 0, plo); MW32(a0 + 4, phi);
-    a0 += 152;
+    tp = (uint32_t)MBS16(scur - 10) << 3; tp += ptab2;
+    plo = MB32(tp); phi = MB32(tp + 4);
+    MW32(wcur + 32, plo); MW32(wcur + 36, phi);
+    tp = (uint32_t)MBS16(scur - 8) << 3;  tp += ptab;
+    plo = MB32(tp); phi = MB32(tp + 4);
+    MW32(wcur - 16, plo); MW32(wcur - 12, phi);
+    tp = (uint32_t)MBS16(scur - 6) << 3;  tp += ptab2;
+    plo = MB32(tp); phi = MB32(tp + 4);
+    MW32(wcur + 40, plo); MW32(wcur + 44, phi);
+    tp = (uint32_t)MBS16(scur - 4) << 3;  count -= 1; tp += ptab;
+    plo = MB32(tp); phi = MB32(tp + 4);
+    MW32(wcur - 8, plo); MW32(wcur - 4, phi);
+    tp = (uint32_t)MBS16(scur - 2) << 3;  cur += 152; tp += ptab2;
+    plo = MB32(tp); phi = MB32(tp + 4);
+    MW32(wcur + 48, plo); MW32(wcur + 52, phi);
+    tp = (uint32_t)MBS16(scur + 0) << 3;  scur += 32; tp += ptab;
+    plo = MB32(tp); phi = MB32(tp + 4);
+    MW32(wcur + 0, plo); MW32(wcur + 4, phi);
+    wcur += 152;
   } while (count != 0);
   return cur;
 }
@@ -16619,45 +16619,45 @@ uint32_t heap_serialize_tag_16(uint32_t a0,uint32_t a1,uint32_t a2,
  * aux src+22 stride 0x18. Six 8-byte lookups alternating
  * arg4/arg3 tables (-10..0 step 2). Tag bytes 6/0x30 at
  * dst+0x2f/0x33/0x4b/0x4f (a0 = cur+0x10). Returns cur + count*0x74. */
-uint32_t heap_serialize_tag_0e(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t count)
+uint32_t heap_serialize_tag_0e(uint32_t wcur,uint32_t scur,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count)
 {
 
 
 
 
-  uint32_t cur = a0;
+  uint32_t cur = wcur;
 
-  uint32_t src_cur = a1;
-  uint32_t v0, plo, phi;
+  uint32_t src_cur = scur;
+  uint32_t tp, plo, phi;
   if (count == 0) return cur;
-  a0 += 16; a1 += 22;
+  wcur += 16; scur += 22;
   do {
-    MW8(a0 + 47, 6);  MW8(a0 + 51, 48);
-    MW8(a0 + 75, 6);  MW8(a0 + 79, 48);
-    MW32(a0 + 8,  MB32(src_cur));
-    MW32(a0 + 12, MB32(a1 - 18));
-    MW32(a0 + 16, MB32(a1 - 14));
+    MW8(wcur + 47, 6);  MW8(wcur + 51, 48);
+    MW8(wcur + 75, 6);  MW8(wcur + 79, 48);
+    MW32(wcur + 8,  MB32(src_cur));
+    MW32(wcur + 12, MB32(scur - 18));
+    MW32(wcur + 16, MB32(scur - 14));
     src_cur += 24;
-    v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
-    plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 + 20, plo); MW32(a0 + 24, phi);
-    v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
-    plo = MB32(v0); phi = MB32(v0 + 4);
+    tp = (uint32_t)MBS16(scur - 10) << 3; tp += ptab2;
+    plo = MB32(tp); phi = MB32(tp + 4);
+    MW32(wcur + 20, plo); MW32(wcur + 24, phi);
+    tp = (uint32_t)MBS16(scur - 8) << 3;  tp += ptab;
+    plo = MB32(tp); phi = MB32(tp + 4);
     MW32(cur + 0, plo); MW32(cur + 4, phi);
-    v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a3;
-    plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 + 28, plo); MW32(a0 + 32, phi);
-    v0 = (uint32_t)MBS16(a1 - 4) << 3;  count -= 1; v0 += a2;
-    plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 - 8, plo); MW32(a0 - 4, phi);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3;  cur += 116; v0 += a3;
-    plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 + 36, plo); MW32(a0 + 40, phi);
-    v0 = (uint32_t)MBS16(a1 + 0) << 3;  a1 += 24; v0 += a2;
-    plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 + 0, plo); MW32(a0 + 4, phi);
-    a0 += 116;
+    tp = (uint32_t)MBS16(scur - 6) << 3;  tp += ptab2;
+    plo = MB32(tp); phi = MB32(tp + 4);
+    MW32(wcur + 28, plo); MW32(wcur + 32, phi);
+    tp = (uint32_t)MBS16(scur - 4) << 3;  count -= 1; tp += ptab;
+    plo = MB32(tp); phi = MB32(tp + 4);
+    MW32(wcur - 8, plo); MW32(wcur - 4, phi);
+    tp = (uint32_t)MBS16(scur - 2) << 3;  cur += 116; tp += ptab2;
+    plo = MB32(tp); phi = MB32(tp + 4);
+    MW32(wcur + 36, plo); MW32(wcur + 40, phi);
+    tp = (uint32_t)MBS16(scur + 0) << 3;  scur += 24; tp += ptab;
+    plo = MB32(tp); phi = MB32(tp + 4);
+    MW32(wcur + 0, plo); MW32(wcur + 4, phi);
+    wcur += 116;
   } while (count != 0);
   return cur;
 }
@@ -16669,35 +16669,35 @@ uint32_t heap_serialize_tag_0e(uint32_t a0,uint32_t a1,uint32_t a2,
  * first lands at the a3 cursor pair, a3 += 0x40 per record.
  * Tag bytes 4/0x20 at dst+0xb/0xf/0x1f/0x23 (a0 = cur+0x10).
  * Returns cur + count*0x40. */
-uint32_t heap_serialize_tag_40048(uint32_t a0,uint32_t a1,uint32_t a2,
+uint32_t heap_serialize_tag_40048(uint32_t wcur,uint32_t scur,uint32_t ptab,
                      uint32_t unused4,uint32_t count)
 {
 
 
 
-  uint32_t cur = a0;
-  uint32_t src_cur = a1;
+  uint32_t cur = wcur;
+  uint32_t src_cur = scur;
 
   uint32_t v0, plo, phi;
   (void)unused4;
   if (count == 0) return cur;
-  a0 += 16; a1 += 8;
+  wcur += 16; scur += 8;
   do {
-    MW8(a0 + 11, 4);  MW8(a0 + 15, 32);
-    MW8(a0 + 31, 4);  MW8(a0 + 35, 32);
+    MW8(wcur + 11, 4);  MW8(wcur + 15, 32);
+    MW8(wcur + 31, 4);  MW8(wcur + 35, 32);
     v0 = MB32(src_cur); src_cur += 12;
-    MW32(a0 + 32, v0); MW32(a0 + 12, v0);
-    v0 = (uint32_t)MBS16(a1 - 4) << 3; count -= 1; v0 += a2;
+    MW32(wcur + 32, v0); MW32(wcur + 12, v0);
+    v0 = (uint32_t)MBS16(scur - 4) << 3; count -= 1; v0 += ptab;
     plo = MB32(v0); phi = MB32(v0 + 4);
     MW32(cur + 0, plo); MW32(cur + 4, phi);
     cur += 64;
-    v0 = (uint32_t)MBS16(a1 - 2) << 3; v0 += a2;
+    v0 = (uint32_t)MBS16(scur - 2) << 3; v0 += ptab;
     plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 - 8, plo); MW32(a0 - 4, phi);
-    v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 12; v0 += a2;
+    MW32(wcur - 8, plo); MW32(wcur - 4, phi);
+    v0 = (uint32_t)MBS16(scur + 0) << 3; scur += 12; v0 += ptab;
     plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 + 0, plo); MW32(a0 + 4, phi);
-    a0 += 64;
+    MW32(wcur + 0, plo); MW32(wcur + 4, phi);
+    wcur += 64;
   } while (count != 0);
   return cur;
 }
@@ -16709,37 +16709,37 @@ uint32_t heap_serialize_tag_40048(uint32_t a0,uint32_t a1,uint32_t a2,
  * (-4,-2,0); first at a3 pair, a3 += 0x50.
  * Tag bytes 6/0x30 at dst+0xb/0xf/0x27/0x2b (a0 = cur+0x10).
  * Returns cur + count*0x50. */
-uint32_t heap_serialize_tag_4004c(uint32_t a0,uint32_t a1,uint32_t a2,
+uint32_t heap_serialize_tag_4004c(uint32_t wcur,uint32_t scur,uint32_t ptab,
                      uint32_t unused4,uint32_t count)
 {
 
 
 
-  uint32_t cur = a0;
-  uint32_t src_cur = a1;
+  uint32_t cur = wcur;
+  uint32_t src_cur = scur;
 
   uint32_t v0, plo, phi;
   (void)unused4;
   if (count == 0) return cur;
-  a0 += 16; a1 += 16;
+  wcur += 16; scur += 16;
   do {
-    MW8(a0 + 11, 6);  MW8(a0 + 15, 48);
-    MW8(a0 + 39, 6);  MW8(a0 + 43, 48);
-    v0 = MB32(src_cur); MW32(a0 + 40, v0); MW32(a0 + 12, v0);
-    v0 = MB32(a1 - 12); MW32(a0 + 48, v0); MW32(a0 + 20, v0);
-    v0 = MB32(a1 - 8);  src_cur += 20;
-    MW32(a0 + 56, v0); MW32(a0 + 28, v0);
-    v0 = (uint32_t)MBS16(a1 - 4) << 3; count -= 1; v0 += a2;
+    MW8(wcur + 11, 6);  MW8(wcur + 15, 48);
+    MW8(wcur + 39, 6);  MW8(wcur + 43, 48);
+    v0 = MB32(src_cur); MW32(wcur + 40, v0); MW32(wcur + 12, v0);
+    v0 = MB32(scur - 12); MW32(wcur + 48, v0); MW32(wcur + 20, v0);
+    v0 = MB32(scur - 8);  src_cur += 20;
+    MW32(wcur + 56, v0); MW32(wcur + 28, v0);
+    v0 = (uint32_t)MBS16(scur - 4) << 3; count -= 1; v0 += ptab;
     plo = MB32(v0); phi = MB32(v0 + 4);
     MW32(cur + 0, plo); MW32(cur + 4, phi);
     cur += 80;
-    v0 = (uint32_t)MBS16(a1 - 2) << 3; v0 += a2;
+    v0 = (uint32_t)MBS16(scur - 2) << 3; v0 += ptab;
     plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 - 8, plo); MW32(a0 - 4, phi);
-    v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 20; v0 += a2;
+    MW32(wcur - 8, plo); MW32(wcur - 4, phi);
+    v0 = (uint32_t)MBS16(scur + 0) << 3; scur += 20; v0 += ptab;
     plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 + 0, plo); MW32(a0 + 4, phi);
-    a0 += 80;
+    MW32(wcur + 0, plo); MW32(wcur + 4, phi);
+    wcur += 80;
   } while (count != 0);
   return cur;
 }
@@ -16750,37 +16750,37 @@ uint32_t heap_serialize_tag_4004c(uint32_t a0,uint32_t a1,uint32_t a2,
  * Four 8-byte lookups via arg3 table (-6,-4,-2,0); first at a3
  * pair, a3 += 0x50. Tag bytes 5/0x28 at dst+0xb/0xf/0x23/0x27
  * (a0 = cur+0x18). Returns cur + count*0x50. */
-uint32_t heap_serialize_tag_40050(uint32_t a0,uint32_t a1,uint32_t a2,
+uint32_t heap_serialize_tag_40050(uint32_t wcur,uint32_t scur,uint32_t ptab,
                      uint32_t unused4,uint32_t count)
 {
 
 
 
-  uint32_t cur = a0;
-  uint32_t src_cur = a1;
+  uint32_t cur = wcur;
+  uint32_t src_cur = scur;
 
   uint32_t v0, plo, phi;
   (void)unused4;
   if (count == 0) return cur;
-  a0 += 24; a1 += 10;
+  wcur += 24; scur += 10;
   do {
-    MW8(a0 + 11, 5);  MW8(a0 + 15, 40);
-    MW8(a0 + 35, 5);  MW8(a0 + 39, 40);
+    MW8(wcur + 11, 5);  MW8(wcur + 15, 40);
+    MW8(wcur + 35, 5);  MW8(wcur + 39, 40);
     v0 = MB32(src_cur); src_cur += 12;
-    MW32(a0 + 36, v0); MW32(a0 + 12, v0);
-    v0 = (uint32_t)MBS16(a1 - 6) << 3; v0 += a2;
+    MW32(wcur + 36, v0); MW32(wcur + 12, v0);
+    v0 = (uint32_t)MBS16(scur - 6) << 3; v0 += ptab;
     plo = MB32(v0); phi = MB32(v0 + 4);
     MW32(cur + 0, plo); MW32(cur + 4, phi);
-    v0 = (uint32_t)MBS16(a1 - 4) << 3; count -= 1; v0 += a2;
+    v0 = (uint32_t)MBS16(scur - 4) << 3; count -= 1; v0 += ptab;
     plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 - 16, plo); MW32(a0 - 12, phi);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3; cur += 80; v0 += a2;
+    MW32(wcur - 16, plo); MW32(wcur - 12, phi);
+    v0 = (uint32_t)MBS16(scur - 2) << 3; cur += 80; v0 += ptab;
     plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 - 8, plo); MW32(a0 - 4, phi);
-    v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 12; v0 += a2;
+    MW32(wcur - 8, plo); MW32(wcur - 4, phi);
+    v0 = (uint32_t)MBS16(scur + 0) << 3; scur += 12; v0 += ptab;
     plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 + 0, plo); MW32(a0 + 4, phi);
-    a0 += 80;
+    MW32(wcur + 0, plo); MW32(wcur + 4, phi);
+    wcur += 80;
   } while (count != 0);
   return cur;
 }
@@ -16792,40 +16792,40 @@ uint32_t heap_serialize_tag_40050(uint32_t a0,uint32_t a1,uint32_t a2,
  * Four 8-byte lookups via arg3 table (-6,-4,-2,0); first at a3
  * pair, a3 += 0x68. Tag bytes 8/0x38 at dst+0xb/0xf/0x2f/0x33
  * (a0 = cur+0x18). Returns cur + count*0x68. */
-uint32_t heap_serialize_tag_40054(uint32_t a0,uint32_t a1,uint32_t a2,
+uint32_t heap_serialize_tag_40054(uint32_t wcur,uint32_t scur,uint32_t ptab,
                      uint32_t unused4,uint32_t count)
 {
 
 
 
-  uint32_t cur = a0;
-  uint32_t src_cur = a1;
+  uint32_t cur = wcur;
+  uint32_t src_cur = scur;
 
   uint32_t v0, plo, phi;
   (void)unused4;
   if (count == 0) return cur;
-  a0 += 24; a1 += 22;
+  wcur += 24; scur += 22;
   do {
-    MW8(a0 + 11, 8);  MW8(a0 + 15, 56);
-    MW8(a0 + 47, 8);  MW8(a0 + 51, 56);
-    v0 = MB32(src_cur);      MW32(a0 + 48, v0); MW32(a0 + 12, v0);
-    v0 = MB32(a1 - 18); MW32(a0 + 56, v0); MW32(a0 + 20, v0);
-    v0 = MB32(a1 - 14); MW32(a0 + 64, v0); MW32(a0 + 28, v0);
-    v0 = MB32(a1 - 10); src_cur += 24;
-    MW32(a0 + 72, v0); MW32(a0 + 36, v0);
-    v0 = (uint32_t)MBS16(a1 - 6) << 3; v0 += a2;
+    MW8(wcur + 11, 8);  MW8(wcur + 15, 56);
+    MW8(wcur + 47, 8);  MW8(wcur + 51, 56);
+    v0 = MB32(src_cur);      MW32(wcur + 48, v0); MW32(wcur + 12, v0);
+    v0 = MB32(scur - 18); MW32(wcur + 56, v0); MW32(wcur + 20, v0);
+    v0 = MB32(scur - 14); MW32(wcur + 64, v0); MW32(wcur + 28, v0);
+    v0 = MB32(scur - 10); src_cur += 24;
+    MW32(wcur + 72, v0); MW32(wcur + 36, v0);
+    v0 = (uint32_t)MBS16(scur - 6) << 3; v0 += ptab;
     plo = MB32(v0); phi = MB32(v0 + 4);
     MW32(cur + 0, plo); MW32(cur + 4, phi);
-    v0 = (uint32_t)MBS16(a1 - 4) << 3; count -= 1; v0 += a2;
+    v0 = (uint32_t)MBS16(scur - 4) << 3; count -= 1; v0 += ptab;
     plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 - 16, plo); MW32(a0 - 12, phi);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3; cur += 104; v0 += a2;
+    MW32(wcur - 16, plo); MW32(wcur - 12, phi);
+    v0 = (uint32_t)MBS16(scur - 2) << 3; cur += 104; v0 += ptab;
     plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 - 8, plo); MW32(a0 - 4, phi);
-    v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 24; v0 += a2;
+    MW32(wcur - 8, plo); MW32(wcur - 4, phi);
+    v0 = (uint32_t)MBS16(scur + 0) << 3; scur += 24; v0 += ptab;
     plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 + 0, plo); MW32(a0 + 4, phi);
-    a0 += 104;
+    MW32(wcur + 0, plo); MW32(wcur + 4, phi);
+    wcur += 104;
   } while (count != 0);
   return cur;
 }
@@ -16839,46 +16839,46 @@ uint32_t heap_serialize_tag_40054(uint32_t a0,uint32_t a1,uint32_t a2,
  * arg7 to the two y u16s (a0-0x18/+8 x, a0-0x20/+0 y).
  * Tag bytes 7/0x24 at dst+0x1b/0x1f/0x3b/0x3f (a0 = cur+0x46).
  * Returns cur + count*0x58. */
-uint32_t heap_serialize_tag_40049(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t unused4,uint32_t count,uint32_t t5,
-                     uint32_t t4)
+uint32_t heap_serialize_tag_40049(uint32_t wcur,uint32_t scur,uint32_t ptab,
+                     uint32_t unused4,uint32_t count,uint32_t xoff,
+                     uint32_t yoff)
 {
 
 
 
-  uint32_t cur = a0;
+  uint32_t cur = wcur;
 
 
 
-  uint32_t src_cur = a1;
+  uint32_t src_cur = scur;
   uint32_t v0, cv, plo, phi;
   (void)unused4;
   if (count == 0) return cur;
-  a0 += 70; a1 += 18;
+  wcur += 70; scur += 18;
   do {
-    MW8(a0 - 43, 7);  MW8(a0 - 39, 36);
-    MW8(a0 - 11, 7);  MW8(a0 - 7, 36);
-    v0 = MB32(src_cur); MW32(a0 - 42, v0); MW32(a0 - 10, v0);
-    v0 = MB32(a1 - 14); MW32(a0 - 34, v0); MW32(a0 - 2, v0);
-    v0 = MB32(a1 - 10); MW32(a0 - 26, v0); MW32(a0 + 6, v0);
-    v0 = MB16(a1 - 6);  src_cur += 20;
-    MW32(a0 - 18, v0); MW32(a0 + 14, v0);
-    v0 = (uint32_t)MBS16(a1 - 4) << 3; count -= 1; v0 += a2;
+    MW8(wcur - 43, 7);  MW8(wcur - 39, 36);
+    MW8(wcur - 11, 7);  MW8(wcur - 7, 36);
+    v0 = MB32(src_cur); MW32(wcur - 42, v0); MW32(wcur - 10, v0);
+    v0 = MB32(scur - 14); MW32(wcur - 34, v0); MW32(wcur - 2, v0);
+    v0 = MB32(scur - 10); MW32(wcur - 26, v0); MW32(wcur + 6, v0);
+    v0 = MB16(scur - 6);  src_cur += 20;
+    MW32(wcur - 18, v0); MW32(wcur + 14, v0);
+    v0 = (uint32_t)MBS16(scur - 4) << 3; count -= 1; v0 += ptab;
     plo = MB32(v0); phi = MB32(v0 + 4);
     MW32(cur + 0, plo); MW32(cur + 4, phi);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3; cur += 88; v0 += a2;
+    v0 = (uint32_t)MBS16(scur - 2) << 3; cur += 88; v0 += ptab;
     plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 - 62, plo); MW32(a0 - 58, phi);
-    v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 20; v0 += a2;
+    MW32(wcur - 62, plo); MW32(wcur - 58, phi);
+    v0 = (uint32_t)MBS16(scur + 0) << 3; scur += 20; v0 += ptab;
     plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 - 54, plo); MW32(a0 - 50, phi);
-    v0 = MB16(a0 - 24); cv = MB16(a0 - 32);
-    v0 += t5; MW16(a0 - 24, v0);
-    v0 = MB16(a0 + 8);  cv += t4; MW16(a0 - 32, cv);
-    cv = MB16(a0 + 0);
-    v0 += t5; cv += t4;
-    MW16(a0 + 8, v0);  MW16(a0 + 0, cv);
-    a0 += 88;
+    MW32(wcur - 54, plo); MW32(wcur - 50, phi);
+    v0 = MB16(wcur - 24); cv = MB16(wcur - 32);
+    v0 += xoff; MW16(wcur - 24, v0);
+    v0 = MB16(wcur + 8);  cv += yoff; MW16(wcur - 32, cv);
+    cv = MB16(wcur + 0);
+    v0 += xoff; cv += yoff;
+    MW16(wcur + 8, v0);  MW16(wcur + 0, cv);
+    wcur += 88;
   } while (count != 0);
   return cur;
 }
@@ -16891,48 +16891,48 @@ uint32_t heap_serialize_tag_40049(uint32_t a0,uint32_t a1,uint32_t a2,
  * cursor pair, t0 += 0x68. Tail adds arg6/arg7 to the coord u16s
  * (a0-0x1c/+0xc x, a0-0x28/+0 y). Tag bytes 9/0x34 at
  * dst+0x1b/0x1f/0x43/0x47 (a0 = cur+0x4e). Returns cur + count*0x68. */
-uint32_t heap_serialize_tag_4004d(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t unused4,uint32_t count,uint32_t t5,
-                     uint32_t t4)
+uint32_t heap_serialize_tag_4004d(uint32_t wcur,uint32_t scur,uint32_t ptab,
+                     uint32_t unused4,uint32_t count,uint32_t xoff,
+                     uint32_t yoff)
 {
 
 
 
-  uint32_t cur = a0;
+  uint32_t cur = wcur;
 
 
 
-  uint32_t src_cur = a1;
+  uint32_t src_cur = scur;
   uint32_t v0, cv, plo, phi;
   (void)unused4;
   if (count == 0) return cur;
-  a0 += 78; a1 += 26;
+  wcur += 78; scur += 26;
   do {
-    MW8(a0 - 51, 9);  MW8(a0 - 47, 52);
-    MW8(a0 - 11, 9);  MW8(a0 - 7, 52);
-    v0 = MB32(src_cur);      MW32(a0 - 50, v0); MW32(a0 - 10, v0);
-    v0 = MB32(a1 - 22); MW32(a0 - 38, v0); MW32(a0 + 2, v0);
-    v0 = MB32(a1 - 18); MW32(a0 - 26, v0); MW32(a0 + 14, v0);
-    v0 = MB32(a1 - 14); MW32(a0 - 42, v0); MW32(a0 - 2, v0);
-    v0 = MB32(a1 - 10); MW32(a0 - 30, v0); MW32(a0 + 10, v0);
-    v0 = MB16(a1 - 6);  src_cur += 28;
-    MW32(a0 - 18, v0); MW32(a0 + 22, v0);
-    v0 = (uint32_t)MBS16(a1 - 4) << 3; count -= 1; v0 += a2;
+    MW8(wcur - 51, 9);  MW8(wcur - 47, 52);
+    MW8(wcur - 11, 9);  MW8(wcur - 7, 52);
+    v0 = MB32(src_cur);      MW32(wcur - 50, v0); MW32(wcur - 10, v0);
+    v0 = MB32(scur - 22); MW32(wcur - 38, v0); MW32(wcur + 2, v0);
+    v0 = MB32(scur - 18); MW32(wcur - 26, v0); MW32(wcur + 14, v0);
+    v0 = MB32(scur - 14); MW32(wcur - 42, v0); MW32(wcur - 2, v0);
+    v0 = MB32(scur - 10); MW32(wcur - 30, v0); MW32(wcur + 10, v0);
+    v0 = MB16(scur - 6);  src_cur += 28;
+    MW32(wcur - 18, v0); MW32(wcur + 22, v0);
+    v0 = (uint32_t)MBS16(scur - 4) << 3; count -= 1; v0 += ptab;
     plo = MB32(v0); phi = MB32(v0 + 4);
     MW32(cur + 0, plo); MW32(cur + 4, phi);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3; cur += 104; v0 += a2;
+    v0 = (uint32_t)MBS16(scur - 2) << 3; cur += 104; v0 += ptab;
     plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 - 70, plo); MW32(a0 - 66, phi);
-    v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 28; v0 += a2;
+    MW32(wcur - 70, plo); MW32(wcur - 66, phi);
+    v0 = (uint32_t)MBS16(scur + 0) << 3; scur += 28; v0 += ptab;
     plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 - 62, plo); MW32(a0 - 58, phi);
-    v0 = MB16(a0 - 28); cv = MB16(a0 - 40);
-    v0 += t5; cv += t4;
-    MW16(a0 - 28, v0); MW16(a0 - 40, cv);
-    v0 = MB16(a0 + 12); cv = MB16(a0 + 0);
-    v0 += t5; cv += t4;
-    MW16(a0 + 12, v0); MW16(a0 + 0, cv);
-    a0 += 104;
+    MW32(wcur - 62, plo); MW32(wcur - 58, phi);
+    v0 = MB16(wcur - 28); cv = MB16(wcur - 40);
+    v0 += xoff; cv += yoff;
+    MW16(wcur - 28, v0); MW16(wcur - 40, cv);
+    v0 = MB16(wcur + 12); cv = MB16(wcur + 0);
+    v0 += xoff; cv += yoff;
+    MW16(wcur + 12, v0); MW16(wcur + 0, cv);
+    wcur += 104;
   } while (count != 0);
   return cur;
 }
@@ -16945,50 +16945,50 @@ uint32_t heap_serialize_tag_4004d(uint32_t a0,uint32_t a1,uint32_t a2,
  * t0 cursor pair, t0 += 0x70. Tail adds arg6/arg7 to coord u16s
  * (a0-0x20/+8 x, a0-0x28/+0 y). Tag bytes 9/0x2c at
  * dst+0x1b/0x1f/0x43/0x47 (a0 = cur+0x56). Returns cur + count*0x70. */
-uint32_t heap_serialize_tag_40051(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t unused4,uint32_t count,uint32_t t5,
-                     uint32_t t4)
+uint32_t heap_serialize_tag_40051(uint32_t wcur,uint32_t scur,uint32_t ptab,
+                     uint32_t unused4,uint32_t count,uint32_t xoff,
+                     uint32_t yoff)
 {
 
 
 
-  uint32_t cur = a0;
+  uint32_t cur = wcur;
 
 
 
-  uint32_t src_cur = a1;
+  uint32_t src_cur = scur;
   uint32_t v0, cv, plo, phi;
   (void)unused4;
   if (count == 0) return cur;
-  a0 += 86; a1 += 22;
+  wcur += 86; scur += 22;
   do {
-    MW8(a0 - 51, 9);  MW8(a0 - 47, 44);
-    MW8(a0 - 11, 9);  MW8(a0 - 7, 44);
-    v0 = MB32(src_cur);      MW32(a0 - 50, v0); MW32(a0 - 10, v0);
-    v0 = MB32(a1 - 18); MW32(a0 - 42, v0); MW32(a0 - 2, v0);
-    v0 = MB32(a1 - 14); MW32(a0 - 34, v0); MW32(a0 + 6, v0);
-    v0 = MB16(a1 - 10); MW32(a0 - 26, v0); MW32(a0 + 14, v0);
-    v0 = MB16(a1 - 6);  src_cur += 24;
-    MW32(a0 - 18, v0); MW32(a0 + 22, v0);
-    v0 = (uint32_t)MBS16(a1 - 8) << 3; v0 += a2;
+    MW8(wcur - 51, 9);  MW8(wcur - 47, 44);
+    MW8(wcur - 11, 9);  MW8(wcur - 7, 44);
+    v0 = MB32(src_cur);      MW32(wcur - 50, v0); MW32(wcur - 10, v0);
+    v0 = MB32(scur - 18); MW32(wcur - 42, v0); MW32(wcur - 2, v0);
+    v0 = MB32(scur - 14); MW32(wcur - 34, v0); MW32(wcur + 6, v0);
+    v0 = MB16(scur - 10); MW32(wcur - 26, v0); MW32(wcur + 14, v0);
+    v0 = MB16(scur - 6);  src_cur += 24;
+    MW32(wcur - 18, v0); MW32(wcur + 22, v0);
+    v0 = (uint32_t)MBS16(scur - 8) << 3; v0 += ptab;
     plo = MB32(v0); phi = MB32(v0 + 4);
     MW32(cur + 0, plo); MW32(cur + 4, phi);
-    v0 = (uint32_t)MBS16(a1 - 4) << 3; count -= 1; v0 += a2;
+    v0 = (uint32_t)MBS16(scur - 4) << 3; count -= 1; v0 += ptab;
     plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 - 78, plo); MW32(a0 - 74, phi);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3; cur += 112; v0 += a2;
+    MW32(wcur - 78, plo); MW32(wcur - 74, phi);
+    v0 = (uint32_t)MBS16(scur - 2) << 3; cur += 112; v0 += ptab;
     plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 - 70, plo); MW32(a0 - 66, phi);
-    v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 24; v0 += a2;
+    MW32(wcur - 70, plo); MW32(wcur - 66, phi);
+    v0 = (uint32_t)MBS16(scur + 0) << 3; scur += 24; v0 += ptab;
     plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 - 62, plo); MW32(a0 - 58, phi);
-    v0 = MB16(a0 - 32); cv = MB16(a0 - 40);
-    v0 += t5; cv += t4;
-    MW16(a0 - 32, v0); MW16(a0 - 40, cv);
-    v0 = MB16(a0 + 8);  cv = MB16(a0 + 0);
-    v0 += t5; cv += t4;
-    MW16(a0 + 8, v0);   MW16(a0 + 0, cv);
-    a0 += 112;
+    MW32(wcur - 62, plo); MW32(wcur - 58, phi);
+    v0 = MB16(wcur - 32); cv = MB16(wcur - 40);
+    v0 += xoff; cv += yoff;
+    MW16(wcur - 32, v0); MW16(wcur - 40, cv);
+    v0 = MB16(wcur + 8);  cv = MB16(wcur + 0);
+    v0 += xoff; cv += yoff;
+    MW16(wcur + 8, v0);   MW16(wcur + 0, cv);
+    wcur += 112;
   } while (count != 0);
   return cur;
 }
@@ -17002,53 +17002,53 @@ uint32_t heap_serialize_tag_40051(uint32_t a0,uint32_t a1,uint32_t a2,
  * (a0-0x28/+0xc) and arg7 to the two y u16s (a0-0x34/+0).
  * Tag bytes 12/0x3c at dst+0x1b/0x1f/0x57/0x5b (a0 = cur+0x62).
  * Returns cur + count*0x88. */
-uint32_t heap_serialize_tag_40055(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t unused4,uint32_t count,uint32_t t5,
-                     uint32_t t4)
+uint32_t heap_serialize_tag_40055(uint32_t wcur,uint32_t scur,uint32_t ptab,
+                     uint32_t unused4,uint32_t count,uint32_t xoff,
+                     uint32_t yoff)
 {
 
 
 
-  uint32_t cur = a0;
+  uint32_t cur = wcur;
 
 
 
-  uint32_t src_cur = a1;
+  uint32_t src_cur = scur;
   uint32_t v0, cv, plo, phi;
   (void)unused4;
   if (count == 0) return cur;
-  a0 += 98; a1 += 34;
+  wcur += 98; scur += 34;
   do {
-    MW8(a0 - 63, 12);  MW8(a0 - 59, 60);
-    MW8(a0 - 11, 12);  MW8(a0 - 7, 60);
-    v0 = MB32(src_cur);      MW32(a0 - 62, v0); MW32(a0 - 10, v0);
-    v0 = MB32(a1 - 30); MW32(a0 - 50, v0); MW32(a0 + 2, v0);
-    v0 = MB32(a1 - 26); MW32(a0 - 38, v0); MW32(a0 + 14, v0);
-    v0 = MB32(a1 - 22); MW32(a0 - 26, v0); MW32(a0 + 26, v0);
-    v0 = MB32(a1 - 18); MW32(a0 - 54, v0); MW32(a0 - 2, v0);
-    v0 = MB32(a1 - 14); MW32(a0 - 42, v0); MW32(a0 + 10, v0);
-    v0 = MB16(a1 - 10); MW32(a0 - 30, v0); MW32(a0 + 22, v0);
-    v0 = MB16(a1 - 6);  src_cur += 36;
-    MW32(a0 - 18, v0); MW32(a0 + 34, v0);
-    v0 = (uint32_t)MBS16(a1 - 8) << 3; v0 += a2;
+    MW8(wcur - 63, 12);  MW8(wcur - 59, 60);
+    MW8(wcur - 11, 12);  MW8(wcur - 7, 60);
+    v0 = MB32(src_cur);      MW32(wcur - 62, v0); MW32(wcur - 10, v0);
+    v0 = MB32(scur - 30); MW32(wcur - 50, v0); MW32(wcur + 2, v0);
+    v0 = MB32(scur - 26); MW32(wcur - 38, v0); MW32(wcur + 14, v0);
+    v0 = MB32(scur - 22); MW32(wcur - 26, v0); MW32(wcur + 26, v0);
+    v0 = MB32(scur - 18); MW32(wcur - 54, v0); MW32(wcur - 2, v0);
+    v0 = MB32(scur - 14); MW32(wcur - 42, v0); MW32(wcur + 10, v0);
+    v0 = MB16(scur - 10); MW32(wcur - 30, v0); MW32(wcur + 22, v0);
+    v0 = MB16(scur - 6);  src_cur += 36;
+    MW32(wcur - 18, v0); MW32(wcur + 34, v0);
+    v0 = (uint32_t)MBS16(scur - 8) << 3; v0 += ptab;
     plo = MB32(v0); phi = MB32(v0 + 4);
     MW32(cur + 0, plo); MW32(cur + 4, phi);
-    v0 = (uint32_t)MBS16(a1 - 4) << 3; count -= 1; v0 += a2;
+    v0 = (uint32_t)MBS16(scur - 4) << 3; count -= 1; v0 += ptab;
     plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 - 90, plo); MW32(a0 - 86, phi);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3; cur += 136; v0 += a2;
+    MW32(wcur - 90, plo); MW32(wcur - 86, phi);
+    v0 = (uint32_t)MBS16(scur - 2) << 3; cur += 136; v0 += ptab;
     plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 - 82, plo); MW32(a0 - 78, phi);
-    v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 36; v0 += a2;
+    MW32(wcur - 82, plo); MW32(wcur - 78, phi);
+    v0 = (uint32_t)MBS16(scur + 0) << 3; scur += 36; v0 += ptab;
     plo = MB32(v0); phi = MB32(v0 + 4);
-    MW32(a0 - 74, plo); MW32(a0 - 70, phi);
-    v0 = MB16(a0 - 40); cv = MB16(a0 - 52);
-    v0 += t5; MW16(a0 - 40, v0);
-    v0 = MB16(a0 + 12); cv += t4; MW16(a0 - 52, cv);
-    cv = MB16(a0 + 0);
-    v0 += t5; cv += t4;
-    MW16(a0 + 12, v0); MW16(a0 + 0, cv);
-    a0 += 136;
+    MW32(wcur - 74, plo); MW32(wcur - 70, phi);
+    v0 = MB16(wcur - 40); cv = MB16(wcur - 52);
+    v0 += xoff; MW16(wcur - 40, v0);
+    v0 = MB16(wcur + 12); cv += yoff; MW16(wcur - 52, cv);
+    cv = MB16(wcur + 0);
+    v0 += xoff; cv += yoff;
+    MW16(wcur + 12, v0); MW16(wcur + 0, cv);
+    wcur += 136;
   } while (count != 0);
   return cur;
 }
@@ -17059,33 +17059,33 @@ uint32_t heap_serialize_tag_40055(uint32_t a0,uint32_t a1,uint32_t a2,
  * Four single-word lookups: lh idx<<3 +table -> lw -> sw
  * (arg4 table for -6, arg3 table for -4/-2/0). Tag bytes 4/0x20 at
  * dst+0xf/0x13/0x23/0x27 (a0 = cur+8). Returns cur + count*0x3c. */
-uint32_t heap_serialize_tag_01000008(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t count)
+uint32_t heap_serialize_tag_01000008(uint32_t wcur,uint32_t scur,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count)
 {
 
 
 
 
-  uint32_t cur = a0;
-  uint32_t src_cur = a1;
+  uint32_t cur = wcur;
+  uint32_t src_cur = scur;
 
-  uint32_t v0;
+  uint32_t tp;
   if (count == 0) return cur;
-  a0 += 8; a1 += 10;
+  wcur += 8; scur += 10;
   do {
-    MW8(a0 + 15, 4);  MW8(a0 + 19, 32);
-    MW8(a0 + 35, 4);  MW8(a0 + 39, 32);
-    MW32(a0 + 4, MB32(src_cur));
-    v0 = (uint32_t)MBS16(a1 - 6) << 3; v0 += a3;
-    MW32(a0 + 8, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 4) << 3; v0 += a2;
-    MW32(cur + 0, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 2) << 3; src_cur += 12; v0 += a2;
+    MW8(wcur + 15, 4);  MW8(wcur + 19, 32);
+    MW8(wcur + 35, 4);  MW8(wcur + 39, 32);
+    MW32(wcur + 4, MB32(src_cur));
+    tp = (uint32_t)MBS16(scur - 6) << 3; tp += ptab2;
+    MW32(wcur + 8, MB32(tp));
+    tp = (uint32_t)MBS16(scur - 4) << 3; tp += ptab;
+    MW32(cur + 0, MB32(tp));
+    tp = (uint32_t)MBS16(scur - 2) << 3; src_cur += 12; tp += ptab;
     count -= 1;
-    MW32(a0 - 4, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 + 0) << 3; cur += 60; a1 += 12; v0 += a2;
-    MW32(a0 + 0, MB32(v0));
-    a0 += 60;
+    MW32(wcur - 4, MB32(tp));
+    tp = (uint32_t)MBS16(scur + 0) << 3; cur += 60; scur += 12; tp += ptab;
+    MW32(wcur + 0, MB32(tp));
+    wcur += 60;
   } while (count != 0);
   return cur;
 }
@@ -17096,37 +17096,37 @@ uint32_t heap_serialize_tag_01000008(uint32_t a0,uint32_t a1,uint32_t a2,
  * lookups alternating arg4/arg3 tables (-10,-8,-6,-4,-2,0).
  * Tag bytes 6/0x30 stamped at loop tail at dst+0x1f/0x23/0x3b/0x3f
  * (a0 = cur+0x3f). Returns cur + count*0x54. */
-uint32_t heap_serialize_tag_0100000c(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t count)
+uint32_t heap_serialize_tag_0100000c(uint32_t wcur,uint32_t scur,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count)
 {
 
 
 
 
-  uint32_t cur = a0;
-  uint32_t src_cur = a1;
+  uint32_t cur = wcur;
+  uint32_t src_cur = scur;
 
-  uint32_t v0;
+  uint32_t tp;
   if (count == 0) return cur;
-  a0 += 63; a1 += 14;
+  wcur += 63; scur += 14;
   do {
-    MW32(a0 - 51, MB32(src_cur));
-    v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
-    MW32(a0 - 47, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
-    MW32(cur + 0, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a3;
-    MW32(a0 - 43, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 4) << 3;  v0 += a2;
-    MW32(a0 - 59, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 2) << 3;  src_cur += 16; v0 += a3;
+    MW32(wcur - 51, MB32(src_cur));
+    tp = (uint32_t)MBS16(scur - 10) << 3; tp += ptab2;
+    MW32(wcur - 47, MB32(tp));
+    tp = (uint32_t)MBS16(scur - 8) << 3;  tp += ptab;
+    MW32(cur + 0, MB32(tp));
+    tp = (uint32_t)MBS16(scur - 6) << 3;  tp += ptab2;
+    MW32(wcur - 43, MB32(tp));
+    tp = (uint32_t)MBS16(scur - 4) << 3;  tp += ptab;
+    MW32(wcur - 59, MB32(tp));
+    tp = (uint32_t)MBS16(scur - 2) << 3;  src_cur += 16; tp += ptab2;
     count -= 1;
-    MW32(a0 - 39, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 + 0) << 3;  cur += 84; a1 += 16; v0 += a2;
-    MW32(a0 - 55, MB32(v0));
-    MW8(a0 - 32, 6);  MW8(a0 - 28, 48);
-    MW8(a0 - 4, 6);   MW8(a0 + 0, 48);
-    a0 += 84;
+    MW32(wcur - 39, MB32(tp));
+    tp = (uint32_t)MBS16(scur + 0) << 3;  cur += 84; scur += 16; tp += ptab;
+    MW32(wcur - 55, MB32(tp));
+    MW8(wcur - 32, 6);  MW8(wcur - 28, 48);
+    MW8(wcur - 4, 6);   MW8(wcur + 0, 48);
+    wcur += 84;
   } while (count != 0);
   return cur;
 }
@@ -17137,35 +17137,35 @@ uint32_t heap_serialize_tag_0100000c(uint32_t a0,uint32_t a1,uint32_t a2,
  * aux src+18. Four single-word lookups (arg4 for -6, arg3 for
  * -4/-2/0). Tag bytes 6/0x30 at dst+0x1f/0x23/0x37/0x3b
  * (a0 = cur+8). Returns cur + count*0x54. */
-uint32_t heap_serialize_tag_0100000a(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t count)
+uint32_t heap_serialize_tag_0100000a(uint32_t wcur,uint32_t scur,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count)
 {
 
 
 
 
-  uint32_t cur = a0;
-  uint32_t src_cur = a1;
+  uint32_t cur = wcur;
+  uint32_t src_cur = scur;
 
-  uint32_t v0;
+  uint32_t tp;
   if (count == 0) return cur;
-  a0 += 8; a1 += 18;
+  wcur += 8; scur += 18;
   do {
-    MW8(a0 + 23, 6);  MW8(a0 + 27, 48);
-    MW8(a0 + 51, 6);  MW8(a0 + 55, 48);
-    MW32(a0 + 4, MB32(src_cur));
-    MW32(a0 + 8,  MB32(a1 - 14));
-    MW32(a0 + 12, MB32(a1 - 10));
-    v0 = (uint32_t)MBS16(a1 - 6) << 3; v0 += a3;
-    MW32(a0 + 16, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 4) << 3; v0 += a2;
-    MW32(cur + 0, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 2) << 3; src_cur += 20; v0 += a2;
+    MW8(wcur + 23, 6);  MW8(wcur + 27, 48);
+    MW8(wcur + 51, 6);  MW8(wcur + 55, 48);
+    MW32(wcur + 4, MB32(src_cur));
+    MW32(wcur + 8,  MB32(scur - 14));
+    MW32(wcur + 12, MB32(scur - 10));
+    tp = (uint32_t)MBS16(scur - 6) << 3; tp += ptab2;
+    MW32(wcur + 16, MB32(tp));
+    tp = (uint32_t)MBS16(scur - 4) << 3; tp += ptab;
+    MW32(cur + 0, MB32(tp));
+    tp = (uint32_t)MBS16(scur - 2) << 3; src_cur += 20; tp += ptab;
     count -= 1;
-    MW32(a0 - 4, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 + 0) << 3; cur += 84; a1 += 20; v0 += a2;
-    MW32(a0 + 0, MB32(v0));
-    a0 += 84;
+    MW32(wcur - 4, MB32(tp));
+    tp = (uint32_t)MBS16(scur + 0) << 3; cur += 84; scur += 20; tp += ptab;
+    MW32(wcur + 0, MB32(tp));
+    wcur += 84;
   } while (count != 0);
   return cur;
 }
@@ -17176,39 +17176,39 @@ uint32_t heap_serialize_tag_0100000a(uint32_t a0,uint32_t a1,uint32_t a2,
  * aux src+22. Six single-word lookups alternating arg4/arg3
  * tables (-10,-8,-6,-4,-2,0). Tag bytes 6/0x30 at
  * dst+0x1f/0x23/0x3b/0x3f (a0 = cur+8). Returns cur + count*0x5c. */
-uint32_t heap_serialize_tag_0100000e(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t count)
+uint32_t heap_serialize_tag_0100000e(uint32_t wcur,uint32_t scur,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count)
 {
 
 
 
 
-  uint32_t cur = a0;
-  uint32_t src_cur = a1;
+  uint32_t cur = wcur;
+  uint32_t src_cur = scur;
 
-  uint32_t v0;
+  uint32_t tp;
   if (count == 0) return cur;
-  a0 += 8; a1 += 22;
+  wcur += 8; scur += 22;
   do {
-    MW8(a0 + 31, 6);  MW8(a0 + 35, 48);
-    MW8(a0 + 59, 6);  MW8(a0 + 63, 48);
-    MW32(a0 + 4,  MB32(src_cur));
-    MW32(a0 + 8,  MB32(a1 - 18));
-    MW32(a0 + 12, MB32(a1 - 14));
-    v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
-    MW32(a0 + 16, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
-    MW32(cur + 0, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a3;
-    MW32(a0 + 20, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 4) << 3;  v0 += a2;
-    MW32(a0 - 4, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 2) << 3;  src_cur += 24; v0 += a3;
+    MW8(wcur + 31, 6);  MW8(wcur + 35, 48);
+    MW8(wcur + 59, 6);  MW8(wcur + 63, 48);
+    MW32(wcur + 4,  MB32(src_cur));
+    MW32(wcur + 8,  MB32(scur - 18));
+    MW32(wcur + 12, MB32(scur - 14));
+    tp = (uint32_t)MBS16(scur - 10) << 3; tp += ptab2;
+    MW32(wcur + 16, MB32(tp));
+    tp = (uint32_t)MBS16(scur - 8) << 3;  tp += ptab;
+    MW32(cur + 0, MB32(tp));
+    tp = (uint32_t)MBS16(scur - 6) << 3;  tp += ptab2;
+    MW32(wcur + 20, MB32(tp));
+    tp = (uint32_t)MBS16(scur - 4) << 3;  tp += ptab;
+    MW32(wcur - 4, MB32(tp));
+    tp = (uint32_t)MBS16(scur - 2) << 3;  src_cur += 24; tp += ptab2;
     count -= 1;
-    MW32(a0 + 24, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 + 0) << 3;  cur += 92; a1 += 24; v0 += a2;
-    MW32(a0 + 0, MB32(v0));
-    a0 += 92;
+    MW32(wcur + 24, MB32(tp));
+    tp = (uint32_t)MBS16(scur + 0) << 3;  cur += 92; scur += 24; tp += ptab;
+    MW32(wcur + 0, MB32(tp));
+    wcur += 92;
   } while (count != 0);
   return cur;
 }
@@ -17219,35 +17219,35 @@ uint32_t heap_serialize_tag_0100000e(uint32_t a0,uint32_t a1,uint32_t a2,
  * Five single-word lookups (arg4 for -8, arg3 for -6/-4/-2/0).
  * Tag bytes 5/0x28 at dst+0xf/0x13/0x27/0x2b (a0 = cur+0xc).
  * Returns cur + count*0x48. */
-uint32_t heap_serialize_tag_01000010(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t count)
+uint32_t heap_serialize_tag_01000010(uint32_t wcur,uint32_t scur,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count)
 {
 
 
 
 
-  uint32_t cur = a0;
-  uint32_t src_cur = a1;
+  uint32_t cur = wcur;
+  uint32_t src_cur = scur;
 
-  uint32_t v0;
+  uint32_t tp;
   if (count == 0) return cur;
-  a0 += 12; a1 += 12;
+  wcur += 12; scur += 12;
   do {
-    MW8(a0 + 15, 5);  MW8(a0 + 19, 40);
-    MW8(a0 + 39, 5);  MW8(a0 + 43, 40);
-    MW32(a0 + 4, MB32(src_cur));
-    v0 = (uint32_t)MBS16(a1 - 8) << 3; v0 += a3;
-    MW32(a0 + 8, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 6) << 3; v0 += a2;
-    MW32(cur + 0, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 4) << 3; v0 += a2;
-    MW32(a0 - 8, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 2) << 3; src_cur += 16; v0 += a2;
+    MW8(wcur + 15, 5);  MW8(wcur + 19, 40);
+    MW8(wcur + 39, 5);  MW8(wcur + 43, 40);
+    MW32(wcur + 4, MB32(src_cur));
+    tp = (uint32_t)MBS16(scur - 8) << 3; tp += ptab2;
+    MW32(wcur + 8, MB32(tp));
+    tp = (uint32_t)MBS16(scur - 6) << 3; tp += ptab;
+    MW32(cur + 0, MB32(tp));
+    tp = (uint32_t)MBS16(scur - 4) << 3; tp += ptab;
+    MW32(wcur - 8, MB32(tp));
+    tp = (uint32_t)MBS16(scur - 2) << 3; src_cur += 16; tp += ptab;
     count -= 1;
-    MW32(a0 - 4, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 + 0) << 3; cur += 72; a1 += 16; v0 += a2;
-    MW32(a0 + 0, MB32(v0));
-    a0 += 72;
+    MW32(wcur - 4, MB32(tp));
+    tp = (uint32_t)MBS16(scur + 0) << 3; cur += 72; scur += 16; tp += ptab;
+    MW32(wcur + 0, MB32(tp));
+    wcur += 72;
   } while (count != 0);
   return cur;
 }
@@ -17258,41 +17258,41 @@ uint32_t heap_serialize_tag_01000010(uint32_t a0,uint32_t a1,uint32_t a2,
  * Eight single-word lookups alternating arg4/arg3 tables
  * (-14..0 step 2). Tag bytes 8/0x38 at dst+0x1b/0x1f/0x3f/0x43
  * (a0 = cur+0xc). Returns cur + count*0x6c. */
-uint32_t heap_serialize_tag_01000014(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t count)
+uint32_t heap_serialize_tag_01000014(uint32_t wcur,uint32_t scur,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count)
 {
 
 
 
 
-  uint32_t cur = a0;
-  uint32_t src_cur = a1;
+  uint32_t cur = wcur;
+  uint32_t src_cur = scur;
 
-  uint32_t v0;
+  uint32_t tp;
   if (count == 0) return cur;
-  a0 += 12; a1 += 18;
+  wcur += 12; scur += 18;
   do {
-    MW8(a0 + 27, 8);  MW8(a0 + 31, 56);
-    MW8(a0 + 63, 8);  MW8(a0 + 67, 56);
-    MW32(a0 + 4, MB32(src_cur));
-    v0 = (uint32_t)MBS16(a1 - 14) << 3; v0 += a3;
-    MW32(a0 + 8, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 12) << 3; v0 += a2;
-    MW32(cur + 0, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
-    MW32(a0 + 12, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
-    MW32(a0 - 8, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a3;
-    MW32(a0 + 16, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 4) << 3;  v0 += a2;
-    MW32(a0 - 4, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 2) << 3;  src_cur += 20; v0 += a3;
+    MW8(wcur + 27, 8);  MW8(wcur + 31, 56);
+    MW8(wcur + 63, 8);  MW8(wcur + 67, 56);
+    MW32(wcur + 4, MB32(src_cur));
+    tp = (uint32_t)MBS16(scur - 14) << 3; tp += ptab2;
+    MW32(wcur + 8, MB32(tp));
+    tp = (uint32_t)MBS16(scur - 12) << 3; tp += ptab;
+    MW32(cur + 0, MB32(tp));
+    tp = (uint32_t)MBS16(scur - 10) << 3; tp += ptab2;
+    MW32(wcur + 12, MB32(tp));
+    tp = (uint32_t)MBS16(scur - 8) << 3;  tp += ptab;
+    MW32(wcur - 8, MB32(tp));
+    tp = (uint32_t)MBS16(scur - 6) << 3;  tp += ptab2;
+    MW32(wcur + 16, MB32(tp));
+    tp = (uint32_t)MBS16(scur - 4) << 3;  tp += ptab;
+    MW32(wcur - 4, MB32(tp));
+    tp = (uint32_t)MBS16(scur - 2) << 3;  src_cur += 20; tp += ptab2;
     count -= 1;
-    MW32(a0 + 20, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 + 0) << 3;  cur += 108; a1 += 20; v0 += a2;
-    MW32(a0 + 0, MB32(v0));
-    a0 += 108;
+    MW32(wcur + 20, MB32(tp));
+    tp = (uint32_t)MBS16(scur + 0) << 3;  cur += 108; scur += 20; tp += ptab;
+    MW32(wcur + 0, MB32(tp));
+    wcur += 108;
   } while (count != 0);
   return cur;
 }
@@ -17303,38 +17303,38 @@ uint32_t heap_serialize_tag_01000014(uint32_t a0,uint32_t a1,uint32_t a2,
  * 0x1c, aux src+24. Five single-word lookups (arg4 for -8, arg3
  * for -6/-4/-2/0). Tag bytes 8/0x38 at dst+0x1b/0x1f/0x3f/0x43
  * (a0 = cur+0xc). Returns cur + count*0x6c. */
-uint32_t heap_serialize_tag_01000012(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t count)
+uint32_t heap_serialize_tag_01000012(uint32_t wcur,uint32_t scur,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count)
 {
 
 
 
 
-  uint32_t cur = a0;
-  uint32_t src_cur = a1;
+  uint32_t cur = wcur;
+  uint32_t src_cur = scur;
 
-  uint32_t v0;
+  uint32_t tp;
   if (count == 0) return cur;
-  a0 += 12; a1 += 24;
+  wcur += 12; scur += 24;
   do {
-    MW8(a0 + 27, 8);  MW8(a0 + 31, 56);
-    MW8(a0 + 63, 8);  MW8(a0 + 67, 56);
-    MW32(a0 + 4,  MB32(src_cur));
-    MW32(a0 + 8,  MB32(a1 - 20));
-    MW32(a0 + 12, MB32(a1 - 16));
-    MW32(a0 + 16, MB32(a1 - 12));
-    v0 = (uint32_t)MBS16(a1 - 8) << 3; v0 += a3;
-    MW32(a0 + 20, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 6) << 3; v0 += a2;
-    MW32(cur + 0, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 4) << 3; v0 += a2;
-    MW32(a0 - 8, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 2) << 3; src_cur += 28; v0 += a2;
+    MW8(wcur + 27, 8);  MW8(wcur + 31, 56);
+    MW8(wcur + 63, 8);  MW8(wcur + 67, 56);
+    MW32(wcur + 4,  MB32(src_cur));
+    MW32(wcur + 8,  MB32(scur - 20));
+    MW32(wcur + 12, MB32(scur - 16));
+    MW32(wcur + 16, MB32(scur - 12));
+    tp = (uint32_t)MBS16(scur - 8) << 3; tp += ptab2;
+    MW32(wcur + 20, MB32(tp));
+    tp = (uint32_t)MBS16(scur - 6) << 3; tp += ptab;
+    MW32(cur + 0, MB32(tp));
+    tp = (uint32_t)MBS16(scur - 4) << 3; tp += ptab;
+    MW32(wcur - 8, MB32(tp));
+    tp = (uint32_t)MBS16(scur - 2) << 3; src_cur += 28; tp += ptab;
     count -= 1;
-    MW32(a0 - 4, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 + 0) << 3; cur += 108; a1 += 28; v0 += a2;
-    MW32(a0 + 0, MB32(v0));
-    a0 += 108;
+    MW32(wcur - 4, MB32(tp));
+    tp = (uint32_t)MBS16(scur + 0) << 3; cur += 108; scur += 28; tp += ptab;
+    MW32(wcur + 0, MB32(tp));
+    wcur += 108;
   } while (count != 0);
   return cur;
 }
@@ -17345,44 +17345,44 @@ uint32_t heap_serialize_tag_01000012(uint32_t a0,uint32_t a1,uint32_t a2,
  * aux src+30. Eight single-word lookups alternating arg4/arg3
  * tables (-14..0 step 2). Tag bytes 8/0x38 at dst+0x27/0x2b/0x4b/0x4f
  * (a0 = cur+0xc). Returns cur + count*0x78. */
-uint32_t heap_serialize_tag_01000016(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t count)
+uint32_t heap_serialize_tag_01000016(uint32_t wcur,uint32_t scur,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count)
 {
 
 
 
 
-  uint32_t cur = a0;
-  uint32_t src_cur = a1;
+  uint32_t cur = wcur;
+  uint32_t src_cur = scur;
 
-  uint32_t v0;
+  uint32_t tp;
   if (count == 0) return cur;
-  a0 += 12; a1 += 30;
+  wcur += 12; scur += 30;
   do {
-    MW8(a0 + 39, 8);  MW8(a0 + 43, 56);
-    MW8(a0 + 75, 8);  MW8(a0 + 79, 56);
-    MW32(a0 + 4,  MB32(src_cur));
-    MW32(a0 + 8,  MB32(a1 - 26));
-    MW32(a0 + 12, MB32(a1 - 22));
-    MW32(a0 + 16, MB32(a1 - 18));
-    v0 = (uint32_t)MBS16(a1 - 14) << 3; v0 += a3;
-    MW32(a0 + 20, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 12) << 3; v0 += a2;
-    MW32(cur + 0, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
-    MW32(a0 + 24, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
-    MW32(a0 - 8, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a3;
-    MW32(a0 + 28, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 4) << 3;  v0 += a2;
-    MW32(a0 - 4, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 2) << 3;  src_cur += 32; v0 += a3;
+    MW8(wcur + 39, 8);  MW8(wcur + 43, 56);
+    MW8(wcur + 75, 8);  MW8(wcur + 79, 56);
+    MW32(wcur + 4,  MB32(src_cur));
+    MW32(wcur + 8,  MB32(scur - 26));
+    MW32(wcur + 12, MB32(scur - 22));
+    MW32(wcur + 16, MB32(scur - 18));
+    tp = (uint32_t)MBS16(scur - 14) << 3; tp += ptab2;
+    MW32(wcur + 20, MB32(tp));
+    tp = (uint32_t)MBS16(scur - 12) << 3; tp += ptab;
+    MW32(cur + 0, MB32(tp));
+    tp = (uint32_t)MBS16(scur - 10) << 3; tp += ptab2;
+    MW32(wcur + 24, MB32(tp));
+    tp = (uint32_t)MBS16(scur - 8) << 3;  tp += ptab;
+    MW32(wcur - 8, MB32(tp));
+    tp = (uint32_t)MBS16(scur - 6) << 3;  tp += ptab2;
+    MW32(wcur + 28, MB32(tp));
+    tp = (uint32_t)MBS16(scur - 4) << 3;  tp += ptab;
+    MW32(wcur - 4, MB32(tp));
+    tp = (uint32_t)MBS16(scur - 2) << 3;  src_cur += 32; tp += ptab2;
     count -= 1;
-    MW32(a0 + 32, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 + 0) << 3;  cur += 120; a1 += 32; v0 += a2;
-    MW32(a0 + 0, MB32(v0));
-    a0 += 120;
+    MW32(wcur + 32, MB32(tp));
+    tp = (uint32_t)MBS16(scur + 0) << 3;  cur += 120; scur += 32; tp += ptab;
+    MW32(wcur + 0, MB32(tp));
+    wcur += 120;
   } while (count != 0);
   return cur;
 }
@@ -17394,46 +17394,46 @@ uint32_t heap_serialize_tag_01000016(uint32_t a0,uint32_t a1,uint32_t a2,
  * arg3 for -4/-2/0). Tail adds param_6 to x u16s (t0-0x18/+8) and
  * param_7 to y u16s (t0-0x20/+0). Tag bytes 7/0x24 at
  * dst+0x13/0x17/0x33/0x37 (t0 = cur+0x3e). Returns cur + count*0x50. */
-uint32_t heap_serialize_tag_01000009(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t count,uint32_t t7,
-                     uint32_t t6)
+uint32_t heap_serialize_tag_01000009(uint32_t a0,uint32_t scur,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count,uint32_t xoff,
+                     uint32_t yoff)
 {
 
 
 
 
   uint32_t cur = a0;
-  uint32_t src_cur = a1;
+  uint32_t src_cur = scur;
 
 
 
   uint32_t cur2 = a0 + 62;
   uint32_t v0;
   if (count == 0) return cur;
-  a1 += 18;
+  scur += 18;
   do {
     MW8(cur2 - 43, 7);  MW8(cur2 - 39, 36);
     MW8(cur2 - 11, 7);  MW8(cur2 - 7, 36);
     v0 = MB32(src_cur); MW32(cur2 - 34, v0); MW32(cur2 - 2, v0);
-    v0 = MB32(a1 - 14); MW32(cur2 - 26, v0); MW32(cur2 + 6, v0);
-    v0 = MB32(a1 - 10); src_cur += 20;
+    v0 = MB32(scur - 14); MW32(cur2 - 26, v0); MW32(cur2 + 6, v0);
+    v0 = MB32(scur - 10); src_cur += 20;
     MW32(cur2 - 18, v0); MW32(cur2 + 14, v0);
-    v0 = (uint32_t)MBS16(a1 - 6) << 3; v0 += a3;
+    v0 = (uint32_t)MBS16(scur - 6) << 3; v0 += ptab2;
     MW32(cur2 - 50, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 4) << 3; v0 += a2;
+    v0 = (uint32_t)MBS16(scur - 4) << 3; v0 += ptab;
     MW32(cur + 0, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 2) << 3; v0 += a2;
+    v0 = (uint32_t)MBS16(scur - 2) << 3; v0 += ptab;
     count -= 1;
     cur += 80;
     MW32(cur2 - 58, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 20; v0 += a2;
+    v0 = (uint32_t)MBS16(scur + 0) << 3; scur += 20; v0 += ptab;
     a0 = MB32(v0);
     MW32(cur2 - 54, a0);
     { uint32_t c0 = MB16(cur2 - 32), c1 = MB16(cur2 - 24);
-      c0 += t6; MW16(cur2 - 32, c0);
-      c1 += t7; MW16(cur2 - 24, c1);
+      c0 += yoff; MW16(cur2 - 32, c0);
+      c1 += xoff; MW16(cur2 - 24, c1);
       c0 = MB16(cur2 + 0);  c1 = MB16(cur2 + 8);
-      c0 += t6; c1 += t7;
+      c0 += yoff; c1 += xoff;
       MW16(cur2 + 0, c0);   MW16(cur2 + 8, c1); }
     cur2 += 80;
   } while (count != 0);
@@ -17448,51 +17448,51 @@ uint32_t heap_serialize_tag_01000009(uint32_t a0,uint32_t a1,uint32_t a2,
  * (+4,+6,+8,+10,+12,+14). Tail adds param_6 to x u16s (a0-0x1c/+0xc)
  * and param_7 to y u16s (a0-0x28/+0). Tag bytes 9/0x34 at
  * dst+0x1b/0x1f/0x43/0x47 (a0 = cur+0x4e). Returns cur + count*0x68. */
-uint32_t heap_serialize_tag_0100000d(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t t0,uint32_t t6,
-                     uint32_t t5)
+uint32_t heap_serialize_tag_0100000d(uint32_t wcur,uint32_t scur,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count,uint32_t xoff,
+                     uint32_t yoff)
 {
 
 
 
 
-  uint32_t cur = a0;
-  uint32_t src_cur = a1;
+  uint32_t cur = wcur;
+  uint32_t src_cur = scur;
 
 
 
   uint32_t v0, v1;
-  if (t0 == 0) return cur;
-  a0 += 78; a1 += 8;
+  if (count == 0) return cur;
+  wcur += 78; scur += 8;
   do {
-    v0 = (uint32_t)MBS16(a1 + 4) << 3;  v0 += a3;
-    MW32(a0 - 66, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 + 6) << 3;  v0 += a2;
+    v0 = (uint32_t)MBS16(scur + 4) << 3;  v0 += ptab2;
+    MW32(wcur - 66, MB32(v0));
+    v0 = (uint32_t)MBS16(scur + 6) << 3;  v0 += ptab;
     MW32(cur + 0, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 + 8) << 3;  v0 += a3;
-    MW32(a0 - 62, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 + 10) << 3; v0 += a2;
-    MW32(a0 - 74, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 + 12) << 3; v0 += a3;
-    MW32(a0 - 58, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 + 14) << 3; v0 += a2;
-    t0 -= 1;
-    MW32(a0 - 70, MB32(v0));
+    v0 = (uint32_t)MBS16(scur + 8) << 3;  v0 += ptab2;
+    MW32(wcur - 62, MB32(v0));
+    v0 = (uint32_t)MBS16(scur + 10) << 3; v0 += ptab;
+    MW32(wcur - 74, MB32(v0));
+    v0 = (uint32_t)MBS16(scur + 12) << 3; v0 += ptab2;
+    MW32(wcur - 58, MB32(v0));
+    v0 = (uint32_t)MBS16(scur + 14) << 3; v0 += ptab;
+    count -= 1;
+    MW32(wcur - 70, MB32(v0));
     v0 = MB32(src_cur); cur += 104; src_cur += 24;
-    MW32(a0 - 42, v0); MW32(a0 - 2, v0);
-    v0 = MB32(a1 - 4); v1 = MB16(a0 - 40);
-    MW32(a0 - 30, v0); MW32(a0 + 10, v0);
-    v0 = MB32(a1 + 0); a1 += 24;
-    MW32(a0 - 18, v0); MW32(a0 + 22, v0);
-    v0 = MB16(a0 - 28); v0 += t6; MW16(a0 - 28, v0);
-    v1 += t5; MW16(a0 - 40, v1);
-    v0 = MB16(a0 + 12); v1 = MB16(a0 + 0);
-    v0 += t6; v1 += t5;
-    MW16(a0 + 12, v0); MW16(a0 + 0, v1);
-    MW8(a0 - 51, 9);  MW8(a0 - 47, 52);
-    MW8(a0 - 11, 9);  MW8(a0 - 7, 52);
-    a0 += 104;
-  } while (t0 != 0);
+    MW32(wcur - 42, v0); MW32(wcur - 2, v0);
+    v0 = MB32(scur - 4); v1 = MB16(wcur - 40);
+    MW32(wcur - 30, v0); MW32(wcur + 10, v0);
+    v0 = MB32(scur + 0); scur += 24;
+    MW32(wcur - 18, v0); MW32(wcur + 22, v0);
+    v0 = MB16(wcur - 28); v0 += xoff; MW16(wcur - 28, v0);
+    v1 += yoff; MW16(wcur - 40, v1);
+    v0 = MB16(wcur + 12); v1 = MB16(wcur + 0);
+    v0 += xoff; v1 += yoff;
+    MW16(wcur + 12, v0); MW16(wcur + 0, v1);
+    MW8(wcur - 51, 9);  MW8(wcur - 47, 52);
+    MW8(wcur - 11, 9);  MW8(wcur - 7, 52);
+    wcur += 104;
+  } while (count != 0);
   return cur;
 }
 
@@ -17504,51 +17504,51 @@ uint32_t heap_serialize_tag_0100000d(uint32_t a0,uint32_t a1,uint32_t a2,
  * Tail adds param_6 to x u16s (t0-0x20/+8) and param_7 to y u16s
  * (t0-0x28/+0). Tag bytes 9/0x2c at dst+0x1b/0x1f/0x43/0x47
  * (t0 = cur+0x4a). Returns cur + count*0x64. */
-uint32_t heap_serialize_tag_01000011(uint32_t cur,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t t1,uint32_t t7,
-                     uint32_t t6)
+uint32_t heap_serialize_tag_01000011(uint32_t cur,uint32_t scur,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count,uint32_t xoff,
+                     uint32_t yoff)
 {
 
 
 
 
-  uint32_t src_cur = a1;
+  uint32_t src_cur = scur;
 
 
 
   uint32_t cur2 = cur + 74;
   uint32_t v0;
-  if (t1 == 0) return cur;
-  a1 += 22;
+  if (count == 0) return cur;
+  scur += 22;
   do {
     MW8(cur2 - 51, 9);  MW8(cur2 - 47, 44);
     MW8(cur2 - 11, 9);  MW8(cur2 - 7, 44);
     v0 = MB32(src_cur); MW32(cur2 - 42, v0); MW32(cur2 - 2, v0);
-    v0 = MB32(a1 - 18); MW32(cur2 - 34, v0); MW32(cur2 + 6, v0);
-    v0 = MB32(a1 - 14); MW32(cur2 - 26, v0); MW32(cur2 + 14, v0);
-    v0 = MB32(a1 - 10); src_cur += 24;
+    v0 = MB32(scur - 18); MW32(cur2 - 34, v0); MW32(cur2 + 6, v0);
+    v0 = MB32(scur - 14); MW32(cur2 - 26, v0); MW32(cur2 + 14, v0);
+    v0 = MB32(scur - 10); src_cur += 24;
     MW32(cur2 - 18, v0); MW32(cur2 + 22, v0);
-    v0 = (uint32_t)MBS16(a1 - 8) << 3; v0 += a3;
+    v0 = (uint32_t)MBS16(scur - 8) << 3; v0 += ptab2;
     MW32(cur2 - 58, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 6) << 3; v0 += a2;
+    v0 = (uint32_t)MBS16(scur - 6) << 3; v0 += ptab;
     MW32(cur + 0, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 4) << 3; v0 += a2;
-    t1 -= 1;
+    v0 = (uint32_t)MBS16(scur - 4) << 3; v0 += ptab;
+    count -= 1;
     MW32(cur2 - 70, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 2) << 3; v0 += a2;
+    v0 = (uint32_t)MBS16(scur - 2) << 3; v0 += ptab;
     cur += 100;
     MW32(cur2 - 66, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 24; v0 += a2;
+    v0 = (uint32_t)MBS16(scur + 0) << 3; scur += 24; v0 += ptab;
     { uint32_t r = MB32(v0);
       { uint32_t c0 = MB16(cur2 - 40), c1 = MB16(cur2 - 32);
-        c1 += t7; MW16(cur2 - 32, c1);
+        c1 += xoff; MW16(cur2 - 32, c1);
         MW32(cur2 - 62, r);
-        c0 += t6; MW16(cur2 - 40, c0);
+        c0 += yoff; MW16(cur2 - 40, c0);
         c0 = MB16(cur2 + 8);  c1 = MB16(cur2 + 0);
-        c0 += t7; c1 += t6;
+        c0 += xoff; c1 += yoff;
         MW16(cur2 + 8, c0);   MW16(cur2 + 0, c1); } }
     cur2 += 100;
-  } while (t1 != 0);
+  } while (count != 0);
   return cur;
 }
 
@@ -17560,57 +17560,57 @@ uint32_t heap_serialize_tag_01000011(uint32_t cur,uint32_t a1,uint32_t a2,
  * (-16..0 step 2). Tail adds param_6 to x u16s (t0-0x28/+0xc) and
  * param_7 to y u16s (t0-0x34/+0). Tag bytes 12/0x3c at
  * dst+0x1b/0x1f/0x57/0x5b (t0 = cur+0x62). Returns cur + count*0x88. */
-uint32_t heap_serialize_tag_01000015(uint32_t cur,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t t1,uint32_t t7,
-                     uint32_t t6)
+uint32_t heap_serialize_tag_01000015(uint32_t cur,uint32_t scur,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count,uint32_t xoff,
+                     uint32_t yoff)
 {
 
 
 
 
-  uint32_t src_cur = a1;
+  uint32_t src_cur = scur;
 
 
 
   uint32_t cur2 = cur + 98;
   uint32_t v0;
-  if (t1 == 0) return cur;
-  a1 += 26;
+  if (count == 0) return cur;
+  scur += 26;
   do {
     MW8(cur2 - 63, 12);  MW8(cur2 - 59, 60);
     MW8(cur2 - 11, 12);  MW8(cur2 - 7, 60);
     v0 = MB32(src_cur);      MW32(cur2 - 54, v0); MW32(cur2 - 2, v0);
-    v0 = MB32(a1 - 22); MW32(cur2 - 42, v0); MW32(cur2 + 10, v0);
-    v0 = MB32(a1 - 18); MW32(cur2 - 30, v0); MW32(cur2 + 22, v0);
-    v0 = MB32(a1 - 14); src_cur += 28;
+    v0 = MB32(scur - 22); MW32(cur2 - 42, v0); MW32(cur2 + 10, v0);
+    v0 = MB32(scur - 18); MW32(cur2 - 30, v0); MW32(cur2 + 22, v0);
+    v0 = MB32(scur - 14); src_cur += 28;
     MW32(cur2 - 18, v0); MW32(cur2 + 34, v0);
-    v0 = (uint32_t)MBS16(a1 - 16) << 3; v0 += a3;
+    v0 = (uint32_t)MBS16(scur - 16) << 3; v0 += ptab2;
     MW32(cur2 - 82, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 12) << 3; v0 += a2;
+    v0 = (uint32_t)MBS16(scur - 12) << 3; v0 += ptab;
     MW32(cur + 0, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
+    v0 = (uint32_t)MBS16(scur - 10) << 3; v0 += ptab2;
     MW32(cur2 - 78, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
+    v0 = (uint32_t)MBS16(scur - 8) << 3;  v0 += ptab;
     MW32(cur2 - 94, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a3;
+    v0 = (uint32_t)MBS16(scur - 6) << 3;  v0 += ptab2;
     MW32(cur2 - 74, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 4) << 3;  v0 += a2;
-    t1 -= 1;
+    v0 = (uint32_t)MBS16(scur - 4) << 3;  v0 += ptab;
+    count -= 1;
     MW32(cur2 - 90, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 2) << 3;  v0 += a3;
+    v0 = (uint32_t)MBS16(scur - 2) << 3;  v0 += ptab2;
     cur += 136;
     MW32(cur2 - 70, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 + 0) << 3;  a1 += 28; v0 += a2;
+    v0 = (uint32_t)MBS16(scur + 0) << 3;  scur += 28; v0 += ptab;
     { uint32_t r = MB32(v0);
       { uint32_t cy = MB16(cur2 - 52), cx = MB16(cur2 - 40);
-        cy += t6; MW16(cur2 - 52, cy);
+        cy += yoff; MW16(cur2 - 52, cy);
         MW32(cur2 - 86, r);
-        cx += t7; MW16(cur2 - 40, cx);
+        cx += xoff; MW16(cur2 - 40, cx);
         cy = MB16(cur2 + 0); cx = MB16(cur2 + 12);
-        cx += t7; cy += t6;
+        cx += xoff; cy += yoff;
         MW16(cur2 + 12, cx); MW16(cur2 + 0, cy); } }
     cur2 += 136;
-  } while (t1 != 0);
+  } while (count != 0);
   return cur;
 }
 
