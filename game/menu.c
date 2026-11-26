@@ -986,9 +986,9 @@ LAB_80170714:
 undefined4 system_config_menu_a(void)
 
 {
-  short *psVar1;
+  short *pad;
   intptr_t iVar2;
-  undefined4 uVar3;
+  undefined4 ret;
   /* Guest stepper descriptor: one contiguous 0x30-byte block at
    * sp+0x10..0x3f passed to menu_stepper_state_advance / menu_stepper_sm
    * (a0 = sp+0x10); the +0xc callback is a u32 GUEST code address
@@ -1027,8 +1027,8 @@ undefined4 system_config_menu_a(void)
 #define local_34 (*(uint16_t *)&step_desc_a[0x2c])
 #define local_32 (*(uint16_t *)&step_desc_a[0x2e])
   
-  psVar1 = _g_pad_buffer;
-  uVar3 = 0;
+  pad = _g_pad_buffer;
+  ret = 0;
   _DAT_1f80008c = 0;
 joined_r0x8015c784:
   /* Bail-unwind exit must preserve the DAT1 exit invariant: the 0xff exit
@@ -1037,26 +1037,26 @@ joined_r0x8015c784:
    * as battle_flow_state_machine). */
   { extern int br2_bail_pending(void);
     extern void br2_guest_frame_abandon(void);
-    if (br2_bail_pending()) { DAT_1f800001 = 0; br2_guest_frame_abandon(); return uVar3; } }
+    if (br2_bail_pending()) { DAT_1f800001 = 0; br2_guest_frame_abandon(); return ret; } }
   do {
     if (DAT_1f800001 == 0xff) {
       DAT_1f800001 = 0;
       br2_guest_frame_free();
-      return uVar3;
+      return ret;
     }
     if (DAT_1f800001 == 1) {
 LAB_8015c900:
       if ((_DAT_1f80007c & 0x10) != 0) {
         deferred_cmd_post(0x400,0xd,0);
         DAT_1f800001 = 0xf0;
-        uVar3 = 1;
+        ret = 1;
       }
       if (local_58 == local_5a) {
-        if ((*psVar1 == 0) || ((_DAT_1f800080 & 0xf) != 0xf)) {
+        if ((*pad == 0) || ((_DAT_1f800080 & 0xf) != 0xf)) {
           if ((_DAT_1f80007c & 0xe0) != 0) {
             deferred_cmd_post(0x400,0xc,0);
             DAT_1f800001 = 0xf0;
-            uVar3 = 1;
+            ret = 1;
           }
         }
         else {
@@ -1164,12 +1164,12 @@ LAB_8015ca68:
 undefined4 system_config_menu_b(void)
 
 {
-  intptr_t iVar1;
-  int iVar2;
-  uint uVar3;
-  byte *pbVar4;
-  uint uVar5;
-  undefined4 uVar6;
+  intptr_t cfg;
+  int rc;
+  uint flags;
+  byte *cfg_b;
+  uint bits;
+  undefined4 ret;
   /* Guest stepper descriptor: one contiguous 0x28-byte block at
    * sp+0x10..0x37 passed to menu_stepper_button_wait (a0 = sp+0x10).
    * The +0xc callback is a u32 GUEST code address like every other
@@ -1206,82 +1206,82 @@ undefined4 system_config_menu_b(void)
 #define local_44 (*(uint16_t *)&step_desc_b[0x24])
 #define local_42 (*(uint16_t *)&step_desc_b[0x26])
   
-  iVar1 = (intptr_t)_g_system_config_ptr;
-  uVar6 = 0;
-  uVar5 = 0;
+  cfg = (intptr_t)_g_system_config_ptr;
+  ret = 0;
+  bits = 0;
   _DAT_1f80008c = 0;
-  pbVar4 = (byte *)(_g_system_config_ptr + 0x38);
+  cfg_b = (byte *)(_g_system_config_ptr + 0x38);
 joined_r0x8015b9e0:
   /* Bail-unwind exit must preserve the DAT1 exit invariant (0xff exit
    * writes DAT_1f800001 = 0); see system_config_menu_a. */
   { extern int br2_bail_pending(void);
     extern void br2_guest_frame_abandon(void);
-    if (br2_bail_pending()) { DAT_1f800001 = 0; br2_guest_frame_abandon(); return uVar6; } }
+    if (br2_bail_pending()) { DAT_1f800001 = 0; br2_guest_frame_abandon(); return ret; } }
   do {
     if (DAT_1f800001 == 0xff) {
       DAT_1f800001 = 0;
       br2_guest_frame_free();
-      return uVar6;
+      return ret;
     }
     if (DAT_1f800001 == 1) {
 LAB_8015bbd8:
       if ((_DAT_1f80007c & 0x10) != 0) {
         deferred_cmd_post(0x400,0xd,0);
         DAT_1f800001 = 0xf0;
-        uVar6 = 1;
+        ret = 1;
       }
       if ((local_60 == local_62) && ((_DAT_1f80007c & 0xe0) != 0)) {
         deferred_cmd_post(0x400,0xc,0);
         DAT_1f800001 = 0xf0;
-        uVar6 = 1;
+        ret = 1;
       }
-      menu_stepper_button_wait(&local_68,uVar5);
+      menu_stepper_button_wait(&local_68,bits);
       hud_gauge_render(0x1f800000,_DAT_1f800008,1);
     }
     else {
       if (1 < DAT_1f800001) {
         if (DAT_1f800001 == 0xf0) {
-          *pbVar4 = (byte)local_54;
-          *(undefined1 *)(iVar1 + 0x39) = (undefined1)local_52;
-          *(undefined1 *)(iVar1 + 0x3a) = (undefined1)local_50;
+          *cfg_b = (byte)local_54;
+          *(undefined1 *)(cfg + 0x39) = (undefined1)local_52;
+          *(undefined1 *)(cfg + 0x3a) = (undefined1)local_50;
           if (local_4e == 0) {
-            uVar3 = *(uint *)(iVar1 + 0x40) & 0xffffdfff;
+            flags = *(uint *)(cfg + 0x40) & 0xffffdfff;
           }
           else {
-            uVar3 = *(uint *)(iVar1 + 0x40) | 0x2000;
+            flags = *(uint *)(cfg + 0x40) | 0x2000;
           }
-          *(uint *)(iVar1 + 0x40) = uVar3;
-          *(undefined1 *)(iVar1 + 0x3b) = (undefined1)local_4c;
-          *(undefined1 *)(iVar1 + 0x3c) = (undefined1)local_4a;
+          *(uint *)(cfg + 0x40) = flags;
+          *(undefined1 *)(cfg + 0x3b) = (undefined1)local_4c;
+          *(undefined1 *)(cfg + 0x3c) = (undefined1)local_4a;
           if (local_48 == 0) {
-            uVar3 = *(uint *)(iVar1 + 0x40) | 0x40;
+            flags = *(uint *)(cfg + 0x40) | 0x40;
           }
           else {
-            uVar3 = *(uint *)(iVar1 + 0x40) & 0xffffffbf;
+            flags = *(uint *)(cfg + 0x40) & 0xffffffbf;
           }
-          *(uint *)(iVar1 + 0x40) = uVar3;
+          *(uint *)(cfg + 0x40) = flags;
           if (local_46 == 0) {
-            uVar3 = *(uint *)(iVar1 + 0x40) & 0xfffff7ff;
+            flags = *(uint *)(cfg + 0x40) & 0xfffff7ff;
           }
           else {
-            uVar3 = *(uint *)(iVar1 + 0x40) | 0x800;
+            flags = *(uint *)(cfg + 0x40) | 0x800;
           }
-          *(uint *)(iVar1 + 0x40) = uVar3;
+          *(uint *)(cfg + 0x40) = flags;
           if (local_44 == 0) {
-            uVar3 = *(uint *)(iVar1 + 0x40) & 0xfffffbff;
+            flags = *(uint *)(cfg + 0x40) & 0xfffffbff;
           }
           else {
-            uVar3 = *(uint *)(iVar1 + 0x40) | 0x400;
+            flags = *(uint *)(cfg + 0x40) | 0x400;
           }
-          *(uint *)(iVar1 + 0x40) = uVar3;
+          *(uint *)(cfg + 0x40) = flags;
           deferred_cmd_post(0x203,0,0);
         }
         else if (DAT_1f800001 != 0xf1) goto LAB_8015bd78;
         DAT_1f800001 = 0xff;
         goto joined_r0x8015b9e0;
       }
-      if (((DAT_1f800001 == 0) && (iVar2 = frame_divisor_get(), iVar2 == 0)) &&
-         (iVar2 = intro_movie_state(0), iVar2 != 0)) {
+      if (((DAT_1f800001 == 0) && (rc = frame_divisor_get(), rc == 0)) &&
+         (rc = intro_movie_state(0), rc != 0)) {
         deferred_cmd_post(0x203,0,0);
         local_5c = 0x8015bdc0;   /* dialog_sel_dispatch_wide, guest addr */
         local_62 = 0xb;
@@ -1294,18 +1294,18 @@ LAB_8015bbd8:
         local_60 = 1;
         local_56 = 0xffff;
         local_42 = 0;
-        local_54 = (ushort)*pbVar4;
-        local_52 = (ushort)*(byte *)(iVar1 + 0x39);
-        local_50 = (ushort)*(byte *)(iVar1 + 0x3a);
-        local_4e = (ushort)(*(uint *)(iVar1 + 0x40) >> 0xd) & 1;
-        local_4c = (ushort)*(byte *)(iVar1 + 0x3b);
-        local_4a = (ushort)*(byte *)(iVar1 + 0x3c);
-        local_48 = ((ushort)(*(uint *)(iVar1 + 0x40) >> 6) ^ 1) & 1;
-        local_46 = (ushort)(*(uint *)(iVar1 + 0x40) >> 0xb) & 1;
-        local_44 = (ushort)(*(uint *)(iVar1 + 0x40) >> 10) & 1;
-        uVar5 = *(uint *)(iVar1 + 0x44);
-        uVar5 = (uVar5 & 1) << 2 | 0xc03 | uVar5 >> 0xd & 8 | uVar5 >> 9 & 0x10 | uVar5 >> 9 & 0x20
-                | uVar5 >> 9 & 0x40 | (uVar5 & 0x40) << 1 | uVar5 >> 3 & 0x100 | uVar5 >> 1 & 0x200;
+        local_54 = (ushort)*cfg_b;
+        local_52 = (ushort)*(byte *)(cfg + 0x39);
+        local_50 = (ushort)*(byte *)(cfg + 0x3a);
+        local_4e = (ushort)(*(uint *)(cfg + 0x40) >> 0xd) & 1;
+        local_4c = (ushort)*(byte *)(cfg + 0x3b);
+        local_4a = (ushort)*(byte *)(cfg + 0x3c);
+        local_48 = ((ushort)(*(uint *)(cfg + 0x40) >> 6) ^ 1) & 1;
+        local_46 = (ushort)(*(uint *)(cfg + 0x40) >> 0xb) & 1;
+        local_44 = (ushort)(*(uint *)(cfg + 0x40) >> 10) & 1;
+        bits = *(uint *)(cfg + 0x44);
+        bits = (bits & 1) << 2 | 0xc03 | bits >> 0xd & 8 | bits >> 9 & 0x10 | bits >> 9 & 0x20
+                | bits >> 9 & 0x40 | (bits & 0x40) << 1 | bits >> 3 & 0x100 | bits >> 1 & 0x200;
         sprite_desc_table_init();
         print_mode_dispatch_b(2,0,0);
         _DAT_801e8508 = 0;
