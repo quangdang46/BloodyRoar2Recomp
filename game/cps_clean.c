@@ -37815,6 +37815,12 @@ void cps_8013b72c(void)
     }
     /* Address: 0x8013B72C, Size: 280 bytes, Blocks: 3 */
 
+    /* bone/joint offset gather: sp-=376, save all; half[sp+32]=
+       -10, half[sp+34]=-60, half[sp+36]=-60->36; two jal
+       0x801951B0 lookups on word[s4+5764]+32+192 and word[s4+5768]
+       indexed by half[s4+7198]*80+32; accumulates half offsets into
+       sp+32/34/36/56; -> 0x8013B844. CPS-blocked. */
+
 block_8013B72C:
     sp = sp + -376;
     v0 = -10;
@@ -43228,6 +43234,10 @@ void cps_8013e790(void)
     }
     /* Address: 0x8013E790, Size: 64 bytes, Blocks: 6 */
 
+    /* countdown/timer piece: half[s1+480]--; if result<0 and
+       word[s1+508]!=0: jal 0x801A48FC then 0x801A482C -> 0x8013EAD4;
+       else v0=half[s1+482] -> 0x8013E7D0. CPS-blocked. */
+
 block_8013E790:
     v0 = v0 + -1;
     cpu->write_half(s1 + 480, (uint16_t)v0);
@@ -43430,6 +43440,9 @@ void cps_8013e850(void)
 
     /* Address: 0x8013E850, Size: 8 bytes, Blocks: 1 */
 
+    /* muldiv tail piece: v1=lo, stall; s2=half[s1+490]; ->
+       0x8013E858. CPS-blocked. */
+
 block_8013E850:
     v1 = cpu->lo;
     psx_muldiv_stall(cpu);
@@ -43445,6 +43458,10 @@ void cps_8013e858(void)
   if (!cpu) return;
 
     /* Address: 0x8013E858, Size: 20 bytes, Blocks: 1 */
+
+    /* divide + branch piece: v0=byte[a1+21]; fp=lo=v1/a0
+       (guarded); v0=0x55550000; byte!=0 -> 0x8013E874 else 0x8013E86C.
+       CPS-blocked. */
 
 block_8013E858:
     v0 = cpu->read_byte(a1 + 21);
@@ -43735,6 +43752,8 @@ void cps_8013ead4(void)
 
     /* Address: 0x8013EAD4, Size: 48 bytes, Blocks: 1 */
 
+    /* epilogue: pop s0-s7, fp, ra (sp += 64), jr ra */
+
 block_8013EAD4:
     ra = cpu->read_word(sp + 60);
     fp = cpu->read_word(sp + 56);
@@ -43770,6 +43789,11 @@ void cps_8013eb0c(void)
         }
     }
     /* Address: 0x8013EB0C, Size: 80 bytes, Blocks: 4 */
+
+    /* list-walk prologue: sp-=40, save s0-s2/ra; s0=a0;
+       v0!=0 -> 0x8013ED50; else check word[s0+24]->half<0 ->
+       0x8013ED24, half[s0+28]!=v1 -> 0x8013ED10, else s2=0x801B0000+
+       7876, v0=512 -> 0x8013EB5C. CPS-blocked. */
 
 block_8013EB0C:
     sp = sp + -40;
@@ -44036,6 +44060,10 @@ void cps_8013ecf0(void)
 
     /* Address: 0x8013ECF0, Size: 32 bytes, Blocks: 1 */
 
+    /* cursor-advance check: a0=word[s0+24]; word[s0+24]=a0+4;
+       v0=half[a0+4]; half[s0+28]==v0 -> 0x8013EB5C else 0x8013ED10;
+       v0=512. CPS-blocked. */
+
 block_8013ECF0:
     a0 = cpu->read_word(s0 + 24);
     v1 = (int32_t)(int16_t)cpu->read_half(s0 + 28);
@@ -44133,6 +44161,10 @@ void cps_8013ed50(void)
 
     /* Address: 0x8013ED50, Size: 48 bytes, Blocks: 1 */
 
+    /* GTE length piece: gte_data[0..1]=word[s0],word[s0+4];
+       cmd 0x0180001; word[s0+8]=gte_data[14]; word[s0+12]=
+       gte_data[19]>>2 (mfc2); -> 0x8013ED80. CPS-blocked. */
+
 block_8013ED50:
     
     psx_gte_stall(cpu);
@@ -44166,6 +44198,8 @@ void cps_8013ed80(void)
   if (!cpu) return;
 
     /* Address: 0x8013ED80, Size: 24 bytes, Blocks: 1 */
+
+    /* epilogue: pop s0-s2, ra (sp += 40), jr ra */
 
 block_8013ED80:
     ra = cpu->read_word(sp + 36);
@@ -44796,6 +44830,11 @@ void cps_8013fc38(void)
 
     /* Address: 0x8013FC38, Size: 244 bytes, Blocks: 1 */
 
+    /* 3x vert blend loop (part 1): s2=word[a1+1684]; per iter
+       s5<3: unaligned lwl/lwr loads, averages 6 halfword pairs
+       (s4[i]+a0-neg-offsets)/2 -> half[s2+16..26]; s4+=48,a0+=48.
+       -> 0x8013FD2C. CPS-blocked. */
+
 block_8013FC38:
     s2 = cpu->read_word(a1 + 1684);
     t8 = br2_lwl(cpu, s4 + 3, t8);
@@ -44861,6 +44900,10 @@ void cps_8013fd2c(void)
   if (!cpu) return;
 
     /* Address: 0x8013FD2C, Size: 28 bytes, Blocks: 1 */
+
+    /* 3x vert blend loop (part 2): half[s2+28]=(v0+sign)>>1;
+       a0+=48; loop while s5<3 -> 0x8013FC38 else 0x8013FD48.
+       CPS-blocked. */
 
 block_8013FD2C:
     v1 = (uint32_t)v0 >> 31;
