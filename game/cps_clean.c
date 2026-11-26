@@ -11235,6 +11235,10 @@ void cps_8012a7bc(void)
     }
     /* Address: 0x8012A7BC, Size: 172 bytes, Blocks: 8 */
 
+    /* channel record update: word[s1+104/112/116] =
+       masked fields; per-channel loop (a0+2 stride, a2<2):
+       byte[a1+120] countdown -> half[a0+116]=half[a0+108];
+       then merge half[s1+104..128] attr pairs. CPS-blocked. */
 block_8012A7BC:
     v0 = v0 & s2;  /* 0x8012A7BC: 0x00521024 */
     cpu->write_word(s1 + 112, s0);
@@ -11395,6 +11399,8 @@ void cps_8012a92c(void)
     }
     /* Address: 0x8012A92C, Size: 24 bytes, Blocks: 2 */
 
+    /* call wrapper: word[sp+16]=v1; jal 0x8018CC6C(
+       word[s1+8], a1, a2=a1). CPS-blocked. */
 block_8012A92C:
     cpu->write_word(sp + 16, v1);
     a0 = cpu->read_word(s1 + 8);
@@ -11420,6 +11426,7 @@ void cps_8012a944(void)
 
     /* Address: 0x8012A944, Size: 8 bytes, Blocks: 1 */
 
+    /* jal link setup -> 0x8012A94C. */
 block_8012A944:
     ra = 0x8012A94Cu;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -11452,6 +11459,10 @@ void cps_8012a94c(void)
     }
     /* Address: 0x8012A94C, Size: 128 bytes, Blocks: 10 */
 
+    /* anim/channel state step: mode select on
+       byte[s1+23] (-2/-1/1/2); byte[s1+25] countdown--; packs
+       half[s1+32/34] + byte[s1+24] params to sp+16/24.
+       CPS-blocked. */
 block_8012A94C:
     s0 = (int32_t)(int8_t)cpu->read_byte(s1 + 23);
     v1 = -1;
@@ -11579,6 +11590,9 @@ void cps_8012a9cc(void)
     }
     /* Address: 0x8012A9CC, Size: 52 bytes, Blocks: 3 */
 
+    /* countdown tail (sibling of 0x8012A94C):
+       byte[s1+25]--, packs half[s1+32/34], byte[s1+24],
+       s0 -> sp+16/24. CPS-blocked. */
 block_8012A9CC:
     v0 = cpu->read_byte(s1 + 25);
     /* nop */  /* 0x8012A9D0: 0x00000000 */
@@ -11667,6 +11681,8 @@ void cps_8012aa28(void)
     }
     /* Address: 0x8012AA28, Size: 28 bytes, Blocks: 3 */
 
+    /* state write: byte[s1+23]=v1; jal(1); jal(0).
+       CPS-blocked. */
 block_8012AA28:
     cpu->write_byte(s1 + 23, (uint8_t)v1);
     ra = 0x8012AA34u;  /* jal link before delay slot */
@@ -11698,6 +11714,7 @@ void cps_8012aa44(void)
 
     /* Address: 0x8012AA44, Size: 8 bytes, Blocks: 1 */
 
+    /* byte[s1+23]=v0. */
 block_8012AA44:
     /* delay slot (always executes) */
     cpu->write_byte(s1 + 23, (uint8_t)v0);
@@ -11722,6 +11739,7 @@ void cps_8012aa4c(void)
     }
     /* Address: 0x8012AA4C, Size: 12 bytes, Blocks: 2 */
 
+    /* jal(1); byte[s1+23]=0. CPS-blocked. */
 block_8012AA4C:
     ra = 0x8012AA54u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -11772,6 +11790,7 @@ void cps_8012aa7c(void)
     }
     /* Address: 0x8012AA7C, Size: 16 bytes, Blocks: 2 */
 
+    /* byte[a2+20]=v0; byte[a2+25]=0; jr ra. */
 block_8012AA7C:
     int _bc_8012AA7C = (a1 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -11835,6 +11854,7 @@ void cps_8012aac0(void)
     }
     /* Address: 0x8012AAC0, Size: 20 bytes, Blocks: 2 */
 
+    /* byte[0x1F800010]=0; return v0=1. */
 block_8012AAC0:
     v0 = 1;
     int _bc_8012AAC4 = (a0 != v0);  /* save branch cond before delay slot */
@@ -11865,6 +11885,7 @@ void cps_8012aad4(void)
 
     /* Address: 0x8012AAD4, Size: 8 bytes, Blocks: 1 */
 
+    /* byte[0x1F800010]=a0; jr ra. */
 block_8012AAD4:
     uint32_t _jt_8012AAD4 = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
@@ -11882,6 +11903,7 @@ void cps_8012aadc(void)
 
     /* Address: 0x8012AADC, Size: 8 bytes, Blocks: 1 */
 
+    /* bare jr ra. */
 block_8012AADC:
     uint32_t _jt_8012AADC = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
