@@ -22260,7 +22260,9 @@ block_80131F48:
 }
 
 /* cps_80131f4c — clean CPS transliteration of br2eu_func_80131F4C (guest 0x80131f4c)
- * from SLES_017.22_full_05.c. */
+ * from SLES_017.22_full_05.c.
+ * rotmat_pair_build: rtps_basis_xform + rotmat2_pair_build — builds a
+ * pair of rotation matrices from basis vectors. */
 void cps_80131f4c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -23605,7 +23607,9 @@ block_8013345C:
 }
 
 /* cps_80133488 — clean CPS transliteration of br2eu_func_80133488 (guest 0x80133488)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * rsqrt_step_leaf: fixed_rsqrt_q12-driven reciprocal-sqrt step near
+ * fixed_approach_s16. */
 void cps_80133488(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -24318,7 +24322,8 @@ block_801337B4:
 }
 
 /* cps_801337bc — clean CPS transliteration of br2eu_func_801337BC (guest 0x801337bc)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * vec_step_leaf: 11-block leaf vector step near vec3_step_toward family. */
 void cps_801337bc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -24971,7 +24976,9 @@ block_801340C4:
 }
 
 /* cps_801342d0 — clean CPS transliteration of br2eu_func_801342D0 (guest 0x801342d0)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * prim_emit_rot: prim_task_run + rotmat_rtps_build + GTE — emits a prim
+ * with freshly built RTPS rotation. */
 void cps_801342d0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -28655,7 +28662,9 @@ block_801361A8:
 }
 
 /* cps_801361bc — clean CPS transliteration of br2eu_func_801361BC (guest 0x801361bc)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * table_walk_rtps_b: same table_byte_next_a + rotmat_rtps_build pattern
+ * as 36294 — sibling table walk. */
 void cps_801361bc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -28825,7 +28834,9 @@ block_8013628C:
 }
 
 /* cps_80136294 — clean CPS transliteration of br2eu_func_80136294 (guest 0x80136294)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * table_walk_rtps_a: table_byte_next_a iteration + rotmat_rtps_build —
+ * walks a byte table building RTPS rotation matrices per entry. */
 void cps_80136294(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -29004,7 +29015,8 @@ block_80136384:
 }
 
 /* cps_8013638c — clean CPS transliteration of br2eu_func_8013638C (guest 0x8013638c)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * table_byte_walk: table_byte_next_a-driven byte table iteration. */
 void cps_8013638c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -29178,7 +29190,9 @@ block_80136480:
 }
 
 /* cps_80136488 — clean CPS transliteration of br2eu_func_80136488 (guest 0x80136488)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * table_walk_rtps_c: table_byte_next_a + rotmat_rtps_build — third
+ * sibling of the RTPS table walks. */
 void cps_80136488(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -30398,7 +30412,9 @@ block_80136C1C:
 }
 
 /* cps_80136c28 — clean CPS transliteration of br2eu_func_80136C28 (guest 0x80136c28)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * gte_emit_kernel: 8 gte_execute ops — emit-side GTE transform kernel
+ * near slot_height_proj. */
 void cps_80136c28(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -30558,7 +30574,8 @@ block_80136D04:
 }
 
 /* cps_80136e98 — clean CPS transliteration of br2eu_func_80136E98 (guest 0x80136e98)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * bitfield_or_write_wrap: single-call bitfield_or_write wrapper. */
 void cps_80136e98(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -32086,7 +32103,9 @@ block_80138154:
 }
 
 /* cps_80138174 — clean CPS transliteration of br2eu_func_80138174 (guest 0x80138174)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * angle_isqrt_clear: angle_from_xy + isqrt + obj_flag34_clear + GTE —
+ * computes angle/distance then clears obj flag 34. */
 void cps_80138174(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -36346,7 +36365,8 @@ block_8013AC6C:
 }
 
 /* cps_8013ac70 — clean CPS transliteration of br2eu_func_8013AC70 (guest 0x8013ac70)
- * from SLES_017.22_full_08.c. */
+ * from SLES_017.22_full_08.c.
+ * fx_leaf_step: 10-block leaf state step in the FX region. */
 void cps_8013ac70(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -37194,7 +37214,8 @@ block_8013B39C:
 }
 
 /* cps_8013b3a8 — clean CPS transliteration of br2eu_func_8013B3A8 (guest 0x8013b3a8)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * angle_step_fx: angle_from_xy-driven angular step for FX placement. */
 void cps_8013b3a8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -38544,7 +38565,9 @@ block_8013BDBC:
 }
 
 /* cps_8013bdc4 — clean CPS transliteration of br2eu_func_8013BDC4 (guest 0x8013bdc4)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * mid_fx_step: 13-block state step in the FX band (no direct calls —
+ * register/leaf math between task_slot_step siblings). */
 void cps_8013bdc4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -39982,7 +40005,9 @@ block_8013C708:
 }
 
 /* cps_8013c750 — clean CPS transliteration of br2eu_func_8013C750 (guest 0x8013c750)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * gte_pure_kernel: 8 gte_execute ops, no calls — standalone GTE
+ * transform kernel. */
 void cps_8013c750(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -41969,7 +41994,9 @@ block_8013D680:
 }
 
 /* cps_8013da40 — clean CPS transliteration of br2eu_func_8013DA40 (guest 0x8013da40)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * confetti_spawn_rand: rand_lcg + task_node_alloc + GTE — randomized
+ * confetti particle spawn (sibling of confetti_burst_update 0x8015ACE4). */
 void cps_8013da40(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -43154,7 +43181,9 @@ block_8013E86C:
 }
 
 /* cps_8013e874 — clean CPS transliteration of br2eu_func_8013E874 (guest 0x8013e874)
- * from SLES_017.22_full_10.c. */
+ * from SLES_017.22_full_10.c.
+ * fx_state_step_b: 12-block leaf state step in the paired_task_cb
+ * region. */
 void cps_8013e874(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -43499,7 +43528,8 @@ block_8013EB50:
 }
 
 /* cps_8013eb5c — clean CPS transliteration of br2eu_func_8013EB5C (guest 0x8013eb5c)
- * from SLES_017.22_full_10.c. */
+ * from SLES_017.22_full_10.c.
+ * task_node_spawn: task_node_alloc wrapper in the emit_task region. */
 void cps_8013eb5c(void)
 {
   CPUState *cpu = clean_cpu_state();
