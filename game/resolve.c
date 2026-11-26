@@ -3161,12 +3161,12 @@ void ev_stream_dispatch(byte *ctrl,byte *motion)
 
 void part_matrix_compute(undefined4 *mat,byte *vec,short *param_3,undefined4 param_4)
 {
-  uint uVar1;
+  uint g1;
   undefined2 uVar2;
   int iVar3;
-  int iVar4;
-  undefined4 uVar5;
-  int iVar6;
+  int g4;
+  undefined4 g5;
+  int g6;
   int iVar7;
   int iVar8;
   int iVar9;
@@ -3180,8 +3180,8 @@ void part_matrix_compute(undefined4 *mat,byte *vec,short *param_3,undefined4 par
   int iVar10;
   undefined4 unaff_retaddr;
   iVar3 = (int)*param_3;
-  iVar4 = (int)param_3[1];
-  iVar6 = (int)param_3[2];
+  g4 = (int)param_3[1];
+  g6 = (int)param_3[2];
   _DAT_1f8003e0 = unaff_s6;
   _DAT_1f8003e4 = unaff_s5;
   _DAT_1f8003e8 = unaff_s4;
@@ -3191,15 +3191,15 @@ void part_matrix_compute(undefined4 *mat,byte *vec,short *param_3,undefined4 par
   _DAT_1f8003f8 = unaff_s0;
   _DAT_1f8003fc = unaff_retaddr;
   FUN_801851d8();
-  iVar10 = 0x1000 - iVar4;
-  uVar5 = 0;
+  iVar10 = 0x1000 - g4;
+  g5 = 0;
   iVar7 = iVar3;
-  iVar9 = iVar6;
+  iVar9 = g6;
   FUN_801851d8();
   iVar8 = -iVar9 * iVar7;
   setCopReg(2,0x4800,-iVar9);
   setCopReg(2,0x5000,iVar7);
-  setCopReg(2,0x5800,uVar5);
+  setCopReg(2,0x5800,g5);
   _DAT_1f8003a0 = trig_cos(param_4);
   copFunction(2,0xa00428);
   iVar7 = getCopReg(2,0xc800);
@@ -3217,23 +3217,23 @@ void part_matrix_compute(undefined4 *mat,byte *vec,short *param_3,undefined4 par
   iVar8 = getCopReg(2,0xc800);
   iVar7 = getCopReg(2,0xd000);
   iVar9 = getCopReg(2,0xd800);
-  _DAT_1f8003c8 = (short)iVar4;
+  _DAT_1f8003c8 = (short)g4;
   _DAT_1f8003d0 = (short)(iVar7 >> 0xc) + _DAT_1f8003c8;
   _DAT_1f8003c0 = (short)(iVar8 >> 0xc) + _DAT_1f8003c8;
   _DAT_1f8003c2 = (short)iVar3;
   _DAT_1f8003c4 = (undefined2)(iVar9 >> 0xc);
-  _DAT_1f8003ce = (short)iVar6;
+  _DAT_1f8003ce = (short)g6;
   _DAT_1f8003c6 = -_DAT_1f8003c2;
   _DAT_1f8003ca = -_DAT_1f8003ce;
   _DAT_1f8003cc = _DAT_1f8003c4;
   gte_mat_vec_swap(vec,&DAT_1f8003a0,&DAT_1f8003c0);
   uVar2 = _DAT_1f8003b0;
   iVar8 = _DAT_1f8003ac;
-  uVar5 = _DAT_1f8003a8;
-  uVar1 = _DAT_1f8003a4;
+  g5 = _DAT_1f8003a8;
+  g1 = _DAT_1f8003a4;
   *mat = _DAT_1f8003a0;
-  mat[1] = uVar1;
-  mat[2] = uVar5;
+  mat[1] = g1;
+  mat[2] = g5;
   mat[3] = iVar8;
   *(undefined2 *)(mat + 4) = uVar2;
   return;
@@ -3242,12 +3242,12 @@ void part_matrix_compute(undefined4 *mat,byte *vec,short *param_3,undefined4 par
 
 uint * matrix_vec3_apply(undefined4 *mat,uint *vec)
 {
-  uint uVar1;
-  int iVar2;
-  uint uVar3;
-  int iVar4;
-  uint uVar5;
-  int iVar6;
+  uint g1;
+  int g2;
+  uint g3;
+  int g4;
+  uint g5;
+  int g6;
   setCopControlWord(2,0,*mat);
   setCopControlWord(2,0x800,mat[1]);
   setCopControlWord(2,0x1000,mat[2]);
@@ -3256,26 +3256,26 @@ uint * matrix_vec3_apply(undefined4 *mat,uint *vec)
   setCopReg(2,0,(uint)(ushort)*vec | vec[1] & 0xffff0000);
   setCopReg(2,0x800,vec[3]);
   copFunction(2,0x486012);
-  uVar1 = getCopReg(2,0x4800);
-  iVar2 = getCopReg(2,0x5000);
-  uVar3 = getCopReg(2,0x5800);
+  g1 = getCopReg(2,0x4800);
+  g2 = getCopReg(2,0x5000);
+  g3 = getCopReg(2,0x5800);
   setCopReg(2,0,(uint)*(ushort *)((char *)vec + 2) | vec[2] << 0x10);
   setCopReg(2,0x800,(int)(short)*(ushort *)((char *)vec + 0xe));
   copFunction(2,0x486012);
-  iVar4 = getCopReg(2,0x4800);
-  uVar5 = getCopReg(2,0x5000);
-  iVar6 = getCopReg(2,0x5800);
+  g4 = getCopReg(2,0x4800);
+  g5 = getCopReg(2,0x5000);
+  g6 = getCopReg(2,0x5800);
   setCopReg(2,0,(uint)(ushort)vec[1] | vec[2] & 0xffff0000);
   setCopReg(2,0x800,vec[4]);
   copFunction(2,0x486012);
-  *vec = iVar4 << 0x10 | uVar1 & 0xffff;
-  vec[3] = iVar6 << 0x10 | uVar3 & 0xffff;
-  uVar1 = getCopReg(2,0x4800);
-  iVar4 = getCopReg(2,0x5000);
-  vec[1] = uVar1 & 0xffff | iVar2 << 0x10;
-  vec[2] = iVar4 << 0x10 | uVar5 & 0xffff;
-  uVar1 = getCopReg(2,0xb);
-  vec[4] = uVar1;
+  *vec = g4 << 0x10 | g1 & 0xffff;
+  vec[3] = g6 << 0x10 | g3 & 0xffff;
+  g1 = getCopReg(2,0x4800);
+  g4 = getCopReg(2,0x5000);
+  vec[1] = g1 & 0xffff | g2 << 0x10;
+  vec[2] = g4 << 0x10 | g5 & 0xffff;
+  g1 = getCopReg(2,0xb);
+  vec[4] = g1;
   return vec;
 
 }
