@@ -7544,12 +7544,12 @@ void hud_cell_frame_set(int val,int cell)
 
 void hud_digits_color(int val,int cell)
 {
-  char cVar1;
-  int iVar2;
-  int iVar3;
-  char *pcVar4;
+  char c0;
+  int tens_off;
+  int ones_off;
+  char *dg;
   if (val < 0) {
-    pcVar4 = &DAT_801b4b94;
+    dg = &DAT_801b4b94;
     *(char *)guest_at((uint32_t)(uintptr_t)((cell + 0xc) ))= DAT_801b4b94;
     *(char *)guest_at((uint32_t)(uintptr_t)((cell + 0xd) ))= DAT_801b4b95;
     *(char *)guest_at((uint32_t)(uintptr_t)((cell + 0x14) ))= DAT_801b4b94 + DAT_801b4b96;
@@ -7564,34 +7564,34 @@ void hud_digits_color(int val,int cell)
     *(char *)guest_at((uint32_t)(uintptr_t)((cell + 0x3d) ))= DAT_801b4b95;
     *(char *)guest_at((uint32_t)(uintptr_t)((cell + 0x44) ))= DAT_801b4b94;
     *(char *)guest_at((uint32_t)(uintptr_t)((cell + 0x45) ))= DAT_801b4b95 + DAT_801b4b97;
-    cVar1 = DAT_801b4b94;
+    c0 = DAT_801b4b94;
   }
   else {
     if (99 < val) {
       val = 0;
     }
-    iVar2 = (val / 10 & 0xffU) * 4;
-    pcVar4 = &DAT_801b4b6c + iVar2;
-    *(char *)guest_at((uint32_t)(uintptr_t)((cell + 0xc) ))= *pcVar4;
-    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((cell + 0xd) ))= (&DAT_801b4b6d)[iVar2];
-    *(char *)guest_at((uint32_t)(uintptr_t)((cell + 0x14) ))= *pcVar4 + (&DAT_801b4b6e)[iVar2];
-    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((cell + 0x15) ))= (&DAT_801b4b6d)[iVar2];
-    *(char *)guest_at((uint32_t)(uintptr_t)((cell + 0x1c) ))= *pcVar4;
-    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((cell + 0x1d) ))= (&DAT_801b4b6d)[iVar2] + (&DAT_801b4b6f)[iVar2];
-    *(char *)guest_at((uint32_t)(uintptr_t)((cell + 0x24) ))= *pcVar4 + (&DAT_801b4b6e)[iVar2];
-    iVar3 = (val % 10 & 0xffU) * 4;
-    pcVar4 = &DAT_801b4b6c + iVar3;
-    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((cell + 0x25) ))= (&DAT_801b4b6d)[iVar2] + (&DAT_801b4b6f)[iVar2];
-    *(char *)guest_at((uint32_t)(uintptr_t)((cell + 0x34) ))= *pcVar4;
-    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((cell + 0x35) ))= (&DAT_801b4b6d)[iVar3];
-    *(char *)guest_at((uint32_t)(uintptr_t)((cell + 0x3c) ))= *pcVar4 + (&DAT_801b4b6e)[iVar3];
-    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((cell + 0x3d) ))= (&DAT_801b4b6d)[iVar3];
-    *(char *)guest_at((uint32_t)(uintptr_t)((cell + 0x44) ))= *pcVar4;
-    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((cell + 0x45) ))= (&DAT_801b4b6d)[iVar3] + (&DAT_801b4b6f)[iVar3];
-    cVar1 = *pcVar4;
+    tens_off = (val / 10 & 0xffU) * 4;
+    dg = &DAT_801b4b6c + tens_off;
+    *(char *)guest_at((uint32_t)(uintptr_t)((cell + 0xc) ))= *dg;
+    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((cell + 0xd) ))= (&DAT_801b4b6d)[tens_off];
+    *(char *)guest_at((uint32_t)(uintptr_t)((cell + 0x14) ))= *dg + (&DAT_801b4b6e)[tens_off];
+    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((cell + 0x15) ))= (&DAT_801b4b6d)[tens_off];
+    *(char *)guest_at((uint32_t)(uintptr_t)((cell + 0x1c) ))= *dg;
+    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((cell + 0x1d) ))= (&DAT_801b4b6d)[tens_off] + (&DAT_801b4b6f)[tens_off];
+    *(char *)guest_at((uint32_t)(uintptr_t)((cell + 0x24) ))= *dg + (&DAT_801b4b6e)[tens_off];
+    ones_off = (val % 10 & 0xffU) * 4;
+    dg = &DAT_801b4b6c + ones_off;
+    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((cell + 0x25) ))= (&DAT_801b4b6d)[tens_off] + (&DAT_801b4b6f)[tens_off];
+    *(char *)guest_at((uint32_t)(uintptr_t)((cell + 0x34) ))= *dg;
+    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((cell + 0x35) ))= (&DAT_801b4b6d)[ones_off];
+    *(char *)guest_at((uint32_t)(uintptr_t)((cell + 0x3c) ))= *dg + (&DAT_801b4b6e)[ones_off];
+    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((cell + 0x3d) ))= (&DAT_801b4b6d)[ones_off];
+    *(char *)guest_at((uint32_t)(uintptr_t)((cell + 0x44) ))= *dg;
+    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((cell + 0x45) ))= (&DAT_801b4b6d)[ones_off] + (&DAT_801b4b6f)[ones_off];
+    c0 = *dg;
   }
-  *(char *)guest_at((uint32_t)(uintptr_t)((cell + 0x4c) ))= cVar1 + pcVar4[2];
-  *(char *)guest_at((uint32_t)(uintptr_t)((cell + 0x4d) ))= pcVar4[1] + pcVar4[3];
+  *(char *)guest_at((uint32_t)(uintptr_t)((cell + 0x4c) ))= c0 + dg[2];
+  *(char *)guest_at((uint32_t)(uintptr_t)((cell + 0x4d) ))= dg[1] + dg[3];
   return;
 
 }
@@ -7605,170 +7605,170 @@ bool fighter_height_check(int f)
 
 }
 
-undefined4 sprite_rect_set_a(int a0,short a1,int a2,undefined4 a3,int arg5)
+undefined4 sprite_rect_set_a(int rec,short x,int y,undefined4 w,int h)
 {
-  short sVar1;
-  short sVar2;
-  short sVar3;
-  sVar3 = a1 + (short)a3;
+  short y1;
+  short y2;
+  short x2;
+  x2 = x + (short)w;
   if (DAT_1f800015 == '\0') {
-    a2 = a2 / 2;
-    arg5 = arg5 / 2;
+    y = y / 2;
+    h = h / 2;
   }
-  sVar1 = (short)a2;
-  sVar2 = sVar1 + (short)arg5;
-  *(short *)guest_at((uint32_t)(uintptr_t)((a0 + 0x12) ))= sVar2;
-  *(short *)guest_at((uint32_t)(uintptr_t)((a0 + 0x16) ))= sVar2;
-  *(short *)guest_at((uint32_t)(uintptr_t)((a0 + 8) ))= a1;
-  *(short *)guest_at((uint32_t)(uintptr_t)((a0 + 10) ))= sVar1;
-  *(short *)guest_at((uint32_t)(uintptr_t)((a0 + 0xc) ))= sVar3;
-  *(short *)guest_at((uint32_t)(uintptr_t)((a0 + 0xe) ))= sVar1;
-  *(short *)guest_at((uint32_t)(uintptr_t)((a0 + 0x10) ))= a1;
-  *(short *)guest_at((uint32_t)(uintptr_t)((a0 + 0x14) ))= sVar3;
-  return a3;
+  y1 = (short)y;
+  y2 = y1 + (short)h;
+  *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x12) ))= y2;
+  *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x16) ))= y2;
+  *(short *)guest_at((uint32_t)(uintptr_t)((rec + 8) ))= x;
+  *(short *)guest_at((uint32_t)(uintptr_t)((rec + 10) ))= y1;
+  *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0xc) ))= x2;
+  *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0xe) ))= y1;
+  *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x10) ))= x;
+  *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x14) ))= x2;
+  return w;
 
 }
 
-undefined4 sprite_rect_set_b(int a0,short a1,int a2,undefined4 a3,int arg5)
+undefined4 sprite_rect_set_b(int rec,short x,int y,undefined4 w,int h)
 {
-  short sVar1;
-  short sVar2;
-  short sVar3;
-  sVar3 = a1 + (short)a3;
+  short y1;
+  short y2;
+  short x2;
+  x2 = x + (short)w;
   if (DAT_1f800015 == '\0') {
-    a2 = a2 / 2;
-    arg5 = arg5 / 2;
+    y = y / 2;
+    h = h / 2;
   }
-  sVar1 = (short)a2;
-  sVar2 = sVar1 + (short)arg5;
-  *(short *)guest_at((uint32_t)(uintptr_t)((a0 + 0x1a) ))= sVar2;
-  *(short *)guest_at((uint32_t)(uintptr_t)((a0 + 0x22) ))= sVar2;
-  *(short *)guest_at((uint32_t)(uintptr_t)((a0 + 8) ))= a1;
-  *(short *)guest_at((uint32_t)(uintptr_t)((a0 + 10) ))= sVar1;
-  *(short *)guest_at((uint32_t)(uintptr_t)((a0 + 0x10) ))= sVar3;
-  *(short *)guest_at((uint32_t)(uintptr_t)((a0 + 0x12) ))= sVar1;
-  *(short *)guest_at((uint32_t)(uintptr_t)((a0 + 0x18) ))= a1;
-  *(short *)guest_at((uint32_t)(uintptr_t)((a0 + 0x20) ))= sVar3;
-  return a3;
+  y1 = (short)y;
+  y2 = y1 + (short)h;
+  *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x1a) ))= y2;
+  *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x22) ))= y2;
+  *(short *)guest_at((uint32_t)(uintptr_t)((rec + 8) ))= x;
+  *(short *)guest_at((uint32_t)(uintptr_t)((rec + 10) ))= y1;
+  *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x10) ))= x2;
+  *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x12) ))= y1;
+  *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x18) ))= x;
+  *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x20) ))= x2;
+  return w;
 
 }
 
-undefined4 sprite_rect_set_c(int a0,short a1,int a2,undefined4 a3,int arg5)
+undefined4 sprite_rect_set_c(int rec,short x,int y,undefined4 w,int h)
 {
-  short sVar1;
-  short sVar2;
-  short sVar3;
-  sVar3 = a1 + (short)a3;
+  short y1;
+  short y2;
+  short x2;
+  x2 = x + (short)w;
   if (DAT_1f800015 == '\0') {
-    a2 = a2 / 2;
-    arg5 = arg5 / 2;
+    y = y / 2;
+    h = h / 2;
   }
-  sVar1 = (short)a2;
-  sVar2 = sVar1 + (short)arg5;
-  *(short *)guest_at((uint32_t)(uintptr_t)((a0 + 0x1a) ))= sVar2;
-  *(short *)guest_at((uint32_t)(uintptr_t)((a0 + 0x22) ))= sVar2;
-  *(short *)guest_at((uint32_t)(uintptr_t)((a0 + 8) ))= a1;
-  *(short *)guest_at((uint32_t)(uintptr_t)((a0 + 10) ))= sVar1;
-  *(short *)guest_at((uint32_t)(uintptr_t)((a0 + 0x10) ))= sVar3;
-  *(short *)guest_at((uint32_t)(uintptr_t)((a0 + 0x12) ))= sVar1;
-  *(short *)guest_at((uint32_t)(uintptr_t)((a0 + 0x18) ))= a1;
-  *(short *)guest_at((uint32_t)(uintptr_t)((a0 + 0x20) ))= sVar3;
-  return a3;
+  y1 = (short)y;
+  y2 = y1 + (short)h;
+  *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x1a) ))= y2;
+  *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x22) ))= y2;
+  *(short *)guest_at((uint32_t)(uintptr_t)((rec + 8) ))= x;
+  *(short *)guest_at((uint32_t)(uintptr_t)((rec + 10) ))= y1;
+  *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x10) ))= x2;
+  *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x12) ))= y1;
+  *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x18) ))= x;
+  *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x20) ))= x2;
+  return w;
 
 }
 
-int * rtps_point_xform(undefined4 *a0,undefined4 *a1,int *a2,int a3)
+int * rtps_point_xform(undefined4 *rt,undefined4 *in,int *out,int flag)
 {
   undefined4 in_zero;
   undefined4 in_at;
-  int iVar1;
-  int iVar2;
-  int iVar3;
-  int iVar4;
-  int iVar5;
-  if (a3 == 0) {
-    setCopControlWord(2,0,*a0);
-    setCopControlWord(2,0x800,a0[1]);
-    setCopControlWord(2,0x1000,a0[2]);
-    setCopControlWord(2,0x1800,a0[3]);
-    setCopControlWord(2,0x2000,a0[4]);
+  int ty;
+  int tz;
+  int gx;
+  int gy;
+  int gz;
+  if (flag == 0) {
+    setCopControlWord(2,0,*rt);
+    setCopControlWord(2,0x800,rt[1]);
+    setCopControlWord(2,0x1000,rt[2]);
+    setCopControlWord(2,0x1800,rt[3]);
+    setCopControlWord(2,0x2000,rt[4]);
   }
-  setCopReg(2,in_zero,*a1);
-  setCopReg(2,in_at,a1[1]);
+  setCopReg(2,in_zero,*in);
+  setCopReg(2,in_at,in[1]);
   copFunction(2,0x486012);
-  iVar1 = a0[6];
-  iVar2 = a0[7];
-  iVar3 = getCopReg(2,0x4800);
-  iVar4 = getCopReg(2,0x5000);
-  iVar5 = getCopReg(2,0x5800);
-  *a2 = a0[5] + iVar3;
-  a2[1] = iVar1 + iVar4;
-  a2[2] = iVar2 + iVar5;
-  return a2;
+  ty = rt[6];
+  tz = rt[7];
+  gx = getCopReg(2,0x4800);
+  gy = getCopReg(2,0x5000);
+  gz = getCopReg(2,0x5800);
+  *out = rt[5] + gx;
+  out[1] = ty + gy;
+  out[2] = tz + gz;
+  return out;
 
 }
 
-int * rtps_point_xform2(undefined4 *a0,undefined4 *a1,int *a2)
+int * rtps_point_xform2(undefined4 *rt,undefined4 *in,int *out)
 {
   undefined4 in_zero;
   undefined4 in_at;
-  int iVar1;
-  int iVar2;
-  int iVar3;
-  int iVar4;
-  int iVar5;
-  setCopControlWord(2,0,*a0);
-  setCopControlWord(2,0x800,a0[1]);
-  setCopControlWord(2,0x1000,a0[2]);
-  setCopControlWord(2,0x1800,a0[3]);
-  setCopControlWord(2,0x2000,a0[4]);
-  setCopReg(2,in_zero,*a1);
-  setCopReg(2,in_at,a1[1]);
+  int ty;
+  int tz;
+  int gx;
+  int gy;
+  int gz;
+  setCopControlWord(2,0,*rt);
+  setCopControlWord(2,0x800,rt[1]);
+  setCopControlWord(2,0x1000,rt[2]);
+  setCopControlWord(2,0x1800,rt[3]);
+  setCopControlWord(2,0x2000,rt[4]);
+  setCopReg(2,in_zero,*in);
+  setCopReg(2,in_at,in[1]);
   copFunction(2,0x486012);
-  iVar1 = a0[6];
-  iVar2 = a0[7];
-  iVar3 = getCopReg(2,0x4800);
-  iVar4 = getCopReg(2,0x5000);
-  iVar5 = getCopReg(2,0x5800);
-  *a2 = a0[5] + iVar3;
-  a2[1] = iVar1 + iVar4;
-  a2[2] = iVar2 + iVar5;
-  return a2;
+  ty = rt[6];
+  tz = rt[7];
+  gx = getCopReg(2,0x4800);
+  gy = getCopReg(2,0x5000);
+  gz = getCopReg(2,0x5800);
+  *out = rt[5] + gx;
+  out[1] = ty + gy;
+  out[2] = tz + gz;
+  return out;
 
 }
 
-uint * rotmat_rtps_build(uint a0,uint *a1)
+uint * rotmat_rtps_build(uint ang,uint *m)
 {
-  int iVar1;
+  int ia;
   int iVar2;
-  uint uVar3;
-  int iVar4;
-  uint uVar5;
-  a1[2] = 0x1000;
-  iVar1 = (a0 & 0x3ff) * 2;
-  iVar4 = (a0 & 0x3ff) * -2 + 0x800;
-  iVar2 = iVar1;
-  if ((a0 & 0x400) != 0) {
-    iVar2 = iVar4;
-    iVar4 = iVar1;
+  uint tv0;
+  int ib;
+  uint tv1;
+  m[2] = 0x1000;
+  ia = (ang & 0x3ff) * 2;
+  ib = (ang & 0x3ff) * -2 + 0x800;
+  iVar2 = ia;
+  if ((ang & 0x400) != 0) {
+    iVar2 = ib;
+    ib = ia;
   }
-  uVar3 = (uint)*(ushort *)(&DAT_801247a8 + iVar2);
-  if ((a0 & 0x800) != 0) {
-    uVar3 = -uVar3 & 0xffff;
+  tv0 = (uint)*(ushort *)(&DAT_801247a8 + iVar2);
+  if ((ang & 0x800) != 0) {
+    tv0 = -tv0 & 0xffff;
   }
-  uVar5 = (uint)*(ushort *)(&DAT_801247a8 + iVar4);
-  if ((a0 + 0x400 & 0x800) != 0) {
-    uVar5 = -uVar5 & 0xffff;
+  tv1 = (uint)*(ushort *)(&DAT_801247a8 + ib);
+  if ((ang + 0x400 & 0x800) != 0) {
+    tv1 = -tv1 & 0xffff;
   }
-  *a1 = uVar5;
-  a1[1] = uVar3;
-  a1[3] = -uVar3 & 0xffff;
-  *(short *)(a1 + 4) = (short)uVar5;
-  return a1;
+  *m = tv1;
+  m[1] = tv0;
+  m[3] = -tv0 & 0xffff;
+  *(short *)(m + 4) = (short)tv1;
+  return m;
 
 }
 
-uint * rotmat2_pair_build(uint a0,uint a1,uint *a2)
+uint * rotmat2_pair_build(uint ang0,uint ang1,uint *m)
 {
   int iVar1;
   int iVar2;
@@ -7778,42 +7778,42 @@ uint * rotmat2_pair_build(uint a0,uint a1,uint *a2)
   uint uVar6;
   uint uVar7;
   int iVar8;
-  iVar1 = (a0 & 0x3ff) * 2;
-  iVar8 = (a0 & 0x3ff) * -2 + 0x800;
+  iVar1 = (ang0 & 0x3ff) * 2;
+  iVar8 = (ang0 & 0x3ff) * -2 + 0x800;
   iVar4 = iVar1;
-  if ((a0 & 0x400) != 0) {
+  if ((ang0 & 0x400) != 0) {
     iVar4 = iVar8;
     iVar8 = iVar1;
   }
   iVar4 = (int)*(short *)(&DAT_801247a8 + iVar4);
-  if ((a0 & 0x800) != 0) {
+  if ((ang0 & 0x800) != 0) {
     iVar4 = -iVar4;
   }
-  iVar2 = (a1 & 0x3ff) * 2;
-  iVar3 = (a1 & 0x3ff) * -2 + 0x800;
+  iVar2 = (ang1 & 0x3ff) * 2;
+  iVar3 = (ang1 & 0x3ff) * -2 + 0x800;
   iVar1 = iVar2;
-  if ((a1 & 0x400) != 0) {
+  if ((ang1 & 0x400) != 0) {
     iVar1 = iVar3;
     iVar3 = iVar2;
   }
   uVar6 = (uint)*(short *)(&DAT_801247a8 + iVar1);
-  if ((a1 & 0x800) != 0) {
+  if ((ang1 & 0x800) != 0) {
     uVar6 = -uVar6;
   }
   uVar7 = (uint)*(short *)(&DAT_801247a8 + iVar3);
-  if ((a1 + 0x400 & 0x800) != 0) {
+  if ((ang1 + 0x400 & 0x800) != 0) {
     uVar7 = -uVar7;
   }
   uVar5 = (uint)*(short *)(&DAT_801247a8 + iVar8);
-  if ((a0 + 0x400 & 0x800) != 0) {
+  if ((ang0 + 0x400 & 0x800) != 0) {
     uVar5 = -uVar5;
   }
-  a2[1] = uVar6 & 0xffff | ((int)(uVar6 * iVar4) >> 0xc) << 0x10;
-  a2[2] = uVar5 & 0xffff | ((int)(uVar7 * -iVar4) >> 0xc) << 0x10;
-  *a2 = uVar7 & 0xffff;
-  a2[3] = iVar4 << 0x10 | -((int)(uVar6 * uVar5) >> 0xc) & 0xffffU;
-  *(short *)(a2 + 4) = (short)((int)(uVar7 * uVar5) >> 0xc);
-  return a2;
+  m[1] = uVar6 & 0xffff | ((int)(uVar6 * iVar4) >> 0xc) << 0x10;
+  m[2] = uVar5 & 0xffff | ((int)(uVar7 * -iVar4) >> 0xc) << 0x10;
+  *m = uVar7 & 0xffff;
+  m[3] = iVar4 << 0x10 | -((int)(uVar6 * uVar5) >> 0xc) & 0xffffU;
+  *(short *)(m + 4) = (short)((int)(uVar7 * uVar5) >> 0xc);
+  return m;
 
 }
 
