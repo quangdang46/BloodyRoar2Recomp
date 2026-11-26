@@ -1971,3 +1971,12 @@
 8018b380 prim_nclip_cull_emit_48
 8018b4b8 prim_rtps_cull_emit_58
 8018b628 prim_avsz3_cull_emit_58
+801870a4 prim_xform3_task_run_b
+80188200 prim_quad_emit_54
+80188308 prim_quad_emit_5c
+80188434 prim_emit_48
+801890dc prim_persp_emit_78
+8018b738 prim_persp_ot_emit_var
+8018b88c prim_emit_ret_a0
+8018b894 prim_persp_ot_emit_58
+8018bae8 prim_emit_ret_v0

@@ -4595,3 +4595,21 @@
 8012a93c cps_8012a92c
 801298f8 cps_801298f8
 801268b8 cps_801268b8
+
+# prim_xform3_task_run_b (guest 0x801870A4) — xform3 task-runner sibling;
+# entry + 13 CPS continuation/jal-return addrs, all re-enter the same
+# clean body whose pc-switch picks the block.
+801870a4 prim_xform3_task_run_b
+801870ac prim_xform3_task_run_b
+801870f0 prim_xform3_task_run_b
+80187100 prim_xform3_task_run_b
+80187108 prim_xform3_task_run_b
+80187110 prim_xform3_task_run_b
+80187118 prim_xform3_task_run_b
+80187144 prim_xform3_task_run_b
+8018714c prim_xform3_task_run_b
+80187164 prim_xform3_task_run_b
+80187178 prim_xform3_task_run_b
+80187180 prim_xform3_task_run_b
+8018718c prim_xform3_task_run_b
+801871b4 prim_xform3_task_run_b

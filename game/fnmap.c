@@ -1151,6 +1151,7 @@ extern void prim_depth_shade_emit_50(void);
 extern void prim_depth_shade_emit_70(void);
 extern void prim_depth_shade_emit_88(void);
 extern void prim_emit_3c(void);
+extern void prim_emit_48(void);
 extern void prim_emit_4c(void);
 extern void prim_emit_5c(void);
 extern void prim_emit_60(void);
@@ -1169,6 +1170,8 @@ extern void prim_emit_ptr_68(void);
 extern void prim_emit_quad_ot_fix(void);
 extern void prim_emit_quad_ot_idx(void);
 extern void prim_emit_quad_tex_ot(void);
+extern void prim_emit_ret_a0(void);
+extern void prim_emit_ret_v0(void);
 extern void prim_emit_tail_advance(void);
 extern void prim_emit_tri_ot_fix(void);
 extern void prim_emit_tri_ot_idx(void);
@@ -1195,9 +1198,12 @@ extern void prim_packet_init(void);
 extern void prim_packet_init_tex(void);
 extern void prim_persp_cull_emit_48(void);
 extern void prim_persp_cull_emit_58(void);
+extern void prim_persp_emit_78(void);
 extern void prim_persp_ot_emit(void);
 extern void prim_persp_ot_emit_112(void);
 extern void prim_persp_ot_emit_50(void);
+extern void prim_persp_ot_emit_58(void);
+extern void prim_persp_ot_emit_var(void);
 extern void prim_point_emit_48(void);
 extern void prim_poly_emit_3c(void);
 extern void prim_poly_emit_50(void);
@@ -1215,12 +1221,15 @@ extern void prim_poly_emit_78(void);
 extern void prim_poly_emit_78b(void);
 extern void prim_poly_emit_88(void);
 extern void prim_poly_emit_88b(void);
+extern void prim_quad_emit_54(void);
+extern void prim_quad_emit_5c(void);
 extern void prim_rtps_cull_emit_58(void);
 extern void prim_tag_set(void);
 extern void prim_task_run(void);
 extern void prim_tri_batch_rtpt(void);
 extern void prim_vert3_ot_emit_40(void);
 extern void prim_xform3_task_run(void);
+extern void prim_xform3_task_run_b(void);
 extern void prim_xform_emit(void);
 extern void prim_xform_emit_64(void);
 extern void print_dispatch_guest(void);
@@ -2303,6 +2312,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80186d20, (void *)rtps_basis_xform },
   { 0x80186e64, (void *)gte_xform3_ip },
   { 0x80186f5c, (void *)gte_xform3_t_ip },
+  { 0x801870a4, (void *)prim_xform3_task_run_b },
   { 0x801871bc, (void *)prim_list_gte_invoke },
   { 0x801872cc, (void *)prim_emit_4c },
   { 0x80187378, (void *)prim_emit_5c },
@@ -2322,6 +2332,9 @@ const Br2FnEnt fn_table[] = {
   { 0x80187ee0, (void *)prim_emit_ptr_54 },
   { 0x80187ffc, (void *)prim_emit_ptr_50 },
   { 0x801880d4, (void *)prim_emit_ptr_68 },
+  { 0x80188200, (void *)prim_quad_emit_54 },
+  { 0x80188308, (void *)prim_quad_emit_5c },
+  { 0x80188434, (void *)prim_emit_48 },
   { 0x80188510, (void *)prim_poly_emit_6c },
   { 0x8018866c, (void *)prim_poly_emit_64 },
   { 0x80188754, (void *)prim_poly_emit_88 },
@@ -2334,6 +2347,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80188e88, (void *)prim_nclip_emit_6c },
   { 0x80188f40, (void *)prim_nclip_emit_8c },
   { 0x8018902c, (void *)prim_nclip_emit_60 },
+  { 0x801890dc, (void *)prim_persp_emit_78 },
   { 0x801891a4, (void *)prim_nclip_emit_80 },
   { 0x8018926c, (void *)prim_nclip_emit_a8 },
   { 0x80189360, (void *)prim_nclip_emit_64 },
@@ -2376,10 +2390,14 @@ const Br2FnEnt fn_table[] = {
   { 0x8018b380, (void *)prim_nclip_cull_emit_48 },
   { 0x8018b4b8, (void *)prim_rtps_cull_emit_58 },
   { 0x8018b628, (void *)prim_avsz3_cull_emit_58 },
+  { 0x8018b738, (void *)prim_persp_ot_emit_var },
   { 0x8018b76c, (void *)prim_persp_ot_emit },
   { 0x8018b884, (void *)prim_emit_tail_advance },
+  { 0x8018b88c, (void *)prim_emit_ret_a0 },
+  { 0x8018b894, (void *)prim_persp_ot_emit_58 },
   { 0x8018b98c, (void *)prim_persp_ot_emit_112 },
   { 0x8018babc, (void *)dbg_marker_mode_set },
+  { 0x8018bae8, (void *)prim_emit_ret_v0 },
   { 0x8018bb38, (void *)flag_801b55d0_set },
   { 0x8018bba8, (void *)pad_slot_state_walk },
   { 0x8018bd24, (void *)rec_hibyte_pair_swap },
