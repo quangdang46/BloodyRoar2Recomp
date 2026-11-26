@@ -6692,11 +6692,11 @@ int32_t menu_step_a(uint32_t ctr_addr,int32_t floor,uint32_t mask)
 {
   uint32_t ctr = ctr_addr;
   int32_t  fl = floor;
-  uint32_t s2 = mask & 0xffff;
+  uint32_t mask_lo = mask & 0xffff;
   int32_t  old = MBS8(ctr);
-  uint32_t v1  = s2;
+  uint32_t btn_code  = mask_lo;
 
-  if (v1 == 0x2000) {
+  if (btn_code == 0x2000) {
     deferred_cmd_post(0x400,0xb,0);
     {
       int32_t nv = (int32_t)(int16_t)(fl << 16 >> 16);   /* fl sll/sra 16 */
@@ -6706,7 +6706,7 @@ int32_t menu_step_a(uint32_t ctr_addr,int32_t floor,uint32_t mask)
       if (nv < cb) MW8(ctr,0);
     }
   }
-  if (v1 == 0x8000) {
+  if (btn_code == 0x8000) {
     deferred_cmd_post(0x400,0xb,0);
     {
       int32_t cb = (int8_t)(MB8(ctr) - 1);               /* lbu-1, sll24 test */
@@ -6724,15 +6724,14 @@ int32_t menu_step_a(uint32_t ctr_addr,int32_t floor,uint32_t mask)
 void string_pair_emit(uint32_t unused_a,uint32_t unused_b,uint32_t unused_c,
                   uint32_t rec)
 {
-  uint32_t s0 = rec;
-  uint32_t v0 = MB8(s0 + 0x17);
+  uint32_t str_idx = MB8(rec + 0x17);
   const void *s;
-  if (v0 == 0) s = guest_at(0x801c15d0);
-  else         s = guest_at(0x801b3f68 + (v0 << 4));
+  if (str_idx == 0) s = guest_at(0x801c15d0);
+  else         s = guest_at(0x801b3f68 + (str_idx << 4));
   u16_tbl_copy(0,s);
-  v0 = MB8(s0 + 0x18);
-  if (v0 == 0) s = guest_at(0x801c15e0);
-  else         s = guest_at(0x801b3f68 + (v0 << 4));
+  str_idx = MB8(rec + 0x18);
+  if (str_idx == 0) s = guest_at(0x801c15e0);
+  else         s = guest_at(0x801b3f68 + (str_idx << 4));
   u16_tbl_copy(1,s);
 }
 
@@ -9902,14 +9901,14 @@ int32_t victory_record_restore(uint32_t battle,int32_t idx)
  * at lh(s0+2); N = s2+1 iterations of {a1--; if (a1<0) a1=2}; a
  * final unchecked decrement in the bnez delay slot is cancelled by
  * the trailing a1++ — net effect is exactly N wrapped decrements. */
-static int32_t dec_wrap(int32_t a1,int32_t n)
+static int32_t dec_wrap(int32_t idx,int32_t steps)
 {
   int32_t i;
-  for (i = 0; i < n; i++) {
-    a1--;
-    if (a1 < 0) a1 = 2;
+  for (i = 0; i < steps; i++) {
+    idx--;
+    if (idx < 0) idx = 2;
   }
-  return a1;
+  return idx;
 }
 
 /* shared record-index walk: from rec = 0x801c47c0 + a1*0x235c walk
@@ -9917,24 +9916,24 @@ static int32_t dec_wrap(int32_t a1,int32_t n)
  * -0x235c, the same record stride (generated 0x80128D18-D54 computes
  * idx*9052 = idx*0x235c both ways). Exits
  * with a1 possibly 0. */
-static int32_t dec_walk(int32_t a1)
+static int32_t dec_walk(int32_t idx)
 {
-  uint32_t r = 0x801c47c0u + (uint32_t)a1 * 0x235cu;
-  while (MBS16(r) < 0) {
-    a1--;
-    r -= 0x235cu;
-    if (a1 <= 0) break;
+  uint32_t rec = 0x801c47c0u + (uint32_t)idx * 0x235cu;
+  while (MBS16(rec) < 0) {
+    idx--;
+    rec -= 0x235cu;
+    if (idx <= 0) break;
   }
-  return a1;
+  return idx;
 }
 
 /* shared epilogue: ret = victory_record_restore(battle, idx) - 1 stored to
  * s0+6; if the s16 result is negative store 0x257 instead. */
-static void dec_finish(uint32_t battle,uint32_t s0,int32_t a1)
+static void dec_finish(uint32_t battle,uint32_t rec,int32_t idx)
 {
-  int32_t ret = victory_record_restore(battle, a1) - 1;
-  MW16(s0 + 6, (uint16_t)ret);
-  if ((int16_t)ret < 0) MW16(s0 + 6, 0x257);
+  int32_t ret = victory_record_restore(battle, idx) - 1;
+  MW16(rec + 6, (uint16_t)ret);
+  if ((int16_t)ret < 0) MW16(rec + 6, 0x257);
 }
 
 /* versus_stage_commit — versus-record stage commit @0x80128c18 (95 insns,
