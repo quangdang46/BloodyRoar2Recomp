@@ -12556,6 +12556,7 @@ block_8012B038:
  * from SLES_017.22_full_01.c. */
 void cps_8012b048(void)
 {
+/* GPU/pad fragment: continues at 0x8012b054 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12573,6 +12574,7 @@ block_8012B048:
  * from SLES_017.22_full_01.c. */
 void cps_8012b054(void)
 {
+/* GPU/pad thunk -> gpu_load_image_cmd */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12611,6 +12613,7 @@ block_8012B060:
  * from SLES_017.22_full_01.c. */
 void cps_8012b06c(void)
 {
+/* GPU/pad fragment: continues at 0x8012b118 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12732,6 +12735,7 @@ block_8012B114:
  * from SLES_017.22_full_01.c. */
 void cps_8012b118(void)
 {
+/* GPU/pad thunk -> gpu_clear_image_cmd */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12762,6 +12766,7 @@ block_8012B118:
  * from SLES_017.22_full_01.c. */
 void cps_8012b154(void)
 {
+/* GPU/pad thunk -> gpu_draw_otag */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12779,6 +12784,7 @@ block_8012B154:
  * from SLES_017.22_full_01.c. */
 void cps_8012b15c(void)
 {
+/* GPU/pad thunk -> table_byte_next_a -> gpu_clear_otag_r -> menu_noop */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12845,6 +12851,7 @@ block_8012B1C4:
  * from SLES_017.22_full_01.c. */
 void cps_8012b1dc(void)
 {
+/* GPU/pad fragment: continues at 0x8012b1e0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12860,6 +12867,7 @@ block_8012B1DC:
  * from SLES_017.22_full_01.c. */
 void cps_8012b1e0(void)
 {
+/* GPU/pad thunk -> debug_stat_print -> ot_packet_chain_fixup -> scroll_offset_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12927,6 +12935,7 @@ block_8012B218:
  * from SLES_017.22_full_01.c. */
 void cps_8012b21c(void)
 {
+/* GPU/pad leaf or terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12950,6 +12959,7 @@ block_8012B21C:
  * from SLES_017.22_full_01.c. */
 void cps_8012b2a4(void)
 {
+/* GPU/pad thunk -> cd_timer_read -> gpu_draw_sync -> cd_timer_read -> cd_timer_read */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13019,6 +13029,7 @@ block_8012B2D4:
  * from SLES_017.22_full_01.c. */
 void cps_8012b2dc(void)
 {
+/* GPU/pad thunk -> cd_timer_read -> cd_timer_read -> gpu_graph_reset */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13065,6 +13076,7 @@ block_8012B2FC:
  * from SLES_017.22_full_01.c. */
 void cps_8012b300(void)
 {
+/* GPU/pad thunk -> gpu_stat_sign -> draw_env_timing -> gpu_draw_env_put -> gpu_disp_mask_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13161,6 +13173,7 @@ block_8012B364:
  * from SLES_017.22_full_01.c. */
 void cps_8012b36c(void)
 {
+/* GPU/pad thunk -> gpu_load_image_cmd */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13208,6 +13221,7 @@ block_8012B38C:
  * from SLES_017.22_full_01.c. */
 void cps_8012b398(void)
 {
+/* GPU/pad thunk -> gpu_clear_image_cmd */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13310,6 +13324,7 @@ block_8012B434:
  * from SLES_017.22_full_01.c. */
 void cps_8012b438(void)
 {
+/* GPU/pad thunk -> gpu_draw_otag */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13351,6 +13366,7 @@ block_8012B444:
  * from SLES_017.22_full_01.c. */
 void cps_8012b44c(void)
 {
+/* GPU/pad leaf or terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13374,6 +13390,7 @@ block_8012B44C:
  * from SLES_017.22_full_01.c. */
 void cps_8012b504(void)
 {
+/* GPU/pad leaf or terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13452,6 +13469,7 @@ block_8012B548:
  * from SLES_017.22_full_01.c. */
 void cps_8012b5d4(void)
 {
+/* GPU/pad thunk -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13490,6 +13508,7 @@ block_8012B5FC:
  * from SLES_017.22_full_01.c. */
 void cps_8012b604(void)
 {
+/* GPU/pad thunk -> deferred_cmd_post -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13626,6 +13645,7 @@ block_8012B68C:
  * from SLES_017.22_full_01.c. */
 void cps_8012b6a4(void)
 {
+/* GPU/pad fragment: continues at 0x8012b6bc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13667,6 +13687,7 @@ block_8012B6B8:
  * from SLES_017.22_full_01.c. */
 void cps_8012b6bc(void)
 {
+/* GPU/pad thunk -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13740,6 +13761,7 @@ block_8012B6FC:
  * from SLES_017.22_full_01.c. */
 void cps_8012b700(void)
 {
+/* GPU/pad thunk -> pad_handler_c -> pad_handler_a -> pad_handler_b -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13856,6 +13878,7 @@ block_8012B768:
  * from SLES_017.22_full_01.c. */
 void cps_8012b778(void)
 {
+/* GPU/pad thunk -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13893,6 +13916,7 @@ block_8012B79C:
  * from SLES_017.22_full_01.c. */
 void cps_8012b7a4(void)
 {
+/* GPU/pad fragment: continues at 0x8012b7cc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13918,6 +13942,7 @@ block_8012B7A4:
  * from SLES_017.22_full_01.c. */
 void cps_8012b7cc(void)
 {
+/* GPU/pad fragment: continues at 0x8012b7ec */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13960,6 +13985,7 @@ block_8012B7E8:
  * from SLES_017.22_full_01.c. */
 void cps_8012b7ec(void)
 {
+/* GPU/pad fragment: continues at 0x8012b7f0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13975,6 +14001,7 @@ block_8012B7EC:
  * from SLES_017.22_full_01.c. */
 void cps_8012b7f0(void)
 {
+/* GPU/pad leaf or terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13995,6 +14022,7 @@ block_8012B7F0:
  * from SLES_017.22_full_01.c. */
 void cps_8012b804(void)
 {
+/* GPU/pad leaf or terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14022,6 +14050,7 @@ block_8012B804:
  * from SLES_017.22_full_01.c. */
 void cps_8012b834(void)
 {
+/* GPU/pad fragment: continues at 0x8012b850 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14043,6 +14072,7 @@ block_8012B834:
  * from SLES_017.22_full_01.c. */
 void cps_8012b850(void)
 {
+/* GPU/pad leaf or terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14063,6 +14093,7 @@ block_8012B850:
  * from SLES_017.22_full_01.c. */
 void cps_8012b864(void)
 {
+/* GPU/pad fragment: continues at 0x8012b928 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14187,6 +14218,7 @@ block_8012B8F0:
  * from SLES_017.22_full_01.c. */
 void cps_8012b928(void)
 {
+/* GPU/pad leaf or terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14272,6 +14304,7 @@ block_8012B9E8:
  * from SLES_017.22_full_01.c. */
 void cps_8012b9fc(void)
 {
+/* GPU/pad leaf or terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14289,6 +14322,7 @@ block_8012B9FC:
  * from SLES_017.22_full_02.c. */
 void cps_8012bae0(void)
 {
+/* GPU/pad fragment: continues at 0x8012bae4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14469,6 +14503,7 @@ block_8012BB48:
  * from SLES_017.22_full_02.c. */
 void cps_8012bb50(void)
 {
+/* GPU/pad fragment: continues at 0x8012bb58 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14486,6 +14521,7 @@ block_8012BB50:
  * from SLES_017.22_full_02.c. */
 void cps_8012bb58(void)
 {
+/* GPU/pad fragment: continues at 0x8012bb60 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14503,6 +14539,7 @@ block_8012BB58:
  * from SLES_017.22_full_02.c. */
 void cps_8012bb60(void)
 {
+/* GPU/pad fragment: continues at 0x8012bb68 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14520,6 +14557,7 @@ block_8012BB60:
  * from SLES_017.22_full_02.c. */
 void cps_8012bb68(void)
 {
+/* GPU/pad fragment: continues at 0x8012bb70 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14537,6 +14575,7 @@ block_8012BB68:
  * from SLES_017.22_full_02.c. */
 void cps_8012bb70(void)
 {
+/* GPU/pad fragment: continues at 0x8012bb78 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14554,6 +14593,7 @@ block_8012BB70:
  * from SLES_017.22_full_02.c. */
 void cps_8012bb78(void)
 {
+/* GPU/pad fragment: continues at 0x8012bb80 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14571,6 +14611,7 @@ block_8012BB78:
  * from SLES_017.22_full_02.c. */
 void cps_8012bb80(void)
 {
+/* GPU/pad fragment: continues at 0x8012bb88 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14588,6 +14629,7 @@ block_8012BB80:
  * from SLES_017.22_full_02.c. */
 void cps_8012bb88(void)
 {
+/* GPU/pad fragment: continues at 0x8012bb8c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14603,6 +14645,7 @@ block_8012BB88:
  * from SLES_017.22_full_02.c. */
 void cps_8012bb8c(void)
 {
+/* GPU/pad fragment: continues at 0x8012bb90 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14618,6 +14661,7 @@ block_8012BB8C:
  * from SLES_017.22_full_02.c. */
 void cps_8012bb90(void)
 {
+/* GPU/pad fragment: continues at 0x8012bbc0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14693,6 +14737,7 @@ block_8012BBB0:
  * from SLES_017.22_full_02.c. */
 void cps_8012bbc0(void)
 {
+/* GPU/pad fragment: continues at 0x8012bca4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14809,6 +14854,7 @@ block_8012BC68:
  * from SLES_017.22_full_02.c. */
 void cps_8012bca4(void)
 {
+/* GPU/pad leaf or terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14853,6 +14899,7 @@ block_8012BCCC:
  * from SLES_017.22_full_02.c. */
 void cps_8012bcd4(void)
 {
+/* GPU/pad fragment: continues at 0x8012bce4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15077,6 +15124,7 @@ block_8012BD80:
  * from SLES_017.22_full_02.c. */
 void cps_8012bd88(void)
 {
+/* GPU/pad fragment: continues at 0x8012bd90 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15094,6 +15142,7 @@ block_8012BD88:
  * from SLES_017.22_full_02.c. */
 void cps_8012bd90(void)
 {
+/* GPU/pad fragment: continues at 0x8012bd98 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15111,6 +15160,7 @@ block_8012BD90:
  * from SLES_017.22_full_02.c. */
 void cps_8012bd98(void)
 {
+/* GPU/pad fragment: continues at 0x8012bd9c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15126,6 +15176,7 @@ block_8012BD98:
  * from SLES_017.22_full_02.c. */
 void cps_8012bd9c(void)
 {
+/* GPU/pad fragment: continues at 0x8012bda0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15141,6 +15192,7 @@ block_8012BD9C:
  * from SLES_017.22_full_02.c. */
 void cps_8012bda0(void)
 {
+/* GPU/pad fragment: continues at 0x8012be70 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15307,6 +15359,7 @@ block_8012BE18:
  * from SLES_017.22_full_02.c. */
 void cps_8012be70(void)
 {
+/* GPU/pad fragment: continues at 0x8012be94 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15330,6 +15383,7 @@ block_8012BE70:
  * from SLES_017.22_full_02.c. */
 void cps_8012be94(void)
 {
+/* GPU/pad fragment: continues at 0x8012bee4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15364,6 +15418,7 @@ block_8012BE94:
  * from SLES_017.22_full_02.c. */
 void cps_8012bee4(void)
 {
+/* GPU/pad fragment: continues at 0x8012bef4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15382,6 +15437,7 @@ block_8012BEE4:
  * from SLES_017.22_full_02.c. */
 void cps_8012bef4(void)
 {
+/* GPU/pad fragment: continues at 0x8012bf04 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15400,6 +15456,7 @@ block_8012BEF4:
  * from SLES_017.22_full_02.c. */
 void cps_8012bf04(void)
 {
+/* GPU/pad leaf or terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
