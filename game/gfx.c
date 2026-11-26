@@ -514,11 +514,12 @@ uint32_t gpu_graph_reset(uint32_t arg)
   uint32_t v;
   
   v = arg & 7;
-  if (v == 3) {
-LAB_80190e4c:
-    printf_forward(s_ResetGraph_jtb__08x_env__08x_80125410,
-                 (uint32_t *)0x801b82d8,(uint32_t *)0x801b8320);
-LAB_80190e68:
+  if (v == 0 || v == 3 || v == 5) {
+    /* v==0/3 print the banner; v==5 enters at the memset (no print). */
+    if (v != 5) {
+      printf_forward(s_ResetGraph_jtb__08x_env__08x_80125410,
+                   (uint32_t *)0x801b82d8,(uint32_t *)0x801b8320);
+    }
     guest_memset((uint32_t *)0x801b8320,0,0x80);
     cd_dispatch_tblc();
     bios_call_a0((*(uint32_t *)guest_at(0x801b8318)) & 0xffffff);
@@ -531,10 +532,6 @@ LAB_80190e68:
     v = (uint32_t)gpu_mode;
   }
   else {
-    if (v < 4) {
-      if (v == 0) goto LAB_80190e4c;
-    }
-    else if (v == 5) goto LAB_80190e68;
     if (1 < gpu_dbg_level) {
       GPU_DBG(s_ResetGraph__d_____80125430,arg);
     }
@@ -564,6 +561,7 @@ uint32_t draw_env_timing(uint32_t env_g)
   int std_idx;
   uint32_t tc;
   uint32_t tot;
+  int clamp_tot;
   uint16_t *env;
   uint16_t *timing_tbl;
   uint8_t  *timing_b;
@@ -618,9 +616,8 @@ uint32_t draw_env_timing(uint32_t env_g)
     gpu_call(0x10,tc,0,0,0);
     *(uint8_t *)(env + 9) = 8;
   }
-  if (((DB16(0x801b8394) == env[4]) && (DB16(0x801b8396) == env[5])) &&
-     ((DB16(0x801b8398) == env[6] && ((DB16(0x801b839a) == env[7] && ((char)env[9] != '\b'))))))
-   goto LAB_80191e74;
+  if (!(((DB16(0x801b8394) == env[4]) && (DB16(0x801b8396) == env[5])) &&
+       ((DB16(0x801b8398) == env[6] && ((DB16(0x801b839a) == env[7] && ((char)env[9] != '\b'))))))) {
   gp_type = gp_bde20_read();
   *(char *)(env + 9) = gp_type;
   tc = (int)(short)env[5] + 0x13;
@@ -668,9 +665,9 @@ uint32_t draw_env_timing(uint32_t env_g)
     }
     tc = td + 2;
     narrow = (int)tot < 0x103;
-    if ((int)tc <= (int)tot) {
+    clamp_tot = ((int)tc <= (int)tot);
+    if (clamp_tot) {
       tc = 0x102;
-      goto LAB_80191e0c;
     }
   }
   else {
@@ -693,17 +690,17 @@ uint32_t draw_env_timing(uint32_t env_g)
     }
     narrow = (int)tot < 0x132;
     tc = td + 2;
-    if ((int)(td + 2) <= (int)tot) {
+    clamp_tot = ((int)(td + 2) <= (int)tot);
+    if (clamp_tot) {
       tc = 0x131;
-LAB_80191e0c:
-      if (narrow) {
-        tc = tot;
-      }
     }
+  }
+  if (clamp_tot && narrow) {
+    tc = tot;
   }
   gpu_call(0x10,(ta & 0xfff) << 0xc | tb & 0xfff | 0x6000000,0,0,0);
   gpu_call(0x10,(tc & 0x3ff) << 10 | td & 0x3ff | 0x7000000,0,0,0);
-LAB_80191e74:
+  }
   guest_memcpy((uint32_t *)0x801b838c,(uint32_t *)env_g,0x14);
   return env_g;
 }
@@ -1318,9 +1315,6 @@ void hud_gauge_render(uint32_t st_g,uint32_t head_g,uint32_t variant)
   uint8_t *st = (uint8_t *)guest_at(st_g);
   attr = *(uint32_t *)(st + 0xc);
   switch (variant & 0xf) {
-  default:
-    col_d = 0xc; col_c = 0x20; col_a = 0x30; col_b = 0x40;
-    goto LAB_8012c4f8;
   case 1:
     col_d = 0; col_c = 0x1000; col_a = 0x3000; col_b = 0x3000;
     v = 1;
@@ -1351,15 +1345,29 @@ void hud_gauge_render(uint32_t st_g,uint32_t head_g,uint32_t variant)
     break;
   case 8:
     col_d = 0; col_c = 0x80; col_a = 0x800000; col_b = 0x200000;
-    goto LAB_8012c4f8;
+    v = 0;
+    break;
   case 9:
     col_d = 0x800000; col_c = 0; col_a = 0x80; col_b = 0x20;
-LAB_8012c4f8:
+    v = 0;
+    break;
+  default:
+    col_d = 0xc; col_c = 0x20; col_a = 0x30; col_b = 0x40;
     v = 0;
   }
   variant = variant & 0xf0;
-  if (variant == 0x20) {
-LAB_8012c64c:
+  if (variant == 0x20 || variant == 0x00) {
+    if (variant == 0x00) {
+      cell = head_g + 4;
+      hud_text_d(cell,attr,guest_at(0x8011f10c),0xc0,
+                   (int32_t)(((uint32_t)*(uint16_t *)(st + 0x22) - 0x38) * 0x10000) >> 0x10,0);
+      spr_slot_pkt_submit((uint32_t *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xd8,0xf0f001e,0x7a16d830);
+      spr_slot_pkt_submit((uint32_t *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xe8,0xf0f001e,0x7a16d820);
+      spr_slot_pkt_submit((uint32_t *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xf8,0xf0f001e,0x7a16d810);
+      hud_text_d(cell,attr,guest_at(0x8011f110),0x120,
+                   (int32_t)(((uint32_t)*(uint16_t *)(st + 0x22) - 0x38) * 0x10000) >> 0x10,0);
+      spr_slot_pkt_submit((uint32_t *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0x148,0xf0f001e,0x7a16d800);
+    }
     cell = head_g + 4;
     spr_attr_alloc_b(cell,0x280000,0x177e001e,0x7ad68080,0x80,0x48);
     spr_attr_alloc_b(cell,0x280080,0x177e001e,0x7a968080,0x100,0x48);
@@ -1373,43 +1381,28 @@ LAB_8012c64c:
     sprite_node_emit_b(cell,((uint32_t)(*(int16_t *)(st + 0x22) + -0x13f) * 0x10000) |
                  ((uint32_t)*(int16_t *)(st + 0x20) - 0xffU) & 0xffff,0xfefe001f,
                  ((uint32_t)(v << 6) | 0x7c16U) << 0x10,0x80,1);
-LAB_8012cb64:
     x = *(int16_t *)(st + 0x20);
     v = (int32_t)*(int16_t *)(st + 0x22);
     cell = 0;
-  } else {
-    if (variant < 0x21) {
-      if (variant == 0) {
-        cell = head_g + 4;
-        hud_text_d(cell,attr,guest_at(0x8011f10c),0xc0,
-                     (int32_t)(((uint32_t)*(uint16_t *)(st + 0x22) - 0x38) * 0x10000) >> 0x10,0);
-        spr_slot_pkt_submit((uint32_t *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xd8,0xf0f001e,0x7a16d830);
-        spr_slot_pkt_submit((uint32_t *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xe8,0xf0f001e,0x7a16d820);
-        spr_slot_pkt_submit((uint32_t *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xf8,0xf0f001e,0x7a16d810);
-        hud_text_d(cell,attr,guest_at(0x8011f110),0x120,
-                     (int32_t)(((uint32_t)*(uint16_t *)(st + 0x22) - 0x38) * 0x10000) >> 0x10,0);
-        spr_slot_pkt_submit((uint32_t *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0x148,0xf0f001e,0x7a16d800);
-        goto LAB_8012c64c;
-      }
-      if (variant != 0x10) return;
+  } else if (variant == 0x30) {
+    cell = head_g + 4;
+    spr_attr_alloc_b(cell,0x280000,0x177e001e,0x7ad68080,0x80,0x48);
+    spr_attr_alloc_b(cell,0x280080,0x177e001e,0x7a968080,0x100,0x48);
+    spr_attr_alloc_b(cell,0x280100,0x177e001e,0x7a568080,0x180,0x48);
+    spr_attr_alloc_b(cell,0x280180,0x1780001e,0x7a5680ff,0x200,0x48);
+    spr_slot_pkt_submit((uint32_t *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x54) * 0x10000) |
+                 ((uint32_t)*(int16_t *)(st + 0x20) - 0x90U) & 0xffff,0x277e001e,
+                 ((uint32_t)(v << 6) | 0x7e16U) << 0x10 | 0x9880);
+    sprite_node_emit_a(cell,0,*(int16_t *)(st + 0x22) + -0x40,(int32_t)*(int16_t *)(st + 0x20),0x18,
+                 col_a,0,col_a,0,2);
+    x = *(int16_t *)(st + 0x20);
+    v = (int32_t)*(int16_t *)(st + 0x22);
+    cell = 0;
+  } else if (variant == 0x10 || variant == 0x40) {
+    if (variant == 0x10) {
       hud_text_d(head_g + 4,attr,guest_at(0x8011f110),0x120,
                    (int32_t)(((uint32_t)*(uint16_t *)(st + 0x22) - 0x30) * 0x10000) >> 0x10,0);
       spr_slot_pkt_submit((uint32_t *)guest_at(head_g + 4),((uint32_t)(*(int16_t *)(st + 0x22) + -0x34) * 0x10000) | 0x148,0xf0f001e,0x7a16d800);
-    } else {
-      if (variant == 0x30) {
-        cell = head_g + 4;
-        spr_attr_alloc_b(cell,0x280000,0x177e001e,0x7ad68080,0x80,0x48);
-        spr_attr_alloc_b(cell,0x280080,0x177e001e,0x7a968080,0x100,0x48);
-        spr_attr_alloc_b(cell,0x280100,0x177e001e,0x7a568080,0x180,0x48);
-        spr_attr_alloc_b(cell,0x280180,0x1780001e,0x7a5680ff,0x200,0x48);
-        spr_slot_pkt_submit((uint32_t *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x54) * 0x10000) |
-                     ((uint32_t)*(int16_t *)(st + 0x20) - 0x90U) & 0xffff,0x277e001e,
-                     ((uint32_t)(v << 6) | 0x7e16U) << 0x10 | 0x9880);
-        sprite_node_emit_a(cell,0,*(int16_t *)(st + 0x22) + -0x40,(int32_t)*(int16_t *)(st + 0x20),0x18,
-                     col_a,0,col_a,0,2);
-        goto LAB_8012cb64;
-      }
-      if (variant != 0x40) return;
     }
     v = head_g + 4;
     hud_text_d(v,attr,guest_at(0x8011f10c),0xc0,
@@ -1430,6 +1423,8 @@ LAB_8012cb64:
     v = *(int16_t *)(st + 0x22) - cell;
     col_c = col_a;
     col_b = col_a;
+  } else {
+    return;
   }
   sprite_node_emit_a(head_g + 4,0,cell,(int32_t)x,v,(int32_t)col_c,(int32_t)col_b,0,(int32_t)col_d,0);
 }
@@ -2216,7 +2211,9 @@ int32_t text_win_printf(int32_t sel,uint32_t a1,uint32_t a2,
       if (width <= 0) width = 1;
       ep = dtop;                        /* $s0 reset (br delay slot) */
       spec = (uint32_t)(c - 0x58);
-      if (spec >= 0x21) goto emit_tail;   /* unknown: stale count/ep */
+      {
+      int32_t skip_pad = 0;            /* 'x'/'X' with '0' flag skips space pad */
+      if (spec < 0x21) {
       if (c == 0x64) {                 /* 'd' */
         int32_t av = (int32_t)BR2_ARG();
         uint32_t ua;
@@ -2243,9 +2240,8 @@ int32_t text_win_printf(int32_t sel,uint32_t a1,uint32_t a2,
           count = count + 1;
         }
         ep = sp;
-        goto pad_tail;
       }
-      if ((c == 0x78) || (c == 0x58)) { /* 'x'/'X' */
+      else if ((c == 0x78) || (c == 0x58)) { /* 'x'/'X' */
         uint32_t hv = BR2_ARG();
         uint8_t *hp = dtop;
         static const char hexd[] = "0123456789abcdef";
@@ -2270,34 +2266,28 @@ int32_t text_win_printf(int32_t sel,uint32_t a1,uint32_t a2,
               *hp = 0x30;
             } while (count < width);
           }
-          goto emit_only;
+          skip_pad = 1;
         }
-        goto pad_tail;
       }
-      if (c == 0x63) {                 /* 'c' */
+      else if (c == 0x63) {            /* 'c' */
         uint32_t av = BR2_ARG();
         uint8_t *hp = dtop - 1;        /* s0 reset to sp+0x210 per spec */
         *hp = (uint8_t)av;
         ep = hp;
         count = 1;
-        goto pad_tail;
       }
-      if (c == 0x73) {                 /* 's' */
+      else if (c == 0x73) {            /* 's' */
         ep = (const uint8_t *)guest_at(BR2_ARG());
         count = str_len((char *)(uintptr_t)ep);
-        goto pad_tail;
       }
-      goto pad_tail;               /* unreachable (spec<0x21 all mapped) */
-emit_tail:
-      ;
-pad_tail:
-      if (count < width) {
+      /* other spec<0x21 chars and spec>=0x21: stale count/ep, still pad+emit */
+      }
+      if (!skip_pad && count < width) {
         do {
           if (win_putc(slot,0x20) < 0) { va_end(ap); return -1; }
           width = width - 1;
         } while (count < width);
       }
-emit_only:
       count = count - 1;
       if (count != -1) {
         do {
@@ -2306,6 +2296,7 @@ emit_only:
           if (win_putc(slot,ch) < 0) { va_end(ap); return -1; }
           count = count - 1;
         } while (count != -1);
+      }
       }
       fmt = fmt + 1;                   /* consume spec char */
     }
@@ -4929,77 +4920,87 @@ static void scene_op_loop(uint32_t entry)
   uint32_t a1, a2;
   if (!c) return;
   a1 = c->gpr[5];
-  if (entry == 0x801b0684u) goto L_cursor_set;      /* frag 0x801B0684  */
-  if (entry == 0x801b0688u) goto L_op_next;         /* frag 0x801B0688  */
-
-L_step_head:                                         /* 0x801B05D8 */
-  a2 = br2_ld32(a1 + 0x58);                          /* lw a2,0x58(a1)  */
-  c->gpr[6] = a2;
-  c->gpr[2] = (uint32_t)br2_ld16(a2);                /* lhu v0,0(a2)    */
-  c->gpr[3] = c->gpr[2] & 0xff00u;                   /* v1 = tag & FF00 */
-  c->gpr[7] = c->gpr[2] & 0x00ffu;                   /* delay: a3=&FF  */
-  if (c->gpr[3] == c->gpr[9]) goto L_idx;            /* beq v1,t1->0620 */
-  c->gpr[2] = ((int32_t)c->gpr[9] < (int32_t)c->gpr[3]) ? 1u : 0u; /* slt */
-  {
-    uint32_t take = (c->gpr[2] != 0u);
-    c->gpr[2] = 0xff00u;                             /* delay: v0=FF00  */
-    if (take) goto L_ff00_chk;                       /* bnez -> 0610    */
+  /* Entry fragments: 0x801B0684 stores $v0 as the record cursor, then
+   * both it and 0x801B0688 enter at the op_next tail check; only the
+   * 0x801B05D8 step head (and loop-backs) run the tag dispatch. */
+  int skip_step = (entry == 0x801b0684u || entry == 0x801b0688u);
+  if (entry == 0x801b0684u) {
+    br2_st32(a1 + 0x58, c->gpr[2]);                     /* sw v0,0x58(a1)  */
   }
-  if (c->gpr[3] == c->gpr[10]) goto L_cond_adv;      /* beq v1,t2->062C */
-  goto L_op_next;                                    /* j 0x801B0688    */
 
-L_ff00_chk:                                          /* 0x801B0610 */
-  if (c->gpr[3] == c->gpr[2]) goto L_ff00_body;      /* beq v1,FF00    */
-  goto L_op_next;                                    /* j 0x801B0688    */
+  for (;;) {
+    if (!skip_step) {
+      /* ---- step head 0x801B05D8: tag dispatch ---- */
+      a2 = br2_ld32(a1 + 0x58);                          /* lw a2,0x58(a1)  */
+      c->gpr[6] = a2;
+      c->gpr[2] = (uint32_t)br2_ld16(a2);                /* lhu v0,0(a2)    */
+      c->gpr[3] = c->gpr[2] & 0xff00u;                   /* v1 = tag & FF00 */
+      c->gpr[7] = c->gpr[2] & 0x00ffu;                   /* delay: a3=&FF  */
+      /* action: 0 = op_next, 1 = cursor_set (sw gpr[2]),
+       *         2 = emit_idx (gpr[2] = halfword index) */
+      int action = 0;
+      if (c->gpr[3] == c->gpr[9]) {                      /* beq v1,t1 */
+        c->gpr[2] = (uint32_t)br2_ld16(a2 + 2);          /* lhu v0,2(a2)    */
+        action = 2;
+      } else {
+        int t1_lt = ((int32_t)c->gpr[9] < (int32_t)c->gpr[3]); /* slt */
+        c->gpr[2] = 0xff00u;                             /* delay: v0=FF00  */
+        if (t1_lt) {                                     /* bnez -> 0610    */
+          if (c->gpr[3] == c->gpr[2]) {                  /* beq v1,FF00     */
+            /* ---- L_ff00_body 0x801B0664 ---- */
+            c->gpr[2] = (uint32_t)br2_ld16(a1 + 0x62);   /* lhu v0,0x62(a1) */
+            int inb = (c->gpr[2] < c->gpr[7]) ? 1 : 0;   /* sltu v0,v0,a3   */
+            c->gpr[2] = a2 + 4u;                         /* delay: v0=a2+4  */
+            if (inb) {
+              action = 1;                                /* -> cursor_set  */
+            } else {
+              /* 0x801B0678: *(gp_cache+0x14) = 0; jr ra */
+              c->gpr[2] = br2_ld32((uint32_t)(c->gpr[28] + 0x4c));
+              br2_st32(c->gpr[2] + 0x14, 0u);            /* delay slot      */
+              return;
+            }
+          }
+          /* else -> op_next */
+        } else if (c->gpr[3] == c->gpr[10]) {            /* beq v1,t2      */
+          /* ---- L_cond_adv 0x801B062C ---- */
+          c->gpr[4] = (uint32_t)br2_ld16(a1 + 0x62);     /* lhu a0,0x62(a1) */
+          int adv = (c->gpr[7] < c->gpr[4]) ? 1 : 0;     /* sltu v0,a3,a0   */
+          c->gpr[2] = a2 + 4u;                           /* delay: v0=a2+4  */
+          if (adv) {
+            action = 1;                                  /* -> cursor_set  */
+          } else {
+            /* 0x801B0640: index++ then emit via cursor+2 halfword */
+            c->gpr[3] = br2_ld32(a1 + 0x58);             /* lw v1,0x58(a1)  */
+            c->gpr[2] = c->gpr[4] + 1u;                  /* v0 = a0+1       */
+            br2_st16(a1 + 0x62, (uint16_t)c->gpr[2]);    /* sh v0,0x62(a1)  */
+            c->gpr[2] = (uint32_t)br2_ld16(c->gpr[3] + 2);/* lhu v0,2(v1)   */
+            action = 2;
+          }
+        }
+        /* else -> op_next */
+      }
 
-L_idx:                                               /* 0x801B0620 */
-  c->gpr[2] = (uint32_t)br2_ld16(a2 + 2);             /* lhu v0,2(a2)    */
-  goto L_emit_idx;                                   /* j 0x801B0650    */
+      if (action == 1) {                                 /* L_cursor_set   */
+        br2_st32(a1 + 0x58, c->gpr[2]);                  /* sw v0,0x58(a1)  */
+      } else if (action == 2) {                          /* L_emit_idx     */
+        c->gpr[3] = br2_ld32(a1 + 0x5c);                 /* lw v1,0x5C(a1)  */
+        c->gpr[2] <<= 2;                                 /* sll v0,v0,2     */
+        c->gpr[3] += c->gpr[2];                          /* v1 += v0        */
+        br2_st32(a1 + 0x58, c->gpr[3]);                  /* delay: sw cur   */
+      }
+      /* action 0 falls through to op_next */
+    }
+    skip_step = 0;
 
-L_cond_adv:                                          /* 0x801B062C */
-  c->gpr[4] = (uint32_t)br2_ld16(a1 + 0x62);          /* lhu a0,0x62(a1) */
-  c->gpr[2] = (c->gpr[7] < c->gpr[4]) ? 1u : 0u;      /* sltu v0,a3,a0   */
-  {
-    uint32_t take = (c->gpr[2] != 0u);
-    c->gpr[2] = a2 + 4u;                              /* delay: v0=a2+4  */
-    if (take) goto L_cursor_set;                      /* -> 0x801B0684   */
+    /* ---- op_next 0x801B0688: loop while next tag nonzero ---- */
+    c->gpr[2] = br2_ld32(a1 + 0x58);                     /* lw v0,0x58(a1)  */
+    c->gpr[2] = (uint32_t)br2_ld16(c->gpr[2]);           /* lhu v0,0(v0)    */
+    c->gpr[2] &= 0xff00u;                                /* andi v0,FF00    */
+    if (c->gpr[2] == 0u) {                               /* beqz -> flush   */
+      scene_op_flush();                                 /* -> 0x801B06A4   */
+      return;
+    }
   }
-  /* 0x801B0640: index++ then emit via cursor+2 halfword */
-  c->gpr[3] = br2_ld32(a1 + 0x58);                    /* lw v1,0x58(a1)  */
-  c->gpr[2] = c->gpr[4] + 1u;                         /* v0 = a0+1       */
-  br2_st16(a1 + 0x62, (uint16_t)c->gpr[2]);           /* sh v0,0x62(a1)  */
-  c->gpr[2] = (uint32_t)br2_ld16(c->gpr[3] + 2);      /* lhu v0,2(v1)    */
-  /* fall through to 0x801B0650 */
-L_emit_idx:                                          /* 0x801B0650 */
-  c->gpr[3] = br2_ld32(a1 + 0x5c);                    /* lw v1,0x5C(a1)  */
-  c->gpr[2] <<= 2;                                    /* sll v0,v0,2     */
-  c->gpr[3] += c->gpr[2];                             /* v1 += v0        */
-  br2_st32(a1 + 0x58, c->gpr[3]);                     /* delay: sw cur   */
-  goto L_op_next;                                    /* j 0x801B0688    */
-
-L_ff00_body:                                         /* 0x801B0664 */
-  c->gpr[2] = (uint32_t)br2_ld16(a1 + 0x62);          /* lhu v0,0x62(a1) */
-  c->gpr[2] = (c->gpr[2] < c->gpr[7]) ? 1u : 0u;      /* sltu v0,v0,a3   */
-  {
-    uint32_t take = (c->gpr[2] != 0u);
-    c->gpr[2] = a2 + 4u;                              /* delay: v0=a2+4  */
-    if (take) goto L_cursor_set;                      /* -> 0x801B0684   */
-  }
-  /* 0x801B0678: *(gp_cache+0x14) = 0; jr ra */
-  c->gpr[2] = br2_ld32((uint32_t)(c->gpr[28] + 0x4c));
-  br2_st32(c->gpr[2] + 0x14, 0u);                     /* delay slot      */
-  return;
-
-L_cursor_set:                                        /* 0x801B0684 */
-  br2_st32(a1 + 0x58, c->gpr[2]);                     /* sw v0,0x58(a1)  */
-  /* fall through */
-L_op_next:                                           /* 0x801B0688 */
-  c->gpr[2] = br2_ld32(a1 + 0x58);                    /* lw v0,0x58(a1)  */
-  c->gpr[2] = (uint32_t)br2_ld16(c->gpr[2]);          /* lhu v0,0(v0)    */
-  c->gpr[2] &= 0xff00u;                               /* andi v0,FF00    */
-  if (c->gpr[2] != 0u) goto L_step_head;              /* bnez -> 05D8    */
-  scene_op_flush();                                  /* -> 0x801B06A4   */
-  return;
 }
 
 /* scene_op_step — entry 0x801B05D8 (op-stream step dispatch). */
@@ -7242,7 +7243,7 @@ uint32_t prim_persp_ot_emit(uint32_t cur, uint32_t ot, uint32_t count,
     flag = (uint32_t)getCopControlWord(2, GTE_CREG(31)); /* cfc2 FLAG */
     copFunction(2, 0x1400006u);                  /* NCLIP */
     base = cur + delta;                          /* t3 = a0 + t4 */
-    if ((flag & 0x7FC40000u) != 0) goto next;
+    if ((flag & 0x7FC40000u) == 0) {
 
     out = base + 8;                              /* addiu t3,8 */
     setCopReg(2, GTE_DREG(0), t1);               /* mtc2 V0.xy */
@@ -7251,7 +7252,7 @@ uint32_t prim_persp_ot_emit(uint32_t cur, uint32_t ot, uint32_t count,
     sxy0 = (uint32_t)getCopReg(2, GTE_DREG(12)); /* mfc2 SXY0 */
     DB32(out) = sxy0;   /* sw SXY0,(out) is the blez MAC0 DELAY SLOT —
                          * unconditional even when mac0 <= 0. */
-    if ((int32_t)mac0 <= 0) goto next;
+    if ((int32_t)mac0 > 0) {
     sxy1 = (uint32_t)getCopReg(2, GTE_DREG(13)); /* mfc2 SXY1 */
     sxy2 = (uint32_t)getCopReg(2, GTE_DREG(14)); /* mfc2 SXY2 */
     out += out_stride; DB32(out) = sxy1;
@@ -7270,20 +7271,23 @@ uint32_t prim_persp_ot_emit(uint32_t cur, uint32_t ot, uint32_t count,
     sxy2 = (uint32_t)getCopReg(2, GTE_DREG(14)); /* post-RTPS SXY2 */
     out += out_stride; DB32(out) = sxy2;
     sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xFFFFu, 512u);
-    if (sx_ok == 0) goto next;
+    if (sx_ok != 0) {
     sy_ok += ((uint32_t)((int32_t)sxy2 >> 16) < 480u) ? 1u : 0u;
-    if (sy_ok == 0) goto next;                   /* t3=a0+t4 recompute: dead */
+    if (sy_ok != 0) {                           /* t3=a0+t4 recompute: dead */
 
     copFunction(2, 0x168002Eu);                  /* AVSZ4 -> OTZ */
-    if ((int32_t)(uint32_t)getCopReg(2, GTE_DREG(7)) < 2048) goto next;
+    if ((int32_t)(uint32_t)getCopReg(2, GTE_DREG(7)) >= 2048) {
 
     /* OT link tail: t3 was recomputed to base (a0+t4) in the branch delay
      * slot, so the swl targets are base+2 / ot+2. */
     old = DB32(ot);                              /* lw t0,(a1) */
     swl_guest(ot + 2, base << 8);                /* swl (t3<<8),2(a1) */
     swl_guest(base + 2, old << 8);               /* swl (t0<<8),2(t3) */
-
-  next:
+    }
+    }
+    }
+    }
+    }
     cur += in_stride;                           /* delay-slot a0 += t7 */
   } while (cnt > 0);                             /* bgtz a3 -> loop */
   return cur;                                   /* move v0,a0 */
@@ -7323,7 +7327,7 @@ uint32_t prim_persp_ot_emit_112(uint32_t cur, uint32_t ot, uint32_t sel,
     flag = (uint32_t)getCopControlWord(2, GTE_CREG(31)); /* cfc2 FLAG */
     copFunction(2, 0x1400006u);                  /* NCLIP */
     base = cur + delta;                          /* t3 = a0 + t4 */
-    if ((flag & 0x7FC40000u) != 0) goto next;
+    if ((flag & 0x7FC40000u) == 0) {
 
     out = base + 8;                              /* addiu t3,8 */
     setCopReg(2, GTE_DREG(0), t1);               /* mtc2 V0.xy */
@@ -7332,7 +7336,7 @@ uint32_t prim_persp_ot_emit_112(uint32_t cur, uint32_t ot, uint32_t sel,
     sxy0 = (uint32_t)getCopReg(2, GTE_DREG(12)); /* mfc2 SXY0 */
     DB32(out) = sxy0;   /* sw SXY0,(out) is the blez MAC0 DELAY SLOT —
                          * unconditional even when mac0 <= 0. */
-    if ((int32_t)mac0 <= 0) goto next;
+    if ((int32_t)mac0 > 0) {
     sxy1 = (uint32_t)getCopReg(2, GTE_DREG(13)); /* mfc2 SXY1 */
     sxy2 = (uint32_t)getCopReg(2, GTE_DREG(14)); /* mfc2 SXY2 */
     out += 8; DB32(out) = sxy1;
@@ -7351,20 +7355,23 @@ uint32_t prim_persp_ot_emit_112(uint32_t cur, uint32_t ot, uint32_t sel,
     sxy2 = (uint32_t)getCopReg(2, GTE_DREG(14)); /* post-RTPS SXY2 */
     out += 8; DB32(out) = sxy2;
     sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xFFFFu, 512u);
-    if (sx_ok == 0) goto next;
+    if (sx_ok != 0) {
     sy_ok += ((uint32_t)((int32_t)sxy2 >> 16) < 480u) ? 1u : 0u;
-    if (sy_ok == 0) goto next;                   /* t3=a0+t4 recompute: dead */
+    if (sy_ok != 0) {                           /* t3=a0+t4 recompute: dead */
 
     copFunction(2, 0x168002Eu);                  /* AVSZ4 -> OTZ */
-    if ((int32_t)(uint32_t)getCopReg(2, GTE_DREG(7)) < 2048) goto next;
+    if ((int32_t)(uint32_t)getCopReg(2, GTE_DREG(7)) >= 2048) {
 
     /* OT link tail: t3 was recomputed to base (a0+t4) in the branch delay
      * slot, so the swl targets are base+2 / ot+2. */
     old = DB32(ot);                              /* lw t0,(a1) */
     swl_guest(ot + 2, base << 8);                /* swl (t3<<8),2(a1) */
     swl_guest(base + 2, old << 8);               /* swl (t0<<8),2(t3) */
-
-  next:
+    }
+    }
+    }
+    }
+    }
     cur += 112;                                  /* delay-slot a0 += t7 */
   } while (cnt > 0);                             /* bgtz a3 -> loop */
   return cur;                                   /* move v0,a0 */
@@ -7431,7 +7438,7 @@ uint32_t prim_depth_shade_emit(uint32_t cur, uint32_t ot, uint32_t sel,
     copFunction(2, 0x1400006u);                  /* NCLIP */
     /* mtc2 gte[0]=t1 sits in the flag-branch DELAY SLOT — unconditional. */
     setCopReg(2, GTE_DREG(0), t1);               /* mtc2 V0.xy */
-    if ((flag & 0x7FC40000u) != 0) goto next;
+    if ((flag & 0x7FC40000u) == 0) {
 
     setCopReg(2, GTE_DREG(1), t2);               /* mtc2 V0.z  */
     base = cur + delta;                          /* t3 = a0 + t4 */
@@ -7440,7 +7447,7 @@ uint32_t prim_depth_shade_emit(uint32_t cur, uint32_t ot, uint32_t sel,
     sxy0 = (uint32_t)getCopReg(2, GTE_DREG(12)); /* mfc2 SXY0 */
     DB32(out) = sxy0;   /* sw SXY0,(out) is the blez MAC0 DELAY SLOT —
                          * unconditional even when mac0 <= 0. */
-    if ((int32_t)mac0 <= 0) goto next;
+    if ((int32_t)mac0 > 0) {
     sxy1 = (uint32_t)getCopReg(2, GTE_DREG(13)); /* mfc2 SXY1 */
     sxy2 = (uint32_t)getCopReg(2, GTE_DREG(14)); /* mfc2 SXY2 */
     out += 8; DB32(out) = sxy1;
@@ -7459,9 +7466,9 @@ uint32_t prim_depth_shade_emit(uint32_t cur, uint32_t ot, uint32_t sel,
     sxy2 = (uint32_t)getCopReg(2, GTE_DREG(14)); /* post-RTPS SXY2 */
     out += 8; DB32(out) = sxy2;
     sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xFFFFu, 512u);
-    if (sx_ok == 0) goto next;
+    if (sx_ok != 0) {
     sy_ok += ((uint32_t)((int32_t)sxy2 >> 16) < 480u) ? 1u : 0u;
-    if (sy_ok == 0) goto next;                   /* t3=a0+t4 recompute: dead */
+    if (sy_ok != 0) {                           /* t3=a0+t4 recompute: dead */
 
     copFunction(2, 0x168002Eu);                  /* AVSZ4 -> OTZ */
 
@@ -7484,8 +7491,10 @@ uint32_t prim_depth_shade_emit(uint32_t cur, uint32_t ot, uint32_t sel,
     old = DB32(ot);                              /* lw t0,(a1) */
     swl_guest(ot + 2, base << 8);                /* swl (t3<<8),2(a1) */
     swl_guest(base + 2, old << 8);               /* swl (t0<<8),2(t3) */
-
-  next:
+    }
+    }
+    }
+    }
     cur += 112;                                  /* delay-slot a0 += t7 */
   } while (cnt > 0);                             /* bgtz a3 -> loop */
   setCopControlWord(2, GTE_CREG(30), 1024u);    /* ctc2 ctrl30 = 1024 */
@@ -7535,7 +7544,7 @@ static uint32_t prim_cull3_emit(uint32_t cur, uint32_t ot, uint32_t sel,
     copFunction(2, 0x0280030u);                  /* RTPT */
     flag = (uint32_t)getCopControlWord(2, GTE_CREG(31)); /* cfc2 FLAG */
     base = cur + delta;                          /* t3 = a0 + t4 */
-    if ((flag & 0x7FC40000u) != 0) goto next;
+    if ((flag & 0x7FC40000u) == 0) {
 
     sxy0 = (uint32_t)getCopReg(2, GTE_DREG(12)); /* mfc2 SXY0 */
     sxy1 = (uint32_t)getCopReg(2, GTE_DREG(13)); /* mfc2 SXY1 */
@@ -7543,7 +7552,7 @@ static uint32_t prim_cull3_emit(uint32_t cur, uint32_t ot, uint32_t sel,
     sx_ok  = (uint32_t)psx_ws_cull_sltiu(sxy0 & 0xFFFFu, 512u);
     sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy1 & 0xFFFFu, 512u);
     sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xFFFFu, 512u);
-    if (sx_ok == 0) goto next;
+    if (sx_ok != 0) {
 
     /* sy0 is computed in the sx-branch DELAY SLOT — live whenever the
      * branch is not taken. */
@@ -7552,7 +7561,7 @@ static uint32_t prim_cull3_emit(uint32_t cur, uint32_t ot, uint32_t sel,
     sy_ok += (((uint32_t)((int32_t)sxy2 >> 16)) < 480u) ? 1u : 0u;
     DB32(base) = sxy0;   /* sw SXY0,(t3) is the sy-cull DELAY SLOT —
                           * unconditional once sx_ok > 0. */
-    if (sy_ok == 0) goto next;
+    if (sy_ok != 0) {
 
     out = base + out_stride; DB32(out) = sxy1;
     out += out_stride;      DB32(out) = sxy2;
@@ -7562,8 +7571,9 @@ static uint32_t prim_cull3_emit(uint32_t cur, uint32_t ot, uint32_t sel,
     old = DB32(ot);                              /* lw t0,(a1) */
     swl_guest(ot + 2, base << 8);                /* swl (t3<<8),2(a1) */
     swl_guest(base + 2, old << 8);               /* swl (t0<<8),2(t3) */
-
-  next:
+    }
+    }
+    }
     cur += in_stride;                           /* delay-slot a0 += s7 */
   } while (cnt > 0);                             /* bgtz a3 -> loop */
   return cur;                                   /* move v0,a0 */
@@ -7623,18 +7633,18 @@ uint32_t prim_cull2_emit_30(uint32_t cur, uint32_t ot, uint32_t sel,
     copFunction(2, 0x0280030u);                  /* RTPT */
     flag = (uint32_t)getCopControlWord(2, GTE_CREG(31)); /* cfc2 FLAG */
     base = cur + delta;                          /* t3 = a0 + t4 */
-    if ((flag & 0x7FC40000u) != 0) goto next;
+    if ((flag & 0x7FC40000u) == 0) {
 
     sxy0 = (uint32_t)getCopReg(2, GTE_DREG(12)); /* mfc2 SXY0 */
     sxy1 = (uint32_t)getCopReg(2, GTE_DREG(13)); /* mfc2 SXY1 */
     sx_ok  = (uint32_t)psx_ws_cull_sltiu(sxy0 & 0xFFFFu, 512u);
     sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy1 & 0xFFFFu, 512u);
-    if (sx_ok == 0) goto next;
+    if (sx_ok != 0) {
 
     sy_ok  = (((uint32_t)((int32_t)sxy0 >> 16)) < 480u) ? 1u : 0u;
     sy_ok += (((uint32_t)((int32_t)sxy1 >> 16)) < 480u) ? 1u : 0u;
     DB32(base) = sxy0;   /* sw SXY0,(t3) is the sy-cull DELAY SLOT. */
-    if (sy_ok == 0) goto next;
+    if (sy_ok != 0) {
 
     DB32(base + 4) = sxy1;                       /* t3 += t8(4); sw */
 
@@ -7642,8 +7652,9 @@ uint32_t prim_cull2_emit_30(uint32_t cur, uint32_t ot, uint32_t sel,
     old = DB32(ot);                              /* lw t0,(a1) */
     swl_guest(ot + 2, base << 8);                /* swl (t3<<8),2(a1) */
     swl_guest(base + 2, old << 8);               /* swl (t0<<8),2(t3) */
-
-  next:
+    }
+    }
+    }
     cur += 48;                                   /* delay-slot a0 += s7 */
   } while (cnt > 0);                             /* bgtz a3 -> loop */
   return cur;                                   /* move v0,a0 */
