@@ -96815,7 +96815,14 @@ block_801A12D4:
 }
 
 /* cps_801a14a0 — clean CPS transliteration of br2eu_func_801A14A0 (guest 0x801a14a0)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Handler-dispatch + 2D table fetch: jalr through the handler pointer
+ * loaded from @0x801BE78C (a0/a1/a2 passed through, a1->s0, a2->s1).
+ * Then bounds-checks s0 against row count byte[v1+233]; row =
+ * *(v1+4) + s0*5 (5-byte rows). If s1-1 in 0..4 returns row[s1-1];
+ * otherwise tail-jumps via pointer table @0x80125FB8[s1-1]. Returns 0
+ * on out-of-range row.
+ */
 void cps_801a14a0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -96843,7 +96850,7 @@ void cps_801a14a0(void)
 
 block_801A14A0:
     v0 = 0x801C << 16;  /* 0x801C0000 */
-    v0 = cpu->read_word(v0 + -6252);
+    v0 = cpu->read_word(v0 + -6252);  /* handler ptr @0x801BE78C */
     sp = sp + -32;
     cpu->write_word(sp + 16, s0);
     s0 = a1;
@@ -96869,14 +96876,14 @@ block_801A14C4:
     }
 
 block_801A14CC:
-    v0 = cpu->read_byte(v1 + 233);
+    v0 = cpu->read_byte(v1 + 233);  /* row count */
     /* delay slot (always executes) */
     /* nop */  /* 0x801A14D4: 0x00000000 */
     psx_check_interrupts_at(cpu, 0x801A1560u);
     goto block_801A1560;  /* j */
 
 block_801A14D8:
-    v0 = cpu->read_byte(v1 + 233);
+    v0 = cpu->read_byte(v1 + 233);  /* row count */
     /* nop */  /* 0x801A14DC: 0x00000000 */
     v0 = ((int32_t)s0 < (int32_t)v0) ? 1 : 0;  /* 0x801A14E0: 0x0202102A */
     int _bc_801A14E4 = (v0 == zero);  /* save branch cond before delay slot */
@@ -96891,7 +96898,7 @@ block_801A14D8:
     }
 
 block_801A14EC:
-    v1 = cpu->read_word(v1 + 4);
+    v1 = cpu->read_word(v1 + 4);  /* row array ptr */
     v0 = v0 + s0;
     a2 = s1 + -1;
     v1 = v1 + v0;
@@ -96910,7 +96917,7 @@ block_801A14EC:
 block_801A1508:
     at = 0x8012 << 16;  /* 0x80120000 */
     at = at + v0;
-    v0 = cpu->read_word(at + 24504);
+    v0 = cpu->read_word(at + 24504);  /* fallback table @0x80125FB8 */
     /* nop */  /* 0x801A1514: 0x00000000 */
     uint32_t _jt_801A1518 = v0;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
@@ -96969,7 +96976,12 @@ block_801A1560:
 }
 
 /* cps_801a1574 — clean CPS transliteration of br2eu_func_801A1574 (guest 0x801a1574)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Handler-dispatch + 2D table fetch (8-byte rows): jalr through handler
+ * ptr @0x801BE78C. Bounds-checks s0 against count byte[v1+234]; row =
+ * *(v1+8) + s0*8. s1<0 returns row[0]; else bounds-checks s1 against
+ * byte[row] and returns byte[*(row+4)+s1]; out-of-range returns 0.
+ */
 void cps_801a1574(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -96994,7 +97006,7 @@ void cps_801a1574(void)
 
 block_801A1574:
     v0 = 0x801C << 16;  /* 0x801C0000 */
-    v0 = cpu->read_word(v0 + -6252);
+    v0 = cpu->read_word(v0 + -6252);  /* handler ptr @0x801BE78C */
     sp = sp + -32;
     cpu->write_word(sp + 16, s0);
     s0 = a1;
@@ -97042,7 +97054,7 @@ block_801A15AC:
     }
 
 block_801A15C0:
-    v1 = cpu->read_word(v1 + 8);
+    v1 = cpu->read_word(v1 + 8);  /* row array ptr */
     int _bc_801A15C4 = ((int32_t)s1 >= 0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v1 = v1 + v0;
@@ -97102,7 +97114,11 @@ block_801A1608:
 }
 
 /* cps_801a1654 — clean CPS transliteration of br2eu_func_801A1654 (guest 0x801a1654)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Handler-dispatch wrapper: jalr through handler ptr @0x801BE78C, then
+ * tails into 0x801A2EC8 (cd_cmd_rec_arm_op) with a0 = handler result,
+ * a1 = arg1 & 0xFF, a2 = arg2 & 0xFF.
+ */
 void cps_801a1654(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -97120,7 +97136,7 @@ void cps_801a1654(void)
 
 block_801A1654:
     v0 = 0x801C << 16;  /* 0x801C0000 */
-    v0 = cpu->read_word(v0 + -6252);
+    v0 = cpu->read_word(v0 + -6252);  /* handler ptr @0x801BE78C */
     sp = sp + -32;
     cpu->write_word(sp + 16, s0);
     s0 = a1;
@@ -97154,7 +97170,14 @@ block_801A1688:
 }
 
 /* cps_801a16f0 — clean CPS transliteration of br2eu_func_801A16F0 (guest 0x801a16f0)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Two-channel state reconcile: computes expected mask s1 from globals
+ * @0x801BE7D4/@0x801BE7D0, compares with arg s0. For bit0: clears/sets
+ * @0x801BE7B8 and @0x801BE7D0 and — when counter @0x801FEF60 < 150 —
+ * calls handler @0x801BE784 with a0 = record ptr @0x801BE7B4. For bit1:
+ * same dance on @0x801BE7D4/@0x801BE7D0 with counter @0x801FEF64 and
+ * a0 += 240. Finally sets @0x801BE7B8 = 1 and returns s1.
+ */
 void cps_801a16f0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -97182,9 +97205,9 @@ void cps_801a16f0(void)
 
 block_801A16F0:
     v1 = 0x801C << 16;  /* 0x801C0000 */
-    v1 = cpu->read_word(v1 + -6188);
+    v1 = cpu->read_word(v1 + -6188);  /* @0x801BE7D4 */
     v0 = 0x801C << 16;  /* 0x801C0000 */
-    v0 = cpu->read_word(v0 + -6192);
+    v0 = cpu->read_word(v0 + -6192);  /* @0x801BE7D0 */
     sp = sp + -32;
     cpu->write_word(sp + 16, s0);
     s0 = a0;
@@ -97207,7 +97230,7 @@ block_801A16F0:
 
 block_801A172C:
     at = 0x801C << 16;  /* 0x801C0000 */
-    cpu->write_word(at + -6216, zero);
+    cpu->write_word(at + -6216, zero);  /* @0x801BE7B8 = 0 */
     int _bc_801A1734 = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v0 = 1;
@@ -97222,9 +97245,9 @@ block_801A172C:
 block_801A173C:
     s2 = 0x8020 << 16;  /* 0x80200000 */
     s2 = s2 + -4144;
-    v0 = cpu->read_word(s2);
+    v0 = cpu->read_word(s2);  /* counter @0x801FEF60 */
     at = 0x801C << 16;  /* 0x801C0000 */
-    cpu->write_word(at + -6192, zero);
+    cpu->write_word(at + -6192, zero);  /* @0x801BE7D0 = 0 */
     v0 = ((int32_t)v0 < 150) ? 1 : 0;  /* 0x801A1750: 0x28420096 */
     int _bc_801A1754 = (v0 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -97239,9 +97262,9 @@ block_801A173C:
 
 block_801A175C:
     a0 = 0x801C << 16;  /* 0x801C0000 */
-    a0 = cpu->read_word(a0 + -6220);
+    a0 = cpu->read_word(a0 + -6220);  /* record ptr @0x801BE7B4 */
     v0 = 0x801C << 16;  /* 0x801C0000 */
-    v0 = cpu->read_word(v0 + -6268);
+    v0 = cpu->read_word(v0 + -6268);  /* handler ptr @0x801BE784 */
     /* nop */  /* 0x801A176C: 0x00000000 */
     uint32_t _jt_801A1770 = v0;  /* latch indirect target before delay slot */
     ra = 0x801A1778u;  /* jalr link before delay slot */
@@ -97258,7 +97281,7 @@ block_801A1778:
 
 block_801A1780:
     at = 0x801C << 16;  /* 0x801C0000 */
-    cpu->write_word(at + -6192, v0);
+    cpu->write_word(at + -6192, v0);  /* @0x801BE7D0 = 1 */
     /* fall through to block_801A1788 */
 
 block_801A1788:
@@ -97277,9 +97300,9 @@ block_801A1788:
 block_801A1794:
     s0 = 0x8020 << 16;  /* 0x80200000 */
     s0 = s0 + -4140;
-    v0 = cpu->read_word(s0);
+    v0 = cpu->read_word(s0);  /* counter @0x801FEF64 */
     at = 0x801C << 16;  /* 0x801C0000 */
-    cpu->write_word(at + -6188, v1);
+    cpu->write_word(at + -6188, v1);  /* @0x801BE7D4 = 1 */
     v0 = ((int32_t)v0 < 150) ? 1 : 0;  /* 0x801A17A8: 0x28420096 */
     int _bc_801A17AC = (v0 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -97294,9 +97317,9 @@ block_801A1794:
 
 block_801A17B4:
     a0 = 0x801C << 16;  /* 0x801C0000 */
-    a0 = cpu->read_word(a0 + -6220);
+    a0 = cpu->read_word(a0 + -6220);  /* record ptr @0x801BE7B4 */
     v0 = 0x801C << 16;  /* 0x801C0000 */
-    v0 = cpu->read_word(v0 + -6268);
+    v0 = cpu->read_word(v0 + -6268);  /* handler ptr @0x801BE784 */
     /* nop */  /* 0x801A17C4: 0x00000000 */
     uint32_t _jt_801A17C8 = v0;  /* latch indirect target before delay slot */
     ra = 0x801A17D0u;  /* jalr link before delay slot */
@@ -97313,13 +97336,13 @@ block_801A17D0:
 
 block_801A17D8:
     at = 0x801C << 16;  /* 0x801C0000 */
-    cpu->write_word(at + -6188, zero);
+    cpu->write_word(at + -6188, zero);  /* @0x801BE7D4 = 0 */
     /* fall through to block_801A17E0 */
 
 block_801A17E0:
     v0 = 1;
     at = 0x801C << 16;  /* 0x801C0000 */
-    cpu->write_word(at + -6216, v0);
+    cpu->write_word(at + -6216, v0);  /* @0x801BE7B8 = 1 */
     /* fall through to block_801A17EC */
 
 block_801A17EC:
@@ -97336,7 +97359,13 @@ block_801A17EC:
 }
 
 /* cps_801a1a40 — clean CPS transliteration of br2eu_func_801A1A40 (guest 0x801a1a40)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Init/teardown sequence: clears @0x801BE7B8, calls 0x8019A340 and
+ * 0x8019A330 with a0=2, a1=@0x801FEF60; pokes state object @0x801BE7E0
+ * (-2, then |=1 at +4) via 0x8019A670 with a0=3; calls 0x8018E310;
+ * jalr handler @0x801BE784 twice with a0 = record @0x801BE7B4 (+240 on
+ * second); clears @0x801FEF60/64 and sets @0x801BE7B8 = 1; returns.
+ */
 void cps_801a1a40(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -97364,14 +97393,14 @@ block_801A1A40:
     at = 0x801C << 16;  /* 0x801C0000 */
     ra = 0x801A1A58u;  /* jal link before delay slot */
     /* delay slot (always executes) */
-    cpu->write_word(at + -6216, zero);
+    cpu->write_word(at + -6216, zero);  /* @0x801BE7B8 = 0 */
     psx_check_interrupts_at(cpu, 0x8018E300u);
     cpu->pc = 0x8018E300u; return;  /* CPS jal -> 0x8018E300 */
 
 block_801A1A58:
     a0 = 2;
     s0 = 0x8020 << 16;  /* 0x80200000 */
-    s0 = s0 + -4160;
+    s0 = s0 + -4160;  /* @0x801FEF60 */
     ra = 0x801A1A6Cu;  /* jal link before delay slot */
     /* delay slot (always executes) */
     a1 = s0;
@@ -97389,7 +97418,7 @@ block_801A1A6C:
 block_801A1A78:
     a0 = 3;
     v1 = 0x801C << 16;  /* 0x801C0000 */
-    v1 = cpu->read_word(v1 + -6176);
+    v1 = cpu->read_word(v1 + -6176);  /* state obj @0x801BE7E0 */
     v0 = -2;
     cpu->write_word(v1, v0);
     v0 = cpu->read_word(v1 + 4);
@@ -97410,9 +97439,9 @@ block_801A1AA0:
 
 block_801A1AA8:
     a0 = 0x801C << 16;  /* 0x801C0000 */
-    a0 = cpu->read_word(a0 + -6220);
+    a0 = cpu->read_word(a0 + -6220);  /* record ptr @0x801BE7B4 */
     v0 = 0x801C << 16;  /* 0x801C0000 */
-    v0 = cpu->read_word(v0 + -6268);
+    v0 = cpu->read_word(v0 + -6268);  /* handler ptr @0x801BE784 */
     /* nop */  /* 0x801A1AB8: 0x00000000 */
     uint32_t _jt_801A1ABC = v0;  /* latch indirect target before delay slot */
     ra = 0x801A1AC4u;  /* jalr link before delay slot */
@@ -97423,9 +97452,9 @@ block_801A1AA8:
 
 block_801A1AC4:
     a0 = 0x801C << 16;  /* 0x801C0000 */
-    a0 = cpu->read_word(a0 + -6220);
+    a0 = cpu->read_word(a0 + -6220);  /* record ptr @0x801BE7B4 */
     v0 = 0x801C << 16;  /* 0x801C0000 */
-    v0 = cpu->read_word(v0 + -6268);
+    v0 = cpu->read_word(v0 + -6268);  /* handler ptr @0x801BE784 */
     /* nop */  /* 0x801A1AD4: 0x00000000 */
     uint32_t _jt_801A1AD8 = v0;  /* latch indirect target before delay slot */
     ra = 0x801A1AE0u;  /* jalr link before delay slot */
