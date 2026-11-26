@@ -66,6 +66,7 @@ extern void LAB_80140510(void);
 extern void action_commit(void);
 extern void action_enter_fwd(void);
 extern void action_from_input(void);
+extern void action_from_input_alias(void);
 extern void action_resolve(void);
 extern void action_switch_guest(void);
 extern void always_one(void);
@@ -120,6 +121,7 @@ extern void battle_init(void);
 extern void battle_input_dispatch(void);
 extern void battle_intro_flow(void);
 extern void battle_intro_fsm(void);
+extern void battle_intro_fsm_alias(void);
 extern void battle_math_init(void);
 extern void battle_reset_tail(void);
 extern void battle_round_init(void);
@@ -499,6 +501,7 @@ extern void clear_battle_counters(void);
 extern void clear_f0300_records(void);
 extern void clear_f4ee8_u16s(void);
 extern void cmd_input_parse(void);
+extern void cmd_input_parse_alias(void);
 extern void cmd_input_parse_alt_3978(void);
 extern void cmd_queue_push(void);
 extern void cmd_queue_slot_next(void);
@@ -626,6 +629,7 @@ extern void entry_setup_guest(void);
 extern void euler_rotmat(void);
 extern void ev20_timer_dispatch(void);
 extern void ev24_fx_spawn(void);
+extern void ev24_fx_spawn_alias(void);
 extern void ev2_hitstun_gate_dispatch(void);
 extern void ev4_branch_dispatch(void);
 extern void ev5_action_select(void);
@@ -644,6 +648,7 @@ extern void ev_cam_op09(void);
 extern void ev_cam_param_dispatch(void);
 extern void ev_cam_ret_pc2(void);
 extern void ev_cmd_dispatch(void);
+extern void ev_cmd_dispatch_alias(void);
 extern void ev_spark_spawn(void);
 extern void ev_stream_dispatch(void);
 extern void event_record_walk(void);
@@ -887,6 +892,7 @@ extern void hud_text_d(void);
 extern void hud_time_score_draw(void);
 extern void impact_fx_emit_tick(void);
 extern void impact_fx_spawn(void);
+extern void impact_fx_type_alias(void);
 extern void impact_fx_update(void);
 extern void indexed_desc_dispatch(void);
 extern void indexed_task_spawn(void);
@@ -1793,6 +1799,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80136fb0, (void *)task_table_init },
   { 0x80137048, (void *)vec_emit_spawn },
   { 0x80137098, (void *)battle_intro_fsm },
+  { 0x80137394, (void *)battle_intro_fsm_alias },
   { 0x80137570, (void *)always_one },
   { 0x80137578, (void *)rec16_fill },
   { 0x80137590, (void *)LAB_80137590 },
@@ -1815,6 +1822,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80138b00, (void *)xform_accum_spawn },
   { 0x80138c6c, (void *)node_list_walk_c },
   { 0x80138cec, (void *)impact_fx_update },
+  { 0x80139664, (void *)impact_fx_type_alias },
   { 0x80139e0c, (void *)impact_fx_emit_tick },
   { 0x80139fd0, (void *)impact_fx_spawn },
   { 0x8013a9d8, (void *)spark_trail_task_update },
@@ -1863,8 +1871,10 @@ const Br2FnEnt fn_table[] = {
   { 0x80141b78, (void *)ev_spark_spawn },
   { 0x80141d2c, (void *)ev_cmd_dispatch },
   { 0x80141d34, (void *)desc_opcode_dispatch },
+  { 0x80142084, (void *)ev_cmd_dispatch_alias },
   { 0x80142108, (void *)group_fx_spawn },
   { 0x801421c4, (void *)ev24_fx_spawn },
+  { 0x80142954, (void *)ev24_fx_spawn_alias },
   { 0x80142b3c, (void *)angle_from_xy },
   { 0x80142c5c, (void *)reset_combat_record },
   { 0x80142c9c, (void *)hitrec_table_clear },
@@ -1875,7 +1885,9 @@ const Br2FnEnt fn_table[] = {
   { 0x80142dd8, (void *)pending_hit_b_clear },
   { 0x80142df4, (void *)pad_edge_scan },
   { 0x80142f3c, (void *)action_from_input },
+  { 0x80143384, (void *)action_from_input_alias },
   { 0x801434d4, (void *)cmd_input_parse },
+  { 0x80143798, (void *)cmd_input_parse_alias },
   { 0x80143978, (void *)cmd_input_parse_alt_3978 },
   { 0x80143ac8, (void *)attr_flag_mask },
   { 0x80143bb8, (void *)fighter_range_code },
