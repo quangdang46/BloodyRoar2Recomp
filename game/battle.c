@@ -7106,26 +7106,26 @@ LAB_80141918:
 
 }
 
-void group_fx_spawn(undefined4 a0,undefined4 a1,undefined4 a2,undefined4 a3, undefined4 arg5,undefined4 arg6,undefined4 arg7)
+void group_fx_spawn(undefined4 arg,undefined4 w0,undefined4 w1,undefined4 w2, undefined4 w3,undefined4 w4,undefined4 w5)
 {
   int grp;
   int rec;
   grp = fx_group_alloc(1,1,0,0xc);
   if (grp != 0) {
     rec = noop_c(grp);
-    noop_b(grp,a0, (undefined4)br2_gaddr(&DAT_801f0760));
-    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((rec + 0xc) ))= a1;
-    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((rec + 0x10) ))= a2;
-    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((rec + 0x14) ))= a3;
-    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((rec + 0x18) ))= arg5;
-    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((rec + 0x1c) ))= arg6;
-    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((rec + 0x20) ))= arg7;
+    noop_b(grp,arg, (undefined4)br2_gaddr(&DAT_801f0760));
+    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((rec + 0xc) ))= w0;
+    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((rec + 0x10) ))= w1;
+    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((rec + 0x14) ))= w2;
+    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((rec + 0x18) ))= w3;
+    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((rec + 0x1c) ))= w4;
+    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((rec + 0x20) ))= w5;
   }
   return;
 
 }
 
-undefined4 * vec3_step_toward(undefined4 *out,short *pos,short *dst,short a3)
+undefined4 * vec3_step_toward(undefined4 *out,short *pos,short *dst,short stp)
 {
   undefined4 len2;
   int len;
@@ -7144,10 +7144,10 @@ undefined4 * vec3_step_toward(undefined4 *out,short *pos,short *dst,short a3)
   delta[0] = (int)*dst - (int)*pos;
   delta[1] = (int)dst[1] - (int)pos[1];
   delta[2] = (int)dst[2] - (int)pos[2];
-  if (a3 == 0) {
-    a3 = 1;
+  if (stp == 0) {
+    stp = 1;
   }
-  step = (int)a3;
+  step = (int)stp;
   len2 = FUN_80194630((undefined4 *)delta,(undefined4 *)ndir);
   len = FUN_80194500(len2);
   if (len < step) {
@@ -7222,7 +7222,7 @@ undefined4 * vec3_step_toward_spd(undefined4 *out,short *pos,short *dst,int spd)
 
 }
 
-undefined4 * vec3_step_toward_q(undefined4 *out,short *pos,short *dst,short a3)
+undefined4 * vec3_step_toward_q(undefined4 *out,short *pos,short *dst,short stp)
 {
   undefined4 len2;
   int len;
@@ -7239,10 +7239,10 @@ undefined4 * vec3_step_toward_q(undefined4 *out,short *pos,short *dst,short a3)
   pk[0] = CONCAT22((short)((dst[1] - pos[1]) * 0x10) >> 4,
                       (short)((*dst - *pos) * 0x10) >> 4);
   pk[1] = CONCAT22((pk[1] >> 16),(short)((dst[2] - pos[2]) * 0x10) >> 4);
-  if (a3 == 0) {
-    a3 = 1;
+  if (stp == 0) {
+    stp = 1;
   }
-  step = (int)a3;
+  step = (int)stp;
   len2 = FUN_80194660((undefined2 *)pk,(undefined2 *)ndir);
   len = FUN_80194500(len2);
   if (step < len) {
@@ -7332,7 +7332,7 @@ undefined1 table_byte_next_b(void)
   return *(undefined1 *)guest_at((uint32_t)(uintptr_t)((idx + 0x801e8400)));
 
 }
-void sprite_strip_draw_dual(int src_a,int src_b,int uv,int n,ushort *pal,int arg6, int rgb,int tag)
+void sprite_strip_draw_dual(int src_a,int src_b,int uv,int n,ushort *pal,int x0, int y0,int tag)
 {
   ushort *pa;
   ushort *pb;
@@ -7346,17 +7346,17 @@ void sprite_strip_draw_dual(int src_a,int src_b,int uv,int n,ushort *pal,int arg
   if (tag == 1) {
     i = 0;
     if (0 < n) {
-      arg6 = arg6 * uv;
+      x0 = x0 * uv;
       pq = pal + 3;
-      rgb = rgb * uv;
+      y0 = y0 * uv;
       do {
-        xfp = arg6;
-        if (arg6 < 0) {
-          xfp = arg6 + 0xfff;
+        xfp = x0;
+        if (x0 < 0) {
+          xfp = x0 + 0xfff;
         }
-        yfp = rgb;
-        if (rgb < 0) {
-          yfp = rgb + 0xfff;
+        yfp = y0;
+        if (y0 < 0) {
+          yfp = y0 + 0xfff;
         }
         sprite_place_centered(src_a,0x1f800000,(int)(((uint)*pal + (xfp >> 0xc)) * 0x10000) >> 0x10,
                      (int)(((uint)pq[-2] + (yfp >> 0xc)) * 0x10000) >> 0x10,
@@ -7377,17 +7377,17 @@ void sprite_strip_draw_dual(int src_a,int src_b,int uv,int n,ushort *pal,int arg
   }
   else if (tag < 2) {
     if ((tag == 0) && (i = 0, 0 < n)) {
-      arg6 = arg6 * uv;
+      x0 = x0 * uv;
       pq = pal + 3;
-      rgb = rgb * uv;
+      y0 = y0 * uv;
       do {
-        xfp = arg6;
-        if (arg6 < 0) {
-          xfp = arg6 + 0xfff;
+        xfp = x0;
+        if (x0 < 0) {
+          xfp = x0 + 0xfff;
         }
-        yfp = rgb;
-        if (rgb < 0) {
-          yfp = rgb + 0xfff;
+        yfp = y0;
+        if (y0 < 0) {
+          yfp = y0 + 0xfff;
         }
         sprite_rect_set_c(src_a,(int)(short)*pal + (xfp >> 0xc),
                      (int)(short)pq[-2] + (yfp >> 0xc),(int)(short)pq[-1],
@@ -7408,18 +7408,18 @@ void sprite_strip_draw_dual(int src_a,int src_b,int uv,int n,ushort *pal,int arg
   else if (tag == 2) {
     i = 0;
     if (0 < n) {
-      arg6 = arg6 * uv;
+      x0 = x0 * uv;
       pq = pal + 3;
-      rgb = rgb * uv;
+      y0 = y0 * uv;
       cur_a = src_a;
       do {
-        xfp = arg6;
-        if (arg6 < 0) {
-          xfp = arg6 + 0xfff;
+        xfp = x0;
+        if (x0 < 0) {
+          xfp = x0 + 0xfff;
         }
-        yfp = rgb;
-        if (rgb < 0) {
-          yfp = rgb + 0xfff;
+        yfp = y0;
+        if (y0 < 0) {
+          yfp = y0 + 0xfff;
         }
         sprite_rect_set_a(cur_a,(int)(short)*pal + (xfp >> 0xc),
                      (int)(short)pq[-2] + (yfp >> 0xc),(int)(short)pq[-1],
@@ -7438,18 +7438,18 @@ void sprite_strip_draw_dual(int src_a,int src_b,int uv,int n,ushort *pal,int arg
     }
   }
   else if ((tag == 3) && (i = 0, 0 < n)) {
-    arg6 = arg6 * uv;
+    x0 = x0 * uv;
     pq = pal + 3;
-    rgb = rgb * uv;
+    y0 = y0 * uv;
     cur_b = src_a;
     do {
-      xfp = arg6;
-      if (arg6 < 0) {
-        xfp = arg6 + 0xfff;
+      xfp = x0;
+      if (x0 < 0) {
+        xfp = x0 + 0xfff;
       }
-      yfp = rgb;
-      if (rgb < 0) {
-        yfp = rgb + 0xfff;
+      yfp = y0;
+      if (y0 < 0) {
+        yfp = y0 + 0xfff;
       }
       sprite_rect_set_b(cur_b,(int)(short)*pal + (xfp >> 0xc),
                    (int)(short)pq[-2] + (yfp >> 0xc),(int)(short)pq[-1],
@@ -7470,18 +7470,18 @@ void sprite_strip_draw_dual(int src_a,int src_b,int uv,int n,ushort *pal,int arg
 
 }
 
-int task_alloc_wrap_a(undefined4 a0,undefined4 a1,int a2,undefined4 a3)
+int task_alloc_wrap_a(undefined4 w0,undefined4 w1,int w2,undefined4 w3)
 {
   int node;
   undefined4 *pay;
   node = (int)(intptr_t)task_node_alloc(0,2,0,0x80137680,0,0x1c);
   if (node != 0) {
     pay = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((node + 0x10))));
-    *pay = a0;
-    pay[1] = a1;
-    pay[2] = a2;
-    pay[3] = a3;
-    pay[4] = a2 + -4;
+    *pay = w0;
+    pay[1] = w1;
+    pay[2] = w2;
+    pay[3] = w3;
+    pay[4] = w2 + -4;
     pay[5] = 0;
     pay[6] = 0;
   }
@@ -7489,30 +7489,30 @@ int task_alloc_wrap_a(undefined4 a0,undefined4 a1,int a2,undefined4 a3)
 
 }
 
-int task_alloc_wrap_b(undefined4 a0,undefined4 a1,undefined4 a2,undefined4 a3, int arg5)
+int task_alloc_wrap_b(undefined4 w0,undefined4 w1,undefined4 w2,undefined4 w3, int w4)
 {
   int node;
   undefined4 *pay;
   { extern uint32_t g_wb_last_p1,g_wb_last_p2,g_wb_last_p3,g_wb_last_p4,g_wb_last_p5;
     extern uint32_t g_wb_bad_count,g_wb_bad_node,g_wrap_src;
     g_wrap_src=1;
-    g_wb_last_p1=(uint32_t)a0; g_wb_last_p2=(uint32_t)a1;
-    g_wb_last_p3=(uint32_t)a2; g_wb_last_p4=(uint32_t)a3;
-    g_wb_last_p5=(uint32_t)arg5;
-    if (((uint32_t)a0 < 0x80100000u || (uint32_t)a1 < 0x80100000u) &&
-        (uint32_t)a0 != 0u && (uint32_t)a1 != 0u) {
-      g_wb_bad_count++; g_wb_bad_node=(uint32_t)a3;
+    g_wb_last_p1=(uint32_t)w0; g_wb_last_p2=(uint32_t)w1;
+    g_wb_last_p3=(uint32_t)w2; g_wb_last_p4=(uint32_t)w3;
+    g_wb_last_p5=(uint32_t)w4;
+    if (((uint32_t)w0 < 0x80100000u || (uint32_t)w1 < 0x80100000u) &&
+        (uint32_t)w0 != 0u && (uint32_t)w1 != 0u) {
+      g_wb_bad_count++; g_wb_bad_node=(uint32_t)w3;
     }
   }
   node = (int)(intptr_t)task_node_alloc(0,3,0,0x80137824,0,0x1c);
   if (node != 0) {
     pay = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((node + 0x10))));
-    *pay = a0;
-    pay[1] = a1;
-    pay[2] = a2;
-    pay[3] = a3;
-    pay[4] = arg5;
-    pay[5] = arg5 + -4;
+    *pay = w0;
+    pay[1] = w1;
+    pay[2] = w2;
+    pay[3] = w3;
+    pay[4] = w4;
+    pay[5] = w4 + -4;
     *(undefined2 *)(pay + 6) = 0;
     *(undefined2 *)((intptr_t)pay + 0x1a) = 0;
   }
@@ -8853,7 +8853,7 @@ void slot_height_proj(undefined4 a0,int obj,int idx,int xf)
 
 }
 
-void battle_intro_fsm(undefined4 a0,undefined4 a1,undefined4 a2,int a3)
+void battle_intro_fsm(undefined4 mat,undefined4 a1,undefined4 a2,int st)
 {
   char cnt;
   int fx;
@@ -8863,7 +8863,7 @@ void battle_intro_fsm(undefined4 a0,undefined4 a1,undefined4 a2,int a3)
   int i;
   int t7;
   int *pp;
-  if (*(char *)guest_at((uint32_t)(uintptr_t)((a3 + 0xb1) ))< '\0') {
+  if (*(char *)guest_at((uint32_t)(uintptr_t)((st + 0xb1) ))< '\0') {
     return;
   }
   if (_DAT_801f0738 == 1) {
@@ -8886,7 +8886,7 @@ void battle_intro_fsm(undefined4 a0,undefined4 a1,undefined4 a2,int a3)
     if (_DAT_801f0738 != 3) {
       return;
     }
-    DAT_801bef20 = (uint)(*(short *)guest_at((uint32_t)(uintptr_t)((a3 + 0x82) ))!= 0);
+    DAT_801bef20 = (uint)(*(short *)guest_at((uint32_t)(uintptr_t)((st + 0x82) ))!= 0);
     i = 0;
     t7 = 0;
     do {
@@ -8907,9 +8907,9 @@ void battle_intro_fsm(undefined4 a0,undefined4 a1,undefined4 a2,int a3)
       i = i + 1;
       t7 = t7 + 0x108;
     } while (i < 2);
-    gp_slot48_set(*(undefined4 *)guest_at((uint32_t)(uintptr_t)((a3 + 8))));
-    gp_slot24_set(*(undefined4 *)guest_at((uint32_t)(uintptr_t)((a3 + 0xc))));
-    gte_matrix_base_set(a0,a0);
+    gp_slot48_set(*(undefined4 *)guest_at((uint32_t)(uintptr_t)((st + 8))));
+    gp_slot24_set(*(undefined4 *)guest_at((uint32_t)(uintptr_t)((st + 0xc))));
+    gte_matrix_base_set(mat,mat);
     angle_pair_rotmat(-(int)_DAT_801f0298,(int)_DAT_801f029a,(uint *)(uintptr_t)&DAT_801f0760);
     gte_rot_load((undefined4 *)(uintptr_t)&DAT_801be838);
     gte_tr_load(DAT_801be838);
@@ -8994,18 +8994,18 @@ LAB_801373c0:
 
 }
 
-int task_alloc_wrap_c(undefined4 a0,undefined4 a1,int a2,undefined4 a3)
+int task_alloc_wrap_c(undefined4 w0,undefined4 w1,int w2,undefined4 w3)
 {
   int node;
   undefined4 *pay;
   node = (int)(intptr_t)task_node_alloc(1,2,6,0x80137680,0,0x1c);
   if (node != 0) {
     pay = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((node + 0x10))));
-    *pay = a0;
-    pay[1] = a1;
-    pay[2] = a2;
-    pay[3] = a3;
-    pay[4] = a2 + -4;
+    *pay = w0;
+    pay[1] = w1;
+    pay[2] = w2;
+    pay[3] = w3;
+    pay[4] = w2 + -4;
     pay[5] = 0;
     pay[6] = 0;
   }
@@ -9013,7 +9013,7 @@ int task_alloc_wrap_c(undefined4 a0,undefined4 a1,int a2,undefined4 a3)
 
 }
 
-int task_alloc_wrap_d(undefined4 a0,undefined4 a1,undefined4 a2,undefined4 a3,int arg5)
+int task_alloc_wrap_d(undefined4 w0,undefined4 w1,undefined4 w2,undefined4 w3,int w4)
 {
   int node;
   undefined4 *pay;
@@ -9023,24 +9023,24 @@ int task_alloc_wrap_d(undefined4 a0,undefined4 a1,undefined4 a2,undefined4 a3,in
   { extern uint32_t g_wd_last_p1,g_wd_last_p2,g_wd_last_p3,g_wd_last_p4,g_wd_last_p5;
     extern uint32_t g_wd_bad_count,g_wd_bad_node,g_wrap_src;
     g_wrap_src=2;
-    g_wd_last_p1=(uint32_t)a0; g_wd_last_p2=(uint32_t)a1;
-    g_wd_last_p3=(uint32_t)a2; g_wd_last_p4=(uint32_t)a3;
-    g_wd_last_p5=(uint32_t)arg5;
-    if (((uint32_t)a0 < 0x80100000u || (uint32_t)a1 < 0x80100000u ||
-         (uint32_t)a2 < 0x80100000u) &&
-        (uint32_t)a0 != 0u && (uint32_t)a1 != 0u) {
-      g_wd_bad_count++; g_wd_bad_node=(uint32_t)(uintptr_t)a3;
+    g_wd_last_p1=(uint32_t)w0; g_wd_last_p2=(uint32_t)w1;
+    g_wd_last_p3=(uint32_t)w2; g_wd_last_p4=(uint32_t)w3;
+    g_wd_last_p5=(uint32_t)w4;
+    if (((uint32_t)w0 < 0x80100000u || (uint32_t)w1 < 0x80100000u ||
+         (uint32_t)w2 < 0x80100000u) &&
+        (uint32_t)w0 != 0u && (uint32_t)w1 != 0u) {
+      g_wd_bad_count++; g_wd_bad_node=(uint32_t)(uintptr_t)w3;
     }
   }
   node = (int)(intptr_t)task_node_alloc(1,2,6,0x80137824,0,0x1c);
   if (node != 0) {
     pay = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((node + 0x10))));
-    *pay = a0;
-    pay[1] = a1;
-    pay[2] = a2;
-    pay[3] = a3;
-    pay[4] = arg5;
-    pay[5] = arg5 + -4;
+    *pay = w0;
+    pay[1] = w1;
+    pay[2] = w2;
+    pay[3] = w3;
+    pay[4] = w4;
+    pay[5] = w4 + -4;
     *(undefined2 *)(pay + 6) = 0;
     *(undefined2 *)((intptr_t)pay + 0x1a) = 0;
   }
@@ -9048,14 +9048,14 @@ int task_alloc_wrap_d(undefined4 a0,undefined4 a1,undefined4 a2,undefined4 a3,in
 
 }
 
-int task_alloc_wrap_e(int a0,int a1,int a2)
+int task_alloc_wrap_e(int w0,int w1,int w2)
 {
   int res;
   int *pay;
   { extern uint32_t g_wrape_calls,g_wrape_last_ret,g_wrape_p1,g_wrape_p2,g_wrape_p3;
-    g_wrape_calls++; g_wrape_p1=(uint32_t)a0;
-    g_wrape_p2=(uint32_t)a1; g_wrape_p3=(uint32_t)a2; }
-  res = (int)(intptr_t)task_node_alloc(1,2,6,0x80137acc,0,a0 + 0x14);
+    g_wrape_calls++; g_wrape_p1=(uint32_t)w0;
+    g_wrape_p2=(uint32_t)w1; g_wrape_p3=(uint32_t)w2; }
+  res = (int)(intptr_t)task_node_alloc(1,2,6,0x80137acc,0,w0 + 0x14);
   if (res == 0) {
     res = 0;
     { extern uint32_t g_wrape_last_ret; g_wrape_last_ret = 0; }
@@ -9063,10 +9063,10 @@ int task_alloc_wrap_e(int a0,int a1,int a2)
   else {
     { extern uint32_t g_wrape_last_ret; g_wrape_last_ret = (uint32_t)res; }
     pay = (int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((res + 0x10))));
-    pay[1] = a2;
-    pay[2] = a2;
+    pay[1] = w2;
+    pay[2] = w2;
     pay[4] = 0;
-    pay[3] = a1;
+    pay[3] = w1;
     res = *(int *)guest_at((uint32_t)(uintptr_t)((res + 0x10) ))+ 0x14;
     *pay = res;
   }
@@ -9074,7 +9074,7 @@ int task_alloc_wrap_e(int a0,int a1,int a2)
 
 }
 
-int task_alloc_wrap_f(undefined4 a0,undefined4 a1,undefined4 a2,int a3)
+int task_alloc_wrap_f(undefined4 w0,undefined4 w1,undefined4 w2,int seq)
 {
   short seq_next;
   int node;
@@ -9082,12 +9082,12 @@ int task_alloc_wrap_f(undefined4 a0,undefined4 a1,undefined4 a2,int a3)
   node = (int)(intptr_t)task_node_alloc(1,2,6,0x80137cd0,0,0x18);
   if (node != 0) {
     pay = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((node + 0x10))));
-    *pay = a0;
-    pay[1] = a1;
-    pay[2] = a2;
-    pay[3] = a3;
-    pay[4] = a3;
-    seq_next = *(short *)guest_at((uint32_t)(uintptr_t)((a3 + 2)));
+    *pay = w0;
+    pay[1] = w1;
+    pay[2] = w2;
+    pay[3] = seq;
+    pay[4] = seq;
+    seq_next = *(short *)guest_at((uint32_t)(uintptr_t)((seq + 2)));
     *(undefined2 *)((intptr_t)pay + 0x16) = 0;
     *(short *)(pay + 5) = seq_next + 1;
   }
@@ -9476,7 +9476,7 @@ code_r0x8016d2ec:
 }
 
 /* ---- batch14: HUD/score/round helpers (0x8012e-0x80135) ---- */
-void hud_text_blk_alt(undefined4 a0,undefined2 a1,const void *a2,undefined2 a3, undefined2 arg5,short arg6)
+void hud_text_blk_alt(undefined4 ot,undefined2 font,const void *str,undefined2 a3, undefined2 arg5,short tm)
 {
   _DAT_1f80038c = 0;
   _DAT_1f80038e = 0;
@@ -9488,18 +9488,18 @@ void hud_text_blk_alt(undefined4 a0,undefined2 a1,const void *a2,undefined2 a3, 
   _DAT_1f80039e = 0;
   _DAT_1f8003a0 = 0;
   _DAT_1f8003a4 = 0;
-  _DAT_1f8003a2 = (arg6 + 0x1e0U & 0x1ff) * 0x40 + 0x1f;
+  _DAT_1f8003a2 = (tm + 0x1e0U & 0x1ff) * 0x40 + 0x1f;
   _DAT_1f800394 = arg5;
   _DAT_1f800392 = a3;
-  _DAT_1f8003a8 = guest_of(a2);
-  text_render_simple((uint *)guest_at(a0),a1,0x1f80038c);
+  _DAT_1f8003a8 = guest_of(str);
+  text_render_simple((uint *)guest_at(ot),font,0x1f80038c);
   return;
 
 }
 
 /* hud_text_blk — 0x1f80038c text-block variant: +0x1c = raw string guest
  * addr, +0xa..0x10 all 8, +0x16 timing formula; disasm 0x8012e100-0x8012e180. */
-void hud_text_blk(undefined4 a0,undefined2 a1,uint32_t a2,undefined2 a3, undefined2 arg5,short arg6)
+void hud_text_blk(undefined4 ot,undefined2 font,uint32_t str,undefined2 a3, undefined2 arg5,short tm)
 {
   _DAT_1f80038c = 0;
   _DAT_1f80038e = 0;
@@ -9512,22 +9512,22 @@ void hud_text_blk(undefined4 a0,undefined2 a1,uint32_t a2,undefined2 a3, undefin
   _DAT_1f80039c = 8;
   _DAT_1f80039e = 0;
   _DAT_1f8003a0 = 0;
-  _DAT_1f8003a2 = (arg6 + 0x1e0U & 0x1ff) * 0x40 + 0x1f;
+  _DAT_1f8003a2 = (tm + 0x1e0U & 0x1ff) * 0x40 + 0x1f;
   _DAT_1f8003a4 = 0;
-  _DAT_1f8003a8 = a2;
-  text_render_simple((uint *)guest_at(a0),a1 & 0xffff,0x1f80038c);
+  _DAT_1f8003a8 = str;
+  text_render_simple((uint *)guest_at(ot),font & 0xffff,0x1f80038c);
   return;
 }
 
 /* please_wait_announce — "PLEASE WAIT" announce when record flag bit 0x800 set
  * and 0x1f8000dc mode bits 4-5 nonzero; disasm 0x801524b0-0x80152440. */
-void please_wait_announce(uint32_t a0,int a1)
+void please_wait_announce(uint32_t ent,int en)
 {
-  uint8_t *rec = (uint8_t *)guest_at(a0);
+  uint8_t *rec = (uint8_t *)guest_at(ent);
   int32_t yadj;
   uint32_t fl;
   if (rec == NULL) return;
-  if (a1) yadj = (int32_t)*(int16_t *)(rec + 0x20) - 0x50;
+  if (en) yadj = (int32_t)*(int16_t *)(rec + 0x20) - 0x50;
   else    yadj = 0x50;
   fl = *(uint16_t *)((uint8_t *)guest_at(*(uint32_t *)(rec + 0xc8)) + 2);
   if (((fl >> 0xb) & 1) == 0) return;
@@ -9540,21 +9540,21 @@ void please_wait_announce(uint32_t a0,int a1)
 /* ctr_clamp — signed counter adjust on a0+0xa0 gated by mode byte
  * a0+0x9c (mode 0, mode>5, or mode==5&&+0x9b==0); clamps [-inf,0xff].
  * Disasm 0x80159eec-0x80159f58. */
-void ctr_clamp(uint32_t a0,int32_t a1)
+void ctr_clamp(uint32_t ent,int32_t delta)
 {
-  uint8_t *rec = (uint8_t *)guest_at(a0);
+  uint8_t *rec = (uint8_t *)guest_at(ent);
   int mode, adj = 0;
   if (rec == NULL) return;
   mode = rec[0x9c];
   if (mode < 5) { if (mode == 0) adj = 1; }
   else if (mode != 5 || rec[0x9b] == 0) adj = 1;
   if (!adj) return;
-  a1 += *(int16_t *)(rec + 0xa0);
-  if (a1 < 0) { *(int16_t *)(rec + 0xa0) = 0; return; }
-  *(int16_t *)(rec + 0xa0) = (a1 < 0x100) ? (int16_t)a1 : (int16_t)0xff;
+  delta += *(int16_t *)(rec + 0xa0);
+  if (delta < 0) { *(int16_t *)(rec + 0xa0) = 0; return; }
+  *(int16_t *)(rec + 0xa0) = (delta < 0x100) ? (int16_t)delta : (int16_t)0xff;
 }
 
-void announce_param_block_init_b(undefined4 a0,undefined2 a1,const void *a2,undefined2 a3, undefined2 arg5,short arg6)
+void announce_param_block_init_b(undefined4 ot,undefined2 font,const void *str,undefined2 a3, undefined2 arg5,short tm)
 {
   _DAT_1f800396 = 0x10;
   _DAT_1f80039a = 0xffff;
@@ -9566,11 +9566,11 @@ void announce_param_block_init_b(undefined4 a0,undefined2 a1,const void *a2,unde
   _DAT_1f80039e = 0;
   _DAT_1f8003a0 = 2;
   _DAT_1f8003a4 = 2;
-  _DAT_1f8003a2 = (arg6 + 0x1e0U & 0x1ff) * 0x40 + 0x1f;
+  _DAT_1f8003a2 = (tm + 0x1e0U & 0x1ff) * 0x40 + 0x1f;
   _DAT_1f800394 = arg5;
   _DAT_1f800392 = a3;
-  _DAT_1f8003a8 = guest_of(a2);
-  text_render_full((uint *)guest_at(a0),a1,0x1f80038c);
+  _DAT_1f8003a8 = guest_of(str);
+  text_render_full((uint *)guest_at(ot),font,0x1f80038c);
   return;
 
 }
@@ -9603,12 +9603,12 @@ void slot_triple_set(int slot,int c0,int c1,int c2)
 
 }
 
-void rec_flag1_set(undefined2 *a0)
+void rec_flag1_set(undefined2 *src)
 {
   _DAT_801f022c = 1;
-  _DAT_801f0234 = *a0;
-  _DAT_801f0236 = a0[1];
-  _DAT_801f0238 = a0[2];
+  _DAT_801f0234 = *src;
+  _DAT_801f0236 = src[1];
+  _DAT_801f0238 = src[2];
   return;
 
 }
@@ -10403,7 +10403,7 @@ int fixed_approach_s16(ushort *cur,short *tgt,uint step)
 
 }
 
-void fighter_trail_emit(undefined4 *a0,undefined4 a1,int a2,int a3)
+void fighter_trail_emit(undefined4 *mat,undefined4 a1,int ent,int spec)
 {
   ushort lif;
   bool far;
@@ -10418,7 +10418,7 @@ void fighter_trail_emit(undefined4 *a0,undefined4 a1,int a2,int a3)
   undefined1 *tp;
   int base;
   undefined4 arg;
-  /* Guest vec3 slot: gte_xform_add_off writes a2[0..2] as 3
+  /* Guest vec3 slot: gte_xform_add_off writes ent[0..2] as 3
    * contiguous int; the decompiler split the 12-byte vec3 into
    * scalars. out[0..2] = old out/local_40/local_3c. */
   undefined4 out [3];
@@ -10426,19 +10426,19 @@ void fighter_trail_emit(undefined4 *a0,undefined4 a1,int a2,int a3)
   uint fl0;
   uint fl1;
   tp = &DAT_801f04a8;
-  arg = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((a3 + 0xc)));
-  base = *(int *)guest_at((uint32_t)(uintptr_t)((a3 + 8)));
-  hdg = ((int)*(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0x2a) ))<< 0x14) >> 0x14;
-  setCopControlWord(2,0,*a0);
-  setCopControlWord(2,0x800,a0[1]);
-  setCopControlWord(2,0x1000,a0[2]);
-  setCopControlWord(2,0x1800,a0[3]);
-  setCopControlWord(2,0x2000,a0[4]);
-  setCopControlWord(2,0x2800,a0[5]);
-  setCopControlWord(2,0x3000,a0[6]);
-  setCopControlWord(2,0x3800,a0[7]);
+  arg = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((spec + 0xc)));
+  base = *(int *)guest_at((uint32_t)(uintptr_t)((spec + 8)));
+  hdg = ((int)*(short *)guest_at((uint32_t)(uintptr_t)((ent + 0x2a) ))<< 0x14) >> 0x14;
+  setCopControlWord(2,0,*mat);
+  setCopControlWord(2,0x800,mat[1]);
+  setCopControlWord(2,0x1000,mat[2]);
+  setCopControlWord(2,0x1800,mat[3]);
+  setCopControlWord(2,0x2000,mat[4]);
+  setCopControlWord(2,0x2800,mat[5]);
+  setCopControlWord(2,0x3000,mat[6]);
+  setCopControlWord(2,0x3800,mat[7]);
   q = 0;
-  if (*(char *)guest_at((uint32_t)(uintptr_t)((a3 + 0x9e) ))== '\0') {
+  if (*(char *)guest_at((uint32_t)(uintptr_t)((spec + 0x9e) ))== '\0') {
     fl0 = (uint)(-hdg < 0x4e4);
     fl1 = (uint)(-hdg < 0x31c);
     do {
@@ -10463,7 +10463,7 @@ LAB_8013531c:
           *(short *)(tp + 0x3c) = (short)((uint)lif - (uint)*(ushort *)(tp + 0x44));
           if ((int)(((uint)lif - (uint)*(ushort *)(tp + 0x44)) * 0x10000) < 1) {
             if ((*(short *)(tp + 0x44) != 10000) || (DAT_801f04c9 != '\0')) goto LAB_80135314;
-            particle_burst_spawn(q,(int)*(char *)guest_at((uint32_t)(uintptr_t)((a3 + 0x98))));
+            particle_burst_spawn(q,(int)*(char *)guest_at((uint32_t)(uintptr_t)((spec + 0x98))));
             *(undefined2 *)(tp + 0x34) = 0xffff;
             *(undefined2 *)(tp + 0x3c) = 0;
             DAT_801f04c9 = '\x01';
@@ -10480,7 +10480,7 @@ LAB_8013531c:
         else if ((*(ushort *)(tp + 0x4c) & 3) < 4) {
           sp = 0;
         }
-        if (*(short *)guest_at((uint32_t)(uintptr_t)((a3 + 0x82) ))== 0) {
+        if (*(short *)guest_at((uint32_t)(uintptr_t)((spec + 0x82) ))== 0) {
           t4 = *(short *)(tp + 0x44) * 7;
           *(short *)(tp + 0x4c) = *(short *)(tp + 0x4c) + 1;
           if (t4 < 0) {
@@ -10556,11 +10556,11 @@ LAB_801354fc:
             }
           }
 LAB_80135504:
-          gte_xform_add_off((int)guest_of(a0),(undefined4 *)off,(int *)out);
+          gte_xform_add_off((int)guest_of(mat),(undefined4 *)off,(int *)out);
           setCopControlWord(2,0x2800,out[0]);
           setCopControlWord(2,0x3000,out[1]);
           setCopControlWord(2,0x3800,out[2]);
-          if (*(char *)guest_at((uint32_t)(uintptr_t)((a3 + 0x9f) ))== '\0') {
+          if (*(char *)guest_at((uint32_t)(uintptr_t)((spec + 0x9f) ))== '\0') {
             t3 = (int)*(short *)(tp + 0x34);
             if (((t3 < 0) || (t4 = _DAT_801f04b0 + t3 * 0x28, _DAT_801f04c6 != 0)) ||
                (!far)) goto LAB_80135630;
@@ -10597,20 +10597,20 @@ LAB_80135630:
       q = q + 1;
       tp = tp + 2;
     } while (q < 4);
-    if (*(char *)guest_at((uint32_t)(uintptr_t)((a3 + 0x9e) ))== '\0') {
-      if (*(char *)guest_at((uint32_t)(uintptr_t)((a3 + 0x9f) ))== '\0') {
+    if (*(char *)guest_at((uint32_t)(uintptr_t)((spec + 0x9e) ))== '\0') {
+      if (*(char *)guest_at((uint32_t)(uintptr_t)((spec + 0x9f) ))== '\0') {
         /* PTR_FUN_801b1734 is the guest u32 code-pointer table @0x801B1734
          * (channel_script_emit_* handlers). It was never populated with host
-         * pointers; dispatch the real guest jalr — a0=s7=*(a3+8),
-         * a1=fp=*(a3+0xc), a2=0x801F04A8, a3=a3, arg5@sp+16=
-         * a0's guest address. */
+         * pointers; dispatch the real guest jalr — mat=s7=*(spec+8),
+         * a1=fp=*(spec+0xc), ent=0x801F04A8, spec=spec, arg5@sp+16=
+         * mat's guest address. */
         {
-          int _ti = (int)*(char *)guest_at((uint32_t)(uintptr_t)((a3 + 0x98)));
+          int _ti = (int)*(char *)guest_at((uint32_t)(uintptr_t)((spec + 0x98)));
           uint32_t _tf = *(uint32_t *)guest_at(0x801b1734u + (uint32_t)_ti * 4u);
           if (_tf != 0) {
             uint32_t _fr = br2_guest_frame(0x20);
-            br2_st32(_fr + 0x10, br2_gaddr(a0));
-            br2_call_clean(_tf,(uint32_t)base,arg,0x801f04a8u,(uint32_t)a3);
+            br2_st32(_fr + 0x10, br2_gaddr(mat));
+            br2_call_clean(_tf,(uint32_t)base,arg,0x801f04a8u,(uint32_t)spec);
             br2_guest_frame_free();
           }
         }
@@ -10621,7 +10621,7 @@ LAB_80135630:
     }
   }
   if (_DAT_801f04c6 == 0) {
-    particle_burst_update(base,arg,(undefined4)br2_gaddr(a0),a3);
+    particle_burst_update(base,arg,(undefined4)br2_gaddr(mat),spec);
   }
   if (0 < _DAT_801f04c6) {
     _DAT_801f04c6 = _DAT_801f04c6 + -1;
@@ -11205,7 +11205,7 @@ void gp_slot24_set(undefined4 v)
 
 }
 
-int prim_batch_emit(int a0,int a1,undefined4 a2,undefined4 a3,int *arg5, undefined4 arg6,undefined4 arg7,int arg8,int arg9,uint arg10, undefined4 arg11)
+int prim_batch_emit(int desc,int idx,undefined4 w0,undefined4 w1,int *otc, undefined4 arg6,undefined4 arg7,int num,int sel,uint fl, undefined4 kind)
 {
   undefined2 t1;
   byte cnt;
@@ -11228,58 +11228,58 @@ int prim_batch_emit(int a0,int a1,undefined4 a2,undefined4 a3,int *arg5, undefin
   undefined2 *s6;
   undefined4 *rec;
   /* PTR_PTR_801be894 / PTR_DAT_801be84c are guest pointer-tables: entry
-   * [arg9] is a guest sub-table address, then [a1] indexes it.
+   * [sel] is a guest sub-table address, then [idx] indexes it.
    * Read the 32-bit guest entries via guest_at (never host ** deref). */
-  uint32_t ptrsub = *(uint32_t *)guest_at(0x801be894u + (uint32_t)arg9 * 4);
-  uint32_t datsub = *(uint32_t *)guest_at(0x801be84cu + (uint32_t)arg9 * 4);
-  node = (int)(intptr_t)task_node_alloc(arg11,2,0xd,*(undefined4 *)guest_at(ptrsub + (uint32_t)a1 * 4),0,
-                       (uint)*(uint8_t *)guest_at(datsub + (uint32_t)a1) * *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8) ))* 2
-                       + *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 0xc) ))* 0x10 + 0x38);
+  uint32_t ptrsub = *(uint32_t *)guest_at(0x801be894u + (uint32_t)sel * 4);
+  uint32_t datsub = *(uint32_t *)guest_at(0x801be84cu + (uint32_t)sel * 4);
+  node = (int)(intptr_t)task_node_alloc(kind,2,0xd,*(undefined4 *)guest_at(ptrsub + (uint32_t)idx * 4),0,
+                       (uint)*(uint8_t *)guest_at(datsub + (uint32_t)idx) * *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8) ))* 2
+                       + *(int *)guest_at((uint32_t)(uintptr_t)((desc + 0xc) ))* 0x10 + 0x38);
   if (node == 0) {
     return 0;
   }
   rec = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((node + 0x10))));
   d0 = rec + 0xe;
-  d1 = d0 + *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 0xc) ))* 4;
+  d1 = d0 + *(int *)guest_at((uint32_t)(uintptr_t)((desc + 0xc) ))* 4;
   *rec = (undefined4)br2_gaddr(d1);
-  cnt = *(uint8_t *)guest_at(datsub + (uint32_t)a1);
-  t0 = *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8)));
+  cnt = *(uint8_t *)guest_at(datsub + (uint32_t)idx);
+  t0 = *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8)));
   rec[2] = (undefined4)br2_gaddr(d0);
   rec[1] = (undefined4)(br2_gaddr(d1) + (uint)cnt * t0);
-  t0 = *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 0xc)));
-  rec[4] = a2;
-  rec[7] = a3;
+  t0 = *(int *)guest_at((uint32_t)(uintptr_t)((desc + 0xc)));
+  rec[4] = w0;
+  rec[7] = w1;
   rec[3] = (undefined4)br2_gaddr(d0 + t0 * 2);
-  rec[6] = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((a0 + 0x18)));
-  t1 = *(undefined2 *)guest_at((uint32_t)(uintptr_t)((a0 + 8)));
+  rec[6] = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((desc + 0x18)));
+  t1 = *(undefined2 *)guest_at((uint32_t)(uintptr_t)((desc + 8)));
   rec[10] = node;
   rec[0xb] = 0;
   *(undefined2 *)(rec + 0xc) = t1;
-  rec[8] = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((a0 + 0x1c)));
-  rec[9] = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((a0 + 0x20)));
-  t2 = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((a0 + 0x24)));
+  rec[8] = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((desc + 0x1c)));
+  rec[9] = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((desc + 0x20)));
+  t2 = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((desc + 0x24)));
   *(undefined2 *)((intptr_t)rec + 0x32) = 0;
   *(undefined2 *)(rec + 0xd) = 1;
   rec[5] = t2;
   t0 = 0;
-  if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 0xc) ))<< 1) {
+  if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 0xc) ))<< 1) {
     do {
       *d0 = 0x1000000;
-      d0[1] = (arg10 & 0x4f) << 5 | 0xe1000000;
+      d0[1] = (fl & 0x4f) << 5 | 0xe1000000;
       t0 = t0 + 1;
       d0 = d0 + 2;
-    } while (t0 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 0xc) ))<< 1);
+    } while (t0 < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 0xc) ))<< 1);
   }
-  switch(a1 + arg9 * 0x100) {
+  switch(idx + sel * 0x100) {
   case 0:
     t0 = 0;
     d1 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*rec));
     d0 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(rec[1]));
-    s0 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x24))));
-    d3 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*arg5));
-    s4 = (ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x20))));
-    d2 = d3 + arg8;
-    if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8)))) {
+    s0 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x24))));
+    d3 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*otc));
+    s4 = (ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x20))));
+    d2 = d3 + num;
+    if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8)))) {
       b1 = (byte *)((intptr_t)d0 + 7);
       b0 = (byte *)((intptr_t)d1 + 7);
       do {
@@ -11294,7 +11294,7 @@ int prim_batch_emit(int a0,int a1,undefined4 a2,undefined4 a3,int *arg5, undefin
           cnt = *b1 & 0xfe;
         }
         *b1 = cnt;
-        if (arg8 != 0) {
+        if (num != 0) {
           *d3 = (undefined4)br2_gaddr(d1 + 1);
           d3 = d3 + 1;
           *d2 = (undefined4)br2_gaddr(d0 + 1);
@@ -11320,20 +11320,20 @@ int prim_batch_emit(int a0,int a1,undefined4 a2,undefined4 a3,int *arg5, undefin
         b1 = b1 + 0x14;
         t0 = t0 + 1;
         d0 = d0 + 5;
-      } while (t0 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8))));
+      } while (t0 < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8))));
     }
-    wpos = *arg5;
-    t0 = *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8) ))<< 2;
+    wpos = *otc;
+    t0 = *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8) ))<< 2;
     break;
   case 1:
     t0 = 0;
     d1 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*rec));
     d0 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(rec[1]));
-    s0 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x24))));
-    d3 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*arg5));
-    s4 = (ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x20))));
-    d2 = d3 + arg8;
-    if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8)))) {
+    s0 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x24))));
+    d3 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*otc));
+    s4 = (ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x20))));
+    d2 = d3 + num;
+    if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8)))) {
       b1 = (byte *)((intptr_t)d0 + 7);
       b0 = (byte *)((intptr_t)d1 + 7);
       do {
@@ -11348,7 +11348,7 @@ int prim_batch_emit(int a0,int a1,undefined4 a2,undefined4 a3,int *arg5, undefin
           cnt = *b1 & 0xfe;
         }
         *b1 = cnt;
-        if (arg8 != 0) {
+        if (num != 0) {
           *d3 = (undefined4)br2_gaddr(d1 + 1);
           d3 = d3 + 1;
           *d2 = (undefined4)br2_gaddr(d0 + 1);
@@ -11374,20 +11374,20 @@ int prim_batch_emit(int a0,int a1,undefined4 a2,undefined4 a3,int *arg5, undefin
         b1 = b1 + 0x18;
         t0 = t0 + 1;
         d0 = d0 + 6;
-      } while (t0 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8))));
+      } while (t0 < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8))));
     }
-    wpos = *arg5;
-    t0 = *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8) ))<< 2;
+    wpos = *otc;
+    t0 = *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8) ))<< 2;
     break;
   case 2:
     t0 = 0;
     d3 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*rec));
     s0 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(rec[1]));
-    d2 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x24))));
-    d0 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*arg5));
-    s4 = (ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x20))));
-    d1 = d0 + arg8;
-    if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8)))) {
+    d2 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x24))));
+    d0 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*otc));
+    s4 = (ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x20))));
+    d1 = d0 + num;
+    if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8)))) {
       b1 = (byte *)((intptr_t)s0 + 7);
       b0 = (byte *)((intptr_t)d3 + 7);
       s2 = d2 + 2;
@@ -11407,7 +11407,7 @@ int prim_batch_emit(int a0,int a1,undefined4 a2,undefined4 a3,int *arg5, undefin
           cnt = *b1 & 0xfe;
         }
         *b1 = cnt;
-        if (arg8 != 0) {
+        if (num != 0) {
           *d0 = (undefined4)br2_gaddr(d3 + 1);
           d0[1] = (undefined4)(br2_gaddr(d3) + 3);
           d0[2] = (undefined4)(br2_gaddr(d3) + 5);
@@ -11438,18 +11438,18 @@ int prim_batch_emit(int a0,int a1,undefined4 a2,undefined4 a3,int *arg5, undefin
         b1 = b1 + 0x1c;
         t0 = t0 + 1;
         s0 = s0 + 7;
-      } while (t0 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8))));
+      } while (t0 < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8))));
     }
     goto LAB_801a83ec;
   case 3:
     t0 = 0;
     d3 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*rec));
     s0 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(rec[1]));
-    d2 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x24))));
-    d1 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*arg5));
-    s4 = (ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x20))));
-    d0 = d1 + arg8;
-    if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8)))) {
+    d2 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x24))));
+    d1 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*otc));
+    s4 = (ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x20))));
+    d0 = d1 + num;
+    if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8)))) {
       b1 = (byte *)((intptr_t)s0 + 7);
       b0 = (byte *)((intptr_t)d3 + 7);
       s2 = d2 + 3;
@@ -11471,7 +11471,7 @@ int prim_batch_emit(int a0,int a1,undefined4 a2,undefined4 a3,int *arg5, undefin
           cnt = *b1 & 0xfe;
         }
         *b1 = cnt;
-        if (arg8 != 0) {
+        if (num != 0) {
           *d1 = (undefined4)br2_gaddr(d3 + 1);
           d1[1] = (undefined4)(br2_gaddr(d3) + 3);
           d1[2] = (undefined4)(br2_gaddr(d3) + 5);
@@ -11504,21 +11504,21 @@ int prim_batch_emit(int a0,int a1,undefined4 a2,undefined4 a3,int *arg5, undefin
         b1 = b1 + 0x24;
         t0 = t0 + 1;
         s0 = s0 + 9;
-      } while (t0 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8))));
+      } while (t0 < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8))));
     }
     goto LAB_801a85d4;
   case 4:
     t0 = 0;
     d1 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*rec));
     d0 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(rec[1]));
-    s0 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x24))));
-    s3 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x30))));
-    s6 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x28))));
-    s5 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x2c))));
-    d3 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*arg5));
-    s4 = (ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x20))));
-    d2 = d3 + arg8;
-    if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8)))) {
+    s0 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x24))));
+    s3 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x30))));
+    s6 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x28))));
+    s5 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x2c))));
+    d3 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*otc));
+    s4 = (ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x20))));
+    d2 = d3 + num;
+    if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8)))) {
       b1 = (byte *)((intptr_t)d0 + 7);
       b0 = (byte *)((intptr_t)d1 + 7);
       s1 = s3 + 2;
@@ -11544,7 +11544,7 @@ int prim_batch_emit(int a0,int a1,undefined4 a2,undefined4 a3,int *arg5, undefin
           cnt = *b1 & 0xfe;
         }
         *b1 = cnt;
-        if (arg8 != 0) {
+        if (num != 0) {
           *d3 = (undefined4)br2_gaddr(d1 + 1);
           d3 = d3 + 1;
           *d2 = (undefined4)br2_gaddr(d0 + 1);
@@ -11574,23 +11574,23 @@ int prim_batch_emit(int a0,int a1,undefined4 a2,undefined4 a3,int *arg5, undefin
         b1 = b1 + 0x20;
         t0 = t0 + 1;
         d0 = d0 + 8;
-      } while (t0 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8))));
+      } while (t0 < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8))));
     }
-    wpos = *arg5;
-    t0 = *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8) ))<< 2;
+    wpos = *otc;
+    t0 = *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8) ))<< 2;
     break;
   case 5:
     t0 = 0;
     d1 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*rec));
     d0 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(rec[1]));
-    s0 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x24))));
-    s3 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x30))));
-    s6 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x28))));
-    s5 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x2c))));
-    d3 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*arg5));
-    s4 = (ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x20))));
-    d2 = d3 + arg8;
-    if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8)))) {
+    s0 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x24))));
+    s3 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x30))));
+    s6 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x28))));
+    s5 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x2c))));
+    d3 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*otc));
+    s4 = (ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x20))));
+    d2 = d3 + num;
+    if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8)))) {
       b1 = (byte *)((intptr_t)d0 + 7);
       b0 = (byte *)((intptr_t)d1 + 7);
       s1 = s3 + 3;
@@ -11618,7 +11618,7 @@ int prim_batch_emit(int a0,int a1,undefined4 a2,undefined4 a3,int *arg5, undefin
           cnt = *b1 & 0xfe;
         }
         *b1 = cnt;
-        if (arg8 != 0) {
+        if (num != 0) {
           *d3 = (undefined4)br2_gaddr(d1 + 1);
           d3 = d3 + 1;
           *d2 = (undefined4)br2_gaddr(d0 + 1);
@@ -11648,27 +11648,27 @@ int prim_batch_emit(int a0,int a1,undefined4 a2,undefined4 a3,int *arg5, undefin
         b1 = b1 + 0x28;
         t0 = t0 + 1;
         d0 = d0 + 10;
-      } while (t0 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8))));
+      } while (t0 < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8))));
     }
-    wpos = *arg5;
-    t0 = *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8) ))<< 2;
+    wpos = *otc;
+    t0 = *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8) ))<< 2;
     break;
   case 6:
     t0 = 0;
     do {
-      d0 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x24))));
-      s3 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x30))));
-      s6 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x28))));
-      s5 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x2c))));
-      s4 = (ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x20))));
+      d0 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x24))));
+      s3 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x30))));
+      s6 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x28))));
+      s5 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x2c))));
+      s4 = (ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x20))));
       if (t0 == 0) {
-        s0 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*arg5));
+        s0 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*otc));
       }
       else {
-        s0 = (undefined4 *)guest_at((uint32_t)(uintptr_t)((*arg5 + arg8 * 4)));
+        s0 = (undefined4 *)guest_at((uint32_t)(uintptr_t)((*otc + num * 4)));
       }
       wpos = 0;
-      if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8)))) {
+      if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8)))) {
         b0 = (byte *)((intptr_t)d1 + 7);
         s1 = s3 + 2;
         d3 = d0 + 2;
@@ -11688,7 +11688,7 @@ int prim_batch_emit(int a0,int a1,undefined4 a2,undefined4 a3,int *arg5, undefin
             cnt = *b0 & 0xfe;
           }
           *b0 = cnt;
-          if (arg8 != 0) {
+          if (num != 0) {
             *s0 = (undefined4)br2_gaddr(d1 + 1);
             s0[1] = (undefined4)(br2_gaddr(d1) + 4);
             s0[2] = (undefined4)(br2_gaddr(d1) + 7);
@@ -11711,29 +11711,29 @@ int prim_batch_emit(int a0,int a1,undefined4 a2,undefined4 a3,int *arg5, undefin
           b0 = b0 + 0x28;
           wpos = wpos + 1;
           d1 = d1 + 10;
-        } while (wpos < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8))));
+        } while (wpos < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8))));
       }
       t0 = t0 + 1;
     } while (t0 < 2);
 LAB_801a83ec:
-    *arg5 = *arg5 + *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8) ))* 0xc;
+    *otc = *otc + *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8) ))* 0xc;
     return node;
   case 7:
     t0 = 0;
     do {
-      d0 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x24))));
-      s3 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x30))));
-      s6 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x28))));
-      s5 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x2c))));
-      s4 = (ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x20))));
+      d0 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x24))));
+      s3 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x30))));
+      s6 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x28))));
+      s5 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x2c))));
+      s4 = (ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x20))));
       if (t0 == 0) {
-        s0 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*arg5));
+        s0 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*otc));
       }
       else {
-        s0 = (undefined4 *)guest_at((uint32_t)(uintptr_t)((*arg5 + arg8 * 4)));
+        s0 = (undefined4 *)guest_at((uint32_t)(uintptr_t)((*otc + num * 4)));
       }
       wpos = 0;
-      if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8)))) {
+      if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8)))) {
         b0 = (byte *)((intptr_t)d1 + 7);
         s1 = s3 + 3;
         d3 = d0 + 3;
@@ -11755,7 +11755,7 @@ LAB_801a83ec:
             cnt = *b0 & 0xfe;
           }
           *b0 = cnt;
-          if (arg8 != 0) {
+          if (num != 0) {
             *s0 = (undefined4)br2_gaddr(d1 + 1);
             s0[1] = (undefined4)(br2_gaddr(d1) + 4);
             s0[2] = (undefined4)(br2_gaddr(d1) + 7);
@@ -11779,18 +11779,18 @@ LAB_801a83ec:
           b0 = b0 + 0x34;
           wpos = wpos + 1;
           d1 = d1 + 0xd;
-        } while (wpos < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8))));
+        } while (wpos < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8))));
       }
       t0 = t0 + 1;
     } while (t0 < 2);
 LAB_801a85d4:
-    wpos = *arg5;
-    t0 = *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8) ))<< 4;
+    wpos = *otc;
+    t0 = *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8) ))<< 4;
     break;
   default:
     goto switchD_801a776c_default;
   }
-  *arg5 = wpos + t0;
+  *otc = wpos + t0;
 switchD_801a776c_default:
   return node;
 
@@ -11809,23 +11809,23 @@ void obj_flag34_clear(int obj)
 
 }
 
-int tween_seq_alloc(int a0,undefined2 a1,undefined4 a2,undefined4 a3,short arg5, undefined2 arg6,undefined4 arg7,undefined4 arg8)
+int tween_seq_alloc(int mode,undefined2 a1,undefined4 a2,undefined4 a3,short arg5, undefined2 arg6,undefined4 arg7,undefined4 kind)
 {
   int node;
   undefined2 *pay;
-  node = (int)(intptr_t)task_node_alloc(arg8,2,3,0x801aa4fc,0,0x4c);
+  node = (int)(intptr_t)task_node_alloc(kind,2,3,0x801aa4fc,0,0x4c);
   if (node == 0) {
     node = 0;
   }
   else {
     pay = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((node + 0x10))));
-    *pay = (short)a0;
+    *pay = (short)mode;
     pay[1] = a1;
     pay[2] = 1;
     pay[3] = arg5 + -1;
     *(undefined4 *)(pay + 0xc) = a3;
     pay[4] = arg6;
-    if (a0 == 0) {
+    if (mode == 0) {
       *(undefined4 *)(pay + 0xe) = a2;
     }
     else {
@@ -11853,25 +11853,25 @@ void gte_matrix_base_set(undefined4 mat,undefined4 aux)
 
 }
 
-int lazy_node_wrap(undefined4 a0,undefined4 a1,undefined2 a2)
+int lazy_node_wrap(undefined4 proto,undefined4 arg,undefined2 aux)
 {
   int node;
   int pay;
-  node = (int)(uintptr_t)node_lazy_attach(a0,0x801aae08,0,0x2c);
+  node = (int)(uintptr_t)node_lazy_attach(proto,0x801aae08,0,0x2c);
   if (node == 0) {
     node = 0;
   }
   else {
     pay = *(int *)guest_at((uint32_t)(uintptr_t)((node + 0x10)));
-    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((pay + 0x20) ))= a1;
+    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((pay + 0x20) ))= arg;
     *(undefined4 *)guest_at((uint32_t)(uintptr_t)((pay + 0x24) ))= 0;
-    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((pay + 0x28) ))= a2;
+    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((pay + 0x28) ))= aux;
   }
   return node;
 
 }
 
-int prim_group_alloc(undefined4 a0,int a1,int a2,int a3,int arg5,int arg6, undefined4 arg7)
+int prim_group_alloc(undefined4 a0,int attr,int num,int mode,int flg,int arg6, undefined4 arg7)
 {
   undefined2 ff;
   int node;
@@ -11883,25 +11883,25 @@ int prim_group_alloc(undefined4 a0,int a1,int a2,int a3,int arg5,int arg6, undef
   undefined4 w1;
   int m;
   int pad;
-  m = a3;
-  if ((a3 == 0) && (arg5 != 0)) {
+  m = mode;
+  if ((mode == 0) && (flg != 0)) {
     m = 1;
   }
   pad = (uint)(arg6 != 0x1000) * 0x20;
   node = (int)(intptr_t)task_node_alloc(arg7,2,1,0x801ac154,0,
-                       a2 * 4 + m * 0x18 + 0x4c + *(int *)guest_at((uint32_t)(uintptr_t)((a1 + 0x2c) ))* 8 +
-                       *(int *)guest_at((uint32_t)(uintptr_t)((a1 + 0x34) ))* 8 + *(int *)guest_at((uint32_t)(uintptr_t)((a1 + 0x30) ))* 8 + pad);
+                       num * 4 + m * 0x18 + 0x4c + *(int *)guest_at((uint32_t)(uintptr_t)((attr + 0x2c) ))* 8 +
+                       *(int *)guest_at((uint32_t)(uintptr_t)((attr + 0x34) ))* 8 + *(int *)guest_at((uint32_t)(uintptr_t)((attr + 0x30) ))* 8 + pad);
   if (node == 0) {
     grp = 0;
   }
   else {
     grp = *(int *)guest_at((uint32_t)(uintptr_t)((node + 0x10)));
     *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x14) ))= node;
-    *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x40) ))= a2;
+    *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x40) ))= num;
     *(undefined4 *)guest_at((uint32_t)(uintptr_t)((grp + 0x18) ))= 0;
     *(undefined4 *)guest_at((uint32_t)(uintptr_t)((grp + 0x28) ))= 0;
     *(undefined4 *)guest_at((uint32_t)(uintptr_t)((grp + 0x2c) ))= 0;
-    *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x44) ))= a3;
+    *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x44) ))= mode;
     *(undefined4 *)guest_at((uint32_t)(uintptr_t)((grp + 0x48) ))= 0;
     if ((arg6 != 0x1000) == 0) {
       *(undefined4 *)guest_at((uint32_t)(uintptr_t)((grp + 4) ))= 0;
@@ -11929,40 +11929,40 @@ int prim_group_alloc(undefined4 a0,int a1,int a2,int a3,int arg5,int arg6, undef
     pad = grp + 0x4c + pad;
     *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x10) ))= pad;
     node = 0;
-    if (0 < a2) {
+    if (0 < num) {
       off = 0;
       do {
         node = node + 1;
         *(undefined4 *)guest_at((uint32_t)(uintptr_t)((off + *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x10)))) ))= 0;
         off = node * 4;
-      } while (node < a2);
+      } while (node < num);
     }
-    pad = pad + a2 * 4;
-    if (*(int *)guest_at((uint32_t)(uintptr_t)((a1 + 0x2c) ))== 0) {
-      *(undefined4 *)guest_at((uint32_t)(uintptr_t)((grp + 0x28) ))= *(undefined4 *)guest_at((uint32_t)(uintptr_t)((a1 + 0x90)));
+    pad = pad + num * 4;
+    if (*(int *)guest_at((uint32_t)(uintptr_t)((attr + 0x2c) ))== 0) {
+      *(undefined4 *)guest_at((uint32_t)(uintptr_t)((grp + 0x28) ))= *(undefined4 *)guest_at((uint32_t)(uintptr_t)((attr + 0x90)));
     }
     else {
       *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x28) ))= pad;
       i = 0;
       node = 0;
-      if (*(int *)guest_at((uint32_t)(uintptr_t)((a1 + 0x2c) ))!= 0) {
+      if (*(int *)guest_at((uint32_t)(uintptr_t)((attr + 0x2c) ))!= 0) {
         node = 0;
         do {
           dst = (undefined4 *)guest_at((uint32_t)(uintptr_t)((node + *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x28))))));
-          src = (undefined4 *)guest_at((uint32_t)(uintptr_t)((node + *(int *)guest_at((uint32_t)(uintptr_t)((a1 + 0x90))))));
+          src = (undefined4 *)guest_at((uint32_t)(uintptr_t)((node + *(int *)guest_at((uint32_t)(uintptr_t)((attr + 0x90))))));
           w1 = src[1];
           *dst = *src;
           dst[1] = w1;
           i = i + 1;
           node = i * 8;
-        } while (i < *(uint *)guest_at((uint32_t)(uintptr_t)((a1 + 0x2c))));
-        node = *(int *)guest_at((uint32_t)(uintptr_t)((a1 + 0x2c)));
+        } while (i < *(uint *)guest_at((uint32_t)(uintptr_t)((attr + 0x2c))));
+        node = *(int *)guest_at((uint32_t)(uintptr_t)((attr + 0x2c)));
       }
       pad = pad + node * 8;
     }
-    if (*(int *)guest_at((uint32_t)(uintptr_t)((a1 + 0x34) ))== 0) {
-      if (*(int *)guest_at((uint32_t)(uintptr_t)((a1 + 0x10) ))== 1) {
-        *(undefined4 *)guest_at((uint32_t)(uintptr_t)((grp + 0x2c) ))= *(undefined4 *)guest_at((uint32_t)(uintptr_t)((a1 + 0x94)));
+    if (*(int *)guest_at((uint32_t)(uintptr_t)((attr + 0x34) ))== 0) {
+      if (*(int *)guest_at((uint32_t)(uintptr_t)((attr + 0x10) ))== 1) {
+        *(undefined4 *)guest_at((uint32_t)(uintptr_t)((grp + 0x2c) ))= *(undefined4 *)guest_at((uint32_t)(uintptr_t)((attr + 0x94)));
       }
       else {
         *(undefined4 *)guest_at((uint32_t)(uintptr_t)((grp + 0x2c) ))= 0;
@@ -11972,27 +11972,27 @@ int prim_group_alloc(undefined4 a0,int a1,int a2,int a3,int arg5,int arg6, undef
       *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x2c) ))= pad;
       i = 0;
       node = 0;
-      if (*(int *)guest_at((uint32_t)(uintptr_t)((a1 + 0x34) ))!= 0) {
+      if (*(int *)guest_at((uint32_t)(uintptr_t)((attr + 0x34) ))!= 0) {
         node = 0;
         do {
           dst = (undefined4 *)guest_at((uint32_t)(uintptr_t)((node + *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x2c))))));
-          src = (undefined4 *)guest_at((uint32_t)(uintptr_t)((node + *(int *)guest_at((uint32_t)(uintptr_t)((a1 + 0x94))))));
+          src = (undefined4 *)guest_at((uint32_t)(uintptr_t)((node + *(int *)guest_at((uint32_t)(uintptr_t)((attr + 0x94))))));
           w1 = src[1];
           *dst = *src;
           dst[1] = w1;
           i = i + 1;
           node = i * 8;
-        } while (i < *(uint *)guest_at((uint32_t)(uintptr_t)((a1 + 0x34))));
-        node = *(int *)guest_at((uint32_t)(uintptr_t)((a1 + 0x34)));
+        } while (i < *(uint *)guest_at((uint32_t)(uintptr_t)((attr + 0x34))));
+        node = *(int *)guest_at((uint32_t)(uintptr_t)((attr + 0x34)));
       }
       pad = pad + node * 8;
     }
-    if (*(int *)guest_at((uint32_t)(uintptr_t)((a1 + 0x30) ))== 0) {
+    if (*(int *)guest_at((uint32_t)(uintptr_t)((attr + 0x30) ))== 0) {
       *(undefined4 *)guest_at((uint32_t)(uintptr_t)((grp + 0x30) ))= 0;
     }
     else {
       *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x30) ))= pad;
-      pad = pad + *(int *)guest_at((uint32_t)(uintptr_t)((a1 + 0x30) ))* 8;
+      pad = pad + *(int *)guest_at((uint32_t)(uintptr_t)((attr + 0x30) ))* 8;
     }
     node = m * 4;
     if (m == 0) {
@@ -12044,7 +12044,7 @@ void node_param_quad_set(int node,undefined4 q0,undefined4 q1,undefined4 q2, und
 
 }
 
-int * prim_list_gte_invoke(int *a0,undefined4 a1,undefined4 a2,int a3,undefined4 arg5 ,undefined4 arg6)
+int * prim_list_gte_invoke(int *lst,undefined4 a1,undefined4 a2,int total,undefined4 arg5 ,undefined4 arg6)
 {
   undefined4 in_zero;
   undefined4 extraout_at;
@@ -12059,9 +12059,8 @@ int * prim_list_gte_invoke(int *a0,undefined4 a1,undefined4 a2,int a3,undefined4
   undefined4 in_s4;
   undefined4 in_s5;
   undefined4 in_s6;
-  int n;
   undefined4 in_ra;
-  if (0 < a3) {
+  if (0 < total) {
     setCopControlWord(2,0xe800,0x555);
     setCopControlWord(2,0xf000,0x400);
     _DAT_1f8003e0 = in_s6;
@@ -12073,51 +12072,51 @@ int * prim_list_gte_invoke(int *a0,undefined4 a1,undefined4 a2,int a3,undefined4
     _DAT_1f8003f8 = in_s0;
     _DAT_1f8003fc = in_ra;
     do {
-      if (((short)a0[3] == 0) && (*a0 != 0)) {
-        gte_xform3_ip((undefined4 *)guest_at((uint32_t)arg6),(undefined2 *)guest_at((uint32_t)(*a0 + 0x20)));
-        gte_xform3_t_ip((undefined4 *)guest_at((uint32_t)arg5),(undefined2 *)guest_at((uint32_t)(*a0 + 0x20)));
-        setCopReg(2,in_zero,a0[1]);
-        setCopReg(2,extraout_at,a0[2]);
+      if (((short)lst[3] == 0) && (*lst != 0)) {
+        gte_xform3_ip((undefined4 *)guest_at((uint32_t)arg6),(undefined2 *)guest_at((uint32_t)(*lst + 0x20)));
+        gte_xform3_t_ip((undefined4 *)guest_at((uint32_t)arg5),(undefined2 *)guest_at((uint32_t)(*lst + 0x20)));
+        setCopReg(2,in_zero,lst[1]);
+        setCopReg(2,extraout_at,lst[2]);
         copFunction(2,0x480012);
-        n = *(int *)guest_at((uint32_t)(uintptr_t)(a0[7]));
+        num = *(int *)guest_at((uint32_t)(uintptr_t)(lst[7]));
         t0 = getCopReg(2,0xc800);
-        rp = (int *)guest_at((uint32_t)(uintptr_t)(a0[7] ))+ 1;
-        if (n != 0) {
+        rp = (int *)guest_at((uint32_t)(uintptr_t)(lst[7] ))+ 1;
+        if (num != 0) {
           t1 = getCopReg(2,0xd000);
           t2 = getCopReg(2,0xd800);
           setCopControlWord(2,0x2800,t0);
           setCopControlWord(2,0x3000,t1);
           setCopControlWord(2,0x3800,t2);
-          /* Generated 0x801871BC jalr's each record fn with the full a0-a3
-           * set: a0 = record[2] (data cursor), a1 = a1 + lh(a0
-           * +0xE), a2 = a2, a3 = record[1] (per-record field).
-           * task_invoke/call_guest only program $a0/$a1 — $a1 arrived as 0
-           * and $a2/$a3 stale, so the GTE emit leaf 0x801876BC used a1=0 as
+          /* Generated 0x801871BC jalr's each record fn with the full lst-num
+           * set: lst = record[2] (data cursor), a1 = a1 + lh(lst
+           * +0xE), a2 = a2, num = record[1] (per-record field).
+           * task_invoke/call_guest only program $lst/$a1 — $a1 arrived as 0
+           * and $a2/$num stale, so the GTE emit leaf 0x801876BC used a1=0 as
            * its OT/link-table base and SWL'd into BIOS kernel RAM
            * (phys 0x0000-0x1FFC). call_guest4 reproduces the guest ABI
            * exactly (same fix as prim_task_run). */
           {
             uint32_t prim_a1 = (uint32_t)a1
-                + (uint32_t)(int)*(int16_t *)((char *)a0 + 0xe);
+                + (uint32_t)(int)*(int16_t *)((char *)lst + 0xe);
             do {
-              n = n + -1;
+              num = num + -1;
               call_guest4((uint32_t)rp[3],(uint32_t)rp[2],prim_a1,
                           (uint32_t)a2,(uint32_t)rp[1]);
               rp = rp + 4;
-            } while (0 < n);
+            } while (0 < num);
           }
         }
       }
-      a3 = a3 + -1;
-      a0 = a0 + 10;
-    } while (0 < a3);
+      num = num + -1;
+      lst = lst + 10;
+    } while (0 < num);
   }
-  return a0;
+  return lst;
 
 }
 
 /* ---- batch17: announcer/round + vector math ---- */
-undefined4 text_render_full(uint *a0,uint a1,int a2)
+undefined4 text_render_full(uint *a0,uint font,int cfg)
 {
   byte wd;
   undefined2 aw;
@@ -12144,50 +12143,50 @@ undefined4 text_render_full(uint *a0,uint a1,int a2)
   byte *nx;
   ushort xc2;
   dw = DAT_1f800015;
-  a1 = a1 & 0xffff;
-  if (_DAT_1f800388 != a1) {
+  font = font & 0xffff;
+  if (_DAT_1f800388 != font) {
     _DAT_1f800380 = 0;
-    _DAT_1f800388 = a1;
+    _DAT_1f800388 = font;
   }
   if (_DAT_1f800380 < 400) {
-    pkt = (uint *)guest_at((uint32_t)(uintptr_t)((a1 * 16000 + _DAT_1f800380 * 0x28 + -0x7fe17ad8)));
-    if (*(short *)guest_at((uint32_t)(uintptr_t)((a2 + 6) ))< 0x1000) {
-      _DAT_1f80037c = *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 6)));
+    pkt = (uint *)guest_at((uint32_t)(uintptr_t)((font * 16000 + _DAT_1f800380 * 0x28 + -0x7fe17ad8)));
+    if (*(short *)guest_at((uint32_t)(uintptr_t)((cfg + 6) ))< 0x1000) {
+      _DAT_1f80037c = *(short *)guest_at((uint32_t)(uintptr_t)((cfg + 6)));
     }
-    if (*(short *)guest_at((uint32_t)(uintptr_t)((a2 + 8) ))< 0x1000) {
-      _DAT_1f80037e = *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 8)));
+    if (*(short *)guest_at((uint32_t)(uintptr_t)((cfg + 8) ))< 0x1000) {
+      _DAT_1f80037e = *(short *)guest_at((uint32_t)(uintptr_t)((cfg + 8)));
     }
-    gw = *(ushort *)guest_at((uint32_t)(uintptr_t)((a2 + 10)));
-    aw = *(undefined2 *)guest_at((uint32_t)(uintptr_t)((a2 + 0x10)));
-    if (((*(ushort *)guest_at((uint32_t)(uintptr_t)((a2 + 0x18) ))< 6) && (3 < *(ushort *)guest_at((uint32_t)(uintptr_t)((a2 + 0x18))))) ||
+    gw = *(ushort *)guest_at((uint32_t)(uintptr_t)((cfg + 10)));
+    aw = *(undefined2 *)guest_at((uint32_t)(uintptr_t)((cfg + 0x10)));
+    if (((*(ushort *)guest_at((uint32_t)(uintptr_t)((cfg + 0x18) ))< 6) && (3 < *(ushort *)guest_at((uint32_t)(uintptr_t)((cfg + 0x18))))) ||
        (DAT_1f800015 == '\0')) {
-      lh = *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0xc)));
+      lh = *(short *)guest_at((uint32_t)(uintptr_t)((cfg + 0xc)));
     }
     else {
-      lh = *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0xc) ))<< 1;
+      lh = *(short *)guest_at((uint32_t)(uintptr_t)((cfg + 0xc) ))<< 1;
     }
     /* +0x1c cell stores a GUEST text pointer — resolve via guest_at before
      * dereferencing (raw guest addr faults as a host pointer). */
-    tp = (byte *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a2 + 0x1c))));
+    tp = (byte *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((cfg + 0x1c))));
     if (*tp != 0) {
-      t2 = (int)*(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0xe)));
-      ac = (char)*(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0xe)));
+      t2 = (int)*(short *)guest_at((uint32_t)(uintptr_t)((cfg + 0xe)));
+      ac = (char)*(short *)guest_at((uint32_t)(uintptr_t)((cfg + 0xe)));
       xc1 = (ushort)DAT_8011ede0;
       xc2 = (ushort)DAT_8011ef64;
       gp = (short *)((intptr_t)pkt + 0x22);
       xc0 = (ushort)DAT_8011ed80;
       do {
-        gp[-10] = *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0x16)));
+        gp[-10] = *(short *)guest_at((uint32_t)(uintptr_t)((cfg + 0x16)));
         ch = (uint)*tp;
         nx = tp + 1;
-        sy = _DAT_1f80037e + *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 4)));
-        sx = _DAT_1f80037c + *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 2)));
+        sy = _DAT_1f80037e + *(short *)guest_at((uint32_t)(uintptr_t)((cfg + 4)));
+        sx = _DAT_1f80037c + *(short *)guest_at((uint32_t)(uintptr_t)((cfg + 2)));
         if (ch != 0x20) {
           if (ch < 0x21) {
             if (ch == 10) {
 LAB_8012d3f4:
               _DAT_1f80037c = 0;
-              _DAT_1f80037e = _DAT_1f80037e + lh + *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0x14)));
+              _DAT_1f80037e = _DAT_1f80037e + lh + *(short *)guest_at((uint32_t)(uintptr_t)((cfg + 0x14)));
               goto LAB_8012dca4;
             }
           }
@@ -12197,15 +12196,15 @@ LAB_8012d3f4:
             nx = tp + 2;
             if (ch != 0x23) {
               if (ch != 0x6e) {
-                *(ushort *)guest_at((uint32_t)(uintptr_t)((a2 + 0x16) ))=
-                     (*(ushort *)guest_at((uint32_t)(uintptr_t)((a2 + 0x16) ))& 0xfc3f) + (t0 - 0x30 & 0x1ff) * 0x40;
+                *(ushort *)guest_at((uint32_t)(uintptr_t)((cfg + 0x16) ))=
+                     (*(ushort *)guest_at((uint32_t)(uintptr_t)((cfg + 0x16) ))& 0xfc3f) + (t0 - 0x30 & 0x1ff) * 0x40;
                 goto LAB_8012dca4;
               }
               goto LAB_8012d3f4;
             }
           }
           tint = (char)aw;
-          switch(*(undefined2 *)guest_at((uint32_t)(uintptr_t)((a2 + 0x18)))) {
+          switch(*(undefined2 *)guest_at((uint32_t)(uintptr_t)((cfg + 0x18)))) {
           default:
             gp[-6] = 0x2f;
             ch = ch - 0x20;
@@ -12397,7 +12396,7 @@ LAB_8012d724:
               *(char *)((intptr_t)gp + 3) = gx + tint;
               gp[-0xd] = sx;
               gp[-0xc] = sy;
-              by = *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 10)));
+              by = *(short *)guest_at((uint32_t)(uintptr_t)((cfg + 10)));
               gp[-8] = sy;
               gp[-5] = sx;
               gp[-9] = by + sx + -1;
@@ -12406,7 +12405,7 @@ LAB_8012d724:
                 by = sy + -1;
               }
               gp[-4] = by + lh;
-              gp[-1] = *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 10) ))+ sx + -1;
+              gp[-1] = *(short *)guest_at((uint32_t)(uintptr_t)((cfg + 10) ))+ sx + -1;
               if (dw == '\0') {
                 by = sy + lh;
               }
@@ -12506,7 +12505,7 @@ LAB_8012d724:
               *(char *)((intptr_t)gp + 3) = gy + tint;
               gp[-0xd] = sx;
               gp[-0xc] = sy;
-              by = *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 10)));
+              by = *(short *)guest_at((uint32_t)(uintptr_t)((cfg + 10)));
               gp[-8] = sy;
               gp[-5] = sx;
               gp[-9] = by + sx + -1;
@@ -12515,7 +12514,7 @@ LAB_8012d724:
                 by = sy + -1;
               }
               gp[-4] = by + lh;
-              gp[-1] = *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 10) ))+ sx + -1;
+              gp[-1] = *(short *)guest_at((uint32_t)(uintptr_t)((cfg + 10) ))+ sx + -1;
               if (dw == '\0') {
                 by = sy + lh;
               }
@@ -12633,19 +12632,19 @@ LAB_8012dc4c:
           if (399 < _DAT_1f800380) {
             return 0xffffffff;
           }
-          sx = gw + *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0x12)));
+          sx = gw + *(short *)guest_at((uint32_t)(uintptr_t)((cfg + 0x12)));
           goto LAB_8012dc9c;
         }
         if (-1 < t2) {
-          _DAT_1f80037c = _DAT_1f80037c + *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 10) ))+ *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0x12)));
+          _DAT_1f80037c = _DAT_1f80037c + *(short *)guest_at((uint32_t)(uintptr_t)((cfg + 10) ))+ *(short *)guest_at((uint32_t)(uintptr_t)((cfg + 0x12)));
           goto LAB_8012dca4;
         }
-        switch(*(undefined2 *)guest_at((uint32_t)(uintptr_t)((a2 + 0x18)))) {
+        switch(*(undefined2 *)guest_at((uint32_t)(uintptr_t)((cfg + 0x18)))) {
         default:
-          sx = xc0 + *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0x12)));
+          sx = xc0 + *(short *)guest_at((uint32_t)(uintptr_t)((cfg + 0x12)));
           break;
         case 1:
-          sx = xc1 + *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0x12)));
+          sx = xc1 + *(short *)guest_at((uint32_t)(uintptr_t)((cfg + 0x12)));
           break;
         case 2:
           t0 = DAT_8011ee5b;
@@ -12653,10 +12652,10 @@ LAB_8012dc4c:
         case 3:
           t0 = DAT_8011ee8f;
 LAB_8012d390:
-          _DAT_1f80037c = _DAT_1f80037c + (ushort)t0 + *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0x12)));
+          _DAT_1f80037c = _DAT_1f80037c + (ushort)t0 + *(short *)guest_at((uint32_t)(uintptr_t)((cfg + 0x12)));
           goto LAB_8012dca4;
         case 4:
-          sx = xc2 + *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0x12)));
+          sx = xc2 + *(short *)guest_at((uint32_t)(uintptr_t)((cfg + 0x12)));
         }
 LAB_8012dc9c:
         _DAT_1f80037c = _DAT_1f80037c + sx;
@@ -12669,7 +12668,7 @@ LAB_8012dca4:
 
 }
 
-undefined4 text_render_simple(uint *a0,uint a1,int a2)
+undefined4 text_render_simple(uint *a0,uint font,int cfg)
 {
   byte aux;
   short adv;
@@ -12691,48 +12690,48 @@ undefined4 text_render_simple(uint *a0,uint a1,int a2)
   ushort tw;
   short lh;
   mode = DAT_1f800015;
-  a1 = a1 & 0xffff;
-  if (_DAT_1f800388 != a1) {
+  font = font & 0xffff;
+  if (_DAT_1f800388 != font) {
     _DAT_1f800380 = 0;
-    _DAT_1f800388 = a1;
+    _DAT_1f800388 = font;
   }
-  *(ushort *)guest_at((uint32_t)(uintptr_t)((a2 + 0x18) ))= *(ushort *)guest_at((uint32_t)(uintptr_t)((a2 + 0x18) ))& 3;
+  *(ushort *)guest_at((uint32_t)(uintptr_t)((cfg + 0x18) ))= *(ushort *)guest_at((uint32_t)(uintptr_t)((cfg + 0x18) ))& 3;
   if (_DAT_1f800380 < 400) {
-    ot = (uint *)guest_at((uint32_t)(uintptr_t)((a1 * 16000 + _DAT_1f800380 * 0x28 + -0x7fe17ad8)));
-    if (*(short *)guest_at((uint32_t)(uintptr_t)((a2 + 6) ))< 0x1000) {
-      _DAT_1f80037c = *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 6)));
+    ot = (uint *)guest_at((uint32_t)(uintptr_t)((font * 16000 + _DAT_1f800380 * 0x28 + -0x7fe17ad8)));
+    if (*(short *)guest_at((uint32_t)(uintptr_t)((cfg + 6) ))< 0x1000) {
+      _DAT_1f80037c = *(short *)guest_at((uint32_t)(uintptr_t)((cfg + 6)));
     }
-    if (*(short *)guest_at((uint32_t)(uintptr_t)((a2 + 8) ))< 0x1000) {
-      _DAT_1f80037e = *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 8)));
+    if (*(short *)guest_at((uint32_t)(uintptr_t)((cfg + 8) ))< 0x1000) {
+      _DAT_1f80037e = *(short *)guest_at((uint32_t)(uintptr_t)((cfg + 8)));
     }
-    gw = *(ushort *)guest_at((uint32_t)(uintptr_t)((a2 + 10)));
-    adv = *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0xe)));
-    tint = *(undefined2 *)guest_at((uint32_t)(uintptr_t)((a2 + 0x10)));
+    gw = *(ushort *)guest_at((uint32_t)(uintptr_t)((cfg + 10)));
+    adv = *(short *)guest_at((uint32_t)(uintptr_t)((cfg + 0xe)));
+    tint = *(undefined2 *)guest_at((uint32_t)(uintptr_t)((cfg + 0x10)));
     if (mode == '\0') {
-      lh = *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0xc)));
+      lh = *(short *)guest_at((uint32_t)(uintptr_t)((cfg + 0xc)));
     }
     else {
-      lh = *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0xc) ))<< 1;
+      lh = *(short *)guest_at((uint32_t)(uintptr_t)((cfg + 0xc) ))<< 1;
     }
     /* The +0x1c cell stores a GUEST pointer (guest_of(text buf)); resolve it
      * through guest_at before dereferencing or the host faults on the raw
      * guest address. */
-    tx = (byte *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a2 + 0x1c))));
+    tx = (byte *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((cfg + 0x1c))));
     if (*tx != 0) {
       tw = (ushort)DAT_8011ed80;
       gp = (short *)((intptr_t)ot + 0x22);
       do {
-        gp[-10] = *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0x16)));
+        gp[-10] = *(short *)guest_at((uint32_t)(uintptr_t)((cfg + 0x16)));
         ch = (uint)*tx;
         nx = tx + 1;
-        x1 = _DAT_1f80037e + *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 4)));
-        cy = _DAT_1f80037c + *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 2)));
+        x1 = _DAT_1f80037e + *(short *)guest_at((uint32_t)(uintptr_t)((cfg + 4)));
+        cy = _DAT_1f80037c + *(short *)guest_at((uint32_t)(uintptr_t)((cfg + 2)));
         if (ch == 0x20) {
           if (adv < 0) {
-            x1 = tw + *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0x12)));
+            x1 = tw + *(short *)guest_at((uint32_t)(uintptr_t)((cfg + 0x12)));
           }
           else {
-            x1 = *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 10) ))+ *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0x12)));
+            x1 = *(short *)guest_at((uint32_t)(uintptr_t)((cfg + 10) ))+ *(short *)guest_at((uint32_t)(uintptr_t)((cfg + 0x12)));
           }
           _DAT_1f80037c = _DAT_1f80037c + x1;
         }
@@ -12741,7 +12740,7 @@ undefined4 text_render_simple(uint *a0,uint a1,int a2)
             if (ch == 10) {
 LAB_8012dec4:
               _DAT_1f80037c = 0;
-              _DAT_1f80037e = _DAT_1f80037e + lh + *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0x14)));
+              _DAT_1f80037e = _DAT_1f80037e + lh + *(short *)guest_at((uint32_t)(uintptr_t)((cfg + 0x14)));
               goto LAB_8012e044;
             }
             gp[-6] = 0x2f;
@@ -12751,8 +12750,8 @@ LAB_8012dec4:
             nx = tx + 2;
             if (aux != 0x23) {
               if (aux == 0x6e) goto LAB_8012dec4;
-              *(ushort *)guest_at((uint32_t)(uintptr_t)((a2 + 0x16) ))=
-                   (*(ushort *)guest_at((uint32_t)(uintptr_t)((a2 + 0x16) ))& 0xfc3f) + (aux - 0x30 & 0x1ff) * 0x40;
+              *(ushort *)guest_at((uint32_t)(uintptr_t)((cfg + 0x16) ))=
+                   (*(ushort *)guest_at((uint32_t)(uintptr_t)((cfg + 0x16) ))& 0xfc3f) + (aux - 0x30 & 0x1ff) * 0x40;
               goto LAB_8012e044;
             }
             gp[-6] = 0x2f;
@@ -12814,7 +12813,7 @@ LAB_8012dec4:
           if (399 < _DAT_1f800380) {
             return 0xffffffff;
           }
-          _DAT_1f80037c = _DAT_1f80037c + gw + *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0x12)));
+          _DAT_1f80037c = _DAT_1f80037c + gw + *(short *)guest_at((uint32_t)(uintptr_t)((cfg + 0x12)));
         }
 LAB_8012e044:
         tx = nx;
@@ -13014,7 +13013,7 @@ void particle_burst_spawn(int type,int idx)
 
 }
 
-void particle_burst_update(int a0,undefined4 a1,undefined4 a2,int a3)
+void particle_burst_update(int ctx,undefined4 arg,undefined4 pos,int rec)
 {
   short vx;
   short vy;
@@ -13023,7 +13022,7 @@ void particle_burst_update(int a0,undefined4 a1,undefined4 a2,int a3)
   undefined1 *pr;
   short *slot;
   int k;
-  /* Guest GTE output slot: gte_rtps_xform3_t writes a2[0..7] as
+  /* Guest GTE output slot: gte_rtps_xform3_t writes pos[0..7] as
    * 8 contiguous u32; the decompiler split them into scalars.
    * xf[0..7] = old xf/local_44/local_40/local_3c/
    * local_38/local_34/local_30/local_2c. */
@@ -13045,7 +13044,7 @@ LAB_80136660:
     pr = &DAT_801f0304;
     do {
       if (*slot != 0) {
-        if (*(short *)guest_at((uint32_t)(uintptr_t)((a3 + 0x82) ))== 0) {
+        if (*(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x82) ))== 0) {
           *(short *)(pr + 0x22) = *(short *)(pr + 0x22) + 2;
           *(int *)(pr + 0x1c) = *(int *)(pr + 0x1c) + (int)*(short *)(pr + 0x24);
           *(int *)(pr + 0x14) = *(int *)(pr + 0x14) + (int)*(short *)(pr + 0x20);
@@ -13053,7 +13052,7 @@ LAB_80136660:
           t = *(int *)(pr + 0x18);
           *(int *)(pr + 0x18) = t + *(short *)(pr + 0x22);
           t = (t + *(short *)(pr + 0x22)) - (int)bnd[1];
-          if (*(char *)guest_at((uint32_t)(uintptr_t)((a3 + 0x98) ))== '\x02') {
+          if (*(char *)guest_at((uint32_t)(uintptr_t)((rec + 0x98) ))== '\x02') {
             if (-1 < t) {
               vec_emit_spawn(slot + 0xc);
               deferred_cmd_post(0x400,0x83,0);
@@ -13148,7 +13147,7 @@ LAB_8013683c:
           }
           angle_pair_rotmat((int)*(short *)(pr + 0x28),(int)*(short *)(pr + 0x2a),pr);
         }
-        gte_rtps_xform3_t((undefined4 *)(uintptr_t)a2,(ushort *)(uintptr_t)pr,(uint *)xf);
+        gte_rtps_xform3_t((undefined4 *)(uintptr_t)pos,(ushort *)(uintptr_t)pr,(uint *)xf);
         setCopControlWord(2,0,xf[0]);
         setCopControlWord(2,0x800,xf[1]);
         setCopControlWord(2,0x1000,xf[2]);
@@ -13157,7 +13156,7 @@ LAB_8013683c:
         setCopControlWord(2,0x2800,xf[5]);
         setCopControlWord(2,0x3000,xf[6]);
         setCopControlWord(2,0x3800,xf[7]);
-        prim_task_run(_DAT_801f04b8 + k * 0x28,a0 + 0x2068,a1,1);
+        prim_task_run(_DAT_801f04b8 + k * 0x28,ctx + 0x2068,arg,1);
         if (*slot == 0) {
           *slot = 1;
         }
@@ -13603,7 +13602,7 @@ uint * angle_gte_vec(undefined4 x,undefined4 y,uint *out)
 
 }
 
-int * prim_list_persp_step(int *a0,undefined4 a1,undefined4 a2,int a3,undefined4 arg5 ,int arg6,undefined4 arg7,undefined4 arg8)
+int * prim_list_persp_step(int *lst,undefined4 a1,undefined4 a2,int n,undefined4 arg5 ,int xf,undefined4 arg7,undefined4 arg8)
 {
   undefined4 in_zero;
   undefined4 extraout_at;
@@ -13625,7 +13624,7 @@ int * prim_list_persp_step(int *a0,undefined4 a1,undefined4 a2,int a3,undefined4
   undefined4 in_s7;
   undefined4 in_t8;
   undefined4 in_ra;
-  if (0 < a3) {
+  if (0 < n) {
     _DAT_1f8003d4 = arg5;
     _DAT_1f8003d0 = arg7;
     _DAT_1f8003cc = arg8;
@@ -13640,11 +13639,11 @@ int * prim_list_persp_step(int *a0,undefined4 a1,undefined4 a2,int a3,undefined4
     _DAT_1f8003f8 = in_s0;
     _DAT_1f8003fc = in_ra;
     do {
-      if (((short)a0[3] == 0) && (*a0 != 0)) {
-        vp = *a0 + 0x20;
-        gte_xform3_t_ip((undefined4 *)guest_at((uint32_t)arg6),(undefined2 *)guest_at((uint32_t)(*a0 + 0x20)));
-        setCopReg(2,in_zero,a0[1]);
-        setCopReg(2,extraout_at,a0[2]);
+      if (((short)lst[3] == 0) && (*lst != 0)) {
+        vp = *lst + 0x20;
+        gte_xform3_t_ip((undefined4 *)guest_at((uint32_t)xf),(undefined2 *)guest_at((uint32_t)(*lst + 0x20)));
+        setCopReg(2,in_zero,lst[1]);
+        setCopReg(2,extraout_at,lst[2]);
         copFunction(2,0x480012);
         t = getCopReg(2,0xc800);
         sz = getCopReg(2,0xd800);
@@ -13655,21 +13654,21 @@ int * prim_list_persp_step(int *a0,undefined4 a1,undefined4 a2,int a3,undefined4
         _DAT_1f8003b0 = in_t5;
         _DAT_1f8003b8 = range_circle_test(t,sz,(uint *)guest_at((uint32_t)_DAT_1f8003d0),*(undefined4 *)guest_at((uint32_t)(uintptr_t)((vp + 0x18))));
         if (_DAT_1f8003b8 != 0) {
-          t = t + ((int)*(short *)guest_at((uint32_t)(uintptr_t)((arg6 + 2) ))* -_DAT_1f8003b8 >> 0xc);
-          sz = sz + ((int)*(short *)guest_at((uint32_t)(uintptr_t)((arg6 + 0xe) ))* -_DAT_1f8003b8 >> 0xc);
+          t = t + ((int)*(short *)guest_at((uint32_t)(uintptr_t)((xf + 2) ))* -_DAT_1f8003b8 >> 0xc);
+          sz = sz + ((int)*(short *)guest_at((uint32_t)(uintptr_t)((xf + 0xe) ))* -_DAT_1f8003b8 >> 0xc);
         }
         _DAT_1f8003b4 = t;
         _DAT_1f8003bc = sz;
         gte_xform3_t_ip((undefined4 *)guest_at((uint32_t)_DAT_1f8003d4),(undefined2 *)(uintptr_t)&DAT_1f8003a0);
-        t = *(int *)guest_at((uint32_t)(uintptr_t)(a0[7]));
-        rp = (int *)guest_at((uint32_t)(uintptr_t)(a0[7] ))+ 1;
+        t = *(int *)guest_at((uint32_t)(uintptr_t)(lst[7]));
+        rp = (int *)guest_at((uint32_t)(uintptr_t)(lst[7] ))+ 1;
         if (t != 0) {
-          /* Generated 0x8018B208 jalr's each record fn with the full a0-a3
+          /* Generated 0x8018B208 jalr's each record fn with the full lst-n
            * set, same {count,[x,a3field,arg0,func]} stride-16 table as
-           * prim_task_run: a0 = entry[+8] (data cursor), a1 = a1,
+           * prim_task_run: lst = entry[+8] (data cursor), a1 = a1,
            * a2 = a2 (both loaded once per node before the entry loop),
-           * a3 = entry[+4] (per-record field). task_invoke/call_guest only
-           * program $a0/$a1, leaving $a2/$a3 as stale register-file values
+           * n = entry[+4] (per-record field). task_invoke/call_guest only
+           * program $lst/$a1, leaving $a2/$n as stale register-file values
            * the callee dereferences. call_guest4 reproduces the guest ABI
            * exactly (same fix prim_task_run carries). */
           do {
@@ -13680,11 +13679,11 @@ int * prim_list_persp_step(int *a0,undefined4 a1,undefined4 a2,int a3,undefined4
           } while (0 < t);
         }
       }
-      a3 = a3 + -1;
-      a0 = a0 + 10;
-    } while (0 < a3);
+      n = n + -1;
+      lst = lst + 10;
+    } while (0 < n);
   }
-  return a0;
+  return lst;
 
 }
 
@@ -14044,7 +14043,7 @@ int isqrt(int n)
 
 }
 
-uint * gte_rtps_xform3_t(undefined4 *n,ushort *a1,uint *a2)
+uint * gte_rtps_xform3_t(undefined4 *rm,ushort *ang,uint *out)
 {
   uint t0;
   int t1;
@@ -14054,46 +14053,46 @@ uint * gte_rtps_xform3_t(undefined4 *n,ushort *a1,uint *a2)
   int t5;
   uint t6;
   int t7;
-  setCopControlWord(2,0,*n);
-  setCopControlWord(2,0x800,n[1]);
-  setCopControlWord(2,0x1000,n[2]);
-  setCopControlWord(2,0x1800,n[3]);
-  setCopControlWord(2,0x2000,n[4]);
-  setCopReg(2,0,(uint)*a1 | *(uint *)(a1 + 2) & 0xffff0000);
-  setCopReg(2,0x800,*(undefined4 *)(a1 + 6));
+  setCopControlWord(2,0,*rm);
+  setCopControlWord(2,0x800,rm[1]);
+  setCopControlWord(2,0x1000,rm[2]);
+  setCopControlWord(2,0x1800,rm[3]);
+  setCopControlWord(2,0x2000,rm[4]);
+  setCopReg(2,0,(uint)*ang | *(uint *)(ang + 2) & 0xffff0000);
+  setCopReg(2,0x800,*(undefined4 *)(ang + 6));
   copFunction(2,0x486012);
   t0 = getCopReg(2,0x4800);
   t1 = getCopReg(2,0x5000);
   t3 = getCopReg(2,0x5800);
-  setCopReg(2,0,(uint)a1[1] | *(int *)(a1 + 4) << 0x10);
-  setCopReg(2,0x800,(int)(short)a1[7]);
+  setCopReg(2,0,(uint)ang[1] | *(int *)(ang + 4) << 0x10);
+  setCopReg(2,0x800,(int)(short)ang[7]);
   copFunction(2,0x486012);
   t5 = getCopReg(2,0x4800);
   t6 = getCopReg(2,0x5000);
   t7 = getCopReg(2,0x5800);
-  setCopReg(2,0,(uint)a1[2] | *(uint *)(a1 + 4) & 0xffff0000);
-  setCopReg(2,0x800,*(undefined4 *)(a1 + 8));
+  setCopReg(2,0,(uint)ang[2] | *(uint *)(ang + 4) & 0xffff0000);
+  setCopReg(2,0x800,*(undefined4 *)(ang + 8));
   copFunction(2,0x486012);
-  *a2 = t5 << 0x10 | t0 & 0xffff;
-  a2[3] = t7 << 0x10 | t3 & 0xffff;
+  *out = t5 << 0x10 | t0 & 0xffff;
+  out[3] = t7 << 0x10 | t3 & 0xffff;
   t3 = getCopReg(2,0x4800);
   t5 = getCopReg(2,0x5000);
   t0 = getCopReg(2,0xb);
-  a2[4] = t0;
-  setCopReg(2,0,(uint)a1[10] | *(int *)(a1 + 0xc) << 0x10);
-  setCopReg(2,0x800,*(undefined4 *)(a1 + 0xe));
+  out[4] = t0;
+  setCopReg(2,0,(uint)ang[10] | *(int *)(ang + 0xc) << 0x10);
+  setCopReg(2,0x800,*(undefined4 *)(ang + 0xe));
   copFunction(2,0x486012);
-  a2[1] = t3 & 0xffff | t1 << 0x10;
-  a2[2] = t5 << 0x10 | t6 & 0xffff;
+  out[1] = t3 & 0xffff | t1 << 0x10;
+  out[2] = t5 << 0x10 | t6 & 0xffff;
   t5 = getCopReg(2,0xc800);
   t1 = getCopReg(2,0xd000);
   t7 = getCopReg(2,0xd800);
-  t2 = n[6];
-  t4 = n[7];
-  a2[5] = t5 + n[5];
-  a2[6] = t1 + t2;
-  a2[7] = t7 + t4;
-  return a2;
+  t2 = rm[6];
+  t4 = rm[7];
+  out[5] = t5 + rm[5];
+  out[6] = t1 + t2;
+  out[7] = t7 + t4;
+  return out;
 
 }
 
@@ -14136,15 +14135,15 @@ undefined4 * gte_rtps_xform1_raw(undefined4 *mtx,undefined4 *in,undefined4 *out)
 
 }
 
-int * node_lazy_attach(int n,int a1,int a2,int a3)
+int * node_lazy_attach(int n,int en,int aux,int par)
 {
   char cls;
   undefined1 sh;
   int *nd;
   int *slot;
   cls = *(char *)guest_at((uint32_t)(uintptr_t)((n + 0x14)));
-  if ((a1 == 0) ||
-     (nd = (int *)guest_at((uint32_t)(uintptr_t)(task_pool_alloc((int)cls,(int)*(char *)guest_at((uint32_t)(uintptr_t)((n + 0x15))),a3 + 0x1c))),
+  if ((en == 0) ||
+     (nd = (int *)guest_at((uint32_t)(uintptr_t)(task_pool_alloc((int)cls,(int)*(char *)guest_at((uint32_t)(uintptr_t)((n + 0x15))),par + 0x1c))),
      nd == (int *)0x0)) {
     nd = (int *)0x0;
   }
@@ -14160,8 +14159,8 @@ int * node_lazy_attach(int n,int a1,int a2,int a3)
     *nd = n;
     nd[1] = *(int *)guest_at((uint32_t)(uintptr_t)((n + 4)));
     *(uint32_t *)guest_at((uint32_t)(uintptr_t)((n + 4) ))= guest_of(nd);
-    nd[2] = a1;
-    nd[3] = a2;
+    nd[2] = en;
+    nd[3] = aux;
     *(undefined1 *)(nd + 5) = *(undefined1 *)guest_at((uint32_t)(uintptr_t)((n + 0x14)));
     *(undefined1 *)((intptr_t)nd + 0x15) = *(undefined1 *)guest_at((uint32_t)(uintptr_t)((n + 0x15)));
     sh = *(undefined1 *)guest_at((uint32_t)(uintptr_t)((n + 0x16)));
@@ -14471,21 +14470,21 @@ LAB_801ac2ac:
 
 }
 
-void rect_prim_spawn(undefined2 a0,undefined2 a1,undefined2 a2,undefined2 a3, undefined1 arg5,undefined1 arg6,undefined2 arg7,undefined2 arg8, undefined4 arg9)
+void rect_prim_spawn(undefined2 x0,undefined2 y0,undefined2 x1,undefined2 y1, undefined1 b0,undefined1 b1,undefined2 fl,undefined2 aux, undefined4 kind)
 {
   int t;
-  t = (int)(uintptr_t)task_node_alloc(arg9,2,0xe,0x801acdbc,0,0x20);
+  t = (int)(uintptr_t)task_node_alloc(kind,2,0xe,0x801acdbc,0,0x20);
   if (t != 0) {
     t = *(int *)guest_at((uint32_t)(uintptr_t)((t + 0x10)));
-    prim_packet_init(t + 0x14,0,0,arg7);
+    prim_packet_init(t + 0x14,0,0,fl);
     prim_tag_set(t);
-    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((t + 8) ))= a0;
-    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((t + 10) ))= a1;
-    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((t + 0x10) ))= a2;
-    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((t + 0x12) ))= a3;
-    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((t + 0xc) ))= arg5;
-    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((t + 0xd) ))= arg6;
-    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((t + 0xe) ))= arg8;
+    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((t + 8) ))= x0;
+    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((t + 10) ))= y0;
+    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((t + 0x10) ))= x1;
+    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((t + 0x12) ))= y1;
+    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((t + 0xc) ))= b0;
+    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((t + 0xd) ))= b1;
+    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((t + 0xe) ))= aux;
     *(undefined4 *)guest_at((uint32_t)(uintptr_t)((t + 0x1c) ))= 1;
     *(byte *)guest_at((uint32_t)(uintptr_t)((t + 7) ))= *(byte *)guest_at((uint32_t)(uintptr_t)((t + 7) ))| 3;
   }
@@ -14550,7 +14549,7 @@ undefined4 cop2_clz(undefined4 v)
 
 }
 
-void gte_points_xform(undefined4 *a0,undefined4 *a1,undefined2 *a2,undefined2 *a3, undefined2 *arg5,int arg6)
+void gte_points_xform(undefined4 *ip,undefined4 *sz,undefined2 *sx,undefined2 *sy, undefined2 *cc,int n)
 {
   undefined4 in_zero;
   undefined4 in_at;
@@ -14558,56 +14557,56 @@ void gte_points_xform(undefined4 *a0,undefined4 *a1,undefined2 *a2,undefined2 *a
   undefined4 t0;
   undefined4 t1;
   do {
-    setCopReg(2,in_zero,*a0);
-    setCopReg(2,in_at,a0[1]);
+    setCopReg(2,in_zero,*ip);
+    setCopReg(2,in_at,ip[1]);
     copFunction(2,0x180001);
-    a0 = a0 + 2;
-    arg6 = arg6 + -1;
+    ip = ip + 2;
+    n = n + -1;
     t0 = getCopReg(2,0xe);
-    *a1 = t0;
+    *sz = t0;
     t0 = getCopReg(2,0x9800);
     t1 = getCopReg(2,0x4000);
     code = getCopControlWord(2,0xf800);
-    *a2 = (short)t0;
-    *a3 = (short)t1;
-    *arg5 = (short)(code >> 0xc);
-    a1 = a1 + 1;
-    a2 = a2 + 1;
-    a3 = a3 + 1;
-    arg5 = arg5 + 1;
-  } while (0 < arg6);
+    *sx = (short)t0;
+    *sy = (short)t1;
+    *cc = (short)(code >> 0xc);
+    sz = sz + 1;
+    sx = sx + 1;
+    sy = sy + 1;
+    cc = cc + 1;
+  } while (0 < n);
   return;
 
 }
 
-int tween_track_alloc(int a0,undefined2 a1,undefined4 a2,undefined2 *a3,short arg5 ,undefined2 arg6,undefined2 arg7,undefined4 arg8)
+int tween_track_alloc(int mode,undefined2 a1,undefined4 a2,undefined2 *kf,short arg5 ,undefined2 arg6,undefined2 arg7,undefined4 kind)
 {
   undefined2 fld0;
   int node;
   int ret;
   undefined2 *pay;
-  node = (int)(uintptr_t)task_node_alloc(arg8,2,3,0x801a972c,0,0x4c);
+  node = (int)(uintptr_t)task_node_alloc(kind,2,3,0x801a972c,0,0x4c);
   ret = 0;
   if (node != 0) {
     pay = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((node + 0x10))));
-    *pay = (short)a0;
+    *pay = (short)mode;
     pay[1] = a1;
     pay[2] = 0;
     pay[3] = arg5 + -1;
     pay[4] = arg6;
     pay[6] = arg7;
-    if (a0 == 0) {
+    if (mode == 0) {
       *(undefined4 *)(pay + 0xe) = a2;
     }
     else {
       *(undefined4 *)(pay + 0x10) = a2;
     }
-    /* a3 is a GUEST address (keyframe descriptor); resolve fields via
+    /* kf is a GUEST address (keyframe descriptor); resolve fields via
      * guest_at and store it as a 32-bit guest pointer, not a host ptr.
      * It may arrive as a guest address in pointer costume (clean callers)
      * or as a host pointer (clean_table wrap); br2_gaddr yields the
      * canonical guest address for both. */
-    uint32_t p4g = br2_gaddr(a3);
+    uint32_t p4g = br2_gaddr(kf);
     *(uint32_t *)((char *)pay + 0x18) = p4g;
     *(undefined4 *)((char *)pay + 0x24) = *(uint32_t *)guest_at(p4g + 8);
     *(undefined4 *)((char *)pay + 0x28) = *(uint32_t *)guest_at(p4g + 12);
@@ -15509,7 +15508,7 @@ void firework_spawn(undefined2 *pos)
 }
 
 /* guest gte_mat_vec_swap @0x80185290 */
-void gte_mat_vec_swap(undefined4 *a0,ushort *a1,undefined4 *a2)
+void gte_mat_vec_swap(undefined4 *mb,ushort *vec,undefined4 *ma)
 
 {
   ushort e0;
@@ -15521,66 +15520,66 @@ void gte_mat_vec_swap(undefined4 *a0,ushort *a1,undefined4 *a2)
   undefined4 y2;
   undefined4 z2;
   
-  setCopControlWord(2,0,*a2);
-  setCopControlWord(2,0x800,a2[1]);
-  setCopControlWord(2,0x1000,a2[2]);
-  setCopControlWord(2,0x1800,a2[3]);
-  setCopControlWord(2,0x2000,a2[4]);
-  setCopReg(2,0,(int)(short)*a1);
-  setCopReg(2,0x800,(int)(short)a1[6]);
+  setCopControlWord(2,0,*ma);
+  setCopControlWord(2,0x800,ma[1]);
+  setCopControlWord(2,0x1000,ma[2]);
+  setCopControlWord(2,0x1800,ma[3]);
+  setCopControlWord(2,0x2000,ma[4]);
+  setCopReg(2,0,(int)(short)*vec);
+  setCopReg(2,0x800,(int)(short)vec[6]);
   copFunction(2,0x486012);
-  e0 = *(ushort *)(a2 + 2);
-  e1 = *(ushort *)((intptr_t)a2 + 0xe);
+  e0 = *(ushort *)(ma + 2);
+  e1 = *(ushort *)((intptr_t)ma + 0xe);
   x = getCopReg(2,0x4800);
   y = getCopReg(2,0x5000);
   z = getCopReg(2,0x5800);
-  setCopReg(2,0,-(int)(short)a1[6] & 0xffff);
-  setCopReg(2,0x800,(int)(short)*a1);
-  a1[1] = *(ushort *)((intptr_t)a2 + 2);
+  setCopReg(2,0,-(int)(short)vec[6] & 0xffff);
+  setCopReg(2,0x800,(int)(short)*vec);
+  vec[1] = *(ushort *)((intptr_t)ma + 2);
   copFunction(2,0x486012);
-  a1[4] = e0;
-  a1[7] = e1;
-  *a1 = (ushort)x;
-  a1[3] = (ushort)y;
-  a1[6] = (ushort)z;
+  vec[4] = e0;
+  vec[7] = e1;
+  *vec = (ushort)x;
+  vec[3] = (ushort)y;
+  vec[6] = (ushort)z;
   y = getCopReg(2,0x4800);
   z = getCopReg(2,0x5000);
   x = getCopReg(2,0xb);
-  *(undefined4 *)(a1 + 8) = x;
-  a1[2] = (ushort)y;
-  a1[5] = (ushort)z;
-  setCopControlWord(2,0,*a0);
-  setCopControlWord(2,0x800,a0[1]);
-  setCopControlWord(2,0x1000,a0[2]);
-  setCopControlWord(2,0x1800,a0[3]);
-  setCopControlWord(2,0x2000,a0[4]);
-  setCopReg(2,0,(uint)*a1 | *(uint *)(a1 + 2) & 0xffff0000);
-  setCopReg(2,0x800,*(undefined4 *)(a1 + 6));
+  *(undefined4 *)(vec + 8) = x;
+  vec[2] = (ushort)y;
+  vec[5] = (ushort)z;
+  setCopControlWord(2,0,*mb);
+  setCopControlWord(2,0x800,mb[1]);
+  setCopControlWord(2,0x1000,mb[2]);
+  setCopControlWord(2,0x1800,mb[3]);
+  setCopControlWord(2,0x2000,mb[4]);
+  setCopReg(2,0,(uint)*vec | *(uint *)(vec + 2) & 0xffff0000);
+  setCopReg(2,0x800,*(undefined4 *)(vec + 6));
   copFunction(2,0x486012);
   x = getCopReg(2,0x4800);
   y = getCopReg(2,0x5000);
   z = getCopReg(2,0x5800);
-  setCopReg(2,0,(uint)a1[1] | *(int *)(a1 + 4) << 0x10);
-  setCopReg(2,0x800,(int)(short)a1[7]);
+  setCopReg(2,0,(uint)vec[1] | *(int *)(vec + 4) << 0x10);
+  setCopReg(2,0x800,(int)(short)vec[7]);
   copFunction(2,0x486012);
   x2 = getCopReg(2,0x4800);
   y2 = getCopReg(2,0x5000);
   z2 = getCopReg(2,0x5800);
-  setCopReg(2,0,(uint)a1[2] | *(uint *)(a1 + 4) & 0xffff0000);
-  setCopReg(2,0x800,*(undefined4 *)(a1 + 8));
+  setCopReg(2,0,(uint)vec[2] | *(uint *)(vec + 4) & 0xffff0000);
+  setCopReg(2,0x800,*(undefined4 *)(vec + 8));
   copFunction(2,0x486012);
-  *a1 = (ushort)x;
-  a1[3] = (ushort)y;
-  a1[6] = (ushort)z;
-  a1[1] = (ushort)x2;
-  a1[4] = (ushort)y2;
-  a1[7] = (ushort)z2;
+  *vec = (ushort)x;
+  vec[3] = (ushort)y;
+  vec[6] = (ushort)z;
+  vec[1] = (ushort)x2;
+  vec[4] = (ushort)y2;
+  vec[7] = (ushort)z2;
   y = getCopReg(2,0x4800);
   z = getCopReg(2,0x5000);
   x = getCopReg(2,0xb);
-  *(undefined4 *)(a1 + 8) = x;
-  a1[2] = (ushort)y;
-  a1[5] = (ushort)z;
+  *(undefined4 *)(vec + 8) = x;
+  vec[2] = (ushort)y;
+  vec[5] = (ushort)z;
   return;
 }
 
@@ -15707,7 +15706,7 @@ void pose_chain_build(int node)
 }
 
 /* guest euler_rotmat @0x8018dc18 */
-undefined2 * euler_rotmat(uint node,uint a1,uint a2,undefined2 *a3)
+undefined2 * euler_rotmat(uint node,uint ang0,uint ang1,undefined2 *out)
 
 {
   short g0;
@@ -15723,16 +15722,16 @@ undefined2 * euler_rotmat(uint node,uint a1,uint a2,undefined2 *a3)
   int t9;
   uint an;
   
-  t0 = (a1 & 0x3ff) * 2;
-  t2 = (a1 & 0x3ff) * -2 + 0x800;
+  t0 = (ang0 & 0x3ff) * 2;
+  t2 = (ang0 & 0x3ff) * -2 + 0x800;
   t1 = t0;
-  if ((a1 & 0x400) != 0) {
+  if ((ang0 & 0x400) != 0) {
     t1 = t2;
     t2 = t0;
   }
   t2 = (int)*(short *)(&DAT_801247a8 + t2);
-  an = node + a2;
-  if ((a1 + 0x400 & 0x800) != 0) {
+  an = node + ang1;
+  if ((ang0 + 0x400 & 0x800) != 0) {
     t2 = -t2;
   }
   g0 = *(short *)(&DAT_801247a8 + t1);
@@ -15749,15 +15748,15 @@ undefined2 * euler_rotmat(uint node,uint a1,uint a2,undefined2 *a3)
     t4 = -t4;
   }
   t0 = (int)*(short *)(&DAT_801247a8 + t0);
-  t5 = (a2 & 0x3ff) * 2;
-  t7 = (a2 & 0x3ff) * -2 + 0x800;
+  t5 = (ang1 & 0x3ff) * 2;
+  t7 = (ang1 & 0x3ff) * -2 + 0x800;
   t3 = t5;
-  if ((a2 & 0x400) != 0) {
+  if ((ang1 & 0x400) != 0) {
     t3 = t7;
     t7 = t5;
   }
   t7 = (int)*(short *)(&DAT_801247a8 + t7);
-  if ((a2 + 0x400 & 0x800) != 0) {
+  if ((ang1 + 0x400 & 0x800) != 0) {
     t7 = -t7;
   }
   t3 = (int)*(short *)(&DAT_801247a8 + t3);
@@ -15776,24 +15775,24 @@ undefined2 * euler_rotmat(uint node,uint a1,uint a2,undefined2 *a3)
   if ((an + 0x400 & 0x800) != 0) {
     t9 = -t9;
   }
-  if ((a2 & 0x800) != 0) {
+  if ((ang1 & 0x800) != 0) {
     t3 = -t3;
   }
-  *a3 = (short)(t7 * t2 >> 0xc);
-  a3[7] = (short)(t0 * t2 >> 0xc);
+  *out = (short)(t7 * t2 >> 0xc);
+  out[7] = (short)(t0 * t2 >> 0xc);
   g0n = -g0;
-  if ((a1 & 0x800) != 0) {
+  if ((ang0 & 0x800) != 0) {
     t1 = -t1;
     g0n = g0;
   }
-  a3[6] = g0n;
+  out[6] = g0n;
   if ((an & 0x800) != 0) {
     t5 = -t5;
   }
   t9 = t9 * (t1 + -0x1000);
-  a3[8] = (short)(t4 * t2 >> 0xc);
-  node = node - a2;
-  a3[3] = (short)(t3 * t2 >> 0xc);
+  out[8] = (short)(t4 * t2 >> 0xc);
+  node = node - ang1;
+  out[3] = (short)(t3 * t2 >> 0xc);
   t4 = (node & 0x3ff) * 2;
   t5 = t5 * (t1 + -0x1000);
   t0 = (node & 0x3ff) * -2 + 0x800;
@@ -15812,11 +15811,11 @@ undefined2 * euler_rotmat(uint node,uint a1,uint a2,undefined2 *a3)
     t2 = -t2;
   }
   t2 = t2 * (t1 + 0x1000);
-  a3[2] = (short)((t9 + t0) >> 0xd);
-  a3[4] = (short)((t0 - t9) >> 0xd);
-  a3[1] = (short)((t5 + t2) >> 0xd);
-  a3[5] = (short)((t5 - t2) >> 0xd);
-  return a3;
+  out[2] = (short)((t9 + t0) >> 0xd);
+  out[4] = (short)((t0 - t9) >> 0xd);
+  out[1] = (short)((t5 + t2) >> 0xd);
+  out[5] = (short)((t5 - t2) >> 0xd);
+  return out;
 }
 
 /* ---- batch25: task callbacks + motion_integrator_tail (verified vs disasm) ---- */
@@ -16350,19 +16349,19 @@ void announce_param_block_init(uint32_t a0,uint32_t a1,const void *a2,
 }
 
 /* print_mode_dispatch — print-mode dispatch (mode 1 = text window). */
-void print_mode_dispatch_b(int32_t a0,uint32_t a1,uint32_t a2)
+void print_mode_dispatch_b(int32_t mode,uint32_t a1,uint32_t a2)
 {
-  BA32(0x1f800384) = (uint32_t)a0;
-  if (a0 == 1) {
+  BA32(0x1f800384) = (uint32_t)mode;
+  if (mode == 1) {
     uint32_t widget;
     text_win_init(0x3c0,0);
     widget = text_widget_alloc(a1,a2,0x140,0xf0,0,0x200);
     text_line_select(widget);
     return;
   }
-  if (a0 < 2) {
-    if (a0 == 0) return;
-  } else if (a0 == 2) {
+  if (mode < 2) {
+    if (mode == 0) return;
+  } else if (mode == 2) {
     return;
   }
   printf_forward(s_Print_mode_error_8011f140);
@@ -16963,7 +16962,7 @@ void LAB_80137cd0(int *ctx)
 /* LAB_8013eb04 — speech/effect emitter task (spawns 0x8013e72c subtasks).
  * Guest 0x8013eb04. Data: [4] flag, [5] record-table base, [6] cursor,
  * byte +0x1c index, byte +0x1e countdown; [2]/[3] receive RTPS outputs. */
-void LAB_8013eb04(int *a0)
+void LAB_8013eb04(int *ctx)
 {
   undefined1 pb;
   undefined2 tp;
@@ -16981,23 +16980,23 @@ void LAB_8013eb04(int *a0)
   uint16_t life;
 
   if (_DAT_1f800082 == 0) {
-    if (*(short *)guest_at((uint32_t)a0[6]) < 0) {
-      life = *(uint16_t *)((intptr_t)a0 + 0x1e) - 1;
-      *(uint16_t *)((intptr_t)a0 + 0x1e) = life;
+    if (*(short *)guest_at((uint32_t)ctx[6]) < 0) {
+      life = *(uint16_t *)((intptr_t)ctx + 0x1e) - 1;
+      *(uint16_t *)((intptr_t)ctx + 0x1e) = life;
       if ((int)((uint)life << 0x10) < 0) {
         task_slot_step();
         return;
       }
     }
     else {
-      if (*(short *)(a0 + 7) == *(short *)guest_at((uint32_t)a0[6])) {
+      if (*(short *)(ctx + 7) == *(short *)guest_at((uint32_t)ctx[6])) {
         do {
           t = (int)(intptr_t)task_node_alloc(1,2,0xe,0x8013e72c,0,0x200);
           if (t != 0) {
             row = 0;
             off = 0;
             pay = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(t + 0x10)));
-            t = *(short *)guest_at((uint32_t)(a0[6] + 2)) * 0x12 + a0[5];
+            t = *(short *)guest_at((uint32_t)(ctx[6] + 2)) * 0x12 + ctx[5];
             d0 = *(undefined4 *)guest_at((uint32_t)(t + -0xe));
             d1 = *(undefined4 *)guest_at((uint32_t)(t + -10));
             d2 = *(undefined4 *)guest_at((uint32_t)(t + -6));
@@ -17006,8 +17005,8 @@ void LAB_8013eb04(int *a0)
             pay[0x7a] = d1;
             pay[0x7b] = d2;
             *(undefined2 *)((intptr_t)pay + 0x1f0) = *(undefined2 *)guest_at((uint32_t)(t + -2));
-            pay[0x7d] = (int)guest_of((char *)a0 + 8);
-            pay[0x7e] = (int)guest_of((char *)a0 + 0xc);
+            pay[0x7d] = (int)guest_of((char *)ctx + 8);
+            pay[0x7e] = (int)guest_of((char *)ctx + 0xc);
             rowp = pay;
             do {
               i = 0;
@@ -17019,7 +17018,7 @@ void LAB_8013eb04(int *a0)
                 *(undefined1 *)((intptr_t)cell + 7) = 0x2e;
                 *(undefined2 *)((intptr_t)pay + t + 0x16) = 0x39;
                 tp = 0x7a5a;
-                if (a0[4] == 0) {
+                if (ctx[4] == 0) {
                   tp = 0x7a9a;
                 }
                 *(undefined2 *)((intptr_t)pay + t + 0xe) = tp;
@@ -17048,24 +17047,24 @@ void LAB_8013eb04(int *a0)
               off = off + 0xf0;
             } while (row < 2);
             pay[0x7f] = 0;
-            if (*(short *)((intptr_t)a0 + 0x1e) <= *(short *)((intptr_t)pay + 0x1e0)) {
-              *(short *)((intptr_t)a0 + 0x1e) = *(short *)((intptr_t)pay + 0x1e0) + 1;
+            if (*(short *)((intptr_t)ctx + 0x1e) <= *(short *)((intptr_t)pay + 0x1e0)) {
+              *(short *)((intptr_t)ctx + 0x1e) = *(short *)((intptr_t)pay + 0x1e0) + 1;
             }
           }
-          t = a0[6];
-          a0[6] = t + 4;
-        } while (*(short *)(a0 + 7) == *(short *)guest_at((uint32_t)(t + 4)));
+          t = ctx[6];
+          ctx[6] = t + 4;
+        } while (*(short *)(ctx + 7) == *(short *)guest_at((uint32_t)(t + 4)));
       }
-      *(short *)(a0 + 7) = *(short *)(a0 + 7) + 1;
+      *(short *)(ctx + 7) = *(short *)(ctx + 7) + 1;
     }
   }
   /* GTE tail: lwc2 r0/r1 <- param[0..1], cop2 op, swc2 r14 -> param[2],
    * mfc2 r19 -> param[3] >> 2 (disasm 0x8013ed50-0x8013ed7c). */
-  setCopReg(2,0,(uint32_t)a0[0]);
-  setCopReg(2,1,(uint32_t)a0[1]);
+  setCopReg(2,0,(uint32_t)ctx[0]);
+  setCopReg(2,1,(uint32_t)ctx[1]);
   copFunction(2,0x180001);
-  a0[2] = (int)getCopReg(2,14);
-  a0[3] = getCopReg(2,0x9800) >> 2;
+  ctx[2] = (int)getCopReg(2,14);
+  ctx[3] = getCopReg(2,0x9800) >> 2;
   return;
 }
 
@@ -17646,24 +17645,24 @@ many:
 /* guest gte_vec_transform_emit @0x80186aa8 — copies 3 hwords from p2+0x34..3c into
  * p3+8..c, GTE transform via rtps_point_xform2, resets p2+4..0x14 to a
  * 0x1000-strided pattern then gte_rtps_xform3 emit. p1 unused. */
-void gte_vec_transform_emit(int a0,int a1,int a2)
+void gte_vec_transform_emit(int a0,int src,int dst)
 {
   int mtx;
-  mtx = *(int *)guest_at((uint32_t)(uintptr_t)(a1 + 0x40)) + 0x20;
-  *(ushort *)guest_at((uint32_t)(uintptr_t)(a2 + 8)) = *(ushort *)guest_at((uint32_t)(uintptr_t)(a1 + 0x34));
-  *(ushort *)guest_at((uint32_t)(uintptr_t)(a2 + 0xa)) = *(ushort *)guest_at((uint32_t)(uintptr_t)(a1 + 0x38));
-  *(ushort *)guest_at((uint32_t)(uintptr_t)(a2 + 0xc)) = *(ushort *)guest_at((uint32_t)(uintptr_t)(a1 + 0x3c));
+  mtx = *(int *)guest_at((uint32_t)(uintptr_t)(src + 0x40)) + 0x20;
+  *(ushort *)guest_at((uint32_t)(uintptr_t)(dst + 8)) = *(ushort *)guest_at((uint32_t)(uintptr_t)(src + 0x34));
+  *(ushort *)guest_at((uint32_t)(uintptr_t)(dst + 0xa)) = *(ushort *)guest_at((uint32_t)(uintptr_t)(src + 0x38));
+  *(ushort *)guest_at((uint32_t)(uintptr_t)(dst + 0xc)) = *(ushort *)guest_at((uint32_t)(uintptr_t)(src + 0x3c));
   rtps_point_xform2((undefined4 *)guest_at((uint32_t)(uintptr_t)mtx),
-               (undefined4 *)guest_at((uint32_t)(uintptr_t)(a1 + 0x18)),
-               (undefined4 *)guest_at((uint32_t)(uintptr_t)(a1 + 0x34)));
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)(a1 + 4)) = 0x1000;
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)(a1 + 8)) = 0;
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)(a1 + 0xc)) = 0x1000;
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)(a1 + 0x10)) = 0;
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)(a1 + 0x14)) = 0x1000;
+               (undefined4 *)guest_at((uint32_t)(uintptr_t)(src + 0x18)),
+               (undefined4 *)guest_at((uint32_t)(uintptr_t)(src + 0x34)));
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)(src + 4)) = 0x1000;
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)(src + 8)) = 0;
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)(src + 0xc)) = 0x1000;
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)(src + 0x10)) = 0;
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)(src + 0x14)) = 0x1000;
   gte_rtps_xform3((undefined4 *)guest_at((uint32_t)(uintptr_t)mtx),
-               (ushort *)guest_at((uint32_t)(uintptr_t)(a1 + 4)),
-               (uint *)guest_at((uint32_t)(uintptr_t)(a1 + 0x20)));
+               (ushort *)guest_at((uint32_t)(uintptr_t)(src + 4)),
+               (uint *)guest_at((uint32_t)(uintptr_t)(src + 0x20)));
   return;
 }
 
@@ -17693,19 +17692,19 @@ void node_list_collect(int head,int out)
 /* guest corner_emit_cond_offset @0x8018bda4 — conditional-offset corner emit: follows
  * p1+8 link when flag&8, packs 4 halfwords on stack, calls
  * gpu_load_image_cmd(stack, t0+0x14 + (p4+p5*lh10)*2). */
-void corner_emit_cond_offset(int a0,int a1,int a2,int a3,int arg5,int arg6,int arg7)
+void corner_emit_cond_offset(int spr,int x0,int y0,int idx,int mul,int x1,int y1)
 {
   int t;
   short asStack_10 [4];
-  t = a0;
-  if ((*(int *)guest_at((uint32_t)(uintptr_t)(a0 + 4)) & 8) != 0) {
-    t = a0 + *(int *)guest_at((uint32_t)(uintptr_t)(a0 + 8));
+  t = spr;
+  if ((*(int *)guest_at((uint32_t)(uintptr_t)(spr + 4)) & 8) != 0) {
+    t = spr + *(int *)guest_at((uint32_t)(uintptr_t)(spr + 8));
   }
-  asStack_10[0] = (short)a1;
-  asStack_10[1] = (short)a2;
-  asStack_10[2] = (short)arg6;
-  asStack_10[3] = (short)arg7;
-  t = t + ((a3 + arg5 * (int)*(short *)guest_at((uint32_t)(uintptr_t)(t + 0x10))) << 1) + 0x14;
+  asStack_10[0] = (short)x0;
+  asStack_10[1] = (short)y0;
+  asStack_10[2] = (short)x1;
+  asStack_10[3] = (short)y1;
+  t = t + ((idx + mul * (int)*(short *)guest_at((uint32_t)(uintptr_t)(t + 0x10))) << 1) + 0x14;
   /* guest rect = $sp+0x10 (frame 0x20, disasm 0x8018bda4) -> frm+0x10;
    * reserved frame staging, see spr_draw_off in gfx.c. */
   {
@@ -17721,24 +17720,24 @@ void corner_emit_cond_offset(int a0,int a1,int a2,int a3,int arg5,int arg6,int a
 
 /* guest corner_emit_variant @0x8018be28 — corner emit variant: p6!=0 uses raw
  * p2/p3 else adds t0+0xc/0xe base; h10/h12 always offset by p4/p5. */
-void corner_emit_variant(int a0,int a1,int a2,int a3,int arg5,int arg6)
+void corner_emit_variant(int spr,int x0,int y0,int dx,int dy,int abs)
 {
   int t;
   short asStack_10 [4];
-  t = a0;
-  if ((*(int *)guest_at((uint32_t)(uintptr_t)(a0 + 4)) & 8) != 0) {
-    t = a0 + *(int *)guest_at((uint32_t)(uintptr_t)(a0 + 8));
+  t = spr;
+  if ((*(int *)guest_at((uint32_t)(uintptr_t)(spr + 4)) & 8) != 0) {
+    t = spr + *(int *)guest_at((uint32_t)(uintptr_t)(spr + 8));
   }
-  if (arg6 != 0) {
-    asStack_10[0] = (short)a1;
-    asStack_10[1] = (short)a2;
+  if (abs != 0) {
+    asStack_10[0] = (short)x0;
+    asStack_10[1] = (short)y0;
   }
   else {
-    asStack_10[0] = (short)(*(ushort *)guest_at((uint32_t)(uintptr_t)(t + 0xc)) + a1);
-    asStack_10[1] = (short)(*(ushort *)guest_at((uint32_t)(uintptr_t)(t + 0xe)) + a2);
+    asStack_10[0] = (short)(*(ushort *)guest_at((uint32_t)(uintptr_t)(t + 0xc)) + x0);
+    asStack_10[1] = (short)(*(ushort *)guest_at((uint32_t)(uintptr_t)(t + 0xe)) + y0);
   }
-  asStack_10[2] = (short)(*(ushort *)guest_at((uint32_t)(uintptr_t)(t + 0x10)) + a3);
-  asStack_10[3] = (short)(*(ushort *)guest_at((uint32_t)(uintptr_t)(t + 0x12)) + arg5);
+  asStack_10[2] = (short)(*(ushort *)guest_at((uint32_t)(uintptr_t)(t + 0x10)) + dx);
+  asStack_10[3] = (short)(*(ushort *)guest_at((uint32_t)(uintptr_t)(t + 0x12)) + dy);
   /* guest rect = $sp+0x10 (frame 0x20, disasm 0x8018be28) -> frm+0x10;
    * reserved frame staging, see spr_draw_off in gfx.c. */
   {
@@ -18278,7 +18277,7 @@ void debug_line_flush(int u0,int u1,int n)
 /* guest sprite_obj_alloc_emit @0x8018ca8c — alloc sprite obj via spr_desc_slot_alloc,
  * fills uv/size halfwords + flags, emits prim_packet_init_tex packet at +0x14,
  * links low24 addrs through *p1; returns 0 or -1. */
-int sprite_obj_alloc_emit(int a0,int a1,int a2,int a3,int arg5)
+int sprite_obj_alloc_emit(int out,int pos,int dim,int arg,int clut)
 {
   int spr;
   spr = (int)guest_of(spr_desc_slot_alloc());
@@ -18286,22 +18285,22 @@ int sprite_obj_alloc_emit(int a0,int a1,int a2,int a3,int arg5)
     return -1;
   }
   *(short *)guest_at((uint32_t)(uintptr_t)(spr + 0x10)) =
-    (short)(((a2 >> 0x10) & 0xff) + 1);
+    (short)(((dim >> 0x10) & 0xff) + 1);
   *(short *)guest_at((uint32_t)(uintptr_t)(spr + 0x12)) =
-    (short)((int)((uint32_t)a2 >> 0x18) + 1);
-  *(short *)guest_at((uint32_t)(uintptr_t)(spr + 0xa)) = (short)(a1 >> 0x10);
-  *(short *)guest_at((uint32_t)(uintptr_t)(spr + 8)) = (short)a1;
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)(spr + 0xc)) = a3;
+    (short)((int)((uint32_t)dim >> 0x18) + 1);
+  *(short *)guest_at((uint32_t)(uintptr_t)(spr + 0xa)) = (short)(pos >> 0x10);
+  *(short *)guest_at((uint32_t)(uintptr_t)(spr + 8)) = (short)pos;
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)(spr + 0xc)) = arg;
   *(byte *)guest_at((uint32_t)(uintptr_t)(spr + 7)) =
     (byte)((*(byte *)guest_at((uint32_t)(uintptr_t)(spr + 7)) & 0xfd) | 1);
   *(undefined4 *)guest_at((uint32_t)(uintptr_t)(spr + 4)) = 0x64808080;
   prim_packet_init_tex(spr + 0x14,*(byte *)guest_at(0x801e4117),*(byte *)guest_at(0x801e4116),
-               (uint)(short)a2,(byte *)guest_at((uint32_t)(uintptr_t)arg5));
+               (uint)(short)dim,(byte *)guest_at((uint32_t)(uintptr_t)clut));
   *(undefined4 *)guest_at((uint32_t)(uintptr_t)spr) =
     *(undefined4 *)guest_at((uint32_t)(uintptr_t)spr) | 0x04000000;
-  *(int *)guest_at((uint32_t)(uintptr_t)a0) = spr & 0xffffff;
+  *(int *)guest_at((uint32_t)(uintptr_t)out) = spr & 0xffffff;
   *(undefined4 *)guest_at((uint32_t)(uintptr_t)(spr + 0x14)) =
     (spr & 0xffffff) | 0x02000000;
-  *(int *)guest_at((uint32_t)(uintptr_t)a0) = (spr + 0x14) & 0xffffff;
+  *(int *)guest_at((uint32_t)(uintptr_t)out) = (spr + 0x14) & 0xffffff;
   return 0;
 }

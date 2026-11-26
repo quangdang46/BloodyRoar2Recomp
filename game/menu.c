@@ -37,7 +37,7 @@ extern uint8_t *_g_system_config_ptr;
 extern uint8_t *_g_pad_buffer;
 extern CPUState *clean_cpu_state(void);
 /* g_game_state/g_sub_state are guest scratchpad bytes at 0x1f800000/0x1f800002
- * (the top-level mode SM read by guest_main in game.c). They must alias
+ * (the top-level mode SM read by entry_0x80126234 in game.c). They must alias
  * the SAME guest storage — declaring them `extern int` bound them to throwaway
  * host ints in bind.c, so menu writes (e.g. g_game_state=8 on mode confirm)
  * never reached the dispatcher and battle_flow_state_machine never ran. */
@@ -3728,75 +3728,75 @@ void selection_stat_bump(uint8_t *state,int32_t unused)
 extern int32_t gate_read_ec(uint32_t,uint32_t);
 void post_confirm_config_build(uint32_t battle_g,uint8_t *recs,int32_t direct)
 {
-  uint8_t *s3 = (uint8_t *)guest_at(battle_g);
-  uint8_t *s4 = recs;
-  uint8_t *a3 = (uint8_t *)guest_at(0x801b23ac);
+  uint8_t *b = (uint8_t *)guest_at(battle_g);
+
+  uint8_t *xlat = (uint8_t *)guest_at(0x801b23ac);
   uint8_t *u16src = (uint8_t *)guest_at(0x801b2378);
-  int32_t s1, s5 = direct;
+int32_t pi;
   int32_t i;
 
   confirm_bookkeeping(battle_g);
   for (i = 0; i < 0xa; i++)
-    *(uint16_t *)(s4 + 0x88 + i * 2) = *(uint16_t *)(u16src + i * 2);
+    *(uint16_t *)(recs + 0x88 + i * 2) = *(uint16_t *)(u16src + i * 2);
 
-  *(uint32_t *)(s4 + 0x14) = 0x1387;
-  *(uint32_t *)(s4 + 0x20) = 0;
-  *(uint32_t *)(s4 + 0x1c) = 1;
-  s4[0x24] = 0; s4[0x25] = 0;
-  *(uint32_t *)(s4 + 4) = 0;
-  *(uint32_t *)(s4 + 8) = 0;
-  *(uint32_t *)(s4 + 0xc) = 0;
-  *(uint32_t *)(s4 + 0x10) = 0;
-  *(uint32_t *)(s4 + 0x18) = (uint32_t)(int32_t)(int8_t)s3[0x98];
+  *(uint32_t *)(recs + 0x14) = 0x1387;
+  *(uint32_t *)(recs + 0x20) = 0;
+  *(uint32_t *)(recs + 0x1c) = 1;
+  recs[0x24] = 0; recs[0x25] = 0;
+  *(uint32_t *)(recs + 4) = 0;
+  *(uint32_t *)(recs + 8) = 0;
+  *(uint32_t *)(recs + 0xc) = 0;
+  *(uint32_t *)(recs + 0x10) = 0;
+  *(uint32_t *)(recs + 0x18) = (uint32_t)(int32_t)(int8_t)b[0x98];
 
-  for (s1 = 0; s1 < 2; s1++) {
-    uint8_t *s0 = s4 + s1 * 0x30;
-    uint16_t *ph = (uint16_t *)(s3 + 0xb4 + s1 * 2);
+  for (pi = 0; pi < 2; pi++) {
+    uint8_t *prec = recs + pi * 0x30;
+    uint16_t *ph = (uint16_t *)(b + 0xb4 + pi * 2);
     uint32_t cls = *ph & 0xf00;
     uint32_t t, a0, v1;
-    *(uint32_t *)(s0 + 0x38) = (uint32_t)select_phase_gate(battle_g,s1);
-    t = *(uint32_t *)(s0 + 0x28);
+    *(uint32_t *)(prec + 0x38) = (uint32_t)select_phase_gate(battle_g,pi);
+    t = *(uint32_t *)(prec + 0x28);
     if (cls==0x100||cls==0x200||cls==0x700) t |= 1; else t &= ~1u;
-    *(uint32_t *)(s0 + 0x28) = t;
+    *(uint32_t *)(prec + 0x28) = t;
     {
-      int32_t r = gate_read_ec(battle_g,s1);
+      int32_t r = gate_read_ec(battle_g,pi);
       a0 = (t & ~3u) | ((uint32_t)(r & 1) << 1);
-      *(uint32_t *)(s0 + 0x28) = a0;
-      *(uint32_t *)(s0 + 0x54) = 0;
+      *(uint32_t *)(prec + 0x28) = a0;
+      *(uint32_t *)(prec + 0x54) = 0;
       v1 = a0 & ~4u;
       v1 |= (*ph >> 0xa) & 4;
-      *(uint32_t *)(s0 + 0x28) = v1;
+      *(uint32_t *)(prec + 0x28) = v1;
     }
   }
 
   {
-    uint32_t mode = s3[0x9b];
+    uint32_t mode = b[0x9b];
     int32_t a2 = 1;
     if (mode == 3) {
       /* path A: both players forced-ready */
-      for (s1 = 0; s1 < 2; s1++) {
-        uint8_t *a1 = s4 + s1 * 0x30;
-        uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(s3 + 0xc0));
-        *(uint32_t *)(a1 + 0x3c) = (uint32_t)s1;
-        *(uint32_t *)(a1 + 0x40) = (uint32_t)s1;
+      for (pi = 0; pi < 2; pi++) {
+        uint8_t *a1 = recs + pi * 0x30;
+        uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(b + 0xc0));
+        *(uint32_t *)(a1 + 0x3c) = (uint32_t)pi;
+        *(uint32_t *)(a1 + 0x40) = (uint32_t)pi;
         *(uint32_t *)(a1 + 0x38) = 1;
-        if (s5) *(uint32_t *)(a1 + 0x44) = cr[s1 + 0x1b];
-        else    *(uint32_t *)(a1 + 0x44) = a3[cr[s1 + 0x1b]];
+        if (direct) *(uint32_t *)(a1 + 0x44) = cr[pi + 0x1b];
+        else    *(uint32_t *)(a1 + 0x44) = xlat[cr[pi + 0x1b]];
         *(uint32_t *)(a1 + 0x4c) = 0;
         *(uint32_t *)(a1 + 0x28) |= 0x78;
       }
     } else if ((mode < 4 && (int8_t)mode >= 0) || mode == 4) {
       /* main per-player fill loop */
-      for (s1 = 0; s1 < 2; s1++) {
-        uint8_t *a0 = s4 + s1 * 0x30;
-        uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(s3 + 0xc0));
-        uint32_t v0 = *(uint32_t *)(a0 + 0x38);
-        *(uint32_t *)(a0 + 0x3c) = (uint32_t)s1;
-        *(uint32_t *)(a0 + 0x40) = (uint32_t)s1;
-        if (v0 == 0) {
+      for (pi = 0; pi < 2; pi++) {
+        uint8_t *a0 = recs + pi * 0x30;
+        uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(b + 0xc0));
+        uint32_t g38 = *(uint32_t *)(a0 + 0x38);
+        *(uint32_t *)(a0 + 0x3c) = (uint32_t)pi;
+        *(uint32_t *)(a0 + 0x40) = (uint32_t)pi;
+        if (g38 == 0) {
           /* char select then +0x28 bit0 test */
-          if (s5) *(uint32_t *)(a0 + 0x44) = cr[s1 + 0x1b];
-          else    *(uint32_t *)(a0 + 0x44) = a3[cr[s1 + 0x1b]];
+          if (direct) *(uint32_t *)(a0 + 0x44) = cr[pi + 0x1b];
+          else    *(uint32_t *)(a0 + 0x44) = xlat[cr[pi + 0x1b]];
           {
             uint32_t v1 = *(uint32_t *)(a0 + 0x28);
             if (v1 & 1) {
@@ -3807,29 +3807,29 @@ void post_confirm_config_build(uint32_t battle_g,uint8_t *recs,int32_t direct)
               *(uint32_t *)(a0 + 0x4c) = (uint32_t)a2;
             }
           }
-        } else if (v0 == (uint32_t)a2) {
+        } else if (g38 == (uint32_t)a2) {
           uint32_t fl_old = *(uint32_t *)(a0 + 0x28);
           uint32_t foe_bit;
           *(uint32_t *)(a0 + 0x28) = fl_old | 0x40;
-          foe_bit = ((*(uint32_t *)(s4 + (s1 ^ 1) * 0x30 + 0x28) >> 1) & 1);
+          foe_bit = ((*(uint32_t *)(recs + (pi ^ 1) * 0x30 + 0x28) >> 1) & 1);
           if (foe_bit != (uint32_t)a2) {
             /* 493c4: cr-based char select */
-            if (s5) *(uint32_t *)(a0 + 0x44) = cr[s1 + 0x1b];
-            else    *(uint32_t *)(a0 + 0x44) = a3[cr[s1 + 0x1b]];
+            if (direct) *(uint32_t *)(a0 + 0x44) = cr[pi + 0x1b];
+            else    *(uint32_t *)(a0 + 0x44) = xlat[cr[pi + 0x1b]];
           } else {
             /* 49380: +0x28 = old|0x58, char via battle+0xa8 table */
             int16_t off;
             *(uint32_t *)(a0 + 0x28) = fl_old | 0x58;
-            off = *(int16_t *)(s3 + 0xa2);
-            if (s5) *(uint32_t *)(a0 + 0x44) =
-              *(uint8_t *)guest_at(*(uint32_t *)(s3 + 0xa8) + (uint32_t)off);
-            else    *(uint32_t *)(a0 + 0x44) = a3[
-              *(uint8_t *)guest_at(*(uint32_t *)(s3 + 0xa8) + (uint32_t)off)];
+            off = *(int16_t *)(b + 0xa2);
+            if (direct) *(uint32_t *)(a0 + 0x44) =
+              *(uint8_t *)guest_at(*(uint32_t *)(b + 0xa8) + (uint32_t)off);
+            else    *(uint32_t *)(a0 + 0x44) = xlat[
+              *(uint8_t *)guest_at(*(uint32_t *)(b + 0xa8) + (uint32_t)off)];
           }
           /* 49408 tail */
-          if (*(uint8_t *)(s3 + 0x9c) == 5 &&
-              (*(uint8_t *)(s3 + 0x9b) == (uint8_t)a2 ||
-               *(uint8_t *)(s3 + 0x9b) == 4)) {
+          if (*(uint8_t *)(b + 0x9c) == 5 &&
+              (*(uint8_t *)(b + 0x9b) == (uint8_t)a2 ||
+               *(uint8_t *)(b + 0x9b) == 4)) {
             *(uint32_t *)(a0 + 0x4c) = 0;
             *(uint32_t *)(a0 + 0x28) |= 0x78;
           } else {
@@ -4307,12 +4307,12 @@ int32_t bcfg_step_a(uint32_t battle_g,uint32_t player,uint32_t flags)
 extern void hud_text_blk_alt(uint32_t,uint32_t,const void *,int32_t,int32_t,int32_t);
 void bcfg_step_b(uint32_t battle_g,int32_t flag)
 {
-  uint8_t *v1 = (uint8_t *)guest_at(battle_g);
-  int32_t a3 = flag ? ((int32_t)*(int16_t *)(v1 + 0x20) - 0x50) : 0x50;
-  uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(v1 + 0xc8));
+  uint8_t *b = (uint8_t *)guest_at(battle_g);
+  int32_t txt_y = flag ? ((int32_t)*(int16_t *)(b + 0x20) - 0x50) : 0x50;
+  uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(b + 0xc8));
   if (((*(uint16_t *)(cr + 2) >> 0xb) & 1) != 0) {
-    hud_text_blk_alt(*(uint32_t *)(v1 + 8),*(uint32_t *)(v1 + 0xc),
-                 (const void *)guest_at(0x8012834),(int16_t)(a3 - 0x1b),1,0x20);
+    hud_text_blk_alt(*(uint32_t *)(b + 8),*(uint32_t *)(b + 0xc),
+                 (const void *)guest_at(0x8012834),(int16_t)(txt_y - 0x1b),1,0x20);
   }
 }
 
@@ -4323,21 +4323,21 @@ extern void chan_blocks_reset(uint32_t,uint32_t,int32_t);
 extern void ret_stub_b(uint8_t *,int32_t);
 void bcfg_step_c(uint32_t battle_g,uint32_t player)
 {
-  uint8_t *s1 = (uint8_t *)guest_at(battle_g);
-  uint8_t *s2 = (uint8_t *)guest_at(0x1f8000e8 + player * 0x108);
-  uint8_t *v1, *cr;
+  uint8_t *b = (uint8_t *)guest_at(battle_g);
+  uint8_t *st_rec = (uint8_t *)guest_at(0x1f8000e8 + player * 0x108);
+  uint8_t *obj, *cr;
   deferred_cmd_post(0x400,0xc,0);
-  *(uint16_t *)(s1 + player * 2 + 0xb4) = 0x100;
-  cr = (uint8_t *)guest_at(*(uint32_t *)(s1 + 0xc0)) + player;
+  *(uint16_t *)(b + player * 2 + 0xb4) = 0x100;
+  cr = (uint8_t *)guest_at(*(uint32_t *)(b + 0xc0)) + player;
   cr[0x19] = cr[0x19] & 3;
-  v1 = (uint8_t *)guest_at(*(uint32_t *)(s2 + 0x2c));
-  if (v1[1] == 0) {
-    uint32_t a1 = *(uint32_t *)(v1 + 0xf0);
-    uint32_t a0 = *(uint32_t *)(v1 + 0xf4);
-    if (a1 >= a0) *(uint32_t *)(v1 + 0xf0) = a1 - a0;
+  obj = (uint8_t *)guest_at(*(uint32_t *)(st_rec + 0x2c));
+  if (obj[1] == 0) {
+    uint32_t cnt_cur = *(uint32_t *)(obj + 0xf0);
+    uint32_t cnt_per = *(uint32_t *)(obj + 0xf4);
+    if (cnt_cur >= cnt_per) *(uint32_t *)(obj + 0xf0) = cnt_cur - cnt_per;
   }
-  chan_blocks_reset(0x1f8000e8 + player * 0x108,*(uint32_t *)guest_at(*(uint32_t *)(s2 + 0x2c) + (0xf0)),1);
-  ret_stub_b(s2,2);
+  chan_blocks_reset(0x1f8000e8 + player * 0x108,*(uint32_t *)guest_at(*(uint32_t *)(st_rec + 0x2c) + (0xf0)),1);
+  ret_stub_b(st_rec,2);
 }
 
 /* bcfg_step_d — variant of 8015279c: same reset but foe-side extra
@@ -4433,16 +4433,16 @@ void fight_timer_announce(uint32_t battle_g,uint8_t *side,int32_t flag)
 extern void champion_win_announce(uint32_t,uint8_t *,int32_t);
 void stage_fight_announce(uint32_t battle_g,uint8_t *side)
 {
-  uint8_t *s0 = (uint8_t *)guest_at(battle_g);
-  uint8_t *s1 = side;
-  uint8_t *v1, *c0;
+  uint8_t *b = (uint8_t *)guest_at(battle_g);
+
+  uint8_t *v1, *crecs;
   /* sprintf buf = guest $sp+0x18 (frame -0x38) = entry_sp-0x20; hud_text_blk_alt
    * re-reads it through nested frames, so the write->draw span inside the
    * v1[1]!=0 branch runs inside a reserved guest frame (sp+0x18 -> frm+0x20). */
   uint8_t *buf;
-  int32_t a2, a3;
-  if (((*(uint16_t *)guest_at(*(uint32_t *)(s0 + 0xc8) + (2)) >> 0xb) & 1) == 0) return;
-  v1 = (uint8_t *)guest_at(*(uint32_t *)(s1 + 0x2c));
+  int32_t a2, txt_y;
+  if (((*(uint16_t *)guest_at(*(uint32_t *)(b + 0xc8) + (2)) >> 0xb) & 1) == 0) return;
+  v1 = (uint8_t *)guest_at(*(uint32_t *)(side + 0x2c));
   if (v1[1] != 0) {
     extern uint32_t br2_guest_frame(uint32_t);
     extern void br2_guest_frame_free(void);
@@ -4450,22 +4450,22 @@ void stage_fight_announce(uint32_t battle_g,uint8_t *side)
     buf = (uint8_t *)guest_at(sfa_frm + 0x20);
     static const uint32_t jt[6] = {
       0x80151e4c,0x80151ed0,0x80151ed0,0x80151ea8,0x80151ea8,0x80151ed0 };
-    a2 = (int32_t)*(int16_t *)(s0 + 0xa2) + 1;
-    c0 = (uint8_t *)guest_at(*(uint32_t *)(s0 + 0xc0));
+    a2 = (int32_t)*(int16_t *)(b + 0xa2) + 1;
+    crecs = (uint8_t *)guest_at(*(uint32_t *)(b + 0xc0));
     {
-      uint32_t mode = s0[0x9c];
+      uint32_t mode = b[0x9c];
       if (mode < 6) {
         uint32_t tgt = jt[mode];
         if (tgt == 0x80151e4c) {                 /* case 0 */
           if (a2 == 9) {
             sprintf_core((char *)buf,(char *)guest_at(0x801208c0));
-          } else if (a2 < (int32_t)c0[0x10]) {
+          } else if (a2 < (int32_t)crecs[0x10]) {
             sprintf_core((char *)buf,(char *)guest_at(0x801208dc),a2);
           } else {
             sprintf_core((char *)buf,(char *)guest_at(0x801208d0));
           }
         } else if (tgt == 0x80151ea8) {          /* cases 3,4 */
-          if (a2 < (int32_t)c0[0x10]) {
+          if (a2 < (int32_t)crecs[0x10]) {
             sprintf_core((char *)buf,(char *)guest_at(0x801208f4),a2);
           } else {
             sprintf_core((char *)buf,(char *)guest_at(0x801208e8));
@@ -4475,31 +4475,31 @@ void stage_fight_announce(uint32_t battle_g,uint8_t *side)
         }
       }
     }
-    if (s1[2] == 0) {
-      a3 = 0xe;
-      hud_text_blk_alt(*(uint32_t *)(s0 + 8),*(uint32_t *)(s0 + 0xc),
-                   buf,a3,0x20,7);
+    if (side[2] == 0) {
+      txt_y = 0xe;
+      hud_text_blk_alt(*(uint32_t *)(b + 8),*(uint32_t *)(b + 0xc),
+                   buf,txt_y,0x20,7);
     } else {
-      a3 = (int32_t)*(int16_t *)(s0 + 0x20) - 0x92;
-      hud_text_blk_alt(*(uint32_t *)(s0 + 8),*(uint32_t *)(s0 + 0xc),
-                   buf,a3,0x20,7);
+      txt_y = (int32_t)*(int16_t *)(b + 0x20) - 0x92;
+      hud_text_blk_alt(*(uint32_t *)(b + 8),*(uint32_t *)(b + 0xc),
+                   buf,txt_y,0x20,7);
     }
     br2_guest_frame_free();
     return;
   }
   /* obj+1 clear path */
-  a2 = (int32_t)*(uint16_t *)(s1 + 0xe2) + (int32_t)*(uint16_t *)(v1 + 0xe2);
+  a2 = (int32_t)*(uint16_t *)(side + 0xe2) + (int32_t)*(uint16_t *)(v1 + 0xe2);
   if (a2 == 0 &&
-      (*(uint16_t *)(s0 + s1[2] * 2 + 0xb4) & 0x1000) != 0) a2 = 1;
+      (*(uint16_t *)(b + side[2] * 2 + 0xb4) & 0x1000) != 0) a2 = 1;
   if (a2 != 0) {
-    champion_win_announce(battle_g,s1,s1[2]);
+    champion_win_announce(battle_g,side,side[2]);
     return;
   }
   if ((*(uint32_t *)guest_at(0x1f8000dc) & 0x40) == 0) return;
-  if (s1[2] == 0) a3 = 0x32;
-  else            a3 = (int32_t)*(int16_t *)(s0 + 0x20) - 0x6e;
-  hud_text_blk_alt(*(uint32_t *)(s0 + 8),*(uint32_t *)(s0 + 0xc),
-               (const void *)guest_at(0x80120900),a3,0x20,1);
+  if (side[2] == 0) txt_y = 0x32;
+  else            txt_y = (int32_t)*(int16_t *)(b + 0x20) - 0x6e;
+  hud_text_blk_alt(*(uint32_t *)(b + 8),*(uint32_t *)(b + 0xc),
+               (const void *)guest_at(0x80120900),txt_y,0x20,1);
 }
 
 /* champion_win_announce — champion-win announce: "CHAMPION 1 WIN" /
@@ -10530,8 +10530,8 @@ extern uint32_t gpu_texclut_pkt(uint32_t *,uint32_t *,uint32_t,uint32_t);
  * Args unused. */
 int32_t queue_slot_peek(void)
 {
-  int32_t a0 = (int32_t)MBS16(0x1f8000d2u) + 1;
-  return (a0 < 5) ? a0 : 0;
+  int32_t next = (int32_t)MBS16(0x1f8000d2u) + 1;
+  return (next < 5) ? next : 0;
 }
 
 /* cmd_queue_slot_next — command-queue slot advance leaf @0x8012a4dc (10
@@ -10541,8 +10541,8 @@ int32_t queue_slot_peek(void)
  * leaf dispatches clean. Args unused. */
 int32_t cmd_queue_slot_next(void)
 {
-  int32_t a0 = (int32_t)MBS16(0x1f8000d0u) + 1;
-  return (a0 < 9) ? a0 : 0;
+  int32_t next = (int32_t)MBS16(0x1f8000d0u) + 1;
+  return (next < 9) ? next : 0;
 }
 
 /* sprite_slot_commit — sprite-slot commit @0x8012a504 (44 insns):
@@ -15720,31 +15720,31 @@ uint32_t terrain_packet_gen(uint32_t hdr,uint32_t cur,
  * left as the lui base). */
 uint32_t peak_track(void)
 {
-  uint32_t t2 = 0, t3 = 0;
-  uint32_t a2, t1, i;
-  if (MB32(0x801f46f4u) != 0) { a2 = 0x100; t1 = 0x200; }
-  else                        { a2 = 0;     t1 = 0x100; }
-  for (i = a2; i < t1; i++) {
+  uint32_t pk_a = 0, pk_b = 0;
+  uint32_t i_lo, i_hi, i;
+  if (MB32(0x801f46f4u) != 0) { i_lo = 0x100; i_hi = 0x200; }
+  else                        { i_lo = 0;     i_hi = 0x100; }
+  for (i = i_lo; i < i_hi; i++) {
     uint32_t p = 0x801f36f0u + i * 2u;
-    int32_t v0 = MBS16(p);
+    int32_t samp_a = MBS16(p);
     int32_t v1 = MBS16(p + 0x400u);
-    int32_t a0 = v0 < 0 ? -v0 : v0;
-    int32_t t0 = v1 < 0 ? -v1 : v1;
-    if ((uint16_t)t2 < (uint16_t)a0) t2 = (uint32_t)a0;
-    if ((uint16_t)t3 < (uint16_t)t0) t3 = (uint32_t)t0;
+    int32_t mag_a = samp_a < 0 ? -samp_a : samp_a;
+    int32_t mag_b = v1 < 0 ? -v1 : v1;
+    if ((uint16_t)pk_a < (uint16_t)mag_a) pk_a = (uint32_t)mag_a;
+    if ((uint16_t)pk_b < (uint16_t)mag_b) pk_b = (uint32_t)mag_b;
   }
   {
-    uint32_t a1 = t2 & 0xffffu;
-    uint32_t a0 = t3 & 0xffffu;
+    uint32_t pk_a16 = pk_a & 0xffffu;
+    uint32_t mag_a = pk_b & 0xffffu;
     uint32_t v1;
-    MW32(0x801f46f8u, a1);
-    if (MB32(0x801f36e4u) < a1) {
-      MW32(0x801f36e8u, a0);
-      MW32(0x801f36e4u, a1);
+    MW32(0x801f46f8u, pk_a16);
+    if (MB32(0x801f36e4u) < pk_a16) {
+      MW32(0x801f36e8u, mag_a);
+      MW32(0x801f36e4u, pk_a16);
       MW32(0x801b3ed0u, 0);
     }
-    if (MB32(0x801f46f0u) < a0) {
-      MW32(0x801f46f0u, a0);
+    if (MB32(0x801f46f0u) < mag_a) {
+      MW32(0x801f46f0u, mag_a);
       MW32(0x801b3ed4u, 0);
     }
     v1 = MB32(0x801b3ed0u);
@@ -15752,7 +15752,7 @@ uint32_t peak_track(void)
       MW32(0x801b3ed0u, v1 + 1);
     } else {
       MW32(0x801b3ed0u, 0);
-      MW32(0x801f36e4u, a1);
+      MW32(0x801f36e4u, pk_a16);
     }
     v1 = MB32(0x801b3ed4u);
     if (v1 < 0x78) {
