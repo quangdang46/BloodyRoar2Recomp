@@ -901,6 +901,7 @@ uint32_t cd_result_wait_a(int a0,uint8_t *out_buf)
 
 /* ======== 0x80197ad0 ======== */
 
+/* cd_str_print — emit NUL-terminated guest string msg (default 0x801258C8) to console, then console_pct. */
 void cd_str_print(uint32_t msg)
 
 {
@@ -5368,6 +5369,7 @@ void cd_chan_reset_b(void)
 
 /* ======== 0x8019af30 ======== */
 
+/* cd_init_stage_b — zero handler-table words @0x801BDDF4 (8), clear @0x801BDDF0, tbl8 dispatch slot 3 -> 0x8019AF7C. */
 uint32_t cd_init_stage_b(void)
 {
   /* Generated zeroes 8 handler-table words at 0x801BDDF4 (0x801C0000-8716),
@@ -5423,6 +5425,7 @@ uint32_t cd_chan_cb_set(uint32_t idx,uint32_t handler)
 
 /* ======== 0x8019ae10 ======== */
 
+/* cd_init_stage_a — init cells @0x801BDDE4/0x801BDDE0, zero32 @0x801BDDC0 (8), tbl8 dispatch slot 0 -> 0x8019AE68. */
 uint32_t cd_init_stage_a(void)
 {
   br2_st32p(0x801bdde4, 0x100);
@@ -5435,6 +5438,7 @@ uint32_t cd_init_stage_a(void)
 /* ======== batch_mass3 ======== */
 
 extern uint32_t gpu_invoke(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+/* cd_gpu_call — table-driven gpu_invoke wrapper: fn=*(tbl+off) via *0x801B8318. */
 static uint32_t cd_gpu_call(uint32_t off,uint32_t a0,uint32_t a1,
                                 uint32_t a2,uint32_t a3)
 {
@@ -5448,6 +5452,7 @@ extern void FUN_8019ad80(uint32_t);
 
 /* ======== 0x80191714 ======== */
 
+/* cd_gpu_callpair_a — two gpu_call steps: (0x3C,0,a1,a2,a3) then (0x14,a0+4,byte[a0+3],a2,a3). */
 void cd_gpu_callpair_a(uint32_t a0,uint32_t a1,uint32_t a2,
                   uint32_t a3)
 {
@@ -5458,6 +5463,7 @@ void cd_gpu_callpair_a(uint32_t a0,uint32_t a1,uint32_t a2,
 
 /* ======== 0x80191084 ======== */
 
+/* cd_gpu_defer_set — swap defer cell @0x801B832C; if trace>=2 fire cb @0x801B831C(0x80125484,a0); ret old. */
 uint32_t cd_gpu_defer_set(uint32_t a0)
 {
   uint32_t old = DB32(0x801b832c);
@@ -5470,6 +5476,7 @@ uint32_t cd_gpu_defer_set(uint32_t a0)
 
 /* ======== 0x80191488 ======== */
 
+/* cd_gpu_call_8 — gpu_rect_bounds_dbg(0x80125510,a0); gpu_call(8,*(tbl+0x1C),a0,8,a1). */
 void cd_gpu_call_8(uint32_t a0,uint32_t a1)
 {
   uint32_t obj;
