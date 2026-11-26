@@ -85265,7 +85265,9 @@ block_80195C98:
 }
 
 /* cps_80195cbc — clean CPS transliteration of br2eu_func_80195CBC (guest 0x80195cbc)
- * from SLES_017.22_full_45.c. */
+ * from SLES_017.22_full_45.c.
+ * cd_status_str_lookup: a0&0xFF <28 → word @0x801BC9B4[a0] else default
+ * str ptr @0x80125698 — CD status→string table. */
 void cps_80195cbc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -85319,7 +85321,9 @@ block_80195CE8:
 }
 
 /* cps_80195cf0 — clean CPS transliteration of br2eu_func_80195CF0 (guest 0x80195cf0)
- * from SLES_017.22_full_45.c. */
+ * from SLES_017.22_full_45.c.
+ * cd_err_str_lookup: a0&0xFF <7 → word @0x801BC9D4[a0] else default
+ * str ptr @0x80125698 — CD error→string table. */
 void cps_80195cf0(void)
 {
   CPUState *cpu = clean_cpu_state();
