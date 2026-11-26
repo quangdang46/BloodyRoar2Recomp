@@ -424,3 +424,32 @@ self-delegate fragments (text_format_*/draw_env_* in gfx_gpu_d0*).
 
 Verified: clean build EU + USA; headless :4923 frames 22753 -> 27514+
 attract CD streaming, no wedge.
+
+## Batch 14 (orch/w5/e05) — first uncovered piece-ENTRY conversions
+
+Targeted the worklist's remaining 2-block CD-region defs that have NO
+clean_cps.map rows and NO fnmap rows — generated-reachable piece entries:
+
+- cpst_80191e18 (blocks 80191E18/80191E48)
+- cpst_80199ab0 (blocks 80199AB0/80199AD0; fallthrough -> 80199AEC
+  stays generated — mid-cluster piece, status quo)
+- cpst_801a1c90 (blocks 801A1C90/801A1C98)
+- cpst_801a3510 (blocks 801A3510/801A3524; fallthrough -> 801A3568
+  stays generated)
+
+8 clean_cps.map rows (entry + _cont/block addrs each). Entries now run
+timed CPS; intra-piece psx_cyc_*/psx_slice_block charges apply; IRQ
+preemption resumes via _cont cases. Continuation pieces reached only by
+cpu->pc tail-dispatch still run generated — faithful (same boundary the
+untimed cps_ bodies used), strictly better than before (entries were
+generated too).
+
+Cluster caveat (worklist): these are pieces of larger state-machine
+clusters — e.g. cpst_801a3510's sibling piece 801A3570 tail-dispatches
+to 6+ addrs (80199B10/801A36C0/801A4210/801A23FC/801A35B8/801A35B0 +
+jalr). Full-cluster timed conversion is future work sized per-cluster.
+
+clean_table: 8741 wrappers, 5 skipped (unchanged legit set).
+Verified: clean build EU + USA; headless :4927 frames 7834 -> 14198+
+boot/attract, no wedge. clean_stats: new entries 0 hits in window
+(infrequent paths — faithful-by-construction).
