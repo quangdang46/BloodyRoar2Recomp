@@ -2379,6 +2379,10 @@ void cps_801264ec(void)
 
     /* Address: 0x801264EC, Size: 44 bytes, Blocks: 1 */
 
+    /* scale piece (state-3 tail): a1=byte[rec+15]*8 * s5(0x66666667)
+       >>2 -sign -> a1; a0=byte[rec+14]; jal 0x80156048 -> cps_8012651C.
+       CPS-blocked. */
+
 block_801264EC:
     v0 = cpu->read_word(s1 + 192);
     /* nop */  /* 0x801264F0: 0x00000000 */
@@ -2422,6 +2426,9 @@ void cps_8012651c(void)
 
     /* Address: 0x8012651C, Size: 16 bytes, Blocks: 1 */
 
+    /* state gate: byte[s1] != s4(4) -> cps_80126344 loop, else ->
+       cps_8012652C. CPS-blocked. */
+
 block_8012651C:
     v0 = cpu->read_byte(s1);
     /* nop */  /* 0x80126520: 0x00000000 */
@@ -2453,6 +2460,10 @@ void cps_8012652c(void)
         }
     }
     /* Address: 0x8012652C, Size: 28 bytes, Blocks: 2 */
+
+    /* state-4 commit: byte[s1]=s2(5) -> cps_80126344; then
+       byte[rec+32]==0 ? a0=2 -> cps_80126550 : -> cps_8012654C.
+       CPS-blocked. */
 
 block_8012652C:
     /* delay slot (always executes) */
@@ -2523,6 +2534,10 @@ void cps_80126550(void)
     }
     /* Address: 0x80126550, Size: 44 bytes, Blocks: 4 */
 
+    /* attr apply (state-4): s3++, jal 0x801560F8, jal 0x8012708C
+       (byte[rec+11]), jal 0x8012AEEC(s1), jal 0x8012748C -> cps_8012657C.
+       CPS-blocked. */
+
 block_80126550:
     ra = 0x80126558u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -2573,6 +2588,10 @@ void cps_8012657c(void)
         }
     }
     /* Address: 0x8012657C, Size: 48 bytes, Blocks: 5 */
+
+    /* state-5 step: jal 0x8012AEEC(s1), 0x8015F644, 0x80147034(0);
+       byte[s1]==5 gate -> (s3&0xFFFF)<4 ? v0=6 : v0=2 -> cps_801265AC.
+       CPS-blocked. */
 
 block_8012657C:
     ra = 0x80126584u;  /* jal link before delay slot */
@@ -2631,6 +2650,9 @@ void cps_801265ac(void)
     }
     /* Address: 0x801265AC, Size: 12 bytes, Blocks: 2 */
 
+    /* next-state select: v0!=0 -> byte[s1]=6 (cps_801265C0),
+       else v0=2 -> cps_801265B8. CPS-blocked. */
+
 block_801265AC:
     int _bc_801265AC = (v0 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -2657,6 +2679,8 @@ void cps_801265b8(void)
 
     /* Address: 0x801265B8, Size: 8 bytes, Blocks: 1 */
 
+    /* state commit: byte[s1]=v0 -> cps_80126344 loop. CPS-blocked. */
+
 block_801265B8:
     /* delay slot (always executes) */
     cpu->write_byte(s1, (uint8_t)v0);
@@ -2680,6 +2704,10 @@ void cps_801265c0(void)
         }
     }
     /* Address: 0x801265C0, Size: 28 bytes, Blocks: 2 */
+
+    /* state-6 commit: byte[s1]=6 -> cps_80126344; then
+       byte[rec+32]==0 ? a0=2 -> cps_801265E4 : -> cps_801265E0.
+       CPS-blocked. */
 
 block_801265C0:
     /* delay slot (always executes) */
@@ -2751,6 +2779,10 @@ void cps_801265e4(void)
     }
     /* Address: 0x801265E4, Size: 44 bytes, Blocks: 5 */
 
+    /* attr apply (state-6): jal 0x801560F8 + 0x80167330(0); s0=byte[s1],
+       gate s0!=6 -> loop; else jal 0x80164668(0) -> cps_80126610.
+       CPS-blocked. */
+
 block_801265E4:
     ra = 0x801265ECu;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -2800,6 +2832,9 @@ void cps_80126610(void)
 
     /* Address: 0x80126610, Size: 12 bytes, Blocks: 1 */
 
+    /* state gate: byte[s1] != s0(6) -> cps_80126344 loop, else v0=3 ->
+       cps_8012661C. CPS-blocked. */
+
 block_80126610:
     /* nop */  /* 0x80126610: 0x00000000 */
     int _bc_80126614 = (v0 != s0);  /* save branch cond before delay slot */
@@ -2831,6 +2866,9 @@ void cps_8012661c(void)
         }
     }
     /* Address: 0x8012661C, Size: 36 bytes, Blocks: 3 */
+
+    /* state-3 commit variant: byte[s1]=3 -> cps_80126344; then
+       byte[rec+32]==0 ? a0=2 : a0=1 -> cps_80126640. CPS-blocked. */
 
 block_8012661C:
     /* delay slot (always executes) */
@@ -2878,6 +2916,10 @@ void cps_80126640(void)
         }
     }
     /* Address: 0x80126640, Size: 48 bytes, Blocks: 6 */
+
+    /* attr apply (state-7/8): jal 0x801560F8; byte[s1]==7 -> jal
+       0x801560F8(1) + 0x8016FCC4(sp+16), v0=8; gate byte[s1]!=v0 ->
+       loop, else cps_80126674. CPS-blocked. */
 
 block_80126640:
     ra = 0x80126648u;  /* jal link before delay slot */
@@ -2934,6 +2976,8 @@ void cps_80126670(void)
 
     /* Address: 0x80126670, Size: 4 bytes, Blocks: 1 */
 
+    /* nop sled -> cps_80126674 */
+
 block_80126670:
     /* nop */  /* 0x80126670: 0x00000000 */
     cpu->pc = 0x80126674u; return;  /* fallthrough to split piece */
@@ -2957,6 +3001,10 @@ void cps_80126674(void)
         }
     }
     /* Address: 0x80126674, Size: 44 bytes, Blocks: 5 */
+
+    /* attr apply (state-8): byte[s1]=s2(5) -> loop; jal 0x801560F8(1) +
+       0x80167840(0); byte[s1+156]==s4(4) -> cps_8012652C, ==s0(5) ->
+       cps_801266B4, else -> cps_801266A4. CPS-blocked. */
 
 block_80126674:
     /* delay slot (always executes) */
@@ -3035,6 +3083,9 @@ void cps_801266a4(void)
     }
     /* Address: 0x801266A4, Size: 16 bytes, Blocks: 2 */
 
+    /* state commit: jal 0x80164EA4(0), byte[s1]=s0(5) -> cps_80126344.
+       CPS-blocked. */
+
 block_801266A4:
     ra = 0x801266ACu;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -3065,6 +3116,10 @@ void cps_801266b4(void)
         }
     }
     /* Address: 0x801266B4, Size: 32 bytes, Blocks: 3 */
+
+    /* state commit: byte[s1]=11, byte[s1+2]=s4(4) -> cps_80126344;
+       then jal 0x801560F8(1), byte[s1+2]==3 ? -> cps_801266F0 :
+       cps_801266D8. CPS-blocked. */
 
 block_801266B4:
     cpu->write_byte(s1, (uint8_t)v0);
