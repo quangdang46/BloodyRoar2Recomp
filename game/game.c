@@ -514,7 +514,7 @@ extern void guest_bzero(uint32_t,int);
 static void entry_0x80126178(void)
 {
     /* Faithful _start (disasm 0x80126178-0x8012621c, delay slots incl.):
-     *   BSS clear 0x801CEEF0..0x801FF650 (sw $zero loop, end exclusive)
+     *   BSS clear 0x801CEEF0..0x801FF650 (sw $zero loop, bss_end exclusive)
      *   sp = (*(u32*)0x80126228) | 0x80000000   — literal-pool load, NOT a
      *     BSS read; a0 = 0x801FF650 then sll/srl 3 -> phys 0x1FF650
      *   a1 = v0 - *(0x801BE720) - 0x1FF650     — size for BIOS bzero
@@ -522,10 +522,10 @@ static void entry_0x80126178(void)
      *   jal bzero_tramp(0x801FF654, a1);  jal main(0x80126234); break.
      * sp/gp/fp setup is skipped: the runtime owns cpu->gpr[29] and the
      * clean ports address globals absolutely via guest_at(). */
-    uint32_t *puVar1 = (uint32_t *)guest_at(0x801ceef0);
-    uint32_t *end    = (uint32_t *)guest_at(0x801ff650);
+    uint32_t *bss_cur = (uint32_t *)guest_at(0x801ceef0);
+    uint32_t *bss_end    = (uint32_t *)guest_at(0x801ff650);
     uint32_t lit, v1, size;
-    while (puVar1 < end) *puVar1++ = 0;
+    while (bss_cur < bss_end) *bss_cur++ = 0;
     *(uint32_t *)guest_at(0x801ceef0) = 0;   /* saved-ra slot (unused) */
     lit  = *(uint32_t *)guest_at(0x80126228); /* literal pool: 2MB top */
     v1   = *(uint32_t *)guest_at(0x801be720);
@@ -548,35 +548,35 @@ static void func_0x80126170(void) { empty_leaf_e(); }
 static void func_0x80163840(int p) { (void)p; }
 
 /* apply_saved_settings_or_defaults @0x80126720 */
-static void apply_saved_settings_or_defaults(undefined4 *param_1)
+static void apply_saved_settings_or_defaults(undefined4 *sys_cfg)
 {
-    undefined4 *puVar1;
-    undefined4 *puVar2;
-    undefined4 uVar3;
-    undefined4 uVar4;
-    undefined4 uVar5;
+    undefined4 *src_rec;
+    undefined4 *dst_rec;
+    undefined4 w1;
+    undefined4 w2;
+    undefined4 w3;
 
-    puVar1 = (undefined4 *)g_DAT_801b1280;
-    puVar2 = param_1;
+    src_rec = (undefined4 *)g_DAT_801b1280;
+    dst_rec = sys_cfg;
     do {
-        uVar3 = puVar1[1];
-        uVar4 = puVar1[2];
-        uVar5 = puVar1[3];
-        *puVar2 = *puVar1;
-        puVar2[1] = uVar3;
-        puVar2[2] = uVar4;
-        puVar2[3] = uVar5;
-        puVar1 = puVar1 + 4;
-        puVar2 = puVar2 + 4;
-    } while (puVar1 != (undefined4 *)g_DAT_801b12e0);
-    *puVar2 = *(undefined4 *)g_DAT_801b12e0;
+        w1 = src_rec[1];
+        w2 = src_rec[2];
+        w3 = src_rec[3];
+        *dst_rec = *src_rec;
+        dst_rec[1] = w1;
+        dst_rec[2] = w2;
+        dst_rec[3] = w3;
+        src_rec = src_rec + 4;
+        dst_rec = dst_rec + 4;
+    } while (src_rec != (undefined4 *)g_DAT_801b12e0);
+    *dst_rec = *(undefined4 *)g_DAT_801b12e0;
     save_defaults_fill();
     save_block_init();
     save_tables_commit();
-    dbg_marker_mode_set(*(undefined1 *)(param_1 + 9));
-    gauge_scale_fixed(*(undefined1 *)((uint8_t *)param_1 + 0xe),
-                 ((uint)*(byte *)((uint8_t *)param_1 + 0xf) << 3) / 10);
-    brightness_commit(*(byte *)(param_1 + 3) ^ 1);
+    dbg_marker_mode_set(*(undefined1 *)(sys_cfg + 9));
+    gauge_scale_fixed(*(undefined1 *)((uint8_t *)sys_cfg + 0xe),
+                 ((uint)*(byte *)((uint8_t *)sys_cfg + 0xf) << 3) / 10);
+    brightness_commit(*(byte *)(sys_cfg + 3) ^ 1);
 }
 
 /* ==================================================================
@@ -592,13 +592,13 @@ static void apply_saved_settings_or_defaults(undefined4 *param_1)
  * ================================================================== */
 void entry_0x80126234(void)
 {
-    bool bVar1;
-    byte bVar2;
-    int iVar3;
-    uint uVar4;
-    undefined4 uVar5;
-    ushort uVar6;
-    /* auStack_30 = the pad/input buffer. In the original it lives on the guest
+    bool state_lt_14;
+    byte ret_state;
+    int call_ret;
+    uint state;
+    undefined4 mmode;
+    ushort retry_count;
+    /* pad_buf = the pad/input buffer. In the original it lives on the guest
      * stack at sp_old-0x30 (generated 0x80126234: addiu sp,-64; buffer at
      * sp+16). The pad driver is generated/BIOS code that writes guest RAM, so
      * _g_pad_buffer must alias that guest buffer — a host stack array would
@@ -609,31 +609,31 @@ void entry_0x80126234(void)
      * frm+0x10). */
     extern uint32_t br2_guest_frame(uint32_t);
     uint32_t mn_frm = br2_guest_frame(0x40);
-    ushort *auStack_30 = (ushort *)guest_at(mn_frm + 0x10);
+    ushort *pad_buf = (ushort *)guest_at(mn_frm + 0x10);
 
     func_0x80126170();
-    uVar6 = 0;
+    retry_count = 0;
     boot();
-    auStack_30[1] = 0x1c7f;
-    _g_pad_buffer = (uint8_t *)auStack_30;
-    auStack_30[0] = 0;
+    pad_buf[1] = 0x1c7f;
+    _g_pad_buffer = (uint8_t *)pad_buf;
+    pad_buf[0] = 0;
     DAT_1f8000b8 = 0;
-    auStack_30[2] = 0;
-    auStack_30[3] = 0;
-    auStack_30[4] = 0;
-    auStack_30[5] = 0;
-    auStack_30[6] = 0;
-    auStack_30[7] = 0;
+    pad_buf[2] = 0;
+    pad_buf[3] = 0;
+    pad_buf[4] = 0;
+    pad_buf[5] = 0;
+    pad_buf[6] = 0;
+    pad_buf[7] = 0;
     g_game_state = 0;
     g_sub_state = '\0';
     DAT_1f80009b = 0;
     DAT_1f80009c = '\0';
-    iVar3 = memcard_info_query();
-    if (iVar3 == 0) {
+    call_ret = memcard_info_query();
+    if (call_ret == 0) {
         apply_saved_settings_or_defaults((undefined4 *)_g_system_config_ptr);
     }
     else {
-        auStack_30[0] = (ushort)*(byte *)(_g_system_config_ptr + 0x1d);
+        pad_buf[0] = (ushort)*(byte *)(_g_system_config_ptr + 0x1d);
         dbg_marker_mode_set(*(undefined1 *)(_g_system_config_ptr + 0x24));
         gauge_scale_fixed(*(undefined1 *)(_g_system_config_ptr + 0xe),
                      ((uint)*(byte *)(_g_system_config_ptr + 0xf) << 3) / 10);
@@ -652,13 +652,13 @@ switchD_80126370_caseD_80126344:
     { extern int br2_bail_pending(void);
       extern void br2_guest_frame_abandon(void);
       if (br2_bail_pending()) { br2_guest_frame_abandon(); return; } }
-    uVar4 = (uint)g_game_state;
+    state = (uint)g_game_state;
 code_r0x8012634c:
-    bVar1 = uVar4 < 0xe;
+    state_lt_14 = state < 0xe;
 LAB_80126350:
     do {
-    } while (!bVar1);
-    switch(uVar4) {
+    } while (!state_lt_14);
+    switch(state) {
     case 0: /* 0x80126378 */
         match_mode_set(1);
         g_game_state = 1;
@@ -667,40 +667,40 @@ LAB_80126350:
         display_mode_setup(*(undefined1 *)(_g_system_config_ptr + 0xb));
         frame_advance_helper();
         transition_screen_flow(0xf);
-        uVar4 = (uint)g_game_state;
-        bVar1 = uVar4 < 0xe;
-        if (uVar4 == 1) goto LAB_801265b8;
+        state = (uint)g_game_state;
+        state_lt_14 = state < 0xe;
+        if (state == 1) goto LAB_801265b8;
         goto LAB_80126350;
     case 2: /* 0x801263c8 */
         goto switchD_80126370_caseD_801263c8;
     case 3: /* 0x801263e0 */
-        uVar5 = 2;
+        mmode = 2;
         if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
-            uVar5 = 1;
+            mmode = 1;
         }
-        match_mode_set(uVar5);
+        match_mode_set(mmode);
         display_mode_setup(*(undefined1 *)(_g_system_config_ptr + 0xb));
         frame_advance_helper();
         transition_screen_flow(3);
         transition_screen_flow(1);
-        uVar4 = (uint)g_game_state;
-        bVar1 = uVar4 < 0xe;
-        if (uVar4 == 3) {
+        state = (uint)g_game_state;
+        state_lt_14 = state < 0xe;
+        if (state == 3) {
             g_game_state = 4;
             goto switchD_80126370_caseD_80126344;
         }
         goto LAB_80126350;
     case 4: /* 0x8012644c */
-        uVar5 = 2;
+        mmode = 2;
         if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
-            uVar5 = 1;
+            mmode = 1;
         }
-        match_mode_set(uVar5);
+        match_mode_set(mmode);
         frame_advance_helper();
         gauge_scale_fixed(*(undefined1 *)(_g_system_config_ptr + 0xe),
                      ((((uint)*(byte *)(_g_system_config_ptr + 0xf) * 0x10a) / 100) * 8) / 10);
-        iVar3 = scene_entry(0x80010000,0,1);
-        if (iVar3 != 0) {
+        call_ret = scene_entry(0x80010000,0,1);
+        if (call_ret != 0) {
             g_game_state = 5;
         }
         gauge_scale_fixed(*(undefined1 *)(_g_system_config_ptr + 0xe),
@@ -710,32 +710,32 @@ LAB_80126350:
     case 5: /* 0x80126534 */
         goto switchD_80126370_caseD_80126534;
     case 6: /* 0x801265c8 */
-        uVar5 = 2;
+        mmode = 2;
         if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
-            uVar5 = 1;
+            mmode = 1;
         }
-        match_mode_set(uVar5);
+        match_mode_set(mmode);
         battle_intro_flow(0);
         if ((g_game_state != 6) || (results_scoreboard(0), g_game_state != 6))
             goto switchD_80126370_caseD_80126344;
         goto LAB_8012661c;
     case 7: /* 0x80126624 */
-        uVar5 = 2;
+        mmode = 2;
         if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
-            uVar5 = 1;
+            mmode = 1;
         }
-        match_mode_set(uVar5);
-        bVar2 = 7;
+        match_mode_set(mmode);
+        ret_state = 7;
         goto LAB_8012666c;
     case 8: /* 0x80126654 */
         match_mode_set(1);
-        /* a0 is the pad/input buffer. auStack_30 is already the host pointer
+        /* a0 is the pad/input buffer. pad_buf is already the host pointer
          * into guest RAM (guest_at of the staged sp-0x30 buffer); the callee
          * dereferences it directly, so pass the host pointer, not guest_of. */
-        battle_flow_state_machine((intptr_t)auStack_30);
-        bVar2 = 8;
+        battle_flow_state_machine((intptr_t)pad_buf);
+        ret_state = 8;
 LAB_8012666c:
-        if (g_game_state == bVar2) {
+        if (g_game_state == ret_state) {
             g_game_state = 5;
         }
         goto switchD_80126370_caseD_80126344;
@@ -757,13 +757,13 @@ LAB_8012666c:
     case 11: /* 0x801266c0 */
         match_mode_set(1);
         if (g_sub_state == '\x03') {
-            iVar3 = system_config_menu_a();
+            call_ret = system_config_menu_a();
         }
         else {
             if (g_sub_state != '\x04') goto switchD_80126370_caseD_80126344;
-            iVar3 = system_config_menu_b();
+            call_ret = system_config_menu_b();
         }
-        if (iVar3 != 0) {
+        if (call_ret != 0) {
             g_game_state = 5;
         }
         goto switchD_80126370_caseD_80126344;
@@ -773,12 +773,12 @@ LAB_8012666c:
     g_game_state = 5;
     goto switchD_80126370_caseD_80126344;
 switchD_80126370_caseD_80126534:
-    uVar5 = 2;
+    mmode = 2;
     if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
-        uVar5 = 1;
+        mmode = 1;
     }
-    uVar6 = uVar6 + 1;
-    match_mode_set(uVar5);
+    retry_count = retry_count + 1;
+    match_mode_set(mmode);
     display_mode_setup(*(undefined1 *)(_g_system_config_ptr + 0xb));
     /* Faithful call order (generated block_80126534 chain): frame_tick,
      * frame_advance_helper, frame_tick, memcard_poll_frame, then match_loop
@@ -790,10 +790,10 @@ switchD_80126370_caseD_80126534:
     frame_tick(0x1f800000);
     memcard_poll_frame();
     match_loop();
-    uVar4 = (uint)g_game_state;
-    bVar1 = uVar4 < 0xe;
-    if (uVar4 == 5) {
-        if (uVar6 < 4) {
+    state = (uint)g_game_state;
+    state_lt_14 = state < 0xe;
+    if (state == 5) {
+        if (retry_count < 4) {
             g_game_state = 6;
         }
         else {
@@ -804,9 +804,9 @@ LAB_801265b8:
     }
     goto LAB_80126350;
 switchD_80126370_caseD_801263c8:
-    uVar4 = (uint)g_game_state;
-    uVar6 = 0;
-    if (uVar4 == 2) goto LAB_8012661c;
+    state = (uint)g_game_state;
+    retry_count = 0;
+    if (state == 2) goto LAB_8012661c;
     goto code_r0x8012634c;
 LAB_8012661c:
     g_game_state = 3;
@@ -818,7 +818,7 @@ LAB_8012661c:
  * ================================================================== */
 void boot(void)
 {
-    int iVar1;
+    int pump_state;
 
     cd_dispatch_tblc();
     cd_read_param_set(0);
@@ -838,14 +838,14 @@ void boot(void)
     DAT_801c4578 = 2;
     DAT_801c457c = (uint)*(uint8_t *)g_DAT_801b12e6;
     gpu_disp_mask_set(0);
-    iVar1 = cd_file_pump(0x1f800000,0);
+    pump_state = cd_file_pump(0x1f800000,0);
     gfx_tbls_init();
     game_globals_reset();
     sprite_desc_table_init(0);
     print_mode_dispatch_b(2,0,0);
     apply_saved_settings_or_defaults((undefined4 *)_g_system_config_ptr);
-    while (-1 < iVar1) {
-        iVar1 = cd_file_pump(0x1f800000,iVar1);
+    while (-1 < pump_state) {
+        pump_state = cd_file_pump(0x1f800000,pump_state);
         cd_timer_read(0);
     }
     battle_session_arm(0x1f800000,0);
@@ -862,33 +862,33 @@ void boot(void)
  * param_2 = pump state: 0 init -> 0x100 streaming -> 0x110 tail ->
  * 0x120 done -> -1. Each step queues one file's DMA reads.
  * ================================================================== */
-int cd_file_pump(int param_1,int param_2)
+int cd_file_pump(int cd_base,int state)
 {
-    undefined1 uVar1;
-    undefined4 uVar2;
-    int iVar3;
+    undefined1 saved_013;
+    undefined4 tag_addr;
+    int n;
 
-    if (param_2 != 0x100) {
-        if (0x100 < param_2) {
-            if (param_2 != 0x110) {
-                if (param_2 != 0x120) {
-                    return param_2;
+    if (state != 0x100) {
+        if (0x100 < state) {
+            if (state != 0x110) {
+                if (state != 0x120) {
+                    return state;
                 }
                 return -1;
             }
-            iVar3 = cd_file_load_sm(0x89,_DAT_801e3cfc);
-            if (iVar3 == 0) {
+            n = cd_file_load_sm(0x89,_DAT_801e3cfc);
+            if (n == 0) {
                 return 0x110;
             }
             fighter_record_apply(_DAT_801e3cfc,0);
             page_table_ptr_set(0,0);
             return 0x120;
         }
-        if (param_2 != 0) {
-            return param_2;
+        if (state != 0) {
+            return state;
         }
         cd_file_load_sm(0xffffffff,0);
-        param_2 = 0x100;
+        state = 0x100;
         DAT_801c43a0 = 0;
         DAT_801befec = 0xff;
         DAT_801befa6 = 0xff;
@@ -898,105 +898,105 @@ int cd_file_pump(int param_1,int param_2)
         _DAT_801c47b8 = 0x80010000;
         _DAT_801e3cfc = -0x7fff0000;
     }
-    uVar2 = guest_of(tag_table_get());
-    iVar3 = cd_file_load_sm(0x80,uVar2);
-    uVar1 = DAT_1f800013;
-    if (iVar3 != 0) {
+    tag_addr = guest_of(tag_table_get());
+    n = cd_file_load_sm(0x80,tag_addr);
+    saved_013 = DAT_1f800013;
+    if (n != 0) {
         scratch_013_set(0);
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),0);
+        tag_addr = guest_of(tag_table_get());
+        n = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0);
         spr_draw_off(_DAT_801e3cfc,0x3c0,0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),1);
+        _DAT_801e3cfc = _DAT_801e3cfc + n;
+        tag_addr = guest_of(tag_table_get());
+        n = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),1);
         spr_draw_off(_DAT_801e3cfc,0x380,0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),2);
+        _DAT_801e3cfc = _DAT_801e3cfc + n;
+        tag_addr = guest_of(tag_table_get());
+        n = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),2);
         spr_draw_off(_DAT_801e3cfc,0x1f0,0x1e0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),3);
+        _DAT_801e3cfc = _DAT_801e3cfc + n;
+        tag_addr = guest_of(tag_table_get());
+        n = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),3);
         spr_draw_off(_DAT_801e3cfc,0x1e0,0x1e0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),4);
+        _DAT_801e3cfc = _DAT_801e3cfc + n;
+        tag_addr = guest_of(tag_table_get());
+        n = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),4);
         spr_draw_off(_DAT_801e3cfc,0x1d0,0x1e0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),5);
+        _DAT_801e3cfc = _DAT_801e3cfc + n;
+        tag_addr = guest_of(tag_table_get());
+        n = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),5);
         spr_draw_off(_DAT_801e3cfc,0x170,0x1e0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),6);
+        _DAT_801e3cfc = _DAT_801e3cfc + n;
+        tag_addr = guest_of(tag_table_get());
+        n = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),6);
         spr_draw_off(_DAT_801e3cfc,0x160,0x1f0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),0x10);
+        _DAT_801e3cfc = _DAT_801e3cfc + n;
+        tag_addr = guest_of(tag_table_get());
+        n = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x10);
         spr_draw_off(_DAT_801e3cfc,0x1d0,0x1f0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),0x11);
+        _DAT_801e3cfc = _DAT_801e3cfc + n;
+        tag_addr = guest_of(tag_table_get());
+        n = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x11);
         spr_draw_off(_DAT_801e3cfc,0x1f0,0x1f0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),0x12);
+        _DAT_801e3cfc = _DAT_801e3cfc + n;
+        tag_addr = guest_of(tag_table_get());
+        n = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x12);
         spr_draw_off(_DAT_801e3cfc,0x1e0,0x1f0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),0x13);
+        _DAT_801e3cfc = _DAT_801e3cfc + n;
+        tag_addr = guest_of(tag_table_get());
+        n = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x13);
         spr_draw_off(_DAT_801e3cfc,0x1c0,0x1f0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),0x14);
+        _DAT_801e3cfc = _DAT_801e3cfc + n;
+        tag_addr = guest_of(tag_table_get());
+        n = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x14);
         spr_draw_off(_DAT_801e3cfc,0x180,0x1f0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),0x15);
+        _DAT_801e3cfc = _DAT_801e3cfc + n;
+        tag_addr = guest_of(tag_table_get());
+        n = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x15);
         spr_draw_off(_DAT_801e3cfc,400,0x1f0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),0x16);
+        _DAT_801e3cfc = _DAT_801e3cfc + n;
+        tag_addr = guest_of(tag_table_get());
+        n = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x16);
         spr_draw_off(_DAT_801e3cfc,0x1a0,0x1f0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),0x17);
+        _DAT_801e3cfc = _DAT_801e3cfc + n;
+        tag_addr = guest_of(tag_table_get());
+        n = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x17);
         spr_draw_off(_DAT_801e3cfc,0x1b0,0x1f0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),0x18);
+        _DAT_801e3cfc = _DAT_801e3cfc + n;
+        tag_addr = guest_of(tag_table_get());
+        n = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x18);
         spr_draw_off(_DAT_801e3cfc,0x340,0x100,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),0x19);
+        _DAT_801e3cfc = _DAT_801e3cfc + n;
+        tag_addr = guest_of(tag_table_get());
+        n = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x19);
         spr_draw_off(_DAT_801e3cfc,0x200,0x100,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),0x1a);
+        _DAT_801e3cfc = _DAT_801e3cfc + n;
+        tag_addr = guest_of(tag_table_get());
+        n = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x1a);
         spr_draw_off(_DAT_801e3cfc,0x1c0,0x1e0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),0x1b);
+        _DAT_801e3cfc = _DAT_801e3cfc + n;
+        tag_addr = guest_of(tag_table_get());
+        n = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x1b);
         spr_draw_off(_DAT_801e3cfc,0x1b0,0x1e0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),7);
+        _DAT_801e3cfc = _DAT_801e3cfc + n;
+        tag_addr = guest_of(tag_table_get());
+        n = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),7);
         spr_draw_pair(_DAT_801e3cfc,0x160,0x1e0,1,0x340,0x1c0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),8);
+        _DAT_801e3cfc = _DAT_801e3cfc + n;
+        tag_addr = guest_of(tag_table_get());
+        n = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),8);
         spr_draw_off(_DAT_801e3cfc,0x380,0x1c0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),9);
+        _DAT_801e3cfc = _DAT_801e3cfc + n;
+        tag_addr = guest_of(tag_table_get());
+        n = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),9);
         spr_draw_off(_DAT_801e3cfc,0x3a0,0x180,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
+        _DAT_801e3cfc = _DAT_801e3cfc + n;
         cd_timer_read(0);
         cd_timer_read(0);
-        scratch_013_set(uVar1);
-        param_2 = 0x110;
+        scratch_013_set(saved_013);
+        state = 0x110;
     }
-    return param_2;
+    return state;
 }
 
 /* small frame/console helpers */
