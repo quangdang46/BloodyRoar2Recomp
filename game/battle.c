@@ -8605,30 +8605,30 @@ LAB_801a6cfc:
 
 }
 
-undefined4 tween_chan_alloc(int a0,int a1)
+undefined4 tween_chan_alloc(int obj,int chan)
 {
-  undefined4 uVar1;
-  int iVar2;
-  if ((((a0 != 0) && (iVar2 = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8) ))+ 0x14))), iVar2 != 0)) &&
-      (*(int *)guest_at((uint32_t)(uintptr_t)((a0 + 0x44) ))!= 0)) && ((-1 < a1 && (a1 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 0x44)))))))
+  undefined4 seq;
+  int sub;
+  if ((((obj != 0) && (sub = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((obj + 8) ))+ 0x14))), sub != 0)) &&
+      (*(int *)guest_at((uint32_t)(uintptr_t)((obj + 0x44) ))!= 0)) && ((-1 < chan && (chan < *(int *)guest_at((uint32_t)(uintptr_t)((obj + 0x44)))))))
   {
-    if ((iVar2 == 1) && (*(int *)guest_at((uint32_t)(uintptr_t)((a1 * 4 + *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 0x24)))) ))!= 0)) {
+    if ((sub == 1) && (*(int *)guest_at((uint32_t)(uintptr_t)((chan * 4 + *(int *)guest_at((uint32_t)(uintptr_t)((obj + 0x24)))) ))!= 0)) {
       return 0;
     }
-    iVar2 = *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8)));
-    if (*(int *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x14) ))!= 1) {
+    sub = *(int *)guest_at((uint32_t)(uintptr_t)((obj + 8)));
+    if (*(int *)guest_at((uint32_t)(uintptr_t)((sub + 0x14) ))!= 1) {
       return 1;
     }
-    uVar1 = tween_seq_alloc(2,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x14))),*(undefined4 *)guest_at((uint32_t)(uintptr_t)((a0 + 0x30))),
-                         *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x8c))),*(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x24))),
-                         *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8) ))+ 0x30))),
-                         *(undefined4 *)guest_at((uint32_t)(uintptr_t)((a1 * 8 + *(int *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x7c) ))+ 4))),
-                         (int)*(char *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((a0 + 0x14) ))+ 0x14))));
-    a1 = a1 * 4;
-    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((a1 + *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 0x24)))) ))= uVar1;
-    iVar2 = *(int *)guest_at((uint32_t)(uintptr_t)((a1 + *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 0x24))))));
-    if (iVar2 != 0) {
-      *(undefined4 *)guest_at((uint32_t)(uintptr_t)((a1 + *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 0x3c)))) ))= *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x10)));
+    seq = tween_seq_alloc(2,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((sub + 0x14))),*(undefined4 *)guest_at((uint32_t)(uintptr_t)((obj + 0x30))),
+                         *(undefined4 *)guest_at((uint32_t)(uintptr_t)((sub + 0x8c))),*(undefined4 *)guest_at((uint32_t)(uintptr_t)((sub + 0x24))),
+                         *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((obj + 8) ))+ 0x30))),
+                         *(undefined4 *)guest_at((uint32_t)(uintptr_t)((chan * 8 + *(int *)guest_at((uint32_t)(uintptr_t)((sub + 0x7c) ))+ 4))),
+                         (int)*(char *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((obj + 0x14) ))+ 0x14))));
+    chan = chan * 4;
+    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((chan + *(int *)guest_at((uint32_t)(uintptr_t)((obj + 0x24)))) ))= seq;
+    sub = *(int *)guest_at((uint32_t)(uintptr_t)((chan + *(int *)guest_at((uint32_t)(uintptr_t)((obj + 0x24))))));
+    if (sub != 0) {
+      *(undefined4 *)guest_at((uint32_t)(uintptr_t)((chan + *(int *)guest_at((uint32_t)(uintptr_t)((obj + 0x3c)))) ))= *(undefined4 *)guest_at((uint32_t)(uintptr_t)((sub + 0x10)));
       return 1;
     }
   }
@@ -8636,18 +8636,18 @@ undefined4 tween_chan_alloc(int a0,int a1)
 
 }
 
-void tween_dur_spread(int a0,int a1)
+void tween_dur_spread(int obj,int dur)
 {
-  int iVar1;
-  if (a1 < 0) {
-    a1 = 1;
+  int i;
+  if (dur < 0) {
+    dur = 1;
   }
-  if ((a0 != 0) && (iVar1 = 0, 0 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 0x40))))) {
+  if ((obj != 0) && (i = 0, 0 < *(int *)guest_at((uint32_t)(uintptr_t)((obj + 0x40))))) {
     do {
-      *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((iVar1 * 4 + *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 0x10)))) ))+ 0x10) ))+ 0x32) ))=
-           (short)a1;
-      iVar1 = iVar1 + 1;
-    } while (iVar1 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 0x40))));
+      *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((i * 4 + *(int *)guest_at((uint32_t)(uintptr_t)((obj + 0x10)))) ))+ 0x10) ))+ 0x32) ))=
+           (short)dur;
+      i = i + 1;
+    } while (i < *(int *)guest_at((uint32_t)(uintptr_t)((obj + 0x40))));
   }
   return;
 
@@ -8656,52 +8656,52 @@ void tween_dur_spread(int a0,int a1)
 int str_len(char *s)
 {
   char cVar1;
-  int iVar2;
-  int iVar3;
-  iVar3 = 0;
-  iVar2 = 0;
+  int i;
+  int len;
+  len = 0;
+  i = 0;
   if (s != (char *)0x0) {
-    while (iVar3 = iVar2, cVar1 = *s, s = s + 1, cVar1 != '\0') {
-      iVar2 = iVar3 + 1;
+    while (len = i, cVar1 = *s, s = s + 1, cVar1 != '\0') {
+      i = len + 1;
     }
   }
-  return iVar3;
+  return len;
 
 }
 
-char * strchr_bounded(char *s,char a1,int a2)
+char * strchr_bounded(char *s,char c,int n)
 {
-  char *pcVar1;
-  pcVar1 = (char *)0x0;
-  if ((s != (char *)0x0) && (0 < a2)) {
+  char *cur;
+  cur = (char *)0x0;
+  if ((s != (char *)0x0) && (0 < n)) {
     do {
-      pcVar1 = s;
-      a2 = a2 + -1;
-      if (a2 < 0) {
+      cur = s;
+      n = n + -1;
+      if (n < 0) {
         return (char *)0x0;
       }
-      s = pcVar1 + 1;
-    } while (*pcVar1 != a1);
+      s = cur + 1;
+    } while (*cur != c);
   }
-  return pcVar1;
+  return cur;
 
 }
 
-undefined1 * mem_move(undefined1 *s,undefined1 *a1,int a2)
+undefined1 * mem_move(undefined1 *s,undefined1 *src,int n)
 {
-  undefined1 uVar1;
-  if (s < a1) {
-    for (; 0 < a2; a2 = a2 + -1) {
-      uVar1 = *a1;
-      a1 = a1 + 1;
-      *s = uVar1;
+  undefined1 tmp;
+  if (s < src) {
+    for (; 0 < n; n = n + -1) {
+      tmp = *src;
+      src = src + 1;
+      *s = tmp;
       s = s + 1;
     }
   }
   else {
-    while (0 < a2) {
-      a2 = a2 + -1;
-      s[a2] = a1[a2];
+    while (0 < n) {
+      n = n + -1;
+      s[n] = src[n];
     }
   }
   return s;
