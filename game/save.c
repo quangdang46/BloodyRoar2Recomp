@@ -3806,7 +3806,6 @@ tick:
     spr_slot_pkt_submit(*(uint32_t *)(ctx + 8) + 4,0x100,0xefff008a,0x7c400000);
     spr_slot_pkt_submit(*(uint32_t *)(ctx + 8) + 4,0xf00000,0xefff0099,0x7c800000);
     spr_slot_pkt_submit(*(uint32_t *)(ctx + 8) + 4,0xf00100,0xefff009b,0x7cc00000);
-    goto poll;
 poll:
     /* guest a0 = 0x1f800000 (immediate) — pass the guest address. */
     frame_tick(0x1f800000);
@@ -5249,8 +5248,6 @@ hit610:
     } else {
       sp50 = 0;
     }
-    goto draw678;
-
 draw678: {
     int32_t bar = to_s16(*(uint16_t *)(g + 0x40));
     if (bar > 0) {
@@ -5523,7 +5520,6 @@ mode0body: {
       phase = 0xf0;
       goto poll;
     }
-    goto tail194;
 tail194:
     g[0x98] = *(uint8_t *)guest_at(0x801f4770 + to_s16(*(uint16_t *)(g + 0xa4)));
     phase = 0xf0;
@@ -5574,8 +5570,6 @@ case2:
     scroll_cfg_set(2,8);
     phase = 0xf0;
     g[0] = 5; g[1] = 9;
-    goto poll;
-
 poll:
     /* frame_tick re-resolves its arg via guest_at((uint32_t)a0), so it
      * must receive the GUEST address 0x1f800000 -- passing the host pointer
