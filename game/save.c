@@ -10156,16 +10156,16 @@ extern void fifo_space_sample(uint32_t);
 int32_t dev_byte_xfer(uint8_t *a0,int32_t a1)
 {
   extern int br2_bail_pending(void);
-  uint8_t *s0 = a0;
+  uint8_t *ctx = a0;
   uint32_t dev, ctrl, buf;
-  int32_t s1, s2;
+  int32_t cmd, prev;
   if (a1 < 0) {
     /* query/flush path 0x801A1F98-0x801A2018. */
     dev = br2_ld32(0x801be7e4u);                    /* 0x801A1F9C */
-    buf = *(uint32_t *)(s0 + 0x40);                 /* 0x801A1FA0 alt ptr */
-    s2 = (int32_t)br2_ld8(dev);                     /* 0x801A1FA4 lbu dev[0] */
-    s0[0x44] = 0xff;                                /* 0x801A1FAC */
-    s0[0x45] = 1;                                   /* 0x801A1FB4 */
+    buf = *(uint32_t *)(ctx + 0x40);                 /* 0x801A1FA0 alt ptr */
+    prev = (int32_t)br2_ld8(dev);                     /* 0x801A1FA4 lbu dev[0] */
+    ctx[0x44] = 0xff;                                /* 0x801A1FAC */
+    ctx[0x45] = 1;                                   /* 0x801A1FB4 */
     br2_st8(buf, (uint8_t)~a1);                     /* 0x801A1FBC *alt=~a1 */
     dev = br2_ld32(0x801be7e4u);                    /* 0x801A1FC4 reload */
     /* 0x801A1FE0: wait while (lhu(dev+4) & 1) == 0. */
@@ -10180,16 +10180,16 @@ int32_t dev_byte_xfer(uint8_t *a0,int32_t a1)
     }
     dev = br2_ld32(0x801be7e4u);                    /* 0x801A2008 reload */
     br2_st8(dev, (uint8_t)~a1);                     /* 0x801A2010 dev[0]=~a1 */
-    return s2;                                      /* v0=s2 @0x801A2018 */
+    return prev;                                      /* v0=prev @0x801A2018 */
   }
   /* send path 0x801A201C-0x801A2164. */
-  buf = *(uint32_t *)(s0 + 0x3c);                   /* 0x801A201C buf ptr */
-  s1 = 0x88;                                        /* 0x801A2034 li s1,0x88 */
-  /* 0x801A2024-0x801A204C: nib = lbu(buf)>>4; s1=0x22 iff nib==8 and
+  buf = *(uint32_t *)(ctx + 0x3c);                   /* 0x801A201C buf ptr */
+  cmd = 0x88;                                        /* 0x801A2034 li cmd,0x88 */
+  /* 0x801A2024-0x801A204C: nib = lbu(buf)>>4; cmd=0x22 iff nib==8 and
    * ctx->f44 >= 9 (sltiu), else stays 0x88. */
   if (((int32_t)br2_ld8(buf) >> 4) == 8 &&
-      (uint32_t)(uint8_t)s0[0x44] >= 9u)
-    s1 = 0x22;
+      (uint32_t)(uint8_t)ctx[0x44] >= 9u)
+    cmd = 0x22;
   fifo_space_sample(0x1aeu);                        /* 0x801A2054-78 inline */
   dev = br2_ld32(0x801be7e4u);                      /* 0x801A205C */
   /* 0x801A2088: wait while (lhu(dev+4) & 2) == 0. */
@@ -10200,8 +10200,8 @@ int32_t dev_byte_xfer(uint8_t *a0,int32_t a1)
   /* 0x801A209C: dev/ctrl reload, capture dev[0], program cmd reg. */
   dev  = br2_ld32(0x801be7e4u);                     /* 0x801A20A0 */
   ctrl = br2_ld32(0x801be7e0u);                     /* 0x801A20A8 */
-  s2 = (int32_t)br2_ld8(dev);                       /* 0x801A20AC lbu dev[0] */
-  br2_st16(dev + 0xeu, (uint16_t)s1);               /* 0x801A20B0 sh cmd */
+  prev = (int32_t)br2_ld8(dev);                       /* 0x801A20AC lbu dev[0] */
+  br2_st16(dev + 0xeu, (uint16_t)cmd);               /* 0x801A20B0 sh cmd */
   /* 0x801A20B4-0x801A20C4: if ((*ctrl & 0x80) == 0) enter the
    * fifo_space_check/ctrl-bit7 wait loop 0x801A20C8-0x801A20F4. */
   if ((br2_ld32(ctrl) & 0x80u) == 0) {
@@ -10213,10 +10213,10 @@ int32_t dev_byte_xfer(uint8_t *a0,int32_t a1)
       br2_irq_poll();
     }
   }
-  /* 0x801A20F8: dev[0] = a1 (delay-slot byte store ahead of the s1 test). */
+  /* 0x801A20F8: dev[0] = a1 (delay-slot byte store ahead of the cmd test). */
   dev = br2_ld32(0x801be7e4u);                      /* 0x801A20FC reload */
   br2_st8(dev, (uint8_t)a1);                        /* 0x801A2104 */
-  if (s1 == 0x22) {                                 /* 0x801A210C-0x801A2114 */
+  if (cmd == 0x22) {                                 /* 0x801A210C-0x801A2114 */
     ctrl = br2_ld32(0x801be7e0u);                   /* 0x801A2118 */
     dev  = br2_ld32(0x801be7e4u);                   /* 0x801A2120 */
     br2_st32(ctrl, 0xffffff7fu);                    /* 0x801A2124 *ctrl */
@@ -10225,16 +10225,16 @@ int32_t dev_byte_xfer(uint8_t *a0,int32_t a1)
   }
   /* 0x801A2138-0x801A2164: advance counters; buf[c44] = old dev[0]. */
   {
-    uint32_t c45 = (uint32_t)(uint8_t)s0[0x45];    /* 0x801A2138 lbu */
-    uint32_t c44 = (uint32_t)(uint8_t)s0[0x44];    /* 0x801A213C lbu */
-    buf = *(uint32_t *)(s0 + 0x3c);                 /* 0x801A2140 reload */
-    s0[0x45] = (uint8_t)(c45 + 1u);                 /* 0x801A214C */
-    br2_st8(buf + c44, (uint8_t)s2);                /* 0x801A2150 sb s2 */
-    /* 0x801A2154: guest RELOADS s0[0x44] after the buf store — the sb
-     * above can alias s0+0x44, so do not reuse the stale c44. */
-    s0[0x44] = (uint8_t)((uint32_t)(uint8_t)s0[0x44] + 1u); /* 0x801A2160 */
+    uint32_t c45 = (uint32_t)(uint8_t)ctx[0x45];    /* 0x801A2138 lbu */
+    uint32_t c44 = (uint32_t)(uint8_t)ctx[0x44];    /* 0x801A213C lbu */
+    buf = *(uint32_t *)(ctx + 0x3c);                 /* 0x801A2140 reload */
+    ctx[0x45] = (uint8_t)(c45 + 1u);                 /* 0x801A214C */
+    br2_st8(buf + c44, (uint8_t)prev);                /* 0x801A2150 sb prev */
+    /* 0x801A2154: guest RELOADS ctx[0x44] after the buf store — the sb
+     * above can alias ctx+0x44, so do not reuse the stale c44. */
+    ctx[0x44] = (uint8_t)((uint32_t)(uint8_t)ctx[0x44] + 1u); /* 0x801A2160 */
   }
-  return s2;                                        /* v0=s2 @0x801A2164 */
+  return prev;                                        /* v0=prev @0x801A2164 */
 }
 
 /* fifo_space_sample — FIFO space baseline/limit setter (0x801A4210).
