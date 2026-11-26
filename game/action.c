@@ -35,16 +35,6 @@ extern uint32_t guest_of(const void *p);
 extern uint16_t *euler_rotmat(uint32_t,uint32_t,uint32_t,uint16_t *);
 extern int32_t skeleton_init(uint32_t,uint32_t,uint32_t);
 
-typedef uint8_t  byte;
-typedef uint16_t ushort;
-typedef uint32_t uint;
-typedef uint16_t undefined2;
-typedef uint32_t undefined4;
-typedef uint8_t  undefined;
-typedef uint8_t  undefined1;
-typedef uint64_t undefined8;
-typedef uint64_t ulonglong;
-
 /* Guest raw-offset accessors. */
 #define GU8(p,o)   (((const uint8_t *)(p))[(o)])
 #define GU16(p,o)  (*(const uint16_t *)((const uint8_t *)(p) + (o)))
@@ -571,7 +561,7 @@ static void entry_setup(uint8_t *ctrl, uint32_t group)
     /* part-record resets (loops over ctrl+8 / ctrl+6 counts) */
     int n = (int8_t)GU8(ctrl, 0x08) - 1;
     for (int i = n; i >= 0; i--) {
-        part_record_reset((undefined2 *)(fobj + i * 0x50));
+        part_record_reset((uint16_t *)(fobj + i * 0x50));
     }
     int pc = (int8_t)GU8(ctrl, 0x06) - 1;
     for (int i = pc; i >= 0; i--) {
@@ -647,18 +637,16 @@ static void part_link_state(uint16_t *src, int16_t *dst, int mode)
         dst[0x23] = 0;
         state = dst[0];
     }
-    if (state != 2) dst[0] = (int16_t)mode;
+        st = dst[0];
     dst[0x24] = 0;
     dst[0x25] = 0;
     *(uint32_t *)((uint8_t *)dst + 0x40) = src ? guest_of(src) : 0;
     if (src != NULL) {
         uint32_t src_state = *src;
         if (mode == 3) {
-            if (src_state == 1) {
                 *src = 2;
                 *(uint32_t *)((uint8_t *)dst + 0x48) = *(uint32_t *)((uint8_t *)src + 0x44);
             } else if (src_state < 2) {
-                if (src_state != 0) {
                     dst[0x20] = 0;
                     dst[0x21] = 0;
                     goto done;
@@ -832,27 +820,18 @@ uint32_t action_enter(void *battle, uint8_t *ctrl, uint32_t sel)
 
 /* part_record_reset — part-record reset: identity 4x3 matrix + tail call. */
 void part_link_unlink(ushort *src,short *dst,int mode);
-void part_record_reset(undefined2 *rec)
 {
   *(undefined4 *)(rec + 2) = 0x1000;
-  *(undefined4 *)(rec + 4) = 0;
-  *(undefined4 *)(rec + 6) = 0x1000;
-  *(undefined4 *)(rec + 8) = 0;
-  *(undefined4 *)(rec + 10) = 0x1000;
+  *(uint32_t *)(rec + 2) = 0x1000;
   rec[0xc] = 0;
   rec[0xd] = 0;
   rec[0xe] = 0;
   rec[0xf] = 0;
   *(undefined4 *)(rec + 0x10) = 0x1000;
-  *(undefined4 *)(rec + 0x12) = 0;
-  *(undefined4 *)(rec + 0x14) = 0x1000;
-  *(undefined4 *)(rec + 0x16) = 0;
-  *(undefined4 *)(rec + 0x18) = 0x1000;
-  *(undefined4 *)(rec + 0x1a) = 0;
-  *(undefined4 *)(rec + 0x1c) = 0;
-  *(undefined4 *)(rec + 0x1e) = 0;
   *rec = 0;
   part_link_unlink((ushort *)0,(short *)rec,0);
+  *(uint32_t *)(rec + 0x10) = 0x1000;
+  part_link_unlink((uint16_t *)0,(short *)rec,0);
 }
 
 /* action_switch_guest — action_switch (guest-verbatim; superset of the      */
@@ -867,33 +846,17 @@ void action_switch_guest(int ctrl_g,int *motion,int idx)
   stream_addr = (int)GU32(ctrl, 0x30);
   off = *(ushort *)guest_at((uint32_t)*motion + (uint32_t)idx * 2);
   *(undefined2 *)(motion + 0x24) = 0;
-  stream_addr = (uint)off + stream_addr;
   motion[0x22] = stream_addr;
   motion[0x21] = stream_addr;
-  *(undefined2 *)(ctrl + 0x8c) = 0;
-  *(undefined2 *)(ctrl + 0x8e) = 0;
   *(undefined1 *)(ctrl + 0x26) = 0xff;
   *(uint *)(ctrl + 0x5c) = *(uint *)(ctrl + 0x5c) & 0xfffc7fd7;
-  *(uint *)(ctrl + 0x60) = *(uint *)(ctrl + 0x60) & 0xa9dfffee;
-  *(uint *)(ctrl + 0x6c) = *(uint *)(ctrl + 0x6c) & 0xffffdfff;
-  *(undefined1 *)guest_at(GU32(ctrl, 0x14)) = 0xff;
-  *(undefined1 *)(ctrl + 0x27) = 0;
-  *(undefined2 *)(ctrl + 0xba) = 0;
-  *(undefined2 *)(ctrl + 0xb8) = 0;
-  *(undefined2 *)(ctrl + 0xb6) = 0;
-  *(undefined2 *)(motion + 0x44) = 0xffff;
-  *(undefined2 *)((uint8_t *)guest_at(GU32(ctrl, 0x18)) + 0x23c) = 0;
-  *(undefined2 *)((uint8_t *)guest_at(GU32(ctrl, 0x1c)) + 0x23c) = 1;
-  *(undefined2 *)((uint8_t *)guest_at(GU32(ctrl, 0x18)) + 0x1c4) = 0;
-  *(undefined2 *)((uint8_t *)guest_at(GU32(ctrl, 0x1c)) + 0x1c4) = 1;
-  *(undefined2 *)((uint8_t *)guest_at(GU32(ctrl, 0x18)) + 0x28c) = 1;
-  *(undefined2 *)((uint8_t *)guest_at(GU32(ctrl, 0x1c)) + 0x28c) = 1;
-  *(undefined2 *)((uint8_t *)guest_at(GU32(ctrl, 0x18)) + 0x264) = 1;
-  *(undefined2 *)((uint8_t *)guest_at(GU32(ctrl, 0x1c)) + 0x264) = 1;
-  *(undefined2 *)((uint8_t *)guest_at(GU32(ctrl, 0x18) +
       (uint32_t)(*(int8_t *)(ctrl + 6) * 0x28) - 0x1c)) = 0;
-  *(undefined2 *)((uint8_t *)guest_at(GU32(ctrl, 0x1c) +
-      (uint32_t)(*(int8_t *)(ctrl + 6) * 0x28) - 0x1c)) = 0;
+  uint16_t sel_idx;
+  sel_val = (int)GU32(p1, 0x30);
+  sel_idx = *(uint16_t *)guest_at((uint32_t)*motion + (uint32_t)idx * 2);
+  *(uint16_t *)(motion + 0x24) = 0;
+  *(uint8_t *)(p1 + 0x26) = 0xff;
+  *(uint32_t *)(p1 + 0x5c) = *(uint32_t *)(p1 + 0x5c) & 0xfffc7fd7;
 }
 
 /* slot_apply_guest — guest entry @0x80175e08: delegates to the faithful static port. */
@@ -909,14 +872,13 @@ void part_link_unlink(ushort *src,short *dst,int mode)
 {
   ushort src_state;
   short state;
-
   state = *dst;
   if (state == 0) {
     dst[0x22] = 0;
     dst[0x23] = 0;
-    state = *dst;
   }
-  if (state != 2) {
+  uint16_t state;
+  st = *dst;
     *dst = (short)mode;
   }
   dst[0x24] = 0;
@@ -927,14 +889,13 @@ void part_link_unlink(ushort *src,short *dst,int mode)
    * rec+0x44 link field and corrupted the part chain). */
   *(uint32_t *)((uint8_t *)dst + 0x40) = src ? guest_of(src) : 0;
   if (src != (ushort *)0x0) {
-    if (mode == 3) {
       src_state = *src;
-      if (src_state == 1) {
         *src = 2;
         *(undefined4 *)(dst + 0x24) = *(undefined4 *)(src + 0x22);
       }
       else if (src_state < 2) {
-        if (src_state != 0) {
+      state = *src;
+        *(uint32_t *)(dst + 0x24) = *(uint32_t *)(src + 0x22);
           dst[0x20] = 0;
           dst[0x21] = 0;
           goto LAB_80179a60;
@@ -952,11 +913,11 @@ void part_link_unlink(ushort *src,short *dst,int mode)
         *src = 4;
         *(undefined4 *)(dst + 0x24) = *(undefined4 *)(src + 0x22);
       }
-    }
     else {
       src_state = *src;
       if ((src_state == 2) || (src_state == 4)) {
-        *(undefined4 *)(dst + 0x24) = *(undefined4 *)
+        *(uint32_t *)(dst + 0x24) = *(uint32_t *)(src + 0x22);
+      state = *src;
             ((uint8_t *)guest_at((uint32_t)*(int *)(src + 0x22)) + 0x48);
         *(uint32_t *)((uint8_t *)guest_at((uint32_t)*(int *)(src + 0x22)) + 0x48)
             = guest_of(dst);
@@ -967,6 +928,7 @@ void part_link_unlink(ushort *src,short *dst,int mode)
       }
       else {
         *(undefined4 *)(dst + 0x24) = *(undefined4 *)(src + 0x22);
+        *(uint32_t *)(dst + 0x24) = *(uint32_t *)(src + 0x22);
       }
     }
     *(uint32_t *)(src + 0x22) = guest_of(dst);
@@ -1040,9 +1002,10 @@ int32_t part_flag100_set(uint32_t unused0, uint32_t unused1, uint32_t obj_g, int
     (void)unused0; (void)unused1;
     if (cnt <= 0) return (int32_t)clean_cpu_state()->gpr[2];
     f = *(uint32_t *)guest_at(obj_g + 0x5c);
-    f |= 0x100u;
     *(uint32_t *)guest_at(obj_g + 0x5c) = f;
     return (int32_t)f;
+    (void)arg0; (void)arg1;
+    flags = *(uint32_t *)guest_at(rec + 0x5c);
 }
 
 /* part_desc_clear — guest func_8017A6B4 (44B leaf before the shared
@@ -1077,6 +1040,7 @@ int32_t part_desc_clear_gate(uint32_t unused0, uint32_t unused1, int32_t idx,
 {
     (void)unused0; (void)unused1; (void)unused3;
     if (idx >= 5) return 0;
+    (void)arg0; (void)arg1; (void)arg3;
     part_desc_clear(clean_cpu_state()->gpr[8]);
     return 1;
 }
