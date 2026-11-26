@@ -1971,3 +1971,12 @@
 8018b380 prim_nclip_cull_emit_48
 8018b4b8 prim_rtps_cull_emit_58
 8018b628 prim_avsz3_cull_emit_58
+8018f22c gpu_pkt_cmd_f22c
+8018f238 gpu_pkt_cmd_f238
+8018f264 gpu_pkt_cmd_f264
+8018f2bc gpu_pkt_cmd_f2bc
+8018f3dc gpu_pkt_cmd_f3dc
+8018f4dc gpu_pkt_cmd_f4dc
+8018f4f0 gpu_pkt_cmd_f4f0
+8018f4fc gpu_pkt_cmd_f4fc
+8018f608 gpu_pkt_cmd_f608
