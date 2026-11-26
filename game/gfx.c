@@ -142,43 +142,43 @@ static void gpu_dbg(const char *fmt, ...)
 
 /* ======== 0x8018bd50 ======== */
 
-void gpu_pkt_unlink_n(uint *param_1,int param_2)
+void gpu_pkt_unlink_n(uint *head,int count)
 
 {
-  uint uVar1;
-  uint uVar2;
-  uint *puVar3;
+  uint word;
+  uint expect;
+  uint *prev;
   uint *hp;
   uint32_t p1g, p1;
   
-  /* param_1 arrives as a host pointer from the clean_table wrapper
+  /* head arrives as a host pointer from the clean_table wrapper
    * (guest_at(gpr4)) but as a raw guest-address value from the game.c/
    * menu.c callers — resolve either form. The link value walked below
    * is the guest address's low 24 bits. */
-  p1g = guest_of(param_1);
-  p1 = p1g ? p1g : (uint32_t)(uintptr_t)param_1;
+  p1g = guest_of(head);
+  p1 = p1g ? p1g : (uint32_t)(uintptr_t)head;
   hp = (uint *)guest_at(p1);
-  uVar2 = p1 & 0xffffff;
+  expect = p1 & 0xffffff;
   do {
-    uVar1 = *hp;
-    uVar2 = uVar2 - 4;
-    puVar3 = hp;
-    if (uVar1 == uVar2) {
+    word = *hp;
+    expect = expect - 4;
+    prev = hp;
+    if (word == expect) {
       do {
-        puVar3 = puVar3 + -1;
-        uVar1 = *puVar3;
-        param_2 = param_2 + -1;
-        uVar2 = uVar2 - 4;
-        if (param_2 < 1) break;
-      } while (uVar1 == uVar2);
-      *hp = uVar1;
+        prev = prev + -1;
+        word = *prev;
+        count = count + -1;
+        expect = expect - 4;
+        if (count < 1) break;
+      } while (word == expect);
+      *hp = word;
     }
-    param_2 = param_2 + -1;
-    if (uVar1 == 0xffffff) {
+    count = count + -1;
+    if (word == 0xffffff) {
       return;
     }
-    hp = puVar3 + -1;
-    if (param_2 < 1) {
+    hp = prev + -1;
+    if (count < 1) {
       return;
     }
   } while( true );
@@ -186,7 +186,7 @@ void gpu_pkt_unlink_n(uint *param_1,int param_2)
 
 /* ======== 0x8018bf40 ======== */
 
-void spr_draw_off(int param_1,short param_2,short param_3,int param_4)
+void spr_draw_off(int spr,short x,short y,int abs_coords)
 
 {
   /* Guest builds one contiguous 8-byte RECT at sp+0x10..0x17
@@ -194,31 +194,31 @@ void spr_draw_off(int param_1,short param_2,short param_3,int param_4)
    * gpu_load_image_cmd reads it through generated GPU frames — stage it
    * in a reserved guest frame (sp+0x10 -> frm+0x10) or the callee's own
    * frame lands on the old sp-0x10 scratch window. */
-  uint16_t local_10[4];
-  uint8_t *hp;
+  uint16_t rect[4];
+  uint8_t *desc;
   
-  /* param_1 is a guest address (callers pass the heap cursor
-   * _DAT_801e3cfc); resolve before dereferencing. param_1 + 0x14
+  /* spr is a guest address (callers pass the heap cursor
+   * _DAT_801e3cfc); resolve before dereferencing. spr + 0x14
    * stays a guest address for gpu_load_image_cmd's a1. */
-  hp = (uint8_t *)guest_at((uint32_t)param_1);
-  if ((*(uint *)(hp + 4) & 8) != 0) {
-    param_1 = param_1 + *(int *)(hp + 8);
-    hp = (uint8_t *)guest_at((uint32_t)param_1);
+  desc = (uint8_t *)guest_at((uint32_t)spr);
+  if ((*(uint *)(desc + 4) & 8) != 0) {
+    spr = spr + *(int *)(desc + 8);
+    desc = (uint8_t *)guest_at((uint32_t)spr);
   }
-  local_10[0] = (uint16_t)param_2;
-  local_10[1] = (uint16_t)param_3;
-  if (param_4 == 0) {
-    local_10[0] = (uint16_t)(*(short *)(hp + 0xc) + param_2);
-    local_10[1] = (uint16_t)(*(short *)(hp + 0xe) + param_3);
+  rect[0] = (uint16_t)x;
+  rect[1] = (uint16_t)y;
+  if (abs_coords == 0) {
+    rect[0] = (uint16_t)(*(short *)(desc + 0xc) + x);
+    rect[1] = (uint16_t)(*(short *)(desc + 0xe) + y);
   }
-  local_10[2] = *(undefined2 *)(hp + 0x10);
-  local_10[3] = *(undefined2 *)(hp + 0x12);
+  rect[2] = *(undefined2 *)(desc + 0x10);
+  rect[3] = *(undefined2 *)(desc + 0x12);
   {
     extern uint32_t br2_guest_frame(uint32_t);
     extern void br2_guest_frame_free(void);
-    uint32_t sdo_frm = br2_guest_frame(0x20);
-    memcpy(guest_at(sdo_frm + 0x10), local_10, 8);
-    gpu_load_image_cmd(sdo_frm + 0x10,(undefined4)(param_1 + 0x14));
+    uint32_t frm = br2_guest_frame(0x20);
+    memcpy(guest_at(frm + 0x10), rect, 8);
+    gpu_load_image_cmd(frm + 0x10,(undefined4)(spr + 0x14));
     br2_guest_frame_free();
   }
   return;
@@ -226,31 +226,31 @@ void spr_draw_off(int param_1,short param_2,short param_3,int param_4)
 
 /* ======== 0x8018bec0 ======== */
 
-void spr_draw_cond(int param_1,short param_2,short param_3,int param_4)
+void spr_draw_cond(int spr,short x,short y,int abs_coords)
 
 {
-  uint16_t local_10[4];
-  uint8_t *hp;
+  uint16_t rect[4];
+  uint8_t *desc;
   
-  /* param_1 is a guest address; see spr_draw_off. */
-  hp = (uint8_t *)guest_at((uint32_t)param_1);
-  if ((*(uint *)(hp + 4) & 8) != 0) {
-    local_10[0] = (uint16_t)param_2;
-    local_10[1] = (uint16_t)param_3;
-    if (param_4 == 0) {
-      local_10[0] = (uint16_t)(*(short *)(hp + 0xc) + param_2);
-      local_10[1] = (uint16_t)(*(short *)(hp + 0xe) + param_3);
+  /* spr is a guest address; see spr_draw_off. */
+  desc = (uint8_t *)guest_at((uint32_t)spr);
+  if ((*(uint *)(desc + 4) & 8) != 0) {
+    rect[0] = (uint16_t)x;
+    rect[1] = (uint16_t)y;
+    if (abs_coords == 0) {
+      rect[0] = (uint16_t)(*(short *)(desc + 0xc) + x);
+      rect[1] = (uint16_t)(*(short *)(desc + 0xe) + y);
     }
-    local_10[2] = *(undefined2 *)(hp + 0x10);
-    local_10[3] = *(undefined2 *)(hp + 0x12);
+    rect[2] = *(undefined2 *)(desc + 0x10);
+    rect[3] = *(undefined2 *)(desc + 0x12);
     /* Same guest frame as spr_draw_off (0x8018bec0: frame 0x20, rect at
      * sp+0x10) — reserved frame staging, see spr_draw_off. */
     {
       extern uint32_t br2_guest_frame(uint32_t);
       extern void br2_guest_frame_free(void);
-      uint32_t sdc_frm = br2_guest_frame(0x20);
-      memcpy(guest_at(sdc_frm + 0x10), local_10, 8);
-      gpu_load_image_cmd(sdc_frm + 0x10,(undefined4)(param_1 + 0x14));
+      uint32_t frm = br2_guest_frame(0x20);
+      memcpy(guest_at(frm + 0x10), rect, 8);
+      gpu_load_image_cmd(frm + 0x10,(undefined4)(spr + 0x14));
       br2_guest_frame_free();
     }
   }
@@ -259,12 +259,12 @@ void spr_draw_cond(int param_1,short param_2,short param_3,int param_4)
 
 /* ======== 0x8018bfcc ======== */
 
-void spr_draw_pair(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
-                 undefined4 param_5,undefined4 param_6,undefined4 param_7)
+void spr_draw_pair(undefined4 spr,undefined4 cx,undefined4 cy,undefined4 cflag,
+                 undefined4 ox,undefined4 oy,undefined4 oflag)
 
 {
-  spr_draw_off(param_1,param_5,param_6,param_7);
-  spr_draw_cond(param_1,param_2,param_3,param_4);
+  spr_draw_off(spr,ox,oy,oflag);
+  spr_draw_cond(spr,cx,cy,cflag);
   return;
 }
 
@@ -273,22 +273,22 @@ void spr_draw_pair(undefined4 param_1,undefined4 param_2,undefined4 param_3,unde
 void spr_desc_tbl_a_init(void)
 
 {
-  int iVar2;
-  uint8_t *puVar1;
+  int i;
+  uint8_t *rec;
   
   if (DAT_801b55dc < 0) {
-    iVar2 = 0x1f;
-    puVar1 = (uint8_t *)&DAT_801f642c;
+    i = 0x1f;
+    rec = (uint8_t *)&DAT_801f642c;
     do {
-      iVar2 = iVar2 + -1;
-      *(uint32_t *)puVar1 = (uint32_t)(_DAT_1f8000dc - 2);
-      puVar1[7] = 9;
-      puVar1[0xb] = 0x2f;
-      puVar1[8] = 0x80;
-      puVar1[9] = 0x80;
-      puVar1[10] = 0x80;
-      puVar1 = puVar1 + -0x2c;
-    } while (-1 < iVar2);
+      i = i + -1;
+      *(uint32_t *)rec = (uint32_t)(_DAT_1f8000dc - 2);
+      rec[7] = 9;
+      rec[0xb] = 0x2f;
+      rec[8] = 0x80;
+      rec[9] = 0x80;
+      rec[10] = 0x80;
+      rec = rec + -0x2c;
+    } while (-1 < i);
     DAT_801b55dc = 0;
   }
   return;
@@ -299,22 +299,22 @@ void spr_desc_tbl_a_init(void)
 void spr_desc_tbl_b_init(void)
 
 {
-  int iVar2;
-  uint8_t *puVar1;
+  int i;
+  uint8_t *rec;
   
   if (DAT_801b55e0 < 0) {
-    iVar2 = 0x1f;
-    puVar1 = (uint8_t *)&DAT_801f68b4;
+    i = 0x1f;
+    rec = (uint8_t *)&DAT_801f68b4;
     do {
-      iVar2 = iVar2 + -1;
-      *(uint32_t *)puVar1 = (uint32_t)(_DAT_1f8000dc - 2);
-      puVar1[7] = 4;
-      puVar1[0xb] = 0x67;
-      puVar1[8] = 0x80;
-      puVar1[9] = 0x80;
-      puVar1[10] = 0x80;
-      puVar1 = puVar1 + -0x24;
-    } while (-1 < iVar2);
+      i = i + -1;
+      *(uint32_t *)rec = (uint32_t)(_DAT_1f8000dc - 2);
+      rec[7] = 4;
+      rec[0xb] = 0x67;
+      rec[8] = 0x80;
+      rec[9] = 0x80;
+      rec[10] = 0x80;
+      rec = rec + -0x24;
+    } while (-1 < i);
     DAT_801b55e0 = 0;
   }
   return;
@@ -327,146 +327,146 @@ void spr_desc_tbl_b_init(void)
 void *spr_desc_slot_alloc(void)
 
 {
-  uint32_t uVar1;
-  int32_t iVar3;
-  uint32_t *puVar4;
-  int32_t iVar2;
+  uint32_t off;
+  int32_t owner;
+  uint32_t *slot;
+  int32_t next;
   
-  uVar1 = (uint32_t)DAT_801b55e0 * 0x24;
-  puVar4 = (uint32_t *)guest_at(0x801f6458 + uVar1);
-  iVar3 = (int32_t)*puVar4;
-  if ((iVar3 != (int32_t)_DAT_1f8000dc) &&
-      (iVar2 = DAT_801b55e0 + 1, iVar3 != (int32_t)(_DAT_1f8000dc - 1))) {
-    if (0x1f < iVar2) {
-      iVar2 = 0;
+  off = (uint32_t)DAT_801b55e0 * 0x24;
+  slot = (uint32_t *)guest_at(0x801f6458 + off);
+  owner = (int32_t)*slot;
+  if ((owner != (int32_t)_DAT_1f8000dc) &&
+      (next = DAT_801b55e0 + 1, owner != (int32_t)(_DAT_1f8000dc - 1))) {
+    if (0x1f < next) {
+      next = 0;
     }
-    DAT_801b55e0 = iVar2;
-    *puVar4 = _DAT_1f8000dc;
-    return guest_at(0x801f645c + uVar1);
+    DAT_801b55e0 = next;
+    *slot = _DAT_1f8000dc;
+    return guest_at(0x801f645c + off);
   }
   return (void *)0;
 }
 
 /* ======== 0x8018c824 ======== */
 
-undefined4 spr_slot_pkt_submit(uint *param_1,undefined4 param_2,undefined4 param_3,uint param_4)
+undefined4 spr_slot_pkt_submit(uint *ot_cell,undefined4 pos,undefined4 col,uint attr)
 
 {
-  uint *puVar1;
-  undefined4 uVar2;
-  uint32_t guest;
+  uint *pkt;
+  undefined4 ret;
+  uint32_t pkt_g;
   uint32_t *cell;
   
-  /* param_1 carries either a guest address value (direct clean callers
+  /* ot_cell carries either a pkt_g address value (direct clean callers
    * pass _DAT_1f800008+n) or a host pointer (clean_table.c wrapper passes
    * guest_at(gpr4)). guest_of() resolves the host form; fall back to the
    * raw value otherwise. */
   {
-    uint32_t p1g = guest_of(param_1);
-    cell = (uint32_t *)guest_at(p1g ? p1g : (uint32_t)(uintptr_t)param_1);
+    uint32_t p1g = guest_of(ot_cell);
+    cell = (uint32_t *)guest_at(p1g ? p1g : (uint32_t)(uintptr_t)ot_cell);
   }
-  puVar1 = (uint *)spr_desc_slot_alloc();
-  if (puVar1 == (uint *)0x0) {
-    uVar2 = 0xffffffff;
+  pkt = (uint *)spr_desc_slot_alloc();
+  if (pkt == (uint *)0x0) {
+    ret = 0xffffffff;
   }
   else {
-    guest = guest_of(puVar1);
-    *(ushort *)(puVar1 + 4) = ((ushort)((uint)param_3 >> 0x10) & 0xff) + 1;
-    puVar1[3] = param_4;
-    *(ushort *)((char *)puVar1 + 0x12) = (byte)((uint)param_3 >> 0x18) + 1;
-    *(short *)(puVar1 + 2) = (short)param_2;
-    *(short *)((char *)puVar1 + 10) = (short)((uint)param_2 >> 0x10);
-    *(byte *)((char *)puVar1 + 7) = *(byte *)((char *)puVar1 + 7) & 0xfd | 1;
-    puVar1[1] = 0x64808080;
-    prim_packet_init_tex((int)guest_of(puVar1 + 5),DAT_801e40b7,DAT_801e40b6,(int)(short)param_3,0);
-    uVar2 = 0;
-    *puVar1 = *cell | 0x4000000;
-    *cell = guest & 0xffffff;
-    puVar1[5] = guest & 0xffffff | 0x2000000;
-    *cell = (guest + 0x14) & 0xffffff;
+    pkt_g = guest_of(pkt);
+    *(ushort *)(pkt + 4) = ((ushort)((uint)col >> 0x10) & 0xff) + 1;
+    pkt[3] = attr;
+    *(ushort *)((char *)pkt + 0x12) = (byte)((uint)col >> 0x18) + 1;
+    *(short *)(pkt + 2) = (short)pos;
+    *(short *)((char *)pkt + 10) = (short)((uint)pos >> 0x10);
+    *(byte *)((char *)pkt + 7) = *(byte *)((char *)pkt + 7) & 0xfd | 1;
+    pkt[1] = 0x64808080;
+    prim_packet_init_tex((int)guest_of(pkt + 5),DAT_801e40b7,DAT_801e40b6,(int)(short)col,0);
+    ret = 0;
+    *pkt = *cell | 0x4000000;
+    *cell = pkt_g & 0xffffff;
+    pkt[5] = pkt_g & 0xffffff | 0x2000000;
+    *cell = (pkt_g + 0x14) & 0xffffff;
   }
-  return uVar2;
+  return ret;
 }
 
 /* ======== GPU command wrappers (libgpu-style dispatch) ======== */
 
 /* ======== 0x80191428 ======== */
 
-void gpu_load_image_cmd(undefined4 param_1,undefined4 param_2)
+void gpu_load_image_cmd(undefined4 rect,undefined4 src)
 
 {
-  gpu_rect_bounds_dbg(guest_of(s_LoadImage_80125504),(short *)(uintptr_t)param_1);
-  gpu_call(8,GPU_TBL()[8],param_1,8,param_2);
+  gpu_rect_bounds_dbg(guest_of(s_LoadImage_80125504),(short *)(uintptr_t)rect);
+  gpu_call(8,GPU_TBL()[8],rect,8,src);
   return;
 }
 
 /* ======== 0x80191300 ======== */
 
-void gpu_clear_image_cmd(undefined4 param_1,uint param_2,uint param_3,uint param_4)
+void gpu_clear_image_cmd(undefined4 rect,uint r,uint g,uint b)
 
 {
-  gpu_rect_bounds_dbg(guest_of(s_ClearImage_801254ec),(short *)(uintptr_t)param_1);
-  gpu_call(8,GPU_TBL()[3],param_1,8,
-               (param_4 & 0xff) << 0x10 | (param_3 & 0xff) << 8 | param_2 & 0xff);
+  gpu_rect_bounds_dbg(guest_of(s_ClearImage_801254ec),(short *)(uintptr_t)rect);
+  gpu_call(8,GPU_TBL()[3],rect,8,
+               (b & 0xff) << 0x10 | (g & 0xff) << 8 | r & 0xff);
   return;
 }
 
 /* ======== 0x80191390 ======== */
 
-void gpu_clear_image_cmd2(undefined4 param_1,uint param_2,uint param_3,uint param_4)
+void gpu_clear_image_cmd2(undefined4 rect,uint r,uint g,uint b)
 
 {
-  gpu_rect_bounds_dbg(guest_of(s_ClearImage2_801254f8),(short *)(uintptr_t)param_1);
-  gpu_call(8,GPU_TBL()[3],param_1,8,
-               (param_4 & 0xff) << 0x10 | (param_3 & 0xff) << 8 | 0x80000000 | param_2 & 0xff);
+  gpu_rect_bounds_dbg(guest_of(s_ClearImage2_801254f8),(short *)(uintptr_t)rect);
+  gpu_call(8,GPU_TBL()[3],rect,8,
+               (b & 0xff) << 0x10 | (g & 0xff) << 8 | 0x80000000 | r & 0xff);
   return;
 }
 
 /* ======== 0x80191668 ======== */
 
-void gpu_clear_otag_r(uint32_t param_1,uint32_t param_2)
+void gpu_clear_otag_r(uint32_t addr,uint32_t tag)
 
 {
   if (1 < DAT_801b8322) {
-    GPU_DBG(s_ClearOTagR__08x__d_____80125540,param_1,param_2);
+    GPU_DBG(s_ClearOTagR__08x__d_____80125540,addr,tag);
   }
-  /* jalr t[11] with a0=param_1,a1=param_2 (a2/a3 = caller leftovers in
+  /* jalr t[11] with a0=addr,a1=tag (a2/a3 = caller leftovers in
    * guest; 0 here — ClearOTagR impl reads only a0/a1). */
-  gpu_call(0x2c,param_1,param_2,0,0);
+  gpu_call(0x2c,addr,tag,0,0);
   DAT_801b83e0 = 0x41b83cc;
-  *(uint32_t *)guest_at(param_1) = 0x1b83e0;
+  *(uint32_t *)guest_at(addr) = 0x1b83e0;
   return;
 }
 
 /* ======== 0x80191770 ======== */
 
-void gpu_draw_otag(undefined4 param_1)
+void gpu_draw_otag(undefined4 otag)
 
 {
   if (1 < DAT_801b8322) {
-    GPU_DBG(s_DrawOTag__08x_____80125558,param_1);
+    GPU_DBG(s_DrawOTag__08x_____80125558,otag);
   }
-  gpu_call(8,GPU_TBL()[6],param_1,0,0);
+  gpu_call(8,GPU_TBL()[6],otag,0,0);
   return;
 }
 
 /* ======== 0x801917e0 ======== */
 
-int gpu_draw_env_put(int param_1)
+int gpu_draw_env_put(int env_g)
 
 {
-  undefined *puVar1;
+  undefined *envp;
   intptr_t hp;
   
-  hp = (intptr_t)guest_at((uint32_t)param_1);
+  hp = (intptr_t)guest_at((uint32_t)env_g);
   if (1 < DAT_801b8322) {
-    GPU_DBG(s_PutDrawEnv__08x_____8012556c,param_1);
+    GPU_DBG(s_PutDrawEnv__08x_____8012556c,env_g);
   }
-  gpu_prim_pkt_build(param_1 + 0x1c,(ushort *)(uintptr_t)param_1);
+  gpu_prim_pkt_build(env_g + 0x1c,(ushort *)(uintptr_t)env_g);
   *(uint32_t *)((char *)hp + 0x1c) = *(uint32_t *)((char *)hp + 0x1c) | 0xffffff;
-  gpu_call(8,GPU_TBL()[6],param_1 + 0x1c,0x40,0);
-  guest_memcpy((uint32_t *)0x801b8330,(uint32_t *)param_1,0x5c);
-  return param_1;
+  gpu_call(8,GPU_TBL()[6],env_g + 0x1c,0x40,0);
+  guest_memcpy((uint32_t *)0x801b8330,(uint32_t *)env_g,0x5c);
+  return env_g;
 }
 
 /* ======== 0x80191ed8 ======== */
@@ -474,55 +474,55 @@ int gpu_draw_env_put(int param_1)
 uint gpu_stat_sign(void)
 
 {
-  uint uVar1;
+  uint stat;
   
-  uVar1 = gpu_call(0x38,0,0,0,0);
-  return uVar1 >> 0x1f;
+  stat = gpu_call(0x38,0,0,0,0);
+  return stat >> 0x1f;
 }
 
 /* ======== 0x801910e4 ======== */
 
-void gpu_disp_mask_set(int param_1)
+void gpu_disp_mask_set(int enable)
 
 {
-  undefined4 uVar1;
+  undefined4 cmd;
   
   if (1 < DAT_801b8322) {
-    GPU_DBG(s_SetDispMask__d_____801254a0,param_1);
+    GPU_DBG(s_SetDispMask__d_____801254a0,enable);
   }
-  if (param_1 == 0) {
+  if (enable == 0) {
     guest_memset((uint32_t *)0x801b838c,0xff,0x14);
   }
-  uVar1 = 0x3000001;
-  if (param_1 != 0) {
-    uVar1 = 0x3000000;
+  cmd = 0x3000001;
+  if (enable != 0) {
+    cmd = 0x3000000;
   }
-  gpu_call(0x10,uVar1,0,0,0);
+  gpu_call(0x10,cmd,0,0,0);
   return;
 }
 
 /* ======== 0x8019117c ======== */
 
-void gpu_draw_sync(undefined4 param_1)
+void gpu_draw_sync(undefined4 n)
 
 {
   if (1 < DAT_801b8322) {
-    GPU_DBG(s_DrawSync__d_____801254b4,param_1);
+    GPU_DBG(s_DrawSync__d_____801254b4,n);
   }
-  /* jalr t[15] with a0=param_1 (delay slot 0x801911D0: move a0,s0). */
-  gpu_call(0x3c,param_1,0,0,0);
+  /* jalr t[15] with a0=n (delay slot 0x801911D0: move a0,s0). */
+  gpu_call(0x3c,n,0,0,0);
   return;
 }
 
 /* ======== 0x80190e00 ======== */
 
-uint gpu_graph_reset(uint param_1)
+uint gpu_graph_reset(uint arg)
 
 {
-  uint uVar1;
+  uint v;
   
-  uVar1 = param_1 & 7;
-  if (uVar1 == 3) {
+  v = arg & 7;
+  if (v == 3) {
 LAB_80190e4c:
     printf_forward(s_ResetGraph_jtb__08x_env__08x_80125410,
                  (uint32_t *)0x801b82d8,(uint32_t *)0x801b8320);
@@ -530,27 +530,27 @@ LAB_80190e68:
     guest_memset((uint32_t *)0x801b8320,0,0x80);
     cd_dispatch_tblc();
     bios_call_a0((*(uint32_t *)guest_at(0x801b8318)) & 0xffffff);
-    DAT_801b8320 = (uint8_t)gpu_mode_regs_apply(param_1);
+    DAT_801b8320 = (uint8_t)gpu_mode_regs_apply(arg);
     DAT_801b8321 = 1;
     DAT_801b8324 = *(undefined2 *)((char *)guest_at(0x801b83a0) + (uint)DAT_801b8320 * 4);
     DAT_801b8326 = *(undefined2 *)((char *)guest_at(0x801b83ac) + (uint)DAT_801b8320 * 4);
     guest_memset((uint32_t *)0x801b8330,0xff,0x5c);
     guest_memset((uint32_t *)0x801b838c,0xff,0x14);
-    uVar1 = (uint)DAT_801b8320;
+    v = (uint)DAT_801b8320;
   }
   else {
-    if (uVar1 < 4) {
-      if (uVar1 == 0) goto LAB_80190e4c;
+    if (v < 4) {
+      if (v == 0) goto LAB_80190e4c;
     }
-    else if (uVar1 == 5) goto LAB_80190e68;
+    else if (v == 5) goto LAB_80190e68;
     if (1 < DAT_801b8322) {
-      GPU_DBG(s_ResetGraph__d_____80125430,param_1);
+      GPU_DBG(s_ResetGraph__d_____80125430,arg);
     }
     /* jalr t[13] with a0=1 (delay slot 0x80190F5C: addiu a0,zero,1);
-     * a1 = leftover (s1=param_1 on debug path, caller a1 otherwise). */
-    uVar1 = gpu_call(0x34,1,0,0,0);
+     * a1 = leftover (s1=arg on debug path, caller a1 otherwise). */
+    v = gpu_call(0x34,1,0,0,0);
   }
-  return uVar1;
+  return v;
 }
 
 /* ======== 0x801919ac ======== */
@@ -558,38 +558,38 @@ LAB_80190e68:
 /* Draw-env -> GPU display timing. param_1 is a guest address of the
  * 20-byte env struct (callers pass 0x801e40fc/0x801e624c-style addrs);
  * bridged to host here. Returns the host env pointer. */
-uint32_t draw_env_timing(uint32_t param_1)
+uint32_t draw_env_timing(uint32_t env_g)
 
 {
-  ushort uVar1;
-  bool bVar2;
-  char cVar3;
-  int iVar4;
-  int iVar5;
+  ushort hgt;
+  bool narrow;
+  char gp_type;
+  int tbl_off;
+  int delta;
   uint uVar6;
   uint uVar7;
   uint uVar8;
-  int iVar9;
+  int std_idx;
   uint uVar10;
   uint uVar11;
   ushort *env;
-  uint16_t *t16;
-  uint8_t  *t8;
+  uint16_t *timing_tbl;
+  uint8_t  *timing_b;
   
-  env = (ushort *)guest_at(param_1);
+  env = (ushort *)guest_at(env_g);
   if (1 < DAT_801b8322) {
-    GPU_DBG(s_PutDispEnv__08x_____801255a0,param_1);
+    GPU_DBG(s_PutDispEnv__08x_____801255a0,env_g);
   }
   gpu_call(0x10,((env[1] & 0x3ff) << 10 | env[0] & 0x3ff | 0x5000000),0,0,0);
   if ((((DB32(0x801b839c) != *(int *)(env + 8)) || (DB16(0x801b838c) != env[0])) ||
       (DB16(0x801b838e) != env[1])) ||
      ((DB16(0x801b8390) != env[2] || (DB16(0x801b8392) != env[3])))) {
-    cVar3 = gp_bde20_read();
-    *(char *)(env + 9) = cVar3;
+    gp_type = gp_bde20_read();
+    *(char *)(env + 9) = gp_type;
     /* s0 = 0x08000000 unconditionally (lui @0x801919DC delay slot);
-     * ori s0,s0,8 @0x80191AC0 only when cVar3==1. */
+     * ori s0,s0,8 @0x80191AC0 only when gp_type==1. */
     uVar10 = 0x08000000;
-    if (cVar3 == '\x01') {
+    if (gp_type == '\x01') {
       uVar10 |= 8;
     }
     if (((uint8_t *)env)[0x11] != 0) {   /* lbu @env+0x11 (0x80191AC4) */
@@ -601,26 +601,26 @@ uint32_t draw_env_timing(uint32_t param_1)
     if (DAT_801b8323 != '\0') {
       uVar10 = uVar10 | 0x80;
     }
-    uVar1 = env[2];
-    if (0x118 < (short)uVar1) {
-      if ((short)uVar1 < 0x161) {
+    hgt = env[2];
+    if (0x118 < (short)hgt) {
+      if ((short)hgt < 0x161) {
         uVar10 = uVar10 | 1;
       }
-      else if ((short)uVar1 < 0x191) {
+      else if ((short)hgt < 0x191) {
         uVar10 = uVar10 | 0x40;
       }
-      else if ((short)uVar1 < 0x231) {
+      else if ((short)hgt < 0x231) {
         uVar10 = uVar10 | 2;
       }
       else {
         uVar10 = uVar10 | 3;
       }
     }
-    bVar2 = (short)env[3] < 0x121;
+    narrow = (short)env[3] < 0x121;
     if ((char)env[9] == '\0') {
-      bVar2 = (short)env[3] < 0x101;
+      narrow = (short)env[3] < 0x101;
     }
-    if (!bVar2) {
+    if (!narrow) {
       uVar10 = uVar10 | 0x24;
     }
     gpu_call(0x10,uVar10,0,0,0);
@@ -629,39 +629,39 @@ uint32_t draw_env_timing(uint32_t param_1)
   if (((DB16(0x801b8394) == env[4]) && (DB16(0x801b8396) == env[5])) &&
      ((DB16(0x801b8398) == env[6] && ((DB16(0x801b839a) == env[7] && ((char)env[9] != '\b'))))))
    goto LAB_80191e74;
-  cVar3 = gp_bde20_read();
-  *(char *)(env + 9) = cVar3;
+  gp_type = gp_bde20_read();
+  *(char *)(env + 9) = gp_type;
   uVar10 = (int)(short)env[5] + 0x13;
-  if (cVar3 == '\0') {
+  if (gp_type == '\0') {
     uVar10 = (int)(short)env[5] + 0x10;
   }
   uVar11 = uVar10 + (int)(short)env[7];
   if ((short)env[7] == 0) {
     uVar11 = uVar10 + 0xf0;
   }
-  uVar1 = env[2];
-  iVar9 = 0;
-  if ((((0x118 < (short)uVar1) && (iVar9 = 1, 0x160 < (short)uVar1)) &&
-      (iVar9 = 2, 400 < (short)uVar1)) && (iVar9 = 4, (short)uVar1 < 0x231)) {
-    iVar9 = 3;
+  hgt = env[2];
+  std_idx = 0;
+  if ((((0x118 < (short)hgt) && (std_idx = 1, 0x160 < (short)hgt)) &&
+      (std_idx = 2, 400 < (short)hgt)) && (std_idx = 4, (short)hgt < 0x231)) {
+    std_idx = 3;
   }
-  iVar4 = ((uint)(byte)env[9] * 5 + iVar9) * 4;
-  t16 = (uint16_t *)guest_at(0x801b83f4);
-  /* iVar4 is a BYTE offset into the u16 timing table (MIPS: lhu @base+iVar4),
-   * not a u16 element index — divide by 2 for t16[] indexing. */
-  iVar5 = (int)t16[iVar4 / 2 + 1] - (int)t16[iVar4 / 2];
-  uVar7 = (uint)t16[iVar4 / 2] +
-          (int)(short)env[4] * (uint)(byte)((uint8_t *)guest_at(0x801b841c))[iVar9];
+  tbl_off = ((uint)(byte)env[9] * 5 + std_idx) * 4;
+  timing_tbl = (uint16_t *)guest_at(0x801b83f4);
+  /* tbl_off is a BYTE offset into the u16 timing table (MIPS: lhu @base+tbl_off),
+   * not a u16 element index — divide by 2 for timing_tbl[] indexing. */
+  delta = (int)timing_tbl[tbl_off / 2 + 1] - (int)timing_tbl[tbl_off / 2];
+  uVar7 = (uint)timing_tbl[tbl_off / 2] +
+          (int)(short)env[4] * (uint)(byte)((uint8_t *)guest_at(0x801b841c))[std_idx];
   if ((short)env[6] != 0) {
-    iVar5 = iVar5 * (short)env[6] >> 8;
+    delta = delta * (short)env[6] >> 8;
   }
-  uVar6 = uVar7 + iVar5;
+  uVar6 = uVar7 + delta;
   if ((char)env[9] == '\0') {
     uVar8 = 500;
     if ((499 < (int)uVar7) && (uVar8 = 0xcb2, (int)uVar7 < 0xcb3)) {
       uVar8 = uVar7;
     }
-    uVar7 = uVar8 + (uint)(byte)((uint8_t *)guest_at(0x801b841c))[iVar9] * 4;
+    uVar7 = uVar8 + (uint)(byte)((uint8_t *)guest_at(0x801b841c))[std_idx] * 4;
     if (((int)uVar7 <= (int)uVar6) && (uVar7 = 0xcda, (int)uVar6 < 0xcdb)) {
       uVar7 = uVar6;
     }
@@ -675,7 +675,7 @@ uint32_t draw_env_timing(uint32_t param_1)
       }
     }
     uVar10 = uVar6 + 2;
-    bVar2 = (int)uVar11 < 0x103;
+    narrow = (int)uVar11 < 0x103;
     if ((int)uVar10 <= (int)uVar11) {
       uVar10 = 0x102;
       goto LAB_80191e0c;
@@ -686,7 +686,7 @@ uint32_t draw_env_timing(uint32_t param_1)
     if ((0x21b < (int)uVar7) && (uVar8 = 0xc94, (int)uVar7 < 0xc95)) {
       uVar8 = uVar7;
     }
-    uVar7 = uVar8 + (uint)(byte)((uint8_t *)guest_at(0x801b841c))[iVar9] * 4;
+    uVar7 = uVar8 + (uint)(byte)((uint8_t *)guest_at(0x801b841c))[std_idx] * 4;
     if (((int)uVar7 <= (int)uVar6) && (uVar7 = 0xcbc, (int)uVar6 < 0xcbd)) {
       uVar7 = uVar6;
     }
@@ -699,12 +699,12 @@ uint32_t draw_env_timing(uint32_t param_1)
         uVar6 = uVar10;
       }
     }
-    bVar2 = (int)uVar11 < 0x132;
+    narrow = (int)uVar11 < 0x132;
     uVar10 = uVar6 + 2;
     if ((int)(uVar6 + 2) <= (int)uVar11) {
       uVar10 = 0x131;
 LAB_80191e0c:
-      if (bVar2) {
+      if (narrow) {
         uVar10 = uVar11;
       }
     }
@@ -712,8 +712,8 @@ LAB_80191e0c:
   gpu_call(0x10,(uVar7 & 0xfff) << 0xc | uVar8 & 0xfff | 0x6000000,0,0,0);
   gpu_call(0x10,(uVar10 & 0x3ff) << 10 | uVar6 & 0x3ff | 0x7000000,0,0,0);
 LAB_80191e74:
-  guest_memcpy((uint32_t *)0x801b838c,(uint32_t *)param_1,0x14);
-  return param_1;
+  guest_memcpy((uint32_t *)0x801b838c,(uint32_t *)env_g,0x14);
+  return env_g;
 }
 
 /* ======== batch27: GPU/env helpers ======== */
@@ -742,128 +742,128 @@ extern char *s__Id__sys_c_v_1_140_1998_01_12_07_801b82d8;
 
 /* ======== 0x80193d08 ======== */
 
-void guest_memset(uint32_t *param_1,undefined1 param_2,int param_3)
+void guest_memset(uint32_t *dst,undefined1 val,int len)
 
 {
-  int iVar1;
-  /* param_1: host pointer from clean_table wrapper, guest-address value
+  int i;
+  /* dst: host pointer from clean_table wrapper, guest-address value
    * from in-file callers (0x801b83xx constants) — resolve either form. */
-  uint32_t g1 = guest_of(param_1);
-  uint8_t *d = (uint8_t *)guest_at(g1 ? g1 : (uint32_t)(uintptr_t)param_1);
+  uint32_t g1 = guest_of(dst);
+  uint8_t *d = (uint8_t *)guest_at(g1 ? g1 : (uint32_t)(uintptr_t)dst);
   
-  iVar1 = param_3 + -1;
-  if (param_3 != 0) {
+  i = len + -1;
+  if (len != 0) {
     do {
-      *d = param_2;
-      iVar1 = iVar1 + -1;
+      *d = val;
+      i = i + -1;
       d = d + 1;
-    } while (iVar1 != -1);
+    } while (i != -1);
   }
   return;
 }
 
 /* ======== 0x8018e490 ======== */
 
-undefined1 * guest_memcpy(uint32_t *param_1,uint32_t *param_2,int param_3)
+undefined1 * guest_memcpy(uint32_t *dst,uint32_t *src,int len)
 
 {
-  undefined1 uVar1;
-  undefined1 *puVar2;
-  undefined1 *puVar3;
+  undefined1 c;
+  undefined1 *wp;
+  undefined1 *ret;
   uint8_t *d, *s;
   
-  puVar3 = (undefined1 *)0x0;
+  ret = (undefined1 *)0x0;
   /* params arrive as host pointers from the clean_table wrapper but as
    * guest-address values from cd.c callers — resolve either form. */
   {
-    uint32_t g1 = guest_of(param_1);
-    uint32_t g2 = guest_of(param_2);
-    d = (uint8_t *)guest_at(g1 ? g1 : (uint32_t)(uintptr_t)param_1);
-    s = (uint8_t *)guest_at(g2 ? g2 : (uint32_t)(uintptr_t)param_2);
+    uint32_t g1 = guest_of(dst);
+    uint32_t g2 = guest_of(src);
+    d = (uint8_t *)guest_at(g1 ? g1 : (uint32_t)(uintptr_t)dst);
+    s = (uint8_t *)guest_at(g2 ? g2 : (uint32_t)(uintptr_t)src);
   }
-  puVar2 = d;
-  if (param_1 != (uint32_t *)0x0) {
-    for (; puVar3 = (undefined1 *)d, 0 < param_3; param_3 = param_3 + -1) {
-      uVar1 = *s;
+  wp = d;
+  if (dst != (uint32_t *)0x0) {
+    for (; ret = (undefined1 *)d, 0 < len; len = len + -1) {
+      c = *s;
       s = s + 1;
-      *puVar2 = uVar1;
-      puVar2 = (undefined1 *)(puVar2 + 1);
+      *wp = c;
+      wp = (undefined1 *)(wp + 1);
     }
   }
-  return puVar3;
+  return ret;
 }
 
 /* ======== 0x801921c0 ======== */
 
-void gpu_prim_pkt_build(int param_1,ushort *param_2)
+void gpu_prim_pkt_build(int pkt_g,ushort *env_p)
 
 {
-  ushort uVar1;
-  ushort uVar2;
-  ushort uVar3;
-  undefined4 uVar4;
-  char cVar5;
-  undefined4 local_18;
-  undefined4 local_14;
+  ushort h_raw;
+  ushort w;
+  ushort h;
+  undefined4 word;
+  char tag;
+  undefined4 dxy;
+  undefined4 wh;
   uint8_t *dst;
   ushort *env;
   
-  /* param_2: host pointer from clean_table wrapper, guest-address value
-   * from gpu_draw_env_put — resolve either form. param_1 stays a guest
+  /* env_p: host pointer from clean_table wrapper, guest-address value
+   * from gpu_draw_env_put — resolve either form. pkt_g stays a guest
    * address value in both paths. */
-  uint32_t p2g = guest_of(param_2);
-  dst = (uint8_t *)guest_at((uint32_t)param_1);
-  env = (ushort *)guest_at(p2g ? p2g : (uint32_t)(uintptr_t)param_2);
-  uVar4 = gpu_coord_clamp_a((int)(short)env[0],(int)(short)env[1]);
-  *(undefined4 *)(dst + 4) = uVar4;
-  uVar4 = gpu_coord_clamp_b((int)(((uint)env[2] + (uint)env[0] + -1) * 0x10000) >> 0x10,
+  uint32_t p2g = guest_of(env_p);
+  dst = (uint8_t *)guest_at((uint32_t)pkt_g);
+  env = (ushort *)guest_at(p2g ? p2g : (uint32_t)(uintptr_t)env_p);
+  word = gpu_coord_clamp_a((int)(short)env[0],(int)(short)env[1]);
+  *(undefined4 *)(dst + 4) = word;
+  word = gpu_coord_clamp_b((int)(((uint)env[2] + (uint)env[0] + -1) * 0x10000) >> 0x10,
                        (int)(((uint)env[1] + (uint)env[3] + -1) * 0x10000) >> 0x10);
-  *(undefined4 *)(dst + 8) = uVar4;
-  uVar4 = gpu_coord_pack((int)(short)env[4],(int)(short)env[5]);
-  *(undefined4 *)(dst + 0xc) = uVar4;
-  uVar4 = gpu_pkt_pack(*(uint8_t *)((char *)env + 0x17),(char)env[0xb],env[10]);
-  *(undefined4 *)(dst + 0x10) = uVar4;
-  uVar4 = gpu_texpage_pack(env + 6);
-  *(undefined4 *)(dst + 0x14) = uVar4;
+  *(undefined4 *)(dst + 8) = word;
+  word = gpu_coord_pack((int)(short)env[4],(int)(short)env[5]);
+  *(undefined4 *)(dst + 0xc) = word;
+  word = gpu_pkt_pack(*(uint8_t *)((char *)env + 0x17),(char)env[0xb],env[10]);
+  *(undefined4 *)(dst + 0x10) = word;
+  word = gpu_texpage_pack(env + 6);
+  *(undefined4 *)(dst + 0x14) = word;
   *(undefined4 *)(dst + 0x18) = 0xe6000000;
-  cVar5 = '\a';
+  tag = '\a';
   if ((char)env[0xc] != '\0') {
-    uVar4 = *(undefined4 *)env;
-    uVar3 = env[2];
-    uVar1 = env[3];
-    uVar2 = 0;
-    if ((-1 < (short)uVar3) && (uVar2 = DAT_801b8324 - 1, (int)(short)uVar3 <= DAT_801b8324 + -1)) {
-      uVar2 = uVar3;
+    word = *(undefined4 *)env;
+    h = env[2];
+    h_raw = env[3];
+    w = 0;
+    if ((-1 < (short)h) && (w = DAT_801b8324 - 1, (int)(short)h <= DAT_801b8324 + -1)) {
+      w = h;
     }
-    if ((short)uVar1 < 0) {
-      uVar3 = 0;
+    if ((short)h_raw < 0) {
+      h = 0;
     }
     else {
-      uVar3 = DAT_801b8326 - 1;
-      if ((int)(short)uVar1 <= DAT_801b8326 + -1) {
-        uVar3 = uVar1;
+      h = DAT_801b8326 - 1;
+      if ((int)(short)h_raw <= DAT_801b8326 + -1) {
+        h = h_raw;
       }
     }
-    local_14 = ((uint32_t)uVar3 << 16) | uVar2;
-    if (((env[0] & 0x3f) == 0) && ((uVar2 & 0x3f) == 0)) {
-      cVar5 = '\n';
+    wh = ((uint32_t)h << 16) | w;
+    if (((env[0] & 0x3f) == 0) && ((w & 0x3f) == 0)) {
+      tag = '\n';
       *(uint *)(dst + 0x1c) =
            (uint)*(uint8_t *)((char *)env + 0x1b) << 0x10 | (uint)(uint8_t)env[0xd] << 8 | 0x2000000
            | (uint)*(uint8_t *)((char *)env + 0x19);
-      *(undefined4 *)(dst + 0x20) = uVar4;
-      *(undefined4 *)(dst + 0x24) = local_14;
+      *(undefined4 *)(dst + 0x20) = word;
+      *(undefined4 *)(dst + 0x24) = wh;
     }
     else {
-      cVar5 = '\n';
-      local_18 = ((uint32_t)(uint16_t)(env[1] - env[5]) << 16) | (uint16_t)(env[0] - env[4]);
+      tag = '\n';
+      dxy = ((uint32_t)(uint16_t)(env[1] - env[5]) << 16) | (uint16_t)(env[0] - env[4]);
       *(uint *)(dst + 0x1c) =
            (uint)*(uint8_t *)((char *)env + 0x1b) << 0x10 | (uint)(uint8_t)env[0xd] << 8 | 0x60000000
            | (uint)*(uint8_t *)((char *)env + 0x19);
-      *(undefined4 *)(dst + 0x20) = local_18;
-      *(undefined4 *)(dst + 0x24) = local_14;
+      *(undefined4 *)(dst + 0x20) = dxy;
+      *(undefined4 *)(dst + 0x24) = wh;
     }
   }
-  *(char *)(dst + 3) = cVar5 + -1;
+  *(char *)(dst + 3) = tag + -1;
   return;
 }
 
@@ -888,9 +888,9 @@ void gpu_prim_pkt_build(int param_1,ushort *param_2)
  *   {2,4,6,7}: no register writes.
  * Tail (all modes): v0 = cd_u16_swap_store(*0x801B8468); if mode==0
  * v0 = gpu_status_cmd(a0). Returns last call's $v0. */
-undefined4 gpu_mode_regs_apply(uint param_1)
+undefined4 gpu_mode_regs_apply(uint arg)
 {
-  uint32_t mode = param_1 & 7u;
+  uint32_t mode = arg & 7u;
   uint32_t v0 = cd_u16_swap_store(0);
   uint32_t p;
   uint32_t r;
@@ -910,55 +910,55 @@ undefined4 gpu_mode_regs_apply(uint param_1)
     p = GP32(0x801B8438); GP32(p) = 0x01000000;
   }
   r = cd_u16_swap_store((int)GP32(0x801B8468));
-  if (mode == 0) r = gpu_status_cmd(param_1);
+  if (mode == 0) r = gpu_status_cmd(arg);
   return r;
 }
 
 /* ======== 0x80193d30 ======== */
 
-void bios_call_a0(uint param_1)
+void bios_call_a0(uint arg)
 
 {
   /* guest 0x80193d30: `li t2,0xa0; jr t2; li t1,0x49` — BIOS svc A0/0x49
-   * with a0 = param_1 (caller's arg register). */
+   * with a0 = arg (caller's arg register). */
   extern uint32_t bios_svc6(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
-  bios_svc6(0xa0,0x49,param_1,0,0,0);
+  bios_svc6(0xa0,0x49,arg,0,0,0);
   return;
 }
 
 /* ======== 0x801911e4 ======== */
 
-void gpu_rect_bounds_dbg(undefined4 param_1,short *param_2)
+void gpu_rect_bounds_dbg(undefined4 name,short *rect)
 
 {
-  int iVar1;
-  char *pcVar2;
-  int iVar3;
-  /* param_2 arrives as a host pointer from the clean_table wrapper
+  int y;
+  char *msg;
+  int x;
+  /* rect arrives as a host pointer from the clean_table wrapper
    * (guest_at(gpr5)) but as a guest-address value from gpu_load_image_cmd
    * family callers — resolve either form. */
-  uint32_t p2g = guest_of(param_2);
-  short *rc = (short *)guest_at(p2g ? p2g : (uint32_t)(uintptr_t)param_2);
+  uint32_t p2g = guest_of(rect);
+  short *rc = (short *)guest_at(p2g ? p2g : (uint32_t)(uintptr_t)rect);
   
   if (DAT_801b8322 == '\x01') {
-    iVar3 = (int)rc[2];
-    if ((iVar3 <= DAT_801b8324) && (iVar3 + rc[0] <= (int)DAT_801b8324)) {
-      iVar1 = (int)rc[1];
-      if (((iVar1 <= DAT_801b8326) &&
-          (((iVar1 + rc[3] <= (int)DAT_801b8326 && (0 < iVar3)) && (-1 < rc[0])))) &&
-         ((-1 < iVar1 && (0 < rc[3])))) {
+    x = (int)rc[2];
+    if ((x <= DAT_801b8324) && (x + rc[0] <= (int)DAT_801b8324)) {
+      y = (int)rc[1];
+      if (((y <= DAT_801b8326) &&
+          (((y + rc[3] <= (int)DAT_801b8326 && (0 < x)) && (-1 < rc[0])))) &&
+         ((-1 < y && (0 < rc[3])))) {
         return;
       }
     }
-    pcVar2 = s__s_bad_RECT_801254c8;
+    msg = s__s_bad_RECT_801254c8;
   }
   else {
     if (DAT_801b8322 != '\x02') {
       return;
     }
-    pcVar2 = (char *)guest_at(0x801254e8);
+    msg = (char *)guest_at(0x801254e8);
   }
-  gpu_dbg(pcVar2,param_1);
+  gpu_dbg(msg,name);
   gpu_dbg(s___d__d____d__d__801254d4,(int)rc[0],(int)rc[1],(int)rc[2],
               (int)rc[3]);
   return;
