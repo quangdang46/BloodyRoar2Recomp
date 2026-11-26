@@ -102160,7 +102160,9 @@ block_801A7568:
 }
 
 /* cps_801a861c — clean CPS transliteration of br2eu_func_801A861C (guest 0x801a861c)
- * from SLES_017.22_full_51.c. */
+ * from SLES_017.22_full_51.c.
+ * Empty leaf: jr ra, nop delay slot.
+ */
 void cps_801a861c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -102173,7 +102175,9 @@ void cps_801a861c(void)
 }
 
 /* cps_801a8624 — clean CPS transliteration of br2eu_func_801A8624 (guest 0x801a8624)
- * from SLES_017.22_full_51.c. */
+ * from SLES_017.22_full_51.c.
+ * Empty leaf: jr ra, nop delay slot.
+ */
 void cps_801a8624(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -102186,7 +102190,9 @@ void cps_801a8624(void)
 }
 
 /* cps_801a862c — clean CPS transliteration of br2eu_func_801A862C (guest 0x801a862c)
- * from SLES_017.22_full_51.c. */
+ * from SLES_017.22_full_51.c.
+ * Empty leaf: jr ra, nop delay slot.
+ */
 void cps_801a862c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -102199,7 +102205,9 @@ void cps_801a862c(void)
 }
 
 /* cps_801a8634 — clean CPS transliteration of br2eu_func_801A8634 (guest 0x801a8634)
- * from SLES_017.22_full_51.c. */
+ * from SLES_017.22_full_51.c.
+ * Empty leaf: jr ra, nop delay slot.
+ */
 void cps_801a8634(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -102212,7 +102220,11 @@ void cps_801a8634(void)
 }
 
 /* cps_801a8ee0 — clean CPS transliteration of br2eu_func_801A8EE0 (guest 0x801a8ee0)
- * from SLES_017.22_full_51.c. */
+ * from SLES_017.22_full_51.c.
+ * Object-processing coroutine (21 blocks): gates on s16 obj+52 != 0,
+ * loads obj+24 (table ptr -> t9), obj+36 -> s0, s16 obj+50, and indexes
+ * through the gp+36 global offset word. Sibling of cps_801a91e0.
+ */
 void cps_801a8ee0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -102654,7 +102666,11 @@ block_801A91CC:
 }
 
 /* cps_801a91e0 — clean CPS transliteration of br2eu_func_801A91E0 (guest 0x801a91e0)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Object-processing coroutine (21 blocks): same prologue/gates as
+ * cps_801a8ee0 (s16 +52 gate, +24/+36/+50 fields, gp+36 index) — the
+ * second variant of the pair.
+ */
 void cps_801a91e0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -103135,7 +103151,10 @@ block_801A9528:
 }
 
 /* cps_801a972c — clean CPS transliteration of br2eu_func_801A972C (guest 0x801a972c)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Guarded body (18 blocks): proceeds only when *(gp+68) == 1 and a0 != 0;
+ * otherwise exits via 983C.
+ */
 void cps_801a972c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -103378,7 +103397,9 @@ block_801A983C:
 }
 
 /* cps_801a9b1c — clean CPS transliteration of br2eu_func_801A9B1C (guest 0x801a9b1c)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): prologue fragment — sp -= 40, falls into 9B20.
+ */
 void cps_801a9b1c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -103391,7 +103412,10 @@ void cps_801a9b1c(void)
 }
 
 /* cps_801a9b20 — clean CPS transliteration of br2eu_func_801A9B20 (guest 0x801a9b20)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): entry body (26 blocks): saves s0-s3/ra, s1=a0,
+ *  s2=a1, s3=a2; s1==0 branches out early.
+ */
 void cps_801a9b20(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -103506,7 +103530,10 @@ block_801A9BA4:
 }
 
 /* cps_801a9c28 — clean CPS transliteration of br2eu_func_801A9C28 (guest 0x801a9c28)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): mid body: t2=a0, t7=a2; a0==0 exits via A0D4
+ *  epilogue.
+ */
 void cps_801a9c28(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -103593,7 +103620,10 @@ block_801A9C70:
 }
 
 /* cps_801a9c7c — clean CPS transliteration of br2eu_func_801A9C7C (guest 0x801a9c7c)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): loop-setup fragment: stride math v1<<2 and bound
+ *  check v1<a1; -> 9CB8 or fallthrough.
+ */
 void cps_801a9c7c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -103633,7 +103663,9 @@ block_801A9C88:
 }
 
 /* cps_801a9cac — clean CPS transliteration of br2eu_func_801A9CAC (guest 0x801a9cac)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): stores (v0-v1) -> sp+24, continues to 9D10.
+ */
 void cps_801a9cac(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -103648,7 +103680,10 @@ void cps_801a9cac(void)
 }
 
 /* cps_801a9cb8 — clean CPS transliteration of br2eu_func_801A9CB8 (guest 0x801a9cb8)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): second loop-setup fragment: compares a1 vs v1,
+ *  reads s16 t2+10; multi-way split.
+ */
 void cps_801a9cb8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -103715,7 +103750,9 @@ block_801A9D08:
 }
 
 /* cps_801a9d10 — clean CPS transliteration of br2eu_func_801A9D10 (guest 0x801a9d10)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): phase test: computes t4<3 flag -> 9D14.
+ */
 void cps_801a9d10(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -103728,7 +103765,10 @@ void cps_801a9d10(void)
 }
 
 /* cps_801a9d14 — clean CPS transliteration of br2eu_func_801A9D14 (guest 0x801a9d14)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): dispatch: t4<3 -> 9F48 (finalize), else -> 9D1C
+ *  inner loop with a2 = sp+24 scratch ptr.
+ */
 void cps_801a9d14(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -103748,7 +103788,10 @@ void cps_801a9d14(void)
 }
 
 /* cps_801a9d1c — clean CPS transliteration of br2eu_func_801A9D1C (guest 0x801a9d1c)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): inner-loop head: gates on s16 t2+16 > 0, t1=0
+ *  vertex index.
+ */
 void cps_801a9d1c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -103781,7 +103824,10 @@ block_801A9D2C:
 }
 
 /* cps_801a9d30 — clean CPS transliteration of br2eu_func_801A9D30 (guest 0x801a9d30)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): loop-step fragment: t5 = a2+v0 (scratch ptr),
+ *  t0 = t1; -> 9D38.
+ */
 void cps_801a9d30(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -103795,7 +103841,10 @@ void cps_801a9d30(void)
 }
 
 /* cps_801a9d38 — clean CPS transliteration of br2eu_func_801A9D38 (guest 0x801a9d38)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): per-vertex kernel: reads weight table *(t2+36)
+ *  indexed t1<<3, multiplies s16 weight * a0 (MUL), seeds accumulator a3.
+ */
 void cps_801a9d38(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -103846,7 +103895,10 @@ block_801A9D80:
 }
 
 /* cps_801a9d84 — clean CPS transliteration of br2eu_func_801A9D84 (guest 0x801a9d84)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): accumulate X: adds a3 into halfword field +0 of the
+ *  8-byte vertex record at *(t2+28)+idx*8; -> 9DAC.
+ */
 void cps_801a9d84(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -103865,7 +103917,9 @@ void cps_801a9d84(void)
 }
 
 /* cps_801a9dac — clean CPS transliteration of br2eu_func_801A9DAC (guest 0x801a9dac)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): phase check t3==0 -> 9DE0 else 9DB4.
+ */
 void cps_801a9dac(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -103885,7 +103939,10 @@ void cps_801a9dac(void)
 }
 
 /* cps_801a9db4 — clean CPS transliteration of br2eu_func_801A9DB4 (guest 0x801a9db4)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): accumulate Y: adds t3 into halfword +2 of the same
+ *  vertex record; -> 9DE0.
+ */
 void cps_801a9db4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -103905,7 +103962,10 @@ void cps_801a9db4(void)
 }
 
 /* cps_801a9de0 — clean CPS transliteration of br2eu_func_801A9DE0 (guest 0x801a9de0)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): accumulate Z gate: a0==0 -> 9E14 skip, else adds
+ *  a0 into halfword +4 via 9DE8/9E08.
+ */
 void cps_801a9de0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -103942,7 +104002,9 @@ block_801A9DE8:
 }
 
 /* cps_801a9e08 — clean CPS transliteration of br2eu_func_801A9E08 (guest 0x801a9e08)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): writes (v0+a0) -> halfword v1+4; -> 9E14.
+ */
 void cps_801a9e08(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -103956,7 +104018,10 @@ void cps_801a9e08(void)
 }
 
 /* cps_801a9e14 — clean CPS transliteration of br2eu_func_801A9E14 (guest 0x801a9e14)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): loop tail: t1++, t0+=2; loops to 9D38 while
+ *  t1 < s16 t2+16, else -> 9E28 phase dispatch.
+ */
 void cps_801a9e14(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -103979,7 +104044,10 @@ void cps_801a9e14(void)
 }
 
 /* cps_801a9e28 — clean CPS transliteration of br2eu_func_801A9E28 (guest 0x801a9e28)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): phase machine on t4: ==1 -> 9EA8, <2 checks,
+ *  default -> 9ED4.
+ */
 void cps_801a9e28(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104019,7 +104087,9 @@ block_801A9E34:
 }
 
 /* cps_801a9e38 — clean CPS transliteration of br2eu_func_801A9E38 (guest 0x801a9e38)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): sets v0=2 -> 9E3C (phase advance fragment).
+ */
 void cps_801a9e38(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104032,7 +104102,9 @@ void cps_801a9e38(void)
 }
 
 /* cps_801a9e3c — clean CPS transliteration of br2eu_func_801A9E3C (guest 0x801a9e3c)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): phase test t4==0 -> 9E5C, else -> 9ED4.
+ */
 void cps_801a9e3c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104064,7 +104136,9 @@ block_801A9E44:
 }
 
 /* cps_801a9e4c — clean CPS transliteration of br2eu_func_801A9E4C (guest 0x801a9e4c)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): phase test t4==v0 -> 9ED0 (t4=3), else -> 9ED4.
+ */
 void cps_801a9e4c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104096,7 +104170,10 @@ block_801A9E54:
 }
 
 /* cps_801a9e5c — clean CPS transliteration of br2eu_func_801A9E5C (guest 0x801a9e5c)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): phase-0 body: s16 t2+14 += t6, then indexes the
+ *  20-byte-stride table *(t2+24)+frame*20 for follow-up fields.
+ */
 void cps_801a9e5c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104116,7 +104193,10 @@ void cps_801a9e5c(void)
 }
 
 /* cps_801a9e8c — clean CPS transliteration of br2eu_func_801A9E8C (guest 0x801a9e8c)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): phase-1 body: t8 = v0*t6 (MUL), stores to
+ *  sp+28, sets t4=1 -> 9EC0 compare.
+ */
 void cps_801a9e8c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104136,7 +104216,9 @@ void cps_801a9e8c(void)
 }
 
 /* cps_801a9ea8 — clean CPS transliteration of br2eu_func_801A9EA8 (guest 0x801a9ea8)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): s16 t2+14 += t6 variant -> 9EBC sign-extend.
+ */
 void cps_801a9ea8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104152,7 +104234,9 @@ void cps_801a9ea8(void)
 }
 
 /* cps_801a9ebc — clean CPS transliteration of br2eu_func_801A9EBC (guest 0x801a9ebc)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): sign-extend fragment -> 9EC0.
+ */
 void cps_801a9ebc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104165,7 +104249,10 @@ void cps_801a9ebc(void)
 }
 
 /* cps_801a9ec0 — clean CPS transliteration of br2eu_func_801A9EC0 (guest 0x801a9ec0)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): compare s16(t2+14) vs a1: != -> 9ED4 done,
+ *  == -> t4=2 -> 9ED4.
+ */
 void cps_801a9ec0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104198,7 +104285,9 @@ block_801A9EC8:
 }
 
 /* cps_801a9ed0 — clean CPS transliteration of br2eu_func_801A9ED0 (guest 0x801a9ed0)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): sets t4=3 -> 9ED4 (final phase).
+ */
 void cps_801a9ed0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104211,7 +104300,10 @@ void cps_801a9ed0(void)
 }
 
 /* cps_801a9ed4 — clean CPS transliteration of br2eu_func_801A9ED4 (guest 0x801a9ed4)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): phase-complete body: reloads table ptr
+ *  *(t2+24)+s16(t2+14)*20 into t2+36, continues field stores -> 9F10.
+ */
 void cps_801a9ed4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104232,7 +104324,10 @@ void cps_801a9ed4(void)
 }
 
 /* cps_801a9f10 — clean CPS transliteration of br2eu_func_801A9F10 (guest 0x801a9f10)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): stores *(v0+16) -> t2+20 and table halfword ->
+ *  t2+16; t4<3 loop test.
+ */
 void cps_801a9f10(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104260,7 +104355,10 @@ void cps_801a9f10(void)
 }
 
 /* cps_801a9f48 — clean CPS transliteration of br2eu_func_801A9F48 (guest 0x801a9f48)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): finalize: writes t7 -> s16 t2+10, sign-extended
+ *  t7 -> t2+44, s16(t2+14) -> t2+48, exits via A0D4.
+ */
 void cps_801a9f48(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104279,7 +104377,10 @@ void cps_801a9f48(void)
 }
 
 /* cps_801a9f64 — clean CPS transliteration of br2eu_func_801A9F64 (guest 0x801a9f64)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): large tail body (36 blocks): gates on s16 t2
+ *  and s16 t2+14, multi-way field updates before epilogue.
+ */
 void cps_801a9f64(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104449,7 +104550,9 @@ block_801AA0BC:
 }
 
 /* cps_801aa0d4 — clean CPS transliteration of br2eu_func_801AA0D4 (guest 0x801aa0d4)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): epilogue: ra = *(sp+40), sp += 48, jr ra.
+ */
 void cps_801aa0d4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104465,7 +104568,10 @@ void cps_801aa0d4(void)
 }
 
 /* cps_801aa558 — clean CPS transliteration of br2eu_func_801AA558 (guest 0x801aa558)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the s0-object state machine (AA558-AA618):
+ * writes computed halfword -> s0+58, continues to AA55C.
+ */
 void cps_801aa558(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104478,7 +104584,11 @@ void cps_801aa558(void)
 }
 
 /* cps_801aa55c — clean CPS transliteration of br2eu_func_801AA55C (guest 0x801aa55c)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the s0-object state machine: resolves a
+ * record via s0+56 index *4 into *(s0+52) table, s0+58*2 byte offset,
+ * reads halfword + byte; 7-block dispatch body.
+ */
 void cps_801aa55c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104576,7 +104686,9 @@ block_801AA5C4:
 }
 
 /* cps_801aa5c8 — clean CPS transliteration of br2eu_func_801AA5C8 (guest 0x801aa5c8)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the state machine: sets v0 = -2 -> AA5CC.
+ */
 void cps_801aa5c8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104589,7 +104701,9 @@ void cps_801aa5c8(void)
 }
 
 /* cps_801aa5cc — clean CPS transliteration of br2eu_func_801AA5CC (guest 0x801aa5cc)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the state machine: tail-jumps to AA618.
+ */
 void cps_801aa5cc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104602,7 +104716,10 @@ void cps_801aa5cc(void)
 }
 
 /* cps_801aa5d4 — clean CPS transliteration of br2eu_func_801AA5D4 (guest 0x801aa5d4)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the state machine: stores a1 -> s0+4 and
+ * s0+68 (halfwords), exits via AA95C epilogue.
+ */
 void cps_801aa5d4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104617,7 +104734,10 @@ void cps_801aa5d4(void)
 }
 
 /* cps_801aa5e0 — clean CPS transliteration of br2eu_func_801AA5E0 (guest 0x801aa5e0)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the state machine: stores v0 -> s0+4 and
+ * a1 -> s0+68, exits via AA95C.
+ */
 void cps_801aa5e0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104632,7 +104752,10 @@ void cps_801aa5e0(void)
 }
 
 /* cps_801aa5ec — clean CPS transliteration of br2eu_func_801AA5EC (guest 0x801aa5ec)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the state machine: sets bit 0x0100 in
+ * s0+68 flags, exits via AA95C.
+ */
 void cps_801aa5ec(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104648,7 +104771,10 @@ void cps_801aa5ec(void)
 }
 
 /* cps_801aa600 — clean CPS transliteration of br2eu_func_801AA600 (guest 0x801aa600)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the state machine: sign-extends v0>>24 ->
+ * AA558.
+ */
 void cps_801aa600(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104662,7 +104788,10 @@ void cps_801aa600(void)
 }
 
 /* cps_801aa608 — clean CPS transliteration of br2eu_func_801AA608 (guest 0x801aa608)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the state machine: stores v0>>24 -> s0+56,
+ * clears s0+58, continues to AA55C.
+ */
 void cps_801aa608(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104678,7 +104807,11 @@ void cps_801aa608(void)
 }
 
 /* cps_801aa618 — clean CPS transliteration of br2eu_func_801AA618 (guest 0x801aa618)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Main dispatcher of the s0-object state machine
+ * (24 blocks, ~200 ops): branches on s16 s0+68 against a3 and drives
+ * the AA7E8/AA95C paths.
+ */
 void cps_801aa618(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104996,7 +105129,10 @@ block_801AA7D0:
 }
 
 /* cps_801aa7e8 — clean CPS transliteration of br2eu_func_801AA7E8 (guest 0x801aa7e8)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Large state-machine body (21 blocks): gates on
+ * s16 s0+2 == 2, multi-way field updates on the s0 object.
+ */
 void cps_801aa7e8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -105216,7 +105352,9 @@ block_801AA94C:
 }
 
 /* cps_801aa95c — clean CPS transliteration of br2eu_func_801AA95C (guest 0x801aa95c)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Shared epilogue: restores s0/s1/ra, sp += 32, jr ra.
+ */
 void cps_801aa95c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -105233,7 +105371,9 @@ void cps_801aa95c(void)
 }
 
 /* cps_801aad18 — clean CPS transliteration of br2eu_func_801AAD18 (guest 0x801aad18)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Tiny accessor: writes 0 -> *(a0+12), returns via jr ra.
+ */
 void cps_801aad18(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -105249,7 +105389,11 @@ void cps_801aad18(void)
 }
 
 /* cps_801ab470 — clean CPS transliteration of br2eu_func_801AB470 (guest 0x801ab470)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Large body (~320 ops, 3 CPS pieces AB470-ABD94):
+ * gates on s16 a0+40, reads gp+52 global, iterates object fields —
+ * part of the same object-processing family as AA618.
+ */
 void cps_801ab470(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -105715,7 +105859,10 @@ block_801AB5A4:
 }
 
 /* cps_801ab84c — clean CPS transliteration of br2eu_func_801AB84C (guest 0x801ab84c)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Large body (~440 ops): gates on *(a0+36) and s16
+ * a0+40, exits via ABD94; sibling of AB470 in the object family.
+ */
 void cps_801ab84c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -106348,7 +106495,10 @@ block_801ABA84:
 }
 
 /* cps_801abd94 — clean CPS transliteration of br2eu_func_801ABD94 (guest 0x801abd94)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Large body (~245 ops): gates on s16 a0+40, reads
+ * gp+52; continuation/tail sibling of AB470/AB84C.
+ */
 void cps_801abd94(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -106704,7 +106854,10 @@ block_801ABEC8:
 }
 
 /* cps_801ac8f0 — clean CPS transliteration of br2eu_func_801AC8F0 (guest 0x801ac8f0)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * Medium body (12 blocks): saves s0-s2/ra, s1=a0,
+ * s2=a1; s1==0 early-out — function entry of the next object routine.
+ */
 void cps_801ac8f0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -106858,7 +107011,9 @@ block_801AC9A0:
 }
 
 /* cps_801ad208 — clean CPS transliteration of br2eu_func_801AD208 (guest 0x801ad208)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * Leaf: returns 0 (v0 = 0, jr ra).
+ */
 void cps_801ad208(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -106873,7 +107028,10 @@ void cps_801ad208(void)
 }
 
 /* cps_801ad210 — clean CPS transliteration of br2eu_func_801AD210 (guest 0x801ad210)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * CPS body piece (1 blocks).
+ * Ops: rd.word a0+16, rd.word v0+8, wr.word v0+4.
+ */
 void cps_801ad210(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -106890,7 +107048,10 @@ void cps_801ad210(void)
 }
 
 /* cps_801ad2dc — clean CPS transliteration of br2eu_func_801AD2DC (guest 0x801ad2dc)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * CPS body piece (1 blocks).
+ * Ops: rd.word a0, wr.word v0.
+ */
 void cps_801ad2dc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -106906,7 +107067,11 @@ void cps_801ad2dc(void)
 }
 
 /* cps_801ad520 — clean CPS transliteration of br2eu_func_801AD520 (guest 0x801ad520)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * CPS body piece (7 blocks).
+ * CPS-split body: 7 blocks (continuation entries); calls 0x801A4BE8, 0x801AD538, 0x801AD540, 0x801AD54C.
+ * Ops: rd.half v0, rd.word a0+16, rd.word a1+24, rd.word s1+12, rd.word s1+4, rd.word sp+16, rd.word sp+20, rd.word sp+24, wr.word s1+12, wr.word sp+16 ....
+ */
 void cps_801ad520(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -106999,7 +107164,9 @@ block_801AD588:
 }
 
 /* cps_801ad5c0 — clean CPS transliteration of br2eu_func_801AD5C0 (guest 0x801ad5c0)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * Leaf: returns 0 (v0 = 0, jr ra).
+ */
 void cps_801ad5c0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107014,7 +107181,9 @@ void cps_801ad5c0(void)
 }
 
 /* cps_801ad5c8 — clean CPS transliteration of br2eu_func_801AD5C8 (guest 0x801ad5c8)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * Empty leaf: jr ra with nop delay slot.
+ */
 void cps_801ad5c8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107029,7 +107198,10 @@ void cps_801ad5c8(void)
 }
 
 /* cps_801ad650 — clean CPS transliteration of br2eu_func_801AD650 (guest 0x801ad650)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0, rd.word gp+80, wr.word a1.
+ */
 void cps_801ad650(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107047,7 +107219,9 @@ void cps_801ad650(void)
 }
 
 /* cps_801ad73c — clean CPS transliteration of br2eu_func_801AD73C (guest 0x801ad73c)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * Empty leaf: jr ra with nop delay slot.
+ */
 void cps_801ad73c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107062,7 +107236,11 @@ void cps_801ad73c(void)
 }
 
 /* cps_801ad744 — clean CPS transliteration of br2eu_func_801AD744 (guest 0x801ad744)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * CPS-split body: 2 blocks (continuation entries); calls 0x801AD75C, 0x801AD774.
+ * Ops: rd.half a0, rd.word gp+76, rd.word gp+80, rd.word v0+20, wr.word a1.
+ */
 void cps_801ad744(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107101,7 +107279,10 @@ block_801AD75C:
 }
 
 /* cps_801ad774 — clean CPS transliteration of br2eu_func_801AD774 (guest 0x801ad774)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * CPS body piece (1 blocks).
+ * Ops: rd.word a1, wr.word a1.
+ */
 void cps_801ad774(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107118,7 +107299,11 @@ void cps_801ad774(void)
 }
 
 /* cps_801ad788 — clean CPS transliteration of br2eu_func_801AD788 (guest 0x801ad788)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * CPS-split body: 2 blocks (continuation entries); calls 0x801AD7A0, 0x801AD7B8.
+ * Ops: rd.half a0, rd.word gp+76, rd.word gp+80, rd.word v0+20, wr.word a1.
+ */
 void cps_801ad788(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107157,7 +107342,10 @@ block_801AD7A0:
 }
 
 /* cps_801ad7b8 — clean CPS transliteration of br2eu_func_801AD7B8 (guest 0x801ad7b8)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * CPS body piece (1 blocks).
+ * Ops: rd.word a1, wr.word a1.
+ */
 void cps_801ad7b8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107174,7 +107362,11 @@ void cps_801ad7b8(void)
 }
 
 /* cps_801ad7cc — clean CPS transliteration of br2eu_func_801AD7CC (guest 0x801ad7cc)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * CPS-split body: 2 blocks (continuation entries); calls 0x801AD7E4, 0x801AD7FC.
+ * Ops: rd.half a0, rd.word gp+76, rd.word gp+80, rd.word v0+20, wr.word a1.
+ */
 void cps_801ad7cc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107213,7 +107405,10 @@ block_801AD7E4:
 }
 
 /* cps_801ad7fc — clean CPS transliteration of br2eu_func_801AD7FC (guest 0x801ad7fc)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * CPS body piece (1 blocks).
+ * Ops: rd.word a1, wr.word a1.
+ */
 void cps_801ad7fc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107230,7 +107425,11 @@ void cps_801ad7fc(void)
 }
 
 /* cps_801ad810 — clean CPS transliteration of br2eu_func_801AD810 (guest 0x801ad810)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * CPS-split body: 2 blocks (continuation entries); calls 0x801AD828, 0x801AD840.
+ * Ops: rd.half a0, rd.word gp+76, rd.word gp+80, rd.word v0+20, wr.word a1.
+ */
 void cps_801ad810(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107269,7 +107468,10 @@ block_801AD828:
 }
 
 /* cps_801ad840 — clean CPS transliteration of br2eu_func_801AD840 (guest 0x801ad840)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.word a1, wr.word a1.
+ */
 void cps_801ad840(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107286,7 +107488,10 @@ void cps_801ad840(void)
 }
 
 /* cps_801ad854 — clean CPS transliteration of br2eu_func_801AD854 (guest 0x801ad854)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0, rd.half a0+2, rd.word a1, rd.word gp+76, rd.word v0+8, wr.word a1, wr.word v0.
+ */
 void cps_801ad854(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107309,7 +107514,11 @@ void cps_801ad854(void)
 }
 
 /* cps_801ad880 — clean CPS transliteration of br2eu_func_801AD880 (guest 0x801ad880)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * CPS-split body: 2 blocks (continuation entries); calls 0x801AD8BC, 0x801AD8D0.
+ * Ops: rd.half a2, rd.half a2+2, rd.word a1, rd.word gp+76, rd.word v0+8, rd.word v1, wr.word a1, wr.word v1.
+ */
 void cps_801ad880(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107355,7 +107564,10 @@ block_801AD8BC:
 }
 
 /* cps_801ad8d0 — clean CPS transliteration of br2eu_func_801AD8D0 (guest 0x801ad8d0)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a2+4, rd.word gp+80, wr.word a1.
+ */
 void cps_801ad8d0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107373,7 +107585,9 @@ void cps_801ad8d0(void)
 }
 
 /* cps_801ad8e8 — clean CPS transliteration of br2eu_func_801AD8E8 (guest 0x801ad8e8)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * Empty leaf: jr ra with nop delay slot.
+ */
 void cps_801ad8e8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107388,7 +107602,10 @@ void cps_801ad8e8(void)
 }
 
 /* cps_801ad8f0 — clean CPS transliteration of br2eu_func_801AD8F0 (guest 0x801ad8f0)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.byte a0+2, rd.byte a1, wr.byte a1.
+ */
 void cps_801ad8f0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107406,7 +107623,10 @@ void cps_801ad8f0(void)
 }
 
 /* cps_801ad908 — clean CPS transliteration of br2eu_func_801AD908 (guest 0x801ad908)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a1, wr.half a1.
+ */
 void cps_801ad908(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107424,7 +107644,10 @@ void cps_801ad908(void)
 }
 
 /* cps_801ad938 — clean CPS transliteration of br2eu_func_801AD938 (guest 0x801ad938)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.byte a0+2, wr.byte a1.
+ */
 void cps_801ad938(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107440,7 +107663,10 @@ void cps_801ad938(void)
 }
 
 /* cps_801ad944 — clean CPS transliteration of br2eu_func_801AD944 (guest 0x801ad944)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, wr.half a1.
+ */
 void cps_801ad944(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107456,7 +107682,10 @@ void cps_801ad944(void)
 }
 
 /* cps_801ad950 — clean CPS transliteration of br2eu_func_801AD950 (guest 0x801ad950)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.word a0+2, wr.word a1.
+ */
 void cps_801ad950(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107472,7 +107701,10 @@ void cps_801ad950(void)
 }
 
 /* cps_801ad95c — clean CPS transliteration of br2eu_func_801AD95C (guest 0x801ad95c)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: wr.byte a1.
+ */
 void cps_801ad95c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107487,7 +107719,10 @@ void cps_801ad95c(void)
 }
 
 /* cps_801ad974 — clean CPS transliteration of br2eu_func_801AD974 (guest 0x801ad974)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.byte a1, rd.word gp+76, wr.word v1+20.
+ */
 void cps_801ad974(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107504,7 +107739,10 @@ void cps_801ad974(void)
 }
 
 /* cps_801ad9a4 — clean CPS transliteration of br2eu_func_801AD9A4 (guest 0x801ad9a4)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.byte a1, rd.half a0+2, rd.word gp+76, wr.word a0+20.
+ */
 void cps_801ad9a4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107523,7 +107761,10 @@ void cps_801ad9a4(void)
 }
 
 /* cps_801ad9bc — clean CPS transliteration of br2eu_func_801AD9BC (guest 0x801ad9bc)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a1, rd.word gp+76, wr.word a0+20.
+ */
 void cps_801ad9bc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107542,7 +107783,11 @@ void cps_801ad9bc(void)
 }
 
 /* cps_801ad9ec — clean CPS transliteration of br2eu_func_801AD9EC (guest 0x801ad9ec)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.byte a1, rd.half a0+2, wr.byte a1.
+ * Uses MUL/DIV (cpu->lo).
+ */
 void cps_801ad9ec(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107563,7 +107808,11 @@ void cps_801ad9ec(void)
 }
 
 /* cps_801ada08 — clean CPS transliteration of br2eu_func_801ADA08 (guest 0x801ada08)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a1, wr.half a1.
+ * Uses MUL/DIV (cpu->lo).
+ */
 void cps_801ada08(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107584,7 +107833,10 @@ void cps_801ada08(void)
 }
 
 /* cps_801ada40 — clean CPS transliteration of br2eu_func_801ADA40 (guest 0x801ada40)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.byte a0+2, rd.byte a1, wr.byte a1.
+ */
 void cps_801ada40(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107602,7 +107854,10 @@ void cps_801ada40(void)
 }
 
 /* cps_801ada58 — clean CPS transliteration of br2eu_func_801ADA58 (guest 0x801ada58)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a1, wr.half a1.
+ */
 void cps_801ada58(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107620,7 +107875,10 @@ void cps_801ada58(void)
 }
 
 /* cps_801ada70 — clean CPS transliteration of br2eu_func_801ADA70 (guest 0x801ada70)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.word a0+2, rd.word a1, wr.word a1.
+ */
 void cps_801ada70(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107638,7 +107896,10 @@ void cps_801ada70(void)
 }
 
 /* cps_801ada88 — clean CPS transliteration of br2eu_func_801ADA88 (guest 0x801ada88)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.byte a0+2, rd.byte a1, rd.word gp+76, wr.byte a1, wr.word a0+20.
+ */
 void cps_801ada88(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107658,7 +107919,10 @@ void cps_801ada88(void)
 }
 
 /* cps_801adae4 — clean CPS transliteration of br2eu_func_801ADAE4 (guest 0x801adae4)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.byte a0+2, rd.byte a1, rd.word gp+76, wr.byte a1, wr.word a0+20.
+ */
 void cps_801adae4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107678,7 +107942,10 @@ void cps_801adae4(void)
 }
 
 /* cps_801adb00 — clean CPS transliteration of br2eu_func_801ADB00 (guest 0x801adb00)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a1, rd.word gp+76, wr.half a1, wr.word a0+20.
+ */
 void cps_801adb00(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107700,7 +107967,10 @@ void cps_801adb00(void)
 }
 
 /* cps_801adb24 — clean CPS transliteration of br2eu_func_801ADB24 (guest 0x801adb24)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.word a0+2, rd.word a1, rd.word gp+76, wr.word a0+20, wr.word a1.
+ */
 void cps_801adb24(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107720,7 +107990,10 @@ void cps_801adb24(void)
 }
 
 /* cps_801adb40 — clean CPS transliteration of br2eu_func_801ADB40 (guest 0x801adb40)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.byte a1, rd.half a0+2, wr.byte a1.
+ */
 void cps_801adb40(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107738,7 +108011,10 @@ void cps_801adb40(void)
 }
 
 /* cps_801adb58 — clean CPS transliteration of br2eu_func_801ADB58 (guest 0x801adb58)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a1, wr.half a1.
+ */
 void cps_801adb58(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107756,7 +108032,10 @@ void cps_801adb58(void)
 }
 
 /* cps_801adb70 — clean CPS transliteration of br2eu_func_801ADB70 (guest 0x801adb70)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.word a1, wr.word a1.
+ */
 void cps_801adb70(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107774,7 +108053,10 @@ void cps_801adb70(void)
 }
 
 /* cps_801adb88 — clean CPS transliteration of br2eu_func_801ADB88 (guest 0x801adb88)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.byte a1, rd.half a0+2, wr.byte a1.
+ */
 void cps_801adb88(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107792,7 +108074,10 @@ void cps_801adb88(void)
 }
 
 /* cps_801adba0 — clean CPS transliteration of br2eu_func_801ADBA0 (guest 0x801adba0)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a1, wr.half a1.
+ */
 void cps_801adba0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107810,7 +108095,10 @@ void cps_801adba0(void)
 }
 
 /* cps_801adbb8 — clean CPS transliteration of br2eu_func_801ADBB8 (guest 0x801adbb8)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.word a1, wr.word a1.
+ */
 void cps_801adbb8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107828,7 +108116,10 @@ void cps_801adbb8(void)
 }
 
 /* cps_801adbd0 — clean CPS transliteration of br2eu_func_801ADBD0 (guest 0x801adbd0)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.byte a1, rd.half a0+2, wr.byte a1.
+ */
 void cps_801adbd0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107846,7 +108137,10 @@ void cps_801adbd0(void)
 }
 
 /* cps_801adbe8 — clean CPS transliteration of br2eu_func_801ADBE8 (guest 0x801adbe8)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a1, wr.half a1.
+ */
 void cps_801adbe8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107864,7 +108158,10 @@ void cps_801adbe8(void)
 }
 
 /* cps_801adc00 — clean CPS transliteration of br2eu_func_801ADC00 (guest 0x801adc00)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.word a1, wr.word a1.
+ */
 void cps_801adc00(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107882,7 +108179,10 @@ void cps_801adc00(void)
 }
 
 /* cps_801adc18 — clean CPS transliteration of br2eu_func_801ADC18 (guest 0x801adc18)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.byte a1, rd.half a0+2, wr.byte a1.
+ */
 void cps_801adc18(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107900,7 +108200,10 @@ void cps_801adc18(void)
 }
 
 /* cps_801adc30 — clean CPS transliteration of br2eu_func_801ADC30 (guest 0x801adc30)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a1, wr.half a1.
+ */
 void cps_801adc30(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107918,7 +108221,10 @@ void cps_801adc30(void)
 }
 
 /* cps_801adcf4 — clean CPS transliteration of br2eu_func_801ADCF4 (guest 0x801adcf4)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.byte a2, rd.half a0+2, rd.half a0+6, wr.byte a1.
+ */
 void cps_801adcf4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107938,7 +108244,10 @@ void cps_801adcf4(void)
 }
 
 /* cps_801add14 — clean CPS transliteration of br2eu_func_801ADD14 (guest 0x801add14)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a0+6, rd.half v0, wr.half v1.
+ */
 void cps_801add14(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107960,7 +108269,10 @@ void cps_801add14(void)
 }
 
 /* cps_801add5c — clean CPS transliteration of br2eu_func_801ADD5C (guest 0x801add5c)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.byte a1, rd.byte a2, rd.half a0+2, rd.half a0+6, wr.byte a1.
+ */
 void cps_801add5c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107982,7 +108294,10 @@ void cps_801add5c(void)
 }
 
 /* cps_801adde4 — clean CPS transliteration of br2eu_func_801ADDE4 (guest 0x801adde4)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.byte a1, rd.byte a2, rd.half a0+2, rd.half a0+6, wr.byte a1.
+ */
 void cps_801adde4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108004,7 +108319,10 @@ void cps_801adde4(void)
 }
 
 /* cps_801ade0c — clean CPS transliteration of br2eu_func_801ADE0C (guest 0x801ade0c)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a0+6, rd.half a3, rd.half v1, wr.half a3.
+ */
 void cps_801ade0c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108028,7 +108346,10 @@ void cps_801ade0c(void)
 }
 
 /* cps_801ade3c — clean CPS transliteration of br2eu_func_801ADE3C (guest 0x801ade3c)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a0+6, rd.word a3, rd.word v1, wr.word a3.
+ */
 void cps_801ade3c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108052,7 +108373,11 @@ void cps_801ade3c(void)
 }
 
 /* cps_801ade6c — clean CPS transliteration of br2eu_func_801ADE6C (guest 0x801ade6c)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.byte a1, rd.byte a2, rd.half a0+2, rd.half a0+6, wr.byte a1.
+ * Uses MUL/DIV (cpu->lo).
+ */
 void cps_801ade6c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108077,7 +108402,11 @@ void cps_801ade6c(void)
 }
 
 /* cps_801ade98 — clean CPS transliteration of br2eu_func_801ADE98 (guest 0x801ade98)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a0+6, rd.half v0, rd.half v1, wr.half v1.
+ * Uses MUL/DIV (cpu->lo).
+ */
 void cps_801ade98(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108104,7 +108433,11 @@ void cps_801ade98(void)
 }
 
 /* cps_801adecc — clean CPS transliteration of br2eu_func_801ADECC (guest 0x801adecc)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a0+6, rd.word v0, rd.word v1, wr.word v1.
+ * Uses MUL/DIV (cpu->lo).
+ */
 void cps_801adecc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108131,7 +108464,10 @@ void cps_801adecc(void)
 }
 
 /* cps_801adf00 — clean CPS transliteration of br2eu_func_801ADF00 (guest 0x801adf00)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.byte a1, rd.byte a2, rd.half a0+2, rd.half a0+6, rd.word gp+76, wr.word a0+20.
+ */
 void cps_801adf00(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108154,7 +108490,10 @@ void cps_801adf00(void)
 }
 
 /* cps_801adf28 — clean CPS transliteration of br2eu_func_801ADF28 (guest 0x801adf28)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a0+6, rd.half v0, rd.half v1, rd.word gp+76, wr.word a0+20.
+ */
 void cps_801adf28(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108181,7 +108520,10 @@ block_801ADF28:
 }
 
 /* cps_801adf58 — clean CPS transliteration of br2eu_func_801ADF58 (guest 0x801adf58)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a0+6, rd.word gp+76, rd.word v0, rd.word v1, wr.word a0+20.
+ */
 void cps_801adf58(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108208,7 +108550,10 @@ block_801ADF58:
 }
 
 /* cps_801adf88 — clean CPS transliteration of br2eu_func_801ADF88 (guest 0x801adf88)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.byte a1, rd.byte a2, rd.half a0+2, rd.half a0+6, wr.byte a1.
+ */
 void cps_801adf88(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108233,7 +108578,10 @@ block_801ADF88:
 }
 
 /* cps_801adfb0 — clean CPS transliteration of br2eu_func_801ADFB0 (guest 0x801adfb0)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a0+6, rd.half a3, rd.half v1, wr.half a3.
+ */
 void cps_801adfb0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108260,7 +108608,10 @@ block_801ADFB0:
 }
 
 /* cps_801adfe0 — clean CPS transliteration of br2eu_func_801ADFE0 (guest 0x801adfe0)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a0+6, rd.word a3, rd.word v1, wr.word a3.
+ */
 void cps_801adfe0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108287,7 +108638,10 @@ block_801ADFE0:
 }
 
 /* cps_801ae010 — clean CPS transliteration of br2eu_func_801AE010 (guest 0x801ae010)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.byte a1, rd.byte a2, rd.half a0+2, rd.half a0+6, wr.byte a1.
+ */
 void cps_801ae010(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108312,7 +108666,10 @@ block_801AE010:
 }
 
 /* cps_801ae038 — clean CPS transliteration of br2eu_func_801AE038 (guest 0x801ae038)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a0+6, rd.half a3, rd.half v1, wr.half a3.
+ */
 void cps_801ae038(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108339,7 +108696,10 @@ block_801AE038:
 }
 
 /* cps_801ae068 — clean CPS transliteration of br2eu_func_801AE068 (guest 0x801ae068)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a0+6, rd.word a3, rd.word v1, wr.word a3.
+ */
 void cps_801ae068(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108366,7 +108726,10 @@ block_801AE068:
 }
 
 /* cps_801ae098 — clean CPS transliteration of br2eu_func_801AE098 (guest 0x801ae098)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a0+6, wr.word v0.
+ */
 void cps_801ae098(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108388,7 +108751,11 @@ block_801AE098:
 }
 
 /* cps_801ae0b4 — clean CPS transliteration of br2eu_func_801AE0B4 (guest 0x801ae0b4)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * CPS-split body: 3 blocks (continuation entries); calls 0x801AE0C4, 0x801AE100.
+ * Ops: rd.half a0+2, rd.half a0+6, rd.half a0+8, rd.word v0, wr.word v1.
+ */
 void cps_801ae0b4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108452,7 +108819,11 @@ block_801AE100:
 }
 
 /* cps_801ae108 — clean CPS transliteration of br2eu_func_801AE108 (guest 0x801ae108)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * CPS-split body: 3 blocks (continuation entries); calls 0x801AE11C, 0x801AE164.
+ * Ops: rd.half t0+2, rd.half t0+6, rd.half t0+8, rd.word a0, rd.word v0, wr.word a0.
+ */
 void cps_801ae108(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108520,7 +108891,12 @@ block_801AE164:
 }
 
 /* cps_801ae16c — clean CPS transliteration of br2eu_func_801AE16C (guest 0x801ae16c)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * CPS-split body: 3 blocks (continuation entries); calls 0x801AE194, 0x801AE198.
+ * Ops: rd.byte a1, rd.byte a2, rd.half a0+2, rd.half a0+6, wr.byte a1.
+ * Uses MUL/DIV (cpu->lo).
+ */
 void cps_801ae16c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108572,7 +108948,12 @@ block_801AE198:
 }
 
 /* cps_801ae1a4 — clean CPS transliteration of br2eu_func_801AE1A4 (guest 0x801ae1a4)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * CPS-split body: 6 blocks (continuation entries); calls 0x801AE1D4, 0x801AE1D8, 0x801AE1E4, 0x801AE1EC.
+ * Ops: rd.half a0+2, rd.half a0+6, rd.half a3, rd.half v1, wr.half a3.
+ * Uses MUL/DIV (cpu->lo).
+ */
 void cps_801ae1a4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108658,7 +109039,12 @@ block_801AE1F0:
 }
 
 /* cps_801ae1fc — clean CPS transliteration of br2eu_func_801AE1FC (guest 0x801ae1fc)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * CPS-split body: 6 blocks (continuation entries); calls 0x801AE22C, 0x801AE230, 0x801AE23C, 0x801AE244.
+ * Ops: rd.half a0+2, rd.half a0+6, rd.word a3, rd.word v1, wr.word a3.
+ * Uses MUL/DIV (cpu->lo).
+ */
 void cps_801ae1fc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108744,7 +109130,10 @@ block_801AE248:
 }
 
 /* cps_801ae254 — clean CPS transliteration of br2eu_func_801AE254 (guest 0x801ae254)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.byte a0+4, rd.half a0+2, wr.byte a1.
+ */
 void cps_801ae254(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108764,7 +109153,10 @@ block_801AE254:
 }
 
 /* cps_801ae268 — clean CPS transliteration of br2eu_func_801AE268 (guest 0x801ae268)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a0+4, wr.half v0.
+ */
 void cps_801ae268(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108785,7 +109177,10 @@ block_801AE268:
 }
 
 /* cps_801ae280 — clean CPS transliteration of br2eu_func_801AE280 (guest 0x801ae280)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.word a0+6, wr.word v0.
+ */
 void cps_801ae280(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108806,7 +109201,10 @@ block_801AE280:
 }
 
 /* cps_801ae298 — clean CPS transliteration of br2eu_func_801AE298 (guest 0x801ae298)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.byte a0+4, rd.byte a1, rd.half a0+2, wr.byte a1.
+ */
 void cps_801ae298(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108829,7 +109227,10 @@ block_801AE298:
 }
 
 /* cps_801ae2b8 — clean CPS transliteration of br2eu_func_801AE2B8 (guest 0x801ae2b8)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a0+4, rd.half v1, wr.half v1.
+ */
 void cps_801ae2b8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108853,7 +109254,10 @@ block_801AE2B8:
 }
 
 /* cps_801ae2dc — clean CPS transliteration of br2eu_func_801AE2DC (guest 0x801ae2dc)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.word a0+6, rd.word v1, wr.word v1.
+ */
 void cps_801ae2dc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108877,7 +109281,10 @@ block_801AE2DC:
 }
 
 /* cps_801ae300 — clean CPS transliteration of br2eu_func_801AE300 (guest 0x801ae300)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.byte a0+4, rd.byte a1, rd.half a0+2, wr.byte a1.
+ */
 void cps_801ae300(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108900,7 +109307,10 @@ block_801AE300:
 }
 
 /* cps_801ae320 — clean CPS transliteration of br2eu_func_801AE320 (guest 0x801ae320)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a0+4, rd.half v1, wr.half v1.
+ */
 void cps_801ae320(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108924,7 +109334,10 @@ block_801AE320:
 }
 
 /* cps_801ae344 — clean CPS transliteration of br2eu_func_801AE344 (guest 0x801ae344)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.word a0+6, rd.word v1, wr.word v1.
+ */
 void cps_801ae344(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108948,7 +109361,10 @@ block_801AE344:
 }
 
 /* cps_801ae368 — clean CPS transliteration of br2eu_func_801AE368 (guest 0x801ae368)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.byte a0+4, rd.byte a1, rd.half a0+2, wr.byte a1.
+ */
 void cps_801ae368(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108972,7 +109388,10 @@ block_801AE368:
 }
 
 /* cps_801ae38c — clean CPS transliteration of br2eu_func_801AE38C (guest 0x801ae38c)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a0+4, rd.half v1, wr.half v1.
+ */
 void cps_801ae38c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108996,7 +109415,10 @@ block_801AE38C:
 }
 
 /* cps_801ae3b0 — clean CPS transliteration of br2eu_func_801AE3B0 (guest 0x801ae3b0)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.word a0+6, rd.word v1, wr.word v1.
+ */
 void cps_801ae3b0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109020,7 +109442,11 @@ block_801AE3B0:
 }
 
 /* cps_801ae3d4 — clean CPS transliteration of br2eu_func_801AE3D4 (guest 0x801ae3d4)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.byte a1, rd.half a0+2, rd.half a0+4, wr.byte a1.
+ * Uses MUL/DIV (cpu->lo).
+ */
 void cps_801ae3d4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109047,7 +109473,11 @@ block_801AE3D4:
 }
 
 /* cps_801ae3fc — clean CPS transliteration of br2eu_func_801AE3FC (guest 0x801ae3fc)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a0+4, rd.half v0, wr.half v0.
+ * Uses MUL/DIV (cpu->lo).
+ */
 void cps_801ae3fc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109074,7 +109504,11 @@ block_801AE3FC:
 }
 
 /* cps_801ae424 — clean CPS transliteration of br2eu_func_801AE424 (guest 0x801ae424)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.word a0+6, rd.word v0, wr.word v0.
+ * Uses MUL/DIV (cpu->lo).
+ */
 void cps_801ae424(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109101,7 +109535,10 @@ block_801AE424:
 }
 
 /* cps_801ae44c — clean CPS transliteration of br2eu_func_801AE44C (guest 0x801ae44c)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, wr.byte a1.
+ */
 void cps_801ae44c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109121,7 +109558,10 @@ block_801AE44C:
 }
 
 /* cps_801ae460 — clean CPS transliteration of br2eu_func_801AE460 (guest 0x801ae460)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, wr.half v0.
+ */
 void cps_801ae460(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109142,7 +109582,10 @@ block_801AE460:
 }
 
 /* cps_801ae478 — clean CPS transliteration of br2eu_func_801AE478 (guest 0x801ae478)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, wr.word v0.
+ */
 void cps_801ae478(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109163,7 +109606,10 @@ block_801AE478:
 }
 
 /* cps_801ae4a8 — clean CPS transliteration of br2eu_func_801AE4A8 (guest 0x801ae4a8)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half v0, rd.word gp+76, wr.word v1+20.
+ */
 void cps_801ae4a8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109185,7 +109631,10 @@ block_801AE4A8:
 }
 
 /* cps_801ae4c4 — clean CPS transliteration of br2eu_func_801AE4C4 (guest 0x801ae4c4)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.word gp+76, rd.word v0, wr.word v1+20.
+ */
 void cps_801ae4c4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109207,7 +109656,10 @@ block_801AE4C4:
 }
 
 /* cps_801ae4e0 — clean CPS transliteration of br2eu_func_801AE4E0 (guest 0x801ae4e0)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.byte a1, rd.half a0+2, rd.half a0+4, rd.word gp+76, wr.word a0+20.
+ */
 void cps_801ae4e0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109230,7 +109682,10 @@ block_801AE4E0:
 }
 
 /* cps_801ae500 — clean CPS transliteration of br2eu_func_801AE500 (guest 0x801ae500)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a0+4, rd.half v0, rd.word gp+76, wr.word a0+20.
+ */
 void cps_801ae500(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109254,7 +109709,10 @@ block_801AE500:
 }
 
 /* cps_801ae524 — clean CPS transliteration of br2eu_func_801AE524 (guest 0x801ae524)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.word a0+6, rd.word gp+76, rd.word v0, wr.word a0+20.
+ */
 void cps_801ae524(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109278,7 +109736,10 @@ block_801AE524:
 }
 
 /* cps_801ae548 — clean CPS transliteration of br2eu_func_801AE548 (guest 0x801ae548)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.byte a0+4, rd.byte a1, rd.half a0+2, wr.byte a1.
+ */
 void cps_801ae548(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109301,7 +109762,10 @@ block_801AE548:
 }
 
 /* cps_801ae568 — clean CPS transliteration of br2eu_func_801AE568 (guest 0x801ae568)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a0+4, rd.half v1, wr.half v1.
+ */
 void cps_801ae568(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109325,7 +109789,10 @@ block_801AE568:
 }
 
 /* cps_801ae58c — clean CPS transliteration of br2eu_func_801AE58C (guest 0x801ae58c)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.word a0+6, rd.word v1, wr.word v1.
+ */
 void cps_801ae58c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109349,7 +109816,10 @@ block_801AE58C:
 }
 
 /* cps_801ae5b0 — clean CPS transliteration of br2eu_func_801AE5B0 (guest 0x801ae5b0)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.byte a0+4, rd.byte a1, rd.half a0+2, wr.byte a1.
+ */
 void cps_801ae5b0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109372,7 +109842,10 @@ block_801AE5B0:
 }
 
 /* cps_801ae5d0 — clean CPS transliteration of br2eu_func_801AE5D0 (guest 0x801ae5d0)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a0+4, rd.half v1, wr.half v1.
+ */
 void cps_801ae5d0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109396,7 +109869,10 @@ block_801AE5D0:
 }
 
 /* cps_801ae5f4 — clean CPS transliteration of br2eu_func_801AE5F4 (guest 0x801ae5f4)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.word a0+6, rd.word v1, wr.word v1.
+ */
 void cps_801ae5f4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109420,7 +109896,11 @@ block_801AE5F4:
 }
 
 /* cps_801ae618 — clean CPS transliteration of br2eu_func_801AE618 (guest 0x801ae618)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * CPS-split body: 3 blocks (continuation entries); calls 0x801AE628, 0x801AE654.
+ * Ops: rd.half a0+2, rd.half a0+4, wr.word v0.
+ */
 void cps_801ae618(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109480,7 +109960,10 @@ block_801AE654:
 }
 
 /* cps_801ae674 — clean CPS transliteration of br2eu_func_801AE674 (guest 0x801ae674)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.word gp+80, wr.word a1.
+ */
 void cps_801ae674(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109501,7 +109984,10 @@ block_801AE674:
 }
 
 /* cps_801ae6a8 — clean CPS transliteration of br2eu_func_801AE6A8 (guest 0x801ae6a8)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.byte v0, rd.half a0+2, rd.half a0+4, rd.word gp+76, rd.word v0+24, wr.byte a1.
+ */
 void cps_801ae6a8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109526,7 +110012,10 @@ block_801AE6A8:
 }
 
 /* cps_801ae6d0 — clean CPS transliteration of br2eu_func_801AE6D0 (guest 0x801ae6d0)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a0+4, rd.half v0, rd.word gp+76, rd.word v0+24, wr.half v1.
+ */
 void cps_801ae6d0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109551,7 +110040,10 @@ block_801AE6D0:
 }
 
 /* cps_801ae6f8 — clean CPS transliteration of br2eu_func_801AE6F8 (guest 0x801ae6f8)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a0+4, rd.word gp+76, rd.word v0, rd.word v0+24, wr.word v1.
+ */
 void cps_801ae6f8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109576,7 +110068,10 @@ block_801AE6F8:
 }
 
 /* cps_801ae720 — clean CPS transliteration of br2eu_func_801AE720 (guest 0x801ae720)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.byte v0, rd.half a0+2, rd.half a0+4, rd.half a0+6, rd.word a2+24, rd.word a2+8, rd.word gp+76, rd.word v0, wr.byte a1.
+ */
 void cps_801ae720(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109609,7 +110104,10 @@ block_801AE720:
 }
 
 /* cps_801ae768 — clean CPS transliteration of br2eu_func_801AE768 (guest 0x801ae768)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a0+4, rd.half a0+6, rd.half v0, rd.half v1, rd.word a2+24, rd.word a2+8, rd.word gp+76, rd.word v0, wr.half a0.
+ */
 void cps_801ae768(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109642,7 +110140,10 @@ block_801AE768:
 }
 
 /* cps_801ae7b0 — clean CPS transliteration of br2eu_func_801AE7B0 (guest 0x801ae7b0)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a0+4, rd.half a0+6, rd.word a2+24, rd.word a2+8, rd.word gp+76, rd.word v0, rd.word v1, wr.word a0.
+ */
 void cps_801ae7b0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109675,7 +110176,11 @@ block_801AE7B0:
 }
 
 /* cps_801ae7f8 — clean CPS transliteration of br2eu_func_801AE7F8 (guest 0x801ae7f8)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * CPS-split body: 4 blocks (continuation entries); calls 0x801AE810, 0x801AE818, 0x801AE854.
+ * Ops: rd.half a3+2, rd.half a3+4, rd.half a3+6, rd.word gp+76, rd.word t0+24, rd.word v1, wr.word a0.
+ */
 void cps_801ae7f8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109747,7 +110252,11 @@ block_801AE854:
 }
 
 /* cps_801ae96c — clean CPS transliteration of br2eu_func_801AE96C (guest 0x801ae96c)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * CPS-split body: 2 blocks (continuation entries); calls 0x801AD284.
+ * Ops: rd.half s0+2, rd.half s0+4, rd.half s0+6, rd.word a1, rd.word gp+76, rd.word sp+16, rd.word sp+20, rd.word v1, rd.word v1+8, wr.word a0 ....
+ */
 void cps_801ae96c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109797,7 +110306,11 @@ block_801AE988:
 }
 
 /* cps_801ae9c8 — clean CPS transliteration of br2eu_func_801AE9C8 (guest 0x801ae9c8)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * CPS-split body: 2 blocks (continuation entries); calls 0x801AD284.
+ * Ops: rd.half s0+2, rd.half s0+4, rd.word a0, rd.word a1, rd.word gp+76, rd.word sp+16, rd.word sp+20, rd.word v1, rd.word v1+8, wr.word sp+16 ....
+ */
 void cps_801ae9c8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109846,7 +110359,11 @@ block_801AE9E4:
 }
 
 /* cps_801aeb24 — clean CPS transliteration of br2eu_func_801AEB24 (guest 0x801aeb24)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * CPS-split body: 2 blocks (continuation entries); calls 0x801AD284.
+ * Ops: rd.half s0+2, rd.half s0+4, rd.word a0, rd.word a1, rd.word gp+76, rd.word sp+16, rd.word sp+20, rd.word v1, rd.word v1+12, rd.word v1+4 ....
+ */
 void cps_801aeb24(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109916,7 +110433,10 @@ block_801AEB40:
 }
 
 /* cps_801aeca4 — clean CPS transliteration of br2eu_func_801AECA4 (guest 0x801aeca4)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half v0, rd.half v0+4, rd.word gp+80, wr.word sp+16.
+ */
 void cps_801aeca4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109935,7 +110455,11 @@ block_801AECA4:
 }
 
 /* cps_801aecbc — clean CPS transliteration of br2eu_func_801AECBC (guest 0x801aecbc)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * CPS-split body: 2 blocks (continuation entries); calls 0x801AD4AC.
+ * Ops: rd.half v0+2, rd.word gp+76, rd.word sp+16.
+ */
 void cps_801aecbc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109970,7 +110494,11 @@ block_801AECCC:
 }
 
 /* cps_801aece4 — clean CPS transliteration of br2eu_func_801AECE4 (guest 0x801aece4)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * CPS-split body: 5 blocks (continuation entries); calls 0x801AECF8, 0x801AED1C, 0x801AED2C.
+ * Ops: rd.half a2, rd.word a1, rd.word gp+76, rd.word sp+16, rd.word sp+20, rd.word v0+8, wr.word s0, wr.word sp+16.
+ */
 void cps_801aece4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -110043,7 +110571,11 @@ block_801AED2C:
 }
 
 /* cps_801aed3c — clean CPS transliteration of br2eu_func_801AED3C (guest 0x801aed3c)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * CPS-split body: 5 blocks (continuation entries); calls 0x801AED58, 0x801AED88, 0x801AEDAC.
+ * Ops: rd.half a0+4, rd.half a2, rd.word a1, rd.word gp+76, rd.word sp+16, rd.word sp+20, rd.word v0, rd.word v1+8, wr.word s0, wr.word sp+16 ....
+ */
 void cps_801aed3c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -110126,7 +110658,9 @@ block_801AEDAC:
 }
 
 /* cps_801aedb8 — clean CPS transliteration of br2eu_func_801AEDB8 (guest 0x801aedb8)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * CPS body piece (1 blocks).
+ */
 void cps_801aedb8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -110140,7 +110674,11 @@ block_801AEDB8:
 }
 
 /* cps_801aedbc — clean CPS transliteration of br2eu_func_801AEDBC (guest 0x801aedbc)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * CPS-split body: 5 blocks (continuation entries); calls 0x801AEDD8, 0x801AEE18, 0x801AEE48.
+ * Ops: rd.half a0+4, rd.half a0+6, rd.half a2, rd.word gp+76, rd.word sp+16, rd.word sp+20, rd.word t0, rd.word v0, rd.word v0+8, rd.word v1 ....
+ */
 void cps_801aedbc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -110230,7 +110768,11 @@ block_801AEE48:
 }
 
 /* cps_801aee58 — clean CPS transliteration of br2eu_func_801AEE58 (guest 0x801aee58)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * CPS-split body: 5 blocks (continuation entries); calls 0x801AEE78, 0x801AEEC8, 0x801AEF08.
+ * Ops: rd.half a2, rd.half t0+4, rd.half t0+6, rd.half t0+8, rd.word gp+76, rd.word sp+16, rd.word sp+20, rd.word t2, rd.word v0, rd.word v1 ....
+ */
 void cps_801aee58(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -110329,7 +110871,11 @@ block_801AEF08:
 }
 
 /* cps_801aef18 — clean CPS transliteration of br2eu_func_801AEF18 (guest 0x801aef18)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * CPS-split body: 5 blocks (continuation entries); calls 0x801AEF38, 0x801AEF98, 0x801AEFE8.
+ * Ops: rd.half a2, rd.half t0+10, rd.half t0+4, rd.half t0+6, rd.half t0+8, rd.word a2, rd.word gp+76, rd.word sp+16, rd.word sp+20, rd.word t2 ....
+ */
 void cps_801aef18(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -110436,7 +110982,9 @@ block_801AEFE8:
 }
 
 /* cps_801af088 — clean CPS transliteration of br2eu_func_801AF088 (guest 0x801af088)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * Empty leaf: jr ra with nop delay slot.
+ */
 void cps_801af088(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -110454,7 +111002,11 @@ block_801AF088:
 }
 
 /* cps_801af098 — clean CPS transliteration of br2eu_func_801AF098 (guest 0x801af098)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * CPS-split body: 5 blocks (continuation entries); calls 0x801A6BD0, 0x801AF0BC, 0x801AF0F8, 0x801AF104.
+ * Ops: rd.half a0+2, rd.half a0+4, rd.half a0+6, rd.half a0+8, rd.word gp+76, rd.word s0, rd.word sp+16, rd.word sp+20, rd.word v0, rd.word v1 ....
+ */
 void cps_801af098(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -110538,7 +111090,11 @@ block_801AF104:
 }
 
 /* cps_801af11c — clean CPS transliteration of br2eu_func_801AF11C (guest 0x801af11c)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * CPS-split body: 5 blocks (continuation entries); calls 0x801A6BD0, 0x801AF150, 0x801AF188, 0x801AF194.
+ * Ops: rd.half a3+2, rd.half a3+4, rd.half a3+6, rd.half a3+8, rd.word a0+8, rd.word gp+76, rd.word s0, rd.word sp+16, rd.word sp+20, rd.word v0 ....
+ */
 void cps_801af11c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -110625,7 +111181,11 @@ block_801AF194:
 }
 
 /* cps_801af1ac — clean CPS transliteration of br2eu_func_801AF1AC (guest 0x801af1ac)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * CPS-split body: 5 blocks (continuation entries); calls 0x801A6BD0, 0x801AF1E4, 0x801AF21C, 0x801AF228.
+ * Ops: rd.half a3+2, rd.half a3+4, rd.half a3+6, rd.half a3+8, rd.word a0+8, rd.word gp+76, rd.word s0, rd.word sp+16, rd.word sp+20, rd.word v0 ....
+ */
 void cps_801af1ac(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -110713,7 +111273,11 @@ block_801AF228:
 }
 
 /* cps_801af23c — clean CPS transliteration of br2eu_func_801AF23C (guest 0x801af23c)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * Script-object routine: insn-driven field access on object a1 (+80..+112), ctx tables via gp+76/gp+80.
+ * CPS-split body: 4 blocks (continuation entries); calls 0x801AC758, 0x801AF268, 0x801AF274.
+ * Ops: rd.half a0, rd.word s0, rd.word sp+16, rd.word sp+20, rd.word v0+8, wr.word s0, wr.word sp+16, wr.word sp+20.
+ */
 void cps_801af23c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -110773,7 +111337,11 @@ block_801AF274:
 }
 
 /* cps_801af288 — clean CPS transliteration of br2eu_func_801AF288 (guest 0x801af288)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * Script-object routine: insn-driven field access on object a1 (+80..+112), ctx tables via gp+76/gp+80.
+ * CPS-split body: 4 blocks (continuation entries); calls 0x801AC758, 0x801AF2C0, 0x801AF2CC.
+ * Ops: rd.half a0, rd.word s0, rd.word sp+16, rd.word sp+20, rd.word v0, rd.word v1+8, wr.word s0, wr.word sp+16, wr.word sp+20.
+ */
 void cps_801af288(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -110836,7 +111404,11 @@ block_801AF2CC:
 }
 
 /* cps_801af314 — clean CPS transliteration of br2eu_func_801AF314 (guest 0x801af314)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * CPS-split body: 2 blocks (continuation entries); calls 0x801A7038.
+ * Ops: rd.half a0+2, rd.word gp+76, rd.word sp+16, rd.word v0, rd.word v0+8, wr.word sp+16, wr.word v1+20.
+ */
 void cps_801af314(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -110879,7 +111451,11 @@ block_801AF338:
 }
 
 /* cps_801af38c — clean CPS transliteration of br2eu_func_801AF38C (guest 0x801af38c)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * CPS-split body: 2 blocks (continuation entries); calls 0x801A72A0.
+ * Ops: rd.half a0+2, rd.word gp+76, rd.word sp+16, rd.word v0, rd.word v0+8, wr.word sp+16, wr.word v1+20.
+ */
 void cps_801af38c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -110922,7 +111498,11 @@ block_801AF3B0:
 }
 
 /* cps_801af428 — clean CPS transliteration of br2eu_func_801AF428 (guest 0x801af428)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * Script-object routine: insn-driven field access on object a1 (+80..+112), ctx tables via gp+76/gp+80.
+ * CPS-split body: 2 blocks (continuation entries); calls 0x801A984C.
+ * Ops: rd.half a0+2, rd.half v0, rd.word sp+16, rd.word v0+8, wr.word sp+16.
+ */
 void cps_801af428(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -110962,7 +111542,11 @@ block_801AF44C:
 }
 
 /* cps_801af460 — clean CPS transliteration of br2eu_func_801AF460 (guest 0x801af460)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * Script-object routine: insn-driven field access on object a1 (+80..+112), ctx tables via gp+76/gp+80.
+ * CPS-split body: 2 blocks (continuation entries); calls 0x801A99E0.
+ * Ops: rd.half a0+2, rd.half v0, rd.word sp+16, rd.word v0+8, wr.word sp+16.
+ */
 void cps_801af460(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111002,7 +111586,11 @@ block_801AF484:
 }
 
 /* cps_801af628 — clean CPS transliteration of br2eu_func_801AF628 (guest 0x801af628)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * Script-object routine: insn-driven field access on object a1 (+80..+112), ctx tables via gp+76/gp+80.
+ * CPS-split body: 5 blocks (continuation entries); calls 0x801A7498, 0x801A74F0, 0x801AF650, 0x801AF660.
+ * Ops: rd.half a0+2, rd.half v0, rd.word sp+16, rd.word v0+8, wr.word sp+16.
+ */
 void cps_801af628(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111071,7 +111659,11 @@ block_801AF668:
 }
 
 /* cps_801af6d4 — clean CPS transliteration of br2eu_func_801AF6D4 (guest 0x801af6d4)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * Script-object routine: insn-driven field access on object a1 (+80..+112), ctx tables via gp+76/gp+80.
+ * CPS-split body: 2 blocks (continuation entries); calls 0x801AAD24.
+ * Ops: rd.half a0+2, rd.word sp+16, rd.word sp+20, rd.word v0, rd.word v0+8, wr.word s0+72, wr.word sp+16, wr.word sp+20.
+ */
 void cps_801af6d4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111113,7 +111705,11 @@ block_801AF6FC:
 }
 
 /* cps_801af714 — clean CPS transliteration of br2eu_func_801AF714 (guest 0x801af714)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * Script-object routine: insn-driven field access on object a1 (+80..+112), ctx tables via gp+76/gp+80.
+ * CPS-split body: 3 blocks (continuation entries); calls 0x801AF730, 0x801AF748.
+ * Ops: rd.half a0+2, rd.half v0, rd.half v0+2, rd.half v0+4, rd.word a3, rd.word sp+16, rd.word v0+8, wr.word sp+16.
+ */
 void cps_801af714(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111168,7 +111764,10 @@ block_801AF748:
 }
 
 /* cps_801af938 — clean CPS transliteration of br2eu_func_801AF938 (guest 0x801af938)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.word gp+76.
+ */
 void cps_801af938(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111182,7 +111781,11 @@ block_801AF938:
 }
 
 /* cps_801af93c — clean CPS transliteration of br2eu_func_801AF93C (guest 0x801af93c)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * Script-object routine: insn-driven field access on object a1 (+80..+112), ctx tables via gp+76/gp+80.
+ * CPS-split body: 2 blocks (continuation entries).
+ * Ops: rd.half a0+2, rd.half a0+4, rd.word sp+16, rd.word v0, rd.word v0+8, rd.word v1, wr.word sp+16.
+ */
 void cps_801af93c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111225,7 +111828,10 @@ block_801AF96C:
 }
 
 /* cps_801af97c — clean CPS transliteration of br2eu_func_801AF97C (guest 0x801af97c)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.word gp+76.
+ */
 void cps_801af97c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111239,7 +111845,11 @@ block_801AF97C:
 }
 
 /* cps_801af980 — clean CPS transliteration of br2eu_func_801AF980 (guest 0x801af980)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * Script-object routine: insn-driven field access on object a1 (+80..+112), ctx tables via gp+76/gp+80.
+ * CPS-split body: 2 blocks (continuation entries).
+ * Ops: rd.half a0+2, rd.half a0+4, rd.word sp+16, rd.word v0, rd.word v0+8, rd.word v1, wr.word sp+16.
+ */
 void cps_801af980(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111282,7 +111892,10 @@ block_801AF9B0:
 }
 
 /* cps_801af9c0 — clean CPS transliteration of br2eu_func_801AF9C0 (guest 0x801af9c0)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.word gp+76.
+ */
 void cps_801af9c0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111296,7 +111909,11 @@ block_801AF9C0:
 }
 
 /* cps_801af9c4 — clean CPS transliteration of br2eu_func_801AF9C4 (guest 0x801af9c4)
- * from SLES_017.22_full_54.c. */
+ * from SLES_017.22_full_54.c.
+ * Script-object routine: insn-driven field access on object a1 (+80..+112), ctx tables via gp+76/gp+80.
+ * CPS-split body: 2 blocks (continuation entries).
+ * Ops: rd.half a0, rd.half a0+2, rd.word sp+16, rd.word sp+20, rd.word v0+8, wr.word s0, wr.word sp+16, wr.word sp+20.
+ */
 void cps_801af9c4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111336,7 +111953,10 @@ block_801AF9E4:
 }
 
 /* cps_801af9f8 — clean CPS transliteration of br2eu_func_801AF9F8 (guest 0x801af9f8)
- * from SLES_017.22_full_54.c. */
+ * from SLES_017.22_full_54.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.word gp+76.
+ */
 void cps_801af9f8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111350,7 +111970,11 @@ block_801AF9F8:
 }
 
 /* cps_801af9fc — clean CPS transliteration of br2eu_func_801AF9FC (guest 0x801af9fc)
- * from SLES_017.22_full_54.c. */
+ * from SLES_017.22_full_54.c.
+ * Script-object routine: insn-driven field access on object a1 (+80..+112), ctx tables via gp+76/gp+80.
+ * CPS-split body: 2 blocks (continuation entries).
+ * Ops: rd.half a0, rd.half a0+2, rd.word sp+16, rd.word sp+20, rd.word v0+8, wr.word s0, wr.word sp+16, wr.word sp+20.
+ */
 void cps_801af9fc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111390,7 +112014,11 @@ block_801AFA1C:
 }
 
 /* cps_801afa34 — clean CPS transliteration of br2eu_func_801AFA34 (guest 0x801afa34)
- * from SLES_017.22_full_54.c. */
+ * from SLES_017.22_full_54.c.
+ * Script-object routine: insn-driven field access on object a1 (+80..+112), ctx tables via gp+76/gp+80.
+ * CPS-split body: 2 blocks (continuation entries).
+ * Ops: rd.half a0, rd.half a0+2, rd.half a0+4, rd.half v1, rd.word sp+16, rd.word sp+20, rd.word v0, rd.word v0+8, wr.word s0, wr.word sp+16 ....
+ */
 void cps_801afa34(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111436,7 +112064,11 @@ block_801AFA6C:
 }
 
 /* cps_801afa84 — clean CPS transliteration of br2eu_func_801AFA84 (guest 0x801afa84)
- * from SLES_017.22_full_54.c. */
+ * from SLES_017.22_full_54.c.
+ * Script-object routine: insn-driven field access on object a1 (+80..+112), ctx tables via gp+76/gp+80.
+ * CPS-split body: 2 blocks (continuation entries).
+ * Ops: rd.half a0, rd.half a0+2, rd.half a0+4, rd.half v1, rd.word sp+16, rd.word sp+20, rd.word v0, rd.word v0+8, wr.word s0, wr.word sp+16 ....
+ */
 void cps_801afa84(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111482,7 +112114,11 @@ block_801AFABC:
 }
 
 /* cps_801afad4 — clean CPS transliteration of br2eu_func_801AFAD4 (guest 0x801afad4)
- * from SLES_017.22_full_54.c. */
+ * from SLES_017.22_full_54.c.
+ * Script-object routine: insn-driven field access on object a1 (+80..+112), ctx tables via gp+76/gp+80.
+ * CPS-split body: 2 blocks (continuation entries).
+ * Ops: rd.half a0, rd.half a0+2, rd.half a0+4, rd.word sp+16, rd.word sp+20, rd.word v0, rd.word v0+8, rd.word v1, rd.word v1+8, wr.word s0 ....
+ */
 void cps_801afad4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111529,7 +112165,10 @@ block_801AFB10:
 }
 
 /* cps_801afb24 — clean CPS transliteration of br2eu_func_801AFB24 (guest 0x801afb24)
- * from SLES_017.22_full_54.c. */
+ * from SLES_017.22_full_54.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.word gp+76.
+ */
 void cps_801afb24(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111543,7 +112182,11 @@ block_801AFB24:
 }
 
 /* cps_801afb28 — clean CPS transliteration of br2eu_func_801AFB28 (guest 0x801afb28)
- * from SLES_017.22_full_54.c. */
+ * from SLES_017.22_full_54.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * CPS-split body: 24 blocks (continuation entries); calls 0x801AFB60, 0x801AFB78, 0x801AFB80, 0x801AFB88.
+ * Ops: rd.half a0, rd.half a0+-6, rd.half a0+2, rd.half a0+4, rd.half a1, rd.half s1, rd.half s1+2, rd.half v0, rd.half v0+6, rd.half v1 ....
+ */
 void cps_801afb28(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111875,7 +112518,10 @@ block_801AFD1C:
 }
 
 /* cps_801afd68 — clean CPS transliteration of br2eu_func_801AFD68 (guest 0x801afd68)
- * from SLES_017.22_full_54.c. */
+ * from SLES_017.22_full_54.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.byte v1, rd.byte v1+1, rd.byte v1+2, rd.byte v1+3, rd.half a0+2, rd.word gp+80, wr.byte a1+12, wr.byte a1+13, wr.byte a1+20, wr.byte a1+21 ....
+ */
 void cps_801afd68(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111959,7 +112605,10 @@ block_801AFD68:
 }
 
 /* cps_801afe7c — clean CPS transliteration of br2eu_func_801AFE7C (guest 0x801afe7c)
- * from SLES_017.22_full_54.c. */
+ * from SLES_017.22_full_54.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a0+4, rd.half v0, rd.word a2+8, rd.word gp+76, wr.half a1+80, wr.half a1+82.
+ */
 void cps_801afe7c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111989,7 +112638,10 @@ block_801AFE7C:
 }
 
 /* cps_801afeb8 — clean CPS transliteration of br2eu_func_801AFEB8 (guest 0x801afeb8)
- * from SLES_017.22_full_54.c. */
+ * from SLES_017.22_full_54.c.
+ * Script-object routine: insn-driven field access on object a1 (+80..+112), ctx tables via gp+76/gp+80.
+ * Ops: rd.half a0+2, rd.half a0+4, wr.half a1+80, wr.half a1+82.
+ */
 void cps_801afeb8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -112010,7 +112662,10 @@ block_801AFEB8:
 }
 
 /* cps_801afed0 — clean CPS transliteration of br2eu_func_801AFED0 (guest 0x801afed0)
- * from SLES_017.22_full_54.c. */
+ * from SLES_017.22_full_54.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.half a0+4, rd.word gp+80, wr.half a1+96, wr.half a1+98, wr.word a1+84, wr.word a1+88, wr.word a1+92.
+ */
 void cps_801afed0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -112038,7 +112693,10 @@ block_801AFED0:
 }
 
 /* cps_801aff04 — clean CPS transliteration of br2eu_func_801AFF04 (guest 0x801aff04)
- * from SLES_017.22_full_54.c. */
+ * from SLES_017.22_full_54.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * Ops: rd.half a0+2, rd.word gp+80, wr.half a1+112, wr.word a1+104, wr.word a1+108.
+ */
 void cps_801aff04(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -112060,7 +112718,11 @@ block_801AFF04:
 }
 
 /* cps_801aff70 — clean CPS transliteration of br2eu_func_801AFF70 (guest 0x801aff70)
- * from SLES_017.22_full_54.c. */
+ * from SLES_017.22_full_54.c.
+ * VM opcode/helper of the script-VM family (ctx obj @*(gp+76), data base @*(gp+80); insn operands are s16 fields at a0+2/+4/+6/+8).
+ * CPS-split body: 4 blocks (continuation entries); calls 0x801AFF88, 0x801AFFA4, 0x801AFFA8.
+ * Ops: rd.byte a0+10, rd.byte a0+11, rd.byte a0+12, rd.byte a0+13, rd.byte a0+14, rd.byte a0+15, rd.byte a0+8, rd.byte a0+9, rd.byte a2+7, rd.half a0 ....
+ */
 void cps_801aff70(void)
 {
   CPUState *cpu = clean_cpu_state();
