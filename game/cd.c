@@ -1520,11 +1520,13 @@ uint cd_sync_wait_a(int a0,undefined1 *out_buf)
   return cd_result_wait_a(a0,out_buf);
 }
 
+/* cd_sync_wait_b — sync-wait variant B: cd_cmd_issue_b, returns 1 on issue success (ret 0). */
 int cd_sync_wait_b(uint32_t a0,uint32_t a1)
 {
   return cd_cmd_issue_b(a0,a1) == 0;
 }
 
+/* cd_sync_wait_c — sync-wait variant C: cd_cmd_issue_c, returns 1 on issue success (ret 0). */
 int cd_sync_wait_c(uint32_t a0,uint32_t a1)
 {
   return cd_cmd_issue_c(a0,a1) == 0;
@@ -1540,6 +1542,7 @@ void bios_table_tramp(void)
   br2_bios_tramp(0xb0,0x5b);
 }
 
+/* bios_kobj_tramp — BIOS C0/0x0a kernel-object trampoline (guest 0x8019a670); see bios_table_tramp note above. */
 void bios_kobj_tramp(void)
 {
   br2_bios_tramp(0xc0,0x0a);
@@ -2003,6 +2006,7 @@ uint32_t cpu_critical_enter(void)
   FUN_8018e300();
   return c ? c->gpr[2] : 0;
 }
+/* cpu_critical_exit — critical-section exit: FUN_8018e310(0) (pairs with cpu_critical_enter's FUN_8018e300); a0 unused, returns v0. */
 uint32_t cpu_critical_exit(uint32_t a0)
 {
   CPUState *c = clean_cpu_state();
@@ -4665,6 +4669,7 @@ static uint8_t *ctx_194_get(void)
   uint32_t fn = *(uint32_t *)guest_at(0x801be194);
   return (uint8_t *)guest_at(call_guest(fn, 0, 0));
 }
+/* cd_ctx_status_map — map selector sel through the ctx record (ctx_194_get) to a status code; guest 0x801a12dc. */
 int32_t cd_ctx_status_map(int32_t sel)
 {
   uint8_t *v1 = ctx_194_get();
@@ -4806,6 +4811,7 @@ void cd_mmio_strobe_20(void)
   uint32_t a = CDREG32(0x801bdec4);   /* -> 0x1F801014 (MMIO) */
   br2_st32(a,(br2_ld32(a) & 0xf0ffffffu) | 0x20000000u);
 }
+/* cd_mmio_strobe_22 — same register-cell RMW as cd_mmio_strobe_20 with op 0x22000000; guest 0x8019be50. */
 void cd_mmio_strobe_22(void)
 {
   uint32_t a = CDREG32(0x801bdec4);
@@ -6921,6 +6927,7 @@ void cd_guest_zero32_a(uint32_t a0,uint32_t a1)
   for (i = 0; i < a1; i++) p[i] = 0;
 }
 
+/* cd_guest_zero32_b — zero a1 u32 words at guest a0 (a1<=0 -> no-op); guest 0x8019af00. */
 void cd_guest_zero32_b(uint32_t a0,uint32_t a1)
 {
   uint32_t *p = (uint32_t *)guest_at(a0);
@@ -6928,6 +6935,7 @@ void cd_guest_zero32_b(uint32_t a0,uint32_t a1)
   for (i = 0; i < a1; i++) p[i] = 0;
 }
 
+/* cd_guest_zero32_c — zero a1 u32 words at guest a0 (a1<=0 -> no-op); guest 0x8019b1a8. */
 void cd_guest_zero32_c(uint32_t a0,uint32_t a1)
 {
   uint32_t *p = (uint32_t *)guest_at(a0);
