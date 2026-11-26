@@ -1763,6 +1763,14 @@
 80183ce4 scriptop_chk_cps_80183ce4
 80183cf0 scriptop_chk_cps_80183cf0
 80183d0c scriptop_chk_state_bits
+80183dc8 chk_atk2_self
+80183df4 chk_atk2_foe
+80183e20 chk_atk1_self
+80183e5c chk_atk1_foe
+80183e98 chk_atk3_self
+80183ec4 chk_atk3_foe
+80183ef0 chk_mode1_self
+80183efc chk_mode1_foe
 80184378 scriptop_cmp
 8018444c scriptop_move
 80184aa0 scriptop_gpad
