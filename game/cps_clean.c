@@ -1387,6 +1387,7 @@ void cps_80126178(void)
     /* zero-fill bounds: [0x801BEEF0, 0x801FF650) */
     v0 = 0x801BEEF0u;   /* 0x801C0000 - 4368 */
     v1 = 0x801FF650u;   /* 0x80200000 - 2480 */
+block_80126178:
     cpu->pc = 0x80126188u; return;  /* fallthrough to split piece */
 }
 
@@ -1449,6 +1450,7 @@ void cps_8012619c(void)
     /* load word via the 0x80120000-based pointer table, index v0=4 */
     v0 = 4;
     a0 = 0x80120000u + 25124u + v0;
+    /* nop */  /* 0x801261A0: 0x00000000 */
     v0 = cpu->read_word(a0);
     t0 = 0x80000000u;                /* tag bit for the sp fixup in 0x801261C4 */
     cpu->pc = 0x801261c4u; return;  /* fallthrough to split piece */
@@ -1465,6 +1467,7 @@ void cps_801261c4(void)
 
     sp = v0 | t0;                     /* tagged pointer into $sp */
     a0 = (0x801FF650u << 3) >> 3;     /* sll/srl pair: keep low 29 bits */
+block_801261C4:
     cpu->pc = 0x801261d8u; return;  /* fallthrough to split piece */
 }
 
@@ -1605,7 +1608,6 @@ void cps_8012625c(void)
 block_8012625C:
     s3 = zero;
     cpu->pc = 0x80126260u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80126260u; return;/* fallthrough to next function */
 }
 
 /* cps_80126260 — clean CPS transliteration of br2eu_func_80126260 (guest 0x80126260)
@@ -1631,7 +1633,6 @@ block_80126260:
     cpu->write_half(sp + 28, (uint16_t)zero);
     cpu->write_half(sp + 30, (uint16_t)zero);
     cpu->pc = 0x80126290u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80126290u; return;/* fallthrough to next function */
 }
 
 /* cps_80126290 — clean CPS transliteration of br2eu_func_80126290 (guest 0x80126290)
@@ -1702,7 +1703,6 @@ void cps_801262c0(void)
 block_801262C0:
     /* nop */  /* 0x801262C0: 0x00000000 */
     cpu->pc = 0x801262c4u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801262c4u; return;/* fallthrough to next function */
 }
 
 /* cps_801262c4 — clean CPS transliteration of br2eu_func_801262C4 (guest 0x801262c4)
@@ -1796,7 +1796,6 @@ void cps_80126324(void)
 block_80126324:
     a0 = a0 ^ 0x0001;  /* 0x80126324: 0x38840001 */
     cpu->pc = 0x80126328u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80126328u; return;/* fallthrough to next function */
 }
 
 /* cps_80126328 — clean CPS transliteration of br2eu_func_80126328 (guest 0x80126328)
@@ -1851,7 +1850,6 @@ block_80126348:
     /* nop */  /* 0x80126348: 0x00000000 */
     v0 = (v1 < (uint32_t)14) ? 1 : 0;  /* 0x8012634C: 0x2C62000E */
     cpu->pc = 0x80126350u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80126350u; return;/* fallthrough to next function */
 }
 
 /* cps_80126350 — clean CPS transliteration of br2eu_func_80126350 (guest 0x80126350)
@@ -1894,8 +1892,7 @@ void cps_80126358(void)
     /* Address: 0x80126358, Size: 48 bytes, Blocks: 3 */
 
 block_80126358:
-    v0 = 0x8012 << 16;  /* 0x80120000 */
-    v0 = v0 + -6144;
+    v0 = 0x8011E800u;  /* 0x80120000 -6144 */
     v1 = v1 << 2;
     v1 = v1 + v0;
     v0 = cpu->read_word(v1);
@@ -1991,7 +1988,6 @@ void cps_801263bc(void)
 block_801263BC:
     v0 = (v1 < (uint32_t)14) ? 1 : 0;  /* 0x801263BC: 0x2C62000E */
     cpu->pc = 0x801263c0u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801263c0u; return;/* fallthrough to next function */
 }
 
 /* cps_801263c0 — clean CPS transliteration of br2eu_func_801263C0 (guest 0x801263c0)
@@ -2249,7 +2245,6 @@ block_80126484:
     a1 = a1 - v0;
     a1 = a1 << 3;
     cpu->pc = 0x801264b4u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801264b4u; return;/* fallthrough to next function */
 }
 
 /* cps_801264b4 — clean CPS transliteration of br2eu_func_801264B4 (guest 0x801264b4)
@@ -2317,7 +2312,6 @@ void cps_801264e8(void)
 block_801264E8:
     cpu->write_byte(s1, (uint8_t)s2);
     cpu->pc = 0x801264ecu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801264ecu; return;/* fallthrough to next function */
 }
 
 /* cps_801264ec — clean CPS transliteration of br2eu_func_801264EC (guest 0x801264ec)
@@ -2361,7 +2355,6 @@ void cps_80126518(void)
 block_80126518:
     a1 = v0 - a1;
     cpu->pc = 0x8012651cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012651cu; return;/* fallthrough to next function */
 }
 
 /* cps_8012651c — clean CPS transliteration of br2eu_func_8012651C (guest 0x8012651c)
@@ -2440,7 +2433,6 @@ void cps_80126548(void)
 block_80126548:
     a0 = 2;
     cpu->pc = 0x8012654cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012654cu; return;/* fallthrough to next function */
 }
 
 /* cps_8012654c — clean CPS transliteration of br2eu_func_8012654C (guest 0x8012654c)
@@ -2455,7 +2447,6 @@ void cps_8012654c(void)
 block_8012654C:
     a0 = 1;
     cpu->pc = 0x80126550u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80126550u; return;/* fallthrough to next function */
 }
 
 /* cps_80126550 — clean CPS transliteration of br2eu_func_80126550 (guest 0x80126550)
@@ -2669,7 +2660,6 @@ void cps_801265dc(void)
 block_801265DC:
     a0 = 2;
     cpu->pc = 0x801265e0u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801265e0u; return;/* fallthrough to next function */
 }
 
 /* cps_801265e0 — clean CPS transliteration of br2eu_func_801265E0 (guest 0x801265e0)
@@ -2684,7 +2674,6 @@ void cps_801265e0(void)
 block_801265E0:
     a0 = 1;
     cpu->pc = 0x801265e4u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801265e4u; return;/* fallthrough to next function */
 }
 
 /* cps_801265e4 — clean CPS transliteration of br2eu_func_801265E4 (guest 0x801265e4)
@@ -2892,7 +2881,6 @@ void cps_80126670(void)
 block_80126670:
     /* nop */  /* 0x80126670: 0x00000000 */
     cpu->pc = 0x80126674u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80126674u; return;/* fallthrough to next function */
 }
 
 /* cps_80126674 — clean CPS transliteration of br2eu_func_80126674 (guest 0x80126674)
@@ -2973,7 +2961,6 @@ void cps_801266a0(void)
 block_801266A0:
     v0 = 11;
     cpu->pc = 0x801266a4u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801266a4u; return;/* fallthrough to next function */
 }
 
 /* cps_801266a4 — clean CPS transliteration of br2eu_func_801266A4 (guest 0x801266a4)
@@ -3064,7 +3051,6 @@ void cps_801266d4(void)
 block_801266D4:
     /* nop */  /* 0x801266D4: 0x00000000 */
     cpu->pc = 0x801266d8u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801266d8u; return;/* fallthrough to next function */
 }
 
 /* cps_801266d8 — clean CPS transliteration of br2eu_func_801266D8 (guest 0x801266d8)
@@ -3198,7 +3184,6 @@ block_80126734:
     a0 = v0 + 96;
     cpu->write_word(sp + 20, ra);
     cpu->pc = 0x80126740u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80126740u; return;/* fallthrough to next function */
 }
 
 /* cps_80126740 — clean CPS transliteration of br2eu_func_80126740 (guest 0x80126740)
@@ -3221,7 +3206,6 @@ block_80126740:
     cpu->write_word(v1 + 12, t1);
     v0 = v0 + 16;
     cpu->pc = 0x80126764u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80126764u; return;/* fallthrough to next function */
 }
 
 /* cps_80126764 — clean CPS transliteration of br2eu_func_80126764 (guest 0x80126764)
@@ -3341,7 +3325,6 @@ void cps_801267c8(void)
 block_801267C8:
     a0 = a0 ^ 0x0001;  /* 0x801267C8: 0x38840001 */
     cpu->pc = 0x801267ccu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801267ccu; return;/* fallthrough to next function */
 }
 
 /* cps_801267cc — clean CPS transliteration of br2eu_func_801267CC (guest 0x801267cc)
@@ -3375,7 +3358,6 @@ void cps_801267f8(void)
 block_801267F8:
     /* nop */  /* 0x801267F8: 0x00000000 */
     cpu->pc = 0x801267fcu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801267fcu; return;/* fallthrough to next function */
 }
 
 /* cps_801267fc — clean CPS transliteration of br2eu_func_801267FC (guest 0x801267fc)
@@ -3427,7 +3409,6 @@ block_80126814:
     a1 = a1 | 0x00E4;
     v0 = cpu->read_word(a0);
     cpu->pc = 0x80126828u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80126828u; return;/* fallthrough to next function */
 }
 
 /* cps_80126828 — clean CPS transliteration of br2eu_func_80126828 (guest 0x80126828)
@@ -3480,7 +3461,6 @@ void cps_80126854(void)
 block_80126854:
     cpu->write_word(v1, zero);
     cpu->pc = 0x80126858u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80126858u; return;/* fallthrough to next function */
 }
 
 /* cps_80126858 — clean CPS transliteration of br2eu_func_80126858 (guest 0x80126858)
@@ -3621,7 +3601,6 @@ void cps_801268b8(void)
 block_801268B8:
     v0 = s0;
     cpu->pc = 0x801268bcu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801268bcu; return;/* fallthrough to next function */
 }
 
 /* cps_801268bc — clean CPS transliteration of br2eu_func_801268BC (guest 0x801268bc)
@@ -3698,7 +3677,6 @@ block_801268E8:
     cpu->write_word(v0 + 18360, v1);
     v0 = 0x801E << 16;  /* 0x801E0000 */
     cpu->pc = 0x80126918u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80126918u; return;/* fallthrough to next function */
 }
 
 /* cps_80126918 — clean CPS transliteration of br2eu_func_80126918 (guest 0x80126918)
@@ -3713,7 +3691,6 @@ void cps_80126918(void)
 block_80126918:
     cpu->write_word(v0 + 15612, v1);
     cpu->pc = 0x8012691cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012691cu; return;/* fallthrough to next function */
 }
 
 /* cps_8012691c — clean CPS transliteration of br2eu_func_8012691C (guest 0x8012691c)
@@ -4728,7 +4705,6 @@ void cps_80126ee8(void)
 block_80126EE8:
     v0 = s0;
     cpu->pc = 0x80126eecu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80126eecu; return;/* fallthrough to next function */
 }
 
 /* cps_80126eec — clean CPS transliteration of br2eu_func_80126EEC (guest 0x80126eec)
@@ -4891,7 +4867,9 @@ tail:
     w0 = cpu->read_word(v1);
     cpu->write_word(v0, w0);
     v0 = 0x801F << 16;  /* 0x801F0000 */
-    v0 = v0 + 4016;
+block_80128490:
+    t4 = cpu->read_word(v1);
+    /* nop */  /* 0x80128494: 0x00000000 */
     v1 = a1 + 7536;
     a0 = a1 + 7792;
     cpu->pc = 0x801284acu; return;  /* fallthrough to split piece */
@@ -4910,7 +4888,6 @@ block_801284AC:
     t4 = cpu->read_word(v1);
     t5 = cpu->read_word(v1 + 4);
     cpu->pc = 0x801284b4u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801284b4u; return;/* fallthrough to next function */
 }
 
 /* cps_801284b4 — clean CPS transliteration of br2eu_func_801284B4 (guest 0x801284b4)
@@ -4988,7 +4965,6 @@ block_80128504:
     t6 = br2_lwr(cpu, v1 + 8, t6);
     t7 = br2_lwl(cpu, v1 + 15, t7);
     cpu->pc = 0x80128520u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80128520u; return;/* fallthrough to next function */
 }
 
 /* cps_80128520 — clean CPS transliteration of br2eu_func_80128520 (guest 0x80128520)
@@ -5367,9 +5343,10 @@ tail:
     a2 = a1 + 5080;
     t1 = a1 + 5832;
     a0 = 0x801E << 16;  /* 0x801E0000 */
-    a0 = a0 + 3948;
     w0 = cpu->read_word(a3);
     cpu->write_word(v0, w0);
+    t4 = cpu->read_word(a3);
+    /* nop */  /* 0x8012877C: 0x00000000 */
     v0 = cpu->read_byte(t2 + 5);
     a0 = a0 + 1512;
     v0 = v0 & 1u;
@@ -5471,7 +5448,6 @@ void cps_80128814(void)
     v0 = cpu->read_word(t2 + 24);
     cpu->write_half(v0 + 612, (uint16_t)v1);
     v0 = 0x801F << 16;  /* 0x801F0000 */
-    v0 = v0 + 19824;
     v1 = (uint32_t)-1;
     cpu->write_half(v0 + 196, (uint16_t)v1);
     cpu->write_half(v0 + 8, (uint16_t)v1);
@@ -5547,8 +5523,7 @@ block_80128908:
     cpu->write_half(s0 + 8, (uint16_t)v1);
     v0 = v0 + 1;
     cpu->write_half(s0 + 2, (uint16_t)v0);
-    v0 = v0 << 16;
-    v0 = (int32_t)v0 >> 16;
+    v0 = (int32_t)(int16_t)v0;
     v0 = ((int32_t)v0 < 3) ? 1 : 0;  /* 0x80128924: 0x28420003 */
     int _bc_80128928 = (v0 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -5623,8 +5598,7 @@ block_80128974:
     cpu->write_half(s0 + 8, (uint16_t)v1);
     v0 = v0 + 1;
     cpu->write_half(s0 + 2, (uint16_t)v0);
-    v0 = v0 << 16;
-    v0 = (int32_t)v0 >> 16;
+    v0 = (int32_t)(int16_t)v0;
     v0 = ((int32_t)v0 < 3) ? 1 : 0;  /* 0x80128990: 0x28420003 */
     int _bc_80128994 = (v0 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -5669,8 +5643,7 @@ void cps_801289d0(void)
     /* Address: 0x801289D0, Size: 40 bytes, Blocks: 2 */
 
 block_801289D0:
-    v0 = 0x8012 << 16;  /* 0x80120000 */
-    v0 = v0 + -5112;
+    v0 = 0x8011EC08u;  /* 0x80120000 -5112 */
     v1 = v1 << 2;
     v1 = v1 + v0;
     v0 = cpu->read_word(v1);
@@ -5726,8 +5699,7 @@ block_80128A0C:
     /* fall through to block_80128A10 */
 
 block_80128A10:
-    a2 = 0x801C << 16;  /* 0x801C0000 */
-    a2 = a2 + 18368;
+    a2 = 0x801C47C0u;  /* 0x801C0000 18368 */
     a0 = t1 << 2;
     a0 = a0 + t1;
     a1 = (int32_t)(int16_t)cpu->read_half(a3 + 6);
@@ -6002,7 +5974,6 @@ void cps_80128c0c(void)
 block_80128C0C:
     v0 = cpu->read_word(a0 + 204);
     cpu->pc = 0x80128c10u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80128c10u; return;/* fallthrough to next function */
 }
 
 /* cps_80128c10 — clean CPS transliteration of br2eu_func_80128C10 (guest 0x80128c10)
@@ -6041,7 +6012,6 @@ block_80128C68:
     cpu->write_word(v0 + 8, t1);
     cpu->write_word(v0 + 12, t2);
     cpu->pc = 0x80128c88u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80128c88u; return;/* fallthrough to next function */
 }
 
 /* cps_80128c88 — clean CPS transliteration of br2eu_func_80128C88 (guest 0x80128c88)
@@ -6079,8 +6049,7 @@ block_80128C88:
     }
 
 block_80128C94:
-    v0 = 0x801E << 16;  /* 0x801E0000 */
-    v0 = v0 + 3948;
+    v0 = 0x801E0F6Cu;  /* 0x801E0000 3948 */
     v1 = s0 + 8664;
     a0 = s0 + 11688;
     /* fall through to block_80128CA4 */
@@ -6179,7 +6148,6 @@ void cps_80128cfc(void)
 block_80128CFC:
     /* nop */  /* 0x80128CFC: 0x00000000 */
     cpu->pc = 0x80128d00u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80128d00u; return;/* fallthrough to next function */
 }
 
 /* cps_80128d00 — clean CPS transliteration of br2eu_func_80128D00 (guest 0x80128d00)
@@ -6194,7 +6162,6 @@ void cps_80128d00(void)
 block_80128D00:
     a1 = 2;
     cpu->pc = 0x80128d04u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80128d04u; return;/* fallthrough to next function */
 }
 
 /* cps_80128d04 — clean CPS transliteration of br2eu_func_80128D04 (guest 0x80128d04)
@@ -6356,7 +6323,6 @@ void cps_80128d74(void)
 block_80128D74:
     v0 = 599;
     cpu->pc = 0x80128d78u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80128d78u; return;/* fallthrough to next function */
 }
 
 /* cps_80128d78 — clean CPS transliteration of br2eu_func_80128D78 (guest 0x80128d78)
@@ -6371,7 +6337,6 @@ void cps_80128d78(void)
 block_80128D78:
     cpu->write_half(s0 + 6, (uint16_t)v0);
     cpu->pc = 0x80128d7cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80128d7cu; return;/* fallthrough to next function */
 }
 
 /* cps_80128d7c — clean CPS transliteration of br2eu_func_80128D7C (guest 0x80128d7c)
@@ -6415,7 +6380,6 @@ block_80128DCC:
     cpu->write_word(a2 + 8, t4);
     cpu->write_word(a2 + 12, t5);
     cpu->pc = 0x80128decu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80128decu; return;/* fallthrough to next function */
 }
 
 /* cps_80128dec — clean CPS transliteration of br2eu_func_80128DEC (guest 0x80128dec)
@@ -6452,8 +6416,7 @@ block_80128DEC:
     }
 
 block_80128DF8:
-    v0 = 0x801E << 16;  /* 0x801E0000 */
-    v0 = v0 + 3948;
+    v0 = 0x801E0F6Cu;  /* 0x801E0000 3948 */
     v1 = s0 + 8664;
     a2 = s0 + 11688;
     /* fall through to block_80128E08 */
@@ -6749,7 +6712,6 @@ block_80128F50:
     a2 = cpu->read_word(v1);
     a3 = cpu->read_word(v1 + 4);
     cpu->pc = 0x80128f58u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80128f58u; return;/* fallthrough to next function */
 }
 
 /* cps_80128f58 — clean CPS transliteration of br2eu_func_80128F58 (guest 0x80128f58)
@@ -6841,7 +6803,6 @@ void cps_80128fa0(void)
 block_80128FA0:
     /* nop */  /* 0x80128FA0: 0x00000000 */
     cpu->pc = 0x80128fa4u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80128fa4u; return;/* fallthrough to next function */
 }
 
 /* cps_80128fa4 — clean CPS transliteration of br2eu_func_80128FA4 (guest 0x80128fa4)
@@ -6856,7 +6817,6 @@ void cps_80128fa4(void)
 block_80128FA4:
     v0 = (int32_t)(int16_t)cpu->read_half(v0);
     cpu->pc = 0x80128fa8u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80128fa8u; return;/* fallthrough to next function */
 }
 
 /* cps_80128fa8 — clean CPS transliteration of br2eu_func_80128FA8 (guest 0x80128fa8)
@@ -6888,7 +6848,6 @@ void cps_80128fac(void)
 block_80128FAC:
     /* nop */  /* 0x80128FAC: 0x00000000 */
     cpu->pc = 0x80128fb0u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80128fb0u; return;/* fallthrough to next function */
 }
 
 /* cps_80128fb0 — clean CPS transliteration of br2eu_func_80128FB0 (guest 0x80128fb0)
@@ -7099,8 +7058,7 @@ block_80129050:
     v1 = v1 << 2;
     v0 = 0x8020 << 16;  /* 0x80200000 */
     v1 = v1 + v0;
-    v0 = 0x801C << 16;  /* 0x801C0000 */
-    v0 = v0 + 5624;
+    v0 = 0x801C15F8u;  /* 0x801C0000 5624 */
     a0 = v0 + 11680;
     /* fall through to block_80129070 */
 
@@ -7163,8 +7121,7 @@ block_801290CC:
     v0 = v0 + a1;
     v0 = v0 << 2;
     a2 = v0 + a0;
-    a0 = 0x801C << 16;  /* 0x801C0000 */
-    a0 = a0 + 18368;
+    a0 = 0x801C47C0u;  /* 0x801C0000 18368 */
     v0 = a3 << 3;
     v0 = v0 + a3;
     v0 = v0 << 3;
@@ -7229,8 +7186,7 @@ block_80129148:
     v0 = v0 + a1;
     v0 = v0 << 2;
     a0 = v0 + a0;
-    v0 = 0x801D << 16;  /* 0x801D0000 */
-    v0 = v0 + -1908;
+    v0 = 0x801CF88Cu;  /* 0x801D0000 -1908 */
     v1 = v0 & 0x0003;  /* 0x80129184: 0x30430003 */
     int _bc_80129188 = (v1 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -7264,7 +7220,6 @@ block_80129190:
     t3 = br2_lwl(cpu, v0 + 15, t3);
     t3 = br2_lwr(cpu, v0 + 12, t3);
     cpu->pc = 0x801291c8u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801291c8u; return;/* fallthrough to next function */
 }
 
 /* cps_801291c8 — clean CPS transliteration of br2eu_func_801291C8 (guest 0x801291c8)
@@ -7567,7 +7522,6 @@ block_801293C4:
     t0 = cpu->read_word(v0);
     t1 = cpu->read_word(v0 + 4);
     cpu->pc = 0x801293ccu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801293ccu; return;/* fallthrough to next function */
 }
 
 /* cps_801293cc — clean CPS transliteration of br2eu_func_801293CC (guest 0x801293cc)
@@ -7629,8 +7583,7 @@ void cps_801293f4(void)
 
 block_801293F4:
     cpu->write_half(s0, (uint16_t)v0);
-    v0 = 0x801E << 16;  /* 0x801E0000 */
-    v0 = v0 + 6972;
+    v0 = 0x801E1B3Cu;  /* 0x801E0000 6972 */
     v1 = s0 + 24;
     a0 = s0 + 8664;
     /* fall through to block_80129408 */
@@ -7657,8 +7610,7 @@ block_80129408:
     }
 
 block_80129434:
-    v0 = 0x801E << 16;  /* 0x801E0000 */
-    v0 = v0 + 3948;
+    v0 = 0x801E0F6Cu;  /* 0x801E0000 3948 */
     v1 = s0 + 8664;
     a0 = s0 + 11688;
     cpu->pc = 0x80129444u; return;  /* fallthrough to split piece */
@@ -7678,7 +7630,6 @@ block_80129444:
     t1 = cpu->read_word(v1 + 4);
     t2 = cpu->read_word(v1 + 8);
     cpu->pc = 0x80129450u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80129450u; return;/* fallthrough to next function */
 }
 
 /* cps_80129450 — clean CPS transliteration of br2eu_func_80129450 (guest 0x80129450)
@@ -8124,7 +8075,6 @@ void cps_8012960c(void)
 block_8012960C:
     cpu->write_half(s0 + 8, (uint16_t)v0);
     cpu->pc = 0x80129610u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80129610u; return;/* fallthrough to next function */
 }
 
 /* cps_80129610 — clean CPS transliteration of br2eu_func_80129610 (guest 0x80129610)
@@ -8453,7 +8403,6 @@ void cps_80129778(void)
 block_80129778:
     a0 = s1;
     cpu->pc = 0x8012977cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012977cu; return;/* fallthrough to next function */
 }
 
 /* cps_8012977c — clean CPS transliteration of br2eu_func_8012977C (guest 0x8012977c)
@@ -8723,7 +8672,6 @@ void cps_8012988c(void)
 block_8012988C:
     a0 = 1024;
     cpu->pc = 0x80129890u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80129890u; return;/* fallthrough to next function */
 }
 
 /* cps_80129890 — clean CPS transliteration of br2eu_func_80129890 (guest 0x80129890)
@@ -8852,7 +8800,6 @@ void cps_801298f8(void)
 block_801298F8:
     cpu->write_half(s0 + 8, (uint16_t)v0);
     cpu->pc = 0x801298fcu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801298fcu; return;/* fallthrough to next function */
 }
 
 /* cps_801298fc — clean CPS transliteration of br2eu_func_801298FC (guest 0x801298fc)
@@ -9069,7 +9016,6 @@ void cps_80129a38(void)
 block_80129A38:
     cpu->write_half(s0, (uint16_t)s5);
     cpu->pc = 0x80129a3cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80129a3cu; return;/* fallthrough to next function */
 }
 
 /* cps_80129a3c — clean CPS transliteration of br2eu_func_80129A3C (guest 0x80129a3c)
@@ -9344,7 +9290,6 @@ void cps_80129be8(void)
 block_80129BE8:
     a2 = zero;
     cpu->pc = 0x80129becu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80129becu; return;/* fallthrough to next function */
 }
 
 /* cps_80129bec — clean CPS transliteration of br2eu_func_80129BEC (guest 0x80129bec)
@@ -9383,7 +9328,6 @@ void cps_80129c7c(void)
 block_80129C7C:
     a2 = zero;
     cpu->pc = 0x80129c80u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80129c80u; return;/* fallthrough to next function */
 }
 
 /* cps_80129c80 — clean CPS transliteration of br2eu_func_80129C80 (guest 0x80129c80)
@@ -9554,7 +9498,6 @@ void cps_80129d10(void)
 block_80129D10:
     v0 = s0;
     cpu->pc = 0x80129d14u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80129d14u; return;/* fallthrough to next function */
 }
 
 /* cps_80129d14 — clean CPS transliteration of br2eu_func_80129D14 (guest 0x80129d14)
@@ -9570,7 +9513,6 @@ block_80129D14:
     a0 = 1024;
     a1 = 11;
     cpu->pc = 0x80129d1cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80129d1cu; return;/* fallthrough to next function */
 }
 
 /* cps_80129d1c — clean CPS transliteration of br2eu_func_80129D1C (guest 0x80129d1c)
@@ -9652,7 +9594,6 @@ void cps_80129da8(void)
 block_80129DA8:
     a2 = zero;
     cpu->pc = 0x80129dacu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80129dacu; return;/* fallthrough to next function */
 }
 
 /* cps_80129dac — clean CPS transliteration of br2eu_func_80129DAC (guest 0x80129dac)
@@ -9864,8 +9805,7 @@ void cps_80129fa8(void)
     /* Address: 0x80129FA8, Size: 28 bytes, Blocks: 1 */
 
 block_80129FA8:
-    v0 = 0x8012 << 16;  /* 0x80120000 */
-    v0 = v0 + -5056;
+    v0 = 0x8011EC40u;  /* 0x80120000 -5056 */
     a0 = a0 & 0x00FF;  /* 0x80129FB0: 0x308400FF */
     a0 = a0 + v0;
     v0 = cpu->read_byte(a0);
@@ -10033,7 +9973,6 @@ block_8012A144:
     cpu->write_byte(a1 + 4, (uint8_t)v0);
     cpu->write_byte(a1 + 5, (uint8_t)v0);
     cpu->pc = 0x8012a1e4u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012a1e4u; return;/* fallthrough to next function */
 }
 
 /* cps_8012a1e4 — clean CPS transliteration of br2eu_func_8012A1E4 (guest 0x8012a1e4)
@@ -10083,8 +10022,7 @@ block_8012A1FC:
     }
 
 block_8012A20C:
-    v0 = 0x801F << 16;  /* 0x801F0000 */
-    v0 = v0 + -31928;
+    v0 = 0x801E8348u;  /* 0x801F0000 -31928 */
     v1 = s3 + 250;
     t0 = s2 + 15;
     a3 = v0 + 16;
@@ -10216,7 +10154,6 @@ block_8012A328:
     v0 = v1 + -48;
     v0 = v0 << 8;
     cpu->pc = 0x8012a3c8u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012a3c8u; return;/* fallthrough to next function */
 }
 
 /* cps_8012a3c8 — clean CPS transliteration of br2eu_func_8012A3C8 (guest 0x8012a3c8)
@@ -10272,7 +10209,6 @@ block_8012A3C8:
     /* nop */  /* 0x8012A468: 0x00000000 */
     v0 = cpu->read_word(a0);
     cpu->pc = 0x8012a470u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012a470u; return;/* fallthrough to next function */
 }
 
 /* cps_8012a470 — clean CPS transliteration of br2eu_func_8012A470 (guest 0x8012a470)
@@ -10448,8 +10384,7 @@ block_8012A5E4:
     }
 
 block_8012A5EC:
-    v1 = 0x801C << 16;  /* 0x801C0000 */
-    v1 = v1 + 17712;
+    v1 = 0x801C4530u;  /* 0x801C0000 17712 */
     a0 = a0 + v1;
     at = 0x1F80 << 16;  /* 0x1F800000 */
     cpu->write_half(at + 208, (uint16_t)v0);
@@ -10457,8 +10392,7 @@ block_8012A5EC:
     cpu->write_half(a0 + 2, (uint16_t)s1);
     cpu->write_half(a0 + 4, (uint16_t)s2);
     cpu->write_half(a0 + 6, (uint16_t)s3);
-    a0 = 0x801C << 16;  /* 0x801C0000 */
-    a0 = a0 + -4296;
+    a0 = 0x801BEF38u;  /* 0x801C0000 -4296 */
     v1 = v0 + -1;
     v1 = v1 << 2;
     v1 = v1 + a0;
@@ -10497,7 +10431,6 @@ void cps_8012a664(void)
 block_8012A664:
     v0 = ((int32_t)v1 < 65) ? 1 : 0;  /* 0x8012A664: 0x28620041 */
     cpu->pc = 0x8012a668u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012a668u; return;/* fallthrough to next function */
 }
 
 /* cps_8012a668 — clean CPS transliteration of br2eu_func_8012A668 (guest 0x8012a668)
@@ -10746,7 +10679,6 @@ void cps_8012a720(void)
 block_8012A720:
     v1 = -1;
     cpu->pc = 0x8012a724u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012a724u; return;/* fallthrough to next function */
 }
 
 /* cps_8012a724 — clean CPS transliteration of br2eu_func_8012A724 (guest 0x8012a724)
@@ -10925,7 +10857,6 @@ block_8012A918:
     cpu->write_word(sp + 20, v0);
     cpu->write_word(sp + 24, s0);
     cpu->pc = 0x8012a92cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012a92cu; return;/* fallthrough to next function */
 }
 
 /* cps_8012a92c — clean CPS transliteration of br2eu_func_8012A92C (guest 0x8012a92c)
@@ -11592,7 +11523,6 @@ void cps_8012abbc(void)
 block_8012ABBC:
     v0 = 0x1F80 << 16;  /* 0x1F800000 */
     cpu->pc = 0x8012abc0u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012abc0u; return;/* fallthrough to next function */
 }
 
 /* cps_8012abc0 — clean CPS transliteration of br2eu_func_8012ABC0 (guest 0x8012abc0)
@@ -12156,7 +12086,6 @@ void cps_8012af90(void)
 block_8012AF90:
     cpu->write_half(s1 + 26, (uint16_t)v0);
     cpu->pc = 0x8012af94u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012af94u; return;/* fallthrough to next function */
 }
 
 /* cps_8012af94 — clean CPS transliteration of br2eu_func_8012AF94 (guest 0x8012af94)
@@ -12356,7 +12285,6 @@ block_8012B048:
     v0 = v0 + s4;
     a1 = cpu->read_word(v0);
     cpu->pc = 0x8012b054u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012b054u; return;/* fallthrough to next function */
 }
 
 /* cps_8012b054 — clean CPS transliteration of br2eu_func_8012B054 (guest 0x8012b054)
@@ -12643,7 +12571,6 @@ void cps_8012b1dc(void)
 block_8012B1DC:
     cpu->write_word(s2 + 112, v0);
     cpu->pc = 0x8012b1e0u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012b1e0u; return;/* fallthrough to next function */
 }
 
 /* cps_8012b1e0 — clean CPS transliteration of br2eu_func_8012B1E0 (guest 0x8012b1e0)
@@ -13758,7 +13685,6 @@ void cps_8012b7ec(void)
 block_8012B7EC:
     v0 = zero;
     cpu->pc = 0x8012b7f0u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012b7f0u; return;/* fallthrough to next function */
 }
 
 /* cps_8012b7f0 — clean CPS transliteration of br2eu_func_8012B7F0 (guest 0x8012b7f0)
@@ -13826,7 +13752,6 @@ block_8012B834:
     cpu->write_byte(a0 + 21, (uint8_t)a2);
     cpu->write_byte(a0 + 28, (uint8_t)a1);
     cpu->pc = 0x8012b850u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012b850u; return;/* fallthrough to next function */
 }
 
 /* cps_8012b850 — clean CPS transliteration of br2eu_func_8012B850 (guest 0x8012b850)
@@ -13915,8 +13840,7 @@ block_8012B898:
     v0 = v1 << 2;
     v0 = v0 + v1;
     v0 = v0 << 3;
-    v1 = 0x801F << 16;  /* 0x801F0000 */
-    v1 = v1 + -31448;
+    v1 = 0x801E8528u;  /* 0x801F0000 -31448 */
     v0 = v0 + v1;
     t0 = a0 + v0;
     v0 = a3 << 16;
@@ -13961,8 +13885,7 @@ block_8012B8F0:
     a0 = cpu->read_half(t1 + 2);
     v0 = 47;
     cpu->write_half(t0 + 22, (uint16_t)v0);
-    v0 = 0x801B << 16;  /* 0x801B0000 */
-    v0 = v0 + 4844;
+    v0 = 0x801B12ECu;  /* 0x801B0000 4844 */
     v1 = a2 << 1;
     v1 = v1 + v0;
     v0 = cpu->read_byte(v1);
@@ -14033,8 +13956,7 @@ block_8012B928:
     /* nop */  /* 0x8012B9C8: 0x00000000 */
     v0 = v0 + 1;
     cpu->write_half(t1 + 4, (uint16_t)v0);
-    v0 = v0 << 16;
-    v0 = (int32_t)v0 >> 16;
+    v0 = (int32_t)(int16_t)v0;
     v0 = ((int32_t)v0 < 400) ? 1 : 0;  /* 0x8012B9DC: 0x28420190 */
     int _bc_8012B9E0 = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -14087,7 +14009,6 @@ void cps_8012bae0(void)
 block_8012BAE0:
     v0 = ((int32_t)v1 < 8193) ? 1 : 0;  /* 0x8012BAE0: 0x28622001 */
     cpu->pc = 0x8012bae4u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012bae4u; return;/* fallthrough to next function */
 }
 
 /* cps_8012bae4 — clean CPS transliteration of br2eu_func_8012BAE4 (guest 0x8012bae4)
@@ -14386,7 +14307,6 @@ void cps_8012bb88(void)
 block_8012BB88:
     v1 = 8;
     cpu->pc = 0x8012bb8cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012bb8cu; return;/* fallthrough to next function */
 }
 
 /* cps_8012bb8c — clean CPS transliteration of br2eu_func_8012BB8C (guest 0x8012bb8c)
@@ -14401,7 +14321,6 @@ void cps_8012bb8c(void)
 block_8012BB8C:
     v0 = t7 & 0x0010;  /* 0x8012BB8C: 0x31E20010 */
     cpu->pc = 0x8012bb90u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012bb90u; return;/* fallthrough to next function */
 }
 
 /* cps_8012bb90 — clean CPS transliteration of br2eu_func_8012BB90 (guest 0x8012bb90)
@@ -14617,8 +14536,7 @@ block_8012BCA4:
     /* nop */  /* 0x8012BCAC: 0x00000000 */
     v0 = v0 + 1;
     cpu->write_half(t1 + 4, (uint16_t)v0);
-    v0 = v0 << 16;
-    v0 = (int32_t)v0 >> 16;
+    v0 = (int32_t)(int16_t)v0;
     v0 = ((int32_t)v0 < 400) ? 1 : 0;  /* 0x8012BCC0: 0x28420190 */
     int _bc_8012BCC4 = (v0 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -14654,7 +14572,6 @@ block_8012BCD4:
     v0 = v0 + t5;
     cpu->write_half(t1, (uint16_t)v0);
     cpu->pc = 0x8012bce4u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012bce4u; return;/* fallthrough to next function */
 }
 
 /* cps_8012bce4 — clean CPS transliteration of br2eu_func_8012BCE4 (guest 0x8012bce4)
@@ -14909,7 +14826,6 @@ void cps_8012bd98(void)
 block_8012BD98:
     v1 = 7;
     cpu->pc = 0x8012bd9cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012bd9cu; return;/* fallthrough to next function */
 }
 
 /* cps_8012bd9c — clean CPS transliteration of br2eu_func_8012BD9C (guest 0x8012bd9c)
@@ -14924,7 +14840,6 @@ void cps_8012bd9c(void)
 block_8012BD9C:
     a0 = t7 & 0x0001;  /* 0x8012BD9C: 0x31E40001 */
     cpu->pc = 0x8012bda0u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012bda0u; return;/* fallthrough to next function */
 }
 
 /* cps_8012bda0 — clean CPS transliteration of br2eu_func_8012BDA0 (guest 0x8012bda0)
@@ -15113,7 +15028,6 @@ block_8012BE70:
     cpu->write_byte(t0 + 37, (uint8_t)v0);
     v1 = a3 + t5;
     cpu->pc = 0x8012be94u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012be94u; return;/* fallthrough to next function */
 }
 
 /* cps_8012be94 — clean CPS transliteration of br2eu_func_8012BE94 (guest 0x8012be94)
@@ -15147,7 +15061,6 @@ block_8012BE94:
     v0 = v0 + 1;
     cpu->write_half(t1 + 4, (uint16_t)v0);
     cpu->pc = 0x8012bee4u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012bee4u; return;/* fallthrough to next function */
 }
 
 /* cps_8012bee4 — clean CPS transliteration of br2eu_func_8012BEE4 (guest 0x8012bee4)
@@ -15165,7 +15078,6 @@ block_8012BEE4:
     v0 = v0 + t5;
     cpu->write_half(t1, (uint16_t)v0);
     cpu->pc = 0x8012bef4u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012bef4u; return;/* fallthrough to next function */
 }
 
 /* cps_8012bef4 — clean CPS transliteration of br2eu_func_8012BEF4 (guest 0x8012bef4)
@@ -15183,7 +15095,6 @@ block_8012BEF4:
     v1 = v1 + 8;
     cpu->write_half(t1, (uint16_t)v1);
     cpu->pc = 0x8012bf04u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012bf04u; return;/* fallthrough to next function */
 }
 
 /* cps_8012bf04 — clean CPS transliteration of br2eu_func_8012BF04 (guest 0x8012bf04)
@@ -15265,8 +15176,7 @@ block_8012BF84:
     }
 
 block_8012BFA4:
-    v0 = 0x801F << 16;  /* 0x801F0000 */
-    v0 = v0 + -31480;
+    v0 = 0x801E8508u;  /* 0x801F0000 -31480 */
     v1 = 0x801F << 16;  /* 0x801F0000 */
     t1 = cpu->read_word(sp + 68);
     v1 = v1 + -31464;
@@ -15276,8 +15186,7 @@ block_8012BFA4:
     s1 = cpu->read_word(v0);
     v0 = cpu->read_half(s4 + 32);
     a0 = cpu->read_word(a0);
-    v0 = v0 << 16;
-    v0 = (int32_t)v0 >> 16;
+    v0 = (int32_t)(int16_t)v0;
     v0 = ((int32_t)s1 < (int32_t)v0) ? 1 : 0;  /* 0x8012BFD8: 0x0222102A */
     int _bc_8012BFDC = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -15374,8 +15283,7 @@ block_8012C048:
     s0 = s0 + v0;
     v0 = cpu->read_half(s4 + 32);
     /* nop */  /* 0x8012C054: 0x00000000 */
-    v0 = v0 << 16;
-    v0 = (int32_t)v0 >> 16;
+    v0 = (int32_t)(int16_t)v0;
     v0 = ((int32_t)s1 < (int32_t)v0) ? 1 : 0;  /* 0x8012C060: 0x0222102A */
     int _bc_8012C064 = (v0 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -15400,8 +15308,7 @@ void cps_8012c06c(void)
     /* Address: 0x8012C06C, Size: 72 bytes, Blocks: 1 */
 
 block_8012C06C:
-    v1 = 0x801F << 16;  /* 0x801F0000 */
-    v1 = v1 + -31480;
+    v1 = 0x801E8508u;  /* 0x801F0000 -31480 */
     t1 = cpu->read_word(sp + 68);
     ra = cpu->read_word(sp + 60);
     fp = cpu->read_word(sp + 56);
@@ -15446,7 +15353,6 @@ block_8012C138:
     v0 = 0x800D << 16;  /* 0x800D0000 */
     cpu->write_word(v1 + 15612, v0);
     cpu->pc = 0x8012c168u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012c168u; return;/* fallthrough to next function */
 }
 
 /* cps_8012c168 — clean CPS transliteration of br2eu_func_8012C168 (guest 0x8012c168)
@@ -15980,7 +15886,6 @@ void cps_8012c350(void)
 block_8012C350:
     cpu->write_half(s3 + 140, (uint16_t)s0);
     cpu->pc = 0x8012c354u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012c354u; return;/* fallthrough to next function */
 }
 
 /* cps_8012c354 — clean CPS transliteration of br2eu_func_8012C354 (guest 0x8012c354)
@@ -15995,7 +15900,6 @@ void cps_8012c354(void)
 block_8012C354:
     v0 = zero;
     cpu->pc = 0x8012c358u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012c358u; return;/* fallthrough to next function */
 }
 
 /* cps_8012c358 — clean CPS transliteration of br2eu_func_8012C358 (guest 0x8012c358)
@@ -16137,7 +16041,6 @@ void cps_8012c4f8(void)
 block_8012C4F8:
     s3 = zero;
     cpu->pc = 0x8012c4fcu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012c4fcu; return;/* fallthrough to next function */
 }
 
 /* cps_8012c4fc — clean CPS transliteration of br2eu_func_8012C4FC (guest 0x8012c4fc)
@@ -16195,7 +16098,6 @@ void cps_8012c510(void)
 block_8012C510:
     v0 = 48;
     cpu->pc = 0x8012c514u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012c514u; return;/* fallthrough to next function */
 }
 
 /* cps_8012c514 — clean CPS transliteration of br2eu_func_8012C514 (guest 0x8012c514)
@@ -16316,8 +16218,7 @@ void cps_8012c544(void)
 
 block_8012C544:
     a1 = s2;
-    a2 = 0x8012 << 16;  /* 0x80120000 */
-    a2 = a2 + -3828;
+    a2 = 0x8011F10Cu;  /* 0x80120000 -3828 */
     t0 = cpu->read_word(sp + 84);
     v0 = cpu->read_half(s4 + 34);
     a3 = 192;
@@ -16325,8 +16226,7 @@ block_8012C544:
     s0 = t0 + 4;
     a0 = s0;
     v0 = v0 + -56;
-    v0 = v0 << 16;
-    v0 = (int32_t)v0 >> 16;
+    v0 = (int32_t)(int16_t)v0;
     ra = 0x8012C57Cu;  /* jal link before delay slot */
     /* delay slot (always executes) */
     cpu->write_word(sp + 16, v0);
@@ -16381,14 +16281,12 @@ block_8012C5CC:
 block_8012C5F4:
     a0 = s0;
     a1 = s2;
-    a2 = 0x8012 << 16;  /* 0x80120000 */
-    a2 = a2 + -3824;
+    a2 = 0x8011F110u;  /* 0x80120000 -3824 */
     v0 = cpu->read_half(s4 + 34);
     a3 = 288;
     cpu->write_word(sp + 20, zero);
     v0 = v0 + -56;
-    v0 = v0 << 16;
-    v0 = (int32_t)v0 >> 16;
+    v0 = (int32_t)(int16_t)v0;
     ra = 0x8012C624u;  /* jal link before delay slot */
     /* delay slot (always executes) */
     cpu->write_word(sp + 16, v0);
@@ -16585,8 +16483,7 @@ void cps_8012c7c4(void)
     /* Address: 0x8012C7C4, Size: 96 bytes, Blocks: 3 */
 
 block_8012C7C4:
-    a2 = 0x8012 << 16;  /* 0x80120000 */
-    a2 = a2 + -3824;
+    a2 = 0x8011F110u;  /* 0x80120000 -3824 */
     t0 = cpu->read_word(sp + 84);
     v0 = cpu->read_half(s4 + 34);
     a3 = 288;
@@ -16594,8 +16491,7 @@ block_8012C7C4:
     s0 = t0 + 4;
     a0 = s0;
     v0 = v0 + -48;
-    v0 = v0 << 16;
-    v0 = (int32_t)v0 >> 16;
+    v0 = (int32_t)(int16_t)v0;
     ra = 0x8012C7F8u;  /* jal link before delay slot */
     /* delay slot (always executes) */
     cpu->write_word(sp + 16, v0);
@@ -16648,8 +16544,7 @@ void cps_8012c824(void)
     /* Address: 0x8012C824, Size: 528 bytes, Blocks: 11 */
 
 block_8012C824:
-    a2 = 0x8012 << 16;  /* 0x80120000 */
-    a2 = a2 + -3828;
+    a2 = 0x8011F10Cu;  /* 0x80120000 -3828 */
     t0 = cpu->read_word(sp + 84);
     v0 = cpu->read_half(s4 + 34);
     a3 = 192;
@@ -16657,8 +16552,7 @@ block_8012C824:
     s1 = t0 + 4;
     a0 = s1;
     v0 = v0 + -48;
-    v0 = v0 << 16;
-    v0 = (int32_t)v0 >> 16;
+    v0 = (int32_t)(int16_t)v0;
     ra = 0x8012C858u;  /* jal link before delay slot */
     /* delay slot (always executes) */
     cpu->write_word(sp + 16, v0);
@@ -17025,7 +16919,6 @@ block_8012CB64:
     cpu->write_word(sp + 32, fp);
     cpu->write_word(sp + 36, zero);
     cpu->pc = 0x8012cb88u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012cb88u; return;/* fallthrough to next function */
 }
 
 /* cps_8012cb88 — clean CPS transliteration of br2eu_func_8012CB88 (guest 0x8012cb88)
@@ -17119,8 +17012,7 @@ void cps_8012edf4(void)
     /* Address: 0x8012EDF4, Size: 24 bytes, Blocks: 1 */
 
 block_8012EDF4:
-    v0 = 0x801F << 16;  /* 0x801F0000 */
-    v0 = v0 + 552;
+    v0 = 0x801F0228u;  /* 0x801F0000 552 */
     a0 = a0 << 1;
     a0 = a0 + v0;
     uint32_t _jt_8012EE04 = ra;  /* latch indirect target before delay slot */
@@ -17159,7 +17051,6 @@ void cps_8012f160(void)
 block_8012F160:
     sp = sp + 32;
     cpu->pc = 0x8012f164u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012f164u; return;  /* fallthrough to next function */
 }
 
 /* cps_8012f188 — clean CPS transliteration of br2eu_func_8012F188 (guest 0x8012f188)
@@ -17189,8 +17080,7 @@ block_8012F188:
     cpu->pc = 0x8012CC6Cu; return;  /* CPS jal -> 0x8012CC6C */
 
 block_8012F19C:
-    v1 = 0x801B << 16;  /* 0x801B0000 */
-    v1 = v1 + 5260;
+    v1 = 0x801B148Cu;  /* 0x801B0000 5260 */
     a0 = 0x8012 << 16;  /* 0x80120000 */
     a1 = 0x1F80 << 16;  /* 0x1F800000 */
     a1 = (int32_t)(int16_t)cpu->read_half(a1 + 36);
@@ -17346,7 +17236,6 @@ void cps_8012fb54(void)
 block_8012FB54:
     s6 = a3;
     cpu->pc = 0x8012fb58u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012fb58u; return;/* fallthrough to next function */
 }
 
 /* cps_8012fb58 — clean CPS transliteration of br2eu_func_8012FB58 (guest 0x8012fb58)
@@ -17380,8 +17269,7 @@ void cps_8012fb58(void)
     /* Address: 0x8012FB58, Size: 376 bytes, Blocks: 16 */
 
 block_8012FB58:
-    v0 = 0x8012 << 16;  /* 0x80120000 */
-    v0 = v0 + -820;
+    v0 = 0x8011FCCCu;  /* 0x80120000 -820 */
     v1 = v1 << 2;
     v1 = v1 + v0;
     v0 = cpu->read_word(v1);
@@ -19475,8 +19363,7 @@ block_80130894:
     cpu->pc = 0x80129FC4u; return;  /* CPS jal -> 0x80129FC4 */
 
 block_801308A4:
-    v1 = 0x8012 << 16;  /* 0x80120000 */
-    v1 = v1 + -1532;
+    v1 = 0x8011FA04u;  /* 0x80120000 -1532 */
     v0 = v0 & 0x0003;  /* 0x801308AC: 0x30420003 */
     v0 = v0 << 1;
     v0 = v0 + v1;
@@ -19488,8 +19375,7 @@ block_801308A4:
     cpu->pc = 0x80129FC4u; return;  /* CPS jal -> 0x80129FC4 */
 
 block_801308C4:
-    v1 = 0x8012 << 16;  /* 0x80120000 */
-    v1 = v1 + -1524;
+    v1 = 0x8011FA0Cu;  /* 0x80120000 -1524 */
     v0 = v0 & 0x0001;  /* 0x801308CC: 0x30420001 */
     v0 = v0 << 1;
     v0 = v0 + v1;
@@ -22095,23 +21981,20 @@ block_80131D4C:
     v0 = cpu->read_half(sp + 16);
     a2 = (int32_t)(int16_t)cpu->read_half(s1 + 58);
     cpu->write_half(s1 + 66, (uint16_t)v0);
-    v0 = v0 << 16;
-    v0 = (int32_t)v0 >> 16;
+    v0 = (int32_t)(int16_t)v0;
     v1 = cpu->read_half(sp + 18);
     v0 = v0 - a2;
     cpu->write_word(sp + 24, v0);
     a2 = (int32_t)(int16_t)cpu->read_half(s1 + 60);
     cpu->write_half(s1 + 68, (uint16_t)v1);
-    v1 = v1 << 16;
-    v1 = (int32_t)v1 >> 16;
+    v1 = (int32_t)(int16_t)v1;
     v0 = cpu->read_half(sp + 20);
     v1 = v1 - a2;
     cpu->write_word(sp + 28, v1);
     v1 = (int32_t)(int16_t)cpu->read_half(s1 + 62);
     a1 = a0;
     cpu->write_half(s1 + 70, (uint16_t)v0);
-    v0 = v0 << 16;
-    v0 = (int32_t)v0 >> 16;
+    v0 = (int32_t)(int16_t)v0;
     v0 = v0 - v1;
     ra = 0x80131DA8u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -23857,7 +23740,6 @@ void cps_80133550(void)
 block_80133550:
     v0 = v0 + 7;
     cpu->pc = 0x80133554u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80133554u; return;/* fallthrough to next function */
 }
 
 /* cps_80133554 — clean CPS transliteration of br2eu_func_80133554 (guest 0x80133554)
@@ -23955,7 +23837,6 @@ void cps_80133588(void)
 block_80133588:
     v1 = s1 << 1;
     cpu->pc = 0x8013358cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8013358cu; return;/* fallthrough to next function */
 }
 
 /* cps_8013358c — clean CPS transliteration of br2eu_func_8013358C (guest 0x8013358c)
@@ -24587,7 +24468,6 @@ void cps_801338b4(void)
 block_801338B4:
     cpu->write_half(a0, (uint16_t)a1);
     cpu->pc = 0x801338b8u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801338b8u; return;/* fallthrough to next function */
 }
 
 /* cps_801338b8 — clean CPS transliteration of br2eu_func_801338B8 (guest 0x801338b8)
@@ -24602,7 +24482,6 @@ void cps_801338b8(void)
 block_801338B8:
     v0 = t0 << 16;
     cpu->pc = 0x801338bcu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801338bcu; return;/* fallthrough to next function */
 }
 
 /* cps_801338bc — clean CPS transliteration of br2eu_func_801338BC (guest 0x801338bc)
@@ -24634,7 +24513,6 @@ void cps_801338fc(void)
 block_801338FC:
     /* nop */  /* 0x801338FC: 0x00000000 */
     cpu->pc = 0x80133900u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80133900u; return;/* fallthrough to next function */
 }
 
 /* cps_80133900 — clean CPS transliteration of br2eu_func_80133900 (guest 0x80133900)
@@ -24705,7 +24583,6 @@ void cps_80133928(void)
 block_80133928:
     a3 = v1;
     cpu->pc = 0x8013392cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8013392cu; return;/* fallthrough to next function */
 }
 
 /* cps_8013392c — clean CPS transliteration of br2eu_func_8013392C (guest 0x8013392c)
@@ -24767,8 +24644,7 @@ block_80133C9C:
     { int64_t result = (int64_t)(int32_t)v0 * (int64_t)(int32_t)a0; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
     psx_muldiv_set(cpu, psx_mult_latency_s(v0));
     v0 = s1 + 12;
-    v0 = v0 << 16;
-    v0 = (int32_t)v0 >> 16;
+    v0 = (int32_t)(int16_t)v0;
     a0 = (int32_t)t4 >> (v0 & 0x1F);
     v1 = (int32_t)v1 >> (v0 & 0x1F);
     cpu->write_half(sp + 48, (uint16_t)a0);
@@ -24928,7 +24804,6 @@ block_80133D68:
     cpu->write_half(sp + 50, (uint16_t)zero);
     cpu->write_half(sp + 48, (uint16_t)zero);
     cpu->pc = 0x80133d74u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80133d74u; return;/* fallthrough to next function */
 }
 
 /* cps_80133d74 — clean CPS transliteration of br2eu_func_80133D74 (guest 0x80133d74)
@@ -24983,7 +24858,6 @@ block_80133EBC:
     v0 = v0 + v1;
     cpu->write_half(s1 + 4, (uint16_t)v0);
     cpu->pc = 0x80133ef0u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80133ef0u; return;/* fallthrough to next function */
 }
 
 /* cps_80133ef0 — clean CPS transliteration of br2eu_func_80133EF0 (guest 0x80133ef0)
@@ -25052,7 +24926,6 @@ block_801340A8:
     cpu->write_half(sp + 18, (uint16_t)zero);
     cpu->write_half(sp + 16, (uint16_t)zero);
     cpu->pc = 0x801340b4u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801340b4u; return;/* fallthrough to next function */
 }
 
 /* cps_801340b4 — clean CPS transliteration of br2eu_func_801340B4 (guest 0x801340b4)
@@ -25070,7 +24943,6 @@ block_801340B4:
     t0 = br2_lwr(cpu, sp + 16, t0);
     t1 = br2_lwl(cpu, sp + 23, t1);
     cpu->pc = 0x801340c4u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801340c4u; return;/* fallthrough to next function */
 }
 
 /* cps_801340c4 — clean CPS transliteration of br2eu_func_801340C4 (guest 0x801340c4)
@@ -26712,7 +26584,6 @@ block_80134E0C:
     cpu->write_word(sp + 16, v0);
     v0 = 483;
     cpu->pc = 0x80134e20u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80134e20u; return;/* fallthrough to next function */
 }
 
 /* cps_80134e20 — clean CPS transliteration of br2eu_func_80134E20 (guest 0x80134e20)
@@ -26955,7 +26826,6 @@ block_80135314:
     cpu->write_half(s0 + 60, (uint16_t)v0);
     v0 = 256;
     cpu->pc = 0x8013531cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8013531cu; return;/* fallthrough to next function */
 }
 
 /* cps_8013531c — clean CPS transliteration of br2eu_func_8013531C (guest 0x8013531c)
@@ -26970,7 +26840,6 @@ void cps_8013531c(void)
 block_8013531C:
     cpu->write_half(s0 + 76, (uint16_t)v0);
     cpu->pc = 0x80135320u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80135320u; return;/* fallthrough to next function */
 }
 
 /* cps_80135320 — clean CPS transliteration of br2eu_func_80135320 (guest 0x80135320)
@@ -28428,7 +28297,6 @@ void cps_80135de4(void)
 block_80135DE4:
     v0 = (t4 < t0) ? 1 : 0;  /* 0x80135DE4: 0x0188102B */
     cpu->pc = 0x80135de8u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80135de8u; return;/* fallthrough to next function */
 }
 
 /* cps_80135de8 — clean CPS transliteration of br2eu_func_80135DE8 (guest 0x80135de8)
@@ -28629,7 +28497,6 @@ block_80135FB8:
     cpu->write_half(a3, (uint16_t)v0);
     a3 = a3 + 48;
     cpu->pc = 0x80135ff0u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80135ff0u; return;/* fallthrough to next function */
 }
 
 /* cps_80135ff0 — clean CPS transliteration of br2eu_func_80135FF0 (guest 0x80135ff0)
@@ -28758,7 +28625,6 @@ void cps_801361a4(void)
 block_801361A4:
     /* nop */  /* 0x801361A4: 0x00000000 */
     cpu->pc = 0x801361a8u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801361a8u; return;/* fallthrough to next function */
 }
 
 /* cps_801361a8 — clean CPS transliteration of br2eu_func_801361A8 (guest 0x801361a8)
@@ -28778,7 +28644,6 @@ block_801361A8:
     if (v0 != 0) { cpu->lo = (uint32_t)((int32_t)v1 / (int32_t)v0); cpu->hi = (uint32_t)((int32_t)v1 % (int32_t)v0); } else { cpu->lo = ((int32_t)v1 >= 0) ? 0xFFFFFFFF : 1; cpu->hi = (uint32_t)v1; }
     psx_muldiv_set(cpu, 37u);
     cpu->pc = 0x801361bcu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801361bcu; return;/* fallthrough to next function */
 }
 
 /* cps_801361bc — clean CPS transliteration of br2eu_func_801361BC (guest 0x801361bc)
@@ -30043,7 +29908,6 @@ void cps_80136970(void)
 block_80136970:
     /* nop */  /* 0x80136970: 0x00000000 */
     cpu->pc = 0x80136974u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80136974u; return;/* fallthrough to next function */
 }
 
 /* cps_80136974 — clean CPS transliteration of br2eu_func_80136974 (guest 0x80136974)
@@ -30058,7 +29922,6 @@ void cps_80136974(void)
 block_80136974:
     a0 = 1024;
     cpu->pc = 0x80136978u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80136978u; return;/* fallthrough to next function */
 }
 
 /* cps_80136978 — clean CPS transliteration of br2eu_func_80136978 (guest 0x80136978)
@@ -30203,7 +30066,6 @@ block_80136A34:
     cpu->write_word(s1 + 28, v0);
     cpu->write_half(s1 + 44, (uint16_t)a0);
     cpu->pc = 0x80136a7cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80136a7cu; return;/* fallthrough to next function */
 }
 
 /* cps_80136a7c — clean CPS transliteration of br2eu_func_80136A7C (guest 0x80136a7c)
@@ -30344,7 +30206,6 @@ block_80136B18:
     /* nop */  /* 0x80136B24: 0x00000000 */
     v0 = ((int32_t)s3 < (int32_t)v0) ? 1 : 0;  /* 0x80136B28: 0x0262102A */
     cpu->pc = 0x80136b2cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80136b2cu; return;/* fallthrough to next function */
 }
 
 /* cps_80136b2c — clean CPS transliteration of br2eu_func_80136B2C (guest 0x80136b2c)
@@ -30410,7 +30271,6 @@ block_80136B70:
     cpu->write_word(sp + 52, s5);
     s5 = a3;
     cpu->pc = 0x80136b78u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80136b78u; return;/* fallthrough to next function */
 }
 
 /* cps_80136b78 — clean CPS transliteration of br2eu_func_80136B78 (guest 0x80136b78)
@@ -30426,7 +30286,6 @@ block_80136B78:
     v0 = 0x801F << 16;  /* 0x801F0000 */
     cpu->write_word(sp + 48, s4);
     cpu->pc = 0x80136b80u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80136b80u; return;/* fallthrough to next function */
 }
 
 /* cps_80136b80 — clean CPS transliteration of br2eu_func_80136B80 (guest 0x80136b80)
@@ -30454,8 +30313,7 @@ block_80136B80:
     v0 = v0 << 2;
     v0 = v0 + s3;
     v0 = v0 << 3;
-    v1 = 0x801F << 16;  /* 0x801F0000 */
-    v1 = v1 + 1632;
+    v1 = 0x801F0660u;  /* 0x801F0000 1632 */
     cpu->write_word(sp + 32, s0);
     s0 = v0 + v1;
     v0 = s5 + 40;
@@ -30618,8 +30476,7 @@ block_80136C7C:
     /* fall through to block_80136C88 */
 
 block_80136C88:
-    a0 = 0x801E << 16;  /* 0x801E0000 */
-    a0 = a0 + 16544;
+    a0 = 0x801E40A0u;  /* 0x801E0000 16544 */
     cpu->write_half(s0 + 14, (uint16_t)v0);
     v0 = s3 << 5;
     v0 = v0 + s3;
@@ -30958,7 +30815,6 @@ void cps_80137528(void)
 block_80137528:
     s0 = s0 + 1880;
     cpu->pc = 0x8013752cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8013752cu; return;/* fallthrough to next function */
 }
 
 /* cps_8013752c — clean CPS transliteration of br2eu_func_8013752C (guest 0x8013752c)
@@ -30979,7 +30835,6 @@ block_8013752C:
     v0 = 0x801F << 16;  /* 0x801F0000 */
     cpu->write_word(v0 + 2352, zero);
     cpu->pc = 0x80137548u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80137548u; return;/* fallthrough to next function */
 }
 
 /* cps_80137548 — clean CPS transliteration of br2eu_func_80137548 (guest 0x80137548)
@@ -31022,7 +30877,6 @@ block_8013783C:
     v0 = v0 + -1;
     cpu->write_half(a2 + 24, (uint16_t)v0);
     cpu->pc = 0x8013784cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8013784cu; return;/* fallthrough to next function */
 }
 
 /* cps_8013784c — clean CPS transliteration of br2eu_func_8013784C (guest 0x8013784c)
@@ -31077,7 +30931,6 @@ block_80137868:
     /* nop */  /* 0x80137870: 0x00000000 */
     v0 = v0 & 0xFF00;  /* 0x80137874: 0x3042FF00 */
     cpu->pc = 0x80137878u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80137878u; return;/* fallthrough to next function */
 }
 
 /* cps_80137878 — clean CPS transliteration of br2eu_func_80137878 (guest 0x80137878)
@@ -31623,7 +31476,6 @@ void cps_80137bc4(void)
 block_80137BC4:
     v0 = a0 + 6;
     cpu->pc = 0x80137bc8u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80137bc8u; return;/* fallthrough to next function */
 }
 
 /* cps_80137bc8 — clean CPS transliteration of br2eu_func_80137BC8 (guest 0x80137bc8)
@@ -32356,8 +32208,7 @@ block_801381F0:
     /* fall through to block_801381F4 */
 
 block_801381F4:
-    a0 = a0 << 16;
-    a0 = (int32_t)a0 >> 16;
+    a0 = (int32_t)(int16_t)a0;
     a0 = s0 - a0;
     a1 = s0 - v1;
     ra = 0x8013820Cu;  /* jal link before delay slot */
@@ -33166,8 +33017,7 @@ block_80138CEC:
     }
 
 block_80138D34:
-    v0 = 0x8012 << 16;  /* 0x80120000 */
-    v0 = v0 + 104;
+    v0 = 0x80120068u;  /* 0x80120000 104 */
     v1 = v1 << 2;
     v1 = v1 + v0;
     v0 = cpu->read_word(v1);
@@ -33518,8 +33368,7 @@ block_80138F48:
 block_80138F8C:
     v0 = cpu->read_half(s4 + 36);
     v1 = cpu->read_word(s1 + 84);
-    v0 = v0 << 16;
-    v0 = (int32_t)v0 >> 16;
+    v0 = (int32_t)(int16_t)v0;
     { int64_t result = (int64_t)(int32_t)v1 * (int64_t)(int32_t)v0; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
     psx_muldiv_set(cpu, psx_mult_latency_s(v1));
     v1 = cpu->lo;
@@ -33604,8 +33453,7 @@ block_80138FC4:
     a0 = v0 + s1;
     v1 = cpu->read_half(s3 + 2);
     v0 = cpu->read_byte(s4 + 21);
-    v1 = v1 << 16;
-    v1 = (int32_t)v1 >> 16;
+    v1 = (int32_t)(int16_t)v1;
     int _bc_801390C8 = (v0 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v1 = v1 - a2;
@@ -33652,8 +33500,7 @@ block_801390DC:
     a0 = (int32_t)v0 >> 1;
     v1 = cpu->read_half(s3 + 2);
     v0 = cpu->read_byte(s4 + 21);
-    v1 = v1 << 16;
-    v1 = (int32_t)v1 >> 16;
+    v1 = (int32_t)(int16_t)v1;
     int _bc_80139144 = (v0 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v1 = v1 - a0;
@@ -33721,8 +33568,7 @@ block_80139160:
     v1 = (int32_t)(int16_t)cpu->read_half(sp + 24);
     v0 = cpu->read_half(s3 + 2);
     a2 = a0 - v1;
-    v0 = v0 << 16;
-    v0 = (int32_t)v0 >> 16;
+    v0 = (int32_t)(int16_t)v0;
     v1 = (int32_t)(int16_t)cpu->read_half(sp + 26);
     a0 = cpu->read_half(s3);
     int _bc_801391CC = ((int32_t)a2 >= 0);  /* save branch cond before delay slot */
@@ -33809,8 +33655,7 @@ block_801391EC:
     a0 = v0 + s1;
     v1 = cpu->read_half(s3 + 2);
     v0 = cpu->read_byte(s4 + 21);
-    v1 = v1 << 16;
-    v1 = (int32_t)v1 >> 16;
+    v1 = (int32_t)(int16_t)v1;
     int _bc_801392D4 = (v0 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v1 = v1 - a3;
@@ -33857,8 +33702,7 @@ block_801392E8:
     a0 = (int32_t)v0 >> 1;
     v1 = cpu->read_half(s3 + 2);
     v0 = cpu->read_byte(s4 + 21);
-    v1 = v1 << 16;
-    v1 = (int32_t)v1 >> 16;
+    v1 = (int32_t)(int16_t)v1;
     int _bc_80139350 = (v0 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v1 = v1 - a0;
@@ -34336,8 +34180,7 @@ block_80139620:
     cpu->write_word(s5, t4);
     v0 = cpu->read_half(s4 + 36);
     v1 = cpu->read_word(s1 + 84);
-    v0 = v0 << 16;
-    v0 = (int32_t)v0 >> 16;
+    v0 = (int32_t)(int16_t)v0;
     { int64_t result = (int64_t)(int32_t)v1 * (int64_t)(int32_t)v0; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
     psx_muldiv_set(cpu, psx_mult_latency_s(v1));
     v0 = cpu->read_word(s5);
@@ -34405,8 +34248,7 @@ block_80139620:
     a0 = v0 + s1;
     v1 = cpu->read_half(s3 + 2);
     v0 = cpu->read_byte(s4 + 21);
-    v1 = v1 << 16;
-    v1 = (int32_t)v1 >> 16;
+    v1 = (int32_t)(int16_t)v1;
     int _bc_801397A4 = (v0 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v1 = v1 - a1;
@@ -34450,8 +34292,7 @@ block_801397B8:
     a0 = v0 + s1;
     v1 = cpu->read_half(s3 + 2);
     v0 = cpu->read_byte(s4 + 21);
-    v1 = v1 << 16;
-    v1 = (int32_t)v1 >> 16;
+    v1 = (int32_t)(int16_t)v1;
     int _bc_80139814 = (v0 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v1 = v1 - a1;
@@ -34539,8 +34380,7 @@ block_80139874:
      * writes halfwords at base+8/+10/+16/+18 (and continues in 0x80139954) */
     v0 = cpu->read_half(s4 + 36);
     v1 = cpu->read_word(s1 + 84);
-    v0 = v0 << 16;
-    v0 = (int32_t)v0 >> 16;
+    v0 = (int32_t)(int16_t)v0;
     { int64_t result = (int64_t)(int32_t)v1 * (int64_t)(int32_t)v0; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
     psx_muldiv_set(cpu, psx_mult_latency_s(v1));
     v1 = cpu->lo;
@@ -34635,7 +34475,7 @@ void cps_80139954(void)
     v1 = cpu->read_half(s3 + 2);
     v0 = cpu->read_byte(s4 + 21);
     v1 = v1 << 16;
-    v1 = (int32_t)v1 >> 16;
+    int _bc_80139984 = (v0 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v1 = v1 - a1;
     if (v0 != zero) {
@@ -34678,7 +34518,7 @@ block_80139998:
     v1 = cpu->read_half(s3 + 2);
     v0 = cpu->read_byte(s4 + 21);
     v1 = v1 << 16;
-    v1 = (int32_t)v1 >> 16;
+    int _bc_801399F4 = (v0 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v1 = v1 - a1;
     if (v0 != zero) {
@@ -34877,8 +34717,7 @@ block_80139AF0:
 block_80139B78:
     v0 = cpu->read_half(s4 + 36);
     v1 = cpu->read_word(s1 + 84);
-    v0 = v0 << 16;
-    v0 = (int32_t)v0 >> 16;
+    v0 = (int32_t)(int16_t)v0;
     { int64_t result = (int64_t)(int32_t)v1 * (int64_t)(int32_t)v0; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
     psx_muldiv_set(cpu, psx_mult_latency_s(v1));
     v0 = cpu->read_word(s5);
@@ -35144,7 +34983,6 @@ void cps_80139f1c(void)
 block_80139F1C:
     v0 = s2;
     cpu->pc = 0x80139f20u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80139f20u; return;/* fallthrough to next function */
 }
 
 /* cps_80139f20 — clean CPS transliteration of br2eu_func_80139F20 (guest 0x80139f20)
@@ -35286,7 +35124,6 @@ block_80139F78:
     v0 = zero - v0;
     cpu->write_half(s1 + 88, (uint16_t)v0);
     cpu->pc = 0x80139f8cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80139f8cu; return;/* fallthrough to next function */
 }
 
 /* cps_80139f8c — clean CPS transliteration of br2eu_func_80139F8C (guest 0x80139f8c)
@@ -35301,7 +35138,6 @@ void cps_80139f8c(void)
 block_80139F8C:
     v0 = s2;
     cpu->pc = 0x80139f90u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80139f90u; return;/* fallthrough to next function */
 }
 
 /* cps_80139f90 — clean CPS transliteration of br2eu_func_80139F90 (guest 0x80139f90)
@@ -35396,7 +35232,6 @@ block_8013A468:
     v0 = cpu->read_word(t1 + 17784);
     /* nop */  /* 0x8013A46C: 0x00000000 */
     cpu->pc = 0x8013a470u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8013a470u; return;/* fallthrough to next function */
 }
 
 /* cps_8013a470 — clean CPS transliteration of br2eu_func_8013A470 (guest 0x8013a470)
@@ -35512,7 +35347,6 @@ block_8013A4E4:
     cpu->write_byte(a0 + 37, (uint8_t)a2);
     a1 = a1 + 1;
     cpu->pc = 0x8013a514u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8013a514u; return;/* fallthrough to next function */
 }
 
 /* cps_8013a514 — clean CPS transliteration of br2eu_func_8013A514 (guest 0x8013a514)
@@ -35849,8 +35683,7 @@ block_8013A690:
     cpu->pc = 0x8013A9B0u; return;  /* CPS j: split */
 
 block_8013A698:
-    v0 = 0x801B << 16;  /* 0x801B0000 */
-    v0 = v0 + 7164;
+    v0 = 0x801B1BFCu;  /* 0x801B0000 7164 */
     cpu->write_word(sp + 16, v0);
     a0 = s1;
     a1 = s1 + 40;
@@ -35877,8 +35710,7 @@ block_8013A6BC:
 
 block_8013A6C8:
     a1 = s1 + 54;
-    a2 = 0x801B << 16;  /* 0x801B0000 */
-    a2 = a2 + 7264;
+    a2 = 0x801B1C60u;  /* 0x801B0000 7264 */
     a3 = 0x801B << 16;  /* 0x801B0000 */
     ra = 0x8013A6E0u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -35965,8 +35797,7 @@ block_8013A740:
     v1 = (int32_t)(int16_t)cpu->read_half(s1 + 100);
     v0 = v0 + 6444;
     cpu->write_word(sp + 16, v0);
-    v0 = 0x801B << 16;  /* 0x801B0000 */
-    v0 = v0 + 6612;
+    v0 = 0x801B19D4u;  /* 0x801B0000 6612 */
     v1 = v1 + -10;
     v1 = v1 << 2;
     v1 = v1 + v0;
@@ -36209,8 +36040,7 @@ block_8013A8D0:
     goto block_8013A8E0;  /* j */
 
 block_8013A8D8:
-    v0 = 0x801B << 16;  /* 0x801B0000 */
-    v0 = v0 + 6716;
+    v0 = 0x801B1A3Cu;  /* 0x801B0000 6716 */
     /* fall through to block_8013A8E0 */
 
 block_8013A8E0:
@@ -36468,7 +36298,6 @@ block_8013AB68:
     v0 = v0 + v1;
     cpu->write_half(s0 + 6, (uint16_t)v0);
     cpu->pc = 0x8013ab7cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8013ab7cu; return;/* fallthrough to next function */
 }
 
 /* cps_8013ab7c — clean CPS transliteration of br2eu_func_8013AB7C (guest 0x8013ab7c)
@@ -36502,7 +36331,6 @@ void cps_8013ac6c(void)
 block_8013AC6C:
     /* nop */  /* 0x8013AC6C: 0x00000000 */
     cpu->pc = 0x8013ac70u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8013ac70u; return;/* fallthrough to next function */
 }
 
 /* cps_8013ac70 — clean CPS transliteration of br2eu_func_8013AC70 (guest 0x8013ac70)
@@ -37349,7 +37177,6 @@ block_8013B39C:
     s3 = s6 + 34;
     s2 = s7 + 6;
     cpu->pc = 0x8013b3a8u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8013b3a8u; return;/* fallthrough to next function */
 }
 
 /* cps_8013b3a8 — clean CPS transliteration of br2eu_func_8013B3A8 (guest 0x8013b3a8)
@@ -37590,7 +37417,6 @@ void cps_8013b544(void)
 block_8013B544:
     v0 = 0x1F80 << 16;  /* 0x1F800000 */
     cpu->pc = 0x8013b548u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8013b548u; return;/* fallthrough to next function */
 }
 
 /* cps_8013b548 — clean CPS transliteration of br2eu_func_8013B548 (guest 0x8013b548)
@@ -39764,7 +39590,6 @@ void cps_8013c50c(void)
 block_8013C50C:
     a0 = s0;
     cpu->pc = 0x8013c510u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8013c510u; return;/* fallthrough to next function */
 }
 
 /* cps_8013c510 — clean CPS transliteration of br2eu_func_8013C510 (guest 0x8013c510)
@@ -40353,7 +40178,6 @@ void cps_8013c89c(void)
 block_8013C89C:
     /* nop */  /* 0x8013C89C: 0x00000000 */
     cpu->pc = 0x8013c8a0u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8013c8a0u; return;/* fallthrough to next function */
 }
 
 /* cps_8013c8a0 — clean CPS transliteration of br2eu_func_8013C8A0 (guest 0x8013c8a0)
@@ -40593,8 +40417,7 @@ block_8013CA14:
     a0 = 1;
     a1 = 2;
     a2 = 10;
-    a3 = 0x8014 << 16;  /* 0x80140000 */
-    a3 = a3 + -18644;
+    a3 = 0x8013B72Cu;  /* 0x80140000 -18644 */
     v0 = 7200;
     cpu->write_word(sp + 16, zero);
     ra = 0x8013CA38u;  /* jal link before delay slot */
@@ -42534,10 +42357,8 @@ block_8013DD84:
     v0 = cpu->read_half(v0 + 2);
     a1 = cpu->read_half(a1 + 2);
     a0 = v1 - a0;
-    v0 = v0 << 16;
-    v0 = (int32_t)v0 >> 16;
-    a1 = a1 << 16;
-    a1 = (int32_t)a1 >> 16;
+    v0 = (int32_t)(int16_t)v0;
+    a1 = (int32_t)(int16_t)a1;
     ra = 0x8013DDC4u;  /* jal link before delay slot */
     /* delay slot (always executes) */
     a1 = v0 - a1;
@@ -42942,7 +42763,6 @@ block_8013E654:
     cpu->write_half(v0 + 6, (uint16_t)t5);
     cpu->write_half(v0 + 12, (uint16_t)t6);
     cpu->pc = 0x8013e71cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8013e71cu; return;/* fallthrough to next function */
 }
 
 /* cps_8013e71c — clean CPS transliteration of br2eu_func_8013E71C (guest 0x8013e71c)
@@ -42994,7 +42814,6 @@ block_8013E72C:
     v0 = v0 - v1;
     v0 = v0 << 4;
     cpu->pc = 0x8013e778u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8013e778u; return;/* fallthrough to next function */
 }
 
 /* cps_8013e778 — clean CPS transliteration of br2eu_func_8013E778 (guest 0x8013e778)
@@ -43034,7 +42853,6 @@ void cps_8013e784(void)
 block_8013E784:
     s6 = s1 + v0;
     cpu->pc = 0x8013e788u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8013e788u; return;/* fallthrough to next function */
 }
 
 /* cps_8013e788 — clean CPS transliteration of br2eu_func_8013E788 (guest 0x8013e788)
@@ -43050,7 +42868,6 @@ block_8013E788:
     v0 = cpu->read_half(s1 + 480);
     /* nop */  /* 0x8013E78C: 0x00000000 */
     cpu->pc = 0x8013e790u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8013e790u; return;/* fallthrough to next function */
 }
 
 /* cps_8013e790 — clean CPS transliteration of br2eu_func_8013E790 (guest 0x8013e790)
@@ -43141,7 +42958,6 @@ block_8013E7D0:
     v1 = cpu->read_half(s1 + 490);
     a1 = cpu->read_half(s1 + 492);
     cpu->pc = 0x8013e7dcu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8013e7dcu; return;/* fallthrough to next function */
 }
 
 /* cps_8013e7dc — clean CPS transliteration of br2eu_func_8013E7DC (guest 0x8013e7dc)
@@ -43164,7 +42980,6 @@ block_8013E7DC:
     a1 = cpu->read_half(s1 + 488);
     v0 = v0 + a0;
     cpu->pc = 0x8013e800u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8013e800u; return;/* fallthrough to next function */
 }
 
 /* cps_8013e800 — clean CPS transliteration of br2eu_func_8013E800 (guest 0x8013e800)
@@ -43181,7 +42996,6 @@ block_8013E800:
     cpu->write_half(s1 + 494, (uint16_t)v0);
     cpu->write_half(s1 + 486, (uint16_t)v1);
     cpu->pc = 0x8013e80cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8013e80cu; return;/* fallthrough to next function */
 }
 
 /* cps_8013e80c — clean CPS transliteration of br2eu_func_8013E80C (guest 0x8013e80c)
@@ -43198,7 +43012,6 @@ block_8013E80C:
     v1 = cpu->read_half(a1 + 36);
     v0 = (int32_t)(int16_t)cpu->read_half(s1 + 486);
     cpu->pc = 0x8013e818u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8013e818u; return;/* fallthrough to next function */
 }
 
 /* cps_8013e818 — clean CPS transliteration of br2eu_func_8013E818 (guest 0x8013e818)
@@ -43211,10 +43024,8 @@ void cps_8013e818(void)
     /* Address: 0x8013E818, Size: 8 bytes, Blocks: 1 */
 
 block_8013E818:
-    v1 = v1 << 16;
-    v1 = (int32_t)v1 >> 16;
+    v1 = (int32_t)(int16_t)v1;
     cpu->pc = 0x8013e820u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8013e820u; return;/* fallthrough to next function */
 }
 
 /* cps_8013e820 — clean CPS transliteration of br2eu_func_8013E820 (guest 0x8013e820)
@@ -43233,7 +43044,6 @@ block_8013E820:
     a2 = cpu->lo;
     psx_muldiv_stall(cpu);
     cpu->pc = 0x8013e82cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8013e82cu; return;/* fallthrough to next function */
 }
 
 /* cps_8013e82c — clean CPS transliteration of br2eu_func_8013E82C (guest 0x8013e82c)
@@ -43259,7 +43069,6 @@ block_8013E82C:
     a3 = 12;
     cpu->write_word(sp + 20, a3);
     cpu->pc = 0x8013e850u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8013e850u; return;/* fallthrough to next function */
 }
 
 /* cps_8013e850 — clean CPS transliteration of br2eu_func_8013E850 (guest 0x8013e850)
@@ -43276,7 +43085,6 @@ block_8013E850:
     psx_muldiv_stall(cpu);
     s2 = (int32_t)(int16_t)cpu->read_half(s1 + 490);
     cpu->pc = 0x8013e858u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8013e858u; return;/* fallthrough to next function */
 }
 
 /* cps_8013e858 — clean CPS transliteration of br2eu_func_8013E858 (guest 0x8013e858)
@@ -43320,7 +43128,6 @@ block_8013E86C:
     a3 = 13;
     cpu->write_word(sp + 20, a3);
     cpu->pc = 0x8013e874u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8013e874u; return;/* fallthrough to next function */
 }
 
 /* cps_8013e874 — clean CPS transliteration of br2eu_func_8013E874 (guest 0x8013e874)
@@ -44001,7 +43808,6 @@ block_8013ED50:
     t4 = (int32_t)t4 >> 2;
     cpu->write_word(v0, t4);
     cpu->pc = 0x8013ed80u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8013ed80u; return;/* fallthrough to next function */
 }
 
 /* cps_8013ed80 — clean CPS transliteration of br2eu_func_8013ED80 (guest 0x8013ed80)
@@ -44697,7 +44503,6 @@ block_8013FC38:
     /* nop */  /* 0x8013FD24: 0x00000000 */
     v0 = v0 + v1;
     cpu->pc = 0x8013fd2cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8013fd2cu; return;/* fallthrough to next function */
 }
 
 /* cps_8013fd2c — clean CPS transliteration of br2eu_func_8013FD2C (guest 0x8013fd2c)
@@ -44751,8 +44556,7 @@ void cps_8013fd48(void)
 
 block_8013FD48:
     s2 = s6 + 2164;
-    t8 = 0x801B << 16;  /* 0x801B0000 */
-    t8 = t8 + 6240;
+    t8 = 0x801B1860u;  /* 0x801B0000 6240 */
     t4 = cpu->read_word(t8);
     t5 = cpu->read_word(t8 + 4);
     
@@ -47612,14 +47416,12 @@ void cps_8014c324(void)
 block_8014C324:
     sp = sp + -40;
     cpu->write_word(sp + 20, s1);
-    s1 = 0x801B << 16;  /* 0x801B0000 */
-    s1 = s1 + 12668;
+    s1 = 0x801B317Cu;  /* 0x801B0000 12668 */
     a2 = s1;
     cpu->write_word(sp + 24, s2);
     s2 = 0x801F << 16;  /* 0x801F0000 */
     cpu->write_word(sp + 16, s0);
-    s0 = 0x801B << 16;  /* 0x801B0000 */
-    s0 = s0 + 12676;
+    s0 = 0x801B3184u;  /* 0x801B0000 12676 */
     v1 = cpu->read_word(s2 + 4284);
     a3 = s0;
     cpu->write_word(sp + 28, s3);
@@ -47731,10 +47533,8 @@ block_8014C418:
     }
 
 block_8014C42C:
-    a2 = 0x801B << 16;  /* 0x801B0000 */
-    a2 = a2 + 12348;
-    a3 = 0x801B << 16;  /* 0x801B0000 */
-    a3 = a3 + 12508;
+    a2 = 0x801B303Cu;  /* 0x801B0000 12348 */
+    a3 = 0x801B30DCu;  /* 0x801B0000 12508 */
     a0 = cpu->read_word(s3 + 4288);
     a1 = cpu->read_word(s4 + 4);
     a0 = a0 + 614;
@@ -47883,10 +47683,8 @@ block_8014C5C4:
     }
 
 block_8014C5D8:
-    a2 = 0x801B << 16;  /* 0x801B0000 */
-    a2 = a2 + 12348;
-    a3 = 0x801B << 16;  /* 0x801B0000 */
-    a3 = a3 + 12588;
+    a2 = 0x801B303Cu;  /* 0x801B0000 12348 */
+    a3 = 0x801B312Cu;  /* 0x801B0000 12588 */
     v0 = 0x801F << 16;  /* 0x801F0000 */
     v1 = v0 + 4288;
     a0 = cpu->read_word(v0 + 4288);
@@ -48433,8 +48231,7 @@ block_8015882C:
     }
 
 block_801588A4:
-    v0 = 0x8012 << 16;  /* 0x80120000 */
-    v0 = v0 + 3532;
+    v0 = 0x80120DCCu;  /* 0x80120000 3532 */
     v1 = v1 << 2;
     v1 = v1 + v0;
     v0 = cpu->read_word(v1);
@@ -48491,8 +48288,7 @@ block_80158910:
 
 block_8015891C:
     a1 = s3;
-    a2 = 0x8012 << 16;  /* 0x80120000 */
-    a2 = a2 + 3520;
+    a2 = 0x80120DC0u;  /* 0x80120000 3520 */
     t2 = cpu->read_word(sp + 96);
     a0 = cpu->read_word(sp + 88);
     s0 = t2 << 16;
@@ -48512,8 +48308,7 @@ block_8015891C:
 
 block_8015895C:
     a1 = s3;
-    a2 = 0x8012 << 16;  /* 0x80120000 */
-    a2 = a2 + 3524;
+    a2 = 0x80120DC4u;  /* 0x80120000 3524 */
     a3 = s0;
     t2 = cpu->read_word(sp + 100);
     a0 = cpu->read_word(sp + 88);
@@ -49194,8 +48989,7 @@ block_8015AD5C:
     cpu->pc = 0x8012CBC0u; return;  /* CPS jal -> 0x8012CBC0 */
 
 block_8015AD68:
-    v0 = 0x8016 << 16;  /* 0x80160000 */
-    v0 = v0 + -20080;
+    v0 = 0x8015B190u;  /* 0x80160000 -20080 */
     cpu->write_word(sp + 28, v0);
     v0 = 17;
     cpu->write_half(sp + 22, (uint16_t)v0);
@@ -51985,8 +51779,7 @@ block_8015D6EC:
     }
 
 block_8015D700:
-    v0 = 0x8012 << 16;  /* 0x80120000 */
-    v0 = v0 + 5648;
+    v0 = 0x80121610u;  /* 0x80120000 5648 */
     v1 = v1 << 2;
     v1 = v1 + v0;
     v0 = cpu->read_word(v1);
@@ -52117,8 +51910,7 @@ block_8015D7D0:
 
 block_8015D7E4:
     s4 = zero;
-    a2 = 0x8012 << 16;  /* 0x80120000 */
-    a2 = a2 + 4720;
+    a2 = 0x80121270u;  /* 0x80120000 4720 */
     a3 = 4096;
     v0 = 0x1F80 << 16;  /* 0x1F800000 */
     a0 = cpu->read_word(v0 + 8);
@@ -52131,8 +51923,7 @@ block_8015D7E4:
     goto block_8015D834;  /* j */
 
 block_8015D810:
-    a2 = 0x8012 << 16;  /* 0x80120000 */
-    a2 = a2 + 4724;
+    a2 = 0x80121274u;  /* 0x80120000 4724 */
     a3 = 4096;
     v0 = 0x1F80 << 16;  /* 0x1F800000 */
     a0 = cpu->read_word(v0 + 8);
@@ -52481,8 +52272,7 @@ block_8015D950:
     cpu->pc = 0x8012CD9Cu; return;  /* CPS jal -> 0x8012CD9C */
 
 block_8015D95C:
-    a2 = 0x8012 << 16;  /* 0x80120000 */
-    a2 = a2 + 5088;
+    a2 = 0x801213E0u;  /* 0x80120000 5088 */
     a3 = 4096;
     a0 = cpu->read_word(s3 + 8);
     a1 = cpu->read_word(s3 + 12);
@@ -52617,8 +52407,7 @@ block_8015DA4C:
     goto block_8015E848;  /* j */
 
 block_8015DA74:
-    a2 = 0x8012 << 16;  /* 0x80120000 */
-    a2 = a2 + 5568;
+    a2 = 0x801215C0u;  /* 0x80120000 5568 */
     a3 = 4096;
     s1 = a3;
     a0 = cpu->read_word(s3 + 8);
@@ -52682,8 +52471,7 @@ block_8015DAE0:
     goto block_8015E7F4;  /* j */
 
 block_8015DB08:
-    a2 = 0x8012 << 16;  /* 0x80120000 */
-    a2 = a2 + 5580;
+    a2 = 0x801215CCu;  /* 0x80120000 5580 */
     a3 = 4096;
     s1 = a3;
     a0 = cpu->read_word(s3 + 8);
@@ -53097,8 +52885,7 @@ block_8015DDDC:
     /* nop */  /* 0x8015DDE0: 0x00000000 */
     v0 = v0 + 1;
     cpu->write_half(s5 + 34, (uint16_t)v0);
-    v0 = v0 << 16;
-    v0 = (int32_t)v0 >> 16;
+    v0 = (int32_t)(int16_t)v0;
     v0 = ((int32_t)v0 < 5) ? 1 : 0;  /* 0x8015DDF4: 0x28420005 */
     int _bc_8015DDF8 = (v0 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -53118,8 +52905,7 @@ block_8015DE00:
     goto block_8015E848;  /* j */
 
 block_8015DE08:
-    a2 = 0x8012 << 16;  /* 0x80120000 */
-    a2 = a2 + 5608;
+    a2 = 0x801215E8u;  /* 0x80120000 5608 */
     a3 = 4096;
     s1 = a3;
     a0 = cpu->read_word(s3 + 8);
@@ -53205,8 +52991,7 @@ block_8015DEA8:
     v1 = cpu->read_half(s5 + 36);
     a1 = cpu->read_word(s3 + 12);
     v0 = v0 | v1;
-    v0 = v0 << 16;
-    v0 = (int32_t)v0 >> 16;
+    v0 = (int32_t)(int16_t)v0;
     ra = 0x8015DED4u;  /* jal link before delay slot */
     /* delay slot (always executes) */
     cpu->write_word(sp + 16, v0);
@@ -54703,8 +54488,7 @@ block_8015E608:
     goto block_8015E5E4;  /* j */
 
 block_8015E610:
-    a2 = 0x8012 << 16;  /* 0x80120000 */
-    a2 = a2 + 5628;
+    a2 = 0x801215FCu;  /* 0x80120000 5628 */
     a3 = 4096;
     s0 = 0x1F80 << 16;  /* 0x1F800000 */
     s2 = a3;
@@ -54843,8 +54627,7 @@ block_8015E724:
     cpu->pc = 0x80156EF4u; return;  /* CPS jal -> 0x80156EF4 */
 
 block_8015E734:
-    v1 = 0x801B << 16;  /* 0x801B0000 */
-    v1 = v1 + 4736;
+    v1 = 0x801B1280u;  /* 0x801B0000 4736 */
     v0 = cpu->read_byte(v1 + 12);
     /* nop */  /* 0x8015E740: 0x00000000 */
     cpu->write_half(s5 + 20, (uint16_t)v0);
@@ -55345,8 +55128,7 @@ block_8015EE70:
 
 block_8015EE84:
     s1 = zero;
-    a2 = 0x8012 << 16;  /* 0x80120000 */
-    a2 = a2 + 4720;
+    a2 = 0x80121270u;  /* 0x80120000 4720 */
     a3 = 4096;
     v0 = 0x1F80 << 16;  /* 0x1F800000 */
     a1 = cpu->read_word(v0 + 12);
@@ -55360,8 +55142,7 @@ block_8015EE84:
 
 block_8015EEB0:
     s1 = 1;
-    a2 = 0x8012 << 16;  /* 0x80120000 */
-    a2 = a2 + 4724;
+    a2 = 0x80121274u;  /* 0x80120000 4724 */
     a3 = 4096;
     v0 = 0x1F80 << 16;  /* 0x1F800000 */
     a1 = cpu->read_word(v0 + 12);
@@ -55499,8 +55280,7 @@ block_8015EF40:
     cpu->pc = 0x8012CD9Cu; return;  /* CPS jal -> 0x8012CD9C */
 
 block_8015EF4C:
-    a2 = 0x8012 << 16;  /* 0x80120000 */
-    a2 = a2 + 5104;
+    a2 = 0x801213F0u;  /* 0x80120000 5104 */
     a3 = 4096;
     v0 = 0x1F80 << 16;  /* 0x1F800000 */
     a1 = cpu->read_word(v0 + 12);
@@ -55931,8 +55711,7 @@ block_8015F23C:
     v1 = (int32_t)(int16_t)cpu->read_half(s3 + 26);
     v0 = v0 + 1;
     cpu->write_half(s3 + 22, (uint16_t)v0);
-    v0 = v0 << 16;
-    v0 = (int32_t)v0 >> 16;
+    v0 = (int32_t)(int16_t)v0;
     v1 = v1 + -1;
     v1 = ((int32_t)v1 < (int32_t)v0) ? 1 : 0;  /* 0x8015F258: 0x0062182A */
     int _bc_8015F25C = (v1 == zero);  /* save branch cond before delay slot */
@@ -56321,10 +56100,8 @@ block_8015F48C:
     v0 = cpu->read_half(v1 + 32);
     a0 = cpu->read_word(v1 + 8);
     v1 = cpu->read_half(v1 + 34);
-    v0 = v0 << 16;
-    v0 = (int32_t)v0 >> 16;
-    v1 = v1 << 16;
-    v1 = (int32_t)v1 >> 16;
+    v0 = (int32_t)(int16_t)v0;
+    v1 = (int32_t)(int16_t)v1;
     cpu->write_word(sp + 16, v0);
     ra = 0x8015F4C0u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -56616,8 +56393,7 @@ block_80160AA4:
 
 block_80160AB8:
     s5 = zero;
-    a2 = 0x8012 << 16;  /* 0x80120000 */
-    a2 = a2 + 4720;
+    a2 = 0x80121270u;  /* 0x80120000 4720 */
     a3 = 4096;
     v0 = 0x1F80 << 16;  /* 0x1F800000 */
     a0 = cpu->read_word(v0 + 8);
@@ -56630,8 +56406,7 @@ block_80160AB8:
     goto block_80160B08;  /* j */
 
 block_80160AE4:
-    a2 = 0x8012 << 16;  /* 0x80120000 */
-    a2 = a2 + 4724;
+    a2 = 0x80121274u;  /* 0x80120000 4724 */
     a3 = 4096;
     v0 = 0x1F80 << 16;  /* 0x1F800000 */
     a0 = cpu->read_word(v0 + 8);
@@ -56732,8 +56507,7 @@ block_80160B54:
     cpu->pc = 0x8012CD9Cu; return;  /* CPS jal -> 0x8012CD9C */
 
 block_80160B60:
-    a2 = 0x8012 << 16;  /* 0x80120000 */
-    a2 = a2 + 5124;
+    a2 = 0x80121404u;  /* 0x80120000 5124 */
     a3 = 4096;
     v0 = 0x1F80 << 16;  /* 0x1F800000 */
     a0 = cpu->read_word(v0 + 8);
@@ -56884,8 +56658,7 @@ block_80160C5C:
     /* fall through to block_80160C74 */
 
 block_80160C74:
-    a1 = 0x8012 << 16;  /* 0x80120000 */
-    a1 = a1 + 7160;
+    a1 = 0x80121BF8u;  /* 0x80120000 7160 */
     ra = 0x80160C84u;  /* jal link before delay slot */
     /* delay slot (always executes) */
     a2 = s3 + 1;
@@ -57075,8 +56848,7 @@ block_80160D80:
     a3 = t1 + v0;
     v0 = s1 << 2;
     a1 = t1 + v0;
-    t4 = 0x801C << 16;  /* 0x801C0000 */
-    t4 = t4 + 5188;
+    t4 = 0x801C1444u;  /* 0x801C0000 5188 */
     a2 = cpu->read_word(a3);
     a0 = cpu->read_word(a1);
     v1 = a2 << 3;
@@ -57086,8 +56858,7 @@ block_80160D80:
     v0 = a0 << 3;
     v0 = v0 + a0;
     v0 = v0 << 2;
-    t4 = 0x801C << 16;  /* 0x801C0000 */
-    t4 = t4 + 5188;
+    t4 = 0x801C1444u;  /* 0x801C0000 5188 */
     v0 = v0 + t4;
     v1 = cpu->read_half(v1);
     v0 = cpu->read_half(v0);
@@ -57137,8 +56908,7 @@ block_80160DF4:
     }
 
 block_80160E04:
-    a2 = 0x8012 << 16;  /* 0x80120000 */
-    a2 = a2 + 7164;
+    a2 = 0x80121BFCu;  /* 0x80120000 7164 */
     a3 = 104;
     s2 = zero;
     s3 = s2;
@@ -57154,8 +56924,7 @@ block_80160E04:
     cpu->pc = 0x8012E7CCu; return;  /* CPS jal -> 0x8012E7CC */
 
 block_80160E34:
-    a2 = 0x8012 << 16;  /* 0x80120000 */
-    a2 = a2 + 7204;
+    a2 = 0x80121C24u;  /* 0x80120000 7204 */
     a0 = cpu->read_word(s0 + 8);
     a1 = cpu->read_word(s0 + 12);
     a3 = 96;
@@ -57167,8 +56936,7 @@ block_80160E34:
     cpu->pc = 0x8012E7CCu; return;  /* CPS jal -> 0x8012E7CC */
 
 block_80160E54:
-    v1 = 0x801C << 16;  /* 0x801C0000 */
-    v1 = v1 + 5188;
+    v1 = 0x801C1444u;  /* 0x801C0000 5188 */
     /* fall through to block_80160E5C */
 
 block_80160E5C:
@@ -57216,13 +56984,10 @@ block_80160E80:
 block_80160E9C:
     v0 = s3 << 2;
     v0 = sp + v0;
-    a1 = 0x8012 << 16;  /* 0x80120000 */
-    a1 = a1 + 7244;
+    a1 = 0x80121C4Cu;  /* 0x80120000 7244 */
     a3 = cpu->read_word(v0 + 88);
-    v0 = 0x801B << 16;  /* 0x801B0000 */
-    v0 = v0 + 18412;
-    t4 = 0x801C << 16;  /* 0x801C0000 */
-    t4 = t4 + 5188;
+    v0 = 0x801B47ECu;  /* 0x801B0000 18412 */
+    t4 = 0x801C1444u;  /* 0x801C0000 5188 */
     v1 = a3 << 3;
     v0 = v1 + v0;
     v1 = v1 + a3;
@@ -57464,16 +57229,14 @@ block_801610CC:
     s3 = zero;
     t3 = 0xCCCC << 16;  /* 0xCCCC0000 */
     t3 = t3 | 0xCCCD;
-    t1 = 0x801C << 16;  /* 0x801C0000 */
-    t1 = t1 + 5188;
+    t1 = 0x801C1444u;  /* 0x801C0000 5188 */
     /* fall through to block_801610E0 */
 
 block_801610E0:
     s0 = zero;
     s1 = s0;
     t2 = s3 << 1;
-    a3 = 0x801C << 16;  /* 0x801C0000 */
-    a3 = a3 + 5188;
+    a3 = 0x801C1444u;  /* 0x801C0000 5188 */
     a2 = t1;
     /* fall through to block_801610F8 */
 
@@ -57748,8 +57511,7 @@ block_801612C4:
     }
 
 block_801612D0:
-    a2 = 0x8012 << 16;  /* 0x80120000 */
-    a2 = a2 + 7272;
+    a2 = 0x80121C68u;  /* 0x80120000 7272 */
     a3 = 448;
     s3 = zero;
     s7 = 0x1F80 << 16;  /* 0x1F800000 */
@@ -57772,13 +57534,10 @@ block_8016130C:
     /* fall through to block_80161310 */
 
 block_80161310:
-    a1 = 0x8012 << 16;  /* 0x80120000 */
-    a1 = a1 + 7244;
+    a1 = 0x80121C4Cu;  /* 0x80120000 7244 */
     s0 = zero;
-    v0 = 0x801B << 16;  /* 0x801B0000 */
-    v0 = v0 + 18412;
-    t4 = 0x801C << 16;  /* 0x801C0000 */
-    t4 = t4 + 5188;
+    v0 = 0x801B47ECu;  /* 0x801B0000 18412 */
+    t4 = 0x801C1444u;  /* 0x801C0000 5188 */
     a3 = cpu->read_word(fp);
     s6 = cpu->read_word(sp + 136);
     v1 = a3 << 3;
@@ -57827,8 +57586,7 @@ block_80161388:
     }
 
 block_80161390:
-    a2 = 0x8012 << 16;  /* 0x80120000 */
-    a2 = a2 + 7284;
+    a2 = 0x80121C74u;  /* 0x80120000 7284 */
     a0 = cpu->read_word(s7 + 8);
     a1 = cpu->read_word(s7 + 12);
     t4 = cpu->read_word(sp + 140);
@@ -57938,8 +57696,7 @@ block_80161480:
 block_80161484:
     s0 = s0 + t0;
     a0 = sp + 24;
-    a1 = 0x8012 << 16;  /* 0x80120000 */
-    a1 = a1 + 7288;
+    a1 = 0x80121C78u;  /* 0x80120000 7288 */
     ra = 0x8016149Cu;  /* jal link before delay slot */
     /* delay slot (always executes) */
     a2 = t0;
@@ -57951,8 +57708,7 @@ block_8016149C:
     a3 = s1 << 5;
     a3 = a3 + 0;
     a3 = a3 + 100;
-    a3 = a3 << 16;
-    a3 = (int32_t)a3 >> 16;
+    a3 = (int32_t)(int16_t)a3;
     a0 = cpu->read_word(s7 + 8);
     a1 = cpu->read_word(s7 + 12);
     t4 = 4096;
@@ -57982,8 +57738,7 @@ block_801614D0:
     }
 
 block_801614E0:
-    a1 = 0x8012 << 16;  /* 0x80120000 */
-    a1 = a1 + 7292;
+    a1 = 0x80121C7Cu;  /* 0x80120000 7292 */
     ra = 0x801614F0u;  /* jal link before delay slot */
     /* delay slot (always executes) */
     a2 = s0;
@@ -58094,8 +57849,7 @@ block_80161594:
     goto block_801615E8;  /* j */
 
 block_801615C4:
-    a2 = 0x8012 << 16;  /* 0x80120000 */
-    a2 = a2 + 4888;
+    a2 = 0x80121318u;  /* 0x80120000 4888 */
     a3 = 4096;
     v0 = 0x1F80 << 16;  /* 0x1F800000 */
     a0 = cpu->read_word(v0 + 8);
@@ -58405,12 +58159,10 @@ block_80161708:
 
 block_80161710:
     s2 = zero;
-    t0 = 0x801C << 16;  /* 0x801C0000 */
-    t0 = t0 + 4576;
+    t0 = 0x801C11E0u;  /* 0x801C0000 4576 */
     v0 = a0 + t0;
     a1 = cpu->read_half(v0 + 1008);
-    v1 = 0x801B << 16;  /* 0x801B0000 */
-    v1 = v1 + 16852;
+    v1 = 0x801B41D4u;  /* 0x801B0000 16852 */
     /* fall through to block_8016172C */
 
 block_8016172C:
@@ -58486,8 +58238,7 @@ block_80161774:
     /* fall through to block_80161794 */
 
 block_80161794:
-    a2 = 0x8012 << 16;  /* 0x80120000 */
-    a2 = a2 + 4972;
+    a2 = 0x8012136Cu;  /* 0x80120000 4972 */
     a3 = 48;
     a0 = cpu->read_word(s7 + 8);
     a1 = cpu->read_word(s7 + 12);
@@ -58554,8 +58305,7 @@ block_801617FC:
     /* fall through to block_80161828 */
 
 block_80161828:
-    a1 = 0x8012 << 16;  /* 0x80120000 */
-    a1 = a1 + 7452;
+    a1 = 0x80121D1Cu;  /* 0x80120000 7452 */
     a0 = cpu->read_word(sp + 92);
     ra = 0x8016183Cu;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -58596,16 +58346,14 @@ block_80161860:
 
 block_8016187C:
     a2 = zero;
-    a0 = 0x801B << 16;  /* 0x801B0000 */
-    a0 = a0 + 16248;
+    a0 = 0x801B3F78u;  /* 0x801B0000 16248 */
     a3 = a0 + 16;
     /* fall through to block_8016188C */
 
 block_8016188C:
     s2 = zero;
     a1 = cpu->read_half(a0);
-    v1 = 0x801B << 16;  /* 0x801B0000 */
-    v1 = v1 + 16852;
+    v1 = 0x801B41D4u;  /* 0x801B0000 16852 */
     /* fall through to block_8016189C */
 
 block_8016189C:
@@ -58678,8 +58426,7 @@ block_801618E0:
 block_80161900:
     cpu->write_half(s0, (uint16_t)v0);
     v0 = 1;
-    t0 = 0x801C << 16;  /* 0x801C0000 */
-    t0 = t0 + 4576;
+    t0 = 0x801C11E0u;  /* 0x801C0000 4576 */
     /* delay slot (always executes) */
     cpu->write_word(t0 + 1040, v0);
     psx_check_interrupts_at(cpu, 0x80161948u);
@@ -58751,8 +58498,7 @@ block_80161974:
 
 block_8016197C:
     s3 = 3;
-    a2 = 0x8012 << 16;  /* 0x80120000 */
-    a2 = a2 + 7464;
+    a2 = 0x80121D28u;  /* 0x80120000 7464 */
     t0 = cpu->read_word(sp + 96);
     a0 = cpu->read_word(s7 + 8);
     a1 = cpu->read_word(s7 + 12);
@@ -58794,8 +58540,7 @@ block_801619D4:
     cpu->write_word(sp + 20, s3);
     a3 = t0 << 16;
     v0 = v0 << 2;
-    t0 = 0x801B << 16;  /* 0x801B0000 */
-    t0 = t0 + 16812;
+    t0 = 0x801B41ACu;  /* 0x801B0000 16812 */
     v0 = v0 + t0;
     a2 = cpu->read_word(v0);
     ra = 0x80161A1Cu;  /* jal link before delay slot */
@@ -58847,8 +58592,7 @@ block_80161A30:
     }
 
 block_80161A74:
-    a2 = 0x8012 << 16;  /* 0x80120000 */
-    a2 = a2 + 7480;
+    a2 = 0x80121D38u;  /* 0x80120000 7480 */
     a1 = cpu->read_word(s7 + 12);
     a3 = 152;
     cpu->write_word(sp + 20, zero);
@@ -58856,8 +58600,7 @@ block_80161A74:
     v0 = cpu->read_half(s7 + 34);
     a0 = a0 + 4;
     v0 = v0 + -56;
-    v0 = v0 << 16;
-    v0 = (int32_t)v0 >> 16;
+    v0 = (int32_t)(int16_t)v0;
     ra = 0x80161AA8u;  /* jal link before delay slot */
     /* delay slot (always executes) */
     cpu->write_word(sp + 16, v0);
@@ -58865,8 +58608,7 @@ block_80161A74:
     cpu->pc = 0x8012E7CCu; return;  /* CPS jal -> 0x8012E7CC */
 
 block_80161AA8:
-    a2 = 0x8012 << 16;  /* 0x80120000 */
-    a2 = a2 + 7496;
+    a2 = 0x80121D48u;  /* 0x80120000 7496 */
     a3 = 220;
     a1 = cpu->read_word(s7 + 12);
     t0 = 8;
@@ -58875,8 +58617,7 @@ block_80161AA8:
     v0 = cpu->read_half(s7 + 34);
     a0 = a0 + 4;
     v0 = v0 + -60;
-    v0 = v0 << 16;
-    v0 = (int32_t)v0 >> 16;
+    v0 = (int32_t)(int16_t)v0;
     ra = 0x80161AE0u;  /* jal link before delay slot */
     /* delay slot (always executes) */
     cpu->write_word(sp + 16, v0);
@@ -58884,8 +58625,7 @@ block_80161AA8:
     cpu->pc = 0x8012E58Cu; return;  /* CPS jal -> 0x8012E58C */
 
 block_80161AE0:
-    a2 = 0x8012 << 16;  /* 0x80120000 */
-    a2 = a2 + 4888;
+    a2 = 0x80121318u;  /* 0x80120000 4888 */
     a1 = cpu->read_word(s7 + 12);
     a3 = 288;
     cpu->write_word(sp + 20, zero);
@@ -58893,8 +58633,7 @@ block_80161AE0:
     v0 = cpu->read_half(s7 + 34);
     a0 = a0 + 4;
     v0 = v0 + -56;
-    v0 = v0 << 16;
-    v0 = (int32_t)v0 >> 16;
+    v0 = (int32_t)(int16_t)v0;
     ra = 0x80161B14u;  /* jal link before delay slot */
     /* delay slot (always executes) */
     cpu->write_word(sp + 16, v0);
@@ -58994,8 +58733,7 @@ block_80161BAC:
     /* fall through to block_80161BB0 */
 
 block_80161BB0:
-    t0 = 0x801C << 16;  /* 0x801C0000 */
-    t0 = t0 + 4576;
+    t0 = 0x801C11E0u;  /* 0x801C0000 4576 */
     v1 = a0 + t0;
     v0 = a1 + a0;
     t0 = 0x801B << 16;  /* 0x801B0000 */
@@ -61213,7 +60951,6 @@ void cps_8017b8d0(void)
 block_8017B8D0:
     v1 = v1 & 0x000F;  /* 0x8017B8D0: 0x3063000F */
     cpu->pc = 0x8017b8d4u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8017b8d4u; return;/* fallthrough to next function */
 }
 
 /* cps_8017b8d4 — clean CPS transliteration of br2eu_func_8017B8D4 (guest 0x8017b8d4)
@@ -61634,7 +61371,6 @@ void cps_8017bad0(void)
 block_8017BAD0:
     a3 = cpu->read_word(t0 + 44);
     cpu->pc = 0x8017bad4u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8017bad4u; return;/* fallthrough to next function */
 }
 
 /* cps_8017bad4 — clean CPS transliteration of br2eu_func_8017BAD4 (guest 0x8017bad4)
@@ -62918,7 +62654,6 @@ block_8017C840:
     /* nop */  /* 0x8017C848: 0x00000000 */
     cpu->write_half(a1 + 268, (uint16_t)v0);
     cpu->pc = 0x8017c850u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8017c850u; return;/* fallthrough to next function */
 }
 
 /* cps_8017c850 — clean CPS transliteration of br2eu_func_8017C850 (guest 0x8017c850)
@@ -63121,7 +62856,6 @@ block_8017C928:
     /* nop */  /* 0x8017C930: 0x00000000 */
     cpu->write_half(a1 + 268, (uint16_t)v0);
     cpu->pc = 0x8017c938u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8017c938u; return;/* fallthrough to next function */
 }
 
 /* cps_8017c938 — clean CPS transliteration of br2eu_func_8017C938 (guest 0x8017c938)
@@ -63571,8 +63305,7 @@ block_8017CBD0:
     v1 = (int32_t)(int16_t)cpu->read_half(s0 + 172);
     v0 = v0 + a0;
     cpu->write_half(s0 + 200, (uint16_t)v0);
-    v0 = v0 << 16;
-    v0 = (int32_t)v0 >> 16;
+    v0 = (int32_t)(int16_t)v0;
     v1 = v1 + v0;
     a0 = (int32_t)(int16_t)cpu->read_half(s0 + 176);
     v0 = cpu->read_half(s0 + 176);
@@ -63666,8 +63399,7 @@ block_8017CC7C:
     v1 = (int32_t)(int16_t)cpu->read_half(s0 + 172);
     v0 = v0 + a0;
     cpu->write_half(s0 + 200, (uint16_t)v0);
-    v0 = v0 << 16;
-    v0 = (int32_t)v0 >> 16;
+    v0 = (int32_t)(int16_t)v0;
     v1 = v1 + v0;
     a0 = (int32_t)(int16_t)cpu->read_half(s0 + 176);
     v0 = cpu->read_half(s0 + 176);
@@ -64224,7 +63956,6 @@ void cps_8017d258(void)
 block_8017D258:
     v1 = v1 & 0x000F;  /* 0x8017D258: 0x3063000F */
     cpu->pc = 0x8017d25cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8017d25cu; return;/* fallthrough to next function */
 }
 
 /* cps_8017d25c — clean CPS transliteration of br2eu_func_8017D25C (guest 0x8017d25c)
@@ -64574,7 +64305,6 @@ void cps_8017d5dc(void)
 block_8017D5DC:
     v1 = v1 & 0x000F;  /* 0x8017D5DC: 0x3063000F */
     cpu->pc = 0x8017d5e0u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8017d5e0u; return;/* fallthrough to next function */
 }
 
 /* cps_8017d5e0 — clean CPS transliteration of br2eu_func_8017D5E0 (guest 0x8017d5e0)
@@ -64934,7 +64664,6 @@ void cps_8017d754(void)
 block_8017D754:
     v1 = v1 & 0x000F;  /* 0x8017D754: 0x3063000F */
     cpu->pc = 0x8017d758u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8017d758u; return;/* fallthrough to next function */
 }
 
 /* cps_8017d758 — clean CPS transliteration of br2eu_func_8017D758 (guest 0x8017d758)
@@ -65209,7 +64938,6 @@ void cps_8017da60(void)
 block_8017DA60:
     v1 = a1 & 0x000F;  /* 0x8017DA60: 0x30A3000F */
     cpu->pc = 0x8017da64u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8017da64u; return;/* fallthrough to next function */
 }
 
 /* cps_8017da64 — clean CPS transliteration of br2eu_func_8017DA64 (guest 0x8017da64)
@@ -65224,7 +64952,6 @@ void cps_8017da64(void)
 block_8017DA64:
     v0 = 1;
     cpu->pc = 0x8017da68u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8017da68u; return;/* fallthrough to next function */
 }
 
 /* cps_8017da68 — clean CPS transliteration of br2eu_func_8017DA68 (guest 0x8017da68)
@@ -65534,8 +65261,7 @@ block_8017E528:
     }
 
 block_8017E530:
-    v0 = 0x801F << 16;  /* 0x801F0000 */
-    v0 = v0 + 19632;
+    v0 = 0x801F4CB0u;  /* 0x801F0000 19632 */
     /* delay slot (always executes) */
     v1 = -4;
     psx_check_interrupts_at(cpu, 0x8017E548u);
@@ -65802,7 +65528,6 @@ void cps_8017e6a8(void)
 block_8017E6A8:
     v1 = a3 & 0x000F;  /* 0x8017E6A8: 0x30E3000F */
     cpu->pc = 0x8017e6acu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8017e6acu; return;/* fallthrough to next function */
 }
 
 /* cps_8017e6ac — clean CPS transliteration of br2eu_func_8017E6AC (guest 0x8017e6ac)
@@ -65817,7 +65542,6 @@ void cps_8017e6ac(void)
 block_8017E6AC:
     v0 = 1;
     cpu->pc = 0x8017e6b0u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8017e6b0u; return;/* fallthrough to next function */
 }
 
 /* cps_8017e6b0 — clean CPS transliteration of br2eu_func_8017E6B0 (guest 0x8017e6b0)
@@ -67440,7 +67164,6 @@ block_80181F10:
     v0 = 9;
     cpu->write_half(a2 + 40, (uint16_t)v0);
     cpu->pc = 0x80181f18u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80181f18u; return;/* fallthrough to next function */
 }
 
 /* cps_80181f18 — clean CPS transliteration of br2eu_func_80181F18 (guest 0x80181f18)
@@ -76966,7 +76689,6 @@ void cps_8018bb48(void)
 block_8018BB48:
     a2 = zero;
     cpu->pc = 0x8018bb4cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8018bb4cu; return;/* fallthrough to next function */
 }
 
 /* cps_8018bb4c — guest 0x8018BB4C: Byte-table init: writes zero bytes at v1/v0 and a0 at hw-mirror 0x1F800000+21968 region; 5-block piece. */
@@ -77271,8 +76993,7 @@ void cps_8018cfdc(void)
 block_8018CFDC:
     sp = sp + -48;
     cpu->write_word(sp + 40, s4);
-    v1 = 0x801B << 16;  /* 0x801B0000 */
-    v1 = v1 + 23444;
+    v1 = 0x801B5B94u;  /* 0x801B0000 23444 */
     v0 = a0 << 3;
     v0 = v0 + v1;
     cpu->write_word(sp + 44, ra);
@@ -77688,7 +77409,6 @@ block_8018D2E0:
     a1 = a1 << 4;
     a2 = a2 << 4;
     cpu->pc = 0x8018d2ecu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8018d2ecu; return;  /* fallthrough to next function */
 }
 
 /* cps_8018d3b4 — guest 0x8018D3B4: Write-back helper trio (84B): calls 0x8018D408 three times with different store widths — word pair at a3/a3+8, half pair at a3/a3+4, and a shifted variant; returns v0 = a3 via saved t1 (jr t1). */
@@ -77774,7 +77494,6 @@ block_8018D474:
     cpu->write_half(a3, (uint16_t)v1);
     cpu->write_half(a3 + 4, (uint16_t)t4);
     cpu->pc = 0x8018d47cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8018d47cu; return;/* fallthrough to next function */
 }
 
 /* cps_8018d47c — guest 0x8018D47C: 8-byte CPS piece: jr t5 (indirect return via saved reg). */
@@ -77919,7 +77638,6 @@ void cps_8018da28(void)
 block_8018DA28:
     a0 = (int32_t)(int16_t)cpu->read_half(a0);
     cpu->pc = 0x8018da2cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8018da2cu; return;/* fallthrough to next function */
 }
 
 /* cps_8018da2c — guest 0x8018DA2C: Struct normalize/copy (136B): reads s16 fields, writes word+half fields at a1+0..16 (v1, 0, t1, v0, v1) — vertex/prim record fixup; returns via $ra. */
@@ -77943,8 +77661,7 @@ void cps_8018da2c(void)
     /* Address: 0x8018DA2C, Size: 136 bytes, Blocks: 7 */
 
 block_8018DA2C:
-    t0 = 0x8012 << 16;  /* 0x80120000 */
-    t0 = t0 + 18344;
+    t0 = 0x801247A8u;  /* 0x80120000 18344 */
     t1 = 0x1000;
     cpu->write_word(a1, t1);
     v0 = a0 & 0x03FF;  /* 0x8018DA3C: 0x308203FF */
@@ -78034,7 +77751,6 @@ block_8018DAB4:
     a2 = a1;
     a1 = (int32_t)a0 >> 16;
     cpu->pc = 0x8018dac0u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8018dac0u; return;/* fallthrough to next function */
 }
 
 /* cps_8018dac0 — guest 0x8018DAC0: Struct normalize/copy (292B, 13 blocks): reads s16 coords from v0/v1/t7, writes word+half record at a2+0..16 — same family as cps_8018da2c, wider variant. */
@@ -78064,8 +77780,7 @@ void cps_8018dac0(void)
     /* Address: 0x8018DAC0, Size: 292 bytes, Blocks: 13 */
 
 block_8018DAC0:
-    t0 = 0x8012 << 16;  /* 0x80120000 */
-    t0 = t0 + 18344;
+    t0 = 0x801247A8u;  /* 0x80120000 18344 */
     v0 = a0 & 0x03FF;  /* 0x8018DAC8: 0x308203FF */
     v0 = v0 << 1;
     t7 = zero - v0;
@@ -78238,8 +77953,7 @@ void cps_8018dbe4(void)
 
 block_8018DBE4:
     a2 = (int32_t)(int16_t)cpu->read_half(a0 + 4);
-    t7 = 0x8012 << 16;  /* 0x80120000 */
-    t7 = t7 + 18344;
+    t7 = 0x801247A8u;  /* 0x80120000 18344 */
     a0 = cpu->read_word(a0);
     a3 = a1;
     int _bc_8018DBF8 = ((int32_t)zero >= 0);  /* save branch cond before delay slot */
@@ -78271,7 +77985,6 @@ block_8018DC00:
     a1 = zero - a1;
     a2 = zero - a2;
     cpu->pc = 0x8018dc18u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8018dc18u; return;  /* fallthrough to next function */
 }
 
 /* cps_8018dc20 — guest 0x8018DC20: Vertex math routine (584B, 31 blocks): reads eight s16 fields, writes normalized half results at a3+0..16+ — heaviest math body in the band; kept in generated CPS shape. */
@@ -78692,7 +78405,6 @@ void cps_8018de68(void)
 block_8018DE68:
     a0 = (int32_t)(int16_t)cpu->read_half(a0 + 2);
     cpu->pc = 0x8018de6cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8018de6cu; return;/* fallthrough to next function */
 }
 
 /* cps_8018de6c — guest 0x8018DE6C: Struct normalize/copy (136B): reads s16 fields, writes word+half record at a1+0..16 — same shape as cps_8018da2c. */
@@ -78716,8 +78428,7 @@ void cps_8018de6c(void)
     /* Address: 0x8018DE6C, Size: 136 bytes, Blocks: 7 */
 
 block_8018DE6C:
-    t0 = 0x8012 << 16;  /* 0x80120000 */
-    t0 = t0 + 18344;
+    t0 = 0x801247A8u;  /* 0x80120000 18344 */
     t1 = 0x1000;
     cpu->write_word(a1 + 8, t1);
     v0 = a0 & 0x03FF;  /* 0x8018DE7C: 0x308203FF */
@@ -78807,7 +78518,6 @@ block_8018DEF4:
     a2 = a1;
     a1 = (int32_t)a0 >> 16;
     cpu->pc = 0x8018df00u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8018df00u; return;/* fallthrough to next function */
 }
 
 /* cps_8018df00 — guest 0x8018DF00: Struct normalize/copy (292B, 13 blocks): reads s16 coords, writes word+half record at a2+0..16 — same family as cps_8018dac0. */
@@ -78837,8 +78547,7 @@ void cps_8018df00(void)
     /* Address: 0x8018DF00, Size: 292 bytes, Blocks: 13 */
 
 block_8018DF00:
-    t0 = 0x8012 << 16;  /* 0x80120000 */
-    t0 = t0 + 18344;
+    t0 = 0x801247A8u;  /* 0x80120000 18344 */
     v0 = a0 & 0x03FF;  /* 0x8018DF08: 0x308203FF */
     v0 = v0 << 1;
     t7 = zero - v0;
@@ -79012,7 +78721,6 @@ void cps_8018e024(void)
 block_8018E024:
     a0 = (int32_t)(int16_t)cpu->read_half(a0 + 4);
     cpu->pc = 0x8018e028u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8018e028u; return;/* fallthrough to next function */
 }
 
 /* cps_8018e028 — guest 0x8018E028: Struct normalize/copy (136B): reads s16 fields, writes word+half record at a1+0..12 (t1, v0, v1, 0) — same family as cps_8018da2c. */
@@ -79036,8 +78744,7 @@ void cps_8018e028(void)
     /* Address: 0x8018E028, Size: 136 bytes, Blocks: 7 */
 
 block_8018E028:
-    t0 = 0x8012 << 16;  /* 0x80120000 */
-    t0 = t0 + 18344;
+    t0 = 0x801247A8u;  /* 0x80120000 18344 */
     t1 = 0x1000;
     cpu->write_half(a1 + 16, (uint16_t)t1);
     v0 = a0 & 0x03FF;  /* 0x8018E038: 0x308203FF */
@@ -79144,8 +78851,7 @@ block_8018E0B0:
     a2 = a1;
     a1 = (int32_t)(int16_t)cpu->read_half(a0 + 4);
     a0 = (int32_t)(int16_t)cpu->read_half(a0);
-    t0 = 0x8012 << 16;  /* 0x80120000 */
-    t0 = t0 + 18344;
+    t0 = 0x801247A8u;  /* 0x80120000 18344 */
     a0 = a0 + 1024;
     v0 = a0 & 0x03FF;  /* 0x8018E0C8: 0x308203FF */
     v0 = v0 << 1;
@@ -79334,8 +79040,7 @@ block_8018E1D0:
     a2 = a1;
     a1 = (int32_t)(int16_t)cpu->read_half(a0 + 4);
     a0 = (int32_t)(int16_t)cpu->read_half(a0);
-    t0 = 0x8012 << 16;  /* 0x80120000 */
-    t0 = t0 + 18344;
+    t0 = 0x801247A8u;  /* 0x80120000 18344 */
     a0 = a0 + 1024;
     v0 = a0 & 0x03FF;  /* 0x8018E1E8: 0x308203FF */
     v0 = v0 << 1;
@@ -79837,8 +79542,7 @@ block_8018EFC0:
     }
 
 block_8018EFC8:
-    a1 = 0x801B << 16;  /* 0x801B0000 */
-    a1 = a1 + 26528;
+    a1 = 0x801B67A0u;  /* 0x801B0000 26528 */
     v0 = cpu->read_word(a1);
     v1 = cpu->read_word(a1 + 4);
     a0 = cpu->read_word(a1 + 8);
@@ -80680,8 +80384,7 @@ block_8018F4DC:
     goto block_8018F504;  /* j */
 
 block_8018F4FC:
-    a3 = 0x8012 << 16;  /* 0x80120000 */
-    a3 = a3 + 21020;
+    a3 = 0x8012521Cu;  /* 0x80120000 21020 */
     /* fall through to block_8018F504 */
 
 block_8018F504:
@@ -81193,8 +80896,7 @@ void cps_8018f884(void)
 
 block_8018F884:
     a2 = a0;
-    a1 = 0x801B << 16;  /* 0x801B0000 */
-    a1 = a1 + 26548;
+    a1 = 0x801B67B4u;  /* 0x801B0000 26548 */
     v1 = 15;
     a3 = -1;
     /* fall through to block_8018F898 */
@@ -81217,8 +80919,7 @@ block_8018F898:
 
 block_8018F8B0:
     a2 = a0 + 64;
-    a1 = 0x801B << 16;  /* 0x801B0000 */
-    a1 = a1 + 26612;
+    a1 = 0x801B67F4u;  /* 0x801B0000 26612 */
     v1 = 15;
     a3 = -1;
     /* fall through to block_8018F8C4 */
@@ -81241,8 +80942,7 @@ block_8018F8C4:
 
 block_8018F8DC:
     a2 = a0 + 128;
-    a1 = 0x801B << 16;  /* 0x801B0000 */
-    a1 = a1 + 26680;
+    a1 = 0x801B6838u;  /* 0x801B0000 26680 */
     v1 = 31;
     a3 = -1;
     /* fall through to block_8018F8F0 */
@@ -81295,8 +80995,7 @@ block_8018F910:
     sp = sp + -24;
     cpu->write_word(sp + 16, s0);
     s0 = a0;
-    a1 = 0x801B << 16;  /* 0x801B0000 */
-    a1 = a1 + 26548;
+    a1 = 0x801B67B4u;  /* 0x801B0000 26548 */
     v1 = 15;
     a2 = -1;
     cpu->write_word(sp + 20, ra);
@@ -81319,8 +81018,7 @@ block_8018F930:
     }
 
 block_8018F948:
-    a1 = 0x801B << 16;  /* 0x801B0000 */
-    a1 = a1 + 26612;
+    a1 = 0x801B67F4u;  /* 0x801B0000 26612 */
     a0 = s0 + 64;
     v1 = 15;
     a2 = -1;
@@ -81343,8 +81041,7 @@ block_8018F95C:
     }
 
 block_8018F974:
-    a0 = 0x801B << 16;  /* 0x801B0000 */
-    a0 = a0 + 26544;
+    a0 = 0x801B67B0u;  /* 0x801B0000 26544 */
     ra = 0x8018F984u;  /* jal link before delay slot */
     /* delay slot (always executes) */
     a1 = 32;
@@ -81352,8 +81049,7 @@ block_8018F974:
     cpu->pc = 0x8018FC00u; return;  /* CPS jal -> 0x8018FC00 */
 
 block_8018F984:
-    a0 = 0x801B << 16;  /* 0x801B0000 */
-    a0 = a0 + 26676;
+    a0 = 0x801B6834u;  /* 0x801B0000 26676 */
     ra = 0x8018F994u;  /* jal link before delay slot */
     /* delay slot (always executes) */
     a1 = 32;
@@ -81404,8 +81100,7 @@ void cps_8018fee0(void)
     /* Address: 0x8018FEE0, Size: 32 bytes, Blocks: 2 */
 
 block_8018FEE0:
-    t0 = 0x801B << 16;  /* 0x801B0000 */
-    t0 = t0 + 26880;
+    t0 = 0x801B6900u;  /* 0x801B0000 26880 */
     at = a0 + -1;
     int _bc_8018FEEC = ((int32_t)at <= 0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -81572,8 +81267,7 @@ block_80190774:
 block_8019077C:
     v0 = v0 + a0;
     v0 = v0 << 4;
-    v1 = 0x801B << 16;  /* 0x801B0000 */
-    v1 = v1 + 30528;
+    v1 = 0x801B7740u;  /* 0x801B0000 30528 */
     s3 = v0 + v1;
     a2 = s3 + 16;
     cpu->write_word(sp + 16, a2);
@@ -82111,8 +81805,7 @@ block_80190A9C:
     v0 = v1 << 1;
     v0 = v0 + v1;
     v0 = v0 << 4;
-    v1 = 0x801B << 16;  /* 0x801B0000 */
-    v1 = v1 + 30528;
+    v1 = 0x801B7740u;  /* 0x801B0000 30528 */
     s1 = v0 + v1;
     v1 = cpu->read_word(s1 + 40);
     v0 = cpu->read_word(s1 + 28);
@@ -82640,8 +82333,7 @@ void cps_80191a78(void)
 
 block_80191A78:
     v1 = (int32_t)(int16_t)cpu->read_half(s1 + 4);
-    v0 = v0 << 16;
-    v0 = (int32_t)v0 >> 16;
+    v0 = (int32_t)(int16_t)v0;
     int _bc_80191A84 = (v0 != v1);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x80191A88: 0x00000000 */
@@ -82656,8 +82348,7 @@ block_80191A78:
 block_80191A8C:
     v0 = cpu->read_half(a0 + 6);
     v1 = (int32_t)(int16_t)cpu->read_half(s1 + 6);
-    v0 = v0 << 16;
-    v0 = (int32_t)v0 >> 16;
+    v0 = (int32_t)(int16_t)v0;
     int _bc_80191A9C = (v0 == v1);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x80191AA0: 0x00000000 */
@@ -82953,12 +82644,11 @@ void cps_80191b90(void)
     /* Address: 0x80191B90, Size: 116 bytes, Blocks: 5 */
 
 block_80191B90:
-    a0 = 0x801C << 16;  /* 0x801C0000 */
+    a0 = 0x801C0000u;  /* 0x801C0000 */
     a0 = a0 + -31852;
     v0 = cpu->read_half(a0);
     v1 = (int32_t)(int16_t)cpu->read_half(s1 + 8);
-    v0 = v0 << 16;
-    v0 = (int32_t)v0 >> 16;
+    v0 = (int32_t)(int16_t)v0;
     int _bc_80191BA8 = (v0 != v1);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x80191BAC: 0x00000000 */
@@ -82973,8 +82663,7 @@ block_80191B90:
 block_80191BB0:
     v0 = cpu->read_half(a0 + 2);
     v1 = (int32_t)(int16_t)cpu->read_half(s1 + 10);
-    v0 = v0 << 16;
-    v0 = (int32_t)v0 >> 16;
+    v0 = (int32_t)(int16_t)v0;
     int _bc_80191BC0 = (v0 != v1);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x80191BC4: 0x00000000 */
@@ -82989,8 +82678,7 @@ block_80191BB0:
 block_80191BC8:
     v0 = cpu->read_half(a0 + 4);
     v1 = (int32_t)(int16_t)cpu->read_half(s1 + 12);
-    v0 = v0 << 16;
-    v0 = (int32_t)v0 >> 16;
+    v0 = (int32_t)(int16_t)v0;
     int _bc_80191BD8 = (v0 != v1);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x80191BDC: 0x00000000 */
@@ -83005,8 +82693,7 @@ block_80191BC8:
 block_80191BE0:
     v0 = cpu->read_half(a0 + 6);
     v1 = (int32_t)(int16_t)cpu->read_half(s1 + 14);
-    v0 = v0 << 16;
-    v0 = (int32_t)v0 >> 16;
+    v0 = (int32_t)(int16_t)v0;
     int _bc_80191BF0 = (v0 != v1);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v0 = 8;
@@ -83045,7 +82732,6 @@ void cps_80191c04(void)
 block_80191C04:
     /* nop */  /* 0x80191C04: 0x00000000 */
     cpu->pc = 0x80191c08u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80191c08u; return;/* fallthrough to next function */
 }
 
 /* cps_80191c08 — clean CPS transliteration of br2eu_func_80191C08 (guest 0x80191c08)
@@ -83177,7 +82863,7 @@ block_80191C74:
 
 block_80191C78:
     v1 = (int32_t)(int16_t)cpu->read_half(s1 + 8);
-    v0 = 0x801C << 16;  /* 0x801C0000 */
+    v0 = 0x801C0000u;  /* 0x801C0000 */
     v0 = v0 + a2;
     v0 = cpu->read_byte(v0 + -31716);
     cpu->pc = 0x80191c88u; return;  /* fallthrough to split piece */
@@ -83213,10 +82899,10 @@ block_80191C88:
     v0 = v0 + v1;
     v0 = v0 + a2;
     v0 = v0 << 2;
-    v1 = 0x801C << 16;  /* 0x801C0000 */
+    v1 = 0x801C0000u;  /* 0x801C0000 */
     v1 = v1 + v0;
     v1 = cpu->read_half(v1 + -31756);
-    at = 0x801C << 16;  /* 0x801C0000 */
+    at = 0x801C0000u;  /* 0x801C0000 */
     at = at + v0;
     v0 = cpu->read_half(at + -31754);
     a1 = (int32_t)(int16_t)cpu->read_half(s1 + 12);
@@ -83312,7 +82998,7 @@ void cps_80191d0c(void)
     /* Address: 0x80191D0C, Size: 116 bytes, Blocks: 10 */
 
 block_80191D0C:
-    v0 = 0x801C << 16;  /* 0x801C0000 */
+    v0 = 0x801C0000u;  /* 0x801C0000 */
     v0 = v0 + a2;
     v0 = cpu->read_byte(v0 + -31716);
     a0 = a1;
@@ -83500,7 +83186,7 @@ void cps_80191d9c(void)
     /* Address: 0x80191D9C, Size: 112 bytes, Blocks: 10 */
 
 block_80191D9C:
-    v0 = 0x801C << 16;  /* 0x801C0000 */
+    v0 = 0x801C0000u;  /* 0x801C0000 */
     v0 = v0 + a2;
     v0 = cpu->read_byte(v0 + -31716);
     a0 = a1;
@@ -83629,7 +83315,6 @@ void cps_80191e14(void)
 block_80191E14:
     a1 = s2;
     cpu->pc = 0x80191e18u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80191e18u; return;/* fallthrough to next function */
 }
 
 /* cps_80191e18 — clean CPS transliteration of br2eu_func_80191E18 (guest 0x80191e18)
@@ -83653,8 +83338,8 @@ block_80191E18:
     v1 = v1 & 0x0FFF;  /* 0x80191E1C: 0x30630FFF */
     v1 = v1 << 12;
     a0 = a0 & 0x0FFF;  /* 0x80191E24: 0x30840FFF */
-    v0 = 0x0600 << 16;  /* 0x06000000 */
-    a1 = 0x801C << 16;  /* 0x801C0000 */
+    v0 = 0x06000000u;  /* 0x06000000 */
+    a1 = 0x801C0000u;  /* 0x801C0000 */
     a1 = cpu->read_word(a1 + -31976);
     a0 = a0 | v0;
     v0 = cpu->read_word(a1 + 16);
@@ -83670,8 +83355,8 @@ block_80191E48:
     v1 = s2 & 0x03FF;  /* 0x80191E48: 0x324303FF */
     v1 = v1 << 10;
     a0 = s0 & 0x03FF;  /* 0x80191E50: 0x320403FF */
-    v0 = 0x0700 << 16;  /* 0x07000000 */
-    a1 = 0x801C << 16;  /* 0x801C0000 */
+    v0 = 0x07000000u;  /* 0x07000000 */
+    a1 = 0x801C0000u;  /* 0x801C0000 */
     a1 = cpu->read_word(a1 + -31976);
     a0 = a0 | v0;
     v0 = cpu->read_word(a1 + 16);
@@ -83701,7 +83386,7 @@ void cps_80191e74(void)
     /* Address: 0x80191E74, Size: 48 bytes, Blocks: 2 */
 
 block_80191E74:
-    a0 = 0x801C << 16;  /* 0x801C0000 */
+    a0 = 0x801C0000u;  /* 0x801C0000 */
     a0 = a0 + -31860;
     a1 = s1;
     ra = 0x80191E88u;  /* jal link before delay slot */
@@ -84131,10 +83816,8 @@ block_801927D4:
     a0 = 0xE4FF << 16;  /* 0xE4FF0000 */
     a0 = a0 | 0xFFFF;
     a3 = 0x03FF << 16;  /* 0x03FF0000 */
-    a1 = 0x8020 << 16;  /* 0x80200000 */
-    a1 = a1 + -21216;
-    s0 = 0x8020 << 16;  /* 0x80200000 */
-    s0 = s0 + -21176;
+    a1 = 0x801FAD20u;  /* 0x80200000 -21216 */
+    s0 = 0x801FAD48u;  /* 0x80200000 -21176 */
     v0 = s0 & a2;  /* 0x801927F8: 0x02061024 */
     v1 = 0x0800 << 16;  /* 0x08000000 */
     v0 = v0 | v1;
@@ -84202,8 +83885,7 @@ block_801928AC:
     v0 = v0 | 0xFFFF;
     v1 = 0x00FF << 16;  /* 0x00FF0000 */
     v1 = v1 | 0xFFFF;
-    a2 = 0x8020 << 16;  /* 0x80200000 */
-    a2 = a2 + -21216;
+    a2 = 0x801FAD20u;  /* 0x80200000 -21216 */
     cpu->write_word(a2, v0);
     v0 = 0xE600 << 16;  /* 0xE6000000 */
     v1 = t1 & v1;  /* 0x801928C8: 0x01231824 */
@@ -84688,9 +84370,9 @@ void cps_80192e38(void)
 
 block_80192E38:
     a2 = a1 + -1;
-    v1 = 0x801C << 16;  /* 0x801C0000 */
+    v1 = 0x801C0000u;  /* 0x801C0000 */
     v1 = cpu->read_word(v1 + -31704);
-    v0 = 0x0400 << 16;  /* 0x04000000 */
+    v0 = 0x04000000u;  /* 0x04000000 */
     int _bc_80192E48 = (a1 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     cpu->write_word(v1, v0);
@@ -84709,7 +84391,7 @@ block_80192E50:
 block_80192E54:
     v1 = cpu->read_word(a0);
     a0 = a0 + 4;
-    v0 = 0x801C << 16;  /* 0x801C0000 */
+    v0 = 0x801C0000u;  /* 0x801C0000 */
     v0 = cpu->read_word(v0 + -31708);
     a2 = a2 + -1;
     int _bc_80192E68 = (a2 != a1);  /* save branch cond before delay slot */
@@ -84745,7 +84427,6 @@ block_80194470:
     psx_muldiv_stall(cpu);
     /* nop: write to $zero */  /* 0x80194474: 0x00440000 */
     cpu->pc = 0x80194478u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80194478u; return;/* fallthrough to next function */
 }
 
 /* cps_80194478 — clean CPS transliteration of br2eu_func_80194478 (guest 0x80194478)
@@ -85006,7 +84687,6 @@ void cps_80195adc(void)
 block_80195ADC:
     cpu->write_word(at + -14412, zero);
     cpu->pc = 0x80195ae0u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80195ae0u; return;/* fallthrough to next function */
 }
 
 /* cps_80195ae0 — clean CPS transliteration of br2eu_func_80195AE0 (guest 0x80195ae0)
@@ -85217,7 +84897,6 @@ void cps_80195bfc(void)
 block_80195BFC:
     /* nop */  /* 0x80195BFC: 0x00000000 */
     cpu->pc = 0x80195c00u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80195c00u; return;/* fallthrough to next function */
 }
 
 /* cps_80195c00 — clean CPS transliteration of br2eu_func_80195C00 (guest 0x80195c00)
@@ -85269,7 +84948,6 @@ void cps_80195c40(void)
 block_80195C40:
     v0 = 1;
     cpu->pc = 0x80195c44u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80195c44u; return;/* fallthrough to next function */
 }
 
 /* cps_80195c44 — clean CPS transliteration of br2eu_func_80195C44 (guest 0x80195c44)
@@ -85380,7 +85058,6 @@ void cps_80195c84(void)
 block_80195C84:
     sp = sp + 24;
     cpu->pc = 0x80195c88u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80195c88u; return;/* fallthrough to next function */
 }
 
 /* cps_80195c88 — clean CPS transliteration of br2eu_func_80195C88 (guest 0x80195c88)
@@ -89973,7 +89650,6 @@ block_80199AEC:
     at = 0x8020 << 16;  /* 0x80200000 */
     cpu->write_word(at + -5352, v0);
     cpu->pc = 0x80199afcu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80199afcu; return;/* fallthrough to next function */
 }
 
 /* cps_80199afc — clean CPS transliteration of br2eu_func_80199AFC (guest 0x80199afc)
@@ -89992,7 +89668,6 @@ block_80199AFC:
     cpu->write_word(at + -14680, v0);
     v0 = 10;
     cpu->pc = 0x80199b10u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80199b10u; return;/* fallthrough to next function */
 }
 
 /* cps_80199b10 — clean CPS transliteration of br2eu_func_80199B10 (guest 0x80199b10)
@@ -90014,7 +89689,6 @@ block_80199B10:
     v1 = 0x8020 << 16;  /* 0x80200000 */
     v1 = cpu->read_word(v1 + -14656);
     cpu->pc = 0x80199b30u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80199b30u; return;/* fallthrough to next function */
 }
 
 /* cps_80199b30 — clean CPS transliteration of br2eu_func_80199B30 (guest 0x80199b30)
@@ -90098,7 +89772,6 @@ block_80199B9C:
     t0 = t0 | 0x0100;
     cpu->write_word(v0, v1);
     cpu->pc = 0x80199bb8u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80199bb8u; return;/* fallthrough to next function */
 }
 
 /* cps_80199bb8 — clean CPS transliteration of br2eu_func_80199BB8 (guest 0x80199bb8)
@@ -90116,7 +89789,6 @@ block_80199BB8:
     /* nop */  /* 0x80199BC0: 0x00000000 */
     v1 = cpu->read_half(v0 + 6);
     cpu->pc = 0x80199bc8u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80199bc8u; return;/* fallthrough to next function */
 }
 
 /* cps_80199bc8 — clean CPS transliteration of br2eu_func_80199BC8 (guest 0x80199bc8)
@@ -90248,7 +89920,6 @@ void cps_80199c50(void)
 block_80199C50:
     cpu->write_word(sp + 24, zero);
     cpu->pc = 0x80199c54u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80199c54u; return;/* fallthrough to next function */
 }
 
 /* cps_80199c54 — clean CPS transliteration of br2eu_func_80199C54 (guest 0x80199c54)
@@ -91699,7 +91370,6 @@ block_8019B26C:
     cpu->write_word(at + -8632, zero);
     cpu->write_word(v0, zero);
     cpu->pc = 0x8019b290u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8019b290u; return;/* fallthrough to next function */
 }
 
 /* cps_8019b290 — clean CPS transliteration of br2eu_func_8019B290 (guest 0x8019b290)
@@ -95340,7 +95010,6 @@ void cps_8019fe74(void)
 block_8019FE74:
     cpu->write_word(at + -5136, s2);
     cpu->pc = 0x8019fe78u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8019fe78u; return;/* fallthrough to next function */
 }
 
 /* cps_8019fe78 — clean CPS transliteration of br2eu_func_8019FE78 (guest 0x8019fe78)
@@ -95355,7 +95024,6 @@ void cps_8019fe78(void)
 block_8019FE78:
     v0 = cpu->read_word(s0);
     cpu->pc = 0x8019fe7cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8019fe7cu; return;/* fallthrough to next function */
 }
 
 /* cps_8019fe7c — clean CPS transliteration of br2eu_func_8019FE7C (guest 0x8019fe7c)
@@ -95540,7 +95208,6 @@ void cps_8019ff2c(void)
 block_8019FF2C:
     v0 = zero;
     cpu->pc = 0x8019ff30u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8019ff30u; return;/* fallthrough to next function */
 }
 
 /* cps_8019ff30 — clean CPS transliteration of br2eu_func_8019FF30 (guest 0x8019ff30)
@@ -97902,7 +97569,6 @@ void cps_801a1d50(void)
 block_801A1D50:
     /* nop */  /* 0x801A1D50: 0x00000000 */
     cpu->pc = 0x801a1d54u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801a1d54u; return;/* fallthrough to next function */
 }
 
 /* cps_801a1d54 — clean CPS transliteration of br2eu_func_801A1D54 (guest 0x801a1d54)
@@ -98084,7 +97750,6 @@ void cps_801a1dd4(void)
 block_801A1DD4:
     v0 = zero;
     cpu->pc = 0x801a1dd8u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801a1dd8u; return;/* fallthrough to next function */
 }
 
 /* cps_801a1dd8 — clean CPS transliteration of br2eu_func_801A1DD8 (guest 0x801a1dd8)
@@ -98187,7 +97852,6 @@ block_801A1E3C:
     /* nop */  /* 0x801A1E44: 0x00000000 */
     cpu->write_word(v1, v0);
     cpu->pc = 0x801a1e4cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801a1e4cu; return;/* fallthrough to next function */
 }
 
 /* cps_801a1e4c — clean CPS transliteration of br2eu_func_801A1E4C (guest 0x801a1e4c)
@@ -98227,7 +97891,6 @@ void cps_801a1e58(void)
 block_801A1E58:
     v0 = 1;
     cpu->pc = 0x801a1e5cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801a1e5cu; return;/* fallthrough to next function */
 }
 
 /* cps_801a1e5c — clean CPS transliteration of br2eu_func_801A1E5C (guest 0x801a1e5c)
@@ -98297,7 +97960,6 @@ void cps_801a1edc(void)
 block_801A1EDC:
     v0 = 3;
     cpu->pc = 0x801a1ee0u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801a1ee0u; return;/* fallthrough to next function */
 }
 
 /* cps_801a1ee0 — clean CPS transliteration of br2eu_func_801A1EE0 (guest 0x801a1ee0)
@@ -100325,7 +99987,6 @@ block_801A3568:
     cpu->write_word(s2, v0);
     a0 = s1;
     cpu->pc = 0x801a3570u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801a3570u; return;/* fallthrough to next function */
 }
 
 /* cps_801a3570 — clean CPS transliteration of br2eu_func_801A3570 (guest 0x801a3570)
@@ -101683,7 +101344,6 @@ block_801A4C88:
     a0 = 0x8012 << 16;  /* 0x80120000 */
     a0 = a0 + 24536;
     cpu->pc = 0x801a4c9cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801a4c9cu; return;/* fallthrough to next function */
 }
 
 /* cps_801a4c9c — clean CPS transliteration of br2eu_func_801A4C9C (guest 0x801a4c9c)
@@ -101876,7 +101536,6 @@ block_801A4FC0:
     v1 = a1 + 1;
     cpu->write_half(a3 + 12, (uint16_t)v1);
     cpu->pc = 0x801a4fc8u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801a4fc8u; return;/* fallthrough to next function */
 }
 
 /* cps_801a4fc8 — clean CPS transliteration of br2eu_func_801A4FC8 (guest 0x801a4fc8)
@@ -104303,7 +103962,6 @@ block_801A9D30:
     t5 = a2 + v0;
     t0 = t1;
     cpu->pc = 0x801a9d38u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801a9d38u; return;/* fallthrough to next function */
 }
 
 /* cps_801a9d38 — clean CPS transliteration of br2eu_func_801A9D38 (guest 0x801a9d38)
@@ -104382,7 +104040,6 @@ block_801A9D84:
     v0 = v0 + a3;
     cpu->write_half(v1, (uint16_t)v0);
     cpu->pc = 0x801a9dacu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801a9dacu; return;/* fallthrough to next function */
 }
 
 /* cps_801a9dac — clean CPS transliteration of br2eu_func_801A9DAC (guest 0x801a9dac)
@@ -104430,7 +104087,6 @@ block_801A9DB4:
     v0 = v0 + t3;
     cpu->write_half(v1 + 2, (uint16_t)v0);
     cpu->pc = 0x801a9de0u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801a9de0u; return;/* fallthrough to next function */
 }
 
 /* cps_801a9de0 — clean CPS transliteration of br2eu_func_801A9DE0 (guest 0x801a9de0)
@@ -104487,7 +104143,6 @@ block_801A9E08:
     v0 = v0 + a0;
     cpu->write_half(v1 + 4, (uint16_t)v0);
     cpu->pc = 0x801a9e14u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801a9e14u; return;/* fallthrough to next function */
 }
 
 /* cps_801a9e14 — clean CPS transliteration of br2eu_func_801A9E14 (guest 0x801a9e14)
@@ -104570,7 +104225,6 @@ void cps_801a9e38(void)
 block_801A9E38:
     v0 = 2;
     cpu->pc = 0x801a9e3cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801a9e3cu; return;/* fallthrough to next function */
 }
 
 /* cps_801a9e3c — clean CPS transliteration of br2eu_func_801A9E3C (guest 0x801a9e3c)
@@ -104666,7 +104320,6 @@ block_801A9E5C:
     v1 = v1 + v0;
     v0 = cpu->read_word(v1 + 4);
     cpu->pc = 0x801a9e8cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801a9e8cu; return;/* fallthrough to next function */
 }
 
 /* cps_801a9e8c — clean CPS transliteration of br2eu_func_801A9E8C (guest 0x801a9e8c)
@@ -104709,7 +104362,6 @@ block_801A9EA8:
     cpu->write_half(t2 + 14, (uint16_t)v0);
     v0 = v0 << 16;
     cpu->pc = 0x801a9ebcu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801a9ebcu; return;/* fallthrough to next function */
 }
 
 /* cps_801a9ebc — clean CPS transliteration of br2eu_func_801A9EBC (guest 0x801a9ebc)
@@ -104724,7 +104376,6 @@ void cps_801a9ebc(void)
 block_801A9EBC:
     v0 = (int32_t)v0 >> 16;
     cpu->pc = 0x801a9ec0u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801a9ec0u; return;/* fallthrough to next function */
 }
 
 /* cps_801a9ec0 — clean CPS transliteration of br2eu_func_801A9EC0 (guest 0x801a9ec0)
@@ -104774,7 +104425,6 @@ void cps_801a9ed0(void)
 block_801A9ED0:
     t4 = 3;
     cpu->pc = 0x801a9ed4u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801a9ed4u; return;/* fallthrough to next function */
 }
 
 /* cps_801a9ed4 — clean CPS transliteration of br2eu_func_801A9ED4 (guest 0x801a9ed4)
@@ -104803,7 +104453,6 @@ block_801A9ED4:
     v0 = v0 << 2;
     v0 = v0 + v1;
     cpu->pc = 0x801a9f10u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801a9f10u; return;/* fallthrough to next function */
 }
 
 /* cps_801a9f10 — clean CPS transliteration of br2eu_func_801A9F10 (guest 0x801a9f10)
@@ -105098,7 +104747,6 @@ void cps_801aa558(void)
 block_801AA558:
     cpu->write_half(s0 + 58, (uint16_t)v0);
     cpu->pc = 0x801aa55cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801aa55cu; return;/* fallthrough to next function */
 }
 
 /* cps_801aa55c — clean CPS transliteration of br2eu_func_801AA55C (guest 0x801aa55c)
@@ -105227,7 +104875,6 @@ void cps_801aa5c8(void)
 block_801AA5C8:
     v0 = -2;
     cpu->pc = 0x801aa5ccu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801aa5ccu; return;/* fallthrough to next function */
 }
 
 /* cps_801aa5cc — clean CPS transliteration of br2eu_func_801AA5CC (guest 0x801aa5cc)
@@ -110825,7 +110472,6 @@ block_801AECA4:
     a3 = cpu->read_word(gp + 80);
     a0 = (int32_t)(int16_t)cpu->read_half(v0);
     cpu->pc = 0x801aecbcu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801aecbcu; return;/* fallthrough to next function */
 }
 
 /* cps_801aecbc — clean CPS transliteration of br2eu_func_801AECBC (guest 0x801aecbc)
@@ -111031,7 +110677,6 @@ void cps_801aedb8(void)
 block_801AEDB8:
     sp = sp + 24;
     cpu->pc = 0x801aedbcu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801aedbcu; return;/* fallthrough to next function */
 }
 
 /* cps_801aedbc — clean CPS transliteration of br2eu_func_801AEDBC (guest 0x801aedbc)
@@ -112074,7 +111719,6 @@ void cps_801af938(void)
 block_801AF938:
     v0 = cpu->read_word(gp + 76);
     cpu->pc = 0x801af93cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801af93cu; return;/* fallthrough to next function */
 }
 
 /* cps_801af93c — clean CPS transliteration of br2eu_func_801AF93C (guest 0x801af93c)
@@ -112132,7 +111776,6 @@ void cps_801af97c(void)
 block_801AF97C:
     v0 = cpu->read_word(gp + 76);
     cpu->pc = 0x801af980u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801af980u; return;/* fallthrough to next function */
 }
 
 /* cps_801af980 — clean CPS transliteration of br2eu_func_801AF980 (guest 0x801af980)
@@ -112190,7 +111833,6 @@ void cps_801af9c0(void)
 block_801AF9C0:
     v0 = cpu->read_word(gp + 76);
     cpu->pc = 0x801af9c4u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801af9c4u; return;/* fallthrough to next function */
 }
 
 /* cps_801af9c4 — clean CPS transliteration of br2eu_func_801AF9C4 (guest 0x801af9c4)
@@ -112245,7 +111887,6 @@ void cps_801af9f8(void)
 block_801AF9F8:
     v0 = cpu->read_word(gp + 76);
     cpu->pc = 0x801af9fcu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801af9fcu; return;/* fallthrough to next function */
 }
 
 /* cps_801af9fc — clean CPS transliteration of br2eu_func_801AF9FC (guest 0x801af9fc)
@@ -112439,7 +112080,6 @@ void cps_801afb24(void)
 block_801AFB24:
     v0 = cpu->read_word(gp + 76);
     cpu->pc = 0x801afb28u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801afb28u; return;/* fallthrough to next function */
 }
 
 /* cps_801afb28 — clean CPS transliteration of br2eu_func_801AFB28 (guest 0x801afb28)
@@ -113289,7 +112929,6 @@ block_801B03D8:
     v0 = v0 + v1;
     v1 = (int32_t)(int16_t)cpu->read_half(v0 + 2);
     cpu->pc = 0x801b03f0u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801b03f0u; return;/* fallthrough to next function */
 }
 
 /* cps_801b03f0 — clean CPS transliteration of br2eu_func_801B03F0 (guest 0x801b03f0)
