@@ -937,7 +937,7 @@ void part_link_unlink(ushort *src,short *dst,int mode)
         if (src_state != 0) {
           dst[0x20] = 0;
           dst[0x21] = 0;
-          goto L_80179a60;
+          goto unlink_tail;
         }
         *src = 2;
       }
@@ -960,7 +960,7 @@ void part_link_unlink(ushort *src,short *dst,int mode)
             ((uint8_t *)guest_at((uint32_t)*(int *)(src + 0x22)) + 0x48);
         *(uint32_t *)((uint8_t *)guest_at((uint32_t)*(int *)(src + 0x22)) + 0x48)
             = guest_of(dst);
-        goto L_80179a60;
+        goto unlink_tail;
       }
       if (src_state == 0) {
         *src = 1;
@@ -971,7 +971,7 @@ void part_link_unlink(ushort *src,short *dst,int mode)
     }
     *(uint32_t *)(src + 0x22) = guest_of(dst);
   }
-L_80179a60:
+unlink_tail:
   dst[0x26] = 0;
   dst[0x27] = 0;
   return;
