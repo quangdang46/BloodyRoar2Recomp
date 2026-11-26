@@ -4595,3 +4595,79 @@
 8012a93c cps_8012a92c
 801298f8 cps_801298f8
 801268b8 cps_801268b8
+
+# --- w2_e04: ScriptVM bra/bsr opcode CPS piece-entries ---
+# scriptop_bra_cps (game/w2_e04.c) — faithful CPS body of generated
+# br2eu_func_80182F48 covering piece-entry 0x801831E0 and every
+# continuation/resume block of the bra opcode handler. Sibling piece
+# entries (0x80182FF0-0x8018310C) stay generated / owned by other ports.
+80182f80 scriptop_bra_cps
+80182f9c scriptop_bra_cps
+80182fb8 scriptop_bra_cps
+80182fc8 scriptop_bra_cps
+80182fd4 scriptop_bra_cps
+80183018 scriptop_bra_cps
+80183024 scriptop_bra_cps
+80183034 scriptop_bra_cps
+80183044 scriptop_bra_cps
+8018305c scriptop_bra_cps
+8018307c scriptop_bra_cps
+8018309c scriptop_bra_cps
+801830bc scriptop_bra_cps
+801830dc scriptop_bra_cps
+801830fc scriptop_bra_cps
+80183124 scriptop_bra_cps
+80183128 scriptop_bra_cps
+80183148 scriptop_bra_cps
+80183188 scriptop_bra_cps
+8018318c scriptop_bra_cps
+801831a4 scriptop_bra_cps
+801831c8 scriptop_bra_cps
+801831e0 scriptop_bra_cps
+801831f0 scriptop_bra_cps
+801831fc scriptop_bra_cps
+80183208 scriptop_bra_cps
+80183218 scriptop_bra_cps
+80183224 scriptop_bra_cps
+80183228 scriptop_bra_cps
+8018322c scriptop_bra_cps
+# scriptop_bsr_cps (game/w2_e04.c) — faithful CPS body of generated
+# br2eu_func_80183248 covering piece-entries 0x801832F0-0x80183418 and
+# every continuation/resume block of the bsr opcode handler. Sibling
+# piece entries 0x80183430/0x8018344C/0x80183514 stay generated.
+80183280 scriptop_bsr_cps
+8018329c scriptop_bsr_cps
+801832b8 scriptop_bsr_cps
+801832c8 scriptop_bsr_cps
+801832d4 scriptop_bsr_cps
+801832f0 scriptop_bsr_cps
+80183308 scriptop_bsr_cps
+80183338 scriptop_bsr_cps
+80183348 scriptop_bsr_cps
+80183354 scriptop_bsr_cps
+80183364 scriptop_bsr_cps
+80183368 scriptop_bsr_cps
+80183378 scriptop_bsr_cps
+80183390 scriptop_bsr_cps
+80183398 scriptop_bsr_cps
+801833b8 scriptop_bsr_cps
+801833c8 scriptop_bsr_cps
+801833d0 scriptop_bsr_cps
+801833e0 scriptop_bsr_cps
+801833e8 scriptop_bsr_cps
+801833f8 scriptop_bsr_cps
+80183400 scriptop_bsr_cps
+80183410 scriptop_bsr_cps
+80183418 scriptop_bsr_cps
+80183428 scriptop_bsr_cps
+80183440 scriptop_bsr_cps
+80183444 scriptop_bsr_cps
+80183474 scriptop_bsr_cps
+80183478 scriptop_bsr_cps
+80183498 scriptop_bsr_cps
+801834d8 scriptop_bsr_cps
+801834dc scriptop_bsr_cps
+801834f4 scriptop_bsr_cps
+80183524 scriptop_bsr_cps
+80183530 scriptop_bsr_cps
+8018353c scriptop_bsr_cps
