@@ -307,7 +307,7 @@ extern undefined4 cop2_clz(undefined4 a0);
 extern void gte_points_xform(undefined4 *a0,undefined4 *a1,undefined2 *a2,undefined2 *a3, undefined2 *arg5,int arg6);
 extern int tween_track_alloc(int a0,undefined2 a1,undefined4 a2,undefined2 *a3,short arg5 ,undefined2 arg6,undefined2 arg7,undefined4 arg8);
 extern void tween_apply(short *a0,int a1,int a2);
-void keyframe_cursor_search(uint *param_1);
+void keyframe_cursor_search(uint *a0);
 extern void rect_prim_tick(uint *a0);
 extern void prim_tag_set(int a0);
 extern void prim_packet_init(int a0,int a1,int a2,uint a3);
