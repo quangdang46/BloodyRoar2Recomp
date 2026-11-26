@@ -4618,7 +4618,6 @@
 80182740 fighter_script_fsm_cps
 8018287c fighter_script_fsm_cps
 80182960 fighter_script_fsm_cps
-
 80183630 cps_801835d0
 80183648 cps_801835d0
 80182f80 scriptop_bra_cps
@@ -5168,3 +5167,14 @@
 80148304 battle_bringup_a_alt_8304
 80148380 battle_bringup_a_alt_8380
 80151014 ko_count_announce_alt_1014
+80160008 memcard_op_fmt_save
+80160024 memcard_op_fmt_format
+80160040 memcard_op_fmt_check
+80160184 memcard_stat_pct_call
+80160220 memcard_flow_triage
+80160298 memcard_flow_arm_flag
+80160410 memcard_flow_state_dispatch
+80160514 memcard_flow_poll_node
+80163744 mode_name_case_vs
+80163758 mode_name_case_watch
+80163780 mode_name_case_practice
