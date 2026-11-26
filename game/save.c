@@ -17,14 +17,12 @@
 #include "cpu_state.h"
 
 #define CONCAT11(hi,lo) (((uint16_t)(uint8_t)(hi) << 8) | (uint8_t)(lo))
-#define CONCAT12(hi,lo) (((uint32_t)(uint8_t)(hi) << 16) | (uint16_t)(lo))
 
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
 extern uint32_t br2_guest_frame(uint32_t);
 extern void br2_guest_frame_free(void);
 extern uint32_t bios_svc(uint32_t table,uint32_t svc,uint32_t a0,uint32_t a1);
-extern uint32_t guest_sp(void);
 extern uint16_t psx_read_half(uint32_t addr);
 extern void decomp_trace_record(uint8_t tag, uint32_t dst, uint32_t src,
                                 uint8_t mode, uint32_t len);
@@ -53,7 +51,6 @@ extern uint8_t  *g_DAT_801b460c;
 extern uint8_t  *g_DAT_801b4610;
 extern uint8_t  *g_DAT_801b4614;
 extern uint8_t  *g_DAT_801b55d0;
-extern uint8_t  *g_DAT_801bdde0;
 extern uint8_t  *g_DAT_801bef60;
 extern uint8_t  *g_DAT_801bef64;
 extern uint8_t  *g_DAT_801bef67;
@@ -79,12 +76,9 @@ extern uint8_t  *g_DAT_801c11f4;
 extern uint8_t  *g_DAT_801c1264;
 extern uint8_t  *g_DAT_801c1304;
 extern uint8_t  *g_DAT_801c13a4;
-extern uint8_t  *g_DAT_801c15f0;
 extern uint8_t  *g_DAT_801c4580;
 extern uint8_t  *g_DAT_801e83aa;
 extern uint8_t  *g_DAT_801e83b0;
-extern uint8_t  *g_DAT_801e8400;
-extern uint8_t  *g_DAT_801f09b;
 extern uint8_t  *g_DAT_801f24d0;
 extern uint8_t  *g_DAT_801f24d1;
 extern uint8_t  *g_DAT_801f35f4;
@@ -120,12 +114,6 @@ extern uint8_t  *g__DAT_801f2668;
 extern uint8_t  *g__DAT_801f266c;
 extern uint8_t  *g__DAT_801f268a;
 extern uint8_t  *g__DAT_801f268c;
-extern uint8_t  *g__DAT_801f2690;
-extern uint8_t  *g__DAT_801f2694;
-extern uint8_t  *g__DAT_801f2696;
-extern uint8_t  *g__DAT_801f26a0;
-extern uint8_t  *g__DAT_801f26a2;
-extern uint8_t  *g__DAT_801f26a8;
 extern uint8_t  *g__DAT_801f36c0;
 extern char *s_1_BLOCK_IS_REQUIRED_TO_SAVE__80121824;
 extern char *s_BLOCKS_AND_1_BLOCK_IS_REQUIRED_801219b8;
@@ -153,7 +141,6 @@ extern char *s_SAVING_TO_MEMORY_CARD__s__801217f0;
 extern char *s_THERE_IS_INSUFFICIENT_MEMORY_CAR_80121994;
 extern char *s_TO_SAVE__801219d8;
 extern char *s_UNFORMATTED_MEMORY_CARD___80121a08;
-extern char *s_VSync__timeout_80125b38;
 extern char *s__s____80121864;
 extern uint32_t *g_PTR_u32_801b4160;
 extern uint8_t  *g_DAT_801b43f0;
@@ -179,7 +166,6 @@ extern uint8_t  *g_DAT_801b43f0;
 #define DAT_801b4610   (*(uint32_t *)g_DAT_801b4610)
 #define DAT_801b4614   (*(uint32_t *)g_DAT_801b4614)
 #define DAT_801b55d0   (*(uint8_t *)g_DAT_801b55d0)
-#define DAT_801bdde0   (*(uint32_t *)g_DAT_801bdde0)
 #define DAT_801bef60   (*(uint8_t *)g_DAT_801bef60)
 #define DAT_801bef64   (*(uint8_t *)g_DAT_801bef64) /* guest lbu @0x801bef64 (0x80157a00) */
 #define DAT_801bef67   (*(uint8_t *)g_DAT_801bef67)
@@ -205,12 +191,9 @@ extern uint8_t  *g_DAT_801b43f0;
 #define DAT_801c1264   (*(uint8_t *)g_DAT_801c1264)
 #define DAT_801c1304   (*(uint8_t *)g_DAT_801c1304)
 #define DAT_801c13a4   (*(uint8_t *)g_DAT_801c13a4)
-#define DAT_801c15f0   (*(uint32_t *)g_DAT_801c15f0)
 #define DAT_801c4580   (*(uint8_t *)g_DAT_801c4580)
 #define DAT_801e83aa   (*(uint8_t *)g_DAT_801e83aa)
 #define DAT_801e83b0   (*(uint8_t *)g_DAT_801e83b0)
-#define DAT_801e8400   (*(uint8_t *)g_DAT_801e8400)
-#define DAT_801f09b   (*(uint8_t *)g_DAT_801f09b)
 #define DAT_801f24d0   (*(uint8_t *)g_DAT_801f24d0)
 #define DAT_801f24d1   (*(uint8_t *)g_DAT_801f24d1)
 #define DAT_801f35f4   (*(uint32_t *)g_DAT_801f35f4)
@@ -267,12 +250,6 @@ extern uint8_t  *g_DAT_801b43f0;
 #define _DAT_801f266c   (*(uint32_t *)g__DAT_801f266c)
 #define _DAT_801f268a   (*(uint16_t *)g__DAT_801f268a)
 #define _DAT_801f268c   (*(uint16_t *)g__DAT_801f268c)
-#define _DAT_801f2690   (*(uint32_t *)g__DAT_801f2690)
-#define _DAT_801f2694   (*(uint16_t *)g__DAT_801f2694)
-#define _DAT_801f2696   (*(uint16_t *)g__DAT_801f2696)
-#define _DAT_801f26a0   (*(uint16_t *)g__DAT_801f26a0)
-#define _DAT_801f26a2   (*(uint16_t *)g__DAT_801f26a2)
-#define _DAT_801f26a8   (*(uint32_t *)g__DAT_801f26a8)
 #define _DAT_801f36c0   (*(uint16_t *)g__DAT_801f36c0) /* guest sh @0x801f36c0 (0x801561c8) */
 #define PTR_s___BloodyRoar2__byRAIZINGver1_60_801b43f0 ((uint8_t *)guest_at(*(uint32_t *)g_DAT_801b43f0))
 #define SLOTSTR(i) ((char *)guest_at(g_PTR_u32_801b4160[i]))
@@ -284,7 +261,7 @@ extern uint8_t *_g_system_config_ptr;
 #define _DAT_801f35f4  (*(uint32_t *)g_DAT_801f35f4)
 
 /* ---- callee externs ---- */
-extern void brightness_packet_send();
+extern void brightness_packet_send(int32_t);
 extern void mc_state_init();
 extern int cd_cmd_issue_async();
 extern int cd_sync_wait_a();
@@ -294,8 +271,7 @@ extern int cd_stamp_to_sector();
 extern int cd_dir_read_wrap();
 extern void slot_status_fill();
 extern void cd_reg_window_update();
-extern void cd_reg_window_u16();
-extern void cd_chan_attr_apply();
+extern void cd_reg_window_u16(int32_t,uint32_t);
 extern int mc_action_dispatch_b();
 extern int mc_action_dispatch();
 extern int ret_one();
@@ -317,12 +293,10 @@ extern int dialog_sel_dispatch(intptr_t,uint32_t);
 extern void menu_stepper_state_advance();
 extern void hud_gauge_render();
 extern void empty_ret();
-extern int frame_divisor_get();
+extern int frame_divisor_get(void);
 extern void scroll_offset_set();
 extern void battle_session_arm(intptr_t,int);
 extern void frame_tick(intptr_t);
-extern void cd_str_print();
-extern void bios_table_tramp();
 extern void bios_kobj_tramp();
 
 /* ======== 0x80157a00 ======== */
@@ -357,7 +331,7 @@ void memcard_tick(void)
     if ((DAT_801bef6e & 0xf) != 2) {
       return;
     }
-    switch(DAT_801bef6d) {
+    switch (DAT_801bef6d) {
     default:
       return;
     case 0x10:
@@ -503,7 +477,7 @@ void memcard_tick(void)
     }
     goto case_30_80157ebc;
   }
-  switch(DAT_801bef6d) {
+  switch (DAT_801bef6d) {
   case 0x10:
     brightness_packet_send(0);
     DAT_801bef60 = 7;
@@ -810,7 +784,7 @@ bb_8015f820:
     if (!(a0)) {
       menu_stepper_state_advance(&local_c0);
     }
-    switch(local_bd) {
+    switch (local_bd) {
     case 0:
       if ((_DAT_1f80007c & 0x10) != 0) {
         deferred_cmd_post(0x400,0xd,0);
@@ -847,7 +821,7 @@ bb_8015fbfc:
     case 0x11:
       if ((int)ow_flag < 0) goto bb_8015ffac;
       scroll_offset_set(0x10,0x68);
-      switch(dlg_type) {
+      switch (dlg_type) {
       case 0:
         sprintf_core(msg_buf,s_LOAD_FROM_MEMORY_CARD__s___80121788,
                      SLOTSTR(slot_no));
@@ -874,7 +848,7 @@ bb_8015fbfc:
       announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,&DAT_8012181c,0x30,0x1000,ow_flag != 0);
       announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,&DAT_80121820,0x90,0x1000,ow_flag == 0);
       scroll_offset_accumulate(0,0x10);
-      switch(dlg_type) {
+      switch (dlg_type) {
       case 1:
       case 5:
         announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_1_BLOCK_IS_REQUIRED_TO_SAVE__80121824,0x10,0x1000
@@ -888,7 +862,7 @@ bb_8015fbfc:
       if ((_DAT_1f80007c & 0x10) == 0) {
         if ((_DAT_1f80007c & 0xe0) != 0) {
           deferred_cmd_post(0x400,0xc,0);
-          switch(dlg_type) {
+          switch (dlg_type) {
           case 0:
           case 1:
 case_0_8015fbc4:
@@ -914,7 +888,7 @@ bb_8015fc08:
     case 0x12:
     case 0x13:
       scroll_offset_set(0x10,0x68);
-      switch(dlg_type) {
+      switch (dlg_type) {
       case 0:
         announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_NOW_LOADING_FROM_MEMORY_CARD_80121844,0x10,0x1000
                      ,0);
@@ -956,7 +930,7 @@ dflt_8015fc3c:
       else if (slot_no == 1) {
         op_sel = 0x10;
       }
-      switch(dlg_type) {
+      switch (dlg_type) {
       case 0:
         op_rc = mc_data_read(op_sel,DAT_801b45f4,DAT_801b45f8,DAT_801b45fc,DAT_801b4600,
                                 DAT_801b4604,DAT_801b4608,DAT_801b460c,DAT_801b4610,DAT_801b4614,
@@ -992,7 +966,7 @@ bb_8015ffac:
       break;
     case 0x15:
       scroll_offset_set(0x10,0x68);
-      switch(dlg_type) {
+      switch (dlg_type) {
       case 0:
         str_arg = SLOTSTR(slot_no);
         fmt_str = s_LOAD_FROM_MEMORY_CARD__s__801218ec;
@@ -1037,7 +1011,7 @@ dflt_8015ffe4:
         if (op_rc != 1) {
           if (op_rc < 2) {
             if (op_rc) goto bb_801603ec;
-            switch(dlg_type) {
+            switch (dlg_type) {
             case 0:
               gauge_scale_fixed(*(uint8_t *)(_g_system_config_ptr + 0xe),
                            ((uint32_t)*(int8_t *)(_g_system_config_ptr + 0xf) << 3) / 10);
@@ -1187,7 +1161,7 @@ bb_80160558:
       br2_guest_frame_free();
       return sm_ret;
     }
-  } while( true );
+  } while (true);
 }
 #undef local_c0
 #undef local_be
@@ -1321,7 +1295,7 @@ bb_80156ebc:
     if (0x1f < slot_i) {
       return;
     }
-  } while( true );
+  } while (true);
 }
 
 /* ======== 0x8015ab4c ======== */
@@ -1652,13 +1626,9 @@ uint32_t attr_word_decode(uint8_t *a0)
 
 /* ---- batch30: memcard/PAD helpers ---- */
 #define SB8(a)   (*(uint8_t  *)guest_at(a))
-#define SB16(a)  (*(uint16_t *)guest_at(a))
 #define SB32(a)  (*(uint32_t *)guest_at(a))
 extern uint8_t *_g_pad_buffer;
-extern int frame_divisor_get(void);
 extern int slot_display_pos(uint8_t *,uint32_t);
-extern void deferred_cmd_post(int,int,int);
-extern void mc_state_init(void);
 extern void chan_sweep_flag100(void);
 extern void chan_sweep_flag200(void);
 extern void datetime_confirm_a(int,uint32_t);
@@ -2261,7 +2231,6 @@ int32_t mc_dialog_bit4(int32_t a0)
 extern int32_t mc_date_serial_cmp(uint8_t *,void *);
 extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern uint32_t br2_call_clean(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
-extern uint32_t call_guest4(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern void cd_bitstream_decode(int32_t,uint32_t,uint32_t);
 extern void cd_dir_entry_probe(int32_t);
 int32_t blk_io_retry(uint32_t a0,void *a1)
@@ -2438,8 +2407,6 @@ void fighter_rec_fetch_apply(uint32_t a0,uint32_t a1,uint32_t a2)
 /* mc_state_init — memcard state init @0x801bef60: brightness_packet_send(0),
  * poll cd_cmd_issue_sync(9,0,0) till 0, then +0xd=0, +0xf=0xff,
  * +0x20 = +0x24. Disasm 0x801573ec-0x8015743c. */
-extern void brightness_packet_send(int32_t);
-extern int32_t cd_cmd_issue_sync(int32_t,int32_t,int32_t);
 void mc_state_init(void)
 {
   extern int br2_bail_pending(void);
@@ -2472,7 +2439,6 @@ uint32_t mc_mode_nibble_rw(int32_t a0)
 /* se_value_select — gauge/se value select: gauge_scale_fixed(0,a0),
  * deferred_cmd_post(0x405,0,4), a1 = table[a0<8] {0,4fff,0,0,4fff,3fff,
  * 5fff,3fff}, blk_1f26c0_init_c(2,a1). Disasm 0x80155edc-0x80155f5c. */
-extern void deferred_cmd_post(int32_t,int32_t,int32_t);
 extern void blk_1f26c0_init_c(int32_t,uint32_t);
 void se_value_select(uint32_t a0)
 {
@@ -2568,7 +2534,6 @@ extern void flow_cfg_init(uint8_t);
 extern void rec_timer_pair_clear(intptr_t);
 extern void battle_state_init(uint8_t *,uint8_t *,uint32_t);
 extern uint8_t *g_DAT_1f8000e8,*g_DAT_1f8001f0;
-extern uint32_t guest_of(const void *);
 extern void record_copy_1a(int);
 void fighter_spawn_tail(uint8_t *rec,uint32_t flag)
 {
@@ -2584,12 +2549,7 @@ void fighter_spawn_tail(uint8_t *rec,uint32_t flag)
 /* cd_file_read_seq — CD file read seq: 9d4d0(0), 9d470(a1),
  * 9d410(a0,a2), poll 9d500(0) till nonzero; returns a2.
  * Disasm 0x801565ec-0x80156648. */
-extern void cd_mode_store(int32_t);
-extern void cd_status_shifted_read(uint32_t);
-extern void cd_seek_param_issue_clamped(uint32_t,uint32_t);
-extern int32_t cd_seek_complete_poll(int32_t);
 extern void br2_irq_poll(void);
-extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 /* cd_file_read_seq — delegate the whole body to the generated MIPS
  * (0x801565ec). Its seek-completion wait loop (0x80156628->0x80156630)
  * crosses a basic-block boundary every iteration, so psx_check_interrupts_at
@@ -2833,7 +2793,6 @@ void rec_slot_scan(void)
  * cd_chan_attr_push(@0x801f2650). Disasm 0x80156344-0x80156400. */
 extern void FUN_8018e300(void);
 extern void FUN_8018e310(void);
-extern void cd_reg_window_u16(int32_t,uint32_t);
 extern void cd_chan_attr_push(uint32_t);
 void rec_clear_irq(uint32_t a0,uint32_t a1)
 {
@@ -3001,7 +2960,6 @@ extern void battle_struct_init(uint32_t,uint32_t);
 extern void perm_table_apply(uint32_t);
 extern int reset_sprite_ot_block(uint32_t);
 extern void task_table_init(uint32_t);
-extern void record_copy_1a(int);
 extern void per_side_setup(int32_t,int32_t);
 extern void rec_copy_init(int32_t,uint32_t,uint32_t);
 extern int clear_f4ee8_u16s(uint32_t);
@@ -3848,7 +3806,6 @@ tick:
     spr_slot_pkt_submit(*(uint32_t *)(ctx + 8) + 4,0x100,0xefff008a,0x7c400000);
     spr_slot_pkt_submit(*(uint32_t *)(ctx + 8) + 4,0xf00000,0xefff0099,0x7c800000);
     spr_slot_pkt_submit(*(uint32_t *)(ctx + 8) + 4,0xf00100,0xefff009b,0x7cc00000);
-    goto poll;
 poll:
     /* guest a0 = 0x1f800000 (immediate) — pass the guest address. */
     frame_tick(0x1f800000);
@@ -4944,7 +4901,6 @@ void sprite_anim_chain_build(uint32_t a0)
    Debug/status text display. a0 = guest char/state ptr,
    a1 = selector 0..15 (jump table 0x80122590). */
 extern void print_dispatch(const char *,...);
-extern void scroll_offset_set(int32_t,int32_t);
 extern void hud_slot_blitter(uint32_t,uint32_t);
 extern void flag_table_dump(uint32_t,uint32_t);
 extern void record_struct_dump(uint32_t);
@@ -5141,7 +5097,6 @@ sel:
    s5 = scratchpad 0x1f800000; fp = display state. */
 extern int display_page_commit_b(uint32_t,uint32_t);
 extern void hud_announce(uint32_t,uint32_t,uint32_t);
-extern uint32_t spr_slot_pkt_submit();
 
 static int32_t to_s16(uint32_t v){ return (int16_t)v; }
 static int32_t sdiv60(int32_t a0)
@@ -5293,8 +5248,6 @@ hit610:
     } else {
       sp50 = 0;
     }
-    goto draw678;
-
 draw678: {
     int32_t bar = to_s16(*(uint16_t *)(g + 0x40));
     if (bar > 0) {
@@ -5567,7 +5520,6 @@ mode0body: {
       phase = 0xf0;
       goto poll;
     }
-    goto tail194;
 tail194:
     g[0x98] = *(uint8_t *)guest_at(0x801f4770 + to_s16(*(uint16_t *)(g + 0xa4)));
     phase = 0xf0;
@@ -5618,8 +5570,6 @@ case2:
     scroll_cfg_set(2,8);
     phase = 0xf0;
     g[0] = 5; g[1] = 9;
-    goto poll;
-
 poll:
     /* frame_tick re-resolves its arg via guest_at((uint32_t)a0), so it
      * must receive the GUEST address 0x1f800000 -- passing the host pointer
@@ -5637,7 +5587,6 @@ poll:
    dialog_sel_dispatch: same init, wider selector dispatch. */
 extern int u16_counter_step_pad_b();
 extern void round_announce_block();
-extern void mc_slot_action(uint8_t *,int);
 
 int dialog_sel_dispatch_wide(intptr_t a0,uint32_t a1)
 {
@@ -6083,7 +6032,6 @@ static uint32_t heap_alloc54(uint32_t heap, int *tbl, int32_t tag)
    ({uint32_t _bv=(uint32_t)(v);uint32_t *_bp=(uint32_t *)guest_at(0x801c47b8u);uint32_t _bo=*_bp;*_bp=_bv; \
      {extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);decomp_trace_record(21,_bo,_bv,0,__LINE__);} _bv;}) \
    : (*(uint32_t *)guest_at(a) = (uint32_t)(v)))
-#define BR2_W16(a,v)   (*(uint16_t *)guest_at(a) = (uint16_t)(v))
 #define BR2_WS16(a,v)  (*(int16_t *)guest_at(a) = (int16_t)(v))
 #define BR2_W8(a,v)    (*(uint8_t *)guest_at(a) = (uint8_t)(v))
 
@@ -8043,7 +7991,6 @@ void *op_wrap_8dac0_b(int16_t *a0,uint32_t a1)
  * lw $r,8($ctx)    -> ctx->table (guest addr); indexed by sign-extended s16. */
 #define BR2_GPC   (*(uint32_t *)guest_at(0x801bef28))
 #define BR2_GPF(o)   (*(uint32_t *)guest_at(BR2_GPC + (uint32_t)(o)))
-#define BR2_GPS(o)   ((uint8_t *)guest_at(BR2_GPC + (uint32_t)(o)))
 #define BR2_GP50 (*(uint32_t *)guest_at(0x801bef2c))
 
 extern int prim_group_build();
@@ -8053,7 +8000,6 @@ extern int op_node_alloc_init();
 extern int *op_job_alloc_init(int32_t,int32_t,uint32_t,uint32_t,uint32_t);
 extern int op_ctx_node_attach();
 extern void op_job_submit_init();
-extern int32_t dev_byte_xfer(uint8_t *,int32_t);
 extern uint32_t cd_svc_50(uint32_t,uint32_t);
 extern uint32_t cd_svc_4e(uint32_t,uint32_t,uint32_t);
 extern int fx_group_alloc(uint32_t,uint32_t,int,int);
@@ -8066,10 +8012,7 @@ extern int angle_from_xy(int,int);
 extern uint32_t noop_c(int);
 extern void node_tree_free(int);
 extern void bios_tramp_c003(uint32_t,uint32_t);
-extern void FUN_8018e300(void);
-extern void FUN_8018e310(void);
 extern void task_slot_step();
-extern uint32_t guest_of(const void *);
 
 /* 0x801a0620 — cd_svc_50(a0,a1); cd_svc_4e(a0,0x3f,0). */
 void cd_svc_dual(uint32_t a0,uint32_t a1)
@@ -8503,7 +8446,6 @@ extern void text_win_printf();
 extern int *task_node_alloc(int,uint32_t,uint32_t,int,int,int);
 extern void tween_apply(int16_t *,int,int);
 extern void gp_20_store_default(void);
-extern int prim_group_build();
 
 /* 0x801a1834 — ctx flag gate + indirect callback; returns 1/0.
  * Faithful port of generated 0x801A1834-0x801A1898:
@@ -8518,8 +8460,6 @@ extern int prim_group_build();
  * values through so the callee sees the caller's regs; $a2/$a3 pass
  * through untouched exactly like the guest jalr. No IRQ wait, no loop —
  * clean C is faithful here (ctx flags are plain MMIO reads). */
-extern CPUState *clean_cpu_state(void);
-extern uint32_t br2_ld32(uint32_t a);
 int op_flag_fn_check(void)
 {
   /* ctx resolves to the SIO status reg 0x1F801070 — MMIO, so the ctx+4/ctx
@@ -8626,7 +8566,6 @@ void op_ctx8_lazy_fill(int16_t *a0)
   return;
 }
 
-extern int *op_job_alloc_init(int32_t,int32_t,uint32_t,uint32_t,uint32_t);
 
 /* 0x801acf34 — four text_win_printf dumps of a0 fields. */
 void op_dbg_dump4(uint32_t *a0)
@@ -8735,7 +8674,6 @@ void op_pair_store(int16_t *a0,uint32_t *a1)
 extern void setCopReg(int,int,uint32_t);
 extern int  getCopReg(int,int);
 extern void copFunction(int,uint32_t);
-extern CPUState *clean_cpu_state(void);
 
 /* lwc2 gte[reg], off(gaddr) — guest word load into a GTE data register.
  * Same routing as gfx.c's gte_lwc2: setCopReg -> gte_write_data, exactly
@@ -9043,7 +8981,6 @@ int guard_callee_d1(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
 
 /* Live guest $a3 — the v1==0 jal path passes the caller's $a3 through
  * untouched (guard_dispatch never writes $a3 before the call). */
-extern CPUState *clean_cpu_state(void);
 static uint32_t br2_guard_passthru_a3(void)
 {
   CPUState *c = clean_cpu_state();
@@ -10939,7 +10876,6 @@ int32_t dev_cmd_byte_send(void *a0_ctx,int32_t a1_byte)
  * result-producing insn in the delay slot.
  * ====================================================================== */
 
-extern uint32_t call_guest(uint32_t,uint32_t,uint32_t);
 
 /* 0x80163840 — bare `jr ra; nop`: v0 passes through untouched. */
 void FUN_80163840(void) { }
