@@ -8,19 +8,12 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include "cpu_state.h"
 
 typedef uint8_t  uint8_t;
-typedef uint8_t  uint8_t;
-typedef uint16_t uint16_t;
-typedef uint32_t uint32_t;
-typedef int8_t   int8_t;
-typedef uint16_t uint16_t;
-typedef uint32_t uint32_t;
 #ifndef bool
 #define bool int
-#define true 1
-#define false 0
 #endif
 
 extern void *guest_at(uint32_t addr);
@@ -433,6 +426,11 @@ bool cd_read_setup(uint32_t count,uint32_t pos,uint32_t mode)
 }
 
 #if 0
+  /* DEAD — superseded clean-port attempt of the CD read-setup body
+   * (0x80198C90 region): kept for reference only; the live path above
+   * delegates via call_guest4 because the clean-C spin could not supply
+   * the live $ra/resume-PC the generated CPS frame provides (see the
+   * cd_read_poll note). Do not re-enable without re-verifying IRQ timing. */
   int t1;
   int t2;
   uint32_t status;
@@ -2872,12 +2870,10 @@ extern void cd_file_header_copy(uint32_t,void *);
 extern void cd_strcat_guard(void *,uintptr_t);
 extern void cd_pending_args_pump(void);
 extern uint32_t cd_file_record_lookup(void *,void *);
-extern uint32_t FUN_801a0260(void *);
 extern uint32_t cd_queue_b_status(void);
 extern uint32_t cd_status_map(uint32_t);
 extern uint32_t cd_xchg_fec24(uint32_t);
 extern uint32_t cd_chan_cmd_burst(uint32_t);
-extern void FUN_801a05f0(uint32_t);
 extern uint32_t cd_queue_a_read(void);
 extern uint32_t cd_queue_a_status(void);
 
@@ -3300,7 +3296,7 @@ retry:
   if (cd_chan_cmd_burst(s0) != 0) {
     uint32_t r;
     cd_pending_args_pump();
-    FUN_801a05f0(CDREG32(0x801febf0));
+    bios_tramp_a0ac(CDREG32(0x801febf0),0,0,0);
     do {
       if (br2_bail_pending()) return -1;
       br2_irq_poll();
@@ -3384,7 +3380,7 @@ int32_t cd_chan_job_pump(uint32_t a0,const void *a1,const void *a2,const void *a
         return (int32_t)err;
       }
     } else {
-      s0 = FUN_801a0260(rec);
+      s0 = bios_tramp_b043(guest_of(rec),0,0,0);
       if (s0 == 0) goto done;
     }
     /* f9b0: copy only once s1 >= fp (signed) and a2 != 0 */
@@ -5029,10 +5025,8 @@ done:
 
 extern uint32_t cd_strncmp(uint32_t,uint32_t,uint32_t);
 extern void FUN_8019a364(void);
-extern void FUN_8019a310(void);
 extern void FUN_8019a300(void);
 extern void FUN_8019a350(void);
-extern void FUN_8019e420(void);
 extern void FUN_8019e600(void);
 extern uint8_t *guest_memcpy(uint32_t *,uint32_t *,int);
 int cd_queue_push(uint32_t,uint32_t,uint32_t,uint32_t);
@@ -5141,7 +5135,7 @@ uint32_t cd_bios16_status(void)
 void cd_chan_reset_seq(void)
 {
   FUN_8019a364();
-  FUN_8019a310();
+  bios_tramp_b014(0,0,0,0);
   cd_crit_c003();
   DB32(0x801bcc90) = 0;
 }
@@ -5217,7 +5211,7 @@ void cd_timeout_arm(void)
 
 void ret_zero_f(void)
 {
-  FUN_8019e420();
+  bios_tramp_b04c(0,0,0,0);
   FUN_8019e600();
 }
 
@@ -5235,7 +5229,6 @@ uint32_t cd_ind_dispatch_14(uint32_t a0)
 extern int gpu_coord_pack(int,int);
 extern void cd_guest_zero32_c(uint32_t,uint32_t);
 extern void cd_guest_zero32_b(uint32_t,uint32_t);
-extern void FUN_801a0250(int32_t);
 extern void FUN_8019a0ddc(void);
 extern void cd_file_open(int32_t,uint8_t *);
 extern int cd_stamp_to_sector(const void *);
@@ -5309,7 +5302,7 @@ void cd_pending_release(void)
 {
   int32_t v = (int32_t)DB32(0x801febf4);
   if (v >= 0) {
-    FUN_801a0250(v);
+    bios_tramp_b036((uint32_t)v,0,0,0);
     DB32(0x801febf4) = 0xffffffff;
   }
 }
@@ -5405,7 +5398,6 @@ static uint32_t cd_gpu_call(uint32_t off,uint32_t a0,uint32_t a1,
 extern void gpu_rect_bounds_dbg(uint32_t,short *);
 extern int cd_pump_watchdog(void);
 extern uint32_t cd_dma_xfer_start(uint32_t,uint32_t,uint32_t);
-extern void FUN_8019ad80(uint32_t);
 
 /* ======== 0x80191714 ======== */
 
@@ -5622,7 +5614,7 @@ uint32_t cd_state_blk_save(void)
 {
   uint32_t s0 = 0x801bcd18;
   if (*(uint16_t *)guest_at(s0) != 0) return 0;
-  FUN_8019ad80(s0 + 0x38);
+  bios_tramp_b019(s0 + 0x38,0,0,0);
   *(uint16_t *)guest_at(s0) = 1;
   br2_st16p(0x801bdda8, *(uint16_t *)guest_at(s0 + 0x32));
   br2_st32p(0x801bddac, *(uint32_t *)guest_at(s0 + 0x34));
@@ -5637,7 +5629,6 @@ extern void cd_kobj_init_b(void);
 extern void FUN_8019a2f0(uint32_t,uint32_t,uint32_t,uint32_t);
 extern int cd_seek_state_machine(uint32_t);
 extern void cd_mmio_strobe_22(void);
-extern void FUN_8019ad70(uint32_t);
 
 /* ======== 0x8019a09c ======== */
 
@@ -5671,7 +5662,7 @@ uint32_t cd_state_blk_restore(void)
   a0 = DB32G(0x801bddac);
   v0 = br2_ld32(a0) & 0x77777777;
   br2_st32(a0, v0);
-  FUN_8019ad70(a0);
+  bios_tramp_b018(a0,0,0,0);
   *(uint16_t *)guest_at(s0) = 0;
   return s0;
 }
@@ -5899,7 +5890,6 @@ int cd_submit6(uint32_t a0,uint32_t a1,uint32_t a2)
 extern void gpu_prim_pkt_build(int,uint16_t *);
 extern void cd_guest_zero32_a(uint32_t,uint32_t);
 extern int cd_ctx_save(uint32_t);
-extern void FUN_8019ad48(uint32_t);
 extern void cd_intc_dispatch(void);
 
 /* shared CD wait: poll **0x801b8434 bit23 / **0x801b8428 bit22 with
@@ -6170,9 +6160,6 @@ timeout:                                        /* @0x8019D124: jal 0x8018E550 *
 
 /* ======== batch_mass9 ======== */
 
-extern uint32_t FUN_801a0230(uint32_t,uint32_t,uint32_t);
-extern uint32_t FUN_801a0240(uint32_t,uint32_t,uint32_t);
-extern int32_t FUN_801a0220(uint32_t,uint32_t,uint32_t);
 extern void cd_svc_dual(uint32_t);
 extern uint32_t cd_queue_b_read(void);
 extern int32_t bios_tramp_b035(int32_t,const void *,int32_t);
@@ -6194,13 +6181,13 @@ int cd_job_sm5(uint32_t a0)
       uint32_t want;
       for (;;) {
         if (br2_bail_pending()) return 0;
-        want = FUN_801a0230(s0[0],s0[1],0);
+        want = (uint32_t)bios_tramp_b033(s0[0],s0[1],0,0);
         if (want == s0[1]) break;
       }
       cd_pending_args_pump();
       for (;;) {
         if (br2_bail_pending()) return 0;
-        if (FUN_801a0240(s0[0],s0[3],s0[2]) == 0) break;
+        if (bios_tramp_b034(s0[0],s0[3],s0[2],0) == 0) break;
       }
       *s1 = 0x1e;
       return 0;
@@ -6243,7 +6230,7 @@ int cd_job_sm6(uint32_t a0)
       uint32_t want;
       for (;;) {
         if (br2_bail_pending()) return 0;
-        want = FUN_801a0230(s0[0],s0[1],0);
+        want = (uint32_t)bios_tramp_b033(s0[0],s0[1],0,0);
         if (want == s0[1]) break;
       }
       cd_pending_args_pump();
@@ -6291,7 +6278,7 @@ int cd_job_submit5(uint32_t a0)
     uint32_t *s0 = (uint32_t *)guest_at(0x801febe4);
     if (s0[0] != 0) return 1;
     {
-      int32_t r = FUN_801a0220(0x801fec04,0x8001,0);
+      int32_t r = (int32_t)bios_tramp_b032(0x801fec04,0x8001,0,0);
       s0[4] = (uint32_t)r;
       if (r < 0) {
         s0[0] = 5;
@@ -6314,7 +6301,7 @@ int cd_job_submit5(uint32_t a0)
       *s1 = 0x16;
       return 0;
     }
-    FUN_801a0250(s0[4]);
+    bios_tramp_b036(s0[4],0,0,0);
     s0[4] = 0xffffffffu;
     return 1;
   }
@@ -6343,7 +6330,7 @@ int cd_job_submit6(uint32_t a0)
     uint32_t *s0 = (uint32_t *)guest_at(0x801febe4);
     if (s0[0] != 0) return 1;
     {
-      int32_t r = FUN_801a0220(0x801fec04,0x8001,0);
+      int32_t r = (int32_t)bios_tramp_b032(0x801fec04,0x8001,0,0);
       s0[4] = (uint32_t)r;
       if (r < 0) {
         s0[0] = 5;
@@ -6366,7 +6353,7 @@ int cd_job_submit6(uint32_t a0)
       *s1 = 0x16;
       return 0;
     }
-    FUN_801a0250(s0[4]);
+    bios_tramp_b036(s0[4],0,0,0);
     s0[4] = 0xffffffffu;
     return 1;
   }
@@ -6769,11 +6756,11 @@ int cd_file_open_wait(uint32_t a0,uint32_t a1,uint32_t a2)
   *(uint32_t *)guest_at(0x801febf0) = a0;
   for (;;) {
     if (br2_bail_pending()) return -1;
-    v0 = FUN_801a0220(guest_of(s0),1,0);
+    v0 = bios_tramp_b032(guest_of(s0),1,0,0);
     if (v0 >= 0) {
-      FUN_801a0250((uint32_t)v0);
+      bios_tramp_b036((uint32_t)v0,0,0,0);
       cd_pending_args_pump();
-      *q = FUN_801a0220(guest_of(s0),a2 | 0x8000,0);
+      *q = (uint32_t)(int32_t)bios_tramp_b032(guest_of(s0),a2 | 0x8000,0,0);
       return 0;
     }
     cd_xchg_fec24(0);
