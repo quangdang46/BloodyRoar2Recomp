@@ -15827,42 +15827,42 @@ undefined2 * euler_rotmat(uint x,uint y,uint z,undefined2 *m)
 /* spark_trail_task_update — spark-trail task update (EV7 sub 3). */
 void spark_trail_task_update(int *rec)
 {
-  ushort uVar1;
-  short sVar2;
-  int iVar3;
-  int iVar4;
+  ushort t;
+  short vy;
+  int pos;
+  int spd;
 
   if (DAT_801bef20 != 0) {
     return;
   }
-  uVar1 = (ushort)((short)rec[1] - 1);
-  *(ushort *)(rec + 1) = uVar1;
-  if ((int)((uint)uVar1 << 0x10) < 0) {
+  t = (ushort)((short)rec[1] - 1);
+  *(ushort *)(rec + 1) = t;
+  if ((int)((uint)t << 0x10) < 0) {
     task_slot_step();
     return;
   }
   if ((_DAT_801c4578 == 0) || (_DAT_801c4578 == 3)) {
     if ((*(ushort *)(rec + 1) & 1) != 0) goto LAB_8013ab68;
-    iVar4 = ((int)(short)rec[3] << 3) / 10;
+    spd = ((int)(short)rec[3] << 3) / 10;
   }
   else {
-    iVar4 = (int)(short)rec[3];
+    spd = (int)(short)rec[3];
   }
-  iVar3 = (uint)*(ushort *)((intptr_t)rec + 6) << 0x10;
-  if ((iVar3 >> 0x13 < (iVar3 >> 0x10) + (int)(short)rec[2]) >> 3) {
-    iVar3 = (int)(short)rec[6];
-    if (iVar3 < 0) {
-      iVar3 = iVar3 + 0xf;
+  pos = (uint)*(ushort *)((intptr_t)rec + 6) << 0x10;
+  if ((pos >> 0x13 < (pos >> 0x10) + (int)(short)rec[2]) >> 3) {
+    pos = (int)(short)rec[6];
+    if (pos < 0) {
+      pos = pos + 0xf;
     }
     impact_fx_spawn((undefined4 *)(uintptr_t)(*(int *)guest_at((uint32_t)(uintptr_t)((*rec + 0x20) ))+ *(short *)((intptr_t)rec + 10) * 0x50 + 0x34),0x80000005,
                  (int)(short)rec[4] + (int)*(short *)guest_at((uint32_t)(uintptr_t)((*rec + 0x4e))),(int)(short)rec[5],
-                 (uint)(iVar4 << 0x10 | iVar3 >> 4));
+                 (uint)(spd << 0x10 | pos >> 4));
     *(short *)(rec + 4) = (short)rec[4] + *(short *)((intptr_t)rec + 0x12);
     *(short *)(rec + 3) = (short)rec[3] + *(short *)((intptr_t)rec + 0xe);
-    sVar2 = (short)rec[6] + *(short *)((intptr_t)rec + 0x1a);
-    *(short *)(rec + 6) = sVar2;
+    vy = (short)rec[6] + *(short *)((intptr_t)rec + 0x1a);
+    *(short *)(rec + 6) = vy;
     *(short *)(rec + 5) = (short)rec[5] + *(short *)((intptr_t)rec + 0x16);
-    if (sVar2 < 0xa0) {
+    if (vy < 0xa0) {
       *(undefined2 *)(rec + 6) = 0xa0;
     }
     if ((short)rec[3] < 0xf) {
@@ -15880,17 +15880,17 @@ LAB_8013ab68:
 void confetti_burst_update(int rec)
 {
   short *psVar1;
-  undefined4 uVar2;
-  int iVar3;
-  short *psVar4;
+  undefined4 xy;
+  int tmp;
+  short *pp;
   uint *puVar5;
-  int iVar6;
-  short local_10;
-  short sStack_e;
+  int i;
+  short lx;
+  short ly;
 
   puVar5 = (uint *)guest_at((uint32_t)(uintptr_t)((rec + _DAT_1f80000c * 0x280)));
   if ((_DAT_1f800082 == 0) &&
-     (iVar3 = *(int *)guest_at((uint32_t)(uintptr_t)((rec + 0x554) ))+ -1, *(int *)guest_at((uint32_t)(uintptr_t)((rec + 0x554) ))= iVar3, iVar3 == 0)) {
+     (tmp = *(int *)guest_at((uint32_t)(uintptr_t)((rec + 0x554) ))+ -1, *(int *)guest_at((uint32_t)(uintptr_t)((rec + 0x554) ))= tmp, tmp == 0)) {
     task_slot_step();
   }
   else {
@@ -15906,37 +15906,37 @@ void confetti_burst_update(int rec)
     setCopReg(2,0,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((rec + 0x540))));
     setCopReg(2,0x800,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((rec + 0x544))));
     copFunction(2,0x180001);
-    uVar2 = (undefined4)getCopReg(2,0xe);
-    iVar6 = 0;
-    psVar4 = (short *)((intptr_t)puVar5 + 0x22);
-    iVar3 = rec;
+    xy = (undefined4)getCopReg(2,0xe);
+    i = 0;
+    pp = (short *)((intptr_t)puVar5 + 0x22);
+    tmp = rec;
     do {
       if (_DAT_1f800082 == 0) {
         *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x500) ))=
-             (short)((int)*(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x500) ))* (int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar3 + 0x558) ))>> 0xc);
+             (short)((int)*(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x500) ))* (int)*(short *)guest_at((uint32_t)(uintptr_t)((tmp + 0x558) ))>> 0xc);
         *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x502) ))=
-             (short)((int)*(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x502) ))* (int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar3 + 0x558) ))>> 0xc);
-        *(short *)guest_at((uint32_t)(uintptr_t)((iVar3 + 0x558) ))= *(short *)guest_at((uint32_t)(uintptr_t)((iVar3 + 0x558) ))- *(short *)guest_at((uint32_t)(uintptr_t)((iVar3 + 0x578)));
+             (short)((int)*(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x502) ))* (int)*(short *)guest_at((uint32_t)(uintptr_t)((tmp + 0x558) ))>> 0xc);
+        *(short *)guest_at((uint32_t)(uintptr_t)((tmp + 0x558) ))= *(short *)guest_at((uint32_t)(uintptr_t)((tmp + 0x558) ))- *(short *)guest_at((uint32_t)(uintptr_t)((tmp + 0x578)));
       }
-      local_10 = (short)uVar2;
-      psVar4[-0xd] = local_10 + *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x500)));
-      sStack_e = (short)((uint)uVar2 >> 0x10);
-      psVar4[-0xc] = sStack_e + *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x502)));
-      psVar4[-9] = local_10 + *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x500) ))+ 0x14;
-      psVar4[-8] = sStack_e + *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x502)));
-      psVar4[-5] = local_10 + *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x500)));
-      iVar3 = iVar3 + 2;
-      psVar4[-4] = sStack_e + *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x502) ))+ 0x14;
-      iVar6 = iVar6 + 1;
-      psVar4[-1] = local_10 + *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x500) ))+ 0x14;
+      lx = (short)xy;
+      pp[-0xd] = lx + *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x500)));
+      ly = (short)((uint)xy >> 0x10);
+      pp[-0xc] = ly + *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x502)));
+      pp[-9] = lx + *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x500) ))+ 0x14;
+      pp[-8] = ly + *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x502)));
+      pp[-5] = lx + *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x500)));
+      tmp = tmp + 2;
+      pp[-4] = ly + *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x502) ))+ 0x14;
+      i = i + 1;
+      pp[-1] = lx + *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x500) ))+ 0x14;
       psVar1 = (short *)guest_at((uint32_t)(uintptr_t)((rec + 0x502)));
       rec = rec + 4;
-      *psVar4 = sStack_e + *psVar1 + 0x14;
-      psVar4 = psVar4 + 0x14;
+      *pp = ly + *psVar1 + 0x14;
+      pp = pp + 0x14;
       *puVar5 = *(uint *)guest_at((uint32_t)(uintptr_t)((_DAT_1f800008 + 0xc) ))| 0x9000000;
       *(uint *)guest_at((uint32_t)(uintptr_t)((_DAT_1f800008 + 0xc) ))= (uint)guest_of(puVar5) & 0xffffff;
       puVar5 = puVar5 + 10;
-    } while (iVar6 < 0x10);
+    } while (i < 0x10);
   }
   return;
 }
