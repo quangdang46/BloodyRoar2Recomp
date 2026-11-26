@@ -102879,7 +102879,9 @@ block_801A7568:
 }
 
 /* cps_801a861c — clean CPS transliteration of br2eu_func_801A861C (guest 0x801a861c)
- * from SLES_017.22_full_51.c. */
+ * from SLES_017.22_full_51.c.
+ * Empty leaf: jr ra, nop delay slot.
+ */
 void cps_801a861c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -102896,7 +102898,9 @@ block_801A861C:
 }
 
 /* cps_801a8624 — clean CPS transliteration of br2eu_func_801A8624 (guest 0x801a8624)
- * from SLES_017.22_full_51.c. */
+ * from SLES_017.22_full_51.c.
+ * Empty leaf: jr ra, nop delay slot.
+ */
 void cps_801a8624(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -102913,7 +102917,9 @@ block_801A8624:
 }
 
 /* cps_801a862c — clean CPS transliteration of br2eu_func_801A862C (guest 0x801a862c)
- * from SLES_017.22_full_51.c. */
+ * from SLES_017.22_full_51.c.
+ * Empty leaf: jr ra, nop delay slot.
+ */
 void cps_801a862c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -102930,7 +102936,9 @@ block_801A862C:
 }
 
 /* cps_801a8634 — clean CPS transliteration of br2eu_func_801A8634 (guest 0x801a8634)
- * from SLES_017.22_full_51.c. */
+ * from SLES_017.22_full_51.c.
+ * Empty leaf: jr ra, nop delay slot.
+ */
 void cps_801a8634(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -102947,7 +102955,11 @@ block_801A8634:
 }
 
 /* cps_801a8ee0 — clean CPS transliteration of br2eu_func_801A8EE0 (guest 0x801a8ee0)
- * from SLES_017.22_full_51.c. */
+ * from SLES_017.22_full_51.c.
+ * Object-processing coroutine (21 blocks): gates on s16 obj+52 != 0,
+ * loads obj+24 (table ptr -> t9), obj+36 -> s0, s16 obj+50, and indexes
+ * through the gp+36 global offset word. Sibling of cps_801a91e0.
+ */
 void cps_801a8ee0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -103389,7 +103401,11 @@ block_801A91CC:
 }
 
 /* cps_801a91e0 — clean CPS transliteration of br2eu_func_801A91E0 (guest 0x801a91e0)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Object-processing coroutine (21 blocks): same prologue/gates as
+ * cps_801a8ee0 (s16 +52 gate, +24/+36/+50 fields, gp+36 index) — the
+ * second variant of the pair.
+ */
 void cps_801a91e0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -103870,7 +103886,10 @@ block_801A9528:
 }
 
 /* cps_801a972c — clean CPS transliteration of br2eu_func_801A972C (guest 0x801a972c)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Guarded body (18 blocks): proceeds only when *(gp+68) == 1 and a0 != 0;
+ * otherwise exits via 983C.
+ */
 void cps_801a972c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104113,7 +104132,9 @@ block_801A983C:
 }
 
 /* cps_801a9b1c — clean CPS transliteration of br2eu_func_801A9B1C (guest 0x801a9b1c)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): prologue fragment — sp -= 40, falls into 9B20.
+ */
 void cps_801a9b1c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104128,7 +104149,10 @@ block_801A9B1C:
 }
 
 /* cps_801a9b20 — clean CPS transliteration of br2eu_func_801A9B20 (guest 0x801a9b20)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): entry body (26 blocks): saves s0-s3/ra, s1=a0,
+ *  s2=a1, s3=a2; s1==0 branches out early.
+ */
 void cps_801a9b20(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104254,7 +104278,10 @@ block_801A9BA4:
 }
 
 /* cps_801a9c28 — clean CPS transliteration of br2eu_func_801A9C28 (guest 0x801a9c28)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): mid body: t2=a0, t7=a2; a0==0 exits via A0D4
+ *  epilogue.
+ */
 void cps_801a9c28(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104349,7 +104376,10 @@ block_801A9C70:
 }
 
 /* cps_801a9c7c — clean CPS transliteration of br2eu_func_801A9C7C (guest 0x801a9c7c)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): loop-setup fragment: stride math v1<<2 and bound
+ *  check v1<a1; -> 9CB8 or fallthrough.
+ */
 void cps_801a9c7c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104391,7 +104421,9 @@ block_801A9C88:
 }
 
 /* cps_801a9cac — clean CPS transliteration of br2eu_func_801A9CAC (guest 0x801a9cac)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): stores (v0-v1) -> sp+24, continues to 9D10.
+ */
 void cps_801a9cac(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104409,7 +104441,10 @@ block_801A9CAC:
 }
 
 /* cps_801a9cb8 — clean CPS transliteration of br2eu_func_801A9CB8 (guest 0x801a9cb8)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): second loop-setup fragment: compares a1 vs v1,
+ *  reads s16 t2+10; multi-way split.
+ */
 void cps_801a9cb8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104481,7 +104516,9 @@ block_801A9D08:
 }
 
 /* cps_801a9d10 — clean CPS transliteration of br2eu_func_801A9D10 (guest 0x801a9d10)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): phase test: computes t4<3 flag -> 9D14.
+ */
 void cps_801a9d10(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104496,7 +104533,10 @@ block_801A9D10:
 }
 
 /* cps_801a9d14 — clean CPS transliteration of br2eu_func_801A9D14 (guest 0x801a9d14)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): dispatch: t4<3 -> 9F48 (finalize), else -> 9D1C
+ *  inner loop with a2 = sp+24 scratch ptr.
+ */
 void cps_801a9d14(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104519,7 +104559,10 @@ block_801A9D14:
 }
 
 /* cps_801a9d1c — clean CPS transliteration of br2eu_func_801A9D1C (guest 0x801a9d1c)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): inner-loop head: gates on s16 t2+16 > 0, t1=0
+ *  vertex index.
+ */
 void cps_801a9d1c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104554,7 +104597,10 @@ block_801A9D2C:
 }
 
 /* cps_801a9d30 — clean CPS transliteration of br2eu_func_801A9D30 (guest 0x801a9d30)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): loop-step fragment: t5 = a2+v0 (scratch ptr),
+ *  t0 = t1; -> 9D38.
+ */
 void cps_801a9d30(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104570,7 +104616,10 @@ block_801A9D30:
 }
 
 /* cps_801a9d38 — clean CPS transliteration of br2eu_func_801A9D38 (guest 0x801a9d38)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): per-vertex kernel: reads weight table *(t2+36)
+ *  indexed t1<<3, multiplies s16 weight * a0 (MUL), seeds accumulator a3.
+ */
 void cps_801a9d38(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104625,7 +104674,10 @@ block_801A9D80:
 }
 
 /* cps_801a9d84 — clean CPS transliteration of br2eu_func_801A9D84 (guest 0x801a9d84)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): accumulate X: adds a3 into halfword field +0 of the
+ *  8-byte vertex record at *(t2+28)+idx*8; -> 9DAC.
+ */
 void cps_801a9d84(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104649,7 +104701,9 @@ block_801A9D84:
 }
 
 /* cps_801a9dac — clean CPS transliteration of br2eu_func_801A9DAC (guest 0x801a9dac)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): phase check t3==0 -> 9DE0 else 9DB4.
+ */
 void cps_801a9dac(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104672,7 +104726,10 @@ block_801A9DAC:
 }
 
 /* cps_801a9db4 — clean CPS transliteration of br2eu_func_801A9DB4 (guest 0x801a9db4)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): accumulate Y: adds t3 into halfword +2 of the same
+ *  vertex record; -> 9DE0.
+ */
 void cps_801a9db4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104697,7 +104754,10 @@ block_801A9DB4:
 }
 
 /* cps_801a9de0 — clean CPS transliteration of br2eu_func_801A9DE0 (guest 0x801a9de0)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): accumulate Z gate: a0==0 -> 9E14 skip, else adds
+ *  a0 into halfword +4 via 9DE8/9E08.
+ */
 void cps_801a9de0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104737,7 +104797,9 @@ block_801A9DE8:
 }
 
 /* cps_801a9e08 — clean CPS transliteration of br2eu_func_801A9E08 (guest 0x801a9e08)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): writes (v0+a0) -> halfword v1+4; -> 9E14.
+ */
 void cps_801a9e08(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104754,7 +104816,10 @@ block_801A9E08:
 }
 
 /* cps_801a9e14 — clean CPS transliteration of br2eu_func_801A9E14 (guest 0x801a9e14)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): loop tail: t1++, t0+=2; loops to 9D38 while
+ *  t1 < s16 t2+16, else -> 9E28 phase dispatch.
+ */
 void cps_801a9e14(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104780,7 +104845,10 @@ block_801A9E14:
 }
 
 /* cps_801a9e28 — clean CPS transliteration of br2eu_func_801A9E28 (guest 0x801a9e28)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): phase machine on t4: ==1 -> 9EA8, <2 checks,
+ *  default -> 9ED4.
+ */
 void cps_801a9e28(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104822,7 +104890,9 @@ block_801A9E34:
 }
 
 /* cps_801a9e38 — clean CPS transliteration of br2eu_func_801A9E38 (guest 0x801a9e38)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): sets v0=2 -> 9E3C (phase advance fragment).
+ */
 void cps_801a9e38(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104837,7 +104907,9 @@ block_801A9E38:
 }
 
 /* cps_801a9e3c — clean CPS transliteration of br2eu_func_801A9E3C (guest 0x801a9e3c)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): phase test t4==0 -> 9E5C, else -> 9ED4.
+ */
 void cps_801a9e3c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104872,7 +104944,9 @@ block_801A9E44:
 }
 
 /* cps_801a9e4c — clean CPS transliteration of br2eu_func_801A9E4C (guest 0x801a9e4c)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): phase test t4==v0 -> 9ED0 (t4=3), else -> 9ED4.
+ */
 void cps_801a9e4c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104907,7 +104981,10 @@ block_801A9E54:
 }
 
 /* cps_801a9e5c — clean CPS transliteration of br2eu_func_801A9E5C (guest 0x801a9e5c)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): phase-0 body: s16 t2+14 += t6, then indexes the
+ *  20-byte-stride table *(t2+24)+frame*20 for follow-up fields.
+ */
 void cps_801a9e5c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104933,7 +105010,10 @@ block_801A9E5C:
 }
 
 /* cps_801a9e8c — clean CPS transliteration of br2eu_func_801A9E8C (guest 0x801a9e8c)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): phase-1 body: t8 = v0*t6 (MUL), stores to
+ *  sp+28, sets t4=1 -> 9EC0 compare.
+ */
 void cps_801a9e8c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104957,7 +105037,9 @@ block_801A9E8C:
 }
 
 /* cps_801a9ea8 — clean CPS transliteration of br2eu_func_801A9EA8 (guest 0x801a9ea8)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): s16 t2+14 += t6 variant -> 9EBC sign-extend.
+ */
 void cps_801a9ea8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104976,7 +105058,9 @@ block_801A9EA8:
 }
 
 /* cps_801a9ebc — clean CPS transliteration of br2eu_func_801A9EBC (guest 0x801a9ebc)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): sign-extend fragment -> 9EC0.
+ */
 void cps_801a9ebc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104991,7 +105075,10 @@ block_801A9EBC:
 }
 
 /* cps_801a9ec0 — clean CPS transliteration of br2eu_func_801A9EC0 (guest 0x801a9ec0)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): compare s16(t2+14) vs a1: != -> 9ED4 done,
+ *  == -> t4=2 -> 9ED4.
+ */
 void cps_801a9ec0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -105026,7 +105113,9 @@ block_801A9EC8:
 }
 
 /* cps_801a9ed0 — clean CPS transliteration of br2eu_func_801A9ED0 (guest 0x801a9ed0)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): sets t4=3 -> 9ED4 (final phase).
+ */
 void cps_801a9ed0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -105041,7 +105130,10 @@ block_801A9ED0:
 }
 
 /* cps_801a9ed4 — clean CPS transliteration of br2eu_func_801A9ED4 (guest 0x801a9ed4)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): phase-complete body: reloads table ptr
+ *  *(t2+24)+s16(t2+14)*20 into t2+36, continues field stores -> 9F10.
+ */
 void cps_801a9ed4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -105070,7 +105162,10 @@ block_801A9ED4:
 }
 
 /* cps_801a9f10 — clean CPS transliteration of br2eu_func_801A9F10 (guest 0x801a9f10)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): stores *(v0+16) -> t2+20 and table halfword ->
+ *  t2+16; t4<3 loop test.
+ */
 void cps_801a9f10(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -105105,7 +105200,10 @@ block_801A9F10:
 }
 
 /* cps_801a9f48 — clean CPS transliteration of br2eu_func_801A9F48 (guest 0x801a9f48)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): finalize: writes t7 -> s16 t2+10, sign-extended
+ *  t7 -> t2+44, s16(t2+14) -> t2+48, exits via A0D4.
+ */
 void cps_801a9f48(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -105127,7 +105225,10 @@ block_801A9F48:
 }
 
 /* cps_801a9f64 — clean CPS transliteration of br2eu_func_801A9F64 (guest 0x801a9f64)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): large tail body (36 blocks): gates on s16 t2
+ *  and s16 t2+14, multi-way field updates before epilogue.
+ */
 void cps_801a9f64(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -105331,7 +105432,9 @@ block_801AA0BC:
 }
 
 /* cps_801aa0d4 — clean CPS transliteration of br2eu_func_801AA0D4 (guest 0x801aa0d4)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the vertex-accumulation coroutine (9B1C-A0D4): epilogue: ra = *(sp+40), sp += 48, jr ra.
+ */
 void cps_801aa0d4(void)
 {
   CPUState *cpu = clean_cpu_state();
