@@ -2154,8 +2154,8 @@ static int32_t win_putc(uint32_t slot,int32_t c)
   return 0;
 }
 
-int32_t text_win_printf(int32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,...)
+int32_t text_win_printf(int32_t sel,uint32_t a1,uint32_t a2,
+                     uint32_t a3,...)
 
 {
   uint32_t iargs[3];
@@ -2164,31 +2164,31 @@ int32_t text_win_printf(int32_t param_1,uint32_t param_2,uint32_t param_3,
   int32_t win;
   const char *fmt;
   uint32_t slot;
-  int32_t count = (int32_t)param_2;    /* live $a1: stale until a spec
+  int32_t count = (int32_t)a1;    /* live $a1: stale until a spec
                                         * handler sets it */
   int32_t c;
   uint8_t dbuf[0x210];
   uint8_t *dtop = dbuf + 0x210;
   const uint8_t *ep = dtop;            /* guest $s0: stale across specs */
   
-  iargs[0] = param_2;
-  iargs[1] = param_3;
-  iargs[2] = param_4;
-  va_start(ap,param_4);
-  if ((param_1 < 0) || ((int32_t)GB32(0x801b78c0) <= param_1)) {
+  iargs[0] = a1;
+  iargs[1] = a2;
+  iargs[2] = a3;
+  va_start(ap,a3);
+  if ((sel < 0) || ((int32_t)GB32(0x801b78c0) <= sel)) {
     /* out-of-range a0: it is the format string; window = DAT_801b78c4 */
     win = GB32(0x801b78c4);
     if (GB32(0x801b7740 + win * 0x30 + 0x24) == 0) {
       va_end(ap);
       return -1;
     }
-    fmt = (const char *)guest_at((uint32_t)param_1);
-    ai = 0;                            /* varargs start at param_2 */
+    fmt = (const char *)guest_at((uint32_t)sel);
+    ai = 0;                            /* varargs start at a1 */
   }
   else {
-    win = (uint32_t)param_1;
-    fmt = (const char *)guest_at(param_2);
-    ai = 1;                            /* varargs start at param_3 */
+    win = (uint32_t)sel;
+    fmt = (const char *)guest_at(a1);
+    ai = 1;                            /* varargs start at a2 */
   }
   slot = 0x801b7740 + win * 0x30;
   if (GB32S(slot + 0x1c) < GB32S(slot + 0x28)) {
@@ -2330,11 +2330,11 @@ emit_only:
 
 /* ======== 0x801a4aa0 ======== */
 
-void gp_20_store(uint32_t param_1)
+void gp_20_store(uint32_t val)
 
 {
   /* $gp = 0x801beedc (set at 0x801261f8: lui/addiu $gp); +0x20 cell */
-  *(uint32_t *)guest_at(0x801beefc) = param_1;
+  *(uint32_t *)guest_at(0x801beefc) = val;
   return;
 }
 
@@ -2349,11 +2349,11 @@ void gp_20_store_default(void)
 
 /* ======== 0x801ad59c ======== */
 
-int32_t aux_tbl_store_a(uint32_t param_1,int32_t param_2)
+int32_t aux_tbl_store_a(uint32_t val,int32_t idx)
 
 {
-  if (param_2 < 5) {
-    *(uint32_t *)guest_at(0x801ff638 + param_2 * 4) = param_1;
+  if (idx < 5) {
+    *(uint32_t *)guest_at(0x801ff638 + idx * 4) = val;
     return 1;
   }
   return 0;
@@ -2361,11 +2361,11 @@ int32_t aux_tbl_store_a(uint32_t param_1,int32_t param_2)
 
 /* ======== 0x801ad1e4 ======== */
 
-int32_t aux_tbl_store_b(uint32_t param_1,int32_t param_2)
+int32_t aux_tbl_store_b(uint32_t val,int32_t idx)
 
 {
-  if (param_2 < 5) {
-    *(uint32_t *)guest_at(0x801ff620 + param_2 * 4) = param_1;
+  if (idx < 5) {
+    *(uint32_t *)guest_at(0x801ff620 + idx * 4) = val;
     return 1;
   }
   return 0;
@@ -2378,13 +2378,13 @@ int32_t aux_tbl_store_b(uint32_t param_1,int32_t param_2)
  * 0x801b8424 cell, re-read *T8424 (status side effect), return 0.
  * Disasm-verified @0x80193828 (cell addrs 0x801B8428/0x801B8424, store
  * base a1 = ptr from 0x801B8424 at 0x8019387C). */
-uint32_t gpu_status_cmd(uint32_t param_1)
+uint32_t gpu_status_cmd(uint32_t flags)
 {
   uint32_t v;
   br2_st32p(0x801b8428, 0x10000007);
   v = br2_ld32p(0x801b8424) & 0xffffff;
   if (v == 2) {
-    if ((param_1 & 8) != 0) {
+    if ((flags & 8) != 0) {
       br2_st32p(0x801b8428, 0x9000001);
       return 2;
     }
