@@ -260,7 +260,12 @@ extern uint8_t *_g_system_config_ptr;
 #define DAT_801f2650   (*(uint8_t  *)g_DAT_801f2650)
 #define _DAT_801f35f4  (*(uint32_t *)g_DAT_801f35f4)
 
-/* ---- callee externs ---- */
+/* ---- callee externs ----
+ * The `name()` decls below are deliberately unprototyped: the Ghidra
+ * defs disagree with call sites on arg counts/types (e.g. ret_one is
+ * defined (void) but called with 2 args; mc_data_* take uint32_t p11
+ * but callers pass host pointers). Tightening them requires a
+ * per-callsite ABI audit — do NOT "fix" without one. */
 extern void brightness_packet_send(int32_t);
 extern void mc_state_init();
 extern int cd_cmd_issue_async();
