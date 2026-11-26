@@ -11871,7 +11871,7 @@ int lazy_node_wrap(undefined4 proto,undefined4 arg,undefined2 aux)
 
 }
 
-int prim_group_alloc(undefined4 a0,int a1,int a2,int a3,int arg5,int arg6, undefined4 arg7)
+int prim_group_alloc(undefined4 a0,int attr,int num,int mode,int flg,int arg6, undefined4 arg7)
 {
   undefined2 ff;
   int node;
@@ -11883,25 +11883,25 @@ int prim_group_alloc(undefined4 a0,int a1,int a2,int a3,int arg5,int arg6, undef
   undefined4 w1;
   int m;
   int pad;
-  m = a3;
-  if ((a3 == 0) && (arg5 != 0)) {
+  m = mode;
+  if ((mode == 0) && (flg != 0)) {
     m = 1;
   }
   pad = (uint)(arg6 != 0x1000) * 0x20;
   node = (int)(intptr_t)task_node_alloc(arg7,2,1,0x801ac154,0,
-                       a2 * 4 + m * 0x18 + 0x4c + *(int *)guest_at((uint32_t)(uintptr_t)((a1 + 0x2c) ))* 8 +
-                       *(int *)guest_at((uint32_t)(uintptr_t)((a1 + 0x34) ))* 8 + *(int *)guest_at((uint32_t)(uintptr_t)((a1 + 0x30) ))* 8 + pad);
+                       num * 4 + m * 0x18 + 0x4c + *(int *)guest_at((uint32_t)(uintptr_t)((attr + 0x2c) ))* 8 +
+                       *(int *)guest_at((uint32_t)(uintptr_t)((attr + 0x34) ))* 8 + *(int *)guest_at((uint32_t)(uintptr_t)((attr + 0x30) ))* 8 + pad);
   if (node == 0) {
     grp = 0;
   }
   else {
     grp = *(int *)guest_at((uint32_t)(uintptr_t)((node + 0x10)));
     *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x14) ))= node;
-    *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x40) ))= a2;
+    *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x40) ))= num;
     *(undefined4 *)guest_at((uint32_t)(uintptr_t)((grp + 0x18) ))= 0;
     *(undefined4 *)guest_at((uint32_t)(uintptr_t)((grp + 0x28) ))= 0;
     *(undefined4 *)guest_at((uint32_t)(uintptr_t)((grp + 0x2c) ))= 0;
-    *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x44) ))= a3;
+    *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x44) ))= mode;
     *(undefined4 *)guest_at((uint32_t)(uintptr_t)((grp + 0x48) ))= 0;
     if ((arg6 != 0x1000) == 0) {
       *(undefined4 *)guest_at((uint32_t)(uintptr_t)((grp + 4) ))= 0;
@@ -11929,40 +11929,40 @@ int prim_group_alloc(undefined4 a0,int a1,int a2,int a3,int arg5,int arg6, undef
     pad = grp + 0x4c + pad;
     *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x10) ))= pad;
     node = 0;
-    if (0 < a2) {
+    if (0 < num) {
       off = 0;
       do {
         node = node + 1;
         *(undefined4 *)guest_at((uint32_t)(uintptr_t)((off + *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x10)))) ))= 0;
         off = node * 4;
-      } while (node < a2);
+      } while (node < num);
     }
-    pad = pad + a2 * 4;
-    if (*(int *)guest_at((uint32_t)(uintptr_t)((a1 + 0x2c) ))== 0) {
-      *(undefined4 *)guest_at((uint32_t)(uintptr_t)((grp + 0x28) ))= *(undefined4 *)guest_at((uint32_t)(uintptr_t)((a1 + 0x90)));
+    pad = pad + num * 4;
+    if (*(int *)guest_at((uint32_t)(uintptr_t)((attr + 0x2c) ))== 0) {
+      *(undefined4 *)guest_at((uint32_t)(uintptr_t)((grp + 0x28) ))= *(undefined4 *)guest_at((uint32_t)(uintptr_t)((attr + 0x90)));
     }
     else {
       *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x28) ))= pad;
       i = 0;
       node = 0;
-      if (*(int *)guest_at((uint32_t)(uintptr_t)((a1 + 0x2c) ))!= 0) {
+      if (*(int *)guest_at((uint32_t)(uintptr_t)((attr + 0x2c) ))!= 0) {
         node = 0;
         do {
           dst = (undefined4 *)guest_at((uint32_t)(uintptr_t)((node + *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x28))))));
-          src = (undefined4 *)guest_at((uint32_t)(uintptr_t)((node + *(int *)guest_at((uint32_t)(uintptr_t)((a1 + 0x90))))));
+          src = (undefined4 *)guest_at((uint32_t)(uintptr_t)((node + *(int *)guest_at((uint32_t)(uintptr_t)((attr + 0x90))))));
           w1 = src[1];
           *dst = *src;
           dst[1] = w1;
           i = i + 1;
           node = i * 8;
-        } while (i < *(uint *)guest_at((uint32_t)(uintptr_t)((a1 + 0x2c))));
-        node = *(int *)guest_at((uint32_t)(uintptr_t)((a1 + 0x2c)));
+        } while (i < *(uint *)guest_at((uint32_t)(uintptr_t)((attr + 0x2c))));
+        node = *(int *)guest_at((uint32_t)(uintptr_t)((attr + 0x2c)));
       }
       pad = pad + node * 8;
     }
-    if (*(int *)guest_at((uint32_t)(uintptr_t)((a1 + 0x34) ))== 0) {
-      if (*(int *)guest_at((uint32_t)(uintptr_t)((a1 + 0x10) ))== 1) {
-        *(undefined4 *)guest_at((uint32_t)(uintptr_t)((grp + 0x2c) ))= *(undefined4 *)guest_at((uint32_t)(uintptr_t)((a1 + 0x94)));
+    if (*(int *)guest_at((uint32_t)(uintptr_t)((attr + 0x34) ))== 0) {
+      if (*(int *)guest_at((uint32_t)(uintptr_t)((attr + 0x10) ))== 1) {
+        *(undefined4 *)guest_at((uint32_t)(uintptr_t)((grp + 0x2c) ))= *(undefined4 *)guest_at((uint32_t)(uintptr_t)((attr + 0x94)));
       }
       else {
         *(undefined4 *)guest_at((uint32_t)(uintptr_t)((grp + 0x2c) ))= 0;
@@ -11972,27 +11972,27 @@ int prim_group_alloc(undefined4 a0,int a1,int a2,int a3,int arg5,int arg6, undef
       *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x2c) ))= pad;
       i = 0;
       node = 0;
-      if (*(int *)guest_at((uint32_t)(uintptr_t)((a1 + 0x34) ))!= 0) {
+      if (*(int *)guest_at((uint32_t)(uintptr_t)((attr + 0x34) ))!= 0) {
         node = 0;
         do {
           dst = (undefined4 *)guest_at((uint32_t)(uintptr_t)((node + *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x2c))))));
-          src = (undefined4 *)guest_at((uint32_t)(uintptr_t)((node + *(int *)guest_at((uint32_t)(uintptr_t)((a1 + 0x94))))));
+          src = (undefined4 *)guest_at((uint32_t)(uintptr_t)((node + *(int *)guest_at((uint32_t)(uintptr_t)((attr + 0x94))))));
           w1 = src[1];
           *dst = *src;
           dst[1] = w1;
           i = i + 1;
           node = i * 8;
-        } while (i < *(uint *)guest_at((uint32_t)(uintptr_t)((a1 + 0x34))));
-        node = *(int *)guest_at((uint32_t)(uintptr_t)((a1 + 0x34)));
+        } while (i < *(uint *)guest_at((uint32_t)(uintptr_t)((attr + 0x34))));
+        node = *(int *)guest_at((uint32_t)(uintptr_t)((attr + 0x34)));
       }
       pad = pad + node * 8;
     }
-    if (*(int *)guest_at((uint32_t)(uintptr_t)((a1 + 0x30) ))== 0) {
+    if (*(int *)guest_at((uint32_t)(uintptr_t)((attr + 0x30) ))== 0) {
       *(undefined4 *)guest_at((uint32_t)(uintptr_t)((grp + 0x30) ))= 0;
     }
     else {
       *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x30) ))= pad;
-      pad = pad + *(int *)guest_at((uint32_t)(uintptr_t)((a1 + 0x30) ))* 8;
+      pad = pad + *(int *)guest_at((uint32_t)(uintptr_t)((attr + 0x30) ))* 8;
     }
     node = m * 4;
     if (m == 0) {
@@ -12044,7 +12044,7 @@ void node_param_quad_set(int node,undefined4 q0,undefined4 q1,undefined4 q2, und
 
 }
 
-int * prim_list_gte_invoke(int *a0,undefined4 a1,undefined4 a2,int a3,undefined4 arg5 ,undefined4 arg6)
+int * prim_list_gte_invoke(int *lst,undefined4 a1,undefined4 a2,int n,undefined4 arg5 ,undefined4 arg6)
 {
   undefined4 in_zero;
   undefined4 extraout_at;
@@ -12061,7 +12061,7 @@ int * prim_list_gte_invoke(int *a0,undefined4 a1,undefined4 a2,int a3,undefined4
   undefined4 in_s6;
   int n;
   undefined4 in_ra;
-  if (0 < a3) {
+  if (0 < n) {
     setCopControlWord(2,0xe800,0x555);
     setCopControlWord(2,0xf000,0x400);
     _DAT_1f8003e0 = in_s6;
@@ -12073,32 +12073,32 @@ int * prim_list_gte_invoke(int *a0,undefined4 a1,undefined4 a2,int a3,undefined4
     _DAT_1f8003f8 = in_s0;
     _DAT_1f8003fc = in_ra;
     do {
-      if (((short)a0[3] == 0) && (*a0 != 0)) {
-        gte_xform3_ip((undefined4 *)guest_at((uint32_t)arg6),(undefined2 *)guest_at((uint32_t)(*a0 + 0x20)));
-        gte_xform3_t_ip((undefined4 *)guest_at((uint32_t)arg5),(undefined2 *)guest_at((uint32_t)(*a0 + 0x20)));
-        setCopReg(2,in_zero,a0[1]);
-        setCopReg(2,extraout_at,a0[2]);
+      if (((short)lst[3] == 0) && (*lst != 0)) {
+        gte_xform3_ip((undefined4 *)guest_at((uint32_t)arg6),(undefined2 *)guest_at((uint32_t)(*lst + 0x20)));
+        gte_xform3_t_ip((undefined4 *)guest_at((uint32_t)arg5),(undefined2 *)guest_at((uint32_t)(*lst + 0x20)));
+        setCopReg(2,in_zero,lst[1]);
+        setCopReg(2,extraout_at,lst[2]);
         copFunction(2,0x480012);
-        n = *(int *)guest_at((uint32_t)(uintptr_t)(a0[7]));
+        n = *(int *)guest_at((uint32_t)(uintptr_t)(lst[7]));
         t0 = getCopReg(2,0xc800);
-        rp = (int *)guest_at((uint32_t)(uintptr_t)(a0[7] ))+ 1;
+        rp = (int *)guest_at((uint32_t)(uintptr_t)(lst[7] ))+ 1;
         if (n != 0) {
           t1 = getCopReg(2,0xd000);
           t2 = getCopReg(2,0xd800);
           setCopControlWord(2,0x2800,t0);
           setCopControlWord(2,0x3000,t1);
           setCopControlWord(2,0x3800,t2);
-          /* Generated 0x801871BC jalr's each record fn with the full a0-a3
-           * set: a0 = record[2] (data cursor), a1 = a1 + lh(a0
-           * +0xE), a2 = a2, a3 = record[1] (per-record field).
-           * task_invoke/call_guest only program $a0/$a1 — $a1 arrived as 0
-           * and $a2/$a3 stale, so the GTE emit leaf 0x801876BC used a1=0 as
+          /* Generated 0x801871BC jalr's each record fn with the full lst-n
+           * set: lst = record[2] (data cursor), a1 = a1 + lh(lst
+           * +0xE), a2 = a2, n = record[1] (per-record field).
+           * task_invoke/call_guest only program $lst/$a1 — $a1 arrived as 0
+           * and $a2/$n stale, so the GTE emit leaf 0x801876BC used a1=0 as
            * its OT/link-table base and SWL'd into BIOS kernel RAM
            * (phys 0x0000-0x1FFC). call_guest4 reproduces the guest ABI
            * exactly (same fix as prim_task_run). */
           {
             uint32_t prim_a1 = (uint32_t)a1
-                + (uint32_t)(int)*(int16_t *)((char *)a0 + 0xe);
+                + (uint32_t)(int)*(int16_t *)((char *)lst + 0xe);
             do {
               n = n + -1;
               call_guest4((uint32_t)rp[3],(uint32_t)rp[2],prim_a1,
@@ -12108,11 +12108,11 @@ int * prim_list_gte_invoke(int *a0,undefined4 a1,undefined4 a2,int a3,undefined4
           }
         }
       }
-      a3 = a3 + -1;
-      a0 = a0 + 10;
-    } while (0 < a3);
+      n = n + -1;
+      lst = lst + 10;
+    } while (0 < n);
   }
-  return a0;
+  return lst;
 
 }
 
@@ -13603,7 +13603,7 @@ uint * angle_gte_vec(undefined4 x,undefined4 y,uint *out)
 
 }
 
-int * prim_list_persp_step(int *a0,undefined4 a1,undefined4 a2,int a3,undefined4 arg5 ,int arg6,undefined4 arg7,undefined4 arg8)
+int * prim_list_persp_step(int *lst,undefined4 a1,undefined4 a2,int n,undefined4 arg5 ,int xf,undefined4 arg7,undefined4 arg8)
 {
   undefined4 in_zero;
   undefined4 extraout_at;
@@ -13625,7 +13625,7 @@ int * prim_list_persp_step(int *a0,undefined4 a1,undefined4 a2,int a3,undefined4
   undefined4 in_s7;
   undefined4 in_t8;
   undefined4 in_ra;
-  if (0 < a3) {
+  if (0 < n) {
     _DAT_1f8003d4 = arg5;
     _DAT_1f8003d0 = arg7;
     _DAT_1f8003cc = arg8;
@@ -13640,11 +13640,11 @@ int * prim_list_persp_step(int *a0,undefined4 a1,undefined4 a2,int a3,undefined4
     _DAT_1f8003f8 = in_s0;
     _DAT_1f8003fc = in_ra;
     do {
-      if (((short)a0[3] == 0) && (*a0 != 0)) {
-        vp = *a0 + 0x20;
-        gte_xform3_t_ip((undefined4 *)guest_at((uint32_t)arg6),(undefined2 *)guest_at((uint32_t)(*a0 + 0x20)));
-        setCopReg(2,in_zero,a0[1]);
-        setCopReg(2,extraout_at,a0[2]);
+      if (((short)lst[3] == 0) && (*lst != 0)) {
+        vp = *lst + 0x20;
+        gte_xform3_t_ip((undefined4 *)guest_at((uint32_t)xf),(undefined2 *)guest_at((uint32_t)(*lst + 0x20)));
+        setCopReg(2,in_zero,lst[1]);
+        setCopReg(2,extraout_at,lst[2]);
         copFunction(2,0x480012);
         t = getCopReg(2,0xc800);
         sz = getCopReg(2,0xd800);
@@ -13655,21 +13655,21 @@ int * prim_list_persp_step(int *a0,undefined4 a1,undefined4 a2,int a3,undefined4
         _DAT_1f8003b0 = in_t5;
         _DAT_1f8003b8 = range_circle_test(t,sz,(uint *)guest_at((uint32_t)_DAT_1f8003d0),*(undefined4 *)guest_at((uint32_t)(uintptr_t)((vp + 0x18))));
         if (_DAT_1f8003b8 != 0) {
-          t = t + ((int)*(short *)guest_at((uint32_t)(uintptr_t)((arg6 + 2) ))* -_DAT_1f8003b8 >> 0xc);
-          sz = sz + ((int)*(short *)guest_at((uint32_t)(uintptr_t)((arg6 + 0xe) ))* -_DAT_1f8003b8 >> 0xc);
+          t = t + ((int)*(short *)guest_at((uint32_t)(uintptr_t)((xf + 2) ))* -_DAT_1f8003b8 >> 0xc);
+          sz = sz + ((int)*(short *)guest_at((uint32_t)(uintptr_t)((xf + 0xe) ))* -_DAT_1f8003b8 >> 0xc);
         }
         _DAT_1f8003b4 = t;
         _DAT_1f8003bc = sz;
         gte_xform3_t_ip((undefined4 *)guest_at((uint32_t)_DAT_1f8003d4),(undefined2 *)(uintptr_t)&DAT_1f8003a0);
-        t = *(int *)guest_at((uint32_t)(uintptr_t)(a0[7]));
-        rp = (int *)guest_at((uint32_t)(uintptr_t)(a0[7] ))+ 1;
+        t = *(int *)guest_at((uint32_t)(uintptr_t)(lst[7]));
+        rp = (int *)guest_at((uint32_t)(uintptr_t)(lst[7] ))+ 1;
         if (t != 0) {
-          /* Generated 0x8018B208 jalr's each record fn with the full a0-a3
+          /* Generated 0x8018B208 jalr's each record fn with the full lst-n
            * set, same {count,[x,a3field,arg0,func]} stride-16 table as
-           * prim_task_run: a0 = entry[+8] (data cursor), a1 = a1,
+           * prim_task_run: lst = entry[+8] (data cursor), a1 = a1,
            * a2 = a2 (both loaded once per node before the entry loop),
-           * a3 = entry[+4] (per-record field). task_invoke/call_guest only
-           * program $a0/$a1, leaving $a2/$a3 as stale register-file values
+           * n = entry[+4] (per-record field). task_invoke/call_guest only
+           * program $lst/$a1, leaving $a2/$n as stale register-file values
            * the callee dereferences. call_guest4 reproduces the guest ABI
            * exactly (same fix prim_task_run carries). */
           do {
@@ -13680,11 +13680,11 @@ int * prim_list_persp_step(int *a0,undefined4 a1,undefined4 a2,int a3,undefined4
           } while (0 < t);
         }
       }
-      a3 = a3 + -1;
-      a0 = a0 + 10;
-    } while (0 < a3);
+      n = n + -1;
+      lst = lst + 10;
+    } while (0 < n);
   }
-  return a0;
+  return lst;
 
 }
 
