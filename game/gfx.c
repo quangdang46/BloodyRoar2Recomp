@@ -96,17 +96,17 @@ extern char *s__Id__sys_c_v_1_140_1998_01_12_07_801b82d8;
 #define DAT_801b55e4   (*(int32_t *)g_DAT_801b55e4)
 #define DAT_801f642c   (*(uint32_t *)g_DAT_801f642c)
 #define DAT_801f68b4   (*(uint32_t *)g_DAT_801f68b4)
-#define _DAT_1f8000dc  (*(uint32_t *)g__DAT_1f8000dc)
+#define frame_tag  (*(uint32_t *)g__DAT_1f8000dc)
 #define DAT_801e40b6   (*(uint8_t *)g_DAT_801e40b6)
 #define DAT_801e40b7   (*(uint8_t *)g_DAT_801e40b7)
-#define DAT_801b8320   (*(uint8_t  *)g_DAT_801b8320)
+#define gpu_mode   (*(uint8_t  *)g_DAT_801b8320)
 #define DAT_801b8321   (*(uint8_t  *)g_DAT_801b8321)
-#define DAT_801b8322   (*(uint8_t  *)g_DAT_801b8322)
+#define gpu_dbg_level   (*(uint8_t  *)g_DAT_801b8322)
 #define DAT_801b8323   (*(uint8_t  *)g_DAT_801b8323)
-#define DAT_801b8324   (*(uint16_t *)g_DAT_801b8324)
-#define DAT_801b8326   (*(uint16_t *)g_DAT_801b8326)
-#define DAT_801b8330   ((uint32_t *)guest_at(0x801b8330))
-#define DAT_801b838c   ((uint32_t *)guest_at(0x801b838c))
+#define disp_width   (*(uint16_t *)g_DAT_801b8324)
+#define disp_height   (*(uint16_t *)g_DAT_801b8326)
+#define draw_env   ((uint32_t *)guest_at(0x801b8330))
+#define disp_env_shadow   ((uint32_t *)guest_at(0x801b838c))
 #define DAT_801b839c   (*(int32_t  *)guest_at(0x801b839c))
 #define DAT_801b83e0   (*(uint32_t *)guest_at(0x801b83e0))
 
@@ -281,7 +281,7 @@ void spr_desc_tbl_a_init(void)
     rec = (uint8_t *)&DAT_801f642c;
     do {
       i = i + -1;
-      *(uint32_t *)rec = (uint32_t)(_DAT_1f8000dc - 2);
+      *(uint32_t *)rec = (uint32_t)(frame_tag - 2);
       rec[7] = 9;
       rec[0xb] = 0x2f;
       rec[8] = 0x80;
@@ -307,7 +307,7 @@ void spr_desc_tbl_b_init(void)
     rec = (uint8_t *)&DAT_801f68b4;
     do {
       i = i + -1;
-      *(uint32_t *)rec = (uint32_t)(_DAT_1f8000dc - 2);
+      *(uint32_t *)rec = (uint32_t)(frame_tag - 2);
       rec[7] = 4;
       rec[0xb] = 0x67;
       rec[8] = 0x80;
@@ -335,13 +335,13 @@ void *spr_desc_slot_alloc(void)
   off = (uint32_t)DAT_801b55e0 * 0x24;
   slot = (uint32_t *)guest_at(0x801f6458 + off);
   owner = (int32_t)*slot;
-  if ((owner != (int32_t)_DAT_1f8000dc) &&
-      (next = DAT_801b55e0 + 1, owner != (int32_t)(_DAT_1f8000dc - 1))) {
+  if ((owner != (int32_t)frame_tag) &&
+      (next = DAT_801b55e0 + 1, owner != (int32_t)(frame_tag - 1))) {
     if (0x1f < next) {
       next = 0;
     }
     DAT_801b55e0 = next;
-    *slot = _DAT_1f8000dc;
+    *slot = frame_tag;
     return guest_at(0x801f645c + off);
   }
   return (void *)0;
@@ -427,7 +427,7 @@ void gpu_clear_image_cmd2(undefined4 rect,uint r,uint g,uint b)
 void gpu_clear_otag_r(uint32_t addr,uint32_t tag)
 
 {
-  if (1 < DAT_801b8322) {
+  if (1 < gpu_dbg_level) {
     GPU_DBG(s_ClearOTagR__08x__d_____80125540,addr,tag);
   }
   /* jalr t[11] with a0=addr,a1=tag (a2/a3 = caller leftovers in
@@ -443,7 +443,7 @@ void gpu_clear_otag_r(uint32_t addr,uint32_t tag)
 void gpu_draw_otag(undefined4 otag)
 
 {
-  if (1 < DAT_801b8322) {
+  if (1 < gpu_dbg_level) {
     GPU_DBG(s_DrawOTag__08x_____80125558,otag);
   }
   gpu_call(8,GPU_TBL()[6],otag,0,0);
@@ -459,7 +459,7 @@ int gpu_draw_env_put(int env_g)
   intptr_t hp;
   
   hp = (intptr_t)guest_at((uint32_t)env_g);
-  if (1 < DAT_801b8322) {
+  if (1 < gpu_dbg_level) {
     GPU_DBG(s_PutDrawEnv__08x_____8012556c,env_g);
   }
   gpu_prim_pkt_build(env_g + 0x1c,(ushort *)(uintptr_t)env_g);
@@ -487,7 +487,7 @@ void gpu_disp_mask_set(int enable)
 {
   undefined4 cmd;
   
-  if (1 < DAT_801b8322) {
+  if (1 < gpu_dbg_level) {
     GPU_DBG(s_SetDispMask__d_____801254a0,enable);
   }
   if (enable == 0) {
@@ -506,7 +506,7 @@ void gpu_disp_mask_set(int enable)
 void gpu_draw_sync(undefined4 n)
 
 {
-  if (1 < DAT_801b8322) {
+  if (1 < gpu_dbg_level) {
     GPU_DBG(s_DrawSync__d_____801254b4,n);
   }
   /* jalr t[15] with a0=n (delay slot 0x801911D0: move a0,s0). */
@@ -530,20 +530,20 @@ LAB_80190e68:
     guest_memset((uint32_t *)0x801b8320,0,0x80);
     cd_dispatch_tblc();
     bios_call_a0((*(uint32_t *)guest_at(0x801b8318)) & 0xffffff);
-    DAT_801b8320 = (uint8_t)gpu_mode_regs_apply(arg);
+    gpu_mode = (uint8_t)gpu_mode_regs_apply(arg);
     DAT_801b8321 = 1;
-    DAT_801b8324 = *(undefined2 *)((char *)guest_at(0x801b83a0) + (uint)DAT_801b8320 * 4);
-    DAT_801b8326 = *(undefined2 *)((char *)guest_at(0x801b83ac) + (uint)DAT_801b8320 * 4);
+    disp_width = *(undefined2 *)((char *)guest_at(0x801b83a0) + (uint)gpu_mode * 4);
+    disp_height = *(undefined2 *)((char *)guest_at(0x801b83ac) + (uint)gpu_mode * 4);
     guest_memset((uint32_t *)0x801b8330,0xff,0x5c);
     guest_memset((uint32_t *)0x801b838c,0xff,0x14);
-    v = (uint)DAT_801b8320;
+    v = (uint)gpu_mode;
   }
   else {
     if (v < 4) {
       if (v == 0) goto LAB_80190e4c;
     }
     else if (v == 5) goto LAB_80190e68;
-    if (1 < DAT_801b8322) {
+    if (1 < gpu_dbg_level) {
       GPU_DBG(s_ResetGraph__d_____80125430,arg);
     }
     /* jalr t[13] with a0=1 (delay slot 0x80190F5C: addiu a0,zero,1);
@@ -577,7 +577,7 @@ uint32_t draw_env_timing(uint32_t env_g)
   uint8_t  *timing_b;
   
   env = (ushort *)guest_at(env_g);
-  if (1 < DAT_801b8322) {
+  if (1 < gpu_dbg_level) {
     GPU_DBG(s_PutDispEnv__08x_____801255a0,env_g);
   }
   gpu_call(0x10,((env[1] & 0x3ff) << 10 | env[0] & 0x3ff | 0x5000000),0,0,0);
@@ -832,15 +832,15 @@ void gpu_prim_pkt_build(int pkt_g,ushort *env_p)
     h = env[2];
     h_raw = env[3];
     w = 0;
-    if ((-1 < (short)h) && (w = DAT_801b8324 - 1, (int)(short)h <= DAT_801b8324 + -1)) {
+    if ((-1 < (short)h) && (w = disp_width - 1, (int)(short)h <= disp_width + -1)) {
       w = h;
     }
     if ((short)h_raw < 0) {
       h = 0;
     }
     else {
-      h = DAT_801b8326 - 1;
-      if ((int)(short)h_raw <= DAT_801b8326 + -1) {
+      h = disp_height - 1;
+      if ((int)(short)h_raw <= disp_height + -1) {
         h = h_raw;
       }
     }
@@ -940,12 +940,12 @@ void gpu_rect_bounds_dbg(undefined4 name,short *rect)
   uint32_t p2g = guest_of(rect);
   short *rc = (short *)guest_at(p2g ? p2g : (uint32_t)(uintptr_t)rect);
   
-  if (DAT_801b8322 == '\x01') {
+  if (gpu_dbg_level == '\x01') {
     x = (int)rc[2];
-    if ((x <= DAT_801b8324) && (x + rc[0] <= (int)DAT_801b8324)) {
+    if ((x <= disp_width) && (x + rc[0] <= (int)disp_width)) {
       y = (int)rc[1];
-      if (((y <= DAT_801b8326) &&
-          (((y + rc[3] <= (int)DAT_801b8326 && (0 < x)) && (-1 < rc[0])))) &&
+      if (((y <= disp_height) &&
+          (((y + rc[3] <= (int)disp_height && (0 < x)) && (-1 < rc[0])))) &&
          ((-1 < y && (0 < rc[3])))) {
         return;
       }
@@ -953,7 +953,7 @@ void gpu_rect_bounds_dbg(undefined4 name,short *rect)
     msg = s__s_bad_RECT_801254c8;
   }
   else {
-    if (DAT_801b8322 != '\x02') {
+    if (gpu_dbg_level != '\x02') {
       return;
     }
     msg = (char *)guest_at(0x801254e8);
@@ -1446,7 +1446,7 @@ LAB_8012cb64:
 
 /* Sprite-attr pool A allocator: 0x18 slots x 0x28 stride at
  * 0x801f5978, round-robin counter DAT_801b55e4, sentinel
- * _DAT_1f8000dc. Slot word0 == sentinel or sentinel-1 -> NULL;
+ * frame_tag. Slot word0 == sentinel or sentinel-1 -> NULL;
  * else mark sentinel, bump counter (wrap at 0x18), return slot+4. */
 void *spr_pool_a_alloc(void)
 {
@@ -1454,7 +1454,7 @@ void *spr_pool_a_alloc(void)
   uint32_t *slot;
   int32_t next;
   int32_t v1 = DAT_801b55e4;
-  uint32_t sent = _DAT_1f8000dc;
+  uint32_t sent = frame_tag;
   if (v1 < 0) {
     slot = (uint32_t *)guest_at(0x801f5978);
     v1 = 0;
@@ -1481,7 +1481,7 @@ void *spr_pool_b_alloc(void)
   uint32_t *slot;
   int32_t next;
   int32_t v1 = DAT_801b55dc;
-  uint32_t sent = _DAT_1f8000dc;
+  uint32_t sent = frame_tag;
   slot = (uint32_t *)guest_at(0x801f5ed8 + (uint32_t)v1 * 0x2c);
   owner = (int32_t)*slot;
   if (owner == (int32_t)sent || owner == (int32_t)(sent - 1))
