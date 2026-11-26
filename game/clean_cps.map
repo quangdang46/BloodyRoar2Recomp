@@ -5327,3 +5327,11 @@
 80183fe4 scriptop_chk_state_bits
 80184354 chk_atk2_self
 80184358 scriptop_chk_state_bits
+80183008 scriptop_bra_subops
+8018304c scriptop_bra_subops
+8018306c scriptop_bra_subops
+8018308c scriptop_bra_subops
+801830ac scriptop_bra_subops
+801830cc scriptop_bra_subops
+801830ec scriptop_bra_subops
+8018310c scriptop_bra_subops

@@ -1739,6 +1739,7 @@
 80182f48 scriptop_bra
 80182ff0 scriptop_bra_pc_commit
 801831e0 scriptop_bra_cps
+80183008 scriptop_bra_subops
 80183248 scriptop_bsr
 801832f0 scriptop_bsr_cps
 80183338 scriptop_bsr_cps

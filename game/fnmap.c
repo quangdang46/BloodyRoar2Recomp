@@ -1390,6 +1390,7 @@ extern void scriptop_add(void);
 extern void scriptop_bra(void);
 extern void scriptop_bra_cps(void);
 extern void scriptop_bra_pc_commit(void);
+extern void scriptop_bra_subops(void);
 extern void scriptop_bsr(void);
 extern void scriptop_bsr_0x80183430(void);
 extern void scriptop_bsr_0x8018344c(void);
@@ -2384,6 +2385,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80182f3c, (void *)scriptop_end },
   { 0x80182f48, (void *)scriptop_bra },
   { 0x80182ff0, (void *)scriptop_bra_pc_commit },
+  { 0x80183008, (void *)scriptop_bra_subops },
   { 0x801831e0, (void *)scriptop_bra_cps },
   { 0x80183248, (void *)scriptop_bsr },
   { 0x80183418, (void *)scriptop_bsr_cps },
