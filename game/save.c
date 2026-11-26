@@ -267,7 +267,7 @@ extern uint8_t *_g_system_config_ptr;
  * but callers pass host pointers). Tightening them requires a
  * per-callsite ABI audit — do NOT "fix" without one. */
 extern void brightness_packet_send(int32_t);
-extern void mc_state_init();
+extern void mc_state_init(void);
 extern int cd_cmd_issue_async();
 extern int cd_sync_wait_a();
 extern int cd_result_wait_b_fwd();
@@ -297,12 +297,12 @@ extern void deferred_cmd_post();
 extern int dialog_sel_dispatch(intptr_t,uint32_t);
 extern void menu_stepper_state_advance();
 extern void hud_gauge_render();
-extern void empty_ret();
+extern void empty_ret(void);
 extern int frame_divisor_get(void);
 extern void scroll_offset_set();
 extern void battle_session_arm(intptr_t,int);
 extern void frame_tick(intptr_t);
-extern void bios_kobj_tramp();
+extern void bios_kobj_tramp(void);
 
 /* ======== 0x80157a00 ======== */
 
@@ -3007,8 +3007,8 @@ int action_enter_fwd(void *battle, uint8_t *ctrl, uint32_t sel)
 extern void fighter_anim_table_init(int32_t);
 extern void sprite_anim_chain_build(uint32_t);
 extern int select_phase_gate(uint32_t,uint32_t);
-extern int display_cur_invalidate();
-extern int display_pair_invalidate();
+extern int display_cur_invalidate(void);
+extern int display_pair_invalidate(void);
 extern int display_page_commit_a(int32_t);
 extern int save_channel_init_commit(uint32_t,int32_t,uint8_t *,uint8_t *);
 extern int save_load_state_machine(uint32_t,int32_t);
@@ -8036,7 +8036,7 @@ extern int angle_from_xy(int,int);
 extern uint32_t noop_c(int);
 extern void node_tree_free(int);
 extern void bios_tramp_c003(uint32_t,uint32_t);
-extern void task_slot_step();
+extern void task_slot_step(void);
 
 /* 0x801a0620 — cd_svc_50(a0,a1); cd_svc_4e(a0,0x3f,0). */
 void cd_svc_dual(uint32_t a0,uint32_t a1)
