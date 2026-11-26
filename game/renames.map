@@ -2138,3 +2138,12 @@
 8018d694 emit_tail_zero
 8018da28 rotmat2_build_s16
 8018dab4 angle_pair_rotmat_unpack
+8018e63c printf_cps_8018e63c
+8018e64c printf_cps_8018e64c
+8018e654 printf_cps_8018e654
+8018e670 printf_cps_8018e670
+8018e678 printf_cps_8018e678
+8018e680 printf_cps_8018e680
+8018e708 printf_cps_8018e708
+8018e710 printf_cps_8018e710
+8018e76c printf_cps_8018e76c
