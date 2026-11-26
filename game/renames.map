@@ -233,6 +233,10 @@
 80129e40 menu_step_a
 8012f2a8 menu_step_b
 801919ac draw_env_timing
+80191aa4 gpu_callback_state_flags
+80191b80 gpu_callback_dispatch
+80191b90 gpu_callback_descriptor_match
+80191c04 gpu_callback_resume_next
 80193ea0 sprite_attr_init_a
 80193f60 sprite_attr_init_b
 8018bd40 bitfield_or_write

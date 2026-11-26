@@ -4595,3 +4595,36 @@
 8012a93c cps_8012a92c
 801298f8 cps_801298f8
 801268b8 cps_801268b8
+
+# GPU callback state/dispatch pieces in SLES_017.22_full_43.c.
+# Every branch continuation re-enters the same CPS-aware clean body.
+80191aa4 gpu_callback_state_flags
+80191aac gpu_callback_state_flags
+80191ac0 gpu_callback_state_flags
+80191ac4 gpu_callback_state_flags
+80191ad4 gpu_callback_state_flags
+80191ad8 gpu_callback_state_flags
+80191ae8 gpu_callback_state_flags
+80191aec gpu_callback_state_flags
+80191b00 gpu_callback_state_flags
+80191b04 gpu_callback_state_flags
+80191b18 gpu_callback_state_flags
+80191b20 gpu_callback_state_flags
+80191b28 gpu_callback_state_flags
+80191b30 gpu_callback_state_flags
+80191b38 gpu_callback_state_flags
+80191b40 gpu_callback_state_flags
+80191b48 gpu_callback_state_flags
+80191b4c gpu_callback_state_flags
+80191b5c gpu_callback_state_flags
+80191b60 gpu_callback_state_flags
+80191b68 gpu_callback_state_flags
+80191b6c gpu_callback_state_flags
+80191b80 gpu_callback_dispatch
+80191b88 gpu_callback_dispatch
+80191b90 gpu_callback_descriptor_match
+80191bb0 gpu_callback_descriptor_match
+80191bc8 gpu_callback_descriptor_match
+80191be0 gpu_callback_descriptor_match
+80191bf8 gpu_callback_descriptor_match
+80191c04 gpu_callback_resume_next
