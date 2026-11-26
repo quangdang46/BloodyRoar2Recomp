@@ -11205,7 +11205,7 @@ void gp_slot24_set(undefined4 v)
 
 }
 
-int prim_batch_emit(int desc,int idx,undefined4 a2,undefined4 a3,int *otc, undefined4 arg6,undefined4 arg7,int num,int sel,uint fl, undefined4 arg11)
+int prim_batch_emit(int desc,int idx,undefined4 w0,undefined4 w1,int *otc, undefined4 arg6,undefined4 arg7,int num,int sel,uint fl, undefined4 kind)
 {
   undefined2 t1;
   byte cnt;
@@ -11232,7 +11232,7 @@ int prim_batch_emit(int desc,int idx,undefined4 a2,undefined4 a3,int *otc, undef
    * Read the 32-bit guest entries via guest_at (never host ** deref). */
   uint32_t ptrsub = *(uint32_t *)guest_at(0x801be894u + (uint32_t)sel * 4);
   uint32_t datsub = *(uint32_t *)guest_at(0x801be84cu + (uint32_t)sel * 4);
-  node = (int)(intptr_t)task_node_alloc(arg11,2,0xd,*(undefined4 *)guest_at(ptrsub + (uint32_t)idx * 4),0,
+  node = (int)(intptr_t)task_node_alloc(kind,2,0xd,*(undefined4 *)guest_at(ptrsub + (uint32_t)idx * 4),0,
                        (uint)*(uint8_t *)guest_at(datsub + (uint32_t)idx) * *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8) ))* 2
                        + *(int *)guest_at((uint32_t)(uintptr_t)((desc + 0xc) ))* 0x10 + 0x38);
   if (node == 0) {
@@ -11247,8 +11247,8 @@ int prim_batch_emit(int desc,int idx,undefined4 a2,undefined4 a3,int *otc, undef
   rec[2] = (undefined4)br2_gaddr(d0);
   rec[1] = (undefined4)(br2_gaddr(d1) + (uint)cnt * t0);
   t0 = *(int *)guest_at((uint32_t)(uintptr_t)((desc + 0xc)));
-  rec[4] = a2;
-  rec[7] = a3;
+  rec[4] = w0;
+  rec[7] = w1;
   rec[3] = (undefined4)br2_gaddr(d0 + t0 * 2);
   rec[6] = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((desc + 0x18)));
   t1 = *(undefined2 *)guest_at((uint32_t)(uintptr_t)((desc + 8)));
@@ -11809,23 +11809,23 @@ void obj_flag34_clear(int obj)
 
 }
 
-int tween_seq_alloc(int a0,undefined2 a1,undefined4 a2,undefined4 a3,short arg5, undefined2 arg6,undefined4 arg7,undefined4 arg8)
+int tween_seq_alloc(int mode,undefined2 a1,undefined4 a2,undefined4 a3,short arg5, undefined2 arg6,undefined4 arg7,undefined4 kind)
 {
   int node;
   undefined2 *pay;
-  node = (int)(intptr_t)task_node_alloc(arg8,2,3,0x801aa4fc,0,0x4c);
+  node = (int)(intptr_t)task_node_alloc(kind,2,3,0x801aa4fc,0,0x4c);
   if (node == 0) {
     node = 0;
   }
   else {
     pay = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((node + 0x10))));
-    *pay = (short)a0;
+    *pay = (short)mode;
     pay[1] = a1;
     pay[2] = 1;
     pay[3] = arg5 + -1;
     *(undefined4 *)(pay + 0xc) = a3;
     pay[4] = arg6;
-    if (a0 == 0) {
+    if (mode == 0) {
       *(undefined4 *)(pay + 0xe) = a2;
     }
     else {
@@ -14471,21 +14471,21 @@ LAB_801ac2ac:
 
 }
 
-void rect_prim_spawn(undefined2 a0,undefined2 a1,undefined2 a2,undefined2 a3, undefined1 arg5,undefined1 arg6,undefined2 arg7,undefined2 arg8, undefined4 arg9)
+void rect_prim_spawn(undefined2 x0,undefined2 y0,undefined2 x1,undefined2 y1, undefined1 b0,undefined1 b1,undefined2 fl,undefined2 aux, undefined4 kind)
 {
   int t;
-  t = (int)(uintptr_t)task_node_alloc(arg9,2,0xe,0x801acdbc,0,0x20);
+  t = (int)(uintptr_t)task_node_alloc(kind,2,0xe,0x801acdbc,0,0x20);
   if (t != 0) {
     t = *(int *)guest_at((uint32_t)(uintptr_t)((t + 0x10)));
-    prim_packet_init(t + 0x14,0,0,arg7);
+    prim_packet_init(t + 0x14,0,0,fl);
     prim_tag_set(t);
-    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((t + 8) ))= a0;
-    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((t + 10) ))= a1;
-    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((t + 0x10) ))= a2;
-    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((t + 0x12) ))= a3;
-    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((t + 0xc) ))= arg5;
-    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((t + 0xd) ))= arg6;
-    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((t + 0xe) ))= arg8;
+    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((t + 8) ))= x0;
+    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((t + 10) ))= y0;
+    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((t + 0x10) ))= x1;
+    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((t + 0x12) ))= y1;
+    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((t + 0xc) ))= b0;
+    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((t + 0xd) ))= b1;
+    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((t + 0xe) ))= aux;
     *(undefined4 *)guest_at((uint32_t)(uintptr_t)((t + 0x1c) ))= 1;
     *(byte *)guest_at((uint32_t)(uintptr_t)((t + 7) ))= *(byte *)guest_at((uint32_t)(uintptr_t)((t + 7) ))| 3;
   }
@@ -14580,34 +14580,34 @@ void gte_points_xform(undefined4 *ip,undefined4 *sz,undefined2 *sx,undefined2 *s
 
 }
 
-int tween_track_alloc(int a0,undefined2 a1,undefined4 a2,undefined2 *a3,short arg5 ,undefined2 arg6,undefined2 arg7,undefined4 arg8)
+int tween_track_alloc(int mode,undefined2 a1,undefined4 a2,undefined2 *kf,short arg5 ,undefined2 arg6,undefined2 arg7,undefined4 kind)
 {
   undefined2 fld0;
   int node;
   int ret;
   undefined2 *pay;
-  node = (int)(uintptr_t)task_node_alloc(arg8,2,3,0x801a972c,0,0x4c);
+  node = (int)(uintptr_t)task_node_alloc(kind,2,3,0x801a972c,0,0x4c);
   ret = 0;
   if (node != 0) {
     pay = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((node + 0x10))));
-    *pay = (short)a0;
+    *pay = (short)mode;
     pay[1] = a1;
     pay[2] = 0;
     pay[3] = arg5 + -1;
     pay[4] = arg6;
     pay[6] = arg7;
-    if (a0 == 0) {
+    if (mode == 0) {
       *(undefined4 *)(pay + 0xe) = a2;
     }
     else {
       *(undefined4 *)(pay + 0x10) = a2;
     }
-    /* a3 is a GUEST address (keyframe descriptor); resolve fields via
+    /* kf is a GUEST address (keyframe descriptor); resolve fields via
      * guest_at and store it as a 32-bit guest pointer, not a host ptr.
      * It may arrive as a guest address in pointer costume (clean callers)
      * or as a host pointer (clean_table wrap); br2_gaddr yields the
      * canonical guest address for both. */
-    uint32_t p4g = br2_gaddr(a3);
+    uint32_t p4g = br2_gaddr(kf);
     *(uint32_t *)((char *)pay + 0x18) = p4g;
     *(undefined4 *)((char *)pay + 0x24) = *(uint32_t *)guest_at(p4g + 8);
     *(undefined4 *)((char *)pay + 0x28) = *(uint32_t *)guest_at(p4g + 12);
