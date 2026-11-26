@@ -847,129 +847,129 @@ LAB_80180f88:
 
 }
 
-void fighter_flash_update(uint param_1,uint param_2,int param_3,byte *param_4)
+void fighter_flash_update(uint scene,uint player_idx,int battle,byte *fighter)
 {
-  int iVar1;
-  uint uVar2;
-  short *psVar3;
-  undefined1 *puVar4;
-  uint uVar5;
-  undefined1 uVar6;
-  int iVar7;
-  undefined4 uVar8;
-  short *psVar9;
-  uVar5 = (uint)*(byte *)(param_4 + 2);
-  iVar1 = uVar5 * 0xbc;
-  psVar9 = (short *)(&DAT_801f4d70 + iVar1);
+  int rec_off;
+  uint flags;
+  short *rec_ptr;
+  undefined1 *pkt_ptr;
+  uint slot_idx;
+  undefined1 tint;
+  int flash;
+  undefined4 prim_attr;
+  short *rec;
+  slot_idx = (uint)*(byte *)(fighter + 2);
+  rec_off = slot_idx * 0xbc;
+  rec = (short *)(&DAT_801f4d70 + rec_off);
   { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-    decomp_trace_record(80,(uint32_t)param_1,uVar5,
-        (uint8_t)((void*)param_4==(void*)g_DAT_1f8001f0?2:1),(uint32_t)param_3); }
-  if (*(short *)guest_at((uint32_t)(uintptr_t)((param_3 + 0x82) ))== 0) {
-    if (0 < *psVar9) {
-      *psVar9 = *psVar9 + -1;
+    decomp_trace_record(80,(uint32_t)scene,slot_idx,
+        (uint8_t)((void*)fighter==(void*)g_DAT_1f8001f0?2:1),(uint32_t)battle); }
+  if (*(short *)guest_at((uint32_t)(uintptr_t)((battle + 0x82) ))== 0) {
+    if (0 < *rec) {
+      *rec = *rec + -1;
       return;
     }
-    iVar7 = (int)*(short *)(&DAT_801f4d74 + iVar1) + (int)*(short *)(&DAT_801f4d76 + iVar1);
-    if (iVar7 < 0x100) {
-      if (iVar7 < 0) {
-        *(undefined2 *)(&DAT_801f4d76 + iVar1) = 0;
-        iVar7 = 0;
+    flash = (int)*(short *)(&DAT_801f4d74 + rec_off) + (int)*(short *)(&DAT_801f4d76 + rec_off);
+    if (flash < 0x100) {
+      if (flash < 0) {
+        *(undefined2 *)(&DAT_801f4d76 + rec_off) = 0;
+        flash = 0;
       }
     }
     else {
-      *(undefined2 *)(&DAT_801f4d76 + iVar1) = 0;
-      iVar7 = 0xff;
+      *(undefined2 *)(&DAT_801f4d76 + rec_off) = 0;
+      flash = 0xff;
     }
-    *(short *)(&DAT_801f4d74 + iVar1) = (short)iVar7;
+    *(short *)(&DAT_801f4d74 + rec_off) = (short)flash;
   }
   else {
-    iVar7 = (int)*(short *)(&DAT_801f4d74 + iVar1);
+    flash = (int)*(short *)(&DAT_801f4d74 + rec_off);
   }
-  if (iVar7 == 0xff) {
-    uVar2 = *(uint *)(param_4 + 0x6c) | 0x400;
+  if (flash == 0xff) {
+    flags = *(uint *)(fighter + 0x6c) | 0x400;
   }
   else {
-    uVar2 = *(uint *)(param_4 + 0x6c) & 0xfffffbff;
+    flags = *(uint *)(fighter + 0x6c) & 0xfffffbff;
   }
-  *(uint *)(param_4 + 0x6c) = uVar2;
-  if ((iVar7 == *(short *)(&DAT_801f4d78 + iVar1)) && (iVar7 == *(short *)(&DAT_801f4d7a + iVar1)))
+  *(uint *)(fighter + 0x6c) = flags;
+  if ((flash == *(short *)(&DAT_801f4d78 + rec_off)) && (flash == *(short *)(&DAT_801f4d7a + rec_off)))
   {
     return;
   }
-  *(undefined2 *)(&DAT_801f4d7a + iVar1) = *(undefined2 *)(&DAT_801f4d78 + iVar1);
-  *(short *)(&DAT_801f4d78 + iVar1) = (short)iVar7;
-  uVar6 = (undefined1)iVar7;
-  switch(*(undefined2 *)(&DAT_801f4d72 + iVar1)) {
+  *(undefined2 *)(&DAT_801f4d7a + rec_off) = *(undefined2 *)(&DAT_801f4d78 + rec_off);
+  *(short *)(&DAT_801f4d78 + rec_off) = (short)flash;
+  tint = (undefined1)flash;
+  switch(*(undefined2 *)(&DAT_801f4d72 + rec_off)) {
   case 0:
-    puVar4 = &DAT_801f4d7c + param_2 * 0x58 + uVar5 * 0xbc;
-    *(undefined1 *)(psVar9 + param_2 * 0x2c + 0x20) = uVar6;
-    *(undefined1 *)((intptr_t)psVar9 + param_2 * 0x58 + 0x41) = uVar6;
-    *(undefined1 *)(psVar9 + param_2 * 0x2c + 0x21) = uVar6;
-    uVar6 = (&DAT_801e40b6)[param_2 * 0x2150];
-    uVar8 = 0x40;
+    pkt_ptr = &DAT_801f4d7c + player_idx * 0x58 + slot_idx * 0xbc;
+    *(undefined1 *)(rec + player_idx * 0x2c + 0x20) = tint;
+    *(undefined1 *)((intptr_t)rec + player_idx * 0x58 + 0x41) = tint;
+    *(undefined1 *)(rec + player_idx * 0x2c + 0x21) = tint;
+    tint = (&DAT_801e40b6)[player_idx * 0x2150];
+    prim_attr = 0x40;
     goto LAB_8016d1cc;
   case 1:
-    puVar4 = &DAT_801f4d7c + param_2 * 0x58 + uVar5 * 0xbc;
-    *(undefined1 *)(psVar9 + param_2 * 0x2c + 0x20) = uVar6;
-    *(undefined1 *)((intptr_t)psVar9 + param_2 * 0x58 + 0x41) = uVar6;
-    *(undefined1 *)(psVar9 + param_2 * 0x2c + 0x21) = uVar6;
+    pkt_ptr = &DAT_801f4d7c + player_idx * 0x58 + slot_idx * 0xbc;
+    *(undefined1 *)(rec + player_idx * 0x2c + 0x20) = tint;
+    *(undefined1 *)((intptr_t)rec + player_idx * 0x58 + 0x41) = tint;
+    *(undefined1 *)(rec + player_idx * 0x2c + 0x21) = tint;
     break;
   case 2:
-    puVar4 = &DAT_801f4d7c + param_2 * 0x58 + uVar5 * 0xbc;
-    psVar3 = psVar9 + param_2 * 0x2c + 0x1e;
-    *(undefined1 *)(psVar9 + param_2 * 0x2c + 0x20) = uVar6;
-    *(undefined1 *)((intptr_t)psVar9 + param_2 * 0x58 + 0x41) = 0;
+    pkt_ptr = &DAT_801f4d7c + player_idx * 0x58 + slot_idx * 0xbc;
+    rec_ptr = rec + player_idx * 0x2c + 0x1e;
+    *(undefined1 *)(rec + player_idx * 0x2c + 0x20) = tint;
+    *(undefined1 *)((intptr_t)rec + player_idx * 0x58 + 0x41) = 0;
     goto LAB_8016d1c0;
   case 3:
-    puVar4 = &DAT_801f4d7c + param_2 * 0x58 + uVar5 * 0xbc;
-    psVar3 = psVar9 + param_2 * 0x2c + 0x1e;
-    *(undefined1 *)(psVar9 + param_2 * 0x2c + 0x20) = 0;
+    pkt_ptr = &DAT_801f4d7c + player_idx * 0x58 + slot_idx * 0xbc;
+    rec_ptr = rec + player_idx * 0x2c + 0x1e;
+    *(undefined1 *)(rec + player_idx * 0x2c + 0x20) = 0;
     goto LAB_8016d1bc;
   case 4:
-    puVar4 = &DAT_801f4d7c + param_2 * 0x58 + uVar5 * 0xbc;
-    *(undefined1 *)(psVar9 + param_2 * 0x2c + 0x20) = 0;
-    *(undefined1 *)((intptr_t)psVar9 + param_2 * 0x58 + 0x41) = 0;
-    *(undefined1 *)(psVar9 + param_2 * 0x2c + 0x21) = uVar6;
+    pkt_ptr = &DAT_801f4d7c + player_idx * 0x58 + slot_idx * 0xbc;
+    *(undefined1 *)(rec + player_idx * 0x2c + 0x20) = 0;
+    *(undefined1 *)((intptr_t)rec + player_idx * 0x58 + 0x41) = 0;
+    *(undefined1 *)(rec + player_idx * 0x2c + 0x21) = tint;
     break;
   case 5:
-    puVar4 = &DAT_801f4d7c + param_2 * 0x58 + uVar5 * 0xbc;
-    psVar3 = psVar9 + param_2 * 0x2c + 0x1e;
-    *(undefined1 *)(psVar9 + param_2 * 0x2c + 0x20) = uVar6;
+    pkt_ptr = &DAT_801f4d7c + player_idx * 0x58 + slot_idx * 0xbc;
+    rec_ptr = rec + player_idx * 0x2c + 0x1e;
+    *(undefined1 *)(rec + player_idx * 0x2c + 0x20) = tint;
     goto LAB_8016d1bc;
   case 6:
-    puVar4 = &DAT_801f4d7c + param_2 * 0x58 + uVar5 * 0xbc;
-    *(undefined1 *)(psVar9 + param_2 * 0x2c + 0x20) = uVar6;
-    *(undefined1 *)((intptr_t)psVar9 + param_2 * 0x58 + 0x41) = 0;
-    *(undefined1 *)(psVar9 + param_2 * 0x2c + 0x21) = uVar6;
+    pkt_ptr = &DAT_801f4d7c + player_idx * 0x58 + slot_idx * 0xbc;
+    *(undefined1 *)(rec + player_idx * 0x2c + 0x20) = tint;
+    *(undefined1 *)((intptr_t)rec + player_idx * 0x58 + 0x41) = 0;
+    *(undefined1 *)(rec + player_idx * 0x2c + 0x21) = tint;
     break;
   case 7:
-    puVar4 = &DAT_801f4d7c + param_2 * 0x58 + uVar5 * 0xbc;
-    *(undefined1 *)(psVar9 + param_2 * 0x2c + 0x20) = 0;
-    *(undefined1 *)((intptr_t)psVar9 + param_2 * 0x58 + 0x41) = uVar6;
-    *(undefined1 *)(psVar9 + param_2 * 0x2c + 0x21) = uVar6;
+    pkt_ptr = &DAT_801f4d7c + player_idx * 0x58 + slot_idx * 0xbc;
+    *(undefined1 *)(rec + player_idx * 0x2c + 0x20) = 0;
+    *(undefined1 *)((intptr_t)rec + player_idx * 0x58 + 0x41) = tint;
+    *(undefined1 *)(rec + player_idx * 0x2c + 0x21) = tint;
     break;
   case 8:
-    puVar4 = &DAT_801f4d7c + param_2 * 0x58 + uVar5 * 0xbc;
-    psVar3 = psVar9 + param_2 * 0x2c + 0x1e;
-    *(char *)(psVar9 + param_2 * 0x2c + 0x20) = (char)(iVar7 / 2);
+    pkt_ptr = &DAT_801f4d7c + player_idx * 0x58 + slot_idx * 0xbc;
+    rec_ptr = rec + player_idx * 0x2c + 0x1e;
+    *(char *)(rec + player_idx * 0x2c + 0x20) = (char)(flash / 2);
 LAB_8016d1bc:
-    *(undefined1 *)((intptr_t)psVar3 + 5) = uVar6;
+    *(undefined1 *)((intptr_t)rec_ptr + 5) = tint;
 LAB_8016d1c0:
-    *(undefined1 *)(psVar3 + 3) = 0;
+    *(undefined1 *)(rec_ptr + 3) = 0;
     break;
   default:
     goto switchD_8016cecc_default;
   }
-  uVar6 = (&DAT_801e40b6)[param_2 * 0x2150];
-  uVar8 = 0x20;
+  tint = (&DAT_801e40b6)[player_idx * 0x2150];
+  prim_attr = 0x20;
 LAB_8016d1cc:
-  prim_packet_init_tex((int)guest_of(puVar4),1,uVar6,uVar8,0);
+  prim_packet_init_tex((int)guest_of(pkt_ptr),1,tint,prim_attr,0);
 switchD_8016cecc_default:
-  *(uint *)(psVar9 + param_2 * 0x2c + 0x2c) =
-       *(uint *)(psVar9 + param_2 * 0x2c + 0x2c) & 0xff000000 |
-       *(uint *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x207c) ))& 0xffffff;
-  *(uint *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x207c) ))=
-       *(uint *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x207c) ))& 0xff000000 | guest_of(psVar9 + param_2 * 0x2c + 6) & 0xffffff;
+  *(uint *)(rec + player_idx * 0x2c + 0x2c) =
+       *(uint *)(rec + player_idx * 0x2c + 0x2c) & 0xff000000 |
+       *(uint *)guest_at((uint32_t)(uintptr_t)((scene + 0x207c) ))& 0xffffff;
+  *(uint *)guest_at((uint32_t)(uintptr_t)((scene + 0x207c) ))=
+       *(uint *)guest_at((uint32_t)(uintptr_t)((scene + 0x207c) ))& 0xff000000 | guest_of(rec + player_idx * 0x2c + 6) & 0xffffff;
   return;
 
 }
