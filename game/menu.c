@@ -15469,15 +15469,15 @@ blockB:
  * count/divisor, arg8 = u8 triple ptr. The pointer params arrive here
  * as host pointers (save.cfg blk[] or guest_at() aliases from the
  * gen_clean_table wrapper) — the triple loads are plain host reads,
- * matching the guest lh/lhu/lbu semantics (param_4/5 signed, param_3
- * unsigned, param_8 bytes).
+ * matching the guest lh/lhu/lbu semantics (colvec/rowvec signed,
+ * u16vec unsigned, u8vec bytes).
  *
  * The guest body keeps its scratch halfword frame at sp+0..0x1c and
  * two record cursors in s-registers: g10 = 72-byte-record cursor,
  * g11 = 48-byte-record cursor (both advanced in lockstep with their
  * +20/+12 aliases g6/g7). All frame reloads are lhu; the only lh
  * loads are the two divisor triples. Loop bounds are sltu (unsigned)
- * against param_6/param_7; the cell-shape selects use signed diff
+ * against cols/rows; the cell-shape selects use signed diff
  * compares. Returns the 72-byte cursor (guest $v0 = $t2). */
 
 /* MIPS div lo semantics as modelled by the generated body: signed
@@ -15589,7 +15589,7 @@ uint32_t terrain_packet_gen(uint32_t hdr, uint32_t cur,
   int i;
 
   /* ---- block_80135A14: header ---- */
-  MW32(hdr + 0x1cu, cur);              /* hdr->out_cursor = param_2 */
+  MW32(hdr + 0x1cu, cur);              /* hdr->out_cursor = cur */
   MW16(hdr + 0x0cu, 0);
   MW16(hdr + 0x0eu, 0);
 
