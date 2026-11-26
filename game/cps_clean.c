@@ -7440,7 +7440,8 @@ done:
 }
 
 /* cps_80129248 — clean CPS transliteration of br2eu_func_80129248 (guest 0x80129248)
- * from SLES_017.22_full_01.c. */
+ * from SLES_017.22_full_01.c.
+ * param-record field copier — reads rec fields (v1+4/8/12, s1+204), writes a0+4/8/12 and stack frame */
 void cps_80129248(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -10104,7 +10105,8 @@ block_8012A0E0:
 }
 
 /* cps_8012a144 — clean CPS transliteration of br2eu_func_8012A144 (guest 0x8012a144)
- * from SLES_017.22_full_01.c. */
+ * from SLES_017.22_full_01.c.
+ * param block init — writes halfwords a0+10..20 */
 void cps_8012a144(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -10287,7 +10289,8 @@ block_8012A284:
 }
 
 /* cps_8012a328 — clean CPS transliteration of br2eu_func_8012A328 (guest 0x8012a328)
- * from SLES_017.22_full_01.c. */
+ * from SLES_017.22_full_01.c.
+ * coord/vec helper — reads a0, a1+8, a2+8/28/30; writes a1+12/20 and v1-16/-32 */
 void cps_8012a328(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -32456,7 +32459,8 @@ block_801380C4:
 }
 
 /* cps_80138100 — clean CPS transliteration of br2eu_func_80138100 (guest 0x80138100)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * angle-vector path — jals angle_vec_build; spills 9 words to stack frame */
 void cps_80138100(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -43185,7 +43189,8 @@ block_8013E0C0:
 }
 
 /* cps_8013e654 — clean CPS transliteration of br2eu_func_8013E654 (guest 0x8013e654)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * record field update — reads/writes v0+6 and v0+12 */
 void cps_8013e654(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -44370,7 +44375,8 @@ block_8013ED80:
 }
 
 /* cps_8013f828 — clean CPS transliteration of br2eu_func_8013F828 (guest 0x8013f828)
- * from SLES_017.22_full_10.c. */
+ * from SLES_017.22_full_10.c.
+ * ctx field reader — reads s6+2410/2414; builds 6-word stack frame */
 void cps_8013f828(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -60385,7 +60391,8 @@ void cps_8017a6e0(void)
 }
 
 /* cps_8017a990 — clean CPS transliteration of br2eu_func_8017A990 (guest 0x8017a990)
- * from SLES_017.22_full_34.c. */
+ * from SLES_017.22_full_34.c.
+ * u16 param decoder — reads half(a2), sign-extends top byte, 2-way dispatch */
 void cps_8017a990(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -60798,7 +60805,8 @@ void cps_8017ae10(void)
 }
 
 /* cps_8017b5f4 — clean CPS transliteration of br2eu_func_8017B5F4 (guest 0x8017b5f4)
- * from SLES_017.22_full_35.c. */
+ * from SLES_017.22_full_35.c.
+ * fighter-param decoder — reads half(a2) + byte(a0+5); range-checks bitfield, 4 continuations */
 void cps_8017b5f4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -61332,7 +61340,8 @@ block_8017B858:
 }
 
 /* cps_8017b860 — clean CPS transliteration of br2eu_func_8017B860 (guest 0x8017b860)
- * from SLES_017.22_full_35.c. */
+ * from SLES_017.22_full_35.c.
+ * fighter-param decoder — reads half(a2) + byte(a0+5); range-checks bitfield, 4 continuations */
 void cps_8017b860(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -61701,7 +61710,8 @@ block_8017BA34:
 }
 
 /* cps_8017ba3c — clean CPS transliteration of br2eu_func_8017BA3C (guest 0x8017ba3c)
- * from SLES_017.22_full_35.c. */
+ * from SLES_017.22_full_35.c.
+ * param decoder — reads half(a2)+0/2/4 and byte(t0+5); 5-way dispatch */
 void cps_8017ba3c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -62332,7 +62342,8 @@ void cps_8017bd8c(void)
 }
 
 /* cps_8017c35c — clean CPS transliteration of br2eu_func_8017C35C (guest 0x8017c35c)
- * from SLES_017.22_full_35.c. */
+ * from SLES_017.22_full_35.c.
+ * param decoder — reads half(a2)+0/2, byte(a3+5); range + flag checks */
 void cps_8017c35c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -62846,7 +62857,8 @@ block_8017C5B0:
 }
 
 /* cps_8017c5b8 — clean CPS transliteration of br2eu_func_8017C5B8 (guest 0x8017c5b8)
- * from SLES_017.22_full_35.c. */
+ * from SLES_017.22_full_35.c.
+ * fighter-param decoder — reads half(a2) + byte(a0+5) */
 void cps_8017c5b8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -63030,7 +63042,8 @@ store:
 }
 
 /* cps_8017c7b0 — clean CPS transliteration of br2eu_func_8017C7B0 (guest 0x8017c7b0)
- * from SLES_017.22_full_35.c. */
+ * from SLES_017.22_full_35.c.
+ * fighter state reader — reads a0+92/116, a1+210, a2+0/2 */
 void cps_8017c7b0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -63230,7 +63243,8 @@ store:
 }
 
 /* cps_8017c898 — clean CPS transliteration of br2eu_func_8017C898 (guest 0x8017c898)
- * from SLES_017.22_full_35.c. */
+ * from SLES_017.22_full_35.c.
+ * fighter state reader — reads a0+92/116, a1+210, a2+0/2 */
 void cps_8017c898(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -63449,7 +63463,8 @@ void cps_8017c9bc(void)
 }
 
 /* cps_8017ca84 — clean CPS transliteration of br2eu_func_8017CA84 (guest 0x8017ca84)
- * from SLES_017.22_full_35.c. */
+ * from SLES_017.22_full_35.c.
+ * fighter-param decoder — reads half(a2) + byte(a0+5) */
 void cps_8017ca84(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -64308,7 +64323,8 @@ block_8017CF00:
 }
 
 /* cps_8017d1d0 — clean CPS transliteration of br2eu_func_8017D1D0 (guest 0x8017d1d0)
- * from SLES_017.22_full_35.c. */
+ * from SLES_017.22_full_35.c.
+ * fighter state reader — reads a1+44, a2+0/2, byte(a3+5) */
 void cps_8017d1d0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -64657,7 +64673,8 @@ void cps_8017d354(void)
 }
 
 /* cps_8017d55c — clean CPS transliteration of br2eu_func_8017D55C (guest 0x8017d55c)
- * from SLES_017.22_full_35.c. */
+ * from SLES_017.22_full_35.c.
+ * fighter state reader — reads a0+44/5, a2+0/2 */
 void cps_8017d55c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -64958,7 +64975,8 @@ block_8017D6A4:
 }
 
 /* cps_8017d6ac — clean CPS transliteration of br2eu_func_8017D6AC (guest 0x8017d6ac)
- * from SLES_017.22_full_35.c. */
+ * from SLES_017.22_full_35.c.
+ * fighter state reader — reads a0+44/5, a2+0/2; 5-way dispatch */
 void cps_8017d6ac(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -65288,7 +65306,8 @@ void cps_8017d7ec(void)
 }
 
 /* cps_8017d9dc — clean CPS transliteration of br2eu_func_8017D9DC (guest 0x8017d9dc)
- * from SLES_017.22_full_36.c. */
+ * from SLES_017.22_full_36.c.
+ * fighter state reader — reads a0+5, a2+0/2/4, t0+44 */
 void cps_8017d9dc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -65645,7 +65664,8 @@ void cps_8017e4cc(void)
 }
 
 /* cps_8017e4d4 — clean CPS transliteration of br2eu_func_8017E4D4 (guest 0x8017e4d4)
- * from SLES_017.22_full_36.c. */
+ * from SLES_017.22_full_36.c.
+ * small record fill — writes v0+0/2/6 from a2/a3 fields */
 void cps_8017e4d4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -65876,7 +65896,8 @@ ret:
 }
 
 /* cps_8017e628 — clean CPS transliteration of br2eu_func_8017E628 (guest 0x8017e628)
- * from SLES_017.22_full_36.c. */
+ * from SLES_017.22_full_36.c.
+ * fighter state reader — reads a0+44/5, a2+0/2; 5-way dispatch */
 void cps_8017e628(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -66264,7 +66285,8 @@ ret:
 }
 
 /* cps_8017f97c — clean CPS transliteration of br2eu_func_8017F97C (guest 0x8017f97c)
- * from SLES_017.22_full_36.c. */
+ * from SLES_017.22_full_36.c.
+ * fighter state machine (19 blocks) — reads a0+116/118, a1+88..210 field set */
 void cps_8017f97c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -82827,7 +82849,8 @@ block_80190DA0:
 }
 
 /* cps_80191a78 — clean CPS transliteration of br2eu_func_80191A78 (guest 0x80191a78)
- * from SLES_017.22_full_43.c. */
+ * from SLES_017.22_full_43.c.
+ * draw-env field compare fragment — reads a0+6, s1+4/6; branches to 0x80191B90 */
 void cps_80191a78(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -83862,7 +83885,8 @@ block_80191E14:
 }
 
 /* cps_80191e18 — clean CPS transliteration of br2eu_func_80191E18 (guest 0x80191e18)
- * from SLES_017.22_full_43.c. */
+ * from SLES_017.22_full_43.c.
+ * env-table lookup — reads a1-31976 and a1+16 */
 void cps_80191e18(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -97231,7 +97255,8 @@ block_801A1608:
 }
 
 /* cps_801a1654 — clean CPS transliteration of br2eu_func_801A1654 (guest 0x801a1654)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * CD cmd record arm wrapper — jals cd_cmd_rec_arm_op; sp+16/20/24 arg frame */
 void cps_801a1654(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -97606,7 +97631,8 @@ block_801A1B40:
 }
 
 /* cps_801a1bc4 — clean CPS transliteration of br2eu_func_801A1BC4 (guest 0x801a1bc4)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * global cell reader — reads gp cell, writes a0+10 */
 void cps_801a1bc4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -102275,7 +102301,8 @@ block_801A5358:
 }
 
 /* cps_801a5464 — clean CPS transliteration of br2eu_func_801A5464 (guest 0x801a5464)
- * from SLES_017.22_full_50.c. */
+ * from SLES_017.22_full_50.c.
+ * record accessor — reads a0+8, returns via a1 */
 void cps_801a5464(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -102331,7 +102358,8 @@ block_801A5490:
 }
 
 /* cps_801a5498 — clean CPS transliteration of br2eu_func_801A5498 (guest 0x801a5498)
- * from SLES_017.22_full_50.c. */
+ * from SLES_017.22_full_50.c.
+ * record accessor — reads a0+8, returns via a1 */
 void cps_801a5498(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -106243,7 +106271,8 @@ block_801AAD18:
 }
 
 /* cps_801ab470 — clean CPS transliteration of br2eu_func_801AB470 (guest 0x801ab470)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * large record processor (988B, 3 blocks) — reads a0+32/40, a1+12..16; writes a2+0..12 */
 void cps_801ab470(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108396,7 +108425,8 @@ block_801AD854:
 }
 
 /* cps_801ad880 — clean CPS transliteration of br2eu_func_801AD880 (guest 0x801ad880)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * gp-global helper — reads a1, a2+0/2, gp+76, v0+8 */
 void cps_801ad880(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109591,7 +109621,8 @@ block_801AE098:
 }
 
 /* cps_801ae0b4 — clean CPS transliteration of br2eu_func_801AE0B4 (guest 0x801ae0b4)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * param field extractor — reads a0+2/6/8, v0 */
 void cps_801ae0b4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109655,7 +109686,8 @@ block_801AE100:
 }
 
 /* cps_801ae108 — clean CPS transliteration of br2eu_func_801AE108 (guest 0x801ae108)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * param field extractor — reads a0+0, t0+2/6/8 */
 void cps_801ae108(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109723,7 +109755,8 @@ block_801AE164:
 }
 
 /* cps_801ae16c — clean CPS transliteration of br2eu_func_801AE16C (guest 0x801ae16c)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * param field extractor — reads a0+2/6, a1, a2 */
 void cps_801ae16c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -110628,7 +110661,8 @@ block_801AE5F4:
 }
 
 /* cps_801ae618 — clean CPS transliteration of br2eu_func_801AE618 (guest 0x801ae618)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * param field extractor — reads a0+2/4 */
 void cps_801ae618(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -110957,7 +110991,8 @@ block_801AE854:
 }
 
 /* cps_801ae96c — clean CPS transliteration of br2eu_func_801AE96C (guest 0x801ae96c)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * callback wrapper — jals noop_c tail; reads gp+76, s0+2/4/6 */
 void cps_801ae96c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111007,7 +111042,8 @@ block_801AE988:
 }
 
 /* cps_801ae9c8 — clean CPS transliteration of br2eu_func_801AE9C8 (guest 0x801ae9c8)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * callback wrapper — jals noop_c tail; reads a0/a1, gp+76, s0+2/4 */
 void cps_801ae9c8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -112366,7 +112402,8 @@ block_801AF6FC:
 }
 
 /* cps_801af714 — clean CPS transliteration of br2eu_func_801AF714 (guest 0x801af714)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * matrix build wrapper — jals mat3x3_build; sp+16 arg setup */
 void cps_801af714(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -113144,7 +113181,8 @@ block_801AFD1C:
 }
 
 /* cps_801afd68 — clean CPS transliteration of br2eu_func_801AFD68 (guest 0x801afd68)
- * from SLES_017.22_full_54.c. */
+ * from SLES_017.22_full_54.c.
+ * record copier — reads src a0+2, gp+80, v1+1..3; writes a1+12/13/20/21/28/29 */
 void cps_801afd68(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -113999,7 +114037,8 @@ block_801B08B4:
 }
 
 /* cps_801b08c8 — clean CPS transliteration of br2eu_func_801B08C8 (guest 0x801b08c8)
- * from SLES_017.22_full_54.c. */
+ * from SLES_017.22_full_54.c.
+ * record copier — reads a0+2/4, a1+80/82; writes a1+10..32 field set */
 void cps_801b08c8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -114075,7 +114114,8 @@ block_801B08C8:
 }
 
 /* cps_801b09bc — clean CPS transliteration of br2eu_func_801B09BC (guest 0x801b09bc)
- * from SLES_017.22_full_54.c. */
+ * from SLES_017.22_full_54.c.
+ * record copier — reads a0+2/4/6/8; writes a1+10..32 field set */
 void cps_801b09bc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -114155,7 +114195,8 @@ block_801B09BC:
 }
 
 /* cps_801b0ac0 — clean CPS transliteration of br2eu_func_801B0AC0 (guest 0x801b0ac0)
- * from SLES_017.22_full_54.c. */
+ * from SLES_017.22_full_54.c.
+ * record copier — reads a0+0/2, a1+80/82, gp+76; writes a1+10..32 field set */
 void cps_801b0ac0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -114237,7 +114278,8 @@ block_801B0AC0:
 }
 
 /* cps_801b0bcc — clean CPS transliteration of br2eu_func_801B0BCC (guest 0x801b0bcc)
- * from SLES_017.22_full_54.c. */
+ * from SLES_017.22_full_54.c.
+ * record copier — reads a0+2, a2+2..14; writes a0-10..-16 back-fields */
 void cps_801b0bcc(void)
 {
   CPUState *cpu = clean_cpu_state();
