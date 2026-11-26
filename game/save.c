@@ -2251,20 +2251,20 @@ extern void cd_dir_entry_probe(int32_t);
 int32_t blk_io_retry(uint32_t a0,void *a1)
 {
   uint8_t *s1 = (uint8_t *)guest_at(a0);
-  int32_t s0, s2 = 0x7d0;
-  uint32_t idx;
+  int32_t handle, tries_left = 0x7d0;
+  uint32_t sel;
   if (s1 == NULL) return -1;
   for (;;) {
-    s0 = mc_date_serial_cmp(s1,a1);
-    if (s0 != 0) {
-      idx = (*(uint32_t *)(s1 + 8) < 1) ? 1 : 0;
-      *(uint32_t *)(s1 + 8) = idx;
-      cd_bitstream_decode(s0,*(uint32_t *)(s1 + idx * 4),
+    handle = mc_date_serial_cmp(s1,a1);
+    if (handle != 0) {
+      sel = (*(uint32_t *)(s1 + 8) < 1) ? 1 : 0;
+      *(uint32_t *)(s1 + 8) = sel;
+      cd_bitstream_decode(handle,*(uint32_t *)(s1 + sel * 4),
                    *(uint32_t *)guest_at(0x801f4758));
-      cd_dir_entry_probe(s0);
-      return s0;
+      cd_dir_entry_probe(handle);
+      return handle;
     }
-    if (--s2 == 0) return -1;
+    if (--tries_left == 0) return -1;
   }
 }
 
@@ -2302,7 +2302,7 @@ int32_t mc_date_serial_cmp(uint8_t *a0,void *a1)
   uint32_t fr = br2_guest_frame(0x30);
   uint8_t *s1 = a0;
   uint8_t *s2 = (uint8_t *)a1;
-  uint32_t tries = 2000, w24, w28, a0v, a3v;
+  uint32_t tries = 2000, buf_p, entry_p, yr_val, aux;
 
   /* @0x80159AD8 loop: poll up to 2000x; rc==0 -> compare, exhausted -> 0.
    * Guest decrements the counter in the branch delay slot (always), but
@@ -2316,50 +2316,50 @@ int32_t mc_date_serial_cmp(uint8_t *a0,void *a1)
     br2_irq_poll();
   }
 
-  w28 = br2_ld32(fr + 28);              /* P = channel entry (guest addr) */
+  entry_p = br2_ld32(fr + 28);              /* P = channel entry (guest addr) */
   /* @0x80159AF8: if lw(P+8) >= lw(s1+8) -> *0x801F4740 = 1 (@0x80159B14) */
-  if (br2_ld32(w28 + 8) >= *(uint32_t *)(s1 + 8))
+  if (br2_ld32(entry_p + 8) >= *(uint32_t *)(s1 + 8))
     br2_st32(0x801f4740, 1);
 
   /* @0x80159B24/@0x80159B38: mismatch on either date half -> @0x80159B4C
    * writeback; both match -> skip straight to @0x80159BB8 tail. */
-  if (br2_ld32(0x801b3f68) != (uint32_t)br2_ld16(w28 + 0x10) ||
-      br2_ld32(0x801b3f6c) != (uint32_t)br2_ld16(w28 + 0x12)) {
+  if (br2_ld32(0x801b3f68) != (uint32_t)br2_ld16(entry_p + 0x10) ||
+      br2_ld32(0x801b3f6c) != (uint32_t)br2_ld16(entry_p + 0x12)) {
     uint32_t x, t;
     br2_st16(fr + 16, 0);                          /* dead frame stores */
     br2_st16(fr + 18, 0);
     if (*(uint32_t *)(s1 + 0) == 0) {
-      a3v = (uint32_t)*(int16_t *)(s1 + 0x14);     /* lh — low16 stored */
+      aux = (uint32_t)*(int16_t *)(s1 + 0x14);     /* lh — low16 stored */
     } else {
       x = *(uint32_t *)(s1 + 0x14);                /* @0x80159B64: 3x/2 */
       t = x * 3u;
-      a3v = (t + (t >> 31)) >> 1;                  /* srl pair, exact */
+      aux = (t + (t >> 31)) >> 1;                  /* srl pair, exact */
     }
-    br2_st16(fr + 20, (uint16_t)a3v);
+    br2_st16(fr + 20, (uint16_t)aux);
     br2_st16(fr + 22, (uint16_t)(*(uint32_t *)(s1 + 0x18) << 1));
     /* @0x80159BA8/@0x80159BB4: publish the entry's date halves */
-    br2_st32(0x801b3f68, (uint32_t)br2_ld16(w28 + 0x10));
-    br2_st32(0x801b3f6c, (uint32_t)br2_ld16(w28 + 0x12));
+    br2_st32(0x801b3f68, (uint32_t)br2_ld16(entry_p + 0x10));
+    br2_st32(0x801b3f6c, (uint32_t)br2_ld16(entry_p + 0x12));
   }
 
   /* @0x80159BB8 tail (both paths converge): year-ish value into s2
    * +0x1c/+0x24, month-ish global into s2 +0x1e/+0x26/+0x32. */
   if (*(uint32_t *)(s1 + 0) == 0) {
-    a0v = (uint32_t)br2_ld16(0x801b3f68);         /* @0x80159BE8: lhu */
+    yr_val = (uint32_t)br2_ld16(0x801b3f68);         /* @0x80159BE8: lhu */
   } else {
     uint32_t x = br2_ld32(0x801b3f68);            /* @0x80159BC8: 3x/2 */
     uint32_t t = x * 3u;
-    a0v = (t + (t >> 31)) >> 1;
+    yr_val = (t + (t >> 31)) >> 1;
   }
-  a3v = (uint32_t)br2_ld16(0x801b3f6c);
-  w24 = br2_ld32(fr + 24);                        /* v0 = *sp+24 = buf addr */
-  *(uint16_t *)(s2 + 0x24) = (uint16_t)a0v;
-  *(uint16_t *)(s2 + 0x1c) = (uint16_t)a0v;
-  *(uint16_t *)(s2 + 0x26) = (uint16_t)a3v;
-  *(uint16_t *)(s2 + 0x1e) = (uint16_t)a3v;
-  *(uint16_t *)(s2 + 0x32) = (uint16_t)a3v;
+  aux = (uint32_t)br2_ld16(0x801b3f6c);
+  buf_p = br2_ld32(fr + 24);                        /* v0 = *sp+24 = buf addr */
+  *(uint16_t *)(s2 + 0x24) = (uint16_t)yr_val;
+  *(uint16_t *)(s2 + 0x1c) = (uint16_t)yr_val;
+  *(uint16_t *)(s2 + 0x26) = (uint16_t)aux;
+  *(uint16_t *)(s2 + 0x1e) = (uint16_t)aux;
+  *(uint16_t *)(s2 + 0x32) = (uint16_t)aux;
   br2_guest_frame_free();
-  return (int32_t)w24;
+  return (int32_t)buf_p;
 }
 
 /* rec_find_lt_f8 — first 0x10-stride rec where f8==0 or f8>=a1;
