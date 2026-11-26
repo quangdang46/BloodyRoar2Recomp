@@ -17287,32 +17287,32 @@ int task_node_alloc_init(int kind,int cnt,int sz)
  * fx_group_alloc alloc + noop_b register, then task_slot_step. */
 void task_cb_voice_line(int arg)
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
-  iVar1 = *(int *)guest_at((uint32_t)(uintptr_t)arg);
-  iVar2 = (uint)*(byte *)guest_at((uint32_t)(uintptr_t)(iVar1 + 2));
-  iVar2 = (int)*(byte *)guest_at((uint32_t)(uintptr_t)(iVar2 + 0x801f0ad8));
-  if (iVar2 != 0) {
+  int ent;
+  int t;
+  int base;
+  ent = *(int *)guest_at((uint32_t)(uintptr_t)arg);
+  t = (uint)*(byte *)guest_at((uint32_t)(uintptr_t)(ent + 2));
+  t = (int)*(byte *)guest_at((uint32_t)(uintptr_t)(t + 0x801f0ad8));
+  if (t != 0) {
     task_slot_step();
     return;
   }
   if (*(short *)guest_at(0x1f800082) != 0) {
     return;
   }
-  iVar2 = (int)*(short *)guest_at((uint32_t)(uintptr_t)(arg + 8));
-  if (iVar2 != 0) {
-    *(short *)guest_at((uint32_t)(uintptr_t)(arg + 8)) = (short)iVar2;
+  t = (int)*(short *)guest_at((uint32_t)(uintptr_t)(arg + 8));
+  if (t != 0) {
+    *(short *)guest_at((uint32_t)(uintptr_t)(arg + 8)) = (short)t;
     return;
   }
-  iVar1 = fx_group_alloc(1,1,0,9);
-  if (iVar1 == 0) {
+  ent = fx_group_alloc(1,1,0,9);
+  if (ent == 0) {
     task_slot_step();
     return;
   }
-  iVar2 = *(int *)guest_at((uint32_t)(uintptr_t)arg);
-  iVar3 = *(int *)guest_at((uint32_t)(uintptr_t)(iVar2 + 0x20));
-  noop_b(iVar1,iVar3 + *(int *)guest_at((uint32_t)(uintptr_t)(arg + 4)) * 0x40 + iVar2 * 0x10 + 0x34,
+  t = *(int *)guest_at((uint32_t)(uintptr_t)arg);
+  base = *(int *)guest_at((uint32_t)(uintptr_t)(t + 0x20));
+  noop_b(ent,base + *(int *)guest_at((uint32_t)(uintptr_t)(arg + 4)) * 0x40 + t * 0x10 + 0x34,
                 (undefined4)br2_gaddr(&DAT_801f0760));
   task_slot_step();
   return;
@@ -17429,40 +17429,40 @@ void node_table_lookup_emit(int f,int node,int out,int idx)
  * rotmat_rtps_build + gte_rtps_xform1 transform emit. */
 void camera_scroll_adjust(int cam)
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
-  ushort *puVar4;
-  ushort *puVar5;
-  ushort auStack_10 [4];
-  uint auStack_18 [6];
-  iVar1 = table_byte_next_a();
-  puVar4 = (ushort *)guest_at(0x801f5958);
-  if ((iVar1 & 1) != 0) {
-    puVar4[6] = (ushort)(puVar4[6] + 0x40);
+  int t;
+  int sy;
+  int dy;
+  ushort *cs;
+  ushort *lut;
+  ushort vec [4];
+  uint rot [6];
+  t = table_byte_next_a();
+  cs = (ushort *)guest_at(0x801f5958);
+  if ((t & 1) != 0) {
+    cs[6] = (ushort)(cs[6] + 0x40);
   }
   else {
-    puVar4[6] = (ushort)(puVar4[6] - 0x40);
+    cs[6] = (ushort)(cs[6] - 0x40);
   }
-  if ((iVar1 & 2) != 0) {
-    puVar4[7] = (ushort)(puVar4[7] + 0x80);
+  if ((t & 2) != 0) {
+    cs[7] = (ushort)(cs[7] + 0x80);
   }
   else {
-    puVar4[7] = (ushort)(puVar4[7] - 0x80);
+    cs[7] = (ushort)(cs[7] - 0x80);
   }
-  iVar1 = lut_sin_q12((int)(short)puVar4[6]);
-  puVar5 = (ushort *)guest_at(0x801237e8 + (((cam << 0x10) >> 0xe)));
-  iVar2 = lut_sin_q12((int)(short)puVar4[7]);
-  puVar4[4] = (ushort)(puVar5[0] + ((iVar1 << 9) >> 0xc));
-  iVar3 = (int)*(short *)guest_at((uint32_t)(uintptr_t)(0x801237e8 + (((cam << 0x10) >> 0xe)) + 2)) * iVar2;
-  auStack_10[0] = 0;
-  auStack_10[1] = 0;
-  iVar1 = (ushort)(puVar5[1] + (iVar3 >> 0xc));
-  auStack_10[2] = (ushort)iVar1;
-  auStack_10[3] = 0;
-  puVar4[5] = (ushort)iVar1;
-  rotmat_rtps_build((uint)(int)(short)puVar4[4],auStack_18);
-  gte_rtps_xform1((undefined4 *)auStack_18,(undefined4 *)auStack_10,(undefined2 *)puVar4);
+  t = lut_sin_q12((int)(short)cs[6]);
+  lut = (ushort *)guest_at(0x801237e8 + (((cam << 0x10) >> 0xe)));
+  sy = lut_sin_q12((int)(short)cs[7]);
+  cs[4] = (ushort)(lut[0] + ((t << 9) >> 0xc));
+  dy = (int)*(short *)guest_at((uint32_t)(uintptr_t)(0x801237e8 + (((cam << 0x10) >> 0xe)) + 2)) * sy;
+  vec[0] = 0;
+  vec[1] = 0;
+  t = (ushort)(lut[1] + (dy >> 0xc));
+  vec[2] = (ushort)t;
+  vec[3] = 0;
+  cs[5] = (ushort)t;
+  rotmat_rtps_build((uint)(int)(short)cs[4],rot);
+  gte_rtps_xform1((undefined4 *)rot,(undefined4 *)vec,(undefined2 *)cs);
   return;
 }
 
