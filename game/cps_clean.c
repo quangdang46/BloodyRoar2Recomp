@@ -14338,6 +14338,7 @@ block_8012BAE0:
  * from SLES_017.22_full_02.c. */
 void cps_8012bae4(void)
 {
+/* GPU/pad fragment: continues at 0x8012BB50. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14407,6 +14408,7 @@ block_8012BB08:
  * from SLES_017.22_full_02.c. */
 void cps_8012bb10(void)
 {
+/* GPU/pad fragment: continues at 0x8012BB60. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14918,6 +14920,7 @@ block_8012BCD4:
  * from SLES_017.22_full_02.c. */
 void cps_8012bce4(void)
 {
+/* GPU/pad fragment: continues at 0x8012BDA0. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15474,6 +15477,7 @@ block_8012BF04:
  * from SLES_017.22_full_02.c. */
 void cps_8012bf58(void)
 {
+/* GPU/pad fragment: continues at 0x8012C06C. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
