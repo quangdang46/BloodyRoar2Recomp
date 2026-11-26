@@ -7233,7 +7233,7 @@ uint32_t prim_persp_ot_emit(uint32_t cur, uint32_t ot, uint32_t count,
     flag = (uint32_t)getCopControlWord(2, GTE_CREG(31)); /* cfc2 FLAG */
     copFunction(2, 0x1400006u);                  /* NCLIP */
     base = cur + delta;                          /* t3 = a0 + t4 */
-    if ((flag & 0x7FC40000u) != 0) goto next;
+    if ((flag & 0x7FC40000u) == 0) {
 
     out = base + 8;                              /* addiu t3,8 */
     setCopReg(2, GTE_DREG(0), t1);               /* mtc2 V0.xy */
@@ -7242,7 +7242,7 @@ uint32_t prim_persp_ot_emit(uint32_t cur, uint32_t ot, uint32_t count,
     sxy0 = (uint32_t)getCopReg(2, GTE_DREG(12)); /* mfc2 SXY0 */
     DB32(out) = sxy0;   /* sw SXY0,(out) is the blez MAC0 DELAY SLOT —
                          * unconditional even when mac0 <= 0. */
-    if ((int32_t)mac0 <= 0) goto next;
+    if ((int32_t)mac0 > 0) {
     sxy1 = (uint32_t)getCopReg(2, GTE_DREG(13)); /* mfc2 SXY1 */
     sxy2 = (uint32_t)getCopReg(2, GTE_DREG(14)); /* mfc2 SXY2 */
     out += out_stride; DB32(out) = sxy1;
@@ -7261,20 +7261,23 @@ uint32_t prim_persp_ot_emit(uint32_t cur, uint32_t ot, uint32_t count,
     sxy2 = (uint32_t)getCopReg(2, GTE_DREG(14)); /* post-RTPS SXY2 */
     out += out_stride; DB32(out) = sxy2;
     sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xFFFFu, 512u);
-    if (sx_ok == 0) goto next;
+    if (sx_ok != 0) {
     sy_ok += ((uint32_t)((int32_t)sxy2 >> 16) < 480u) ? 1u : 0u;
-    if (sy_ok == 0) goto next;                   /* t3=a0+t4 recompute: dead */
+    if (sy_ok != 0) {                           /* t3=a0+t4 recompute: dead */
 
     copFunction(2, 0x168002Eu);                  /* AVSZ4 -> OTZ */
-    if ((int32_t)(uint32_t)getCopReg(2, GTE_DREG(7)) < 2048) goto next;
+    if ((int32_t)(uint32_t)getCopReg(2, GTE_DREG(7)) >= 2048) {
 
     /* OT link tail: t3 was recomputed to base (a0+t4) in the branch delay
      * slot, so the swl targets are base+2 / ot+2. */
     old = DB32(ot);                              /* lw t0,(a1) */
     swl_guest(ot + 2, base << 8);                /* swl (t3<<8),2(a1) */
     swl_guest(base + 2, old << 8);               /* swl (t0<<8),2(t3) */
-
-  next:
+    }
+    }
+    }
+    }
+    }
     cur += in_stride;                           /* delay-slot a0 += t7 */
   } while (cnt > 0);                             /* bgtz a3 -> loop */
   return cur;                                   /* move v0,a0 */
@@ -7314,7 +7317,7 @@ uint32_t prim_persp_ot_emit_112(uint32_t cur, uint32_t ot, uint32_t sel,
     flag = (uint32_t)getCopControlWord(2, GTE_CREG(31)); /* cfc2 FLAG */
     copFunction(2, 0x1400006u);                  /* NCLIP */
     base = cur + delta;                          /* t3 = a0 + t4 */
-    if ((flag & 0x7FC40000u) != 0) goto next;
+    if ((flag & 0x7FC40000u) == 0) {
 
     out = base + 8;                              /* addiu t3,8 */
     setCopReg(2, GTE_DREG(0), t1);               /* mtc2 V0.xy */
@@ -7323,7 +7326,7 @@ uint32_t prim_persp_ot_emit_112(uint32_t cur, uint32_t ot, uint32_t sel,
     sxy0 = (uint32_t)getCopReg(2, GTE_DREG(12)); /* mfc2 SXY0 */
     DB32(out) = sxy0;   /* sw SXY0,(out) is the blez MAC0 DELAY SLOT —
                          * unconditional even when mac0 <= 0. */
-    if ((int32_t)mac0 <= 0) goto next;
+    if ((int32_t)mac0 > 0) {
     sxy1 = (uint32_t)getCopReg(2, GTE_DREG(13)); /* mfc2 SXY1 */
     sxy2 = (uint32_t)getCopReg(2, GTE_DREG(14)); /* mfc2 SXY2 */
     out += 8; DB32(out) = sxy1;
@@ -7342,20 +7345,23 @@ uint32_t prim_persp_ot_emit_112(uint32_t cur, uint32_t ot, uint32_t sel,
     sxy2 = (uint32_t)getCopReg(2, GTE_DREG(14)); /* post-RTPS SXY2 */
     out += 8; DB32(out) = sxy2;
     sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xFFFFu, 512u);
-    if (sx_ok == 0) goto next;
+    if (sx_ok != 0) {
     sy_ok += ((uint32_t)((int32_t)sxy2 >> 16) < 480u) ? 1u : 0u;
-    if (sy_ok == 0) goto next;                   /* t3=a0+t4 recompute: dead */
+    if (sy_ok != 0) {                           /* t3=a0+t4 recompute: dead */
 
     copFunction(2, 0x168002Eu);                  /* AVSZ4 -> OTZ */
-    if ((int32_t)(uint32_t)getCopReg(2, GTE_DREG(7)) < 2048) goto next;
+    if ((int32_t)(uint32_t)getCopReg(2, GTE_DREG(7)) >= 2048) {
 
     /* OT link tail: t3 was recomputed to base (a0+t4) in the branch delay
      * slot, so the swl targets are base+2 / ot+2. */
     old = DB32(ot);                              /* lw t0,(a1) */
     swl_guest(ot + 2, base << 8);                /* swl (t3<<8),2(a1) */
     swl_guest(base + 2, old << 8);               /* swl (t0<<8),2(t3) */
-
-  next:
+    }
+    }
+    }
+    }
+    }
     cur += 112;                                  /* delay-slot a0 += t7 */
   } while (cnt > 0);                             /* bgtz a3 -> loop */
   return cur;                                   /* move v0,a0 */
@@ -7422,7 +7428,7 @@ uint32_t prim_depth_shade_emit(uint32_t cur, uint32_t ot, uint32_t sel,
     copFunction(2, 0x1400006u);                  /* NCLIP */
     /* mtc2 gte[0]=t1 sits in the flag-branch DELAY SLOT — unconditional. */
     setCopReg(2, GTE_DREG(0), t1);               /* mtc2 V0.xy */
-    if ((flag & 0x7FC40000u) != 0) goto next;
+    if ((flag & 0x7FC40000u) == 0) {
 
     setCopReg(2, GTE_DREG(1), t2);               /* mtc2 V0.z  */
     base = cur + delta;                          /* t3 = a0 + t4 */
@@ -7431,7 +7437,7 @@ uint32_t prim_depth_shade_emit(uint32_t cur, uint32_t ot, uint32_t sel,
     sxy0 = (uint32_t)getCopReg(2, GTE_DREG(12)); /* mfc2 SXY0 */
     DB32(out) = sxy0;   /* sw SXY0,(out) is the blez MAC0 DELAY SLOT —
                          * unconditional even when mac0 <= 0. */
-    if ((int32_t)mac0 <= 0) goto next;
+    if ((int32_t)mac0 > 0) {
     sxy1 = (uint32_t)getCopReg(2, GTE_DREG(13)); /* mfc2 SXY1 */
     sxy2 = (uint32_t)getCopReg(2, GTE_DREG(14)); /* mfc2 SXY2 */
     out += 8; DB32(out) = sxy1;
@@ -7450,9 +7456,9 @@ uint32_t prim_depth_shade_emit(uint32_t cur, uint32_t ot, uint32_t sel,
     sxy2 = (uint32_t)getCopReg(2, GTE_DREG(14)); /* post-RTPS SXY2 */
     out += 8; DB32(out) = sxy2;
     sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xFFFFu, 512u);
-    if (sx_ok == 0) goto next;
+    if (sx_ok != 0) {
     sy_ok += ((uint32_t)((int32_t)sxy2 >> 16) < 480u) ? 1u : 0u;
-    if (sy_ok == 0) goto next;                   /* t3=a0+t4 recompute: dead */
+    if (sy_ok != 0) {                           /* t3=a0+t4 recompute: dead */
 
     copFunction(2, 0x168002Eu);                  /* AVSZ4 -> OTZ */
 
@@ -7475,8 +7481,10 @@ uint32_t prim_depth_shade_emit(uint32_t cur, uint32_t ot, uint32_t sel,
     old = DB32(ot);                              /* lw t0,(a1) */
     swl_guest(ot + 2, base << 8);                /* swl (t3<<8),2(a1) */
     swl_guest(base + 2, old << 8);               /* swl (t0<<8),2(t3) */
-
-  next:
+    }
+    }
+    }
+    }
     cur += 112;                                  /* delay-slot a0 += t7 */
   } while (cnt > 0);                             /* bgtz a3 -> loop */
   setCopControlWord(2, GTE_CREG(30), 1024u);    /* ctc2 ctrl30 = 1024 */
