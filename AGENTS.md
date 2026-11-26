@@ -1086,4 +1086,12 @@ Post-`2b57002` runtime sweep on current master (`proof/arcade_combat_verified.md
   by design. Match/mode-flow is clean-ported `menu.c`/`save.c`, unaffected
   by the cps_ change.
 
+- **INTRO FMV / MDEC**: plays ~40s of continuous decode (`command
+  0x32000880`, `decode_macroblocks`≈325/frame, `output_size` varying per
+  frame, `dma_in/out_words` live) then reaches title — **no ~87%
+  truncation stall**. The `cd_deferred_coroutine_starvation.md` unified
+  cause is resolved by the same fix: CD on generated restores
+  `psx_check_interrupts_at` + per-instruction cycle advance, so the
+  deferred CD coroutine resumes and streaming/FMV completes.
+
 **No known mode wedges remain.** All selectable modes boot and run.
