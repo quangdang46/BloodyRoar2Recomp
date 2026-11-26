@@ -661,15 +661,15 @@ void fighter_pair_update(int f0,int f1,int battle)
 {
   short head0;
   short head1;
-  undefined2 qres;
-  int iVar4;
-  int iVar5;
-  undefined4 zz0;
-  int iVar7;
-  int iVar8;
-  int iVar9;
+  undefined2 q;
+  int t4;
+  int elig1;
+  undefined4 t10;
+  int t7;
+  int t8;
+  int t9;
   int scale0;
-  undefined4 zz1;
+  undefined4 t11;
   int scale1;
   /* Guest stack layout (br2eu_func_801809C8): the two hitbox-result buffers
    * are 8-byte slots at sp+0x18 and sp+0x20. hitbox_pair_test /
@@ -683,8 +683,8 @@ void fighter_pair_update(int f0,int f1,int battle)
   short hitres0 [4];
   short hitres1 [4];
   
-  iVar9 = 0;
-  iVar8 = 0;
+  t9 = 0;
+  t8 = 0;
   hitbox_corners_xform(f0,f1);
   fighter_height_track(f0,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((f0 + 0x38))));
   fighter_height_track(f1,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((f1 + 0x38))));
@@ -700,47 +700,47 @@ void fighter_pair_update(int f0,int f1,int battle)
   if ((*(uint *)guest_at((uint32_t)(uintptr_t)((f1 + 0x58) ))& 0x800000) != 0) {
     *(uint *)guest_at((uint32_t)(uintptr_t)((f1 + 0x5c) ))= *(uint *)guest_at((uint32_t)(uintptr_t)((f1 + 0x5c) ))| 0x2000;
   }
-  iVar4 = hit_elig_check(f0,f1);
-  iVar5 = hit_elig_check(f1,f0);
-  iVar7 = 0;
-  if (iVar4 != 0) {
-    zz0 = fighter_range_code(f0,f1);
-    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((f1 + 0x68) ))= zz0;
+  t4 = hit_elig_check(f0,f1);
+  elig1 = hit_elig_check(f1,f0);
+  t7 = 0;
+  if (t4 != 0) {
+    t10 = fighter_range_code(f0,f1);
+    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((f1 + 0x68) ))= t10;
     scale0 = hit_scale_calc(f0,f1);
-    iVar9 = (uint)*(byte *)guest_at((uint32_t)(uintptr_t)((f0 + 0xda) ))* scale0;
-    if (iVar9 < 0) {
-      iVar9 = iVar9 + 0x7f;
+    t9 = (uint)*(byte *)guest_at((uint32_t)(uintptr_t)((f0 + 0xda) ))* scale0;
+    if (t9 < 0) {
+      t9 = t9 + 0x7f;
     }
-    iVar9 = iVar9 >> 7;
-    iVar7 = hitbox_pair_test(f0,f1,hitres0);
+    t9 = t9 >> 7;
+    t7 = hitbox_pair_test(f0,f1,hitres0);
   }
-  iVar4 = 0;
-  if (iVar5 != 0) {
-    zz0 = fighter_range_code(f1,f0);
-    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((f0 + 0x68) ))= zz0;
+  t4 = 0;
+  if (elig1 != 0) {
+    t10 = fighter_range_code(f1,f0);
+    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((f0 + 0x68) ))= t10;
     scale1 = hit_scale_calc(f1,f0);
-    iVar8 = (uint)*(byte *)guest_at((uint32_t)(uintptr_t)((f1 + 0xda) ))* scale1;
-    if (iVar8 < 0) {
-      iVar8 = iVar8 + 0x7f;
+    t8 = (uint)*(byte *)guest_at((uint32_t)(uintptr_t)((f1 + 0xda) ))* scale1;
+    if (t8 < 0) {
+      t8 = t8 + 0x7f;
     }
-    iVar8 = iVar8 >> 7;
-    iVar4 = hitbox_pair_test(f1,f0,hitres1);
+    t8 = t8 >> 7;
+    t4 = hitbox_pair_test(f1,f0,hitres1);
   }
-  if (iVar7 != 0) {
-    if (iVar4 != 0) {
-      if (iVar9 < iVar8) {
-        iVar7 = 0;
+  if (t7 != 0) {
+    if (t4 != 0) {
+      if (t9 < t8) {
+        t7 = 0;
       }
-      else if (iVar8 < iVar9) {
-        iVar4 = 0;
+      else if (t8 < t9) {
+        t4 = 0;
       }
     }
-    if (iVar7 != 0) {
-      hit_react_apply(f0,f1,scale0,hitres0,iVar7);
+    if (t7 != 0) {
+      hit_react_apply(f0,f1,scale0,hitres0,t7);
     }
   }
-  if (iVar4 != 0) {
-    hit_react_apply(f1,f0,scale1,hitres1,iVar4);
+  if (t4 != 0) {
+    hit_react_apply(f1,f0,scale1,hitres1,t4);
   }
   if (((*(uint *)guest_at((uint32_t)(uintptr_t)((f0 + 0x58) ))& 0x48000) == 0) && ((*(uint *)guest_at((uint32_t)(uintptr_t)((f0 + 0x5c) ))& 0x4000000) == 0)
      ) {
@@ -764,18 +764,18 @@ void fighter_pair_update(int f0,int f1,int battle)
   if ((*(uint *)guest_at((uint32_t)(uintptr_t)((f1 + 0x5c) ))& 0x60000000) == 0) {
     *(undefined1 *)guest_at((uint32_t)(uintptr_t)((f0 + 0xdd) ))= 0;
   }
-  iVar9 = atan2_lut(*(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f0 + 0x20) ))+ 0x3c) ))-
+  t9 = atan2_lut(*(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f0 + 0x20) ))+ 0x3c) ))-
                        *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f1 + 0x20) ))+ 0x3c))),
                        *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f1 + 0x20) ))+ 0x34) ))-
                        *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f0 + 0x20) ))+ 0x34))));
-  camera_aim_offset(f0,f1,iVar9);
-  iVar8 = hitbox_wall_collide(f0,hitres0,battle);
-  iVar7 = hitbox_wall_collide(f1,hitres1,battle);
+  camera_aim_offset(f0,f1,t9);
+  t8 = hitbox_wall_collide(f0,hitres0,battle);
+  t7 = hitbox_wall_collide(f1,hitres1,battle);
   if ((((*(uint *)guest_at((uint32_t)(uintptr_t)((f0 + 0x58) ))& 0x40000000) == 0) ||
       ((*(uint *)guest_at((uint32_t)(uintptr_t)((f1 + 0x58) ))& 0x100000) == 0)) &&
      (((*(uint *)guest_at((uint32_t)(uintptr_t)((f1 + 0x58) ))& 0x40000000) == 0 ||
       ((*(uint *)guest_at((uint32_t)(uintptr_t)((f0 + 0x58) ))& 0x100000) == 0)))) {
-    if (iVar8 != 0) {
+    if (t8 != 0) {
       node_translate_tree(*(undefined4 *)guest_at((uint32_t)(uintptr_t)((f0 + 0x20))),(int)hitres0[0],0,(int)hitres0[2]);
       *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f0 + 0x38) ))+ 0xd4) ))=
            *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f0 + 0x38) ))+ 0xd4) ))+ hitres0[0];
@@ -788,14 +788,14 @@ void fighter_pair_update(int f0,int f1,int battle)
       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f0 + 0x20) ))+ 0x1c) ))=
            *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f0 + 0x20) ))+ 0x3c)));
     }
-    if (iVar7 == 0) goto LAB_80180f88;
+    if (t7 == 0) goto LAB_80180f88;
     node_translate_tree(*(undefined4 *)guest_at((uint32_t)(uintptr_t)((f1 + 0x20))),(int)hitres1[0],0,(int)hitres1[2]);
     *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f1 + 0x38) ))+ 0xd4) ))=
          *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f1 + 0x38) ))+ 0xd4) ))+ hitres1[0];
-    iVar8 = *(int *)guest_at((uint32_t)(uintptr_t)((f1 + 0x38)));
+    t8 = *(int *)guest_at((uint32_t)(uintptr_t)((f1 + 0x38)));
   }
   else {
-    if (iVar8 == 0 && iVar7 == 0) goto LAB_80180f88;
+    if (t8 == 0 && t7 == 0) goto LAB_80180f88;
     hitres0[0] = hitres0[0] + hitres1[0];
     hitres0[2] = hitres0[2] + hitres1[2];
     node_translate_tree(*(undefined4 *)guest_at((uint32_t)(uintptr_t)((f0 + 0x20))),(int)hitres0[0],0,(int)hitres0[2]);
@@ -812,10 +812,10 @@ void fighter_pair_update(int f0,int f1,int battle)
     node_translate_tree(*(undefined4 *)guest_at((uint32_t)(uintptr_t)((f1 + 0x20))),(int)hitres0[0],0,(int)hitres0[2]);
     *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f1 + 0x38) ))+ 0xd4) ))=
          *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f1 + 0x38) ))+ 0xd4) ))+ hitres0[0];
-    iVar8 = *(int *)guest_at((uint32_t)(uintptr_t)((f1 + 0x38)));
+    t8 = *(int *)guest_at((uint32_t)(uintptr_t)((f1 + 0x38)));
     hitres1[2] = hitres0[2];
   }
-  *(short *)guest_at((uint32_t)(uintptr_t)((iVar8 + 0xd8) ))= *(short *)guest_at((uint32_t)(uintptr_t)((iVar8 + 0xd8) ))+ hitres1[2];
+  *(short *)guest_at((uint32_t)(uintptr_t)((t8 + 0xd8) ))= *(short *)guest_at((uint32_t)(uintptr_t)((t8 + 0xd8) ))+ hitres1[2];
   *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f1 + 0x20) ))+ 0x18) ))=
        *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f1 + 0x20) ))+ 0x34)));
   *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f1 + 0x20) ))+ 0x1a) ))=
@@ -825,21 +825,21 @@ void fighter_pair_update(int f0,int f1,int battle)
 LAB_80180f88:
   head0 = *(short *)guest_at((uint32_t)(uintptr_t)((f0 + 0x4e)));
   head1 = *(short *)guest_at((uint32_t)(uintptr_t)((f1 + 0x4e)));
-  iVar8 = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f0 + 0x20) ))+ 0x34)));
-  zz0 = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f0 + 0x20) ))+ 0x3c)));
-  iVar7 = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f1 + 0x20) ))+ 0x34)));
-  zz1 = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f1 + 0x20) ))+ 0x3c)));
-  *(short *)guest_at((uint32_t)(uintptr_t)((f0 + 0x74) ))= (short)((iVar9 - head0) * 0x100000 >> 0x14);
+  t8 = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f0 + 0x20) ))+ 0x34)));
+  t10 = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f0 + 0x20) ))+ 0x3c)));
+  t7 = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f1 + 0x20) ))+ 0x34)));
+  t11 = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f1 + 0x20) ))+ 0x3c)));
+  *(short *)guest_at((uint32_t)(uintptr_t)((f0 + 0x74) ))= (short)((t9 - head0) * 0x100000 >> 0x14);
   *(short *)guest_at((uint32_t)(uintptr_t)((f1 + 0x74) ))=
-       (short)((int)(((iVar9 + 0x800U & 0xfff) - (int)head1) * 0x100000) >> 0x14);
-  iVar9 = atan2_lut(zz0,-iVar8);
-  qres = fixed_point_divide(zz0,iVar8);
-  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((f0 + 0x72) ))= qres;
-  *(short *)guest_at((uint32_t)(uintptr_t)((f0 + 0x70) ))= (short)((iVar9 - head0) * 0x100000 >> 0x14);
-  iVar9 = atan2_lut(zz1,-iVar7);
-  qres = fixed_point_divide(zz1,iVar7);
-  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((f1 + 0x72) ))= qres;
-  *(short *)guest_at((uint32_t)(uintptr_t)((f1 + 0x70) ))= (short)((iVar9 - head1) * 0x100000 >> 0x14);
+       (short)((int)(((t9 + 0x800U & 0xfff) - (int)head1) * 0x100000) >> 0x14);
+  t9 = atan2_lut(t10,-t8);
+  q = fixed_point_divide(t10,t8);
+  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((f0 + 0x72) ))= q;
+  *(short *)guest_at((uint32_t)(uintptr_t)((f0 + 0x70) ))= (short)((t9 - head0) * 0x100000 >> 0x14);
+  t9 = atan2_lut(t11,-t7);
+  q = fixed_point_divide(t11,t7);
+  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((f1 + 0x72) ))= q;
+  *(short *)guest_at((uint32_t)(uintptr_t)((f1 + 0x70) ))= (short)((t9 - head1) * 0x100000 >> 0x14);
   fighter_attach_run(f0);
   fighter_attach_run(f1);
   return;
