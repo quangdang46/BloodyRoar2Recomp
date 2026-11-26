@@ -17361,6 +17361,9 @@ void cps_8012cb64(void)
 
     /* Address: 0x8012CB64, Size: 36 bytes, Blocks: 1 */
 
+    /* arg preload: a3=half[s4+32], v0=half[s4+34], a1=a2=0;
+       stack saves (sp+20..36); -> 0x8012CB88. CPS-blocked. */
+
 block_8012CB64:
     a1 = zero;
     a3 = (int32_t)(int16_t)cpu->read_half(s4 + 32);
@@ -17399,6 +17402,8 @@ void cps_8012cb90(void)
   if (!cpu) return;
 
     /* Address: 0x8012CB90, Size: 48 bytes, Blocks: 1 */
+
+    /* epilogue: pop s0-s7, fp, ra (sp += 80), jr ra */
 
 block_8012CB90:
     ra = cpu->read_word(sp + 76);
@@ -17522,6 +17527,10 @@ void cps_8012f188(void)
     }
     /* Address: 0x8012F188, Size: 40 bytes, Blocks: 2 */
 
+    /* dispatch entry: a1=word[v0*4+v1]; jal 0x8012CC6C(a0-
+       1188, a1); then a0=0x80120000, v1=0x801B148C, a1=half
+       [0x1F800024]; -> 0x8012F1B0. CPS-blocked. */
+
 block_8012F188:
     v0 = v0 << 2;
     v0 = v0 + v1;
@@ -17563,6 +17572,11 @@ void cps_8012f1b0(void)
         }
     }
     /* Address: 0x8012F1B0, Size: 248 bytes, Blocks: 10 */
+
+    /* HUD/param dump: 8x jal 0x8012CC6C(0x8012xxxx-const,
+       fields from s0 record: half[124]*4 table ptr, byte[128/129],
+       half[74..138 pairs], each with sp+16 spill); epilogue.
+       CPS-blocked. */
 
 block_8012F1B0:
     v0 = (int32_t)(int16_t)cpu->read_half(s0 + 124);
