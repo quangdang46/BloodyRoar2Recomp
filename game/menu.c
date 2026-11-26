@@ -552,7 +552,7 @@ switchD_801678c4_caseD_1:
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void battle_flow_state_machine(intptr_t param_1)
+void battle_flow_state_machine(intptr_t rec)
 
 {
   int iVar1;
@@ -812,7 +812,7 @@ switchD_8016fd64_caseD_8:
         FUN_801787dc(&DAT_1f8001f0,(uint8_t *)guest_at(0x1f800000));
         fighter_pair_update((int)guest_of(&DAT_1f8000e8),(int)guest_of(&DAT_1f8001f0),0x1f800000);
       }
-      if (((*(ushort *)(param_1 + 2) >> 2 & 1) != 0) && (DAT_1f8000b0 == '\0')) {
+      if (((*(ushort *)(rec + 2) >> 2 & 1) != 0) && (DAT_1f8000b0 == '\0')) {
         iVar5 = iVar1 + 0x10;
         if (DAT_1f80009d == '\0') {
           iVar5 = iVar1 + 0x2038;
@@ -821,7 +821,7 @@ switchD_8016fd64_caseD_8:
       }
       battle_camera_step(_DAT_1f8000bc,&DAT_1f8000e8,&DAT_1f8001f0,0x1f800000);
       camera_state_cache(_DAT_1f8000bc,0x1f800000);
-      if (((*(ushort *)(param_1 + 2) & 1) != 0) && ((_DAT_1f800148 & 2) == 0)) {
+      if (((*(ushort *)(rec + 2) & 1) != 0) && ((_DAT_1f800148 & 2) == 0)) {
         fighter_flash_update(iVar1,iVar4,0x1f800000,&DAT_1f8000e8);
         if ((_DAT_1f800154 & 0x400) == 0) {
           if ((_DAT_1f800154 & 0x200) == 0) {
@@ -844,7 +844,7 @@ switchD_8016fd64_caseD_8:
           else {
             player_light_apply(&DAT_1f8000e8,1);
             /* Guest 0x80170414/0x80170404: lw 0x10($v0) / lb 0($v0) —
-             * param_1 = record[0] prim hdr (byte +0x10), param_4 = signed
+             * rec = record[0] prim hdr (byte +0x10), param_4 = signed
              * count byte at struct +0. */
             prim_list_gte_invoke((int *)guest_at(*(uint32_t *)guest_at(_DAT_1f800110 + 0x10)),iVar1 + 0x40,iVar4,
                          (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800110),0x1f800028,0x1f80033c);
@@ -855,7 +855,7 @@ switchD_8016fd64_caseD_8:
           prim_list_gte_invoke((int *)guest_at(uVar3),iVar1 + 0x40,iVar4,iVar5,0x1f800028,0x1f80033c);
         }
 LAB_801704bc:
-        if (((*(ushort *)(param_1 + 2) >> 6 & 1) != 0) && (DAT_1f80009f == '\0')) {
+        if (((*(ushort *)(rec + 2) >> 6 & 1) != 0) && (DAT_1f80009f == '\0')) {
           if (DAT_1f800098 == 4) {
 LAB_80170524:
             FUN_8018b100(_DAT_1f800104,iVar1 + 0x2040,iVar4,0xf,0x1f800028,0x1f80035c);
@@ -870,7 +870,7 @@ LAB_80170524:
           }
         }
       }
-      if (((*(ushort *)(param_1 + 2) >> 1 & 1) != 0) && ((_DAT_1f800250 & 2) == 0)) {
+      if (((*(ushort *)(rec + 2) >> 1 & 1) != 0) && ((_DAT_1f800250 & 2) == 0)) {
         fighter_flash_update(iVar1,iVar4,0x1f800000,&DAT_1f8001f0);
         if ((_DAT_1f80025c & 0x400) == 0) {
           if ((_DAT_1f80025c & 0x200) == 0) {
@@ -896,7 +896,7 @@ LAB_80170524:
           prim_list_gte_invoke((int *)guest_at(uVar3),iVar1 + 0x40,iVar4,iVar5,0x1f800028,0x1f80033c);
         }
 LAB_801706ac:
-        if (((*(ushort *)(param_1 + 2) >> 6 & 1) != 0) && (DAT_1f80009f == '\0')) {
+        if (((*(ushort *)(rec + 2) >> 6 & 1) != 0) && (DAT_1f80009f == '\0')) {
           if (DAT_1f800098 == 4) {
 LAB_80170714:
             FUN_8018b100(_DAT_1f80020c,iVar1 + 0x2040,iVar4,0xf,0x1f800028,0x1f80035c);
@@ -911,7 +911,7 @@ LAB_80170714:
           }
         }
       }
-      if ((*(ushort *)(param_1 + 2) >> 4 & 1) == 0) {
+      if ((*(ushort *)(rec + 2) >> 4 & 1) == 0) {
         DAT_1f8000b1 = 1;
       }
       battle_intro_fsm(0x1f800028,iVar1,iVar4,0x1f800000);
@@ -921,24 +921,24 @@ LAB_80170714:
       }
       _DAT_801f4cb2 = 0;
       fighter_tint_fade(iVar1,iVar4,0x1f800000,(int)(char)DAT_1f800098);
-      if ((*(ushort *)(param_1 + 2) >> 3 & 1) != 0) {
+      if ((*(ushort *)(rec + 2) >> 3 & 1) != 0) {
         fighter_trail_emit((undefined4 *)guest_at(0x1f800028),0x1f80033c,_DAT_1f8000bc,0x1f800000);
       }
       if (((DAT_1f80009f == '\0') && (DAT_1f80009e == '\0')) &&
-         ((*(ushort *)(param_1 + 2) >> 5 & 1) != 0)) {
+         ((*(ushort *)(rec + 2) >> 5 & 1) != 0)) {
         slot_height_proj(iVar1 + 0x207c,_DAT_1f8000bc,iVar4,0x1f800000);
       }
-      if (*(short *)(param_1 + 8) != 0) {
-        FUN_801468ec(iVar1,iVar4,0x1f800028,&DAT_1f8000e8,(int)*(short *)(param_1 + 8));
+      if (*(short *)(rec + 8) != 0) {
+        FUN_801468ec(iVar1,iVar4,0x1f800028,&DAT_1f8000e8,(int)*(short *)(rec + 8));
       }
-      if (*(short *)(param_1 + 10) != 0) {
-        FUN_801468ec(iVar1,iVar4,0x1f800028,&DAT_1f8001f0,(int)*(short *)(param_1 + 10));
+      if (*(short *)(rec + 10) != 0) {
+        FUN_801468ec(iVar1,iVar4,0x1f800028,&DAT_1f8001f0,(int)*(short *)(rec + 10));
       }
-      if (*(short *)(param_1 + 4) != 0) {
-        status_text_display(0x1f8000e8u,(uint32_t)*(short *)(param_1 + 4));
+      if (*(short *)(rec + 4) != 0) {
+        status_text_display(0x1f8000e8u,(uint32_t)*(short *)(rec + 4));
       }
-      if (*(short *)(param_1 + 6) != 0) {
-        status_text_display(0x1f8001f0u,(uint32_t)*(short *)(param_1 + 6));
+      if (*(short *)(rec + 6) != 0) {
+        status_text_display(0x1f8001f0u,(uint32_t)*(short *)(rec + 6));
       }
     }
     break;
@@ -2283,8 +2283,8 @@ void display_frame_present(int *env,int ticks)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void tile_stream_job_init(undefined4 *job,undefined2 param_2,undefined2 param_3,undefined2 param_4,
-                 undefined2 param_5,int *opt)
+void tile_stream_job_init(undefined4 *job,undefined2 a1,undefined2 a2,undefined2 a3,
+                 undefined2 stk0,int *opt)
 
 {
   undefined4 w0;
@@ -2309,10 +2309,10 @@ void tile_stream_job_init(undefined4 *job,undefined2 param_2,undefined2 param_3,
     job[3] = w2;
     job[4] = w3;
   }
-  *(undefined2 *)(job + 6) = param_2;
-  *(undefined2 *)((char *)job + 0x1a) = param_3;
-  *(undefined2 *)(job + 8) = param_4;
-  *(undefined2 *)((char *)job + 0x22) = param_5;
+  *(undefined2 *)(job + 6) = a1;
+  *(undefined2 *)((char *)job + 0x1a) = a2;
+  *(undefined2 *)(job + 8) = a3;
+  *(undefined2 *)((char *)job + 0x22) = stk0;
   stride = 0x10;
   if (*opt != 0) {
     stride = 0x18;
@@ -2320,12 +2320,12 @@ void tile_stream_job_init(undefined4 *job,undefined2 param_2,undefined2 param_3,
   *(undefined2 *)(job + 0xc) = stride;
   job[0xe] = *opt;
   if (job[10] == 0) {
-    *(undefined2 *)(job + 0xb) = param_2;
-    *(undefined2 *)((char *)job + 0x2e) = param_3;
+    *(undefined2 *)(job + 0xb) = a1;
+    *(undefined2 *)((char *)job + 0x2e) = a2;
     return;
   }
-  *(undefined2 *)(job + 0xb) = param_4;
-  *(undefined2 *)((char *)job + 0x2e) = param_5;
+  *(undefined2 *)(job + 0xb) = a3;
+  *(undefined2 *)((char *)job + 0x2e) = stk0;
   return;
 }
 
@@ -10868,9 +10868,9 @@ static int32_t tpg_idiv(int32_t,int32_t);   /* defined in batch47 */
  * (sx16@R+0x1a - sx16@R+0x14) as numerator; then
  * sprite_place_centered fires twice (heads @R+0/+4 against 0x1f800000)
  * and task_slot_step() runs when sx16 @R+0x1e != 0. */
-void sprite_record_tick(uint32_t param_1)
+void sprite_record_tick(uint32_t rec)
 {
-  uint32_t s0 = param_1;
+  uint32_t s0 = rec;
   int32_t arr[8];
   uint32_t cur, tag, hi, lo, q, src;
   int32_t i, idx, f14, f1a, d, prod;
@@ -10984,9 +10984,9 @@ L_tail:                                         /* 0x8014ac9c */
  * cd_file_open(d, buf); bcd = (buf[2]>>4)*10 + (buf[2]&0xf);
  * frames = magic-div(bcd*100) by ~75; sprintf_core(a0, 0x80120de0,
  * buf[0], buf[1], frames). */
-void bcd_time_frame_print(uint32_t param_1)
+void bcd_time_frame_print(uint32_t fmt)
 {
-  uint32_t s0 = param_1;
+  uint32_t s0 = fmt;
   uint8_t buf[8];
   int32_t d;
   uint32_t v1, x;
@@ -11010,9 +11010,9 @@ void bcd_time_frame_print(uint32_t param_1)
  * save_defaults_fill(); save_block_init(); save_tables_commit();
  * dbg_marker_mode_set(MB8(a0+0x24)); gauge_scale_fixed(MB8(a0+0xe),
  * magic-div(MB8(a0+0xf)<<3)); brightness_commit(MB8(a0+0xc)^1). */
-void versus_state_init(uint32_t param_1)
+void versus_state_init(uint32_t state)
 {
-  uint32_t s0 = param_1;
+  uint32_t s0 = state;
   uint32_t v0 = 0x801b1280u;
   uint32_t v1 = s0;
   int i;
@@ -13130,14 +13130,14 @@ extern uint32_t br2_ld32(uint32_t);
 extern void br2_st16(uint32_t, uint16_t);
 extern uint32_t call_guest4(uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
 
-uint32_t desc_cmd_interp(uint32_t param_1, uint32_t param_2,
-                         uint32_t param_3, uint32_t param_4)
+uint32_t desc_cmd_interp(uint32_t a0, uint32_t a1,
+                         uint32_t a2, uint32_t a3)
 {
   CPUState *cpu = clean_cpu_state();
   uint32_t _sv_s0 = cpu->gpr[16], _sv_s1 = cpu->gpr[17];
   uint32_t _sv_s2 = cpu->gpr[18], _sv_s3 = cpu->gpr[19];
   uint32_t jt;
-  (void)param_1; (void)param_2; (void)param_3; (void)param_4;
+  (void)a0; (void)a1; (void)a2; (void)a3;
 
 block_8017DB88:
 { uint32_t _pgx1 = cpu->gpr[6]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[19] = cpu->gpr[6];
@@ -15576,24 +15576,20 @@ static void tpg_cell48_v2(uint32_t r, const uint16_t *fr,
   MW16(r + 12u, (uint16_t)(fr[2] + fr[14]));
 }
 
-uint32_t terrain_packet_gen(uint32_t param_1,uint32_t param_2,
-                      const uint16_t *param_3,const int16_t *param_4,
-                      const int16_t *param_5,int32_t param_6,
-                      int32_t param_7,const uint8_t *param_8)
+uint32_t terrain_packet_gen(uint32_t hdr,uint32_t cur,
+                      const uint16_t *u16v,const int16_t *vx,
+                      const int16_t *vy,int32_t sx,
+                      int32_t sy,const uint8_t *rgb)
 {
-  uint32_t hdr = param_1;              /* guest $a0 */
-  uint32_t cur = param_2;              /* guest $a1 */
-  int32_t  sx  = param_6;              /* guest $s6: col count + p4 divisor */
-  int32_t  sy  = param_7;              /* guest $s7: row count + p5 divisor */
   uint32_t prod, r48, r72;             /* mult lo; g11/g10 cursors */
   uint16_t fr[16];                     /* guest sp+0..0x1c frame (lhu) */
   int32_t  col, row;                   /* g8/g12 loop counters */
   int32_t  diff;                       /* g24 = sx - sy (signed) */
-  uint8_t  b0 = param_8[0], b1 = param_8[1], b2 = param_8[2];
+  uint8_t  b0 = rgb[0], b1 = rgb[1], b2 = rgb[2];
   int i;
 
   /* ---- block_80135A14: header ---- */
-  MW32(hdr + 0x1cu, cur);              /* hdr->out_cursor = param_2 */
+  MW32(hdr + 0x1cu, cur);              /* hdr->out_cursor = cur */
   MW16(hdr + 0x0cu, 0);
   MW16(hdr + 0x0eu, 0);
 
@@ -15633,15 +15629,15 @@ uint32_t terrain_packet_gen(uint32_t param_1,uint32_t param_2,
   }
 
   /* ---- block_80135B00: scaled triples into the sp frame ----
-   * sp+16..20 = lh(param_4)/sx, sp+24..28 = lh(param_5)/sy,
-   * sp+0..4 = lhu(param_3). Frame reloads everywhere below are lhu. */
+   * sp+16..20 = lh(vx)/sx, sp+24..28 = lh(vy)/sy,
+   * sp+0..4 = lhu(u16v). Frame reloads everywhere below are lhu. */
   for (i = 0; i < 3; i++) {
-    fr[8  + i] = (uint16_t)tpg_idiv((int32_t)param_4[i], sx);
-    fr[12 + i] = (uint16_t)tpg_idiv((int32_t)param_5[i], sy);
+    fr[8  + i] = (uint16_t)tpg_idiv((int32_t)vx[i], sx);
+    fr[12 + i] = (uint16_t)tpg_idiv((int32_t)vy[i], sy);
   }
-  fr[0] = param_3[0];
-  fr[1] = param_3[1];
-  fr[2] = param_3[2];
+  fr[0] = u16v[0];
+  fr[1] = u16v[1];
+  fr[2] = u16v[2];
 
   if (sy == 0) return r72;             /* block_80135BB0 -> epilogue */
 
@@ -15786,10 +15782,8 @@ uint32_t peak_track(void)
  * from desc+8; the disasm splits them (s7=+0x10 for euler_rotmat,
  * a0=+8 for the sh fields). Ported verbatim here.
  * Return value is whatever v0 last held; callers ignore it. */
-int32_t skeleton_init(uint32_t param_1,uint32_t param_2,uint32_t param_3)
+int32_t skeleton_init(uint32_t ctrl,uint32_t desc,uint32_t unused)
 {
-  uint32_t ctrl = param_1;
-  uint32_t desc = param_2;
   uint32_t base = MB32(ctrl + 0x30u);
   int32_t  np   = (int8_t)MB8(ctrl + 6u);   /* lb */
   int32_t  nr   = (int8_t)MB8(ctrl + 8u);   /* lb */
@@ -15800,8 +15794,7 @@ int32_t skeleton_init(uint32_t param_1,uint32_t param_2,uint32_t param_3)
   uint32_t seedM   = MB32(desc + 0x10u) + base;
   uint32_t extrat  = MB32(desc + 0x18u) + base;
   int32_t  i, j, k;
-  (void)param_3;
-
+  
   /* zero part-record lead fields: fobj + i*0x50, i = nr-1 .. 0 */
   for (i = nr - 1; i >= 0; i--)
     MW16(MB32(ctrl + 0x20u) + (uint32_t)i * 0x50u, 0u);
