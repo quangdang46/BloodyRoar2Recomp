@@ -4225,6 +4225,10 @@ void cps_80126a38(void)
     }
     /* Address: 0x80126A38, Size: 1136 bytes, Blocks: 58 */
 
+    /* channel/display-list init: word[s0+15612]=v0;
+       jal 0x80127680, 0x80163154(handle,v0,4) -> s2;
+       jal 0x8018BF40 params 464/480... 58-block init chain.
+       CPS-blocked. */
 block_80126A38:
     ra = 0x80126A40u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -18065,6 +18069,10 @@ void cps_8012fb58(void)
     }
     /* Address: 0x8012FB58, Size: 376 bytes, Blocks: 16 */
 
+    /* record compact/remap: if half[s1+118]&0x80 ->
+       copy half pairs s1+82..104 -> +74/76/78, +40/42/44,
+       +92/94/96, mask half[+118]&=0x7F; else half[s1+90]<=0
+       -> sp+72 out-param path. CPS-blocked. */
 block_8012FB58:
     v0 = 0x8011FCCCu;  /* 0x80120000 -820 */
     v1 = v1 << 2;
@@ -18653,6 +18661,10 @@ void cps_8012fce0(void)
     }
     /* Address: 0x8012FCE0, Size: 8808 bytes, Blocks: 355 */
 
+    /* mega CPS routine (~4.7k lines): entered via
+       byte[s1+128] dispatch from 0x8012FCD0; per-state channel/
+       object processing. CPS-blocked — too large to summarize
+       faithfully; ops untouched. */
 block_8012FCE0:
     int _bc_8012FCE0 = ((int32_t)v1 < 0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
