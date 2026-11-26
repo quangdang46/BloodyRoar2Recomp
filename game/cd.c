@@ -6020,6 +6020,7 @@ static int32_t cd_wait_stat(void)
 
 /* ======== 0x80192634 ======== */
 
+/* cd_cmd_queue_load — arm cmd-queue DMA descriptor (cells 0x801B8438-44): end=a0+n*4-4, count=n, trigger 0x11000002, timeout_arm, poll w/ watchdog. */
 int cd_cmd_queue_load(uint32_t a0,uint32_t a1)
 {
   /* 0x80192634-0x80192710. DMA-descriptor arm for the cmd queue:
@@ -6053,6 +6054,7 @@ int cd_cmd_queue_load(uint32_t a0,uint32_t a1)
 
 /* ======== 0x801938c8 ======== */
 
+/* cd_gpu_call_20 — rect dbg 0x801255EC, timeout_arm, wait_stat, dispatch tbl4(2,0x80193CE0), gpu_invoke(tbl+0x20). */
 int32_t cd_gpu_call_20(uint32_t a0,uint32_t a1)
 {
   int32_t r;
@@ -6070,6 +6072,7 @@ int32_t cd_gpu_call_20(uint32_t a0,uint32_t a1)
 
 /* ======== 0x801939b4 ======== */
 
+/* cd_gpu_call_1c — same shape, rect dbg 0x80125510, gpu_invoke(tbl+0x1C). */
 int32_t cd_gpu_call_1c(uint32_t a0,uint32_t a1)
 {
   int32_t r;
@@ -6101,6 +6104,7 @@ uint32_t cd_chan_full_init(void)
 
 /* ======== 0x801918a0 ======== */
 
+/* cd_prim_emit_a — prim emit w/ optional trace cb 0x80125584 (>=2); builds packet via gpu tbl. */
 void cd_prim_emit_a(uint32_t a0,uint32_t a1)
 {
   uint32_t s0;
@@ -6124,6 +6128,7 @@ extern uint32_t cd_queue_drain(void);
 
 /* ======== 0x80193574 ======== */
 
+/* cd_queue_poll — poll queue state cell (see body). */
 int cd_queue_poll(uint32_t a0)
 {
   if (a0 == 0) {
@@ -6345,6 +6350,7 @@ int cd_job_sm6(uint32_t a0)
 
 /* ======== 0x8019f474 ======== */
 
+/* cd_job_submit5 — job submit SM for state-5 job (cb 0x8019F02C): case walk 0->alloc, 0xa->FUN_801A0220 slot, 0x14->pump svc_dual, 0x16->queue_b. */
 int cd_job_submit5(uint32_t a0)
 {
   uint32_t *s1 = (uint32_t *)guest_at(a0);
@@ -6397,6 +6403,7 @@ int cd_job_submit5(uint32_t a0)
 
 /* ======== 0x8019f6cc ======== */
 
+/* cd_job_submit6 — sibling submit SM for state-6 job (cb 0x8019F220). */
 int cd_job_submit6(uint32_t a0)
 {
   uint32_t *s1 = (uint32_t *)guest_at(a0);
@@ -6514,6 +6521,7 @@ uint32_t cd_vcall_18(uint32_t a0,uint32_t a1)
 
 /* ======== 0x8019799c ======== */
 
+/* cd_mmio_bit_wait — bounded MMIO bit poll helper. */
 int cd_mmio_bit_wait(uint32_t a0,uint32_t a1)
 {
   volatile uint8_t *p = (volatile uint8_t *)guest_at(a1);
