@@ -2405,9 +2405,9 @@ int sprite_node_emit_b(uint32_t head_gaddr,uint32_t param_2,uint32_t param_3,
 
 
 /* frame_counter_bump — bump byte counter @0x1f800012 by arg+1. Disasm-verified. */
-void frame_counter_bump(int param_1)
+void frame_counter_bump(int count)
 {
-  *(uint8_t *)guest_at(0x1f800012) = (uint8_t)(param_1 + 1);
+  *(uint8_t *)guest_at(0x1f800012) = (uint8_t)(count + 1);
 }
 
 /* clear_battle_counters — clear battle-side counters @0x1f800068/74 (u32) and
@@ -2422,9 +2422,9 @@ void clear_battle_counters(void)
 
 /* u16_lut_lookup — u16 lookup: idx=a0&0xffff; <3 returns lhu at
  * *(u32*)0x801b66e4 + idx*0x10, else 0. Disasm 0x8018e3bc-0x8018e3f0. */
-uint32_t u16_lut_lookup(uint32_t param_1)
+uint32_t u16_lut_lookup(uint32_t key)
 {
-  uint32_t idx = param_1 & 0xffff;
+  uint32_t idx = key & 0xffff;
   uint32_t tbl;
   if (idx >= 3) return 0;
   tbl = *(uint32_t *)guest_at(0x801b66e4);
@@ -2434,9 +2434,9 @@ uint32_t u16_lut_lookup(uint32_t param_1)
 /* u16_lut_slot_clear — sibling of u16_lut_lookup: idx=a0&0xffff; <3
  * clears the u16 at *(u32*)0x801b66e4 + idx*0x10 and returns 1, else 0.
  * Disasm 0x8018e458-0x8018e488 (lui/addiu base, sll idx,4, sh $zero). */
-uint32_t u16_lut_slot_clear(uint32_t param_1)
+uint32_t u16_lut_slot_clear(uint32_t key)
 {
-  uint32_t idx = param_1 & 0xffff;
+  uint32_t idx = key & 0xffff;
   uint32_t tbl;
   if (idx >= 3) return 0;
   tbl = *(uint32_t *)guest_at(0x801b66e4);
@@ -2448,9 +2448,9 @@ uint32_t u16_lut_slot_clear(uint32_t param_1)
  * mask = *(u32*)(0x801b66e8 + idx*4); base = *(u32*)0x801b66e0;
  * *(u32*)(base+4) |= mask; returns (int32)idx < 3.
  * Disasm 0x8018e3f4-0x8018e420. */
-uint32_t lut_mask_or(uint32_t param_1)
+uint32_t lut_mask_or(uint32_t key)
 {
-  uint32_t idx = param_1 & 0xffff;
+  uint32_t idx = key & 0xffff;
   uint32_t base = *(uint32_t *)guest_at(0x801b66e0);
   uint32_t mask = *(uint32_t *)guest_at(0x801b66e8 + idx * 4);
   uint32_t flags = *(uint32_t *)guest_at(base + 4);
@@ -2461,9 +2461,9 @@ uint32_t lut_mask_or(uint32_t param_1)
 /* lut_mask_clear — same table walk as lut_mask_or but clears the mask:
  * *(u32*)(base+4) &= ~mask; always returns 1.
  * Disasm 0x8018e424-0x8018e454 (not + and+slti absent). */
-uint32_t lut_mask_clear(uint32_t param_1)
+uint32_t lut_mask_clear(uint32_t key)
 {
-  uint32_t idx = param_1 & 0xffff;
+  uint32_t idx = key & 0xffff;
   uint32_t base = *(uint32_t *)guest_at(0x801b66e0);
   uint32_t mask = *(uint32_t *)guest_at(0x801b66e8 + idx * 4);
   uint32_t flags = *(uint32_t *)guest_at(base + 4);
@@ -2474,28 +2474,28 @@ uint32_t lut_mask_clear(uint32_t param_1)
 /* rand_seed — LCG state seed: *(u32*)0x801f68e0 = a0 (the state word
  * rand_lcg @0x8018e4d0 advances as state*0x41c64e6d+0x3039).
  * Disasm 0x8018e500-0x8018e510 (lui 0x801f, sw a0, +0x68e0). */
-void rand_seed(uint32_t param_1)
+void rand_seed(uint32_t seed)
 {
-  *(uint32_t *)guest_at(0x801f68e0) = param_1;
+  *(uint32_t *)guest_at(0x801f68e0) = seed;
 }
 
 /* ctype_adj_m32 — printf ctype-table adjust: c = ctype_tbl[a0 & 0xff]
  * (@0x801b6701); when (c & 2) returns (int8_t)(a0 - 32), else (int8_t)a0.
  * Disasm 0x8018ec30-0x8018ec60 (lb, andi 2, a0-32 vs a0, <<24 >>24). */
-int32_t ctype_adj_m32(uint32_t param_1)
+int32_t ctype_adj_m32(uint32_t ch)
 {
-  uint8_t c = *(uint8_t *)guest_at(0x801b6701 + (param_1 & 0xff));
-  int32_t r = (c & 2) ? (int32_t)(param_1 - 32) : (int32_t)param_1;
+  uint8_t c = *(uint8_t *)guest_at(0x801b6701 + (ch & 0xff));
+  int32_t r = (c & 2) ? (int32_t)(ch - 32) : (int32_t)ch;
   return (int8_t)r;
 }
 
 /* ctype_adj_p32 — printf ctype-table adjust: c = ctype_tbl[a0 & 0xff];
  * when (c & 1) returns (int8_t)(a0 + 32), else (int8_t)a0.
  * Disasm 0x8018ec64-0x8018ec94 (lb, andi 1, a0+32 vs a0, <<24 >>24). */
-int32_t ctype_adj_p32(uint32_t param_1)
+int32_t ctype_adj_p32(uint32_t ch)
 {
-  uint8_t c = *(uint8_t *)guest_at(0x801b6701 + (param_1 & 0xff));
-  int32_t r = (c & 1) ? (int32_t)(param_1 + 32) : (int32_t)param_1;
+  uint8_t c = *(uint8_t *)guest_at(0x801b6701 + (ch & 0xff));
+  int32_t r = (c & 1) ? (int32_t)(ch + 32) : (int32_t)ch;
   return (int8_t)r;
 }
 
@@ -2504,10 +2504,10 @@ int32_t ctype_adj_p32(uint32_t param_1)
  * (size+0x7ff)>>0xb page count written by pad_record_init).
  * Disasm 0x8018cfb4-0x8018cfd0 (bltz a0 -> shared ret-0 tail 0x8018cfd4,
  * sll a0,3, lw +4). */
-uint32_t file_rec_size_get(int32_t param_1)
+uint32_t file_rec_size_get(int32_t file_idx)
 {
-  if (param_1 < 0) return 0;
-  return *(uint32_t *)guest_at(0x801b5b98 + (uint32_t)param_1 * 8);
+  if (file_idx < 0) return 0;
+  return *(uint32_t *)guest_at(0x801b5b98 + (uint32_t)file_idx * 8);
 }
 
 /* set_graph_debug — SetGraphDebug level setter: byte @0x801b8322 = arg;
@@ -2515,14 +2515,14 @@ uint32_t file_rec_size_get(int32_t param_1)
  * with "SetGraphDebug:level:%d,type:%d reverse:%d". Returns old byte.
  * Disasm 0x80190f74-0x80190fc8. */
 extern void *PTR_FUN_801b831c;
-int32_t set_graph_debug(uint32_t param_1)
+int32_t set_graph_debug(uint32_t level)
 {
   uint8_t *flag = (uint8_t *)guest_at(0x801b8322);
   int32_t old = flag[0];
   int (*cb)(int32_t,uint32_t,uint32_t,uint32_t,...) =
       (int (*)(int32_t,uint32_t,uint32_t,uint32_t,...))PTR_FUN_801b831c;
-  flag[0] = (uint8_t)param_1;
-  if ((param_1 & 0xff) == 0) return old;
+  flag[0] = (uint8_t)level;
+  if ((level & 0xff) == 0) return old;
   cb(0x80125444,flag[0],flag[-2],flag[1]);
   return old;
 }
@@ -2536,15 +2536,15 @@ extern int32_t mc_data_read(int32_t,uint32_t,uint32_t,uint32_t,uint32_t,
                             uint32_t,uint32_t,uint32_t);
 int32_t memcard_info_query(void)
 {
-  uint32_t *t = (uint32_t *)guest_at(0x801b45f4);
-  int32_t r;
-  if (t == NULL) return -1;
-  r = mc_data_read(0,t[0],t[1],t[2],t[3],t[4],t[5],t[6],t[7],t[8],t[9],
+  uint32_t *tbl = (uint32_t *)guest_at(0x801b45f4);
+  int32_t ret;
+  if (tbl == NULL) return -1;
+  ret = mc_data_read(0,tbl[0],tbl[1],tbl[2],tbl[3],tbl[4],tbl[5],tbl[6],tbl[7],tbl[8],tbl[9],
                    0x801c11e0,0x414);
-  /* Generated 0x8015F590-0x8015F63C: every r!=0 path returns v0=0
-   * (li v0,0 in the 0x8015F610 delay slot); only r==0 clears
+  /* Generated 0x8015F590-0x8015F63C: every ret!=0 path returns v0=0
+   * (li v0,0 in the 0x8015F610 delay slot); only ret==0 clears
    * 0x801c15f0 and returns the config byte. */
-  if (r != 0) return 0;
+  if (ret != 0) return 0;
   *(uint32_t *)guest_at(0x801c15f0) = 0;
   return *(uint8_t *)guest_at(*(uint32_t *)guest_at(0x1f8000c0) + 0x22);
 }
@@ -2555,13 +2555,13 @@ int32_t memcard_info_query(void)
  * Disasm 0x8012a088-0x8012a0e8. */
 void debug_stat_print(void)
 {
-  uint16_t a1 = *(uint16_t *)guest_at(0x1f80001a);
-  uint16_t a2 = *(uint16_t *)guest_at(0x1f80001c);
+  uint16_t cpu_val = *(uint16_t *)guest_at(0x1f80001a);
+  uint16_t gpu_val = *(uint16_t *)guest_at(0x1f80001c);
   scroll_offset_set(0,0xdc);
   if (*(uint16_t *)guest_at(0x801e83a8) == 0)
-    print_dispatch((const char *)guest_at(0x8011ed40),a1,a2);
+    print_dispatch((const char *)guest_at(0x8011ed40),cpu_val,gpu_val);
   else
-    print_dispatch((const char *)guest_at(0x8011ed54),a1,a2);
+    print_dispatch((const char *)guest_at(0x8011ed54),cpu_val,gpu_val);
 }
 
 /* players_ctrl_init — two-player control-block init: fills guest structs at
@@ -2569,34 +2569,34 @@ void debug_stat_print(void)
  * with ptr pairs into 0x801e1b3c region. Disasm 0x801757b8-0x80175890. */
 void players_ctrl_init(void)
 {
-  uint8_t *pa = (uint8_t *)guest_at(0x1f8000e8);
-  uint8_t *pb = (uint8_t *)guest_at(0x1f8001f0);
-  uint8_t *ta = (uint8_t *)guest_at(0x801f5258);
-  uint8_t *tb = ta + 0x48;
-  const uint32_t v1 = 0x801e1b3c;
-  if (!pa || !pb || !ta) return;
-  pa[2] = 0; pa[3] = 0;
-  *(uint32_t *)(pa + 0x28) = 0x801f5258;
-  *(uint32_t *)(ta + 0x3c) = v1 + 0x870;
-  *(uint32_t *)(ta + 0x1c) = v1 - 0xbd0;
-  *(uint32_t *)(ta + 0x40) = v1 - 0x8dc;
-  *(uint32_t *)(ta + 0x18) = v1;
-  *(uint32_t *)(pa + 0x44) = v1 - 0x1950;
-  *(uint32_t *)(pa + 0x48) = v1 - 0x1290;
-  *(uint32_t *)(pa + 0x2c) = 0x1f8001f0;
-  *(uint32_t *)(pa + 0x38) = 0x801f5328;
-  *(uint32_t *)(pa + 0x3c) = 0x801f55c0;
-  pb[2] = 1; pb[3] = 5;
-  *(uint32_t *)(pb + 0x28) = 0x801f52a0;
-  *(uint32_t *)(tb + 0x18) = v1 + 0x10e0;
-  *(uint32_t *)(tb + 0x3c) = v1 + 0x1950;
-  *(uint32_t *)(tb + 0x1c) = v1 - 0x5e8;
-  *(uint32_t *)(tb + 0x40) = v1 - 0x2f4;
-  *(uint32_t *)(pb + 0x44) = v1 - 0x15f0;
-  *(uint32_t *)(pb + 0x48) = v1 - 0xf30;
-  *(uint32_t *)(pb + 0x2c) = 0x1f8000e8;
-  *(uint32_t *)(pb + 0x38) = 0x801f5440;
-  *(uint32_t *)(pb + 0x3c) = 0x801f5704;
+  uint8_t *ctrl_a = (uint8_t *)guest_at(0x1f8000e8);
+  uint8_t *ctrl_b = (uint8_t *)guest_at(0x1f8001f0);
+  uint8_t *tbl_a = (uint8_t *)guest_at(0x801f5258);
+  uint8_t *tbl_b = tbl_a + 0x48;
+  const uint32_t base_gaddr = 0x801e1b3c;
+  if (!ctrl_a || !ctrl_b || !tbl_a) return;
+  ctrl_a[2] = 0; ctrl_a[3] = 0;
+  *(uint32_t *)(ctrl_a + 0x28) = 0x801f5258;
+  *(uint32_t *)(tbl_a + 0x3c) = base_gaddr + 0x870;
+  *(uint32_t *)(tbl_a + 0x1c) = base_gaddr - 0xbd0;
+  *(uint32_t *)(tbl_a + 0x40) = base_gaddr - 0x8dc;
+  *(uint32_t *)(tbl_a + 0x18) = base_gaddr;
+  *(uint32_t *)(ctrl_a + 0x44) = base_gaddr - 0x1950;
+  *(uint32_t *)(ctrl_a + 0x48) = base_gaddr - 0x1290;
+  *(uint32_t *)(ctrl_a + 0x2c) = 0x1f8001f0;
+  *(uint32_t *)(ctrl_a + 0x38) = 0x801f5328;
+  *(uint32_t *)(ctrl_a + 0x3c) = 0x801f55c0;
+  ctrl_b[2] = 1; ctrl_b[3] = 5;
+  *(uint32_t *)(ctrl_b + 0x28) = 0x801f52a0;
+  *(uint32_t *)(tbl_b + 0x18) = base_gaddr + 0x10e0;
+  *(uint32_t *)(tbl_b + 0x3c) = base_gaddr + 0x1950;
+  *(uint32_t *)(tbl_b + 0x1c) = base_gaddr - 0x5e8;
+  *(uint32_t *)(tbl_b + 0x40) = base_gaddr - 0x2f4;
+  *(uint32_t *)(ctrl_b + 0x44) = base_gaddr - 0x15f0;
+  *(uint32_t *)(ctrl_b + 0x48) = base_gaddr - 0xf30;
+  *(uint32_t *)(ctrl_b + 0x2c) = 0x1f8000e8;
+  *(uint32_t *)(ctrl_b + 0x38) = 0x801f5440;
+  *(uint32_t *)(ctrl_b + 0x3c) = 0x801f5704;
   *(uint8_t *)guest_at(0x1f800098) = 0;
 }
 
@@ -2608,42 +2608,42 @@ void players_ctrl_init(void)
  * Disasm 0x8012a30c-0x8012a4b0. */
 void ot_packet_chain_fixup(void)
 {
-  uint32_t h;
-  uint32_t t1 = *(uint32_t *)guest_at(0x1f800008);
+  uint32_t pos;
+  uint32_t ot_head = *(uint32_t *)guest_at(0x1f800008);
   static const uint32_t offs[5] = {0x10,0x20,0x30,0x40,0x50};
   int i;
-  uint8_t *A = (uint8_t *)guest_at(0x801e83e8);
-  uint8_t *A2 = (uint8_t *)guest_at(0x801e83d0);
-  if (A == NULL || A2 == NULL) return;
-  h = (uint32_t)*(uint16_t *)(A + 8) + *(uint16_t *)guest_at(0x1f80001a);
-  *(uint16_t *)(A + 0x14) = (uint16_t)h;
-  *(uint16_t *)(A + 0xc)  = (uint16_t)h;
-  h = (uint32_t)*(uint16_t *)(A2 + 8) + *(uint16_t *)guest_at(0x1f80001c);
-  *(uint16_t *)(A2 + 0x14) = (uint16_t)h;
-  *(uint16_t *)(A2 + 0xc)  = (uint16_t)h;
-  h = (uint32_t)*(uint16_t *)(A2 + 8) + *(uint16_t *)guest_at(0x1f80001e);
-  *(uint16_t *)guest_at(0x801e83a4) = (uint16_t)h;
-  *(uint16_t *)guest_at(0x801e83a0) = (uint16_t)h;
+  uint8_t *rec_a = (uint8_t *)guest_at(0x801e83e8);
+  uint8_t *rec_b = (uint8_t *)guest_at(0x801e83d0);
+  if (rec_a == NULL || rec_b == NULL) return;
+  pos = (uint32_t)*(uint16_t *)(rec_a + 8) + *(uint16_t *)guest_at(0x1f80001a);
+  *(uint16_t *)(rec_a + 0x14) = (uint16_t)pos;
+  *(uint16_t *)(rec_a + 0xc)  = (uint16_t)pos;
+  pos = (uint32_t)*(uint16_t *)(rec_b + 8) + *(uint16_t *)guest_at(0x1f80001c);
+  *(uint16_t *)(rec_b + 0x14) = (uint16_t)pos;
+  *(uint16_t *)(rec_b + 0xc)  = (uint16_t)pos;
+  pos = (uint32_t)*(uint16_t *)(rec_b + 8) + *(uint16_t *)guest_at(0x1f80001e);
+  *(uint16_t *)guest_at(0x801e83a4) = (uint16_t)pos;
+  *(uint16_t *)guest_at(0x801e83a0) = (uint16_t)pos;
   for (i = 0; i < 5; i++) {
     uint32_t slot = 0x801e8398 - offs[i];
-    uint32_t v = *(uint32_t *)guest_at(t1) | 0x3000000;
+    uint32_t v = *(uint32_t *)guest_at(ot_head) | 0x3000000;
     *(uint32_t *)guest_at(slot) = v;
-    *(uint32_t *)guest_at(t1) = slot & 0xffffff;
+    *(uint32_t *)guest_at(ot_head) = slot & 0xffffff;
   }
   {
     uint32_t slot = 0x801e8398;
-    *(uint32_t *)guest_at(slot) = *(uint32_t *)guest_at(t1) | 0x3000000;
-    *(uint32_t *)guest_at(t1) = slot & 0xffffff;
+    *(uint32_t *)guest_at(slot) = *(uint32_t *)guest_at(ot_head) | 0x3000000;
+    *(uint32_t *)guest_at(ot_head) = slot & 0xffffff;
   }
   {
     uint32_t slot = 0x801e83d0;
-    *(uint32_t *)guest_at(slot) = *(uint32_t *)guest_at(t1) | 0x5000000;
-    *(uint32_t *)guest_at(t1) = slot & 0xffffff;
+    *(uint32_t *)guest_at(slot) = *(uint32_t *)guest_at(ot_head) | 0x5000000;
+    *(uint32_t *)guest_at(ot_head) = slot & 0xffffff;
   }
   {
     uint32_t slot = 0x801e83b8;
-    *(uint32_t *)guest_at(slot) = *(uint32_t *)guest_at(t1) | 0x5000000;
-    *(uint32_t *)guest_at(t1) = slot & 0xffffff;
+    *(uint32_t *)guest_at(slot) = *(uint32_t *)guest_at(ot_head) | 0x5000000;
+    *(uint32_t *)guest_at(ot_head) = slot & 0xffffff;
   }
 }
 
@@ -2658,26 +2658,26 @@ static void sh16(uint32_t a,uint32_t o,uint32_t v)
 { *(uint16_t *)((uint8_t *)guest_at(a) + o) = (uint16_t)v; }
 static void sb8(uint32_t a,uint32_t o,uint32_t v)
 { *(uint8_t *)((uint8_t *)guest_at(a) + o) = (uint8_t)v; }
-void sprite_rect_table_init(int32_t param_1,int32_t param_2,int32_t param_3)
+void sprite_rect_table_init(int32_t x_dim,int32_t y_dim,int32_t param_3)
 {
-  uint32_t s3 = (uint32_t)param_1, s2 = (uint32_t)param_2;
+  uint32_t xd = (uint32_t)x_dim, yd = (uint32_t)y_dim;
   (void)param_3;
   uint32_t v1 = 0x801e83b8, a1 = v1 + 0x18, a0 = v1 + 0x30;
   uint32_t b, i;
   for (i = 0; i < 3; i++) spr_prim_tag_a(v1 + i * 0x18);
   /* three 0x18 records */
-  sh16(v1,0x12,s2+0xf);  sh16(v1,0x16,s2+0xf);
-  sh16(v1,0x08,s3);      sh16(v1,0x0a,s2);
-  sh16(v1,0x0c,s3+0xff); sh16(v1,0x0e,s2);
-  sh16(v1,0x10,s3);      sh16(v1,0x14,s3+0xff);
-  sh16(a1,0x0a,s2+9);    sh16(a1,0x0e,s2+9);
-  sh16(a1,0x12,s2+0xe);  sh16(a1,0x16,s2+0xe);
-  sh16(a1,0x08,s3);      sh16(a1,0x0c,s3+0xff);
-  sh16(a1,0x10,s3);      sh16(a1,0x14,s3+0xff);
-  sh16(a0,0x0a,s2+1);    sh16(a0,0x0e,s2+1);
-  sh16(a0,0x12,s2+6);    sh16(a0,0x16,s2+6);
-  sh16(a0,0x08,s3);      sh16(a0,0x0c,s3+0xff);
-  sh16(a0,0x10,s3);      sh16(a0,0x14,s3+0xff);
+  sh16(v1,0x12,yd+0xf);  sh16(v1,0x16,yd+0xf);
+  sh16(v1,0x08,xd);      sh16(v1,0x0a,yd);
+  sh16(v1,0x0c,xd+0xff); sh16(v1,0x0e,yd);
+  sh16(v1,0x10,xd);      sh16(v1,0x14,xd+0xff);
+  sh16(a1,0x0a,yd+9);    sh16(a1,0x0e,yd+9);
+  sh16(a1,0x12,yd+0xe);  sh16(a1,0x16,yd+0xe);
+  sh16(a1,0x08,xd);      sh16(a1,0x0c,xd+0xff);
+  sh16(a1,0x10,xd);      sh16(a1,0x14,xd+0xff);
+  sh16(a0,0x0a,yd+1);    sh16(a0,0x0e,yd+1);
+  sh16(a0,0x12,yd+6);    sh16(a0,0x16,yd+6);
+  sh16(a0,0x08,xd);      sh16(a0,0x0c,xd+0xff);
+  sh16(a0,0x10,xd);      sh16(a0,0x14,xd+0xff);
   sb8(v1,4,0x28); sb8(v1,5,0x28); sb8(v1,6,0x28);
   sb8(a1,4,0xc8); sb8(a1,5,0xc8); sb8(a1,6,0);
   sb8(a0,4,0xc8); sb8(a0,5,0);    sb8(a0,6,0);
@@ -2688,10 +2688,10 @@ void sprite_rect_table_init(int32_t param_1,int32_t param_2,int32_t param_3)
     uint32_t r;
     for (i = 0; i < 6; i++) {
       r = 0x801e8348 + i * 0x10;
-      sh16(r,0x08, i == 5 ? s3 : s3 + xs[i]);
-      sh16(r,0x0c, i == 5 ? s3 : s3 + xs[i]);
-      sh16(r,0x0a, s2);
-      sh16(r,0x0e, s2 + 0xf);
+      sh16(r,0x08, i == 5 ? xd : xd + xs[i]);
+      sh16(r,0x0c, i == 5 ? xd : xd + xs[i]);
+      sh16(r,0x0a, yd);
+      sh16(r,0x0e, yd + 0xf);
       if (i == 5) { sb8(r,4,0xff); sb8(r,5,0xff); sb8(r,6,0xff); }
       else        { sb8(r,4,0);    sb8(r,5,0);    sb8(r,6,(i & 1) ? 0xff : 0x40); }
     }
@@ -2747,15 +2747,15 @@ void blk_1f26c0_init(void)
 
 /* clear_f4ee8_u16s — clear 10 u16s at 0x801f4ee8 + byte(a0+2)*24 + 0x12,
  * plus u16 @+0x14/+0x16 and 9 words before +0x12. Disasm verified. */
-void clear_f4ee8_u16s(uint32_t a0)
+void clear_f4ee8_u16s(uint32_t ctrl_gaddr)
 {
-  uint8_t *ctrl = (uint8_t *)guest_at(a0);
-  uint8_t *v1 = (uint8_t *)guest_at(0x801f4ee8) + ctrl[2] * 24;
-  uint16_t *v0 = (uint16_t *)(v1 + 0x12);
+  uint8_t *ctrl = (uint8_t *)guest_at(ctrl_gaddr);
+  uint8_t *rec = (uint8_t *)guest_at(0x801f4ee8) + ctrl[2] * 24;
+  uint16_t *dst = (uint16_t *)(rec + 0x12);
   int i;
-  v1[0x14] = 0; v1[0x15] = 0;
-  *(uint16_t *)(v1 + 0x16) = 0;
-  for (i = 9; i >= 0; i--) *v0-- = 0;
+  rec[0x14] = 0; rec[0x15] = 0;
+  *(uint16_t *)(rec + 0x16) = 0;
+  for (i = 9; i >= 0; i--) *dst-- = 0;
 }
 
 /* blk_1f26c0_init_b — block @0x801f26c0 variant init: +0=7, +4=0x100,
@@ -2782,20 +2782,20 @@ extern int select_phase_update(uint32_t);
 extern int32_t gauge_leaf_update(uint32_t);
 void scratchpad_pair_init(void)
 {
-  uint8_t *s0 = (uint8_t *)guest_at(0x1f8000e8);
-  uint8_t *s1 = (uint8_t *)guest_at(0x1f8001f0);
-  uint8_t *z = (uint8_t *)guest_at(0x1f800000);
+  uint8_t *ctrl_a = (uint8_t *)guest_at(0x1f8000e8);
+  uint8_t *ctrl_b = (uint8_t *)guest_at(0x1f8001f0);
+  uint8_t *base = (uint8_t *)guest_at(0x1f800000);
   (void)select_phase_update(0x1f800000);
-  if (z) { z[0x99] = 0; z[0x9a] = 0; }
-  if (s0) {
-    s0[0xe4] = 0;
-    *(uint32_t *)(s0 + 0xf4) = 0;
-    *(uint16_t *)(s0 + 0xe8) += 1;
+  if (base) { base[0x99] = 0; base[0x9a] = 0; }
+  if (ctrl_a) {
+    ctrl_a[0xe4] = 0;
+    *(uint32_t *)(ctrl_a + 0xf4) = 0;
+    *(uint16_t *)(ctrl_a + 0xe8) += 1;
   }
-  if (s1) {
-    s1[0xe4] = 0;
-    *(uint32_t *)(s1 + 0xf4) = 0;
-    *(uint16_t *)(s1 + 0xe8) += 1;
+  if (ctrl_b) {
+    ctrl_b[0xe4] = 0;
+    *(uint32_t *)(ctrl_b + 0xf4) = 0;
+    *(uint16_t *)(ctrl_b + 0xe8) += 1;
   }
   gauge_leaf_update(0x1f800000);
 }
@@ -2804,31 +2804,31 @@ void scratchpad_pair_init(void)
  * s8(+0x98)->+0x12, s8(+0x99)->+0x14, lhu(+0xa0)->+0x16, then five
  * u16=-1 stores stride -0x235c from 0x801cd530. a0 guest addr.
  * Disasm 0x80127be4-0x80127c58. */
-void reset_sprite_ot_block(uint32_t a0)
+void reset_sprite_ot_block(uint32_t obj_gaddr)
 {
-  uint8_t *b = (uint8_t *)guest_at(a0);
-  uint16_t *v1;
-  uint32_t v0;
+  uint8_t *obj = (uint8_t *)guest_at(obj_gaddr);
+  uint16_t *vec;
+  uint32_t slot_addr;
   int i;
-  if (b == NULL) return;
-  v1 = (uint16_t *)guest_at(*(uint32_t *)(b + 0xcc));
-  if (v1 == NULL) return;
-  for (i = 0; i < 8; i++) v1[i] = 0;
-  v1[9] = (uint16_t)(int8_t)b[0x98];
-  v1[10] = (uint16_t)(int8_t)b[0x99];
-  v1[11] = *(uint16_t *)(b + 0xa0);
-  v0 = 0x801cd530;
+  if (obj == NULL) return;
+  vec = (uint16_t *)guest_at(*(uint32_t *)(obj + 0xcc));
+  if (vec == NULL) return;
+  for (i = 0; i < 8; i++) vec[i] = 0;
+  vec[9] = (uint16_t)(int8_t)obj[0x98];
+  vec[10] = (uint16_t)(int8_t)obj[0x99];
+  vec[11] = *(uint16_t *)(obj + 0xa0);
+  slot_addr = 0x801cd530;
   for (i = 4; i >= 0; i--) {
-    *(uint16_t *)guest_at(v0) = 0xffff;
-    v0 -= 0x235c;
+    *(uint16_t *)guest_at(slot_addr) = 0xffff;
+    slot_addr -= 0x235c;
   }
 }
 
 /* reset_combat_record — reset combat record block: 16 sub-slots stride 4
  * at 0x801f0fb0 + a0*0x84: [i]=0, [i+0x40]=0x64. Disasm verified. */
-void reset_combat_record(int32_t a0)
+void reset_combat_record(int32_t slot)
 {
-  uint8_t *base = (uint8_t *)guest_at(0x801f0fb0 + a0 * 0x84);
+  uint8_t *base = (uint8_t *)guest_at(0x801f0fb0 + slot * 0x84);
   int i;
   if (base == NULL) return;
   for (i = 0; i < 16; i++) {
@@ -2841,24 +2841,24 @@ void reset_combat_record(int32_t a0)
  * +0=7, +4=a0|0x100, +8/+0xa=a1, 9c0f0, 9caa0, 9cb20(1,0xffffFF08),
  * 9bf10(1). Disasm 0x80155e6c-0x80155ed4. */
 extern void cd_reg_win_rmw_cc_cd(int32_t,uint32_t);
-void blk_1f26c0_init_c(int32_t a0,uint32_t a1)
+void blk_1f26c0_init_c(int32_t mode,uint32_t dim)
 {
-  uint32_t s0 = 0x801f26c0;
-  *(uint32_t *)guest_at(0x801f36c4) = (uint32_t)a0;
-  *(uint32_t *)guest_at(s0) = 7;
-  *(uint32_t *)guest_at(s0 + 4) = (uint32_t)a0 | 0x100;
-  *(uint16_t *)guest_at(s0 + 8) = (uint16_t)a1;
-  *(uint16_t *)guest_at(s0 + 0xa) = (uint16_t)a1;
-  cd_chan_mode_apply(s0);
-  cd_chan_flags_to_dir(s0);
+  uint32_t blk = 0x801f26c0;
+  *(uint32_t *)guest_at(0x801f36c4) = (uint32_t)mode;
+  *(uint32_t *)guest_at(blk) = 7;
+  *(uint32_t *)guest_at(blk + 4) = (uint32_t)mode | 0x100;
+  *(uint16_t *)guest_at(blk + 8) = (uint16_t)dim;
+  *(uint16_t *)guest_at(blk + 0xa) = (uint16_t)dim;
+  cd_chan_mode_apply(blk);
+  cd_chan_flags_to_dir(blk);
   cd_reg_win_rmw_cc_cd(1,0xffffFF08);
   cd_chan_mode_set(1);
 }
 
 /* record_copy_1a — copy 0x1a-byte record 0x8011fea0 + idx*0x1a ->
  * 0x801f0640 then hud_sprite_desc_init. Disasm 0x80136d28-0x80136dd4. */
-void record_copy_1a(int a0)
+void record_copy_1a(int idx)
 {
-  memcpy(guest_at(0x801f0640),guest_at(0x8011fea0 + a0 * 0x1a),0x1a);
+  memcpy(guest_at(0x801f0640),guest_at(0x8011fea0 + idx * 0x1a),0x1a);
   hud_sprite_desc_init();
 }
