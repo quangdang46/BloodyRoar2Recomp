@@ -33,8 +33,8 @@ extern uint32_t guest_sp(void);
 extern uint16_t psx_read_half(uint32_t addr);
 extern void decomp_trace_record(uint8_t tag, uint32_t dst, uint32_t src,
                                 uint8_t mode, uint32_t len);
-void gauge_scale_fixed(short param_1,short param_2);
-void brightness_commit(undefined2 param_1);
+void gauge_scale_fixed(short a0,short a1);
+void brightness_commit(undefined2 a0);
 
 
 /* ---- guest globals ---- */
@@ -667,7 +667,7 @@ switchD_80157ebc_caseD_30:
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-int memcard_file_flow(int param_1)
+int memcard_file_flow(int a0)
 
 {
   int iVar1;
@@ -770,7 +770,7 @@ int memcard_file_flow(int param_1)
             local_a0 = 0;
             local_9e = 0;
             _DAT_801e8518 = 0x30;
-            if (param_1 != 0) {
+            if (a0 != 0) {
               uVar6 = 0xffffffff;
               iVar4 = 1;
               iVar5 = 0;
@@ -791,7 +791,7 @@ int memcard_file_flow(int param_1)
       goto LAB_80160558;
     }
 LAB_8015f820:
-    if (param_1 == 0) {
+    if (a0 == 0) {
       menu_stepper_state_advance(&local_c0);
     }
     switch(local_bd) {
@@ -881,7 +881,7 @@ switchD_8015fbc4_caseD_0:
           case 2:
           case 3:
           case 5:
-            if (param_1 == 0) goto switchD_8015fbc4_caseD_0;
+            if (a0 == 0) goto switchD_8015fbc4_caseD_0;
             if (uVar6 == 0) goto LAB_8015fbfc;
             local_bd = '\x11';
             iVar4 = 1;
@@ -968,7 +968,7 @@ switchD_8015fc3c_default:
       }
       local_30 = 100;
       local_34 = unaff_s2;
-      if (param_1 == 0) {
+      if (a0 == 0) {
         local_30 = -1;
       }
 code_r0x8015ffac:
@@ -1037,7 +1037,7 @@ switchD_8015ffe4_default:
               break;
             case 2:
               uVar6 = 0xffffffff;
-              if (param_1 == 0) {
+              if (a0 == 0) {
                 if (local_b8 != 2) {
                   if (local_b8 < 3) {
                     if (local_b8 == 1) goto LAB_8016026c;
@@ -1119,7 +1119,7 @@ LAB_801603fc:
       break;
     case '\x16':
       if (iVar4 == 0) {
-        if (param_1 != 0) goto LAB_8015f8c0;
+        if (a0 != 0) goto LAB_8015f8c0;
         if (unaff_s2 == 0) goto LAB_80160510;
         if (local_b8 != 1) {
           local_bd = '\0';
@@ -1129,7 +1129,7 @@ LAB_801603fc:
       }
       if (unaff_s2 == 5) {
 LAB_80160494:
-        if (param_1 != 0) goto LAB_8015f8c0;
+        if (a0 != 0) goto LAB_8015f8c0;
 LAB_801604a4:
         if (unaff_s2 != 0) goto LAB_801604f4;
         goto LAB_80160510;
@@ -1137,7 +1137,7 @@ LAB_801604a4:
       if (5 < unaff_s2) {
         if (unaff_s2 == 0xf) goto LAB_80160494;
 LAB_80160470:
-        if (param_1 == 0) goto LAB_801604a4;
+        if (a0 == 0) goto LAB_801604a4;
         iVar4 = 1;
         goto LAB_80160488;
       }
@@ -1152,7 +1152,7 @@ LAB_80160464:
       break;
     case ' ':
     case '!':
-      if (param_1 != 0) goto LAB_8015f8c0;
+      if (a0 != 0) goto LAB_8015f8c0;
 LAB_801604f4:
       if (local_b8 == 1) {
 LAB_80160504:
@@ -1161,7 +1161,7 @@ LAB_80160504:
 LAB_80160510:
       local_bd = '\0';
     }
-    if (param_1 == 0) {
+    if (a0 == 0) {
       hud_gauge_render(0x1f800000,_DAT_1f800008,7);
     }
 LAB_80160550:
@@ -1250,7 +1250,7 @@ void memcard_slot_poll(void)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void deferred_cmd_drain(undefined4 param_1,int param_2)
+void deferred_cmd_drain(undefined4 a0,int a1)
 
 {
   ushort uVar1;
@@ -1272,24 +1272,24 @@ void deferred_cmd_drain(undefined4 param_1,int param_2)
       if (psVar5[1] == 0) {
         uVar4 = uVar1 & 0xf00;
         if (uVar4 == 0x200) {
-          param_2 = mc_action_dispatch_b(uVar1 & 0xff,(int)*psVar5);
+          a1 = mc_action_dispatch_b(uVar1 & 0xff,(int)*psVar5);
         }
         else if (uVar4 < 0x201) {
           if (uVar4 == 0x100) {
-            param_2 = mc_action_dispatch(uVar1 & 0xff,(int)*psVar5);
+            a1 = mc_action_dispatch(uVar1 & 0xff,(int)*psVar5);
           }
         }
         else if (uVar4 == 0x300) {
           if (bVar2) goto LAB_80156ebc;
           bVar2 = true;
-          param_2 = ret_one(uVar1 & 0xff,(int)*psVar5);
+          a1 = ret_one(uVar1 & 0xff,(int)*psVar5);
         }
         else if (uVar4 == 0x400) {
           if (bVar3) goto LAB_80156ebc;
           bVar3 = true;
-          param_2 = deferred_cmd_exec(uVar1 & 0xff,(int)*psVar5);
+          a1 = deferred_cmd_exec(uVar1 & 0xff,(int)*psVar5);
         }
-        if (param_2 != 0) {
+        if (a1 != 0) {
           *puVar6 = 0;
           _DAT_801f35f4 = _DAT_801f35f4 + -1;
         }
@@ -1388,7 +1388,7 @@ void save_tables_commit(void)
 
 /* ======== 0x8018babc ======== */
 
-void dbg_marker_mode_set(int param_1)
+void dbg_marker_mode_set(int a0)
 
 {
   int iVar1;
@@ -1397,12 +1397,12 @@ void dbg_marker_mode_set(int param_1)
   
   DAT_801f5969 = 0;
   DAT_801f5968 = 0;
-  if (param_1 == 1) {
+  if (a0 == 1) {
     DAT_801b55d0 = 1;
     return;
   }
-  if (param_1 < 2) {
-    if (param_1 == 0) {
+  if (a0 < 2) {
+    if (a0 == 0) {
 LAB_8018bb4c:
       iVar3 = 0;
       do {
@@ -1416,13 +1416,13 @@ LAB_8018bb4c:
         } while (iVar2 < 2);
         iVar3 = iVar3 + 1;
       } while (iVar3 < 2);
-      DAT_801b55d0 = (char)param_1;
+      DAT_801b55d0 = (char)a0;
       return;
     }
   }
   else {
-    if (param_1 == 2) goto LAB_8018bb4c;
-    if (param_1 == 3) {
+    if (a0 == 2) goto LAB_8018bb4c;
+    if (a0 == 3) {
       DAT_801b55d0 = 1;
       DAT_801f5968 = 0;
       DAT_801f5969 = 0;
@@ -1446,10 +1446,10 @@ LAB_8018bb4c:
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void brightness_commit(undefined2 param_1)
+void brightness_commit(undefined2 a0)
 
 {
-  _DAT_801f36c0 = param_1;
+  _DAT_801f36c0 = a0;
   brightness_packet_send(0xffffffff);
   return;
 }
@@ -1459,10 +1459,10 @@ void brightness_commit(undefined2 param_1)
 
 /* ======== 0x801525c4 ======== */
 
-void rec_timer_pair_clear(intptr_t param_1)
+void rec_timer_pair_clear(intptr_t a0)
 
 {
-  uint8_t *p = (uint8_t *)guest_at((uint32_t)param_1);
+  uint8_t *p = (uint8_t *)guest_at((uint32_t)a0);
   *(undefined2 *)(p + 0xb4) = 0;
   *(undefined2 *)(p + 0xb6) = 0;
   return;
@@ -1470,11 +1470,11 @@ void rec_timer_pair_clear(intptr_t param_1)
 
 /* ======== 0x80129f64 ======== */
 
-void mode_flag_pair_set(undefined1 param_1)
+void mode_flag_pair_set(undefined1 a0)
 
 {
-  DAT_801e83aa = param_1;
-  DAT_801e83b0 = param_1;
+  DAT_801e83aa = a0;
+  DAT_801e83b0 = a0;
   return;
 }
 
@@ -1500,7 +1500,7 @@ void perm_table_load(void)
 
 /* ======== 0x8012a030 ======== */
 
-void perm_table_apply(uint param_1)
+void perm_table_apply(uint a0)
 
 {
   byte bVar1;
@@ -1511,29 +1511,29 @@ void perm_table_apply(uint param_1)
   iVar4 = 0;
   do {
     puVar3 = (undefined1 *)guest_at((uint32_t)(iVar4 + -0x7fe17c00));
-    bVar1 = (&DAT_8011ec40)[param_1 & 0xff];
+    bVar1 = (&DAT_8011ec40)[a0 & 0xff];
     uVar2 = *puVar3;
     iVar4 = iVar4 + 1;
     *puVar3 = *(undefined1 *)guest_at((uint32_t)(bVar1 + 0x801e8400));
     *(undefined1 *)guest_at((uint32_t)(bVar1 + 0x801e8400)) = uVar2;
-    param_1 = param_1 + 1;
+    a0 = a0 + 1;
   } while (iVar4 < 0x100);
   return;
 }
 
 /* ======== 0x8012aa6c ======== */
 
-void scroll_cfg_set(undefined1 param_1,int param_2)
+void scroll_cfg_set(undefined1 a0,int a1)
 
 {
-  DAT_1f800017 = param_1;
-  DAT_1f800018 = (char)param_2;
+  DAT_1f800017 = a0;
+  DAT_1f800018 = (char)a1;
   DAT_1f800014 = DAT_1f80000c;
-  if (param_2 == 0) {
+  if (a1 == 0) {
     DAT_1f800019 = 0;
     return;
   }
-  DAT_1f800019 = (char)(0x100 / param_2) + '\x01';
+  DAT_1f800019 = (char)(0x100 / a1) + '\x01';
   return;
 }
 
@@ -1549,7 +1549,7 @@ void scroll_cfg_set(undefined1 param_1,int param_2)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void flow_cfg_init(undefined1 param_1)
+void flow_cfg_init(undefined1 a0)
 
 {
   int iVar1;
@@ -1563,7 +1563,7 @@ void flow_cfg_init(undefined1 param_1)
   p84[1] = 0;
   p84[2] = 0;
   iVar2 = 0;
-  p84[4] = param_1;
+  p84[4] = a0;
   do {
     iVar1 = iVar2 * 2;
     iVar2 = iVar2 + 1;
@@ -1595,15 +1595,15 @@ void guest_bzero(uint32_t addr,uint32_t size)
 
 /* ======== 0x8012a650 ======== */
 
-uint attr_word_decode(uint8_t *param_1)
+uint attr_word_decode(uint8_t *a0)
 
 {
   byte bVar1;
   uint uVar2;
   
-  bVar1 = *(byte *)(param_1 + 1) & 0xf0;
+  bVar1 = *(byte *)(a0 + 1) & 0xf0;
   if (bVar1 == 0x40) {
-    uVar2 = ~(uint)CONCAT11(*(undefined1 *)(param_1 + 2),*(undefined1 *)(param_1 + 3)) & 63999;
+    uVar2 = ~(uint)CONCAT11(*(undefined1 *)(a0 + 2),*(undefined1 *)(a0 + 3)) & 63999;
   }
   else if ((bVar1 < 0x41) || (bVar1 == 0x60)) {
     uVar2 = 0xffffffff;
@@ -1617,17 +1617,17 @@ uint attr_word_decode(uint8_t *param_1)
     else if (bVar1 != 0x70) {
       return 0xffffffff;
     }
-    uVar2 = ~(uint)CONCAT11(*(undefined1 *)(param_1 + 2),*(undefined1 *)(param_1 + 3)) & 63999;
-    if (*(uint8_t *)(param_1 + 6) < 0x40) {
+    uVar2 = ~(uint)CONCAT11(*(undefined1 *)(a0 + 2),*(undefined1 *)(a0 + 3)) & 63999;
+    if (*(uint8_t *)(a0 + 6) < 0x40) {
       uVar2 = uVar2 | 0x8000;
     }
-    else if (0xc0 < *(uint8_t *)(param_1 + 6)) {
+    else if (0xc0 < *(uint8_t *)(a0 + 6)) {
       uVar2 = uVar2 | 0x2000;
     }
-    if (*(uint8_t *)(param_1 + 7) < 0x40) {
+    if (*(uint8_t *)(a0 + 7) < 0x40) {
       uVar2 = uVar2 | 0x1000;
     }
-    else if (0xc0 < *(uint8_t *)(param_1 + 7)) {
+    else if (0xc0 < *(uint8_t *)(a0 + 7)) {
       uVar2 = uVar2 | 0x4000;
     }
   }
@@ -1658,16 +1658,16 @@ uint32_t memcard_err_sentinel(void)
 /* mc_confirm_dispatch — PAD-start gated memcard confirm dispatch.
  * pad_buffer+2 bit12 = confirm press; DAT_801bef6e low nibble =
  * dialog state (1 -> datetime_confirm_a path, 2 -> datetime_confirm_b path). */
-void mc_confirm_dispatch(int32_t param_1,uint32_t param_2)
+void mc_confirm_dispatch(int32_t a0,uint32_t a1)
 {
-  if ((((*(uint16_t *)(_g_pad_buffer + 2) >> 0xc) & 1) != 0) && (0 <= param_1)) {
+  if ((((*(uint16_t *)(_g_pad_buffer + 2) >> 0xc) & 1) != 0) && (0 <= a0)) {
     mc_state_init();
     if ((SB8(0x801bef6e) & 0xf) == 1) {
       chan_sweep_flag100();
-      datetime_confirm_a(param_1,param_2);
+      datetime_confirm_a(a0,a1);
     } else if ((SB8(0x801bef6e) & 0xf) == 2) {
       chan_sweep_flag200();
-      datetime_confirm_b(param_1,param_2);
+      datetime_confirm_b(a0,a1);
     }
   }
 }
@@ -1693,15 +1693,15 @@ void mc_init_reset(void)
 }
 
 /* save_slot_state_fixup — save-slot state fixup @guest 0x1f800000.
- * param_1 = guest address (bridged). */
-void save_slot_state_fixup(uint32_t param_1,uint32_t param_2)
+ * a0 = guest address (bridged). */
+void save_slot_state_fixup(uint32_t a0,uint32_t a1)
 {
-  uint8_t *p = (uint8_t *)guest_at(param_1);
+  uint8_t *p = (uint8_t *)guest_at(a0);
   int32_t iVar1;
-  (void)param_2;
+  (void)a1;
   iVar1 = frame_divisor_get();
   if (iVar1 == 0) {
-    iVar1 = slot_display_pos(p,param_2);
+    iVar1 = slot_display_pos(p,a1);
     if (0 <= iVar1) {
       p[0] = 5;
       p[1] = 0xf0;
@@ -1720,122 +1720,122 @@ void save_slot_state_fixup(uint32_t param_1,uint32_t param_2)
 
 /* mc_pad_button_handler — memcard button-press handler: PAD bits 0x840 on
  * +0x68/+0x6a trigger deferred_cmd_post sfx + mc_slot_action slot action.
- * param_1 = host ptr to save-manager state block. */
+ * a0 = host ptr to save-manager state block. */
 extern int32_t ret_zero_b(uint32_t);
 extern void mc_slot_action(uint8_t *,int32_t);
-uint32_t mc_pad_button_handler(uint8_t *param_1)
+uint32_t mc_pad_button_handler(uint8_t *a0)
 {
   int32_t iVar1;
   uint32_t uVar2;
   uint32_t uVar3 = 0;
-  param_1[0xb4] = 0; param_1[0xb5] = 0; param_1[0xb6] = 0; param_1[0xb7] = 0;
-  if (param_1[0x9b] == 0) {
-    if (((*(uint16_t *)(param_1 + 0x68) & 0x840) != 0) &&
+  a0[0xb4] = 0; a0[0xb5] = 0; a0[0xb6] = 0; a0[0xb7] = 0;
+  if (a0[0x9b] == 0) {
+    if (((*(uint16_t *)(a0 + 0x68) & 0x840) != 0) &&
         (iVar1 = ret_zero_b(0), 0 <= iVar1)) {
-      uVar2 = (*param_1 == 5) ? 0x80 : 0xc;
+      uVar2 = (*a0 == 5) ? 0x80 : 0xc;
       deferred_cmd_post(0x400,uVar2,0);
-      mc_slot_action(param_1,0);
+      mc_slot_action(a0,0);
       uVar3 = 1;
     }
-    if ((*(uint16_t *)(param_1 + 0x6a) & 0x840) == 0) return uVar3;
+    if ((*(uint16_t *)(a0 + 0x6a) & 0x840) == 0) return uVar3;
     iVar1 = ret_zero_b(1);
     if (iVar1 < 0) return uVar3;
-    if (*param_1 == 5) { uVar2 = 0x80; goto LAB_801533b0; }
+    if (*a0 == 5) { uVar2 = 0x80; goto LAB_801533b0; }
   } else {
-    if (3 < param_1[0x9b]) return 0;
-    if ((*(uint16_t *)(param_1 + 0x68) & 0x840) != 0) {
-      uVar2 = (*param_1 == 5) ? 0x80 : 0xc;
+    if (3 < a0[0x9b]) return 0;
+    if ((*(uint16_t *)(a0 + 0x68) & 0x840) != 0) {
+      uVar2 = (*a0 == 5) ? 0x80 : 0xc;
       deferred_cmd_post(0x400,uVar2,0);
-      mc_slot_action(param_1,0);
+      mc_slot_action(a0,0);
       uVar3 = 1;
     }
-    if ((*(uint16_t *)(param_1 + 0x6a) & 0x840) == 0) return uVar3;
-    if (*param_1 == 5) { uVar2 = 0x80; goto LAB_801533b0; }
+    if ((*(uint16_t *)(a0 + 0x6a) & 0x840) == 0) return uVar3;
+    if (*a0 == 5) { uVar2 = 0x80; goto LAB_801533b0; }
   }
   uVar2 = 0xc;
 LAB_801533b0:
   deferred_cmd_post(0x400,uVar2,0);
-  mc_slot_action(param_1,1);
+  mc_slot_action(a0,1);
   return uVar3 | 2;
 }
 
 /* save_rec_table_copy — 16-byte record copy between caller buffer and one
- * of four static tables selected by param_2:
+ * of four static tables selected by a1:
  *   0: 0x801b427c -> dst   1: dst -> 0x801c1264   2: 0x801c1264 -> dst
  *   3: dst -> 0x801c1304   4: 0x801c1304 -> dst   5: 0x801b431c -> dst
- * param_3 = record count. */
-void save_rec_table_copy(uint32_t *param_1,uint32_t param_2,int32_t param_3)
+ * a2 = record count. */
+void save_rec_table_copy(uint32_t *a0,uint32_t a1,int32_t a2)
 {
   int32_t iVar1;
   uint32_t *puVar2, *puVar3;
   uint32_t uVar4, uVar5, uVar6;
   puVar2 = (uint32_t *)g_DAT_801c1264;
   puVar3 = (uint32_t *)g_DAT_801c1304;
-  switch (param_2) {
+  switch (a1) {
   case 0:
     iVar1 = 0;
-    if (0 < param_3) {
+    if (0 < a2) {
       puVar2 = (uint32_t *)guest_at(0x801b427c);
       do {
         uVar4 = puVar2[1]; uVar5 = puVar2[2]; uVar6 = puVar2[3];
-        param_1[0] = puVar2[0]; param_1[1] = uVar4; param_1[2] = uVar5; param_1[3] = uVar6;
-        param_1 += 4; iVar1++; puVar2 += 4;
-      } while (iVar1 < param_3);
+        a0[0] = puVar2[0]; a0[1] = uVar4; a0[2] = uVar5; a0[3] = uVar6;
+        a0 += 4; iVar1++; puVar2 += 4;
+      } while (iVar1 < a2);
     }
     break;
   case 1:
     iVar1 = 0;
-    if (0 < param_3) {
+    if (0 < a2) {
       do {
-        uVar4 = param_1[1]; uVar5 = param_1[2]; uVar6 = param_1[3];
-        puVar2[0] = param_1[0]; puVar2[1] = uVar4; puVar2[2] = uVar5; puVar2[3] = uVar6;
-        puVar2 += 4; iVar1++; param_1 += 4;
-      } while (iVar1 < param_3);
+        uVar4 = a0[1]; uVar5 = a0[2]; uVar6 = a0[3];
+        puVar2[0] = a0[0]; puVar2[1] = uVar4; puVar2[2] = uVar5; puVar2[3] = uVar6;
+        puVar2 += 4; iVar1++; a0 += 4;
+      } while (iVar1 < a2);
       return;
     }
     break;
   case 2:
     iVar1 = 0;
-    if (0 < param_3) {
+    if (0 < a2) {
       do {
         uVar4 = puVar2[1]; uVar5 = puVar2[2]; uVar6 = puVar2[3];
-        param_1[0] = puVar2[0]; param_1[1] = uVar4; param_1[2] = uVar5; param_1[3] = uVar6;
-        param_1 += 4; iVar1++; puVar2 += 4;
-      } while (iVar1 < param_3);
+        a0[0] = puVar2[0]; a0[1] = uVar4; a0[2] = uVar5; a0[3] = uVar6;
+        a0 += 4; iVar1++; puVar2 += 4;
+      } while (iVar1 < a2);
       return;
     }
     break;
   case 3:
     iVar1 = 0;
-    if (0 < param_3) {
+    if (0 < a2) {
       do {
-        uVar4 = param_1[1]; uVar5 = param_1[2]; uVar6 = param_1[3];
-        puVar3[0] = param_1[0]; puVar3[1] = uVar4; puVar3[2] = uVar5; puVar3[3] = uVar6;
-        puVar3 += 4; iVar1++; param_1 += 4;
-      } while (iVar1 < param_3);
+        uVar4 = a0[1]; uVar5 = a0[2]; uVar6 = a0[3];
+        puVar3[0] = a0[0]; puVar3[1] = uVar4; puVar3[2] = uVar5; puVar3[3] = uVar6;
+        puVar3 += 4; iVar1++; a0 += 4;
+      } while (iVar1 < a2);
       return;
     }
     break;
   case 4:
     iVar1 = 0;
-    if (0 < param_3) {
+    if (0 < a2) {
       do {
         uVar4 = puVar3[1]; uVar5 = puVar3[2]; uVar6 = puVar3[3];
-        param_1[0] = puVar3[0]; param_1[1] = uVar4; param_1[2] = uVar5; param_1[3] = uVar6;
-        param_1 += 4; iVar1++; puVar3 += 4;
-      } while (iVar1 < param_3);
+        a0[0] = puVar3[0]; a0[1] = uVar4; a0[2] = uVar5; a0[3] = uVar6;
+        a0 += 4; iVar1++; puVar3 += 4;
+      } while (iVar1 < a2);
       return;
     }
     break;
   case 5:
     iVar1 = 0;
-    if (0 < param_3) {
+    if (0 < a2) {
       puVar2 = (uint32_t *)guest_at(0x801b431c);
       do {
         uVar4 = puVar2[1]; uVar5 = puVar2[2]; uVar6 = puVar2[3];
-        param_1[0] = puVar2[0]; param_1[1] = uVar4; param_1[2] = uVar5; param_1[3] = uVar6;
-        param_1 += 4; iVar1++; puVar2 += 4;
-      } while (iVar1 < param_3);
+        a0[0] = puVar2[0]; a0[1] = uVar4; a0[2] = uVar5; a0[3] = uVar6;
+        a0 += 4; iVar1++; puVar2 += 4;
+      } while (iVar1 < a2);
       return;
     }
   }
@@ -1857,69 +1857,69 @@ extern void     picker_table_shuffle(uint8_t *);
 
 /* dialog_mode_mirror — mirror a mode byte into the two dialog-state cells
  * (guest 0x801e40b8 and 0x801e6208). */
-void dialog_mode_mirror(int32_t param_1)
+void dialog_mode_mirror(int32_t a0)
 {
-  *g_DAT_801e6208 = (uint8_t)param_1;
-  *g_DAT_801e40b8 = (uint8_t)param_1;
+  *g_DAT_801e6208 = (uint8_t)a0;
+  *g_DAT_801e40b8 = (uint8_t)a0;
 }
 
-/* slot_name_measure — print the slot-name string for fighter index param_2
+/* slot_name_measure — print the slot-name string for fighter index a1
  * (table @0x801b47ec, 8-byte entries {char *name0, char *name1}) then
- * measure param_1 with str_len. Returns str_len's result. */
-int slot_name_measure(void *param_1,int32_t param_2)
+ * measure a0 with str_len. Returns str_len's result. */
+int slot_name_measure(void *a0,int32_t a1)
 {
-  uint32_t uVar1 = *(uint32_t *)guest_at(0x801b47ec + ((uint32_t)param_2 << 3));
-  /* disasm-verified @0x801513fc: guest does sprintf(param_1, name) straight
-   * into the caller's buffer (a0), then str_len(param_1). param_1 is already
+  uint32_t uVar1 = *(uint32_t *)guest_at(0x801b47ec + ((uint32_t)a1 << 3));
+  /* disasm-verified @0x801513fc: guest does sprintf(a0, name) straight
+   * into the caller's buffer (a0), then str_len(a0). a0 is already
    * a host pointer into guest memory, so no staging buffer is needed. */
-  sprintf_core((char *)param_1,(char *)guest_at(uVar1));
-  return str_len((char *)param_1);
+  sprintf_core((char *)a0,(char *)guest_at(uVar1));
+  return str_len((char *)a0);
 }
 
 /* chan_blocks_reset — clear the 0x1f8000e8/0x1f8001f0 channel blocks: zero
- * +0xe0..+0xec fields, store param_2 at +0xf0, then param_3 selects the
+ * +0xe0..+0xec fields, store a1 at +0xf0, then a2 selects the
  * +0xec counter (0 -> clear, 1 -> increment, other -> untouched).
- * param_1 is a GUEST address (0x1f80xxx scratch). */
-void chan_blocks_reset(uint32_t param_1,uint32_t param_2,int32_t param_3)
+ * a0 is a GUEST address (0x1f80xxx scratch). */
+void chan_blocks_reset(uint32_t a0,uint32_t a1,int32_t a2)
 {
-  uint8_t *p = (uint8_t *)guest_at(param_1);
+  uint8_t *p = (uint8_t *)guest_at(a0);
   *(uint16_t *)(p + 0xe0) = 0;
   *(uint16_t *)(p + 0xe6) = 0;
   *(uint16_t *)(p + 0xe8) = 0;
   *(uint16_t *)(p + 0xea) = 0;
   *(uint16_t *)(p + 0xe2) = 0;
   p[0xe4] = 0;
-  *(uint32_t *)(p + 0xf0) = param_2;
-  if (param_3 == 0) {
+  *(uint32_t *)(p + 0xf0) = a1;
+  if (a2 == 0) {
     *(uint16_t *)(p + 0xec) = 0;
     return;
   }
-  if (param_3 == 1) {
+  if (a2 == 1) {
     *(uint16_t *)(p + 0xec) = (uint16_t)(*(uint16_t *)(p + 0xec) + 1);
   }
 }
 
 /* slot_icon_nibble_resolve — resolve the save-slot icon nibble: index =
- * (int16)param_1[0xa4] + (c0block[7] << 4) into the byte table at
- * guest 0x801b3f88; store value<<4 at param_1+0xa0, return it. */
-int slot_icon_nibble_resolve(uint8_t *param_1)
+ * (int16)a0[0xa4] + (c0block[7] << 4) into the byte table at
+ * guest 0x801b3f88; store value<<4 at a0+0xa0, return it. */
+int slot_icon_nibble_resolve(uint8_t *a0)
 {
-  uint8_t *p = (uint8_t *)guest_at(*(uint32_t *)(param_1 + 0xc0));
-  uint32_t uVar1 = 0x801b3f88u + (uint32_t)(int32_t)*(int16_t *)(param_1 + 0xa4) +
+  uint8_t *p = (uint8_t *)guest_at(*(uint32_t *)(a0 + 0xc0));
+  uint32_t uVar1 = 0x801b3f88u + (uint32_t)(int32_t)*(int16_t *)(a0 + 0xa4) +
                    ((uint32_t)p[7] << 4);
   int32_t iVar1 = *(uint8_t *)guest_at(uVar1);
   iVar1 = iVar1 << 4;
-  *(int16_t *)(param_1 + 0xa0) = (int16_t)iVar1;
+  *(int16_t *)(a0 + 0xa0) = (int16_t)iVar1;
   return iVar1;
 }
 
 /* picker_table_shuffle — shuffle the two 11-byte picker tables at guest
  * 0x801f47a0 / 0x801f4770 using table_byte_next_a() rand bytes, selected by
- * param_1[0x9c]: 0 -> Fisher-Yates on table A (mod 9), rotate the
+ * a0[0x9c]: 0 -> Fisher-Yates on table A (mod 9), rotate the
  * A[7..10] window, swap B[4]/B[5], Fisher-Yates on B (mod 5);
  * 1..5 -> Fisher-Yates on A (mod 9) then B[i] = rand % 8 (11 entries);
  * anything else -> just the slot_icon_nibble_resolve icon resolve + +0xa4 clear. */
-void picker_table_shuffle(uint8_t *param_1)
+void picker_table_shuffle(uint8_t *a0)
 {
   uint8_t *puVar1 = (uint8_t *)guest_at(0x801f47a0);
   uint8_t *puVar2 = (uint8_t *)guest_at(0x801f4770);
@@ -1933,9 +1933,9 @@ void picker_table_shuffle(uint8_t *param_1)
     puVar1[iVar1] = (uint8_t)iVar1;
     puVar2[iVar1] = (uint8_t)(iVar1 % 9);
   }
-  *(int16_t *)(param_1 + 0xa4) = 0;
-  slot_icon_nibble_resolve(param_1);
-  iVar1 = param_1[0x9c];
+  *(int16_t *)(a0 + 0xa4) = 0;
+  slot_icon_nibble_resolve(a0);
+  iVar1 = a0[0x9c];
   if (iVar1 == 0) {
     puVar3 = puVar1;
     for (iVar2 = 0; iVar2 < 9; iVar2 = iVar2 + 1) {
@@ -1988,45 +1988,45 @@ void picker_table_shuffle(uint8_t *param_1)
 }
 
 /* mc_slot_action — memcard slot action dispatched by mc_pad_button_handler.
- * param_1 = host ptr to save-manager state; param_2 = slot (0/1).
+ * a0 = host ptr to save-manager state; a1 = slot (0/1).
  * Marks the c0-block busy flag, applies the per-state slot-mask table
- * (jump table @0x80120998 indexed by param_1[0x9b]), resets the two
+ * (jump table @0x80120998 indexed by a0[0x9b]), resets the two
  * 0x1f80 scratch channel blocks via chan_blocks_reset, re-shuffles the
- * picker tables (picker_table_shuffle) and pokes channel param_2 via
+ * picker tables (picker_table_shuffle) and pokes channel a1 via
  * ret_stub_b. */
-void mc_slot_action(uint8_t *param_1,int32_t param_2)
+void mc_slot_action(uint8_t *a0,int32_t a1)
 {
   uint8_t *s1 = (uint8_t *)guest_at(0x1f8000e8);
   uint8_t *s2 = (uint8_t *)guest_at(0x1f8001f0);
   uint8_t *q;
   int32_t iVar1;
 
-  q = (uint8_t *)guest_at(*(uint32_t *)(param_1 + 0xc0));
-  if ((*(uint16_t *)(param_1 + ((uint32_t)param_2 << 1) + 0x6c) & 0xf) == 0xf) {
+  q = (uint8_t *)guest_at(*(uint32_t *)(a0 + 0xc0));
+  if ((*(uint16_t *)(a0 + ((uint32_t)a1 << 1) + 0x6c) & 0xf) == 0xf) {
     q[0x21] = 1;
   }
   else {
     q[0x21] = 0;
   }
-  iVar1 = param_1[0x9b];
+  iVar1 = a0[0x9b];
   if (iVar1 < 5) {
     switch (iVar1) {
     case 0:
-      *(uint16_t *)(param_1 + ((uint32_t)param_2 << 1) + 0xb4) = 0x100;
+      *(uint16_t *)(a0 + ((uint32_t)a1 << 1) + 0xb4) = 0x100;
       break;
     case 1:
     case 4:
-      *(uint16_t *)(param_1 + ((uint32_t)param_2 << 1) + 0xb4) = 0x100;
-      *(uint16_t *)(param_1 + ((uint32_t)(param_2 ^ 1) << 1) + 0xb4) = 0;
+      *(uint16_t *)(a0 + ((uint32_t)a1 << 1) + 0xb4) = 0x100;
+      *(uint16_t *)(a0 + ((uint32_t)(a1 ^ 1) << 1) + 0xb4) = 0;
       break;
     case 2:
-      *(uint16_t *)(param_1 + 0xb4) = 0x100;
-      *(uint16_t *)(param_1 + 0xb6) = 0x100;
+      *(uint16_t *)(a0 + 0xb4) = 0x100;
+      *(uint16_t *)(a0 + 0xb6) = 0x100;
       break;
     case 3:
-      *(uint16_t *)(param_1 + 0x92) = 0x400;
-      *(uint16_t *)(param_1 + 0xb4) = 0;
-      *(uint16_t *)(param_1 + 0xb6) = 0;
+      *(uint16_t *)(a0 + 0x92) = 0x400;
+      *(uint16_t *)(a0 + 0xb4) = 0;
+      *(uint16_t *)(a0 + 0xb6) = 0;
       break;
     }
   }
@@ -2036,10 +2036,10 @@ void mc_slot_action(uint8_t *param_1,int32_t param_2)
   q[0x1c] = 2;
   q[0x19] = q[0x19] & 3;
   q[0x1a] = q[0x1a] & 3;
-  picker_table_shuffle(param_1);
+  picker_table_shuffle(a0);
   chan_blocks_reset(0x1f8000e8,0,0);
   chan_blocks_reset(0x1f8001f0,0,0);
-  ret_stub_b(0x1f8000e8 + (uint32_t)param_2 * 264,0);
+  ret_stub_b(0x1f8000e8 + (uint32_t)a1 * 264,0);
 }
 
 /* chan_sweep_flag200 — sweep the 32-entry x6-byte channel table at guest
@@ -2077,12 +2077,12 @@ void chan_sweep_flag100(void)
   } while (iVar1 < 0x20);
 }
 
-/* datetime_confirm_a — date/time dialog confirm path A. param_1 = packed
+/* datetime_confirm_a — date/time dialog confirm path A. a0 = packed
  * date value stored at 0x801bef60+0x12 (clamped modulo byte +0xc),
- * param_2 = optional mc_dialog_bit4 hook index. Computes the display
+ * a1 = optional mc_dialog_bit4 hook index. Computes the display
  * string offset table entry at +0x2c+idx*4 through cd_stamp_to_sector and
  * publishes the result at +0x20/+0x24. */
-void datetime_confirm_a(int32_t param_1,uint32_t param_2)
+void datetime_confirm_a(int32_t a0,uint32_t a1)
 {
   uint8_t *s0 = g_DAT_801bef60;
   int32_t iVar1;
@@ -2093,10 +2093,10 @@ void datetime_confirm_a(int32_t param_1,uint32_t param_2)
    * 0x80157614 `A6020012`/`A6040012`; reads are lh — 0x801575FC `86020012`,
    * 0x80157628 `86040012`. +0x16/+0x14/+0x10 are also sb — 0x80157638/
    * 0x8015763C/0x80157678. */
-  s0[0x12] = (uint8_t)param_1;
-  /* guest compares against sign-extended param_1 in-register (sll/sra at
+  s0[0x12] = (uint8_t)a0;
+  /* guest compares against sign-extended a0 in-register (sll/sra at
    * 0x801575D4/0x801575DC), not a reload of the halfword. */
-  iVar1 = (int32_t)(int16_t)param_1;
+  iVar1 = (int32_t)(int16_t)a0;
   if (s0[0xc] < iVar1) {
     /* guest div @0x801575EC + mfhi: HI = iVar1 % s0[0xc];
      * divisor 0 -> HI = dividend (no trap). */
@@ -2105,8 +2105,8 @@ void datetime_confirm_a(int32_t param_1,uint32_t param_2)
   if (*(int16_t *)(s0 + 0x12) == 0) {
     s0[0x12] = s0[0xc];
   }
-  if ((int32_t)param_2 >= 0) {
-    mc_dialog_bit4((int32_t)param_2);
+  if ((int32_t)a1 >= 0) {
+    mc_dialog_bit4((int32_t)a1);
   }
   iVar1 = *(int16_t *)(s0 + 0x12);
   s0[0xd] = 0x10;
@@ -2124,13 +2124,13 @@ void datetime_confirm_a(int32_t param_1,uint32_t param_2)
   s0[0x10] = 0x7f;
 }
 
-/* datetime_confirm_b — date/time dialog confirm path B. param_1 = packed
- * date value (param_1 % 8 -> weekday nibble at +1); looks up the
+/* datetime_confirm_b — date/time dialog confirm path B. a0 = packed
+ * date value (a0 % 8 -> weekday nibble at +1); looks up the
  * date-string pointer in the table @0x801b5b94 (u32 entries,
- * index = param_1/8 — guest sll $3,$3,2 at 0x801576DC), resolves it and the +0x12-indexed string at
+ * index = a0/8 — guest sll $3,$3,2 at 0x801576DC), resolves it and the +0x12-indexed string at
  * guest 0x801b3310 via cd_stamp_to_sector, waits on cd_cmd_issue_sync(0xd),
  * then publishes like datetime_confirm_a with flag bits |2. */
-void datetime_confirm_b(int32_t param_1,uint32_t param_2)
+void datetime_confirm_b(int32_t a0,uint32_t a1)
 {
   extern int br2_bail_pending(void);
   uint8_t *s1 = g_DAT_801bef60;
@@ -2141,14 +2141,14 @@ void datetime_confirm_b(int32_t param_1,uint32_t param_2)
   int32_t iVar4;
   uint8_t bVar4;
 
-  iVar4 = param_1;
-  if (param_1 < 0) {
-    iVar4 = param_1 + 7;
+  iVar4 = a0;
+  if (a0 < 0) {
+    iVar4 = a0 + 7;
   }
   iVar1 = iVar4 >> 3;
-  iVar2 = param_1 - iVar1 * 8;
+  iVar2 = a0 - iVar1 * 8;
   s3 = (uint8_t *)guest_at(g_PTR_DAT_801b5b94[iVar1]);
-  *(int16_t *)(s1 + 0x12) = (int16_t)param_1;
+  *(int16_t *)(s1 + 0x12) = (int16_t)a0;
   mc_state_init();
   iVar3 = cd_stamp_to_sector(s3);
   iVar3 = iVar3 + cd_stamp_to_sector((const void *)guest_at(
@@ -2160,8 +2160,8 @@ void datetime_confirm_b(int32_t param_1,uint32_t param_2)
     if (br2_bail_pending()) return;
     iVar3 = cd_cmd_issue_sync(0xd,(int)guest_of(s1),0);
   } while (iVar3 == 0);
-  if ((int32_t)param_2 >= 0) {
-    mc_dialog_bit4((int32_t)param_2);
+  if ((int32_t)a1 >= 0) {
+    mc_dialog_bit4((int32_t)a1);
   }
   /* disasm: +0x16/+0x14/+0x10 are sb — 0x80157764/0x80157768/0x80157794;
    * +0x12 is sh — 0x801576E4 `A6240012`; +0x12 read is lhu — 0x80157704
@@ -2181,12 +2181,12 @@ void datetime_confirm_b(int32_t param_1,uint32_t param_2)
 
 /* slot_display_pos — save-slot display-position helper. Gates on the
  * scratch flags at guest 0x1f8000dc ((v>>4)&3 != 0 and bit 0x40 set),
- * then param_2 selects the fixed-point divisor: 0 -> lh22*3 scaled
+ * then a1 selects the fixed-point divisor: 0 -> lh22*3 scaled
  * >>2, 1 -> lh22*7 scaled >>3 (both mod-adjusted toward zero), with
- * arg4 = ((int16)param_1[0x20] / 2) - 0x45 and arg6 = 4 handed to
+ * arg4 = ((int16)a0[0x20] / 2) - 0x45 and arg6 = 4 handed to
  * hud_text_blk_alt(a0=+8 ptr, a1=+0xc ptr, a2=guest 0x80121e3c table).
  * Returns -0x63 (-99) on gate/selector failure. */
-int slot_display_pos(uint8_t *param_1,uint32_t param_2)
+int slot_display_pos(uint8_t *a0,uint32_t a1)
 {
   uint32_t uVar1 = SB32(0x1f8000dc);
   int32_t iVar1;
@@ -2199,26 +2199,26 @@ int slot_display_pos(uint8_t *param_1,uint32_t param_2)
   if ((uVar1 & 0x40) == 0) {
     return -0x63;
   }
-  if (param_2 == 0) {
-    iVar1 = *(int16_t *)(param_1 + 0x22) * 3;
+  if (a1 == 0) {
+    iVar1 = *(int16_t *)(a0 + 0x22) * 3;
     if (iVar1 < 0) {
       iVar1 = iVar1 + 3;
     }
-    iVar2 = (int32_t)(int16_t)*(uint16_t *)(param_1 + 0x20);
+    iVar2 = (int32_t)(int16_t)*(uint16_t *)(a0 + 0x20);
     iVar3 = (int16_t)((iVar2 / 2) - 0x45);
-    hud_text_blk_alt(*(uint32_t *)(param_1 + 8),*(uint32_t *)(param_1 + 0xc),
+    hud_text_blk_alt(*(uint32_t *)(a0 + 8),*(uint32_t *)(a0 + 0xc),
                 (const void *)guest_at(0x80121e3c),iVar3,
                 (int32_t)((uint32_t)iVar1 << 14) >> 16,4);
     return 0;
   }
-  if (param_2 == 1) {
-    iVar1 = *(int16_t *)(param_1 + 0x22) * 7;
+  if (a1 == 1) {
+    iVar1 = *(int16_t *)(a0 + 0x22) * 7;
     if (iVar1 < 0) {
       iVar1 = iVar1 + 7;
     }
-    iVar2 = (int32_t)(int16_t)*(uint16_t *)(param_1 + 0x20);
+    iVar2 = (int32_t)(int16_t)*(uint16_t *)(a0 + 0x20);
     iVar3 = (int16_t)((iVar2 / 2) - 0x45);
-    hud_text_blk_alt(*(uint32_t *)(param_1 + 8),*(uint32_t *)(param_1 + 0xc),
+    hud_text_blk_alt(*(uint32_t *)(a0 + 8),*(uint32_t *)(a0 + 0xc),
                 (const void *)guest_at(0x80121e3c),iVar3,
                 (int32_t)((uint32_t)iVar1 << 13) >> 16,4);
     return -0x63;   /* disasm 0x80163618: v0=-99 on all paths */
@@ -2229,11 +2229,11 @@ int slot_display_pos(uint8_t *param_1,uint32_t param_2)
 /* mc_dialog_bit4 — memcard dialog flag @0x801bef6e bit4 setter.
  * p<0 -> read-only return; p==0 -> clear 0x10; p>0 -> set 0x10.
  * Disasm-verified @0x801574b4. */
-int32_t mc_dialog_bit4(int32_t param_1)
+int32_t mc_dialog_bit4(int32_t a0)
 {
   uint8_t *f = (uint8_t *)guest_at(0x801bef60);
-  if (param_1 < 0) return f[0xe];
-  f[0xe] = (param_1 == 0) ? (uint8_t)(f[0xe] & 0xef)
+  if (a0 < 0) return f[0xe];
+  f[0xe] = (a0 == 0) ? (uint8_t)(f[0xe] & 0xef)
                         : (uint8_t)(f[0xe] | 0x10);
   return f[0xe];
 }
@@ -2248,14 +2248,14 @@ extern uint32_t br2_call_clean(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern uint32_t call_guest4(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern void cd_bitstream_decode(int32_t,uint32_t,uint32_t);
 extern void cd_dir_entry_probe(int32_t);
-int32_t blk_io_retry(uint32_t param_1,void *param_2)
+int32_t blk_io_retry(uint32_t a0,void *a1)
 {
-  uint8_t *s1 = (uint8_t *)guest_at(param_1);
+  uint8_t *s1 = (uint8_t *)guest_at(a0);
   int32_t s0, s2 = 0x7d0;
   uint32_t idx;
   if (s1 == NULL) return -1;
   for (;;) {
-    s0 = mc_date_serial_cmp(s1,param_2);
+    s0 = mc_date_serial_cmp(s1,a1);
     if (s0 != 0) {
       idx = (*(uint32_t *)(s1 + 8) < 1) ? 1 : 0;
       *(uint32_t *)(s1 + 8) = idx;
@@ -2286,11 +2286,11 @@ extern int32_t cd_channel_poll(uint32_t *,uint32_t *);
  * mark the channel entry state==2 exactly like the generated per-block
  * psx_check_interrupts_at did. The two RTC out-params live on a real
  * 0x30 guest frame (br2_guest_frame) because cd_channel_poll writes guest
- * addresses through them. param_1/param_2 arrive as host pointers into
+ * addresses through them. a0/a1 arrive as host pointers into
  * guest RAM (blk_io_retry passes guest_at()/table ptrs) — dereferenced
  * directly per file convention; the channel-entry pointer read back from
  * the frame is a GUEST address and goes through br2_ldN/br2_stN helpers. */
-int32_t mc_date_serial_cmp(uint8_t *param_1,void *param_2)
+int32_t mc_date_serial_cmp(uint8_t *a0,void *a1)
 {
   extern int32_t cd_channel_poll(uint32_t *,uint32_t *);
   extern void br2_irq_poll(void);
@@ -2300,8 +2300,8 @@ int32_t mc_date_serial_cmp(uint8_t *param_1,void *param_2)
   extern void     br2_st16(uint32_t a, uint16_t v);
   extern void     br2_st32(uint32_t a, uint32_t v);
   uint32_t fr = br2_guest_frame(0x30);
-  uint8_t *s1 = param_1;
-  uint8_t *s2 = (uint8_t *)param_2;
+  uint8_t *s1 = a0;
+  uint8_t *s2 = (uint8_t *)a1;
   uint32_t tries = 2000, w24, w28, a0v, a3v;
 
   /* @0x80159AD8 loop: poll up to 2000x; rc==0 -> compare, exhausted -> 0.
@@ -2996,7 +2996,7 @@ extern void page_table_ptr_set(uint32_t,int32_t);
 /* real signature lives in menu.c: (guest heap ptr, host int* tag table,
  * tag) -> consumed length. The table argument is a GUEST address at these
  * call sites, so wrap it in guest_at() — passing the raw guest address as
- * int* made *param_2 dereference host memory ~0x80xxxxxx (wild read). */
+ * int* made *a1 dereference host memory ~0x80xxxxxx (wild read). */
 extern undefined4 stream_block_decode(undefined4,int *,int);
 extern void cd_timer_read(uint32_t);
 extern uint32_t action_enter(void *battle, uint8_t *ctrl, uint32_t sel);
@@ -5607,7 +5607,7 @@ case2:
     goto poll;
 
 poll:
-    /* frame_tick re-resolves its arg via guest_at((uint32_t)param_1), so it
+    /* frame_tick re-resolves its arg via guest_at((uint32_t)a0), so it
      * must receive the GUEST address 0x1f800000 -- passing the host pointer
      * g truncated to 32 bits and made pad_state_refresh write the held/edge
      * words to a phantom arena slot, leaving 0x1f800068..0x77 stale forever
@@ -6027,15 +6027,15 @@ uint32_t ret_zero_d(uint32_t a0, uint32_t a1, uint32_t a2,
 extern void heap_ptr_fixup(uint32_t);
 /* heap_record_emit is defined in menu.c with a full 9-param prototype
  * (param_6 is a uint32_t* out-count). The weak ()-stub made calls compile
- * unprototyped so the callee read param_3/param_6 from the wrong arg slots —
- * param_3 came back as a decode source pointer and was stored into the heap-A
+ * unprototyped so the callee read a2/param_6 from the wrong arg slots —
+ * a2 came back as a decode source pointer and was stored into the heap-A
  * cursor, running it into the compressed-source region. Declare the real
  * signature instead of a conflicting stub (same fix as terrain_packet_gen). */
 extern uint32_t heap_record_emit(uint32_t,uint32_t,uint32_t,uint32_t,
     uint32_t,uint32_t *,uint32_t,uint32_t,uint32_t);
 /* terrain_packet_gen is defined in menu.c with a full prototype; the weak
  * ()-stub here made calls compile as "no prototype / too many args" and
- * pass garbage in the arg registers (crash: param_3 read as 0x25). Declare
+ * pass garbage in the arg registers (crash: a2 read as 0x25). Declare
  * the real signature instead of a conflicting stub. */
 extern uint32_t terrain_packet_gen(uint32_t,uint32_t,const uint16_t *,
     const int16_t *,const int16_t *,int32_t,int32_t,const uint8_t *);
