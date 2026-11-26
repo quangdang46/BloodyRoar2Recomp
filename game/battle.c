@@ -13568,125 +13568,125 @@ int prim_task_run(int rec,undefined4 a1,undefined4 a2,int mode)
 
 undefined2 * vec2_rot(undefined4 ang0,undefined4 ang1,undefined2 *dst)
 {
-  undefined2 uVar1;
-  int iVar2;
-  int iVar3;
-  int iVar4;
-  iVar2 = lut_sin_q12();
-  iVar2 = -iVar2;
-  uVar1 = lut_cos_q12();
-  dst[1] = uVar1;
-  iVar3 = lut_sin_q12(ang1);
-  iVar3 = iVar2 * iVar3;
-  iVar4 = lut_cos_q12();
-  *dst = (short)(iVar3 >> 0xc);
-  dst[2] = (short)(iVar2 * iVar4 >> 0xc);
+  undefined2 c;
+  int s;
+  int sp;
+  int c2;
+  s = lut_sin_q12();
+  s = -s;
+  c = lut_cos_q12();
+  dst[1] = c;
+  sp = lut_sin_q12(ang1);
+  sp = s * sp;
+  c2 = lut_cos_q12();
+  *dst = (short)(sp >> 0xc);
+  dst[2] = (short)(s * c2 >> 0xc);
   return dst;
 
 }
 
 uint * angle_gte_vec(undefined4 x,undefined4 y,uint *out)
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
-  uint uVar4;
-  uVar4 = 0x1000;
-  iVar1 = trig_sin_lookup(x);
-  iVar2 = lut_sin_q12(y);
-  iVar2 = iVar1 * iVar2;
-  iVar3 = lut_cos_q12(y);
-  *out = uVar4 | (iVar2 >> 0xc) << 0x10;
+  int sx;
+  int p;
+  int cy;
+  uint one;
+  one = 0x1000;
+  sx = trig_sin_lookup(x);
+  p = lut_sin_q12(y);
+  p = sx * p;
+  cy = lut_cos_q12(y);
+  *out = one | (p >> 0xc) << 0x10;
   out[1] = 0;
   out[2] = 0;
-  *(short *)(out + 4) = (short)uVar4;
-  out[3] = (iVar1 * iVar3 >> 0xc) << 0x10;
+  *(short *)(out + 4) = (short)one;
+  out[3] = (sx * cy >> 0xc) << 0x10;
   return out;
 
 }
 
-int * prim_list_persp_step(int *a0,undefined4 a1,undefined4 a2,int a3,undefined4 arg5 ,int arg6,undefined4 arg7,undefined4 arg8)
+int * prim_list_persp_step(int *rec,undefined4 a1,undefined4 a2,int n,undefined4 arg5 ,int arg6,undefined4 arg7,undefined4 arg8)
 {
   undefined4 in_zero;
   undefined4 extraout_at;
-  int iVar1;
-  int iVar2;
-  int iVar3;
+  int tx;
+  int vp;
+  int tz;
   undefined4 in_t4;
   undefined4 in_t5;
   undefined4 in_t6;
   undefined4 in_t7;
-  undefined4 unaff_s0;
-  undefined4 unaff_s1;
-  undefined4 unaff_s2;
-  int *piVar4;
-  undefined4 unaff_s3;
-  undefined4 unaff_s4;
-  undefined4 unaff_s5;
-  undefined4 unaff_s6;
-  undefined4 unaff_s7;
+  undefined4 sv_s0;
+  undefined4 sv_s1;
+  undefined4 sv_s2;
+  int *pi;
+  undefined4 sv_s3;
+  undefined4 sv_s4;
+  undefined4 sv_s5;
+  undefined4 sv_s6;
+  undefined4 sv_s7;
   undefined4 in_t8;
-  undefined4 unaff_retaddr;
-  if (0 < a3) {
+  undefined4 sv_ra;
+  if (0 < n) {
     _DAT_1f8003d4 = arg5;
     _DAT_1f8003d0 = arg7;
     _DAT_1f8003cc = arg8;
     _DAT_1f8003d8 = a1;
-    _DAT_1f8003dc = unaff_s7;
-    _DAT_1f8003e0 = unaff_s6;
-    _DAT_1f8003e4 = unaff_s5;
-    _DAT_1f8003e8 = unaff_s4;
-    _DAT_1f8003ec = unaff_s3;
-    _DAT_1f8003f0 = unaff_s2;
-    _DAT_1f8003f4 = unaff_s1;
-    _DAT_1f8003f8 = unaff_s0;
-    _DAT_1f8003fc = unaff_retaddr;
+    _DAT_1f8003dc = sv_s7;
+    _DAT_1f8003e0 = sv_s6;
+    _DAT_1f8003e4 = sv_s5;
+    _DAT_1f8003e8 = sv_s4;
+    _DAT_1f8003ec = sv_s3;
+    _DAT_1f8003f0 = sv_s2;
+    _DAT_1f8003f4 = sv_s1;
+    _DAT_1f8003f8 = sv_s0;
+    _DAT_1f8003fc = sv_ra;
     do {
-      if (((short)a0[3] == 0) && (*a0 != 0)) {
-        iVar2 = *a0 + 0x20;
-        gte_xform3_t_ip((undefined4 *)guest_at((uint32_t)arg6),(undefined2 *)guest_at((uint32_t)(*a0 + 0x20)));
-        setCopReg(2,in_zero,a0[1]);
-        setCopReg(2,extraout_at,a0[2]);
+      if (((short)rec[3] == 0) && (*rec != 0)) {
+        vp = *rec + 0x20;
+        gte_xform3_t_ip((undefined4 *)guest_at((uint32_t)arg6),(undefined2 *)guest_at((uint32_t)(*rec + 0x20)));
+        setCopReg(2,in_zero,rec[1]);
+        setCopReg(2,extraout_at,rec[2]);
         copFunction(2,0x480012);
-        iVar1 = getCopReg(2,0xc800);
-        iVar3 = getCopReg(2,0xd800);
+        tx = getCopReg(2,0xc800);
+        tz = getCopReg(2,0xd800);
         _DAT_1f8003a0 = in_t6;
         _DAT_1f8003a4 = in_t4;
         _DAT_1f8003a8 = in_t7;
         _DAT_1f8003ac = in_t8;
         _DAT_1f8003b0 = in_t5;
-        _DAT_1f8003b8 = range_circle_test(iVar1,iVar3,(uint *)guest_at((uint32_t)_DAT_1f8003d0),*(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x18))));
+        _DAT_1f8003b8 = range_circle_test(tx,tz,(uint *)guest_at((uint32_t)_DAT_1f8003d0),*(undefined4 *)guest_at((uint32_t)(uintptr_t)((vp + 0x18))));
         if (_DAT_1f8003b8 != 0) {
-          iVar1 = iVar1 + ((int)*(short *)guest_at((uint32_t)(uintptr_t)((arg6 + 2) ))* -_DAT_1f8003b8 >> 0xc);
-          iVar3 = iVar3 + ((int)*(short *)guest_at((uint32_t)(uintptr_t)((arg6 + 0xe) ))* -_DAT_1f8003b8 >> 0xc);
+          tx = tx + ((int)*(short *)guest_at((uint32_t)(uintptr_t)((arg6 + 2) ))* -_DAT_1f8003b8 >> 0xc);
+          tz = tz + ((int)*(short *)guest_at((uint32_t)(uintptr_t)((arg6 + 0xe) ))* -_DAT_1f8003b8 >> 0xc);
         }
-        _DAT_1f8003b4 = iVar1;
-        _DAT_1f8003bc = iVar3;
+        _DAT_1f8003b4 = tx;
+        _DAT_1f8003bc = tz;
         gte_xform3_t_ip((undefined4 *)guest_at((uint32_t)_DAT_1f8003d4),(undefined2 *)(uintptr_t)&DAT_1f8003a0);
-        iVar1 = *(int *)guest_at((uint32_t)(uintptr_t)(a0[7]));
-        piVar4 = (int *)guest_at((uint32_t)(uintptr_t)(a0[7] ))+ 1;
-        if (iVar1 != 0) {
-          /* Generated 0x8018B208 jalr's each record fn with the full a0-a3
+        tx = *(int *)guest_at((uint32_t)(uintptr_t)(rec[7]));
+        pi = (int *)guest_at((uint32_t)(uintptr_t)(rec[7] ))+ 1;
+        if (tx != 0) {
+          /* Generated 0x8018B208 jalr's each record fn with the full rec-n
            * set, same {count,[x,a3field,arg0,func]} stride-16 table as
-           * prim_task_run: a0 = entry[+8] (data cursor), a1 = a1,
+           * prim_task_run: rec = entry[+8] (data cursor), a1 = a1,
            * a2 = a2 (both loaded once per node before the entry loop),
-           * a3 = entry[+4] (per-record field). task_invoke/call_guest only
-           * program $a0/$a1, leaving $a2/$a3 as stale register-file values
+           * n = entry[+4] (per-record field). task_invoke/call_guest only
+           * program $rec/$a1, leaving $a2/$n as stale register-file values
            * the callee dereferences. call_guest4 reproduces the guest ABI
            * exactly (same fix prim_task_run carries). */
           do {
-            iVar1 = iVar1 + -1;
-            call_guest4((uint32_t)piVar4[3],(uint32_t)piVar4[2],
-                        (uint32_t)a1,(uint32_t)a2,(uint32_t)piVar4[1]);
-            piVar4 = piVar4 + 4;
-          } while (0 < iVar1);
+            tx = tx + -1;
+            call_guest4((uint32_t)pi[3],(uint32_t)pi[2],
+                        (uint32_t)a1,(uint32_t)a2,(uint32_t)pi[1]);
+            pi = pi + 4;
+          } while (0 < tx);
         }
       }
-      a3 = a3 + -1;
-      a0 = a0 + 10;
-    } while (0 < a3);
+      n = n + -1;
+      rec = rec + 10;
+    } while (0 < n);
   }
-  return a0;
+  return rec;
 
 }
 
