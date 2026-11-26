@@ -5039,6 +5039,7 @@ extern uint8_t *guest_memcpy(uint32_t *,uint32_t *,int);
 int cd_queue_push(uint32_t,uint32_t,uint32_t,uint32_t);
 void cd_chan_reset_seq(void);
 int cd_crit_c003(void);
+/* ret_zero_f — tail pair: FUN_8019E420 then FUN_8019E600 (CPS continuation chain). */
 void ret_zero_f(void);
 
 /* 0x80195bd0 — BIOS vector trampoline: jr $t2=0xb0, t1=7; a0/a1 fwd. */
@@ -5192,6 +5193,7 @@ int cd_chan_init_trio(void)
 
 /* ======== 0x80191978 ======== */
 
+/* cd_blk5c_copy — copy the 0x5c-byte CD status block @0x801B8330 to a0; returns a0. */
 uint32_t cd_blk5c_copy(uint32_t a0)
 {
   guest_memcpy((uint32_t *)a0,(uint32_t *)0x801b8330,0x5c);
@@ -5200,6 +5202,7 @@ uint32_t cd_blk5c_copy(uint32_t a0)
 
 /* ======== 0x80191ea4 ======== */
 
+/* cd_blk14_copy — copy the 0x14-byte CD sub-block @0x801B838C to a0; returns a0. */
 uint32_t cd_blk14_copy(uint32_t a0)
 {
   guest_memcpy((uint32_t *)a0,(uint32_t *)0x801b838c,0x14);
@@ -5208,6 +5211,7 @@ uint32_t cd_blk14_copy(uint32_t a0)
 
 /* ======== 0x801936b0 ======== */
 
+/* cd_timeout_arm — arm the CD timeout: deadline @0x801B845C = timer+0xF0, counter @0x801B8460 = 0. */
 void cd_timeout_arm(void)
 {
   DB32(0x801b845c) = cd_timer_read(0xffffffff) + 0xf0;
@@ -5224,6 +5228,7 @@ void ret_zero_f(void)
 
 /* ======== 0x8019a710 ======== */
 
+/* cd_ind_dispatch_14 — indirect dispatch: call *(u32*)(*0x801BDDA0 + 0x14) with (4, a0). */
 uint32_t cd_ind_dispatch_14(uint32_t a0)
 {
   uint32_t tbl = CDB32G(0x801bdda0);
@@ -5261,6 +5266,7 @@ uint32_t cd_ind_dispatch_18(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
 
 /* ======== 0x8019d1b0 ======== */
 
+/* cd_state9_store — store a0 to state cell @0x801BDEEC on change; fires cd_tbl8_dispatch9(a0); returns previous. */
 uint32_t cd_state9_store(uint32_t a0)
 {
   uint32_t old = DB32G(0x801bdeec);
@@ -5273,6 +5279,7 @@ uint32_t cd_state9_store(uint32_t a0)
 
 /* ======== 0x80191f88 ======== */
 
+/* cd_coord_pack_entry — pack s16 pair at a1 via gpu_coord_pack, store tag 2 + packed result +0/+4/+8 at a0. */
 int cd_coord_pack_entry(uint32_t a0,uint32_t a1)
 {
   int packed;
@@ -5286,6 +5293,7 @@ int cd_coord_pack_entry(uint32_t a0,uint32_t a1)
 
 /* ======== 0x8019d170 ======== */
 
+/* cd_reg_rw_d2 — indexed register op 0xD2 on a0 (rejects a0 > 0x7FFFFFF8). */
 int32_t cd_reg_rw_d2(uint32_t a0)
 {
   if (a0 > 0x7ffffff8u) return 0;
@@ -5294,6 +5302,7 @@ int32_t cd_reg_rw_d2(uint32_t a0)
 
 /* ======== 0x8019e6f0 ======== */
 
+/* cd_block7_init — wait for @0x801FEBE0 drain (IRQ poll), then cd_chan_block_init(7,0) + FUN_8019A0DDC. */
 void cd_block7_init(void)
 {
   while (DB32(0x801febe0) != 0) {
@@ -5306,6 +5315,7 @@ void cd_block7_init(void)
 
 /* ======== 0x8019ef30 ======== */
 
+/* cd_pending_release — if pending slot @0x801FEBF4 >= 0, release via FUN_801A0250 and mark -1. */
 void cd_pending_release(void)
 {
   int32_t v = (int32_t)DB32(0x801febf4);
@@ -5317,6 +5327,7 @@ void cd_pending_release(void)
 
 /* ======== 0x8019746c ======== */
 
+/* cd_chan_reset_b — trace CDFN_CHAN_RESET_B; clears cells @0x801BC848/4C/54/58 then tbl-c + tbl-8 dispatches. */
 void cd_chan_reset_b(void)
 {
   CDFN(CDFN_CHAN_RESET_B,0);
