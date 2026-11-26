@@ -555,11 +555,11 @@ switchD_801678c4_caseD_1:
 void battle_flow_state_machine(intptr_t rec)
 
 {
-  int iVar1;
+  int ot_base;
   bool battle_ran;
-  undefined4 uVar3;
-  int iVar4;
-  int iVar5;
+  undefined4 tmp;
+  int v0;
+  int ot_sub;
   
   battle_ran = false;
   { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
@@ -592,8 +592,8 @@ joined_r0x8016fd30:
    * the same OT cells with no intervening ch6 clear, so the second pass linked
    * each packet chain's tail to the previous head and the GPU walked a closed
    * cycle. Read them fresh here; the guest stores nothing back. */
-  iVar4 = _DAT_1f80000c;
-  iVar1 = _DAT_1f800008;
+  v0 = _DAT_1f80000c;
+  ot_base = _DAT_1f800008;
   if ((int8_t)DAT_1f800001 == -1) {
     if (g_game_state != '\t') {
       rec_timer_pair_clear(0x1f800000);
@@ -606,8 +606,8 @@ joined_r0x8016fd30:
     DAT_1f800001 = '\x01';
   case '\x01':
     hud_sprite_desc_init();
-    iVar4 = frame_divisor_get();
-    if (iVar4 == 0) {
+    v0 = frame_divisor_get();
+    if (v0 == 0) {
       display_mode_setup(*(undefined1 *)(_g_system_config_ptr + 0xb));
       frame_advance_helper();
       match_mode_set(1);
@@ -622,7 +622,7 @@ joined_r0x8016fd30:
       case 0:
         _DAT_1f8000c4 = guest_of(_g_system_config_ptr + 0x2c);
         if ((DAT_1f80009b == '\0') && (*(char *)(_g_system_config_ptr + 0x11) != '\x01')) {
-          iVar4 = battle_frame();
+          v0 = battle_frame();
           /* battle_frame returns early on a bail unwind — propagate it so
            * the unwind reaches the dispatch boundary instead of continuing
            * this clean-C loop with every generated fallback dropped.
@@ -630,14 +630,14 @@ joined_r0x8016fd30:
            * must not leak BFSM-private DAT1 into match_loop (see above). */
           { extern int br2_bail_pending(void);
             if (br2_bail_pending()) { DAT_1f800001 = 0; return; } }
-          if (iVar4 < 0) {
+          if (v0 < 0) {
             DAT_1f800001 = -1;
           }
           battle_ran = true;
         }
         else {
-          iVar4 = select_screen_tick(0);
-          if (iVar4 != 0) {
+          v0 = select_screen_tick(0);
+          if (v0 != 0) {
             DAT_1f800001 = -1;
           }
         }
@@ -645,17 +645,17 @@ joined_r0x8016fd30:
       case 1:
       case 2:
         _DAT_1f8000c4 = guest_of(_g_system_config_ptr + 0x2c);
-        iVar4 = select_screen_tick(1);
+        v0 = select_screen_tick(1);
         { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-          decomp_trace_record(74,0xf00d,(uint32_t)iVar4,(uint8_t)DAT_1f800001,(uint32_t)DAT_1f80009c); }
-        if (iVar4 != 0) {
+          decomp_trace_record(74,0xf00d,(uint32_t)v0,(uint8_t)DAT_1f800001,(uint32_t)DAT_1f80009c); }
+        if (v0 != 0) {
           DAT_1f800001 = -1;
         }
         break;
       case 3:
         _DAT_1f8000c4 = guest_of(_g_system_config_ptr + 0x2c);
-        iVar4 = select_screen_tick(3);
-        if (iVar4 != 0) {
+        v0 = select_screen_tick(3);
+        if (v0 != 0) {
           DAT_1f800001 = -1;
         }
         break;
@@ -668,8 +668,8 @@ joined_r0x8016fd30:
           *(uint *)(_g_system_config_ptr + 0x28) = *(uint *)(_g_system_config_ptr + 0x28) | 2;
           _DAT_801c15f0 = 1;
         }
-        iVar4 = select_screen_tick(2);
-        if (iVar4 == 0) {
+        v0 = select_screen_tick(2);
+        if (v0 == 0) {
           countdown_display_sm(0);
           hud_state_machine(0);
         }
@@ -679,12 +679,12 @@ joined_r0x8016fd30:
         break;
       case 5:
         _DAT_1f8000c4 = guest_of(_g_system_config_ptr + 0x38);
-        uVar3 = 1;
+        tmp = 1;
         if (DAT_1f80009b == '\0') {
-          uVar3 = 3;
+          tmp = 3;
         }
-        iVar4 = select_screen_tick(uVar3);
-        if (iVar4 != 0) {
+        v0 = select_screen_tick(tmp);
+        if (v0 != 0) {
           g_game_state = '\v';
           g_sub_state = 4;
           DAT_1f800001 = -1;
@@ -706,8 +706,8 @@ switchD_8016fd64_caseD_2:
         { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
           decomp_trace_record(73,0xcafe,(uint32_t)DAT_1f800001,(uint8_t)DAT_1f80009b,(uint32_t)DAT_1f80009c); }
 switchD_8016fd64_caseD_3:
-        iVar4 = frame_divisor_get();
-        if (iVar4 == 0) {
+        v0 = frame_divisor_get();
+        if (v0 == 0) {
           if (battle_ran) {
             battle_ran = false;
           }
@@ -738,7 +738,7 @@ switchD_8016fd64_caseD_3:
     if (_DAT_1f800090 != 0) {
       _DAT_1f800090 = 0;
     }
-    iVar5 = menu_res_load_sm(0x1f800000,&DAT_1f8000e8,&DAT_1f8001f0,0);
+    ot_sub = menu_res_load_sm(0x1f800000,&DAT_1f8000e8,&DAT_1f8001f0,0);
     /* menu_res_load_sm returns -1 both for "already done" (s1+0x8c<0
      * stored marker) and for a br2_bail_pending unwind. Only the bail case
      * must NOT advance the phase — the load is mid-flight and the fighter
@@ -749,7 +749,7 @@ switchD_8016fd64_caseD_3:
      * leak BFSM-private DAT1 into match_loop — restore canonical 0. */
     { extern int br2_bail_pending(void);
       if (br2_bail_pending()) { DAT_1f800001 = 0; return; } }
-    if ((iVar5 != 0) && (_DAT_1f800090 == 0)) goto switchD_8016fd64_caseD_5;
+    if ((ot_sub != 0) && (_DAT_1f800090 == 0)) goto switchD_8016fd64_caseD_5;
     break;
   case '\x05':
 switchD_8016fd64_caseD_5:
@@ -764,8 +764,8 @@ switchD_8016fd64_caseD_5:
   case '\x06':
     match_setup_apply(0x1f8000e8u,0x1f8001f0u,0x1f800000u,(uint32_t)guest_of(_g_system_config_ptr));
     battle_state_init(&DAT_1f8000e8,&DAT_1f8001f0,0x1f800000);
-    uVar3 = table_byte_next_a();
-    perm_table_apply(uVar3);
+    tmp = table_byte_next_a();
+    perm_table_apply(tmp);
     reset_sprite_ot_block(0x1f800000);
     task_table_init(1);
     flow_cfg_init(1);
@@ -784,8 +784,8 @@ switchD_8016fd64_caseD_5:
     frame_tick(0x1f800000);
     DAT_1f800001 = '\a';
 switchD_8016fd64_caseD_7:
-    iVar5 = frame_divisor_get();
-    if (iVar5 == 0) {
+    ot_sub = frame_divisor_get();
+    if (ot_sub == 0) {
       DAT_1f800001 = '\b';
 switchD_8016fd64_caseD_8:
       { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
@@ -798,8 +798,8 @@ switchD_8016fd64_caseD_8:
       }
       if ((DAT_1f800001 != '\x06') && (DAT_1f800001 != '\b')) {
         frame_present(0x1f800000);
-        iVar4 = _DAT_1f80000c;
-        iVar1 = _DAT_1f800008;
+        v0 = _DAT_1f80000c;
+        ot_base = _DAT_1f800008;
         goto joined_r0x8016fd30;
       }
       if ((*(uint *)((uint32_t *)guest_at(_DAT_1f8000c4) + 8) >> 0xb & 1) != 0) {
@@ -813,22 +813,22 @@ switchD_8016fd64_caseD_8:
         fighter_pair_update((int)guest_of(&DAT_1f8000e8),(int)guest_of(&DAT_1f8001f0),0x1f800000);
       }
       if (((*(ushort *)(rec + 2) >> 2 & 1) != 0) && (DAT_1f8000b0 == '\0')) {
-        iVar5 = iVar1 + 0x10;
+        ot_sub = ot_base + 0x10;
         if (DAT_1f80009d == '\0') {
-          iVar5 = iVar1 + 0x2038;
+          ot_sub = ot_base + 0x2038;
         }
-        battle_hud_draw(iVar5,0x1f800000,(int)guest_of(&DAT_1f8000e8),(int)guest_of(&DAT_1f8001f0));
+        battle_hud_draw(ot_sub,0x1f800000,(int)guest_of(&DAT_1f8000e8),(int)guest_of(&DAT_1f8001f0));
       }
       battle_camera_step(_DAT_1f8000bc,&DAT_1f8000e8,&DAT_1f8001f0,0x1f800000);
       camera_state_cache(_DAT_1f8000bc,0x1f800000);
       if (((*(ushort *)(rec + 2) & 1) != 0) && ((_DAT_1f800148 & 2) == 0)) {
-        fighter_flash_update(iVar1,iVar4,0x1f800000,&DAT_1f8000e8);
+        fighter_flash_update(ot_base,v0,0x1f800000,&DAT_1f8000e8);
         if ((_DAT_1f800154 & 0x400) == 0) {
           if ((_DAT_1f800154 & 0x200) == 0) {
-            if (((_DAT_1f800154 & 0x8000000) == 0) || (iVar4 == 0)) {
+            if (((_DAT_1f800154 & 0x8000000) == 0) || (v0 == 0)) {
               player_light_apply(&DAT_1f8000e8,1);
-              iVar5 = (int)(int8_t)DAT_1f8000ee;
-              uVar3 = _DAT_1f800100;
+              ot_sub = (int)(int8_t)DAT_1f8000ee;
+              tmp = _DAT_1f800100;
             }
             else {
               player_light_apply(&DAT_1f8000e8,1);
@@ -837,8 +837,8 @@ switchD_8016fd64_caseD_8:
                * _DAT_1f800110 (record[1]: count byte +0x24, prim hdr +0x34).
                * The decompiler's +0x24/+0x34 were element indices on a
                * uint32_t*, i.e. byte offsets 4x too far. */
-              iVar5 = (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800110 + 0x24);
-              uVar3 = *(undefined4 *)guest_at(_DAT_1f800110 + 0x34);
+              ot_sub = (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800110 + 0x24);
+              tmp = *(undefined4 *)guest_at(_DAT_1f800110 + 0x34);
             }
           }
           else {
@@ -846,93 +846,93 @@ switchD_8016fd64_caseD_8:
             /* Guest 0x80170414/0x80170404: lw 0x10($v0) / lb 0($v0) —
              * rec = record[0] prim hdr (byte +0x10), param_4 = signed
              * count byte at struct +0. */
-            prim_list_gte_invoke((int *)guest_at(*(uint32_t *)guest_at(_DAT_1f800110 + 0x10)),iVar1 + 0x40,iVar4,
+            prim_list_gte_invoke((int *)guest_at(*(uint32_t *)guest_at(_DAT_1f800110 + 0x10)),ot_base + 0x40,v0,
                          (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800110),0x1f800028,0x1f80033c);
-            if (iVar4 == 0) goto LAB_801704bc;
-            iVar5 = (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800110 + 0x24);
-            uVar3 = *(undefined4 *)guest_at(_DAT_1f800110 + 0x34);
+            if (v0 == 0) goto LAB_801704bc;
+            ot_sub = (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800110 + 0x24);
+            tmp = *(undefined4 *)guest_at(_DAT_1f800110 + 0x34);
           }
-          prim_list_gte_invoke((int *)guest_at(uVar3),iVar1 + 0x40,iVar4,iVar5,0x1f800028,0x1f80033c);
+          prim_list_gte_invoke((int *)guest_at(tmp),ot_base + 0x40,v0,ot_sub,0x1f800028,0x1f80033c);
         }
 LAB_801704bc:
         if (((*(ushort *)(rec + 2) >> 6 & 1) != 0) && (DAT_1f80009f == '\0')) {
           if (DAT_1f800098 == 4) {
 LAB_80170524:
-            FUN_8018b100(_DAT_1f800104,iVar1 + 0x2040,iVar4,0xf,0x1f800028,0x1f80035c);
+            FUN_8018b100(_DAT_1f800104,ot_base + 0x2040,v0,0xf,0x1f800028,0x1f80035c);
           }
           else {
             if ((char)DAT_1f800098 < '\x05') {
               if (DAT_1f800098 == 1) goto LAB_80170524;
             }
             else if (DAT_1f800098 == 6) goto LAB_80170524;
-            prim_list_persp_step((int *)guest_at(_DAT_1f800104),iVar1 + 0x2040,iVar4,0xf,0x1f800028,0x1f80035c,
-                         ((int)((uint)DAT_1f800098 << 0x18) >> 0x15) + -0x7fe4e94c,iVar1 + 0x206c);
+            prim_list_persp_step((int *)guest_at(_DAT_1f800104),ot_base + 0x2040,v0,0xf,0x1f800028,0x1f80035c,
+                         ((int)((uint)DAT_1f800098 << 0x18) >> 0x15) + -0x7fe4e94c,ot_base + 0x206c);
           }
         }
       }
       if (((*(ushort *)(rec + 2) >> 1 & 1) != 0) && ((_DAT_1f800250 & 2) == 0)) {
-        fighter_flash_update(iVar1,iVar4,0x1f800000,&DAT_1f8001f0);
+        fighter_flash_update(ot_base,v0,0x1f800000,&DAT_1f8001f0);
         if ((_DAT_1f80025c & 0x400) == 0) {
           if ((_DAT_1f80025c & 0x200) == 0) {
-            if (((_DAT_1f80025c & 0x8000000) == 0) || (iVar4 == 0)) {
+            if (((_DAT_1f80025c & 0x8000000) == 0) || (v0 == 0)) {
               player_light_apply(&DAT_1f8001f0,2);
-              iVar5 = (int)(int8_t)DAT_1f8001f6;
-              uVar3 = _DAT_1f800208;
+              ot_sub = (int)(int8_t)DAT_1f8001f6;
+              tmp = _DAT_1f800208;
             }
             else {
               player_light_apply(&DAT_1f8001f0,2);
-              iVar5 = (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800218 + 0x24);
-              uVar3 = *(undefined4 *)guest_at(_DAT_1f800218 + 0x34);
+              ot_sub = (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800218 + 0x24);
+              tmp = *(undefined4 *)guest_at(_DAT_1f800218 + 0x34);
             }
           }
           else {
             player_light_apply(&DAT_1f8001f0,2);
-            prim_list_gte_invoke((int *)guest_at(*(uint32_t *)guest_at(_DAT_1f800218 + 0x10)),iVar1 + 0x40,iVar4,
+            prim_list_gte_invoke((int *)guest_at(*(uint32_t *)guest_at(_DAT_1f800218 + 0x10)),ot_base + 0x40,v0,
                          (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800218),0x1f800028,0x1f80033c);
-            if (iVar4 == 0) goto LAB_801706ac;
-            iVar5 = (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800218 + 0x24);
-            uVar3 = *(undefined4 *)guest_at(_DAT_1f800218 + 0x34);
+            if (v0 == 0) goto LAB_801706ac;
+            ot_sub = (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800218 + 0x24);
+            tmp = *(undefined4 *)guest_at(_DAT_1f800218 + 0x34);
           }
-          prim_list_gte_invoke((int *)guest_at(uVar3),iVar1 + 0x40,iVar4,iVar5,0x1f800028,0x1f80033c);
+          prim_list_gte_invoke((int *)guest_at(tmp),ot_base + 0x40,v0,ot_sub,0x1f800028,0x1f80033c);
         }
 LAB_801706ac:
         if (((*(ushort *)(rec + 2) >> 6 & 1) != 0) && (DAT_1f80009f == '\0')) {
           if (DAT_1f800098 == 4) {
 LAB_80170714:
-            FUN_8018b100(_DAT_1f80020c,iVar1 + 0x2040,iVar4,0xf,0x1f800028,0x1f80035c);
+            FUN_8018b100(_DAT_1f80020c,ot_base + 0x2040,v0,0xf,0x1f800028,0x1f80035c);
           }
           else {
             if ((char)DAT_1f800098 < '\x05') {
               if (DAT_1f800098 == 1) goto LAB_80170714;
             }
             else if (DAT_1f800098 == 6) goto LAB_80170714;
-            prim_list_persp_step((int *)guest_at(_DAT_1f80020c),iVar1 + 0x2040,iVar4,0xf,0x1f800028,0x1f80035c,
-                         ((int)((uint)DAT_1f800098 << 0x18) >> 0x15) + -0x7fe4e94c,iVar1 + 0x206c);
+            prim_list_persp_step((int *)guest_at(_DAT_1f80020c),ot_base + 0x2040,v0,0xf,0x1f800028,0x1f80035c,
+                         ((int)((uint)DAT_1f800098 << 0x18) >> 0x15) + -0x7fe4e94c,ot_base + 0x206c);
           }
         }
       }
       if ((*(ushort *)(rec + 2) >> 4 & 1) == 0) {
         DAT_1f8000b1 = 1;
       }
-      battle_intro_fsm(0x1f800028,iVar1,iVar4,0x1f800000);
+      battle_intro_fsm(0x1f800028,ot_base,v0,0x1f800000);
       if (((_DAT_1f800154 & 0x8000) != 0) || (_DAT_801f4cb6 = 0xfff8, (_DAT_1f80025c & 0x8000) != 0)
          ) {
         _DAT_801f4cb6 = 0x10;
       }
       _DAT_801f4cb2 = 0;
-      fighter_tint_fade(iVar1,iVar4,0x1f800000,(int)(char)DAT_1f800098);
+      fighter_tint_fade(ot_base,v0,0x1f800000,(int)(char)DAT_1f800098);
       if ((*(ushort *)(rec + 2) >> 3 & 1) != 0) {
         fighter_trail_emit((undefined4 *)guest_at(0x1f800028),0x1f80033c,_DAT_1f8000bc,0x1f800000);
       }
       if (((DAT_1f80009f == '\0') && (DAT_1f80009e == '\0')) &&
          ((*(ushort *)(rec + 2) >> 5 & 1) != 0)) {
-        slot_height_proj(iVar1 + 0x207c,_DAT_1f8000bc,iVar4,0x1f800000);
+        slot_height_proj(ot_base + 0x207c,_DAT_1f8000bc,v0,0x1f800000);
       }
       if (*(short *)(rec + 8) != 0) {
-        FUN_801468ec(iVar1,iVar4,0x1f800028,&DAT_1f8000e8,(int)*(short *)(rec + 8));
+        FUN_801468ec(ot_base,v0,0x1f800028,&DAT_1f8000e8,(int)*(short *)(rec + 8));
       }
       if (*(short *)(rec + 10) != 0) {
-        FUN_801468ec(iVar1,iVar4,0x1f800028,&DAT_1f8001f0,(int)*(short *)(rec + 10));
+        FUN_801468ec(ot_base,v0,0x1f800028,&DAT_1f8001f0,(int)*(short *)(rec + 10));
       }
       if (*(short *)(rec + 4) != 0) {
         status_text_display(0x1f8000e8u,(uint32_t)*(short *)(rec + 4));
@@ -966,16 +966,16 @@ LAB_80170714:
     }
     break;
   case '\f':
-    iVar4 = frame_divisor_get();
-    if (iVar4 != 0) break;
+    v0 = frame_divisor_get();
+    if (v0 != 0) break;
     DAT_1f800001 = -1;
-    iVar4 = _DAT_1f80000c;
-    iVar1 = _DAT_1f800008;
+    v0 = _DAT_1f80000c;
+    ot_base = _DAT_1f800008;
     goto joined_r0x8016fd30;
   }
   frame_tick(0x1f800000);
-  iVar4 = _DAT_1f80000c;
-  iVar1 = _DAT_1f800008;
+  v0 = _DAT_1f80000c;
+  ot_base = _DAT_1f800008;
   goto joined_r0x8016fd30;
 }
 
