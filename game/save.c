@@ -6714,7 +6714,7 @@ int save_load_state_machine(uint32_t a0, int32_t a1)
   int32_t a1v = a1;
   int32_t saved8 = (int32_t)g8(0x1f800013);
   uint8_t blk[0x20];           /* sp+0x28..0x47 block for terrain_packet_gen */
-  /* heap_record_emit's param_6 is a uint32_t* out-count (*s5 = 0; ++*s5)
+  /* heap_record_emit's param_6 is a uint32_t* out-count (*img = 0; ++*img)
    * — the guest slots are words; u16 locals would be overflowed by the
    * 4-byte store. */
   uint32_t sp48 = 0, sp4c = 0;
@@ -6742,9 +6742,9 @@ init:
     goto ret0;
   scratch_013_set(0);
   {
-    uint8_t *s5 = (uint8_t *)guest_at(0x801f04a8);
+    uint8_t *img = (uint8_t *)guest_at(0x801f04a8);
     int32_t *tbl = (int *)tag_table_get();
-    *(int16_t *)(s5 + 4) = 0;
+    *(int16_t *)(img + 4) = 0;
 
     /* alloc tag0 + tag1, then ret_zero_d */
     heapB = g32(0x801e3cfc);
@@ -6752,7 +6752,7 @@ init:
     if (alloc0 != 0) {
       uint32_t mid, fin, r;
       heapB0 = heapB;
-      *(uint32_t *)(s5 + 0) = 0x801c11b0u;
+      *(uint32_t *)(img + 0) = 0x801c11b0u;
       mid = heapB0 + alloc0;                    /* heapB advance #1 (delay slot) */
       BR2_W32(0x801e3cfc, mid);
       alloc1 = heap_alloc54(mid, tbl, 1);
@@ -6763,9 +6763,9 @@ init:
       r = (uint32_t)ret_zero_d(heapB0, mid, 0x801c11b0u, heapA,
                                g32(0x801b4844u + (uint32_t)a1v * 4));
       BR2_W32(0x801c47b8, r);
-      *(int16_t *)(s5 + 4) = (int16_t)(*(int16_t *)(s5 + 4) + 1);
+      *(int16_t *)(img + 4) = (int16_t)(*(int16_t *)(img + 4) + 1);
     }
-    *(int16_t *)(s5 + 0xc) = 0;
+    *(int16_t *)(img + 0xc) = 0;
 
     /* alloc tag2: 0x17 character-record slots */
     heapB = g32(0x801e3cfc);
@@ -6775,7 +6775,7 @@ init:
       int32_t s3i;
       uint32_t s4o = (uint32_t)a1v * 23;
       heap_ptr_fixup(g32(0x801e3cfc));
-      *(uint32_t *)(s5 + 8) = 0x801e3d08u;
+      *(uint32_t *)(img + 8) = 0x801e3d08u;
       for (s3i = 0; s3i < 0x17; s3i++, rec += 0x28, s2p += 0x28) {
         uint32_t cp = 0x801b4878u + s4o + (uint32_t)s3i;
         uint32_t ch = g8(cp);
@@ -6789,32 +6789,32 @@ init:
           *(int16_t *)(rec + 0xe) = 0;
           *(uint32_t *)(rec + 0x20) = 0;
           *(uint32_t *)(rec + 0x24) = 0;
-          *(int16_t *)(s5 + 0xc) =
-            (int16_t)(*(int16_t *)(s5 + 0xc) + 1);
+          *(int16_t *)(img + 0xc) =
+            (int16_t)(*(int16_t *)(img + 0xc) + 1);
         } else {
           uint32_t r = (uint32_t)heap_record_emit(
               g32(0x801e3cfc), 0x801e3d08u + (uint32_t)s3i * 0x28u,
               g32(0x801c47b8), (uint32_t)(s3i + 1),
               1, &sp48, ch, 0, 0);
           BR2_W32(0x801c47b8, r);
-          *(int16_t *)(s5 + 0xc) =
-            (int16_t)(*(int16_t *)(s5 + 0xc) + (int32_t)sp48);
+          *(int16_t *)(img + 0xc) =
+            (int16_t)(*(int16_t *)(img + 0xc) + (int32_t)sp48);
         }
       }
     }
 
     /* alloc tag3 */
-    *(int16_t *)(s5 + 0x14) = 0;
+    *(int16_t *)(img + 0x14) = 0;
     heapB = g32(0x801e3cfc);
     if (heap_alloc54(heapB, tbl, 3) != 0) {
       heap_ptr_fixup(g32(0x801e3cfc));
-      *(uint32_t *)(s5 + 0x10) = 0x801c4588u;
+      *(uint32_t *)(img + 0x10) = 0x801c4588u;
       {
         uint32_t r = (uint32_t)heap_record_emit(
             g32(0x801e3cfc), 0x801c4588u, g32(0x801c47b8), 0,
             0, &sp4c, g8(0x801b49a4u + (uint32_t)a1v), 0, 0);
         BR2_W32(0x801c47b8, r);
-        *(int16_t *)(s5 + 0x14) = (int16_t)sp4c;
+        *(int16_t *)(img + 0x14) = (int16_t)sp4c;
       }
     }
 
@@ -6852,8 +6852,8 @@ init:
     {
       uint8_t *blk_arr = (uint8_t *)guest_at(0x801c46c8);
       dims = (uint8_t *)guest_at(0x801b1524u + (uint32_t)a1v * 8);
-      *(int16_t *)(s5 + 0x1c) = 5;
-      *(uint32_t *)(s5 + 0x18) = 0x801c46c8u;
+      *(int16_t *)(img + 0x1c) = 5;
+      *(uint32_t *)(img + 0x18) = 0x801c46c8u;
       if (a1v < 9) {
         uw = *(uint16_t *)(dims + 4);
         uh = *(uint16_t *)(dims + 6);
@@ -8800,100 +8800,100 @@ static int32_t guard_tri_emit(uint32_t a0,uint32_t a1,uint32_t a2,
                               uint32_t tag,uint32_t o1,uint32_t o2,
                               uint32_t o3,uint32_t recsz,int fixed)
 {
-  uint32_t s0,s1,s2,s3,s4,s6,s7,t1,t5,va0 = 0,va1 = 0;
-  int32_t  s5,i0,i1,i2,t1s,mac0;
-  uint32_t p;
+  uint32_t ot_cur,vtab,istr,fstr,ot2,flags,slot,tmp,old_tag,dreg0 = 0,dreg1 = 0;
+  int32_t  cnt,vidx0,vidx1,vidx2,depth,mac;
+  uint32_t vtx;
   int first = 1;
 
   guard_ctx_save();
   a1 <<= 2;
-  s0 = *(uint32_t *)guest_at(a1 + a2);
-  s4 = *(uint32_t *)guest_at(a1 + a2 + 8);
-  s1 = *(uint32_t *)guest_at(a2 + 0x10);
-  s2 = *(uint32_t *)guest_at(a2 + 0x18);
-  s3 = *(uint32_t *)guest_at(a2 + 0x24);
-  s5 = (int32_t)*(int16_t *)guest_at(a2 + 0x30);
+  ot_cur = *(uint32_t *)guest_at(a1 + a2);
+  ot2 = *(uint32_t *)guest_at(a1 + a2 + 8);
+  vtab = *(uint32_t *)guest_at(a2 + 0x10);
+  istr = *(uint32_t *)guest_at(a2 + 0x18);
+  fstr = *(uint32_t *)guest_at(a2 + 0x24);
+  cnt = (int32_t)*(int16_t *)guest_at(a2 + 0x30);
 
   /* pre-loop: first index triple -> V0,V1,V2 (GTE regs 0-5).
    * word0 = idx0|idx1<<16 (u16, zero-extended); word1's low s16 = idx2
    * (sign-extended lh). */
   {
-    uint32_t w = *(uint32_t *)guest_at(s2);
-    i0 = (int32_t)(w & 0xffffu);
-    i1 = (int32_t)(w >> 16);
-    i2 = (int32_t)*(int16_t *)guest_at(s2 + 4);
-    p = s1 + ((uint32_t)i0 << 3);
-    guard_lwc2(p,0); guard_lwc2(p + 4,1);
-    p = s1 + ((uint32_t)i1 << 3);
-    guard_lwc2(p,2); guard_lwc2(p + 4,3);
-    p = (uint32_t)s1 + ((uint32_t)i2 << 3);
-    guard_lwc2(p,4); guard_lwc2(p + 4,5);
+    uint32_t w = *(uint32_t *)guest_at(istr);
+    vidx0 = (int32_t)(w & 0xffffu);
+    vidx1 = (int32_t)(w >> 16);
+    vidx2 = (int32_t)*(int16_t *)guest_at(istr + 4);
+    vtx = vtab + ((uint32_t)vidx0 << 3);
+    guard_lwc2(vtx,0); guard_lwc2(vtx + 4,1);
+    vtx = vtab + ((uint32_t)vidx1 << 3);
+    guard_lwc2(vtx,2); guard_lwc2(vtx + 4,3);
+    vtx = (uint32_t)vtab + ((uint32_t)vidx2 << 3);
+    guard_lwc2(vtx,4); guard_lwc2(vtx + 4,5);
   }
 
-  s5 -= 1;
-  if (s5 > 0) s2 += 6; else s2 -= 6;   /* bgtz/j delay slots */
+  cnt -= 1;
+  if (cnt > 0) istr += 6; else istr -= 6;   /* bgtz/j delay slots */
 
   for (;;) {
     /* loop-back target 0x..84: mtc2 the saved a1/a2 pair into V0 —
      * skipped on the first iteration (V0 keeps the pre-loop lwc2). */
     if (!first) {
-      setCopReg(2, GTE_DREG(0), va0);
-      setCopReg(2, GTE_DREG(1), va1);
+      setCopReg(2, GTE_DREG(0), dreg0);
+      setCopReg(2, GTE_DREG(1), dreg1);
     }
     first = 0;
-    s5 -= 1;
+    cnt -= 1;
     copFunction(2, 0x0280030);              /* RTPT */
     /* current triple: idx0 pair -> next-iteration V0 (GPRs), idx1/idx2
      * -> V1/V2 via lwc2. All three indices are lh (sign-extended). */
-    i0 = (int32_t)*(int16_t *)guest_at((uint32_t)s2);
-    i1 = (int32_t)*(int16_t *)guest_at((uint32_t)s2 + 2);
-    i2 = (int32_t)*(int16_t *)guest_at(s2 + 4);
-    p = s1 + ((uint32_t)i0 << 3);
-    va0 = *(uint32_t *)guest_at(p);
-    va1 = *(uint32_t *)guest_at(p + 4);
-    p = s1 + ((uint32_t)i1 << 3);
-    guard_lwc2(p,2); guard_lwc2(p + 4,3);
-    t1 = (uint32_t)getCopReg(2, GTE_DREG(19));   /* SZ3 */
+    vidx0 = (int32_t)*(int16_t *)guest_at((uint32_t)istr);
+    vidx1 = (int32_t)*(int16_t *)guest_at((uint32_t)istr + 2);
+    vidx2 = (int32_t)*(int16_t *)guest_at(istr + 4);
+    vtx = vtab + ((uint32_t)vidx0 << 3);
+    dreg0 = *(uint32_t *)guest_at(vtx);
+    dreg1 = *(uint32_t *)guest_at(vtx + 4);
+    vtx = vtab + ((uint32_t)vidx1 << 3);
+    guard_lwc2(vtx,2); guard_lwc2(vtx + 4,3);
+    tmp = (uint32_t)getCopReg(2, GTE_DREG(19));   /* SZ3 */
     copFunction(2, 0x0400006);              /* NCLIP */
-    t1s = (int32_t)t1 >> 2;                 /* sra — value <= 0xffff */
-    p = (uint32_t)s1 + ((uint32_t)i2 << 3);
-    guard_lwc2(p,4); guard_lwc2(p + 4,5);
-    guard_swc2(s0 + o1,12);
-    guard_swc2(s0 + o2,13);
-    guard_swc2(s0 + o3,14);
-    mac0 = (int32_t)getCopReg(2, GTE_DREG(24));  /* MAC0 */
-    s6 = (uint32_t)*(int16_t *)guest_at(s3);   /* lh — sign-extended flags word */
+    depth = (int32_t)tmp >> 2;                 /* sra — value <= 0xffff */
+    vtx = (uint32_t)vtab + ((uint32_t)vidx2 << 3);
+    guard_lwc2(vtx,4); guard_lwc2(vtx + 4,5);
+    guard_swc2(ot_cur + o1,12);
+    guard_swc2(ot_cur + o2,13);
+    guard_swc2(ot_cur + o3,14);
+    mac = (int32_t)getCopReg(2, GTE_DREG(24));  /* MAC0 */
+    flags = (uint32_t)*(int16_t *)guest_at(fstr);   /* lh — sign-extended flags word */
     /* bgez MAC0 -> insert path; else require flags&0x200. */
-    if (mac0 >= 0 || (s6 & 0x200) != 0) {
+    if (mac >= 0 || (flags & 0x200) != 0) {
       if (fixed) {
-        guard_ot_fixed(a0,s0,s4,s6,tag,&s4);
+        guard_ot_fixed(a0,ot_cur,ot2,flags,tag,&ot2);
       } else {
-        s7 = a0 + ((uint32_t)t1s << 2);
-        if (t1s >= 10) {
-          t5 = *(uint32_t *)guest_at(s7);
-          if (t1s < 0x800) {
-            *(uint32_t *)guest_at(s0) = tag | t5;
-            t1 = s0 & 0xffffffu;
-            *(uint32_t *)guest_at(s7) = t1;
-            if ((s6 & 0x100) != 0) {
-              *(uint32_t *)guest_at(s4) = 0x1000000u | t1;
-              t1 = s4 & 0xffffffu;
-              *(uint32_t *)guest_at(s7) = t1;
-              s4 += 8;
+        slot = a0 + ((uint32_t)depth << 2);
+        if (depth >= 10) {
+          old_tag = *(uint32_t *)guest_at(slot);
+          if (depth < 0x800) {
+            *(uint32_t *)guest_at(ot_cur) = tag | old_tag;
+            tmp = ot_cur & 0xffffffu;
+            *(uint32_t *)guest_at(slot) = tmp;
+            if ((flags & 0x100) != 0) {
+              *(uint32_t *)guest_at(ot2) = 0x1000000u | tmp;
+              tmp = ot2 & 0xffffffu;
+              *(uint32_t *)guest_at(slot) = tmp;
+              ot2 += 8;
             }
           }
         }
       }
     }
-    /* tail: s0+=recsz, s2+=6, s3+=2 (bgtz delay — always), then
-     * s5>0 -> next; s5<=0 -> s2-=6 (bgez delay — always) and s5==0 ->
+    /* tail: ot_cur+=recsz, istr+=6, fstr+=2 (bgtz delay — always), then
+     * cnt>0 -> next; cnt<=0 -> istr-=6 (bgez delay — always) and cnt==0 ->
      * one final pass over the same triple, else exit. */
-    s0 += recsz;
-    s2 += 6;
-    s3 += 2;
-    if (s5 > 0) continue;
-    s2 -= 6;
-    if (s5 >= 0) continue;
+    ot_cur += recsz;
+    istr += 6;
+    fstr += 2;
+    if (cnt > 0) continue;
+    istr -= 6;
+    if (cnt >= 0) continue;
     break;
   }
   return 0x00ffffff;   /* guest v0 = the 0xffffff mask constant */
