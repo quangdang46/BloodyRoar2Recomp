@@ -8996,27 +8996,27 @@ LAB_801373c0:
 
 int task_alloc_wrap_c(undefined4 a0,undefined4 a1,int a2,undefined4 a3)
 {
-  int iVar1;
-  undefined4 *puVar2;
-  iVar1 = (int)(intptr_t)task_node_alloc(1,2,6,0x80137680,0,0x1c);
-  if (iVar1 != 0) {
-    puVar2 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0x10))));
-    *puVar2 = a0;
-    puVar2[1] = a1;
-    puVar2[2] = a2;
-    puVar2[3] = a3;
-    puVar2[4] = a2 + -4;
-    puVar2[5] = 0;
-    puVar2[6] = 0;
+  int node;
+  undefined4 *pay;
+  node = (int)(intptr_t)task_node_alloc(1,2,6,0x80137680,0,0x1c);
+  if (node != 0) {
+    pay = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((node + 0x10))));
+    *pay = a0;
+    pay[1] = a1;
+    pay[2] = a2;
+    pay[3] = a3;
+    pay[4] = a2 + -4;
+    pay[5] = 0;
+    pay[6] = 0;
   }
-  return iVar1;
+  return node;
 
 }
 
 int task_alloc_wrap_d(undefined4 a0,undefined4 a1,undefined4 a2,undefined4 a3,int arg5)
 {
-  int iVar1;
-  undefined4 *puVar2;
+  int node;
+  undefined4 *pay;
   /* creation-time arg latch: the dest-ptr args must be real guest addrs
    * (>=0x80100000). Recording them lets freeze_check tell a bad br2_gaddr /
    * puVar14 at alloc apart from the stream state being overwritten later. */
@@ -9032,86 +9032,86 @@ int task_alloc_wrap_d(undefined4 a0,undefined4 a1,undefined4 a2,undefined4 a3,in
       g_wd_bad_count++; g_wd_bad_node=(uint32_t)(uintptr_t)a3;
     }
   }
-  iVar1 = (int)(intptr_t)task_node_alloc(1,2,6,0x80137824,0,0x1c);
-  if (iVar1 != 0) {
-    puVar2 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0x10))));
-    *puVar2 = a0;
-    puVar2[1] = a1;
-    puVar2[2] = a2;
-    puVar2[3] = a3;
-    puVar2[4] = arg5;
-    puVar2[5] = arg5 + -4;
-    *(undefined2 *)(puVar2 + 6) = 0;
-    *(undefined2 *)((intptr_t)puVar2 + 0x1a) = 0;
+  node = (int)(intptr_t)task_node_alloc(1,2,6,0x80137824,0,0x1c);
+  if (node != 0) {
+    pay = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((node + 0x10))));
+    *pay = a0;
+    pay[1] = a1;
+    pay[2] = a2;
+    pay[3] = a3;
+    pay[4] = arg5;
+    pay[5] = arg5 + -4;
+    *(undefined2 *)(pay + 6) = 0;
+    *(undefined2 *)((intptr_t)pay + 0x1a) = 0;
   }
-  return iVar1;
+  return node;
 
 }
 
 int task_alloc_wrap_e(int a0,int a1,int a2)
 {
-  int iVar1;
-  int *piVar2;
+  int res;
+  int *pay;
   { extern uint32_t g_wrape_calls,g_wrape_last_ret,g_wrape_p1,g_wrape_p2,g_wrape_p3;
     g_wrape_calls++; g_wrape_p1=(uint32_t)a0;
     g_wrape_p2=(uint32_t)a1; g_wrape_p3=(uint32_t)a2; }
-  iVar1 = (int)(intptr_t)task_node_alloc(1,2,6,0x80137acc,0,a0 + 0x14);
-  if (iVar1 == 0) {
-    iVar1 = 0;
+  res = (int)(intptr_t)task_node_alloc(1,2,6,0x80137acc,0,a0 + 0x14);
+  if (res == 0) {
+    res = 0;
     { extern uint32_t g_wrape_last_ret; g_wrape_last_ret = 0; }
   }
   else {
-    { extern uint32_t g_wrape_last_ret; g_wrape_last_ret = (uint32_t)iVar1; }
-    piVar2 = (int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0x10))));
-    piVar2[1] = a2;
-    piVar2[2] = a2;
-    piVar2[4] = 0;
-    piVar2[3] = a1;
-    iVar1 = *(int *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0x10) ))+ 0x14;
-    *piVar2 = iVar1;
+    { extern uint32_t g_wrape_last_ret; g_wrape_last_ret = (uint32_t)res; }
+    pay = (int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((res + 0x10))));
+    pay[1] = a2;
+    pay[2] = a2;
+    pay[4] = 0;
+    pay[3] = a1;
+    res = *(int *)guest_at((uint32_t)(uintptr_t)((res + 0x10) ))+ 0x14;
+    *pay = res;
   }
-  return iVar1;
+  return res;
 
 }
 
 int task_alloc_wrap_f(undefined4 a0,undefined4 a1,undefined4 a2,int a3)
 {
   short sVar1;
-  int iVar2;
-  undefined4 *puVar3;
-  iVar2 = (int)(intptr_t)task_node_alloc(1,2,6,0x80137cd0,0,0x18);
-  if (iVar2 != 0) {
-    puVar3 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x10))));
-    *puVar3 = a0;
-    puVar3[1] = a1;
-    puVar3[2] = a2;
-    puVar3[3] = a3;
-    puVar3[4] = a3;
+  int node;
+  undefined4 *pay;
+  node = (int)(intptr_t)task_node_alloc(1,2,6,0x80137cd0,0,0x18);
+  if (node != 0) {
+    pay = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((node + 0x10))));
+    *pay = a0;
+    pay[1] = a1;
+    pay[2] = a2;
+    pay[3] = a3;
+    pay[4] = a3;
     sVar1 = *(short *)guest_at((uint32_t)(uintptr_t)((a3 + 2)));
-    *(undefined2 *)((intptr_t)puVar3 + 0x16) = 0;
-    *(short *)(puVar3 + 5) = sVar1 + 1;
+    *(undefined2 *)((intptr_t)pay + 0x16) = 0;
+    *(short *)(pay + 5) = sVar1 + 1;
   }
-  return iVar2;
+  return node;
 
 }
 
 void slot_triple_tick(int *slot)
 {
-  short sVar1;
-  short *psVar2;
-  int iVar3;
-  psVar2 = (short *)guest_at((uint32_t)(uintptr_t)(slot[1]));
-  slot_triple_set((short)slot[2] + 1,(int)*psVar2,(int)psVar2[1],(int)psVar2[2]);
-  sVar1 = (short)slot[3] + 1;
-  *(short *)(slot + 3) = sVar1;
-  if (sVar1 < *(short *)((intptr_t)slot + 10)) {
-    iVar3 = slot[1] + 6;
+  short cnt;
+  short *tp;
+  int npc;
+  tp = (short *)guest_at((uint32_t)(uintptr_t)(slot[1]));
+  slot_triple_set((short)slot[2] + 1,(int)*tp,(int)tp[1],(int)tp[2]);
+  cnt = (short)slot[3] + 1;
+  *(short *)(slot + 3) = cnt;
+  if (cnt < *(short *)((intptr_t)slot + 10)) {
+    npc = slot[1] + 6;
   }
   else {
-    iVar3 = *slot;
+    npc = *slot;
     *(undefined2 *)(slot + 3) = 0;
   }
-  slot[1] = iVar3;
+  slot[1] = npc;
   if (_DAT_1f800082 == 0) {
     *(short *)((intptr_t)slot + 0xe) = *(short *)((intptr_t)slot + 0xe) + -1;
   }
@@ -9126,7 +9126,7 @@ void slot_triple_tick(int *slot)
 
 void xform_accum_tick(undefined4 *rec)
 {
-  short sVar1;
+  short cnt;
   _DAT_1f8003f8 = *rec;
   _DAT_1f8003fc = rec[1];
   gte_xform_accum((short *)(uintptr_t)&DAT_1f8003f8,(uint *)(uintptr_t)(rec + 2),1,(int)*(short *)(rec + 4));
@@ -9136,10 +9136,10 @@ void xform_accum_tick(undefined4 *rec)
     _DAT_801f0748 = 0;
   }
   else if (((_DAT_1f800082 == 0) &&
-           (sVar1 = *(short *)((intptr_t)rec + 0x12) + 1, *(short *)((intptr_t)rec + 0x12) = sVar1,
-           10 < sVar1)) &&
-          (sVar1 = *(short *)(rec + 4), *(ushort *)(rec + 4) = sVar1 - 0x88U,
-          (int)((uint)(ushort)(sVar1 - 0x88U) << 0x10) < 0)) {
+           (cnt = *(short *)((intptr_t)rec + 0x12) + 1, *(short *)((intptr_t)rec + 0x12) = cnt,
+           10 < cnt)) &&
+          (cnt = *(short *)(rec + 4), *(ushort *)(rec + 4) = cnt - 0x88U,
+          (int)((uint)(ushort)(cnt - 0x88U) << 0x10) < 0)) {
     *(undefined2 *)(rec + 4) = 0;
   }
   return;
