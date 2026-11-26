@@ -1716,6 +1716,7 @@
 80183664 scriptop_wait
 80183bd0 scriptop_sflag
 80183c30 scriptop_chk
+80183d0c scriptop_chk_state_bits
 80184378 scriptop_cmp
 8018444c scriptop_move
 80184aa0 scriptop_gpad

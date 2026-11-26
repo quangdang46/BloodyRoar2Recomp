@@ -4595,3 +4595,21 @@
 8012a93c cps_8012a92c
 801298f8 cps_801298f8
 801268b8 cps_801268b8
+
+# scriptop_chk_state_bits (game/w2_e08.c) — scriptop_chk cond cases 2-9
+# (state-word bit tests at ctrl+0x58) + shared mask/xor tails and the
+# shared `jr $ra` epilogue. Entries 0x80183D0C-0x80183DA8 plus CPS
+# resume PCs 0x80183D50/0x80183DB0/0x80183DBC/0x80183FE4/0x80184358.
+80183d0c scriptop_chk_state_bits
+80183d24 scriptop_chk_state_bits
+80183d3c scriptop_chk_state_bits
+80183d48 scriptop_chk_state_bits
+80183d50 scriptop_chk_state_bits
+80183d64 scriptop_chk_state_bits
+80183d80 scriptop_chk_state_bits
+80183d9c scriptop_chk_state_bits
+80183da8 scriptop_chk_state_bits
+80183db0 scriptop_chk_state_bits
+80183dbc scriptop_chk_state_bits
+80183fe4 scriptop_chk_state_bits
+80184358 scriptop_chk_state_bits
