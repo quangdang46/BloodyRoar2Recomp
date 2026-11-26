@@ -229,6 +229,10 @@ void hud_score_draw_alt(void)
     }
     /* Address: 0x80163E38, Size: 2096 bytes, Blocks: 68 */
 
+    /* Phase 1 — prologue + time decompose: *(fp+8) ticks ->
+     * min/sec.cent fields via magic-multiply division (0x51EB851F,
+     * 0x88888889), clamped to 99:59 at block_80163F04. Args a0..a3
+     * and stack arg saved to s4..s7/s3 for the draw phases. */
 block_80163E38:
     sp = sp + -96;
     cpu->write_word(sp + 88, fp);
@@ -300,6 +304,8 @@ block_80163F04:
     s1 = 59;
     /* fall through to block_80163F10 */
 
+    /* sprintf_core_guest(sp+24, fmt@0x80121FA8, s2, s1, s0) —
+     * format the decomposed time into the stack string buffer. */
 block_80163F10:
     a0 = sp + 24;
     a1 = 0x8012 << 16;  /* 0x80120000 */
@@ -312,6 +318,8 @@ block_80163F10:
     psx_check_interrupts_at(cpu, 0x8018EF60u);
     cpu->pc = 0x8018EF60u; return;  /* CPS jal -> 0x8018EF60 */
 
+    /* Phase 2 — screen position: fp+12/fp+14 halfwords scaled by
+     * 0x10624DD3 fixed-point, then jr v0 computed-goto dispatch. */
 block_80163F2C:
     v1 = 0x1062 << 16;  /* 0x10620000 */
     v0 = cpu->read_half(fp + 12);
@@ -363,6 +371,7 @@ block_80163F2C:
         goto block_80163FC0;  /* not taken */
     }
 
+    /* jr v0 — indirect dispatch into the per-field draw chain. */
 block_80163FC0:
     v0 = 0x8012 << 16;  /* 0x80120000 */
     v0 = v0 + 8172;
@@ -436,6 +445,7 @@ block_80164068:
     psx_check_interrupts_at(cpu, 0x80164638u);
     goto block_80164638;  /* j */
 
+    /* sprintf_core_guest(sp+24, fmt@0x80121FB8, ...) — field 2. */
 block_80164070:
     a0 = sp + 24;
     a1 = 0x8012 << 16;  /* 0x80120000 */
@@ -448,6 +458,7 @@ block_80164070:
     psx_check_interrupts_at(cpu, 0x8018EF60u);
     cpu->pc = 0x8018EF60u; return;  /* CPS jal -> 0x8018EF60 */
 
+    /* print_dispatch_guest — emit formatted field text. */
 block_8016408C:
     a0 = 0x8012 << 16;  /* 0x80120000 */
     a0 = a0 + 8136;
@@ -509,6 +520,7 @@ block_80164108:
     psx_check_interrupts_at(cpu, 0x80164638u);
     goto block_80164638;  /* j */
 
+    /* print_dispatch_guest — emit formatted field text. */
 block_80164110:
     a0 = 0x8012 << 16;  /* 0x80120000 */
     a0 = a0 + 8148;
@@ -527,6 +539,7 @@ block_80164124:
     psx_check_interrupts_at(cpu, 0x801513FCu);
     cpu->pc = 0x801513FCu; return;  /* CPS jal -> 0x801513FC */
 
+    /* print_dispatch_guest — emit formatted field text. */
 block_80164130:
     ra = 0x80164138u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -540,6 +553,7 @@ block_80164138:
     psx_check_interrupts_at(cpu, 0x80164638u);
     goto block_80164638;  /* j */
 
+    /* sprintf_core_guest(sp+24, fmt@0x80121FE0, ...) — field 3. */
 block_80164140:
     a0 = sp + 24;
     a1 = 0x8012 << 16;  /* 0x80120000 */
@@ -628,6 +642,7 @@ block_80164210:
     psx_check_interrupts_at(cpu, 0x80164638u);
     goto block_80164638;  /* j */
 
+    /* sprintf_core_guest(sp+24, fmt@0x80121FE0, ...) — field 4. */
 block_80164218:
     a0 = sp + 24;
     a1 = 0x8012 << 16;  /* 0x80120000 */
@@ -719,6 +734,7 @@ block_801642F4:
     psx_check_interrupts_at(cpu, 0x80164638u);
     goto block_80164638;  /* j */
 
+    /* sprintf_core_guest(sp+24, fmt@0x80121FE0, ...) — field 5. */
 block_801642FC:
     a0 = sp + 24;
     a1 = 0x8012 << 16;  /* 0x80120000 */
@@ -879,6 +895,7 @@ block_80164458:
     psx_check_interrupts_at(cpu, 0x8016457Cu);
     goto block_8016457C;  /* j */
 
+    /* sprintf_core_guest(sp+24, fmt@0x80121FE0, ...) — field 6. */
 block_8016446C:
     a0 = sp + 24;
     a1 = 0x8012 << 16;  /* 0x80120000 */
@@ -1001,6 +1018,7 @@ block_8016456C:
     a2 = t0;
     /* fall through to block_8016457C */
 
+    /* sprintf_core_guest(sp+24, fmt@0x80121FE0, ...) — field 7. */
 block_8016457C:
     ra = 0x80164584u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -1081,6 +1099,7 @@ block_80164610:
     psx_check_interrupts_at(cpu, 0x8012E58Cu);
     cpu->pc = 0x8012E58Cu; return;  /* CPS jal -> 0x8012E58C */
 
+    /* Epilogue — restore s0..s7/fp/ra, return. */
 block_80164638:
     ra = cpu->read_word(sp + 92);
     fp = cpu->read_word(sp + 88);
