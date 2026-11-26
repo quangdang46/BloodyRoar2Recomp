@@ -15115,65 +15115,65 @@ extern void ring_effect_task_update();
 extern void firework_task_update(int);
 
 /* guest popup_spawn @0x8013ab8c */
-void popup_spawn(int a0,uint a1,uint a2)
+void popup_spawn(int ent,uint id,uint arg)
 
 {
-  int iVar1;
-  int *piVar2;
-  undefined1 *puVar3;
-  int iVar4;
-  int *piVar5;
-  int iVar6;
-  int iVar7;
+  int tmp2;
+  int *src;
+  undefined1 *slot;
+  int tmp;
+  int *pay;
+  int f2;
+  int f3;
   
-  iVar4 = 0;
-  puVar3 = &DAT_1f8000e8;
-  while (((*(uint *)(puVar3 + 0x58) & 0xc0000000) == 0 || (puVar3[5] != '\0'))) {
-    iVar4 = iVar4 + 1;
-    puVar3 = puVar3 + 0x108;
-    if (1 < iVar4) {
-      iVar1 = (int)(uintptr_t)task_node_alloc(1,2,10,0x8013a9d8,0,0x1c);
-      iVar4 = _DAT_801c4578;
-      if (iVar1 != 0) {
-        piVar5 = (int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0x10))));
-        iVar1 = 0;
-        if (DAT_1f8000eb == a1) {
-          iVar1 = _DAT_801c4494;
+  tmp = 0;
+  slot = &DAT_1f8000e8;
+  while (((*(uint *)(slot + 0x58) & 0xc0000000) == 0 || (slot[5] != '\0'))) {
+    tmp = tmp + 1;
+    slot = slot + 0x108;
+    if (1 < tmp) {
+      tmp2 = (int)(uintptr_t)task_node_alloc(1,2,10,0x8013a9d8,0,0x1c);
+      tmp = _DAT_801c4578;
+      if (tmp2 != 0) {
+        pay = (int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((tmp2 + 0x10))));
+        tmp2 = 0;
+        if (DAT_1f8000eb == id) {
+          tmp2 = _DAT_801c4494;
         }
-        if (DAT_1f8001f3 == a1) {
-          iVar1 = _DAT_801c44e4;
+        if (DAT_1f8001f3 == id) {
+          tmp2 = _DAT_801c44e4;
         }
-        if (iVar1 == 0) {
+        if (tmp2 == 0) {
           task_node_free(0);
         }
         else {
-          piVar2 = (int *)guest_at((uint32_t)(uintptr_t)(((a2 & 0x7f) * 0x18 + iVar1)));
-          *piVar5 = a0;
-          iVar1 = piVar2[1];
-          iVar6 = piVar2[2];
-          iVar7 = piVar2[3];
-          piVar5[1] = *piVar2;
-          piVar5[2] = iVar1;
-          piVar5[3] = iVar6;
-          piVar5[4] = iVar7;
-          iVar1 = piVar2[5];
-          piVar5[5] = piVar2[4];
-          piVar5[6] = iVar1;
-          *(undefined2 *)((intptr_t)piVar5 + 6) = 0;
-          if (((iVar4 == 0) || (iVar4 == 3)) && (0x2d < (short)piVar5[3])) {
-            *(undefined2 *)(piVar5 + 3) = 0x2d;
+          src = (int *)guest_at((uint32_t)(uintptr_t)(((arg & 0x7f) * 0x18 + tmp2)));
+          *pay = ent;
+          tmp2 = src[1];
+          f2 = src[2];
+          f3 = src[3];
+          pay[1] = *src;
+          pay[2] = tmp2;
+          pay[3] = f2;
+          pay[4] = f3;
+          tmp2 = src[5];
+          pay[5] = src[4];
+          pay[6] = tmp2;
+          *(undefined2 *)((intptr_t)pay + 6) = 0;
+          if (((tmp == 0) || (tmp == 3)) && (0x2d < (short)pay[3])) {
+            *(undefined2 *)(pay + 3) = 0x2d;
           }
-          if (400 < (short)piVar5[6]) {
-            *(undefined2 *)(piVar5 + 6) = 400;
+          if (400 < (short)pay[6]) {
+            *(undefined2 *)(pay + 6) = 400;
           }
-          if ((*(char *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((*piVar5 + 0x38) ))+ 0x100) ))!= '\0') &&
-             (*(ushort *)((intptr_t)piVar5 + 10) =
-                   (ushort)(byte)(&DAT_801b180c)[*(short *)((intptr_t)piVar5 + 10)],
-             (a2 & 0x80) != 0)) {
-            *(short *)(piVar5 + 4) = 0x1000 - (short)piVar5[4];
+          if ((*(char *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((*pay + 0x38) ))+ 0x100) ))!= '\0') &&
+             (*(ushort *)((intptr_t)pay + 10) =
+                   (ushort)(byte)(&DAT_801b180c)[*(short *)((intptr_t)pay + 10)],
+             (arg & 0x80) != 0)) {
+            *(short *)(pay + 4) = 0x1000 - (short)pay[4];
           }
-          *(short *)(piVar5 + 5) = (short)piVar5[5] + -0x400;
-          *(short *)(piVar5 + 4) = (short)piVar5[4] + -0x400;
+          *(short *)(pay + 5) = (short)pay[5] + -0x400;
+          *(short *)(pay + 4) = (short)pay[4] + -0x400;
         }
       }
       return;
