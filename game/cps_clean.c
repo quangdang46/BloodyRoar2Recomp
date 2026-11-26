@@ -10162,6 +10162,9 @@ void cps_8012a00c(void)
     }
     /* Address: 0x8012A00C, Size: 36 bytes, Blocks: 2 */
 
+    /* byte-copy loop: byte[v1=a0+a2]=byte[a0+a1], a0++ while
+       a0<256; then jr ra. CPS-blocked. */
+
 block_8012A00C:
     v0 = a0 + a1;
     v0 = cpu->read_byte(v0);
@@ -10261,6 +10264,11 @@ void cps_8012a144(void)
 
     /* Address: 0x8012A144, Size: 160 bytes, Blocks: 1 */
 
+    /* OAM/sprite attr triple init: v1=v1-31816 base; writes
+       halfword field pairs (s3,s2,s3+255,s2+9/14/15...) at
+       v1+8..22, a1+8..22, a0+8..22 and byte tags 40/200; ->
+       0x8012A1E4. CPS-blocked. */
+
 block_8012A144:
     v1 = v1 + -31816;
     a2 = s3 + 255;
@@ -10322,6 +10330,11 @@ void cps_8012a1e4(void)
         }
     }
     /* Address: 0x8012A1E4, Size: 160 bytes, Blocks: 4 */
+
+    /* sprite-attr finish + loop: byte[a1+6]=0, byte[a0+4..6];
+       loop s1<6: jal 0x80194160(s0), s0+=16; then writes 6 halfword
+       pairs at 0x801E8348.. (s3+250/200/150/100/50 ladder); ->
+       0x8012A284. CPS-blocked. */
 
 block_8012A1E4:
     cpu->write_byte(a1 + 6, (uint8_t)zero);
@@ -10393,6 +10406,10 @@ void cps_8012a284(void)
 
     /* Address: 0x8012A284, Size: 136 bytes, Blocks: 1 */
 
+    /* sprite-attr tail: halfword writes + byte tags 0/64/255
+       across v0/a3/a2/a1/a0/v1 blocks; epilogue (sp += 40).
+       CPS-blocked. */
+
 block_8012A284:
     v1 = v0 + 80;
     cpu->write_half(a0 + 10, (uint16_t)s2);
@@ -10441,6 +10458,11 @@ void cps_8012a328(void)
   if (!cpu) return;
 
     /* Address: 0x8012A328, Size: 160 bytes, Blocks: 1 */
+
+    /* GPU packet chain emit: halfword pair sums ->
+       half[a1-24 +/-]; then 6x pattern: word[cmdptr]|0x03000000 ->
+       v1-16/-32/-48/-64/-80 slots, cmdptr=v1-16<<8>>8; ->
+       0x8012A3C8. CPS-blocked. */
 
 block_8012A328:
     cpu->write_half(a1 + 20, (uint16_t)v0);
@@ -10494,6 +10516,9 @@ void cps_8012a3c8(void)
   if (!cpu) return;
 
     /* Address: 0x8012A3C8, Size: 168 bytes, Blocks: 1 */
+
+    /* GPU packet chain emit cont.: -64/-80 + t2-31848 slots,
+       0x05000000 tag at a3-31768; -> 0x8012A470. CPS-blocked. */
 
 block_8012A3C8:
     v0 = (uint32_t)v0 >> 8;
@@ -10593,6 +10618,11 @@ void cps_8012a514(void)
     }
     /* Address: 0x8012A514, Size: 164 bytes, Blocks: 6 */
 
+    /* object spawn wrapper: save regs; s2=word[0x1F800004];
+       jal 0x8012A4B4 -> s0=v0; if nonzero: a0=s0*24+8408+s2,
+       half[0x1F8000D2]=s0, pack s3-s6 halfwords at sp+16, jal
+       0x80194180; v0=s0; epilogue. CPS-blocked. */
+
 block_8012A514:
     s4 = a1;
     cpu->write_word(sp + 44, s5);
@@ -10685,6 +10715,11 @@ void cps_8012a5bc(void)
         }
     }
     /* Address: 0x8012A5BC, Size: 148 bytes, Blocks: 5 */
+
+    /* slot alloc + register: jal 0x8012A4DC -> v0; if nonzero:
+       half[0x801C4530+v0*8]=s0..s3, half[0x1F8000D0]=v0,
+       word[0x801BEF38+(v0-1)*4]=ret addr arg; epilogue.
+       CPS-blocked. */
 
 block_8012A5BC:
     cpu->write_word(sp + 16, s0);
@@ -10867,6 +10902,9 @@ void cps_8012a6a4(void)
 
     /* Address: 0x8012A6A4, Size: 24 bytes, Blocks: 1 */
 
+    /* status-word compute: v1=~(byte[a0+3]|byte[a0+2]<<8)&
+       0xF9FF; j 0x8012A724. CPS-blocked. */
+
 block_8012A6A4:
     v0 = cpu->read_byte(a0 + 2);
     v1 = cpu->read_byte(a0 + 3);
@@ -10898,6 +10936,10 @@ void cps_8012a6bc(void)
         }
     }
     /* Address: 0x8012A6BC, Size: 84 bytes, Blocks: 6 */
+
+    /* status-word compute extended: same base + range checks
+       byte[a0+6]/[a0+7]&0xFF vs 64/193 -> set bits 0x8000/0x2000/
+       0x1000 in v1; j 0x8012A724. CPS-blocked. */
 
 block_8012A6BC:
     v0 = cpu->read_byte(a0 + 2);
@@ -11158,6 +11200,8 @@ void cps_8012a868(void)
 
     /* Address: 0x8012A868, Size: 28 bytes, Blocks: 1 */
 
+    /* epilogue: v0=s2; pop s0-s2, ra (sp += 32), jr ra */
+
 block_8012A868:
     v0 = s2;
     ra = cpu->read_word(sp + 28);
@@ -11179,6 +11223,9 @@ void cps_8012a918(void)
   if (!cpu) return;
 
     /* Address: 0x8012A918, Size: 20 bytes, Blocks: 1 */
+
+    /* arg preload: a3=half[s1+32], v1=half[s1+34], a1=0,
+       word[sp+20]=v0, word[sp+24]=s0; -> 0x8012A92C. CPS-blocked. */
 
 block_8012A918:
     a3 = (int32_t)(int16_t)cpu->read_half(s1 + 32);
