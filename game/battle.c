@@ -6477,44 +6477,44 @@ undefined4 always_one(int unused)
 
 }
 
-void triple_track_spawn(int param_1,undefined2 param_2,int param_3)
+void triple_track_spawn(int slot,undefined2 val,int kind)
 {
-  undefined2 uVar1;
-  int iVar2;
-  undefined2 *puVar3;
-  undefined4 *puVar4;
+  undefined2 w0;
+  int node;
+  undefined2 *src;
+  undefined4 *rec;
   if (DAT_1f8000b1 == '\0') {
-    if (*(int *)(&DAT_801f0740 + param_1 * 4) != 0) {
-      task_node_free((int *)(uintptr_t)*(int *)(&DAT_801f0740 + param_1 * 4));
+    if (*(int *)(&DAT_801f0740 + slot * 4) != 0) {
+      task_node_free((int *)(uintptr_t)*(int *)(&DAT_801f0740 + slot * 4));
     }
-    iVar2 = (int)(intptr_t)task_node_alloc(1,2,8,0x8013885c,0,0x10);
-    *(int *)(&DAT_801f0740 + param_1 * 4) = iVar2;
-    if (iVar2 != 0) {
-      puVar4 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x10))));
+    node = (int)(intptr_t)task_node_alloc(1,2,8,0x8013885c,0,0x10);
+    *(int *)(&DAT_801f0740 + slot * 4) = node;
+    if (node != 0) {
+      rec = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((node + 0x10))));
       /* Table @0x801b1e8c holds 4-byte GUEST pointers to u16-pair data.
        * g_PTR_DAT_801b1e8c is uint8_t** so [&PTR][i] reads 8 bytes at i*8,
        * folding two guest entries into one bogus host ptr (SIGSEGV
        * 0x801B1DE4801B1DD4). Index as u32 and guest_at() the entry. */
-      puVar3 = (undefined2 *)guest_at(((uint32_t *)&PTR_DAT_801b1e8c)[param_3]);
-      *(undefined2 *)((intptr_t)puVar4 + 0xe) = param_2;
-      *(short *)(puVar4 + 2) = (short)param_1;
-      *(undefined2 *)(puVar4 + 3) = 0;
-      uVar1 = *puVar3;
-      puVar3 = puVar3 + 1;
-      *puVar4 = (undefined4)br2_gaddr(puVar3);
-      puVar4[1] = (undefined4)br2_gaddr(puVar3);
-      *(undefined2 *)((intptr_t)puVar4 + 10) = uVar1;
+      src = (undefined2 *)guest_at(((uint32_t *)&PTR_DAT_801b1e8c)[kind]);
+      *(undefined2 *)((intptr_t)rec + 0xe) = val;
+      *(short *)(rec + 2) = (short)slot;
+      *(undefined2 *)(rec + 3) = 0;
+      w0 = *src;
+      src = src + 1;
+      *rec = (undefined4)br2_gaddr(src);
+      rec[1] = (undefined4)br2_gaddr(src);
+      *(undefined2 *)((intptr_t)rec + 10) = w0;
     }
   }
   return;
 
 }
 
-void xform_accum_spawn(int param_1,int param_2)
+void xform_accum_spawn(int chan,int delta)
 {
-  undefined4 uVar1;
-  short *psVar2;
-  short sVar3;
+  undefined4 m0;
+  short *rec;
+  short d16;
   if (DAT_1f8000b1 != '\0') {
     return;
   }
@@ -6525,43 +6525,43 @@ void xform_accum_spawn(int param_1,int param_2)
   if (_DAT_801f0748 == 0) {
     return;
   }
-  param_2 = param_2 << 8;
-  psVar2 = (short *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((_DAT_801f0748 + 0x10))));
-  psVar2[8] = 0xfff;
-  psVar2[9] = 0;
-  uVar1 = _DAT_1f800320;
-  *(undefined4 *)psVar2 = _DAT_1f80031c;
-  *(undefined4 *)(psVar2 + 2) = uVar1;
-  uVar1 = _DAT_1f800320;
-  *(undefined4 *)(psVar2 + 4) = _DAT_1f80031c;
-  *(undefined4 *)(psVar2 + 6) = uVar1;
-  if (0xfff < param_2) {
-    param_2 = 0xfff;
+  delta = delta << 8;
+  rec = (short *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((_DAT_801f0748 + 0x10))));
+  rec[8] = 0xfff;
+  rec[9] = 0;
+  m0 = _DAT_1f800320;
+  *(undefined4 *)rec = _DAT_1f80031c;
+  *(undefined4 *)(rec + 2) = m0;
+  m0 = _DAT_1f800320;
+  *(undefined4 *)(rec + 4) = _DAT_1f80031c;
+  *(undefined4 *)(rec + 6) = m0;
+  if (0xfff < delta) {
+    delta = 0xfff;
   }
-  sVar3 = (short)param_2;
-  if (param_1 == 1) {
-    psVar2[4] = sVar3;
+  d16 = (short)delta;
+  if (chan == 1) {
+    rec[4] = d16;
     goto LAB_80138c24;
   }
-  if (param_1 < 2) {
-    psVar2[4] = sVar3;
+  if (chan < 2) {
+    rec[4] = d16;
 LAB_80138c1c:
-    psVar2[5] = sVar3;
+    rec[5] = d16;
   }
-  else if (param_1 != 2) {
-    if (param_1 == 3) {
-      psVar2[4] = sVar3;
-      psVar2[5] = sVar3;
+  else if (chan != 2) {
+    if (chan == 3) {
+      rec[4] = d16;
+      rec[5] = d16;
       goto LAB_80138c24;
     }
-    psVar2[4] = sVar3;
+    rec[4] = d16;
     goto LAB_80138c1c;
   }
-  psVar2[6] = sVar3;
+  rec[6] = d16;
 LAB_80138c24:
-  psVar2[4] = psVar2[4] - *psVar2;
-  psVar2[5] = psVar2[5] - psVar2[1];
-  psVar2[6] = psVar2[6] - psVar2[2];
+  rec[4] = rec[4] - *rec;
+  rec[5] = rec[5] - rec[1];
+  rec[6] = rec[6] - rec[2];
   return;
 
 }
@@ -7126,7 +7126,7 @@ void group_fx_spawn(undefined4 param_1,undefined4 param_2,undefined4 param_3,und
 
 }
 
-undefined4 * vec3_step_toward(undefined4 *param_1,short *param_2,short *param_3,short param_4)
+undefined4 * vec3_step_toward(undefined4 *out,short *cur,short *tgt,short step)
 {
   undefined4 uVar1;
   int iVar2;
@@ -7142,37 +7142,37 @@ undefined4 * vec3_step_toward(undefined4 *param_1,short *param_2,short *param_3,
   int local_30 [3];
   undefined4 local_20;
   undefined4 local_1c;
-  local_40[0] = (int)*param_3 - (int)*param_2;
-  local_40[1] = (int)param_3[1] - (int)param_2[1];
-  local_40[2] = (int)param_3[2] - (int)param_2[2];
-  if (param_4 == 0) {
-    param_4 = 1;
+  local_40[0] = (int)*tgt - (int)*cur;
+  local_40[1] = (int)tgt[1] - (int)cur[1];
+  local_40[2] = (int)tgt[2] - (int)cur[2];
+  if (step == 0) {
+    step = 1;
   }
-  iVar5 = (int)param_4;
+  iVar5 = (int)step;
   uVar1 = FUN_80194630((undefined4 *)local_40,(undefined4 *)local_30);
   iVar2 = FUN_80194500(uVar1);
   if (iVar2 < iVar5) {
-    *param_2 = *param_3;
-    param_2[1] = param_3[1];
-    param_2[2] = param_3[2];
+    *cur = *tgt;
+    cur[1] = tgt[1];
+    cur[2] = tgt[2];
   }
   else {
     sVar3 = (short)(local_30[0] * iVar5 >> 0xc);
-    *param_2 = *param_2 + sVar3;
+    *cur = *cur + sVar3;
     sVar4 = (short)(local_30[1] * iVar5 >> 0xc);
     local_20 = CONCAT22(sVar4,sVar3);
-    param_2[1] = param_2[1] + sVar4;
+    cur[1] = cur[1] + sVar4;
     sVar3 = (short)(local_30[2] * iVar5 >> 0xc);
     local_1c = CONCAT22((local_1c >> 16),sVar3);
-    param_2[2] = param_2[2] + sVar3;
+    cur[2] = cur[2] + sVar3;
   }
-  *param_1 = local_20;
-  param_1[1] = local_1c;
-  return param_1;
+  *out = local_20;
+  out[1] = local_1c;
+  return out;
 
 }
 
-undefined4 * vec3_step_toward_spd(undefined4 *param_1,short *param_2,short *param_3,int param_4)
+undefined4 * vec3_step_toward_spd(undefined4 *out,short *cur,short *tgt,int step)
 {
   short sVar1;
   int iVar2;
@@ -7188,9 +7188,9 @@ undefined4 * vec3_step_toward_spd(undefined4 *param_1,short *param_2,short *para
   int local_28 [3] = {0, 0, 0};
   undefined4 local_18;
   undefined4 local_14;
-  local_38[0] = (int)*param_3 - (int)*param_2;
-  local_38[1] = (int)param_3[1] - (int)param_2[1];
-  local_38[2] = (int)param_3[2] - (int)param_2[2];
+  local_38[0] = (int)*tgt - (int)*cur;
+  local_38[1] = (int)tgt[1] - (int)cur[1];
+  local_38[2] = (int)tgt[2] - (int)cur[2];
   iVar2 = FUN_80194630((undefined4 *)local_38,(undefined4 *)local_28);
   if (iVar2 == 0) {
     local_14 = (uint)(local_14 >> 16) << 0x10;
@@ -7198,7 +7198,7 @@ undefined4 * vec3_step_toward_spd(undefined4 *param_1,short *param_2,short *para
   }
   else {
     iVar2 = FUN_80194500((uint)iVar2);
-    uVar3 = (param_4 + 0xc) * 0x10000 >> 0x10;
+    uVar3 = (step + 0xc) * 0x10000 >> 0x10;
     uVar5 = local_28[0] * iVar2 >> (uVar3 & 0x1f);
     uVar4 = (undefined2)(local_28[1] * iVar2 >> (uVar3 & 0x1f));
     local_18 = CONCAT22(uVar4,(short)uVar5);
@@ -7213,17 +7213,17 @@ undefined4 * vec3_step_toward_spd(undefined4 *param_1,short *param_2,short *para
     if ((sVar1 == 0) && (local_28[2] != 0)) {
       local_14 = CONCAT22((local_14 >> 16),1);
     }
-    *param_2 = *param_2 + (short)local_18;
-    param_2[1] = param_2[1] + (local_18 >> 16);
-    param_2[2] = param_2[2] + (short)local_14;
+    *cur = *cur + (short)local_18;
+    cur[1] = cur[1] + (local_18 >> 16);
+    cur[2] = cur[2] + (short)local_14;
   }
-  *param_1 = local_18;
-  param_1[1] = local_14;
-  return param_1;
+  *out = local_18;
+  out[1] = local_14;
+  return out;
 
 }
 
-undefined4 * vec3_step_toward_q(undefined4 *param_1,short *param_2,short *param_3,short param_4)
+undefined4 * vec3_step_toward_q(undefined4 *out,short *cur,short *tgt,short step)
 {
   undefined4 uVar1;
   int iVar2;
@@ -7237,37 +7237,37 @@ undefined4 * vec3_step_toward_q(undefined4 *param_1,short *param_2,short *param_
    * into scalars. local_20[0..2] = old local_20/local_1e/local_1c. */
   undefined4 local_28 [2];
   short local_20 [3];
-  local_28[0] = CONCAT22((short)((param_3[1] - param_2[1]) * 0x10) >> 4,
-                      (short)((*param_3 - *param_2) * 0x10) >> 4);
-  local_28[1] = CONCAT22((local_28[1] >> 16),(short)((param_3[2] - param_2[2]) * 0x10) >> 4);
-  if (param_4 == 0) {
-    param_4 = 1;
+  local_28[0] = CONCAT22((short)((tgt[1] - cur[1]) * 0x10) >> 4,
+                      (short)((*tgt - *cur) * 0x10) >> 4);
+  local_28[1] = CONCAT22((local_28[1] >> 16),(short)((tgt[2] - cur[2]) * 0x10) >> 4);
+  if (step == 0) {
+    step = 1;
   }
-  iVar5 = (int)param_4;
+  iVar5 = (int)step;
   uVar1 = FUN_80194660((undefined2 *)local_28,(undefined2 *)local_20);
   iVar2 = FUN_80194500(uVar1);
   if (iVar5 < iVar2) {
     sVar3 = (short)(local_20[0] * iVar5 >> 0xc);
-    *param_2 = *param_2 + sVar3;
+    *cur = *cur + sVar3;
     sVar4 = (short)(local_20[1] * iVar5 >> 0xc);
     local_28[0] = CONCAT22(sVar4,sVar3);
-    param_2[1] = param_2[1] + sVar4;
+    cur[1] = cur[1] + sVar4;
     sVar3 = (short)(local_20[2] * iVar5 >> 0xc);
     local_28[1] = CONCAT22((local_28[1] >> 16),sVar3);
-    param_2[2] = param_2[2] + sVar3;
+    cur[2] = cur[2] + sVar3;
   }
   else {
-    *param_2 = *param_3;
-    param_2[1] = param_3[1];
-    param_2[2] = param_3[2];
+    *cur = *tgt;
+    cur[1] = tgt[1];
+    cur[2] = tgt[2];
   }
-  *param_1 = local_28[0];
-  param_1[1] = local_28[1];
-  return param_1;
+  *out = local_28[0];
+  out[1] = local_28[1];
+  return out;
 
 }
 
-undefined4 * vec3_step_toward_q_spd(undefined4 *param_1,short *param_2,short *param_3,int param_4)
+undefined4 * vec3_step_toward_q_spd(undefined4 *out,short *cur,short *tgt,int step)
 {
   short sVar1;
   int iVar2;
@@ -7281,9 +7281,9 @@ undefined4 * vec3_step_toward_q_spd(undefined4 *param_1,short *param_2,short *pa
    * local_18/local_16/local_14. */
   undefined4 local_20 [2];
   short local_18 [3];
-  local_20[0] = CONCAT22((short)((param_3[1] - param_2[1]) * 0x10) >> 4,
-                      (short)((*param_3 - *param_2) * 0x10) >> 4);
-  local_20[1] = (local_20[1] & 0xffff0000) | (uint16_t)((short)((param_3[2] - param_2[2]) * 0x10) >> 4);
+  local_20[0] = CONCAT22((short)((tgt[1] - cur[1]) * 0x10) >> 4,
+                      (short)((*tgt - *cur) * 0x10) >> 4);
+  local_20[1] = (local_20[1] & 0xffff0000) | (uint16_t)((short)((tgt[2] - cur[2]) * 0x10) >> 4);
   iVar2 = FUN_80194660((undefined2 *)local_20,(undefined2 *)local_18);
   if (iVar2 == 0) {
     local_20[1] = (uint)(local_20[1] >> 16) << 0x10;
@@ -7291,7 +7291,7 @@ undefined4 * vec3_step_toward_q_spd(undefined4 *param_1,short *param_2,short *pa
   }
   else {
     iVar2 = FUN_80194500((uint)iVar2);
-    uVar3 = (param_4 + 0xc) * 0x10000 >> 0x10;
+    uVar3 = (step + 0xc) * 0x10000 >> 0x10;
     uVar5 = local_18[0] * iVar2 >> (uVar3 & 0x1f);
     uVar4 = (undefined2)(local_18[1] * iVar2 >> (uVar3 & 0x1f));
     local_20[0] = CONCAT22(uVar4,(short)uVar5);
@@ -7306,13 +7306,13 @@ undefined4 * vec3_step_toward_q_spd(undefined4 *param_1,short *param_2,short *pa
     if ((sVar1 == 0) && (local_18[2] != 0)) {
       local_20[1] = CONCAT22((local_20[1] >> 16),1);
     }
-    *param_2 = *param_2 + (short)local_20[0];
-    param_2[1] = param_2[1] + (local_20[0] >> 16);
-    param_2[2] = param_2[2] + (short)local_20[1];
+    *cur = *cur + (short)local_20[0];
+    cur[1] = cur[1] + (local_20[0] >> 16);
+    cur[2] = cur[2] + (short)local_20[1];
   }
-  *param_1 = local_20[0];
-  param_1[1] = local_20[1];
-  return param_1;
+  *out = local_20[0];
+  out[1] = local_20[1];
+  return out;
 
 }
 
@@ -7333,7 +7333,7 @@ undefined1 table_byte_next_b(void)
   return *(undefined1 *)guest_at((uint32_t)(uintptr_t)((bVar1 + 0x801e8400)));
 
 }
-void sprite_strip_draw_dual(int param_1,int param_2,int param_3,int param_4,ushort *param_5,int param_6, int param_7,int param_8)
+void sprite_strip_draw_dual(int out,int cur,int tgt,int step,ushort *param_5,int param_6, int param_7,int param_8)
 {
   ushort *puVar1;
   ushort *puVar2;
@@ -7346,10 +7346,10 @@ void sprite_strip_draw_dual(int param_1,int param_2,int param_3,int param_4,usho
   int local_2c;
   if (param_8 == 1) {
     iVar7 = 0;
-    if (0 < param_4) {
-      param_6 = param_6 * param_3;
+    if (0 < step) {
+      param_6 = param_6 * tgt;
       puVar6 = param_5 + 3;
-      param_7 = param_7 * param_3;
+      param_7 = param_7 * tgt;
       do {
         iVar4 = param_6;
         if (param_6 < 0) {
@@ -7359,7 +7359,7 @@ void sprite_strip_draw_dual(int param_1,int param_2,int param_3,int param_4,usho
         if (param_7 < 0) {
           iVar5 = param_7 + 0xfff;
         }
-        sprite_place_centered(param_1,0x1f800000,(int)(((uint)*param_5 + (iVar4 >> 0xc)) * 0x10000) >> 0x10,
+        sprite_place_centered(out,0x1f800000,(int)(((uint)*param_5 + (iVar4 >> 0xc)) * 0x10000) >> 0x10,
                      (int)(((uint)puVar6[-2] + (iVar5 >> 0xc)) * 0x10000) >> 0x10,
                      (int)(short)puVar6[-1],(int)(short)*puVar6);
         iVar7 = iVar7 + 1;
@@ -7367,20 +7367,20 @@ void sprite_strip_draw_dual(int param_1,int param_2,int param_3,int param_4,usho
         puVar2 = puVar6 + -1;
         uVar3 = *puVar6;
         puVar6 = puVar6 + 4;
-        sprite_place_centered(param_2,0x1f800000,(int)(((uint)*param_5 + (iVar4 >> 0xc)) * 0x10000) >> 0x10,
+        sprite_place_centered(cur,0x1f800000,(int)(((uint)*param_5 + (iVar4 >> 0xc)) * 0x10000) >> 0x10,
                      (int)(((uint)*puVar1 + (iVar5 >> 0xc)) * 0x10000) >> 0x10,(int)(short)*puVar2,
                      (int)(short)uVar3);
         param_5 = param_5 + 4;
-        param_1 = param_1 + 0x28;
-        param_2 = param_2 + 0x28;
-      } while (iVar7 < param_4);
+        out = out + 0x28;
+        cur = cur + 0x28;
+      } while (iVar7 < step);
     }
   }
   else if (param_8 < 2) {
-    if ((param_8 == 0) && (iVar7 = 0, 0 < param_4)) {
-      param_6 = param_6 * param_3;
+    if ((param_8 == 0) && (iVar7 = 0, 0 < step)) {
+      param_6 = param_6 * tgt;
       puVar6 = param_5 + 3;
-      param_7 = param_7 * param_3;
+      param_7 = param_7 * tgt;
       do {
         iVar4 = param_6;
         if (param_6 < 0) {
@@ -7390,7 +7390,7 @@ void sprite_strip_draw_dual(int param_1,int param_2,int param_3,int param_4,usho
         if (param_7 < 0) {
           iVar5 = param_7 + 0xfff;
         }
-        sprite_rect_set_c(param_1,(int)(short)*param_5 + (iVar4 >> 0xc),
+        sprite_rect_set_c(out,(int)(short)*param_5 + (iVar4 >> 0xc),
                      (int)(short)puVar6[-2] + (iVar5 >> 0xc),(int)(short)puVar6[-1],
                      (int)(short)*puVar6);
         puVar1 = puVar6 + -2;
@@ -7398,21 +7398,21 @@ void sprite_strip_draw_dual(int param_1,int param_2,int param_3,int param_4,usho
         uVar3 = *puVar6;
         puVar6 = puVar6 + 4;
         iVar7 = iVar7 + 1;
-        sprite_rect_set_c(param_2,(int)(short)*param_5 + (iVar4 >> 0xc),
+        sprite_rect_set_c(cur,(int)(short)*param_5 + (iVar4 >> 0xc),
                      (int)(short)*puVar1 + (iVar5 >> 0xc),(int)(short)*puVar2,(int)(short)uVar3);
         param_5 = param_5 + 4;
-        param_1 = param_1 + 0x28;
-        param_2 = param_2 + 0x28;
-      } while (iVar7 < param_4);
+        out = out + 0x28;
+        cur = cur + 0x28;
+      } while (iVar7 < step);
     }
   }
   else if (param_8 == 2) {
     iVar7 = 0;
-    if (0 < param_4) {
-      param_6 = param_6 * param_3;
+    if (0 < step) {
+      param_6 = param_6 * tgt;
       puVar6 = param_5 + 3;
-      param_7 = param_7 * param_3;
-      local_30 = param_1;
+      param_7 = param_7 * tgt;
+      local_30 = out;
       do {
         iVar4 = param_6;
         if (param_6 < 0) {
@@ -7431,18 +7431,18 @@ void sprite_strip_draw_dual(int param_1,int param_2,int param_3,int param_4,usho
         puVar6 = puVar6 + 4;
         iVar7 = iVar7 + 1;
         local_30 = local_30 + 0x18;
-        sprite_rect_set_a(param_2,(int)(short)*param_5 + (iVar4 >> 0xc),
+        sprite_rect_set_a(cur,(int)(short)*param_5 + (iVar4 >> 0xc),
                      (int)(short)*puVar1 + (iVar5 >> 0xc),(int)(short)*puVar2,(int)(short)uVar3);
         param_5 = param_5 + 4;
-        param_2 = param_2 + 0x18;
-      } while (iVar7 < param_4);
+        cur = cur + 0x18;
+      } while (iVar7 < step);
     }
   }
-  else if ((param_8 == 3) && (iVar7 = 0, 0 < param_4)) {
-    param_6 = param_6 * param_3;
+  else if ((param_8 == 3) && (iVar7 = 0, 0 < step)) {
+    param_6 = param_6 * tgt;
     puVar6 = param_5 + 3;
-    param_7 = param_7 * param_3;
-    local_2c = param_1;
+    param_7 = param_7 * tgt;
+    local_2c = out;
     do {
       iVar4 = param_6;
       if (param_6 < 0) {
@@ -7461,28 +7461,28 @@ void sprite_strip_draw_dual(int param_1,int param_2,int param_3,int param_4,usho
       puVar6 = puVar6 + 4;
       iVar7 = iVar7 + 1;
       local_2c = local_2c + 0x24;
-      sprite_rect_set_b(param_2,(int)(short)*param_5 + (iVar4 >> 0xc),
+      sprite_rect_set_b(cur,(int)(short)*param_5 + (iVar4 >> 0xc),
                    (int)(short)*puVar1 + (iVar5 >> 0xc),(int)(short)*puVar2,(int)(short)uVar3);
       param_5 = param_5 + 4;
-      param_2 = param_2 + 0x24;
-    } while (iVar7 < param_4);
+      cur = cur + 0x24;
+    } while (iVar7 < step);
   }
   return;
 
 }
 
-int task_alloc_wrap_a(undefined4 param_1,undefined4 param_2,int param_3,undefined4 param_4)
+int task_alloc_wrap_a(undefined4 out,undefined4 cur,int tgt,undefined4 step)
 {
   int iVar1;
   undefined4 *puVar2;
   iVar1 = (int)(intptr_t)task_node_alloc(0,2,0,0x80137680,0,0x1c);
   if (iVar1 != 0) {
     puVar2 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0x10))));
-    *puVar2 = param_1;
-    puVar2[1] = param_2;
-    puVar2[2] = param_3;
-    puVar2[3] = param_4;
-    puVar2[4] = param_3 + -4;
+    *puVar2 = out;
+    puVar2[1] = cur;
+    puVar2[2] = tgt;
+    puVar2[3] = step;
+    puVar2[4] = tgt + -4;
     puVar2[5] = 0;
     puVar2[6] = 0;
   }
@@ -7490,28 +7490,28 @@ int task_alloc_wrap_a(undefined4 param_1,undefined4 param_2,int param_3,undefine
 
 }
 
-int task_alloc_wrap_b(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4, int param_5)
+int task_alloc_wrap_b(undefined4 out,undefined4 cur,undefined4 tgt,undefined4 step, int param_5)
 {
   int iVar1;
   undefined4 *puVar2;
   { extern uint32_t g_wb_last_p1,g_wb_last_p2,g_wb_last_p3,g_wb_last_p4,g_wb_last_p5;
     extern uint32_t g_wb_bad_count,g_wb_bad_node,g_wrap_src;
     g_wrap_src=1;
-    g_wb_last_p1=(uint32_t)param_1; g_wb_last_p2=(uint32_t)param_2;
-    g_wb_last_p3=(uint32_t)param_3; g_wb_last_p4=(uint32_t)param_4;
+    g_wb_last_p1=(uint32_t)out; g_wb_last_p2=(uint32_t)cur;
+    g_wb_last_p3=(uint32_t)tgt; g_wb_last_p4=(uint32_t)step;
     g_wb_last_p5=(uint32_t)param_5;
-    if (((uint32_t)param_1 < 0x80100000u || (uint32_t)param_2 < 0x80100000u) &&
-        (uint32_t)param_1 != 0u && (uint32_t)param_2 != 0u) {
-      g_wb_bad_count++; g_wb_bad_node=(uint32_t)param_4;
+    if (((uint32_t)out < 0x80100000u || (uint32_t)cur < 0x80100000u) &&
+        (uint32_t)out != 0u && (uint32_t)cur != 0u) {
+      g_wb_bad_count++; g_wb_bad_node=(uint32_t)step;
     }
   }
   iVar1 = (int)(intptr_t)task_node_alloc(0,3,0,0x80137824,0,0x1c);
   if (iVar1 != 0) {
     puVar2 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0x10))));
-    *puVar2 = param_1;
-    puVar2[1] = param_2;
-    puVar2[2] = param_3;
-    puVar2[3] = param_4;
+    *puVar2 = out;
+    puVar2[1] = cur;
+    puVar2[2] = tgt;
+    puVar2[3] = step;
     puVar2[4] = param_5;
     puVar2[5] = param_5 + -4;
     *(undefined2 *)(puVar2 + 6) = 0;
@@ -7521,86 +7521,86 @@ int task_alloc_wrap_b(undefined4 param_1,undefined4 param_2,undefined4 param_3,u
 
 }
 
-void hud_cell_frame_set(int param_1,int param_2)
+void hud_cell_frame_set(int out,int cur)
 {
   ushort uVar1;
-  if (param_1 < 10) {
-    *(ushort *)guest_at((uint32_t)(uintptr_t)((param_2 + 0xe) ))=
+  if (out < 10) {
+    *(ushort *)guest_at((uint32_t)(uintptr_t)((cur + 0xe) ))=
          (short)((DAT_801b4b54 & 0x3ff) >> 4) +
          (DAT_801b4b56 + (ushort)(byte)(&DAT_801b4e28)[_DAT_801f4f20 % 3] & 0x1ff) * 0x40;
   }
   else {
-    if (param_1 < 0x14) {
+    if (out < 0x14) {
       uVar1 = DAT_801b4b56 + 1;
     }
     else {
       uVar1 = DAT_801b4b56 + 3;
     }
-    *(ushort *)guest_at((uint32_t)(uintptr_t)((param_2 + 0xe) ))= (short)((DAT_801b4b54 & 0x3ff) >> 4) + (uVar1 & 0x1ff) * 0x40;
+    *(ushort *)guest_at((uint32_t)(uintptr_t)((cur + 0xe) ))= (short)((DAT_801b4b54 & 0x3ff) >> 4) + (uVar1 & 0x1ff) * 0x40;
   }
-  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x36) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0xe)));
+  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((cur + 0x36) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((cur + 0xe)));
   return;
 
 }
 
-void hud_digits_color(int param_1,int param_2)
+void hud_digits_color(int out,int cur)
 {
   char cVar1;
   int iVar2;
   int iVar3;
   char *pcVar4;
-  if (param_1 < 0) {
+  if (out < 0) {
     pcVar4 = &DAT_801b4b94;
-    *(char *)guest_at((uint32_t)(uintptr_t)((param_2 + 0xc) ))= DAT_801b4b94;
-    *(char *)guest_at((uint32_t)(uintptr_t)((param_2 + 0xd) ))= DAT_801b4b95;
-    *(char *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x14) ))= DAT_801b4b94 + DAT_801b4b96;
-    *(char *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x15) ))= DAT_801b4b95;
-    *(char *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x1c) ))= DAT_801b4b94;
-    *(char *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x1d) ))= DAT_801b4b95 + DAT_801b4b97;
-    *(char *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x24) ))= DAT_801b4b94 + DAT_801b4b96;
-    *(char *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x25) ))= DAT_801b4b95 + DAT_801b4b97;
-    *(char *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x34) ))= DAT_801b4b94;
-    *(char *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x35) ))= DAT_801b4b95;
-    *(char *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x3c) ))= DAT_801b4b94 + DAT_801b4b96;
-    *(char *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x3d) ))= DAT_801b4b95;
-    *(char *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x44) ))= DAT_801b4b94;
-    *(char *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x45) ))= DAT_801b4b95 + DAT_801b4b97;
+    *(char *)guest_at((uint32_t)(uintptr_t)((cur + 0xc) ))= DAT_801b4b94;
+    *(char *)guest_at((uint32_t)(uintptr_t)((cur + 0xd) ))= DAT_801b4b95;
+    *(char *)guest_at((uint32_t)(uintptr_t)((cur + 0x14) ))= DAT_801b4b94 + DAT_801b4b96;
+    *(char *)guest_at((uint32_t)(uintptr_t)((cur + 0x15) ))= DAT_801b4b95;
+    *(char *)guest_at((uint32_t)(uintptr_t)((cur + 0x1c) ))= DAT_801b4b94;
+    *(char *)guest_at((uint32_t)(uintptr_t)((cur + 0x1d) ))= DAT_801b4b95 + DAT_801b4b97;
+    *(char *)guest_at((uint32_t)(uintptr_t)((cur + 0x24) ))= DAT_801b4b94 + DAT_801b4b96;
+    *(char *)guest_at((uint32_t)(uintptr_t)((cur + 0x25) ))= DAT_801b4b95 + DAT_801b4b97;
+    *(char *)guest_at((uint32_t)(uintptr_t)((cur + 0x34) ))= DAT_801b4b94;
+    *(char *)guest_at((uint32_t)(uintptr_t)((cur + 0x35) ))= DAT_801b4b95;
+    *(char *)guest_at((uint32_t)(uintptr_t)((cur + 0x3c) ))= DAT_801b4b94 + DAT_801b4b96;
+    *(char *)guest_at((uint32_t)(uintptr_t)((cur + 0x3d) ))= DAT_801b4b95;
+    *(char *)guest_at((uint32_t)(uintptr_t)((cur + 0x44) ))= DAT_801b4b94;
+    *(char *)guest_at((uint32_t)(uintptr_t)((cur + 0x45) ))= DAT_801b4b95 + DAT_801b4b97;
     cVar1 = DAT_801b4b94;
   }
   else {
-    if (99 < param_1) {
-      param_1 = 0;
+    if (99 < out) {
+      out = 0;
     }
-    iVar2 = (param_1 / 10 & 0xffU) * 4;
+    iVar2 = (out / 10 & 0xffU) * 4;
     pcVar4 = &DAT_801b4b6c + iVar2;
-    *(char *)guest_at((uint32_t)(uintptr_t)((param_2 + 0xc) ))= *pcVar4;
-    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0xd) ))= (&DAT_801b4b6d)[iVar2];
-    *(char *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x14) ))= *pcVar4 + (&DAT_801b4b6e)[iVar2];
-    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x15) ))= (&DAT_801b4b6d)[iVar2];
-    *(char *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x1c) ))= *pcVar4;
-    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x1d) ))= (&DAT_801b4b6d)[iVar2] + (&DAT_801b4b6f)[iVar2];
-    *(char *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x24) ))= *pcVar4 + (&DAT_801b4b6e)[iVar2];
-    iVar3 = (param_1 % 10 & 0xffU) * 4;
+    *(char *)guest_at((uint32_t)(uintptr_t)((cur + 0xc) ))= *pcVar4;
+    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((cur + 0xd) ))= (&DAT_801b4b6d)[iVar2];
+    *(char *)guest_at((uint32_t)(uintptr_t)((cur + 0x14) ))= *pcVar4 + (&DAT_801b4b6e)[iVar2];
+    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((cur + 0x15) ))= (&DAT_801b4b6d)[iVar2];
+    *(char *)guest_at((uint32_t)(uintptr_t)((cur + 0x1c) ))= *pcVar4;
+    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((cur + 0x1d) ))= (&DAT_801b4b6d)[iVar2] + (&DAT_801b4b6f)[iVar2];
+    *(char *)guest_at((uint32_t)(uintptr_t)((cur + 0x24) ))= *pcVar4 + (&DAT_801b4b6e)[iVar2];
+    iVar3 = (out % 10 & 0xffU) * 4;
     pcVar4 = &DAT_801b4b6c + iVar3;
-    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x25) ))= (&DAT_801b4b6d)[iVar2] + (&DAT_801b4b6f)[iVar2];
-    *(char *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x34) ))= *pcVar4;
-    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x35) ))= (&DAT_801b4b6d)[iVar3];
-    *(char *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x3c) ))= *pcVar4 + (&DAT_801b4b6e)[iVar3];
-    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x3d) ))= (&DAT_801b4b6d)[iVar3];
-    *(char *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x44) ))= *pcVar4;
-    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x45) ))= (&DAT_801b4b6d)[iVar3] + (&DAT_801b4b6f)[iVar3];
+    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((cur + 0x25) ))= (&DAT_801b4b6d)[iVar2] + (&DAT_801b4b6f)[iVar2];
+    *(char *)guest_at((uint32_t)(uintptr_t)((cur + 0x34) ))= *pcVar4;
+    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((cur + 0x35) ))= (&DAT_801b4b6d)[iVar3];
+    *(char *)guest_at((uint32_t)(uintptr_t)((cur + 0x3c) ))= *pcVar4 + (&DAT_801b4b6e)[iVar3];
+    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((cur + 0x3d) ))= (&DAT_801b4b6d)[iVar3];
+    *(char *)guest_at((uint32_t)(uintptr_t)((cur + 0x44) ))= *pcVar4;
+    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((cur + 0x45) ))= (&DAT_801b4b6d)[iVar3] + (&DAT_801b4b6f)[iVar3];
     cVar1 = *pcVar4;
   }
-  *(char *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x4c) ))= cVar1 + pcVar4[2];
-  *(char *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x4d) ))= pcVar4[1] + pcVar4[3];
+  *(char *)guest_at((uint32_t)(uintptr_t)((cur + 0x4c) ))= cVar1 + pcVar4[2];
+  *(char *)guest_at((uint32_t)(uintptr_t)((cur + 0x4d) ))= pcVar4[1] + pcVar4[3];
   return;
 
 }
 
-bool fighter_height_check(int param_1)
+bool fighter_height_check(int out)
 {
-  if ((*(byte *)guest_at((uint32_t)(uintptr_t)((param_1 + 5) ))& 0x10) == 0) {
-    return 0x1dff < *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0xd6)));
+  if ((*(byte *)guest_at((uint32_t)(uintptr_t)((out + 5) ))& 0x10) == 0) {
+    return 0x1dff < *(short *)guest_at((uint32_t)(uintptr_t)((out + 0xd6)));
   }
   return (bool)2;
 
@@ -10343,35 +10343,35 @@ void camera_track_step(int param_1,int param_2,int param_3)
 
 }
 
-int u16_step_toward(ushort *param_1,ushort *param_2,short param_3)
+int u16_step_toward(ushort *cur,ushort *tgt,short step)
 {
-  ushort uVar1;
-  short sVar2;
-  int iVar3;
-  uVar1 = *param_1;
-  iVar3 = (uint)*param_2 - (uint)uVar1;
-  sVar2 = (short)iVar3;
-  iVar3 = iVar3 * 0x10000 >> 0x10;
-  if (iVar3 != 0) {
-    if (param_3 == 0) {
-      param_3 = 1;
+  ushort old;
+  short delta;
+  int diff;
+  old = *cur;
+  diff = (uint)*tgt - (uint)old;
+  delta = (short)diff;
+  diff = diff * 0x10000 >> 0x10;
+  if (diff != 0) {
+    if (step == 0) {
+      step = 1;
     }
-    if (iVar3 < 1) {
-      if ((int)param_3 < -iVar3) {
-        sVar2 = -param_3;
-        *param_1 = uVar1 + sVar2;
+    if (diff < 1) {
+      if ((int)step < -diff) {
+        delta = -step;
+        *cur = old + delta;
         goto LAB_801338bc;
       }
     }
-    else if (param_3 < iVar3) {
-      *param_1 = uVar1 + param_3;
-      sVar2 = param_3;
+    else if (step < diff) {
+      *cur = old + step;
+      delta = step;
       goto LAB_801338bc;
     }
-    *param_1 = *param_2;
+    *cur = *tgt;
   }
 LAB_801338bc:
-  return (int)sVar2;
+  return (int)delta;
 
 }
 
