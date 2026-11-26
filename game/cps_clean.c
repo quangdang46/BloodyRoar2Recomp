@@ -7227,6 +7227,7 @@ block_8012903C:
  * from SLES_017.22_full_01.c. */
 void cps_80129050(void)
 {
+/* menu-piece fragment: continues at 0x801290cc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7292,6 +7293,7 @@ block_8012909C:
  * from SLES_017.22_full_01.c. */
 void cps_801290cc(void)
 {
+/* menu-piece fragment: continues at 0x80129148 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7357,6 +7359,7 @@ block_80129134:
  * from SLES_017.22_full_01.c. */
 void cps_80129148(void)
 {
+/* menu-piece fragment: continues at 0x80129190 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7396,6 +7399,7 @@ block_80129148:
  * from SLES_017.22_full_01.c. */
 void cps_80129190(void)
 {
+/* menu-piece fragment: continues at 0x801291c8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7418,6 +7422,7 @@ block_80129190:
  * from SLES_017.22_full_01.c. */
 void cps_801291c8(void)
 {
+/* menu-piece fragment: continues at 0x80129190 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7500,6 +7505,7 @@ block_80129210:
  * from SLES_017.22_full_01.c. */
 void cps_80129248(void)
 {
+/* menu-piece fragment: continues at 0x801292c8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7566,6 +7572,7 @@ block_80129298:
  * from SLES_017.22_full_01.c. */
 void cps_801292c8(void)
 {
+/* menu-piece fragment: continues at 0x80129348 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7632,6 +7639,7 @@ block_80129310:
  * from SLES_017.22_full_01.c. */
 void cps_80129348(void)
 {
+/* menu-piece fragment: continues at 0x801293c4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7705,6 +7713,7 @@ block_801293C0:
  * from SLES_017.22_full_01.c. */
 void cps_801293c4(void)
 {
+/* menu-piece fragment: continues at 0x801293cc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7721,6 +7730,7 @@ block_801293C4:
  * from SLES_017.22_full_01.c. */
 void cps_801293cc(void)
 {
+/* menu-piece fragment: continues at 0x801293f4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7761,6 +7771,7 @@ block_801293F0:
  * from SLES_017.22_full_01.c. */
 void cps_801293f4(void)
 {
+/* menu-piece fragment: continues at 0x80129444 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7815,6 +7826,7 @@ block_80129434:
  * from SLES_017.22_full_01.c. */
 void cps_80129444(void)
 {
+/* menu-piece fragment: continues at 0x80129450 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7832,6 +7844,7 @@ block_80129444:
  * from SLES_017.22_full_01.c. */
 void cps_80129450(void)
 {
+/* menu thunk -> victory_record_restore */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7916,6 +7929,7 @@ block_801294B8:
  * from SLES_017.22_full_01.c. */
 void cps_801294d4(void)
 {
+/* menu thunk -> menu_stepper_input -> menu_stepper_redraw */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8031,6 +8045,7 @@ block_80129530:
  * from SLES_017.22_full_01.c. */
 void cps_80129558(void)
 {
+/* menu thunk -> menu_stepper_input */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8151,6 +8166,7 @@ block_801295B8:
  * from SLES_017.22_full_01.c. */
 void cps_801295bc(void)
 {
+/* menu-piece fragment: continues at 0x801295e0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8190,6 +8206,7 @@ block_801295D0:
  * from SLES_017.22_full_01.c. */
 void cps_801295e0(void)
 {
+/* menu-piece fragment: continues at 0x80129610 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8225,6 +8242,7 @@ block_801295E8:
  * from SLES_017.22_full_01.c. */
 void cps_801295f0(void)
 {
+/* menu-piece fragment: continues at 0x80129610 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8263,6 +8281,7 @@ block_80129600:
  * from SLES_017.22_full_01.c. */
 void cps_8012960c(void)
 {
+/* menu-piece fragment: continues at 0x80129610 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8278,6 +8297,7 @@ block_8012960C:
  * from SLES_017.22_full_01.c. */
 void cps_80129610(void)
 {
+/* menu-piece fragment: continues at 0x80129628 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8305,6 +8325,7 @@ block_80129610:
  * from SLES_017.22_full_01.c. */
 void cps_80129628(void)
 {
+/* menu-piece fragment: continues at 0x80129640 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8337,6 +8358,7 @@ block_8012963C:
  * from SLES_017.22_full_01.c. */
 void cps_80129640(void)
 {
+/* menu thunk -> menu_stepper_masked_sweep */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8375,6 +8397,7 @@ block_80129648:
  * from SLES_017.22_full_01.c. */
 void cps_80129664(void)
 {
+/* menu thunk -> menu_row_paint -> menu_row_paint_b */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8533,6 +8556,7 @@ block_801296FC:
  * from SLES_017.22_full_01.c. */
 void cps_80129750(void)
 {
+/* menu thunk -> menu_row_paint */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8592,6 +8616,7 @@ block_80129774:
  * from SLES_017.22_full_01.c. */
 void cps_80129778(void)
 {
+/* menu-piece fragment: continues at 0x8012977c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8607,6 +8632,7 @@ block_80129778:
  * from SLES_017.22_full_01.c. */
 void cps_8012977c(void)
 {
+/* menu thunk -> menu_row_paint_b */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8656,6 +8682,7 @@ block_80129788:
  * from SLES_017.22_full_01.c. */
 void cps_8012979c(void)
 {
+/* menu-piece fragment: continues at 0x801297b0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8721,6 +8748,7 @@ block_801297C4:
  * from SLES_017.22_full_01.c. */
 void cps_80129800(void)
 {
+/* menu thunk -> deferred_cmd_post -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8836,6 +8864,7 @@ block_80129870:
  * from SLES_017.22_full_01.c. */
 void cps_8012987c(void)
 {
+/* menu-piece fragment: continues at 0x8012988c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8862,6 +8891,7 @@ block_8012987C:
  * from SLES_017.22_full_01.c. */
 void cps_8012988c(void)
 {
+/* menu-piece fragment: continues at 0x80129890 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8877,6 +8907,7 @@ block_8012988C:
  * from SLES_017.22_full_01.c. */
 void cps_80129890(void)
 {
+/* menu thunk -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8928,6 +8959,7 @@ block_801298B8:
  * from SLES_017.22_full_01.c. */
 void cps_801298bc(void)
 {
+/* menu thunk -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8991,6 +9023,7 @@ block_801298EC:
  * from SLES_017.22_full_01.c. */
 void cps_801298f8(void)
 {
+/* menu-piece fragment: continues at 0x801298fc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9026,6 +9059,7 @@ block_801298FC:
  * from SLES_017.22_full_01.c. */
 void cps_80129918(void)
 {
+/* menu thunk -> print_dispatch_selfdesc_guest */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9075,6 +9109,7 @@ block_80129934:
  * from SLES_017.22_full_01.c. */
 void cps_801299a8(void)
 {
+/* menu thunk -> deferred_cmd_post -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9208,6 +9243,7 @@ block_80129A1C:
  * from SLES_017.22_full_01.c. */
 void cps_80129a38(void)
 {
+/* menu-piece fragment: continues at 0x80129a3c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9250,6 +9286,7 @@ block_80129A3C:
  * from SLES_017.22_full_01.c. */
 void cps_80129ac8(void)
 {
+/* menu-piece fragment: continues at 0x80129ae0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9286,6 +9323,7 @@ block_80129ADC:
  * from SLES_017.22_full_01.c. */
 void cps_80129ae0(void)
 {
+/* menu thunk -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9365,6 +9403,7 @@ block_80129B1C:
  * from SLES_017.22_full_01.c. */
 void cps_80129b58(void)
 {
+/* menu thunk -> deferred_cmd_post -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9483,6 +9522,7 @@ block_80129BE0:
  * from SLES_017.22_full_01.c. */
 void cps_80129be8(void)
 {
+/* menu-piece fragment: continues at 0x80129bec */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9522,6 +9562,7 @@ block_80129BEC:
  * from SLES_017.22_full_01.c. */
 void cps_80129c7c(void)
 {
+/* menu-piece fragment: continues at 0x80129c80 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9537,6 +9578,7 @@ block_80129C7C:
  * from SLES_017.22_full_01.c. */
 void cps_80129c80(void)
 {
+/* menu-piece fragment: continues at 0x80129c9c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9613,6 +9655,7 @@ block_80129CB0:
  * from SLES_017.22_full_01.c. */
 void cps_80129cbc(void)
 {
+/* menu thunk -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9693,6 +9736,7 @@ block_80129D00:
  * from SLES_017.22_full_01.c. */
 void cps_80129d10(void)
 {
+/* menu-piece fragment: continues at 0x80129d14 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9708,6 +9752,7 @@ block_80129D10:
  * from SLES_017.22_full_01.c. */
 void cps_80129d14(void)
 {
+/* menu-piece fragment: continues at 0x80129d1c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9724,6 +9769,7 @@ block_80129D14:
  * from SLES_017.22_full_01.c. */
 void cps_80129d1c(void)
 {
+/* menu thunk -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9791,6 +9837,7 @@ block_80129D3C:
  * from SLES_017.22_full_01.c. */
 void cps_80129da8(void)
 {
+/* menu-piece fragment: continues at 0x80129dac */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9806,6 +9853,7 @@ block_80129DA8:
  * from SLES_017.22_full_01.c. */
 void cps_80129dac(void)
 {
+/* menu-piece fragment: continues at 0x80129dd8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9847,6 +9895,7 @@ block_80129DD4:
  * from SLES_017.22_full_01.c. */
 void cps_80129dd8(void)
 {
+/* menu thunk -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9926,6 +9975,7 @@ block_80129E14:
  * from SLES_017.22_full_01.c. */
 void cps_80129ed8(void)
 {
+/* menu-piece fragment: continues at 0x80129ef0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10005,6 +10055,7 @@ block_80129F70:
  * from SLES_017.22_full_01.c. */
 void cps_80129fa8(void)
 {
+/* menu thunk -> print_dispatch_guest */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
