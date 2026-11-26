@@ -4093,11 +4093,11 @@ extern int32_t continue_countdown();
 extern void bcfg_step_d(uint32_t,uint32_t);
 extern void bcfg_step_c(uint32_t,uint32_t);
 extern void bcfg_step_b(uint32_t,int32_t);
-int32_t battle_config_eval(uint8_t *param_1,uint32_t param_2,int32_t param_3)
+int32_t battle_config_eval(uint8_t *argblk,uint32_t battle_g,int32_t flag)
 {
-  uint8_t *B = (uint8_t *)guest_at(param_2);
-  uint8_t *AB = param_1;
-  int32_t fz = ((uint32_t)param_3 < 1);      /* sltiu $a2,$a2,1 */
+  uint8_t *B = (uint8_t *)guest_at(battle_g);
+  uint8_t *AB = argblk;
+  int32_t fz = ((uint32_t)flag < 1);      /* sltiu $a2,$a2,1 */
   uint32_t ret = 0;                          /* $s3 */
   uint8_t *pl = B + AB[2] * 2;               /* $a0: player slot base */
   uint32_t ph = *(uint16_t *)(pl + 0xb4);    /* $a3 */
@@ -4106,8 +4106,8 @@ int32_t battle_config_eval(uint8_t *param_1,uint32_t param_2,int32_t param_3)
   int32_t r;
   extern uint32_t g_bce_calls,g_bce_fz0,g_bce_fzN,g_bce_cls,g_bce_p3;
   g_bce_calls++;
-  if (param_3 == 0) g_bce_fz0++; else g_bce_fzN++;
-  g_bce_cls = cls; g_bce_p3 = (uint32_t)param_3;
+  if (flag == 0) g_bce_fz0++; else g_bce_fzN++;
+  g_bce_cls = cls; g_bce_p3 = (uint32_t)flag;
 
   if (cls == 0x500) goto L_ret68;            /* 0x801537f8 */
   if (cls < 0x501) {
@@ -4128,7 +4128,7 @@ int32_t battle_config_eval(uint8_t *param_1,uint32_t param_2,int32_t param_3)
   if (cls < 0x801) {
     if (cls == 0x600) goto L_600;            /* 0x80153804 */
     if (cls == 0x700) {                      /* 0x80153900 */
-      bcfg_step_c(param_2,AB[2]);
+      bcfg_step_c(battle_g,AB[2]);
       goto L_ret;
     }
     goto L_ret;                              /* 0x80153600 */
@@ -4170,13 +4170,13 @@ L_A0:                                        /* 0x8015364c */
   goto L_ret;                                /* 0x80153674/88 */
 
 L_A0_body:                                   /* 0x80153698 */
-  if (fz) mode_name_announce(param_2,AB[2],0);
-  r = bcfg_step_a(param_2,AB[2],*(uint16_t *)(pl + 0x68));
+  if (fz) mode_name_announce(battle_g,AB[2],0);
+  r = bcfg_step_a(battle_g,AB[2],*(uint16_t *)(pl + 0x68));
   if (r == 0) goto L_ret;
   goto L_set700;                             /* 0x801538a4 */
 
 L_A14:                                       /* 0x801536d8 */
-  if (fz) mode_name_announce(param_2,AB[2],0);
+  if (fz) mode_name_announce(battle_g,AB[2],0);
   goto L_ret;
 
 /* ---- phase-0x300 / state sub-blocks ---- */
@@ -4194,14 +4194,14 @@ L_B0:                                        /* 0x80153730 */
 L_B0_774:                                    /* 0x80153774 */
   ret = *(uint16_t *)(pl + 0x68);
   if (!fz) goto L_ret;
-  stage_fight_announce(param_2,AB);
-  fight_timer_announce(param_2,AB,AB[2]);
+  stage_fight_announce(battle_g,AB);
+  fight_timer_announce(battle_g,AB,AB[2]);
   goto L_ret;
 
 L_B0_7cc:                                    /* 0x801537cc */
   ret = *(uint16_t *)(pl + 0x68);
   if (!fz) goto L_ret;
-  stage_fight_announce(param_2,AB);
+  stage_fight_announce(battle_g,AB);
   goto L_ret;
 
 L_B23:                                       /* 0x801537cc via table B idx 2/3 */
@@ -4216,13 +4216,13 @@ L_600:                                       /* 0x80153804 */
     if (cr[0x1e] != 0) { *(uint16_t *)(pl + 0xb4) = 0x800; goto L_ret; }
   }
   /* 0x80153834: $a0 = $s1 (delay slot, always) */
-  if (fz) mode_name_announce(param_2,AB[2],1);
-  r = continue_countdown(param_2,AB[2]);
+  if (fz) mode_name_announce(battle_g,AB[2],1);
+  r = continue_countdown(battle_g,AB[2]);
   if (r > 0) {                               /* 0x80153850 path */
     name_rec_gate(AB,(const void *)guest_at(0x801209ac));
     status_flag_cond_set(guest_of(AB),0); /* $a2=0x801209ac unused by callee */
-    if (select_phase_gate(param_2,(uint32_t)(AB[2] ^ 1)) != 0) {
-      bcfg_step_d(param_2,AB[2]);
+    if (select_phase_gate(battle_g,(uint32_t)(AB[2] ^ 1)) != 0) {
+      bcfg_step_d(battle_g,AB[2]);
       goto L_ret;
     }
     goto L_set700;                           /* 0x801538a4 */
@@ -4243,7 +4243,7 @@ L_set700:                                    /* 0x801538a4 */
 L_800:                                       /* 0x80153910 */
   *(uint16_t *)(pl + 0xb4) = 0x900;
 L_900:                                       /* 0x80153918 */
-  if (fz) bcfg_step_b(param_2,AB[2]);
+  if (fz) bcfg_step_b(battle_g,AB[2]);
   {
     uint32_t cur = *(uint16_t *)(pl + 0xb4);
     if ((cur & 0xff) < 0x96) *(uint16_t *)(pl + 0xb4) = (uint16_t)(cur + 1);
@@ -4261,13 +4261,13 @@ L_ret:                                       /* 0x80153960/64 epilogue */
  * s16(+0x82)!=0, mode byte +0x9c in [1,5], or +0x9b in [1,3]; then a
  * 17-entry jump table on +0x92 (<0x11) decides: states {0-4,15}->1,
  * {5-11,16}->0, {12-14}->(+0xa4>=0). JT 0x80120948 — disasm verified. */
-int32_t battle_state_gate(uint32_t param_1,uint32_t param_2)
+int32_t battle_state_gate(uint32_t battle_g,uint32_t unused)
 {
-  uint8_t *a0 = (uint8_t *)guest_at(param_1);
+  uint8_t *a0 = (uint8_t *)guest_at(battle_g);
   uint32_t mode, b9b, s92;
   static const uint8_t jt_kind[17] = {
     1,1,1,1,1,0,0,0,0,0,0,0,2,2,2,1,0 };   /* 1->ret1 0->ret0 2->a4>=0 */
-  (void)param_2;
+  (void)unused;
   if (*(int16_t *)(a0 + 0x82) != 0) return 0;
   mode = a0[0x9c];
   if (mode != 0 && mode < 6) return 0;
@@ -4292,21 +4292,21 @@ do_jt:
 /* bcfg_step_a — combined gate: battle_state_gate(battle,0) && (flags&0x800)
  * && ret_zero_b(player)>=0. Disasm-verified. */
 extern int32_t ret_zero_b(uint32_t);
-int32_t bcfg_step_a(uint32_t param_1,uint32_t param_2,uint32_t param_3)
+int32_t bcfg_step_a(uint32_t battle_g,uint32_t player,uint32_t flags)
 {
-  if (battle_state_gate(param_1,0) == 0) return 0;
-  if ((param_3 & 0x800) == 0) return 0;
-  return ret_zero_b(param_2) >= 0 ? 1 : 0;
+  if (battle_state_gate(battle_g,0) == 0) return 0;
+  if ((flags & 0x800) == 0) return 0;
+  return ret_zero_b(player) >= 0 ? 1 : 0;
 }
 
 /* bcfg_step_b — optional announce: when char-record flags bit 0x800
  * set, calls hud_text_blk_alt with string 0x8012834 and y = (a1? s16
  * obj+0x20 : 0x50) - 0x1b. Disasm-verified. */
 extern void hud_text_blk_alt(uint32_t,uint32_t,const void *,int32_t,int32_t,int32_t);
-void bcfg_step_b(uint32_t param_1,int32_t param_2)
+void bcfg_step_b(uint32_t battle_g,int32_t flag)
 {
-  uint8_t *v1 = (uint8_t *)guest_at(param_1);
-  int32_t a3 = param_2 ? ((int32_t)*(int16_t *)(v1 + 0x20) - 0x50) : 0x50;
+  uint8_t *v1 = (uint8_t *)guest_at(battle_g);
+  int32_t a3 = flag ? ((int32_t)*(int16_t *)(v1 + 0x20) - 0x50) : 0x50;
   uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(v1 + 0xc8));
   if (((*(uint16_t *)(cr + 2) >> 0xb) & 1) != 0) {
     hud_text_blk_alt(*(uint32_t *)(v1 + 8),*(uint32_t *)(v1 + 0xc),
@@ -4319,14 +4319,14 @@ void bcfg_step_b(uint32_t param_1,int32_t param_2)
  * Disasm-verified. */
 extern void chan_blocks_reset(uint32_t,uint32_t,int32_t);
 extern void ret_stub_b(uint8_t *,int32_t);
-void bcfg_step_c(uint32_t param_1,uint32_t param_2)
+void bcfg_step_c(uint32_t battle_g,uint32_t player)
 {
-  uint8_t *s1 = (uint8_t *)guest_at(param_1);
-  uint8_t *s2 = (uint8_t *)guest_at(0x1f8000e8 + param_2 * 0x108);
+  uint8_t *s1 = (uint8_t *)guest_at(battle_g);
+  uint8_t *s2 = (uint8_t *)guest_at(0x1f8000e8 + player * 0x108);
   uint8_t *v1, *cr;
   deferred_cmd_post(0x400,0xc,0);
-  *(uint16_t *)(s1 + param_2 * 2 + 0xb4) = 0x100;
-  cr = (uint8_t *)guest_at(*(uint32_t *)(s1 + 0xc0)) + param_2;
+  *(uint16_t *)(s1 + player * 2 + 0xb4) = 0x100;
+  cr = (uint8_t *)guest_at(*(uint32_t *)(s1 + 0xc0)) + player;
   cr[0x19] = cr[0x19] & 3;
   v1 = (uint8_t *)guest_at(*(uint32_t *)(s2 + 0x2c));
   if (v1[1] == 0) {
@@ -4334,7 +4334,7 @@ void bcfg_step_c(uint32_t param_1,uint32_t param_2)
     uint32_t a0 = *(uint32_t *)(v1 + 0xf4);
     if (a1 >= a0) *(uint32_t *)(v1 + 0xf0) = a1 - a0;
   }
-  chan_blocks_reset(0x1f8000e8 + param_2 * 0x108,*(uint32_t *)guest_at(*(uint32_t *)(s2 + 0x2c) + (0xf0)),1);
+  chan_blocks_reset(0x1f8000e8 + player * 0x108,*(uint32_t *)guest_at(*(uint32_t *)(s2 + 0x2c) + (0xf0)),1);
   ret_stub_b(s2,2);
 }
 
@@ -4342,25 +4342,25 @@ void bcfg_step_c(uint32_t param_1,uint32_t param_2)
  * ctr_clamp(battle,-0x14) + battle+0xa0|=0x100 when obj+1 set, and
  * ret_stub_b(s0,1). Disasm-verified. */
 extern void ctr_clamp(uint32_t,int32_t);
-void bcfg_step_d(uint32_t param_1,uint32_t param_2)
+void bcfg_step_d(uint32_t battle_g,uint32_t player)
 {
-  uint8_t *s2 = (uint8_t *)guest_at(param_1);
-  uint8_t *s0 = (uint8_t *)guest_at(0x1f8000e8 + param_2 * 0x108);
+  uint8_t *s2 = (uint8_t *)guest_at(battle_g);
+  uint8_t *s0 = (uint8_t *)guest_at(0x1f8000e8 + player * 0x108);
   uint8_t *v1, *cr;
   deferred_cmd_post(0x400,0xc,0);
-  *(uint16_t *)(s2 + param_2 * 2 + 0xb4) = 0x100;
+  *(uint16_t *)(s2 + player * 2 + 0xb4) = 0x100;
   v1 = (uint8_t *)guest_at(*(uint32_t *)(s0 + 0x2c));
   if (v1[1] == 0) {
     uint32_t a1 = *(uint32_t *)(v1 + 0xf0);
     uint32_t a0 = *(uint32_t *)(v1 + 0xf4);
     if (a1 >= a0) *(uint32_t *)(v1 + 0xf0) = a1 - a0;
   }
-  cr = (uint8_t *)guest_at(*(uint32_t *)(s2 + 0xc0)) + param_2;
+  cr = (uint8_t *)guest_at(*(uint32_t *)(s2 + 0xc0)) + player;
   cr[0x19] = cr[0x19] & 3;
-  chan_blocks_reset(0x1f8000e8 + param_2 * 0x108,*(uint32_t *)(s0 + 0xf0),1);
+  chan_blocks_reset(0x1f8000e8 + player * 0x108,*(uint32_t *)(s0 + 0xf0),1);
   v1 = (uint8_t *)guest_at(*(uint32_t *)(s0 + 0x2c));
   if (v1[1] != 0) {
-    ctr_clamp(param_1,-0x14);
+    ctr_clamp(battle_g,-0x14);
     *(uint16_t *)(s2 + 0xa0) |= 0x100;
   }
   ret_stub_b(s0,1);
@@ -4371,9 +4371,9 @@ void bcfg_step_d(uint32_t param_1,uint32_t param_2)
  * (obj+0xf0 /50 -> min, /60 -> sec+frame) via sprintf into stack buf,
  * then hud_text_blk draw. Disasm-verified (magic-div constants). */
 extern void hud_text_blk(uint32_t,uint32_t,uint32_t,int32_t,int32_t,int32_t);
-void fight_timer_announce(uint32_t param_1,uint8_t *param_2,int32_t param_3)
+void fight_timer_announce(uint32_t battle_g,uint8_t *side,int32_t flag)
 {
-  uint8_t *s1 = (uint8_t *)guest_at(param_1);
+  uint8_t *s1 = (uint8_t *)guest_at(battle_g);
   uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(s1 + 0xc8));
   int32_t s2, s0;
   uint32_t a1v;
@@ -4387,8 +4387,8 @@ void fight_timer_announce(uint32_t param_1,uint8_t *param_2,int32_t param_3)
   if (s1[0xb0] != 0) return;
   if (*(int16_t *)guest_at(*(uint32_t *)(s1 + 0xcc) + (0xa)) != 0) return;
   s2 = (*(uint8_t *)guest_at(*(uint32_t *)(s1 + 0xc0) + (0x21)) != 0) ? 6 : 5;
-  s0 = param_3 ? ((int32_t)*(int16_t *)(s1 + 0x20) - 0x50) : 0x50;
-  a1v = *(uint32_t *)(param_2 + 0xf0);
+  s0 = flag ? ((int32_t)*(int16_t *)(s1 + 0x20) - 0x50) : 0x50;
+  a1v = *(uint32_t *)(side + 0xf0);
   /* frames/50 -> seconds (0x51eb851f magic, hi>>4), remainder*2 =
    * sub-frame count; seconds/60 -> min:sec (0x88888889 magic). */
   {
@@ -4429,10 +4429,10 @@ void fight_timer_announce(uint32_t param_1,uint8_t *param_2,int32_t param_3)
  * direct "CHALLENGER" when 0x1f80dc&0x40 or champion_win_announce path.
  * Tail calls hud_text_blk_alt(text, y, 0x20, 7|1). Disasm-verified. */
 extern void champion_win_announce(uint32_t,uint8_t *,int32_t);
-void stage_fight_announce(uint32_t param_1,uint8_t *param_2)
+void stage_fight_announce(uint32_t battle_g,uint8_t *side)
 {
-  uint8_t *s0 = (uint8_t *)guest_at(param_1);
-  uint8_t *s1 = param_2;
+  uint8_t *s0 = (uint8_t *)guest_at(battle_g);
+  uint8_t *s1 = side;
   uint8_t *v1, *c0;
   /* sprintf buf = guest $sp+0x18 (frame -0x38) = entry_sp-0x20; hud_text_blk_alt
    * re-reads it through nested frames, so the write->draw span inside the
@@ -4490,7 +4490,7 @@ void stage_fight_announce(uint32_t param_1,uint8_t *param_2)
   if (a2 == 0 &&
       (*(uint16_t *)(s0 + s1[2] * 2 + 0xb4) & 0x1000) != 0) a2 = 1;
   if (a2 != 0) {
-    champion_win_announce(param_1,s1,s1[2]);
+    champion_win_announce(battle_g,s1,s1[2]);
     return;
   }
   if ((*(uint32_t *)guest_at(0x1f8000dc) & 0x40) == 0) return;
@@ -4505,9 +4505,9 @@ void stage_fight_announce(uint32_t param_1,uint8_t *param_2)
  * &0x40==0; win counter at rec+0xe2 clamped to 999, drawn via
  * hud_text_blk_alt. Disasm 0x80151cd0-0x80151dc4. */
 extern int str_len(char *);
-void champion_win_announce(uint32_t param_1,uint8_t *param_2,int32_t param_3)
+void champion_win_announce(uint32_t battle_g,uint8_t *side,int32_t player)
 {
-  uint8_t *s0 = (uint8_t *)guest_at(param_1);
+  uint8_t *s0 = (uint8_t *)guest_at(battle_g);
   /* guest sprintf/draw buffer is a stack slot: $sp+0x18 post-prologue
    * (frame -0x40) = entry_sp-0x28; str_len/hud_text_blk_alt re-read it
    * through nested frames, so the write->draw span runs inside a
@@ -4517,10 +4517,10 @@ void champion_win_announce(uint32_t param_1,uint8_t *param_2,int32_t param_3)
   uint32_t dc = *(uint32_t *)guest_at(0x1f8000dc);
   if (((dc >> 4) & 3) == 0) return;
   if (dc & 0x40) return;
-  cnt = *(int16_t *)(param_2 + 0xe2);
-  if (cnt < 0) { *(int16_t *)(param_2 + 0xe2) = 0; return; }
+  cnt = *(int16_t *)(side + 0xe2);
+  if (cnt < 0) { *(int16_t *)(side + 0xe2) = 0; return; }
   if (cnt == 0) return;
-  if (cnt >= 0x3e8) { cnt = 0x3e7; *(int16_t *)(param_2 + 0xe2) = (int16_t)cnt; }
+  if (cnt >= 0x3e8) { cnt = 0x3e7; *(int16_t *)(side + 0xe2) = (int16_t)cnt; }
   {
     extern uint32_t br2_guest_frame(uint32_t);
     extern void br2_guest_frame_free(void);
@@ -4533,7 +4533,7 @@ void champion_win_announce(uint32_t param_1,uint8_t *param_2,int32_t param_3)
       sprintf_core((char *)buf,(const char *)guest_at(0x801208ac),cnt);
       a2 = str_len((char *)buf);
     }
-    if (param_3 != 0) {
+    if (player != 0) {
       a3 = (int16_t)(*(int16_t *)(s0 + 0x20) - (a2 * 3 + 0x50));
     } else {
       a3 = (int16_t)(0x50 - a2 * 3);
