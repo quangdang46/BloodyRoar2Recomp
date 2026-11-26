@@ -91101,6 +91101,7 @@ block_80199FF0:
  * from SLES_017.22_full_46.c. */
 void cps_8019a00c(void)
 {
+/* cd_cmd_sequence piece -> cd_kobj_init_a -> cpu_critical_enter -> cd_kobj_init_b */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -91200,6 +91201,7 @@ block_8019A074:
  * from SLES_017.22_full_46.c. */
 void cps_8019a09c(void)
 {
+/* cd_subsys_init_full piece -> cd_kobj_init_a -> cpu_critical_enter -> cd_kobj_init_b */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -91299,6 +91301,7 @@ block_8019A104:
  * from SLES_017.22_full_46.c. */
 void cps_8019a2ac(void)
 {
+/* cd_hdr_clear piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -91362,6 +91365,7 @@ block_8019A2E4:
  * from SLES_017.22_full_46.c. */
 void cps_8019a350(void)
 {
+/* bios_tramp_c003 piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -91382,6 +91386,7 @@ block_8019A350:
  * from SLES_017.22_full_46.c. */
 void cps_8019a364(void)
 {
+/* bios_tramp_c003 piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -91402,6 +91407,7 @@ block_8019A364:
  * from SLES_017.22_full_46.c. */
 void cps_8019a378(void)
 {
+/* cd_kobj_init_b piece -> cpu_critical_enter -> bios_tramp_a044 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -91485,6 +91491,7 @@ block_8019A3D4:
  * from SLES_017.22_full_46.c. */
 void cps_8019a3f0(void)
 {
+/* cd_kobj_init_a piece -> cpu_critical_enter -> bios_tramp_a044 -> cpu_critical_exit */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -91572,6 +91579,7 @@ block_8019A444:
  * from SLES_017.22_full_46.c. */
 void cps_8019a5d8(void)
 {
+/* vsync_wait_n piece -> cd_str_print -> bios_table_tramp -> bios_kobj_tramp */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -91691,6 +91699,7 @@ block_8019A660:
  * from SLES_017.22_full_46.c. */
 void cps_8019a7e4(void)
 {
+/* cd_intc_busy_read piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -91712,6 +91721,7 @@ block_8019A7E4:
  * from SLES_017.22_full_46.c. */
 void cps_8019a8dc(void)
 {
+/* cd_chan_full_init piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -91731,6 +91741,7 @@ block_8019A8DC:
  * from SLES_017.22_full_46.c. */
 void cps_8019aabc(void)
 {
+/* cd_chan_slot_set piece -> bios_table_tramp -> bios_kobj_tramp */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -91970,6 +91981,7 @@ block_8019ABE4:
  * from SLES_017.22_full_46.c. */
 void cps_8019adcc(void)
 {
+/* cd_ctx_save piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -92000,6 +92012,7 @@ block_8019ADCC:
  * from SLES_017.22_full_46.c. */
 void cps_8019aed4(void)
 {
+/* cd_cb8_run_param piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -92047,6 +92060,7 @@ block_8019AEF8:
  * from SLES_017.22_full_46.c. */
 void cps_8019af7c(void)
 {
+/* cd_init_stage_b piece -> printf_forward_guest -> cd_u16_table_store -> cd_delay_3c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -116568,6 +116582,7 @@ block_80196DE4:
  * from SLES_017.22_full_46.c. */
 void cps_8019a814(void)
 {
+/* cd_chan_full_init piece -> cd_guest_zero32_a -> cd_ctx_save */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -116632,6 +116647,7 @@ block_8019A874:
  * from SLES_017.22_full_46.c. */
 void cps_8019a8ec(void)
 {
+/* cd_intc_dispatch piece -> printf_forward_guest -> bios_tramp_b017 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
