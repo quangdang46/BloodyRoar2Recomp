@@ -755,6 +755,10 @@ extern void gp_bde20_read(void);
 extern void gp_slot24_set(void);
 extern void gp_slot48_set(void);
 extern void gpu_bits_pack_a(void);
+extern void gpu_callback_descriptor_match(void);
+extern void gpu_callback_dispatch(void);
+extern void gpu_callback_resume_next(void);
+extern void gpu_callback_state_flags(void);
 extern void gpu_clear_image_cmd(void);
 extern void gpu_clear_image_cmd2(void);
 extern void gpu_clear_otag_r(void);
@@ -2889,6 +2893,10 @@ const Br2FnEnt fn_table[] = {
   { 0x80191978, (void *)cd_blk5c_copy },
   { 0x801919ac, (void *)draw_env_timing },
   { 0x80191a78, (void *)draw_env_field_compare_fragment },
+  { 0x80191aa4, (void *)gpu_callback_state_flags },
+  { 0x80191b80, (void *)gpu_callback_dispatch },
+  { 0x80191b90, (void *)gpu_callback_descriptor_match },
+  { 0x80191c04, (void *)gpu_callback_resume_next },
   { 0x80191ea4, (void *)cd_blk14_copy },
   { 0x80191ed8, (void *)gpu_stat_sign },
   { 0x80191ee0, (void *)cd_vcall_38 },
