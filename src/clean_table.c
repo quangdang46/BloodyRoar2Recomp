@@ -7982,7 +7982,7 @@ extern void cps_801356c0(void);
     cps_801356c0();
 }
 static void wrap_80135724(CPUState *cpu) {
-extern uint32_t burst_slot_active(int a0);
+extern uint32_t burst_slot_active(int slot);
     cpu->gpr[2] = (uint32_t)(burst_slot_active(((int)cpu->gpr[4])));
 }
 static void wrap_80135740(CPUState *cpu) {
@@ -8022,10 +8022,10 @@ extern uint32_t per_side_setup(int32_t side, int32_t flag);
     cpu->gpr[2] = (uint32_t)(per_side_setup(((int32_t)cpu->gpr[4]), ((int32_t)cpu->gpr[5])));
 }
 static void wrap_80135a14(CPUState *cpu) {
-extern uint32_t terrain_packet_gen(uint32_t param_1,uint32_t param_2,
-                      const uint16_t *param_3,const int16_t *param_4,
-                      const int16_t *param_5,int32_t param_6,
-                      int32_t param_7,const uint8_t *param_8);
+extern uint32_t terrain_packet_gen(uint32_t hdr, uint32_t cur,
+                      const uint16_t *u16vec, const int16_t *colvec,
+                      const int16_t *rowvec, int32_t cols,
+                      int32_t rows, const uint8_t *u8vec);
     cpu->gpr[2] = (uint32_t)(terrain_packet_gen(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((const uint16_t *)guest_at(cpu->gpr[6])), ((const int16_t *)guest_at(cpu->gpr[7])), ((const int16_t *)guest_at((uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu))), ((int32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 20) & 0xffffffffu)), ((int32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 24) & 0xffffffffu)), ((const uint8_t *)guest_at((uint32_t)cpu->read_word((cpu->gpr[29] + 28) & 0xffffffffu)))));
 }
 static void wrap_80135bd0(CPUState *cpu) {
@@ -8705,7 +8705,7 @@ extern void task_table_init(int32_t arg);
     task_table_init(((int32_t)cpu->gpr[4]));
 }
 static void wrap_80137048(CPUState *cpu) {
-extern void vec_emit_spawn(undefined4 *a0);
+extern void vec_emit_spawn(undefined4 *rec);
     vec_emit_spawn(((undefined4 *)guest_at(cpu->gpr[4])));
 }
 static void wrap_80137074(CPUState *cpu) {
@@ -9159,7 +9159,7 @@ extern void cps_80138074(void);
     cps_80138074();
 }
 static void wrap_801380e4(CPUState *cpu) {
-extern void radial_glow_draw(int *a0);
+extern void radial_glow_draw(int *rec);
     radial_glow_draw(((int *)guest_at(cpu->gpr[4])));
 }
 static void wrap_80138100(CPUState *cpu) {
@@ -9403,7 +9403,7 @@ extern void cps_801385b0(void);
     cps_801385b0();
 }
 static void wrap_801385dc(CPUState *cpu) {
-extern void orbit_fx_spawn(int a0);
+extern void orbit_fx_spawn(int rec);
     orbit_fx_spawn(((int)cpu->gpr[4]));
 }
 static void wrap_801387dc(CPUState *cpu) {
@@ -10497,7 +10497,7 @@ extern uint32_t fx_record_alloc(undefined4 pos_g,int kind,uint fl,undefined4 aux
     cpu->gpr[2] = (uint32_t)(fx_record_alloc(((undefined4)cpu->gpr[4]), ((int)cpu->gpr[5]), ((uint)cpu->gpr[6]), ((undefined4)cpu->gpr[7]), ((undefined4)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu))));
 }
 static void wrap_8013b12c(CPUState *cpu) {
-extern void iris_wipe_update(int *a0);
+extern void iris_wipe_update(int *rec);
     iris_wipe_update(((int *)guest_at(cpu->gpr[4])));
 }
 static void wrap_8013b1a4(CPUState *cpu) {
@@ -21691,24 +21691,24 @@ extern void cd_subsys_boot(void);
     cd_subsys_boot();
 }
 static void wrap_801689d0(CPUState *cpu) {
-extern uint32_t heap_serialize_tag_08(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7);
+extern uint32_t heap_serialize_tag_08(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count,uint32_t unused6,
+                     uint32_t unused7);
     cpu->gpr[2] = (uint32_t)(heap_serialize_tag_08(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu)), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 20) & 0xffffffffu)), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 24) & 0xffffffffu))));
 }
 static void wrap_80168ae0(CPUState *cpu) {
-extern uint32_t heap_serialize_tag_10(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5);
+extern uint32_t heap_serialize_tag_10(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count);
     cpu->gpr[2] = (uint32_t)(heap_serialize_tag_10(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu))));
 }
 static void wrap_80168c20(CPUState *cpu) {
-extern uint32_t heap_serialize_tag_0c(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5);
+extern uint32_t heap_serialize_tag_0c(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count);
     cpu->gpr[2] = (uint32_t)(heap_serialize_tag_0c(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu))));
 }
 static void wrap_80168d90(CPUState *cpu) {
-extern uint32_t heap_serialize_tag_14(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5);
+extern uint32_t heap_serialize_tag_14(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count);
     cpu->gpr[2] = (uint32_t)(heap_serialize_tag_14(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu))));
 }
 static void wrap_80168f60(CPUState *cpu) {
@@ -21736,67 +21736,67 @@ extern uint32_t quad_strip_emit_b(uint32_t dst, uint32_t src, uint32_t tb,
     cpu->gpr[2] = (uint32_t)(quad_strip_emit_b(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu)), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 20) & 0xffffffffu)), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 24) & 0xffffffffu))));
 }
 static void wrap_801697f4(CPUState *cpu) {
-extern uint32_t heap_serialize_tag_0a(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5);
+extern uint32_t heap_serialize_tag_0a(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count);
     cpu->gpr[2] = (uint32_t)(heap_serialize_tag_0a(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu))));
 }
 static void wrap_8016991c(CPUState *cpu) {
-extern uint32_t heap_serialize_tag_0e(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5);
+extern uint32_t heap_serialize_tag_0e(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count);
     cpu->gpr[2] = (uint32_t)(heap_serialize_tag_0e(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu))));
 }
 static void wrap_80169aa4(CPUState *cpu) {
-extern uint32_t heap_serialize_tag_12(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5);
+extern uint32_t heap_serialize_tag_12(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count);
     cpu->gpr[2] = (uint32_t)(heap_serialize_tag_12(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu))));
 }
 static void wrap_80169c08(CPUState *cpu) {
-extern uint32_t heap_serialize_tag_16(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5);
+extern uint32_t heap_serialize_tag_16(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count);
     cpu->gpr[2] = (uint32_t)(heap_serialize_tag_16(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu))));
 }
 static void wrap_80169dfc(CPUState *cpu) {
-extern uint32_t heap_serialize_tag_40048(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5);
+extern uint32_t heap_serialize_tag_40048(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t unused,uint32_t count);
     cpu->gpr[2] = (uint32_t)(heap_serialize_tag_40048(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu))));
 }
 static void wrap_80169ee0(CPUState *cpu) {
-extern uint32_t heap_serialize_tag_4004c(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5);
+extern uint32_t heap_serialize_tag_4004c(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t unused,uint32_t count);
     cpu->gpr[2] = (uint32_t)(heap_serialize_tag_4004c(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu))));
 }
 static void wrap_80169fe4(CPUState *cpu) {
-extern uint32_t heap_serialize_tag_40050(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5);
+extern uint32_t heap_serialize_tag_40050(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t unused,uint32_t count);
     cpu->gpr[2] = (uint32_t)(heap_serialize_tag_40050(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu))));
 }
 static void wrap_8016a0f8(CPUState *cpu) {
-extern uint32_t heap_serialize_tag_40054(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5);
+extern uint32_t heap_serialize_tag_40054(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t unused,uint32_t count);
     cpu->gpr[2] = (uint32_t)(heap_serialize_tag_40054(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu))));
 }
 static void wrap_8016a23c(CPUState *cpu) {
-extern uint32_t heap_serialize_tag_40049(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7);
+extern uint32_t heap_serialize_tag_40049(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t unused,uint32_t count,uint32_t xoff,
+                     uint32_t yoff);
     cpu->gpr[2] = (uint32_t)(heap_serialize_tag_40049(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu)), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 20) & 0xffffffffu)), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 24) & 0xffffffffu))));
 }
 static void wrap_8016a384(CPUState *cpu) {
-extern uint32_t heap_serialize_tag_40051(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7);
+extern uint32_t heap_serialize_tag_40051(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t unused,uint32_t count,uint32_t xoff,
+                     uint32_t yoff);
     cpu->gpr[2] = (uint32_t)(heap_serialize_tag_40051(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu)), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 20) & 0xffffffffu)), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 24) & 0xffffffffu))));
 }
 static void wrap_8016a50c(CPUState *cpu) {
-extern uint32_t heap_serialize_tag_4004d(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7);
+extern uint32_t heap_serialize_tag_4004d(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t unused,uint32_t count,uint32_t xoff,
+                     uint32_t yoff);
     cpu->gpr[2] = (uint32_t)(heap_serialize_tag_4004d(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu)), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 20) & 0xffffffffu)), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 24) & 0xffffffffu))));
 }
 static void wrap_8016a674(CPUState *cpu) {
-extern uint32_t heap_serialize_tag_40055(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7);
+extern uint32_t heap_serialize_tag_40055(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t unused,uint32_t count,uint32_t xoff,
+                     uint32_t yoff);
     cpu->gpr[2] = (uint32_t)(heap_serialize_tag_40055(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu)), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 20) & 0xffffffffu)), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 24) & 0xffffffffu))));
 }
 static void wrap_8016a82c(CPUState *cpu) {
@@ -21806,67 +21806,67 @@ extern uint32_t heap_serialize_tag_01000000(uint32_t dst,uint32_t hdr,
     cpu->gpr[2] = (uint32_t)(heap_serialize_tag_01000000(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu)), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 20) & 0xffffffffu))));
 }
 static void wrap_8016a8ec(CPUState *cpu) {
-extern uint32_t heap_serialize_tag_01000008(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5);
+extern uint32_t heap_serialize_tag_01000008(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count);
     cpu->gpr[2] = (uint32_t)(heap_serialize_tag_01000008(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu))));
 }
 static void wrap_8016a9ac(CPUState *cpu) {
-extern uint32_t heap_serialize_tag_0100000c(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5);
+extern uint32_t heap_serialize_tag_0100000c(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count);
     cpu->gpr[2] = (uint32_t)(heap_serialize_tag_0100000c(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu))));
 }
 static void wrap_8016aaa4(CPUState *cpu) {
-extern uint32_t heap_serialize_tag_01000009(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7);
+extern uint32_t heap_serialize_tag_01000009(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t unused,uint32_t count,uint32_t xoff,
+                     uint32_t yoff);
     cpu->gpr[2] = (uint32_t)(heap_serialize_tag_01000009(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu)), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 20) & 0xffffffffu)), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 24) & 0xffffffffu))));
 }
 static void wrap_8016abb4(CPUState *cpu) {
-extern uint32_t heap_serialize_tag_0100000d(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7);
+extern uint32_t heap_serialize_tag_0100000d(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t unused,uint32_t count,uint32_t xoff,
+                     uint32_t yoff);
     cpu->gpr[2] = (uint32_t)(heap_serialize_tag_0100000d(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu)), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 20) & 0xffffffffu)), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 24) & 0xffffffffu))));
 }
 static void wrap_8016ad04(CPUState *cpu) {
-extern uint32_t heap_serialize_tag_0100000a(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5);
+extern uint32_t heap_serialize_tag_0100000a(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count);
     cpu->gpr[2] = (uint32_t)(heap_serialize_tag_0100000a(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu))));
 }
 static void wrap_8016addc(CPUState *cpu) {
-extern uint32_t heap_serialize_tag_0100000e(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5);
+extern uint32_t heap_serialize_tag_0100000e(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count);
     cpu->gpr[2] = (uint32_t)(heap_serialize_tag_0100000e(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu))));
 }
 static void wrap_8016aeec(CPUState *cpu) {
-extern uint32_t heap_serialize_tag_01000010(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5);
+extern uint32_t heap_serialize_tag_01000010(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count);
     cpu->gpr[2] = (uint32_t)(heap_serialize_tag_01000010(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu))));
 }
 static void wrap_8016afc8(CPUState *cpu) {
-extern uint32_t heap_serialize_tag_01000014(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5);
+extern uint32_t heap_serialize_tag_01000014(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count);
     cpu->gpr[2] = (uint32_t)(heap_serialize_tag_01000014(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu))));
 }
 static void wrap_8016b0f8(CPUState *cpu) {
-extern uint32_t heap_serialize_tag_01000011(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7);
+extern uint32_t heap_serialize_tag_01000011(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t unused,uint32_t count,uint32_t xoff,
+                     uint32_t yoff);
     cpu->gpr[2] = (uint32_t)(heap_serialize_tag_01000011(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu)), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 20) & 0xffffffffu)), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 24) & 0xffffffffu))));
 }
 static void wrap_8016b234(CPUState *cpu) {
-extern uint32_t heap_serialize_tag_01000015(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7);
+extern uint32_t heap_serialize_tag_01000015(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t unused,uint32_t count,uint32_t xoff,
+                     uint32_t yoff);
     cpu->gpr[2] = (uint32_t)(heap_serialize_tag_01000015(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu)), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 20) & 0xffffffffu)), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 24) & 0xffffffffu))));
 }
 static void wrap_8016b3c4(CPUState *cpu) {
-extern uint32_t heap_serialize_tag_01000012(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5);
+extern uint32_t heap_serialize_tag_01000012(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count);
     cpu->gpr[2] = (uint32_t)(heap_serialize_tag_01000012(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu))));
 }
 static void wrap_8016b4c4(CPUState *cpu) {
-extern uint32_t heap_serialize_tag_01000016(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5);
+extern uint32_t heap_serialize_tag_01000016(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count);
     cpu->gpr[2] = (uint32_t)(heap_serialize_tag_01000016(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu))));
 }
 static void wrap_8016b618(CPUState *cpu) {
@@ -21880,9 +21880,9 @@ extern void dual_entry_attr_bump(uint32_t rec,uint32_t im0,uint32_t im1,
     dual_entry_attr_bump(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu)), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 20) & 0xffffffffu)));
 }
 static void wrap_8016b7c0(CPUState *cpu) {
-extern uint32_t heap_serialize(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7);
+extern uint32_t heap_serialize(uint32_t blk, uint32_t cur, uint32_t dst,
+                     uint32_t mode, uint32_t outp, uint32_t s7,
+                     uint32_t fp);
     cpu->gpr[2] = (uint32_t)(heap_serialize(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu)), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 20) & 0xffffffffu)), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 24) & 0xffffffffu))));
 }
 static void wrap_8016cb20(CPUState *cpu) {
@@ -21949,7 +21949,7 @@ extern uint32_t FUN_8016fcb0(uint32_t a0);
     cpu->gpr[2] = (uint32_t)(FUN_8016fcb0(((uint32_t)cpu->gpr[4])));
 }
 static void wrap_8016fcc4(CPUState *cpu) {
-extern void battle_flow_state_machine(intptr_t param_1);
+extern void battle_flow_state_machine(intptr_t aux_ptr);
     battle_flow_state_machine(((intptr_t)guest_at(cpu->gpr[4])));
 }
 static void wrap_8016fd38(CPUState *cpu) {
@@ -22999,7 +22999,7 @@ extern void part_record_reset(undefined2 *rec);
     part_record_reset(((undefined2 *)guest_at(cpu->gpr[4])));
 }
 static void wrap_80179ae0(CPUState *cpu) {
-extern uint32_t skeleton_init(uint32_t param_1,uint32_t param_2,uint32_t param_3);
+extern uint32_t skeleton_init(uint32_t ctrl, uint32_t desc, uint32_t unused);
     cpu->gpr[2] = (uint32_t)(skeleton_init(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6])));
 }
 static void wrap_8017a05c(CPUState *cpu) {
@@ -27198,7 +27198,7 @@ extern uint32_t atan2_lut(int x,int y);
     cpu->gpr[2] = (uint32_t)(atan2_lut(((int)cpu->gpr[4]), ((int)cpu->gpr[5])));
 }
 static void wrap_8018d244(CPUState *cpu) {
-extern uint32_t trig_sin_lookup(uint a0);
+extern uint32_t trig_sin_lookup(uint ang);
     cpu->gpr[2] = (uint32_t)(trig_sin_lookup(((uint)cpu->gpr[4])));
 }
 static void wrap_8018d27c(CPUState *cpu) {
@@ -27230,7 +27230,7 @@ extern void gte_light_set_q4(void);
     gte_light_set_q4();
 }
 static void wrap_8018d2ec(CPUState *cpu) {
-extern void gte_light_set(undefined4 a0,undefined4 a1,undefined4 a2);
+extern void gte_light_set(undefined4 x,undefined4 y,undefined4 z);
     gte_light_set(((undefined4)cpu->gpr[4]), ((undefined4)cpu->gpr[5]), ((undefined4)cpu->gpr[6]));
 }
 static void wrap_8018d300(CPUState *cpu) {
@@ -27308,7 +27308,7 @@ extern int * rtps_point_xform2(undefined4 *a0,undefined4 *a1,int *a2);
     cpu->gpr[2] = guest_of((const void *)(rtps_point_xform2(((undefined4 *)guest_at(cpu->gpr[4])), ((undefined4 *)guest_at(cpu->gpr[5])), ((int *)guest_at(cpu->gpr[6])))));
 }
 static void wrap_8018d568(CPUState *cpu) {
-extern int * gte_xform_add_off(int a0,undefined4 *a1,int *a2);
+extern int * gte_xform_add_off(int x,undefined4 *y,int *z);
     cpu->gpr[2] = guest_of((const void *)(gte_xform_add_off(((int)cpu->gpr[4]), ((undefined4 *)guest_at(cpu->gpr[5])), ((int *)guest_at(cpu->gpr[6])))));
 }
 static void wrap_8018d5b4(CPUState *cpu) {
@@ -27364,7 +27364,7 @@ extern void angle_pair_rotmat_unpack(void);
     angle_pair_rotmat_unpack();
 }
 static void wrap_8018dac0(CPUState *cpu) {
-extern uint * angle_pair_rotmat(uint a0,uint a1,uint *a2);
+extern uint * angle_pair_rotmat(uint x,uint y,uint *z);
     cpu->gpr[2] = guest_of((const void *)(angle_pair_rotmat(((uint)cpu->gpr[4]), ((uint)cpu->gpr[5]), ((uint *)guest_at(cpu->gpr[6])))));
 }
 static void wrap_8018dbe4(CPUState *cpu) {
@@ -27404,7 +27404,7 @@ extern uint * angle_vec_build_half(uint32_t src, uint *out);
     cpu->gpr[2] = guest_of((const void *)(angle_vec_build_half(((uint32_t)cpu->gpr[4]), ((uint *)guest_at(cpu->gpr[5])))));
 }
 static void wrap_8018e028(CPUState *cpu) {
-extern uint * angle_vec_build(uint a0,uint *a1);
+extern uint * angle_vec_build(uint ang,uint *a1);
     cpu->gpr[2] = guest_of((const void *)(angle_vec_build(((uint)cpu->gpr[4]), ((uint *)guest_at(cpu->gpr[5])))));
 }
 static void wrap_8018e0b0(CPUState *cpu) {
@@ -28551,7 +28551,7 @@ extern uint32_t gpu_texclut_pkt(uint32_t *t0, uint32_t *a1, uint32_t a2, uint32_
     cpu->gpr[2] = (uint32_t)(gpu_texclut_pkt(((uint32_t *)guest_at(cpu->gpr[4])), ((uint32_t *)guest_at(cpu->gpr[5])), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7])));
 }
 static void wrap_801941e0(CPUState *cpu) {
-extern void prim_packet_init_tex(int a0,int a1,int a2,uint a3,byte *arg5);
+extern void prim_packet_init_tex(int pkt,int a1,int a2,uint fl,byte *arg5);
     prim_packet_init_tex(((int)cpu->gpr[4]), ((int)cpu->gpr[5]), ((int)cpu->gpr[6]), ((uint)cpu->gpr[7]), ((byte *)guest_at((uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu))));
 }
 static void wrap_80194280(CPUState *cpu) {
@@ -28667,15 +28667,15 @@ extern undefined2 * gte_rtps_xform1(undefined4 *a0,undefined4 *a1,undefined2 *a2
     cpu->gpr[2] = guest_of((const void *)(gte_rtps_xform1(((undefined4 *)guest_at(cpu->gpr[4])), ((undefined4 *)guest_at(cpu->gpr[5])), ((undefined2 *)guest_at(cpu->gpr[6])))));
 }
 static void wrap_80195210(CPUState *cpu) {
-extern void gte_rot_load(undefined4 *a0);
+extern void gte_rot_load(undefined4 *m);
     gte_rot_load(((undefined4 *)guest_at(cpu->gpr[4])));
 }
 static void wrap_80195240(CPUState *cpu) {
-extern void gte_light_load(undefined4 *a0);
+extern void gte_light_load(undefined4 *light);
     gte_light_load(((undefined4 *)guest_at(cpu->gpr[4])));
 }
 static void wrap_80195270(CPUState *cpu) {
-extern void gte_tr_load(int a0);
+extern void gte_tr_load(int t);
     gte_tr_load(((int)cpu->gpr[4]));
 }
 static void wrap_80195290(CPUState *cpu) {
@@ -31856,7 +31856,7 @@ extern uint32_t fifo_space_check(void);
     cpu->gpr[2] = (uint32_t)(fifo_space_check());
 }
 static void wrap_801a42d0(CPUState *cpu) {
-extern void task_heads_clear(int a0);
+extern void task_heads_clear(int pool);
     task_heads_clear(((int)cpu->gpr[4]));
 }
 static void wrap_801a4308(CPUState *cpu) {
@@ -31888,7 +31888,7 @@ extern void gp_20_store(uint32_t val);
     gp_20_store(((uint32_t)cpu->gpr[4]));
 }
 static void wrap_801a4aac(CPUState *cpu) {
-extern void task_slot_fns_run(int a0);
+extern void task_slot_fns_run(int slot);
     task_slot_fns_run(((int)cpu->gpr[4]));
 }
 static void wrap_801a4be8(CPUState *cpu) {
@@ -31916,7 +31916,7 @@ extern uint32_t task_pool_alloc(int a0,int a1,int a2);
     cpu->gpr[2] = (uint32_t)(task_pool_alloc(((int)cpu->gpr[4]), ((int)cpu->gpr[5]), ((int)cpu->gpr[6])));
 }
 static void wrap_801a4fd0(CPUState *cpu) {
-extern void task_pool_free(int a0);
+extern void task_pool_free(int pool);
     task_pool_free(((int)cpu->gpr[4]));
 }
 static void wrap_801a50d8(CPUState *cpu) {
