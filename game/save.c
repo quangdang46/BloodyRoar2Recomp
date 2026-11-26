@@ -2687,7 +2687,7 @@ int hud_name_fixup(char *name)
  * u16 src+0xe0->+0xc, u16 src+0xe6->+0xe. */
 void name_rec_insert(uint8_t *a0,int32_t a1,uint8_t *a2,const void *a3_,int32_t count)
 {
-  uint8_t *t0 = a0 + a1 * 16;
+  uint8_t *rec = a0 + a1 * 16;
   const uint8_t *a3 = (const uint8_t *)a3_;
   int32_t i;
   if (a1 >= count || a1 < 0) {
@@ -2695,29 +2695,29 @@ void name_rec_insert(uint8_t *a0,int32_t a1,uint8_t *a2,const void *a3_,int32_t 
   }
   for (i = count - 2; i >= a1; i--)
     memcpy(a0 + (i + 1) * 16,a0 + i * 16,16);
-  t0[0] = a3[0]; t0[1] = a3[1]; t0[2] = a3[2]; t0[3] = a3[3];
-  t0[4] = a2[3];
-  *(uint32_t *)(t0 + 8) = *(uint32_t *)(a2 + 0xf0);
-  *(uint16_t *)(t0 + 0xc) = *(uint16_t *)(a2 + 0xe0);
-  *(uint16_t *)(t0 + 0xe) = *(uint16_t *)(a2 + 0xe6);
+  rec[0] = a3[0]; rec[1] = a3[1]; rec[2] = a3[2]; rec[3] = a3[3];
+  rec[4] = a2[3];
+  *(uint32_t *)(rec + 8) = *(uint32_t *)(a2 + 0xf0);
+  *(uint16_t *)(rec + 0xc) = *(uint16_t *)(a2 + 0xe0);
+  *(uint16_t *)(rec + 0xe) = *(uint16_t *)(a2 + 0xe6);
 }
 
 /* name_rec_gate — name-table update gate: skip when byte @0x1f80009c
  * in [2,6); else rec_sorted_lookup lookup on table @0x801c1304 keyed by
  * src+0xe0, then name_rec_insert insert (str arg or default @0x80121fa4).
  * Disasm 0x80163cbc-0x80163d78. */
-void name_rec_gate(uint8_t *s1,const void *a1_)
+void name_rec_gate(uint8_t *src,const void *a1_)
 {
-  int8_t v1 = *(int8_t *)guest_at(0x1f80009c);
-  uint8_t *s0 = (uint8_t *)guest_at(0x801c1304);
-  const uint8_t *s2 = (const uint8_t *)a1_;
+  int8_t gate = *(int8_t *)guest_at(0x1f80009c);
+  uint8_t *tab = (uint8_t *)guest_at(0x801c1304);
+  const uint8_t *str = (const uint8_t *)a1_;
   int32_t r;
-  if (v1 >= 2 && v1 < 6) return;
-  r = rec_sorted_lookup(s0,*(uint16_t *)(s1 + 0xe0),0xa);
-  if (*(uint8_t *)s2 != 0) {
-    if (r >= 0) name_rec_insert(s0,r,s1,s2,0xa);
+  if (gate >= 2 && gate < 6) return;
+  r = rec_sorted_lookup(tab,*(uint16_t *)(src + 0xe0),0xa);
+  if (*(uint8_t *)str != 0) {
+    if (r >= 0) name_rec_insert(tab,r,src,str,0xa);
   } else {
-    if (r >= 0) name_rec_insert(s0,r,s1,(uint8_t *)guest_at(0x80121fa4),0xa);
+    if (r >= 0) name_rec_insert(tab,r,src,(uint8_t *)guest_at(0x80121fa4),0xa);
   }
 }
 
@@ -2727,12 +2727,12 @@ void name_rec_gate(uint8_t *s1,const void *a1_)
  * Disasm 0x80167b34-0x80167bd4. */
 int mc_op_dispatch(uint32_t a0)
 {
-  int32_t s0 = -(a0 != 0);
-  uint32_t s1 = (uint32_t)s0 & 0x10;
-  int32_t r = mc_op_result_poll(s1);
+  int32_t neg = -(a0 != 0);
+  uint32_t fl = (uint32_t)neg & 0x10;
+  int32_t r = mc_op_result_poll(fl);
   if (r == 3 || r == 4)
-    *(uint32_t *)guest_at(0x801b43e8 + ((uint32_t)s0 & 4)) = 3;
-  if (r == 0 || r == 4) return mc_op_wait_stable(s1);
+    *(uint32_t *)guest_at(0x801b43e8 + ((uint32_t)neg & 4)) = 3;
+  if (r == 0 || r == 4) return mc_op_wait_stable(fl);
   return r;
 }
 
@@ -2742,8 +2742,8 @@ int mc_op_dispatch(uint32_t a0)
  * Disasm 0x80167bd8-0x80167cdc. */
 int mc_op_dispatch_b(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,uint32_t s4,uint32_t s5,uint32_t s6)
 {
-  int32_t s1 = -(a0 != 0);
-  uint32_t fl = (uint32_t)s1 & 0x10;
+  int32_t neg = -(a0 != 0);
+  uint32_t fl = (uint32_t)neg & 0x10;
   int32_t r = mc_op_result_poll(fl);
   if (r == 3 || r == 0) {
     uint32_t *slot = (uint32_t *)guest_at(0x801b43e8 + ((a0 != 0) ? 4 : 0));
@@ -2770,7 +2770,7 @@ int mc_op_dispatch_b(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,uint32_t s4
     }
   }
   if (r == 4) {
-    *(uint32_t *)guest_at(0x801b43e8 + ((uint32_t)s1 & 4)) = 3;
+    *(uint32_t *)guest_at(0x801b43e8 + ((uint32_t)neg & 4)) = 3;
     return 4;
   }
   if (r >= 1 && r <= 2) return r;
