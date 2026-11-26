@@ -897,3 +897,21 @@ entries — generated fallback covers them faithfully regardless.
 Transformer notes: `psx_ws_cull_sltiu`+`psx_restore_state_escape` externs in
 FILE_HDR; covered-fallthrough targets emit `cpu->pc=addr;return` (NOT `cps_X()`
 — they'd shadow clean defs); dedupe piece-closures before registering.
+
+### Session update 16 (embedded entries + absolute-zero uncovered)
+
+Pushed coverage to literal zero at the dispatch level:
+- `cd_ext_init_once` (0x8019b308) → cps_ (BIOS boundary, proven safe)
+- `cd_dma_chan_init` (0x8019b310) → `_cont` injection: it's an alternate
+  jal-entry inside ext_init_once's piece (unconditional-init variant
+  skipping the guard-load). Added `block_8019B310` label + case.
+- `cd_seek_step` (0x8019d508) → new `cps_8019d508`: shared-body entry
+  inside hand-ported `cd_seek_complete_poll`'s piece; faithful copy
+  minus the flag-load preamble (seek_step uses caller gpr[2]).
+
+**Verified zero uncovered:** 0 named addrs, 0 piece entries, 0 delegate
+targets missing from clean_table (8973 wrappers). `generated/` is now
+load-bearing ONLY for ~87 `br2_call_generated` sub-calls inside clean
+fn bodies — deliberate §4 delegations (BIOS svc, MMIO sequences,
+coroutine ops needing live guest state). Those need per-function §4
+hand-analysis, not transformation.
