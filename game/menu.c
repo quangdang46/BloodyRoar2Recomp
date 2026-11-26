@@ -7533,12 +7533,12 @@ extern uint16_t attr_flag_mask(uint32_t);
  * a1==0 -> ++u16 @rec+0xa. Returns the incremented u32. */
 int32_t record_field_step(int32_t ent,int32_t which)
 {
-  uint32_t a0 = (uint32_t)ent;
+  uint32_t ent_u = (uint32_t)ent;
   uint32_t rec;
   uint32_t idx, tgt;
-  uint32_t v;
+  uint32_t nv;
 
-  rec = 0x801c11e0u + ((uint32_t)MB8(a0 + 3) * 36u) + 0x264u;
+  rec = 0x801c11e0u + ((uint32_t)MB8(ent_u + 3) * 36u) + 0x264u;
   idx = MB8(0x1f80009c);
   if (idx < 6) {
     tgt = MB32(0x8011ebb8u + (idx << 2));
@@ -7546,13 +7546,13 @@ int32_t record_field_step(int32_t ent,int32_t which)
     /* tgt == 0x80127b30 -> shared tail */
   }
   if (which != 0) {
-    v = (uint32_t)MB16(rec + 6) + 1u;
-    MW16(rec + 6,(uint16_t)v);
-    return (int32_t)v;
+    nv = (uint32_t)MB16(rec + 6) + 1u;
+    MW16(rec + 6,(uint16_t)nv);
+    return (int32_t)nv;
   }
-  v = (uint32_t)MB16(rec + 0xa) + 1u;
-  MW16(rec + 0xa,(uint16_t)v);
-  return (int32_t)v;
+  nv = (uint32_t)MB16(rec + 0xa) + 1u;
+  MW16(rec + 0xa,(uint16_t)nv);
+  return (int32_t)nv;
 }
 
 /* ======== 0x80128bfc ========
@@ -7567,10 +7567,10 @@ void battle_subrecord_set2(uint32_t battle)
  * a1>=0 -> store a1 there and return the pointer itself (v0). */
 int32_t subrecord_u16_rw(uint32_t battle,int32_t val)
 {
-  uint32_t v0 = MB32(battle + 0xcc);
-  if (val < 0) return (int32_t)MBS16(v0);
-  MW16(v0,(uint16_t)val);
-  return (int32_t)v0;
+  uint32_t sub = MB32(battle + 0xcc);
+  if (val < 0) return (int32_t)MBS16(sub);
+  MW16(sub,(uint16_t)val);
+  return (int32_t)sub;
 }
 
 /* ======== 0x8012b488 ========
@@ -9052,11 +9052,11 @@ void battle_side_flag_prop(uint32_t battle,uint8_t *side)
  * victory_record_restore(battle,4) and stores the low halfword at s0+6. */
 void engine_tables_restore(uint32_t battle)
 {
-  uint32_t s0 = MB32(battle + 0xcc);
-  MW16(s0,0);
-  memcpy(guest_at(0x801e1b3c),guest_at(s0 + 0x18),0x21c0);
-  memcpy(guest_at(0x801e0f6c),guest_at(s0 + 0x21d8),0xbd0);
-  MW16(s0 + 6,(uint16_t)victory_record_restore(battle,4));
+  uint32_t tbl = MB32(battle + 0xcc);
+  MW16(tbl,0);
+  memcpy(guest_at(0x801e1b3c),guest_at(tbl + 0x18),0x21c0);
+  memcpy(guest_at(0x801e0f6c),guest_at(tbl + 0x21d8),0xbd0);
+  MW16(tbl + 6,(uint16_t)victory_record_restore(battle,4));
 }
 
 /* ======== batch37 ======== */
@@ -11502,32 +11502,32 @@ void print_mode_dispatch(uint32_t win,uint32_t fmt,uint32_t a3,
 void scroll_attr_100_update(uint32_t base)
 {
   uint32_t slot = base + MB32(0x1f80000cu) * 4000u;
-  uint32_t r4 = base, r2 = base;
+  uint32_t cur4 = base, cur2 = base;
   int32_t i;
-  uint32_t v0;
+  uint32_t ot_tail;
   for (i = 0; i < 100; i++) {
-    if (MB32(r4 + 0x2260) != 0) {
-      uint32_t a2;
-      MW16(r4 + 0x1f40, MB16(r4 + 0x1f40) + MB16(r4 + 0x20d0));
-      a2 = MB16(r4 + 0x1f42) + MB16(r4 + 0x20d2);
-      MW16(r4 + 0x1f42, a2);
-      a2 = (uint32_t)(int32_t)(int16_t)a2;
+    if (MB32(cur4 + 0x2260) != 0) {
+      uint32_t sy;
+      MW16(cur4 + 0x1f40, MB16(cur4 + 0x1f40) + MB16(cur4 + 0x20d0));
+      sy = MB16(cur4 + 0x1f42) + MB16(cur4 + 0x20d2);
+      MW16(cur4 + 0x1f42, sy);
+      sy = (uint32_t)(int32_t)(int16_t)sy;
       {
-        int32_t a3 = (int32_t)MBS16(r2 + 0x23f0);
-        sprite_rect_set_c(slot, (int32_t)MBS16(r4 + 0x1f40), (int32_t)a2,
-                     a3, a3);
+        int32_t sz = (int32_t)MBS16(cur2 + 0x23f0);
+        sprite_rect_set_c(slot, (int32_t)MBS16(cur4 + 0x1f40), (int32_t)sy,
+                     sz, sz);
       }
-      v0 = MB32(MB32(0x1f800008u) + 0x40);
-      MW32(slot, v0 | 0x90000000u);
+      ot_tail = MB32(MB32(0x1f800008u) + 0x40);
+      MW32(slot, ot_tail | 0x90000000u);
       MW32(MB32(0x1f800008u) + 0x40, slot & 0xffffffu);
     }
     slot += 0x28;
-    r2 += 2;
-    r4 += 4;
+    cur2 += 2;
+    cur4 += 4;
   }
-  v0 = MB16(base + 0x24b8) - 1u;
-  MW16(base + 0x24b8, v0);
-  if ((int32_t)(int16_t)v0 < 0) task_slot_step();
+  ot_tail = MB16(base + 0x24b8) - 1u;
+  MW16(base + 0x24b8, ot_tail);
+  if ((int32_t)(int16_t)ot_tail < 0) task_slot_step();
 }
 
 /* ======== batch45 ======== */
@@ -12452,7 +12452,7 @@ void color_rec_table_init(uint32_t unused,uint32_t arg)
  * backlink s5&0xffffff into MB32(MB32(0x1f800008)+0x203c). */
 void emitter_30_teardown(uint32_t rec)
 {
-  uint32_t slot, p16, q16, dec, dst, v0, v1;
+  uint32_t slot, p16, q16, dec, dst, v0, dec_b;
   int32_t i;
   uint32_t pal = 0x1f8003f0u;
   for (i = 0; i < 8; i++)
@@ -12469,8 +12469,8 @@ void emitter_30_teardown(uint32_t rec)
     dec = rec + 0x9d8;
     q16 = rec + 0x962;
     for (i = 0; i < 0x1e; i++) {
-      v1 = MB8(dec);
-      v0 = (uint32_t)(int16_t)(MB16(q16) - v1);
+      dec_b = MB8(dec);
+      v0 = (uint32_t)(int16_t)(MB16(q16) - dec_b);
       MW16(q16, (uint16_t)v0);
       if ((int32_t)(int16_t)v0 < -0x40) {
         MW16(q16, 0x200u);
