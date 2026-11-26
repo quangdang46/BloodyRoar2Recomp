@@ -195,10 +195,10 @@ extern void dialog_sel_dispatch_wide(void);
 undefined1 frame_divisor_get(void);
 extern int card_sprite_load_sm(uint32_t,int);
 extern int attr_word_decode(void *);
-undefined4 stream_block_decode(undefined4,int *,int param_3);
-uint pad_state_refresh(intptr_t param_1);
-undefined2 match_mode_set(int param_1);
-void cd_stream_mode_init(undefined4 param_1);
+undefined4 stream_block_decode(undefined4,int *,int idx);
+uint pad_state_refresh(intptr_t ctx);
+undefined2 match_mode_set(int ctx);
+void cd_stream_mode_init(undefined4 stptr);
 
 /* ---- guest globals ---- */
 extern uint8_t  *g_DAT_1f800001;
@@ -2219,7 +2219,7 @@ void cd_subsys_boot(void)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void display_frame_present(int *param_1,int param_2)
+void display_frame_present(int *par,int tmr)
 
 {
   int iVar1;
@@ -2230,41 +2230,41 @@ void display_frame_present(int *param_1,int param_2)
   deferred_cmd_drain();
   memcard_slot_poll();
   iVar1 = 0;
-  if (-1 < param_2) {
-    iVar1 = param_2;
+  if (-1 < tmr) {
+    iVar1 = tmr;
   }
   cd_timer_read(iVar1);
   _DAT_1f80000c = (uint)(_DAT_801f4728 == 0);
-  if (*param_1 == 0) {
-    iVar1 = param_1[3];
+  if (*par == 0) {
+    iVar1 = par[3];
   }
   else {
-    iVar1 = (param_1[3] * 3) / 2;
+    iVar1 = (par[3] * 3) / 2;
   }
-  if (*param_1 == 0) {
-    iVar2 = param_1[5];
+  if (*par == 0) {
+    iVar2 = par[5];
   }
   else {
-    iVar2 = (param_1[5] * 3) / 2;
+    iVar2 = (par[5] * 3) / 2;
   }
   sprite_attr_init_b(_DAT_1f800004 + 0x5c,*(short *)guest_at((uint32_t)(_DAT_1f80000c * 8 + -0x7fe0b8e8)) - iVar1,
-               (int)*(short *)guest_at((uint32_t)(_DAT_1f80000c * 8 + -0x7fe0b8e6)) - param_1[4],iVar2,param_1[6]);
+               (int)*(short *)guest_at((uint32_t)(_DAT_1f80000c * 8 + -0x7fe0b8e6)) - par[4],iVar2,par[6]);
   *(undefined1 *)guest_at(_DAT_1f800004 + 0x6e) = 1;
   *(undefined2 *)guest_at(_DAT_1f800004 + 0x66) = 0x18;
-  if (*param_1 != 0) {
-    *(char *)guest_at(_DAT_1f800004 + 0x6d) = (char)*param_1;
+  if (*par != 0) {
+    *(char *)guest_at(_DAT_1f800004 + 0x6d) = (char)*par;
     iVar1 = (int)*(short *)guest_at(_DAT_1f800004 + 0x60) << 1;
     *(short *)guest_at(_DAT_1f800004 + 0x60) =
          (short)((ulonglong)((longlong)iVar1 * 0x55555556) >> 0x20) - (short)(iVar1 >> 0x1f);
   }
-  if (*param_1 == 0) {
-    iVar1 = param_1[5];
+  if (*par == 0) {
+    iVar1 = par[5];
   }
   else {
-    iVar1 = (param_1[5] * 3) / 2;
+    iVar1 = (par[5] * 3) / 2;
   }
   sprite_attr_init_a(_DAT_1f800004,(int)*(short *)guest_at((uint32_t)(_DAT_1f80000c * 8 + -0x7fe0b8e8)),
-               (int)*(short *)guest_at((uint32_t)(_DAT_1f80000c * 8 + -0x7fe0b8e6)),iVar1,param_1[6]);
+               (int)*(short *)guest_at((uint32_t)(_DAT_1f80000c * 8 + -0x7fe0b8e6)),iVar1,par[6]);
   draw_env_timing(_DAT_1f800004 + 0x5c);
   gpu_draw_env_put(_DAT_1f800004);
   gpu_draw_otag((int)_DAT_1f800008 + 0x24);
@@ -2283,49 +2283,49 @@ void display_frame_present(int *param_1,int param_2)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void tile_stream_job_init(undefined4 *param_1,undefined2 param_2,undefined2 param_3,undefined2 param_4,
-                 undefined2 param_5,int *param_6)
+void tile_stream_job_init(undefined4 *job,undefined2 w0,undefined2 w1,undefined2 w2,
+                 undefined2 w3,int *ctrl)
 
 {
-  undefined4 uVar1;
-  undefined4 uVar2;
-  undefined4 uVar3;
-  undefined4 uVar4;
-  undefined2 uVar5;
+  undefined4 hdr0;
+  undefined4 hdr1;
+  undefined4 hdr2;
+  undefined4 hdr3;
+  undefined2 flg;
   
-  param_1 = (undefined4 *)guest_at((uint32_t)(uintptr_t)param_1);
-  uVar4 = _DAT_801f4750;
-  uVar3 = _DAT_801f474c;
-  uVar2 = _DAT_801f4748;
-  uVar1 = _DAT_801f4744;
+  job = (undefined4 *)guest_at((uint32_t)(uintptr_t)job);
+  hdr3 = _DAT_801f4750;
+  hdr2 = _DAT_801f474c;
+  hdr1 = _DAT_801f4748;
+  hdr0 = _DAT_801f4744;
   if (DAT_801b3f64 == 1) {
-    param_1[2] = 0;
-    param_1[5] = 0;
-    param_1[10] = 0;
-    param_1[0xd] = 0;
+    job[2] = 0;
+    job[5] = 0;
+    job[10] = 0;
+    job[0xd] = 0;
     DAT_801b3f64 = 0;
-    *param_1 = uVar1;
-    param_1[1] = uVar2;
-    param_1[3] = uVar3;
-    param_1[4] = uVar4;
+    *job = hdr0;
+    job[1] = hdr1;
+    job[3] = hdr2;
+    job[4] = hdr3;
   }
-  *(undefined2 *)(param_1 + 6) = param_2;
-  *(undefined2 *)((char *)param_1 + 0x1a) = param_3;
-  *(undefined2 *)(param_1 + 8) = param_4;
-  *(undefined2 *)((char *)param_1 + 0x22) = param_5;
-  uVar5 = 0x10;
-  if (*param_6 != 0) {
-    uVar5 = 0x18;
+  *(undefined2 *)(job + 6) = w0;
+  *(undefined2 *)((char *)job + 0x1a) = w1;
+  *(undefined2 *)(job + 8) = w2;
+  *(undefined2 *)((char *)job + 0x22) = w3;
+  flg = 0x10;
+  if (*ctrl != 0) {
+    flg = 0x18;
   }
-  *(undefined2 *)(param_1 + 0xc) = uVar5;
-  param_1[0xe] = *param_6;
-  if (param_1[10] == 0) {
-    *(undefined2 *)(param_1 + 0xb) = param_2;
-    *(undefined2 *)((char *)param_1 + 0x2e) = param_3;
+  *(undefined2 *)(job + 0xc) = flg;
+  job[0xe] = *ctrl;
+  if (job[10] == 0) {
+    *(undefined2 *)(job + 0xb) = w0;
+    *(undefined2 *)((char *)job + 0x2e) = w1;
     return;
   }
-  *(undefined2 *)(param_1 + 0xb) = param_4;
-  *(undefined2 *)((char *)param_1 + 0x2e) = param_5;
+  *(undefined2 *)(job + 0xb) = w2;
+  *(undefined2 *)((char *)job + 0x2e) = w3;
   return;
 }
 
@@ -2333,14 +2333,14 @@ void tile_stream_job_init(undefined4 *param_1,undefined2 param_2,undefined2 para
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void tile_stream_open(uint8_t *param_1,void *param_2,int *param_3)
+void tile_stream_open(uint8_t *buf,void *fpath,int *rdpar)
 
 {
   cd_fileop_reset(0);
-  cd_fileop_dispatch(br2_gaddr(param_2));
+  cd_fileop_dispatch(br2_gaddr(fpath));
   cd_dir_table_set(_DAT_801f4754,0x20);
-  cd_read_params_store(*param_3,param_3[1],0xffffffff,0,0);
-  cd_stream_mode_init(guest_of(param_1));
+  cd_read_params_store(*rdpar,rdpar[1],0xffffffff,0,0);
+  cd_stream_mode_init(guest_of(buf));
   return;
 }
 
@@ -2406,30 +2406,30 @@ void tile_stream_pump(void)
 
 /* ======== 0x80159c24 ======== */
 
-void tile_decode_wait(intptr_t param_1)
+void tile_decode_wait(intptr_t job)
 
 {
-  uint uVar1;
-  int iVar2;
+  uint flip;
+  int busy;
   int local_18;
   
-  param_1 = (intptr_t)guest_at((uint32_t)param_1);
-  iVar2 = *(int *)(param_1 + 0x34);
+  job = (intptr_t)guest_at((uint32_t)job);
+  busy = *(int *)(job + 0x34);
   local_18 = 0x800000;
-  while (iVar2 == 0) {
+  while (busy == 0) {
     local_18 = local_18 + -1;
     if (local_18 == 0) {
       printf_forward(s_time_out_in_decoding___80120e90);
-      *(undefined4 *)(param_1 + 0x34) = 1;
-      uVar1 = (uint)(*(int *)(param_1 + 0x28) == 0);
-      *(uint *)(param_1 + 0x28) = uVar1;
-      *(undefined2 *)(param_1 + 0x2c) = *(undefined2 *)(param_1 + uVar1 * 8 + 0x18);
-      *(undefined2 *)(param_1 + 0x2e) =
-           *(undefined2 *)(param_1 + *(int *)(param_1 + 0x28) * 8 + 0x1a);
+      *(undefined4 *)(job + 0x34) = 1;
+      flip = (uint)(*(int *)(job + 0x28) == 0);
+      *(uint *)(job + 0x28) = flip;
+      *(undefined2 *)(job + 0x2c) = *(undefined2 *)(job + flip * 8 + 0x18);
+      *(undefined2 *)(job + 0x2e) =
+           *(undefined2 *)(job + *(int *)(job + 0x28) * 8 + 0x1a);
     }
-    iVar2 = *(int *)(param_1 + 0x34);
+    busy = *(int *)(job + 0x34);
   }
-  *(undefined4 *)(param_1 + 0x34) = 0;
+  *(undefined4 *)(job + 0x34) = 0;
   return;
 }
 
