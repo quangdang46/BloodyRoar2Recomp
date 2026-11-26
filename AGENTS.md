@@ -965,3 +965,27 @@ memcard on this build. Working verification that DOES NOT need read_ram:
 `clean_trace`, `phase_profile`, `bioscall_dump`. To fix read_ram properly,
 route it through the same overlay/paging resolution real CPU loads use —
 a memory-subsystem change, not a debug_server tweak.
+
+### Session update 18 (readability pass — named GPRs in cps_clean.c)
+
+Mechanical readability win on the transliteration bulk: all **65,600**
+`cpu->gpr[N]` refs in `game/cps_clean.c` now use standard MIPS register
+names via file-local `#define` aliases (`zero/at/v0/v1/a0-a3/t0-t9/s0-s7/
+k0/k1/gp/sp/fp/ra`). Purely cosmetic — macros expand back to identical
+`cpu->gpr[N]`, so semantics/dispatch are byte-identical. Verified: clean
+build, boot healthy, 0 dispatch misses. Mirrored in `gen_cps_clean.py`
+(GPR_NAMES + `_GPR_RE` in emit_fn + #define block in FILE_HDR) so future
+regens emit named regs.
+
+**Readability frontier status:** operand-level readability is now good —
+`sw $zero,0($v0); addiu $v0,$v0,4; sltiu $at,$v0,$v1` reads as real MIPS.
+What remains is STRUCTURAL: cps_clean.c is CPS-fragmented (each "function"
+is dozens of 4-40B basic-block pieces chained by `cpu->pc` returns +
+`psx_check_interrupts_at` yield points), so reconstructing whole readable
+functions requires decompiling the piece-CFG back into coherent control
+flow — the true hand-port frontier, large and per-function. The named
+cps_-routed fns are almost all correctly-transliterated CD/kernel
+coroutines (§4 — can't safely hand-port); math fns (angle_*,
+keyframe_cursor_search) are already hand-ported. Memory accessors
+(`cpu->read_word` etc.) intentionally NOT aliased — they don't map
+cleanly to signed/unsigned MIPS load names.
