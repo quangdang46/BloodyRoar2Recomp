@@ -110242,7 +110242,10 @@ block_801AE9E4:
 }
 
 /* cps_801aeb24 — clean CPS transliteration of br2eu_func_801AEB24 (guest 0x801aeb24)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * cmd_result_copy4: jal 0x801AD284(*(a1)) then copies 4 words from the
+ * resolved table entry (*(gp+76)+8 + s16[s0+2], idx s16[s0+4]*4) into
+ * v0+4..+16. */
 void cps_801aeb24(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -110628,7 +110631,10 @@ block_801AEE48:
 }
 
 /* cps_801aee58 — clean CPS transliteration of br2eu_func_801AEE58 (guest 0x801aee58)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * cmd_invoke_idx: param block t0 s16 idxs @+4/+6/+8 index table a3;
+ * resolves (a0,a1,a2) and jalr *t2 — when s16@a2==0 stores result into
+ * *(gp+76)+8+t1 instead. */
 void cps_801aee58(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -110727,7 +110733,9 @@ block_801AEF08:
 }
 
 /* cps_801aef18 — clean CPS transliteration of br2eu_func_801AEF18 (guest 0x801aef18)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * cmd_invoke_idx4: same shape as aee58 but 4 indices (@+4,+6,+8,+10)
+ * resolving a0..a3, jalr *t2; s16@a2==0 path stores via gp+76 ctx+8. */
 void cps_801aef18(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -110852,7 +110860,10 @@ block_801AF088:
 }
 
 /* cps_801af098 — clean CPS transliteration of br2eu_func_801AF098 (guest 0x801af098)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * cmd_invoke_table: if *s0==0 resolve params via 3-level s16 table
+ * (@0x801FF668 base, idxs @a0+2/+4/+6/+8), jal 0x801A6BD0, store result
+ * *s0; on success *(gp+76 ctx)+20=1. */
 void cps_801af098(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -110936,7 +110947,9 @@ block_801AF104:
 }
 
 /* cps_801af11c — clean CPS transliteration of br2eu_func_801AF11C (guest 0x801af11c)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * cmd_invoke_table_b: same resolver as af098 but a0+8 ptr + s16@a3+4
+ * offset base and 2-level table; stores *s0, sets ctx+20=1 on success. */
 void cps_801af11c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111023,7 +111036,9 @@ block_801AF194:
 }
 
 /* cps_801af1ac — clean CPS transliteration of br2eu_func_801AF1AC (guest 0x801af1ac)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * cmd_invoke_table_c: same family — a0+8 + s16@a3+2 base, table idx
+ * s16@a3+4, args a2/a3 from +6/+8; jal 0x801A6BD0 -> *s0, ctx+20=1. */
 void cps_801af1ac(void)
 {
   CPUState *cpu = clean_cpu_state();
