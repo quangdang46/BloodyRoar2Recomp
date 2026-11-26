@@ -589,3 +589,26 @@ clean_table: 8832 wrappers (+12), 5 skips unchanged.
 Remaining pool ~351 unrouted cps_ bodies >=0x8018.
 Verified: clean build EU + USA; headless :4971 frames 39364 -> 49114+
 attract CD streaming, no wedge.
+
+## Batch 24 (orch/w5/e05) — 12 leaves + PEER-PORT SHADOWING AUDIT
+
+12 bodies -> cpst_ (80192e24 SKIPPED: fnmap->gpu_tag_cmd_byte_get is a
+real peer port in gfx_gpu_d06.c; clean_cps.map rows override fnmap at
+dispatch so a cpst_ row would shadow it). clean_table 8808->? wrappers.
+
+AUDIT FINDING (needs orchestrator decision): 56 unique addrs now have
+cpst_ rows sitting over fnmap targets that are REAL clean-C ports
+(non-delegate): 28 in cd.c, 9 gfx_emit_p06, 5 gfx_emit_p02, 3 gfx.c,
+3 gfx_emit_p03, 2 save.c, 2 gfx_emit_p00, 1 each menu/vm/p01/p09.
+Examples: cd_probe_retry(cd.c:1802 real loop), prim_emit_ret_a0,
+lut_tail_pos, gpu_pkt_field2_get, rotmat2_build_s16, dir_emit_hpair.
+My leaf sweep (batches 14-23) picked addrs by unrouted-cps_-body only
+and did NOT check fnmap targets — shadowing peer ports violates the
+peer-ports-win convention. Both bodies are faithful-by-construction so
+this is a convention/maintainability issue, not a correctness bug.
+Candidates for row-removal: the ~15 gfx_emit_p0* addrs are clearly
+peer GFX ports; cd.c entries need per-function check (leaf ports fine,
+coroutine-resume addrs may still need CPS). cpst_ bodies can stay as
+dead code or be swept later.
+
+Verified: clean build EU + USA; headless :4977 frame 21286+ advancing.
