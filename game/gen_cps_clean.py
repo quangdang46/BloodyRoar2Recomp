@@ -219,7 +219,7 @@ FILE_HDR = '''/* cps_clean.c — AUTO-GENERATED clean CPS transliterations.
 
 extern CPUState *clean_cpu_state(void);
 extern void psx_check_interrupts_at(CPUState *cpu, uint32_t resume_pc);
-extern int  psx_ws_cull_sltiu(uint32_t sx, uint32_t imm);
+extern int  psx_ws_cull_sltiu(uint32_t sx, uint32_t imm);\nextern void psx_restore_state_escape(void);
 
 /* MIPS unaligned word accessors — faithful to psx_lwl/lwr/swl/swr but on the
  * MMIO-aware cpu read/write accessor path (no per-access cycle charge). */
