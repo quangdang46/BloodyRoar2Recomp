@@ -60059,6 +60059,7 @@ void cps_80172a2c(void)
     /* Address: 0x80172A2C, Size: 8 bytes, Blocks: 1 */
 
 block_80172A2C:
+    /* leaf stub: returns constant 2 (v0 set in the jr delay slot) */
     uint32_t _jt_80172A2C = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     v0 = 2;
@@ -60076,30 +60077,33 @@ void cps_80175a18(void)
     /* Address: 0x80175A18, Size: 100 bytes, Blocks: 1 */
 
 block_80175A18:
-    a0 = (int32_t)(int16_t)cpu->read_half(a2 + 176);
-    v0 = cpu->read_byte(a2 + 222);
+    /* entity motion-state init: scale = (s16[@a2+176] * u8[@a2+222]) * 0x51EB851F >> 37
+     * (signed magic-divide by ~100), result stored to halfwords @+170/+172/+174/+176;
+     * also clears @+216, presets @+214 = 0x1E00, sets flag bit 0x00200000 in word @+92 */
+    a0 = (int32_t)(int16_t)cpu->read_half(a2 + 176);  /* signed base stat */
+    v0 = cpu->read_byte(a2 + 222);                     /* unsigned multiplier byte */
     /* nop */  /* 0x80175A20: 0x00000000 */
     { int64_t result = (int64_t)(int32_t)a0 * (int64_t)(int32_t)v0; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
     psx_muldiv_set(cpu, psx_mult_latency_s(a0));
-    a0 = cpu->lo;
+    a0 = cpu->lo;                                      /* product low 32 */
     psx_muldiv_stall(cpu);
     v0 = 0x51EB << 16;  /* 0x51EB0000 */
-    v0 = v0 | 0x851F;
+    v0 = v0 | 0x851F;                                 /* magic multiplier 0x51EB851F */
     { int64_t result = (int64_t)(int32_t)a0 * (int64_t)(int32_t)v0; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
     psx_muldiv_set(cpu, psx_mult_latency_s(a0));
-    v1 = 0x0020 << 16;  /* 0x00200000 */
-    cpu->write_half(a2 + 216, (uint16_t)zero);
-    v0 = 7680;
-    cpu->write_half(a2 + 214, (uint16_t)v0);
-    v0 = cpu->read_word(a2 + 92);
-    a0 = (int32_t)a0 >> 31;
-    v0 = v0 | v1;
+    v1 = 0x0020 << 16;  /* 0x00200000 — flag bit OR'd into word @+92 */
+    cpu->write_half(a2 + 216, (uint16_t)zero);         /* clear counter/acc @+216 */
+    v0 = 7680;                                         /* 0x1E00 */
+    cpu->write_half(a2 + 214, (uint16_t)v0);           /* preset @+214 */
+    v0 = cpu->read_word(a2 + 92);                      /* flags word */
+    a0 = (int32_t)a0 >> 31;                            /* sign of product low (div correction) */
+    v0 = v0 | v1;                                      /* set bit 0x00200000 */
     cpu->write_word(a2 + 92, v0);
-    t0 = cpu->hi;
+    t0 = cpu->hi;                                      /* magic-multiply high word */
     psx_muldiv_stall(cpu);
-    v0 = (int32_t)t0 >> 5;
-    v0 = v0 - a0;
-    cpu->write_half(a2 + 176, (uint16_t)v0);
+    v0 = (int32_t)t0 >> 5;                             /* >>32+5 total: ~ /100 scale */
+    v0 = v0 - a0;                                      /* signed-divide rounding correction */
+    cpu->write_half(a2 + 176, (uint16_t)v0);           /* scaled value -> 4 motion fields */
     cpu->write_half(a2 + 172, (uint16_t)v0);
     cpu->write_half(a2 + 170, (uint16_t)v0);
     cpu->write_half(a2 + 174, (uint16_t)v0);
