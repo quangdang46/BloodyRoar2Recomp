@@ -1971,3 +1971,8 @@
 8018b380 prim_nclip_cull_emit_48
 8018b4b8 prim_rtps_cull_emit_58
 8018b628 prim_avsz3_cull_emit_58
+80164070 hud_score_draw_alt
+80165174 player_name_entry_alt
+80168494 mc_op_result_poll_alt
+80168624 mc_file_cmd_stable_poll_alt
+80170050 battle_flow_state_machine_alt
