@@ -8,10 +8,6 @@
 #include <string.h>
 #include "cpu_state.h"
 
-typedef uint8_t  undefined;
-typedef uint8_t  undefined1;
-typedef uint16_t undefined2;
-typedef uint32_t undefined4;
 typedef int8_t   byte;
 typedef uint16_t ushort;
 typedef uint32_t uint;
@@ -34,7 +30,7 @@ extern uint16_t psx_read_half(uint32_t addr);
 extern void decomp_trace_record(uint8_t tag, uint32_t dst, uint32_t src,
                                 uint8_t mode, uint32_t len);
 void gauge_scale_fixed(short a0,short a1);
-void brightness_commit(undefined2 a0);
+void brightness_commit(uint16_t a0);
 
 
 /* ---- guest globals ---- */
@@ -232,6 +228,27 @@ extern uint8_t  *g_DAT_801b43f0;
 #define DAT_801f5972   (*(uint8_t *)g_DAT_801f5972)
 #define DAT_801f5973   (*(uint8_t *)g_DAT_801f5973)
 #define PTR_DAT_801b4618   (*(uint32_t *)g_PTR_DAT_801b4618)
+/* Identified globals (roles inferred from use; names keep the guest addr):
+ *   0x801bef60  memcard dialog/state block base (s0/s1 in datetime_confirm_*)
+ *   0x801bef64  CD command result/status word (cd_sync_wait_a out-param)
+ *   0x801bef67..69  BCD timestamp bytes fed to cd_stamp_to_sector
+ *   0x801bef6c  populated slot count (cd_dir_read_wrap result)
+ *   0x801bef6d  memcard tick state (switch cases 0x10..0x23)
+ *   0x801bef6e  dialog mode byte; low nibble = confirm path (1/2)
+ *   0x801bef6f  memcard_tick gate flag (!=0 -> tick returns early)
+ *   0x801bef72  expected slot-count threshold for dir scan
+ *   0x801bef74  slot scan counter
+ *   0x801bef76  brightness fade countdown (u16, ticked in memcard_tick)
+ *   0x801bef78/80/84/88  save-sector numbers (cd_stamp_to_sector results)
+ *   0x801bef8c  directory-read buffer pointer
+ *   0x801c11e0  save record block (0x264-byte stride area, 11 records)
+ *   0x801c1264/1304/13a4  16-byte record tables (save_rec_table_copy)
+ *   0x801c4580  CD command-in-flight flag
+ *   0x801e8400  256-byte permutation table (perm_table_load/apply)
+ *   0x801f24d0  24x16 slot poll records (memcard_slot_poll)
+ *   0x801f35f4  live deferred-command count
+ *   0x801f3600  deferred command queue, 32 entries x 6 bytes
+ *   0x801f5968..73  debug marker mode params (dbg_marker_mode_set) */
 #define _DAT_1f800008   (*(uint32_t *)g__DAT_1f800008)
 #define _DAT_1f80000c   (*(uint32_t *)g__DAT_1f80000c)
 #define _DAT_1f80007c   (*(uint16_t *)g__DAT_1f80007c) /* guest lhu @0x1f80007c (0x8015f6a0) */
@@ -320,7 +337,7 @@ void memcard_tick(void)
   /* Guest builds a 3-byte BCD timestamp at sp+0x10..0x12 (sb @0x10,
    * 0x11, 0x12) and passes sp+0x10 to cd_stamp_to_sector, which reads
    * s[0..2]. Ghidra split it into 3 scalars — keep it one array. */
-  undefined1 timestamp_bcd[3];
+  uint8_t timestamp_bcd[3];
   
   if (DAT_801bef6f != '\0') {
     return;
@@ -358,7 +375,7 @@ void memcard_tick(void)
       DAT_801bef6d = DAT_801bef6d + '\x01';
       return;
     case '\x14':
-      cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+      cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
       if (cd_rc == 2) {
         /* disasm-verified: sprintf/cd buf = $sp+0x10, frame -0x28
          * (0x80157b44/0x80157f3c) -> entry_sp - 0x18. The buf is handed
@@ -381,7 +398,7 @@ void memcard_tick(void)
       DAT_801bef6d = 0x20;
       return;
     case '\x15':
-      cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+      cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
       if (cd_rc == 2) {
         brightness_packet_send(0xffffffff);
         cd_cmd_issue_async(0x1b,0);
@@ -394,7 +411,7 @@ void memcard_tick(void)
       DAT_801bef6d = 0x20;
       return;
     case '\x16':
-      cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+      cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
       if (cd_rc == 2) {
         cd_cmd_issue_async(1,0);
         DAT_801bef6d = DAT_801bef6d + '\x01';
@@ -406,7 +423,7 @@ void memcard_tick(void)
       DAT_801bef6d = 0x20;
       return;
     case '\x17':
-      cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+      cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
       if (cd_rc != 2) {
         if (cd_rc != 5) {
           return;
@@ -425,7 +442,7 @@ void memcard_tick(void)
       DAT_801bef6d = DAT_801bef6d + '\x01';
       return;
     case '\x19':
-      cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+      cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
       if (cd_rc != 2) {
         if (cd_rc != 5) {
           return;
@@ -454,7 +471,7 @@ void memcard_tick(void)
       DAT_801bef6d = DAT_801bef6d + '\x01';
       return;
     case '\"':
-      cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+      cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
       if (cd_rc != 2) {
         if (cd_rc != 5) {
           return;
@@ -473,7 +490,7 @@ void memcard_tick(void)
       DAT_801bef6d = DAT_801bef6d + '\x01';
       return;
     case '$':
-      cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+      cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
       if (cd_rc != 2) {
         if (cd_rc != 5) {
           return;
@@ -502,7 +519,7 @@ void memcard_tick(void)
     DAT_801bef6d = DAT_801bef6d + '\x01';
     break;
   case '\x14':
-    cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+    cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
     if (cd_rc == 2) {
       /* disasm-verified: sprintf/cd buf = $sp+0x10, frame -0x28
        * (0x80157b44/0x80157f3c) -> entry_sp - 0x18. Same guest-frame
@@ -522,7 +539,7 @@ void memcard_tick(void)
     }
     break;
   case '\x15':
-    cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+    cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
     if (cd_rc == 2) {
       brightness_packet_send(0xffffffff);
       cd_cmd_issue_async(3,0);
@@ -533,7 +550,7 @@ void memcard_tick(void)
     }
     break;
   case '\x16':
-    cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+    cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
     if (cd_rc == 2) {
       DAT_801bef6d = DAT_801bef6d + '\x01';
     }
@@ -577,7 +594,7 @@ joined_r0x80157c80:
     }
     break;
   case '\x18':
-    cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+    cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
     if (cd_rc == 2) {
       DAT_801bef6d = DAT_801bef6d + -1;
     }
@@ -600,7 +617,7 @@ joined_r0x80157c80:
     DAT_801bef6d = DAT_801bef6d + '\x01';
     break;
   case '\"':
-    cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+    cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
     if (cd_rc == 2) {
       if ((DAT_801bef64 & 0x10) == 0) {
         DAT_801bef6d = DAT_801bef6d + '\x01';
@@ -618,7 +635,7 @@ joined_r0x80157c80:
     DAT_801bef6d = DAT_801bef6d + '\x01';
     break;
   case '$':
-    cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+    cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
     if (cd_rc != 2) {
       if (cd_rc != 5) {
         return;
@@ -632,7 +649,7 @@ joined_r0x80157c80:
     DAT_801bef6d = DAT_801bef6d + '\x01';
     break;
   case '1':
-    cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+    cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
     if (cd_rc != 2) {
       if (cd_rc != 5) {
         return;
@@ -670,14 +687,14 @@ switchD_80157ebc_caseD_30:
 int memcard_file_flow(int a0)
 
 {
-  int iVar1;
-  undefined *puVar2;
-  char *pcVar3;
-  int iVar4;
+  int rc;
+  uint8_t *str_arg;
+  char *fmt_str;
+  int dlg_type;
   int unaff_s2;
-  int iVar5;
-  uint uVar6;
-  uint uVar7;
+  int slot_no;
+  uint ow_flag;
+  uint sm_state;
   /* Guest stepper descriptor: one contiguous 0x24-byte block at
    * sp+0x38..0x5b passed to menu_stepper_state_advance (a0 = sp+0x38);
    * the +0xc callback is a u32 GUEST code address (fn_lookup), stored
@@ -705,12 +722,12 @@ int memcard_file_flow(int a0)
 #define local_a2 (*(uint16_t *)&step_desc[0x1e])
 #define local_a0 (*(uint16_t *)&step_desc[0x20])
 #define local_9e (*(uint16_t *)&step_desc[0x22])
-  char *acStack_78;   /* guest-backed staging buffer: $sp+0x80, frame -0xf8 */
-  undefined4 local_38;
-  int local_34;
-  int local_30;
-  char *local_2c;
-  /* guest sp-0xf8..sp frame image (frame 0xf8). acStack_78 is written by
+  char *msg_buf;   /* guest-backed staging buffer: $sp+0x80, frame -0xf8 */
+  uint32_t op_sel;
+  int sm_ret;
+  int wait_cnt;
+  char *msg_arg;
+  /* guest sp-0xf8..sp frame image (frame 0xf8). msg_buf is written by
    * sprintf_core and re-read by announce_param_block_init* across the
    * whole state loop; without the reservation every nested guest call
    * lands its frame on top of the buffer. frame 0xf8 is 8 mod 16 so the
@@ -721,30 +738,30 @@ int memcard_file_flow(int a0)
   uint32_t mff_frm = br2_guest_frame(0xf8);
 
   extern int br2_bail_pending(void);
-  uVar7 = 0;
-  uVar6 = 0;
-  iVar4 = 0;
-  iVar5 = 0;
+  sm_state = 0;
+  ow_flag = 0;
+  dlg_type = 0;
+  slot_no = 0;
   /* sprintf_core and announce_param_block_init both take host string pointers;
    * back both with the guest stack buffer ($sp+0x80, frame -0xf8 ->
    * entry_sp - 0x78, disasm-verified @0x8015f96c/0x8015fc68+) so one buffer
    * serves both. */
-  acStack_78 = (char *)guest_at(mff_frm + 0x88);
+  msg_buf = (char *)guest_at(mff_frm + 0x88);
   /* stepper descriptor at sp+0x38 -> frm+0x40 (0x24 bytes, ends 0x64,
-   * clear of the acStack_78 string buffer at frm+0x88). */
+   * clear of the msg_buf string buffer at frm+0x88). */
   step_desc = (uint8_t *)guest_at(mff_frm + 0x40);
-  local_2c = acStack_78;
-  local_34 = -1;
-  local_30 = 0;
+  msg_arg = msg_buf;
+  sm_ret = -1;
+  wait_cnt = 0;
   _DAT_1f80008c = 0;
   do {
-    if (br2_bail_pending()) { br2_guest_frame_free(); return local_34; }
-    if (uVar7 != 1) {
-      if (uVar7 < 2) {
-        if ((uVar7 == 0) && (iVar1 = frame_divisor_get(), iVar1 == 0)) {
+    if (br2_bail_pending()) { br2_guest_frame_free(); return sm_ret; }
+    if (sm_state != 1) {
+      if (sm_state < 2) {
+        if ((sm_state == 0) && (rc = frame_divisor_get(), rc == 0)) {
           print_mode_dispatch_b(2,0,0);
-          iVar1 = intro_movie_state(0);
-          if (iVar1 != 0) {
+          rc = intro_movie_state(0);
+          if (rc != 0) {
             deferred_cmd_post(0x203,0,0);
             /* desc+0xc is read by menu_stepper_state_advance as a u32
              * GUEST code address (fn_lookup -> call_guest fallback).
@@ -771,23 +788,23 @@ int memcard_file_flow(int a0)
             local_9e = 0;
             _DAT_801e8518 = 0x30;
             if (a0 != 0) {
-              uVar6 = 0xffffffff;
-              iVar4 = 1;
-              iVar5 = 0;
+              ow_flag = 0xffffffff;
+              dlg_type = 1;
+              slot_no = 0;
               local_bd = '\x11';
             }
             battle_session_arm(0x1f800000,0xffffffff);
-            uVar7 = 1;
+            sm_state = 1;
             goto LAB_8015f820;
           }
         }
         goto LAB_80160550;
       }
-      if (uVar7 == 0xf0) {
+      if (sm_state == 0xf0) {
         deferred_cmd_post(0x203,0,0);
       }
-      else if (uVar7 != 0xf1) goto LAB_80160550;
-      uVar7 = 0xff;
+      else if (sm_state != 0xf1) goto LAB_80160550;
+      sm_state = 0xff;
       goto LAB_80160558;
     }
 LAB_8015f820:
@@ -798,67 +815,67 @@ LAB_8015f820:
     case '\0':
       if ((_DAT_1f80007c & 0x10) != 0) {
         deferred_cmd_post(0x400,0xd,0);
-        uVar7 = 0xf0;
+        sm_state = 0xf0;
       }
       if ((local_b8 == local_ba) && ((_DAT_1f80007c & 0xe0) != 0)) {
         deferred_cmd_post(0x400,0xc,0);
 LAB_8015f8c0:
-        uVar7 = 0xf0;
+        sm_state = 0xf0;
       }
       break;
     case '\x10':
-      uVar6 = 1;
-      local_34 = -1;
+      ow_flag = 1;
+      sm_ret = -1;
       if (local_b8 == 2) {
-        iVar5 = (int)local_aa;
-        iVar4 = 0;
+        slot_no = (int)local_aa;
+        dlg_type = 0;
         goto code_r0x8015ffac;
       }
       if (local_b8 < 3) {
         if (local_b8 == 1) {
-          iVar4 = 4;
-          iVar5 = 0;
+          dlg_type = 4;
+          slot_no = 0;
 LAB_8015fbfc:
           local_bd = '\x12';
         }
       }
       else if (local_b8 == 3) {
-        iVar5 = (int)local_a8;
-        iVar4 = 4;
+        slot_no = (int)local_a8;
+        dlg_type = 4;
         goto LAB_8015fbfc;
       }
       break;
     case '\x11':
-      if ((int)uVar6 < 0) goto code_r0x8015ffac;
+      if ((int)ow_flag < 0) goto code_r0x8015ffac;
       scroll_offset_set(0x10,0x68);
-      switch(iVar4) {
+      switch(dlg_type) {
       case 0:
-        sprintf_core(acStack_78,s_LOAD_FROM_MEMORY_CARD__s___80121788,
-                     SLOTSTR(iVar5));
+        sprintf_core(msg_buf,s_LOAD_FROM_MEMORY_CARD__s___80121788,
+                     SLOTSTR(slot_no));
         break;
       case 2:
-        sprintf_core(acStack_78,s_FORMAT_MEMORY_CARD__s___801217d8,SLOTSTR(iVar5));
+        sprintf_core(msg_buf,s_FORMAT_MEMORY_CARD__s___801217d8,SLOTSTR(slot_no));
         break;
       case 3:
-        sprintf_core(acStack_78,s_SAVING_TO_MEMORY_CARD__s__801217f0,SLOTSTR(iVar5));
-        announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,local_2c,0x10,0x1000,0);
+        sprintf_core(msg_buf,s_SAVING_TO_MEMORY_CARD__s__801217f0,SLOTSTR(slot_no));
+        announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,msg_arg,0x10,0x1000,0);
         scroll_offset_accumulate(0,0x10);
-        sprintf_core(acStack_78,s_OVER_WRITE_OK___8012180c);
+        sprintf_core(msg_buf,s_OVER_WRITE_OK___8012180c);
       default:
         break;
       case 5:
         announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_MEMORY_CARD_CHANGED__801217a4,0x10,0x1000,2);
         scroll_offset_accumulate(0,0x10);
       case 1:
-        sprintf_core(acStack_78,s_SAVE_TO_MEMORY_CARD__s___801217bc,SLOTSTR(iVar5))
+        sprintf_core(msg_buf,s_SAVE_TO_MEMORY_CARD__s___801217bc,SLOTSTR(slot_no))
         ;
       }
-      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,acStack_78,0x10,0x1000,0);
+      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,msg_buf,0x10,0x1000,0);
       scroll_offset_accumulate(0,0x10);
-      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,&DAT_8012181c,0x30,0x1000,uVar6 != 0);
-      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,&DAT_80121820,0x90,0x1000,uVar6 == 0);
+      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,&DAT_8012181c,0x30,0x1000,ow_flag != 0);
+      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,&DAT_80121820,0x90,0x1000,ow_flag == 0);
       scroll_offset_accumulate(0,0x10);
-      switch(iVar4) {
+      switch(dlg_type) {
       case 1:
       case 5:
         announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_1_BLOCK_IS_REQUIRED_TO_SAVE__80121824,0x10,0x1000
@@ -867,25 +884,25 @@ LAB_8015fbfc:
       scroll_offset_accumulate(0,0x10);
       if ((_DAT_1f80007c & 0xa000) != 0) {
         deferred_cmd_post(0x400,0xb,0);
-        uVar6 = uVar6 ^ 1;
+        ow_flag = ow_flag ^ 1;
       }
       if ((_DAT_1f80007c & 0x10) == 0) {
         if ((_DAT_1f80007c & 0xe0) != 0) {
           deferred_cmd_post(0x400,0xc,0);
-          switch(iVar4) {
+          switch(dlg_type) {
           case 0:
           case 1:
 switchD_8015fbc4_caseD_0:
-            if (uVar6 == 0) goto LAB_8015fbfc;
+            if (ow_flag == 0) goto LAB_8015fbfc;
             goto LAB_8015fc08;
           case 2:
           case 3:
           case 5:
             if (a0 == 0) goto switchD_8015fbc4_caseD_0;
-            if (uVar6 == 0) goto LAB_8015fbfc;
+            if (ow_flag == 0) goto LAB_8015fbfc;
             local_bd = '\x11';
-            iVar4 = 1;
-            uVar6 = 1;
+            dlg_type = 1;
+            ow_flag = 1;
           }
         }
       }
@@ -898,108 +915,108 @@ LAB_8015fc08:
     case '\x12':
     case '\x13':
       scroll_offset_set(0x10,0x68);
-      switch(iVar4) {
+      switch(dlg_type) {
       case 0:
         announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_NOW_LOADING_FROM_MEMORY_CARD_80121844,0x10,0x1000
                      ,0);
-        puVar2 = SLOTSTR(iVar5);
-        pcVar3 = s__s____80121864;
+        str_arg = SLOTSTR(slot_no);
+        fmt_str = s__s____80121864;
         break;
       case 2:
-        puVar2 = SLOTSTR(iVar5);
-        pcVar3 = s_NOW_FORMATTING_MEMORY_CARD__s____8012188c;
+        str_arg = SLOTSTR(slot_no);
+        fmt_str = s_NOW_FORMATTING_MEMORY_CARD__s____8012188c;
         break;
       case 3:
-        puVar2 = SLOTSTR(iVar5);
-        pcVar3 = s_NOW_SAVING_TO_MEMORY_CARD__s____8012186c;
+        str_arg = SLOTSTR(slot_no);
+        fmt_str = s_NOW_SAVING_TO_MEMORY_CARD__s____8012186c;
         break;
       case 4:
-        puVar2 = SLOTSTR(iVar5);
-        pcVar3 = s_NOW_CHECKING_MEMORY_CARD__s____801218b0;
+        str_arg = SLOTSTR(slot_no);
+        fmt_str = s_NOW_CHECKING_MEMORY_CARD__s____801218b0;
         break;
       case 5:
-        iVar4 = 1;
+        dlg_type = 1;
       case 1:
-        puVar2 = SLOTSTR(iVar5);
-        pcVar3 = s_NOW_SAVING_TO_MEMORY_CARD__s____8012186c;
+        str_arg = SLOTSTR(slot_no);
+        fmt_str = s_NOW_SAVING_TO_MEMORY_CARD__s____8012186c;
         break;
       default:
         goto switchD_8015fc3c_default;
       }
-      sprintf_core(acStack_78,pcVar3,puVar2);
+      sprintf_core(msg_buf,fmt_str,str_arg);
 switchD_8015fc3c_default:
-      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,acStack_78,0x10,0x1000,0);
+      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,msg_buf,0x10,0x1000,0);
       scroll_offset_accumulate(0,0x10);
       announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_DO_NOT_REMOVE_MEMORY_CARD___801218d0,0x10,0x1000,3)
       ;
       goto code_r0x8015ffac;
     case '\x14':
-      if (iVar5 == 0) {
-        local_38 = 0;
+      if (slot_no == 0) {
+        op_sel = 0;
       }
-      else if (iVar5 == 1) {
-        local_38 = 0x10;
+      else if (slot_no == 1) {
+        op_sel = 0x10;
       }
-      switch(iVar4) {
+      switch(dlg_type) {
       case 0:
-        unaff_s2 = mc_data_read(local_38,DAT_801b45f4,DAT_801b45f8,DAT_801b45fc,DAT_801b4600,
+        unaff_s2 = mc_data_read(op_sel,DAT_801b45f4,DAT_801b45f8,DAT_801b45fc,DAT_801b4600,
                                 DAT_801b4604,DAT_801b4608,DAT_801b460c,DAT_801b4610,DAT_801b4614,
                                 PTR_DAT_801b4618,&DAT_801c11e0,0x414);
-        if ((unaff_s2 == 0) && (iVar1 = save_blk_cmp32(), iVar1 != 0)) {
+        if ((unaff_s2 == 0) && (rc = save_blk_cmp32(), rc != 0)) {
           unaff_s2 = 2;
         }
         break;
       case 1:
-        unaff_s2 = mc_data_write(local_38,DAT_801b45f4,DAT_801b45f8,DAT_801b45fc,DAT_801b4600,
+        unaff_s2 = mc_data_write(op_sel,DAT_801b45f4,DAT_801b45f8,DAT_801b45fc,DAT_801b4600,
                                 DAT_801b4604,DAT_801b4608,DAT_801b460c,DAT_801b4610,DAT_801b4614,
                                 PTR_DAT_801b4618,&DAT_801c11e0,0x414);
         break;
       case 2:
-        unaff_s2 = mc_op_dispatch(local_38);
+        unaff_s2 = mc_op_dispatch(op_sel);
         break;
       case 3:
-        unaff_s2 = mc_read_queue(local_38,DAT_801b45f4,DAT_801b45f8,DAT_801b45fc,DAT_801b4600,
+        unaff_s2 = mc_read_queue(op_sel,DAT_801b45f4,DAT_801b45f8,DAT_801b45fc,DAT_801b4600,
                                 DAT_801b4604,DAT_801b4608,DAT_801b460c,DAT_801b4610,DAT_801b4614,
                                 PTR_DAT_801b4618,&DAT_801c11e0,0x414);
         break;
       case 4:
-        unaff_s2 = mc_op_dispatch_b(local_38,DAT_801b45f4,DAT_801b45f8,DAT_801b45fc,DAT_801b4600,
+        unaff_s2 = mc_op_dispatch_b(op_sel,DAT_801b45f4,DAT_801b45f8,DAT_801b45fc,DAT_801b4600,
                                 DAT_801b4604,DAT_801b4608);
       }
-      local_30 = 100;
-      local_34 = unaff_s2;
+      wait_cnt = 100;
+      sm_ret = unaff_s2;
       if (a0 == 0) {
-        local_30 = -1;
+        wait_cnt = -1;
       }
 code_r0x8015ffac:
       local_bd = local_bd + '\x01';
       break;
     case '\x15':
       scroll_offset_set(0x10,0x68);
-      switch(iVar4) {
+      switch(dlg_type) {
       case 0:
-        puVar2 = SLOTSTR(iVar5);
-        pcVar3 = s_LOAD_FROM_MEMORY_CARD__s__801218ec;
+        str_arg = SLOTSTR(slot_no);
+        fmt_str = s_LOAD_FROM_MEMORY_CARD__s__801218ec;
         break;
       case 1:
       case 3:
-        puVar2 = SLOTSTR(iVar5);
-        pcVar3 = s_SAVE_TO_MEMORY_CARD__s__80121908;
+        str_arg = SLOTSTR(slot_no);
+        fmt_str = s_SAVE_TO_MEMORY_CARD__s__80121908;
         break;
       case 2:
-        puVar2 = SLOTSTR(iVar5);
-        pcVar3 = s_FORMAT_MEMORY_CARD__s__80121920;
+        str_arg = SLOTSTR(slot_no);
+        fmt_str = s_FORMAT_MEMORY_CARD__s__80121920;
         break;
       case 4:
-        puVar2 = SLOTSTR(iVar5);
-        pcVar3 = s_CHECKING_MEMORY_CARD__s__80121938;
+        str_arg = SLOTSTR(slot_no);
+        fmt_str = s_CHECKING_MEMORY_CARD__s__80121938;
         break;
       default:
         goto switchD_8015ffe4_default;
       }
-      sprintf_core(acStack_78,pcVar3,puVar2);
+      sprintf_core(msg_buf,fmt_str,str_arg);
 switchD_8015ffe4_default:
-      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,local_2c,0x10,0x1000,0);
+      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,msg_arg,0x10,0x1000,0);
       scroll_offset_accumulate(0,0x10);
       if ((_DAT_1f80007c & 0xe0) != 0) {
         deferred_cmd_post(0x400,0xc,0);
@@ -1010,33 +1027,33 @@ switchD_8015ffe4_default:
         local_bd = '\x16';
       }
       if (unaff_s2 == 4) {
-        if (iVar4 == 0) {
-          pcVar3 = s_NO_BLOODY_ROAR_2_DATA_DETECTED___801219e4;
+        if (dlg_type == 0) {
+          fmt_str = s_NO_BLOODY_ROAR_2_DATA_DETECTED___801219e4;
         }
         else {
-          pcVar3 = s_UNFORMATTED_MEMORY_CARD___80121a08;
+          fmt_str = s_UNFORMATTED_MEMORY_CARD___80121a08;
         }
       }
       else if (unaff_s2 < 5) {
         if (unaff_s2 != 1) {
           if (unaff_s2 < 2) {
             if (unaff_s2 != 0) goto LAB_801603ec;
-            switch(iVar4) {
+            switch(dlg_type) {
             case 0:
-              gauge_scale_fixed(*(undefined1 *)(_g_system_config_ptr + 0xe),
+              gauge_scale_fixed(*(uint8_t *)(_g_system_config_ptr + 0xe),
                            ((uint)*(byte *)(_g_system_config_ptr + 0xf) << 3) / 10);
               brightness_commit(*(byte *)(_g_system_config_ptr + 0xc) ^ 1);
             case 1:
             case 3:
               _DAT_801c15f0 = 0;
               announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_COMPLETED___80121954,0x10,0x1000,3);
-              iVar1 = local_30 + -1;
-              if ((-1 < local_30) && (local_30 = iVar1, iVar1 == -1)) {
+              rc = wait_cnt + -1;
+              if ((-1 < wait_cnt) && (wait_cnt = rc, rc == -1)) {
                 local_bd = '\x16';
               }
               break;
             case 2:
-              uVar6 = 0xffffffff;
+              ow_flag = 0xffffffff;
               if (a0 == 0) {
                 if (local_b8 != 2) {
                   if (local_b8 < 3) {
@@ -1045,27 +1062,27 @@ switchD_8015ffe4_default:
                   }
                   else {
                     if (local_b8 == 3) {
-                      iVar4 = 1;
-                      iVar5 = (int)local_a8;
+                      dlg_type = 1;
+                      slot_no = (int)local_a8;
                       goto LAB_8016028c;
                     }
                     local_bd = '\x11';
                   }
                   break;
                 }
-                iVar5 = (int)local_aa;
-                iVar4 = 0;
+                slot_no = (int)local_aa;
+                dlg_type = 0;
               }
               else {
 LAB_8016026c:
-                iVar4 = 1;
-                iVar5 = 0;
+                dlg_type = 1;
+                slot_no = 0;
               }
 LAB_8016028c:
               local_bd = '\x11';
               break;
             case 4:
-              iVar4 = 1;
+              dlg_type = 1;
               goto LAB_80160464;
             }
           }
@@ -1074,12 +1091,12 @@ LAB_8016028c:
           }
           else {
             if (unaff_s2 != 3) goto LAB_801603ec;
-            uVar6 = 1;
-            if (iVar4 == 4) {
-              iVar4 = 1;
+            ow_flag = 1;
+            if (dlg_type == 4) {
+              dlg_type = 1;
             }
             else {
-              iVar4 = 5;
+              dlg_type = 5;
             }
             local_bd = '\x11';
           }
@@ -1087,38 +1104,38 @@ LAB_8016028c:
         }
         announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_NO_MEMORY_CARD_IS_INSERTED_IN_80121960,0x10,
                      0x1000,2);
-        sprintf_core(acStack_78,s_MEMORY_CARD__s___80121980,SLOTSTR(iVar5));
-        pcVar3 = local_2c;
+        sprintf_core(msg_buf,s_MEMORY_CARD__s___80121980,SLOTSTR(slot_no));
+        fmt_str = msg_arg;
       }
       else if (unaff_s2 == 7) {
         announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_THERE_IS_INSUFFICIENT_MEMORY_CAR_80121994,0x10,
                      0x1000,2);
         announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_BLOCKS_AND_1_BLOCK_IS_REQUIRED_801219b8,0x10,
                      0x1000,2);
-        pcVar3 = s_TO_SAVE__801219d8;
+        fmt_str = s_TO_SAVE__801219d8;
       }
       else {
         if (unaff_s2 < 8) {
           if (unaff_s2 == 5) {
-            pcVar3 = s_NO_BLOODY_ROAR_2_DATA_DETECTED___801219e4;
+            fmt_str = s_NO_BLOODY_ROAR_2_DATA_DETECTED___801219e4;
             goto LAB_801603fc;
           }
         }
         else if (unaff_s2 == 0xf) {
-          iVar4 = 3;
+          dlg_type = 3;
 LAB_80160488:
-          uVar6 = 1;
+          ow_flag = 1;
           local_bd = '\x11';
           break;
         }
 LAB_801603ec:
-        pcVar3 = s_ERROR___80121a34;
+        fmt_str = s_ERROR___80121a34;
       }
 LAB_801603fc:
-      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,pcVar3,0x10,0x1000,2);
+      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,fmt_str,0x10,0x1000,2);
       break;
     case '\x16':
-      if (iVar4 == 0) {
+      if (dlg_type == 0) {
         if (a0 != 0) goto LAB_8015f8c0;
         if (unaff_s2 == 0) goto LAB_80160510;
         if (local_b8 != 1) {
@@ -1138,16 +1155,16 @@ LAB_801604a4:
         if (unaff_s2 == 0xf) goto LAB_80160494;
 LAB_80160470:
         if (a0 == 0) goto LAB_801604a4;
-        iVar4 = 1;
+        dlg_type = 1;
         goto LAB_80160488;
       }
       if (unaff_s2 < 4) {
         if ((unaff_s2 < 1) && (unaff_s2 == 0)) goto LAB_80160494;
         goto LAB_80160470;
       }
-      iVar4 = 2;
+      dlg_type = 2;
 LAB_80160464:
-      uVar6 = 1;
+      ow_flag = 1;
       local_bd = '\x11';
       break;
     case ' ':
@@ -1156,7 +1173,7 @@ LAB_80160464:
 LAB_801604f4:
       if (local_b8 == 1) {
 LAB_80160504:
-        *(undefined1 *)(_g_system_config_ptr + 0x22) = 0;
+        *(uint8_t *)(_g_system_config_ptr + 0x22) = 0;
       }
 LAB_80160510:
       local_bd = '\0';
@@ -1167,9 +1184,9 @@ LAB_80160510:
 LAB_80160550:
     frame_tick(0x1f800000);
 LAB_80160558:
-    if (uVar7 == 0xff) {
+    if (sm_state == 0xff) {
       br2_guest_frame_free();
-      return local_34;
+      return sm_ret;
     }
   } while( true );
 }
@@ -1201,7 +1218,7 @@ void memcard_slot_poll(void)
 {
   short age;
   int ent_off;
-  undefined1 *rec;
+  uint8_t *rec;
   char *slot_flag;
   int slot_i;
   char status_buf [24];
@@ -1213,25 +1230,25 @@ void memcard_slot_poll(void)
   do {
     if (*slot_flag != '\0') {
       if (*slot_flag == -0x80) {
-        *(undefined2 *)(rec + 0xb) = 0;
+        *(uint16_t *)(rec + 0xb) = 0;
         *slot_flag = '\x01';
-        _DAT_801f2650 = *(undefined4 *)(rec + 7);
+        _DAT_801f2650 = *(uint32_t *)(rec + 7);
         _DAT_801f2654 = 0x600e3;
         _DAT_801f2666 = 0;
         ent_off = (uint)*(ushort *)(rec + 5) * 8;
-        _DAT_801f2668 = *(undefined2 *)guest_at((uint32_t)(ent_off + -0x7fe0d41e));
-        _DAT_801f2658 = *(undefined2 *)(rec + 1);
-        _DAT_801f265a = *(undefined2 *)(rec + 3);
-        _DAT_801f266c = *(undefined4 *)guest_at((uint32_t)((uint)*(ushort *)guest_at((uint32_t)(ent_off + -0x7fe0d420)) * 4 + -0x7fe0d920));
-        _DAT_801f268a = *(undefined2 *)guest_at((uint32_t)(ent_off + -0x7fe0d41c));
-        _DAT_801f268c = *(undefined2 *)guest_at((uint32_t)(ent_off + -0x7fe0d41a));
+        _DAT_801f2668 = *(uint16_t *)guest_at((uint32_t)(ent_off + -0x7fe0d41e));
+        _DAT_801f2658 = *(uint16_t *)(rec + 1);
+        _DAT_801f265a = *(uint16_t *)(rec + 3);
+        _DAT_801f266c = *(uint32_t *)guest_at((uint32_t)((uint)*(ushort *)guest_at((uint32_t)(ent_off + -0x7fe0d420)) * 4 + -0x7fe0d920));
+        _DAT_801f268a = *(uint16_t *)guest_at((uint32_t)(ent_off + -0x7fe0d41c));
+        _DAT_801f268c = *(uint16_t *)guest_at((uint32_t)(ent_off + -0x7fe0d41a));
         cd_reg_window_update(&DAT_801f2650);
       }
       else {
         age = *(short *)(rec + 0xb);
         *(short *)(rec + 0xb) = age + 1;
         if ((short)(age + 1) == 2) {
-          cd_reg_window_u16(0,*(undefined4 *)(rec + 7));
+          cd_reg_window_u16(0,*(uint32_t *)(rec + 7));
         }
         if ((status_buf[slot_i] == '\0') && (0x14 < *(short *)(rec + 0xb))) {
           *slot_flag = '\0';
@@ -1250,7 +1267,7 @@ void memcard_slot_poll(void)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void deferred_cmd_drain(undefined4 a0,int a1)
+void deferred_cmd_drain(uint32_t a0,int a1)
 
 {
   ushort cmdw;
@@ -1313,9 +1330,9 @@ LAB_80156ebc:
 void save_defaults_fill(void)
 
 {
-  undefined2 def_val;
-  undefined1 *dst;
-  undefined2 *src;
+  uint16_t def_val;
+  uint8_t *dst;
+  uint16_t *src;
   int i;
   
   i = 0;
@@ -1325,8 +1342,8 @@ void save_defaults_fill(void)
     def_val = *src;
     src = src + 1;
     i = i + 1;
-    *(undefined2 *)(dst + 0x400) = def_val;
-    *(undefined2 *)(dst + 0x3f0) = def_val;
+    *(uint16_t *)(dst + 0x400) = def_val;
+    *(uint16_t *)(dst + 0x3f0) = def_val;
     dst = dst + 2;
   } while (i < 8);
   return;
@@ -1337,9 +1354,9 @@ void save_defaults_fill(void)
 void save_block_init(void)
 
 {
-  undefined *src_name;
-  undefined1 *dst;
-  undefined1 *src;
+  uint8_t *src_name;
+  uint8_t *dst;
+  uint8_t *src;
   int i;
   int j;
   int n;
@@ -1359,13 +1376,13 @@ void save_block_init(void)
   do {
     j = 10;
     dst = &DAT_801c11f4 + n;
-    *(undefined2 *)(&DAT_801c11ec + n) = 0;
-    *(undefined2 *)(&DAT_801c11e8 + n) = 0;
-    *(undefined2 *)(&DAT_801c11e4 + n) = 0;
-    *(undefined2 *)guest_at((uint32_t)(n + -0x7fe3ee1e)) = 0;
-    *(undefined2 *)(&DAT_801c11e0 + n) = 0;
+    *(uint16_t *)(&DAT_801c11ec + n) = 0;
+    *(uint16_t *)(&DAT_801c11e8 + n) = 0;
+    *(uint16_t *)(&DAT_801c11e4 + n) = 0;
+    *(uint16_t *)guest_at((uint32_t)(n + -0x7fe3ee1e)) = 0;
+    *(uint16_t *)(&DAT_801c11e0 + n) = 0;
     do {
-      *(undefined2 *)(dst + 0xe) = 0;
+      *(uint16_t *)(dst + 0xe) = 0;
       j = j + -1;
       dst = dst + -2;
     } while (-1 < j);
@@ -1446,7 +1463,7 @@ LAB_8018bb4c:
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void brightness_commit(undefined2 a0)
+void brightness_commit(uint16_t a0)
 
 {
   _DAT_801f36c0 = a0;
@@ -1463,14 +1480,14 @@ void rec_timer_pair_clear(intptr_t a0)
 
 {
   uint8_t *p = (uint8_t *)guest_at((uint32_t)a0);
-  *(undefined2 *)(p + 0xb4) = 0;
-  *(undefined2 *)(p + 0xb6) = 0;
+  *(uint16_t *)(p + 0xb4) = 0;
+  *(uint16_t *)(p + 0xb6) = 0;
   return;
 }
 
 /* ======== 0x80129f64 ======== */
 
-void mode_flag_pair_set(undefined1 a0)
+void mode_flag_pair_set(uint8_t a0)
 
 {
   DAT_801e83aa = a0;
@@ -1483,16 +1500,16 @@ void mode_flag_pair_set(undefined1 a0)
 void perm_table_load(void)
 
 {
-  undefined1 *dst;
+  uint8_t *dst;
   int i;
   int j;
   
-  dst = (undefined1 *)guest_at(0x801e8400);
+  dst = (uint8_t *)guest_at(0x801e8400);
   i = 0;
   do {
     j = i + 1;
     *dst = (&DAT_8011ec40)[i];
-    dst = (undefined1 *)guest_at((uint32_t)(i + -0x7fe17bff));
+    dst = (uint8_t *)guest_at((uint32_t)(i + -0x7fe17bff));
     i = j;
   } while (j < 0x100);
   return;
@@ -1504,18 +1521,18 @@ void perm_table_apply(uint a0)
 
 {
   byte perm_idx;
-  undefined1 swap_tmp;
-  undefined1 *cell;
+  uint8_t swap_tmp;
+  uint8_t *cell;
   int i;
   
   i = 0;
   do {
-    cell = (undefined1 *)guest_at((uint32_t)(i + -0x7fe17c00));
+    cell = (uint8_t *)guest_at((uint32_t)(i + -0x7fe17c00));
     perm_idx = (&DAT_8011ec40)[a0 & 0xff];
     swap_tmp = *cell;
     i = i + 1;
-    *cell = *(undefined1 *)guest_at((uint32_t)(perm_idx + 0x801e8400));
-    *(undefined1 *)guest_at((uint32_t)(perm_idx + 0x801e8400)) = swap_tmp;
+    *cell = *(uint8_t *)guest_at((uint32_t)(perm_idx + 0x801e8400));
+    *(uint8_t *)guest_at((uint32_t)(perm_idx + 0x801e8400)) = swap_tmp;
     a0 = a0 + 1;
   } while (i < 0x100);
   return;
@@ -1523,7 +1540,7 @@ void perm_table_apply(uint a0)
 
 /* ======== 0x8012aa6c ======== */
 
-void scroll_cfg_set(undefined1 a0,int a1)
+void scroll_cfg_set(uint8_t a0,int a1)
 
 {
   DAT_1f800017 = a0;
@@ -1549,7 +1566,7 @@ void scroll_cfg_set(undefined1 a0,int a1)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void flow_cfg_init(undefined1 a0)
+void flow_cfg_init(uint8_t a0)
 
 {
   int idx;
@@ -1567,7 +1584,7 @@ void flow_cfg_init(undefined1 a0)
   do {
     idx = i * 2;
     i = i + 1;
-    *(undefined2 *)((char *)cfg + (idx + 6) * 4) = 0;
+    *(uint16_t *)((char *)cfg + (idx + 6) * 4) = 0;
   } while (i < 8);
   if (_DAT_1f8000b8 == 0) {
     cfg[3] = 3;
@@ -1603,7 +1620,7 @@ uint attr_word_decode(uint8_t *a0)
   
   attr_hi = *(byte *)(a0 + 1) & 0xf0;
   if (attr_hi == 0x40) {
-    attr_word = ~(uint)CONCAT11(*(undefined1 *)(a0 + 2),*(undefined1 *)(a0 + 3)) & 63999;
+    attr_word = ~(uint)CONCAT11(*(uint8_t *)(a0 + 2),*(uint8_t *)(a0 + 3)) & 63999;
   }
   else if ((attr_hi < 0x41) || (attr_hi == 0x60)) {
     attr_word = 0xffffffff;
@@ -1617,7 +1634,7 @@ uint attr_word_decode(uint8_t *a0)
     else if (attr_hi != 0x70) {
       return 0xffffffff;
     }
-    attr_word = ~(uint)CONCAT11(*(undefined1 *)(a0 + 2),*(undefined1 *)(a0 + 3)) & 63999;
+    attr_word = ~(uint)CONCAT11(*(uint8_t *)(a0 + 2),*(uint8_t *)(a0 + 3)) & 63999;
     if (*(uint8_t *)(a0 + 6) < 0x40) {
       attr_word = attr_word | 0x8000;
     }
@@ -1847,7 +1864,7 @@ extern uint8_t  *g_DAT_801e40b8;
 extern uint8_t  *g_DAT_801e6208;
 extern uint32_t *g_PTR_DAT_801b5b94;
 extern int      str_len(char *);
-extern undefined1 table_byte_next_a(void);
+extern uint8_t table_byte_next_a(void);
 extern int32_t  mc_dialog_bit4(int32_t);
 extern void     ret_stub_b();
 extern void     hud_text_blk_alt(uint32_t,uint32_t,const void *,int32_t,int32_t,int32_t);
@@ -1868,11 +1885,11 @@ void dialog_mode_mirror(int32_t a0)
  * measure a0 with str_len. Returns str_len's result. */
 int slot_name_measure(void *a0,int32_t a1)
 {
-  uint32_t uVar1 = *(uint32_t *)guest_at(0x801b47ec + ((uint32_t)a1 << 3));
+  uint32_t name_ent = *(uint32_t *)guest_at(0x801b47ec + ((uint32_t)a1 << 3));
   /* disasm-verified @0x801513fc: guest does sprintf(a0, name) straight
    * into the caller's buffer (a0), then str_len(a0). a0 is already
    * a host pointer into guest memory, so no staging buffer is needed. */
-  sprintf_core((char *)a0,(char *)guest_at(uVar1));
+  sprintf_core((char *)a0,(char *)guest_at(name_ent));
   return str_len((char *)a0);
 }
 
@@ -1924,7 +1941,7 @@ void picker_table_shuffle(uint8_t *a0)
   uint8_t *tab_a = (uint8_t *)guest_at(0x801f47a0);
   uint8_t *tab_b = (uint8_t *)guest_at(0x801f4770);
   uint8_t *cur;
-  uint8_t tmp, bVar5, bVar6;
+  uint8_t tmp;
   int32_t n;
   int32_t i;
   int32_t j;
@@ -2548,7 +2565,7 @@ int32_t mc_action_dispatch_b(uint32_t a0,uint32_t a1)
  * Disasm 0x80166398-0x80166424. */
 extern void fighter_link_init(uint32_t,uint32_t,uint8_t *,uint32_t);
 extern void scratchpad_pair_init(void);
-extern void flow_cfg_init(undefined1);
+extern void flow_cfg_init(uint8_t);
 extern void rec_timer_pair_clear(intptr_t);
 extern void battle_state_init(uint8_t *,uint8_t *,uint32_t);
 extern uint8_t *g_DAT_1f8000e8,*g_DAT_1f8001f0;
@@ -2997,7 +3014,7 @@ extern void page_table_ptr_set(uint32_t,int32_t);
  * tag) -> consumed length. The table argument is a GUEST address at these
  * call sites, so wrap it in guest_at() — passing the raw guest address as
  * int* made *a1 dereference host memory ~0x80xxxxxx (wild read). */
-extern undefined4 stream_block_decode(undefined4,int *,int);
+extern uint32_t stream_block_decode(uint32_t,int *,int);
 extern void cd_timer_read(uint32_t);
 extern uint32_t action_enter(void *battle, uint8_t *ctrl, uint32_t sel);
 /* strong action_enter_fwd: forwards to action_enter (action.c).
@@ -3050,7 +3067,7 @@ extern int32_t FUN_801a0220(uint32_t,uint32_t,uint32_t);
 extern void FUN_801a0250(int32_t);
 extern uint32_t cd_xchg_fec24(uint32_t);
 extern int32_t fifo_space_check(void);
-extern int tween_seq_alloc(int,undefined2,undefined4,undefined4,short,undefined2,undefined4,undefined4);
+extern int tween_seq_alloc(int,uint16_t,uint32_t,uint32_t,short,uint16_t,uint32_t,uint32_t);
 extern int *node_lazy_attach(int,int,int,int);
 extern int cd_file_load_sm(int32_t,uint32_t);
 extern int sprite_quad_emit(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
@@ -7775,7 +7792,7 @@ extern int angle_pair_rotmat();
 extern uint  rand_lcg(void);
 extern void tween_dur_spread();
 extern void prim_attr_word_set();
-extern undefined4 tween_ensure(int);
+extern uint32_t tween_ensure(int);
 extern void obj_flag34_set(int);
 extern void obj_flag34_clear(int);
 extern void task_node_free(int *);
@@ -7970,7 +7987,7 @@ void mat3x3_build_wrap(uint32_t a0,uint32_t a1,int16_t *a2)
 }
 
 /* 0x801af804 — rotmat2_build(*a2, a1); a0 unused. */
-void *op_wrap_8da2c_a(uint32_t a0,undefined4 *a1,int16_t *a2)
+void *op_wrap_8da2c_a(uint32_t a0,uint32_t *a1,int16_t *a2)
 {
   (void)a0;
   return (void *)rotmat2_build((uint)(int32_t)*a2,a1);
@@ -7999,7 +8016,7 @@ void *op_wrap_8dac0_a(uint32_t a0,uint32_t a1,int16_t *a2)
 }
 
 /* 0x801af89c — rotmat2_build(a0[1], a1). */
-void *op_wrap_8da2c_b(int16_t *a0,undefined4 *a1)
+void *op_wrap_8da2c_b(int16_t *a0,uint32_t *a1)
 {
   return (void *)rotmat2_build((uint)(int32_t)a0[1],a1);
 }
@@ -8042,14 +8059,14 @@ extern void op_job_submit_init();
 extern int32_t dev_byte_xfer(uint8_t *,int32_t);
 extern uint32_t cd_svc_50(uint32_t,uint32_t);
 extern uint32_t cd_svc_4e(uint32_t,uint32_t,uint32_t);
-extern int fx_group_alloc(undefined4,undefined4,int,int);
-extern undefined4 tween_chan_alloc(int,int);
+extern int fx_group_alloc(uint32_t,uint32_t,int,int);
+extern uint32_t tween_chan_alloc(int,int);
 extern void tween_seek(int,int);
 extern int lut_sin_q12();
 extern int lut_cos_q12();
-extern int task_alloc_wrap_f(undefined4,undefined4,undefined4,int);
+extern int task_alloc_wrap_f(uint32_t,uint32_t,uint32_t,int);
 extern int angle_from_xy(int,int);
-extern undefined4 noop_c(int);
+extern uint32_t noop_c(int);
 extern void node_tree_free(int);
 extern void bios_tramp_c003(uint32_t,uint32_t);
 extern void FUN_8018e300(void);
@@ -8486,7 +8503,7 @@ void op_field_store_idx(uint8_t *a0,uint32_t *a1)
 /* ======== batch34: 0x801a0a/0x801a18/0x801a51/0x801a6b/0x801a9b/0x801ac/0x801ad/0x801ae ======== */
 
 extern void text_win_printf();
-extern int *task_node_alloc(int,undefined4,uint,int,int,int);
+extern int *task_node_alloc(int,uint32_t,uint,int,int,int);
 extern void tween_apply(short *,int,int);
 extern void gp_20_store_default(void);
 extern int prim_group_build();
