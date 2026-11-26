@@ -6128,7 +6128,7 @@ extern uint32_t cd_queue_drain(void);
 
 /* ======== 0x80193574 ======== */
 
-/* cd_queue_poll — poll queue state cell (see body). */
+/* cd_queue_poll — a0==0: arm timeout, drain queue until counters 0x801B8448==4C then wait_stat; else bounded poll w/ watchdog. */
 int cd_queue_poll(uint32_t a0)
 {
   if (a0 == 0) {
@@ -6521,7 +6521,7 @@ uint32_t cd_vcall_18(uint32_t a0,uint32_t a1)
 
 /* ======== 0x8019799c ======== */
 
-/* cd_mmio_bit_wait — bounded MMIO bit poll helper. */
+/* cd_mmio_bit_wait — spin until bit6 of byte at a1 sets; irq_poll each pass, bail-aware. */
 int cd_mmio_bit_wait(uint32_t a0,uint32_t a1)
 {
   volatile uint8_t *p = (volatile uint8_t *)guest_at(a1);
@@ -6957,7 +6957,7 @@ int cd_gpu_call_18_b(uint32_t a0,uint32_t a1,uint32_t a2)
 
 /* ======== 0x8019ae70 ======== */
 
-/* cd_cb8_run_param — table-8 run with param (see body). */
+/* cd_cb8_run_param — VBlank-ish dispatch: bump counter @0x801BDDE0=a0+1, call each of 8 tbl @0x801BDDC0 handlers with (a0,0). */
 void cd_cb8_run_param(uint32_t a0)
 {
   uint32_t *tbl = (uint32_t *)guest_at(0x801bddc0);
