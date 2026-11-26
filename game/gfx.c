@@ -566,12 +566,12 @@ uint32_t draw_env_timing(uint32_t env_g)
   char gp_type;
   int tbl_off;
   int delta;
-  uint uVar6;
-  uint uVar7;
-  uint uVar8;
+  uint td;
+  uint ta;
+  uint tb;
   int std_idx;
-  uint uVar10;
-  uint uVar11;
+  uint tc;
+  uint tot;
   ushort *env;
   uint16_t *timing_tbl;
   uint8_t  *timing_b;
@@ -588,32 +588,32 @@ uint32_t draw_env_timing(uint32_t env_g)
     *(char *)(env + 9) = gp_type;
     /* s0 = 0x08000000 unconditionally (lui @0x801919DC delay slot);
      * ori s0,s0,8 @0x80191AC0 only when gp_type==1. */
-    uVar10 = 0x08000000;
+    tc = 0x08000000;
     if (gp_type == '\x01') {
-      uVar10 |= 8;
+      tc |= 8;
     }
     if (((uint8_t *)env)[0x11] != 0) {   /* lbu @env+0x11 (0x80191AC4) */
-      uVar10 = uVar10 | 0x10;
+      tc = tc | 0x10;
     }
     if ((char)env[8] != '\0') {
-      uVar10 = uVar10 | 0x20;
+      tc = tc | 0x20;
     }
     if (DAT_801b8323 != '\0') {
-      uVar10 = uVar10 | 0x80;
+      tc = tc | 0x80;
     }
     hgt = env[2];
     if (0x118 < (short)hgt) {
       if ((short)hgt < 0x161) {
-        uVar10 = uVar10 | 1;
+        tc = tc | 1;
       }
       else if ((short)hgt < 0x191) {
-        uVar10 = uVar10 | 0x40;
+        tc = tc | 0x40;
       }
       else if ((short)hgt < 0x231) {
-        uVar10 = uVar10 | 2;
+        tc = tc | 2;
       }
       else {
-        uVar10 = uVar10 | 3;
+        tc = tc | 3;
       }
     }
     narrow = (short)env[3] < 0x121;
@@ -621,9 +621,9 @@ uint32_t draw_env_timing(uint32_t env_g)
       narrow = (short)env[3] < 0x101;
     }
     if (!narrow) {
-      uVar10 = uVar10 | 0x24;
+      tc = tc | 0x24;
     }
-    gpu_call(0x10,uVar10,0,0,0);
+    gpu_call(0x10,tc,0,0,0);
     *(undefined1 *)(env + 9) = 8;
   }
   if (((DB16(0x801b8394) == env[4]) && (DB16(0x801b8396) == env[5])) &&
@@ -631,13 +631,13 @@ uint32_t draw_env_timing(uint32_t env_g)
    goto LAB_80191e74;
   gp_type = gp_bde20_read();
   *(char *)(env + 9) = gp_type;
-  uVar10 = (int)(short)env[5] + 0x13;
+  tc = (int)(short)env[5] + 0x13;
   if (gp_type == '\0') {
-    uVar10 = (int)(short)env[5] + 0x10;
+    tc = (int)(short)env[5] + 0x10;
   }
-  uVar11 = uVar10 + (int)(short)env[7];
+  tot = tc + (int)(short)env[7];
   if ((short)env[7] == 0) {
-    uVar11 = uVar10 + 0xf0;
+    tot = tc + 0xf0;
   }
   hgt = env[2];
   std_idx = 0;
@@ -650,67 +650,67 @@ uint32_t draw_env_timing(uint32_t env_g)
   /* tbl_off is a BYTE offset into the u16 timing table (MIPS: lhu @base+tbl_off),
    * not a u16 element index — divide by 2 for timing_tbl[] indexing. */
   delta = (int)timing_tbl[tbl_off / 2 + 1] - (int)timing_tbl[tbl_off / 2];
-  uVar7 = (uint)timing_tbl[tbl_off / 2] +
+  ta = (uint)timing_tbl[tbl_off / 2] +
           (int)(short)env[4] * (uint)(byte)((uint8_t *)guest_at(0x801b841c))[std_idx];
   if ((short)env[6] != 0) {
     delta = delta * (short)env[6] >> 8;
   }
-  uVar6 = uVar7 + delta;
+  td = ta + delta;
   if ((char)env[9] == '\0') {
-    uVar8 = 500;
-    if ((499 < (int)uVar7) && (uVar8 = 0xcb2, (int)uVar7 < 0xcb3)) {
-      uVar8 = uVar7;
+    tb = 500;
+    if ((499 < (int)ta) && (tb = 0xcb2, (int)ta < 0xcb3)) {
+      tb = ta;
     }
-    uVar7 = uVar8 + (uint)(byte)((uint8_t *)guest_at(0x801b841c))[std_idx] * 4;
-    if (((int)uVar7 <= (int)uVar6) && (uVar7 = 0xcda, (int)uVar6 < 0xcdb)) {
-      uVar7 = uVar6;
+    ta = tb + (uint)(byte)((uint8_t *)guest_at(0x801b841c))[std_idx] * 4;
+    if (((int)ta <= (int)td) && (ta = 0xcda, (int)td < 0xcdb)) {
+      ta = td;
     }
-    if ((int)uVar10 < 0x10) {
-      uVar6 = 0x10;
+    if ((int)tc < 0x10) {
+      td = 0x10;
     }
     else {
-      uVar6 = 0x101;
-      if ((int)uVar10 < 0x102) {
-        uVar6 = uVar10;
+      td = 0x101;
+      if ((int)tc < 0x102) {
+        td = tc;
       }
     }
-    uVar10 = uVar6 + 2;
-    narrow = (int)uVar11 < 0x103;
-    if ((int)uVar10 <= (int)uVar11) {
-      uVar10 = 0x102;
+    tc = td + 2;
+    narrow = (int)tot < 0x103;
+    if ((int)tc <= (int)tot) {
+      tc = 0x102;
       goto LAB_80191e0c;
     }
   }
   else {
-    uVar8 = 0x21c;
-    if ((0x21b < (int)uVar7) && (uVar8 = 0xc94, (int)uVar7 < 0xc95)) {
-      uVar8 = uVar7;
+    tb = 0x21c;
+    if ((0x21b < (int)ta) && (tb = 0xc94, (int)ta < 0xc95)) {
+      tb = ta;
     }
-    uVar7 = uVar8 + (uint)(byte)((uint8_t *)guest_at(0x801b841c))[std_idx] * 4;
-    if (((int)uVar7 <= (int)uVar6) && (uVar7 = 0xcbc, (int)uVar6 < 0xcbd)) {
-      uVar7 = uVar6;
+    ta = tb + (uint)(byte)((uint8_t *)guest_at(0x801b841c))[std_idx] * 4;
+    if (((int)ta <= (int)td) && (ta = 0xcbc, (int)td < 0xcbd)) {
+      ta = td;
     }
-    if ((int)uVar10 < 0x13) {
-      uVar6 = 0x13;
+    if ((int)tc < 0x13) {
+      td = 0x13;
     }
     else {
-      uVar6 = 0x12f;
-      if ((int)uVar10 < 0x130) {
-        uVar6 = uVar10;
+      td = 0x12f;
+      if ((int)tc < 0x130) {
+        td = tc;
       }
     }
-    narrow = (int)uVar11 < 0x132;
-    uVar10 = uVar6 + 2;
-    if ((int)(uVar6 + 2) <= (int)uVar11) {
-      uVar10 = 0x131;
+    narrow = (int)tot < 0x132;
+    tc = td + 2;
+    if ((int)(td + 2) <= (int)tot) {
+      tc = 0x131;
 LAB_80191e0c:
       if (narrow) {
-        uVar10 = uVar11;
+        tc = tot;
       }
     }
   }
-  gpu_call(0x10,(uVar7 & 0xfff) << 0xc | uVar8 & 0xfff | 0x6000000,0,0,0);
-  gpu_call(0x10,(uVar10 & 0x3ff) << 10 | uVar6 & 0x3ff | 0x7000000,0,0,0);
+  gpu_call(0x10,(ta & 0xfff) << 0xc | tb & 0xfff | 0x6000000,0,0,0);
+  gpu_call(0x10,(tc & 0x3ff) << 10 | td & 0x3ff | 0x7000000,0,0,0);
 LAB_80191e74:
   guest_memcpy((uint32_t *)0x801b838c,(uint32_t *)env_g,0x14);
   return env_g;
@@ -1770,8 +1770,8 @@ LAB_8018e9fc_d:
   }
   while ((zpad = zpad - 1), zpad >= 0) console_emit(0x30);
   if ((flags & 0x10) != 0 && (intptr_t)fldw < width) {
-    intptr_t puVar17b = (intptr_t)fldw;
-    do { console_emit(0x20); puVar17b++; } while (puVar17b < width);
+    intptr_t pad = (intptr_t)fldw;
+    do { console_emit(0x20); pad++; } while (pad < width);
   }
   need = (uint32_t *)width;
   if (width < (intptr_t)fldw) need = fldw;
@@ -2010,21 +2010,21 @@ void mdec_pump_b(uint32_t bfr_g,uint32_t size)
 
 /* ======== 0x80193fa0 ======== */
 
-uint32_t gpu_bits_pack_a(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                      uint32_t param_4)
+uint32_t gpu_bits_pack_a(uint32_t a0,uint32_t a1,uint32_t a2,
+                      uint32_t a3)
 
 {
-  return ((param_1 & 3) << 7) | ((param_2 & 3) << 5) |
-         ((param_4 & 0x100) >> 4) | ((param_3 & 0x3ff) >> 6) |
-         ((param_4 & 0x200) << 2);
+  return ((a0 & 3) << 7) | ((a1 & 3) << 5) |
+         ((a3 & 0x100) >> 4) | ((a2 & 0x3ff) >> 6) |
+         ((a3 & 0x200) << 2);
 }
 
 /* ======== 0x80193fe0 ======== */
 
-uint32_t gpu_coord_pack_b(uint32_t param_1,uint32_t param_2)
+uint32_t gpu_coord_pack_b(uint32_t a0,uint32_t a1)
 
 {
-  return (((param_2 << 6) | ((param_1 >> 4) & 0x3f)) & 0xffff);
+  return (((a1 << 6) | ((a0 >> 4) & 0x3f)) & 0xffff);
 }
 
 /* ======== 0x80193e30 ======== */
@@ -2441,14 +2441,14 @@ void spr_tbl_init_b(void)
  * a1 bit1: set->set bit25 (0x02000000), clear->clear bit25
  * (mask 0xfdffffff); then mdec_decode_issue(a0, lhu(*a0)).
  * Disasm 0x8018f9b4-0x8018fa28. */
-void gpu_pkt_attr_set(uint32_t param_1,int param_2)
+void gpu_pkt_attr_set(uint32_t pkt_g,int flags)
 {
-  uint32_t *w = (uint32_t *)guest_at(param_1);
-  if (param_2 & 1) *w &= 0xf7ffffff;
+  uint32_t *w = (uint32_t *)guest_at(pkt_g);
+  if (flags & 1) *w &= 0xf7ffffff;
   else             *w |= 0x08000000;
-  if (param_2 & 2) *w |= 0x02000000;
+  if (flags & 2) *w |= 0x02000000;
   else             *w &= 0xfdffffff;
-  mdec_decode_issue(param_1,*(uint16_t *)w);
+  mdec_decode_issue(pkt_g,*(uint16_t *)w);
 }
 
 /* vram_tile_decode — VRAM tile RLE decoder + XOR descramble. Control bytes
@@ -2457,16 +2457,16 @@ void gpu_pkt_attr_set(uint32_t param_1,int param_2)
  * dist; >0xf0 packs dist = ((n<<8)|next) - 0xf0ff, dist==0xf00 ends.
  * Then u16 buf[i] ^= buf[i-4] for i in [4,0x87ff]. dst = host buffer.
  * Disasm 0x80190260-0x8019033c. */
-void vram_tile_decode(uint8_t *param_1)
+void vram_tile_decode(uint8_t *vram)
 {
   const uint8_t *s = (const uint8_t *)guest_at(0x801b6930);
-  /* param_1: host pointer from the clean_table wrapper, guest-address
+  /* vram: host pointer from the clean_table wrapper, guest-address
    * value from game.c scene_entry (_DAT_801f4758 = 0x80010000+0x6f000) —
    * resolve either form. */
   uint8_t *base;
   {
-    uint32_t g = guest_of(param_1);
-    base = (uint8_t *)guest_at(g ? g : (uint32_t)(uintptr_t)param_1);
+    uint32_t g = guest_of(vram);
+    base = (uint8_t *)guest_at(g ? g : (uint32_t)(uintptr_t)vram);
   }
   uint8_t *d = base;
   uint32_t dist = 0;
@@ -2501,9 +2501,9 @@ void vram_tile_decode(uint8_t *param_1)
 
 /* spr_prim_tag_a — sprite-prim tag init: byte+3=5, byte+7=0x28.
  * a0 is a guest address. Disasm 0x801940c0-0x801940d0. */
-void spr_prim_tag_a(uint32_t param_1)
+void spr_prim_tag_a(uint32_t pkt_g)
 {
-  uint8_t *p = (uint8_t *)guest_at(param_1);
+  uint8_t *p = (uint8_t *)guest_at(pkt_g);
   if (p == NULL) return;
   p[3] = 5;
   p[7] = 0x28;
@@ -2511,9 +2511,9 @@ void spr_prim_tag_a(uint32_t param_1)
 
 /* spr_prim_tag_b — sprite-prim tag init: byte+3=3, byte+7=0x40.
  * a0 is a guest address. Disasm 0x80194160-0x80194170. */
-void spr_prim_tag_b(uint32_t param_1)
+void spr_prim_tag_b(uint32_t pkt_g)
 {
-  uint8_t *p = (uint8_t *)guest_at(param_1);
+  uint8_t *p = (uint8_t *)guest_at(pkt_g);
   if (p == NULL) return;
   p[3] = 3;
   p[7] = 0x40;
@@ -5082,11 +5082,11 @@ uint32_t gpu_data_reg_read(void)
  * by a0>>24. Guest returns a0>>24 in $v0 (the srl result survives
  * into the jr delay slot which performs the sb). Disasm
  * 0x80192e00-0x80192e20. */
-uint32_t gpu_tag_cmd_store(uint32_t param_1)
+uint32_t gpu_tag_cmd_store(uint32_t cmd)
 {
-  uint32_t idx = param_1 >> 24;
-  br2_st32p(0x801b8428, param_1);
-  GP8(0x801fad68 + idx) = (uint8_t)param_1;
+  uint32_t idx = cmd >> 24;
+  br2_st32p(0x801b8428, cmd);
+  GP8(0x801fad68 + idx) = (uint8_t)cmd;
   return idx;
 }
 
@@ -5096,10 +5096,10 @@ uint32_t gpu_tag_cmd_store(uint32_t param_1)
  * a0, 0 and 0x01000401 through pointer cells 0x801b8428/2c/30/34.
  * Guest leaves $v0 = the last cell pointer (callers ignore it).
  * Disasm 0x80192e78-0x80192ebc. */
-void gpu_reg_cells_init(uint32_t param_1)
+void gpu_reg_cells_init(uint32_t val)
 {
   br2_st32p(0x801b8428, 0x04000002u);
-  br2_st32p(0x801b842c, param_1);
+  br2_st32p(0x801b842c, val);
   br2_st32p(0x801b8430, 0u);
   br2_st32p(0x801b8434, 0x01000401u);
 }
@@ -5111,10 +5111,10 @@ void gpu_reg_cells_init(uint32_t param_1)
  * contents are device/register addresses (can be 0x1F80xxxx MMIO), so
  * both dereferences go through br2_ld32/br2_st32. Disasm
  * 0x80192EC0-0x80192EF0. */
-uint32_t gpu_reg_cmd_commit(uint32_t param_1)
+uint32_t gpu_reg_cmd_commit(uint32_t cmd)
 {
   uint32_t dst = br2_ld32(0x801b8428u);
-  br2_st32(dst, param_1 | 0x10000000u);
+  br2_st32(dst, cmd | 0x10000000u);
   return br2_ld32(br2_ld32(0x801b8424u)) & 0x00ffffffu;
 }
 
