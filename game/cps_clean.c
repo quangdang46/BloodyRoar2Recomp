@@ -47278,6 +47278,11 @@ block_80147DEC:
 
 /* cps_801484e8 — clean CPS transliteration of br2eu_func_801484E8 (guest 0x801484e8)
  * from SLES_017.22_full_13.c. */
+/* cps_801484e8 — guest 0x801484E8. Flags/attr update on a 2-byte-stride
+ * table at a0: entry = a0 + a1*2. If the s16 flags field @+180 (0xB4) is
+ * nonzero, merge bit 0x0200 into its high nibble (v0 = flags & 0xF000).
+ * Then entry2 = lw(a0+0xC0) + a1; its mode byte @+25 is masked to &3.
+ * Returns via $ra. Continuations: 0x80148500, 0x80148508. */
 void cps_801484e8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -47291,22 +47296,21 @@ void cps_801484e8(void)
             default: break;
         }
     }
-    /* Address: 0x801484E8, Size: 64 bytes, Blocks: 3 */
 
 block_801484E8:
     v0 = a1 << 1;
-    a2 = a0 + v0;
-    v0 = (int32_t)(int16_t)cpu->read_half(a2 + 180);
-    v1 = cpu->read_half(a2 + 180);
+    a2 = a0 + v0;                                  /* entry = a0 + a1*2 */
+    v0 = (int32_t)(int16_t)cpu->read_half(a2 + 180);  /* s16 flags @+0xB4 */
+    v1 = cpu->read_half(a2 + 180);                 /* u16 raw flags */
     int _bc_801484F8 = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v0 = v1 & 0xF000;  /* 0x801484FC: 0x3062F000 */
     if (_bc_801484F8) {
         psx_check_interrupts_at(cpu, 0x80148508u);
-        goto block_80148508;  /* taken */
+        goto block_80148508;  /* flags==0: skip the bit merge */
     } else {
         psx_check_interrupts_at(cpu, 0x80148500u);
-        goto block_80148500;  /* not taken */
+        goto block_80148500;  /* flags!=0: set bit 0x0200 */
     }
 
 block_80148500:
@@ -47315,10 +47319,10 @@ block_80148500:
     /* fall through to block_80148508 */
 
 block_80148508:
-    v1 = cpu->read_word(a0 + 192);
+    v1 = cpu->read_word(a0 + 192);                 /* secondary table ptr */
     /* nop */  /* 0x8014850C: 0x00000000 */
     v1 = v1 + a1;
-    v0 = cpu->read_byte(v1 + 25);
+    v0 = cpu->read_byte(v1 + 25);                  /* mode byte @+25 */
     /* nop */  /* 0x80148518: 0x00000000 */
     v0 = v0 & 0x0003;  /* 0x8014851C: 0x30420003 */
     uint32_t _jt_80148520 = ra;  /* latch indirect target before delay slot */
@@ -47330,42 +47334,41 @@ block_80148508:
 
 /* cps_80148e60 — clean CPS transliteration of br2eu_func_80148E60 (guest 0x80148e60)
  * from SLES_017.22_full_14.c. */
+/* cps_80148e60 — guest 0x80148E60: clear byte @a3+3, fall through to
+ * cps_80148e64 (v0 = a3) then cps_80148e68 (jr $ra). 3-instruction split
+ * chain; each piece is a separate CPS dispatch boundary. */
 void cps_80148e60(void)
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
-    /* Address: 0x80148E60, Size: 4 bytes, Blocks: 1 */
-
 block_80148E60:
     cpu->write_byte(a3 + 3, (uint8_t)zero);
     cpu->pc = 0x80148e64u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80148e64u; return;/* fallthrough to next function */
 }
 
 /* cps_80148e64 — clean CPS transliteration of br2eu_func_80148E64 (guest 0x80148e64)
  * from SLES_017.22_full_14.c. */
+/* cps_80148e64 — guest 0x80148E64: v0 = a3, fall through to
+ * cps_80148e68 (jr $ra). Middle piece of the 80148e60 chain. */
 void cps_80148e64(void)
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
-    /* Address: 0x80148E64, Size: 4 bytes, Blocks: 1 */
-
 block_80148E64:
     v0 = a3;
     cpu->pc = 0x80148e68u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80148e68u; return;/* fallthrough to next function */
 }
 
 /* cps_80148e68 — clean CPS transliteration of br2eu_func_80148E68 (guest 0x80148e68)
  * from SLES_017.22_full_14.c. */
+/* cps_80148e68 — guest 0x80148E68: bare `jr $ra` tail of the
+ * 80148e60/64/68 split chain (nop delay slot). */
 void cps_80148e68(void)
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
-
-    /* Address: 0x80148E68, Size: 8 bytes, Blocks: 1 */
 
 block_80148E68:
     uint32_t _jt_80148E68 = ra;  /* latch indirect target before delay slot */
@@ -47375,8 +47378,15 @@ block_80148E68:
     cpu->pc = _jt_80148E68; return;  /* CPS: jr $ra */
 }
 
-/* cps_8014b810 — clean CPS transliteration of br2eu_func_8014B810 (guest 0x8014b810)
- * from SLES_017.22_full_14.c. */
+/* cps_8014b810 — guest 0x8014B810: 100-iteration table walk.
+ * s4 = context (a0); s1 = s4 + idx*4000 (v1*125<<5 from lw(0x1F80000C));
+ * s0 iterates a 4-byte-stride sub-table, s2 a 2-byte-stride mirror.
+ * Per element: skip if lw(s0+8800)==0; else accumulate halfword sums at
+ * +8000/+8002 and +8400/+8402, call 0x80175760 (coord transform), then
+ * link the 40-byte record at s1 into the list head @0x1F800008.
+ * After the loop: decrement s16 counter @s4+9400; if it went negative
+ * call 0x801A482C. Epilogue restores s0-s5/ra. Continuations listed in
+ * the dispatch switch. */
 void cps_8014b810(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -47395,11 +47405,9 @@ void cps_8014b810(void)
             default: break;
         }
     }
-    /* Address: 0x8014B810, Size: 296 bytes, Blocks: 8 */
 
-block_8014B810:
-    v1 = 0x1F80 << 16;  /* 0x1F800000 */
-    v1 = cpu->read_word(v1 + 12);
+block_8014B810:                                  /* prologue + stride calc */
+    v1 = cpu->read_word(0x1F80000Cu);              /* hw mirror @0x1F80000C */
     sp = sp + -56;
     cpu->write_word(sp + 40, s4);
     s4 = a0;
@@ -47421,7 +47429,7 @@ block_8014B810:
     s1 = s4 + v0;
     /* fall through to block_8014B864 */
 
-block_8014B864:
+block_8014B864:                                 /* loop head: entry active? */
     v0 = cpu->read_word(s0 + 8800);
     /* nop */  /* 0x8014B868: 0x00000000 */
     int _bc_8014B86C = (v0 == zero);  /* save branch cond before delay slot */
@@ -47435,7 +47443,7 @@ block_8014B864:
         goto block_8014B874;  /* not taken */
     }
 
-block_8014B874:
+block_8014B874:                                 /* sum halfwords, call transform */
     v0 = cpu->read_half(s0 + 8000);
     v1 = cpu->read_half(s0 + 8400);
     a2 = cpu->read_half(s0 + 8002);
@@ -47455,7 +47463,7 @@ block_8014B874:
     psx_check_interrupts_at(cpu, 0x80175760u);
     cpu->pc = 0x80175760u; return;  /* CPS jal -> 0x80175760 */
 
-block_8014B8B0:
+block_8014B8B0:                                 /* push record onto 0x1F800008 list */
     v0 = cpu->read_word(s5 + 8);
     /* nop */  /* 0x8014B8B4: 0x00000000 */
     v0 = cpu->read_word(v0 + 64);
@@ -47468,7 +47476,7 @@ block_8014B8B0:
     cpu->write_word(v1 + 64, v0);
     /* fall through to block_8014B8D8 */
 
-block_8014B8D8:
+block_8014B8D8:                                 /* loop tail: advance 3 strides */
     s1 = s1 + 40;
     s2 = s2 + 2;
     s3 = s3 + 1;
@@ -47484,7 +47492,7 @@ block_8014B8D8:
         goto block_8014B8F0;  /* not taken */
     }
 
-block_8014B8F0:
+block_8014B8F0:                                 /* countdown @s4+9400 */
     v0 = cpu->read_half(s4 + 9400);
     /* nop */  /* 0x8014B8F4: 0x00000000 */
     v0 = v0 + -1;
@@ -47508,7 +47516,7 @@ block_8014B90C:
     psx_check_interrupts_at(cpu, 0x801A482Cu);
     cpu->pc = 0x801A482Cu; return;  /* CPS jal -> 0x801A482C */
 
-block_8014B914:
+block_8014B914:                                 /* epilogue: restore regs, jr $ra */
     ra = cpu->read_word(sp + 48);
     s5 = cpu->read_word(sp + 44);
     s4 = cpu->read_word(sp + 40);
@@ -47523,8 +47531,12 @@ block_8014B914:
     cpu->pc = _jt_8014B930; return;  /* CPS: jr $ra */
 }
 
-/* cps_8014c324 — clean CPS transliteration of br2eu_func_8014C324 (guest 0x8014c324)
- * from SLES_017.22_full_15.c. */
+/* cps_8014c324 — guest 0x8014C324 (1096 bytes, 20 CPS blocks).
+ * Init/teardown routine around global state at 0x801F10BC/0x801F10C0
+ * (s3/s4 = &globals+4288): ORs 0x0006 into lw(obj+28), then repeatedly
+ * calls 0x8014B2CC (pair-wise init, a0/a1 = ptr+160 then +200) across
+ * the block chain. 20 continuation blocks — kept in generated CPS
+ * shape; restructuring would risk the interleaved jal delay slots. */
 void cps_8014c324(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -47954,18 +47966,19 @@ block_8014C74C:
 
 /* cps_8014cd48 — clean CPS transliteration of br2eu_func_8014CD48 (guest 0x8014cd48)
  * from SLES_017.22_full_15.c. */
+/* cps_8014cd48 — guest 0x8014CD48: set bit 0x0100 in the flags word
+ * (lw+28) of the global object ptr stored at 0x801F10BC. Returns the
+ * updated flags word in $v0. Same shape as cd68/cd88 with bits
+ * 0x0200/0x0400. */
 void cps_8014cd48(void)
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
-    /* Address: 0x8014CD48, Size: 32 bytes, Blocks: 1 */
-
 block_8014CD48:
-    v0 = 0x801F << 16;  /* 0x801F0000 */
-    v1 = cpu->read_word(v0 + 4284);
+    v1 = cpu->read_word(0x801F10BCu);              /* global object ptr */
     /* nop */  /* 0x8014CD50: 0x00000000 */
-    v0 = cpu->read_word(v1 + 28);
+    v0 = cpu->read_word(v1 + 28);                   /* flags word */
     /* nop */  /* 0x8014CD58: 0x00000000 */
     v0 = v0 | 0x0100;
     uint32_t _jt_8014CD60 = ra;  /* latch indirect target before delay slot */
@@ -47977,18 +47990,17 @@ block_8014CD48:
 
 /* cps_8014cd68 — clean CPS transliteration of br2eu_func_8014CD68 (guest 0x8014cd68)
  * from SLES_017.22_full_15.c. */
+/* cps_8014cd68 — guest 0x8014CD68: set bit 0x0200 in the flags word
+ * (lw+28) of the global object ptr at 0x801F10BC. See cps_8014cd48. */
 void cps_8014cd68(void)
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
-    /* Address: 0x8014CD68, Size: 32 bytes, Blocks: 1 */
-
 block_8014CD68:
-    v0 = 0x801F << 16;  /* 0x801F0000 */
-    v1 = cpu->read_word(v0 + 4284);
+    v1 = cpu->read_word(0x801F10BCu);              /* global object ptr */
     /* nop */  /* 0x8014CD70: 0x00000000 */
-    v0 = cpu->read_word(v1 + 28);
+    v0 = cpu->read_word(v1 + 28);                   /* flags word */
     /* nop */  /* 0x8014CD78: 0x00000000 */
     v0 = v0 | 0x0200;
     uint32_t _jt_8014CD80 = ra;  /* latch indirect target before delay slot */
@@ -47998,20 +48010,17 @@ block_8014CD68:
     cpu->pc = _jt_8014CD80; return;  /* CPS: jr $ra */
 }
 
-/* cps_8014cd88 — clean CPS transliteration of br2eu_func_8014CD88 (guest 0x8014cd88)
- * from SLES_017.22_full_15.c. */
+/* cps_8014cd88 — guest 0x8014CD88: set bit 0x0400 in the flags word
+ * (lw+28) of the global object ptr at 0x801F10BC. See cps_8014cd48. */
 void cps_8014cd88(void)
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
-    /* Address: 0x8014CD88, Size: 32 bytes, Blocks: 1 */
-
 block_8014CD88:
-    v0 = 0x801F << 16;  /* 0x801F0000 */
-    v1 = cpu->read_word(v0 + 4284);
+    v1 = cpu->read_word(0x801F10BCu);              /* global object ptr */
     /* nop */  /* 0x8014CD90: 0x00000000 */
-    v0 = cpu->read_word(v1 + 28);
+    v0 = cpu->read_word(v1 + 28);                   /* flags word */
     /* nop */  /* 0x8014CD98: 0x00000000 */
     v0 = v0 | 0x0400;
     uint32_t _jt_8014CDA0 = ra;  /* latch indirect target before delay slot */
@@ -48021,14 +48030,12 @@ block_8014CD88:
     cpu->pc = _jt_8014CDA0; return;  /* CPS: jr $ra */
 }
 
-/* cps_8014cda8 — clean CPS transliteration of br2eu_func_8014CDA8 (guest 0x8014cda8)
- * from SLES_017.22_full_15.c. */
+/* cps_8014cda8 — guest 0x8014CDA8: write byte 9 to hw-mirror reg
+ * 0x1F800001 (scratchpad/echo region), return 9 in $v0. */
 void cps_8014cda8(void)
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
-
-    /* Address: 0x8014CDA8, Size: 20 bytes, Blocks: 1 */
 
 block_8014CDA8:
     v0 = 9;
@@ -48041,14 +48048,12 @@ block_8014CDA8:
     cpu->pc = _jt_8014CDB4; return;  /* CPS: jr $ra */
 }
 
-/* cps_8014cdbc — clean CPS transliteration of br2eu_func_8014CDBC (guest 0x8014cdbc)
- * from SLES_017.22_full_15.c. */
+/* cps_8014cdbc — guest 0x8014CDBC: write byte 240 (0xF0) to hw-mirror
+ * reg 0x1F800001, return 240 in $v0. Same shape as cps_8014cda8. */
 void cps_8014cdbc(void)
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
-
-    /* Address: 0x8014CDBC, Size: 20 bytes, Blocks: 1 */
 
 block_8014CDBC:
     v0 = 240;
