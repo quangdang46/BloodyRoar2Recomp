@@ -16020,104 +16020,104 @@ void ring_effect_task_update(int rec)
 /* firework_task_update — firework/particle task update (10 emitters). */
 void firework_task_update(int rec)
 {
-  short sVar1;
+  short dv;
   ushort life;
   int t;
   int prod;
-  char *bp;
-  short *psVar6;
-  uint *puVar7;
-  short *psVar8;
-  short *psVar9;
-  undefined4 *puVar10;
-  short *psVar11;
-  int i;
+  char *px;
+  short *vel2;
+  uint *ot;
+  short *pos;
+  short *acc;
+  undefined4 *src;
+  short *vel;
+  int k;
 
   t = _DAT_1f80000c * 400;
   if (_DAT_1f800082 == 0) {
     life = (ushort)(*(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x3d4) ))- 1);
     *(ushort *)guest_at((uint32_t)(uintptr_t)((rec + 0x3d4) ))= life;
-    psVar9 = (short *)guest_at((uint32_t)(uintptr_t)((rec + 800)));
+    acc = (short *)guest_at((uint32_t)(uintptr_t)((rec + 800)));
     if ((int)((uint)life << 0x10) < 0) {
       task_slot_step();
       return;
     }
-    psVar11 = (short *)guest_at((uint32_t)(uintptr_t)((rec + 0x370)));
-    i = 0;
-    psVar6 = (short *)guest_at((uint32_t)(uintptr_t)((rec + 0x374)));
-    psVar8 = (short *)guest_at((uint32_t)(uintptr_t)((rec + 0x324)));
-    bp = (char *)guest_at((uint32_t)(uintptr_t)((rec + t + 6)));
+    vel = (short *)guest_at((uint32_t)(uintptr_t)((rec + 0x370)));
+    k = 0;
+    vel2 = (short *)guest_at((uint32_t)(uintptr_t)((rec + 0x374)));
+    pos = (short *)guest_at((uint32_t)(uintptr_t)((rec + 0x324)));
+    px = (char *)guest_at((uint32_t)(uintptr_t)((rec + t + 6)));
     t = rec;
     do {
       if (*(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x3d4) ))< 10) {
-        bp[-2] = bp[-2] + -0x20;
-        *bp = *bp + -0x20;
-        bp[-1] = bp[-1] + -0x20;
+        px[-2] = px[-2] + -0x20;
+        *px = *px + -0x20;
+        px[-1] = px[-1] + -0x20;
       }
       if (10 < *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x3d4)))) {
         *(short *)guest_at((uint32_t)(uintptr_t)((t + 0x3c0) ))= *(short *)guest_at((uint32_t)(uintptr_t)((t + 0x3c0) ))+ 4;
-        prod = *psVar11 * 0xf0a;
+        prod = *vel * 0xf0a;
         if (prod < 0) {
           prod = prod + 0xfff;
         }
-        *psVar11 = (short)(prod >> 0xc);
-        prod = psVar6[-1] * 0xf0a;
+        *vel = (short)(prod >> 0xc);
+        prod = vel2[-1] * 0xf0a;
         if (prod < 0) {
           prod = prod + 0xfff;
         }
-        psVar6[-1] = (short)(prod >> 0xc);
-        prod = *psVar6 * 0xf0a;
+        vel2[-1] = (short)(prod >> 0xc);
+        prod = *vel2 * 0xf0a;
         if (prod < 0) {
           prod = prod + 0xfff;
         }
-        *psVar6 = (short)(prod >> 0xc);
+        *vel2 = (short)(prod >> 0xc);
       }
-      bp = bp + 0x28;
-      sVar1 = *psVar11;
-      psVar11 = psVar11 + 4;
+      px = px + 0x28;
+      dv = *vel;
+      vel = vel + 4;
       t = t + 2;
-      i = i + 1;
-      *psVar9 = *psVar9 + sVar1;
-      psVar9 = psVar9 + 4;
-      psVar8[-1] = psVar8[-1] + psVar6[-1];
-      sVar1 = *psVar6;
-      psVar6 = psVar6 + 4;
-      *psVar8 = *psVar8 + sVar1;
-      psVar8 = psVar8 + 4;
-    } while (i < 10);
+      k = k + 1;
+      *acc = *acc + dv;
+      acc = acc + 4;
+      pos[-1] = pos[-1] + vel2[-1];
+      dv = *vel2;
+      vel2 = vel2 + 4;
+      *pos = *pos + dv;
+      pos = pos + 4;
+    } while (k < 10);
   }
-  puVar10 = (undefined4 *)guest_at((uint32_t)(uintptr_t)((rec + 800)));
+  src = (undefined4 *)guest_at((uint32_t)(uintptr_t)((rec + 800)));
   t = 0;
-  puVar7 = (uint *)guest_at((uint32_t)(uintptr_t)((rec + _DAT_1f80000c * 400)));
-  psVar9 = (short *)((intptr_t)puVar7 + 0x22);
+  ot = (uint *)guest_at((uint32_t)(uintptr_t)((rec + _DAT_1f80000c * 400)));
+  acc = (short *)((intptr_t)ot + 0x22);
   do {
-    setCopReg(2,0,*puVar10);
-    setCopReg(2,0x800,puVar10[1]);
+    setCopReg(2,0,*src);
+    setCopReg(2,0x800,src[1]);
     copFunction(2,0x180001);
     _DAT_1f8003fc = (uint32_t)getCopReg(2,0xe);
     _DAT_1f8003f8 = (uint32_t)getCopReg(2,0x9800);
     _DAT_1f8003f8 = _DAT_1f8003f8 >> 2;
-    sVar1 = *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x3c0)));
+    dv = *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x3c0)));
     /* guest @0x80140F70-0x80140F7C: lhu @0x1f800024 then sll16/sra16 =
      * sext16 of the low halfword only — NOT the full u32 cell. */
-    i = (int)(int16_t)(uint16_t)_DAT_1f800024;
+    k = (int)(int16_t)(uint16_t)_DAT_1f800024;
     prod = _DAT_1f8003f8 << 2;
-    psVar9[-0xd] = (short)_DAT_1f8003fc;
-    psVar9[-0xc] = _DAT_1f8003fe;
-    sVar1 = (short)mips_div_lo((int32_t)(sVar1 * i),prod); /* guest div @0x80140F94 */
-    psVar9[-9] = (short)_DAT_1f8003fc + sVar1;
-    psVar9[-8] = _DAT_1f8003fe;
-    psVar9[-5] = (short)_DAT_1f8003fc;
-    psVar9[-4] = _DAT_1f8003fe + sVar1;
-    puVar10 = puVar10 + 2;
-    psVar9[-1] = (short)_DAT_1f8003fc + sVar1;
+    acc[-0xd] = (short)_DAT_1f8003fc;
+    acc[-0xc] = _DAT_1f8003fe;
+    dv = (short)mips_div_lo((int32_t)(dv * k),prod); /* guest div @0x80140F94 */
+    acc[-9] = (short)_DAT_1f8003fc + dv;
+    acc[-8] = _DAT_1f8003fe;
+    acc[-5] = (short)_DAT_1f8003fc;
+    acc[-4] = _DAT_1f8003fe + dv;
+    src = src + 2;
+    acc[-1] = (short)_DAT_1f8003fc + dv;
     rec = rec + 2;
-    *psVar9 = _DAT_1f8003fe + sVar1;
+    *acc = _DAT_1f8003fe + dv;
     t = t + 1;
-    psVar9 = psVar9 + 0x14;
-    *puVar7 = *(uint *)guest_at((uint32_t)(uintptr_t)((_DAT_1f800008 + 0x10) ))| 0x9000000;
-    *(uint *)guest_at((uint32_t)(uintptr_t)((_DAT_1f800008 + 0x10) ))= guest_of(puVar7) & 0xffffff;
-    puVar7 = puVar7 + 10;
+    acc = acc + 0x14;
+    *ot = *(uint *)guest_at((uint32_t)(uintptr_t)((_DAT_1f800008 + 0x10) ))| 0x9000000;
+    *(uint *)guest_at((uint32_t)(uintptr_t)((_DAT_1f800008 + 0x10) ))= guest_of(ot) & 0xffffff;
+    ot = ot + 10;
   } while (t < 10);
   return;
 }
@@ -16532,8 +16532,8 @@ void hud_time_score_draw(uint32_t tbl,uint16_t a1,int32_t a2,int32_t a3,
                   uint8_t *arg5,int32_t arg6)
 {
   int32_t iVar1, iVar2, iVar4, iVar5, iVar6, iVar7;
-  int16_t sVar3;
-  uint32_t uVar8;
+  int16_t col;
+  uint32_t fl;
   /* auStack_48 = sp+0x18 (frame 0x60) -> guest_sp()-0x48;
    * `addiu $tbl,$sp,0x18` before sprintf jal in 0x80163e38. The string is
    * re-read by announce_param_block_init_b / hud_text_* / slot_name_measure
@@ -16552,10 +16552,10 @@ void hud_time_score_draw(uint32_t tbl,uint16_t a1,int32_t a2,int32_t a3,
   sprintf_core(auStack_48,(char *)guest_at(0x80121fa8),iVar6,iVar5,iVar4);
   iVar2 = ((int32_t)*(int16_t *)(arg5 + 0xc) % 1000) * 0x10000 >> 0x10;
   iVar1 = ((int32_t)*(int16_t *)(arg5 + 0xe) % 1000) * 0x10000 >> 0x10;
-  sVar3 = (int16_t)a3;
+  col = (int16_t)a3;
   switch (arg6) {
   case 0:
-    iVar5 = (int32_t)sVar3;
+    iVar5 = (int32_t)col;
     announce_param_block_init_b(tbl,a1,auStack_48,(uint16_t)((a2 + 0x10) * 0x10000 >> 0x10),(uint16_t)iVar5,1);
     slot_name_measure(auStack_48,*(uint8_t *)(arg5 + 4));
     announce_param_block_init_b(tbl,a1,auStack_48,(uint16_t)((a2 + 0xa0) * 0x10000 >> 0x10),(uint16_t)iVar5,1);
@@ -16566,9 +16566,9 @@ void hud_time_score_draw(uint32_t tbl,uint16_t a1,int32_t a2,int32_t a3,
     print_dispatch((const char *)guest_at(0x80121fc8),(const char *)arg5,auStack_48);
     goto LAB_80164124;
   case 2:
-    announce_param_block_init_b(tbl,a1,auStack_48,(uint16_t)((a2 + 0x10) * 0x10000 >> 0x10),(uint16_t)sVar3,1);
+    announce_param_block_init_b(tbl,a1,auStack_48,(uint16_t)((a2 + 0x10) * 0x10000 >> 0x10),(uint16_t)col,1);
     slot_name_measure(auStack_48,*(uint8_t *)(arg5 + 4));
-    announce_param_block_init_b(tbl,a1,auStack_48,(uint16_t)((a2 + 0xa0) * 0x10000 >> 0x10),(uint16_t)sVar3,1);
+    announce_param_block_init_b(tbl,a1,auStack_48,(uint16_t)((a2 + 0xa0) * 0x10000 >> 0x10),(uint16_t)col,1);
     break;
   case 3:
     print_dispatch((const char *)guest_at(0x80121fd4),(const char *)arg5,iVar2);
@@ -16578,7 +16578,7 @@ LAB_80164124:
     break;
   case 4:
     iVar5 = sprintf_core(auStack_48,(char *)guest_at(0x80121fe0),iVar2,iVar1,iVar7);
-    iVar6 = (int32_t)sVar3;
+    iVar6 = (int32_t)col;
     announce_param_block_init_b(tbl,a1,auStack_48,(uint16_t)((a2 + (3 - iVar5) * 0x10) * 0x10000 >> 0x10),(uint16_t)iVar6,4);
     announce_param_block_init_b(tbl,a1,guest_at(0x80121fe4),(uint16_t)((a2 + 0x30) * 0x10000 >> 0x10),(uint16_t)iVar6,1);
     slot_name_measure(auStack_48,*(uint8_t *)(arg5 + 4));
@@ -16587,16 +16587,16 @@ LAB_80164124:
     break;
   case 5:
     iVar5 = sprintf_core(auStack_48,(char *)guest_at(0x80121fe0),iVar1,iVar1,iVar7);
-    announce_param_block_init_b(tbl,a1,auStack_48,(uint16_t)((a2 + (3 - iVar5) * 0x10) * 0x10000 >> 0x10),(uint16_t)sVar3,4);
+    announce_param_block_init_b(tbl,a1,auStack_48,(uint16_t)((a2 + (3 - iVar5) * 0x10) * 0x10000 >> 0x10),(uint16_t)col,4);
     iVar5 = (a3 + 10) * 0x10000 >> 0x10;
     hud_text_a(tbl,a1,guest_at(0x80121fe4),(uint16_t)((a2 + 0x30) * 0x10000 >> 0x10),(uint16_t)iVar5,1);
     slot_name_measure(auStack_48,*(uint8_t *)(arg5 + 4));
     hud_text_a(tbl,a1,auStack_48,(uint16_t)((a2 + 0x74) * 0x10000 >> 0x10),(uint16_t)iVar5,1);
-    announce_param_block_init_b(tbl,a1,arg5,(uint16_t)((a2 + 0xb4) * 0x10000 >> 0x10),(uint16_t)sVar3,4);
+    announce_param_block_init_b(tbl,a1,arg5,(uint16_t)((a2 + 0xb4) * 0x10000 >> 0x10),(uint16_t)col,4);
     break;
   case 6:
     iVar5 = sprintf_core(auStack_48,(char *)guest_at(0x80121fe0),iVar1,iVar1,iVar7);
-    announce_param_block_init_b(tbl,a1,auStack_48,(uint16_t)((a2 + (3 - iVar5) * 0x10) * 0x10000 >> 0x10),(uint16_t)sVar3,4);
+    announce_param_block_init_b(tbl,a1,auStack_48,(uint16_t)((a2 + (3 - iVar5) * 0x10) * 0x10000 >> 0x10),(uint16_t)col,4);
     iVar5 = (a3 + 10) * 0x10000 >> 0x10;
     hud_text_a(tbl,a1,guest_at(0x80121fe4),(uint16_t)((a2 + 0x30) * 0x10000 >> 0x10),(uint16_t)iVar5,1);
     slot_name_measure(auStack_48,*(uint8_t *)(arg5 + 4));
@@ -16606,8 +16606,8 @@ LAB_80164124:
     hud_text_b(tbl,a1,auStack_48,a2 + 0x10,(uint16_t)a3,5);
     goto LAB_801645f8;
   case 0x13:
-    if ((_DAT_1f8000dc & 4) == 0) uVar8 = 0; else uVar8 = 5;
-    hud_text_c(tbl,a1,auStack_48,a2 + 0x10,(uint16_t)a3,uVar8);
+    if ((_DAT_1f8000dc & 4) == 0) fl = 0; else fl = 5;
+    hud_text_c(tbl,a1,auStack_48,a2 + 0x10,(uint16_t)a3,fl);
     goto LAB_80164538;
   case 0x14:
     iVar2 = iVar1;
@@ -16616,12 +16616,12 @@ LAB_80164124:
     iVar5 = sprintf_core(auStack_48,(char *)guest_at(0x80121fe0),iVar1,iVar1,iVar7);
     if ((_DAT_1f8000dc & 4) == 0) {
       hud_text_c(tbl,a1,auStack_48,a2 + (3 - iVar5) * 0x10 + 0x10,(uint16_t)a3,0);
-      uVar8 = 0;
+      fl = 0;
     } else {
       hud_text_c(tbl,a1,auStack_48,a2 + (3 - iVar5) * 0x10 + 0x10,(uint16_t)a3,5);
-      uVar8 = 5;
+      fl = 5;
     }
-    announce_param_block_init_alt(tbl,a1,guest_at(0x80121fe4),(uint16_t)(a2 + 0x40),(uint16_t)a3,uVar8);
+    announce_param_block_init_alt(tbl,a1,guest_at(0x80121fe4),(uint16_t)(a2 + 0x40),(uint16_t)a3,fl);
 LAB_80164538:
     slot_name_measure(auStack_48,*(uint8_t *)(arg5 + 4));
     announce_param_block_init_alt(tbl,a1,auStack_48,(uint16_t)(a2 + 0xf8),(uint16_t)a3,2);
@@ -16630,11 +16630,11 @@ LAB_80164538:
 LAB_8016457c:
     iVar5 = sprintf_core(auStack_48,(char *)guest_at(0x80121fe0),iVar2,iVar1,iVar7);
     hud_text_b(tbl,a1,auStack_48,a2 + (3 - iVar5) * 0x10 + 0x10,(uint16_t)a3,5);
-    announce_param_block_init(tbl,a1,guest_at(0x80121fe4),(uint16_t)((a2 + 0x40) * 0x10000 >> 0x10),(uint16_t)sVar3,5);
+    announce_param_block_init(tbl,a1,guest_at(0x80121fe4),(uint16_t)((a2 + 0x40) * 0x10000 >> 0x10),(uint16_t)col,5);
 LAB_801645f8:
-    announce_param_block_init(tbl,a1,arg5,(uint16_t)((a2 + 0xa8) * 0x10000 >> 0x10),(uint16_t)sVar3,0);
+    announce_param_block_init(tbl,a1,arg5,(uint16_t)((a2 + 0xa8) * 0x10000 >> 0x10),(uint16_t)col,0);
     slot_name_measure(auStack_48,*(uint8_t *)(arg5 + 4));
-    announce_param_block_init(tbl,a1,auStack_48,(uint16_t)((a2 + 0xf8) * 0x10000 >> 0x10),(uint16_t)sVar3,2);
+    announce_param_block_init(tbl,a1,auStack_48,(uint16_t)((a2 + 0xf8) * 0x10000 >> 0x10),(uint16_t)col,2);
   }
   br2_guest_frame_free();
 }
