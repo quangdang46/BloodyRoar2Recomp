@@ -266,7 +266,7 @@ static int32_t mips_div_lo(int32_t num, int32_t den)
 
 /* action_resolve - pick next fighter action from input/state flag
  * words; returns action id (or -1 = keep current). */
-int32_t action_resolve(byte *ctrl, uint8_t *motion)
+int32_t action_resolve(byte *ctrl, byte *motion)
 {
   /* Locals: fXX = snapshot of the ctrl+0xXX flag word (0x58 request,
    * 0x5c state, 0x60/0x64 mode, 0x68 temp, 0x6c motion-state).
@@ -1615,7 +1615,7 @@ LAB_80176d24:
  * applies its result to motion+0x80, then physics/anim tail. */
 /* fighter_frame - per-fighter frame update: resource drain,
  * floor/height clamps, hit-zone tests, turn, action resolve+commit. */
-void fighter_frame(byte *ctrl, uint8_t *motion)
+void fighter_frame(byte *ctrl, byte *motion)
 {
   /* Locals: motion_p = ctrl+0x38 motion object; dv = short scratch
    * (gauge delta, zone result, action id); uv = uint scratch (flag
