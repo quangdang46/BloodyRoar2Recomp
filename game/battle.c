@@ -9476,7 +9476,7 @@ code_r0x8016d2ec:
 }
 
 /* ---- batch14: HUD/score/round helpers (0x8012e-0x80135) ---- */
-void hud_text_blk_alt(undefined4 a0,undefined2 a1,const void *a2,undefined2 a3, undefined2 arg5,short arg6)
+void hud_text_blk_alt(undefined4 ot,undefined2 font,const void *str,undefined2 a3, undefined2 arg5,short tm)
 {
   _DAT_1f80038c = 0;
   _DAT_1f80038e = 0;
@@ -9488,18 +9488,18 @@ void hud_text_blk_alt(undefined4 a0,undefined2 a1,const void *a2,undefined2 a3, 
   _DAT_1f80039e = 0;
   _DAT_1f8003a0 = 0;
   _DAT_1f8003a4 = 0;
-  _DAT_1f8003a2 = (arg6 + 0x1e0U & 0x1ff) * 0x40 + 0x1f;
+  _DAT_1f8003a2 = (tm + 0x1e0U & 0x1ff) * 0x40 + 0x1f;
   _DAT_1f800394 = arg5;
   _DAT_1f800392 = a3;
-  _DAT_1f8003a8 = guest_of(a2);
-  text_render_simple((uint *)guest_at(a0),a1,0x1f80038c);
+  _DAT_1f8003a8 = guest_of(str);
+  text_render_simple((uint *)guest_at(ot),font,0x1f80038c);
   return;
 
 }
 
 /* hud_text_blk — 0x1f80038c text-block variant: +0x1c = raw string guest
  * addr, +0xa..0x10 all 8, +0x16 timing formula; disasm 0x8012e100-0x8012e180. */
-void hud_text_blk(undefined4 a0,undefined2 a1,uint32_t a2,undefined2 a3, undefined2 arg5,short arg6)
+void hud_text_blk(undefined4 ot,undefined2 font,uint32_t str,undefined2 a3, undefined2 arg5,short tm)
 {
   _DAT_1f80038c = 0;
   _DAT_1f80038e = 0;
@@ -9512,10 +9512,10 @@ void hud_text_blk(undefined4 a0,undefined2 a1,uint32_t a2,undefined2 a3, undefin
   _DAT_1f80039c = 8;
   _DAT_1f80039e = 0;
   _DAT_1f8003a0 = 0;
-  _DAT_1f8003a2 = (arg6 + 0x1e0U & 0x1ff) * 0x40 + 0x1f;
+  _DAT_1f8003a2 = (tm + 0x1e0U & 0x1ff) * 0x40 + 0x1f;
   _DAT_1f8003a4 = 0;
-  _DAT_1f8003a8 = a2;
-  text_render_simple((uint *)guest_at(a0),a1 & 0xffff,0x1f80038c);
+  _DAT_1f8003a8 = str;
+  text_render_simple((uint *)guest_at(ot),font & 0xffff,0x1f80038c);
   return;
 }
 
@@ -9554,7 +9554,7 @@ void ctr_clamp(uint32_t ent,int32_t delta)
   *(int16_t *)(rec + 0xa0) = (delta < 0x100) ? (int16_t)delta : (int16_t)0xff;
 }
 
-void announce_param_block_init_b(undefined4 a0,undefined2 a1,const void *a2,undefined2 a3, undefined2 arg5,short arg6)
+void announce_param_block_init_b(undefined4 ot,undefined2 font,const void *str,undefined2 a3, undefined2 arg5,short tm)
 {
   _DAT_1f800396 = 0x10;
   _DAT_1f80039a = 0xffff;
@@ -9566,11 +9566,11 @@ void announce_param_block_init_b(undefined4 a0,undefined2 a1,const void *a2,unde
   _DAT_1f80039e = 0;
   _DAT_1f8003a0 = 2;
   _DAT_1f8003a4 = 2;
-  _DAT_1f8003a2 = (arg6 + 0x1e0U & 0x1ff) * 0x40 + 0x1f;
+  _DAT_1f8003a2 = (tm + 0x1e0U & 0x1ff) * 0x40 + 0x1f;
   _DAT_1f800394 = arg5;
   _DAT_1f800392 = a3;
-  _DAT_1f8003a8 = guest_of(a2);
-  text_render_full((uint *)guest_at(a0),a1,0x1f80038c);
+  _DAT_1f8003a8 = guest_of(str);
+  text_render_full((uint *)guest_at(ot),font,0x1f80038c);
   return;
 
 }
