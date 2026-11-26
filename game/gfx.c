@@ -1769,7 +1769,7 @@ uint32_t printf_core(uint32_t chan,const uint8_t *fmt,const uint32_t *args)
         count = count + (intptr_t)need;
       }
     }
-    fmt = fmt + 1;                                /* LAB_8018ebec_d */
+    fmt = fmt + 1;                                /* guest 0x8018EBEC */
   }
 spec_flush:                                        /* 0x8018EBC0 */
   console_pct();
