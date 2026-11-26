@@ -5157,11 +5157,11 @@ void hud_state_machine(uint32_t a0)
   extern int br2_bail_pending(void);
   uint8_t *g  = (uint8_t *)guest_at(0x1f800000);
   uint8_t *sp20, *sp24, *c0;
-  uint32_t fp = 0, mode = a0;
+  uint32_t phase = 0, mode = a0;
   uint32_t sp48 = 0, sp4c = 0, sp50 = 0, sp54 = 0;
   uint32_t sp58, sp60, sp64, sp68, sp6c, idx;
-  int32_t s7 = 0;
-  int32_t i, t0, v0, v1, a1, a2, a3, s6, s1, s0v, s2, s3;
+  int32_t cnt = 0;
+  int32_t i, tmpv, va, vb, p1, p2, p3, yc, pkx, xc, sub_off, sub;
   uint32_t ctx8, ctxc;
   uint16_t *w20, *w22;
 
@@ -5182,14 +5182,14 @@ void hud_state_machine(uint32_t a0)
     w20   = (uint16_t *)(g + 0x20);
     w22   = (uint16_t *)(g + 0x22);
 
-    if (fp == 2) goto case2;
-    if (fp < 3) {
-      if (fp == 0) goto case0;
-      if (fp == 1) goto case1;
+    if (phase == 2) goto case2;
+    if (phase < 3) {
+      if (phase == 0) goto case0;
+      if (phase == 1) goto case1;
       goto poll;
     }
-    if (fp == 0xf0) { deferred_cmd_post(0x203,0,0); fp = 0xff; goto poll; }
-    if (fp == 0xf1) { fp = 0xff; goto poll; }
+    if (phase == 0xf0) { deferred_cmd_post(0x203,0,0); phase = 0xff; goto poll; }
+    if (phase == 0xf1) { phase = 0xff; goto poll; }
     goto poll;
 
 case0:
@@ -5203,7 +5203,7 @@ case0:
       uint32_t n = *(uint8_t *)guest_at(0x801b461c + idx);
       uint8_t *t64 = (uint8_t *)guest_at(sp64);
       *(uint16_t *)(g + 0x30) = (uint16_t)(*t64 << 3);
-      if ((int32_t)fp < (int32_t)n) {
+      if ((int32_t)phase < (int32_t)n) {
         c0 = (uint8_t *)guest_at(*(uint32_t *)(g + 0xc0));
         c0[0x10] = (uint8_t)n;
         for (i = 0; i < (int32_t)n; i++) {
@@ -5213,24 +5213,24 @@ case0:
             *(uint8_t *)guest_at(0x801b4628 + idx * 8 + i);
         }
       }
-      fp++;
+      phase++;
     } else if (mode == 1) {
       uint32_t b5 = sp20[0xe4], b4 = sp24[0xe4];
       int32_t a4;
       if (b4 < b5) {
         a4 = to_s16(*(uint16_t *)(g + 0xa4));
-        v0 = *(uint8_t *)guest_at(0x801b46d8 + a4 * 3 + sp6c);
+        va = *(uint8_t *)guest_at(0x801b46d8 + a4 * 3 + sp6c);
         sp48 = 0;
       } else {
         a4 = to_s16(*(uint16_t *)(g + 0xa4));
         sp48 = 1;
         *(uint16_t *)(g + 0xa4) = (uint16_t)(a4 + 1);
-        v0 = *(uint8_t *)guest_at(0x801b46d8 + a4 * 3 + sp68);
+        va = *(uint8_t *)guest_at(0x801b46d8 + a4 * 3 + sp68);
       }
-      *(uint16_t *)(g + 0x30) = (uint16_t)(v0 << 3);
-      fp++;
+      *(uint16_t *)(g + 0x30) = (uint16_t)(va << 3);
+      phase++;
     } else {
-      fp++;
+      phase++;
     }
     sp50 = 0; sp54 = 0;
     *(uint16_t *)(g + 0x8c) = (uint16_t)-1;
@@ -5247,22 +5247,22 @@ case1: {
         tt = to_s16(t4h);
         if (tt < 0) tt += 7;
         if (display_page_commit_b(idx, (uint32_t)(tt >> 3)) != 0) {
-          v0 = (int32_t)(uint8_t)g8(0x8007193 + (sv << 12));
-          v1 = (int32_t)(uint8_t)g8(0x8007113 + (sv << 12));
-          t0 = (v0 >> 4) + (v1 >> 4) * 10;
-          if (to_s16(*(uint16_t *)(g + 0x28)) == t0) goto hit610;
-          if ((uint32_t)(t0 - 1) < 0x5f) {
-            int32_t a2v = t0 - 1;
+          va = (int32_t)(uint8_t)g8(0x8007193 + (sv << 12));
+          vb = (int32_t)(uint8_t)g8(0x8007113 + (sv << 12));
+          tmpv = (va >> 4) + (vb >> 4) * 10;
+          if (to_s16(*(uint16_t *)(g + 0x28)) == tmpv) goto hit610;
+          if ((uint32_t)(tmpv - 1) < 0x5f) {
+            int32_t a2v = tmpv - 1;
             uint32_t wi, bit;
-            *(uint16_t *)(g + 0x28) = (uint16_t)t0;
+            *(uint16_t *)(g + 0x28) = (uint16_t)tmpv;
             if (a2v < 0) { *(uint16_t *)(g + 0x8c) = 0; a2v += 0x1e; }
             wi = (uint32_t)(a2v >> 5);
             c0 = (uint8_t *)guest_at(*(uint32_t *)(g + 0xc0));
             bit = (uint32_t)(a2v - (int32_t)(wi << 5));
-            v0 = (int32_t)((*(uint32_t *)(c0 + wi * 4 + 0x54) >> bit) & 1);
-            if (v0 == 0) {
+            va = (int32_t)((*(uint32_t *)(c0 + wi * 4 + 0x54) >> bit) & 1);
+            if (va == 0) {
               *(uint32_t *)(c0 + wi * 4 + 0x54) |= (uint32_t)1 << bit;
-              *(uint32_t *)guest_at(0x801c11f0) = fp;
+              *(uint32_t *)guest_at(0x801c11f0) = phase;
             }
           } else {
             *(uint16_t *)(g + 0x28) = 0;
@@ -5279,14 +5279,14 @@ case1: {
     goto draw678;
 
 hit610:
-    v0 = (int32_t)(uint8_t)g8(0x8007213 + (sv << 12));
-    v0 >>= 4;
-    sp50 = (uint32_t)v0;
+    va = (int32_t)(uint8_t)g8(0x8007213 + (sv << 12));
+    va >>= 4;
+    sp50 = (uint32_t)va;
     *(uint16_t *)(g + 0x40) = *(uint16_t *)(g + 0x28);
-    v1 = v0 - 1;
-    if ((uint32_t)v1 < 5) {
+    vb = va - 1;
+    if ((uint32_t)vb < 5) {
       static const uint8_t jt_bc[5] = {0,1,0,0,1}; /* 0x10 for 0,2,3 ; 0x3c for 1,4 */
-      s7 = jt_bc[v1] ? 0x3c : 0x10;
+      cnt = jt_bc[vb] ? 0x3c : 0x10;
     } else {
       sp50 = 0;
     }
@@ -5311,45 +5311,45 @@ draw678: {
 
 d6c0: /* sp54 4,5 : fade bar, cc6c stk18=2 */
     {
-      int32_t a0x = s7 * 255;
+      int32_t a0x = cnt * 255;
       int32_t vv;
       if (sp54 == 4) vv = shr4_trunc(a0x);
       else           vv = sdiv60(a0x);
-      t0 = 0xff - vv;
-      s7--;
-      if (s7 == -1) { sp54 = 0; *(uint16_t *)(g + 0x40) = (uint16_t)-1; }
-      a1 = 0; a2 = a1;
-      v0 = (t0 | (t0 << 8) | (t0 << 16));
-      spr_attr_alloc_a(ctx8, (int16_t)a1, (int16_t)a2, (int16_t)to_s16(*w20),
-                   (int16_t)to_s16(*w22), (uint32_t)v0, 2);
+      tmpv = 0xff - vv;
+      cnt--;
+      if (cnt == -1) { sp54 = 0; *(uint16_t *)(g + 0x40) = (uint16_t)-1; }
+      p1 = 0; p2 = p1;
+      va = (tmpv | (tmpv << 8) | (tmpv << 16));
+      spr_attr_alloc_a(ctx8, (int16_t)p1, (int16_t)p2, (int16_t)to_s16(*w20),
+                   (int16_t)to_s16(*w22), (uint32_t)va, 2);
       goto after678;
     }
 d754: /* sp54 3 : 8c71c growing bar */
     {
-      int32_t a2x = s7 - 1;
+      int32_t a2x = cnt - 1;
       int32_t y  = to_s16(*w20);
       int32_t p  = a2x * y;
-      t0 = shr4_trunc(p);
-      s7 = a2x;
-      if (s7 == -1) { sp54 = 0; *(uint16_t *)(g + 0x40) = 0; }
-      a1 = (t0 - y) & 0xffff;
-      spr_attr_alloc_b(ctx8 + 4, (uint32_t)a1, 0xeffe0088, 0x7fc00000,
-                   t0, to_s16(*w22));
+      tmpv = shr4_trunc(p);
+      cnt = a2x;
+      if (cnt == -1) { sp54 = 0; *(uint16_t *)(g + 0x40) = 0; }
+      p1 = (tmpv - y) & 0xffff;
+      spr_attr_alloc_b(ctx8 + 4, (uint32_t)p1, 0xeffe0088, 0x7fc00000,
+                   tmpv, to_s16(*w22));
       goto after678;
     }
 d7ac: /* sp54 1,2 : fade bar, cc6c stk18=3 */
     {
-      int32_t a0x = s7 * 255;
+      int32_t a0x = cnt * 255;
       int32_t vv;
       if (sp54 == 1) vv = shr4_trunc(a0x);
       else           vv = sdiv60(a0x);
-      t0 = 0xff - vv;
-      s7--;
-      if (s7 == -1) { sp54 = 0; *(uint16_t *)(g + 0x40) = 0; }
-      a1 = 0; a2 = 0;
-      v0 = (t0 | (t0 << 8) | (t0 << 16));
-      spr_attr_alloc_a(ctx8, (int16_t)a1, (int16_t)a2, (int16_t)to_s16(*w20),
-                   (int16_t)to_s16(*w22), (uint32_t)v0, 3);
+      tmpv = 0xff - vv;
+      cnt--;
+      if (cnt == -1) { sp54 = 0; *(uint16_t *)(g + 0x40) = 0; }
+      p1 = 0; p2 = 0;
+      va = (tmpv | (tmpv << 8) | (tmpv << 16));
+      spr_attr_alloc_a(ctx8, (int16_t)p1, (int16_t)p2, (int16_t)to_s16(*w20),
+                   (int16_t)to_s16(*w22), (uint32_t)va, 3);
       goto after678;
     }
 d818: /* sp54 0 : sub-state sp50 table */
@@ -5369,36 +5369,36 @@ d818: /* sp54 0 : sub-state sp50 table */
 
 e91c: /* sp50 1,2 : shrinking bar, cc6c stk18=3 */
     {
-      int32_t v1x = s7 * 255;
-      t0 = (sp50 == 1) ? shr4_trunc(v1x) : sdiv60(v1x);
-      s7--;
-      if (s7 == -1) sp50 = 0;
-      a1 = 0; a2 = 0;
-      v0 = (t0 | (t0 << 8) | (t0 << 16));
-      spr_attr_alloc_a(ctx8, (int16_t)a1, (int16_t)a2, (int16_t)to_s16(*w20),
-                   (int16_t)to_s16(*w22), (uint32_t)v0, 3);
+      int32_t v1x = cnt * 255;
+      tmpv = (sp50 == 1) ? shr4_trunc(v1x) : sdiv60(v1x);
+      cnt--;
+      if (cnt == -1) sp50 = 0;
+      p1 = 0; p2 = 0;
+      va = (tmpv | (tmpv << 8) | (tmpv << 16));
+      spr_attr_alloc_a(ctx8, (int16_t)p1, (int16_t)p2, (int16_t)to_s16(*w20),
+                   (int16_t)to_s16(*w22), (uint32_t)va, 3);
       goto after678;
     }
 e8a8: /* sp50 3 : growing bar, 8c71c */
     {
       int32_t y = to_s16(*w20);
-      t0 = shr4_trunc(s7 * y);
-      s7--;
-      if (s7 == -1) sp50 = 0;
-      spr_attr_alloc_b(ctx8 + 4, (uint32_t)(t0 & 0xffff), 0xeffe0088, 0x7fc00000,
-                   (uint32_t)(t0 + y), to_s16(*w22));
+      tmpv = shr4_trunc(cnt * y);
+      cnt--;
+      if (cnt == -1) sp50 = 0;
+      spr_attr_alloc_b(ctx8 + 4, (uint32_t)(tmpv & 0xffff), 0xeffe0088, 0x7fc00000,
+                   (uint32_t)(tmpv + y), to_s16(*w22));
       goto after678;
     }
 e848: /* sp50 4,5 : shrinking bar, cc6c stk18=2 */
     {
-      int32_t v1x = s7 * 255;
-      t0 = (sp50 == 4) ? shr4_trunc(v1x) : sdiv60(v1x);
-      s7--;
-      if (s7 == -1) sp50 = 0;
-      a1 = 0; a2 = 0;
-      v0 = (t0 | (t0 << 8) | (t0 << 16));
-      spr_attr_alloc_a(ctx8, (int16_t)a1, (int16_t)a2, (int16_t)to_s16(*w20),
-                   (int16_t)to_s16(*w22), (uint32_t)v0, 2);
+      int32_t v1x = cnt * 255;
+      tmpv = (sp50 == 4) ? shr4_trunc(v1x) : sdiv60(v1x);
+      cnt--;
+      if (cnt == -1) sp50 = 0;
+      p1 = 0; p2 = 0;
+      va = (tmpv | (tmpv << 8) | (tmpv << 16));
+      spr_attr_alloc_a(ctx8, (int16_t)p1, (int16_t)p2, (int16_t)to_s16(*w20),
+                   (int16_t)to_s16(*w22), (uint32_t)va, 2);
       goto after678;
     }
 
@@ -5430,34 +5430,34 @@ after678:
       int32_t sp30s = to_s16(*(uint16_t *)(g + 0x30));
       if (dw != 0 || sp30s >= 0) {
         /* sprite block (6ecac/6ed1c merged — identical) */
-        s6 = shr2_trunc(to_s16(*w22) * 3);
-        s0v = to_s16(*w20);
-        s1 = (s0v - 0x1c2) & 0xffff;
-        s3 = (int32_t)*(uint16_t *)(g + 0x38);
-        s2 = s3 << 5;
+        yc = shr2_trunc(to_s16(*w22) * 3);
+        xc = to_s16(*w20);
+        pkx = (xc - 0x1c2) & 0xffff;
+        sub = (int32_t)*(uint16_t *)(g + 0x38);
+        sub_off = sub << 5;
         spr_attr_alloc_b(ctx8,
-          (uint32_t)(((s6 + 4) << 16) | s1), 0x0efe001c,
-          (uint32_t)((s2 << 8) | 0x7bd6), (uint32_t)(s0v - 4),
-          (uint32_t)(s6 + 0x23));
+          (uint32_t)(((yc + 4) << 16) | pkx), 0x0efe001c,
+          (uint32_t)((sub_off << 8) | 0x7bd6), (uint32_t)(xc - 4),
+          (uint32_t)(yc + 0x23));
         spr_attr_alloc_b(ctx8,
-          (uint32_t)(((s6 + 0x2c) << 16) | s1), 0x0efe001c,
-          (uint32_t)(((s2 | 0x10) << 8) | 0x7bd6), (uint32_t)(s0v - 4),
-          (uint32_t)(s6 + 0x4a));
+          (uint32_t)(((yc + 0x2c) << 16) | pkx), 0x0efe001c,
+          (uint32_t)(((sub_off | 0x10) << 8) | 0x7bd6), (uint32_t)(xc - 4),
+          (uint32_t)(yc + 0x4a));
         {
-          uint8_t *tb = (uint8_t *)guest_at(0x8007093 + (s3 << 12));
+          uint8_t *tb = (uint8_t *)guest_at(0x8007093 + (sub << 12));
           int32_t vv = *tb >> 4;
           if ((uint32_t)(vv - 1) < 0xb) {
             int32_t t0v = vv - 1;
             int32_t hi = ((t0v >> 2) << 6) + 1;
             hi &= 0xff; hi <<= 8;
-            a3 = ((vv + 0x1df) & 0x1ff) << 22;
-            a3 |= hi;
-            a3 |= (t0v & 3) << 6;
-            spr_slot_pkt_submit(ctx8, (uint32_t)(((s6 + 8) << 16) | 4),
-                         0x3e37009d, (uint32_t)a3);
+            p3 = ((vv + 0x1df) & 0x1ff) << 22;
+            p3 |= hi;
+            p3 |= (t0v & 3) << 6;
+            spr_slot_pkt_submit(ctx8, (uint32_t)(((yc + 8) << 16) | 4),
+                         0x3e37009d, (uint32_t)p3);
           }
         }
-        spr_attr_alloc_a(ctx8, 0, (int16_t)s6, (int16_t)to_s16(*w20),
+        spr_attr_alloc_a(ctx8, 0, (int16_t)yc, (int16_t)to_s16(*w20),
                      0x50, 0x80808080, 3);
       }
     }
@@ -5482,8 +5482,8 @@ mode2body:
       t0v = yv * 3; if (t0v < 0) t0v += 3; t0v >>= 2;
       announce_param_block_init(ctx8, ctxc, (const void *)guest_at(0x801222b8),
                    (uint32_t)(int16_t)(t0v + 0x70), (uint32_t)(sp4c < 1), a3v);
-      a2 = yv * 3; if (a2 < 0) a2 += 3; a2 >>= 2;
-      spr_attr_alloc_a(ctx8, 0, (int16_t)a2, (int16_t)to_s16(*w20),
+      p2 = yv * 3; if (p2 < 0) p2 += 3; p2 >>= 2;
+      spr_attr_alloc_a(ctx8, 0, (int16_t)p2, (int16_t)to_s16(*w20),
                    0x50, 0x80808080, 3);
       (void)row;
     }
@@ -5503,7 +5503,7 @@ afterdraw:
           int32_t v1x = vv - 1;
           if ((uint32_t)v1x < 5) {
             static const uint8_t jt2304[5] = {0,1,0,0,1};
-            s7 = jt2304[v1x] ? 0x3c : 0x10;
+            cnt = jt2304[v1x] ? 0x3c : 0x10;
           } else sp54 = 0;
           {
             uint8_t *tb2 = (uint8_t *)guest_at(0x80071013 + (*(uint16_t *)(g + 0x38) << 12));
@@ -5539,15 +5539,15 @@ mode0body: {
     }
     /* 6f018 */
     c0 = (uint8_t *)guest_at(*(uint32_t *)(g + 0xc0));
-    v1 = *(uint32_t *)(c0 + 0x44);
-    if ((v1 & 1) == 0) {
-      *(uint32_t *)(c0 + 0x44) = v1 | 1;
+    vb = *(uint32_t *)(c0 + 0x44);
+    if ((vb & 1) == 0) {
+      *(uint32_t *)(c0 + 0x44) = vb | 1;
       *(uint32_t *)guest_at(0x801c11f0) = 1;
     }
     if (*(uint16_t *)(sp20 + 0xec) == 0) {
-      v1 = *(uint32_t *)(c0 + 0x44);
-      if (((v1 >> 15) & 1) == 0) {
-        *(uint32_t *)(c0 + 0x44) = v1 | 0x8000;
+      vb = *(uint32_t *)(c0 + 0x44);
+      if (((vb >> 15) & 1) == 0) {
+        *(uint32_t *)(c0 + 0x44) = vb | 0x8000;
         *(uint32_t *)guest_at(0x801c11f0) = 1;
       }
       *(uint16_t *)(g + 0xa4) = (uint16_t)-2;
@@ -5561,13 +5561,13 @@ mode0body: {
       }
       g[0] = 9; g[1] = 9;
       *(uint16_t *)(g + 0x92) = (uint16_t)((*(uint16_t *)(g + 0x92) & 0xff00) | 0x10);
-      fp = 0xf0;
+      phase = 0xf0;
       goto poll;
     }
     goto tail194;
 tail194:
     g[0x98] = *(uint8_t *)guest_at(0x801f4770 + to_s16(*(uint16_t *)(g + 0xa4)));
-    fp = 0xf0;
+    phase = 0xf0;
     goto poll;
 }
 
@@ -5575,7 +5575,7 @@ mode1body:
     /* guest 0x8016F100-0x8016F108: li $t5,2; sw $t5,0x98($sp) sits in the
      * DELAY SLOT of the sp48==0 test, so mode is set to 2 unconditionally on
      * entry; the sp48!=0 path (0x8016F138) then overwrites it with 0.
-     * mode==2 routes modechk -> mode2sel -> fp=0xf0/0xff -> return (tally
+     * mode==2 routes modechk -> mode2sel -> phase=0xf0/0xff -> return (tally
      * exit). Omitting the mode=2 store left mode==1 -> mode1body forever
      * (the row-3 mode-(1,4) tally wedge). */
     mode = 2;
@@ -5590,30 +5590,30 @@ mode2sel:
     *(uint16_t *)(sp20 + 0xec) = (uint16_t)(*(uint16_t *)(sp20 + 0xec) + 1);
     sp24[3] = *(uint8_t *)guest_at(0x801f47a0 + to_s16(*(uint16_t *)(g + 0xa4)));
     g[0x98] = *(uint8_t *)guest_at(0x801f4770 + to_s16(*(uint16_t *)(g + 0xa4)));
-    fp = 0xf0;
+    phase = 0xf0;
     goto poll;
 mode2b:
     c0 = (uint8_t *)guest_at(*(uint32_t *)(g + 0xc0));
     if (c0[0xd] == 0) {
-      mc_confirm_dispatch(0x27,0); s7 = 0x2ee;
+      mc_confirm_dispatch(0x27,0); cnt = 0x2ee;
     } else {
-      mc_confirm_dispatch(6,0);   s7 = 0x15e;
+      mc_confirm_dispatch(6,0);   cnt = 0x15e;
     }
-    fp = 2;
+    phase = 2;
     goto poll;
     }
 
 case2:
-    hud_announce(0x1f800000,0x16,(uint32_t)s7);
-    s7--;
-    if (s7 != -1) {
+    hud_announce(0x1f800000,0x16,(uint32_t)cnt);
+    cnt--;
+    if (cnt != -1) {
       /* guest flag F = sp58^1 row select (see afterdraw gate above) */
       uint8_t *r = g + (sp58 ^ 1) * 2;
       if ((*(uint16_t *)(r + 0x68) & 0xe0) == 0) goto poll;
     }
     deferred_cmd_post(0x204,0,0);
     scroll_cfg_set(2,8);
-    fp = 0xf0;
+    phase = 0xf0;
     g[0] = 5; g[1] = 9;
     goto poll;
 
@@ -5624,7 +5624,7 @@ poll:
      * words to a phantom arena slot, leaving 0x1f800068..0x77 stale forever
      * (the afterdraw pad-edge gate then spins in poll -> WEDGE-A). */
     frame_tick(0x1f800000);
-    if (fp != 0xff) continue;
+    if (phase != 0xff) continue;
     return;
   }
 }
