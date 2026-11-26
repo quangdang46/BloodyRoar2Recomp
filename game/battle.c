@@ -7125,7 +7125,7 @@ void group_fx_spawn(undefined4 a0,undefined4 a1,undefined4 a2,undefined4 a3, und
 
 }
 
-undefined4 * vec3_step_toward(undefined4 *out,short *pos,short *dst,short a3)
+undefined4 * vec3_step_toward(undefined4 *out,short *pos,short *dst,short step)
 {
   undefined4 len2;
   int len;
@@ -7144,10 +7144,10 @@ undefined4 * vec3_step_toward(undefined4 *out,short *pos,short *dst,short a3)
   delta[0] = (int)*dst - (int)*pos;
   delta[1] = (int)dst[1] - (int)pos[1];
   delta[2] = (int)dst[2] - (int)pos[2];
-  if (a3 == 0) {
-    a3 = 1;
+  if (step == 0) {
+    step = 1;
   }
-  step = (int)a3;
+  step = (int)step;
   len2 = FUN_80194630((undefined4 *)delta,(undefined4 *)ndir);
   len = FUN_80194500(len2);
   if (len < step) {
@@ -7222,7 +7222,7 @@ undefined4 * vec3_step_toward_spd(undefined4 *out,short *pos,short *dst,int spd)
 
 }
 
-undefined4 * vec3_step_toward_q(undefined4 *out,short *pos,short *dst,short a3)
+undefined4 * vec3_step_toward_q(undefined4 *out,short *pos,short *dst,short step)
 {
   undefined4 len2;
   int len;
@@ -7239,10 +7239,10 @@ undefined4 * vec3_step_toward_q(undefined4 *out,short *pos,short *dst,short a3)
   pk[0] = CONCAT22((short)((dst[1] - pos[1]) * 0x10) >> 4,
                       (short)((*dst - *pos) * 0x10) >> 4);
   pk[1] = CONCAT22((pk[1] >> 16),(short)((dst[2] - pos[2]) * 0x10) >> 4);
-  if (a3 == 0) {
-    a3 = 1;
+  if (step == 0) {
+    step = 1;
   }
-  step = (int)a3;
+  step = (int)step;
   len2 = FUN_80194660((undefined2 *)pk,(undefined2 *)ndir);
   len = FUN_80194500(len2);
   if (step < len) {
@@ -7332,7 +7332,7 @@ undefined1 table_byte_next_b(void)
   return *(undefined1 *)guest_at((uint32_t)(uintptr_t)((idx + 0x801e8400)));
 
 }
-void sprite_strip_draw_dual(int src_a,int src_b,int uv,int n,ushort *pal,int arg6, int rgb,int tag)
+void sprite_strip_draw_dual(int src_a,int src_b,int uv,int n,ushort *pal,int x0, int y0,int tag)
 {
   ushort *pa;
   ushort *pb;
@@ -7346,17 +7346,17 @@ void sprite_strip_draw_dual(int src_a,int src_b,int uv,int n,ushort *pal,int arg
   if (tag == 1) {
     i = 0;
     if (0 < n) {
-      arg6 = arg6 * uv;
+      x0 = x0 * uv;
       pq = pal + 3;
-      rgb = rgb * uv;
+      y0 = y0 * uv;
       do {
-        xfp = arg6;
-        if (arg6 < 0) {
-          xfp = arg6 + 0xfff;
+        xfp = x0;
+        if (x0 < 0) {
+          xfp = x0 + 0xfff;
         }
-        yfp = rgb;
-        if (rgb < 0) {
-          yfp = rgb + 0xfff;
+        yfp = y0;
+        if (y0 < 0) {
+          yfp = y0 + 0xfff;
         }
         sprite_place_centered(src_a,0x1f800000,(int)(((uint)*pal + (xfp >> 0xc)) * 0x10000) >> 0x10,
                      (int)(((uint)pq[-2] + (yfp >> 0xc)) * 0x10000) >> 0x10,
@@ -7377,17 +7377,17 @@ void sprite_strip_draw_dual(int src_a,int src_b,int uv,int n,ushort *pal,int arg
   }
   else if (tag < 2) {
     if ((tag == 0) && (i = 0, 0 < n)) {
-      arg6 = arg6 * uv;
+      x0 = x0 * uv;
       pq = pal + 3;
-      rgb = rgb * uv;
+      y0 = y0 * uv;
       do {
-        xfp = arg6;
-        if (arg6 < 0) {
-          xfp = arg6 + 0xfff;
+        xfp = x0;
+        if (x0 < 0) {
+          xfp = x0 + 0xfff;
         }
-        yfp = rgb;
-        if (rgb < 0) {
-          yfp = rgb + 0xfff;
+        yfp = y0;
+        if (y0 < 0) {
+          yfp = y0 + 0xfff;
         }
         sprite_rect_set_c(src_a,(int)(short)*pal + (xfp >> 0xc),
                      (int)(short)pq[-2] + (yfp >> 0xc),(int)(short)pq[-1],
@@ -7408,18 +7408,18 @@ void sprite_strip_draw_dual(int src_a,int src_b,int uv,int n,ushort *pal,int arg
   else if (tag == 2) {
     i = 0;
     if (0 < n) {
-      arg6 = arg6 * uv;
+      x0 = x0 * uv;
       pq = pal + 3;
-      rgb = rgb * uv;
+      y0 = y0 * uv;
       cur_a = src_a;
       do {
-        xfp = arg6;
-        if (arg6 < 0) {
-          xfp = arg6 + 0xfff;
+        xfp = x0;
+        if (x0 < 0) {
+          xfp = x0 + 0xfff;
         }
-        yfp = rgb;
-        if (rgb < 0) {
-          yfp = rgb + 0xfff;
+        yfp = y0;
+        if (y0 < 0) {
+          yfp = y0 + 0xfff;
         }
         sprite_rect_set_a(cur_a,(int)(short)*pal + (xfp >> 0xc),
                      (int)(short)pq[-2] + (yfp >> 0xc),(int)(short)pq[-1],
@@ -7438,18 +7438,18 @@ void sprite_strip_draw_dual(int src_a,int src_b,int uv,int n,ushort *pal,int arg
     }
   }
   else if ((tag == 3) && (i = 0, 0 < n)) {
-    arg6 = arg6 * uv;
+    x0 = x0 * uv;
     pq = pal + 3;
-    rgb = rgb * uv;
+    y0 = y0 * uv;
     cur_b = src_a;
     do {
-      xfp = arg6;
-      if (arg6 < 0) {
-        xfp = arg6 + 0xfff;
+      xfp = x0;
+      if (x0 < 0) {
+        xfp = x0 + 0xfff;
       }
-      yfp = rgb;
-      if (rgb < 0) {
-        yfp = rgb + 0xfff;
+      yfp = y0;
+      if (y0 < 0) {
+        yfp = y0 + 0xfff;
       }
       sprite_rect_set_b(cur_b,(int)(short)*pal + (xfp >> 0xc),
                    (int)(short)pq[-2] + (yfp >> 0xc),(int)(short)pq[-1],
@@ -14044,7 +14044,7 @@ int isqrt(int n)
 
 }
 
-uint * gte_rtps_xform3_t(undefined4 *n,ushort *a1,uint *a2)
+uint * gte_rtps_xform3_t(undefined4 *rm,ushort *ang,uint *out)
 {
   uint t0;
   int t1;
@@ -14054,46 +14054,46 @@ uint * gte_rtps_xform3_t(undefined4 *n,ushort *a1,uint *a2)
   int t5;
   uint t6;
   int t7;
-  setCopControlWord(2,0,*n);
-  setCopControlWord(2,0x800,n[1]);
-  setCopControlWord(2,0x1000,n[2]);
-  setCopControlWord(2,0x1800,n[3]);
-  setCopControlWord(2,0x2000,n[4]);
-  setCopReg(2,0,(uint)*a1 | *(uint *)(a1 + 2) & 0xffff0000);
-  setCopReg(2,0x800,*(undefined4 *)(a1 + 6));
+  setCopControlWord(2,0,*rm);
+  setCopControlWord(2,0x800,rm[1]);
+  setCopControlWord(2,0x1000,rm[2]);
+  setCopControlWord(2,0x1800,rm[3]);
+  setCopControlWord(2,0x2000,rm[4]);
+  setCopReg(2,0,(uint)*ang | *(uint *)(ang + 2) & 0xffff0000);
+  setCopReg(2,0x800,*(undefined4 *)(ang + 6));
   copFunction(2,0x486012);
   t0 = getCopReg(2,0x4800);
   t1 = getCopReg(2,0x5000);
   t3 = getCopReg(2,0x5800);
-  setCopReg(2,0,(uint)a1[1] | *(int *)(a1 + 4) << 0x10);
-  setCopReg(2,0x800,(int)(short)a1[7]);
+  setCopReg(2,0,(uint)ang[1] | *(int *)(ang + 4) << 0x10);
+  setCopReg(2,0x800,(int)(short)ang[7]);
   copFunction(2,0x486012);
   t5 = getCopReg(2,0x4800);
   t6 = getCopReg(2,0x5000);
   t7 = getCopReg(2,0x5800);
-  setCopReg(2,0,(uint)a1[2] | *(uint *)(a1 + 4) & 0xffff0000);
-  setCopReg(2,0x800,*(undefined4 *)(a1 + 8));
+  setCopReg(2,0,(uint)ang[2] | *(uint *)(ang + 4) & 0xffff0000);
+  setCopReg(2,0x800,*(undefined4 *)(ang + 8));
   copFunction(2,0x486012);
-  *a2 = t5 << 0x10 | t0 & 0xffff;
-  a2[3] = t7 << 0x10 | t3 & 0xffff;
+  *out = t5 << 0x10 | t0 & 0xffff;
+  out[3] = t7 << 0x10 | t3 & 0xffff;
   t3 = getCopReg(2,0x4800);
   t5 = getCopReg(2,0x5000);
   t0 = getCopReg(2,0xb);
-  a2[4] = t0;
-  setCopReg(2,0,(uint)a1[10] | *(int *)(a1 + 0xc) << 0x10);
-  setCopReg(2,0x800,*(undefined4 *)(a1 + 0xe));
+  out[4] = t0;
+  setCopReg(2,0,(uint)ang[10] | *(int *)(ang + 0xc) << 0x10);
+  setCopReg(2,0x800,*(undefined4 *)(ang + 0xe));
   copFunction(2,0x486012);
-  a2[1] = t3 & 0xffff | t1 << 0x10;
-  a2[2] = t5 << 0x10 | t6 & 0xffff;
+  out[1] = t3 & 0xffff | t1 << 0x10;
+  out[2] = t5 << 0x10 | t6 & 0xffff;
   t5 = getCopReg(2,0xc800);
   t1 = getCopReg(2,0xd000);
   t7 = getCopReg(2,0xd800);
-  t2 = n[6];
-  t4 = n[7];
-  a2[5] = t5 + n[5];
-  a2[6] = t1 + t2;
-  a2[7] = t7 + t4;
-  return a2;
+  t2 = rm[6];
+  t4 = rm[7];
+  out[5] = t5 + rm[5];
+  out[6] = t1 + t2;
+  out[7] = t7 + t4;
+  return out;
 
 }
 
@@ -15509,7 +15509,7 @@ void firework_spawn(undefined2 *pos)
 }
 
 /* guest gte_mat_vec_swap @0x80185290 */
-void gte_mat_vec_swap(undefined4 *a0,ushort *a1,undefined4 *a2)
+void gte_mat_vec_swap(undefined4 *mb,ushort *vec,undefined4 *ma)
 
 {
   ushort e0;
@@ -15521,66 +15521,66 @@ void gte_mat_vec_swap(undefined4 *a0,ushort *a1,undefined4 *a2)
   undefined4 y2;
   undefined4 z2;
   
-  setCopControlWord(2,0,*a2);
-  setCopControlWord(2,0x800,a2[1]);
-  setCopControlWord(2,0x1000,a2[2]);
-  setCopControlWord(2,0x1800,a2[3]);
-  setCopControlWord(2,0x2000,a2[4]);
-  setCopReg(2,0,(int)(short)*a1);
-  setCopReg(2,0x800,(int)(short)a1[6]);
+  setCopControlWord(2,0,*ma);
+  setCopControlWord(2,0x800,ma[1]);
+  setCopControlWord(2,0x1000,ma[2]);
+  setCopControlWord(2,0x1800,ma[3]);
+  setCopControlWord(2,0x2000,ma[4]);
+  setCopReg(2,0,(int)(short)*vec);
+  setCopReg(2,0x800,(int)(short)vec[6]);
   copFunction(2,0x486012);
-  e0 = *(ushort *)(a2 + 2);
-  e1 = *(ushort *)((intptr_t)a2 + 0xe);
+  e0 = *(ushort *)(ma + 2);
+  e1 = *(ushort *)((intptr_t)ma + 0xe);
   x = getCopReg(2,0x4800);
   y = getCopReg(2,0x5000);
   z = getCopReg(2,0x5800);
-  setCopReg(2,0,-(int)(short)a1[6] & 0xffff);
-  setCopReg(2,0x800,(int)(short)*a1);
-  a1[1] = *(ushort *)((intptr_t)a2 + 2);
+  setCopReg(2,0,-(int)(short)vec[6] & 0xffff);
+  setCopReg(2,0x800,(int)(short)*vec);
+  vec[1] = *(ushort *)((intptr_t)ma + 2);
   copFunction(2,0x486012);
-  a1[4] = e0;
-  a1[7] = e1;
-  *a1 = (ushort)x;
-  a1[3] = (ushort)y;
-  a1[6] = (ushort)z;
+  vec[4] = e0;
+  vec[7] = e1;
+  *vec = (ushort)x;
+  vec[3] = (ushort)y;
+  vec[6] = (ushort)z;
   y = getCopReg(2,0x4800);
   z = getCopReg(2,0x5000);
   x = getCopReg(2,0xb);
-  *(undefined4 *)(a1 + 8) = x;
-  a1[2] = (ushort)y;
-  a1[5] = (ushort)z;
-  setCopControlWord(2,0,*a0);
-  setCopControlWord(2,0x800,a0[1]);
-  setCopControlWord(2,0x1000,a0[2]);
-  setCopControlWord(2,0x1800,a0[3]);
-  setCopControlWord(2,0x2000,a0[4]);
-  setCopReg(2,0,(uint)*a1 | *(uint *)(a1 + 2) & 0xffff0000);
-  setCopReg(2,0x800,*(undefined4 *)(a1 + 6));
+  *(undefined4 *)(vec + 8) = x;
+  vec[2] = (ushort)y;
+  vec[5] = (ushort)z;
+  setCopControlWord(2,0,*mb);
+  setCopControlWord(2,0x800,mb[1]);
+  setCopControlWord(2,0x1000,mb[2]);
+  setCopControlWord(2,0x1800,mb[3]);
+  setCopControlWord(2,0x2000,mb[4]);
+  setCopReg(2,0,(uint)*vec | *(uint *)(vec + 2) & 0xffff0000);
+  setCopReg(2,0x800,*(undefined4 *)(vec + 6));
   copFunction(2,0x486012);
   x = getCopReg(2,0x4800);
   y = getCopReg(2,0x5000);
   z = getCopReg(2,0x5800);
-  setCopReg(2,0,(uint)a1[1] | *(int *)(a1 + 4) << 0x10);
-  setCopReg(2,0x800,(int)(short)a1[7]);
+  setCopReg(2,0,(uint)vec[1] | *(int *)(vec + 4) << 0x10);
+  setCopReg(2,0x800,(int)(short)vec[7]);
   copFunction(2,0x486012);
   x2 = getCopReg(2,0x4800);
   y2 = getCopReg(2,0x5000);
   z2 = getCopReg(2,0x5800);
-  setCopReg(2,0,(uint)a1[2] | *(uint *)(a1 + 4) & 0xffff0000);
-  setCopReg(2,0x800,*(undefined4 *)(a1 + 8));
+  setCopReg(2,0,(uint)vec[2] | *(uint *)(vec + 4) & 0xffff0000);
+  setCopReg(2,0x800,*(undefined4 *)(vec + 8));
   copFunction(2,0x486012);
-  *a1 = (ushort)x;
-  a1[3] = (ushort)y;
-  a1[6] = (ushort)z;
-  a1[1] = (ushort)x2;
-  a1[4] = (ushort)y2;
-  a1[7] = (ushort)z2;
+  *vec = (ushort)x;
+  vec[3] = (ushort)y;
+  vec[6] = (ushort)z;
+  vec[1] = (ushort)x2;
+  vec[4] = (ushort)y2;
+  vec[7] = (ushort)z2;
   y = getCopReg(2,0x4800);
   z = getCopReg(2,0x5000);
   x = getCopReg(2,0xb);
-  *(undefined4 *)(a1 + 8) = x;
-  a1[2] = (ushort)y;
-  a1[5] = (ushort)z;
+  *(undefined4 *)(vec + 8) = x;
+  vec[2] = (ushort)y;
+  vec[5] = (ushort)z;
   return;
 }
 
@@ -16963,7 +16963,7 @@ void LAB_80137cd0(int *ctx)
 /* LAB_8013eb04 — speech/effect emitter task (spawns 0x8013e72c subtasks).
  * Guest 0x8013eb04. Data: [4] flag, [5] record-table base, [6] cursor,
  * byte +0x1c index, byte +0x1e countdown; [2]/[3] receive RTPS outputs. */
-void LAB_8013eb04(int *a0)
+void LAB_8013eb04(int *ctx)
 {
   undefined1 pb;
   undefined2 tp;
@@ -16981,23 +16981,23 @@ void LAB_8013eb04(int *a0)
   uint16_t life;
 
   if (_DAT_1f800082 == 0) {
-    if (*(short *)guest_at((uint32_t)a0[6]) < 0) {
-      life = *(uint16_t *)((intptr_t)a0 + 0x1e) - 1;
-      *(uint16_t *)((intptr_t)a0 + 0x1e) = life;
+    if (*(short *)guest_at((uint32_t)ctx[6]) < 0) {
+      life = *(uint16_t *)((intptr_t)ctx + 0x1e) - 1;
+      *(uint16_t *)((intptr_t)ctx + 0x1e) = life;
       if ((int)((uint)life << 0x10) < 0) {
         task_slot_step();
         return;
       }
     }
     else {
-      if (*(short *)(a0 + 7) == *(short *)guest_at((uint32_t)a0[6])) {
+      if (*(short *)(ctx + 7) == *(short *)guest_at((uint32_t)ctx[6])) {
         do {
           t = (int)(intptr_t)task_node_alloc(1,2,0xe,0x8013e72c,0,0x200);
           if (t != 0) {
             row = 0;
             off = 0;
             pay = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(t + 0x10)));
-            t = *(short *)guest_at((uint32_t)(a0[6] + 2)) * 0x12 + a0[5];
+            t = *(short *)guest_at((uint32_t)(ctx[6] + 2)) * 0x12 + ctx[5];
             d0 = *(undefined4 *)guest_at((uint32_t)(t + -0xe));
             d1 = *(undefined4 *)guest_at((uint32_t)(t + -10));
             d2 = *(undefined4 *)guest_at((uint32_t)(t + -6));
@@ -17006,8 +17006,8 @@ void LAB_8013eb04(int *a0)
             pay[0x7a] = d1;
             pay[0x7b] = d2;
             *(undefined2 *)((intptr_t)pay + 0x1f0) = *(undefined2 *)guest_at((uint32_t)(t + -2));
-            pay[0x7d] = (int)guest_of((char *)a0 + 8);
-            pay[0x7e] = (int)guest_of((char *)a0 + 0xc);
+            pay[0x7d] = (int)guest_of((char *)ctx + 8);
+            pay[0x7e] = (int)guest_of((char *)ctx + 0xc);
             rowp = pay;
             do {
               i = 0;
@@ -17019,7 +17019,7 @@ void LAB_8013eb04(int *a0)
                 *(undefined1 *)((intptr_t)cell + 7) = 0x2e;
                 *(undefined2 *)((intptr_t)pay + t + 0x16) = 0x39;
                 tp = 0x7a5a;
-                if (a0[4] == 0) {
+                if (ctx[4] == 0) {
                   tp = 0x7a9a;
                 }
                 *(undefined2 *)((intptr_t)pay + t + 0xe) = tp;
@@ -17048,24 +17048,24 @@ void LAB_8013eb04(int *a0)
               off = off + 0xf0;
             } while (row < 2);
             pay[0x7f] = 0;
-            if (*(short *)((intptr_t)a0 + 0x1e) <= *(short *)((intptr_t)pay + 0x1e0)) {
-              *(short *)((intptr_t)a0 + 0x1e) = *(short *)((intptr_t)pay + 0x1e0) + 1;
+            if (*(short *)((intptr_t)ctx + 0x1e) <= *(short *)((intptr_t)pay + 0x1e0)) {
+              *(short *)((intptr_t)ctx + 0x1e) = *(short *)((intptr_t)pay + 0x1e0) + 1;
             }
           }
-          t = a0[6];
-          a0[6] = t + 4;
-        } while (*(short *)(a0 + 7) == *(short *)guest_at((uint32_t)(t + 4)));
+          t = ctx[6];
+          ctx[6] = t + 4;
+        } while (*(short *)(ctx + 7) == *(short *)guest_at((uint32_t)(t + 4)));
       }
-      *(short *)(a0 + 7) = *(short *)(a0 + 7) + 1;
+      *(short *)(ctx + 7) = *(short *)(ctx + 7) + 1;
     }
   }
   /* GTE tail: lwc2 r0/r1 <- param[0..1], cop2 op, swc2 r14 -> param[2],
    * mfc2 r19 -> param[3] >> 2 (disasm 0x8013ed50-0x8013ed7c). */
-  setCopReg(2,0,(uint32_t)a0[0]);
-  setCopReg(2,1,(uint32_t)a0[1]);
+  setCopReg(2,0,(uint32_t)ctx[0]);
+  setCopReg(2,1,(uint32_t)ctx[1]);
   copFunction(2,0x180001);
-  a0[2] = (int)getCopReg(2,14);
-  a0[3] = getCopReg(2,0x9800) >> 2;
+  ctx[2] = (int)getCopReg(2,14);
+  ctx[3] = getCopReg(2,0x9800) >> 2;
   return;
 }
 
@@ -17646,24 +17646,24 @@ many:
 /* guest gte_vec_transform_emit @0x80186aa8 — copies 3 hwords from p2+0x34..3c into
  * p3+8..c, GTE transform via rtps_point_xform2, resets p2+4..0x14 to a
  * 0x1000-strided pattern then gte_rtps_xform3 emit. p1 unused. */
-void gte_vec_transform_emit(int a0,int a1,int a2)
+void gte_vec_transform_emit(int a0,int src,int dst)
 {
   int mtx;
-  mtx = *(int *)guest_at((uint32_t)(uintptr_t)(a1 + 0x40)) + 0x20;
-  *(ushort *)guest_at((uint32_t)(uintptr_t)(a2 + 8)) = *(ushort *)guest_at((uint32_t)(uintptr_t)(a1 + 0x34));
-  *(ushort *)guest_at((uint32_t)(uintptr_t)(a2 + 0xa)) = *(ushort *)guest_at((uint32_t)(uintptr_t)(a1 + 0x38));
-  *(ushort *)guest_at((uint32_t)(uintptr_t)(a2 + 0xc)) = *(ushort *)guest_at((uint32_t)(uintptr_t)(a1 + 0x3c));
+  mtx = *(int *)guest_at((uint32_t)(uintptr_t)(src + 0x40)) + 0x20;
+  *(ushort *)guest_at((uint32_t)(uintptr_t)(dst + 8)) = *(ushort *)guest_at((uint32_t)(uintptr_t)(src + 0x34));
+  *(ushort *)guest_at((uint32_t)(uintptr_t)(dst + 0xa)) = *(ushort *)guest_at((uint32_t)(uintptr_t)(src + 0x38));
+  *(ushort *)guest_at((uint32_t)(uintptr_t)(dst + 0xc)) = *(ushort *)guest_at((uint32_t)(uintptr_t)(src + 0x3c));
   rtps_point_xform2((undefined4 *)guest_at((uint32_t)(uintptr_t)mtx),
-               (undefined4 *)guest_at((uint32_t)(uintptr_t)(a1 + 0x18)),
-               (undefined4 *)guest_at((uint32_t)(uintptr_t)(a1 + 0x34)));
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)(a1 + 4)) = 0x1000;
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)(a1 + 8)) = 0;
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)(a1 + 0xc)) = 0x1000;
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)(a1 + 0x10)) = 0;
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)(a1 + 0x14)) = 0x1000;
+               (undefined4 *)guest_at((uint32_t)(uintptr_t)(src + 0x18)),
+               (undefined4 *)guest_at((uint32_t)(uintptr_t)(src + 0x34)));
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)(src + 4)) = 0x1000;
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)(src + 8)) = 0;
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)(src + 0xc)) = 0x1000;
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)(src + 0x10)) = 0;
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)(src + 0x14)) = 0x1000;
   gte_rtps_xform3((undefined4 *)guest_at((uint32_t)(uintptr_t)mtx),
-               (ushort *)guest_at((uint32_t)(uintptr_t)(a1 + 4)),
-               (uint *)guest_at((uint32_t)(uintptr_t)(a1 + 0x20)));
+               (ushort *)guest_at((uint32_t)(uintptr_t)(src + 4)),
+               (uint *)guest_at((uint32_t)(uintptr_t)(src + 0x20)));
   return;
 }
 
@@ -17693,19 +17693,19 @@ void node_list_collect(int head,int out)
 /* guest corner_emit_cond_offset @0x8018bda4 — conditional-offset corner emit: follows
  * p1+8 link when flag&8, packs 4 halfwords on stack, calls
  * gpu_load_image_cmd(stack, t0+0x14 + (p4+p5*lh10)*2). */
-void corner_emit_cond_offset(int a0,int a1,int a2,int a3,int arg5,int arg6,int arg7)
+void corner_emit_cond_offset(int spr,int x0,int y0,int idx,int mul,int x1,int y1)
 {
   int t;
   short asStack_10 [4];
-  t = a0;
-  if ((*(int *)guest_at((uint32_t)(uintptr_t)(a0 + 4)) & 8) != 0) {
-    t = a0 + *(int *)guest_at((uint32_t)(uintptr_t)(a0 + 8));
+  t = spr;
+  if ((*(int *)guest_at((uint32_t)(uintptr_t)(spr + 4)) & 8) != 0) {
+    t = spr + *(int *)guest_at((uint32_t)(uintptr_t)(spr + 8));
   }
-  asStack_10[0] = (short)a1;
-  asStack_10[1] = (short)a2;
-  asStack_10[2] = (short)arg6;
-  asStack_10[3] = (short)arg7;
-  t = t + ((a3 + arg5 * (int)*(short *)guest_at((uint32_t)(uintptr_t)(t + 0x10))) << 1) + 0x14;
+  asStack_10[0] = (short)x0;
+  asStack_10[1] = (short)y0;
+  asStack_10[2] = (short)x1;
+  asStack_10[3] = (short)y1;
+  t = t + ((idx + mul * (int)*(short *)guest_at((uint32_t)(uintptr_t)(t + 0x10))) << 1) + 0x14;
   /* guest rect = $sp+0x10 (frame 0x20, disasm 0x8018bda4) -> frm+0x10;
    * reserved frame staging, see spr_draw_off in gfx.c. */
   {
@@ -17721,24 +17721,24 @@ void corner_emit_cond_offset(int a0,int a1,int a2,int a3,int arg5,int arg6,int a
 
 /* guest corner_emit_variant @0x8018be28 — corner emit variant: p6!=0 uses raw
  * p2/p3 else adds t0+0xc/0xe base; h10/h12 always offset by p4/p5. */
-void corner_emit_variant(int a0,int a1,int a2,int a3,int arg5,int arg6)
+void corner_emit_variant(int spr,int x0,int y0,int dx,int dy,int abs)
 {
   int t;
   short asStack_10 [4];
-  t = a0;
-  if ((*(int *)guest_at((uint32_t)(uintptr_t)(a0 + 4)) & 8) != 0) {
-    t = a0 + *(int *)guest_at((uint32_t)(uintptr_t)(a0 + 8));
+  t = spr;
+  if ((*(int *)guest_at((uint32_t)(uintptr_t)(spr + 4)) & 8) != 0) {
+    t = spr + *(int *)guest_at((uint32_t)(uintptr_t)(spr + 8));
   }
-  if (arg6 != 0) {
-    asStack_10[0] = (short)a1;
-    asStack_10[1] = (short)a2;
+  if (abs != 0) {
+    asStack_10[0] = (short)x0;
+    asStack_10[1] = (short)y0;
   }
   else {
-    asStack_10[0] = (short)(*(ushort *)guest_at((uint32_t)(uintptr_t)(t + 0xc)) + a1);
-    asStack_10[1] = (short)(*(ushort *)guest_at((uint32_t)(uintptr_t)(t + 0xe)) + a2);
+    asStack_10[0] = (short)(*(ushort *)guest_at((uint32_t)(uintptr_t)(t + 0xc)) + x0);
+    asStack_10[1] = (short)(*(ushort *)guest_at((uint32_t)(uintptr_t)(t + 0xe)) + y0);
   }
-  asStack_10[2] = (short)(*(ushort *)guest_at((uint32_t)(uintptr_t)(t + 0x10)) + a3);
-  asStack_10[3] = (short)(*(ushort *)guest_at((uint32_t)(uintptr_t)(t + 0x12)) + arg5);
+  asStack_10[2] = (short)(*(ushort *)guest_at((uint32_t)(uintptr_t)(t + 0x10)) + dx);
+  asStack_10[3] = (short)(*(ushort *)guest_at((uint32_t)(uintptr_t)(t + 0x12)) + dy);
   /* guest rect = $sp+0x10 (frame 0x20, disasm 0x8018be28) -> frm+0x10;
    * reserved frame staging, see spr_draw_off in gfx.c. */
   {
@@ -18278,7 +18278,7 @@ void debug_line_flush(int u0,int u1,int n)
 /* guest sprite_obj_alloc_emit @0x8018ca8c — alloc sprite obj via spr_desc_slot_alloc,
  * fills uv/size halfwords + flags, emits prim_packet_init_tex packet at +0x14,
  * links low24 addrs through *p1; returns 0 or -1. */
-int sprite_obj_alloc_emit(int a0,int a1,int a2,int a3,int arg5)
+int sprite_obj_alloc_emit(int out,int pos,int dim,int arg,int clut)
 {
   int spr;
   spr = (int)guest_of(spr_desc_slot_alloc());
@@ -18286,22 +18286,22 @@ int sprite_obj_alloc_emit(int a0,int a1,int a2,int a3,int arg5)
     return -1;
   }
   *(short *)guest_at((uint32_t)(uintptr_t)(spr + 0x10)) =
-    (short)(((a2 >> 0x10) & 0xff) + 1);
+    (short)(((dim >> 0x10) & 0xff) + 1);
   *(short *)guest_at((uint32_t)(uintptr_t)(spr + 0x12)) =
-    (short)((int)((uint32_t)a2 >> 0x18) + 1);
-  *(short *)guest_at((uint32_t)(uintptr_t)(spr + 0xa)) = (short)(a1 >> 0x10);
-  *(short *)guest_at((uint32_t)(uintptr_t)(spr + 8)) = (short)a1;
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)(spr + 0xc)) = a3;
+    (short)((int)((uint32_t)dim >> 0x18) + 1);
+  *(short *)guest_at((uint32_t)(uintptr_t)(spr + 0xa)) = (short)(pos >> 0x10);
+  *(short *)guest_at((uint32_t)(uintptr_t)(spr + 8)) = (short)pos;
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)(spr + 0xc)) = arg;
   *(byte *)guest_at((uint32_t)(uintptr_t)(spr + 7)) =
     (byte)((*(byte *)guest_at((uint32_t)(uintptr_t)(spr + 7)) & 0xfd) | 1);
   *(undefined4 *)guest_at((uint32_t)(uintptr_t)(spr + 4)) = 0x64808080;
   prim_packet_init_tex(spr + 0x14,*(byte *)guest_at(0x801e4117),*(byte *)guest_at(0x801e4116),
-               (uint)(short)a2,(byte *)guest_at((uint32_t)(uintptr_t)arg5));
+               (uint)(short)dim,(byte *)guest_at((uint32_t)(uintptr_t)clut));
   *(undefined4 *)guest_at((uint32_t)(uintptr_t)spr) =
     *(undefined4 *)guest_at((uint32_t)(uintptr_t)spr) | 0x04000000;
-  *(int *)guest_at((uint32_t)(uintptr_t)a0) = spr & 0xffffff;
+  *(int *)guest_at((uint32_t)(uintptr_t)out) = spr & 0xffffff;
   *(undefined4 *)guest_at((uint32_t)(uintptr_t)(spr + 0x14)) =
     (spr & 0xffffff) | 0x02000000;
-  *(int *)guest_at((uint32_t)(uintptr_t)a0) = (spr + 0x14) & 0xffffff;
+  *(int *)guest_at((uint32_t)(uintptr_t)out) = (spr + 0x14) & 0xffffff;
   return 0;
 }
