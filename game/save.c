@@ -6104,44 +6104,44 @@ int display_pair_invalidate(void)
    current @0x801b4154). a0 = requested page (s2). */
 int display_page_commit_a(int32_t a0)
 {
-  uint8_t *s3 = (uint8_t *)guest_at(0x1f800000);
-  int32_t s2 = a0;
+  uint8_t *g = (uint8_t *)guest_at(0x1f800000);
+  int32_t sel = a0;
   int32_t cur = (int32_t)g32(0x801b4154);
-  int32_t s0;
-  int32_t s1;
+  int32_t phase;
+  int32_t saved8;
 
   BR2_W32(0x801f4760, 0x80010000u);
   BR2_W32(0x801f4764, 0x80040000u);
 
-  if (cur != s2) {
-    if ((cur >> 2) != (s2 >> 2)) {
+  if (cur != sel) {
+    if ((cur >> 2) != (sel >> 2)) {
       /* page change: state gate via h@0x1f80008c */
-      s0 = (int32_t)*(int16_t *)(s3 + 0x8c);
-      if (s0 == 0) {
+      phase = (int32_t)*(int16_t *)(g + 0x8c);
+      if (phase == 0) {
         cd_file_load_sm(-1, 0);
-        s0 = 0x10;
+        phase = 0x10;
         BR2_W32(0x801c43a0, 0);
         BR2_W8(0x801e3d00, 0xff);
-      } else if (s0 != 0x10) {
-        *(int16_t *)(s3 + 0x8c) = (int16_t)s0;
+      } else if (phase != 0x10) {
+        *(int16_t *)(g + 0x8c) = (int16_t)phase;
         return 0;
       }
-      if (cd_file_load_sm((s2 >> 2) + 0x118,
+      if (cd_file_load_sm((sel >> 2) + 0x118,
                        (uint32_t)g32(0x801f4760)) == 0) {
-        *(int16_t *)(s3 + 0x8c) = (int16_t)s0;
+        *(int16_t *)(g + 0x8c) = (int16_t)phase;
         return 0;
       }
     }
     /* commit path (also taken when same 1KB page) */
-    s1 = (int32_t)g8(0x1f800013);
+    saved8 = (int32_t)g8(0x1f800013);
     scratch_013_set(0);
-    stream_block_decode(g32(0x801f4764), (int *)guest_at(g32(0x801f4760)), s2 & 3);
+    stream_block_decode(g32(0x801f4764), (int *)guest_at(g32(0x801f4760)), sel & 3);
     spr_draw_pair(g32(0x801f4764), 0, 0x1ff, 1, 0x200, 0, 1);
     cd_timer_read(0);
-    scratch_013_set((uint32_t)s1);
-    BR2_W32(0x801b4154, (uint32_t)s2);
+    scratch_013_set((uint32_t)saved8);
+    BR2_W32(0x801b4154, (uint32_t)sel);
   }
-  *(int16_t *)(s3 + 0x8c) = -1;
+  *(int16_t *)(g + 0x8c) = -1;
   return 1;
 }
 
@@ -6150,77 +6150,77 @@ int display_page_commit_a(int32_t a0)
    currents @0x801b4158/0x801b415c). a0 = bank, a1 = offset. */
 int display_page_commit_b(uint32_t a0, uint32_t a1)
 {
-  uint8_t *s3 = (uint8_t *)guest_at(0x1f800000);
-  uint32_t s4 = a0;
-  int32_t s2 = (int32_t)a1;
+  uint8_t *g = (uint8_t *)guest_at(0x1f800000);
+  uint32_t sel = a0;
+  int32_t sub = (int32_t)a1;
   int32_t cur8 = (int32_t)g32(0x801b4158);
-  int32_t s0, s1;
+  int32_t phase, saved8;
 
   BR2_W32(0x801f4768, 0x80050000u);
   BR2_W32(0x801f476c, 0x80070000u);
 
-  if ((int32_t)s4 == cur8) {
+  if ((int32_t)sel == cur8) {
     int32_t curc = (int32_t)g32(0x801b415c);
-    if (curc == s2) goto same;
-    if ((curc >> 3) == (s2 >> 3)) goto commit;
+    if (curc == sub) goto same;
+    if ((curc >> 3) == (sub >> 3)) goto commit;
   }
   /* state gate via h@0x1f80008e */
-  s0 = (int32_t)*(int16_t *)(s3 + 0x8e);
-  if (s0 == 5) {
+  phase = (int32_t)*(int16_t *)(g + 0x8e);
+  if (phase == 5) {
     if (cd_file_load_sm(0x16, 0x80050000u) == 0) {
-      *(int16_t *)(s3 + 0x8e) = (int16_t)s0;
+      *(int16_t *)(g + 0x8e) = (int16_t)phase;
       return 0;
     }
-    s1 = (int32_t)g8(0x1f800013);
+    saved8 = (int32_t)g8(0x1f800013);
     scratch_013_set(0);
     spr_draw_off((int32_t)g32(0x801f4768), 0, 0x1e0, 1);
-    s0 = 0x10;
+    phase = 0x10;
     cd_timer_read(0);
-    scratch_013_set((uint32_t)s1);
+    scratch_013_set((uint32_t)saved8);
     goto mid;
   }
-  if (s0 >= 6) {
-    if (s0 != 0x10) {
-      *(int16_t *)(s3 + 0x8e) = (int16_t)s0;
+  if (phase >= 6) {
+    if (phase != 0x10) {
+      *(int16_t *)(g + 0x8e) = (int16_t)phase;
       return 0;
     }
     goto mid;
   }
-  if (s0 == 0) {
+  if (phase == 0) {
     cd_file_load_sm(-1, 0);
     BR2_W32(0x801c43a0, 0);
     BR2_W8(0x801e3d00, 0xff);
     if ((int32_t)g32(0x801b415c) != -1) {
-      s0 = 0x10;
+      phase = 0x10;
     } else {
-      s0 = 5;
+      phase = 5;
     }
-    *(int16_t *)(s3 + 0x8e) = (int16_t)s0;
+    *(int16_t *)(g + 0x8e) = (int16_t)phase;
     return 0;
   }
-  *(int16_t *)(s3 + 0x8e) = (int16_t)s0;
+  *(int16_t *)(g + 0x8e) = (int16_t)phase;
   return 0;
 
 mid:
   {
-    int32_t t = (int32_t)(uint8_t)g8(0x801b4148 + s4);
-    int32_t a0x = (s2 >> 3) + t + 0x130;
+    int32_t off = (int32_t)(uint8_t)g8(0x801b4148 + sel);
+    int32_t a0x = (sub >> 3) + off + 0x130;
     if (cd_file_load_sm(a0x, (uint32_t)g32(0x801f4768)) == 0) {
-      *(int16_t *)(s3 + 0x8e) = (int16_t)s0;
+      *(int16_t *)(g + 0x8e) = (int16_t)phase;
       return 0;
     }
   }
 commit:
-  s1 = (int32_t)g8(0x1f800013);
+  saved8 = (int32_t)g8(0x1f800013);
   scratch_013_set(0);
-  stream_block_decode(g32(0x801f476c), (int *)guest_at(g32(0x801f4768)), s2 & 7);
+  stream_block_decode(g32(0x801f476c), (int *)guest_at(g32(0x801f4768)), sub & 7);
   spr_draw_off((int32_t)g32(0x801f476c), 0x300, 0x100, 1);
   cd_timer_read(0);
-  scratch_013_set((uint32_t)s1);
-  BR2_W32(0x801b4158, s4);
-  BR2_W32(0x801b415c, (uint32_t)s2);
+  scratch_013_set((uint32_t)saved8);
+  BR2_W32(0x801b4158, sel);
+  BR2_W32(0x801b415c, (uint32_t)sub);
 same:
-  *(int16_t *)(s3 + 0x8e) = -1;
+  *(int16_t *)(g + 0x8e) = -1;
   return 1;
 }
 
