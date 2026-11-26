@@ -9947,7 +9947,7 @@ static void dec_finish(uint32_t battle,uint32_t rec,int32_t idx)
  * resulting record's lh is negative. */
 void versus_stage_commit(uint32_t baddr,uint32_t stage)
 {
-  uint32_t baddr = baddr;
+
   int32_t stg = (int32_t)stage;
   uint32_t rec = MB32(baddr + 0xcc);
   int32_t idx;
