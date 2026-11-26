@@ -193,7 +193,10 @@ extern void     br2_guest_ra_set(uint32_t);
 #define CDMMIO32_ST(base, idx, v)  \
     br2_st32((base) + ((uint32_t)(idx) << 2), (uint32_t)(v))
 
-/* ---- guest globals ---- */
+/* ---- guest globals ----
+ * The g_DAT_* bindings live in bind.c (guest_for registry) — names are
+ * load-bearing, do NOT rename them here. The CD_* macros below are the
+ * readable aliases; guest address kept in each comment. */
 extern uint8_t  *g_DAT_801bc7b4;
 extern uint8_t  *g_DAT_801bcb80;
 extern uint8_t  *g_DAT_801bcb94;
@@ -207,18 +210,18 @@ extern uint8_t  *g_DAT_801bc854;
 extern uint8_t  *g_DAT_801bc848;
 extern uint8_t  *g_DAT_801bc7c0;
 
-#define DAT_801bc7b4   (*(uint8_t  *)g_DAT_801bc7b4)
-#define DAT_801bcb80   (*(int32_t  *)g_DAT_801bcb80)
-#define DAT_801bcb94   (*(int32_t  *)g_DAT_801bcb94)
-#define DAT_801bcb98   (*(int32_t  *)g_DAT_801bcb98)
-#define DAT_801bcb9c   (*(int32_t  *)g_DAT_801bcb9c)
-#define DAT_801bcba4   (*(int32_t  *)g_DAT_801bcba4)
-#define DAT_801bcba8   (*(int32_t  *)g_DAT_801bcba8)
-#define DAT_801bcbac   (*(int32_t  *)g_DAT_801bcbac)
-#define DAT_801bcbb0   (*(int32_t  *)g_DAT_801bcbb0)
-#define DAT_801bc854   (*(uint8_t *)g_DAT_801bc854) /* guest lbu @0x801bc854 (0x80195be0) */
-#define DAT_801bc848   (*(uint32_t *)g_DAT_801bc848)
-#define DAT_801bc7c0   ((int32_t  *)g_DAT_801bc7c0)
+#define CD_DISPATCH_PEND   (*(uint8_t  *)g_DAT_801bc7b4)  /* u8 @0x801bc7b4: bit0 = dispatch pending */
+#define CD_RD_COUNT        (*(int32_t  *)g_DAT_801bcb80)  /* i32 @0x801bcb80: read sector count */
+#define CD_RD_RESULT       (*(int32_t  *)g_DAT_801bcb94)  /* i32 @0x801bcb94: read result/remaining (-1 err) */
+#define CD_RD_TS_ISSUE     (*(int32_t  *)g_DAT_801bcb98)  /* i32 @0x801bcb98: tick after ReadN issue */
+#define CD_RD_TS_PAUSE     (*(int32_t  *)g_DAT_801bcb9c)  /* i32 @0x801bcb9c: tick after Pause/issue */
+#define CD_RD_DONE         (*(int32_t  *)g_DAT_801bcba4)  /* i32 @0x801bcba4: read-session done flag */
+#define CD_RD_SESS_A       (*(int32_t  *)g_DAT_801bcba8)  /* i32 @0x801bcba8: mc_session handle */
+#define CD_RD_SESS_B       (*(int32_t  *)g_DAT_801bcbac)  /* i32 @0x801bcbac: mc_session_b handle */
+#define CD_RD_DISP         (*(int32_t  *)g_DAT_801bcbb0)  /* i32 @0x801bcbb0: cd_cmd_dispatch3 result */
+#define CD_STATUS          (*(uint8_t *)g_DAT_801bc854)   /* u8 @0x801bc854: raw CD status (cd_status_raw) */
+#define CD_BIOS_CB_20      (*(uint32_t *)g_DAT_801bc848)  /* u32 @0x801bc848: fn ptr -> cd_bios_cmd20 */
+#define CD_CMD_TBL         ((int32_t  *)g_DAT_801bc7c0)   /* i32* @0x801bc7c0: per-opcode table */
 
 /* ======== 0x8018d150 ======== */
 
@@ -239,10 +242,10 @@ undefined4 cd_read_issue(undefined4 param_1,undefined4 param_2,undefined4 param_
 /* ======== 0x80198af0 ======== */
 
 /* cd_init_session — CD read-session init + async-Pause handshake (0x80198af0).
- * Waits on DAT_801bcba4 (cleared by session cb 0x80198590 = cd_init_done_cb,
+ * Waits on CD_RD_DONE (cleared by session cb 0x80198590 = cd_init_done_cb,
  * registered as the INT2 command-complete callback via mc_session->
- * DAT_801bc848). It issues Pause(0x09) once via cd_cmd_issue_async, sets
- * DAT_801bcba4=1, then waits <=0x79 frame ticks (cd_timer_read -> 0x801bdde0
+ * CD_BIOS_CB_20). It issues Pause(0x09) once via cd_cmd_issue_async, sets
+ * CD_RD_DONE=1, then waits <=0x79 frame ticks (cd_timer_read -> 0x801bdde0
  * VBlank counter) for the INT2 cb to clear the flag.
  *
  * This wait MUST run the generated body: the deferred-IRQ ctx save/restore
@@ -314,29 +317,29 @@ undefined4 cd_mode_flag_set(byte param_1,int param_2,undefined4 param_3)
    * around cd_cmd_issue (delegated generated — supplies the per-block
    * interrupt checks / deferred-coroutine resume inside each call, same
    * contract as cd_cmd_issue_sync 0x80195ffc which has the identical
-   * shape). DAT_801bc848 handshake matches the guest exactly: cleared at
+   * shape). CD_BIOS_CB_20 handshake matches the guest exactly: cleared at
    * each attempt head, restored before the main issue and once more on
    * exhaustion — but NOT restored on issue(2)-failure iterations (guest
    * branches straight to the decrement). */
   uint32_t s3 = (uint32_t)(uint8_t)param_1;
-  uint32_t s5 = DAT_801bc848;
+  uint32_t s5 = CD_BIOS_CB_20;
   int iVar5 = 3;
   do {
     int do_main = 1;
-    DAT_801bc848 = 0;
-    if ((s3 != 1) && ((DAT_801bc854 & 0x10) != 0)) {
+    CD_BIOS_CB_20 = 0;
+    if ((s3 != 1) && ((CD_STATUS & 0x10) != 0)) {
       cd_cmd_issue(1,0,0,0);
     }
-    if ((param_2 != 0) && (DAT_801bc7c0[s3] != 0)) {
+    if ((param_2 != 0) && (CD_CMD_TBL[s3] != 0)) {
       if (cd_cmd_issue(2,param_2,param_3,0) != 0) do_main = 0;
     }
     if (do_main) {
-      DAT_801bc848 = s5;
+      CD_BIOS_CB_20 = s5;
       if (cd_cmd_issue(param_1,param_2,param_3,0) == 0) return 1;
     }
     iVar5 = iVar5 - 1;
   } while (iVar5 != -1);
-  DAT_801bc848 = s5;
+  CD_BIOS_CB_20 = s5;
   return 0;
 }
 
@@ -349,12 +352,12 @@ void cd_chan_boot_fwd(void)
   return;
 }
 
-#define DAT_801bcb84   (*(uint32_t *)guest_at(0x801bcb84))
-#define DAT_801bcb88   (*(int32_t  *)guest_at(0x801bcb88))
-#define DAT_801bcb8c   (*(uint32_t *)guest_at(0x801bcb8c))
-#define DAT_801bcb90   (*(uint32_t *)guest_at(0x801bcb90))
-#define DAT_801bc84c   (*(uint32_t *)guest_at(0x801bc84c))
-#define DAT_801bcba0   (*(uint32_t *)guest_at(0x801bcba0))
+#define CD_RD_POS    (*(uint32_t *)guest_at(0x801bcb84))  /* u32 @0x801bcb84: read setup param2 (pos/aux) */
+#define CD_RD_CUR    (*(int32_t  *)guest_at(0x801bcb88))  /* i32 @0x801bcb88: active read position (copy of POS) */
+#define CD_RD_MODE   (*(uint32_t *)guest_at(0x801bcb8c))  /* u32 @0x801bcb8c: Setmode param byte (|0x20) */
+#define CD_RD_SECTSZ (*(uint32_t *)guest_at(0x801bcb90))  /* u32 @0x801bcb90: sector size 0x200/0x246/0x249 */
+#define CD_BIOS_CB_40 (*(uint32_t *)guest_at(0x801bc84c)) /* u32 @0x801bc84c: fn ptr -> cd_bios_cmd40 */
+#define CD_RD_SECTOR (*(uint32_t *)guest_at(0x801bcba0))  /* u32 @0x801bcba0: read start sector */
 
 /* ======== batch26: CD driver cluster ======== */
 
@@ -430,34 +433,34 @@ bool cd_read_setup(undefined4 param_1,undefined4 param_2,uint param_3)
   int iVar2;
   uint uVar3;
 
-  if (DAT_801bcba4 != 0) {
+  if (CD_RD_DONE != 0) {
     iVar1 = cd_timer_read(0xffffffff);
     do {
-      if (DAT_801bcba4 == 0) goto LAB_80198d0c;
+      if (CD_RD_DONE == 0) goto LAB_80198d0c;
       iVar2 = cd_timer_read(0xffffffff);
     } while ((uint)(iVar2 - iVar1) < 0x79);
-    mc_session(DAT_801bcba8);
-    DAT_801bcba4 = 0;
+    mc_session(CD_RD_SESS_A);
+    CD_RD_DONE = 0;
   }
 LAB_80198d0c:
   if ((param_3 & 0x30) == 0) {
-    DAT_801bcb90 = 0x200;
+    CD_RD_SECTSZ = 0x200;
   }
   else if ((param_3 & 0x30) == 0x20) {
-    DAT_801bcb90 = 0x249;
+    CD_RD_SECTSZ = 0x249;
   }
   else {
-    DAT_801bcb90 = 0x246;
+    CD_RD_SECTSZ = 0x246;
   }
-  DAT_801bcb8c = param_3 | 0x20;
-  DAT_801bcb80 = param_1;
-  DAT_801bcb84 = param_2;
-  DAT_801bcba8 = mc_session(0);
-  DAT_801bcbac = mc_session_b(0);
-  if ((DAT_801bc7b4 & 1) != 0) {
-    DAT_801bcbb0 = cd_cmd_dispatch3(0);
+  CD_RD_MODE = param_3 | 0x20;
+  CD_RD_COUNT = param_1;
+  CD_RD_POS = param_2;
+  CD_RD_SESS_A = mc_session(0);
+  CD_RD_SESS_B = mc_session_b(0);
+  if ((CD_DISPATCH_PEND & 1) != 0) {
+    CD_RD_DISP = cd_cmd_dispatch3(0);
   }
-  DAT_801bcb9c = cd_timer_read(0xffffffff);
+  CD_RD_TS_PAUSE = cd_timer_read(0xffffffff);
   uVar3 = cd_status_raw();
   if ((uVar3 & 0xe0) != 0) {
     cd_cmd_issue_sync(9,0,0);
@@ -672,8 +675,8 @@ undefined4 mc_session(undefined4 param_1)
 {
   undefined4 uVar1;
   
-  uVar1 = DAT_801bc848;
-  DAT_801bc848 = param_1;
+  uVar1 = CD_BIOS_CB_20;
+  CD_BIOS_CB_20 = param_1;
   return uVar1;
 }
 
@@ -685,8 +688,8 @@ undefined4 mc_session_b(undefined4 param_1)
   undefined4 uVar1;
   
   CDFN(CDFN_MC_SESSION_B,param_1);
-  uVar1 = DAT_801bc84c;
-  DAT_801bc84c = param_1;
+  uVar1 = CD_BIOS_CB_40;
+  CD_BIOS_CB_40 = param_1;
   { uint32_t i = g_bc84c_seq_n & 63u;
     g_bc84c_seq[i*2]   = (uint32_t)param_1;  /* new */
     g_bc84c_seq[i*2+1] = uVar1;              /* old (pre-write bc84c) */
@@ -709,19 +712,19 @@ undefined4 cd_cmd_issue_async(byte param_1,int param_2)
    * wild table index for opcodes >= 0x80. */
   uint32_t p1 = (uint32_t)(uint8_t)param_1;
 
-  uVar1 = DAT_801bc848;
+  uVar1 = CD_BIOS_CB_20;
   iVar3 = 3;
   while( true ) {
-    DAT_801bc848 = 0;
-    if ((p1 != 1) && ((DAT_801bc854 & 0x10) != 0)) {
+    CD_BIOS_CB_20 = 0;
+    if ((p1 != 1) && ((CD_STATUS & 0x10) != 0)) {
       cd_cmd_issue(1,0,0,0);
     }
     if ((((param_2 == 0) || (I32AT(0x801bc7c0,p1) == 0)) ||
         (iVar2 = cd_cmd_issue(2,param_2,0,0), iVar2 == 0)) &&
-       (DAT_801bc848 = uVar1, iVar2 = cd_cmd_issue((byte)p1,param_2,0,1), iVar2 == 0)) break;
+       (CD_BIOS_CB_20 = uVar1, iVar2 = cd_cmd_issue((byte)p1,param_2,0,1), iVar2 == 0)) break;
     iVar3 = iVar3 + -1;
     if (iVar3 == -1) {
-      DAT_801bc848 = uVar1;
+      CD_BIOS_CB_20 = uVar1;
       return 0;
     }
   }
@@ -752,7 +755,7 @@ undefined4 cd_read_open(int param_1)
 
   mc_session(0);
   mc_session_b(0);
-  if ((DAT_801bc7b4 & 1) != 0) {
+  if ((CD_DISPATCH_PEND & 1) != 0) {
     cd_cmd_dispatch3(0);
   }
   uVar1 = cd_status_raw();
@@ -763,8 +766,8 @@ undefined4 cd_read_open(int param_1)
       cd_str_print(0x80125ae0);
     }
     cd_cmd_issue_async(1,0);
-    DAT_801bcb9c = cd_timer_read(0xffffffff);
-    DAT_801bcb94 = 0xffffffff;
+    CD_RD_TS_PAUSE = cd_timer_read(0xffffffff);
+    CD_RD_RESULT = 0xffffffff;
     br2_guest_frame_free();
     return 0xffffffff;
   }
@@ -777,7 +780,7 @@ undefined4 cd_read_open(int param_1)
     iVar3 = cd_mode_flag_set(2,(int)uVar2,0);
     if (iVar3 == 0) {
       /* mode_flag_set(2) fail */
-      DAT_801bcb94 = 0xffffffff;
+      CD_RD_RESULT = 0xffffffff;
       br2_guest_frame_free();
       return 0xffffffff;
     }
@@ -786,29 +789,29 @@ undefined4 cd_read_open(int param_1)
   /* stack buf = sp+0x10 (frame 0x28) -> fr+0x10; verified
    * `sb $s0,0x10($sp)` / `addiu $a1,$sp,0x10` in 0x80198908. */
   p18 = (uint8_t *)guest_at(fr + 0x10);
-  p18[0] = (uint8_t)DAT_801bcb8c;
-  uVar4 = DAT_801bcb8c & 0xff;
+  p18[0] = (uint8_t)CD_RD_MODE;
+  uVar4 = CD_RD_MODE & 0xff;
   uVar1 = cd_mode_byte_read();
   if (((uVar4 != uVar1) || (param_1 != 0)) &&
       (iVar3 = cd_mode_flag_set(0xe,(int)(fr + 0x10),0), iVar3 == 0)) {
     /* mode_flag_set(0xe) fail */
-    DAT_801bcb94 = 0xffffffff;
+    CD_RD_RESULT = 0xffffffff;
     br2_guest_frame_free();
     return 0xffffffff;
   }
-  DAT_801bcba0 = cd_stamp_to_sector(cd_param_buf_get());
+  CD_RD_SECTOR = cd_stamp_to_sector(cd_param_buf_get());
   mc_session_b(0x801985c4);
-  if ((DAT_801bc7b4 & 1) != 0) {
+  if ((CD_DISPATCH_PEND & 1) != 0) {
     cd_cmd_dispatch3(0x80198838);
   }
-  DAT_801bcb88 = DAT_801bcb84;
+  CD_RD_CUR = CD_RD_POS;
   /* reached ReadN issue */
   /* sector count bcb80 */
   cd_cmd_issue_async(6,0);
-  DAT_801bcb94 = DAT_801bcb80;
-  DAT_801bcb98 = cd_timer_read(0xffffffff);
+  CD_RD_RESULT = CD_RD_COUNT;
+  CD_RD_TS_ISSUE = cd_timer_read(0xffffffff);
   br2_guest_frame_free();
-  return DAT_801bcb94;
+  return CD_RD_RESULT;
 }
 
 /* ======== 0x80198590 ======== */
@@ -1244,7 +1247,7 @@ undefined4 cd_response_process(void)
 undefined1 cd_status_raw(void)
 
 {
-  return (undefined1)DAT_801bc854;
+  return (undefined1)CD_STATUS;
 }
 
 undefined1 cd_mode_byte_read(void)
@@ -1281,16 +1284,16 @@ bool cd_cmd_issue_sync(byte param_1,int param_2,undefined4 param_3)
    * cd_cmd_issue opcode — see cd_cmd_issue_async. */
   uint32_t p1 = (uint32_t)(uint8_t)param_1;
 
-  uVar1 = DAT_801bc848;
+  uVar1 = CD_BIOS_CB_20;
   iVar5 = 3;
   do {
-    DAT_801bc848 = 0;
-    if ((p1 != 1) && ((DAT_801bc854 & 0x10) != 0)) {
+    CD_BIOS_CB_20 = 0;
+    if ((p1 != 1) && ((CD_STATUS & 0x10) != 0)) {
       cd_cmd_issue(1,0,0,0);
     }
     if (((param_2 == 0) || (I32AT(0x801bc7c0,p1) == 0)) ||
        (iVar3 = cd_cmd_issue(2,param_2,param_3,0), iVar3 == 0)) {
-      DAT_801bc848 = uVar1;
+      CD_BIOS_CB_20 = uVar1;
       iVar3 = cd_cmd_issue((byte)p1,param_2,param_3,0);
       iVar4 = 0;
       if (iVar3 == 0) break;
@@ -1298,7 +1301,7 @@ bool cd_cmd_issue_sync(byte param_1,int param_2,undefined4 param_3)
     }
     iVar5 = iVar5 + -1;
     iVar4 = -1;
-    DAT_801bc848 = uVar1;
+    CD_BIOS_CB_20 = uVar1;
   } while (iVar5 != -1);
   if (iVar4 == 0) {
     /* param_3 is a raw guest address value; cd_result_wait_a's
@@ -1457,7 +1460,7 @@ void cd_read_step_cb(uint32_t param_1,undefined4 param_2)
  * (0x801bc7b0 -> DeliverEvent). This is the same IRQ/completion-path family
  * as cd_read_step_cb: it calls cd_cmd_issue_async and call_guest across the
  * deferred-IRQ coroutine boundary, and a clean-C body cannot supply the live
- * guest register file / frame the generated MIPS keeps. DAT_801bcba4 stayed 0
+ * guest register file / frame the generated MIPS keeps. CD_RD_DONE stayed 0
  * at the stall (completion branch never ran) — delegate the whole body to the
  * recompiled 0x80198838 so the Pause + DeliverEvent fire faithfully. */
 uint32_t cd_read_finish_cb(void)
