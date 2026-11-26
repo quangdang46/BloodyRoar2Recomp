@@ -1279,6 +1279,7 @@ void memcard_slot_poll(void)
 void deferred_cmd_drain(uint32_t a0,int a1)
 
 {
+  (void)a0;
   uint16_t cmdw;
   bool cls300_seen;
   bool cls400_seen;
@@ -2741,6 +2742,7 @@ int mc_op_dispatch(uint32_t a0)
  * Disasm 0x80167bd8-0x80167cdc. */
 int mc_op_dispatch_b(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,uint32_t s4,uint32_t s5,uint32_t s6)
 {
+  (void)s4; (void)s5; (void)s6;
   int32_t neg = -(a0 != 0);
   uint32_t fl = (uint32_t)neg & 0x10;
   int32_t r = mc_op_result_poll(fl);
