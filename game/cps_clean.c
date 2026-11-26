@@ -95056,7 +95056,11 @@ block_8019FD78:
 }
 
 /* cps_8019fd98 — clean CPS transliteration of br2eu_func_8019FD98 (guest 0x8019fd98)
- * from SLES_017.22_full_48.c. */
+ * from SLES_017.22_full_48.c.
+ * File-load entry: guards on channel cell @0x801FEBE0 (busy → printf diag +
+ * return -1 via ff30). Else resolves the request via 0x801A01BC(a0, sp+16) and
+ * 0x801A0530(sp+16, a1), sets bit (1 << idx) in the channel mask @cell+12,
+ * then falls through into the fe1c load pump. */
 void cps_8019fd98(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -95078,47 +95082,43 @@ void cps_8019fd98(void)
 block_8019FD98:
     sp = sp + -80;
     cpu->write_word(sp + 64, s2);
-    s2 = a0;
+    s2 = a0;                                   /* request arg0 */
     cpu->write_word(sp + 56, s0);
-    s0 = a1;
+    s0 = a1;                                   /* request arg1 */
     cpu->write_word(sp + 68, s3);
-    s3 = 0x8020 << 16;  /* 0x80200000 */
-    s3 = s3 + -5152;
+    s3 = 0x801FEBE0u;                          /* 0x80200000 - 5152: chan cell */
     cpu->write_word(sp + 72, ra);
     cpu->write_word(sp + 60, s1);
-    v0 = cpu->read_word(s3);
+    s1 = zero;                                 /* retry counter */
+    v0 = cpu->read_word(s3);                   /* channel busy? */
     /* nop */  /* 0x8019FDC4: 0x00000000 */
-    int _bc_8019FDC8 = (v0 == zero);  /* save branch cond before delay slot */
-    /* delay slot (always executes) */
-    s1 = zero;
-    if (_bc_8019FDC8) {
+    int cond_chan_free = (v0 == zero);         /* latch: delay clears s1 */
+    if (cond_chan_free) {
         psx_check_interrupts_at(cpu, 0x8019FDE4u);
-        goto block_8019FDE4;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019FDD0u);
-        goto block_8019FDD0;  /* not taken */
+        goto block_8019FDE4;
     }
+    psx_check_interrupts_at(cpu, 0x8019FDD0u);
+    goto block_8019FDD0;
 
 block_8019FDD0:
-    a0 = 0x8012 << 16;  /* 0x80120000 */
+    a0 = 0x80125EA4u;                          /* 0x80120000 + 24204: diag fmt */
     ra = 0x8019FDDCu;  /* jal link before delay slot */
     /* delay slot (always executes) */
-    a0 = a0 + 24204;
-    psx_check_interrupts_at(cpu, 0x8018E550u);
-    cpu->pc = 0x8018E550u; return;  /* CPS jal -> 0x8018E550 */
+    psx_check_interrupts_at(cpu, 0x8018E550u); /* printf_forward_guest */
+    cpu->pc = 0x8018E550u; return;  /* CPS jal -> printf_forward_guest */
 
 block_8019FDDC:
     /* delay slot (always executes) */
-    v0 = -1;
+    v0 = -1;                                   /* busy → fail */
     psx_check_interrupts_at(cpu, 0x8019FF30u);
-    cpu->pc = 0x8019FF30u; return;  /* CPS j: split */
+    cpu->pc = 0x8019FF30u; return;  /* CPS j: split → shared epilogue */
 
 block_8019FDE4:
     a0 = s2;
     ra = 0x8019FDF0u;  /* jal link before delay slot */
     /* delay slot (always executes) */
-    a1 = sp + 16;
-    psx_check_interrupts_at(cpu, 0x801A01BCu);
+    a1 = sp + 16;                              /* out: resolved request */
+    psx_check_interrupts_at(cpu, 0x801A01BCu); /* request resolver */
     cpu->pc = 0x801A01BCu; return;  /* CPS jal -> 0x801A01BC */
 
 block_8019FDF0:
@@ -95126,19 +95126,19 @@ block_8019FDF0:
     ra = 0x8019FDFCu;  /* jal link before delay slot */
     /* delay slot (always executes) */
     a1 = s0;
-    psx_check_interrupts_at(cpu, 0x801A0530u);
+    psx_check_interrupts_at(cpu, 0x801A0530u); /* request binder */
     cpu->pc = 0x801A0530u; return;  /* CPS jal -> 0x801A0530 */
 
 block_8019FDFC:
-    s0 = s3;
+    s0 = s3;                                   /* s0 = chan cell */
     s3 = 2;
     v0 = 1;
-    a0 = cpu->read_word(s0 + 16);
-    v1 = cpu->read_word(s0 + 12);
-    v0 = v0 << (a0 & 0x1F);
+    a0 = cpu->read_word(s0 + 16);              /* channel index */
+    v1 = cpu->read_word(s0 + 12);              /* pending mask */
+    v0 = v0 << (a0 & 0x1F);                    /* bit for this channel */
     v1 = v1 | v0;
-    cpu->write_word(s0 + 12, v1);
-    cpu->pc = 0x8019fe1cu; return;  /* fallthrough to split piece */
+    cpu->write_word(s0 + 12, v1);              /* mark channel pending */
+    cpu->pc = 0x8019fe1cu; return;  /* fallthrough to split piece → fe1c pump */
 }
 
 /* cps_8019fe1c — clean CPS transliteration of br2eu_func_8019FE1C (guest 0x8019fe1c)
@@ -114842,7 +114842,11 @@ block_80196DE4:
 }
 
 /* cps_8019a814 — clean CPS transliteration of br2eu_func_8019A814 (guest 0x8019a814)
- * from SLES_017.22_full_46.c. */
+ * from SLES_017.22_full_46.c.
+ * CD channel full-init (cd_chan_full_init): once-guard on half @0x801BCD18
+ * (the slot-enable flag); seeds the hw regs via ptrs @0x801BDDA4/0x801BDDA8/
+ * 0x801BDDAC (writes 0, reads back, writes 0x33333333), then runs
+ * 0x8019AD1C(ctx, 1050) and 0x8019AD90(ctx+56). */
 void cps_8019a814(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -114861,47 +114865,41 @@ void cps_8019a814(void)
 block_8019A814:
     sp = sp + -24;
     cpu->write_word(sp + 16, s0);
-    s0 = 0x801C << 16;  /* 0x801C0000 */
-    s0 = s0 + -13032;
+    s0 = 0x801BCD18u;                          /* 0x801C0000 - 13032: ctx/enable */
     cpu->write_word(sp + 20, ra);
-    v0 = cpu->read_half(s0);
+    v0 = cpu->read_half(s0);                   /* already initialized? */
     /* nop */  /* 0x8019A82C: 0x00000000 */
-    int _bc_8019A830 = (v0 != zero);  /* save branch cond before delay slot */
+    int cond_initialized = (v0 != zero);       /* latch: delay clears v0 */
     /* delay slot (always executes) */
     v0 = zero;
-    if (_bc_8019A830) {
+    if (cond_initialized) {
         psx_check_interrupts_at(cpu, 0x8019A8DCu);
         cpu->pc = 0x8019A8DCu; return;  /* CPS taken: split */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019A838u);
-        goto block_8019A838;  /* not taken */
     }
+    psx_check_interrupts_at(cpu, 0x8019A838u);
+    goto block_8019A838;
 
 block_8019A838:
-    v1 = 0x801C << 16;  /* 0x801C0000 */
-    v1 = cpu->read_word(v1 + -8796);
-    v0 = 0x801C << 16;  /* 0x801C0000 */
-    v0 = cpu->read_word(v0 + -8792);
-    a1 = 0x3333 << 16;  /* 0x33330000 */
-    cpu->write_half(v0, (uint16_t)zero);
-    v0 = cpu->read_half(v0);
-    a1 = a1 | 0x3333;
-    cpu->write_half(v1, (uint16_t)v0);
-    v0 = 0x801C << 16;  /* 0x801C0000 */
-    v0 = cpu->read_word(v0 + -8788);
+    v1 = cpu->read_word(0x801BDDA4u);          /* 0x801C0000 - 8796: dst ptr */
+    v0 = cpu->read_word(0x801BDDA8u);          /* 0x801C0000 - 8792: src ptr */
+    a1 = 0x33333333u;                          /* 0x33330000 | 0x3333 */
+    cpu->write_half(v0, (uint16_t)zero);       /* clear src half */
+    v0 = cpu->read_half(v0);                   /* read back (0) */
+    cpu->write_half(v1, (uint16_t)v0);         /* → dst */
+    v0 = cpu->read_word(0x801BDDACu);          /* 0x801C0000 - 8788: ctrl ptr */
     a0 = s0;
-    cpu->write_word(v0, a1);
+    cpu->write_word(v0, a1);                   /* ctrl = 0x33333333 */
     ra = 0x8019A874u;  /* jal link before delay slot */
     /* delay slot (always executes) */
     a1 = 1050;
-    psx_check_interrupts_at(cpu, 0x8019AD1Cu);
+    psx_check_interrupts_at(cpu, 0x8019AD1Cu); /* chan setup helper */
     cpu->pc = 0x8019AD1Cu; return;  /* CPS jal -> 0x8019AD1C */
 
 block_8019A874:
     ra = 0x8019A87Cu;  /* jal link before delay slot */
     /* delay slot (always executes) */
     a0 = s0 + 56;
-    psx_check_interrupts_at(cpu, 0x8019AD90u);
+    psx_check_interrupts_at(cpu, 0x8019AD90u); /* chan sub-init */
     cpu->pc = 0x8019AD90u; return;  /* CPS jal -> 0x8019AD90 */
 }
 
