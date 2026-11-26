@@ -2098,168 +2098,168 @@ void action_commit(byte *param_1, byte *param_2)
 
 }
 
-void pending_hit_a_clear(byte *param_1)
+void pending_hit_a_clear(byte *ctrl)
 {
-  uintptr_t iVar1;
+  uintptr_t mo;
   
-  iVar1 = (uintptr_t)guest_at(*(uint32_t *)(param_1 + 0x38));
-  *(undefined4 *)(iVar1 + 0x18) = 0;
-  *(undefined2 *)(iVar1 + 0x1c) = 0;
-  *(undefined2 *)(iVar1 + 0x1e) = 0;
-  hitrec_table_clear(*(undefined1 *)(param_1 + 2));
+  mo = (uintptr_t)guest_at(*(uint32_t *)(ctrl + 0x38));
+  *(undefined4 *)(mo + 0x18) = 0;
+  *(undefined2 *)(mo + 0x1c) = 0;
+  *(undefined2 *)(mo + 0x1e) = 0;
+  hitrec_table_clear(*(undefined1 *)(ctrl + 2));
   return;
 
 }
 
-void hit_chain_clear(byte *param_1)
+void hit_chain_clear(byte *ctrl)
 {
-  uintptr_t iVar1;
+  uintptr_t mo;
   
-  iVar1 = (uintptr_t)guest_at(*(uint32_t *)(param_1 + 0x38));
-  *(undefined1 *)(iVar1 + 0x7d) = 0;
-  *(undefined1 *)(iVar1 + 0x7c) = 0;
-  *(undefined1 *)(iVar1 + 0x7e) = 0xff;
-  table_1f0ae0_clear(*(undefined1 *)(param_1 + 2));
+  mo = (uintptr_t)guest_at(*(uint32_t *)(ctrl + 0x38));
+  *(undefined1 *)(mo + 0x7d) = 0;
+  *(undefined1 *)(mo + 0x7c) = 0;
+  *(undefined1 *)(mo + 0x7e) = 0xff;
+  table_1f0ae0_clear(*(undefined1 *)(ctrl + 2));
   return;
 
 }
 
-void pending_hit_b_clear(byte *param_1)
+void pending_hit_b_clear(byte *ctrl)
 {
-  uintptr_t iVar1;
+  uintptr_t mo;
   
-  iVar1 = (uintptr_t)guest_at(*(uint32_t *)(param_1 + 0x38));
-  *(undefined4 *)(iVar1 + 0x20) = 0;
-  *(undefined2 *)(iVar1 + 0x24) = 0xffff;
-  *(undefined2 *)(iVar1 + 0x26) = 0;
-  *(undefined2 *)(iVar1 + 0x2a) = 0xffff;
+  mo = (uintptr_t)guest_at(*(uint32_t *)(ctrl + 0x38));
+  *(undefined4 *)(mo + 0x20) = 0;
+  *(undefined2 *)(mo + 0x24) = 0xffff;
+  *(undefined2 *)(mo + 0x26) = 0;
+  *(undefined2 *)(mo + 0x2a) = 0xffff;
   return;
 
 }
 
-void fighter_combat_reset(byte *param_1)
+void fighter_combat_reset(byte *ctrl)
 {
   deferred_cmd_post(0x400,7,0);
-  *(undefined2 *)(param_1 + 0xd6) = 0;
-  *(undefined2 *)(param_1 + 0xd8) = 0;
-  *(undefined1 *)(param_1 + 5) = 0;
-  *(uint *)(param_1 + 0x6c) = *(uint *)(param_1 + 0x6c) & 0xffff7fff;
-  *(undefined2 *)(param_1 + 0xae) = *(undefined2 *)(param_1 + 0xac);
-  slot_apply_guest((int)guest_of(param_1),0);
-  fighter_reset_fx(1,param_1);
-  hit_chain_clear(param_1);
-  pending_hit_a_clear(param_1);
-  pending_hit_b_clear(param_1);
+  *(undefined2 *)(ctrl + 0xd6) = 0;
+  *(undefined2 *)(ctrl + 0xd8) = 0;
+  *(undefined1 *)(ctrl + 5) = 0;
+  *(uint *)(ctrl + 0x6c) = *(uint *)(ctrl + 0x6c) & 0xffff7fff;
+  *(undefined2 *)(ctrl + 0xae) = *(undefined2 *)(ctrl + 0xac);
+  slot_apply_guest((int)guest_of(ctrl),0);
+  fighter_reset_fx(1,ctrl);
+  hit_chain_clear(ctrl);
+  pending_hit_a_clear(ctrl);
+  pending_hit_b_clear(ctrl);
   return;
 
 }
 
 /* trig LUT readers (guest sin/cos) — host binds br2_lut tables */
 
-void trig_lut_read(uint32_t param_1, byte *param_2)
+void trig_lut_read(uint32_t ctrl_g, byte *mo)
 {
-  int iVar1;
-  int iVar2;
+  int angle;
+  int vel;
   
-  iVar1 = (((int)((uint)*(byte *)guest_at(param_1 + 0xdb) * 0x60) >> 3) + 0x200) *
-          (0x41 - (uint)*(byte *)guest_at(param_1 + 0xdd));
-  if (iVar1 < 0) {
-    iVar1 = iVar1 + 0x3f;
+  angle = (((int)((uint)*(byte *)guest_at(ctrl_g + 0xdb) * 0x60) >> 3) + 0x200) *
+          (0x41 - (uint)*(byte *)guest_at(ctrl_g + 0xdd));
+  if (angle < 0) {
+    angle = angle + 0x3f;
   }
-  *(undefined2 *)(param_2 + 0xb4) = 0x78;
-  *(undefined2 *)(param_2 + 0xb2) = 0;
-  *(undefined2 *)(param_2 + 0x92) = 0xa0;
-  iVar2 = lut_cos_q12(iVar1 >> 6);
-  iVar2 = iVar2 * 0xd00;
-  if (iVar2 < 0) {
-    iVar2 = iVar2 + 0xfff;
+  *(undefined2 *)(mo + 0xb4) = 0x78;
+  *(undefined2 *)(mo + 0xb2) = 0;
+  *(undefined2 *)(mo + 0x92) = 0xa0;
+  vel = lut_cos_q12(angle >> 6);
+  vel = vel * 0xd00;
+  if (vel < 0) {
+    vel = vel + 0xfff;
   }
-  *(short *)(param_2 + 0x90) = (short)(iVar2 >> 0xc);
-  iVar1 = lut_sin_q12(iVar1 >> 6);
-  iVar1 = iVar1 * -0x500;
-  if (iVar1 < 0) {
-    iVar1 = iVar1 + 0xfff;
+  *(short *)(mo + 0x90) = (short)(vel >> 0xc);
+  angle = lut_sin_q12(angle >> 6);
+  angle = angle * -0x500;
+  if (angle < 0) {
+    angle = angle + 0xfff;
   }
-  *(short *)(param_2 + 0x98) = (short)(iVar1 >> 0xc);
-  if (((*(byte *)guest_at(param_1 + 5) & 0x10) != 0) && ((*(uint *)guest_at(param_1 + 100) & 0x480000) != 0)) {
-    iVar1 = *(short *)(param_2 + 0x90) * 0x140;
-    if (iVar1 < 0) {
-      iVar1 = iVar1 + 0xff;
+  *(short *)(mo + 0x98) = (short)(angle >> 0xc);
+  if (((*(byte *)guest_at(ctrl_g + 5) & 0x10) != 0) && ((*(uint *)guest_at(ctrl_g + 100) & 0x480000) != 0)) {
+    angle = *(short *)(mo + 0x90) * 0x140;
+    if (angle < 0) {
+      angle = angle + 0xff;
     }
-    *(short *)(param_2 + 0x90) = (short)((uint)iVar1 >> 8);
+    *(short *)(mo + 0x90) = (short)((uint)angle >> 8);
   }
-  *(short *)(param_2 + 0x90) =
-       (short)mips_div_lo(*(short *)(param_2 + 0x90) * 0x12c0, *(short *)(param_2 + 0x24) + 4000);
-  *(short *)(param_2 + 0x98) =
-       (short)mips_div_lo(*(short *)(param_2 + 0x98) * 0x12c0, *(short *)(param_2 + 0x24) + 4000);
+  *(short *)(mo + 0x90) =
+       (short)mips_div_lo(*(short *)(mo + 0x90) * 0x12c0, *(short *)(mo + 0x24) + 4000);
+  *(short *)(mo + 0x98) =
+       (short)mips_div_lo(*(short *)(mo + 0x98) * 0x12c0, *(short *)(mo + 0x24) + 4000);
   return;
 
 }
 
-void trig_vel_flat(uint32_t param_1, byte *param_2)
+void trig_vel_flat(uint32_t ctrl_g, byte *mo)
 {
-  short sVar1;
-  int iVar2;
+  short vel;
+  int angle;
   
-  iVar2 = ((uint)*(byte *)guest_at(param_1 + 0xdb) * 8 + 0x400) * (0x41 - (uint)*(byte *)guest_at(param_1 + 0xdd));
-  if (iVar2 < 0) {
-    iVar2 = iVar2 + 0x3f;
+  angle = ((uint)*(byte *)guest_at(ctrl_g + 0xdb) * 8 + 0x400) * (0x41 - (uint)*(byte *)guest_at(ctrl_g + 0xdd));
+  if (angle < 0) {
+    angle = angle + 0x3f;
   }
-  *(undefined2 *)(param_2 + 0xb4) = 0x78;
-  *(undefined2 *)(param_2 + 0xb2) = 0;
-  *(undefined2 *)(param_2 + 0x92) = 0xa0;
-  iVar2 = lut_cos_q12(iVar2 >> 6);
-  sVar1 = (short)(iVar2 / 2);
-  *(short *)(param_2 + 0x90) = sVar1;
-  *(undefined2 *)(param_2 + 0x98) = 0;
-  *(short *)(param_2 + 0x90) = (short)mips_div_lo(sVar1 * 0x12c0, *(short *)(param_2 + 0x24) + 4000);
+  *(undefined2 *)(mo + 0xb4) = 0x78;
+  *(undefined2 *)(mo + 0xb2) = 0;
+  *(undefined2 *)(mo + 0x92) = 0xa0;
+  angle = lut_cos_q12(angle >> 6);
+  vel = (short)(angle / 2);
+  *(short *)(mo + 0x90) = vel;
+  *(undefined2 *)(mo + 0x98) = 0;
+  *(short *)(mo + 0x90) = (short)mips_div_lo(vel * 0x12c0, *(short *)(mo + 0x24) + 4000);
   return;
 
 }
 
-void trig_vel_up(uint32_t param_1, byte *param_2)
+void trig_vel_up(uint32_t ctrl_g, byte *mo)
 {
-  undefined2 uVar1;
-  short sVar2;
-  int iVar3;
+  undefined2 cos_v;
+  short sin_v;
+  int angle;
   
-  iVar3 = ((int)((uint)*(byte *)guest_at(param_1 + 0xdb) * 0x10) >> 2) + 0x300;
-  *(undefined2 *)(param_2 + 0xb4) = 0x78;
-  *(undefined2 *)(param_2 + 0xb2) = 0;
-  *(undefined2 *)(param_2 + 0x92) = 0xa0;
-  uVar1 = lut_cos_q12(iVar3);
-  *(undefined2 *)(param_2 + 0x90) = uVar1;
-  sVar2 = lut_sin_q12(iVar3);
-  *(short *)(param_2 + 0x98) = sVar2 * -2;
-  if ((*(byte *)guest_at(param_1 + 5) & 0x10) != 0) {
-    *(short *)(param_2 + 0x98) = sVar2 * -2 + -0x2000;
+  angle = ((int)((uint)*(byte *)guest_at(ctrl_g + 0xdb) * 0x10) >> 2) + 0x300;
+  *(undefined2 *)(mo + 0xb4) = 0x78;
+  *(undefined2 *)(mo + 0xb2) = 0;
+  *(undefined2 *)(mo + 0x92) = 0xa0;
+  cos_v = lut_cos_q12(angle);
+  *(undefined2 *)(mo + 0x90) = cos_v;
+  sin_v = lut_sin_q12(angle);
+  *(short *)(mo + 0x98) = sin_v * -2;
+  if ((*(byte *)guest_at(ctrl_g + 5) & 0x10) != 0) {
+    *(short *)(mo + 0x98) = sin_v * -2 + -0x2000;
   }
-  *(short *)(param_2 + 0x90) =
-       (short)mips_div_lo(*(short *)(param_2 + 0x90) * 0x12c0, *(short *)(param_2 + 0x24) + 4000);
-  *(short *)(param_2 + 0x98) =
-       (short)mips_div_lo(*(short *)(param_2 + 0x98) * 0x12c0, *(short *)(param_2 + 0x24) + 4000);
+  *(short *)(mo + 0x90) =
+       (short)mips_div_lo(*(short *)(mo + 0x90) * 0x12c0, *(short *)(mo + 0x24) + 4000);
+  *(short *)(mo + 0x98) =
+       (short)mips_div_lo(*(short *)(mo + 0x98) * 0x12c0, *(short *)(mo + 0x24) + 4000);
   return;
 
 }
 
-void trig_vel_diag(uint32_t param_1, byte *param_2)
+void trig_vel_diag(uint32_t ctrl_g, byte *mo)
 {
-  undefined2 uVar1;
-  short sVar2;
-  int iVar3;
+  undefined2 cos_v;
+  short sin_v;
+  int angle;
   
-  iVar3 = (int)((uint)*(byte *)guest_at(param_1 + 0xdb) * 0x10) >> 2;
-  *(undefined2 *)(param_2 + 0xb4) = 0x78;
-  *(undefined2 *)(param_2 + 0xb2) = 0;
-  *(undefined2 *)(param_2 + 0x92) = 0xa0;
-  uVar1 = lut_cos_q12(iVar3);
-  *(undefined2 *)(param_2 + 0x90) = uVar1;
-  sVar2 = lut_sin_q12(iVar3);
-  *(short *)(param_2 + 0x98) = -sVar2;
-  *(short *)(param_2 + 0x90) =
-       (short)mips_div_lo(*(short *)(param_2 + 0x90) * 0x12c0, *(short *)(param_2 + 0x24) + 4000);
-  *(short *)(param_2 + 0x98) =
-       (short)mips_div_lo(*(short *)(param_2 + 0x98) * 0x12c0, *(short *)(param_2 + 0x24) + 4000);
+  angle = (int)((uint)*(byte *)guest_at(ctrl_g + 0xdb) * 0x10) >> 2;
+  *(undefined2 *)(mo + 0xb4) = 0x78;
+  *(undefined2 *)(mo + 0xb2) = 0;
+  *(undefined2 *)(mo + 0x92) = 0xa0;
+  cos_v = lut_cos_q12(angle);
+  *(undefined2 *)(mo + 0x90) = cos_v;
+  sin_v = lut_sin_q12(angle);
+  *(short *)(mo + 0x98) = -sin_v;
+  *(short *)(mo + 0x90) =
+       (short)mips_div_lo(*(short *)(mo + 0x90) * 0x12c0, *(short *)(mo + 0x24) + 4000);
+  *(short *)(mo + 0x98) =
+       (short)mips_div_lo(*(short *)(mo + 0x98) * 0x12c0, *(short *)(mo + 0x24) + 4000);
   return;
 
 }
