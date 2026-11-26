@@ -2211,7 +2211,9 @@ int32_t text_win_printf(int32_t sel,uint32_t a1,uint32_t a2,
       if (width <= 0) width = 1;
       ep = dtop;                        /* $s0 reset (br delay slot) */
       spec = (uint32_t)(c - 0x58);
-      if (spec >= 0x21) goto emit_tail;   /* unknown: stale count/ep */
+      {
+      int32_t skip_pad = 0;            /* 'x'/'X' with '0' flag skips space pad */
+      if (spec < 0x21) {
       if (c == 0x64) {                 /* 'd' */
         int32_t av = (int32_t)BR2_ARG();
         uint32_t ua;
@@ -2238,9 +2240,8 @@ int32_t text_win_printf(int32_t sel,uint32_t a1,uint32_t a2,
           count = count + 1;
         }
         ep = sp;
-        goto pad_tail;
       }
-      if ((c == 0x78) || (c == 0x58)) { /* 'x'/'X' */
+      else if ((c == 0x78) || (c == 0x58)) { /* 'x'/'X' */
         uint32_t hv = BR2_ARG();
         uint8_t *hp = dtop;
         static const char hexd[] = "0123456789abcdef";
@@ -2265,34 +2266,28 @@ int32_t text_win_printf(int32_t sel,uint32_t a1,uint32_t a2,
               *hp = 0x30;
             } while (count < width);
           }
-          goto emit_only;
+          skip_pad = 1;
         }
-        goto pad_tail;
       }
-      if (c == 0x63) {                 /* 'c' */
+      else if (c == 0x63) {            /* 'c' */
         uint32_t av = BR2_ARG();
         uint8_t *hp = dtop - 1;        /* s0 reset to sp+0x210 per spec */
         *hp = (uint8_t)av;
         ep = hp;
         count = 1;
-        goto pad_tail;
       }
-      if (c == 0x73) {                 /* 's' */
+      else if (c == 0x73) {            /* 's' */
         ep = (const uint8_t *)guest_at(BR2_ARG());
         count = str_len((char *)(uintptr_t)ep);
-        goto pad_tail;
       }
-      goto pad_tail;               /* unreachable (spec<0x21 all mapped) */
-emit_tail:
-      ;
-pad_tail:
-      if (count < width) {
+      /* other spec<0x21 chars and spec>=0x21: stale count/ep, still pad+emit */
+      }
+      if (!skip_pad && count < width) {
         do {
           if (win_putc(slot,0x20) < 0) { va_end(ap); return -1; }
           width = width - 1;
         } while (count < width);
       }
-emit_only:
       count = count - 1;
       if (count != -1) {
         do {
@@ -2301,6 +2296,7 @@ emit_only:
           if (win_putc(slot,ch) < 0) { va_end(ap); return -1; }
           count = count - 1;
         } while (count != -1);
+      }
       }
       fmt = fmt + 1;                   /* consume spec char */
     }
