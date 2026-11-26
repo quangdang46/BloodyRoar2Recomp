@@ -5171,6 +5171,7 @@ uint32_t cd_bios16_status(void)
 
 /* ======== 0x8019a15c ======== */
 
+/* cd_chan_reset_seq — kobj mcalls 0x8019A364/0x8019A310, cd_crit_c003, clear flag @0x801BCC90. */
 void cd_chan_reset_seq(void)
 {
   FUN_8019a364();
