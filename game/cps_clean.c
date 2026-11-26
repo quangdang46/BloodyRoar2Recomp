@@ -97367,7 +97367,9 @@ block_801A1D90:
 }
 
 /* cps_801a1d98 — clean CPS transliteration of br2eu_func_801A1D98 (guest 0x801a1d98)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * stream_cmd_tail: jal 0x801A248C, reads byte@(*(0x801BE858))+430,
+ * jal 0x801A4210(a0=byte), tail-j 0x801A1DD8 (stream_wait_poll). */
 void cps_801a1d98(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -101124,7 +101126,9 @@ block_801A4C88:
 }
 
 /* cps_801a4c9c — clean CPS transliteration of br2eu_func_801A4C9C (guest 0x801a4c9c)
- * from SLES_017.22_full_50.c. */
+ * from SLES_017.22_full_50.c.
+ * node_pair_dump: three 0x80190A04 printf calls — fmt @0x80125C18
+ * (a1=s0), @0x80125C28 (*s0), @0x80125C38 (*(s0+4)). */
 void cps_801a4c9c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -101725,7 +101729,9 @@ block_801A5A04:
 }
 
 /* cps_801a6b70 — clean CPS transliteration of br2eu_func_801A6B70 (guest 0x801a6b70)
- * from SLES_017.22_full_51.c. */
+ * from SLES_017.22_full_51.c.
+ * gp36_flag_toggle: flips gp+36 (0->1 else ->0), then caches
+ * word @0x801BEEF8[gp36] into gp+72 and returns. */
 void cps_801a6b70(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -105929,7 +105935,11 @@ block_801AB5A4:
 }
 
 /* cps_801ab84c — clean CPS transliteration of br2eu_func_801AB84C (guest 0x801ab84c)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * gte_light_setup: guarded by *(a0+36)!=0 && s16@+40!=0; programs GTE
+ * light dir/colour matrix (RTPS cmd 0x12 via gte_data 9-11), ctc2
+ * regs 0-7 from matrix @v1, translation from a0+20 (cmd 0x12 →
+ * gte_data 25-27 → 0x1F8003F4), for two matrix slots (a0/a1). */
 void cps_801ab84c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -112536,7 +112546,11 @@ block_801AFF04:
 }
 
 /* cps_801aff70 — clean CPS transliteration of br2eu_func_801AFF70 (guest 0x801aff70)
- * from SLES_017.22_full_54.c. */
+ * from SLES_017.22_full_54.c.
+ * fx_param_init_2: fills two 40B param records at a1/a1+40 from src
+ * record *(gp+80)+s16@a0+2 (+80): bytes 3=9,7=44/46,12,13,20,21,28,29,
+ * 36,37 (sums of src+8/+9/+10/+11), 4,5,6, halves @22,@14; tail writes
+ * halves src+4/+6 → a1+80/+82. */
 void cps_801aff70(void)
 {
   CPUState *cpu = clean_cpu_state();
