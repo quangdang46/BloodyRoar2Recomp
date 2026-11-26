@@ -23676,6 +23676,7 @@ block_80132D40:
  * from SLES_017.22_full_05.c. */
 void cps_8013309c(void)
 {
+/* math thunk -> table_byte_next_a -> pair_depth_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -23777,6 +23778,7 @@ block_80133140:
  * from SLES_017.22_full_05.c. */
 void cps_80133164(void)
 {
+/* math thunk -> vec3_s32_normalize -> fixed_rsqrt_q12 -> pair_depth_set -> u16_step_toward */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -24031,6 +24033,7 @@ block_801332E8:
  * from SLES_017.22_full_05.c. */
 void cps_801332f0(void)
 {
+/* math leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -24060,6 +24063,7 @@ block_801332F0:
  * from SLES_017.22_full_05.c. */
 void cps_80133428(void)
 {
+/* math fragment: continues at 0x80133450 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -24087,6 +24091,7 @@ block_80133428:
  * from SLES_017.22_full_05.c. */
 void cps_80133450(void)
 {
+/* math fragment: continues at 0x8013345c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -24105,6 +24110,7 @@ block_80133450:
  * from SLES_017.22_full_05.c. */
 void cps_8013345c(void)
 {
+/* math fragment: continues at 0x80133488 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -24132,6 +24138,7 @@ block_8013345C:
  * from SLES_017.22_full_06.c. */
 void cps_80133488(void)
 {
+/* math thunk -> fixed_rsqrt_q12 -> atan2_lut */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -24280,6 +24287,7 @@ block_80133548:
  * from SLES_017.22_full_06.c. */
 void cps_80133550(void)
 {
+/* math fragment: continues at 0x80133554 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -24295,6 +24303,7 @@ block_80133550:
  * from SLES_017.22_full_06.c. */
 void cps_80133554(void)
 {
+/* math thunk -> fixed_approach_s16 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -24344,6 +24353,7 @@ block_80133574:
  * from SLES_017.22_full_06.c. */
 void cps_80133578(void)
 {
+/* math fragment: continues at 0x80133588 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -24378,6 +24388,7 @@ block_80133580:
  * from SLES_017.22_full_06.c. */
 void cps_80133588(void)
 {
+/* math fragment: continues at 0x8013358c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -24393,6 +24404,7 @@ block_80133588:
  * from SLES_017.22_full_06.c. */
 void cps_8013358c(void)
 {
+/* math thunk -> atan2_lut -> fixed_approach_s16 -> pair_depth_set -> u16_step_toward */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -24718,6 +24730,7 @@ block_801336D8:
  * from SLES_017.22_full_06.c. */
 void cps_80133768(void)
 {
+/* math fragment: continues at 0x80133794 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -24792,6 +24805,7 @@ block_80133788:
  * from SLES_017.22_full_06.c. */
 void cps_80133794(void)
 {
+/* math leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -24809,6 +24823,7 @@ block_80133794:
  * from SLES_017.22_full_06.c. */
 void cps_8013379c(void)
 {
+/* math fragment: continues at 0x801337ac */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -24834,6 +24849,7 @@ block_8013379C:
  * from SLES_017.22_full_06.c. */
 void cps_801337ac(void)
 {
+/* math leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -24851,6 +24867,7 @@ block_801337AC:
  * from SLES_017.22_full_06.c. */
 void cps_801337b4(void)
 {
+/* math leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -24868,6 +24885,7 @@ block_801337B4:
  * from SLES_017.22_full_06.c. */
 void cps_801337bc(void)
 {
+/* math leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -24993,6 +25011,7 @@ block_80133820:
  * from SLES_017.22_full_06.c. */
 void cps_801338ac(void)
 {
+/* math fragment: continues at 0x801338b4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25010,6 +25029,7 @@ block_801338AC:
  * from SLES_017.22_full_06.c. */
 void cps_801338b4(void)
 {
+/* math fragment: continues at 0x801338b8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25025,6 +25045,7 @@ block_801338B4:
  * from SLES_017.22_full_06.c. */
 void cps_801338b8(void)
 {
+/* math fragment: continues at 0x801338bc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25040,6 +25061,7 @@ block_801338B8:
  * from SLES_017.22_full_06.c. */
 void cps_801338bc(void)
 {
+/* math leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25057,6 +25079,7 @@ block_801338BC:
  * from SLES_017.22_full_06.c. */
 void cps_801338fc(void)
 {
+/* math fragment: continues at 0x80133900 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25072,6 +25095,7 @@ block_801338FC:
  * from SLES_017.22_full_06.c. */
 void cps_80133900(void)
 {
+/* math fragment: continues at 0x8013390c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25090,6 +25114,7 @@ block_80133900:
  * from SLES_017.22_full_06.c. */
 void cps_8013390c(void)
 {
+/* math fragment: continues at 0x8013392C */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25128,6 +25153,7 @@ block_8013391C:
  * from SLES_017.22_full_06.c. */
 void cps_80133928(void)
 {
+/* math fragment: continues at 0x8013392c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25143,6 +25169,7 @@ block_80133928:
  * from SLES_017.22_full_06.c. */
 void cps_8013392c(void)
 {
+/* math leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25162,6 +25189,7 @@ block_8013392C:
  * from SLES_017.22_full_06.c. */
 void cps_8013393c(void)
 {
+/* math leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25179,6 +25207,7 @@ block_8013393C:
  * from SLES_017.22_full_06.c. */
 void cps_80133c9c(void)
 {
+/* math fragment: continues at 0x80133ce8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25245,6 +25274,7 @@ block_80133CE0:
  * from SLES_017.22_full_06.c. */
 void cps_80133ce8(void)
 {
+/* math fragment: continues at 0x80133D74 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25349,6 +25379,7 @@ block_80133D28:
  * from SLES_017.22_full_06.c. */
 void cps_80133d68(void)
 {
+/* math fragment: continues at 0x80133d74 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25366,6 +25397,7 @@ block_80133D68:
  * from SLES_017.22_full_06.c. */
 void cps_80133d74(void)
 {
+/* math leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25392,6 +25424,7 @@ block_80133D74:
  * from SLES_017.22_full_06.c. */
 void cps_80133ebc(void)
 {
+/* math fragment: continues at 0x80133ef0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25421,6 +25454,7 @@ block_80133EBC:
  * from SLES_017.22_full_06.c. */
 void cps_80133ef0(void)
 {
+/* math fragment: continues at 0x801340c4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
