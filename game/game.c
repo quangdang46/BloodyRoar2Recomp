@@ -355,7 +355,6 @@ int cd_read_issue();
 void cursor_sprite_anim(uint8_t *);
 extern void entry_0x80126234(void);
 
-typedef void code(void);
 
 /* ---- callee externs (ported in later batches; weak-bound meanwhile) ---- */
 extern void memcard_tick(void);
@@ -1721,7 +1720,7 @@ LAB_801593a8:
 /* ======== 0x8018cfdc ======== */
 
 /* cd_file_load_sm — per-file CD load state machine. The clean port passed
- * piVar2 = guest_at(filetab[..]) — a HOST arena pointer — into
+ * dst = guest_at(filetab[..]) — a HOST arena pointer — into
  * cd_read_issue -> cd_mode_flag_set -> cd_cmd_issue(2,..), which is delegated
  * to generated code that reads the SetLoc MSF params treating dst as a
  * GUEST address. The host pointer decoded to a bogus address -> SetLoc
