@@ -357,3 +357,14 @@ Audit follow-up sweep (batch 11 continuation): cpu->pc literal writes
 bodies — they feed the outer dispatch loop, not bypasses. br2_irq_poll
 sites are framework IRQ delivery. No new generated-dispatch bypasses
 found; proof/generated_zero_audit.md conclusions stand.
+
+## Batch 11c (orch/w5/e05) — 10 more CD 1-block leaves (20 rows)
+
+cd_xchg_bc850(0x80195CA8), cd_status_bcc90(0x80199FFC), cd_xchg_bde20
+(0x8019B1D0), cd_mmio_strobe_22(0x8019BE50), cd_xchg_fec24(0x8019FA6C),
+cd_job_slots_reset(0x801A0A00), cd_xchg_fefb4(0x801A11E4),
+cd_xchg_fefb8(0x801A11F8), cd_state_clear(0x801A1A2C),
+cd_ctx_set_28_34(0x801A24C0) — all 1-block timed cpst_ bodies.
+
+clean_table: 8637 wrappers, 0 skipped. Verified: clean build EU+USA;
+headless :4901 frames 30684 -> 45772+ attract CD streaming, no wedge.
