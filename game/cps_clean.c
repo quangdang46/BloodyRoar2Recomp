@@ -66437,6 +66437,11 @@ void cps_801800a4(void)
     }
     /* Address: 0x801800A4, Size: 552 bytes, Blocks: 6 */
 
+    /* record field merge: copies half/word fields between s3/s4/s5/s7
+       records (offsets 208-224, 56-60, 32/68), applies fixed-point deltas
+       via 0x8018D298/0x8018D29C pair lookups, jal 0x8018D788 tail.
+       CPS-blocked. */
+
 block_801800A4:
     /* nop */  /* 0x801800A4: 0x00000000 */
     cpu->write_word(v1 + 56, v0);
@@ -66644,6 +66649,11 @@ void cps_801802cc(void)
         }
     }
     /* Address: 0x801802CC, Size: 1728 bytes, Blocks: 18 */
+
+    /* flag-gated record merge (sibling of 0x801800A4): tests
+       word[s7+108] & a0, clears bit via 0xFFFDFFFF mask on hit, then the
+       same s3/s4 half-field copy + 0x8018D298/29C fixed-point deltas.
+       CPS-blocked. */
 
 block_801802CC:
     v1 = cpu->read_word(s7 + 108);
@@ -67206,7 +67216,10 @@ void cps_8018098c(void)
             default: break;
         }
     }
-    /* Address: 0x8018098C, Size: 60 bytes, Blocks: 2 */
+    /* Address: 0x8018098C, Size: 60 bytes, blocks: 2 */
+
+    /* tail call + epilogue: a0 = word[a1+68], a1 += 32, jal
+       0x8018D788, then pop s0..s7/fp/ra (sp += 64). CPS-blocked. */
 
 block_8018098C:
     a0 = cpu->read_word(a1 + 68);
@@ -67252,6 +67265,11 @@ void cps_80181000(void)
         }
     }
     /* Address: 0x80181000, Size: 108 bytes, Blocks: 5 */
+
+    /* transform-apply piece: jal 0x8018D1BC(-s7) -> fp; jal
+       0x8018D300(s6, s7); packs (fp-s1)<<20>>20 into half s5+112,
+       v0 into half s5+114, then jal 0x80186B2C(s5) twice.
+       CPS-blocked. */
 
 block_80181000:
     ra = 0x80181008u;  /* jal link before delay slot */
@@ -67315,6 +67333,8 @@ void cps_80181ee8(void)
 
     /* Address: 0x80181EE8, Size: 8 bytes, Blocks: 1 */
 
+    /* clear field: half[a2+40] = 0 */
+
 block_80181EE8:
     uint32_t _jt_80181EE8 = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
@@ -67331,6 +67351,9 @@ void cps_80181ef0(void)
   if (!cpu) return;
 
     /* Address: 0x80181EF0, Size: 32 bytes, Blocks: 1 */
+
+    /* field writer: half[a2+40] = 8; word[a2+36] = word[word[a2+12]+20]
+       + word[t1+48] */
 
 block_80181EF0:
     v0 = cpu->read_word(a2 + 12);
@@ -67371,6 +67394,8 @@ void cps_80181f18(void)
 
     /* Address: 0x80181F18, Size: 8 bytes, Blocks: 1 */
 
+    /* bare return (jr $ra, nop delay slot) */
+
 block_80181F18:
     uint32_t _jt_80181F18 = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
@@ -67405,6 +67430,11 @@ void cps_801835d0(void)
         }
     }
     /* Address: 0x801835D0, Size: 148 bytes, Blocks: 13 */
+
+    /* 6-way compare dispatcher on word[a2+56]: entries for
+       !=0/==0/>0/>=0/<0/<=0 all write a0+2 -> a2+36 and jump to shared
+       tail (return 1); fallthrough to 0x80183594 on mismatch.
+       CPS-blocked. */
 
 block_801835D0:
     v0 = cpu->read_word(a2 + 56);
@@ -67559,6 +67589,10 @@ void cps_801870a4(void)
         }
     }
     /* Address: 0x801870A4, Size: 280 bytes, Blocks: 14 */
+
+    /* GTE transform driver: saves s0-s6 to scratch 0x1F800000+992..1020,
+       ctc2 ctrl 29=1365 / 30=1024, iterates calling 0x80186E64/0x80186F5C
+       per vertex. CPS-blocked (GTE + jal chain). */
 
 block_801870A4:
     int _bc_801870A4 = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
@@ -77826,6 +77860,10 @@ void cps_8018d3b4(void)
     }
     /* Address: 0x8018D3B4, Size: 84 bytes, Blocks: 6 */
 
+    /* vector store trio (three entry points share jal 0x8018D408 arg
+       fetch): stores (v1,v0) as two words / two halves / one packed
+       32-bit (v0<<16|v1&0xFFFF) into a3, returns a3 via jr t1.
+       CPS-blocked. */
 block_8018D3B4:
     t1 = ra;
     ra = 0x8018D3C0u;  /* jal link before delay slot */
@@ -78067,6 +78105,10 @@ void cps_8018da2c(void)
     }
     /* Address: 0x8018DA2C, Size: 136 bytes, Blocks: 7 */
 
+    /* 2D vector transform: decodes angle a0 (10-bit idx -> sin/cos via
+       table 0x801247C8 with quadrant XOR fixups on bits 0x400/0x800),
+       applies sign flips, writes result vector + flags into a1
+       (0x1000 tag, packed halves). CPS-blocked. */
 block_8018DA2C:
     t0 = 0x8012 << 16;  /* 0x80120000 */
     t0 = t0 + 18344;
@@ -78190,6 +78232,10 @@ void cps_8018dac0(void)
     }
     /* Address: 0x8018DAC0, Size: 292 bytes, Blocks: 13 */
 
+    /* 2x2 rotation matrix build: decodes two angles (a0,a1) through the
+       same 0x801247C8 sin/cos table with quadrant fixups, then four
+       fixed-point multiplies (>>12) assemble the matrix into a2
+       (+0/+4/+8/+12 words, +16 half). CPS-blocked. */
 block_8018DAC0:
     t0 = 0x8012 << 16;  /* 0x80120000 */
     t0 = t0 + 18344;
@@ -78364,6 +78410,10 @@ void cps_8018dbe4(void)
 
     /* Address: 0x8018DBE4, Size: 28 bytes, Blocks: 1 */
 
+    /* prologue piece: loads half(a0+4) and word(a0) args, sets up
+       t7 = 0x801247C8 table base, a3 = a1, a1 = a0>>16, then CPS-splits
+       into cps_8018dc00/cps_8018dc20 (the two halves of the transform
+       above). */
 block_8018DBE4:
     a2 = (int32_t)(int16_t)cpu->read_half(a0 + 4);
     t7 = 0x8012 << 16;  /* 0x80120000 */
@@ -78448,6 +78498,10 @@ void cps_8018dc20(void)
     }
     /* Address: 0x8018DC20, Size: 584 bytes, Blocks: 31 */
 
+    /* 3-angle transform (continuation of cps_8018dbe4): decodes three
+       angles (a1, a0, a2) through the 0x801247C8 sin/cos table with
+       quadrant fixups, combines via fixed-point muls into a transform
+       written through a3. CPS-blocked. */
 block_8018DC20:
     v0 = a1 & 0x03FF;  /* 0x8018DC20: 0x30A203FF */
     v0 = v0 << 1;
@@ -78847,6 +78901,9 @@ void cps_8018de6c(void)
     }
     /* Address: 0x8018DE6C, Size: 136 bytes, Blocks: 7 */
 
+    /* single-angle vector writer: decodes a0 via 0x801247C8 sin/cos
+       table (quadrant fixups), writes (packed, v0, 0, v1, 0x1000 tag)
+       into a1+0..16. CPS-blocked. */
 block_8018DE6C:
     t0 = 0x8012 << 16;  /* 0x80120000 */
     t0 = t0 + 18344;
@@ -78970,6 +79027,9 @@ void cps_8018df00(void)
     }
     /* Address: 0x8018DF00, Size: 292 bytes, Blocks: 13 */
 
+    /* two-angle transform writer (sibling of 0x8018DAC0): decodes a0/a1
+       via 0x801247C8 sin/cos table, four fixed-point muls (>>12) into a
+       2x2 matrix written to a2. CPS-blocked. */
 block_8018DF00:
     t0 = 0x8012 << 16;  /* 0x80120000 */
     t0 = t0 + 18344;
@@ -79171,6 +79231,9 @@ void cps_8018e028(void)
     }
     /* Address: 0x8018E028, Size: 136 bytes, Blocks: 7 */
 
+    /* single-angle vector writer variant: same 0x801247C8 decode as
+       0x8018DE6C but writes packed result into a1+0..12 with zero at
+       +12. CPS-blocked. */
 block_8018E028:
     t0 = 0x8012 << 16;  /* 0x80120000 */
     t0 = t0 + 18344;
@@ -79277,6 +79340,9 @@ void cps_8018e0b0(void)
     }
     /* Address: 0x8018E0B0, Size: 288 bytes, Blocks: 13 */
 
+    /* two-angle vector transform: reads angle pair from half(a0)/half(a0+4),
+       decodes both via 0x801247C8 sin/cos table, writes result vector to
+       a2 (sibling of 0x8018DAC0). CPS-blocked. */
 block_8018E0B0:
     a2 = a1;
     a1 = (int32_t)(int16_t)cpu->read_half(a0 + 4);
@@ -79468,6 +79534,8 @@ void cps_8018e1d0(void)
     }
     /* Address: 0x8018E1D0, Size: 288 bytes, Blocks: 13 */
 
+    /* two-angle vector transform variant (same 0x801247C8 decode as
+       0x8018E0B0, different output layout). CPS-blocked. */
 block_8018E1D0:
     a2 = a1;
     a1 = (int32_t)(int16_t)cpu->read_half(a0 + 4);
@@ -79660,6 +79728,9 @@ void cps_8018e320(void)
     }
     /* Address: 0x8018E320, Size: 156 bytes, Blocks: 14 */
 
+    /* slot init: a0&0xFFFF bounds (<3), entry = word[0x801B66FC] + idx*16;
+       writes half fields (+4=0, +8=a1), picks code a3=72/73/... from
+       flag bits of a2 (0x10/0x01/0x1000). CPS-blocked. */
 block_8018E320:
     t0 = a0 & 0xFFFF;  /* 0x8018E320: 0x3088FFFF */
     v0 = ((int32_t)t0 < 3) ? 1 : 0;  /* 0x8018E324: 0x29020003 */
@@ -79929,6 +80000,10 @@ void cps_8018ef6c(void)
         }
     }
     /* Address: 0x8018EF6C, Size: 2164 bytes, Blocks: 121 */
+
+    /* bytecode interpreter: 584-byte frame, walks op stream at a1
+       dispatching on opcode bytes (cmps vs 37/43/45...), calls
+       sub-handlers 0x8018E510 / 0x8018ECA0 / 0x8018F7E0. CPS-blocked. */
 
 block_8018EF6C:
     sp = sp + -584;
@@ -81332,6 +81407,8 @@ void cps_8018f884(void)
     }
     /* Address: 0x8018F884, Size: 140 bytes, Blocks: 7 */
 
+    /* table -> buffer copy: 16 words 0x801B67FC->a0, 16 words
+       0x801B680C->a0+64, 32 words 0x801B6850->a0+128. CPS-blocked. */
 block_8018F884:
     a2 = a0;
     a1 = 0x801B << 16;  /* 0x801B0000 */
@@ -81433,6 +81510,10 @@ void cps_8018f910(void)
     }
     /* Address: 0x8018F910, Size: 152 bytes, Blocks: 7 */
 
+    /* buffer -> table save + sort: copies 16 words a0->0x801B67FC and
+       16 words a0+64->0x801B680C, then jal 0x8018FC00(32) on
+       0x801B67F0 and 0x801B682C (insertion-sort the saved arrays).
+       CPS-blocked. */
 block_8018F910:
     sp = sp + -24;
     cpu->write_word(sp + 16, s0);
@@ -81522,6 +81603,7 @@ void cps_8018f9a8(void)
 
     /* Address: 0x8018F9A8, Size: 12 bytes, Blocks: 1 */
 
+    /* return read_half(a0) */
 block_8018F9A8:
     v0 = cpu->read_half(a0);
     uint32_t _jt_8018F9AC = ra;  /* latch indirect target before delay slot */
@@ -81547,6 +81629,8 @@ void cps_8018fee0(void)
     }
     /* Address: 0x8018FEE0, Size: 32 bytes, Blocks: 2 */
 
+    /* counter write: word[0x801B9D50] = (a0>1) ? a0*2 : 0x00FFFFFF.
+       CPS-blocked (split into cps_8018ff00). */
 block_8018FEE0:
     t0 = 0x801B << 16;  /* 0x801B0000 */
     t0 = t0 + 26880;
@@ -81580,6 +81664,7 @@ void cps_8018ff00(void)
 
     /* Address: 0x8018FF00, Size: 16 bytes, Blocks: 1 */
 
+    /* counter reset: word[0x801B9D50] = 0x00FFFFFF (tail of 0x8018FEE0). */
 block_8018FF00:
     at = 0x00FF << 16;  /* 0x00FF0000 */
     at = at | 0xFFFF;
