@@ -14396,58 +14396,57 @@ uint32_t desc_opcode_dispatch(uint32_t ent,uint32_t unused,
  * from s2=MB32(s0+0xc)+tag*12 quad vs +0x18/+0x20. Phase3: if
  * MB32(s0+0x14)==0 -> sprite_place_centered calls (a0 = s0/s0+4 by
  * MBS16(s0+0x18)==0, or indexed by MB32(0x1f80000c)). */
-void script_move_timer_eval(uint32_t param_1)
+void script_move_timer_eval(uint32_t rec)
 {
-  uint32_t s0 = param_1;
-  uint32_t s2 = 0, ptr = 0, w = 0;
-  int32_t s1 = 0, s3 = 0;
-  int32_t t = MBS16(s0 + 0x1c);
+  uint32_t quad = 0, cur = 0, tw = 0;
+  int32_t x = 0, y = 0;
+  int32_t cnt = MBS16(rec + 0x1c);
   int do_finish = 0, terminated = 0;
-  if (t != 0) {
-    MW16(s0 + 0x1c, MB16(s0 + 0x1c) - 1u);
+  if (cnt != 0) {
+    MW16(rec + 0x1c, MB16(rec + 0x1c) - 1u);
   } else {
     if (MBS16(0x1f800082u) == 0)
-      MW16(s0 + 0x18, MB16(s0 + 0x18) - 1u);
-    if (MBS16(s0 + 0x18) <= 0) {
-      ptr = MB32(s0 + 0x10);
-      MW32(s0 + 0x10, ptr + 4u);
-      if ((MB16(ptr + 4) & 0xff00u) != 0) {
+      MW16(rec + 0x18, MB16(rec + 0x18) - 1u);
+    if (MBS16(rec + 0x18) <= 0) {
+      cur = MB32(rec + 0x10);
+      MW32(rec + 0x10, cur + 4u);
+      if ((MB16(cur + 4) & 0xff00u) != 0) {
         for (;;) {
           uint32_t a1, cmd, arg, next = 0;
           int jumped = 0, stored = 0;
-          a1 = MB32(s0 + 0x10);
-          w = MB16(a1);
-          cmd = w & 0xff00u; arg = w & 0xffu;
+          a1 = MB32(rec + 0x10);
+          tw = MB16(a1);
+          cmd = tw & 0xff00u; arg = tw & 0xffu;
           if (cmd == 0xfd00u) {
-            next = MB32(s0 + 8) + (uint32_t)MBS16(a1 + 2) * 4u;
+            next = MB32(rec + 8) + (uint32_t)MBS16(a1 + 2) * 4u;
             jumped = 1;
           } else if (cmd > 0xfd00u) {
             if (cmd == 0xfe00u) {
-              MW16(s0 + 0x1c, MB16(a1 + 2));
+              MW16(rec + 0x1c, MB16(a1 + 2));
               next = a1 + 4u; stored = 1;
             } else if (cmd == 0xff00u) {
-              if (arg < (uint32_t)MBS16(s0 + 0x1a)) {
+              if (arg < (uint32_t)MBS16(rec + 0x1a)) {
                 next = a1 + 4u; stored = 1;
               } else {
                 task_slot_step();
-                MW16(s0 + 0x18, 0);
-                MW32(s0 + 0x10, MB32(s0 + 0x10) - 4u);
+                MW16(rec + 0x18, 0);
+                MW32(rec + 0x10, MB32(rec + 0x10) - 4u);
                 terminated = 1;
                 break;
               }
             }
           } else if (cmd == 0xfc00u) {
-            if (arg < (uint32_t)MBS16(s0 + 0x1a)) {
+            if (arg < (uint32_t)MBS16(rec + 0x1a)) {
               next = a1 + 4u; stored = 1;
             } else {
-              MW16(s0 + 0x1a, MB16(s0 + 0x1a) + 1u);
-              next = MB32(s0 + 8) +
-                     (uint32_t)MBS16(MB32(s0 + 0x10) + 2) * 4u;
+              MW16(rec + 0x1a, MB16(rec + 0x1a) + 1u);
+              next = MB32(rec + 8) +
+                     (uint32_t)MBS16(MB32(rec + 0x10) + 2) * 4u;
               jumped = 1;
             }
           }
-          if (jumped || stored) MW32(s0 + 0x10, next);
-          if ((MB16(MB32(s0 + 0x10)) & 0xff00u) == 0) {
+          if (jumped || stored) MW32(rec + 0x10, next);
+          if ((MB16(MB32(rec + 0x10)) & 0xff00u) == 0) {
             do_finish = 1;
             break;
           }
@@ -14456,61 +14455,61 @@ void script_move_timer_eval(uint32_t param_1)
         do_finish = 1;
       }
       if (do_finish) {
-        ptr = MB32(s0 + 0x10);
-        w = MB16(ptr + 2);
-        if ((int32_t)(int16_t)w > 0) {
-          MW16(s0 + 0x20, w);
-          MW16(s0 + 0x1e, 0);
-          MW16(s0 + 0x18, MB16(ptr + 2));
+        cur = MB32(rec + 0x10);
+        tw = MB16(cur + 2);
+        if ((int32_t)(int16_t)tw > 0) {
+          MW16(rec + 0x20, tw);
+          MW16(rec + 0x1e, 0);
+          MW16(rec + 0x18, MB16(cur + 2));
         } else {
-          MW16(s0 + 0x20, (uint16_t)(0u - w));
-          MW16(s0 + 0x1e, 1);
-          MW16(s0 + 0x18, (uint16_t)(0u - MB16(ptr + 2)));
+          MW16(rec + 0x20, (uint16_t)(0u - tw));
+          MW16(rec + 0x1e, 1);
+          MW16(rec + 0x18, (uint16_t)(0u - MB16(cur + 2)));
         }
       }
     }
   }
   /* phase2 (also reached via the task_slot_step terminate path,
    * which skips only the finish block above) */
-  ptr = MB32(s0 + 0x10);
-  s2 = MB32(s0 + 0xc) + (uint32_t)MBS16(ptr) * 12u;
+  cur = MB32(rec + 0x10);
+  quad = MB32(rec + 0xc) + (uint32_t)MBS16(cur) * 12u;
   {
-    int32_t a0i = (int32_t)MB32(s0 + 0x14);
-    if (a0i >= 0 && a0i < 2) {
-      int32_t t2 = MBS16(s2), t3 = MBS16(s2 + 2);
-      int32_t t0 = MBS16(s2 + 4), a3 = MBS16(s2 + 6);
-      int32_t A = MBS16(s0 + 0x18), D = MBS16(s0 + 0x20);
+    int32_t ph = (int32_t)MB32(rec + 0x14);
+    if (ph >= 0 && ph < 2) {
+      int32_t t2 = MBS16(quad), t3 = MBS16(quad + 2);
+      int32_t t0 = MBS16(quad + 4), a3 = MBS16(quad + 6);
+      int32_t A = MBS16(rec + 0x18), D = MBS16(rec + 0x20);
       int32_t p1, p2;
-      if (MB16(s0 + 0x1e) == 0) {
+      if (MB16(rec + 0x1e) == 0) {
         p1 = D != 0 ? (int32_t)((int32_t)((int64_t)(((int64_t)(t2 << 16) -
               (t0 << 16)) * A)) / D) : 0;
         p2 = D != 0 ? (int32_t)((int32_t)((int64_t)(((int64_t)(t3 << 16) -
               (a3 << 16)) * A)) / D) : 0;
-        s1 = t0 + (p1 >> 16);
-        s3 = a3 + (p2 >> 16);
+        x = t0 + (p1 >> 16);
+        y = a3 + (p2 >> 16);
       } else {
         p1 = D != 0 ? (int32_t)((int32_t)((int64_t)(((int64_t)(t0 << 16) -
               (t2 << 16)) * A)) / D) : 0;
         p2 = D != 0 ? (int32_t)((int32_t)((int64_t)(((int64_t)(a3 << 16) -
               (t3 << 16)) * A)) / D) : 0;
-        s1 = t2 + (p1 >> 16);
-        s3 = t3 + (p2 >> 16);
+        x = t2 + (p1 >> 16);
+        y = t3 + (p2 >> 16);
       }
     }
   }
 phase2:
-  if (MB32(s0 + 0x14) != 0) return;
-  s2 = MB32(s0 + 0xc) + (uint32_t)MBS16(MB32(s0 + 0x10)) * 12u;
+  if (MB32(rec + 0x14) != 0) return;
+  quad = MB32(rec + 0xc) + (uint32_t)MBS16(MB32(rec + 0x10)) * 12u;
   {
-    int32_t h8 = MBS16(s2 + 8), hA = MBS16(s2 + 0xa);
-    int32_t x = (int32_t)(int16_t)s1, y = (int32_t)(int16_t)s3;
-    if (MBS16(s0 + 0x18) == 0) {
-      sprite_place_centered(MB32(s0), 0x1f800000u, x, y, h8, hA);
-      sprite_place_centered(MB32(s0 + 4), 0x1f800000u, x, y, h8, hA);
+    int32_t dimx = MBS16(quad + 8), dimy = MBS16(quad + 0xa);
+    int32_t x = (int32_t)(int16_t)x, y = (int32_t)(int16_t)y;
+    if (MBS16(rec + 0x18) == 0) {
+      sprite_place_centered(MB32(rec), 0x1f800000u, x, y, dimx, dimy);
+      sprite_place_centered(MB32(rec + 4), 0x1f800000u, x, y, dimx, dimy);
     } else {
-      uint32_t base = MB32(s0);
-      if (MB32(0x1f80000cu) != 0) base = MB32(s0 + 4);
-      sprite_place_centered(base, 0x1f800000u, x, y, h8, hA);
+      uint32_t base = MB32(rec);
+      if (MB32(0x1f80000cu) != 0) base = MB32(rec + 4);
+      sprite_place_centered(base, 0x1f800000u, x, y, dimx, dimy);
     }
   }
 }
@@ -14545,101 +14544,100 @@ extern int32_t lut_sin_q12(uint32_t);
  *  7: d4=MB16(MB32(a3+0x20)+0x174); d8=MB16(+0x17c)
  *  8: s0=s2+MBS16(a3+0x4e); d4+=((8018d298(s0)*s4)+(neg?0xfff:0)
  *     >>12); d8+=((8018d29c(s0)*s4)+(neg?0xfff:0)>>12) */
-uint32_t desc_transform_dispatch(uint32_t param_1,uint32_t param_2,
-                      uint32_t param_3)
+uint32_t desc_transform_dispatch(uint32_t ent,uint32_t st,
+                      uint32_t desc)
 {
-  uint32_t a3 = param_1, s3 = param_2, s5 = param_3;
-  int32_t b1 = (int32_t)(int8_t)(MB16(s5) >> 8);
-  int32_t mode = b1 >> 4, sub = b1 & 0xf;
-  int32_t s2, s4, flag;
-  if (mode == 1) { if (MB8(a3 + 5) & 1) return s5 + 6; }
-  else if (mode == 2) { if (!(MB8(a3 + 5) & 1)) return s5 + 6; }
-  s2 = MBS16(s5 + 2); s4 = MBS16(s5 + 4);
-  if ((uint32_t)sub >= 9) return s5 + 6;
+  int32_t op = (int32_t)(int8_t)(MB16(desc) >> 8);
+  int32_t mode = op >> 4, sub = op & 0xf;
+  int32_t dx, dy, flag;
+  if (mode == 1) { if (MB8(ent + 5) & 1) return desc + 6; }
+  else if (mode == 2) { if (!(MB8(ent + 5) & 1)) return desc + 6; }
+  dx = MBS16(desc + 2); dy = MBS16(desc + 4);
+  if ((uint32_t)sub >= 9) return desc + 6;
   switch (sub) {
   case 0:
-    MW16(s3 + 0xd4, (uint16_t)s2);
-    MW16(s3 + 0xd8, (uint16_t)s4);
+    MW16(st + 0xd4, (uint16_t)dx);
+    MW16(st + 0xd8, (uint16_t)dy);
     break;
   case 1: {
-    int32_t s1 = MBS16(s3 + 0xd0);
-    int32_t r1 = lut_cos_q12((uint32_t)s1);
-    int32_t r2 = lut_sin_q12((uint32_t)s1);
-    int32_t r3 = lut_sin_q12((uint32_t)s1);
-    int32_t r4 = lut_cos_q12((uint32_t)s1);
+    int32_t rot = MBS16(st + 0xd0);
+    int32_t r1 = lut_cos_q12((uint32_t)rot);
+    int32_t r2 = lut_sin_q12((uint32_t)rot);
+    int32_t r3 = lut_sin_q12((uint32_t)rot);
+    int32_t r4 = lut_cos_q12((uint32_t)rot);
     int32_t d;
-    d = (int32_t)(((int32_t)((int64_t)s2 * r1) -
-                   (int32_t)((int64_t)s4 * r2)) >> 16);
-    MW16(s3 + 0xd4, (uint16_t)(MB16(s3 + 0xd4) + (uint16_t)d));
-    d = (int32_t)(((int32_t)((int64_t)s2 * r3) +
-                   (int32_t)((int64_t)s4 * r4)) >> 16);
-    MW16(s3 + 0xd8, (uint16_t)(MB16(s3 + 0xd8) + (uint16_t)d));
+    d = (int32_t)(((int32_t)((int64_t)dx * r1) -
+                   (int32_t)((int64_t)dy * r2)) >> 16);
+    MW16(st + 0xd4, (uint16_t)(MB16(st + 0xd4) + (uint16_t)d));
+    d = (int32_t)(((int32_t)((int64_t)dx * r3) +
+                   (int32_t)((int64_t)dy * r4)) >> 16);
+    MW16(st + 0xd8, (uint16_t)(MB16(st + 0xd8) + (uint16_t)d));
     break;
   }
   case 2: {
-    uint32_t rec = MB32(MB32(a3 + 0x2c) + 0x20);
-    MW16(s3 + 0xd4, (uint16_t)(MB16(rec + 0x34) + (uint16_t)s2));
-    MW16(s3 + 0xd6, MB16(rec + 0x38));
-    MW16(s3 + 0xd8, (uint16_t)(MB16(rec + 0x3c) + (uint16_t)s4));
+    uint32_t rec = MB32(MB32(ent + 0x2c) + 0x20);
+    MW16(st + 0xd4, (uint16_t)(MB16(rec + 0x34) + (uint16_t)dx));
+    MW16(st + 0xd6, MB16(rec + 0x38));
+    MW16(st + 0xd8, (uint16_t)(MB16(rec + 0x3c) + (uint16_t)dy));
     break;
   }
   case 3: {
-    uint32_t rec = MB32(s3 + 0x10) + (uint32_t)(MB8(a3 + 5) & 1) * 28u;
-    uint32_t a0 = MB32(rec + 8) + MB32(a3 + 0x30);
-    uint32_t p20 = MB32(a3 + 0x20);
+    uint32_t rec = MB32(st + 0x10) + (uint32_t)(MB8(ent + 5) & 1) * 28u;
+    uint32_t a0 = MB32(rec + 8) + MB32(ent + 0x30);
+    uint32_t p20 = MB32(ent + 0x20);
     int32_t e;
-    /* guest stores d4/d6/d8 first, then computes a0; a3+0x40 and
+    /* guest stores d4/d6/d8 first, then computes a0; ent+0x40 and
      * MB32(a0) are RELOADED before every use, matching the guest's
      * repeated lw's */
-    MW16(s3 + 0xd4, MB16(p20 + 0x174));
-    MW16(s3 + 0xd6, (uint16_t)(MB16(p20 + 0x178) - (uint16_t)s4));
-    MW16(s3 + 0xd8, MB16(p20 + 0x17c));
+    MW16(st + 0xd4, MB16(p20 + 0x174));
+    MW16(st + 0xd6, (uint16_t)(MB16(p20 + 0x178) - (uint16_t)dy));
+    MW16(st + 0xd8, MB16(p20 + 0x17c));
     e = (int32_t)(((int32_t)(MB32(a0) << 22)) >> 18);
-    MW16(MB32(a3 + 0x40) + 0x24, (uint16_t)(0u - (uint32_t)e));
-    e = (int32_t)((((int32_t)(MB32(a0) << 12)) >> 22) + s4);
-    MW16(MB32(a3 + 0x40) + 0x26, (uint16_t)(0u - (uint32_t)(e << 4)));
+    MW16(MB32(ent + 0x40) + 0x24, (uint16_t)(0u - (uint32_t)e));
+    e = (int32_t)((((int32_t)(MB32(a0) << 12)) >> 22) + dy);
+    MW16(MB32(ent + 0x40) + 0x26, (uint16_t)(0u - (uint32_t)(e << 4)));
     e = (int32_t)(((int32_t)(MB32(a0) << 2)) >> 22);
-    MW16(MB32(a3 + 0x40) + 0x28, (uint16_t)(0u - (uint32_t)(e << 4)));
-    MW16(MB32(a3 + 0x40) + 0x78, 0);
-    MW16(MB32(a3 + 0x40) + 0x7a, 0);
-    MW16(MB32(a3 + 0x40) + 0x7c, 0);
+    MW16(MB32(ent + 0x40) + 0x28, (uint16_t)(0u - (uint32_t)(e << 4)));
+    MW16(MB32(ent + 0x40) + 0x78, 0);
+    MW16(MB32(ent + 0x40) + 0x7a, 0);
+    MW16(MB32(ent + 0x40) + 0x7c, 0);
     break;
   }
   case 4:
-    if (s2 < MBS16(s3 + 0xd6) - MBS16(a3 + 0x94))
-      MW16(s3 + 0xd6, (uint16_t)(MB16(a3 + 0x94) + (uint16_t)s2));
+    if (dx < MBS16(st + 0xd6) - MBS16(ent + 0x94))
+      MW16(st + 0xd6, (uint16_t)(MB16(ent + 0x94) + (uint16_t)dx));
     break;
   case 5:
-    MW16(s3 + 0xd6, (uint16_t)(MB16(a3 + 0x94) + (uint16_t)s2));
+    MW16(st + 0xd6, (uint16_t)(MB16(ent + 0x94) + (uint16_t)dx));
     break;
   case 6: {
     uint32_t t = 0x801b158cu + (uint32_t)(int32_t)(int8_t)MB8(0x1f800098u) * 8u;
-    uint32_t f = MB32(a3 + 0x6c);
-    if (f & 1) MW16(s3 + 0xd4, (uint16_t)(MB16(t + 4) - (uint16_t)s2));
-    if (f & 2) MW16(s3 + 0xd4, (uint16_t)((uint16_t)s2 - MB16(t + 4)));
-    if (f & 4) MW16(s3 + 0xd8, (uint16_t)(MB16(t + 6) - (uint16_t)s2));
-    if (f & 8) MW16(s3 + 0xd8, (uint16_t)((uint16_t)s2 - MB16(t + 6)));
+    uint32_t f = MB32(ent + 0x6c);
+    if (f & 1) MW16(st + 0xd4, (uint16_t)(MB16(t + 4) - (uint16_t)dx));
+    if (f & 2) MW16(st + 0xd4, (uint16_t)((uint16_t)dx - MB16(t + 4)));
+    if (f & 4) MW16(st + 0xd8, (uint16_t)(MB16(t + 6) - (uint16_t)dx));
+    if (f & 8) MW16(st + 0xd8, (uint16_t)((uint16_t)dx - MB16(t + 6)));
     break;
   }
   case 7:
-    MW16(s3 + 0xd4, MB16(MB32(a3 + 0x20) + 0x174));
-    MW16(s3 + 0xd8, MB16(MB32(a3 + 0x20) + 0x17c));
+    MW16(st + 0xd4, MB16(MB32(ent + 0x20) + 0x174));
+    MW16(st + 0xd8, MB16(MB32(ent + 0x20) + 0x17c));
     break;
   case 8: {
-    int32_t s0 = s2 + MBS16(a3 + 0x4e);
+    int32_t ang = dx + MBS16(ent + 0x4e);
     int32_t p, v;
-    p = (int32_t)((int64_t)lut_cos_q12((uint32_t)s0) * s4) ;
+    p = (int32_t)((int64_t)lut_cos_q12((uint32_t)ang) * dy) ;
     if (p < 0) p += 0xfff;
     v = p >> 12;
-    MW16(s3 + 0xd4, (uint16_t)(MB16(s3 + 0xd4) + (uint16_t)v));
-    p = (int32_t)((int64_t)lut_sin_q12((uint32_t)s0) * s4);
+    MW16(st + 0xd4, (uint16_t)(MB16(st + 0xd4) + (uint16_t)v));
+    p = (int32_t)((int64_t)lut_sin_q12((uint32_t)ang) * dy);
     if (p < 0) p += 0xfff;
     v = p >> 12;
-    MW16(s3 + 0xd8, (uint16_t)(MB16(s3 + 0xd8) + (uint16_t)v));
+    MW16(st + 0xd8, (uint16_t)(MB16(st + 0xd8) + (uint16_t)v));
     break;
   }
   }
-  return s5 + 6;
+  return desc + 6;
 }
 
 /* ======================================================================
