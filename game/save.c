@@ -8,10 +8,6 @@
 #include <string.h>
 #include "cpu_state.h"
 
-typedef int8_t   byte;
-typedef uint16_t ushort;
-typedef uint32_t uint;
-typedef void code(void);
 #define CONCAT11(hi,lo) (((uint16_t)(uint8_t)(hi) << 8) | (uint8_t)(lo))
 #define CONCAT12(hi,lo) (((uint32_t)(uint8_t)(hi) << 16) | (uint16_t)(lo))
 #ifndef bool
@@ -331,8 +327,8 @@ extern void bios_kobj_tramp();
 void memcard_tick(void)
 
 {
-  ushort tick_dec;
-  uint dir_n;
+  uint16_t tick_dec;
+  uint32_t dir_n;
   int cd_rc;
   /* Guest builds a 3-byte BCD timestamp at sp+0x10..0x12 (sb @0x10,
    * 0x11, 0x12) and passes sp+0x10 to cd_stamp_to_sector, which reads
@@ -345,7 +341,7 @@ void memcard_tick(void)
   tick_dec = DAT_801bef76 - 1;
   if (DAT_801bef76 != 0) {
     DAT_801bef76 = tick_dec;
-    if ((int)((uint)tick_dec << 0x10) < 0) {
+    if ((int)((uint32_t)tick_dec << 0x10) < 0) {
       DAT_801bef76 = 0;
     }
     brightness_packet_send((int)(short)DAT_801bef76);
@@ -662,16 +658,16 @@ joined_r0x80157c80:
       DAT_801bef6d = DAT_801bef6d + -1;
       return;
     }
-    DAT_801bef6c = (byte)dir_n;
+    DAT_801bef6c = (int8_t)dir_n;
     if ((int)(dir_n & 0xff) < (int)(short)DAT_801bef72) {
       /* guest div @0x80157E2C + mfhi: signed div HI = nm % dv;
        * dv==0 -> HI = dividend (recompiler no-trap semantics). */
       int32_t _dv = (int32_t)(dir_n & 0xff);
       int32_t _nm = (int32_t)(short)DAT_801bef72;
-      DAT_801bef72 = (ushort)(_dv == 0 ? _nm : _nm % _dv);
+      DAT_801bef72 = (uint16_t)(_dv == 0 ? _nm : _nm % _dv);
     }
     if (DAT_801bef72 == 0) {
-      DAT_801bef72 = (ushort)DAT_801bef6c;
+      DAT_801bef72 = (uint16_t)DAT_801bef6c;
     }
     DAT_801bef84 = cd_stamp_to_sector(&DAT_801bef8c + (short)DAT_801bef72 * 4);
 switchD_80157ebc_caseD_30:
@@ -693,8 +689,8 @@ int memcard_file_flow(int a0)
   int dlg_type;
   int op_rc;
   int slot_no;
-  uint ow_flag;
-  uint sm_state;
+  uint32_t ow_flag;
+  uint32_t sm_state;
   /* Guest stepper descriptor: one contiguous 0x24-byte block at
    * sp+0x38..0x5b passed to menu_stepper_state_advance (a0 = sp+0x38);
    * the +0xc callback is a u32 GUEST code address (fn_lookup), stored
@@ -1041,8 +1037,8 @@ switchD_8015ffe4_default:
             switch(dlg_type) {
             case 0:
               gauge_scale_fixed(*(uint8_t *)(_g_system_config_ptr + 0xe),
-                           ((uint)*(byte *)(_g_system_config_ptr + 0xf) << 3) / 10);
-              brightness_commit(*(byte *)(_g_system_config_ptr + 0xc) ^ 1);
+                           ((uint32_t)*(int8_t *)(_g_system_config_ptr + 0xf) << 3) / 10);
+              brightness_commit(*(int8_t *)(_g_system_config_ptr + 0xc) ^ 1);
             case 1:
             case 3:
               _DAT_801c15f0 = 0;
@@ -1235,11 +1231,11 @@ void memcard_slot_poll(void)
         _DAT_801f2650 = *(uint32_t *)(rec + 7);
         _DAT_801f2654 = 0x600e3;
         _DAT_801f2666 = 0;
-        ent_off = (uint)*(ushort *)(rec + 5) * 8;
+        ent_off = (uint32_t)*(uint16_t *)(rec + 5) * 8;
         _DAT_801f2668 = *(uint16_t *)guest_at((uint32_t)(ent_off + -0x7fe0d41e));
         _DAT_801f2658 = *(uint16_t *)(rec + 1);
         _DAT_801f265a = *(uint16_t *)(rec + 3);
-        _DAT_801f266c = *(uint32_t *)guest_at((uint32_t)((uint)*(ushort *)guest_at((uint32_t)(ent_off + -0x7fe0d420)) * 4 + -0x7fe0d920));
+        _DAT_801f266c = *(uint32_t *)guest_at((uint32_t)((uint32_t)*(uint16_t *)guest_at((uint32_t)(ent_off + -0x7fe0d420)) * 4 + -0x7fe0d920));
         _DAT_801f268a = *(uint16_t *)guest_at((uint32_t)(ent_off + -0x7fe0d41c));
         _DAT_801f268c = *(uint16_t *)guest_at((uint32_t)(ent_off + -0x7fe0d41a));
         cd_reg_window_update(&DAT_801f2650);
@@ -1270,17 +1266,17 @@ void memcard_slot_poll(void)
 void deferred_cmd_drain(uint32_t a0,int a1)
 
 {
-  ushort cmdw;
+  uint16_t cmdw;
   bool cls300_seen;
   bool cls400_seen;
-  ushort cmdcls;
+  uint16_t cmdcls;
   short *rec_s;
-  ushort *rec_u;
+  uint16_t *rec_u;
   int slot_i;
   
   cls300_seen = false;
   cls400_seen = false;
-  rec_u = (ushort *)&DAT_801f3600;
+  rec_u = (uint16_t *)&DAT_801f3600;
   slot_i = 0;
   rec_s = (short *)&DAT_801f3602;
   do {
@@ -1517,10 +1513,10 @@ void perm_table_load(void)
 
 /* ======== 0x8012a030 ======== */
 
-void perm_table_apply(uint a0)
+void perm_table_apply(uint32_t a0)
 
 {
-  byte perm_idx;
+  int8_t perm_idx;
   uint8_t swap_tmp;
   uint8_t *cell;
   int i;
@@ -1612,15 +1608,15 @@ void guest_bzero(uint32_t addr,uint32_t size)
 
 /* ======== 0x8012a650 ======== */
 
-uint attr_word_decode(uint8_t *a0)
+uint32_t attr_word_decode(uint8_t *a0)
 
 {
-  byte attr_hi;
-  uint attr_word;
+  int8_t attr_hi;
+  uint32_t attr_word;
   
-  attr_hi = *(byte *)(a0 + 1) & 0xf0;
+  attr_hi = *(int8_t *)(a0 + 1) & 0xf0;
   if (attr_hi == 0x40) {
-    attr_word = ~(uint)CONCAT11(*(uint8_t *)(a0 + 2),*(uint8_t *)(a0 + 3)) & 63999;
+    attr_word = ~(uint32_t)CONCAT11(*(uint8_t *)(a0 + 2),*(uint8_t *)(a0 + 3)) & 63999;
   }
   else if ((attr_hi < 0x41) || (attr_hi == 0x60)) {
     attr_word = 0xffffffff;
@@ -1634,7 +1630,7 @@ uint attr_word_decode(uint8_t *a0)
     else if (attr_hi != 0x70) {
       return 0xffffffff;
     }
-    attr_word = ~(uint)CONCAT11(*(uint8_t *)(a0 + 2),*(uint8_t *)(a0 + 3)) & 63999;
+    attr_word = ~(uint32_t)CONCAT11(*(uint8_t *)(a0 + 2),*(uint8_t *)(a0 + 3)) & 63999;
     if (*(uint8_t *)(a0 + 6) < 0x40) {
       attr_word = attr_word | 0x8000;
     }
@@ -5536,9 +5532,9 @@ modechk:
     goto poll;
 
 mode0body: {
-    uint32_t byte = *(uint8_t *)guest_at(0x801b461c + idx);
+    uint32_t bound = *(uint8_t *)guest_at(0x801b461c + idx);
     int32_t a0x = to_s16(*(uint16_t *)(g + 0xa4));
-    if (a0x < (int32_t)byte && sp48 == 0) {
+    if (a0x < (int32_t)bound && sp48 == 0) {
       uint8_t v = *(uint8_t *)guest_at(0x801f47a0 + a0x);
       sp24[3] = v;
       goto tail194;
@@ -7789,7 +7785,7 @@ extern int rotmat2_build();
 extern int rotmat_rtps_build();
 extern int angle_vec_build();
 extern int angle_pair_rotmat();
-extern uint  rand_lcg(void);
+extern uint32_t  rand_lcg(void);
 extern void tween_dur_spread();
 extern void prim_attr_word_set();
 extern uint32_t tween_ensure(int);
@@ -7990,53 +7986,53 @@ void mat3x3_build_wrap(uint32_t a0,uint32_t a1,int16_t *a2)
 void *op_wrap_8da2c_a(uint32_t a0,uint32_t *a1,int16_t *a2)
 {
   (void)a0;
-  return (void *)rotmat2_build((uint)(int32_t)*a2,a1);
+  return (void *)rotmat2_build((uint32_t)(int32_t)*a2,a1);
 }
 
 /* 0x801af828 — rotmat_rtps_build(*a2, a1); a0 unused. */
 void *op_wrap_8de6c_a(uint32_t a0,uint32_t *a1,int16_t *a2)
 {
   (void)a0;
-  return (void *)rotmat_rtps_build((uint)(int32_t)*a2,a1);
+  return (void *)rotmat_rtps_build((uint32_t)(int32_t)*a2,a1);
 }
 
 /* 0x801af84c — angle_vec_build(*a2, a1); a0 unused. */
 void *op_wrap_8e028_a(uint32_t a0,uint32_t *a1,int16_t *a2)
 {
   (void)a0;
-  return (void *)angle_vec_build((uint)(int32_t)*a2,a1);
+  return (void *)angle_vec_build((uint32_t)(int32_t)*a2,a1);
 }
 
 /* 0x801af870 — angle_pair_rotmat(a2[0], a2[1], a2[2], a1); a0 unused. */
 void *op_wrap_8dac0_a(uint32_t a0,uint32_t a1,int16_t *a2)
 {
   (void)a0;
-  return (void *)angle_pair_rotmat((uint)(int32_t)a2[0],(uint)(int32_t)a2[1],
+  return (void *)angle_pair_rotmat((uint32_t)(int32_t)a2[0],(uint32_t)(int32_t)a2[1],
                               (uint32_t *)guest_at((uint32_t)a1));
 }
 
 /* 0x801af89c — rotmat2_build(a0[1], a1). */
 void *op_wrap_8da2c_b(int16_t *a0,uint32_t *a1)
 {
-  return (void *)rotmat2_build((uint)(int32_t)a0[1],a1);
+  return (void *)rotmat2_build((uint32_t)(int32_t)a0[1],a1);
 }
 
 /* 0x801af8c0 — rotmat_rtps_build(a0[1], a1). */
 void *op_wrap_8de6c_b(int16_t *a0,uint32_t *a1)
 {
-  return (void *)rotmat_rtps_build((uint)(int32_t)a0[1],a1);
+  return (void *)rotmat_rtps_build((uint32_t)(int32_t)a0[1],a1);
 }
 
 /* 0x801af8e4 — angle_vec_build(a0[1], a1). */
 void *op_wrap_8e028_b(int16_t *a0,uint32_t *a1)
 {
-  return (void *)angle_vec_build((uint)(int32_t)a0[1],a1);
+  return (void *)angle_vec_build((uint32_t)(int32_t)a0[1],a1);
 }
 
 /* 0x801af908 — angle_pair_rotmat(a0[1], a0[2], a1). */
 void *op_wrap_8dac0_b(int16_t *a0,uint32_t a1)
 {
-  return (void *)angle_pair_rotmat((uint)(int32_t)a0[1],(uint)(int32_t)a0[2],
+  return (void *)angle_pair_rotmat((uint32_t)(int32_t)a0[1],(uint32_t)(int32_t)a0[2],
                               (uint32_t *)guest_at(a1));
 }
 
@@ -8185,7 +8181,7 @@ void op_ctx_fc_set(int16_t *a0,uint32_t *a1)
   return;
 }
 
-/* 0x801adc60 — *a1 = (int8_t)(rand() magic-div). */
+/* 0x801adc60 — *a1 = (byte)(rand() magic-div). */
 void op_rand_i8(uint32_t a0,int8_t *a1)
 {
   (void)a0;
@@ -8503,7 +8499,7 @@ void op_field_store_idx(uint8_t *a0,uint32_t *a1)
 /* ======== batch34: 0x801a0a/0x801a18/0x801a51/0x801a6b/0x801a9b/0x801ac/0x801ad/0x801ae ======== */
 
 extern void text_win_printf();
-extern int *task_node_alloc(int,uint32_t,uint,int,int,int);
+extern int *task_node_alloc(int,uint32_t,uint32_t,int,int,int);
 extern void tween_apply(short *,int,int);
 extern void gp_20_store_default(void);
 extern int prim_group_build();
