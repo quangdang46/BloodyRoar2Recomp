@@ -101,6 +101,9 @@ extern void aux_tbl_store_a(void);
 extern void aux_tbl_store_b(void);
 extern void banner_stripe_scroll(void);
 extern void battle_bringup_a(void);
+extern void battle_bringup_a_alt_8224(void);
+extern void battle_bringup_a_alt_8304(void);
+extern void battle_bringup_a_alt_8380(void);
 extern void battle_bringup_b(void);
 extern void battle_camera_step(void);
 extern void battle_config_eval(void);
@@ -483,6 +486,7 @@ extern void clear_battle_counters(void);
 extern void clear_f0300_records(void);
 extern void clear_f4ee8_u16s(void);
 extern void cmd_input_parse(void);
+extern void cmd_input_parse_alt_3978(void);
 extern void cmd_queue_push(void);
 extern void cmd_queue_slot_next(void);
 extern void color_rec_table_init(void);
@@ -828,6 +832,12 @@ extern void hit_chain_clear(void);
 extern void hit_elig_check(void);
 extern void hit_pose_swap(void);
 extern void hit_react_apply(void);
+extern void hit_react_apply_alt_4034(void);
+extern void hit_react_apply_alt_4054(void);
+extern void hit_react_apply_alt_4070(void);
+extern void hit_react_apply_alt_4094(void);
+extern void hit_react_apply_alt_4114(void);
+extern void hit_react_apply_alt_4158(void);
 extern void hit_scale_calc(void);
 extern void hit_spark_spawn(void);
 extern void hitbox_corners_xform(void);
@@ -871,6 +881,7 @@ extern void keyframe_advance(void);
 extern void keyframe_blend_apply(void);
 extern void keyframe_cursor_search(void);
 extern void ko_count_announce(void);
+extern void ko_count_announce_alt_1014(void);
 extern void launch_vel_update(void);
 extern void lazy_node_wrap(void);
 extern void lut_cos_q12(void);
@@ -1801,10 +1812,17 @@ const Br2FnEnt fn_table[] = {
   { 0x80142df4, (void *)pad_edge_scan },
   { 0x80142f3c, (void *)action_from_input },
   { 0x801434d4, (void *)cmd_input_parse },
+  { 0x80143978, (void *)cmd_input_parse_alt_3978 },
   { 0x80143ac8, (void *)attr_flag_mask },
   { 0x80143bb8, (void *)fighter_range_code },
   { 0x80143c6c, (void *)hit_scale_calc },
   { 0x80143d38, (void *)hit_react_apply },
+  { 0x80144034, (void *)hit_react_apply_alt_4034 },
+  { 0x80144054, (void *)hit_react_apply_alt_4054 },
+  { 0x80144070, (void *)hit_react_apply_alt_4070 },
+  { 0x80144094, (void *)hit_react_apply_alt_4094 },
+  { 0x80144114, (void *)hit_react_apply_alt_4114 },
+  { 0x80144158, (void *)hit_react_apply_alt_4158 },
   { 0x80144f8c, (void *)trig_lut_read },
   { 0x8014512c, (void *)trig_vel_flat },
   { 0x801451d4, (void *)trig_vel_up },
@@ -1826,6 +1844,9 @@ const Br2FnEnt fn_table[] = {
   { 0x80147cdc, (void *)sprite_blit_center_a },
   { 0x80147df4, (void *)battle_bringup_b },
   { 0x80148170, (void *)battle_bringup_a },
+  { 0x80148224, (void *)battle_bringup_a_alt_8224 },
+  { 0x80148304, (void *)battle_bringup_a_alt_8304 },
+  { 0x80148380, (void *)battle_bringup_a_alt_8380 },
   { 0x80148528, (void *)select_confirm_handler },
   { 0x801487ac, (void *)fighter_spawn_setup },
   { 0x80148cb0, (void *)width3_num_format },
@@ -1871,6 +1892,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8014f260, (void *)select_screen_tick },
   { 0x801506d0, (void *)battle_init },
   { 0x80150f04, (void *)ko_count_announce },
+  { 0x80151014, (void *)ko_count_announce_alt_1014 },
   { 0x8015113c, (void *)confirm_bookkeeping },
   { 0x80151328, (void *)battle_state_init },
   { 0x801513c8, (void *)s16_dec_with_floor },
