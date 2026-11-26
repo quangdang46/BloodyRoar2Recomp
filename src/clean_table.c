@@ -36309,6 +36309,23 @@ int clean_try_dispatch(CPUState *cpu, uint32_t addr) {
     } else {
         cpu->pc = cpu->gpr[31];
     }
-    if (e->cost) psx_advance_cycles(e->cost);
+    if (e->cost) {
+        /* PSX_CPS_COST_MUL=<pct> — diagnostic: scale the flat per-dispatch
+         * cycle charge for CLEAN_ENT_CPS coroutine pieces (default 100 =
+         * unchanged). cps_ transliterations strip the per-instruction
+         * psx_cyc_* load-wait/interlock charges that generated code folds
+         * in, so a piece may under-charge vs its generated twin; this knob
+         * tests whether that desync wedges the CD/IRQ wait path. */
+        static int _cost_mul = -1;
+        if (_cost_mul < 0) {
+            const char *_m = getenv("PSX_CPS_COST_MUL");
+            _cost_mul = (_m && _m[0]) ? atoi(_m) : 100;
+            if (_cost_mul <= 0) _cost_mul = 100;
+        }
+        uint32_t _c = (_cps && _cost_mul != 100)
+            ? (uint32_t)(((uint64_t)e->cost * (uint64_t)_cost_mul) / 100u)
+            : e->cost;
+        if (_c) psx_advance_cycles(_c);
+    }
     return 1;
 }

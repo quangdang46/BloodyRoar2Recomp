@@ -998,3 +998,39 @@ coroutines (§4 — can't safely hand-port); math fns (angle_*,
 keyframe_cursor_search) are already hand-ported. Memory accessors
 (`cpu->read_word` etc.) intentionally NOT aliased — they don't map
 cleanly to signed/unsigned MIPS load names.
+
+### Session update 19 (boot wedge ROOT-CAUSED to cps_ transliterations)
+
+**The "frames advance = healthy" assumption was masking a deterministic
+early-boot wedge on current master.** Fresh instances park identically:
+scratchpad `0x1F800000` all zeros (`gs`/`ph` never written), main thread
+TCB `0x8FE0` in BIOS `TestEvent` wait (`ra=0xBFC05E00`), ~2.78M BIOS
+memcard-manager calls (`0x1FC0957C`/`0x1FC091E0`/`0x1FC08360`) — the §4
+deferred-coroutine DeliverEvent starvation class. `read_ram`/scratchpad
+nonzero is the real health signal, NOT frame count.
+
+**A/B isolation (committed diagnostics):** `PSX_NO_CLEAN=1` (all generated)
+and `PSX_NO_CPS=1` (named clean ports, all `cps_`→generated) both boot to
+title; default wedges. **=> the `cps_` transliterations in `cps_clean.c`/
+`gen_cps_clean.py` contain the boot-wedging defect** — coverage was proven,
+correctness was not.
+
+**Commit bisect:** `c0c611e` boots, `e00e5c6` boots, `5edaca1` wedges =>
+first-bad `5edaca1`; function-bisect within it isolated `cps_801a0660`
+(`cd_chan_cmd_pump`). On master the culprit moved/evolved (later commits
+added ~1200 more cps_ fns).
+
+**Master narrowing + its limit:** `PSX_CPS_KEEP` region bisect bounds the
+bug to "reachable downstream of `0x80126178`" (the BIOS-called memset at
+`0xBFC06694` head of the `0x8012` init fallthrough chain) — but direct
+`cps_Y()` fallthrough calls bypass `clean_try_dispatch`, so region keeps
+do NOT isolate cleanly. `clean_trace` shows the last clean dispatches are
+`0x80126178`/`0x80126188`; the buggy fn runs later via untracked
+fallthrough. Verified faithful: `cd_chan_cmd_pump` (63 instrs) + the
+`0x80126178-9c` memset cluster incl. GPR dest regs. `PSX_CPS_COST_MUL=300`
+does NOT fix => not flat cycle under-charge.
+
+**Next:** fallthrough-aware isolation (route `cps_Y()` through dispatch, or
+physically delete map ranges + regen per candidate); arm `fntrace`/
+`pc_probe` to catch the last game PC before the BIOS park. Full writeup:
+`proof/cps_boot_wedge_master_localization.md`.
