@@ -74343,7 +74343,9 @@ block_80189A58:
     cpu->pc = jt_80189A58; return;  /* CPS: jr $ra */
 }
 
-/* cps_80189a60 — guest 0x80189A60: GTE batch transform → OT packet writer (3-vertex perspective). t4 = 28 (+28 when a2!=0); cmds 0x06/3×0x1C; gte_data[22] at t3+4/12/20, raw triples at t3+8/16/24. Stride a0 += 84. */
+/* cps_80189a60 — guest 0x80189A60: GTE batch transform → OT packet writer (3-vertex perspective). t4 = 28 (+28 when a2!=0); cmds 0x06/3×0x1C; gte_data[22] at t3+4/12/20, raw triples at t3+8/16/24. Stride a0 += 84. 
+ * GTE/matrix vertex-transform variant A: loads record words a0/+4/+8 and t6/t7 chain across CPS blocks.
+ */
 void cps_80189a60(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -74514,7 +74516,9 @@ block_80189B48:
     cpu->pc = jt_80189B48; return;  /* CPS: jr $ra */
 }
 
-/* cps_80189b50 — guest 0x80189B50: GTE batch transform → OT packet writer (3-vertex perspective, wider). t4 = 36 (+28 when a2!=0); cmds 0x06/3×0x1C; gte_data[22] at t3+4/12/20, raw triples at t3+8/16/24. Stride a0 += 92. */
+/* cps_80189b50 — guest 0x80189B50: GTE batch transform → OT packet writer (3-vertex perspective, wider). t4 = 36 (+28 when a2!=0); cmds 0x06/3×0x1C; gte_data[22] at t3+4/12/20, raw triples at t3+8/16/24. Stride a0 += 92. 
+ * GTE/matrix vertex-transform variant B: same a0/+4/+8 + t6/t7 record-word pattern as 0x80189A60.
+ */
 void cps_80189b50(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -74688,7 +74692,9 @@ block_80189C44:
     cpu->pc = jt_80189C44; return;  /* CPS: jr $ra */
 }
 
-/* cps_80189c4c — guest 0x80189C4C: GTE batch transform → OT packet writer (single-vertex). t4 = 24 (+24 when a2!=0); cmds 0x06/0x1C; gte_data[22] at t3+4, raw words at t3+8/12/16/20. Stride a0 += 72. */
+/* cps_80189c4c — guest 0x80189C4C: GTE batch transform → OT packet writer (single-vertex). t4 = 24 (+24 when a2!=0); cmds 0x06/0x1C; gte_data[22] at t3+4, raw words at t3+8/12/16/20. Stride a0 += 72. 
+ * GTE/matrix vertex-transform variant C: same record-word load pattern (a0/+4/+8, t6/t7).
+ */
 void cps_80189c4c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -74824,7 +74830,9 @@ block_80189D00:
     cpu->pc = jt_80189D00; return;  /* CPS: jr $ra */
 }
 
-/* cps_80189d08 — guest 0x80189D08: GTE batch transform → OT packet writer (4-vertex perspective). t4 = 36 (+36 when a2!=0); cmds 0x06/4×0x1C; gte_data[22] at t3+4/12/20/28, raw triples at t3+8/16/24/32. Stride a0 += 108. */
+/* cps_80189d08 — guest 0x80189D08: GTE batch transform → OT packet writer (4-vertex perspective). t4 = 36 (+36 when a2!=0); cmds 0x06/4×0x1C; gte_data[22] at t3+4/12/20/28, raw triples at t3+8/16/24/32. Stride a0 += 108. 
+ * GTE/matrix vertex-transform variant D: same record-word load pattern (a0/+4/+8, t6/t7).
+ */
 void cps_80189d08(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -75013,7 +75021,9 @@ block_80189E24:
     cpu->pc = jt_80189E24; return;  /* CPS: jr $ra */
 }
 
-/* cps_80189e2c — guest 0x80189E2C: GTE batch transform → OT packet writer. t4 = 20 (+40 when a2!=0); cmds 0x06/0x1C; gte_data[22] at t3+4, raw words at t3+8/16/24/32. Stride a0 += 100. */
+/* cps_80189e2c — guest 0x80189E2C: GTE batch transform → OT packet writer. t4 = 20 (+40 when a2!=0); cmds 0x06/0x1C; gte_data[22] at t3+4, raw words at t3+8/16/24/32. Stride a0 += 100. 
+ * GTE/matrix vertex-transform variant E: same record-word load pattern (a0/+4/+8, t6/t7).
+ */
 void cps_80189e2c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -75154,7 +75164,9 @@ block_80189EF4:
     cpu->pc = jt_80189EF4; return;  /* CPS: jr $ra */
 }
 
-/* cps_80189efc — guest 0x80189EFC: GTE batch transform → OT packet writer, largest record (writes to t3+44). t4 = 32 with two a2 variants (+36/+52); 2× cmd 0x06 + 4×0x1C; interleaved gte_data[22] and raw words across t3+4..+44. Stride a0 += 136. */
+/* cps_80189efc — guest 0x80189EFC: GTE batch transform → OT packet writer, largest record (writes to t3+44). t4 = 32 with two a2 variants (+36/+52); 2× cmd 0x06 + 4×0x1C; interleaved gte_data[22] and raw words across t3+4..+44. Stride a0 += 136. 
+ * GTE/matrix vertex-transform variant F: same record-word load pattern (a0/+4/+8, t6/t7).
+ */
 void cps_80189efc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -75347,7 +75359,9 @@ block_8018A028:
     cpu->pc = jt_8018A028; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018a030 — guest 0x8018A030: GTE batch transform → OT packet writer (4-vertex perspective, no 0x06 preamble). t4 = 36 (+36 when a2!=0); 4× cmd 0x1C; gte_data[22] at t3+4/12/20/28 plus raw words. Stride a0 += 108. */
+/* cps_8018a030 — guest 0x8018A030: GTE batch transform → OT packet writer (4-vertex perspective, no 0x06 preamble). t4 = 36 (+36 when a2!=0); 4× cmd 0x1C; gte_data[22] at t3+4/12/20/28 plus raw words. Stride a0 += 108. 
+ * GTE/matrix vertex-transform variant G: same record-word load pattern (a0/+4/+8, t6/t7).
+ */
 void cps_8018a030(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -75540,7 +75554,9 @@ block_8018A144:
     cpu->pc = jt_8018A144; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018a14c — guest 0x8018A14C: GTE batch transform → OT packet writer (4-vertex perspective). t4 = 48 (+36 when a2!=0); cmds 0x06/4×0x1C; gte_data[22] at t3+4/12/20/28, raw words at t3+8/16/24/32. Stride a0 += 120. */
+/* cps_8018a14c — guest 0x8018A14C: GTE batch transform → OT packet writer (4-vertex perspective). t4 = 48 (+36 when a2!=0); cmds 0x06/4×0x1C; gte_data[22] at t3+4/12/20/28, raw words at t3+8/16/24/32. Stride a0 += 120. 
+ * GTE/matrix vertex-transform variant H: same record-word load pattern (a0/+4/+8, t6/t7).
+ */
 void cps_8018a14c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -75738,7 +75754,9 @@ block_8018A274:
     cpu->pc = jt_8018A274; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018a27c — guest 0x8018A27C: GTE batch writer, a2-indexed record layout (stride table like cps_80188b5c): t6={20,28,32,40}, t7={64,80,88,104}, t8={4,8,8,12}; t4 = 24 + t6. Cmds 0x30/0x06; 3 result words. Stride a0 += t7. */
+/* cps_8018a27c — guest 0x8018A27C: GTE batch writer, a2-indexed record layout (stride table like cps_80188b5c): t6={20,28,32,40}, t7={64,80,88,104}, t8={4,8,8,12}; t4 = 24 + t6. Cmds 0x30/0x06; 3 result words. Stride a0 += t7. 
+ * GTE matrix-element store: write_data regs 1/3 from read_word(a0+..) chain (rotation/translation elems).
+ */
 void cps_8018a27c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -75901,7 +75919,9 @@ block_8018A338:
     cpu->pc = jt_8018A338; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018a340 — guest 0x8018A340: GTE batch writer, a2-indexed layout (table like cps_80188c34): t6={24,36,40,52}, t7={80,104,112,136}, t8={4,8,8,12}; t4 = 32 + t6. Cmds 0x30/0x06/0x01; 4 result words. Stride a0 += t7. */
+/* cps_8018a340 — guest 0x8018A340: GTE batch writer, a2-indexed layout (table like cps_80188c34): t6={24,36,40,52}, t7={80,104,112,136}, t8={4,8,8,12}; t4 = 32 + t6. Cmds 0x30/0x06/0x01; 4 result words. Stride a0 += t7. 
+ * GTE matrix-element store variant: write_data regs 1/3, a0+8/+16 record reads.
+ */
 void cps_8018a340(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -76079,7 +76099,9 @@ block_8018A41C:
     cpu->pc = jt_8018A41C; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018a424 — guest 0x8018A424: GTE batch writer, a2-indexed layout: t6={24,36,40,52}, t7={64,88,96,120}, t8={4,8,8,12}; t4 = 16 + t6. Only cmd 0x06 (transform-only, no MV preload). Stride a0 += t7. */
+/* cps_8018a424 — guest 0x8018A424: GTE batch writer, a2-indexed layout: t6={24,36,40,52}, t7={64,88,96,120}, t8={4,8,8,12}; t4 = 16 + t6. Only cmd 0x06 (transform-only, no MV preload). Stride a0 += t7. 
+ * GTE/matrix transform variant: record-word loads a0/+4/+8, t0/t1 chain.
+ */
 void cps_8018a424(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -76229,7 +76251,9 @@ block_8018A4F0:
     cpu->pc = jt_8018A4F0; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018a59c — guest 0x8018A59C: GTE batch writer, a2-indexed layout: t6/t7/t8 stride table; t4 = 24 + t6. Cmds 0x30/0x06; 3 result words. Stride a0 += t7. */
+/* cps_8018a59c — guest 0x8018A59C: GTE batch writer, a2-indexed layout: t6/t7/t8 stride table; t4 = 24 + t6. Cmds 0x30/0x06; 3 result words. Stride a0 += t7. 
+ * GTE matrix-element store variant: write_data regs 1/3, a0+8/+16 record reads.
+ */
 void cps_8018a59c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -76456,7 +76480,9 @@ block_8018A6CC:
     cpu->pc = jt_8018A6CC; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018a6d4 — guest 0x8018A6D4: GTE batch writer, a2-indexed 5-entry layout: t6={24,28,36,40,52}, t7={80,88,104,112,136}, t8={4,8,12}; t4 = 32 + t6. Cmds 0x30/0x06/0x01; 15 CPS blocks. */
+/* cps_8018a6d4 — guest 0x8018A6D4: GTE batch writer, a2-indexed 5-entry layout: t6={24,28,36,40,52}, t7={80,88,104,112,136}, t8={4,8,12}; t4 = 32 + t6. Cmds 0x30/0x06/0x01; 15 CPS blocks. 
+ * GTE matrix-element store variant: write_data regs 1/3, a0+8/+16 record reads.
+ */
 void cps_8018a6d4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -76703,7 +76729,9 @@ block_8018A83C:
     cpu->pc = jt_8018A83C; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018a844 — guest 0x8018A844: GTE batch writer, a2-indexed 4-entry layout (same table as cps_8018a27c): t6={20,28,32,40}, t7={64,80,88,104}, t8={4,8,12}; t4 = 24 + t6. Cmds 0x30/0x06/0x2D; 20 CPS blocks. */
+/* cps_8018a844 — guest 0x8018A844: GTE batch writer, a2-indexed 4-entry layout (same table as cps_8018a27c): t6={20,28,32,40}, t7={64,80,88,104}, t8={4,8,12}; t4 = 24 + t6. Cmds 0x30/0x06/0x2D; 20 CPS blocks. 
+ * GTE matrix-element store variant: write_data regs 1/3, a0+8/+16 record reads.
+ */
 void cps_8018a844(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -76990,7 +77018,9 @@ block_8018A9C0:
     cpu->pc = jt_8018A9C0; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018a9c8 — guest 0x8018A9C8: GTE batch writer, a2-indexed 5-entry layout (same table as cps_8018a6d4): t6={24,28,36,40,52}, t7={80,88,104,112,136}, t8={4,8,12}; t4 = 32 + t6. Cmds 0x30/0x06/0x01/0x2E; 20 CPS blocks. */
+/* cps_8018a9c8 — guest 0x8018A9C8: GTE batch writer, a2-indexed 5-entry layout (same table as cps_8018a6d4): t6={24,28,36,40,52}, t7={80,88,104,112,136}, t8={4,8,12}; t4 = 32 + t6. Cmds 0x30/0x06/0x01/0x2E; 20 CPS blocks. 
+ * GTE matrix-element store variant: write_data regs 1/3, a0+8/+16 record reads.
+ */
 void cps_8018a9c8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -77297,7 +77327,9 @@ block_8018AB7C:
     cpu->pc = jt_8018AB7C; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018ad80 — guest 0x8018AD80: GTE batch transform → OT packet writer. t4 = 32 (+40 when a2!=0); cmds 0x30/0x06/0x01/0x2E; src reads a0+24/28; writes t3+8/12/16/24/32. Stride a0 += 112. 15 CPS blocks. */
+/* cps_8018ad80 — guest 0x8018AD80: GTE batch transform → OT packet writer. t4 = 32 (+40 when a2!=0); cmds 0x30/0x06/0x01/0x2E; src reads a0+24/28; writes t3+8/12/16/24/32. Stride a0 += 112. 15 CPS blocks. 
+ * GTE matrix-element store variant: write_data regs 1/3, a0+8/+16 record reads.
+ */
 void cps_8018ad80(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -77559,7 +77591,9 @@ block_8018AEE0:
     cpu->pc = jt_8018AEE0; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018aee8 — guest 0x8018AEE8: GTE batch transform → OT packet writer, wider variant of cps_8018ad80. t4 = 32 (+52 when a2!=0); same cmds 0x30/0x06/0x01/0x2E; writes t3+8/12/20/32/44. Stride a0 += 136. 15 CPS blocks. */
+/* cps_8018aee8 — guest 0x8018AEE8: GTE batch transform → OT packet writer, wider variant of cps_8018ad80. t4 = 32 (+52 when a2!=0); same cmds 0x30/0x06/0x01/0x2E; writes t3+8/12/20/32/44. Stride a0 += 136. 15 CPS blocks. 
+ * GTE matrix-element store variant: write_data regs 1/3, a0+8/+16 record reads.
+ */
 void cps_8018aee8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -77821,7 +77855,9 @@ block_8018B048:
     cpu->pc = jt_8018B048; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018b100 — guest 0x8018B100: NOT an OT-writer: scratchpad save/restore + extent helper. Saves s0-s6/ra to 0x1F8003E0..0x1F800404, calls 0x80186F5C twice (once with a1 = s0+32, once with a1 = 0x1F8003C0 result block), runs GTE cmd 0x12 and stores MAC/t-matrix results at 0x1F8003C0+960..988. */
+/* cps_8018b100 — guest 0x8018B100: NOT an OT-writer: scratchpad save/restore + extent helper. Saves s0-s6/ra to 0x1F8003E0..0x1F800404, calls 0x80186F5C twice (once with a1 = s0+32, once with a1 = 0x1F8003C0 result block), runs GTE cmd 0x12 and stores MAC/t-matrix results at 0x1F8003C0+960..988. 
+ * frame prologue: saves ra/s0-s3 to t0+1004..1020; calls 0x80186F5C/0x8018B1C4.
+ */
 void cps_8018b100(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -78013,7 +78049,9 @@ block_8018B200:
     cpu->pc = jt_8018B200; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018b380 — guest 0x8018B380: GTE batch writer, a2-indexed 5-entry layout (same table as cps_8018a59c): t6={20,24,28,32,40}, t7={64,72,80,88,104}, t8={4,8,12}; t4 = 24 + t6. Cmds 0x30/0x06; 15 CPS blocks. */
+/* cps_8018b380 — guest 0x8018B380: GTE batch writer, a2-indexed 5-entry layout (same table as cps_8018a59c): t6={20,24,28,32,40}, t7={64,72,80,88,104}, t8={4,8,12}; t4 = 24 + t6. Cmds 0x30/0x06; 15 CPS blocks. 
+ * GTE matrix-element store variant: write_data regs 1/3, a0+8/+16 record reads.
+ */
 void cps_8018b380(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -78240,7 +78278,9 @@ block_8018B4B0:
     cpu->pc = jt_8018B4B0; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018b4b8 — guest 0x8018B4B8: GTE batch writer, a2-indexed 5-entry layout (same table as cps_8018a6d4): t6={24,28,36,40,52}, t7={80,88,104,112,136}, t8={4,8,12}; t4 = 32 + t6. Cmds 0x30/0x06/0x01; 15 CPS blocks. */
+/* cps_8018b4b8 — guest 0x8018B4B8: GTE batch writer, a2-indexed 5-entry layout (same table as cps_8018a6d4): t6={24,28,36,40,52}, t7={80,88,104,112,136}, t8={4,8,12}; t4 = 32 + t6. Cmds 0x30/0x06/0x01; 15 CPS blocks. 
+ * GTE matrix-element store variant: write_data regs 1/3, a0+8/+16 record reads.
+ */
 void cps_8018b4b8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -78487,7 +78527,9 @@ block_8018B620:
     cpu->pc = jt_8018B620; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018b628 — guest 0x8018B628: GTE batch writer, a2-indexed layout (stride table; e.g. t6=32/t7=88/t8=8 variant). Cmds 0x30/0x06/0x2D; 11 CPS blocks. */
+/* cps_8018b628 — guest 0x8018B628: GTE batch writer, a2-indexed layout (stride table; e.g. t6=32/t7=88/t8=8 variant). Cmds 0x30/0x06/0x2D; 11 CPS blocks. 
+ * GTE matrix-element store variant: write_data regs 1/3, a0+8/+16 record reads.
+ */
 void cps_8018b628(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -78693,7 +78735,9 @@ block_8018B730:
     cpu->pc = jt_8018B730; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018b738 — guest 0x8018B738: a2-dispatch prologue piece for the cps_8018b76c family: selects (t6,t7,t8) from a 2-entry table {(24,80,4),(40,112,8)}, sets t4 = 32 + t6, then tail-dispatches to 0x8018B76C (worker) or 0x8018B88C (bail). */
+/* cps_8018b738 — guest 0x8018B738: a2-dispatch prologue piece for the cps_8018b76c family: selects (t6,t7,t8) from a 2-entry table {(24,80,4),(40,112,8)}, sets t4 = 32 + t6, then tail-dispatches to 0x8018B76C (worker) or 0x8018B88C (bail). 
+ * small CPS dispatch/leaf piece (13 blocks, no direct mem ops).
+ */
 void cps_8018b738(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -78929,7 +78973,9 @@ block_8018B870:
     cpu->pc = 0x8018b884u; return;  /* fallthrough to split piece */
 }
 
-/* cps_8018b88c — guest 0x8018B88C: 8-byte CPS piece: v0 = a0; jr $ra (nop delay). Bail-out return for the cps_8018b738/b76c family. */
+/* cps_8018b88c — guest 0x8018B88C: 8-byte CPS piece: v0 = a0; jr $ra (nop delay). Bail-out return for the cps_8018b738/b76c family. 
+ * leaf CPS piece (1 block).
+ */
 void cps_8018b88c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -78945,7 +78991,9 @@ block_8018B88C:
     cpu->pc = jt_8018B88C; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018b894 — guest 0x8018B894: GTE batch worker (10 blocks): 6-reg preload from a0 (cmd 0x30), preamble 0x06, per-vertex transform writing results through t3 slots; reads src word at a1. Continuation of the b76c-family dispatchers. */
+/* cps_8018b894 — guest 0x8018B894: GTE batch worker (10 blocks): 6-reg preload from a0 (cmd 0x30), preamble 0x06, per-vertex transform writing results through t3 slots; reads src word at a1. Continuation of the b76c-family dispatchers. 
+ * GTE matrix-element store variant: write_data regs 1/3, a0+8/+16 record reads.
+ */
 void cps_8018b894(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -79132,7 +79180,9 @@ block_8018B984:
     cpu->pc = jt_8018B984; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018bae8 — guest 0x8018BAE8: 8-byte CPS piece: bare jr $ra (nop delay slot). Return stub. */
+/* cps_8018bae8 — guest 0x8018BAE8: 8-byte CPS piece: bare jr $ra (nop delay slot). Return stub. 
+ * leaf CPS piece (1 block).
+ */
 void cps_8018bae8(void)
 {
   CPUState *cpu = clean_cpu_state();
