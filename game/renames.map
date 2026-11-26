@@ -1934,4 +1934,10 @@
 801888c0 prim_poly_emit_6c_tex
 801889f4 prim_poly_emit_78
 80188b5c prim_xform_emit
+80188c34 prim_nclip_emit_50
+80188d2c prim_nclip_emit_4c
+80188dcc prim_nclip_emit_5c
+80188e88 prim_nclip_emit_6c
+80188f40 prim_nclip_emit_8c
+8018902c prim_nclip_emit_60
 80189e2c prim_poly_emit_64_vs
