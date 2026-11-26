@@ -7125,13 +7125,13 @@ void group_fx_spawn(undefined4 a0,undefined4 a1,undefined4 a2,undefined4 a3, und
 
 }
 
-undefined4 * vec3_step_toward(undefined4 *a0,short *a1,short *a2,short a3)
+undefined4 * vec3_step_toward(undefined4 *out,short *cur,short *tgt,short step)
 {
-  undefined4 uVar1;
-  int iVar2;
-  short sVar3;
-  short sVar4;
-  int iVar5;
+  undefined4 d2;
+  int dist;
+  short d;
+  short d2s;
+  int stp;
   /* Guest vec3 slots: FUN_80194630 reads/writes 3 contiguous u32 through
    * local_40 (delta) and local_30 (normalized out); the decompiler split
    * each 12-byte vec3 into scalars. local_40[0..2] = old
@@ -7141,37 +7141,37 @@ undefined4 * vec3_step_toward(undefined4 *a0,short *a1,short *a2,short a3)
   int local_30 [3];
   undefined4 local_20;
   undefined4 local_1c;
-  local_40[0] = (int)*a2 - (int)*a1;
-  local_40[1] = (int)a2[1] - (int)a1[1];
-  local_40[2] = (int)a2[2] - (int)a1[2];
-  if (a3 == 0) {
-    a3 = 1;
+  local_40[0] = (int)*tgt - (int)*cur;
+  local_40[1] = (int)tgt[1] - (int)cur[1];
+  local_40[2] = (int)tgt[2] - (int)cur[2];
+  if (step == 0) {
+    step = 1;
   }
-  iVar5 = (int)a3;
-  uVar1 = FUN_80194630((undefined4 *)local_40,(undefined4 *)local_30);
-  iVar2 = FUN_80194500(uVar1);
-  if (iVar2 < iVar5) {
-    *a1 = *a2;
-    a1[1] = a2[1];
-    a1[2] = a2[2];
+  stp = (int)step;
+  d2 = FUN_80194630((undefined4 *)local_40,(undefined4 *)local_30);
+  dist = FUN_80194500(d2);
+  if (dist < stp) {
+    *cur = *tgt;
+    cur[1] = tgt[1];
+    cur[2] = tgt[2];
   }
   else {
-    sVar3 = (short)(local_30[0] * iVar5 >> 0xc);
-    *a1 = *a1 + sVar3;
-    sVar4 = (short)(local_30[1] * iVar5 >> 0xc);
-    local_20 = CONCAT22(sVar4,sVar3);
-    a1[1] = a1[1] + sVar4;
-    sVar3 = (short)(local_30[2] * iVar5 >> 0xc);
-    local_1c = CONCAT22((local_1c >> 16),sVar3);
-    a1[2] = a1[2] + sVar3;
+    d = (short)(local_30[0] * stp >> 0xc);
+    *cur = *cur + d;
+    d2s = (short)(local_30[1] * stp >> 0xc);
+    local_20 = CONCAT22(d2s,d);
+    cur[1] = cur[1] + d2s;
+    d = (short)(local_30[2] * stp >> 0xc);
+    local_1c = CONCAT22((local_1c >> 16),d);
+    cur[2] = cur[2] + d;
   }
-  *a0 = local_20;
-  a0[1] = local_1c;
-  return a0;
+  *out = local_20;
+  out[1] = local_1c;
+  return out;
 
 }
 
-undefined4 * vec3_step_toward_spd(undefined4 *a0,short *a1,short *a2,int a3)
+undefined4 * vec3_step_toward_spd(undefined4 *out,short *cur,short *tgt,int step)
 {
   short sVar1;
   int iVar2;
@@ -7187,9 +7187,9 @@ undefined4 * vec3_step_toward_spd(undefined4 *a0,short *a1,short *a2,int a3)
   int local_28 [3] = {0, 0, 0};
   undefined4 local_18;
   undefined4 local_14;
-  local_38[0] = (int)*a2 - (int)*a1;
-  local_38[1] = (int)a2[1] - (int)a1[1];
-  local_38[2] = (int)a2[2] - (int)a1[2];
+  local_38[0] = (int)*tgt - (int)*cur;
+  local_38[1] = (int)tgt[1] - (int)cur[1];
+  local_38[2] = (int)tgt[2] - (int)cur[2];
   iVar2 = FUN_80194630((undefined4 *)local_38,(undefined4 *)local_28);
   if (iVar2 == 0) {
     local_14 = (uint)(local_14 >> 16) << 0x10;
@@ -7197,7 +7197,7 @@ undefined4 * vec3_step_toward_spd(undefined4 *a0,short *a1,short *a2,int a3)
   }
   else {
     iVar2 = FUN_80194500((uint)iVar2);
-    uVar3 = (a3 + 0xc) * 0x10000 >> 0x10;
+    uVar3 = (step + 0xc) * 0x10000 >> 0x10;
     uVar5 = local_28[0] * iVar2 >> (uVar3 & 0x1f);
     uVar4 = (undefined2)(local_28[1] * iVar2 >> (uVar3 & 0x1f));
     local_18 = CONCAT22(uVar4,(short)uVar5);
@@ -7212,17 +7212,17 @@ undefined4 * vec3_step_toward_spd(undefined4 *a0,short *a1,short *a2,int a3)
     if ((sVar1 == 0) && (local_28[2] != 0)) {
       local_14 = CONCAT22((local_14 >> 16),1);
     }
-    *a1 = *a1 + (short)local_18;
-    a1[1] = a1[1] + (local_18 >> 16);
-    a1[2] = a1[2] + (short)local_14;
+    *cur = *cur + (short)local_18;
+    cur[1] = cur[1] + (local_18 >> 16);
+    cur[2] = cur[2] + (short)local_14;
   }
-  *a0 = local_18;
-  a0[1] = local_14;
-  return a0;
+  *out = local_18;
+  out[1] = local_14;
+  return out;
 
 }
 
-undefined4 * vec3_step_toward_q(undefined4 *a0,short *a1,short *a2,short a3)
+undefined4 * vec3_step_toward_q(undefined4 *out,short *cur,short *tgt,short step)
 {
   undefined4 uVar1;
   int iVar2;
@@ -7236,37 +7236,37 @@ undefined4 * vec3_step_toward_q(undefined4 *a0,short *a1,short *a2,short a3)
    * into scalars. local_20[0..2] = old local_20/local_1e/local_1c. */
   undefined4 local_28 [2];
   short local_20 [3];
-  local_28[0] = CONCAT22((short)((a2[1] - a1[1]) * 0x10) >> 4,
-                      (short)((*a2 - *a1) * 0x10) >> 4);
-  local_28[1] = CONCAT22((local_28[1] >> 16),(short)((a2[2] - a1[2]) * 0x10) >> 4);
-  if (a3 == 0) {
-    a3 = 1;
+  local_28[0] = CONCAT22((short)((tgt[1] - cur[1]) * 0x10) >> 4,
+                      (short)((*tgt - *cur) * 0x10) >> 4);
+  local_28[1] = CONCAT22((local_28[1] >> 16),(short)((tgt[2] - cur[2]) * 0x10) >> 4);
+  if (step == 0) {
+    step = 1;
   }
-  iVar5 = (int)a3;
+  iVar5 = (int)step;
   uVar1 = FUN_80194660((undefined2 *)local_28,(undefined2 *)local_20);
   iVar2 = FUN_80194500(uVar1);
   if (iVar5 < iVar2) {
     sVar3 = (short)(local_20[0] * iVar5 >> 0xc);
-    *a1 = *a1 + sVar3;
+    *cur = *cur + sVar3;
     sVar4 = (short)(local_20[1] * iVar5 >> 0xc);
     local_28[0] = CONCAT22(sVar4,sVar3);
-    a1[1] = a1[1] + sVar4;
+    cur[1] = cur[1] + sVar4;
     sVar3 = (short)(local_20[2] * iVar5 >> 0xc);
     local_28[1] = CONCAT22((local_28[1] >> 16),sVar3);
-    a1[2] = a1[2] + sVar3;
+    cur[2] = cur[2] + sVar3;
   }
   else {
-    *a1 = *a2;
-    a1[1] = a2[1];
-    a1[2] = a2[2];
+    *cur = *tgt;
+    cur[1] = tgt[1];
+    cur[2] = tgt[2];
   }
-  *a0 = local_28[0];
-  a0[1] = local_28[1];
-  return a0;
+  *out = local_28[0];
+  out[1] = local_28[1];
+  return out;
 
 }
 
-undefined4 * vec3_step_toward_q_spd(undefined4 *a0,short *a1,short *a2,int a3)
+undefined4 * vec3_step_toward_q_spd(undefined4 *out,short *cur,short *tgt,int step)
 {
   short sVar1;
   int iVar2;
@@ -7280,9 +7280,9 @@ undefined4 * vec3_step_toward_q_spd(undefined4 *a0,short *a1,short *a2,int a3)
    * local_18/local_16/local_14. */
   undefined4 local_20 [2];
   short local_18 [3];
-  local_20[0] = CONCAT22((short)((a2[1] - a1[1]) * 0x10) >> 4,
-                      (short)((*a2 - *a1) * 0x10) >> 4);
-  local_20[1] = (local_20[1] & 0xffff0000) | (uint16_t)((short)((a2[2] - a1[2]) * 0x10) >> 4);
+  local_20[0] = CONCAT22((short)((tgt[1] - cur[1]) * 0x10) >> 4,
+                      (short)((*tgt - *cur) * 0x10) >> 4);
+  local_20[1] = (local_20[1] & 0xffff0000) | (uint16_t)((short)((tgt[2] - cur[2]) * 0x10) >> 4);
   iVar2 = FUN_80194660((undefined2 *)local_20,(undefined2 *)local_18);
   if (iVar2 == 0) {
     local_20[1] = (uint)(local_20[1] >> 16) << 0x10;
@@ -7290,7 +7290,7 @@ undefined4 * vec3_step_toward_q_spd(undefined4 *a0,short *a1,short *a2,int a3)
   }
   else {
     iVar2 = FUN_80194500((uint)iVar2);
-    uVar3 = (a3 + 0xc) * 0x10000 >> 0x10;
+    uVar3 = (step + 0xc) * 0x10000 >> 0x10;
     uVar5 = local_18[0] * iVar2 >> (uVar3 & 0x1f);
     uVar4 = (undefined2)(local_18[1] * iVar2 >> (uVar3 & 0x1f));
     local_20[0] = CONCAT22(uVar4,(short)uVar5);
@@ -7305,13 +7305,13 @@ undefined4 * vec3_step_toward_q_spd(undefined4 *a0,short *a1,short *a2,int a3)
     if ((sVar1 == 0) && (local_18[2] != 0)) {
       local_20[1] = CONCAT22((local_20[1] >> 16),1);
     }
-    *a1 = *a1 + (short)local_20[0];
-    a1[1] = a1[1] + (local_20[0] >> 16);
-    a1[2] = a1[2] + (short)local_20[1];
+    *cur = *cur + (short)local_20[0];
+    cur[1] = cur[1] + (local_20[0] >> 16);
+    cur[2] = cur[2] + (short)local_20[1];
   }
-  *a0 = local_20[0];
-  a0[1] = local_20[1];
-  return a0;
+  *out = local_20[0];
+  out[1] = local_20[1];
+  return out;
 
 }
 
