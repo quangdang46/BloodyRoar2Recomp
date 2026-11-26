@@ -23275,6 +23275,12 @@ void cps_80132ba0(void)
     }
     /* Address: 0x80132BA0, Size: 464 bytes, Blocks: 39 */
 
+    /* aim-angle solve (sibling of 0x8013358C): dist² =
+       s1²+(s3-s6)² -> jal 0x80194500 (isqrt); if <129 ->
+       atan2_lut(s0,s1); angle negated, wrapped mod 2048 (&0xFFF),
+       stored half[s2+50]; half[s2+42] adjusted; tilt deltas
+       -> param block emit. CPS-blocked. */
+
 block_80132BA0:
     { int64_t result = (int64_t)(int32_t)s1 * (int64_t)(int32_t)s1; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
     psx_muldiv_set(cpu, psx_mult_latency_s(s1));
@@ -24390,6 +24396,12 @@ void cps_8013358c(void)
         }
     }
     /* Address: 0x8013358C, Size: 380 bytes, Blocks: 30 */
+
+    /* sprite orient/tilt emit: angle from atan2_lut -> -angle to
+       half[s2+48], adjusts half[s2+40]; computes tilt deltas
+       s0/s5/s4 clamped >=-128 (rounding via +7>>3); clears
+       half[s2+44/52]; packs {fp,s5,s6,s4} param block sp+16 and
+       calls emit with a0=sp+16,a1=sp+32,a2=s2. CPS-blocked. */
 
 block_8013358C:
     v1 = v1 + s1;
@@ -25749,6 +25761,13 @@ void cps_80134648(void)
         }
     }
     /* Address: 0x80134648, Size: 1260 bytes, Blocks: 101 */
+
+    /* limb/part setup (extended sibling of 0x80134C30): 3x jal
+       0x8018A4F8 with ptrs s3+8264/+8308 and word[s1]/word[s1+8]
+       +160/200 offsets, a3=1 (third call a3=half[s1+12]-5);
+       half[s1+38]+=20 and &0x1F00 field selects param pair
+       (4096/480, 2048, 1024, 512...) for further emit.
+       CPS-blocked. */
 
 block_80134648:
     sp = sp + -48;
@@ -32955,6 +32974,13 @@ void cps_80138248(void)
     }
     /* Address: 0x80138248, Size: 872 bytes, Blocks: 43 */
 
+    /* aim-reticle/HUD emit (cont. of 0x80138174): screen coords
+       (v1>>1+240, (v0-256 sign-adj)>>1+240) -> half[sp+56/58],
+       scaled offset -> half[sp+66]; jal 0x8018E4D0 sprite emit;
+       then repeated jal 0x801ACE48 with param blocks
+       {192/224,64,57,30937,1} at reticle positions
+       (sp+56/58 +/- half[sp+64/66]-16), gated s2<150. CPS-blocked. */
+
 block_80138248:
     v1 = (int32_t)v1 >> 1;
     v1 = v1 + 240;
@@ -34461,6 +34487,11 @@ void cps_801393b8(void)
         }
     }
     /* Address: 0x801393B8, Size: 1148 bytes, Blocks: 34 */
+
+    /* particle/physics integrator: velocity damping per axis
+       half[a1+n] -= (half[a1+n]+7)>>3 (~*7/8), pos half[s1+88..92]
+       += half[s0..4] from record s0=word[s1+96]; word[s0+12]
+       counter inc/reset gate; jal emit with a1=15. CPS-blocked. */
 
 block_801393B8:
     cpu->write_half(s1 + 92, (uint16_t)v0);
@@ -38366,6 +38397,12 @@ void cps_8013b844(void)
         }
     }
     /* Address: 0x8013B844, Size: 1408 bytes, Blocks: 74 */
+
+    /* projectile/aim trajectory solve: combines two bone-space
+       half offsets (half[s4+7198]*80 + word[word[s4+5768]+32]
+       -> +56/+60) into sp+56..63 point; dist via 0x80142B3C;
+       atan2-style (dx<<12 / lut_cos(dist+1024)) divisions ->
+       launch angles; unaligned lwl/lwr point load. CPS-blocked. */
 
 block_8013B844:
     cpu->write_half(sp + 56, (uint16_t)v1);
