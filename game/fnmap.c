@@ -1189,6 +1189,7 @@ extern void prim_packet_init(void);
 extern void prim_packet_init_tex(void);
 extern void prim_persp_ot_emit(void);
 extern void prim_persp_ot_emit_112(void);
+extern void prim_point_emit_48(void);
 extern void prim_poly_emit_3c(void);
 extern void prim_poly_emit_50(void);
 extern void prim_poly_emit_54(void);
@@ -1199,12 +1200,17 @@ extern void prim_poly_emit_64_vs(void);
 extern void prim_poly_emit_68(void);
 extern void prim_poly_emit_6c(void);
 extern void prim_poly_emit_6c_tex(void);
+extern void prim_poly_emit_6cb(void);
+extern void prim_poly_emit_6cc(void);
 extern void prim_poly_emit_78(void);
+extern void prim_poly_emit_78b(void);
 extern void prim_poly_emit_88(void);
+extern void prim_poly_emit_88b(void);
 extern void prim_tag_set(void);
 extern void prim_task_run(void);
 extern void prim_tri_batch_rtpt(void);
 extern void prim_xform_emit(void);
+extern void prim_xform_emit_64(void);
 extern void print_dispatch_guest(void);
 extern void print_dispatch_selfdesc_guest(void);
 extern void print_mode_dispatch_b(void);
@@ -2328,7 +2334,13 @@ const Br2FnEnt fn_table[] = {
   { 0x8018995c, (void *)prim_poly_emit_68 },
   { 0x80189a60, (void *)prim_poly_emit_54b },
   { 0x80189b50, (void *)prim_poly_emit_5c },
+  { 0x80189c4c, (void *)prim_point_emit_48 },
+  { 0x80189d08, (void *)prim_poly_emit_6cb },
   { 0x80189e2c, (void *)prim_poly_emit_64_vs },
+  { 0x80189efc, (void *)prim_poly_emit_88b },
+  { 0x8018a030, (void *)prim_poly_emit_6cc },
+  { 0x8018a14c, (void *)prim_poly_emit_78b },
+  { 0x8018a27c, (void *)prim_xform_emit_64 },
   { 0x8018a4f8, (void *)prim_task_run },
   { 0x8018a9e8, (void *)prim_depth_shade_emit },
   { 0x8018ab84, (void *)prim_cull2_emit_30 },

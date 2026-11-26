@@ -1952,4 +1952,10 @@
 8018995c prim_poly_emit_68
 80189a60 prim_poly_emit_54b
 80189b50 prim_poly_emit_5c
+80189c4c prim_point_emit_48
+80189d08 prim_poly_emit_6cb
 80189e2c prim_poly_emit_64_vs
+80189efc prim_poly_emit_88b
+8018a030 prim_poly_emit_6cc
+8018a14c prim_poly_emit_78b
+8018a27c prim_xform_emit_64
