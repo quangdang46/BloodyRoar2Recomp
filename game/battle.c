@@ -15337,12 +15337,12 @@ void speech_bubble_spawn(undefined4 *a0,short a1,int a2,ushort a3)
 void effect_arg_set(undefined4 arg)
 
 {
-  undefined4 *puVar1;
+  undefined4 *ent;
   
   if ((DAT_1f8000b1 == '\0') &&
-     (puVar1 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(task_alloc_wrap_e(4,(int)br2_gaddr(g_PTR_FUN_801b1ec0),(int)guest_of(&DAT_801b1eac)))),
-     puVar1 != (undefined4 *)0x0)) {
-    *puVar1 = arg;
+     (ent = (undefined4 *)guest_at((uint32_t)(uintptr_t)(task_alloc_wrap_e(4,(int)br2_gaddr(g_PTR_FUN_801b1ec0),(int)guest_of(&DAT_801b1eac)))),
+     ent != (undefined4 *)0x0)) {
+    *ent = arg;
   }
   return;
 }
