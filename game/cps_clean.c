@@ -96580,7 +96580,11 @@ block_801A1688:
 }
 
 /* cps_801a16f0 — clean CPS transliteration of br2eu_func_801A16F0 (guest 0x801a16f0)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * chan_cfg_commit: builds desired mask s1 = cell@0x801BE834*2 | (counter
+ * @0x801BE838<1); returns mask if ==a0. Else per bit0/bit1 of a0: clears
+ * cells @0x801BE830/-6192/-6188, arms @0x801BE838/-6216, polls counter
+ * @0x801FEF30 <150 → jalr @0x801BE838(a0=@0x801BE844[, +240]). */
 void cps_801a16f0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -99850,7 +99854,11 @@ block_801A35B8:
 }
 
 /* cps_801a35dc — clean CPS transliteration of br2eu_func_801A35DC (guest 0x801a35dc)
- * from SLES_017.22_full_50.c. */
+ * from SLES_017.22_full_50.c.
+ * stream_byte_consume: waits until s16@(*(0x801BE864)+14)==s0 via
+ * 0x801A4210(60)/0x801A23FC poll (-3 on fail); decrements counter
+ * @0x801BE86C, appends byte from cell @0x801BE864+68 idx into
+ * *(*(s1+60)+idx), jalr @0x801BE840(0). */
 void cps_801a35dc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -100478,7 +100486,11 @@ block_801A45B0:
 }
 
 /* cps_801a45c8 — clean CPS transliteration of br2eu_func_801A45C8 (guest 0x801a45c8)
- * from SLES_017.22_full_50.c. */
+ * from SLES_017.22_full_50.c.
+ * list_reparent: unlink node a1 from its chain (fix prev/next or slot
+ * head in 72B class rec @0x801FE3F8 via byte@+20), insert after a2
+ * (or as head when a2.next==0 → slot table via byte@a2+22), copy
+ * bytes +20/+22. Guards a1/a2 nonnull and a2.next!=a1. */
 void cps_801a45c8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -106884,7 +106896,10 @@ block_801ABEC8:
 }
 
 /* cps_801ac8f0 — clean CPS transliteration of br2eu_func_801AC8F0 (guest 0x801ac8f0)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * node_array_foreach: ctx s1 nonnull → for i<*(s1+64) call
+ * 0x801A46C8(*(s1+16)[i], s2) on nonzero entries; then same on single
+ * ptrs *(s1+24), *(s1+72), *(s1+20) when nonzero. */
 void cps_801ac8f0(void)
 {
   CPUState *cpu = clean_cpu_state();
