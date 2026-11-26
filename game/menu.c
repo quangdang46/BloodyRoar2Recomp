@@ -13143,25 +13143,25 @@ uint32_t desc_cmd_interp(uint32_t unused1, uint32_t unused2,
   (void)unused1; (void)unused2; (void)unused3; (void)unused4;
 
 block_8017DB88:
-{ uint32_t _pgx1 = cpu->gpr[6]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[19] = cpu->gpr[6];
+{ cpu->gpr[19] = cpu->gpr[6];
 }
-{ uint32_t _pgxa = cpu->gpr[19]; cpu->gpr[2] = (uint32_t)br2_ld16(cpu->gpr[19]);
+{ cpu->gpr[2] = (uint32_t)br2_ld16(cpu->gpr[19]);
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] << 16;
+{ cpu->gpr[2] = cpu->gpr[2] << 16;
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = (int32_t)cpu->gpr[2] >> 24;
+{ cpu->gpr[2] = (int32_t)cpu->gpr[2] >> 24;
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] << 16;
+{ cpu->gpr[2] = cpu->gpr[2] << 16;
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[3] = (int32_t)cpu->gpr[2] >> 16;
+{ cpu->gpr[3] = (int32_t)cpu->gpr[2] >> 16;
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = (int32_t)cpu->gpr[2] >> 20;
+{ cpu->gpr[2] = (int32_t)cpu->gpr[2] >> 20;
 }
 cpu->gpr[6] = cpu->gpr[2] & 0x0003;
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 1;
+{ cpu->gpr[2] = 1;
 }
 int _bc_8017DBC8 = (cpu->gpr[6] == cpu->gpr[2]);
-{ uint32_t _pgx1 = cpu->gpr[5]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[7] = cpu->gpr[5];
+{ cpu->gpr[7] = cpu->gpr[5];
 }
 if (_bc_8017DBC8) {
 goto block_8017DBF0;
@@ -13178,7 +13178,7 @@ goto block_8017DC24;
 goto block_8017DBDC;
 }
 block_8017DBDC:
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 2;
+{ cpu->gpr[2] = 2;
 }
 int _bc_8017DBE0 = (cpu->gpr[6] == cpu->gpr[2]);
 cpu->gpr[2] = cpu->gpr[3] & 0x0040;
@@ -13190,11 +13190,11 @@ goto block_8017DBE8;
 block_8017DBE8:
 goto block_8017DC24;
 block_8017DBF0:
-{ uint32_t _pgxa = cpu->gpr[4] + 5; cpu->gpr[2] = (uint32_t)br2_ld8(cpu->gpr[4] + 5);
+{ cpu->gpr[2] = (uint32_t)br2_ld8(cpu->gpr[4] + 5);
 }
 cpu->gpr[2] = cpu->gpr[2] & 0x0001;
 int _bc_8017DBFC = (cpu->gpr[2] == cpu->gpr[0]);
-{ uint32_t _pgx1 = cpu->gpr[19]; cpu->gpr[2] = cpu->gpr[19] + 4;
+{ cpu->gpr[2] = cpu->gpr[19] + 4;
 }
 if (_bc_8017DBFC) {
 goto block_8017DC20;
@@ -13204,11 +13204,11 @@ goto block_8017DC04;
 block_8017DC04:
 goto block_8017E11C;
 block_8017DC0C:
-{ uint32_t _pgxa = cpu->gpr[4] + 5; cpu->gpr[2] = (uint32_t)br2_ld8(cpu->gpr[4] + 5);
+{ cpu->gpr[2] = (uint32_t)br2_ld8(cpu->gpr[4] + 5);
 }
 cpu->gpr[2] = cpu->gpr[2] & 0x0001;
 int _bc_8017DC18 = (cpu->gpr[2] == cpu->gpr[0]);
-{ uint32_t _pgx1 = cpu->gpr[19]; cpu->gpr[2] = cpu->gpr[19] + 4;
+{ cpu->gpr[2] = cpu->gpr[19] + 4;
 }
 if (_bc_8017DC18) {
 goto block_8017E11C;
@@ -13225,18 +13225,18 @@ goto block_8017DC3C;
 goto block_8017DC2C;
 }
 block_8017DC2C:
-{ uint32_t _pgxa = cpu->gpr[4] + 2; cpu->gpr[18] = (uint32_t)br2_ld8(cpu->gpr[4] + 2);
+{ cpu->gpr[18] = (uint32_t)br2_ld8(cpu->gpr[4] + 2);
 }
-{ uint32_t _pgxa = cpu->gpr[4] + 3; cpu->gpr[6] = (uint32_t)br2_ld8(cpu->gpr[4] + 3);
+{ cpu->gpr[6] = (uint32_t)br2_ld8(cpu->gpr[4] + 3);
 }
 cpu->gpr[3] = cpu->gpr[3] & 0x000F;
 goto block_8017DC50;
 block_8017DC3C:
-{ uint32_t _pgxa = cpu->gpr[4] + 44; cpu->gpr[2] = br2_ld32(cpu->gpr[4] + 44);
+{ cpu->gpr[2] = br2_ld32(cpu->gpr[4] + 44);
 }
-{ uint32_t _pgxa = cpu->gpr[2] + 2; cpu->gpr[18] = (uint32_t)br2_ld8(cpu->gpr[2] + 2);
+{ cpu->gpr[18] = (uint32_t)br2_ld8(cpu->gpr[2] + 2);
 }
-{ uint32_t _pgxa = cpu->gpr[2] + 3; cpu->gpr[6] = (uint32_t)br2_ld8(cpu->gpr[2] + 3);
+{ cpu->gpr[6] = (uint32_t)br2_ld8(cpu->gpr[2] + 3);
 }
 cpu->gpr[3] = cpu->gpr[3] & 0x000F;
 block_8017DC50:
@@ -13249,22 +13249,22 @@ goto block_8017E118;
 goto block_8017DC5C;
 }
 block_8017DC5C:
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] + 10756;
+{ cpu->gpr[2] = cpu->gpr[2] + 10756;
 }
-{ uint32_t _pgx1 = cpu->gpr[3]; cpu->gpr[3] = cpu->gpr[3] << 2;
+{ cpu->gpr[3] = cpu->gpr[3] << 2;
 }
-{ uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[2];
+{ cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[2];
 }
-{ uint32_t _pgxa = cpu->gpr[3]; cpu->gpr[2] = br2_ld32(cpu->gpr[3]);
+{ cpu->gpr[2] = br2_ld32(cpu->gpr[3]);
 }
 jt = cpu->gpr[2];
 goto jt_dispatch;
 block_8017DC78:
-{ uint32_t _pgxa = cpu->gpr[19] + 2; cpu->gpr[5] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[19] + 2);
+{ cpu->gpr[5] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[19] + 2);
 }
 cpu->gpr[2] = ((int32_t)cpu->gpr[5] < 192) ? 1 : 0;
 int _bc_8017DC84 = (cpu->gpr[2] != cpu->gpr[0]);
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1024;
+{ cpu->gpr[4] = 1024;
 }
 if (_bc_8017DC84) {
 goto block_8017E10C;
@@ -13273,7 +13273,7 @@ goto block_8017DC8C;
 }
 block_8017DC8C:
 int _bc_8017DC8C = (cpu->gpr[18] != cpu->gpr[0]);
-{ uint32_t _pgx1 = cpu->gpr[5]; cpu->gpr[5] = cpu->gpr[5] + 64;
+{ cpu->gpr[5] = cpu->gpr[5] + 64;
 }
 if (_bc_8017DC8C) {
 goto block_8017E10C;
@@ -13281,15 +13281,15 @@ goto block_8017E10C;
 goto block_8017DC94;
 }
 block_8017DC94:
-{ uint32_t _pgxa = cpu->gpr[19] + 2; cpu->gpr[5] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[19] + 2);
+{ cpu->gpr[5] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[19] + 2);
 }
-{ uint32_t _pgx1 = cpu->gpr[0]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[6] = cpu->gpr[0];
+{ cpu->gpr[6] = cpu->gpr[0];
 }
 goto block_8017E110;
 block_8017DCA0:
-{ uint32_t _pgxa = cpu->gpr[7] + 274; cpu->gpr[3] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[7] + 274);
+{ cpu->gpr[3] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[7] + 274);
 }
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[6] = 64;
+{ cpu->gpr[6] = 64;
 }
 int _bc_8017DCA8 = (cpu->gpr[3] == cpu->gpr[6]);
 cpu->gpr[2] = ((int32_t)cpu->gpr[3] < 65) ? 1 : 0;
@@ -13300,7 +13300,7 @@ goto block_8017DCB0;
 }
 block_8017DCB0:
 int _bc_8017DCB0 = (cpu->gpr[2] == cpu->gpr[0]);
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = -1;
+{ cpu->gpr[2] = -1;
 }
 if (_bc_8017DCB0) {
 goto block_8017DD98;
@@ -13309,7 +13309,7 @@ goto block_8017DCB8;
 }
 block_8017DCB8:
 int _bc_8017DCB8 = (cpu->gpr[3] == cpu->gpr[2]);
-{ uint32_t _pgx1 = cpu->gpr[19]; cpu->gpr[2] = cpu->gpr[19] + 4;
+{ cpu->gpr[2] = cpu->gpr[19] + 4;
 }
 if (_bc_8017DCB8) {
 goto block_8017E11C;
@@ -13326,10 +13326,10 @@ goto block_8017DCC8;
 block_8017DCC8:
 goto block_8017DD98;
 block_8017DCD0:
-{ uint32_t _pgxa = cpu->gpr[4] + 104; cpu->gpr[2] = br2_ld32(cpu->gpr[4] + 104);
+{ cpu->gpr[2] = br2_ld32(cpu->gpr[4] + 104);
 }
 cpu->gpr[3] = cpu->gpr[2] & 0x0340;
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 256;
+{ cpu->gpr[2] = 256;
 }
 int _bc_8017DCE0 = (cpu->gpr[3] == cpu->gpr[2]);
 cpu->gpr[2] = ((int32_t)cpu->gpr[3] < 257) ? 1 : 0;
@@ -13340,7 +13340,7 @@ goto block_8017DCE8;
 }
 block_8017DCE8:
 int _bc_8017DCE8 = (cpu->gpr[2] == cpu->gpr[0]);
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 512;
+{ cpu->gpr[2] = 512;
 }
 if (_bc_8017DCE8) {
 goto block_8017DD00;
@@ -13349,7 +13349,7 @@ goto block_8017DCF0;
 }
 block_8017DCF0:
 int _bc_8017DCF0 = (cpu->gpr[3] == cpu->gpr[6]);
-{ uint32_t _pgx1 = cpu->gpr[19]; cpu->gpr[2] = cpu->gpr[19] + 4;
+{ cpu->gpr[2] = cpu->gpr[19] + 4;
 }
 if (_bc_8017DCF0) {
 goto block_8017DD10;
@@ -13360,7 +13360,7 @@ block_8017DCF8:
 goto block_8017E11C;
 block_8017DD00:
 int _bc_8017DD00 = (cpu->gpr[3] == cpu->gpr[2]);
-{ uint32_t _pgx1 = cpu->gpr[19]; cpu->gpr[2] = cpu->gpr[19] + 4;
+{ cpu->gpr[2] = cpu->gpr[19] + 4;
 }
 if (_bc_8017DD00) {
 goto block_8017DD28;
@@ -13370,28 +13370,28 @@ goto block_8017DD08;
 block_8017DD08:
 goto block_8017E11C;
 block_8017DD10:
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1024;
+{ cpu->gpr[4] = 1024;
 }
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[5] = 64;
+{ cpu->gpr[5] = 64;
 }
 goto block_8017E10C;
 block_8017DD1C:
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1024;
+{ cpu->gpr[4] = 1024;
 }
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[5] = 65;
+{ cpu->gpr[5] = 65;
 }
 goto block_8017E10C;
 block_8017DD28:
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1024;
+{ cpu->gpr[4] = 1024;
 }
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[5] = 66;
+{ cpu->gpr[5] = 66;
 }
 goto block_8017E10C;
 block_8017DD34:
-{ uint32_t _pgxa = cpu->gpr[4] + 104; cpu->gpr[2] = br2_ld32(cpu->gpr[4] + 104);
+{ cpu->gpr[2] = br2_ld32(cpu->gpr[4] + 104);
 }
 cpu->gpr[3] = cpu->gpr[2] & 0x0340;
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 256;
+{ cpu->gpr[2] = 256;
 }
 int _bc_8017DD44 = (cpu->gpr[3] == cpu->gpr[2]);
 cpu->gpr[2] = ((int32_t)cpu->gpr[3] < 257) ? 1 : 0;
@@ -13402,7 +13402,7 @@ goto block_8017DD4C;
 }
 block_8017DD4C:
 int _bc_8017DD4C = (cpu->gpr[2] == cpu->gpr[0]);
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 512;
+{ cpu->gpr[2] = 512;
 }
 if (_bc_8017DD4C) {
 goto block_8017DD64;
@@ -13411,7 +13411,7 @@ goto block_8017DD54;
 }
 block_8017DD54:
 int _bc_8017DD54 = (cpu->gpr[3] == cpu->gpr[6]);
-{ uint32_t _pgx1 = cpu->gpr[19]; cpu->gpr[2] = cpu->gpr[19] + 4;
+{ cpu->gpr[2] = cpu->gpr[19] + 4;
 }
 if (_bc_8017DD54) {
 goto block_8017DD74;
@@ -13422,7 +13422,7 @@ block_8017DD5C:
 goto block_8017E11C;
 block_8017DD64:
 int _bc_8017DD64 = (cpu->gpr[3] == cpu->gpr[2]);
-{ uint32_t _pgx1 = cpu->gpr[19]; cpu->gpr[2] = cpu->gpr[19] + 4;
+{ cpu->gpr[2] = cpu->gpr[19] + 4;
 }
 if (_bc_8017DD64) {
 goto block_8017DD8C;
@@ -13432,29 +13432,29 @@ goto block_8017DD6C;
 block_8017DD6C:
 goto block_8017E11C;
 block_8017DD74:
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1024;
+{ cpu->gpr[4] = 1024;
 }
-{ uint32_t _pgx1 = cpu->gpr[0]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[5] = cpu->gpr[0];
+{ cpu->gpr[5] = cpu->gpr[0];
 }
 goto block_8017E10C;
 block_8017DD80:
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1024;
+{ cpu->gpr[4] = 1024;
 }
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[5] = 1;
+{ cpu->gpr[5] = 1;
 }
 goto block_8017E10C;
 block_8017DD8C:
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1024;
+{ cpu->gpr[4] = 1024;
 }
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[5] = 2;
+{ cpu->gpr[5] = 2;
 }
 goto block_8017E10C;
 block_8017DD98:
-{ uint32_t _pgxa = cpu->gpr[7] + 274; cpu->gpr[5] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[7] + 274);
+{ cpu->gpr[5] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[7] + 274);
 }
 cpu->gpr[2] = ((int32_t)cpu->gpr[5] < 192) ? 1 : 0;
 int _bc_8017DDA4 = (cpu->gpr[2] != cpu->gpr[0]);
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1024;
+{ cpu->gpr[4] = 1024;
 }
 if (_bc_8017DDA4) {
 goto block_8017E10C;
@@ -13463,7 +13463,7 @@ goto block_8017DDAC;
 }
 block_8017DDAC:
 int _bc_8017DDAC = (cpu->gpr[18] != cpu->gpr[0]);
-{ uint32_t _pgx1 = cpu->gpr[5]; cpu->gpr[5] = cpu->gpr[5] + 64;
+{ cpu->gpr[5] = cpu->gpr[5] + 64;
 }
 if (_bc_8017DDAC) {
 goto block_8017E10C;
@@ -13471,45 +13471,45 @@ goto block_8017E10C;
 goto block_8017DDB4;
 }
 block_8017DDB4:
-{ uint32_t _pgxa = cpu->gpr[7] + 274; cpu->gpr[5] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[7] + 274);
+{ cpu->gpr[5] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[7] + 274);
 }
-{ uint32_t _pgx1 = cpu->gpr[0]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[6] = cpu->gpr[0];
+{ cpu->gpr[6] = cpu->gpr[0];
 }
 goto block_8017E110;
 block_8017DDC0:
-{ uint32_t _pgxa = cpu->gpr[4] + 44; cpu->gpr[2] = br2_ld32(cpu->gpr[4] + 44);
+{ cpu->gpr[2] = br2_ld32(cpu->gpr[4] + 44);
 }
-{ uint32_t _pgxa = cpu->gpr[2] + 56; cpu->gpr[3] = br2_ld32(cpu->gpr[2] + 56);
+{ cpu->gpr[3] = br2_ld32(cpu->gpr[2] + 56);
 }
-{ uint32_t _pgxa = cpu->gpr[19] + 2; cpu->gpr[2] = (uint32_t)br2_ld16(cpu->gpr[19] + 2);
+{ cpu->gpr[2] = (uint32_t)br2_ld16(cpu->gpr[19] + 2);
 }
-{ uint32_t _pgxa = cpu->gpr[3] + 274; br2_st16(cpu->gpr[3] + 274, (uint16_t)((uint16_t)cpu->gpr[2]));
+{ br2_st16(cpu->gpr[3] + 274, (uint16_t)((uint16_t)cpu->gpr[2]));
 }
 goto block_8017E118;
 block_8017DDD8:
-{ uint32_t _pgxa = cpu->gpr[4] + 56; cpu->gpr[3] = br2_ld32(cpu->gpr[4] + 56);
+{ cpu->gpr[3] = br2_ld32(cpu->gpr[4] + 56);
 }
-{ uint32_t _pgxa = cpu->gpr[19] + 2; cpu->gpr[2] = (uint32_t)br2_ld16(cpu->gpr[19] + 2);
+{ cpu->gpr[2] = (uint32_t)br2_ld16(cpu->gpr[19] + 2);
 }
-{ uint32_t _pgxa = cpu->gpr[3] + 276; br2_st16(cpu->gpr[3] + 276, (uint16_t)((uint16_t)cpu->gpr[2]));
+{ br2_st16(cpu->gpr[3] + 276, (uint16_t)((uint16_t)cpu->gpr[2]));
 }
 goto block_8017E118;
 block_8017DDE8:
-{ uint32_t _pgxa = cpu->gpr[19] + 2; cpu->gpr[2] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[19] + 2);
+{ cpu->gpr[2] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[19] + 2);
 }
-{ uint32_t _pgxa = cpu->gpr[4] + 56; cpu->gpr[3] = br2_ld32(cpu->gpr[4] + 56);
+{ cpu->gpr[3] = br2_ld32(cpu->gpr[4] + 56);
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] << 4;
+{ cpu->gpr[2] = cpu->gpr[2] << 4;
 }
-{ uint32_t _pgxa = cpu->gpr[3] + 278; br2_st16(cpu->gpr[3] + 278, (uint16_t)((uint16_t)cpu->gpr[2]));
+{ br2_st16(cpu->gpr[3] + 278, (uint16_t)((uint16_t)cpu->gpr[2]));
 }
 goto block_8017E118;
 block_8017DDFC:
-{ uint32_t _pgxa = cpu->gpr[4] + 5; cpu->gpr[2] = (uint32_t)br2_ld8(cpu->gpr[4] + 5);
+{ cpu->gpr[2] = (uint32_t)br2_ld8(cpu->gpr[4] + 5);
 }
 cpu->gpr[2] = cpu->gpr[2] & 0x0001;
 int _bc_8017DE08 = (cpu->gpr[2] != cpu->gpr[0]);
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[16] = 87;
+{ cpu->gpr[16] = 87;
 }
 if (_bc_8017DE08) {
 goto block_8017DE50;
@@ -13519,7 +13519,7 @@ goto block_8017DE10;
 block_8017DE10:
 cpu->gpr[2] = (cpu->gpr[6] < (uint32_t)11) ? 1 : 0;
 int _bc_8017DE14 = (cpu->gpr[2] == cpu->gpr[0]);
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[16] = -1;
+{ cpu->gpr[16] = -1;
 }
 if (_bc_8017DE14) {
 goto block_8017DE50;
@@ -13528,30 +13528,30 @@ goto block_8017DE1C;
 }
 block_8017DE1C:
 cpu->gpr[2] = 0x8012 << 16;
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] + 10796;
+{ cpu->gpr[2] = cpu->gpr[2] + 10796;
 }
-{ uint32_t _pgx1 = cpu->gpr[6]; cpu->gpr[3] = cpu->gpr[6] << 2;
+{ cpu->gpr[3] = cpu->gpr[6] << 2;
 }
-{ uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[2];
+{ cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[2];
 }
-{ uint32_t _pgxa = cpu->gpr[3]; cpu->gpr[2] = br2_ld32(cpu->gpr[3]);
+{ cpu->gpr[2] = br2_ld32(cpu->gpr[3]);
 }
 jt = cpu->gpr[2];
 goto jt_dispatch;
 block_8017DE3C:
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[16] = 201;
+{ cpu->gpr[16] = 201;
 }
 goto block_8017DE50;
 block_8017DE44:
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[16] = 200;
+{ cpu->gpr[16] = 200;
 }
 goto block_8017DE50;
 block_8017DE4C:
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[16] = 199;
+{ cpu->gpr[16] = 199;
 }
 block_8017DE50:
 int _bc_8017DE50 = ((int32_t)cpu->gpr[16] < 0);
-{ uint32_t _pgx1 = cpu->gpr[19]; cpu->gpr[2] = cpu->gpr[19] + 4;
+{ cpu->gpr[2] = cpu->gpr[19] + 4;
 }
 if (_bc_8017DE50) {
 goto block_8017E11C;
@@ -13563,21 +13563,21 @@ cpu->gpr[17] = 0x5555 << 16;
 cpu->gpr[2] = (uint32_t)(uint8_t)table_byte_next_a();
 goto block_8017DE60;
 block_8017DE60:
-{ uint32_t _pgx1 = cpu->gpr[17]; cpu->gpr[17] = cpu->gpr[17] | 0x5556;
+{ cpu->gpr[17] = cpu->gpr[17] | 0x5556;
 }
 { int64_t result = (int64_t)(int32_t)cpu->gpr[2] * (int64_t)(int32_t)cpu->gpr[17]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[4] = (int32_t)cpu->gpr[2] >> 31;
+{ cpu->gpr[4] = (int32_t)cpu->gpr[2] >> 31;
 }
 cpu->gpr[8] = cpu->hi;
-{ uint32_t _pgx1 = cpu->gpr[8]; uint32_t _pgx2 = cpu->gpr[4]; cpu->gpr[4] = cpu->gpr[8] - cpu->gpr[4];
+{ cpu->gpr[4] = cpu->gpr[8] - cpu->gpr[4];
 }
-{ uint32_t _pgx1 = cpu->gpr[4]; cpu->gpr[3] = cpu->gpr[4] << 1;
+{ cpu->gpr[3] = cpu->gpr[4] << 1;
 }
-{ uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[4]; cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[4];
+{ cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[4];
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
+{ cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
 }
-{ uint32_t _pgx1 = cpu->gpr[16]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[16] + cpu->gpr[2];
+{ cpu->gpr[2] = cpu->gpr[16] + cpu->gpr[2];
 }
 cpu->gpr[2] = ((int32_t)cpu->gpr[2] < 192) ? 1 : 0;
 int _bc_8017DE88 = (cpu->gpr[2] != cpu->gpr[0]);
@@ -13598,24 +13598,24 @@ cpu->gpr[2] = (uint32_t)(uint8_t)table_byte_next_a();
 goto block_8017DEA0;
 block_8017DEA0:
 { int64_t result = (int64_t)(int32_t)cpu->gpr[2] * (int64_t)(int32_t)cpu->gpr[17]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1024;
+{ cpu->gpr[4] = 1024;
 }
-{ uint32_t _pgx1 = cpu->gpr[0]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[6] = cpu->gpr[0];
+{ cpu->gpr[6] = cpu->gpr[0];
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[5] = (int32_t)cpu->gpr[2] >> 31;
+{ cpu->gpr[5] = (int32_t)cpu->gpr[2] >> 31;
 }
 cpu->gpr[8] = cpu->hi;
-{ uint32_t _pgx1 = cpu->gpr[8]; uint32_t _pgx2 = cpu->gpr[5]; cpu->gpr[5] = cpu->gpr[8] - cpu->gpr[5];
+{ cpu->gpr[5] = cpu->gpr[8] - cpu->gpr[5];
 }
-{ uint32_t _pgx1 = cpu->gpr[5]; cpu->gpr[3] = cpu->gpr[5] << 1;
+{ cpu->gpr[3] = cpu->gpr[5] << 1;
 }
-{ uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[5]; cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[5];
+{ cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[5];
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
+{ cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
 }
-{ uint32_t _pgx1 = cpu->gpr[16]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[16] + cpu->gpr[2];
+{ cpu->gpr[2] = cpu->gpr[16] + cpu->gpr[2];
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[5] = cpu->gpr[2] + 64;
+{ cpu->gpr[5] = cpu->gpr[2] + 64;
 }
 goto block_8017E110;
 block_8017DED0:
@@ -13623,32 +13623,32 @@ cpu->gpr[2] = (uint32_t)(uint8_t)table_byte_next_a();
 goto block_8017DED8;
 block_8017DED8:
 cpu->gpr[3] = 0x5555 << 16;
-{ uint32_t _pgx1 = cpu->gpr[3]; cpu->gpr[3] = cpu->gpr[3] | 0x5556;
+{ cpu->gpr[3] = cpu->gpr[3] | 0x5556;
 }
 { int64_t result = (int64_t)(int32_t)cpu->gpr[2] * (int64_t)(int32_t)cpu->gpr[3]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1024;
+{ cpu->gpr[4] = 1024;
 }
-{ uint32_t _pgx1 = cpu->gpr[0]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[6] = cpu->gpr[0];
+{ cpu->gpr[6] = cpu->gpr[0];
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[5] = (int32_t)cpu->gpr[2] >> 31;
+{ cpu->gpr[5] = (int32_t)cpu->gpr[2] >> 31;
 }
 cpu->gpr[8] = cpu->hi;
-{ uint32_t _pgx1 = cpu->gpr[8]; uint32_t _pgx2 = cpu->gpr[5]; cpu->gpr[5] = cpu->gpr[8] - cpu->gpr[5];
+{ cpu->gpr[5] = cpu->gpr[8] - cpu->gpr[5];
 }
-{ uint32_t _pgx1 = cpu->gpr[5]; cpu->gpr[3] = cpu->gpr[5] << 1;
+{ cpu->gpr[3] = cpu->gpr[5] << 1;
 }
-{ uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[5]; cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[5];
+{ cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[5];
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
+{ cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
 }
-{ uint32_t _pgx1 = cpu->gpr[16]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[5] = cpu->gpr[16] + cpu->gpr[2];
+{ cpu->gpr[5] = cpu->gpr[16] + cpu->gpr[2];
 }
 goto block_8017E110;
 block_8017DF0C:
-{ uint32_t _pgxa = cpu->gpr[19] + 2; cpu->gpr[2] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[19] + 2);
+{ cpu->gpr[2] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[19] + 2);
 }
 int _bc_8017DF14 = (cpu->gpr[2] != cpu->gpr[0]);
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1024;
+{ cpu->gpr[4] = 1024;
 }
 if (_bc_8017DF14) {
 goto block_8017DF24;
@@ -13656,19 +13656,19 @@ goto block_8017DF24;
 goto block_8017DF1C;
 }
 block_8017DF1C:
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[5] = 128;
+{ cpu->gpr[5] = 128;
 }
 goto block_8017E10C;
 block_8017DF24:
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[5] = 129;
+{ cpu->gpr[5] = 129;
 }
 goto block_8017E10C;
 block_8017DF2C:
-{ uint32_t _pgxa = cpu->gpr[4] + 5; cpu->gpr[2] = (uint32_t)br2_ld8(cpu->gpr[4] + 5);
+{ cpu->gpr[2] = (uint32_t)br2_ld8(cpu->gpr[4] + 5);
 }
 cpu->gpr[2] = cpu->gpr[2] & 0x0001;
 int _bc_8017DF38 = (cpu->gpr[2] != cpu->gpr[0]);
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[16] = 87;
+{ cpu->gpr[16] = 87;
 }
 if (_bc_8017DF38) {
 goto block_8017DF80;
@@ -13678,7 +13678,7 @@ goto block_8017DF40;
 block_8017DF40:
 cpu->gpr[2] = (cpu->gpr[6] < (uint32_t)11) ? 1 : 0;
 int _bc_8017DF44 = (cpu->gpr[2] == cpu->gpr[0]);
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[16] = -1;
+{ cpu->gpr[16] = -1;
 }
 if (_bc_8017DF44) {
 goto block_8017DF80;
@@ -13687,30 +13687,30 @@ goto block_8017DF4C;
 }
 block_8017DF4C:
 cpu->gpr[2] = 0x8012 << 16;
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] + 10844;
+{ cpu->gpr[2] = cpu->gpr[2] + 10844;
 }
-{ uint32_t _pgx1 = cpu->gpr[6]; cpu->gpr[3] = cpu->gpr[6] << 2;
+{ cpu->gpr[3] = cpu->gpr[6] << 2;
 }
-{ uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[2];
+{ cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[2];
 }
-{ uint32_t _pgxa = cpu->gpr[3]; cpu->gpr[2] = br2_ld32(cpu->gpr[3]);
+{ cpu->gpr[2] = br2_ld32(cpu->gpr[3]);
 }
 jt = cpu->gpr[2];
 goto jt_dispatch;
 block_8017DF6C:
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[16] = 201;
+{ cpu->gpr[16] = 201;
 }
 goto block_8017DF80;
 block_8017DF74:
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[16] = 200;
+{ cpu->gpr[16] = 200;
 }
 goto block_8017DF80;
 block_8017DF7C:
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[16] = 199;
+{ cpu->gpr[16] = 199;
 }
 block_8017DF80:
 int _bc_8017DF80 = ((int32_t)cpu->gpr[16] < 0);
-{ uint32_t _pgx1 = cpu->gpr[19]; cpu->gpr[2] = cpu->gpr[19] + 4;
+{ cpu->gpr[2] = cpu->gpr[19] + 4;
 }
 if (_bc_8017DF80) {
 goto block_8017E11C;
@@ -13722,21 +13722,21 @@ cpu->gpr[17] = 0x5555 << 16;
 cpu->gpr[2] = (uint32_t)(uint8_t)table_byte_next_a();
 goto block_8017DF90;
 block_8017DF90:
-{ uint32_t _pgx1 = cpu->gpr[17]; cpu->gpr[17] = cpu->gpr[17] | 0x5556;
+{ cpu->gpr[17] = cpu->gpr[17] | 0x5556;
 }
 { int64_t result = (int64_t)(int32_t)cpu->gpr[2] * (int64_t)(int32_t)cpu->gpr[17]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[4] = (int32_t)cpu->gpr[2] >> 31;
+{ cpu->gpr[4] = (int32_t)cpu->gpr[2] >> 31;
 }
 cpu->gpr[8] = cpu->hi;
-{ uint32_t _pgx1 = cpu->gpr[8]; uint32_t _pgx2 = cpu->gpr[4]; cpu->gpr[4] = cpu->gpr[8] - cpu->gpr[4];
+{ cpu->gpr[4] = cpu->gpr[8] - cpu->gpr[4];
 }
-{ uint32_t _pgx1 = cpu->gpr[4]; cpu->gpr[3] = cpu->gpr[4] << 1;
+{ cpu->gpr[3] = cpu->gpr[4] << 1;
 }
-{ uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[4]; cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[4];
+{ cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[4];
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
+{ cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
 }
-{ uint32_t _pgx1 = cpu->gpr[16]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[16] + cpu->gpr[2];
+{ cpu->gpr[2] = cpu->gpr[16] + cpu->gpr[2];
 }
 cpu->gpr[2] = ((int32_t)cpu->gpr[2] < 192) ? 1 : 0;
 int _bc_8017DFB8 = (cpu->gpr[2] != cpu->gpr[0]);
@@ -13757,24 +13757,24 @@ cpu->gpr[2] = (uint32_t)(uint8_t)table_byte_next_a();
 goto block_8017DFD0;
 block_8017DFD0:
 { int64_t result = (int64_t)(int32_t)cpu->gpr[2] * (int64_t)(int32_t)cpu->gpr[17]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1024;
+{ cpu->gpr[4] = 1024;
 }
-{ uint32_t _pgx1 = cpu->gpr[0]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[6] = cpu->gpr[0];
+{ cpu->gpr[6] = cpu->gpr[0];
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[5] = (int32_t)cpu->gpr[2] >> 31;
+{ cpu->gpr[5] = (int32_t)cpu->gpr[2] >> 31;
 }
 cpu->gpr[8] = cpu->hi;
-{ uint32_t _pgx1 = cpu->gpr[8]; uint32_t _pgx2 = cpu->gpr[5]; cpu->gpr[5] = cpu->gpr[8] - cpu->gpr[5];
+{ cpu->gpr[5] = cpu->gpr[8] - cpu->gpr[5];
 }
-{ uint32_t _pgx1 = cpu->gpr[5]; cpu->gpr[3] = cpu->gpr[5] << 1;
+{ cpu->gpr[3] = cpu->gpr[5] << 1;
 }
-{ uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[5]; cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[5];
+{ cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[5];
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
+{ cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
 }
-{ uint32_t _pgx1 = cpu->gpr[16]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[16] + cpu->gpr[2];
+{ cpu->gpr[2] = cpu->gpr[16] + cpu->gpr[2];
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[5] = cpu->gpr[2] + 64;
+{ cpu->gpr[5] = cpu->gpr[2] + 64;
 }
 goto block_8017E038;
 block_8017E000:
@@ -13782,49 +13782,49 @@ cpu->gpr[2] = (uint32_t)(uint8_t)table_byte_next_a();
 goto block_8017E008;
 block_8017E008:
 cpu->gpr[3] = 0x5555 << 16;
-{ uint32_t _pgx1 = cpu->gpr[3]; cpu->gpr[3] = cpu->gpr[3] | 0x5556;
+{ cpu->gpr[3] = cpu->gpr[3] | 0x5556;
 }
 { int64_t result = (int64_t)(int32_t)cpu->gpr[2] * (int64_t)(int32_t)cpu->gpr[3]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1024;
+{ cpu->gpr[4] = 1024;
 }
-{ uint32_t _pgx1 = cpu->gpr[0]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[6] = cpu->gpr[0];
+{ cpu->gpr[6] = cpu->gpr[0];
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[5] = (int32_t)cpu->gpr[2] >> 31;
+{ cpu->gpr[5] = (int32_t)cpu->gpr[2] >> 31;
 }
 cpu->gpr[8] = cpu->hi;
-{ uint32_t _pgx1 = cpu->gpr[8]; uint32_t _pgx2 = cpu->gpr[5]; cpu->gpr[5] = cpu->gpr[8] - cpu->gpr[5];
+{ cpu->gpr[5] = cpu->gpr[8] - cpu->gpr[5];
 }
-{ uint32_t _pgx1 = cpu->gpr[5]; cpu->gpr[3] = cpu->gpr[5] << 1;
+{ cpu->gpr[3] = cpu->gpr[5] << 1;
 }
-{ uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[5]; cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[5];
+{ cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[5];
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
+{ cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
 }
-{ uint32_t _pgx1 = cpu->gpr[16]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[5] = cpu->gpr[16] + cpu->gpr[2];
+{ cpu->gpr[5] = cpu->gpr[16] + cpu->gpr[2];
 }
 block_8017E038:
 cpu->gpr[17] = 0x5555 << 16;
 deferred_cmd_post(cpu->gpr[4], (int)cpu->gpr[5], (short)cpu->gpr[6]);
 goto block_8017E040;
 block_8017E040:
-{ uint32_t _pgx1 = cpu->gpr[17]; cpu->gpr[17] = cpu->gpr[17] | 0x5556;
+{ cpu->gpr[17] = cpu->gpr[17] | 0x5556;
 }
 cpu->gpr[2] = (uint32_t)(uint8_t)table_byte_next_a();
 goto block_8017E048;
 block_8017E048:
 { int64_t result = (int64_t)(int32_t)cpu->gpr[2] * (int64_t)(int32_t)cpu->gpr[17]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[4] = (int32_t)cpu->gpr[2] >> 31;
+{ cpu->gpr[4] = (int32_t)cpu->gpr[2] >> 31;
 }
 cpu->gpr[8] = cpu->hi;
-{ uint32_t _pgx1 = cpu->gpr[8]; uint32_t _pgx2 = cpu->gpr[4]; cpu->gpr[4] = cpu->gpr[8] - cpu->gpr[4];
+{ cpu->gpr[4] = cpu->gpr[8] - cpu->gpr[4];
 }
-{ uint32_t _pgx1 = cpu->gpr[4]; cpu->gpr[3] = cpu->gpr[4] << 1;
+{ cpu->gpr[3] = cpu->gpr[4] << 1;
 }
-{ uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[4]; cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[4];
+{ cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[4];
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
+{ cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
 }
-{ uint32_t _pgx1 = cpu->gpr[16]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[16] + cpu->gpr[2];
+{ cpu->gpr[2] = cpu->gpr[16] + cpu->gpr[2];
 }
 cpu->gpr[2] = ((int32_t)cpu->gpr[2] < 192) ? 1 : 0;
 int _bc_8017E06C = (cpu->gpr[2] != cpu->gpr[0]);
@@ -13845,24 +13845,24 @@ cpu->gpr[2] = (uint32_t)(uint8_t)table_byte_next_a();
 goto block_8017E084;
 block_8017E084:
 { int64_t result = (int64_t)(int32_t)cpu->gpr[2] * (int64_t)(int32_t)cpu->gpr[17]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1024;
+{ cpu->gpr[4] = 1024;
 }
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[6] = 4;
+{ cpu->gpr[6] = 4;
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[5] = (int32_t)cpu->gpr[2] >> 31;
+{ cpu->gpr[5] = (int32_t)cpu->gpr[2] >> 31;
 }
 cpu->gpr[8] = cpu->hi;
-{ uint32_t _pgx1 = cpu->gpr[8]; uint32_t _pgx2 = cpu->gpr[5]; cpu->gpr[5] = cpu->gpr[8] - cpu->gpr[5];
+{ cpu->gpr[5] = cpu->gpr[8] - cpu->gpr[5];
 }
-{ uint32_t _pgx1 = cpu->gpr[5]; cpu->gpr[3] = cpu->gpr[5] << 1;
+{ cpu->gpr[3] = cpu->gpr[5] << 1;
 }
-{ uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[5]; cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[5];
+{ cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[5];
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
+{ cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
 }
-{ uint32_t _pgx1 = cpu->gpr[16]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[16] + cpu->gpr[2];
+{ cpu->gpr[2] = cpu->gpr[16] + cpu->gpr[2];
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[5] = cpu->gpr[2] + 64;
+{ cpu->gpr[5] = cpu->gpr[2] + 64;
 }
 goto block_8017E110;
 block_8017E0B4:
@@ -13870,32 +13870,32 @@ cpu->gpr[2] = (uint32_t)(uint8_t)table_byte_next_a();
 goto block_8017E0BC;
 block_8017E0BC:
 cpu->gpr[3] = 0x5555 << 16;
-{ uint32_t _pgx1 = cpu->gpr[3]; cpu->gpr[3] = cpu->gpr[3] | 0x5556;
+{ cpu->gpr[3] = cpu->gpr[3] | 0x5556;
 }
 { int64_t result = (int64_t)(int32_t)cpu->gpr[2] * (int64_t)(int32_t)cpu->gpr[3]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1024;
+{ cpu->gpr[4] = 1024;
 }
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[6] = 4;
+{ cpu->gpr[6] = 4;
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[5] = (int32_t)cpu->gpr[2] >> 31;
+{ cpu->gpr[5] = (int32_t)cpu->gpr[2] >> 31;
 }
 cpu->gpr[8] = cpu->hi;
-{ uint32_t _pgx1 = cpu->gpr[8]; uint32_t _pgx2 = cpu->gpr[5]; cpu->gpr[5] = cpu->gpr[8] - cpu->gpr[5];
+{ cpu->gpr[5] = cpu->gpr[8] - cpu->gpr[5];
 }
-{ uint32_t _pgx1 = cpu->gpr[5]; cpu->gpr[3] = cpu->gpr[5] << 1;
+{ cpu->gpr[3] = cpu->gpr[5] << 1;
 }
-{ uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[5]; cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[5];
+{ cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[5];
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
+{ cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
 }
-{ uint32_t _pgx1 = cpu->gpr[16]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[5] = cpu->gpr[16] + cpu->gpr[2];
+{ cpu->gpr[5] = cpu->gpr[16] + cpu->gpr[2];
 }
 goto block_8017E110;
 block_8017E0F0:
-{ uint32_t _pgxa = cpu->gpr[19] + 2; cpu->gpr[2] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[19] + 2);
+{ cpu->gpr[2] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[19] + 2);
 }
 int _bc_8017E0F8 = (cpu->gpr[2] != cpu->gpr[0]);
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1024;
+{ cpu->gpr[4] = 1024;
 }
 if (_bc_8017E0F8) {
 goto block_8017E108;
@@ -13903,20 +13903,20 @@ goto block_8017E108;
 goto block_8017E100;
 }
 block_8017E100:
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[5] = 72;
+{ cpu->gpr[5] = 72;
 }
 goto block_8017E10C;
 block_8017E108:
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[5] = 73;
+{ cpu->gpr[5] = 73;
 }
 block_8017E10C:
-{ uint32_t _pgx1 = cpu->gpr[0]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[6] = cpu->gpr[0];
+{ cpu->gpr[6] = cpu->gpr[0];
 }
 block_8017E110:
 deferred_cmd_post(cpu->gpr[4], (int)cpu->gpr[5], (short)cpu->gpr[6]);
 goto block_8017E118;
 block_8017E118:
-{ uint32_t _pgx1 = cpu->gpr[19]; cpu->gpr[2] = cpu->gpr[19] + 4;
+{ cpu->gpr[2] = cpu->gpr[19] + 4;
 }
 block_8017E11C:
 /* epilogue: guest reloaded s0-s3/ra from its sp-40 frame and jr $ra.
