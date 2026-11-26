@@ -96322,6 +96322,10 @@ void cps_801a0c68(void)
     }
     /* Address: 0x801A0C68, Size: 340 bytes, Blocks: 17 */
 
+    /* DMA/channel setup part 2 (continues cps_801a0be0): five more
+       0x8019B380 requests (a0=0xF0000011, sizes 4/0x8000/256/8192) storing
+       handles at 0x801FAEB4..C8, then eight 0x8019B390 calls on the stored
+       handles, then 0x801A0E90 and a conditional 0x8018E310. CPS-blocked. */
 block_801A0C68:
     a3 = a3 + 2892;
     at = 0x8020 << 16;  /* 0x80200000 */
@@ -96524,6 +96528,9 @@ void cps_801a0ddc(void)
     }
     /* Address: 0x801A0DDC, Size: 180 bytes, Blocks: 12 */
 
+    /* channel teardown: calls 0x8018E300, then 0x801A11C0 on each of the
+       eight stored handles at 0x801FAEC8..E4 (first result kept in s0),
+       then conditional 0x8018E310. CPS-blocked. */
 block_801A0DDC:
     sp = sp + -24;
     cpu->write_word(sp + 20, ra);
@@ -96644,13 +96651,11 @@ void cps_801a11d0(void)
 
     /* Address: 0x801A11D0, Size: 20 bytes, Blocks: 1 */
 
-block_801A11D0:
-    v1 = 0x8020 << 16;  /* 0x80200000 */
-    v1 = v1 + -4176;
-    v0 = cpu->read_word(v1);
+    /* exchange: v0 = old *0x801FF070, *0x801FF070 = a0 (delay slot) */
+    v1 = 0x801FF070;                       /* flag slot */
+    v0 = cpu->read_word(v1);               /* old value -> v0 */
     uint32_t _jt_801A11DC = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    cpu->write_word(v1, a0);
+    cpu->write_word(v1, a0);               /* delay slot: store a0 */
     psx_check_interrupts_at(cpu, _jt_801A11DC);
     cpu->pc = _jt_801A11DC; return;  /* CPS: jr $ra */
 }
@@ -96673,6 +96678,9 @@ void cps_801a1290(void)
     }
     /* Address: 0x801A1290, Size: 76 bytes, Blocks: 4 */
 
+    /* predicate: returns 1 iff global flag 0x801AE6EC != 0 AND
+       byte[0x801AE6D4 + (a0>>4)*240 + 232] == 8 (xor 8 then <1).
+       CPS-blocked. */
 block_801A1290:
     v0 = 0x801C << 16;  /* 0x801C0000 */
     v0 = cpu->read_word(v0 + -6196);
