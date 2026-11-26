@@ -128,7 +128,12 @@ static int32_t mips_div_lo(int32_t num, int32_t den)
  * words; returns action id (or -1 = keep current). */
 int32_t action_resolve(byte *ctrl, uint8_t *motion)
 {
-
+  /* Locals: fXX = snapshot of the ctrl+0xXX flag word (0x58 request,
+   * 0x5c state, 0x60/0x64 mode, 0x68 temp, 0x6c motion-state).
+   * btn/ba/bb = button masks; cat/cat2 = direction nibbles from
+   * ctrl+0x7c/+0x82; act/act2 = primary/secondary action candidates;
+   * motion_p = ctrl+0x38 motion object; t2 = ctrl+0x2c foe ctrl;
+   * cnt = ctrl+0xce timer; sv/w/zb/idx = scratch. */
   short sv;
   ushort btn;
   ushort cnt;
