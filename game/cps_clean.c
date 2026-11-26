@@ -7460,6 +7460,7 @@ block_801291DC:
  * from SLES_017.22_full_01.c. */
 void cps_801291e4(void)
 {
+/* menu leaf/terminal piece (jr/jr $ra exit of the menu cluster). */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8376,6 +8377,7 @@ block_80129640:
  * from SLES_017.22_full_01.c. */
 void cps_80129648(void)
 {
+/* menu leaf/terminal piece (jr/jr $ra exit of the menu cluster). */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8520,6 +8522,7 @@ block_801296E8:
  * from SLES_017.22_full_01.c. */
 void cps_801296f0(void)
 {
+/* menu leaf/terminal piece (jr/jr $ra exit of the menu cluster). */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8661,6 +8664,7 @@ block_80129784:
  * from SLES_017.22_full_01.c. */
 void cps_80129788(void)
 {
+/* menu leaf/terminal piece (jr/jr $ra exit of the menu cluster). */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8709,6 +8713,7 @@ block_8012979C:
  * from SLES_017.22_full_01.c. */
 void cps_801297b0(void)
 {
+/* menu leaf/terminal piece (jr/jr $ra exit of the menu cluster). */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9039,6 +9044,7 @@ block_801298F8:
  * from SLES_017.22_full_01.c. */
 void cps_801298fc(void)
 {
+/* menu leaf/terminal piece (jr/jr $ra exit of the menu cluster). */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9259,6 +9265,7 @@ block_80129A38:
  * from SLES_017.22_full_01.c. */
 void cps_80129a3c(void)
 {
+/* menu leaf/terminal piece (jr/jr $ra exit of the menu cluster). */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9538,6 +9545,7 @@ block_80129BE8:
  * from SLES_017.22_full_01.c. */
 void cps_80129bec(void)
 {
+/* menu leaf/terminal piece (jr/jr $ra exit of the menu cluster). */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9616,6 +9624,7 @@ block_80129C98:
  * from SLES_017.22_full_01.c. */
 void cps_80129c9c(void)
 {
+/* menu leaf/terminal piece (jr/jr $ra exit of the menu cluster). */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9814,6 +9823,7 @@ block_80129D30:
  * from SLES_017.22_full_01.c. */
 void cps_80129d3c(void)
 {
+/* menu leaf/terminal piece (jr/jr $ra exit of the menu cluster). */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10012,6 +10022,7 @@ block_80129EEC:
  * from SLES_017.22_full_01.c. */
 void cps_80129ef0(void)
 {
+/* menu leaf/terminal piece (jr/jr $ra exit of the menu cluster). */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10038,6 +10049,7 @@ block_80129EF0:
  * from SLES_017.22_full_01.c. */
 void cps_80129f70(void)
 {
+/* menu leaf/terminal piece (jr/jr $ra exit of the menu cluster). */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
