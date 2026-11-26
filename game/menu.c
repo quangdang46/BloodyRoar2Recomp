@@ -4624,24 +4624,24 @@ extern int32_t ret_zero_c(uint32_t);
 extern int str_len(char *);
 int32_t continue_countdown(uint32_t battle_g,uint32_t player)
 {
-  uint8_t *s0 = (uint8_t *)guest_at(battle_g);
-  uint32_t s1 = player;
+  uint8_t *b = (uint8_t *)guest_at(battle_g);
+
   /* sprintf buf = guest $sp+0x18 (frame -0x38) = entry_sp-0x20; str_len/
    * hud_text_blk_alt re-read it through nested frames, so the
    * write->draw span below runs inside a reserved guest frame
    * (sp+0x18 -> frm+0x20). */
   uint8_t *buf;
-  int32_t v0 = 0;
+
   uint32_t dc;
   if (battle_state_gate(battle_g,1) == 0) return 0;
   dc = *(uint32_t *)guest_at(0x1f8000dc);
-  if (((*(uint16_t *)guest_at(*(uint32_t *)(s0 + 0xc8) + (2)) >> 0xb) & 1) != 0 &&
+  if (((*(uint16_t *)guest_at(*(uint32_t *)(b + 0xc8) + (2)) >> 0xb) & 1) != 0 &&
       (dc & 0x40) != 0 && ((dc >> 4) & 3) != 0) {
     /* remaining = 9 - (counter&0x3fff)/10000 */
-    uint32_t cnt = *(uint16_t *)(s0 + 0xb2) & 0x3fff;
-    int64_t m = (int64_t)(int32_t)cnt * 0x66666667;
-    int32_t q = (int32_t)(((int32_t)(m >> 32) << 0xb) >> 0x10); /* hi>>5 */
-    int32_t rem = 9 - q;
+    uint32_t cnt = *(uint16_t *)(b + 0xb2) & 0x3fff;
+    int64_t prod = (int64_t)(int32_t)cnt * 0x66666667;
+    int32_t quo = (int32_t)(((int32_t)(prod >> 32) << 0xb) >> 0x10); /* hi>>5 */
+    int32_t rem = 9 - quo;
     int w;
     extern uint32_t br2_guest_frame(uint32_t);
     extern void br2_guest_frame_free(void);
@@ -4651,40 +4651,40 @@ int32_t continue_countdown(uint32_t battle_g,uint32_t player)
     w = str_len((char *)buf);
     {
       int32_t y;
-      int32_t v1 = w * 3;
-      if (s1 != 0) { y = (int32_t)*(int16_t *)(s0 + 0x20) - (v1 + 0x50); }
-      else         { y = 0x50 - v1; }
-      hud_text_blk_alt(*(uint32_t *)(s0 + 8),*(uint32_t *)(s0 + 0xc),
+      int32_t xext = w * 3;
+      if (player != 0) { y = (int32_t)*(int16_t *)(b + 0x20) - (xext + 0x50); }
+      else         { y = 0x50 - xext; }
+      hud_text_blk_alt(*(uint32_t *)(b + 8),*(uint32_t *)(b + 0xc),
                    buf,(int16_t)y,0x20,1);
     }
     br2_guest_frame_free();
   }
-  if (*(int16_t *)(s0 + 0xb2) == 0) ret_zero_a(s1);
+  if (*(int16_t *)(b + 0xb2) == 0) ret_zero_a(player);
   {
-    uint32_t b2 = *(uint16_t *)(s0 + 0xb2);
-    if ((b2 & 0x3fff) < 0x31f) *(uint16_t *)(s0 + 0xb2) = (uint16_t)(b2 + 1);
+    uint32_t b2 = *(uint16_t *)(b + 0xb2);
+    if ((b2 & 0x3fff) < 0x31f) *(uint16_t *)(b + 0xb2) = (uint16_t)(b2 + 1);
   }
-  if ((*(uint16_t *)(s0 + s1 * 2 + 0x68) & 0x800) != 0) {
-    if (ret_zero_c(s1) < 0) return 1;
+  if ((*(uint16_t *)(b + player * 2 + 0x68) & 0x800) != 0) {
+    if (ret_zero_c(player) < 0) return 1;
   }
-  if (ret_zero_a(s1) != 0)
-    *(uint16_t *)(s0 + 0xb2) = (uint16_t)((*(uint16_t *)(s0 + 0xb2) & 0x4000) + 1);
-  if ((*(uint16_t *)(s0 + 0xb2) & 0x4000) == 0 &&
-      (*(uint16_t *)(s0 + s1 * 2 + 0x68) & 0x800) != 0)
-    *(uint16_t *)(s0 + 0xb2) = 0x4001;
+  if (ret_zero_a(player) != 0)
+    *(uint16_t *)(b + 0xb2) = (uint16_t)((*(uint16_t *)(b + 0xb2) & 0x4000) + 1);
+  if ((*(uint16_t *)(b + 0xb2) & 0x4000) == 0 &&
+      (*(uint16_t *)(b + player * 2 + 0x68) & 0x800) != 0)
+    *(uint16_t *)(b + 0xb2) = 0x4001;
   {
-    uint32_t a1 = *(uint16_t *)(s0 + 0xb2);
-    uint32_t a0 = a1 & 0x3fff;
-    if (a0 < 4) return 0;
-    if (a0 >= 0xa0 &&
-        (*(uint16_t *)(s0 + s1 * 2 + 0x68) & 0xe8) != 0) {
-      /* (a0+0x50)/100 * 80 | flag */
-      uint32_t x = a0 + 0x50;
-      int64_t m = (int64_t)(int32_t)x * 0x66666667;
-      int32_t q = (int32_t)(((int32_t)(m >> 32)) >> 5) - ((int32_t)x >> 31);
-      *(uint16_t *)(s0 + 0xb2) = (uint16_t)((uint32_t)q * 80 | (a1 & 0x4000));
+    uint32_t b2raw = *(uint16_t *)(b + 0xb2);
+    uint32_t count = b2raw & 0x3fff;
+    if (count < 4) return 0;
+    if (count >= 0xa0 &&
+        (*(uint16_t *)(b + player * 2 + 0x68) & 0xe8) != 0) {
+      /* (count+0x50)/100 * 80 | flag */
+      uint32_t x = count + 0x50;
+      int64_t prod = (int64_t)(int32_t)x * 0x66666667;
+      int32_t quo = (int32_t)(((int32_t)(prod >> 32)) >> 5) - ((int32_t)x >> 31);
+      *(uint16_t *)(b + 0xb2) = (uint16_t)((uint32_t)quo * 80 | (b2raw & 0x4000));
     }
-    if ((*(uint16_t *)(s0 + 0xb2) & 0x3fff) >= 0x31f) return -1;
+    if ((*(uint16_t *)(b + 0xb2) & 0x3fff) >= 0x31f) return -1;
     return 0;
   }
 }
