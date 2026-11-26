@@ -1020,7 +1020,7 @@ LAB_80177a7c:
         if ((short)(sv + *(short *)(ctrl + 0x88)) < 0x61) {
           if ((f5c & 0x80) == 0) {
             if (((f5c & 0x2004) == 0) && ((*(ushort *)(ctrl + 0x7a) & 0x2000) != 0)) {
-              f58 = f68 & 0xfdfffffb | 1;
+              f58 = (f68 & 0xfdfffffb) | 1;
               t2 = 0x35;
               goto LAB_80176f0c;
             }
@@ -1106,7 +1106,7 @@ LAB_8017857c:
             *(short *)((char *)guest_at((uint32_t)t2) + 0x5c) <= *(short *)(ctrl + 0xbc)))
         {
           sv = *(short *)((char *)guest_at((uint32_t)t2) + 0x3c);
-          if (f60 == (int)*(char *)(motion_p + 0x7e)) {
+          if (f60 == (uint)(int)*(char *)(motion_p + 0x7e)) {
             *(undefined1 *)(motion_p + 0x7e) = 0xff;
           }
           idx = *(char *)(motion_p + 0x7c) + 1;
@@ -1438,7 +1438,7 @@ LAB_801766e8:
           if ((f68 & 0x10000) == 0) {
             if ((f68 & 0x2000) == 0) {
               if ((f68 & 0x40000) == 0) {
-                *(uint *)(ctrl + 0x68) = *(uint *)(ctrl + 0x68) & 0xffffefff | 0x804400;
+                *(uint *)(ctrl + 0x68) = (*(uint *)(ctrl + 0x68) & 0xffffefff) | 0x804400;
                 trig_lut_read(t2,ctrl);
                 if ((ctrl[5] & 1) == 0) {
                   return 0x5b;
@@ -1867,7 +1867,7 @@ LAB_80178f9c:
   ia = *(short *)(ctrl + 0x94) + -0x66;
   if (((*(int *)((char *)guest_at((uint32_t)ib) + 0x268) < ia) && (*(int *)((char *)guest_at((uint32_t)ib) + 0x358) < ia)) &&
      (*(int *)((char *)guest_at((uint32_t)ib) + 0x178) < ia)) {
-    *(uint *)(ctrl + 0x5c) = uv & 0xeffba5fc | 0x40000;
+    *(uint *)(ctrl + 0x5c) = (uv & 0xeffba5fc) | 0x40000;
   }
   if (*(int *)((char *)guest_at(*(uint32_t *)(ctrl + 0x2c)) + 0x58) < 0) {
     *(uint *)(ctrl + 0x5c) = *(uint *)(ctrl + 0x5c) | 0x1000;
@@ -2200,8 +2200,8 @@ void action_commit(byte *ctrl, byte *motion)
     }
     tv = (uint)*(ushort *)(motion + 0x108) + tv;
     *(short *)(motion + 0x108) = (short)tv;
-    euler_rotmat(tv * 0x10000 >> 0x10,-(int)*(short *)(motion + 0x106),0,rotm);
-    matrix_vec3_apply(rotm,(uint *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0xa4));
+    euler_rotmat(tv * 0x10000 >> 0x10,-(int)*(short *)(motion + 0x106),0,(undefined2 *)rotm);
+    matrix_vec3_apply((undefined4 *)rotm,(uint *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0xa4));
   }
   return;
 
@@ -3407,7 +3407,7 @@ uint * matrix_vec3_apply(undefined4 *mat,uint *vec)
   setCopControlWord(2,0x1000,mat[2]);
   setCopControlWord(2,0x1800,mat[3]);
   setCopControlWord(2,0x2000,mat[4]);
-  setCopReg(2,0,(uint)(ushort)*vec | vec[1] & 0xffff0000);
+  setCopReg(2,0,(uint)(ushort)*vec | (vec[1] & 0xffff0000));
   setCopReg(2,0x800,vec[3]);
   copFunction(2,0x486012);
   r1 = getCopReg(2,0x4800);
@@ -3419,15 +3419,15 @@ uint * matrix_vec3_apply(undefined4 *mat,uint *vec)
   r4 = getCopReg(2,0x4800);
   r5 = getCopReg(2,0x5000);
   r6 = getCopReg(2,0x5800);
-  setCopReg(2,0,(uint)(ushort)vec[1] | vec[2] & 0xffff0000);
+  setCopReg(2,0,(uint)(ushort)vec[1] | (vec[2] & 0xffff0000));
   setCopReg(2,0x800,vec[4]);
   copFunction(2,0x486012);
-  *vec = r4 << 0x10 | r1 & 0xffff;
-  vec[3] = r6 << 0x10 | r3 & 0xffff;
+  *vec = r4 << 0x10 | (r1 & 0xffff);
+  vec[3] = r6 << 0x10 | (r3 & 0xffff);
   r1 = getCopReg(2,0x4800);
   r4 = getCopReg(2,0x5000);
-  vec[1] = r1 & 0xffff | r2 << 0x10;
-  vec[2] = r4 << 0x10 | r5 & 0xffff;
+  vec[1] = (r1 & 0xffff) | r2 << 0x10;
+  vec[2] = r4 << 0x10 | (r5 & 0xffff);
   r1 = getCopReg(2,0xb);
   vec[4] = r1;
   return vec;
