@@ -3601,33 +3601,33 @@ LAB_80150610:
  * mod 4 and returns the validated bit. Disasm-verified. */
 int32_t select_cursor_step(int32_t row,int32_t col0)
 {
-  int32_t a3 = col0;
-  uint8_t *t0 = (uint8_t *)guest_at(0x801b3218);
-  uint32_t t1 = *(uint32_t *)(_g_system_config_ptr + 0x4c);
-  uint32_t v1 = t1;
-  int32_t a2 = t0[a3 + row * 4];
-  uint32_t v0 = (v1 >> a2) & 1;
-  if (v0 != 0) return (int32_t)v0;
-  v1 = (uint32_t)a2 * 4;
+  int32_t col = col0;
+  uint8_t *grid = (uint8_t *)guest_at(0x801b3218);
+  uint32_t unlocked = *(uint32_t *)(_g_system_config_ptr + 0x4c);
+  uint32_t v1 = unlocked;
+  int32_t ch_idx = grid[col + row * 4];
+  uint32_t ok = (v1 >> ch_idx) & 1;
+  if (ok != 0) return (int32_t)ok;
+  v1 = (uint32_t)ch_idx * 4;
   goto LAB_f208;
 LAB_f248:
-  v0 = (t1 >> a2) & 1;
+  ok = (unlocked >> ch_idx) & 1;
 LAB_f24c:
-  v0 &= 1;
-  if (v0 == 0) goto LAB_f208;
-  return (int32_t)v0;
+  ok &= 1;
+  if (ok == 0) goto LAB_f208;
+  return (int32_t)ok;
 LAB_f208:
   {
-    int32_t b = t0[a3 + v1];
-    a2 = b;
-    if (b != a2) goto LAB_f248;
-    a3 = (a3 - 1) & 3;
-    if (a3 != col0) {
-      a2 = t0[a3 + v1];
-      v0 = (t1 >> a2) & 1;
+    int32_t nch = grid[col + v1];
+    ch_idx = nch;
+    if (nch != ch_idx) goto LAB_f248;
+    col = (col - 1) & 3;
+    if (col != col0) {
+      ch_idx = grid[col + v1];
+      ok = (unlocked >> ch_idx) & 1;
       goto LAB_f24c;
     }
-    a2 = row;
+    ch_idx = row;
     goto LAB_f248;
   }
 }
