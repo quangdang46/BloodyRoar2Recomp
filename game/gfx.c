@@ -1827,19 +1827,19 @@ void console_pct(void)
  * packed bytes) and param_2 (pos), param_4 color at +0xc, tag
  * 0x2e808080 at +4, links slot[0] = old_head|0x9000000 and stores
  * compressed slot ptr into *param_1 head cell. Disasm-verified. */
-uint32_t sprite_9slice_build(uint32_t param_1,uint32_t param_2,uint32_t param_3,uint32_t param_4)
+uint32_t sprite_9slice_build(uint32_t head_g,uint32_t pos,uint32_t wh,uint32_t col)
 {
-  uint32_t *t1;
+  uint32_t *pkt;
   uint8_t *b;
   int32_t a2, a3, a0, v1, v0_;
-  t1 = (uint32_t *)spr_pool_b_alloc();
-  if (t1 == 0) return 0xffffffff;
-  b = (uint8_t *)t1;
-  a2 = (int32_t)(param_3 >> 16) & 0xff; a2 += 1;
-  a0 = (int32_t)param_4 & 0xff;
+  pkt = (uint32_t *)spr_pool_b_alloc();
+  if (pkt == 0) return 0xffffffff;
+  b = (uint8_t *)pkt;
+  a2 = (int32_t)(wh >> 16) & 0xff; a2 += 1;
+  a0 = (int32_t)col & 0xff;
   int32_t a1 = a0 + a2;
-  v1 = (int32_t)(param_4 >> 8) & 0xff;
-  a3 = (int32_t)(param_3 >> 24) + 1;
+  v1 = (int32_t)(col >> 8) & 0xff;
+  a3 = (int32_t)(wh >> 24) + 1;
   b[0x15] = (uint8_t)v1;
   v1 += a3;
   b[0x14] = (uint8_t)a1;
@@ -1849,15 +1849,15 @@ uint32_t sprite_9slice_build(uint32_t param_1,uint32_t param_2,uint32_t param_3,
   b[0x1c] = (uint8_t)a0;
   a1 = -a2;
   a1 = (a1 + ((uint32_t)a1 >> 31)) >> 1;   /* -(a2)/2 rounding */
-  a1 += (int32_t)param_2;
+  a1 += (int32_t)pos;
   v1 = -a3;
   v1 = (v1 + ((uint32_t)v1 >> 31)) >> 1;
-  a0 = (int32_t)param_2 >> 16;
+  a0 = (int32_t)pos >> 16;
   v1 += a0;
-  a2 >>= 1; a2 += (int32_t)param_2;
+  a2 >>= 1; a2 += (int32_t)pos;
   a3 >>= 1; a0 += a3;
-  t1[3] = param_4;                          /* +0xc */
-  *(int16_t *)(b + 0x16) = (int16_t)param_3;
+  pkt[3] = col;                          /* +0xc */
+  *(int16_t *)(b + 0x16) = (int16_t)wh;
   *(int16_t *)(b + 8) = (int16_t)a1;
   *(int16_t *)(b + 0xa) = (int16_t)v1;
   *(int16_t *)(b + 0x10) = (int16_t)a2;
@@ -1866,11 +1866,11 @@ uint32_t sprite_9slice_build(uint32_t param_1,uint32_t param_2,uint32_t param_3,
   *(int16_t *)(b + 0x1a) = (int16_t)a0;
   *(int16_t *)(b + 0x20) = (int16_t)a2;
   *(int16_t *)(b + 0x22) = (int16_t)a0;
-  t1[1] = 0x2e808080;
-  uint32_t *head = (uint32_t *)guest_at(param_1);
+  pkt[1] = 0x2e808080;
+  uint32_t *head = (uint32_t *)guest_at(head_g);
   uint32_t old = *head;
-  *t1 = old | 0x9000000;
-  *head = guest_of(t1) & 0xffffff;
+  *pkt = old | 0x9000000;
+  *head = guest_of(pkt) & 0xffffff;
   return 0;
 }
 
@@ -1897,17 +1897,17 @@ void     gp_20_store(uint32_t);
 
 /* ======== 0x8018fc00 ======== */
 
-void mdec_decode_issue(uint32_t param_1,uint32_t param_2)
+void mdec_decode_issue(uint32_t bfr_g,uint32_t size)
 
 {
   uint32_t sz;
   
   mdec_stat_wait_a();
   MDECREG_ST(0x801b68f8, MDECREG(0x801b68f8) | 0x88);
-  MDECREG_ST(0x801b68c0, param_1 + 4);
-  sz = ((param_2 >> 5) << 0x10) | 0x20;
+  MDECREG_ST(0x801b68c0, bfr_g + 4);
+  sz = ((size >> 5) << 0x10) | 0x20;
   MDECREG_ST(0x801b68c4, sz);
-  MDECREG_ST(0x801b68f0, *(uint32_t *)guest_at(param_1));
+  MDECREG_ST(0x801b68f0, *(uint32_t *)guest_at(bfr_g));
   MDECREG_ST(0x801b68c8, 0x1000201);
   return;
 }
@@ -1954,11 +1954,11 @@ int32_t mdec_stat_wait_b(void)
 
 /* ======== 0x8018fe5c ======== */
 
-void mdec_error_reset(uint32_t param_1)
+void mdec_error_reset(uint32_t msg_g)
 
 {
   printf_forward((const char *)guest_at(0x80125324),
-               (const char *)guest_at(param_1));
+               (const char *)guest_at(msg_g));
   MDECREG_ST(0x801b68f4, 0x80000000);
   MDECREG_ST(0x801b68c8, 0);
   MDECREG_ST(0x801b68d4, 0);
@@ -1968,10 +1968,10 @@ void mdec_error_reset(uint32_t param_1)
 
 /* ======== 0x8018fb10 ======== */
 
-void mdec_pump_a(int32_t param_1)
+void mdec_pump_a(int32_t code)
 
 {
-  if (param_1 == 0) {
+  if (code == 0) {
     MDECREG_ST(0x801b68f4, 0x80000000);
     MDECREG_ST(0x801b68c8, 0);
     MDECREG_ST(0x801b68d4, 0);
@@ -1979,21 +1979,21 @@ void mdec_pump_a(int32_t param_1)
     mdec_decode_issue(0x801b67b0,0x20);
     mdec_decode_issue(0x801b6834,0x20);
   }
-  else if (param_1 == 1) {
+  else if (code == 1) {
     MDECREG_ST(0x801b68f4, 0x80000000);
     MDECREG_ST(0x801b68c8, 0);
     MDECREG_ST(0x801b68d4, 0);
     MDECREG_ST(0x801b68f4, 0x60000000);
   }
   else {
-    printf_forward((const char *)guest_at(0x801252e8),param_1);
+    printf_forward((const char *)guest_at(0x801252e8),code);
   }
   return;
 }
 
 /* ======== 0x8018fc90 ======== */
 
-void mdec_pump_b(uint32_t param_1,uint32_t param_2)
+void mdec_pump_b(uint32_t bfr_g,uint32_t size)
 
 {
   uint32_t sz;
@@ -2001,8 +2001,8 @@ void mdec_pump_b(uint32_t param_1,uint32_t param_2)
   mdec_stat_wait_b();
   MDECREG_ST(0x801b68f8, MDECREG(0x801b68f8) | 0x88);
   MDECREG_ST(0x801b68d4, 0);
-  MDECREG_ST(0x801b68cc, param_1);
-  sz = ((param_2 >> 5) << 0x10) | 0x20;
+  MDECREG_ST(0x801b68cc, bfr_g);
+  sz = ((size >> 5) << 0x10) | 0x20;
   MDECREG_ST(0x801b68d0, sz);
   MDECREG_ST(0x801b68d4, 0x1000200);
   return;
@@ -2029,73 +2029,73 @@ uint32_t gpu_coord_pack_b(uint32_t param_1,uint32_t param_2)
 
 /* ======== 0x80193e30 ======== */
 
-uint32_t gpu_sprite_rect_emit(uint32_t param_1,uint32_t param_2,uint32_t param_3)
+uint32_t gpu_sprite_rect_emit(uint32_t src,uint32_t x,uint32_t y)
 
 {
-  int16_t local_10[4];
+  int16_t rect[4];
   
-  local_10[0] = (int16_t)param_2;
-  local_10[1] = (int16_t)param_3;
-  local_10[2] = 0x10;
-  local_10[3] = 1;
+  rect[0] = (int16_t)x;
+  rect[1] = (int16_t)y;
+  rect[2] = 0x10;
+  rect[3] = 1;
   /* guest rect = $sp+0x10 (frame 0x28, disasm 0x80193e30) -> frm+0x10;
    * reserved frame staging, see spr_draw_off. */
   {
     extern uint32_t br2_guest_frame(uint32_t);
     extern void br2_guest_frame_free(void);
     uint32_t gre_frm = br2_guest_frame(0x28);
-    memcpy(guest_at(gre_frm + 0x10), local_10, 8);
-    gpu_load_image_cmd(gre_frm + 0x10,param_1);
+    memcpy(guest_at(gre_frm + 0x10), rect, 8);
+    gpu_load_image_cmd(gre_frm + 0x10,src);
     br2_guest_frame_free();
   }
-  return gpu_coord_pack_b(param_2,param_3) & 0xffff;
+  return gpu_coord_pack_b(x,y) & 0xffff;
 }
 
 /* ======== 0x80193d40 ======== */
 
-uint32_t gpu_sprite_rect_emit_mode(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                      uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                      uint32_t param_7)
+uint32_t gpu_sprite_rect_emit_mode(uint32_t src,uint32_t mode,uint32_t arg3,
+                      uint32_t x,uint32_t y,uint32_t v,
+                      uint32_t h)
 
 {
-  int16_t local_10[4];
-  int16_t f14;                          /* guest leaves +0x14 uninit for
+  int16_t rect[4];
+  int16_t dim;                          /* guest leaves +0x14 uninit for
                                          * mode > 2 / negative mode */
-  int32_t m = (int32_t)param_2;
-  int32_t v = (int32_t)param_6;
+  int32_t mode_i = (int32_t)mode;
+  int32_t v_i = (int32_t)v;
   
-  local_10[0] = (int16_t)param_4;
-  local_10[1] = (int16_t)param_5;
-  local_10[3] = (int16_t)param_7;
-  if (m == 1) {
-    f14 = (int16_t)(v / 2);
+  rect[0] = (int16_t)x;
+  rect[1] = (int16_t)y;
+  rect[3] = (int16_t)h;
+  if (mode_i == 1) {
+    dim = (int16_t)(v_i / 2);
   }
-  else if (m < 2) {
-    if (m == 0) f14 = (int16_t)(v / 4);
+  else if (mode_i < 2) {
+    if (mode_i == 0) dim = (int16_t)(v_i / 4);
   }
-  else if (m == 2) {
-    f14 = (int16_t)param_6;
+  else if (mode_i == 2) {
+    dim = (int16_t)v_i;
   }
-  local_10[2] = f14;
+  rect[2] = dim;
   /* guest rect = $sp+0x10 (frame 0x30, disasm 0x80193d40) -> frm+0x10;
    * reserved frame staging, see spr_draw_off. */
   {
     extern uint32_t br2_guest_frame(uint32_t);
     extern void br2_guest_frame_free(void);
     uint32_t grem_frm = br2_guest_frame(0x30);
-    memcpy(guest_at(grem_frm + 0x10), local_10, 8);
-    gpu_load_image_cmd(grem_frm + 0x10,param_1);
+    memcpy(guest_at(grem_frm + 0x10), rect, 8);
+    gpu_load_image_cmd(grem_frm + 0x10,src);
     br2_guest_frame_free();
   }
-  return gpu_bits_pack_a(param_2,param_3,param_4,param_5) & 0xffff;
+  return gpu_bits_pack_a(mode,arg3,x,y) & 0xffff;
 }
 
 /* ======== 0x80194120 ======== */
 
-void gpu_pkt_tag_74(uint32_t param_1)
+void gpu_pkt_tag_74(uint32_t pkt_g)
 
 {
-  uint8_t *p = (uint8_t *)guest_at(param_1);
+  uint8_t *p = (uint8_t *)guest_at(pkt_g);
   p[3] = 3;
   p[7] = 0x74;                        /* jr delay slot */
   return;
@@ -2103,10 +2103,10 @@ void gpu_pkt_tag_74(uint32_t param_1)
 
 /* ======== 0x80194140 ======== */
 
-void gpu_pkt_tag_60(uint32_t param_1)
+void gpu_pkt_tag_60(uint32_t pkt_g)
 
 {
-  uint8_t *p = (uint8_t *)guest_at(param_1);
+  uint8_t *p = (uint8_t *)guest_at(pkt_g);
   p[3] = 3;
   p[7] = 0x60;                        /* jr delay slot */
   return;
@@ -2114,17 +2114,17 @@ void gpu_pkt_tag_60(uint32_t param_1)
 
 /* ======== 0x80190dd0 ======== */
 
-void guest_memset_b(uint32_t param_1,uint32_t param_2,uint32_t param_3)
+void guest_memset_b(uint32_t dst,uint32_t val,uint32_t len)
 
 {
   uint8_t *d;
-  int32_t n = (int32_t)param_3;
+  int32_t n = (int32_t)len;
   
-  if (param_1 == 0) return;
-  d = (uint8_t *)guest_at(param_1);
+  if (dst == 0) return;
+  d = (uint8_t *)guest_at(dst);
   if (n > 0) {
     do {
-      *d = (uint8_t)param_2;
+      *d = (uint8_t)val;
       n = n - 1;
       d = d + 1;
     } while (n > 0);
