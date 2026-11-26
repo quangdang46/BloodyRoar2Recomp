@@ -548,35 +548,35 @@ static void func_0x80126170(void) { empty_leaf_e(); }
 static void func_0x80163840(int p) { (void)p; }
 
 /* apply_saved_settings_or_defaults @0x80126720 */
-static void apply_saved_settings_or_defaults(undefined4 *param_1)
+static void apply_saved_settings_or_defaults(undefined4 *cfg)
 {
-    undefined4 *puVar1;
-    undefined4 *puVar2;
-    undefined4 uVar3;
-    undefined4 uVar4;
-    undefined4 uVar5;
+    undefined4 *src;
+    undefined4 *dst;
+    undefined4 w1;
+    undefined4 w2;
+    undefined4 w3;
 
-    puVar1 = (undefined4 *)g_DAT_801b1280;
-    puVar2 = param_1;
+    src = (undefined4 *)g_DAT_801b1280;
+    dst = cfg;
     do {
-        uVar3 = puVar1[1];
-        uVar4 = puVar1[2];
-        uVar5 = puVar1[3];
-        *puVar2 = *puVar1;
-        puVar2[1] = uVar3;
-        puVar2[2] = uVar4;
-        puVar2[3] = uVar5;
-        puVar1 = puVar1 + 4;
-        puVar2 = puVar2 + 4;
-    } while (puVar1 != (undefined4 *)g_DAT_801b12e0);
-    *puVar2 = *(undefined4 *)g_DAT_801b12e0;
+        w1 = src[1];
+        w2 = src[2];
+        w3 = src[3];
+        *dst = *src;
+        dst[1] = w1;
+        dst[2] = w2;
+        dst[3] = w3;
+        src = src + 4;
+        dst = dst + 4;
+    } while (src != (undefined4 *)g_DAT_801b12e0);
+    *dst = *(undefined4 *)g_DAT_801b12e0;
     save_defaults_fill();
     save_block_init();
     save_tables_commit();
-    dbg_marker_mode_set(*(undefined1 *)(param_1 + 9));
-    gauge_scale_fixed(*(undefined1 *)((uint8_t *)param_1 + 0xe),
-                 ((uint)*(byte *)((uint8_t *)param_1 + 0xf) << 3) / 10);
-    brightness_commit(*(byte *)(param_1 + 3) ^ 1);
+    dbg_marker_mode_set(*(undefined1 *)(cfg + 9));
+    gauge_scale_fixed(*(undefined1 *)((uint8_t *)cfg + 0xe),
+                 ((uint)*(byte *)((uint8_t *)cfg + 0xf) << 3) / 10);
+    brightness_commit(*(byte *)(cfg + 3) ^ 1);
 }
 
 /* ==================================================================
@@ -592,13 +592,13 @@ static void apply_saved_settings_or_defaults(undefined4 *param_1)
  * ================================================================== */
 void entry_0x80126234(void)
 {
-    bool bVar1;
-    byte bVar2;
-    int iVar3;
-    uint uVar4;
-    undefined4 uVar5;
-    ushort uVar6;
-    /* auStack_30 = the pad/input buffer. In the original it lives on the guest
+    bool state_ok;
+    byte prev_state;
+    int ret;
+    uint gs;
+    undefined4 mode_sel;
+    ushort match_ctr;
+    /* pad_buf = the pad/input buffer. In the original it lives on the guest
      * stack at sp_old-0x30 (generated 0x80126234: addiu sp,-64; buffer at
      * sp+16). The pad driver is generated/BIOS code that writes guest RAM, so
      * _g_pad_buffer must alias that guest buffer — a host stack array would
@@ -609,31 +609,31 @@ void entry_0x80126234(void)
      * frm+0x10). */
     extern uint32_t br2_guest_frame(uint32_t);
     uint32_t mn_frm = br2_guest_frame(0x40);
-    ushort *auStack_30 = (ushort *)guest_at(mn_frm + 0x10);
+    ushort *pad_buf = (ushort *)guest_at(mn_frm + 0x10);
 
     func_0x80126170();
-    uVar6 = 0;
+    match_ctr = 0;
     boot();
-    auStack_30[1] = 0x1c7f;
-    _g_pad_buffer = (uint8_t *)auStack_30;
-    auStack_30[0] = 0;
+    pad_buf[1] = 0x1c7f;
+    _g_pad_buffer = (uint8_t *)pad_buf;
+    pad_buf[0] = 0;
     DAT_1f8000b8 = 0;
-    auStack_30[2] = 0;
-    auStack_30[3] = 0;
-    auStack_30[4] = 0;
-    auStack_30[5] = 0;
-    auStack_30[6] = 0;
-    auStack_30[7] = 0;
+    pad_buf[2] = 0;
+    pad_buf[3] = 0;
+    pad_buf[4] = 0;
+    pad_buf[5] = 0;
+    pad_buf[6] = 0;
+    pad_buf[7] = 0;
     g_game_state = 0;
     g_sub_state = '\0';
     DAT_1f80009b = 0;
     DAT_1f80009c = '\0';
-    iVar3 = memcard_info_query();
-    if (iVar3 == 0) {
+    ret = memcard_info_query();
+    if (ret == 0) {
         apply_saved_settings_or_defaults((undefined4 *)_g_system_config_ptr);
     }
     else {
-        auStack_30[0] = (ushort)*(byte *)(_g_system_config_ptr + 0x1d);
+        pad_buf[0] = (ushort)*(byte *)(_g_system_config_ptr + 0x1d);
         dbg_marker_mode_set(*(undefined1 *)(_g_system_config_ptr + 0x24));
         gauge_scale_fixed(*(undefined1 *)(_g_system_config_ptr + 0xe),
                      ((uint)*(byte *)(_g_system_config_ptr + 0xf) << 3) / 10);
@@ -652,13 +652,13 @@ switchD_80126370_caseD_80126344:
     { extern int br2_bail_pending(void);
       extern void br2_guest_frame_abandon(void);
       if (br2_bail_pending()) { br2_guest_frame_abandon(); return; } }
-    uVar4 = (uint)g_game_state;
+    gs = (uint)g_game_state;
 code_r0x8012634c:
-    bVar1 = uVar4 < 0xe;
+    state_ok = gs < 0xe;
 LAB_80126350:
     do {
-    } while (!bVar1);
-    switch(uVar4) {
+    } while (!state_ok);
+    switch(gs) {
     case 0: /* 0x80126378 */
         match_mode_set(1);
         g_game_state = 1;
@@ -667,40 +667,40 @@ LAB_80126350:
         display_mode_setup(*(undefined1 *)(_g_system_config_ptr + 0xb));
         frame_advance_helper();
         transition_screen_flow(0xf);
-        uVar4 = (uint)g_game_state;
-        bVar1 = uVar4 < 0xe;
-        if (uVar4 == 1) goto LAB_801265b8;
+        gs = (uint)g_game_state;
+        state_ok = gs < 0xe;
+        if (gs == 1) goto LAB_801265b8;
         goto LAB_80126350;
     case 2: /* 0x801263c8 */
         goto switchD_80126370_caseD_801263c8;
     case 3: /* 0x801263e0 */
-        uVar5 = 2;
+        mode_sel = 2;
         if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
-            uVar5 = 1;
+            mode_sel = 1;
         }
-        match_mode_set(uVar5);
+        match_mode_set(mode_sel);
         display_mode_setup(*(undefined1 *)(_g_system_config_ptr + 0xb));
         frame_advance_helper();
         transition_screen_flow(3);
         transition_screen_flow(1);
-        uVar4 = (uint)g_game_state;
-        bVar1 = uVar4 < 0xe;
-        if (uVar4 == 3) {
+        gs = (uint)g_game_state;
+        state_ok = gs < 0xe;
+        if (gs == 3) {
             g_game_state = 4;
             goto switchD_80126370_caseD_80126344;
         }
         goto LAB_80126350;
     case 4: /* 0x8012644c */
-        uVar5 = 2;
+        mode_sel = 2;
         if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
-            uVar5 = 1;
+            mode_sel = 1;
         }
-        match_mode_set(uVar5);
+        match_mode_set(mode_sel);
         frame_advance_helper();
         gauge_scale_fixed(*(undefined1 *)(_g_system_config_ptr + 0xe),
                      ((((uint)*(byte *)(_g_system_config_ptr + 0xf) * 0x10a) / 100) * 8) / 10);
-        iVar3 = scene_entry(0x80010000,0,1);
-        if (iVar3 != 0) {
+        ret = scene_entry(0x80010000,0,1);
+        if (ret != 0) {
             g_game_state = 5;
         }
         gauge_scale_fixed(*(undefined1 *)(_g_system_config_ptr + 0xe),
@@ -710,32 +710,32 @@ LAB_80126350:
     case 5: /* 0x80126534 */
         goto switchD_80126370_caseD_80126534;
     case 6: /* 0x801265c8 */
-        uVar5 = 2;
+        mode_sel = 2;
         if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
-            uVar5 = 1;
+            mode_sel = 1;
         }
-        match_mode_set(uVar5);
+        match_mode_set(mode_sel);
         battle_intro_flow(0);
         if ((g_game_state != 6) || (results_scoreboard(0), g_game_state != 6))
             goto switchD_80126370_caseD_80126344;
         goto LAB_8012661c;
     case 7: /* 0x80126624 */
-        uVar5 = 2;
+        mode_sel = 2;
         if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
-            uVar5 = 1;
+            mode_sel = 1;
         }
-        match_mode_set(uVar5);
-        bVar2 = 7;
+        match_mode_set(mode_sel);
+        prev_state = 7;
         goto LAB_8012666c;
     case 8: /* 0x80126654 */
         match_mode_set(1);
-        /* a0 is the pad/input buffer. auStack_30 is already the host pointer
+        /* a0 is the pad/input buffer. pad_buf is already the host pointer
          * into guest RAM (guest_at of the staged sp-0x30 buffer); the callee
          * dereferences it directly, so pass the host pointer, not guest_of. */
-        battle_flow_state_machine((intptr_t)auStack_30);
-        bVar2 = 8;
+        battle_flow_state_machine((intptr_t)pad_buf);
+        prev_state = 8;
 LAB_8012666c:
-        if (g_game_state == bVar2) {
+        if (g_game_state == prev_state) {
             g_game_state = 5;
         }
         goto switchD_80126370_caseD_80126344;
@@ -757,13 +757,13 @@ LAB_8012666c:
     case 11: /* 0x801266c0 */
         match_mode_set(1);
         if (g_sub_state == '\x03') {
-            iVar3 = system_config_menu_a();
+            ret = system_config_menu_a();
         }
         else {
             if (g_sub_state != '\x04') goto switchD_80126370_caseD_80126344;
-            iVar3 = system_config_menu_b();
+            ret = system_config_menu_b();
         }
-        if (iVar3 != 0) {
+        if (ret != 0) {
             g_game_state = 5;
         }
         goto switchD_80126370_caseD_80126344;
@@ -773,12 +773,12 @@ LAB_8012666c:
     g_game_state = 5;
     goto switchD_80126370_caseD_80126344;
 switchD_80126370_caseD_80126534:
-    uVar5 = 2;
+    mode_sel = 2;
     if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
-        uVar5 = 1;
+        mode_sel = 1;
     }
-    uVar6 = uVar6 + 1;
-    match_mode_set(uVar5);
+    match_ctr = match_ctr + 1;
+    match_mode_set(mode_sel);
     display_mode_setup(*(undefined1 *)(_g_system_config_ptr + 0xb));
     /* Faithful call order (generated block_80126534 chain): frame_tick,
      * frame_advance_helper, frame_tick, memcard_poll_frame, then match_loop
@@ -790,10 +790,10 @@ switchD_80126370_caseD_80126534:
     frame_tick(0x1f800000);
     memcard_poll_frame();
     match_loop();
-    uVar4 = (uint)g_game_state;
-    bVar1 = uVar4 < 0xe;
-    if (uVar4 == 5) {
-        if (uVar6 < 4) {
+    gs = (uint)g_game_state;
+    state_ok = gs < 0xe;
+    if (gs == 5) {
+        if (match_ctr < 4) {
             g_game_state = 6;
         }
         else {
@@ -804,9 +804,9 @@ LAB_801265b8:
     }
     goto LAB_80126350;
 switchD_80126370_caseD_801263c8:
-    uVar4 = (uint)g_game_state;
-    uVar6 = 0;
-    if (uVar4 == 2) goto LAB_8012661c;
+    gs = (uint)g_game_state;
+    match_ctr = 0;
+    if (gs == 2) goto LAB_8012661c;
     goto code_r0x8012634c;
 LAB_8012661c:
     g_game_state = 3;
