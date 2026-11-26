@@ -37,6 +37,15 @@ extern void slot_mark2_set(uint32_t);
  * host pointers into the guest arena, same convention as the callers. */
 extern void keyframe_advance(uint8_t *ctrl, uint8_t *motion);
 
+typedef uint8_t  byte;
+typedef uint16_t ushort;
+typedef uint32_t uint;
+typedef uint16_t undefined2;
+typedef uint32_t undefined4;
+typedef uint8_t  undefined;
+typedef uint8_t  undefined1;
+typedef uint64_t undefined8;
+typedef uint64_t ulonglong;
 
 #define G16(p,o)   (*(const int16_t  *)((const uint8_t *)(p) + (o)))
 #define GU16(p,o)  (*(const uint16_t *)((const uint8_t *)(p) + (o)))
@@ -1189,57 +1198,66 @@ ushort * ev5_action_select(int ctrl_g,int foe_g,ushort *stream)
 {
   short act_idx;
   undefined4 pend_g;
+  ushort *next;
   uint opcode;
   int motion_g;
+  int foe_motion_g;
+  int op_word;
+  int off;
+  uint subop;
+  ushort operand;
+  int idx;
+  int target_g;
   /* ctrl_g/foe_g arrive as guest addresses; stream is a host
    * stream pointer. Bridge the guest addrs once here. */
   uint8_t *ctrl = (uint8_t *)guest_at((uint32_t)ctrl_g);
+  uint8_t *foe = (uint8_t *)guest_at((uint32_t)foe_g);
+  uint8_t *motion;
+  uint8_t *foe_motion;
   operand = stream[1];
   idx = (int)(short)operand;
   op_word = ((int)((uint)*stream << 0x10) >> 0x18) << 0x10;
   opcode = op_word >> 0x10;
   target_g = ctrl_g;
   if ((opcode & 0x40) != 0) {
+    target_g = (int)GU32(ctrl, 0x2c);
   }
   motion_g = (int)GU32(ctrl, 0x38);
   motion = (uint8_t *)guest_at((uint32_t)motion_g);
   subop = op_word >> 0x14 & 3;
+  if (subop == 1) {
+    if ((GU8(ctrl, 5) & 1) == 0) goto LAB_8017aebc;
     goto LAB_8017ae9c;
+  }
+  if (((1 < subop) && (subop == 2)) && ((GU8(ctrl, 5) & 1) == 0)) {
     return stream + 2;
+  }
 LAB_8017aebc:
   next = (ushort *)0x0;
   switch(opcode & 0xf) {
   case 0:
+    if (idx == -1) {
+      idx = (int)*(short *)(foe + 0xa0);
+      if (*(short *)(foe + 0xa4) <= idx) {
         *(undefined2 *)(foe + 0xa0) = 0;
-uint16_t * ev5_action_select(int ctrl_g,int motion_g,uint16_t *stream)
-  uint32_t anim_val;
-  anim = stream[1];
-  tmp = ((int)((uint32_t)*stream << 0x10) >> 0x18) << 0x10;
-  op = tmp >> 0x10;
-  ctrl_arg = ctrl_g;
-  motion_addr = (int)GU32(p1, 0x38);
-  m5 = (uint8_t *)guest_at((uint32_t)motion_addr);
-  variant = tmp >> 0x14 & 3;
-  ret = (uint16_t *)0x0;
-  switch(op & 0xf) {
-        *(uint16_t *)(p2 + 0xa0) = 0;
         idx = 0;
       }
       *(short *)(foe + 0xa0) = *(short *)(foe + 0xa0) + 1;
     }
     off = idx * 4;
     if (idx < *(short *)(foe + 0xa4)) {
+      if (*(uint *)((uint8_t *)guest_at(GU32(foe, 0xac)) + off) < 0x80000001) {
+        if (*(int *)((uint8_t *)guest_at(GU32(foe, 0xa8)) + off) == 0) goto LAB_8017b034;
         *(undefined2 *)(foe + 0xbe) = *(undefined2 *)(foe + 0xbc);
         *(undefined4 *)(foe + 0xb0) = *(undefined4 *)((uint8_t *)guest_at(GU32(foe, 0xa8)) + off);
       }
       else {
+        *(undefined2 *)(foe + 0xbe) = 0x80;
+        *(undefined4 *)(foe + 0xb0) = *(undefined4 *)((uint8_t *)guest_at(GU32(foe, 0xac)) + off);
+      }
       *(short *)(foe + 0xa2) = (short)idx;
 LAB_8017b090:
       fighter_anim_advance(ctrl_g,foe_g);
-    tmp = idx * 4;
-        *(uint16_t *)(p2 + 0xbe) = *(uint16_t *)(p2 + 0xbc);
-        *(uint32_t *)(p2 + 0xb0) = *(uint32_t *)((uint8_t *)guest_at(GU32(p2, 0xa8)) + tmp);
-      fighter_anim_advance(ctrl_g,motion_g);
       return stream + 2;
     }
     break;
@@ -1249,29 +1267,37 @@ LAB_8017b090:
     }
     *(ushort *)(motion + 0x80) = operand;
     act_idx = *(short *)(motion + 0x80);
+    *(ushort *)(motion + 0x82) = operand;
     goto LAB_8017b044;
   case 2:
+    *(ushort *)(foe + 0x98) = operand;
     break;
+  case 3:
+    *(ushort *)(foe + 0x9a) = operand;
+    break;
+  case 4:
+    *(ushort *)(foe + 0x16) = operand;
+    break;
+  case 5:
     foe_motion_g = (int)GU32((const uint8_t *)guest_at(GU32(ctrl, 0x2c)), 0x38);
     foe_motion = (uint8_t *)guest_at((uint32_t)foe_motion_g);
     if (idx < *(short *)(foe_motion + 0xa4)) {
+      if (0x80000000 < *(uint *)((uint8_t *)guest_at(GU32(foe_motion, 0xac)) + idx * 4)) {
         *(undefined2 *)(foe + 0xbe) = *(undefined2 *)(foe + 0xbc);
         pend_g = *(undefined4 *)((uint8_t *)guest_at(GU32(foe_motion, 0xac)) + idx * 4);
+        *(ushort *)(foe + 0xa2) = operand;
         *(undefined4 *)(foe + 0xb0) = pend_g;
+        goto LAB_8017b090;
+      }
 LAB_8017b034:
+      *(undefined2 *)(motion + 0x80) = 1;
+      act_idx = *(short *)(motion + 0x80);
+      *(undefined2 *)(motion + 0x82) = 1;
 LAB_8017b044:
       action_switch_guest(target_g,(int *)motion,(int)act_idx);
       {
         uint32_t ns = GU32(foe, 0x84);
         return ns ? (ushort *)guest_at(ns) : (ushort *)0;
-      anim = *(uint16_t *)(m5 + 0x98);
-    *(uint16_t *)(m5 + 0x80) = anim;
-    sel = *(short *)(m5 + 0x80);
-    tmp = (int)GU32((const uint8_t *)guest_at(GU32(p1, 0x2c)), 0x38);
-    fmc = (uint8_t *)guest_at((uint32_t)tmp);
-        anim_val = *(uint32_t *)((uint8_t *)guest_at(GU32(fmc, 0xac)) + idx * 4);
-        *(uint32_t *)(p2 + 0xb0) = anim_val;
-      action_switch_guest(ctrl_arg,(int *)m5,(int)sel);
       }
     }
     break;
@@ -1280,8 +1306,7 @@ LAB_8017b044:
     break;
   case 7:
     next = stream + 2;
-    *(uint16_t *)(p2 + 0x14) = anim;
-    ret = stream + 2;
+    *(ushort *)(foe + (*(byte *)(foe + 0x7d) - 1) * 2 + 0x3c) = operand;
   default:
     goto switchD_8017aedc_default;
   }
@@ -1289,7 +1314,6 @@ LAB_8017ae9c:
   next = stream + 2;
 switchD_8017aedc_default:
   return next;
-  ret = stream + 2;
 
 }
 
@@ -1305,67 +1329,67 @@ switchD_8017aedc_default:
 typedef uint8_t *evhandler_t(uint8_t *ctrl, uint8_t *motion, uint32_t pc_g);
 extern uint8_t *g_DAT_1f8000b1, *g_DAT_1f8000e8, *g_DAT_801f0760;
 extern uint32_t *g__DAT_801f093a, *g__DAT_801f093e;
-extern int fx_group_alloc(uint32_t,uint32_t,int,int);
-extern uint32_t noop_c(int);
-extern void noop_a(int,uint32_t,uint32_t,uint32_t);
-extern void node_param_quad_set(int,uint32_t,uint32_t,uint32_t,uint32_t);
-extern void hit_spark_spawn(uint32_t,uint32_t,uint16_t);
-extern void speech_bubble_spawn(uint32_t*,short,int,uint16_t);
+extern int fx_group_alloc(undefined4,undefined4,int,int);
+extern undefined4 noop_c(int);
+extern void noop_a(int,undefined4,undefined4,undefined4);
+extern void node_param_quad_set(int,undefined4,undefined4,undefined4,undefined4);
+extern void hit_spark_spawn(undefined4,uint,undefined2);
+extern void speech_bubble_spawn(undefined4*,short,int,ushort);
 extern void color_rec_table_init(uint32_t,uint32_t);
 extern void effect_arg_set(int);
 extern void sprite_burst_spawn(int,int);
 extern void confetti_burst_spawn(int,int);
 extern void popup_spawn(int,int,int);
-extern void firework_spawn(uint16_t*);
-extern void triple_track_spawn(int,uint16_t,int);
+extern void firework_spawn(undefined2*);
+extern void triple_track_spawn(int,undefined2,int);
 extern void iris_wipe_spawn(int,int);
-extern void noop_b(int,uint32_t,uint32_t);
-extern void emit_task_spawn_b(uint32_t*,uint32_t,uint32_t,uint32_t);
-extern int fx_record_alloc(uint32_t,int,uint32_t,uint32_t,uint32_t);
-extern uint32_t rand_lcg(void);
+extern void noop_b(int,undefined4,undefined4);
+extern void emit_task_spawn_b(undefined4*,undefined4,undefined4,undefined4);
+extern int fx_record_alloc(undefined4,int,uint,undefined4,undefined4);
+extern uint rand_lcg(void);
 extern uint32_t *g__DAT_1f8000c4, *g__DAT_801f0780, *g__DAT_801f0790;
 extern uint8_t *g_DAT_801b180c;
 extern uint8_t *g_DAT_801b1d5c;
 extern uint32_t *g_PTR_DAT_801b1d44;
-extern void fighter_reset_fx(int,uint8_t*);
+extern void fighter_reset_fx(int,byte*);
 
 /* ev_spark_spawn — EV22: spawn hit-spark/effect task. a2 = pc (stream
  * ptr); consumes one u16 record, returns pc+2. */
 ushort * ev_spark_spawn(int ctrl_g,undefined4 unused,ushort *stream)
 {
+  ushort rec;
   int task_g;
+  int tmp;
   /* ctrl_g arrives as a guest address; stream is a host stream ptr. */
   uint8_t *ctrl = (uint8_t *)guest_at((uint32_t)ctrl_g);
-uint16_t * ev_spark_spawn(int ctrl_g,uint32_t arg,uint16_t *stream)
+  uint8_t *task;
 
   if (*g_DAT_1f8000b1 == 0) {
     /* guest: s1 = sx8(byte@pc+1); slti s1,3 is SIGNED — negative
      * opcodes still take the alloc path (@0x80141bb4-0x80141bc4) */
     tmp = (int)(int8_t)(*stream >> 8);
     if (tmp < 3) {
+      tmp = fx_group_alloc(1,1,0,0);
+      if (tmp != 0) {
         task_g = (int)noop_c(tmp);
         task = (uint8_t *)guest_at((uint32_t)task_g);
         noop_a(tmp,GU32(ctrl, 0x20) + 0x124,
                      (uint32_t)ctrl_g,guest_of(g_DAT_801f0760));
         rec = *stream;
         *(uint32_t *)(task + 0x18) = 0x80140710;
+        *(uint32_t *)(task + 0x1c) = 0;
         /* guest: sll16/sra24 -> sx8(byte@pc+1), sw @task+0x14
          * (@0x80141c38-0x80141c44) */
         *(int *)(task + 0x14) = (int)(int8_t)(rec >> 8);
       }
+    }
     else if ((tmp == 3) &&
                (tmp = fx_group_alloc(1,1,GU8(ctrl,2) + 1,0), tmp != 0)) {
+        task_g = (int)noop_c(tmp);
+        task = (uint8_t *)guest_at((uint32_t)task_g);
         node_param_quad_set(tmp,(uint32_t)ctrl_g,
                      guest_of(g_DAT_1f8000e8 + (GU8(ctrl,2) ^ 1) * 0x108),
                      (uint32_t)(GU8(ctrl,2) + 1),
-    grp = (int)(int8_t)(*stream >> 8);
-        ti_g = (int)noop_c(grp);
-        ti = (uint8_t *)guest_at((uint32_t)ti_g);
-        noop_a(grp,GU32(p1, 0x20) + 0x124,
-        op16 = *stream;
-               (grp = fx_group_alloc(1,1,GU8(p1,2) + 1,0), grp != 0)) {
-        node_param_quad_set(grp,(uint32_t)ctrl_g,
-                     (uint32_t)(GU8(p1,2) + 1),
                      guest_of(g_DAT_801f0760));
         *(uint32_t *)(task + 0x14) =
              (uint32_t)GU8((uint8_t *)guest_at(GU32(ctrl, 0x38)), 0x100);
@@ -1376,7 +1400,7 @@ uint16_t * ev_spark_spawn(int ctrl_g,uint32_t arg,uint16_t *stream)
           *(int *)(task + 0x1c) = (int)*(const int16_t *)g__DAT_801f093a;
           tmp = (int)*(const int16_t *)g__DAT_801f093e;
           *(uint32_t *)(task + 0x24) = 0x8013f178;
-          grp = (int)*(const int16_t *)g__DAT_801f093e;
+          *(int *)(task + 0x20) = tmp;
         }
     }
   }
@@ -1386,39 +1410,41 @@ uint16_t * ev_spark_spawn(int ctrl_g,uint32_t arg,uint16_t *stream)
 static uint8_t *w22(uint8_t *c, uint8_t *m, uint32_t pc_g)
 {
     return (uint8_t *)ev_spark_spawn(
-        (int)guest_of(c), 0, (uint16_t *)guest_at(pc_g));
+        (int)guest_of(c), 0, (ushort *)guest_at(pc_g));
 }
 
 /* ev_cmd_dispatch — EV23: event/sound/effect command dispatcher.
  * Consumes a 4-byte record {u8 op, u8 arg, u16 param}; returns pc+4. */
 ushort * ev_cmd_dispatch(int ctrl_g,undefined4 unused,ushort *stream)
 {
+  ushort param16;
   undefined2 rand_val;
+  undefined2 *fx_rec;
   int *fx_rec2;
+  int tmp;
   uint arg7;
+  uint param32;
+  undefined2 vec[4];
   /* ctrl_g arrives as a guest address; stream is a host stream ptr. */
   uint8_t *ctrl = (uint8_t *)guest_at((uint32_t)ctrl_g);
+  uint8_t *motion;
+
   param16 = stream[1];
   param32 = (uint)param16;
   if (*g_DAT_1f8000b1 == 0) {
     switch((int)((uint)*stream << 0x10) >> 0x18) {
     case 0:
       motion = (uint8_t *)guest_at(GU32(ctrl, 0x38));
+      if ((*(int8_t *)(motion + 0x100) == 0) || ((param16 & 0x80) == 0)) {
         arg7 = param32 & 0x7f;
       }
       else {
+        arg7 = param32 & 0xff;
+      }
       hit_spark_spawn(ctrl_g,arg7,(int)(int8_t)(param32 >> 8));
       break;
+    case 1:
       triple_track_spawn(GU8(ctrl,2),param32 & 0xff,(int)(int8_t)(param32 >> 8));
-uint16_t * ev_cmd_dispatch(int ctrl_g,uint32_t arg,uint16_t *stream)
-  uint32_t aux_idx;
-  op16 = stream[1];
-  op = (uint32_t)op16;
-    switch((int)((uint32_t)*stream << 0x10) >> 0x18) {
-      mo = (uint8_t *)guest_at(GU32(p1, 0x38));
-        aux_idx = op & 0x7f;
-      hit_spark_spawn(ctrl_g,aux_idx,(int)(int8_t)(op >> 8));
-      triple_track_spawn(GU8(p1,2),op & 0xff,(int)(int8_t)(op >> 8));
       break;
     case 2:
       /* guest @0x80141DF0: a2 = sx8(param>>8) = sx8(byte@pc+3),
@@ -1428,8 +1454,9 @@ uint16_t * ev_cmd_dispatch(int ctrl_g,uint32_t arg,uint16_t *stream)
                    (int)(int8_t)(param32 >> 8),(ushort)(param32 & 0xff));
       break;
     case 3:
-      speech_bubble_spawn((uint32_t *)guest_at(GU32(p1, 0x20) + 0x124),
-                   (int)(int8_t)(op >> 8),(uint16_t)(op & 0xff));
+      speech_bubble_spawn((undefined4 *)guest_at(GU32(ctrl, 0x20) + 0x124),
+                   *(short *)(ctrl + 0x4e) + 0x400,
+                   (int)(int8_t)(param32 >> 8),(ushort)(param32 & 0xff));
       break;
     case 4:
       effect_arg_set(ctrl_g);
@@ -1439,14 +1466,14 @@ uint16_t * ev_cmd_dispatch(int ctrl_g,uint32_t arg,uint16_t *stream)
       break;
     case 6:
       confetti_burst_spawn(ctrl_g,(int)(short)param16);
+      break;
+    case 7:
       if (*(int8_t *)((uint8_t *)guest_at(*g__DAT_1f8000c4) + 2) != 0) {
         popup_spawn(ctrl_g,(int)(int8_t)(param32 >> 8),param32 & 0xff);
       }
+      break;
+    case 8:
       iris_wipe_spawn(ctrl_g,(int)(short)param16);
-      sprite_burst_spawn(ctrl_g,(int)(short)op16);
-      confetti_burst_spawn(ctrl_g,(int)(short)op16);
-        popup_spawn(ctrl_g,(int)(int8_t)(op >> 8),op & 0xff);
-      iris_wipe_spawn(ctrl_g,(int)(short)op16);
       break;
     case 9: {
       /* guest: s0 = sx16(param); if motion+0x100: s0 = lbu(0x801b180c+s0);
@@ -1459,11 +1486,8 @@ uint16_t * ev_cmd_dispatch(int ctrl_g,uint32_t arg,uint16_t *stream)
         pi = (int32_t)g_DAT_801b180c[pi];
       }
       tmp = fx_group_alloc(1,1,0,0xf);
+      if (tmp != 0) {
         noop_b(tmp,GU32(ctrl, 0x20) + (uint32_t)(pi * 0x50) + 0x34,
-      mo = (uint8_t *)guest_at(GU32(p1, 0x38));
-        pidx = (int32_t)g_DAT_801b180c[pidx];
-      off = fx_group_alloc(1,1,0,0xf);
-        noop_b(off,GU32(p1, 0x20) + (uint32_t)(pidx * 0x50) + 0x34,
                      guest_of(g_DAT_801f0760));
       }
       break;
@@ -1474,48 +1498,44 @@ uint16_t * ev_cmd_dispatch(int ctrl_g,uint32_t arg,uint16_t *stream)
     case 0xb:
       firework_spawn((undefined2 *)guest_at(GU32(ctrl, 0x20) +
                         (uint32_t)((int16_t)param16 * 0x50) + 0x34));
+      break;
+    case 0xc: {
       uint8_t *obj;
       arg7 = (int)(int8_t)(param32 >> 8) & 0x7f;
       motion = (uint8_t *)guest_at(GU32(ctrl, 0x38));
       if ((*(int8_t *)(motion + 0x100) != 0) &&
          (((int)(param32 << 0x10) >> 0x10 & 0x8000U) != 0)) {
+        arg7 = (uint)g_DAT_801b180c[arg7];
       }
       tmp = arg7 * 0x50;
       obj = (uint8_t *)guest_at(GU32(ctrl, 0x20));
       /* guest copies 3 u16 to its stack vec; emit_task_spawn_b reads
        * 8 bytes — keep the host vec contiguous and padded like the
+       * guest frame (@0x80141e18-0x80141e50) */
       vec[0] = *(undefined2 *)(obj + tmp + 0x34);
       vec[1] = *(undefined2 *)(obj + tmp + 0x38);
       vec[2] = *(undefined2 *)(obj + tmp + 0x3c);
       vec[3] = 0;
+      tmp = (param32 & 0xff) * 4;
       emit_task_spawn_b((undefined4 *)vec,
                    *(uint32_t *)((char *)g__DAT_801f0790 + tmp),
+                   *(uint32_t *)((char *)g__DAT_801f0780 + tmp),0);
+      break;
+    }
+    case 0xd:
       fx_rec = (undefined2 *)guest_at((uint32_t)fx_record_alloc(GU32(ctrl, 0x20) + 0x124,6,
                             0x80000010,2,*g_PTR_DAT_801b1d44));
+      if (fx_rec != (undefined2 *)0x0) {
         rand_val = (undefined2)rand_lcg();
         *fx_rec = rand_val;
+      }
+      break;
+    case 0xe:
       fx_rec2 = (int *)guest_at((uint32_t)fx_record_alloc(GU32(ctrl, 0x20) + 0x444,0xc,
                                    0x80000012,0x8e,guest_of(g_DAT_801b1d5c)));
+      if (fx_rec2 != (int *)0x0) {
         *fx_rec2 = ctrl_g;
         fx_rec2[1] = (int)guest_of(g_DAT_1f8000e8 + (GU8(ctrl,2) ^ 1) * 0x108);
-      color_rec_table_init(GU8(p1,3),(uint32_t)(int16_t)op16);
-      firework_spawn((uint16_t *)guest_at(GU32(p1, 0x20) +
-                        (uint32_t)((int16_t)op16 * 0x50) + 0x34));
-      aux_idx = (int)(int8_t)(op >> 8) & 0x7f;
-      mo = (uint8_t *)guest_at(GU32(p1, 0x38));
-         (((int)(op << 0x10) >> 0x10 & 0x8000U) != 0)) {
-      off = aux_idx * 0x50;
-      pos[0] = *(uint16_t *)(obj + off + 0x34);
-      pos[1] = *(uint16_t *)(obj + off + 0x38);
-      pos[2] = *(uint16_t *)(obj + off + 0x3c);
-      pos[3] = 0;
-      emit_task_spawn_b((uint32_t *)pos,
-      rec = (uint16_t *)guest_at((uint32_t)fx_record_alloc(GU32(p1, 0x20) + 0x124,6,
-        rand_v = (uint16_t)rand_lcg();
-        *rec = rand_v;
-      task = (int *)guest_at((uint32_t)fx_record_alloc(GU32(p1, 0x20) + 0x444,0xc,
-        *task = ctrl_g;
-        task[1] = (int)guest_of(g_DAT_1f8000e8 + (GU8(p1,2) ^ 1) * 0x108);
       }
       break;
     case 0xf:
@@ -1528,7 +1548,7 @@ uint16_t * ev_cmd_dispatch(int ctrl_g,uint32_t arg,uint16_t *stream)
 static uint8_t *w23(uint8_t *c, uint8_t *m, uint32_t pc_g)
 {
     return (uint8_t *)ev_cmd_dispatch(
-        (int)guest_of(c), 0, (uint16_t *)guest_at(pc_g));
+        (int)guest_of(c), 0, (ushort *)guest_at(pc_g));
 }
 #define EVWRAP(nm, fn) \
     static uint8_t *nm(uint8_t *c, uint8_t *m, uint32_t pc_g) \
@@ -1543,7 +1563,7 @@ static uint8_t *w5(uint8_t *c, uint8_t *m, uint32_t pc_g)
 {
     return (uint8_t *)ev5_action_select(
         (int)guest_of(c), (int)guest_of(m),
-        (uint16_t *)guest_at(pc_g));
+        (ushort *)guest_at(pc_g));
 }
 EVWRAP(w6,  ev6_guard_sync)
 EVWRAP(w7,  ev7_position)
@@ -1697,9 +1717,9 @@ block_801421C4:
     cpu->gpr[2] = 0x1F80 << 16;  /* 0x1F800000 */
     { uint32_t _pgxa = cpu->gpr[2] + 177; cpu->gpr[2] = (int32_t)(int8_t)br2_ld8(cpu->gpr[2] + 177);
     }  /* 0x80142228: 0x804200B1 */
-    int cond_cpu_sub_gt_gpr_2_eq_cpu_sub_gt_gpr_0 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    int _bc_80142230 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
     cpu->gpr[23] = cpu->gpr[16] & 0x00FF;  /* 0x80142234: 0x321700FF */
-    if (cond_cpu_sub_gt_gpr_2_eq_cpu_sub_gt_gpr_0) {
+    if (_bc_80142230) {
         goto block_80142240;  /* taken */
     } else {
         goto block_80142238;  /* not taken */
@@ -1713,18 +1733,18 @@ block_80142240:
     }  /* 0x80142240: 0x8E420038 */
     { uint32_t _pgxa = cpu->gpr[2] + 256; cpu->gpr[2] = br2_ld8(cpu->gpr[2] + 256);
     }  /* 0x80142248: 0x90420100 */
-    int cond_cpu_sub_gt_gpr_2_eq_cpu_sub_gt_gpr_0_2 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    int _bc_80142250 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
     cpu->gpr[2] = cpu->gpr[4] & 0x0080;  /* 0x80142254: 0x30820080 */
-    if (cond_cpu_sub_gt_gpr_2_eq_cpu_sub_gt_gpr_0_2) {
+    if (_bc_80142250) {
         goto block_80142270;  /* taken */
     } else {
         goto block_80142258;  /* not taken */
     }
 block_80142258:
     ;
-    int cond_cpu_sub_gt_gpr_2_eq_cpu_sub_gt_gpr_0_3 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    int _bc_80142258 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
     cpu->gpr[3] = 0x801B << 16;  /* 0x801B0000 */
-    if (cond_cpu_sub_gt_gpr_2_eq_cpu_sub_gt_gpr_0_3) {
+    if (_bc_80142258) {
         goto block_80142270;  /* taken */
     } else {
         goto block_80142260;  /* not taken */
@@ -1743,20 +1763,20 @@ block_80142270:
     cpu->gpr[3] = cpu->gpr[5] & 0xF000;  /* 0x80142278: 0x30A3F000 */
     { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 0x8000;
     }  /* 0x8014227C: 0x34028000 */
-    int cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_2 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
+    int _bc_80142280 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
     { uint32_t _pgx1 = cpu->gpr[5]; cpu->gpr[20] = cpu->gpr[5] << 16;
     }  /* 0x80142284: 0x0005A400 */
-    if (cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_2) {
+    if (_bc_80142280) {
         goto block_80142884;  /* taken */
     } else {
         goto block_80142288;  /* not taken */
     }
 block_80142288:
     cpu->gpr[2] = ((int32_t)cpu->gpr[2] < (int32_t)cpu->gpr[3]) ? 1 : 0;  /* 0x80142288: 0x0043102A */
-    int cond_cpu_sub_gt_gpr_2_ne_cpu_sub_gt_gpr_0 = (cpu->gpr[2] != cpu->gpr[0]);  /* save branch cond before delay slot */
+    int _bc_8014228C = (cpu->gpr[2] != cpu->gpr[0]);  /* save branch cond before delay slot */
     { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 0xB000;
     }  /* 0x80142290: 0x3402B000 */
-    if (cond_cpu_sub_gt_gpr_2_ne_cpu_sub_gt_gpr_0) {
+    if (_bc_8014228C) {
         goto block_801422F8;  /* taken */
     } else {
         goto block_80142294;  /* not taken */
@@ -1764,39 +1784,39 @@ block_80142288:
 block_80142294:
     { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 12288;
     }  /* 0x80142294: 0x24023000 */
-    int cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_2_2 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
+    int _bc_80142298 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
     cpu->gpr[2] = ((int32_t)cpu->gpr[3] < 12289) ? 1 : 0;  /* 0x8014229C: 0x28623001 */
-    if (cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_2_2) {
+    if (_bc_80142298) {
         goto block_80142434;  /* taken */
     } else {
         goto block_801422A0;  /* not taken */
     }
 block_801422A0:
     ;
-    int cond_cpu_sub_gt_gpr_2_eq_cpu_sub_gt_gpr_0_4 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    int _bc_801422A0 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
     { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 4096;
     }  /* 0x801422A4: 0x24021000 */
-    if (cond_cpu_sub_gt_gpr_2_eq_cpu_sub_gt_gpr_0_4) {
+    if (_bc_801422A0) {
         goto block_801422C0;  /* taken */
     } else {
         goto block_801422A8;  /* not taken */
     }
 block_801422A8:
     ;
-    int cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_2_3 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
+    int _bc_801422A8 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
     { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 8192;
     }  /* 0x801422AC: 0x24022000 */
-    if (cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_2_3) {
+    if (_bc_801422A8) {
         goto block_80142358;  /* taken */
     } else {
         goto block_801422B0;  /* not taken */
     }
 block_801422B0:
     ;
-    int cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_2_4 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
+    int _bc_801422B0 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
     { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1;
     }  /* 0x801422B4: 0x24040001 */
-    if (cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_2_4) {
+    if (_bc_801422B0) {
         goto block_801423A8;  /* taken */
     } else {
         goto block_801422B8;  /* not taken */
@@ -1806,29 +1826,29 @@ block_801422B8:
 block_801422C0:
     { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 20480;
     }  /* 0x801422C0: 0x24025000 */
-    int cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_2_5 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
+    int _bc_801422C4 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
     cpu->gpr[2] = ((int32_t)cpu->gpr[3] < 20481) ? 1 : 0;  /* 0x801422C8: 0x28625001 */
-    if (cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_2_5) {
+    if (_bc_801422C4) {
         goto block_801424DC;  /* taken */
     } else {
         goto block_801422CC;  /* not taken */
     }
 block_801422CC:
     ;
-    int cond_cpu_sub_gt_gpr_2_eq_cpu_sub_gt_gpr_0_5 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    int _bc_801422CC = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
     { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 16384;
     }  /* 0x801422D0: 0x24024000 */
-    if (cond_cpu_sub_gt_gpr_2_eq_cpu_sub_gt_gpr_0_5) {
+    if (_bc_801422CC) {
         goto block_801422E4;  /* taken */
     } else {
         goto block_801422D4;  /* not taken */
     }
 block_801422D4:
     ;
-    int cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_2_6 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
+    int _bc_801422D4 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
     { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1;
     }  /* 0x801422D8: 0x24040001 */
-    if (cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_2_6) {
+    if (_bc_801422D4) {
         goto block_80142484;  /* taken */
     } else {
         goto block_801422DC;  /* not taken */
@@ -1838,10 +1858,10 @@ block_801422DC:
 block_801422E4:
     { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 24576;
     }  /* 0x801422E4: 0x24026000 */
-    int cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_2_7 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
+    int _bc_801422E8 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
     { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1;
     }  /* 0x801422EC: 0x24040001 */
-    if (cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_2_7) {
+    if (_bc_801422E8) {
         goto block_8014256C;  /* taken */
     } else {
         goto block_801422F0;  /* not taken */
@@ -1850,19 +1870,19 @@ block_801422F0:
     goto block_80142B00;
 block_801422F8:
     ;
-    int cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_2_8 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
+    int _bc_801422F8 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
     cpu->gpr[2] = ((int32_t)cpu->gpr[2] < (int32_t)cpu->gpr[3]) ? 1 : 0;  /* 0x801422FC: 0x0043102A */
-    if (cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_2_8) {
+    if (_bc_801422F8) {
         goto block_8014269C;  /* taken */
     } else {
         goto block_80142300;  /* not taken */
     }
 block_80142300:
     ;
-    int cond_cpu_sub_gt_gpr_2_ne_cpu_sub_gt_gpr_0_2 = (cpu->gpr[2] != cpu->gpr[0]);  /* save branch cond before delay slot */
+    int _bc_80142300 = (cpu->gpr[2] != cpu->gpr[0]);  /* save branch cond before delay slot */
     { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 0xD000;
     }  /* 0x80142304: 0x3402D000 */
-    if (cond_cpu_sub_gt_gpr_2_ne_cpu_sub_gt_gpr_0_2) {
+    if (_bc_80142300) {
         goto block_80142324;  /* taken */
     } else {
         goto block_80142308;  /* not taken */
@@ -1870,19 +1890,19 @@ block_80142300:
 block_80142308:
     { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 0x9000;
     }  /* 0x80142308: 0x34029000 */
-    int cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_2_9 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
+    int _bc_8014230C = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
     { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 0xA000;
     }  /* 0x80142310: 0x3402A000 */
-    if (cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_2_9) {
+    if (_bc_8014230C) {
         goto block_801427FC;  /* taken */
     } else {
         goto block_80142314;  /* not taken */
     }
 block_80142314:
     ;
-    int cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_2_10 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
+    int _bc_80142314 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
     cpu->gpr[16] = cpu->gpr[17] & 0x00FF;  /* 0x80142318: 0x323000FF */
-    if (cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_2_10) {
+    if (_bc_80142314) {
         goto block_8014263C;  /* taken */
     } else {
         goto block_8014231C;  /* not taken */
@@ -1891,19 +1911,19 @@ block_8014231C:
     goto block_80142B00;
 block_80142324:
     ;
-    int cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_2_11 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
+    int _bc_80142324 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
     cpu->gpr[2] = ((int32_t)cpu->gpr[2] < (int32_t)cpu->gpr[3]) ? 1 : 0;  /* 0x80142328: 0x0043102A */
-    if (cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_2_11) {
+    if (_bc_80142324) {
         goto block_801426F8;  /* taken */
     } else {
         goto block_8014232C;  /* not taken */
     }
 block_8014232C:
     ;
-    int cond_cpu_sub_gt_gpr_2_ne_cpu_sub_gt_gpr_0_3 = (cpu->gpr[2] != cpu->gpr[0]);  /* save branch cond before delay slot */
+    int _bc_8014232C = (cpu->gpr[2] != cpu->gpr[0]);  /* save branch cond before delay slot */
     { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 0xE000;
     }  /* 0x80142330: 0x3402E000 */
-    if (cond_cpu_sub_gt_gpr_2_ne_cpu_sub_gt_gpr_0_3) {
+    if (_bc_8014232C) {
         goto block_80142348;  /* taken */
     } else {
         goto block_80142334;  /* not taken */
@@ -1911,8 +1931,8 @@ block_8014232C:
 block_80142334:
     { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 0xC000;
     }  /* 0x80142334: 0x3402C000 */
-    int cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_2_12 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
-    if (cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_2_12) {
+    int _bc_80142338 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
+    if (_bc_80142338) {
         goto block_801428A0;  /* taken */
     } else {
         goto block_80142340;  /* not taken */
@@ -1921,9 +1941,9 @@ block_80142340:
     goto block_80142B00;
 block_80142348:
     ;
-    int cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_2_13 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
+    int _bc_80142348 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
     cpu->gpr[2] = cpu->gpr[19] & 0x00FF;  /* 0x8014234C: 0x326200FF */
-    if (cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_2_13) {
+    if (_bc_80142348) {
         goto block_80142734;  /* taken */
     } else {
         goto block_80142350;  /* not taken */
@@ -1981,8 +2001,8 @@ block_801423A8:
 block_801423B8:
     { uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[16] = cpu->gpr[2];  /* move */
     }  /* 0x801423B8: 0x00408021 */
-    int cond_cpu_sub_gt_gpr_16_eq_cpu_sub_gt_gpr_0 = (cpu->gpr[16] == cpu->gpr[0]);  /* save branch cond before delay slot */
-    if (cond_cpu_sub_gt_gpr_16_eq_cpu_sub_gt_gpr_0) {
+    int _bc_801423BC = (cpu->gpr[16] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    if (_bc_801423BC) {
         goto block_80142B00;
     } else {
         goto block_801423C4;  /* not taken */
@@ -2095,8 +2115,8 @@ block_80142484:
 block_80142494:
     { uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[16] = cpu->gpr[2];  /* move */
     }  /* 0x80142494: 0x00408021 */
-    int cond_cpu_sub_gt_gpr_16_eq_cpu_sub_gt_gpr_0_2 = (cpu->gpr[16] == cpu->gpr[0]);  /* save branch cond before delay slot */
-    if (cond_cpu_sub_gt_gpr_16_eq_cpu_sub_gt_gpr_0_2) {
+    int _bc_80142498 = (cpu->gpr[16] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    if (_bc_80142498) {
         goto block_80142B00;
     } else {
         goto block_801424A0;  /* not taken */
@@ -2148,8 +2168,8 @@ block_801424DC:
 block_801424F0:
     { uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[16] = cpu->gpr[2];  /* move */
     }  /* 0x801424F0: 0x00408021 */
-    int cond_cpu_sub_gt_gpr_16_eq_cpu_sub_gt_gpr_0_3 = (cpu->gpr[16] == cpu->gpr[0]);  /* save branch cond before delay slot */
-    if (cond_cpu_sub_gt_gpr_16_eq_cpu_sub_gt_gpr_0_3) {
+    int _bc_801424F4 = (cpu->gpr[16] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    if (_bc_801424F4) {
         goto block_80142B00;
     } else {
         goto block_801424FC;  /* not taken */
@@ -2225,8 +2245,8 @@ block_8014256C:
     goto block_8014257C;
 block_8014257C:
     ;
-    int cond_cpu_sub_gt_gpr_2_eq_cpu_sub_gt_gpr_0_6 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
-    if (cond_cpu_sub_gt_gpr_2_eq_cpu_sub_gt_gpr_0_6) {
+    int _bc_8014257C = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    if (_bc_8014257C) {
         goto block_80142B00;
     } else {
         goto block_80142584;  /* not taken */
@@ -2292,9 +2312,9 @@ block_8014258C:
     }  /* 0x801425FC: 0x8E420038 */
     { uint32_t _pgxa = cpu->gpr[2] + 256; cpu->gpr[2] = br2_ld8(cpu->gpr[2] + 256);
     }  /* 0x80142604: 0x90420100 */
-    int cond_cpu_sub_gt_gpr_2_eq_cpu_sub_gt_gpr_0_7 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    int _bc_8014260C = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
     cpu->gpr[3] = cpu->gpr[16] & 0x0F00;  /* 0x80142610: 0x32030F00 */
-    if (cond_cpu_sub_gt_gpr_2_eq_cpu_sub_gt_gpr_0_7) {
+    if (_bc_8014260C) {
         goto block_80142634;  /* taken */
     } else {
         goto block_80142614;  /* not taken */
@@ -2305,10 +2325,10 @@ block_80142614:
     { uint32_t _pgxa = cpu->gpr[10]; cpu->gpr[2] = (int32_t)(int16_t)br2_ld16(cpu->gpr[10]);
     }  /* 0x8014261C: 0x85420000 */
     cpu->gpr[2] = cpu->gpr[2] & 0x8000;  /* 0x80142624: 0x30428000 */
-    int cond_cpu_sub_gt_gpr_2_eq_cpu_sub_gt_gpr_0_8 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    int _bc_80142628 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
     { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 4096;
     }  /* 0x8014262C: 0x24021000 */
-    if (cond_cpu_sub_gt_gpr_2_eq_cpu_sub_gt_gpr_0_8) {
+    if (_bc_80142628) {
         goto block_80142634;  /* taken */
     } else {
         goto block_80142630;  /* not taken */
@@ -2349,8 +2369,8 @@ block_8014263C:
     goto block_80142670;
 block_80142670:
     ;
-    int cond_cpu_sub_gt_gpr_16_ne_cpu_sub_gt_gpr_0 = (cpu->gpr[16] != cpu->gpr[0]);  /* save branch cond before delay slot */
-    if (cond_cpu_sub_gt_gpr_16_ne_cpu_sub_gt_gpr_0) {
+    int _bc_80142670 = (cpu->gpr[16] != cpu->gpr[0]);  /* save branch cond before delay slot */
+    if (_bc_80142670) {
         goto block_80142B00;
     } else {
         goto block_80142678;  /* not taken */
@@ -2359,9 +2379,9 @@ block_80142678:
     { uint32_t _pgxa = cpu->gpr[18] + 88; cpu->gpr[2] = br2_ld32(cpu->gpr[18] + 88);
     }  /* 0x80142678: 0x8E420058 */
     cpu->gpr[2] = cpu->gpr[2] & 0x8000;  /* 0x80142680: 0x30428000 */
-    int cond_cpu_sub_gt_gpr_2_eq_cpu_sub_gt_gpr_0_9 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    int _bc_80142684 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
     cpu->gpr[2] = 0x801F << 16;  /* 0x801F0000 */
-    if (cond_cpu_sub_gt_gpr_2_eq_cpu_sub_gt_gpr_0_9) {
+    if (_bc_80142684) {
         goto block_801427D4;  /* taken */
     } else {
         goto block_8014268C;  /* not taken */
@@ -2502,9 +2522,9 @@ block_801427B0:
     { uint32_t _pgxa = cpu->gpr[18] + 88; cpu->gpr[2] = br2_ld32(cpu->gpr[18] + 88);
     }  /* 0x801427B0: 0x8E420058 */
     cpu->gpr[2] = cpu->gpr[2] & 0x8000;  /* 0x801427B8: 0x30428000 */
-    int cond_cpu_sub_gt_gpr_2_eq_cpu_sub_gt_gpr_0_10 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    int _bc_801427BC = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
     cpu->gpr[2] = 0x801F << 16;  /* 0x801F0000 */
-    if (cond_cpu_sub_gt_gpr_2_eq_cpu_sub_gt_gpr_0_10) {
+    if (_bc_801427BC) {
         goto block_801427D4;  /* taken */
     } else {
         goto block_801427C4;  /* not taken */
@@ -2618,9 +2638,9 @@ block_801428A0:
     { uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[3] = cpu->gpr[2] + -1;
     }  /* 0x801428A8: 0x2443FFFF */
     cpu->gpr[2] = (cpu->gpr[3] < (uint32_t)9) ? 1 : 0;  /* 0x801428AC: 0x2C620009 */
-    int cond_cpu_sub_gt_gpr_2_eq_cpu_sub_gt_gpr_0_11 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    int _bc_801428B0 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
     cpu->gpr[2] = 0x8012 << 16;  /* 0x80120000 */
-    if (cond_cpu_sub_gt_gpr_2_eq_cpu_sub_gt_gpr_0_11) {
+    if (_bc_801428B0) {
         goto block_80142B00;
     } else {
         goto block_801428B8;  /* not taken */
@@ -2634,8 +2654,8 @@ block_801428B8:
     }  /* 0x801428C0: 0x00621821 */
     { uint32_t _pgxa = cpu->gpr[3]; cpu->gpr[2] = br2_ld32(cpu->gpr[3]);
     }  /* 0x801428C4: 0x8C620000 */
-    uint32_t jr_target = cpu->gpr[2];  /* latch indirect target before delay slot */
-    switch (jr_target) {
+    uint32_t _jt_801428CC = cpu->gpr[2];  /* latch indirect target before delay slot */
+    switch (_jt_801428CC) {
     case 0x80142AC4u: goto block_80142AC4;
     case 0x80142B00u: goto block_80142B00;
     case 0x801429F4u: goto block_801429F4;
@@ -2643,7 +2663,7 @@ block_801428B8:
     case 0x801428D4u: goto block_801428D4;
     case 0x80142954u: goto block_80142954;
     default:
-        return call_guest4(jr_target, cpu->gpr[4], cpu->gpr[5], cpu->gpr[6], cpu->gpr[7]);
+        return call_guest4(_jt_801428CC, cpu->gpr[4], cpu->gpr[5], cpu->gpr[6], cpu->gpr[7]);
     }
 block_801428D4:
     cpu->gpr[2] = 0x801F << 16;  /* 0x801F0000 */
@@ -2666,29 +2686,29 @@ block_801428F4:
     cpu->gpr[3] = cpu->gpr[17] & 0x00FF;  /* 0x801428F8: 0x322300FF */
     { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 254;
     }  /* 0x801428FC: 0x240200FE */
-    int cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_2_14 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
+    int _bc_80142900 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
     cpu->gpr[2] = ((int32_t)cpu->gpr[3] < 255) ? 1 : 0;  /* 0x80142904: 0x286200FF */
-    if (cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_2_14) {
+    if (_bc_80142900) {
         goto block_8014294C;  /* taken */
     } else {
         goto block_80142908;  /* not taken */
     }
 block_80142908:
     ;
-    int cond_cpu_sub_gt_gpr_2_eq_cpu_sub_gt_gpr_0_12 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    int _bc_80142908 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
     { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 255;
     }  /* 0x8014290C: 0x240200FF */
-    if (cond_cpu_sub_gt_gpr_2_eq_cpu_sub_gt_gpr_0_12) {
+    if (_bc_80142908) {
         goto block_80142920;  /* taken */
     } else {
         goto block_80142910;  /* not taken */
     }
 block_80142910:
     ;
-    int cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_0 = (cpu->gpr[3] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    int _bc_80142910 = (cpu->gpr[3] == cpu->gpr[0]);  /* save branch cond before delay slot */
     { uint32_t _pgx1 = cpu->gpr[16]; cpu->gpr[2] = cpu->gpr[16] << 16;
     }  /* 0x80142914: 0x00101400 */
-    if (cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_0) {
+    if (_bc_80142910) {
         goto block_80142930;  /* taken */
     } else {
         goto block_80142918;  /* not taken */
@@ -2697,10 +2717,10 @@ block_80142918:
     goto block_80142B00;
 block_80142920:
     ;
-    int cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_2_15 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
+    int _bc_80142920 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
     { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 1;
     }  /* 0x80142924: 0x24020001 */
-    if (cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_2_15) {
+    if (_bc_80142920) {
         goto block_80142944;  /* taken */
     } else {
         goto block_80142928;  /* not taken */
@@ -2726,20 +2746,20 @@ block_8014294C:
     goto block_80142B00;
 block_80142954:
     cpu->gpr[3] = cpu->gpr[17] & 0x00FF;  /* 0x80142954: 0x322300FF */
-    int cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_0_2 = (cpu->gpr[3] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    int _bc_80142958 = (cpu->gpr[3] == cpu->gpr[0]);  /* save branch cond before delay slot */
     { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 1;
     }  /* 0x8014295C: 0x24020001 */
-    if (cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_0_2) {
+    if (_bc_80142958) {
         goto block_80142970;  /* taken */
     } else {
         goto block_80142960;  /* not taken */
     }
 block_80142960:
     ;
-    int cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_2_16 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
+    int _bc_80142960 = (cpu->gpr[3] == cpu->gpr[2]);  /* save branch cond before delay slot */
     { uint32_t _pgx1 = cpu->gpr[18]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[4] = cpu->gpr[18];  /* move */
     }  /* 0x80142964: 0x02402021 */
-    if (cond_cpu_sub_gt_gpr_3_eq_cpu_sub_gt_gpr_2_16) {
+    if (_bc_80142960) {
         goto block_801429C4;  /* taken */
     } else {
         goto block_80142968;  /* not taken */
@@ -2762,8 +2782,8 @@ block_80142970:
     goto block_80142988;
 block_80142988:
     ;
-    int cond_cpu_sub_gt_gpr_2_eq_cpu_sub_gt_gpr_0_13 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
-    if (cond_cpu_sub_gt_gpr_2_eq_cpu_sub_gt_gpr_0_13) {
+    int _bc_80142988 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    if (_bc_80142988) {
         goto block_80142B00;
     } else {
         goto block_80142990;  /* not taken */
@@ -2820,9 +2840,9 @@ block_801429EC:
     goto block_80142B00;
 block_801429F4:
     cpu->gpr[2] = cpu->gpr[17] & 0x00FF;  /* 0x801429F4: 0x322200FF */
-    int cond_cpu_sub_gt_gpr_2_ne_cpu_sub_gt_gpr_0_4 = (cpu->gpr[2] != cpu->gpr[0]);  /* save branch cond before delay slot */
+    int _bc_801429F8 = (cpu->gpr[2] != cpu->gpr[0]);  /* save branch cond before delay slot */
     cpu->gpr[3] = 0x1F80 << 16;  /* 0x1F800000 */
-    if (cond_cpu_sub_gt_gpr_2_ne_cpu_sub_gt_gpr_0_4) {
+    if (_bc_801429F8) {
         goto block_80142B00;
     } else {
         goto block_80142A00;  /* not taken */
@@ -2863,18 +2883,18 @@ block_80142A40:
 block_80142A44:
     cpu->gpr[17] = cpu->gpr[17] & 0x00FF;  /* 0x80142A44: 0x323100FF */
     cpu->gpr[2] = ((int32_t)cpu->gpr[17] < 2) ? 1 : 0;  /* 0x80142A48: 0x2A220002 */
-    int cond_cpu_sub_gt_gpr_2_eq_cpu_sub_gt_gpr_0_14 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
-    if (cond_cpu_sub_gt_gpr_2_eq_cpu_sub_gt_gpr_0_14) {
+    int _bc_80142A4C = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    if (_bc_80142A4C) {
         goto block_80142B00;  /* taken */
     } else {
         goto block_80142A54;  /* not taken */
     }
 block_80142A54:
     ;
-    int cond_cpu_sub_gt_gpr_17_lt_0 = ((int32_t)cpu->gpr[17] < 0);  /* save branch cond before delay slot */
+    int _bc_80142A54 = ((int32_t)cpu->gpr[17] < 0);  /* save branch cond before delay slot */
     { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1;
     }  /* 0x80142A58: 0x24040001 */
-    if (cond_cpu_sub_gt_gpr_17_lt_0) {
+    if (_bc_80142A54) {
         goto block_80142B00;  /* taken */
     } else {
         goto block_80142A5C;  /* not taken */
@@ -2896,10 +2916,10 @@ block_80142A5C:
 block_80142A74:
     { uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[16] = cpu->gpr[2];  /* move */
     }  /* 0x80142A74: 0x00408021 */
-    int cond_cpu_sub_gt_gpr_16_eq_cpu_sub_gt_gpr_0_4 = (cpu->gpr[16] == cpu->gpr[0]);  /* save branch cond before delay slot */
+    int _bc_80142A78 = (cpu->gpr[16] == cpu->gpr[0]);  /* save branch cond before delay slot */
     { uint32_t _pgx1 = cpu->gpr[16]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[4] = cpu->gpr[16];  /* move */
     }  /* 0x80142A7C: 0x02002021 */
-    if (cond_cpu_sub_gt_gpr_16_eq_cpu_sub_gt_gpr_0_4) {
+    if (_bc_80142A78) {
         goto block_80142B00;  /* taken */
     } else {
         goto block_80142A80;  /* not taken */
@@ -2929,10 +2949,10 @@ block_80142A80:
     goto block_80142AAC;
 block_80142AAC:
     ;
-    int cond_cpu_sub_gt_gpr_17_ne_cpu_sub_gt_gpr_0 = (cpu->gpr[17] != cpu->gpr[0]);  /* save branch cond before delay slot */
+    int _bc_80142AAC = (cpu->gpr[17] != cpu->gpr[0]);  /* save branch cond before delay slot */
     { uint32_t _pgx1 = cpu->gpr[16]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[4] = cpu->gpr[16];  /* move */
     }  /* 0x80142AB0: 0x02002021 */
-    if (cond_cpu_sub_gt_gpr_17_ne_cpu_sub_gt_gpr_0) {
+    if (_bc_80142AAC) {
         goto block_80142B00;  /* taken */
     } else {
         goto block_80142AB4;  /* not taken */
@@ -2947,9 +2967,9 @@ block_80142ABC:
     goto block_80142B00;  /* j */
 block_80142AC4:
     cpu->gpr[2] = cpu->gpr[17] & 0x00FF;  /* 0x80142AC4: 0x322200FF */
-    int cond_cpu_sub_gt_gpr_2_ne_cpu_sub_gt_gpr_0_5 = (cpu->gpr[2] != cpu->gpr[0]);  /* save branch cond before delay slot */
+    int _bc_80142AC8 = (cpu->gpr[2] != cpu->gpr[0]);  /* save branch cond before delay slot */
     cpu->gpr[3] = 0x1F80 << 16;  /* 0x1F800000 */
-    if (cond_cpu_sub_gt_gpr_2_ne_cpu_sub_gt_gpr_0_5) {
+    if (_bc_80142AC8) {
         goto block_80142B00;  /* taken */
     } else {
         goto block_80142AD0;  /* not taken */
@@ -3005,7 +3025,7 @@ block_80142B0C:
     }  /* 0x80142B2C: 0x8FB10034 */
     { uint32_t _pgxa = cpu->gpr[29] + 48; cpu->gpr[16] = br2_ld32(cpu->gpr[29] + 48);
     }  /* 0x80142B30: 0x8FB00030 */
-    uint32_t jr_target_2 = cpu->gpr[31];  /* latch indirect target before delay slot */
+    uint32_t _jt_80142B34 = cpu->gpr[31];  /* latch indirect target before delay slot */
     { uint32_t _pgx1 = cpu->gpr[29]; cpu->gpr[29] = cpu->gpr[29] + 88;
     }  /* 0x80142B38: 0x27BD0058 */
     return cpu->gpr[2];
@@ -3015,8 +3035,8 @@ block_80142B0C:
 /* Public clean entry — ev handler table slot 0x801b4ec8 (opcode 24).
  * a0=ctrl, a1=motion, a2=stream pc (all guest addrs in gpr[4..7]). */
 uint32_t ev24_fx_spawn(uint32_t ctrl_g, uint32_t motion_g,
+                       uint32_t pc_g, uint32_t unused)
 {
   (void)ctrl_g; (void)motion_g; (void)pc_g; (void)unused;
-  (void)arg0; (void)arg1; (void)arg2; (void)arg3;
   return ev24_cluster(0x801421C4u);
 }
