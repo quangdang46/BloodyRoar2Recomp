@@ -23274,6 +23274,9 @@ void cps_80132868(void)
     }
     /* Address: 0x80132868, Size: 320 bytes, Blocks: 20 */
 
+    /* large CPS state machine (65 blocks) —
+       per-state object/channel processing; ops untouched.
+       CPS-blocked. */
 block_80132868:
     a0 = 0x1F80 << 16;  /* 0x1F800000 */
     a0 = a0 | 0x0394;
@@ -24119,6 +24122,8 @@ void cps_80133164(void)
     }
     /* Address: 0x80133164, Size: 396 bytes, Blocks: 19 */
 
+    /* large CPS state machine (59 blocks) —
+       sibling of 0x80132868. CPS-blocked. */
 block_80133164:
     v0 = cpu->read_word(s3 + 32);
     /* nop */  /* 0x80133168: 0x00000000 */
@@ -27875,6 +27880,9 @@ void cps_80135320(void)
     }
     /* Address: 0x80135320, Size: 784 bytes, Blocks: 68 */
 
+    /* large CPS state machine (234 blocks) —
+       anim/frame processing chain entered from
+       0x801352A0. CPS-blocked. */
 block_80135320:
     v0 = cpu->read_half(s0 + 76);
     /* nop */  /* 0x80135324: 0x00000000 */
@@ -34136,6 +34144,8 @@ void cps_80138cec(void)
     }
     /* Address: 0x80138CEC, Size: 1740 bytes, Blocks: 49 */
 
+    /* large CPS state machine (154 blocks).
+       CPS-blocked. */
 block_80138CEC:
     sp = sp + -64;
     cpu->write_word(sp + 44, s3);
@@ -36618,6 +36628,8 @@ void cps_8013a514(void)
     }
     /* Address: 0x8013A514, Size: 1172 bytes, Blocks: 73 */
 
+    /* large CPS state machine (210 blocks).
+       CPS-blocked. */
 block_8013A514:
     v0 = ((int32_t)a1 < 2) ? 1 : 0;  /* 0x8013A514: 0x28A20002 */
     int _bc_8013A518 = (v0 != zero);  /* save branch cond before delay slot */
@@ -40080,6 +40092,9 @@ void cps_8013bf2c(void)
     }
     /* Address: 0x8013BF2C, Size: 1504 bytes, Blocks: 51 */
 
+    /* large CPS routine (147 blocks): setup jals
+       0x80195210/0x80195270 + table walk at
+       0x80120000+7056. CPS-blocked. */
 block_8013BF2C:
     s0 = 0x801C << 16;  /* 0x801C0000 */
     a0 = cpu->read_word(s0 + -6088);
@@ -41662,6 +41677,8 @@ void cps_8013c9cc(void)
     }
     /* Address: 0x8013C9CC, Size: 1052 bytes, Blocks: 38 */
 
+    /* large CPS state machine (122 blocks).
+       CPS-blocked. */
 block_8013C9CC:
     v0 = 0x1F80 << 16;  /* 0x1F800000 */
     v0 = (int32_t)(int8_t)cpu->read_byte(v0 + 177);
@@ -42245,6 +42262,8 @@ void cps_8013ce68(void)
     }
     /* Address: 0x8013CE68, Size: 2120 bytes, Blocks: 62 */
 
+    /* large CPS state machine (206 blocks).
+       CPS-blocked. */
 block_8013CE68:
     v0 = 0x1F80 << 16;  /* 0x1F800000 */
     v0 = (int32_t)(int16_t)cpu->read_half(v0 + 130);
@@ -43248,6 +43267,8 @@ void cps_8013da40(void)
     }
     /* Address: 0x8013DA40, Size: 408 bytes, Blocks: 12 */
 
+    /* medium CPS state machine (34 blocks).
+       CPS-blocked. */
 block_8013DA40:
     v0 = 1432;
     a3 = 0x8013D7E4u;  /* 0x80140000 -10268 */
@@ -45057,6 +45078,8 @@ void cps_8013ed10(void)
 
     /* Address: 0x8013ED10, Size: 20 bytes, Blocks: 1 */
 
+    /* half[s0+28] adjust -> 0x8013ED50/0x8013ED24.
+       CPS-blocked. */
 block_8013ED10:
     v0 = cpu->read_half(s0 + 28);
     /* nop */  /* 0x8013ED14: 0x00000000 */
@@ -45085,6 +45108,8 @@ void cps_8013ed24(void)
     }
     /* Address: 0x8013ED24, Size: 44 bytes, Blocks: 3 */
 
+    /* half[s0+30] adjust -> 0x8013ED50; jal
+       0x801A482C -> 0x8013ED80. CPS-blocked. */
 block_8013ED24:
     v0 = cpu->read_half(s0 + 30);
     /* nop */  /* 0x8013ED28: 0x00000000 */
@@ -45194,6 +45219,8 @@ void cps_8013f828(void)
     }
     /* Address: 0x8013F828, Size: 96 bytes, Blocks: 3 */
 
+    /* frame prologue: half[v0+130] gate; saves
+       s3-s7/fp/ra to sp+36..60. CPS-blocked. */
 block_8013F828:
     v0 = 0x1F80 << 16;  /* 0x1F800000 */
     v0 = (int32_t)(int16_t)cpu->read_half(v0 + 130);
@@ -45261,6 +45288,8 @@ void cps_8013f888(void)
     }
     /* Address: 0x8013F888, Size: 124 bytes, Blocks: 5 */
 
+    /* field pair update: half[s6+2410]/[s6+2418] ->
+       0x8013F914/0x8013FEA0 -> 0x8013F904. CPS-blocked. */
 block_8013F888:
     /* nop */  /* 0x8013F888: 0x00000000 */
     int _bc_8013F88C = (v0 != zero);  /* save branch cond before delay slot */
@@ -45348,6 +45377,7 @@ void cps_8013f904(void)
     }
     /* Address: 0x8013F904, Size: 16 bytes, Blocks: 2 */
 
+    /* jal 0x801A482C -> 0x80140198. CPS-blocked. */
 block_8013F904:
     ra = 0x8013F90Cu;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -45401,6 +45431,8 @@ void cps_8013f914(void)
     }
     /* Address: 0x8013F914, Size: 804 bytes, Blocks: 25 */
 
+    /* field rotate: half[s6+2412]/[s6+2408]/[s6+2416]
+       update -> 0x80140198. CPS-blocked. */
 block_8013F914:
     v0 = (int32_t)(int16_t)cpu->read_half(s6 + 2412);
     v1 = cpu->read_half(s6 + 2412);
@@ -45909,6 +45941,8 @@ void cps_8013fd48(void)
     }
     /* Address: 0x8013FD48, Size: 344 bytes, Blocks: 7 */
 
+    /* record unpack: t4-t6 = word[t8..+16]; fp/s4 =
+       word[a1+1688/1684]; half[s2] read. CPS-blocked. */
 block_8013FD48:
     s2 = s6 + 2164;
     t8 = 0x801B1860u;  /* 0x801B0000 6240 */
@@ -46083,6 +46117,9 @@ void cps_8013fea0(void)
     }
     /* Address: 0x8013FEA0, Size: 760 bytes, Blocks: 20 */
 
+    /* field update: half[v0+130]/half[s6+2410] ->
+       word[v0-4352]; s3=word[s6+2372]; half[s6+2420/2422]
+       -> half[s2]=0. CPS-blocked. */
 block_8013FEA0:
     v0 = 0x1F80 << 16;  /* 0x1F800000 */
     v0 = (int32_t)(int16_t)cpu->read_half(v0 + 130);
