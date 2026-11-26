@@ -2349,7 +2349,7 @@ void battle_hud_draw(int unused,int fighter,int aux0,int aux1)
   undefined2 *tC;
   int t4;
   int t5;
-  int local_80 [2];
+  int ap [2];
   uint *rectbl;
   uint *rectbl2;
   uint *rectbl3;
@@ -2375,8 +2375,8 @@ void battle_hud_draw(int unused,int fighter,int aux0,int aux1)
   rectbl = (uint *)guest_at(*(uint32_t *)(&DAT_801f5210 + t0 * 4));
   if ((*(uint *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter + 0xc4) ))+ 8) ))>> 1 & 1) == 0) {
     _DAT_801f4f20 = _DAT_801f4f20 + 1;
-    local_80[0] = aux0;
-    local_80[1] = aux1;
+    ap[0] = aux0;
+    ap[1] = aux1;
     if ((int)_DAT_801f4f20 < 0x21) {
       sprite_strip_draw_dual(_DAT_801f5210 + 0x78,_DAT_801f5214 + 0x78,_DAT_801f4f20 * -0x80 + 0x1000,0x10,
                    &DAT_801b4a48,0,0xffffff80,0);
@@ -2447,7 +2447,7 @@ LAB_80173dd8:
                           (undefined4)br2_gaddr(&DAT_801b4e08));
             *(undefined2 *)(aux + 0x18) = 0x1000;
             *(undefined2 *)(aux + 0x1a) = 0x78;
-            slot = (int *)((intptr_t)local_80 + t1);
+            slot = (int *)((intptr_t)ap + t1);
             triple_track_spawn(*(undefined1 *)guest_at((uint32_t)(uintptr_t)((*slot + 2))),0x30,0);
             t0 = fx_group_alloc(1,1,0,0x13);
             if (t0 != 0) {
@@ -2497,7 +2497,7 @@ LAB_80173de8:
     tA = &DAT_801b4ccc;
     if ((-1 < *(char *)guest_at((uint32_t)(uintptr_t)((fighter + 0x99)))) && (0x20 < (int)_DAT_801f4f20)) {
       t1 = 0;
-      slot = local_80;
+      slot = ap;
       t0 = -0x7fe0af50;
       aux = &DAT_801f51d8;
       tB = &DAT_801b4cd2;
@@ -8655,13 +8655,13 @@ void tween_dur_spread(int grp,int n)
 
 int str_len(char *s)
 {
-  char cVar1;
+  char ch;
   int i;
   int len;
   len = 0;
   i = 0;
   if (s != (char *)0x0) {
-    while (len = i, cVar1 = *s, s = s + 1, cVar1 != '\0') {
+    while (len = i, ch = *s, s = s + 1, ch != '\0') {
       i = len + 1;
     }
   }
