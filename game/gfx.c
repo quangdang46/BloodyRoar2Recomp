@@ -99,8 +99,8 @@ extern char *s__Id__sys_c_v_1_140_1998_01_12_07_801b82d8;
 #define disp_height   (*(uint16_t *)g_DAT_801b8326)
 #define draw_env   ((uint32_t *)guest_at(0x801b8330))
 #define disp_env_shadow   ((uint32_t *)guest_at(0x801b838c))
-#define DAT_801b839c   (*(int32_t  *)guest_at(0x801b839c))
-#define DAT_801b83e0   (*(uint32_t *)guest_at(0x801b83e0))
+#define disp_env_tail   (*(int32_t  *)guest_at(0x801b839c))
+#define otag_r_tag   (*(uint32_t *)guest_at(0x801b83e0))
 
 /* GPU func table: PTR_PTR_801b8318 -> 0x801b82d8 (verified in
  * payload). Entries are guest addrs of libgpu syscall impls;
@@ -425,7 +425,7 @@ void gpu_clear_otag_r(uint32_t addr,uint32_t tag)
   /* jalr t[11] with a0=addr,a1=tag (a2/a3 = caller leftovers in
    * guest; 0 here — ClearOTagR impl reads only a0/a1). */
   gpu_call(0x2c,addr,tag,0,0);
-  DAT_801b83e0 = 0x41b83cc;
+  otag_r_tag = 0x41b83cc;
   *(uint32_t *)guest_at(addr) = 0x1b83e0;
   return;
 }
