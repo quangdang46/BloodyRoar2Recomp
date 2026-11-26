@@ -3044,8 +3044,8 @@ extern int32_t dev_byte_xfer(uint8_t *,int32_t);
 extern void cd_file_header_copy(uint32_t,void *);
 extern void cd_strcat_guard(void *,uint32_t);
 extern void cd_job_slot_alloc(uint32_t,uint32_t);
-extern int32_t FUN_801a0220(uint32_t,uint32_t,uint32_t);
-extern void FUN_801a0250(int32_t);
+extern uint32_t bios_tramp_b032(uint32_t,uint32_t,uint32_t,uint32_t);
+extern uint32_t bios_tramp_b036(uint32_t,uint32_t,uint32_t,uint32_t);
 extern uint32_t cd_xchg_fec24(uint32_t);
 extern int32_t fifo_space_check(void);
 extern int tween_seq_alloc(int,uint16_t,uint32_t,uint32_t,int16_t,uint16_t,uint32_t,uint32_t);
@@ -9561,17 +9561,17 @@ int mc_file_cmd(uint32_t a0,const void *a1,uint32_t a2)
   cd_file_header_copy(a0,cblk);
   cd_strcat_guard(cblk,(uintptr_t)a1);
   cblk[3] |= 1u << (cblk[4] & 31);
-  fd = FUN_801a0220(fr + 0x10,1,cblk[4]);
+  fd = (int32_t)bios_tramp_b032(fr + 0x10,1,cblk[4],0);
   a2hi = a2 << 16;                    /* delay slot: always executes */
   if (fd >= 0) {
-    FUN_801a0250(fd);
+    bios_tramp_b036((uint32_t)fd,0,0,0);
     br2_guest_frame_free();
     return 6;
   }
   for (;;) {
-    fd = FUN_801a0220(fr + 0x10,(a2hi | 0x200),cblk[4]);
+    fd = (int32_t)bios_tramp_b032(fr + 0x10,(a2hi | 0x200),cblk[4],0);
     if (fd >= 0) {
-      FUN_801a0250(fd);
+      bios_tramp_b036((uint32_t)fd,0,0,0);
       br2_guest_frame_free();
       return 0;
     }
