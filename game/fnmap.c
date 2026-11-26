@@ -697,6 +697,7 @@ extern void gpu_bits_pack_a(void);
 extern void gpu_clear_image_cmd(void);
 extern void gpu_clear_image_cmd2(void);
 extern void gpu_clear_otag_r(void);
+extern void gpu_command_words_send(void);
 extern void gpu_coord_clamp_a(void);
 extern void gpu_coord_clamp_b(void);
 extern void gpu_coord_pack(void);
@@ -709,6 +710,7 @@ extern void gpu_draw_otag(void);
 extern void gpu_draw_sync(void);
 extern void gpu_flag_8322_read(void);
 extern void gpu_graph_reset(void);
+extern void gpu_image_transfer_dma(void);
 extern void gpu_load_image_cmd(void);
 extern void gpu_mode_regs_apply(void);
 extern void gpu_pkt_attr_set(void);
@@ -730,6 +732,7 @@ extern void gpu_sprite_rect_emit_mode(void);
 extern void gpu_stat_sign(void);
 extern void gpu_state_patch_defer(void);
 extern void gpu_status_cmd(void);
+extern void gpu_tag_cmd_byte_get(void);
 extern void gpu_tag_cmd_store(void);
 extern void gpu_texclut_pkt(void);
 extern void gpu_texpage_pack(void);
@@ -763,6 +766,7 @@ extern void gte_rtps_xform1_raw(void);
 extern void gte_rtps_xform3(void);
 extern void gte_rtps_xform3_t(void);
 extern void gte_screen_init_defer(void);
+extern void gte_screen_init_hi_entry(void);
 extern void gte_sqr_vec3_b(void);
 extern void gte_tr_load(void);
 extern void gte_vec3_normalize(void);
@@ -2521,7 +2525,10 @@ const Br2FnEnt fn_table[] = {
   { 0x8019261c, (void *)gpu_data_reg_read },
   { 0x80192634, (void *)cd_cmd_queue_load },
   { 0x80192944, (void *)gpu_draw_env_dma },
+  { 0x80192b80, (void *)gpu_image_transfer_dma },
   { 0x80192e00, (void *)gpu_tag_cmd_store },
+  { 0x80192e24, (void *)gpu_tag_cmd_byte_get },
+  { 0x80192e38, (void *)gpu_command_words_send },
   { 0x80192e78, (void *)gpu_reg_cells_init },
   { 0x80192ec0, (void *)gpu_reg_cmd_commit },
   { 0x80192ef0, (void *)cd_queue_push_wrap },
@@ -2559,6 +2566,7 @@ const Br2FnEnt fn_table[] = {
   { 0x801941e0, (void *)prim_packet_init_tex },
   { 0x80194280, (void *)isqrt_refine },
   { 0x801943d4, (void *)isqrt },
+  { 0x80194470, (void *)gte_screen_init_hi_entry },
   { 0x80194478, (void *)gte_screen_init_defer },
   { 0x80194500, (void *)fixed_rsqrt_q12 },
   { 0x80194590, (void *)fixed_rsqrt_q12_ex },

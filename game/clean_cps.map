@@ -4595,3 +4595,43 @@
 8012a93c cps_8012a92c
 801298f8 cps_801298f8
 801268b8 cps_801268b8
+
+# gpu_image_transfer_dma (0x80192B80): guest block leaders used as
+# psx_check_interrupts_at resume PCs and the two CD-helper jal returns.
+80192b80 gpu_image_transfer_dma
+80192ba8 gpu_image_transfer_dma
+80192bb8 gpu_image_transfer_dma
+80192bd4 gpu_image_transfer_dma
+80192bdc gpu_image_transfer_dma
+80192be0 gpu_image_transfer_dma
+80192bf0 gpu_image_transfer_dma
+80192c10 gpu_image_transfer_dma
+80192c18 gpu_image_transfer_dma
+80192c1c gpu_image_transfer_dma
+80192c20 gpu_image_transfer_dma
+80192c4c gpu_image_transfer_dma
+80192c54 gpu_image_transfer_dma
+80192c80 gpu_image_transfer_dma
+80192c84 gpu_image_transfer_dma
+80192c8c gpu_image_transfer_dma
+80192c94 gpu_image_transfer_dma
+80192cb4 gpu_image_transfer_dma
+80192d2c gpu_image_transfer_dma
+80192d30 gpu_image_transfer_dma
+80192d38 gpu_image_transfer_dma
+80192d40 gpu_image_transfer_dma
+80192d60 gpu_image_transfer_dma
+80192d70 gpu_image_transfer_dma
+80192d90 gpu_image_transfer_dma
+80192d98 gpu_image_transfer_dma
+80192ddc gpu_image_transfer_dma
+80192de0 gpu_image_transfer_dma
+
+# gpu_command_words_send (0x80192E38) block leaders.
+80192e38 gpu_command_words_send
+80192e50 gpu_command_words_send
+80192e54 gpu_command_words_send
+80192e70 gpu_command_words_send
+
+# 0x80194470 is a CPS fallthrough entry into the existing GTE init helper.
+80194470 gte_screen_init_hi_entry

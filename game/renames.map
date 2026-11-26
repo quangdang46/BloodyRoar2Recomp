@@ -1971,3 +1971,9 @@
 8018b380 prim_nclip_cull_emit_48
 8018b4b8 prim_rtps_cull_emit_58
 8018b628 prim_avsz3_cull_emit_58
+
+# GPU/GTE entries from the 0x80192xxx/0x80194xxx sweep, sorted by address.
+80192b80 gpu_image_transfer_dma
+80192e24 gpu_tag_cmd_byte_get
+80192e38 gpu_command_words_send
+80194470 gte_screen_init_hi_entry
