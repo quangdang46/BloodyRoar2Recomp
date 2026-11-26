@@ -10592,28 +10592,28 @@ void menu_quad_reset_redraw(void)
  * (a3): 0->all, 1->0+8, 2->0, 3->4, 4->8 (jump table 0x801226cc).
  * Then gte_rtps_xform3(obj+0x44 + idx*0x20, blk, obj+0x48 + idx*0x20)
  * where obj = a0, idx = a2. */
-void gte_quad_attr_emit(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                  uint32_t param_4)
+void gte_quad_attr_emit(uint32_t obj,uint32_t mode,uint32_t idx,
+                  uint32_t val)
 {
   uint16_t blk[10];
   uint32_t off;
   int i;
   for (i = 0; i < 10; i++) blk[i] = 0;
   blk[0] = 0x1000; blk[4] = 0x1000; blk[8] = 0x1000;
-  if (param_2 < 5u) {
-    switch (param_2) {
-    case 0: blk[0] = (uint16_t)param_4; blk[4] = (uint16_t)param_4;
-            blk[8] = (uint16_t)param_4; break;
-    case 1: blk[0] = (uint16_t)param_4; blk[8] = (uint16_t)param_4; break;
-    case 2: blk[0] = (uint16_t)param_4; break;
-    case 3: blk[4] = (uint16_t)param_4; break;
-    case 4: blk[8] = (uint16_t)param_4; break;
+  if (mode < 5u) {
+    switch (mode) {
+    case 0: blk[0] = (uint16_t)val; blk[4] = (uint16_t)val;
+            blk[8] = (uint16_t)val; break;
+    case 1: blk[0] = (uint16_t)val; blk[8] = (uint16_t)val; break;
+    case 2: blk[0] = (uint16_t)val; break;
+    case 3: blk[4] = (uint16_t)val; break;
+    case 4: blk[8] = (uint16_t)val; break;
     }
   }
-  off = param_3 << 5;
-  gte_rtps_xform3((undefined4 *)guest_at(MB32(param_1 + 0x44) + off),
+  off = idx << 5;
+  gte_rtps_xform3((undefined4 *)guest_at(MB32(obj + 0x44) + off),
                blk,
-               (uint *)guest_at(MB32(param_1 + 0x48) + off));
+               (uint *)guest_at(MB32(obj + 0x48) + off));
 }
 
 /* fighter_frame_triple_emit — fighter-frame triple emit @0x80166f6c (39 insns;
@@ -10623,17 +10623,16 @@ void gte_quad_attr_emit(uint32_t param_1,uint32_t param_2,uint32_t param_3,
  * fighter_tint_fade(obj+8, obj+0xc, s0, MBS8(s0+0x98));
  * fighter_trail_emit(s0+0x28, 0x1f80033c, obj+0xbc, s0);
  * slot_height_proj(obj+8 + 0x207c, obj+0xbc, obj+0xc, s0); return 0. */
-int32_t fighter_frame_triple_emit(uint32_t param_1)
+int32_t fighter_frame_triple_emit(uint32_t obj)
 {
-  uint32_t s0 = param_1;
-  uint32_t s1 = s0 + 0x28;
+  uint32_t sub28 = obj + 0x28;
   if (MBS8(0x801e3d00u) < 0) return -1;
-  MW8(s0 + 0x9d, 0);
-  battle_camera_step(MB32(s0 + 0xbc), (uint8_t *)guest_at(0x1f8000e8),(uint8_t *)guest_at(0x1f8001f0),(int32_t)s0);
-  fighter_tint_fade(MB32(s0 + 8), MB32(s0 + 0xc), s0, MBS8(s0 + 0x98));
-  fighter_trail_emit((undefined4 *)guest_at(s1), 0x1f80033cu, MB32(s0 + 0xbc), (int32_t)s0);
-  slot_height_proj(MB32(s0 + 8) + 0x207cu, MB32(s0 + 0xbc), MB32(s0 + 0xc),
-               s0);
+  MW8(obj + 0x9d, 0);
+  battle_camera_step(MB32(obj + 0xbc), (uint8_t *)guest_at(0x1f8000e8),(uint8_t *)guest_at(0x1f8001f0),(int32_t)obj);
+  fighter_tint_fade(MB32(obj + 8), MB32(obj + 0xc), obj, MBS8(obj + 0x98));
+  fighter_trail_emit((undefined4 *)guest_at(sub28), 0x1f80033cu, MB32(obj + 0xbc), (int32_t)obj);
+  slot_height_proj(MB32(obj + 8) + 0x207cu, MB32(obj + 0xbc), MB32(obj + 0xc),
+               obj);
   return 0;
 }
 
@@ -10641,20 +10640,20 @@ int32_t fighter_frame_triple_emit(uint32_t param_1)
  * insns): like job_wait_pump but on cd_job_start_e and exits early
  * when sp14 is 0 or 3, or repeats-until-stable otherwise; returns
  * last sp14. */
-int32_t job_pump_filter(uint32_t param_1)
+int32_t job_pump_filter(uint32_t job)
 {
-  uint32_t s0 = 0;
+  uint32_t prev = 0;
   uint32_t sp10 = 0, sp14 = 0;
   for (;;) {
-    while (cd_job_start_e(param_1) == 0) { }
+    while (cd_job_start_e(job) == 0) { }
     while (cd_job_result(0, &sp10, &sp14) == 0) { }
     if (sp14 < 3u) {
       if (sp14 == 0) return (int32_t)sp14;
     } else {
       if (sp14 == 3) return (int32_t)sp14;
     }
-    if (s0 == sp14) return (int32_t)sp14;
-    s0 = sp14;
+    if (prev == sp14) return (int32_t)sp14;
+    prev = sp14;
   }
 }
 
@@ -10662,23 +10661,23 @@ int32_t job_pump_filter(uint32_t param_1)
  * if a2==0 return. s4=(a3<<6)&0x3ff, s3=(a3<<4)&0x100; walk s2
  * entries stride 0xc: MB16(s1)+=s4, MB16(s0-6)+=s3, then
  * gpu_load_image_cmd(s1, a1 + MB32(s0)*4); s0+=0xc,s1+=0xc. */
-void entry_attr_bump_loop(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                  uint32_t param_4)
+void entry_attr_bump_loop(uint32_t rec,uint32_t img,
+                  uint32_t cnt,uint32_t amt)
 {
-  uint32_t s1 = param_1;
-  uint32_t s0 = param_1 + 8;
-  int32_t s2 = (int32_t)param_3;
-  uint32_t s4 = (param_4 << 6) & 0x3ffu;
-  uint32_t s3 = (param_4 << 4) & 0x100u;
-  if (s2 == 0) return;
+  uint32_t walk = rec;
+  uint32_t rec8 = rec + 8;
+  int32_t n = (int32_t)cnt;
+  uint32_t inc0 = (amt << 6) & 0x3ffu;
+  uint32_t inc1 = (amt << 4) & 0x100u;
+  if (n == 0) return;
   do {
-    MW16(s1, MB16(s1) + s4);
-    MW16(s0 - 6, MB16(s0 - 6) + s3);
-    gpu_load_image_cmd(s1, param_2 + MB32(s0) * 4u);
-    s0 += 0xc;
-    s1 += 0xc;
-    s2--;
-  } while (s2 != 0);
+    MW16(walk, MB16(walk) + inc0);
+    MW16(rec8 - 6, MB16(rec8 - 6) + inc1);
+    gpu_load_image_cmd(walk, img + MB32(rec8) * 4u);
+    rec8 += 0xc;
+    walk += 0xc;
+    n--;
+  } while (n != 0);
 }
 
 /* centered_sprite_emit — centered sprite emit @0x80172100 (40 insns, 6
@@ -10688,18 +10687,18 @@ void entry_attr_bump_loop(uint32_t param_1,uint32_t param_2,uint32_t param_3,
  * a2' = sx16(a2v) - ((sx16(v1v)+sb16(v1v)) sra 1);
  * a3' = sx16(p5); stack5 = sx16(v1v);
  * sprite_rect_set_a(p1, (short)a1', a2', a3', stack5). */
-uint32_t centered_sprite_emit(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                      uint32_t param_4,uint32_t param_5,uint32_t param_6)
+uint32_t centered_sprite_emit(uint32_t ctx,uint32_t fl,uint32_t x,
+                      uint32_t w,uint32_t hgt,uint32_t vht)
 {
-  uint32_t t0 = param_3, t1 = param_6, t2 = param_5;
-  uint32_t a2 = param_4, v1, h;
+  uint32_t t0 = x, t1 = vht, t2 = hgt;
+  uint32_t a2 = w, v1, h;
   int32_t sx_v1, sx_t2, half_t2, half_v1;
-  if (MB8(param_2 + 0x15) == 0) {
-    h = (uint32_t)((int32_t)(int16_t)param_4
-                   + (int32_t)((param_4 >> 15) & 1u));
+  if (MB8(fl + 0x15) == 0) {
+    h = (uint32_t)((int32_t)(int16_t)w
+                   + (int32_t)((w >> 15) & 1u));
     a2 = h >> 1;
-    h = (uint32_t)((int32_t)(int16_t)param_6
-                   + (int32_t)((param_6 >> 15) & 1u));
+    h = (uint32_t)((int32_t)(int16_t)vht
+                   + (int32_t)((vht >> 15) & 1u));
     v1 = h >> 1;
   } else {
     v1 = t1;
@@ -10708,7 +10707,7 @@ uint32_t centered_sprite_emit(uint32_t param_1,uint32_t param_2,uint32_t param_3
   sx_t2 = (int32_t)(int16_t)t2;
   half_t2 = (sx_t2 + (int32_t)((t2 >> 15) & 1u)) >> 1;
   half_v1 = (sx_v1 + (int32_t)((v1 >> 15) & 1u)) >> 1;
-  return sprite_rect_set_a((int32_t)param_1,
+  return sprite_rect_set_a((int32_t)ctx,
                       (int16_t)((int32_t)(int16_t)t0 - half_t2),
                       (int32_t)(int16_t)a2 - half_v1,
                       (uint32_t)sx_t2, (int32_t)sx_v1);
@@ -10720,45 +10719,44 @@ uint32_t centered_sprite_emit(uint32_t param_1,uint32_t param_2,uint32_t param_3
  * s0+6; all other nibbles call through. Call:
  * gte_quad_attr_emit(a0, b&0xf, (s16)MB16(s0+2), (s16)MB16(s0+4)<<5);
  * return s0+6. */
-uint32_t descriptor_quad_dispatch(uint32_t param_1,uint32_t param_2,uint32_t param_3)
+uint32_t descriptor_quad_dispatch(uint32_t obj,uint32_t unused,uint32_t desc)
 {
-  uint32_t s0 = param_3;
-  int32_t b = (int32_t)(int8_t)(MB16(s0) >> 8);
-  int32_t nib = b >> 4;
-  if (nib == 1) {
-    if ((MB8(param_1 + 5) & 1) != 0) return s0 + 6u;
-  } else if (nib < 2) {
+  int32_t tagb = (int32_t)(int8_t)(MB16(desc) >> 8);
+  int32_t op = tagb >> 4;
+  if (op == 1) {
+    if ((MB8(obj + 5) & 1) != 0) return desc + 6u;
+  } else if (op < 2) {
     /* call path */
-  } else if (nib == 2) {
-    if ((MB8(param_1 + 5) & 1) == 0) return s0 + 6u;
+  } else if (op == 2) {
+    if ((MB8(obj + 5) & 1) == 0) return desc + 6u;
   }
-  gte_quad_attr_emit(param_1, (uint32_t)(b & 0xf),
-               (uint32_t)(int32_t)MBS16(s0 + 2),
-               (uint32_t)((int32_t)MBS16(s0 + 4) << 5));
-  return s0 + 6u;
+  gte_quad_attr_emit(obj, (uint32_t)(tagb & 0xf),
+               (uint32_t)(int32_t)MBS16(desc + 2),
+               (uint32_t)((int32_t)MBS16(desc + 4) << 5));
+  return desc + 6u;
 }
 
 /* task_spawn_var_a — task spawn variant @0x8014b2cc (43 insns):
  * blk = task_node_alloc(1,2,0,0x8014afc0,0x8014b2c4,0x20); if 0 return
  * 0. v0=MB32(blk+0x10): +0=a0,+4=a1,+8=a2,+0xc=a3,+0x10=a2-4,
  * u16 zeros at +0x14,+0x16,+0x18,+0x1a,+0x1c; return blk. */
-uint32_t task_spawn_var_a(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                      uint32_t param_4)
+uint32_t task_spawn_var_a(uint32_t f0,uint32_t f4,
+                      uint32_t f8,uint32_t fc)
 {
   uint32_t blk = task_node_alloc(1, 2, 0, 0x8014afc0u, 0x8014b2c4u, 0x20);
-  uint32_t v0;
+  uint32_t inner;
   if (blk == 0) return 0;
-  v0 = MB32(blk + 0x10);
-  MW32(v0 + 0x0,  param_1);
-  MW32(v0 + 0x4,  param_2);
-  MW32(v0 + 0x8,  param_3);
-  MW32(v0 + 0xc,  param_4);
-  MW32(v0 + 0x10, param_3 - 4u);
-  MW16(v0 + 0x1c, 0);
-  MW16(v0 + 0x14, 0);
-  MW16(v0 + 0x18, 0);
-  MW16(v0 + 0x16, 0);
-  MW16(v0 + 0x1a, 0);
+  inner = MB32(blk + 0x10);
+  MW32(inner + 0x0,  f0);
+  MW32(inner + 0x4,  f4);
+  MW32(inner + 0x8,  f8);
+  MW32(inner + 0xc,  fc);
+  MW32(inner + 0x10, f8 - 4u);
+  MW16(inner + 0x1c, 0);
+  MW16(inner + 0x14, 0);
+  MW16(inner + 0x18, 0);
+  MW16(inner + 0x16, 0);
+  MW16(inner + 0x1a, 0);
   return blk;
 }
 
@@ -10768,17 +10766,17 @@ uint32_t task_spawn_var_a(uint32_t param_1,uint32_t param_2,uint32_t param_3,
  * options_page_dispatch(6). */
 void desc_slot_fill_x15(void)
 {
-  uint32_t a0 = MB32(0x801f10bcu);
-  uint32_t s1 = 0x801b2e2cu;
-  uint32_t s0 = 0x7f8u;
-  int32_t s2;
-  MW32(a0 + 0x1c, MB32(a0 + 0x1c) & ~0x820u);
-  for (s2 = 0; s2 < 0xf; s2++) {
-    uint32_t v0 = MB32(s1);
-    s1 += 4;
-    task_object_spawn(0, MB32(0x801f10c0u) + s0, MB32(0x801f10c4u) + s0,
-                 0x801b2d70u, v0);
-    s0 += 0x28u;
+  uint32_t obj = MB32(0x801f10bcu);
+  uint32_t strtab = 0x801b2e2cu;
+  uint32_t off = 0x7f8u;
+  int32_t i;
+  MW32(obj + 0x1c, MB32(obj + 0x1c) & ~0x820u);
+  for (i = 0; i < 0xf; i++) {
+    uint32_t str = MB32(strtab);
+    strtab += 4;
+    task_object_spawn(0, MB32(0x801f10c0u) + off, MB32(0x801f10c4u) + off,
+                 0x801b2d70u, str);
+    off += 0x28u;
   }
   options_page_dispatch(6);
 }
@@ -10789,49 +10787,50 @@ void desc_slot_fill_x15(void)
  * MB32(blk+0x10); v1 = MB32(0x801b22ec + (a1&0x7f)*4);
  * inner[0]=inner[1]=v1; u16 0 @+0xc/+0xe; +8=a0; +0x10=(a1&0x80);
  * +0x12=a2; return inner. */
-uint32_t indexed_task_spawn(uint32_t param_1,uint32_t param_2,uint32_t param_3)
+uint32_t indexed_task_spawn(uint32_t f8,uint32_t sel,
+                      uint32_t f12)
 {
-  uint32_t s0 = param_2 & 0x7fu;
-  uint32_t s1 = param_2 & 0x80u;
-  uint32_t blk, v0, v1;
+  uint32_t idx = sel & 0x7fu;
+  uint32_t hi = sel & 0x80u;
+  uint32_t blk, inner, ent;
   if (MBS8(0x1f8000b1u) != 0) return 0;
-  if (s0 >= 3) return 0;
+  if (idx >= 3) return 0;
   blk = task_node_alloc(1, 2, 8, 0x80140510u, 0, 0x14);
   if (blk == 0) return 0;
-  v0 = MB32(blk + 0x10);
-  v1 = MB32(0x801b22ecu + s0 * 4u);
-  MW32(v0 + 0x0, v1);
-  MW32(v0 + 0x4, v1);
-  MW16(v0 + 0xc, 0);
-  MW16(v0 + 0xe, 0);
-  MW32(v0 + 0x8, param_1);
-  MW16(v0 + 0x10, s1);
-  MW16(v0 + 0x12, param_3);
-  return v0;
+  inner = MB32(blk + 0x10);
+  ent = MB32(0x801b22ecu + idx * 4u);
+  MW32(inner + 0x0, ent);
+  MW32(inner + 0x4, ent);
+  MW16(inner + 0xc, 0);
+  MW16(inner + 0xe, 0);
+  MW32(inner + 0x8, f8);
+  MW16(inner + 0x10, hi);
+  MW16(inner + 0x12, f12);
+  return inner;
 }
 
 /* task_spawn_var_b — task spawn variant @0x8014af0c (44 insns):
  * blk = task_node_alloc(1,2,0,0x8014aee0,0x8014af04,0x20); stores
  * a0..a3 at +0/+4/+8/+0xc, a2-4 at +0x10, u16 zeros at
  * +0x14,+0x16,+0x18,+0x1a,+0x1c,+0x1e; return blk. */
-uint32_t task_spawn_var_b(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                      uint32_t param_4)
+uint32_t task_spawn_var_b(uint32_t f0,uint32_t f4,
+                      uint32_t f8,uint32_t fc)
 {
   uint32_t blk = task_node_alloc(1, 2, 0, 0x8014aee0u, 0x8014af04u, 0x20);
-  uint32_t v0;
+  uint32_t inner;
   if (blk == 0) return 0;
-  v0 = MB32(blk + 0x10);
-  MW32(v0 + 0x0,  param_1);
-  MW32(v0 + 0x4,  param_2);
-  MW32(v0 + 0x8,  param_3);
-  MW32(v0 + 0xc,  param_4);
-  MW32(v0 + 0x10, param_3 - 4u);
-  MW16(v0 + 0x1c, 0);
-  MW16(v0 + 0x14, 0);
-  MW16(v0 + 0x18, 0);
-  MW16(v0 + 0x16, 0);
-  MW16(v0 + 0x1a, 0);
-  MW16(v0 + 0x1e, 0);
+  inner = MB32(blk + 0x10);
+  MW32(inner + 0x0,  f0);
+  MW32(inner + 0x4,  f4);
+  MW32(inner + 0x8,  f8);
+  MW32(inner + 0xc,  fc);
+  MW32(inner + 0x10, f8 - 4u);
+  MW16(inner + 0x1c, 0);
+  MW16(inner + 0x14, 0);
+  MW16(inner + 0x18, 0);
+  MW16(inner + 0x16, 0);
+  MW16(inner + 0x1a, 0);
+  MW16(inner + 0x1e, 0);
   return blk;
 }
 
@@ -11078,23 +11077,21 @@ static void redraw_4recs(uint32_t start0,uint32_t str0a,
  * !(s1&1) cond_triple_spawn(1,s0); clear bit15 of [s0+0x6c], zero
  * +0xd6/+0xd8/+5, copy +0xac -> +0xae; slot_apply_guest(s0,0);
  * hit_chain_clear/42da0/42dd8(s0); return s2+2. */
-uint32_t battle_reset_tail(uint32_t param_1,uint32_t param_2,uint32_t param_3)
+uint32_t battle_reset_tail(uint32_t obj,uint32_t unused,uint32_t desc)
 {
-  uint32_t s0 = param_1;
-  uint32_t s2 = param_3;
-  int32_t s1 = (int32_t)(int8_t)(MB16(s2) >> 8);
-  if ((s1 & 2) == 0) deferred_cmd_post(0x400, 7, 0);
-  if ((s1 & 1) == 0) cond_triple_spawn(1, s0);
-  MW32(s0 + 0x6c, MB32(s0 + 0x6c) & 0xffff7fffu);
-  MW16(s0 + 0xd6, 0);
-  MW16(s0 + 0xd8, 0);
-  MW8(s0 + 5, 0);
-  MW16(s0 + 0xae, MB16(s0 + 0xac));
-  slot_apply_guest((int)s0, 0);
-  hit_chain_clear(s0);
-  pending_hit_a_clear(s0);
-  pending_hit_b_clear(s0);
-  return s2 + 2u;
+  int32_t fl = (int32_t)(int8_t)(MB16(desc) >> 8);
+  if ((fl & 2) == 0) deferred_cmd_post(0x400, 7, 0);
+  if ((fl & 1) == 0) cond_triple_spawn(1, obj);
+  MW32(obj + 0x6c, MB32(obj + 0x6c) & 0xffff7fffu);
+  MW16(obj + 0xd6, 0);
+  MW16(obj + 0xd8, 0);
+  MW8(obj + 5, 0);
+  MW16(obj + 0xae, MB16(obj + 0xac));
+  slot_apply_guest((int)obj, 0);
+  hit_chain_clear(obj);
+  pending_hit_a_clear(obj);
+  pending_hit_b_clear(obj);
+  return desc + 2u;
 }
 
 /* dual_axis_coord_xform — dual-axis coord transform @0x8012eaa8 (50
@@ -11106,22 +11103,22 @@ uint32_t battle_reset_tail(uint32_t param_1,uint32_t param_2,uint32_t param_3)
  * angle_gte_vec(s0,s1,a2+0x20).
  * Generated reads the object through $a3 (gpr[7]) and the output base
  * through $a2 (gpr[6]); $a0/$a1 are dead on entry. */
-void dual_axis_coord_xform(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                  uint32_t param_4)
+void dual_axis_coord_xform(uint32_t unused,uint32_t unused2,uint32_t dst,
+                  uint32_t ent)
 {
-  uint32_t o = MB32(param_4 + 0x20);
-  uint32_t sp[3];
-  uint32_t s0, s1, s2 = param_3;
-  int32_t r;
-  sp[0] = MB32(o + 0x174);
-  s0 = MB32(o + 0x178) + 0xa00u;
-  sp[1] = s0;
-  sp[2] = MB32(o + 0x17c);
-  s1 = (uint32_t)atan2_lut((int32_t)sp[2], (int32_t)sp[0]);
-  (void)FUN_80195370(&sp[0], &sp[0]);
-  r = FUN_801948c0(sp[0] + sp[2]);
-  r = atan2_lut(-(int32_t)s0, r);
-  s0 = (uint32_t)(int32_t)(int16_t)r;
+  uint32_t obj = MB32(ent + 0x20);
+  uint32_t pos[3];
+  uint32_t s0, s1, s2 = dst;
+  int32_t ang;
+  pos[0] = MB32(obj + 0x174);
+  s0 = MB32(obj + 0x178) + 0xa00u;
+  pos[1] = s0;
+  pos[2] = MB32(obj + 0x17c);
+  s1 = (uint32_t)atan2_lut((int32_t)pos[2], (int32_t)pos[0]);
+  (void)FUN_80195370(&pos[0], &pos[0]);
+  ang = FUN_801948c0(pos[0] + pos[2]);
+  ang = atan2_lut(-(int32_t)s0, ang);
+  s0 = (uint32_t)(int32_t)(int16_t)ang;
   s1 = (uint32_t)(int32_t)(int16_t)s1;
   vec2_rot(s0, s1, (undefined2 *)guest_at(s2 + 6));
   angle_gte_vec(s0, s1, (uint *)guest_at(s2 + 0x20));
@@ -11163,24 +11160,23 @@ void dual_redraw_c(void)
  * If MB16(0x1f80007e)==0x4000: deferred_cmd_post(0x400,0xb,0);
  * MB16(s0)--; if ((s16)new < 0) MB16(s0)=param_2.
  * Return (MB16(s0)^old)!=0. */
-int32_t u16_wrap_counter_step(uint32_t param_1,int32_t param_2)
+int32_t u16_wrap_counter_step(uint32_t ctr,int32_t wrap)
 {
-  uint32_t s0 = param_1;
-  int32_t s3 = (int32_t)MBS16(s0);
-  uint32_t v1;
+  int32_t old = (int32_t)MBS16(ctr);
+  uint32_t v;
   if (MB16(0x1f80007eu) == 0x1000u) {
     deferred_cmd_post(0x400, 0xb, 0);
-    v1 = MB16(s0) + 1u;
-    MW16(s0, v1);
-    if ((int32_t)(int16_t)param_2 < (int32_t)(int16_t)v1) MW16(s0, 0);
+    v = MB16(ctr) + 1u;
+    MW16(ctr, v);
+    if ((int32_t)(int16_t)wrap < (int32_t)(int16_t)v) MW16(ctr, 0);
   }
   if (MB16(0x1f80007eu) == 0x4000u) {
     deferred_cmd_post(0x400, 0xb, 0);
-    v1 = MB16(s0) - 1u;
-    MW16(s0, v1);
-    if ((int32_t)(int16_t)v1 < 0) MW16(s0, (uint16_t)param_2);
+    v = MB16(ctr) - 1u;
+    MW16(ctr, v);
+    if ((int32_t)(int16_t)v < 0) MW16(ctr, (uint16_t)wrap);
   }
-  return ((int32_t)MBS16(s0) ^ s3) != 0;
+  return ((int32_t)MBS16(ctr) ^ old) != 0;
 }
 
 /* desc_cursor_select — descriptor cursor select @0x8017a8b4 (54 insns):
@@ -11191,35 +11187,35 @@ int32_t u16_wrap_counter_step(uint32_t param_1,int32_t param_2)
  * 5-> (s32)MB32(a1+0x94)>=0 ? MB32(a1+0x8c) : a2+2;
  * 6-> (s32)MB32(a1+0x94)<0 ? MB32(a1+0x8c) : a2+2;
  * 7-> MB32(a1+0x84)=a2+2, return 0; 8-> state_pair_init(), a2+2. */
-uint32_t desc_cursor_select(uint32_t param_1,uint32_t param_2,uint32_t param_3)
+uint32_t desc_cursor_select(uint32_t unused,uint32_t st,uint32_t desc)
 {
-  int32_t sel = (int32_t)(int8_t)(MB16(param_3) >> 8);
-  int32_t v94;
-  if ((uint32_t)sel >= 9u) return MB32(param_2 + 0x8c);
+  int32_t sel = (int32_t)(int8_t)(MB16(desc) >> 8);
+  int32_t f94;
+  if ((uint32_t)sel >= 9u) return MB32(st + 0x8c);
   switch (sel) {
   case 0: return 0;
-  case 1: return param_3 + 2u;
-  case 2: return MB32(param_2 + 0x8c);
+  case 1: return desc + 2u;
+  case 2: return MB32(st + 0x8c);
   case 3:
-    return (MB32(param_2 + 0x94) == 0) ? MB32(param_2 + 0x8c)
-                                      : param_3 + 2u;
+    return (MB32(st + 0x94) == 0) ? MB32(st + 0x8c)
+                                      : desc + 2u;
   case 4:
-    return (MB32(param_2 + 0x94) != 0) ? MB32(param_2 + 0x8c)
-                                      : param_3 + 2u;
+    return (MB32(st + 0x94) != 0) ? MB32(st + 0x8c)
+                                      : desc + 2u;
   case 5:
-    v94 = (int32_t)MB32(param_2 + 0x94);
-    return (v94 >= 0) ? MB32(param_2 + 0x8c) : param_3 + 2u;
+    f94 = (int32_t)MB32(st + 0x94);
+    return (f94 >= 0) ? MB32(st + 0x8c) : desc + 2u;
   case 6:
-    v94 = (int32_t)MB32(param_2 + 0x94);
-    return (v94 < 0) ? MB32(param_2 + 0x8c) : param_3 + 2u;
+    f94 = (int32_t)MB32(st + 0x94);
+    return (f94 < 0) ? MB32(st + 0x8c) : desc + 2u;
   case 7:
-    MW32(param_2 + 0x84, param_3 + 2u);
+    MW32(st + 0x84, desc + 2u);
     return 0;
   case 8:
     state_pair_init();
-    return param_3 + 2u;
+    return desc + 2u;
   }
-  return MB32(param_2 + 0x8c);
+  return MB32(st + 0x8c);
 }
 
 /* ======== batch43 ======== */
