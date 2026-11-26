@@ -4179,7 +4179,7 @@ void countdown_display_sm(uint32_t a0)
   sel_rec = (uint8_t *)guest_at(0x1f800000 + (uint32_t)which * 2);
   for (;;) {
     if (br2_bail_pending()) return;
-    int32_t st;
+
     if (sm_state == 1) goto body;
     if (sm_state < 2) {
       if (sm_state == 0) {
@@ -4501,7 +4501,7 @@ void fighter_anim_table_init(int32_t a0)
 {
   uint32_t pass_off, pass, ri;
   uint8_t *rec;
-  uint32_t buf1, buf2, bp;
+  uint32_t bp;
   int32_t i, j, k;
 
   if (a0 != 0) return;
@@ -4873,7 +4873,7 @@ void sprite_anim_chain_build(uint32_t a0)
     uint32_t h2_91f0a = 0x801f4e5c + off;
     uint32_t h2_fill  = 0x801f4e68 + off;
     uint32_t h2_e0    = 0x801f4e78 + off;
-    uint32_t h2_f08   = 0x801f4dc8 + off;
+
     uint32_t h2_e0c   = 0x801f4e38 + off;
     s4t = 0x801e40a0 + sp2c;
 
@@ -7428,7 +7428,7 @@ L20:
     uint32_t slot = 0x801c43a8u + slot_base * 4;
     for (i = 0; i < 0x14; i++, slot += 4) {
       uint32_t h = (g32(0x801c47b8) + 3) & ~3u;
-      uint32_t r;
+
       BR2_W32(0x801c47b8, h);
       BR2_W32(slot, h);
       sz = heap_alloc54(h, tbl, (int32_t)i + 1);
