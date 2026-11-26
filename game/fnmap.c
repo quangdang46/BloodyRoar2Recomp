@@ -924,9 +924,17 @@ extern void mem_move(void);
 extern void memcard_block_verify(void);
 extern void memcard_err_sentinel(void);
 extern void memcard_file_flow(void);
+extern void memcard_flow_arm_flag(void);
+extern void memcard_flow_poll_node(void);
+extern void memcard_flow_state_dispatch(void);
+extern void memcard_flow_triage(void);
 extern void memcard_info_query(void);
+extern void memcard_op_fmt_check(void);
+extern void memcard_op_fmt_format(void);
+extern void memcard_op_fmt_save(void);
 extern void memcard_poll_frame(void);
 extern void memcard_slot_poll(void);
+extern void memcard_stat_pct_call(void);
 extern void memcard_tick(void);
 extern void memmap_debug_dump(void);
 extern void menu_noop(void);
@@ -947,6 +955,9 @@ extern void midpoint_angles_set(void);
 extern void mode3_dispatch(void);
 extern void mode_flag_pair_set(void);
 extern void mode_name_announce(void);
+extern void mode_name_case_practice(void);
+extern void mode_name_case_vs(void);
+extern void mode_name_case_watch(void);
 extern void mode_select_commit(void);
 extern void mode_select_wrapper(void);
 extern void mode_string_dispatch(void);
@@ -2014,6 +2025,14 @@ const Br2FnEnt fn_table[] = {
   { 0x8015f644, (void *)memcard_poll_frame },
   { 0x8015f64c, (void *)pending_work_drain },
   { 0x8015f6a0, (void *)memcard_file_flow },
+  { 0x80160008, (void *)memcard_op_fmt_save },
+  { 0x80160024, (void *)memcard_op_fmt_format },
+  { 0x80160040, (void *)memcard_op_fmt_check },
+  { 0x80160184, (void *)memcard_stat_pct_call },
+  { 0x80160220, (void *)memcard_flow_triage },
+  { 0x80160298, (void *)memcard_flow_arm_flag },
+  { 0x80160410, (void *)memcard_flow_state_dispatch },
+  { 0x80160514, (void *)memcard_flow_poll_node },
   { 0x80160598, (void *)dialog_sel_dispatch },
   { 0x8016088c, (void *)screen_flow_state_machine },
   { 0x80161c54, (void *)pad_handler_a },
@@ -2035,6 +2054,9 @@ const Br2FnEnt fn_table[] = {
   { 0x80163520, (void *)slot_display_pos },
   { 0x8016362c, (void *)menu_noop },
   { 0x80163634, (void *)mode_name_announce },
+  { 0x80163744, (void *)mode_name_case_vs },
+  { 0x80163758, (void *)mode_name_case_watch },
+  { 0x80163780, (void *)mode_name_case_practice },
   { 0x80163840, (void *)FUN_80163840 },
   { 0x80163848, (void *)FUN_80163848 },
   { 0x80163850, (void *)ret_zero_a },

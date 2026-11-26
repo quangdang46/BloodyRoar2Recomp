@@ -4595,3 +4595,16 @@
 8012a93c cps_8012a92c
 801298f8 cps_801298f8
 801268b8 cps_801268b8
+# memcard_file_flow pieces (guest 0x8015F6A0 body) — w3_e07
+80160008 memcard_op_fmt_save
+80160024 memcard_op_fmt_format
+80160040 memcard_op_fmt_check
+80160184 memcard_stat_pct_call
+80160220 memcard_flow_triage
+80160298 memcard_flow_arm_flag
+80160410 memcard_flow_state_dispatch
+80160514 memcard_flow_poll_node
+# mode_name_announce cases (guest 0x80163634 body) — w3_e07
+80163744 mode_name_case_vs
+80163758 mode_name_case_watch
+80163780 mode_name_case_practice
