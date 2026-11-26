@@ -4741,3 +4741,14 @@
 80156818 page_table_ptr_set_sel
 80156824 page_table_ptr_set_sel
 80156830 page_table_ptr_set_sel
+80157948 confirm_code_entry_cps
+80157950 confirm_code_entry_cps
+80157958 confirm_code_entry_cps
+80157960 confirm_code_entry_cps
+80158000 memcard_dialog_cps
+80158058 memcard_dialog_cps
+80158070 memcard_dialog_cps
+80158170 memcard_dialog_cps
+80158188 memcard_dialog_cps
+80158228 memcard_dialog_cps
+80158230 memcard_dialog_cps
