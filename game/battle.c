@@ -17917,10 +17917,10 @@ void task_alloc_setup(int pool)
  * midpoints into **p1 +0x14/0x18/0x1c. */
 void paired_task_cb(int arg)
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
-  int iVar4;
+  int t;
+  int nd;
+  int mtx;
+  int tgt;
   if (*(int *)guest_at((uint32_t)(uintptr_t)arg) == 0) {
     task_slot_step();
     return;
@@ -17932,34 +17932,34 @@ void paired_task_cb(int arg)
       (short)(*(ushort *)guest_at((uint32_t)(uintptr_t)(arg + 0x2a)) + 0x1c4);
   }
   obj_flag34_set(*(int *)guest_at((uint32_t)(uintptr_t)arg));
-  iVar1 = (int)*(ushort *)guest_at((uint32_t)(uintptr_t)(arg + 0x2a));
-  *(short *)guest_at((uint32_t)(uintptr_t)(arg + 8)) = (short)iVar1;
-  *(short *)guest_at((uint32_t)(uintptr_t)(arg + 0x10)) = (short)iVar1;
+  t = (int)*(ushort *)guest_at((uint32_t)(uintptr_t)(arg + 0x2a));
+  *(short *)guest_at((uint32_t)(uintptr_t)(arg + 8)) = (short)t;
+  *(short *)guest_at((uint32_t)(uintptr_t)(arg + 0x10)) = (short)t;
   angle_vec_build((uint)(short)*(short *)guest_at((uint32_t)(uintptr_t)(arg + 0x28)),
                (uint *)guest_at(0x1f8003e0));
   gte_rtps_xform3((undefined4 *)guest_at((uint32_t)(uintptr_t)(arg + 8)),
                (ushort *)guest_at(0x1f8003e0),(uint *)guest_at(0x1f8003e0));
-  iVar1 = *(int *)guest_at((uint32_t)(uintptr_t)arg);
+  t = *(int *)guest_at((uint32_t)(uintptr_t)arg);
   gte_rtps_xform3((undefined4 *)guest_at(0x801f0760),(ushort *)guest_at(0x1f8003e0),
-               (uint *)guest_at((uint32_t)(uintptr_t)(*(int *)guest_at((uint32_t)(uintptr_t)iVar1))));
-  iVar2 = *(int *)guest_at((uint32_t)(uintptr_t)(arg + 4));
-  iVar3 = *(int *)guest_at((uint32_t)(uintptr_t)(iVar2 + 0x20));
-  iVar4 = *(int *)guest_at((uint32_t)(uintptr_t)(*(int *)guest_at((uint32_t)(uintptr_t)arg)));
-  *(int *)guest_at((uint32_t)(uintptr_t)(iVar4 + 0x14)) =
-    (*(int *)guest_at((uint32_t)(uintptr_t)(iVar3 + 0x84)) +
-     *(int *)guest_at((uint32_t)(uintptr_t)(iVar3 + 0x1c4)) +
-     ((*(int *)guest_at((uint32_t)(uintptr_t)(iVar3 + 0x84)) +
-       *(int *)guest_at((uint32_t)(uintptr_t)(iVar3 + 0x1c4))) >> 31)) >> 1;
-  *(int *)guest_at((uint32_t)(uintptr_t)(iVar4 + 0x18)) =
-    (*(int *)guest_at((uint32_t)(uintptr_t)(iVar3 + 0x88)) +
-     *(int *)guest_at((uint32_t)(uintptr_t)(iVar3 + 0x1c8)) +
-     ((*(int *)guest_at((uint32_t)(uintptr_t)(iVar3 + 0x88)) +
-       *(int *)guest_at((uint32_t)(uintptr_t)(iVar3 + 0x1c8))) >> 31)) >> 1;
-  *(int *)guest_at((uint32_t)(uintptr_t)(iVar4 + 0x1c)) =
-    (*(int *)guest_at((uint32_t)(uintptr_t)(iVar3 + 0x8c)) +
-     *(int *)guest_at((uint32_t)(uintptr_t)(iVar3 + 0x1cc)) +
-     ((*(int *)guest_at((uint32_t)(uintptr_t)(iVar3 + 0x8c)) +
-       *(int *)guest_at((uint32_t)(uintptr_t)(iVar3 + 0x1cc))) >> 31)) >> 1;
+               (uint *)guest_at((uint32_t)(uintptr_t)(*(int *)guest_at((uint32_t)(uintptr_t)t))));
+  nd = *(int *)guest_at((uint32_t)(uintptr_t)(arg + 4));
+  mtx = *(int *)guest_at((uint32_t)(uintptr_t)(nd + 0x20));
+  tgt = *(int *)guest_at((uint32_t)(uintptr_t)(*(int *)guest_at((uint32_t)(uintptr_t)arg)));
+  *(int *)guest_at((uint32_t)(uintptr_t)(tgt + 0x14)) =
+    (*(int *)guest_at((uint32_t)(uintptr_t)(mtx + 0x84)) +
+     *(int *)guest_at((uint32_t)(uintptr_t)(mtx + 0x1c4)) +
+     ((*(int *)guest_at((uint32_t)(uintptr_t)(mtx + 0x84)) +
+       *(int *)guest_at((uint32_t)(uintptr_t)(mtx + 0x1c4))) >> 31)) >> 1;
+  *(int *)guest_at((uint32_t)(uintptr_t)(tgt + 0x18)) =
+    (*(int *)guest_at((uint32_t)(uintptr_t)(mtx + 0x88)) +
+     *(int *)guest_at((uint32_t)(uintptr_t)(mtx + 0x1c8)) +
+     ((*(int *)guest_at((uint32_t)(uintptr_t)(mtx + 0x88)) +
+       *(int *)guest_at((uint32_t)(uintptr_t)(mtx + 0x1c8))) >> 31)) >> 1;
+  *(int *)guest_at((uint32_t)(uintptr_t)(tgt + 0x1c)) =
+    (*(int *)guest_at((uint32_t)(uintptr_t)(mtx + 0x8c)) +
+     *(int *)guest_at((uint32_t)(uintptr_t)(mtx + 0x1cc)) +
+     ((*(int *)guest_at((uint32_t)(uintptr_t)(mtx + 0x8c)) +
+       *(int *)guest_at((uint32_t)(uintptr_t)(mtx + 0x1cc))) >> 31)) >> 1;
   return;
 }
 
@@ -17972,54 +17972,54 @@ void paired_task_cb(int arg)
  * on the u8 flag at arg+2. Disasm 0x8013e0f0-0x8013e370. */
 void task_packet_emit(int a0,int a1,int a2)
 {
-  int iVar1;
-  int iVar2;
-  uint32_t uVar3;
+  int node;
+  int hdg;
+  uint32_t pkt;
   uint32_t uVar4;
   int iVar5;
   int iVar6;
 
-  iVar1 = (int)(intptr_t)task_node_alloc(1,2,0xb,0x8014dbd8,0,0xc4);
-  if (iVar1 == 0) {
+  node = (int)(intptr_t)task_node_alloc(1,2,0xb,0x8014dbd8,0,0xc4);
+  if (node == 0) {
     return;
   }
-  uVar3 = *(uint32_t *)guest_at((uint32_t)(uintptr_t)(iVar1 + 0x10));
-  *(short *)guest_at(uVar3 + 0xc2) = (short)a2;
-  *(short *)guest_at(uVar3 + 0xc0) = (short)a2;
-  iVar2 = (int)*(short *)guest_at((uint32_t)(uintptr_t)(a0 + 0x4e));
-  *(short *)guest_at(uVar3 + 0xb8) =
-    (short)(lut_cos_q12(iVar2 + 0x400) >> 6);
-  *(short *)guest_at(uVar3 + 0xbc) =
-    (short)(lut_sin_q12(iVar2 + 0x400) >> 6);
-  /* 3x3 u16 matrix at uVar3+0xa0: column j = u16 of a1 word j
+  pkt = *(uint32_t *)guest_at((uint32_t)(uintptr_t)(node + 0x10));
+  *(short *)guest_at(pkt + 0xc2) = (short)a2;
+  *(short *)guest_at(pkt + 0xc0) = (short)a2;
+  hdg = (int)*(short *)guest_at((uint32_t)(uintptr_t)(a0 + 0x4e));
+  *(short *)guest_at(pkt + 0xb8) =
+    (short)(lut_cos_q12(hdg + 0x400) >> 6);
+  *(short *)guest_at(pkt + 0xbc) =
+    (short)(lut_sin_q12(hdg + 0x400) >> 6);
+  /* 3x3 u16 matrix at pkt+0xa0: column j = u16 of a1 word j
    * (guest reads lhu at +0/+4/+8, writes sh at row/col strides 8/2). */
-  *(ushort *)guest_at(uVar3 + 0xa0) =
+  *(ushort *)guest_at(pkt + 0xa0) =
     *(ushort *)guest_at((uint32_t)(uintptr_t)(a1 + 0));
-  *(ushort *)guest_at(uVar3 + 0xa8) =
+  *(ushort *)guest_at(pkt + 0xa8) =
     *(ushort *)guest_at((uint32_t)(uintptr_t)(a1 + 0));
-  *(ushort *)guest_at(uVar3 + 0xb0) =
+  *(ushort *)guest_at(pkt + 0xb0) =
     *(ushort *)guest_at((uint32_t)(uintptr_t)(a1 + 0));
-  *(ushort *)guest_at(uVar3 + 0xa2) =
+  *(ushort *)guest_at(pkt + 0xa2) =
     *(ushort *)guest_at((uint32_t)(uintptr_t)(a1 + 4));
-  *(ushort *)guest_at(uVar3 + 0xaa) =
+  *(ushort *)guest_at(pkt + 0xaa) =
     *(ushort *)guest_at((uint32_t)(uintptr_t)(a1 + 4));
-  *(ushort *)guest_at(uVar3 + 0xb2) =
+  *(ushort *)guest_at(pkt + 0xb2) =
     *(ushort *)guest_at((uint32_t)(uintptr_t)(a1 + 4));
-  *(ushort *)guest_at(uVar3 + 0xa4) =
+  *(ushort *)guest_at(pkt + 0xa4) =
     *(ushort *)guest_at((uint32_t)(uintptr_t)(a1 + 8));
-  *(ushort *)guest_at(uVar3 + 0xac) =
+  *(ushort *)guest_at(pkt + 0xac) =
     *(ushort *)guest_at((uint32_t)(uintptr_t)(a1 + 8));
-  *(ushort *)guest_at(uVar3 + 0xb4) =
+  *(ushort *)guest_at(pkt + 0xb4) =
     *(ushort *)guest_at((uint32_t)(uintptr_t)(a1 + 8));
-  *(ushort *)guest_at(uVar3 + 0xa8) =
-    (ushort)(*(ushort *)guest_at(uVar3 + 0xa8) +
-             (*(ushort *)guest_at(uVar3 + 0xb8) << 2));
-  *(ushort *)guest_at(uVar3 + 0xac) =
-    (ushort)(*(ushort *)guest_at(uVar3 + 0xac) +
-             (*(ushort *)guest_at(uVar3 + 0xbc) << 2));
+  *(ushort *)guest_at(pkt + 0xa8) =
+    (ushort)(*(ushort *)guest_at(pkt + 0xa8) +
+             (*(ushort *)guest_at(pkt + 0xb8) << 2));
+  *(ushort *)guest_at(pkt + 0xac) =
+    (ushort)(*(ushort *)guest_at(pkt + 0xac) +
+             (*(ushort *)guest_at(pkt + 0xbc) << 2));
   /* two outer passes of two 0x28-byte records each (guest a2/t1 += 0x50) */
   for (iVar5 = 0; iVar5 < 2; iVar5++) {
-    uVar4 = uVar3 + iVar5 * 0x50;
+    uVar4 = pkt + iVar5 * 0x50;
     for (iVar6 = 0; iVar6 < 2; iVar6++) {
       uint32_t uVar7 = uVar4 + iVar6 * 0x28;
       *(uint32_t *)guest_at(uVar7) = 0x09000000;
