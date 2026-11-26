@@ -3267,6 +3267,8 @@ block_80126700:
  * from SLES_017.22_full_00.c. */
 void cps_80126704(void)
 {
+/* scratchpad/RAM byte store: writes s2 to *s1 and 13/255 to
+ * 0x1F800000+13 — low-level state byte init. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3454,6 +3456,7 @@ block_801267C8:
  * from SLES_017.22_full_00.c. */
 void cps_801267cc(void)
 {
+/* leaf epilogue piece: restore s0/ra, sp += 24, jr ra. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3543,6 +3546,7 @@ block_80126814:
  * from SLES_017.22_full_00.c. */
 void cps_80126828(void)
 {
+/* counter-increment leaf: *(a0) += 1 and *a1 += 1. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3564,6 +3568,7 @@ block_80126828:
  * from SLES_017.22_full_00.c. */
 void cps_80126840(void)
 {
+/* empty leaf: immediate jr ra. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3636,6 +3641,7 @@ block_80126868:
  * from SLES_017.22_full_00.c. */
 void cps_80126888(void)
 {
+/* small multi-block piece in the 0x80126 thunk cluster. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -4861,6 +4867,7 @@ block_80126EE8:
  * from SLES_017.22_full_00.c. */
 void cps_80126eec(void)
 {
+/* leaf epilogue piece: restore s0-s2/ra, sp += 48, jr ra. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
