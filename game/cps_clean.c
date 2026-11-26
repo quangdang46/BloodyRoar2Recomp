@@ -115226,6 +115226,7 @@ void cps_8019b308(void)
             case 0x8019B360u: goto block_8019B360;
             case 0x8019B368u: goto block_8019B368;
             case 0x8019B31Cu: goto block_8019B31C;
+            case 0x8019B310u: goto block_8019B310;
             default: break;
         }
     }
@@ -115234,6 +115235,8 @@ void cps_8019b308(void)
 block_8019B308:
     cpu->gpr[2] = 0x801C << 16;  /* 0x801C0000 */
     cpu->gpr[2] = cpu->read_word(cpu->gpr[2] + -8544);
+
+block_8019B310:
     cpu->gpr[29] = cpu->gpr[29] + -24;
     int _bc_8019B314 = (cpu->gpr[2] != cpu->gpr[0]);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
