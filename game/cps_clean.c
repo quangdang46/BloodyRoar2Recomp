@@ -96582,7 +96582,14 @@ block_801A0DAC:
 }
 
 /* cps_801a0ddc — clean CPS transliteration of br2eu_func_801A0DDC (guest 0x801a0ddc)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Channel release-all (paired with cps_801a0be0/0x801a0c68 init):
+ * prologue saves ra/s0 and calls 0x8018E300, then reads all eight
+ * command-handle slots @0x801FEF70..0x801FEF8C and passes each to
+ * 0x801A11C0 (per-channel release); s0 captures the first call's
+ * return value — if it equals 1, tails into 0x8018E310, else epilogues
+ * via jr ra.
+ */
 void cps_801a0ddc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -96618,7 +96625,7 @@ block_801A0DDC:
 
 block_801A0DEC:
     a0 = 0x8020 << 16;  /* 0x80200000 */
-    a0 = cpu->read_word(a0 + -4240);
+    a0 = cpu->read_word(a0 + -4240);  /* handle[0] @0x801FEF70 */
     ra = 0x801A0DFCu;  /* jal link before delay slot */
     /* delay slot (always executes) */
     s0 = v0;
@@ -96627,7 +96634,7 @@ block_801A0DEC:
 
 block_801A0DFC:
     a0 = 0x8020 << 16;  /* 0x80200000 */
-    a0 = cpu->read_word(a0 + -4236);
+    a0 = cpu->read_word(a0 + -4236);  /* handle[1] @0x801FEF74 */
     ra = 0x801A0E0Cu;  /* jal link before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x801A0E08: 0x00000000 */
@@ -96636,7 +96643,7 @@ block_801A0DFC:
 
 block_801A0E0C:
     a0 = 0x8020 << 16;  /* 0x80200000 */
-    a0 = cpu->read_word(a0 + -4232);
+    a0 = cpu->read_word(a0 + -4232);  /* handle[2] @0x801FEF78 */
     ra = 0x801A0E1Cu;  /* jal link before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x801A0E18: 0x00000000 */
@@ -96645,7 +96652,7 @@ block_801A0E0C:
 
 block_801A0E1C:
     a0 = 0x8020 << 16;  /* 0x80200000 */
-    a0 = cpu->read_word(a0 + -4228);
+    a0 = cpu->read_word(a0 + -4228);  /* handle[3] @0x801FEF7C */
     ra = 0x801A0E2Cu;  /* jal link before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x801A0E28: 0x00000000 */
@@ -96654,7 +96661,7 @@ block_801A0E1C:
 
 block_801A0E2C:
     a0 = 0x8020 << 16;  /* 0x80200000 */
-    a0 = cpu->read_word(a0 + -4224);
+    a0 = cpu->read_word(a0 + -4224);  /* handle[4] @0x801FEF80 */
     ra = 0x801A0E3Cu;  /* jal link before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x801A0E38: 0x00000000 */
@@ -96663,7 +96670,7 @@ block_801A0E2C:
 
 block_801A0E3C:
     a0 = 0x8020 << 16;  /* 0x80200000 */
-    a0 = cpu->read_word(a0 + -4220);
+    a0 = cpu->read_word(a0 + -4220);  /* handle[5] @0x801FEF84 */
     ra = 0x801A0E4Cu;  /* jal link before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x801A0E48: 0x00000000 */
@@ -96672,7 +96679,7 @@ block_801A0E3C:
 
 block_801A0E4C:
     a0 = 0x8020 << 16;  /* 0x80200000 */
-    a0 = cpu->read_word(a0 + -4216);
+    a0 = cpu->read_word(a0 + -4216);  /* handle[6] @0x801FEF88 */
     ra = 0x801A0E5Cu;  /* jal link before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x801A0E58: 0x00000000 */
@@ -96681,7 +96688,7 @@ block_801A0E4C:
 
 block_801A0E5C:
     a0 = 0x8020 << 16;  /* 0x80200000 */
-    a0 = cpu->read_word(a0 + -4212);
+    a0 = cpu->read_word(a0 + -4212);  /* handle[7] @0x801FEF8C */
     ra = 0x801A0E6Cu;  /* jal link before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x801A0E68: 0x00000000 */
@@ -96719,7 +96726,11 @@ block_801A0E80:
 }
 
 /* cps_801a11d0 — clean CPS transliteration of br2eu_func_801A11D0 (guest 0x801a11d0)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Channel-flag exchange: v0 = old word @0x801FEF90 (flag slot 0), then
+ * stores a0 into it — atomic test-and-set style swap returning the
+ * previous flag value.
+ */
 void cps_801a11d0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -96729,7 +96740,7 @@ void cps_801a11d0(void)
 
 block_801A11D0:
     v1 = 0x8020 << 16;  /* 0x80200000 */
-    v1 = v1 + -4176;
+    v1 = v1 + -4176;  /* @0x801FEF90 */
     v0 = cpu->read_word(v1);
     uint32_t _jt_801A11DC = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
@@ -96739,7 +96750,12 @@ block_801A11D0:
 }
 
 /* cps_801a1290 — clean CPS transliteration of br2eu_func_801A1290 (guest 0x801a1290)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Indexed flag probe: if word @0x801BE7CC is zero returns 0; else
+ * loads a record-array pointer @0x801BE7B4 and indexes it by
+ * a0>>4 — record stride 240 bytes — reads byte @+0xE8, XORs 8, and
+ * returns 1 iff the result is zero (byte == 8).
+ */
 void cps_801a1290(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -96758,7 +96774,7 @@ void cps_801a1290(void)
 
 block_801A1290:
     v0 = 0x801C << 16;  /* 0x801C0000 */
-    v0 = cpu->read_word(v0 + -6196);
+    v0 = cpu->read_word(v0 + -6196);  /* @0x801BE7CC */
     /* nop */  /* 0x801A1298: 0x00000000 */
     int _bc_801A129C = (v0 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -96781,10 +96797,10 @@ block_801A12AC:
     v0 = v1 << 4;
     v0 = v0 - v1;
     v1 = 0x801C << 16;  /* 0x801C0000 */
-    v1 = cpu->read_word(v1 + -6220);
+    v1 = cpu->read_word(v1 + -6220);  /* record-array ptr @0x801BE7B4 */
     v0 = v0 << 4;
     v0 = v0 + v1;
-    v0 = cpu->read_byte(v0 + 232);
+    v0 = cpu->read_byte(v0 + 232);  /* flag byte @+0xE8 */
     /* nop */  /* 0x801A12C8: 0x00000000 */
     v0 = v0 ^ 0x0008;  /* 0x801A12CC: 0x38420008 */
     v0 = (v0 < (uint32_t)1) ? 1 : 0;  /* 0x801A12D0: 0x2C420001 */
