@@ -4,6 +4,35 @@
  * DAT_ symbols are lvalue macros yielding guest-field pointers;
  * _DAT_801f04a4 is an int32_t* guest pointer. FUN_ calls bind to
  * host hooks (declared below; guest names preserved for audit). */
+
+/* Observed field map (from usage in this file; offsets are guest
+ * byte offsets, names are descriptive not official):
+ *
+ * ctrl (fighter state record):
+ *   +0x02 fighter slot, +0x05 mode flags, +0x20 own actor obj guest
+ *   ptr, +0x2c foe ctrl guest ptr, +0x38 hit/motion obj guest ptr
+ *   (motion_p), +0x40 skeleton/joint pose guest ptr, +0x48 parts
+ *   table guest ptr.
+ *   +0x4e facing/yaw, +0x50/+0x4c euler pair, +0x54/+0x58/+0x5c/
+ *   +0x60/+0x64/+0x68/+0x6c flag words (snapshotted as fXX locals).
+ *   +0x70 turn-rate value, +0x74 turn rate, +0x7a held-button mask,
+ *   +0x7c/+0x80/+0x82/+0x84 button words (btn/ba/bb/cat/cat2).
+ *   +0x86/+0x88 frame-step pair, +0x8a/+0x8c/+0x8e/+0x90..+0xa4
+ *   velocity/impulse block, +0xaa/+0xac/+0xae/+0xb0/+0xb2/+0xb4/
+ *   +0xb6/+0xb8/+0xba/+0xbc/+0xbe timers & gauges, +0xc0..+0xd8
+ *   action/velocity scratch, +0xd4 countdown, +0xd6 launch timer,
+ *   +0xe5 counter, +0xfc alt frame step.
+ *
+ * motion (per-fighter motion/anim state):
+ *   +0x80 current action, +0x82 next/pending action, +0x84 event
+ *   stream pc, +0x88 blend timer, +0x90 stream countdown,
+ *   +0x92/+0x98 anim channels, +0xb0 keyframe table guest ptr,
+ *   +0xb2/+0xb4/+0xb8/+0xbe anim params, +0xc0..+0xce keyframe
+ *   timeline (pos/step/window), +0xd0..+0xdc motion position,
+ *   +0xe4 yaw rate, +0xf8..+0x100 keyframe record slots,
+ *   +0x106/+0x108 steering offsets, +0x10a/+0x10c/+0x10e/+0x110/
+ *   +0x114/+0x116 timers, +0x24 divisor (mass-like, +4000 bias).
+ */
 #include <stdint.h>
 #include <stdbool.h>
 
