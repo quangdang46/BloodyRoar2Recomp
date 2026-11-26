@@ -7472,27 +7472,27 @@ void sprite_strip_draw_dual(int src_a,int src_b,int uv,int n,ushort *pal,int arg
 
 int task_alloc_wrap_a(undefined4 a0,undefined4 a1,int a2,undefined4 a3)
 {
-  int iVar1;
-  undefined4 *puVar2;
-  iVar1 = (int)(intptr_t)task_node_alloc(0,2,0,0x80137680,0,0x1c);
-  if (iVar1 != 0) {
-    puVar2 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0x10))));
-    *puVar2 = a0;
-    puVar2[1] = a1;
-    puVar2[2] = a2;
-    puVar2[3] = a3;
-    puVar2[4] = a2 + -4;
-    puVar2[5] = 0;
-    puVar2[6] = 0;
+  int node;
+  undefined4 *pay;
+  node = (int)(intptr_t)task_node_alloc(0,2,0,0x80137680,0,0x1c);
+  if (node != 0) {
+    pay = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((node + 0x10))));
+    *pay = a0;
+    pay[1] = a1;
+    pay[2] = a2;
+    pay[3] = a3;
+    pay[4] = a2 + -4;
+    pay[5] = 0;
+    pay[6] = 0;
   }
-  return iVar1;
+  return node;
 
 }
 
 int task_alloc_wrap_b(undefined4 a0,undefined4 a1,undefined4 a2,undefined4 a3, int arg5)
 {
-  int iVar1;
-  undefined4 *puVar2;
+  int node;
+  undefined4 *pay;
   { extern uint32_t g_wb_last_p1,g_wb_last_p2,g_wb_last_p3,g_wb_last_p4,g_wb_last_p5;
     extern uint32_t g_wb_bad_count,g_wb_bad_node,g_wrap_src;
     g_wrap_src=1;
@@ -7504,19 +7504,19 @@ int task_alloc_wrap_b(undefined4 a0,undefined4 a1,undefined4 a2,undefined4 a3, i
       g_wb_bad_count++; g_wb_bad_node=(uint32_t)a3;
     }
   }
-  iVar1 = (int)(intptr_t)task_node_alloc(0,3,0,0x80137824,0,0x1c);
-  if (iVar1 != 0) {
-    puVar2 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0x10))));
-    *puVar2 = a0;
-    puVar2[1] = a1;
-    puVar2[2] = a2;
-    puVar2[3] = a3;
-    puVar2[4] = arg5;
-    puVar2[5] = arg5 + -4;
-    *(undefined2 *)(puVar2 + 6) = 0;
-    *(undefined2 *)((intptr_t)puVar2 + 0x1a) = 0;
+  node = (int)(intptr_t)task_node_alloc(0,3,0,0x80137824,0,0x1c);
+  if (node != 0) {
+    pay = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((node + 0x10))));
+    *pay = a0;
+    pay[1] = a1;
+    pay[2] = a2;
+    pay[3] = a3;
+    pay[4] = arg5;
+    pay[5] = arg5 + -4;
+    *(undefined2 *)(pay + 6) = 0;
+    *(undefined2 *)((intptr_t)pay + 0x1a) = 0;
   }
-  return iVar1;
+  return node;
 
 }
 
