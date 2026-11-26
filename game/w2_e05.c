@@ -97,6 +97,9 @@ static void prim_ot_link_indexed(uint32_t ot, uint32_t out, uint32_t otz)
 #define ra   cpu->gpr[31]
 
 
+/* scriptop_bsr shared body (guest 0x80183248, op02 Bsr) —
+ * branch-to-subroutine: ctx stack bounds check, push return pc,
+ * commit branch target; sprintf trace calls. */
 static void scriptop_bsr_cps_impl(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -613,6 +616,8 @@ block_8018353C:
     cpu->pc = _jt_80183550; return;  /* CPS: jr $ra */
 }
 
+/* scriptop_ret shared body (guest 0x80183558, op03 Ret) —
+ * pop return pc from ctx stack, resume caller script. */
 static void scriptop_ret_cps_impl(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -687,6 +692,9 @@ block_801835A4:
     cpu->pc = _jt_801835BC; return;  /* CPS: jr $ra */
 }
 
+/* scriptop_ret_cond shared body (guest 0x801835D0, op03
+ * conditional return) — conditionally pop return pc based on
+ * script flag/operand. */
 static void scriptop_ret_cond_cps_impl(void)
 {
   CPUState *cpu = clean_cpu_state();
