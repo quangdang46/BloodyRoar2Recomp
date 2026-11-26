@@ -1189,8 +1189,14 @@ extern void prim_packet_init(void);
 extern void prim_packet_init_tex(void);
 extern void prim_persp_ot_emit(void);
 extern void prim_persp_ot_emit_112(void);
+extern void prim_poly_emit_3c(void);
+extern void prim_poly_emit_50(void);
+extern void prim_poly_emit_54(void);
+extern void prim_poly_emit_54b(void);
+extern void prim_poly_emit_5c(void);
 extern void prim_poly_emit_64(void);
 extern void prim_poly_emit_64_vs(void);
+extern void prim_poly_emit_68(void);
 extern void prim_poly_emit_6c(void);
 extern void prim_poly_emit_6c_tex(void);
 extern void prim_poly_emit_78(void);
@@ -2316,6 +2322,12 @@ const Br2FnEnt fn_table[] = {
   { 0x80189428, (void *)prim_nclip_emit_74 },
   { 0x80189500, (void *)prim_nclip_emit_80b },
   { 0x801895f8, (void *)prim_nclip_emit_98 },
+  { 0x80189704, (void *)prim_poly_emit_3c },
+  { 0x801897b0, (void *)prim_poly_emit_54 },
+  { 0x801898a0, (void *)prim_poly_emit_50 },
+  { 0x8018995c, (void *)prim_poly_emit_68 },
+  { 0x80189a60, (void *)prim_poly_emit_54b },
+  { 0x80189b50, (void *)prim_poly_emit_5c },
   { 0x80189e2c, (void *)prim_poly_emit_64_vs },
   { 0x8018a4f8, (void *)prim_task_run },
   { 0x8018a9e8, (void *)prim_depth_shade_emit },
