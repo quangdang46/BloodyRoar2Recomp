@@ -3246,7 +3246,7 @@ void select_phase_update(uint32_t a0)
   int32_t s0;
   int32_t s1;
   int32_t s5;
-  int32_t v0;
+  int32_t gate1;
   int32_t a1v;
   int32_t a0v;
   int32_t idx;
@@ -3254,12 +3254,12 @@ void select_phase_update(uint32_t a0)
   uint32_t *cell;
 
   s0 = select_phase_gate(a0,0);
-  v0 = select_phase_gate(a0,1);
+  gate1 = select_phase_gate(a0,1);
   if (s0 != 0) {
-    s5 = (v0 == 0);
+    s5 = (gate1 == 0);
   } else {
     s5 = 0;
-    if (v0 == 0) {
+    if (gate1 == 0) {
       s5 = (*(uint16_t *)(s4 + 0xb6) & 0x1000) != 0;
     }
   }
@@ -3898,24 +3898,24 @@ void round_banner_draw(uint32_t a0,uint32_t a1)
 {
   uint8_t *s0 = (uint8_t *)guest_at(a0);
   int32_t s3 = (int32_t)a1;
-  int32_t v0;
+  int32_t pos;
   int32_t q;
   int32_t a1v;
   int32_t a3v;
 
   if (s3 != 1) return;
-  v0 = (int32_t)*(int16_t *)(s0 + 0x20);
+  pos = (int32_t)*(int16_t *)(s0 + 0x20);
   if (*(uint8_t *)(s0 + 0x15) != 0) {
     /* sprite path: two sprite_quad_emit draws then hud_text_blk_alt */
-    q = (v0 < 0) ? v0 + 0x1f : v0;
+    q = (pos < 0) ? pos + 0x1f : pos;
     q >>= 5;
-    a1v = ((v0 - q) - 0x68) & 0xffff;
+    a1v = ((pos - q) - 0x68) & 0xffff;
     a1v |= 0x1a000000;
     sprite_quad_emit(*(uint32_t *)(s0 + 8),a1v,0x1e7f000f,0x7adfe000,
                   0x1000,0x2000,0);
-    q = (v0 < 0) ? v0 + 0x1f : v0;
+    q = (pos < 0) ? pos + 0x1f : pos;
     q >>= 5;
-    a1v = ((v0 - q) - 0x14) & 0xffff;
+    a1v = ((pos - q) - 0x14) & 0xffff;
     a1v |= 0x19800000;
     sprite_quad_emit(*(uint32_t *)(s0 + 8),a1v,0x2627000f,0x7adfd880,
                   0x1000,0x2000,0);
@@ -3927,14 +3927,14 @@ void round_banner_draw(uint32_t a0,uint32_t a1)
     return;
   }
   /* plain path: two sprite_9slice_build draws then hud_text_blk_alt */
-  q = (v0 < 0) ? v0 + 0x1f : v0;
+  q = (pos < 0) ? pos + 0x1f : pos;
   q >>= 5;
-  a1v = ((v0 - q) - 0x68) & 0xffff;
+  a1v = ((pos - q) - 0x68) & 0xffff;
   a1v |= 0x00d00000;
   sprite_9slice_build(*(uint32_t *)(s0 + 8),a1v,0x1e7f000f,0x7adfe000);
-  q = (v0 < 0) ? v0 + 0x1f : v0;
+  q = (pos < 0) ? pos + 0x1f : pos;
   q >>= 5;
-  a1v = ((v0 - q) - 0x14) & 0xffff;
+  a1v = ((pos - q) - 0x14) & 0xffff;
   a1v |= 0x00cc0000;
   sprite_9slice_build(*(uint32_t *)(s0 + 8),a1v,0x2627000f,0x7adfd880);
   a3v = (int32_t)*(int16_t *)(s0 + 0x20);
@@ -4321,15 +4321,15 @@ int32_t menu_res_load_sm(uint32_t a0,uint8_t *s4,uint8_t *s5,int32_t s2)
   uint8_t *s1 = (uint8_t *)guest_at(a0);
   int32_t s3 = 0;
   int32_t s0;
-  int32_t v0;
+  int32_t tmp;
 
-  v0 = (int32_t)*(int16_t *)(s1 + 0x8c);
+  tmp = (int32_t)*(int16_t *)(s1 + 0x8c);
   /* DIAG: record every menu_res_load_sm entry (a0, s4 guest, s5 guest, s2,
    * incoming s1+0x8c state) so versus-vs-arcade load coverage is provable. */
-  decomp_trace_record(61,a0,s4?guest_of(s4):0,(uint8_t)s2,(uint32_t)v0);
-  decomp_trace_record(62,a0,s5?guest_of(s5):0,(uint8_t)s2,(uint32_t)v0);
+  decomp_trace_record(61,a0,s4?guest_of(s4):0,(uint8_t)s2,(uint32_t)tmp);
+  decomp_trace_record(62,a0,s5?guest_of(s5):0,(uint8_t)s2,(uint32_t)tmp);
   s3 = 0;
-  if (v0 < 0) return v0;
+  if (tmp < 0) return tmp;
   *(int16_t *)(s1 + 0xd2) = 0;
   if (s2 != 1) {
     *(int16_t *)(s1 + 0xd0) = 0;   /* delay slot: always executed */
@@ -4367,18 +4367,18 @@ st00:
     *(uint32_t *)guest_at(0x801e3cfc) = 0x800f0000;
     *(uint16_t *)(s1 + 0x8e) = 0;
     if (s2 == 3) {
-      v0 = (int32_t)g32(0x801c11d8);
+      tmp = (int32_t)g32(0x801c11d8);
       s0 = 0x40;
       *(uint32_t *)guest_at(0x801e3cfc) = 0x800f0000;
-      *(uint32_t *)guest_at(0x801c47b8) = (uint32_t)v0;
+      *(uint32_t *)guest_at(0x801c47b8) = (uint32_t)tmp;
       goto dispatch;
     }
     if (s2 < 4) {
       if (s2 == 2) {
-        v0 = (int32_t)g32(0x801c43a0);
+        tmp = (int32_t)g32(0x801c43a0);
         s0 = 0x20;
-        if (v0 != 0) {
-          *(uint32_t *)guest_at(0x801c47b8) = (uint32_t)v0;
+        if (tmp != 0) {
+          *(uint32_t *)guest_at(0x801c47b8) = (uint32_t)tmp;
         } else {
           s0 = 0x10;
         }
@@ -4388,10 +4388,10 @@ st00:
       goto dispatch;
     }
     if (s2 == 4) {
-      v0 = (int32_t)g32(0x801c15f4);
+      tmp = (int32_t)g32(0x801c15f4);
       s0 = 0x50;
       *(uint32_t *)guest_at(0x801e3cfc) = 0x800f0000;
-      *(uint32_t *)guest_at(0x801c47b8) = (uint32_t)v0;
+      *(uint32_t *)guest_at(0x801c47b8) = (uint32_t)tmp;
       goto dispatch;
     }
     s0 = 0x10;
