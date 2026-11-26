@@ -675,7 +675,26 @@ int memcard_file_flow(int a0)
    * Ghidra split the block into scalars; local_XX names keep their sp
    * offsets via macros (local_c0[i] == old local_X).
    * The block is backed by the mff_frm guest frame (sp+0x38 -> frm+0x40)
-   * so guest_of(&local_c0) resolves for the stepper's call_guest path. */
+   * so guest_of(&local_c0) resolves for the stepper's call_guest path.
+   * Observed field roles in this function (verified against uses below):
+   *   local_c0  +0x00 u16  stepper descriptor head (&local_c0 is the
+   *                        a0 arg to menu_stepper_state_advance)
+   *   local_be  +0x02 u8   descriptor field (init 0)
+   *   local_bd  +0x03 i8   stepper/dialog state — switch dispatch key
+   *                        (0, 0x10, 0x11, 0x12, 0x16, 0x20...)
+   *   local_bc  +0x04 u8   descriptor field (init 1)
+   *   local_bb  +0x05 u8   descriptor field (init 0)
+   *   local_ba  +0x06 u16  menu item count (init 4; local_b8==local_ba
+   *                        is the cursor-at-end test)
+   *   local_b8  +0x08 u16  menu cursor/phase index (init 4; 1,2,3
+   *                        select the slot/dialog arms below)
+   *   local_b4  +0x0c u32  guest callback code addr (init 0x80160598)
+   *   local_b0  +0x10 u16  descriptor field (init 0x10)
+   *   local_ae  +0x12 u16  descriptor field (init 0xffff)
+   *   local_ac  +0x14 u16  descriptor field (init 0)
+   *   local_aa  +0x16 s16  selected slot no. for the local_b8==2 arm
+   *   local_a8  +0x18 s16  selected slot no. for the local_b8==3 arm
+   *   local_a6..local_9e +0x1a..0x22  descriptor tail fields (init 0) */
   uint8_t *step_desc;
 #define local_c0 (*(uint16_t *)&step_desc[0x00])
 #define local_be (*(uint8_t  *)&step_desc[0x02])
