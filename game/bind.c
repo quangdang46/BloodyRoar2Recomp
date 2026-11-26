@@ -951,7 +951,7 @@ extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t)
 extern uint32_t br2_call_clean(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern uint32_t call_guest4(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern void br2_guest_frame_free(void);
-void br2_st32(uint32_t a, uint32_t v);
+void br2_st32(uint32_t addr, uint32_t val);
 static uint32_t g_bind_frm_sp[32];
 static int g_bind_frm_depth;
 #if defined(__GNUC__) || defined(__clang__)
@@ -986,17 +986,17 @@ extern void gte_ofs_set(int32_t,int32_t);
 extern uint32_t gte_screen_init_defer(void);
 extern uint32_t gte_sqr_vec3_b(uint32_t,uint32_t);
 extern uint32_t bios_svc6(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
-extern uint32_t * gte_xform3_t_ip(uint32_t *param_1, uint16_t *param_2);
+extern uint32_t * gte_xform3_t_ip(uint32_t *mat, uint16_t *vec);
 extern void br2_bios_tramp(uint32_t,uint32_t);
 extern void gpu_state_patch_defer(void);
 extern void FUN_8018e300(void);
 extern void FUN_8018e310(uint32_t);
 extern int psx_syscall(CPUState *cpu, uint32_t code);
-uint32_t br2_ld32(uint32_t a);
-uint16_t br2_ld16(uint32_t a);
-uint8_t  br2_ld8 (uint32_t a);
-void     br2_st8 (uint32_t a, uint8_t  v);
-void     br2_st16(uint32_t a, uint16_t v);
+uint32_t br2_ld32(uint32_t addr);
+uint16_t br2_ld16(uint32_t addr);
+uint8_t  br2_ld8 (uint32_t addr);
+void     br2_st8 (uint32_t addr, uint8_t  val);
+void     br2_st16(uint32_t addr, uint16_t val);
 
 /* COP2 register field encoding shared with ani.c/gfx.c: reg n -> n*0x800. */
 #define BR2_GTE_REG(n) ((n) * 0x800)
@@ -1026,7 +1026,7 @@ void FUN_801851d8(void) { anim_vec3_normalize(); }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int32_t FUN_80194500(uint32_t a0) { return (int32_t)fixed_rsqrt_q12(a0); }
+int32_t FUN_80194500(uint32_t val) { return (int32_t)fixed_rsqrt_q12(val); }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -1511,7 +1511,7 @@ void FUN_80194478(void) { gte_screen_init_defer(); }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_80195290(int32_t a0,int32_t a1) { gte_ofs_set(a0,a1); }
+void FUN_80195290(int32_t ofs_x,int32_t ofs_y) { gte_ofs_set(ofs_x,ofs_y); }
 
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
@@ -2487,7 +2487,7 @@ __attribute__((weak)) void sprite_node_emit_b() { return; }
 char s_0123456789abcdef_80124fe8[] = "0123456789abcdef";
 char s_0123456789ABCDEF_80125004[] = "0123456789ABCDEF";
 char s__null__80124ffc[] = "(null)";
-uint8_t DAT_801b6701[256] = {32, 32, 32, 32, 32, 32, 32, 32, 32, 8, 8, 8, 8, 8, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 24, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 16, 16, 16, 16, 16, 16, 16, 65, 65, 65, 65, 65, 65, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 16, 16, 16, 16, 16, 16, 66, 66, 66, 66, 66, 66, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 16, 16, 16, 16, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 64, 2, 16, 16, 19, 16, 19, 22, 22, 22, 22, 22, 22, 26, 24, 26, 27, 27, 27, 26, 26, 26, 26, 27, 27, 27, 29, 29, 29, 34, 34, 34, 29, 29, 29, 27, 27, 29, 29, 32, 32, 34, 34, 37, 38, 37, 35, 35, 34, 35, 38, 38, 40, 40, 40, 48, 48, 46, 46, 56, 56, 58, 69, 69, 83, 2, 16, 16, 19, 16, 19, 22, 22, 22, 22, 22, 22, 26};
+uint8_t ctype_bitmap_801b6701[256] = {32, 32, 32, 32, 32, 32, 32, 32, 32, 8, 8, 8, 8, 8, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 24, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 16, 16, 16, 16, 16, 16, 16, 65, 65, 65, 65, 65, 65, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 16, 16, 16, 16, 16, 16, 66, 66, 66, 66, 66, 66, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 16, 16, 16, 16, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 64, 2, 16, 16, 19, 16, 19, 22, 22, 22, 22, 22, 22, 26, 24, 26, 27, 27, 27, 26, 26, 26, 26, 27, 27, 27, 29, 29, 29, 34, 34, 34, 29, 29, 29, 27, 27, 29, 29, 32, 32, 34, 34, 37, 38, 37, 35, 35, 34, 35, 38, 38, 40, 40, 40, 48, 48, 46, 46, 56, 56, 58, 69, 69, 83, 2, 16, 16, 19, 16, 19, 22, 22, 22, 22, 22, 22, 26};
 /* bios_tramp_b035 — guest 0x8018EF50: BIOS B035 debug-output
  * trampoline fronting the line-buffer flush. a1 arrives as a host
  * pointer (callers pass guest_at(...)); convert back to a guest
@@ -2524,11 +2524,11 @@ void FUN_8018e300(void)
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_8018e310(uint32_t a0)
+void FUN_8018e310(uint32_t arg)
 {
     /* guest 0x8018E310: li a0,2; syscall 0 (ExitCriticalSection/EI). */
     CPUState *cpu = clean_cpu_state();
-    (void)a0;
+    (void)arg;
     if (!cpu) return;
     cpu->gpr[4] = 2;
     psx_syscall(cpu, 0);
@@ -2662,7 +2662,7 @@ void FUN_8019e55c(void)
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int32_t cd_seek_state_machine(uint32_t a0)
+int32_t cd_seek_state_machine(uint32_t arg)
 {
     /* guest 0x8019D5B0: li t2,0xB0; li t1,0x0B; jr t2 — B0 svc 0x0B
      * trampoline forwarding live a0-a3 (generated
@@ -2670,7 +2670,7 @@ int32_t cd_seek_state_machine(uint32_t a0)
      * caller's return address; record it as the svc return pc. */
     CPUState *c = clean_cpu_state();
     uint32_t ret = c ? c->gpr[31] : 0x8019d5bcu;
-    (void)a0;
+    (void)arg;
     return (int32_t)bind_bios_call_live(0x0b, ret);
 }
 
@@ -3011,7 +3011,7 @@ __attribute__((weak))
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int32_t FUN_801948c0(uint32_t a0) { return (int32_t)fixed_recip_lut(a0); }
+int32_t FUN_801948c0(uint32_t val) { return (int32_t)fixed_recip_lut(val); }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -3190,27 +3190,27 @@ void FUN_801a0250(uint32_t a0)
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-uint8_t br2_ld8(uint32_t a) { return *(uint8_t *)guest_at(a); }
+uint8_t br2_ld8(uint32_t addr) { return *(uint8_t *)guest_at(addr); }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-uint16_t br2_ld16(uint32_t a) { return *(uint16_t *)guest_at(a); }
+uint16_t br2_ld16(uint32_t addr) { return *(uint16_t *)guest_at(addr); }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-uint32_t br2_ld32(uint32_t a) { return *(uint32_t *)guest_at(a); }
+uint32_t br2_ld32(uint32_t addr) { return *(uint32_t *)guest_at(addr); }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void br2_st8(uint32_t a, uint8_t v) { *(uint8_t *)guest_at(a) = v; }
+void br2_st8(uint32_t addr, uint8_t val) { *(uint8_t *)guest_at(addr) = val; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void br2_st16(uint32_t a, uint16_t v) { *(uint16_t *)guest_at(a) = v; }
+void br2_st16(uint32_t addr, uint16_t val) { *(uint16_t *)guest_at(addr) = val; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void br2_st32(uint32_t a, uint32_t v) { *(uint32_t *)guest_at(a) = v; }
+void br2_st32(uint32_t addr, uint32_t val) { *(uint32_t *)guest_at(addr) = val; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
