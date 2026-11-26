@@ -2285,8 +2285,6 @@ void cd_handler_triple_install(void)
  * 0x2000,0) -> FUN_8019b390 -> @0x801bde38, crit-out.
  * Disasm 0x8019b308-0x8019b370. */
 extern int32_t cd_ext_table_init(uint32_t);
-extern uint32_t FUN_8019b380(uint32_t,uint32_t,uint32_t,uint32_t);
-extern void FUN_8019b390(uint32_t);
 extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 void cd_ext_init_once(void)
 {
@@ -2435,9 +2433,6 @@ void cd_dir_reset(void)
  * if !v0 arg=0; 9e400(arg), 9e5cc, 9e4c8, 9e55c, 8e310(0).
  * Disasm 0x8019e330-0x8019e394. */
 extern uint32_t cd_mode_apply(uint32_t,uint32_t,uint32_t,uint32_t);
-extern void FUN_8019e5cc(void);
-extern void FUN_8019e4c8(void);
-extern void FUN_8019e55c(void);
 extern int32_t cd_status_bcc90(void);
 void cd_mode_apply_seq(uint32_t a0)
 {
@@ -5025,8 +5020,6 @@ done:
 
 extern uint32_t cd_strncmp(uint32_t,uint32_t,uint32_t);
 extern void FUN_8019a364(void);
-extern void FUN_8019a300(void);
-extern void FUN_8019a350(void);
 extern void FUN_8019e600(void);
 extern uint8_t *guest_memcpy(uint32_t *,uint32_t *,int);
 int cd_queue_push(uint32_t,uint32_t,uint32_t,uint32_t);
@@ -5626,7 +5619,6 @@ uint32_t cd_state_blk_save(void)
 
 extern void cd_kobj_init_a(void);
 extern void cd_kobj_init_b(void);
-extern void FUN_8019a2f0(uint32_t,uint32_t,uint32_t,uint32_t);
 extern int cd_seek_state_machine(uint32_t);
 extern void cd_mmio_strobe_22(void);
 
