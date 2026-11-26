@@ -2033,23 +2033,23 @@ LAB_80166058:
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void battle_intro_flow(int param_1)
+void battle_intro_flow(int mode)
 
 {
-  bool bVar1;
-  undefined1 uVar2;
-  ushort uVar3;
+  bool did_roll;
+  undefined1 saved_9b;
+  ushort roll;
   int iVar4;
-  uint uVar5;
-  char cVar6;
+  uint flip;
+  char mod_base;
   /* The generated code keeps the phase-2 intro countdown in $s3 across the
    * per-frame calls to this state machine; it must persist here or the
    * countdown restarts from stack garbage every frame. */
   static int unaff_s3;
   undefined4 unaff_s6;
-  bVar1 = false;
+  did_roll = false;
   iVar4 = memcard_err_sentinel();
-  uVar2 = DAT_1f80009b;
+  saved_9b = DAT_1f80009b;
   if (iVar4 < 0) {
     DAT_1f80009b = 3;
 joined_r0x801673ac:
@@ -2077,22 +2077,22 @@ LAB_8016767c:
         }
         if (_DAT_1f80008e == 0) {
           _DAT_1f80008e = 200;
-          uVar5 = table_byte_next_a();
-          if ((uVar5 & 1) == 0) {
+          flip = table_byte_next_a();
+          if ((flip & 1) == 0) {
             unaff_s6 = 3;
           }
-          else if ((uVar5 & 1) == 1) {
+          else if ((flip & 1) == 1) {
             unaff_s6 = 0x20;
           }
           battle_field_set(_DAT_1f8000bc,unaff_s6);
-          uVar3 = table_byte_next_a();
-          *(ushort *)guest_at(_DAT_1f8000bc + 0x7e) = uVar3 & 7;
+          roll = table_byte_next_a();
+          *(ushort *)guest_at(_DAT_1f8000bc + 0x7e) = roll & 7;
         }
         _DAT_1f80008e = _DAT_1f80008e + -1;
         if ((DAT_1f8000e8 != '\x01') || (DAT_1f8001f0 != '\x01')) {
           DAT_1f800001 = 0xf0;
         }
-        if (bVar1) {
+        if (did_roll) {
           battle_frame_tick(0x1f800000,0x1ff);
         }
         else {
@@ -2104,24 +2104,24 @@ LAB_8016767c:
           DAT_1f8000ec = 0;
           DAT_1f8001f4 = 0;
           _DAT_1f8000c4 = guest_of(_g_system_config_ptr + 0x2c);
-          if (param_1 == 0) {
+          if (mode == 0) {
             iVar4 = table_byte_next_a();
             DAT_1f8000eb = (char)iVar4 + (char)(iVar4 / 9) * -9;
             iVar4 = table_byte_next_a();
             DAT_1f8001f3 = (char)iVar4 + (char)(iVar4 / 9) * -9;
             iVar4 = table_byte_next_a();
-            cVar6 = (char)(iVar4 / 5) * '\x05';
+            mod_base = (char)(iVar4 / 5) * '\x05';
           }
           else {
-            bVar1 = true;
+            did_roll = true;
             iVar4 = table_byte_next_a();
             DAT_1f8000eb = (char)iVar4 + (char)(iVar4 / 9) * -9;
             iVar4 = table_byte_next_a();
             DAT_1f8001f3 = (char)iVar4 + (char)(iVar4 / 9) * -9;
             iVar4 = table_byte_next_a();
-            cVar6 = (char)(iVar4 / 6) * '\x06';
+            mod_base = (char)(iVar4 / 6) * '\x06';
           }
-          DAT_1f800098 = (char)iVar4 - cVar6;
+          DAT_1f800098 = (char)iVar4 - mod_base;
           DAT_1f800099 = *(char *)(_g_system_config_ptr + 4) * '\x02' + -2;
           fighter_spawn_tail((uint8_t *)guest_at(0x1f800000),0);
           _DAT_1f800088 = 0;
@@ -2153,7 +2153,7 @@ LAB_8016767c:
           battle_round_init(0x1f800000,0);
           _DAT_1f80008c = 0;
           _DAT_1f80008e = 0;
-          if (param_1 == 0) {
+          if (mode == 0) {
             unaff_s3 = 0x5dc;
           }
           battle_session_arm(0x1f800000,0xffffffff);
@@ -2201,7 +2201,7 @@ LAB_801677b4:
     g_game_state = 5;
   }
   DAT_1f800001 = 0;
-  DAT_1f80009b = uVar2;
+  DAT_1f80009b = saved_9b;
   return;
 }
 
