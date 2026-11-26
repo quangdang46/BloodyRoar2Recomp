@@ -1496,7 +1496,7 @@ extern char * strchr_bounded(char *,char,int);
 extern char s_0123456789abcdef_80124fe8[];
 extern char s_0123456789ABCDEF_80125004[];
 extern char s__null__80124ffc[];
-extern uint8_t DAT_801b6701[];
+extern uint8_t ctype_bitmap_801b6701[];
 uint32_t printf_core(uint32_t chan,const uint8_t *fmt,const uint32_t *args)
 {
   uint8_t c1, c2;
@@ -1578,7 +1578,7 @@ uint32_t printf_core(uint32_t chan,const uint8_t *fmt,const uint32_t *args)
             ap = ap + 1;
           } else {
             prec_raw = 0;
-            while (c1 < 0x80 && (c2 = *fp, (DAT_801b6701[c2] & 4) != 0)) {
+            while (c1 < 0x80 && (c2 = *fp, (ctype_bitmap_801b6701[c2] & 4) != 0)) {
               fp = fp + 1;
               c1 = *fp;
               prec_raw = (intptr_t)((intptr_t)prec_raw * 10 + -0x30 + (uint32_t)c2);
@@ -1599,7 +1599,7 @@ uint32_t printf_core(uint32_t chan,const uint8_t *fmt,const uint32_t *args)
             fmt = fp + 1;
             width = (intptr_t)((intptr_t)width * 10 + -0x30 + (uint32_t)*fp);
             if (0x7f < *fmt) break;
-          } while ((DAT_801b6701[*fmt] & 4) != 0);
+          } while ((ctype_bitmap_801b6701[*fmt] & 4) != 0);
           break;
         case 0x44:
           lng = 1;
@@ -1793,7 +1793,7 @@ void console_emit(uint32_t c)
     console_emit(0xd);
     *(int32_t *)guest_at(0x801b6790) = 0;
   } else {
-    if ((DAT_801b6701[ch & 0xff] & 0x97) != 0)
+    if ((ctype_bitmap_801b6701[ch & 0xff] & 0x97) != 0)
       *(int32_t *)guest_at(0x801b6790) += 1;
   }
   int32_t cnt = *(int32_t *)guest_at(0x801b6794);
