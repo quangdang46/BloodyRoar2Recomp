@@ -92,7 +92,7 @@ extern char *s__Id__sys_c_v_1_140_1998_01_12_07_801b82d8;
 #define DAT_801e40b6   (*(uint8_t *)g_DAT_801e40b6)
 #define DAT_801e40b7   (*(uint8_t *)g_DAT_801e40b7)
 #define gpu_mode   (*(uint8_t  *)g_DAT_801b8320)
-#define DAT_801b8321   (*(uint8_t  *)g_DAT_801b8321)
+#define gpu_mode_state   (*(uint8_t  *)g_DAT_801b8321)
 #define gpu_dbg_level   (*(uint8_t  *)g_DAT_801b8322)
 #define DAT_801b8323   (*(uint8_t  *)g_DAT_801b8323)
 #define disp_width   (*(uint16_t *)g_DAT_801b8324)
@@ -523,7 +523,7 @@ LAB_80190e68:
     cd_dispatch_tblc();
     bios_call_a0((*(uint32_t *)guest_at(0x801b8318)) & 0xffffff);
     gpu_mode = (uint8_t)gpu_mode_regs_apply(arg);
-    DAT_801b8321 = 1;
+    gpu_mode_state = 1;
     disp_width = *(uint16_t *)((char *)guest_at(0x801b83a0) + (uint32_t)gpu_mode * 4);
     disp_height = *(uint16_t *)((char *)guest_at(0x801b83ac) + (uint32_t)gpu_mode * 4);
     guest_memset((uint32_t *)0x801b8330,0xff,0x5c);
