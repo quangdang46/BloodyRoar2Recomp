@@ -81392,7 +81392,9 @@ block_8018FF00:
 }
 
 /* cps_801906e8 — clean CPS transliteration of br2eu_func_801906E8 (guest 0x801906e8)
- * from SLES_017.22_full_43.c. */
+ * from SLES_017.22_full_43.c.
+ * GPU packet builder: drives gpu_draw_otag once, gpu_pkt_merge24 twice and
+ * gpu_pkt_low24_or once to assemble ordering-table packets. */
 void cps_801906e8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -81918,7 +81920,9 @@ block_801909D4:
 }
 
 /* cps_80190a14 — clean CPS transliteration of br2eu_func_80190A14 (guest 0x80190a14)
- * from SLES_017.22_full_43.c. */
+ * from SLES_017.22_full_43.c.
+ * String routine built around str_len (0x8018E510); large branch tree
+ * over string/table state cells. */
 void cps_80190a14(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -83942,7 +83946,9 @@ block_801921A4:
 }
 
 /* cps_80192714 — clean CPS transliteration of br2eu_func_80192714 (guest 0x80192714)
- * from SLES_017.22_full_44.c. */
+ * from SLES_017.22_full_44.c.
+ * GPU register-command sequence: gpu_reg_cells_init once then
+ * gpu_reg_cmd_commit three times (multi-register commit). */
 void cps_80192714(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -84220,7 +84226,9 @@ block_80192928:
 }
 
 /* cps_80192b80 — clean CPS transliteration of br2eu_func_80192B80 (guest 0x80192b80)
- * from SLES_017.22_full_44.c. */
+ * from SLES_017.22_full_44.c.
+ * CD pump watchdog: cd_timeout_arm once + cd_pump_watchdog twice across
+ * its poll stages. */
 void cps_80192b80(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -85507,7 +85515,9 @@ block_80195D1C:
 }
 
 /* cps_80196370 — clean CPS transliteration of br2eu_func_80196370 (guest 0x80196370)
- * from SLES_017.22_full_45.c. */
+ * from SLES_017.22_full_45.c.
+ * cd_response_process: three printf_forward_guest diag paths plus a
+ * cd_str_print tail; response-record decode/dispatch. */
 void cps_80196370(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -86431,7 +86441,10 @@ block_801968B8:
 }
 
 /* cps_80196e14 — clean CPS transliteration of br2eu_func_80196E14 (guest 0x80196e14)
- * from SLES_017.22_full_45.c. */
+ * from SLES_017.22_full_45.c.
+ * cd_cmd_issue: command issue front-end — drives cd_response_process,
+ * cd_cmd_state_reset, cd_intc_busy_read, tick queries (0x8019A460) and
+ * two jalr callback dispatches, with printf_forward_guest diag paths. */
 void cps_80196e14(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -113854,7 +113867,10 @@ block_801B0D40:
 }
 
 /* cps_801968cc — clean CPS transliteration of br2eu_func_801968CC (guest 0x801968cc)
- * from SLES_017.22_full_45.c. */
+ * from SLES_017.22_full_45.c.
+ * cd_result_wait_a: result-wait sibling of cd_result_wait_b — polls via
+ * cd_response_process + tick queries + cd_intc_busy_read, resets via
+ * cd_cmd_state_reset, two jalr dispatches, diag prints. */
 void cps_801968cc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -114284,7 +114300,10 @@ block_80196B1C:
 }
 
 /* cps_80196b4c — clean CPS transliteration of br2eu_func_80196B4C (guest 0x80196b4c)
- * from SLES_017.22_full_45.c. */
+ * from SLES_017.22_full_45.c.
+ * cd_result_wait_b: result-wait sibling of cd_result_wait_a — same callee
+ * set (cd_response_process, cd_cmd_state_reset, cd_intc_busy_read, tick
+ * queries, two jalr dispatches, diag prints). */
 void cps_80196b4c(void)
 {
   CPUState *cpu = clean_cpu_state();
