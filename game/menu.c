@@ -2953,54 +2953,54 @@ undefined4 attract_menu_dispatch(intptr_t ctx,uint btn)
 
 /* ======== 0x8012a72c ======== */
 
-uint pad_state_refresh(intptr_t param_1)
+uint pad_state_refresh(intptr_t pad)
 
 {
-  char cVar1;
-  uint uVar2;
-  intptr_t iVar3;
-  uint uVar4;
-  intptr_t iVar5;
-  int iVar6;
-  uint uVar7;
+  char cnt;
+  uint btns;
+  intptr_t tmp;
+  uint pressed;
+  intptr_t rec;
+  int i;
+  uint btns_old;
   
-  if ((DAT_801befa8 != '\0') || (uVar2 = attr_word_decode(&DAT_801befa8), (int)uVar2 < 0)) {
-    uVar2 = 0;
+  if ((DAT_801befa8 != '\0') || (btns = attr_word_decode(&DAT_801befa8), (int)btns < 0)) {
+    btns = 0;
   }
-  if ((DAT_801befca != '\0') || (iVar3 = attr_word_decode(&DAT_801befca), iVar3 < 0)) {
-    iVar3 = 0;
+  if ((DAT_801befca != '\0') || (tmp = attr_word_decode(&DAT_801befca), tmp < 0)) {
+    tmp = 0;
   }
-  iVar6 = 0;
-  uVar2 = iVar3 << 0x10 | uVar2;
-  uVar7 = *(uint *)(param_1 + 0x6c);
-  *(uint *)(param_1 + 0x6c) = uVar2;
-  uVar4 = (uVar2 ^ uVar7) & uVar2;
-  *(uint *)(param_1 + 0x70) = uVar7;
-  *(uint *)(param_1 + 0x68) = uVar4;
-  *(uint *)(param_1 + 0x74) = uVar4;
-  iVar3 = param_1;
-  iVar5 = param_1;
+  i = 0;
+  btns = tmp << 0x10 | btns;
+  btns_old = *(uint *)(pad + 0x6c);
+  *(uint *)(pad + 0x6c) = btns;
+  pressed = (btns ^ btns_old) & btns;
+  *(uint *)(pad + 0x70) = btns_old;
+  *(uint *)(pad + 0x68) = pressed;
+  *(uint *)(pad + 0x74) = pressed;
+  tmp = pad;
+  rec = pad;
   do {
-    if ((*(short *)(iVar3 + 0x6c) == 0) || (*(short *)(iVar3 + 0x6c) != *(short *)(iVar3 + 0x70))) {
-      *(undefined1 *)(iVar5 + 0x78) = 0x10;
+    if ((*(short *)(tmp + 0x6c) == 0) || (*(short *)(tmp + 0x6c) != *(short *)(tmp + 0x70))) {
+      *(undefined1 *)(rec + 0x78) = 0x10;
     }
     else {
-      cVar1 = *(char *)(iVar5 + 0x78) + -1;
-      *(char *)(iVar5 + 0x78) = cVar1;
-      if (cVar1 == '\0') {
-        *(undefined2 *)(iVar3 + 0x74) = *(undefined2 *)(iVar3 + 0x6c);
-        *(undefined1 *)(iVar5 + 0x78) = 2;
+      cnt = *(char *)(rec + 0x78) + -1;
+      *(char *)(rec + 0x78) = cnt;
+      if (cnt == '\0') {
+        *(undefined2 *)(tmp + 0x74) = *(undefined2 *)(tmp + 0x6c);
+        *(undefined1 *)(rec + 0x78) = 2;
       }
     }
-    iVar5 = iVar5 + 1;
-    iVar6 = iVar6 + 1;
-    iVar3 = iVar3 + 2;
-  } while (iVar6 < 2);
-  *(ushort *)(param_1 + 0x80) = *(ushort *)(param_1 + 0x6c) | *(ushort *)(param_1 + 0x6e);
-  *(ushort *)(param_1 + 0x7c) = *(ushort *)(param_1 + 0x68) | *(ushort *)(param_1 + 0x6a);
-  *(ushort *)(param_1 + 0x7e) = *(ushort *)(param_1 + 0x74) | *(ushort *)(param_1 + 0x76);
+    rec = rec + 1;
+    i = i + 1;
+    tmp = tmp + 2;
+  } while (i < 2);
+  *(ushort *)(pad + 0x80) = *(ushort *)(pad + 0x6c) | *(ushort *)(pad + 0x6e);
+  *(ushort *)(pad + 0x7c) = *(ushort *)(pad + 0x68) | *(ushort *)(pad + 0x6a);
+  *(ushort *)(pad + 0x7e) = *(ushort *)(pad + 0x74) | *(ushort *)(pad + 0x76);
   pad_slot_state_walk();
-  return uVar2;
+  return btns;
 }
 
 
@@ -3031,62 +3031,62 @@ extern char *PTR_s_MOVIES_AND_PICTURES_801b13c4;
 
 /* menu_stepper_state_advance — generic 3-state stepper: byte+2 state (0->1),
  * byte+3 gate, callback at +0xc invoked once, then menu_stepper_redraw. */
-void menu_stepper_state_advance(void *param_1)
+void menu_stepper_state_advance(void *desc)
 {
-  uint8_t *p = (uint8_t *)param_1;
-  uint8_t bVar1 = p[2];
-  if (bVar1 != 1) {
-    if (1 < bVar1) return;
-    if (bVar1 != 0) return;
+  uint8_t *p = (uint8_t *)desc;
+  uint8_t state = p[2];
+  if (state != 1) {
+    if (1 < state) return;
+    if (state != 0) return;
     p[2] = 1;
   }
   if (*(char *)(p + 3) == '\0') {
-    menu_stepper_input(param_1);
+    menu_stepper_input(desc);
     /* desc+0xc is a guest code address (e.g. 0x8015b190) — dispatch
      * through the fn map; arg = desc ptr, second arg = u16 @+8.
      * Guest jalr is unconditional: a0 = desc guest addr, a1 = lhu @+8. */
     uint32_t cb_g = *(uint32_t *)(p + 0xc);
     void *cb = fn_lookup(cb_g);
     if (cb != NULL)
-      ((void (*)(void *,uint16_t))cb)(param_1,*(uint16_t *)(p + 8));
+      ((void (*)(void *,uint16_t))cb)(desc,*(uint16_t *)(p + 8));
     else
-      call_guest(cb_g,guest_of(param_1),(uint32_t)*(uint16_t *)(p + 8));
+      call_guest(cb_g,guest_of(desc),(uint32_t)*(uint16_t *)(p + 8));
   }
-  menu_stepper_redraw(param_1);
+  menu_stepper_redraw(desc);
 }
 
 /* banner_stripe_scroll — scrolling banner stripes: walks DAT_801e8508/8518
  * position pair, emits announce_param_block_init announce lines per screen row. */
-uint32_t banner_stripe_scroll(int32_t param_1,int32_t param_2,int32_t param_3,int16_t param_4)
+uint32_t banner_stripe_scroll(int32_t banner,int32_t chan,int32_t step,int16_t aux)
 {
-  int32_t iVar6 = MB32S(0x801b1348 + param_1 * 4);
-  int32_t pos = MB32S(0x801e8508 + param_2 * 4) - param_3;
-  MB32S(0x801e8508 + param_2 * 4) = (uint32_t)pos;
-  while (pos < -iVar6) {
-    pos = MB32S(0x801e8508 + param_2 * 4) + iVar6;
-    MB32S(0x801e8508 + param_2 * 4) = (uint32_t)pos;
+  int32_t stride = MB32S(0x801b1348 + banner * 4);
+  int32_t row = MB32S(0x801e8508 + chan * 4) - step;
+  MB32S(0x801e8508 + chan * 4) = (uint32_t)row;
+  while (row < -stride) {
+    row = MB32S(0x801e8508 + chan * 4) + stride;
+    MB32S(0x801e8508 + chan * 4) = (uint32_t)row;
   }
-  int32_t iVar5 = MB32S(0x801e8508 + param_2 * 4);
-  uint32_t uVar1 = MB32(0x801e8518 + param_2 * 4);
-  if (iVar5 < (int32_t)MB16(0x1f800020)) {
-    int32_t iVar4 = iVar5 << 0x10;
+  int32_t y = MB32S(0x801e8508 + chan * 4);
+  uint32_t aux_u32 = MB32(0x801e8518 + chan * 4);
+  if (y < (int32_t)MB16(0x1f800020)) {
+    int32_t y_q16 = y << 0x10;
     do {
-      char *puVar3; int32_t iVar2;
-      if (param_1 == 7) {
-        iVar2 = (int32_t)MB32(0x1f800008) + 4;
-        puVar3 = PTR_s_MOVIES_AND_PICTURES_801b13c4;
+      char *str; int32_t dst;
+      if (banner == 7) {
+        dst = (int32_t)MB32(0x1f800008) + 4;
+        str = PTR_s_MOVIES_AND_PICTURES_801b13c4;
       } else {
-        puVar3 = PTR_s_NAME_ENTRY_801b13a8[param_1];
-        iVar2 = (int32_t)MB32(0x1f800008);
+        str = PTR_s_NAME_ENTRY_801b13a8[banner];
+        dst = (int32_t)MB32(0x1f800008);
       }
-      iVar5 = iVar5 + iVar6;
-      announce_param_block_init((uint32_t)iVar2,(uint32_t)MB32(0x1f80000c),
-                   puVar3,(uint32_t)(iVar4 >> 0x10),
-                   (int32_t)(int16_t)uVar1,(int32_t)param_4);
-      iVar4 = iVar4 + iVar6 * 0x10000;
-    } while (iVar5 < (int32_t)MB16(0x1f800020));
+      y = y + stride;
+      announce_param_block_init((uint32_t)dst,(uint32_t)MB32(0x1f80000c),
+                   str,(uint32_t)(y_q16 >> 0x10),
+                   (int32_t)(int16_t)aux_u32,(int32_t)aux);
+      y_q16 = y_q16 + stride * 0x10000;
+    } while (y < (int32_t)MB16(0x1f800020));
   }
-  return MB32(0x801e8508 + param_2 * 4);
+  return MB32(0x801e8508 + chan * 4);
 }
 
 /* cursor_sprite_anim — cursor/sprite anim state machine: byte+0x9e selects
@@ -3095,76 +3095,76 @@ uint32_t banner_stripe_scroll(int32_t param_1,int32_t param_2,int32_t param_3,in
 extern void dialog_mode_mirror(int32_t);
 extern void frame_counter_bump(int32_t);
 extern uint32_t spr_attr_alloc_a(uint32_t,int16_t,int16_t,int16_t,int16_t,uint32_t,int32_t);
-void cursor_sprite_anim(uint8_t *param_1)
+void cursor_sprite_anim(uint8_t *st)
 {
-  char cVar1;
-  uint8_t bVar2;
-  uint8_t uVar3;
-  int32_t sVar4, sVar5;
-  uint32_t uVar6;
-  bVar2 = param_1[0x9e];
-  if (bVar2 == 1) {
+  char phase;
+  uint8_t variant;
+  uint8_t gray;
+  int32_t y, x;
+  uint32_t sel;
+  variant = st[0x9e];
+  if (variant == 1) {
     dialog_mode_mirror(0);
-    sVar5 = *(int16_t *)(param_1 + 0x20);
-    sVar4 = *(int16_t *)(param_1 + 0x22);
-    uVar6 = 3;
+    x = *(int16_t *)(st + 0x20);
+    y = *(int16_t *)(st + 0x22);
+    sel = 3;
 LAB_8012a92c:
-    spr_attr_alloc_a(*(uint32_t *)(param_1 + 8),0,0,sVar5,sVar4,0x101010,uVar6);
-  } else if (bVar2 < 2) {
-    uVar6 = 1;
-    if (bVar2 == 0) goto LAB_8012a944;
+    spr_attr_alloc_a(*(uint32_t *)(st + 8),0,0,x,y,0x101010,sel);
+  } else if (variant < 2) {
+    sel = 1;
+    if (variant == 0) goto LAB_8012a944;
   } else {
-    if (bVar2 == 2) {
+    if (variant == 2) {
       dialog_mode_mirror(0);
-      sVar5 = *(int16_t *)(param_1 + 0x20);
-      sVar4 = *(int16_t *)(param_1 + 0x22);
-      uVar6 = 2;
+      x = *(int16_t *)(st + 0x20);
+      y = *(int16_t *)(st + 0x22);
+      sel = 2;
       goto LAB_8012a92c;
     }
-    uVar6 = 0;
-    if (bVar2 == 3) goto LAB_8012a944;
+    sel = 0;
+    if (variant == 3) goto LAB_8012a944;
   }
   goto LAB_8012a9a0;
 LAB_8012a944:
-  dialog_mode_mirror((int)uVar6);
+  dialog_mode_mirror((int)sel);
 LAB_8012a9a0:
-  cVar1 = *(char *)(param_1 + 0x17);
-  if (cVar1 == -1) {
-    param_1[0x17] = 0xfe;
+  phase = *(char *)(st + 0x17);
+  if (phase == -1) {
+    st[0x17] = 0xfe;
     return;
   }
-  if (cVar1 < 0) {
-    if (cVar1 != -2) return;
+  if (phase < 0) {
+    if (phase != -2) return;
     frame_counter_bump(1);
-    param_1[0x17] = 0;
+    st[0x17] = 0;
     return;
   }
-  if (cVar1 == 1) {
-    if (param_1[0x19] == 0) goto LAB_8012aa28;
-    param_1[0x19] = param_1[0x19] - 1;
+  if (phase == 1) {
+    if (st[0x19] == 0) goto LAB_8012aa28;
+    st[0x19] = st[0x19] - 1;
     dialog_mode_mirror(0);
-    sVar5 = *(int16_t *)(param_1 + 0x20);
-    sVar4 = *(int16_t *)(param_1 + 0x22);
-    uVar3 = param_1[0x18];
-    uVar6 = 3;
+    x = *(int16_t *)(st + 0x20);
+    y = *(int16_t *)(st + 0x22);
+    gray = st[0x18];
+    sel = 3;
   } else {
-    if (cVar1 != 2) return;
-    if (param_1[0x19] == 0) {
+    if (phase != 2) return;
+    if (st[0x19] == 0) {
 LAB_8012aa28:
-      param_1[0x17] = 0xff;
+      st[0x17] = 0xff;
       dialog_mode_mirror(1);
       frame_counter_bump(0);
       return;
     }
-    param_1[0x19] = param_1[0x19] - 1;
+    st[0x19] = st[0x19] - 1;
     dialog_mode_mirror(0);
-    sVar4 = *(int16_t *)(param_1 + 0x22);
-    sVar5 = *(int16_t *)(param_1 + 0x20);
-    uVar3 = param_1[0x18];
-    uVar6 = 2;
+    y = *(int16_t *)(st + 0x22);
+    x = *(int16_t *)(st + 0x20);
+    gray = st[0x18];
+    sel = 2;
   }
-  spr_attr_alloc_a(*(uint32_t *)(param_1 + 8),0,0,sVar5,sVar4,
-               ((uint32_t)uVar3 << 16) | ((uint32_t)uVar3 << 8) | uVar3,uVar6);
+  spr_attr_alloc_a(*(uint32_t *)(st + 8),0,0,x,y,
+               ((uint32_t)gray << 16) | ((uint32_t)gray << 8) | gray,sel);
 }
 
 /* select_screen_tick — character/stage-select orchestrator. DAT_1f800001
@@ -3184,7 +3184,7 @@ extern void post_confirm_config_build(uint32_t,uint8_t *,int32_t);
 extern int32_t battle_config_eval(uint8_t *,uint32_t,int32_t);
 extern int32_t table_byte_next_a(void);
 extern void sprite_9slice_build(uint32_t,uint32_t,uint32_t,uint32_t);
-int32_t select_screen_tick(int32_t param_1)
+int32_t select_screen_tick(int32_t entry_mode)
 {
   uint8_t bVar1;
   int32_t iVar2, iVar3, iVar4, iVar9, iVar10;
@@ -3231,7 +3231,7 @@ int32_t select_screen_tick(int32_t param_1)
     if (DAT_1f800001 == 6) {
       fighter_spawn_setup(0x1f800000,local_40,local_3c,auStack_e0,1);
       if (((*(uint32_t *)g__DAT_1f80007c & 0x10) == 0) ||
-          ((*(uint8_t *)g_DAT_1f8000a2 != 0 && (param_1 != 1)))) {
+          ((*(uint8_t *)g_DAT_1f8000a2 != 0 && (entry_mode != 1)))) {
         uVar8 = 0;
         puVar6 = auStack_b8;
         do {
@@ -3294,7 +3294,7 @@ code_r0x8014f6c0:
           puVar6 += 0x30;
           uVar8++;
         } while ((int32_t)uVar8 < 2);
-        if ((DAT_1f80009b != 0) && (param_1 != 2)) {
+        if ((DAT_1f80009b != 0) && (entry_mode != 2)) {
           iVar4 = 0;
           puVar6 = auStack_b8;
           do {
@@ -3399,11 +3399,11 @@ code_r0x8014f6c0:
           uint8_t *t300 = (uint8_t *)guest_at(0x801b3300);
           uint32_t *p47ec = (uint32_t *)guest_at(0x801b47ec);
           uint32_t *p47f0 = (uint32_t *)guest_at(0x801b47f0);
-          if (param_1 < 4 && 1 < param_1) {
+          if (entry_mode < 4 && 1 < entry_mode) {
             uVar8 = (uint32_t)local_94[10];
             if (local_a8[0] == 0) uVar8 = (uint32_t)local_a8[3];
             uVar11 = (uint32_t)(local_a8[0] != 0);
-            if (param_1 == 2) {
+            if (entry_mode == 2) {
               iVar3 = (((int16_t)_DAT_1f800020) -
                       (((int32_t)((uint16_t)_DAT_1f800020 << 16)) >> 31)) >> 1;
               iVar4 = ((int16_t)_DAT_1f800022 * 3) / 5;
@@ -3527,8 +3527,8 @@ LAB_80150558:
         }
         if ((*(uint32_t *)g__DAT_1f8000dc & 3) == 0 && (local_38 = local_38 + 1, 5 < local_38))
           local_38 = 0;
-        if (param_1 == 2) uVar5 = 0x19;
-        else if ((*(uint8_t *)g_DAT_1f8000a2 == 0) || param_1 == 1) uVar5 = 0x18;
+        if (entry_mode == 2) uVar5 = 0x19;
+        else if ((*(uint8_t *)g_DAT_1f8000a2 == 0) || entry_mode == 1) uVar5 = 0x18;
         else uVar5 = 0x48;
         hud_gauge_render(0x1f800000,_DAT_1f800008,uVar5);
         local_2c++;
@@ -3540,9 +3540,9 @@ LAB_80150558:
     } else {
       if (DAT_1f800001 < 7) {
         if (DAT_1f800001 == 0 && (iVar4 = frame_divisor_get(), iVar4 == 0)) {
-          if (-1 < param_1) {
-            if (param_1 < 2) unaff_s2 = 1;
-            else if (param_1 < 4) unaff_s2 = 2;
+          if (-1 < entry_mode) {
+            if (entry_mode < 2) unaff_s2 = 1;
+            else if (entry_mode < 4) unaff_s2 = 2;
           }
           iVar4 = intro_movie_state((int32_t)unaff_s2);
           if (iVar4 != 0) {
