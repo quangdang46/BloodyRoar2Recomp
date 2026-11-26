@@ -178,10 +178,23 @@ for path in files:
         # let the emit loop (which knows addr) apply the self/indirect check.
         bend = code.find('\n}', j)
         gen_args = []
+        call_args = []
         if bend > 0:
+            _body = code[j:bend]
             gen_args = [gm.group(1).strip() for gm in
                         re.finditer(r'br2_call_generated\(\s*([^,]+)',
-                                    code[j:bend])]
+                                    _body)]
+            # Self-delegation is not limited to br2_call_generated: the CD/IRQ
+            # boundary ports forward their whole body through call_guest /
+            # call_guest4 / br2_call_clean / psx_dispatch_call with their OWN
+            # guest addr as the target (a §4 delegate). Record every bridge
+            # call's first arg so the emit loop can flag a literal self-target;
+            # non-literal (indirect jalr) targets are normal and ignored here.
+            call_args = [gm.group(1).strip() for gm in
+                         re.finditer(r'(?:br2_call_generated|br2_call_clean|'
+                                     r'call_guest4|call_guest3|call_guest2|'
+                                     r'call_guest|psx_dispatch_call)'
+                                     r'\(\s*([^,]+)', _body)]
         # exclude static defs (not callable cross-TU anyway, but be safe)
         k = m.start() - 1
         while k >= 0 and code[k] not in ';{}': k -= 1
@@ -194,7 +207,8 @@ for path in files:
         ret_raw = code[code.rfind('\n', 0, m.start(1))+1:m.start(2)].strip()
         # strip leading storage-class words
         ret_raw = re.sub(r'^(extern|static|inline|__inline)\s+', '', ret_raw).strip()
-        defs[name] = (ret_raw, params, os.path.basename(path), gen_args)
+        defs[name] = (ret_raw, params, os.path.basename(path), gen_args,
+                      call_args)
 
 def split_params(p):
     """Split param list on top-level commas."""
@@ -376,7 +390,7 @@ wrappers, table, skipped = [], [], []
 for addr, name in sorted(entries):
     if name not in defs:
         skipped.append((addr, name, 'no-def')); continue
-    ret_raw, params, f, gen_args = defs[name]
+    ret_raw, params, f, gen_args, call_args = defs[name]
     # Self-delegation and indirect-delegation thunks stay unwrapped (see the
     # def-scan comment): wrapping them recurses through clean_try_dispatch.
     # Literal delegates to a different guest addr are safe to wrap.
@@ -391,6 +405,20 @@ for addr, name in sorted(entries):
         iv = int(v, 16) if v.lower().startswith('0x') else int(v, 10)
         if iv == addr:
             skipped.append((addr, name, 'self-delegate')); deleg_bad = True; break
+    # Literal self-target via ANY bridge call (call_guest/call_guest4/
+    # br2_call_clean/psx_dispatch_call) is the same recursion trap: the named
+    # port forwards to its own guest addr, and once its cps_ shadow is gone a
+    # wrap would route straight back into itself. Only literal targets count —
+    # an indirect jalr target is a normal cross/indirect call, not a thunk.
+    if not deleg_bad:
+        for ca in call_args:
+            lit = re.fullmatch(r'0x[0-9a-fA-F]+[uUlL]*|\d+[uUlL]*', ca)
+            if lit is None:
+                continue
+            v = lit.group(0).rstrip('uUlL')
+            iv = int(v, 16) if v.lower().startswith('0x') else int(v, 10)
+            if iv == addr:
+                skipped.append((addr, name, 'self-delegate')); deleg_bad = True; break
     if deleg_bad:
         continue
     rk = ret_kind(ret_raw)

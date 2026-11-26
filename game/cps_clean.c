@@ -1389,8 +1389,8 @@ block_80126178:
     v0 = v0 + -4368;
     v1 = 0x8020 << 16;  /* 0x80200000 */
     v1 = v1 + -2480;
-    cps_80126188(); return;  /* fallthrough to split piece */
-    cps_80126188();  /* fallthrough to next function */
+    cpu->pc = 0x80126188u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80126188u; return;/* fallthrough to next function */
 }
 
 /* cps_80126188 — clean CPS transliteration of br2eu_func_80126188 (guest 0x80126188)
@@ -1406,8 +1406,8 @@ block_80126188:
     cpu->write_word(v0, zero);
     v0 = v0 + 4;
     at = (v0 < v1) ? 1 : 0;  /* 0x80126190: 0x0043082B */
-    cps_80126194(); return;  /* fallthrough to split piece */
-    cps_80126194();  /* fallthrough to next function */
+    cpu->pc = 0x80126194u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80126194u; return;/* fallthrough to next function */
 }
 
 /* cps_80126194 — clean CPS transliteration of br2eu_func_80126194 (guest 0x80126194)
@@ -1430,7 +1430,7 @@ block_80126194:
         psx_check_interrupts_at(cpu, 0x8012619Cu);
         cpu->pc = 0x8012619Cu; return;  /* CPS not taken: split */
     }
-    cps_80126198();  /* fallthrough to next function */
+    cpu->pc = 0x80126198u; return;/* fallthrough to next function */
 }
 
 /* cps_80126198 — clean CPS transliteration of br2eu_func_80126198 (guest 0x80126198)
@@ -1444,8 +1444,8 @@ void cps_80126198(void)
 
 block_80126198:
     /* nop */  /* 0x80126198: 0x00000000 */
-    cps_8012619c(); return;  /* fallthrough to split piece */
-    cps_8012619c();  /* fallthrough to next function */
+    cpu->pc = 0x8012619cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012619cu; return;/* fallthrough to next function */
 }
 
 /* cps_8012619c — clean CPS transliteration of br2eu_func_8012619C (guest 0x8012619c)
@@ -1468,8 +1468,8 @@ block_8012619C:
     a0 = a0 + v0;
     v0 = cpu->read_word(a0);
     t0 = 0x8000 << 16;  /* 0x80000000 */
-    cps_801261c4(); return;  /* fallthrough to split piece */
-    cps_801261c4();  /* fallthrough to next function */
+    cpu->pc = 0x801261c4u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801261c4u; return;/* fallthrough to next function */
 }
 
 /* cps_801261c4 — clean CPS transliteration of br2eu_func_801261C4 (guest 0x801261c4)
@@ -1487,8 +1487,8 @@ block_801261C4:
     a0 = a0 + -2480;
     a0 = a0 << 3;
     a0 = (uint32_t)a0 >> 3;
-    cps_801261d8(); return;  /* fallthrough to split piece */
-    cps_801261d8();  /* fallthrough to next function */
+    cpu->pc = 0x801261d8u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801261d8u; return;/* fallthrough to next function */
 }
 
 /* cps_801261d8 — clean CPS transliteration of br2eu_func_801261D8 (guest 0x801261d8)
@@ -1509,8 +1509,8 @@ block_801261D8:
     a0 = a0 | t0;
     at = 0x801C << 16;  /* 0x801C0000 */
     cpu->write_word(at + -4368, ra);
-    cps_801261f8(); return;  /* fallthrough to split piece */
-    cps_801261f8();  /* fallthrough to next function */
+    cpu->pc = 0x801261f8u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801261f8u; return;/* fallthrough to next function */
 }
 
 /* cps_801261f8 — clean CPS transliteration of br2eu_func_801261F8 (guest 0x801261f8)
@@ -1561,8 +1561,8 @@ void cps_8012621c(void)
 
 block_8012621C:
     /* nop */  /* 0x8012621C: 0x00000000 */
-    cps_80126220(); return;  /* fallthrough to split piece */
-    cps_80126220();  /* fallthrough to next function */
+    cpu->pc = 0x80126220u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80126220u; return;/* fallthrough to next function */
 }
 
 /* cps_80126220 — clean CPS transliteration of br2eu_func_80126220 (guest 0x80126220)
@@ -1577,8 +1577,8 @@ void cps_80126220(void)
 block_80126220:
     /* break(1) — trap, no-op in recompiler */  /* 0x80126220: 0x0000004D */
     /* nop */  /* 0x80126224: 0x00200000 */
-    cps_80126228(); return;  /* fallthrough to split piece */
-    cps_80126228();  /* fallthrough to next function */
+    cpu->pc = 0x80126228u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80126228u; return;/* fallthrough to next function */
 }
 
 /* cps_80126228 — clean CPS transliteration of br2eu_func_80126228 (guest 0x80126228)
@@ -1594,8 +1594,8 @@ block_80126228:
     /* nop */  /* 0x80126228: 0x00200000 */
     /* nop */  /* 0x8012622C: 0x00200000 */
     /* nop */  /* 0x80126230: 0x00200000 */
-    cps_80126234(); return;  /* fallthrough to split piece */
-    cps_80126234();  /* fallthrough to next function */
+    cpu->pc = 0x80126234u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80126234u; return;/* fallthrough to next function */
 }
 
 /* cps_80126234 — clean CPS transliteration of br2eu_func_80126234 (guest 0x80126234)
@@ -1647,8 +1647,8 @@ void cps_8012625c(void)
 
 block_8012625C:
     s3 = zero;
-    cps_80126260(); return;  /* fallthrough to split piece */
-    cps_80126260();  /* fallthrough to next function */
+    cpu->pc = 0x80126260u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80126260u; return;/* fallthrough to next function */
 }
 
 /* cps_80126260 — clean CPS transliteration of br2eu_func_80126260 (guest 0x80126260)
@@ -1673,8 +1673,8 @@ block_80126260:
     cpu->write_half(sp + 26, (uint16_t)zero);
     cpu->write_half(sp + 28, (uint16_t)zero);
     cpu->write_half(sp + 30, (uint16_t)zero);
-    cps_80126290(); return;  /* fallthrough to split piece */
-    cps_80126290();  /* fallthrough to next function */
+    cpu->pc = 0x80126290u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80126290u; return;/* fallthrough to next function */
 }
 
 /* cps_80126290 — clean CPS transliteration of br2eu_func_80126290 (guest 0x80126290)
@@ -1744,8 +1744,8 @@ void cps_801262c0(void)
 
 block_801262C0:
     /* nop */  /* 0x801262C0: 0x00000000 */
-    cps_801262c4(); return;  /* fallthrough to split piece */
-    cps_801262c4();  /* fallthrough to next function */
+    cpu->pc = 0x801262c4u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801262c4u; return;/* fallthrough to next function */
 }
 
 /* cps_801262c4 — clean CPS transliteration of br2eu_func_801262C4 (guest 0x801262c4)
@@ -1782,7 +1782,7 @@ block_801262E4:
     v1 = 0x6666 << 16;  /* 0x66660000 */
     a1 = cpu->read_byte(v0 + 15);
     v1 = v1 | 0x6667;
-    cps_801262f4(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801262f4u; return;  /* fallthrough to split piece */
 }
 
 /* cps_801262f4 — clean CPS transliteration of br2eu_func_801262F4 (guest 0x801262f4)
@@ -1838,8 +1838,8 @@ void cps_80126324(void)
 
 block_80126324:
     a0 = a0 ^ 0x0001;  /* 0x80126324: 0x38840001 */
-    cps_80126328(); return;  /* fallthrough to split piece */
-    cps_80126328();  /* fallthrough to next function */
+    cpu->pc = 0x80126328u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80126328u; return;/* fallthrough to next function */
 }
 
 /* cps_80126328 — clean CPS transliteration of br2eu_func_80126328 (guest 0x80126328)
@@ -1878,7 +1878,7 @@ block_80126338:
     s2 = 5;
     s4 = 4;
     v1 = cpu->read_byte(s1);
-    cps_80126348(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80126348u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80126348 — clean CPS transliteration of br2eu_func_80126348 (guest 0x80126348)
@@ -1893,8 +1893,8 @@ void cps_80126348(void)
 block_80126348:
     /* nop */  /* 0x80126348: 0x00000000 */
     v0 = (v1 < (uint32_t)14) ? 1 : 0;  /* 0x8012634C: 0x2C62000E */
-    cps_80126350(); return;  /* fallthrough to split piece */
-    cps_80126350();  /* fallthrough to next function */
+    cpu->pc = 0x80126350u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80126350u; return;/* fallthrough to next function */
 }
 
 /* cps_80126350 — clean CPS transliteration of br2eu_func_80126350 (guest 0x80126350)
@@ -2033,8 +2033,8 @@ void cps_801263bc(void)
 
 block_801263BC:
     v0 = (v1 < (uint32_t)14) ? 1 : 0;  /* 0x801263BC: 0x2C62000E */
-    cps_801263c0(); return;  /* fallthrough to split piece */
-    cps_801263c0();  /* fallthrough to next function */
+    cpu->pc = 0x801263c0u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801263c0u; return;/* fallthrough to next function */
 }
 
 /* cps_801263c0 — clean CPS transliteration of br2eu_func_801263C0 (guest 0x801263c0)
@@ -2085,7 +2085,7 @@ block_801263E0:
     v0 = cpu->read_word(s1 + 192);
     /* nop */  /* 0x801263E4: 0x00000000 */
     v0 = cpu->read_byte(v0 + 32);
-    cps_801263ec(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801263ecu; return;  /* fallthrough to split piece */
 }
 
 /* cps_801263ec — clean CPS transliteration of br2eu_func_801263EC (guest 0x801263ec)
@@ -2205,7 +2205,7 @@ block_80126440:
 
 block_8012644C:
     v0 = cpu->read_word(s1 + 192);
-    cps_80126450(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80126450u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80126450 — clean CPS transliteration of br2eu_func_80126450 (guest 0x80126450)
@@ -2264,7 +2264,7 @@ block_80126478:
     a2 = cpu->read_word(s1 + 192);
     a0 = 0x51EB << 16;  /* 0x51EB0000 */
     v1 = cpu->read_byte(a2 + 15);
-    cps_80126484(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80126484u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80126484 — clean CPS transliteration of br2eu_func_80126484 (guest 0x80126484)
@@ -2291,8 +2291,8 @@ block_80126484:
     a1 = (int32_t)a3 >> 5;
     a1 = a1 - v0;
     a1 = a1 << 3;
-    cps_801264b4(); return;  /* fallthrough to split piece */
-    cps_801264b4();  /* fallthrough to next function */
+    cpu->pc = 0x801264b4u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801264b4u; return;/* fallthrough to next function */
 }
 
 /* cps_801264b4 — clean CPS transliteration of br2eu_func_801264B4 (guest 0x801264b4)
@@ -2359,8 +2359,8 @@ void cps_801264e8(void)
 
 block_801264E8:
     cpu->write_byte(s1, (uint8_t)s2);
-    cps_801264ec(); return;  /* fallthrough to split piece */
-    cps_801264ec();  /* fallthrough to next function */
+    cpu->pc = 0x801264ecu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801264ecu; return;/* fallthrough to next function */
 }
 
 /* cps_801264ec — clean CPS transliteration of br2eu_func_801264EC (guest 0x801264ec)
@@ -2403,8 +2403,8 @@ void cps_80126518(void)
 
 block_80126518:
     a1 = v0 - a1;
-    cps_8012651c(); return;  /* fallthrough to split piece */
-    cps_8012651c();  /* fallthrough to next function */
+    cpu->pc = 0x8012651cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012651cu; return;/* fallthrough to next function */
 }
 
 /* cps_8012651c — clean CPS transliteration of br2eu_func_8012651C (guest 0x8012651c)
@@ -2429,7 +2429,7 @@ block_8012651C:
         psx_check_interrupts_at(cpu, 0x8012652Cu);
         cpu->pc = 0x8012652Cu; return;  /* CPS not taken: split */
     }
-    cps_8012652c();  /* fallthrough to next function */
+    cpu->pc = 0x8012652cu; return;/* fallthrough to next function */
 }
 
 /* cps_8012652c — clean CPS transliteration of br2eu_func_8012652C (guest 0x8012652c)
@@ -2482,8 +2482,8 @@ void cps_80126548(void)
 
 block_80126548:
     a0 = 2;
-    cps_8012654c(); return;  /* fallthrough to split piece */
-    cps_8012654c();  /* fallthrough to next function */
+    cpu->pc = 0x8012654cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012654cu; return;/* fallthrough to next function */
 }
 
 /* cps_8012654c — clean CPS transliteration of br2eu_func_8012654C (guest 0x8012654c)
@@ -2497,8 +2497,8 @@ void cps_8012654c(void)
 
 block_8012654C:
     a0 = 1;
-    cps_80126550(); return;  /* fallthrough to split piece */
-    cps_80126550();  /* fallthrough to next function */
+    cpu->pc = 0x80126550u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80126550u; return;/* fallthrough to next function */
 }
 
 /* cps_80126550 — clean CPS transliteration of br2eu_func_80126550 (guest 0x80126550)
@@ -2608,7 +2608,7 @@ block_80126594:
 block_801265A4:
     v0 = s3 & 0xFFFF;  /* 0x801265A4: 0x3262FFFF */
     v0 = (v0 < (uint32_t)4) ? 1 : 0;  /* 0x801265A8: 0x2C420004 */
-    cps_801265ac(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801265acu; return;  /* fallthrough to split piece */
 }
 
 /* cps_801265ac — clean CPS transliteration of br2eu_func_801265AC (guest 0x801265ac)
@@ -2641,7 +2641,7 @@ block_801265AC:
 
 block_801265B4:
     v0 = 2;
-    cps_801265b8(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801265b8u; return;  /* fallthrough to split piece */
 }
 
 /* cps_801265b8 — clean CPS transliteration of br2eu_func_801265B8 (guest 0x801265b8)
@@ -2658,7 +2658,7 @@ block_801265B8:
     cpu->write_byte(s1, (uint8_t)v0);
     psx_check_interrupts_at(cpu, 0x80126344u);
     cpu->pc = 0x80126344u; return;  /* CPS j: split */
-    cps_801265c0();  /* fallthrough to next function */
+    cpu->pc = 0x801265c0u; return;/* fallthrough to next function */
 }
 
 /* cps_801265c0 — clean CPS transliteration of br2eu_func_801265C0 (guest 0x801265c0)
@@ -2711,8 +2711,8 @@ void cps_801265dc(void)
 
 block_801265DC:
     a0 = 2;
-    cps_801265e0(); return;  /* fallthrough to split piece */
-    cps_801265e0();  /* fallthrough to next function */
+    cpu->pc = 0x801265e0u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801265e0u; return;/* fallthrough to next function */
 }
 
 /* cps_801265e0 — clean CPS transliteration of br2eu_func_801265E0 (guest 0x801265e0)
@@ -2726,8 +2726,8 @@ void cps_801265e0(void)
 
 block_801265E0:
     a0 = 1;
-    cps_801265e4(); return;  /* fallthrough to split piece */
-    cps_801265e4();  /* fallthrough to next function */
+    cpu->pc = 0x801265e4u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801265e4u; return;/* fallthrough to next function */
 }
 
 /* cps_801265e4 — clean CPS transliteration of br2eu_func_801265E4 (guest 0x801265e4)
@@ -2786,7 +2786,7 @@ block_80126604:
 
 block_8012660C:
     v0 = cpu->read_byte(s1);
-    cps_80126610(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80126610u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80126610 — clean CPS transliteration of br2eu_func_80126610 (guest 0x80126610)
@@ -2810,7 +2810,7 @@ block_80126610:
         psx_check_interrupts_at(cpu, 0x8012661Cu);
         cpu->pc = 0x8012661Cu; return;  /* CPS not taken: split */
     }
-    cps_8012661c();  /* fallthrough to next function */
+    cpu->pc = 0x8012661cu; return;/* fallthrough to next function */
 }
 
 /* cps_8012661c — clean CPS transliteration of br2eu_func_8012661C (guest 0x8012661c)
@@ -2854,7 +2854,7 @@ block_80126624:
 
 block_8012663C:
     a0 = 1;
-    cps_80126640(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80126640u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80126640 — clean CPS transliteration of br2eu_func_80126640 (guest 0x80126640)
@@ -2934,8 +2934,8 @@ void cps_80126670(void)
 
 block_80126670:
     /* nop */  /* 0x80126670: 0x00000000 */
-    cps_80126674(); return;  /* fallthrough to split piece */
-    cps_80126674();  /* fallthrough to next function */
+    cpu->pc = 0x80126674u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80126674u; return;/* fallthrough to next function */
 }
 
 /* cps_80126674 — clean CPS transliteration of br2eu_func_80126674 (guest 0x80126674)
@@ -3015,8 +3015,8 @@ void cps_801266a0(void)
 
 block_801266A0:
     v0 = 11;
-    cps_801266a4(); return;  /* fallthrough to split piece */
-    cps_801266a4();  /* fallthrough to next function */
+    cpu->pc = 0x801266a4u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801266a4u; return;/* fallthrough to next function */
 }
 
 /* cps_801266a4 — clean CPS transliteration of br2eu_func_801266A4 (guest 0x801266a4)
@@ -3106,8 +3106,8 @@ void cps_801266d4(void)
 
 block_801266D4:
     /* nop */  /* 0x801266D4: 0x00000000 */
-    cps_801266d8(); return;  /* fallthrough to split piece */
-    cps_801266d8();  /* fallthrough to next function */
+    cpu->pc = 0x801266d8u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801266d8u; return;/* fallthrough to next function */
 }
 
 /* cps_801266d8 — clean CPS transliteration of br2eu_func_801266D8 (guest 0x801266d8)
@@ -3240,8 +3240,8 @@ block_80126734:
     v0 = v0 + 4736;
     a0 = v0 + 96;
     cpu->write_word(sp + 20, ra);
-    cps_80126740(); return;  /* fallthrough to split piece */
-    cps_80126740();  /* fallthrough to next function */
+    cpu->pc = 0x80126740u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80126740u; return;/* fallthrough to next function */
 }
 
 /* cps_80126740 — clean CPS transliteration of br2eu_func_80126740 (guest 0x80126740)
@@ -3263,8 +3263,8 @@ block_80126740:
     cpu->write_word(v1 + 8, t0);
     cpu->write_word(v1 + 12, t1);
     v0 = v0 + 16;
-    cps_80126764(); return;  /* fallthrough to split piece */
-    cps_80126764();  /* fallthrough to next function */
+    cpu->pc = 0x80126764u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80126764u; return;/* fallthrough to next function */
 }
 
 /* cps_80126764 — clean CPS transliteration of br2eu_func_80126764 (guest 0x80126764)
@@ -3383,8 +3383,8 @@ void cps_801267c8(void)
 
 block_801267C8:
     a0 = a0 ^ 0x0001;  /* 0x801267C8: 0x38840001 */
-    cps_801267cc(); return;  /* fallthrough to split piece */
-    cps_801267cc();  /* fallthrough to next function */
+    cpu->pc = 0x801267ccu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801267ccu; return;/* fallthrough to next function */
 }
 
 /* cps_801267cc — clean CPS transliteration of br2eu_func_801267CC (guest 0x801267cc)
@@ -3417,8 +3417,8 @@ void cps_801267f8(void)
 
 block_801267F8:
     /* nop */  /* 0x801267F8: 0x00000000 */
-    cps_801267fc(); return;  /* fallthrough to split piece */
-    cps_801267fc();  /* fallthrough to next function */
+    cpu->pc = 0x801267fcu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801267fcu; return;/* fallthrough to next function */
 }
 
 /* cps_801267fc — clean CPS transliteration of br2eu_func_801267FC (guest 0x801267fc)
@@ -3469,8 +3469,8 @@ block_80126814:
     a1 = 0x1F80 << 16;  /* 0x1F800000 */
     a1 = a1 | 0x00E4;
     v0 = cpu->read_word(a0);
-    cps_80126828(); return;  /* fallthrough to split piece */
-    cps_80126828();  /* fallthrough to next function */
+    cpu->pc = 0x80126828u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80126828u; return;/* fallthrough to next function */
 }
 
 /* cps_80126828 — clean CPS transliteration of br2eu_func_80126828 (guest 0x80126828)
@@ -3522,8 +3522,8 @@ void cps_80126854(void)
 
 block_80126854:
     cpu->write_word(v1, zero);
-    cps_80126858(); return;  /* fallthrough to split piece */
-    cps_80126858();  /* fallthrough to next function */
+    cpu->pc = 0x80126858u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80126858u; return;/* fallthrough to next function */
 }
 
 /* cps_80126858 — clean CPS transliteration of br2eu_func_80126858 (guest 0x80126858)
@@ -3663,8 +3663,8 @@ void cps_801268b8(void)
 
 block_801268B8:
     v0 = s0;
-    cps_801268bc(); return;  /* fallthrough to split piece */
-    cps_801268bc();  /* fallthrough to next function */
+    cpu->pc = 0x801268bcu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801268bcu; return;/* fallthrough to next function */
 }
 
 /* cps_801268bc — clean CPS transliteration of br2eu_func_801268BC (guest 0x801268bc)
@@ -3681,7 +3681,7 @@ block_801268BC:
     /* nop */  /* 0x801268C0: 0x00000000 */
     psx_check_interrupts_at(cpu, 0x80126EECu);
     cpu->pc = 0x80126EECu; return;  /* CPS j: split */
-    cps_801268c4();  /* fallthrough to next function */
+    cpu->pc = 0x801268c4u; return;/* fallthrough to next function */
 }
 
 /* cps_801268c4 — clean CPS transliteration of br2eu_func_801268C4 (guest 0x801268c4)
@@ -3715,7 +3715,7 @@ block_801268D0:
     v0 = 0x801C << 16;  /* 0x801C0000 */
     v1 = -1;
     cpu->write_byte(v0 + -4116, (uint8_t)v1);
-    cps_801268e8(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801268e8u; return;  /* fallthrough to split piece */
 }
 
 /* cps_801268e8 — clean CPS transliteration of br2eu_func_801268E8 (guest 0x801268e8)
@@ -3740,8 +3740,8 @@ block_801268E8:
     v1 = 0x8001 << 16;  /* 0x80010000 */
     cpu->write_word(v0 + 18360, v1);
     v0 = 0x801E << 16;  /* 0x801E0000 */
-    cps_80126918(); return;  /* fallthrough to split piece */
-    cps_80126918();  /* fallthrough to next function */
+    cpu->pc = 0x80126918u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80126918u; return;/* fallthrough to next function */
 }
 
 /* cps_80126918 — clean CPS transliteration of br2eu_func_80126918 (guest 0x80126918)
@@ -3755,8 +3755,8 @@ void cps_80126918(void)
 
 block_80126918:
     cpu->write_word(v0 + 15612, v1);
-    cps_8012691c(); return;  /* fallthrough to split piece */
-    cps_8012691c();  /* fallthrough to next function */
+    cpu->pc = 0x8012691cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012691cu; return;/* fallthrough to next function */
 }
 
 /* cps_8012691c — clean CPS transliteration of br2eu_func_8012691C (guest 0x8012691c)
@@ -3899,7 +3899,7 @@ block_8012699C:
     s2 = v0;
     a1 = 896;
     a2 = zero;
-    cps_801269a8(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801269a8u; return;  /* fallthrough to split piece */
 }
 
 /* cps_801269a8 — clean CPS transliteration of br2eu_func_801269A8 (guest 0x801269a8)
@@ -3987,7 +3987,7 @@ block_801269F0:
 
 block_80126A04:
     a1 = v0;
-    cps_80126a08(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80126a08u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80126a08 — clean CPS transliteration of br2eu_func_80126A08 (guest 0x80126a08)
@@ -4030,7 +4030,7 @@ block_80126A2C:
     v0 = cpu->read_word(s0 + 15612);
     /* nop */  /* 0x80126A30: 0x00000000 */
     v0 = v0 + s2;
-    cps_80126a38(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80126a38u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80126a38 — clean CPS transliteration of br2eu_func_80126A38 (guest 0x80126a38)
@@ -4756,7 +4756,7 @@ block_80126EE0:
     v0 = -1;
     psx_check_interrupts_at(cpu, 0x80126EECu);
     cpu->pc = 0x80126EECu; return;  /* CPS j: split */
-    cps_80126ee8();  /* fallthrough to next function */
+    cpu->pc = 0x80126ee8u; return;/* fallthrough to next function */
 }
 
 /* cps_80126ee8 — clean CPS transliteration of br2eu_func_80126EE8 (guest 0x80126ee8)
@@ -4770,8 +4770,8 @@ void cps_80126ee8(void)
 
 block_80126EE8:
     v0 = s0;
-    cps_80126eec(); return;  /* fallthrough to split piece */
-    cps_80126eec();  /* fallthrough to next function */
+    cpu->pc = 0x80126eecu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80126eecu; return;/* fallthrough to next function */
 }
 
 /* cps_80126eec — clean CPS transliteration of br2eu_func_80126EEC (guest 0x80126eec)
@@ -4852,8 +4852,8 @@ block_80128428:
     cpu->write_word(a0 + 8, t6);
     cpu->write_word(a0 + 12, t7);
     v1 = v1 + 16;
-    cps_8012844c(); return;  /* fallthrough to split piece */
-    cps_8012844c();  /* fallthrough to next function */
+    cpu->pc = 0x8012844cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012844cu; return;/* fallthrough to next function */
 }
 
 /* cps_8012844c — clean CPS transliteration of br2eu_func_8012844C (guest 0x8012844c)
@@ -4886,7 +4886,7 @@ block_8012844C:
 
 block_80128454:
     v0 = 0x801F << 16;  /* 0x801F0000 */
-    cps_80128458(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80128458u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80128458 — clean CPS transliteration of br2eu_func_80128458 (guest 0x80128458)
@@ -4941,7 +4941,7 @@ block_80128490:
     v0 = v0 + 4016;
     v1 = a1 + 7536;
     a0 = a1 + 7792;
-    cps_801284ac(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801284acu; return;  /* fallthrough to split piece */
 }
 
 /* cps_801284ac — clean CPS transliteration of br2eu_func_801284AC (guest 0x801284ac)
@@ -4956,8 +4956,8 @@ void cps_801284ac(void)
 block_801284AC:
     t4 = cpu->read_word(v1);
     t5 = cpu->read_word(v1 + 4);
-    cps_801284b4(); return;  /* fallthrough to split piece */
-    cps_801284b4();  /* fallthrough to next function */
+    cpu->pc = 0x801284b4u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801284b4u; return;/* fallthrough to next function */
 }
 
 /* cps_801284b4 — clean CPS transliteration of br2eu_func_801284B4 (guest 0x801284b4)
@@ -5034,8 +5034,8 @@ block_80128504:
     t6 = br2_lwl(cpu, v1 + 11, t6);
     t6 = br2_lwr(cpu, v1 + 8, t6);
     t7 = br2_lwl(cpu, v1 + 15, t7);
-    cps_80128520(); return;  /* fallthrough to split piece */
-    cps_80128520();  /* fallthrough to next function */
+    cpu->pc = 0x80128520u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80128520u; return;/* fallthrough to next function */
 }
 
 /* cps_80128520 — clean CPS transliteration of br2eu_func_80128520 (guest 0x80128520)
@@ -5114,7 +5114,7 @@ block_80128558:
 
 block_80128584:
     v0 = 0x801F << 16;  /* 0x801F0000 */
-    cps_80128588(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80128588u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80128588 — clean CPS transliteration of br2eu_func_80128588 (guest 0x80128588)
@@ -5217,7 +5217,7 @@ block_801285F4:
 
 block_80128620:
     a2 = a1 + 4;
-    cps_80128624(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80128624u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80128624 — clean CPS transliteration of br2eu_func_80128624 (guest 0x80128624)
@@ -5245,8 +5245,8 @@ block_80128624:
     t5 = cpu->read_word(a1 + 9044);
     cpu->write_word(v0 + 188, t4);
     cpu->write_word(v0 + 192, t5);
-    cps_80128660(); return;  /* fallthrough to split piece */
-    cps_80128660();  /* fallthrough to next function */
+    cpu->pc = 0x80128660u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80128660u; return;/* fallthrough to next function */
 }
 
 /* cps_80128660 — clean CPS transliteration of br2eu_func_80128660 (guest 0x80128660)
@@ -5307,7 +5307,7 @@ block_801286A8:
     v1 = v1 & 0x0001;  /* 0x801286C0: 0x30630001 */
     v0 = v1 << 4;
     v0 = v0 + v1;
-    cps_801286cc(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801286ccu; return;  /* fallthrough to split piece */
 }
 
 /* cps_801286cc — clean CPS transliteration of br2eu_func_801286CC (guest 0x801286cc)
@@ -5368,7 +5368,7 @@ block_80128708:
     v0 = v1 << 6;
     v0 = v0 - v1;
     v0 = v0 << 2;
-    cps_80128738(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80128738u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80128738 — clean CPS transliteration of br2eu_func_80128738 (guest 0x80128738)
@@ -5429,7 +5429,7 @@ block_80128768:
     v0 = v1 << 6;
     v0 = v0 - v1;
     v0 = v0 << 2;
-    cps_801287a4(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801287a4u; return;  /* fallthrough to split piece */
 }
 
 /* cps_801287a4 — clean CPS transliteration of br2eu_func_801287A4 (guest 0x801287a4)
@@ -5491,7 +5491,7 @@ block_801287D4:
     cpu->write_half(a0 + 452, (uint16_t)v0);
     v0 = (int32_t)v1 >> 2;
     a0 = cpu->read_word(t0 + 24);
-    cps_80128814(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80128814u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80128814 — clean CPS transliteration of br2eu_func_80128814 (guest 0x80128814)
@@ -5531,8 +5531,8 @@ block_80128814:
     v1 = -1;
     cpu->write_half(v0 + 196, (uint16_t)v1);
     cpu->write_half(v0 + 8, (uint16_t)v1);
-    cps_80128880(); return;  /* fallthrough to split piece */
-    cps_80128880();  /* fallthrough to next function */
+    cpu->pc = 0x80128880u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80128880u; return;/* fallthrough to next function */
 }
 
 /* cps_80128880 — clean CPS transliteration of br2eu_func_80128880 (guest 0x80128880)
@@ -5643,7 +5643,7 @@ block_80128944:
 block_80128958:
     v0 = cpu->read_half(s0 + 6);
     a1 = (int32_t)(int16_t)cpu->read_half(s0 + 2);
-    cps_80128960(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80128960u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80128960 — clean CPS transliteration of br2eu_func_80128960 (guest 0x80128960)
@@ -5796,7 +5796,7 @@ block_80128A10:
     v1 = v1 << 4;
     a1 = a1 + v1;
     a1 = a1 + a2;
-    cps_80128a44(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80128a44u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80128a44 — clean CPS transliteration of br2eu_func_80128A44 (guest 0x80128a44)
@@ -6058,8 +6058,8 @@ void cps_80128c0c(void)
 
 block_80128C0C:
     v0 = cpu->read_word(a0 + 204);
-    cps_80128c10(); return;  /* fallthrough to split piece */
-    cps_80128c10();  /* fallthrough to next function */
+    cpu->pc = 0x80128c10u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80128c10u; return;/* fallthrough to next function */
 }
 
 /* cps_80128c10 — clean CPS transliteration of br2eu_func_80128C10 (guest 0x80128c10)
@@ -6097,8 +6097,8 @@ block_80128C68:
     cpu->write_word(v0 + 4, t0);
     cpu->write_word(v0 + 8, t1);
     cpu->write_word(v0 + 12, t2);
-    cps_80128c88(); return;  /* fallthrough to split piece */
-    cps_80128c88();  /* fallthrough to next function */
+    cpu->pc = 0x80128c88u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80128c88u; return;/* fallthrough to next function */
 }
 
 /* cps_80128c88 — clean CPS transliteration of br2eu_func_80128C88 (guest 0x80128c88)
@@ -6198,7 +6198,7 @@ block_80128CE4:
 block_80128CF0:
     a0 = v0;
     a1 = a1 + -1;
-    cps_80128cf8(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80128cf8u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80128cf8 — clean CPS transliteration of br2eu_func_80128CF8 (guest 0x80128cf8)
@@ -6221,7 +6221,7 @@ block_80128CF8:
         psx_check_interrupts_at(cpu, 0x80128D00u);
         cpu->pc = 0x80128D00u; return;  /* CPS not taken: split */
     }
-    cps_80128cfc();  /* fallthrough to next function */
+    cpu->pc = 0x80128cfcu; return;/* fallthrough to next function */
 }
 
 /* cps_80128cfc — clean CPS transliteration of br2eu_func_80128CFC (guest 0x80128cfc)
@@ -6235,8 +6235,8 @@ void cps_80128cfc(void)
 
 block_80128CFC:
     /* nop */  /* 0x80128CFC: 0x00000000 */
-    cps_80128d00(); return;  /* fallthrough to split piece */
-    cps_80128d00();  /* fallthrough to next function */
+    cpu->pc = 0x80128d00u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80128d00u; return;/* fallthrough to next function */
 }
 
 /* cps_80128d00 — clean CPS transliteration of br2eu_func_80128D00 (guest 0x80128d00)
@@ -6250,8 +6250,8 @@ void cps_80128d00(void)
 
 block_80128D00:
     a1 = 2;
-    cps_80128d04(); return;  /* fallthrough to split piece */
-    cps_80128d04();  /* fallthrough to next function */
+    cpu->pc = 0x80128d04u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80128d04u; return;/* fallthrough to next function */
 }
 
 /* cps_80128d04 — clean CPS transliteration of br2eu_func_80128D04 (guest 0x80128d04)
@@ -6286,7 +6286,7 @@ block_80128D04:
 
 block_80128D14:
     a1 = a1 + 1;
-    cps_80128d18(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80128d18u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80128d18 — clean CPS transliteration of br2eu_func_80128D18 (guest 0x80128d18)
@@ -6359,7 +6359,7 @@ block_80128D4C:
 
 block_80128D58:
     a0 = s1;
-    cps_80128d5c(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80128d5cu; return;  /* fallthrough to split piece */
 }
 
 /* cps_80128d5c — clean CPS transliteration of br2eu_func_80128D5C (guest 0x80128d5c)
@@ -6412,8 +6412,8 @@ void cps_80128d74(void)
 
 block_80128D74:
     v0 = 599;
-    cps_80128d78(); return;  /* fallthrough to split piece */
-    cps_80128d78();  /* fallthrough to next function */
+    cpu->pc = 0x80128d78u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80128d78u; return;/* fallthrough to next function */
 }
 
 /* cps_80128d78 — clean CPS transliteration of br2eu_func_80128D78 (guest 0x80128d78)
@@ -6427,8 +6427,8 @@ void cps_80128d78(void)
 
 block_80128D78:
     cpu->write_half(s0 + 6, (uint16_t)v0);
-    cps_80128d7c(); return;  /* fallthrough to split piece */
-    cps_80128d7c();  /* fallthrough to next function */
+    cpu->pc = 0x80128d7cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80128d7cu; return;/* fallthrough to next function */
 }
 
 /* cps_80128d7c — clean CPS transliteration of br2eu_func_80128D7C (guest 0x80128d7c)
@@ -6471,8 +6471,8 @@ block_80128DCC:
     cpu->write_word(a2 + 4, t3);
     cpu->write_word(a2 + 8, t4);
     cpu->write_word(a2 + 12, t5);
-    cps_80128dec(); return;  /* fallthrough to split piece */
-    cps_80128dec();  /* fallthrough to next function */
+    cpu->pc = 0x80128decu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80128decu; return;/* fallthrough to next function */
 }
 
 /* cps_80128dec — clean CPS transliteration of br2eu_func_80128DEC (guest 0x80128dec)
@@ -6565,7 +6565,7 @@ block_80128E3C:
 block_80128E4C:
     a2 = v0;
     a1 = a1 + -1;
-    cps_80128e54(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80128e54u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80128e54 — clean CPS transliteration of br2eu_func_80128E54 (guest 0x80128e54)
@@ -6603,7 +6603,7 @@ block_80128E5C:
 
 block_80128E60:
     v1 = v1 + 1;
-    cps_80128e64(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80128e64u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80128e64 — clean CPS transliteration of br2eu_func_80128E64 (guest 0x80128e64)
@@ -6637,7 +6637,7 @@ block_80128E64:
 
 block_80128E70:
     a1 = a1 + 1;
-    cps_80128e74(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80128e74u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80128e74 — clean CPS transliteration of br2eu_func_80128E74 (guest 0x80128e74)
@@ -6755,7 +6755,7 @@ block_80128ED0:
 block_80128ED4:
     ra = cpu->read_word(sp + 20);
     s0 = cpu->read_word(sp + 16);
-    cps_80128edc(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80128edcu; return;  /* fallthrough to split piece */
 }
 
 /* cps_80128edc — clean CPS transliteration of br2eu_func_80128EDC (guest 0x80128edc)
@@ -6805,8 +6805,8 @@ void cps_80128f50(void)
 block_80128F50:
     a2 = cpu->read_word(v1);
     a3 = cpu->read_word(v1 + 4);
-    cps_80128f58(); return;  /* fallthrough to split piece */
-    cps_80128f58();  /* fallthrough to next function */
+    cpu->pc = 0x80128f58u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80128f58u; return;/* fallthrough to next function */
 }
 
 /* cps_80128f58 — clean CPS transliteration of br2eu_func_80128F58 (guest 0x80128f58)
@@ -6883,7 +6883,7 @@ block_80128F9C:
         psx_check_interrupts_at(cpu, 0x80128FA4u);
         cpu->pc = 0x80128FA4u; return;  /* CPS not taken: split */
     }
-    cps_80128fa0();  /* fallthrough to next function */
+    cpu->pc = 0x80128fa0u; return;/* fallthrough to next function */
 }
 
 /* cps_80128fa0 — clean CPS transliteration of br2eu_func_80128FA0 (guest 0x80128fa0)
@@ -6897,8 +6897,8 @@ void cps_80128fa0(void)
 
 block_80128FA0:
     /* nop */  /* 0x80128FA0: 0x00000000 */
-    cps_80128fa4(); return;  /* fallthrough to split piece */
-    cps_80128fa4();  /* fallthrough to next function */
+    cpu->pc = 0x80128fa4u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80128fa4u; return;/* fallthrough to next function */
 }
 
 /* cps_80128fa4 — clean CPS transliteration of br2eu_func_80128FA4 (guest 0x80128fa4)
@@ -6912,8 +6912,8 @@ void cps_80128fa4(void)
 
 block_80128FA4:
     v0 = (int32_t)(int16_t)cpu->read_half(v0);
-    cps_80128fa8(); return;  /* fallthrough to split piece */
-    cps_80128fa8();  /* fallthrough to next function */
+    cpu->pc = 0x80128fa8u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80128fa8u; return;/* fallthrough to next function */
 }
 
 /* cps_80128fa8 — clean CPS transliteration of br2eu_func_80128FA8 (guest 0x80128fa8)
@@ -6944,8 +6944,8 @@ void cps_80128fac(void)
 
 block_80128FAC:
     /* nop */  /* 0x80128FAC: 0x00000000 */
-    cps_80128fb0(); return;  /* fallthrough to split piece */
-    cps_80128fb0();  /* fallthrough to next function */
+    cpu->pc = 0x80128fb0u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80128fb0u; return;/* fallthrough to next function */
 }
 
 /* cps_80128fb0 — clean CPS transliteration of br2eu_func_80128FB0 (guest 0x80128fb0)
@@ -6990,7 +6990,7 @@ block_80128FB8:
         psx_check_interrupts_at(cpu, 0x80128FD4u);
         cpu->pc = 0x80128FD4u; return;  /* CPS not taken: split */
     }
-    cps_80128fd4();  /* fallthrough to next function */
+    cpu->pc = 0x80128fd4u; return;/* fallthrough to next function */
 }
 
 /* cps_80128fd4 — clean CPS transliteration of br2eu_func_80128FD4 (guest 0x80128fd4)
@@ -7048,7 +7048,7 @@ block_80128FE4:
 
 block_80128FF4:
     a3 = a3 + 1;
-    cps_80128ff8(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80128ff8u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80128ff8 — clean CPS transliteration of br2eu_func_80128FF8 (guest 0x80128ff8)
@@ -7130,7 +7130,7 @@ block_8012903C:
     v0 = v0 + a1;
     v1 = v0 << 2;
     v1 = v1 - v0;
-    cps_80129050(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80129050u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80129050 — clean CPS transliteration of br2eu_func_80129050 (guest 0x80129050)
@@ -7195,7 +7195,7 @@ block_8012909C:
     v1 = v1 + a1;
     v0 = v1 << 2;
     v0 = v0 - v1;
-    cps_801290cc(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801290ccu; return;  /* fallthrough to split piece */
 }
 
 /* cps_801290cc — clean CPS transliteration of br2eu_func_801290CC (guest 0x801290cc)
@@ -7260,7 +7260,7 @@ block_80129134:
     t2 = cpu->read_word(v1 + 8);
     cpu->write_word(a2, t0);
     cpu->write_word(a2 + 4, t1);
-    cps_80129148(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80129148u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80129148 — clean CPS transliteration of br2eu_func_80129148 (guest 0x80129148)
@@ -7299,7 +7299,7 @@ block_80129148:
         psx_check_interrupts_at(cpu, 0x80129190u);
         cpu->pc = 0x80129190u; return;  /* CPS not taken: split */
     }
-    cps_80129190();  /* fallthrough to next function */
+    cpu->pc = 0x80129190u; return;/* fallthrough to next function */
 }
 
 /* cps_80129190 — clean CPS transliteration of br2eu_func_80129190 (guest 0x80129190)
@@ -7320,8 +7320,8 @@ block_80129190:
     t2 = br2_lwr(cpu, v0 + 8, t2);
     t3 = br2_lwl(cpu, v0 + 15, t3);
     t3 = br2_lwr(cpu, v0 + 12, t3);
-    cps_801291c8(); return;  /* fallthrough to split piece */
-    cps_801291c8();  /* fallthrough to next function */
+    cpu->pc = 0x801291c8u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801291c8u; return;/* fallthrough to next function */
 }
 
 /* cps_801291c8 — clean CPS transliteration of br2eu_func_801291C8 (guest 0x801291c8)
@@ -7469,7 +7469,7 @@ block_80129298:
     v1 = v1 - a1;
     v1 = v1 << 4;
     v1 = v1 + a1;
-    cps_801292c8(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801292c8u; return;  /* fallthrough to split piece */
 }
 
 /* cps_801292c8 — clean CPS transliteration of br2eu_func_801292C8 (guest 0x801292c8)
@@ -7535,7 +7535,7 @@ block_80129310:
     v1 = v1 - a1;
     v1 = v1 << 4;
     v1 = v1 + a1;
-    cps_80129348(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80129348u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80129348 — clean CPS transliteration of br2eu_func_80129348 (guest 0x80129348)
@@ -7608,7 +7608,7 @@ block_801293B8:
 
 block_801293C0:
     v1 = v0 + 2400;
-    cps_801293c4(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801293c4u; return;  /* fallthrough to split piece */
 }
 
 /* cps_801293c4 — clean CPS transliteration of br2eu_func_801293C4 (guest 0x801293c4)
@@ -7623,8 +7623,8 @@ void cps_801293c4(void)
 block_801293C4:
     t0 = cpu->read_word(v0);
     t1 = cpu->read_word(v0 + 4);
-    cps_801293cc(); return;  /* fallthrough to split piece */
-    cps_801293cc();  /* fallthrough to next function */
+    cpu->pc = 0x801293ccu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801293ccu; return;/* fallthrough to next function */
 }
 
 /* cps_801293cc — clean CPS transliteration of br2eu_func_801293CC (guest 0x801293cc)
@@ -7664,7 +7664,7 @@ block_801293CC:
 
 block_801293F0:
     v0 = 3;
-    cps_801293f4(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801293f4u; return;  /* fallthrough to split piece */
 }
 
 /* cps_801293f4 — clean CPS transliteration of br2eu_func_801293F4 (guest 0x801293f4)
@@ -7718,7 +7718,7 @@ block_80129434:
     v0 = v0 + 3948;
     v1 = s0 + 8664;
     a0 = s0 + 11688;
-    cps_80129444(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80129444u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80129444 — clean CPS transliteration of br2eu_func_80129444 (guest 0x80129444)
@@ -7734,8 +7734,8 @@ block_80129444:
     t0 = cpu->read_word(v1);
     t1 = cpu->read_word(v1 + 4);
     t2 = cpu->read_word(v1 + 8);
-    cps_80129450(); return;  /* fallthrough to split piece */
-    cps_80129450();  /* fallthrough to next function */
+    cpu->pc = 0x80129450u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80129450u; return;/* fallthrough to next function */
 }
 
 /* cps_80129450 — clean CPS transliteration of br2eu_func_80129450 (guest 0x80129450)
@@ -8054,7 +8054,7 @@ block_801295A0:
 
 block_801295B8:
     a1 = 1;
-    cps_801295bc(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801295bcu; return;  /* fallthrough to split piece */
 }
 
 /* cps_801295bc — clean CPS transliteration of br2eu_func_801295BC (guest 0x801295bc)
@@ -8093,7 +8093,7 @@ block_801295D0:
     v0 = cpu->read_half(s0 + 6);
     /* nop */  /* 0x801295D8: 0x00000000 */
     v0 = (v1 < v0) ? 1 : 0;  /* 0x801295DC: 0x0062102B */
-    cps_801295e0(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801295e0u; return;  /* fallthrough to split piece */
 }
 
 /* cps_801295e0 — clean CPS transliteration of br2eu_func_801295E0 (guest 0x801295e0)
@@ -8180,8 +8180,8 @@ void cps_8012960c(void)
 
 block_8012960C:
     cpu->write_half(s0 + 8, (uint16_t)v0);
-    cps_80129610(); return;  /* fallthrough to split piece */
-    cps_80129610();  /* fallthrough to next function */
+    cpu->pc = 0x80129610u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80129610u; return;/* fallthrough to next function */
 }
 
 /* cps_80129610 — clean CPS transliteration of br2eu_func_80129610 (guest 0x80129610)
@@ -8208,7 +8208,7 @@ block_80129610:
         psx_check_interrupts_at(cpu, 0x80129628u);
         cpu->pc = 0x80129628u; return;  /* CPS not taken: split */
     }
-    cps_80129628();  /* fallthrough to next function */
+    cpu->pc = 0x80129628u; return;/* fallthrough to next function */
 }
 
 /* cps_80129628 — clean CPS transliteration of br2eu_func_80129628 (guest 0x80129628)
@@ -8240,7 +8240,7 @@ block_80129628:
 
 block_8012963C:
     a0 = s0;
-    cps_80129640(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80129640u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80129640 — clean CPS transliteration of br2eu_func_80129640 (guest 0x80129640)
@@ -8400,7 +8400,7 @@ block_801296D4:
 block_801296E8:
     a0 = s1;
     v0 = cpu->read_word(a0 + 12);
-    cps_801296f0(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801296f0u; return;  /* fallthrough to split piece */
 }
 
 /* cps_801296f0 — clean CPS transliteration of br2eu_func_801296F0 (guest 0x801296f0)
@@ -8509,8 +8509,8 @@ void cps_80129778(void)
 
 block_80129778:
     a0 = s1;
-    cps_8012977c(); return;  /* fallthrough to split piece */
-    cps_8012977c();  /* fallthrough to next function */
+    cpu->pc = 0x8012977cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012977cu; return;/* fallthrough to next function */
 }
 
 /* cps_8012977c — clean CPS transliteration of br2eu_func_8012977C (guest 0x8012977c)
@@ -8538,7 +8538,7 @@ block_8012977C:
 
 block_80129784:
     a0 = s1;
-    cps_80129788(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80129788u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80129788 — clean CPS transliteration of br2eu_func_80129788 (guest 0x80129788)
@@ -8585,7 +8585,7 @@ block_8012979C:
         psx_check_interrupts_at(cpu, 0x801297B0u);
         cpu->pc = 0x801297B0u; return;  /* CPS not taken: split */
     }
-    cps_801297b0();  /* fallthrough to next function */
+    cpu->pc = 0x801297b0u; return;/* fallthrough to next function */
 }
 
 /* cps_801297b0 — clean CPS transliteration of br2eu_func_801297B0 (guest 0x801297b0)
@@ -8765,7 +8765,7 @@ block_8012987C:
         psx_check_interrupts_at(cpu, 0x80129890u);
         cpu->pc = 0x80129890u; return;  /* CPS not taken: split */
     }
-    cps_8012988c();  /* fallthrough to next function */
+    cpu->pc = 0x8012988cu; return;/* fallthrough to next function */
 }
 
 /* cps_8012988c — clean CPS transliteration of br2eu_func_8012988C (guest 0x8012988c)
@@ -8779,8 +8779,8 @@ void cps_8012988c(void)
 
 block_8012988C:
     a0 = 1024;
-    cps_80129890(); return;  /* fallthrough to split piece */
-    cps_80129890();  /* fallthrough to next function */
+    cpu->pc = 0x80129890u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80129890u; return;/* fallthrough to next function */
 }
 
 /* cps_80129890 — clean CPS transliteration of br2eu_func_80129890 (guest 0x80129890)
@@ -8831,7 +8831,7 @@ block_801298B4:
 
 block_801298B8:
     cpu->write_half(s0 + 8, (uint16_t)v0);
-    cps_801298bc(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801298bcu; return;  /* fallthrough to split piece */
 }
 
 /* cps_801298bc — clean CPS transliteration of br2eu_func_801298BC (guest 0x801298bc)
@@ -8908,8 +8908,8 @@ void cps_801298f8(void)
 
 block_801298F8:
     cpu->write_half(s0 + 8, (uint16_t)v0);
-    cps_801298fc(); return;  /* fallthrough to split piece */
-    cps_801298fc();  /* fallthrough to next function */
+    cpu->pc = 0x801298fcu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801298fcu; return;/* fallthrough to next function */
 }
 
 /* cps_801298fc — clean CPS transliteration of br2eu_func_801298FC (guest 0x801298fc)
@@ -9125,8 +9125,8 @@ void cps_80129a38(void)
 
 block_80129A38:
     cpu->write_half(s0, (uint16_t)s5);
-    cps_80129a3c(); return;  /* fallthrough to split piece */
-    cps_80129a3c();  /* fallthrough to next function */
+    cpu->pc = 0x80129a3cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80129a3cu; return;/* fallthrough to next function */
 }
 
 /* cps_80129a3c — clean CPS transliteration of br2eu_func_80129A3C (guest 0x80129a3c)
@@ -9189,7 +9189,7 @@ block_80129AC8:
 
 block_80129ADC:
     cpu->write_half(s0, (uint16_t)zero);
-    cps_80129ae0(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80129ae0u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80129ae0 — clean CPS transliteration of br2eu_func_80129AE0 (guest 0x80129ae0)
@@ -9400,8 +9400,8 @@ void cps_80129be8(void)
 
 block_80129BE8:
     a2 = zero;
-    cps_80129bec(); return;  /* fallthrough to split piece */
-    cps_80129bec();  /* fallthrough to next function */
+    cpu->pc = 0x80129becu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80129becu; return;/* fallthrough to next function */
 }
 
 /* cps_80129bec — clean CPS transliteration of br2eu_func_80129BEC (guest 0x80129bec)
@@ -9439,8 +9439,8 @@ void cps_80129c7c(void)
 
 block_80129C7C:
     a2 = zero;
-    cps_80129c80(); return;  /* fallthrough to split piece */
-    cps_80129c80();  /* fallthrough to next function */
+    cpu->pc = 0x80129c80u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80129c80u; return;/* fallthrough to next function */
 }
 
 /* cps_80129c80 — clean CPS transliteration of br2eu_func_80129C80 (guest 0x80129c80)
@@ -9477,7 +9477,7 @@ block_80129C80:
 
 block_80129C98:
     s0 = zero;
-    cps_80129c9c(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80129c9cu; return;  /* fallthrough to split piece */
 }
 
 /* cps_80129c9c — clean CPS transliteration of br2eu_func_80129C9C (guest 0x80129c9c)
@@ -9610,8 +9610,8 @@ void cps_80129d10(void)
 
 block_80129D10:
     v0 = s0;
-    cps_80129d14(); return;  /* fallthrough to split piece */
-    cps_80129d14();  /* fallthrough to next function */
+    cpu->pc = 0x80129d14u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80129d14u; return;/* fallthrough to next function */
 }
 
 /* cps_80129d14 — clean CPS transliteration of br2eu_func_80129D14 (guest 0x80129d14)
@@ -9626,8 +9626,8 @@ void cps_80129d14(void)
 block_80129D14:
     a0 = 1024;
     a1 = 11;
-    cps_80129d1c(); return;  /* fallthrough to split piece */
-    cps_80129d1c();  /* fallthrough to next function */
+    cpu->pc = 0x80129d1cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80129d1cu; return;/* fallthrough to next function */
 }
 
 /* cps_80129d1c — clean CPS transliteration of br2eu_func_80129D1C (guest 0x80129d1c)
@@ -9671,7 +9671,7 @@ block_80129D30:
     v0 = s4 << 16;
     s0 = (int32_t)v0 >> 16;
     v0 = s0;
-    cps_80129d3c(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80129d3cu; return;  /* fallthrough to split piece */
 }
 
 /* cps_80129d3c — clean CPS transliteration of br2eu_func_80129D3C (guest 0x80129d3c)
@@ -9708,8 +9708,8 @@ void cps_80129da8(void)
 
 block_80129DA8:
     a2 = zero;
-    cps_80129dac(); return;  /* fallthrough to split piece */
-    cps_80129dac();  /* fallthrough to next function */
+    cpu->pc = 0x80129dacu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80129dacu; return;/* fallthrough to next function */
 }
 
 /* cps_80129dac — clean CPS transliteration of br2eu_func_80129DAC (guest 0x80129dac)
@@ -9750,7 +9750,7 @@ block_80129DAC:
 
 block_80129DD4:
     cpu->write_byte(s0, (uint8_t)zero);
-    cps_80129dd8(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80129dd8u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80129dd8 — clean CPS transliteration of br2eu_func_80129DD8 (guest 0x80129dd8)
@@ -9865,7 +9865,7 @@ block_80129ED8:
 
 block_80129EEC:
     cpu->write_byte(s0, (uint8_t)s3);
-    cps_80129ef0(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80129ef0u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80129ef0 — clean CPS transliteration of br2eu_func_80129EF0 (guest 0x80129ef0)
@@ -10089,8 +10089,8 @@ block_8012A144:
     v0 = 200;
     cpu->write_byte(a1 + 4, (uint8_t)v0);
     cpu->write_byte(a1 + 5, (uint8_t)v0);
-    cps_8012a1e4(); return;  /* fallthrough to split piece */
-    cps_8012a1e4();  /* fallthrough to next function */
+    cpu->pc = 0x8012a1e4u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012a1e4u; return;/* fallthrough to next function */
 }
 
 /* cps_8012a1e4 — clean CPS transliteration of br2eu_func_8012A1E4 (guest 0x8012a1e4)
@@ -10170,7 +10170,7 @@ block_8012A20C:
     cpu->write_half(a1 + 14, (uint16_t)t0);
     cpu->write_half(a0 + 8, (uint16_t)v1);
     cpu->write_half(a0 + 12, (uint16_t)v1);
-    cps_8012a284(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012a284u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012a284 — clean CPS transliteration of br2eu_func_8012A284 (guest 0x8012a284)
@@ -10272,8 +10272,8 @@ block_8012A328:
     cpu->write_word(v1 + -48, v0);
     v0 = v1 + -48;
     v0 = v0 << 8;
-    cps_8012a3c8(); return;  /* fallthrough to split piece */
-    cps_8012a3c8();  /* fallthrough to next function */
+    cpu->pc = 0x8012a3c8u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012a3c8u; return;/* fallthrough to next function */
 }
 
 /* cps_8012a3c8 — clean CPS transliteration of br2eu_func_8012A3C8 (guest 0x8012a3c8)
@@ -10328,8 +10328,8 @@ block_8012A3C8:
     a0 = cpu->read_word(a2 + 8);
     /* nop */  /* 0x8012A468: 0x00000000 */
     v0 = cpu->read_word(a0);
-    cps_8012a470(); return;  /* fallthrough to split piece */
-    cps_8012a470();  /* fallthrough to next function */
+    cpu->pc = 0x8012a470u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012a470u; return;/* fallthrough to next function */
 }
 
 /* cps_8012a470 — clean CPS transliteration of br2eu_func_8012A470 (guest 0x8012a470)
@@ -10553,8 +10553,8 @@ void cps_8012a664(void)
 
 block_8012A664:
     v0 = ((int32_t)v1 < 65) ? 1 : 0;  /* 0x8012A664: 0x28620041 */
-    cps_8012a668(); return;  /* fallthrough to split piece */
-    cps_8012a668();  /* fallthrough to next function */
+    cpu->pc = 0x8012a668u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012a668u; return;/* fallthrough to next function */
 }
 
 /* cps_8012a668 — clean CPS transliteration of br2eu_func_8012A668 (guest 0x8012a668)
@@ -10670,7 +10670,7 @@ block_8012A6A4:
     v1 = v0 & 0xF9FF;  /* 0x8012A6B8: 0x3043F9FF */
     psx_check_interrupts_at(cpu, 0x8012A724u);
     cpu->pc = 0x8012A724u; return;  /* CPS j: split */
-    cps_8012a6bc();  /* fallthrough to next function */
+    cpu->pc = 0x8012a6bcu; return;/* fallthrough to next function */
 }
 
 /* cps_8012a6bc — clean CPS transliteration of br2eu_func_8012A6BC (guest 0x8012a6bc)
@@ -10802,8 +10802,8 @@ void cps_8012a720(void)
 
 block_8012A720:
     v1 = -1;
-    cps_8012a724(); return;  /* fallthrough to split piece */
-    cps_8012a724();  /* fallthrough to next function */
+    cpu->pc = 0x8012a724u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012a724u; return;/* fallthrough to next function */
 }
 
 /* cps_8012a724 — clean CPS transliteration of br2eu_func_8012A724 (guest 0x8012a724)
@@ -10981,8 +10981,8 @@ block_8012A918:
     a1 = zero;
     cpu->write_word(sp + 20, v0);
     cpu->write_word(sp + 24, s0);
-    cps_8012a92c(); return;  /* fallthrough to split piece */
-    cps_8012a92c();  /* fallthrough to next function */
+    cpu->pc = 0x8012a92cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012a92cu; return;/* fallthrough to next function */
 }
 
 /* cps_8012a92c — clean CPS transliteration of br2eu_func_8012A92C (guest 0x8012a92c)
@@ -11214,7 +11214,7 @@ block_8012A9E8:
     v1 = cpu->read_byte(s1 + 24);
     a1 = zero;
     cpu->write_word(sp + 24, s0);
-    cps_8012aa00(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012aa00u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012aa00 — clean CPS transliteration of br2eu_func_8012AA00 (guest 0x8012aa00)
@@ -11306,7 +11306,7 @@ block_8012AA44:
     cpu->write_byte(s1 + 23, (uint8_t)v0);
     psx_check_interrupts_at(cpu, 0x8012AA58u);
     cpu->pc = 0x8012AA58u; return;  /* CPS j: split */
-    cps_8012aa4c();  /* fallthrough to next function */
+    cpu->pc = 0x8012aa4cu; return;/* fallthrough to next function */
 }
 
 /* cps_8012aa4c — clean CPS transliteration of br2eu_func_8012AA4C (guest 0x8012aa4c)
@@ -11334,7 +11334,7 @@ block_8012AA4C:
 
 block_8012AA54:
     cpu->write_byte(s1 + 23, (uint8_t)zero);
-    cps_8012aa58(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012aa58u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012aa58 — clean CPS transliteration of br2eu_func_8012AA58 (guest 0x8012aa58)
@@ -11648,8 +11648,8 @@ void cps_8012abbc(void)
 
 block_8012ABBC:
     v0 = 0x1F80 << 16;  /* 0x1F800000 */
-    cps_8012abc0(); return;  /* fallthrough to split piece */
-    cps_8012abc0();  /* fallthrough to next function */
+    cpu->pc = 0x8012abc0u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012abc0u; return;/* fallthrough to next function */
 }
 
 /* cps_8012abc0 — clean CPS transliteration of br2eu_func_8012ABC0 (guest 0x8012abc0)
@@ -11684,7 +11684,7 @@ block_8012ABDC:
     v1 = cpu->read_half(s2 + 208);
     a0 = 0x801F << 16;  /* 0x801F0000 */
     cpu->write_half(a0 + -31826, (uint16_t)v0);
-    cps_8012abe8(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012abe8u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012abe8 — clean CPS transliteration of br2eu_func_8012ABE8 (guest 0x8012abe8)
@@ -11835,7 +11835,7 @@ block_8012AC6C:
 
 block_8012AC9C:
     v0 = cpu->read_byte(s2 + 158);
-    cps_8012aca0(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012aca0u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012aca0 — clean CPS transliteration of br2eu_func_8012ACA0 (guest 0x8012aca0)
@@ -11980,7 +11980,7 @@ block_8012AD48:
     v1 = a0 << 5;
     v1 = v1 + a0;
     v1 = v1 << 2;
-    cps_8012ad58(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012ad58u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012ad58 — clean CPS transliteration of br2eu_func_8012AD58 (guest 0x8012ad58)
@@ -12018,7 +12018,7 @@ block_8012AD58:
 
 block_8012AD88:
     v0 = 0x801E << 16;  /* 0x801E0000 */
-    cps_8012ad8c(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012ad8cu; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012ad8c — clean CPS transliteration of br2eu_func_8012AD8C (guest 0x8012ad8c)
@@ -12108,7 +12108,7 @@ block_8012ADC0:
 
 block_8012ADD4:
     cpu->write_word(v1 + -31820, zero);
-    cps_8012add8(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012add8u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012add8 — clean CPS transliteration of br2eu_func_8012ADD8 (guest 0x8012add8)
@@ -12212,8 +12212,8 @@ void cps_8012af90(void)
 
 block_8012AF90:
     cpu->write_half(s1 + 26, (uint16_t)v0);
-    cps_8012af94(); return;  /* fallthrough to split piece */
-    cps_8012af94();  /* fallthrough to next function */
+    cpu->pc = 0x8012af94u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012af94u; return;/* fallthrough to next function */
 }
 
 /* cps_8012af94 — clean CPS transliteration of br2eu_func_8012AF94 (guest 0x8012af94)
@@ -12298,7 +12298,7 @@ block_8012AFC8:
 
 block_8012AFD0:
     v0 = 0x1F80 << 16;  /* 0x1F800000 */
-    cps_8012afd4(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012afd4u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012afd4 — clean CPS transliteration of br2eu_func_8012AFD4 (guest 0x8012afd4)
@@ -12396,7 +12396,7 @@ block_8012B038:
     v0 = 0x801C << 16;  /* 0x801C0000 */
     s4 = v0 + -4296;
     s0 = a0 + -1;
-    cps_8012b048(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012b048u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012b048 — clean CPS transliteration of br2eu_func_8012B048 (guest 0x8012b048)
@@ -12412,8 +12412,8 @@ block_8012B048:
     v0 = s0 << 2;
     v0 = v0 + s4;
     a1 = cpu->read_word(v0);
-    cps_8012b054(); return;  /* fallthrough to split piece */
-    cps_8012b054();  /* fallthrough to next function */
+    cpu->pc = 0x8012b054u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012b054u; return;/* fallthrough to next function */
 }
 
 /* cps_8012b054 — clean CPS transliteration of br2eu_func_8012B054 (guest 0x8012b054)
@@ -12572,7 +12572,7 @@ block_8012B104:
 
 block_8012B114:
     v0 = v0 + 16544;
-    cps_8012b118(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012b118u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012b118 — clean CPS transliteration of br2eu_func_8012B118 (guest 0x8012b118)
@@ -12699,8 +12699,8 @@ void cps_8012b1dc(void)
 
 block_8012B1DC:
     cpu->write_word(s2 + 112, v0);
-    cps_8012b1e0(); return;  /* fallthrough to split piece */
-    cps_8012b1e0();  /* fallthrough to next function */
+    cpu->pc = 0x8012b1e0u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012b1e0u; return;/* fallthrough to next function */
 }
 
 /* cps_8012b1e0 — clean CPS transliteration of br2eu_func_8012B1E0 (guest 0x8012b1e0)
@@ -12767,7 +12767,7 @@ block_8012B210:
 
 block_8012B218:
     ra = cpu->read_word(sp + 40);
-    cps_8012b21c(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012b21cu; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012b21c — clean CPS transliteration of br2eu_func_8012B21C (guest 0x8012b21c)
@@ -12905,7 +12905,7 @@ block_8012B2F4:
 
 block_8012B2FC:
     v0 = 0x1F80 << 16;  /* 0x1F800000 */
-    cps_8012b300(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012b300u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012b300 — clean CPS transliteration of br2eu_func_8012B300 (guest 0x8012b300)
@@ -13001,7 +13001,7 @@ block_8012B354:
 block_8012B364:
     s3 = v0 + 17712;
     v0 = 0x801C << 16;  /* 0x801C0000 */
-    cps_8012b36c(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012b36cu; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012b36c — clean CPS transliteration of br2eu_func_8012B36C (guest 0x8012b36c)
@@ -13150,7 +13150,7 @@ block_8012B430:
 
 block_8012B434:
     v0 = v0 + 16544;
-    cps_8012b438(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012b438u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012b438 — clean CPS transliteration of br2eu_func_8012B438 (guest 0x8012b438)
@@ -13466,7 +13466,7 @@ block_8012B68C:
     v1 = (int32_t)(int8_t)cpu->read_byte(a0 + 2);
     v0 = v0 + -1;
     v1 = ((int32_t)v1 < (int32_t)v0) ? 1 : 0;  /* 0x8012B6A0: 0x0062182A */
-    cps_8012b6a4(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012b6a4u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012b6a4 — clean CPS transliteration of br2eu_func_8012B6A4 (guest 0x8012b6a4)
@@ -13507,7 +13507,7 @@ block_8012B6B0:
 
 block_8012B6B8:
     cpu->write_byte(a0 + 2, (uint8_t)v0);
-    cps_8012b6bc(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012b6bcu; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012b6bc — clean CPS transliteration of br2eu_func_8012B6BC (guest 0x8012b6bc)
@@ -13580,7 +13580,7 @@ block_8012B6F8:
 
 block_8012B6FC:
     cpu->write_byte(v1 + 2, (uint8_t)v0);
-    cps_8012b700(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012b700u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012b700 — clean CPS transliteration of br2eu_func_8012B700 (guest 0x8012b700)
@@ -13696,7 +13696,7 @@ block_8012B768:
     v1 = cpu->read_word(s0 + 132);
     v0 = -10;
     cpu->write_byte(v1, (uint8_t)v0);
-    cps_8012b778(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012b778u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012b778 — clean CPS transliteration of br2eu_func_8012B778 (guest 0x8012b778)
@@ -13758,7 +13758,7 @@ block_8012B7A4:
     cpu->write_half(s0 + 130, (uint16_t)v1);
     psx_check_interrupts_at(cpu, 0x8012B7ECu);
     cpu->pc = 0x8012B7ECu; return;  /* CPS j: split */
-    cps_8012b7cc();  /* fallthrough to next function */
+    cpu->pc = 0x8012b7ccu; return;/* fallthrough to next function */
 }
 
 /* cps_8012b7cc — clean CPS transliteration of br2eu_func_8012B7CC (guest 0x8012b7cc)
@@ -13800,7 +13800,7 @@ block_8012B7DC:
 
 block_8012B7E8:
     cpu->write_half(s0 + 130, (uint16_t)v0);
-    cps_8012b7ec(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012b7ecu; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012b7ec — clean CPS transliteration of br2eu_func_8012B7EC (guest 0x8012b7ec)
@@ -13814,8 +13814,8 @@ void cps_8012b7ec(void)
 
 block_8012B7EC:
     v0 = zero;
-    cps_8012b7f0(); return;  /* fallthrough to split piece */
-    cps_8012b7f0();  /* fallthrough to next function */
+    cpu->pc = 0x8012b7f0u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012b7f0u; return;/* fallthrough to next function */
 }
 
 /* cps_8012b7f0 — clean CPS transliteration of br2eu_func_8012B7F0 (guest 0x8012b7f0)
@@ -13882,8 +13882,8 @@ block_8012B834:
     cpu->write_byte(a0 + 20, (uint8_t)a3);
     cpu->write_byte(a0 + 21, (uint8_t)a2);
     cpu->write_byte(a0 + 28, (uint8_t)a1);
-    cps_8012b850(); return;  /* fallthrough to split piece */
-    cps_8012b850();  /* fallthrough to next function */
+    cpu->pc = 0x8012b850u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012b850u; return;/* fallthrough to next function */
 }
 
 /* cps_8012b850 — clean CPS transliteration of br2eu_func_8012B850 (guest 0x8012b850)
@@ -14027,7 +14027,7 @@ block_8012B8F0:
     cpu->write_byte(t0 + 12, (uint8_t)v0);
     v0 = cpu->read_byte(v1 + 1);
     /* nop */  /* 0x8012B924: 0x00000000 */
-    cps_8012b928(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012b928u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012b928 — clean CPS transliteration of br2eu_func_8012B928 (guest 0x8012b928)
@@ -14143,8 +14143,8 @@ void cps_8012bae0(void)
 
 block_8012BAE0:
     v0 = ((int32_t)v1 < 8193) ? 1 : 0;  /* 0x8012BAE0: 0x28622001 */
-    cps_8012bae4(); return;  /* fallthrough to split piece */
-    cps_8012bae4();  /* fallthrough to next function */
+    cpu->pc = 0x8012bae4u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012bae4u; return;/* fallthrough to next function */
 }
 
 /* cps_8012bae4 — clean CPS transliteration of br2eu_func_8012BAE4 (guest 0x8012bae4)
@@ -14326,7 +14326,7 @@ block_8012BB50:
     v1 = 1;
     psx_check_interrupts_at(cpu, 0x8012BB8Cu);
     cpu->pc = 0x8012BB8Cu; return;  /* CPS j: split */
-    cps_8012bb58();  /* fallthrough to next function */
+    cpu->pc = 0x8012bb58u; return;/* fallthrough to next function */
 }
 
 /* cps_8012bb58 — clean CPS transliteration of br2eu_func_8012BB58 (guest 0x8012bb58)
@@ -14343,7 +14343,7 @@ block_8012BB58:
     v1 = 2;
     psx_check_interrupts_at(cpu, 0x8012BB8Cu);
     cpu->pc = 0x8012BB8Cu; return;  /* CPS j: split */
-    cps_8012bb60();  /* fallthrough to next function */
+    cpu->pc = 0x8012bb60u; return;/* fallthrough to next function */
 }
 
 /* cps_8012bb60 — clean CPS transliteration of br2eu_func_8012BB60 (guest 0x8012bb60)
@@ -14360,7 +14360,7 @@ block_8012BB60:
     v1 = 3;
     psx_check_interrupts_at(cpu, 0x8012BB8Cu);
     cpu->pc = 0x8012BB8Cu; return;  /* CPS j: split */
-    cps_8012bb68();  /* fallthrough to next function */
+    cpu->pc = 0x8012bb68u; return;/* fallthrough to next function */
 }
 
 /* cps_8012bb68 — clean CPS transliteration of br2eu_func_8012BB68 (guest 0x8012bb68)
@@ -14377,7 +14377,7 @@ block_8012BB68:
     v1 = 4;
     psx_check_interrupts_at(cpu, 0x8012BB8Cu);
     cpu->pc = 0x8012BB8Cu; return;  /* CPS j: split */
-    cps_8012bb70();  /* fallthrough to next function */
+    cpu->pc = 0x8012bb70u; return;/* fallthrough to next function */
 }
 
 /* cps_8012bb70 — clean CPS transliteration of br2eu_func_8012BB70 (guest 0x8012bb70)
@@ -14394,7 +14394,7 @@ block_8012BB70:
     v1 = 5;
     psx_check_interrupts_at(cpu, 0x8012BB8Cu);
     cpu->pc = 0x8012BB8Cu; return;  /* CPS j: split */
-    cps_8012bb78();  /* fallthrough to next function */
+    cpu->pc = 0x8012bb78u; return;/* fallthrough to next function */
 }
 
 /* cps_8012bb78 — clean CPS transliteration of br2eu_func_8012BB78 (guest 0x8012bb78)
@@ -14411,7 +14411,7 @@ block_8012BB78:
     v1 = 6;
     psx_check_interrupts_at(cpu, 0x8012BB8Cu);
     cpu->pc = 0x8012BB8Cu; return;  /* CPS j: split */
-    cps_8012bb80();  /* fallthrough to next function */
+    cpu->pc = 0x8012bb80u; return;/* fallthrough to next function */
 }
 
 /* cps_8012bb80 — clean CPS transliteration of br2eu_func_8012BB80 (guest 0x8012bb80)
@@ -14428,7 +14428,7 @@ block_8012BB80:
     v1 = 7;
     psx_check_interrupts_at(cpu, 0x8012BB8Cu);
     cpu->pc = 0x8012BB8Cu; return;  /* CPS j: split */
-    cps_8012bb88();  /* fallthrough to next function */
+    cpu->pc = 0x8012bb88u; return;/* fallthrough to next function */
 }
 
 /* cps_8012bb88 — clean CPS transliteration of br2eu_func_8012BB88 (guest 0x8012bb88)
@@ -14442,8 +14442,8 @@ void cps_8012bb88(void)
 
 block_8012BB88:
     v1 = 8;
-    cps_8012bb8c(); return;  /* fallthrough to split piece */
-    cps_8012bb8c();  /* fallthrough to next function */
+    cpu->pc = 0x8012bb8cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012bb8cu; return;/* fallthrough to next function */
 }
 
 /* cps_8012bb8c — clean CPS transliteration of br2eu_func_8012BB8C (guest 0x8012bb8c)
@@ -14457,8 +14457,8 @@ void cps_8012bb8c(void)
 
 block_8012BB8C:
     v0 = t7 & 0x0010;  /* 0x8012BB8C: 0x31E20010 */
-    cps_8012bb90(); return;  /* fallthrough to split piece */
-    cps_8012bb90();  /* fallthrough to next function */
+    cpu->pc = 0x8012bb90u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012bb90u; return;/* fallthrough to next function */
 }
 
 /* cps_8012bb90 — clean CPS transliteration of br2eu_func_8012BB90 (guest 0x8012bb90)
@@ -14533,7 +14533,7 @@ block_8012BBB0:
     a3 = cpu->read_half(t1);
     t2 = cpu->read_half(t1 + 2);
     v0 = 46;
-    cps_8012bbc0(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012bbc0u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012bbc0 — clean CPS transliteration of br2eu_func_8012BBC0 (guest 0x8012bbc0)
@@ -14649,7 +14649,7 @@ block_8012BC68:
     cpu->write_word(t0, v0);
     v0 = t0 << 8;
     v0 = (uint32_t)v0 >> 8;
-    cps_8012bca4(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012bca4u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012bca4 — clean CPS transliteration of br2eu_func_8012BCA4 (guest 0x8012bca4)
@@ -14710,8 +14710,8 @@ block_8012BCD4:
     /* nop */  /* 0x8012BCD8: 0x00000000 */
     v0 = v0 + t5;
     cpu->write_half(t1, (uint16_t)v0);
-    cps_8012bce4(); return;  /* fallthrough to split piece */
-    cps_8012bce4();  /* fallthrough to next function */
+    cpu->pc = 0x8012bce4u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012bce4u; return;/* fallthrough to next function */
 }
 
 /* cps_8012bce4 — clean CPS transliteration of br2eu_func_8012BCE4 (guest 0x8012bce4)
@@ -14934,7 +14934,7 @@ block_8012BD88:
     v1 = 5;
     psx_check_interrupts_at(cpu, 0x8012BD9Cu);
     cpu->pc = 0x8012BD9Cu; return;  /* CPS j: split */
-    cps_8012bd90();  /* fallthrough to next function */
+    cpu->pc = 0x8012bd90u; return;/* fallthrough to next function */
 }
 
 /* cps_8012bd90 — clean CPS transliteration of br2eu_func_8012BD90 (guest 0x8012bd90)
@@ -14951,7 +14951,7 @@ block_8012BD90:
     v1 = 6;
     psx_check_interrupts_at(cpu, 0x8012BD9Cu);
     cpu->pc = 0x8012BD9Cu; return;  /* CPS j: split */
-    cps_8012bd98();  /* fallthrough to next function */
+    cpu->pc = 0x8012bd98u; return;/* fallthrough to next function */
 }
 
 /* cps_8012bd98 — clean CPS transliteration of br2eu_func_8012BD98 (guest 0x8012bd98)
@@ -14965,8 +14965,8 @@ void cps_8012bd98(void)
 
 block_8012BD98:
     v1 = 7;
-    cps_8012bd9c(); return;  /* fallthrough to split piece */
-    cps_8012bd9c();  /* fallthrough to next function */
+    cpu->pc = 0x8012bd9cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012bd9cu; return;/* fallthrough to next function */
 }
 
 /* cps_8012bd9c — clean CPS transliteration of br2eu_func_8012BD9C (guest 0x8012bd9c)
@@ -14980,8 +14980,8 @@ void cps_8012bd9c(void)
 
 block_8012BD9C:
     a0 = t7 & 0x0001;  /* 0x8012BD9C: 0x31E40001 */
-    cps_8012bda0(); return;  /* fallthrough to split piece */
-    cps_8012bda0();  /* fallthrough to next function */
+    cpu->pc = 0x8012bda0u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012bda0u; return;/* fallthrough to next function */
 }
 
 /* cps_8012bda0 — clean CPS transliteration of br2eu_func_8012BDA0 (guest 0x8012bda0)
@@ -15147,7 +15147,7 @@ block_8012BE18:
     a0 = t4;
     v0 = v0 + a0;
     cpu->write_byte(t0 + 29, (uint8_t)v0);
-    cps_8012be70(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012be70u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012be70 — clean CPS transliteration of br2eu_func_8012BE70 (guest 0x8012be70)
@@ -15169,8 +15169,8 @@ block_8012BE70:
     v0 = v0 + a0;
     cpu->write_byte(t0 + 37, (uint8_t)v0);
     v1 = a3 + t5;
-    cps_8012be94(); return;  /* fallthrough to split piece */
-    cps_8012be94();  /* fallthrough to next function */
+    cpu->pc = 0x8012be94u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012be94u; return;/* fallthrough to next function */
 }
 
 /* cps_8012be94 — clean CPS transliteration of br2eu_func_8012BE94 (guest 0x8012be94)
@@ -15203,8 +15203,8 @@ block_8012BE94:
     /* nop */  /* 0x8012BED8: 0x00000000 */
     v0 = v0 + 1;
     cpu->write_half(t1 + 4, (uint16_t)v0);
-    cps_8012bee4(); return;  /* fallthrough to split piece */
-    cps_8012bee4();  /* fallthrough to next function */
+    cpu->pc = 0x8012bee4u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012bee4u; return;/* fallthrough to next function */
 }
 
 /* cps_8012bee4 — clean CPS transliteration of br2eu_func_8012BEE4 (guest 0x8012bee4)
@@ -15221,8 +15221,8 @@ block_8012BEE4:
     /* nop */  /* 0x8012BEE8: 0x00000000 */
     v0 = v0 + t5;
     cpu->write_half(t1, (uint16_t)v0);
-    cps_8012bef4(); return;  /* fallthrough to split piece */
-    cps_8012bef4();  /* fallthrough to next function */
+    cpu->pc = 0x8012bef4u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012bef4u; return;/* fallthrough to next function */
 }
 
 /* cps_8012bef4 — clean CPS transliteration of br2eu_func_8012BEF4 (guest 0x8012bef4)
@@ -15239,8 +15239,8 @@ block_8012BEF4:
     v0 = zero;
     v1 = v1 + 8;
     cpu->write_half(t1, (uint16_t)v1);
-    cps_8012bf04(); return;  /* fallthrough to split piece */
-    cps_8012bf04();  /* fallthrough to next function */
+    cpu->pc = 0x8012bf04u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012bf04u; return;/* fallthrough to next function */
 }
 
 /* cps_8012bf04 — clean CPS transliteration of br2eu_func_8012BF04 (guest 0x8012bf04)
@@ -15357,7 +15357,7 @@ block_8012BFE4:
     s7 = v0 + s6;
     s0 = s1 << 16;
     v0 = 7;
-    cps_8012c008(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012c008u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012c008 — clean CPS transliteration of br2eu_func_8012C008 (guest 0x8012c008)
@@ -15444,7 +15444,7 @@ block_8012C048:
         psx_check_interrupts_at(cpu, 0x8012C06Cu);
         cpu->pc = 0x8012C06Cu; return;  /* CPS not taken: split */
     }
-    cps_8012c06c();  /* fallthrough to next function */
+    cpu->pc = 0x8012c06cu; return;/* fallthrough to next function */
 }
 
 /* cps_8012c06c — clean CPS transliteration of br2eu_func_8012C06C (guest 0x8012c06c)
@@ -15502,8 +15502,8 @@ block_8012C138:
     v1 = 0x801E << 16;  /* 0x801E0000 */
     v0 = 0x800D << 16;  /* 0x800D0000 */
     cpu->write_word(v1 + 15612, v0);
-    cps_8012c168(); return;  /* fallthrough to split piece */
-    cps_8012c168();  /* fallthrough to next function */
+    cpu->pc = 0x8012c168u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012c168u; return;/* fallthrough to next function */
 }
 
 /* cps_8012c168 — clean CPS transliteration of br2eu_func_8012C168 (guest 0x8012c168)
@@ -15679,7 +15679,7 @@ block_8012C210:
 
 block_8012C224:
     s2 = 0x801E << 16;  /* 0x801E0000 */
-    cps_8012c228(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012c228u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012c228 — clean CPS transliteration of br2eu_func_8012C228 (guest 0x8012c228)
@@ -15900,7 +15900,7 @@ block_8012C2E8:
 
 block_8012C2F0:
     s1 = 0x801E << 16;  /* 0x801E0000 */
-    cps_8012c2f4(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012c2f4u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012c2f4 — clean CPS transliteration of br2eu_func_8012C2F4 (guest 0x8012c2f4)
@@ -15953,7 +15953,7 @@ block_8012C308:
 block_8012C318:
     a1 = zero;
     a2 = 480;
-    cps_8012c320(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012c320u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012c320 — clean CPS transliteration of br2eu_func_8012C320 (guest 0x8012c320)
@@ -15982,7 +15982,7 @@ block_8012C320:
 
 block_8012C32C:
     a0 = zero;
-    cps_8012c330(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012c330u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012c330 — clean CPS transliteration of br2eu_func_8012C330 (guest 0x8012c330)
@@ -16036,8 +16036,8 @@ void cps_8012c350(void)
 
 block_8012C350:
     cpu->write_half(s3 + 140, (uint16_t)s0);
-    cps_8012c354(); return;  /* fallthrough to split piece */
-    cps_8012c354();  /* fallthrough to next function */
+    cpu->pc = 0x8012c354u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012c354u; return;/* fallthrough to next function */
 }
 
 /* cps_8012c354 — clean CPS transliteration of br2eu_func_8012C354 (guest 0x8012c354)
@@ -16051,8 +16051,8 @@ void cps_8012c354(void)
 
 block_8012C354:
     v0 = zero;
-    cps_8012c358(); return;  /* fallthrough to split piece */
-    cps_8012c358();  /* fallthrough to next function */
+    cpu->pc = 0x8012c358u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012c358u; return;/* fallthrough to next function */
 }
 
 /* cps_8012c358 — clean CPS transliteration of br2eu_func_8012C358 (guest 0x8012c358)
@@ -16179,7 +16179,7 @@ block_8012C4E8:
     s7 = zero;
     s5 = 128;
     s6 = 32;
-    cps_8012c4f8(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012c4f8u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012c4f8 — clean CPS transliteration of br2eu_func_8012C4F8 (guest 0x8012c4f8)
@@ -16193,8 +16193,8 @@ void cps_8012c4f8(void)
 
 block_8012C4F8:
     s3 = zero;
-    cps_8012c4fc(); return;  /* fallthrough to split piece */
-    cps_8012c4fc();  /* fallthrough to next function */
+    cpu->pc = 0x8012c4fcu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012c4fcu; return;/* fallthrough to next function */
 }
 
 /* cps_8012c4fc — clean CPS transliteration of br2eu_func_8012C4FC (guest 0x8012c4fc)
@@ -16251,8 +16251,8 @@ void cps_8012c510(void)
 
 block_8012C510:
     v0 = 48;
-    cps_8012c514(); return;  /* fallthrough to split piece */
-    cps_8012c514();  /* fallthrough to next function */
+    cpu->pc = 0x8012c514u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012c514u; return;/* fallthrough to next function */
 }
 
 /* cps_8012c514 — clean CPS transliteration of br2eu_func_8012C514 (guest 0x8012c514)
@@ -16676,7 +16676,7 @@ block_8012C7F8:
 
 block_8012C820:
     a1 = s2;
-    cps_8012c824(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012c824u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012c824 — clean CPS transliteration of br2eu_func_8012C824 (guest 0x8012c824)
@@ -16935,7 +16935,7 @@ block_8012CA68:
     a2 = a2 | 0x001E;
     a3 = 0x7A96 << 16;  /* 0x7A960000 */
     a3 = a3 | 0x8080;
-    cps_8012ca84(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012ca84u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012ca84 — clean CPS transliteration of br2eu_func_8012CA84 (guest 0x8012ca84)
@@ -16999,7 +16999,7 @@ block_8012CAC0:
 
 block_8012CAEC:
     a0 = s0;
-    cps_8012caf0(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012caf0u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012caf0 — clean CPS transliteration of br2eu_func_8012CAF0 (guest 0x8012caf0)
@@ -17059,7 +17059,7 @@ block_8012CB28:
 
 block_8012CB60:
     a0 = s0;
-    cps_8012cb64(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012cb64u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012cb64 — clean CPS transliteration of br2eu_func_8012CB64 (guest 0x8012cb64)
@@ -17081,8 +17081,8 @@ block_8012CB64:
     cpu->write_word(sp + 28, zero);
     cpu->write_word(sp + 32, fp);
     cpu->write_word(sp + 36, zero);
-    cps_8012cb88(); return;  /* fallthrough to split piece */
-    cps_8012cb88();  /* fallthrough to next function */
+    cpu->pc = 0x8012cb88u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012cb88u; return;/* fallthrough to next function */
 }
 
 /* cps_8012cb88 — clean CPS transliteration of br2eu_func_8012CB88 (guest 0x8012cb88)
@@ -17251,7 +17251,7 @@ block_8012F19C:
     a0 = 0x8012 << 16;  /* 0x80120000 */
     a1 = 0x1F80 << 16;  /* 0x1F800000 */
     a1 = (int32_t)(int16_t)cpu->read_half(a1 + 36);
-    cps_8012f1b0(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012f1b0u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012f1b0 — clean CPS transliteration of br2eu_func_8012F1B0 (guest 0x8012f1b0)
@@ -17402,8 +17402,8 @@ void cps_8012fb54(void)
 
 block_8012FB54:
     s6 = a3;
-    cps_8012fb58(); return;  /* fallthrough to split piece */
-    cps_8012fb58();  /* fallthrough to next function */
+    cpu->pc = 0x8012fb58u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012fb58u; return;/* fallthrough to next function */
 }
 
 /* cps_8012fb58 — clean CPS transliteration of br2eu_func_8012FB58 (guest 0x8012fb58)
@@ -17622,7 +17622,7 @@ block_8012FC8C:
     cpu->write_half(s1 + 62, (uint16_t)a3);
     cpu->write_half(s1 + 32, (uint16_t)t0);
     cpu->write_half(s1 + 34, (uint16_t)t1);
-    cps_8012fcd0(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012fcd0u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012fcd0 — clean CPS transliteration of br2eu_func_8012FCD0 (guest 0x8012fcd0)
@@ -17650,7 +17650,7 @@ block_8012FCD0:
 block_8012FCD8:
     v1 = (int32_t)(int8_t)cpu->read_byte(s1 + 128);
     /* nop */  /* 0x8012FCDC: 0x00000000 */
-    cps_8012fce0(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8012fce0u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012fce0 — clean CPS transliteration of br2eu_func_8012FCE0 (guest 0x8012fce0)
@@ -22422,7 +22422,7 @@ block_80131F30:
     cpu->write_half(s1 + 32, (uint16_t)v0);
     cpu->write_half(s1 + 34, (uint16_t)v1);
     cpu->write_half(s1 + 36, (uint16_t)a0);
-    cps_80131f48(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80131f48u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80131f48 — clean CPS transliteration of br2eu_func_80131F48 (guest 0x80131f48)
@@ -22436,8 +22436,8 @@ void cps_80131f48(void)
 
 block_80131F48:
     v1 = 0x68DB << 16;  /* 0x68DB0000 */
-    cps_80131f4c(); return;  /* fallthrough to split piece */
-    cps_80131f4c();  /* fallthrough to next function */
+    cpu->pc = 0x80131f4cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80131f4cu; return;/* fallthrough to next function */
 }
 
 /* cps_80131f4c — clean CPS transliteration of br2eu_func_80131F4C (guest 0x80131f4c)
@@ -22602,8 +22602,8 @@ void cps_80132864(void)
 
 block_80132864:
     a2 = a2 | 0x039C;
-    cps_80132868(); return;  /* fallthrough to split piece */
-    cps_80132868();  /* fallthrough to next function */
+    cpu->pc = 0x80132868u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80132868u; return;/* fallthrough to next function */
 }
 
 /* cps_80132868 — clean CPS transliteration of br2eu_func_80132868 (guest 0x80132868)
@@ -22848,7 +22848,7 @@ block_80132994:
 block_801329A0:
     v0 = cpu->read_half(s5 + 36);
     /* nop */  /* 0x801329A4: 0x00000000 */
-    cps_801329a8(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801329a8u; return;  /* fallthrough to split piece */
 }
 
 /* cps_801329a8 — clean CPS transliteration of br2eu_func_801329A8 (guest 0x801329a8)
@@ -22862,8 +22862,8 @@ void cps_801329a8(void)
 
 block_801329A8:
     v0 = s3 - v0;
-    cps_801329ac(); return;  /* fallthrough to split piece */
-    cps_801329ac();  /* fallthrough to next function */
+    cpu->pc = 0x801329acu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801329acu; return;/* fallthrough to next function */
 }
 
 /* cps_801329ac — clean CPS transliteration of br2eu_func_801329AC (guest 0x801329ac)
@@ -22927,8 +22927,8 @@ block_80132B50:
     v1 = (int32_t)a3 >> 16;
     v0 = v0 + v1;
     cpu->write_half(s2 + 78, (uint16_t)v0);
-    cps_80132ba0(); return;  /* fallthrough to split piece */
-    cps_80132ba0();  /* fallthrough to next function */
+    cpu->pc = 0x80132ba0u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80132ba0u; return;/* fallthrough to next function */
 }
 
 /* cps_80132ba0 — clean CPS transliteration of br2eu_func_80132BA0 (guest 0x80132ba0)
@@ -23447,7 +23447,7 @@ block_80133140:
     cpu->write_half(s2 + 94, (uint16_t)a0);
     cpu->write_half(s2 + 96, (uint16_t)a1);
     cpu->write_half(s2 + 120, (uint16_t)v0);
-    cps_80133164(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80133164u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80133164 — clean CPS transliteration of br2eu_func_80133164 (guest 0x80133164)
@@ -23756,8 +23756,8 @@ block_80133428:
     /* nop */  /* 0x80133448: 0x00000000 */
     { int64_t result = (int64_t)(int32_t)v0 * (int64_t)(int32_t)s3; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
     psx_muldiv_set(cpu, psx_mult_latency_s(v0));
-    cps_80133450(); return;  /* fallthrough to split piece */
-    cps_80133450();  /* fallthrough to next function */
+    cpu->pc = 0x80133450u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80133450u; return;/* fallthrough to next function */
 }
 
 /* cps_80133450 — clean CPS transliteration of br2eu_func_80133450 (guest 0x80133450)
@@ -23774,8 +23774,8 @@ block_80133450:
     a3 = cpu->lo;
     psx_muldiv_stall(cpu);
     v1 = (int32_t)a3 >> 12;
-    cps_8013345c(); return;  /* fallthrough to split piece */
-    cps_8013345c();  /* fallthrough to next function */
+    cpu->pc = 0x8013345cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013345cu; return;/* fallthrough to next function */
 }
 
 /* cps_8013345c — clean CPS transliteration of br2eu_func_8013345C (guest 0x8013345c)
@@ -23801,8 +23801,8 @@ block_8013345C:
     v0 = v0 + v1;
     cpu->write_half(s2 + 78, (uint16_t)v0);
     s1 = s7 - s6;
-    cps_80133488(); return;  /* fallthrough to split piece */
-    cps_80133488();  /* fallthrough to next function */
+    cpu->pc = 0x80133488u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80133488u; return;/* fallthrough to next function */
 }
 
 /* cps_80133488 — clean CPS transliteration of br2eu_func_80133488 (guest 0x80133488)
@@ -23964,8 +23964,8 @@ void cps_80133550(void)
 
 block_80133550:
     v0 = v0 + 7;
-    cps_80133554(); return;  /* fallthrough to split piece */
-    cps_80133554();  /* fallthrough to next function */
+    cpu->pc = 0x80133554u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80133554u; return;/* fallthrough to next function */
 }
 
 /* cps_80133554 — clean CPS transliteration of br2eu_func_80133554 (guest 0x80133554)
@@ -24014,7 +24014,7 @@ block_80133564:
 
 block_80133574:
     v0 = ((int32_t)s1 < 1025) ? 1 : 0;  /* 0x80133574: 0x2A220401 */
-    cps_80133578(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80133578u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80133578 — clean CPS transliteration of br2eu_func_80133578 (guest 0x80133578)
@@ -24048,7 +24048,7 @@ block_80133578:
 block_80133580:
     v0 = 2048;
     s1 = v0 - s1;
-    cps_80133588(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80133588u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80133588 — clean CPS transliteration of br2eu_func_80133588 (guest 0x80133588)
@@ -24062,8 +24062,8 @@ void cps_80133588(void)
 
 block_80133588:
     v1 = s1 << 1;
-    cps_8013358c(); return;  /* fallthrough to split piece */
-    cps_8013358c();  /* fallthrough to next function */
+    cpu->pc = 0x8013358cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013358cu; return;/* fallthrough to next function */
 }
 
 /* cps_8013358c — clean CPS transliteration of br2eu_func_8013358C (guest 0x8013358c)
@@ -24504,7 +24504,7 @@ block_8013379C:
         psx_check_interrupts_at(cpu, 0x801337ACu);
         cpu->pc = 0x801337ACu; return;  /* CPS not taken: split */
     }
-    cps_801337ac();  /* fallthrough to next function */
+    cpu->pc = 0x801337acu; return;/* fallthrough to next function */
 }
 
 /* cps_801337ac — clean CPS transliteration of br2eu_func_801337AC (guest 0x801337ac)
@@ -24680,7 +24680,7 @@ block_801338AC:
     cpu->write_half(a0, (uint16_t)v0);
     psx_check_interrupts_at(cpu, 0x801338B8u);
     cpu->pc = 0x801338B8u; return;  /* CPS j: split */
-    cps_801338b4();  /* fallthrough to next function */
+    cpu->pc = 0x801338b4u; return;/* fallthrough to next function */
 }
 
 /* cps_801338b4 — clean CPS transliteration of br2eu_func_801338B4 (guest 0x801338b4)
@@ -24694,8 +24694,8 @@ void cps_801338b4(void)
 
 block_801338B4:
     cpu->write_half(a0, (uint16_t)a1);
-    cps_801338b8(); return;  /* fallthrough to split piece */
-    cps_801338b8();  /* fallthrough to next function */
+    cpu->pc = 0x801338b8u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801338b8u; return;/* fallthrough to next function */
 }
 
 /* cps_801338b8 — clean CPS transliteration of br2eu_func_801338B8 (guest 0x801338b8)
@@ -24709,8 +24709,8 @@ void cps_801338b8(void)
 
 block_801338B8:
     v0 = t0 << 16;
-    cps_801338bc(); return;  /* fallthrough to split piece */
-    cps_801338bc();  /* fallthrough to next function */
+    cpu->pc = 0x801338bcu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801338bcu; return;/* fallthrough to next function */
 }
 
 /* cps_801338bc — clean CPS transliteration of br2eu_func_801338BC (guest 0x801338bc)
@@ -24741,8 +24741,8 @@ void cps_801338fc(void)
 
 block_801338FC:
     /* nop */  /* 0x801338FC: 0x00000000 */
-    cps_80133900(); return;  /* fallthrough to split piece */
-    cps_80133900();  /* fallthrough to next function */
+    cpu->pc = 0x80133900u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80133900u; return;/* fallthrough to next function */
 }
 
 /* cps_80133900 — clean CPS transliteration of br2eu_func_80133900 (guest 0x80133900)
@@ -24760,7 +24760,7 @@ block_80133900:
     a3 = a3 + a1;
     psx_check_interrupts_at(cpu, 0x8013392Cu);
     cpu->pc = 0x8013392Cu; return;  /* CPS j: split */
-    cps_8013390c();  /* fallthrough to next function */
+    cpu->pc = 0x8013390cu; return;/* fallthrough to next function */
 }
 
 /* cps_8013390c — clean CPS transliteration of br2eu_func_8013390C (guest 0x8013390c)
@@ -24812,8 +24812,8 @@ void cps_80133928(void)
 
 block_80133928:
     a3 = v1;
-    cps_8013392c(); return;  /* fallthrough to split piece */
-    cps_8013392c();  /* fallthrough to next function */
+    cpu->pc = 0x8013392cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013392cu; return;/* fallthrough to next function */
 }
 
 /* cps_8013392c — clean CPS transliteration of br2eu_func_8013392C (guest 0x8013392c)
@@ -24915,7 +24915,7 @@ block_80133CDC:
 block_80133CE0:
     v0 = (int32_t)(int16_t)cpu->read_half(sp + 50);
     /* nop */  /* 0x80133CE4: 0x00000000 */
-    cps_80133ce8(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80133ce8u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80133ce8 — clean CPS transliteration of br2eu_func_80133CE8 (guest 0x80133ce8)
@@ -25035,8 +25035,8 @@ block_80133D68:
     cpu->write_half(sp + 52, (uint16_t)zero);
     cpu->write_half(sp + 50, (uint16_t)zero);
     cpu->write_half(sp + 48, (uint16_t)zero);
-    cps_80133d74(); return;  /* fallthrough to split piece */
-    cps_80133d74();  /* fallthrough to next function */
+    cpu->pc = 0x80133d74u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80133d74u; return;/* fallthrough to next function */
 }
 
 /* cps_80133d74 — clean CPS transliteration of br2eu_func_80133D74 (guest 0x80133d74)
@@ -25090,8 +25090,8 @@ block_80133EBC:
     /* nop */  /* 0x80133EE4: 0x00000000 */
     v0 = v0 + v1;
     cpu->write_half(s1 + 4, (uint16_t)v0);
-    cps_80133ef0(); return;  /* fallthrough to split piece */
-    cps_80133ef0();  /* fallthrough to next function */
+    cpu->pc = 0x80133ef0u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80133ef0u; return;/* fallthrough to next function */
 }
 
 /* cps_80133ef0 — clean CPS transliteration of br2eu_func_80133EF0 (guest 0x80133ef0)
@@ -25143,7 +25143,7 @@ block_80134080:
     cpu->write_half(s0 + 4, (uint16_t)v0);
     psx_check_interrupts_at(cpu, 0x801340B4u);
     cpu->pc = 0x801340B4u; return;  /* CPS j: split */
-    cps_801340a8();  /* fallthrough to next function */
+    cpu->pc = 0x801340a8u; return;/* fallthrough to next function */
 }
 
 /* cps_801340a8 — clean CPS transliteration of br2eu_func_801340A8 (guest 0x801340a8)
@@ -25159,8 +25159,8 @@ block_801340A8:
     cpu->write_half(sp + 20, (uint16_t)zero);
     cpu->write_half(sp + 18, (uint16_t)zero);
     cpu->write_half(sp + 16, (uint16_t)zero);
-    cps_801340b4(); return;  /* fallthrough to split piece */
-    cps_801340b4();  /* fallthrough to next function */
+    cpu->pc = 0x801340b4u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801340b4u; return;/* fallthrough to next function */
 }
 
 /* cps_801340b4 — clean CPS transliteration of br2eu_func_801340B4 (guest 0x801340b4)
@@ -25177,8 +25177,8 @@ block_801340B4:
     t0 = br2_lwl(cpu, sp + 19, t0);
     t0 = br2_lwr(cpu, sp + 16, t0);
     t1 = br2_lwl(cpu, sp + 23, t1);
-    cps_801340c4(); return;  /* fallthrough to split piece */
-    cps_801340c4();  /* fallthrough to next function */
+    cpu->pc = 0x801340c4u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801340c4u; return;/* fallthrough to next function */
 }
 
 /* cps_801340c4 — clean CPS transliteration of br2eu_func_801340C4 (guest 0x801340c4)
@@ -26780,7 +26780,7 @@ block_80134DD4:
 
 block_80134DF0:
     a1 = 485;
-    cps_80134df4(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80134df4u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80134df4 — clean CPS transliteration of br2eu_func_80134DF4 (guest 0x80134df4)
@@ -26801,7 +26801,7 @@ block_80134DF4:
     v0 = 482;
     psx_check_interrupts_at(cpu, 0x80134E20u);
     cpu->pc = 0x80134E20u; return;  /* CPS j: split */
-    cps_80134e0c();  /* fallthrough to next function */
+    cpu->pc = 0x80134e0cu; return;/* fallthrough to next function */
 }
 
 /* cps_80134e0c — clean CPS transliteration of br2eu_func_80134E0C (guest 0x80134e0c)
@@ -26819,8 +26819,8 @@ block_80134E0C:
     v0 = a0;
     cpu->write_word(sp + 16, v0);
     v0 = 483;
-    cps_80134e20(); return;  /* fallthrough to split piece */
-    cps_80134e20();  /* fallthrough to next function */
+    cpu->pc = 0x80134e20u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80134e20u; return;/* fallthrough to next function */
 }
 
 /* cps_80134e20 — clean CPS transliteration of br2eu_func_80134E20 (guest 0x80134e20)
@@ -26948,7 +26948,7 @@ block_80135298:
     v0 = 1;
     psx_check_interrupts_at(cpu, 0x80135314u);
     cpu->pc = 0x80135314u; return;  /* CPS j: split */
-    cps_801352a0();  /* fallthrough to next function */
+    cpu->pc = 0x801352a0u; return;/* fallthrough to next function */
 }
 
 /* cps_801352a0 — clean CPS transliteration of br2eu_func_801352A0 (guest 0x801352a0)
@@ -27062,8 +27062,8 @@ void cps_80135314(void)
 block_80135314:
     cpu->write_half(s0 + 60, (uint16_t)v0);
     v0 = 256;
-    cps_8013531c(); return;  /* fallthrough to split piece */
-    cps_8013531c();  /* fallthrough to next function */
+    cpu->pc = 0x8013531cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013531cu; return;/* fallthrough to next function */
 }
 
 /* cps_8013531c — clean CPS transliteration of br2eu_func_8013531C (guest 0x8013531c)
@@ -27077,8 +27077,8 @@ void cps_8013531c(void)
 
 block_8013531C:
     cpu->write_half(s0 + 76, (uint16_t)v0);
-    cps_80135320(); return;  /* fallthrough to split piece */
-    cps_80135320();  /* fallthrough to next function */
+    cpu->pc = 0x80135320u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80135320u; return;/* fallthrough to next function */
 }
 
 /* cps_80135320 — clean CPS transliteration of br2eu_func_80135320 (guest 0x80135320)
@@ -28312,7 +28312,7 @@ block_80135BD0:
 block_80135BF0:
     a3 = t3 + 12;
     a2 = t2 + 20;
-    cps_80135bf8(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80135bf8u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80135bf8 — clean CPS transliteration of br2eu_func_80135BF8 (guest 0x80135bf8)
@@ -28359,7 +28359,7 @@ block_80135C04:
     cpu->write_byte(a2 + 9, (uint8_t)v0);
     v0 = cpu->read_byte(t1 + 2);
     /* nop */  /* 0x80135C38: 0x00000000 */
-    cps_80135c3c(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80135c3cu; return;  /* fallthrough to split piece */
 }
 
 /* cps_80135c3c — clean CPS transliteration of br2eu_func_80135C3C (guest 0x80135c3c)
@@ -28428,7 +28428,7 @@ block_80135C3C:
     a2 = a2 + 72;
     psx_check_interrupts_at(cpu, 0x80135DE4u);
     cpu->pc = 0x80135DE4u; return;  /* CPS j: split */
-    cps_80135d14();  /* fallthrough to next function */
+    cpu->pc = 0x80135d14u; return;/* fallthrough to next function */
 }
 
 /* cps_80135d14 — clean CPS transliteration of br2eu_func_80135D14 (guest 0x80135d14)
@@ -28521,7 +28521,7 @@ block_80135D28:
     v0 = v0 + v1;
     cpu->write_half(a3, (uint16_t)v0);
     a3 = a3 + 48;
-    cps_80135de4(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80135de4u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80135de4 — clean CPS transliteration of br2eu_func_80135DE4 (guest 0x80135de4)
@@ -28535,8 +28535,8 @@ void cps_80135de4(void)
 
 block_80135DE4:
     v0 = (t4 < t0) ? 1 : 0;  /* 0x80135DE4: 0x0188102B */
-    cps_80135de8(); return;  /* fallthrough to split piece */
-    cps_80135de8();  /* fallthrough to next function */
+    cpu->pc = 0x80135de8u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80135de8u; return;/* fallthrough to next function */
 }
 
 /* cps_80135de8 — clean CPS transliteration of br2eu_func_80135DE8 (guest 0x80135de8)
@@ -28709,7 +28709,7 @@ block_80135F10:
     cpu->write_half(a3 + -8, (uint16_t)v0);
     v0 = cpu->read_half(sp);
     v1 = cpu->read_half(sp + 24);
-    cps_80135fb8(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80135fb8u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80135fb8 — clean CPS transliteration of br2eu_func_80135FB8 (guest 0x80135fb8)
@@ -28736,8 +28736,8 @@ block_80135FB8:
     v0 = v0 + v1;
     cpu->write_half(a3, (uint16_t)v0);
     a3 = a3 + 48;
-    cps_80135ff0(); return;  /* fallthrough to split piece */
-    cps_80135ff0();  /* fallthrough to next function */
+    cpu->pc = 0x80135ff0u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80135ff0u; return;/* fallthrough to next function */
 }
 
 /* cps_80135ff0 — clean CPS transliteration of br2eu_func_80135FF0 (guest 0x80135ff0)
@@ -28773,7 +28773,7 @@ block_80135FF0:
         psx_check_interrupts_at(cpu, 0x8013602Cu);
         cpu->pc = 0x8013602Cu; return;  /* CPS not taken: split */
     }
-    cps_8013602c();  /* fallthrough to next function */
+    cpu->pc = 0x8013602cu; return;/* fallthrough to next function */
 }
 
 /* cps_8013602c — clean CPS transliteration of br2eu_func_8013602C (guest 0x8013602c)
@@ -28812,7 +28812,7 @@ block_8013602C:
         psx_check_interrupts_at(cpu, 0x80136074u);
         cpu->pc = 0x80136074u; return;  /* CPS not taken: split */
     }
-    cps_80136074();  /* fallthrough to next function */
+    cpu->pc = 0x80136074u; return;/* fallthrough to next function */
 }
 
 /* cps_80136074 — clean CPS transliteration of br2eu_func_80136074 (guest 0x80136074)
@@ -28865,8 +28865,8 @@ void cps_801361a4(void)
 
 block_801361A4:
     /* nop */  /* 0x801361A4: 0x00000000 */
-    cps_801361a8(); return;  /* fallthrough to split piece */
-    cps_801361a8();  /* fallthrough to next function */
+    cpu->pc = 0x801361a8u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801361a8u; return;/* fallthrough to next function */
 }
 
 /* cps_801361a8 — clean CPS transliteration of br2eu_func_801361A8 (guest 0x801361a8)
@@ -28885,8 +28885,8 @@ block_801361A8:
     v0 = a0 + 1;
     if (v0 != 0) { cpu->lo = (uint32_t)((int32_t)v1 / (int32_t)v0); cpu->hi = (uint32_t)((int32_t)v1 % (int32_t)v0); } else { cpu->lo = ((int32_t)v1 >= 0) ? 0xFFFFFFFF : 1; cpu->hi = (uint32_t)v1; }
     psx_muldiv_set(cpu, 37u);
-    cps_801361bc(); return;  /* fallthrough to split piece */
-    cps_801361bc();  /* fallthrough to next function */
+    cpu->pc = 0x801361bcu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801361bcu; return;/* fallthrough to next function */
 }
 
 /* cps_801361bc — clean CPS transliteration of br2eu_func_801361BC (guest 0x801361bc)
@@ -30066,7 +30066,7 @@ block_80136920:
 
 block_80136940:
     v0 = (int32_t)(int16_t)cpu->read_half(s1 + 36);
-    cps_80136944(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80136944u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80136944 — clean CPS transliteration of br2eu_func_80136944 (guest 0x80136944)
@@ -30090,7 +30090,7 @@ block_80136944:
         psx_check_interrupts_at(cpu, 0x80136950u);
         cpu->pc = 0x80136950u; return;  /* CPS not taken: split */
     }
-    cps_80136950();  /* fallthrough to next function */
+    cpu->pc = 0x80136950u; return;/* fallthrough to next function */
 }
 
 /* cps_80136950 — clean CPS transliteration of br2eu_func_80136950 (guest 0x80136950)
@@ -30150,8 +30150,8 @@ void cps_80136970(void)
 
 block_80136970:
     /* nop */  /* 0x80136970: 0x00000000 */
-    cps_80136974(); return;  /* fallthrough to split piece */
-    cps_80136974();  /* fallthrough to next function */
+    cpu->pc = 0x80136974u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80136974u; return;/* fallthrough to next function */
 }
 
 /* cps_80136974 — clean CPS transliteration of br2eu_func_80136974 (guest 0x80136974)
@@ -30165,8 +30165,8 @@ void cps_80136974(void)
 
 block_80136974:
     a0 = 1024;
-    cps_80136978(); return;  /* fallthrough to split piece */
-    cps_80136978();  /* fallthrough to next function */
+    cpu->pc = 0x80136978u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80136978u; return;/* fallthrough to next function */
 }
 
 /* cps_80136978 — clean CPS transliteration of br2eu_func_80136978 (guest 0x80136978)
@@ -30279,7 +30279,7 @@ block_80136A10:
     a1 = a1 + v0;
     a1 = (int32_t)a1 >> 1;
     v0 = cpu->read_half(s1 + 36);
-    cps_80136a34(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80136a34u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80136a34 — clean CPS transliteration of br2eu_func_80136A34 (guest 0x80136a34)
@@ -30310,8 +30310,8 @@ block_80136A34:
     a0 = zero - a0;
     cpu->write_word(s1 + 28, v0);
     cpu->write_half(s1 + 44, (uint16_t)a0);
-    cps_80136a7c(); return;  /* fallthrough to split piece */
-    cps_80136a7c();  /* fallthrough to next function */
+    cpu->pc = 0x80136a7cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80136a7cu; return;/* fallthrough to next function */
 }
 
 /* cps_80136a7c — clean CPS transliteration of br2eu_func_80136A7C (guest 0x80136a7c)
@@ -30341,7 +30341,7 @@ block_80136A7C:
 
 block_80136A8C:
     a1 = s1;
-    cps_80136a90(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80136a90u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80136a90 — clean CPS transliteration of br2eu_func_80136A90 (guest 0x80136a90)
@@ -30433,7 +30433,7 @@ block_80136B04:
 
 block_80136B14:
     cpu->write_half(s2, (uint16_t)v0);
-    cps_80136b18(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80136b18u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80136b18 — clean CPS transliteration of br2eu_func_80136B18 (guest 0x80136b18)
@@ -30451,8 +30451,8 @@ block_80136B18:
     v0 = (int32_t)(int16_t)cpu->read_half(s5 + 20);
     /* nop */  /* 0x80136B24: 0x00000000 */
     v0 = ((int32_t)s3 < (int32_t)v0) ? 1 : 0;  /* 0x80136B28: 0x0262102A */
-    cps_80136b2c(); return;  /* fallthrough to split piece */
-    cps_80136b2c();  /* fallthrough to next function */
+    cpu->pc = 0x80136b2cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80136b2cu; return;/* fallthrough to next function */
 }
 
 /* cps_80136b2c — clean CPS transliteration of br2eu_func_80136B2C (guest 0x80136b2c)
@@ -30475,7 +30475,7 @@ block_80136B2C:
         psx_check_interrupts_at(cpu, 0x80136B34u);
         cpu->pc = 0x80136B34u; return;  /* CPS not taken: split */
     }
-    cps_80136b34();  /* fallthrough to next function */
+    cpu->pc = 0x80136b34u; return;/* fallthrough to next function */
 }
 
 /* cps_80136b34 — clean CPS transliteration of br2eu_func_80136B34 (guest 0x80136b34)
@@ -30517,8 +30517,8 @@ void cps_80136b70(void)
 block_80136B70:
     cpu->write_word(sp + 52, s5);
     s5 = a3;
-    cps_80136b78(); return;  /* fallthrough to split piece */
-    cps_80136b78();  /* fallthrough to next function */
+    cpu->pc = 0x80136b78u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80136b78u; return;/* fallthrough to next function */
 }
 
 /* cps_80136b78 — clean CPS transliteration of br2eu_func_80136B78 (guest 0x80136b78)
@@ -30533,8 +30533,8 @@ void cps_80136b78(void)
 block_80136B78:
     v0 = 0x801F << 16;  /* 0x801F0000 */
     cpu->write_word(sp + 48, s4);
-    cps_80136b80(); return;  /* fallthrough to split piece */
-    cps_80136b80();  /* fallthrough to next function */
+    cpu->pc = 0x80136b80u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80136b80u; return;/* fallthrough to next function */
 }
 
 /* cps_80136b80 — clean CPS transliteration of br2eu_func_80136B80 (guest 0x80136b80)
@@ -30634,7 +30634,7 @@ block_80136C1C:
     v1 = cpu->read_half(s4 + 22);
     v0 = (int32_t)v0 >> 12;
     cpu->write_half(sp + 16, (uint16_t)v0);
-    cps_80136c28(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80136c28u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80136c28 — clean CPS transliteration of br2eu_func_80136C28 (guest 0x80136c28)
@@ -31065,8 +31065,8 @@ void cps_80137528(void)
 
 block_80137528:
     s0 = s0 + 1880;
-    cps_8013752c(); return;  /* fallthrough to split piece */
-    cps_8013752c();  /* fallthrough to next function */
+    cpu->pc = 0x8013752cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013752cu; return;/* fallthrough to next function */
 }
 
 /* cps_8013752c — clean CPS transliteration of br2eu_func_8013752C (guest 0x8013752c)
@@ -31086,8 +31086,8 @@ block_8013752C:
     cpu->write_word(v0 + 4, zero);
     v0 = 0x801F << 16;  /* 0x801F0000 */
     cpu->write_word(v0 + 2352, zero);
-    cps_80137548(); return;  /* fallthrough to split piece */
-    cps_80137548();  /* fallthrough to next function */
+    cpu->pc = 0x80137548u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80137548u; return;/* fallthrough to next function */
 }
 
 /* cps_80137548 — clean CPS transliteration of br2eu_func_80137548 (guest 0x80137548)
@@ -31129,8 +31129,8 @@ block_8013783C:
     /* nop */  /* 0x80137840: 0x00000000 */
     v0 = v0 + -1;
     cpu->write_half(a2 + 24, (uint16_t)v0);
-    cps_8013784c(); return;  /* fallthrough to split piece */
-    cps_8013784c();  /* fallthrough to next function */
+    cpu->pc = 0x8013784cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013784cu; return;/* fallthrough to next function */
 }
 
 /* cps_8013784c — clean CPS transliteration of br2eu_func_8013784C (guest 0x8013784c)
@@ -31167,7 +31167,7 @@ block_8013785C:
     v1 = cpu->read_word(a2 + 20);
     /* nop */  /* 0x80137860: 0x00000000 */
     v0 = v1 + 4;
-    cps_80137868(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80137868u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80137868 — clean CPS transliteration of br2eu_func_80137868 (guest 0x80137868)
@@ -31184,8 +31184,8 @@ block_80137868:
     v0 = (int32_t)(int16_t)cpu->read_half(v1 + 4);
     /* nop */  /* 0x80137870: 0x00000000 */
     v0 = v0 & 0xFF00;  /* 0x80137874: 0x3042FF00 */
-    cps_80137878(); return;  /* fallthrough to split piece */
-    cps_80137878();  /* fallthrough to next function */
+    cpu->pc = 0x80137878u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80137878u; return;/* fallthrough to next function */
 }
 
 /* cps_80137878 — clean CPS transliteration of br2eu_func_80137878 (guest 0x80137878)
@@ -31487,7 +31487,7 @@ block_80137974:
     v0 = cpu->read_half(v0 + 2);
     /* nop */  /* 0x80137AB4: 0x00000000 */
     cpu->write_half(a2 + 24, (uint16_t)v0);
-    cps_80137abc(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80137abcu; return;  /* fallthrough to split piece */
 }
 
 /* cps_80137abc — clean CPS transliteration of br2eu_func_80137ABC (guest 0x80137abc)
@@ -31613,7 +31613,7 @@ block_80137B48:
     v0 = (int32_t)(int16_t)cpu->read_half(s1 + 2);
     /* nop */  /* 0x80137B50: 0x00000000 */
     v0 = ((int32_t)v0 < (int32_t)v1) ? 1 : 0;  /* 0x80137B54: 0x0043102A */
-    cps_80137b58(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80137b58u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80137b58 — clean CPS transliteration of br2eu_func_80137B58 (guest 0x80137b58)
@@ -31698,7 +31698,7 @@ block_80137B8C:
     v0 = cpu->read_half(s1 + 2);
     v1 = cpu->read_half(v1);
     v0 = v0 + 1;
-    cps_80137bb8(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80137bb8u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80137bb8 — clean CPS transliteration of br2eu_func_80137BB8 (guest 0x80137bb8)
@@ -31716,7 +31716,7 @@ block_80137BB8:
     cpu->write_half(s1 + 2, (uint16_t)v0);
     psx_check_interrupts_at(cpu, 0x80137AFCu);
     cpu->pc = 0x80137AFCu; return;  /* CPS j: split */
-    cps_80137bc4();  /* fallthrough to next function */
+    cpu->pc = 0x80137bc4u; return;/* fallthrough to next function */
 }
 
 /* cps_80137bc4 — clean CPS transliteration of br2eu_func_80137BC4 (guest 0x80137bc4)
@@ -31730,8 +31730,8 @@ void cps_80137bc4(void)
 
 block_80137BC4:
     v0 = a0 + 6;
-    cps_80137bc8(); return;  /* fallthrough to split piece */
-    cps_80137bc8();  /* fallthrough to next function */
+    cpu->pc = 0x80137bc8u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80137bc8u; return;/* fallthrough to next function */
 }
 
 /* cps_80137bc8 — clean CPS transliteration of br2eu_func_80137BC8 (guest 0x80137bc8)
@@ -31749,7 +31749,7 @@ block_80137BC8:
     cpu->write_half(s1 + 2, (uint16_t)zero);
     psx_check_interrupts_at(cpu, 0x80137AFCu);
     cpu->pc = 0x80137AFCu; return;  /* CPS j: split */
-    cps_80137bd4();  /* fallthrough to next function */
+    cpu->pc = 0x80137bd4u; return;/* fallthrough to next function */
 }
 
 /* cps_80137bd4 — clean CPS transliteration of br2eu_func_80137BD4 (guest 0x80137bd4)
@@ -31776,7 +31776,7 @@ block_80137BD4:
     cpu->write_half(s1, (uint16_t)v0);
     psx_check_interrupts_at(cpu, 0x80137AFCu);
     cpu->pc = 0x80137AFCu; return;  /* CPS j: split */
-    cps_80137c04();  /* fallthrough to next function */
+    cpu->pc = 0x80137c04u; return;/* fallthrough to next function */
 }
 
 /* cps_80137c04 — clean CPS transliteration of br2eu_func_80137C04 (guest 0x80137c04)
@@ -31916,7 +31916,7 @@ block_80137CA4:
     /* nop */  /* 0x80137CA8: 0x00000000 */
     v0 = v0 + 1;
     cpu->write_half(s1, (uint16_t)v0);
-    cps_80137cb4(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80137cb4u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80137cb4 — clean CPS transliteration of br2eu_func_80137CB4 (guest 0x80137cb4)
@@ -32179,7 +32179,7 @@ block_80137E4C:
     v0 = cpu->read_half(v0 + 2);
     /* nop */  /* 0x80137E58: 0x00000000 */
     cpu->write_half(s0 + 20, (uint16_t)v0);
-    cps_80137e60(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80137e60u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80137e60 — clean CPS transliteration of br2eu_func_80137E60 (guest 0x80137e60)
@@ -32331,7 +32331,7 @@ block_80138154:
     psx_muldiv_stall(cpu);
     v0 = s0 - v0;
     /* nop */  /* 0x80138170: 0x00000000 */
-    cps_80138174(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80138174u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80138174 — clean CPS transliteration of br2eu_func_80138174 (guest 0x80138174)
@@ -32506,7 +32506,7 @@ block_80138230:
     v1 = v1 + -256;
     a0 = (uint32_t)v1 >> 31;
     v1 = v1 + a0;
-    cps_80138248(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80138248u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80138248 — clean CPS transliteration of br2eu_func_80138248 (guest 0x80138248)
@@ -33092,8 +33092,8 @@ block_801388DC:
     /* nop */  /* 0x801388E0: 0x00000000 */
     v0 = v0 + -1;
     cpu->write_half(s0 + 14, (uint16_t)v0);
-    cps_801388ec(); return;  /* fallthrough to split piece */
-    cps_801388ec();  /* fallthrough to next function */
+    cpu->pc = 0x801388ecu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801388ecu; return;/* fallthrough to next function */
 }
 
 /* cps_801388ec — clean CPS transliteration of br2eu_func_801388EC (guest 0x801388ec)
@@ -33148,8 +33148,8 @@ void cps_8013890c(void)
 
 block_8013890C:
     a0 = a0 + 1;
-    cps_80138910(); return;  /* fallthrough to split piece */
-    cps_80138910();  /* fallthrough to next function */
+    cpu->pc = 0x80138910u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80138910u; return;/* fallthrough to next function */
 }
 
 /* cps_80138910 — clean CPS transliteration of br2eu_func_80138910 (guest 0x80138910)
@@ -34035,7 +34035,7 @@ block_8013937C:
     v1 = cpu->read_half(a1 + 4);
     /* nop */  /* 0x801393B0: 0x00000000 */
     v0 = v0 + v1;
-    cps_801393b8(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801393b8u; return;  /* fallthrough to split piece */
 }
 
 /* cps_801393b8 — clean CPS transliteration of br2eu_func_801393B8 (guest 0x801393b8)
@@ -34600,7 +34600,7 @@ block_80139828:
 
 block_80139830:
     v0 = s1 + 88;
-    cps_80139834(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80139834u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80139834 — clean CPS transliteration of br2eu_func_80139834 (guest 0x80139834)
@@ -34715,7 +34715,7 @@ block_80139874:
     v0 = v0 << 3;
     v1 = cpu->read_half(s3);
     v0 = v0 + s1;
-    cps_80139954(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80139954u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80139954 — clean CPS transliteration of br2eu_func_80139954 (guest 0x80139954)
@@ -34820,7 +34820,7 @@ block_80139A04:
 
 block_80139A08:
     cpu->write_half(a0 + 34, (uint16_t)v0);
-    cps_80139a0c(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80139a0cu; return;  /* fallthrough to split piece */
 }
 
 /* cps_80139a0c — clean CPS transliteration of br2eu_func_80139A0C (guest 0x80139a0c)
@@ -35204,7 +35204,7 @@ block_80139D68:
     a0 = (int32_t)t1 >> 12;
     v1 = v1 - a0;
     cpu->write_half(v0 + 26, (uint16_t)v1);
-    cps_80139d98(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80139d98u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80139d98 — clean CPS transliteration of br2eu_func_80139D98 (guest 0x80139d98)
@@ -35262,8 +35262,8 @@ void cps_80139f1c(void)
 
 block_80139F1C:
     v0 = s2;
-    cps_80139f20(); return;  /* fallthrough to split piece */
-    cps_80139f20();  /* fallthrough to next function */
+    cpu->pc = 0x80139f20u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80139f20u; return;/* fallthrough to next function */
 }
 
 /* cps_80139f20 — clean CPS transliteration of br2eu_func_80139F20 (guest 0x80139f20)
@@ -35280,7 +35280,7 @@ block_80139F20:
     /* nop */  /* 0x80139F24: 0x00000000 */
     psx_check_interrupts_at(cpu, 0x80139F90u);
     cpu->pc = 0x80139F90u; return;  /* CPS j: split */
-    cps_80139f28();  /* fallthrough to next function */
+    cpu->pc = 0x80139f28u; return;/* fallthrough to next function */
 }
 
 /* cps_80139f28 — clean CPS transliteration of br2eu_func_80139F28 (guest 0x80139f28)
@@ -35349,7 +35349,7 @@ block_80139F40:
     cpu->write_half(s1 + 92, (uint16_t)v0);
     psx_check_interrupts_at(cpu, 0x80139F8Cu);
     cpu->pc = 0x80139F8Cu; return;  /* CPS j: split */
-    cps_80139f58();  /* fallthrough to next function */
+    cpu->pc = 0x80139f58u; return;/* fallthrough to next function */
 }
 
 /* cps_80139f58 — clean CPS transliteration of br2eu_func_80139F58 (guest 0x80139f58)
@@ -35368,7 +35368,7 @@ block_80139F58:
     cpu->write_half(s1 + 88, (uint16_t)v0);
     psx_check_interrupts_at(cpu, 0x80139F8Cu);
     cpu->pc = 0x80139F8Cu; return;  /* CPS j: split */
-    cps_80139f68();  /* fallthrough to next function */
+    cpu->pc = 0x80139f68u; return;/* fallthrough to next function */
 }
 
 /* cps_80139f68 — clean CPS transliteration of br2eu_func_80139F68 (guest 0x80139f68)
@@ -35387,7 +35387,7 @@ block_80139F68:
     cpu->write_half(s1 + 92, (uint16_t)v0);
     psx_check_interrupts_at(cpu, 0x80139F8Cu);
     cpu->pc = 0x80139F8Cu; return;  /* CPS j: split */
-    cps_80139f78();  /* fallthrough to next function */
+    cpu->pc = 0x80139f78u; return;/* fallthrough to next function */
 }
 
 /* cps_80139f78 — clean CPS transliteration of br2eu_func_80139F78 (guest 0x80139f78)
@@ -35405,8 +35405,8 @@ block_80139F78:
     /* nop */  /* 0x80139F80: 0x00000000 */
     v0 = zero - v0;
     cpu->write_half(s1 + 88, (uint16_t)v0);
-    cps_80139f8c(); return;  /* fallthrough to split piece */
-    cps_80139f8c();  /* fallthrough to next function */
+    cpu->pc = 0x80139f8cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80139f8cu; return;/* fallthrough to next function */
 }
 
 /* cps_80139f8c — clean CPS transliteration of br2eu_func_80139F8C (guest 0x80139f8c)
@@ -35420,8 +35420,8 @@ void cps_80139f8c(void)
 
 block_80139F8C:
     v0 = s2;
-    cps_80139f90(); return;  /* fallthrough to split piece */
-    cps_80139f90();  /* fallthrough to next function */
+    cpu->pc = 0x80139f90u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80139f90u; return;/* fallthrough to next function */
 }
 
 /* cps_80139f90 — clean CPS transliteration of br2eu_func_80139F90 (guest 0x80139f90)
@@ -35463,7 +35463,7 @@ block_80139F9C:
     a1 = a1 | 0x0007;
     a2 = (int32_t)v0 >> 10;
     a3 = zero;
-    cps_80139fb0(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80139fb0u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80139fb0 — clean CPS transliteration of br2eu_func_80139FB0 (guest 0x80139fb0)
@@ -35516,8 +35516,8 @@ void cps_8013a468(void)
 block_8013A468:
     v0 = cpu->read_word(t1 + 17784);
     /* nop */  /* 0x8013A46C: 0x00000000 */
-    cps_8013a470(); return;  /* fallthrough to split piece */
-    cps_8013a470();  /* fallthrough to next function */
+    cpu->pc = 0x8013a470u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013a470u; return;/* fallthrough to next function */
 }
 
 /* cps_8013a470 — clean CPS transliteration of br2eu_func_8013A470 (guest 0x8013a470)
@@ -35607,7 +35607,7 @@ block_8013A4B4:
     v1 = cpu->read_word(s1 + 96);
     v0 = 32;
     cpu->write_half(v1, (uint16_t)v0);
-    cps_8013a4e4(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013a4e4u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8013a4e4 — clean CPS transliteration of br2eu_func_8013A4E4 (guest 0x8013a4e4)
@@ -35632,8 +35632,8 @@ block_8013A4E4:
     cpu->write_byte(a0 + 36, (uint8_t)a3);
     cpu->write_byte(a0 + 37, (uint8_t)a2);
     a1 = a1 + 1;
-    cps_8013a514(); return;  /* fallthrough to split piece */
-    cps_8013a514();  /* fallthrough to next function */
+    cpu->pc = 0x8013a514u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013a514u; return;/* fallthrough to next function */
 }
 
 /* cps_8013a514 — clean CPS transliteration of br2eu_func_8013A514 (guest 0x8013a514)
@@ -36570,7 +36570,7 @@ block_8013AB50:
 
 block_8013AB64:
     cpu->write_half(s0 + 12, (uint16_t)v0);
-    cps_8013ab68(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013ab68u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8013ab68 — clean CPS transliteration of br2eu_func_8013AB68 (guest 0x8013ab68)
@@ -36588,8 +36588,8 @@ block_8013AB68:
     /* nop */  /* 0x8013AB70: 0x00000000 */
     v0 = v0 + v1;
     cpu->write_half(s0 + 6, (uint16_t)v0);
-    cps_8013ab7c(); return;  /* fallthrough to split piece */
-    cps_8013ab7c();  /* fallthrough to next function */
+    cpu->pc = 0x8013ab7cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013ab7cu; return;/* fallthrough to next function */
 }
 
 /* cps_8013ab7c — clean CPS transliteration of br2eu_func_8013AB7C (guest 0x8013ab7c)
@@ -36622,8 +36622,8 @@ void cps_8013ac6c(void)
 
 block_8013AC6C:
     /* nop */  /* 0x8013AC6C: 0x00000000 */
-    cps_8013ac70(); return;  /* fallthrough to split piece */
-    cps_8013ac70();  /* fallthrough to next function */
+    cpu->pc = 0x8013ac70u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013ac70u; return;/* fallthrough to next function */
 }
 
 /* cps_8013ac70 — clean CPS transliteration of br2eu_func_8013AC70 (guest 0x8013ac70)
@@ -36783,7 +36783,7 @@ block_8013AD84:
     v1 = v1 + -1024;
     cpu->write_half(a1 + 20, (uint16_t)v0);
     cpu->write_half(a1 + 16, (uint16_t)v1);
-    cps_8013ad9c(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013ad9cu; return;  /* fallthrough to split piece */
 }
 
 /* cps_8013ad9c — clean CPS transliteration of br2eu_func_8013AD9C (guest 0x8013ad9c)
@@ -37227,7 +37227,7 @@ block_8013B1CC:
     v0 = 1;
     cpu->write_half(s5 + 844, (uint16_t)v0);
     cpu->write_half(s5 + 840, (uint16_t)zero);
-    cps_8013b1d8(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013b1d8u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8013b1d8 — clean CPS transliteration of br2eu_func_8013B1D8 (guest 0x8013b1d8)
@@ -37453,7 +37453,7 @@ block_8013B374:
     v0 = v0 << 3;
     v0 = v0 + 116;
     s6 = s5 + v0;
-    cps_8013b39c(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013b39cu; return;  /* fallthrough to split piece */
 }
 
 /* cps_8013b39c — clean CPS transliteration of br2eu_func_8013B39C (guest 0x8013b39c)
@@ -37469,8 +37469,8 @@ block_8013B39C:
     s4 = zero;
     s3 = s6 + 34;
     s2 = s7 + 6;
-    cps_8013b3a8(); return;  /* fallthrough to split piece */
-    cps_8013b3a8();  /* fallthrough to next function */
+    cpu->pc = 0x8013b3a8u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013b3a8u; return;/* fallthrough to next function */
 }
 
 /* cps_8013b3a8 — clean CPS transliteration of br2eu_func_8013B3A8 (guest 0x8013b3a8)
@@ -37660,7 +37660,7 @@ block_8013B4E4:
     v0 = (int32_t)t7 >> 12;
     v1 = v1 - v0;
     cpu->write_half(s3, (uint16_t)v1);
-    cps_8013b508(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013b508u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8013b508 — clean CPS transliteration of br2eu_func_8013B508 (guest 0x8013b508)
@@ -37696,7 +37696,7 @@ block_8013B508:
         psx_check_interrupts_at(cpu, 0x8013B544u);
         cpu->pc = 0x8013B544u; return;  /* CPS not taken: split */
     }
-    cps_8013b544();  /* fallthrough to next function */
+    cpu->pc = 0x8013b544u; return;/* fallthrough to next function */
 }
 
 /* cps_8013b544 — clean CPS transliteration of br2eu_func_8013B544 (guest 0x8013b544)
@@ -37710,8 +37710,8 @@ void cps_8013b544(void)
 
 block_8013B544:
     v0 = 0x1F80 << 16;  /* 0x1F800000 */
-    cps_8013b548(); return;  /* fallthrough to split piece */
-    cps_8013b548();  /* fallthrough to next function */
+    cpu->pc = 0x8013b548u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013b548u; return;/* fallthrough to next function */
 }
 
 /* cps_8013b548 — clean CPS transliteration of br2eu_func_8013B548 (guest 0x8013b548)
@@ -37744,7 +37744,7 @@ block_8013B548:
         psx_check_interrupts_at(cpu, 0x8013B578u);
         cpu->pc = 0x8013B578u; return;  /* CPS not taken: split */
     }
-    cps_8013b578();  /* fallthrough to next function */
+    cpu->pc = 0x8013b578u; return;/* fallthrough to next function */
 }
 
 /* cps_8013b578 — clean CPS transliteration of br2eu_func_8013B578 (guest 0x8013b578)
@@ -37872,7 +37872,7 @@ block_8013B818:
     v0 = cpu->read_half(v0 + 52);
     /* nop */  /* 0x8013B83C: 0x00000000 */
     v1 = v1 + v0;
-    cps_8013b844(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013b844u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8013b844 — clean CPS transliteration of br2eu_func_8013B844 (guest 0x8013b844)
@@ -38819,7 +38819,7 @@ block_8013BDB0:
 block_8013BDBC:
     v0 = s1 << 3;
     a3 = v0 + s4;
-    cps_8013bdc4(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013bdc4u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8013bdc4 — clean CPS transliteration of br2eu_func_8013BDC4 (guest 0x8013bdc4)
@@ -39039,7 +39039,7 @@ block_8013BF10:
     cpu->write_half(a3 + 7060, (uint16_t)v0);
     t1 = t1 + 512;
     s1 = s1 + 1;
-    cps_8013bf20(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013bf20u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8013bf20 — clean CPS transliteration of br2eu_func_8013BF20 (guest 0x8013bf20)
@@ -39063,7 +39063,7 @@ block_8013BF20:
         psx_check_interrupts_at(cpu, 0x8013BF2Cu);
         cpu->pc = 0x8013BF2Cu; return;  /* CPS not taken: split */
     }
-    cps_8013bf2c();  /* fallthrough to next function */
+    cpu->pc = 0x8013bf2cu; return;/* fallthrough to next function */
 }
 
 /* cps_8013bf2c — clean CPS transliteration of br2eu_func_8013BF2C (guest 0x8013bf2c)
@@ -39884,8 +39884,8 @@ void cps_8013c50c(void)
 
 block_8013C50C:
     a0 = s0;
-    cps_8013c510(); return;  /* fallthrough to split piece */
-    cps_8013c510();  /* fallthrough to next function */
+    cpu->pc = 0x8013c510u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013c510u; return;/* fallthrough to next function */
 }
 
 /* cps_8013c510 — clean CPS transliteration of br2eu_func_8013C510 (guest 0x8013c510)
@@ -39933,7 +39933,7 @@ block_8013C530:
     psx_muldiv_stall(cpu);
     /* nop */  /* 0x8013C538: 0x00000000 */
     s2 = zero - v0;
-    cps_8013c540(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013c540u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8013c540 — clean CPS transliteration of br2eu_func_8013C540 (guest 0x8013c540)
@@ -39972,7 +39972,7 @@ block_8013C568:
     v1 = cpu->read_word(s4 + 5772);
     a0 = a1 - v0;
     a2 = cpu->read_word(v1);
-    cps_8013c578(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013c578u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8013c578 — clean CPS transliteration of br2eu_func_8013C578 (guest 0x8013c578)
@@ -40256,7 +40256,7 @@ block_8013C708:
     v0 = (int32_t)(int16_t)cpu->read_half(sp + 76);
     /* nop */  /* 0x8013C748: 0x00000000 */
     cpu->write_word(v1 + 28, v0);
-    cps_8013c750(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013c750u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8013c750 — clean CPS transliteration of br2eu_func_8013C750 (guest 0x8013c750)
@@ -40459,7 +40459,7 @@ block_8013C898:
         psx_check_interrupts_at(cpu, 0x8013C8A0u);
         cpu->pc = 0x8013C8A0u; return;  /* CPS not taken: split */
     }
-    cps_8013c89c();  /* fallthrough to next function */
+    cpu->pc = 0x8013c89cu; return;/* fallthrough to next function */
 }
 
 /* cps_8013c89c — clean CPS transliteration of br2eu_func_8013C89C (guest 0x8013c89c)
@@ -40473,8 +40473,8 @@ void cps_8013c89c(void)
 
 block_8013C89C:
     /* nop */  /* 0x8013C89C: 0x00000000 */
-    cps_8013c8a0(); return;  /* fallthrough to split piece */
-    cps_8013c8a0();  /* fallthrough to next function */
+    cpu->pc = 0x8013c8a0u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013c8a0u; return;/* fallthrough to next function */
 }
 
 /* cps_8013c8a0 — clean CPS transliteration of br2eu_func_8013C8A0 (guest 0x8013c8a0)
@@ -40557,7 +40557,7 @@ block_8013C8C8:
 block_8013C97C:
     v1 = cpu->read_word(s4 + 5756);
     s1 = s1 + 1;
-    cps_8013c984(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013c984u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8013c984 — clean CPS transliteration of br2eu_func_8013C984 (guest 0x8013c984)
@@ -43062,8 +43062,8 @@ block_8013E654:
     cpu->write_half(v0, (uint16_t)t4);
     cpu->write_half(v0 + 6, (uint16_t)t5);
     cpu->write_half(v0 + 12, (uint16_t)t6);
-    cps_8013e71c(); return;  /* fallthrough to split piece */
-    cps_8013e71c();  /* fallthrough to next function */
+    cpu->pc = 0x8013e71cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013e71cu; return;/* fallthrough to next function */
 }
 
 /* cps_8013e71c — clean CPS transliteration of br2eu_func_8013E71C (guest 0x8013e71c)
@@ -43114,8 +43114,8 @@ block_8013E72C:
     v0 = v1 << 4;
     v0 = v0 - v1;
     v0 = v0 << 4;
-    cps_8013e778(); return;  /* fallthrough to split piece */
-    cps_8013e778();  /* fallthrough to next function */
+    cpu->pc = 0x8013e778u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013e778u; return;/* fallthrough to next function */
 }
 
 /* cps_8013e778 — clean CPS transliteration of br2eu_func_8013E778 (guest 0x8013e778)
@@ -43140,7 +43140,7 @@ block_8013E778:
         psx_check_interrupts_at(cpu, 0x8013E788u);
         cpu->pc = 0x8013E788u; return;  /* CPS not taken: split */
     }
-    cps_8013e784();  /* fallthrough to next function */
+    cpu->pc = 0x8013e784u; return;/* fallthrough to next function */
 }
 
 /* cps_8013e784 — clean CPS transliteration of br2eu_func_8013E784 (guest 0x8013e784)
@@ -43154,8 +43154,8 @@ void cps_8013e784(void)
 
 block_8013E784:
     s6 = s1 + v0;
-    cps_8013e788(); return;  /* fallthrough to split piece */
-    cps_8013e788();  /* fallthrough to next function */
+    cpu->pc = 0x8013e788u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013e788u; return;/* fallthrough to next function */
 }
 
 /* cps_8013e788 — clean CPS transliteration of br2eu_func_8013E788 (guest 0x8013e788)
@@ -43170,8 +43170,8 @@ void cps_8013e788(void)
 block_8013E788:
     v0 = cpu->read_half(s1 + 480);
     /* nop */  /* 0x8013E78C: 0x00000000 */
-    cps_8013e790(); return;  /* fallthrough to split piece */
-    cps_8013e790();  /* fallthrough to next function */
+    cpu->pc = 0x8013e790u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013e790u; return;/* fallthrough to next function */
 }
 
 /* cps_8013e790 — clean CPS transliteration of br2eu_func_8013E790 (guest 0x8013e790)
@@ -43245,7 +43245,7 @@ block_8013E7C4:
 
 block_8013E7CC:
     v0 = cpu->read_half(s1 + 482);
-    cps_8013e7d0(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013e7d0u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8013e7d0 — clean CPS transliteration of br2eu_func_8013E7D0 (guest 0x8013e7d0)
@@ -43261,8 +43261,8 @@ block_8013E7D0:
     a0 = cpu->read_half(s1 + 484);
     v1 = cpu->read_half(s1 + 490);
     a1 = cpu->read_half(s1 + 492);
-    cps_8013e7dc(); return;  /* fallthrough to split piece */
-    cps_8013e7dc();  /* fallthrough to next function */
+    cpu->pc = 0x8013e7dcu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013e7dcu; return;/* fallthrough to next function */
 }
 
 /* cps_8013e7dc — clean CPS transliteration of br2eu_func_8013E7DC (guest 0x8013e7dc)
@@ -43284,8 +43284,8 @@ block_8013E7DC:
     v1 = cpu->read_half(s1 + 486);
     a1 = cpu->read_half(s1 + 488);
     v0 = v0 + a0;
-    cps_8013e800(); return;  /* fallthrough to split piece */
-    cps_8013e800();  /* fallthrough to next function */
+    cpu->pc = 0x8013e800u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013e800u; return;/* fallthrough to next function */
 }
 
 /* cps_8013e800 — clean CPS transliteration of br2eu_func_8013E800 (guest 0x8013e800)
@@ -43301,8 +43301,8 @@ block_8013E800:
     v1 = v1 + a1;
     cpu->write_half(s1 + 494, (uint16_t)v0);
     cpu->write_half(s1 + 486, (uint16_t)v1);
-    cps_8013e80c(); return;  /* fallthrough to split piece */
-    cps_8013e80c();  /* fallthrough to next function */
+    cpu->pc = 0x8013e80cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013e80cu; return;/* fallthrough to next function */
 }
 
 /* cps_8013e80c — clean CPS transliteration of br2eu_func_8013E80C (guest 0x8013e80c)
@@ -43318,8 +43318,8 @@ block_8013E80C:
     a1 = 0x1F80 << 16;  /* 0x1F800000 */
     v1 = cpu->read_half(a1 + 36);
     v0 = (int32_t)(int16_t)cpu->read_half(s1 + 486);
-    cps_8013e818(); return;  /* fallthrough to split piece */
-    cps_8013e818();  /* fallthrough to next function */
+    cpu->pc = 0x8013e818u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013e818u; return;/* fallthrough to next function */
 }
 
 /* cps_8013e818 — clean CPS transliteration of br2eu_func_8013E818 (guest 0x8013e818)
@@ -43334,8 +43334,8 @@ void cps_8013e818(void)
 block_8013E818:
     v1 = v1 << 16;
     v1 = (int32_t)v1 >> 16;
-    cps_8013e820(); return;  /* fallthrough to split piece */
-    cps_8013e820();  /* fallthrough to next function */
+    cpu->pc = 0x8013e820u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013e820u; return;/* fallthrough to next function */
 }
 
 /* cps_8013e820 — clean CPS transliteration of br2eu_func_8013E820 (guest 0x8013e820)
@@ -43353,8 +43353,8 @@ block_8013E820:
     v0 = cpu->read_word(s1 + 504);
     a2 = cpu->lo;
     psx_muldiv_stall(cpu);
-    cps_8013e82c(); return;  /* fallthrough to split piece */
-    cps_8013e82c();  /* fallthrough to next function */
+    cpu->pc = 0x8013e82cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013e82cu; return;/* fallthrough to next function */
 }
 
 /* cps_8013e82c — clean CPS transliteration of br2eu_func_8013E82C (guest 0x8013e82c)
@@ -43379,8 +43379,8 @@ block_8013E82C:
     psx_muldiv_set(cpu, psx_mult_latency_s(v0));
     a3 = 12;
     cpu->write_word(sp + 20, a3);
-    cps_8013e850(); return;  /* fallthrough to split piece */
-    cps_8013e850();  /* fallthrough to next function */
+    cpu->pc = 0x8013e850u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013e850u; return;/* fallthrough to next function */
 }
 
 /* cps_8013e850 — clean CPS transliteration of br2eu_func_8013E850 (guest 0x8013e850)
@@ -43396,8 +43396,8 @@ block_8013E850:
     v1 = cpu->lo;
     psx_muldiv_stall(cpu);
     s2 = (int32_t)(int16_t)cpu->read_half(s1 + 490);
-    cps_8013e858(); return;  /* fallthrough to split piece */
-    cps_8013e858();  /* fallthrough to next function */
+    cpu->pc = 0x8013e858u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013e858u; return;/* fallthrough to next function */
 }
 
 /* cps_8013e858 — clean CPS transliteration of br2eu_func_8013E858 (guest 0x8013e858)
@@ -43425,7 +43425,7 @@ block_8013E858:
         psx_check_interrupts_at(cpu, 0x8013E86Cu);
         cpu->pc = 0x8013E86Cu; return;  /* CPS not taken: split */
     }
-    cps_8013e86c();  /* fallthrough to next function */
+    cpu->pc = 0x8013e86cu; return;/* fallthrough to next function */
 }
 
 /* cps_8013e86c — clean CPS transliteration of br2eu_func_8013E86C (guest 0x8013e86c)
@@ -43440,8 +43440,8 @@ void cps_8013e86c(void)
 block_8013E86C:
     a3 = 13;
     cpu->write_word(sp + 20, a3);
-    cps_8013e874(); return;  /* fallthrough to split piece */
-    cps_8013e874();  /* fallthrough to next function */
+    cpu->pc = 0x8013e874u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013e874u; return;/* fallthrough to next function */
 }
 
 /* cps_8013e874 — clean CPS transliteration of br2eu_func_8013E874 (guest 0x8013e874)
@@ -43786,7 +43786,7 @@ block_8013EB50:
     v0 = 0x801B << 16;  /* 0x801B0000 */
     s2 = v0 + 7876;
     v0 = 512;
-    cps_8013eb5c(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013eb5cu; return;  /* fallthrough to split piece */
 }
 
 /* cps_8013eb5c — clean CPS transliteration of br2eu_func_8013EB5C (guest 0x8013eb5c)
@@ -43955,7 +43955,7 @@ block_8013ECCC:
     v1 = (int32_t)(int16_t)cpu->read_half(s0 + 30);
     v0 = (int32_t)(int16_t)cpu->read_half(t0 + 480);
     /* nop */  /* 0x8013ECD8: 0x00000000 */
-    cps_8013ecdc(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013ecdcu; return;  /* fallthrough to split piece */
 }
 
 /* cps_8013ecdc — clean CPS transliteration of br2eu_func_8013ECDC (guest 0x8013ecdc)
@@ -43990,7 +43990,7 @@ block_8013ECDC:
 
 block_8013ECEC:
     cpu->write_half(s0 + 30, (uint16_t)v0);
-    cps_8013ecf0(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013ecf0u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8013ecf0 — clean CPS transliteration of br2eu_func_8013ECF0 (guest 0x8013ecf0)
@@ -44019,7 +44019,7 @@ block_8013ECF0:
         psx_check_interrupts_at(cpu, 0x8013ED10u);
         cpu->pc = 0x8013ED10u; return;  /* CPS not taken: split */
     }
-    cps_8013ed10();  /* fallthrough to next function */
+    cpu->pc = 0x8013ed10u; return;/* fallthrough to next function */
 }
 
 /* cps_8013ed10 — clean CPS transliteration of br2eu_func_8013ED10 (guest 0x8013ed10)
@@ -44039,7 +44039,7 @@ block_8013ED10:
     cpu->write_half(s0 + 28, (uint16_t)v0);
     psx_check_interrupts_at(cpu, 0x8013ED50u);
     cpu->pc = 0x8013ED50u; return;  /* CPS j: split */
-    cps_8013ed24();  /* fallthrough to next function */
+    cpu->pc = 0x8013ed24u; return;/* fallthrough to next function */
 }
 
 /* cps_8013ed24 — clean CPS transliteration of br2eu_func_8013ED24 (guest 0x8013ed24)
@@ -44121,8 +44121,8 @@ block_8013ED50:
     /* nop */  /* 0x8013ED74: 0x00000000 */
     t4 = (int32_t)t4 >> 2;
     cpu->write_word(v0, t4);
-    cps_8013ed80(); return;  /* fallthrough to split piece */
-    cps_8013ed80();  /* fallthrough to next function */
+    cpu->pc = 0x8013ed80u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013ed80u; return;/* fallthrough to next function */
 }
 
 /* cps_8013ed80 — clean CPS transliteration of br2eu_func_8013ED80 (guest 0x8013ed80)
@@ -44208,7 +44208,7 @@ block_8013F864:
 
 block_8013F884:
     v0 = (int32_t)(int16_t)cpu->read_half(s6 + 2410);
-    cps_8013f888(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013f888u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8013f888 — clean CPS transliteration of br2eu_func_8013F888 (guest 0x8013f888)
@@ -44751,7 +44751,7 @@ block_8013FC28:
     s5 = zero;
     a1 = s6;
     a0 = s6 + 2192;
-    cps_8013fc38(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013fc38u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8013fc38 — clean CPS transliteration of br2eu_func_8013FC38 (guest 0x8013fc38)
@@ -44817,8 +44817,8 @@ block_8013FC38:
     v1 = (int32_t)(int16_t)cpu->read_half(a0);
     /* nop */  /* 0x8013FD24: 0x00000000 */
     v0 = v0 + v1;
-    cps_8013fd2c(); return;  /* fallthrough to split piece */
-    cps_8013fd2c();  /* fallthrough to next function */
+    cpu->pc = 0x8013fd2cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8013fd2cu; return;/* fallthrough to next function */
 }
 
 /* cps_8013fd2c — clean CPS transliteration of br2eu_func_8013FD2C (guest 0x8013fd2c)
@@ -44846,7 +44846,7 @@ block_8013FD2C:
         psx_check_interrupts_at(cpu, 0x8013FD48u);
         cpu->pc = 0x8013FD48u; return;  /* CPS not taken: split */
     }
-    cps_8013fd48();  /* fallthrough to next function */
+    cpu->pc = 0x8013fd48u; return;/* fallthrough to next function */
 }
 
 /* cps_8013fd48 — clean CPS transliteration of br2eu_func_8013FD48 (guest 0x8013fd48)
@@ -45610,7 +45610,7 @@ block_80142B00:
     t2 = cpu->read_word(sp + 96);
     /* nop */  /* 0x80142B04: 0x00000000 */
     v0 = t2 + 6;
-    cps_80142b0c(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80142b0cu; return;  /* fallthrough to split piece */
 }
 
 /* cps_80142b0c — clean CPS transliteration of br2eu_func_80142B0C (guest 0x80142b0c)
@@ -45658,8 +45658,8 @@ block_80142C38:
     psx_muldiv_stall(cpu);
     /* nop */  /* 0x80142C48: 0x00000000 */
     v1 = v0 + 4095;
-    cps_80142c50(); return;  /* fallthrough to split piece */
-    cps_80142c50();  /* fallthrough to next function */
+    cpu->pc = 0x80142c50u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80142c50u; return;/* fallthrough to next function */
 }
 
 /* cps_80142c50 — clean CPS transliteration of br2eu_func_80142C50 (guest 0x80142c50)
@@ -45752,8 +45752,8 @@ void cps_80142e60(void)
 
 block_80142E60:
     t1 = t1 | a3;
-    cps_80142e64(); return;  /* fallthrough to split piece */
-    cps_80142e64();  /* fallthrough to next function */
+    cpu->pc = 0x80142e64u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80142e64u; return;/* fallthrough to next function */
 }
 
 /* cps_80142e64 — clean CPS transliteration of br2eu_func_80142E64 (guest 0x80142e64)
@@ -45771,7 +45771,7 @@ block_80142E64:
     cpu->write_word(a2, zero);
     psx_check_interrupts_at(cpu, 0x80142EC8u);
     cpu->pc = 0x80142EC8u; return;  /* CPS j: split */
-    cps_80142e70();  /* fallthrough to next function */
+    cpu->pc = 0x80142e70u; return;/* fallthrough to next function */
 }
 
 /* cps_80142e70 — clean CPS transliteration of br2eu_func_80142E70 (guest 0x80142e70)
@@ -45854,7 +45854,7 @@ block_80142EB8:
     /* nop */  /* 0x80142EBC: 0x00000000 */
     v0 = v0 + 1;
     cpu->write_word(a2 + 64, v0);
-    cps_80142ec8(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80142ec8u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80142ec8 — clean CPS transliteration of br2eu_func_80142EC8 (guest 0x80142ec8)
@@ -47339,8 +47339,8 @@ void cps_80148e60(void)
 
 block_80148E60:
     cpu->write_byte(a3 + 3, (uint8_t)zero);
-    cps_80148e64(); return;  /* fallthrough to split piece */
-    cps_80148e64();  /* fallthrough to next function */
+    cpu->pc = 0x80148e64u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80148e64u; return;/* fallthrough to next function */
 }
 
 /* cps_80148e64 — clean CPS transliteration of br2eu_func_80148E64 (guest 0x80148e64)
@@ -47354,8 +47354,8 @@ void cps_80148e64(void)
 
 block_80148E64:
     v0 = a3;
-    cps_80148e68(); return;  /* fallthrough to split piece */
-    cps_80148e68();  /* fallthrough to next function */
+    cpu->pc = 0x80148e68u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80148e68u; return;/* fallthrough to next function */
 }
 
 /* cps_80148e68 — clean CPS transliteration of br2eu_func_80148E68 (guest 0x80148e68)
@@ -60106,8 +60106,8 @@ void cps_80179a5c(void)
 
 block_80179A5C:
     cpu->write_word(a0 + 68, a1);
-    cps_80179a60(); return;  /* fallthrough to split piece */
-    cps_80179a60();  /* fallthrough to next function */
+    cpu->pc = 0x80179a60u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80179a60u; return;/* fallthrough to next function */
 }
 
 /* cps_80179a60 — clean CPS transliteration of br2eu_func_80179A60 (guest 0x80179a60)
@@ -60689,7 +60689,7 @@ block_8017B650:
         psx_check_interrupts_at(cpu, 0x8017B664u);
         cpu->pc = 0x8017B664u; return;  /* CPS not taken: split */
     }
-    cps_8017b664();  /* fallthrough to next function */
+    cpu->pc = 0x8017b664u; return;/* fallthrough to next function */
 }
 
 /* cps_8017b664 — clean CPS transliteration of br2eu_func_8017B664 (guest 0x8017b664)
@@ -60703,8 +60703,8 @@ void cps_8017b664(void)
 
 block_8017B664:
     v1 = v1 & 0x000F;  /* 0x8017B664: 0x3063000F */
-    cps_8017b668(); return;  /* fallthrough to split piece */
-    cps_8017b668();  /* fallthrough to next function */
+    cpu->pc = 0x8017b668u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8017b668u; return;/* fallthrough to next function */
 }
 
 /* cps_8017b668 — clean CPS transliteration of br2eu_func_8017B668 (guest 0x8017b668)
@@ -61224,7 +61224,7 @@ block_8017B8BC:
         psx_check_interrupts_at(cpu, 0x8017B8D0u);
         cpu->pc = 0x8017B8D0u; return;  /* CPS not taken: split */
     }
-    cps_8017b8d0();  /* fallthrough to next function */
+    cpu->pc = 0x8017b8d0u; return;/* fallthrough to next function */
 }
 
 /* cps_8017b8d0 — clean CPS transliteration of br2eu_func_8017B8D0 (guest 0x8017b8d0)
@@ -61238,8 +61238,8 @@ void cps_8017b8d0(void)
 
 block_8017B8D0:
     v1 = v1 & 0x000F;  /* 0x8017B8D0: 0x3063000F */
-    cps_8017b8d4(); return;  /* fallthrough to split piece */
-    cps_8017b8d4();  /* fallthrough to next function */
+    cpu->pc = 0x8017b8d4u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8017b8d4u; return;/* fallthrough to next function */
 }
 
 /* cps_8017b8d4 — clean CPS transliteration of br2eu_func_8017B8D4 (guest 0x8017b8d4)
@@ -61628,7 +61628,7 @@ block_8017BAB4:
         psx_check_interrupts_at(cpu, 0x8017BAC8u);
         cpu->pc = 0x8017BAC8u; return;  /* CPS not taken: split */
     }
-    cps_8017bac8();  /* fallthrough to next function */
+    cpu->pc = 0x8017bac8u; return;/* fallthrough to next function */
 }
 
 /* cps_8017bac8 — clean CPS transliteration of br2eu_func_8017BAC8 (guest 0x8017bac8)
@@ -61645,7 +61645,7 @@ block_8017BAC8:
     a3 = t0;
     psx_check_interrupts_at(cpu, 0x8017BAD4u);
     cpu->pc = 0x8017BAD4u; return;  /* CPS j: split */
-    cps_8017bad0();  /* fallthrough to next function */
+    cpu->pc = 0x8017bad0u; return;/* fallthrough to next function */
 }
 
 /* cps_8017bad0 — clean CPS transliteration of br2eu_func_8017BAD0 (guest 0x8017bad0)
@@ -61659,8 +61659,8 @@ void cps_8017bad0(void)
 
 block_8017BAD0:
     a3 = cpu->read_word(t0 + 44);
-    cps_8017bad4(); return;  /* fallthrough to split piece */
-    cps_8017bad4();  /* fallthrough to next function */
+    cpu->pc = 0x8017bad4u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8017bad4u; return;/* fallthrough to next function */
 }
 
 /* cps_8017bad4 — clean CPS transliteration of br2eu_func_8017BAD4 (guest 0x8017bad4)
@@ -62229,7 +62229,7 @@ block_8017C3BC:
         psx_check_interrupts_at(cpu, 0x8017C3D0u);
         cpu->pc = 0x8017C3D0u; return;  /* CPS not taken: split */
     }
-    cps_8017c3d0();  /* fallthrough to next function */
+    cpu->pc = 0x8017c3d0u; return;/* fallthrough to next function */
 }
 
 /* cps_8017c3d0 — clean CPS transliteration of br2eu_func_8017C3D0 (guest 0x8017c3d0)
@@ -62739,7 +62739,7 @@ block_8017C608:
         psx_check_interrupts_at(cpu, 0x8017C61Cu);
         cpu->pc = 0x8017C61Cu; return;  /* CPS not taken: split */
     }
-    cps_8017c61c();  /* fallthrough to next function */
+    cpu->pc = 0x8017c61cu; return;/* fallthrough to next function */
 }
 
 /* cps_8017c61c — clean CPS transliteration of br2eu_func_8017C61C (guest 0x8017c61c)
@@ -62926,7 +62926,7 @@ block_8017C818:
     cpu->write_half(a1 + 266, (uint16_t)v0);
     psx_check_interrupts_at(cpu, 0x8017C850u);
     cpu->pc = 0x8017C850u; return;  /* CPS j: split */
-    cps_8017c840();  /* fallthrough to next function */
+    cpu->pc = 0x8017c840u; return;/* fallthrough to next function */
 }
 
 /* cps_8017c840 — clean CPS transliteration of br2eu_func_8017C840 (guest 0x8017c840)
@@ -62943,8 +62943,8 @@ block_8017C840:
     v0 = cpu->read_half(a2 + 2);
     /* nop */  /* 0x8017C848: 0x00000000 */
     cpu->write_half(a1 + 268, (uint16_t)v0);
-    cps_8017c850(); return;  /* fallthrough to split piece */
-    cps_8017c850();  /* fallthrough to next function */
+    cpu->pc = 0x8017c850u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8017c850u; return;/* fallthrough to next function */
 }
 
 /* cps_8017c850 — clean CPS transliteration of br2eu_func_8017C850 (guest 0x8017c850)
@@ -63129,7 +63129,7 @@ block_8017C900:
     cpu->write_half(a1 + 266, (uint16_t)v0);
     psx_check_interrupts_at(cpu, 0x8017C938u);
     cpu->pc = 0x8017C938u; return;  /* CPS j: split */
-    cps_8017c928();  /* fallthrough to next function */
+    cpu->pc = 0x8017c928u; return;/* fallthrough to next function */
 }
 
 /* cps_8017c928 — clean CPS transliteration of br2eu_func_8017C928 (guest 0x8017c928)
@@ -63146,8 +63146,8 @@ block_8017C928:
     v0 = cpu->read_half(a2 + 2);
     /* nop */  /* 0x8017C930: 0x00000000 */
     cpu->write_half(a1 + 268, (uint16_t)v0);
-    cps_8017c938(); return;  /* fallthrough to split piece */
-    cps_8017c938();  /* fallthrough to next function */
+    cpu->pc = 0x8017c938u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8017c938u; return;/* fallthrough to next function */
 }
 
 /* cps_8017c938 — clean CPS transliteration of br2eu_func_8017C938 (guest 0x8017c938)
@@ -63352,7 +63352,7 @@ block_8017CAD8:
         psx_check_interrupts_at(cpu, 0x8017CAECu);
         cpu->pc = 0x8017CAECu; return;  /* CPS not taken: split */
     }
-    cps_8017caec();  /* fallthrough to next function */
+    cpu->pc = 0x8017caecu; return;/* fallthrough to next function */
 }
 
 /* cps_8017caec — clean CPS transliteration of br2eu_func_8017CAEC (guest 0x8017caec)
@@ -64235,7 +64235,7 @@ block_8017D244:
         psx_check_interrupts_at(cpu, 0x8017D258u);
         cpu->pc = 0x8017D258u; return;  /* CPS not taken: split */
     }
-    cps_8017d258();  /* fallthrough to next function */
+    cpu->pc = 0x8017d258u; return;/* fallthrough to next function */
 }
 
 /* cps_8017d258 — clean CPS transliteration of br2eu_func_8017D258 (guest 0x8017d258)
@@ -64249,8 +64249,8 @@ void cps_8017d258(void)
 
 block_8017D258:
     v1 = v1 & 0x000F;  /* 0x8017D258: 0x3063000F */
-    cps_8017d25c(); return;  /* fallthrough to split piece */
-    cps_8017d25c();  /* fallthrough to next function */
+    cpu->pc = 0x8017d25cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8017d25cu; return;/* fallthrough to next function */
 }
 
 /* cps_8017d25c — clean CPS transliteration of br2eu_func_8017D25C (guest 0x8017d25c)
@@ -64585,7 +64585,7 @@ block_8017D5C8:
         psx_check_interrupts_at(cpu, 0x8017D5DCu);
         cpu->pc = 0x8017D5DCu; return;  /* CPS not taken: split */
     }
-    cps_8017d5dc();  /* fallthrough to next function */
+    cpu->pc = 0x8017d5dcu; return;/* fallthrough to next function */
 }
 
 /* cps_8017d5dc — clean CPS transliteration of br2eu_func_8017D5DC (guest 0x8017d5dc)
@@ -64599,8 +64599,8 @@ void cps_8017d5dc(void)
 
 block_8017D5DC:
     v1 = v1 & 0x000F;  /* 0x8017D5DC: 0x3063000F */
-    cps_8017d5e0(); return;  /* fallthrough to split piece */
-    cps_8017d5e0();  /* fallthrough to next function */
+    cpu->pc = 0x8017d5e0u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8017d5e0u; return;/* fallthrough to next function */
 }
 
 /* cps_8017d5e0 — clean CPS transliteration of br2eu_func_8017D5E0 (guest 0x8017d5e0)
@@ -64959,8 +64959,8 @@ void cps_8017d754(void)
 
 block_8017D754:
     v1 = v1 & 0x000F;  /* 0x8017D754: 0x3063000F */
-    cps_8017d758(); return;  /* fallthrough to split piece */
-    cps_8017d758();  /* fallthrough to next function */
+    cpu->pc = 0x8017d758u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8017d758u; return;/* fallthrough to next function */
 }
 
 /* cps_8017d758 — clean CPS transliteration of br2eu_func_8017D758 (guest 0x8017d758)
@@ -65220,7 +65220,7 @@ block_8017DA4C:
         psx_check_interrupts_at(cpu, 0x8017DA60u);
         cpu->pc = 0x8017DA60u; return;  /* CPS not taken: split */
     }
-    cps_8017da60();  /* fallthrough to next function */
+    cpu->pc = 0x8017da60u; return;/* fallthrough to next function */
 }
 
 /* cps_8017da60 — clean CPS transliteration of br2eu_func_8017DA60 (guest 0x8017da60)
@@ -65234,8 +65234,8 @@ void cps_8017da60(void)
 
 block_8017DA60:
     v1 = a1 & 0x000F;  /* 0x8017DA60: 0x30A3000F */
-    cps_8017da64(); return;  /* fallthrough to split piece */
-    cps_8017da64();  /* fallthrough to next function */
+    cpu->pc = 0x8017da64u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8017da64u; return;/* fallthrough to next function */
 }
 
 /* cps_8017da64 — clean CPS transliteration of br2eu_func_8017DA64 (guest 0x8017da64)
@@ -65249,8 +65249,8 @@ void cps_8017da64(void)
 
 block_8017DA64:
     v0 = 1;
-    cps_8017da68(); return;  /* fallthrough to split piece */
-    cps_8017da68();  /* fallthrough to next function */
+    cpu->pc = 0x8017da68u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8017da68u; return;/* fallthrough to next function */
 }
 
 /* cps_8017da68 — clean CPS transliteration of br2eu_func_8017DA68 (guest 0x8017da68)
@@ -65813,7 +65813,7 @@ block_8017E694:
         psx_check_interrupts_at(cpu, 0x8017E6A8u);
         cpu->pc = 0x8017E6A8u; return;  /* CPS not taken: split */
     }
-    cps_8017e6a8();  /* fallthrough to next function */
+    cpu->pc = 0x8017e6a8u; return;/* fallthrough to next function */
 }
 
 /* cps_8017e6a8 — clean CPS transliteration of br2eu_func_8017E6A8 (guest 0x8017e6a8)
@@ -65827,8 +65827,8 @@ void cps_8017e6a8(void)
 
 block_8017E6A8:
     v1 = a3 & 0x000F;  /* 0x8017E6A8: 0x30E3000F */
-    cps_8017e6ac(); return;  /* fallthrough to split piece */
-    cps_8017e6ac();  /* fallthrough to next function */
+    cpu->pc = 0x8017e6acu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8017e6acu; return;/* fallthrough to next function */
 }
 
 /* cps_8017e6ac — clean CPS transliteration of br2eu_func_8017E6AC (guest 0x8017e6ac)
@@ -65842,8 +65842,8 @@ void cps_8017e6ac(void)
 
 block_8017E6AC:
     v0 = 1;
-    cps_8017e6b0(); return;  /* fallthrough to split piece */
-    cps_8017e6b0();  /* fallthrough to next function */
+    cpu->pc = 0x8017e6b0u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8017e6b0u; return;/* fallthrough to next function */
 }
 
 /* cps_8017e6b0 — clean CPS transliteration of br2eu_func_8017E6B0 (guest 0x8017e6b0)
@@ -66393,7 +66393,7 @@ block_8017FAE4:
         psx_check_interrupts_at(cpu, 0x8017FAF8u);
         cpu->pc = 0x8017FAF8u; return;  /* CPS not taken: split */
     }
-    cps_8017faf8();  /* fallthrough to next function */
+    cpu->pc = 0x8017faf8u; return;/* fallthrough to next function */
 }
 
 /* cps_8017faf8 — clean CPS transliteration of br2eu_func_8017FAF8 (guest 0x8017faf8)
@@ -67245,7 +67245,7 @@ block_80180854:
     cpu->write_word(v1 + 60, v0);
     a1 = cpu->read_word(s7 + 32);
     a2 = zero;
-    cps_8018098c(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8018098cu; return;  /* fallthrough to split piece */
 }
 
 /* cps_8018098c — clean CPS transliteration of br2eu_func_8018098C (guest 0x8018098c)
@@ -67414,8 +67414,8 @@ void cps_80181f10(void)
 block_80181F10:
     v0 = 9;
     cpu->write_half(a2 + 40, (uint16_t)v0);
-    cps_80181f18(); return;  /* fallthrough to split piece */
-    cps_80181f18();  /* fallthrough to next function */
+    cpu->pc = 0x80181f18u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80181f18u; return;/* fallthrough to next function */
 }
 
 /* cps_80181f18 — clean CPS transliteration of br2eu_func_80181F18 (guest 0x80181f18)
@@ -76402,7 +76402,7 @@ block_8018B760:
 
 block_8018B768:
     t4 = t4 + t6;
-    cps_8018b76c(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8018b76cu; return;  /* fallthrough to split piece */
 }
 
 /* cps_8018b76c — clean CPS transliteration of br2eu_func_8018B76C (guest 0x8018b76c)
@@ -76869,8 +76869,8 @@ void cps_8018bb48(void)
 
 block_8018BB48:
     a2 = zero;
-    cps_8018bb4c(); return;  /* fallthrough to split piece */
-    cps_8018bb4c();  /* fallthrough to next function */
+    cpu->pc = 0x8018bb4cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8018bb4cu; return;/* fallthrough to next function */
 }
 
 /* cps_8018bb4c — clean CPS transliteration of br2eu_func_8018BB4C (guest 0x8018bb4c)
@@ -77554,7 +77554,7 @@ block_8018D284:
         psx_check_interrupts_at(cpu, 0x8018D290u);
         cpu->pc = 0x8018D290u; return;  /* CPS not taken: split */
     }
-    cps_8018d290();  /* fallthrough to next function */
+    cpu->pc = 0x8018d290u; return;/* fallthrough to next function */
 }
 
 /* cps_8018d290 — clean CPS transliteration of br2eu_func_8018D290 (guest 0x8018d290)
@@ -77692,8 +77692,8 @@ void cps_8018d474(void)
 block_8018D474:
     cpu->write_half(a3, (uint16_t)v1);
     cpu->write_half(a3 + 4, (uint16_t)t4);
-    cps_8018d47c(); return;  /* fallthrough to split piece */
-    cps_8018d47c();  /* fallthrough to next function */
+    cpu->pc = 0x8018d47cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8018d47cu; return;/* fallthrough to next function */
 }
 
 /* cps_8018d47c — clean CPS transliteration of br2eu_func_8018D47C (guest 0x8018d47c)
@@ -77812,7 +77812,7 @@ block_8018D670:
         psx_check_interrupts_at(cpu, 0x8018D694u);
         cpu->pc = 0x8018D694u; return;  /* CPS not taken: split */
     }
-    cps_8018d694();  /* fallthrough to next function */
+    cpu->pc = 0x8018d694u; return;/* fallthrough to next function */
 }
 
 /* cps_8018d694 — clean CPS transliteration of br2eu_func_8018D694 (guest 0x8018d694)
@@ -77843,8 +77843,8 @@ void cps_8018da28(void)
 
 block_8018DA28:
     a0 = (int32_t)(int16_t)cpu->read_half(a0);
-    cps_8018da2c(); return;  /* fallthrough to split piece */
-    cps_8018da2c();  /* fallthrough to next function */
+    cpu->pc = 0x8018da2cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8018da2cu; return;/* fallthrough to next function */
 }
 
 /* cps_8018da2c — clean CPS transliteration of br2eu_func_8018DA2C (guest 0x8018da2c)
@@ -77960,8 +77960,8 @@ block_8018DAB4:
     a0 = cpu->read_word(a0);
     a2 = a1;
     a1 = (int32_t)a0 >> 16;
-    cps_8018dac0(); return;  /* fallthrough to split piece */
-    cps_8018dac0();  /* fallthrough to next function */
+    cpu->pc = 0x8018dac0u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8018dac0u; return;/* fallthrough to next function */
 }
 
 /* cps_8018dac0 — clean CPS transliteration of br2eu_func_8018DAC0 (guest 0x8018dac0)
@@ -78181,7 +78181,7 @@ block_8018DBE4:
         psx_check_interrupts_at(cpu, 0x8018DC00u);
         cpu->pc = 0x8018DC00u; return;  /* CPS not taken: split */
     }
-    cps_8018dc00();  /* fallthrough to next function */
+    cpu->pc = 0x8018dc00u; return;/* fallthrough to next function */
 }
 
 /* cps_8018dc00 — clean CPS transliteration of br2eu_func_8018DC00 (guest 0x8018dc00)
@@ -78623,8 +78623,8 @@ void cps_8018de68(void)
 
 block_8018DE68:
     a0 = (int32_t)(int16_t)cpu->read_half(a0 + 2);
-    cps_8018de6c(); return;  /* fallthrough to split piece */
-    cps_8018de6c();  /* fallthrough to next function */
+    cpu->pc = 0x8018de6cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8018de6cu; return;/* fallthrough to next function */
 }
 
 /* cps_8018de6c — clean CPS transliteration of br2eu_func_8018DE6C (guest 0x8018de6c)
@@ -78740,8 +78740,8 @@ block_8018DEF4:
     a0 = cpu->read_word(a0);
     a2 = a1;
     a1 = (int32_t)a0 >> 16;
-    cps_8018df00(); return;  /* fallthrough to split piece */
-    cps_8018df00();  /* fallthrough to next function */
+    cpu->pc = 0x8018df00u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8018df00u; return;/* fallthrough to next function */
 }
 
 /* cps_8018df00 — clean CPS transliteration of br2eu_func_8018DF00 (guest 0x8018df00)
@@ -78947,8 +78947,8 @@ void cps_8018e024(void)
 
 block_8018E024:
     a0 = (int32_t)(int16_t)cpu->read_half(a0 + 4);
-    cps_8018e028(); return;  /* fallthrough to split piece */
-    cps_8018e028();  /* fallthrough to next function */
+    cpu->pc = 0x8018e028u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8018e028u; return;/* fallthrough to next function */
 }
 
 /* cps_8018e028 — clean CPS transliteration of br2eu_func_8018E028 (guest 0x8018e028)
@@ -82846,7 +82846,7 @@ block_80191B6C:
     /* nop */  /* 0x80191B74: 0x00000000 */
     v0 = cpu->read_word(v0 + 16);
     /* nop */  /* 0x80191B7C: 0x00000000 */
-    cps_80191b80(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80191b80u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80191b80 — clean CPS transliteration of br2eu_func_80191B80 (guest 0x80191b80)
@@ -82876,7 +82876,7 @@ block_80191B80:
 block_80191B88:
     v0 = 8;
     cpu->write_byte(s1 + 18, (uint8_t)v0);
-    cps_80191b90(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80191b90u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80191b90 — clean CPS transliteration of br2eu_func_80191B90 (guest 0x80191b90)
@@ -82990,8 +82990,8 @@ void cps_80191c04(void)
 
 block_80191C04:
     /* nop */  /* 0x80191C04: 0x00000000 */
-    cps_80191c08(); return;  /* fallthrough to split piece */
-    cps_80191c08();  /* fallthrough to next function */
+    cpu->pc = 0x80191c08u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80191c08u; return;/* fallthrough to next function */
 }
 
 /* cps_80191c08 — clean CPS transliteration of br2eu_func_80191C08 (guest 0x80191c08)
@@ -83126,7 +83126,7 @@ block_80191C78:
     v0 = 0x801C << 16;  /* 0x801C0000 */
     v0 = v0 + a2;
     v0 = cpu->read_byte(v0 + -31716);
-    cps_80191c88(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80191c88u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80191c88 — clean CPS transliteration of br2eu_func_80191C88 (guest 0x80191c88)
@@ -83230,7 +83230,7 @@ block_80191CFC:
 
 block_80191D08:
     a1 = a0;
-    cps_80191d0c(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80191d0cu; return;  /* fallthrough to split piece */
 }
 
 /* cps_80191d0c — clean CPS transliteration of br2eu_func_80191D0C (guest 0x80191d0c)
@@ -83385,7 +83385,7 @@ block_80191D80:
 
 block_80191D8C:
     v0 = ((int32_t)a0 < 3251) ? 1 : 0;  /* 0x80191D8C: 0x28820CB3 */
-    cps_80191d90(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80191d90u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80191d90 — clean CPS transliteration of br2eu_func_80191D90 (guest 0x80191d90)
@@ -83418,7 +83418,7 @@ block_80191D90:
 
 block_80191D98:
     a1 = a0;
-    cps_80191d9c(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80191d9cu; return;  /* fallthrough to split piece */
 }
 
 /* cps_80191d9c — clean CPS transliteration of br2eu_func_80191D9C (guest 0x80191d9c)
@@ -83537,7 +83537,7 @@ block_80191DF4:
 
 block_80191E08:
     a1 = 258;
-    cps_80191e0c(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80191e0cu; return;  /* fallthrough to split piece */
 }
 
 /* cps_80191e0c — clean CPS transliteration of br2eu_func_80191E0C (guest 0x80191e0c)
@@ -83560,7 +83560,7 @@ block_80191E0C:
         psx_check_interrupts_at(cpu, 0x80191E14u);
         cpu->pc = 0x80191E14u; return;  /* CPS not taken: split */
     }
-    cps_80191e14();  /* fallthrough to next function */
+    cpu->pc = 0x80191e14u; return;/* fallthrough to next function */
 }
 
 /* cps_80191e14 — clean CPS transliteration of br2eu_func_80191E14 (guest 0x80191e14)
@@ -83574,8 +83574,8 @@ void cps_80191e14(void)
 
 block_80191E14:
     a1 = s2;
-    cps_80191e18(); return;  /* fallthrough to split piece */
-    cps_80191e18();  /* fallthrough to next function */
+    cpu->pc = 0x80191e18u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80191e18u; return;/* fallthrough to next function */
 }
 
 /* cps_80191e18 — clean CPS transliteration of br2eu_func_80191E18 (guest 0x80191e18)
@@ -84690,8 +84690,8 @@ block_80194470:
     t6 = cpu->hi;
     psx_muldiv_stall(cpu);
     /* nop: write to $zero */  /* 0x80194474: 0x00440000 */
-    cps_80194478(); return;  /* fallthrough to split piece */
-    cps_80194478();  /* fallthrough to next function */
+    cpu->pc = 0x80194478u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80194478u; return;/* fallthrough to next function */
 }
 
 /* cps_80194478 — clean CPS transliteration of br2eu_func_80194478 (guest 0x80194478)
@@ -84951,8 +84951,8 @@ void cps_80195adc(void)
 
 block_80195ADC:
     cpu->write_word(at + -14412, zero);
-    cps_80195ae0(); return;  /* fallthrough to split piece */
-    cps_80195ae0();  /* fallthrough to next function */
+    cpu->pc = 0x80195ae0u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80195ae0u; return;/* fallthrough to next function */
 }
 
 /* cps_80195ae0 — clean CPS transliteration of br2eu_func_80195AE0 (guest 0x80195ae0)
@@ -84996,7 +84996,7 @@ block_80195AF0:
 
 block_80195AFC:
     v0 = zero;
-    cps_80195b00(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80195b00u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80195b00 — clean CPS transliteration of br2eu_func_80195B00 (guest 0x80195b00)
@@ -85162,8 +85162,8 @@ void cps_80195bfc(void)
 
 block_80195BFC:
     /* nop */  /* 0x80195BFC: 0x00000000 */
-    cps_80195c00(); return;  /* fallthrough to split piece */
-    cps_80195c00();  /* fallthrough to next function */
+    cpu->pc = 0x80195c00u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80195c00u; return;/* fallthrough to next function */
 }
 
 /* cps_80195c00 — clean CPS transliteration of br2eu_func_80195C00 (guest 0x80195c00)
@@ -85214,8 +85214,8 @@ void cps_80195c40(void)
 
 block_80195C40:
     v0 = 1;
-    cps_80195c44(); return;  /* fallthrough to split piece */
-    cps_80195c44();  /* fallthrough to next function */
+    cpu->pc = 0x80195c44u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80195c44u; return;/* fallthrough to next function */
 }
 
 /* cps_80195c44 — clean CPS transliteration of br2eu_func_80195C44 (guest 0x80195c44)
@@ -85292,7 +85292,7 @@ block_80195C68:
 
 block_80195C74:
     v0 = 1;
-    cps_80195c78(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80195c78u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80195c78 — clean CPS transliteration of br2eu_func_80195C78 (guest 0x80195c78)
@@ -85325,8 +85325,8 @@ void cps_80195c84(void)
 
 block_80195C84:
     sp = sp + 24;
-    cps_80195c88(); return;  /* fallthrough to split piece */
-    cps_80195c88();  /* fallthrough to next function */
+    cpu->pc = 0x80195c88u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80195c88u; return;/* fallthrough to next function */
 }
 
 /* cps_80195c88 — clean CPS transliteration of br2eu_func_80195C88 (guest 0x80195c88)
@@ -89839,7 +89839,7 @@ block_80199A88:
 
 block_80199AA4:
     at = 0x801C << 16;  /* 0x801C0000 */
-    cps_80199aa8(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80199aa8u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80199aa8 — clean CPS transliteration of br2eu_func_80199AA8 (guest 0x80199aa8)
@@ -89856,7 +89856,7 @@ block_80199AA8:
     cpu->write_word(at + -13176, v0);
     psx_check_interrupts_at(cpu, 0x80199D4Cu);
     cpu->pc = 0x80199D4Cu; return;  /* CPS j: split */
-    cps_80199ab0();  /* fallthrough to next function */
+    cpu->pc = 0x80199ab0u; return;/* fallthrough to next function */
 }
 
 /* cps_80199ab0 — clean CPS transliteration of br2eu_func_80199AB0 (guest 0x80199ab0)
@@ -89918,8 +89918,8 @@ block_80199AEC:
     v0 = cpu->read_word(v0 + -14656);
     at = 0x8020 << 16;  /* 0x80200000 */
     cpu->write_word(at + -5352, v0);
-    cps_80199afc(); return;  /* fallthrough to split piece */
-    cps_80199afc();  /* fallthrough to next function */
+    cpu->pc = 0x80199afcu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80199afcu; return;/* fallthrough to next function */
 }
 
 /* cps_80199afc — clean CPS transliteration of br2eu_func_80199AFC (guest 0x80199afc)
@@ -89937,8 +89937,8 @@ block_80199AFC:
     at = 0x8020 << 16;  /* 0x80200000 */
     cpu->write_word(at + -14680, v0);
     v0 = 10;
-    cps_80199b10(); return;  /* fallthrough to split piece */
-    cps_80199b10();  /* fallthrough to next function */
+    cpu->pc = 0x80199b10u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80199b10u; return;/* fallthrough to next function */
 }
 
 /* cps_80199b10 — clean CPS transliteration of br2eu_func_80199B10 (guest 0x80199b10)
@@ -89959,8 +89959,8 @@ block_80199B10:
     a0 = cpu->read_word(a0 + -14652);
     v1 = 0x8020 << 16;  /* 0x80200000 */
     v1 = cpu->read_word(v1 + -14656);
-    cps_80199b30(); return;  /* fallthrough to split piece */
-    cps_80199b30();  /* fallthrough to next function */
+    cpu->pc = 0x80199b30u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80199b30u; return;/* fallthrough to next function */
 }
 
 /* cps_80199b30 — clean CPS transliteration of br2eu_func_80199B30 (guest 0x80199b30)
@@ -89998,7 +89998,7 @@ block_80199B30:
         psx_check_interrupts_at(cpu, 0x80199B74u);
         cpu->pc = 0x80199B74u; return;  /* CPS not taken: split */
     }
-    cps_80199b74();  /* fallthrough to next function */
+    cpu->pc = 0x80199b74u; return;/* fallthrough to next function */
 }
 
 /* cps_80199b74 — clean CPS transliteration of br2eu_func_80199B74 (guest 0x80199b74)
@@ -90023,7 +90023,7 @@ block_80199B74:
     cpu->write_word(v1, v0);
     psx_check_interrupts_at(cpu, 0x80199BB8u);
     cpu->pc = 0x80199BB8u; return;  /* CPS j: split */
-    cps_80199b9c();  /* fallthrough to next function */
+    cpu->pc = 0x80199b9cu; return;/* fallthrough to next function */
 }
 
 /* cps_80199b9c — clean CPS transliteration of br2eu_func_80199B9C (guest 0x80199b9c)
@@ -90043,8 +90043,8 @@ block_80199B9C:
     v0 = cpu->read_word(v0 + -13232);
     t0 = t0 | 0x0100;
     cpu->write_word(v0, v1);
-    cps_80199bb8(); return;  /* fallthrough to split piece */
-    cps_80199bb8();  /* fallthrough to next function */
+    cpu->pc = 0x80199bb8u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80199bb8u; return;/* fallthrough to next function */
 }
 
 /* cps_80199bb8 — clean CPS transliteration of br2eu_func_80199BB8 (guest 0x80199bb8)
@@ -90061,8 +90061,8 @@ block_80199BB8:
     v0 = cpu->read_word(v0 + -5352);
     /* nop */  /* 0x80199BC0: 0x00000000 */
     v1 = cpu->read_half(v0 + 6);
-    cps_80199bc8(); return;  /* fallthrough to split piece */
-    cps_80199bc8();  /* fallthrough to next function */
+    cpu->pc = 0x80199bc8u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80199bc8u; return;/* fallthrough to next function */
 }
 
 /* cps_80199bc8 — clean CPS transliteration of br2eu_func_80199BC8 (guest 0x80199bc8)
@@ -90120,7 +90120,7 @@ block_80199BF0:
     a0 = cpu->read_word(a0 + -14660);
     a1 = a1 << 11;
     a1 = v0 + a1;
-    cps_80199c0c(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80199c0cu; return;  /* fallthrough to split piece */
 }
 
 /* cps_80199c0c — clean CPS transliteration of br2eu_func_80199C0C (guest 0x80199c0c)
@@ -90193,8 +90193,8 @@ void cps_80199c50(void)
 
 block_80199C50:
     cpu->write_word(sp + 24, zero);
-    cps_80199c54(); return;  /* fallthrough to split piece */
-    cps_80199c54();  /* fallthrough to next function */
+    cpu->pc = 0x80199c54u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x80199c54u; return;/* fallthrough to next function */
 }
 
 /* cps_80199c54 — clean CPS transliteration of br2eu_func_80199C54 (guest 0x80199c54)
@@ -90218,7 +90218,7 @@ block_80199C54:
     cpu->write_word(at + -14696, v0);
     psx_check_interrupts_at(cpu, 0x80199CF0u);
     cpu->pc = 0x80199CF0u; return;  /* CPS j: split */
-    cps_80199c78();  /* fallthrough to next function */
+    cpu->pc = 0x80199c78u; return;/* fallthrough to next function */
 }
 
 /* cps_80199c78 — clean CPS transliteration of br2eu_func_80199C78 (guest 0x80199c78)
@@ -90255,7 +90255,7 @@ block_80199C78:
 block_80199C8C:
     a3 = zero;
     a1 = 0x8020 << 16;  /* 0x80200000 */
-    cps_80199c94(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x80199c94u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80199c94 — clean CPS transliteration of br2eu_func_80199C94 (guest 0x80199c94)
@@ -91644,8 +91644,8 @@ block_8019B26C:
     at = 0x801C << 16;  /* 0x801C0000 */
     cpu->write_word(at + -8632, zero);
     cpu->write_word(v0, zero);
-    cps_8019b290(); return;  /* fallthrough to split piece */
-    cps_8019b290();  /* fallthrough to next function */
+    cpu->pc = 0x8019b290u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8019b290u; return;/* fallthrough to next function */
 }
 
 /* cps_8019b290 — clean CPS transliteration of br2eu_func_8019B290 (guest 0x8019b290)
@@ -95182,7 +95182,7 @@ block_8019FDFC:
     v0 = v0 << (a0 & 0x1F);
     v1 = v1 | v0;
     cpu->write_word(s0 + 12, v1);
-    cps_8019fe1c(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x8019fe1cu; return;  /* fallthrough to split piece */
 }
 
 /* cps_8019fe1c — clean CPS transliteration of br2eu_func_8019FE1C (guest 0x8019fe1c)
@@ -95285,8 +95285,8 @@ void cps_8019fe74(void)
 
 block_8019FE74:
     cpu->write_word(at + -5136, s2);
-    cps_8019fe78(); return;  /* fallthrough to split piece */
-    cps_8019fe78();  /* fallthrough to next function */
+    cpu->pc = 0x8019fe78u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8019fe78u; return;/* fallthrough to next function */
 }
 
 /* cps_8019fe78 — clean CPS transliteration of br2eu_func_8019FE78 (guest 0x8019fe78)
@@ -95300,8 +95300,8 @@ void cps_8019fe78(void)
 
 block_8019FE78:
     v0 = cpu->read_word(s0);
-    cps_8019fe7c(); return;  /* fallthrough to split piece */
-    cps_8019fe7c();  /* fallthrough to next function */
+    cpu->pc = 0x8019fe7cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8019fe7cu; return;/* fallthrough to next function */
 }
 
 /* cps_8019fe7c — clean CPS transliteration of br2eu_func_8019FE7C (guest 0x8019fe7c)
@@ -95485,8 +95485,8 @@ void cps_8019ff2c(void)
 
 block_8019FF2C:
     v0 = zero;
-    cps_8019ff30(); return;  /* fallthrough to split piece */
-    cps_8019ff30();  /* fallthrough to next function */
+    cpu->pc = 0x8019ff30u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8019ff30u; return;/* fallthrough to next function */
 }
 
 /* cps_8019ff30 — clean CPS transliteration of br2eu_func_8019FF30 (guest 0x8019ff30)
@@ -96334,7 +96334,7 @@ block_801A0C58:
     a0 = a0 | 0x0001;
     a1 = 8192;
     a3 = 0x801A << 16;  /* 0x801A0000 */
-    cps_801a0c68(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a0c68u; return;  /* fallthrough to split piece */
 }
 
 /* cps_801a0c68 — clean CPS transliteration of br2eu_func_801A0C68 (guest 0x801a0c68)
@@ -97465,7 +97465,7 @@ block_801A1BE0:
 
 block_801A1BE8:
     s1 = v1;
-    cps_801a1bec(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a1becu; return;  /* fallthrough to split piece */
 }
 
 /* cps_801a1bec — clean CPS transliteration of br2eu_func_801A1BEC (guest 0x801a1bec)
@@ -97514,7 +97514,7 @@ block_801A1C34:
     /* nop */  /* 0x801A1C3C: 0x00000000 */
     v0 = v0 << 2;
     v0 = v0 + s1;
-    cps_801a1c48(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a1c48u; return;  /* fallthrough to split piece */
 }
 
 /* cps_801a1c48 — clean CPS transliteration of br2eu_func_801A1C48 (guest 0x801a1c48)
@@ -97539,7 +97539,7 @@ block_801A1C48:
         psx_check_interrupts_at(cpu, 0x801A1C58u);
         cpu->pc = 0x801A1C58u; return;  /* CPS not taken: split */
     }
-    cps_801a1c58();  /* fallthrough to next function */
+    cpu->pc = 0x801a1c58u; return;/* fallthrough to next function */
 }
 
 /* cps_801a1c58 — clean CPS transliteration of br2eu_func_801A1C58 (guest 0x801a1c58)
@@ -97583,7 +97583,7 @@ block_801A1C80:
     v0 = 0x801C << 16;  /* 0x801C0000 */
     v0 = cpu->read_word(v0 + -6240);
     /* nop */  /* 0x801A1C8C: 0x00000000 */
-    cps_801a1c90(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a1c90u; return;  /* fallthrough to split piece */
 }
 
 /* cps_801a1c90 — clean CPS transliteration of br2eu_func_801A1C90 (guest 0x801a1c90)
@@ -97648,7 +97648,7 @@ block_801A1CAC:
         psx_check_interrupts_at(cpu, 0x801A1CCCu);
         cpu->pc = 0x801A1CCCu; return;  /* CPS not taken: split */
     }
-    cps_801a1ccc();  /* fallthrough to next function */
+    cpu->pc = 0x801a1cccu; return;/* fallthrough to next function */
 }
 
 /* cps_801a1ccc — clean CPS transliteration of br2eu_func_801A1CCC (guest 0x801a1ccc)
@@ -97794,8 +97794,8 @@ void cps_801a1d50(void)
 
 block_801A1D50:
     /* nop */  /* 0x801A1D50: 0x00000000 */
-    cps_801a1d54(); return;  /* fallthrough to split piece */
-    cps_801a1d54();  /* fallthrough to next function */
+    cpu->pc = 0x801a1d54u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a1d54u; return;/* fallthrough to next function */
 }
 
 /* cps_801a1d54 — clean CPS transliteration of br2eu_func_801A1D54 (guest 0x801a1d54)
@@ -97818,7 +97818,7 @@ block_801A1D54:
         psx_check_interrupts_at(cpu, 0x801A1D5Cu);
         cpu->pc = 0x801A1D5Cu; return;  /* CPS not taken: split */
     }
-    cps_801a1d5c();  /* fallthrough to next function */
+    cpu->pc = 0x801a1d5cu; return;/* fallthrough to next function */
 }
 
 /* cps_801a1d5c — clean CPS transliteration of br2eu_func_801A1D5C (guest 0x801a1d5c)
@@ -97976,8 +97976,8 @@ void cps_801a1dd4(void)
 
 block_801A1DD4:
     v0 = zero;
-    cps_801a1dd8(); return;  /* fallthrough to split piece */
-    cps_801a1dd8();  /* fallthrough to next function */
+    cpu->pc = 0x801a1dd8u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a1dd8u; return;/* fallthrough to next function */
 }
 
 /* cps_801a1dd8 — clean CPS transliteration of br2eu_func_801A1DD8 (guest 0x801a1dd8)
@@ -98079,8 +98079,8 @@ block_801A1E3C:
     v1 = cpu->read_word(v1 + -6176);
     /* nop */  /* 0x801A1E44: 0x00000000 */
     cpu->write_word(v1, v0);
-    cps_801a1e4c(); return;  /* fallthrough to split piece */
-    cps_801a1e4c();  /* fallthrough to next function */
+    cpu->pc = 0x801a1e4cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a1e4cu; return;/* fallthrough to next function */
 }
 
 /* cps_801a1e4c — clean CPS transliteration of br2eu_func_801A1E4C (guest 0x801a1e4c)
@@ -98105,7 +98105,7 @@ block_801A1E4C:
         psx_check_interrupts_at(cpu, 0x801A1E5Cu);
         cpu->pc = 0x801A1E5Cu; return;  /* CPS not taken: split */
     }
-    cps_801a1e58();  /* fallthrough to next function */
+    cpu->pc = 0x801a1e58u; return;/* fallthrough to next function */
 }
 
 /* cps_801a1e58 — clean CPS transliteration of br2eu_func_801A1E58 (guest 0x801a1e58)
@@ -98119,8 +98119,8 @@ void cps_801a1e58(void)
 
 block_801A1E58:
     v0 = 1;
-    cps_801a1e5c(); return;  /* fallthrough to split piece */
-    cps_801a1e5c();  /* fallthrough to next function */
+    cpu->pc = 0x801a1e5cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a1e5cu; return;/* fallthrough to next function */
 }
 
 /* cps_801a1e5c — clean CPS transliteration of br2eu_func_801A1E5C (guest 0x801a1e5c)
@@ -98155,7 +98155,7 @@ block_801A1E5C:
 
 block_801A1E6C:
     v0 = 1;
-    cps_801a1e70(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a1e70u; return;  /* fallthrough to split piece */
 }
 
 /* cps_801a1e70 — clean CPS transliteration of br2eu_func_801A1E70 (guest 0x801a1e70)
@@ -98189,8 +98189,8 @@ void cps_801a1edc(void)
 
 block_801A1EDC:
     v0 = 3;
-    cps_801a1ee0(); return;  /* fallthrough to split piece */
-    cps_801a1ee0();  /* fallthrough to next function */
+    cpu->pc = 0x801a1ee0u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a1ee0u; return;/* fallthrough to next function */
 }
 
 /* cps_801a1ee0 — clean CPS transliteration of br2eu_func_801A1EE0 (guest 0x801a1ee0)
@@ -98283,7 +98283,7 @@ block_801A1F2C:
     v1 = 0x801C << 16;  /* 0x801C0000 */
     v1 = cpu->read_word(v1 + -6204);
     /* nop */  /* 0x801A1F34: 0x00000000 */
-    cps_801a1f38(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a1f38u; return;  /* fallthrough to split piece */
 }
 
 /* cps_801a1f38 — clean CPS transliteration of br2eu_func_801A1F38 (guest 0x801a1f38)
@@ -100038,7 +100038,7 @@ block_801A34C8:
 
 block_801A34D8:
     v0 = ((int32_t)v1 < 4) ? 1 : 0;  /* 0x801A34D8: 0x28620004 */
-    cps_801a34dc(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a34dcu; return;  /* fallthrough to split piece */
 }
 
 /* cps_801a34dc — clean CPS transliteration of br2eu_func_801A34DC (guest 0x801a34dc)
@@ -100202,7 +100202,7 @@ block_801A3550:
 
 block_801A3564:
     v0 = -1;
-    cps_801a3568(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a3568u; return;  /* fallthrough to split piece */
 }
 
 /* cps_801a3568 — clean CPS transliteration of br2eu_func_801A3568 (guest 0x801a3568)
@@ -100217,8 +100217,8 @@ void cps_801a3568(void)
 block_801A3568:
     cpu->write_word(s2, v0);
     a0 = s1;
-    cps_801a3570(); return;  /* fallthrough to split piece */
-    cps_801a3570();  /* fallthrough to next function */
+    cpu->pc = 0x801a3570u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a3570u; return;/* fallthrough to next function */
 }
 
 /* cps_801a3570 — clean CPS transliteration of br2eu_func_801A3570 (guest 0x801a3570)
@@ -100313,7 +100313,7 @@ block_801A35B0:
     v0 = -3;
     psx_check_interrupts_at(cpu, 0x801A36C0u);
     cpu->pc = 0x801A36C0u; return;  /* CPS j: split */
-    cps_801a35b8();  /* fallthrough to next function */
+    cpu->pc = 0x801a35b8u; return;/* fallthrough to next function */
 }
 
 /* cps_801a35b8 — clean CPS transliteration of br2eu_func_801A35B8 (guest 0x801a35b8)
@@ -100343,7 +100343,7 @@ block_801A35B8:
         psx_check_interrupts_at(cpu, 0x801A35DCu);
         cpu->pc = 0x801A35DCu; return;  /* CPS not taken: split */
     }
-    cps_801a35dc();  /* fallthrough to next function */
+    cpu->pc = 0x801a35dcu; return;/* fallthrough to next function */
 }
 
 /* cps_801a35dc — clean CPS transliteration of br2eu_func_801A35DC (guest 0x801a35dc)
@@ -100516,7 +100516,7 @@ block_801A3680:
 
 block_801A36BC:
     v0 = zero;
-    cps_801a36c0(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a36c0u; return;  /* fallthrough to split piece */
 }
 
 /* cps_801a36c0 — clean CPS transliteration of br2eu_func_801A36C0 (guest 0x801a36c0)
@@ -101575,8 +101575,8 @@ block_801A4C88:
     s0 = a0;
     a0 = 0x8012 << 16;  /* 0x80120000 */
     a0 = a0 + 24536;
-    cps_801a4c9c(); return;  /* fallthrough to split piece */
-    cps_801a4c9c();  /* fallthrough to next function */
+    cpu->pc = 0x801a4c9cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a4c9cu; return;/* fallthrough to next function */
 }
 
 /* cps_801a4c9c — clean CPS transliteration of br2eu_func_801A4C9C (guest 0x801a4c9c)
@@ -101768,8 +101768,8 @@ void cps_801a4fc0(void)
 block_801A4FC0:
     v1 = a1 + 1;
     cpu->write_half(a3 + 12, (uint16_t)v1);
-    cps_801a4fc8(); return;  /* fallthrough to split piece */
-    cps_801a4fc8();  /* fallthrough to next function */
+    cpu->pc = 0x801a4fc8u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a4fc8u; return;/* fallthrough to next function */
 }
 
 /* cps_801a4fc8 — clean CPS transliteration of br2eu_func_801A4FC8 (guest 0x801a4fc8)
@@ -103805,8 +103805,8 @@ void cps_801a9b1c(void)
 
 block_801A9B1C:
     sp = sp + -40;
-    cps_801a9b20(); return;  /* fallthrough to split piece */
-    cps_801a9b20();  /* fallthrough to next function */
+    cpu->pc = 0x801a9b20u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a9b20u; return;/* fallthrough to next function */
 }
 
 /* cps_801a9b20 — clean CPS transliteration of br2eu_func_801A9B20 (guest 0x801a9b20)
@@ -104027,7 +104027,7 @@ block_801A9C70:
     cpu->write_word(sp + 28, zero);
     v1 = (int32_t)(int16_t)cpu->read_half(t2 + 14);
     /* nop */  /* 0x801A9C78: 0x00000000 */
-    cps_801a9c7c(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a9c7cu; return;  /* fallthrough to split piece */
 }
 
 /* cps_801a9c7c — clean CPS transliteration of br2eu_func_801A9C7C (guest 0x801a9c7c)
@@ -104069,7 +104069,7 @@ block_801A9C88:
     v0 = cpu->read_word(v0 + 4);
     t4 = zero;
     cpu->write_word(sp + 32, t7);
-    cps_801a9cac(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a9cacu; return;  /* fallthrough to split piece */
 }
 
 /* cps_801a9cac — clean CPS transliteration of br2eu_func_801A9CAC (guest 0x801a9cac)
@@ -104087,7 +104087,7 @@ block_801A9CAC:
     cpu->write_word(sp + 24, v0);
     psx_check_interrupts_at(cpu, 0x801A9D10u);
     cpu->pc = 0x801A9D10u; return;  /* CPS j: split */
-    cps_801a9cb8();  /* fallthrough to next function */
+    cpu->pc = 0x801a9cb8u; return;/* fallthrough to next function */
 }
 
 /* cps_801a9cb8 — clean CPS transliteration of br2eu_func_801A9CB8 (guest 0x801a9cb8)
@@ -104159,7 +104159,7 @@ block_801A9CFC:
 block_801A9D08:
     v0 = t7 - v0;
     cpu->write_word(sp + 32, v0);
-    cps_801a9d10(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a9d10u; return;  /* fallthrough to split piece */
 }
 
 /* cps_801a9d10 — clean CPS transliteration of br2eu_func_801A9D10 (guest 0x801a9d10)
@@ -104173,8 +104173,8 @@ void cps_801a9d10(void)
 
 block_801A9D10:
     v0 = ((int32_t)t4 < 3) ? 1 : 0;  /* 0x801A9D10: 0x29820003 */
-    cps_801a9d14(); return;  /* fallthrough to split piece */
-    cps_801a9d14();  /* fallthrough to next function */
+    cpu->pc = 0x801a9d14u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a9d14u; return;/* fallthrough to next function */
 }
 
 /* cps_801a9d14 — clean CPS transliteration of br2eu_func_801A9D14 (guest 0x801a9d14)
@@ -104197,7 +104197,7 @@ block_801A9D14:
         psx_check_interrupts_at(cpu, 0x801A9D1Cu);
         cpu->pc = 0x801A9D1Cu; return;  /* CPS not taken: split */
     }
-    cps_801a9d1c();  /* fallthrough to next function */
+    cpu->pc = 0x801a9d1cu; return;/* fallthrough to next function */
 }
 
 /* cps_801a9d1c — clean CPS transliteration of br2eu_func_801A9D1C (guest 0x801a9d1c)
@@ -104232,7 +104232,7 @@ block_801A9D1C:
 
 block_801A9D2C:
     v0 = t4 << 2;
-    cps_801a9d30(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a9d30u; return;  /* fallthrough to split piece */
 }
 
 /* cps_801a9d30 — clean CPS transliteration of br2eu_func_801A9D30 (guest 0x801a9d30)
@@ -104247,8 +104247,8 @@ void cps_801a9d30(void)
 block_801A9D30:
     t5 = a2 + v0;
     t0 = t1;
-    cps_801a9d38(); return;  /* fallthrough to split piece */
-    cps_801a9d38();  /* fallthrough to next function */
+    cpu->pc = 0x801a9d38u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a9d38u; return;/* fallthrough to next function */
 }
 
 /* cps_801a9d38 — clean CPS transliteration of br2eu_func_801A9D38 (guest 0x801a9d38)
@@ -104303,7 +104303,7 @@ block_801A9D38:
 
 block_801A9D80:
     v0 = cpu->read_word(t2 + 20);
-    cps_801a9d84(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a9d84u; return;  /* fallthrough to split piece */
 }
 
 /* cps_801a9d84 — clean CPS transliteration of br2eu_func_801A9D84 (guest 0x801a9d84)
@@ -104326,8 +104326,8 @@ block_801A9D84:
     /* nop */  /* 0x801A9DA0: 0x00000000 */
     v0 = v0 + a3;
     cpu->write_half(v1, (uint16_t)v0);
-    cps_801a9dac(); return;  /* fallthrough to split piece */
-    cps_801a9dac();  /* fallthrough to next function */
+    cpu->pc = 0x801a9dacu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a9dacu; return;/* fallthrough to next function */
 }
 
 /* cps_801a9dac — clean CPS transliteration of br2eu_func_801A9DAC (guest 0x801a9dac)
@@ -104350,7 +104350,7 @@ block_801A9DAC:
         psx_check_interrupts_at(cpu, 0x801A9DB4u);
         cpu->pc = 0x801A9DB4u; return;  /* CPS not taken: split */
     }
-    cps_801a9db4();  /* fallthrough to next function */
+    cpu->pc = 0x801a9db4u; return;/* fallthrough to next function */
 }
 
 /* cps_801a9db4 — clean CPS transliteration of br2eu_func_801A9DB4 (guest 0x801a9db4)
@@ -104374,8 +104374,8 @@ block_801A9DB4:
     /* nop */  /* 0x801A9DD4: 0x00000000 */
     v0 = v0 + t3;
     cpu->write_half(v1 + 2, (uint16_t)v0);
-    cps_801a9de0(); return;  /* fallthrough to split piece */
-    cps_801a9de0();  /* fallthrough to next function */
+    cpu->pc = 0x801a9de0u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a9de0u; return;/* fallthrough to next function */
 }
 
 /* cps_801a9de0 — clean CPS transliteration of br2eu_func_801A9DE0 (guest 0x801a9de0)
@@ -104415,7 +104415,7 @@ block_801A9DE8:
     v1 = v1 << 3;
     v1 = v1 + v0;
     v0 = cpu->read_half(v1 + 4);
-    cps_801a9e08(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a9e08u; return;  /* fallthrough to split piece */
 }
 
 /* cps_801a9e08 — clean CPS transliteration of br2eu_func_801A9E08 (guest 0x801a9e08)
@@ -104431,8 +104431,8 @@ block_801A9E08:
     /* nop */  /* 0x801A9E08: 0x00000000 */
     v0 = v0 + a0;
     cpu->write_half(v1 + 4, (uint16_t)v0);
-    cps_801a9e14(); return;  /* fallthrough to split piece */
-    cps_801a9e14();  /* fallthrough to next function */
+    cpu->pc = 0x801a9e14u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a9e14u; return;/* fallthrough to next function */
 }
 
 /* cps_801a9e14 — clean CPS transliteration of br2eu_func_801A9E14 (guest 0x801a9e14)
@@ -104458,7 +104458,7 @@ block_801A9E14:
         psx_check_interrupts_at(cpu, 0x801A9E28u);
         cpu->pc = 0x801A9E28u; return;  /* CPS not taken: split */
     }
-    cps_801a9e28();  /* fallthrough to next function */
+    cpu->pc = 0x801a9e28u; return;/* fallthrough to next function */
 }
 
 /* cps_801a9e28 — clean CPS transliteration of br2eu_func_801A9E28 (guest 0x801a9e28)
@@ -104514,8 +104514,8 @@ void cps_801a9e38(void)
 
 block_801A9E38:
     v0 = 2;
-    cps_801a9e3c(); return;  /* fallthrough to split piece */
-    cps_801a9e3c();  /* fallthrough to next function */
+    cpu->pc = 0x801a9e3cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a9e3cu; return;/* fallthrough to next function */
 }
 
 /* cps_801a9e3c — clean CPS transliteration of br2eu_func_801A9E3C (guest 0x801a9e3c)
@@ -104610,8 +104610,8 @@ block_801A9E5C:
     v1 = v1 << 2;
     v1 = v1 + v0;
     v0 = cpu->read_word(v1 + 4);
-    cps_801a9e8c(); return;  /* fallthrough to split piece */
-    cps_801a9e8c();  /* fallthrough to next function */
+    cpu->pc = 0x801a9e8cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a9e8cu; return;/* fallthrough to next function */
 }
 
 /* cps_801a9e8c — clean CPS transliteration of br2eu_func_801A9E8C (guest 0x801a9e8c)
@@ -104635,7 +104635,7 @@ block_801A9E8C:
     t4 = 1;
     psx_check_interrupts_at(cpu, 0x801A9EC0u);
     cpu->pc = 0x801A9EC0u; return;  /* CPS j: split */
-    cps_801a9ea8();  /* fallthrough to next function */
+    cpu->pc = 0x801a9ea8u; return;/* fallthrough to next function */
 }
 
 /* cps_801a9ea8 — clean CPS transliteration of br2eu_func_801A9EA8 (guest 0x801a9ea8)
@@ -104653,8 +104653,8 @@ block_801A9EA8:
     v0 = v0 + t6;
     cpu->write_half(t2 + 14, (uint16_t)v0);
     v0 = v0 << 16;
-    cps_801a9ebc(); return;  /* fallthrough to split piece */
-    cps_801a9ebc();  /* fallthrough to next function */
+    cpu->pc = 0x801a9ebcu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a9ebcu; return;/* fallthrough to next function */
 }
 
 /* cps_801a9ebc — clean CPS transliteration of br2eu_func_801A9EBC (guest 0x801a9ebc)
@@ -104668,8 +104668,8 @@ void cps_801a9ebc(void)
 
 block_801A9EBC:
     v0 = (int32_t)v0 >> 16;
-    cps_801a9ec0(); return;  /* fallthrough to split piece */
-    cps_801a9ec0();  /* fallthrough to next function */
+    cpu->pc = 0x801a9ec0u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a9ec0u; return;/* fallthrough to next function */
 }
 
 /* cps_801a9ec0 — clean CPS transliteration of br2eu_func_801A9EC0 (guest 0x801a9ec0)
@@ -104718,8 +104718,8 @@ void cps_801a9ed0(void)
 
 block_801A9ED0:
     t4 = 3;
-    cps_801a9ed4(); return;  /* fallthrough to split piece */
-    cps_801a9ed4();  /* fallthrough to next function */
+    cpu->pc = 0x801a9ed4u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a9ed4u; return;/* fallthrough to next function */
 }
 
 /* cps_801a9ed4 — clean CPS transliteration of br2eu_func_801A9ED4 (guest 0x801a9ed4)
@@ -104747,8 +104747,8 @@ block_801A9ED4:
     v1 = cpu->read_word(t2 + 24);
     v0 = v0 << 2;
     v0 = v0 + v1;
-    cps_801a9f10(); return;  /* fallthrough to split piece */
-    cps_801a9f10();  /* fallthrough to next function */
+    cpu->pc = 0x801a9f10u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a9f10u; return;/* fallthrough to next function */
 }
 
 /* cps_801a9f10 — clean CPS transliteration of br2eu_func_801A9F10 (guest 0x801a9f10)
@@ -104783,7 +104783,7 @@ block_801A9F10:
         psx_check_interrupts_at(cpu, 0x801A9F48u);
         cpu->pc = 0x801A9F48u; return;  /* CPS not taken: split */
     }
-    cps_801a9f48();  /* fallthrough to next function */
+    cpu->pc = 0x801a9f48u; return;/* fallthrough to next function */
 }
 
 /* cps_801a9f48 — clean CPS transliteration of br2eu_func_801A9F48 (guest 0x801a9f48)
@@ -104805,7 +104805,7 @@ block_801A9F48:
     cpu->write_word(t2 + 48, v1);
     psx_check_interrupts_at(cpu, 0x801AA0D4u);
     cpu->pc = 0x801AA0D4u; return;  /* CPS j: split */
-    cps_801a9f64();  /* fallthrough to next function */
+    cpu->pc = 0x801a9f64u; return;/* fallthrough to next function */
 }
 
 /* cps_801a9f64 — clean CPS transliteration of br2eu_func_801A9F64 (guest 0x801a9f64)
@@ -105042,8 +105042,8 @@ void cps_801aa558(void)
 
 block_801AA558:
     cpu->write_half(s0 + 58, (uint16_t)v0);
-    cps_801aa55c(); return;  /* fallthrough to split piece */
-    cps_801aa55c();  /* fallthrough to next function */
+    cpu->pc = 0x801aa55cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801aa55cu; return;/* fallthrough to next function */
 }
 
 /* cps_801aa55c — clean CPS transliteration of br2eu_func_801AA55C (guest 0x801aa55c)
@@ -105171,8 +105171,8 @@ void cps_801aa5c8(void)
 
 block_801AA5C8:
     v0 = -2;
-    cps_801aa5cc(); return;  /* fallthrough to split piece */
-    cps_801aa5cc();  /* fallthrough to next function */
+    cpu->pc = 0x801aa5ccu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801aa5ccu; return;/* fallthrough to next function */
 }
 
 /* cps_801aa5cc — clean CPS transliteration of br2eu_func_801AA5CC (guest 0x801aa5cc)
@@ -105189,7 +105189,7 @@ block_801AA5CC:
     /* nop */  /* 0x801AA5D0: 0x00000000 */
     psx_check_interrupts_at(cpu, 0x801AA618u);
     cpu->pc = 0x801AA618u; return;  /* CPS j: split */
-    cps_801aa5d4();  /* fallthrough to next function */
+    cpu->pc = 0x801aa5d4u; return;/* fallthrough to next function */
 }
 
 /* cps_801aa5d4 — clean CPS transliteration of br2eu_func_801AA5D4 (guest 0x801aa5d4)
@@ -105207,7 +105207,7 @@ block_801AA5D4:
     cpu->write_half(s0 + 68, (uint16_t)a1);
     psx_check_interrupts_at(cpu, 0x801AA95Cu);
     cpu->pc = 0x801AA95Cu; return;  /* CPS j: split */
-    cps_801aa5e0();  /* fallthrough to next function */
+    cpu->pc = 0x801aa5e0u; return;/* fallthrough to next function */
 }
 
 /* cps_801aa5e0 — clean CPS transliteration of br2eu_func_801AA5E0 (guest 0x801aa5e0)
@@ -105225,7 +105225,7 @@ block_801AA5E0:
     cpu->write_half(s0 + 68, (uint16_t)a1);
     psx_check_interrupts_at(cpu, 0x801AA95Cu);
     cpu->pc = 0x801AA95Cu; return;  /* CPS j: split */
-    cps_801aa5ec();  /* fallthrough to next function */
+    cpu->pc = 0x801aa5ecu; return;/* fallthrough to next function */
 }
 
 /* cps_801aa5ec — clean CPS transliteration of br2eu_func_801AA5EC (guest 0x801aa5ec)
@@ -105245,7 +105245,7 @@ block_801AA5EC:
     cpu->write_half(s0 + 68, (uint16_t)v0);
     psx_check_interrupts_at(cpu, 0x801AA95Cu);
     cpu->pc = 0x801AA95Cu; return;  /* CPS j: split */
-    cps_801aa600();  /* fallthrough to next function */
+    cpu->pc = 0x801aa600u; return;/* fallthrough to next function */
 }
 
 /* cps_801aa600 — clean CPS transliteration of br2eu_func_801AA600 (guest 0x801aa600)
@@ -105262,7 +105262,7 @@ block_801AA600:
     v0 = (int32_t)v0 >> 24;
     psx_check_interrupts_at(cpu, 0x801AA558u);
     cpu->pc = 0x801AA558u; return;  /* CPS j: split */
-    cps_801aa608();  /* fallthrough to next function */
+    cpu->pc = 0x801aa608u; return;/* fallthrough to next function */
 }
 
 /* cps_801aa608 — clean CPS transliteration of br2eu_func_801AA608 (guest 0x801aa608)
@@ -105281,7 +105281,7 @@ block_801AA608:
     cpu->write_half(s0 + 58, (uint16_t)zero);
     psx_check_interrupts_at(cpu, 0x801AA55Cu);
     cpu->pc = 0x801AA55Cu; return;  /* CPS j: split */
-    cps_801aa618();  /* fallthrough to next function */
+    cpu->pc = 0x801aa618u; return;/* fallthrough to next function */
 }
 
 /* cps_801aa618 — clean CPS transliteration of br2eu_func_801AA618 (guest 0x801aa618)
@@ -105599,7 +105599,7 @@ block_801AA7D0:
     /* nop */  /* 0x801AA7DC: 0x00000000 */
     v0 = v0 + v1;
     cpu->write_half(s0 + 64, (uint16_t)v0);
-    cps_801aa7e8(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801aa7e8u; return;  /* fallthrough to split piece */
 }
 
 /* cps_801aa7e8 — clean CPS transliteration of br2eu_func_801AA7E8 (guest 0x801aa7e8)
@@ -105853,7 +105853,7 @@ block_801AA94C:
     /* nop */  /* 0x801AA950: 0x00000000 */
     v0 = v0 + -1;
     cpu->write_half(s0 + 10, (uint16_t)v0);
-    cps_801aa95c(); return;  /* fallthrough to split piece */
+    cpu->pc = 0x801aa95cu; return;  /* fallthrough to split piece */
 }
 
 /* cps_801aa95c — clean CPS transliteration of br2eu_func_801AA95C (guest 0x801aa95c)
@@ -110769,8 +110769,8 @@ block_801AECA4:
     v1 = (int32_t)(int16_t)cpu->read_half(v0 + 4);
     a3 = cpu->read_word(gp + 80);
     a0 = (int32_t)(int16_t)cpu->read_half(v0);
-    cps_801aecbc(); return;  /* fallthrough to split piece */
-    cps_801aecbc();  /* fallthrough to next function */
+    cpu->pc = 0x801aecbcu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801aecbcu; return;/* fallthrough to next function */
 }
 
 /* cps_801aecbc — clean CPS transliteration of br2eu_func_801AECBC (guest 0x801aecbc)
@@ -110975,8 +110975,8 @@ void cps_801aedb8(void)
 
 block_801AEDB8:
     sp = sp + 24;
-    cps_801aedbc(); return;  /* fallthrough to split piece */
-    cps_801aedbc();  /* fallthrough to next function */
+    cpu->pc = 0x801aedbcu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801aedbcu; return;/* fallthrough to next function */
 }
 
 /* cps_801aedbc — clean CPS transliteration of br2eu_func_801AEDBC (guest 0x801aedbc)
@@ -112018,8 +112018,8 @@ void cps_801af938(void)
 
 block_801AF938:
     v0 = cpu->read_word(gp + 76);
-    cps_801af93c(); return;  /* fallthrough to split piece */
-    cps_801af93c();  /* fallthrough to next function */
+    cpu->pc = 0x801af93cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801af93cu; return;/* fallthrough to next function */
 }
 
 /* cps_801af93c — clean CPS transliteration of br2eu_func_801AF93C (guest 0x801af93c)
@@ -112076,8 +112076,8 @@ void cps_801af97c(void)
 
 block_801AF97C:
     v0 = cpu->read_word(gp + 76);
-    cps_801af980(); return;  /* fallthrough to split piece */
-    cps_801af980();  /* fallthrough to next function */
+    cpu->pc = 0x801af980u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801af980u; return;/* fallthrough to next function */
 }
 
 /* cps_801af980 — clean CPS transliteration of br2eu_func_801AF980 (guest 0x801af980)
@@ -112134,8 +112134,8 @@ void cps_801af9c0(void)
 
 block_801AF9C0:
     v0 = cpu->read_word(gp + 76);
-    cps_801af9c4(); return;  /* fallthrough to split piece */
-    cps_801af9c4();  /* fallthrough to next function */
+    cpu->pc = 0x801af9c4u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801af9c4u; return;/* fallthrough to next function */
 }
 
 /* cps_801af9c4 — clean CPS transliteration of br2eu_func_801AF9C4 (guest 0x801af9c4)
@@ -112189,8 +112189,8 @@ void cps_801af9f8(void)
 
 block_801AF9F8:
     v0 = cpu->read_word(gp + 76);
-    cps_801af9fc(); return;  /* fallthrough to split piece */
-    cps_801af9fc();  /* fallthrough to next function */
+    cpu->pc = 0x801af9fcu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801af9fcu; return;/* fallthrough to next function */
 }
 
 /* cps_801af9fc — clean CPS transliteration of br2eu_func_801AF9FC (guest 0x801af9fc)
@@ -112383,8 +112383,8 @@ void cps_801afb24(void)
 
 block_801AFB24:
     v0 = cpu->read_word(gp + 76);
-    cps_801afb28(); return;  /* fallthrough to split piece */
-    cps_801afb28();  /* fallthrough to next function */
+    cpu->pc = 0x801afb28u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801afb28u; return;/* fallthrough to next function */
 }
 
 /* cps_801afb28 — clean CPS transliteration of br2eu_func_801AFB28 (guest 0x801afb28)
@@ -113233,8 +113233,8 @@ block_801B03D8:
     /* nop */  /* 0x801B03E4: 0x00000000 */
     v0 = v0 + v1;
     v1 = (int32_t)(int16_t)cpu->read_half(v0 + 2);
-    cps_801b03f0(); return;  /* fallthrough to split piece */
-    cps_801b03f0();  /* fallthrough to next function */
+    cpu->pc = 0x801b03f0u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801b03f0u; return;/* fallthrough to next function */
 }
 
 /* cps_801b03f0 — clean CPS transliteration of br2eu_func_801B03F0 (guest 0x801b03f0)

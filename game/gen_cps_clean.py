@@ -200,7 +200,17 @@ def transform(body):
         if op is not None:
             out.append(op)
         i += 1
-    return '\n'.join(out)
+    body = '\n'.join(out)
+    # Route every split-piece / next-function fallthrough through dispatch.
+    # _FT_RE emits a bare cps_X() call, which runs the whole piece chain in ONE
+    # clean_try_dispatch — cost is charged once for the entry piece and cpu->pc
+    # is never updated between pieces, so the per-piece cycle accounting and
+    # CPS resume contract collapse and IRQ/device deadlines starve (the early
+    # boot wedge). Emitting `cpu->pc = piece; return` makes each boundary a
+    # real dispatch — the same tail-dispatch the generated body uses.
+    body = re.sub(r'cps_([0-9a-fA-F]{8})\(\)\s*;\s*(?:return\s*;)?',
+                  lambda m: f'cpu->pc = 0x{m.group(1)}u; return;', body)
+    return body
 
 
 FILE_HDR = '''/* cps_clean.c — AUTO-GENERATED clean CPS transliterations.
