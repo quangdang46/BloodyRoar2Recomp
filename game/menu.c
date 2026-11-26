@@ -10552,9 +10552,9 @@ int32_t cmd_queue_slot_next(void)
 int32_t sprite_slot_commit(uint32_t w0,uint32_t w1,uint32_t w2,
                      uint32_t w3,uint32_t aux5,uint32_t aux6)
 {
-  uint32_t s0 = (uint32_t)queue_slot_peek();
+  uint32_t slot = (uint32_t)queue_slot_peek();
   uint32_t *gbuf;
-  if (s0 == 0) return 0;
+  if (slot == 0) return 0;
   /* The four-u16 packet buf is handed to gpu_texclut_pkt, which resolves
    * a1 via guest_of()/guest_at(): a host stack buffer yields guest_of()==0
    * and the fallback reads the host pointer bits as a guest address
@@ -10563,12 +10563,12 @@ int32_t sprite_slot_commit(uint32_t w0,uint32_t w1,uint32_t w2,
   gbuf = (uint32_t *)guest_at(br2_guest_frame(0x20) + 0x10);
   gbuf[0] = (w0 & 0xffffu) | ((w1 & 0xffffu) << 16);
   gbuf[1] = (w2 & 0xffffu) | ((w3 & 0xffffu) << 16);
-  MW16(0x1f8000d2u, s0);
-  gpu_texclut_pkt((uint32_t *)guest_at(MB32(0x1f800004u) + s0 * 24u
+  MW16(0x1f8000d2u, slot);
+  gpu_texclut_pkt((uint32_t *)guest_at(MB32(0x1f800004u) + slot * 24u
                                       + 0x20d8u),
                gbuf, aux5, aux6);
   br2_guest_frame_free();
-  return (int32_t)s0;
+  return (int32_t)slot;
 }
 
 /* menu_quad_reset_redraw — quad reset + two redraws @0x8014cb64 (38 insns):
@@ -10691,26 +10691,26 @@ void entry_attr_bump_loop(uint32_t rec,uint32_t img,
 uint32_t centered_sprite_emit(uint32_t ctx,uint32_t fl,uint32_t x,
                       uint32_t w,uint32_t hgt,uint32_t vht)
 {
-  uint32_t t0 = x, t1 = vht, t2 = hgt;
-  uint32_t a2 = w, v1, h;
+
+  uint32_t hw = w, vsz, scr;
   int32_t sx_v1, sx_t2, half_t2, half_v1;
   if (MB8(fl + 0x15) == 0) {
-    h = (uint32_t)((int32_t)(int16_t)w
+    scr = (uint32_t)((int32_t)(int16_t)w
                    + (int32_t)((w >> 15) & 1u));
-    a2 = h >> 1;
-    h = (uint32_t)((int32_t)(int16_t)vht
+    hw = scr >> 1;
+    scr = (uint32_t)((int32_t)(int16_t)vht
                    + (int32_t)((vht >> 15) & 1u));
-    v1 = h >> 1;
+    vsz = scr >> 1;
   } else {
-    v1 = t1;
+    vsz = vht;
   }
-  sx_v1 = (int32_t)(int16_t)v1;
-  sx_t2 = (int32_t)(int16_t)t2;
-  half_t2 = (sx_t2 + (int32_t)((t2 >> 15) & 1u)) >> 1;
-  half_v1 = (sx_v1 + (int32_t)((v1 >> 15) & 1u)) >> 1;
+  sx_v1 = (int32_t)(int16_t)vsz;
+  sx_t2 = (int32_t)(int16_t)hgt;
+  half_t2 = (sx_t2 + (int32_t)((hgt >> 15) & 1u)) >> 1;
+  half_v1 = (sx_v1 + (int32_t)((vsz >> 15) & 1u)) >> 1;
   return sprite_rect_set_a((int32_t)ctx,
-                      (int16_t)((int32_t)(int16_t)t0 - half_t2),
-                      (int32_t)(int16_t)a2 - half_v1,
+                      (int16_t)((int32_t)(int16_t)x - half_t2),
+                      (int32_t)(int16_t)hw - half_v1,
                       (uint32_t)sx_t2, (int32_t)sx_v1);
 }
 
@@ -11111,20 +11111,21 @@ void dual_axis_coord_xform(uint32_t unused,uint32_t unused2,uint32_t dst,
 {
   uint32_t obj = MB32(ent + 0x20);
   uint32_t pos[3];
-  uint32_t s0, s1, s2 = dst;
+
+  uint32_t s0, ang_a;
   int32_t ang;
   pos[0] = MB32(obj + 0x174);
   s0 = MB32(obj + 0x178) + 0xa00u;
   pos[1] = s0;
   pos[2] = MB32(obj + 0x17c);
-  s1 = (uint32_t)atan2_lut((int32_t)pos[2], (int32_t)pos[0]);
+  ang_a = (uint32_t)atan2_lut((int32_t)pos[2], (int32_t)pos[0]);
   (void)FUN_80195370(&pos[0], &pos[0]);
   ang = FUN_801948c0(pos[0] + pos[2]);
   ang = atan2_lut(-(int32_t)s0, ang);
   s0 = (uint32_t)(int32_t)(int16_t)ang;
-  s1 = (uint32_t)(int32_t)(int16_t)s1;
-  vec2_rot(s0, s1, (undefined2 *)guest_at(s2 + 6));
-  angle_gte_vec(s0, s1, (uint *)guest_at(s2 + 0x20));
+  ang_a = (uint32_t)(int32_t)(int16_t)ang_a;
+  vec2_rot(s0, ang_a, (undefined2 *)guest_at(dst + 6));
+  angle_gte_vec(s0, ang_a, (uint *)guest_at(dst + 0x20));
 }
 
 /* dual_redraw_a — dual redraw, no pre/post call @0x8014c258 (50
