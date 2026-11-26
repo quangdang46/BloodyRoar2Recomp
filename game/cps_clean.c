@@ -91735,7 +91735,9 @@ block_8019BBB4:
 }
 
 /* cps_8019bd94 — clean CPS transliteration of br2eu_func_8019BD94 (guest 0x8019bd94)
- * from SLES_017.22_full_47.c. */
+ * from SLES_017.22_full_47.c.
+ * u16 table lookup: entry = read_half(read(0x801BDEB0) + a0*2); when a1 != -1
+ * returns entry << read(0x801BDED8), else returns entry raw. */
 void cps_8019bd94(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -91753,26 +91755,23 @@ void cps_8019bd94(void)
     /* Address: 0x8019BD94, Size: 60 bytes, Blocks: 4 */
 
 block_8019BD94:
-    v0 = 0x801C << 16;  /* 0x801C0000 */
-    v0 = cpu->read_word(v0 + -8528);
+    v0 = cpu->read_word(0x801BDEB0u);          /* 0x801C0000 - 8528: u16 table ptr */
     a0 = a0 << 1;
     a0 = a0 + v0;
     v0 = -1;
-    a0 = cpu->read_half(a0);
-    int _bc_8019BDAC = (a1 == v0);  /* save branch cond before delay slot */
+    a0 = cpu->read_half(a0);                   /* table entry */
+    int cond_raw = (a1 == v0);                 /* latch: delay is nop */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019BDB0: 0x00000000 */
-    if (_bc_8019BDAC) {
+    if (cond_raw) {                            /* a1 == -1 → return raw entry */
         psx_check_interrupts_at(cpu, 0x8019BDC4u);
-        goto block_8019BDC4;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019BDB4u);
-        goto block_8019BDB4;  /* not taken */
+        goto block_8019BDC4;
     }
+    psx_check_interrupts_at(cpu, 0x8019BDB4u);
+    goto block_8019BDB4;
 
 block_8019BDB4:
-    v0 = 0x801C << 16;  /* 0x801C0000 */
-    v0 = cpu->read_word(v0 + -8488);
+    v0 = cpu->read_word(0x801BDED8u);          /* 0x801C0000 - 8488: shift amount */
     /* delay slot (always executes) */
     v0 = a0 << (v0 & 0x1F);
     psx_check_interrupts_at(cpu, 0x8019BDC8u);
@@ -91783,15 +91782,18 @@ block_8019BDC4:
     /* fall through to block_8019BDC8 */
 
 block_8019BDC8:
-    uint32_t _jt_8019BDC8 = ra;  /* latch indirect target before delay slot */
+    uint32_t return_pc = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019BDCC: 0x00000000 */
-    psx_check_interrupts_at(cpu, _jt_8019BDC8);
-    cpu->pc = _jt_8019BDC8; return;  /* CPS: jr $ra */
+    psx_check_interrupts_at(cpu, return_pc);
+    cpu->pc = return_pc; return;  /* CPS: jr $ra */
 }
 
 /* cps_8019bdd0 — clean CPS transliteration of br2eu_func_8019BDD0 (guest 0x8019bdd0)
- * from SLES_017.22_full_47.c. */
+ * from SLES_017.22_full_47.c.
+ * Mode-field setter on the register pointed to by cell @0x801BDEC0: clears
+ * bits 16-18 (mask 0xFFF8FFFF) then ORs 0x00050000 when a0 == 0, else
+ * 0x00030000 — i.e. field = a0 ? 3 : 5. */
 void cps_8019bdd0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -91809,52 +91811,51 @@ void cps_8019bdd0(void)
     /* Address: 0x8019BDD0, Size: 88 bytes, Blocks: 4 */
 
 block_8019BDD0:
-    a1 = 0x801C << 16;  /* 0x801C0000 */
-    a1 = cpu->read_word(a1 + -8512);
-    v1 = 0xFFF8 << 16;  /* 0xFFF80000 */
+    a1 = cpu->read_word(0x801BDEC0u);          /* 0x801C0000 - 8512: reg ptr cell */
+    v1 = 0xFFF8FFFFu;                          /* clear bits 16-18 */
     v0 = cpu->read_word(a1);
-    v1 = v1 | 0xFFFF;
-    v0 = v0 & v1;  /* 0x8019BDE4: 0x00431024 */
-    int _bc_8019BDE8 = (a0 == zero);  /* save branch cond before delay slot */
+    v0 = v0 & v1;
+    int cond_zero_arg = (a0 == zero);          /* latch: delay writes a1 */
     /* delay slot (always executes) */
     cpu->write_word(a1, v0);
-    if (_bc_8019BDE8) {
+    if (cond_zero_arg) {                       /* a0 == 0 → field 5 */
         psx_check_interrupts_at(cpu, 0x8019BE08u);
-        goto block_8019BE08;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019BDF0u);
-        goto block_8019BDF0;  /* not taken */
+        goto block_8019BE08;
     }
+    psx_check_interrupts_at(cpu, 0x8019BDF0u);
+    goto block_8019BDF0;
 
 block_8019BDF0:
-    v0 = 0x801C << 16;  /* 0x801C0000 */
-    v0 = cpu->read_word(v0 + -8512);
+    v0 = cpu->read_word(0x801BDEC0u);          /* reload reg ptr */
     /* nop */  /* 0x8019BDF8: 0x00000000 */
     v1 = cpu->read_word(v0);
     /* delay slot (always executes) */
-    a0 = 0x0003 << 16;  /* 0x00030000 */
+    a0 = 0x00030000u;                          /* field value 3 */
     psx_check_interrupts_at(cpu, 0x8019BE1Cu);
     goto block_8019BE1C;  /* j */
 
 block_8019BE08:
-    v0 = 0x801C << 16;  /* 0x801C0000 */
-    v0 = cpu->read_word(v0 + -8512);
+    v0 = cpu->read_word(0x801BDEC0u);          /* reload reg ptr */
     /* nop */  /* 0x8019BE10: 0x00000000 */
     v1 = cpu->read_word(v0);
-    a0 = 0x0005 << 16;  /* 0x00050000 */
+    a0 = 0x00050000u;                          /* field value 5 */
     /* fall through to block_8019BE1C */
 
 block_8019BE1C:
     v1 = v1 | a0;
-    uint32_t _jt_8019BE20 = ra;  /* latch indirect target before delay slot */
+    uint32_t return_pc = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     cpu->write_word(v0, v1);
-    psx_check_interrupts_at(cpu, _jt_8019BE20);
-    cpu->pc = _jt_8019BE20; return;  /* CPS: jr $ra */
+    psx_check_interrupts_at(cpu, return_pc);
+    cpu->pc = return_pc; return;  /* CPS: jr $ra */
 }
 
 /* cps_8019bfe0 — clean CPS transliteration of br2eu_func_8019BFE0 (guest 0x8019bfe0)
- * from SLES_017.22_full_47.c. */
+ * from SLES_017.22_full_47.c.
+ * Scans 8-byte records at the ptr stored in cell @0x801BDF18 (gated: cell 0 →
+ * return 0). Per record: bit31 set → skip; bit30 set → return 0; base =
+ * word0 & 0x0FFFFFFF; returns 1 when base >= a0 or a0 < base + word1,
+ * else advances 8 bytes and repeats. */
 void cps_8019bfe0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -91878,19 +91879,17 @@ void cps_8019bfe0(void)
     /* Address: 0x8019BFE0, Size: 128 bytes, Blocks: 10 */
 
 block_8019BFE0:
-    v0 = 0x801C << 16;  /* 0x801C0000 */
-    v0 = cpu->read_word(v0 + -8424);
+    v0 = cpu->read_word(0x801BDF18u);          /* 0x801C0000 - 8424: record ptr cell */
     /* nop */  /* 0x8019BFE8: 0x00000000 */
-    int _bc_8019BFEC = (v0 != zero);  /* save branch cond before delay slot */
+    int cond_no_table = (v0 == zero);          /* latch: delay writes t0 */
     /* delay slot (always executes) */
-    t0 = 0x8000 << 16;  /* 0x80000000 */
-    if (_bc_8019BFEC) {
-        psx_check_interrupts_at(cpu, 0x8019BFFCu);
-        goto block_8019BFFC;  /* taken */
-    } else {
+    t0 = 0x80000000u;                          /* skip flag: bit31 */
+    if (cond_no_table) {                       /* no table → return 0 */
         psx_check_interrupts_at(cpu, 0x8019BFF4u);
-        goto block_8019BFF4;  /* not taken */
+        goto block_8019BFF4;
     }
+    psx_check_interrupts_at(cpu, 0x8019BFFCu);
+    goto block_8019BFFC;
 
 block_8019BFF4:
     /* delay slot (always executes) */
@@ -91899,71 +91898,66 @@ block_8019BFF4:
     goto block_8019C058;  /* j */
 
 block_8019BFFC:
-    a3 = 0x4000 << 16;  /* 0x40000000 */
-    a2 = 0x0FFF << 16;  /* 0x0FFF0000 */
-    a2 = a2 | 0xFFFF;
-    a1 = v0;
+    a3 = 0x40000000u;                          /* abort flag: bit30 */
+    a2 = 0x0FFFFFFFu;                          /* base mask: low 28 bits */
+    a1 = v0;                                   /* record cursor */
     /* fall through to block_8019C00C */
 
 block_8019C00C:
-    v1 = cpu->read_word(a1);
+    v1 = cpu->read_word(a1);                   /* record word0 */
     /* nop */  /* 0x8019C010: 0x00000000 */
-    v0 = v1 & t0;  /* 0x8019C014: 0x00681024 */
-    int _bc_8019C018 = (v0 != zero);  /* save branch cond before delay slot */
+    v0 = v1 & t0;
+    int cond_skip_rec = (v0 != zero);          /* latch: delay rewrites v0 */
     /* delay slot (always executes) */
-    v0 = v1 & a3;  /* 0x8019C01C: 0x00671024 */
-    if (_bc_8019C018) {
+    v0 = v1 & a3;
+    if (cond_skip_rec) {                       /* bit31 → next record */
         psx_check_interrupts_at(cpu, 0x8019C04Cu);
-        goto block_8019C04C;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019C020u);
-        goto block_8019C020;  /* not taken */
+        goto block_8019C04C;
     }
+    psx_check_interrupts_at(cpu, 0x8019C020u);
+    goto block_8019C020;
 
 block_8019C020:
-    int _bc_8019C020 = (v0 != zero);  /* save branch cond before delay slot */
+    int cond_abort = (v0 != zero);             /* latch: delay masks v1 */
     /* delay slot (always executes) */
-    v1 = v1 & a2;  /* 0x8019C024: 0x00661824 */
-    if (_bc_8019C020) {
+    v1 = v1 & a2;                              /* base = low 28 bits */
+    if (cond_abort) {                          /* bit30 → return 0 */
         psx_check_interrupts_at(cpu, 0x8019C054u);
-        goto block_8019C054;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019C028u);
-        goto block_8019C028;  /* not taken */
+        goto block_8019C054;
     }
+    psx_check_interrupts_at(cpu, 0x8019C028u);
+    goto block_8019C028;
 
 block_8019C028:
-    v0 = (v1 < a0) ? 1 : 0;  /* 0x8019C028: 0x0064102B */
-    int _bc_8019C02C = (v0 == zero);  /* save branch cond before delay slot */
+    v0 = (v1 < a0) ? 1 : 0;                    /* base < a0? */
+    int cond_base_ge = (v0 == zero);           /* latch: delay sets v0=1 */
     /* delay slot (always executes) */
     v0 = 1;
-    if (_bc_8019C02C) {
+    if (cond_base_ge) {                        /* base >= a0 → match */
         psx_check_interrupts_at(cpu, 0x8019C058u);
-        goto block_8019C058;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019C034u);
-        goto block_8019C034;  /* not taken */
+        goto block_8019C058;
     }
+    psx_check_interrupts_at(cpu, 0x8019C034u);
+    goto block_8019C034;
 
 block_8019C034:
-    v0 = cpu->read_word(a1 + 4);
+    v0 = cpu->read_word(a1 + 4);               /* record word1: extent */
     /* nop */  /* 0x8019C038: 0x00000000 */
-    v0 = v1 + v0;
-    v0 = (a0 < v0) ? 1 : 0;  /* 0x8019C040: 0x0082102B */
-    int _bc_8019C044 = (v0 != zero);  /* save branch cond before delay slot */
+    v0 = v1 + v0;                              /* base + extent */
+    v0 = (a0 < v0) ? 1 : 0;                    /* a0 < base+extent? */
+    int cond_in_range = (v0 != zero);          /* latch: delay sets v0=1 */
     /* delay slot (always executes) */
     v0 = 1;
-    if (_bc_8019C044) {
+    if (cond_in_range) {                       /* a0 in range → match */
         psx_check_interrupts_at(cpu, 0x8019C058u);
-        goto block_8019C058;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019C04Cu);
-        goto block_8019C04C;  /* not taken */
+        goto block_8019C058;
     }
+    psx_check_interrupts_at(cpu, 0x8019C04Cu);
+    goto block_8019C04C;
 
 block_8019C04C:
     /* delay slot (always executes) */
-    a1 = a1 + 8;
+    a1 = a1 + 8;                               /* next 8-byte record */
     psx_check_interrupts_at(cpu, 0x8019C00Cu);
     goto block_8019C00C;  /* j */
 
@@ -91972,15 +91966,21 @@ block_8019C054:
     /* fall through to block_8019C058 */
 
 block_8019C058:
-    uint32_t _jt_8019C058 = ra;  /* latch indirect target before delay slot */
+    uint32_t return_pc = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019C05C: 0x00000000 */
-    psx_check_interrupts_at(cpu, _jt_8019C058);
-    cpu->pc = _jt_8019C058; return;  /* CPS: jr $ra */
+    psx_check_interrupts_at(cpu, return_pc);
+    cpu->pc = return_pc; return;  /* CPS: jr $ra */
 }
 
 /* cps_8019d970 — clean CPS transliteration of br2eu_func_8019D970 (guest 0x8019d970)
- * from SLES_017.22_full_47.c. */
+ * from SLES_017.22_full_47.c.
+ * State→code mapper over slots [a0..a1] (both clamped/validated to 0..23,
+ * a1 inclusive; invalid → return -3). For each slot i: record =
+ * read(0x801BDEB0) + i*16, enabled = read(0x801BDE3C) bit i, flag =
+ * read_half(record+12). Writes a byte code to out[a2_arg + i]:
+ * enabled&flag→1, enabled&!flag→3, disabled&flag→2, disabled&!flag→0.
+ * Returns 0 on success. */
 void cps_8019d970(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -92014,74 +92014,69 @@ void cps_8019d970(void)
     /* Address: 0x8019D970, Size: 212 bytes, Blocks: 20 */
 
 block_8019D970:
-    int _bc_8019D970 = ((int32_t)a0 >= 0);  /* save branch cond before delay slot */
+    int cond_arg0_neg = ((int32_t)a0 >= 0);     /* latch: delay computes v0 */
     /* delay slot (always executes) */
-    v0 = ((int32_t)a0 < 24) ? 1 : 0;  /* 0x8019D974: 0x28820018 */
-    if (_bc_8019D970) {
+    v0 = ((int32_t)a0 < 24) ? 1 : 0;
+    if (cond_arg0_neg) {
         psx_check_interrupts_at(cpu, 0x8019D980u);
-        goto block_8019D980;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019D978u);
-        goto block_8019D978;  /* not taken */
+        goto block_8019D980;
     }
+    psx_check_interrupts_at(cpu, 0x8019D978u);
+    goto block_8019D978;
 
 block_8019D978:
-    a0 = zero;
-    v0 = ((int32_t)a0 < 24) ? 1 : 0;  /* 0x8019D97C: 0x28820018 */
+    a0 = zero;                                 /* clamp negative a0 → 0 */
+    v0 = ((int32_t)a0 < 24) ? 1 : 0;
     /* fall through to block_8019D980 */
 
 block_8019D980:
-    int _bc_8019D980 = (v0 == zero);  /* save branch cond before delay slot */
+    int cond_arg0_oob = (v0 == zero);          /* latch: delay computes v0 */
     /* delay slot (always executes) */
-    v0 = ((int32_t)a1 < 24) ? 1 : 0;  /* 0x8019D984: 0x28A20018 */
-    if (_bc_8019D980) {
+    v0 = ((int32_t)a1 < 24) ? 1 : 0;
+    if (cond_arg0_oob) {                       /* a0 >= 24 → -3 */
         psx_check_interrupts_at(cpu, 0x8019D9A8u);
-        goto block_8019D9A8;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019D988u);
-        goto block_8019D988;  /* not taken */
+        goto block_8019D9A8;
     }
+    psx_check_interrupts_at(cpu, 0x8019D988u);
+    goto block_8019D988;
 
 block_8019D988:
-    int _bc_8019D988 = (v0 != zero);  /* save branch cond before delay slot */
+    int cond_arg1_oob = (v0 != zero);          /* latch: delay is nop */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019D98C: 0x00000000 */
-    if (_bc_8019D988) {
+    if (cond_arg1_oob) {                       /* a1 >= 24 → clamp 23 */
         psx_check_interrupts_at(cpu, 0x8019D994u);
-        goto block_8019D994;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019D990u);
-        goto block_8019D990;  /* not taken */
+        goto block_8019D994;
     }
+    psx_check_interrupts_at(cpu, 0x8019D990u);
+    goto block_8019D990;
 
 block_8019D990:
     a1 = 23;
     /* fall through to block_8019D994 */
 
 block_8019D994:
-    int _bc_8019D994 = ((int32_t)a1 < 0);  /* save branch cond before delay slot */
+    int cond_arg1_neg = ((int32_t)a1 < 0);     /* latch: delay sets v0=-3 */
     /* delay slot (always executes) */
     v0 = -3;
-    if (_bc_8019D994) {
+    if (cond_arg1_neg) {                       /* a1 < 0 → -3 */
         psx_check_interrupts_at(cpu, 0x8019DA3Cu);
-        goto block_8019DA3C;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019D99Cu);
-        goto block_8019D99C;  /* not taken */
+        goto block_8019DA3C;
     }
+    psx_check_interrupts_at(cpu, 0x8019D99Cu);
+    goto block_8019D99C;
 
 block_8019D99C:
-    v0 = ((int32_t)a1 < (int32_t)a0) ? 1 : 0;  /* 0x8019D99C: 0x00A4102A */
-    int _bc_8019D9A0 = (v0 == zero);  /* save branch cond before delay slot */
+    v0 = ((int32_t)a1 < (int32_t)a0) ? 1 : 0;  /* a1 < a0 → empty → -3 */
+    int cond_range_ok = (v0 == zero);          /* latch: delay sets a3=a0 */
     /* delay slot (always executes) */
-    a3 = a0;
-    if (_bc_8019D9A0) {
+    a3 = a0;                                   /* slot cursor = a0 */
+    if (cond_range_ok) {
         psx_check_interrupts_at(cpu, 0x8019D9B0u);
-        goto block_8019D9B0;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019D9A8u);
-        goto block_8019D9A8;  /* not taken */
+        goto block_8019D9B0;
     }
+    psx_check_interrupts_at(cpu, 0x8019D9A8u);
+    goto block_8019D9A8;
 
 block_8019D9A8:
     /* delay slot (always executes) */
@@ -92090,121 +92085,120 @@ block_8019D9A8:
     goto block_8019DA3C;  /* j */
 
 block_8019D9B0:
-    a1 = a1 + 1;
-    v0 = ((int32_t)a3 < (int32_t)a1) ? 1 : 0;  /* 0x8019D9B4: 0x00E5102A */
-    int _bc_8019D9B8 = (v0 == zero);  /* save branch cond before delay slot */
+    a1 = a1 + 1;                               /* loop bound: a1 inclusive */
+    v0 = ((int32_t)a3 < (int32_t)a1) ? 1 : 0;  /* any slots? */
+    int cond_empty = (v0 == zero);             /* latch: delay sets v0=0 */
     /* delay slot (always executes) */
     v0 = zero;
-    if (_bc_8019D9B8) {
+    if (cond_empty) {                          /* a0 > a1 → return 0 */
         psx_check_interrupts_at(cpu, 0x8019DA3Cu);
-        goto block_8019DA3C;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019D9C0u);
-        goto block_8019D9C0;  /* not taken */
+        goto block_8019DA3C;
     }
+    psx_check_interrupts_at(cpu, 0x8019D9C0u);
+    goto block_8019D9C0;
 
 block_8019D9C0:
-    t0 = 1;
-    t2 = 3;
-    t1 = 2;
-    a2 = a3 + a2;
+    t0 = 1;                                    /* code: enabled & flag */
+    t2 = 3;                                    /* code: enabled & !flag */
+    t1 = 2;                                    /* code: disabled & flag */
+    a2 = a3 + a2;                              /* out ptr = arg + a0 */
     /* fall through to block_8019D9D0 */
 
 block_8019D9D0:
+    /* per-slot: record = table + i*16, flag = half @rec+12 */
     a0 = a3 << 4;
-    v0 = 0x801C << 16;  /* 0x801C0000 */
-    v0 = cpu->read_word(v0 + -8528);
-    v1 = 0x801C << 16;  /* 0x801C0000 */
-    v1 = cpu->read_word(v1 + -8644);
+    v0 = cpu->read_word(0x801BDEB0u);          /* 0x801C0000 - 8528: rec table */
+    v1 = cpu->read_word(0x801BDE3Cu);          /* 0x801C0000 - 8644: enable mask */
     a0 = a0 + v0;
     v0 = t0 << (a3 & 0x1F);
-    v1 = v1 & v0;  /* 0x8019D9EC: 0x00621824 */
+    v1 = v1 & v0;                              /* slot enabled? */
     v0 = cpu->read_half(a0 + 12);
-    int _bc_8019D9F4 = (v1 == zero);  /* save branch cond before delay slot */
+    int cond_disabled = (v1 == zero);          /* latch: delay is nop */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019D9F8: 0x00000000 */
-    if (_bc_8019D9F4) {
+    if (cond_disabled) {
         psx_check_interrupts_at(cpu, 0x8019DA14u);
-        goto block_8019DA14;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019D9FCu);
-        goto block_8019D9FC;  /* not taken */
+        goto block_8019DA14;
     }
+    psx_check_interrupts_at(cpu, 0x8019D9FCu);
+    goto block_8019D9FC;
 
 block_8019D9FC:
-    int _bc_8019D9FC = (v0 == zero);  /* save branch cond before delay slot */
+    int cond_flag_clear = (v0 == zero);        /* latch: delay is nop */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019DA00: 0x00000000 */
-    if (_bc_8019D9FC) {
+    if (cond_flag_clear) {                     /* enabled, flag 0 → code 3 */
         psx_check_interrupts_at(cpu, 0x8019DA0Cu);
-        goto block_8019DA0C;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019DA04u);
-        goto block_8019DA04;  /* not taken */
+        goto block_8019DA0C;
     }
+    psx_check_interrupts_at(cpu, 0x8019DA04u);
+    goto block_8019DA04;
 
 block_8019DA04:
     /* delay slot (always executes) */
-    cpu->write_byte(a2, (uint8_t)t0);
+    cpu->write_byte(a2, (uint8_t)t0);          /* code 1 */
     psx_check_interrupts_at(cpu, 0x8019DA28u);
     goto block_8019DA28;  /* j */
 
 block_8019DA0C:
     /* delay slot (always executes) */
-    cpu->write_byte(a2, (uint8_t)t2);
+    cpu->write_byte(a2, (uint8_t)t2);          /* code 3 */
     psx_check_interrupts_at(cpu, 0x8019DA28u);
     goto block_8019DA28;  /* j */
 
 block_8019DA14:
-    int _bc_8019DA14 = (v0 == zero);  /* save branch cond before delay slot */
+    int cond_flag_set = (v0 == zero);          /* latch: delay is nop */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019DA18: 0x00000000 */
-    if (_bc_8019DA14) {
+    if (cond_flag_set) {                       /* disabled, flag 0 → code 0 */
         psx_check_interrupts_at(cpu, 0x8019DA24u);
-        goto block_8019DA24;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019DA1Cu);
-        goto block_8019DA1C;  /* not taken */
+        goto block_8019DA24;
     }
+    psx_check_interrupts_at(cpu, 0x8019DA1Cu);
+    goto block_8019DA1C;
 
 block_8019DA1C:
     /* delay slot (always executes) */
-    cpu->write_byte(a2, (uint8_t)t1);
+    cpu->write_byte(a2, (uint8_t)t1);          /* code 2 */
     psx_check_interrupts_at(cpu, 0x8019DA28u);
     goto block_8019DA28;  /* j */
 
 block_8019DA24:
-    cpu->write_byte(a2, (uint8_t)zero);
+    cpu->write_byte(a2, (uint8_t)zero);        /* code 0 */
     /* fall through to block_8019DA28 */
 
 block_8019DA28:
-    a3 = a3 + 1;
-    v0 = ((int32_t)a3 < (int32_t)a1) ? 1 : 0;  /* 0x8019DA2C: 0x00E5102A */
-    int _bc_8019DA30 = (v0 != zero);  /* save branch cond before delay slot */
+    a3 = a3 + 1;                               /* next slot */
+    v0 = ((int32_t)a3 < (int32_t)a1) ? 1 : 0;
+    int cond_more_slots = (v0 != zero);        /* latch: delay bumps a2 */
     /* delay slot (always executes) */
     a2 = a2 + 1;
-    if (_bc_8019DA30) {
+    if (cond_more_slots) {
         psx_check_interrupts_at(cpu, 0x8019D9D0u);
-        goto block_8019D9D0;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019DA38u);
-        goto block_8019DA38;  /* not taken */
+        goto block_8019D9D0;
     }
+    psx_check_interrupts_at(cpu, 0x8019DA38u);
+    goto block_8019DA38;
 
 block_8019DA38:
-    v0 = zero;
+    v0 = zero;                                 /* success */
     /* fall through to block_8019DA3C */
 
 block_8019DA3C:
-    uint32_t _jt_8019DA3C = ra;  /* latch indirect target before delay slot */
+    uint32_t return_pc = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019DA40: 0x00000000 */
-    psx_check_interrupts_at(cpu, _jt_8019DA3C);
-    cpu->pc = _jt_8019DA3C; return;  /* CPS: jr $ra */
+    psx_check_interrupts_at(cpu, return_pc);
+    cpu->pc = return_pc; return;  /* CPS: jr $ra */
 }
 
 /* cps_8019e1a0 — clean CPS transliteration of br2eu_func_8019E1A0 (guest 0x8019e1a0)
- * from SLES_017.22_full_48.c. */
+ * from SLES_017.22_full_48.c.
+ * Fixed-point value packer: clamps a2 to 16383, bit-scans its low 16 bits for
+ * the lowest set bit (position → t3), normalizes, then runs two descending
+ * u16 table scans (@0x801BE320 divisor table walked downward from index 11,
+ * @0x801BE436 magnitude table from index 127) with a (v1<<15)/div muldiv, and packs
+ * (a1 + pos + 1) and a computed offset into the return word. */
 void cps_8019e1a0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -92235,193 +92229,188 @@ void cps_8019e1a0(void)
     /* Address: 0x8019E1A0, Size: 304 bytes, Blocks: 17 */
 
 block_8019E1A0:
-    v0 = a2 & 0xFFFF;  /* 0x8019E1A0: 0x30C2FFFF */
-    v0 = (v0 < (uint32_t)16384) ? 1 : 0;  /* 0x8019E1A4: 0x2C424000 */
-    int _bc_8019E1A8 = (v0 != zero);  /* save branch cond before delay slot */
+    v0 = a2 & 0xFFFF;
+    v0 = (v0 < (uint32_t)16384) ? 1 : 0;      /* in range? */
+    int cond_in_range = (v0 != zero);         /* latch: delay clears t3 */
     /* delay slot (always executes) */
-    t3 = zero;
-    if (_bc_8019E1A8) {
+    t3 = zero;                                /* bit position */
+    if (cond_in_range) {
         psx_check_interrupts_at(cpu, 0x8019E1B4u);
-        goto block_8019E1B4;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019E1B0u);
-        goto block_8019E1B0;  /* not taken */
+        goto block_8019E1B4;
     }
+    psx_check_interrupts_at(cpu, 0x8019E1B0u);
+    goto block_8019E1B0;
 
 block_8019E1B0:
-    a2 = 16383;
+    a2 = 16383;                               /* clamp to max */
     /* fall through to block_8019E1B4 */
 
 block_8019E1B4:
-    a3 = zero;
-    v1 = a2 & 0xFFFF;  /* 0x8019E1B8: 0x30C3FFFF */
+    a3 = zero;                                /* scan index */
+    v1 = a2 & 0xFFFF;
     v0 = (int32_t)v1 >> (a3 & 0x1F);
     /* fall through to block_8019E1C0 */
 
 block_8019E1C0:
-    v0 = v0 & 0x0001;  /* 0x8019E1C0: 0x30420001 */
-    int _bc_8019E1C4 = (v0 == zero);  /* save branch cond before delay slot */
+    v0 = v0 & 0x0001;                         /* bit a3 set? */
+    int cond_bit_clear = (v0 == zero);        /* latch: delay is nop */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019E1C8: 0x00000000 */
-    if (_bc_8019E1C4) {
+    if (cond_bit_clear) {
         psx_check_interrupts_at(cpu, 0x8019E1D0u);
-        goto block_8019E1D0;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019E1CCu);
-        goto block_8019E1CC;  /* not taken */
+        goto block_8019E1D0;
     }
+    psx_check_interrupts_at(cpu, 0x8019E1CCu);
+    goto block_8019E1CC;
 
 block_8019E1CC:
-    t3 = a3;
+    t3 = a3;                                  /* record bit position */
     /* fall through to block_8019E1D0 */
 
 block_8019E1D0:
     a3 = a3 + 1;
-    v0 = ((int32_t)a3 < 14) ? 1 : 0;  /* 0x8019E1D4: 0x28E2000E */
-    int _bc_8019E1D8 = (v0 != zero);  /* save branch cond before delay slot */
+    v0 = ((int32_t)a3 < 14) ? 1 : 0;          /* scanned all 14 bits? */
+    int cond_scan_on = (v0 != zero);          /* latch: delay shifts v1 */
     /* delay slot (always executes) */
     v0 = (int32_t)v1 >> (a3 & 0x1F);
-    if (_bc_8019E1D8) {
+    if (cond_scan_on) {
         psx_check_interrupts_at(cpu, 0x8019E1C0u);
-        goto block_8019E1C0;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019E1E0u);
-        goto block_8019E1E0;  /* not taken */
+        goto block_8019E1C0;
     }
+    psx_check_interrupts_at(cpu, 0x8019E1E0u);
+    goto block_8019E1E0;
 
 block_8019E1E0:
-    v1 = a2 & 0xFFFF;  /* 0x8019E1E0: 0x30C3FFFF */
+    v1 = a2 & 0xFFFF;                         /* normalize: value << (15-pos) */
     v0 = 15;
     v0 = v0 - t3;
     a2 = v1 << (v0 & 0x1F);
     a3 = 11;
     v1 = a2 & 0xFFFF;  /* 0x8019E1F4: 0x30C3FFFF */
     t0 = 0x801BE336u;  /* 0x801C0000 -7370 */    /* fall through to block_8019E200 */
+    /* fall through to block_8019E200 */
 
 block_8019E200:
-    v0 = cpu->read_half(t0);
+    v0 = cpu->read_half(t0);                  /* candidate divisor */
     /* nop */  /* 0x8019E204: 0x00000000 */
-    v0 = (v1 < v0) ? 1 : 0;  /* 0x8019E208: 0x0062102B */
-    int _bc_8019E20C = (v0 != zero);  /* save branch cond before delay slot */
+    v0 = (v1 < v0) ? 1 : 0;                   /* value < divisor? */
+    int cond_below = (v0 != zero);            /* latch: delay is nop */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019E210: 0x00000000 */
-    if (_bc_8019E20C) {
+    if (cond_below) {
         psx_check_interrupts_at(cpu, 0x8019E21Cu);
-        goto block_8019E21C;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019E214u);
-        goto block_8019E214;  /* not taken */
+        goto block_8019E21C;
     }
+    psx_check_interrupts_at(cpu, 0x8019E214u);
+    goto block_8019E214;
 
 block_8019E214:
     /* delay slot (always executes) */
-    t2 = a3;
+    t2 = a3;                                  /* matched divisor index */
     psx_check_interrupts_at(cpu, 0x8019E228u);
     goto block_8019E228;  /* j */
 
 block_8019E21C:
-    a3 = a3 + -1;
-    int _bc_8019E220 = ((int32_t)a3 >= 0);  /* save branch cond before delay slot */
+    a3 = a3 + -1;                             /* try next smaller divisor */
+    int cond_idx_ok = ((int32_t)a3 >= 0);     /* latch: delay steps t0 */
     /* delay slot (always executes) */
     t0 = t0 + -2;
-    if (_bc_8019E220) {
+    if (cond_idx_ok) {
         psx_check_interrupts_at(cpu, 0x8019E200u);
-        goto block_8019E200;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019E228u);
-        goto block_8019E228;  /* not taken */
+        goto block_8019E200;
     }
+    psx_check_interrupts_at(cpu, 0x8019E228u);
+    goto block_8019E228;
 
 block_8019E228:
-    v1 = a2 & 0xFFFF;  /* 0x8019E228: 0x30C3FFFF */
-    v0 = t2 & 0xFFFF;  /* 0x8019E22C: 0x3142FFFF */
+    v1 = a2 & 0xFFFF;
+    v0 = t2 & 0xFFFF;
     v0 = v0 << 1;
-    at = 0x801C << 16;  /* 0x801C0000 */
+    at = 0x801C0000u;                         /* 0x801C << 16 */
     at = at + v0;
-    v0 = cpu->read_half(at + -7392);
-    v1 = v1 << 15;
+    v0 = cpu->read_half(at + -7392);          /* divisor = tbl[t2] @0x801BE320 */
+    v1 = v1 << 15;                            /* dividend = value << 15 */
     if (v0 != 0) { cpu->lo = v1 / v0; cpu->hi = v1 % v0; } else { cpu->lo = 0xFFFFFFFF; cpu->hi = v1; }
     psx_muldiv_set(cpu, 37u);
-    int _bc_8019E248 = (v0 != zero);  /* save branch cond before delay slot */
+    int cond_div_ok = (v0 != zero);           /* latch: delay is nop */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019E24C: 0x00000000 */
-    if (_bc_8019E248) {
+    if (cond_div_ok) {
         psx_check_interrupts_at(cpu, 0x8019E254u);
-        goto block_8019E254;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019E250u);
-        goto block_8019E250;  /* not taken */
+        goto block_8019E254;
     }
+    psx_check_interrupts_at(cpu, 0x8019E250u);
+    goto block_8019E250;
 
 block_8019E250:
     /* break(7168) — trap, no-op in recompiler */  /* 0x8019E250: 0x0007000D */
     /* fall through to block_8019E254 */
 
 block_8019E254:
-    v1 = cpu->lo;
+    v1 = cpu->lo;                             /* quotient */
     psx_muldiv_stall(cpu);
     a3 = 127;
     a2 = 0x801BE436u;  /* 0x801C0000 -7114 */    v1 = v1 & 0xFFFF;  /* 0x8019E264: 0x3063FFFF */
+    v1 = v1 & 0xFFFF;
     /* fall through to block_8019E268 */
 
 block_8019E268:
-    v0 = cpu->read_half(a2);
+    v0 = cpu->read_half(a2);                  /* magnitude candidate */
     /* nop */  /* 0x8019E26C: 0x00000000 */
-    v0 = (v1 < v0) ? 1 : 0;  /* 0x8019E270: 0x0062102B */
-    int _bc_8019E274 = (v0 != zero);  /* save branch cond before delay slot */
+    v0 = (v1 < v0) ? 1 : 0;                   /* quotient < candidate? */
+    int cond_mag_below = (v0 != zero);        /* latch: delay is nop */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019E278: 0x00000000 */
-    if (_bc_8019E274) {
+    if (cond_mag_below) {
         psx_check_interrupts_at(cpu, 0x8019E284u);
-        goto block_8019E284;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019E27Cu);
-        goto block_8019E27C;  /* not taken */
+        goto block_8019E284;
     }
+    psx_check_interrupts_at(cpu, 0x8019E27Cu);
+    goto block_8019E27C;
 
 block_8019E27C:
     /* delay slot (always executes) */
-    t1 = a3;
+    t1 = a3;                                  /* matched magnitude index */
     psx_check_interrupts_at(cpu, 0x8019E290u);
     goto block_8019E290;  /* j */
 
 block_8019E284:
-    a3 = a3 + -1;
-    int _bc_8019E288 = ((int32_t)a3 >= 0);  /* save branch cond before delay slot */
+    a3 = a3 + -1;                             /* try next smaller magnitude */
+    int cond_mag_ok = ((int32_t)a3 >= 0);     /* latch: delay steps a2 */
     /* delay slot (always executes) */
     a2 = a2 + -2;
-    if (_bc_8019E288) {
+    if (cond_mag_ok) {
         psx_check_interrupts_at(cpu, 0x8019E268u);
-        goto block_8019E268;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019E290u);
-        goto block_8019E290;  /* not taken */
+        goto block_8019E268;
     }
+    psx_check_interrupts_at(cpu, 0x8019E290u);
+    goto block_8019E290;
 
 block_8019E290:
     v0 = t1 + 1;
-    t1 = a1 + v0;
+    t1 = a1 + v0;                             /* out field: a1 + idx + 1 */
     v1 = t3 + -12;
     v0 = v1 << 1;
     v0 = v0 + v1;
-    v0 = v0 << 2;
+    v0 = v0 << 2;                             /* (bitpos - 12) * 12 */
     v0 = a0 + v0;
-    v0 = t2 + v0;
-    a0 = t1 & 0xFFFF;  /* 0x8019E2B0: 0x3124FFFF */
+    v0 = t2 + v0;                             /* offset: a0 + (pos-12)*12 + didx */
+    a0 = t1 & 0xFFFF;
     v1 = (uint32_t)a0 >> 7;
     t2 = v0 + v1;
-    v0 = t2 & 0xFFFF;  /* 0x8019E2BC: 0x3142FFFF */
+    v0 = t2 & 0xFFFF;
     v0 = v0 << 8;
-    a0 = a0 & 0x007E;  /* 0x8019E2C4: 0x3084007E */
-    uint32_t _jt_8019E2C8 = ra;  /* latch indirect target before delay slot */
+    a0 = a0 & 0x007E;
+    uint32_t return_pc = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     v0 = v0 | a0;
-    psx_check_interrupts_at(cpu, _jt_8019E2C8);
-    cpu->pc = _jt_8019E2C8; return;  /* CPS: jr $ra */
+    psx_check_interrupts_at(cpu, return_pc);
+    cpu->pc = return_pc; return;  /* CPS: jr $ra */
 }
 
 /* cps_8019e300 — clean CPS transliteration of br2eu_func_8019E300 (guest 0x8019e300)
- * from SLES_017.22_full_48.c. */
+ * from SLES_017.22_full_48.c.
+ * Thin wrapper: saves ra and tail-calls 0x8019E3D4. */
 void cps_8019e300(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -92443,20 +92432,24 @@ block_8019E300:
     /* delay slot (always executes) */
     /* nop */  /* 0x8019E30C: 0x00000000 */
     psx_check_interrupts_at(cpu, 0x8019E3D4u);
-    cpu->pc = 0x8019E3D4u; return;  /* CPS jal -> 0x8019E3D4 */
+    cpu->pc = 0x8019E3D4u; return;  /* CPS jal -> 0x8019E3D4 (callee) */
 
 block_8019E310:
     ra = cpu->read_word(sp + 16);
     sp = sp + 24;
-    uint32_t _jt_8019E318 = ra;  /* latch indirect target before delay slot */
+    uint32_t return_pc = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019E31C: 0x00000000 */
-    psx_check_interrupts_at(cpu, _jt_8019E318);
-    cpu->pc = _jt_8019E318; return;  /* CPS: jr $ra */
+    psx_check_interrupts_at(cpu, return_pc);
+    cpu->pc = return_pc; return;  /* CPS: jr $ra */
 }
 
 /* cps_8019e330 — clean CPS transliteration of br2eu_func_8019E330 (guest 0x8019e330)
- * from SLES_017.22_full_48.c. */
+ * from SLES_017.22_full_48.c.
+ * CD mode-apply sequence (cd_mode_apply_seq): saves s0=a0, runs
+ * bios_table_tramp(0) → 0x80199FFC (returns flag → s0 = flag ? a0 : 0) →
+ * cpu_critical_enter → 0x8019E400(s0) → cd_kobj_param_copy →
+ * cd_kobj_b56_commit → cd_kobj_b57_commit → cpu_critical_exit. */
 void cps_8019e330(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -92483,91 +92476,92 @@ void cps_8019e330(void)
 block_8019E330:
     sp = sp + -24;
     cpu->write_word(sp + 16, s0);
-    s0 = a0;
+    s0 = a0;                                   /* saved mode arg */
     cpu->write_word(sp + 20, ra);
     ra = 0x8019E348u;  /* jal link before delay slot */
     /* delay slot (always executes) */
     a0 = zero;
-    psx_check_interrupts_at(cpu, 0x80199FE0u);
-    cpu->pc = 0x80199FE0u; return;  /* CPS jal -> 0x80199FE0 */
+    psx_check_interrupts_at(cpu, 0x80199FE0u); /* bios_table_tramp(0) */
+    cpu->pc = 0x80199FE0u; return;  /* CPS jal -> bios_table_tramp */
 
 block_8019E348:
     ra = 0x8019E350u;  /* jal link before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019E34C: 0x00000000 */
-    psx_check_interrupts_at(cpu, 0x8018E300u);
-    cpu->pc = 0x8018E300u; return;  /* CPS jal -> 0x8018E300 */
+    psx_check_interrupts_at(cpu, 0x8018E300u); /* cpu_critical_enter */
+    cpu->pc = 0x8018E300u; return;  /* CPS jal -> cpu_critical_enter */
 
 block_8019E350:
     ra = 0x8019E358u;  /* jal link before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019E354: 0x00000000 */
-    psx_check_interrupts_at(cpu, 0x80199FFCu);
+    psx_check_interrupts_at(cpu, 0x80199FFCu); /* BIOS table query → v0 flag */
     cpu->pc = 0x80199FFCu; return;  /* CPS jal -> 0x80199FFC */
 
 block_8019E358:
-    int _bc_8019E358 = (v0 != zero);  /* save branch cond before delay slot */
+    int cond_flag_set = (v0 != zero);          /* latch: delay is nop */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019E35C: 0x00000000 */
-    if (_bc_8019E358) {
+    if (cond_flag_set) {
         psx_check_interrupts_at(cpu, 0x8019E364u);
-        goto block_8019E364;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019E360u);
-        goto block_8019E360;  /* not taken */
+        goto block_8019E364;
     }
+    psx_check_interrupts_at(cpu, 0x8019E360u);
+    goto block_8019E360;
 
 block_8019E360:
-    s0 = zero;
+    s0 = zero;                                 /* flag clear → mode 0 */
     /* fall through to block_8019E364 */
 
 block_8019E364:
     ra = 0x8019E36Cu;  /* jal link before delay slot */
     /* delay slot (always executes) */
     a0 = s0;
-    psx_check_interrupts_at(cpu, 0x8019E400u);
+    psx_check_interrupts_at(cpu, 0x8019E400u); /* mode apply helper */
     cpu->pc = 0x8019E400u; return;  /* CPS jal -> 0x8019E400 */
 
 block_8019E36C:
     ra = 0x8019E374u;  /* jal link before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019E370: 0x00000000 */
-    psx_check_interrupts_at(cpu, 0x8019E5CCu);
-    cpu->pc = 0x8019E5CCu; return;  /* CPS jal -> 0x8019E5CC */
+    psx_check_interrupts_at(cpu, 0x8019E5CCu); /* cd_kobj_param_copy */
+    cpu->pc = 0x8019E5CCu; return;  /* CPS jal -> cd_kobj_param_copy */
 
 block_8019E374:
     ra = 0x8019E37Cu;  /* jal link before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019E378: 0x00000000 */
-    psx_check_interrupts_at(cpu, 0x8019E4C8u);
-    cpu->pc = 0x8019E4C8u; return;  /* CPS jal -> 0x8019E4C8 */
+    psx_check_interrupts_at(cpu, 0x8019E4C8u); /* cd_kobj_b56_commit */
+    cpu->pc = 0x8019E4C8u; return;  /* CPS jal -> cd_kobj_b56_commit */
 
 block_8019E37C:
     ra = 0x8019E384u;  /* jal link before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019E380: 0x00000000 */
-    psx_check_interrupts_at(cpu, 0x8019E55Cu);
-    cpu->pc = 0x8019E55Cu; return;  /* CPS jal -> 0x8019E55C */
+    psx_check_interrupts_at(cpu, 0x8019E55Cu); /* cd_kobj_b57_commit */
+    cpu->pc = 0x8019E55Cu; return;  /* CPS jal -> cd_kobj_b57_commit */
 
 block_8019E384:
     ra = 0x8019E38Cu;  /* jal link before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019E388: 0x00000000 */
-    psx_check_interrupts_at(cpu, 0x8018E310u);
-    cpu->pc = 0x8018E310u; return;  /* CPS jal -> 0x8018E310 */
+    psx_check_interrupts_at(cpu, 0x8018E310u); /* cpu_critical_exit */
+    cpu->pc = 0x8018E310u; return;  /* CPS jal -> cpu_critical_exit */
 
 block_8019E38C:
     ra = cpu->read_word(sp + 20);
     s0 = cpu->read_word(sp + 16);
-    uint32_t _jt_8019E394 = ra;  /* latch indirect target before delay slot */
+    uint32_t return_pc = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     sp = sp + 24;
-    psx_check_interrupts_at(cpu, _jt_8019E394);
-    cpu->pc = _jt_8019E394; return;  /* CPS: jr $ra */
+    psx_check_interrupts_at(cpu, return_pc);
+    cpu->pc = return_pc; return;  /* CPS: jr $ra */
 }
 
 /* cps_8019e39c — clean CPS transliteration of br2eu_func_8019E39C (guest 0x8019e39c)
- * from SLES_017.22_full_48.c. */
+ * from SLES_017.22_full_48.c.
+ * CD mode-reset sequence (cd_mode_reset_seq): cpu_critical_enter →
+ * 0x8019E410 → bios_table_tramp(0) → cpu_critical_exit. */
 void cps_8019e39c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -92591,42 +92585,44 @@ block_8019E39C:
     ra = 0x8019E3ACu;  /* jal link before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019E3A8: 0x00000000 */
-    psx_check_interrupts_at(cpu, 0x8018E300u);
-    cpu->pc = 0x8018E300u; return;  /* CPS jal -> 0x8018E300 */
+    psx_check_interrupts_at(cpu, 0x8018E300u); /* cpu_critical_enter */
+    cpu->pc = 0x8018E300u; return;  /* CPS jal -> cpu_critical_enter */
 
 block_8019E3AC:
     ra = 0x8019E3B4u;  /* jal link before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019E3B0: 0x00000000 */
-    psx_check_interrupts_at(cpu, 0x8019E410u);
+    psx_check_interrupts_at(cpu, 0x8019E410u); /* mode reset helper */
     cpu->pc = 0x8019E410u; return;  /* CPS jal -> 0x8019E410 */
 
 block_8019E3B4:
     ra = 0x8019E3BCu;  /* jal link before delay slot */
     /* delay slot (always executes) */
     a0 = zero;
-    psx_check_interrupts_at(cpu, 0x80199FE0u);
-    cpu->pc = 0x80199FE0u; return;  /* CPS jal -> 0x80199FE0 */
+    psx_check_interrupts_at(cpu, 0x80199FE0u); /* bios_table_tramp(0) */
+    cpu->pc = 0x80199FE0u; return;  /* CPS jal -> bios_table_tramp */
 
 block_8019E3BC:
     ra = 0x8019E3C4u;  /* jal link before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019E3C0: 0x00000000 */
-    psx_check_interrupts_at(cpu, 0x8018E310u);
-    cpu->pc = 0x8018E310u; return;  /* CPS jal -> 0x8018E310 */
+    psx_check_interrupts_at(cpu, 0x8018E310u); /* cpu_critical_exit */
+    cpu->pc = 0x8018E310u; return;  /* CPS jal -> cpu_critical_exit */
 
 block_8019E3C4:
     ra = cpu->read_word(sp + 16);
     sp = sp + 24;
-    uint32_t _jt_8019E3CC = ra;  /* latch indirect target before delay slot */
+    uint32_t return_pc = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019E3D0: 0x00000000 */
-    psx_check_interrupts_at(cpu, _jt_8019E3CC);
-    cpu->pc = _jt_8019E3CC; return;  /* CPS: jr $ra */
+    psx_check_interrupts_at(cpu, return_pc);
+    cpu->pc = return_pc; return;  /* CPS: jr $ra */
 }
 
 /* cps_8019e430 — clean CPS transliteration of br2eu_func_8019E430 (guest 0x8019e430)
- * from SLES_017.22_full_48.c. */
+ * from SLES_017.22_full_48.c.
+ * Register poke + settle delay: half @v1+10 |= v0 | 0x0012, then a 40-iteration
+ * busy loop before returning. */
 void cps_8019e430(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -92643,37 +92639,39 @@ void cps_8019e430(void)
     /* Address: 0x8019E430, Size: 44 bytes, Blocks: 3 */
 
 block_8019E430:
-    t7 = cpu->read_half(v1 + 10);
-    t0 = 0x0000 << 16;  /* 0x00000000 */
+    t7 = cpu->read_half(v1 + 10);               /* current reg half */
+    t0 = 0x00000000u;
     t8 = t7 | v0;
-    t9 = t8 | 0x0012;
+    t9 = t8 | 0x0012;                           /* set bits 1,4 plus v0 */
     cpu->write_half(v1 + 10, (uint16_t)t9);
-    t0 = 40;
+    t0 = 40;                                    /* delay count */
     /* fall through to block_8019E448 */
 
 block_8019E448:
-    t0 = t0 + -1;
-    int _bc_8019E44C = (t0 != zero);  /* save branch cond before delay slot */
+    t0 = t0 + -1;                               /* settle loop */
+    int cond_delay = (t0 != zero);              /* latch: delay is nop */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019E450: 0x00000000 */
-    if (_bc_8019E44C) {
+    if (cond_delay) {
         psx_check_interrupts_at(cpu, 0x8019E448u);
-        goto block_8019E448;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019E454u);
-        goto block_8019E454;  /* not taken */
+        goto block_8019E448;
     }
+    psx_check_interrupts_at(cpu, 0x8019E454u);
+    goto block_8019E454;
 
 block_8019E454:
-    uint32_t _jt_8019E454 = ra;  /* latch indirect target before delay slot */
+    uint32_t return_pc = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019E458: 0x00000000 */
-    psx_check_interrupts_at(cpu, _jt_8019E454);
-    cpu->pc = _jt_8019E454; return;  /* CPS: jr $ra */
+    psx_check_interrupts_at(cpu, return_pc);
+    cpu->pc = return_pc; return;  /* CPS: jr $ra */
 }
 
 /* cps_8019e45c — clean CPS transliteration of br2eu_func_8019E45C (guest 0x8019e45c)
- * from SLES_017.22_full_48.c. */
+ * from SLES_017.22_full_48.c.
+ * Flag-gated tail dispatch: returns unless bit7 of word @v1+4212 is set; then
+ * spins while bit7 of word @v1+4164 is set; finally tail-jumps through the
+ * pointer cell at 0x0001DFF4 (0x00010000 - 8196). */
 void cps_8019e45c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -92691,55 +92689,54 @@ void cps_8019e45c(void)
     /* Address: 0x8019E45C, Size: 68 bytes, Blocks: 4 */
 
 block_8019E45C:
-    v0 = cpu->read_word(v1 + 4212);
+    v0 = cpu->read_word(v1 + 4212);              /* status word A */
     /* nop */  /* 0x8019E460: 0x00000000 */
-    v0 = v0 & 0x0080;  /* 0x8019E464: 0x30420080 */
-    int _bc_8019E468 = (v0 == zero);  /* save branch cond before delay slot */
+    v0 = v0 & 0x0080;                           /* bit7 armed? */
+    int cond_not_armed = (v0 == zero);          /* latch: delay is nop */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019E46C: 0x00000000 */
-    if (_bc_8019E468) {
+    if (cond_not_armed) {
         psx_check_interrupts_at(cpu, 0x8019E498u);
-        goto block_8019E498;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019E470u);
-        goto block_8019E470;  /* not taken */
+        goto block_8019E498;
     }
+    psx_check_interrupts_at(cpu, 0x8019E470u);
+    goto block_8019E470;
 
 block_8019E470:
-    v0 = cpu->read_word(v1 + 4164);
+    v0 = cpu->read_word(v1 + 4164);              /* status word B */
     /* nop */  /* 0x8019E474: 0x00000000 */
-    v0 = v0 & 0x0080;  /* 0x8019E478: 0x30420080 */
-    int _bc_8019E47C = (v0 != zero);  /* save branch cond before delay slot */
+    v0 = v0 & 0x0080;                           /* bit7 still busy? */
+    int cond_busy = (v0 != zero);               /* latch: delay is nop */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019E480: 0x00000000 */
-    if (_bc_8019E47C) {
+    if (cond_busy) {
         psx_check_interrupts_at(cpu, 0x8019E470u);
-        goto block_8019E470;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019E484u);
-        goto block_8019E484;  /* not taken */
+        goto block_8019E470;
     }
+    psx_check_interrupts_at(cpu, 0x8019E484u);
+    goto block_8019E484;
 
 block_8019E484:
-    v0 = 0x0001 << 16;  /* 0x00010000 */
-    v0 = cpu->read_word(v0 + -8196);
+    v0 = cpu->read_word(0x0001DFF4u);            /* 0x00010000 - 8196: tail ptr */
     /* nop */  /* 0x8019E48C: 0x00000000 */
-    uint32_t _jt_8019E490 = v0;  /* latch indirect target before delay slot */
+    uint32_t tail_pc = v0;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019E494: 0x00000000 */
-    psx_check_interrupts_at(cpu, _jt_8019E490);
-    cpu->pc = _jt_8019E490; return;  /* CPS: jr v0 */
+    psx_check_interrupts_at(cpu, tail_pc);
+    cpu->pc = tail_pc; return;  /* CPS: jr v0 */
 
 block_8019E498:
-    uint32_t _jt_8019E498 = ra;  /* latch indirect target before delay slot */
+    uint32_t return_pc = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019E49C: 0x00000000 */
-    psx_check_interrupts_at(cpu, _jt_8019E498);
-    cpu->pc = _jt_8019E498; return;  /* CPS: jr $ra */
+    psx_check_interrupts_at(cpu, return_pc);
+    cpu->pc = return_pc; return;  /* CPS: jr $ra */
 }
 
 /* cps_8019e4a0 — clean CPS transliteration of br2eu_func_8019E4A0 (guest 0x8019e4a0)
- * from SLES_017.22_full_48.c. */
+ * from SLES_017.22_full_48.c.
+ * Scratchpad tail-dispatch: jr to the fixed RAM routine at 0xA000DFA4
+ * (0xA0010000 - 8276). */
 void cps_8019e4a0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -92749,10 +92746,11 @@ void cps_8019e4a0(void)
 
 block_8019E4A0:
     v0 = 0xA000DFACu;  /* 0xA0010000 -8276 */    uint32_t _jt_8019E4A8 = v0;  /* latch indirect target before delay slot */
+    uint32_t tail_pc = v0;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019E4AC: 0x00000000 */
-    psx_check_interrupts_at(cpu, _jt_8019E4A8);
-    cpu->pc = _jt_8019E4A8; return;  /* CPS: jr v0 */
+    psx_check_interrupts_at(cpu, tail_pc);
+    cpu->pc = tail_pc; return;  /* CPS: jr v0 */
 }
 
 /* cps_8019e4c8 — clean CPS transliteration of br2eu_func_8019E4C8 (guest 0x8019e4c8)
@@ -92968,7 +92966,11 @@ block_8019E5F8:
 }
 
 /* cps_8019e600 — clean CPS transliteration of br2eu_func_8019E600 (guest 0x8019e600)
- * from SLES_017.22_full_48.c. */
+ * from SLES_017.22_full_48.c.
+ * Kobj commit variant (B0:0x56): saves ra to cell @0x801FEB60, enters critical
+ * section, issues BIOS call 0x56 via the 0xB0 gate (jalr t2=0xB0, a0=0x56),
+ * copies 3 words from 0x8019E670 to ctx+112, runs bios_tramp_a044, exits
+ * critical section, then tail-dispatches through the saved-ra cell. */
 void cps_8019e600(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -92989,67 +92991,67 @@ void cps_8019e600(void)
     /* Address: 0x8019E600, Size: 112 bytes, Blocks: 7 */
 
 block_8019E600:
-    at = 0x8020 << 16;  /* 0x80200000 */
-    cpu->write_word(at + -5216, ra);
+    at = 0x80200000u;                          /* 0x8020 << 16 */
+    cpu->write_word(at + -5216, ra);           /* save ra @0x801FEB60 */
     ra = 0x8019E610u;  /* jal link before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019E60C: 0x00000000 */
-    psx_check_interrupts_at(cpu, 0x8018E300u);
-    cpu->pc = 0x8018E300u; return;  /* CPS jal -> 0x8018E300 */
+    psx_check_interrupts_at(cpu, 0x8018E300u); /* cpu_critical_enter */
+    cpu->pc = 0x8018E300u; return;  /* CPS jal -> cpu_critical_enter */
 
 block_8019E610:
-    t1 = 86;
-    t2 = 176;
-    uint32_t _jt_8019E618 = t2;  /* latch indirect target before delay slot */
+    t1 = 86;                                   /* BIOS call 0x56 */
+    t2 = 176;                                  /* 0xB0 BIOS gate */
+    uint32_t bios_gate = t2;  /* latch indirect target before delay slot */
     ra = 0x8019E620u;  /* jalr link before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019E61C: 0x00000000 */
-    psx_check_interrupts_at(cpu, _jt_8019E618);
-    cpu->pc = _jt_8019E618; return;  /* CPS jalr */
+    psx_check_interrupts_at(cpu, bios_gate);
+    cpu->pc = bios_gate; return;  /* CPS jalr -> 0xB0 gate */
 
 block_8019E620:
     v0 = cpu->read_word(v0 + 24);
     t2 = 0x8019E670u;  /* 0x801A0000 -6544 */    t1 = 0x8019E67Cu;  /* 0x801A0000 -6532 */    /* fall through to block_8019E634 */
+    t1 = 0x8019E67Cu;                          /* 0x801A0000 - 6532: end */
+    /* fall through to block_8019E634 */
 
 block_8019E634:
-    v1 = cpu->read_word(t2);
+    v1 = cpu->read_word(t2);                   /* copy 3 words src→ctx+112 */
     /* nop */  /* 0x8019E638: 0x00000000 */
     cpu->write_word(v0 + 112, v1);
     t2 = t2 + 4;
-    int _bc_8019E644 = (t2 != t1);  /* save branch cond before delay slot */
+    int cond_copy_done = (t2 != t1);           /* latch: delay bumps v0 */
     /* delay slot (always executes) */
     v0 = v0 + 4;
-    if (_bc_8019E644) {
+    if (cond_copy_done) {
         psx_check_interrupts_at(cpu, 0x8019E634u);
-        goto block_8019E634;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019E64Cu);
-        goto block_8019E64C;  /* not taken */
+        goto block_8019E634;
     }
+    psx_check_interrupts_at(cpu, 0x8019E64Cu);
+    goto block_8019E64C;
 
 block_8019E64C:
     ra = 0x8019E654u;  /* jal link before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019E650: 0x00000000 */
-    psx_check_interrupts_at(cpu, 0x801957F0u);
-    cpu->pc = 0x801957F0u; return;  /* CPS jal -> 0x801957F0 */
+    psx_check_interrupts_at(cpu, 0x801957F0u); /* bios_tramp_a044 */
+    cpu->pc = 0x801957F0u; return;  /* CPS jal -> bios_tramp_a044 */
 
 block_8019E654:
     ra = 0x8019E65Cu;  /* jal link before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019E658: 0x00000000 */
-    psx_check_interrupts_at(cpu, 0x8018E310u);
-    cpu->pc = 0x8018E310u; return;  /* CPS jal -> 0x8018E310 */
+    psx_check_interrupts_at(cpu, 0x8018E310u); /* cpu_critical_exit */
+    cpu->pc = 0x8018E310u; return;  /* CPS jal -> cpu_critical_exit */
 
 block_8019E65C:
-    ra = 0x8020 << 16;  /* 0x80200000 */
-    ra = cpu->read_word(ra + -5216);
+    ra = cpu->read_word(0x801FEB60u);          /* 0x80200000 - 5216: saved ra */
     /* nop */  /* 0x8019E664: 0x00000000 */
-    uint32_t _jt_8019E668 = ra;  /* latch indirect target before delay slot */
+    uint32_t return_pc = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019E66C: 0x00000000 */
-    psx_check_interrupts_at(cpu, _jt_8019E668);
-    cpu->pc = _jt_8019E668; return;  /* CPS: jr $ra */
+    psx_check_interrupts_at(cpu, return_pc);
+    cpu->pc = return_pc; return;  /* CPS: jr $ra */
 }
 
 /* cps_8019e798 — clean CPS transliteration of br2eu_func_8019E798 (guest 0x8019e798)
@@ -94490,7 +94492,11 @@ block_8019FD78:
 }
 
 /* cps_8019fd98 — clean CPS transliteration of br2eu_func_8019FD98 (guest 0x8019fd98)
- * from SLES_017.22_full_48.c. */
+ * from SLES_017.22_full_48.c.
+ * File-load entry: guards on channel cell @0x801FEBE0 (busy → printf diag +
+ * return -1 via ff30). Else resolves the request via 0x801A01BC(a0, sp+16) and
+ * 0x801A0530(sp+16, a1), sets bit (1 << idx) in the channel mask @cell+12,
+ * then falls through into the fe1c load pump. */
 void cps_8019fd98(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -94512,43 +94518,43 @@ void cps_8019fd98(void)
 block_8019FD98:
     sp = sp + -80;
     cpu->write_word(sp + 64, s2);
-    s2 = a0;
+    s2 = a0;                                   /* request arg0 */
     cpu->write_word(sp + 56, s0);
-    s0 = a1;
+    s0 = a1;                                   /* request arg1 */
     cpu->write_word(sp + 68, s3);
     s3 = 0x801FEBE0u;  /* 0x80200000 -5152 */    cpu->write_word(sp + 72, ra);
+    cpu->write_word(sp + 72, ra);
     cpu->write_word(sp + 60, s1);
-    v0 = cpu->read_word(s3);
+    s1 = zero;                                 /* retry counter */
+    v0 = cpu->read_word(s3);                   /* channel busy? */
     /* nop */  /* 0x8019FDC4: 0x00000000 */
-    int _bc_8019FDC8 = (v0 == zero);  /* save branch cond before delay slot */
-    /* delay slot (always executes) */
-    s1 = zero;
-    if (_bc_8019FDC8) {
+    int cond_chan_free = (v0 == zero);         /* latch: delay clears s1 */
+    if (cond_chan_free) {
         psx_check_interrupts_at(cpu, 0x8019FDE4u);
-        goto block_8019FDE4;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019FDD0u);
-        goto block_8019FDD0;  /* not taken */
+        goto block_8019FDE4;
     }
+    psx_check_interrupts_at(cpu, 0x8019FDD0u);
+    goto block_8019FDD0;
 
 block_8019FDD0:
     a0 = 0x80125E8Cu;  /* 0x80120000 24204 */
     ra = 0x8019FDDCu;  /* jal link before delay slot */
     /* delay slot (always executes) */    psx_check_interrupts_at(cpu, 0x8018E550u);
     cpu->pc = 0x8018E550u; return;  /* CPS jal -> 0x8018E550 */
+    psx_check_interrupts_at(cpu, 0x8018E550u); /* printf_forward_guest */
 
 block_8019FDDC:
     /* delay slot (always executes) */
-    v0 = -1;
+    v0 = -1;                                   /* busy → fail */
     psx_check_interrupts_at(cpu, 0x8019FF30u);
-    cpu->pc = 0x8019FF30u; return;  /* CPS j: split */
+    cpu->pc = 0x8019FF30u; return;  /* CPS j: split → shared epilogue */
 
 block_8019FDE4:
     a0 = s2;
     ra = 0x8019FDF0u;  /* jal link before delay slot */
     /* delay slot (always executes) */
-    a1 = sp + 16;
-    psx_check_interrupts_at(cpu, 0x801A01BCu);
+    a1 = sp + 16;                              /* out: resolved request */
+    psx_check_interrupts_at(cpu, 0x801A01BCu); /* request resolver */
     cpu->pc = 0x801A01BCu; return;  /* CPS jal -> 0x801A01BC */
 
 block_8019FDF0:
@@ -94556,23 +94562,28 @@ block_8019FDF0:
     ra = 0x8019FDFCu;  /* jal link before delay slot */
     /* delay slot (always executes) */
     a1 = s0;
-    psx_check_interrupts_at(cpu, 0x801A0530u);
+    psx_check_interrupts_at(cpu, 0x801A0530u); /* request binder */
     cpu->pc = 0x801A0530u; return;  /* CPS jal -> 0x801A0530 */
 
 block_8019FDFC:
-    s0 = s3;
+    s0 = s3;                                   /* s0 = chan cell */
     s3 = 2;
     v0 = 1;
-    a0 = cpu->read_word(s0 + 16);
-    v1 = cpu->read_word(s0 + 12);
-    v0 = v0 << (a0 & 0x1F);
+    a0 = cpu->read_word(s0 + 16);              /* channel index */
+    v1 = cpu->read_word(s0 + 12);              /* pending mask */
+    v0 = v0 << (a0 & 0x1F);                    /* bit for this channel */
     v1 = v1 | v0;
-    cpu->write_word(s0 + 12, v1);
-    cpu->pc = 0x8019fe1cu; return;  /* fallthrough to split piece */
+    cpu->write_word(s0 + 12, v1);              /* mark channel pending */
+    cpu->pc = 0x8019fe1cu; return;  /* fallthrough to split piece → fe1c pump */
 }
 
 /* cps_8019fe1c — clean CPS transliteration of br2eu_func_8019FE1C (guest 0x8019fe1c)
- * from SLES_017.22_full_48.c. */
+ * from SLES_017.22_full_48.c.
+ * File-load pump head (split pieces continue at 0x8019FE74/78/7C, tail at
+ * 0x8019FF2C/30): calls loader 0x801A0270(sp+16); nonzero result → return 0 via
+ * ff2c/ff30. Else queries status 0x8019FA6C(0) → cell @0x801FEC38; empty slot →
+ * reset record @s0 and call 0x801A0A10(0x8019EAC0); occupied → printf diag then
+ * continue into the fe7c retry loop. */
 void cps_8019fe1c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -94595,69 +94606,71 @@ void cps_8019fe1c(void)
 block_8019FE1C:
     ra = 0x8019FE24u;  /* jal link before delay slot */
     /* delay slot (always executes) */
-    a0 = sp + 16;
-    psx_check_interrupts_at(cpu, 0x801A0270u);
+    a0 = sp + 16;                               /* load params on stack */
+    psx_check_interrupts_at(cpu, 0x801A0270u);  /* file load worker */
     cpu->pc = 0x801A0270u; return;  /* CPS jal -> 0x801A0270 */
 
 block_8019FE24:
-    int _bc_8019FE24 = (v0 != zero);  /* save branch cond before delay slot */
+    int cond_load_ok = (v0 != zero);           /* latch: delay stores v0 */
     /* delay slot (always executes) */
-    cpu->write_word(sp + 48, v0);
-    if (_bc_8019FE24) {
+    cpu->write_word(sp + 48, v0);              /* result cell */
+    if (cond_load_ok) {                        /* load failed → return 0 */
         psx_check_interrupts_at(cpu, 0x8019FF2Cu);
         cpu->pc = 0x8019FF2Cu; return;  /* CPS taken: split */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019FE2Cu);
-        goto block_8019FE2C;  /* not taken */
     }
+    psx_check_interrupts_at(cpu, 0x8019FE2Cu);
+    goto block_8019FE2C;
 
 block_8019FE2C:
     ra = 0x8019FE34u;  /* jal link before delay slot */
     /* delay slot (always executes) */
     a0 = zero;
-    psx_check_interrupts_at(cpu, 0x8019FA6Cu);
+    psx_check_interrupts_at(cpu, 0x8019FA6Cu); /* status query */
     cpu->pc = 0x8019FA6Cu; return;  /* CPS jal -> 0x8019FA6C */
 
 block_8019FE34:
-    v1 = cpu->read_word(s0);
-    at = 0x8020 << 16;  /* 0x80200000 */
-    int _bc_8019FE3C = ((int32_t)v1 <= 0);  /* save branch cond before delay slot */
+    v1 = cpu->read_word(s0);                   /* record word0: in-use? */
+    at = 0x80200000u;                          /* 0x8020 << 16 */
+    int cond_slot_used = ((int32_t)v1 <= 0);   /* latch: delay stores v0 */
     /* delay slot (always executes) */
-    cpu->write_word(at + -5064, v0);
-    if (_bc_8019FE3C) {
+    cpu->write_word(at + -5064, v0);           /* status → 0x801FEC38 */
+    if (cond_slot_used) {
         psx_check_interrupts_at(cpu, 0x8019FE58u);
-        goto block_8019FE58;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019FE44u);
-        goto block_8019FE44;  /* not taken */
+        goto block_8019FE58;
     }
+    psx_check_interrupts_at(cpu, 0x8019FE44u);
+    goto block_8019FE44;
 
 block_8019FE44:
     a0 = 0x80125CE8u;  /* 0x80120000 23784 */
     ra = 0x8019FE50u;  /* jal link before delay slot */
     /* delay slot (always executes) */    psx_check_interrupts_at(cpu, 0x8018E550u);
     cpu->pc = 0x8018E550u; return;  /* CPS jal -> 0x8018E550 */
+    psx_check_interrupts_at(cpu, 0x8018E550u); /* printf_forward_guest */
 
 block_8019FE50:
     /* delay slot (always executes) */
     /* nop */  /* 0x8019FE54: 0x00000000 */
     psx_check_interrupts_at(cpu, 0x8019FE78u);
-    cpu->pc = 0x8019FE78u; return;  /* CPS j: split */
+    cpu->pc = 0x8019FE78u; return;  /* CPS j: split → fe78 piece */
 
 block_8019FE58:
     a0 = 0x8019EB00u;  /* 0x801A0000 -5376 */    cpu->write_word(s0, s3);
+    cpu->write_word(s0, s3);                   /* reset record: w0=s3,w1=0,w2=0 */
     cpu->write_word(s0 + 4, zero);
     cpu->write_word(s0 + 8, zero);
-    at = 0x8020 << 16;  /* 0x80200000 */
+    at = 0x80200000u;                          /* 0x8020 << 16 */
     ra = 0x8019FE78u;  /* jal link before delay slot */
     /* delay slot (always executes) */
-    cpu->write_word(at + -5136, s2);
-    psx_check_interrupts_at(cpu, 0x801A0A10u);
+    cpu->write_word(at + -5136, s2);           /* s2 → 0x801FEBF0 */
+    psx_check_interrupts_at(cpu, 0x801A0A10u); /* queue/notify worker */
     cpu->pc = 0x801A0A10u; return;  /* CPS jal -> 0x801A0A10 */
 }
 
 /* cps_8019fe74 — clean CPS transliteration of br2eu_func_8019FE74 (guest 0x8019fe74)
- * from SLES_017.22_full_48.c. */
+ * from SLES_017.22_full_48.c.
+ * Split piece of the fe1c machine: delay-slot tail storing s2 to cell
+ * @0x801FEBF0, then falls through to the fe78 piece. */
 void cps_8019fe74(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -94666,12 +94679,14 @@ void cps_8019fe74(void)
     /* Address: 0x8019FE74, Size: 4 bytes, Blocks: 1 */
 
 block_8019FE74:
-    cpu->write_word(at + -5136, s2);
+    cpu->write_word(0x801FEBF0u, s2);           /* 0x80200000 - 5136 */
     cpu->pc = 0x8019fe78u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8019fe78 — clean CPS transliteration of br2eu_func_8019FE78 (guest 0x8019fe78)
- * from SLES_017.22_full_48.c. */
+ * from SLES_017.22_full_48.c.
+ * Split piece of the fe1c machine: loads the record word0 into v0 (the fe7c
+ * state loop's entry condition), then falls through to fe7c. */
 void cps_8019fe78(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -94685,7 +94700,11 @@ block_8019FE78:
 }
 
 /* cps_8019fe7c — clean CPS transliteration of br2eu_func_8019FE7C (guest 0x8019fe7c)
- * from SLES_017.22_full_48.c. */
+ * from SLES_017.22_full_48.c.
+ * Load-state loop (entered via fe78 piece with v0 = record word0): spins while
+ * record words @s0/+4/+8 look busy or cell @0x801FEBE8 is 0, then queries
+ * 0x8019FA6C(cell @0x801FEC38); result 3 or ==s3 (with s1 retry <4) re-enters
+ * fe1c, else stores 5 when result 0 and returns the sp+48 result via ff30. */
 void cps_8019fe7c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -94713,63 +94732,60 @@ void cps_8019fe7c(void)
 
 block_8019FE7C:
     /* nop */  /* 0x8019FE7C: 0x00000000 */
-    int _bc_8019FE80 = (v0 != zero);  /* save branch cond before delay slot */
+    int cond_busy0 = (v0 != zero);             /* latch: delay is nop */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019FE84: 0x00000000 */
-    if (_bc_8019FE80) {
+    if (cond_busy0) {
         psx_check_interrupts_at(cpu, 0x8019FE98u);
-        goto block_8019FE98;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019FE88u);
-        goto block_8019FE88;  /* not taken */
+        goto block_8019FE98;
     }
+    psx_check_interrupts_at(cpu, 0x8019FE88u);
+    goto block_8019FE88;
 
 block_8019FE88:
-    v0 = cpu->read_word(s0 + 8);
+    v0 = cpu->read_word(s0 + 8);               /* record word2 pending? */
     /* nop */  /* 0x8019FE8C: 0x00000000 */
-    int _bc_8019FE90 = (v0 == zero);  /* save branch cond before delay slot */
+    int cond_pending = (v0 == zero);           /* latch: delay is nop */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019FE94: 0x00000000 */
-    if (_bc_8019FE90) {
+    if (cond_pending) {
         psx_check_interrupts_at(cpu, 0x8019FEDCu);
-        goto block_8019FEDC;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019FE98u);
-        goto block_8019FE98;  /* not taken */
+        goto block_8019FEDC;
     }
+    psx_check_interrupts_at(cpu, 0x8019FE98u);
+    goto block_8019FE98;
 
 block_8019FE98:
-    v0 = cpu->read_word(s0);
+    v0 = cpu->read_word(s0);                   /* drain record words 0,1,2 */
     v0 = cpu->read_word(s0 + 4);
     v0 = cpu->read_word(s0 + 8);
     /* nop */  /* 0x8019FEA4: 0x00000000 */
-    int _bc_8019FEA8 = (v0 != zero);  /* save branch cond before delay slot */
+    int cond_words_nonzero = (v0 != zero);     /* latch: delay is nop */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019FEAC: 0x00000000 */
-    if (_bc_8019FEA8) {
+    if (cond_words_nonzero) {
         psx_check_interrupts_at(cpu, 0x8019FEC8u);
-        goto block_8019FEC8;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019FEB0u);
-        goto block_8019FEB0;  /* not taken */
+        goto block_8019FEC8;
     }
+    psx_check_interrupts_at(cpu, 0x8019FEB0u);
+    goto block_8019FEB0;
 
 block_8019FEB0:
     v1 = 0x801FEBE8u;  /* 0x80200000 -5144 */    /* fall through to block_8019FEB8 */
+    /* fall through to block_8019FEB8 */
 
 block_8019FEB8:
-    v0 = cpu->read_word(v1);
+    v0 = cpu->read_word(v1);                   /* gate nonzero? */
     /* nop */  /* 0x8019FEBC: 0x00000000 */
-    int _bc_8019FEC0 = (v0 == zero);  /* save branch cond before delay slot */
+    int cond_gate_zero = (v0 == zero);         /* latch: delay is nop */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019FEC4: 0x00000000 */
-    if (_bc_8019FEC0) {
+    if (cond_gate_zero) {
         psx_check_interrupts_at(cpu, 0x8019FEB8u);
-        goto block_8019FEB8;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019FEC8u);
-        goto block_8019FEC8;  /* not taken */
+        goto block_8019FEB8;
     }
+    psx_check_interrupts_at(cpu, 0x8019FEC8u);
+    goto block_8019FEC8;
 
 block_8019FEC8:
     v0 = 0x801FEBD4u;  /* 0x80200000 -5164 */    v0 = cpu->read_word(v0);
@@ -94778,80 +94794,76 @@ block_8019FEC8:
     /* fall through to block_8019FEDC */
 
 block_8019FEDC:
-    a0 = 0x8020 << 16;  /* 0x80200000 */
-    a0 = cpu->read_word(a0 + -5064);
+    a0 = cpu->read_word(0x801FEC38u);          /* 0x80200000 - 5064: status arg */
     ra = 0x8019FEECu;  /* jal link before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019FEE8: 0x00000000 */
-    psx_check_interrupts_at(cpu, 0x8019FA6Cu);
+    psx_check_interrupts_at(cpu, 0x8019FA6Cu); /* status query */
     cpu->pc = 0x8019FA6Cu; return;  /* CPS jal -> 0x8019FA6C */
 
 block_8019FEEC:
-    v1 = cpu->read_word(sp + 48);
+    v1 = cpu->read_word(sp + 48);              /* latest status */
     v0 = 3;
-    int _bc_8019FEF4 = (v1 == v0);  /* save branch cond before delay slot */
+    int cond_status3 = (v1 == v0);             /* latch: delay is nop */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019FEF8: 0x00000000 */
-    if (_bc_8019FEF4) {
+    if (cond_status3) {                        /* status 3 → restart pump */
         psx_check_interrupts_at(cpu, 0x8019FE1Cu);
         cpu->pc = 0x8019FE1Cu; return;  /* CPS taken: split */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019FEFCu);
-        goto block_8019FEFC;  /* not taken */
     }
+    psx_check_interrupts_at(cpu, 0x8019FEFCu);
+    goto block_8019FEFC;
 
 block_8019FEFC:
-    int _bc_8019FEFC = (v1 != s3);  /* save branch cond before delay slot */
+    int cond_match_s3 = (v1 != s3);            /* latch: delay is nop */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019FF00: 0x00000000 */
-    if (_bc_8019FEFC) {
+    if (cond_match_s3) {
         psx_check_interrupts_at(cpu, 0x8019FF14u);
-        goto block_8019FF14;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019FF04u);
-        goto block_8019FF04;  /* not taken */
+        goto block_8019FF14;
     }
+    psx_check_interrupts_at(cpu, 0x8019FF04u);
+    goto block_8019FF04;
 
 block_8019FF04:
-    s1 = s1 + 1;
-    v0 = ((int32_t)s1 < 4) ? 1 : 0;  /* 0x8019FF08: 0x2A220004 */
-    int _bc_8019FF0C = (v0 != zero);  /* save branch cond before delay slot */
+    s1 = s1 + 1;                               /* retry counter */
+    v0 = ((int32_t)s1 < 4) ? 1 : 0;            /* retries left? */
+    int cond_retry = (v0 != zero);             /* latch: delay is nop */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019FF10: 0x00000000 */
-    if (_bc_8019FF0C) {
+    if (cond_retry) {
         psx_check_interrupts_at(cpu, 0x8019FE1Cu);
         cpu->pc = 0x8019FE1Cu; return;  /* CPS taken: split */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019FF14u);
-        goto block_8019FF14;  /* not taken */
     }
+    psx_check_interrupts_at(cpu, 0x8019FF14u);
+    goto block_8019FF14;
 
 block_8019FF14:
-    int _bc_8019FF14 = (v1 != zero);  /* save branch cond before delay slot */
+    int cond_status_nonzero = (v1 != zero);    /* latch: delay sets v0=5 */
     /* delay slot (always executes) */
-    v0 = 5;
-    if (_bc_8019FF14) {
+    v0 = 5;                                    /* default fail code */
+    if (cond_status_nonzero) {
         psx_check_interrupts_at(cpu, 0x8019FF20u);
-        goto block_8019FF20;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019FF1Cu);
-        goto block_8019FF1C;  /* not taken */
+        goto block_8019FF20;
     }
+    psx_check_interrupts_at(cpu, 0x8019FF1Cu);
+    goto block_8019FF1C;
 
 block_8019FF1C:
-    cpu->write_word(sp + 48, v0);
+    cpu->write_word(sp + 48, v0);              /* status 0 → result 5 */
     /* fall through to block_8019FF20 */
 
 block_8019FF20:
-    v0 = cpu->read_word(sp + 48);
+    v0 = cpu->read_word(sp + 48);              /* final result → v0 */
     /* delay slot (always executes) */
     /* nop */  /* 0x8019FF28: 0x00000000 */
     psx_check_interrupts_at(cpu, 0x8019FF30u);
-    cpu->pc = 0x8019FF30u; return;  /* CPS j: split */
+    cpu->pc = 0x8019FF30u; return;  /* CPS j: split → epilogue */
 }
 
 /* cps_8019ff2c — clean CPS transliteration of br2eu_func_8019FF2C (guest 0x8019ff2c)
- * from SLES_017.22_full_48.c. */
+ * from SLES_017.22_full_48.c.
+ * Split piece of the fe1c machine: v0 = 0 (load-failed result) → ff30. */
 void cps_8019ff2c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -94865,7 +94877,9 @@ block_8019FF2C:
 }
 
 /* cps_8019ff30 — clean CPS transliteration of br2eu_func_8019FF30 (guest 0x8019ff30)
- * from SLES_017.22_full_48.c. */
+ * from SLES_017.22_full_48.c.
+ * Shared epilogue for the fe1c file-load machine: restores s0-s3 + ra, pops 80
+ * bytes of stack, returns v0 (the sp+48 result). */
 void cps_8019ff30(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -94879,11 +94893,11 @@ block_8019FF30:
     s2 = cpu->read_word(sp + 64);
     s1 = cpu->read_word(sp + 60);
     s0 = cpu->read_word(sp + 56);
-    uint32_t _jt_8019FF44 = ra;  /* latch indirect target before delay slot */
+    uint32_t return_pc = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     sp = sp + 80;
-    psx_check_interrupts_at(cpu, _jt_8019FF44);
-    cpu->pc = _jt_8019FF44; return;  /* CPS: jr $ra */
+    psx_check_interrupts_at(cpu, return_pc);
+    cpu->pc = return_pc; return;  /* CPS: jr $ra */
 }
 
 /* cps_801a0008 — clean CPS transliteration of br2eu_func_801A0008 (guest 0x801a0008)
@@ -114342,7 +114356,11 @@ block_80196DE4:
 }
 
 /* cps_8019a814 — clean CPS transliteration of br2eu_func_8019A814 (guest 0x8019a814)
- * from SLES_017.22_full_46.c. */
+ * from SLES_017.22_full_46.c.
+ * CD channel full-init (cd_chan_full_init): once-guard on half @0x801BCD18
+ * (the slot-enable flag); seeds the hw regs via ptrs @0x801BDDA4/0x801BDDA8/
+ * 0x801BDDAC (writes 0, reads back, writes 0x33333333), then runs
+ * 0x8019AD1C(ctx, 1050) and 0x8019AD90(ctx+56). */
 void cps_8019a814(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -114363,43 +114381,39 @@ block_8019A814:
     cpu->write_word(sp + 16, s0);
     s0 = 0x801BCD18u;  /* 0x801C0000 -13032 */    cpu->write_word(sp + 20, ra);
     v0 = cpu->read_half(s0);
+    cpu->write_word(sp + 20, ra);
     /* nop */  /* 0x8019A82C: 0x00000000 */
-    int _bc_8019A830 = (v0 != zero);  /* save branch cond before delay slot */
+    int cond_initialized = (v0 != zero);       /* latch: delay clears v0 */
     /* delay slot (always executes) */
     v0 = zero;
-    if (_bc_8019A830) {
+    if (cond_initialized) {
         psx_check_interrupts_at(cpu, 0x8019A8DCu);
         cpu->pc = 0x8019A8DCu; return;  /* CPS taken: split */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8019A838u);
-        goto block_8019A838;  /* not taken */
     }
+    psx_check_interrupts_at(cpu, 0x8019A838u);
+    goto block_8019A838;
 
 block_8019A838:
-    v1 = 0x801C << 16;  /* 0x801C0000 */
-    v1 = cpu->read_word(v1 + -8796);
-    v0 = 0x801C << 16;  /* 0x801C0000 */
-    v0 = cpu->read_word(v0 + -8792);
-    a1 = 0x3333 << 16;  /* 0x33330000 */
-    cpu->write_half(v0, (uint16_t)zero);
-    v0 = cpu->read_half(v0);
-    a1 = a1 | 0x3333;
-    cpu->write_half(v1, (uint16_t)v0);
-    v0 = 0x801C << 16;  /* 0x801C0000 */
-    v0 = cpu->read_word(v0 + -8788);
+    v1 = cpu->read_word(0x801BDDA4u);          /* 0x801C0000 - 8796: dst ptr */
+    v0 = cpu->read_word(0x801BDDA8u);          /* 0x801C0000 - 8792: src ptr */
+    a1 = 0x33333333u;                          /* 0x33330000 | 0x3333 */
+    cpu->write_half(v0, (uint16_t)zero);       /* clear src half */
+    v0 = cpu->read_half(v0);                   /* read back (0) */
+    cpu->write_half(v1, (uint16_t)v0);         /* → dst */
+    v0 = cpu->read_word(0x801BDDACu);          /* 0x801C0000 - 8788: ctrl ptr */
     a0 = s0;
-    cpu->write_word(v0, a1);
+    cpu->write_word(v0, a1);                   /* ctrl = 0x33333333 */
     ra = 0x8019A874u;  /* jal link before delay slot */
     /* delay slot (always executes) */
     a1 = 1050;
-    psx_check_interrupts_at(cpu, 0x8019AD1Cu);
+    psx_check_interrupts_at(cpu, 0x8019AD1Cu); /* chan setup helper */
     cpu->pc = 0x8019AD1Cu; return;  /* CPS jal -> 0x8019AD1C */
 
 block_8019A874:
     ra = 0x8019A87Cu;  /* jal link before delay slot */
     /* delay slot (always executes) */
     a0 = s0 + 56;
-    psx_check_interrupts_at(cpu, 0x8019AD90u);
+    psx_check_interrupts_at(cpu, 0x8019AD90u); /* chan sub-init */
     cpu->pc = 0x8019AD90u; return;  /* CPS jal -> 0x8019AD90 */
 }
 
