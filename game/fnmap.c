@@ -656,6 +656,7 @@ extern void fighter_reinit_tail(void);
 extern void fighter_reset_fx(void);
 extern void fighter_respawn_init(void);
 extern void fighter_script_fsm(void);
+extern void fighter_script_fsm_cps(void);
 extern void fighter_spawn_setup(void);
 extern void fighter_spawn_tail(void);
 extern void fighter_state_tick(void);
@@ -2256,6 +2257,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8018123c, (void *)slot_action_dump },
   { 0x80181db8, (void *)ani_fixup_guest },
   { 0x80181f20, (void *)fighter_script_fsm },
+  { 0x80182960, (void *)fighter_script_fsm_cps },
   { 0x80182f3c, (void *)scriptop_end },
   { 0x80182f48, (void *)scriptop_bra },
   { 0x80183248, (void *)scriptop_bsr },
