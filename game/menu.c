@@ -78,7 +78,7 @@ void post_confirm_config_build(uint32_t,uint8_t *,int32_t);
 extern int battle_init();
 extern int confirm_bookkeeping();
 extern void battle_state_init(uint8_t *,uint8_t *,uint32_t);
-extern uint32_t mc_pad_button_handler(uint8_t *param_1);
+extern uint32_t mc_pad_button_handler(uint8_t *battle_g);
 extern int post_battle_dispatch();
 extern void battle_sides_commit(uint8_t *,uint8_t *,uint32_t);
 extern int blk_1f26c0_init_b();
@@ -122,7 +122,8 @@ extern int fighter_anim_table_init();
 extern int action_enter_fwd();
 extern void fighter_frame(byte *,uint8_t *);
 #define FUN_801787dc fighter_frame
-extern int FUN_8018b100();
+extern int prim_xform3_task_run();
+#define FUN_8018b100 prim_xform3_task_run
 extern void pad_slot_state_walk(void);
 extern uint32_t spr_attr_alloc_b(uint32_t,uint32_t,uint32_t,uint32_t,int32_t,int32_t);
 extern int spr_slot_pkt_submit();
@@ -195,10 +196,10 @@ extern void dialog_sel_dispatch_wide(void);
 undefined1 frame_divisor_get(void);
 extern int card_sprite_load_sm(uint32_t,int);
 extern int attr_word_decode(void *);
-undefined4 stream_block_decode(undefined4,int *,int param_3);
-uint pad_state_refresh(intptr_t param_1);
-undefined2 match_mode_set(int param_1);
-void cd_stream_mode_init(undefined4 param_1);
+undefined4 stream_block_decode(undefined4 ctx,int *tab,int idx);
+uint pad_state_refresh(intptr_t pad);
+undefined2 match_mode_set(int mode);
+void cd_stream_mode_init(undefined4 stptr);
 
 /* ---- guest globals ---- */
 extern uint8_t  *g_DAT_1f800001;
@@ -524,7 +525,7 @@ void unlock_progress_scene_entry(void)
     *(uint *)(_g_system_config_ptr + 0x4c) = char_idx;
     break;
   default:
-    goto switchD_801678c4_caseD_1;
+    goto L_done;
   case 4:
     *(uint *)(_g_system_config_ptr + 0x60) =
          *(uint *)(_g_system_config_ptr + 0x60) | 1 << (char_idx & 0x1f);
@@ -544,7 +545,7 @@ void unlock_progress_scene_entry(void)
   }
   *(uint *)(_g_system_config_ptr + 0x28) = char_idx;
   _DAT_801c15f0 = 1;
-switchD_801678c4_caseD_1:
+L_done:
   return;
 }
 
@@ -552,14 +553,14 @@ switchD_801678c4_caseD_1:
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void battle_flow_state_machine(intptr_t param_1)
+void battle_flow_state_machine(intptr_t in_rec)
 
 {
-  int iVar1;
+  int ot_base;
   bool battle_ran;
-  undefined4 uVar3;
-  int iVar4;
-  int iVar5;
+  undefined4 aux_val;
+  int tmp;
+  int tmp2;
   
   battle_ran = false;
   { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
@@ -592,8 +593,8 @@ joined_r0x8016fd30:
    * the same OT cells with no intervening ch6 clear, so the second pass linked
    * each packet chain's tail to the previous head and the GPU walked a closed
    * cycle. Read them fresh here; the guest stores nothing back. */
-  iVar4 = _DAT_1f80000c;
-  iVar1 = _DAT_1f800008;
+  tmp = _DAT_1f80000c;
+  ot_base = _DAT_1f800008;
   if ((int8_t)DAT_1f800001 == -1) {
     if (g_game_state != '\t') {
       rec_timer_pair_clear(0x1f800000);
@@ -606,8 +607,8 @@ joined_r0x8016fd30:
     DAT_1f800001 = '\x01';
   case '\x01':
     hud_sprite_desc_init();
-    iVar4 = frame_divisor_get();
-    if (iVar4 == 0) {
+    tmp = frame_divisor_get();
+    if (tmp == 0) {
       display_mode_setup(*(undefined1 *)(_g_system_config_ptr + 0xb));
       frame_advance_helper();
       match_mode_set(1);
@@ -622,7 +623,7 @@ joined_r0x8016fd30:
       case 0:
         _DAT_1f8000c4 = guest_of(_g_system_config_ptr + 0x2c);
         if ((DAT_1f80009b == '\0') && (*(char *)(_g_system_config_ptr + 0x11) != '\x01')) {
-          iVar4 = battle_frame();
+          tmp = battle_frame();
           /* battle_frame returns early on a bail unwind — propagate it so
            * the unwind reaches the dispatch boundary instead of continuing
            * this clean-C loop with every generated fallback dropped.
@@ -630,14 +631,14 @@ joined_r0x8016fd30:
            * must not leak BFSM-private DAT1 into match_loop (see above). */
           { extern int br2_bail_pending(void);
             if (br2_bail_pending()) { DAT_1f800001 = 0; return; } }
-          if (iVar4 < 0) {
+          if (tmp < 0) {
             DAT_1f800001 = -1;
           }
           battle_ran = true;
         }
         else {
-          iVar4 = select_screen_tick(0);
-          if (iVar4 != 0) {
+          tmp = select_screen_tick(0);
+          if (tmp != 0) {
             DAT_1f800001 = -1;
           }
         }
@@ -645,17 +646,17 @@ joined_r0x8016fd30:
       case 1:
       case 2:
         _DAT_1f8000c4 = guest_of(_g_system_config_ptr + 0x2c);
-        iVar4 = select_screen_tick(1);
+        tmp = select_screen_tick(1);
         { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-          decomp_trace_record(74,0xf00d,(uint32_t)iVar4,(uint8_t)DAT_1f800001,(uint32_t)DAT_1f80009c); }
-        if (iVar4 != 0) {
+          decomp_trace_record(74,0xf00d,(uint32_t)tmp,(uint8_t)DAT_1f800001,(uint32_t)DAT_1f80009c); }
+        if (tmp != 0) {
           DAT_1f800001 = -1;
         }
         break;
       case 3:
         _DAT_1f8000c4 = guest_of(_g_system_config_ptr + 0x2c);
-        iVar4 = select_screen_tick(3);
-        if (iVar4 != 0) {
+        tmp = select_screen_tick(3);
+        if (tmp != 0) {
           DAT_1f800001 = -1;
         }
         break;
@@ -668,8 +669,8 @@ joined_r0x8016fd30:
           *(uint *)(_g_system_config_ptr + 0x28) = *(uint *)(_g_system_config_ptr + 0x28) | 2;
           _DAT_801c15f0 = 1;
         }
-        iVar4 = select_screen_tick(2);
-        if (iVar4 == 0) {
+        tmp = select_screen_tick(2);
+        if (tmp == 0) {
           countdown_display_sm(0);
           hud_state_machine(0);
         }
@@ -679,12 +680,12 @@ joined_r0x8016fd30:
         break;
       case 5:
         _DAT_1f8000c4 = guest_of(_g_system_config_ptr + 0x38);
-        uVar3 = 1;
+        aux_val = 1;
         if (DAT_1f80009b == '\0') {
-          uVar3 = 3;
+          aux_val = 3;
         }
-        iVar4 = select_screen_tick(uVar3);
-        if (iVar4 != 0) {
+        tmp = select_screen_tick(aux_val);
+        if (tmp != 0) {
           g_game_state = '\v';
           g_sub_state = 4;
           DAT_1f800001 = -1;
@@ -693,7 +694,7 @@ joined_r0x8016fd30:
       if (DAT_1f800001 == '\0') {
 LAB_8016ffd8:
         DAT_1f800001 = '\x02';
-switchD_8016fd64_caseD_2:
+L_dat1_2:
         deferred_cmd_post(0x204,0,0);
         hud_sprite_desc_init();
         rgb_triple_store(0,0,0);
@@ -705,9 +706,9 @@ switchD_8016fd64_caseD_2:
         DAT_1f800001 = '\x03';
         { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
           decomp_trace_record(73,0xcafe,(uint32_t)DAT_1f800001,(uint8_t)DAT_1f80009b,(uint32_t)DAT_1f80009c); }
-switchD_8016fd64_caseD_3:
-        iVar4 = frame_divisor_get();
-        if (iVar4 == 0) {
+L_dat1_3:
+        tmp = frame_divisor_get();
+        if (tmp == 0) {
           if (battle_ran) {
             battle_ran = false;
           }
@@ -729,16 +730,16 @@ switchD_8016fd64_caseD_3:
     }
     break;
   case '\x02':
-    goto switchD_8016fd64_caseD_2;
+    goto L_dat1_2;
   case '\x03':
-    goto switchD_8016fd64_caseD_3;
+    goto L_dat1_3;
   case '\x04':
     { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
       decomp_trace_record(71,0xdead,(uint32_t)DAT_1f800001,(uint8_t)DAT_1f80009b,(uint32_t)DAT_1f80009c); }
     if (_DAT_1f800090 != 0) {
       _DAT_1f800090 = 0;
     }
-    iVar5 = menu_res_load_sm(0x1f800000,&DAT_1f8000e8,&DAT_1f8001f0,0);
+    tmp2 = menu_res_load_sm(0x1f800000,&DAT_1f8000e8,&DAT_1f8001f0,0);
     /* menu_res_load_sm returns -1 both for "already done" (s1+0x8c<0
      * stored marker) and for a br2_bail_pending unwind. Only the bail case
      * must NOT advance the phase — the load is mid-flight and the fighter
@@ -749,10 +750,10 @@ switchD_8016fd64_caseD_3:
      * leak BFSM-private DAT1 into match_loop — restore canonical 0. */
     { extern int br2_bail_pending(void);
       if (br2_bail_pending()) { DAT_1f800001 = 0; return; } }
-    if ((iVar5 != 0) && (_DAT_1f800090 == 0)) goto switchD_8016fd64_caseD_5;
+    if ((tmp2 != 0) && (_DAT_1f800090 == 0)) goto L_dat1_5;
     break;
   case '\x05':
-switchD_8016fd64_caseD_5:
+L_dat1_5:
     se_value_select((int)(char)DAT_1f800098);
     confirm_code_select(0x1f800000);
     battle_struct_init(_DAT_1f8000bc,0x1f800000);
@@ -764,8 +765,8 @@ switchD_8016fd64_caseD_5:
   case '\x06':
     match_setup_apply(0x1f8000e8u,0x1f8001f0u,0x1f800000u,(uint32_t)guest_of(_g_system_config_ptr));
     battle_state_init(&DAT_1f8000e8,&DAT_1f8001f0,0x1f800000);
-    uVar3 = table_byte_next_a();
-    perm_table_apply(uVar3);
+    aux_val = table_byte_next_a();
+    perm_table_apply(aux_val);
     reset_sprite_ot_block(0x1f800000);
     task_table_init(1);
     flow_cfg_init(1);
@@ -783,11 +784,11 @@ switchD_8016fd64_caseD_5:
     clear_f0300_records();
     frame_tick(0x1f800000);
     DAT_1f800001 = '\a';
-switchD_8016fd64_caseD_7:
-    iVar5 = frame_divisor_get();
-    if (iVar5 == 0) {
+L_dat1_7:
+    tmp2 = frame_divisor_get();
+    if (tmp2 == 0) {
       DAT_1f800001 = '\b';
-switchD_8016fd64_caseD_8:
+L_dat1_8:
       { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
         decomp_trace_record(72,0xbeef,(uint32_t)DAT_1f800001,(uint8_t)DAT_1f80009b,(uint32_t)DAT_1f80009c); }
       if (DAT_1f80009b == '\x04') {
@@ -798,8 +799,8 @@ switchD_8016fd64_caseD_8:
       }
       if ((DAT_1f800001 != '\x06') && (DAT_1f800001 != '\b')) {
         frame_present(0x1f800000);
-        iVar4 = _DAT_1f80000c;
-        iVar1 = _DAT_1f800008;
+        tmp = _DAT_1f80000c;
+        ot_base = _DAT_1f800008;
         goto joined_r0x8016fd30;
       }
       if ((*(uint *)((uint32_t *)guest_at(_DAT_1f8000c4) + 8) >> 0xb & 1) != 0) {
@@ -812,23 +813,23 @@ switchD_8016fd64_caseD_8:
         FUN_801787dc(&DAT_1f8001f0,(uint8_t *)guest_at(0x1f800000));
         fighter_pair_update((int)guest_of(&DAT_1f8000e8),(int)guest_of(&DAT_1f8001f0),0x1f800000);
       }
-      if (((*(ushort *)(param_1 + 2) >> 2 & 1) != 0) && (DAT_1f8000b0 == '\0')) {
-        iVar5 = iVar1 + 0x10;
+      if (((*(ushort *)(in_rec + 2) >> 2 & 1) != 0) && (DAT_1f8000b0 == '\0')) {
+        tmp2 = ot_base + 0x10;
         if (DAT_1f80009d == '\0') {
-          iVar5 = iVar1 + 0x2038;
+          tmp2 = ot_base + 0x2038;
         }
-        battle_hud_draw(iVar5,0x1f800000,(int)guest_of(&DAT_1f8000e8),(int)guest_of(&DAT_1f8001f0));
+        battle_hud_draw(tmp2,0x1f800000,(int)guest_of(&DAT_1f8000e8),(int)guest_of(&DAT_1f8001f0));
       }
       battle_camera_step(_DAT_1f8000bc,&DAT_1f8000e8,&DAT_1f8001f0,0x1f800000);
       camera_state_cache(_DAT_1f8000bc,0x1f800000);
-      if (((*(ushort *)(param_1 + 2) & 1) != 0) && ((_DAT_1f800148 & 2) == 0)) {
-        fighter_flash_update(iVar1,iVar4,0x1f800000,&DAT_1f8000e8);
+      if (((*(ushort *)(in_rec + 2) & 1) != 0) && ((_DAT_1f800148 & 2) == 0)) {
+        fighter_flash_update(ot_base,tmp,0x1f800000,&DAT_1f8000e8);
         if ((_DAT_1f800154 & 0x400) == 0) {
           if ((_DAT_1f800154 & 0x200) == 0) {
-            if (((_DAT_1f800154 & 0x8000000) == 0) || (iVar4 == 0)) {
+            if (((_DAT_1f800154 & 0x8000000) == 0) || (tmp == 0)) {
               player_light_apply(&DAT_1f8000e8,1);
-              iVar5 = (int)(int8_t)DAT_1f8000ee;
-              uVar3 = _DAT_1f800100;
+              tmp2 = (int)(int8_t)DAT_1f8000ee;
+              aux_val = _DAT_1f800100;
             }
             else {
               player_light_apply(&DAT_1f8000e8,1);
@@ -837,115 +838,115 @@ switchD_8016fd64_caseD_8:
                * _DAT_1f800110 (record[1]: count byte +0x24, prim hdr +0x34).
                * The decompiler's +0x24/+0x34 were element indices on a
                * uint32_t*, i.e. byte offsets 4x too far. */
-              iVar5 = (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800110 + 0x24);
-              uVar3 = *(undefined4 *)guest_at(_DAT_1f800110 + 0x34);
+              tmp2 = (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800110 + 0x24);
+              aux_val = *(undefined4 *)guest_at(_DAT_1f800110 + 0x34);
             }
           }
           else {
             player_light_apply(&DAT_1f8000e8,1);
             /* Guest 0x80170414/0x80170404: lw 0x10($v0) / lb 0($v0) —
-             * param_1 = record[0] prim hdr (byte +0x10), param_4 = signed
+             * in_rec = record[0] prim hdr (byte +0x10), param_4 = signed
              * count byte at struct +0. */
-            prim_list_gte_invoke((int *)guest_at(*(uint32_t *)guest_at(_DAT_1f800110 + 0x10)),iVar1 + 0x40,iVar4,
+            prim_list_gte_invoke((int *)guest_at(*(uint32_t *)guest_at(_DAT_1f800110 + 0x10)),ot_base + 0x40,tmp,
                          (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800110),0x1f800028,0x1f80033c);
-            if (iVar4 == 0) goto LAB_801704bc;
-            iVar5 = (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800110 + 0x24);
-            uVar3 = *(undefined4 *)guest_at(_DAT_1f800110 + 0x34);
+            if (tmp == 0) goto LAB_801704bc;
+            tmp2 = (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800110 + 0x24);
+            aux_val = *(undefined4 *)guest_at(_DAT_1f800110 + 0x34);
           }
-          prim_list_gte_invoke((int *)guest_at(uVar3),iVar1 + 0x40,iVar4,iVar5,0x1f800028,0x1f80033c);
+          prim_list_gte_invoke((int *)guest_at(aux_val),ot_base + 0x40,tmp,tmp2,0x1f800028,0x1f80033c);
         }
 LAB_801704bc:
-        if (((*(ushort *)(param_1 + 2) >> 6 & 1) != 0) && (DAT_1f80009f == '\0')) {
+        if (((*(ushort *)(in_rec + 2) >> 6 & 1) != 0) && (DAT_1f80009f == '\0')) {
           if (DAT_1f800098 == 4) {
 LAB_80170524:
-            FUN_8018b100(_DAT_1f800104,iVar1 + 0x2040,iVar4,0xf,0x1f800028,0x1f80035c);
+            FUN_8018b100(_DAT_1f800104,ot_base + 0x2040,tmp,0xf,0x1f800028,0x1f80035c);
           }
           else {
             if ((char)DAT_1f800098 < '\x05') {
               if (DAT_1f800098 == 1) goto LAB_80170524;
             }
             else if (DAT_1f800098 == 6) goto LAB_80170524;
-            prim_list_persp_step((int *)guest_at(_DAT_1f800104),iVar1 + 0x2040,iVar4,0xf,0x1f800028,0x1f80035c,
-                         ((int)((uint)DAT_1f800098 << 0x18) >> 0x15) + -0x7fe4e94c,iVar1 + 0x206c);
+            prim_list_persp_step((int *)guest_at(_DAT_1f800104),ot_base + 0x2040,tmp,0xf,0x1f800028,0x1f80035c,
+                         ((int)((uint)DAT_1f800098 << 0x18) >> 0x15) + -0x7fe4e94c,ot_base + 0x206c);
           }
         }
       }
-      if (((*(ushort *)(param_1 + 2) >> 1 & 1) != 0) && ((_DAT_1f800250 & 2) == 0)) {
-        fighter_flash_update(iVar1,iVar4,0x1f800000,&DAT_1f8001f0);
+      if (((*(ushort *)(in_rec + 2) >> 1 & 1) != 0) && ((_DAT_1f800250 & 2) == 0)) {
+        fighter_flash_update(ot_base,tmp,0x1f800000,&DAT_1f8001f0);
         if ((_DAT_1f80025c & 0x400) == 0) {
           if ((_DAT_1f80025c & 0x200) == 0) {
-            if (((_DAT_1f80025c & 0x8000000) == 0) || (iVar4 == 0)) {
+            if (((_DAT_1f80025c & 0x8000000) == 0) || (tmp == 0)) {
               player_light_apply(&DAT_1f8001f0,2);
-              iVar5 = (int)(int8_t)DAT_1f8001f6;
-              uVar3 = _DAT_1f800208;
+              tmp2 = (int)(int8_t)DAT_1f8001f6;
+              aux_val = _DAT_1f800208;
             }
             else {
               player_light_apply(&DAT_1f8001f0,2);
-              iVar5 = (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800218 + 0x24);
-              uVar3 = *(undefined4 *)guest_at(_DAT_1f800218 + 0x34);
+              tmp2 = (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800218 + 0x24);
+              aux_val = *(undefined4 *)guest_at(_DAT_1f800218 + 0x34);
             }
           }
           else {
             player_light_apply(&DAT_1f8001f0,2);
-            prim_list_gte_invoke((int *)guest_at(*(uint32_t *)guest_at(_DAT_1f800218 + 0x10)),iVar1 + 0x40,iVar4,
+            prim_list_gte_invoke((int *)guest_at(*(uint32_t *)guest_at(_DAT_1f800218 + 0x10)),ot_base + 0x40,tmp,
                          (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800218),0x1f800028,0x1f80033c);
-            if (iVar4 == 0) goto LAB_801706ac;
-            iVar5 = (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800218 + 0x24);
-            uVar3 = *(undefined4 *)guest_at(_DAT_1f800218 + 0x34);
+            if (tmp == 0) goto LAB_801706ac;
+            tmp2 = (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800218 + 0x24);
+            aux_val = *(undefined4 *)guest_at(_DAT_1f800218 + 0x34);
           }
-          prim_list_gte_invoke((int *)guest_at(uVar3),iVar1 + 0x40,iVar4,iVar5,0x1f800028,0x1f80033c);
+          prim_list_gte_invoke((int *)guest_at(aux_val),ot_base + 0x40,tmp,tmp2,0x1f800028,0x1f80033c);
         }
 LAB_801706ac:
-        if (((*(ushort *)(param_1 + 2) >> 6 & 1) != 0) && (DAT_1f80009f == '\0')) {
+        if (((*(ushort *)(in_rec + 2) >> 6 & 1) != 0) && (DAT_1f80009f == '\0')) {
           if (DAT_1f800098 == 4) {
 LAB_80170714:
-            FUN_8018b100(_DAT_1f80020c,iVar1 + 0x2040,iVar4,0xf,0x1f800028,0x1f80035c);
+            FUN_8018b100(_DAT_1f80020c,ot_base + 0x2040,tmp,0xf,0x1f800028,0x1f80035c);
           }
           else {
             if ((char)DAT_1f800098 < '\x05') {
               if (DAT_1f800098 == 1) goto LAB_80170714;
             }
             else if (DAT_1f800098 == 6) goto LAB_80170714;
-            prim_list_persp_step((int *)guest_at(_DAT_1f80020c),iVar1 + 0x2040,iVar4,0xf,0x1f800028,0x1f80035c,
-                         ((int)((uint)DAT_1f800098 << 0x18) >> 0x15) + -0x7fe4e94c,iVar1 + 0x206c);
+            prim_list_persp_step((int *)guest_at(_DAT_1f80020c),ot_base + 0x2040,tmp,0xf,0x1f800028,0x1f80035c,
+                         ((int)((uint)DAT_1f800098 << 0x18) >> 0x15) + -0x7fe4e94c,ot_base + 0x206c);
           }
         }
       }
-      if ((*(ushort *)(param_1 + 2) >> 4 & 1) == 0) {
+      if ((*(ushort *)(in_rec + 2) >> 4 & 1) == 0) {
         DAT_1f8000b1 = 1;
       }
-      battle_intro_fsm(0x1f800028,iVar1,iVar4,0x1f800000);
+      battle_intro_fsm(0x1f800028,ot_base,tmp,0x1f800000);
       if (((_DAT_1f800154 & 0x8000) != 0) || (_DAT_801f4cb6 = 0xfff8, (_DAT_1f80025c & 0x8000) != 0)
          ) {
         _DAT_801f4cb6 = 0x10;
       }
       _DAT_801f4cb2 = 0;
-      fighter_tint_fade(iVar1,iVar4,0x1f800000,(int)(char)DAT_1f800098);
-      if ((*(ushort *)(param_1 + 2) >> 3 & 1) != 0) {
+      fighter_tint_fade(ot_base,tmp,0x1f800000,(int)(char)DAT_1f800098);
+      if ((*(ushort *)(in_rec + 2) >> 3 & 1) != 0) {
         fighter_trail_emit((undefined4 *)guest_at(0x1f800028),0x1f80033c,_DAT_1f8000bc,0x1f800000);
       }
       if (((DAT_1f80009f == '\0') && (DAT_1f80009e == '\0')) &&
-         ((*(ushort *)(param_1 + 2) >> 5 & 1) != 0)) {
-        slot_height_proj(iVar1 + 0x207c,_DAT_1f8000bc,iVar4,0x1f800000);
+         ((*(ushort *)(in_rec + 2) >> 5 & 1) != 0)) {
+        slot_height_proj(ot_base + 0x207c,_DAT_1f8000bc,tmp,0x1f800000);
       }
-      if (*(short *)(param_1 + 8) != 0) {
-        FUN_801468ec(iVar1,iVar4,0x1f800028,&DAT_1f8000e8,(int)*(short *)(param_1 + 8));
+      if (*(short *)(in_rec + 8) != 0) {
+        FUN_801468ec(ot_base,tmp,0x1f800028,&DAT_1f8000e8,(int)*(short *)(in_rec + 8));
       }
-      if (*(short *)(param_1 + 10) != 0) {
-        FUN_801468ec(iVar1,iVar4,0x1f800028,&DAT_1f8001f0,(int)*(short *)(param_1 + 10));
+      if (*(short *)(in_rec + 10) != 0) {
+        FUN_801468ec(ot_base,tmp,0x1f800028,&DAT_1f8001f0,(int)*(short *)(in_rec + 10));
       }
-      if (*(short *)(param_1 + 4) != 0) {
-        status_text_display(0x1f8000e8u,(uint32_t)*(short *)(param_1 + 4));
+      if (*(short *)(in_rec + 4) != 0) {
+        status_text_display(0x1f8000e8u,(uint32_t)*(short *)(in_rec + 4));
       }
-      if (*(short *)(param_1 + 6) != 0) {
-        status_text_display(0x1f8001f0u,(uint32_t)*(short *)(param_1 + 6));
+      if (*(short *)(in_rec + 6) != 0) {
+        status_text_display(0x1f8001f0u,(uint32_t)*(short *)(in_rec + 6));
       }
     }
     break;
   case '\a':
-    goto switchD_8016fd64_caseD_7;
+    goto L_dat1_7;
   case '\b':
-    goto switchD_8016fd64_caseD_8;
+    goto L_dat1_8;
   case '\t':
     frame_present(0x1f800000);
     hud_sprite_desc_init();
@@ -966,16 +967,16 @@ LAB_80170714:
     }
     break;
   case '\f':
-    iVar4 = frame_divisor_get();
-    if (iVar4 != 0) break;
+    tmp = frame_divisor_get();
+    if (tmp != 0) break;
     DAT_1f800001 = -1;
-    iVar4 = _DAT_1f80000c;
-    iVar1 = _DAT_1f800008;
+    tmp = _DAT_1f80000c;
+    ot_base = _DAT_1f800008;
     goto joined_r0x8016fd30;
   }
   frame_tick(0x1f800000);
-  iVar4 = _DAT_1f80000c;
-  iVar1 = _DAT_1f800008;
+  tmp = _DAT_1f80000c;
+  ot_base = _DAT_1f800008;
   goto joined_r0x8016fd30;
 }
 
@@ -1355,11 +1356,11 @@ void menu_noop(void)
 void results_scoreboard(int mode)
 
 {
-  int iVar1;
+  int tmp;
   undefined4 draw_mode;
   char *title_str;
-  undefined2 uVar4;
-  int iVar5;
+  undefined2 attr;
+  int tmp2;
   int rec_off;
   int row_off;
   undefined1 *name_ptr;
@@ -1371,7 +1372,7 @@ void results_scoreboard(int mode)
   extern uint32_t br2_guest_frame(uint32_t);
   extern void br2_guest_frame_free(void);
   uint32_t rsb_frm = br2_guest_frame(0x88);
-  undefined1 *auStack_70 = (undefined1 *)guest_at(rsb_frm + 0x20);
+  undefined1 *num_buf = (undefined1 *)guest_at(rsb_frm + 0x20);
   int local_60 [6];
   int local_48;
   int local_44;
@@ -1399,8 +1400,8 @@ void results_scoreboard(int mode)
   }
   local_30 = &DAT_801c1304;
 LAB_80164714:
-  iVar1 = memcard_err_sentinel();
-  if (iVar1 < 0) {
+  tmp = memcard_err_sentinel();
+  if (tmp < 0) {
     _DAT_1f80008c = 0;
 joined_r0x80164744:
     /* Bail-unwind exit must preserve the DAT1 exit invariant: every normal
@@ -1435,48 +1436,48 @@ LAB_80164830:
             }
           }
         }
-        uVar4 = 0x10;
+        attr = 0x10;
         if (DAT_1f800015 != '\0') {
-          uVar4 = 0x20;
+          attr = 0x20;
         }
         if (mode < 3) {
           if (mode < 1) {
             if (mode != 0) goto LAB_80164a2c;
             title_str = s_RANKING_80122048;
-            iVar1 = _DAT_1f800020 + -0x62;
+            tmp = _DAT_1f800020 + -0x62;
           }
           else {
             title_str = s_TIME_ATTACK_80122050;
-            iVar1 = _DAT_1f800020 + -0x9a;
+            tmp = _DAT_1f800020 + -0x9a;
           }
 LAB_80164a00:
           announce_param_block_init_b(_DAT_1f800008 + 4,_DAT_1f80000c,title_str,
-                       (iVar1 / 2 + local_40) * 0x10000 >> 0x10,uVar4,1);
+                       (tmp / 2 + local_40) * 0x10000 >> 0x10,attr,1);
         }
         else if (mode == 3) {
           title_str = s_SURVIVAL_8012205c;
-          iVar1 = _DAT_1f800020 + -0x70;
+          tmp = _DAT_1f800020 + -0x70;
           goto LAB_80164a00;
         }
 LAB_80164a2c:
         rec_off = 0;
         row_off = 0;
-        iVar1 = rec_off;
+        tmp = rec_off;
         name_ptr = local_34;
         do {
           if (DAT_1f800015 == '\0') {
-            iVar5 = row_off + 0x30;
+            tmp2 = row_off + 0x30;
           }
           else {
-            iVar5 = (row_off + 0x30) * 2;
+            tmp2 = (row_off + 0x30) * 2;
           }
           if (-1 < *(int *)((char *)local_60 + rec_off)) {
-            sprintf_core((char *)auStack_70,&DAT_80121fe0,iVar1 + 1);
-            announce_param_block_init_b(_DAT_1f800008 + 0x14,_DAT_1f80000c,auStack_70,
-                         (local_40 + 0x38) * 0x10000 >> 0x10,(int)(short)iVar5,3);
+            sprintf_core((char *)num_buf,&DAT_80121fe0,tmp + 1);
+            announce_param_block_init_b(_DAT_1f800008 + 0x14,_DAT_1f80000c,num_buf,
+                         (local_40 + 0x38) * 0x10000 >> 0x10,(int)(short)tmp2,3);
             announce_param_block_init_b(_DAT_1f800008 + 0x14,_DAT_1f80000c,
                          (const void *)guest_at(*(uint32_t *)((char *)&PTR_DAT_801b4254 + rec_off)),
-                         (local_40 + 0x48) * 0x10000 >> 0x10,(int)(short)iVar5,4);
+                         (local_40 + 0x48) * 0x10000 >> 0x10,(int)(short)tmp2,4);
             if (-1 < mode) {
               if (mode < 3) {
                 draw_mode = 0;
@@ -1485,48 +1486,48 @@ LAB_80164a2c:
                 if (mode != 3) goto LAB_80164b68;
                 draw_mode = 5;
               }
-              hud_time_score_draw(_DAT_1f800008 + 0x14,_DAT_1f80000c,local_40 + 0x70,iVar5,name_ptr,draw_mode);
+              hud_time_score_draw(_DAT_1f800008 + 0x14,_DAT_1f80000c,local_40 + 0x70,tmp2,name_ptr,draw_mode);
             }
 LAB_80164b68:
-            iVar5 = *(int *)((char *)local_60 + rec_off);
-            if (iVar5 < _DAT_1f800020 + 0x80) {
-              *(int *)((char *)local_60 + rec_off) = iVar5 + 0x10;
+            tmp2 = *(int *)((char *)local_60 + rec_off);
+            if (tmp2 < _DAT_1f800020 + 0x80) {
+              *(int *)((char *)local_60 + rec_off) = tmp2 + 0x10;
             }
           }
           rec_off = rec_off + 4;
           name_ptr = name_ptr + 0x10;
-          iVar1 = iVar1 + 1;
+          tmp = tmp + 1;
           row_off = row_off + 0x20;
-        } while (iVar1 < 5);
-        uVar4 = 0x10;
+        } while (tmp < 5);
+        attr = 0x10;
         if (DAT_1f800015 != '\0') {
-          uVar4 = 0x20;
+          attr = 0x20;
         }
         if (mode == 0) {
           title_str = s_VS_RANKING_80122068;
-          iVar1 = _DAT_1f800020 + -0x8c;
+          tmp = _DAT_1f800020 + -0x8c;
 LAB_80164c38:
           announce_param_block_init_b(_DAT_1f800008 + 4,_DAT_1f80000c,title_str,
-                       (iVar1 / 2 + local_3c) * 0x10000 >> 0x10,uVar4,1);
+                       (tmp / 2 + local_3c) * 0x10000 >> 0x10,attr,1);
         }
         else if (mode == 1) {
           title_str = s_SURVIVAL_8012205c;
-          iVar1 = _DAT_1f800020 + -0x70;
+          tmp = _DAT_1f800020 + -0x70;
           goto LAB_80164c38;
         }
         rec_off = 0;
         name_tbl = &PTR_DAT_801b4254;
-        iVar1 = 0;
+        tmp = 0;
         name_ptr = local_30;
         do {
           if (DAT_1f800015 == '\0') {
-            row_off = iVar1 + 0x30;
+            row_off = tmp + 0x30;
           }
           else {
-            row_off = (iVar1 + 0x30) * 2;
+            row_off = (tmp + 0x30) * 2;
           }
-          sprintf_core((char *)auStack_70,&DAT_80121fe0,rec_off + 1);
-          announce_param_block_init_b(_DAT_1f800008 + 0x14,_DAT_1f80000c,auStack_70,
+          sprintf_core((char *)num_buf,&DAT_80121fe0,rec_off + 1);
+          announce_param_block_init_b(_DAT_1f800008 + 0x14,_DAT_1f80000c,num_buf,
                        (local_3c + 0x38) * 0x10000 >> 0x10,(int)(short)row_off,3);
           announce_param_block_init_b(_DAT_1f800008 + 0x14,_DAT_1f80000c,(const void *)guest_at((uint32_t)(uintptr_t)*name_tbl),
                        (local_3c + 0x48) * 0x10000 >> 0x10,(int)(short)row_off,4);
@@ -1546,7 +1547,7 @@ LAB_80164d68:
           name_ptr = name_ptr + 0x10;
           name_tbl = name_tbl + 1;
           rec_off = rec_off + 1;
-          iVar1 = iVar1 + 0x20;
+          tmp = tmp + 0x20;
         } while (rec_off < 5);
         if (local_44 != 0) {
           fighter_reinit_tail(0x1f800000);
@@ -1564,7 +1565,7 @@ LAB_80164d68:
           DAT_1f800001 = 0xff;
           goto joined_r0x80164744;
         }
-        if ((DAT_1f800001 == 0) && (iVar1 = frame_divisor_get(), iVar1 == 0)) {
+        if ((DAT_1f800001 == 0) && (tmp = frame_divisor_get(), tmp == 0)) {
           if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
             draw_mode = 9;
             if (*(char *)(_g_system_config_ptr + 0xd) == '\0') {
@@ -1619,8 +1620,8 @@ void player_name_entry(void)
   int disp_i;
   int char_x;
   int char_sel;
-  uint32_t *ppuVar8;
-  undefined1 *puVar9;
+  uint32_t *name_tbl;
+  undefined1 *rec_ptr;
   int name_len;
   /* Guest string slots at sp+0x18/0x20/0x28/0x30 (8-byte stride, offsets
    * verified against the generated body's sp accesses): slot0 @sp+0x18 is
@@ -1639,7 +1640,7 @@ void player_name_entry(void)
   extern uint32_t br2_guest_frame(uint32_t);
   extern void br2_guest_frame_free(void);
   uint32_t pne_frm = br2_guest_frame(0x90);
-  undefined1 *auStack_58 = (undefined1 *)guest_at(pne_frm + 0x38);
+  undefined1 *num_buf = (undefined1 *)guest_at(pne_frm + 0x38);
   uint8_t *pne_slots = (uint8_t *)guest_at(pne_frm + 0x18);
 #define local_78   (*(uint32_t *)pne_slots)
 #define local_70   pne_slots[8]
@@ -1684,7 +1685,7 @@ void player_name_entry(void)
   _DAT_1f80008c = 0;
   if (DAT_1f800001 != 0xff) {
     name_ptr = &local_78;
-    fmt_buf = auStack_58;
+    fmt_buf = num_buf;
     do {
       if (DAT_1f800001 == 3) {
 LAB_801652bc:
@@ -1743,19 +1744,19 @@ LAB_801652bc:
 LAB_801654c0:
         scroll_offset_set(0x20,0x30);
         tmp_i = 0;
-        ppuVar8 = &PTR_DAT_801b4254;
-        puVar9 = records;
+        name_tbl = &PTR_DAT_801b4254;
+        rec_ptr = records;
         do {
           sprintf_core((char *)fmt_buf,&DAT_80121fe0,tmp_i + 1);
           if (rec_idx == tmp_i) {
             scroll_offset_accumulate(0,0xfffffffc);
             announce_param_block_init_alt(_DAT_1f800008,_DAT_1f80000c,fmt_buf,0x20,0x1000,3);
-            announce_param_block_init_alt(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at((uint32_t)(uintptr_t)*ppuVar8),0x1000,0x1000,0);
+            announce_param_block_init_alt(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at((uint32_t)(uintptr_t)*name_tbl),0x1000,0x1000,0);
             aux_mode = 0x13;
             if (DAT_1f80009c == 3) {
               aux_mode = 0x15;
             }
-            hud_time_score_draw(_DAT_1f800008,_DAT_1f80000c,0x60,0x1000,puVar9,aux_mode);
+            hud_time_score_draw(_DAT_1f800008,_DAT_1f80000c,0x60,0x1000,rec_ptr,aux_mode);
             char_x = 0x108;
             if (DAT_1f800001 == 3) {
               disp_i = 0;
@@ -1786,18 +1787,18 @@ LAB_801654c0:
           }
           else {
             announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,fmt_buf,0x20,0x1000,3);
-            announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at((uint32_t)(uintptr_t)*ppuVar8),0x1000,0x1000,0);
+            announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at((uint32_t)(uintptr_t)*name_tbl),0x1000,0x1000,0);
             aux_mode = 0x12;
             if (DAT_1f80009c == 3) {
               aux_mode = 0x14;
             }
-            hud_time_score_draw(_DAT_1f800008,_DAT_1f80000c,0x60,0x1000,puVar9,aux_mode);
+            hud_time_score_draw(_DAT_1f800008,_DAT_1f80000c,0x60,0x1000,rec_ptr,aux_mode);
             aux_mode = 0x10;
           }
-          puVar9 = puVar9 + 0x10;
+          rec_ptr = rec_ptr + 0x10;
           scroll_offset_accumulate(0,aux_mode);
           tmp_i = tmp_i + 1;
-          ppuVar8 = ppuVar8 + 1;
+          name_tbl = name_tbl + 1;
         } while (tmp_i < 10);
         scroll_offset_set(0x20,0x18);
         announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_NAME_ENTRY_80122080,0x1000,0x1000,0);
@@ -2283,49 +2284,49 @@ void display_frame_present(int *env,int ticks)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void tile_stream_job_init(undefined4 *job,undefined2 param_2,undefined2 param_3,undefined2 param_4,
-                 undefined2 param_5,int *opt)
+void tile_stream_job_init(undefined4 *job,undefined2 w0,undefined2 w1,undefined2 w2,
+                 undefined2 w3,int *ctrl)
 
 {
-  undefined4 w0;
-  undefined4 w1;
-  undefined4 w2;
-  undefined4 w3;
-  undefined2 stride;
+  undefined4 hdr0;
+  undefined4 hdr1;
+  undefined4 hdr2;
+  undefined4 hdr3;
+  undefined2 flg;
   
   job = (undefined4 *)guest_at((uint32_t)(uintptr_t)job);
-  w3 = _DAT_801f4750;
-  w2 = _DAT_801f474c;
-  w1 = _DAT_801f4748;
-  w0 = _DAT_801f4744;
+  hdr3 = _DAT_801f4750;
+  hdr2 = _DAT_801f474c;
+  hdr1 = _DAT_801f4748;
+  hdr0 = _DAT_801f4744;
   if (DAT_801b3f64 == 1) {
     job[2] = 0;
     job[5] = 0;
     job[10] = 0;
     job[0xd] = 0;
     DAT_801b3f64 = 0;
-    *job = w0;
-    job[1] = w1;
-    job[3] = w2;
-    job[4] = w3;
+    *job = hdr0;
+    job[1] = hdr1;
+    job[3] = hdr2;
+    job[4] = hdr3;
   }
-  *(undefined2 *)(job + 6) = param_2;
-  *(undefined2 *)((char *)job + 0x1a) = param_3;
-  *(undefined2 *)(job + 8) = param_4;
-  *(undefined2 *)((char *)job + 0x22) = param_5;
-  stride = 0x10;
-  if (*opt != 0) {
-    stride = 0x18;
+  *(undefined2 *)(job + 6) = w0;
+  *(undefined2 *)((char *)job + 0x1a) = w1;
+  *(undefined2 *)(job + 8) = w2;
+  *(undefined2 *)((char *)job + 0x22) = w3;
+  flg = 0x10;
+  if (*ctrl != 0) {
+    flg = 0x18;
   }
-  *(undefined2 *)(job + 0xc) = stride;
-  job[0xe] = *opt;
+  *(undefined2 *)(job + 0xc) = flg;
+  job[0xe] = *ctrl;
   if (job[10] == 0) {
-    *(undefined2 *)(job + 0xb) = param_2;
-    *(undefined2 *)((char *)job + 0x2e) = param_3;
+    *(undefined2 *)(job + 0xb) = w0;
+    *(undefined2 *)((char *)job + 0x2e) = w1;
     return;
   }
-  *(undefined2 *)(job + 0xb) = param_4;
-  *(undefined2 *)((char *)job + 0x2e) = param_5;
+  *(undefined2 *)(job + 0xb) = w2;
+  *(undefined2 *)((char *)job + 0x2e) = w3;
   return;
 }
 
@@ -3186,12 +3187,12 @@ extern int32_t table_byte_next_a(void);
 extern void sprite_9slice_build(uint32_t,uint32_t,uint32_t,uint32_t);
 int32_t select_screen_tick(int32_t entry_mode)
 {
-  uint8_t bVar1;
-  int32_t iVar2, iVar3, iVar4, iVar9, iVar10;
-  uint32_t uVar5, uVar8, uVar11;
-  uint8_t *puVar6;
-  uint32_t *puVar7;
-  uint32_t unaff_s2;
+  uint8_t next_state;
+  int32_t iVar2, iVar3, iVar4, draw_slot, aux_val;
+  uint32_t uVar5, uVar8, pidx_b;
+  uint8_t *rec;
+  uint32_t *spr_tab;
+  uint32_t attr_idx;
   int32_t local_c8 = 0, local_c0 = 0;
   /* guest sp-0xf8..sp frame image (prologue @0x8014f260: addiu sp,-0xf8,
    * s7=sp+0x40, sp+0x18 -> cell 0x801f10bc). Reserve the window on the
@@ -3208,18 +3209,18 @@ int32_t select_screen_tick(int32_t entry_mode)
   uint32_t sst_frm = br2_guest_frame(0xf8);
   /* sp+0x18 -> sst_frm+0x20; guest RAM backing so the 0x801f10bc cell
    * carries a real guest address. */
-  uint8_t *auStack_e0 = (uint8_t *)guest_at(sst_frm + 0x20);
-  /* auStack_b8 = two 0x30-byte player records at sp+0x40 (s7);
+  uint8_t *arg_blk = (uint8_t *)guest_at(sst_frm + 0x20);
+  /* player_recs = two 0x30-byte player records at sp+0x40 (s7);
    * local_a8/local_94 are Ghidra aliases into that same guest record
    * array (+0x10 / +0x24), not separate host storage. */
-  uint8_t *auStack_b8 = (uint8_t *)guest_at(sst_frm + 0x48);
+  uint8_t *player_recs = (uint8_t *)guest_at(sst_frm + 0x48);
   int32_t *local_a8 = (int32_t *)guest_at(sst_frm + 0x58);
   int32_t *local_94 = (int32_t *)guest_at(sst_frm + 0x6c);
   int32_t local_38 = 0;
   int32_t local_34, local_30, local_2c = 0;
   uint8_t *local_40 = (uint8_t *)guest_at(0x1f8000e8);
   uint8_t *local_3c = (uint8_t *)guest_at(0x1f8001f0);
-  *(uint32_t *)guest_at(0x801f10bc) = guest_of(auStack_e0);
+  *(uint32_t *)guest_at(0x801f10bc) = guest_of(arg_blk);
   local_a8[3] = 0;
   local_94[10] = 0;
   hud_sprite_desc_init();
@@ -3229,81 +3230,81 @@ int32_t select_screen_tick(int32_t entry_mode)
   DAT_1f800001 = 0;
   do {
     if (DAT_1f800001 == 6) {
-      fighter_spawn_setup(0x1f800000,local_40,local_3c,auStack_e0,1);
+      fighter_spawn_setup(0x1f800000,local_40,local_3c,arg_blk,1);
       if (((*(uint32_t *)g__DAT_1f80007c & 0x10) == 0) ||
           ((*(uint8_t *)g_DAT_1f8000a2 != 0 && (entry_mode != 1)))) {
         uVar8 = 0;
-        puVar6 = auStack_b8;
+        rec = player_recs;
         do {
-          iVar4 = *(int32_t *)(puVar6 + 0x24);
+          iVar4 = *(int32_t *)(rec + 0x24);
           if (iVar4 == 1) {
-            if (*(int32_t *)(puVar6 + 0x10) == 0) {
-              if (*(int32_t *)(puVar6 + 0x2c) == 0) {
+            if (*(int32_t *)(rec + 0x10) == 0) {
+              if (*(int32_t *)(rec + 0x2c) == 0) {
                 if (local_a8[(uVar8 ^ 1) * 0xc] == 0) {
                   iVar4 = local_94[(uVar8 ^ 1) * 0xc];
-                  goto code_r0x8014f6c0;
+                  goto L_promote_chk;
                 }
                 if (local_a8[(uVar8 ^ 1) * 0xc] == 1) {
-                  *(uint32_t *)(puVar6 + 0x24) = 2;
+                  *(uint32_t *)(rec + 0x24) = 2;
                 }
               }
             }
-            else if (*(int32_t *)(puVar6 + 0x10) == 1) {
+            else if (*(int32_t *)(rec + 0x10) == 1) {
               iVar4 = local_94[(uVar8 ^ 1) * 0xc];
-code_r0x8014f6c0:
-              if (0 < iVar4) *(uint32_t *)(puVar6 + 0x24) = 2;
+L_promote_chk:
+              if (0 < iVar4) *(uint32_t *)(rec + 0x24) = 2;
             }
           }
           else if (iVar4 < 2) {
             if (iVar4 == 0 && local_2c != 0) {
-              iVar4 = *(int32_t *)(puVar6 + 0x1c);
-              if ((*(uint32_t *)(puVar6 + 8) & 0x1000) != 0) {
+              iVar4 = *(int32_t *)(rec + 0x1c);
+              if ((*(uint32_t *)(rec + 8) & 0x1000) != 0) {
                 uVar5 = (uint32_t)select_cursor_step(iVar4,0);
-                *(uint32_t *)(puVar6 + 0x1c) = uVar5;
+                *(uint32_t *)(rec + 0x1c) = uVar5;
               }
-              if ((*(uint32_t *)(puVar6 + 8) & 0x2000) != 0) {
-                uVar5 = (uint32_t)select_cursor_step(*(int32_t *)(puVar6 + 0x1c),1);
-                *(uint32_t *)(puVar6 + 0x1c) = uVar5;
+              if ((*(uint32_t *)(rec + 8) & 0x2000) != 0) {
+                uVar5 = (uint32_t)select_cursor_step(*(int32_t *)(rec + 0x1c),1);
+                *(uint32_t *)(rec + 0x1c) = uVar5;
               }
-              if ((*(uint32_t *)(puVar6 + 8) & 0x4000) != 0) {
-                uVar5 = (uint32_t)select_cursor_step(*(int32_t *)(puVar6 + 0x1c),2);
-                *(uint32_t *)(puVar6 + 0x1c) = uVar5;
+              if ((*(uint32_t *)(rec + 8) & 0x4000) != 0) {
+                uVar5 = (uint32_t)select_cursor_step(*(int32_t *)(rec + 0x1c),2);
+                *(uint32_t *)(rec + 0x1c) = uVar5;
               }
-              if ((*(uint32_t *)(puVar6 + 8) & 0x8000) != 0) {
-                uVar5 = (uint32_t)select_cursor_step(*(int32_t *)(puVar6 + 0x1c),3);
-                *(uint32_t *)(puVar6 + 0x1c) = uVar5;
+              if ((*(uint32_t *)(rec + 8) & 0x8000) != 0) {
+                uVar5 = (uint32_t)select_cursor_step(*(int32_t *)(rec + 0x1c),3);
+                *(uint32_t *)(rec + 0x1c) = uVar5;
               }
-              iVar3 = *(int32_t *)(puVar6 + 0x1c);
-              if (iVar3 < 0) { *(uint32_t *)(puVar6 + 0x1c) = 0; iVar3 = 0; }
-              if (10 < iVar3) *(uint32_t *)(puVar6 + 0x1c) = 10;
-              if (*(int32_t *)(puVar6 + 0x1c) != iVar4) deferred_cmd_post(0x400,0x40,0);
-              if (((*(uint32_t *)(puVar6 + 8) & 0xe0) != 0) ||
-                  (((*(uint32_t *)(puVar6 + 8) & 0x800) != 0 &&
+              iVar3 = *(int32_t *)(rec + 0x1c);
+              if (iVar3 < 0) { *(uint32_t *)(rec + 0x1c) = 0; iVar3 = 0; }
+              if (10 < iVar3) *(uint32_t *)(rec + 0x1c) = 10;
+              if (*(int32_t *)(rec + 0x1c) != iVar4) deferred_cmd_post(0x400,0x40,0);
+              if (((*(uint32_t *)(rec + 8) & 0xe0) != 0) ||
+                  (((*(uint32_t *)(rec + 8) & 0x800) != 0 &&
                     ((*(uint32_t *)(_g_system_config_ptr + 0x50) >>
-                      (*(uint32_t *)(puVar6 + 0x1c) & 0x1f) & 1) != 0)))) {
-                select_confirm_handler(0x1f800000,uVar8,puVar6,*(uint32_t *)(puVar6 + 8),1);
-                *(uint32_t *)(puVar6 + 0x24) = 1;
+                      (*(uint32_t *)(rec + 0x1c) & 0x1f) & 1) != 0)))) {
+                select_confirm_handler(0x1f800000,uVar8,rec,*(uint32_t *)(rec + 8),1);
+                *(uint32_t *)(rec + 0x24) = 1;
                 deferred_cmd_post(0x400,0x41,0);
-                *(uint32_t *)(puVar6 + 0x2c) = 8;
+                *(uint32_t *)(rec + 0x2c) = 8;
               }
             }
           }
           else if (iVar4 == 2 && local_94[0] == 2 && local_94[0xc] == 2) {
             DAT_1f800001 = 0xf0;
           }
-          puVar6 += 0x30;
+          rec += 0x30;
           uVar8++;
         } while ((int32_t)uVar8 < 2);
         if ((DAT_1f80009b != 0) && (entry_mode != 2)) {
           iVar4 = 0;
-          puVar6 = auStack_b8;
+          rec = player_recs;
           do {
-            if ((*(uint32_t *)(puVar6 + 8) & 4) != 0) { deferred_cmd_post(0x400,0x40,0); local_c8--; }
-            if ((*(uint32_t *)(puVar6 + 8) & 8) != 0) { deferred_cmd_post(0x400,0x40,0); local_c8++; }
+            if ((*(uint32_t *)(rec + 8) & 4) != 0) { deferred_cmd_post(0x400,0x40,0); local_c8--; }
+            if ((*(uint32_t *)(rec + 8) & 8) != 0) { deferred_cmd_post(0x400,0x40,0); local_c8++; }
             if (9 < local_c8) local_c8 = 0;
             if (local_c8 < 0) local_c8 = 9;
             iVar4++;
-            puVar6 += 0x30;
+            rec += 0x30;
           } while (iVar4 < 2);
           announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x80120688),0xd8,0x88,4);
           announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x80120690),0xd0,0x98,4);
@@ -3333,47 +3334,47 @@ code_r0x8014f6c0:
           int16_t *t44 = (int16_t *)guest_at(0x801b3244);
           int16_t *t46 = (int16_t *)guest_at(0x801b3246);
           if (local_34 != 0) {
-            iVar10 = 0xe9;
-            if (local_34 == 1) iVar10 = 0xb9;
+            aux_val = 0xe9;
+            if (local_34 == 1) aux_val = 0xb9;
             sprite_9slice_build(_DAT_1f800008,
                          ((uint32_t)(t46[local_a8[3] * 2] + 0xf) << 16) |
                          ((uint32_t)(t44[local_a8[3] * 2] + 0x24) & 0xffff),0x151d000e,
-                         (uint32_t)((iVar10 << 8) | 0x7adc00b1));
-            iVar10 = 0x7adc;
-            if (local_94[0] < 1) iVar10 = (local_38 + 0x1e5 & 0x1ff) * 0x40 + 0x1c;
+                         (uint32_t)((aux_val << 8) | 0x7adc00b1));
+            aux_val = 0x7adc;
+            if (local_94[0] < 1) aux_val = (local_38 + 0x1e5 & 0x1ff) * 0x40 + 0x1c;
             sprite_9slice_build(_DAT_1f800008 + 4,
                          ((uint32_t)(t46[iVar4 * 2] + 0x1f) << 16) |
                          ((uint32_t)(t44[iVar4 * 2] + 0x1c) & 0xffff),0x3e37000e,
-                         ((uint32_t)iVar10 << 16) | 0xc040);
+                         ((uint32_t)aux_val << 16) | 0xc040);
           }
           if (local_30 != 0) {
-            iVar10 = 0xe9;
-            if (local_30 == 1) iVar10 = 0xd1;
+            aux_val = 0xe9;
+            if (local_30 == 1) aux_val = 0xd1;
             sprite_9slice_build(_DAT_1f800008,
                          ((uint32_t)(t46[iVar3 * 2] + 0x31) << 16) |
                          ((uint32_t)(t44[iVar3 * 2] + 0x12) & 0xffff),0x151d000e,
-                         (uint32_t)((iVar10 << 8) | 0x7adc00b1));
-            iVar10 = 0x7adc;
-            if (local_94[0xc] < 1) iVar10 = (local_38 + 0x1e5 & 0x1ff) * 0x40 + 0x1c;
+                         (uint32_t)((aux_val << 8) | 0x7adc00b1));
+            aux_val = 0x7adc;
+            if (local_94[0xc] < 1) aux_val = (local_38 + 0x1e5 & 0x1ff) * 0x40 + 0x1c;
             sprite_9slice_build(_DAT_1f800008 + 4,
                          ((uint32_t)(t46[iVar3 * 2] + 0x1f) << 16) |
                          ((uint32_t)(t44[iVar3 * 2] + 0x1c) & 0xffff),0x3e37000e,
-                         ((uint32_t)iVar10 << 16) | 0xc078);
+                         ((uint32_t)aux_val << 16) | 0xc078);
           }
-          unaff_s2 = 0;
-          puVar7 = (uint32_t *)guest_at(0x801b3244);
+          attr_idx = 0;
+          spr_tab = (uint32_t *)guest_at(0x801b3244);
           uVar8 = *(uint32_t *)(_g_system_config_ptr + 0x4c);
           do {
             if ((uVar8 & 1) != 0) {
-              spr_slot_pkt_submit((uint *)(uintptr_t)(_DAT_1f800008 + 4),*puVar7,0x3e37009d,
-                           ((unaff_s2 + 0x1e0 & 0x1ff) << 0x16) |
-                           ((((int32_t)unaff_s2 >> 2) * 0x40 + 1U & 0xff) << 8) |
-                           ((unaff_s2 & 3) << 6));
+              spr_slot_pkt_submit((uint *)(uintptr_t)(_DAT_1f800008 + 4),*spr_tab,0x3e37009d,
+                           ((attr_idx + 0x1e0 & 0x1ff) << 0x16) |
+                           ((((int32_t)attr_idx >> 2) * 0x40 + 1U & 0xff) << 8) |
+                           ((attr_idx & 3) << 6));
             }
             uVar8 = (int32_t)uVar8 >> 1;
-            unaff_s2++;
-            puVar7++;
-          } while ((int32_t)unaff_s2 < 0xb);
+            attr_idx++;
+            spr_tab++;
+          } while ((int32_t)attr_idx < 0xb);
           {
             int32_t cx = (((int16_t)((uint16_t)_DAT_1f800020 << 16) >> 16) -
                          (((int32_t)((uint16_t)_DAT_1f800020 << 16)) >> 31)) >> 1;
@@ -3381,18 +3382,18 @@ code_r0x8014f6c0:
                          ((((cx - 0x80) * 0x10000) >> 16)),0x28,0);
           }
           switch (DAT_1f80009c) {
-          case 0: unaff_s2 = 10; break;
-          case 1: unaff_s2 = 0xb; break;
-          case 2: unaff_s2 = 0xe; break;
-          case 3: unaff_s2 = 0xf; break;
-          case 4: unaff_s2 = 0xc; break;
+          case 0: attr_idx = 10; break;
+          case 1: attr_idx = 0xb; break;
+          case 2: attr_idx = 0xe; break;
+          case 3: attr_idx = 0xf; break;
+          case 4: attr_idx = 0xc; break;
           case 5:
-            if (DAT_1f80009b == 1) unaff_s2 = 0x15;
-            else if (DAT_1f80009b < 2) { unaff_s2 = 0xd; if (DAT_1f80009b == 0) unaff_s2 = 0x16; }
-            else if (DAT_1f80009b == 2) unaff_s2 = 0x14;
-            else { unaff_s2 = 0xd; if (DAT_1f80009b == 4) unaff_s2 = 0x17; }
+            if (DAT_1f80009b == 1) attr_idx = 0x15;
+            else if (DAT_1f80009b < 2) { attr_idx = 0xd; if (DAT_1f80009b == 0) attr_idx = 0x16; }
+            else if (DAT_1f80009b == 2) attr_idx = 0x14;
+            else { attr_idx = 0xd; if (DAT_1f80009b == 4) attr_idx = 0x17; }
           }
-          banner_stripe_scroll(unaff_s2,0,4,7);
+          banner_stripe_scroll(attr_idx,0,4,7);
           uint8_t *t270 = (uint8_t *)guest_at(0x801b3270);
           uint8_t *t271 = (uint8_t *)guest_at(0x801b3271);
           uint8_t *t2f4 = (uint8_t *)guest_at(0x801b32f4);
@@ -3402,7 +3403,7 @@ code_r0x8014f6c0:
           if (entry_mode < 4 && 1 < entry_mode) {
             uVar8 = (uint32_t)local_94[10];
             if (local_a8[0] == 0) uVar8 = (uint32_t)local_a8[3];
-            uVar11 = (uint32_t)(local_a8[0] != 0);
+            pidx_b = (uint32_t)(local_a8[0] != 0);
             if (entry_mode == 2) {
               iVar3 = (((int16_t)_DAT_1f800020) -
                       (((int32_t)((uint16_t)_DAT_1f800020 << 16)) >> 31)) >> 1;
@@ -3427,7 +3428,7 @@ code_r0x8014f6c0:
               }
             } else {
               iVar4 = 0;
-              if (uVar11 != 0) iVar4 = 0x140;
+              if (pidx_b != 0) iVar4 = 0x140;
               iVar3 = ((int16_t)_DAT_1f800022 * 3) / 5;
               announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47ec[uVar8 * 2]),
                            (int32_t)(((uint32_t)(t270[uVar8 * 2] + iVar4)) * 0x10000) >> 16,
@@ -3442,38 +3443,38 @@ code_r0x8014f6c0:
             iVar3 = iVar2 + -8;
             {
               uint8_t *hh = (uint8_t *)guest_at(0x801b3288);
-              iVar10 = 0x140 - hh[uVar8];
+              aux_val = 0x140 - hh[uVar8];
             }
-            if (local_94[uVar11 * 0xc + 2] == 0) iVar4 = 0x7996;
-            else { local_94[uVar11 * 0xc + 2]--; iVar4 = 0x7b56; }
-            iVar9 = (int32_t)(uVar8 + 0xb);
-            if (uVar8 == 8) iVar9 = 0x16;
-            spr_draw_off(iVar9 * 0x8014 + -0x7fff0000,0x280,0,1);
+            if (local_94[pidx_b * 0xc + 2] == 0) iVar4 = 0x7996;
+            else { local_94[pidx_b * 0xc + 2]--; iVar4 = 0x7b56; }
+            draw_slot = (int32_t)(uVar8 + 0xb);
+            if (uVar8 == 8) draw_slot = 0x16;
+            spr_draw_off(draw_slot * 0x8014 + -0x7fff0000,0x280,0,1);
             iVar4 <<= 16;
-            unaff_s2 = 200;
+            attr_idx = 200;
             spr_attr_alloc_b(_DAT_1f800008 + 4,(uint32_t)((iVar2 + -0x107) * 0x10000 | 0x13f),
                          0xfebe000a,(uint32_t)iVar4,0x80,iVar3);
             spr_draw_off(uVar8 * 0x8014 + -0x7fff0000,0x200,0,1);
             iVar2 = -200;
-            if (uVar8 == 8) { unaff_s2 = 0xff; iVar2 = -0xff; }
-            uVar8 = (uint32_t)((iVar3 + iVar2) * 0x10000 | ((iVar10 + (int32_t)unaff_s2) & 0xffff));
+            if (uVar8 == 8) { attr_idx = 0xff; iVar2 = -0xff; }
+            uVar8 = (uint32_t)((iVar3 + iVar2) * 0x10000 | ((aux_val + (int32_t)attr_idx) & 0xffff));
             {
-              uint32_t uVar5l = 0xfefe0008;
-              int32_t iVar2l = _DAT_1f800008 + 4;
+              uint32_t attr_code = 0xfefe0008;
+              int32_t ot_ptr = _DAT_1f800008 + 4;
 LAB_80150558:
-              spr_attr_alloc_b((uint32_t)iVar2l,uVar8,uVar5l,(uint32_t)iVar4,iVar10,iVar3);
+              spr_attr_alloc_b((uint32_t)ot_ptr,uVar8,attr_code,(uint32_t)iVar4,aux_val,iVar3);
             }
           } else {
-            iVar10 = ((int16_t)_DAT_1f800022 * 3) / 5;
+            aux_val = ((int16_t)_DAT_1f800022 * 3) / 5;
             if (local_34 != 0) {
               announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47ec[iVar4 * 2]),
                            (int32_t)((uint32_t)t270[iVar4 * 2] + 0), /* (&DAT_801b3270)[iVar4*2] u32? */
-                           (iVar10 + -0x34) * 0x10000 >> 16,5);
+                           (aux_val + -0x34) * 0x10000 >> 16,5);
               hud_text_d(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x801206b4),0x48,
-                           (iVar10 + -0x24) * 0x10000 >> 16,0);
+                           (aux_val + -0x24) * 0x10000 >> 16,0);
               announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47f0[iVar4 * 2]),
                            (int32_t)((uint32_t)t271[iVar4 * 2] + 0),
-                           (iVar10 + -0x1b) * 0x10000 >> 16,5);
+                           (aux_val + -0x1b) * 0x10000 >> 16,5);
               if ((*(uint32_t *)(_g_system_config_ptr + 0x60) >> ((iVar4 + 0x10U) & 0x1f) & 1) != 0) {
                 iVar2 = (int32_t)(int16_t)_DAT_1f800022;
                 if (iVar2 < 0) iVar2 += 7;
@@ -3484,26 +3485,26 @@ LAB_80150558:
             if (local_30 != 0) {
               announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47ec[iVar3 * 2]),
                            (int32_t)((uint32_t)t270[iVar3 * 2] + 0x140),
-                           (iVar10 + -0x34) * 0x10000 >> 16,5);
+                           (aux_val + -0x34) * 0x10000 >> 16,5);
               hud_text_d(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x801206b4),0x188,
-                           (iVar10 + -0x24) * 0x10000 >> 16,0);
+                           (aux_val + -0x24) * 0x10000 >> 16,0);
               announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47f0[iVar3 * 2]),
                            (int32_t)((uint32_t)t271[iVar3 * 2] + 0x140),
-                           (iVar10 + -0x1b) * 0x10000 >> 16,5);
+                           (aux_val + -0x1b) * 0x10000 >> 16,5);
               if ((*(uint32_t *)(_g_system_config_ptr + 0x60) >> ((iVar3 + 0x10U) & 0x1f) & 1) != 0) {
-                iVar10 = (int32_t)(int16_t)_DAT_1f800022;
-                if (iVar10 < 0) iVar10 += 7;
+                aux_val = (int32_t)(int16_t)_DAT_1f800022;
+                if (aux_val < 0) aux_val += 7;
                 hud_text_d(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x801206bc),
-                             (int32_t)((_DAT_1f800020 - 0x38) * 0x10000) >> 16,iVar10 >> 3,3);
+                             (int32_t)((_DAT_1f800020 - 0x38) * 0x10000) >> 16,aux_val >> 3,3);
               }
             }
             if (local_34 != 0) {
-              if (local_94[2] == 0) iVar10 = 0x7996;
-              else { iVar10 = 0x7b56; local_94[2]--; }
+              if (local_94[2] == 0) aux_val = 0x7996;
+              else { aux_val = 0x7b56; local_94[2]--; }
               spr_draw_off(iVar4 * 0x8014 + -0x7fff0000,0x200,0,1);
               if (iVar4 == 8) uVar8 = (uint32_t)_DAT_1f800022 * 0x10000 + 0xfe390000 | 0xff;
               else uVar8 = (uint32_t)_DAT_1f800022 * 0x10000 + 0xfe700000 | 200;
-              spr_attr_alloc_b(_DAT_1f800008 + 4,uVar8,0xfefe0008,(uint32_t)(iVar10 << 16),0,
+              spr_attr_alloc_b(_DAT_1f800008 + 4,uVar8,0xfefe0008,(uint32_t)(aux_val << 16),0,
                            (int16_t)_DAT_1f800022 + -200);
             }
             if (local_30 != 0) {
@@ -3512,16 +3513,16 @@ LAB_80150558:
               spr_draw_off(iVar3 * 0x8014 + -0x7fff0000,0x240,0,1);
               if (iVar3 == 8) {
                 uVar5 = 0xfefe0009; iVar4 <<= 16; iVar2 = _DAT_1f800008 + 4;
-                iVar10 = (int32_t)(int16_t)_DAT_1f800020;
-                uVar8 = (uint32_t)_DAT_1f800022 * 0x10000 + 0xfe390000 | ((iVar10 - 0xffU) & 0xffff);
+                aux_val = (int32_t)(int16_t)_DAT_1f800020;
+                uVar8 = (uint32_t)_DAT_1f800022 * 0x10000 + 0xfe390000 | ((aux_val - 0xffU) & 0xffff);
                 iVar3 = (int16_t)_DAT_1f800022 + -200;
               } else {
                 uVar5 = 0xfefe0009; iVar4 <<= 16; iVar2 = _DAT_1f800008 + 4;
-                iVar10 = (int32_t)(int16_t)_DAT_1f800020;
-                uVar8 = (uint32_t)_DAT_1f800022 * 0x10000 + 0xfe700000 | ((iVar10 - 200U) & 0xffff);
+                aux_val = (int32_t)(int16_t)_DAT_1f800020;
+                uVar8 = (uint32_t)_DAT_1f800022 * 0x10000 + 0xfe700000 | ((aux_val - 200U) & 0xffff);
                 iVar3 = (int16_t)_DAT_1f800022 + -200;
               }
-              spr_attr_alloc_b((uint32_t)iVar2,uVar8,uVar5,(uint32_t)iVar4,iVar10,iVar3);
+              spr_attr_alloc_b((uint32_t)iVar2,uVar8,uVar5,(uint32_t)iVar4,aux_val,iVar3);
             }
           }
         }
@@ -3541,23 +3542,23 @@ LAB_80150558:
       if (DAT_1f800001 < 7) {
         if (DAT_1f800001 == 0 && (iVar4 = frame_divisor_get(), iVar4 == 0)) {
           if (-1 < entry_mode) {
-            if (entry_mode < 2) unaff_s2 = 1;
-            else if (entry_mode < 4) unaff_s2 = 2;
+            if (entry_mode < 2) attr_idx = 1;
+            else if (entry_mode < 4) attr_idx = 2;
           }
-          iVar4 = intro_movie_state((int32_t)unaff_s2);
+          iVar4 = intro_movie_state((int32_t)attr_idx);
           if (iVar4 != 0) {
             sprite_desc_table_init(1);
             print_mode_dispatch_b(2,0,0);
             battle_config_eval(local_40,0x1f800000,1);
             battle_config_eval(local_3c,0x1f800000,1);
-            post_confirm_config_build(0x1f800000,auStack_e0,1);
+            post_confirm_config_build(0x1f800000,arg_blk,1);
             *(uint32_t *)g__DAT_801e8508 = 0;
             *(uint32_t *)g__DAT_801e8518 = 0x28;
             if (*(int32_t *)(_g_system_config_ptr + 0x40) < 0) local_c8 = 9;
             uVar5 = 1;
             if (*(char *)(_g_system_config_ptr + 0xd) == 0) uVar5 = 0x1f;
             mc_confirm_dispatch(uVar5,1);
-            bVar1 = 6;
+            next_state = 6;
             local_2c = 0;
             goto LAB_8015060c;
           }
@@ -3565,13 +3566,13 @@ LAB_80150558:
       } else {
         if (DAT_1f800001 == 0xf0) {
           deferred_cmd_post(0x204,0,0);
-          bVar1 = 0xf1;
+          next_state = 0xf1;
         } else {
-          bVar1 = 0xff;
+          next_state = 0xff;
           if (DAT_1f800001 != 0xf1) goto LAB_80150610;
         }
 LAB_8015060c:
-        DAT_1f800001 = bVar1;
+        DAT_1f800001 = next_state;
       }
 LAB_80150610:
       frame_tick(0x1f800000);
@@ -3631,9 +3632,9 @@ LAB_f208:
 }
 
 /* select_confirm_handler — select-screen confirm handler. param_1 = guest addr
- * of battle state (0x1f800000), param_2 = player slot, param_3 =
- * records base (host ptr, 0x30 stride), param_4 = button flags,
- * param_5 = stack arg (direct vs table char lookup). Writes chosen
+ * of battle state (0x1f800000), player = player slot, recs =
+ * records base (host ptr, 0x30 stride), btns = button flags,
+ * direct = stack arg (direct vs table char lookup). Writes chosen
  * char to battle+0xc0[player]+0x1b and anim state to
  * 0x1f8000e8+player*0x108+3/+4; gates on select_phase_gate then toggles
  * battle+0xb4 phase bits. Disasm-verified. */
@@ -3718,9 +3719,9 @@ void selection_stat_bump(uint8_t *state,int32_t unused)
   *(uint32_t *)(tbl + 0x410) = 1;
 }
 
-/* post_confirm_config_build — post-confirm battle-config builder. param_1 = guest
- * battle addr, param_2 = out record array (0x30 stride/player),
- * param_3 = direct-char flag. Per player: stores phase-gate results
+/* post_confirm_config_build — post-confirm battle-config builder. battle_g = guest
+ * battle addr, recs = out record array (0x30 stride/player),
+ * direct = direct-char flag. Per player: stores phase-gate results
  * (+0x38), flag word (+0x28), char id (+0x44), then mode-specific
  * (+0x3c/40/4c/48) fill. Disasm-verified. */
 extern int32_t gate_read_ec(uint32_t,uint32_t);
@@ -3842,9 +3843,9 @@ void post_confirm_config_build(uint32_t battle_g,uint8_t *recs,int32_t direct)
 }
 
 
-/* fighter_spawn_setup — fighter spawn/setup. param_1 = guest battle addr,
- * param_2/param_3 = per-side arg blocks passed to battle_config_eval,
- * param_4 = cfg base (records at +0x28, stride 0x30), param_5 = flag.
+/* fighter_spawn_setup — fighter spawn/setup. battle_g = guest battle addr,
+ * ab_a/ab_b = per-side arg blocks passed to battle_config_eval,
+ * cfg = cfg base (records at +0x28, stride 0x30), flag = flag.
  * Patches battle+0xb4/b6 phase 0x500->0x600, per-player record fill
  * when rec+0x10==1 && phase==0x700, then mode dispatch on battle+0x9b
  * (jump table 0x801204c0) merging packed button u16s into rec+8.
@@ -5602,7 +5603,7 @@ int battle_init(uint32_t battle, uint8_t *side_a, uint8_t *side_b)
   uint32_t sst_frm = br2_guest_frame(0x168);
   /* sp+0x18 -> sst_frm+0x20; guest RAM backing so the 0x801f10bc cell
    * carries a real guest address aliasing the same bytes. */
-  uint8_t  *auStack_18 = (uint8_t *)guest_at(sst_frm + 0x20);
+  uint8_t  *arg_blk = (uint8_t *)guest_at(sst_frm + 0x20);
   uint32_t cnt   = 0;                   /* sp+0x130 */
   uint32_t p134  = 0x801b2604;          /* sp+0x134: lh-pair cursor */
   uint32_t p138  = 0xa50;               /* sp+0x138: record offset A */
@@ -5610,7 +5611,7 @@ int battle_init(uint32_t battle, uint8_t *side_a, uint8_t *side_b)
   int32_t  s6    = 0;
   uint8_t *p1 = side_a, *p2 = side_b;
 
-  *(uint32_t *)guest_at(0x801f10bc) = guest_of(auStack_18);
+  *(uint32_t *)guest_at(0x801f10bc) = guest_of(arg_blk);
   { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
     decomp_trace_record(44,battle,(uint32_t)p1[3],(uint32_t)p2[3],0); }
 
@@ -5620,7 +5621,7 @@ int battle_init(uint32_t battle, uint8_t *side_a, uint8_t *side_b)
       /* ---------- state 0 ---------- */
       int32_t r, r1, r2;
       r = battle_bringup_a(battle,(uint32_t)p1[3],(uint32_t)p2[3],
-                       auStack_18 + 0x100);
+                       arg_blk + 0x100);
       if (r == 0) goto L_tail;
       rgb_triple_store(0,0,0);
       task_pool_init(1,2,0x6400,0x801d01ec);
@@ -9815,7 +9816,7 @@ void packed_u16_expand(uint32_t rec_a,uint32_t rec_b,uint32_t idx)
 }
 
 /* cmd_queue_push — 8-entry u16 command-queue push @0x8012a5b8 (38
- * insns). Inlines leaf FUN_8012a4dc @0x8012a4dc (9 insns):
+ * insns). Inlines leaf cmd_queue_slot_next @0x8012a4dc (9 insns):
  * nxt = MBS16(0x1f8000d0) + 1; slot = nxt < 9 (signed) ? nxt : 0.
  * slot 0 -> return. Else entry = 0x801c4530 + slot*8 receives the
  * four args as u16s, 0x1f8000d0 = slot, and the 5th (stack) arg
@@ -9944,14 +9945,14 @@ static void dec_finish(uint32_t battle,uint32_t s0,int32_t a1)
  * tables. s2 < 0 -> idx 3. Else idx = wrapped-decrement of
  * lh(s0+2) by s2+1, then the downward record walk while the
  * resulting record's lh is negative. */
-void versus_stage_commit(uint32_t param_1,uint32_t param_2)
+void versus_stage_commit(uint32_t baddr,uint32_t stage)
 {
-  uint32_t s1 = param_1;
-  int32_t s2 = (int32_t)param_2;
+  uint32_t s1 = baddr;
+  int32_t s2 = (int32_t)stage;
   uint32_t s0 = MB32(s1 + 0xcc);
   int32_t a1;
   { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-    decomp_trace_record(47,param_1,param_2,s0,MB32(s1+0xcc)); }
+    decomp_trace_record(47,baddr,stage,s0,MB32(s1+0xcc)); }
 
   MW16(s0 + 0, 3);
   results_record_build(4, (int32_t)MBS16(s0 + 6));
@@ -9972,13 +9973,13 @@ void versus_stage_commit(uint32_t param_1,uint32_t param_2)
  * 0x80128d98 (82 insns, jr $ra @0x80128edc). a0 = guest battle
  * base, a1 = stage arg t0. Identical record copies and index
  * resolution; t0 < 0 -> idx 3. */
-void versus_stage_commit_b(uint32_t param_1,int32_t param_2)
+void versus_stage_commit_b(uint32_t baddr,int32_t stage)
 {
-  int32_t t0 = param_2;
-  uint32_t s0 = MB32(param_1 + 0xcc);
+  int32_t t0 = stage;
+  uint32_t s0 = MB32(baddr + 0xcc);
   int32_t a1;
   { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-    decomp_trace_record(48,param_1,param_2,s0,MB32(param_1+0xcc)); }
+    decomp_trace_record(48,baddr,stage,s0,MB32(baddr+0xcc)); }
 
   MW16(s0 + 0, 3);
   blk_copy(0x801e1b3c, s0 + 0x18,   0x21c0);
@@ -9991,7 +9992,7 @@ void versus_stage_commit_b(uint32_t param_1,int32_t param_2)
     if (t0 + 1 > 0) a1 = dec_wrap(a1, t0 + 1);
     if (a1 > 0) a1 = dec_walk(a1);
   }
-  dec_finish(param_1, s0, a1);
+  dec_finish(baddr, s0, a1);
 }
 
 /* ======== batch39 ======== */
@@ -10016,9 +10017,9 @@ extern uint32_t task_node_alloc(int32_t,uint32_t,uint32_t,uint32_t,
                              uint32_t,uint32_t);
 
 /* cd_reg_window_u16_wrap — cd_reg_window_u16(0,a0) trampoline @0x80157334 (8 insns). */
-void cd_reg_window_u16_wrap(uint32_t param_1)
+void cd_reg_window_u16_wrap(uint32_t val)
 {
-  cd_reg_window_u16(0, param_1);
+  cd_reg_window_u16(0, val);
 }
 
 /* options_pages_reset — reset pair @0x8014bfe4 (9 insns):
@@ -10031,10 +10032,10 @@ void options_pages_reset(void)
 
 /* cursor_advance_thunk — motion_integrator_tail(a0,a1) then v0 = a2+2 @0x8017cfe0
  * (9 insns). a2 saved to s0 in the delay slot of the jal. */
-int32_t cursor_advance_thunk(uint32_t param_1,uint32_t param_2,uint32_t param_3)
+int32_t cursor_advance_thunk(uint32_t a0,uint32_t a1,uint32_t cur)
 {
-  motion_integrator_tail((int)param_1, (int)param_2);
-  return (int32_t)(param_3 + 2u);
+  motion_integrator_tail((int)a0, (int)a1);
+  return (int32_t)(cur + 2u);
 }
 
 /* audio_seq_reset — audio/seq reset pair @0x80158244 (11 insns):
@@ -10047,40 +10048,40 @@ void audio_seq_reset(void)
 
 /* chan_attr_block_write — channel-attr block @0x801f2690 @0x80156404 (13
  * insns): flags=3, +4=+6=(u16)a0, cd_chan_attr_apply(0x801f2690). */
-void chan_attr_block_write(uint32_t param_1)
+void chan_attr_block_write(uint32_t val)
 {
   MW32(0x801f2690u, 3);
-  MW16(0x801f2696u, param_1);
-  MW16(0x801f2694u, param_1);
+  MW16(0x801f2696u, val);
+  MW16(0x801f2694u, val);
   cd_chan_attr_apply(0x801f2690u);
 }
 
 /* chan_attr_rec_a — @0x801f2650 record variant A @0x801572c0 (13
  * insns): [0]=a0, [4]=0x10, [0x14]=a1, cd_chan_attr_push(0x801f2650). */
-void chan_attr_rec_a(uint32_t param_1,uint32_t param_2)
+void chan_attr_rec_a(uint32_t ptr,uint32_t val)
 {
-  MW32(0x801f2650u, param_1);
+  MW32(0x801f2650u, ptr);
   MW32(0x801f2654u, 0x10);
-  MW16(0x801f2664u, param_2);
+  MW16(0x801f2664u, val);
   cd_chan_attr_push(0x801f2650u);
 }
 
 /* dual_mode_announce — dual mode announce @0x801525d0 (14 insns):
  * mode_name_announce(a0,0,1); mode_name_announce(a0,1,1). */
-void dual_mode_announce(uint32_t param_1)
+void dual_mode_announce(uint32_t baddr)
 {
-  mode_name_announce(param_1, 0, 1);
-  mode_name_announce(param_1, 1, 1);
+  mode_name_announce(baddr, 0, 1);
+  mode_name_announce(baddr, 1, 1);
 }
 
 /* chan_attr_rec_b — @0x801f2650 record variant B @0x801572f8 (14
  * insns): [0]=a0, [4]=3, [8]=[0xa]=a1, cd_chan_attr_push(0x801f2650). */
-void chan_attr_rec_b(uint32_t param_1,uint32_t param_2)
+void chan_attr_rec_b(uint32_t ptr,uint32_t val)
 {
-  MW32(0x801f2650u, param_1);
+  MW32(0x801f2650u, ptr);
   MW32(0x801f2654u, 3);
-  MW16(0x801f2658u, param_2);
-  MW16(0x801f265au, param_2);
+  MW16(0x801f2658u, val);
+  MW16(0x801f265au, val);
   cd_chan_attr_push(0x801f2650u);
 }
 
@@ -10088,12 +10089,12 @@ void chan_attr_rec_b(uint32_t param_1,uint32_t param_2)
  * lh s0; sll 16; sra 24 -> a1 = sx8 of the HIGH byte of the halfword
  * (byte1); sh a1 -> MB8(a0+5); slot_apply_guest(a0, a1&1);
  * v0 = s0+2. a1 (in) is dead. */
-int32_t slot_byte_commit(uint32_t param_1,uint32_t param_2,uint32_t param_3)
+int32_t slot_byte_commit(uint32_t obj,uint32_t unused,uint32_t cur)
 {
-  uint32_t s0 = param_3;
+  uint32_t s0 = cur;
   int32_t a1 = (int32_t)(int8_t)(MB16(s0) >> 8);
-  MW8(param_1 + 5, (uint32_t)a1);
-  slot_apply_guest((int)param_1, a1 & 1);
+  MW8(obj + 5, (uint32_t)a1);
+  slot_apply_guest((int)obj, a1 & 1);
   return (int32_t)(s0 + 2u);
 }
 
@@ -10127,21 +10128,21 @@ void chan_flag_toggle(void)
 /* mode_string_dispatch — mode-string dispatch @0x80129f1c (17 insns):
  * a1==0 -> print_dispatch_selfdesc(a0, 0x8011ec30); a1==1 -> same with
  * 0x8011ec38; any other a1 returns without calling. */
-void mode_string_dispatch(uint32_t param_1,int32_t param_2)
+void mode_string_dispatch(uint32_t desc,int32_t sel)
 {
-  if (param_2 == 0) {
-    print_dispatch_selfdesc((void *)guest_at(param_1), (const char *)guest_at(0x8011ec30));
-  } else if (param_2 == 1) {
-    print_dispatch_selfdesc((void *)guest_at(param_1), (const char *)guest_at(0x8011ec38));
+  if (sel == 0) {
+    print_dispatch_selfdesc((void *)guest_at(desc), (const char *)guest_at(0x8011ec30));
+  } else if (sel == 1) {
+    print_dispatch_selfdesc((void *)guest_at(desc), (const char *)guest_at(0x8011ec38));
   }
 }
 
 /* pending_work_drain — pending-work drain @0x8015f64c (20 insns):
  * a0 = guest ptr; if MB8(a0+0x22)==0 or MB32(0x801c15f0)==0 return
  * -1. Else clear 0x801c15f0 and return memcard_file_flow(1). */
-int32_t pending_work_drain(uint32_t param_1)
+int32_t pending_work_drain(uint32_t obj)
 {
-  if (MB8(param_1 + 0x22) == 0) return -1;
+  if (MB8(obj + 0x22) == 0) return -1;
   if (MB32(0x801c15f0u) == 0) return -1;
   MW32(0x801c15f0u, 0);
   return memcard_file_flow(1);
@@ -10150,12 +10151,12 @@ int32_t pending_work_drain(uint32_t param_1)
 /* descriptor_fetch — descriptor fetch @0x8017cf14 (21 insns): s0 = a2;
  * idx = ((s16)lh(s0+2)*2 + MB8(a0+5)) & 1; skeleton_init(a0,
  * MB32(a1+0x10) + idx*28, a1); v0 = s0+4. */
-int32_t descriptor_fetch(uint32_t param_1,uint32_t param_2,uint32_t param_3)
+int32_t descriptor_fetch(uint32_t ctrl,uint32_t desc,uint32_t cur)
 {
-  uint32_t s0 = param_3;
+  uint32_t s0 = cur;
   uint32_t idx = ((uint32_t)(int32_t)(int16_t)MBS16(s0 + 2) * 2u
-                  + MB8(param_1 + 5)) & 1u;
-  skeleton_init(param_1, MB32(param_2 + 0x10) + idx * 28u, param_2);
+                  + MB8(ctrl + 5)) & 1u;
+  skeleton_init(ctrl, MB32(desc + 0x10) + idx * 28u, desc);
   return (int32_t)(s0 + 4u);
 }
 
@@ -10165,18 +10166,18 @@ int32_t descriptor_fetch(uint32_t param_1,uint32_t param_2,uint32_t param_3)
  * MB16(a0+36)) and ret 0x801f0000. If s3!=1: slti(s3,2)==0 -> ret 0;
  * s3!=0 -> ret 0x801f0000; only s3==0 falls through: h=MBS16(a0+36),
  * if h<0 h+=15, MW16(0x801f02f6, h>>4); ret 0x801f0000. a1 dead. */
-int32_t byte2_probe_commit(uint32_t param_1,uint32_t param_2,uint32_t param_3)
+int32_t byte2_probe_commit(uint32_t rec,uint32_t unused,uint32_t desc)
 {
-  int32_t s3 = (int32_t)MBS8(param_3 + 2);
+  int32_t s3 = (int32_t)MBS8(desc + 2);
   if (s3 == 1) {
     if (MBS8(0x1f8000b1u) != 0) return 0x801f0000;
-    MW16(0x801f02f4u, MB16(param_1 + 36));
+    MW16(0x801f02f4u, MB16(rec + 36));
     return 0x801f0000;
   }
   if (!(s3 < 2)) return 0;
   if (s3 != 0) return 0x801f0000;
   {
-    int32_t h = (int32_t)MBS16(param_1 + 36);
+    int32_t h = (int32_t)MBS16(rec + 36);
     if (h < 0) h += 15;
     MW16(0x801f02f6u, (uint16_t)(h >> 4));
   }
@@ -10379,12 +10380,12 @@ void descblk_variant_d(uint32_t ctx,uint32_t ctx2,uint32_t str,
  * (cd_job_result(0,&sp10,&sp14)==0); if (sp14==0 || s0==sp14) break;
  * s0 = sp14; }. sp10/sp14 are the guest stack slots the callee
  * writes through a1/a2 — host locals stand in. */
-uint32_t job_wait_pump(uint32_t param_1,uint32_t param_2,uint32_t param_3)
+uint32_t job_wait_pump(uint32_t cd_a,uint32_t cd_b,uint32_t cd_c)
 {
   uint32_t s0 = 0;
   uint32_t sp10 = 0, sp14 = 0;
   for (;;) {
-    while (cd_submit5(param_1, param_2, param_3) == 0) { }
+    while (cd_submit5(cd_a, cd_b, cd_c) == 0) { }
     while (cd_job_result(0, &sp10, &sp14) == 0) { }
     if (sp14 == 0) break;
     if (s0 == sp14) break;
@@ -10394,12 +10395,12 @@ uint32_t job_wait_pump(uint32_t param_1,uint32_t param_2,uint32_t param_3)
 }
 
 /* job_wait_pump_b — same pump on cd_submit6 @0x801687ac (34 insns). */
-void job_wait_pump_b(uint32_t param_1,uint32_t param_2,uint32_t param_3)
+void job_wait_pump_b(uint32_t cd_a,uint32_t cd_b,uint32_t cd_c)
 {
   uint32_t s0 = 0;
   uint32_t sp10 = 0, sp14 = 0;
   for (;;) {
-    while (cd_submit6(param_1, param_2, param_3) == 0) { }
+    while (cd_submit6(cd_a, cd_b, cd_c) == 0) { }
     while (cd_job_result(0, &sp10, &sp14) == 0) { }
     if (sp14 == 0) break;
     if (s0 == sp14) break;
@@ -10428,13 +10429,13 @@ void cond_triple_spawn(uint32_t sel,uint32_t rec)
  * sprite_node_emit_a(p1, p2-p4, p3, p4, p5, 0, p6, 0, p6, 3) then
  * spr_attr_alloc_a(p1, p2, p3, lh(0x1f800020), p5, 0, 0). p5/p6 are the
  * two incoming stack args. */
-void dual_sprite_attr_emit(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                  uint32_t param_4,uint32_t param_5,uint32_t param_6)
+void dual_sprite_attr_emit(uint32_t ot,uint32_t x1,uint32_t y,
+                  uint32_t x0,uint32_t stk1,uint32_t stk2)
 {
-  sprite_node_emit_a(param_1, (int32_t)(param_2 - param_4), (int32_t)param_3,
-               (int32_t)param_4, param_5, 0, param_6, 0, param_6, 3);
-  spr_attr_alloc_a(param_1, (int16_t)param_2, (int16_t)param_3,
-               (int16_t)MBS16(0x1f800020u), (int16_t)param_4, param_5, 0);
+  sprite_node_emit_a(ot, (int32_t)(x1 - x0), (int32_t)y,
+               (int32_t)x0, stk1, 0, stk2, 0, stk2, 3);
+  spr_attr_alloc_a(ot, (int16_t)x1, (int16_t)y,
+               (int16_t)MBS16(0x1f800020u), (int16_t)x0, stk1, 0);
 }
 
 /* descblk_variant_b — descriptor variant @0x8012e2a0 (36 insns, 7 args):
@@ -10548,8 +10549,8 @@ int32_t cmd_queue_slot_next(void)
  * s0 = queue_slot_peek(); if 0 return 0. slot = MB32(0x1f800004) +
  * s0*24 + 0x20d8; MW16(0x1f8000d2, s0); stack buf = four u16s
  * {a0,a1,a2,a3}; gpu_texclut_pkt(slot, buf, stk1, stk2); return s0. */
-int32_t sprite_slot_commit(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6)
+int32_t sprite_slot_commit(uint32_t w0,uint32_t w1,uint32_t w2,
+                     uint32_t w3,uint32_t aux5,uint32_t aux6)
 {
   uint32_t s0 = (uint32_t)queue_slot_peek();
   uint32_t *gbuf;
@@ -10560,12 +10561,12 @@ int32_t sprite_slot_commit(uint32_t param_1,uint32_t param_2,uint32_t param_3,
    * (garbage). Back it with a guest frame so guest_of() resolves it like
    * the generated guest-stack buffer. */
   gbuf = (uint32_t *)guest_at(br2_guest_frame(0x20) + 0x10);
-  gbuf[0] = (param_1 & 0xffffu) | ((param_2 & 0xffffu) << 16);
-  gbuf[1] = (param_3 & 0xffffu) | ((param_4 & 0xffffu) << 16);
+  gbuf[0] = (w0 & 0xffffu) | ((w1 & 0xffffu) << 16);
+  gbuf[1] = (w2 & 0xffffu) | ((w3 & 0xffffu) << 16);
   MW16(0x1f8000d2u, s0);
   gpu_texclut_pkt((uint32_t *)guest_at(MB32(0x1f800004u) + s0 * 24u
                                       + 0x20d8u),
-               gbuf, param_5, param_6);
+               gbuf, aux5, aux6);
   br2_guest_frame_free();
   return (int32_t)s0;
 }
@@ -10868,9 +10869,9 @@ static int32_t tpg_idiv(int32_t,int32_t);   /* defined in batch47 */
  * (sx16@R+0x1a - sx16@R+0x14) as numerator; then
  * sprite_place_centered fires twice (heads @R+0/+4 against 0x1f800000)
  * and task_slot_step() runs when sx16 @R+0x1e != 0. */
-void sprite_record_tick(uint32_t param_1)
+void sprite_record_tick(uint32_t rec)
 {
-  uint32_t s0 = param_1;
+  uint32_t s0 = rec;
   int32_t arr[8];
   uint32_t cur, tag, hi, lo, q, src;
   int32_t i, idx, f14, f1a, d, prod;
@@ -10984,9 +10985,9 @@ L_tail:                                         /* 0x8014ac9c */
  * cd_file_open(d, buf); bcd = (buf[2]>>4)*10 + (buf[2]&0xf);
  * frames = magic-div(bcd*100) by ~75; sprintf_core(a0, 0x80120de0,
  * buf[0], buf[1], frames). */
-void bcd_time_frame_print(uint32_t param_1)
+void bcd_time_frame_print(uint32_t out)
 {
-  uint32_t s0 = param_1;
+  uint32_t s0 = out;
   uint8_t buf[8];
   int32_t d;
   uint32_t v1, x;
@@ -11010,9 +11011,9 @@ void bcd_time_frame_print(uint32_t param_1)
  * save_defaults_fill(); save_block_init(); save_tables_commit();
  * dbg_marker_mode_set(MB8(a0+0x24)); gauge_scale_fixed(MB8(a0+0xe),
  * magic-div(MB8(a0+0xf)<<3)); brightness_commit(MB8(a0+0xc)^1). */
-void versus_state_init(uint32_t param_1)
+void versus_state_init(uint32_t state)
 {
-  uint32_t s0 = param_1;
+  uint32_t s0 = state;
   uint32_t v0 = 0x801b1280u;
   uint32_t v1 = s0;
   int i;
@@ -11045,8 +11046,10 @@ extern int pending_hit_a_clear();
 extern int pending_hit_b_clear();
 extern int options_menu_alloc();
 extern int atan2_lut(int32_t,int32_t);
-extern int FUN_80195370(uint32_t *,uint32_t *);
-extern int FUN_801948c0(uint32_t);
+extern int gte_sqr_vec3_b(uint32_t *,uint32_t *);
+extern int fixed_recip_lut(uint32_t);
+#define FUN_80195370 gte_sqr_vec3_b
+#define FUN_801948c0 fixed_recip_lut
 extern undefined2 *vec2_rot(uint32_t,uint32_t,undefined2 *);
 extern uint *angle_gte_vec(uint32_t,uint32_t,uint *);
 extern int state_pair_init();
@@ -11097,8 +11100,8 @@ uint32_t battle_reset_tail(uint32_t obj,uint32_t unused,uint32_t desc)
 /* dual_axis_coord_xform — dual-axis coord transform @0x8012eaa8 (50
  * insns): o = MB32(a3+0x20); sp = {MB32(o+0x174),
  * MB32(o+0x178)+0xa00, MB32(o+0x17c)}; s1 = atan2_lut(sp[2],
- * sp[0]); FUN_80195370(&sp[0],&sp[0]) (ret discarded); r =
- * atan2_lut(-sp[1], FUN_801948c0(sp[0]+sp[2]));
+ * sp[0]); gte_sqr_vec3_b(&sp[0],&sp[0]) (ret discarded); r =
+ * atan2_lut(-sp[1], fixed_recip_lut(sp[0]+sp[2]));
  * s0=(s16)r, s1=(s16)s1; vec2_rot(s0,s1,a2+6);
  * angle_gte_vec(s0,s1,a2+0x20).
  * Generated reads the object through $a3 (gpr[7]) and the output base
@@ -11445,14 +11448,14 @@ void voice_desc_fill(uint32_t id,uint32_t sel,int32_t kind,
  * frame -0x130 = entry_sp-0x108), init the
  * 0x1f80038c GPU block and text_render_simple(MB32(0x1f800008),
  * MB16(0x1f80000c), 0x1f80038c); else return. */
-void print_mode_dispatch(uint32_t win,uint32_t fmt,uint32_t param_3,
-                  uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                  uint32_t param_7,uint32_t param_8,uint32_t param_9)
+void print_mode_dispatch(uint32_t win,uint32_t fmt,uint32_t a3,
+                  uint32_t a4,uint32_t a5,uint32_t a6,
+                  uint32_t a7,uint32_t a8,uint32_t a9)
 {
   uint32_t mode = MB32(0x1f800384u);
   if (mode == 1) {
-    text_win_printf((int32_t)win, fmt, param_3, param_4,
-                 param_5, param_6, param_7, param_8, param_9);
+    text_win_printf((int32_t)win, fmt, a3, a4,
+                 a5, a6, a7, a8, a9);
   } else if (mode == 2) {
     /* sprintf buf = guest $sp+0x28 (frame -0x130) = entry_sp-0x108;
      * text_render_simple re-reads it through the 0x1f80038c block
@@ -11464,8 +11467,8 @@ void print_mode_dispatch(uint32_t win,uint32_t fmt,uint32_t param_3,
     uint8_t *buf = (uint8_t *)guest_at(pmd_frm + 0x28);
     uint32_t blk = 0x1f80038cu;
     sprintf_core((char *)buf, (char *)guest_at(fmt),
-                 param_3, param_4, param_5, param_6, param_7,
-                 param_8, param_9);
+                 a3, a4, a5, a6, a7,
+                 a8, a9);
     MW16(blk + 6,  0x1000u);
     MW16(blk + 8,  0x1000u);
     MW16(blk + 0xe, 0xffffu);
@@ -13130,14 +13133,14 @@ extern uint32_t br2_ld32(uint32_t);
 extern void br2_st16(uint32_t, uint16_t);
 extern uint32_t call_guest4(uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
 
-uint32_t desc_cmd_interp(uint32_t param_1, uint32_t param_2,
-                         uint32_t param_3, uint32_t param_4)
+uint32_t desc_cmd_interp(uint32_t unused1, uint32_t unused2,
+                         uint32_t unused3, uint32_t unused4)
 {
   CPUState *cpu = clean_cpu_state();
   uint32_t _sv_s0 = cpu->gpr[16], _sv_s1 = cpu->gpr[17];
   uint32_t _sv_s2 = cpu->gpr[18], _sv_s3 = cpu->gpr[19];
   uint32_t jt;
-  (void)param_1; (void)param_2; (void)param_3; (void)param_4;
+  (void)unused1; (void)unused2; (void)unused3; (void)unused4;
 
 block_8017DB88:
 { uint32_t _pgx1 = cpu->gpr[6]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[19] = cpu->gpr[6];
@@ -15576,24 +15579,24 @@ static void tpg_cell48_v2(uint32_t r, const uint16_t *fr,
   MW16(r + 12u, (uint16_t)(fr[2] + fr[14]));
 }
 
-uint32_t terrain_packet_gen(uint32_t param_1,uint32_t param_2,
-                      const uint16_t *param_3,const int16_t *param_4,
-                      const int16_t *param_5,int32_t param_6,
-                      int32_t param_7,const uint8_t *param_8)
+uint32_t terrain_packet_gen(uint32_t hdr,uint32_t cur,
+                      const uint16_t *u16vec,const int16_t *colvec,
+                      const int16_t *rowvec,int32_t sx,
+                      int32_t sy,const uint8_t *u8vec)
 {
-  uint32_t hdr = param_1;              /* guest $a0 */
-  uint32_t cur = param_2;              /* guest $a1 */
-  int32_t  sx  = param_6;              /* guest $s6: col count + p4 divisor */
-  int32_t  sy  = param_7;              /* guest $s7: row count + p5 divisor */
+
+
+
+
   uint32_t prod, r48, r72;             /* mult lo; g11/g10 cursors */
   uint16_t fr[16];                     /* guest sp+0..0x1c frame (lhu) */
   int32_t  col, row;                   /* g8/g12 loop counters */
   int32_t  diff;                       /* g24 = sx - sy (signed) */
-  uint8_t  b0 = param_8[0], b1 = param_8[1], b2 = param_8[2];
+  uint8_t  b0 = u8vec[0], b1 = u8vec[1], b2 = u8vec[2];
   int i;
 
   /* ---- block_80135A14: header ---- */
-  MW32(hdr + 0x1cu, cur);              /* hdr->out_cursor = param_2 */
+  MW32(hdr + 0x1cu, cur);              /* hdr->out_cursor = cur */
   MW16(hdr + 0x0cu, 0);
   MW16(hdr + 0x0eu, 0);
 
@@ -15633,15 +15636,15 @@ uint32_t terrain_packet_gen(uint32_t param_1,uint32_t param_2,
   }
 
   /* ---- block_80135B00: scaled triples into the sp frame ----
-   * sp+16..20 = lh(param_4)/sx, sp+24..28 = lh(param_5)/sy,
-   * sp+0..4 = lhu(param_3). Frame reloads everywhere below are lhu. */
+   * sp+16..20 = lh(colvec)/sx, sp+24..28 = lh(rowvec)/sy,
+   * sp+0..4 = lhu(u16vec). Frame reloads everywhere below are lhu. */
   for (i = 0; i < 3; i++) {
-    fr[8  + i] = (uint16_t)tpg_idiv((int32_t)param_4[i], sx);
-    fr[12 + i] = (uint16_t)tpg_idiv((int32_t)param_5[i], sy);
+    fr[8  + i] = (uint16_t)tpg_idiv((int32_t)colvec[i], sx);
+    fr[12 + i] = (uint16_t)tpg_idiv((int32_t)rowvec[i], sy);
   }
-  fr[0] = param_3[0];
-  fr[1] = param_3[1];
-  fr[2] = param_3[2];
+  fr[0] = u16vec[0];
+  fr[1] = u16vec[1];
+  fr[2] = u16vec[2];
 
   if (sy == 0) return r72;             /* block_80135BB0 -> epilogue */
 
@@ -15786,10 +15789,10 @@ uint32_t peak_track(void)
  * from desc+8; the disasm splits them (s7=+0x10 for euler_rotmat,
  * a0=+8 for the sh fields). Ported verbatim here.
  * Return value is whatever v0 last held; callers ignore it. */
-int32_t skeleton_init(uint32_t param_1,uint32_t param_2,uint32_t param_3)
+int32_t skeleton_init(uint32_t ctrl,uint32_t desc,uint32_t unused3)
 {
-  uint32_t ctrl = param_1;
-  uint32_t desc = param_2;
+
+
   uint32_t base = MB32(ctrl + 0x30u);
   int32_t  np   = (int8_t)MB8(ctrl + 6u);   /* lb */
   int32_t  nr   = (int8_t)MB8(ctrl + 8u);   /* lb */
@@ -15800,7 +15803,7 @@ int32_t skeleton_init(uint32_t param_1,uint32_t param_2,uint32_t param_3)
   uint32_t seedM   = MB32(desc + 0x10u) + base;
   uint32_t extrat  = MB32(desc + 0x18u) + base;
   int32_t  i, j, k;
-  (void)param_3;
+  (void)unused3;
 
   /* zero part-record lead fields: fobj + i*0x50, i = nr-1 .. 0 */
   for (i = nr - 1; i >= 0; i--)
@@ -15992,26 +15995,26 @@ extern uint32_t heap_serialize_tag_01000000(uint32_t,uint32_t,uint32_t,uint32_t,
  * Epilogue: *dst+0x1c = cursor (before trailer), *outp = count,
  * then u32 count + count*16 scratch bytes appended at cursor;
  * returns cursor past the trailer. */
-int32_t heap_serialize(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7)
+int32_t heap_serialize(uint32_t blk,uint32_t cur,uint32_t dst,
+                     uint32_t mode,uint32_t outp,uint32_t s7,
+                     uint32_t fp)
 {
-  uint32_t blk  = param_1;
-  uint32_t cur  = param_2;
-  uint32_t dst  = param_3;
-  uint32_t mode = param_4;
-  uint32_t outp = param_5;
-  uint32_t s7   = param_6;
-  uint32_t fp   = param_7;
+
+
+
+
+
+
+
   uint32_t scr[128];             /* sp+0x20: guest fits 16 x 16B;
                                   * 32 here so an over-count can't
                                   * smash the C frame (guest would
                                   * corrupt its own locals instead) */
   uint32_t s3 = 0;
   uint32_t i;
-  uint32_t _eb = param_1;   /* entry blk for trace */
+  uint32_t _eb = blk;   /* entry blk for trace */
   { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-    decomp_trace_record(22,param_1,param_2,param_3,0); }  /* tag22 hser_in */
+    decomp_trace_record(22,blk,cur,dst,0); }  /* tag22 hser_in */
 
 #define B7C0_EMIT(N_) do {                                    \
     scr[s3*4u+0u] = tag;   scr[s3*4u+1u] = param;             \
@@ -16270,19 +16273,19 @@ uint32_t NM(uint32_t a,uint32_t b,uint32_t c,uint32_t d,uint32_t e, \
  * src+4/+6/+8/+10 stride 0xc, src aux ptr src+10 stride 0xc.
  * Tag bytes 4/0x20 at dst+0x27/0x2b/0x3b/0x3f (a0 = cur+0x10).
  * Returns cur + count*0x4c. */
-uint32_t heap_serialize_tag_08(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7)
+uint32_t heap_serialize_tag_08(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t v1,uint32_t unused6,
+                     uint32_t unused7)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t1 = param_2;
+
+
+
+
+  uint32_t t0 = a0;
+
+  uint32_t t1 = a1;
   uint32_t v0, t4, t5;
-  (void)param_6; (void)param_7;
+  (void)unused6; (void)unused7;
   if (v1 == 0) return t0;
   a0 += 16; a1 += 10;
   do {
@@ -16319,16 +16322,16 @@ uint32_t heap_serialize_tag_08(uint32_t param_1,uint32_t param_2,uint32_t param_
  * src+4/+8, u16 index quads at src+12/+14/+16/+18 stride 0x14,
  * aux src+18 stride 0x14. Tag bytes 6/0x30 at dst+0x2f/0x33/0x4b/0x4f.
  * Returns cur + count*0x64. */
-uint32_t heap_serialize_tag_0a(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_0a(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t1 = param_2;
+
+
+
+
+  uint32_t t0 = a0;
+
+  uint32_t t1 = a1;
   uint32_t v0, t4, t5;
   if (v1 == 0) return t0;
   a0 += 16; a1 += 18;
@@ -16369,16 +16372,16 @@ uint32_t heap_serialize_tag_0a(uint32_t param_1,uint32_t param_2,uint32_t param_
  * Six 8-byte table lookups alternating arg4/arg3 tables
  * (-10,-8,-6,-4,-2,0). Tag bytes 6/0x30 at dst+0x37/0x3b/0x5b/0x5f.
  * Returns cur + count*0x6c. */
-uint32_t heap_serialize_tag_0c(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_0c(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t1 = param_2;
+
+
+
+
+  uint32_t t0 = a0;
+
+  uint32_t t1 = a1;
   uint32_t v0, t4, t5;
   if (v1 == 0) return t0;
   a0 += 16; a1 += 14;
@@ -16416,16 +16419,16 @@ uint32_t heap_serialize_tag_0c(uint32_t param_1,uint32_t param_2,uint32_t param_
  * src+4/+6/+8/+10 stride 0x10, aux src+12 stride 0x10.
  * Tag bytes 5/0x28 at dst+0x27/0x2b/0x3b/0x3f (a0 = cur+0x18).
  * Returns cur + count*0x5c. */
-uint32_t heap_serialize_tag_10(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_10(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t1 = param_2;
+
+
+
+
+  uint32_t t0 = a0;
+
+  uint32_t t1 = a1;
   uint32_t v0, t4, t5;
   if (v1 == 0) return t0;
   a0 += 24; a1 += 12;
@@ -16460,16 +16463,16 @@ uint32_t heap_serialize_tag_10(uint32_t param_1,uint32_t param_2,uint32_t param_
  * Eight 8-byte lookups alternating arg4/arg3 tables
  * (-14,-12,-10,-8,-6,-4,-2,0). Tag bytes 8/0x38 at
  * dst+0x3f/0x43/0x6b/0x6f (a0 = cur+0x18). Returns cur + count*0x8c. */
-uint32_t heap_serialize_tag_14(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_14(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t1 = param_2;
+
+
+
+
+  uint32_t t0 = a0;
+
+  uint32_t t1 = a1;
   uint32_t v0, t4, t5;
   if (v1 == 0) return t0;
   a0 += 24; a1 += 18;
@@ -16512,16 +16515,16 @@ uint32_t heap_serialize_tag_14(uint32_t param_1,uint32_t param_2,uint32_t param_
  * src+4/+8/+12, u16 index quad at src+16/+18/+20/+22 stride 0x1c,
  * aux src+24 stride 0x1c. Tag bytes 8/0x38 at dst+0x33/0x37/0x57/0x5b
  * (a0 = cur+0x18). Returns cur + count*0x80. */
-uint32_t heap_serialize_tag_12(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_12(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t1 = param_2;
+
+
+
+
+  uint32_t t0 = a0;
+
+  uint32_t t1 = a1;
   uint32_t v0, t4, t5;
   if (v1 == 0) return t0;
   a0 += 24; a1 += 24;
@@ -16559,16 +16562,16 @@ uint32_t heap_serialize_tag_12(uint32_t param_1,uint32_t param_2,uint32_t param_
  * aux src+30 stride 0x20. Eight 8-byte lookups alternating
  * arg4/arg3 tables (-14..0 step 2). Tag bytes 8/0x38 at
  * dst+0x3b/0x3f/0x5f/0x63 (a0 = cur+0x18). Returns cur + count*0x98. */
-uint32_t heap_serialize_tag_16(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_16(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t1 = param_2;
+
+
+
+
+  uint32_t t0 = a0;
+
+  uint32_t t1 = a1;
   uint32_t v0, t4, t5;
   if (v1 == 0) return t0;
   a0 += 24; a1 += 30;
@@ -16615,16 +16618,16 @@ uint32_t heap_serialize_tag_16(uint32_t param_1,uint32_t param_2,uint32_t param_
  * aux src+22 stride 0x18. Six 8-byte lookups alternating
  * arg4/arg3 tables (-10..0 step 2). Tag bytes 6/0x30 at
  * dst+0x2f/0x33/0x4b/0x4f (a0 = cur+0x10). Returns cur + count*0x74. */
-uint32_t heap_serialize_tag_0e(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_0e(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t1 = param_2;
+
+
+
+
+  uint32_t t0 = a0;
+
+  uint32_t t1 = a1;
   uint32_t v0, t4, t5;
   if (v1 == 0) return t0;
   a0 += 16; a1 += 22;
@@ -16665,17 +16668,17 @@ uint32_t heap_serialize_tag_0e(uint32_t param_1,uint32_t param_2,uint32_t param_
  * first lands at the a3 cursor pair, a3 += 0x40 per record.
  * Tag bytes 4/0x20 at dst+0xb/0xf/0x1f/0x23 (a0 = cur+0x10).
  * Returns cur + count*0x40. */
-uint32_t heap_serialize_tag_40048(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_40048(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t unused4,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_1;
-  uint32_t t0 = param_2;
-  uint32_t v1 = param_5;
+
+
+
+  uint32_t a3 = a0;
+  uint32_t t0 = a1;
+
   uint32_t v0, t3, t4;
-  (void)param_4;
+  (void)unused4;
   if (v1 == 0) return a3;
   a0 += 16; a1 += 8;
   do {
@@ -16705,17 +16708,17 @@ uint32_t heap_serialize_tag_40048(uint32_t param_1,uint32_t param_2,uint32_t par
  * (-4,-2,0); first at a3 pair, a3 += 0x50.
  * Tag bytes 6/0x30 at dst+0xb/0xf/0x27/0x2b (a0 = cur+0x10).
  * Returns cur + count*0x50. */
-uint32_t heap_serialize_tag_4004c(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_4004c(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t unused4,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_1;
-  uint32_t t0 = param_2;
-  uint32_t v1 = param_5;
+
+
+
+  uint32_t a3 = a0;
+  uint32_t t0 = a1;
+
   uint32_t v0, t3, t4;
-  (void)param_4;
+  (void)unused4;
   if (v1 == 0) return a3;
   a0 += 16; a1 += 16;
   do {
@@ -16746,17 +16749,17 @@ uint32_t heap_serialize_tag_4004c(uint32_t param_1,uint32_t param_2,uint32_t par
  * Four 8-byte lookups via arg3 table (-6,-4,-2,0); first at a3
  * pair, a3 += 0x50. Tag bytes 5/0x28 at dst+0xb/0xf/0x23/0x27
  * (a0 = cur+0x18). Returns cur + count*0x50. */
-uint32_t heap_serialize_tag_40050(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_40050(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t unused4,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_1;
-  uint32_t t0 = param_2;
-  uint32_t v1 = param_5;
+
+
+
+  uint32_t a3 = a0;
+  uint32_t t0 = a1;
+
   uint32_t v0, t3, t4;
-  (void)param_4;
+  (void)unused4;
   if (v1 == 0) return a3;
   a0 += 24; a1 += 10;
   do {
@@ -16788,17 +16791,17 @@ uint32_t heap_serialize_tag_40050(uint32_t param_1,uint32_t param_2,uint32_t par
  * Four 8-byte lookups via arg3 table (-6,-4,-2,0); first at a3
  * pair, a3 += 0x68. Tag bytes 8/0x38 at dst+0xb/0xf/0x2f/0x33
  * (a0 = cur+0x18). Returns cur + count*0x68. */
-uint32_t heap_serialize_tag_40054(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_40054(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t unused4,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_1;
-  uint32_t t0 = param_2;
-  uint32_t v1 = param_5;
+
+
+
+  uint32_t a3 = a0;
+  uint32_t t0 = a1;
+
   uint32_t v0, t3, t4;
-  (void)param_4;
+  (void)unused4;
   if (v1 == 0) return a3;
   a0 += 24; a1 += 22;
   do {
@@ -16835,20 +16838,20 @@ uint32_t heap_serialize_tag_40054(uint32_t param_1,uint32_t param_2,uint32_t par
  * arg7 to the two y u16s (a0-0x18/+8 x, a0-0x20/+0 y).
  * Tag bytes 7/0x24 at dst+0x1b/0x1f/0x3b/0x3f (a0 = cur+0x46).
  * Returns cur + count*0x58. */
-uint32_t heap_serialize_tag_40049(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7)
+uint32_t heap_serialize_tag_40049(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t unused4,uint32_t v1,uint32_t t5,
+                     uint32_t t4)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t5 = param_6;
-  uint32_t t4 = param_7;
-  uint32_t t1 = param_2;
+
+
+
+  uint32_t t0 = a0;
+
+
+
+  uint32_t t1 = a1;
   uint32_t v0, v2, t6, t7;
-  (void)param_4;
+  (void)unused4;
   if (v1 == 0) return t0;
   a0 += 70; a1 += 18;
   do {
@@ -16887,20 +16890,20 @@ uint32_t heap_serialize_tag_40049(uint32_t param_1,uint32_t param_2,uint32_t par
  * cursor pair, t0 += 0x68. Tail adds arg6/arg7 to the coord u16s
  * (a0-0x1c/+0xc x, a0-0x28/+0 y). Tag bytes 9/0x34 at
  * dst+0x1b/0x1f/0x43/0x47 (a0 = cur+0x4e). Returns cur + count*0x68. */
-uint32_t heap_serialize_tag_4004d(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7)
+uint32_t heap_serialize_tag_4004d(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t unused4,uint32_t v1,uint32_t t5,
+                     uint32_t t4)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t5 = param_6;
-  uint32_t t4 = param_7;
-  uint32_t t1 = param_2;
+
+
+
+  uint32_t t0 = a0;
+
+
+
+  uint32_t t1 = a1;
   uint32_t v0, v2, t6, t7;
-  (void)param_4;
+  (void)unused4;
   if (v1 == 0) return t0;
   a0 += 78; a1 += 26;
   do {
@@ -16941,20 +16944,20 @@ uint32_t heap_serialize_tag_4004d(uint32_t param_1,uint32_t param_2,uint32_t par
  * t0 cursor pair, t0 += 0x70. Tail adds arg6/arg7 to coord u16s
  * (a0-0x20/+8 x, a0-0x28/+0 y). Tag bytes 9/0x2c at
  * dst+0x1b/0x1f/0x43/0x47 (a0 = cur+0x56). Returns cur + count*0x70. */
-uint32_t heap_serialize_tag_40051(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7)
+uint32_t heap_serialize_tag_40051(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t unused4,uint32_t v1,uint32_t t5,
+                     uint32_t t4)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t5 = param_6;
-  uint32_t t4 = param_7;
-  uint32_t t1 = param_2;
+
+
+
+  uint32_t t0 = a0;
+
+
+
+  uint32_t t1 = a1;
   uint32_t v0, v2, t6, t7;
-  (void)param_4;
+  (void)unused4;
   if (v1 == 0) return t0;
   a0 += 86; a1 += 22;
   do {
@@ -16998,20 +17001,20 @@ uint32_t heap_serialize_tag_40051(uint32_t param_1,uint32_t param_2,uint32_t par
  * (a0-0x28/+0xc) and arg7 to the two y u16s (a0-0x34/+0).
  * Tag bytes 12/0x3c at dst+0x1b/0x1f/0x57/0x5b (a0 = cur+0x62).
  * Returns cur + count*0x88. */
-uint32_t heap_serialize_tag_40055(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7)
+uint32_t heap_serialize_tag_40055(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t unused4,uint32_t v1,uint32_t t5,
+                     uint32_t t4)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t5 = param_6;
-  uint32_t t4 = param_7;
-  uint32_t t1 = param_2;
+
+
+
+  uint32_t t0 = a0;
+
+
+
+  uint32_t t1 = a1;
   uint32_t v0, v2, t6, t7;
-  (void)param_4;
+  (void)unused4;
   if (v1 == 0) return t0;
   a0 += 98; a1 += 34;
   do {
@@ -17055,16 +17058,16 @@ uint32_t heap_serialize_tag_40055(uint32_t param_1,uint32_t param_2,uint32_t par
  * Four single-word lookups: lh idx<<3 +table -> lw -> sw
  * (arg4 table for -6, arg3 table for -4/-2/0). Tag bytes 4/0x20 at
  * dst+0xf/0x13/0x23/0x27 (a0 = cur+8). Returns cur + count*0x3c. */
-uint32_t heap_serialize_tag_01000008(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_01000008(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t t1 = param_2;
-  uint32_t v1 = param_5;
+
+
+
+
+  uint32_t t0 = a0;
+  uint32_t t1 = a1;
+
   uint32_t v0;
   if (v1 == 0) return t0;
   a0 += 8; a1 += 10;
@@ -17092,16 +17095,16 @@ uint32_t heap_serialize_tag_01000008(uint32_t param_1,uint32_t param_2,uint32_t 
  * lookups alternating arg4/arg3 tables (-10,-8,-6,-4,-2,0).
  * Tag bytes 6/0x30 stamped at loop tail at dst+0x1f/0x23/0x3b/0x3f
  * (a0 = cur+0x3f). Returns cur + count*0x54. */
-uint32_t heap_serialize_tag_0100000c(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_0100000c(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t t1 = param_2;
-  uint32_t v1 = param_5;
+
+
+
+
+  uint32_t t0 = a0;
+  uint32_t t1 = a1;
+
   uint32_t v0;
   if (v1 == 0) return t0;
   a0 += 63; a1 += 14;
@@ -17133,16 +17136,16 @@ uint32_t heap_serialize_tag_0100000c(uint32_t param_1,uint32_t param_2,uint32_t 
  * aux src+18. Four single-word lookups (arg4 for -6, arg3 for
  * -4/-2/0). Tag bytes 6/0x30 at dst+0x1f/0x23/0x37/0x3b
  * (a0 = cur+8). Returns cur + count*0x54. */
-uint32_t heap_serialize_tag_0100000a(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_0100000a(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t t1 = param_2;
-  uint32_t v1 = param_5;
+
+
+
+
+  uint32_t t0 = a0;
+  uint32_t t1 = a1;
+
   uint32_t v0;
   if (v1 == 0) return t0;
   a0 += 8; a1 += 18;
@@ -17172,16 +17175,16 @@ uint32_t heap_serialize_tag_0100000a(uint32_t param_1,uint32_t param_2,uint32_t 
  * aux src+22. Six single-word lookups alternating arg4/arg3
  * tables (-10,-8,-6,-4,-2,0). Tag bytes 6/0x30 at
  * dst+0x1f/0x23/0x3b/0x3f (a0 = cur+8). Returns cur + count*0x5c. */
-uint32_t heap_serialize_tag_0100000e(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_0100000e(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t t1 = param_2;
-  uint32_t v1 = param_5;
+
+
+
+
+  uint32_t t0 = a0;
+  uint32_t t1 = a1;
+
   uint32_t v0;
   if (v1 == 0) return t0;
   a0 += 8; a1 += 22;
@@ -17215,16 +17218,16 @@ uint32_t heap_serialize_tag_0100000e(uint32_t param_1,uint32_t param_2,uint32_t 
  * Five single-word lookups (arg4 for -8, arg3 for -6/-4/-2/0).
  * Tag bytes 5/0x28 at dst+0xf/0x13/0x27/0x2b (a0 = cur+0xc).
  * Returns cur + count*0x48. */
-uint32_t heap_serialize_tag_01000010(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_01000010(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t t1 = param_2;
-  uint32_t v1 = param_5;
+
+
+
+
+  uint32_t t0 = a0;
+  uint32_t t1 = a1;
+
   uint32_t v0;
   if (v1 == 0) return t0;
   a0 += 12; a1 += 12;
@@ -17254,16 +17257,16 @@ uint32_t heap_serialize_tag_01000010(uint32_t param_1,uint32_t param_2,uint32_t 
  * Eight single-word lookups alternating arg4/arg3 tables
  * (-14..0 step 2). Tag bytes 8/0x38 at dst+0x1b/0x1f/0x3f/0x43
  * (a0 = cur+0xc). Returns cur + count*0x6c. */
-uint32_t heap_serialize_tag_01000014(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_01000014(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t t1 = param_2;
-  uint32_t v1 = param_5;
+
+
+
+
+  uint32_t t0 = a0;
+  uint32_t t1 = a1;
+
   uint32_t v0;
   if (v1 == 0) return t0;
   a0 += 12; a1 += 18;
@@ -17299,16 +17302,16 @@ uint32_t heap_serialize_tag_01000014(uint32_t param_1,uint32_t param_2,uint32_t 
  * 0x1c, aux src+24. Five single-word lookups (arg4 for -8, arg3
  * for -6/-4/-2/0). Tag bytes 8/0x38 at dst+0x1b/0x1f/0x3f/0x43
  * (a0 = cur+0xc). Returns cur + count*0x6c. */
-uint32_t heap_serialize_tag_01000012(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_01000012(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t t1 = param_2;
-  uint32_t v1 = param_5;
+
+
+
+
+  uint32_t t0 = a0;
+  uint32_t t1 = a1;
+
   uint32_t v0;
   if (v1 == 0) return t0;
   a0 += 12; a1 += 24;
@@ -17341,16 +17344,16 @@ uint32_t heap_serialize_tag_01000012(uint32_t param_1,uint32_t param_2,uint32_t 
  * aux src+30. Eight single-word lookups alternating arg4/arg3
  * tables (-14..0 step 2). Tag bytes 8/0x38 at dst+0x27/0x2b/0x4b/0x4f
  * (a0 = cur+0xc). Returns cur + count*0x78. */
-uint32_t heap_serialize_tag_01000016(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_01000016(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t t1 = param_2;
-  uint32_t v1 = param_5;
+
+
+
+
+  uint32_t t0 = a0;
+  uint32_t t1 = a1;
+
   uint32_t v0;
   if (v1 == 0) return t0;
   a0 += 12; a1 += 30;
@@ -17390,20 +17393,20 @@ uint32_t heap_serialize_tag_01000016(uint32_t param_1,uint32_t param_2,uint32_t 
  * arg3 for -4/-2/0). Tail adds param_6 to x u16s (t0-0x18/+8) and
  * param_7 to y u16s (t0-0x20/+0). Tag bytes 7/0x24 at
  * dst+0x13/0x17/0x33/0x37 (t0 = cur+0x3e). Returns cur + count*0x50. */
-uint32_t heap_serialize_tag_01000009(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7)
+uint32_t heap_serialize_tag_01000009(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t v1,uint32_t t7,
+                     uint32_t t6)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t2 = param_1;
-  uint32_t t3 = param_2;
-  uint32_t v1 = param_5;
-  uint32_t t7 = param_6;
-  uint32_t t6 = param_7;
-  uint32_t t0 = param_1 + 62;
+
+
+
+
+  uint32_t t2 = a0;
+  uint32_t t3 = a1;
+
+
+
+  uint32_t t0 = a0 + 62;
   uint32_t v0;
   if (v1 == 0) return t2;
   a1 += 18;
@@ -17444,19 +17447,19 @@ uint32_t heap_serialize_tag_01000009(uint32_t param_1,uint32_t param_2,uint32_t 
  * (+4,+6,+8,+10,+12,+14). Tail adds param_6 to x u16s (a0-0x1c/+0xc)
  * and param_7 to y u16s (a0-0x28/+0). Tag bytes 9/0x34 at
  * dst+0x1b/0x1f/0x43/0x47 (a0 = cur+0x4e). Returns cur + count*0x68. */
-uint32_t heap_serialize_tag_0100000d(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7)
+uint32_t heap_serialize_tag_0100000d(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t t0,uint32_t t6,
+                     uint32_t t5)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t1 = param_1;
-  uint32_t t2 = param_2;
-  uint32_t t0 = param_5;
-  uint32_t t6 = param_6;
-  uint32_t t5 = param_7;
+
+
+
+
+  uint32_t t1 = a0;
+  uint32_t t2 = a1;
+
+
+
   uint32_t v0, v1;
   if (t0 == 0) return t1;
   a0 += 78; a1 += 8;
@@ -17500,19 +17503,19 @@ uint32_t heap_serialize_tag_0100000d(uint32_t param_1,uint32_t param_2,uint32_t 
  * Tail adds param_6 to x u16s (t0-0x20/+8) and param_7 to y u16s
  * (t0-0x28/+0). Tag bytes 9/0x2c at dst+0x1b/0x1f/0x43/0x47
  * (t0 = cur+0x4a). Returns cur + count*0x64. */
-uint32_t heap_serialize_tag_01000011(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7)
+uint32_t heap_serialize_tag_01000011(uint32_t t2,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t t1,uint32_t t7,
+                     uint32_t t6)
 {
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t2 = param_1;
-  uint32_t t3 = param_2;
-  uint32_t t1 = param_5;
-  uint32_t t7 = param_6;
-  uint32_t t6 = param_7;
-  uint32_t t0 = param_1 + 74;
+
+
+
+
+  uint32_t t3 = a1;
+
+
+
+  uint32_t t0 = t2 + 74;
   uint32_t v0;
   if (t1 == 0) return t2;
   a1 += 22;
@@ -17556,19 +17559,19 @@ uint32_t heap_serialize_tag_01000011(uint32_t param_1,uint32_t param_2,uint32_t 
  * (-16..0 step 2). Tail adds param_6 to x u16s (t0-0x28/+0xc) and
  * param_7 to y u16s (t0-0x34/+0). Tag bytes 12/0x3c at
  * dst+0x1b/0x1f/0x57/0x5b (t0 = cur+0x62). Returns cur + count*0x88. */
-uint32_t heap_serialize_tag_01000015(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7)
+uint32_t heap_serialize_tag_01000015(uint32_t t2,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t t1,uint32_t t7,
+                     uint32_t t6)
 {
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t2 = param_1;
-  uint32_t t3 = param_2;
-  uint32_t t1 = param_5;
-  uint32_t t7 = param_6;
-  uint32_t t6 = param_7;
-  uint32_t t0 = param_1 + 98;
+
+
+
+
+  uint32_t t3 = a1;
+
+
+
+  uint32_t t0 = t2 + 98;
   uint32_t v0;
   if (t1 == 0) return t2;
   a1 += 26;

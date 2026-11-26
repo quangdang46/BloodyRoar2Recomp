@@ -4,6 +4,35 @@
  * DAT_ symbols are lvalue macros yielding guest-field pointers;
  * _DAT_801f04a4 is an int32_t* guest pointer. FUN_ calls bind to
  * host hooks (declared below; guest names preserved for audit). */
+
+/* Observed field map (from usage in this file; offsets are guest
+ * byte offsets, names are descriptive not official):
+ *
+ * ctrl (fighter state record):
+ *   +0x02 fighter slot, +0x05 mode flags, +0x20 own actor obj guest
+ *   ptr, +0x2c foe ctrl guest ptr, +0x38 hit/motion obj guest ptr
+ *   (motion_p), +0x40 skeleton/joint pose guest ptr, +0x48 parts
+ *   table guest ptr.
+ *   +0x4e facing/yaw, +0x50/+0x4c euler pair, +0x54/+0x58/+0x5c/
+ *   +0x60/+0x64/+0x68/+0x6c flag words (snapshotted as fXX locals).
+ *   +0x70 turn-rate value, +0x74 turn rate, +0x7a held-button mask,
+ *   +0x7c/+0x80/+0x82/+0x84 button words (btn/ba/bb/cat/cat2).
+ *   +0x86/+0x88 frame-step pair, +0x8a/+0x8c/+0x8e/+0x90..+0xa4
+ *   velocity/impulse block, +0xaa/+0xac/+0xae/+0xb0/+0xb2/+0xb4/
+ *   +0xb6/+0xb8/+0xba/+0xbc/+0xbe timers & gauges, +0xc0..+0xd8
+ *   action/velocity scratch, +0xd4 countdown, +0xd6 launch timer,
+ *   +0xe5 counter, +0xfc alt frame step.
+ *
+ * motion (per-fighter motion/anim state):
+ *   +0x80 current action, +0x82 next/pending action, +0x84 event
+ *   stream pc, +0x88 blend timer, +0x90 stream countdown,
+ *   +0x92/+0x98 anim channels, +0xb0 keyframe table guest ptr,
+ *   +0xb2/+0xb4/+0xb8/+0xbe anim params, +0xc0..+0xce keyframe
+ *   timeline (pos/step/window), +0xd0..+0xdc motion position,
+ *   +0xe4 yaw rate, +0xf8..+0x100 keyframe record slots,
+ *   +0x106/+0x108 steering offsets, +0x10a/+0x10c/+0x10e/+0x110/
+ *   +0x114/+0x116 timers, +0x24 divisor (mass-like, +4000 bias).
+ */
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -114,6 +143,119 @@ undefined8 vec2_rot_lut(undefined4,int);
 void dir_rotate_acc(int,int,byte*,byte*);
 void dir_rotate_set(int,int,byte*,byte*);
 
+
+/* ---- guest globals + prototypes (consolidated) ---- */
+extern uint8_t *g_DAT_801b4e2c, *g_DAT_801b4e38, *g_DAT_801b4e44,
+              *g_DAT_801b4e50, *g_DAT_801b4e5c;
+#define DAT_801b4e2c   (*g_DAT_801b4e2c)
+#define DAT_801b4e38   (*g_DAT_801b4e38)
+#define DAT_801b4e44   (*g_DAT_801b4e44)
+#define DAT_801b4e50   (*g_DAT_801b4e50)
+#define DAT_801b4e5c   (*g_DAT_801b4e5c)
+extern void motion_turn_update(byte*,byte*);
+int range_circle_test(int,int,uint*,int);
+void deferred_cmd_post(uint,int,short);
+extern void action_commit(byte*,byte*);
+
+extern void launch_vel_update(byte*,byte*);
+extern void ev_stream_dispatch(byte *ctrl,byte *motion);
+extern void action_switch_guest(int ctrl,int *motion,int act);
+extern void slot_apply_guest(int ctrl,int motion);
+extern void part_record_reset(undefined2 *ctrl);
+extern ushort * ev5_action_select(int ctrl,int motion,ushort *stream);
+void part_matrix_compute(undefined4 *mat,byte *parts,short *euler,undefined4 angle);
+uint * matrix_vec3_apply(undefined4 *mat,uint *vec);
+extern uint8_t *g_DAT_1f8003a0,*g_DAT_1f8003c0;
+#define DAT_1f8003a0 (*g_DAT_1f8003a0)
+#define DAT_1f8003c0 (*g_DAT_1f8003c0)
+typedef uint8_t *evhandler_t(uint8_t *ctrl, uint8_t *motion, uint32_t pc_g);
+extern evhandler_t *PTR_FUN_801b4e68[];
+extern void FUN_801851d8(void);
+extern int trig_cos(int);
+extern int trig_sin(uint);
+extern void gte_mat_vec_swap(void*,void*,void*);
+extern void setCopReg(int,int,uint);
+extern int getCopReg(int,int);
+extern void copFunction(int,uint);
+extern void setCopControlWord(int,int,uint);
+extern uint32_t *g__DAT_1f8003a0,*g__DAT_1f8003a4,*g__DAT_1f8003a8,*g__DAT_1f8003ac,
+  *g__DAT_1f8003b0,*g__DAT_1f8003b4,*g__DAT_1f8003b8,*g__DAT_1f8003bc,
+  *g__DAT_1f8003c0,*g__DAT_1f8003c4,*g__DAT_1f8003c8,*g__DAT_1f8003cc,
+  *g__DAT_1f8003d0,*g__DAT_1f8003d4,*g__DAT_1f8003d8,*g__DAT_1f8003dc,
+  *g__DAT_1f8003e0,*g__DAT_1f8003e4,*g__DAT_1f8003e8,*g__DAT_1f8003ec,
+  *g__DAT_1f8003f0,*g__DAT_1f8003f4,*g__DAT_1f8003f8,*g__DAT_1f8003fc;
+#define _DAT_1f8003a0 (*g__DAT_1f8003a0)
+#define _DAT_1f8003a4 (*g__DAT_1f8003a4)
+#define _DAT_1f8003a8 (*g__DAT_1f8003a8)
+#define _DAT_1f8003ac (*g__DAT_1f8003ac)
+#define _DAT_1f8003b0 (*(int16_t *)g__DAT_1f8003b0) /* guest lh/sh @0x1f8003b0 (0x80185048) */
+#define _DAT_1f8003b4 (*g__DAT_1f8003b4)
+#define _DAT_1f8003b8 (*g__DAT_1f8003b8)
+#define _DAT_1f8003bc (*g__DAT_1f8003bc)
+#define _DAT_1f8003c0 (*(int16_t *)g__DAT_1f8003c0) /* guest sh @0x1f8003c0 (0x80185048) */
+#define _DAT_1f8003c4 (*(int16_t *)g__DAT_1f8003c4) /* guest sh @0x1f8003c4 */
+#define _DAT_1f8003c8 (*(int16_t *)g__DAT_1f8003c8) /* guest sh @0x1f8003c8 */
+#define _DAT_1f8003cc (*(int16_t *)g__DAT_1f8003cc) /* guest sh @0x1f8003cc */
+#define _DAT_1f8003d0 (*(int16_t *)g__DAT_1f8003d0) /* guest sh @0x1f8003d0 */
+#define _DAT_1f8003d4 (*g__DAT_1f8003d4)
+#define _DAT_1f8003d8 (*g__DAT_1f8003d8)
+#define _DAT_1f8003dc (*g__DAT_1f8003dc)
+#define _DAT_1f8003e0 (*g__DAT_1f8003e0)
+#define _DAT_1f8003e4 (*g__DAT_1f8003e4)
+#define _DAT_1f8003e8 (*g__DAT_1f8003e8)
+#define _DAT_1f8003ec (*g__DAT_1f8003ec)
+#define _DAT_1f8003f0 (*g__DAT_1f8003f0)
+#define _DAT_1f8003f4 (*g__DAT_1f8003f4)
+#define _DAT_1f8003f8 (*g__DAT_1f8003f8)
+#define _DAT_1f8003fc (*g__DAT_1f8003fc)
+#define _DAT_1f8003a2 (*(uint16_t *)&_DAT_1f8003a0)
+#define _DAT_1f8003a6 (*(uint16_t *)&_DAT_1f8003a4)
+#define _DAT_1f8003aa (*(uint16_t *)&_DAT_1f8003a8)
+#define _DAT_1f8003ae (*(uint16_t *)&_DAT_1f8003ac)
+#define _DAT_1f8003b2 (*(uint16_t *)&_DAT_1f8003b0)
+#define _DAT_1f8003b6 (*(uint16_t *)&_DAT_1f8003b4)
+#define _DAT_1f8003ba (*(uint16_t *)&_DAT_1f8003b8)
+#define _DAT_1f8003be (*(uint16_t *)&_DAT_1f8003bc)
+#define _DAT_1f8003c2 (*(uint16_t *)&_DAT_1f8003c0)
+#define _DAT_1f8003c6 (*(uint16_t *)&_DAT_1f8003c4)
+#define _DAT_1f8003ca (*(uint16_t *)&_DAT_1f8003c8)
+#define _DAT_1f8003ce (*(uint16_t *)&_DAT_1f8003cc)
+#define _DAT_1f8003d2 (*(uint16_t *)&_DAT_1f8003d0)
+#define _DAT_1f8003d6 (*(uint16_t *)&_DAT_1f8003d4)
+#define _DAT_1f8003da (*(uint16_t *)&_DAT_1f8003d8)
+#define _DAT_1f8003de (*(uint16_t *)&_DAT_1f8003dc)
+
+/* ---- action-commit + state helpers (action_commit family) ---- */
+extern void motion_blend_frame(byte*,byte*);
+extern int  atan2_lut(int,int);
+extern void gte_op_a00428(int*,int*);
+extern int32_t FUN_80194500(uint32_t);
+undefined2 *euler_rotmat(uint,uint,uint,undefined2*);
+void hitrec_table_clear(int);
+void table_1f0ae0_clear(int);
+extern void fighter_reset_fx(int,byte*);
+extern void keyframe_blend_apply(byte*,byte*);
+void keyframe_advance(byte*,byte*);
+void skeleton_pose_step(byte*,undefined2*,byte*,int);
+extern void fx_record_alloc(int,int,int,int,void*);
+extern void quad_fx_spawn(int,int,undefined4*,undefined2,ushort,int,int);
+extern void triple_track_spawn(int,int,int);
+undefined8 vec2_rot_lut(undefined4,int);
+void anim_lerp_scalar(short*,short,int,int);
+void anim_lerp_vec3(short*,short*,int,int,short);
+void anim_lerp_vec3_raw(short*,short*,int,int);
+void anim_lerp_packed4(short*,ushort*,int,int);
+extern void anim_lerp_aux(byte*,int,int,int);
+void anim_lerp_packed3(short*,ushort*,int,int);
+uint *rotmat_rtps_build(uint,uint*);
+
+
+extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+extern uint32_t br2_gaddr(const void *p);
+extern uint32_t call_guest4(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+extern void debug_server_poll(void);
+
 /* Faithful signed 32/32 `div` LO result. Guest div-by-zero yields
  * LO = (dividend<0) ? 1 : -1 (no trap); INT_MIN/-1 yields INT_MIN.
  * Use wherever the guest emits `div`/`break 7`-free signed divide. */
@@ -124,9 +266,16 @@ static int32_t mips_div_lo(int32_t num, int32_t den)
     return num / den;
 }
 
+/* action_resolve - pick next fighter action from input/state flag
+ * words; returns action id (or -1 = keep current). */
 int32_t action_resolve(byte *ctrl, uint8_t *motion)
 {
-
+  /* Locals: fXX = snapshot of the ctrl+0xXX flag word (0x58 request,
+   * 0x5c state, 0x60/0x64 mode, 0x68 temp, 0x6c motion-state).
+   * btn/ba/bb = button masks; cat/cat2 = direction nibbles from
+   * ctrl+0x7c/+0x82; act/act2 = primary/secondary action candidates;
+   * motion_p = ctrl+0x38 motion object; t2 = ctrl+0x2c foe ctrl;
+   * cnt = ctrl+0xce timer; sv/w/zb/idx = scratch. */
   short sv;
   ushort btn;
   ushort cnt;
@@ -177,6 +326,8 @@ int32_t action_resolve(byte *ctrl, uint8_t *motion)
     ctrl[0xce] = 0;
     ctrl[0xcf] = 0;
   }
+  /* juggle/launch pin: zero x-vel, force hop velocity, pick juggle
+   * action (0x6b-0x70) by turn rate sign/magnitude. */
   if ((f6c & 0x100000) != 0) {
     if (*(short *)(motion_p + 0xd6) < 0x100) {
       *(undefined2 *)(motion_p + 0xd6) = 0;
@@ -237,6 +388,8 @@ int32_t action_resolve(byte *ctrl, uint8_t *motion)
     }
     goto LAB_80176d24;
   }
+  /* pending-hit window: return stored follow-up action from
+   * motion_p+0x24 after clearing hit records. */
   if ((f6c & 0x400000) != 0) {
     *(uint *)(ctrl + 0x6c) = *(uint *)(ctrl + 0x6c) & 0xffbfffff;
     sv = *(short *)(motion_p + 0x24);
@@ -246,6 +399,8 @@ int32_t action_resolve(byte *ctrl, uint8_t *motion)
     hit_chain_clear(ctrl);
     return sv + 0x90;
   }
+  /* launched/hitstun: decay timer, reset or clear hits, return
+   * action from the motion_p+4 table indexed by +0x2c. */
   if ((f6c & 0x800000) != 0) {
     ctrl[0xd4] = 0;
     ctrl[0xd5] = 0;
@@ -262,6 +417,8 @@ int32_t action_resolve(byte *ctrl, uint8_t *motion)
     *(undefined2 *)(&DAT_801f4d76 + (uint)ctrl[2] * 0xbc) = 0xfff6;
     return *(short *)guest_at((uint32_t)(*(short *)(motion_p + 0x2c) * 2 + *(int *)(motion_p + 4) + -0x1a0)) + 0x90;
   }
+  /* main dispatch: f58 request-flag word (sign clear = normal
+   * path; the nested tree maps flag combos to action ids). */
   if ((f58 & 0x40000000) == 0) {
     if ((f58 & 0x100000) == 0) {
       if ((f5c & 0x4000000) != 0) goto LAB_801766e8;
@@ -310,6 +467,9 @@ int32_t action_resolve(byte *ctrl, uint8_t *motion)
                             *(uint *)(ctrl + 0x5c) = *(uint *)(ctrl + 0x5c) | 1;
                           }
                           *(uint *)(ctrl + 0x5c) = *(uint *)(ctrl + 0x5c) | 0x4000;
+                          /* neutral stance: cat nibble (ctrl+0x7c
+                           * &0xf000) selects stand/walk action;
+                           * cat2 (+0x82 nibble) selects alt actions. */
                           if (cat == 0x6000) {
                             act = 0xd;
                           }
@@ -426,7 +586,7 @@ int32_t action_resolve(byte *ctrl, uint8_t *motion)
                           *(uint *)(ctrl + 0x5c) = *(uint *)(ctrl + 0x5c) | 2;
                         }
                         f68 = *(uint *)(ctrl + 0x5c);
-                        goto code_r0x80177a7c;
+                        goto LAB_80177a7c;
                       }
                     }
                   }
@@ -463,6 +623,8 @@ LAB_80177940:
                     }
                   }
                   else if (0x800 < f68) {
+                    /* f68 = f58&0x2800 direction class: 0x800/0x2000/
+                     * 0x2800 each gate the same press-edge flag set. */
                     if (f68 == 0x2000) {
                       if (((((*(ushort *)(ctrl + 0x7c) & 0x800) != 0) &&
                            ((f60 & 0x1000000) == 0)) && ((f5c & 0x1400) == 0x1000)) &&
@@ -479,6 +641,9 @@ LAB_80177940:
                 }
               }
             }
+            /* special request path (f58&0x30000 set, f60&0x20
+             * clear): juggle-pin bounds clamp vs _DAT_801f04a4,
+             * else directional action decode below. */
             else {
               if ((f58 & 0x8000000) != 0) {
                 if ((f5c & 0x80080) != 0x80080) {
@@ -562,6 +727,9 @@ LAB_80177940:
                 }
                 return 0x6f;
               }
+              /* direction-nibble -> action table: cat/cat2
+               * (+0xc0 countdown variant) map to 0x6b-0x84 ids;
+               * ctrl+0x70 turn rate picks weak/strong variant. */
               *(uint *)(ctrl + 0x5c) = *(uint *)(ctrl + 0x5c) | 0x8000;
               cat2 = *(ushort *)(ctrl + 0xc0);
               if (*(short *)(ctrl + 0xc0) < 1) {
@@ -813,9 +981,11 @@ LAB_80177350:
           }
         }
       }
+      /* f58 sign bit set: forced/priority state - just set the
+       * request-ack bit and fall through to the tail. */
       else if ((int)f58 < 0) {
         f68 = *(uint *)(ctrl + 0x5c) & 0xfdfffffb;
-code_r0x80177a7c:
+LAB_80177a7c:
         *(uint *)(ctrl + 0x5c) = f68 | 1;
       }
       else {
@@ -1199,6 +1369,8 @@ LAB_80178120:
         (&DAT_801f596d)[(uint)ctrl[2] * 2] = 0x3c;
         (&DAT_801f5971)[(uint)ctrl[2] * 2] = 1;
       }
+      /* attack/cancel selection tail: act2<0 keeps act, else
+       * returns act2+0x90 (extended action range). */
 LAB_8017862c:
       if (act2 < 0) {
         return act;
@@ -1221,6 +1393,8 @@ LAB_8017862c:
     }
     if ((f6c & 0x80000) == 0) goto LAB_801766c8;
   }
+  /* f58 high bit set: special-state tail - juggle timer, then
+   * get-up path or -1. */
   else {
     if ((f6c & 0x4000000) != 0) {
       *(uint *)(ctrl + 0x6c) = *(uint *)(ctrl + 0x6c) & 0xfbffffff;
@@ -1235,6 +1409,9 @@ LAB_801766c8:
         *(uint *)(ctrl + 0x5c) = *(uint *)(ctrl + 0x5c) & 0xfbffffff;
         return -1;
       }
+      /* get-up/knockdown path: clear flags, mark slot, reset or
+       * clear hits, then pick directional get-up action (0x30-0x5b
+       * range) from f68/f58 nibble combos. */
 LAB_801766e8:
       *(uint *)(ctrl + 0x5c) = *(uint *)(ctrl + 0x5c) & 0xfbffffff;
       *(uint *)(ctrl + 0x6c) = *(uint *)(ctrl + 0x6c) & 0xfff7efff;
@@ -1439,124 +1616,51 @@ LAB_80176d24:
 
 /* FUN_801787dc — per-fighter frame update. Calls the resolver and
  * applies its result to motion+0x80, then physics/anim tail. */
-extern uint8_t *g_DAT_801b4e2c, *g_DAT_801b4e38, *g_DAT_801b4e44,
-              *g_DAT_801b4e50, *g_DAT_801b4e5c;
-#define DAT_801b4e2c   (*g_DAT_801b4e2c)
-#define DAT_801b4e38   (*g_DAT_801b4e38)
-#define DAT_801b4e44   (*g_DAT_801b4e44)
-#define DAT_801b4e50   (*g_DAT_801b4e50)
-#define DAT_801b4e5c   (*g_DAT_801b4e5c)
-extern void motion_turn_update(byte*,byte*);
-int range_circle_test(int,int,uint*,int);
-void deferred_cmd_post(uint,int,short);
-extern void action_commit(byte*,byte*);
-
-extern void launch_vel_update(byte*,byte*);
-extern void ev_stream_dispatch(byte *ctrl,byte *motion);
-extern void action_switch_guest(int ctrl,int *motion,int act);
-extern void slot_apply_guest(int ctrl,int motion);
-extern void part_record_reset(undefined2 *ctrl);
-extern ushort * ev5_action_select(int ctrl,int motion,ushort *stream);
-void part_matrix_compute(undefined4 *mat,byte *parts,short *euler,undefined4 angle);
-uint * matrix_vec3_apply(undefined4 *mat,uint *vec);
-extern uint8_t *g_DAT_1f8003a0,*g_DAT_1f8003c0;
-#define DAT_1f8003a0 (*g_DAT_1f8003a0)
-#define DAT_1f8003c0 (*g_DAT_1f8003c0)
-typedef uint8_t *evhandler_t(uint8_t *ctrl, uint8_t *motion, uint32_t pc_g);
-extern evhandler_t *PTR_FUN_801b4e68[];
-extern void FUN_801851d8();
-extern int trig_cos();
-extern int trig_sin();
-extern void gte_mat_vec_swap();
-extern void setCopReg(int,int,uint);
-extern int getCopReg(int,int);
-extern void copFunction(int,int);
-extern void setCopControlWord(int,int,uint);
-extern uint32_t *g__DAT_1f8003a0,*g__DAT_1f8003a4,*g__DAT_1f8003a8,*g__DAT_1f8003ac,
-  *g__DAT_1f8003b0,*g__DAT_1f8003b4,*g__DAT_1f8003b8,*g__DAT_1f8003bc,
-  *g__DAT_1f8003c0,*g__DAT_1f8003c4,*g__DAT_1f8003c8,*g__DAT_1f8003cc,
-  *g__DAT_1f8003d0,*g__DAT_1f8003d4,*g__DAT_1f8003d8,*g__DAT_1f8003dc,
-  *g__DAT_1f8003e0,*g__DAT_1f8003e4,*g__DAT_1f8003e8,*g__DAT_1f8003ec,
-  *g__DAT_1f8003f0,*g__DAT_1f8003f4,*g__DAT_1f8003f8,*g__DAT_1f8003fc;
-#define _DAT_1f8003a0 (*g__DAT_1f8003a0)
-#define _DAT_1f8003a4 (*g__DAT_1f8003a4)
-#define _DAT_1f8003a8 (*g__DAT_1f8003a8)
-#define _DAT_1f8003ac (*g__DAT_1f8003ac)
-#define _DAT_1f8003b0 (*(int16_t *)g__DAT_1f8003b0) /* guest lh/sh @0x1f8003b0 (0x80185048) */
-#define _DAT_1f8003b4 (*g__DAT_1f8003b4)
-#define _DAT_1f8003b8 (*g__DAT_1f8003b8)
-#define _DAT_1f8003bc (*g__DAT_1f8003bc)
-#define _DAT_1f8003c0 (*(int16_t *)g__DAT_1f8003c0) /* guest sh @0x1f8003c0 (0x80185048) */
-#define _DAT_1f8003c4 (*(int16_t *)g__DAT_1f8003c4) /* guest sh @0x1f8003c4 */
-#define _DAT_1f8003c8 (*(int16_t *)g__DAT_1f8003c8) /* guest sh @0x1f8003c8 */
-#define _DAT_1f8003cc (*(int16_t *)g__DAT_1f8003cc) /* guest sh @0x1f8003cc */
-#define _DAT_1f8003d0 (*(int16_t *)g__DAT_1f8003d0) /* guest sh @0x1f8003d0 */
-#define _DAT_1f8003d4 (*g__DAT_1f8003d4)
-#define _DAT_1f8003d8 (*g__DAT_1f8003d8)
-#define _DAT_1f8003dc (*g__DAT_1f8003dc)
-#define _DAT_1f8003e0 (*g__DAT_1f8003e0)
-#define _DAT_1f8003e4 (*g__DAT_1f8003e4)
-#define _DAT_1f8003e8 (*g__DAT_1f8003e8)
-#define _DAT_1f8003ec (*g__DAT_1f8003ec)
-#define _DAT_1f8003f0 (*g__DAT_1f8003f0)
-#define _DAT_1f8003f4 (*g__DAT_1f8003f4)
-#define _DAT_1f8003f8 (*g__DAT_1f8003f8)
-#define _DAT_1f8003fc (*g__DAT_1f8003fc)
-#define _DAT_1f8003a2 (*(uint16_t *)&_DAT_1f8003a0)
-#define _DAT_1f8003a6 (*(uint16_t *)&_DAT_1f8003a4)
-#define _DAT_1f8003aa (*(uint16_t *)&_DAT_1f8003a8)
-#define _DAT_1f8003ae (*(uint16_t *)&_DAT_1f8003ac)
-#define _DAT_1f8003b2 (*(uint16_t *)&_DAT_1f8003b0)
-#define _DAT_1f8003b6 (*(uint16_t *)&_DAT_1f8003b4)
-#define _DAT_1f8003ba (*(uint16_t *)&_DAT_1f8003b8)
-#define _DAT_1f8003be (*(uint16_t *)&_DAT_1f8003bc)
-#define _DAT_1f8003c2 (*(uint16_t *)&_DAT_1f8003c0)
-#define _DAT_1f8003c6 (*(uint16_t *)&_DAT_1f8003c4)
-#define _DAT_1f8003ca (*(uint16_t *)&_DAT_1f8003c8)
-#define _DAT_1f8003ce (*(uint16_t *)&_DAT_1f8003cc)
-#define _DAT_1f8003d2 (*(uint16_t *)&_DAT_1f8003d0)
-#define _DAT_1f8003d6 (*(uint16_t *)&_DAT_1f8003d4)
-#define _DAT_1f8003da (*(uint16_t *)&_DAT_1f8003d8)
-#define _DAT_1f8003de (*(uint16_t *)&_DAT_1f8003dc)
-
+/* fighter_frame - per-fighter frame update: resource drain,
+ * floor/height clamps, hit-zone tests, turn, action resolve+commit. */
 void fighter_frame(byte *ctrl, uint8_t *motion)
 {
-
-  byte bidx;
+  /* Locals: motion_p = ctrl+0x38 motion object; dv = short scratch
+   * (gauge delta, zone result, action id); uv = uint scratch (flag
+   * words, zone results, deferred-cmd arg, resolver result); z2/z3 =
+   * hit-zone test results; tab/auxv/fidx = deferred-cmd table
+   * lookup; ia/ib/ic = int scratch (guest addrs, actor ptr,
+   * products); acc = +0x8c accumulator; downed = KO flag. */
+  byte fidx;
   bool downed;
-  short d;
+  short dv;
   ushort acc;
-  int t3;
-  uint fl;
-  uint hit2;
-  uint hit3;
-  undefined *tbl;
-  int t;
-  undefined4 carg;
-  int t2;
+  int ic;
+  uint uv;
+  uint z2;
+  uint z3;
+  undefined *tab;
+  int ia;
+  undefined4 auxv;
+  int ib;
   byte *motion_p;
   
-  t = *(char *)(motion + 0x98) * 8;
-  t2 = t + -0x7fe4eadc;
+  ia = *(char *)(motion + 0x98) * 8;
+  ib = ia + -0x7fe4eadc;
   motion_p = (byte *)guest_at(*(uint32_t *)(ctrl + 0x38));
   downed = false;
   if (ctrl[1] == '\0') {
-    d = *(short *)(ctrl + 200);
-    t3 = (int)d;
-    if (t3 < 0) {
+    dv = *(short *)(ctrl + 200);
+    ic = (int)dv;
+    if (ic < 0) {
       if ((DAT_801b55d0 & 1) != 0) {
         (&DAT_801f596c)[(uint)(byte)ctrl[2] * 2] = 5;
-        (&DAT_801f5970)[(uint)(byte)ctrl[2] * 2] = '@' - (char)d;
+        (&DAT_801f5970)[(uint)(byte)ctrl[2] * 2] = '@' - (char)dv;
       }
     }
-    else if (t3 != 0) {
-      t3 = t3 * 4 + 0x40;
-      if (0xff < t3) {
-        t3 = 0xff;
+    else if (ic != 0) {
+      ic = ic * 4 + 0x40;
+      if (0xff < ic) {
+        ic = 0xff;
       }
       if ((DAT_801b55d0 & 1) != 0) {
         (&DAT_801f596c)[(uint)(byte)ctrl[2] * 2] = 0xf;
-        (&DAT_801f5970)[(uint)(byte)ctrl[2] * 2] = (char)t3;
+        (&DAT_801f5970)[(uint)(byte)ctrl[2] * 2] = (char)ic;
         (&DAT_801f596d)[(uint)(byte)ctrl[2] * 2] = 0xf;
         (&DAT_801f5971)[(uint)(byte)ctrl[2] * 2] = 1;
       }
@@ -1574,9 +1678,11 @@ void fighter_frame(byte *ctrl, uint8_t *motion)
     ctrl[0xc9] = '\0';
   }
   else {
+    /* gauge block (ctrl+0x54 bit1 clear): decay +0xd8 bonus into
+     * +0xd6 launch timer, then regen/clamp +0xd6 vs +0x3bff. */
     if ((*(uint *)(ctrl + 0x54) & 2) == 0) {
-      d = *(short *)(ctrl + 0xd8);
-      if (d < 0) {
+      dv = *(short *)(ctrl + 0xd8);
+      if (dv < 0) {
         if (-1 < *(short *)(ctrl + 0xd6)) {
           *(short *)(ctrl + 0xd6) = *(short *)(ctrl + 0xd6) + *(short *)(ctrl + 0xd8);
           ctrl[0xd8] = '\0';
@@ -1587,14 +1693,14 @@ void fighter_frame(byte *ctrl, uint8_t *motion)
           }
         }
       }
-      else if (0 < d) {
+      else if (0 < dv) {
         if (*(short *)(ctrl + 0xd6) < 0) {
           ctrl[0xd8] = '\0';
           ctrl[0xd9] = '\0';
         }
         else {
           *(ushort *)(ctrl + 0xd6) =
-               *(short *)(ctrl + 0xd6) + d * (ushort)*(byte *)((char *)guest_at(*(uint32_t *)(motion + 0xc4)) + 3);
+               *(short *)(ctrl + 0xd6) + dv * (ushort)*(byte *)((char *)guest_at(*(uint32_t *)(motion + 0xc4)) + 3);
           ctrl[0xd8] = '\0';
           ctrl[0xd9] = '\0';
           if (0x3bff < *(short *)(ctrl + 0xd6)) {
@@ -1611,9 +1717,9 @@ void fighter_frame(byte *ctrl, uint8_t *motion)
           }
         }
         else {
-          d = *(short *)(ctrl + 0xd6) + (ushort)*(byte *)((char *)guest_at(*(uint32_t *)(motion + 0xc4)) + 3);
-          *(short *)(ctrl + 0xd6) = d;
-          if (0x3bff < d) {
+          dv = *(short *)(ctrl + 0xd6) + (ushort)*(byte *)((char *)guest_at(*(uint32_t *)(motion + 0xc4)) + 3);
+          *(short *)(ctrl + 0xd6) = dv;
+          if (0x3bff < dv) {
             ctrl[0xd6] = -1;
             ctrl[0xd7] = ';';
           }
@@ -1625,30 +1731,30 @@ void fighter_frame(byte *ctrl, uint8_t *motion)
     }
     if ((((ctrl[5] & 0x10U) != 0) && ((*(uint *)(ctrl + 0x58) & 0x10008000) == 0)) &&
        (*(short *)(ctrl + 0xae) < *(short *)(ctrl + 0xac))) {
-      d = *(short *)(ctrl + 0xfa);
-      *(short *)(ctrl + 0xfa) = d + *(short *)(ctrl + 0xf8);
-      t3 = (int)(short)(d + *(short *)(ctrl + 0xf8));
-      if (0xff < t3) {
-        if (t3 < 0) {
-          t3 = t3 + 0xff;
+      dv = *(short *)(ctrl + 0xfa);
+      *(short *)(ctrl + 0xfa) = dv + *(short *)(ctrl + 0xf8);
+      ic = (int)(short)(dv + *(short *)(ctrl + 0xf8));
+      if (0xff < ic) {
+        if (ic < 0) {
+          ic = ic + 0xff;
         }
-        t3 = (uint)*(ushort *)(ctrl + 0xac) - (t3 >> 8);
-        *(short *)(ctrl + 0xac) = (short)t3;
-        if (t3 * 0x10000 >> 0x10 < (int)*(short *)(ctrl + 0xae)) {
+        ic = (uint)*(ushort *)(ctrl + 0xac) - (ic >> 8);
+        *(short *)(ctrl + 0xac) = (short)ic;
+        if (ic * 0x10000 >> 0x10 < (int)*(short *)(ctrl + 0xae)) {
           *(undefined2 *)(ctrl + 0xac) = *(undefined2 *)(ctrl + 0xae);
         }
         *(ushort *)(ctrl + 0xfa) = (ushort)(byte)ctrl[0xfa];
       }
     }
-    d = *(short *)(ctrl + 200);
+    dv = *(short *)(ctrl + 200);
     if (*(short *)(ctrl + 200) < 0) {
       if ((*(uint *)(ctrl + 0x54) & 2) == 0) {
-        *(short *)(ctrl + 0xac) = *(short *)(ctrl + 0xac) - d;
+        *(short *)(ctrl + 0xac) = *(short *)(ctrl + 0xac) - dv;
         *(short *)(ctrl + 0xae) =
              *(short *)(ctrl + 0xae) - (short)((*(short *)(ctrl + 200) * 0x3c) / 100);
       }
       else {
-        *(short *)(ctrl + 0xaa) = *(short *)(ctrl + 0xaa) - d;
+        *(short *)(ctrl + 0xaa) = *(short *)(ctrl + 0xaa) - dv;
       }
       if (*(short *)(ctrl + 0xb0) < *(short *)(ctrl + 0xae)) {
         *(undefined2 *)(ctrl + 0xae) = *(undefined2 *)(ctrl + 0xb0);
@@ -1656,26 +1762,26 @@ void fighter_frame(byte *ctrl, uint8_t *motion)
       if (*(short *)(ctrl + 0xb0) < *(short *)(ctrl + 0xac)) {
         *(undefined2 *)(ctrl + 0xac) = *(undefined2 *)(ctrl + 0xb0);
       }
-      d = *(short *)(ctrl + 200);
+      dv = *(short *)(ctrl + 200);
       ctrl[200] = '\0';
       ctrl[0xc9] = '\0';
-      d = -d;
+      dv = -dv;
 LAB_80178d48:
-      *(short *)(ctrl + 0xca) = d;
+      *(short *)(ctrl + 0xca) = dv;
     }
     else if (*(short *)(ctrl + 200) != 0) {
       if ((*(uint *)(ctrl + 0x54) & 2) == 0) {
-        *(short *)(ctrl + 0xac) = *(short *)(ctrl + 0xac) + d;
+        *(short *)(ctrl + 0xac) = *(short *)(ctrl + 0xac) + dv;
         *(short *)(ctrl + 0xae) =
              *(short *)(ctrl + 0xae) + (short)((*(short *)(ctrl + 200) * 0x3c) / 100);
       }
       else {
-        *(short *)(ctrl + 0xaa) = *(short *)(ctrl + 0xaa) + d;
+        *(short *)(ctrl + 0xaa) = *(short *)(ctrl + 0xaa) + dv;
       }
       if (*(short *)(ctrl + 0xb0) < *(short *)(ctrl + 0xae)) {
         *(undefined2 *)(ctrl + 0xae) = *(undefined2 *)(ctrl + 0xb0);
       }
-      d = *(short *)(ctrl + 200);
+      dv = *(short *)(ctrl + 200);
       ctrl[200] = '\0';
       ctrl[0xc9] = '\0';
       goto LAB_80178d48;
@@ -1701,28 +1807,33 @@ LAB_80178d48:
     }
   }
   motion_turn_update(ctrl,motion_p);
+  /* terrain probe: point (actor +0x174/+0x17c) vs floor box
+   * table; miss clears ctrl+0x94 and +0x60 bit29. */
   if (((*(uint *)(ctrl + 0x60) & 0x10000000) == 0) &&
      ((*(uint *)(ctrl + 0x6c) & 0x100000) == 0)) {
-    d = range_circle_test(*(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x174),
-                         *(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x17c),(uint *)guest_at((uint32_t)(t + -0x7fe4ea74)),0);
-    *(short *)(ctrl + 0x94) = d;
-    if (d == 0) {
+    dv = range_circle_test(*(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x174),
+                         *(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x17c),(uint *)guest_at((uint32_t)(ia + -0x7fe4ea74)),0);
+    *(short *)(ctrl + 0x94) = dv;
+    if (dv == 0) {
 LAB_80178f9c:
       ctrl[0x94] = '\0';
       ctrl[0x95] = '\0';
-      fl = *(uint *)(ctrl + 0x60) & 0xdfffffff;
+      uv = *(uint *)(ctrl + 0x60) & 0xdfffffff;
     }
     else {
-      fl = range_circle_test(*(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0xd4),
-                           *(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0xdc),(uint *)guest_at((uint32_t)t2),0);
-      hit2 = range_circle_test(*(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x354),
-                           *(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x35c),(uint *)guest_at((uint32_t)t2),0);
-      hit3 = range_circle_test(*(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x264),
-                           *(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x26c),(uint *)guest_at((uint32_t)t2),0);
-      if ((fl == 0 && hit2 == 0) && hit3 == 0) goto LAB_80178f9c;
+      uv = range_circle_test(*(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0xd4),
+                           *(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0xdc),(uint *)guest_at((uint32_t)ib),0);
+      /* three zone tests (actor +0xd4/+0xdc, +0x354/+0x35c,
+       * +0x264/+0x26c) vs the same box: all-miss => no ground
+       * contact; partial => +0x6c bit20 + possible knockdown. */
+      z2 = range_circle_test(*(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x354),
+                           *(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x35c),(uint *)guest_at((uint32_t)ib),0);
+      z3 = range_circle_test(*(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x264),
+                           *(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x26c),(uint *)guest_at((uint32_t)ib),0);
+      if ((uv == 0 && z2 == 0) && z3 == 0) goto LAB_80178f9c;
       if ((-1 < *(int *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x38)) &&
          ((*(uint *)(ctrl + 0x6c) & 0x100000) == 0)) {
-        if (((fl & hit2 & hit3) == 0) && ((*(uint *)(ctrl + 0x58) & 0x1000000) == 0)) {
+        if (((uv & z2 & z3) == 0) && ((*(uint *)(ctrl + 0x58) & 0x1000000) == 0)) {
           if ((*(uint *)(ctrl + 0x5c) & 0x80) != 0) {
             *(uint *)(ctrl + 0x6c) = *(uint *)(ctrl + 0x6c) | 0x80000;
           }
@@ -1742,24 +1853,24 @@ LAB_80178f9c:
           *(uint *)(ctrl + 0x5c) = *(uint *)(ctrl + 0x5c) | 0x80000;
         }
       }
-      fl = *(uint *)(ctrl + 0x60) | 0x20000000;
+      uv = *(uint *)(ctrl + 0x60) | 0x20000000;
     }
-    *(uint *)(ctrl + 0x60) = fl;
+    *(uint *)(ctrl + 0x60) = uv;
   }
   if (*(short *)(ctrl + 0x94) == 0) {
-    fl = *(uint *)(ctrl + 0x5c) & 0x7fffffff;
+    uv = *(uint *)(ctrl + 0x5c) & 0x7fffffff;
   }
   else {
-    fl = *(uint *)(ctrl + 0x5c) | 0x80000000;
+    uv = *(uint *)(ctrl + 0x5c) | 0x80000000;
   }
-  *(uint *)(ctrl + 0x5c) = fl;
-  fl = *(uint *)(ctrl + 0x5c);
-  t2 = *(int *)(ctrl + 0x20);
-  *(uint *)(ctrl + 0x5c) = fl & 0xeffba5fc;
-  t = *(short *)(ctrl + 0x94) + -0x66;
-  if (((*(int *)((char *)guest_at((uint32_t)t2) + 0x268) < t) && (*(int *)((char *)guest_at((uint32_t)t2) + 0x358) < t)) &&
-     (*(int *)((char *)guest_at((uint32_t)t2) + 0x178) < t)) {
-    *(uint *)(ctrl + 0x5c) = fl & 0xeffba5fc | 0x40000;
+  *(uint *)(ctrl + 0x5c) = uv;
+  uv = *(uint *)(ctrl + 0x5c);
+  ib = *(int *)(ctrl + 0x20);
+  *(uint *)(ctrl + 0x5c) = uv & 0xeffba5fc;
+  ia = *(short *)(ctrl + 0x94) + -0x66;
+  if (((*(int *)((char *)guest_at((uint32_t)ib) + 0x268) < ia) && (*(int *)((char *)guest_at((uint32_t)ib) + 0x358) < ia)) &&
+     (*(int *)((char *)guest_at((uint32_t)ib) + 0x178) < ia)) {
+    *(uint *)(ctrl + 0x5c) = uv & 0xeffba5fc | 0x40000;
   }
   if (*(int *)((char *)guest_at(*(uint32_t *)(ctrl + 0x2c)) + 0x58) < 0) {
     *(uint *)(ctrl + 0x5c) = *(uint *)(ctrl + 0x5c) | 0x1000;
@@ -1773,79 +1884,84 @@ LAB_80178f9c:
   }
   if (downed) {
     if ((ctrl[5] & 1U) == 0) {
-      bidx = ctrl[3];
-      tbl = &DAT_801b4e5c;
+      fidx = ctrl[3];
+      tab = &DAT_801b4e5c;
     }
     else {
-      bidx = ctrl[3];
-      tbl = &DAT_801b4e50;
+      fidx = ctrl[3];
+      tab = &DAT_801b4e50;
     }
-    fl = (uint)(byte)tbl[bidx];
-    if ((fl < 0xc0) || (carg = 5, ctrl[2] == '\0')) {
-      carg = 5;
+    uv = (uint)(byte)tab[fidx];
+    if ((uv < 0xc0) || (auxv = 5, ctrl[2] == '\0')) {
+      auxv = 5;
     }
     else {
-      fl = fl + 0x40;
+      uv = uv + 0x40;
     }
 LAB_80179238:
-    deferred_cmd_post(0x400,fl,carg);
+    deferred_cmd_post(0x400,uv,auxv);
   }
   else if (((*(uint *)(ctrl + 0x68) & 0x8000000) != 0) &&
           ((*(uint *)(ctrl + 0x5c) & 0x4000000) != 0)) {
-    fl = *(uint *)(ctrl + 0x68) & 0x400;
+    uv = *(uint *)(ctrl + 0x68) & 0x400;
     if ((ctrl[5] & 1U) == 0) {
-      if (fl == 0) {
-        carg = 0x54;
-        bidx = ctrl[3];
-        tbl = &DAT_801b4e44;
+      if (uv == 0) {
+        auxv = 0x54;
+        fidx = ctrl[3];
+        tab = &DAT_801b4e44;
       }
       else {
-        carg = 0x55;
-        bidx = ctrl[3];
-        tbl = &DAT_801b4e38;
+        auxv = 0x55;
+        fidx = ctrl[3];
+        tab = &DAT_801b4e38;
       }
-      bidx = tbl[bidx];
-      deferred_cmd_post(0x400,carg,0);
+      fidx = tab[fidx];
+      deferred_cmd_post(0x400,auxv,0);
     }
     else {
-      if (fl == 0) {
-        carg = 0x54;
+      if (uv == 0) {
+        auxv = 0x54;
       }
       else {
-        carg = 0x55;
+        auxv = 0x55;
       }
-      deferred_cmd_post(0x400,carg,0);
-      bidx = (&DAT_801b4e2c)[(byte)ctrl[3]];
+      deferred_cmd_post(0x400,auxv,0);
+      fidx = (&DAT_801b4e2c)[(byte)ctrl[3]];
     }
-    fl = (uint)bidx;
-    if ((0xbf < fl) && (ctrl[2] != '\0')) {
-      fl = fl + 0x40;
+    uv = (uint)fidx;
+    if ((0xbf < uv) && (ctrl[2] != '\0')) {
+      uv = uv + 0x40;
     }
-    carg = 0;
+    auxv = 0;
     goto LAB_80179238;
   }
-  fl = action_resolve(ctrl,motion);
-  if (-1 < (int)fl) {
-    d = (short)(fl & 0xfff);
-    *(short *)(motion_p + 0x80) = d;
-    if (0x8f < (fl & 0xfff)) {
+  /* resolve next action; commit applies it to motion+0x80
+   * (extended ids >=0x90 stored as id-0x90 in +0x14). */
+  uv = action_resolve(ctrl,motion);
+  if (-1 < (int)uv) {
+    dv = (short)(uv & 0xfff);
+    *(short *)(motion_p + 0x80) = dv;
+    if (0x8f < (uv & 0xfff)) {
       *(uint *)(ctrl + 0x5c) = *(uint *)(ctrl + 0x5c) & 0xefffbffc;
-      *(short *)(motion_p + 0x14) = d + -0x90;
+      *(short *)(motion_p + 0x14) = dv + -0x90;
     }
-    if ((fl & 0x1000) == 0) {
-      fl = *(uint *)(ctrl + 0x5c) & 0xffffffbf;
+    if ((uv & 0x1000) == 0) {
+      uv = *(uint *)(ctrl + 0x5c) & 0xffffffbf;
     }
     else {
-      fl = *(uint *)(ctrl + 0x5c) | 0x40;
+      uv = *(uint *)(ctrl + 0x5c) | 0x40;
     }
-    *(uint *)(ctrl + 0x5c) = fl;
+    *(uint *)(ctrl + 0x5c) = uv;
   }
+  /* per-frame commit on the motion_p (ctrl+0x38) object. */
   action_commit(ctrl,motion_p);
   if ((((*(uint *)(ctrl + 0x6c) & 0x800) != 0) && ((ctrl[5] & 0x10U) == 0)) &&
      ((*(uint *)(ctrl + 0x6c) & 0x8000) == 0)) {
     *(ushort *)(ctrl + 0xd8) =
          *(short *)(ctrl + 0xd8) + (ushort)((byte)ctrl[0xda] >> 3) * 0x3c;
   }
+  /* facing sync: rotate ctrl+0xa2 vector by (facing - motion yaw
+   * + 0x8a) at rate 0x8c, accumulate into ctrl+0x9a/+0x9c. */
   dir_rotate_set(((int)*(short *)(ctrl + 0x4e) - (int)*(short *)(motion_p + 0xd2)) +
                (int)*(short *)(ctrl + 0x8a),(int)*(short *)(ctrl + 0x8c),ctrl + 0xa2,
                ctrl + 0x9a);
@@ -1866,100 +1982,89 @@ LAB_80179238:
   ctrl[0x8c] = '\0';
   ctrl[0x8d] = '\0';
 LAB_8017938c:
+  /* spin decay: apply rotation rate 0xb2 into 0xa2/0x9a, then
+   * scale 0xb2 by 0xb4 >> 7. */
   if (*(short *)(ctrl + 0xb2) != 0) {
     dir_rotate_acc((int)*(short *)(ctrl + 0xc4),(int)*(short *)(ctrl + 0xb2),ctrl + 0xa2,
                  ctrl + 0x9a);
-    t = (int)*(short *)(ctrl + 0xb2) * (int)*(short *)(ctrl + 0xb4);
-    if (t < 0) {
-      t = t + 0x7f;
+    ia = (int)*(short *)(ctrl + 0xb2) * (int)*(short *)(ctrl + 0xb4);
+    if (ia < 0) {
+      ia = ia + 0x7f;
     }
-    *(short *)(ctrl + 0xb2) = (short)(t >> 7);
+    *(short *)(ctrl + 0xb2) = (short)(ia >> 7);
   }
+  /* integrate launch velocity; then decay ctrl+0x9a/+0x9c/+0x9e
+   * by frame step >> 4. */
   launch_vel_update(ctrl,motion_p);
-  t = (int)*(short *)(ctrl + 0x9a) * (int)*(short *)(ctrl + 0x88);
-  if (t < 0) {
-    t = t + 0xf;
+  ia = (int)*(short *)(ctrl + 0x9a) * (int)*(short *)(ctrl + 0x88);
+  if (ia < 0) {
+    ia = ia + 0xf;
   }
-  t2 = (int)*(short *)(ctrl + 0x9c) * (int)*(short *)(ctrl + 0x88);
-  *(short *)(ctrl + 0x9a) = (short)(t >> 4);
-  if (t2 < 0) {
-    t2 = t2 + 0xf;
+  ib = (int)*(short *)(ctrl + 0x9c) * (int)*(short *)(ctrl + 0x88);
+  *(short *)(ctrl + 0x9a) = (short)(ia >> 4);
+  if (ib < 0) {
+    ib = ib + 0xf;
   }
-  t = (int)*(short *)(ctrl + 0x9e) * (int)*(short *)(ctrl + 0x88);
-  *(short *)(ctrl + 0x9c) = (short)(t2 >> 4);
-  if (t < 0) {
-    t = t + 0xf;
+  ia = (int)*(short *)(ctrl + 0x9e) * (int)*(short *)(ctrl + 0x88);
+  *(short *)(ctrl + 0x9c) = (short)(ib >> 4);
+  if (ia < 0) {
+    ia = ia + 0xf;
   }
-  *(short *)(ctrl + 0x9e) = (short)(t >> 4);
+  *(short *)(ctrl + 0x9e) = (short)(ia >> 4);
   return;
 
 }
 
-/* ---- action-commit + state helpers (action_commit family) ---- */
-extern void motion_blend_frame(byte*,byte*);
-extern int  atan2_lut(int,int);
-extern void gte_op_a00428(int*,int*);
-extern uint FUN_80194500(int);
-undefined2 *euler_rotmat(uint,uint,uint,undefined2*);
-void hitrec_table_clear(int);
-void table_1f0ae0_clear(int);
-extern void fighter_reset_fx(int,byte*);
-extern void keyframe_blend_apply(byte*,byte*);
-void keyframe_advance(byte*,byte*);
-void skeleton_pose_step(byte*,undefined2*,byte*,int);
-extern void fx_record_alloc(int,int,int,int,void*);
-extern void quad_fx_spawn(int,int,undefined4*,undefined2,ushort,int,int);
-extern void triple_track_spawn(int,int,int);
-undefined8 vec2_rot_lut(undefined4,int);
-void anim_lerp_scalar(short*,short,int,int);
-void anim_lerp_vec3(short*,short*,int,int,short);
-void anim_lerp_vec3_raw(short*,short*,int,int);
-void anim_lerp_packed4(short*,ushort*,int,int);
-extern void anim_lerp_aux(byte*,int,int,int);
-void anim_lerp_packed3(short*,ushort*,int,int);
-uint *rotmat_rtps_build(uint,uint*);
-
-
+/* action_commit - commit resolved action: sync motion state,
+ * advance timers/blends, steer toward foe, post deferred cmds. */
 void action_commit(byte *ctrl, byte *motion)
 {
-  bool neg;
-  ushort cnt;
-  uint fl;
-  int t;
-  int braw;
-  undefined4 tmp;
+  /* Locals: rem = countdown remainder; f6c = ctrl+0x6c flag word;
+   * tv/delta = steering scratch; dvec = foe-self position delta;
+   * sign = clamp direction flag; rotm = output rotation matrix. */
+  bool sign;
+  ushort rem;
+  uint f6c;
+  int tv;
+  int raw;
+  undefined4 res;
   int lead;
-  int d;
+  int delta;
   int bias;
   undefined1 rotm [32];
-  int dlt [4];
+  int dvec [4];
   
+  /* action change: mirror +0x80 into +0x82 and switch via guest;
+   * then run the event stream. */
   if (*(short *)(motion + 0x80) != *(short *)(motion + 0x82)) {
     *(undefined2 *)(motion + 0x82) = *(undefined2 *)(motion + 0x80);
     action_switch_guest((int)guest_of(ctrl),(int *)motion,(int)*(short *)(motion + 0x80));
   }
   ev_stream_dispatch(ctrl,motion);
+  /* frame step: +0x88 = +0x86 normally, +0xfc while the +0x6c
+   * bit15 & ctrl[5]&1 & motion!=0xbe combo holds. */
   *(undefined2 *)(ctrl + 0x88) = *(undefined2 *)(ctrl + 0x86);
   if ((((ctrl[5] & 1U) != 0) && ((*(uint *)(ctrl + 0x58) & 0xc0000000) == 0x80000000)) &&
      (*(short *)(motion + 0x80) != 0xbe)) {
     *(undefined2 *)(ctrl + 0x88) = *(undefined2 *)(ctrl + 0xfc);
   }
+  /* advance keyframe anim + skeleton pose for this frame. */
   motion_blend_frame(ctrl,motion);
   *(short *)(ctrl + 0xb6) = *(short *)(ctrl + 0xb6) + *(short *)(ctrl + 0x88);
   *(uint *)(ctrl + 0x6c) = *(uint *)(ctrl + 0x6c) & 0xfffff7ff;
-  cnt = *(ushort *)(ctrl + 0xba);
+  rem = *(ushort *)(ctrl + 0xba);
   if ((0 < *(short *)(ctrl + 0xba)) &&
-     (*(short *)(ctrl + 0xba) = (short)((uint)cnt - (uint)*(ushort *)(ctrl + 0x88)),
-     (int)(((uint)cnt - (uint)*(ushort *)(ctrl + 0x88)) * 0x10000) < 1)) {
+     (*(short *)(ctrl + 0xba) = (short)((uint)rem - (uint)*(ushort *)(ctrl + 0x88)),
+     (int)(((uint)rem - (uint)*(ushort *)(ctrl + 0x88)) * 0x10000) < 1)) {
     ctrl[0xba] = '\0';
     ctrl[0xbb] = '\0';
     ctrl[0x26] = '\0';
     *(uint *)(ctrl + 0x6c) = *(uint *)(ctrl + 0x6c) | 0x800;
   }
-  cnt = *(ushort *)(ctrl + 0xb8);
+  rem = *(ushort *)(ctrl + 0xb8);
   if ((0 < *(short *)(ctrl + 0xb8)) &&
-     (*(short *)(ctrl + 0xb8) = (short)((uint)cnt - (uint)*(ushort *)(ctrl + 0x86)),
-     (int)(((uint)cnt - (uint)*(ushort *)(ctrl + 0x86)) * 0x10000) < 1)) {
+     (*(short *)(ctrl + 0xb8) = (short)((uint)rem - (uint)*(ushort *)(ctrl + 0x86)),
+     (int)(((uint)rem - (uint)*(ushort *)(ctrl + 0x86)) * 0x10000) < 1)) {
     ctrl[0xb8] = '\0';
     ctrl[0xb9] = '\0';
     ctrl[0x26] = -1;
@@ -1968,136 +2073,145 @@ void action_commit(byte *ctrl, byte *motion)
     *(short *)(ctrl + 0xbc) = *(short *)(ctrl + 0xbc) + *(short *)(ctrl + 0x88);
   }
   if (0 < *(short *)(ctrl + 0xd0)) {
-    cnt = *(ushort *)(ctrl + 0xd0);
+    rem = *(ushort *)(ctrl + 0xd0);
     ctrl[0x27] = -1;
-    *(short *)(ctrl + 0xd0) = (short)((uint)cnt - (uint)*(ushort *)(ctrl + 0x88));
-    if (((int)(((uint)cnt - (uint)*(ushort *)(ctrl + 0x88)) * 0x10000) < 1) ||
+    *(short *)(ctrl + 0xd0) = (short)((uint)rem - (uint)*(ushort *)(ctrl + 0x88));
+    if (((int)(((uint)rem - (uint)*(ushort *)(ctrl + 0x88)) * 0x10000) < 1) ||
        (*(short *)(motion + 0x80) != 1)) {
       ctrl[0xd0] = '\0';
       ctrl[0xd1] = '\0';
       ctrl[0x27] = '\0';
     }
   }
+  /* +0x6c bit14: set while +0x64<0, +0xb8<0xc0 and +0xbc expired. */
   if (((*(int *)(ctrl + 100) < 0) && (*(short *)(ctrl + 0xb8) < 0xc0)) &&
      (*(short *)(ctrl + 0xbc) <= *(short *)(ctrl + 0x88))) {
-    fl = *(uint *)(ctrl + 0x6c) | 0x4000;
+    f6c = *(uint *)(ctrl + 0x6c) | 0x4000;
   }
   else {
-    fl = *(uint *)(ctrl + 0x6c) & 0xffffbfff;
+    f6c = *(uint *)(ctrl + 0x6c) & 0xffffbfff;
   }
-  *(uint *)(ctrl + 0x6c) = fl;
+  *(uint *)(ctrl + 0x6c) = f6c;
   if (0 < *(short *)(ctrl + 0xd2)) {
     if ((*(ushort *)(ctrl + 0x7a) & 0xf0e8) != 0) {
       *(short *)(ctrl + 0xd2) = *(short *)(ctrl + 0xd2) + *(short *)(ctrl + 0x88) * -2;
     }
-    cnt = *(ushort *)(ctrl + 0xd2);
-    *(short *)(ctrl + 0xd2) = (short)((uint)cnt - (uint)*(ushort *)(ctrl + 0x88));
-    if ((int)(((uint)cnt - (uint)*(ushort *)(ctrl + 0x88)) * 0x10000) < 1) {
+    rem = *(ushort *)(ctrl + 0xd2);
+    *(short *)(ctrl + 0xd2) = (short)((uint)rem - (uint)*(ushort *)(ctrl + 0x88));
+    if ((int)(((uint)rem - (uint)*(ushort *)(ctrl + 0x88)) * 0x10000) < 1) {
       ctrl[0xd2] = '\0';
       ctrl[0xd3] = '\0';
     }
     pending_hit_a_clear(ctrl);
     pending_hit_b_clear(ctrl);
   }
+  /* motion-side timers +0x116/+0x110 expire -> deferred_cmd_post
+   * 0x400 with the +0x114/+0x10e channel value. */
   if ((0 < *(short *)(motion + 0x116)) &&
-     (t = (uint)*(ushort *)(motion + 0x116) - (uint)*(ushort *)(ctrl + 0x88),
-     *(short *)(motion + 0x116) = (short)t, t * 0x10000 < 1)) {
-    t = (int)*(short *)(motion + 0x114);
+     (tv = (uint)*(ushort *)(motion + 0x116) - (uint)*(ushort *)(ctrl + 0x88),
+     *(short *)(motion + 0x116) = (short)tv, tv * 0x10000 < 1)) {
+    tv = (int)*(short *)(motion + 0x114);
     *(undefined2 *)(motion + 0x116) = 0;
-    if ((-1 < t) && (*(int *)(ctrl + 0x58) < 0)) {
-      if ((t < 0xc0) || (t = t + 0x40, ctrl[2] == '\0')) {
-        t = (int)*(short *)(motion + 0x114);
+    if ((-1 < tv) && (*(int *)(ctrl + 0x58) < 0)) {
+      if ((tv < 0xc0) || (tv = tv + 0x40, ctrl[2] == '\0')) {
+        tv = (int)*(short *)(motion + 0x114);
       }
-      deferred_cmd_post(0x400,t,0);
+      deferred_cmd_post(0x400,tv,0);
     }
   }
   if ((0 < *(short *)(motion + 0x110)) &&
-     (t = (uint)*(ushort *)(motion + 0x110) - (uint)*(ushort *)(ctrl + 0x88),
-     *(short *)(motion + 0x110) = (short)t, t * 0x10000 < 1)) {
-    t = (int)*(short *)(motion + 0x10e);
+     (tv = (uint)*(ushort *)(motion + 0x110) - (uint)*(ushort *)(ctrl + 0x88),
+     *(short *)(motion + 0x110) = (short)tv, tv * 0x10000 < 1)) {
+    tv = (int)*(short *)(motion + 0x10e);
     *(undefined2 *)(motion + 0x110) = 0;
-    if (-1 < t) {
-      if ((t < 0xc0) || (t = t + 0x40, ctrl[2] == '\0')) {
-        t = (int)*(short *)(motion + 0x10e);
+    if (-1 < tv) {
+      if ((tv < 0xc0) || (tv = tv + 0x40, ctrl[2] == '\0')) {
+        tv = (int)*(short *)(motion + 0x10e);
       }
-      deferred_cmd_post(0x400,t,0);
+      deferred_cmd_post(0x400,tv,0);
     }
   }
+  /* steering block (only when +0x5c bit16 set and ctrl sign
+   * clear): rotate launch dir toward foe, write motion+0x106/0x108
+   * steering offsets and apply the resulting rotmat to the actor
+   * position vector. */
   if (((*(uint *)(ctrl + 0x5c) & 0x10000) == 0) || (*ctrl < '\0')) {
     *(undefined2 *)(motion + 0x106) = 0;
     *(undefined2 *)(motion + 0x108) = 0;
   }
   else {
-    t = atan2_lut(*(int *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x3c) -
+    tv = atan2_lut(*(int *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x3c) -
                          *(int *)((char *)guest_at(*(uint32_t *)((char *)guest_at(*(uint32_t *)(ctrl + 0x2c)) + 0x20)) + 0x3c),
                          *(int *)((char *)guest_at(*(uint32_t *)((char *)guest_at(*(uint32_t *)(ctrl + 0x2c)) + 0x20)) + 0x34) -
                          *(int *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x34));
     lead = (int)((uint)*(ushort *)((char *)guest_at(*(uint32_t *)(ctrl + 0x40)) + 0x3e) << 0x10) >> 0x11;
-    d = ((t - *(short *)(ctrl + 0x4e)) + lead) * 0x100000 >> 0x14;
-    t = d;
-    if (d < 0) {
-      t = -d;
+    delta = ((tv - *(short *)(ctrl + 0x4e)) + lead) * 0x100000 >> 0x14;
+    tv = delta;
+    if (delta < 0) {
+      tv = -delta;
     }
-    if ((0x31c < t) && (neg = -1 < d, d = -0x31c, neg)) {
-      d = 0x31c;
+    if ((0x31c < tv) && (sign = -1 < delta, delta = -0x31c, sign)) {
+      delta = 0x31c;
     }
-    t = d;
-    if (d < 0) {
-      t = -d;
+    tv = delta;
+    if (delta < 0) {
+      tv = -delta;
     }
     bias = 0;
-    if (0x400 < t) {
-      braw = -t + 0x800;
-      bias = braw >> 3;
-      if (braw < 0) {
-        bias = (-t + 0x807) >> 3;
+    if (0x400 < tv) {
+      raw = -tv + 0x800;
+      bias = raw >> 3;
+      if (raw < 0) {
+        bias = (-tv + 0x807) >> 3;
       }
     }
-    d = d - ((lead + *(short *)(motion + 0x106)) * 0x100000 >> 0x14);
-    t = d;
-    if (d < 0) {
-      t = -d;
+    delta = delta - ((lead + *(short *)(motion + 0x106)) * 0x100000 >> 0x14);
+    tv = delta;
+    if (delta < 0) {
+      tv = -delta;
     }
-    if ((0x2d < t) && (neg = -1 < d, d = -0x2d, neg)) {
-      d = 0x2d;
+    if ((0x2d < tv) && (sign = -1 < delta, delta = -0x2d, sign)) {
+      delta = 0x2d;
     }
-    *(short *)(motion + 0x106) = *(short *)(motion + 0x106) + (short)d;
-    dlt[1] = 0;
-    dlt[0] = *(int *)((char *)guest_at(*(uint32_t *)((char *)guest_at(*(uint32_t *)(ctrl + 0x2c)) + 0x20)) + 0xd4) -
+    *(short *)(motion + 0x106) = *(short *)(motion + 0x106) + (short)delta;
+    dvec[1] = 0;
+    dvec[0] = *(int *)((char *)guest_at(*(uint32_t *)((char *)guest_at(*(uint32_t *)(ctrl + 0x2c)) + 0x20)) + 0xd4) -
                   *(int *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0xd4);
-    dlt[2] = *(int *)((char *)guest_at(*(uint32_t *)((char *)guest_at(*(uint32_t *)(ctrl + 0x2c)) + 0x20)) + 0xdc) -
+    dvec[2] = *(int *)((char *)guest_at(*(uint32_t *)((char *)guest_at(*(uint32_t *)(ctrl + 0x2c)) + 0x20)) + 0xdc) -
                   *(int *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0xdc);
-    gte_op_a00428(dlt,dlt);
-    d = *(int *)((char *)guest_at(*(uint32_t *)((char *)guest_at(*(uint32_t *)(ctrl + 0x2c)) + 0x20)) + 0xd8);
-    t = *(int *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0xd8);
-    tmp = FUN_80194500(dlt[0] + dlt[2]);
-    t = atan2_lut(tmp,d - t);
-    d = atan2_lut((int)*(short *)((char *)guest_at(*(uint32_t *)(ctrl + 0x40)) + 0x3a),
+    gte_op_a00428(dvec,dvec);
+    delta = *(int *)((char *)guest_at(*(uint32_t *)((char *)guest_at(*(uint32_t *)(ctrl + 0x2c)) + 0x20)) + 0xd8);
+    tv = *(int *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0xd8);
+    res = FUN_80194500(dvec[0] + dvec[2]);
+    tv = atan2_lut(res,delta - tv);
+    delta = atan2_lut((int)*(short *)((char *)guest_at(*(uint32_t *)(ctrl + 0x40)) + 0x3a),
                          (int)*(short *)((char *)guest_at(*(uint32_t *)(ctrl + 0x40)) + 0x3c));
-    t = (t + d + bias) * 0x100000 >> 0x14;
-    if (t < -0x271) {
-      t = -0x271;
+    tv = (tv + delta + bias) * 0x100000 >> 0x14;
+    if (tv < -0x271) {
+      tv = -0x271;
     }
-    else if (0x1c7 < t) {
-      t = 0x1c7;
+    else if (0x1c7 < tv) {
+      tv = 0x1c7;
     }
-    t = t - ((d + *(short *)(motion + 0x108)) * 0x100000 >> 0x14);
-    d = t;
-    if (t < 0) {
-      d = -t;
+    tv = tv - ((delta + *(short *)(motion + 0x108)) * 0x100000 >> 0x14);
+    delta = tv;
+    if (tv < 0) {
+      delta = -tv;
     }
-    if ((0x22 < d) && (neg = -1 < t, t = -0x22, neg)) {
-      t = 0x22;
+    if ((0x22 < delta) && (sign = -1 < tv, tv = -0x22, sign)) {
+      tv = 0x22;
     }
-    t = (uint)*(ushort *)(motion + 0x108) + t;
-    *(short *)(motion + 0x108) = (short)t;
-    euler_rotmat(t * 0x10000 >> 0x10,-(int)*(short *)(motion + 0x106),0,rotm);
+    tv = (uint)*(ushort *)(motion + 0x108) + tv;
+    *(short *)(motion + 0x108) = (short)tv;
+    euler_rotmat(tv * 0x10000 >> 0x10,-(int)*(short *)(motion + 0x106),0,rotm);
     matrix_vec3_apply(rotm,(uint *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0xa4));
   }
   return;
 
 }
 
+/* pending_hit_a_clear - clear pending-hit-A record on the
+ * ctrl+0x38 motion object and the slot hitrec table. */
 void pending_hit_a_clear(byte *ctrl)
 {
   uintptr_t mo;
@@ -2111,6 +2225,8 @@ void pending_hit_a_clear(byte *ctrl)
 
 }
 
+/* hit_chain_clear - clear hit-chain counters on the ctrl+0x38
+ * motion object and the chain table. */
 void hit_chain_clear(byte *ctrl)
 {
   uintptr_t mo;
@@ -2124,6 +2240,8 @@ void hit_chain_clear(byte *ctrl)
 
 }
 
+/* pending_hit_b_clear - clear pending-hit-B record on the
+ * ctrl+0x38 motion object. */
 void pending_hit_b_clear(byte *ctrl)
 {
   uintptr_t mo;
@@ -2137,6 +2255,8 @@ void pending_hit_b_clear(byte *ctrl)
 
 }
 
+/* fighter_combat_reset - full combat-state reset: deferred cmd,
+ * timers, flags, slots, reset fx, hit records. */
 void fighter_combat_reset(byte *ctrl)
 {
   deferred_cmd_post(0x400,7,0);
@@ -2196,6 +2316,8 @@ void trig_lut_read(uint32_t ctrl_g, byte *motion)
 
 }
 
+/* trig_vel_flat - set launch velocity (motion+0x90/0x98) for a
+ * flat attack from facing byte; scaled by height (+0x24). */
 void trig_vel_flat(uint32_t ctrl_g, byte *motion)
 {
   short vel;
@@ -2217,6 +2339,8 @@ void trig_vel_flat(uint32_t ctrl_g, byte *motion)
 
 }
 
+/* trig_vel_up - launch velocity for rising attack; extra -0x2000
+ * z-kick when the +5&0x10 flag is set. */
 void trig_vel_up(uint32_t ctrl_g, byte *motion)
 {
   undefined2 cos_v;
@@ -2242,6 +2366,8 @@ void trig_vel_up(uint32_t ctrl_g, byte *motion)
 
 }
 
+/* trig_vel_diag - launch velocity for diagonal attack (cos on x,
+ * -sin on z). */
 void trig_vel_diag(uint32_t ctrl_g, byte *motion)
 {
   undefined2 cos_v;
@@ -2263,6 +2389,8 @@ void trig_vel_diag(uint32_t ctrl_g, byte *motion)
   return;
 
 }
+/* launch_vel_update - integrate launch velocity with turn assist;
+ * writes ctrl+0x90 velocity and ctrl+0x9c remainder. */
 void launch_vel_update(byte *ctrl,byte *motion)
 {
   ushort acc;
@@ -2331,6 +2459,8 @@ LAB_80179618:
 
 }
 
+/* motion_turn_update - turn-rate -> flag bands + per-frame turn
+ * step into ctrl+0x74/0x4e and motion+0xe4. */
 void motion_turn_update(byte *ctrl,byte *motion)
 {
   ushort ctr16;
@@ -2438,6 +2568,8 @@ LAB_801798e0:
 
 }
 
+/* motion_blend_frame - advance keyframe anim, copy joint pose,
+ * apply yaw rotation to motion position. */
 void motion_blend_frame(byte *ctrl,byte *motion)
 {
   short yaw;
@@ -2449,8 +2581,8 @@ void motion_blend_frame(byte *ctrl,byte *motion)
   undefined2 *jsrc;
   int dy;
   int t;
-  int v;
-  int g;
+  int dx;
+  int obj_g;
   if (*(int *)(motion + 0xb0) == 0) goto LAB_8018604c;
   if (*(short *)(motion + 0xce) == 0) {
 LAB_80186010:
@@ -2488,59 +2620,61 @@ LAB_8018604c:
   skeleton_pose_step((byte *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x50,
                (undefined2 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x40)) + 0x1c),
                (byte *)((char *)guest_at(*(uint32_t *)(ctrl + 0x48)) + 0x20),0x12);
-  g = *(int *)(ctrl + 0x20);
+  obj_g = *(int *)(ctrl + 0x20);
   t = -(int)*(short *)(motion + 0xe4);
   if (t != 0) {
-    v = (int)*(short *)(motion + 0xd4) - *(int *)((char *)guest_at((uint32_t)g) + 0x34);
-    dy = (int)*(short *)(motion + 0xd8) - *(int *)((char *)guest_at((uint32_t)g) + 0x3c);
+    dx = (int)*(short *)(motion + 0xd4) - *(int *)((char *)guest_at((uint32_t)obj_g) + 0x34);
+    dy = (int)*(short *)(motion + 0xd8) - *(int *)((char *)guest_at((uint32_t)obj_g) + 0x3c);
     sn = lut_sin_q12(t);
     cs = lut_cos_q12(t);
     *(short *)(motion + 0xd4) =
-         *(short *)((char *)guest_at((uint32_t)g) + 0x34) + (short)((dy * sn + v * cs) >> 0xc);
+         *(short *)((char *)guest_at((uint32_t)obj_g) + 0x34) + (short)((dy * sn + dx * cs) >> 0xc);
     sn = lut_cos_q12(t);
     t = lut_sin_q12(t);
-    pz = *(short *)((char *)guest_at((uint32_t)g) + 0x3c);
+    pz = *(short *)((char *)guest_at((uint32_t)obj_g) + 0x3c);
     yaw = *(short *)(motion + 0xe4);
     *(undefined2 *)(motion + 0xe4) = 0;
     *(short *)(motion + 0xd0) = (short)((*(short *)(motion + 0xd0) + yaw) * 0x10) >> 4;
-    *(short *)(motion + 0xd8) = pz + (short)((dy * sn - v * t) >> 0xc);
+    *(short *)(motion + 0xd8) = pz + (short)((dy * sn - dx * t) >> 0xc);
   }
   t = ((int)*(short *)(motion + 0xd0) + (int)*(short *)(motion + 0xd2) +
           (int)*(short *)(motion + 0xe4)) * 0x100000;
   *(short *)(ctrl + 0x4e) = (short)(t >> 0x14);
   euler_rotmat((int)*(short *)(ctrl + 0x4c),-(t >> 0x14),(int)*(short *)(ctrl + 0x50),
-               (undefined2 *)((char *)guest_at((uint32_t)g) + 4));
+               (undefined2 *)((char *)guest_at((uint32_t)obj_g) + 4));
   t = *(int *)(ctrl + 0x20);
   if ((*(uint *)(ctrl + 0x54) & 8) == 0) {
-    g = *(int *)(ctrl + 0x2c);
-    if ((*(uint *)((char *)guest_at((uint32_t)g) + 0x54) & 8) == 0) {
+    obj_g = *(int *)(ctrl + 0x2c);
+    if ((*(uint *)((char *)guest_at((uint32_t)obj_g) + 0x54) & 8) == 0) {
       if ((*(uint *)(ctrl + 0x54) & 0x10) == 0) {
-        if ((*(uint *)((char *)guest_at((uint32_t)g) + 0x54) & 0x10) == 0) {
+        if ((*(uint *)((char *)guest_at((uint32_t)obj_g) + 0x54) & 0x10) == 0) {
           return;
         }
         if (((*(uint *)(ctrl + 0x58) & 0x40100000) == 0) &&
-           ((*(uint *)((char *)guest_at((uint32_t)g) + 0x58) & 0x40100000) == 0)) {
+           ((*(uint *)((char *)guest_at((uint32_t)obj_g) + 0x58) & 0x40100000) == 0)) {
           return;
         }
       }
-      g = *(short *)((char *)guest_at((uint32_t)t) + 0x6a) * 7;
-      if (g < 0) {
-        g = g + 7;
+      obj_g = *(short *)((char *)guest_at((uint32_t)t) + 0x6a) * 7;
+      if (obj_g < 0) {
+        obj_g = obj_g + 7;
       }
-      *(short *)((char *)guest_at((uint32_t)t) + 0x6a) = (short)(g >> 3);
+      *(short *)((char *)guest_at((uint32_t)t) + 0x6a) = (short)(obj_g >> 3);
       return;
     }
     if (((*(uint *)(ctrl + 0x58) & 0x40100000) == 0) &&
-       ((*(uint *)((char *)guest_at((uint32_t)g) + 0x58) & 0x40100000) == 0)) {
+       ((*(uint *)((char *)guest_at((uint32_t)obj_g) + 0x58) & 0x40100000) == 0)) {
       return;
     }
   }
-  g = (uint)*(ushort *)((char *)guest_at((uint32_t)t) + 0x6a) << 0x10;
-  *(short *)((char *)guest_at((uint32_t)t) + 0x6a) = (short)(((g >> 0x10) - (g >> 0x1f)) >> 1);
+  obj_g = (uint)*(ushort *)((char *)guest_at((uint32_t)t) + 0x6a) << 0x10;
+  *(short *)((char *)guest_at((uint32_t)t) + 0x6a) = (short)(((obj_g >> 0x10) - (obj_g >> 0x1f)) >> 1);
   return;
 
 }
 
+/* deferred_cmd_post - post or (0x1000) remove a deferred command
+ * in the 0x20-slot ring at DAT_801f3600. */
 void deferred_cmd_post(uint cmd,int arg,short aux)
 {
   int i;
@@ -2582,6 +2716,8 @@ void deferred_cmd_post(uint cmd,int arg,short aux)
 
 }
 
+/* range_circle_test - point vs packed circle/rect box; returns
+ * 0 on hit else box radius tag. */
 int range_circle_test(int x,int y,uint *box,int radius)
 {
   uint packed;
@@ -2608,6 +2744,7 @@ int range_circle_test(int x,int y,uint *box,int radius)
 
 }
 
+/* atan2_lut - fixed-point atan2 via octant + LUT at DAT_80123844. */
 int atan2_lut(int x,int y)
 {
   bool neg;
@@ -2645,6 +2782,8 @@ int atan2_lut(int x,int y)
 }
 
 
+/* hitrec_table_clear - zero the 0x20 hit-record entries for a
+ * fighter slot (DAT_801f0db0). */
 void hitrec_table_clear(int slot)
 {
   int i;
@@ -2663,6 +2802,7 @@ void hitrec_table_clear(int slot)
 }
 
 
+/* slot_mark2_set - set DAT_801f0ad8[slot] = 2. */
 void slot_mark2_set(int slot)
 {
   (&DAT_801f0ad8)[slot] = 2;
@@ -2670,6 +2810,8 @@ void slot_mark2_set(int slot)
 
 }
 
+/* fighter_reset_fx - spawn reset FX (record alloc + quad fx +
+ * triple track) when DAT_1f8000b1 clear and reset==1. */
 void fighter_reset_fx(int reset,byte *ctrl)
 {
   if ((DAT_1f8000b1 == '\0') && (reset == 1)) {
@@ -2680,6 +2822,7 @@ void fighter_reset_fx(int reset,byte *ctrl)
   return;
 
 }
+/* lut_cos_q12 - Q12 cos over DAT_801247a8; 0x400 units = 90 deg. */
 int lut_cos_q12(int angle)
 {
   int idx;
@@ -2697,6 +2840,7 @@ int lut_cos_q12(int angle)
 
 }
 
+/* lut_sin_q12 - Q12 sin over DAT_801247a8. */
 int lut_sin_q12(uint angle)
 {
   int idx;
@@ -2712,6 +2856,8 @@ int lut_sin_q12(uint angle)
 
 }
 
+/* dir_rotate_wrap - rotate (vec.x,vec.z) by angle scaled by mag
+ * via vec2_rot_lut, wrap to +/-0x40; returns quotients. */
 unsigned long long dir_rotate_wrap(undefined4 angle,int mag,short *vec)
 {
   ushort wx;
@@ -2739,9 +2885,10 @@ unsigned long long dir_rotate_wrap(undefined4 angle,int mag,short *vec)
 
 }
 
+/* keyframe_blend_apply - blend keyframe pose channels into
+ * motion/skeleton state at blend alpha. */
 void keyframe_blend_apply(byte *ctrl,byte *motion)
 {
-  extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
   byte tag;
   short w;
   byte *rec;
@@ -2751,7 +2898,7 @@ void keyframe_blend_apply(byte *ctrl,byte *motion)
   short *pdst;
   int *mp;
   int cur;
-  int t2;
+  int j;
   int i;
   int alpha;
   uint slot;
@@ -2778,17 +2925,17 @@ void keyframe_blend_apply(byte *ctrl,byte *motion)
   skel = skel + 0x38;
   i = 2;
   do {
-    t2 = i;
+    j = i;
     cur = skel;
-    i = t2 + 1;
-    anim_lerp_packed4((short *)guest_at((uint32_t)cur),(ushort *)guest_at((uint32_t)(adata + 0x14 + (uint)*(byte *)((char *)guest_at((uint32_t)krec) + t2) * 6)),slot,alpha);
+    i = j + 1;
+    anim_lerp_packed4((short *)guest_at((uint32_t)cur),(ushort *)guest_at((uint32_t)(adata + 0x14 + (uint)*(byte *)((char *)guest_at((uint32_t)krec) + j) * 6)),slot,alpha);
     skel = cur + 0x1c;
   } while (i < 0x11);
   anim_lerp_aux((byte *)guest_at((uint32_t)(cur + 0x1c)),
                (int)*(short *)guest_at((uint32_t)((uint)*(byte *)((char *)guest_at((uint32_t)krec) + i) * 2 + adata + 0x74 + -0x20)),slot,
                alpha);
   anim_lerp_aux((byte *)guest_at((uint32_t)(cur + 0x38)),
-               (int)*(short *)guest_at((uint32_t)((uint)*(byte *)((char *)guest_at((uint32_t)krec) + t2 + 2) * 2 + adata + 0x74 + -0x20)),
+               (int)*(short *)guest_at((uint32_t)((uint)*(byte *)((char *)guest_at((uint32_t)krec) + j + 2) * 2 + adata + 0x74 + -0x20)),
                slot,alpha);
   skel = *(int *)(ctrl + 0x40);
   tag = *(byte *)((char *)guest_at((uint32_t)adata) + 0x78);
@@ -2804,7 +2951,7 @@ void keyframe_blend_apply(byte *ctrl,byte *motion)
     tag = rec[4];
     rec = rec + 4;
   }
-  krec = 1;
+  krec = 1;  /* reused as loop counter (was keyframe rec ptr) */
   pdst = (short *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x6c);
   psrc = (short *)((char *)guest_at(*(uint32_t *)(ctrl + 0x40)) + 0x28);
   mp = (int *)guest_at(*(uint32_t *)((char *)guest_at(*(uint32_t *)(motion + 0x10)) + (*(byte *)(ctrl + 5) & 1) * 0x1c + 8) +
@@ -2824,6 +2971,8 @@ void keyframe_blend_apply(byte *ctrl,byte *motion)
 
 }
 
+/* keyframe_advance - advance keyframe timeline; stage next
+ * frame and open the blend window. */
 void keyframe_advance(byte *ctrl,byte *motion)
 {
   short step;
@@ -2850,6 +2999,8 @@ void keyframe_advance(byte *ctrl,byte *motion)
 
 }
 
+/* skeleton_pose_step - per-joint skeleton pose step: copy pose
+ * channels, compute part matrices, build root rotmat. */
 void skeleton_pose_step(byte *joints,undefined2 *pose,byte *parts,int count)
 {
   ushort w;
@@ -2871,7 +3022,7 @@ void skeleton_pose_step(byte *joints,undefined2 *pose,byte *parts,int count)
       _DAT_1f800390 = pp[-1];
       w = *pp;
       pp = pp + 0xe;
-      part_matrix_compute((undefined4 *)jp,parts,&DAT_1f80038c,(int)((uint)w << 0x10) >> 0x11);
+      part_matrix_compute((undefined4 *)jp,parts,(short *)&DAT_1f80038c,(int)((uint)w << 0x10) >> 0x11);
       joints = joints + 0x50;
       pose = pose + 0xe;
       parts = parts + 0x20;
@@ -2884,6 +3035,8 @@ void skeleton_pose_step(byte *joints,undefined2 *pose,byte *parts,int count)
 
 }
 
+/* deferred_cmd_reset - clear deferred-cmd count and all ring
+ * entries. */
 void deferred_cmd_reset(void)
 {
   undefined2 *ent;
@@ -2900,15 +3053,17 @@ void deferred_cmd_reset(void)
   return;
 
 }
+/* anim_lerp_scalar - Q12 lerp of one channel: dst += (src-dst)*
+ * alpha >> 12, with sign flip. */
 void anim_lerp_scalar(short *dst,short src,int flip,int alpha)
 {
-  int d;
+  int d0;
   
-  d = (int)src;
+  d0 = (int)src;
   if (flip != 0) {
-    d = -d;
+    d0 = -d0;
   }
-  alpha = (d - *dst) * alpha;
+  alpha = (d0 - *dst) * alpha;
   if (alpha < 0) {
     alpha = alpha + 0xfff;
   }
@@ -2917,6 +3072,7 @@ void anim_lerp_scalar(short *dst,short src,int flip,int alpha)
 
 }
 
+/* anim_lerp_vec3 - vec3 channel lerp; y scaled by yscale>>7. */
 void anim_lerp_vec3(short *dst,short *src,int flip,int alpha,short yscale)
 {
   short sz;
@@ -2943,7 +3099,7 @@ void anim_lerp_vec3(short *dst,short *src,int flip,int alpha,short yscale)
   if (dy < 0) {
     dy = dy + 0xfff;
   }
-  alpha = ((int)sz - (int)dst[2]) * alpha;
+  alpha = ((int)sz - (int)dst[2]) * alpha;  /* alpha reused as z-delta */
   dst[1] = dst[1] + (short)(dy >> 0xc);
   if (alpha < 0) {
     alpha = alpha + 0xfff;
@@ -2953,6 +3109,7 @@ void anim_lerp_vec3(short *dst,short *src,int flip,int alpha,short yscale)
 
 }
 
+/* anim_lerp_vec3_raw - vec3 lerp without the y-scale. */
 void anim_lerp_vec3_raw(short *dst,short *src,int flip,int alpha)
 {
   short sz;
@@ -2975,7 +3132,7 @@ void anim_lerp_vec3_raw(short *dst,short *src,int flip,int alpha)
   if (dy < 0) {
     dy = dy + 0xfff;
   }
-  alpha = ((int)sz - (int)dst[2]) * alpha;
+  alpha = ((int)sz - (int)dst[2]) * alpha;  /* alpha reused as z-delta */
   dst[1] = dst[1] + (short)(dy >> 0xc);
   if (alpha < 0) {
     alpha = alpha + 0xfff;
@@ -2985,6 +3142,7 @@ void anim_lerp_vec3_raw(short *dst,short *src,int flip,int alpha)
 
 }
 
+/* anim_lerp_packed4 - packed 4-channel lerp (packed src words). */
 void anim_lerp_packed4(short *dst,ushort *src,int flip,int alpha)
 {
   uint pk;
@@ -2993,8 +3151,7 @@ void anim_lerp_packed4(short *dst,ushort *src,int flip,int alpha)
   int d1;
   int d2;
   {
-    extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-    uint32_t _gd = (uint32_t)guest_of(dst);
+      uint32_t _gd = (uint32_t)guest_of(dst);
     if (_gd >= 0x801d0000u && _gd < 0x80200000u)
       decomp_trace_record(53, _gd, (uint32_t)guest_of(src), 4, 0);
   }
@@ -3023,7 +3180,7 @@ void anim_lerp_packed4(short *dst,ushort *src,int flip,int alpha)
   if (d2 < 0) {
     d2 = d2 + 0xfff;
   }
-  alpha = (d3 * 2 - (int)dst[3]) * alpha;
+  alpha = (d3 * 2 - (int)dst[3]) * alpha;  /* alpha reused as last-channel delta */
   dst[2] = dst[2] + (short)(d2 >> 0xc);
   if (alpha < 0) {
     alpha = alpha + 0xfff;
@@ -3033,15 +3190,16 @@ void anim_lerp_packed4(short *dst,ushort *src,int flip,int alpha)
 
 }
 
+/* anim_lerp_aux - aux channel lerp into dst+6. */
 void anim_lerp_aux(byte *dst,int src,int flip,int alpha)
 {
-  int d;
+  int sv;
   
-  d = (src << 0x10) >> 0xf;
+  sv = (src << 0x10) >> 0xf;
   if (flip != 0) {
-    d = -d;
+    sv = -sv;
   }
-  alpha = (d - *(short *)(dst + 6)) * alpha;
+  alpha = (sv - *(short *)(dst + 6)) * alpha;
   if (alpha < 0) {
     alpha = alpha + 0xfff;
   }
@@ -3050,34 +3208,34 @@ void anim_lerp_aux(byte *dst,int src,int flip,int alpha)
 
 }
 
+/* anim_lerp_packed3 - packed 3-channel lerp. */
 void anim_lerp_packed3(short *dst,ushort *src,int flip,int alpha)
 {
   ushort hi;
   int q;
-  int d;
+  int d0;
   {
-    extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-    uint32_t _gd = (uint32_t)guest_of(dst);
+      uint32_t _gd = (uint32_t)guest_of(dst);
     if (_gd >= 0x801d0000u && _gd < 0x80200000u)
       decomp_trace_record(53, _gd, (uint32_t)guest_of(src), 3, 0);
   }
   
   q = (int)((uint)*src << 0x10) >> 0x18;
-  d = q * 0x10;
+  d0 = q * 0x10;
   hi = src[1];
   if (flip != 0) {
-    d = q * -0x10;
+    d0 = q * -0x10;
   }
-  d = (d - *dst) * alpha;
-  if (d < 0) {
-    d = d + 0xfff;
+  d0 = (d0 - *dst) * alpha;
+  if (d0 < 0) {
+    d0 = d0 + 0xfff;
   }
   q = (((int)((uint)hi << 0x18) >> 0x14) - (int)dst[1]) * alpha;
-  *dst = *dst + (short)(d >> 0xc);
+  *dst = *dst + (short)(d0 >> 0xc);
   if (q < 0) {
     q = q + 0xfff;
   }
-  alpha = (((int)((uint)hi << 0x10) >> 0x18) * 0x10 - (int)dst[2]) * alpha;
+  alpha = (((int)((uint)hi << 0x10) >> 0x18) * 0x10 - (int)dst[2]) * alpha;  /* alpha reused as last-channel delta */
   dst[1] = dst[1] + (short)(q >> 0xc);
   if (alpha < 0) {
     alpha = alpha + 0xfff;
@@ -3090,13 +3248,13 @@ void anim_lerp_packed3(short *dst,ushort *src,int flip,int alpha)
 
 undefined8 vec2_rot_lut(undefined4 angle,int mag)
 {
-  int s;
-  int c;
+  int sn;
+  int cs;
   
-  s = lut_sin_q12(angle);
-  s = mag * s;
-  c = lut_cos_q12(angle);
-  return CONCAT44((s + 0x800) >> 0xc,(mag * -c + 0x800) >> 0xc);
+  sn = lut_sin_q12(angle);
+  sn = mag * sn;
+  cs = lut_cos_q12(angle);
+  return CONCAT44((sn + 0x800) >> 0xc,(mag * -cs + 0x800) >> 0xc);
 
 }
 
@@ -3106,8 +3264,6 @@ undefined8 vec2_rot_lut(undefined4 angle,int mag)
 void ev_stream_dispatch(byte *ctrl,byte *motion)
 {
   byte *ret;
-  extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
-  extern uint32_t br2_gaddr(const void *p);
   /* Guest 0x8017ea7c carries the stream pc in $a2/$v0 through the
    * handler loop AND mirrors every nonzero next-pc into motion+0x84
    * (block_8017EAF0: sw v0,0x84(s0) @0x8017EAF4, executed on every
@@ -3132,11 +3288,10 @@ void ev_stream_dispatch(byte *ctrl,byte *motion)
          * clean-room port first (call_guest4 -> clean_try_dispatch), with
          * the same generated fallback br2_call_generated used. */
         uint32_t h = *(uint32_t *)guest_at(0x801b4e68u + (uint32_t)op * 4);
-        extern uint32_t call_guest4(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
-        npc_g = call_guest4(h, br2_gaddr(ctrl), br2_gaddr(motion), pc_g, 0);
+              npc_g = call_guest4(h, br2_gaddr(ctrl), br2_gaddr(motion), pc_g, 0);
         ret = npc_g ? (byte *)guest_at(npc_g) : (byte *)0;
       }
-      { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+      {
         decomp_trace_record(60, pc_g, (uint32_t)br2_gaddr(motion), op, npc_g); }
       if (npc_g == 0) break;
       *(uint32_t *)(motion + 0x84) = npc_g;   /* guest sw @0x8017EAF4 */
@@ -3148,8 +3303,7 @@ void ev_stream_dispatch(byte *ctrl,byte *motion)
        * Poll periodically — host-side socket service only, no guest
        * interrupt/resume semantics. */
       if (((++_dbsp_n) & 0x3FFu) == 0) {
-        extern void debug_server_poll(void);
-        debug_server_poll();
+              debug_server_poll();
       }
     }
   }
@@ -3159,6 +3313,8 @@ void ev_stream_dispatch(byte *ctrl,byte *motion)
   return;
 }
 
+/* part_matrix_compute - build a part rotation matrix from euler
+ * angles + twist via GTE RTPS/RTPT ops; store to mat. */
 void part_matrix_compute(undefined4 *mat,byte *parts,short *euler,undefined4 angle)
 {
   uint m1;
@@ -3240,14 +3396,16 @@ void part_matrix_compute(undefined4 *mat,byte *parts,short *euler,undefined4 ang
 
 }
 
+/* matrix_vec3_apply - apply the matrix to vec xyz via GTE ops;
+ * returns vec. */
 uint * matrix_vec3_apply(undefined4 *mat,uint *vec)
 {
-  uint g1;
-  int g2;
-  uint g3;
-  int g4;
-  uint g5;
-  int g6;
+  uint r1;
+  int r2;
+  uint r3;
+  int r4;
+  uint r5;
+  int r6;
   setCopControlWord(2,0,*mat);
   setCopControlWord(2,0x800,mat[1]);
   setCopControlWord(2,0x1000,mat[2]);
@@ -3256,26 +3414,26 @@ uint * matrix_vec3_apply(undefined4 *mat,uint *vec)
   setCopReg(2,0,(uint)(ushort)*vec | vec[1] & 0xffff0000);
   setCopReg(2,0x800,vec[3]);
   copFunction(2,0x486012);
-  g1 = getCopReg(2,0x4800);
-  g2 = getCopReg(2,0x5000);
-  g3 = getCopReg(2,0x5800);
+  r1 = getCopReg(2,0x4800);
+  r2 = getCopReg(2,0x5000);
+  r3 = getCopReg(2,0x5800);
   setCopReg(2,0,(uint)*(ushort *)((char *)vec + 2) | vec[2] << 0x10);
   setCopReg(2,0x800,(int)(short)*(ushort *)((char *)vec + 0xe));
   copFunction(2,0x486012);
-  g4 = getCopReg(2,0x4800);
-  g5 = getCopReg(2,0x5000);
-  g6 = getCopReg(2,0x5800);
+  r4 = getCopReg(2,0x4800);
+  r5 = getCopReg(2,0x5000);
+  r6 = getCopReg(2,0x5800);
   setCopReg(2,0,(uint)(ushort)vec[1] | vec[2] & 0xffff0000);
   setCopReg(2,0x800,vec[4]);
   copFunction(2,0x486012);
-  *vec = g4 << 0x10 | g1 & 0xffff;
-  vec[3] = g6 << 0x10 | g3 & 0xffff;
-  g1 = getCopReg(2,0x4800);
-  g4 = getCopReg(2,0x5000);
-  vec[1] = g1 & 0xffff | g2 << 0x10;
-  vec[2] = g4 << 0x10 | g5 & 0xffff;
-  g1 = getCopReg(2,0xb);
-  vec[4] = g1;
+  *vec = r4 << 0x10 | r1 & 0xffff;
+  vec[3] = r6 << 0x10 | r3 & 0xffff;
+  r1 = getCopReg(2,0x4800);
+  r4 = getCopReg(2,0x5000);
+  vec[1] = r1 & 0xffff | r2 << 0x10;
+  vec[2] = r4 << 0x10 | r5 & 0xffff;
+  r1 = getCopReg(2,0xb);
+  vec[4] = r1;
   return vec;
 
 }
