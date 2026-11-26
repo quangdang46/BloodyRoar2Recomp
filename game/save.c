@@ -4499,7 +4499,7 @@ static void coord_rec_fill(uint8_t *d, uint32_t s)
 }
 void fighter_anim_table_init(int32_t a0)
 {
-  uint32_t s5, s3i, s4i;
+  uint32_t pass_off, pass, ri;
   uint8_t *rec;
   uint32_t buf1, buf2, bp;
   int32_t i, j, k;
@@ -4514,63 +4514,63 @@ void fighter_anim_table_init(int32_t a0)
   *(uint32_t *)guest_at(0x801f5210) = task_pool_alloc(0,2,0x898);
   *(uint32_t *)guest_at(0x801f5214) = task_pool_alloc(0,2,0x898);
 
-  /* ---- block A: 0x801f4f30 region, two passes s5=0,0xc0 ---- */
-  for (s3i = 0; s3i < 2; s3i++) {
-    s5 = s3i * 0xc0;
-    /* 8 records stride 0x18 at 0x801f4f30+s5 */
-    for (s4i = 0; s4i < 8; s4i++) {
-      rec = (uint8_t *)guest_at(0x801f4f30 + s5 + s4i * 0x18);
+  /* ---- block A: 0x801f4f30 region, two passes pass_off=0,0xc0 ---- */
+  for (pass = 0; pass < 2; pass++) {
+    pass_off = pass * 0xc0;
+    /* 8 records stride 0x18 at 0x801f4f30+pass_off */
+    for (ri = 0; ri < 8; ri++) {
+      rec = (uint8_t *)guest_at(0x801f4f30 + pass_off + ri * 0x18);
       rec[3] = 5;
       rec[7] = 0x28;
-      spr_desc_b(0x801f4f30 + s5 + s4i * 0x18,0);
-      spr_desc_c(0x801f4f30 + s5 + s4i * 0x18,1);
+      spr_desc_b(0x801f4f30 + pass_off + ri * 0x18,0);
+      spr_desc_c(0x801f4f30 + pass_off + ri * 0x18,1);
     }
-    /* 2 records at 0x801f4f30+s5 stride 0x18 via sprite_rect_set_a,
+    /* 2 records at 0x801f4f30+pass_off stride 0x18 via sprite_rect_set_a,
        src table 0x801b4cbc step 8 */
-    for (s4i = 0; s4i < 2; s4i++) {
-      uint32_t t = 0x801b4cbc + s4i * 8;
-      rec = (uint8_t *)guest_at(0x801f4f30 + s5 + s4i * 0x18);
+    for (ri = 0; ri < 2; ri++) {
+      uint32_t t = 0x801b4cbc + ri * 8;
+      rec = (uint8_t *)guest_at(0x801f4f30 + pass_off + ri * 0x18);
       rec[4] = 2; rec[5] = 2; rec[6] = 9;
-      sprite_rect_set_a(0x801f4f30 + s5 + s4i * 0x18,
+      sprite_rect_set_a(0x801f4f30 + pass_off + ri * 0x18,
                    (int32_t)gs16(t),(int32_t)gs16(t+2),
                    (int32_t)gs16(t+4),(int32_t)gs16(t+6));
     }
-    /* 2 records at 0x801f4f60+s5, table 0x801b4cdc */
-    for (s4i = 0; s4i < 2; s4i++) {
-      uint32_t t = 0x801b4cdc + s4i * 8;
-      rec = (uint8_t *)guest_at(0x801f4f60 + s5 + s4i * 0x18);
+    /* 2 records at 0x801f4f60+pass_off, table 0x801b4cdc */
+    for (ri = 0; ri < 2; ri++) {
+      uint32_t t = 0x801b4cdc + ri * 8;
+      rec = (uint8_t *)guest_at(0x801f4f60 + pass_off + ri * 0x18);
       rec[4] = 2; rec[5] = 2; rec[6] = 9;
-      sprite_rect_set_a(0x801f4f60 + s5 + s4i * 0x18,
+      sprite_rect_set_a(0x801f4f60 + pass_off + ri * 0x18,
                    (int32_t)gs16(t),(int32_t)gs16(t+2),
                    (int32_t)gs16(t+4),(int32_t)gs16(t+6));
     }
-    /* 2 records at 0x801f4f90+s5: {0xff,0,0} */
-    for (s4i = 0; s4i < 2; s4i++) {
-      rec = (uint8_t *)guest_at(0x801f4f90 + s5 + s4i * 0x18);
+    /* 2 records at 0x801f4f90+pass_off: {0xff,0,0} */
+    for (ri = 0; ri < 2; ri++) {
+      rec = (uint8_t *)guest_at(0x801f4f90 + pass_off + ri * 0x18);
       rec[4] = 0xff; rec[5] = 0; rec[6] = 0;
     }
-    /* 2 records at 0x801f4fc0+s5: {0,0,0x80} */
-    for (s4i = 0; s4i < 2; s4i++) {
-      rec = (uint8_t *)guest_at(0x801f4fc0 + s5 + s4i * 0x18);
+    /* 2 records at 0x801f4fc0+pass_off: {0,0,0x80} */
+    for (ri = 0; ri < 2; ri++) {
+      rec = (uint8_t *)guest_at(0x801f4fc0 + pass_off + ri * 0x18);
       rec[4] = 0; rec[5] = 0; rec[6] = 0x80;
     }
   }
 
   /* ---- block B: 0x801f50b0 region, two passes offset 0,0x90 ---- */
-  for (s3i = 0; s3i < 2; s3i++) {
-    uint32_t off = s3i * 0x90;
+  for (pass = 0; pass < 2; pass++) {
+    uint32_t off = pass * 0x90;
     /* 4 records stride 0x24 at 0x801f50b0+off */
-    for (s4i = 0; s4i < 4; s4i++) {
-      uint32_t a = 0x801f50b0 + off + s4i * 0x24;
+    for (ri = 0; ri < 4; ri++) {
+      uint32_t a = 0x801f50b0 + off + ri * 0x24;
       rec = (uint8_t *)guest_at(a);
       rec[3] = 8; rec[7] = 0x38;
       spr_desc_b(a,0);
       spr_desc_c(a,1);
     }
     /* 2 records stride 0x24, sprite_rect_set_b, table 0x801b4ccc */
-    for (s4i = 0; s4i < 2; s4i++) {
-      uint32_t t = 0x801b4ccc + s4i * 8;
-      uint32_t a = 0x801f50b0 + off + s4i * 0x24;
+    for (ri = 0; ri < 2; ri++) {
+      uint32_t t = 0x801b4ccc + ri * 8;
+      uint32_t a = 0x801f50b0 + off + ri * 0x24;
       rec = (uint8_t *)guest_at(a + 0x1e);
       rec[-0x1a]=0xff; rec[-0x19]=0xf0; rec[-0x18]=0x20;
       rec[-0x12]=0xff; rec[-0x11]=0xf0; rec[-0x10]=0x20;
@@ -4580,9 +4580,9 @@ void fighter_anim_table_init(int32_t a0)
                    (int32_t)gs16(t+4),(int32_t)gs16(t+6));
     }
     /* 2 records at 0x801f50f8+off, table 0x801b4cec, a2 += flag */
-    for (s4i = 0; s4i < 2; s4i++) {
-      uint32_t t = 0x801b4cec + s4i * 8;
-      uint32_t a = 0x801f50f8 + off + s4i * 0x24;
+    for (ri = 0; ri < 2; ri++) {
+      uint32_t t = 0x801b4cec + ri * 8;
+      uint32_t a = 0x801f50f8 + off + ri * 0x24;
       int32_t fl = (g8(0x1f800015) < 1) ? 1 : 0;
       rec = (uint8_t *)guest_at(a + 0x1e);
       rec[-0x1a]=0x20; rec[-0x19]=0xf0; rec[-0x18]=0xff;
@@ -4811,34 +4811,34 @@ void sprite_anim_chain_build(uint32_t a0)
 
   /* pass 1: records at 0x801f4cbc + i*0x58 */
   for (i = 0; i < 2; i++) {
-    uint32_t s5 = (uint32_t)i * 0x58;
-    uint32_t s6 = 0x801f4cbc + s5;
-    uint32_t s3 = 0x801f4cc8 + s5;
-    uint32_t s1 = 0x801f4ce0 + s5;
-    uint32_t s0 = 0x801f4cec + s5;
-    uint32_t s2 = 0x801f4cfc + s5;
-    uint32_t s7 = 0x801f4d08 + s5;
+    uint32_t off = (uint32_t)i * 0x58;
+    uint32_t prim_a = 0x801f4cbc + off;
+    uint32_t clut = 0x801f4cc8 + off;
+    uint32_t rect = 0x801f4ce0 + off;
+    uint32_t tag_d = 0x801f4cec + off;
+    uint32_t prim_b = 0x801f4cfc + off;
+    uint32_t prim_c = 0x801f4d08 + off;
     s4t = 0x801e40a0 + (uint32_t)i * 0x2150;
 
     sp20 += 1;
-    prim_packet_init_tex(s6,1,g8(s4t + 0x16),0x40,0);
+    prim_packet_init_tex(prim_a,1,g8(s4t + 0x16),0x40,0);
     d18[0]=0x100; d18[1]=0x1f0; d18[2]=0x60; d18[3]=0x10;
-    gpu_texclut_pkt(s3,d18,0x100,0x1e0);
+    gpu_texclut_pkt(clut,d18,0x100,0x1e0);
     d18[0]=0x100; d18[1]=0x1e0; d18[2]=0x60; d18[3]=0x10;
-    sprite_rect_pkt_fill(s1,d18);
+    sprite_rect_pkt_fill(rect,d18);
     {
-      uint8_t *r = (uint8_t *)guest_at(s0);
+      uint8_t *r = (uint8_t *)guest_at(tag_d);
       r[7]=0x60; *(uint16_t *)(r+8)=0x100; *(uint16_t *)(r+0xa)=0x1e0;
       *(uint16_t *)(r+0xc)=0x60; *(uint16_t *)(r+0xe)=0x10;
       r[3]=3; r[4]=0; r[5]=0; r[6]=0; r[7]=0x62;
     }
-    prim_packet_init_tex(s2,g8(s4t + 0x17),g8(s4t + 0x16),0,0);
-    sprite_rect_pkt_fill(s7,(const void *)(uintptr_t)s4t);
-    tag24_merge(s6,s3);
-    tag24_merge(s3,s1);
-    tag24_merge(s1,s0);
-    tag24_merge(s0,s2);
-    tag24_merge(s2,s7);
+    prim_packet_init_tex(prim_b,g8(s4t + 0x17),g8(s4t + 0x16),0,0);
+    sprite_rect_pkt_fill(prim_c,(const void *)(uintptr_t)s4t);
+    tag24_merge(prim_a,clut);
+    tag24_merge(clut,rect);
+    tag24_merge(rect,tag_d);
+    tag24_merge(tag_d,prim_b);
+    tag24_merge(prim_b,prim_c);
   }
 
   /* init + pass 2 setup */
@@ -4846,12 +4846,12 @@ void sprite_anim_chain_build(uint32_t a0)
   sp28 = 0x801f4d7c;
   *(uint16_t *)guest_at(0x801f4cb0) = 0;
   {
-    uint8_t *v1 = (uint8_t *)guest_at(0x801f4cb0);
-    *(uint16_t *)(v1 + 8) = 0xffff;
-    *(uint16_t *)(v1 + 2) = 0;
-    *(uint16_t *)(v1 + 4) = 0;
-    *(uint16_t *)(v1 + 6) = 0;
-    *(uint16_t *)(v1 + 0xa) = 0xfffe;
+    uint8_t *hdr = (uint8_t *)guest_at(0x801f4cb0);
+    *(uint16_t *)(hdr + 8) = 0xffff;
+    *(uint16_t *)(hdr + 2) = 0;
+    *(uint16_t *)(hdr + 4) = 0;
+    *(uint16_t *)(hdr + 6) = 0;
+    *(uint16_t *)(hdr + 0xa) = 0xfffe;
   }
   sp20 = 0;
   sp2c = 0;
@@ -4859,22 +4859,22 @@ void sprite_anim_chain_build(uint32_t a0)
   *(uint8_t *)guest_at(a0 + 0x9f) = 0;
 
   for (i = 0; i < 2; i++) {
-    uint32_t s7 = (uint32_t)i * 0x58;
+    uint32_t off = (uint32_t)i * 0x58;
     /* half 1: records sp28+0xc/+0x24/+0x30/+0x40/+0x4c/+0xbc */
     uint32_t h1_941e0 = sp28;
-    uint32_t h1_9180  = 0x801f4d88 + s7;
-    uint32_t h1_91f0a = 0x801f4da0 + s7;
-    uint32_t h1_fill  = 0x801f4dac + s7;
-    uint32_t h1_e0    = 0x801f4dbc + s7;
-    uint32_t h1_f08   = 0x801f4dc8 + s7;
+    uint32_t h1_9180  = 0x801f4d88 + off;
+    uint32_t h1_91f0a = 0x801f4da0 + off;
+    uint32_t h1_fill  = 0x801f4dac + off;
+    uint32_t h1_e0    = 0x801f4dbc + off;
+    uint32_t h1_f08   = 0x801f4dc8 + off;
     /* half 2: records sp28+0xc8/+0xe0/+0xec/+0xfc/+0x4c/+0xbc,
        91f08 target sp24 */
-    uint32_t h2_9180  = 0x801f4e44 + s7;
-    uint32_t h2_91f0a = 0x801f4e5c + s7;
-    uint32_t h2_fill  = 0x801f4e68 + s7;
-    uint32_t h2_e0    = 0x801f4e78 + s7;
-    uint32_t h2_f08   = 0x801f4dc8 + s7;
-    uint32_t h2_e0c   = 0x801f4e38 + s7;
+    uint32_t h2_9180  = 0x801f4e44 + off;
+    uint32_t h2_91f0a = 0x801f4e5c + off;
+    uint32_t h2_fill  = 0x801f4e68 + off;
+    uint32_t h2_e0    = 0x801f4e78 + off;
+    uint32_t h2_f08   = 0x801f4dc8 + off;
+    uint32_t h2_e0c   = 0x801f4e38 + off;
     s4t = 0x801e40a0 + sp2c;
 
     prim_packet_init_tex(h1_941e0,1,g8(s4t + 0x16),0x40,0);
