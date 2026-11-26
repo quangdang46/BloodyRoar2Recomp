@@ -1517,6 +1517,10 @@ extern void node_list_walk_e(uint32_t list_holder, uint32_t node,
                       uint32_t a2, uint32_t a3);
     node_list_walk_e(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]));
 }
+static void wrap_80140198(CPUState *cpu) {
+extern void cps_80140198(void);
+    cps_80140198();
+}
 static void wrap_801401c8(CPUState *cpu) {
 extern void anim_wb_init_gate(uint32_t param_1,uint32_t param_2,uint32_t param_3,
                   uint32_t param_4,uint32_t param_5);
@@ -1558,6 +1562,10 @@ extern void hud_prim_init(uint32_t param_1,uint32_t param_2);
 static void wrap_80140c90(CPUState *cpu) {
 extern void noop_fn(void);
     noop_fn();
+}
+static void wrap_80140c98(CPUState *cpu) {
+extern void cps_80140c98(void);
+    cps_80140c98();
 }
 static void wrap_80140ca0(CPUState *cpu) {
 extern void fighter_reset_fx(int param_1,byte *param_2);
@@ -1613,9 +1621,65 @@ extern uint32_t ev24_fx_spawn(uint32_t param_1, uint32_t param_2,
                        uint32_t param_3, uint32_t param_4);
     cpu->gpr[2] = (uint32_t)(ev24_fx_spawn(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7])));
 }
+static void wrap_80142a40(CPUState *cpu) {
+extern void cps_80142a40(void);
+    cps_80142a40();
+}
+static void wrap_80142a54(CPUState *cpu) {
+extern void cps_80142a40(void);
+    cps_80142a40();
+}
+static void wrap_80142a5c(CPUState *cpu) {
+extern void cps_80142a40(void);
+    cps_80142a40();
+}
+static void wrap_80142a74(CPUState *cpu) {
+extern void cps_80142a40(void);
+    cps_80142a40();
+}
+static void wrap_80142a80(CPUState *cpu) {
+extern void cps_80142a40(void);
+    cps_80142a40();
+}
+static void wrap_80142aac(CPUState *cpu) {
+extern void cps_80142a40(void);
+    cps_80142a40();
+}
+static void wrap_80142ab4(CPUState *cpu) {
+extern void cps_80142a40(void);
+    cps_80142a40();
+}
+static void wrap_80142abc(CPUState *cpu) {
+extern void cps_80142a40(void);
+    cps_80142a40();
+}
+static void wrap_80142ac4(CPUState *cpu) {
+extern void cps_80142a40(void);
+    cps_80142a40();
+}
+static void wrap_80142ad0(CPUState *cpu) {
+extern void cps_80142a40(void);
+    cps_80142a40();
+}
+static void wrap_80142b00(CPUState *cpu) {
+extern void cps_80142a40(void);
+    cps_80142a40();
+}
+static void wrap_80142b0c(CPUState *cpu) {
+extern void cps_80142b0c(void);
+    cps_80142b0c();
+}
 static void wrap_80142b3c(CPUState *cpu) {
 extern uint32_t angle_from_xy(int param_1,int param_2);
     cpu->gpr[2] = (uint32_t)(angle_from_xy(((int)cpu->gpr[4]), ((int)cpu->gpr[5])));
+}
+static void wrap_80142c38(CPUState *cpu) {
+extern void cps_80142c38(void);
+    cps_80142c38();
+}
+static void wrap_80142c50(CPUState *cpu) {
+extern void cps_80142c50(void);
+    cps_80142c50();
 }
 static void wrap_80142c5c(CPUState *cpu) {
 extern void reset_combat_record(int32_t a0);
@@ -1649,6 +1713,86 @@ static void wrap_80142df4(CPUState *cpu) {
 extern void pad_edge_scan(int param_1);
     pad_edge_scan(((int)cpu->gpr[4]));
 }
+static void wrap_80142e2c(CPUState *cpu) {
+extern void cps_80142e2c(void);
+    cps_80142e2c();
+}
+static void wrap_80142e40(CPUState *cpu) {
+extern void cps_80142e2c(void);
+    cps_80142e2c();
+}
+static void wrap_80142e58(CPUState *cpu) {
+extern void cps_80142e2c(void);
+    cps_80142e2c();
+}
+static void wrap_80142e60(CPUState *cpu) {
+extern void cps_80142e60(void);
+    cps_80142e60();
+}
+static void wrap_80142e64(CPUState *cpu) {
+extern void cps_80142e64(void);
+    cps_80142e64();
+}
+static void wrap_80142e70(CPUState *cpu) {
+extern void cps_80142e70(void);
+    cps_80142e70();
+}
+static void wrap_80142e7c(CPUState *cpu) {
+extern void cps_80142e70(void);
+    cps_80142e70();
+}
+static void wrap_80142e98(CPUState *cpu) {
+extern void cps_80142e70(void);
+    cps_80142e70();
+}
+static void wrap_80142eac(CPUState *cpu) {
+extern void cps_80142e70(void);
+    cps_80142e70();
+}
+static void wrap_80142eb4(CPUState *cpu) {
+extern void cps_80142e70(void);
+    cps_80142e70();
+}
+static void wrap_80142eb8(CPUState *cpu) {
+extern void cps_80142e70(void);
+    cps_80142e70();
+}
+static void wrap_80142ec8(CPUState *cpu) {
+extern void cps_80142ec8(void);
+    cps_80142ec8();
+}
+static void wrap_80142edc(CPUState *cpu) {
+extern void cps_80142ec8(void);
+    cps_80142ec8();
+}
+static void wrap_80142ee0(CPUState *cpu) {
+extern void cps_80142ec8(void);
+    cps_80142ec8();
+}
+static void wrap_80142ef4(CPUState *cpu) {
+extern void cps_80142ec8(void);
+    cps_80142ec8();
+}
+static void wrap_80142ef8(CPUState *cpu) {
+extern void cps_80142ec8(void);
+    cps_80142ec8();
+}
+static void wrap_80142f08(CPUState *cpu) {
+extern void cps_80142ec8(void);
+    cps_80142ec8();
+}
+static void wrap_80142f14(CPUState *cpu) {
+extern void cps_80142ec8(void);
+    cps_80142ec8();
+}
+static void wrap_80142f1c(CPUState *cpu) {
+extern void cps_80142ec8(void);
+    cps_80142ec8();
+}
+static void wrap_80142f2c(CPUState *cpu) {
+extern void cps_80142ec8(void);
+    cps_80142ec8();
+}
 static void wrap_80142f3c(CPUState *cpu) {
 extern void action_from_input(int param_1);
     action_from_input(((int)cpu->gpr[4]));
@@ -1668,6 +1812,34 @@ extern uint32_t fighter_range_code(int param_1,int param_2);
 static void wrap_80143c6c(CPUState *cpu) {
 extern uint32_t hit_scale_calc(int param_1,int param_2);
     cpu->gpr[2] = (uint32_t)(hit_scale_calc(((int)cpu->gpr[4]), ((int)cpu->gpr[5])));
+}
+static void wrap_80143ce8(CPUState *cpu) {
+extern void cps_80143ce8(void);
+    cps_80143ce8();
+}
+static void wrap_80143cfc(CPUState *cpu) {
+extern void cps_80143ce8(void);
+    cps_80143ce8();
+}
+static void wrap_80143d00(CPUState *cpu) {
+extern void cps_80143ce8(void);
+    cps_80143ce8();
+}
+static void wrap_80143d08(CPUState *cpu) {
+extern void cps_80143d08(void);
+    cps_80143d08();
+}
+static void wrap_80143d1c(CPUState *cpu) {
+extern void cps_80143d08(void);
+    cps_80143d08();
+}
+static void wrap_80143d28(CPUState *cpu) {
+extern void cps_80143d08(void);
+    cps_80143d08();
+}
+static void wrap_80143d30(CPUState *cpu) {
+extern void cps_80143d30(void);
+    cps_80143d30();
 }
 static void wrap_80143d38(CPUState *cpu) {
 extern uint32_t hit_react_apply(int param_1,int param_2,int param_3,short *param_4,int param_5);
@@ -1704,6 +1876,34 @@ extern uint32_t hit_elig_check(int param_1,int param_2);
 static void wrap_80145924(CPUState *cpu) {
 extern uint32_t ret_zero_g(void);
     cpu->gpr[2] = (uint32_t)(ret_zero_g());
+}
+static void wrap_8014592c(CPUState *cpu) {
+extern void cps_8014592c(void);
+    cps_8014592c();
+}
+static void wrap_80145938(CPUState *cpu) {
+extern void cps_8014592c(void);
+    cps_8014592c();
+}
+static void wrap_80145940(CPUState *cpu) {
+extern void cps_8014592c(void);
+    cps_8014592c();
+}
+static void wrap_80145948(CPUState *cpu) {
+extern void cps_8014592c(void);
+    cps_8014592c();
+}
+static void wrap_80145954(CPUState *cpu) {
+extern void cps_8014592c(void);
+    cps_8014592c();
+}
+static void wrap_8014595c(CPUState *cpu) {
+extern void cps_8014592c(void);
+    cps_8014592c();
+}
+static void wrap_80145964(CPUState *cpu) {
+extern void cps_8014592c(void);
+    cps_8014592c();
 }
 static void wrap_80145968(CPUState *cpu) {
 extern void ret_nop(void);
@@ -2005,6 +2205,34 @@ static void wrap_8014751c(CPUState *cpu) {
 extern uint32_t attract_menu_dispatch(intptr_t param_1,uint param_2);
     cpu->gpr[2] = (uint32_t)(attract_menu_dispatch(((intptr_t)guest_at(cpu->gpr[4])), ((uint)cpu->gpr[5])));
 }
+static void wrap_801478b0(CPUState *cpu) {
+extern void cps_801478b0(void);
+    cps_801478b0();
+}
+static void wrap_801478d0(CPUState *cpu) {
+extern void cps_801478b0(void);
+    cps_801478b0();
+}
+static void wrap_801478dc(CPUState *cpu) {
+extern void cps_801478b0(void);
+    cps_801478b0();
+}
+static void wrap_801478f8(CPUState *cpu) {
+extern void cps_801478b0(void);
+    cps_801478b0();
+}
+static void wrap_8014799c(CPUState *cpu) {
+extern void cps_801478b0(void);
+    cps_801478b0();
+}
+static void wrap_801479ac(CPUState *cpu) {
+extern void cps_801478b0(void);
+    cps_801478b0();
+}
+static void wrap_801479bc(CPUState *cpu) {
+extern void cps_801478b0(void);
+    cps_801478b0();
+}
 static void wrap_801479c4(CPUState *cpu) {
 extern void gpu_prim8_emit(uint32_t param_1,int32_t param_2,int32_t param_3,
                   int32_t param_4,int32_t param_5);
@@ -2021,6 +2249,14 @@ extern void sprite_blit_center_a(uint32_t param_1,int32_t param_2,int32_t param_
                   int32_t param_4,int32_t param_5,int32_t param_6);
     sprite_blit_center_a(((uint32_t)cpu->gpr[4]), ((int32_t)cpu->gpr[5]), ((int32_t)cpu->gpr[6]), ((int32_t)cpu->gpr[7]), ((int32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu)), ((int32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 20) & 0xffffffffu)));
 }
+static void wrap_80147de4(CPUState *cpu) {
+extern void cps_80147de4(void);
+    cps_80147de4();
+}
+static void wrap_80147dec(CPUState *cpu) {
+extern void cps_80147dec(void);
+    cps_80147dec();
+}
 static void wrap_80147df4(CPUState *cpu) {
 extern uint32_t battle_bringup_b(uint32_t a0,void *a1,void *a2,void *a3);
     cpu->gpr[2] = (uint32_t)(battle_bringup_b(((uint32_t)cpu->gpr[4]), ((void *)guest_at(cpu->gpr[5])), ((void *)guest_at(cpu->gpr[6])), ((void *)guest_at(cpu->gpr[7]))));
@@ -2029,6 +2265,18 @@ static void wrap_80148170(CPUState *cpu) {
 extern uint32_t battle_bringup_a(uint32_t param_1,uint32_t param_2,uint32_t param_3,
                      void *param_4);
     cpu->gpr[2] = (uint32_t)(battle_bringup_a(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((void *)guest_at(cpu->gpr[7]))));
+}
+static void wrap_801484e8(CPUState *cpu) {
+extern void cps_801484e8(void);
+    cps_801484e8();
+}
+static void wrap_80148500(CPUState *cpu) {
+extern void cps_801484e8(void);
+    cps_801484e8();
+}
+static void wrap_80148508(CPUState *cpu) {
+extern void cps_801484e8(void);
+    cps_801484e8();
 }
 static void wrap_80148528(CPUState *cpu) {
 extern void select_confirm_handler(uint32_t param_1,uint32_t param_2,uint8_t *param_3,
@@ -2053,6 +2301,18 @@ static void wrap_80148e00(CPUState *cpu) {
 extern void width3_num_zero_pad(int32_t param_1,int32_t param_2,int32_t param_3,
                    uint8_t *param_4);
     width3_num_zero_pad(((int32_t)cpu->gpr[4]), ((int32_t)cpu->gpr[5]), ((int32_t)cpu->gpr[6]), ((uint8_t *)guest_at(cpu->gpr[7])));
+}
+static void wrap_80148e60(CPUState *cpu) {
+extern void cps_80148e60(void);
+    cps_80148e60();
+}
+static void wrap_80148e64(CPUState *cpu) {
+extern void cps_80148e64(void);
+    cps_80148e64();
+}
+static void wrap_80148e68(CPUState *cpu) {
+extern void cps_80148e68(void);
+    cps_80148e68();
 }
 static void wrap_80148e70(CPUState *cpu) {
 extern void sprite_place_centered(undefined4 param_1,undefined4 param_2,short param_3,short param_4,int param_5, int param_6);
@@ -2138,9 +2398,41 @@ extern uint32_t task_object_spawn(uint32_t param_1,uint32_t param_2,uint32_t par
                       uint32_t param_4,uint32_t param_5);
     cpu->gpr[2] = (uint32_t)(task_object_spawn(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu))));
 }
+static void wrap_8014b810(CPUState *cpu) {
+extern void cps_8014b810(void);
+    cps_8014b810();
+}
 static void wrap_8014b818(CPUState *cpu) {
 extern void scroll_attr_100_update(uint32_t param_1);
     scroll_attr_100_update(((uint32_t)cpu->gpr[4]));
+}
+static void wrap_8014b864(CPUState *cpu) {
+extern void cps_8014b810(void);
+    cps_8014b810();
+}
+static void wrap_8014b874(CPUState *cpu) {
+extern void cps_8014b810(void);
+    cps_8014b810();
+}
+static void wrap_8014b8b0(CPUState *cpu) {
+extern void cps_8014b810(void);
+    cps_8014b810();
+}
+static void wrap_8014b8d8(CPUState *cpu) {
+extern void cps_8014b810(void);
+    cps_8014b810();
+}
+static void wrap_8014b8f0(CPUState *cpu) {
+extern void cps_8014b810(void);
+    cps_8014b810();
+}
+static void wrap_8014b90c(CPUState *cpu) {
+extern void cps_8014b810(void);
+    cps_8014b810();
+}
+static void wrap_8014b914(CPUState *cpu) {
+extern void cps_8014b810(void);
+    cps_8014b810();
 }
 static void wrap_8014b938(CPUState *cpu) {
 extern uint32_t options_menu_alloc(void);
@@ -2170,6 +2462,86 @@ static void wrap_8014c258(CPUState *cpu) {
 extern void dual_redraw_a(void);
     dual_redraw_a();
 }
+static void wrap_8014c324(CPUState *cpu) {
+extern void cps_8014c324(void);
+    cps_8014c324();
+}
+static void wrap_8014c388(CPUState *cpu) {
+extern void cps_8014c324(void);
+    cps_8014c324();
+}
+static void wrap_8014c3a4(CPUState *cpu) {
+extern void cps_8014c324(void);
+    cps_8014c324();
+}
+static void wrap_8014c3c0(CPUState *cpu) {
+extern void cps_8014c324(void);
+    cps_8014c324();
+}
+static void wrap_8014c3d4(CPUState *cpu) {
+extern void cps_8014c324(void);
+    cps_8014c324();
+}
+static void wrap_8014c3f0(CPUState *cpu) {
+extern void cps_8014c324(void);
+    cps_8014c324();
+}
+static void wrap_8014c408(CPUState *cpu) {
+extern void cps_8014c324(void);
+    cps_8014c324();
+}
+static void wrap_8014c418(CPUState *cpu) {
+extern void cps_8014c324(void);
+    cps_8014c324();
+}
+static void wrap_8014c42c(CPUState *cpu) {
+extern void cps_8014c324(void);
+    cps_8014c324();
+}
+static void wrap_8014c450(CPUState *cpu) {
+extern void cps_8014c324(void);
+    cps_8014c324();
+}
+static void wrap_8014c458(CPUState *cpu) {
+extern void cps_8014c324(void);
+    cps_8014c324();
+}
+static void wrap_8014c45c(CPUState *cpu) {
+extern void cps_8014c324(void);
+    cps_8014c324();
+}
+static void wrap_8014c59c(CPUState *cpu) {
+extern void cps_8014c324(void);
+    cps_8014c324();
+}
+static void wrap_8014c5b4(CPUState *cpu) {
+extern void cps_8014c324(void);
+    cps_8014c324();
+}
+static void wrap_8014c5c4(CPUState *cpu) {
+extern void cps_8014c324(void);
+    cps_8014c324();
+}
+static void wrap_8014c5d8(CPUState *cpu) {
+extern void cps_8014c324(void);
+    cps_8014c324();
+}
+static void wrap_8014c604(CPUState *cpu) {
+extern void cps_8014c324(void);
+    cps_8014c324();
+}
+static void wrap_8014c60c(CPUState *cpu) {
+extern void cps_8014c324(void);
+    cps_8014c324();
+}
+static void wrap_8014c610(CPUState *cpu) {
+extern void cps_8014c324(void);
+    cps_8014c324();
+}
+static void wrap_8014c74c(CPUState *cpu) {
+extern void cps_8014c324(void);
+    cps_8014c324();
+}
 static void wrap_8014c76c(CPUState *cpu) {
 extern void resource_rebuild_b(void);
     resource_rebuild_b();
@@ -2197,6 +2569,26 @@ extern void dual_redraw_b(void);
 static void wrap_8014ccd0(CPUState *cpu) {
 extern void display_list_poke_redraw(void);
     display_list_poke_redraw();
+}
+static void wrap_8014cd48(CPUState *cpu) {
+extern void cps_8014cd48(void);
+    cps_8014cd48();
+}
+static void wrap_8014cd68(CPUState *cpu) {
+extern void cps_8014cd68(void);
+    cps_8014cd68();
+}
+static void wrap_8014cd88(CPUState *cpu) {
+extern void cps_8014cd88(void);
+    cps_8014cd88();
+}
+static void wrap_8014cda8(CPUState *cpu) {
+extern void cps_8014cda8(void);
+    cps_8014cda8();
+}
+static void wrap_8014cdbc(CPUState *cpu) {
+extern void cps_8014cdbc(void);
+    cps_8014cdbc();
 }
 static void wrap_8014cdd0(CPUState *cpu) {
 extern uint32_t battle_frame(void);
@@ -2394,6 +2786,30 @@ extern void boot_globals_init(void);
 static void wrap_80156048(CPUState *cpu) {
 extern void gauge_scale_fixed(int16_t param_1,int16_t param_2);
     gauge_scale_fixed(((int16_t)cpu->gpr[4]), ((int16_t)cpu->gpr[5]));
+}
+static void wrap_8015607c(CPUState *cpu) {
+extern void cps_8015607c(void);
+    cps_8015607c();
+}
+static void wrap_801560a8(CPUState *cpu) {
+extern void cps_8015607c(void);
+    cps_8015607c();
+}
+static void wrap_801560ac(CPUState *cpu) {
+extern void cps_8015607c(void);
+    cps_8015607c();
+}
+static void wrap_801560bc(CPUState *cpu) {
+extern void cps_8015607c(void);
+    cps_8015607c();
+}
+static void wrap_801560c0(CPUState *cpu) {
+extern void cps_8015607c(void);
+    cps_8015607c();
+}
+static void wrap_801560e8(CPUState *cpu) {
+extern void cps_8015607c(void);
+    cps_8015607c();
 }
 static void wrap_801560f8(CPUState *cpu) {
 extern uint32_t match_mode_set(int param_1);
@@ -3221,6 +3637,706 @@ static void wrap_8015b170(CPUState *cpu) {
 extern void cps_8015ace4(void);
     cps_8015ace4();
 }
+static void wrap_8015b190(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b1b0(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b1bc(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b1c4(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b1cc(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b1d4(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b1dc(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b1e4(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b1ec(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b1f4(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b1fc(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b208(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b210(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b21c(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b224(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b22c(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b238(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b240(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b248(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b250(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b258(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b264(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b26c(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b278(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b280(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b288(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b294(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b29c(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b2a4(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b2ac(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b2b4(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b2bc(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b2c4(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b2d0(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b2d8(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b2e4(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b2ec(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b2f4(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b300(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b308(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b310(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b318(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b324(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b32c(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b334(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b340(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b348(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b354(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b35c(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b364(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b374(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b37c(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b384(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b390(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b398(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b3a8(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b3b4(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b3bc(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b3c8(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b3d4(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b3dc(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b3ec(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b3f8(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b404(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b410(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b418(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b428(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b434(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b440(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b44c(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b460(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b47c(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b488(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b494(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b4a8(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b4c4(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b4d4(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b4dc(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b4ec(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b4f4(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b504(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b50c(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b51c(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b524(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b534(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b53c(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b54c(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b554(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b564(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b56c(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b57c(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b584(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b594(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b59c(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b5ac(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b5b4(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b5c4(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b5cc(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b5dc(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b5e4(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b5f4(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b5fc(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b60c(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b614(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b624(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b62c(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b63c(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b644(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b650(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b660(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b674(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b690(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b69c(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b6b0(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b6cc(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b6dc(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b6e4(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b6f4(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b6fc(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b70c(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b714(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b724(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b72c(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b73c(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b744(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b754(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b75c(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b764(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b774(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b780(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b788(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b794(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b7a0(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b7ac(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b7b8(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b7c8(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b7d0(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b7d8(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b7e0(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b7e8(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b7f0(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b7f8(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b808(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b810(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b820(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b828(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b838(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b840(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b850(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b858(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b864(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b880(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b88c(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b8b0(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b8b8(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b8c4(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b8cc(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b8f4(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b904(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b90c(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b914(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b920(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b92c(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b934(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b944(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b950(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b954(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b958(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b960(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b968(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b974(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b978(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b980(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b988(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
+static void wrap_8015b98c(CPUState *cpu) {
+extern void cps_8015b190(void);
+    cps_8015b190();
+}
 static void wrap_8015b9a0(CPUState *cpu) {
 extern uint32_t system_config_menu_b(void);
     cpu->gpr[2] = (uint32_t)(system_config_menu_b());
@@ -3241,6 +4357,1334 @@ static void wrap_8015d420(CPUState *cpu) {
 extern uint32_t save_flow_state_machine(void);
     cpu->gpr[2] = (uint32_t)(save_flow_state_machine());
 }
+static void wrap_8015d69c(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d6ec(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d700(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d720(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d72c(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d738(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d744(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d750(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d75c(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d768(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d774(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d780(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d78c(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d798(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d7a4(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d7b0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d7bc(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d7c8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d7d0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d7e4(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d810(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d834(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d83c(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d854(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d85c(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d864(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d86c(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d874(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d87c(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d884(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d88c(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d898(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d8a0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d8a8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d8b4(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d8bc(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d8c8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d8d0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d8dc(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d8e4(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d8ec(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d8f4(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d900(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d908(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d910(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d91c(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d924(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d92c(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d934(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d93c(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d948(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d950(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d95c(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d980(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d994(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d9a0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d9ac(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d9b4(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d9d8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015d9e0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015da04(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015da34(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015da44(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015da4c(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015da74(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015da9c(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dacc(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dad8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dae0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015db08(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015db30(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015db44(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015db60(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015db68(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dba8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dbb0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dbd4(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dbdc(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dbe4(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dbec(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dbf4(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dc18(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dc2c(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dc48(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dc50(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dc9c(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dca4(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dcc8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dcd0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dcdc(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dce8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dd00(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dd10(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dd24(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dd30(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dd38(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dd44(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dd4c(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dd58(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dd6c(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dd7c(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dd90(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dd9c(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dda4(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015ddb4(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015ddbc(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015ddc4(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dddc(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015de00(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015de08(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015de30(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015de48(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015de64(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015de70(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015de78(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015de94(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dea0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dea8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015ded4(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dee0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015deec(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015def4(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015defc(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015df08(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015df10(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015df18(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015df34(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015df50(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015df54(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015df68(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015df70(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015df78(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015df80(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015df84(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015df98(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dfa0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dfa8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dfb0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dfb4(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dfc8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dfd0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dfd8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dfe0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dfe4(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015dff8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e000(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e008(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e010(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e014(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e028(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e030(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e038(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e040(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e044(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e058(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e060(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e068(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e070(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e074(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e088(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e090(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e098(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e0a0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e0a4(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e0b8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e0c0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e0c8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e0d0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e0d4(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e0e8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e0f0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e0f8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e100(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e104(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e118(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e120(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e128(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e130(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e134(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e148(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e150(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e158(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e160(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e164(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e178(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e180(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e188(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e190(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e194(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e1a8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e1b0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e1b8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e1c0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e1c4(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e1d8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e1e0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e1e8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e1f0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e1f4(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e208(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e210(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e218(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e220(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e224(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e238(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e240(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e248(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e250(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e254(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e268(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e270(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e278(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e280(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e284(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e298(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e2a0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e2a8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e2b0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e2b4(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e2c8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e2d0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e2d8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e2e0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e2e4(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e2f8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e300(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e308(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e310(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e314(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e328(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e330(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e338(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e340(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e344(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e358(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e360(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e368(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e370(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e374(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e388(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e390(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e398(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e3a0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e3a4(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e3b8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e3c0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e3c8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e3d0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e3d4(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e3e8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e3f0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e3f8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e400(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e404(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e418(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e420(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e428(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e430(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e434(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e448(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e450(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e458(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e460(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e464(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e478(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e480(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e488(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e490(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e494(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e4a8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e4b0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e4b8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e4c0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e4c4(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e4d8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e4e0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e4e8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e4f0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e4f4(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e508(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e510(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e518(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e520(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e524(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e538(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e540(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e548(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e550(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e554(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e568(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e570(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e578(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e580(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e584(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e598(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e5a0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e5a8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e5b0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e5b4(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e5c8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e5d0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e5d8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e5e0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e5e4(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e5f8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e600(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e608(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e610(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e63c(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e66c(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e680(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e694(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e6a4(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e6ac(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e6d0(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e6e8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e704(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e718(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e724(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e734(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e7a8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e7b8(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e7f4(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e7fc(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e808(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e814(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e818(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e830(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e838(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e83c(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e840(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
+static void wrap_8015e848(CPUState *cpu) {
+extern void cps_8015d69c(void);
+    cps_8015d69c();
+}
 static void wrap_8015e87c(CPUState *cpu) {
 extern uint32_t display_cur_invalidate(void);
     cpu->gpr[2] = (uint32_t)(display_cur_invalidate());
@@ -3253,9 +5697,85 @@ static void wrap_8015e8a4(CPUState *cpu) {
 extern uint32_t display_page_commit_a(int32_t a0);
     cpu->gpr[2] = (uint32_t)(display_page_commit_a(((int32_t)cpu->gpr[4])));
 }
+static void wrap_8015e8bc(CPUState *cpu) {
+extern void cps_8015e8bc(void);
+    cps_8015e8bc();
+}
 static void wrap_8015e8c4(CPUState *cpu) {
 extern uint32_t mode_select_commit(uint32_t param_1);
     cpu->gpr[2] = (uint32_t)(mode_select_commit(((uint32_t)cpu->gpr[4])));
+}
+static void wrap_8015e8e8(CPUState *cpu) {
+extern void cps_8015e8bc(void);
+    cps_8015e8bc();
+}
+static void wrap_8015e8f8(CPUState *cpu) {
+extern void cps_8015e8bc(void);
+    cps_8015e8bc();
+}
+static void wrap_8015e910(CPUState *cpu) {
+extern void cps_8015e8bc(void);
+    cps_8015e8bc();
+}
+static void wrap_8015e918(CPUState *cpu) {
+extern void cps_8015e8bc(void);
+    cps_8015e8bc();
+}
+static void wrap_8015e920(CPUState *cpu) {
+extern void cps_8015e8bc(void);
+    cps_8015e8bc();
+}
+static void wrap_8015e92c(CPUState *cpu) {
+extern void cps_8015e8bc(void);
+    cps_8015e8bc();
+}
+static void wrap_8015e948(CPUState *cpu) {
+extern void cps_8015e8bc(void);
+    cps_8015e8bc();
+}
+static void wrap_8015e958(CPUState *cpu) {
+extern void cps_8015e8bc(void);
+    cps_8015e8bc();
+}
+static void wrap_8015e960(CPUState *cpu) {
+extern void cps_8015e8bc(void);
+    cps_8015e8bc();
+}
+static void wrap_8015e970(CPUState *cpu) {
+extern void cps_8015e8bc(void);
+    cps_8015e8bc();
+}
+static void wrap_8015e988(CPUState *cpu) {
+extern void cps_8015e8bc(void);
+    cps_8015e8bc();
+}
+static void wrap_8015e9b0(CPUState *cpu) {
+extern void cps_8015e8bc(void);
+    cps_8015e8bc();
+}
+static void wrap_8015e9b8(CPUState *cpu) {
+extern void cps_8015e8bc(void);
+    cps_8015e8bc();
+}
+static void wrap_8015e9c0(CPUState *cpu) {
+extern void cps_8015e8bc(void);
+    cps_8015e8bc();
+}
+static void wrap_8015e9c8(CPUState *cpu) {
+extern void cps_8015e8bc(void);
+    cps_8015e8bc();
+}
+static void wrap_8015e9d8(CPUState *cpu) {
+extern void cps_8015e8bc(void);
+    cps_8015e8bc();
+}
+static void wrap_8015e9dc(CPUState *cpu) {
+extern void cps_8015e8bc(void);
+    cps_8015e8bc();
+}
+static void wrap_8015e9e0(CPUState *cpu) {
+extern void cps_8015e8bc(void);
+    cps_8015e8bc();
 }
 static void wrap_8015e9fc(CPUState *cpu) {
 extern uint32_t display_page_commit_b(uint32_t a0, uint32_t a1);
@@ -3264,6 +5784,390 @@ extern uint32_t display_page_commit_b(uint32_t a0, uint32_t a1);
 static void wrap_8015ebf8(CPUState *cpu) {
 extern uint32_t options_state_machine(void);
     cpu->gpr[2] = (uint32_t)(options_state_machine());
+}
+static void wrap_8015ee40(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015ee70(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015ee84(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015eeb0(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015eed8(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015eee0(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015eef0(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015eef8(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015ef00(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015ef08(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015ef10(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015ef18(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015ef24(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015ef2c(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015ef38(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015ef40(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015ef4c(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015ef78(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015ef8c(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015ef98(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015efac(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015efbc(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015efc8(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015efd0(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015eff0(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f008(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f030(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f034(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f044(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f064(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f078(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f09c(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f0a4(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f0b0(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f0c8(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f0d4(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f0dc(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f0ec(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f14c(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f150(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f15c(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f16c(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f19c(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f1a4(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f1ac(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f1b4(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f1dc(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f20c(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f21c(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f234(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f23c(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f264(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f26c(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f274(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f290(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f2a4(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f2a8(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f2b0(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f2c8(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f2d4(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f2dc(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f2ec(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f2f4(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f308(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f310(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f31c(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f328(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f32c(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f33c(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f34c(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f360(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f36c(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f380(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f38c(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f394(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f39c(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f3c8(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f3d8(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f3e4(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f430(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f434(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f450(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f468(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f478(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f48c(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f4c0(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f4c8(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f4e8(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f4f0(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f528(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f52c(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f534(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f554(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f55c(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f564(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
+}
+static void wrap_8015f56c(CPUState *cpu) {
+extern void cps_8015ee40(void);
+    cps_8015ee40();
 }
 static void wrap_8015f590(CPUState *cpu) {
 extern uint32_t memcard_info_query(void);
@@ -3288,6 +6192,538 @@ extern uint32_t dialog_sel_dispatch(intptr_t a0,uint32_t a1);
 static void wrap_8016088c(CPUState *cpu) {
 extern uint32_t screen_flow_state_machine(void);
     cpu->gpr[2] = (uint32_t)(screen_flow_state_machine());
+}
+static void wrap_80160a64(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160aa4(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160ab8(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160ae4(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160b08(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160b10(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160b20(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160b28(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160b30(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160b38(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160b44(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160b4c(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160b54(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160b60(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160b88(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160b9c(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160bb8(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160bc0(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160bc8(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160bd0(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160bd8(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160bdc(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160bf0(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160bfc(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160c10(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160c2c(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160c38(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160c44(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160c4c(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160c5c(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160c74(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160c84(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160ca4(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160cc0(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160cd0(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160cd8(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160ce0(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160ce8(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160cf0(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160cf8(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160d00(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160d08(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160d0c(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160d14(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160d38(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160d44(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160d50(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160d58(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160d60(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160d70(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160d7c(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160d80(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160de0(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160de8(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160df4(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160e04(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160e34(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160e54(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160e5c(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160e74(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160e7c(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160e80(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160e9c(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160edc(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160ef8(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160f14(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160f30(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160f84(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160fa0(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160fb0(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80160fb4(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80161008(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80161024(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80161034(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80161038(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80161090(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_801610ac(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_801610b8(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_801610c4(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_801610cc(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_801610e0(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_801610f8(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80161100(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80161118(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_8016111c(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80161188(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80161190(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80161194(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80161198(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_801611ac(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_801611c8(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_801611d0(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_801611e0(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_801611f0(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_801611f4(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80161234(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_8016123c(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80161248(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80161258(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80161270(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_8016129c(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_801612c4(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_801612d0(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_8016130c(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80161310(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80161350(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80161370(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80161388(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80161390(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_801613bc(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80161400(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80161404(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80161478(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80161480(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80161484(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_8016149c(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_801614c8(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_801614d0(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_801614e0(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_801614f0(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80161528(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80161534(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80161540(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80161544(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80161550(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80161558(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80161564(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_8016156c(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_80161594(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_801615c4(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_801615e8(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_801615f0(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
+}
+static void wrap_801615fc(CPUState *cpu) {
+extern void cps_80160a64(void);
+    cps_80160a64();
 }
 static void wrap_80161630(CPUState *cpu) {
 extern void cps_80161630(void);
@@ -3814,6 +7250,34 @@ static void wrap_80163d7c(CPUState *cpu) {
 extern uint32_t hud_name_fixup(char *t1);
     cpu->gpr[2] = (uint32_t)(hud_name_fixup(((char *)guest_at(cpu->gpr[4]))));
 }
+static void wrap_80163ddc(CPUState *cpu) {
+extern void cps_80163ddc(void);
+    cps_80163ddc();
+}
+static void wrap_80163de8(CPUState *cpu) {
+extern void cps_80163ddc(void);
+    cps_80163ddc();
+}
+static void wrap_80163e00(CPUState *cpu) {
+extern void cps_80163ddc(void);
+    cps_80163ddc();
+}
+static void wrap_80163e0c(CPUState *cpu) {
+extern void cps_80163ddc(void);
+    cps_80163ddc();
+}
+static void wrap_80163e14(CPUState *cpu) {
+extern void cps_80163ddc(void);
+    cps_80163ddc();
+}
+static void wrap_80163e28(CPUState *cpu) {
+extern void cps_80163e28(void);
+    cps_80163e28();
+}
+static void wrap_80163e30(CPUState *cpu) {
+extern void cps_80163e28(void);
+    cps_80163e28();
+}
 static void wrap_80163e38(CPUState *cpu) {
 extern void hud_time_score_draw(uint32_t param_1,uint16_t param_2,int32_t param_3,int32_t param_4,
                   uint8_t *param_5,int32_t param_6);
@@ -3850,6 +7314,218 @@ extern void battle_round_init(uint32_t a0,uint32_t a1);
 static void wrap_80166544(CPUState *cpu) {
 extern void battle_frame_tick(int param_1,uint param_2);
     battle_frame_tick(((int)cpu->gpr[4]), ((uint)cpu->gpr[5]));
+}
+static void wrap_80166a60(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166abc(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166acc(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166ae8(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166b00(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166b08(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166b14(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166b28(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166b3c(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166b6c(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166b7c(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166b94(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166b9c(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166bc0(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166bc8(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166bec(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166bf4(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166bf8(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166c04(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166c14(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166c58(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166c5c(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166c68(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166c7c(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166c90(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166cc0(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166cd0(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166ce8(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166cf0(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166d14(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166d1c(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166d40(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166d48(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166d4c(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166d58(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166d68(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166dac(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166db0(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166dbc(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166dc4(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166dd4(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166de4(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166df8(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166e0c(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166e18(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166e20(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166e2c(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166e38(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166e48(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166e58(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166e68(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166e74(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
+}
+static void wrap_80166e88(CPUState *cpu) {
+extern void cps_80166a60(void);
+    cps_80166a60();
 }
 static void wrap_80166eb0(CPUState *cpu) {
 extern uint32_t fighter_respawn_init(uint32_t a0);
@@ -6492,9 +10168,133 @@ static void wrap_8017fe60(CPUState *cpu) {
 extern void hitbox_corners_xform(int param_1,int param_2);
     hitbox_corners_xform(((int)cpu->gpr[4]), ((int)cpu->gpr[5]));
 }
+static void wrap_801800a4(CPUState *cpu) {
+extern void cps_801800a4(void);
+    cps_801800a4();
+}
+static void wrap_801800d4(CPUState *cpu) {
+extern void cps_801800a4(void);
+    cps_801800a4();
+}
+static void wrap_80180134(CPUState *cpu) {
+extern void cps_801800a4(void);
+    cps_801800a4();
+}
+static void wrap_80180140(CPUState *cpu) {
+extern void cps_801800a4(void);
+    cps_801800a4();
+}
+static void wrap_80180184(CPUState *cpu) {
+extern void cps_801800a4(void);
+    cps_801800a4();
+}
+static void wrap_80180190(CPUState *cpu) {
+extern void cps_801800a4(void);
+    cps_801800a4();
+}
+static void wrap_801802cc(CPUState *cpu) {
+extern void cps_801802cc(void);
+    cps_801802cc();
+}
+static void wrap_801802e0(CPUState *cpu) {
+extern void cps_801802cc(void);
+    cps_801802cc();
+}
+static void wrap_80180364(CPUState *cpu) {
+extern void cps_801802cc(void);
+    cps_801802cc();
+}
+static void wrap_80180370(CPUState *cpu) {
+extern void cps_801802cc(void);
+    cps_801802cc();
+}
+static void wrap_801803b4(CPUState *cpu) {
+extern void cps_801802cc(void);
+    cps_801802cc();
+}
+static void wrap_801803c0(CPUState *cpu) {
+extern void cps_801802cc(void);
+    cps_801802cc();
+}
+static void wrap_80180504(CPUState *cpu) {
+extern void cps_801802cc(void);
+    cps_801802cc();
+}
+static void wrap_80180564(CPUState *cpu) {
+extern void cps_801802cc(void);
+    cps_801802cc();
+}
+static void wrap_801805dc(CPUState *cpu) {
+extern void cps_801802cc(void);
+    cps_801802cc();
+}
+static void wrap_801805e8(CPUState *cpu) {
+extern void cps_801802cc(void);
+    cps_801802cc();
+}
+static void wrap_8018062c(CPUState *cpu) {
+extern void cps_801802cc(void);
+    cps_801802cc();
+}
+static void wrap_80180638(CPUState *cpu) {
+extern void cps_801802cc(void);
+    cps_801802cc();
+}
+static void wrap_8018077c(CPUState *cpu) {
+extern void cps_801802cc(void);
+    cps_801802cc();
+}
+static void wrap_801807f0(CPUState *cpu) {
+extern void cps_801802cc(void);
+    cps_801802cc();
+}
+static void wrap_801807f8(CPUState *cpu) {
+extern void cps_801802cc(void);
+    cps_801802cc();
+}
+static void wrap_80180804(CPUState *cpu) {
+extern void cps_801802cc(void);
+    cps_801802cc();
+}
+static void wrap_80180848(CPUState *cpu) {
+extern void cps_801802cc(void);
+    cps_801802cc();
+}
+static void wrap_80180854(CPUState *cpu) {
+extern void cps_801802cc(void);
+    cps_801802cc();
+}
+static void wrap_8018098c(CPUState *cpu) {
+extern void cps_8018098c(void);
+    cps_8018098c();
+}
+static void wrap_80180998(CPUState *cpu) {
+extern void cps_8018098c(void);
+    cps_8018098c();
+}
 static void wrap_801809c8(CPUState *cpu) {
 extern void fighter_pair_update(int param_1,int param_2,int param_3);
     fighter_pair_update(((int)cpu->gpr[4]), ((int)cpu->gpr[5]), ((int)cpu->gpr[6]));
+}
+static void wrap_80181000(CPUState *cpu) {
+extern void cps_80181000(void);
+    cps_80181000();
+}
+static void wrap_80181008(CPUState *cpu) {
+extern void cps_80181000(void);
+    cps_80181000();
+}
+static void wrap_80181018(CPUState *cpu) {
+extern void cps_80181000(void);
+    cps_80181000();
+}
+static void wrap_80181034(CPUState *cpu) {
+extern void cps_80181000(void);
+    cps_80181000();
+}
+static void wrap_8018103c(CPUState *cpu) {
+extern void cps_80181000(void);
+    cps_80181000();
 }
 static void wrap_8018106c(CPUState *cpu) {
 extern void record_struct_dump(uint32_t a0);
@@ -6508,6 +10308,22 @@ static void wrap_80181db8(CPUState *cpu) {
 extern void ani_fixup_guest(uint8_t *ctrl, uint32_t a1, uint8_t *cat,
                      const uint8_t *battle, int32_t variant);
     ani_fixup_guest(((uint8_t *)guest_at(cpu->gpr[4])), ((uint32_t)cpu->gpr[5]), ((uint8_t *)guest_at(cpu->gpr[6])), ((const uint8_t *)guest_at(cpu->gpr[7])), ((int32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu)));
+}
+static void wrap_80181ee8(CPUState *cpu) {
+extern void cps_80181ee8(void);
+    cps_80181ee8();
+}
+static void wrap_80181ef0(CPUState *cpu) {
+extern void cps_80181ef0(void);
+    cps_80181ef0();
+}
+static void wrap_80181f10(CPUState *cpu) {
+extern void cps_80181f10(void);
+    cps_80181f10();
+}
+static void wrap_80181f18(CPUState *cpu) {
+extern void cps_80181f18(void);
+    cps_80181f18();
 }
 static void wrap_80181f20(CPUState *cpu) {
 extern void fighter_script_fsm(int param_1,undefined4 param_2,int *param_3,int param_4);
@@ -6532,6 +10348,58 @@ extern uint32_t scriptop_ret(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3
 static void wrap_801835c4(CPUState *cpu) {
 extern uint32_t script_ctx28_clear(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3);
     cpu->gpr[2] = (uint32_t)(script_ctx28_clear(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint8_t *)guest_at(cpu->gpr[6])), ((uint32_t)cpu->gpr[7])));
+}
+static void wrap_801835d0(CPUState *cpu) {
+extern void cps_801835d0(void);
+    cps_801835d0();
+}
+static void wrap_801835e0(CPUState *cpu) {
+extern void cps_801835d0(void);
+    cps_801835d0();
+}
+static void wrap_801835e8(CPUState *cpu) {
+extern void cps_801835d0(void);
+    cps_801835d0();
+}
+static void wrap_801835f8(CPUState *cpu) {
+extern void cps_801835d0(void);
+    cps_801835d0();
+}
+static void wrap_80183600(CPUState *cpu) {
+extern void cps_801835d0(void);
+    cps_801835d0();
+}
+static void wrap_80183610(CPUState *cpu) {
+extern void cps_801835d0(void);
+    cps_801835d0();
+}
+static void wrap_80183618(CPUState *cpu) {
+extern void cps_801835d0(void);
+    cps_801835d0();
+}
+static void wrap_80183628(CPUState *cpu) {
+extern void cps_801835d0(void);
+    cps_801835d0();
+}
+static void wrap_80183630(CPUState *cpu) {
+extern void cps_801835d0(void);
+    cps_801835d0();
+}
+static void wrap_80183640(CPUState *cpu) {
+extern void cps_801835d0(void);
+    cps_801835d0();
+}
+static void wrap_80183648(CPUState *cpu) {
+extern void cps_801835d0(void);
+    cps_801835d0();
+}
+static void wrap_80183658(CPUState *cpu) {
+extern void cps_801835d0(void);
+    cps_801835d0();
+}
+static void wrap_8018365c(CPUState *cpu) {
+extern void cps_801835d0(void);
+    cps_801835d0();
 }
 static void wrap_80183664(CPUState *cpu) {
 extern uint32_t scriptop_wait(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3);
@@ -6705,6 +10573,62 @@ static void wrap_80186f5c(CPUState *cpu) {
 extern undefined4 * gte_xform3_t_ip(undefined4 *param_1,undefined2 *param_2);
     cpu->gpr[2] = guest_of((const void *)(gte_xform3_t_ip(((undefined4 *)guest_at(cpu->gpr[4])), ((undefined2 *)guest_at(cpu->gpr[5])))));
 }
+static void wrap_801870a4(CPUState *cpu) {
+extern void cps_801870a4(void);
+    cps_801870a4();
+}
+static void wrap_801870ac(CPUState *cpu) {
+extern void cps_801870a4(void);
+    cps_801870a4();
+}
+static void wrap_801870f0(CPUState *cpu) {
+extern void cps_801870a4(void);
+    cps_801870a4();
+}
+static void wrap_80187100(CPUState *cpu) {
+extern void cps_801870a4(void);
+    cps_801870a4();
+}
+static void wrap_80187108(CPUState *cpu) {
+extern void cps_801870a4(void);
+    cps_801870a4();
+}
+static void wrap_80187110(CPUState *cpu) {
+extern void cps_801870a4(void);
+    cps_801870a4();
+}
+static void wrap_80187118(CPUState *cpu) {
+extern void cps_801870a4(void);
+    cps_801870a4();
+}
+static void wrap_80187144(CPUState *cpu) {
+extern void cps_801870a4(void);
+    cps_801870a4();
+}
+static void wrap_8018714c(CPUState *cpu) {
+extern void cps_801870a4(void);
+    cps_801870a4();
+}
+static void wrap_80187164(CPUState *cpu) {
+extern void cps_801870a4(void);
+    cps_801870a4();
+}
+static void wrap_80187178(CPUState *cpu) {
+extern void cps_801870a4(void);
+    cps_801870a4();
+}
+static void wrap_80187180(CPUState *cpu) {
+extern void cps_801870a4(void);
+    cps_801870a4();
+}
+static void wrap_8018718c(CPUState *cpu) {
+extern void cps_801870a4(void);
+    cps_801870a4();
+}
+static void wrap_801871b4(CPUState *cpu) {
+extern void cps_801870a4(void);
+    cps_801870a4();
+}
 static void wrap_801871bc(CPUState *cpu) {
 extern int * prim_list_gte_invoke(int *param_1,undefined4 param_2,undefined4 param_3,int param_4,undefined4 param_5 ,undefined4 param_6);
     cpu->gpr[2] = guest_of((const void *)(prim_list_gte_invoke(((int *)guest_at(cpu->gpr[4])), ((undefined4)cpu->gpr[5]), ((undefined4)cpu->gpr[6]), ((int)cpu->gpr[7]), ((undefined4)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu)), ((undefined4)(uint32_t)cpu->read_word((cpu->gpr[29] + 20) & 0xffffffffu)))));
@@ -6799,22 +10723,1358 @@ extern uint32_t prim_emit_ptr_68(uint32_t cur, uint32_t ot, uint32_t sel,
                           int32_t count);
     cpu->gpr[2] = (uint32_t)(prim_emit_ptr_68(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((int32_t)cpu->gpr[7])));
 }
+static void wrap_80188200(CPUState *cpu) {
+extern void cps_80188200(void);
+    cps_80188200();
+}
+static void wrap_80188208(CPUState *cpu) {
+extern void cps_80188200(void);
+    cps_80188200();
+}
+static void wrap_80188210(CPUState *cpu) {
+extern void cps_80188200(void);
+    cps_80188200();
+}
+static void wrap_80188214(CPUState *cpu) {
+extern void cps_80188200(void);
+    cps_80188200();
+}
+static void wrap_80188260(CPUState *cpu) {
+extern void cps_80188200(void);
+    cps_80188200();
+}
+static void wrap_801882f8(CPUState *cpu) {
+extern void cps_80188200(void);
+    cps_80188200();
+}
+static void wrap_80188300(CPUState *cpu) {
+extern void cps_80188200(void);
+    cps_80188200();
+}
+static void wrap_80188308(CPUState *cpu) {
+extern void cps_80188308(void);
+    cps_80188308();
+}
+static void wrap_80188310(CPUState *cpu) {
+extern void cps_80188308(void);
+    cps_80188308();
+}
+static void wrap_80188318(CPUState *cpu) {
+extern void cps_80188308(void);
+    cps_80188308();
+}
+static void wrap_8018831c(CPUState *cpu) {
+extern void cps_80188308(void);
+    cps_80188308();
+}
+static void wrap_80188368(CPUState *cpu) {
+extern void cps_80188308(void);
+    cps_80188308();
+}
+static void wrap_80188424(CPUState *cpu) {
+extern void cps_80188308(void);
+    cps_80188308();
+}
+static void wrap_8018842c(CPUState *cpu) {
+extern void cps_80188308(void);
+    cps_80188308();
+}
+static void wrap_80188434(CPUState *cpu) {
+extern void cps_80188434(void);
+    cps_80188434();
+}
+static void wrap_8018843c(CPUState *cpu) {
+extern void cps_80188434(void);
+    cps_80188434();
+}
+static void wrap_80188444(CPUState *cpu) {
+extern void cps_80188434(void);
+    cps_80188434();
+}
+static void wrap_80188448(CPUState *cpu) {
+extern void cps_80188434(void);
+    cps_80188434();
+}
+static void wrap_80188494(CPUState *cpu) {
+extern void cps_80188434(void);
+    cps_80188434();
+}
+static void wrap_80188500(CPUState *cpu) {
+extern void cps_80188434(void);
+    cps_80188434();
+}
+static void wrap_80188508(CPUState *cpu) {
+extern void cps_80188434(void);
+    cps_80188434();
+}
 static void wrap_80188510(CPUState *cpu) {
 extern uint32_t prim_poly_emit_6c(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3);
     cpu->gpr[2] = (uint32_t)(prim_poly_emit_6c(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7])));
+}
+static void wrap_8018866c(CPUState *cpu) {
+extern void cps_8018866c(void);
+    cps_8018866c();
+}
+static void wrap_80188674(CPUState *cpu) {
+extern void cps_8018866c(void);
+    cps_8018866c();
+}
+static void wrap_8018867c(CPUState *cpu) {
+extern void cps_8018866c(void);
+    cps_8018866c();
+}
+static void wrap_80188680(CPUState *cpu) {
+extern void cps_8018866c(void);
+    cps_8018866c();
+}
+static void wrap_801886cc(CPUState *cpu) {
+extern void cps_8018866c(void);
+    cps_8018866c();
+}
+static void wrap_80188744(CPUState *cpu) {
+extern void cps_8018866c(void);
+    cps_8018866c();
+}
+static void wrap_8018874c(CPUState *cpu) {
+extern void cps_8018866c(void);
+    cps_8018866c();
 }
 static void wrap_80188754(CPUState *cpu) {
 extern uint32_t prim_poly_emit_88(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3);
     cpu->gpr[2] = (uint32_t)(prim_poly_emit_88(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7])));
 }
+static void wrap_801888c0(CPUState *cpu) {
+extern void cps_801888c0(void);
+    cps_801888c0();
+}
+static void wrap_801888c8(CPUState *cpu) {
+extern void cps_801888c0(void);
+    cps_801888c0();
+}
+static void wrap_801888d0(CPUState *cpu) {
+extern void cps_801888c0(void);
+    cps_801888c0();
+}
+static void wrap_801888d4(CPUState *cpu) {
+extern void cps_801888c0(void);
+    cps_801888c0();
+}
+static void wrap_80188920(CPUState *cpu) {
+extern void cps_801888c0(void);
+    cps_801888c0();
+}
+static void wrap_801889e4(CPUState *cpu) {
+extern void cps_801888c0(void);
+    cps_801888c0();
+}
+static void wrap_801889ec(CPUState *cpu) {
+extern void cps_801888c0(void);
+    cps_801888c0();
+}
+static void wrap_801889f4(CPUState *cpu) {
+extern void cps_801889f4(void);
+    cps_801889f4();
+}
+static void wrap_801889fc(CPUState *cpu) {
+extern void cps_801889f4(void);
+    cps_801889f4();
+}
+static void wrap_80188a04(CPUState *cpu) {
+extern void cps_801889f4(void);
+    cps_801889f4();
+}
+static void wrap_80188a08(CPUState *cpu) {
+extern void cps_801889f4(void);
+    cps_801889f4();
+}
+static void wrap_80188a54(CPUState *cpu) {
+extern void cps_801889f4(void);
+    cps_801889f4();
+}
+static void wrap_80188b4c(CPUState *cpu) {
+extern void cps_801889f4(void);
+    cps_801889f4();
+}
+static void wrap_80188b54(CPUState *cpu) {
+extern void cps_801889f4(void);
+    cps_801889f4();
+}
+static void wrap_80188b5c(CPUState *cpu) {
+extern void cps_80188b5c(void);
+    cps_80188b5c();
+}
+static void wrap_80188b6c(CPUState *cpu) {
+extern void cps_80188b5c(void);
+    cps_80188b5c();
+}
+static void wrap_80188b7c(CPUState *cpu) {
+extern void cps_80188b5c(void);
+    cps_80188b5c();
+}
+static void wrap_80188b8c(CPUState *cpu) {
+extern void cps_80188b5c(void);
+    cps_80188b5c();
+}
+static void wrap_80188b98(CPUState *cpu) {
+extern void cps_80188b5c(void);
+    cps_80188b5c();
+}
+static void wrap_80188ba0(CPUState *cpu) {
+extern void cps_80188b5c(void);
+    cps_80188b5c();
+}
+static void wrap_80188ba8(CPUState *cpu) {
+extern void cps_80188b5c(void);
+    cps_80188b5c();
+}
+static void wrap_80188bac(CPUState *cpu) {
+extern void cps_80188b5c(void);
+    cps_80188b5c();
+}
+static void wrap_80188bf4(CPUState *cpu) {
+extern void cps_80188b5c(void);
+    cps_80188b5c();
+}
+static void wrap_80188c24(CPUState *cpu) {
+extern void cps_80188b5c(void);
+    cps_80188b5c();
+}
+static void wrap_80188c2c(CPUState *cpu) {
+extern void cps_80188b5c(void);
+    cps_80188b5c();
+}
+static void wrap_80188c34(CPUState *cpu) {
+extern void cps_80188c34(void);
+    cps_80188c34();
+}
+static void wrap_80188c44(CPUState *cpu) {
+extern void cps_80188c34(void);
+    cps_80188c34();
+}
+static void wrap_80188c54(CPUState *cpu) {
+extern void cps_80188c34(void);
+    cps_80188c34();
+}
+static void wrap_80188c64(CPUState *cpu) {
+extern void cps_80188c34(void);
+    cps_80188c34();
+}
+static void wrap_80188c70(CPUState *cpu) {
+extern void cps_80188c34(void);
+    cps_80188c34();
+}
+static void wrap_80188c78(CPUState *cpu) {
+extern void cps_80188c34(void);
+    cps_80188c34();
+}
+static void wrap_80188c80(CPUState *cpu) {
+extern void cps_80188c34(void);
+    cps_80188c34();
+}
+static void wrap_80188c84(CPUState *cpu) {
+extern void cps_80188c34(void);
+    cps_80188c34();
+}
+static void wrap_80188ccc(CPUState *cpu) {
+extern void cps_80188c34(void);
+    cps_80188c34();
+}
+static void wrap_80188d1c(CPUState *cpu) {
+extern void cps_80188c34(void);
+    cps_80188c34();
+}
+static void wrap_80188d24(CPUState *cpu) {
+extern void cps_80188c34(void);
+    cps_80188c34();
+}
+static void wrap_80188d2c(CPUState *cpu) {
+extern void cps_80188d2c(void);
+    cps_80188d2c();
+}
+static void wrap_80188d34(CPUState *cpu) {
+extern void cps_80188d2c(void);
+    cps_80188d2c();
+}
+static void wrap_80188d3c(CPUState *cpu) {
+extern void cps_80188d2c(void);
+    cps_80188d2c();
+}
+static void wrap_80188d40(CPUState *cpu) {
+extern void cps_80188d2c(void);
+    cps_80188d2c();
+}
+static void wrap_80188d80(CPUState *cpu) {
+extern void cps_80188d2c(void);
+    cps_80188d2c();
+}
+static void wrap_80188dbc(CPUState *cpu) {
+extern void cps_80188d2c(void);
+    cps_80188d2c();
+}
+static void wrap_80188dc4(CPUState *cpu) {
+extern void cps_80188d2c(void);
+    cps_80188d2c();
+}
+static void wrap_80188dcc(CPUState *cpu) {
+extern void cps_80188dcc(void);
+    cps_80188dcc();
+}
+static void wrap_80188dd4(CPUState *cpu) {
+extern void cps_80188dcc(void);
+    cps_80188dcc();
+}
+static void wrap_80188ddc(CPUState *cpu) {
+extern void cps_80188dcc(void);
+    cps_80188dcc();
+}
+static void wrap_80188de0(CPUState *cpu) {
+extern void cps_80188dcc(void);
+    cps_80188dcc();
+}
+static void wrap_80188e20(CPUState *cpu) {
+extern void cps_80188dcc(void);
+    cps_80188dcc();
+}
+static void wrap_80188e78(CPUState *cpu) {
+extern void cps_80188dcc(void);
+    cps_80188dcc();
+}
+static void wrap_80188e80(CPUState *cpu) {
+extern void cps_80188dcc(void);
+    cps_80188dcc();
+}
+static void wrap_80188e88(CPUState *cpu) {
+extern void cps_80188e88(void);
+    cps_80188e88();
+}
+static void wrap_80188e90(CPUState *cpu) {
+extern void cps_80188e88(void);
+    cps_80188e88();
+}
+static void wrap_80188e98(CPUState *cpu) {
+extern void cps_80188e88(void);
+    cps_80188e88();
+}
+static void wrap_80188e9c(CPUState *cpu) {
+extern void cps_80188e88(void);
+    cps_80188e88();
+}
+static void wrap_80188edc(CPUState *cpu) {
+extern void cps_80188e88(void);
+    cps_80188e88();
+}
+static void wrap_80188f30(CPUState *cpu) {
+extern void cps_80188e88(void);
+    cps_80188e88();
+}
+static void wrap_80188f38(CPUState *cpu) {
+extern void cps_80188e88(void);
+    cps_80188e88();
+}
+static void wrap_80188f40(CPUState *cpu) {
+extern void cps_80188f40(void);
+    cps_80188f40();
+}
+static void wrap_80188f48(CPUState *cpu) {
+extern void cps_80188f40(void);
+    cps_80188f40();
+}
+static void wrap_80188f50(CPUState *cpu) {
+extern void cps_80188f40(void);
+    cps_80188f40();
+}
+static void wrap_80188f54(CPUState *cpu) {
+extern void cps_80188f40(void);
+    cps_80188f40();
+}
+static void wrap_80188f94(CPUState *cpu) {
+extern void cps_80188f40(void);
+    cps_80188f40();
+}
+static void wrap_8018901c(CPUState *cpu) {
+extern void cps_80188f40(void);
+    cps_80188f40();
+}
+static void wrap_80189024(CPUState *cpu) {
+extern void cps_80188f40(void);
+    cps_80188f40();
+}
+static void wrap_8018902c(CPUState *cpu) {
+extern void cps_8018902c(void);
+    cps_8018902c();
+}
+static void wrap_80189034(CPUState *cpu) {
+extern void cps_8018902c(void);
+    cps_8018902c();
+}
+static void wrap_8018903c(CPUState *cpu) {
+extern void cps_8018902c(void);
+    cps_8018902c();
+}
+static void wrap_80189040(CPUState *cpu) {
+extern void cps_8018902c(void);
+    cps_8018902c();
+}
+static void wrap_801890a4(CPUState *cpu) {
+extern void cps_8018902c(void);
+    cps_8018902c();
+}
+static void wrap_801890cc(CPUState *cpu) {
+extern void cps_8018902c(void);
+    cps_8018902c();
+}
+static void wrap_801890d4(CPUState *cpu) {
+extern void cps_8018902c(void);
+    cps_8018902c();
+}
+static void wrap_801890dc(CPUState *cpu) {
+extern void cps_801890dc(void);
+    cps_801890dc();
+}
+static void wrap_801890e4(CPUState *cpu) {
+extern void cps_801890dc(void);
+    cps_801890dc();
+}
+static void wrap_801890ec(CPUState *cpu) {
+extern void cps_801890dc(void);
+    cps_801890dc();
+}
+static void wrap_801890f0(CPUState *cpu) {
+extern void cps_801890dc(void);
+    cps_801890dc();
+}
+static void wrap_80189154(CPUState *cpu) {
+extern void cps_801890dc(void);
+    cps_801890dc();
+}
+static void wrap_80189194(CPUState *cpu) {
+extern void cps_801890dc(void);
+    cps_801890dc();
+}
+static void wrap_8018919c(CPUState *cpu) {
+extern void cps_801890dc(void);
+    cps_801890dc();
+}
+static void wrap_801891a4(CPUState *cpu) {
+extern void cps_801891a4(void);
+    cps_801891a4();
+}
+static void wrap_801891ac(CPUState *cpu) {
+extern void cps_801891a4(void);
+    cps_801891a4();
+}
+static void wrap_801891b4(CPUState *cpu) {
+extern void cps_801891a4(void);
+    cps_801891a4();
+}
+static void wrap_801891b8(CPUState *cpu) {
+extern void cps_801891a4(void);
+    cps_801891a4();
+}
+static void wrap_80189210(CPUState *cpu) {
+extern void cps_801891a4(void);
+    cps_801891a4();
+}
+static void wrap_8018925c(CPUState *cpu) {
+extern void cps_801891a4(void);
+    cps_801891a4();
+}
+static void wrap_80189264(CPUState *cpu) {
+extern void cps_801891a4(void);
+    cps_801891a4();
+}
+static void wrap_8018926c(CPUState *cpu) {
+extern void cps_8018926c(void);
+    cps_8018926c();
+}
+static void wrap_80189274(CPUState *cpu) {
+extern void cps_8018926c(void);
+    cps_8018926c();
+}
+static void wrap_8018927c(CPUState *cpu) {
+extern void cps_8018926c(void);
+    cps_8018926c();
+}
+static void wrap_80189280(CPUState *cpu) {
+extern void cps_8018926c(void);
+    cps_8018926c();
+}
+static void wrap_801892d8(CPUState *cpu) {
+extern void cps_8018926c(void);
+    cps_8018926c();
+}
+static void wrap_80189350(CPUState *cpu) {
+extern void cps_8018926c(void);
+    cps_8018926c();
+}
+static void wrap_80189358(CPUState *cpu) {
+extern void cps_8018926c(void);
+    cps_8018926c();
+}
+static void wrap_80189360(CPUState *cpu) {
+extern void cps_80189360(void);
+    cps_80189360();
+}
+static void wrap_80189368(CPUState *cpu) {
+extern void cps_80189360(void);
+    cps_80189360();
+}
+static void wrap_80189370(CPUState *cpu) {
+extern void cps_80189360(void);
+    cps_80189360();
+}
+static void wrap_80189374(CPUState *cpu) {
+extern void cps_80189360(void);
+    cps_80189360();
+}
+static void wrap_801893b4(CPUState *cpu) {
+extern void cps_80189360(void);
+    cps_80189360();
+}
+static void wrap_80189418(CPUState *cpu) {
+extern void cps_80189360(void);
+    cps_80189360();
+}
+static void wrap_80189420(CPUState *cpu) {
+extern void cps_80189360(void);
+    cps_80189360();
+}
+static void wrap_80189428(CPUState *cpu) {
+extern void cps_80189428(void);
+    cps_80189428();
+}
+static void wrap_80189430(CPUState *cpu) {
+extern void cps_80189428(void);
+    cps_80189428();
+}
+static void wrap_80189438(CPUState *cpu) {
+extern void cps_80189428(void);
+    cps_80189428();
+}
+static void wrap_8018943c(CPUState *cpu) {
+extern void cps_80189428(void);
+    cps_80189428();
+}
+static void wrap_8018947c(CPUState *cpu) {
+extern void cps_80189428(void);
+    cps_80189428();
+}
+static void wrap_801894f0(CPUState *cpu) {
+extern void cps_80189428(void);
+    cps_80189428();
+}
+static void wrap_801894f8(CPUState *cpu) {
+extern void cps_80189428(void);
+    cps_80189428();
+}
+static void wrap_80189500(CPUState *cpu) {
+extern void cps_80189500(void);
+    cps_80189500();
+}
+static void wrap_80189508(CPUState *cpu) {
+extern void cps_80189500(void);
+    cps_80189500();
+}
+static void wrap_80189510(CPUState *cpu) {
+extern void cps_80189500(void);
+    cps_80189500();
+}
+static void wrap_80189514(CPUState *cpu) {
+extern void cps_80189500(void);
+    cps_80189500();
+}
+static void wrap_80189554(CPUState *cpu) {
+extern void cps_80189500(void);
+    cps_80189500();
+}
+static void wrap_801895e8(CPUState *cpu) {
+extern void cps_80189500(void);
+    cps_80189500();
+}
+static void wrap_801895f0(CPUState *cpu) {
+extern void cps_80189500(void);
+    cps_80189500();
+}
+static void wrap_801895f8(CPUState *cpu) {
+extern void cps_801895f8(void);
+    cps_801895f8();
+}
+static void wrap_80189600(CPUState *cpu) {
+extern void cps_801895f8(void);
+    cps_801895f8();
+}
+static void wrap_80189608(CPUState *cpu) {
+extern void cps_801895f8(void);
+    cps_801895f8();
+}
+static void wrap_8018960c(CPUState *cpu) {
+extern void cps_801895f8(void);
+    cps_801895f8();
+}
+static void wrap_8018964c(CPUState *cpu) {
+extern void cps_801895f8(void);
+    cps_801895f8();
+}
+static void wrap_801896f4(CPUState *cpu) {
+extern void cps_801895f8(void);
+    cps_801895f8();
+}
+static void wrap_801896fc(CPUState *cpu) {
+extern void cps_801895f8(void);
+    cps_801895f8();
+}
+static void wrap_80189704(CPUState *cpu) {
+extern void cps_80189704(void);
+    cps_80189704();
+}
+static void wrap_8018970c(CPUState *cpu) {
+extern void cps_80189704(void);
+    cps_80189704();
+}
+static void wrap_80189714(CPUState *cpu) {
+extern void cps_80189704(void);
+    cps_80189704();
+}
+static void wrap_80189718(CPUState *cpu) {
+extern void cps_80189704(void);
+    cps_80189704();
+}
+static void wrap_80189764(CPUState *cpu) {
+extern void cps_80189704(void);
+    cps_80189704();
+}
+static void wrap_801897a0(CPUState *cpu) {
+extern void cps_80189704(void);
+    cps_80189704();
+}
+static void wrap_801897a8(CPUState *cpu) {
+extern void cps_80189704(void);
+    cps_80189704();
+}
+static void wrap_801897b0(CPUState *cpu) {
+extern void cps_801897b0(void);
+    cps_801897b0();
+}
+static void wrap_801897b8(CPUState *cpu) {
+extern void cps_801897b0(void);
+    cps_801897b0();
+}
+static void wrap_801897c0(CPUState *cpu) {
+extern void cps_801897b0(void);
+    cps_801897b0();
+}
+static void wrap_801897c4(CPUState *cpu) {
+extern void cps_801897b0(void);
+    cps_801897b0();
+}
+static void wrap_80189810(CPUState *cpu) {
+extern void cps_801897b0(void);
+    cps_801897b0();
+}
+static void wrap_80189890(CPUState *cpu) {
+extern void cps_801897b0(void);
+    cps_801897b0();
+}
+static void wrap_80189898(CPUState *cpu) {
+extern void cps_801897b0(void);
+    cps_801897b0();
+}
+static void wrap_801898a0(CPUState *cpu) {
+extern void cps_801898a0(void);
+    cps_801898a0();
+}
+static void wrap_801898a8(CPUState *cpu) {
+extern void cps_801898a0(void);
+    cps_801898a0();
+}
+static void wrap_801898b0(CPUState *cpu) {
+extern void cps_801898a0(void);
+    cps_801898a0();
+}
+static void wrap_801898b4(CPUState *cpu) {
+extern void cps_801898a0(void);
+    cps_801898a0();
+}
+static void wrap_80189900(CPUState *cpu) {
+extern void cps_801898a0(void);
+    cps_801898a0();
+}
+static void wrap_8018994c(CPUState *cpu) {
+extern void cps_801898a0(void);
+    cps_801898a0();
+}
+static void wrap_80189954(CPUState *cpu) {
+extern void cps_801898a0(void);
+    cps_801898a0();
+}
+static void wrap_8018995c(CPUState *cpu) {
+extern void cps_8018995c(void);
+    cps_8018995c();
+}
+static void wrap_80189964(CPUState *cpu) {
+extern void cps_8018995c(void);
+    cps_8018995c();
+}
+static void wrap_8018996c(CPUState *cpu) {
+extern void cps_8018995c(void);
+    cps_8018995c();
+}
+static void wrap_80189970(CPUState *cpu) {
+extern void cps_8018995c(void);
+    cps_8018995c();
+}
+static void wrap_801899bc(CPUState *cpu) {
+extern void cps_8018995c(void);
+    cps_8018995c();
+}
+static void wrap_80189a50(CPUState *cpu) {
+extern void cps_8018995c(void);
+    cps_8018995c();
+}
+static void wrap_80189a58(CPUState *cpu) {
+extern void cps_8018995c(void);
+    cps_8018995c();
+}
+static void wrap_80189a60(CPUState *cpu) {
+extern void cps_80189a60(void);
+    cps_80189a60();
+}
+static void wrap_80189a68(CPUState *cpu) {
+extern void cps_80189a60(void);
+    cps_80189a60();
+}
+static void wrap_80189a70(CPUState *cpu) {
+extern void cps_80189a60(void);
+    cps_80189a60();
+}
+static void wrap_80189a74(CPUState *cpu) {
+extern void cps_80189a60(void);
+    cps_80189a60();
+}
+static void wrap_80189abc(CPUState *cpu) {
+extern void cps_80189a60(void);
+    cps_80189a60();
+}
+static void wrap_80189b40(CPUState *cpu) {
+extern void cps_80189a60(void);
+    cps_80189a60();
+}
+static void wrap_80189b48(CPUState *cpu) {
+extern void cps_80189a60(void);
+    cps_80189a60();
+}
+static void wrap_80189b50(CPUState *cpu) {
+extern void cps_80189b50(void);
+    cps_80189b50();
+}
+static void wrap_80189b58(CPUState *cpu) {
+extern void cps_80189b50(void);
+    cps_80189b50();
+}
+static void wrap_80189b60(CPUState *cpu) {
+extern void cps_80189b50(void);
+    cps_80189b50();
+}
+static void wrap_80189b64(CPUState *cpu) {
+extern void cps_80189b50(void);
+    cps_80189b50();
+}
+static void wrap_80189bb0(CPUState *cpu) {
+extern void cps_80189b50(void);
+    cps_80189b50();
+}
+static void wrap_80189c3c(CPUState *cpu) {
+extern void cps_80189b50(void);
+    cps_80189b50();
+}
+static void wrap_80189c44(CPUState *cpu) {
+extern void cps_80189b50(void);
+    cps_80189b50();
+}
+static void wrap_80189c4c(CPUState *cpu) {
+extern void cps_80189c4c(void);
+    cps_80189c4c();
+}
+static void wrap_80189c54(CPUState *cpu) {
+extern void cps_80189c4c(void);
+    cps_80189c4c();
+}
+static void wrap_80189c5c(CPUState *cpu) {
+extern void cps_80189c4c(void);
+    cps_80189c4c();
+}
+static void wrap_80189c60(CPUState *cpu) {
+extern void cps_80189c4c(void);
+    cps_80189c4c();
+}
+static void wrap_80189cac(CPUState *cpu) {
+extern void cps_80189c4c(void);
+    cps_80189c4c();
+}
+static void wrap_80189cf8(CPUState *cpu) {
+extern void cps_80189c4c(void);
+    cps_80189c4c();
+}
+static void wrap_80189d00(CPUState *cpu) {
+extern void cps_80189c4c(void);
+    cps_80189c4c();
+}
+static void wrap_80189d08(CPUState *cpu) {
+extern void cps_80189d08(void);
+    cps_80189d08();
+}
+static void wrap_80189d10(CPUState *cpu) {
+extern void cps_80189d08(void);
+    cps_80189d08();
+}
+static void wrap_80189d18(CPUState *cpu) {
+extern void cps_80189d08(void);
+    cps_80189d08();
+}
+static void wrap_80189d1c(CPUState *cpu) {
+extern void cps_80189d08(void);
+    cps_80189d08();
+}
+static void wrap_80189d68(CPUState *cpu) {
+extern void cps_80189d08(void);
+    cps_80189d08();
+}
+static void wrap_80189e1c(CPUState *cpu) {
+extern void cps_80189d08(void);
+    cps_80189d08();
+}
+static void wrap_80189e24(CPUState *cpu) {
+extern void cps_80189d08(void);
+    cps_80189d08();
+}
+static void wrap_80189e2c(CPUState *cpu) {
+extern void cps_80189e2c(void);
+    cps_80189e2c();
+}
+static void wrap_80189e34(CPUState *cpu) {
+extern void cps_80189e2c(void);
+    cps_80189e2c();
+}
+static void wrap_80189e3c(CPUState *cpu) {
+extern void cps_80189e2c(void);
+    cps_80189e2c();
+}
+static void wrap_80189e40(CPUState *cpu) {
+extern void cps_80189e2c(void);
+    cps_80189e2c();
+}
+static void wrap_80189e8c(CPUState *cpu) {
+extern void cps_80189e2c(void);
+    cps_80189e2c();
+}
+static void wrap_80189eec(CPUState *cpu) {
+extern void cps_80189e2c(void);
+    cps_80189e2c();
+}
+static void wrap_80189ef4(CPUState *cpu) {
+extern void cps_80189e2c(void);
+    cps_80189e2c();
+}
+static void wrap_80189efc(CPUState *cpu) {
+extern void cps_80189efc(void);
+    cps_80189efc();
+}
+static void wrap_80189f04(CPUState *cpu) {
+extern void cps_80189efc(void);
+    cps_80189efc();
+}
+static void wrap_80189f0c(CPUState *cpu) {
+extern void cps_80189efc(void);
+    cps_80189efc();
+}
+static void wrap_80189f10(CPUState *cpu) {
+extern void cps_80189efc(void);
+    cps_80189efc();
+}
+static void wrap_80189f5c(CPUState *cpu) {
+extern void cps_80189efc(void);
+    cps_80189efc();
+}
+static void wrap_8018a020(CPUState *cpu) {
+extern void cps_80189efc(void);
+    cps_80189efc();
+}
+static void wrap_8018a028(CPUState *cpu) {
+extern void cps_80189efc(void);
+    cps_80189efc();
+}
+static void wrap_8018a030(CPUState *cpu) {
+extern void cps_8018a030(void);
+    cps_8018a030();
+}
+static void wrap_8018a038(CPUState *cpu) {
+extern void cps_8018a030(void);
+    cps_8018a030();
+}
+static void wrap_8018a040(CPUState *cpu) {
+extern void cps_8018a030(void);
+    cps_8018a030();
+}
+static void wrap_8018a044(CPUState *cpu) {
+extern void cps_8018a030(void);
+    cps_8018a030();
+}
+static void wrap_8018a090(CPUState *cpu) {
+extern void cps_8018a030(void);
+    cps_8018a030();
+}
+static void wrap_8018a13c(CPUState *cpu) {
+extern void cps_8018a030(void);
+    cps_8018a030();
+}
+static void wrap_8018a144(CPUState *cpu) {
+extern void cps_8018a030(void);
+    cps_8018a030();
+}
+static void wrap_8018a14c(CPUState *cpu) {
+extern void cps_8018a14c(void);
+    cps_8018a14c();
+}
+static void wrap_8018a154(CPUState *cpu) {
+extern void cps_8018a14c(void);
+    cps_8018a14c();
+}
+static void wrap_8018a15c(CPUState *cpu) {
+extern void cps_8018a14c(void);
+    cps_8018a14c();
+}
+static void wrap_8018a160(CPUState *cpu) {
+extern void cps_8018a14c(void);
+    cps_8018a14c();
+}
+static void wrap_8018a1ac(CPUState *cpu) {
+extern void cps_8018a14c(void);
+    cps_8018a14c();
+}
+static void wrap_8018a26c(CPUState *cpu) {
+extern void cps_8018a14c(void);
+    cps_8018a14c();
+}
+static void wrap_8018a274(CPUState *cpu) {
+extern void cps_8018a14c(void);
+    cps_8018a14c();
+}
+static void wrap_8018a27c(CPUState *cpu) {
+extern void cps_8018a27c(void);
+    cps_8018a27c();
+}
+static void wrap_8018a28c(CPUState *cpu) {
+extern void cps_8018a27c(void);
+    cps_8018a27c();
+}
+static void wrap_8018a29c(CPUState *cpu) {
+extern void cps_8018a27c(void);
+    cps_8018a27c();
+}
+static void wrap_8018a2ac(CPUState *cpu) {
+extern void cps_8018a27c(void);
+    cps_8018a27c();
+}
+static void wrap_8018a2b8(CPUState *cpu) {
+extern void cps_8018a27c(void);
+    cps_8018a27c();
+}
+static void wrap_8018a2c0(CPUState *cpu) {
+extern void cps_8018a27c(void);
+    cps_8018a27c();
+}
+static void wrap_8018a2c8(CPUState *cpu) {
+extern void cps_8018a27c(void);
+    cps_8018a27c();
+}
+static void wrap_8018a2cc(CPUState *cpu) {
+extern void cps_8018a27c(void);
+    cps_8018a27c();
+}
+static void wrap_8018a320(CPUState *cpu) {
+extern void cps_8018a27c(void);
+    cps_8018a27c();
+}
+static void wrap_8018a330(CPUState *cpu) {
+extern void cps_8018a27c(void);
+    cps_8018a27c();
+}
+static void wrap_8018a338(CPUState *cpu) {
+extern void cps_8018a27c(void);
+    cps_8018a27c();
+}
+static void wrap_8018a340(CPUState *cpu) {
+extern void cps_8018a340(void);
+    cps_8018a340();
+}
+static void wrap_8018a350(CPUState *cpu) {
+extern void cps_8018a340(void);
+    cps_8018a340();
+}
+static void wrap_8018a360(CPUState *cpu) {
+extern void cps_8018a340(void);
+    cps_8018a340();
+}
+static void wrap_8018a370(CPUState *cpu) {
+extern void cps_8018a340(void);
+    cps_8018a340();
+}
+static void wrap_8018a37c(CPUState *cpu) {
+extern void cps_8018a340(void);
+    cps_8018a340();
+}
+static void wrap_8018a384(CPUState *cpu) {
+extern void cps_8018a340(void);
+    cps_8018a340();
+}
+static void wrap_8018a38c(CPUState *cpu) {
+extern void cps_8018a340(void);
+    cps_8018a340();
+}
+static void wrap_8018a390(CPUState *cpu) {
+extern void cps_8018a340(void);
+    cps_8018a340();
+}
+static void wrap_8018a3d8(CPUState *cpu) {
+extern void cps_8018a340(void);
+    cps_8018a340();
+}
+static void wrap_8018a414(CPUState *cpu) {
+extern void cps_8018a340(void);
+    cps_8018a340();
+}
+static void wrap_8018a41c(CPUState *cpu) {
+extern void cps_8018a340(void);
+    cps_8018a340();
+}
+static void wrap_8018a424(CPUState *cpu) {
+extern void cps_8018a424(void);
+    cps_8018a424();
+}
+static void wrap_8018a434(CPUState *cpu) {
+extern void cps_8018a424(void);
+    cps_8018a424();
+}
+static void wrap_8018a444(CPUState *cpu) {
+extern void cps_8018a424(void);
+    cps_8018a424();
+}
+static void wrap_8018a454(CPUState *cpu) {
+extern void cps_8018a424(void);
+    cps_8018a424();
+}
+static void wrap_8018a460(CPUState *cpu) {
+extern void cps_8018a424(void);
+    cps_8018a424();
+}
+static void wrap_8018a468(CPUState *cpu) {
+extern void cps_8018a424(void);
+    cps_8018a424();
+}
+static void wrap_8018a470(CPUState *cpu) {
+extern void cps_8018a424(void);
+    cps_8018a424();
+}
+static void wrap_8018a474(CPUState *cpu) {
+extern void cps_8018a424(void);
+    cps_8018a424();
+}
+static void wrap_8018a4cc(CPUState *cpu) {
+extern void cps_8018a424(void);
+    cps_8018a424();
+}
+static void wrap_8018a4e8(CPUState *cpu) {
+extern void cps_8018a424(void);
+    cps_8018a424();
+}
+static void wrap_8018a4f0(CPUState *cpu) {
+extern void cps_8018a424(void);
+    cps_8018a424();
+}
 static void wrap_8018a4f8(CPUState *cpu) {
 extern uint32_t prim_task_run(int param_1,undefined4 param_2,undefined4 param_3,int param_4);
     cpu->gpr[2] = (uint32_t)(prim_task_run(((int)cpu->gpr[4]), ((undefined4)cpu->gpr[5]), ((undefined4)cpu->gpr[6]), ((int)cpu->gpr[7])));
+}
+static void wrap_8018a59c(CPUState *cpu) {
+extern void cps_8018a59c(void);
+    cps_8018a59c();
+}
+static void wrap_8018a5ac(CPUState *cpu) {
+extern void cps_8018a59c(void);
+    cps_8018a59c();
+}
+static void wrap_8018a5bc(CPUState *cpu) {
+extern void cps_8018a59c(void);
+    cps_8018a59c();
+}
+static void wrap_8018a5cc(CPUState *cpu) {
+extern void cps_8018a59c(void);
+    cps_8018a59c();
+}
+static void wrap_8018a5dc(CPUState *cpu) {
+extern void cps_8018a59c(void);
+    cps_8018a59c();
+}
+static void wrap_8018a5e8(CPUState *cpu) {
+extern void cps_8018a59c(void);
+    cps_8018a59c();
+}
+static void wrap_8018a5f0(CPUState *cpu) {
+extern void cps_8018a59c(void);
+    cps_8018a59c();
+}
+static void wrap_8018a5f8(CPUState *cpu) {
+extern void cps_8018a59c(void);
+    cps_8018a59c();
+}
+static void wrap_8018a5fc(CPUState *cpu) {
+extern void cps_8018a59c(void);
+    cps_8018a59c();
+}
+static void wrap_8018a638(CPUState *cpu) {
+extern void cps_8018a59c(void);
+    cps_8018a59c();
+}
+static void wrap_8018a64c(CPUState *cpu) {
+extern void cps_8018a59c(void);
+    cps_8018a59c();
+}
+static void wrap_8018a678(CPUState *cpu) {
+extern void cps_8018a59c(void);
+    cps_8018a59c();
+}
+static void wrap_8018a69c(CPUState *cpu) {
+extern void cps_8018a59c(void);
+    cps_8018a59c();
+}
+static void wrap_8018a6c4(CPUState *cpu) {
+extern void cps_8018a59c(void);
+    cps_8018a59c();
+}
+static void wrap_8018a6cc(CPUState *cpu) {
+extern void cps_8018a59c(void);
+    cps_8018a59c();
+}
+static void wrap_8018a6d4(CPUState *cpu) {
+extern void cps_8018a6d4(void);
+    cps_8018a6d4();
+}
+static void wrap_8018a6e4(CPUState *cpu) {
+extern void cps_8018a6d4(void);
+    cps_8018a6d4();
+}
+static void wrap_8018a6f4(CPUState *cpu) {
+extern void cps_8018a6d4(void);
+    cps_8018a6d4();
+}
+static void wrap_8018a704(CPUState *cpu) {
+extern void cps_8018a6d4(void);
+    cps_8018a6d4();
+}
+static void wrap_8018a714(CPUState *cpu) {
+extern void cps_8018a6d4(void);
+    cps_8018a6d4();
+}
+static void wrap_8018a720(CPUState *cpu) {
+extern void cps_8018a6d4(void);
+    cps_8018a6d4();
+}
+static void wrap_8018a728(CPUState *cpu) {
+extern void cps_8018a6d4(void);
+    cps_8018a6d4();
+}
+static void wrap_8018a730(CPUState *cpu) {
+extern void cps_8018a6d4(void);
+    cps_8018a6d4();
+}
+static void wrap_8018a734(CPUState *cpu) {
+extern void cps_8018a6d4(void);
+    cps_8018a6d4();
+}
+static void wrap_8018a778(CPUState *cpu) {
+extern void cps_8018a6d4(void);
+    cps_8018a6d4();
+}
+static void wrap_8018a794(CPUState *cpu) {
+extern void cps_8018a6d4(void);
+    cps_8018a6d4();
+}
+static void wrap_8018a810(CPUState *cpu) {
+extern void cps_8018a6d4(void);
+    cps_8018a6d4();
+}
+static void wrap_8018a820(CPUState *cpu) {
+extern void cps_8018a6d4(void);
+    cps_8018a6d4();
+}
+static void wrap_8018a834(CPUState *cpu) {
+extern void cps_8018a6d4(void);
+    cps_8018a6d4();
+}
+static void wrap_8018a83c(CPUState *cpu) {
+extern void cps_8018a6d4(void);
+    cps_8018a6d4();
+}
+static void wrap_8018a844(CPUState *cpu) {
+extern void cps_8018a844(void);
+    cps_8018a844();
+}
+static void wrap_8018a854(CPUState *cpu) {
+extern void cps_8018a844(void);
+    cps_8018a844();
+}
+static void wrap_8018a864(CPUState *cpu) {
+extern void cps_8018a844(void);
+    cps_8018a844();
+}
+static void wrap_8018a874(CPUState *cpu) {
+extern void cps_8018a844(void);
+    cps_8018a844();
+}
+static void wrap_8018a880(CPUState *cpu) {
+extern void cps_8018a844(void);
+    cps_8018a844();
+}
+static void wrap_8018a888(CPUState *cpu) {
+extern void cps_8018a844(void);
+    cps_8018a844();
+}
+static void wrap_8018a894(CPUState *cpu) {
+extern void cps_8018a844(void);
+    cps_8018a844();
+}
+static void wrap_8018a898(CPUState *cpu) {
+extern void cps_8018a844(void);
+    cps_8018a844();
+}
+static void wrap_8018a8d4(CPUState *cpu) {
+extern void cps_8018a844(void);
+    cps_8018a844();
+}
+static void wrap_8018a8e8(CPUState *cpu) {
+extern void cps_8018a844(void);
+    cps_8018a844();
+}
+static void wrap_8018a914(CPUState *cpu) {
+extern void cps_8018a844(void);
+    cps_8018a844();
+}
+static void wrap_8018a938(CPUState *cpu) {
+extern void cps_8018a844(void);
+    cps_8018a844();
+}
+static void wrap_8018a968(CPUState *cpu) {
+extern void cps_8018a844(void);
+    cps_8018a844();
+}
+static void wrap_8018a974(CPUState *cpu) {
+extern void cps_8018a844(void);
+    cps_8018a844();
+}
+static void wrap_8018a980(CPUState *cpu) {
+extern void cps_8018a844(void);
+    cps_8018a844();
+}
+static void wrap_8018a988(CPUState *cpu) {
+extern void cps_8018a844(void);
+    cps_8018a844();
+}
+static void wrap_8018a998(CPUState *cpu) {
+extern void cps_8018a844(void);
+    cps_8018a844();
+}
+static void wrap_8018a9b0(CPUState *cpu) {
+extern void cps_8018a844(void);
+    cps_8018a844();
+}
+static void wrap_8018a9b8(CPUState *cpu) {
+extern void cps_8018a844(void);
+    cps_8018a844();
+}
+static void wrap_8018a9c0(CPUState *cpu) {
+extern void cps_8018a844(void);
+    cps_8018a844();
+}
+static void wrap_8018a9c8(CPUState *cpu) {
+extern void cps_8018a9c8(void);
+    cps_8018a9c8();
+}
+static void wrap_8018a9d8(CPUState *cpu) {
+extern void cps_8018a9c8(void);
+    cps_8018a9c8();
 }
 static void wrap_8018a9e8(CPUState *cpu) {
 extern uint32_t prim_depth_shade_emit(uint32_t cur, uint32_t ot, uint32_t sel,
                                int32_t count);
     cpu->gpr[2] = (uint32_t)(prim_depth_shade_emit(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((int32_t)cpu->gpr[7])));
+}
+static void wrap_8018a9f8(CPUState *cpu) {
+extern void cps_8018a9c8(void);
+    cps_8018a9c8();
+}
+static void wrap_8018aa04(CPUState *cpu) {
+extern void cps_8018a9c8(void);
+    cps_8018a9c8();
+}
+static void wrap_8018aa0c(CPUState *cpu) {
+extern void cps_8018a9c8(void);
+    cps_8018a9c8();
+}
+static void wrap_8018aa18(CPUState *cpu) {
+extern void cps_8018a9c8(void);
+    cps_8018a9c8();
+}
+static void wrap_8018aa1c(CPUState *cpu) {
+extern void cps_8018a9c8(void);
+    cps_8018a9c8();
+}
+static void wrap_8018aa60(CPUState *cpu) {
+extern void cps_8018a9c8(void);
+    cps_8018a9c8();
+}
+static void wrap_8018aa7c(CPUState *cpu) {
+extern void cps_8018a9c8(void);
+    cps_8018a9c8();
+}
+static void wrap_8018aaf8(CPUState *cpu) {
+extern void cps_8018a9c8(void);
+    cps_8018a9c8();
+}
+static void wrap_8018ab08(CPUState *cpu) {
+extern void cps_8018a9c8(void);
+    cps_8018a9c8();
+}
+static void wrap_8018ab24(CPUState *cpu) {
+extern void cps_8018a9c8(void);
+    cps_8018a9c8();
+}
+static void wrap_8018ab30(CPUState *cpu) {
+extern void cps_8018a9c8(void);
+    cps_8018a9c8();
+}
+static void wrap_8018ab3c(CPUState *cpu) {
+extern void cps_8018a9c8(void);
+    cps_8018a9c8();
+}
+static void wrap_8018ab44(CPUState *cpu) {
+extern void cps_8018a9c8(void);
+    cps_8018a9c8();
+}
+static void wrap_8018ab54(CPUState *cpu) {
+extern void cps_8018a9c8(void);
+    cps_8018a9c8();
+}
+static void wrap_8018ab6c(CPUState *cpu) {
+extern void cps_8018a9c8(void);
+    cps_8018a9c8();
+}
+static void wrap_8018ab74(CPUState *cpu) {
+extern void cps_8018a9c8(void);
+    cps_8018a9c8();
+}
+static void wrap_8018ab7c(CPUState *cpu) {
+extern void cps_8018a9c8(void);
+    cps_8018a9c8();
 }
 static void wrap_8018ab84(CPUState *cpu) {
 extern uint32_t prim_cull2_emit_30(uint32_t cur, uint32_t ot, uint32_t sel,
@@ -6845,6 +12105,126 @@ static void wrap_8018ac94(CPUState *cpu) {
 extern uint32_t prim_cull3_emit_68(uint32_t cur, uint32_t ot, uint32_t sel,
                             int32_t count);
     cpu->gpr[2] = (uint32_t)(prim_cull3_emit_68(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((int32_t)cpu->gpr[7])));
+}
+static void wrap_8018ad80(CPUState *cpu) {
+extern void cps_8018ad80(void);
+    cps_8018ad80();
+}
+static void wrap_8018ad88(CPUState *cpu) {
+extern void cps_8018ad80(void);
+    cps_8018ad80();
+}
+static void wrap_8018ad94(CPUState *cpu) {
+extern void cps_8018ad80(void);
+    cps_8018ad80();
+}
+static void wrap_8018ad98(CPUState *cpu) {
+extern void cps_8018ad80(void);
+    cps_8018ad80();
+}
+static void wrap_8018addc(CPUState *cpu) {
+extern void cps_8018ad80(void);
+    cps_8018ad80();
+}
+static void wrap_8018adf4(CPUState *cpu) {
+extern void cps_8018ad80(void);
+    cps_8018ad80();
+}
+static void wrap_8018ae64(CPUState *cpu) {
+extern void cps_8018ad80(void);
+    cps_8018ad80();
+}
+static void wrap_8018ae74(CPUState *cpu) {
+extern void cps_8018ad80(void);
+    cps_8018ad80();
+}
+static void wrap_8018ae90(CPUState *cpu) {
+extern void cps_8018ad80(void);
+    cps_8018ad80();
+}
+static void wrap_8018ae9c(CPUState *cpu) {
+extern void cps_8018ad80(void);
+    cps_8018ad80();
+}
+static void wrap_8018aea8(CPUState *cpu) {
+extern void cps_8018ad80(void);
+    cps_8018ad80();
+}
+static void wrap_8018aeb8(CPUState *cpu) {
+extern void cps_8018ad80(void);
+    cps_8018ad80();
+}
+static void wrap_8018aed0(CPUState *cpu) {
+extern void cps_8018ad80(void);
+    cps_8018ad80();
+}
+static void wrap_8018aed8(CPUState *cpu) {
+extern void cps_8018ad80(void);
+    cps_8018ad80();
+}
+static void wrap_8018aee0(CPUState *cpu) {
+extern void cps_8018ad80(void);
+    cps_8018ad80();
+}
+static void wrap_8018aee8(CPUState *cpu) {
+extern void cps_8018aee8(void);
+    cps_8018aee8();
+}
+static void wrap_8018aef0(CPUState *cpu) {
+extern void cps_8018aee8(void);
+    cps_8018aee8();
+}
+static void wrap_8018aefc(CPUState *cpu) {
+extern void cps_8018aee8(void);
+    cps_8018aee8();
+}
+static void wrap_8018af00(CPUState *cpu) {
+extern void cps_8018aee8(void);
+    cps_8018aee8();
+}
+static void wrap_8018af44(CPUState *cpu) {
+extern void cps_8018aee8(void);
+    cps_8018aee8();
+}
+static void wrap_8018af5c(CPUState *cpu) {
+extern void cps_8018aee8(void);
+    cps_8018aee8();
+}
+static void wrap_8018afcc(CPUState *cpu) {
+extern void cps_8018aee8(void);
+    cps_8018aee8();
+}
+static void wrap_8018afdc(CPUState *cpu) {
+extern void cps_8018aee8(void);
+    cps_8018aee8();
+}
+static void wrap_8018aff8(CPUState *cpu) {
+extern void cps_8018aee8(void);
+    cps_8018aee8();
+}
+static void wrap_8018b004(CPUState *cpu) {
+extern void cps_8018aee8(void);
+    cps_8018aee8();
+}
+static void wrap_8018b010(CPUState *cpu) {
+extern void cps_8018aee8(void);
+    cps_8018aee8();
+}
+static void wrap_8018b020(CPUState *cpu) {
+extern void cps_8018aee8(void);
+    cps_8018aee8();
+}
+static void wrap_8018b038(CPUState *cpu) {
+extern void cps_8018aee8(void);
+    cps_8018aee8();
+}
+static void wrap_8018b040(CPUState *cpu) {
+extern void cps_8018aee8(void);
+    cps_8018aee8();
+}
+static void wrap_8018b048(CPUState *cpu) {
+extern void cps_8018aee8(void);
+    cps_8018aee8();
 }
 static void wrap_8018b050(CPUState *cpu) {
 extern undefined2 * vec2_rot(undefined4 param_1,undefined4 param_2,undefined2 *param_3);
@@ -6906,17 +12286,265 @@ static void wrap_8018b208(CPUState *cpu) {
 extern int * prim_list_persp_step(int *param_1,undefined4 param_2,undefined4 param_3,int param_4,undefined4 param_5 ,int param_6,undefined4 param_7,undefined4 param_8);
     cpu->gpr[2] = guest_of((const void *)(prim_list_persp_step(((int *)guest_at(cpu->gpr[4])), ((undefined4)cpu->gpr[5]), ((undefined4)cpu->gpr[6]), ((int)cpu->gpr[7]), ((undefined4)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu)), ((int)(uint32_t)cpu->read_word((cpu->gpr[29] + 20) & 0xffffffffu)), ((undefined4)(uint32_t)cpu->read_word((cpu->gpr[29] + 24) & 0xffffffffu)), ((undefined4)(uint32_t)cpu->read_word((cpu->gpr[29] + 28) & 0xffffffffu)))));
 }
+static void wrap_8018b380(CPUState *cpu) {
+extern void cps_8018b380(void);
+    cps_8018b380();
+}
+static void wrap_8018b390(CPUState *cpu) {
+extern void cps_8018b380(void);
+    cps_8018b380();
+}
+static void wrap_8018b3a0(CPUState *cpu) {
+extern void cps_8018b380(void);
+    cps_8018b380();
+}
+static void wrap_8018b3b0(CPUState *cpu) {
+extern void cps_8018b380(void);
+    cps_8018b380();
+}
+static void wrap_8018b3c0(CPUState *cpu) {
+extern void cps_8018b380(void);
+    cps_8018b380();
+}
+static void wrap_8018b3cc(CPUState *cpu) {
+extern void cps_8018b380(void);
+    cps_8018b380();
+}
+static void wrap_8018b3d4(CPUState *cpu) {
+extern void cps_8018b380(void);
+    cps_8018b380();
+}
+static void wrap_8018b3dc(CPUState *cpu) {
+extern void cps_8018b380(void);
+    cps_8018b380();
+}
+static void wrap_8018b3e0(CPUState *cpu) {
+extern void cps_8018b380(void);
+    cps_8018b380();
+}
+static void wrap_8018b41c(CPUState *cpu) {
+extern void cps_8018b380(void);
+    cps_8018b380();
+}
+static void wrap_8018b430(CPUState *cpu) {
+extern void cps_8018b380(void);
+    cps_8018b380();
+}
+static void wrap_8018b45c(CPUState *cpu) {
+extern void cps_8018b380(void);
+    cps_8018b380();
+}
+static void wrap_8018b480(CPUState *cpu) {
+extern void cps_8018b380(void);
+    cps_8018b380();
+}
+static void wrap_8018b4a8(CPUState *cpu) {
+extern void cps_8018b380(void);
+    cps_8018b380();
+}
+static void wrap_8018b4b0(CPUState *cpu) {
+extern void cps_8018b380(void);
+    cps_8018b380();
+}
+static void wrap_8018b4b8(CPUState *cpu) {
+extern void cps_8018b4b8(void);
+    cps_8018b4b8();
+}
+static void wrap_8018b4c8(CPUState *cpu) {
+extern void cps_8018b4b8(void);
+    cps_8018b4b8();
+}
+static void wrap_8018b4d8(CPUState *cpu) {
+extern void cps_8018b4b8(void);
+    cps_8018b4b8();
+}
+static void wrap_8018b4e8(CPUState *cpu) {
+extern void cps_8018b4b8(void);
+    cps_8018b4b8();
+}
+static void wrap_8018b4f8(CPUState *cpu) {
+extern void cps_8018b4b8(void);
+    cps_8018b4b8();
+}
+static void wrap_8018b504(CPUState *cpu) {
+extern void cps_8018b4b8(void);
+    cps_8018b4b8();
+}
+static void wrap_8018b50c(CPUState *cpu) {
+extern void cps_8018b4b8(void);
+    cps_8018b4b8();
+}
+static void wrap_8018b514(CPUState *cpu) {
+extern void cps_8018b4b8(void);
+    cps_8018b4b8();
+}
+static void wrap_8018b518(CPUState *cpu) {
+extern void cps_8018b4b8(void);
+    cps_8018b4b8();
+}
+static void wrap_8018b55c(CPUState *cpu) {
+extern void cps_8018b4b8(void);
+    cps_8018b4b8();
+}
+static void wrap_8018b578(CPUState *cpu) {
+extern void cps_8018b4b8(void);
+    cps_8018b4b8();
+}
+static void wrap_8018b5f4(CPUState *cpu) {
+extern void cps_8018b4b8(void);
+    cps_8018b4b8();
+}
+static void wrap_8018b604(CPUState *cpu) {
+extern void cps_8018b4b8(void);
+    cps_8018b4b8();
+}
+static void wrap_8018b618(CPUState *cpu) {
+extern void cps_8018b4b8(void);
+    cps_8018b4b8();
+}
+static void wrap_8018b620(CPUState *cpu) {
+extern void cps_8018b4b8(void);
+    cps_8018b4b8();
+}
+static void wrap_8018b628(CPUState *cpu) {
+extern void cps_8018b628(void);
+    cps_8018b628();
+}
+static void wrap_8018b63c(CPUState *cpu) {
+extern void cps_8018b628(void);
+    cps_8018b628();
+}
+static void wrap_8018b644(CPUState *cpu) {
+extern void cps_8018b628(void);
+    cps_8018b628();
+}
+static void wrap_8018b648(CPUState *cpu) {
+extern void cps_8018b628(void);
+    cps_8018b628();
+}
+static void wrap_8018b684(CPUState *cpu) {
+extern void cps_8018b628(void);
+    cps_8018b628();
+}
+static void wrap_8018b698(CPUState *cpu) {
+extern void cps_8018b628(void);
+    cps_8018b628();
+}
+static void wrap_8018b6c4(CPUState *cpu) {
+extern void cps_8018b628(void);
+    cps_8018b628();
+}
+static void wrap_8018b6e8(CPUState *cpu) {
+extern void cps_8018b628(void);
+    cps_8018b628();
+}
+static void wrap_8018b710(CPUState *cpu) {
+extern void cps_8018b628(void);
+    cps_8018b628();
+}
+static void wrap_8018b728(CPUState *cpu) {
+extern void cps_8018b628(void);
+    cps_8018b628();
+}
+static void wrap_8018b730(CPUState *cpu) {
+extern void cps_8018b628(void);
+    cps_8018b628();
+}
+static void wrap_8018b738(CPUState *cpu) {
+extern void cps_8018b738(void);
+    cps_8018b738();
+}
+static void wrap_8018b748(CPUState *cpu) {
+extern void cps_8018b738(void);
+    cps_8018b738();
+}
+static void wrap_8018b758(CPUState *cpu) {
+extern void cps_8018b738(void);
+    cps_8018b738();
+}
+static void wrap_8018b760(CPUState *cpu) {
+extern void cps_8018b738(void);
+    cps_8018b738();
+}
+static void wrap_8018b768(CPUState *cpu) {
+extern void cps_8018b738(void);
+    cps_8018b738();
+}
 static void wrap_8018b76c(CPUState *cpu) {
 extern uint32_t prim_persp_ot_emit(uint32_t cur, uint32_t ot, uint32_t count,
                             uint32_t delta, uint32_t in_stride,
                             uint32_t out_stride);
     cpu->gpr[2] = (uint32_t)(prim_persp_ot_emit(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[7]), ((uint32_t)cpu->gpr[12]), ((uint32_t)cpu->gpr[15]), ((uint32_t)cpu->gpr[24])));
 }
+static void wrap_8018b7b0(CPUState *cpu) {
+extern void cps_8018b76c(void);
+    cps_8018b76c();
+}
+static void wrap_8018b7cc(CPUState *cpu) {
+extern void cps_8018b76c(void);
+    cps_8018b76c();
+}
+static void wrap_8018b848(CPUState *cpu) {
+extern void cps_8018b76c(void);
+    cps_8018b76c();
+}
+static void wrap_8018b858(CPUState *cpu) {
+extern void cps_8018b76c(void);
+    cps_8018b76c();
+}
+static void wrap_8018b870(CPUState *cpu) {
+extern void cps_8018b76c(void);
+    cps_8018b76c();
+}
 static void wrap_8018b884(CPUState *cpu) {
 extern uint32_t prim_emit_tail_advance(uint32_t cur, uint32_t ot, int32_t count,
                                 uint32_t delta, uint32_t in_stride,
                                 uint32_t out_stride);
     cpu->gpr[2] = (uint32_t)(prim_emit_tail_advance(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((int32_t)cpu->gpr[7]), ((uint32_t)cpu->gpr[12]), ((uint32_t)cpu->gpr[15]), ((uint32_t)cpu->gpr[24])));
+}
+static void wrap_8018b88c(CPUState *cpu) {
+extern void cps_8018b88c(void);
+    cps_8018b88c();
+}
+static void wrap_8018b894(CPUState *cpu) {
+extern void cps_8018b894(void);
+    cps_8018b894();
+}
+static void wrap_8018b8a8(CPUState *cpu) {
+extern void cps_8018b894(void);
+    cps_8018b894();
+}
+static void wrap_8018b8b0(CPUState *cpu) {
+extern void cps_8018b894(void);
+    cps_8018b894();
+}
+static void wrap_8018b8b4(CPUState *cpu) {
+extern void cps_8018b894(void);
+    cps_8018b894();
+}
+static void wrap_8018b8f0(CPUState *cpu) {
+extern void cps_8018b894(void);
+    cps_8018b894();
+}
+static void wrap_8018b904(CPUState *cpu) {
+extern void cps_8018b894(void);
+    cps_8018b894();
+}
+static void wrap_8018b930(CPUState *cpu) {
+extern void cps_8018b894(void);
+    cps_8018b894();
+}
+static void wrap_8018b954(CPUState *cpu) {
+extern void cps_8018b894(void);
+    cps_8018b894();
+}
+static void wrap_8018b97c(CPUState *cpu) {
+extern void cps_8018b894(void);
+    cps_8018b894();
+}
+static void wrap_8018b984(CPUState *cpu) {
+extern void cps_8018b894(void);
+    cps_8018b894();
 }
 static void wrap_8018b98c(CPUState *cpu) {
 extern uint32_t prim_persp_ot_emit_112(uint32_t cur, uint32_t ot, uint32_t sel,
@@ -6927,9 +12555,49 @@ static void wrap_8018babc(CPUState *cpu) {
 extern void dbg_marker_mode_set(int param_1);
     dbg_marker_mode_set(((int)cpu->gpr[4]));
 }
+static void wrap_8018bae8(CPUState *cpu) {
+extern void cps_8018bae8(void);
+    cps_8018bae8();
+}
+static void wrap_8018baf0(CPUState *cpu) {
+extern void cps_8018baf0(void);
+    cps_8018baf0();
+}
+static void wrap_8018bafc(CPUState *cpu) {
+extern void cps_8018baf0(void);
+    cps_8018baf0();
+}
+static void wrap_8018bb04(CPUState *cpu) {
+extern void cps_8018baf0(void);
+    cps_8018baf0();
+}
 static void wrap_8018bb38(CPUState *cpu) {
 extern uint32_t flag_801b55d0_set(void);
     cpu->gpr[2] = (uint32_t)(flag_801b55d0_set());
+}
+static void wrap_8018bb48(CPUState *cpu) {
+extern void cps_8018bb48(void);
+    cps_8018bb48();
+}
+static void wrap_8018bb4c(CPUState *cpu) {
+extern void cps_8018bb4c(void);
+    cps_8018bb4c();
+}
+static void wrap_8018bb60(CPUState *cpu) {
+extern void cps_8018bb4c(void);
+    cps_8018bb4c();
+}
+static void wrap_8018bb68(CPUState *cpu) {
+extern void cps_8018bb4c(void);
+    cps_8018bb4c();
+}
+static void wrap_8018bb88(CPUState *cpu) {
+extern void cps_8018bb4c(void);
+    cps_8018bb4c();
+}
+static void wrap_8018bb98(CPUState *cpu) {
+extern void cps_8018bb4c(void);
+    cps_8018bb4c();
 }
 static void wrap_8018bba8(CPUState *cpu) {
 extern void pad_slot_state_walk(void);
@@ -6976,6 +12644,18 @@ static void wrap_8018c0a8(CPUState *cpu) {
 extern void * spr_pool_b_alloc(void);
     cpu->gpr[2] = guest_of((const void *)(spr_pool_b_alloc()));
 }
+static void wrap_8018c0f8(CPUState *cpu) {
+extern void cps_8018c0f8(void);
+    cps_8018c0f8();
+}
+static void wrap_8018c104(CPUState *cpu) {
+extern void cps_8018c0f8(void);
+    cps_8018c0f8();
+}
+static void wrap_8018c108(CPUState *cpu) {
+extern void cps_8018c0f8(void);
+    cps_8018c0f8();
+}
 static void wrap_8018c118(CPUState *cpu) {
 extern void spr_desc_tbl_b_init(void);
     spr_desc_tbl_b_init();
@@ -6983,6 +12663,18 @@ extern void spr_desc_tbl_b_init(void);
 static void wrap_8018c18c(CPUState *cpu) {
 extern void * spr_desc_slot_alloc(void);
     cpu->gpr[2] = guest_of((const void *)(spr_desc_slot_alloc()));
+}
+static void wrap_8018c1d4(CPUState *cpu) {
+extern void cps_8018c1d4(void);
+    cps_8018c1d4();
+}
+static void wrap_8018c1e0(CPUState *cpu) {
+extern void cps_8018c1d4(void);
+    cps_8018c1d4();
+}
+static void wrap_8018c1e4(CPUState *cpu) {
+extern void cps_8018c1d4(void);
+    cps_8018c1d4();
 }
 static void wrap_8018c1f4(CPUState *cpu) {
 extern uint32_t sprite_9slice_build(uint32_t param_1,uint32_t param_2,uint32_t param_3,uint32_t param_4);
@@ -7023,6 +12715,18 @@ static void wrap_8018cbfc(CPUState *cpu) {
 extern void * spr_pool_a_alloc(void);
     cpu->gpr[2] = guest_of((const void *)(spr_pool_a_alloc()));
 }
+static void wrap_8018cc4c(CPUState *cpu) {
+extern void cps_8018cc4c(void);
+    cps_8018cc4c();
+}
+static void wrap_8018cc58(CPUState *cpu) {
+extern void cps_8018cc4c(void);
+    cps_8018cc4c();
+}
+static void wrap_8018cc5c(CPUState *cpu) {
+extern void cps_8018cc4c(void);
+    cps_8018cc4c();
+}
 static void wrap_8018cc6c(CPUState *cpu) {
 extern uint32_t spr_attr_alloc_a(uint32_t param_1,int16_t param_2,int16_t param_3,
                       int16_t param_4,int16_t param_5,uint32_t param_6,
@@ -7037,6 +12741,18 @@ static void wrap_8018cdf8(CPUState *cpu) {
 extern void * sprite_node_alloc(void);
     cpu->gpr[2] = guest_of((const void *)(sprite_node_alloc()));
 }
+static void wrap_8018ce50(CPUState *cpu) {
+extern void cps_8018ce50(void);
+    cps_8018ce50();
+}
+static void wrap_8018ce5c(CPUState *cpu) {
+extern void cps_8018ce50(void);
+    cps_8018ce50();
+}
+static void wrap_8018ce60(CPUState *cpu) {
+extern void cps_8018ce50(void);
+    cps_8018ce50();
+}
 static void wrap_8018ce70(CPUState *cpu) {
 extern uint32_t sprite_node_emit_a(uint32_t param_1,int32_t param_2,int32_t param_3,
                  int32_t param_4,int32_t param_5,uint32_t param_6,
@@ -7047,6 +12763,10 @@ extern uint32_t sprite_node_emit_a(uint32_t param_1,int32_t param_2,int32_t para
 static void wrap_8018cfb4(CPUState *cpu) {
 extern uint32_t file_rec_size_get(int32_t param_1);
     cpu->gpr[2] = (uint32_t)(file_rec_size_get(((int32_t)cpu->gpr[4])));
+}
+static void wrap_8018cfd4(CPUState *cpu) {
+extern void cps_8018cfd4(void);
+    cps_8018cfd4();
 }
 static void wrap_8018cfdc(CPUState *cpu) {
 extern void cps_8018cfdc(void);
@@ -7184,6 +12904,18 @@ static void wrap_8018d244(CPUState *cpu) {
 extern uint32_t trig_sin_lookup(uint param_1);
     cpu->gpr[2] = (uint32_t)(trig_sin_lookup(((uint)cpu->gpr[4])));
 }
+static void wrap_8018d27c(CPUState *cpu) {
+extern void cps_8018d27c(void);
+    cps_8018d27c();
+}
+static void wrap_8018d284(CPUState *cpu) {
+extern void cps_8018d284(void);
+    cps_8018d284();
+}
+static void wrap_8018d290(CPUState *cpu) {
+extern void cps_8018d290(void);
+    cps_8018d290();
+}
 static void wrap_8018d298(CPUState *cpu) {
 extern uint32_t lut_cos_q12(int param_1);
     cpu->gpr[2] = (uint32_t)(lut_cos_q12(((int)cpu->gpr[4])));
@@ -7192,6 +12924,14 @@ static void wrap_8018d29c(CPUState *cpu) {
 extern uint32_t lut_sin_q12(uint param_1);
     cpu->gpr[2] = (uint32_t)(lut_sin_q12(((uint)cpu->gpr[4])));
 }
+static void wrap_8018d2d8(CPUState *cpu) {
+extern void cps_8018d2d8(void);
+    cps_8018d2d8();
+}
+static void wrap_8018d2e0(CPUState *cpu) {
+extern void cps_8018d2e0(void);
+    cps_8018d2e0();
+}
 static void wrap_8018d2ec(CPUState *cpu) {
 extern void gte_light_set(undefined4 param_1,undefined4 param_2,undefined4 param_3);
     gte_light_set(((undefined4)cpu->gpr[4]), ((undefined4)cpu->gpr[5]), ((undefined4)cpu->gpr[6]));
@@ -7199,6 +12939,30 @@ extern void gte_light_set(undefined4 param_1,undefined4 param_2,undefined4 param
 static void wrap_8018d300(CPUState *cpu) {
 extern uint32_t fixed_point_divide(int param_1,int param_2);
     cpu->gpr[2] = (uint32_t)(fixed_point_divide(((int)cpu->gpr[4]), ((int)cpu->gpr[5])));
+}
+static void wrap_8018d3b4(CPUState *cpu) {
+extern void cps_8018d3b4(void);
+    cps_8018d3b4();
+}
+static void wrap_8018d3c0(CPUState *cpu) {
+extern void cps_8018d3b4(void);
+    cps_8018d3b4();
+}
+static void wrap_8018d3d0(CPUState *cpu) {
+extern void cps_8018d3b4(void);
+    cps_8018d3b4();
+}
+static void wrap_8018d3dc(CPUState *cpu) {
+extern void cps_8018d3b4(void);
+    cps_8018d3b4();
+}
+static void wrap_8018d3ec(CPUState *cpu) {
+extern void cps_8018d3b4(void);
+    cps_8018d3b4();
+}
+static void wrap_8018d3f8(CPUState *cpu) {
+extern void cps_8018d3b4(void);
+    cps_8018d3b4();
 }
 static void wrap_8018d408(CPUState *cpu) {
 extern uint32_t dir_rotate_pair(uint32_t a0, uint32_t a1, uint32_t a2);
@@ -7212,10 +12976,26 @@ static void wrap_8018d468(CPUState *cpu) {
 extern void dir_rotate_set(int param_1,int param_2,byte *param_3,byte *param_4);
     dir_rotate_set(((int)cpu->gpr[4]), ((int)cpu->gpr[5]), ((byte *)guest_at(cpu->gpr[6])), ((byte *)guest_at(cpu->gpr[7])));
 }
+static void wrap_8018d474(CPUState *cpu) {
+extern void cps_8018d474(void);
+    cps_8018d474();
+}
+static void wrap_8018d47c(CPUState *cpu) {
+extern void cps_8018d47c(void);
+    cps_8018d47c();
+}
 static void wrap_8018d484(CPUState *cpu) {
 extern unsigned long long dir_rotate_wrap(undefined4 param_1,int param_2,short *param_3);
     { uint64_t _r = (uint64_t)(dir_rotate_wrap(((undefined4)cpu->gpr[4]), ((int)cpu->gpr[5]), ((short *)guest_at(cpu->gpr[6]))));
       cpu->gpr[2] = (uint32_t)_r; cpu->gpr[3] = (uint32_t)(_r >> 32); }
+}
+static void wrap_8018d49c(CPUState *cpu) {
+extern void cps_8018d49c(void);
+    cps_8018d49c();
+}
+static void wrap_8018d4ac(CPUState *cpu) {
+extern void cps_8018d49c(void);
+    cps_8018d49c();
 }
 static void wrap_8018d4fc(CPUState *cpu) {
 extern undefined8 vec2_rot_lut(undefined4 param_1,int param_2);
@@ -7246,6 +13026,18 @@ static void wrap_8018d618(CPUState *cpu) {
 extern uint32_t range_circle_test(int param_1,int param_2,uint *param_3,int param_4);
     cpu->gpr[2] = (uint32_t)(range_circle_test(((int)cpu->gpr[4]), ((int)cpu->gpr[5]), ((uint *)guest_at(cpu->gpr[6])), ((int)cpu->gpr[7])));
 }
+static void wrap_8018d668(CPUState *cpu) {
+extern void cps_8018d668(void);
+    cps_8018d668();
+}
+static void wrap_8018d670(CPUState *cpu) {
+extern void cps_8018d670(void);
+    cps_8018d670();
+}
+static void wrap_8018d694(CPUState *cpu) {
+extern void cps_8018d694(void);
+    cps_8018d694();
+}
 static void wrap_8018d69c(CPUState *cpu) {
 extern uint32_t prim_attr_repack(uint32_t src_a, uint32_t dst_a);
     cpu->gpr[2] = (uint32_t)(prim_attr_repack(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
@@ -7262,29 +13054,453 @@ static void wrap_8018d8e4(CPUState *cpu) {
 extern void pad_record_init(void);
     pad_record_init();
 }
+static void wrap_8018da28(CPUState *cpu) {
+extern void cps_8018da28(void);
+    cps_8018da28();
+}
 static void wrap_8018da2c(CPUState *cpu) {
 extern undefined4 * rotmat2_build(uint param_1,undefined4 *param_2);
     cpu->gpr[2] = guest_of((const void *)(rotmat2_build(((uint)cpu->gpr[4]), ((undefined4 *)guest_at(cpu->gpr[5])))));
+}
+static void wrap_8018da54(CPUState *cpu) {
+extern void cps_8018da2c(void);
+    cps_8018da2c();
+}
+static void wrap_8018da60(CPUState *cpu) {
+extern void cps_8018da2c(void);
+    cps_8018da2c();
+}
+static void wrap_8018da78(CPUState *cpu) {
+extern void cps_8018da2c(void);
+    cps_8018da2c();
+}
+static void wrap_8018da7c(CPUState *cpu) {
+extern void cps_8018da2c(void);
+    cps_8018da2c();
+}
+static void wrap_8018da90(CPUState *cpu) {
+extern void cps_8018da2c(void);
+    cps_8018da2c();
+}
+static void wrap_8018da98(CPUState *cpu) {
+extern void cps_8018da2c(void);
+    cps_8018da2c();
+}
+static void wrap_8018dab4(CPUState *cpu) {
+extern void cps_8018dab4(void);
+    cps_8018dab4();
 }
 static void wrap_8018dac0(CPUState *cpu) {
 extern uint * angle_pair_rotmat(uint param_1,uint param_2,uint *param_3);
     cpu->gpr[2] = guest_of((const void *)(angle_pair_rotmat(((uint)cpu->gpr[4]), ((uint)cpu->gpr[5]), ((uint *)guest_at(cpu->gpr[6])))));
 }
+static void wrap_8018dae0(CPUState *cpu) {
+extern void cps_8018dac0(void);
+    cps_8018dac0();
+}
+static void wrap_8018daec(CPUState *cpu) {
+extern void cps_8018dac0(void);
+    cps_8018dac0();
+}
+static void wrap_8018db04(CPUState *cpu) {
+extern void cps_8018dac0(void);
+    cps_8018dac0();
+}
+static void wrap_8018db08(CPUState *cpu) {
+extern void cps_8018dac0(void);
+    cps_8018dac0();
+}
+static void wrap_8018db20(CPUState *cpu) {
+extern void cps_8018dac0(void);
+    cps_8018dac0();
+}
+static void wrap_8018db2c(CPUState *cpu) {
+extern void cps_8018dac0(void);
+    cps_8018dac0();
+}
+static void wrap_8018db44(CPUState *cpu) {
+extern void cps_8018dac0(void);
+    cps_8018dac0();
+}
+static void wrap_8018db48(CPUState *cpu) {
+extern void cps_8018dac0(void);
+    cps_8018dac0();
+}
+static void wrap_8018db60(CPUState *cpu) {
+extern void cps_8018dac0(void);
+    cps_8018dac0();
+}
+static void wrap_8018db64(CPUState *cpu) {
+extern void cps_8018dac0(void);
+    cps_8018dac0();
+}
+static void wrap_8018db88(CPUState *cpu) {
+extern void cps_8018dac0(void);
+    cps_8018dac0();
+}
+static void wrap_8018db8c(CPUState *cpu) {
+extern void cps_8018dac0(void);
+    cps_8018dac0();
+}
+static void wrap_8018dbe4(CPUState *cpu) {
+extern void cps_8018dbe4(void);
+    cps_8018dbe4();
+}
+static void wrap_8018dc00(CPUState *cpu) {
+extern void cps_8018dc00(void);
+    cps_8018dc00();
+}
 static void wrap_8018dc18(CPUState *cpu) {
 extern undefined2 * euler_rotmat(uint param_1,uint param_2,uint param_3,undefined2 *param_4);
     cpu->gpr[2] = guest_of((const void *)(euler_rotmat(((uint)cpu->gpr[4]), ((uint)cpu->gpr[5]), ((uint)cpu->gpr[6]), ((undefined2 *)guest_at(cpu->gpr[7])))));
+}
+static void wrap_8018dc20(CPUState *cpu) {
+extern void cps_8018dc20(void);
+    cps_8018dc20();
+}
+static void wrap_8018dc38(CPUState *cpu) {
+extern void cps_8018dc20(void);
+    cps_8018dc20();
+}
+static void wrap_8018dc44(CPUState *cpu) {
+extern void cps_8018dc20(void);
+    cps_8018dc20();
+}
+static void wrap_8018dc60(CPUState *cpu) {
+extern void cps_8018dc20(void);
+    cps_8018dc20();
+}
+static void wrap_8018dc64(CPUState *cpu) {
+extern void cps_8018dc20(void);
+    cps_8018dc20();
+}
+static void wrap_8018dc80(CPUState *cpu) {
+extern void cps_8018dc20(void);
+    cps_8018dc20();
+}
+static void wrap_8018dc8c(CPUState *cpu) {
+extern void cps_8018dc20(void);
+    cps_8018dc20();
+}
+static void wrap_8018dca8(CPUState *cpu) {
+extern void cps_8018dc20(void);
+    cps_8018dc20();
+}
+static void wrap_8018dcac(CPUState *cpu) {
+extern void cps_8018dc20(void);
+    cps_8018dc20();
+}
+static void wrap_8018dcc8(CPUState *cpu) {
+extern void cps_8018dc20(void);
+    cps_8018dc20();
+}
+static void wrap_8018dcd4(CPUState *cpu) {
+extern void cps_8018dc20(void);
+    cps_8018dc20();
+}
+static void wrap_8018dcf0(CPUState *cpu) {
+extern void cps_8018dc20(void);
+    cps_8018dc20();
+}
+static void wrap_8018dcf4(CPUState *cpu) {
+extern void cps_8018dc20(void);
+    cps_8018dc20();
+}
+static void wrap_8018dd18(CPUState *cpu) {
+extern void cps_8018dc20(void);
+    cps_8018dc20();
+}
+static void wrap_8018dd24(CPUState *cpu) {
+extern void cps_8018dc20(void);
+    cps_8018dc20();
+}
+static void wrap_8018dd3c(CPUState *cpu) {
+extern void cps_8018dc20(void);
+    cps_8018dc20();
+}
+static void wrap_8018dd40(CPUState *cpu) {
+extern void cps_8018dc20(void);
+    cps_8018dc20();
+}
+static void wrap_8018dd5c(CPUState *cpu) {
+extern void cps_8018dc20(void);
+    cps_8018dc20();
+}
+static void wrap_8018dd60(CPUState *cpu) {
+extern void cps_8018dc20(void);
+    cps_8018dc20();
+}
+static void wrap_8018dd68(CPUState *cpu) {
+extern void cps_8018dc20(void);
+    cps_8018dc20();
+}
+static void wrap_8018dd6c(CPUState *cpu) {
+extern void cps_8018dc20(void);
+    cps_8018dc20();
+}
+static void wrap_8018dd8c(CPUState *cpu) {
+extern void cps_8018dc20(void);
+    cps_8018dc20();
+}
+static void wrap_8018dd94(CPUState *cpu) {
+extern void cps_8018dc20(void);
+    cps_8018dc20();
+}
+static void wrap_8018dd9c(CPUState *cpu) {
+extern void cps_8018dc20(void);
+    cps_8018dc20();
+}
+static void wrap_8018dda0(CPUState *cpu) {
+extern void cps_8018dc20(void);
+    cps_8018dc20();
+}
+static void wrap_8018dddc(CPUState *cpu) {
+extern void cps_8018dc20(void);
+    cps_8018dc20();
+}
+static void wrap_8018dde8(CPUState *cpu) {
+extern void cps_8018dc20(void);
+    cps_8018dc20();
+}
+static void wrap_8018de08(CPUState *cpu) {
+extern void cps_8018dc20(void);
+    cps_8018dc20();
+}
+static void wrap_8018de0c(CPUState *cpu) {
+extern void cps_8018dc20(void);
+    cps_8018dc20();
+}
+static void wrap_8018de20(CPUState *cpu) {
+extern void cps_8018dc20(void);
+    cps_8018dc20();
+}
+static void wrap_8018de24(CPUState *cpu) {
+extern void cps_8018dc20(void);
+    cps_8018dc20();
+}
+static void wrap_8018de68(CPUState *cpu) {
+extern void cps_8018de68(void);
+    cps_8018de68();
 }
 static void wrap_8018de6c(CPUState *cpu) {
 extern uint * rotmat_rtps_build(uint param_1,uint *param_2);
     cpu->gpr[2] = guest_of((const void *)(rotmat_rtps_build(((uint)cpu->gpr[4]), ((uint *)guest_at(cpu->gpr[5])))));
 }
+static void wrap_8018de94(CPUState *cpu) {
+extern void cps_8018de6c(void);
+    cps_8018de6c();
+}
+static void wrap_8018dea0(CPUState *cpu) {
+extern void cps_8018de6c(void);
+    cps_8018de6c();
+}
+static void wrap_8018deb8(CPUState *cpu) {
+extern void cps_8018de6c(void);
+    cps_8018de6c();
+}
+static void wrap_8018dec0(CPUState *cpu) {
+extern void cps_8018de6c(void);
+    cps_8018de6c();
+}
+static void wrap_8018ded4(CPUState *cpu) {
+extern void cps_8018de6c(void);
+    cps_8018de6c();
+}
+static void wrap_8018dedc(CPUState *cpu) {
+extern void cps_8018de6c(void);
+    cps_8018de6c();
+}
+static void wrap_8018def4(CPUState *cpu) {
+extern void cps_8018def4(void);
+    cps_8018def4();
+}
 static void wrap_8018df00(CPUState *cpu) {
 extern uint * rotmat2_pair_build(uint param_1,uint param_2,uint *param_3);
     cpu->gpr[2] = guest_of((const void *)(rotmat2_pair_build(((uint)cpu->gpr[4]), ((uint)cpu->gpr[5]), ((uint *)guest_at(cpu->gpr[6])))));
 }
+static void wrap_8018df20(CPUState *cpu) {
+extern void cps_8018df00(void);
+    cps_8018df00();
+}
+static void wrap_8018df2c(CPUState *cpu) {
+extern void cps_8018df00(void);
+    cps_8018df00();
+}
+static void wrap_8018df44(CPUState *cpu) {
+extern void cps_8018df00(void);
+    cps_8018df00();
+}
+static void wrap_8018df48(CPUState *cpu) {
+extern void cps_8018df00(void);
+    cps_8018df00();
+}
+static void wrap_8018df60(CPUState *cpu) {
+extern void cps_8018df00(void);
+    cps_8018df00();
+}
+static void wrap_8018df6c(CPUState *cpu) {
+extern void cps_8018df00(void);
+    cps_8018df00();
+}
+static void wrap_8018df84(CPUState *cpu) {
+extern void cps_8018df00(void);
+    cps_8018df00();
+}
+static void wrap_8018df88(CPUState *cpu) {
+extern void cps_8018df00(void);
+    cps_8018df00();
+}
+static void wrap_8018dfa0(CPUState *cpu) {
+extern void cps_8018df00(void);
+    cps_8018df00();
+}
+static void wrap_8018dfa4(CPUState *cpu) {
+extern void cps_8018df00(void);
+    cps_8018df00();
+}
+static void wrap_8018dfc8(CPUState *cpu) {
+extern void cps_8018df00(void);
+    cps_8018df00();
+}
+static void wrap_8018dfcc(CPUState *cpu) {
+extern void cps_8018df00(void);
+    cps_8018df00();
+}
+static void wrap_8018e024(CPUState *cpu) {
+extern void cps_8018e024(void);
+    cps_8018e024();
+}
 static void wrap_8018e028(CPUState *cpu) {
 extern uint * angle_vec_build(uint param_1,uint *param_2);
     cpu->gpr[2] = guest_of((const void *)(angle_vec_build(((uint)cpu->gpr[4]), ((uint *)guest_at(cpu->gpr[5])))));
+}
+static void wrap_8018e050(CPUState *cpu) {
+extern void cps_8018e028(void);
+    cps_8018e028();
+}
+static void wrap_8018e05c(CPUState *cpu) {
+extern void cps_8018e028(void);
+    cps_8018e028();
+}
+static void wrap_8018e074(CPUState *cpu) {
+extern void cps_8018e028(void);
+    cps_8018e028();
+}
+static void wrap_8018e078(CPUState *cpu) {
+extern void cps_8018e028(void);
+    cps_8018e028();
+}
+static void wrap_8018e08c(CPUState *cpu) {
+extern void cps_8018e028(void);
+    cps_8018e028();
+}
+static void wrap_8018e094(CPUState *cpu) {
+extern void cps_8018e028(void);
+    cps_8018e028();
+}
+static void wrap_8018e0b0(CPUState *cpu) {
+extern void cps_8018e0b0(void);
+    cps_8018e0b0();
+}
+static void wrap_8018e0e0(CPUState *cpu) {
+extern void cps_8018e0b0(void);
+    cps_8018e0b0();
+}
+static void wrap_8018e0ec(CPUState *cpu) {
+extern void cps_8018e0b0(void);
+    cps_8018e0b0();
+}
+static void wrap_8018e100(CPUState *cpu) {
+extern void cps_8018e0b0(void);
+    cps_8018e0b0();
+}
+static void wrap_8018e104(CPUState *cpu) {
+extern void cps_8018e0b0(void);
+    cps_8018e0b0();
+}
+static void wrap_8018e120(CPUState *cpu) {
+extern void cps_8018e0b0(void);
+    cps_8018e0b0();
+}
+static void wrap_8018e12c(CPUState *cpu) {
+extern void cps_8018e0b0(void);
+    cps_8018e0b0();
+}
+static void wrap_8018e140(CPUState *cpu) {
+extern void cps_8018e0b0(void);
+    cps_8018e0b0();
+}
+static void wrap_8018e144(CPUState *cpu) {
+extern void cps_8018e0b0(void);
+    cps_8018e0b0();
+}
+static void wrap_8018e15c(CPUState *cpu) {
+extern void cps_8018e0b0(void);
+    cps_8018e0b0();
+}
+static void wrap_8018e160(CPUState *cpu) {
+extern void cps_8018e0b0(void);
+    cps_8018e0b0();
+}
+static void wrap_8018e18c(CPUState *cpu) {
+extern void cps_8018e0b0(void);
+    cps_8018e0b0();
+}
+static void wrap_8018e190(CPUState *cpu) {
+extern void cps_8018e0b0(void);
+    cps_8018e0b0();
+}
+static void wrap_8018e1d0(CPUState *cpu) {
+extern void cps_8018e1d0(void);
+    cps_8018e1d0();
+}
+static void wrap_8018e200(CPUState *cpu) {
+extern void cps_8018e1d0(void);
+    cps_8018e1d0();
+}
+static void wrap_8018e20c(CPUState *cpu) {
+extern void cps_8018e1d0(void);
+    cps_8018e1d0();
+}
+static void wrap_8018e220(CPUState *cpu) {
+extern void cps_8018e1d0(void);
+    cps_8018e1d0();
+}
+static void wrap_8018e224(CPUState *cpu) {
+extern void cps_8018e1d0(void);
+    cps_8018e1d0();
+}
+static void wrap_8018e240(CPUState *cpu) {
+extern void cps_8018e1d0(void);
+    cps_8018e1d0();
+}
+static void wrap_8018e24c(CPUState *cpu) {
+extern void cps_8018e1d0(void);
+    cps_8018e1d0();
+}
+static void wrap_8018e260(CPUState *cpu) {
+extern void cps_8018e1d0(void);
+    cps_8018e1d0();
+}
+static void wrap_8018e264(CPUState *cpu) {
+extern void cps_8018e1d0(void);
+    cps_8018e1d0();
+}
+static void wrap_8018e27c(CPUState *cpu) {
+extern void cps_8018e1d0(void);
+    cps_8018e1d0();
+}
+static void wrap_8018e280(CPUState *cpu) {
+extern void cps_8018e1d0(void);
+    cps_8018e1d0();
+}
+static void wrap_8018e2a4(CPUState *cpu) {
+extern void cps_8018e1d0(void);
+    cps_8018e1d0();
+}
+static void wrap_8018e2a8(CPUState *cpu) {
+extern void cps_8018e1d0(void);
+    cps_8018e1d0();
 }
 static void wrap_8018e2f0(CPUState *cpu) {
 extern void guest_bzero(uint32_t addr,uint32_t size);
@@ -7297,6 +13513,62 @@ extern uint32_t cpu_critical_enter(void);
 static void wrap_8018e310(CPUState *cpu) {
 extern uint32_t cpu_critical_exit(uint32_t a0);
     cpu->gpr[2] = (uint32_t)(cpu_critical_exit(((uint32_t)cpu->gpr[4])));
+}
+static void wrap_8018e320(CPUState *cpu) {
+extern void cps_8018e320(void);
+    cps_8018e320();
+}
+static void wrap_8018e330(CPUState *cpu) {
+extern void cps_8018e320(void);
+    cps_8018e320();
+}
+static void wrap_8018e338(CPUState *cpu) {
+extern void cps_8018e320(void);
+    cps_8018e320();
+}
+static void wrap_8018e35c(CPUState *cpu) {
+extern void cps_8018e320(void);
+    cps_8018e320();
+}
+static void wrap_8018e364(CPUState *cpu) {
+extern void cps_8018e320(void);
+    cps_8018e320();
+}
+static void wrap_8018e368(CPUState *cpu) {
+extern void cps_8018e320(void);
+    cps_8018e320();
+}
+static void wrap_8018e370(CPUState *cpu) {
+extern void cps_8018e320(void);
+    cps_8018e320();
+}
+static void wrap_8018e378(CPUState *cpu) {
+extern void cps_8018e320(void);
+    cps_8018e320();
+}
+static void wrap_8018e384(CPUState *cpu) {
+extern void cps_8018e320(void);
+    cps_8018e320();
+}
+static void wrap_8018e390(CPUState *cpu) {
+extern void cps_8018e320(void);
+    cps_8018e320();
+}
+static void wrap_8018e394(CPUState *cpu) {
+extern void cps_8018e320(void);
+    cps_8018e320();
+}
+static void wrap_8018e39c(CPUState *cpu) {
+extern void cps_8018e320(void);
+    cps_8018e320();
+}
+static void wrap_8018e3a0(CPUState *cpu) {
+extern void cps_8018e320(void);
+    cps_8018e320();
+}
+static void wrap_8018e3b4(CPUState *cpu) {
+extern void cps_8018e320(void);
+    cps_8018e320();
 }
 static void wrap_8018e3bc(CPUState *cpu) {
 extern uint32_t u16_lut_lookup(uint32_t param_1);
@@ -7379,6 +13651,490 @@ extern uint32_t sprintf_core_guest(char *param_1,char *param_2,uint32_t param_3,
                        uint32_t param_7,uint32_t param_8);
     cpu->gpr[2] = (uint32_t)(sprintf_core_guest(((char *)guest_at(cpu->gpr[4])), ((char *)guest_at(cpu->gpr[5])), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu)), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 20) & 0xffffffffu)), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 24) & 0xffffffffu)), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 28) & 0xffffffffu))));
 }
+static void wrap_8018ef6c(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018efb0(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018efc0(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018efc8(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018eff0(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f010(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f024(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f02c(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f040(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f048(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f050(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f058(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f06c(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f074(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f088(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f090(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f0ac(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f0c0(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f0d4(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f110(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f11c(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f124(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f144(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f170(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f1ac(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f1b8(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f1c8(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f1d8(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f1ec(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f1f8(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f1fc(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f208(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f220(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f22c(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f238(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f244(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f264(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f290(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f294(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f29c(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f2a8(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f2b4(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f2bc(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f2e8(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f2ec(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f2f0(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f308(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f314(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f328(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f330(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f340(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f344(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f34c(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f354(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f388(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f39c(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f3a0(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f3b8(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f3bc(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f3cc(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f3dc(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f408(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f40c(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f418(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f424(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f430(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f440(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f444(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f44c(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f468(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f480(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f488(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f498(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f4a4(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f4b8(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f4bc(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f4d4(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f4dc(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f4fc(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f504(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f530(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f534(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f540(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f54c(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f55c(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f564(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f574(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f578(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f580(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f5a0(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f5b4(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f5bc(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f5d4(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f5d8(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f5f0(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f608(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f628(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f64c(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f65c(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f670(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f678(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f684(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f68c(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f694(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f6a0(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f6a8(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f6b4(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f6d8(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f6e0(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f6e8(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f6f4(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f700(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f714(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f728(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f74c(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f750(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f754(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f75c(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f770(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f78c(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
+static void wrap_8018f7ac(CPUState *cpu) {
+extern void cps_8018ef6c(void);
+    cps_8018ef6c();
+}
 static void wrap_8018f7e0(CPUState *cpu) {
 extern undefined1 * mem_move(undefined1 *param_1,undefined1 *param_2,int param_3);
     cpu->gpr[2] = guest_of((const void *)(mem_move(((undefined1 *)guest_at(cpu->gpr[4])), ((undefined1 *)guest_at(cpu->gpr[5])), ((int)cpu->gpr[6]))));
@@ -7386,6 +14142,66 @@ extern undefined1 * mem_move(undefined1 *param_1,undefined1 *param_2,int param_3
 static void wrap_8018f850(CPUState *cpu) {
 extern void cd_fileop_reset(int32_t param_1);
     cd_fileop_reset(((int32_t)cpu->gpr[4]));
+}
+static void wrap_8018f884(CPUState *cpu) {
+extern void cps_8018f884(void);
+    cps_8018f884();
+}
+static void wrap_8018f898(CPUState *cpu) {
+extern void cps_8018f884(void);
+    cps_8018f884();
+}
+static void wrap_8018f8b0(CPUState *cpu) {
+extern void cps_8018f884(void);
+    cps_8018f884();
+}
+static void wrap_8018f8c4(CPUState *cpu) {
+extern void cps_8018f884(void);
+    cps_8018f884();
+}
+static void wrap_8018f8dc(CPUState *cpu) {
+extern void cps_8018f884(void);
+    cps_8018f884();
+}
+static void wrap_8018f8f0(CPUState *cpu) {
+extern void cps_8018f884(void);
+    cps_8018f884();
+}
+static void wrap_8018f908(CPUState *cpu) {
+extern void cps_8018f884(void);
+    cps_8018f884();
+}
+static void wrap_8018f910(CPUState *cpu) {
+extern void cps_8018f910(void);
+    cps_8018f910();
+}
+static void wrap_8018f930(CPUState *cpu) {
+extern void cps_8018f910(void);
+    cps_8018f910();
+}
+static void wrap_8018f948(CPUState *cpu) {
+extern void cps_8018f910(void);
+    cps_8018f910();
+}
+static void wrap_8018f95c(CPUState *cpu) {
+extern void cps_8018f910(void);
+    cps_8018f910();
+}
+static void wrap_8018f974(CPUState *cpu) {
+extern void cps_8018f910(void);
+    cps_8018f910();
+}
+static void wrap_8018f984(CPUState *cpu) {
+extern void cps_8018f910(void);
+    cps_8018f910();
+}
+static void wrap_8018f994(CPUState *cpu) {
+extern void cps_8018f910(void);
+    cps_8018f910();
+}
+static void wrap_8018f9a8(CPUState *cpu) {
+extern void cps_8018f9a8(void);
+    cps_8018f9a8();
 }
 static void wrap_8018f9b4(CPUState *cpu) {
 extern void gpu_pkt_attr_set(uint32_t param_1,int param_2);
@@ -7438,6 +14254,18 @@ extern uint32_t mdec_status_read(void);
 static void wrap_8018fe5c(CPUState *cpu) {
 extern void mdec_error_reset(uint32_t param_1);
     mdec_error_reset(((uint32_t)cpu->gpr[4]));
+}
+static void wrap_8018fee0(CPUState *cpu) {
+extern void cps_8018fee0(void);
+    cps_8018fee0();
+}
+static void wrap_8018fef4(CPUState *cpu) {
+extern void cps_8018fee0(void);
+    cps_8018fee0();
+}
+static void wrap_8018ff00(CPUState *cpu) {
+extern void cps_8018ff00(void);
+    cps_8018ff00();
 }
 static void wrap_8018ff10(CPUState *cpu) {
 extern void cd_bitstream_decode(int32_t a0,uint32_t a1,uint32_t a2);
@@ -12018,7 +18846,7 @@ typedef void (*CleanWrapFn)(CPUState *cpu);
 #define CLEAN_ENT_CPS 1u
 typedef struct { uint32_t addr; CleanWrapFn fn; uint32_t cost; uint32_t frame; uint32_t flags; } CleanDispatchEnt;
 static const CleanDispatchEnt k_clean_dispatch[] = {
-    { 0x80126170u, wrap_80126170, 4u, 0u, 0u },    { 0x80126234u, wrap_80126234, 17u, 64u, 1u },    { 0x80126258u, wrap_80126258, 8u, 0u, 1u },    { 0x80126720u, wrap_80126720, 6u, 24u, 0u },    { 0x801267dcu, wrap_801267dc, 8u, 24u, 0u },    { 0x80126848u, wrap_80126848, 4u, 0u, 0u },    { 0x80126870u, wrap_80126870, 9u, 48u, 0u },    { 0x80126f04u, wrap_80126f04, 112u, 32u, 0u },    { 0x8012708cu, wrap_8012708c, 311u, 48u, 0u },    { 0x80127424u, wrap_80127424, 30u, 24u, 0u },    { 0x8012748cu, wrap_8012748c, 16u, 24u, 0u },    { 0x801274c4u, wrap_801274c4, 6u, 0u, 0u },    { 0x801274d8u, wrap_801274d8, 5u, 0u, 0u },    { 0x801274e8u, wrap_801274e8, 7u, 0u, 0u },    { 0x801274fcu, wrap_801274fc, 16u, 0u, 0u },    { 0x80127524u, wrap_80127524, 16u, 24u, 0u },    { 0x8012755cu, wrap_8012755c, 10u, 0u, 0u },    { 0x80127574u, wrap_80127574, 101u, 24u, 0u },    { 0x80127680u, wrap_80127680, 4u, 0u, 0u },    { 0x8012768cu, wrap_8012768c, 220u, 1072u, 0u },    { 0x801279c8u, wrap_801279c8, 4u, 0u, 0u },    { 0x801279d0u, wrap_801279d0, 10u, 0u, 0u },    { 0x801279f4u, wrap_801279f4, 79u, 0u, 0u },    { 0x80127ae0u, wrap_80127ae0, 32u, 0u, 0u },    { 0x80127b64u, wrap_80127b64, 39u, 0u, 0u },    { 0x80127be4u, wrap_80127be4, 47u, 0u, 0u },    { 0x80127c60u, wrap_80127c60, 582u, 0u, 0u },    { 0x80128268u, wrap_80128268, 168u, 0u, 0u },    { 0x80128898u, wrap_80128898, 30u, 24u, 0u },    { 0x801289b4u, wrap_801289b4, 9u, 0u, 0u },    { 0x80128b28u, wrap_80128b28, 47u, 24u, 0u },    { 0x80128becu, wrap_80128bec, 6u, 0u, 0u },    { 0x80128bfcu, wrap_80128bfc, 6u, 0u, 0u },    { 0x80128c18u, wrap_80128c18, 28u, 40u, 0u },    { 0x80128d98u, wrap_80128d98, 17u, 24u, 0u },    { 0x80128ef0u, wrap_80128ef0, 36u, 24u, 0u },    { 0x80128f98u, wrap_80128f98, 4u, 0u, 0u },    { 0x80129218u, wrap_80129218, 13u, 32u, 0u },    { 0x801294ccu, wrap_801294cc, 4u, 24u, 0u },    { 0x80129540u, wrap_80129540, 9u, 32u, 0u },    { 0x80129660u, wrap_80129660, 4u, 32u, 0u },    { 0x80129710u, wrap_80129710, 22u, 32u, 0u },    { 0x801297dcu, wrap_801297dc, 13u, 32u, 0u },    { 0x80129910u, wrap_80129910, 4u, 24u, 0u },    { 0x80129944u, wrap_80129944, 16u, 24u, 0u },    { 0x80129978u, wrap_80129978, 18u, 48u, 0u },    { 0x80129a6cu, wrap_80129a6c, 32u, 40u, 0u },    { 0x80129b48u, wrap_80129b48, 6u, 32u, 0u },    { 0x80129c10u, wrap_80129c10, 34u, 40u, 0u },    { 0x80129d5cu, wrap_80129d5c, 27u, 40u, 0u },    { 0x80129e40u, wrap_80129e40, 49u, 40u, 0u },    { 0x80129f1cu, wrap_80129f1c, 20u, 24u, 0u },    { 0x80129f64u, wrap_80129f64, 4u, 0u, 0u },    { 0x80129f78u, wrap_80129f78, 15u, 0u, 0u },    { 0x80129fc4u, wrap_80129fc4, 15u, 0u, 0u },    { 0x80129ff4u, wrap_80129ff4, 6u, 0u, 0u },    { 0x8012a030u, wrap_8012a030, 27u, 0u, 0u },    { 0x8012a088u, wrap_8012a088, 11u, 24u, 0u },    { 0x8012a0f0u, wrap_8012a0f0, 26u, 40u, 0u },    { 0x8012a30cu, wrap_8012a30c, 9u, 0u, 0u },    { 0x8012a4b4u, wrap_8012a4b4, 11u, 0u, 0u },    { 0x8012a4dcu, wrap_8012a4dc, 11u, 0u, 0u },    { 0x8012a504u, wrap_8012a504, 6u, 56u, 0u },    { 0x8012a5b8u, wrap_8012a5b8, 4u, 40u, 0u },    { 0x8012a650u, wrap_8012a650, 6u, 0u, 0u },    { 0x8012a72cu, wrap_8012a72c, 44u, 32u, 0u },    { 0x8012a884u, wrap_8012a884, 45u, 48u, 0u },    { 0x8012aa6cu, wrap_8012aa6c, 7u, 0u, 0u },    { 0x8012aaa8u, wrap_8012aaa8, 5u, 0u, 0u },    { 0x8012aab8u, wrap_8012aab8, 4u, 0u, 0u },    { 0x8012aae4u, wrap_8012aae4, 30u, 40u, 0u },    { 0x8012adf8u, wrap_8012adf8, 9u, 24u, 0u },    { 0x8012ae3cu, wrap_8012ae3c, 50u, 32u, 0u },    { 0x8012aeecu, wrap_8012aeec, 52u, 48u, 0u },    { 0x8012b23cu, wrap_8012b23c, 35u, 40u, 0u },    { 0x8012b46cu, wrap_8012b46c, 11u, 0u, 0u },    { 0x8012b488u, wrap_8012b488, 6u, 0u, 0u },    { 0x8012b49cu, wrap_8012b49c, 40u, 32u, 0u },    { 0x8012b55cu, wrap_8012b55c, 39u, 32u, 0u },    { 0x8012ba04u, wrap_8012ba04, 63u, 0u, 0u },    { 0x8012bf0cu, wrap_8012bf0c, 28u, 64u, 0u },    { 0x8012c0b4u, wrap_8012c0b4, 41u, 40u, 0u },    { 0x8012c374u, wrap_8012c374, 54u, 80u, 0u },    { 0x8012cbc0u, wrap_8012cbc0, 52u, 40u, 0u },    { 0x8012cc6cu, wrap_8012cc6c, 113u, 304u, 0u },    { 0x8012cd9cu, wrap_8012cd9c, 18u, 0u, 0u },    { 0x8012cdd8u, wrap_8012cdd8, 19u, 0u, 0u },    { 0x8012ce20u, wrap_8012ce20, 5u, 0u, 0u },    { 0x8012ce30u, wrap_8012ce30, 114u, 304u, 0u },    { 0x8012cf64u, wrap_8012cf64, 117u, 312u, 0u },    { 0x8012d090u, wrap_8012d090, 72u, 48u, 0u },    { 0x8012d154u, wrap_8012d154, 1007u, 48u, 0u },    { 0x8012dce4u, wrap_8012dce4, 317u, 24u, 0u },    { 0x8012e078u, wrap_8012e078, 52u, 24u, 0u },    { 0x8012e100u, wrap_8012e100, 51u, 24u, 0u },    { 0x8012e184u, wrap_8012e184, 54u, 24u, 0u },    { 0x8012e214u, wrap_8012e214, 53u, 24u, 0u },    { 0x8012e2a0u, wrap_8012e2a0, 56u, 24u, 0u },    { 0x8012e334u, wrap_8012e334, 54u, 24u, 0u },    { 0x8012e3c4u, wrap_8012e3c4, 56u, 24u, 0u },    { 0x8012e45cu, wrap_8012e45c, 56u, 24u, 0u },    { 0x8012e4f4u, wrap_8012e4f4, 57u, 24u, 0u },    { 0x8012e58cu, wrap_8012e58c, 54u, 24u, 0u },    { 0x8012e61cu, wrap_8012e61c, 53u, 24u, 0u },    { 0x8012e6a8u, wrap_8012e6a8, 55u, 24u, 0u },    { 0x8012e73cu, wrap_8012e73c, 54u, 24u, 0u },    { 0x8012e7ccu, wrap_8012e7cc, 54u, 24u, 0u },    { 0x8012e85cu, wrap_8012e85c, 53u, 24u, 0u },    { 0x8012e8e8u, wrap_8012e8e8, 55u, 24u, 0u },    { 0x8012e97cu, wrap_8012e97c, 56u, 0u, 0u },    { 0x8012ea18u, wrap_8012ea18, 42u, 0u, 0u },    { 0x8012eaa8u, wrap_8012eaa8, 70u, 48u, 0u },    { 0x8012eb74u, wrap_8012eb74, 109u, 56u, 0u },    { 0x8012ecbcu, wrap_8012ecbc, 101u, 72u, 0u },    { 0x8012ee0cu, wrap_8012ee0c, 20u, 0u, 0u },    { 0x8012ee48u, wrap_8012ee48, 110u, 32u, 0u },    { 0x8012ef6cu, wrap_8012ef6c, 62u, 24u, 0u },    { 0x8012f024u, wrap_8012f024, 133u, 32u, 0u },    { 0x8012f164u, wrap_8012f164, 13u, 32u, 0u },    { 0x8012f2a8u, wrap_8012f2a8, 708u, 96u, 0u },    { 0x8012fb04u, wrap_8012fb04, 5u, 0u, 0u },    { 0x8012fb10u, wrap_8012fb10, 26u, 168u, 0u },    { 0x80132084u, wrap_80132084, 60u, 40u, 0u },    { 0x80132128u, wrap_80132128, 88u, 40u, 0u },    { 0x80132224u, wrap_80132224, 107u, 32u, 0u },    { 0x8013237cu, wrap_8013237c, 167u, 32u, 0u },    { 0x8013258cu, wrap_8013258c, 113u, 40u, 0u },    { 0x801326d4u, wrap_801326d4, 143u, 48u, 0u },    { 0x801329d8u, wrap_801329d8, 135u, 88u, 0u },    { 0x80132d70u, wrap_80132d70, 217u, 88u, 0u },    { 0x80132fdcu, wrap_80132fdc, 73u, 96u, 0u },    { 0x80133328u, wrap_80133328, 97u, 96u, 0u },    { 0x80133708u, wrap_80133708, 34u, 24u, 0u },    { 0x80133828u, wrap_80133828, 36u, 0u, 0u },    { 0x801338c4u, wrap_801338c4, 16u, 0u, 0u },    { 0x80133944u, wrap_80133944, 130u, 72u, 0u },    { 0x80133aa0u, wrap_80133aa0, 135u, 80u, 0u },    { 0x80133c08u, wrap_80133c08, 53u, 72u, 0u },    { 0x80133db0u, wrap_80133db0, 94u, 56u, 0u },    { 0x80133f30u, wrap_80133f30, 114u, 48u, 0u },    { 0x801340f0u, wrap_801340f0, 16u, 24u, 0u },    { 0x80134128u, wrap_80134128, 42u, 32u, 0u },    { 0x801341a0u, wrap_801341a0, 51u, 40u, 0u },    { 0x80134234u, wrap_80134234, 51u, 48u, 0u },    { 0x801343bcu, wrap_801343bc, 221u, 56u, 0u },    { 0x80134b34u, wrap_80134b34, 84u, 40u, 0u },    { 0x80134e44u, wrap_80134e44, 76u, 40u, 0u },    { 0x80134f2cu, wrap_80134f2c, 114u, 48u, 0u },    { 0x80135078u, wrap_80135078, 35u, 32u, 0u },    { 0x801350dcu, wrap_801350dc, 39u, 32u, 0u },    { 0x8013514cu, wrap_8013514c, 16u, 24u, 0u },    { 0x80135180u, wrap_80135180, 72u, 112u, 0u },    { 0x80135724u, wrap_80135724, 8u, 0u, 0u },    { 0x801358e8u, wrap_801358e8, 103u, 40u, 0u },    { 0x80135a14u, wrap_80135a14, 154u, 48u, 0u },    { 0x80136090u, wrap_80136090, 18u, 24u, 0u },    { 0x801360ccu, wrap_801360cc, 19u, 0u, 0u },    { 0x80136114u, wrap_80136114, 46u, 56u, 0u },    { 0x801365a4u, wrap_801365a4, 70u, 88u, 0u },    { 0x80136b64u, wrap_80136b64, 4u, 64u, 0u },    { 0x80136d28u, wrap_80136d28, 73u, 24u, 0u },    { 0x80136ddcu, wrap_80136ddc, 78u, 48u, 0u },    { 0x80136f70u, wrap_80136f70, 4u, 0u, 0u },    { 0x80136f78u, wrap_80136f78, 4u, 0u, 0u },    { 0x80136f80u, wrap_80136f80, 4u, 0u, 0u },    { 0x80136fb0u, wrap_80136fb0, 44u, 24u, 0u },    { 0x80137048u, wrap_80137048, 13u, 24u, 0u },    { 0x80137098u, wrap_80137098, 361u, 56u, 0u },    { 0x80137570u, wrap_80137570, 4u, 0u, 0u },    { 0x80137578u, wrap_80137578, 11u, 0u, 0u },    { 0x80137590u, wrap_80137590, 31u, 0u, 0u },    { 0x801375e8u, wrap_801375e8, 7u, 0u, 0u },    { 0x80137600u, wrap_80137600, 45u, 32u, 0u },    { 0x80137680u, wrap_80137680, 142u, 0u, 0u },    { 0x80137824u, wrap_80137824, 8u, 24u, 0u },    { 0x80137accu, wrap_80137acc, 18u, 0u, 0u },    { 0x80137cd0u, wrap_80137cd0, 31u, 0u, 0u },    { 0x80137e70u, wrap_80137e70, 59u, 48u, 0u },    { 0x80137f0cu, wrap_80137f0c, 67u, 48u, 0u },    { 0x80137fb8u, wrap_80137fb8, 49u, 40u, 0u },    { 0x80138040u, wrap_80138040, 17u, 48u, 0u },    { 0x801380e4u, wrap_801380e4, 9u, 112u, 0u },    { 0x801385dcu, wrap_801385dc, 189u, 64u, 0u },    { 0x801387dcu, wrap_801387dc, 45u, 32u, 0u },    { 0x8013885cu, wrap_8013885c, 47u, 24u, 0u },    { 0x8013893cu, wrap_8013893c, 79u, 24u, 0u },    { 0x80138a24u, wrap_80138a24, 79u, 0u, 0u },    { 0x80138b00u, wrap_80138b00, 139u, 0u, 0u },    { 0x80138c6cu, wrap_80138c6c, 45u, 32u, 0u },    { 0x80138cecu, wrap_80138cec, 561u, 64u, 1u },    { 0x80138d34u, wrap_80138d34, 8u, 0u, 1u },    { 0x80138d54u, wrap_80138d54, 8u, 0u, 1u },    { 0x80138d64u, wrap_80138d64, 8u, 0u, 1u },    { 0x80138d6cu, wrap_80138d6c, 8u, 0u, 1u },    { 0x80138d74u, wrap_80138d74, 8u, 0u, 1u },    { 0x80138d84u, wrap_80138d84, 8u, 0u, 1u },    { 0x80138da0u, wrap_80138da0, 8u, 0u, 1u },    { 0x80138dccu, wrap_80138dcc, 8u, 0u, 1u },    { 0x80138dd4u, wrap_80138dd4, 8u, 0u, 1u },    { 0x80138dd8u, wrap_80138dd8, 8u, 0u, 1u },    { 0x80138e04u, wrap_80138e04, 8u, 0u, 1u },    { 0x80138e0cu, wrap_80138e0c, 8u, 0u, 1u },    { 0x80138e10u, wrap_80138e10, 8u, 0u, 1u },    { 0x80138e3cu, wrap_80138e3c, 8u, 0u, 1u },    { 0x80138e44u, wrap_80138e44, 8u, 0u, 1u },    { 0x80138e54u, wrap_80138e54, 8u, 0u, 1u },    { 0x80138e70u, wrap_80138e70, 8u, 0u, 1u },    { 0x80138e9cu, wrap_80138e9c, 8u, 0u, 1u },    { 0x80138ea4u, wrap_80138ea4, 8u, 0u, 1u },    { 0x80138ea8u, wrap_80138ea8, 8u, 0u, 1u },    { 0x80138ed4u, wrap_80138ed4, 8u, 0u, 1u },    { 0x80138edcu, wrap_80138edc, 8u, 0u, 1u },    { 0x80138ee0u, wrap_80138ee0, 8u, 0u, 1u },    { 0x80138f0cu, wrap_80138f0c, 8u, 0u, 1u },    { 0x80138f14u, wrap_80138f14, 8u, 0u, 1u },    { 0x80138f18u, wrap_80138f18, 8u, 0u, 1u },    { 0x80138f24u, wrap_80138f24, 8u, 0u, 1u },    { 0x80138f2cu, wrap_80138f2c, 8u, 0u, 1u },    { 0x80138f48u, wrap_80138f48, 8u, 0u, 1u },    { 0x80138f8cu, wrap_80138f8c, 8u, 0u, 1u },    { 0x80138fc4u, wrap_80138fc4, 8u, 0u, 1u },    { 0x801390d0u, wrap_801390d0, 8u, 0u, 1u },    { 0x801390d8u, wrap_801390d8, 8u, 0u, 1u },    { 0x801390dcu, wrap_801390dc, 8u, 0u, 1u },    { 0x8013914cu, wrap_8013914c, 8u, 0u, 1u },    { 0x80139154u, wrap_80139154, 8u, 0u, 1u },    { 0x80139158u, wrap_80139158, 8u, 0u, 1u },    { 0x80139160u, wrap_80139160, 8u, 0u, 1u },    { 0x801391d4u, wrap_801391d4, 8u, 0u, 1u },    { 0x801391ecu, wrap_801391ec, 8u, 0u, 1u },    { 0x801392dcu, wrap_801392dc, 8u, 0u, 1u },    { 0x801392e4u, wrap_801392e4, 8u, 0u, 1u },    { 0x801392e8u, wrap_801392e8, 8u, 0u, 1u },    { 0x80139358u, wrap_80139358, 8u, 0u, 1u },    { 0x80139360u, wrap_80139360, 8u, 0u, 1u },    { 0x80139364u, wrap_80139364, 8u, 0u, 1u },    { 0x8013936cu, wrap_8013936c, 8u, 0u, 1u },    { 0x8013937cu, wrap_8013937c, 8u, 0u, 1u },    { 0x801393b8u, wrap_801393b8, 397u, 0u, 1u },    { 0x801393ccu, wrap_801393cc, 8u, 0u, 1u },    { 0x801393d0u, wrap_801393d0, 8u, 0u, 1u },    { 0x801393e8u, wrap_801393e8, 8u, 0u, 1u },    { 0x801393ecu, wrap_801393ec, 8u, 0u, 1u },    { 0x80139404u, wrap_80139404, 8u, 0u, 1u },    { 0x80139408u, wrap_80139408, 8u, 0u, 1u },    { 0x80139424u, wrap_80139424, 8u, 0u, 1u },    { 0x80139434u, wrap_80139434, 8u, 0u, 1u },    { 0x80139450u, wrap_80139450, 8u, 0u, 1u },    { 0x8013946cu, wrap_8013946c, 8u, 0u, 1u },    { 0x801394b8u, wrap_801394b8, 8u, 0u, 1u },    { 0x801394bcu, wrap_801394bc, 8u, 0u, 1u },    { 0x801394d4u, wrap_801394d4, 8u, 0u, 1u },    { 0x801394d8u, wrap_801394d8, 8u, 0u, 1u },    { 0x801394f0u, wrap_801394f0, 8u, 0u, 1u },    { 0x801394f4u, wrap_801394f4, 8u, 0u, 1u },    { 0x80139504u, wrap_80139504, 8u, 0u, 1u },    { 0x80139514u, wrap_80139514, 8u, 0u, 1u },    { 0x80139560u, wrap_80139560, 8u, 0u, 1u },    { 0x80139570u, wrap_80139570, 8u, 0u, 1u },    { 0x801395d4u, wrap_801395d4, 8u, 0u, 1u },    { 0x801395d8u, wrap_801395d8, 8u, 0u, 1u },    { 0x801395e8u, wrap_801395e8, 8u, 0u, 1u },    { 0x80139608u, wrap_80139608, 8u, 0u, 1u },    { 0x8013960cu, wrap_8013960c, 8u, 0u, 1u },    { 0x80139620u, wrap_80139620, 8u, 0u, 1u },    { 0x801397acu, wrap_801397ac, 8u, 0u, 1u },    { 0x801397b4u, wrap_801397b4, 8u, 0u, 1u },    { 0x801397b8u, wrap_801397b8, 8u, 0u, 1u },    { 0x8013981cu, wrap_8013981c, 8u, 0u, 1u },    { 0x80139824u, wrap_80139824, 8u, 0u, 1u },    { 0x80139828u, wrap_80139828, 8u, 0u, 1u },    { 0x80139830u, wrap_80139830, 8u, 0u, 1u },    { 0x80139834u, wrap_80139834, 93u, 0u, 1u },    { 0x80139874u, wrap_80139874, 8u, 0u, 1u },    { 0x80139954u, wrap_80139954, 58u, 0u, 1u },    { 0x8013998cu, wrap_8013998c, 8u, 0u, 1u },    { 0x80139994u, wrap_80139994, 8u, 0u, 1u },    { 0x80139998u, wrap_80139998, 8u, 0u, 1u },    { 0x801399fcu, wrap_801399fc, 8u, 0u, 1u },    { 0x80139a04u, wrap_80139a04, 8u, 0u, 1u },    { 0x80139a08u, wrap_80139a08, 8u, 0u, 1u },    { 0x80139a0cu, wrap_80139a0c, 295u, 0u, 1u },    { 0x80139a74u, wrap_80139a74, 8u, 0u, 1u },    { 0x80139ab8u, wrap_80139ab8, 8u, 0u, 1u },    { 0x80139ac8u, wrap_80139ac8, 8u, 0u, 1u },    { 0x80139aecu, wrap_80139aec, 8u, 0u, 1u },    { 0x80139af0u, wrap_80139af0, 8u, 0u, 1u },    { 0x80139b78u, wrap_80139b78, 8u, 0u, 1u },    { 0x80139bacu, wrap_80139bac, 8u, 0u, 1u },    { 0x80139bb8u, wrap_80139bb8, 8u, 0u, 1u },    { 0x80139bc4u, wrap_80139bc4, 8u, 0u, 1u },    { 0x80139c00u, wrap_80139c00, 8u, 0u, 1u },    { 0x80139c3cu, wrap_80139c3c, 8u, 0u, 1u },    { 0x80139c78u, wrap_80139c78, 8u, 0u, 1u },    { 0x80139cb4u, wrap_80139cb4, 8u, 0u, 1u },    { 0x80139cf0u, wrap_80139cf0, 8u, 0u, 1u },    { 0x80139d2cu, wrap_80139d2c, 8u, 0u, 1u },    { 0x80139d68u, wrap_80139d68, 8u, 0u, 1u },    { 0x80139d98u, wrap_80139d98, 43u, 0u, 1u },    { 0x80139e0cu, wrap_80139e0c, 85u, 40u, 0u },    { 0x80139fd0u, wrap_80139fd0, 374u, 0u, 0u },    { 0x8013a9d8u, wrap_8013a9d8, 120u, 0u, 0u },    { 0x8013ab8cu, wrap_8013ab8c, 69u, 40u, 0u },    { 0x8013adb4u, wrap_8013adb4, 23u, 0u, 0u },    { 0x8013b088u, wrap_8013b088, 59u, 0u, 0u },    { 0x8013b12cu, wrap_8013b12c, 45u, 0u, 0u },    { 0x8013b5a8u, wrap_8013b5a8, 138u, 0u, 0u },    { 0x8013c9ccu, wrap_8013c9cc, 379u, 0u, 1u },    { 0x8013ca14u, wrap_8013ca14, 8u, 0u, 1u },    { 0x8013ca38u, wrap_8013ca38, 8u, 0u, 1u },    { 0x8013ca40u, wrap_8013ca40, 8u, 0u, 1u },    { 0x8013ca74u, wrap_8013ca74, 8u, 0u, 1u },    { 0x8013ca90u, wrap_8013ca90, 8u, 0u, 1u },    { 0x8013caa4u, wrap_8013caa4, 8u, 0u, 1u },    { 0x8013cabcu, wrap_8013cabc, 8u, 0u, 1u },    { 0x8013cac0u, wrap_8013cac0, 8u, 0u, 1u },    { 0x8013cae0u, wrap_8013cae0, 8u, 0u, 1u },    { 0x8013cb28u, wrap_8013cb28, 8u, 0u, 1u },    { 0x8013cb64u, wrap_8013cb64, 8u, 0u, 1u },    { 0x8013cb70u, wrap_8013cb70, 8u, 0u, 1u },    { 0x8013cb78u, wrap_8013cb78, 8u, 0u, 1u },    { 0x8013cbbcu, wrap_8013cbbc, 8u, 0u, 1u },    { 0x8013cbd0u, wrap_8013cbd0, 8u, 0u, 1u },    { 0x8013cbe4u, wrap_8013cbe4, 8u, 0u, 1u },    { 0x8013cc04u, wrap_8013cc04, 8u, 0u, 1u },    { 0x8013cc08u, wrap_8013cc08, 8u, 0u, 1u },    { 0x8013cc1cu, wrap_8013cc1c, 8u, 0u, 1u },    { 0x8013cc28u, wrap_8013cc28, 8u, 0u, 1u },    { 0x8013cc40u, wrap_8013cc40, 8u, 0u, 1u },    { 0x8013cc4cu, wrap_8013cc4c, 8u, 0u, 1u },    { 0x8013cc50u, wrap_8013cc50, 8u, 0u, 1u },    { 0x8013cc60u, wrap_8013cc60, 8u, 0u, 1u },    { 0x8013cc6cu, wrap_8013cc6c, 8u, 0u, 1u },    { 0x8013cca4u, wrap_8013cca4, 8u, 0u, 1u },    { 0x8013ccd8u, wrap_8013ccd8, 8u, 0u, 1u },    { 0x8013cce4u, wrap_8013cce4, 8u, 0u, 1u },    { 0x8013ccf4u, wrap_8013ccf4, 8u, 0u, 1u },    { 0x8013cd30u, wrap_8013cd30, 8u, 0u, 1u },    { 0x8013cd44u, wrap_8013cd44, 8u, 0u, 1u },    { 0x8013cd50u, wrap_8013cd50, 8u, 0u, 1u },    { 0x8013cd58u, wrap_8013cd58, 8u, 0u, 1u },    { 0x8013cd90u, wrap_8013cd90, 8u, 0u, 1u },    { 0x8013cda4u, wrap_8013cda4, 8u, 0u, 1u },    { 0x8013cdacu, wrap_8013cdac, 8u, 0u, 1u },    { 0x8013cdb8u, wrap_8013cdb8, 8u, 0u, 1u },    { 0x8013cde8u, wrap_8013cde8, 45u, 32u, 0u },    { 0x8013d6b0u, wrap_8013d6b0, 115u, 0u, 0u },    { 0x8013d7e4u, wrap_8013d7e4, 208u, 32u, 0u },    { 0x8013da2cu, wrap_8013da2c, 7u, 56u, 0u },    { 0x8013e0f0u, wrap_8013e0f0, 237u, 48u, 0u },    { 0x8013e374u, wrap_8013e374, 45u, 32u, 0u },    { 0x8013e3f4u, wrap_8013e3f4, 127u, 24u, 0u },    { 0x8013e558u, wrap_8013e558, 88u, 0u, 0u },    { 0x8013eb04u, wrap_8013eb04, 4u, 0u, 0u },    { 0x8013ed98u, wrap_8013ed98, 68u, 48u, 0u },    { 0x8013ee40u, wrap_8013ee40, 161u, 48u, 0u },    { 0x8013f034u, wrap_8013f034, 113u, 72u, 0u },    { 0x8013f178u, wrap_8013f178, 273u, 48u, 0u },    { 0x8013f490u, wrap_8013f490, 130u, 40u, 0u },    { 0x8013f5f8u, wrap_8013f5f8, 26u, 0u, 0u },    { 0x8013f648u, wrap_8013f648, 65u, 24u, 0u },    { 0x8013f714u, wrap_8013f714, 50u, 0u, 0u },    { 0x8013f7a0u, wrap_8013f7a0, 4u, 0u, 0u },    { 0x8013f7a8u, wrap_8013f7a8, 45u, 32u, 0u },    { 0x801401c8u, wrap_801401c8, 284u, 0u, 0u },    { 0x801401d0u, wrap_801401d0, 8u, 64u, 0u },    { 0x80140510u, wrap_80140510, 178u, 0u, 0u },    { 0x80140518u, wrap_80140518, 8u, 48u, 0u },    { 0x80140710u, wrap_80140710, 69u, 0u, 0u },    { 0x80140718u, wrap_80140718, 8u, 48u, 0u },    { 0x801407ccu, wrap_801407cc, 294u, 64u, 0u },    { 0x80140b18u, wrap_80140b18, 132u, 0u, 0u },    { 0x80140b20u, wrap_80140b20, 8u, 48u, 0u },    { 0x80140c90u, wrap_80140c90, 4u, 0u, 0u },    { 0x80140ca0u, wrap_80140ca0, 50u, 0u, 0u },    { 0x80140ca8u, wrap_80140ca8, 8u, 40u, 0u },    { 0x80140d38u, wrap_80140d38, 258u, 24u, 0u },    { 0x80141050u, wrap_80141050, 143u, 48u, 0u },    { 0x801411e8u, wrap_801411e8, 190u, 56u, 0u },    { 0x8014140cu, wrap_8014140c, 176u, 48u, 0u },    { 0x80141610u, wrap_80141610, 173u, 32u, 0u },    { 0x80141814u, wrap_80141814, 315u, 64u, 0u },    { 0x80141b78u, wrap_80141b78, 141u, 48u, 0u },    { 0x80141d2cu, wrap_80141d2c, 297u, 0u, 0u },    { 0x80141d34u, wrap_80141d34, 8u, 56u, 0u },    { 0x80142108u, wrap_80142108, 68u, 40u, 0u },    { 0x801421c4u, wrap_801421c4, 652u, 88u, 0u },    { 0x80142b3cu, wrap_80142b3c, 63u, 0u, 0u },    { 0x80142c5cu, wrap_80142c5c, 18u, 0u, 0u },    { 0x80142c9cu, wrap_80142c9c, 19u, 0u, 0u },    { 0x80142cd8u, wrap_80142cd8, 21u, 0u, 0u },    { 0x80142d20u, wrap_80142d20, 21u, 24u, 0u },    { 0x80142d58u, wrap_80142d58, 20u, 24u, 0u },    { 0x80142da0u, wrap_80142da0, 21u, 24u, 0u },    { 0x80142dd8u, wrap_80142dd8, 12u, 0u, 0u },    { 0x80142df4u, wrap_80142df4, 17u, 0u, 0u },    { 0x80142f3cu, wrap_80142f3c, 460u, 0u, 0u },    { 0x801434d4u, wrap_801434d4, 492u, 16u, 0u },    { 0x80143ac8u, wrap_80143ac8, 69u, 0u, 0u },    { 0x80143bb8u, wrap_80143bb8, 51u, 0u, 0u },    { 0x80143c6cu, wrap_80143c6c, 39u, 0u, 0u },    { 0x80143d38u, wrap_80143d38, 1360u, 64u, 0u },    { 0x80144f8cu, wrap_80144f8c, 129u, 32u, 0u },    { 0x8014512cu, wrap_8014512c, 55u, 24u, 0u },    { 0x801451d4u, wrap_801451d4, 85u, 32u, 0u },    { 0x801452d0u, wrap_801452d0, 70u, 32u, 0u },    { 0x801453a0u, wrap_801453a0, 117u, 64u, 0u },    { 0x801454f0u, wrap_801454f0, 354u, 64u, 0u },    { 0x801458acu, wrap_801458ac, 37u, 0u, 0u },    { 0x80145924u, wrap_80145924, 4u, 0u, 0u },    { 0x80145968u, wrap_80145968, 4u, 0u, 0u },    { 0x80145970u, wrap_80145970, 283u, 120u, 0u },    { 0x80145c90u, wrap_80145c90, 77u, 40u, 0u },    { 0x80145d84u, wrap_80145d84, 607u, 128u, 0u },    { 0x8014642cu, wrap_8014642c, 360u, 24u, 0u },    { 0x801468ecu, wrap_801468ec, 447u, 96u, 1u },    { 0x80146998u, wrap_80146998, 8u, 0u, 1u },    { 0x801469b4u, wrap_801469b4, 8u, 0u, 1u },    { 0x801469bcu, wrap_801469bc, 8u, 0u, 1u },    { 0x801469c4u, wrap_801469c4, 8u, 0u, 1u },    { 0x801469ccu, wrap_801469cc, 8u, 0u, 1u },    { 0x801469d4u, wrap_801469d4, 8u, 0u, 1u },    { 0x801469dcu, wrap_801469dc, 8u, 0u, 1u },    { 0x801469e0u, wrap_801469e0, 8u, 0u, 1u },    { 0x801469e8u, wrap_801469e8, 8u, 0u, 1u },    { 0x80146a00u, wrap_80146a00, 8u, 0u, 1u },    { 0x80146a0cu, wrap_80146a0c, 8u, 0u, 1u },    { 0x80146a20u, wrap_80146a20, 8u, 0u, 1u },    { 0x80146a34u, wrap_80146a34, 8u, 0u, 1u },    { 0x80146a44u, wrap_80146a44, 8u, 0u, 1u },    { 0x80146a60u, wrap_80146a60, 8u, 0u, 1u },    { 0x80146a6cu, wrap_80146a6c, 8u, 0u, 1u },    { 0x80146a70u, wrap_80146a70, 8u, 0u, 1u },    { 0x80146a78u, wrap_80146a78, 8u, 0u, 1u },    { 0x80146a80u, wrap_80146a80, 8u, 0u, 1u },    { 0x80146a88u, wrap_80146a88, 8u, 0u, 1u },    { 0x80146a98u, wrap_80146a98, 8u, 0u, 1u },    { 0x80146aa0u, wrap_80146aa0, 8u, 0u, 1u },    { 0x80146ad8u, wrap_80146ad8, 8u, 0u, 1u },    { 0x80146ae4u, wrap_80146ae4, 8u, 0u, 1u },    { 0x80146ae8u, wrap_80146ae8, 8u, 0u, 1u },    { 0x80146af4u, wrap_80146af4, 8u, 0u, 1u },    { 0x80146b04u, wrap_80146b04, 8u, 0u, 1u },    { 0x80146b18u, wrap_80146b18, 8u, 0u, 1u },    { 0x80146b28u, wrap_80146b28, 8u, 0u, 1u },    { 0x80146b34u, wrap_80146b34, 8u, 0u, 1u },    { 0x80146b4cu, wrap_80146b4c, 8u, 0u, 1u },    { 0x80146b50u, wrap_80146b50, 8u, 0u, 1u },    { 0x80146b68u, wrap_80146b68, 8u, 0u, 1u },    { 0x80146b70u, wrap_80146b70, 8u, 0u, 1u },    { 0x80146b78u, wrap_80146b78, 8u, 0u, 1u },    { 0x80146b80u, wrap_80146b80, 8u, 0u, 1u },    { 0x80146bb8u, wrap_80146bb8, 8u, 0u, 1u },    { 0x80146bc4u, wrap_80146bc4, 8u, 0u, 1u },    { 0x80146bc8u, wrap_80146bc8, 8u, 0u, 1u },    { 0x80146bd4u, wrap_80146bd4, 8u, 0u, 1u },    { 0x80146be8u, wrap_80146be8, 8u, 0u, 1u },    { 0x80146c24u, wrap_80146c24, 8u, 0u, 1u },    { 0x80146c28u, wrap_80146c28, 8u, 0u, 1u },    { 0x80146c34u, wrap_80146c34, 8u, 0u, 1u },    { 0x80146c44u, wrap_80146c44, 8u, 0u, 1u },    { 0x80146c58u, wrap_80146c58, 8u, 0u, 1u },    { 0x80146c68u, wrap_80146c68, 8u, 0u, 1u },    { 0x80146c74u, wrap_80146c74, 8u, 0u, 1u },    { 0x80146c90u, wrap_80146c90, 8u, 0u, 1u },    { 0x80146c94u, wrap_80146c94, 8u, 0u, 1u },    { 0x80146c98u, wrap_80146c98, 8u, 0u, 1u },    { 0x80146cacu, wrap_80146cac, 8u, 0u, 1u },    { 0x80146cc8u, wrap_80146cc8, 8u, 0u, 1u },    { 0x80146cd0u, wrap_80146cd0, 8u, 0u, 1u },    { 0x80146cd8u, wrap_80146cd8, 8u, 0u, 1u },    { 0x80146ce0u, wrap_80146ce0, 8u, 0u, 1u },    { 0x80146ce8u, wrap_80146ce8, 8u, 0u, 1u },    { 0x80146cf0u, wrap_80146cf0, 8u, 0u, 1u },    { 0x80146d20u, wrap_80146d20, 8u, 0u, 1u },    { 0x80146d34u, wrap_80146d34, 8u, 0u, 1u },    { 0x80146d80u, wrap_80146d80, 8u, 0u, 1u },    { 0x80146d94u, wrap_80146d94, 8u, 0u, 1u },    { 0x80146da4u, wrap_80146da4, 8u, 0u, 1u },    { 0x80146db4u, wrap_80146db4, 8u, 0u, 1u },    { 0x80146e00u, wrap_80146e00, 8u, 0u, 1u },    { 0x80146e08u, wrap_80146e08, 8u, 0u, 1u },    { 0x80146e38u, wrap_80146e38, 176u, 40u, 0u },    { 0x80147034u, wrap_80147034, 411u, 168u, 0u },    { 0x8014751cu, wrap_8014751c, 276u, 40u, 0u },    { 0x801479c4u, wrap_801479c4, 158u, 64u, 0u },    { 0x80147bb4u, wrap_80147bb4, 94u, 48u, 0u },    { 0x80147cdcu, wrap_80147cdc, 83u, 48u, 0u },    { 0x80147df4u, wrap_80147df4, 286u, 56u, 0u },    { 0x80148170u, wrap_80148170, 275u, 64u, 0u },    { 0x80148528u, wrap_80148528, 208u, 40u, 0u },    { 0x801487acu, wrap_801487ac, 413u, 56u, 0u },    { 0x80148cb0u, wrap_80148cb0, 55u, 0u, 0u },    { 0x80148d80u, wrap_80148d80, 38u, 0u, 0u },    { 0x80148e00u, wrap_80148e00, 28u, 0u, 0u },    { 0x80148e70u, wrap_80148e70, 32u, 40u, 0u },    { 0x80148edcu, wrap_80148edc, 27u, 0u, 0u },    { 0x80148f30u, wrap_80148f30, 12u, 0u, 0u },    { 0x80148f58u, wrap_80148f58, 156u, 48u, 0u },    { 0x80149114u, wrap_80149114, 346u, 48u, 0u },    { 0x8014950cu, wrap_8014950c, 1582u, 88u, 0u },    { 0x8014a5bcu, wrap_8014a5bc, 82u, 48u, 0u },    { 0x8014a6a8u, wrap_8014a6a8, 28u, 0u, 0u },    { 0x8014a708u, wrap_8014a708, 93u, 56u, 0u },    { 0x8014a804u, wrap_8014a804, 87u, 48u, 0u },    { 0x8014a918u, wrap_8014a918, 136u, 40u, 0u },    { 0x8014aae0u, wrap_8014aae0, 372u, 88u, 0u },    { 0x8014af04u, wrap_8014af04, 4u, 0u, 0u },    { 0x8014af0cu, wrap_8014af0c, 69u, 48u, 0u },    { 0x8014afc0u, wrap_8014afc0, 278u, 48u, 0u },    { 0x8014b2c4u, wrap_8014b2c4, 4u, 0u, 0u },    { 0x8014b2ccu, wrap_8014b2cc, 67u, 48u, 0u },    { 0x8014b37cu, wrap_8014b37c, 326u, 56u, 0u },    { 0x8014b73cu, wrap_8014b73c, 4u, 0u, 0u },    { 0x8014b744u, wrap_8014b744, 78u, 48u, 0u },    { 0x8014b818u, wrap_8014b818, 8u, 56u, 0u },    { 0x8014b938u, wrap_8014b938, 165u, 64u, 0u },    { 0x8014bb34u, wrap_8014bb34, 382u, 48u, 0u },    { 0x8014bfe4u, wrap_8014bfe4, 12u, 24u, 0u },    { 0x8014c00cu, wrap_8014c00c, 67u, 40u, 0u },    { 0x8014c0e0u, wrap_8014c0e0, 85u, 40u, 0u },    { 0x8014c1d8u, wrap_8014c1d8, 40u, 24u, 0u },    { 0x8014c258u, wrap_8014c258, 65u, 40u, 0u },    { 0x8014c76cu, wrap_8014c76c, 128u, 56u, 0u },    { 0x8014c8d4u, wrap_8014c8d4, 124u, 56u, 0u },    { 0x8014ca34u, wrap_8014ca34, 43u, 32u, 0u },    { 0x8014cab4u, wrap_8014cab4, 63u, 48u, 0u },    { 0x8014cb64u, wrap_8014cb64, 51u, 32u, 0u },    { 0x8014cc00u, wrap_8014cc00, 66u, 40u, 0u },    { 0x8014ccd0u, wrap_8014ccd0, 41u, 24u, 0u },    { 0x8014cdd0u, wrap_8014cdd0, 3079u, 384u, 0u },    { 0x8014f1c8u, wrap_8014f1c8, 43u, 0u, 0u },    { 0x8014f260u, wrap_8014f260, 1638u, 248u, 0u },    { 0x801506d0u, wrap_801506d0, 708u, 360u, 0u },    { 0x80150f04u, wrap_80150f04, 183u, 56u, 0u },    { 0x8015113cu, wrap_8015113c, 172u, 40u, 0u },    { 0x80151328u, wrap_80151328, 57u, 24u, 0u },    { 0x801513c8u, wrap_801513c8, 17u, 0u, 0u },    { 0x801513fcu, wrap_801513fc, 21u, 24u, 0u },    { 0x8015143cu, wrap_8015143c, 660u, 64u, 0u },    { 0x80151cd0u, wrap_80151cd0, 77u, 0u, 0u },    { 0x80151dc8u, wrap_80151dc8, 186u, 56u, 0u },    { 0x8015200cu, wrap_8015200c, 124u, 56u, 0u },    { 0x801521a4u, wrap_801521a4, 56u, 0u, 0u },    { 0x80152260u, wrap_80152260, 4u, 0u, 0u },    { 0x80152264u, wrap_80152264, 4u, 0u, 0u },    { 0x8015226cu, wrap_8015226c, 173u, 56u, 0u },    { 0x801524b0u, wrap_801524b0, 48u, 32u, 0u },    { 0x80152548u, wrap_80152548, 40u, 32u, 0u },    { 0x801525c4u, wrap_801525c4, 5u, 0u, 0u },    { 0x801525d0u, wrap_801525d0, 19u, 24u, 0u },    { 0x8015260cu, wrap_8015260c, 135u, 32u, 0u },    { 0x8015279cu, wrap_8015279c, 74u, 32u, 0u },    { 0x80152878u, wrap_80152878, 87u, 32u, 0u },    { 0x8015297cu, wrap_8015297c, 190u, 32u, 0u },    { 0x80152bdcu, wrap_80152bdc, 503u, 40u, 0u },    { 0x801531ecu, wrap_801531ec, 41u, 24u, 0u },    { 0x80153264u, wrap_80153264, 112u, 32u, 0u },    { 0x801533e0u, wrap_801533e0, 29u, 32u, 0u },    { 0x8015343cu, wrap_8015343c, 23u, 24u, 0u },    { 0x80153484u, wrap_80153484, 45u, 0u, 0u },    { 0x80153534u, wrap_80153534, 4u, 0u, 0u },    { 0x8015353cu, wrap_8015353c, 4u, 0u, 0u },    { 0x80153544u, wrap_80153544, 321u, 40u, 0u },    { 0x80153984u, wrap_80153984, 102u, 24u, 0u },    { 0x80153ab0u, wrap_80153ab0, 277u, 40u, 0u },    { 0x80153decu, wrap_80153dec, 84u, 0u, 0u },    { 0x80153ee8u, wrap_80153ee8, 362u, 32u, 0u },    { 0x80154368u, wrap_80154368, 205u, 40u, 0u },    { 0x801545d0u, wrap_801545d0, 279u, 40u, 0u },    { 0x80154930u, wrap_80154930, 1572u, 56u, 0u },    { 0x80155c14u, wrap_80155c14, 147u, 40u, 0u },    { 0x80155dd0u, wrap_80155dd0, 33u, 24u, 0u },    { 0x80155e30u, wrap_80155e30, 19u, 24u, 0u },    { 0x80155e6cu, wrap_80155e6c, 37u, 24u, 0u },    { 0x80155edcu, wrap_80155edc, 39u, 24u, 0u },    { 0x80155f64u, wrap_80155f64, 72u, 32u, 0u },    { 0x80156048u, wrap_80156048, 13u, 0u, 0u },    { 0x801560f8u, wrap_801560f8, 9u, 0u, 0u },    { 0x80156114u, wrap_80156114, 63u, 32u, 0u },    { 0x801561c8u, wrap_801561c8, 13u, 24u, 0u },    { 0x801561f0u, wrap_801561f0, 14u, 0u, 0u },    { 0x80156220u, wrap_80156220, 32u, 0u, 0u },    { 0x80156290u, wrap_80156290, 24u, 0u, 0u },    { 0x801562e0u, wrap_801562e0, 29u, 0u, 0u },    { 0x80156344u, wrap_80156344, 64u, 32u, 0u },    { 0x80156404u, wrap_80156404, 19u, 24u, 0u },    { 0x8015643cu, wrap_8015643c, 7u, 0u, 0u },    { 0x80156458u, wrap_80156458, 7u, 0u, 0u },    { 0x80156470u, wrap_80156470, 4u, 0u, 0u },    { 0x8015647cu, wrap_8015647c, 4u, 0u, 0u },    { 0x80156484u, wrap_80156484, 117u, 40u, 0u },    { 0x801565ecu, wrap_801565ec, 33u, 32u, 1u },    { 0x80156614u, wrap_80156614, 8u, 0u, 1u },    { 0x8015661cu, wrap_8015661c, 8u, 0u, 1u },    { 0x80156628u, wrap_80156628, 8u, 0u, 1u },    { 0x80156630u, wrap_80156630, 8u, 0u, 1u },    { 0x80156638u, wrap_80156638, 8u, 0u, 1u },    { 0x80156650u, wrap_80156650, 27u, 32u, 0u },    { 0x801566a0u, wrap_801566a0, 16u, 24u, 0u },    { 0x801566d4u, wrap_801566d4, 142u, 0u, 0u },    { 0x801568fcu, wrap_801568fc, 249u, 24u, 0u },    { 0x80156c60u, wrap_80156c60, 41u, 24u, 0u },    { 0x80156cf4u, wrap_80156cf4, 41u, 24u, 0u },    { 0x80156d88u, wrap_80156d88, 4u, 0u, 0u },    { 0x80156d90u, wrap_80156d90, 4u, 0u, 0u },    { 0x80156d98u, wrap_80156d98, 113u, 48u, 0u },    { 0x80156ef4u, wrap_80156ef4, 77u, 24u, 0u },    { 0x80156ff0u, wrap_80156ff0, 146u, 72u, 0u },    { 0x80157188u, wrap_80157188, 102u, 24u, 0u },    { 0x801572c0u, wrap_801572c0, 19u, 24u, 0u },    { 0x801572f8u, wrap_801572f8, 21u, 24u, 0u },    { 0x80157334u, wrap_80157334, 11u, 24u, 0u },    { 0x80157358u, wrap_80157358, 5u, 0u, 0u },    { 0x80157368u, wrap_80157368, 39u, 24u, 0u },    { 0x801573dcu, wrap_801573dc, 5u, 0u, 0u },    { 0x801573ecu, wrap_801573ec, 30u, 24u, 0u },    { 0x80157444u, wrap_80157444, 7u, 0u, 0u },    { 0x80157458u, wrap_80157458, 32u, 32u, 0u },    { 0x801574b4u, wrap_801574b4, 7u, 0u, 0u },    { 0x801574ccu, wrap_801574cc, 16u, 0u, 0u },    { 0x801574fcu, wrap_801574fc, 37u, 24u, 0u },    { 0x80157574u, wrap_80157574, 22u, 0u, 0u },    { 0x801575bcu, wrap_801575bc, 74u, 24u, 0u },    { 0x8015768cu, wrap_8015768c, 106u, 48u, 0u },    { 0x801577bcu, wrap_801577bc, 59u, 32u, 0u },    { 0x8015787cu, wrap_8015787c, 107u, 24u, 0u },    { 0x80157a00u, wrap_80157a00, 642u, 40u, 0u },    { 0x80158244u, wrap_80158244, 14u, 24u, 0u },    { 0x80158274u, wrap_80158274, 25u, 0u, 0u },    { 0x8015827cu, wrap_8015827c, 8u, 24u, 0u },    { 0x801582c0u, wrap_801582c0, 47u, 24u, 0u },    { 0x80158358u, wrap_80158358, 37u, 24u, 0u },    { 0x801583ccu, wrap_801583cc, 99u, 0u, 0u },    { 0x80158514u, wrap_80158514, 8u, 0u, 0u },    { 0x80158528u, wrap_80158528, 131u, 72u, 0u },    { 0x80158698u, wrap_80158698, 111u, 56u, 0u },    { 0x801587c0u, wrap_801587c0, 522u, 88u, 1u },    { 0x80158808u, wrap_80158808, 8u, 0u, 1u },    { 0x80158814u, wrap_80158814, 8u, 0u, 1u },    { 0x8015881cu, wrap_8015881c, 8u, 0u, 1u },    { 0x80158824u, wrap_80158824, 8u, 0u, 1u },    { 0x80158828u, wrap_80158828, 8u, 0u, 1u },    { 0x8015882cu, wrap_8015882c, 8u, 0u, 1u },    { 0x801588a4u, wrap_801588a4, 8u, 0u, 1u },    { 0x801588c4u, wrap_801588c4, 8u, 0u, 1u },    { 0x801588d4u, wrap_801588d4, 8u, 0u, 1u },    { 0x801588e4u, wrap_801588e4, 8u, 0u, 1u },    { 0x801588f4u, wrap_801588f4, 8u, 0u, 1u },    { 0x80158904u, wrap_80158904, 8u, 0u, 1u },    { 0x80158910u, wrap_80158910, 8u, 0u, 1u },    { 0x8015891cu, wrap_8015891c, 8u, 0u, 1u },    { 0x8015895cu, wrap_8015895c, 8u, 0u, 1u },    { 0x80158994u, wrap_80158994, 8u, 0u, 1u },    { 0x801589a4u, wrap_801589a4, 8u, 0u, 1u },    { 0x801589acu, wrap_801589ac, 8u, 0u, 1u },    { 0x801589b4u, wrap_801589b4, 8u, 0u, 1u },    { 0x801589bcu, wrap_801589bc, 8u, 0u, 1u },    { 0x801589c8u, wrap_801589c8, 8u, 0u, 1u },    { 0x801589d0u, wrap_801589d0, 8u, 0u, 1u },    { 0x80158a1cu, wrap_80158a1c, 8u, 0u, 1u },    { 0x80158a5cu, wrap_80158a5c, 8u, 0u, 1u },    { 0x80158a84u, wrap_80158a84, 8u, 0u, 1u },    { 0x80158aa4u, wrap_80158aa4, 8u, 0u, 1u },    { 0x80158aacu, wrap_80158aac, 8u, 0u, 1u },    { 0x80158afcu, wrap_80158afc, 8u, 0u, 1u },    { 0x80158b08u, wrap_80158b08, 8u, 0u, 1u },    { 0x80158b58u, wrap_80158b58, 8u, 0u, 1u },    { 0x80158b64u, wrap_80158b64, 8u, 0u, 1u },    { 0x80158b9cu, wrap_80158b9c, 8u, 0u, 1u },    { 0x80158ba8u, wrap_80158ba8, 8u, 0u, 1u },    { 0x80158bd8u, wrap_80158bd8, 8u, 0u, 1u },    { 0x80158be4u, wrap_80158be4, 8u, 0u, 1u },    { 0x80158bfcu, wrap_80158bfc, 8u, 0u, 1u },    { 0x80158c44u, wrap_80158c44, 8u, 0u, 1u },    { 0x80158c50u, wrap_80158c50, 8u, 0u, 1u },    { 0x80158cb0u, wrap_80158cb0, 8u, 0u, 1u },    { 0x80158cbcu, wrap_80158cbc, 8u, 0u, 1u },    { 0x80158d00u, wrap_80158d00, 8u, 0u, 1u },    { 0x80158d0cu, wrap_80158d0c, 8u, 0u, 1u },    { 0x80158d48u, wrap_80158d48, 8u, 0u, 1u },    { 0x80158d54u, wrap_80158d54, 8u, 0u, 1u },    { 0x80158d78u, wrap_80158d78, 8u, 0u, 1u },    { 0x80158da8u, wrap_80158da8, 55u, 40u, 0u },    { 0x80158e5cu, wrap_80158e5c, 148u, 88u, 0u },    { 0x80159028u, wrap_80159028, 364u, 96u, 0u },    { 0x801594a4u, wrap_801594a4, 219u, 40u, 0u },    { 0x80159734u, wrap_80159734, 70u, 0u, 0u },    { 0x801597e0u, wrap_801597e0, 5u, 0u, 0u },    { 0x801597ecu, wrap_801597ec, 42u, 40u, 0u },    { 0x80159864u, wrap_80159864, 151u, 0u, 0u },    { 0x8015986cu, wrap_8015986c, 8u, 40u, 0u },    { 0x80159a14u, wrap_80159a14, 54u, 40u, 0u },    { 0x80159ab4u, wrap_80159ab4, 131u, 48u, 0u },    { 0x80159c24u, wrap_80159c24, 71u, 40u, 0u },    { 0x80159ce4u, wrap_80159ce4, 46u, 40u, 0u },    { 0x80159d78u, wrap_80159d78, 18u, 0u, 0u },    { 0x80159dacu, wrap_80159dac, 100u, 0u, 0u },    { 0x80159eecu, wrap_80159eec, 26u, 0u, 0u },    { 0x80159f44u, wrap_80159f44, 5u, 0u, 0u },    { 0x80159f54u, wrap_80159f54, 4u, 0u, 0u },    { 0x80159f58u, wrap_80159f58, 4u, 0u, 0u },    { 0x80159f60u, wrap_80159f60, 10u, 0u, 0u },    { 0x80159f7cu, wrap_80159f7c, 4u, 0u, 0u },    { 0x80159f84u, wrap_80159f84, 187u, 32u, 0u },    { 0x8015a1dcu, wrap_8015a1dc, 4u, 0u, 0u },    { 0x8015a1e4u, wrap_8015a1e4, 300u, 48u, 0u },    { 0x8015a584u, wrap_8015a584, 51u, 24u, 0u },    { 0x8015a614u, wrap_8015a614, 40u, 24u, 0u },    { 0x8015a69cu, wrap_8015a69c, 376u, 48u, 0u },    { 0x8015ab4cu, wrap_8015ab4c, 18u, 0u, 0u },    { 0x8015ab88u, wrap_8015ab88, 16u, 0u, 0u },    { 0x8015abc0u, wrap_8015abc0, 97u, 48u, 0u },    { 0x8015ace4u, wrap_8015ace4, 413u, 112u, 1u },    { 0x8015ad14u, wrap_8015ad14, 8u, 0u, 1u },    { 0x8015ad1cu, wrap_8015ad1c, 8u, 0u, 1u },    { 0x8015ad24u, wrap_8015ad24, 8u, 0u, 1u },    { 0x8015ad2cu, wrap_8015ad2c, 8u, 0u, 1u },    { 0x8015ad34u, wrap_8015ad34, 8u, 0u, 1u },    { 0x8015ad3cu, wrap_8015ad3c, 8u, 0u, 1u },    { 0x8015ad44u, wrap_8015ad44, 8u, 0u, 1u },    { 0x8015ad4cu, wrap_8015ad4c, 8u, 0u, 1u },    { 0x8015ad54u, wrap_8015ad54, 8u, 0u, 1u },    { 0x8015ad5cu, wrap_8015ad5c, 8u, 0u, 1u },    { 0x8015ad68u, wrap_8015ad68, 8u, 0u, 1u },    { 0x8015add0u, wrap_8015add0, 8u, 0u, 1u },    { 0x8015add4u, wrap_8015add4, 8u, 0u, 1u },    { 0x8015adecu, wrap_8015adec, 8u, 0u, 1u },    { 0x8015adf0u, wrap_8015adf0, 8u, 0u, 1u },    { 0x8015ae08u, wrap_8015ae08, 8u, 0u, 1u },    { 0x8015ae0cu, wrap_8015ae0c, 8u, 0u, 1u },    { 0x8015ae24u, wrap_8015ae24, 8u, 0u, 1u },    { 0x8015ae28u, wrap_8015ae28, 8u, 0u, 1u },    { 0x8015ae40u, wrap_8015ae40, 8u, 0u, 1u },    { 0x8015ae44u, wrap_8015ae44, 8u, 0u, 1u },    { 0x8015ae58u, wrap_8015ae58, 8u, 0u, 1u },    { 0x8015ae5cu, wrap_8015ae5c, 8u, 0u, 1u },    { 0x8015aea4u, wrap_8015aea4, 8u, 0u, 1u },    { 0x8015aea8u, wrap_8015aea8, 8u, 0u, 1u },    { 0x8015aec0u, wrap_8015aec0, 8u, 0u, 1u },    { 0x8015aec4u, wrap_8015aec4, 8u, 0u, 1u },    { 0x8015af08u, wrap_8015af08, 8u, 0u, 1u },    { 0x8015af0cu, wrap_8015af0c, 8u, 0u, 1u },    { 0x8015af24u, wrap_8015af24, 8u, 0u, 1u },    { 0x8015af28u, wrap_8015af28, 8u, 0u, 1u },    { 0x8015af40u, wrap_8015af40, 8u, 0u, 1u },    { 0x8015af44u, wrap_8015af44, 8u, 0u, 1u },    { 0x8015af4cu, wrap_8015af4c, 8u, 0u, 1u },    { 0x8015af50u, wrap_8015af50, 8u, 0u, 1u },    { 0x8015af64u, wrap_8015af64, 8u, 0u, 1u },    { 0x8015af70u, wrap_8015af70, 8u, 0u, 1u },    { 0x8015af78u, wrap_8015af78, 8u, 0u, 1u },    { 0x8015af8cu, wrap_8015af8c, 8u, 0u, 1u },    { 0x8015af98u, wrap_8015af98, 8u, 0u, 1u },    { 0x8015afa0u, wrap_8015afa0, 8u, 0u, 1u },    { 0x8015afa8u, wrap_8015afa8, 8u, 0u, 1u },    { 0x8015afb0u, wrap_8015afb0, 8u, 0u, 1u },    { 0x8015afb8u, wrap_8015afb8, 8u, 0u, 1u },    { 0x8015afccu, wrap_8015afcc, 8u, 0u, 1u },    { 0x8015afd0u, wrap_8015afd0, 8u, 0u, 1u },    { 0x8015afe0u, wrap_8015afe0, 8u, 0u, 1u },    { 0x8015aff0u, wrap_8015aff0, 8u, 0u, 1u },    { 0x8015b000u, wrap_8015b000, 8u, 0u, 1u },    { 0x8015b010u, wrap_8015b010, 8u, 0u, 1u },    { 0x8015b020u, wrap_8015b020, 8u, 0u, 1u },    { 0x8015b030u, wrap_8015b030, 8u, 0u, 1u },    { 0x8015b040u, wrap_8015b040, 8u, 0u, 1u },    { 0x8015b050u, wrap_8015b050, 8u, 0u, 1u },    { 0x8015b060u, wrap_8015b060, 8u, 0u, 1u },    { 0x8015b070u, wrap_8015b070, 8u, 0u, 1u },    { 0x8015b0b0u, wrap_8015b0b0, 8u, 0u, 1u },    { 0x8015b0c0u, wrap_8015b0c0, 8u, 0u, 1u },    { 0x8015b0d0u, wrap_8015b0d0, 8u, 0u, 1u },    { 0x8015b0e0u, wrap_8015b0e0, 8u, 0u, 1u },    { 0x8015b104u, wrap_8015b104, 8u, 0u, 1u },    { 0x8015b114u, wrap_8015b114, 8u, 0u, 1u },    { 0x8015b124u, wrap_8015b124, 8u, 0u, 1u },    { 0x8015b134u, wrap_8015b134, 8u, 0u, 1u },    { 0x8015b144u, wrap_8015b144, 8u, 0u, 1u },    { 0x8015b154u, wrap_8015b154, 8u, 0u, 1u },    { 0x8015b15cu, wrap_8015b15c, 8u, 0u, 1u },    { 0x8015b164u, wrap_8015b164, 8u, 0u, 1u },    { 0x8015b170u, wrap_8015b170, 8u, 0u, 1u },    { 0x8015b9a0u, wrap_8015b9a0, 356u, 120u, 0u },    { 0x8015bdc0u, wrap_8015bdc0, 790u, 72u, 0u },    { 0x8015c754u, wrap_8015c754, 309u, 112u, 0u },    { 0x8015caa8u, wrap_8015caa8, 791u, 72u, 0u },    { 0x8015d420u, wrap_8015d420, 220u, 104u, 0u },    { 0x8015e87cu, wrap_8015e87c, 5u, 0u, 0u },    { 0x8015e88cu, wrap_8015e88c, 8u, 0u, 0u },    { 0x8015e8a4u, wrap_8015e8a4, 8u, 0u, 0u },    { 0x8015e8c4u, wrap_8015e8c4, 8u, 56u, 0u },    { 0x8015e9fcu, wrap_8015e9fc, 163u, 48u, 0u },    { 0x8015ebf8u, wrap_8015ebf8, 189u, 128u, 0u },    { 0x8015f590u, wrap_8015f590, 71u, 64u, 0u },    { 0x8015f644u, wrap_8015f644, 29u, 0u, 0u },    { 0x8015f64cu, wrap_8015f64c, 8u, 24u, 0u },    { 0x8015f6a0u, wrap_8015f6a0, 1247u, 248u, 0u },    { 0x80160598u, wrap_80160598, 236u, 64u, 0u },    { 0x8016088cu, wrap_8016088c, 150u, 112u, 0u },    { 0x80161630u, wrap_80161630, 516u, 160u, 1u },    { 0x8016167cu, wrap_8016167c, 8u, 0u, 1u },    { 0x80161684u, wrap_80161684, 8u, 0u, 1u },    { 0x8016168cu, wrap_8016168c, 8u, 0u, 1u },    { 0x80161694u, wrap_80161694, 8u, 0u, 1u },    { 0x8016169cu, wrap_8016169c, 8u, 0u, 1u },    { 0x801616a4u, wrap_801616a4, 8u, 0u, 1u },    { 0x801616acu, wrap_801616ac, 8u, 0u, 1u },    { 0x801616b4u, wrap_801616b4, 8u, 0u, 1u },    { 0x801616c4u, wrap_801616c4, 8u, 0u, 1u },    { 0x801616ccu, wrap_801616cc, 8u, 0u, 1u },    { 0x801616d4u, wrap_801616d4, 8u, 0u, 1u },    { 0x801616e0u, wrap_801616e0, 8u, 0u, 1u },    { 0x801616e8u, wrap_801616e8, 8u, 0u, 1u },    { 0x801616f0u, wrap_801616f0, 8u, 0u, 1u },    { 0x801616fcu, wrap_801616fc, 8u, 0u, 1u },    { 0x80161700u, wrap_80161700, 8u, 0u, 1u },    { 0x80161708u, wrap_80161708, 8u, 0u, 1u },    { 0x80161710u, wrap_80161710, 8u, 0u, 1u },    { 0x8016172cu, wrap_8016172c, 8u, 0u, 1u },    { 0x8016173cu, wrap_8016173c, 8u, 0u, 1u },    { 0x8016174cu, wrap_8016174c, 8u, 0u, 1u },    { 0x80161750u, wrap_80161750, 8u, 0u, 1u },    { 0x80161764u, wrap_80161764, 8u, 0u, 1u },    { 0x80161774u, wrap_80161774, 8u, 0u, 1u },    { 0x80161794u, wrap_80161794, 8u, 0u, 1u },    { 0x801617b8u, wrap_801617b8, 8u, 0u, 1u },    { 0x801617ccu, wrap_801617cc, 8u, 0u, 1u },    { 0x801617e0u, wrap_801617e0, 8u, 0u, 1u },    { 0x801617ecu, wrap_801617ec, 8u, 0u, 1u },    { 0x801617fcu, wrap_801617fc, 8u, 0u, 1u },    { 0x80161828u, wrap_80161828, 8u, 0u, 1u },    { 0x8016183cu, wrap_8016183c, 8u, 0u, 1u },    { 0x80161860u, wrap_80161860, 8u, 0u, 1u },    { 0x8016187cu, wrap_8016187c, 8u, 0u, 1u },    { 0x8016188cu, wrap_8016188c, 8u, 0u, 1u },    { 0x8016189cu, wrap_8016189c, 8u, 0u, 1u },    { 0x801618acu, wrap_801618ac, 8u, 0u, 1u },    { 0x801618bcu, wrap_801618bc, 8u, 0u, 1u },    { 0x801618c0u, wrap_801618c0, 8u, 0u, 1u },    { 0x801618d8u, wrap_801618d8, 8u, 0u, 1u },    { 0x801618e0u, wrap_801618e0, 8u, 0u, 1u },    { 0x80161900u, wrap_80161900, 8u, 0u, 1u },    { 0x80161918u, wrap_80161918, 8u, 0u, 1u },    { 0x80161924u, wrap_80161924, 8u, 0u, 1u },    { 0x80161938u, wrap_80161938, 8u, 0u, 1u },    { 0x80161948u, wrap_80161948, 8u, 0u, 1u },    { 0x8016194cu, wrap_8016194c, 8u, 0u, 1u },    { 0x80161974u, wrap_80161974, 8u, 0u, 1u },    { 0x8016197cu, wrap_8016197c, 8u, 0u, 1u },    { 0x801619a8u, wrap_801619a8, 8u, 0u, 1u },    { 0x801619d4u, wrap_801619d4, 8u, 0u, 1u },    { 0x80161a1cu, wrap_80161a1c, 8u, 0u, 1u },    { 0x80161a30u, wrap_80161a30, 8u, 0u, 1u },    { 0x80161a74u, wrap_80161a74, 8u, 0u, 1u },    { 0x80161aa8u, wrap_80161aa8, 8u, 0u, 1u },    { 0x80161ae0u, wrap_80161ae0, 8u, 0u, 1u },    { 0x80161b14u, wrap_80161b14, 8u, 0u, 1u },    { 0x80161b44u, wrap_80161b44, 8u, 0u, 1u },    { 0x80161b54u, wrap_80161b54, 8u, 0u, 1u },    { 0x80161b5cu, wrap_80161b5c, 8u, 0u, 1u },    { 0x80161b64u, wrap_80161b64, 8u, 0u, 1u },    { 0x80161b74u, wrap_80161b74, 8u, 0u, 1u },    { 0x80161b7cu, wrap_80161b7c, 8u, 0u, 1u },    { 0x80161b88u, wrap_80161b88, 8u, 0u, 1u },    { 0x80161b90u, wrap_80161b90, 8u, 0u, 1u },    { 0x80161bacu, wrap_80161bac, 8u, 0u, 1u },    { 0x80161bb0u, wrap_80161bb0, 8u, 0u, 1u },    { 0x80161becu, wrap_80161bec, 8u, 0u, 1u },    { 0x80161bfcu, wrap_80161bfc, 8u, 0u, 1u },    { 0x80161c00u, wrap_80161c00, 8u, 0u, 1u },    { 0x80161c08u, wrap_80161c08, 8u, 0u, 1u },    { 0x80161c10u, wrap_80161c10, 8u, 0u, 1u },    { 0x80161c20u, wrap_80161c20, 8u, 0u, 1u },    { 0x80161c54u, wrap_80161c54, 533u, 88u, 0u },    { 0x80162280u, wrap_80162280, 484u, 80u, 0u },    { 0x80162838u, wrap_80162838, 778u, 80u, 0u },    { 0x80163154u, wrap_80163154, 28u, 24u, 0u },    { 0x801631b4u, wrap_801631b4, 8u, 0u, 0u },    { 0x801631d0u, wrap_801631d0, 13u, 0u, 0u },    { 0x801631fcu, wrap_801631fc, 4u, 0u, 0u },    { 0x80163204u, wrap_80163204, 8u, 0u, 0u },    { 0x80163220u, wrap_80163220, 11u, 0u, 0u },    { 0x80163248u, wrap_80163248, 4u, 0u, 0u },    { 0x80163250u, wrap_80163250, 4u, 0u, 0u },    { 0x8016325cu, wrap_8016325c, 37u, 24u, 0u },    { 0x801632e4u, wrap_801632e4, 17u, 24u, 0u },    { 0x80163314u, wrap_80163314, 4u, 0u, 0u },    { 0x80163320u, wrap_80163320, 100u, 0u, 0u },    { 0x8016347cu, wrap_8016347c, 50u, 32u, 0u },    { 0x80163520u, wrap_80163520, 78u, 32u, 0u },    { 0x8016362cu, wrap_8016362c, 4u, 0u, 0u },    { 0x80163634u, wrap_80163634, 156u, 32u, 0u },    { 0x80163840u, wrap_80163840, 4u, 0u, 0u },    { 0x80163848u, wrap_80163848, 4u, 0u, 0u },    { 0x80163850u, wrap_80163850, 4u, 0u, 0u },    { 0x80163858u, wrap_80163858, 4u, 0u, 0u },    { 0x80163860u, wrap_80163860, 4u, 0u, 0u },    { 0x80163868u, wrap_80163868, 4u, 0u, 0u },    { 0x80163870u, wrap_80163870, 4u, 0u, 0u },    { 0x80163878u, wrap_80163878, 4u, 0u, 0u },    { 0x80163880u, wrap_80163880, 4u, 0u, 0u },    { 0x80163888u, wrap_80163888, 4u, 0u, 0u },    { 0x80163890u, wrap_80163890, 4u, 0u, 0u },    { 0x80163898u, wrap_80163898, 4u, 0u, 0u },    { 0x801638a0u, wrap_801638a0, 4u, 0u, 0u },    { 0x801638a8u, wrap_801638a8, 4u, 0u, 0u },    { 0x801638b0u, wrap_801638b0, 4u, 0u, 0u },    { 0x801638b8u, wrap_801638b8, 4u, 0u, 0u },    { 0x801638c0u, wrap_801638c0, 4u, 0u, 0u },    { 0x801638c8u, wrap_801638c8, 39u, 0u, 0u },    { 0x80163940u, wrap_80163940, 4u, 0u, 0u },    { 0x80163948u, wrap_80163948, 26u, 0u, 0u },    { 0x80163990u, wrap_80163990, 26u, 0u, 0u },    { 0x801639d8u, wrap_801639d8, 26u, 0u, 0u },    { 0x80163a20u, wrap_80163a20, 26u, 0u, 0u },    { 0x80163a68u, wrap_80163a68, 27u, 0u, 0u },    { 0x80163ab4u, wrap_80163ab4, 25u, 24u, 0u },    { 0x80163b08u, wrap_80163b08, 4u, 0u, 0u },    { 0x80163b10u, wrap_80163b10, 5u, 0u, 0u },    { 0x80163b20u, wrap_80163b20, 4u, 0u, 0u },    { 0x80163b28u, wrap_80163b28, 6u, 0u, 0u },    { 0x80163b40u, wrap_80163b40, 4u, 0u, 0u },    { 0x80163b48u, wrap_80163b48, 14u, 0u, 0u },    { 0x80163b7cu, wrap_80163b7c, 4u, 0u, 0u },    { 0x80163b84u, wrap_80163b84, 14u, 0u, 0u },    { 0x80163bb8u, wrap_80163bb8, 4u, 0u, 0u },    { 0x80163bc0u, wrap_80163bc0, 21u, 0u, 0u },    { 0x80163bf4u, wrap_80163bf4, 75u, 0u, 0u },    { 0x80163cbcu, wrap_80163cbc, 61u, 40u, 0u },    { 0x80163d7cu, wrap_80163d7c, 26u, 0u, 0u },    { 0x80163e38u, wrap_80163e38, 618u, 96u, 0u },    { 0x80164668u, wrap_80164668, 677u, 136u, 0u },    { 0x80164ea4u, wrap_80164ea4, 875u, 144u, 0u },    { 0x80165908u, wrap_80165908, 307u, 64u, 0u },    { 0x80165cb4u, wrap_80165cb4, 321u, 56u, 0u },    { 0x801660c0u, wrap_801660c0, 226u, 56u, 0u },    { 0x80166398u, wrap_80166398, 46u, 32u, 0u },    { 0x8016642cu, wrap_8016642c, 90u, 32u, 0u },    { 0x80166544u, wrap_80166544, 425u, 64u, 0u },    { 0x80166eb0u, wrap_80166eb0, 64u, 32u, 0u },    { 0x80166f64u, wrap_80166f64, 58u, 0u, 0u },    { 0x80166f6cu, wrap_80166f6c, 8u, 32u, 0u },    { 0x8016700cu, wrap_8016700c, 60u, 32u, 0u },    { 0x801670c8u, wrap_801670c8, 149u, 56u, 0u },    { 0x801672a0u, wrap_801672a0, 58u, 64u, 0u },    { 0x80167330u, wrap_80167330, 407u, 64u, 0u },    { 0x80167840u, wrap_80167840, 183u, 32u, 0u },    { 0x80167a64u, wrap_80167a64, 42u, 0u, 0u },    { 0x80167ae8u, wrap_80167ae8, 7u, 0u, 0u },    { 0x80167b00u, wrap_80167b00, 10u, 0u, 0u },    { 0x80167b20u, wrap_80167b20, 5u, 0u, 0u },    { 0x80167b34u, wrap_80167b34, 49u, 32u, 0u },    { 0x80167bd8u, wrap_80167bd8, 84u, 88u, 0u },    { 0x80167ce4u, wrap_80167ce4, 65u, 64u, 0u },    { 0x80167d7cu, wrap_80167d7c, 247u, 240u, 0u },    { 0x8016809cu, wrap_8016809c, 155u, 64u, 0u },    { 0x8016827cu, wrap_8016827c, 52u, 168u, 0u },    { 0x8016831cu, wrap_8016831c, 34u, 32u, 0u },    { 0x80168380u, wrap_80168380, 52u, 40u, 0u },    { 0x80168424u, wrap_80168424, 53u, 40u, 0u },    { 0x801684c8u, wrap_801684c8, 23u, 32u, 0u },    { 0x8016850cu, wrap_8016850c, 62u, 56u, 0u },    { 0x801685b4u, wrap_801685b4, 50u, 40u, 0u },    { 0x80168648u, wrap_80168648, 62u, 48u, 0u },    { 0x80168700u, wrap_80168700, 10u, 24u, 0u },    { 0x80168720u, wrap_80168720, 46u, 48u, 0u },    { 0x801687acu, wrap_801687ac, 46u, 48u, 0u },    { 0x80168838u, wrap_80168838, 64u, 64u, 1u },    { 0x80168870u, wrap_80168870, 8u, 0u, 1u },    { 0x80168888u, wrap_80168888, 8u, 0u, 1u },    { 0x80168890u, wrap_80168890, 8u, 0u, 1u },    { 0x8016889cu, wrap_8016889c, 8u, 0u, 1u },    { 0x801688a4u, wrap_801688a4, 8u, 0u, 1u },    { 0x801688b8u, wrap_801688b8, 8u, 0u, 1u },    { 0x801688c0u, wrap_801688c0, 8u, 0u, 1u },    { 0x801688c8u, wrap_801688c8, 8u, 0u, 1u },    { 0x801688f0u, wrap_801688f0, 64u, 64u, 0u },    { 0x801689a8u, wrap_801689a8, 12u, 24u, 0u },    { 0x801689d0u, wrap_801689d0, 111u, 0u, 0u },    { 0x80168ae0u, wrap_80168ae0, 132u, 0u, 0u },    { 0x80168c20u, wrap_80168c20, 153u, 0u, 0u },    { 0x80168d90u, wrap_80168d90, 195u, 0u, 0u },    { 0x80168f60u, wrap_80168f60, 165u, 8u, 0u },    { 0x801690fcu, wrap_801690fc, 193u, 8u, 0u },    { 0x801692d8u, wrap_801692d8, 225u, 8u, 0u },    { 0x8016951cu, wrap_8016951c, 283u, 8u, 0u },    { 0x801697f4u, wrap_801697f4, 121u, 0u, 0u },    { 0x8016991cu, wrap_8016991c, 163u, 0u, 0u },    { 0x80169aa4u, wrap_80169aa4, 147u, 0u, 0u },    { 0x80169c08u, wrap_80169c08, 210u, 0u, 0u },    { 0x80169dfcu, wrap_80169dfc, 92u, 0u, 0u },    { 0x80169ee0u, wrap_80169ee0, 106u, 0u, 0u },    { 0x80169fe4u, wrap_80169fe4, 113u, 0u, 0u },    { 0x8016a0f8u, wrap_8016a0f8, 134u, 0u, 0u },    { 0x8016a23cu, wrap_8016a23c, 136u, 0u, 0u },    { 0x8016a384u, wrap_8016a384, 164u, 0u, 0u },    { 0x8016a50cu, wrap_8016a50c, 150u, 0u, 0u },    { 0x8016a674u, wrap_8016a674, 185u, 0u, 0u },    { 0x8016a82cu, wrap_8016a82c, 72u, 0u, 0u },    { 0x8016a8ecu, wrap_8016a8ec, 67u, 0u, 0u },    { 0x8016a9acu, wrap_8016a9ac, 87u, 0u, 0u },    { 0x8016aaa4u, wrap_8016aaa4, 104u, 0u, 0u },    { 0x8016abb4u, wrap_8016abb4, 126u, 0u, 0u },    { 0x8016ad04u, wrap_8016ad04, 77u, 0u, 0u },    { 0x8016addcu, wrap_8016addc, 97u, 0u, 0u },    { 0x8016aeecu, wrap_8016aeec, 77u, 0u, 0u },    { 0x8016afc8u, wrap_8016afc8, 107u, 0u, 0u },    { 0x8016b0f8u, wrap_8016b0f8, 121u, 0u, 0u },    { 0x8016b234u, wrap_8016b234, 151u, 0u, 0u },    { 0x8016b3c4u, wrap_8016b3c4, 92u, 0u, 0u },    { 0x8016b4c4u, wrap_8016b4c4, 122u, 0u, 0u },    { 0x8016b618u, wrap_8016b618, 60u, 48u, 0u },    { 0x8016b6bcu, wrap_8016b6bc, 97u, 56u, 0u },    { 0x8016b7c0u, wrap_8016b7c0, 1635u, 344u, 0u },    { 0x8016cb20u, wrap_8016cb20, 98u, 0u, 0u },    { 0x8016cc5cu, wrap_8016cc5c, 118u, 80u, 0u },    { 0x8016cd8cu, wrap_8016cd8c, 361u, 40u, 0u },    { 0x8016d244u, wrap_8016d244, 180u, 0u, 0u },    { 0x8016d478u, wrap_8016d478, 573u, 88u, 0u },    { 0x8016dadcu, wrap_8016dadc, 320u, 56u, 0u },    { 0x8016ddf8u, wrap_8016ddf8, 317u, 80u, 0u },    { 0x8016e21cu, wrap_8016e21c, 1331u, 152u, 0u },    { 0x8016f2c4u, wrap_8016f2c4, 23u, 0u, 0u },    { 0x8016f30cu, wrap_8016f30c, 203u, 56u, 0u },    { 0x8016f588u, wrap_8016f588, 500u, 48u, 0u },    { 0x8016fbfcu, wrap_8016fbfc, 46u, 32u, 0u },    { 0x8016fc74u, wrap_8016fc74, 20u, 0u, 0u },    { 0x8016fca8u, wrap_8016fca8, 4u, 0u, 0u },    { 0x8016fcb0u, wrap_8016fcb0, 7u, 0u, 0u },    { 0x8016fcc4u, wrap_8016fcc4, 1053u, 80u, 0u },    { 0x801709fcu, wrap_801709fc, 275u, 48u, 0u },    { 0x80170d38u, wrap_80170d38, 224u, 64u, 0u },    { 0x80170fe0u, wrap_80170fe0, 786u, 128u, 0u },    { 0x80171890u, wrap_80171890, 730u, 88u, 0u },    { 0x80172100u, wrap_80172100, 47u, 40u, 0u },    { 0x801721a4u, wrap_801721a4, 339u, 72u, 0u },    { 0x801725a4u, wrap_801725a4, 59u, 48u, 0u },    { 0x80172640u, wrap_80172640, 67u, 48u, 0u },    { 0x801726ecu, wrap_801726ec, 63u, 0u, 0u },    { 0x801727b8u, wrap_801727b8, 222u, 0u, 0u },    { 0x80172a04u, wrap_80172a04, 12u, 0u, 0u },    { 0x80172a2cu, wrap_80172a2c, 4u, 0u, 1u },    { 0x80172a34u, wrap_80172a34, 1249u, 80u, 0u },    { 0x801737ecu, wrap_801737ec, 2714u, 160u, 0u },    { 0x801756b0u, wrap_801756b0, 32u, 0u, 0u },    { 0x80175708u, wrap_80175708, 32u, 0u, 0u },    { 0x80175760u, wrap_80175760, 32u, 0u, 0u },    { 0x801757b8u, wrap_801757b8, 82u, 0u, 0u },    { 0x80175898u, wrap_80175898, 148u, 0u, 0u },    { 0x80175a18u, wrap_80175a18, 35u, 0u, 1u },    { 0x80175a7cu, wrap_80175a7c, 296u, 56u, 0u },    { 0x80175e08u, wrap_80175e08, 208u, 0u, 0u },    { 0x80175fecu, wrap_80175fec, 198u, 48u, 0u },    { 0x80176248u, wrap_80176248, 2714u, 80u, 0u },    { 0x80178664u, wrap_80178664, 77u, 32u, 0u },    { 0x80178754u, wrap_80178754, 45u, 24u, 0u },    { 0x801787dcu, wrap_801787dc, 1068u, 56u, 0u },    { 0x80179478u, wrap_80179478, 151u, 40u, 0u },    { 0x80179638u, wrap_80179638, 55u, 0u, 0u },    { 0x801796ccu, wrap_801796cc, 8u, 0u, 0u },    { 0x801796e4u, wrap_801796e4, 4u, 0u, 1u },    { 0x801796ecu, wrap_801796ec, 187u, 0u, 0u },    { 0x80179964u, wrap_80179964, 59u, 0u, 0u },    { 0x80179a0cu, wrap_80179a0c, 29u, 0u, 0u },    { 0x80179a5cu, wrap_80179a5c, 4u, 0u, 1u },    { 0x80179a60u, wrap_80179a60, 4u, 0u, 1u },    { 0x80179a6cu, wrap_80179a6c, 49u, 24u, 0u },    { 0x80179ae0u, wrap_80179ae0, 503u, 72u, 0u },    { 0x8017a05cu, wrap_8017a05c, 638u, 0u, 0u },    { 0x8017a6a8u, wrap_8017a6a8, 4u, 0u, 0u },    { 0x8017a6b4u, wrap_8017a6b4, 22u, 0u, 0u },    { 0x8017a6e0u, wrap_8017a6e0, 4u, 0u, 1u },    { 0x8017a6e8u, wrap_8017a6e8, 120u, 0u, 0u },    { 0x8017a818u, wrap_8017a818, 55u, 56u, 0u },    { 0x8017a8b4u, wrap_8017a8b4, 67u, 24u, 0u },    { 0x8017a990u, wrap_8017a990, 11u, 0u, 1u },    { 0x8017a9a8u, wrap_8017a9a8, 8u, 0u, 1u },    { 0x8017a9b0u, wrap_8017a9b0, 8u, 0u, 1u },    { 0x8017a9b8u, wrap_8017a9b8, 4u, 0u, 1u },    { 0x8017a9c4u, wrap_8017a9c4, 4u, 0u, 1u },    { 0x8017a9d0u, wrap_8017a9d0, 13u, 0u, 1u },    { 0x8017a9e8u, wrap_8017a9e8, 8u, 0u, 1u },    { 0x8017a9fcu, wrap_8017a9fc, 4u, 0u, 1u },    { 0x8017aa04u, wrap_8017aa04, 4u, 0u, 1u },    { 0x8017aa0cu, wrap_8017aa0c, 88u, 0u, 0u },    { 0x8017ab30u, wrap_8017ab30, 14u, 0u, 1u },    { 0x8017ab48u, wrap_8017ab48, 8u, 0u, 1u },    { 0x8017ab5cu, wrap_8017ab5c, 9u, 0u, 1u },    { 0x8017ab74u, wrap_8017ab74, 59u, 0u, 0u },    { 0x8017ac44u, wrap_8017ac44, 4u, 0u, 1u },    { 0x8017ac4cu, wrap_8017ac4c, 7u, 0u, 1u },    { 0x8017ac5cu, wrap_8017ac5c, 8u, 0u, 1u },    { 0x8017ad78u, wrap_8017ad78, 19u, 0u, 1u },    { 0x8017ad80u, wrap_8017ad80, 8u, 0u, 1u },    { 0x8017ad88u, wrap_8017ad88, 8u, 0u, 1u },    { 0x8017ad94u, wrap_8017ad94, 8u, 0u, 1u },    { 0x8017ada0u, wrap_8017ada0, 8u, 0u, 1u },    { 0x8017adb0u, wrap_8017adb0, 8u, 0u, 1u },    { 0x8017adb8u, wrap_8017adb8, 4u, 0u, 1u },    { 0x8017ae00u, wrap_8017ae00, 8u, 0u, 1u },    { 0x8017ae10u, wrap_8017ae10, 4u, 0u, 1u },    { 0x8017ae18u, wrap_8017ae18, 235u, 32u, 0u },    { 0x8017b0d4u, wrap_8017b0d4, 102u, 0u, 0u },    { 0x8017b1ecu, wrap_8017b1ec, 351u, 48u, 0u },    { 0x8017b5f4u, wrap_8017b5f4, 23u, 0u, 1u },    { 0x8017b61cu, wrap_8017b61c, 8u, 0u, 1u },    { 0x8017b624u, wrap_8017b624, 8u, 0u, 1u },    { 0x8017b62cu, wrap_8017b62c, 8u, 0u, 1u },    { 0x8017b634u, wrap_8017b634, 8u, 0u, 1u },    { 0x8017b648u, wrap_8017b648, 4u, 0u, 1u },    { 0x8017b650u, wrap_8017b650, 6u, 0u, 1u },    { 0x8017b664u, wrap_8017b664, 4u, 0u, 1u },    { 0x8017b668u, wrap_8017b668, 163u, 0u, 1u },    { 0x8017b674u, wrap_8017b674, 8u, 0u, 1u },    { 0x8017b690u, wrap_8017b690, 8u, 0u, 1u },    { 0x8017b69cu, wrap_8017b69c, 8u, 0u, 1u },    { 0x8017b6acu, wrap_8017b6ac, 8u, 0u, 1u },    { 0x8017b6c0u, wrap_8017b6c0, 8u, 0u, 1u },    { 0x8017b6d0u, wrap_8017b6d0, 8u, 0u, 1u },    { 0x8017b6dcu, wrap_8017b6dc, 8u, 0u, 1u },    { 0x8017b704u, wrap_8017b704, 8u, 0u, 1u },    { 0x8017b710u, wrap_8017b710, 8u, 0u, 1u },    { 0x8017b724u, wrap_8017b724, 8u, 0u, 1u },    { 0x8017b728u, wrap_8017b728, 8u, 0u, 1u },    { 0x8017b734u, wrap_8017b734, 8u, 0u, 1u },    { 0x8017b738u, wrap_8017b738, 8u, 0u, 1u },    { 0x8017b740u, wrap_8017b740, 8u, 0u, 1u },    { 0x8017b744u, wrap_8017b744, 8u, 0u, 1u },    { 0x8017b74cu, wrap_8017b74c, 8u, 0u, 1u },    { 0x8017b750u, wrap_8017b750, 8u, 0u, 1u },    { 0x8017b758u, wrap_8017b758, 8u, 0u, 1u },    { 0x8017b75cu, wrap_8017b75c, 8u, 0u, 1u },    { 0x8017b764u, wrap_8017b764, 8u, 0u, 1u },    { 0x8017b768u, wrap_8017b768, 8u, 0u, 1u },    { 0x8017b770u, wrap_8017b770, 8u, 0u, 1u },    { 0x8017b774u, wrap_8017b774, 8u, 0u, 1u },    { 0x8017b77cu, wrap_8017b77c, 8u, 0u, 1u },    { 0x8017b780u, wrap_8017b780, 8u, 0u, 1u },    { 0x8017b79cu, wrap_8017b79c, 8u, 0u, 1u },    { 0x8017b7b0u, wrap_8017b7b0, 8u, 0u, 1u },    { 0x8017b7c8u, wrap_8017b7c8, 8u, 0u, 1u },    { 0x8017b7d4u, wrap_8017b7d4, 8u, 0u, 1u },    { 0x8017b7e0u, wrap_8017b7e0, 8u, 0u, 1u },    { 0x8017b7ecu, wrap_8017b7ec, 8u, 0u, 1u },    { 0x8017b7f8u, wrap_8017b7f8, 8u, 0u, 1u },    { 0x8017b83cu, wrap_8017b83c, 8u, 0u, 1u },    { 0x8017b840u, wrap_8017b840, 8u, 0u, 1u },    { 0x8017b844u, wrap_8017b844, 8u, 0u, 1u },    { 0x8017b84cu, wrap_8017b84c, 8u, 0u, 1u },    { 0x8017b858u, wrap_8017b858, 8u, 0u, 1u },    { 0x8017b860u, wrap_8017b860, 23u, 0u, 1u },    { 0x8017b888u, wrap_8017b888, 8u, 0u, 1u },    { 0x8017b890u, wrap_8017b890, 8u, 0u, 1u },    { 0x8017b898u, wrap_8017b898, 8u, 0u, 1u },    { 0x8017b8a0u, wrap_8017b8a0, 8u, 0u, 1u },    { 0x8017b8b4u, wrap_8017b8b4, 4u, 0u, 1u },    { 0x8017b8bcu, wrap_8017b8bc, 6u, 0u, 1u },    { 0x8017b8d0u, wrap_8017b8d0, 4u, 0u, 1u },    { 0x8017b8d4u, wrap_8017b8d4, 129u, 0u, 1u },    { 0x8017b8e0u, wrap_8017b8e0, 8u, 0u, 1u },    { 0x8017b8fcu, wrap_8017b8fc, 8u, 0u, 1u },    { 0x8017b914u, wrap_8017b914, 8u, 0u, 1u },    { 0x8017b92cu, wrap_8017b92c, 8u, 0u, 1u },    { 0x8017b944u, wrap_8017b944, 8u, 0u, 1u },    { 0x8017b950u, wrap_8017b950, 8u, 0u, 1u },    { 0x8017b970u, wrap_8017b970, 8u, 0u, 1u },    { 0x8017b974u, wrap_8017b974, 8u, 0u, 1u },    { 0x8017b98cu, wrap_8017b98c, 8u, 0u, 1u },    { 0x8017b9b4u, wrap_8017b9b4, 8u, 0u, 1u },    { 0x8017b9c0u, wrap_8017b9c0, 8u, 0u, 1u },    { 0x8017b9ccu, wrap_8017b9cc, 8u, 0u, 1u },    { 0x8017b9dcu, wrap_8017b9dc, 8u, 0u, 1u },    { 0x8017ba04u, wrap_8017ba04, 8u, 0u, 1u },    { 0x8017ba10u, wrap_8017ba10, 8u, 0u, 1u },    { 0x8017ba18u, wrap_8017ba18, 8u, 0u, 1u },    { 0x8017ba30u, wrap_8017ba30, 8u, 0u, 1u },    { 0x8017ba34u, wrap_8017ba34, 8u, 0u, 1u },    { 0x8017ba3cu, wrap_8017ba3c, 32u, 0u, 1u },    { 0x8017ba68u, wrap_8017ba68, 8u, 0u, 1u },    { 0x8017ba70u, wrap_8017ba70, 8u, 0u, 1u },    { 0x8017ba78u, wrap_8017ba78, 8u, 0u, 1u },    { 0x8017ba80u, wrap_8017ba80, 8u, 0u, 1u },    { 0x8017ba88u, wrap_8017ba88, 8u, 0u, 1u },    { 0x8017ba90u, wrap_8017ba90, 8u, 0u, 1u },    { 0x8017ba98u, wrap_8017ba98, 8u, 0u, 1u },    { 0x8017baacu, wrap_8017baac, 4u, 0u, 1u },    { 0x8017bab4u, wrap_8017bab4, 6u, 0u, 1u },    { 0x8017bac8u, wrap_8017bac8, 4u, 0u, 1u },    { 0x8017bad0u, wrap_8017bad0, 4u, 0u, 1u },    { 0x8017bad4u, wrap_8017bad4, 239u, 0u, 0u },    { 0x8017baf0u, wrap_8017baf0, 8u, 0u, 1u },    { 0x8017bb0cu, wrap_8017bb0c, 8u, 0u, 1u },    { 0x8017bb24u, wrap_8017bb24, 8u, 0u, 1u },    { 0x8017bb3cu, wrap_8017bb3c, 8u, 0u, 1u },    { 0x8017bb4cu, wrap_8017bb4c, 8u, 0u, 1u },    { 0x8017bb58u, wrap_8017bb58, 8u, 0u, 1u },    { 0x8017bb60u, wrap_8017bb60, 8u, 0u, 1u },    { 0x8017bb68u, wrap_8017bb68, 8u, 0u, 1u },    { 0x8017bb70u, wrap_8017bb70, 8u, 0u, 1u },    { 0x8017bb78u, wrap_8017bb78, 8u, 0u, 1u },    { 0x8017bb8cu, wrap_8017bb8c, 8u, 0u, 1u },    { 0x8017bba0u, wrap_8017bba0, 8u, 0u, 1u },    { 0x8017bbb4u, wrap_8017bbb4, 8u, 0u, 1u },    { 0x8017bbc8u, wrap_8017bbc8, 8u, 0u, 1u },    { 0x8017bbdcu, wrap_8017bbdc, 8u, 0u, 1u },    { 0x8017bbf0u, wrap_8017bbf0, 8u, 0u, 1u },    { 0x8017bc04u, wrap_8017bc04, 8u, 0u, 1u },    { 0x8017bc18u, wrap_8017bc18, 8u, 0u, 1u },    { 0x8017bc2cu, wrap_8017bc2c, 8u, 0u, 1u },    { 0x8017bc40u, wrap_8017bc40, 8u, 0u, 1u },    { 0x8017bc54u, wrap_8017bc54, 8u, 0u, 1u },    { 0x8017bc68u, wrap_8017bc68, 8u, 0u, 1u },    { 0x8017bc7cu, wrap_8017bc7c, 8u, 0u, 1u },    { 0x8017bc90u, wrap_8017bc90, 8u, 0u, 1u },    { 0x8017bca4u, wrap_8017bca4, 8u, 0u, 1u },    { 0x8017bcb0u, wrap_8017bcb0, 8u, 0u, 1u },    { 0x8017bcbcu, wrap_8017bcbc, 8u, 0u, 1u },    { 0x8017bcc8u, wrap_8017bcc8, 8u, 0u, 1u },    { 0x8017bcd4u, wrap_8017bcd4, 8u, 0u, 1u },    { 0x8017bce0u, wrap_8017bce0, 8u, 0u, 1u },    { 0x8017bce8u, wrap_8017bce8, 8u, 0u, 1u },    { 0x8017bcfcu, wrap_8017bcfc, 8u, 0u, 1u },    { 0x8017bd10u, wrap_8017bd10, 8u, 0u, 1u },    { 0x8017bd24u, wrap_8017bd24, 8u, 0u, 1u },    { 0x8017bd30u, wrap_8017bd30, 8u, 0u, 1u },    { 0x8017bd38u, wrap_8017bd38, 8u, 0u, 1u },    { 0x8017bd4cu, wrap_8017bd4c, 8u, 0u, 1u },    { 0x8017bd60u, wrap_8017bd60, 8u, 0u, 1u },    { 0x8017bd74u, wrap_8017bd74, 8u, 0u, 1u },    { 0x8017bd80u, wrap_8017bd80, 8u, 0u, 1u },    { 0x8017bd84u, wrap_8017bd84, 8u, 0u, 1u },    { 0x8017bd8cu, wrap_8017bd8c, 4u, 0u, 1u },    { 0x8017bd94u, wrap_8017bd94, 196u, 24u, 0u },    { 0x8017bfb8u, wrap_8017bfb8, 281u, 48u, 0u },    { 0x8017c35cu, wrap_8017c35c, 25u, 0u, 1u },    { 0x8017c384u, wrap_8017c384, 8u, 0u, 1u },    { 0x8017c390u, wrap_8017c390, 8u, 0u, 1u },    { 0x8017c398u, wrap_8017c398, 8u, 0u, 1u },    { 0x8017c3a0u, wrap_8017c3a0, 8u, 0u, 1u },    { 0x8017c3b4u, wrap_8017c3b4, 4u, 0u, 1u },    { 0x8017c3bcu, wrap_8017c3bc, 6u, 0u, 1u },    { 0x8017c3d0u, wrap_8017c3d0, 151u, 0u, 1u },    { 0x8017c3ecu, wrap_8017c3ec, 8u, 0u, 1u },    { 0x8017c3f4u, wrap_8017c3f4, 8u, 0u, 1u },    { 0x8017c3fcu, wrap_8017c3fc, 8u, 0u, 1u },    { 0x8017c404u, wrap_8017c404, 8u, 0u, 1u },    { 0x8017c40cu, wrap_8017c40c, 8u, 0u, 1u },    { 0x8017c414u, wrap_8017c414, 8u, 0u, 1u },    { 0x8017c41cu, wrap_8017c41c, 8u, 0u, 1u },    { 0x8017c438u, wrap_8017c438, 8u, 0u, 1u },    { 0x8017c44cu, wrap_8017c44c, 8u, 0u, 1u },    { 0x8017c460u, wrap_8017c460, 8u, 0u, 1u },    { 0x8017c478u, wrap_8017c478, 8u, 0u, 1u },    { 0x8017c4a0u, wrap_8017c4a0, 8u, 0u, 1u },    { 0x8017c4a8u, wrap_8017c4a8, 8u, 0u, 1u },    { 0x8017c4ccu, wrap_8017c4cc, 8u, 0u, 1u },    { 0x8017c4e0u, wrap_8017c4e0, 8u, 0u, 1u },    { 0x8017c4f4u, wrap_8017c4f4, 8u, 0u, 1u },    { 0x8017c50cu, wrap_8017c50c, 8u, 0u, 1u },    { 0x8017c518u, wrap_8017c518, 8u, 0u, 1u },    { 0x8017c520u, wrap_8017c520, 8u, 0u, 1u },    { 0x8017c528u, wrap_8017c528, 8u, 0u, 1u },    { 0x8017c534u, wrap_8017c534, 8u, 0u, 1u },    { 0x8017c540u, wrap_8017c540, 8u, 0u, 1u },    { 0x8017c548u, wrap_8017c548, 8u, 0u, 1u },    { 0x8017c554u, wrap_8017c554, 8u, 0u, 1u },    { 0x8017c560u, wrap_8017c560, 8u, 0u, 1u },    { 0x8017c56cu, wrap_8017c56c, 8u, 0u, 1u },    { 0x8017c580u, wrap_8017c580, 8u, 0u, 1u },    { 0x8017c58cu, wrap_8017c58c, 8u, 0u, 1u },    { 0x8017c598u, wrap_8017c598, 8u, 0u, 1u },    { 0x8017c5a4u, wrap_8017c5a4, 8u, 0u, 1u },    { 0x8017c5acu, wrap_8017c5ac, 8u, 0u, 1u },    { 0x8017c5b0u, wrap_8017c5b0, 8u, 0u, 1u },    { 0x8017c5b8u, wrap_8017c5b8, 20u, 0u, 1u },    { 0x8017c5d4u, wrap_8017c5d4, 8u, 0u, 1u },    { 0x8017c5dcu, wrap_8017c5dc, 8u, 0u, 1u },    { 0x8017c5e4u, wrap_8017c5e4, 8u, 0u, 1u },    { 0x8017c5ecu, wrap_8017c5ec, 8u, 0u, 1u },    { 0x8017c600u, wrap_8017c600, 4u, 0u, 1u },    { 0x8017c608u, wrap_8017c608, 6u, 0u, 1u },    { 0x8017c61cu, wrap_8017c61c, 26u, 0u, 1u },    { 0x8017c638u, wrap_8017c638, 8u, 0u, 1u },    { 0x8017c650u, wrap_8017c650, 8u, 0u, 1u },    { 0x8017c660u, wrap_8017c660, 8u, 0u, 1u },    { 0x8017c66cu, wrap_8017c66c, 112u, 32u, 0u },    { 0x8017c7b0u, wrap_8017c7b0, 31u, 0u, 1u },    { 0x8017c7c8u, wrap_8017c7c8, 8u, 0u, 1u },    { 0x8017c7dcu, wrap_8017c7dc, 8u, 0u, 1u },    { 0x8017c7e0u, wrap_8017c7e0, 8u, 0u, 1u },    { 0x8017c800u, wrap_8017c800, 8u, 0u, 1u },    { 0x8017c804u, wrap_8017c804, 8u, 0u, 1u },    { 0x8017c810u, wrap_8017c810, 8u, 0u, 1u },    { 0x8017c818u, wrap_8017c818, 12u, 0u, 1u },    { 0x8017c840u, wrap_8017c840, 7u, 0u, 1u },    { 0x8017c850u, wrap_8017c850, 22u, 0u, 1u },    { 0x8017c874u, wrap_8017c874, 8u, 0u, 1u },    { 0x8017c884u, wrap_8017c884, 8u, 0u, 1u },    { 0x8017c88cu, wrap_8017c88c, 8u, 0u, 1u },    { 0x8017c898u, wrap_8017c898, 31u, 0u, 1u },    { 0x8017c8b0u, wrap_8017c8b0, 8u, 0u, 1u },    { 0x8017c8c4u, wrap_8017c8c4, 8u, 0u, 1u },    { 0x8017c8c8u, wrap_8017c8c8, 8u, 0u, 1u },    { 0x8017c8e8u, wrap_8017c8e8, 8u, 0u, 1u },    { 0x8017c8ecu, wrap_8017c8ec, 8u, 0u, 1u },    { 0x8017c8f8u, wrap_8017c8f8, 8u, 0u, 1u },    { 0x8017c900u, wrap_8017c900, 12u, 0u, 1u },    { 0x8017c928u, wrap_8017c928, 7u, 0u, 1u },    { 0x8017c938u, wrap_8017c938, 21u, 0u, 1u },    { 0x8017c958u, wrap_8017c958, 8u, 0u, 1u },    { 0x8017c968u, wrap_8017c968, 8u, 0u, 1u },    { 0x8017c970u, wrap_8017c970, 8u, 0u, 1u },    { 0x8017c97cu, wrap_8017c97c, 22u, 24u, 0u },    { 0x8017c9bcu, wrap_8017c9bc, 8u, 0u, 1u },    { 0x8017c9d4u, wrap_8017c9d4, 57u, 0u, 0u },    { 0x8017ca84u, wrap_8017ca84, 21u, 0u, 1u },    { 0x8017caa0u, wrap_8017caa0, 8u, 0u, 1u },    { 0x8017caa8u, wrap_8017caa8, 8u, 0u, 1u },    { 0x8017cab4u, wrap_8017cab4, 8u, 0u, 1u },    { 0x8017cabcu, wrap_8017cabc, 8u, 0u, 1u },    { 0x8017cad0u, wrap_8017cad0, 4u, 0u, 1u },    { 0x8017cad8u, wrap_8017cad8, 6u, 0u, 1u },    { 0x8017caecu, wrap_8017caec, 4u, 0u, 1u },    { 0x8017caf4u, wrap_8017caf4, 346u, 32u, 1u },    { 0x8017cb2cu, wrap_8017cb2c, 8u, 0u, 1u },    { 0x8017cb34u, wrap_8017cb34, 8u, 0u, 1u },    { 0x8017cb3cu, wrap_8017cb3c, 8u, 0u, 1u },    { 0x8017cb44u, wrap_8017cb44, 8u, 0u, 1u },    { 0x8017cb4cu, wrap_8017cb4c, 8u, 0u, 1u },    { 0x8017cb54u, wrap_8017cb54, 8u, 0u, 1u },    { 0x8017cb5cu, wrap_8017cb5c, 8u, 0u, 1u },    { 0x8017cb88u, wrap_8017cb88, 8u, 0u, 1u },    { 0x8017cb90u, wrap_8017cb90, 8u, 0u, 1u },    { 0x8017cb94u, wrap_8017cb94, 8u, 0u, 1u },    { 0x8017cbc8u, wrap_8017cbc8, 8u, 0u, 1u },    { 0x8017cbd0u, wrap_8017cbd0, 8u, 0u, 1u },    { 0x8017cc04u, wrap_8017cc04, 8u, 0u, 1u },    { 0x8017cc0cu, wrap_8017cc0c, 8u, 0u, 1u },    { 0x8017cc2cu, wrap_8017cc2c, 8u, 0u, 1u },    { 0x8017cc34u, wrap_8017cc34, 8u, 0u, 1u },    { 0x8017cc38u, wrap_8017cc38, 8u, 0u, 1u },    { 0x8017cc74u, wrap_8017cc74, 8u, 0u, 1u },    { 0x8017cc7cu, wrap_8017cc7c, 8u, 0u, 1u },    { 0x8017ccb0u, wrap_8017ccb0, 8u, 0u, 1u },    { 0x8017ccb8u, wrap_8017ccb8, 8u, 0u, 1u },    { 0x8017cce0u, wrap_8017cce0, 8u, 0u, 1u },    { 0x8017ccecu, wrap_8017ccec, 8u, 0u, 1u },    { 0x8017ccf8u, wrap_8017ccf8, 8u, 0u, 1u },    { 0x8017cd04u, wrap_8017cd04, 8u, 0u, 1u },    { 0x8017cd0cu, wrap_8017cd0c, 8u, 0u, 1u },    { 0x8017cd20u, wrap_8017cd20, 8u, 0u, 1u },    { 0x8017cd2cu, wrap_8017cd2c, 8u, 0u, 1u },    { 0x8017cd38u, wrap_8017cd38, 8u, 0u, 1u },    { 0x8017cd44u, wrap_8017cd44, 8u, 0u, 1u },    { 0x8017cd4cu, wrap_8017cd4c, 8u, 0u, 1u },    { 0x8017cd68u, wrap_8017cd68, 8u, 0u, 1u },    { 0x8017cd70u, wrap_8017cd70, 8u, 0u, 1u },    { 0x8017cd94u, wrap_8017cd94, 8u, 0u, 1u },    { 0x8017cda8u, wrap_8017cda8, 8u, 0u, 1u },    { 0x8017cdc8u, wrap_8017cdc8, 8u, 0u, 1u },    { 0x8017cddcu, wrap_8017cddc, 8u, 0u, 1u },    { 0x8017ce10u, wrap_8017ce10, 8u, 0u, 1u },    { 0x8017ce28u, wrap_8017ce28, 8u, 0u, 1u },    { 0x8017ce38u, wrap_8017ce38, 8u, 0u, 1u },    { 0x8017ce40u, wrap_8017ce40, 8u, 0u, 1u },    { 0x8017ce50u, wrap_8017ce50, 8u, 0u, 1u },    { 0x8017ce64u, wrap_8017ce64, 8u, 0u, 1u },    { 0x8017ce78u, wrap_8017ce78, 8u, 0u, 1u },    { 0x8017ce98u, wrap_8017ce98, 8u, 0u, 1u },    { 0x8017cea8u, wrap_8017cea8, 8u, 0u, 1u },    { 0x8017ceacu, wrap_8017ceac, 8u, 0u, 1u },    { 0x8017ceb8u, wrap_8017ceb8, 8u, 0u, 1u },    { 0x8017cec4u, wrap_8017cec4, 8u, 0u, 1u },    { 0x8017cee4u, wrap_8017cee4, 8u, 0u, 1u },    { 0x8017ceecu, wrap_8017ceec, 8u, 0u, 1u },    { 0x8017cef4u, wrap_8017cef4, 8u, 0u, 1u },    { 0x8017cefcu, wrap_8017cefc, 8u, 0u, 1u },    { 0x8017cf00u, wrap_8017cf00, 8u, 0u, 1u },    { 0x8017cf14u, wrap_8017cf14, 29u, 24u, 0u },    { 0x8017cf6cu, wrap_8017cf6c, 35u, 0u, 0u },    { 0x8017cfe0u, wrap_8017cfe0, 14u, 24u, 0u },    { 0x8017d008u, wrap_8017d008, 51u, 24u, 0u },    { 0x8017d0b0u, wrap_8017d0b0, 75u, 0u, 0u },    { 0x8017d198u, wrap_8017d198, 4u, 0u, 0u },    { 0x8017d19cu, wrap_8017d19c, 16u, 0u, 0u },    { 0x8017d1c4u, wrap_8017d1c4, 4u, 0u, 0u },    { 0x8017d1d0u, wrap_8017d1d0, 30u, 0u, 1u },    { 0x8017d1f8u, wrap_8017d1f8, 8u, 0u, 1u },    { 0x8017d1fcu, wrap_8017d1fc, 8u, 0u, 1u },    { 0x8017d210u, wrap_8017d210, 8u, 0u, 1u },    { 0x8017d218u, wrap_8017d218, 8u, 0u, 1u },    { 0x8017d220u, wrap_8017d220, 8u, 0u, 1u },    { 0x8017d228u, wrap_8017d228, 8u, 0u, 1u },    { 0x8017d23cu, wrap_8017d23c, 4u, 0u, 1u },    { 0x8017d244u, wrap_8017d244, 6u, 0u, 1u },    { 0x8017d258u, wrap_8017d258, 4u, 0u, 1u },    { 0x8017d25cu, wrap_8017d25c, 85u, 0u, 1u },    { 0x8017d268u, wrap_8017d268, 8u, 0u, 1u },    { 0x8017d284u, wrap_8017d284, 8u, 0u, 1u },    { 0x8017d2a0u, wrap_8017d2a0, 8u, 0u, 1u },    { 0x8017d2b8u, wrap_8017d2b8, 8u, 0u, 1u },    { 0x8017d2d4u, wrap_8017d2d4, 8u, 0u, 1u },    { 0x8017d2f0u, wrap_8017d2f0, 8u, 0u, 1u },    { 0x8017d2f8u, wrap_8017d2f8, 8u, 0u, 1u },    { 0x8017d2fcu, wrap_8017d2fc, 8u, 0u, 1u },    { 0x8017d308u, wrap_8017d308, 8u, 0u, 1u },    { 0x8017d314u, wrap_8017d314, 8u, 0u, 1u },    { 0x8017d330u, wrap_8017d330, 8u, 0u, 1u },    { 0x8017d344u, wrap_8017d344, 8u, 0u, 1u },    { 0x8017d34cu, wrap_8017d34c, 8u, 0u, 1u },    { 0x8017d354u, wrap_8017d354, 13u, 0u, 1u },    { 0x8017d378u, wrap_8017d378, 149u, 24u, 0u },    { 0x8017d55cu, wrap_8017d55c, 28u, 0u, 1u },    { 0x8017d580u, wrap_8017d580, 8u, 0u, 1u },    { 0x8017d584u, wrap_8017d584, 8u, 0u, 1u },    { 0x8017d594u, wrap_8017d594, 8u, 0u, 1u },    { 0x8017d59cu, wrap_8017d59c, 8u, 0u, 1u },    { 0x8017d5a4u, wrap_8017d5a4, 8u, 0u, 1u },    { 0x8017d5acu, wrap_8017d5ac, 8u, 0u, 1u },    { 0x8017d5c0u, wrap_8017d5c0, 4u, 0u, 1u },    { 0x8017d5c8u, wrap_8017d5c8, 6u, 0u, 1u },    { 0x8017d5dcu, wrap_8017d5dc, 4u, 0u, 1u },    { 0x8017d5e0u, wrap_8017d5e0, 71u, 0u, 1u },    { 0x8017d5ecu, wrap_8017d5ec, 8u, 0u, 1u },    { 0x8017d608u, wrap_8017d608, 8u, 0u, 1u },    { 0x8017d61cu, wrap_8017d61c, 8u, 0u, 1u },    { 0x8017d628u, wrap_8017d628, 8u, 0u, 1u },    { 0x8017d63cu, wrap_8017d63c, 8u, 0u, 1u },    { 0x8017d650u, wrap_8017d650, 8u, 0u, 1u },    { 0x8017d660u, wrap_8017d660, 8u, 0u, 1u },    { 0x8017d670u, wrap_8017d670, 8u, 0u, 1u },    { 0x8017d67cu, wrap_8017d67c, 8u, 0u, 1u },    { 0x8017d690u, wrap_8017d690, 8u, 0u, 1u },    { 0x8017d694u, wrap_8017d694, 8u, 0u, 1u },    { 0x8017d6a0u, wrap_8017d6a0, 8u, 0u, 1u },    { 0x8017d6a4u, wrap_8017d6a4, 8u, 0u, 1u },    { 0x8017d6acu, wrap_8017d6ac, 31u, 0u, 1u },    { 0x8017d6d0u, wrap_8017d6d0, 8u, 0u, 1u },    { 0x8017d6d4u, wrap_8017d6d4, 8u, 0u, 1u },    { 0x8017d6e4u, wrap_8017d6e4, 8u, 0u, 1u },    { 0x8017d6ecu, wrap_8017d6ec, 8u, 0u, 1u },    { 0x8017d6f4u, wrap_8017d6f4, 8u, 0u, 1u },    { 0x8017d6fcu, wrap_8017d6fc, 8u, 0u, 1u },    { 0x8017d710u, wrap_8017d710, 8u, 0u, 1u },    { 0x8017d71cu, wrap_8017d71c, 4u, 0u, 1u },    { 0x8017d724u, wrap_8017d724, 4u, 0u, 1u },    { 0x8017d72cu, wrap_8017d72c, 11u, 0u, 1u },    { 0x8017d740u, wrap_8017d740, 8u, 0u, 1u },    { 0x8017d74cu, wrap_8017d74c, 8u, 0u, 1u },    { 0x8017d754u, wrap_8017d754, 4u, 0u, 1u },    { 0x8017d758u, wrap_8017d758, 54u, 0u, 1u },    { 0x8017d764u, wrap_8017d764, 8u, 0u, 1u },    { 0x8017d780u, wrap_8017d780, 8u, 0u, 1u },    { 0x8017d78cu, wrap_8017d78c, 8u, 0u, 1u },    { 0x8017d798u, wrap_8017d798, 8u, 0u, 1u },    { 0x8017d7a4u, wrap_8017d7a4, 8u, 0u, 1u },    { 0x8017d7b0u, wrap_8017d7b0, 8u, 0u, 1u },    { 0x8017d7ecu, wrap_8017d7ec, 4u, 0u, 1u },    { 0x8017d7f4u, wrap_8017d7f4, 151u, 32u, 0u },    { 0x8017d9dcu, wrap_8017d9dc, 30u, 0u, 1u },    { 0x8017da00u, wrap_8017da00, 8u, 0u, 1u },    { 0x8017da04u, wrap_8017da04, 8u, 0u, 1u },    { 0x8017da18u, wrap_8017da18, 8u, 0u, 1u },    { 0x8017da20u, wrap_8017da20, 8u, 0u, 1u },    { 0x8017da28u, wrap_8017da28, 8u, 0u, 1u },    { 0x8017da30u, wrap_8017da30, 8u, 0u, 1u },    { 0x8017da44u, wrap_8017da44, 4u, 0u, 1u },    { 0x8017da4cu, wrap_8017da4c, 6u, 0u, 1u },    { 0x8017da60u, wrap_8017da60, 4u, 0u, 1u },    { 0x8017da64u, wrap_8017da64, 4u, 0u, 1u },    { 0x8017da68u, wrap_8017da68, 94u, 0u, 1u },    { 0x8017da70u, wrap_8017da70, 8u, 0u, 1u },    { 0x8017da78u, wrap_8017da78, 8u, 0u, 1u },    { 0x8017da80u, wrap_8017da80, 8u, 0u, 1u },    { 0x8017da88u, wrap_8017da88, 8u, 0u, 1u },    { 0x8017da90u, wrap_8017da90, 8u, 0u, 1u },    { 0x8017da98u, wrap_8017da98, 8u, 0u, 1u },    { 0x8017dac8u, wrap_8017dac8, 8u, 0u, 1u },    { 0x8017daf8u, wrap_8017daf8, 8u, 0u, 1u },    { 0x8017db7cu, wrap_8017db7c, 8u, 0u, 1u },    { 0x8017db80u, wrap_8017db80, 8u, 0u, 1u },    { 0x8017db88u, wrap_8017db88, 406u, 40u, 0u },    { 0x8017e138u, wrap_8017e138, 238u, 24u, 0u },    { 0x8017e46cu, wrap_8017e46c, 35u, 32u, 0u },    { 0x8017e4ccu, wrap_8017e4cc, 4u, 0u, 1u },    { 0x8017e4d4u, wrap_8017e4d4, 99u, 0u, 1u },    { 0x8017e4f0u, wrap_8017e4f0, 8u, 0u, 1u },    { 0x8017e4f8u, wrap_8017e4f8, 8u, 0u, 1u },    { 0x8017e500u, wrap_8017e500, 8u, 0u, 1u },    { 0x8017e508u, wrap_8017e508, 8u, 0u, 1u },    { 0x8017e510u, wrap_8017e510, 8u, 0u, 1u },    { 0x8017e518u, wrap_8017e518, 8u, 0u, 1u },    { 0x8017e528u, wrap_8017e528, 8u, 0u, 1u },    { 0x8017e530u, wrap_8017e530, 8u, 0u, 1u },    { 0x8017e540u, wrap_8017e540, 8u, 0u, 1u },    { 0x8017e548u, wrap_8017e548, 8u, 0u, 1u },    { 0x8017e554u, wrap_8017e554, 8u, 0u, 1u },    { 0x8017e588u, wrap_8017e588, 8u, 0u, 1u },    { 0x8017e598u, wrap_8017e598, 8u, 0u, 1u },    { 0x8017e59cu, wrap_8017e59c, 8u, 0u, 1u },    { 0x8017e61cu, wrap_8017e61c, 8u, 0u, 1u },    { 0x8017e620u, wrap_8017e620, 8u, 0u, 1u },    { 0x8017e628u, wrap_8017e628, 28u, 0u, 1u },    { 0x8017e64cu, wrap_8017e64c, 8u, 0u, 1u },    { 0x8017e650u, wrap_8017e650, 8u, 0u, 1u },    { 0x8017e660u, wrap_8017e660, 8u, 0u, 1u },    { 0x8017e668u, wrap_8017e668, 8u, 0u, 1u },    { 0x8017e670u, wrap_8017e670, 8u, 0u, 1u },    { 0x8017e678u, wrap_8017e678, 8u, 0u, 1u },    { 0x8017e68cu, wrap_8017e68c, 4u, 0u, 1u },    { 0x8017e694u, wrap_8017e694, 6u, 0u, 1u },    { 0x8017e6a8u, wrap_8017e6a8, 4u, 0u, 1u },    { 0x8017e6acu, wrap_8017e6ac, 4u, 0u, 1u },    { 0x8017e6b0u, wrap_8017e6b0, 60u, 0u, 1u },    { 0x8017e6b8u, wrap_8017e6b8, 8u, 0u, 1u },    { 0x8017e6c0u, wrap_8017e6c0, 8u, 0u, 1u },    { 0x8017e6c8u, wrap_8017e6c8, 8u, 0u, 1u },    { 0x8017e6d0u, wrap_8017e6d0, 8u, 0u, 1u },    { 0x8017e6d8u, wrap_8017e6d8, 8u, 0u, 1u },    { 0x8017e6e0u, wrap_8017e6e0, 8u, 0u, 1u },    { 0x8017e6e8u, wrap_8017e6e8, 8u, 0u, 1u },    { 0x8017e6f8u, wrap_8017e6f8, 8u, 0u, 1u },    { 0x8017e704u, wrap_8017e704, 8u, 0u, 1u },    { 0x8017e714u, wrap_8017e714, 8u, 0u, 1u },    { 0x8017e724u, wrap_8017e724, 8u, 0u, 1u },    { 0x8017e730u, wrap_8017e730, 8u, 0u, 1u },    { 0x8017e740u, wrap_8017e740, 8u, 0u, 1u },    { 0x8017e74cu, wrap_8017e74c, 8u, 0u, 1u },    { 0x8017e760u, wrap_8017e760, 8u, 0u, 1u },    { 0x8017e76cu, wrap_8017e76c, 8u, 0u, 1u },    { 0x8017e774u, wrap_8017e774, 8u, 0u, 1u },    { 0x8017e77cu, wrap_8017e77c, 65u, 32u, 0u },    { 0x8017e840u, wrap_8017e840, 24u, 0u, 0u },    { 0x8017e87cu, wrap_8017e87c, 8u, 0u, 0u },    { 0x8017e88cu, wrap_8017e88c, 16u, 0u, 0u },    { 0x8017e8b4u, wrap_8017e8b4, 18u, 0u, 0u },    { 0x8017e8e0u, wrap_8017e8e0, 16u, 0u, 0u },    { 0x8017e908u, wrap_8017e908, 16u, 0u, 0u },    { 0x8017e930u, wrap_8017e930, 19u, 0u, 0u },    { 0x8017e960u, wrap_8017e960, 6u, 0u, 0u },    { 0x8017e970u, wrap_8017e970, 6u, 0u, 0u },    { 0x8017e980u, wrap_8017e980, 6u, 0u, 0u },    { 0x8017e990u, wrap_8017e990, 33u, 0u, 0u },    { 0x8017e9ecu, wrap_8017e9ec, 4u, 0u, 0u },    { 0x8017e9f4u, wrap_8017e9f4, 43u, 0u, 0u },    { 0x8017ea7cu, wrap_8017ea7c, 53u, 32u, 0u },    { 0x8017eb10u, wrap_8017eb10, 42u, 0u, 0u },    { 0x8017eb78u, wrap_8017eb78, 500u, 88u, 0u },    { 0x8017f13cu, wrap_8017f13c, 174u, 40u, 0u },    { 0x8017f398u, wrap_8017f398, 356u, 48u, 0u },    { 0x8017f7c4u, wrap_8017f7c4, 134u, 0u, 0u },    { 0x8017f97cu, wrap_8017f97c, 108u, 0u, 1u },    { 0x8017f98cu, wrap_8017f98c, 8u, 0u, 1u },    { 0x8017f9a0u, wrap_8017f9a0, 8u, 0u, 1u },    { 0x8017f9b4u, wrap_8017f9b4, 8u, 0u, 1u },    { 0x8017f9c8u, wrap_8017f9c8, 8u, 0u, 1u },    { 0x8017f9d8u, wrap_8017f9d8, 8u, 0u, 1u },    { 0x8017f9ecu, wrap_8017f9ec, 8u, 0u, 1u },    { 0x8017f9fcu, wrap_8017f9fc, 8u, 0u, 1u },    { 0x8017fa14u, wrap_8017fa14, 8u, 0u, 1u },    { 0x8017fa30u, wrap_8017fa30, 8u, 0u, 1u },    { 0x8017fa44u, wrap_8017fa44, 8u, 0u, 1u },    { 0x8017fa58u, wrap_8017fa58, 8u, 0u, 1u },    { 0x8017fa64u, wrap_8017fa64, 8u, 0u, 1u },    { 0x8017fa78u, wrap_8017fa78, 8u, 0u, 1u },    { 0x8017fa8cu, wrap_8017fa8c, 8u, 0u, 1u },    { 0x8017faa0u, wrap_8017faa0, 8u, 0u, 1u },    { 0x8017fab4u, wrap_8017fab4, 8u, 0u, 1u },    { 0x8017fac8u, wrap_8017fac8, 8u, 0u, 1u },    { 0x8017fadcu, wrap_8017fadc, 8u, 0u, 1u },    { 0x8017fae4u, wrap_8017fae4, 6u, 0u, 1u },    { 0x8017faf8u, wrap_8017faf8, 4u, 0u, 1u },    { 0x8017fb00u, wrap_8017fb00, 15u, 0u, 1u },    { 0x8017fb14u, wrap_8017fb14, 8u, 0u, 1u },    { 0x8017fb28u, wrap_8017fb28, 8u, 0u, 1u },    { 0x8017fb2cu, wrap_8017fb2c, 8u, 0u, 1u },    { 0x8017fb34u, wrap_8017fb34, 267u, 40u, 0u },    { 0x8017fe60u, wrap_8017fe60, 226u, 64u, 0u },    { 0x801809c8u, wrap_801809c8, 541u, 80u, 0u },    { 0x8018106cu, wrap_8018106c, 155u, 48u, 0u },    { 0x8018123cu, wrap_8018123c, 856u, 80u, 0u },    { 0x80181db8u, wrap_80181db8, 108u, 0u, 0u },    { 0x80181f20u, wrap_80181f20, 1341u, 40u, 0u },    { 0x80182f3cu, wrap_80182f3c, 4u, 0u, 0u },    { 0x80182f48u, wrap_80182f48, 258u, 72u, 0u },    { 0x80183248u, wrap_80183248, 261u, 72u, 0u },    { 0x80183558u, wrap_80183558, 34u, 0u, 0u },    { 0x801835c4u, wrap_801835c4, 4u, 0u, 0u },    { 0x80183664u, wrap_80183664, 458u, 40u, 0u },    { 0x80183bd0u, wrap_80183bd0, 33u, 0u, 0u },    { 0x80183c30u, wrap_80183c30, 626u, 40u, 0u },    { 0x80184378u, wrap_80184378, 66u, 0u, 0u },    { 0x8018444cu, wrap_8018444c, 236u, 48u, 0u },    { 0x80184710u, wrap_80184710, 85u, 0u, 0u },    { 0x80184810u, wrap_80184810, 39u, 0u, 0u },    { 0x80184890u, wrap_80184890, 40u, 0u, 0u },    { 0x80184914u, wrap_80184914, 41u, 0u, 0u },    { 0x8018499cu, wrap_8018499c, 87u, 32u, 0u },    { 0x80184aa0u, wrap_80184aa0, 222u, 24u, 0u },    { 0x80184d3cu, wrap_80184d3c, 178u, 0u, 0u },    { 0x80184f28u, wrap_80184f28, 98u, 56u, 0u },    { 0x80185048u, wrap_80185048, 143u, 0u, 0u },    { 0x801851d8u, wrap_801851d8, 47u, 0u, 0u },    { 0x80185290u, wrap_80185290, 135u, 0u, 0u },    { 0x80185404u, wrap_80185404, 4u, 0u, 0u },    { 0x80185408u, wrap_80185408, 16u, 0u, 0u },    { 0x80185444u, wrap_80185444, 4u, 0u, 0u },    { 0x8018544cu, wrap_8018544c, 104u, 56u, 0u },    { 0x80185568u, wrap_80185568, 22u, 0u, 0u },    { 0x801855b4u, wrap_801855b4, 65u, 0u, 0u },    { 0x80185680u, wrap_80185680, 56u, 0u, 0u },    { 0x8018572cu, wrap_8018572c, 60u, 0u, 0u },    { 0x801857f0u, wrap_801857f0, 82u, 0u, 0u },    { 0x801858f8u, wrap_801858f8, 26u, 0u, 0u },    { 0x8018594cu, wrap_8018594c, 22u, 0u, 0u },    { 0x80185998u, wrap_80185998, 241u, 64u, 0u },    { 0x80185c70u, wrap_80185c70, 129u, 48u, 0u },    { 0x80185ddcu, wrap_80185ddc, 55u, 8u, 0u },    { 0x80185e6cu, wrap_80185e6c, 99u, 32u, 0u },    { 0x80185f64u, wrap_80185f64, 283u, 48u, 0u },    { 0x801862a8u, wrap_801862a8, 92u, 0u, 0u },    { 0x801863acu, wrap_801863ac, 4u, 0u, 0u },    { 0x801863b4u, wrap_801863b4, 105u, 48u, 0u },    { 0x801864dcu, wrap_801864dc, 388u, 112u, 0u },    { 0x8018694cu, wrap_8018694c, 128u, 48u, 0u },    { 0x80186aa8u, wrap_80186aa8, 51u, 32u, 0u },    { 0x80186b2cu, wrap_80186b2c, 74u, 48u, 0u },    { 0x80186bfcu, wrap_80186bfc, 98u, 72u, 0u },    { 0x80186d20u, wrap_80186d20, 107u, 0u, 0u },    { 0x80186e64u, wrap_80186e64, 74u, 0u, 0u },    { 0x80186f5cu, wrap_80186f5c, 100u, 0u, 0u },    { 0x801871bcu, wrap_801871bc, 96u, 0u, 0u },    { 0x801872ccu, wrap_801872cc, 59u, 0u, 0u },    { 0x80187378u, wrap_80187378, 68u, 0u, 0u },    { 0x8018743cu, wrap_8018743c, 72u, 0u, 0u },    { 0x80187504u, wrap_80187504, 90u, 0u, 0u },    { 0x801875fcu, wrap_801875fc, 64u, 0u, 0u },    { 0x801876bcu, wrap_801876bc, 73u, 0u, 0u },    { 0x80187794u, wrap_80187794, 76u, 0u, 0u },    { 0x8018786cu, wrap_8018786c, 97u, 0u, 0u },    { 0x80187980u, wrap_80187980, 70u, 0u, 0u },    { 0x80187a48u, wrap_80187a48, 78u, 0u, 0u },    { 0x80187b20u, wrap_80187b20, 85u, 0u, 0u },    { 0x80187c10u, wrap_80187c10, 96u, 0u, 0u },    { 0x80187d14u, wrap_80187d14, 70u, 0u, 0u },    { 0x80187dccu, wrap_80187dcc, 26u, 0u, 0u },    { 0x80187e18u, wrap_80187e18, 70u, 0u, 0u },    { 0x80187ee0u, wrap_80187ee0, 99u, 0u, 0u },    { 0x80187ffcu, wrap_80187ffc, 74u, 0u, 0u },    { 0x801880d4u, wrap_801880d4, 103u, 0u, 0u },    { 0x80188510u, wrap_80188510, 123u, 0u, 0u },    { 0x80188754u, wrap_80188754, 127u, 0u, 0u },    { 0x8018a4f8u, wrap_8018a4f8, 60u, 0u, 0u },    { 0x8018a9e8u, wrap_8018a9e8, 8u, 0u, 0u },    { 0x8018ab84u, wrap_8018ab84, 61u, 0u, 0u },    { 0x8018ac54u, wrap_8018ac54, 87u, 0u, 0u },    { 0x8018ac64u, wrap_8018ac64, 8u, 0u, 0u },    { 0x8018ac74u, wrap_8018ac74, 8u, 0u, 0u },    { 0x8018ac84u, wrap_8018ac84, 8u, 0u, 0u },    { 0x8018ac94u, wrap_8018ac94, 8u, 0u, 0u },    { 0x8018b050u, wrap_8018b050, 23u, 0u, 0u },    { 0x8018b0a0u, wrap_8018b0a0, 29u, 0u, 0u },    { 0x8018b100u, wrap_8018b100, 101u, 0u, 1u },    { 0x8018b108u, wrap_8018b108, 8u, 0u, 1u },    { 0x8018b13cu, wrap_8018b13c, 8u, 0u, 1u },    { 0x8018b14cu, wrap_8018b14c, 8u, 0u, 1u },    { 0x8018b154u, wrap_8018b154, 8u, 0u, 1u },    { 0x8018b15cu, wrap_8018b15c, 8u, 0u, 1u },    { 0x8018b198u, wrap_8018b198, 8u, 0u, 1u },    { 0x8018b1b0u, wrap_8018b1b0, 8u, 0u, 1u },    { 0x8018b1c4u, wrap_8018b1c4, 8u, 0u, 1u },    { 0x8018b1ccu, wrap_8018b1cc, 8u, 0u, 1u },    { 0x8018b1d8u, wrap_8018b1d8, 8u, 0u, 1u },    { 0x8018b200u, wrap_8018b200, 8u, 0u, 1u },    { 0x8018b208u, wrap_8018b208, 144u, 0u, 0u },    { 0x8018b76cu, wrap_8018b76c, 85u, 0u, 0u },    { 0x8018b884u, wrap_8018b884, 4u, 0u, 0u },    { 0x8018b98cu, wrap_8018b98c, 91u, 0u, 0u },    { 0x8018babcu, wrap_8018babc, 13u, 0u, 0u },    { 0x8018bb38u, wrap_8018bb38, 5u, 0u, 0u },    { 0x8018bba8u, wrap_8018bba8, 131u, 0u, 0u },    { 0x8018bd24u, wrap_8018bd24, 10u, 0u, 0u },    { 0x8018bd40u, wrap_8018bd40, 5u, 0u, 0u },    { 0x8018bd50u, wrap_8018bd50, 24u, 0u, 0u },    { 0x8018bda4u, wrap_8018bda4, 45u, 32u, 0u },    { 0x8018be28u, wrap_8018be28, 54u, 32u, 0u },    { 0x8018bec0u, wrap_8018bec0, 45u, 32u, 0u },    { 0x8018bf40u, wrap_8018bf40, 49u, 32u, 0u },    { 0x8018bfccu, wrap_8018bfcc, 39u, 48u, 0u },    { 0x8018c034u, wrap_8018c034, 38u, 0u, 0u },    { 0x8018c0a8u, wrap_8018c0a8, 23u, 0u, 0u },    { 0x8018c118u, wrap_8018c118, 38u, 0u, 0u },    { 0x8018c18cu, wrap_8018c18c, 21u, 0u, 0u },    { 0x8018c1f4u, wrap_8018c1f4, 104u, 40u, 0u },    { 0x8018c31cu, wrap_8018c31c, 196u, 56u, 0u },    { 0x8018c578u, wrap_8018c578, 144u, 48u, 0u },    { 0x8018c71cu, wrap_8018c71c, 102u, 48u, 0u },    { 0x8018c824u, wrap_8018c824, 94u, 48u, 0u },    { 0x8018c92cu, wrap_8018c92c, 123u, 56u, 0u },    { 0x8018ca8cu, wrap_8018ca8c, 96u, 48u, 0u },    { 0x8018cb98u, wrap_8018cb98, 31u, 0u, 0u },    { 0x8018cbfcu, wrap_8018cbfc, 23u, 0u, 0u },    { 0x8018cc6cu, wrap_8018cc6c, 111u, 56u, 0u },    { 0x8018cd94u, wrap_8018cd94, 31u, 0u, 0u },    { 0x8018cdf8u, wrap_8018cdf8, 25u, 0u, 0u },    { 0x8018ce70u, wrap_8018ce70, 124u, 56u, 0u },    { 0x8018cfb4u, wrap_8018cfb4, 9u, 0u, 0u },    { 0x8018cfdcu, wrap_8018cfdc, 119u, 48u, 1u },    { 0x8018d018u, wrap_8018d018, 8u, 0u, 1u },    { 0x8018d020u, wrap_8018d020, 8u, 0u, 1u },    { 0x8018d028u, wrap_8018d028, 8u, 0u, 1u },    { 0x8018d040u, wrap_8018d040, 8u, 0u, 1u },    { 0x8018d054u, wrap_8018d054, 8u, 0u, 1u },    { 0x8018d064u, wrap_8018d064, 8u, 0u, 1u },    { 0x8018d068u, wrap_8018d068, 8u, 0u, 1u },    { 0x8018d074u, wrap_8018d074, 8u, 0u, 1u },    { 0x8018d084u, wrap_8018d084, 8u, 0u, 1u },    { 0x8018d08cu, wrap_8018d08c, 8u, 0u, 1u },    { 0x8018d09cu, wrap_8018d09c, 8u, 0u, 1u },    { 0x8018d0a4u, wrap_8018d0a4, 8u, 0u, 1u },    { 0x8018d0bcu, wrap_8018d0bc, 8u, 0u, 1u },    { 0x8018d0ccu, wrap_8018d0cc, 8u, 0u, 1u },    { 0x8018d0d8u, wrap_8018d0d8, 8u, 0u, 1u },    { 0x8018d0e4u, wrap_8018d0e4, 8u, 0u, 1u },    { 0x8018d0ecu, wrap_8018d0ec, 8u, 0u, 1u },    { 0x8018d0f4u, wrap_8018d0f4, 8u, 0u, 1u },    { 0x8018d104u, wrap_8018d104, 8u, 0u, 1u },    { 0x8018d10cu, wrap_8018d10c, 8u, 0u, 1u },    { 0x8018d118u, wrap_8018d118, 8u, 0u, 1u },    { 0x8018d120u, wrap_8018d120, 8u, 0u, 1u },    { 0x8018d12cu, wrap_8018d12c, 8u, 0u, 1u },    { 0x8018d130u, wrap_8018d130, 8u, 0u, 1u },    { 0x8018d150u, wrap_8018d150, 35u, 32u, 1u },    { 0x8018d174u, wrap_8018d174, 8u, 0u, 1u },    { 0x8018d180u, wrap_8018d180, 8u, 0u, 1u },    { 0x8018d188u, wrap_8018d188, 8u, 0u, 1u },    { 0x8018d18cu, wrap_8018d18c, 8u, 0u, 1u },    { 0x8018d198u, wrap_8018d198, 8u, 0u, 1u },    { 0x8018d1a0u, wrap_8018d1a0, 8u, 0u, 1u },    { 0x8018d1bcu, wrap_8018d1bc, 35u, 0u, 0u },    { 0x8018d244u, wrap_8018d244, 15u, 0u, 0u },    { 0x8018d298u, wrap_8018d298, 4u, 0u, 0u },    { 0x8018d29cu, wrap_8018d29c, 16u, 0u, 0u },    { 0x8018d2ecu, wrap_8018d2ec, 5u, 0u, 0u },    { 0x8018d300u, wrap_8018d300, 45u, 0u, 0u },    { 0x8018d408u, wrap_8018d408, 15u, 0u, 0u },    { 0x8018d444u, wrap_8018d444, 11u, 0u, 0u },    { 0x8018d468u, wrap_8018d468, 4u, 0u, 0u },    { 0x8018d484u, wrap_8018d484, 6u, 0u, 0u },    { 0x8018d4fcu, wrap_8018d4fc, 15u, 0u, 0u },    { 0x8018d538u, wrap_8018d538, 4u, 0u, 0u },    { 0x8018d540u, wrap_8018d540, 15u, 0u, 0u },    { 0x8018d568u, wrap_8018d568, 27u, 0u, 0u },    { 0x8018d5b4u, wrap_8018d5b4, 24u, 0u, 0u },    { 0x8018d5fcu, wrap_8018d5fc, 9u, 0u, 0u },    { 0x8018d618u, wrap_8018d618, 22u, 0u, 0u },    { 0x8018d69cu, wrap_8018d69c, 35u, 0u, 0u },    { 0x8018d700u, wrap_8018d700, 53u, 0u, 0u },    { 0x8018d788u, wrap_8018d788, 43u, 0u, 0u },    { 0x8018d8e4u, wrap_8018d8e4, 109u, 80u, 0u },    { 0x8018da2cu, wrap_8018da2c, 41u, 0u, 0u },    { 0x8018dac0u, wrap_8018dac0, 82u, 0u, 0u },    { 0x8018dc18u, wrap_8018dc18, 4u, 0u, 0u },    { 0x8018de6cu, wrap_8018de6c, 41u, 0u, 0u },    { 0x8018df00u, wrap_8018df00, 82u, 0u, 0u },    { 0x8018e028u, wrap_8018e028, 41u, 0u, 0u },    { 0x8018e2f0u, wrap_8018e2f0, 4u, 0u, 0u },    { 0x8018e300u, wrap_8018e300, 4u, 0u, 0u },    { 0x8018e310u, wrap_8018e310, 4u, 0u, 0u },    { 0x8018e3bcu, wrap_8018e3bc, 16u, 0u, 0u },    { 0x8018e3f4u, wrap_8018e3f4, 16u, 0u, 0u },    { 0x8018e424u, wrap_8018e424, 17u, 0u, 0u },    { 0x8018e458u, wrap_8018e458, 15u, 0u, 0u },    { 0x8018e490u, wrap_8018e490, 15u, 0u, 0u },    { 0x8018e4d0u, wrap_8018e4d0, 14u, 0u, 0u },    { 0x8018e500u, wrap_8018e500, 4u, 0u, 0u },    { 0x8018e510u, wrap_8018e510, 14u, 0u, 0u },    { 0x8018e550u, wrap_8018e550, 22u, 24u, 0u },    { 0x8018e590u, wrap_8018e590, 509u, 120u, 0u },    { 0x8018ec30u, wrap_8018ec30, 14u, 0u, 0u },    { 0x8018ec64u, wrap_8018ec64, 14u, 0u, 0u },    { 0x8018eca0u, wrap_8018eca0, 21u, 0u, 0u },    { 0x8018ecf0u, wrap_8018ecf0, 77u, 24u, 0u },    { 0x8018edecu, wrap_8018edec, 19u, 0u, 0u },    { 0x8018edf4u, wrap_8018edf4, 8u, 24u, 0u },    { 0x8018ee28u, wrap_8018ee28, 90u, 24u, 0u },    { 0x8018ef50u, wrap_8018ef50, 4u, 0u, 0u },    { 0x8018ef60u, wrap_8018ef60, 6u, 0u, 0u },    { 0x8018f7e0u, wrap_8018f7e0, 31u, 0u, 0u },    { 0x8018f850u, wrap_8018f850, 17u, 24u, 0u },    { 0x8018f9b4u, wrap_8018f9b4, 40u, 24u, 0u },    { 0x8018fa30u, wrap_8018fa30, 10u, 24u, 0u },    { 0x8018fa50u, wrap_8018fa50, 17u, 24u, 0u },    { 0x8018fa8cu, wrap_8018fa8c, 17u, 24u, 0u },    { 0x8018fac8u, wrap_8018fac8, 11u, 24u, 0u },    { 0x8018faecu, wrap_8018faec, 11u, 24u, 0u },    { 0x8018fb10u, wrap_8018fb10, 80u, 24u, 0u },    { 0x8018fc00u, wrap_8018fc00, 54u, 32u, 0u },    { 0x8018fc90u, wrap_8018fc90, 52u, 32u, 0u },    { 0x8018fd1cu, wrap_8018fd1c, 47u, 32u, 0u },    { 0x8018fdb0u, wrap_8018fdb0, 47u, 32u, 0u },    { 0x8018fe44u, wrap_8018fe44, 8u, 0u, 0u },    { 0x8018fe5cu, wrap_8018fe5c, 43u, 24u, 0u },    { 0x8018ff10u, wrap_8018ff10, 233u, 0u, 0u },    { 0x80190228u, wrap_80190228, 22u, 0u, 0u },    { 0x80190260u, wrap_80190260, 66u, 0u, 0u },    { 0x80190350u, wrap_80190350, 19u, 0u, 0u },    { 0x80190390u, wrap_80190390, 54u, 48u, 0u },    { 0x80190430u, wrap_80190430, 232u, 0u, 0u },    { 0x80190a04u, wrap_80190a04, 8u, 0u, 0u },    { 0x80190dd0u, wrap_80190dd0, 13u, 0u, 0u },    { 0x80190e00u, wrap_80190e00, 113u, 32u, 0u },    { 0x80190f74u, wrap_80190f74, 33u, 24u, 0u },    { 0x80190fd0u, wrap_80190fd0, 56u, 32u, 0u },    { 0x80191074u, wrap_80191074, 5u, 0u, 0u },    { 0x80191084u, wrap_80191084, 34u, 32u, 0u },    { 0x801910e4u, wrap_801910e4, 48u, 32u, 0u },    { 0x8019117cu, wrap_8019117c, 34u, 0u, 0u },    { 0x80191184u, wrap_80191184, 8u, 24u, 0u },    { 0x801911e4u, wrap_801911e4, 89u, 32u, 0u },    { 0x80191300u, wrap_80191300, 49u, 40u, 0u },    { 0x80191390u, wrap_80191390, 51u, 40u, 0u },    { 0x80191428u, wrap_80191428, 33u, 32u, 0u },    { 0x80191488u, wrap_80191488, 33u, 32u, 0u },    { 0x801914e8u, wrap_801914e8, 64u, 32u, 0u },    { 0x801915a0u, wrap_801915a0, 63u, 0u, 0u },    { 0x801915a8u, wrap_801915a8, 8u, 32u, 0u },    { 0x80191668u, wrap_80191668, 55u, 0u, 0u },    { 0x80191670u, wrap_80191670, 8u, 32u, 0u },    { 0x80191714u, wrap_80191714, 34u, 32u, 0u },    { 0x80191770u, wrap_80191770, 37u, 0u, 0u },    { 0x80191778u, wrap_80191778, 8u, 24u, 0u },    { 0x801917e0u, wrap_801917e0, 63u, 32u, 0u },    { 0x801918a0u, wrap_801918a0, 71u, 40u, 0u },    { 0x80191978u, wrap_80191978, 17u, 24u, 0u },    { 0x801919acu, wrap_801919ac, 68u, 32u, 0u },    { 0x80191ea4u, wrap_80191ea4, 17u, 24u, 0u },    { 0x80191ed8u, wrap_80191ed8, 16u, 0u, 0u },    { 0x80191ee0u, wrap_80191ee0, 8u, 24u, 0u },    { 0x80191f08u, wrap_80191f08, 47u, 32u, 0u },    { 0x80191f88u, wrap_80191f88, 25u, 24u, 0u },    { 0x801921c0u, wrap_801921c0, 220u, 40u, 0u },    { 0x80192430u, wrap_80192430, 8u, 0u, 0u },    { 0x80192450u, wrap_80192450, 42u, 0u, 0u },    { 0x801924e8u, wrap_801924e8, 42u, 0u, 0u },    { 0x80192580u, wrap_80192580, 7u, 0u, 0u },    { 0x8019259cu, wrap_8019259c, 40u, 0u, 0u },    { 0x8019261cu, wrap_8019261c, 8u, 0u, 0u },    { 0x80192634u, wrap_80192634, 77u, 32u, 0u },    { 0x80192944u, wrap_80192944, 195u, 48u, 0u },    { 0x80192e00u, wrap_80192e00, 12u, 0u, 0u },    { 0x80192e78u, wrap_80192e78, 26u, 0u, 0u },    { 0x80192ec0u, wrap_80192ec0, 16u, 0u, 0u },    { 0x80192ef0u, wrap_80192ef0, 11u, 24u, 0u },    { 0x80192f14u, wrap_80192f14, 212u, 40u, 0u },    { 0x801931c4u, wrap_801931c4, 193u, 0u, 0u },    { 0x80193424u, wrap_80193424, 109u, 24u, 0u },    { 0x80193574u, wrap_80193574, 95u, 24u, 0u },    { 0x801936b0u, wrap_801936b0, 17u, 24u, 0u },    { 0x801936e4u, wrap_801936e4, 110u, 32u, 0u },    { 0x80193828u, wrap_80193828, 51u, 0u, 0u },    { 0x801938c8u, wrap_801938c8, 75u, 32u, 0u },    { 0x801939b4u, wrap_801939b4, 75u, 32u, 0u },    { 0x80193aa0u, wrap_80193aa0, 106u, 32u, 0u },    { 0x80193be4u, wrap_80193be4, 79u, 0u, 0u },    { 0x80193ce0u, wrap_80193ce0, 12u, 24u, 0u },    { 0x80193d08u, wrap_80193d08, 10u, 0u, 0u },    { 0x80193d30u, wrap_80193d30, 4u, 0u, 0u },    { 0x80193d40u, wrap_80193d40, 77u, 48u, 0u },    { 0x80193e30u, wrap_80193e30, 35u, 40u, 0u },    { 0x80193ea0u, wrap_80193ea0, 75u, 40u, 0u },    { 0x80193f60u, wrap_80193f60, 28u, 0u, 0u },    { 0x80193fa0u, wrap_80193fa0, 15u, 0u, 0u },    { 0x80193fe0u, wrap_80193fe0, 6u, 0u, 0u },    { 0x80194000u, wrap_80194000, 20u, 0u, 0u },    { 0x80194040u, wrap_80194040, 8u, 0u, 0u },    { 0x80194060u, wrap_80194060, 13u, 0u, 0u },    { 0x80194090u, wrap_80194090, 13u, 0u, 0u },    { 0x801940c0u, wrap_801940c0, 7u, 0u, 0u },    { 0x801940e0u, wrap_801940e0, 7u, 0u, 0u },    { 0x80194100u, wrap_80194100, 7u, 0u, 0u },    { 0x80194120u, wrap_80194120, 7u, 0u, 0u },    { 0x80194140u, wrap_80194140, 7u, 0u, 0u },    { 0x80194160u, wrap_80194160, 7u, 0u, 0u },    { 0x80194180u, wrap_80194180, 34u, 0u, 0u },    { 0x801941e0u, wrap_801941e0, 46u, 0u, 0u },    { 0x80194280u, wrap_80194280, 110u, 64u, 0u },    { 0x801943d4u, wrap_801943d4, 44u, 32u, 0u },    { 0x80194478u, wrap_80194478, 34u, 0u, 0u },    { 0x80194500u, wrap_80194500, 32u, 0u, 0u },    { 0x80194590u, wrap_80194590, 36u, 0u, 0u },    { 0x8019461cu, wrap_8019461c, 8u, 0u, 0u },    { 0x80194630u, wrap_80194630, 18u, 0u, 0u },    { 0x80194660u, wrap_80194660, 6u, 0u, 0u },    { 0x80194690u, wrap_80194690, 49u, 0u, 0u },    { 0x80194750u, wrap_80194750, 73u, 0u, 0u },    { 0x80194840u, wrap_80194840, 39u, 0u, 0u },    { 0x801948c0u, wrap_801948c0, 33u, 0u, 0u },    { 0x80194960u, wrap_80194960, 86u, 0u, 0u },    { 0x80194a70u, wrap_80194a70, 72u, 0u, 0u },    { 0x80194b60u, wrap_80194b60, 71u, 0u, 0u },    { 0x80194c50u, wrap_80194c50, 116u, 0u, 0u },    { 0x80194db0u, wrap_80194db0, 99u, 0u, 0u },    { 0x80194f10u, wrap_80194f10, 17u, 0u, 0u },    { 0x80194f40u, wrap_80194f40, 82u, 0u, 0u },    { 0x80195050u, wrap_80195050, 86u, 0u, 0u },    { 0x80195160u, wrap_80195160, 30u, 0u, 0u },    { 0x801951b0u, wrap_801951b0, 33u, 0u, 0u },    { 0x80195210u, wrap_80195210, 17u, 0u, 0u },    { 0x80195240u, wrap_80195240, 17u, 0u, 0u },    { 0x80195270u, wrap_80195270, 11u, 0u, 0u },    { 0x80195290u, wrap_80195290, 6u, 0u, 0u },    { 0x801952b0u, wrap_801952b0, 4u, 0u, 0u },    { 0x801952c0u, wrap_801952c0, 16u, 0u, 0u },    { 0x801952e8u, wrap_801952e8, 15u, 0u, 0u },    { 0x80195310u, wrap_80195310, 25u, 0u, 0u },    { 0x8019534cu, wrap_8019534c, 13u, 0u, 0u },    { 0x80195370u, wrap_80195370, 16u, 0u, 0u },    { 0x80195398u, wrap_80195398, 16u, 0u, 0u },    { 0x801953c0u, wrap_801953c0, 8u, 0u, 0u },    { 0x801953e0u, wrap_801953e0, 9u, 0u, 0u },    { 0x80195404u, wrap_80195404, 31u, 0u, 0u },    { 0x8019545cu, wrap_8019545c, 31u, 0u, 0u },    { 0x801954b4u, wrap_801954b4, 6u, 0u, 0u },    { 0x801954d0u, wrap_801954d0, 16u, 0u, 0u },    { 0x80195500u, wrap_80195500, 33u, 0u, 0u },    { 0x80195570u, wrap_80195570, 116u, 0u, 0u },    { 0x80195710u, wrap_80195710, 50u, 0u, 0u },    { 0x801957f0u, wrap_801957f0, 4u, 0u, 0u },    { 0x80195800u, wrap_80195800, 15u, 24u, 0u },    { 0x80195830u, wrap_80195830, 11u, 24u, 0u },    { 0x80195854u, wrap_80195854, 173u, 64u, 0u },    { 0x80195a80u, wrap_80195a80, 6u, 24u, 0u },    { 0x80195b10u, wrap_80195b10, 5u, 24u, 0u },    { 0x80195b4cu, wrap_80195b4c, 7u, 24u, 0u },    { 0x80195b74u, wrap_80195b74, 12u, 24u, 0u },    { 0x80195b9cu, wrap_80195b9c, 9u, 24u, 0u },    { 0x80195bd0u, wrap_80195bd0, 4u, 0u, 0u },    { 0x80195be0u, wrap_80195be0, 5u, 0u, 1u },    { 0x80195bf0u, wrap_80195bf0, 4u, 0u, 1u },    { 0x80195c10u, wrap_80195c10, 4u, 0u, 1u },    { 0x80195c1cu, wrap_80195c1c, 11u, 24u, 0u },    { 0x80195c88u, wrap_80195c88, 10u, 24u, 0u },    { 0x80195ca8u, wrap_80195ca8, 7u, 0u, 0u },    { 0x80195d24u, wrap_80195d24, 10u, 24u, 0u },    { 0x80195d44u, wrap_80195d44, 10u, 24u, 0u },    { 0x80195d64u, wrap_80195d64, 7u, 0u, 0u },    { 0x80195d78u, wrap_80195d78, 7u, 0u, 0u },    { 0x80195d8cu, wrap_80195d8c, 105u, 56u, 0u },    { 0x80195ec8u, wrap_80195ec8, 103u, 56u, 0u },    { 0x80195ffcu, wrap_80195ffc, 109u, 56u, 0u },    { 0x80196148u, wrap_80196148, 10u, 24u, 0u },    { 0x80196168u, wrap_80196168, 10u, 24u, 0u },    { 0x80196188u, wrap_80196188, 10u, 24u, 0u },    { 0x801961a8u, wrap_801961a8, 11u, 24u, 0u },    { 0x801961ccu, wrap_801961cc, 10u, 24u, 0u },    { 0x801961ecu, wrap_801961ec, 68u, 0u, 0u },    { 0x801962f0u, wrap_801962f0, 35u, 0u, 0u },    { 0x80196370u, wrap_80196370, 427u, 48u, 1u },    { 0x801963bcu, wrap_801963bc, 8u, 0u, 1u },    { 0x801963c4u, wrap_801963c4, 8u, 0u, 1u },    { 0x801963d4u, wrap_801963d4, 8u, 0u, 1u },    { 0x801963e8u, wrap_801963e8, 8u, 0u, 1u },    { 0x801963ecu, wrap_801963ec, 8u, 0u, 1u },    { 0x8019640cu, wrap_8019640c, 8u, 0u, 1u },    { 0x80196430u, wrap_80196430, 8u, 0u, 1u },    { 0x8019643cu, wrap_8019643c, 8u, 0u, 1u },    { 0x80196444u, wrap_80196444, 8u, 0u, 1u },    { 0x80196458u, wrap_80196458, 8u, 0u, 1u },    { 0x80196498u, wrap_80196498, 8u, 0u, 1u },    { 0x801964c0u, wrap_801964c0, 8u, 0u, 1u },    { 0x801964d8u, wrap_801964d8, 8u, 0u, 1u },    { 0x801964ecu, wrap_801964ec, 8u, 0u, 1u },    { 0x80196504u, wrap_80196504, 8u, 0u, 1u },    { 0x80196524u, wrap_80196524, 8u, 0u, 1u },    { 0x80196534u, wrap_80196534, 8u, 0u, 1u },    { 0x80196548u, wrap_80196548, 8u, 0u, 1u },    { 0x80196554u, wrap_80196554, 8u, 0u, 1u },    { 0x80196568u, wrap_80196568, 8u, 0u, 1u },    { 0x8019659cu, wrap_8019659c, 8u, 0u, 1u },    { 0x801965b4u, wrap_801965b4, 8u, 0u, 1u },    { 0x801965ccu, wrap_801965cc, 8u, 0u, 1u },    { 0x801965d4u, wrap_801965d4, 8u, 0u, 1u },    { 0x801965f0u, wrap_801965f0, 8u, 0u, 1u },    { 0x801965f8u, wrap_801965f8, 8u, 0u, 1u },    { 0x80196610u, wrap_80196610, 8u, 0u, 1u },    { 0x80196618u, wrap_80196618, 8u, 0u, 1u },    { 0x80196640u, wrap_80196640, 8u, 0u, 1u },    { 0x8019665cu, wrap_8019665c, 8u, 0u, 1u },    { 0x80196664u, wrap_80196664, 8u, 0u, 1u },    { 0x8019667cu, wrap_8019667c, 8u, 0u, 1u },    { 0x80196684u, wrap_80196684, 8u, 0u, 1u },    { 0x801966a4u, wrap_801966a4, 8u, 0u, 1u },    { 0x801966acu, wrap_801966ac, 8u, 0u, 1u },    { 0x801966c4u, wrap_801966c4, 8u, 0u, 1u },    { 0x801966ccu, wrap_801966cc, 8u, 0u, 1u },    { 0x801966d4u, wrap_801966d4, 8u, 0u, 1u },    { 0x801966d8u, wrap_801966d8, 8u, 0u, 1u },    { 0x801966f0u, wrap_801966f0, 8u, 0u, 1u },    { 0x801966f8u, wrap_801966f8, 8u, 0u, 1u },    { 0x80196710u, wrap_80196710, 8u, 0u, 1u },    { 0x80196718u, wrap_80196718, 8u, 0u, 1u },    { 0x80196720u, wrap_80196720, 8u, 0u, 1u },    { 0x80196728u, wrap_80196728, 8u, 0u, 1u },    { 0x8019672cu, wrap_8019672c, 8u, 0u, 1u },    { 0x80196734u, wrap_80196734, 8u, 0u, 1u },    { 0x80196738u, wrap_80196738, 8u, 0u, 1u },    { 0x80196754u, wrap_80196754, 8u, 0u, 1u },    { 0x8019675cu, wrap_8019675c, 8u, 0u, 1u },    { 0x80196774u, wrap_80196774, 8u, 0u, 1u },    { 0x80196798u, wrap_80196798, 8u, 0u, 1u },    { 0x801967c4u, wrap_801967c4, 8u, 0u, 1u },    { 0x801967c8u, wrap_801967c8, 8u, 0u, 1u },    { 0x801967e0u, wrap_801967e0, 8u, 0u, 1u },    { 0x801967f0u, wrap_801967f0, 8u, 0u, 1u },    { 0x801967f8u, wrap_801967f8, 8u, 0u, 1u },    { 0x80196810u, wrap_80196810, 8u, 0u, 1u },    { 0x80196818u, wrap_80196818, 8u, 0u, 1u },    { 0x80196844u, wrap_80196844, 8u, 0u, 1u },    { 0x80196848u, wrap_80196848, 8u, 0u, 1u },    { 0x80196860u, wrap_80196860, 8u, 0u, 1u },    { 0x80196870u, wrap_80196870, 8u, 0u, 1u },    { 0x80196878u, wrap_80196878, 8u, 0u, 1u },    { 0x80196890u, wrap_80196890, 8u, 0u, 1u },    { 0x80196898u, wrap_80196898, 8u, 0u, 1u },    { 0x801968a4u, wrap_801968a4, 8u, 0u, 1u },    { 0x801968b4u, wrap_801968b4, 8u, 0u, 1u },    { 0x801968b8u, wrap_801968b8, 8u, 0u, 1u },    { 0x80196e14u, wrap_80196e14, 324u, 0u, 1u },    { 0x80196e58u, wrap_80196e58, 8u, 0u, 1u },    { 0x80196e78u, wrap_80196e78, 8u, 0u, 1u },    { 0x80196e98u, wrap_80196e98, 8u, 0u, 1u },    { 0x80196ea0u, wrap_80196ea0, 8u, 0u, 1u },    { 0x80196eb4u, wrap_80196eb4, 8u, 0u, 1u },    { 0x80196eccu, wrap_80196ecc, 8u, 0u, 1u },    { 0x80196ed4u, wrap_80196ed4, 8u, 0u, 1u },    { 0x80196edcu, wrap_80196edc, 8u, 0u, 1u },    { 0x80196eecu, wrap_80196eec, 8u, 0u, 1u },    { 0x80196ef4u, wrap_80196ef4, 8u, 0u, 1u },    { 0x80196f14u, wrap_80196f14, 8u, 0u, 1u },    { 0x80196f1cu, wrap_80196f1c, 8u, 0u, 1u },    { 0x80196f24u, wrap_80196f24, 8u, 0u, 1u },    { 0x80196f30u, wrap_80196f30, 8u, 0u, 1u },    { 0x80196f58u, wrap_80196f58, 8u, 0u, 1u },    { 0x80196f5cu, wrap_80196f5c, 8u, 0u, 1u },    { 0x80196f84u, wrap_80196f84, 8u, 0u, 1u },    { 0x80196f8cu, wrap_80196f8c, 8u, 0u, 1u },    { 0x80196fb4u, wrap_80196fb4, 8u, 0u, 1u },    { 0x80196fd0u, wrap_80196fd0, 8u, 0u, 1u },    { 0x80196fd8u, wrap_80196fd8, 8u, 0u, 1u },    { 0x80197010u, wrap_80197010, 8u, 0u, 1u },    { 0x80197028u, wrap_80197028, 8u, 0u, 1u },    { 0x80197030u, wrap_80197030, 8u, 0u, 1u },    { 0x80197048u, wrap_80197048, 8u, 0u, 1u },    { 0x80197074u, wrap_80197074, 8u, 0u, 1u },    { 0x80197080u, wrap_80197080, 8u, 0u, 1u },    { 0x801970ccu, wrap_801970cc, 8u, 0u, 1u },    { 0x801970d4u, wrap_801970d4, 8u, 0u, 1u },    { 0x801970dcu, wrap_801970dc, 8u, 0u, 1u },    { 0x801970e0u, wrap_801970e0, 8u, 0u, 1u },    { 0x801970e8u, wrap_801970e8, 8u, 0u, 1u },    { 0x801970f0u, wrap_801970f0, 8u, 0u, 1u },    { 0x801970f8u, wrap_801970f8, 8u, 0u, 1u },    { 0x80197110u, wrap_80197110, 8u, 0u, 1u },    { 0x80197118u, wrap_80197118, 8u, 0u, 1u },    { 0x80197124u, wrap_80197124, 8u, 0u, 1u },    { 0x8019712cu, wrap_8019712c, 8u, 0u, 1u },    { 0x80197140u, wrap_80197140, 8u, 0u, 1u },    { 0x80197150u, wrap_80197150, 8u, 0u, 1u },    { 0x80197154u, wrap_80197154, 8u, 0u, 1u },    { 0x8019715cu, wrap_8019715c, 8u, 0u, 1u },    { 0x80197170u, wrap_80197170, 8u, 0u, 1u },    { 0x80197180u, wrap_80197180, 8u, 0u, 1u },    { 0x80197188u, wrap_80197188, 8u, 0u, 1u },    { 0x80197198u, wrap_80197198, 8u, 0u, 1u },    { 0x801971a8u, wrap_801971a8, 8u, 0u, 1u },    { 0x801971b8u, wrap_801971b8, 8u, 0u, 1u },    { 0x801971bcu, wrap_801971bc, 8u, 0u, 1u },    { 0x801971d4u, wrap_801971d4, 8u, 0u, 1u },    { 0x801971f0u, wrap_801971f0, 8u, 0u, 1u },    { 0x801971f8u, wrap_801971f8, 8u, 0u, 1u },    { 0x80197220u, wrap_80197220, 52u, 0u, 0u },    { 0x801972a8u, wrap_801972a8, 75u, 0u, 0u },    { 0x8019737cu, wrap_8019737c, 91u, 0u, 0u },    { 0x8019746cu, wrap_8019746c, 25u, 24u, 0u },    { 0x801974b8u, wrap_801974b8, 151u, 24u, 0u },    { 0x80197698u, wrap_80197698, 118u, 48u, 0u },    { 0x80197800u, wrap_80197800, 88u, 0u, 0u },    { 0x80197900u, wrap_80197900, 82u, 0u, 0u },    { 0x8019799cu, wrap_8019799c, 8u, 8u, 0u },    { 0x801979f8u, wrap_801979f8, 72u, 0u, 1u },    { 0x80197a2cu, wrap_80197a2c, 8u, 0u, 1u },    { 0x80197a34u, wrap_80197a34, 8u, 0u, 1u },    { 0x80197a40u, wrap_80197a40, 8u, 0u, 1u },    { 0x80197a48u, wrap_80197a48, 8u, 0u, 1u },    { 0x80197a5cu, wrap_80197a5c, 8u, 0u, 1u },    { 0x80197a6cu, wrap_80197a6c, 8u, 0u, 1u },    { 0x80197a70u, wrap_80197a70, 8u, 0u, 1u },    { 0x80197a78u, wrap_80197a78, 8u, 0u, 1u },    { 0x80197a8cu, wrap_80197a8c, 8u, 0u, 1u },    { 0x80197a9cu, wrap_80197a9c, 8u, 0u, 1u },    { 0x80197aa4u, wrap_80197aa4, 8u, 0u, 1u },    { 0x80197ad0u, wrap_80197ad0, 26u, 24u, 0u },    { 0x80197b30u, wrap_80197b30, 233u, 0u, 0u },    { 0x80197e08u, wrap_80197e08, 10u, 24u, 0u },    { 0x80197e28u, wrap_80197e28, 223u, 64u, 0u },    { 0x801980ecu, wrap_801980ec, 54u, 40u, 0u },    { 0x8019842cu, wrap_8019842c, 32u, 40u, 0u },    { 0x801984a0u, wrap_801984a0, 30u, 0u, 0u },    { 0x80198510u, wrap_80198510, 36u, 0u, 0u },    { 0x80198590u, wrap_80198590, 19u, 24u, 0u },    { 0x801985c4u, wrap_801985c4, 194u, 48u, 1u },    { 0x801985f4u, wrap_801985f4, 8u, 0u, 1u },    { 0x80198604u, wrap_80198604, 8u, 0u, 1u },    { 0x80198614u, wrap_80198614, 8u, 0u, 1u },    { 0x8019862cu, wrap_8019862c, 8u, 0u, 1u },    { 0x80198634u, wrap_80198634, 8u, 0u, 1u },    { 0x80198640u, wrap_80198640, 8u, 0u, 1u },    { 0x80198648u, wrap_80198648, 8u, 0u, 1u },    { 0x80198654u, wrap_80198654, 8u, 0u, 1u },    { 0x8019865cu, wrap_8019865c, 8u, 0u, 1u },    { 0x80198664u, wrap_80198664, 8u, 0u, 1u },    { 0x8019866cu, wrap_8019866c, 8u, 0u, 1u },    { 0x80198684u, wrap_80198684, 8u, 0u, 1u },    { 0x80198690u, wrap_80198690, 8u, 0u, 1u },    { 0x8019869cu, wrap_8019869c, 8u, 0u, 1u },    { 0x801986b4u, wrap_801986b4, 8u, 0u, 1u },    { 0x801986ccu, wrap_801986cc, 8u, 0u, 1u },    { 0x801986d4u, wrap_801986d4, 8u, 0u, 1u },    { 0x801986ecu, wrap_801986ec, 8u, 0u, 1u },    { 0x80198728u, wrap_80198728, 8u, 0u, 1u },    { 0x8019872cu, wrap_8019872c, 8u, 0u, 1u },    { 0x80198734u, wrap_80198734, 8u, 0u, 1u },    { 0x80198750u, wrap_80198750, 8u, 0u, 1u },    { 0x80198758u, wrap_80198758, 8u, 0u, 1u },    { 0x80198760u, wrap_80198760, 8u, 0u, 1u },    { 0x80198778u, wrap_80198778, 8u, 0u, 1u },    { 0x8019877cu, wrap_8019877c, 8u, 0u, 1u },    { 0x8019878cu, wrap_8019878c, 8u, 0u, 1u },    { 0x80198794u, wrap_80198794, 8u, 0u, 1u },    { 0x801987acu, wrap_801987ac, 8u, 0u, 1u },    { 0x801987b8u, wrap_801987b8, 8u, 0u, 1u },    { 0x801987d0u, wrap_801987d0, 8u, 0u, 1u },    { 0x801987dcu, wrap_801987dc, 8u, 0u, 1u },    { 0x801987e8u, wrap_801987e8, 8u, 0u, 1u },    { 0x801987f4u, wrap_801987f4, 8u, 0u, 1u },    { 0x80198808u, wrap_80198808, 8u, 0u, 1u },    { 0x80198818u, wrap_80198818, 8u, 0u, 1u },    { 0x8019881cu, wrap_8019881c, 8u, 0u, 1u },    { 0x80198824u, wrap_80198824, 8u, 0u, 1u },    { 0x80198838u, wrap_80198838, 70u, 24u, 0u },    { 0x80198908u, wrap_80198908, 146u, 40u, 0u },    { 0x80198af0u, wrap_80198af0, 126u, 0u, 1u },    { 0x80198b10u, wrap_80198b10, 8u, 0u, 1u },    { 0x80198b18u, wrap_80198b18, 8u, 0u, 1u },    { 0x80198b34u, wrap_80198b34, 8u, 0u, 1u },    { 0x80198b3cu, wrap_80198b3c, 8u, 0u, 1u },    { 0x80198b50u, wrap_80198b50, 8u, 0u, 1u },    { 0x80198b5cu, wrap_80198b5c, 8u, 0u, 1u },    { 0x80198b70u, wrap_80198b70, 8u, 0u, 1u },    { 0x80198b7cu, wrap_80198b7c, 8u, 0u, 1u },    { 0x80198b84u, wrap_80198b84, 8u, 0u, 1u },    { 0x80198b94u, wrap_80198b94, 8u, 0u, 1u },    { 0x80198b98u, wrap_80198b98, 8u, 0u, 1u },    { 0x80198ba0u, wrap_80198ba0, 8u, 0u, 1u },    { 0x80198bb0u, wrap_80198bb0, 8u, 0u, 1u },    { 0x80198bc0u, wrap_80198bc0, 8u, 0u, 1u },    { 0x80198bc4u, wrap_80198bc4, 8u, 0u, 1u },    { 0x80198bccu, wrap_80198bcc, 8u, 0u, 1u },    { 0x80198be0u, wrap_80198be0, 8u, 0u, 1u },    { 0x80198bf8u, wrap_80198bf8, 8u, 0u, 1u },    { 0x80198c04u, wrap_80198c04, 8u, 0u, 1u },    { 0x80198c10u, wrap_80198c10, 8u, 0u, 1u },    { 0x80198c1cu, wrap_80198c1c, 8u, 0u, 1u },    { 0x80198c38u, wrap_80198c38, 8u, 0u, 1u },    { 0x80198c40u, wrap_80198c40, 8u, 0u, 1u },    { 0x80198c50u, wrap_80198c50, 8u, 0u, 1u },    { 0x80198c54u, wrap_80198c54, 8u, 0u, 1u },    { 0x80198c5cu, wrap_80198c5c, 8u, 0u, 1u },    { 0x80198c6cu, wrap_80198c6c, 8u, 0u, 1u },    { 0x80198c7cu, wrap_80198c7c, 8u, 0u, 1u },    { 0x80198c90u, wrap_80198c90, 134u, 40u, 1u },    { 0x80198cccu, wrap_80198ccc, 8u, 0u, 1u },    { 0x80198cd4u, wrap_80198cd4, 8u, 0u, 1u },    { 0x80198ce4u, wrap_80198ce4, 8u, 0u, 1u },    { 0x80198cecu, wrap_80198cec, 8u, 0u, 1u },    { 0x80198cfcu, wrap_80198cfc, 8u, 0u, 1u },    { 0x80198d0cu, wrap_80198d0c, 8u, 0u, 1u },    { 0x80198d2cu, wrap_80198d2c, 8u, 0u, 1u },    { 0x80198d34u, wrap_80198d34, 8u, 0u, 1u },    { 0x80198d3cu, wrap_80198d3c, 8u, 0u, 1u },    { 0x80198d50u, wrap_80198d50, 8u, 0u, 1u },    { 0x80198d5cu, wrap_80198d5c, 8u, 0u, 1u },    { 0x80198d68u, wrap_80198d68, 8u, 0u, 1u },    { 0x80198d74u, wrap_80198d74, 8u, 0u, 1u },    { 0x80198d80u, wrap_80198d80, 8u, 0u, 1u },    { 0x80198da4u, wrap_80198da4, 8u, 0u, 1u },    { 0x80198db0u, wrap_80198db0, 8u, 0u, 1u },    { 0x80198dc8u, wrap_80198dc8, 8u, 0u, 1u },    { 0x80198dd0u, wrap_80198dd0, 8u, 0u, 1u },    { 0x80198dd4u, wrap_80198dd4, 8u, 0u, 1u },    { 0x80198ddcu, wrap_80198ddc, 8u, 0u, 1u },    { 0x80198de8u, wrap_80198de8, 8u, 0u, 1u },    { 0x80198df4u, wrap_80198df4, 8u, 0u, 1u },    { 0x80198e00u, wrap_80198e00, 8u, 0u, 1u },    { 0x80198e08u, wrap_80198e08, 8u, 0u, 1u },    { 0x80198e2cu, wrap_80198e2c, 84u, 40u, 1u },    { 0x80198e5cu, wrap_80198e5c, 8u, 0u, 1u },    { 0x80198e64u, wrap_80198e64, 8u, 0u, 1u },    { 0x80198e7cu, wrap_80198e7c, 8u, 0u, 1u },    { 0x80198e8cu, wrap_80198e8c, 8u, 0u, 1u },    { 0x80198e94u, wrap_80198e94, 8u, 0u, 1u },    { 0x80198eacu, wrap_80198eac, 8u, 0u, 1u },    { 0x80198eb4u, wrap_80198eb4, 8u, 0u, 1u },    { 0x80198ec0u, wrap_80198ec0, 8u, 0u, 1u },    { 0x80198ec4u, wrap_80198ec4, 8u, 0u, 1u },    { 0x80198eccu, wrap_80198ecc, 8u, 0u, 1u },    { 0x80198edcu, wrap_80198edc, 8u, 0u, 1u },    { 0x80198ee4u, wrap_80198ee4, 8u, 0u, 1u },    { 0x80198eecu, wrap_80198eec, 8u, 0u, 1u },    { 0x80198ef4u, wrap_80198ef4, 8u, 0u, 1u },    { 0x80198f04u, wrap_80198f04, 8u, 0u, 1u },    { 0x80198f0cu, wrap_80198f0c, 8u, 0u, 1u },    { 0x80198f10u, wrap_80198f10, 8u, 0u, 1u },    { 0x80198f60u, wrap_80198f60, 40u, 32u, 0u },    { 0x80198fe4u, wrap_80198fe4, 10u, 24u, 0u },    { 0x80199010u, wrap_80199010, 34u, 24u, 0u },    { 0x80199070u, wrap_80199070, 39u, 24u, 0u },    { 0x801990f0u, wrap_801990f0, 50u, 0u, 0u },    { 0x80199100u, wrap_80199100, 8u, 24u, 0u },    { 0x8019917cu, wrap_8019917c, 28u, 0u, 0u },    { 0x80199184u, wrap_80199184, 8u, 24u, 0u },    { 0x801991e0u, wrap_801991e0, 50u, 32u, 0u },    { 0x80199270u, wrap_80199270, 50u, 0u, 0u },    { 0x80199320u, wrap_80199320, 15u, 0u, 0u },    { 0x80199360u, wrap_80199360, 61u, 0u, 0u },    { 0x80199420u, wrap_80199420, 10u, 0u, 0u },    { 0x80199440u, wrap_80199440, 544u, 64u, 1u },    { 0x80199458u, wrap_80199458, 8u, 0u, 1u },    { 0x8019946cu, wrap_8019946c, 8u, 0u, 1u },    { 0x8019948cu, wrap_8019948c, 8u, 0u, 1u },    { 0x801994a0u, wrap_801994a0, 8u, 0u, 1u },    { 0x801994b8u, wrap_801994b8, 8u, 0u, 1u },    { 0x801994c4u, wrap_801994c4, 8u, 0u, 1u },    { 0x801994ccu, wrap_801994cc, 8u, 0u, 1u },    { 0x801994d8u, wrap_801994d8, 8u, 0u, 1u },    { 0x801994fcu, wrap_801994fc, 8u, 0u, 1u },    { 0x80199508u, wrap_80199508, 8u, 0u, 1u },    { 0x80199538u, wrap_80199538, 8u, 0u, 1u },    { 0x8019954cu, wrap_8019954c, 8u, 0u, 1u },    { 0x80199568u, wrap_80199568, 8u, 0u, 1u },    { 0x80199574u, wrap_80199574, 8u, 0u, 1u },    { 0x801995e8u, wrap_801995e8, 8u, 0u, 1u },    { 0x801995ecu, wrap_801995ec, 8u, 0u, 1u },    { 0x80199610u, wrap_80199610, 8u, 0u, 1u },    { 0x80199620u, wrap_80199620, 8u, 0u, 1u },    { 0x80199634u, wrap_80199634, 8u, 0u, 1u },    { 0x80199648u, wrap_80199648, 8u, 0u, 1u },    { 0x8019966cu, wrap_8019966c, 8u, 0u, 1u },    { 0x80199674u, wrap_80199674, 8u, 0u, 1u },    { 0x80199698u, wrap_80199698, 8u, 0u, 1u },    { 0x801996b8u, wrap_801996b8, 8u, 0u, 1u },    { 0x801996bcu, wrap_801996bc, 8u, 0u, 1u },    { 0x801996d0u, wrap_801996d0, 8u, 0u, 1u },    { 0x80199724u, wrap_80199724, 8u, 0u, 1u },    { 0x80199738u, wrap_80199738, 8u, 0u, 1u },    { 0x80199754u, wrap_80199754, 8u, 0u, 1u },    { 0x8019976cu, wrap_8019976c, 8u, 0u, 1u },    { 0x80199788u, wrap_80199788, 8u, 0u, 1u },    { 0x80199790u, wrap_80199790, 8u, 0u, 1u },    { 0x801997acu, wrap_801997ac, 8u, 0u, 1u },    { 0x801997c8u, wrap_801997c8, 8u, 0u, 1u },    { 0x801997dcu, wrap_801997dc, 8u, 0u, 1u },    { 0x801997e8u, wrap_801997e8, 8u, 0u, 1u },    { 0x801997ecu, wrap_801997ec, 8u, 0u, 1u },    { 0x80199808u, wrap_80199808, 8u, 0u, 1u },    { 0x80199820u, wrap_80199820, 8u, 0u, 1u },    { 0x80199834u, wrap_80199834, 8u, 0u, 1u },    { 0x80199844u, wrap_80199844, 8u, 0u, 1u },    { 0x8019986cu, wrap_8019986c, 8u, 0u, 1u },    { 0x8019989cu, wrap_8019989c, 8u, 0u, 1u },    { 0x801998b8u, wrap_801998b8, 8u, 0u, 1u },    { 0x801998c4u, wrap_801998c4, 8u, 0u, 1u },    { 0x801998e0u, wrap_801998e0, 8u, 0u, 1u },    { 0x80199908u, wrap_80199908, 8u, 0u, 1u },    { 0x80199910u, wrap_80199910, 8u, 0u, 1u },    { 0x80199938u, wrap_80199938, 8u, 0u, 1u },    { 0x8019996cu, wrap_8019996c, 8u, 0u, 1u },    { 0x80199974u, wrap_80199974, 8u, 0u, 1u },    { 0x80199988u, wrap_80199988, 8u, 0u, 1u },    { 0x801999a4u, wrap_801999a4, 8u, 0u, 1u },    { 0x801999b0u, wrap_801999b0, 8u, 0u, 1u },    { 0x801999e0u, wrap_801999e0, 8u, 0u, 1u },    { 0x801999f4u, wrap_801999f4, 8u, 0u, 1u },    { 0x80199a10u, wrap_80199a10, 8u, 0u, 1u },    { 0x80199a18u, wrap_80199a18, 8u, 0u, 1u },    { 0x80199a2cu, wrap_80199a2c, 8u, 0u, 1u },    { 0x80199a48u, wrap_80199a48, 8u, 0u, 1u },    { 0x80199a54u, wrap_80199a54, 8u, 0u, 1u },    { 0x80199a70u, wrap_80199a70, 8u, 0u, 1u },    { 0x80199a88u, wrap_80199a88, 8u, 0u, 1u },    { 0x80199aa4u, wrap_80199aa4, 8u, 0u, 1u },    { 0x80199aa8u, wrap_80199aa8, 4u, 0u, 1u },    { 0x80199ab0u, wrap_80199ab0, 21u, 0u, 1u },    { 0x80199ad0u, wrap_80199ad0, 8u, 0u, 1u },    { 0x80199aecu, wrap_80199aec, 6u, 0u, 1u },    { 0x80199afcu, wrap_80199afc, 7u, 0u, 1u },    { 0x80199b10u, wrap_80199b10, 12u, 0u, 1u },    { 0x80199b30u, wrap_80199b30, 21u, 0u, 1u },    { 0x80199b74u, wrap_80199b74, 14u, 0u, 1u },    { 0x80199b9cu, wrap_80199b9c, 9u, 0u, 1u },    { 0x80199bb8u, wrap_80199bb8, 6u, 0u, 1u },    { 0x80199bc8u, wrap_80199bc8, 22u, 0u, 1u },    { 0x80199bd8u, wrap_80199bd8, 8u, 0u, 1u },    { 0x80199bf0u, wrap_80199bf0, 8u, 0u, 1u },    { 0x80199c0cu, wrap_80199c0c, 11u, 0u, 1u },    { 0x80199c14u, wrap_80199c14, 8u, 0u, 1u },    { 0x80199c30u, wrap_80199c30, 11u, 0u, 1u },    { 0x80199c54u, wrap_80199c54, 13u, 0u, 1u },    { 0x80199c78u, wrap_80199c78, 8u, 0u, 1u },    { 0x80199c8cu, wrap_80199c8c, 8u, 0u, 1u },    { 0x80199c94u, wrap_80199c94, 18u, 0u, 1u },    { 0x80199cb0u, wrap_80199cb0, 8u, 0u, 1u },    { 0x80199cccu, wrap_80199ccc, 13u, 0u, 1u },    { 0x80199cf0u, wrap_80199cf0, 31u, 0u, 1u },    { 0x80199d30u, wrap_80199d30, 8u, 0u, 1u },    { 0x80199d44u, wrap_80199d44, 8u, 0u, 1u },    { 0x80199d4cu, wrap_80199d4c, 5u, 0u, 1u },    { 0x80199d5cu, wrap_80199d5c, 13u, 0u, 0u },    { 0x80199d88u, wrap_80199d88, 142u, 48u, 0u },    { 0x80199f30u, wrap_80199f30, 23u, 24u, 0u },    { 0x80199f7cu, wrap_80199f7c, 13u, 24u, 0u },    { 0x80199fa4u, wrap_80199fa4, 10u, 24u, 0u },    { 0x80199fd0u, wrap_80199fd0, 4u, 0u, 0u },    { 0x80199fe0u, wrap_80199fe0, 4u, 0u, 0u },    { 0x80199ffcu, wrap_80199ffc, 5u, 0u, 0u },    { 0x8019a00cu, wrap_8019a00c, 47u, 40u, 1u },    { 0x8019a038u, wrap_8019a038, 8u, 0u, 1u },    { 0x8019a040u, wrap_8019a040, 8u, 0u, 1u },    { 0x8019a048u, wrap_8019a048, 8u, 0u, 1u },    { 0x8019a050u, wrap_8019a050, 8u, 0u, 1u },    { 0x8019a058u, wrap_8019a058, 8u, 0u, 1u },    { 0x8019a060u, wrap_8019a060, 8u, 0u, 1u },    { 0x8019a074u, wrap_8019a074, 8u, 0u, 1u },    { 0x8019a09cu, wrap_8019a09c, 47u, 40u, 1u },    { 0x8019a0c8u, wrap_8019a0c8, 8u, 0u, 1u },    { 0x8019a0d0u, wrap_8019a0d0, 8u, 0u, 1u },    { 0x8019a0d8u, wrap_8019a0d8, 8u, 0u, 1u },    { 0x8019a0e0u, wrap_8019a0e0, 8u, 0u, 1u },    { 0x8019a0e8u, wrap_8019a0e8, 8u, 0u, 1u },    { 0x8019a0f0u, wrap_8019a0f0, 8u, 0u, 1u },    { 0x8019a104u, wrap_8019a104, 8u, 0u, 1u },    { 0x8019a12cu, wrap_8019a12c, 14u, 24u, 0u },    { 0x8019a15cu, wrap_8019a15c, 17u, 24u, 0u },    { 0x8019a194u, wrap_8019a194, 38u, 24u, 0u },    { 0x8019a20cu, wrap_8019a20c, 16u, 24u, 0u },    { 0x8019a244u, wrap_8019a244, 35u, 0u, 0u },    { 0x8019a24cu, wrap_8019a24c, 8u, 16u, 0u },    { 0x8019a2f0u, wrap_8019a2f0, 4u, 0u, 0u },    { 0x8019a300u, wrap_8019a300, 4u, 0u, 0u },    { 0x8019a310u, wrap_8019a310, 4u, 0u, 0u },    { 0x8019a320u, wrap_8019a320, 4u, 0u, 0u },    { 0x8019a330u, wrap_8019a330, 4u, 0u, 0u },    { 0x8019a340u, wrap_8019a340, 4u, 0u, 0u },    { 0x8019a378u, wrap_8019a378, 34u, 0u, 1u },    { 0x8019a388u, wrap_8019a388, 8u, 0u, 1u },    { 0x8019a398u, wrap_8019a398, 8u, 0u, 1u },    { 0x8019a3b8u, wrap_8019a3b8, 8u, 0u, 1u },    { 0x8019a3ccu, wrap_8019a3cc, 8u, 0u, 1u },    { 0x8019a3d4u, wrap_8019a3d4, 8u, 0u, 1u },    { 0x8019a3f0u, wrap_8019a3f0, 30u, 0u, 1u },    { 0x8019a400u, wrap_8019a400, 8u, 0u, 1u },    { 0x8019a410u, wrap_8019a410, 8u, 0u, 1u },    { 0x8019a420u, wrap_8019a420, 8u, 0u, 1u },    { 0x8019a434u, wrap_8019a434, 8u, 0u, 1u },    { 0x8019a43cu, wrap_8019a43c, 8u, 0u, 1u },    { 0x8019a444u, wrap_8019a444, 8u, 0u, 1u },    { 0x8019a460u, wrap_8019a460, 125u, 0u, 0u },    { 0x8019a5d8u, wrap_8019a5d8, 46u, 32u, 1u },    { 0x8019a5fcu, wrap_8019a5fc, 8u, 0u, 1u },    { 0x8019a600u, wrap_8019a600, 8u, 0u, 1u },    { 0x8019a620u, wrap_8019a620, 8u, 0u, 1u },    { 0x8019a62cu, wrap_8019a62c, 8u, 0u, 1u },    { 0x8019a634u, wrap_8019a634, 8u, 0u, 1u },    { 0x8019a640u, wrap_8019a640, 8u, 0u, 1u },    { 0x8019a648u, wrap_8019a648, 8u, 0u, 1u },    { 0x8019a660u, wrap_8019a660, 8u, 0u, 1u },    { 0x8019a670u, wrap_8019a670, 4u, 0u, 0u },    { 0x8019a680u, wrap_8019a680, 16u, 0u, 0u },    { 0x8019a688u, wrap_8019a688, 8u, 24u, 0u },    { 0x8019a6b0u, wrap_8019a6b0, 16u, 0u, 0u },    { 0x8019a6b8u, wrap_8019a6b8, 8u, 24u, 0u },    { 0x8019a6e0u, wrap_8019a6e0, 16u, 0u, 0u },    { 0x8019a6e8u, wrap_8019a6e8, 8u, 24u, 0u },    { 0x8019a710u, wrap_8019a710, 17u, 24u, 0u },    { 0x8019a744u, wrap_8019a744, 16u, 0u, 0u },    { 0x8019a74cu, wrap_8019a74c, 8u, 24u, 0u },    { 0x8019a774u, wrap_8019a774, 16u, 0u, 0u },    { 0x8019a77cu, wrap_8019a77c, 8u, 24u, 0u },    { 0x8019a7a4u, wrap_8019a7a4, 16u, 0u, 0u },    { 0x8019a7acu, wrap_8019a7ac, 8u, 24u, 0u },    { 0x8019a7d4u, wrap_8019a7d4, 5u, 0u, 0u },    { 0x8019a7fcu, wrap_8019a7fc, 9u, 0u, 0u },    { 0x8019a87cu, wrap_8019a87c, 30u, 0u, 1u },    { 0x8019a884u, wrap_8019a884, 8u, 0u, 1u },    { 0x8019a88cu, wrap_8019a88c, 8u, 0u, 1u },    { 0x8019a8a4u, wrap_8019a8a4, 8u, 0u, 1u },    { 0x8019a8b0u, wrap_8019a8b0, 8u, 0u, 1u },    { 0x8019a8c0u, wrap_8019a8c0, 8u, 0u, 1u },    { 0x8019a8d0u, wrap_8019a8d0, 8u, 0u, 1u },    { 0x8019a8d8u, wrap_8019a8d8, 8u, 0u, 1u },    { 0x8019aabcu, wrap_8019aabc, 107u, 40u, 1u },    { 0x8019ab00u, wrap_8019ab00, 8u, 0u, 1u },    { 0x8019ab10u, wrap_8019ab10, 8u, 0u, 1u },    { 0x8019ab2cu, wrap_8019ab2c, 8u, 0u, 1u },    { 0x8019ab4cu, wrap_8019ab4c, 8u, 0u, 1u },    { 0x8019ab6cu, wrap_8019ab6c, 8u, 0u, 1u },    { 0x8019ab74u, wrap_8019ab74, 8u, 0u, 1u },    { 0x8019ab80u, wrap_8019ab80, 8u, 0u, 1u },    { 0x8019ab8cu, wrap_8019ab8c, 8u, 0u, 1u },    { 0x8019ab90u, wrap_8019ab90, 8u, 0u, 1u },    { 0x8019ab98u, wrap_8019ab98, 8u, 0u, 1u },    { 0x8019aba4u, wrap_8019aba4, 8u, 0u, 1u },    { 0x8019aba8u, wrap_8019aba8, 8u, 0u, 1u },    { 0x8019abb0u, wrap_8019abb0, 8u, 0u, 1u },    { 0x8019abbcu, wrap_8019abbc, 8u, 0u, 1u },    { 0x8019abc0u, wrap_8019abc0, 8u, 0u, 1u },    { 0x8019abc8u, wrap_8019abc8, 8u, 0u, 1u },    { 0x8019abd0u, wrap_8019abd0, 8u, 0u, 1u },    { 0x8019abe0u, wrap_8019abe0, 8u, 0u, 1u },    { 0x8019abe4u, wrap_8019abe4, 8u, 0u, 1u },    { 0x8019ac04u, wrap_8019ac04, 59u, 24u, 0u },    { 0x8019aca4u, wrap_8019aca4, 42u, 24u, 0u },    { 0x8019ad1cu, wrap_8019ad1c, 10u, 0u, 0u },    { 0x8019ad48u, wrap_8019ad48, 6u, 0u, 0u },    { 0x8019ad60u, wrap_8019ad60, 4u, 0u, 0u },    { 0x8019ad70u, wrap_8019ad70, 4u, 0u, 0u },    { 0x8019ad80u, wrap_8019ad80, 4u, 0u, 0u },    { 0x8019ad90u, wrap_8019ad90, 27u, 0u, 0u },    { 0x8019ae10u, wrap_8019ae10, 27u, 24u, 0u },    { 0x8019ae68u, wrap_8019ae68, 36u, 0u, 0u },    { 0x8019ae70u, wrap_8019ae70, 8u, 32u, 0u },    { 0x8019af00u, wrap_8019af00, 10u, 0u, 0u },    { 0x8019af30u, wrap_8019af30, 23u, 24u, 0u },    { 0x8019af84u, wrap_8019af84, 8u, 48u, 0u },    { 0x8019b0fcu, wrap_8019b0fc, 52u, 0u, 0u },    { 0x8019b1a8u, wrap_8019b1a8, 10u, 0u, 0u },    { 0x8019b1d0u, wrap_8019b1d0, 7u, 0u, 0u },    { 0x8019b1e4u, wrap_8019b1e4, 5u, 0u, 0u },    { 0x8019b200u, wrap_8019b200, 10u, 24u, 0u },    { 0x8019b220u, wrap_8019b220, 22u, 24u, 0u },    { 0x8019b380u, wrap_8019b380, 4u, 0u, 0u },    { 0x8019b390u, wrap_8019b390, 4u, 0u, 0u },    { 0x8019b3a0u, wrap_8019b3a0, 223u, 32u, 0u },    { 0x8019b620u, wrap_8019b620, 142u, 0u, 0u },    { 0x8019b7e8u, wrap_8019b7e8, 8u, 24u, 0u },    { 0x8019b89cu, wrap_8019b89c, 60u, 0u, 0u },    { 0x8019b8a4u, wrap_8019b8a4, 8u, 32u, 0u },    { 0x8019b944u, wrap_8019b944, 8u, 0u, 0u },    { 0x8019bbc4u, wrap_8019bbc4, 42u, 0u, 0u },    { 0x8019bc48u, wrap_8019bc48, 33u, 32u, 0u },    { 0x8019bcacu, wrap_8019bcac, 22u, 0u, 0u },    { 0x8019bcf0u, wrap_8019bcf0, 47u, 0u, 0u },    { 0x8019be28u, wrap_8019be28, 13u, 0u, 0u },    { 0x8019be50u, wrap_8019be50, 13u, 0u, 0u },    { 0x8019be78u, wrap_8019be78, 30u, 8u, 0u },    { 0x8019bee0u, wrap_8019bee0, 11u, 24u, 0u },    { 0x8019bf10u, wrap_8019bf10, 68u, 24u, 0u },    { 0x8019c060u, wrap_8019c060, 39u, 0u, 0u },    { 0x8019c0f0u, wrap_8019c0f0, 401u, 136u, 0u },    { 0x8019c5d0u, wrap_8019c5d0, 405u, 0u, 0u },    { 0x8019caa0u, wrap_8019caa0, 41u, 0u, 0u },    { 0x8019cb20u, wrap_8019cb20, 11u, 24u, 0u },    { 0x8019cb50u, wrap_8019cb50, 211u, 0u, 0u },    { 0x8019ce10u, wrap_8019ce10, 131u, 56u, 0u },    { 0x8019cfb0u, wrap_8019cfb0, 4u, 0u, 0u },    { 0x8019cfc0u, wrap_8019cfc0, 31u, 24u, 0u },    { 0x8019d030u, wrap_8019d030, 93u, 24u, 0u },    { 0x8019d170u, wrap_8019d170, 18u, 24u, 0u },    { 0x8019d1b0u, wrap_8019d1b0, 21u, 24u, 0u },    { 0x8019d1f0u, wrap_8019d1f0, 11u, 24u, 0u },    { 0x8019d220u, wrap_8019d220, 146u, 0u, 0u },    { 0x8019d3e0u, wrap_8019d3e0, 17u, 24u, 0u },    { 0x8019d410u, wrap_8019d410, 29u, 24u, 0u },    { 0x8019d470u, wrap_8019d470, 28u, 24u, 0u },    { 0x8019d4d0u, wrap_8019d4d0, 14u, 0u, 0u },    { 0x8019d500u, wrap_8019d500, 52u, 0u, 0u },    { 0x8019d5b0u, wrap_8019d5b0, 4u, 0u, 0u },    { 0x8019d5c0u, wrap_8019d5c0, 11u, 0u, 0u },    { 0x8019d5f0u, wrap_8019d5f0, 274u, 0u, 0u },    { 0x8019da44u, wrap_8019da44, 41u, 0u, 0u },    { 0x8019dad0u, wrap_8019dad0, 457u, 56u, 0u },    { 0x8019e0d0u, wrap_8019e0d0, 54u, 0u, 0u },    { 0x8019e2d0u, wrap_8019e2d0, 14u, 24u, 0u },    { 0x8019e320u, wrap_8019e320, 4u, 0u, 0u },    { 0x8019e330u, wrap_8019e330, 31u, 24u, 1u },    { 0x8019e348u, wrap_8019e348, 8u, 0u, 1u },    { 0x8019e350u, wrap_8019e350, 8u, 0u, 1u },    { 0x8019e358u, wrap_8019e358, 8u, 0u, 1u },    { 0x8019e360u, wrap_8019e360, 8u, 0u, 1u },    { 0x8019e364u, wrap_8019e364, 8u, 0u, 1u },    { 0x8019e36cu, wrap_8019e36c, 8u, 0u, 1u },    { 0x8019e374u, wrap_8019e374, 8u, 0u, 1u },    { 0x8019e37cu, wrap_8019e37c, 8u, 0u, 1u },    { 0x8019e384u, wrap_8019e384, 8u, 0u, 1u },    { 0x8019e38cu, wrap_8019e38c, 8u, 0u, 1u },    { 0x8019e39cu, wrap_8019e39c, 16u, 24u, 1u },    { 0x8019e3acu, wrap_8019e3ac, 8u, 0u, 1u },    { 0x8019e3b4u, wrap_8019e3b4, 8u, 0u, 1u },    { 0x8019e3bcu, wrap_8019e3bc, 8u, 0u, 1u },    { 0x8019e3c4u, wrap_8019e3c4, 8u, 0u, 1u },    { 0x8019e3d4u, wrap_8019e3d4, 12u, 24u, 0u },    { 0x8019e400u, wrap_8019e400, 4u, 0u, 0u },    { 0x8019e410u, wrap_8019e410, 4u, 0u, 0u },    { 0x8019e420u, wrap_8019e420, 4u, 0u, 0u },    { 0x8019e680u, wrap_8019e680, 43u, 24u, 0u },    { 0x8019e6f0u, wrap_8019e6f0, 19u, 24u, 0u },    { 0x8019e730u, wrap_8019e730, 33u, 24u, 0u },    { 0x8019ea98u, wrap_8019ea98, 33u, 24u, 0u },    { 0x8019eda8u, wrap_8019eda8, 125u, 56u, 0u },    { 0x8019ef30u, wrap_8019ef30, 23u, 24u, 0u },    { 0x8019ef74u, wrap_8019ef74, 56u, 24u, 0u },    { 0x8019f02cu, wrap_8019f02c, 99u, 32u, 0u },    { 0x8019f168u, wrap_8019f168, 56u, 24u, 0u },    { 0x8019f220u, wrap_8019f220, 99u, 32u, 0u },    { 0x8019f35cu, wrap_8019f35c, 96u, 48u, 0u },    { 0x8019f474u, wrap_8019f474, 98u, 32u, 0u },    { 0x8019f5b4u, wrap_8019f5b4, 96u, 48u, 0u },    { 0x8019f6ccu, wrap_8019f6cc, 98u, 32u, 0u },    { 0x8019f80cu, wrap_8019f80c, 206u, 144u, 0u },    { 0x8019fa6cu, wrap_8019fa6c, 7u, 0u, 0u },    { 0x8019fa80u, wrap_8019fa80, 90u, 0u, 0u },    { 0x8019fb9cu, wrap_8019fb9c, 162u, 80u, 1u },    { 0x8019fbdcu, wrap_8019fbdc, 8u, 0u, 1u },    { 0x8019fbe8u, wrap_8019fbe8, 8u, 0u, 1u },    { 0x8019fbf0u, wrap_8019fbf0, 8u, 0u, 1u },    { 0x8019fbfcu, wrap_8019fbfc, 8u, 0u, 1u },    { 0x8019fc08u, wrap_8019fc08, 8u, 0u, 1u },    { 0x8019fc2cu, wrap_8019fc2c, 8u, 0u, 1u },    { 0x8019fc34u, wrap_8019fc34, 8u, 0u, 1u },    { 0x8019fc3cu, wrap_8019fc3c, 8u, 0u, 1u },    { 0x8019fc44u, wrap_8019fc44, 8u, 0u, 1u },    { 0x8019fc4cu, wrap_8019fc4c, 8u, 0u, 1u },    { 0x8019fc50u, wrap_8019fc50, 8u, 0u, 1u },    { 0x8019fc54u, wrap_8019fc54, 8u, 0u, 1u },    { 0x8019fc5cu, wrap_8019fc5c, 8u, 0u, 1u },    { 0x8019fc64u, wrap_8019fc64, 8u, 0u, 1u },    { 0x8019fc6cu, wrap_8019fc6c, 8u, 0u, 1u },    { 0x8019fc7cu, wrap_8019fc7c, 8u, 0u, 1u },    { 0x8019fc88u, wrap_8019fc88, 8u, 0u, 1u },    { 0x8019fc90u, wrap_8019fc90, 8u, 0u, 1u },    { 0x8019fcb0u, wrap_8019fcb0, 8u, 0u, 1u },    { 0x8019fcc0u, wrap_8019fcc0, 8u, 0u, 1u },    { 0x8019fcd0u, wrap_8019fcd0, 8u, 0u, 1u },    { 0x8019fce8u, wrap_8019fce8, 8u, 0u, 1u },    { 0x8019fcf0u, wrap_8019fcf0, 8u, 0u, 1u },    { 0x8019fd00u, wrap_8019fd00, 8u, 0u, 1u },    { 0x8019fd14u, wrap_8019fd14, 8u, 0u, 1u },    { 0x8019fd24u, wrap_8019fd24, 8u, 0u, 1u },    { 0x8019fd34u, wrap_8019fd34, 8u, 0u, 1u },    { 0x8019fd3cu, wrap_8019fd3c, 8u, 0u, 1u },    { 0x8019fd44u, wrap_8019fd44, 8u, 0u, 1u },    { 0x8019fd54u, wrap_8019fd54, 8u, 0u, 1u },    { 0x8019fd5cu, wrap_8019fd5c, 8u, 0u, 1u },    { 0x8019fd60u, wrap_8019fd60, 8u, 0u, 1u },    { 0x8019fd6cu, wrap_8019fd6c, 8u, 0u, 1u },    { 0x8019fd74u, wrap_8019fd74, 8u, 0u, 1u },    { 0x8019fd78u, wrap_8019fd78, 8u, 0u, 1u },    { 0x8019ff4cu, wrap_8019ff4c, 53u, 24u, 0u },    { 0x801a00bcu, wrap_801a00bc, 21u, 0u, 0u },    { 0x801a0110u, wrap_801a0110, 59u, 24u, 0u },    { 0x801a01bcu, wrap_801a01bc, 33u, 0u, 0u },    { 0x801a0220u, wrap_801a0220, 4u, 0u, 0u },    { 0x801a0230u, wrap_801a0230, 4u, 0u, 0u },    { 0x801a0240u, wrap_801a0240, 4u, 0u, 0u },    { 0x801a0250u, wrap_801a0250, 4u, 0u, 0u },    { 0x801a0260u, wrap_801a0260, 4u, 0u, 0u },    { 0x801a0270u, wrap_801a0270, 4u, 0u, 0u },    { 0x801a0280u, wrap_801a0280, 127u, 40u, 0u },    { 0x801a0520u, wrap_801a0520, 4u, 0u, 0u },    { 0x801a0530u, wrap_801a0530, 53u, 32u, 0u },    { 0x801a05e0u, wrap_801a05e0, 4u, 0u, 0u },    { 0x801a05f0u, wrap_801a05f0, 4u, 0u, 0u },    { 0x801a0600u, wrap_801a0600, 4u, 0u, 0u },    { 0x801a0610u, wrap_801a0610, 4u, 0u, 0u },    { 0x801a0620u, wrap_801a0620, 17u, 24u, 0u },    { 0x801a0660u, wrap_801a0660, 99u, 176u, 1u },    { 0x801a069cu, wrap_801a069c, 8u, 0u, 1u },    { 0x801a06b4u, wrap_801a06b4, 8u, 0u, 1u },    { 0x801a06c0u, wrap_801a06c0, 8u, 0u, 1u },    { 0x801a06ccu, wrap_801a06cc, 8u, 0u, 1u },    { 0x801a06d4u, wrap_801a06d4, 8u, 0u, 1u },    { 0x801a06e4u, wrap_801a06e4, 8u, 0u, 1u },    { 0x801a06ecu, wrap_801a06ec, 8u, 0u, 1u },    { 0x801a06f4u, wrap_801a06f4, 8u, 0u, 1u },    { 0x801a0700u, wrap_801a0700, 8u, 0u, 1u },    { 0x801a0708u, wrap_801a0708, 8u, 0u, 1u },    { 0x801a0710u, wrap_801a0710, 8u, 0u, 1u },    { 0x801a0720u, wrap_801a0720, 8u, 0u, 1u },    { 0x801a0728u, wrap_801a0728, 8u, 0u, 1u },    { 0x801a0734u, wrap_801a0734, 8u, 0u, 1u },    { 0x801a073cu, wrap_801a073c, 8u, 0u, 1u },    { 0x801a0744u, wrap_801a0744, 8u, 0u, 1u },    { 0x801a0750u, wrap_801a0750, 8u, 0u, 1u },    { 0x801a0758u, wrap_801a0758, 8u, 0u, 1u },    { 0x801a076cu, wrap_801a076c, 8u, 0u, 1u },    { 0x801a077cu, wrap_801a077c, 8u, 0u, 1u },    { 0x801a0780u, wrap_801a0780, 8u, 0u, 1u },    { 0x801a07a4u, wrap_801a07a4, 193u, 56u, 0u },    { 0x801a09b0u, wrap_801a09b0, 13u, 0u, 0u },    { 0x801a09e0u, wrap_801a09e0, 4u, 0u, 0u },    { 0x801a09f0u, wrap_801a09f0, 4u, 0u, 0u },    { 0x801a0a00u, wrap_801a0a00, 5u, 0u, 0u },    { 0x801a0a10u, wrap_801a0a10, 37u, 0u, 0u },    { 0x801a0a8cu, wrap_801a0a8c, 33u, 0u, 0u },    { 0x801a0af8u, wrap_801a0af8, 5u, 0u, 0u },    { 0x801a0bb0u, wrap_801a0bb0, 14u, 24u, 0u },    { 0x801a0be0u, wrap_801a0be0, 38u, 24u, 1u },    { 0x801a0bf0u, wrap_801a0bf0, 8u, 0u, 1u },    { 0x801a0c10u, wrap_801a0c10, 8u, 0u, 1u },    { 0x801a0c34u, wrap_801a0c34, 8u, 0u, 1u },    { 0x801a0c58u, wrap_801a0c58, 8u, 0u, 1u },    { 0x801a0c68u, wrap_801a0c68, 101u, 0u, 1u },    { 0x801a0c7cu, wrap_801a0c7c, 8u, 0u, 1u },    { 0x801a0ca0u, wrap_801a0ca0, 8u, 0u, 1u },    { 0x801a0cc4u, wrap_801a0cc4, 8u, 0u, 1u },    { 0x801a0ce8u, wrap_801a0ce8, 8u, 0u, 1u },    { 0x801a0d0cu, wrap_801a0d0c, 8u, 0u, 1u },    { 0x801a0d20u, wrap_801a0d20, 8u, 0u, 1u },    { 0x801a0d30u, wrap_801a0d30, 8u, 0u, 1u },    { 0x801a0d40u, wrap_801a0d40, 8u, 0u, 1u },    { 0x801a0d50u, wrap_801a0d50, 8u, 0u, 1u },    { 0x801a0d60u, wrap_801a0d60, 8u, 0u, 1u },    { 0x801a0d70u, wrap_801a0d70, 8u, 0u, 1u },    { 0x801a0d80u, wrap_801a0d80, 8u, 0u, 1u },    { 0x801a0d90u, wrap_801a0d90, 8u, 0u, 1u },    { 0x801a0d98u, wrap_801a0d98, 8u, 0u, 1u },    { 0x801a0da4u, wrap_801a0da4, 8u, 0u, 1u },    { 0x801a0dacu, wrap_801a0dac, 8u, 0u, 1u },    { 0x801a0dbcu, wrap_801a0dbc, 10u, 24u, 0u },    { 0x801a0e90u, wrap_801a0e90, 90u, 0u, 0u },    { 0x801a0e98u, wrap_801a0e98, 8u, 24u, 0u },    { 0x801a0f98u, wrap_801a0f98, 73u, 24u, 0u },    { 0x801a1070u, wrap_801a1070, 73u, 24u, 0u },    { 0x801a1148u, wrap_801a1148, 19u, 0u, 0u },    { 0x801a1184u, wrap_801a1184, 19u, 0u, 0u },    { 0x801a11c0u, wrap_801a11c0, 4u, 0u, 0u },    { 0x801a11e4u, wrap_801a11e4, 7u, 0u, 0u },    { 0x801a11f8u, wrap_801a11f8, 7u, 0u, 0u },    { 0x801a120cu, wrap_801a120c, 11u, 24u, 0u },    { 0x801a1230u, wrap_801a1230, 10u, 24u, 0u },    { 0x801a1250u, wrap_801a1250, 10u, 24u, 0u },    { 0x801a1270u, wrap_801a1270, 10u, 24u, 0u },    { 0x801a12dcu, wrap_801a12dc, 62u, 0u, 0u },    { 0x801a13a8u, wrap_801a13a8, 77u, 0u, 0u },    { 0x801a161cu, wrap_801a161c, 19u, 0u, 0u },    { 0x801a169cu, wrap_801a169c, 25u, 0u, 0u },    { 0x801a1808u, wrap_801a1808, 15u, 0u, 0u },    { 0x801a1834u, wrap_801a1834, 32u, 0u, 0u },    { 0x801a189cu, wrap_801a189c, 127u, 0u, 0u },    { 0x801a1a2cu, wrap_801a1a2c, 7u, 0u, 0u },    { 0x801a1a40u, wrap_801a1a40, 67u, 24u, 1u },    { 0x801a1a58u, wrap_801a1a58, 8u, 0u, 1u },    { 0x801a1a6cu, wrap_801a1a6c, 8u, 0u, 1u },    { 0x801a1a78u, wrap_801a1a78, 8u, 0u, 1u },    { 0x801a1aa0u, wrap_801a1aa0, 8u, 0u, 1u },    { 0x801a1aa8u, wrap_801a1aa8, 8u, 0u, 1u },    { 0x801a1ac4u, wrap_801a1ac4, 8u, 0u, 1u },    { 0x801a1ae0u, wrap_801a1ae0, 8u, 0u, 1u },    { 0x801a1b0cu, wrap_801a1b0c, 14u, 24u, 0u },    { 0x801a1b50u, wrap_801a1b50, 40u, 32u, 0u },    { 0x801a1e84u, wrap_801a1e84, 28u, 24u, 0u },    { 0x801a1f74u, wrap_801a1f74, 183u, 40u, 0u },    { 0x801a2184u, wrap_801a2184, 205u, 40u, 0u },    { 0x801a23fcu, wrap_801a23fc, 47u, 24u, 0u },    { 0x801a248cu, wrap_801a248c, 12u, 0u, 0u },    { 0x801a24c0u, wrap_801a24c0, 5u, 0u, 0u },    { 0x801a24dcu, wrap_801a24dc, 38u, 24u, 0u },    { 0x801a27d0u, wrap_801a27d0, 17u, 0u, 0u },    { 0x801a2d7cu, wrap_801a2d7c, 37u, 32u, 0u },    { 0x801a2de4u, wrap_801a2de4, 11u, 0u, 0u },    { 0x801a2e00u, wrap_801a2e00, 61u, 0u, 0u },    { 0x801a2fb4u, wrap_801a2fb4, 30u, 24u, 0u },    { 0x801a3014u, wrap_801a3014, 12u, 0u, 0u },    { 0x801a3034u, wrap_801a3034, 8u, 0u, 0u },    { 0x801a3048u, wrap_801a3048, 12u, 0u, 0u },    { 0x801a3068u, wrap_801a3068, 12u, 0u, 0u },    { 0x801a3088u, wrap_801a3088, 12u, 0u, 0u },    { 0x801a30a8u, wrap_801a30a8, 8u, 0u, 0u },    { 0x801a30c0u, wrap_801a30c0, 26u, 24u, 0u },    { 0x801a3108u, wrap_801a3108, 70u, 0u, 0u },    { 0x801a31e0u, wrap_801a31e0, 56u, 0u, 0u },    { 0x801a328cu, wrap_801a328c, 61u, 24u, 0u },    { 0x801a3350u, wrap_801a3350, 92u, 0u, 0u },    { 0x801a36f0u, wrap_801a36f0, 118u, 32u, 1u },    { 0x801a3720u, wrap_801a3720, 8u, 0u, 1u },    { 0x801a37acu, wrap_801a37ac, 8u, 0u, 1u },    { 0x801a37d0u, wrap_801a37d0, 8u, 0u, 1u },    { 0x801a37f8u, wrap_801a37f8, 8u, 0u, 1u },    { 0x801a3808u, wrap_801a3808, 8u, 0u, 1u },    { 0x801a3824u, wrap_801a3824, 8u, 0u, 1u },    { 0x801a382cu, wrap_801a382c, 8u, 0u, 1u },    { 0x801a3850u, wrap_801a3850, 41u, 0u, 0u },    { 0x801a38b8u, wrap_801a38b8, 79u, 40u, 0u },    { 0x801a39acu, wrap_801a39ac, 7u, 0u, 0u },    { 0x801a39bcu, wrap_801a39bc, 58u, 0u, 0u },    { 0x801a3a78u, wrap_801a3a78, 195u, 24u, 0u },    { 0x801a3d50u, wrap_801a3d50, 16u, 0u, 0u },    { 0x801a3d84u, wrap_801a3d84, 80u, 24u, 0u },    { 0x801a3e94u, wrap_801a3e94, 206u, 24u, 0u },    { 0x801a40f8u, wrap_801a40f8, 78u, 24u, 0u },    { 0x801a4210u, wrap_801a4210, 11u, 0u, 0u },    { 0x801a4230u, wrap_801a4230, 49u, 0u, 0u },    { 0x801a42d0u, wrap_801a42d0, 15u, 0u, 0u },    { 0x801a4308u, wrap_801a4308, 98u, 48u, 0u },    { 0x801a4414u, wrap_801a4414, 97u, 40u, 0u },    { 0x801a46c8u, wrap_801a46c8, 65u, 0u, 0u },    { 0x801a482cu, wrap_801a482c, 4u, 0u, 0u },    { 0x801a48fcu, wrap_801a48fc, 74u, 32u, 0u },    { 0x801a49d0u, wrap_801a49d0, 71u, 40u, 0u },    { 0x801a4aa0u, wrap_801a4aa0, 4u, 0u, 0u },    { 0x801a4aacu, wrap_801a4aac, 45u, 32u, 0u },    { 0x801a4be8u, wrap_801a4be8, 39u, 24u, 0u },    { 0x801a4c60u, wrap_801a4c60, 6u, 0u, 0u },    { 0x801a4c74u, wrap_801a4c74, 6u, 0u, 0u },    { 0x801a4cd8u, wrap_801a4cd8, 38u, 24u, 0u },    { 0x801a4e2cu, wrap_801a4e2c, 51u, 24u, 0u },    { 0x801a4ebcu, wrap_801a4ebc, 84u, 0u, 0u },    { 0x801a4fd0u, wrap_801a4fd0, 96u, 0u, 0u },    { 0x801a50d8u, wrap_801a50d8, 41u, 24u, 0u },    { 0x801a5160u, wrap_801a5160, 36u, 24u, 0u },    { 0x801a51d0u, wrap_801a51d0, 33u, 24u, 0u },    { 0x801a536cu, wrap_801a536c, 36u, 24u, 0u },    { 0x801a53e8u, wrap_801a53e8, 41u, 32u, 0u },    { 0x801a54c8u, wrap_801a54c8, 4u, 0u, 0u },    { 0x801a54f8u, wrap_801a54f8, 152u, 0u, 0u },    { 0x801a5698u, wrap_801a5698, 170u, 0u, 0u },    { 0x801a5878u, wrap_801a5878, 148u, 0u, 0u },    { 0x801a5a0cu, wrap_801a5a0c, 163u, 0u, 0u },    { 0x801a5bd0u, wrap_801a5bd0, 162u, 0u, 0u },    { 0x801a5d90u, wrap_801a5d90, 162u, 0u, 0u },    { 0x801a5f50u, wrap_801a5f50, 180u, 0u, 0u },    { 0x801a6150u, wrap_801a6150, 180u, 0u, 0u },    { 0x801a6350u, wrap_801a6350, 174u, 0u, 0u },    { 0x801a6538u, wrap_801a6538, 155u, 0u, 0u },    { 0x801a66dcu, wrap_801a66dc, 155u, 0u, 0u },    { 0x801a6880u, wrap_801a6880, 174u, 0u, 0u },    { 0x801a6a68u, wrap_801a6a68, 45u, 32u, 0u },    { 0x801a6ae8u, wrap_801a6ae8, 11u, 24u, 0u },    { 0x801a6b0cu, wrap_801a6b0c, 35u, 32u, 0u },    { 0x801a6bb8u, wrap_801a6bb8, 4u, 0u, 0u },    { 0x801a6bc4u, wrap_801a6bc4, 4u, 0u, 0u },    { 0x801a6bd0u, wrap_801a6bd0, 149u, 96u, 0u },    { 0x801a6f44u, wrap_801a6f44, 90u, 40u, 0u },    { 0x801a7038u, wrap_801a7038, 220u, 48u, 0u },    { 0x801a72a0u, wrap_801a72a0, 115u, 48u, 0u },    { 0x801a73e4u, wrap_801a73e4, 30u, 0u, 0u },    { 0x801a7444u, wrap_801a7444, 27u, 0u, 0u },    { 0x801a7498u, wrap_801a7498, 28u, 0u, 0u },    { 0x801a74f0u, wrap_801a74f0, 27u, 0u, 0u },    { 0x801a7570u, wrap_801a7570, 1565u, 72u, 0u },    { 0x801a863cu, wrap_801a863c, 45u, 32u, 0u },    { 0x801a86bcu, wrap_801a86bc, 42u, 24u, 0u },    { 0x801a8744u, wrap_801a8744, 42u, 24u, 0u },    { 0x801a87ccu, wrap_801a87cc, 42u, 24u, 0u },    { 0x801a8854u, wrap_801a8854, 42u, 24u, 0u },    { 0x801a88dcu, wrap_801a88dc, 257u, 40u, 0u },    { 0x801a8bc8u, wrap_801a8bc8, 273u, 40u, 0u },    { 0x801a953cu, wrap_801a953c, 106u, 48u, 0u },    { 0x801a9644u, wrap_801a9644, 91u, 48u, 0u },    { 0x801a972cu, wrap_801a972c, 88u, 24u, 1u },    { 0x801a9740u, wrap_801a9740, 8u, 0u, 1u },    { 0x801a9748u, wrap_801a9748, 8u, 0u, 1u },    { 0x801a975cu, wrap_801a975c, 8u, 0u, 1u },    { 0x801a976cu, wrap_801a976c, 8u, 0u, 1u },    { 0x801a9770u, wrap_801a9770, 8u, 0u, 1u },    { 0x801a9778u, wrap_801a9778, 8u, 0u, 1u },    { 0x801a9784u, wrap_801a9784, 8u, 0u, 1u },    { 0x801a97a0u, wrap_801a97a0, 8u, 0u, 1u },    { 0x801a97c4u, wrap_801a97c4, 8u, 0u, 1u },    { 0x801a97dcu, wrap_801a97dc, 8u, 0u, 1u },    { 0x801a97e8u, wrap_801a97e8, 8u, 0u, 1u },    { 0x801a97f0u, wrap_801a97f0, 8u, 0u, 1u },    { 0x801a9810u, wrap_801a9810, 8u, 0u, 1u },    { 0x801a9820u, wrap_801a9820, 8u, 0u, 1u },    { 0x801a9828u, wrap_801a9828, 8u, 0u, 1u },    { 0x801a9830u, wrap_801a9830, 8u, 0u, 1u },    { 0x801a983cu, wrap_801a983c, 8u, 0u, 1u },    { 0x801a984cu, wrap_801a984c, 119u, 40u, 0u },    { 0x801a99e0u, wrap_801a99e0, 88u, 24u, 0u },    { 0x801a9bc0u, wrap_801a9bc0, 33u, 24u, 0u },    { 0x801a9c24u, wrap_801a9c24, 4u, 48u, 0u },    { 0x801aa0e4u, wrap_801aa0e4, 42u, 0u, 0u },    { 0x801aa168u, wrap_801aa168, 40u, 0u, 0u },    { 0x801aa1e4u, wrap_801aa1e4, 78u, 0u, 0u },    { 0x801aa244u, wrap_801aa244, 8u, 0u, 0u },    { 0x801aa2acu, wrap_801aa2ac, 8u, 0u, 0u },    { 0x801aa2c8u, wrap_801aa2c8, 27u, 0u, 0u },    { 0x801aa320u, wrap_801aa320, 26u, 0u, 0u },    { 0x801aa374u, wrap_801aa374, 45u, 0u, 0u },    { 0x801aa3fcu, wrap_801aa3fc, 45u, 32u, 0u },    { 0x801aa47cu, wrap_801aa47c, 45u, 32u, 0u },    { 0x801aa4fcu, wrap_801aa4fc, 29u, 32u, 0u },    { 0x801aa96cu, wrap_801aa96c, 321u, 0u, 0u },    { 0x801aad04u, wrap_801aad04, 7u, 0u, 0u },    { 0x801aad24u, wrap_801aad24, 57u, 32u, 0u },    { 0x801aadc4u, wrap_801aadc4, 24u, 24u, 0u },    { 0x801aae08u, wrap_801aae08, 574u, 0u, 0u },    { 0x801ac070u, wrap_801ac070, 35u, 32u, 0u },    { 0x801ac0d4u, wrap_801ac0d4, 45u, 32u, 0u },    { 0x801ac154u, wrap_801ac154, 163u, 40u, 0u },    { 0x801ac334u, wrap_801ac334, 386u, 56u, 0u },    { 0x801ac758u, wrap_801ac758, 133u, 32u, 0u },    { 0x801ac9b8u, wrap_801ac9b8, 105u, 0u, 0u },    { 0x801acb08u, wrap_801acb08, 199u, 0u, 0u },    { 0x801acd3cu, wrap_801acd3c, 45u, 32u, 0u },    { 0x801acdbcu, wrap_801acdbc, 48u, 24u, 0u },    { 0x801ace48u, wrap_801ace48, 93u, 56u, 0u },    { 0x801acf34u, wrap_801acf34, 32u, 24u, 0u },    { 0x801acf94u, wrap_801acf94, 7u, 0u, 0u },    { 0x801acfb4u, wrap_801acfb4, 13u, 0u, 0u },    { 0x801acfe4u, wrap_801acfe4, 45u, 0u, 0u },    { 0x801ad070u, wrap_801ad070, 52u, 0u, 0u },    { 0x801ad11cu, wrap_801ad11c, 33u, 0u, 0u },    { 0x801ad180u, wrap_801ad180, 33u, 0u, 0u },    { 0x801ad1e4u, wrap_801ad1e4, 10u, 0u, 0u },    { 0x801ad224u, wrap_801ad224, 11u, 0u, 0u },    { 0x801ad240u, wrap_801ad240, 13u, 0u, 0u },    { 0x801ad260u, wrap_801ad260, 16u, 0u, 0u },    { 0x801ad284u, wrap_801ad284, 7u, 0u, 0u },    { 0x801ad298u, wrap_801ad298, 24u, 24u, 0u },    { 0x801ad2e8u, wrap_801ad2e8, 59u, 32u, 0u },    { 0x801ad38cu, wrap_801ad38c, 55u, 32u, 0u },    { 0x801ad424u, wrap_801ad424, 50u, 40u, 0u },    { 0x801ad4acu, wrap_801ad4ac, 44u, 40u, 0u },    { 0x801ad59cu, wrap_801ad59c, 10u, 0u, 0u },    { 0x801ad5d0u, wrap_801ad5d0, 45u, 32u, 0u },    { 0x801ad668u, wrap_801ad668, 17u, 0u, 0u },    { 0x801ad698u, wrap_801ad698, 7u, 0u, 0u },    { 0x801ad6acu, wrap_801ad6ac, 17u, 0u, 0u },    { 0x801ad6dcu, wrap_801ad6dc, 7u, 0u, 0u },    { 0x801ad6f0u, wrap_801ad6f0, 31u, 32u, 0u },    { 0x801ad920u, wrap_801ad920, 9u, 0u, 0u },    { 0x801ad964u, wrap_801ad964, 4u, 0u, 0u },    { 0x801ad96cu, wrap_801ad96c, 4u, 0u, 0u },    { 0x801ad984u, wrap_801ad984, 7u, 0u, 0u },    { 0x801ad994u, wrap_801ad994, 7u, 0u, 0u },    { 0x801ad9d4u, wrap_801ad9d4, 10u, 0u, 0u },    { 0x801ada24u, wrap_801ada24, 10u, 0u, 0u },    { 0x801adaa4u, wrap_801adaa4, 14u, 0u, 0u },    { 0x801adac8u, wrap_801adac8, 12u, 0u, 0u },    { 0x801adc48u, wrap_801adc48, 9u, 0u, 0u },    { 0x801adc60u, wrap_801adc60, 22u, 24u, 0u },    { 0x801adca4u, wrap_801adca4, 15u, 24u, 0u },    { 0x801adcccu, wrap_801adccc, 15u, 24u, 0u },    { 0x801add38u, wrap_801add38, 13u, 0u, 0u },    { 0x801add84u, wrap_801add84, 17u, 0u, 0u },    { 0x801addb4u, wrap_801addb4, 17u, 0u, 0u },    { 0x801ae490u, wrap_801ae490, 10u, 0u, 0u },    { 0x801ae65cu, wrap_801ae65c, 10u, 0u, 0u },    { 0x801ae68cu, wrap_801ae68c, 11u, 0u, 0u },    { 0x801ae85cu, wrap_801ae85c, 30u, 32u, 0u },    { 0x801ae8a8u, wrap_801ae8a8, 19u, 24u, 0u },    { 0x801ae8dcu, wrap_801ae8dc, 25u, 24u, 0u },    { 0x801ae91cu, wrap_801ae91c, 32u, 24u, 0u },    { 0x801aea20u, wrap_801aea20, 44u, 24u, 0u },    { 0x801aea94u, wrap_801aea94, 54u, 24u, 0u },    { 0x801aebd0u, wrap_801aebd0, 24u, 24u, 0u },    { 0x801aec10u, wrap_801aec10, 15u, 24u, 0u },    { 0x801aec40u, wrap_801aec40, 39u, 32u, 0u },    { 0x801aecdcu, wrap_801aecdc, 4u, 24u, 0u },    { 0x801aed3cu, wrap_801aed3c, 45u, 24u, 1u },    { 0x801aed58u, wrap_801aed58, 8u, 0u, 1u },    { 0x801aed80u, wrap_801aed80, 8u, 0u, 1u },    { 0x801aed88u, wrap_801aed88, 8u, 0u, 1u },    { 0x801aedacu, wrap_801aedac, 8u, 0u, 1u },    { 0x801aedbcu, wrap_801aedbc, 57u, 24u, 1u },    { 0x801aedd8u, wrap_801aedd8, 8u, 0u, 1u },    { 0x801aee10u, wrap_801aee10, 8u, 0u, 1u },    { 0x801aee18u, wrap_801aee18, 8u, 0u, 1u },    { 0x801aee48u, wrap_801aee48, 8u, 0u, 1u },    { 0x801aef18u, wrap_801aef18, 82u, 24u, 1u },    { 0x801aef38u, wrap_801aef38, 8u, 0u, 1u },    { 0x801aef90u, wrap_801aef90, 8u, 0u, 1u },    { 0x801aef98u, wrap_801aef98, 8u, 0u, 1u },    { 0x801aefe8u, wrap_801aefe8, 8u, 0u, 1u },    { 0x801aeff8u, wrap_801aeff8, 26u, 24u, 0u },    { 0x801af040u, wrap_801af040, 26u, 24u, 0u },    { 0x801af094u, wrap_801af094, 4u, 0u, 0u },    { 0x801af114u, wrap_801af114, 4u, 0u, 0u },    { 0x801af1a4u, wrap_801af1a4, 4u, 0u, 0u },    { 0x801af238u, wrap_801af238, 4u, 0u, 0u },    { 0x801af284u, wrap_801af284, 4u, 0u, 0u },    { 0x801af2dcu, wrap_801af2dc, 18u, 24u, 0u },    { 0x801af310u, wrap_801af310, 4u, 0u, 0u },    { 0x801af354u, wrap_801af354, 18u, 24u, 0u },    { 0x801af388u, wrap_801af388, 4u, 0u, 0u },    { 0x801af3ccu, wrap_801af3cc, 15u, 24u, 0u },    { 0x801af3f8u, wrap_801af3f8, 15u, 24u, 0u },    { 0x801af424u, wrap_801af424, 4u, 0u, 0u },    { 0x801af45cu, wrap_801af45c, 4u, 0u, 0u },    { 0x801af494u, wrap_801af494, 13u, 24u, 0u },    { 0x801af4bcu, wrap_801af4bc, 13u, 24u, 0u },    { 0x801af4e4u, wrap_801af4e4, 18u, 24u, 0u },    { 0x801af518u, wrap_801af518, 13u, 24u, 0u },    { 0x801af540u, wrap_801af540, 13u, 24u, 0u },    { 0x801af568u, wrap_801af568, 18u, 24u, 0u },    { 0x801af59cu, wrap_801af59c, 13u, 24u, 0u },    { 0x801af5c4u, wrap_801af5c4, 10u, 24u, 0u },    { 0x801af5e4u, wrap_801af5e4, 10u, 24u, 0u },    { 0x801af604u, wrap_801af604, 10u, 24u, 0u },    { 0x801af624u, wrap_801af624, 4u, 0u, 0u },    { 0x801af678u, wrap_801af678, 13u, 24u, 0u },    { 0x801af6a0u, wrap_801af6a0, 16u, 24u, 0u },    { 0x801af6d0u, wrap_801af6d0, 4u, 0u, 0u },    { 0x801af710u, wrap_801af710, 4u, 0u, 0u },    { 0x801af758u, wrap_801af758, 44u, 24u, 0u },    { 0x801af7d4u, wrap_801af7d4, 17u, 24u, 0u },    { 0x801af804u, wrap_801af804, 12u, 24u, 0u },    { 0x801af828u, wrap_801af828, 12u, 24u, 0u },    { 0x801af84cu, wrap_801af84c, 12u, 24u, 0u },    { 0x801af870u, wrap_801af870, 15u, 24u, 0u },    { 0x801af89cu, wrap_801af89c, 12u, 24u, 0u },    { 0x801af8c0u, wrap_801af8c0, 12u, 24u, 0u },    { 0x801af8e4u, wrap_801af8e4, 12u, 24u, 0u },    { 0x801af908u, wrap_801af908, 16u, 24u, 0u },    { 0x801afa30u, wrap_801afa30, 4u, 0u, 0u },    { 0x801afa80u, wrap_801afa80, 4u, 0u, 0u },    { 0x801afad0u, wrap_801afad0, 4u, 0u, 0u },    { 0x801afd38u, wrap_801afd38, 10u, 0u, 0u },    { 0x801afd50u, wrap_801afd50, 10u, 0u, 0u },    { 0x801aff20u, wrap_801aff20, 29u, 0u, 0u },    { 0x801b0228u, wrap_801b0228, 10u, 0u, 0u },    { 0x801b0240u, wrap_801b0240, 137u, 24u, 0u },    { 0x801b0584u, wrap_801b0584, 29u, 0u, 0u },    { 0x801b05d8u, wrap_801b05d8, 55u, 0u, 0u },    { 0x801b0684u, wrap_801b0684, 4u, 0u, 0u },    { 0x801b0688u, wrap_801b0688, 9u, 0u, 0u },    { 0x801b06a4u, wrap_801b06a4, 121u, 0u, 0u },    { 0x801b07d0u, wrap_801b07d0, 4u, 0u, 0u },    { 0x801b0db8u, wrap_801b0db8, 278u, 48u, 0u },    { 0x801b1140u, wrap_801b1140, 8u, 0u, 0u },};
+    { 0x80126170u, wrap_80126170, 4u, 0u, 0u },    { 0x80126234u, wrap_80126234, 17u, 64u, 1u },    { 0x80126258u, wrap_80126258, 8u, 0u, 1u },    { 0x80126720u, wrap_80126720, 6u, 24u, 0u },    { 0x801267dcu, wrap_801267dc, 8u, 24u, 0u },    { 0x80126848u, wrap_80126848, 4u, 0u, 0u },    { 0x80126870u, wrap_80126870, 9u, 48u, 0u },    { 0x80126f04u, wrap_80126f04, 112u, 32u, 0u },    { 0x8012708cu, wrap_8012708c, 311u, 48u, 0u },    { 0x80127424u, wrap_80127424, 30u, 24u, 0u },    { 0x8012748cu, wrap_8012748c, 16u, 24u, 0u },    { 0x801274c4u, wrap_801274c4, 6u, 0u, 0u },    { 0x801274d8u, wrap_801274d8, 5u, 0u, 0u },    { 0x801274e8u, wrap_801274e8, 7u, 0u, 0u },    { 0x801274fcu, wrap_801274fc, 16u, 0u, 0u },    { 0x80127524u, wrap_80127524, 16u, 24u, 0u },    { 0x8012755cu, wrap_8012755c, 10u, 0u, 0u },    { 0x80127574u, wrap_80127574, 101u, 24u, 0u },    { 0x80127680u, wrap_80127680, 4u, 0u, 0u },    { 0x8012768cu, wrap_8012768c, 220u, 1072u, 0u },    { 0x801279c8u, wrap_801279c8, 4u, 0u, 0u },    { 0x801279d0u, wrap_801279d0, 10u, 0u, 0u },    { 0x801279f4u, wrap_801279f4, 79u, 0u, 0u },    { 0x80127ae0u, wrap_80127ae0, 32u, 0u, 0u },    { 0x80127b64u, wrap_80127b64, 39u, 0u, 0u },    { 0x80127be4u, wrap_80127be4, 47u, 0u, 0u },    { 0x80127c60u, wrap_80127c60, 582u, 0u, 0u },    { 0x80128268u, wrap_80128268, 168u, 0u, 0u },    { 0x80128898u, wrap_80128898, 30u, 24u, 0u },    { 0x801289b4u, wrap_801289b4, 9u, 0u, 0u },    { 0x80128b28u, wrap_80128b28, 47u, 24u, 0u },    { 0x80128becu, wrap_80128bec, 6u, 0u, 0u },    { 0x80128bfcu, wrap_80128bfc, 6u, 0u, 0u },    { 0x80128c18u, wrap_80128c18, 28u, 40u, 0u },    { 0x80128d98u, wrap_80128d98, 17u, 24u, 0u },    { 0x80128ef0u, wrap_80128ef0, 36u, 24u, 0u },    { 0x80128f98u, wrap_80128f98, 4u, 0u, 0u },    { 0x80129218u, wrap_80129218, 13u, 32u, 0u },    { 0x801294ccu, wrap_801294cc, 4u, 24u, 0u },    { 0x80129540u, wrap_80129540, 9u, 32u, 0u },    { 0x80129660u, wrap_80129660, 4u, 32u, 0u },    { 0x80129710u, wrap_80129710, 22u, 32u, 0u },    { 0x801297dcu, wrap_801297dc, 13u, 32u, 0u },    { 0x80129910u, wrap_80129910, 4u, 24u, 0u },    { 0x80129944u, wrap_80129944, 16u, 24u, 0u },    { 0x80129978u, wrap_80129978, 18u, 48u, 0u },    { 0x80129a6cu, wrap_80129a6c, 32u, 40u, 0u },    { 0x80129b48u, wrap_80129b48, 6u, 32u, 0u },    { 0x80129c10u, wrap_80129c10, 34u, 40u, 0u },    { 0x80129d5cu, wrap_80129d5c, 27u, 40u, 0u },    { 0x80129e40u, wrap_80129e40, 49u, 40u, 0u },    { 0x80129f1cu, wrap_80129f1c, 20u, 24u, 0u },    { 0x80129f64u, wrap_80129f64, 4u, 0u, 0u },    { 0x80129f78u, wrap_80129f78, 15u, 0u, 0u },    { 0x80129fc4u, wrap_80129fc4, 15u, 0u, 0u },    { 0x80129ff4u, wrap_80129ff4, 6u, 0u, 0u },    { 0x8012a030u, wrap_8012a030, 27u, 0u, 0u },    { 0x8012a088u, wrap_8012a088, 11u, 24u, 0u },    { 0x8012a0f0u, wrap_8012a0f0, 26u, 40u, 0u },    { 0x8012a30cu, wrap_8012a30c, 9u, 0u, 0u },    { 0x8012a4b4u, wrap_8012a4b4, 11u, 0u, 0u },    { 0x8012a4dcu, wrap_8012a4dc, 11u, 0u, 0u },    { 0x8012a504u, wrap_8012a504, 6u, 56u, 0u },    { 0x8012a5b8u, wrap_8012a5b8, 4u, 40u, 0u },    { 0x8012a650u, wrap_8012a650, 6u, 0u, 0u },    { 0x8012a72cu, wrap_8012a72c, 44u, 32u, 0u },    { 0x8012a884u, wrap_8012a884, 45u, 48u, 0u },    { 0x8012aa6cu, wrap_8012aa6c, 7u, 0u, 0u },    { 0x8012aaa8u, wrap_8012aaa8, 5u, 0u, 0u },    { 0x8012aab8u, wrap_8012aab8, 4u, 0u, 0u },    { 0x8012aae4u, wrap_8012aae4, 30u, 40u, 0u },    { 0x8012adf8u, wrap_8012adf8, 9u, 24u, 0u },    { 0x8012ae3cu, wrap_8012ae3c, 50u, 32u, 0u },    { 0x8012aeecu, wrap_8012aeec, 52u, 48u, 0u },    { 0x8012b23cu, wrap_8012b23c, 35u, 40u, 0u },    { 0x8012b46cu, wrap_8012b46c, 11u, 0u, 0u },    { 0x8012b488u, wrap_8012b488, 6u, 0u, 0u },    { 0x8012b49cu, wrap_8012b49c, 40u, 32u, 0u },    { 0x8012b55cu, wrap_8012b55c, 39u, 32u, 0u },    { 0x8012ba04u, wrap_8012ba04, 63u, 0u, 0u },    { 0x8012bf0cu, wrap_8012bf0c, 28u, 64u, 0u },    { 0x8012c0b4u, wrap_8012c0b4, 41u, 40u, 0u },    { 0x8012c374u, wrap_8012c374, 54u, 80u, 0u },    { 0x8012cbc0u, wrap_8012cbc0, 52u, 40u, 0u },    { 0x8012cc6cu, wrap_8012cc6c, 113u, 304u, 0u },    { 0x8012cd9cu, wrap_8012cd9c, 18u, 0u, 0u },    { 0x8012cdd8u, wrap_8012cdd8, 19u, 0u, 0u },    { 0x8012ce20u, wrap_8012ce20, 5u, 0u, 0u },    { 0x8012ce30u, wrap_8012ce30, 114u, 304u, 0u },    { 0x8012cf64u, wrap_8012cf64, 117u, 312u, 0u },    { 0x8012d090u, wrap_8012d090, 72u, 48u, 0u },    { 0x8012d154u, wrap_8012d154, 1007u, 48u, 0u },    { 0x8012dce4u, wrap_8012dce4, 317u, 24u, 0u },    { 0x8012e078u, wrap_8012e078, 52u, 24u, 0u },    { 0x8012e100u, wrap_8012e100, 51u, 24u, 0u },    { 0x8012e184u, wrap_8012e184, 54u, 24u, 0u },    { 0x8012e214u, wrap_8012e214, 53u, 24u, 0u },    { 0x8012e2a0u, wrap_8012e2a0, 56u, 24u, 0u },    { 0x8012e334u, wrap_8012e334, 54u, 24u, 0u },    { 0x8012e3c4u, wrap_8012e3c4, 56u, 24u, 0u },    { 0x8012e45cu, wrap_8012e45c, 56u, 24u, 0u },    { 0x8012e4f4u, wrap_8012e4f4, 57u, 24u, 0u },    { 0x8012e58cu, wrap_8012e58c, 54u, 24u, 0u },    { 0x8012e61cu, wrap_8012e61c, 53u, 24u, 0u },    { 0x8012e6a8u, wrap_8012e6a8, 55u, 24u, 0u },    { 0x8012e73cu, wrap_8012e73c, 54u, 24u, 0u },    { 0x8012e7ccu, wrap_8012e7cc, 54u, 24u, 0u },    { 0x8012e85cu, wrap_8012e85c, 53u, 24u, 0u },    { 0x8012e8e8u, wrap_8012e8e8, 55u, 24u, 0u },    { 0x8012e97cu, wrap_8012e97c, 56u, 0u, 0u },    { 0x8012ea18u, wrap_8012ea18, 42u, 0u, 0u },    { 0x8012eaa8u, wrap_8012eaa8, 70u, 48u, 0u },    { 0x8012eb74u, wrap_8012eb74, 109u, 56u, 0u },    { 0x8012ecbcu, wrap_8012ecbc, 101u, 72u, 0u },    { 0x8012ee0cu, wrap_8012ee0c, 20u, 0u, 0u },    { 0x8012ee48u, wrap_8012ee48, 110u, 32u, 0u },    { 0x8012ef6cu, wrap_8012ef6c, 62u, 24u, 0u },    { 0x8012f024u, wrap_8012f024, 133u, 32u, 0u },    { 0x8012f164u, wrap_8012f164, 13u, 32u, 0u },    { 0x8012f2a8u, wrap_8012f2a8, 708u, 96u, 0u },    { 0x8012fb04u, wrap_8012fb04, 5u, 0u, 0u },    { 0x8012fb10u, wrap_8012fb10, 26u, 168u, 0u },    { 0x80132084u, wrap_80132084, 60u, 40u, 0u },    { 0x80132128u, wrap_80132128, 88u, 40u, 0u },    { 0x80132224u, wrap_80132224, 107u, 32u, 0u },    { 0x8013237cu, wrap_8013237c, 167u, 32u, 0u },    { 0x8013258cu, wrap_8013258c, 113u, 40u, 0u },    { 0x801326d4u, wrap_801326d4, 143u, 48u, 0u },    { 0x801329d8u, wrap_801329d8, 135u, 88u, 0u },    { 0x80132d70u, wrap_80132d70, 217u, 88u, 0u },    { 0x80132fdcu, wrap_80132fdc, 73u, 96u, 0u },    { 0x80133328u, wrap_80133328, 97u, 96u, 0u },    { 0x80133708u, wrap_80133708, 34u, 24u, 0u },    { 0x80133828u, wrap_80133828, 36u, 0u, 0u },    { 0x801338c4u, wrap_801338c4, 16u, 0u, 0u },    { 0x80133944u, wrap_80133944, 130u, 72u, 0u },    { 0x80133aa0u, wrap_80133aa0, 135u, 80u, 0u },    { 0x80133c08u, wrap_80133c08, 53u, 72u, 0u },    { 0x80133db0u, wrap_80133db0, 94u, 56u, 0u },    { 0x80133f30u, wrap_80133f30, 114u, 48u, 0u },    { 0x801340f0u, wrap_801340f0, 16u, 24u, 0u },    { 0x80134128u, wrap_80134128, 42u, 32u, 0u },    { 0x801341a0u, wrap_801341a0, 51u, 40u, 0u },    { 0x80134234u, wrap_80134234, 51u, 48u, 0u },    { 0x801343bcu, wrap_801343bc, 221u, 56u, 0u },    { 0x80134b34u, wrap_80134b34, 84u, 40u, 0u },    { 0x80134e44u, wrap_80134e44, 76u, 40u, 0u },    { 0x80134f2cu, wrap_80134f2c, 114u, 48u, 0u },    { 0x80135078u, wrap_80135078, 35u, 32u, 0u },    { 0x801350dcu, wrap_801350dc, 39u, 32u, 0u },    { 0x8013514cu, wrap_8013514c, 16u, 24u, 0u },    { 0x80135180u, wrap_80135180, 72u, 112u, 0u },    { 0x80135724u, wrap_80135724, 8u, 0u, 0u },    { 0x801358e8u, wrap_801358e8, 103u, 40u, 0u },    { 0x80135a14u, wrap_80135a14, 154u, 48u, 0u },    { 0x80136090u, wrap_80136090, 18u, 24u, 0u },    { 0x801360ccu, wrap_801360cc, 19u, 0u, 0u },    { 0x80136114u, wrap_80136114, 46u, 56u, 0u },    { 0x801365a4u, wrap_801365a4, 70u, 88u, 0u },    { 0x80136b64u, wrap_80136b64, 4u, 64u, 0u },    { 0x80136d28u, wrap_80136d28, 73u, 24u, 0u },    { 0x80136ddcu, wrap_80136ddc, 78u, 48u, 0u },    { 0x80136f70u, wrap_80136f70, 4u, 0u, 0u },    { 0x80136f78u, wrap_80136f78, 4u, 0u, 0u },    { 0x80136f80u, wrap_80136f80, 4u, 0u, 0u },    { 0x80136fb0u, wrap_80136fb0, 44u, 24u, 0u },    { 0x80137048u, wrap_80137048, 13u, 24u, 0u },    { 0x80137098u, wrap_80137098, 361u, 56u, 0u },    { 0x80137570u, wrap_80137570, 4u, 0u, 0u },    { 0x80137578u, wrap_80137578, 11u, 0u, 0u },    { 0x80137590u, wrap_80137590, 31u, 0u, 0u },    { 0x801375e8u, wrap_801375e8, 7u, 0u, 0u },    { 0x80137600u, wrap_80137600, 45u, 32u, 0u },    { 0x80137680u, wrap_80137680, 142u, 0u, 0u },    { 0x80137824u, wrap_80137824, 8u, 24u, 0u },    { 0x80137accu, wrap_80137acc, 18u, 0u, 0u },    { 0x80137cd0u, wrap_80137cd0, 31u, 0u, 0u },    { 0x80137e70u, wrap_80137e70, 59u, 48u, 0u },    { 0x80137f0cu, wrap_80137f0c, 67u, 48u, 0u },    { 0x80137fb8u, wrap_80137fb8, 49u, 40u, 0u },    { 0x80138040u, wrap_80138040, 17u, 48u, 0u },    { 0x801380e4u, wrap_801380e4, 9u, 112u, 0u },    { 0x801385dcu, wrap_801385dc, 189u, 64u, 0u },    { 0x801387dcu, wrap_801387dc, 45u, 32u, 0u },    { 0x8013885cu, wrap_8013885c, 47u, 24u, 0u },    { 0x8013893cu, wrap_8013893c, 79u, 24u, 0u },    { 0x80138a24u, wrap_80138a24, 79u, 0u, 0u },    { 0x80138b00u, wrap_80138b00, 139u, 0u, 0u },    { 0x80138c6cu, wrap_80138c6c, 45u, 32u, 0u },    { 0x80138cecu, wrap_80138cec, 561u, 64u, 1u },    { 0x80138d34u, wrap_80138d34, 8u, 0u, 1u },    { 0x80138d54u, wrap_80138d54, 8u, 0u, 1u },    { 0x80138d64u, wrap_80138d64, 8u, 0u, 1u },    { 0x80138d6cu, wrap_80138d6c, 8u, 0u, 1u },    { 0x80138d74u, wrap_80138d74, 8u, 0u, 1u },    { 0x80138d84u, wrap_80138d84, 8u, 0u, 1u },    { 0x80138da0u, wrap_80138da0, 8u, 0u, 1u },    { 0x80138dccu, wrap_80138dcc, 8u, 0u, 1u },    { 0x80138dd4u, wrap_80138dd4, 8u, 0u, 1u },    { 0x80138dd8u, wrap_80138dd8, 8u, 0u, 1u },    { 0x80138e04u, wrap_80138e04, 8u, 0u, 1u },    { 0x80138e0cu, wrap_80138e0c, 8u, 0u, 1u },    { 0x80138e10u, wrap_80138e10, 8u, 0u, 1u },    { 0x80138e3cu, wrap_80138e3c, 8u, 0u, 1u },    { 0x80138e44u, wrap_80138e44, 8u, 0u, 1u },    { 0x80138e54u, wrap_80138e54, 8u, 0u, 1u },    { 0x80138e70u, wrap_80138e70, 8u, 0u, 1u },    { 0x80138e9cu, wrap_80138e9c, 8u, 0u, 1u },    { 0x80138ea4u, wrap_80138ea4, 8u, 0u, 1u },    { 0x80138ea8u, wrap_80138ea8, 8u, 0u, 1u },    { 0x80138ed4u, wrap_80138ed4, 8u, 0u, 1u },    { 0x80138edcu, wrap_80138edc, 8u, 0u, 1u },    { 0x80138ee0u, wrap_80138ee0, 8u, 0u, 1u },    { 0x80138f0cu, wrap_80138f0c, 8u, 0u, 1u },    { 0x80138f14u, wrap_80138f14, 8u, 0u, 1u },    { 0x80138f18u, wrap_80138f18, 8u, 0u, 1u },    { 0x80138f24u, wrap_80138f24, 8u, 0u, 1u },    { 0x80138f2cu, wrap_80138f2c, 8u, 0u, 1u },    { 0x80138f48u, wrap_80138f48, 8u, 0u, 1u },    { 0x80138f8cu, wrap_80138f8c, 8u, 0u, 1u },    { 0x80138fc4u, wrap_80138fc4, 8u, 0u, 1u },    { 0x801390d0u, wrap_801390d0, 8u, 0u, 1u },    { 0x801390d8u, wrap_801390d8, 8u, 0u, 1u },    { 0x801390dcu, wrap_801390dc, 8u, 0u, 1u },    { 0x8013914cu, wrap_8013914c, 8u, 0u, 1u },    { 0x80139154u, wrap_80139154, 8u, 0u, 1u },    { 0x80139158u, wrap_80139158, 8u, 0u, 1u },    { 0x80139160u, wrap_80139160, 8u, 0u, 1u },    { 0x801391d4u, wrap_801391d4, 8u, 0u, 1u },    { 0x801391ecu, wrap_801391ec, 8u, 0u, 1u },    { 0x801392dcu, wrap_801392dc, 8u, 0u, 1u },    { 0x801392e4u, wrap_801392e4, 8u, 0u, 1u },    { 0x801392e8u, wrap_801392e8, 8u, 0u, 1u },    { 0x80139358u, wrap_80139358, 8u, 0u, 1u },    { 0x80139360u, wrap_80139360, 8u, 0u, 1u },    { 0x80139364u, wrap_80139364, 8u, 0u, 1u },    { 0x8013936cu, wrap_8013936c, 8u, 0u, 1u },    { 0x8013937cu, wrap_8013937c, 8u, 0u, 1u },    { 0x801393b8u, wrap_801393b8, 397u, 0u, 1u },    { 0x801393ccu, wrap_801393cc, 8u, 0u, 1u },    { 0x801393d0u, wrap_801393d0, 8u, 0u, 1u },    { 0x801393e8u, wrap_801393e8, 8u, 0u, 1u },    { 0x801393ecu, wrap_801393ec, 8u, 0u, 1u },    { 0x80139404u, wrap_80139404, 8u, 0u, 1u },    { 0x80139408u, wrap_80139408, 8u, 0u, 1u },    { 0x80139424u, wrap_80139424, 8u, 0u, 1u },    { 0x80139434u, wrap_80139434, 8u, 0u, 1u },    { 0x80139450u, wrap_80139450, 8u, 0u, 1u },    { 0x8013946cu, wrap_8013946c, 8u, 0u, 1u },    { 0x801394b8u, wrap_801394b8, 8u, 0u, 1u },    { 0x801394bcu, wrap_801394bc, 8u, 0u, 1u },    { 0x801394d4u, wrap_801394d4, 8u, 0u, 1u },    { 0x801394d8u, wrap_801394d8, 8u, 0u, 1u },    { 0x801394f0u, wrap_801394f0, 8u, 0u, 1u },    { 0x801394f4u, wrap_801394f4, 8u, 0u, 1u },    { 0x80139504u, wrap_80139504, 8u, 0u, 1u },    { 0x80139514u, wrap_80139514, 8u, 0u, 1u },    { 0x80139560u, wrap_80139560, 8u, 0u, 1u },    { 0x80139570u, wrap_80139570, 8u, 0u, 1u },    { 0x801395d4u, wrap_801395d4, 8u, 0u, 1u },    { 0x801395d8u, wrap_801395d8, 8u, 0u, 1u },    { 0x801395e8u, wrap_801395e8, 8u, 0u, 1u },    { 0x80139608u, wrap_80139608, 8u, 0u, 1u },    { 0x8013960cu, wrap_8013960c, 8u, 0u, 1u },    { 0x80139620u, wrap_80139620, 8u, 0u, 1u },    { 0x801397acu, wrap_801397ac, 8u, 0u, 1u },    { 0x801397b4u, wrap_801397b4, 8u, 0u, 1u },    { 0x801397b8u, wrap_801397b8, 8u, 0u, 1u },    { 0x8013981cu, wrap_8013981c, 8u, 0u, 1u },    { 0x80139824u, wrap_80139824, 8u, 0u, 1u },    { 0x80139828u, wrap_80139828, 8u, 0u, 1u },    { 0x80139830u, wrap_80139830, 8u, 0u, 1u },    { 0x80139834u, wrap_80139834, 93u, 0u, 1u },    { 0x80139874u, wrap_80139874, 8u, 0u, 1u },    { 0x80139954u, wrap_80139954, 58u, 0u, 1u },    { 0x8013998cu, wrap_8013998c, 8u, 0u, 1u },    { 0x80139994u, wrap_80139994, 8u, 0u, 1u },    { 0x80139998u, wrap_80139998, 8u, 0u, 1u },    { 0x801399fcu, wrap_801399fc, 8u, 0u, 1u },    { 0x80139a04u, wrap_80139a04, 8u, 0u, 1u },    { 0x80139a08u, wrap_80139a08, 8u, 0u, 1u },    { 0x80139a0cu, wrap_80139a0c, 295u, 0u, 1u },    { 0x80139a74u, wrap_80139a74, 8u, 0u, 1u },    { 0x80139ab8u, wrap_80139ab8, 8u, 0u, 1u },    { 0x80139ac8u, wrap_80139ac8, 8u, 0u, 1u },    { 0x80139aecu, wrap_80139aec, 8u, 0u, 1u },    { 0x80139af0u, wrap_80139af0, 8u, 0u, 1u },    { 0x80139b78u, wrap_80139b78, 8u, 0u, 1u },    { 0x80139bacu, wrap_80139bac, 8u, 0u, 1u },    { 0x80139bb8u, wrap_80139bb8, 8u, 0u, 1u },    { 0x80139bc4u, wrap_80139bc4, 8u, 0u, 1u },    { 0x80139c00u, wrap_80139c00, 8u, 0u, 1u },    { 0x80139c3cu, wrap_80139c3c, 8u, 0u, 1u },    { 0x80139c78u, wrap_80139c78, 8u, 0u, 1u },    { 0x80139cb4u, wrap_80139cb4, 8u, 0u, 1u },    { 0x80139cf0u, wrap_80139cf0, 8u, 0u, 1u },    { 0x80139d2cu, wrap_80139d2c, 8u, 0u, 1u },    { 0x80139d68u, wrap_80139d68, 8u, 0u, 1u },    { 0x80139d98u, wrap_80139d98, 43u, 0u, 1u },    { 0x80139e0cu, wrap_80139e0c, 85u, 40u, 0u },    { 0x80139fd0u, wrap_80139fd0, 374u, 0u, 0u },    { 0x8013a9d8u, wrap_8013a9d8, 120u, 0u, 0u },    { 0x8013ab8cu, wrap_8013ab8c, 69u, 40u, 0u },    { 0x8013adb4u, wrap_8013adb4, 23u, 0u, 0u },    { 0x8013b088u, wrap_8013b088, 59u, 0u, 0u },    { 0x8013b12cu, wrap_8013b12c, 45u, 0u, 0u },    { 0x8013b5a8u, wrap_8013b5a8, 138u, 0u, 0u },    { 0x8013c9ccu, wrap_8013c9cc, 379u, 0u, 1u },    { 0x8013ca14u, wrap_8013ca14, 8u, 0u, 1u },    { 0x8013ca38u, wrap_8013ca38, 8u, 0u, 1u },    { 0x8013ca40u, wrap_8013ca40, 8u, 0u, 1u },    { 0x8013ca74u, wrap_8013ca74, 8u, 0u, 1u },    { 0x8013ca90u, wrap_8013ca90, 8u, 0u, 1u },    { 0x8013caa4u, wrap_8013caa4, 8u, 0u, 1u },    { 0x8013cabcu, wrap_8013cabc, 8u, 0u, 1u },    { 0x8013cac0u, wrap_8013cac0, 8u, 0u, 1u },    { 0x8013cae0u, wrap_8013cae0, 8u, 0u, 1u },    { 0x8013cb28u, wrap_8013cb28, 8u, 0u, 1u },    { 0x8013cb64u, wrap_8013cb64, 8u, 0u, 1u },    { 0x8013cb70u, wrap_8013cb70, 8u, 0u, 1u },    { 0x8013cb78u, wrap_8013cb78, 8u, 0u, 1u },    { 0x8013cbbcu, wrap_8013cbbc, 8u, 0u, 1u },    { 0x8013cbd0u, wrap_8013cbd0, 8u, 0u, 1u },    { 0x8013cbe4u, wrap_8013cbe4, 8u, 0u, 1u },    { 0x8013cc04u, wrap_8013cc04, 8u, 0u, 1u },    { 0x8013cc08u, wrap_8013cc08, 8u, 0u, 1u },    { 0x8013cc1cu, wrap_8013cc1c, 8u, 0u, 1u },    { 0x8013cc28u, wrap_8013cc28, 8u, 0u, 1u },    { 0x8013cc40u, wrap_8013cc40, 8u, 0u, 1u },    { 0x8013cc4cu, wrap_8013cc4c, 8u, 0u, 1u },    { 0x8013cc50u, wrap_8013cc50, 8u, 0u, 1u },    { 0x8013cc60u, wrap_8013cc60, 8u, 0u, 1u },    { 0x8013cc6cu, wrap_8013cc6c, 8u, 0u, 1u },    { 0x8013cca4u, wrap_8013cca4, 8u, 0u, 1u },    { 0x8013ccd8u, wrap_8013ccd8, 8u, 0u, 1u },    { 0x8013cce4u, wrap_8013cce4, 8u, 0u, 1u },    { 0x8013ccf4u, wrap_8013ccf4, 8u, 0u, 1u },    { 0x8013cd30u, wrap_8013cd30, 8u, 0u, 1u },    { 0x8013cd44u, wrap_8013cd44, 8u, 0u, 1u },    { 0x8013cd50u, wrap_8013cd50, 8u, 0u, 1u },    { 0x8013cd58u, wrap_8013cd58, 8u, 0u, 1u },    { 0x8013cd90u, wrap_8013cd90, 8u, 0u, 1u },    { 0x8013cda4u, wrap_8013cda4, 8u, 0u, 1u },    { 0x8013cdacu, wrap_8013cdac, 8u, 0u, 1u },    { 0x8013cdb8u, wrap_8013cdb8, 8u, 0u, 1u },    { 0x8013cde8u, wrap_8013cde8, 45u, 32u, 0u },    { 0x8013d6b0u, wrap_8013d6b0, 115u, 0u, 0u },    { 0x8013d7e4u, wrap_8013d7e4, 208u, 32u, 0u },    { 0x8013da2cu, wrap_8013da2c, 7u, 56u, 0u },    { 0x8013e0f0u, wrap_8013e0f0, 237u, 48u, 0u },    { 0x8013e374u, wrap_8013e374, 45u, 32u, 0u },    { 0x8013e3f4u, wrap_8013e3f4, 127u, 24u, 0u },    { 0x8013e558u, wrap_8013e558, 88u, 0u, 0u },    { 0x8013eb04u, wrap_8013eb04, 4u, 0u, 0u },    { 0x8013ed98u, wrap_8013ed98, 68u, 48u, 0u },    { 0x8013ee40u, wrap_8013ee40, 161u, 48u, 0u },    { 0x8013f034u, wrap_8013f034, 113u, 72u, 0u },    { 0x8013f178u, wrap_8013f178, 273u, 48u, 0u },    { 0x8013f490u, wrap_8013f490, 130u, 40u, 0u },    { 0x8013f5f8u, wrap_8013f5f8, 26u, 0u, 0u },    { 0x8013f648u, wrap_8013f648, 65u, 24u, 0u },    { 0x8013f714u, wrap_8013f714, 50u, 0u, 0u },    { 0x8013f7a0u, wrap_8013f7a0, 4u, 0u, 0u },    { 0x8013f7a8u, wrap_8013f7a8, 45u, 32u, 0u },    { 0x80140198u, wrap_80140198, 22u, 0u, 1u },    { 0x801401c8u, wrap_801401c8, 284u, 0u, 0u },    { 0x801401d0u, wrap_801401d0, 8u, 64u, 0u },    { 0x80140510u, wrap_80140510, 178u, 0u, 0u },    { 0x80140518u, wrap_80140518, 8u, 48u, 0u },    { 0x80140710u, wrap_80140710, 69u, 0u, 0u },    { 0x80140718u, wrap_80140718, 8u, 48u, 0u },    { 0x801407ccu, wrap_801407cc, 294u, 64u, 0u },    { 0x80140b18u, wrap_80140b18, 132u, 0u, 0u },    { 0x80140b20u, wrap_80140b20, 8u, 48u, 0u },    { 0x80140c90u, wrap_80140c90, 4u, 0u, 0u },    { 0x80140c98u, wrap_80140c98, 4u, 0u, 1u },    { 0x80140ca0u, wrap_80140ca0, 50u, 0u, 0u },    { 0x80140ca8u, wrap_80140ca8, 8u, 40u, 0u },    { 0x80140d38u, wrap_80140d38, 258u, 24u, 0u },    { 0x80141050u, wrap_80141050, 143u, 48u, 0u },    { 0x801411e8u, wrap_801411e8, 190u, 56u, 0u },    { 0x8014140cu, wrap_8014140c, 176u, 48u, 0u },    { 0x80141610u, wrap_80141610, 173u, 32u, 0u },    { 0x80141814u, wrap_80141814, 315u, 64u, 0u },    { 0x80141b78u, wrap_80141b78, 141u, 48u, 0u },    { 0x80141d2cu, wrap_80141d2c, 297u, 0u, 0u },    { 0x80141d34u, wrap_80141d34, 8u, 56u, 0u },    { 0x80142108u, wrap_80142108, 68u, 40u, 0u },    { 0x801421c4u, wrap_801421c4, 652u, 88u, 0u },    { 0x80142a40u, wrap_80142a40, 56u, 0u, 1u },    { 0x80142a54u, wrap_80142a54, 8u, 0u, 1u },    { 0x80142a5cu, wrap_80142a5c, 8u, 0u, 1u },    { 0x80142a74u, wrap_80142a74, 8u, 0u, 1u },    { 0x80142a80u, wrap_80142a80, 8u, 0u, 1u },    { 0x80142aacu, wrap_80142aac, 8u, 0u, 1u },    { 0x80142ab4u, wrap_80142ab4, 8u, 0u, 1u },    { 0x80142abcu, wrap_80142abc, 8u, 0u, 1u },    { 0x80142ac4u, wrap_80142ac4, 8u, 0u, 1u },    { 0x80142ad0u, wrap_80142ad0, 8u, 0u, 1u },    { 0x80142b00u, wrap_80142b00, 8u, 0u, 1u },    { 0x80142b0cu, wrap_80142b0c, 22u, 0u, 1u },    { 0x80142b3cu, wrap_80142b3c, 63u, 0u, 0u },    { 0x80142c38u, wrap_80142c38, 6u, 0u, 1u },    { 0x80142c50u, wrap_80142c50, 4u, 0u, 1u },    { 0x80142c5cu, wrap_80142c5c, 18u, 0u, 0u },    { 0x80142c9cu, wrap_80142c9c, 19u, 0u, 0u },    { 0x80142cd8u, wrap_80142cd8, 21u, 0u, 0u },    { 0x80142d20u, wrap_80142d20, 21u, 24u, 0u },    { 0x80142d58u, wrap_80142d58, 20u, 24u, 0u },    { 0x80142da0u, wrap_80142da0, 21u, 24u, 0u },    { 0x80142dd8u, wrap_80142dd8, 12u, 0u, 0u },    { 0x80142df4u, wrap_80142df4, 17u, 0u, 0u },    { 0x80142e2cu, wrap_80142e2c, 15u, 0u, 1u },    { 0x80142e40u, wrap_80142e40, 8u, 0u, 1u },    { 0x80142e58u, wrap_80142e58, 8u, 0u, 1u },    { 0x80142e60u, wrap_80142e60, 4u, 0u, 1u },    { 0x80142e64u, wrap_80142e64, 5u, 0u, 1u },    { 0x80142e70u, wrap_80142e70, 28u, 0u, 1u },    { 0x80142e7cu, wrap_80142e7c, 8u, 0u, 1u },    { 0x80142e98u, wrap_80142e98, 8u, 0u, 1u },    { 0x80142eacu, wrap_80142eac, 8u, 0u, 1u },    { 0x80142eb4u, wrap_80142eb4, 8u, 0u, 1u },    { 0x80142eb8u, wrap_80142eb8, 8u, 0u, 1u },    { 0x80142ec8u, wrap_80142ec8, 37u, 0u, 1u },    { 0x80142edcu, wrap_80142edc, 8u, 0u, 1u },    { 0x80142ee0u, wrap_80142ee0, 8u, 0u, 1u },    { 0x80142ef4u, wrap_80142ef4, 8u, 0u, 1u },    { 0x80142ef8u, wrap_80142ef8, 8u, 0u, 1u },    { 0x80142f08u, wrap_80142f08, 8u, 0u, 1u },    { 0x80142f14u, wrap_80142f14, 8u, 0u, 1u },    { 0x80142f1cu, wrap_80142f1c, 8u, 0u, 1u },    { 0x80142f2cu, wrap_80142f2c, 8u, 0u, 1u },    { 0x80142f3cu, wrap_80142f3c, 460u, 0u, 0u },    { 0x801434d4u, wrap_801434d4, 492u, 16u, 0u },    { 0x80143ac8u, wrap_80143ac8, 69u, 0u, 0u },    { 0x80143bb8u, wrap_80143bb8, 51u, 0u, 0u },    { 0x80143c6cu, wrap_80143c6c, 39u, 0u, 0u },    { 0x80143ce8u, wrap_80143ce8, 8u, 0u, 1u },    { 0x80143cfcu, wrap_80143cfc, 8u, 0u, 1u },    { 0x80143d00u, wrap_80143d00, 8u, 0u, 1u },    { 0x80143d08u, wrap_80143d08, 11u, 0u, 1u },    { 0x80143d1cu, wrap_80143d1c, 8u, 0u, 1u },    { 0x80143d28u, wrap_80143d28, 8u, 0u, 1u },    { 0x80143d30u, wrap_80143d30, 4u, 0u, 1u },    { 0x80143d38u, wrap_80143d38, 1360u, 64u, 0u },    { 0x80144f8cu, wrap_80144f8c, 129u, 32u, 0u },    { 0x8014512cu, wrap_8014512c, 55u, 24u, 0u },    { 0x801451d4u, wrap_801451d4, 85u, 32u, 0u },    { 0x801452d0u, wrap_801452d0, 70u, 32u, 0u },    { 0x801453a0u, wrap_801453a0, 117u, 64u, 0u },    { 0x801454f0u, wrap_801454f0, 354u, 64u, 0u },    { 0x801458acu, wrap_801458ac, 37u, 0u, 0u },    { 0x80145924u, wrap_80145924, 4u, 0u, 0u },    { 0x8014592cu, wrap_8014592c, 15u, 0u, 1u },    { 0x80145938u, wrap_80145938, 8u, 0u, 1u },    { 0x80145940u, wrap_80145940, 8u, 0u, 1u },    { 0x80145948u, wrap_80145948, 8u, 0u, 1u },    { 0x80145954u, wrap_80145954, 8u, 0u, 1u },    { 0x8014595cu, wrap_8014595c, 8u, 0u, 1u },    { 0x80145964u, wrap_80145964, 8u, 0u, 1u },    { 0x80145968u, wrap_80145968, 4u, 0u, 0u },    { 0x80145970u, wrap_80145970, 283u, 120u, 0u },    { 0x80145c90u, wrap_80145c90, 77u, 40u, 0u },    { 0x80145d84u, wrap_80145d84, 607u, 128u, 0u },    { 0x8014642cu, wrap_8014642c, 360u, 24u, 0u },    { 0x801468ecu, wrap_801468ec, 447u, 96u, 1u },    { 0x80146998u, wrap_80146998, 8u, 0u, 1u },    { 0x801469b4u, wrap_801469b4, 8u, 0u, 1u },    { 0x801469bcu, wrap_801469bc, 8u, 0u, 1u },    { 0x801469c4u, wrap_801469c4, 8u, 0u, 1u },    { 0x801469ccu, wrap_801469cc, 8u, 0u, 1u },    { 0x801469d4u, wrap_801469d4, 8u, 0u, 1u },    { 0x801469dcu, wrap_801469dc, 8u, 0u, 1u },    { 0x801469e0u, wrap_801469e0, 8u, 0u, 1u },    { 0x801469e8u, wrap_801469e8, 8u, 0u, 1u },    { 0x80146a00u, wrap_80146a00, 8u, 0u, 1u },    { 0x80146a0cu, wrap_80146a0c, 8u, 0u, 1u },    { 0x80146a20u, wrap_80146a20, 8u, 0u, 1u },    { 0x80146a34u, wrap_80146a34, 8u, 0u, 1u },    { 0x80146a44u, wrap_80146a44, 8u, 0u, 1u },    { 0x80146a60u, wrap_80146a60, 8u, 0u, 1u },    { 0x80146a6cu, wrap_80146a6c, 8u, 0u, 1u },    { 0x80146a70u, wrap_80146a70, 8u, 0u, 1u },    { 0x80146a78u, wrap_80146a78, 8u, 0u, 1u },    { 0x80146a80u, wrap_80146a80, 8u, 0u, 1u },    { 0x80146a88u, wrap_80146a88, 8u, 0u, 1u },    { 0x80146a98u, wrap_80146a98, 8u, 0u, 1u },    { 0x80146aa0u, wrap_80146aa0, 8u, 0u, 1u },    { 0x80146ad8u, wrap_80146ad8, 8u, 0u, 1u },    { 0x80146ae4u, wrap_80146ae4, 8u, 0u, 1u },    { 0x80146ae8u, wrap_80146ae8, 8u, 0u, 1u },    { 0x80146af4u, wrap_80146af4, 8u, 0u, 1u },    { 0x80146b04u, wrap_80146b04, 8u, 0u, 1u },    { 0x80146b18u, wrap_80146b18, 8u, 0u, 1u },    { 0x80146b28u, wrap_80146b28, 8u, 0u, 1u },    { 0x80146b34u, wrap_80146b34, 8u, 0u, 1u },    { 0x80146b4cu, wrap_80146b4c, 8u, 0u, 1u },    { 0x80146b50u, wrap_80146b50, 8u, 0u, 1u },    { 0x80146b68u, wrap_80146b68, 8u, 0u, 1u },    { 0x80146b70u, wrap_80146b70, 8u, 0u, 1u },    { 0x80146b78u, wrap_80146b78, 8u, 0u, 1u },    { 0x80146b80u, wrap_80146b80, 8u, 0u, 1u },    { 0x80146bb8u, wrap_80146bb8, 8u, 0u, 1u },    { 0x80146bc4u, wrap_80146bc4, 8u, 0u, 1u },    { 0x80146bc8u, wrap_80146bc8, 8u, 0u, 1u },    { 0x80146bd4u, wrap_80146bd4, 8u, 0u, 1u },    { 0x80146be8u, wrap_80146be8, 8u, 0u, 1u },    { 0x80146c24u, wrap_80146c24, 8u, 0u, 1u },    { 0x80146c28u, wrap_80146c28, 8u, 0u, 1u },    { 0x80146c34u, wrap_80146c34, 8u, 0u, 1u },    { 0x80146c44u, wrap_80146c44, 8u, 0u, 1u },    { 0x80146c58u, wrap_80146c58, 8u, 0u, 1u },    { 0x80146c68u, wrap_80146c68, 8u, 0u, 1u },    { 0x80146c74u, wrap_80146c74, 8u, 0u, 1u },    { 0x80146c90u, wrap_80146c90, 8u, 0u, 1u },    { 0x80146c94u, wrap_80146c94, 8u, 0u, 1u },    { 0x80146c98u, wrap_80146c98, 8u, 0u, 1u },    { 0x80146cacu, wrap_80146cac, 8u, 0u, 1u },    { 0x80146cc8u, wrap_80146cc8, 8u, 0u, 1u },    { 0x80146cd0u, wrap_80146cd0, 8u, 0u, 1u },    { 0x80146cd8u, wrap_80146cd8, 8u, 0u, 1u },    { 0x80146ce0u, wrap_80146ce0, 8u, 0u, 1u },    { 0x80146ce8u, wrap_80146ce8, 8u, 0u, 1u },    { 0x80146cf0u, wrap_80146cf0, 8u, 0u, 1u },    { 0x80146d20u, wrap_80146d20, 8u, 0u, 1u },    { 0x80146d34u, wrap_80146d34, 8u, 0u, 1u },    { 0x80146d80u, wrap_80146d80, 8u, 0u, 1u },    { 0x80146d94u, wrap_80146d94, 8u, 0u, 1u },    { 0x80146da4u, wrap_80146da4, 8u, 0u, 1u },    { 0x80146db4u, wrap_80146db4, 8u, 0u, 1u },    { 0x80146e00u, wrap_80146e00, 8u, 0u, 1u },    { 0x80146e08u, wrap_80146e08, 8u, 0u, 1u },    { 0x80146e38u, wrap_80146e38, 176u, 40u, 0u },    { 0x80147034u, wrap_80147034, 411u, 168u, 0u },    { 0x8014751cu, wrap_8014751c, 276u, 40u, 0u },    { 0x801478b0u, wrap_801478b0, 96u, 0u, 1u },    { 0x801478d0u, wrap_801478d0, 8u, 0u, 1u },    { 0x801478dcu, wrap_801478dc, 8u, 0u, 1u },    { 0x801478f8u, wrap_801478f8, 8u, 0u, 1u },    { 0x8014799cu, wrap_8014799c, 8u, 0u, 1u },    { 0x801479acu, wrap_801479ac, 8u, 0u, 1u },    { 0x801479bcu, wrap_801479bc, 8u, 0u, 1u },    { 0x801479c4u, wrap_801479c4, 158u, 64u, 0u },    { 0x80147bb4u, wrap_80147bb4, 94u, 48u, 0u },    { 0x80147cdcu, wrap_80147cdc, 83u, 48u, 0u },    { 0x80147de4u, wrap_80147de4, 4u, 0u, 1u },    { 0x80147decu, wrap_80147dec, 4u, 0u, 1u },    { 0x80147df4u, wrap_80147df4, 286u, 56u, 0u },    { 0x80148170u, wrap_80148170, 275u, 64u, 0u },    { 0x801484e8u, wrap_801484e8, 22u, 0u, 1u },    { 0x80148500u, wrap_80148500, 8u, 0u, 1u },    { 0x80148508u, wrap_80148508, 8u, 0u, 1u },    { 0x80148528u, wrap_80148528, 208u, 40u, 0u },    { 0x801487acu, wrap_801487ac, 413u, 56u, 0u },    { 0x80148cb0u, wrap_80148cb0, 55u, 0u, 0u },    { 0x80148d80u, wrap_80148d80, 38u, 0u, 0u },    { 0x80148e00u, wrap_80148e00, 28u, 0u, 0u },    { 0x80148e60u, wrap_80148e60, 4u, 0u, 1u },    { 0x80148e64u, wrap_80148e64, 4u, 0u, 1u },    { 0x80148e68u, wrap_80148e68, 4u, 0u, 1u },    { 0x80148e70u, wrap_80148e70, 32u, 40u, 0u },    { 0x80148edcu, wrap_80148edc, 27u, 0u, 0u },    { 0x80148f30u, wrap_80148f30, 12u, 0u, 0u },    { 0x80148f58u, wrap_80148f58, 156u, 48u, 0u },    { 0x80149114u, wrap_80149114, 346u, 48u, 0u },    { 0x8014950cu, wrap_8014950c, 1582u, 88u, 0u },    { 0x8014a5bcu, wrap_8014a5bc, 82u, 48u, 0u },    { 0x8014a6a8u, wrap_8014a6a8, 28u, 0u, 0u },    { 0x8014a708u, wrap_8014a708, 93u, 56u, 0u },    { 0x8014a804u, wrap_8014a804, 87u, 48u, 0u },    { 0x8014a918u, wrap_8014a918, 136u, 40u, 0u },    { 0x8014aae0u, wrap_8014aae0, 372u, 88u, 0u },    { 0x8014af04u, wrap_8014af04, 4u, 0u, 0u },    { 0x8014af0cu, wrap_8014af0c, 69u, 48u, 0u },    { 0x8014afc0u, wrap_8014afc0, 278u, 48u, 0u },    { 0x8014b2c4u, wrap_8014b2c4, 4u, 0u, 0u },    { 0x8014b2ccu, wrap_8014b2cc, 67u, 48u, 0u },    { 0x8014b37cu, wrap_8014b37c, 326u, 56u, 0u },    { 0x8014b73cu, wrap_8014b73c, 4u, 0u, 0u },    { 0x8014b744u, wrap_8014b744, 78u, 48u, 0u },    { 0x8014b810u, wrap_8014b810, 106u, 0u, 1u },    { 0x8014b818u, wrap_8014b818, 8u, 56u, 0u },    { 0x8014b864u, wrap_8014b864, 8u, 0u, 1u },    { 0x8014b874u, wrap_8014b874, 8u, 0u, 1u },    { 0x8014b8b0u, wrap_8014b8b0, 8u, 0u, 1u },    { 0x8014b8d8u, wrap_8014b8d8, 8u, 0u, 1u },    { 0x8014b8f0u, wrap_8014b8f0, 8u, 0u, 1u },    { 0x8014b90cu, wrap_8014b90c, 8u, 0u, 1u },    { 0x8014b914u, wrap_8014b914, 8u, 0u, 1u },    { 0x8014b938u, wrap_8014b938, 165u, 64u, 0u },    { 0x8014bb34u, wrap_8014bb34, 382u, 48u, 0u },    { 0x8014bfe4u, wrap_8014bfe4, 12u, 24u, 0u },    { 0x8014c00cu, wrap_8014c00c, 67u, 40u, 0u },    { 0x8014c0e0u, wrap_8014c0e0, 85u, 40u, 0u },    { 0x8014c1d8u, wrap_8014c1d8, 40u, 24u, 0u },    { 0x8014c258u, wrap_8014c258, 65u, 40u, 0u },    { 0x8014c324u, wrap_8014c324, 431u, 40u, 1u },    { 0x8014c388u, wrap_8014c388, 8u, 0u, 1u },    { 0x8014c3a4u, wrap_8014c3a4, 8u, 0u, 1u },    { 0x8014c3c0u, wrap_8014c3c0, 8u, 0u, 1u },    { 0x8014c3d4u, wrap_8014c3d4, 8u, 0u, 1u },    { 0x8014c3f0u, wrap_8014c3f0, 8u, 0u, 1u },    { 0x8014c408u, wrap_8014c408, 8u, 0u, 1u },    { 0x8014c418u, wrap_8014c418, 8u, 0u, 1u },    { 0x8014c42cu, wrap_8014c42c, 8u, 0u, 1u },    { 0x8014c450u, wrap_8014c450, 8u, 0u, 1u },    { 0x8014c458u, wrap_8014c458, 8u, 0u, 1u },    { 0x8014c45cu, wrap_8014c45c, 8u, 0u, 1u },    { 0x8014c59cu, wrap_8014c59c, 8u, 0u, 1u },    { 0x8014c5b4u, wrap_8014c5b4, 8u, 0u, 1u },    { 0x8014c5c4u, wrap_8014c5c4, 8u, 0u, 1u },    { 0x8014c5d8u, wrap_8014c5d8, 8u, 0u, 1u },    { 0x8014c604u, wrap_8014c604, 8u, 0u, 1u },    { 0x8014c60cu, wrap_8014c60c, 8u, 0u, 1u },    { 0x8014c610u, wrap_8014c610, 8u, 0u, 1u },    { 0x8014c74cu, wrap_8014c74c, 8u, 0u, 1u },    { 0x8014c76cu, wrap_8014c76c, 128u, 56u, 0u },    { 0x8014c8d4u, wrap_8014c8d4, 124u, 56u, 0u },    { 0x8014ca34u, wrap_8014ca34, 43u, 32u, 0u },    { 0x8014cab4u, wrap_8014cab4, 63u, 48u, 0u },    { 0x8014cb64u, wrap_8014cb64, 51u, 32u, 0u },    { 0x8014cc00u, wrap_8014cc00, 66u, 40u, 0u },    { 0x8014ccd0u, wrap_8014ccd0, 41u, 24u, 0u },    { 0x8014cd48u, wrap_8014cd48, 11u, 0u, 1u },    { 0x8014cd68u, wrap_8014cd68, 11u, 0u, 1u },    { 0x8014cd88u, wrap_8014cd88, 11u, 0u, 1u },    { 0x8014cda8u, wrap_8014cda8, 6u, 0u, 1u },    { 0x8014cdbcu, wrap_8014cdbc, 6u, 0u, 1u },    { 0x8014cdd0u, wrap_8014cdd0, 3079u, 384u, 0u },    { 0x8014f1c8u, wrap_8014f1c8, 43u, 0u, 0u },    { 0x8014f260u, wrap_8014f260, 1638u, 248u, 0u },    { 0x801506d0u, wrap_801506d0, 708u, 360u, 0u },    { 0x80150f04u, wrap_80150f04, 183u, 56u, 0u },    { 0x8015113cu, wrap_8015113c, 172u, 40u, 0u },    { 0x80151328u, wrap_80151328, 57u, 24u, 0u },    { 0x801513c8u, wrap_801513c8, 17u, 0u, 0u },    { 0x801513fcu, wrap_801513fc, 21u, 24u, 0u },    { 0x8015143cu, wrap_8015143c, 660u, 64u, 0u },    { 0x80151cd0u, wrap_80151cd0, 77u, 0u, 0u },    { 0x80151dc8u, wrap_80151dc8, 186u, 56u, 0u },    { 0x8015200cu, wrap_8015200c, 124u, 56u, 0u },    { 0x801521a4u, wrap_801521a4, 56u, 0u, 0u },    { 0x80152260u, wrap_80152260, 4u, 0u, 0u },    { 0x80152264u, wrap_80152264, 4u, 0u, 0u },    { 0x8015226cu, wrap_8015226c, 173u, 56u, 0u },    { 0x801524b0u, wrap_801524b0, 48u, 32u, 0u },    { 0x80152548u, wrap_80152548, 40u, 32u, 0u },    { 0x801525c4u, wrap_801525c4, 5u, 0u, 0u },    { 0x801525d0u, wrap_801525d0, 19u, 24u, 0u },    { 0x8015260cu, wrap_8015260c, 135u, 32u, 0u },    { 0x8015279cu, wrap_8015279c, 74u, 32u, 0u },    { 0x80152878u, wrap_80152878, 87u, 32u, 0u },    { 0x8015297cu, wrap_8015297c, 190u, 32u, 0u },    { 0x80152bdcu, wrap_80152bdc, 503u, 40u, 0u },    { 0x801531ecu, wrap_801531ec, 41u, 24u, 0u },    { 0x80153264u, wrap_80153264, 112u, 32u, 0u },    { 0x801533e0u, wrap_801533e0, 29u, 32u, 0u },    { 0x8015343cu, wrap_8015343c, 23u, 24u, 0u },    { 0x80153484u, wrap_80153484, 45u, 0u, 0u },    { 0x80153534u, wrap_80153534, 4u, 0u, 0u },    { 0x8015353cu, wrap_8015353c, 4u, 0u, 0u },    { 0x80153544u, wrap_80153544, 321u, 40u, 0u },    { 0x80153984u, wrap_80153984, 102u, 24u, 0u },    { 0x80153ab0u, wrap_80153ab0, 277u, 40u, 0u },    { 0x80153decu, wrap_80153dec, 84u, 0u, 0u },    { 0x80153ee8u, wrap_80153ee8, 362u, 32u, 0u },    { 0x80154368u, wrap_80154368, 205u, 40u, 0u },    { 0x801545d0u, wrap_801545d0, 279u, 40u, 0u },    { 0x80154930u, wrap_80154930, 1572u, 56u, 0u },    { 0x80155c14u, wrap_80155c14, 147u, 40u, 0u },    { 0x80155dd0u, wrap_80155dd0, 33u, 24u, 0u },    { 0x80155e30u, wrap_80155e30, 19u, 24u, 0u },    { 0x80155e6cu, wrap_80155e6c, 37u, 24u, 0u },    { 0x80155edcu, wrap_80155edc, 39u, 24u, 0u },    { 0x80155f64u, wrap_80155f64, 72u, 32u, 0u },    { 0x80156048u, wrap_80156048, 13u, 0u, 0u },    { 0x8015607cu, wrap_8015607c, 39u, 24u, 1u },    { 0x801560a8u, wrap_801560a8, 8u, 0u, 1u },    { 0x801560acu, wrap_801560ac, 8u, 0u, 1u },    { 0x801560bcu, wrap_801560bc, 8u, 0u, 1u },    { 0x801560c0u, wrap_801560c0, 8u, 0u, 1u },    { 0x801560e8u, wrap_801560e8, 8u, 0u, 1u },    { 0x801560f8u, wrap_801560f8, 9u, 0u, 0u },    { 0x80156114u, wrap_80156114, 63u, 32u, 0u },    { 0x801561c8u, wrap_801561c8, 13u, 24u, 0u },    { 0x801561f0u, wrap_801561f0, 14u, 0u, 0u },    { 0x80156220u, wrap_80156220, 32u, 0u, 0u },    { 0x80156290u, wrap_80156290, 24u, 0u, 0u },    { 0x801562e0u, wrap_801562e0, 29u, 0u, 0u },    { 0x80156344u, wrap_80156344, 64u, 32u, 0u },    { 0x80156404u, wrap_80156404, 19u, 24u, 0u },    { 0x8015643cu, wrap_8015643c, 7u, 0u, 0u },    { 0x80156458u, wrap_80156458, 7u, 0u, 0u },    { 0x80156470u, wrap_80156470, 4u, 0u, 0u },    { 0x8015647cu, wrap_8015647c, 4u, 0u, 0u },    { 0x80156484u, wrap_80156484, 117u, 40u, 0u },    { 0x801565ecu, wrap_801565ec, 33u, 32u, 1u },    { 0x80156614u, wrap_80156614, 8u, 0u, 1u },    { 0x8015661cu, wrap_8015661c, 8u, 0u, 1u },    { 0x80156628u, wrap_80156628, 8u, 0u, 1u },    { 0x80156630u, wrap_80156630, 8u, 0u, 1u },    { 0x80156638u, wrap_80156638, 8u, 0u, 1u },    { 0x80156650u, wrap_80156650, 27u, 32u, 0u },    { 0x801566a0u, wrap_801566a0, 16u, 24u, 0u },    { 0x801566d4u, wrap_801566d4, 142u, 0u, 0u },    { 0x801568fcu, wrap_801568fc, 249u, 24u, 0u },    { 0x80156c60u, wrap_80156c60, 41u, 24u, 0u },    { 0x80156cf4u, wrap_80156cf4, 41u, 24u, 0u },    { 0x80156d88u, wrap_80156d88, 4u, 0u, 0u },    { 0x80156d90u, wrap_80156d90, 4u, 0u, 0u },    { 0x80156d98u, wrap_80156d98, 113u, 48u, 0u },    { 0x80156ef4u, wrap_80156ef4, 77u, 24u, 0u },    { 0x80156ff0u, wrap_80156ff0, 146u, 72u, 0u },    { 0x80157188u, wrap_80157188, 102u, 24u, 0u },    { 0x801572c0u, wrap_801572c0, 19u, 24u, 0u },    { 0x801572f8u, wrap_801572f8, 21u, 24u, 0u },    { 0x80157334u, wrap_80157334, 11u, 24u, 0u },    { 0x80157358u, wrap_80157358, 5u, 0u, 0u },    { 0x80157368u, wrap_80157368, 39u, 24u, 0u },    { 0x801573dcu, wrap_801573dc, 5u, 0u, 0u },    { 0x801573ecu, wrap_801573ec, 30u, 24u, 0u },    { 0x80157444u, wrap_80157444, 7u, 0u, 0u },    { 0x80157458u, wrap_80157458, 32u, 32u, 0u },    { 0x801574b4u, wrap_801574b4, 7u, 0u, 0u },    { 0x801574ccu, wrap_801574cc, 16u, 0u, 0u },    { 0x801574fcu, wrap_801574fc, 37u, 24u, 0u },    { 0x80157574u, wrap_80157574, 22u, 0u, 0u },    { 0x801575bcu, wrap_801575bc, 74u, 24u, 0u },    { 0x8015768cu, wrap_8015768c, 106u, 48u, 0u },    { 0x801577bcu, wrap_801577bc, 59u, 32u, 0u },    { 0x8015787cu, wrap_8015787c, 107u, 24u, 0u },    { 0x80157a00u, wrap_80157a00, 642u, 40u, 0u },    { 0x80158244u, wrap_80158244, 14u, 24u, 0u },    { 0x80158274u, wrap_80158274, 25u, 0u, 0u },    { 0x8015827cu, wrap_8015827c, 8u, 24u, 0u },    { 0x801582c0u, wrap_801582c0, 47u, 24u, 0u },    { 0x80158358u, wrap_80158358, 37u, 24u, 0u },    { 0x801583ccu, wrap_801583cc, 99u, 0u, 0u },    { 0x80158514u, wrap_80158514, 8u, 0u, 0u },    { 0x80158528u, wrap_80158528, 131u, 72u, 0u },    { 0x80158698u, wrap_80158698, 111u, 56u, 0u },    { 0x801587c0u, wrap_801587c0, 522u, 88u, 1u },    { 0x80158808u, wrap_80158808, 8u, 0u, 1u },    { 0x80158814u, wrap_80158814, 8u, 0u, 1u },    { 0x8015881cu, wrap_8015881c, 8u, 0u, 1u },    { 0x80158824u, wrap_80158824, 8u, 0u, 1u },    { 0x80158828u, wrap_80158828, 8u, 0u, 1u },    { 0x8015882cu, wrap_8015882c, 8u, 0u, 1u },    { 0x801588a4u, wrap_801588a4, 8u, 0u, 1u },    { 0x801588c4u, wrap_801588c4, 8u, 0u, 1u },    { 0x801588d4u, wrap_801588d4, 8u, 0u, 1u },    { 0x801588e4u, wrap_801588e4, 8u, 0u, 1u },    { 0x801588f4u, wrap_801588f4, 8u, 0u, 1u },    { 0x80158904u, wrap_80158904, 8u, 0u, 1u },    { 0x80158910u, wrap_80158910, 8u, 0u, 1u },    { 0x8015891cu, wrap_8015891c, 8u, 0u, 1u },    { 0x8015895cu, wrap_8015895c, 8u, 0u, 1u },    { 0x80158994u, wrap_80158994, 8u, 0u, 1u },    { 0x801589a4u, wrap_801589a4, 8u, 0u, 1u },    { 0x801589acu, wrap_801589ac, 8u, 0u, 1u },    { 0x801589b4u, wrap_801589b4, 8u, 0u, 1u },    { 0x801589bcu, wrap_801589bc, 8u, 0u, 1u },    { 0x801589c8u, wrap_801589c8, 8u, 0u, 1u },    { 0x801589d0u, wrap_801589d0, 8u, 0u, 1u },    { 0x80158a1cu, wrap_80158a1c, 8u, 0u, 1u },    { 0x80158a5cu, wrap_80158a5c, 8u, 0u, 1u },    { 0x80158a84u, wrap_80158a84, 8u, 0u, 1u },    { 0x80158aa4u, wrap_80158aa4, 8u, 0u, 1u },    { 0x80158aacu, wrap_80158aac, 8u, 0u, 1u },    { 0x80158afcu, wrap_80158afc, 8u, 0u, 1u },    { 0x80158b08u, wrap_80158b08, 8u, 0u, 1u },    { 0x80158b58u, wrap_80158b58, 8u, 0u, 1u },    { 0x80158b64u, wrap_80158b64, 8u, 0u, 1u },    { 0x80158b9cu, wrap_80158b9c, 8u, 0u, 1u },    { 0x80158ba8u, wrap_80158ba8, 8u, 0u, 1u },    { 0x80158bd8u, wrap_80158bd8, 8u, 0u, 1u },    { 0x80158be4u, wrap_80158be4, 8u, 0u, 1u },    { 0x80158bfcu, wrap_80158bfc, 8u, 0u, 1u },    { 0x80158c44u, wrap_80158c44, 8u, 0u, 1u },    { 0x80158c50u, wrap_80158c50, 8u, 0u, 1u },    { 0x80158cb0u, wrap_80158cb0, 8u, 0u, 1u },    { 0x80158cbcu, wrap_80158cbc, 8u, 0u, 1u },    { 0x80158d00u, wrap_80158d00, 8u, 0u, 1u },    { 0x80158d0cu, wrap_80158d0c, 8u, 0u, 1u },    { 0x80158d48u, wrap_80158d48, 8u, 0u, 1u },    { 0x80158d54u, wrap_80158d54, 8u, 0u, 1u },    { 0x80158d78u, wrap_80158d78, 8u, 0u, 1u },    { 0x80158da8u, wrap_80158da8, 55u, 40u, 0u },    { 0x80158e5cu, wrap_80158e5c, 148u, 88u, 0u },    { 0x80159028u, wrap_80159028, 364u, 96u, 0u },    { 0x801594a4u, wrap_801594a4, 219u, 40u, 0u },    { 0x80159734u, wrap_80159734, 70u, 0u, 0u },    { 0x801597e0u, wrap_801597e0, 5u, 0u, 0u },    { 0x801597ecu, wrap_801597ec, 42u, 40u, 0u },    { 0x80159864u, wrap_80159864, 151u, 0u, 0u },    { 0x8015986cu, wrap_8015986c, 8u, 40u, 0u },    { 0x80159a14u, wrap_80159a14, 54u, 40u, 0u },    { 0x80159ab4u, wrap_80159ab4, 131u, 48u, 0u },    { 0x80159c24u, wrap_80159c24, 71u, 40u, 0u },    { 0x80159ce4u, wrap_80159ce4, 46u, 40u, 0u },    { 0x80159d78u, wrap_80159d78, 18u, 0u, 0u },    { 0x80159dacu, wrap_80159dac, 100u, 0u, 0u },    { 0x80159eecu, wrap_80159eec, 26u, 0u, 0u },    { 0x80159f44u, wrap_80159f44, 5u, 0u, 0u },    { 0x80159f54u, wrap_80159f54, 4u, 0u, 0u },    { 0x80159f58u, wrap_80159f58, 4u, 0u, 0u },    { 0x80159f60u, wrap_80159f60, 10u, 0u, 0u },    { 0x80159f7cu, wrap_80159f7c, 4u, 0u, 0u },    { 0x80159f84u, wrap_80159f84, 187u, 32u, 0u },    { 0x8015a1dcu, wrap_8015a1dc, 4u, 0u, 0u },    { 0x8015a1e4u, wrap_8015a1e4, 300u, 48u, 0u },    { 0x8015a584u, wrap_8015a584, 51u, 24u, 0u },    { 0x8015a614u, wrap_8015a614, 40u, 24u, 0u },    { 0x8015a69cu, wrap_8015a69c, 376u, 48u, 0u },    { 0x8015ab4cu, wrap_8015ab4c, 18u, 0u, 0u },    { 0x8015ab88u, wrap_8015ab88, 16u, 0u, 0u },    { 0x8015abc0u, wrap_8015abc0, 97u, 48u, 0u },    { 0x8015ace4u, wrap_8015ace4, 413u, 112u, 1u },    { 0x8015ad14u, wrap_8015ad14, 8u, 0u, 1u },    { 0x8015ad1cu, wrap_8015ad1c, 8u, 0u, 1u },    { 0x8015ad24u, wrap_8015ad24, 8u, 0u, 1u },    { 0x8015ad2cu, wrap_8015ad2c, 8u, 0u, 1u },    { 0x8015ad34u, wrap_8015ad34, 8u, 0u, 1u },    { 0x8015ad3cu, wrap_8015ad3c, 8u, 0u, 1u },    { 0x8015ad44u, wrap_8015ad44, 8u, 0u, 1u },    { 0x8015ad4cu, wrap_8015ad4c, 8u, 0u, 1u },    { 0x8015ad54u, wrap_8015ad54, 8u, 0u, 1u },    { 0x8015ad5cu, wrap_8015ad5c, 8u, 0u, 1u },    { 0x8015ad68u, wrap_8015ad68, 8u, 0u, 1u },    { 0x8015add0u, wrap_8015add0, 8u, 0u, 1u },    { 0x8015add4u, wrap_8015add4, 8u, 0u, 1u },    { 0x8015adecu, wrap_8015adec, 8u, 0u, 1u },    { 0x8015adf0u, wrap_8015adf0, 8u, 0u, 1u },    { 0x8015ae08u, wrap_8015ae08, 8u, 0u, 1u },    { 0x8015ae0cu, wrap_8015ae0c, 8u, 0u, 1u },    { 0x8015ae24u, wrap_8015ae24, 8u, 0u, 1u },    { 0x8015ae28u, wrap_8015ae28, 8u, 0u, 1u },    { 0x8015ae40u, wrap_8015ae40, 8u, 0u, 1u },    { 0x8015ae44u, wrap_8015ae44, 8u, 0u, 1u },    { 0x8015ae58u, wrap_8015ae58, 8u, 0u, 1u },    { 0x8015ae5cu, wrap_8015ae5c, 8u, 0u, 1u },    { 0x8015aea4u, wrap_8015aea4, 8u, 0u, 1u },    { 0x8015aea8u, wrap_8015aea8, 8u, 0u, 1u },    { 0x8015aec0u, wrap_8015aec0, 8u, 0u, 1u },    { 0x8015aec4u, wrap_8015aec4, 8u, 0u, 1u },    { 0x8015af08u, wrap_8015af08, 8u, 0u, 1u },    { 0x8015af0cu, wrap_8015af0c, 8u, 0u, 1u },    { 0x8015af24u, wrap_8015af24, 8u, 0u, 1u },    { 0x8015af28u, wrap_8015af28, 8u, 0u, 1u },    { 0x8015af40u, wrap_8015af40, 8u, 0u, 1u },    { 0x8015af44u, wrap_8015af44, 8u, 0u, 1u },    { 0x8015af4cu, wrap_8015af4c, 8u, 0u, 1u },    { 0x8015af50u, wrap_8015af50, 8u, 0u, 1u },    { 0x8015af64u, wrap_8015af64, 8u, 0u, 1u },    { 0x8015af70u, wrap_8015af70, 8u, 0u, 1u },    { 0x8015af78u, wrap_8015af78, 8u, 0u, 1u },    { 0x8015af8cu, wrap_8015af8c, 8u, 0u, 1u },    { 0x8015af98u, wrap_8015af98, 8u, 0u, 1u },    { 0x8015afa0u, wrap_8015afa0, 8u, 0u, 1u },    { 0x8015afa8u, wrap_8015afa8, 8u, 0u, 1u },    { 0x8015afb0u, wrap_8015afb0, 8u, 0u, 1u },    { 0x8015afb8u, wrap_8015afb8, 8u, 0u, 1u },    { 0x8015afccu, wrap_8015afcc, 8u, 0u, 1u },    { 0x8015afd0u, wrap_8015afd0, 8u, 0u, 1u },    { 0x8015afe0u, wrap_8015afe0, 8u, 0u, 1u },    { 0x8015aff0u, wrap_8015aff0, 8u, 0u, 1u },    { 0x8015b000u, wrap_8015b000, 8u, 0u, 1u },    { 0x8015b010u, wrap_8015b010, 8u, 0u, 1u },    { 0x8015b020u, wrap_8015b020, 8u, 0u, 1u },    { 0x8015b030u, wrap_8015b030, 8u, 0u, 1u },    { 0x8015b040u, wrap_8015b040, 8u, 0u, 1u },    { 0x8015b050u, wrap_8015b050, 8u, 0u, 1u },    { 0x8015b060u, wrap_8015b060, 8u, 0u, 1u },    { 0x8015b070u, wrap_8015b070, 8u, 0u, 1u },    { 0x8015b0b0u, wrap_8015b0b0, 8u, 0u, 1u },    { 0x8015b0c0u, wrap_8015b0c0, 8u, 0u, 1u },    { 0x8015b0d0u, wrap_8015b0d0, 8u, 0u, 1u },    { 0x8015b0e0u, wrap_8015b0e0, 8u, 0u, 1u },    { 0x8015b104u, wrap_8015b104, 8u, 0u, 1u },    { 0x8015b114u, wrap_8015b114, 8u, 0u, 1u },    { 0x8015b124u, wrap_8015b124, 8u, 0u, 1u },    { 0x8015b134u, wrap_8015b134, 8u, 0u, 1u },    { 0x8015b144u, wrap_8015b144, 8u, 0u, 1u },    { 0x8015b154u, wrap_8015b154, 8u, 0u, 1u },    { 0x8015b15cu, wrap_8015b15c, 8u, 0u, 1u },    { 0x8015b164u, wrap_8015b164, 8u, 0u, 1u },    { 0x8015b170u, wrap_8015b170, 8u, 0u, 1u },    { 0x8015b190u, wrap_8015b190, 554u, 32u, 1u },    { 0x8015b1b0u, wrap_8015b1b0, 8u, 0u, 1u },    { 0x8015b1bcu, wrap_8015b1bc, 8u, 0u, 1u },    { 0x8015b1c4u, wrap_8015b1c4, 8u, 0u, 1u },    { 0x8015b1ccu, wrap_8015b1cc, 8u, 0u, 1u },    { 0x8015b1d4u, wrap_8015b1d4, 8u, 0u, 1u },    { 0x8015b1dcu, wrap_8015b1dc, 8u, 0u, 1u },    { 0x8015b1e4u, wrap_8015b1e4, 8u, 0u, 1u },    { 0x8015b1ecu, wrap_8015b1ec, 8u, 0u, 1u },    { 0x8015b1f4u, wrap_8015b1f4, 8u, 0u, 1u },    { 0x8015b1fcu, wrap_8015b1fc, 8u, 0u, 1u },    { 0x8015b208u, wrap_8015b208, 8u, 0u, 1u },    { 0x8015b210u, wrap_8015b210, 8u, 0u, 1u },    { 0x8015b21cu, wrap_8015b21c, 8u, 0u, 1u },    { 0x8015b224u, wrap_8015b224, 8u, 0u, 1u },    { 0x8015b22cu, wrap_8015b22c, 8u, 0u, 1u },    { 0x8015b238u, wrap_8015b238, 8u, 0u, 1u },    { 0x8015b240u, wrap_8015b240, 8u, 0u, 1u },    { 0x8015b248u, wrap_8015b248, 8u, 0u, 1u },    { 0x8015b250u, wrap_8015b250, 8u, 0u, 1u },    { 0x8015b258u, wrap_8015b258, 8u, 0u, 1u },    { 0x8015b264u, wrap_8015b264, 8u, 0u, 1u },    { 0x8015b26cu, wrap_8015b26c, 8u, 0u, 1u },    { 0x8015b278u, wrap_8015b278, 8u, 0u, 1u },    { 0x8015b280u, wrap_8015b280, 8u, 0u, 1u },    { 0x8015b288u, wrap_8015b288, 8u, 0u, 1u },    { 0x8015b294u, wrap_8015b294, 8u, 0u, 1u },    { 0x8015b29cu, wrap_8015b29c, 8u, 0u, 1u },    { 0x8015b2a4u, wrap_8015b2a4, 8u, 0u, 1u },    { 0x8015b2acu, wrap_8015b2ac, 8u, 0u, 1u },    { 0x8015b2b4u, wrap_8015b2b4, 8u, 0u, 1u },    { 0x8015b2bcu, wrap_8015b2bc, 8u, 0u, 1u },    { 0x8015b2c4u, wrap_8015b2c4, 8u, 0u, 1u },    { 0x8015b2d0u, wrap_8015b2d0, 8u, 0u, 1u },    { 0x8015b2d8u, wrap_8015b2d8, 8u, 0u, 1u },    { 0x8015b2e4u, wrap_8015b2e4, 8u, 0u, 1u },    { 0x8015b2ecu, wrap_8015b2ec, 8u, 0u, 1u },    { 0x8015b2f4u, wrap_8015b2f4, 8u, 0u, 1u },    { 0x8015b300u, wrap_8015b300, 8u, 0u, 1u },    { 0x8015b308u, wrap_8015b308, 8u, 0u, 1u },    { 0x8015b310u, wrap_8015b310, 8u, 0u, 1u },    { 0x8015b318u, wrap_8015b318, 8u, 0u, 1u },    { 0x8015b324u, wrap_8015b324, 8u, 0u, 1u },    { 0x8015b32cu, wrap_8015b32c, 8u, 0u, 1u },    { 0x8015b334u, wrap_8015b334, 8u, 0u, 1u },    { 0x8015b340u, wrap_8015b340, 8u, 0u, 1u },    { 0x8015b348u, wrap_8015b348, 8u, 0u, 1u },    { 0x8015b354u, wrap_8015b354, 8u, 0u, 1u },    { 0x8015b35cu, wrap_8015b35c, 8u, 0u, 1u },    { 0x8015b364u, wrap_8015b364, 8u, 0u, 1u },    { 0x8015b374u, wrap_8015b374, 8u, 0u, 1u },    { 0x8015b37cu, wrap_8015b37c, 8u, 0u, 1u },    { 0x8015b384u, wrap_8015b384, 8u, 0u, 1u },    { 0x8015b390u, wrap_8015b390, 8u, 0u, 1u },    { 0x8015b398u, wrap_8015b398, 8u, 0u, 1u },    { 0x8015b3a8u, wrap_8015b3a8, 8u, 0u, 1u },    { 0x8015b3b4u, wrap_8015b3b4, 8u, 0u, 1u },    { 0x8015b3bcu, wrap_8015b3bc, 8u, 0u, 1u },    { 0x8015b3c8u, wrap_8015b3c8, 8u, 0u, 1u },    { 0x8015b3d4u, wrap_8015b3d4, 8u, 0u, 1u },    { 0x8015b3dcu, wrap_8015b3dc, 8u, 0u, 1u },    { 0x8015b3ecu, wrap_8015b3ec, 8u, 0u, 1u },    { 0x8015b3f8u, wrap_8015b3f8, 8u, 0u, 1u },    { 0x8015b404u, wrap_8015b404, 8u, 0u, 1u },    { 0x8015b410u, wrap_8015b410, 8u, 0u, 1u },    { 0x8015b418u, wrap_8015b418, 8u, 0u, 1u },    { 0x8015b428u, wrap_8015b428, 8u, 0u, 1u },    { 0x8015b434u, wrap_8015b434, 8u, 0u, 1u },    { 0x8015b440u, wrap_8015b440, 8u, 0u, 1u },    { 0x8015b44cu, wrap_8015b44c, 8u, 0u, 1u },    { 0x8015b460u, wrap_8015b460, 8u, 0u, 1u },    { 0x8015b47cu, wrap_8015b47c, 8u, 0u, 1u },    { 0x8015b488u, wrap_8015b488, 8u, 0u, 1u },    { 0x8015b494u, wrap_8015b494, 8u, 0u, 1u },    { 0x8015b4a8u, wrap_8015b4a8, 8u, 0u, 1u },    { 0x8015b4c4u, wrap_8015b4c4, 8u, 0u, 1u },    { 0x8015b4d4u, wrap_8015b4d4, 8u, 0u, 1u },    { 0x8015b4dcu, wrap_8015b4dc, 8u, 0u, 1u },    { 0x8015b4ecu, wrap_8015b4ec, 8u, 0u, 1u },    { 0x8015b4f4u, wrap_8015b4f4, 8u, 0u, 1u },    { 0x8015b504u, wrap_8015b504, 8u, 0u, 1u },    { 0x8015b50cu, wrap_8015b50c, 8u, 0u, 1u },    { 0x8015b51cu, wrap_8015b51c, 8u, 0u, 1u },    { 0x8015b524u, wrap_8015b524, 8u, 0u, 1u },    { 0x8015b534u, wrap_8015b534, 8u, 0u, 1u },    { 0x8015b53cu, wrap_8015b53c, 8u, 0u, 1u },    { 0x8015b54cu, wrap_8015b54c, 8u, 0u, 1u },    { 0x8015b554u, wrap_8015b554, 8u, 0u, 1u },    { 0x8015b564u, wrap_8015b564, 8u, 0u, 1u },    { 0x8015b56cu, wrap_8015b56c, 8u, 0u, 1u },    { 0x8015b57cu, wrap_8015b57c, 8u, 0u, 1u },    { 0x8015b584u, wrap_8015b584, 8u, 0u, 1u },    { 0x8015b594u, wrap_8015b594, 8u, 0u, 1u },    { 0x8015b59cu, wrap_8015b59c, 8u, 0u, 1u },    { 0x8015b5acu, wrap_8015b5ac, 8u, 0u, 1u },    { 0x8015b5b4u, wrap_8015b5b4, 8u, 0u, 1u },    { 0x8015b5c4u, wrap_8015b5c4, 8u, 0u, 1u },    { 0x8015b5ccu, wrap_8015b5cc, 8u, 0u, 1u },    { 0x8015b5dcu, wrap_8015b5dc, 8u, 0u, 1u },    { 0x8015b5e4u, wrap_8015b5e4, 8u, 0u, 1u },    { 0x8015b5f4u, wrap_8015b5f4, 8u, 0u, 1u },    { 0x8015b5fcu, wrap_8015b5fc, 8u, 0u, 1u },    { 0x8015b60cu, wrap_8015b60c, 8u, 0u, 1u },    { 0x8015b614u, wrap_8015b614, 8u, 0u, 1u },    { 0x8015b624u, wrap_8015b624, 8u, 0u, 1u },    { 0x8015b62cu, wrap_8015b62c, 8u, 0u, 1u },    { 0x8015b63cu, wrap_8015b63c, 8u, 0u, 1u },    { 0x8015b644u, wrap_8015b644, 8u, 0u, 1u },    { 0x8015b650u, wrap_8015b650, 8u, 0u, 1u },    { 0x8015b660u, wrap_8015b660, 8u, 0u, 1u },    { 0x8015b674u, wrap_8015b674, 8u, 0u, 1u },    { 0x8015b690u, wrap_8015b690, 8u, 0u, 1u },    { 0x8015b69cu, wrap_8015b69c, 8u, 0u, 1u },    { 0x8015b6b0u, wrap_8015b6b0, 8u, 0u, 1u },    { 0x8015b6ccu, wrap_8015b6cc, 8u, 0u, 1u },    { 0x8015b6dcu, wrap_8015b6dc, 8u, 0u, 1u },    { 0x8015b6e4u, wrap_8015b6e4, 8u, 0u, 1u },    { 0x8015b6f4u, wrap_8015b6f4, 8u, 0u, 1u },    { 0x8015b6fcu, wrap_8015b6fc, 8u, 0u, 1u },    { 0x8015b70cu, wrap_8015b70c, 8u, 0u, 1u },    { 0x8015b714u, wrap_8015b714, 8u, 0u, 1u },    { 0x8015b724u, wrap_8015b724, 8u, 0u, 1u },    { 0x8015b72cu, wrap_8015b72c, 8u, 0u, 1u },    { 0x8015b73cu, wrap_8015b73c, 8u, 0u, 1u },    { 0x8015b744u, wrap_8015b744, 8u, 0u, 1u },    { 0x8015b754u, wrap_8015b754, 8u, 0u, 1u },    { 0x8015b75cu, wrap_8015b75c, 8u, 0u, 1u },    { 0x8015b764u, wrap_8015b764, 8u, 0u, 1u },    { 0x8015b774u, wrap_8015b774, 8u, 0u, 1u },    { 0x8015b780u, wrap_8015b780, 8u, 0u, 1u },    { 0x8015b788u, wrap_8015b788, 8u, 0u, 1u },    { 0x8015b794u, wrap_8015b794, 8u, 0u, 1u },    { 0x8015b7a0u, wrap_8015b7a0, 8u, 0u, 1u },    { 0x8015b7acu, wrap_8015b7ac, 8u, 0u, 1u },    { 0x8015b7b8u, wrap_8015b7b8, 8u, 0u, 1u },    { 0x8015b7c8u, wrap_8015b7c8, 8u, 0u, 1u },    { 0x8015b7d0u, wrap_8015b7d0, 8u, 0u, 1u },    { 0x8015b7d8u, wrap_8015b7d8, 8u, 0u, 1u },    { 0x8015b7e0u, wrap_8015b7e0, 8u, 0u, 1u },    { 0x8015b7e8u, wrap_8015b7e8, 8u, 0u, 1u },    { 0x8015b7f0u, wrap_8015b7f0, 8u, 0u, 1u },    { 0x8015b7f8u, wrap_8015b7f8, 8u, 0u, 1u },    { 0x8015b808u, wrap_8015b808, 8u, 0u, 1u },    { 0x8015b810u, wrap_8015b810, 8u, 0u, 1u },    { 0x8015b820u, wrap_8015b820, 8u, 0u, 1u },    { 0x8015b828u, wrap_8015b828, 8u, 0u, 1u },    { 0x8015b838u, wrap_8015b838, 8u, 0u, 1u },    { 0x8015b840u, wrap_8015b840, 8u, 0u, 1u },    { 0x8015b850u, wrap_8015b850, 8u, 0u, 1u },    { 0x8015b858u, wrap_8015b858, 8u, 0u, 1u },    { 0x8015b864u, wrap_8015b864, 8u, 0u, 1u },    { 0x8015b880u, wrap_8015b880, 8u, 0u, 1u },    { 0x8015b88cu, wrap_8015b88c, 8u, 0u, 1u },    { 0x8015b8b0u, wrap_8015b8b0, 8u, 0u, 1u },    { 0x8015b8b8u, wrap_8015b8b8, 8u, 0u, 1u },    { 0x8015b8c4u, wrap_8015b8c4, 8u, 0u, 1u },    { 0x8015b8ccu, wrap_8015b8cc, 8u, 0u, 1u },    { 0x8015b8f4u, wrap_8015b8f4, 8u, 0u, 1u },    { 0x8015b904u, wrap_8015b904, 8u, 0u, 1u },    { 0x8015b90cu, wrap_8015b90c, 8u, 0u, 1u },    { 0x8015b914u, wrap_8015b914, 8u, 0u, 1u },    { 0x8015b920u, wrap_8015b920, 8u, 0u, 1u },    { 0x8015b92cu, wrap_8015b92c, 8u, 0u, 1u },    { 0x8015b934u, wrap_8015b934, 8u, 0u, 1u },    { 0x8015b944u, wrap_8015b944, 8u, 0u, 1u },    { 0x8015b950u, wrap_8015b950, 8u, 0u, 1u },    { 0x8015b954u, wrap_8015b954, 8u, 0u, 1u },    { 0x8015b958u, wrap_8015b958, 8u, 0u, 1u },    { 0x8015b960u, wrap_8015b960, 8u, 0u, 1u },    { 0x8015b968u, wrap_8015b968, 8u, 0u, 1u },    { 0x8015b974u, wrap_8015b974, 8u, 0u, 1u },    { 0x8015b978u, wrap_8015b978, 8u, 0u, 1u },    { 0x8015b980u, wrap_8015b980, 8u, 0u, 1u },    { 0x8015b988u, wrap_8015b988, 8u, 0u, 1u },    { 0x8015b98cu, wrap_8015b98c, 8u, 0u, 1u },    { 0x8015b9a0u, wrap_8015b9a0, 356u, 120u, 0u },    { 0x8015bdc0u, wrap_8015bdc0, 790u, 72u, 0u },    { 0x8015c754u, wrap_8015c754, 309u, 112u, 0u },    { 0x8015caa8u, wrap_8015caa8, 791u, 72u, 0u },    { 0x8015d420u, wrap_8015d420, 220u, 104u, 0u },    { 0x8015d69cu, wrap_8015d69c, 1428u, 96u, 1u },    { 0x8015d6ecu, wrap_8015d6ec, 8u, 0u, 1u },    { 0x8015d700u, wrap_8015d700, 8u, 0u, 1u },    { 0x8015d720u, wrap_8015d720, 8u, 0u, 1u },    { 0x8015d72cu, wrap_8015d72c, 8u, 0u, 1u },    { 0x8015d738u, wrap_8015d738, 8u, 0u, 1u },    { 0x8015d744u, wrap_8015d744, 8u, 0u, 1u },    { 0x8015d750u, wrap_8015d750, 8u, 0u, 1u },    { 0x8015d75cu, wrap_8015d75c, 8u, 0u, 1u },    { 0x8015d768u, wrap_8015d768, 8u, 0u, 1u },    { 0x8015d774u, wrap_8015d774, 8u, 0u, 1u },    { 0x8015d780u, wrap_8015d780, 8u, 0u, 1u },    { 0x8015d78cu, wrap_8015d78c, 8u, 0u, 1u },    { 0x8015d798u, wrap_8015d798, 8u, 0u, 1u },    { 0x8015d7a4u, wrap_8015d7a4, 8u, 0u, 1u },    { 0x8015d7b0u, wrap_8015d7b0, 8u, 0u, 1u },    { 0x8015d7bcu, wrap_8015d7bc, 8u, 0u, 1u },    { 0x8015d7c8u, wrap_8015d7c8, 8u, 0u, 1u },    { 0x8015d7d0u, wrap_8015d7d0, 8u, 0u, 1u },    { 0x8015d7e4u, wrap_8015d7e4, 8u, 0u, 1u },    { 0x8015d810u, wrap_8015d810, 8u, 0u, 1u },    { 0x8015d834u, wrap_8015d834, 8u, 0u, 1u },    { 0x8015d83cu, wrap_8015d83c, 8u, 0u, 1u },    { 0x8015d854u, wrap_8015d854, 8u, 0u, 1u },    { 0x8015d85cu, wrap_8015d85c, 8u, 0u, 1u },    { 0x8015d864u, wrap_8015d864, 8u, 0u, 1u },    { 0x8015d86cu, wrap_8015d86c, 8u, 0u, 1u },    { 0x8015d874u, wrap_8015d874, 8u, 0u, 1u },    { 0x8015d87cu, wrap_8015d87c, 8u, 0u, 1u },    { 0x8015d884u, wrap_8015d884, 8u, 0u, 1u },    { 0x8015d88cu, wrap_8015d88c, 8u, 0u, 1u },    { 0x8015d898u, wrap_8015d898, 8u, 0u, 1u },    { 0x8015d8a0u, wrap_8015d8a0, 8u, 0u, 1u },    { 0x8015d8a8u, wrap_8015d8a8, 8u, 0u, 1u },    { 0x8015d8b4u, wrap_8015d8b4, 8u, 0u, 1u },    { 0x8015d8bcu, wrap_8015d8bc, 8u, 0u, 1u },    { 0x8015d8c8u, wrap_8015d8c8, 8u, 0u, 1u },    { 0x8015d8d0u, wrap_8015d8d0, 8u, 0u, 1u },    { 0x8015d8dcu, wrap_8015d8dc, 8u, 0u, 1u },    { 0x8015d8e4u, wrap_8015d8e4, 8u, 0u, 1u },    { 0x8015d8ecu, wrap_8015d8ec, 8u, 0u, 1u },    { 0x8015d8f4u, wrap_8015d8f4, 8u, 0u, 1u },    { 0x8015d900u, wrap_8015d900, 8u, 0u, 1u },    { 0x8015d908u, wrap_8015d908, 8u, 0u, 1u },    { 0x8015d910u, wrap_8015d910, 8u, 0u, 1u },    { 0x8015d91cu, wrap_8015d91c, 8u, 0u, 1u },    { 0x8015d924u, wrap_8015d924, 8u, 0u, 1u },    { 0x8015d92cu, wrap_8015d92c, 8u, 0u, 1u },    { 0x8015d934u, wrap_8015d934, 8u, 0u, 1u },    { 0x8015d93cu, wrap_8015d93c, 8u, 0u, 1u },    { 0x8015d948u, wrap_8015d948, 8u, 0u, 1u },    { 0x8015d950u, wrap_8015d950, 8u, 0u, 1u },    { 0x8015d95cu, wrap_8015d95c, 8u, 0u, 1u },    { 0x8015d980u, wrap_8015d980, 8u, 0u, 1u },    { 0x8015d994u, wrap_8015d994, 8u, 0u, 1u },    { 0x8015d9a0u, wrap_8015d9a0, 8u, 0u, 1u },    { 0x8015d9acu, wrap_8015d9ac, 8u, 0u, 1u },    { 0x8015d9b4u, wrap_8015d9b4, 8u, 0u, 1u },    { 0x8015d9d8u, wrap_8015d9d8, 8u, 0u, 1u },    { 0x8015d9e0u, wrap_8015d9e0, 8u, 0u, 1u },    { 0x8015da04u, wrap_8015da04, 8u, 0u, 1u },    { 0x8015da34u, wrap_8015da34, 8u, 0u, 1u },    { 0x8015da44u, wrap_8015da44, 8u, 0u, 1u },    { 0x8015da4cu, wrap_8015da4c, 8u, 0u, 1u },    { 0x8015da74u, wrap_8015da74, 8u, 0u, 1u },    { 0x8015da9cu, wrap_8015da9c, 8u, 0u, 1u },    { 0x8015daccu, wrap_8015dacc, 8u, 0u, 1u },    { 0x8015dad8u, wrap_8015dad8, 8u, 0u, 1u },    { 0x8015dae0u, wrap_8015dae0, 8u, 0u, 1u },    { 0x8015db08u, wrap_8015db08, 8u, 0u, 1u },    { 0x8015db30u, wrap_8015db30, 8u, 0u, 1u },    { 0x8015db44u, wrap_8015db44, 8u, 0u, 1u },    { 0x8015db60u, wrap_8015db60, 8u, 0u, 1u },    { 0x8015db68u, wrap_8015db68, 8u, 0u, 1u },    { 0x8015dba8u, wrap_8015dba8, 8u, 0u, 1u },    { 0x8015dbb0u, wrap_8015dbb0, 8u, 0u, 1u },    { 0x8015dbd4u, wrap_8015dbd4, 8u, 0u, 1u },    { 0x8015dbdcu, wrap_8015dbdc, 8u, 0u, 1u },    { 0x8015dbe4u, wrap_8015dbe4, 8u, 0u, 1u },    { 0x8015dbecu, wrap_8015dbec, 8u, 0u, 1u },    { 0x8015dbf4u, wrap_8015dbf4, 8u, 0u, 1u },    { 0x8015dc18u, wrap_8015dc18, 8u, 0u, 1u },    { 0x8015dc2cu, wrap_8015dc2c, 8u, 0u, 1u },    { 0x8015dc48u, wrap_8015dc48, 8u, 0u, 1u },    { 0x8015dc50u, wrap_8015dc50, 8u, 0u, 1u },    { 0x8015dc9cu, wrap_8015dc9c, 8u, 0u, 1u },    { 0x8015dca4u, wrap_8015dca4, 8u, 0u, 1u },    { 0x8015dcc8u, wrap_8015dcc8, 8u, 0u, 1u },    { 0x8015dcd0u, wrap_8015dcd0, 8u, 0u, 1u },    { 0x8015dcdcu, wrap_8015dcdc, 8u, 0u, 1u },    { 0x8015dce8u, wrap_8015dce8, 8u, 0u, 1u },    { 0x8015dd00u, wrap_8015dd00, 8u, 0u, 1u },    { 0x8015dd10u, wrap_8015dd10, 8u, 0u, 1u },    { 0x8015dd24u, wrap_8015dd24, 8u, 0u, 1u },    { 0x8015dd30u, wrap_8015dd30, 8u, 0u, 1u },    { 0x8015dd38u, wrap_8015dd38, 8u, 0u, 1u },    { 0x8015dd44u, wrap_8015dd44, 8u, 0u, 1u },    { 0x8015dd4cu, wrap_8015dd4c, 8u, 0u, 1u },    { 0x8015dd58u, wrap_8015dd58, 8u, 0u, 1u },    { 0x8015dd6cu, wrap_8015dd6c, 8u, 0u, 1u },    { 0x8015dd7cu, wrap_8015dd7c, 8u, 0u, 1u },    { 0x8015dd90u, wrap_8015dd90, 8u, 0u, 1u },    { 0x8015dd9cu, wrap_8015dd9c, 8u, 0u, 1u },    { 0x8015dda4u, wrap_8015dda4, 8u, 0u, 1u },    { 0x8015ddb4u, wrap_8015ddb4, 8u, 0u, 1u },    { 0x8015ddbcu, wrap_8015ddbc, 8u, 0u, 1u },    { 0x8015ddc4u, wrap_8015ddc4, 8u, 0u, 1u },    { 0x8015dddcu, wrap_8015dddc, 8u, 0u, 1u },    { 0x8015de00u, wrap_8015de00, 8u, 0u, 1u },    { 0x8015de08u, wrap_8015de08, 8u, 0u, 1u },    { 0x8015de30u, wrap_8015de30, 8u, 0u, 1u },    { 0x8015de48u, wrap_8015de48, 8u, 0u, 1u },    { 0x8015de64u, wrap_8015de64, 8u, 0u, 1u },    { 0x8015de70u, wrap_8015de70, 8u, 0u, 1u },    { 0x8015de78u, wrap_8015de78, 8u, 0u, 1u },    { 0x8015de94u, wrap_8015de94, 8u, 0u, 1u },    { 0x8015dea0u, wrap_8015dea0, 8u, 0u, 1u },    { 0x8015dea8u, wrap_8015dea8, 8u, 0u, 1u },    { 0x8015ded4u, wrap_8015ded4, 8u, 0u, 1u },    { 0x8015dee0u, wrap_8015dee0, 8u, 0u, 1u },    { 0x8015deecu, wrap_8015deec, 8u, 0u, 1u },    { 0x8015def4u, wrap_8015def4, 8u, 0u, 1u },    { 0x8015defcu, wrap_8015defc, 8u, 0u, 1u },    { 0x8015df08u, wrap_8015df08, 8u, 0u, 1u },    { 0x8015df10u, wrap_8015df10, 8u, 0u, 1u },    { 0x8015df18u, wrap_8015df18, 8u, 0u, 1u },    { 0x8015df34u, wrap_8015df34, 8u, 0u, 1u },    { 0x8015df50u, wrap_8015df50, 8u, 0u, 1u },    { 0x8015df54u, wrap_8015df54, 8u, 0u, 1u },    { 0x8015df68u, wrap_8015df68, 8u, 0u, 1u },    { 0x8015df70u, wrap_8015df70, 8u, 0u, 1u },    { 0x8015df78u, wrap_8015df78, 8u, 0u, 1u },    { 0x8015df80u, wrap_8015df80, 8u, 0u, 1u },    { 0x8015df84u, wrap_8015df84, 8u, 0u, 1u },    { 0x8015df98u, wrap_8015df98, 8u, 0u, 1u },    { 0x8015dfa0u, wrap_8015dfa0, 8u, 0u, 1u },    { 0x8015dfa8u, wrap_8015dfa8, 8u, 0u, 1u },    { 0x8015dfb0u, wrap_8015dfb0, 8u, 0u, 1u },    { 0x8015dfb4u, wrap_8015dfb4, 8u, 0u, 1u },    { 0x8015dfc8u, wrap_8015dfc8, 8u, 0u, 1u },    { 0x8015dfd0u, wrap_8015dfd0, 8u, 0u, 1u },    { 0x8015dfd8u, wrap_8015dfd8, 8u, 0u, 1u },    { 0x8015dfe0u, wrap_8015dfe0, 8u, 0u, 1u },    { 0x8015dfe4u, wrap_8015dfe4, 8u, 0u, 1u },    { 0x8015dff8u, wrap_8015dff8, 8u, 0u, 1u },    { 0x8015e000u, wrap_8015e000, 8u, 0u, 1u },    { 0x8015e008u, wrap_8015e008, 8u, 0u, 1u },    { 0x8015e010u, wrap_8015e010, 8u, 0u, 1u },    { 0x8015e014u, wrap_8015e014, 8u, 0u, 1u },    { 0x8015e028u, wrap_8015e028, 8u, 0u, 1u },    { 0x8015e030u, wrap_8015e030, 8u, 0u, 1u },    { 0x8015e038u, wrap_8015e038, 8u, 0u, 1u },    { 0x8015e040u, wrap_8015e040, 8u, 0u, 1u },    { 0x8015e044u, wrap_8015e044, 8u, 0u, 1u },    { 0x8015e058u, wrap_8015e058, 8u, 0u, 1u },    { 0x8015e060u, wrap_8015e060, 8u, 0u, 1u },    { 0x8015e068u, wrap_8015e068, 8u, 0u, 1u },    { 0x8015e070u, wrap_8015e070, 8u, 0u, 1u },    { 0x8015e074u, wrap_8015e074, 8u, 0u, 1u },    { 0x8015e088u, wrap_8015e088, 8u, 0u, 1u },    { 0x8015e090u, wrap_8015e090, 8u, 0u, 1u },    { 0x8015e098u, wrap_8015e098, 8u, 0u, 1u },    { 0x8015e0a0u, wrap_8015e0a0, 8u, 0u, 1u },    { 0x8015e0a4u, wrap_8015e0a4, 8u, 0u, 1u },    { 0x8015e0b8u, wrap_8015e0b8, 8u, 0u, 1u },    { 0x8015e0c0u, wrap_8015e0c0, 8u, 0u, 1u },    { 0x8015e0c8u, wrap_8015e0c8, 8u, 0u, 1u },    { 0x8015e0d0u, wrap_8015e0d0, 8u, 0u, 1u },    { 0x8015e0d4u, wrap_8015e0d4, 8u, 0u, 1u },    { 0x8015e0e8u, wrap_8015e0e8, 8u, 0u, 1u },    { 0x8015e0f0u, wrap_8015e0f0, 8u, 0u, 1u },    { 0x8015e0f8u, wrap_8015e0f8, 8u, 0u, 1u },    { 0x8015e100u, wrap_8015e100, 8u, 0u, 1u },    { 0x8015e104u, wrap_8015e104, 8u, 0u, 1u },    { 0x8015e118u, wrap_8015e118, 8u, 0u, 1u },    { 0x8015e120u, wrap_8015e120, 8u, 0u, 1u },    { 0x8015e128u, wrap_8015e128, 8u, 0u, 1u },    { 0x8015e130u, wrap_8015e130, 8u, 0u, 1u },    { 0x8015e134u, wrap_8015e134, 8u, 0u, 1u },    { 0x8015e148u, wrap_8015e148, 8u, 0u, 1u },    { 0x8015e150u, wrap_8015e150, 8u, 0u, 1u },    { 0x8015e158u, wrap_8015e158, 8u, 0u, 1u },    { 0x8015e160u, wrap_8015e160, 8u, 0u, 1u },    { 0x8015e164u, wrap_8015e164, 8u, 0u, 1u },    { 0x8015e178u, wrap_8015e178, 8u, 0u, 1u },    { 0x8015e180u, wrap_8015e180, 8u, 0u, 1u },    { 0x8015e188u, wrap_8015e188, 8u, 0u, 1u },    { 0x8015e190u, wrap_8015e190, 8u, 0u, 1u },    { 0x8015e194u, wrap_8015e194, 8u, 0u, 1u },    { 0x8015e1a8u, wrap_8015e1a8, 8u, 0u, 1u },    { 0x8015e1b0u, wrap_8015e1b0, 8u, 0u, 1u },    { 0x8015e1b8u, wrap_8015e1b8, 8u, 0u, 1u },    { 0x8015e1c0u, wrap_8015e1c0, 8u, 0u, 1u },    { 0x8015e1c4u, wrap_8015e1c4, 8u, 0u, 1u },    { 0x8015e1d8u, wrap_8015e1d8, 8u, 0u, 1u },    { 0x8015e1e0u, wrap_8015e1e0, 8u, 0u, 1u },    { 0x8015e1e8u, wrap_8015e1e8, 8u, 0u, 1u },    { 0x8015e1f0u, wrap_8015e1f0, 8u, 0u, 1u },    { 0x8015e1f4u, wrap_8015e1f4, 8u, 0u, 1u },    { 0x8015e208u, wrap_8015e208, 8u, 0u, 1u },    { 0x8015e210u, wrap_8015e210, 8u, 0u, 1u },    { 0x8015e218u, wrap_8015e218, 8u, 0u, 1u },    { 0x8015e220u, wrap_8015e220, 8u, 0u, 1u },    { 0x8015e224u, wrap_8015e224, 8u, 0u, 1u },    { 0x8015e238u, wrap_8015e238, 8u, 0u, 1u },    { 0x8015e240u, wrap_8015e240, 8u, 0u, 1u },    { 0x8015e248u, wrap_8015e248, 8u, 0u, 1u },    { 0x8015e250u, wrap_8015e250, 8u, 0u, 1u },    { 0x8015e254u, wrap_8015e254, 8u, 0u, 1u },    { 0x8015e268u, wrap_8015e268, 8u, 0u, 1u },    { 0x8015e270u, wrap_8015e270, 8u, 0u, 1u },    { 0x8015e278u, wrap_8015e278, 8u, 0u, 1u },    { 0x8015e280u, wrap_8015e280, 8u, 0u, 1u },    { 0x8015e284u, wrap_8015e284, 8u, 0u, 1u },    { 0x8015e298u, wrap_8015e298, 8u, 0u, 1u },    { 0x8015e2a0u, wrap_8015e2a0, 8u, 0u, 1u },    { 0x8015e2a8u, wrap_8015e2a8, 8u, 0u, 1u },    { 0x8015e2b0u, wrap_8015e2b0, 8u, 0u, 1u },    { 0x8015e2b4u, wrap_8015e2b4, 8u, 0u, 1u },    { 0x8015e2c8u, wrap_8015e2c8, 8u, 0u, 1u },    { 0x8015e2d0u, wrap_8015e2d0, 8u, 0u, 1u },    { 0x8015e2d8u, wrap_8015e2d8, 8u, 0u, 1u },    { 0x8015e2e0u, wrap_8015e2e0, 8u, 0u, 1u },    { 0x8015e2e4u, wrap_8015e2e4, 8u, 0u, 1u },    { 0x8015e2f8u, wrap_8015e2f8, 8u, 0u, 1u },    { 0x8015e300u, wrap_8015e300, 8u, 0u, 1u },    { 0x8015e308u, wrap_8015e308, 8u, 0u, 1u },    { 0x8015e310u, wrap_8015e310, 8u, 0u, 1u },    { 0x8015e314u, wrap_8015e314, 8u, 0u, 1u },    { 0x8015e328u, wrap_8015e328, 8u, 0u, 1u },    { 0x8015e330u, wrap_8015e330, 8u, 0u, 1u },    { 0x8015e338u, wrap_8015e338, 8u, 0u, 1u },    { 0x8015e340u, wrap_8015e340, 8u, 0u, 1u },    { 0x8015e344u, wrap_8015e344, 8u, 0u, 1u },    { 0x8015e358u, wrap_8015e358, 8u, 0u, 1u },    { 0x8015e360u, wrap_8015e360, 8u, 0u, 1u },    { 0x8015e368u, wrap_8015e368, 8u, 0u, 1u },    { 0x8015e370u, wrap_8015e370, 8u, 0u, 1u },    { 0x8015e374u, wrap_8015e374, 8u, 0u, 1u },    { 0x8015e388u, wrap_8015e388, 8u, 0u, 1u },    { 0x8015e390u, wrap_8015e390, 8u, 0u, 1u },    { 0x8015e398u, wrap_8015e398, 8u, 0u, 1u },    { 0x8015e3a0u, wrap_8015e3a0, 8u, 0u, 1u },    { 0x8015e3a4u, wrap_8015e3a4, 8u, 0u, 1u },    { 0x8015e3b8u, wrap_8015e3b8, 8u, 0u, 1u },    { 0x8015e3c0u, wrap_8015e3c0, 8u, 0u, 1u },    { 0x8015e3c8u, wrap_8015e3c8, 8u, 0u, 1u },    { 0x8015e3d0u, wrap_8015e3d0, 8u, 0u, 1u },    { 0x8015e3d4u, wrap_8015e3d4, 8u, 0u, 1u },    { 0x8015e3e8u, wrap_8015e3e8, 8u, 0u, 1u },    { 0x8015e3f0u, wrap_8015e3f0, 8u, 0u, 1u },    { 0x8015e3f8u, wrap_8015e3f8, 8u, 0u, 1u },    { 0x8015e400u, wrap_8015e400, 8u, 0u, 1u },    { 0x8015e404u, wrap_8015e404, 8u, 0u, 1u },    { 0x8015e418u, wrap_8015e418, 8u, 0u, 1u },    { 0x8015e420u, wrap_8015e420, 8u, 0u, 1u },    { 0x8015e428u, wrap_8015e428, 8u, 0u, 1u },    { 0x8015e430u, wrap_8015e430, 8u, 0u, 1u },    { 0x8015e434u, wrap_8015e434, 8u, 0u, 1u },    { 0x8015e448u, wrap_8015e448, 8u, 0u, 1u },    { 0x8015e450u, wrap_8015e450, 8u, 0u, 1u },    { 0x8015e458u, wrap_8015e458, 8u, 0u, 1u },    { 0x8015e460u, wrap_8015e460, 8u, 0u, 1u },    { 0x8015e464u, wrap_8015e464, 8u, 0u, 1u },    { 0x8015e478u, wrap_8015e478, 8u, 0u, 1u },    { 0x8015e480u, wrap_8015e480, 8u, 0u, 1u },    { 0x8015e488u, wrap_8015e488, 8u, 0u, 1u },    { 0x8015e490u, wrap_8015e490, 8u, 0u, 1u },    { 0x8015e494u, wrap_8015e494, 8u, 0u, 1u },    { 0x8015e4a8u, wrap_8015e4a8, 8u, 0u, 1u },    { 0x8015e4b0u, wrap_8015e4b0, 8u, 0u, 1u },    { 0x8015e4b8u, wrap_8015e4b8, 8u, 0u, 1u },    { 0x8015e4c0u, wrap_8015e4c0, 8u, 0u, 1u },    { 0x8015e4c4u, wrap_8015e4c4, 8u, 0u, 1u },    { 0x8015e4d8u, wrap_8015e4d8, 8u, 0u, 1u },    { 0x8015e4e0u, wrap_8015e4e0, 8u, 0u, 1u },    { 0x8015e4e8u, wrap_8015e4e8, 8u, 0u, 1u },    { 0x8015e4f0u, wrap_8015e4f0, 8u, 0u, 1u },    { 0x8015e4f4u, wrap_8015e4f4, 8u, 0u, 1u },    { 0x8015e508u, wrap_8015e508, 8u, 0u, 1u },    { 0x8015e510u, wrap_8015e510, 8u, 0u, 1u },    { 0x8015e518u, wrap_8015e518, 8u, 0u, 1u },    { 0x8015e520u, wrap_8015e520, 8u, 0u, 1u },    { 0x8015e524u, wrap_8015e524, 8u, 0u, 1u },    { 0x8015e538u, wrap_8015e538, 8u, 0u, 1u },    { 0x8015e540u, wrap_8015e540, 8u, 0u, 1u },    { 0x8015e548u, wrap_8015e548, 8u, 0u, 1u },    { 0x8015e550u, wrap_8015e550, 8u, 0u, 1u },    { 0x8015e554u, wrap_8015e554, 8u, 0u, 1u },    { 0x8015e568u, wrap_8015e568, 8u, 0u, 1u },    { 0x8015e570u, wrap_8015e570, 8u, 0u, 1u },    { 0x8015e578u, wrap_8015e578, 8u, 0u, 1u },    { 0x8015e580u, wrap_8015e580, 8u, 0u, 1u },    { 0x8015e584u, wrap_8015e584, 8u, 0u, 1u },    { 0x8015e598u, wrap_8015e598, 8u, 0u, 1u },    { 0x8015e5a0u, wrap_8015e5a0, 8u, 0u, 1u },    { 0x8015e5a8u, wrap_8015e5a8, 8u, 0u, 1u },    { 0x8015e5b0u, wrap_8015e5b0, 8u, 0u, 1u },    { 0x8015e5b4u, wrap_8015e5b4, 8u, 0u, 1u },    { 0x8015e5c8u, wrap_8015e5c8, 8u, 0u, 1u },    { 0x8015e5d0u, wrap_8015e5d0, 8u, 0u, 1u },    { 0x8015e5d8u, wrap_8015e5d8, 8u, 0u, 1u },    { 0x8015e5e0u, wrap_8015e5e0, 8u, 0u, 1u },    { 0x8015e5e4u, wrap_8015e5e4, 8u, 0u, 1u },    { 0x8015e5f8u, wrap_8015e5f8, 8u, 0u, 1u },    { 0x8015e600u, wrap_8015e600, 8u, 0u, 1u },    { 0x8015e608u, wrap_8015e608, 8u, 0u, 1u },    { 0x8015e610u, wrap_8015e610, 8u, 0u, 1u },    { 0x8015e63cu, wrap_8015e63c, 8u, 0u, 1u },    { 0x8015e66cu, wrap_8015e66c, 8u, 0u, 1u },    { 0x8015e680u, wrap_8015e680, 8u, 0u, 1u },    { 0x8015e694u, wrap_8015e694, 8u, 0u, 1u },    { 0x8015e6a4u, wrap_8015e6a4, 8u, 0u, 1u },    { 0x8015e6acu, wrap_8015e6ac, 8u, 0u, 1u },    { 0x8015e6d0u, wrap_8015e6d0, 8u, 0u, 1u },    { 0x8015e6e8u, wrap_8015e6e8, 8u, 0u, 1u },    { 0x8015e704u, wrap_8015e704, 8u, 0u, 1u },    { 0x8015e718u, wrap_8015e718, 8u, 0u, 1u },    { 0x8015e724u, wrap_8015e724, 8u, 0u, 1u },    { 0x8015e734u, wrap_8015e734, 8u, 0u, 1u },    { 0x8015e7a8u, wrap_8015e7a8, 8u, 0u, 1u },    { 0x8015e7b8u, wrap_8015e7b8, 8u, 0u, 1u },    { 0x8015e7f4u, wrap_8015e7f4, 8u, 0u, 1u },    { 0x8015e7fcu, wrap_8015e7fc, 8u, 0u, 1u },    { 0x8015e808u, wrap_8015e808, 8u, 0u, 1u },    { 0x8015e814u, wrap_8015e814, 8u, 0u, 1u },    { 0x8015e818u, wrap_8015e818, 8u, 0u, 1u },    { 0x8015e830u, wrap_8015e830, 8u, 0u, 1u },    { 0x8015e838u, wrap_8015e838, 8u, 0u, 1u },    { 0x8015e83cu, wrap_8015e83c, 8u, 0u, 1u },    { 0x8015e840u, wrap_8015e840, 8u, 0u, 1u },    { 0x8015e848u, wrap_8015e848, 8u, 0u, 1u },    { 0x8015e87cu, wrap_8015e87c, 5u, 0u, 0u },    { 0x8015e88cu, wrap_8015e88c, 8u, 0u, 0u },    { 0x8015e8a4u, wrap_8015e8a4, 8u, 0u, 0u },    { 0x8015e8bcu, wrap_8015e8bc, 106u, 0u, 1u },    { 0x8015e8c4u, wrap_8015e8c4, 8u, 56u, 0u },    { 0x8015e8e8u, wrap_8015e8e8, 8u, 0u, 1u },    { 0x8015e8f8u, wrap_8015e8f8, 8u, 0u, 1u },    { 0x8015e910u, wrap_8015e910, 8u, 0u, 1u },    { 0x8015e918u, wrap_8015e918, 8u, 0u, 1u },    { 0x8015e920u, wrap_8015e920, 8u, 0u, 1u },    { 0x8015e92cu, wrap_8015e92c, 8u, 0u, 1u },    { 0x8015e948u, wrap_8015e948, 8u, 0u, 1u },    { 0x8015e958u, wrap_8015e958, 8u, 0u, 1u },    { 0x8015e960u, wrap_8015e960, 8u, 0u, 1u },    { 0x8015e970u, wrap_8015e970, 8u, 0u, 1u },    { 0x8015e988u, wrap_8015e988, 8u, 0u, 1u },    { 0x8015e9b0u, wrap_8015e9b0, 8u, 0u, 1u },    { 0x8015e9b8u, wrap_8015e9b8, 8u, 0u, 1u },    { 0x8015e9c0u, wrap_8015e9c0, 8u, 0u, 1u },    { 0x8015e9c8u, wrap_8015e9c8, 8u, 0u, 1u },    { 0x8015e9d8u, wrap_8015e9d8, 8u, 0u, 1u },    { 0x8015e9dcu, wrap_8015e9dc, 8u, 0u, 1u },    { 0x8015e9e0u, wrap_8015e9e0, 8u, 0u, 1u },    { 0x8015e9fcu, wrap_8015e9fc, 163u, 48u, 0u },    { 0x8015ebf8u, wrap_8015ebf8, 189u, 128u, 0u },    { 0x8015ee40u, wrap_8015ee40, 585u, 72u, 1u },    { 0x8015ee70u, wrap_8015ee70, 8u, 0u, 1u },    { 0x8015ee84u, wrap_8015ee84, 8u, 0u, 1u },    { 0x8015eeb0u, wrap_8015eeb0, 8u, 0u, 1u },    { 0x8015eed8u, wrap_8015eed8, 8u, 0u, 1u },    { 0x8015eee0u, wrap_8015eee0, 8u, 0u, 1u },    { 0x8015eef0u, wrap_8015eef0, 8u, 0u, 1u },    { 0x8015eef8u, wrap_8015eef8, 8u, 0u, 1u },    { 0x8015ef00u, wrap_8015ef00, 8u, 0u, 1u },    { 0x8015ef08u, wrap_8015ef08, 8u, 0u, 1u },    { 0x8015ef10u, wrap_8015ef10, 8u, 0u, 1u },    { 0x8015ef18u, wrap_8015ef18, 8u, 0u, 1u },    { 0x8015ef24u, wrap_8015ef24, 8u, 0u, 1u },    { 0x8015ef2cu, wrap_8015ef2c, 8u, 0u, 1u },    { 0x8015ef38u, wrap_8015ef38, 8u, 0u, 1u },    { 0x8015ef40u, wrap_8015ef40, 8u, 0u, 1u },    { 0x8015ef4cu, wrap_8015ef4c, 8u, 0u, 1u },    { 0x8015ef78u, wrap_8015ef78, 8u, 0u, 1u },    { 0x8015ef8cu, wrap_8015ef8c, 8u, 0u, 1u },    { 0x8015ef98u, wrap_8015ef98, 8u, 0u, 1u },    { 0x8015efacu, wrap_8015efac, 8u, 0u, 1u },    { 0x8015efbcu, wrap_8015efbc, 8u, 0u, 1u },    { 0x8015efc8u, wrap_8015efc8, 8u, 0u, 1u },    { 0x8015efd0u, wrap_8015efd0, 8u, 0u, 1u },    { 0x8015eff0u, wrap_8015eff0, 8u, 0u, 1u },    { 0x8015f008u, wrap_8015f008, 8u, 0u, 1u },    { 0x8015f030u, wrap_8015f030, 8u, 0u, 1u },    { 0x8015f034u, wrap_8015f034, 8u, 0u, 1u },    { 0x8015f044u, wrap_8015f044, 8u, 0u, 1u },    { 0x8015f064u, wrap_8015f064, 8u, 0u, 1u },    { 0x8015f078u, wrap_8015f078, 8u, 0u, 1u },    { 0x8015f09cu, wrap_8015f09c, 8u, 0u, 1u },    { 0x8015f0a4u, wrap_8015f0a4, 8u, 0u, 1u },    { 0x8015f0b0u, wrap_8015f0b0, 8u, 0u, 1u },    { 0x8015f0c8u, wrap_8015f0c8, 8u, 0u, 1u },    { 0x8015f0d4u, wrap_8015f0d4, 8u, 0u, 1u },    { 0x8015f0dcu, wrap_8015f0dc, 8u, 0u, 1u },    { 0x8015f0ecu, wrap_8015f0ec, 8u, 0u, 1u },    { 0x8015f14cu, wrap_8015f14c, 8u, 0u, 1u },    { 0x8015f150u, wrap_8015f150, 8u, 0u, 1u },    { 0x8015f15cu, wrap_8015f15c, 8u, 0u, 1u },    { 0x8015f16cu, wrap_8015f16c, 8u, 0u, 1u },    { 0x8015f19cu, wrap_8015f19c, 8u, 0u, 1u },    { 0x8015f1a4u, wrap_8015f1a4, 8u, 0u, 1u },    { 0x8015f1acu, wrap_8015f1ac, 8u, 0u, 1u },    { 0x8015f1b4u, wrap_8015f1b4, 8u, 0u, 1u },    { 0x8015f1dcu, wrap_8015f1dc, 8u, 0u, 1u },    { 0x8015f20cu, wrap_8015f20c, 8u, 0u, 1u },    { 0x8015f21cu, wrap_8015f21c, 8u, 0u, 1u },    { 0x8015f234u, wrap_8015f234, 8u, 0u, 1u },    { 0x8015f23cu, wrap_8015f23c, 8u, 0u, 1u },    { 0x8015f264u, wrap_8015f264, 8u, 0u, 1u },    { 0x8015f26cu, wrap_8015f26c, 8u, 0u, 1u },    { 0x8015f274u, wrap_8015f274, 8u, 0u, 1u },    { 0x8015f290u, wrap_8015f290, 8u, 0u, 1u },    { 0x8015f2a4u, wrap_8015f2a4, 8u, 0u, 1u },    { 0x8015f2a8u, wrap_8015f2a8, 8u, 0u, 1u },    { 0x8015f2b0u, wrap_8015f2b0, 8u, 0u, 1u },    { 0x8015f2c8u, wrap_8015f2c8, 8u, 0u, 1u },    { 0x8015f2d4u, wrap_8015f2d4, 8u, 0u, 1u },    { 0x8015f2dcu, wrap_8015f2dc, 8u, 0u, 1u },    { 0x8015f2ecu, wrap_8015f2ec, 8u, 0u, 1u },    { 0x8015f2f4u, wrap_8015f2f4, 8u, 0u, 1u },    { 0x8015f308u, wrap_8015f308, 8u, 0u, 1u },    { 0x8015f310u, wrap_8015f310, 8u, 0u, 1u },    { 0x8015f31cu, wrap_8015f31c, 8u, 0u, 1u },    { 0x8015f328u, wrap_8015f328, 8u, 0u, 1u },    { 0x8015f32cu, wrap_8015f32c, 8u, 0u, 1u },    { 0x8015f33cu, wrap_8015f33c, 8u, 0u, 1u },    { 0x8015f34cu, wrap_8015f34c, 8u, 0u, 1u },    { 0x8015f360u, wrap_8015f360, 8u, 0u, 1u },    { 0x8015f36cu, wrap_8015f36c, 8u, 0u, 1u },    { 0x8015f380u, wrap_8015f380, 8u, 0u, 1u },    { 0x8015f38cu, wrap_8015f38c, 8u, 0u, 1u },    { 0x8015f394u, wrap_8015f394, 8u, 0u, 1u },    { 0x8015f39cu, wrap_8015f39c, 8u, 0u, 1u },    { 0x8015f3c8u, wrap_8015f3c8, 8u, 0u, 1u },    { 0x8015f3d8u, wrap_8015f3d8, 8u, 0u, 1u },    { 0x8015f3e4u, wrap_8015f3e4, 8u, 0u, 1u },    { 0x8015f430u, wrap_8015f430, 8u, 0u, 1u },    { 0x8015f434u, wrap_8015f434, 8u, 0u, 1u },    { 0x8015f450u, wrap_8015f450, 8u, 0u, 1u },    { 0x8015f468u, wrap_8015f468, 8u, 0u, 1u },    { 0x8015f478u, wrap_8015f478, 8u, 0u, 1u },    { 0x8015f48cu, wrap_8015f48c, 8u, 0u, 1u },    { 0x8015f4c0u, wrap_8015f4c0, 8u, 0u, 1u },    { 0x8015f4c8u, wrap_8015f4c8, 8u, 0u, 1u },    { 0x8015f4e8u, wrap_8015f4e8, 8u, 0u, 1u },    { 0x8015f4f0u, wrap_8015f4f0, 8u, 0u, 1u },    { 0x8015f528u, wrap_8015f528, 8u, 0u, 1u },    { 0x8015f52cu, wrap_8015f52c, 8u, 0u, 1u },    { 0x8015f534u, wrap_8015f534, 8u, 0u, 1u },    { 0x8015f554u, wrap_8015f554, 8u, 0u, 1u },    { 0x8015f55cu, wrap_8015f55c, 8u, 0u, 1u },    { 0x8015f564u, wrap_8015f564, 8u, 0u, 1u },    { 0x8015f56cu, wrap_8015f56c, 8u, 0u, 1u },    { 0x8015f590u, wrap_8015f590, 71u, 64u, 0u },    { 0x8015f644u, wrap_8015f644, 29u, 0u, 0u },    { 0x8015f64cu, wrap_8015f64c, 8u, 24u, 0u },    { 0x8015f6a0u, wrap_8015f6a0, 1247u, 248u, 0u },    { 0x80160598u, wrap_80160598, 236u, 64u, 0u },    { 0x8016088cu, wrap_8016088c, 150u, 112u, 0u },    { 0x80160a64u, wrap_80160a64, 914u, 192u, 1u },    { 0x80160aa4u, wrap_80160aa4, 8u, 0u, 1u },    { 0x80160ab8u, wrap_80160ab8, 8u, 0u, 1u },    { 0x80160ae4u, wrap_80160ae4, 8u, 0u, 1u },    { 0x80160b08u, wrap_80160b08, 8u, 0u, 1u },    { 0x80160b10u, wrap_80160b10, 8u, 0u, 1u },    { 0x80160b20u, wrap_80160b20, 8u, 0u, 1u },    { 0x80160b28u, wrap_80160b28, 8u, 0u, 1u },    { 0x80160b30u, wrap_80160b30, 8u, 0u, 1u },    { 0x80160b38u, wrap_80160b38, 8u, 0u, 1u },    { 0x80160b44u, wrap_80160b44, 8u, 0u, 1u },    { 0x80160b4cu, wrap_80160b4c, 8u, 0u, 1u },    { 0x80160b54u, wrap_80160b54, 8u, 0u, 1u },    { 0x80160b60u, wrap_80160b60, 8u, 0u, 1u },    { 0x80160b88u, wrap_80160b88, 8u, 0u, 1u },    { 0x80160b9cu, wrap_80160b9c, 8u, 0u, 1u },    { 0x80160bb8u, wrap_80160bb8, 8u, 0u, 1u },    { 0x80160bc0u, wrap_80160bc0, 8u, 0u, 1u },    { 0x80160bc8u, wrap_80160bc8, 8u, 0u, 1u },    { 0x80160bd0u, wrap_80160bd0, 8u, 0u, 1u },    { 0x80160bd8u, wrap_80160bd8, 8u, 0u, 1u },    { 0x80160bdcu, wrap_80160bdc, 8u, 0u, 1u },    { 0x80160bf0u, wrap_80160bf0, 8u, 0u, 1u },    { 0x80160bfcu, wrap_80160bfc, 8u, 0u, 1u },    { 0x80160c10u, wrap_80160c10, 8u, 0u, 1u },    { 0x80160c2cu, wrap_80160c2c, 8u, 0u, 1u },    { 0x80160c38u, wrap_80160c38, 8u, 0u, 1u },    { 0x80160c44u, wrap_80160c44, 8u, 0u, 1u },    { 0x80160c4cu, wrap_80160c4c, 8u, 0u, 1u },    { 0x80160c5cu, wrap_80160c5c, 8u, 0u, 1u },    { 0x80160c74u, wrap_80160c74, 8u, 0u, 1u },    { 0x80160c84u, wrap_80160c84, 8u, 0u, 1u },    { 0x80160ca4u, wrap_80160ca4, 8u, 0u, 1u },    { 0x80160cc0u, wrap_80160cc0, 8u, 0u, 1u },    { 0x80160cd0u, wrap_80160cd0, 8u, 0u, 1u },    { 0x80160cd8u, wrap_80160cd8, 8u, 0u, 1u },    { 0x80160ce0u, wrap_80160ce0, 8u, 0u, 1u },    { 0x80160ce8u, wrap_80160ce8, 8u, 0u, 1u },    { 0x80160cf0u, wrap_80160cf0, 8u, 0u, 1u },    { 0x80160cf8u, wrap_80160cf8, 8u, 0u, 1u },    { 0x80160d00u, wrap_80160d00, 8u, 0u, 1u },    { 0x80160d08u, wrap_80160d08, 8u, 0u, 1u },    { 0x80160d0cu, wrap_80160d0c, 8u, 0u, 1u },    { 0x80160d14u, wrap_80160d14, 8u, 0u, 1u },    { 0x80160d38u, wrap_80160d38, 8u, 0u, 1u },    { 0x80160d44u, wrap_80160d44, 8u, 0u, 1u },    { 0x80160d50u, wrap_80160d50, 8u, 0u, 1u },    { 0x80160d58u, wrap_80160d58, 8u, 0u, 1u },    { 0x80160d60u, wrap_80160d60, 8u, 0u, 1u },    { 0x80160d70u, wrap_80160d70, 8u, 0u, 1u },    { 0x80160d7cu, wrap_80160d7c, 8u, 0u, 1u },    { 0x80160d80u, wrap_80160d80, 8u, 0u, 1u },    { 0x80160de0u, wrap_80160de0, 8u, 0u, 1u },    { 0x80160de8u, wrap_80160de8, 8u, 0u, 1u },    { 0x80160df4u, wrap_80160df4, 8u, 0u, 1u },    { 0x80160e04u, wrap_80160e04, 8u, 0u, 1u },    { 0x80160e34u, wrap_80160e34, 8u, 0u, 1u },    { 0x80160e54u, wrap_80160e54, 8u, 0u, 1u },    { 0x80160e5cu, wrap_80160e5c, 8u, 0u, 1u },    { 0x80160e74u, wrap_80160e74, 8u, 0u, 1u },    { 0x80160e7cu, wrap_80160e7c, 8u, 0u, 1u },    { 0x80160e80u, wrap_80160e80, 8u, 0u, 1u },    { 0x80160e9cu, wrap_80160e9c, 8u, 0u, 1u },    { 0x80160edcu, wrap_80160edc, 8u, 0u, 1u },    { 0x80160ef8u, wrap_80160ef8, 8u, 0u, 1u },    { 0x80160f14u, wrap_80160f14, 8u, 0u, 1u },    { 0x80160f30u, wrap_80160f30, 8u, 0u, 1u },    { 0x80160f84u, wrap_80160f84, 8u, 0u, 1u },    { 0x80160fa0u, wrap_80160fa0, 8u, 0u, 1u },    { 0x80160fb0u, wrap_80160fb0, 8u, 0u, 1u },    { 0x80160fb4u, wrap_80160fb4, 8u, 0u, 1u },    { 0x80161008u, wrap_80161008, 8u, 0u, 1u },    { 0x80161024u, wrap_80161024, 8u, 0u, 1u },    { 0x80161034u, wrap_80161034, 8u, 0u, 1u },    { 0x80161038u, wrap_80161038, 8u, 0u, 1u },    { 0x80161090u, wrap_80161090, 8u, 0u, 1u },    { 0x801610acu, wrap_801610ac, 8u, 0u, 1u },    { 0x801610b8u, wrap_801610b8, 8u, 0u, 1u },    { 0x801610c4u, wrap_801610c4, 8u, 0u, 1u },    { 0x801610ccu, wrap_801610cc, 8u, 0u, 1u },    { 0x801610e0u, wrap_801610e0, 8u, 0u, 1u },    { 0x801610f8u, wrap_801610f8, 8u, 0u, 1u },    { 0x80161100u, wrap_80161100, 8u, 0u, 1u },    { 0x80161118u, wrap_80161118, 8u, 0u, 1u },    { 0x8016111cu, wrap_8016111c, 8u, 0u, 1u },    { 0x80161188u, wrap_80161188, 8u, 0u, 1u },    { 0x80161190u, wrap_80161190, 8u, 0u, 1u },    { 0x80161194u, wrap_80161194, 8u, 0u, 1u },    { 0x80161198u, wrap_80161198, 8u, 0u, 1u },    { 0x801611acu, wrap_801611ac, 8u, 0u, 1u },    { 0x801611c8u, wrap_801611c8, 8u, 0u, 1u },    { 0x801611d0u, wrap_801611d0, 8u, 0u, 1u },    { 0x801611e0u, wrap_801611e0, 8u, 0u, 1u },    { 0x801611f0u, wrap_801611f0, 8u, 0u, 1u },    { 0x801611f4u, wrap_801611f4, 8u, 0u, 1u },    { 0x80161234u, wrap_80161234, 8u, 0u, 1u },    { 0x8016123cu, wrap_8016123c, 8u, 0u, 1u },    { 0x80161248u, wrap_80161248, 8u, 0u, 1u },    { 0x80161258u, wrap_80161258, 8u, 0u, 1u },    { 0x80161270u, wrap_80161270, 8u, 0u, 1u },    { 0x8016129cu, wrap_8016129c, 8u, 0u, 1u },    { 0x801612c4u, wrap_801612c4, 8u, 0u, 1u },    { 0x801612d0u, wrap_801612d0, 8u, 0u, 1u },    { 0x8016130cu, wrap_8016130c, 8u, 0u, 1u },    { 0x80161310u, wrap_80161310, 8u, 0u, 1u },    { 0x80161350u, wrap_80161350, 8u, 0u, 1u },    { 0x80161370u, wrap_80161370, 8u, 0u, 1u },    { 0x80161388u, wrap_80161388, 8u, 0u, 1u },    { 0x80161390u, wrap_80161390, 8u, 0u, 1u },    { 0x801613bcu, wrap_801613bc, 8u, 0u, 1u },    { 0x80161400u, wrap_80161400, 8u, 0u, 1u },    { 0x80161404u, wrap_80161404, 8u, 0u, 1u },    { 0x80161478u, wrap_80161478, 8u, 0u, 1u },    { 0x80161480u, wrap_80161480, 8u, 0u, 1u },    { 0x80161484u, wrap_80161484, 8u, 0u, 1u },    { 0x8016149cu, wrap_8016149c, 8u, 0u, 1u },    { 0x801614c8u, wrap_801614c8, 8u, 0u, 1u },    { 0x801614d0u, wrap_801614d0, 8u, 0u, 1u },    { 0x801614e0u, wrap_801614e0, 8u, 0u, 1u },    { 0x801614f0u, wrap_801614f0, 8u, 0u, 1u },    { 0x80161528u, wrap_80161528, 8u, 0u, 1u },    { 0x80161534u, wrap_80161534, 8u, 0u, 1u },    { 0x80161540u, wrap_80161540, 8u, 0u, 1u },    { 0x80161544u, wrap_80161544, 8u, 0u, 1u },    { 0x80161550u, wrap_80161550, 8u, 0u, 1u },    { 0x80161558u, wrap_80161558, 8u, 0u, 1u },    { 0x80161564u, wrap_80161564, 8u, 0u, 1u },    { 0x8016156cu, wrap_8016156c, 8u, 0u, 1u },    { 0x80161594u, wrap_80161594, 8u, 0u, 1u },    { 0x801615c4u, wrap_801615c4, 8u, 0u, 1u },    { 0x801615e8u, wrap_801615e8, 8u, 0u, 1u },    { 0x801615f0u, wrap_801615f0, 8u, 0u, 1u },    { 0x801615fcu, wrap_801615fc, 8u, 0u, 1u },    { 0x80161630u, wrap_80161630, 516u, 160u, 1u },    { 0x8016167cu, wrap_8016167c, 8u, 0u, 1u },    { 0x80161684u, wrap_80161684, 8u, 0u, 1u },    { 0x8016168cu, wrap_8016168c, 8u, 0u, 1u },    { 0x80161694u, wrap_80161694, 8u, 0u, 1u },    { 0x8016169cu, wrap_8016169c, 8u, 0u, 1u },    { 0x801616a4u, wrap_801616a4, 8u, 0u, 1u },    { 0x801616acu, wrap_801616ac, 8u, 0u, 1u },    { 0x801616b4u, wrap_801616b4, 8u, 0u, 1u },    { 0x801616c4u, wrap_801616c4, 8u, 0u, 1u },    { 0x801616ccu, wrap_801616cc, 8u, 0u, 1u },    { 0x801616d4u, wrap_801616d4, 8u, 0u, 1u },    { 0x801616e0u, wrap_801616e0, 8u, 0u, 1u },    { 0x801616e8u, wrap_801616e8, 8u, 0u, 1u },    { 0x801616f0u, wrap_801616f0, 8u, 0u, 1u },    { 0x801616fcu, wrap_801616fc, 8u, 0u, 1u },    { 0x80161700u, wrap_80161700, 8u, 0u, 1u },    { 0x80161708u, wrap_80161708, 8u, 0u, 1u },    { 0x80161710u, wrap_80161710, 8u, 0u, 1u },    { 0x8016172cu, wrap_8016172c, 8u, 0u, 1u },    { 0x8016173cu, wrap_8016173c, 8u, 0u, 1u },    { 0x8016174cu, wrap_8016174c, 8u, 0u, 1u },    { 0x80161750u, wrap_80161750, 8u, 0u, 1u },    { 0x80161764u, wrap_80161764, 8u, 0u, 1u },    { 0x80161774u, wrap_80161774, 8u, 0u, 1u },    { 0x80161794u, wrap_80161794, 8u, 0u, 1u },    { 0x801617b8u, wrap_801617b8, 8u, 0u, 1u },    { 0x801617ccu, wrap_801617cc, 8u, 0u, 1u },    { 0x801617e0u, wrap_801617e0, 8u, 0u, 1u },    { 0x801617ecu, wrap_801617ec, 8u, 0u, 1u },    { 0x801617fcu, wrap_801617fc, 8u, 0u, 1u },    { 0x80161828u, wrap_80161828, 8u, 0u, 1u },    { 0x8016183cu, wrap_8016183c, 8u, 0u, 1u },    { 0x80161860u, wrap_80161860, 8u, 0u, 1u },    { 0x8016187cu, wrap_8016187c, 8u, 0u, 1u },    { 0x8016188cu, wrap_8016188c, 8u, 0u, 1u },    { 0x8016189cu, wrap_8016189c, 8u, 0u, 1u },    { 0x801618acu, wrap_801618ac, 8u, 0u, 1u },    { 0x801618bcu, wrap_801618bc, 8u, 0u, 1u },    { 0x801618c0u, wrap_801618c0, 8u, 0u, 1u },    { 0x801618d8u, wrap_801618d8, 8u, 0u, 1u },    { 0x801618e0u, wrap_801618e0, 8u, 0u, 1u },    { 0x80161900u, wrap_80161900, 8u, 0u, 1u },    { 0x80161918u, wrap_80161918, 8u, 0u, 1u },    { 0x80161924u, wrap_80161924, 8u, 0u, 1u },    { 0x80161938u, wrap_80161938, 8u, 0u, 1u },    { 0x80161948u, wrap_80161948, 8u, 0u, 1u },    { 0x8016194cu, wrap_8016194c, 8u, 0u, 1u },    { 0x80161974u, wrap_80161974, 8u, 0u, 1u },    { 0x8016197cu, wrap_8016197c, 8u, 0u, 1u },    { 0x801619a8u, wrap_801619a8, 8u, 0u, 1u },    { 0x801619d4u, wrap_801619d4, 8u, 0u, 1u },    { 0x80161a1cu, wrap_80161a1c, 8u, 0u, 1u },    { 0x80161a30u, wrap_80161a30, 8u, 0u, 1u },    { 0x80161a74u, wrap_80161a74, 8u, 0u, 1u },    { 0x80161aa8u, wrap_80161aa8, 8u, 0u, 1u },    { 0x80161ae0u, wrap_80161ae0, 8u, 0u, 1u },    { 0x80161b14u, wrap_80161b14, 8u, 0u, 1u },    { 0x80161b44u, wrap_80161b44, 8u, 0u, 1u },    { 0x80161b54u, wrap_80161b54, 8u, 0u, 1u },    { 0x80161b5cu, wrap_80161b5c, 8u, 0u, 1u },    { 0x80161b64u, wrap_80161b64, 8u, 0u, 1u },    { 0x80161b74u, wrap_80161b74, 8u, 0u, 1u },    { 0x80161b7cu, wrap_80161b7c, 8u, 0u, 1u },    { 0x80161b88u, wrap_80161b88, 8u, 0u, 1u },    { 0x80161b90u, wrap_80161b90, 8u, 0u, 1u },    { 0x80161bacu, wrap_80161bac, 8u, 0u, 1u },    { 0x80161bb0u, wrap_80161bb0, 8u, 0u, 1u },    { 0x80161becu, wrap_80161bec, 8u, 0u, 1u },    { 0x80161bfcu, wrap_80161bfc, 8u, 0u, 1u },    { 0x80161c00u, wrap_80161c00, 8u, 0u, 1u },    { 0x80161c08u, wrap_80161c08, 8u, 0u, 1u },    { 0x80161c10u, wrap_80161c10, 8u, 0u, 1u },    { 0x80161c20u, wrap_80161c20, 8u, 0u, 1u },    { 0x80161c54u, wrap_80161c54, 533u, 88u, 0u },    { 0x80162280u, wrap_80162280, 484u, 80u, 0u },    { 0x80162838u, wrap_80162838, 778u, 80u, 0u },    { 0x80163154u, wrap_80163154, 28u, 24u, 0u },    { 0x801631b4u, wrap_801631b4, 8u, 0u, 0u },    { 0x801631d0u, wrap_801631d0, 13u, 0u, 0u },    { 0x801631fcu, wrap_801631fc, 4u, 0u, 0u },    { 0x80163204u, wrap_80163204, 8u, 0u, 0u },    { 0x80163220u, wrap_80163220, 11u, 0u, 0u },    { 0x80163248u, wrap_80163248, 4u, 0u, 0u },    { 0x80163250u, wrap_80163250, 4u, 0u, 0u },    { 0x8016325cu, wrap_8016325c, 37u, 24u, 0u },    { 0x801632e4u, wrap_801632e4, 17u, 24u, 0u },    { 0x80163314u, wrap_80163314, 4u, 0u, 0u },    { 0x80163320u, wrap_80163320, 100u, 0u, 0u },    { 0x8016347cu, wrap_8016347c, 50u, 32u, 0u },    { 0x80163520u, wrap_80163520, 78u, 32u, 0u },    { 0x8016362cu, wrap_8016362c, 4u, 0u, 0u },    { 0x80163634u, wrap_80163634, 156u, 32u, 0u },    { 0x80163840u, wrap_80163840, 4u, 0u, 0u },    { 0x80163848u, wrap_80163848, 4u, 0u, 0u },    { 0x80163850u, wrap_80163850, 4u, 0u, 0u },    { 0x80163858u, wrap_80163858, 4u, 0u, 0u },    { 0x80163860u, wrap_80163860, 4u, 0u, 0u },    { 0x80163868u, wrap_80163868, 4u, 0u, 0u },    { 0x80163870u, wrap_80163870, 4u, 0u, 0u },    { 0x80163878u, wrap_80163878, 4u, 0u, 0u },    { 0x80163880u, wrap_80163880, 4u, 0u, 0u },    { 0x80163888u, wrap_80163888, 4u, 0u, 0u },    { 0x80163890u, wrap_80163890, 4u, 0u, 0u },    { 0x80163898u, wrap_80163898, 4u, 0u, 0u },    { 0x801638a0u, wrap_801638a0, 4u, 0u, 0u },    { 0x801638a8u, wrap_801638a8, 4u, 0u, 0u },    { 0x801638b0u, wrap_801638b0, 4u, 0u, 0u },    { 0x801638b8u, wrap_801638b8, 4u, 0u, 0u },    { 0x801638c0u, wrap_801638c0, 4u, 0u, 0u },    { 0x801638c8u, wrap_801638c8, 39u, 0u, 0u },    { 0x80163940u, wrap_80163940, 4u, 0u, 0u },    { 0x80163948u, wrap_80163948, 26u, 0u, 0u },    { 0x80163990u, wrap_80163990, 26u, 0u, 0u },    { 0x801639d8u, wrap_801639d8, 26u, 0u, 0u },    { 0x80163a20u, wrap_80163a20, 26u, 0u, 0u },    { 0x80163a68u, wrap_80163a68, 27u, 0u, 0u },    { 0x80163ab4u, wrap_80163ab4, 25u, 24u, 0u },    { 0x80163b08u, wrap_80163b08, 4u, 0u, 0u },    { 0x80163b10u, wrap_80163b10, 5u, 0u, 0u },    { 0x80163b20u, wrap_80163b20, 4u, 0u, 0u },    { 0x80163b28u, wrap_80163b28, 6u, 0u, 0u },    { 0x80163b40u, wrap_80163b40, 4u, 0u, 0u },    { 0x80163b48u, wrap_80163b48, 14u, 0u, 0u },    { 0x80163b7cu, wrap_80163b7c, 4u, 0u, 0u },    { 0x80163b84u, wrap_80163b84, 14u, 0u, 0u },    { 0x80163bb8u, wrap_80163bb8, 4u, 0u, 0u },    { 0x80163bc0u, wrap_80163bc0, 21u, 0u, 0u },    { 0x80163bf4u, wrap_80163bf4, 75u, 0u, 0u },    { 0x80163cbcu, wrap_80163cbc, 61u, 40u, 0u },    { 0x80163d7cu, wrap_80163d7c, 26u, 0u, 0u },    { 0x80163ddcu, wrap_80163ddc, 25u, 0u, 1u },    { 0x80163de8u, wrap_80163de8, 8u, 0u, 1u },    { 0x80163e00u, wrap_80163e00, 8u, 0u, 1u },    { 0x80163e0cu, wrap_80163e0c, 8u, 0u, 1u },    { 0x80163e14u, wrap_80163e14, 8u, 0u, 1u },    { 0x80163e28u, wrap_80163e28, 4u, 0u, 1u },    { 0x80163e30u, wrap_80163e30, 8u, 0u, 1u },    { 0x80163e38u, wrap_80163e38, 618u, 96u, 0u },    { 0x80164668u, wrap_80164668, 677u, 136u, 0u },    { 0x80164ea4u, wrap_80164ea4, 875u, 144u, 0u },    { 0x80165908u, wrap_80165908, 307u, 64u, 0u },    { 0x80165cb4u, wrap_80165cb4, 321u, 56u, 0u },    { 0x801660c0u, wrap_801660c0, 226u, 56u, 0u },    { 0x80166398u, wrap_80166398, 46u, 32u, 0u },    { 0x8016642cu, wrap_8016642c, 90u, 32u, 0u },    { 0x80166544u, wrap_80166544, 425u, 64u, 0u },    { 0x80166a60u, wrap_80166a60, 364u, 64u, 1u },    { 0x80166abcu, wrap_80166abc, 8u, 0u, 1u },    { 0x80166accu, wrap_80166acc, 8u, 0u, 1u },    { 0x80166ae8u, wrap_80166ae8, 8u, 0u, 1u },    { 0x80166b00u, wrap_80166b00, 8u, 0u, 1u },    { 0x80166b08u, wrap_80166b08, 8u, 0u, 1u },    { 0x80166b14u, wrap_80166b14, 8u, 0u, 1u },    { 0x80166b28u, wrap_80166b28, 8u, 0u, 1u },    { 0x80166b3cu, wrap_80166b3c, 8u, 0u, 1u },    { 0x80166b6cu, wrap_80166b6c, 8u, 0u, 1u },    { 0x80166b7cu, wrap_80166b7c, 8u, 0u, 1u },    { 0x80166b94u, wrap_80166b94, 8u, 0u, 1u },    { 0x80166b9cu, wrap_80166b9c, 8u, 0u, 1u },    { 0x80166bc0u, wrap_80166bc0, 8u, 0u, 1u },    { 0x80166bc8u, wrap_80166bc8, 8u, 0u, 1u },    { 0x80166becu, wrap_80166bec, 8u, 0u, 1u },    { 0x80166bf4u, wrap_80166bf4, 8u, 0u, 1u },    { 0x80166bf8u, wrap_80166bf8, 8u, 0u, 1u },    { 0x80166c04u, wrap_80166c04, 8u, 0u, 1u },    { 0x80166c14u, wrap_80166c14, 8u, 0u, 1u },    { 0x80166c58u, wrap_80166c58, 8u, 0u, 1u },    { 0x80166c5cu, wrap_80166c5c, 8u, 0u, 1u },    { 0x80166c68u, wrap_80166c68, 8u, 0u, 1u },    { 0x80166c7cu, wrap_80166c7c, 8u, 0u, 1u },    { 0x80166c90u, wrap_80166c90, 8u, 0u, 1u },    { 0x80166cc0u, wrap_80166cc0, 8u, 0u, 1u },    { 0x80166cd0u, wrap_80166cd0, 8u, 0u, 1u },    { 0x80166ce8u, wrap_80166ce8, 8u, 0u, 1u },    { 0x80166cf0u, wrap_80166cf0, 8u, 0u, 1u },    { 0x80166d14u, wrap_80166d14, 8u, 0u, 1u },    { 0x80166d1cu, wrap_80166d1c, 8u, 0u, 1u },    { 0x80166d40u, wrap_80166d40, 8u, 0u, 1u },    { 0x80166d48u, wrap_80166d48, 8u, 0u, 1u },    { 0x80166d4cu, wrap_80166d4c, 8u, 0u, 1u },    { 0x80166d58u, wrap_80166d58, 8u, 0u, 1u },    { 0x80166d68u, wrap_80166d68, 8u, 0u, 1u },    { 0x80166dacu, wrap_80166dac, 8u, 0u, 1u },    { 0x80166db0u, wrap_80166db0, 8u, 0u, 1u },    { 0x80166dbcu, wrap_80166dbc, 8u, 0u, 1u },    { 0x80166dc4u, wrap_80166dc4, 8u, 0u, 1u },    { 0x80166dd4u, wrap_80166dd4, 8u, 0u, 1u },    { 0x80166de4u, wrap_80166de4, 8u, 0u, 1u },    { 0x80166df8u, wrap_80166df8, 8u, 0u, 1u },    { 0x80166e0cu, wrap_80166e0c, 8u, 0u, 1u },    { 0x80166e18u, wrap_80166e18, 8u, 0u, 1u },    { 0x80166e20u, wrap_80166e20, 8u, 0u, 1u },    { 0x80166e2cu, wrap_80166e2c, 8u, 0u, 1u },    { 0x80166e38u, wrap_80166e38, 8u, 0u, 1u },    { 0x80166e48u, wrap_80166e48, 8u, 0u, 1u },    { 0x80166e58u, wrap_80166e58, 8u, 0u, 1u },    { 0x80166e68u, wrap_80166e68, 8u, 0u, 1u },    { 0x80166e74u, wrap_80166e74, 8u, 0u, 1u },    { 0x80166e88u, wrap_80166e88, 8u, 0u, 1u },    { 0x80166eb0u, wrap_80166eb0, 64u, 32u, 0u },    { 0x80166f64u, wrap_80166f64, 58u, 0u, 0u },    { 0x80166f6cu, wrap_80166f6c, 8u, 32u, 0u },    { 0x8016700cu, wrap_8016700c, 60u, 32u, 0u },    { 0x801670c8u, wrap_801670c8, 149u, 56u, 0u },    { 0x801672a0u, wrap_801672a0, 58u, 64u, 0u },    { 0x80167330u, wrap_80167330, 407u, 64u, 0u },    { 0x80167840u, wrap_80167840, 183u, 32u, 0u },    { 0x80167a64u, wrap_80167a64, 42u, 0u, 0u },    { 0x80167ae8u, wrap_80167ae8, 7u, 0u, 0u },    { 0x80167b00u, wrap_80167b00, 10u, 0u, 0u },    { 0x80167b20u, wrap_80167b20, 5u, 0u, 0u },    { 0x80167b34u, wrap_80167b34, 49u, 32u, 0u },    { 0x80167bd8u, wrap_80167bd8, 84u, 88u, 0u },    { 0x80167ce4u, wrap_80167ce4, 65u, 64u, 0u },    { 0x80167d7cu, wrap_80167d7c, 247u, 240u, 0u },    { 0x8016809cu, wrap_8016809c, 155u, 64u, 0u },    { 0x8016827cu, wrap_8016827c, 52u, 168u, 0u },    { 0x8016831cu, wrap_8016831c, 34u, 32u, 0u },    { 0x80168380u, wrap_80168380, 52u, 40u, 0u },    { 0x80168424u, wrap_80168424, 53u, 40u, 0u },    { 0x801684c8u, wrap_801684c8, 23u, 32u, 0u },    { 0x8016850cu, wrap_8016850c, 62u, 56u, 0u },    { 0x801685b4u, wrap_801685b4, 50u, 40u, 0u },    { 0x80168648u, wrap_80168648, 62u, 48u, 0u },    { 0x80168700u, wrap_80168700, 10u, 24u, 0u },    { 0x80168720u, wrap_80168720, 46u, 48u, 0u },    { 0x801687acu, wrap_801687ac, 46u, 48u, 0u },    { 0x80168838u, wrap_80168838, 64u, 64u, 1u },    { 0x80168870u, wrap_80168870, 8u, 0u, 1u },    { 0x80168888u, wrap_80168888, 8u, 0u, 1u },    { 0x80168890u, wrap_80168890, 8u, 0u, 1u },    { 0x8016889cu, wrap_8016889c, 8u, 0u, 1u },    { 0x801688a4u, wrap_801688a4, 8u, 0u, 1u },    { 0x801688b8u, wrap_801688b8, 8u, 0u, 1u },    { 0x801688c0u, wrap_801688c0, 8u, 0u, 1u },    { 0x801688c8u, wrap_801688c8, 8u, 0u, 1u },    { 0x801688f0u, wrap_801688f0, 64u, 64u, 0u },    { 0x801689a8u, wrap_801689a8, 12u, 24u, 0u },    { 0x801689d0u, wrap_801689d0, 111u, 0u, 0u },    { 0x80168ae0u, wrap_80168ae0, 132u, 0u, 0u },    { 0x80168c20u, wrap_80168c20, 153u, 0u, 0u },    { 0x80168d90u, wrap_80168d90, 195u, 0u, 0u },    { 0x80168f60u, wrap_80168f60, 165u, 8u, 0u },    { 0x801690fcu, wrap_801690fc, 193u, 8u, 0u },    { 0x801692d8u, wrap_801692d8, 225u, 8u, 0u },    { 0x8016951cu, wrap_8016951c, 283u, 8u, 0u },    { 0x801697f4u, wrap_801697f4, 121u, 0u, 0u },    { 0x8016991cu, wrap_8016991c, 163u, 0u, 0u },    { 0x80169aa4u, wrap_80169aa4, 147u, 0u, 0u },    { 0x80169c08u, wrap_80169c08, 210u, 0u, 0u },    { 0x80169dfcu, wrap_80169dfc, 92u, 0u, 0u },    { 0x80169ee0u, wrap_80169ee0, 106u, 0u, 0u },    { 0x80169fe4u, wrap_80169fe4, 113u, 0u, 0u },    { 0x8016a0f8u, wrap_8016a0f8, 134u, 0u, 0u },    { 0x8016a23cu, wrap_8016a23c, 136u, 0u, 0u },    { 0x8016a384u, wrap_8016a384, 164u, 0u, 0u },    { 0x8016a50cu, wrap_8016a50c, 150u, 0u, 0u },    { 0x8016a674u, wrap_8016a674, 185u, 0u, 0u },    { 0x8016a82cu, wrap_8016a82c, 72u, 0u, 0u },    { 0x8016a8ecu, wrap_8016a8ec, 67u, 0u, 0u },    { 0x8016a9acu, wrap_8016a9ac, 87u, 0u, 0u },    { 0x8016aaa4u, wrap_8016aaa4, 104u, 0u, 0u },    { 0x8016abb4u, wrap_8016abb4, 126u, 0u, 0u },    { 0x8016ad04u, wrap_8016ad04, 77u, 0u, 0u },    { 0x8016addcu, wrap_8016addc, 97u, 0u, 0u },    { 0x8016aeecu, wrap_8016aeec, 77u, 0u, 0u },    { 0x8016afc8u, wrap_8016afc8, 107u, 0u, 0u },    { 0x8016b0f8u, wrap_8016b0f8, 121u, 0u, 0u },    { 0x8016b234u, wrap_8016b234, 151u, 0u, 0u },    { 0x8016b3c4u, wrap_8016b3c4, 92u, 0u, 0u },    { 0x8016b4c4u, wrap_8016b4c4, 122u, 0u, 0u },    { 0x8016b618u, wrap_8016b618, 60u, 48u, 0u },    { 0x8016b6bcu, wrap_8016b6bc, 97u, 56u, 0u },    { 0x8016b7c0u, wrap_8016b7c0, 1635u, 344u, 0u },    { 0x8016cb20u, wrap_8016cb20, 98u, 0u, 0u },    { 0x8016cc5cu, wrap_8016cc5c, 118u, 80u, 0u },    { 0x8016cd8cu, wrap_8016cd8c, 361u, 40u, 0u },    { 0x8016d244u, wrap_8016d244, 180u, 0u, 0u },    { 0x8016d478u, wrap_8016d478, 573u, 88u, 0u },    { 0x8016dadcu, wrap_8016dadc, 320u, 56u, 0u },    { 0x8016ddf8u, wrap_8016ddf8, 317u, 80u, 0u },    { 0x8016e21cu, wrap_8016e21c, 1331u, 152u, 0u },    { 0x8016f2c4u, wrap_8016f2c4, 23u, 0u, 0u },    { 0x8016f30cu, wrap_8016f30c, 203u, 56u, 0u },    { 0x8016f588u, wrap_8016f588, 500u, 48u, 0u },    { 0x8016fbfcu, wrap_8016fbfc, 46u, 32u, 0u },    { 0x8016fc74u, wrap_8016fc74, 20u, 0u, 0u },    { 0x8016fca8u, wrap_8016fca8, 4u, 0u, 0u },    { 0x8016fcb0u, wrap_8016fcb0, 7u, 0u, 0u },    { 0x8016fcc4u, wrap_8016fcc4, 1053u, 80u, 0u },    { 0x801709fcu, wrap_801709fc, 275u, 48u, 0u },    { 0x80170d38u, wrap_80170d38, 224u, 64u, 0u },    { 0x80170fe0u, wrap_80170fe0, 786u, 128u, 0u },    { 0x80171890u, wrap_80171890, 730u, 88u, 0u },    { 0x80172100u, wrap_80172100, 47u, 40u, 0u },    { 0x801721a4u, wrap_801721a4, 339u, 72u, 0u },    { 0x801725a4u, wrap_801725a4, 59u, 48u, 0u },    { 0x80172640u, wrap_80172640, 67u, 48u, 0u },    { 0x801726ecu, wrap_801726ec, 63u, 0u, 0u },    { 0x801727b8u, wrap_801727b8, 222u, 0u, 0u },    { 0x80172a04u, wrap_80172a04, 12u, 0u, 0u },    { 0x80172a2cu, wrap_80172a2c, 4u, 0u, 1u },    { 0x80172a34u, wrap_80172a34, 1249u, 80u, 0u },    { 0x801737ecu, wrap_801737ec, 2714u, 160u, 0u },    { 0x801756b0u, wrap_801756b0, 32u, 0u, 0u },    { 0x80175708u, wrap_80175708, 32u, 0u, 0u },    { 0x80175760u, wrap_80175760, 32u, 0u, 0u },    { 0x801757b8u, wrap_801757b8, 82u, 0u, 0u },    { 0x80175898u, wrap_80175898, 148u, 0u, 0u },    { 0x80175a18u, wrap_80175a18, 35u, 0u, 1u },    { 0x80175a7cu, wrap_80175a7c, 296u, 56u, 0u },    { 0x80175e08u, wrap_80175e08, 208u, 0u, 0u },    { 0x80175fecu, wrap_80175fec, 198u, 48u, 0u },    { 0x80176248u, wrap_80176248, 2714u, 80u, 0u },    { 0x80178664u, wrap_80178664, 77u, 32u, 0u },    { 0x80178754u, wrap_80178754, 45u, 24u, 0u },    { 0x801787dcu, wrap_801787dc, 1068u, 56u, 0u },    { 0x80179478u, wrap_80179478, 151u, 40u, 0u },    { 0x80179638u, wrap_80179638, 55u, 0u, 0u },    { 0x801796ccu, wrap_801796cc, 8u, 0u, 0u },    { 0x801796e4u, wrap_801796e4, 4u, 0u, 1u },    { 0x801796ecu, wrap_801796ec, 187u, 0u, 0u },    { 0x80179964u, wrap_80179964, 59u, 0u, 0u },    { 0x80179a0cu, wrap_80179a0c, 29u, 0u, 0u },    { 0x80179a5cu, wrap_80179a5c, 4u, 0u, 1u },    { 0x80179a60u, wrap_80179a60, 4u, 0u, 1u },    { 0x80179a6cu, wrap_80179a6c, 49u, 24u, 0u },    { 0x80179ae0u, wrap_80179ae0, 503u, 72u, 0u },    { 0x8017a05cu, wrap_8017a05c, 638u, 0u, 0u },    { 0x8017a6a8u, wrap_8017a6a8, 4u, 0u, 0u },    { 0x8017a6b4u, wrap_8017a6b4, 22u, 0u, 0u },    { 0x8017a6e0u, wrap_8017a6e0, 4u, 0u, 1u },    { 0x8017a6e8u, wrap_8017a6e8, 120u, 0u, 0u },    { 0x8017a818u, wrap_8017a818, 55u, 56u, 0u },    { 0x8017a8b4u, wrap_8017a8b4, 67u, 24u, 0u },    { 0x8017a990u, wrap_8017a990, 11u, 0u, 1u },    { 0x8017a9a8u, wrap_8017a9a8, 8u, 0u, 1u },    { 0x8017a9b0u, wrap_8017a9b0, 8u, 0u, 1u },    { 0x8017a9b8u, wrap_8017a9b8, 4u, 0u, 1u },    { 0x8017a9c4u, wrap_8017a9c4, 4u, 0u, 1u },    { 0x8017a9d0u, wrap_8017a9d0, 13u, 0u, 1u },    { 0x8017a9e8u, wrap_8017a9e8, 8u, 0u, 1u },    { 0x8017a9fcu, wrap_8017a9fc, 4u, 0u, 1u },    { 0x8017aa04u, wrap_8017aa04, 4u, 0u, 1u },    { 0x8017aa0cu, wrap_8017aa0c, 88u, 0u, 0u },    { 0x8017ab30u, wrap_8017ab30, 14u, 0u, 1u },    { 0x8017ab48u, wrap_8017ab48, 8u, 0u, 1u },    { 0x8017ab5cu, wrap_8017ab5c, 9u, 0u, 1u },    { 0x8017ab74u, wrap_8017ab74, 59u, 0u, 0u },    { 0x8017ac44u, wrap_8017ac44, 4u, 0u, 1u },    { 0x8017ac4cu, wrap_8017ac4c, 7u, 0u, 1u },    { 0x8017ac5cu, wrap_8017ac5c, 8u, 0u, 1u },    { 0x8017ad78u, wrap_8017ad78, 19u, 0u, 1u },    { 0x8017ad80u, wrap_8017ad80, 8u, 0u, 1u },    { 0x8017ad88u, wrap_8017ad88, 8u, 0u, 1u },    { 0x8017ad94u, wrap_8017ad94, 8u, 0u, 1u },    { 0x8017ada0u, wrap_8017ada0, 8u, 0u, 1u },    { 0x8017adb0u, wrap_8017adb0, 8u, 0u, 1u },    { 0x8017adb8u, wrap_8017adb8, 4u, 0u, 1u },    { 0x8017ae00u, wrap_8017ae00, 8u, 0u, 1u },    { 0x8017ae10u, wrap_8017ae10, 4u, 0u, 1u },    { 0x8017ae18u, wrap_8017ae18, 235u, 32u, 0u },    { 0x8017b0d4u, wrap_8017b0d4, 102u, 0u, 0u },    { 0x8017b1ecu, wrap_8017b1ec, 351u, 48u, 0u },    { 0x8017b5f4u, wrap_8017b5f4, 23u, 0u, 1u },    { 0x8017b61cu, wrap_8017b61c, 8u, 0u, 1u },    { 0x8017b624u, wrap_8017b624, 8u, 0u, 1u },    { 0x8017b62cu, wrap_8017b62c, 8u, 0u, 1u },    { 0x8017b634u, wrap_8017b634, 8u, 0u, 1u },    { 0x8017b648u, wrap_8017b648, 4u, 0u, 1u },    { 0x8017b650u, wrap_8017b650, 6u, 0u, 1u },    { 0x8017b664u, wrap_8017b664, 4u, 0u, 1u },    { 0x8017b668u, wrap_8017b668, 163u, 0u, 1u },    { 0x8017b674u, wrap_8017b674, 8u, 0u, 1u },    { 0x8017b690u, wrap_8017b690, 8u, 0u, 1u },    { 0x8017b69cu, wrap_8017b69c, 8u, 0u, 1u },    { 0x8017b6acu, wrap_8017b6ac, 8u, 0u, 1u },    { 0x8017b6c0u, wrap_8017b6c0, 8u, 0u, 1u },    { 0x8017b6d0u, wrap_8017b6d0, 8u, 0u, 1u },    { 0x8017b6dcu, wrap_8017b6dc, 8u, 0u, 1u },    { 0x8017b704u, wrap_8017b704, 8u, 0u, 1u },    { 0x8017b710u, wrap_8017b710, 8u, 0u, 1u },    { 0x8017b724u, wrap_8017b724, 8u, 0u, 1u },    { 0x8017b728u, wrap_8017b728, 8u, 0u, 1u },    { 0x8017b734u, wrap_8017b734, 8u, 0u, 1u },    { 0x8017b738u, wrap_8017b738, 8u, 0u, 1u },    { 0x8017b740u, wrap_8017b740, 8u, 0u, 1u },    { 0x8017b744u, wrap_8017b744, 8u, 0u, 1u },    { 0x8017b74cu, wrap_8017b74c, 8u, 0u, 1u },    { 0x8017b750u, wrap_8017b750, 8u, 0u, 1u },    { 0x8017b758u, wrap_8017b758, 8u, 0u, 1u },    { 0x8017b75cu, wrap_8017b75c, 8u, 0u, 1u },    { 0x8017b764u, wrap_8017b764, 8u, 0u, 1u },    { 0x8017b768u, wrap_8017b768, 8u, 0u, 1u },    { 0x8017b770u, wrap_8017b770, 8u, 0u, 1u },    { 0x8017b774u, wrap_8017b774, 8u, 0u, 1u },    { 0x8017b77cu, wrap_8017b77c, 8u, 0u, 1u },    { 0x8017b780u, wrap_8017b780, 8u, 0u, 1u },    { 0x8017b79cu, wrap_8017b79c, 8u, 0u, 1u },    { 0x8017b7b0u, wrap_8017b7b0, 8u, 0u, 1u },    { 0x8017b7c8u, wrap_8017b7c8, 8u, 0u, 1u },    { 0x8017b7d4u, wrap_8017b7d4, 8u, 0u, 1u },    { 0x8017b7e0u, wrap_8017b7e0, 8u, 0u, 1u },    { 0x8017b7ecu, wrap_8017b7ec, 8u, 0u, 1u },    { 0x8017b7f8u, wrap_8017b7f8, 8u, 0u, 1u },    { 0x8017b83cu, wrap_8017b83c, 8u, 0u, 1u },    { 0x8017b840u, wrap_8017b840, 8u, 0u, 1u },    { 0x8017b844u, wrap_8017b844, 8u, 0u, 1u },    { 0x8017b84cu, wrap_8017b84c, 8u, 0u, 1u },    { 0x8017b858u, wrap_8017b858, 8u, 0u, 1u },    { 0x8017b860u, wrap_8017b860, 23u, 0u, 1u },    { 0x8017b888u, wrap_8017b888, 8u, 0u, 1u },    { 0x8017b890u, wrap_8017b890, 8u, 0u, 1u },    { 0x8017b898u, wrap_8017b898, 8u, 0u, 1u },    { 0x8017b8a0u, wrap_8017b8a0, 8u, 0u, 1u },    { 0x8017b8b4u, wrap_8017b8b4, 4u, 0u, 1u },    { 0x8017b8bcu, wrap_8017b8bc, 6u, 0u, 1u },    { 0x8017b8d0u, wrap_8017b8d0, 4u, 0u, 1u },    { 0x8017b8d4u, wrap_8017b8d4, 129u, 0u, 1u },    { 0x8017b8e0u, wrap_8017b8e0, 8u, 0u, 1u },    { 0x8017b8fcu, wrap_8017b8fc, 8u, 0u, 1u },    { 0x8017b914u, wrap_8017b914, 8u, 0u, 1u },    { 0x8017b92cu, wrap_8017b92c, 8u, 0u, 1u },    { 0x8017b944u, wrap_8017b944, 8u, 0u, 1u },    { 0x8017b950u, wrap_8017b950, 8u, 0u, 1u },    { 0x8017b970u, wrap_8017b970, 8u, 0u, 1u },    { 0x8017b974u, wrap_8017b974, 8u, 0u, 1u },    { 0x8017b98cu, wrap_8017b98c, 8u, 0u, 1u },    { 0x8017b9b4u, wrap_8017b9b4, 8u, 0u, 1u },    { 0x8017b9c0u, wrap_8017b9c0, 8u, 0u, 1u },    { 0x8017b9ccu, wrap_8017b9cc, 8u, 0u, 1u },    { 0x8017b9dcu, wrap_8017b9dc, 8u, 0u, 1u },    { 0x8017ba04u, wrap_8017ba04, 8u, 0u, 1u },    { 0x8017ba10u, wrap_8017ba10, 8u, 0u, 1u },    { 0x8017ba18u, wrap_8017ba18, 8u, 0u, 1u },    { 0x8017ba30u, wrap_8017ba30, 8u, 0u, 1u },    { 0x8017ba34u, wrap_8017ba34, 8u, 0u, 1u },    { 0x8017ba3cu, wrap_8017ba3c, 32u, 0u, 1u },    { 0x8017ba68u, wrap_8017ba68, 8u, 0u, 1u },    { 0x8017ba70u, wrap_8017ba70, 8u, 0u, 1u },    { 0x8017ba78u, wrap_8017ba78, 8u, 0u, 1u },    { 0x8017ba80u, wrap_8017ba80, 8u, 0u, 1u },    { 0x8017ba88u, wrap_8017ba88, 8u, 0u, 1u },    { 0x8017ba90u, wrap_8017ba90, 8u, 0u, 1u },    { 0x8017ba98u, wrap_8017ba98, 8u, 0u, 1u },    { 0x8017baacu, wrap_8017baac, 4u, 0u, 1u },    { 0x8017bab4u, wrap_8017bab4, 6u, 0u, 1u },    { 0x8017bac8u, wrap_8017bac8, 4u, 0u, 1u },    { 0x8017bad0u, wrap_8017bad0, 4u, 0u, 1u },    { 0x8017bad4u, wrap_8017bad4, 239u, 0u, 0u },    { 0x8017baf0u, wrap_8017baf0, 8u, 0u, 1u },    { 0x8017bb0cu, wrap_8017bb0c, 8u, 0u, 1u },    { 0x8017bb24u, wrap_8017bb24, 8u, 0u, 1u },    { 0x8017bb3cu, wrap_8017bb3c, 8u, 0u, 1u },    { 0x8017bb4cu, wrap_8017bb4c, 8u, 0u, 1u },    { 0x8017bb58u, wrap_8017bb58, 8u, 0u, 1u },    { 0x8017bb60u, wrap_8017bb60, 8u, 0u, 1u },    { 0x8017bb68u, wrap_8017bb68, 8u, 0u, 1u },    { 0x8017bb70u, wrap_8017bb70, 8u, 0u, 1u },    { 0x8017bb78u, wrap_8017bb78, 8u, 0u, 1u },    { 0x8017bb8cu, wrap_8017bb8c, 8u, 0u, 1u },    { 0x8017bba0u, wrap_8017bba0, 8u, 0u, 1u },    { 0x8017bbb4u, wrap_8017bbb4, 8u, 0u, 1u },    { 0x8017bbc8u, wrap_8017bbc8, 8u, 0u, 1u },    { 0x8017bbdcu, wrap_8017bbdc, 8u, 0u, 1u },    { 0x8017bbf0u, wrap_8017bbf0, 8u, 0u, 1u },    { 0x8017bc04u, wrap_8017bc04, 8u, 0u, 1u },    { 0x8017bc18u, wrap_8017bc18, 8u, 0u, 1u },    { 0x8017bc2cu, wrap_8017bc2c, 8u, 0u, 1u },    { 0x8017bc40u, wrap_8017bc40, 8u, 0u, 1u },    { 0x8017bc54u, wrap_8017bc54, 8u, 0u, 1u },    { 0x8017bc68u, wrap_8017bc68, 8u, 0u, 1u },    { 0x8017bc7cu, wrap_8017bc7c, 8u, 0u, 1u },    { 0x8017bc90u, wrap_8017bc90, 8u, 0u, 1u },    { 0x8017bca4u, wrap_8017bca4, 8u, 0u, 1u },    { 0x8017bcb0u, wrap_8017bcb0, 8u, 0u, 1u },    { 0x8017bcbcu, wrap_8017bcbc, 8u, 0u, 1u },    { 0x8017bcc8u, wrap_8017bcc8, 8u, 0u, 1u },    { 0x8017bcd4u, wrap_8017bcd4, 8u, 0u, 1u },    { 0x8017bce0u, wrap_8017bce0, 8u, 0u, 1u },    { 0x8017bce8u, wrap_8017bce8, 8u, 0u, 1u },    { 0x8017bcfcu, wrap_8017bcfc, 8u, 0u, 1u },    { 0x8017bd10u, wrap_8017bd10, 8u, 0u, 1u },    { 0x8017bd24u, wrap_8017bd24, 8u, 0u, 1u },    { 0x8017bd30u, wrap_8017bd30, 8u, 0u, 1u },    { 0x8017bd38u, wrap_8017bd38, 8u, 0u, 1u },    { 0x8017bd4cu, wrap_8017bd4c, 8u, 0u, 1u },    { 0x8017bd60u, wrap_8017bd60, 8u, 0u, 1u },    { 0x8017bd74u, wrap_8017bd74, 8u, 0u, 1u },    { 0x8017bd80u, wrap_8017bd80, 8u, 0u, 1u },    { 0x8017bd84u, wrap_8017bd84, 8u, 0u, 1u },    { 0x8017bd8cu, wrap_8017bd8c, 4u, 0u, 1u },    { 0x8017bd94u, wrap_8017bd94, 196u, 24u, 0u },    { 0x8017bfb8u, wrap_8017bfb8, 281u, 48u, 0u },    { 0x8017c35cu, wrap_8017c35c, 25u, 0u, 1u },    { 0x8017c384u, wrap_8017c384, 8u, 0u, 1u },    { 0x8017c390u, wrap_8017c390, 8u, 0u, 1u },    { 0x8017c398u, wrap_8017c398, 8u, 0u, 1u },    { 0x8017c3a0u, wrap_8017c3a0, 8u, 0u, 1u },    { 0x8017c3b4u, wrap_8017c3b4, 4u, 0u, 1u },    { 0x8017c3bcu, wrap_8017c3bc, 6u, 0u, 1u },    { 0x8017c3d0u, wrap_8017c3d0, 151u, 0u, 1u },    { 0x8017c3ecu, wrap_8017c3ec, 8u, 0u, 1u },    { 0x8017c3f4u, wrap_8017c3f4, 8u, 0u, 1u },    { 0x8017c3fcu, wrap_8017c3fc, 8u, 0u, 1u },    { 0x8017c404u, wrap_8017c404, 8u, 0u, 1u },    { 0x8017c40cu, wrap_8017c40c, 8u, 0u, 1u },    { 0x8017c414u, wrap_8017c414, 8u, 0u, 1u },    { 0x8017c41cu, wrap_8017c41c, 8u, 0u, 1u },    { 0x8017c438u, wrap_8017c438, 8u, 0u, 1u },    { 0x8017c44cu, wrap_8017c44c, 8u, 0u, 1u },    { 0x8017c460u, wrap_8017c460, 8u, 0u, 1u },    { 0x8017c478u, wrap_8017c478, 8u, 0u, 1u },    { 0x8017c4a0u, wrap_8017c4a0, 8u, 0u, 1u },    { 0x8017c4a8u, wrap_8017c4a8, 8u, 0u, 1u },    { 0x8017c4ccu, wrap_8017c4cc, 8u, 0u, 1u },    { 0x8017c4e0u, wrap_8017c4e0, 8u, 0u, 1u },    { 0x8017c4f4u, wrap_8017c4f4, 8u, 0u, 1u },    { 0x8017c50cu, wrap_8017c50c, 8u, 0u, 1u },    { 0x8017c518u, wrap_8017c518, 8u, 0u, 1u },    { 0x8017c520u, wrap_8017c520, 8u, 0u, 1u },    { 0x8017c528u, wrap_8017c528, 8u, 0u, 1u },    { 0x8017c534u, wrap_8017c534, 8u, 0u, 1u },    { 0x8017c540u, wrap_8017c540, 8u, 0u, 1u },    { 0x8017c548u, wrap_8017c548, 8u, 0u, 1u },    { 0x8017c554u, wrap_8017c554, 8u, 0u, 1u },    { 0x8017c560u, wrap_8017c560, 8u, 0u, 1u },    { 0x8017c56cu, wrap_8017c56c, 8u, 0u, 1u },    { 0x8017c580u, wrap_8017c580, 8u, 0u, 1u },    { 0x8017c58cu, wrap_8017c58c, 8u, 0u, 1u },    { 0x8017c598u, wrap_8017c598, 8u, 0u, 1u },    { 0x8017c5a4u, wrap_8017c5a4, 8u, 0u, 1u },    { 0x8017c5acu, wrap_8017c5ac, 8u, 0u, 1u },    { 0x8017c5b0u, wrap_8017c5b0, 8u, 0u, 1u },    { 0x8017c5b8u, wrap_8017c5b8, 20u, 0u, 1u },    { 0x8017c5d4u, wrap_8017c5d4, 8u, 0u, 1u },    { 0x8017c5dcu, wrap_8017c5dc, 8u, 0u, 1u },    { 0x8017c5e4u, wrap_8017c5e4, 8u, 0u, 1u },    { 0x8017c5ecu, wrap_8017c5ec, 8u, 0u, 1u },    { 0x8017c600u, wrap_8017c600, 4u, 0u, 1u },    { 0x8017c608u, wrap_8017c608, 6u, 0u, 1u },    { 0x8017c61cu, wrap_8017c61c, 26u, 0u, 1u },    { 0x8017c638u, wrap_8017c638, 8u, 0u, 1u },    { 0x8017c650u, wrap_8017c650, 8u, 0u, 1u },    { 0x8017c660u, wrap_8017c660, 8u, 0u, 1u },    { 0x8017c66cu, wrap_8017c66c, 112u, 32u, 0u },    { 0x8017c7b0u, wrap_8017c7b0, 31u, 0u, 1u },    { 0x8017c7c8u, wrap_8017c7c8, 8u, 0u, 1u },    { 0x8017c7dcu, wrap_8017c7dc, 8u, 0u, 1u },    { 0x8017c7e0u, wrap_8017c7e0, 8u, 0u, 1u },    { 0x8017c800u, wrap_8017c800, 8u, 0u, 1u },    { 0x8017c804u, wrap_8017c804, 8u, 0u, 1u },    { 0x8017c810u, wrap_8017c810, 8u, 0u, 1u },    { 0x8017c818u, wrap_8017c818, 12u, 0u, 1u },    { 0x8017c840u, wrap_8017c840, 7u, 0u, 1u },    { 0x8017c850u, wrap_8017c850, 22u, 0u, 1u },    { 0x8017c874u, wrap_8017c874, 8u, 0u, 1u },    { 0x8017c884u, wrap_8017c884, 8u, 0u, 1u },    { 0x8017c88cu, wrap_8017c88c, 8u, 0u, 1u },    { 0x8017c898u, wrap_8017c898, 31u, 0u, 1u },    { 0x8017c8b0u, wrap_8017c8b0, 8u, 0u, 1u },    { 0x8017c8c4u, wrap_8017c8c4, 8u, 0u, 1u },    { 0x8017c8c8u, wrap_8017c8c8, 8u, 0u, 1u },    { 0x8017c8e8u, wrap_8017c8e8, 8u, 0u, 1u },    { 0x8017c8ecu, wrap_8017c8ec, 8u, 0u, 1u },    { 0x8017c8f8u, wrap_8017c8f8, 8u, 0u, 1u },    { 0x8017c900u, wrap_8017c900, 12u, 0u, 1u },    { 0x8017c928u, wrap_8017c928, 7u, 0u, 1u },    { 0x8017c938u, wrap_8017c938, 21u, 0u, 1u },    { 0x8017c958u, wrap_8017c958, 8u, 0u, 1u },    { 0x8017c968u, wrap_8017c968, 8u, 0u, 1u },    { 0x8017c970u, wrap_8017c970, 8u, 0u, 1u },    { 0x8017c97cu, wrap_8017c97c, 22u, 24u, 0u },    { 0x8017c9bcu, wrap_8017c9bc, 8u, 0u, 1u },    { 0x8017c9d4u, wrap_8017c9d4, 57u, 0u, 0u },    { 0x8017ca84u, wrap_8017ca84, 21u, 0u, 1u },    { 0x8017caa0u, wrap_8017caa0, 8u, 0u, 1u },    { 0x8017caa8u, wrap_8017caa8, 8u, 0u, 1u },    { 0x8017cab4u, wrap_8017cab4, 8u, 0u, 1u },    { 0x8017cabcu, wrap_8017cabc, 8u, 0u, 1u },    { 0x8017cad0u, wrap_8017cad0, 4u, 0u, 1u },    { 0x8017cad8u, wrap_8017cad8, 6u, 0u, 1u },    { 0x8017caecu, wrap_8017caec, 4u, 0u, 1u },    { 0x8017caf4u, wrap_8017caf4, 346u, 32u, 1u },    { 0x8017cb2cu, wrap_8017cb2c, 8u, 0u, 1u },    { 0x8017cb34u, wrap_8017cb34, 8u, 0u, 1u },    { 0x8017cb3cu, wrap_8017cb3c, 8u, 0u, 1u },    { 0x8017cb44u, wrap_8017cb44, 8u, 0u, 1u },    { 0x8017cb4cu, wrap_8017cb4c, 8u, 0u, 1u },    { 0x8017cb54u, wrap_8017cb54, 8u, 0u, 1u },    { 0x8017cb5cu, wrap_8017cb5c, 8u, 0u, 1u },    { 0x8017cb88u, wrap_8017cb88, 8u, 0u, 1u },    { 0x8017cb90u, wrap_8017cb90, 8u, 0u, 1u },    { 0x8017cb94u, wrap_8017cb94, 8u, 0u, 1u },    { 0x8017cbc8u, wrap_8017cbc8, 8u, 0u, 1u },    { 0x8017cbd0u, wrap_8017cbd0, 8u, 0u, 1u },    { 0x8017cc04u, wrap_8017cc04, 8u, 0u, 1u },    { 0x8017cc0cu, wrap_8017cc0c, 8u, 0u, 1u },    { 0x8017cc2cu, wrap_8017cc2c, 8u, 0u, 1u },    { 0x8017cc34u, wrap_8017cc34, 8u, 0u, 1u },    { 0x8017cc38u, wrap_8017cc38, 8u, 0u, 1u },    { 0x8017cc74u, wrap_8017cc74, 8u, 0u, 1u },    { 0x8017cc7cu, wrap_8017cc7c, 8u, 0u, 1u },    { 0x8017ccb0u, wrap_8017ccb0, 8u, 0u, 1u },    { 0x8017ccb8u, wrap_8017ccb8, 8u, 0u, 1u },    { 0x8017cce0u, wrap_8017cce0, 8u, 0u, 1u },    { 0x8017ccecu, wrap_8017ccec, 8u, 0u, 1u },    { 0x8017ccf8u, wrap_8017ccf8, 8u, 0u, 1u },    { 0x8017cd04u, wrap_8017cd04, 8u, 0u, 1u },    { 0x8017cd0cu, wrap_8017cd0c, 8u, 0u, 1u },    { 0x8017cd20u, wrap_8017cd20, 8u, 0u, 1u },    { 0x8017cd2cu, wrap_8017cd2c, 8u, 0u, 1u },    { 0x8017cd38u, wrap_8017cd38, 8u, 0u, 1u },    { 0x8017cd44u, wrap_8017cd44, 8u, 0u, 1u },    { 0x8017cd4cu, wrap_8017cd4c, 8u, 0u, 1u },    { 0x8017cd68u, wrap_8017cd68, 8u, 0u, 1u },    { 0x8017cd70u, wrap_8017cd70, 8u, 0u, 1u },    { 0x8017cd94u, wrap_8017cd94, 8u, 0u, 1u },    { 0x8017cda8u, wrap_8017cda8, 8u, 0u, 1u },    { 0x8017cdc8u, wrap_8017cdc8, 8u, 0u, 1u },    { 0x8017cddcu, wrap_8017cddc, 8u, 0u, 1u },    { 0x8017ce10u, wrap_8017ce10, 8u, 0u, 1u },    { 0x8017ce28u, wrap_8017ce28, 8u, 0u, 1u },    { 0x8017ce38u, wrap_8017ce38, 8u, 0u, 1u },    { 0x8017ce40u, wrap_8017ce40, 8u, 0u, 1u },    { 0x8017ce50u, wrap_8017ce50, 8u, 0u, 1u },    { 0x8017ce64u, wrap_8017ce64, 8u, 0u, 1u },    { 0x8017ce78u, wrap_8017ce78, 8u, 0u, 1u },    { 0x8017ce98u, wrap_8017ce98, 8u, 0u, 1u },    { 0x8017cea8u, wrap_8017cea8, 8u, 0u, 1u },    { 0x8017ceacu, wrap_8017ceac, 8u, 0u, 1u },    { 0x8017ceb8u, wrap_8017ceb8, 8u, 0u, 1u },    { 0x8017cec4u, wrap_8017cec4, 8u, 0u, 1u },    { 0x8017cee4u, wrap_8017cee4, 8u, 0u, 1u },    { 0x8017ceecu, wrap_8017ceec, 8u, 0u, 1u },    { 0x8017cef4u, wrap_8017cef4, 8u, 0u, 1u },    { 0x8017cefcu, wrap_8017cefc, 8u, 0u, 1u },    { 0x8017cf00u, wrap_8017cf00, 8u, 0u, 1u },    { 0x8017cf14u, wrap_8017cf14, 29u, 24u, 0u },    { 0x8017cf6cu, wrap_8017cf6c, 35u, 0u, 0u },    { 0x8017cfe0u, wrap_8017cfe0, 14u, 24u, 0u },    { 0x8017d008u, wrap_8017d008, 51u, 24u, 0u },    { 0x8017d0b0u, wrap_8017d0b0, 75u, 0u, 0u },    { 0x8017d198u, wrap_8017d198, 4u, 0u, 0u },    { 0x8017d19cu, wrap_8017d19c, 16u, 0u, 0u },    { 0x8017d1c4u, wrap_8017d1c4, 4u, 0u, 0u },    { 0x8017d1d0u, wrap_8017d1d0, 30u, 0u, 1u },    { 0x8017d1f8u, wrap_8017d1f8, 8u, 0u, 1u },    { 0x8017d1fcu, wrap_8017d1fc, 8u, 0u, 1u },    { 0x8017d210u, wrap_8017d210, 8u, 0u, 1u },    { 0x8017d218u, wrap_8017d218, 8u, 0u, 1u },    { 0x8017d220u, wrap_8017d220, 8u, 0u, 1u },    { 0x8017d228u, wrap_8017d228, 8u, 0u, 1u },    { 0x8017d23cu, wrap_8017d23c, 4u, 0u, 1u },    { 0x8017d244u, wrap_8017d244, 6u, 0u, 1u },    { 0x8017d258u, wrap_8017d258, 4u, 0u, 1u },    { 0x8017d25cu, wrap_8017d25c, 85u, 0u, 1u },    { 0x8017d268u, wrap_8017d268, 8u, 0u, 1u },    { 0x8017d284u, wrap_8017d284, 8u, 0u, 1u },    { 0x8017d2a0u, wrap_8017d2a0, 8u, 0u, 1u },    { 0x8017d2b8u, wrap_8017d2b8, 8u, 0u, 1u },    { 0x8017d2d4u, wrap_8017d2d4, 8u, 0u, 1u },    { 0x8017d2f0u, wrap_8017d2f0, 8u, 0u, 1u },    { 0x8017d2f8u, wrap_8017d2f8, 8u, 0u, 1u },    { 0x8017d2fcu, wrap_8017d2fc, 8u, 0u, 1u },    { 0x8017d308u, wrap_8017d308, 8u, 0u, 1u },    { 0x8017d314u, wrap_8017d314, 8u, 0u, 1u },    { 0x8017d330u, wrap_8017d330, 8u, 0u, 1u },    { 0x8017d344u, wrap_8017d344, 8u, 0u, 1u },    { 0x8017d34cu, wrap_8017d34c, 8u, 0u, 1u },    { 0x8017d354u, wrap_8017d354, 13u, 0u, 1u },    { 0x8017d378u, wrap_8017d378, 149u, 24u, 0u },    { 0x8017d55cu, wrap_8017d55c, 28u, 0u, 1u },    { 0x8017d580u, wrap_8017d580, 8u, 0u, 1u },    { 0x8017d584u, wrap_8017d584, 8u, 0u, 1u },    { 0x8017d594u, wrap_8017d594, 8u, 0u, 1u },    { 0x8017d59cu, wrap_8017d59c, 8u, 0u, 1u },    { 0x8017d5a4u, wrap_8017d5a4, 8u, 0u, 1u },    { 0x8017d5acu, wrap_8017d5ac, 8u, 0u, 1u },    { 0x8017d5c0u, wrap_8017d5c0, 4u, 0u, 1u },    { 0x8017d5c8u, wrap_8017d5c8, 6u, 0u, 1u },    { 0x8017d5dcu, wrap_8017d5dc, 4u, 0u, 1u },    { 0x8017d5e0u, wrap_8017d5e0, 71u, 0u, 1u },    { 0x8017d5ecu, wrap_8017d5ec, 8u, 0u, 1u },    { 0x8017d608u, wrap_8017d608, 8u, 0u, 1u },    { 0x8017d61cu, wrap_8017d61c, 8u, 0u, 1u },    { 0x8017d628u, wrap_8017d628, 8u, 0u, 1u },    { 0x8017d63cu, wrap_8017d63c, 8u, 0u, 1u },    { 0x8017d650u, wrap_8017d650, 8u, 0u, 1u },    { 0x8017d660u, wrap_8017d660, 8u, 0u, 1u },    { 0x8017d670u, wrap_8017d670, 8u, 0u, 1u },    { 0x8017d67cu, wrap_8017d67c, 8u, 0u, 1u },    { 0x8017d690u, wrap_8017d690, 8u, 0u, 1u },    { 0x8017d694u, wrap_8017d694, 8u, 0u, 1u },    { 0x8017d6a0u, wrap_8017d6a0, 8u, 0u, 1u },    { 0x8017d6a4u, wrap_8017d6a4, 8u, 0u, 1u },    { 0x8017d6acu, wrap_8017d6ac, 31u, 0u, 1u },    { 0x8017d6d0u, wrap_8017d6d0, 8u, 0u, 1u },    { 0x8017d6d4u, wrap_8017d6d4, 8u, 0u, 1u },    { 0x8017d6e4u, wrap_8017d6e4, 8u, 0u, 1u },    { 0x8017d6ecu, wrap_8017d6ec, 8u, 0u, 1u },    { 0x8017d6f4u, wrap_8017d6f4, 8u, 0u, 1u },    { 0x8017d6fcu, wrap_8017d6fc, 8u, 0u, 1u },    { 0x8017d710u, wrap_8017d710, 8u, 0u, 1u },    { 0x8017d71cu, wrap_8017d71c, 4u, 0u, 1u },    { 0x8017d724u, wrap_8017d724, 4u, 0u, 1u },    { 0x8017d72cu, wrap_8017d72c, 11u, 0u, 1u },    { 0x8017d740u, wrap_8017d740, 8u, 0u, 1u },    { 0x8017d74cu, wrap_8017d74c, 8u, 0u, 1u },    { 0x8017d754u, wrap_8017d754, 4u, 0u, 1u },    { 0x8017d758u, wrap_8017d758, 54u, 0u, 1u },    { 0x8017d764u, wrap_8017d764, 8u, 0u, 1u },    { 0x8017d780u, wrap_8017d780, 8u, 0u, 1u },    { 0x8017d78cu, wrap_8017d78c, 8u, 0u, 1u },    { 0x8017d798u, wrap_8017d798, 8u, 0u, 1u },    { 0x8017d7a4u, wrap_8017d7a4, 8u, 0u, 1u },    { 0x8017d7b0u, wrap_8017d7b0, 8u, 0u, 1u },    { 0x8017d7ecu, wrap_8017d7ec, 4u, 0u, 1u },    { 0x8017d7f4u, wrap_8017d7f4, 151u, 32u, 0u },    { 0x8017d9dcu, wrap_8017d9dc, 30u, 0u, 1u },    { 0x8017da00u, wrap_8017da00, 8u, 0u, 1u },    { 0x8017da04u, wrap_8017da04, 8u, 0u, 1u },    { 0x8017da18u, wrap_8017da18, 8u, 0u, 1u },    { 0x8017da20u, wrap_8017da20, 8u, 0u, 1u },    { 0x8017da28u, wrap_8017da28, 8u, 0u, 1u },    { 0x8017da30u, wrap_8017da30, 8u, 0u, 1u },    { 0x8017da44u, wrap_8017da44, 4u, 0u, 1u },    { 0x8017da4cu, wrap_8017da4c, 6u, 0u, 1u },    { 0x8017da60u, wrap_8017da60, 4u, 0u, 1u },    { 0x8017da64u, wrap_8017da64, 4u, 0u, 1u },    { 0x8017da68u, wrap_8017da68, 94u, 0u, 1u },    { 0x8017da70u, wrap_8017da70, 8u, 0u, 1u },    { 0x8017da78u, wrap_8017da78, 8u, 0u, 1u },    { 0x8017da80u, wrap_8017da80, 8u, 0u, 1u },    { 0x8017da88u, wrap_8017da88, 8u, 0u, 1u },    { 0x8017da90u, wrap_8017da90, 8u, 0u, 1u },    { 0x8017da98u, wrap_8017da98, 8u, 0u, 1u },    { 0x8017dac8u, wrap_8017dac8, 8u, 0u, 1u },    { 0x8017daf8u, wrap_8017daf8, 8u, 0u, 1u },    { 0x8017db7cu, wrap_8017db7c, 8u, 0u, 1u },    { 0x8017db80u, wrap_8017db80, 8u, 0u, 1u },    { 0x8017db88u, wrap_8017db88, 406u, 40u, 0u },    { 0x8017e138u, wrap_8017e138, 238u, 24u, 0u },    { 0x8017e46cu, wrap_8017e46c, 35u, 32u, 0u },    { 0x8017e4ccu, wrap_8017e4cc, 4u, 0u, 1u },    { 0x8017e4d4u, wrap_8017e4d4, 99u, 0u, 1u },    { 0x8017e4f0u, wrap_8017e4f0, 8u, 0u, 1u },    { 0x8017e4f8u, wrap_8017e4f8, 8u, 0u, 1u },    { 0x8017e500u, wrap_8017e500, 8u, 0u, 1u },    { 0x8017e508u, wrap_8017e508, 8u, 0u, 1u },    { 0x8017e510u, wrap_8017e510, 8u, 0u, 1u },    { 0x8017e518u, wrap_8017e518, 8u, 0u, 1u },    { 0x8017e528u, wrap_8017e528, 8u, 0u, 1u },    { 0x8017e530u, wrap_8017e530, 8u, 0u, 1u },    { 0x8017e540u, wrap_8017e540, 8u, 0u, 1u },    { 0x8017e548u, wrap_8017e548, 8u, 0u, 1u },    { 0x8017e554u, wrap_8017e554, 8u, 0u, 1u },    { 0x8017e588u, wrap_8017e588, 8u, 0u, 1u },    { 0x8017e598u, wrap_8017e598, 8u, 0u, 1u },    { 0x8017e59cu, wrap_8017e59c, 8u, 0u, 1u },    { 0x8017e61cu, wrap_8017e61c, 8u, 0u, 1u },    { 0x8017e620u, wrap_8017e620, 8u, 0u, 1u },    { 0x8017e628u, wrap_8017e628, 28u, 0u, 1u },    { 0x8017e64cu, wrap_8017e64c, 8u, 0u, 1u },    { 0x8017e650u, wrap_8017e650, 8u, 0u, 1u },    { 0x8017e660u, wrap_8017e660, 8u, 0u, 1u },    { 0x8017e668u, wrap_8017e668, 8u, 0u, 1u },    { 0x8017e670u, wrap_8017e670, 8u, 0u, 1u },    { 0x8017e678u, wrap_8017e678, 8u, 0u, 1u },    { 0x8017e68cu, wrap_8017e68c, 4u, 0u, 1u },    { 0x8017e694u, wrap_8017e694, 6u, 0u, 1u },    { 0x8017e6a8u, wrap_8017e6a8, 4u, 0u, 1u },    { 0x8017e6acu, wrap_8017e6ac, 4u, 0u, 1u },    { 0x8017e6b0u, wrap_8017e6b0, 60u, 0u, 1u },    { 0x8017e6b8u, wrap_8017e6b8, 8u, 0u, 1u },    { 0x8017e6c0u, wrap_8017e6c0, 8u, 0u, 1u },    { 0x8017e6c8u, wrap_8017e6c8, 8u, 0u, 1u },    { 0x8017e6d0u, wrap_8017e6d0, 8u, 0u, 1u },    { 0x8017e6d8u, wrap_8017e6d8, 8u, 0u, 1u },    { 0x8017e6e0u, wrap_8017e6e0, 8u, 0u, 1u },    { 0x8017e6e8u, wrap_8017e6e8, 8u, 0u, 1u },    { 0x8017e6f8u, wrap_8017e6f8, 8u, 0u, 1u },    { 0x8017e704u, wrap_8017e704, 8u, 0u, 1u },    { 0x8017e714u, wrap_8017e714, 8u, 0u, 1u },    { 0x8017e724u, wrap_8017e724, 8u, 0u, 1u },    { 0x8017e730u, wrap_8017e730, 8u, 0u, 1u },    { 0x8017e740u, wrap_8017e740, 8u, 0u, 1u },    { 0x8017e74cu, wrap_8017e74c, 8u, 0u, 1u },    { 0x8017e760u, wrap_8017e760, 8u, 0u, 1u },    { 0x8017e76cu, wrap_8017e76c, 8u, 0u, 1u },    { 0x8017e774u, wrap_8017e774, 8u, 0u, 1u },    { 0x8017e77cu, wrap_8017e77c, 65u, 32u, 0u },    { 0x8017e840u, wrap_8017e840, 24u, 0u, 0u },    { 0x8017e87cu, wrap_8017e87c, 8u, 0u, 0u },    { 0x8017e88cu, wrap_8017e88c, 16u, 0u, 0u },    { 0x8017e8b4u, wrap_8017e8b4, 18u, 0u, 0u },    { 0x8017e8e0u, wrap_8017e8e0, 16u, 0u, 0u },    { 0x8017e908u, wrap_8017e908, 16u, 0u, 0u },    { 0x8017e930u, wrap_8017e930, 19u, 0u, 0u },    { 0x8017e960u, wrap_8017e960, 6u, 0u, 0u },    { 0x8017e970u, wrap_8017e970, 6u, 0u, 0u },    { 0x8017e980u, wrap_8017e980, 6u, 0u, 0u },    { 0x8017e990u, wrap_8017e990, 33u, 0u, 0u },    { 0x8017e9ecu, wrap_8017e9ec, 4u, 0u, 0u },    { 0x8017e9f4u, wrap_8017e9f4, 43u, 0u, 0u },    { 0x8017ea7cu, wrap_8017ea7c, 53u, 32u, 0u },    { 0x8017eb10u, wrap_8017eb10, 42u, 0u, 0u },    { 0x8017eb78u, wrap_8017eb78, 500u, 88u, 0u },    { 0x8017f13cu, wrap_8017f13c, 174u, 40u, 0u },    { 0x8017f398u, wrap_8017f398, 356u, 48u, 0u },    { 0x8017f7c4u, wrap_8017f7c4, 134u, 0u, 0u },    { 0x8017f97cu, wrap_8017f97c, 108u, 0u, 1u },    { 0x8017f98cu, wrap_8017f98c, 8u, 0u, 1u },    { 0x8017f9a0u, wrap_8017f9a0, 8u, 0u, 1u },    { 0x8017f9b4u, wrap_8017f9b4, 8u, 0u, 1u },    { 0x8017f9c8u, wrap_8017f9c8, 8u, 0u, 1u },    { 0x8017f9d8u, wrap_8017f9d8, 8u, 0u, 1u },    { 0x8017f9ecu, wrap_8017f9ec, 8u, 0u, 1u },    { 0x8017f9fcu, wrap_8017f9fc, 8u, 0u, 1u },    { 0x8017fa14u, wrap_8017fa14, 8u, 0u, 1u },    { 0x8017fa30u, wrap_8017fa30, 8u, 0u, 1u },    { 0x8017fa44u, wrap_8017fa44, 8u, 0u, 1u },    { 0x8017fa58u, wrap_8017fa58, 8u, 0u, 1u },    { 0x8017fa64u, wrap_8017fa64, 8u, 0u, 1u },    { 0x8017fa78u, wrap_8017fa78, 8u, 0u, 1u },    { 0x8017fa8cu, wrap_8017fa8c, 8u, 0u, 1u },    { 0x8017faa0u, wrap_8017faa0, 8u, 0u, 1u },    { 0x8017fab4u, wrap_8017fab4, 8u, 0u, 1u },    { 0x8017fac8u, wrap_8017fac8, 8u, 0u, 1u },    { 0x8017fadcu, wrap_8017fadc, 8u, 0u, 1u },    { 0x8017fae4u, wrap_8017fae4, 6u, 0u, 1u },    { 0x8017faf8u, wrap_8017faf8, 4u, 0u, 1u },    { 0x8017fb00u, wrap_8017fb00, 15u, 0u, 1u },    { 0x8017fb14u, wrap_8017fb14, 8u, 0u, 1u },    { 0x8017fb28u, wrap_8017fb28, 8u, 0u, 1u },    { 0x8017fb2cu, wrap_8017fb2c, 8u, 0u, 1u },    { 0x8017fb34u, wrap_8017fb34, 267u, 40u, 0u },    { 0x8017fe60u, wrap_8017fe60, 226u, 64u, 0u },    { 0x801800a4u, wrap_801800a4, 213u, 0u, 1u },    { 0x801800d4u, wrap_801800d4, 8u, 0u, 1u },    { 0x80180134u, wrap_80180134, 8u, 0u, 1u },    { 0x80180140u, wrap_80180140, 8u, 0u, 1u },    { 0x80180184u, wrap_80180184, 8u, 0u, 1u },    { 0x80180190u, wrap_80180190, 8u, 0u, 1u },    { 0x801802ccu, wrap_801802cc, 670u, 0u, 1u },    { 0x801802e0u, wrap_801802e0, 8u, 0u, 1u },    { 0x80180364u, wrap_80180364, 8u, 0u, 1u },    { 0x80180370u, wrap_80180370, 8u, 0u, 1u },    { 0x801803b4u, wrap_801803b4, 8u, 0u, 1u },    { 0x801803c0u, wrap_801803c0, 8u, 0u, 1u },    { 0x80180504u, wrap_80180504, 8u, 0u, 1u },    { 0x80180564u, wrap_80180564, 8u, 0u, 1u },    { 0x801805dcu, wrap_801805dc, 8u, 0u, 1u },    { 0x801805e8u, wrap_801805e8, 8u, 0u, 1u },    { 0x8018062cu, wrap_8018062c, 8u, 0u, 1u },    { 0x80180638u, wrap_80180638, 8u, 0u, 1u },    { 0x8018077cu, wrap_8018077c, 8u, 0u, 1u },    { 0x801807f0u, wrap_801807f0, 8u, 0u, 1u },    { 0x801807f8u, wrap_801807f8, 8u, 0u, 1u },    { 0x80180804u, wrap_80180804, 8u, 0u, 1u },    { 0x80180848u, wrap_80180848, 8u, 0u, 1u },    { 0x80180854u, wrap_80180854, 8u, 0u, 1u },    { 0x8018098cu, wrap_8018098c, 26u, 0u, 1u },    { 0x80180998u, wrap_80180998, 8u, 0u, 1u },    { 0x801809c8u, wrap_801809c8, 541u, 80u, 0u },    { 0x80181000u, wrap_80181000, 39u, 0u, 1u },    { 0x80181008u, wrap_80181008, 8u, 0u, 1u },    { 0x80181018u, wrap_80181018, 8u, 0u, 1u },    { 0x80181034u, wrap_80181034, 8u, 0u, 1u },    { 0x8018103cu, wrap_8018103c, 8u, 0u, 1u },    { 0x8018106cu, wrap_8018106c, 155u, 48u, 0u },    { 0x8018123cu, wrap_8018123c, 856u, 80u, 0u },    { 0x80181db8u, wrap_80181db8, 108u, 0u, 0u },    { 0x80181ee8u, wrap_80181ee8, 4u, 0u, 1u },    { 0x80181ef0u, wrap_80181ef0, 13u, 0u, 1u },    { 0x80181f10u, wrap_80181f10, 4u, 0u, 1u },    { 0x80181f18u, wrap_80181f18, 4u, 0u, 1u },    { 0x80181f20u, wrap_80181f20, 1341u, 40u, 0u },    { 0x80182f3cu, wrap_80182f3c, 4u, 0u, 0u },    { 0x80182f48u, wrap_80182f48, 258u, 72u, 0u },    { 0x80183248u, wrap_80183248, 261u, 72u, 0u },    { 0x80183558u, wrap_80183558, 34u, 0u, 0u },    { 0x801835c4u, wrap_801835c4, 4u, 0u, 0u },    { 0x801835d0u, wrap_801835d0, 49u, 0u, 1u },    { 0x801835e0u, wrap_801835e0, 8u, 0u, 1u },    { 0x801835e8u, wrap_801835e8, 8u, 0u, 1u },    { 0x801835f8u, wrap_801835f8, 8u, 0u, 1u },    { 0x80183600u, wrap_80183600, 8u, 0u, 1u },    { 0x80183610u, wrap_80183610, 8u, 0u, 1u },    { 0x80183618u, wrap_80183618, 8u, 0u, 1u },    { 0x80183628u, wrap_80183628, 8u, 0u, 1u },    { 0x80183630u, wrap_80183630, 8u, 0u, 1u },    { 0x80183640u, wrap_80183640, 8u, 0u, 1u },    { 0x80183648u, wrap_80183648, 8u, 0u, 1u },    { 0x80183658u, wrap_80183658, 8u, 0u, 1u },    { 0x8018365cu, wrap_8018365c, 8u, 0u, 1u },    { 0x80183664u, wrap_80183664, 458u, 40u, 0u },    { 0x80183bd0u, wrap_80183bd0, 33u, 0u, 0u },    { 0x80183c30u, wrap_80183c30, 626u, 40u, 0u },    { 0x80184378u, wrap_80184378, 66u, 0u, 0u },    { 0x8018444cu, wrap_8018444c, 236u, 48u, 0u },    { 0x80184710u, wrap_80184710, 85u, 0u, 0u },    { 0x80184810u, wrap_80184810, 39u, 0u, 0u },    { 0x80184890u, wrap_80184890, 40u, 0u, 0u },    { 0x80184914u, wrap_80184914, 41u, 0u, 0u },    { 0x8018499cu, wrap_8018499c, 87u, 32u, 0u },    { 0x80184aa0u, wrap_80184aa0, 222u, 24u, 0u },    { 0x80184d3cu, wrap_80184d3c, 178u, 0u, 0u },    { 0x80184f28u, wrap_80184f28, 98u, 56u, 0u },    { 0x80185048u, wrap_80185048, 143u, 0u, 0u },    { 0x801851d8u, wrap_801851d8, 47u, 0u, 0u },    { 0x80185290u, wrap_80185290, 135u, 0u, 0u },    { 0x80185404u, wrap_80185404, 4u, 0u, 0u },    { 0x80185408u, wrap_80185408, 16u, 0u, 0u },    { 0x80185444u, wrap_80185444, 4u, 0u, 0u },    { 0x8018544cu, wrap_8018544c, 104u, 56u, 0u },    { 0x80185568u, wrap_80185568, 22u, 0u, 0u },    { 0x801855b4u, wrap_801855b4, 65u, 0u, 0u },    { 0x80185680u, wrap_80185680, 56u, 0u, 0u },    { 0x8018572cu, wrap_8018572c, 60u, 0u, 0u },    { 0x801857f0u, wrap_801857f0, 82u, 0u, 0u },    { 0x801858f8u, wrap_801858f8, 26u, 0u, 0u },    { 0x8018594cu, wrap_8018594c, 22u, 0u, 0u },    { 0x80185998u, wrap_80185998, 241u, 64u, 0u },    { 0x80185c70u, wrap_80185c70, 129u, 48u, 0u },    { 0x80185ddcu, wrap_80185ddc, 55u, 8u, 0u },    { 0x80185e6cu, wrap_80185e6c, 99u, 32u, 0u },    { 0x80185f64u, wrap_80185f64, 283u, 48u, 0u },    { 0x801862a8u, wrap_801862a8, 92u, 0u, 0u },    { 0x801863acu, wrap_801863ac, 4u, 0u, 0u },    { 0x801863b4u, wrap_801863b4, 105u, 48u, 0u },    { 0x801864dcu, wrap_801864dc, 388u, 112u, 0u },    { 0x8018694cu, wrap_8018694c, 128u, 48u, 0u },    { 0x80186aa8u, wrap_80186aa8, 51u, 32u, 0u },    { 0x80186b2cu, wrap_80186b2c, 74u, 48u, 0u },    { 0x80186bfcu, wrap_80186bfc, 98u, 72u, 0u },    { 0x80186d20u, wrap_80186d20, 107u, 0u, 0u },    { 0x80186e64u, wrap_80186e64, 74u, 0u, 0u },    { 0x80186f5cu, wrap_80186f5c, 100u, 0u, 0u },    { 0x801870a4u, wrap_801870a4, 98u, 0u, 1u },    { 0x801870acu, wrap_801870ac, 8u, 0u, 1u },    { 0x801870f0u, wrap_801870f0, 8u, 0u, 1u },    { 0x80187100u, wrap_80187100, 8u, 0u, 1u },    { 0x80187108u, wrap_80187108, 8u, 0u, 1u },    { 0x80187110u, wrap_80187110, 8u, 0u, 1u },    { 0x80187118u, wrap_80187118, 8u, 0u, 1u },    { 0x80187144u, wrap_80187144, 8u, 0u, 1u },    { 0x8018714cu, wrap_8018714c, 8u, 0u, 1u },    { 0x80187164u, wrap_80187164, 8u, 0u, 1u },    { 0x80187178u, wrap_80187178, 8u, 0u, 1u },    { 0x80187180u, wrap_80187180, 8u, 0u, 1u },    { 0x8018718cu, wrap_8018718c, 8u, 0u, 1u },    { 0x801871b4u, wrap_801871b4, 8u, 0u, 1u },    { 0x801871bcu, wrap_801871bc, 96u, 0u, 0u },    { 0x801872ccu, wrap_801872cc, 59u, 0u, 0u },    { 0x80187378u, wrap_80187378, 68u, 0u, 0u },    { 0x8018743cu, wrap_8018743c, 72u, 0u, 0u },    { 0x80187504u, wrap_80187504, 90u, 0u, 0u },    { 0x801875fcu, wrap_801875fc, 64u, 0u, 0u },    { 0x801876bcu, wrap_801876bc, 73u, 0u, 0u },    { 0x80187794u, wrap_80187794, 76u, 0u, 0u },    { 0x8018786cu, wrap_8018786c, 97u, 0u, 0u },    { 0x80187980u, wrap_80187980, 70u, 0u, 0u },    { 0x80187a48u, wrap_80187a48, 78u, 0u, 0u },    { 0x80187b20u, wrap_80187b20, 85u, 0u, 0u },    { 0x80187c10u, wrap_80187c10, 96u, 0u, 0u },    { 0x80187d14u, wrap_80187d14, 70u, 0u, 0u },    { 0x80187dccu, wrap_80187dcc, 26u, 0u, 0u },    { 0x80187e18u, wrap_80187e18, 70u, 0u, 0u },    { 0x80187ee0u, wrap_80187ee0, 99u, 0u, 0u },    { 0x80187ffcu, wrap_80187ffc, 74u, 0u, 0u },    { 0x801880d4u, wrap_801880d4, 103u, 0u, 0u },    { 0x80188200u, wrap_80188200, 90u, 0u, 1u },    { 0x80188208u, wrap_80188208, 8u, 0u, 1u },    { 0x80188210u, wrap_80188210, 8u, 0u, 1u },    { 0x80188214u, wrap_80188214, 8u, 0u, 1u },    { 0x80188260u, wrap_80188260, 8u, 0u, 1u },    { 0x801882f8u, wrap_801882f8, 8u, 0u, 1u },    { 0x80188300u, wrap_80188300, 8u, 0u, 1u },    { 0x80188308u, wrap_80188308, 105u, 0u, 1u },    { 0x80188310u, wrap_80188310, 8u, 0u, 1u },    { 0x80188318u, wrap_80188318, 8u, 0u, 1u },    { 0x8018831cu, wrap_8018831c, 8u, 0u, 1u },    { 0x80188368u, wrap_80188368, 8u, 0u, 1u },    { 0x80188424u, wrap_80188424, 8u, 0u, 1u },    { 0x8018842cu, wrap_8018842c, 8u, 0u, 1u },    { 0x80188434u, wrap_80188434, 79u, 0u, 1u },    { 0x8018843cu, wrap_8018843c, 8u, 0u, 1u },    { 0x80188444u, wrap_80188444, 8u, 0u, 1u },    { 0x80188448u, wrap_80188448, 8u, 0u, 1u },    { 0x80188494u, wrap_80188494, 8u, 0u, 1u },    { 0x80188500u, wrap_80188500, 8u, 0u, 1u },    { 0x80188508u, wrap_80188508, 8u, 0u, 1u },    { 0x80188510u, wrap_80188510, 123u, 0u, 0u },    { 0x8018866cu, wrap_8018866c, 82u, 0u, 1u },    { 0x80188674u, wrap_80188674, 8u, 0u, 1u },    { 0x8018867cu, wrap_8018867c, 8u, 0u, 1u },    { 0x80188680u, wrap_80188680, 8u, 0u, 1u },    { 0x801886ccu, wrap_801886cc, 8u, 0u, 1u },    { 0x80188744u, wrap_80188744, 8u, 0u, 1u },    { 0x8018874cu, wrap_8018874c, 8u, 0u, 1u },    { 0x80188754u, wrap_80188754, 127u, 0u, 0u },    { 0x801888c0u, wrap_801888c0, 107u, 0u, 1u },    { 0x801888c8u, wrap_801888c8, 8u, 0u, 1u },    { 0x801888d0u, wrap_801888d0, 8u, 0u, 1u },    { 0x801888d4u, wrap_801888d4, 8u, 0u, 1u },    { 0x80188920u, wrap_80188920, 8u, 0u, 1u },    { 0x801889e4u, wrap_801889e4, 8u, 0u, 1u },    { 0x801889ecu, wrap_801889ec, 8u, 0u, 1u },    { 0x801889f4u, wrap_801889f4, 129u, 0u, 1u },    { 0x801889fcu, wrap_801889fc, 8u, 0u, 1u },    { 0x80188a04u, wrap_80188a04, 8u, 0u, 1u },    { 0x80188a08u, wrap_80188a08, 8u, 0u, 1u },    { 0x80188a54u, wrap_80188a54, 8u, 0u, 1u },    { 0x80188b4cu, wrap_80188b4c, 8u, 0u, 1u },    { 0x80188b54u, wrap_80188b54, 8u, 0u, 1u },    { 0x80188b5cu, wrap_80188b5c, 66u, 0u, 1u },    { 0x80188b6cu, wrap_80188b6c, 8u, 0u, 1u },    { 0x80188b7cu, wrap_80188b7c, 8u, 0u, 1u },    { 0x80188b8cu, wrap_80188b8c, 8u, 0u, 1u },    { 0x80188b98u, wrap_80188b98, 8u, 0u, 1u },    { 0x80188ba0u, wrap_80188ba0, 8u, 0u, 1u },    { 0x80188ba8u, wrap_80188ba8, 8u, 0u, 1u },    { 0x80188bacu, wrap_80188bac, 8u, 0u, 1u },    { 0x80188bf4u, wrap_80188bf4, 8u, 0u, 1u },    { 0x80188c24u, wrap_80188c24, 8u, 0u, 1u },    { 0x80188c2cu, wrap_80188c2c, 8u, 0u, 1u },    { 0x80188c34u, wrap_80188c34, 77u, 0u, 1u },    { 0x80188c44u, wrap_80188c44, 8u, 0u, 1u },    { 0x80188c54u, wrap_80188c54, 8u, 0u, 1u },    { 0x80188c64u, wrap_80188c64, 8u, 0u, 1u },    { 0x80188c70u, wrap_80188c70, 8u, 0u, 1u },    { 0x80188c78u, wrap_80188c78, 8u, 0u, 1u },    { 0x80188c80u, wrap_80188c80, 8u, 0u, 1u },    { 0x80188c84u, wrap_80188c84, 8u, 0u, 1u },    { 0x80188cccu, wrap_80188ccc, 8u, 0u, 1u },    { 0x80188d1cu, wrap_80188d1c, 8u, 0u, 1u },    { 0x80188d24u, wrap_80188d24, 8u, 0u, 1u },    { 0x80188d2cu, wrap_80188d2c, 56u, 0u, 1u },    { 0x80188d34u, wrap_80188d34, 8u, 0u, 1u },    { 0x80188d3cu, wrap_80188d3c, 8u, 0u, 1u },    { 0x80188d40u, wrap_80188d40, 8u, 0u, 1u },    { 0x80188d80u, wrap_80188d80, 8u, 0u, 1u },    { 0x80188dbcu, wrap_80188dbc, 8u, 0u, 1u },    { 0x80188dc4u, wrap_80188dc4, 8u, 0u, 1u },    { 0x80188dccu, wrap_80188dcc, 66u, 0u, 1u },    { 0x80188dd4u, wrap_80188dd4, 8u, 0u, 1u },    { 0x80188ddcu, wrap_80188ddc, 8u, 0u, 1u },    { 0x80188de0u, wrap_80188de0, 8u, 0u, 1u },    { 0x80188e20u, wrap_80188e20, 8u, 0u, 1u },    { 0x80188e78u, wrap_80188e78, 8u, 0u, 1u },    { 0x80188e80u, wrap_80188e80, 8u, 0u, 1u },    { 0x80188e88u, wrap_80188e88, 68u, 0u, 1u },    { 0x80188e90u, wrap_80188e90, 8u, 0u, 1u },    { 0x80188e98u, wrap_80188e98, 8u, 0u, 1u },    { 0x80188e9cu, wrap_80188e9c, 8u, 0u, 1u },    { 0x80188edcu, wrap_80188edc, 8u, 0u, 1u },    { 0x80188f30u, wrap_80188f30, 8u, 0u, 1u },    { 0x80188f38u, wrap_80188f38, 8u, 0u, 1u },    { 0x80188f40u, wrap_80188f40, 87u, 0u, 1u },    { 0x80188f48u, wrap_80188f48, 8u, 0u, 1u },    { 0x80188f50u, wrap_80188f50, 8u, 0u, 1u },    { 0x80188f54u, wrap_80188f54, 8u, 0u, 1u },    { 0x80188f94u, wrap_80188f94, 8u, 0u, 1u },    { 0x8018901cu, wrap_8018901c, 8u, 0u, 1u },    { 0x80189024u, wrap_80189024, 8u, 0u, 1u },    { 0x8018902cu, wrap_8018902c, 60u, 0u, 1u },    { 0x80189034u, wrap_80189034, 8u, 0u, 1u },    { 0x8018903cu, wrap_8018903c, 8u, 0u, 1u },    { 0x80189040u, wrap_80189040, 8u, 0u, 1u },    { 0x801890a4u, wrap_801890a4, 8u, 0u, 1u },    { 0x801890ccu, wrap_801890cc, 8u, 0u, 1u },    { 0x801890d4u, wrap_801890d4, 8u, 0u, 1u },    { 0x801890dcu, wrap_801890dc, 69u, 0u, 1u },    { 0x801890e4u, wrap_801890e4, 8u, 0u, 1u },    { 0x801890ecu, wrap_801890ec, 8u, 0u, 1u },    { 0x801890f0u, wrap_801890f0, 8u, 0u, 1u },    { 0x80189154u, wrap_80189154, 8u, 0u, 1u },    { 0x80189194u, wrap_80189194, 8u, 0u, 1u },    { 0x8018919cu, wrap_8018919c, 8u, 0u, 1u },    { 0x801891a4u, wrap_801891a4, 72u, 0u, 1u },    { 0x801891acu, wrap_801891ac, 8u, 0u, 1u },    { 0x801891b4u, wrap_801891b4, 8u, 0u, 1u },    { 0x801891b8u, wrap_801891b8, 8u, 0u, 1u },    { 0x80189210u, wrap_80189210, 8u, 0u, 1u },    { 0x8018925cu, wrap_8018925c, 8u, 0u, 1u },    { 0x80189264u, wrap_80189264, 8u, 0u, 1u },    { 0x8018926cu, wrap_8018926c, 89u, 0u, 1u },    { 0x80189274u, wrap_80189274, 8u, 0u, 1u },    { 0x8018927cu, wrap_8018927c, 8u, 0u, 1u },    { 0x80189280u, wrap_80189280, 8u, 0u, 1u },    { 0x801892d8u, wrap_801892d8, 8u, 0u, 1u },    { 0x80189350u, wrap_80189350, 8u, 0u, 1u },    { 0x80189358u, wrap_80189358, 8u, 0u, 1u },    { 0x80189360u, wrap_80189360, 70u, 0u, 1u },    { 0x80189368u, wrap_80189368, 8u, 0u, 1u },    { 0x80189370u, wrap_80189370, 8u, 0u, 1u },    { 0x80189374u, wrap_80189374, 8u, 0u, 1u },    { 0x801893b4u, wrap_801893b4, 8u, 0u, 1u },    { 0x80189418u, wrap_80189418, 8u, 0u, 1u },    { 0x80189420u, wrap_80189420, 8u, 0u, 1u },    { 0x80189428u, wrap_80189428, 78u, 0u, 1u },    { 0x80189430u, wrap_80189430, 8u, 0u, 1u },    { 0x80189438u, wrap_80189438, 8u, 0u, 1u },    { 0x8018943cu, wrap_8018943c, 8u, 0u, 1u },    { 0x8018947cu, wrap_8018947c, 8u, 0u, 1u },    { 0x801894f0u, wrap_801894f0, 8u, 0u, 1u },    { 0x801894f8u, wrap_801894f8, 8u, 0u, 1u },    { 0x80189500u, wrap_80189500, 87u, 0u, 1u },    { 0x80189508u, wrap_80189508, 8u, 0u, 1u },    { 0x80189510u, wrap_80189510, 8u, 0u, 1u },    { 0x80189514u, wrap_80189514, 8u, 0u, 1u },    { 0x80189554u, wrap_80189554, 8u, 0u, 1u },    { 0x801895e8u, wrap_801895e8, 8u, 0u, 1u },    { 0x801895f0u, wrap_801895f0, 8u, 0u, 1u },    { 0x801895f8u, wrap_801895f8, 98u, 0u, 1u },    { 0x80189600u, wrap_80189600, 8u, 0u, 1u },    { 0x80189608u, wrap_80189608, 8u, 0u, 1u },    { 0x8018960cu, wrap_8018960c, 8u, 0u, 1u },    { 0x8018964cu, wrap_8018964c, 8u, 0u, 1u },    { 0x801896f4u, wrap_801896f4, 8u, 0u, 1u },    { 0x801896fcu, wrap_801896fc, 8u, 0u, 1u },    { 0x80189704u, wrap_80189704, 61u, 0u, 1u },    { 0x8018970cu, wrap_8018970c, 8u, 0u, 1u },    { 0x80189714u, wrap_80189714, 8u, 0u, 1u },    { 0x80189718u, wrap_80189718, 8u, 0u, 1u },    { 0x80189764u, wrap_80189764, 8u, 0u, 1u },    { 0x801897a0u, wrap_801897a0, 8u, 0u, 1u },    { 0x801897a8u, wrap_801897a8, 8u, 0u, 1u },    { 0x801897b0u, wrap_801897b0, 88u, 0u, 1u },    { 0x801897b8u, wrap_801897b8, 8u, 0u, 1u },    { 0x801897c0u, wrap_801897c0, 8u, 0u, 1u },    { 0x801897c4u, wrap_801897c4, 8u, 0u, 1u },    { 0x80189810u, wrap_80189810, 8u, 0u, 1u },    { 0x80189890u, wrap_80189890, 8u, 0u, 1u },    { 0x80189898u, wrap_80189898, 8u, 0u, 1u },    { 0x801898a0u, wrap_801898a0, 65u, 0u, 1u },    { 0x801898a8u, wrap_801898a8, 8u, 0u, 1u },    { 0x801898b0u, wrap_801898b0, 8u, 0u, 1u },    { 0x801898b4u, wrap_801898b4, 8u, 0u, 1u },    { 0x80189900u, wrap_80189900, 8u, 0u, 1u },    { 0x8018994cu, wrap_8018994c, 8u, 0u, 1u },    { 0x80189954u, wrap_80189954, 8u, 0u, 1u },    { 0x8018995cu, wrap_8018995c, 93u, 0u, 1u },    { 0x80189964u, wrap_80189964, 8u, 0u, 1u },    { 0x8018996cu, wrap_8018996c, 8u, 0u, 1u },    { 0x80189970u, wrap_80189970, 8u, 0u, 1u },    { 0x801899bcu, wrap_801899bc, 8u, 0u, 1u },    { 0x80189a50u, wrap_80189a50, 8u, 0u, 1u },    { 0x80189a58u, wrap_80189a58, 8u, 0u, 1u },    { 0x80189a60u, wrap_80189a60, 82u, 0u, 1u },    { 0x80189a68u, wrap_80189a68, 8u, 0u, 1u },    { 0x80189a70u, wrap_80189a70, 8u, 0u, 1u },    { 0x80189a74u, wrap_80189a74, 8u, 0u, 1u },    { 0x80189abcu, wrap_80189abc, 8u, 0u, 1u },    { 0x80189b40u, wrap_80189b40, 8u, 0u, 1u },    { 0x80189b48u, wrap_80189b48, 8u, 0u, 1u },    { 0x80189b50u, wrap_80189b50, 93u, 0u, 1u },    { 0x80189b58u, wrap_80189b58, 8u, 0u, 1u },    { 0x80189b60u, wrap_80189b60, 8u, 0u, 1u },    { 0x80189b64u, wrap_80189b64, 8u, 0u, 1u },    { 0x80189bb0u, wrap_80189bb0, 8u, 0u, 1u },    { 0x80189c3cu, wrap_80189c3c, 8u, 0u, 1u },    { 0x80189c44u, wrap_80189c44, 8u, 0u, 1u },    { 0x80189c4cu, wrap_80189c4c, 68u, 0u, 1u },    { 0x80189c54u, wrap_80189c54, 8u, 0u, 1u },    { 0x80189c5cu, wrap_80189c5c, 8u, 0u, 1u },    { 0x80189c60u, wrap_80189c60, 8u, 0u, 1u },    { 0x80189cacu, wrap_80189cac, 8u, 0u, 1u },    { 0x80189cf8u, wrap_80189cf8, 8u, 0u, 1u },    { 0x80189d00u, wrap_80189d00, 8u, 0u, 1u },    { 0x80189d08u, wrap_80189d08, 109u, 0u, 1u },    { 0x80189d10u, wrap_80189d10, 8u, 0u, 1u },    { 0x80189d18u, wrap_80189d18, 8u, 0u, 1u },    { 0x80189d1cu, wrap_80189d1c, 8u, 0u, 1u },    { 0x80189d68u, wrap_80189d68, 8u, 0u, 1u },    { 0x80189e1cu, wrap_80189e1c, 8u, 0u, 1u },    { 0x80189e24u, wrap_80189e24, 8u, 0u, 1u },    { 0x80189e2cu, wrap_80189e2c, 73u, 0u, 1u },    { 0x80189e34u, wrap_80189e34, 8u, 0u, 1u },    { 0x80189e3cu, wrap_80189e3c, 8u, 0u, 1u },    { 0x80189e40u, wrap_80189e40, 8u, 0u, 1u },    { 0x80189e8cu, wrap_80189e8c, 8u, 0u, 1u },    { 0x80189eecu, wrap_80189eec, 8u, 0u, 1u },    { 0x80189ef4u, wrap_80189ef4, 8u, 0u, 1u },    { 0x80189efcu, wrap_80189efc, 113u, 0u, 1u },    { 0x80189f04u, wrap_80189f04, 8u, 0u, 1u },    { 0x80189f0cu, wrap_80189f0c, 8u, 0u, 1u },    { 0x80189f10u, wrap_80189f10, 8u, 0u, 1u },    { 0x80189f5cu, wrap_80189f5c, 8u, 0u, 1u },    { 0x8018a020u, wrap_8018a020, 8u, 0u, 1u },    { 0x8018a028u, wrap_8018a028, 8u, 0u, 1u },    { 0x8018a030u, wrap_8018a030, 98u, 0u, 1u },    { 0x8018a038u, wrap_8018a038, 8u, 0u, 1u },    { 0x8018a040u, wrap_8018a040, 8u, 0u, 1u },    { 0x8018a044u, wrap_8018a044, 8u, 0u, 1u },    { 0x8018a090u, wrap_8018a090, 8u, 0u, 1u },    { 0x8018a13cu, wrap_8018a13c, 8u, 0u, 1u },    { 0x8018a144u, wrap_8018a144, 8u, 0u, 1u },    { 0x8018a14cu, wrap_8018a14c, 115u, 0u, 1u },    { 0x8018a154u, wrap_8018a154, 8u, 0u, 1u },    { 0x8018a15cu, wrap_8018a15c, 8u, 0u, 1u },    { 0x8018a160u, wrap_8018a160, 8u, 0u, 1u },    { 0x8018a1acu, wrap_8018a1ac, 8u, 0u, 1u },    { 0x8018a26cu, wrap_8018a26c, 8u, 0u, 1u },    { 0x8018a274u, wrap_8018a274, 8u, 0u, 1u },    { 0x8018a27cu, wrap_8018a27c, 61u, 0u, 1u },    { 0x8018a28cu, wrap_8018a28c, 8u, 0u, 1u },    { 0x8018a29cu, wrap_8018a29c, 8u, 0u, 1u },    { 0x8018a2acu, wrap_8018a2ac, 8u, 0u, 1u },    { 0x8018a2b8u, wrap_8018a2b8, 8u, 0u, 1u },    { 0x8018a2c0u, wrap_8018a2c0, 8u, 0u, 1u },    { 0x8018a2c8u, wrap_8018a2c8, 8u, 0u, 1u },    { 0x8018a2ccu, wrap_8018a2cc, 8u, 0u, 1u },    { 0x8018a320u, wrap_8018a320, 8u, 0u, 1u },    { 0x8018a330u, wrap_8018a330, 8u, 0u, 1u },    { 0x8018a338u, wrap_8018a338, 8u, 0u, 1u },    { 0x8018a340u, wrap_8018a340, 72u, 0u, 1u },    { 0x8018a350u, wrap_8018a350, 8u, 0u, 1u },    { 0x8018a360u, wrap_8018a360, 8u, 0u, 1u },    { 0x8018a370u, wrap_8018a370, 8u, 0u, 1u },    { 0x8018a37cu, wrap_8018a37c, 8u, 0u, 1u },    { 0x8018a384u, wrap_8018a384, 8u, 0u, 1u },    { 0x8018a38cu, wrap_8018a38c, 8u, 0u, 1u },    { 0x8018a390u, wrap_8018a390, 8u, 0u, 1u },    { 0x8018a3d8u, wrap_8018a3d8, 8u, 0u, 1u },    { 0x8018a414u, wrap_8018a414, 8u, 0u, 1u },    { 0x8018a41cu, wrap_8018a41c, 8u, 0u, 1u },    { 0x8018a424u, wrap_8018a424, 68u, 0u, 1u },    { 0x8018a434u, wrap_8018a434, 8u, 0u, 1u },    { 0x8018a444u, wrap_8018a444, 8u, 0u, 1u },    { 0x8018a454u, wrap_8018a454, 8u, 0u, 1u },    { 0x8018a460u, wrap_8018a460, 8u, 0u, 1u },    { 0x8018a468u, wrap_8018a468, 8u, 0u, 1u },    { 0x8018a470u, wrap_8018a470, 8u, 0u, 1u },    { 0x8018a474u, wrap_8018a474, 8u, 0u, 1u },    { 0x8018a4ccu, wrap_8018a4cc, 8u, 0u, 1u },    { 0x8018a4e8u, wrap_8018a4e8, 8u, 0u, 1u },    { 0x8018a4f0u, wrap_8018a4f0, 8u, 0u, 1u },    { 0x8018a4f8u, wrap_8018a4f8, 60u, 0u, 0u },    { 0x8018a59cu, wrap_8018a59c, 90u, 0u, 1u },    { 0x8018a5acu, wrap_8018a5ac, 8u, 0u, 1u },    { 0x8018a5bcu, wrap_8018a5bc, 8u, 0u, 1u },    { 0x8018a5ccu, wrap_8018a5cc, 8u, 0u, 1u },    { 0x8018a5dcu, wrap_8018a5dc, 8u, 0u, 1u },    { 0x8018a5e8u, wrap_8018a5e8, 8u, 0u, 1u },    { 0x8018a5f0u, wrap_8018a5f0, 8u, 0u, 1u },    { 0x8018a5f8u, wrap_8018a5f8, 8u, 0u, 1u },    { 0x8018a5fcu, wrap_8018a5fc, 8u, 0u, 1u },    { 0x8018a638u, wrap_8018a638, 8u, 0u, 1u },    { 0x8018a64cu, wrap_8018a64c, 8u, 0u, 1u },    { 0x8018a678u, wrap_8018a678, 8u, 0u, 1u },    { 0x8018a69cu, wrap_8018a69c, 8u, 0u, 1u },    { 0x8018a6c4u, wrap_8018a6c4, 8u, 0u, 1u },    { 0x8018a6ccu, wrap_8018a6cc, 8u, 0u, 1u },    { 0x8018a6d4u, wrap_8018a6d4, 107u, 0u, 1u },    { 0x8018a6e4u, wrap_8018a6e4, 8u, 0u, 1u },    { 0x8018a6f4u, wrap_8018a6f4, 8u, 0u, 1u },    { 0x8018a704u, wrap_8018a704, 8u, 0u, 1u },    { 0x8018a714u, wrap_8018a714, 8u, 0u, 1u },    { 0x8018a720u, wrap_8018a720, 8u, 0u, 1u },    { 0x8018a728u, wrap_8018a728, 8u, 0u, 1u },    { 0x8018a730u, wrap_8018a730, 8u, 0u, 1u },    { 0x8018a734u, wrap_8018a734, 8u, 0u, 1u },    { 0x8018a778u, wrap_8018a778, 8u, 0u, 1u },    { 0x8018a794u, wrap_8018a794, 8u, 0u, 1u },    { 0x8018a810u, wrap_8018a810, 8u, 0u, 1u },    { 0x8018a820u, wrap_8018a820, 8u, 0u, 1u },    { 0x8018a834u, wrap_8018a834, 8u, 0u, 1u },    { 0x8018a83cu, wrap_8018a83c, 8u, 0u, 1u },    { 0x8018a844u, wrap_8018a844, 111u, 0u, 1u },    { 0x8018a854u, wrap_8018a854, 8u, 0u, 1u },    { 0x8018a864u, wrap_8018a864, 8u, 0u, 1u },    { 0x8018a874u, wrap_8018a874, 8u, 0u, 1u },    { 0x8018a880u, wrap_8018a880, 8u, 0u, 1u },    { 0x8018a888u, wrap_8018a888, 8u, 0u, 1u },    { 0x8018a894u, wrap_8018a894, 8u, 0u, 1u },    { 0x8018a898u, wrap_8018a898, 8u, 0u, 1u },    { 0x8018a8d4u, wrap_8018a8d4, 8u, 0u, 1u },    { 0x8018a8e8u, wrap_8018a8e8, 8u, 0u, 1u },    { 0x8018a914u, wrap_8018a914, 8u, 0u, 1u },    { 0x8018a938u, wrap_8018a938, 8u, 0u, 1u },    { 0x8018a968u, wrap_8018a968, 8u, 0u, 1u },    { 0x8018a974u, wrap_8018a974, 8u, 0u, 1u },    { 0x8018a980u, wrap_8018a980, 8u, 0u, 1u },    { 0x8018a988u, wrap_8018a988, 8u, 0u, 1u },    { 0x8018a998u, wrap_8018a998, 8u, 0u, 1u },    { 0x8018a9b0u, wrap_8018a9b0, 8u, 0u, 1u },    { 0x8018a9b8u, wrap_8018a9b8, 8u, 0u, 1u },    { 0x8018a9c0u, wrap_8018a9c0, 8u, 0u, 1u },    { 0x8018a9c8u, wrap_8018a9c8, 128u, 0u, 1u },    { 0x8018a9d8u, wrap_8018a9d8, 8u, 0u, 1u },    { 0x8018a9e8u, wrap_8018a9e8, 8u, 0u, 0u },    { 0x8018a9f8u, wrap_8018a9f8, 8u, 0u, 1u },    { 0x8018aa04u, wrap_8018aa04, 8u, 0u, 1u },    { 0x8018aa0cu, wrap_8018aa0c, 8u, 0u, 1u },    { 0x8018aa18u, wrap_8018aa18, 8u, 0u, 1u },    { 0x8018aa1cu, wrap_8018aa1c, 8u, 0u, 1u },    { 0x8018aa60u, wrap_8018aa60, 8u, 0u, 1u },    { 0x8018aa7cu, wrap_8018aa7c, 8u, 0u, 1u },    { 0x8018aaf8u, wrap_8018aaf8, 8u, 0u, 1u },    { 0x8018ab08u, wrap_8018ab08, 8u, 0u, 1u },    { 0x8018ab24u, wrap_8018ab24, 8u, 0u, 1u },    { 0x8018ab30u, wrap_8018ab30, 8u, 0u, 1u },    { 0x8018ab3cu, wrap_8018ab3c, 8u, 0u, 1u },    { 0x8018ab44u, wrap_8018ab44, 8u, 0u, 1u },    { 0x8018ab54u, wrap_8018ab54, 8u, 0u, 1u },    { 0x8018ab6cu, wrap_8018ab6c, 8u, 0u, 1u },    { 0x8018ab74u, wrap_8018ab74, 8u, 0u, 1u },    { 0x8018ab7cu, wrap_8018ab7c, 8u, 0u, 1u },    { 0x8018ab84u, wrap_8018ab84, 61u, 0u, 0u },    { 0x8018ac54u, wrap_8018ac54, 87u, 0u, 0u },    { 0x8018ac64u, wrap_8018ac64, 8u, 0u, 0u },    { 0x8018ac74u, wrap_8018ac74, 8u, 0u, 0u },    { 0x8018ac84u, wrap_8018ac84, 8u, 0u, 0u },    { 0x8018ac94u, wrap_8018ac94, 8u, 0u, 0u },    { 0x8018ad80u, wrap_8018ad80, 107u, 0u, 1u },    { 0x8018ad88u, wrap_8018ad88, 8u, 0u, 1u },    { 0x8018ad94u, wrap_8018ad94, 8u, 0u, 1u },    { 0x8018ad98u, wrap_8018ad98, 8u, 0u, 1u },    { 0x8018addcu, wrap_8018addc, 8u, 0u, 1u },    { 0x8018adf4u, wrap_8018adf4, 8u, 0u, 1u },    { 0x8018ae64u, wrap_8018ae64, 8u, 0u, 1u },    { 0x8018ae74u, wrap_8018ae74, 8u, 0u, 1u },    { 0x8018ae90u, wrap_8018ae90, 8u, 0u, 1u },    { 0x8018ae9cu, wrap_8018ae9c, 8u, 0u, 1u },    { 0x8018aea8u, wrap_8018aea8, 8u, 0u, 1u },    { 0x8018aeb8u, wrap_8018aeb8, 8u, 0u, 1u },    { 0x8018aed0u, wrap_8018aed0, 8u, 0u, 1u },    { 0x8018aed8u, wrap_8018aed8, 8u, 0u, 1u },    { 0x8018aee0u, wrap_8018aee0, 8u, 0u, 1u },    { 0x8018aee8u, wrap_8018aee8, 107u, 0u, 1u },    { 0x8018aef0u, wrap_8018aef0, 8u, 0u, 1u },    { 0x8018aefcu, wrap_8018aefc, 8u, 0u, 1u },    { 0x8018af00u, wrap_8018af00, 8u, 0u, 1u },    { 0x8018af44u, wrap_8018af44, 8u, 0u, 1u },    { 0x8018af5cu, wrap_8018af5c, 8u, 0u, 1u },    { 0x8018afccu, wrap_8018afcc, 8u, 0u, 1u },    { 0x8018afdcu, wrap_8018afdc, 8u, 0u, 1u },    { 0x8018aff8u, wrap_8018aff8, 8u, 0u, 1u },    { 0x8018b004u, wrap_8018b004, 8u, 0u, 1u },    { 0x8018b010u, wrap_8018b010, 8u, 0u, 1u },    { 0x8018b020u, wrap_8018b020, 8u, 0u, 1u },    { 0x8018b038u, wrap_8018b038, 8u, 0u, 1u },    { 0x8018b040u, wrap_8018b040, 8u, 0u, 1u },    { 0x8018b048u, wrap_8018b048, 8u, 0u, 1u },    { 0x8018b050u, wrap_8018b050, 23u, 0u, 0u },    { 0x8018b0a0u, wrap_8018b0a0, 29u, 0u, 0u },    { 0x8018b100u, wrap_8018b100, 101u, 0u, 1u },    { 0x8018b108u, wrap_8018b108, 8u, 0u, 1u },    { 0x8018b13cu, wrap_8018b13c, 8u, 0u, 1u },    { 0x8018b14cu, wrap_8018b14c, 8u, 0u, 1u },    { 0x8018b154u, wrap_8018b154, 8u, 0u, 1u },    { 0x8018b15cu, wrap_8018b15c, 8u, 0u, 1u },    { 0x8018b198u, wrap_8018b198, 8u, 0u, 1u },    { 0x8018b1b0u, wrap_8018b1b0, 8u, 0u, 1u },    { 0x8018b1c4u, wrap_8018b1c4, 8u, 0u, 1u },    { 0x8018b1ccu, wrap_8018b1cc, 8u, 0u, 1u },    { 0x8018b1d8u, wrap_8018b1d8, 8u, 0u, 1u },    { 0x8018b200u, wrap_8018b200, 8u, 0u, 1u },    { 0x8018b208u, wrap_8018b208, 144u, 0u, 0u },    { 0x8018b380u, wrap_8018b380, 90u, 0u, 1u },    { 0x8018b390u, wrap_8018b390, 8u, 0u, 1u },    { 0x8018b3a0u, wrap_8018b3a0, 8u, 0u, 1u },    { 0x8018b3b0u, wrap_8018b3b0, 8u, 0u, 1u },    { 0x8018b3c0u, wrap_8018b3c0, 8u, 0u, 1u },    { 0x8018b3ccu, wrap_8018b3cc, 8u, 0u, 1u },    { 0x8018b3d4u, wrap_8018b3d4, 8u, 0u, 1u },    { 0x8018b3dcu, wrap_8018b3dc, 8u, 0u, 1u },    { 0x8018b3e0u, wrap_8018b3e0, 8u, 0u, 1u },    { 0x8018b41cu, wrap_8018b41c, 8u, 0u, 1u },    { 0x8018b430u, wrap_8018b430, 8u, 0u, 1u },    { 0x8018b45cu, wrap_8018b45c, 8u, 0u, 1u },    { 0x8018b480u, wrap_8018b480, 8u, 0u, 1u },    { 0x8018b4a8u, wrap_8018b4a8, 8u, 0u, 1u },    { 0x8018b4b0u, wrap_8018b4b0, 8u, 0u, 1u },    { 0x8018b4b8u, wrap_8018b4b8, 107u, 0u, 1u },    { 0x8018b4c8u, wrap_8018b4c8, 8u, 0u, 1u },    { 0x8018b4d8u, wrap_8018b4d8, 8u, 0u, 1u },    { 0x8018b4e8u, wrap_8018b4e8, 8u, 0u, 1u },    { 0x8018b4f8u, wrap_8018b4f8, 8u, 0u, 1u },    { 0x8018b504u, wrap_8018b504, 8u, 0u, 1u },    { 0x8018b50cu, wrap_8018b50c, 8u, 0u, 1u },    { 0x8018b514u, wrap_8018b514, 8u, 0u, 1u },    { 0x8018b518u, wrap_8018b518, 8u, 0u, 1u },    { 0x8018b55cu, wrap_8018b55c, 8u, 0u, 1u },    { 0x8018b578u, wrap_8018b578, 8u, 0u, 1u },    { 0x8018b5f4u, wrap_8018b5f4, 8u, 0u, 1u },    { 0x8018b604u, wrap_8018b604, 8u, 0u, 1u },    { 0x8018b618u, wrap_8018b618, 8u, 0u, 1u },    { 0x8018b620u, wrap_8018b620, 8u, 0u, 1u },    { 0x8018b628u, wrap_8018b628, 80u, 0u, 1u },    { 0x8018b63cu, wrap_8018b63c, 8u, 0u, 1u },    { 0x8018b644u, wrap_8018b644, 8u, 0u, 1u },    { 0x8018b648u, wrap_8018b648, 8u, 0u, 1u },    { 0x8018b684u, wrap_8018b684, 8u, 0u, 1u },    { 0x8018b698u, wrap_8018b698, 8u, 0u, 1u },    { 0x8018b6c4u, wrap_8018b6c4, 8u, 0u, 1u },    { 0x8018b6e8u, wrap_8018b6e8, 8u, 0u, 1u },    { 0x8018b710u, wrap_8018b710, 8u, 0u, 1u },    { 0x8018b728u, wrap_8018b728, 8u, 0u, 1u },    { 0x8018b730u, wrap_8018b730, 8u, 0u, 1u },    { 0x8018b738u, wrap_8018b738, 13u, 0u, 1u },    { 0x8018b748u, wrap_8018b748, 8u, 0u, 1u },    { 0x8018b758u, wrap_8018b758, 8u, 0u, 1u },    { 0x8018b760u, wrap_8018b760, 8u, 0u, 1u },    { 0x8018b768u, wrap_8018b768, 8u, 0u, 1u },    { 0x8018b76cu, wrap_8018b76c, 85u, 0u, 0u },    { 0x8018b7b0u, wrap_8018b7b0, 8u, 0u, 1u },    { 0x8018b7ccu, wrap_8018b7cc, 8u, 0u, 1u },    { 0x8018b848u, wrap_8018b848, 8u, 0u, 1u },    { 0x8018b858u, wrap_8018b858, 8u, 0u, 1u },    { 0x8018b870u, wrap_8018b870, 8u, 0u, 1u },    { 0x8018b884u, wrap_8018b884, 4u, 0u, 0u },    { 0x8018b88cu, wrap_8018b88c, 4u, 0u, 1u },    { 0x8018b894u, wrap_8018b894, 74u, 0u, 1u },    { 0x8018b8a8u, wrap_8018b8a8, 8u, 0u, 1u },    { 0x8018b8b0u, wrap_8018b8b0, 8u, 0u, 1u },    { 0x8018b8b4u, wrap_8018b8b4, 8u, 0u, 1u },    { 0x8018b8f0u, wrap_8018b8f0, 8u, 0u, 1u },    { 0x8018b904u, wrap_8018b904, 8u, 0u, 1u },    { 0x8018b930u, wrap_8018b930, 8u, 0u, 1u },    { 0x8018b954u, wrap_8018b954, 8u, 0u, 1u },    { 0x8018b97cu, wrap_8018b97c, 8u, 0u, 1u },    { 0x8018b984u, wrap_8018b984, 8u, 0u, 1u },    { 0x8018b98cu, wrap_8018b98c, 91u, 0u, 0u },    { 0x8018babcu, wrap_8018babc, 13u, 0u, 0u },    { 0x8018bae8u, wrap_8018bae8, 4u, 0u, 1u },    { 0x8018baf0u, wrap_8018baf0, 26u, 0u, 1u },    { 0x8018bafcu, wrap_8018bafc, 8u, 0u, 1u },    { 0x8018bb04u, wrap_8018bb04, 8u, 0u, 1u },    { 0x8018bb38u, wrap_8018bb38, 5u, 0u, 0u },    { 0x8018bb48u, wrap_8018bb48, 4u, 0u, 1u },    { 0x8018bb4cu, wrap_8018bb4c, 26u, 0u, 1u },    { 0x8018bb60u, wrap_8018bb60, 8u, 0u, 1u },    { 0x8018bb68u, wrap_8018bb68, 8u, 0u, 1u },    { 0x8018bb88u, wrap_8018bb88, 8u, 0u, 1u },    { 0x8018bb98u, wrap_8018bb98, 8u, 0u, 1u },    { 0x8018bba8u, wrap_8018bba8, 131u, 0u, 0u },    { 0x8018bd24u, wrap_8018bd24, 10u, 0u, 0u },    { 0x8018bd40u, wrap_8018bd40, 5u, 0u, 0u },    { 0x8018bd50u, wrap_8018bd50, 24u, 0u, 0u },    { 0x8018bda4u, wrap_8018bda4, 45u, 32u, 0u },    { 0x8018be28u, wrap_8018be28, 54u, 32u, 0u },    { 0x8018bec0u, wrap_8018bec0, 45u, 32u, 0u },    { 0x8018bf40u, wrap_8018bf40, 49u, 32u, 0u },    { 0x8018bfccu, wrap_8018bfcc, 39u, 48u, 0u },    { 0x8018c034u, wrap_8018c034, 38u, 0u, 0u },    { 0x8018c0a8u, wrap_8018c0a8, 23u, 0u, 0u },    { 0x8018c0f8u, wrap_8018c0f8, 10u, 0u, 1u },    { 0x8018c104u, wrap_8018c104, 8u, 0u, 1u },    { 0x8018c108u, wrap_8018c108, 8u, 0u, 1u },    { 0x8018c118u, wrap_8018c118, 38u, 0u, 0u },    { 0x8018c18cu, wrap_8018c18c, 21u, 0u, 0u },    { 0x8018c1d4u, wrap_8018c1d4, 10u, 0u, 1u },    { 0x8018c1e0u, wrap_8018c1e0, 8u, 0u, 1u },    { 0x8018c1e4u, wrap_8018c1e4, 8u, 0u, 1u },    { 0x8018c1f4u, wrap_8018c1f4, 104u, 40u, 0u },    { 0x8018c31cu, wrap_8018c31c, 196u, 56u, 0u },    { 0x8018c578u, wrap_8018c578, 144u, 48u, 0u },    { 0x8018c71cu, wrap_8018c71c, 102u, 48u, 0u },    { 0x8018c824u, wrap_8018c824, 94u, 48u, 0u },    { 0x8018c92cu, wrap_8018c92c, 123u, 56u, 0u },    { 0x8018ca8cu, wrap_8018ca8c, 96u, 48u, 0u },    { 0x8018cb98u, wrap_8018cb98, 31u, 0u, 0u },    { 0x8018cbfcu, wrap_8018cbfc, 23u, 0u, 0u },    { 0x8018cc4cu, wrap_8018cc4c, 10u, 0u, 1u },    { 0x8018cc58u, wrap_8018cc58, 8u, 0u, 1u },    { 0x8018cc5cu, wrap_8018cc5c, 8u, 0u, 1u },    { 0x8018cc6cu, wrap_8018cc6c, 111u, 56u, 0u },    { 0x8018cd94u, wrap_8018cd94, 31u, 0u, 0u },    { 0x8018cdf8u, wrap_8018cdf8, 25u, 0u, 0u },    { 0x8018ce50u, wrap_8018ce50, 10u, 0u, 1u },    { 0x8018ce5cu, wrap_8018ce5c, 8u, 0u, 1u },    { 0x8018ce60u, wrap_8018ce60, 8u, 0u, 1u },    { 0x8018ce70u, wrap_8018ce70, 124u, 56u, 0u },    { 0x8018cfb4u, wrap_8018cfb4, 9u, 0u, 0u },    { 0x8018cfd4u, wrap_8018cfd4, 4u, 0u, 1u },    { 0x8018cfdcu, wrap_8018cfdc, 119u, 48u, 1u },    { 0x8018d018u, wrap_8018d018, 8u, 0u, 1u },    { 0x8018d020u, wrap_8018d020, 8u, 0u, 1u },    { 0x8018d028u, wrap_8018d028, 8u, 0u, 1u },    { 0x8018d040u, wrap_8018d040, 8u, 0u, 1u },    { 0x8018d054u, wrap_8018d054, 8u, 0u, 1u },    { 0x8018d064u, wrap_8018d064, 8u, 0u, 1u },    { 0x8018d068u, wrap_8018d068, 8u, 0u, 1u },    { 0x8018d074u, wrap_8018d074, 8u, 0u, 1u },    { 0x8018d084u, wrap_8018d084, 8u, 0u, 1u },    { 0x8018d08cu, wrap_8018d08c, 8u, 0u, 1u },    { 0x8018d09cu, wrap_8018d09c, 8u, 0u, 1u },    { 0x8018d0a4u, wrap_8018d0a4, 8u, 0u, 1u },    { 0x8018d0bcu, wrap_8018d0bc, 8u, 0u, 1u },    { 0x8018d0ccu, wrap_8018d0cc, 8u, 0u, 1u },    { 0x8018d0d8u, wrap_8018d0d8, 8u, 0u, 1u },    { 0x8018d0e4u, wrap_8018d0e4, 8u, 0u, 1u },    { 0x8018d0ecu, wrap_8018d0ec, 8u, 0u, 1u },    { 0x8018d0f4u, wrap_8018d0f4, 8u, 0u, 1u },    { 0x8018d104u, wrap_8018d104, 8u, 0u, 1u },    { 0x8018d10cu, wrap_8018d10c, 8u, 0u, 1u },    { 0x8018d118u, wrap_8018d118, 8u, 0u, 1u },    { 0x8018d120u, wrap_8018d120, 8u, 0u, 1u },    { 0x8018d12cu, wrap_8018d12c, 8u, 0u, 1u },    { 0x8018d130u, wrap_8018d130, 8u, 0u, 1u },    { 0x8018d150u, wrap_8018d150, 35u, 32u, 1u },    { 0x8018d174u, wrap_8018d174, 8u, 0u, 1u },    { 0x8018d180u, wrap_8018d180, 8u, 0u, 1u },    { 0x8018d188u, wrap_8018d188, 8u, 0u, 1u },    { 0x8018d18cu, wrap_8018d18c, 8u, 0u, 1u },    { 0x8018d198u, wrap_8018d198, 8u, 0u, 1u },    { 0x8018d1a0u, wrap_8018d1a0, 8u, 0u, 1u },    { 0x8018d1bcu, wrap_8018d1bc, 35u, 0u, 0u },    { 0x8018d244u, wrap_8018d244, 15u, 0u, 0u },    { 0x8018d27cu, wrap_8018d27c, 4u, 0u, 1u },    { 0x8018d284u, wrap_8018d284, 4u, 0u, 1u },    { 0x8018d290u, wrap_8018d290, 4u, 0u, 1u },    { 0x8018d298u, wrap_8018d298, 4u, 0u, 0u },    { 0x8018d29cu, wrap_8018d29c, 16u, 0u, 0u },    { 0x8018d2d8u, wrap_8018d2d8, 4u, 0u, 1u },    { 0x8018d2e0u, wrap_8018d2e0, 4u, 0u, 1u },    { 0x8018d2ecu, wrap_8018d2ec, 5u, 0u, 0u },    { 0x8018d300u, wrap_8018d300, 45u, 0u, 0u },    { 0x8018d3b4u, wrap_8018d3b4, 25u, 0u, 1u },    { 0x8018d3c0u, wrap_8018d3c0, 8u, 0u, 1u },    { 0x8018d3d0u, wrap_8018d3d0, 8u, 0u, 1u },    { 0x8018d3dcu, wrap_8018d3dc, 8u, 0u, 1u },    { 0x8018d3ecu, wrap_8018d3ec, 8u, 0u, 1u },    { 0x8018d3f8u, wrap_8018d3f8, 8u, 0u, 1u },    { 0x8018d408u, wrap_8018d408, 15u, 0u, 0u },    { 0x8018d444u, wrap_8018d444, 11u, 0u, 0u },    { 0x8018d468u, wrap_8018d468, 4u, 0u, 0u },    { 0x8018d474u, wrap_8018d474, 4u, 0u, 1u },    { 0x8018d47cu, wrap_8018d47c, 4u, 0u, 1u },    { 0x8018d484u, wrap_8018d484, 6u, 0u, 0u },    { 0x8018d49cu, wrap_8018d49c, 28u, 0u, 1u },    { 0x8018d4acu, wrap_8018d4ac, 8u, 0u, 1u },    { 0x8018d4fcu, wrap_8018d4fc, 15u, 0u, 0u },    { 0x8018d538u, wrap_8018d538, 4u, 0u, 0u },    { 0x8018d540u, wrap_8018d540, 15u, 0u, 0u },    { 0x8018d568u, wrap_8018d568, 27u, 0u, 0u },    { 0x8018d5b4u, wrap_8018d5b4, 24u, 0u, 0u },    { 0x8018d5fcu, wrap_8018d5fc, 9u, 0u, 0u },    { 0x8018d618u, wrap_8018d618, 22u, 0u, 0u },    { 0x8018d668u, wrap_8018d668, 4u, 0u, 1u },    { 0x8018d670u, wrap_8018d670, 9u, 0u, 1u },    { 0x8018d694u, wrap_8018d694, 4u, 0u, 1u },    { 0x8018d69cu, wrap_8018d69c, 35u, 0u, 0u },    { 0x8018d700u, wrap_8018d700, 53u, 0u, 0u },    { 0x8018d788u, wrap_8018d788, 43u, 0u, 0u },    { 0x8018d8e4u, wrap_8018d8e4, 109u, 80u, 0u },    { 0x8018da28u, wrap_8018da28, 4u, 0u, 1u },    { 0x8018da2cu, wrap_8018da2c, 41u, 0u, 0u },    { 0x8018da54u, wrap_8018da54, 8u, 0u, 1u },    { 0x8018da60u, wrap_8018da60, 8u, 0u, 1u },    { 0x8018da78u, wrap_8018da78, 8u, 0u, 1u },    { 0x8018da7cu, wrap_8018da7c, 8u, 0u, 1u },    { 0x8018da90u, wrap_8018da90, 8u, 0u, 1u },    { 0x8018da98u, wrap_8018da98, 8u, 0u, 1u },    { 0x8018dab4u, wrap_8018dab4, 4u, 0u, 1u },    { 0x8018dac0u, wrap_8018dac0, 82u, 0u, 0u },    { 0x8018dae0u, wrap_8018dae0, 8u, 0u, 1u },    { 0x8018daecu, wrap_8018daec, 8u, 0u, 1u },    { 0x8018db04u, wrap_8018db04, 8u, 0u, 1u },    { 0x8018db08u, wrap_8018db08, 8u, 0u, 1u },    { 0x8018db20u, wrap_8018db20, 8u, 0u, 1u },    { 0x8018db2cu, wrap_8018db2c, 8u, 0u, 1u },    { 0x8018db44u, wrap_8018db44, 8u, 0u, 1u },    { 0x8018db48u, wrap_8018db48, 8u, 0u, 1u },    { 0x8018db60u, wrap_8018db60, 8u, 0u, 1u },    { 0x8018db64u, wrap_8018db64, 8u, 0u, 1u },    { 0x8018db88u, wrap_8018db88, 8u, 0u, 1u },    { 0x8018db8cu, wrap_8018db8c, 8u, 0u, 1u },    { 0x8018dbe4u, wrap_8018dbe4, 9u, 0u, 1u },    { 0x8018dc00u, wrap_8018dc00, 8u, 0u, 1u },    { 0x8018dc18u, wrap_8018dc18, 4u, 0u, 0u },    { 0x8018dc20u, wrap_8018dc20, 165u, 0u, 1u },    { 0x8018dc38u, wrap_8018dc38, 8u, 0u, 1u },    { 0x8018dc44u, wrap_8018dc44, 8u, 0u, 1u },    { 0x8018dc60u, wrap_8018dc60, 8u, 0u, 1u },    { 0x8018dc64u, wrap_8018dc64, 8u, 0u, 1u },    { 0x8018dc80u, wrap_8018dc80, 8u, 0u, 1u },    { 0x8018dc8cu, wrap_8018dc8c, 8u, 0u, 1u },    { 0x8018dca8u, wrap_8018dca8, 8u, 0u, 1u },    { 0x8018dcacu, wrap_8018dcac, 8u, 0u, 1u },    { 0x8018dcc8u, wrap_8018dcc8, 8u, 0u, 1u },    { 0x8018dcd4u, wrap_8018dcd4, 8u, 0u, 1u },    { 0x8018dcf0u, wrap_8018dcf0, 8u, 0u, 1u },    { 0x8018dcf4u, wrap_8018dcf4, 8u, 0u, 1u },    { 0x8018dd18u, wrap_8018dd18, 8u, 0u, 1u },    { 0x8018dd24u, wrap_8018dd24, 8u, 0u, 1u },    { 0x8018dd3cu, wrap_8018dd3c, 8u, 0u, 1u },    { 0x8018dd40u, wrap_8018dd40, 8u, 0u, 1u },    { 0x8018dd5cu, wrap_8018dd5c, 8u, 0u, 1u },    { 0x8018dd60u, wrap_8018dd60, 8u, 0u, 1u },    { 0x8018dd68u, wrap_8018dd68, 8u, 0u, 1u },    { 0x8018dd6cu, wrap_8018dd6c, 8u, 0u, 1u },    { 0x8018dd8cu, wrap_8018dd8c, 8u, 0u, 1u },    { 0x8018dd94u, wrap_8018dd94, 8u, 0u, 1u },    { 0x8018dd9cu, wrap_8018dd9c, 8u, 0u, 1u },    { 0x8018dda0u, wrap_8018dda0, 8u, 0u, 1u },    { 0x8018dddcu, wrap_8018dddc, 8u, 0u, 1u },    { 0x8018dde8u, wrap_8018dde8, 8u, 0u, 1u },    { 0x8018de08u, wrap_8018de08, 8u, 0u, 1u },    { 0x8018de0cu, wrap_8018de0c, 8u, 0u, 1u },    { 0x8018de20u, wrap_8018de20, 8u, 0u, 1u },    { 0x8018de24u, wrap_8018de24, 8u, 0u, 1u },    { 0x8018de68u, wrap_8018de68, 4u, 0u, 1u },    { 0x8018de6cu, wrap_8018de6c, 41u, 0u, 0u },    { 0x8018de94u, wrap_8018de94, 8u, 0u, 1u },    { 0x8018dea0u, wrap_8018dea0, 8u, 0u, 1u },    { 0x8018deb8u, wrap_8018deb8, 8u, 0u, 1u },    { 0x8018dec0u, wrap_8018dec0, 8u, 0u, 1u },    { 0x8018ded4u, wrap_8018ded4, 8u, 0u, 1u },    { 0x8018dedcu, wrap_8018dedc, 8u, 0u, 1u },    { 0x8018def4u, wrap_8018def4, 4u, 0u, 1u },    { 0x8018df00u, wrap_8018df00, 82u, 0u, 0u },    { 0x8018df20u, wrap_8018df20, 8u, 0u, 1u },    { 0x8018df2cu, wrap_8018df2c, 8u, 0u, 1u },    { 0x8018df44u, wrap_8018df44, 8u, 0u, 1u },    { 0x8018df48u, wrap_8018df48, 8u, 0u, 1u },    { 0x8018df60u, wrap_8018df60, 8u, 0u, 1u },    { 0x8018df6cu, wrap_8018df6c, 8u, 0u, 1u },    { 0x8018df84u, wrap_8018df84, 8u, 0u, 1u },    { 0x8018df88u, wrap_8018df88, 8u, 0u, 1u },    { 0x8018dfa0u, wrap_8018dfa0, 8u, 0u, 1u },    { 0x8018dfa4u, wrap_8018dfa4, 8u, 0u, 1u },    { 0x8018dfc8u, wrap_8018dfc8, 8u, 0u, 1u },    { 0x8018dfccu, wrap_8018dfcc, 8u, 0u, 1u },    { 0x8018e024u, wrap_8018e024, 4u, 0u, 1u },    { 0x8018e028u, wrap_8018e028, 41u, 0u, 0u },    { 0x8018e050u, wrap_8018e050, 8u, 0u, 1u },    { 0x8018e05cu, wrap_8018e05c, 8u, 0u, 1u },    { 0x8018e074u, wrap_8018e074, 8u, 0u, 1u },    { 0x8018e078u, wrap_8018e078, 8u, 0u, 1u },    { 0x8018e08cu, wrap_8018e08c, 8u, 0u, 1u },    { 0x8018e094u, wrap_8018e094, 8u, 0u, 1u },    { 0x8018e0b0u, wrap_8018e0b0, 87u, 0u, 1u },    { 0x8018e0e0u, wrap_8018e0e0, 8u, 0u, 1u },    { 0x8018e0ecu, wrap_8018e0ec, 8u, 0u, 1u },    { 0x8018e100u, wrap_8018e100, 8u, 0u, 1u },    { 0x8018e104u, wrap_8018e104, 8u, 0u, 1u },    { 0x8018e120u, wrap_8018e120, 8u, 0u, 1u },    { 0x8018e12cu, wrap_8018e12c, 8u, 0u, 1u },    { 0x8018e140u, wrap_8018e140, 8u, 0u, 1u },    { 0x8018e144u, wrap_8018e144, 8u, 0u, 1u },    { 0x8018e15cu, wrap_8018e15c, 8u, 0u, 1u },    { 0x8018e160u, wrap_8018e160, 8u, 0u, 1u },    { 0x8018e18cu, wrap_8018e18c, 8u, 0u, 1u },    { 0x8018e190u, wrap_8018e190, 8u, 0u, 1u },    { 0x8018e1d0u, wrap_8018e1d0, 87u, 0u, 1u },    { 0x8018e200u, wrap_8018e200, 8u, 0u, 1u },    { 0x8018e20cu, wrap_8018e20c, 8u, 0u, 1u },    { 0x8018e220u, wrap_8018e220, 8u, 0u, 1u },    { 0x8018e224u, wrap_8018e224, 8u, 0u, 1u },    { 0x8018e240u, wrap_8018e240, 8u, 0u, 1u },    { 0x8018e24cu, wrap_8018e24c, 8u, 0u, 1u },    { 0x8018e260u, wrap_8018e260, 8u, 0u, 1u },    { 0x8018e264u, wrap_8018e264, 8u, 0u, 1u },    { 0x8018e27cu, wrap_8018e27c, 8u, 0u, 1u },    { 0x8018e280u, wrap_8018e280, 8u, 0u, 1u },    { 0x8018e2a4u, wrap_8018e2a4, 8u, 0u, 1u },    { 0x8018e2a8u, wrap_8018e2a8, 8u, 0u, 1u },    { 0x8018e2f0u, wrap_8018e2f0, 4u, 0u, 0u },    { 0x8018e300u, wrap_8018e300, 4u, 0u, 0u },    { 0x8018e310u, wrap_8018e310, 4u, 0u, 0u },    { 0x8018e320u, wrap_8018e320, 44u, 0u, 1u },    { 0x8018e330u, wrap_8018e330, 8u, 0u, 1u },    { 0x8018e338u, wrap_8018e338, 8u, 0u, 1u },    { 0x8018e35cu, wrap_8018e35c, 8u, 0u, 1u },    { 0x8018e364u, wrap_8018e364, 8u, 0u, 1u },    { 0x8018e368u, wrap_8018e368, 8u, 0u, 1u },    { 0x8018e370u, wrap_8018e370, 8u, 0u, 1u },    { 0x8018e378u, wrap_8018e378, 8u, 0u, 1u },    { 0x8018e384u, wrap_8018e384, 8u, 0u, 1u },    { 0x8018e390u, wrap_8018e390, 8u, 0u, 1u },    { 0x8018e394u, wrap_8018e394, 8u, 0u, 1u },    { 0x8018e39cu, wrap_8018e39c, 8u, 0u, 1u },    { 0x8018e3a0u, wrap_8018e3a0, 8u, 0u, 1u },    { 0x8018e3b4u, wrap_8018e3b4, 8u, 0u, 1u },    { 0x8018e3bcu, wrap_8018e3bc, 16u, 0u, 0u },    { 0x8018e3f4u, wrap_8018e3f4, 16u, 0u, 0u },    { 0x8018e424u, wrap_8018e424, 17u, 0u, 0u },    { 0x8018e458u, wrap_8018e458, 15u, 0u, 0u },    { 0x8018e490u, wrap_8018e490, 15u, 0u, 0u },    { 0x8018e4d0u, wrap_8018e4d0, 14u, 0u, 0u },    { 0x8018e500u, wrap_8018e500, 4u, 0u, 0u },    { 0x8018e510u, wrap_8018e510, 14u, 0u, 0u },    { 0x8018e550u, wrap_8018e550, 22u, 24u, 0u },    { 0x8018e590u, wrap_8018e590, 509u, 120u, 0u },    { 0x8018ec30u, wrap_8018ec30, 14u, 0u, 0u },    { 0x8018ec64u, wrap_8018ec64, 14u, 0u, 0u },    { 0x8018eca0u, wrap_8018eca0, 21u, 0u, 0u },    { 0x8018ecf0u, wrap_8018ecf0, 77u, 24u, 0u },    { 0x8018edecu, wrap_8018edec, 19u, 0u, 0u },    { 0x8018edf4u, wrap_8018edf4, 8u, 24u, 0u },    { 0x8018ee28u, wrap_8018ee28, 90u, 24u, 0u },    { 0x8018ef50u, wrap_8018ef50, 4u, 0u, 0u },    { 0x8018ef60u, wrap_8018ef60, 6u, 0u, 0u },    { 0x8018ef6cu, wrap_8018ef6c, 710u, 584u, 1u },    { 0x8018efb0u, wrap_8018efb0, 8u, 0u, 1u },    { 0x8018efc0u, wrap_8018efc0, 8u, 0u, 1u },    { 0x8018efc8u, wrap_8018efc8, 8u, 0u, 1u },    { 0x8018eff0u, wrap_8018eff0, 8u, 0u, 1u },    { 0x8018f010u, wrap_8018f010, 8u, 0u, 1u },    { 0x8018f024u, wrap_8018f024, 8u, 0u, 1u },    { 0x8018f02cu, wrap_8018f02c, 8u, 0u, 1u },    { 0x8018f040u, wrap_8018f040, 8u, 0u, 1u },    { 0x8018f048u, wrap_8018f048, 8u, 0u, 1u },    { 0x8018f050u, wrap_8018f050, 8u, 0u, 1u },    { 0x8018f058u, wrap_8018f058, 8u, 0u, 1u },    { 0x8018f06cu, wrap_8018f06c, 8u, 0u, 1u },    { 0x8018f074u, wrap_8018f074, 8u, 0u, 1u },    { 0x8018f088u, wrap_8018f088, 8u, 0u, 1u },    { 0x8018f090u, wrap_8018f090, 8u, 0u, 1u },    { 0x8018f0acu, wrap_8018f0ac, 8u, 0u, 1u },    { 0x8018f0c0u, wrap_8018f0c0, 8u, 0u, 1u },    { 0x8018f0d4u, wrap_8018f0d4, 8u, 0u, 1u },    { 0x8018f110u, wrap_8018f110, 8u, 0u, 1u },    { 0x8018f11cu, wrap_8018f11c, 8u, 0u, 1u },    { 0x8018f124u, wrap_8018f124, 8u, 0u, 1u },    { 0x8018f144u, wrap_8018f144, 8u, 0u, 1u },    { 0x8018f170u, wrap_8018f170, 8u, 0u, 1u },    { 0x8018f1acu, wrap_8018f1ac, 8u, 0u, 1u },    { 0x8018f1b8u, wrap_8018f1b8, 8u, 0u, 1u },    { 0x8018f1c8u, wrap_8018f1c8, 8u, 0u, 1u },    { 0x8018f1d8u, wrap_8018f1d8, 8u, 0u, 1u },    { 0x8018f1ecu, wrap_8018f1ec, 8u, 0u, 1u },    { 0x8018f1f8u, wrap_8018f1f8, 8u, 0u, 1u },    { 0x8018f1fcu, wrap_8018f1fc, 8u, 0u, 1u },    { 0x8018f208u, wrap_8018f208, 8u, 0u, 1u },    { 0x8018f220u, wrap_8018f220, 8u, 0u, 1u },    { 0x8018f22cu, wrap_8018f22c, 8u, 0u, 1u },    { 0x8018f238u, wrap_8018f238, 8u, 0u, 1u },    { 0x8018f244u, wrap_8018f244, 8u, 0u, 1u },    { 0x8018f264u, wrap_8018f264, 8u, 0u, 1u },    { 0x8018f290u, wrap_8018f290, 8u, 0u, 1u },    { 0x8018f294u, wrap_8018f294, 8u, 0u, 1u },    { 0x8018f29cu, wrap_8018f29c, 8u, 0u, 1u },    { 0x8018f2a8u, wrap_8018f2a8, 8u, 0u, 1u },    { 0x8018f2b4u, wrap_8018f2b4, 8u, 0u, 1u },    { 0x8018f2bcu, wrap_8018f2bc, 8u, 0u, 1u },    { 0x8018f2e8u, wrap_8018f2e8, 8u, 0u, 1u },    { 0x8018f2ecu, wrap_8018f2ec, 8u, 0u, 1u },    { 0x8018f2f0u, wrap_8018f2f0, 8u, 0u, 1u },    { 0x8018f308u, wrap_8018f308, 8u, 0u, 1u },    { 0x8018f314u, wrap_8018f314, 8u, 0u, 1u },    { 0x8018f328u, wrap_8018f328, 8u, 0u, 1u },    { 0x8018f330u, wrap_8018f330, 8u, 0u, 1u },    { 0x8018f340u, wrap_8018f340, 8u, 0u, 1u },    { 0x8018f344u, wrap_8018f344, 8u, 0u, 1u },    { 0x8018f34cu, wrap_8018f34c, 8u, 0u, 1u },    { 0x8018f354u, wrap_8018f354, 8u, 0u, 1u },    { 0x8018f388u, wrap_8018f388, 8u, 0u, 1u },    { 0x8018f39cu, wrap_8018f39c, 8u, 0u, 1u },    { 0x8018f3a0u, wrap_8018f3a0, 8u, 0u, 1u },    { 0x8018f3b8u, wrap_8018f3b8, 8u, 0u, 1u },    { 0x8018f3bcu, wrap_8018f3bc, 8u, 0u, 1u },    { 0x8018f3ccu, wrap_8018f3cc, 8u, 0u, 1u },    { 0x8018f3dcu, wrap_8018f3dc, 8u, 0u, 1u },    { 0x8018f408u, wrap_8018f408, 8u, 0u, 1u },    { 0x8018f40cu, wrap_8018f40c, 8u, 0u, 1u },    { 0x8018f418u, wrap_8018f418, 8u, 0u, 1u },    { 0x8018f424u, wrap_8018f424, 8u, 0u, 1u },    { 0x8018f430u, wrap_8018f430, 8u, 0u, 1u },    { 0x8018f440u, wrap_8018f440, 8u, 0u, 1u },    { 0x8018f444u, wrap_8018f444, 8u, 0u, 1u },    { 0x8018f44cu, wrap_8018f44c, 8u, 0u, 1u },    { 0x8018f468u, wrap_8018f468, 8u, 0u, 1u },    { 0x8018f480u, wrap_8018f480, 8u, 0u, 1u },    { 0x8018f488u, wrap_8018f488, 8u, 0u, 1u },    { 0x8018f498u, wrap_8018f498, 8u, 0u, 1u },    { 0x8018f4a4u, wrap_8018f4a4, 8u, 0u, 1u },    { 0x8018f4b8u, wrap_8018f4b8, 8u, 0u, 1u },    { 0x8018f4bcu, wrap_8018f4bc, 8u, 0u, 1u },    { 0x8018f4d4u, wrap_8018f4d4, 8u, 0u, 1u },    { 0x8018f4dcu, wrap_8018f4dc, 8u, 0u, 1u },    { 0x8018f4fcu, wrap_8018f4fc, 8u, 0u, 1u },    { 0x8018f504u, wrap_8018f504, 8u, 0u, 1u },    { 0x8018f530u, wrap_8018f530, 8u, 0u, 1u },    { 0x8018f534u, wrap_8018f534, 8u, 0u, 1u },    { 0x8018f540u, wrap_8018f540, 8u, 0u, 1u },    { 0x8018f54cu, wrap_8018f54c, 8u, 0u, 1u },    { 0x8018f55cu, wrap_8018f55c, 8u, 0u, 1u },    { 0x8018f564u, wrap_8018f564, 8u, 0u, 1u },    { 0x8018f574u, wrap_8018f574, 8u, 0u, 1u },    { 0x8018f578u, wrap_8018f578, 8u, 0u, 1u },    { 0x8018f580u, wrap_8018f580, 8u, 0u, 1u },    { 0x8018f5a0u, wrap_8018f5a0, 8u, 0u, 1u },    { 0x8018f5b4u, wrap_8018f5b4, 8u, 0u, 1u },    { 0x8018f5bcu, wrap_8018f5bc, 8u, 0u, 1u },    { 0x8018f5d4u, wrap_8018f5d4, 8u, 0u, 1u },    { 0x8018f5d8u, wrap_8018f5d8, 8u, 0u, 1u },    { 0x8018f5f0u, wrap_8018f5f0, 8u, 0u, 1u },    { 0x8018f608u, wrap_8018f608, 8u, 0u, 1u },    { 0x8018f628u, wrap_8018f628, 8u, 0u, 1u },    { 0x8018f64cu, wrap_8018f64c, 8u, 0u, 1u },    { 0x8018f65cu, wrap_8018f65c, 8u, 0u, 1u },    { 0x8018f670u, wrap_8018f670, 8u, 0u, 1u },    { 0x8018f678u, wrap_8018f678, 8u, 0u, 1u },    { 0x8018f684u, wrap_8018f684, 8u, 0u, 1u },    { 0x8018f68cu, wrap_8018f68c, 8u, 0u, 1u },    { 0x8018f694u, wrap_8018f694, 8u, 0u, 1u },    { 0x8018f6a0u, wrap_8018f6a0, 8u, 0u, 1u },    { 0x8018f6a8u, wrap_8018f6a8, 8u, 0u, 1u },    { 0x8018f6b4u, wrap_8018f6b4, 8u, 0u, 1u },    { 0x8018f6d8u, wrap_8018f6d8, 8u, 0u, 1u },    { 0x8018f6e0u, wrap_8018f6e0, 8u, 0u, 1u },    { 0x8018f6e8u, wrap_8018f6e8, 8u, 0u, 1u },    { 0x8018f6f4u, wrap_8018f6f4, 8u, 0u, 1u },    { 0x8018f700u, wrap_8018f700, 8u, 0u, 1u },    { 0x8018f714u, wrap_8018f714, 8u, 0u, 1u },    { 0x8018f728u, wrap_8018f728, 8u, 0u, 1u },    { 0x8018f74cu, wrap_8018f74c, 8u, 0u, 1u },    { 0x8018f750u, wrap_8018f750, 8u, 0u, 1u },    { 0x8018f754u, wrap_8018f754, 8u, 0u, 1u },    { 0x8018f75cu, wrap_8018f75c, 8u, 0u, 1u },    { 0x8018f770u, wrap_8018f770, 8u, 0u, 1u },    { 0x8018f78cu, wrap_8018f78c, 8u, 0u, 1u },    { 0x8018f7acu, wrap_8018f7ac, 8u, 0u, 1u },    { 0x8018f7e0u, wrap_8018f7e0, 31u, 0u, 0u },    { 0x8018f850u, wrap_8018f850, 17u, 24u, 0u },    { 0x8018f884u, wrap_8018f884, 41u, 0u, 1u },    { 0x8018f898u, wrap_8018f898, 8u, 0u, 1u },    { 0x8018f8b0u, wrap_8018f8b0, 8u, 0u, 1u },    { 0x8018f8c4u, wrap_8018f8c4, 8u, 0u, 1u },    { 0x8018f8dcu, wrap_8018f8dc, 8u, 0u, 1u },    { 0x8018f8f0u, wrap_8018f8f0, 8u, 0u, 1u },    { 0x8018f908u, wrap_8018f908, 8u, 0u, 1u },    { 0x8018f910u, wrap_8018f910, 46u, 24u, 1u },    { 0x8018f930u, wrap_8018f930, 8u, 0u, 1u },    { 0x8018f948u, wrap_8018f948, 8u, 0u, 1u },    { 0x8018f95cu, wrap_8018f95c, 8u, 0u, 1u },    { 0x8018f974u, wrap_8018f974, 8u, 0u, 1u },    { 0x8018f984u, wrap_8018f984, 8u, 0u, 1u },    { 0x8018f994u, wrap_8018f994, 8u, 0u, 1u },    { 0x8018f9a8u, wrap_8018f9a8, 4u, 0u, 1u },    { 0x8018f9b4u, wrap_8018f9b4, 40u, 24u, 0u },    { 0x8018fa30u, wrap_8018fa30, 10u, 24u, 0u },    { 0x8018fa50u, wrap_8018fa50, 17u, 24u, 0u },    { 0x8018fa8cu, wrap_8018fa8c, 17u, 24u, 0u },    { 0x8018fac8u, wrap_8018fac8, 11u, 24u, 0u },    { 0x8018faecu, wrap_8018faec, 11u, 24u, 0u },    { 0x8018fb10u, wrap_8018fb10, 80u, 24u, 0u },    { 0x8018fc00u, wrap_8018fc00, 54u, 32u, 0u },    { 0x8018fc90u, wrap_8018fc90, 52u, 32u, 0u },    { 0x8018fd1cu, wrap_8018fd1c, 47u, 32u, 0u },    { 0x8018fdb0u, wrap_8018fdb0, 47u, 32u, 0u },    { 0x8018fe44u, wrap_8018fe44, 8u, 0u, 0u },    { 0x8018fe5cu, wrap_8018fe5c, 43u, 24u, 0u },    { 0x8018fee0u, wrap_8018fee0, 10u, 0u, 1u },    { 0x8018fef4u, wrap_8018fef4, 8u, 0u, 1u },    { 0x8018ff00u, wrap_8018ff00, 5u, 0u, 1u },    { 0x8018ff10u, wrap_8018ff10, 233u, 0u, 0u },    { 0x80190228u, wrap_80190228, 22u, 0u, 0u },    { 0x80190260u, wrap_80190260, 66u, 0u, 0u },    { 0x80190350u, wrap_80190350, 19u, 0u, 0u },    { 0x80190390u, wrap_80190390, 54u, 48u, 0u },    { 0x80190430u, wrap_80190430, 232u, 0u, 0u },    { 0x80190a04u, wrap_80190a04, 8u, 0u, 0u },    { 0x80190dd0u, wrap_80190dd0, 13u, 0u, 0u },    { 0x80190e00u, wrap_80190e00, 113u, 32u, 0u },    { 0x80190f74u, wrap_80190f74, 33u, 24u, 0u },    { 0x80190fd0u, wrap_80190fd0, 56u, 32u, 0u },    { 0x80191074u, wrap_80191074, 5u, 0u, 0u },    { 0x80191084u, wrap_80191084, 34u, 32u, 0u },    { 0x801910e4u, wrap_801910e4, 48u, 32u, 0u },    { 0x8019117cu, wrap_8019117c, 34u, 0u, 0u },    { 0x80191184u, wrap_80191184, 8u, 24u, 0u },    { 0x801911e4u, wrap_801911e4, 89u, 32u, 0u },    { 0x80191300u, wrap_80191300, 49u, 40u, 0u },    { 0x80191390u, wrap_80191390, 51u, 40u, 0u },    { 0x80191428u, wrap_80191428, 33u, 32u, 0u },    { 0x80191488u, wrap_80191488, 33u, 32u, 0u },    { 0x801914e8u, wrap_801914e8, 64u, 32u, 0u },    { 0x801915a0u, wrap_801915a0, 63u, 0u, 0u },    { 0x801915a8u, wrap_801915a8, 8u, 32u, 0u },    { 0x80191668u, wrap_80191668, 55u, 0u, 0u },    { 0x80191670u, wrap_80191670, 8u, 32u, 0u },    { 0x80191714u, wrap_80191714, 34u, 32u, 0u },    { 0x80191770u, wrap_80191770, 37u, 0u, 0u },    { 0x80191778u, wrap_80191778, 8u, 24u, 0u },    { 0x801917e0u, wrap_801917e0, 63u, 32u, 0u },    { 0x801918a0u, wrap_801918a0, 71u, 40u, 0u },    { 0x80191978u, wrap_80191978, 17u, 24u, 0u },    { 0x801919acu, wrap_801919ac, 68u, 32u, 0u },    { 0x80191ea4u, wrap_80191ea4, 17u, 24u, 0u },    { 0x80191ed8u, wrap_80191ed8, 16u, 0u, 0u },    { 0x80191ee0u, wrap_80191ee0, 8u, 24u, 0u },    { 0x80191f08u, wrap_80191f08, 47u, 32u, 0u },    { 0x80191f88u, wrap_80191f88, 25u, 24u, 0u },    { 0x801921c0u, wrap_801921c0, 220u, 40u, 0u },    { 0x80192430u, wrap_80192430, 8u, 0u, 0u },    { 0x80192450u, wrap_80192450, 42u, 0u, 0u },    { 0x801924e8u, wrap_801924e8, 42u, 0u, 0u },    { 0x80192580u, wrap_80192580, 7u, 0u, 0u },    { 0x8019259cu, wrap_8019259c, 40u, 0u, 0u },    { 0x8019261cu, wrap_8019261c, 8u, 0u, 0u },    { 0x80192634u, wrap_80192634, 77u, 32u, 0u },    { 0x80192944u, wrap_80192944, 195u, 48u, 0u },    { 0x80192e00u, wrap_80192e00, 12u, 0u, 0u },    { 0x80192e78u, wrap_80192e78, 26u, 0u, 0u },    { 0x80192ec0u, wrap_80192ec0, 16u, 0u, 0u },    { 0x80192ef0u, wrap_80192ef0, 11u, 24u, 0u },    { 0x80192f14u, wrap_80192f14, 212u, 40u, 0u },    { 0x801931c4u, wrap_801931c4, 193u, 0u, 0u },    { 0x80193424u, wrap_80193424, 109u, 24u, 0u },    { 0x80193574u, wrap_80193574, 95u, 24u, 0u },    { 0x801936b0u, wrap_801936b0, 17u, 24u, 0u },    { 0x801936e4u, wrap_801936e4, 110u, 32u, 0u },    { 0x80193828u, wrap_80193828, 51u, 0u, 0u },    { 0x801938c8u, wrap_801938c8, 75u, 32u, 0u },    { 0x801939b4u, wrap_801939b4, 75u, 32u, 0u },    { 0x80193aa0u, wrap_80193aa0, 106u, 32u, 0u },    { 0x80193be4u, wrap_80193be4, 79u, 0u, 0u },    { 0x80193ce0u, wrap_80193ce0, 12u, 24u, 0u },    { 0x80193d08u, wrap_80193d08, 10u, 0u, 0u },    { 0x80193d30u, wrap_80193d30, 4u, 0u, 0u },    { 0x80193d40u, wrap_80193d40, 77u, 48u, 0u },    { 0x80193e30u, wrap_80193e30, 35u, 40u, 0u },    { 0x80193ea0u, wrap_80193ea0, 75u, 40u, 0u },    { 0x80193f60u, wrap_80193f60, 28u, 0u, 0u },    { 0x80193fa0u, wrap_80193fa0, 15u, 0u, 0u },    { 0x80193fe0u, wrap_80193fe0, 6u, 0u, 0u },    { 0x80194000u, wrap_80194000, 20u, 0u, 0u },    { 0x80194040u, wrap_80194040, 8u, 0u, 0u },    { 0x80194060u, wrap_80194060, 13u, 0u, 0u },    { 0x80194090u, wrap_80194090, 13u, 0u, 0u },    { 0x801940c0u, wrap_801940c0, 7u, 0u, 0u },    { 0x801940e0u, wrap_801940e0, 7u, 0u, 0u },    { 0x80194100u, wrap_80194100, 7u, 0u, 0u },    { 0x80194120u, wrap_80194120, 7u, 0u, 0u },    { 0x80194140u, wrap_80194140, 7u, 0u, 0u },    { 0x80194160u, wrap_80194160, 7u, 0u, 0u },    { 0x80194180u, wrap_80194180, 34u, 0u, 0u },    { 0x801941e0u, wrap_801941e0, 46u, 0u, 0u },    { 0x80194280u, wrap_80194280, 110u, 64u, 0u },    { 0x801943d4u, wrap_801943d4, 44u, 32u, 0u },    { 0x80194478u, wrap_80194478, 34u, 0u, 0u },    { 0x80194500u, wrap_80194500, 32u, 0u, 0u },    { 0x80194590u, wrap_80194590, 36u, 0u, 0u },    { 0x8019461cu, wrap_8019461c, 8u, 0u, 0u },    { 0x80194630u, wrap_80194630, 18u, 0u, 0u },    { 0x80194660u, wrap_80194660, 6u, 0u, 0u },    { 0x80194690u, wrap_80194690, 49u, 0u, 0u },    { 0x80194750u, wrap_80194750, 73u, 0u, 0u },    { 0x80194840u, wrap_80194840, 39u, 0u, 0u },    { 0x801948c0u, wrap_801948c0, 33u, 0u, 0u },    { 0x80194960u, wrap_80194960, 86u, 0u, 0u },    { 0x80194a70u, wrap_80194a70, 72u, 0u, 0u },    { 0x80194b60u, wrap_80194b60, 71u, 0u, 0u },    { 0x80194c50u, wrap_80194c50, 116u, 0u, 0u },    { 0x80194db0u, wrap_80194db0, 99u, 0u, 0u },    { 0x80194f10u, wrap_80194f10, 17u, 0u, 0u },    { 0x80194f40u, wrap_80194f40, 82u, 0u, 0u },    { 0x80195050u, wrap_80195050, 86u, 0u, 0u },    { 0x80195160u, wrap_80195160, 30u, 0u, 0u },    { 0x801951b0u, wrap_801951b0, 33u, 0u, 0u },    { 0x80195210u, wrap_80195210, 17u, 0u, 0u },    { 0x80195240u, wrap_80195240, 17u, 0u, 0u },    { 0x80195270u, wrap_80195270, 11u, 0u, 0u },    { 0x80195290u, wrap_80195290, 6u, 0u, 0u },    { 0x801952b0u, wrap_801952b0, 4u, 0u, 0u },    { 0x801952c0u, wrap_801952c0, 16u, 0u, 0u },    { 0x801952e8u, wrap_801952e8, 15u, 0u, 0u },    { 0x80195310u, wrap_80195310, 25u, 0u, 0u },    { 0x8019534cu, wrap_8019534c, 13u, 0u, 0u },    { 0x80195370u, wrap_80195370, 16u, 0u, 0u },    { 0x80195398u, wrap_80195398, 16u, 0u, 0u },    { 0x801953c0u, wrap_801953c0, 8u, 0u, 0u },    { 0x801953e0u, wrap_801953e0, 9u, 0u, 0u },    { 0x80195404u, wrap_80195404, 31u, 0u, 0u },    { 0x8019545cu, wrap_8019545c, 31u, 0u, 0u },    { 0x801954b4u, wrap_801954b4, 6u, 0u, 0u },    { 0x801954d0u, wrap_801954d0, 16u, 0u, 0u },    { 0x80195500u, wrap_80195500, 33u, 0u, 0u },    { 0x80195570u, wrap_80195570, 116u, 0u, 0u },    { 0x80195710u, wrap_80195710, 50u, 0u, 0u },    { 0x801957f0u, wrap_801957f0, 4u, 0u, 0u },    { 0x80195800u, wrap_80195800, 15u, 24u, 0u },    { 0x80195830u, wrap_80195830, 11u, 24u, 0u },    { 0x80195854u, wrap_80195854, 173u, 64u, 0u },    { 0x80195a80u, wrap_80195a80, 6u, 24u, 0u },    { 0x80195b10u, wrap_80195b10, 5u, 24u, 0u },    { 0x80195b4cu, wrap_80195b4c, 7u, 24u, 0u },    { 0x80195b74u, wrap_80195b74, 12u, 24u, 0u },    { 0x80195b9cu, wrap_80195b9c, 9u, 24u, 0u },    { 0x80195bd0u, wrap_80195bd0, 4u, 0u, 0u },    { 0x80195be0u, wrap_80195be0, 5u, 0u, 1u },    { 0x80195bf0u, wrap_80195bf0, 4u, 0u, 1u },    { 0x80195c10u, wrap_80195c10, 4u, 0u, 1u },    { 0x80195c1cu, wrap_80195c1c, 11u, 24u, 0u },    { 0x80195c88u, wrap_80195c88, 10u, 24u, 0u },    { 0x80195ca8u, wrap_80195ca8, 7u, 0u, 0u },    { 0x80195d24u, wrap_80195d24, 10u, 24u, 0u },    { 0x80195d44u, wrap_80195d44, 10u, 24u, 0u },    { 0x80195d64u, wrap_80195d64, 7u, 0u, 0u },    { 0x80195d78u, wrap_80195d78, 7u, 0u, 0u },    { 0x80195d8cu, wrap_80195d8c, 105u, 56u, 0u },    { 0x80195ec8u, wrap_80195ec8, 103u, 56u, 0u },    { 0x80195ffcu, wrap_80195ffc, 109u, 56u, 0u },    { 0x80196148u, wrap_80196148, 10u, 24u, 0u },    { 0x80196168u, wrap_80196168, 10u, 24u, 0u },    { 0x80196188u, wrap_80196188, 10u, 24u, 0u },    { 0x801961a8u, wrap_801961a8, 11u, 24u, 0u },    { 0x801961ccu, wrap_801961cc, 10u, 24u, 0u },    { 0x801961ecu, wrap_801961ec, 68u, 0u, 0u },    { 0x801962f0u, wrap_801962f0, 35u, 0u, 0u },    { 0x80196370u, wrap_80196370, 427u, 48u, 1u },    { 0x801963bcu, wrap_801963bc, 8u, 0u, 1u },    { 0x801963c4u, wrap_801963c4, 8u, 0u, 1u },    { 0x801963d4u, wrap_801963d4, 8u, 0u, 1u },    { 0x801963e8u, wrap_801963e8, 8u, 0u, 1u },    { 0x801963ecu, wrap_801963ec, 8u, 0u, 1u },    { 0x8019640cu, wrap_8019640c, 8u, 0u, 1u },    { 0x80196430u, wrap_80196430, 8u, 0u, 1u },    { 0x8019643cu, wrap_8019643c, 8u, 0u, 1u },    { 0x80196444u, wrap_80196444, 8u, 0u, 1u },    { 0x80196458u, wrap_80196458, 8u, 0u, 1u },    { 0x80196498u, wrap_80196498, 8u, 0u, 1u },    { 0x801964c0u, wrap_801964c0, 8u, 0u, 1u },    { 0x801964d8u, wrap_801964d8, 8u, 0u, 1u },    { 0x801964ecu, wrap_801964ec, 8u, 0u, 1u },    { 0x80196504u, wrap_80196504, 8u, 0u, 1u },    { 0x80196524u, wrap_80196524, 8u, 0u, 1u },    { 0x80196534u, wrap_80196534, 8u, 0u, 1u },    { 0x80196548u, wrap_80196548, 8u, 0u, 1u },    { 0x80196554u, wrap_80196554, 8u, 0u, 1u },    { 0x80196568u, wrap_80196568, 8u, 0u, 1u },    { 0x8019659cu, wrap_8019659c, 8u, 0u, 1u },    { 0x801965b4u, wrap_801965b4, 8u, 0u, 1u },    { 0x801965ccu, wrap_801965cc, 8u, 0u, 1u },    { 0x801965d4u, wrap_801965d4, 8u, 0u, 1u },    { 0x801965f0u, wrap_801965f0, 8u, 0u, 1u },    { 0x801965f8u, wrap_801965f8, 8u, 0u, 1u },    { 0x80196610u, wrap_80196610, 8u, 0u, 1u },    { 0x80196618u, wrap_80196618, 8u, 0u, 1u },    { 0x80196640u, wrap_80196640, 8u, 0u, 1u },    { 0x8019665cu, wrap_8019665c, 8u, 0u, 1u },    { 0x80196664u, wrap_80196664, 8u, 0u, 1u },    { 0x8019667cu, wrap_8019667c, 8u, 0u, 1u },    { 0x80196684u, wrap_80196684, 8u, 0u, 1u },    { 0x801966a4u, wrap_801966a4, 8u, 0u, 1u },    { 0x801966acu, wrap_801966ac, 8u, 0u, 1u },    { 0x801966c4u, wrap_801966c4, 8u, 0u, 1u },    { 0x801966ccu, wrap_801966cc, 8u, 0u, 1u },    { 0x801966d4u, wrap_801966d4, 8u, 0u, 1u },    { 0x801966d8u, wrap_801966d8, 8u, 0u, 1u },    { 0x801966f0u, wrap_801966f0, 8u, 0u, 1u },    { 0x801966f8u, wrap_801966f8, 8u, 0u, 1u },    { 0x80196710u, wrap_80196710, 8u, 0u, 1u },    { 0x80196718u, wrap_80196718, 8u, 0u, 1u },    { 0x80196720u, wrap_80196720, 8u, 0u, 1u },    { 0x80196728u, wrap_80196728, 8u, 0u, 1u },    { 0x8019672cu, wrap_8019672c, 8u, 0u, 1u },    { 0x80196734u, wrap_80196734, 8u, 0u, 1u },    { 0x80196738u, wrap_80196738, 8u, 0u, 1u },    { 0x80196754u, wrap_80196754, 8u, 0u, 1u },    { 0x8019675cu, wrap_8019675c, 8u, 0u, 1u },    { 0x80196774u, wrap_80196774, 8u, 0u, 1u },    { 0x80196798u, wrap_80196798, 8u, 0u, 1u },    { 0x801967c4u, wrap_801967c4, 8u, 0u, 1u },    { 0x801967c8u, wrap_801967c8, 8u, 0u, 1u },    { 0x801967e0u, wrap_801967e0, 8u, 0u, 1u },    { 0x801967f0u, wrap_801967f0, 8u, 0u, 1u },    { 0x801967f8u, wrap_801967f8, 8u, 0u, 1u },    { 0x80196810u, wrap_80196810, 8u, 0u, 1u },    { 0x80196818u, wrap_80196818, 8u, 0u, 1u },    { 0x80196844u, wrap_80196844, 8u, 0u, 1u },    { 0x80196848u, wrap_80196848, 8u, 0u, 1u },    { 0x80196860u, wrap_80196860, 8u, 0u, 1u },    { 0x80196870u, wrap_80196870, 8u, 0u, 1u },    { 0x80196878u, wrap_80196878, 8u, 0u, 1u },    { 0x80196890u, wrap_80196890, 8u, 0u, 1u },    { 0x80196898u, wrap_80196898, 8u, 0u, 1u },    { 0x801968a4u, wrap_801968a4, 8u, 0u, 1u },    { 0x801968b4u, wrap_801968b4, 8u, 0u, 1u },    { 0x801968b8u, wrap_801968b8, 8u, 0u, 1u },    { 0x80196e14u, wrap_80196e14, 324u, 0u, 1u },    { 0x80196e58u, wrap_80196e58, 8u, 0u, 1u },    { 0x80196e78u, wrap_80196e78, 8u, 0u, 1u },    { 0x80196e98u, wrap_80196e98, 8u, 0u, 1u },    { 0x80196ea0u, wrap_80196ea0, 8u, 0u, 1u },    { 0x80196eb4u, wrap_80196eb4, 8u, 0u, 1u },    { 0x80196eccu, wrap_80196ecc, 8u, 0u, 1u },    { 0x80196ed4u, wrap_80196ed4, 8u, 0u, 1u },    { 0x80196edcu, wrap_80196edc, 8u, 0u, 1u },    { 0x80196eecu, wrap_80196eec, 8u, 0u, 1u },    { 0x80196ef4u, wrap_80196ef4, 8u, 0u, 1u },    { 0x80196f14u, wrap_80196f14, 8u, 0u, 1u },    { 0x80196f1cu, wrap_80196f1c, 8u, 0u, 1u },    { 0x80196f24u, wrap_80196f24, 8u, 0u, 1u },    { 0x80196f30u, wrap_80196f30, 8u, 0u, 1u },    { 0x80196f58u, wrap_80196f58, 8u, 0u, 1u },    { 0x80196f5cu, wrap_80196f5c, 8u, 0u, 1u },    { 0x80196f84u, wrap_80196f84, 8u, 0u, 1u },    { 0x80196f8cu, wrap_80196f8c, 8u, 0u, 1u },    { 0x80196fb4u, wrap_80196fb4, 8u, 0u, 1u },    { 0x80196fd0u, wrap_80196fd0, 8u, 0u, 1u },    { 0x80196fd8u, wrap_80196fd8, 8u, 0u, 1u },    { 0x80197010u, wrap_80197010, 8u, 0u, 1u },    { 0x80197028u, wrap_80197028, 8u, 0u, 1u },    { 0x80197030u, wrap_80197030, 8u, 0u, 1u },    { 0x80197048u, wrap_80197048, 8u, 0u, 1u },    { 0x80197074u, wrap_80197074, 8u, 0u, 1u },    { 0x80197080u, wrap_80197080, 8u, 0u, 1u },    { 0x801970ccu, wrap_801970cc, 8u, 0u, 1u },    { 0x801970d4u, wrap_801970d4, 8u, 0u, 1u },    { 0x801970dcu, wrap_801970dc, 8u, 0u, 1u },    { 0x801970e0u, wrap_801970e0, 8u, 0u, 1u },    { 0x801970e8u, wrap_801970e8, 8u, 0u, 1u },    { 0x801970f0u, wrap_801970f0, 8u, 0u, 1u },    { 0x801970f8u, wrap_801970f8, 8u, 0u, 1u },    { 0x80197110u, wrap_80197110, 8u, 0u, 1u },    { 0x80197118u, wrap_80197118, 8u, 0u, 1u },    { 0x80197124u, wrap_80197124, 8u, 0u, 1u },    { 0x8019712cu, wrap_8019712c, 8u, 0u, 1u },    { 0x80197140u, wrap_80197140, 8u, 0u, 1u },    { 0x80197150u, wrap_80197150, 8u, 0u, 1u },    { 0x80197154u, wrap_80197154, 8u, 0u, 1u },    { 0x8019715cu, wrap_8019715c, 8u, 0u, 1u },    { 0x80197170u, wrap_80197170, 8u, 0u, 1u },    { 0x80197180u, wrap_80197180, 8u, 0u, 1u },    { 0x80197188u, wrap_80197188, 8u, 0u, 1u },    { 0x80197198u, wrap_80197198, 8u, 0u, 1u },    { 0x801971a8u, wrap_801971a8, 8u, 0u, 1u },    { 0x801971b8u, wrap_801971b8, 8u, 0u, 1u },    { 0x801971bcu, wrap_801971bc, 8u, 0u, 1u },    { 0x801971d4u, wrap_801971d4, 8u, 0u, 1u },    { 0x801971f0u, wrap_801971f0, 8u, 0u, 1u },    { 0x801971f8u, wrap_801971f8, 8u, 0u, 1u },    { 0x80197220u, wrap_80197220, 52u, 0u, 0u },    { 0x801972a8u, wrap_801972a8, 75u, 0u, 0u },    { 0x8019737cu, wrap_8019737c, 91u, 0u, 0u },    { 0x8019746cu, wrap_8019746c, 25u, 24u, 0u },    { 0x801974b8u, wrap_801974b8, 151u, 24u, 0u },    { 0x80197698u, wrap_80197698, 118u, 48u, 0u },    { 0x80197800u, wrap_80197800, 88u, 0u, 0u },    { 0x80197900u, wrap_80197900, 82u, 0u, 0u },    { 0x8019799cu, wrap_8019799c, 8u, 8u, 0u },    { 0x801979f8u, wrap_801979f8, 72u, 0u, 1u },    { 0x80197a2cu, wrap_80197a2c, 8u, 0u, 1u },    { 0x80197a34u, wrap_80197a34, 8u, 0u, 1u },    { 0x80197a40u, wrap_80197a40, 8u, 0u, 1u },    { 0x80197a48u, wrap_80197a48, 8u, 0u, 1u },    { 0x80197a5cu, wrap_80197a5c, 8u, 0u, 1u },    { 0x80197a6cu, wrap_80197a6c, 8u, 0u, 1u },    { 0x80197a70u, wrap_80197a70, 8u, 0u, 1u },    { 0x80197a78u, wrap_80197a78, 8u, 0u, 1u },    { 0x80197a8cu, wrap_80197a8c, 8u, 0u, 1u },    { 0x80197a9cu, wrap_80197a9c, 8u, 0u, 1u },    { 0x80197aa4u, wrap_80197aa4, 8u, 0u, 1u },    { 0x80197ad0u, wrap_80197ad0, 26u, 24u, 0u },    { 0x80197b30u, wrap_80197b30, 233u, 0u, 0u },    { 0x80197e08u, wrap_80197e08, 10u, 24u, 0u },    { 0x80197e28u, wrap_80197e28, 223u, 64u, 0u },    { 0x801980ecu, wrap_801980ec, 54u, 40u, 0u },    { 0x8019842cu, wrap_8019842c, 32u, 40u, 0u },    { 0x801984a0u, wrap_801984a0, 30u, 0u, 0u },    { 0x80198510u, wrap_80198510, 36u, 0u, 0u },    { 0x80198590u, wrap_80198590, 19u, 24u, 0u },    { 0x801985c4u, wrap_801985c4, 194u, 48u, 1u },    { 0x801985f4u, wrap_801985f4, 8u, 0u, 1u },    { 0x80198604u, wrap_80198604, 8u, 0u, 1u },    { 0x80198614u, wrap_80198614, 8u, 0u, 1u },    { 0x8019862cu, wrap_8019862c, 8u, 0u, 1u },    { 0x80198634u, wrap_80198634, 8u, 0u, 1u },    { 0x80198640u, wrap_80198640, 8u, 0u, 1u },    { 0x80198648u, wrap_80198648, 8u, 0u, 1u },    { 0x80198654u, wrap_80198654, 8u, 0u, 1u },    { 0x8019865cu, wrap_8019865c, 8u, 0u, 1u },    { 0x80198664u, wrap_80198664, 8u, 0u, 1u },    { 0x8019866cu, wrap_8019866c, 8u, 0u, 1u },    { 0x80198684u, wrap_80198684, 8u, 0u, 1u },    { 0x80198690u, wrap_80198690, 8u, 0u, 1u },    { 0x8019869cu, wrap_8019869c, 8u, 0u, 1u },    { 0x801986b4u, wrap_801986b4, 8u, 0u, 1u },    { 0x801986ccu, wrap_801986cc, 8u, 0u, 1u },    { 0x801986d4u, wrap_801986d4, 8u, 0u, 1u },    { 0x801986ecu, wrap_801986ec, 8u, 0u, 1u },    { 0x80198728u, wrap_80198728, 8u, 0u, 1u },    { 0x8019872cu, wrap_8019872c, 8u, 0u, 1u },    { 0x80198734u, wrap_80198734, 8u, 0u, 1u },    { 0x80198750u, wrap_80198750, 8u, 0u, 1u },    { 0x80198758u, wrap_80198758, 8u, 0u, 1u },    { 0x80198760u, wrap_80198760, 8u, 0u, 1u },    { 0x80198778u, wrap_80198778, 8u, 0u, 1u },    { 0x8019877cu, wrap_8019877c, 8u, 0u, 1u },    { 0x8019878cu, wrap_8019878c, 8u, 0u, 1u },    { 0x80198794u, wrap_80198794, 8u, 0u, 1u },    { 0x801987acu, wrap_801987ac, 8u, 0u, 1u },    { 0x801987b8u, wrap_801987b8, 8u, 0u, 1u },    { 0x801987d0u, wrap_801987d0, 8u, 0u, 1u },    { 0x801987dcu, wrap_801987dc, 8u, 0u, 1u },    { 0x801987e8u, wrap_801987e8, 8u, 0u, 1u },    { 0x801987f4u, wrap_801987f4, 8u, 0u, 1u },    { 0x80198808u, wrap_80198808, 8u, 0u, 1u },    { 0x80198818u, wrap_80198818, 8u, 0u, 1u },    { 0x8019881cu, wrap_8019881c, 8u, 0u, 1u },    { 0x80198824u, wrap_80198824, 8u, 0u, 1u },    { 0x80198838u, wrap_80198838, 70u, 24u, 0u },    { 0x80198908u, wrap_80198908, 146u, 40u, 0u },    { 0x80198af0u, wrap_80198af0, 126u, 0u, 1u },    { 0x80198b10u, wrap_80198b10, 8u, 0u, 1u },    { 0x80198b18u, wrap_80198b18, 8u, 0u, 1u },    { 0x80198b34u, wrap_80198b34, 8u, 0u, 1u },    { 0x80198b3cu, wrap_80198b3c, 8u, 0u, 1u },    { 0x80198b50u, wrap_80198b50, 8u, 0u, 1u },    { 0x80198b5cu, wrap_80198b5c, 8u, 0u, 1u },    { 0x80198b70u, wrap_80198b70, 8u, 0u, 1u },    { 0x80198b7cu, wrap_80198b7c, 8u, 0u, 1u },    { 0x80198b84u, wrap_80198b84, 8u, 0u, 1u },    { 0x80198b94u, wrap_80198b94, 8u, 0u, 1u },    { 0x80198b98u, wrap_80198b98, 8u, 0u, 1u },    { 0x80198ba0u, wrap_80198ba0, 8u, 0u, 1u },    { 0x80198bb0u, wrap_80198bb0, 8u, 0u, 1u },    { 0x80198bc0u, wrap_80198bc0, 8u, 0u, 1u },    { 0x80198bc4u, wrap_80198bc4, 8u, 0u, 1u },    { 0x80198bccu, wrap_80198bcc, 8u, 0u, 1u },    { 0x80198be0u, wrap_80198be0, 8u, 0u, 1u },    { 0x80198bf8u, wrap_80198bf8, 8u, 0u, 1u },    { 0x80198c04u, wrap_80198c04, 8u, 0u, 1u },    { 0x80198c10u, wrap_80198c10, 8u, 0u, 1u },    { 0x80198c1cu, wrap_80198c1c, 8u, 0u, 1u },    { 0x80198c38u, wrap_80198c38, 8u, 0u, 1u },    { 0x80198c40u, wrap_80198c40, 8u, 0u, 1u },    { 0x80198c50u, wrap_80198c50, 8u, 0u, 1u },    { 0x80198c54u, wrap_80198c54, 8u, 0u, 1u },    { 0x80198c5cu, wrap_80198c5c, 8u, 0u, 1u },    { 0x80198c6cu, wrap_80198c6c, 8u, 0u, 1u },    { 0x80198c7cu, wrap_80198c7c, 8u, 0u, 1u },    { 0x80198c90u, wrap_80198c90, 134u, 40u, 1u },    { 0x80198cccu, wrap_80198ccc, 8u, 0u, 1u },    { 0x80198cd4u, wrap_80198cd4, 8u, 0u, 1u },    { 0x80198ce4u, wrap_80198ce4, 8u, 0u, 1u },    { 0x80198cecu, wrap_80198cec, 8u, 0u, 1u },    { 0x80198cfcu, wrap_80198cfc, 8u, 0u, 1u },    { 0x80198d0cu, wrap_80198d0c, 8u, 0u, 1u },    { 0x80198d2cu, wrap_80198d2c, 8u, 0u, 1u },    { 0x80198d34u, wrap_80198d34, 8u, 0u, 1u },    { 0x80198d3cu, wrap_80198d3c, 8u, 0u, 1u },    { 0x80198d50u, wrap_80198d50, 8u, 0u, 1u },    { 0x80198d5cu, wrap_80198d5c, 8u, 0u, 1u },    { 0x80198d68u, wrap_80198d68, 8u, 0u, 1u },    { 0x80198d74u, wrap_80198d74, 8u, 0u, 1u },    { 0x80198d80u, wrap_80198d80, 8u, 0u, 1u },    { 0x80198da4u, wrap_80198da4, 8u, 0u, 1u },    { 0x80198db0u, wrap_80198db0, 8u, 0u, 1u },    { 0x80198dc8u, wrap_80198dc8, 8u, 0u, 1u },    { 0x80198dd0u, wrap_80198dd0, 8u, 0u, 1u },    { 0x80198dd4u, wrap_80198dd4, 8u, 0u, 1u },    { 0x80198ddcu, wrap_80198ddc, 8u, 0u, 1u },    { 0x80198de8u, wrap_80198de8, 8u, 0u, 1u },    { 0x80198df4u, wrap_80198df4, 8u, 0u, 1u },    { 0x80198e00u, wrap_80198e00, 8u, 0u, 1u },    { 0x80198e08u, wrap_80198e08, 8u, 0u, 1u },    { 0x80198e2cu, wrap_80198e2c, 84u, 40u, 1u },    { 0x80198e5cu, wrap_80198e5c, 8u, 0u, 1u },    { 0x80198e64u, wrap_80198e64, 8u, 0u, 1u },    { 0x80198e7cu, wrap_80198e7c, 8u, 0u, 1u },    { 0x80198e8cu, wrap_80198e8c, 8u, 0u, 1u },    { 0x80198e94u, wrap_80198e94, 8u, 0u, 1u },    { 0x80198eacu, wrap_80198eac, 8u, 0u, 1u },    { 0x80198eb4u, wrap_80198eb4, 8u, 0u, 1u },    { 0x80198ec0u, wrap_80198ec0, 8u, 0u, 1u },    { 0x80198ec4u, wrap_80198ec4, 8u, 0u, 1u },    { 0x80198eccu, wrap_80198ecc, 8u, 0u, 1u },    { 0x80198edcu, wrap_80198edc, 8u, 0u, 1u },    { 0x80198ee4u, wrap_80198ee4, 8u, 0u, 1u },    { 0x80198eecu, wrap_80198eec, 8u, 0u, 1u },    { 0x80198ef4u, wrap_80198ef4, 8u, 0u, 1u },    { 0x80198f04u, wrap_80198f04, 8u, 0u, 1u },    { 0x80198f0cu, wrap_80198f0c, 8u, 0u, 1u },    { 0x80198f10u, wrap_80198f10, 8u, 0u, 1u },    { 0x80198f60u, wrap_80198f60, 40u, 32u, 0u },    { 0x80198fe4u, wrap_80198fe4, 10u, 24u, 0u },    { 0x80199010u, wrap_80199010, 34u, 24u, 0u },    { 0x80199070u, wrap_80199070, 39u, 24u, 0u },    { 0x801990f0u, wrap_801990f0, 50u, 0u, 0u },    { 0x80199100u, wrap_80199100, 8u, 24u, 0u },    { 0x8019917cu, wrap_8019917c, 28u, 0u, 0u },    { 0x80199184u, wrap_80199184, 8u, 24u, 0u },    { 0x801991e0u, wrap_801991e0, 50u, 32u, 0u },    { 0x80199270u, wrap_80199270, 50u, 0u, 0u },    { 0x80199320u, wrap_80199320, 15u, 0u, 0u },    { 0x80199360u, wrap_80199360, 61u, 0u, 0u },    { 0x80199420u, wrap_80199420, 10u, 0u, 0u },    { 0x80199440u, wrap_80199440, 544u, 64u, 1u },    { 0x80199458u, wrap_80199458, 8u, 0u, 1u },    { 0x8019946cu, wrap_8019946c, 8u, 0u, 1u },    { 0x8019948cu, wrap_8019948c, 8u, 0u, 1u },    { 0x801994a0u, wrap_801994a0, 8u, 0u, 1u },    { 0x801994b8u, wrap_801994b8, 8u, 0u, 1u },    { 0x801994c4u, wrap_801994c4, 8u, 0u, 1u },    { 0x801994ccu, wrap_801994cc, 8u, 0u, 1u },    { 0x801994d8u, wrap_801994d8, 8u, 0u, 1u },    { 0x801994fcu, wrap_801994fc, 8u, 0u, 1u },    { 0x80199508u, wrap_80199508, 8u, 0u, 1u },    { 0x80199538u, wrap_80199538, 8u, 0u, 1u },    { 0x8019954cu, wrap_8019954c, 8u, 0u, 1u },    { 0x80199568u, wrap_80199568, 8u, 0u, 1u },    { 0x80199574u, wrap_80199574, 8u, 0u, 1u },    { 0x801995e8u, wrap_801995e8, 8u, 0u, 1u },    { 0x801995ecu, wrap_801995ec, 8u, 0u, 1u },    { 0x80199610u, wrap_80199610, 8u, 0u, 1u },    { 0x80199620u, wrap_80199620, 8u, 0u, 1u },    { 0x80199634u, wrap_80199634, 8u, 0u, 1u },    { 0x80199648u, wrap_80199648, 8u, 0u, 1u },    { 0x8019966cu, wrap_8019966c, 8u, 0u, 1u },    { 0x80199674u, wrap_80199674, 8u, 0u, 1u },    { 0x80199698u, wrap_80199698, 8u, 0u, 1u },    { 0x801996b8u, wrap_801996b8, 8u, 0u, 1u },    { 0x801996bcu, wrap_801996bc, 8u, 0u, 1u },    { 0x801996d0u, wrap_801996d0, 8u, 0u, 1u },    { 0x80199724u, wrap_80199724, 8u, 0u, 1u },    { 0x80199738u, wrap_80199738, 8u, 0u, 1u },    { 0x80199754u, wrap_80199754, 8u, 0u, 1u },    { 0x8019976cu, wrap_8019976c, 8u, 0u, 1u },    { 0x80199788u, wrap_80199788, 8u, 0u, 1u },    { 0x80199790u, wrap_80199790, 8u, 0u, 1u },    { 0x801997acu, wrap_801997ac, 8u, 0u, 1u },    { 0x801997c8u, wrap_801997c8, 8u, 0u, 1u },    { 0x801997dcu, wrap_801997dc, 8u, 0u, 1u },    { 0x801997e8u, wrap_801997e8, 8u, 0u, 1u },    { 0x801997ecu, wrap_801997ec, 8u, 0u, 1u },    { 0x80199808u, wrap_80199808, 8u, 0u, 1u },    { 0x80199820u, wrap_80199820, 8u, 0u, 1u },    { 0x80199834u, wrap_80199834, 8u, 0u, 1u },    { 0x80199844u, wrap_80199844, 8u, 0u, 1u },    { 0x8019986cu, wrap_8019986c, 8u, 0u, 1u },    { 0x8019989cu, wrap_8019989c, 8u, 0u, 1u },    { 0x801998b8u, wrap_801998b8, 8u, 0u, 1u },    { 0x801998c4u, wrap_801998c4, 8u, 0u, 1u },    { 0x801998e0u, wrap_801998e0, 8u, 0u, 1u },    { 0x80199908u, wrap_80199908, 8u, 0u, 1u },    { 0x80199910u, wrap_80199910, 8u, 0u, 1u },    { 0x80199938u, wrap_80199938, 8u, 0u, 1u },    { 0x8019996cu, wrap_8019996c, 8u, 0u, 1u },    { 0x80199974u, wrap_80199974, 8u, 0u, 1u },    { 0x80199988u, wrap_80199988, 8u, 0u, 1u },    { 0x801999a4u, wrap_801999a4, 8u, 0u, 1u },    { 0x801999b0u, wrap_801999b0, 8u, 0u, 1u },    { 0x801999e0u, wrap_801999e0, 8u, 0u, 1u },    { 0x801999f4u, wrap_801999f4, 8u, 0u, 1u },    { 0x80199a10u, wrap_80199a10, 8u, 0u, 1u },    { 0x80199a18u, wrap_80199a18, 8u, 0u, 1u },    { 0x80199a2cu, wrap_80199a2c, 8u, 0u, 1u },    { 0x80199a48u, wrap_80199a48, 8u, 0u, 1u },    { 0x80199a54u, wrap_80199a54, 8u, 0u, 1u },    { 0x80199a70u, wrap_80199a70, 8u, 0u, 1u },    { 0x80199a88u, wrap_80199a88, 8u, 0u, 1u },    { 0x80199aa4u, wrap_80199aa4, 8u, 0u, 1u },    { 0x80199aa8u, wrap_80199aa8, 4u, 0u, 1u },    { 0x80199ab0u, wrap_80199ab0, 21u, 0u, 1u },    { 0x80199ad0u, wrap_80199ad0, 8u, 0u, 1u },    { 0x80199aecu, wrap_80199aec, 6u, 0u, 1u },    { 0x80199afcu, wrap_80199afc, 7u, 0u, 1u },    { 0x80199b10u, wrap_80199b10, 12u, 0u, 1u },    { 0x80199b30u, wrap_80199b30, 21u, 0u, 1u },    { 0x80199b74u, wrap_80199b74, 14u, 0u, 1u },    { 0x80199b9cu, wrap_80199b9c, 9u, 0u, 1u },    { 0x80199bb8u, wrap_80199bb8, 6u, 0u, 1u },    { 0x80199bc8u, wrap_80199bc8, 22u, 0u, 1u },    { 0x80199bd8u, wrap_80199bd8, 8u, 0u, 1u },    { 0x80199bf0u, wrap_80199bf0, 8u, 0u, 1u },    { 0x80199c0cu, wrap_80199c0c, 11u, 0u, 1u },    { 0x80199c14u, wrap_80199c14, 8u, 0u, 1u },    { 0x80199c30u, wrap_80199c30, 11u, 0u, 1u },    { 0x80199c54u, wrap_80199c54, 13u, 0u, 1u },    { 0x80199c78u, wrap_80199c78, 8u, 0u, 1u },    { 0x80199c8cu, wrap_80199c8c, 8u, 0u, 1u },    { 0x80199c94u, wrap_80199c94, 18u, 0u, 1u },    { 0x80199cb0u, wrap_80199cb0, 8u, 0u, 1u },    { 0x80199cccu, wrap_80199ccc, 13u, 0u, 1u },    { 0x80199cf0u, wrap_80199cf0, 31u, 0u, 1u },    { 0x80199d30u, wrap_80199d30, 8u, 0u, 1u },    { 0x80199d44u, wrap_80199d44, 8u, 0u, 1u },    { 0x80199d4cu, wrap_80199d4c, 5u, 0u, 1u },    { 0x80199d5cu, wrap_80199d5c, 13u, 0u, 0u },    { 0x80199d88u, wrap_80199d88, 142u, 48u, 0u },    { 0x80199f30u, wrap_80199f30, 23u, 24u, 0u },    { 0x80199f7cu, wrap_80199f7c, 13u, 24u, 0u },    { 0x80199fa4u, wrap_80199fa4, 10u, 24u, 0u },    { 0x80199fd0u, wrap_80199fd0, 4u, 0u, 0u },    { 0x80199fe0u, wrap_80199fe0, 4u, 0u, 0u },    { 0x80199ffcu, wrap_80199ffc, 5u, 0u, 0u },    { 0x8019a00cu, wrap_8019a00c, 47u, 40u, 1u },    { 0x8019a038u, wrap_8019a038, 8u, 0u, 1u },    { 0x8019a040u, wrap_8019a040, 8u, 0u, 1u },    { 0x8019a048u, wrap_8019a048, 8u, 0u, 1u },    { 0x8019a050u, wrap_8019a050, 8u, 0u, 1u },    { 0x8019a058u, wrap_8019a058, 8u, 0u, 1u },    { 0x8019a060u, wrap_8019a060, 8u, 0u, 1u },    { 0x8019a074u, wrap_8019a074, 8u, 0u, 1u },    { 0x8019a09cu, wrap_8019a09c, 47u, 40u, 1u },    { 0x8019a0c8u, wrap_8019a0c8, 8u, 0u, 1u },    { 0x8019a0d0u, wrap_8019a0d0, 8u, 0u, 1u },    { 0x8019a0d8u, wrap_8019a0d8, 8u, 0u, 1u },    { 0x8019a0e0u, wrap_8019a0e0, 8u, 0u, 1u },    { 0x8019a0e8u, wrap_8019a0e8, 8u, 0u, 1u },    { 0x8019a0f0u, wrap_8019a0f0, 8u, 0u, 1u },    { 0x8019a104u, wrap_8019a104, 8u, 0u, 1u },    { 0x8019a12cu, wrap_8019a12c, 14u, 24u, 0u },    { 0x8019a15cu, wrap_8019a15c, 17u, 24u, 0u },    { 0x8019a194u, wrap_8019a194, 38u, 24u, 0u },    { 0x8019a20cu, wrap_8019a20c, 16u, 24u, 0u },    { 0x8019a244u, wrap_8019a244, 35u, 0u, 0u },    { 0x8019a24cu, wrap_8019a24c, 8u, 16u, 0u },    { 0x8019a2f0u, wrap_8019a2f0, 4u, 0u, 0u },    { 0x8019a300u, wrap_8019a300, 4u, 0u, 0u },    { 0x8019a310u, wrap_8019a310, 4u, 0u, 0u },    { 0x8019a320u, wrap_8019a320, 4u, 0u, 0u },    { 0x8019a330u, wrap_8019a330, 4u, 0u, 0u },    { 0x8019a340u, wrap_8019a340, 4u, 0u, 0u },    { 0x8019a378u, wrap_8019a378, 34u, 0u, 1u },    { 0x8019a388u, wrap_8019a388, 8u, 0u, 1u },    { 0x8019a398u, wrap_8019a398, 8u, 0u, 1u },    { 0x8019a3b8u, wrap_8019a3b8, 8u, 0u, 1u },    { 0x8019a3ccu, wrap_8019a3cc, 8u, 0u, 1u },    { 0x8019a3d4u, wrap_8019a3d4, 8u, 0u, 1u },    { 0x8019a3f0u, wrap_8019a3f0, 30u, 0u, 1u },    { 0x8019a400u, wrap_8019a400, 8u, 0u, 1u },    { 0x8019a410u, wrap_8019a410, 8u, 0u, 1u },    { 0x8019a420u, wrap_8019a420, 8u, 0u, 1u },    { 0x8019a434u, wrap_8019a434, 8u, 0u, 1u },    { 0x8019a43cu, wrap_8019a43c, 8u, 0u, 1u },    { 0x8019a444u, wrap_8019a444, 8u, 0u, 1u },    { 0x8019a460u, wrap_8019a460, 125u, 0u, 0u },    { 0x8019a5d8u, wrap_8019a5d8, 46u, 32u, 1u },    { 0x8019a5fcu, wrap_8019a5fc, 8u, 0u, 1u },    { 0x8019a600u, wrap_8019a600, 8u, 0u, 1u },    { 0x8019a620u, wrap_8019a620, 8u, 0u, 1u },    { 0x8019a62cu, wrap_8019a62c, 8u, 0u, 1u },    { 0x8019a634u, wrap_8019a634, 8u, 0u, 1u },    { 0x8019a640u, wrap_8019a640, 8u, 0u, 1u },    { 0x8019a648u, wrap_8019a648, 8u, 0u, 1u },    { 0x8019a660u, wrap_8019a660, 8u, 0u, 1u },    { 0x8019a670u, wrap_8019a670, 4u, 0u, 0u },    { 0x8019a680u, wrap_8019a680, 16u, 0u, 0u },    { 0x8019a688u, wrap_8019a688, 8u, 24u, 0u },    { 0x8019a6b0u, wrap_8019a6b0, 16u, 0u, 0u },    { 0x8019a6b8u, wrap_8019a6b8, 8u, 24u, 0u },    { 0x8019a6e0u, wrap_8019a6e0, 16u, 0u, 0u },    { 0x8019a6e8u, wrap_8019a6e8, 8u, 24u, 0u },    { 0x8019a710u, wrap_8019a710, 17u, 24u, 0u },    { 0x8019a744u, wrap_8019a744, 16u, 0u, 0u },    { 0x8019a74cu, wrap_8019a74c, 8u, 24u, 0u },    { 0x8019a774u, wrap_8019a774, 16u, 0u, 0u },    { 0x8019a77cu, wrap_8019a77c, 8u, 24u, 0u },    { 0x8019a7a4u, wrap_8019a7a4, 16u, 0u, 0u },    { 0x8019a7acu, wrap_8019a7ac, 8u, 24u, 0u },    { 0x8019a7d4u, wrap_8019a7d4, 5u, 0u, 0u },    { 0x8019a7fcu, wrap_8019a7fc, 9u, 0u, 0u },    { 0x8019a87cu, wrap_8019a87c, 30u, 0u, 1u },    { 0x8019a884u, wrap_8019a884, 8u, 0u, 1u },    { 0x8019a88cu, wrap_8019a88c, 8u, 0u, 1u },    { 0x8019a8a4u, wrap_8019a8a4, 8u, 0u, 1u },    { 0x8019a8b0u, wrap_8019a8b0, 8u, 0u, 1u },    { 0x8019a8c0u, wrap_8019a8c0, 8u, 0u, 1u },    { 0x8019a8d0u, wrap_8019a8d0, 8u, 0u, 1u },    { 0x8019a8d8u, wrap_8019a8d8, 8u, 0u, 1u },    { 0x8019aabcu, wrap_8019aabc, 107u, 40u, 1u },    { 0x8019ab00u, wrap_8019ab00, 8u, 0u, 1u },    { 0x8019ab10u, wrap_8019ab10, 8u, 0u, 1u },    { 0x8019ab2cu, wrap_8019ab2c, 8u, 0u, 1u },    { 0x8019ab4cu, wrap_8019ab4c, 8u, 0u, 1u },    { 0x8019ab6cu, wrap_8019ab6c, 8u, 0u, 1u },    { 0x8019ab74u, wrap_8019ab74, 8u, 0u, 1u },    { 0x8019ab80u, wrap_8019ab80, 8u, 0u, 1u },    { 0x8019ab8cu, wrap_8019ab8c, 8u, 0u, 1u },    { 0x8019ab90u, wrap_8019ab90, 8u, 0u, 1u },    { 0x8019ab98u, wrap_8019ab98, 8u, 0u, 1u },    { 0x8019aba4u, wrap_8019aba4, 8u, 0u, 1u },    { 0x8019aba8u, wrap_8019aba8, 8u, 0u, 1u },    { 0x8019abb0u, wrap_8019abb0, 8u, 0u, 1u },    { 0x8019abbcu, wrap_8019abbc, 8u, 0u, 1u },    { 0x8019abc0u, wrap_8019abc0, 8u, 0u, 1u },    { 0x8019abc8u, wrap_8019abc8, 8u, 0u, 1u },    { 0x8019abd0u, wrap_8019abd0, 8u, 0u, 1u },    { 0x8019abe0u, wrap_8019abe0, 8u, 0u, 1u },    { 0x8019abe4u, wrap_8019abe4, 8u, 0u, 1u },    { 0x8019ac04u, wrap_8019ac04, 59u, 24u, 0u },    { 0x8019aca4u, wrap_8019aca4, 42u, 24u, 0u },    { 0x8019ad1cu, wrap_8019ad1c, 10u, 0u, 0u },    { 0x8019ad48u, wrap_8019ad48, 6u, 0u, 0u },    { 0x8019ad60u, wrap_8019ad60, 4u, 0u, 0u },    { 0x8019ad70u, wrap_8019ad70, 4u, 0u, 0u },    { 0x8019ad80u, wrap_8019ad80, 4u, 0u, 0u },    { 0x8019ad90u, wrap_8019ad90, 27u, 0u, 0u },    { 0x8019ae10u, wrap_8019ae10, 27u, 24u, 0u },    { 0x8019ae68u, wrap_8019ae68, 36u, 0u, 0u },    { 0x8019ae70u, wrap_8019ae70, 8u, 32u, 0u },    { 0x8019af00u, wrap_8019af00, 10u, 0u, 0u },    { 0x8019af30u, wrap_8019af30, 23u, 24u, 0u },    { 0x8019af84u, wrap_8019af84, 8u, 48u, 0u },    { 0x8019b0fcu, wrap_8019b0fc, 52u, 0u, 0u },    { 0x8019b1a8u, wrap_8019b1a8, 10u, 0u, 0u },    { 0x8019b1d0u, wrap_8019b1d0, 7u, 0u, 0u },    { 0x8019b1e4u, wrap_8019b1e4, 5u, 0u, 0u },    { 0x8019b200u, wrap_8019b200, 10u, 24u, 0u },    { 0x8019b220u, wrap_8019b220, 22u, 24u, 0u },    { 0x8019b380u, wrap_8019b380, 4u, 0u, 0u },    { 0x8019b390u, wrap_8019b390, 4u, 0u, 0u },    { 0x8019b3a0u, wrap_8019b3a0, 223u, 32u, 0u },    { 0x8019b620u, wrap_8019b620, 142u, 0u, 0u },    { 0x8019b7e8u, wrap_8019b7e8, 8u, 24u, 0u },    { 0x8019b89cu, wrap_8019b89c, 60u, 0u, 0u },    { 0x8019b8a4u, wrap_8019b8a4, 8u, 32u, 0u },    { 0x8019b944u, wrap_8019b944, 8u, 0u, 0u },    { 0x8019bbc4u, wrap_8019bbc4, 42u, 0u, 0u },    { 0x8019bc48u, wrap_8019bc48, 33u, 32u, 0u },    { 0x8019bcacu, wrap_8019bcac, 22u, 0u, 0u },    { 0x8019bcf0u, wrap_8019bcf0, 47u, 0u, 0u },    { 0x8019be28u, wrap_8019be28, 13u, 0u, 0u },    { 0x8019be50u, wrap_8019be50, 13u, 0u, 0u },    { 0x8019be78u, wrap_8019be78, 30u, 8u, 0u },    { 0x8019bee0u, wrap_8019bee0, 11u, 24u, 0u },    { 0x8019bf10u, wrap_8019bf10, 68u, 24u, 0u },    { 0x8019c060u, wrap_8019c060, 39u, 0u, 0u },    { 0x8019c0f0u, wrap_8019c0f0, 401u, 136u, 0u },    { 0x8019c5d0u, wrap_8019c5d0, 405u, 0u, 0u },    { 0x8019caa0u, wrap_8019caa0, 41u, 0u, 0u },    { 0x8019cb20u, wrap_8019cb20, 11u, 24u, 0u },    { 0x8019cb50u, wrap_8019cb50, 211u, 0u, 0u },    { 0x8019ce10u, wrap_8019ce10, 131u, 56u, 0u },    { 0x8019cfb0u, wrap_8019cfb0, 4u, 0u, 0u },    { 0x8019cfc0u, wrap_8019cfc0, 31u, 24u, 0u },    { 0x8019d030u, wrap_8019d030, 93u, 24u, 0u },    { 0x8019d170u, wrap_8019d170, 18u, 24u, 0u },    { 0x8019d1b0u, wrap_8019d1b0, 21u, 24u, 0u },    { 0x8019d1f0u, wrap_8019d1f0, 11u, 24u, 0u },    { 0x8019d220u, wrap_8019d220, 146u, 0u, 0u },    { 0x8019d3e0u, wrap_8019d3e0, 17u, 24u, 0u },    { 0x8019d410u, wrap_8019d410, 29u, 24u, 0u },    { 0x8019d470u, wrap_8019d470, 28u, 24u, 0u },    { 0x8019d4d0u, wrap_8019d4d0, 14u, 0u, 0u },    { 0x8019d500u, wrap_8019d500, 52u, 0u, 0u },    { 0x8019d5b0u, wrap_8019d5b0, 4u, 0u, 0u },    { 0x8019d5c0u, wrap_8019d5c0, 11u, 0u, 0u },    { 0x8019d5f0u, wrap_8019d5f0, 274u, 0u, 0u },    { 0x8019da44u, wrap_8019da44, 41u, 0u, 0u },    { 0x8019dad0u, wrap_8019dad0, 457u, 56u, 0u },    { 0x8019e0d0u, wrap_8019e0d0, 54u, 0u, 0u },    { 0x8019e2d0u, wrap_8019e2d0, 14u, 24u, 0u },    { 0x8019e320u, wrap_8019e320, 4u, 0u, 0u },    { 0x8019e330u, wrap_8019e330, 31u, 24u, 1u },    { 0x8019e348u, wrap_8019e348, 8u, 0u, 1u },    { 0x8019e350u, wrap_8019e350, 8u, 0u, 1u },    { 0x8019e358u, wrap_8019e358, 8u, 0u, 1u },    { 0x8019e360u, wrap_8019e360, 8u, 0u, 1u },    { 0x8019e364u, wrap_8019e364, 8u, 0u, 1u },    { 0x8019e36cu, wrap_8019e36c, 8u, 0u, 1u },    { 0x8019e374u, wrap_8019e374, 8u, 0u, 1u },    { 0x8019e37cu, wrap_8019e37c, 8u, 0u, 1u },    { 0x8019e384u, wrap_8019e384, 8u, 0u, 1u },    { 0x8019e38cu, wrap_8019e38c, 8u, 0u, 1u },    { 0x8019e39cu, wrap_8019e39c, 16u, 24u, 1u },    { 0x8019e3acu, wrap_8019e3ac, 8u, 0u, 1u },    { 0x8019e3b4u, wrap_8019e3b4, 8u, 0u, 1u },    { 0x8019e3bcu, wrap_8019e3bc, 8u, 0u, 1u },    { 0x8019e3c4u, wrap_8019e3c4, 8u, 0u, 1u },    { 0x8019e3d4u, wrap_8019e3d4, 12u, 24u, 0u },    { 0x8019e400u, wrap_8019e400, 4u, 0u, 0u },    { 0x8019e410u, wrap_8019e410, 4u, 0u, 0u },    { 0x8019e420u, wrap_8019e420, 4u, 0u, 0u },    { 0x8019e680u, wrap_8019e680, 43u, 24u, 0u },    { 0x8019e6f0u, wrap_8019e6f0, 19u, 24u, 0u },    { 0x8019e730u, wrap_8019e730, 33u, 24u, 0u },    { 0x8019ea98u, wrap_8019ea98, 33u, 24u, 0u },    { 0x8019eda8u, wrap_8019eda8, 125u, 56u, 0u },    { 0x8019ef30u, wrap_8019ef30, 23u, 24u, 0u },    { 0x8019ef74u, wrap_8019ef74, 56u, 24u, 0u },    { 0x8019f02cu, wrap_8019f02c, 99u, 32u, 0u },    { 0x8019f168u, wrap_8019f168, 56u, 24u, 0u },    { 0x8019f220u, wrap_8019f220, 99u, 32u, 0u },    { 0x8019f35cu, wrap_8019f35c, 96u, 48u, 0u },    { 0x8019f474u, wrap_8019f474, 98u, 32u, 0u },    { 0x8019f5b4u, wrap_8019f5b4, 96u, 48u, 0u },    { 0x8019f6ccu, wrap_8019f6cc, 98u, 32u, 0u },    { 0x8019f80cu, wrap_8019f80c, 206u, 144u, 0u },    { 0x8019fa6cu, wrap_8019fa6c, 7u, 0u, 0u },    { 0x8019fa80u, wrap_8019fa80, 90u, 0u, 0u },    { 0x8019fb9cu, wrap_8019fb9c, 162u, 80u, 1u },    { 0x8019fbdcu, wrap_8019fbdc, 8u, 0u, 1u },    { 0x8019fbe8u, wrap_8019fbe8, 8u, 0u, 1u },    { 0x8019fbf0u, wrap_8019fbf0, 8u, 0u, 1u },    { 0x8019fbfcu, wrap_8019fbfc, 8u, 0u, 1u },    { 0x8019fc08u, wrap_8019fc08, 8u, 0u, 1u },    { 0x8019fc2cu, wrap_8019fc2c, 8u, 0u, 1u },    { 0x8019fc34u, wrap_8019fc34, 8u, 0u, 1u },    { 0x8019fc3cu, wrap_8019fc3c, 8u, 0u, 1u },    { 0x8019fc44u, wrap_8019fc44, 8u, 0u, 1u },    { 0x8019fc4cu, wrap_8019fc4c, 8u, 0u, 1u },    { 0x8019fc50u, wrap_8019fc50, 8u, 0u, 1u },    { 0x8019fc54u, wrap_8019fc54, 8u, 0u, 1u },    { 0x8019fc5cu, wrap_8019fc5c, 8u, 0u, 1u },    { 0x8019fc64u, wrap_8019fc64, 8u, 0u, 1u },    { 0x8019fc6cu, wrap_8019fc6c, 8u, 0u, 1u },    { 0x8019fc7cu, wrap_8019fc7c, 8u, 0u, 1u },    { 0x8019fc88u, wrap_8019fc88, 8u, 0u, 1u },    { 0x8019fc90u, wrap_8019fc90, 8u, 0u, 1u },    { 0x8019fcb0u, wrap_8019fcb0, 8u, 0u, 1u },    { 0x8019fcc0u, wrap_8019fcc0, 8u, 0u, 1u },    { 0x8019fcd0u, wrap_8019fcd0, 8u, 0u, 1u },    { 0x8019fce8u, wrap_8019fce8, 8u, 0u, 1u },    { 0x8019fcf0u, wrap_8019fcf0, 8u, 0u, 1u },    { 0x8019fd00u, wrap_8019fd00, 8u, 0u, 1u },    { 0x8019fd14u, wrap_8019fd14, 8u, 0u, 1u },    { 0x8019fd24u, wrap_8019fd24, 8u, 0u, 1u },    { 0x8019fd34u, wrap_8019fd34, 8u, 0u, 1u },    { 0x8019fd3cu, wrap_8019fd3c, 8u, 0u, 1u },    { 0x8019fd44u, wrap_8019fd44, 8u, 0u, 1u },    { 0x8019fd54u, wrap_8019fd54, 8u, 0u, 1u },    { 0x8019fd5cu, wrap_8019fd5c, 8u, 0u, 1u },    { 0x8019fd60u, wrap_8019fd60, 8u, 0u, 1u },    { 0x8019fd6cu, wrap_8019fd6c, 8u, 0u, 1u },    { 0x8019fd74u, wrap_8019fd74, 8u, 0u, 1u },    { 0x8019fd78u, wrap_8019fd78, 8u, 0u, 1u },    { 0x8019ff4cu, wrap_8019ff4c, 53u, 24u, 0u },    { 0x801a00bcu, wrap_801a00bc, 21u, 0u, 0u },    { 0x801a0110u, wrap_801a0110, 59u, 24u, 0u },    { 0x801a01bcu, wrap_801a01bc, 33u, 0u, 0u },    { 0x801a0220u, wrap_801a0220, 4u, 0u, 0u },    { 0x801a0230u, wrap_801a0230, 4u, 0u, 0u },    { 0x801a0240u, wrap_801a0240, 4u, 0u, 0u },    { 0x801a0250u, wrap_801a0250, 4u, 0u, 0u },    { 0x801a0260u, wrap_801a0260, 4u, 0u, 0u },    { 0x801a0270u, wrap_801a0270, 4u, 0u, 0u },    { 0x801a0280u, wrap_801a0280, 127u, 40u, 0u },    { 0x801a0520u, wrap_801a0520, 4u, 0u, 0u },    { 0x801a0530u, wrap_801a0530, 53u, 32u, 0u },    { 0x801a05e0u, wrap_801a05e0, 4u, 0u, 0u },    { 0x801a05f0u, wrap_801a05f0, 4u, 0u, 0u },    { 0x801a0600u, wrap_801a0600, 4u, 0u, 0u },    { 0x801a0610u, wrap_801a0610, 4u, 0u, 0u },    { 0x801a0620u, wrap_801a0620, 17u, 24u, 0u },    { 0x801a0660u, wrap_801a0660, 99u, 176u, 1u },    { 0x801a069cu, wrap_801a069c, 8u, 0u, 1u },    { 0x801a06b4u, wrap_801a06b4, 8u, 0u, 1u },    { 0x801a06c0u, wrap_801a06c0, 8u, 0u, 1u },    { 0x801a06ccu, wrap_801a06cc, 8u, 0u, 1u },    { 0x801a06d4u, wrap_801a06d4, 8u, 0u, 1u },    { 0x801a06e4u, wrap_801a06e4, 8u, 0u, 1u },    { 0x801a06ecu, wrap_801a06ec, 8u, 0u, 1u },    { 0x801a06f4u, wrap_801a06f4, 8u, 0u, 1u },    { 0x801a0700u, wrap_801a0700, 8u, 0u, 1u },    { 0x801a0708u, wrap_801a0708, 8u, 0u, 1u },    { 0x801a0710u, wrap_801a0710, 8u, 0u, 1u },    { 0x801a0720u, wrap_801a0720, 8u, 0u, 1u },    { 0x801a0728u, wrap_801a0728, 8u, 0u, 1u },    { 0x801a0734u, wrap_801a0734, 8u, 0u, 1u },    { 0x801a073cu, wrap_801a073c, 8u, 0u, 1u },    { 0x801a0744u, wrap_801a0744, 8u, 0u, 1u },    { 0x801a0750u, wrap_801a0750, 8u, 0u, 1u },    { 0x801a0758u, wrap_801a0758, 8u, 0u, 1u },    { 0x801a076cu, wrap_801a076c, 8u, 0u, 1u },    { 0x801a077cu, wrap_801a077c, 8u, 0u, 1u },    { 0x801a0780u, wrap_801a0780, 8u, 0u, 1u },    { 0x801a07a4u, wrap_801a07a4, 193u, 56u, 0u },    { 0x801a09b0u, wrap_801a09b0, 13u, 0u, 0u },    { 0x801a09e0u, wrap_801a09e0, 4u, 0u, 0u },    { 0x801a09f0u, wrap_801a09f0, 4u, 0u, 0u },    { 0x801a0a00u, wrap_801a0a00, 5u, 0u, 0u },    { 0x801a0a10u, wrap_801a0a10, 37u, 0u, 0u },    { 0x801a0a8cu, wrap_801a0a8c, 33u, 0u, 0u },    { 0x801a0af8u, wrap_801a0af8, 5u, 0u, 0u },    { 0x801a0bb0u, wrap_801a0bb0, 14u, 24u, 0u },    { 0x801a0be0u, wrap_801a0be0, 38u, 24u, 1u },    { 0x801a0bf0u, wrap_801a0bf0, 8u, 0u, 1u },    { 0x801a0c10u, wrap_801a0c10, 8u, 0u, 1u },    { 0x801a0c34u, wrap_801a0c34, 8u, 0u, 1u },    { 0x801a0c58u, wrap_801a0c58, 8u, 0u, 1u },    { 0x801a0c68u, wrap_801a0c68, 101u, 0u, 1u },    { 0x801a0c7cu, wrap_801a0c7c, 8u, 0u, 1u },    { 0x801a0ca0u, wrap_801a0ca0, 8u, 0u, 1u },    { 0x801a0cc4u, wrap_801a0cc4, 8u, 0u, 1u },    { 0x801a0ce8u, wrap_801a0ce8, 8u, 0u, 1u },    { 0x801a0d0cu, wrap_801a0d0c, 8u, 0u, 1u },    { 0x801a0d20u, wrap_801a0d20, 8u, 0u, 1u },    { 0x801a0d30u, wrap_801a0d30, 8u, 0u, 1u },    { 0x801a0d40u, wrap_801a0d40, 8u, 0u, 1u },    { 0x801a0d50u, wrap_801a0d50, 8u, 0u, 1u },    { 0x801a0d60u, wrap_801a0d60, 8u, 0u, 1u },    { 0x801a0d70u, wrap_801a0d70, 8u, 0u, 1u },    { 0x801a0d80u, wrap_801a0d80, 8u, 0u, 1u },    { 0x801a0d90u, wrap_801a0d90, 8u, 0u, 1u },    { 0x801a0d98u, wrap_801a0d98, 8u, 0u, 1u },    { 0x801a0da4u, wrap_801a0da4, 8u, 0u, 1u },    { 0x801a0dacu, wrap_801a0dac, 8u, 0u, 1u },    { 0x801a0dbcu, wrap_801a0dbc, 10u, 24u, 0u },    { 0x801a0e90u, wrap_801a0e90, 90u, 0u, 0u },    { 0x801a0e98u, wrap_801a0e98, 8u, 24u, 0u },    { 0x801a0f98u, wrap_801a0f98, 73u, 24u, 0u },    { 0x801a1070u, wrap_801a1070, 73u, 24u, 0u },    { 0x801a1148u, wrap_801a1148, 19u, 0u, 0u },    { 0x801a1184u, wrap_801a1184, 19u, 0u, 0u },    { 0x801a11c0u, wrap_801a11c0, 4u, 0u, 0u },    { 0x801a11e4u, wrap_801a11e4, 7u, 0u, 0u },    { 0x801a11f8u, wrap_801a11f8, 7u, 0u, 0u },    { 0x801a120cu, wrap_801a120c, 11u, 24u, 0u },    { 0x801a1230u, wrap_801a1230, 10u, 24u, 0u },    { 0x801a1250u, wrap_801a1250, 10u, 24u, 0u },    { 0x801a1270u, wrap_801a1270, 10u, 24u, 0u },    { 0x801a12dcu, wrap_801a12dc, 62u, 0u, 0u },    { 0x801a13a8u, wrap_801a13a8, 77u, 0u, 0u },    { 0x801a161cu, wrap_801a161c, 19u, 0u, 0u },    { 0x801a169cu, wrap_801a169c, 25u, 0u, 0u },    { 0x801a1808u, wrap_801a1808, 15u, 0u, 0u },    { 0x801a1834u, wrap_801a1834, 32u, 0u, 0u },    { 0x801a189cu, wrap_801a189c, 127u, 0u, 0u },    { 0x801a1a2cu, wrap_801a1a2c, 7u, 0u, 0u },    { 0x801a1a40u, wrap_801a1a40, 67u, 24u, 1u },    { 0x801a1a58u, wrap_801a1a58, 8u, 0u, 1u },    { 0x801a1a6cu, wrap_801a1a6c, 8u, 0u, 1u },    { 0x801a1a78u, wrap_801a1a78, 8u, 0u, 1u },    { 0x801a1aa0u, wrap_801a1aa0, 8u, 0u, 1u },    { 0x801a1aa8u, wrap_801a1aa8, 8u, 0u, 1u },    { 0x801a1ac4u, wrap_801a1ac4, 8u, 0u, 1u },    { 0x801a1ae0u, wrap_801a1ae0, 8u, 0u, 1u },    { 0x801a1b0cu, wrap_801a1b0c, 14u, 24u, 0u },    { 0x801a1b50u, wrap_801a1b50, 40u, 32u, 0u },    { 0x801a1e84u, wrap_801a1e84, 28u, 24u, 0u },    { 0x801a1f74u, wrap_801a1f74, 183u, 40u, 0u },    { 0x801a2184u, wrap_801a2184, 205u, 40u, 0u },    { 0x801a23fcu, wrap_801a23fc, 47u, 24u, 0u },    { 0x801a248cu, wrap_801a248c, 12u, 0u, 0u },    { 0x801a24c0u, wrap_801a24c0, 5u, 0u, 0u },    { 0x801a24dcu, wrap_801a24dc, 38u, 24u, 0u },    { 0x801a27d0u, wrap_801a27d0, 17u, 0u, 0u },    { 0x801a2d7cu, wrap_801a2d7c, 37u, 32u, 0u },    { 0x801a2de4u, wrap_801a2de4, 11u, 0u, 0u },    { 0x801a2e00u, wrap_801a2e00, 61u, 0u, 0u },    { 0x801a2fb4u, wrap_801a2fb4, 30u, 24u, 0u },    { 0x801a3014u, wrap_801a3014, 12u, 0u, 0u },    { 0x801a3034u, wrap_801a3034, 8u, 0u, 0u },    { 0x801a3048u, wrap_801a3048, 12u, 0u, 0u },    { 0x801a3068u, wrap_801a3068, 12u, 0u, 0u },    { 0x801a3088u, wrap_801a3088, 12u, 0u, 0u },    { 0x801a30a8u, wrap_801a30a8, 8u, 0u, 0u },    { 0x801a30c0u, wrap_801a30c0, 26u, 24u, 0u },    { 0x801a3108u, wrap_801a3108, 70u, 0u, 0u },    { 0x801a31e0u, wrap_801a31e0, 56u, 0u, 0u },    { 0x801a328cu, wrap_801a328c, 61u, 24u, 0u },    { 0x801a3350u, wrap_801a3350, 92u, 0u, 0u },    { 0x801a36f0u, wrap_801a36f0, 118u, 32u, 1u },    { 0x801a3720u, wrap_801a3720, 8u, 0u, 1u },    { 0x801a37acu, wrap_801a37ac, 8u, 0u, 1u },    { 0x801a37d0u, wrap_801a37d0, 8u, 0u, 1u },    { 0x801a37f8u, wrap_801a37f8, 8u, 0u, 1u },    { 0x801a3808u, wrap_801a3808, 8u, 0u, 1u },    { 0x801a3824u, wrap_801a3824, 8u, 0u, 1u },    { 0x801a382cu, wrap_801a382c, 8u, 0u, 1u },    { 0x801a3850u, wrap_801a3850, 41u, 0u, 0u },    { 0x801a38b8u, wrap_801a38b8, 79u, 40u, 0u },    { 0x801a39acu, wrap_801a39ac, 7u, 0u, 0u },    { 0x801a39bcu, wrap_801a39bc, 58u, 0u, 0u },    { 0x801a3a78u, wrap_801a3a78, 195u, 24u, 0u },    { 0x801a3d50u, wrap_801a3d50, 16u, 0u, 0u },    { 0x801a3d84u, wrap_801a3d84, 80u, 24u, 0u },    { 0x801a3e94u, wrap_801a3e94, 206u, 24u, 0u },    { 0x801a40f8u, wrap_801a40f8, 78u, 24u, 0u },    { 0x801a4210u, wrap_801a4210, 11u, 0u, 0u },    { 0x801a4230u, wrap_801a4230, 49u, 0u, 0u },    { 0x801a42d0u, wrap_801a42d0, 15u, 0u, 0u },    { 0x801a4308u, wrap_801a4308, 98u, 48u, 0u },    { 0x801a4414u, wrap_801a4414, 97u, 40u, 0u },    { 0x801a46c8u, wrap_801a46c8, 65u, 0u, 0u },    { 0x801a482cu, wrap_801a482c, 4u, 0u, 0u },    { 0x801a48fcu, wrap_801a48fc, 74u, 32u, 0u },    { 0x801a49d0u, wrap_801a49d0, 71u, 40u, 0u },    { 0x801a4aa0u, wrap_801a4aa0, 4u, 0u, 0u },    { 0x801a4aacu, wrap_801a4aac, 45u, 32u, 0u },    { 0x801a4be8u, wrap_801a4be8, 39u, 24u, 0u },    { 0x801a4c60u, wrap_801a4c60, 6u, 0u, 0u },    { 0x801a4c74u, wrap_801a4c74, 6u, 0u, 0u },    { 0x801a4cd8u, wrap_801a4cd8, 38u, 24u, 0u },    { 0x801a4e2cu, wrap_801a4e2c, 51u, 24u, 0u },    { 0x801a4ebcu, wrap_801a4ebc, 84u, 0u, 0u },    { 0x801a4fd0u, wrap_801a4fd0, 96u, 0u, 0u },    { 0x801a50d8u, wrap_801a50d8, 41u, 24u, 0u },    { 0x801a5160u, wrap_801a5160, 36u, 24u, 0u },    { 0x801a51d0u, wrap_801a51d0, 33u, 24u, 0u },    { 0x801a536cu, wrap_801a536c, 36u, 24u, 0u },    { 0x801a53e8u, wrap_801a53e8, 41u, 32u, 0u },    { 0x801a54c8u, wrap_801a54c8, 4u, 0u, 0u },    { 0x801a54f8u, wrap_801a54f8, 152u, 0u, 0u },    { 0x801a5698u, wrap_801a5698, 170u, 0u, 0u },    { 0x801a5878u, wrap_801a5878, 148u, 0u, 0u },    { 0x801a5a0cu, wrap_801a5a0c, 163u, 0u, 0u },    { 0x801a5bd0u, wrap_801a5bd0, 162u, 0u, 0u },    { 0x801a5d90u, wrap_801a5d90, 162u, 0u, 0u },    { 0x801a5f50u, wrap_801a5f50, 180u, 0u, 0u },    { 0x801a6150u, wrap_801a6150, 180u, 0u, 0u },    { 0x801a6350u, wrap_801a6350, 174u, 0u, 0u },    { 0x801a6538u, wrap_801a6538, 155u, 0u, 0u },    { 0x801a66dcu, wrap_801a66dc, 155u, 0u, 0u },    { 0x801a6880u, wrap_801a6880, 174u, 0u, 0u },    { 0x801a6a68u, wrap_801a6a68, 45u, 32u, 0u },    { 0x801a6ae8u, wrap_801a6ae8, 11u, 24u, 0u },    { 0x801a6b0cu, wrap_801a6b0c, 35u, 32u, 0u },    { 0x801a6bb8u, wrap_801a6bb8, 4u, 0u, 0u },    { 0x801a6bc4u, wrap_801a6bc4, 4u, 0u, 0u },    { 0x801a6bd0u, wrap_801a6bd0, 149u, 96u, 0u },    { 0x801a6f44u, wrap_801a6f44, 90u, 40u, 0u },    { 0x801a7038u, wrap_801a7038, 220u, 48u, 0u },    { 0x801a72a0u, wrap_801a72a0, 115u, 48u, 0u },    { 0x801a73e4u, wrap_801a73e4, 30u, 0u, 0u },    { 0x801a7444u, wrap_801a7444, 27u, 0u, 0u },    { 0x801a7498u, wrap_801a7498, 28u, 0u, 0u },    { 0x801a74f0u, wrap_801a74f0, 27u, 0u, 0u },    { 0x801a7570u, wrap_801a7570, 1565u, 72u, 0u },    { 0x801a863cu, wrap_801a863c, 45u, 32u, 0u },    { 0x801a86bcu, wrap_801a86bc, 42u, 24u, 0u },    { 0x801a8744u, wrap_801a8744, 42u, 24u, 0u },    { 0x801a87ccu, wrap_801a87cc, 42u, 24u, 0u },    { 0x801a8854u, wrap_801a8854, 42u, 24u, 0u },    { 0x801a88dcu, wrap_801a88dc, 257u, 40u, 0u },    { 0x801a8bc8u, wrap_801a8bc8, 273u, 40u, 0u },    { 0x801a953cu, wrap_801a953c, 106u, 48u, 0u },    { 0x801a9644u, wrap_801a9644, 91u, 48u, 0u },    { 0x801a972cu, wrap_801a972c, 88u, 24u, 1u },    { 0x801a9740u, wrap_801a9740, 8u, 0u, 1u },    { 0x801a9748u, wrap_801a9748, 8u, 0u, 1u },    { 0x801a975cu, wrap_801a975c, 8u, 0u, 1u },    { 0x801a976cu, wrap_801a976c, 8u, 0u, 1u },    { 0x801a9770u, wrap_801a9770, 8u, 0u, 1u },    { 0x801a9778u, wrap_801a9778, 8u, 0u, 1u },    { 0x801a9784u, wrap_801a9784, 8u, 0u, 1u },    { 0x801a97a0u, wrap_801a97a0, 8u, 0u, 1u },    { 0x801a97c4u, wrap_801a97c4, 8u, 0u, 1u },    { 0x801a97dcu, wrap_801a97dc, 8u, 0u, 1u },    { 0x801a97e8u, wrap_801a97e8, 8u, 0u, 1u },    { 0x801a97f0u, wrap_801a97f0, 8u, 0u, 1u },    { 0x801a9810u, wrap_801a9810, 8u, 0u, 1u },    { 0x801a9820u, wrap_801a9820, 8u, 0u, 1u },    { 0x801a9828u, wrap_801a9828, 8u, 0u, 1u },    { 0x801a9830u, wrap_801a9830, 8u, 0u, 1u },    { 0x801a983cu, wrap_801a983c, 8u, 0u, 1u },    { 0x801a984cu, wrap_801a984c, 119u, 40u, 0u },    { 0x801a99e0u, wrap_801a99e0, 88u, 24u, 0u },    { 0x801a9bc0u, wrap_801a9bc0, 33u, 24u, 0u },    { 0x801a9c24u, wrap_801a9c24, 4u, 48u, 0u },    { 0x801aa0e4u, wrap_801aa0e4, 42u, 0u, 0u },    { 0x801aa168u, wrap_801aa168, 40u, 0u, 0u },    { 0x801aa1e4u, wrap_801aa1e4, 78u, 0u, 0u },    { 0x801aa244u, wrap_801aa244, 8u, 0u, 0u },    { 0x801aa2acu, wrap_801aa2ac, 8u, 0u, 0u },    { 0x801aa2c8u, wrap_801aa2c8, 27u, 0u, 0u },    { 0x801aa320u, wrap_801aa320, 26u, 0u, 0u },    { 0x801aa374u, wrap_801aa374, 45u, 0u, 0u },    { 0x801aa3fcu, wrap_801aa3fc, 45u, 32u, 0u },    { 0x801aa47cu, wrap_801aa47c, 45u, 32u, 0u },    { 0x801aa4fcu, wrap_801aa4fc, 29u, 32u, 0u },    { 0x801aa96cu, wrap_801aa96c, 321u, 0u, 0u },    { 0x801aad04u, wrap_801aad04, 7u, 0u, 0u },    { 0x801aad24u, wrap_801aad24, 57u, 32u, 0u },    { 0x801aadc4u, wrap_801aadc4, 24u, 24u, 0u },    { 0x801aae08u, wrap_801aae08, 574u, 0u, 0u },    { 0x801ac070u, wrap_801ac070, 35u, 32u, 0u },    { 0x801ac0d4u, wrap_801ac0d4, 45u, 32u, 0u },    { 0x801ac154u, wrap_801ac154, 163u, 40u, 0u },    { 0x801ac334u, wrap_801ac334, 386u, 56u, 0u },    { 0x801ac758u, wrap_801ac758, 133u, 32u, 0u },    { 0x801ac9b8u, wrap_801ac9b8, 105u, 0u, 0u },    { 0x801acb08u, wrap_801acb08, 199u, 0u, 0u },    { 0x801acd3cu, wrap_801acd3c, 45u, 32u, 0u },    { 0x801acdbcu, wrap_801acdbc, 48u, 24u, 0u },    { 0x801ace48u, wrap_801ace48, 93u, 56u, 0u },    { 0x801acf34u, wrap_801acf34, 32u, 24u, 0u },    { 0x801acf94u, wrap_801acf94, 7u, 0u, 0u },    { 0x801acfb4u, wrap_801acfb4, 13u, 0u, 0u },    { 0x801acfe4u, wrap_801acfe4, 45u, 0u, 0u },    { 0x801ad070u, wrap_801ad070, 52u, 0u, 0u },    { 0x801ad11cu, wrap_801ad11c, 33u, 0u, 0u },    { 0x801ad180u, wrap_801ad180, 33u, 0u, 0u },    { 0x801ad1e4u, wrap_801ad1e4, 10u, 0u, 0u },    { 0x801ad224u, wrap_801ad224, 11u, 0u, 0u },    { 0x801ad240u, wrap_801ad240, 13u, 0u, 0u },    { 0x801ad260u, wrap_801ad260, 16u, 0u, 0u },    { 0x801ad284u, wrap_801ad284, 7u, 0u, 0u },    { 0x801ad298u, wrap_801ad298, 24u, 24u, 0u },    { 0x801ad2e8u, wrap_801ad2e8, 59u, 32u, 0u },    { 0x801ad38cu, wrap_801ad38c, 55u, 32u, 0u },    { 0x801ad424u, wrap_801ad424, 50u, 40u, 0u },    { 0x801ad4acu, wrap_801ad4ac, 44u, 40u, 0u },    { 0x801ad59cu, wrap_801ad59c, 10u, 0u, 0u },    { 0x801ad5d0u, wrap_801ad5d0, 45u, 32u, 0u },    { 0x801ad668u, wrap_801ad668, 17u, 0u, 0u },    { 0x801ad698u, wrap_801ad698, 7u, 0u, 0u },    { 0x801ad6acu, wrap_801ad6ac, 17u, 0u, 0u },    { 0x801ad6dcu, wrap_801ad6dc, 7u, 0u, 0u },    { 0x801ad6f0u, wrap_801ad6f0, 31u, 32u, 0u },    { 0x801ad920u, wrap_801ad920, 9u, 0u, 0u },    { 0x801ad964u, wrap_801ad964, 4u, 0u, 0u },    { 0x801ad96cu, wrap_801ad96c, 4u, 0u, 0u },    { 0x801ad984u, wrap_801ad984, 7u, 0u, 0u },    { 0x801ad994u, wrap_801ad994, 7u, 0u, 0u },    { 0x801ad9d4u, wrap_801ad9d4, 10u, 0u, 0u },    { 0x801ada24u, wrap_801ada24, 10u, 0u, 0u },    { 0x801adaa4u, wrap_801adaa4, 14u, 0u, 0u },    { 0x801adac8u, wrap_801adac8, 12u, 0u, 0u },    { 0x801adc48u, wrap_801adc48, 9u, 0u, 0u },    { 0x801adc60u, wrap_801adc60, 22u, 24u, 0u },    { 0x801adca4u, wrap_801adca4, 15u, 24u, 0u },    { 0x801adcccu, wrap_801adccc, 15u, 24u, 0u },    { 0x801add38u, wrap_801add38, 13u, 0u, 0u },    { 0x801add84u, wrap_801add84, 17u, 0u, 0u },    { 0x801addb4u, wrap_801addb4, 17u, 0u, 0u },    { 0x801ae490u, wrap_801ae490, 10u, 0u, 0u },    { 0x801ae65cu, wrap_801ae65c, 10u, 0u, 0u },    { 0x801ae68cu, wrap_801ae68c, 11u, 0u, 0u },    { 0x801ae85cu, wrap_801ae85c, 30u, 32u, 0u },    { 0x801ae8a8u, wrap_801ae8a8, 19u, 24u, 0u },    { 0x801ae8dcu, wrap_801ae8dc, 25u, 24u, 0u },    { 0x801ae91cu, wrap_801ae91c, 32u, 24u, 0u },    { 0x801aea20u, wrap_801aea20, 44u, 24u, 0u },    { 0x801aea94u, wrap_801aea94, 54u, 24u, 0u },    { 0x801aebd0u, wrap_801aebd0, 24u, 24u, 0u },    { 0x801aec10u, wrap_801aec10, 15u, 24u, 0u },    { 0x801aec40u, wrap_801aec40, 39u, 32u, 0u },    { 0x801aecdcu, wrap_801aecdc, 4u, 24u, 0u },    { 0x801aed3cu, wrap_801aed3c, 45u, 24u, 1u },    { 0x801aed58u, wrap_801aed58, 8u, 0u, 1u },    { 0x801aed80u, wrap_801aed80, 8u, 0u, 1u },    { 0x801aed88u, wrap_801aed88, 8u, 0u, 1u },    { 0x801aedacu, wrap_801aedac, 8u, 0u, 1u },    { 0x801aedbcu, wrap_801aedbc, 57u, 24u, 1u },    { 0x801aedd8u, wrap_801aedd8, 8u, 0u, 1u },    { 0x801aee10u, wrap_801aee10, 8u, 0u, 1u },    { 0x801aee18u, wrap_801aee18, 8u, 0u, 1u },    { 0x801aee48u, wrap_801aee48, 8u, 0u, 1u },    { 0x801aef18u, wrap_801aef18, 82u, 24u, 1u },    { 0x801aef38u, wrap_801aef38, 8u, 0u, 1u },    { 0x801aef90u, wrap_801aef90, 8u, 0u, 1u },    { 0x801aef98u, wrap_801aef98, 8u, 0u, 1u },    { 0x801aefe8u, wrap_801aefe8, 8u, 0u, 1u },    { 0x801aeff8u, wrap_801aeff8, 26u, 24u, 0u },    { 0x801af040u, wrap_801af040, 26u, 24u, 0u },    { 0x801af094u, wrap_801af094, 4u, 0u, 0u },    { 0x801af114u, wrap_801af114, 4u, 0u, 0u },    { 0x801af1a4u, wrap_801af1a4, 4u, 0u, 0u },    { 0x801af238u, wrap_801af238, 4u, 0u, 0u },    { 0x801af284u, wrap_801af284, 4u, 0u, 0u },    { 0x801af2dcu, wrap_801af2dc, 18u, 24u, 0u },    { 0x801af310u, wrap_801af310, 4u, 0u, 0u },    { 0x801af354u, wrap_801af354, 18u, 24u, 0u },    { 0x801af388u, wrap_801af388, 4u, 0u, 0u },    { 0x801af3ccu, wrap_801af3cc, 15u, 24u, 0u },    { 0x801af3f8u, wrap_801af3f8, 15u, 24u, 0u },    { 0x801af424u, wrap_801af424, 4u, 0u, 0u },    { 0x801af45cu, wrap_801af45c, 4u, 0u, 0u },    { 0x801af494u, wrap_801af494, 13u, 24u, 0u },    { 0x801af4bcu, wrap_801af4bc, 13u, 24u, 0u },    { 0x801af4e4u, wrap_801af4e4, 18u, 24u, 0u },    { 0x801af518u, wrap_801af518, 13u, 24u, 0u },    { 0x801af540u, wrap_801af540, 13u, 24u, 0u },    { 0x801af568u, wrap_801af568, 18u, 24u, 0u },    { 0x801af59cu, wrap_801af59c, 13u, 24u, 0u },    { 0x801af5c4u, wrap_801af5c4, 10u, 24u, 0u },    { 0x801af5e4u, wrap_801af5e4, 10u, 24u, 0u },    { 0x801af604u, wrap_801af604, 10u, 24u, 0u },    { 0x801af624u, wrap_801af624, 4u, 0u, 0u },    { 0x801af678u, wrap_801af678, 13u, 24u, 0u },    { 0x801af6a0u, wrap_801af6a0, 16u, 24u, 0u },    { 0x801af6d0u, wrap_801af6d0, 4u, 0u, 0u },    { 0x801af710u, wrap_801af710, 4u, 0u, 0u },    { 0x801af758u, wrap_801af758, 44u, 24u, 0u },    { 0x801af7d4u, wrap_801af7d4, 17u, 24u, 0u },    { 0x801af804u, wrap_801af804, 12u, 24u, 0u },    { 0x801af828u, wrap_801af828, 12u, 24u, 0u },    { 0x801af84cu, wrap_801af84c, 12u, 24u, 0u },    { 0x801af870u, wrap_801af870, 15u, 24u, 0u },    { 0x801af89cu, wrap_801af89c, 12u, 24u, 0u },    { 0x801af8c0u, wrap_801af8c0, 12u, 24u, 0u },    { 0x801af8e4u, wrap_801af8e4, 12u, 24u, 0u },    { 0x801af908u, wrap_801af908, 16u, 24u, 0u },    { 0x801afa30u, wrap_801afa30, 4u, 0u, 0u },    { 0x801afa80u, wrap_801afa80, 4u, 0u, 0u },    { 0x801afad0u, wrap_801afad0, 4u, 0u, 0u },    { 0x801afd38u, wrap_801afd38, 10u, 0u, 0u },    { 0x801afd50u, wrap_801afd50, 10u, 0u, 0u },    { 0x801aff20u, wrap_801aff20, 29u, 0u, 0u },    { 0x801b0228u, wrap_801b0228, 10u, 0u, 0u },    { 0x801b0240u, wrap_801b0240, 137u, 24u, 0u },    { 0x801b0584u, wrap_801b0584, 29u, 0u, 0u },    { 0x801b05d8u, wrap_801b05d8, 55u, 0u, 0u },    { 0x801b0684u, wrap_801b0684, 4u, 0u, 0u },    { 0x801b0688u, wrap_801b0688, 9u, 0u, 0u },    { 0x801b06a4u, wrap_801b06a4, 121u, 0u, 0u },    { 0x801b07d0u, wrap_801b07d0, 4u, 0u, 0u },    { 0x801b0db8u, wrap_801b0db8, 278u, 48u, 0u },    { 0x801b1140u, wrap_801b1140, 8u, 0u, 0u },};
 
 static const CleanDispatchEnt *clean_find(uint32_t addr) {
     uint32_t lo = 0, hi = (uint32_t)(sizeof(k_clean_dispatch) / sizeof(k_clean_dispatch[0]));
