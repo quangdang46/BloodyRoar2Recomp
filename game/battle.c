@@ -15944,18 +15944,18 @@ void confetti_burst_update(int rec)
 /* ring_effect_task_update — ring/effect task update (6 sprites, matrix transform). */
 void ring_effect_task_update(int rec)
 {
-  undefined4 uVar1;
-  int iVar2;
-  int iVar3;
-  short *psVar4;
-  uint *puVar5;
-  int iVar6;
-  undefined4 local_30;
-  undefined4 local_2c;
+  undefined4 xy;
+  int tmp;
+  int tr;
+  short *pc;
+  uint *pp;
+  int i;
+  undefined4 lx;
+  undefined4 ly;
 
-  puVar5 = (uint *)guest_at((uint32_t)(uintptr_t)((rec + _DAT_1f80000c * 0xa8)));
+  pp = (uint *)guest_at((uint32_t)(uintptr_t)((rec + _DAT_1f80000c * 0xa8)));
   if ((_DAT_1f800082 == 0) &&
-     (iVar2 = *(int *)guest_at((uint32_t)(uintptr_t)((rec + 0x168))), *(int *)guest_at((uint32_t)(uintptr_t)((rec + 0x168) ))= iVar2 + -1, iVar2 < 0)) {
+     (tmp = *(int *)guest_at((uint32_t)(uintptr_t)((rec + 0x168))), *(int *)guest_at((uint32_t)(uintptr_t)((rec + 0x168) ))= tmp + -1, tmp < 0)) {
     task_slot_step();
   }
   else {
@@ -15967,11 +15967,11 @@ void ring_effect_task_update(int rec)
     {
       int ring_ent = (*(int *)guest_at((uint32_t)(uintptr_t)((rec + 0x164) ))* 0x50 +
                      *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((rec + 0x160) ))+ 0x20) )));
-      local_30 = ((undefined4)*(undefined2 *)
+      lx = ((undefined4)*(undefined2 *)
                    guest_at((uint32_t)(uintptr_t)(ring_ent + 0x38)) << 16) |
                *(undefined2 *)
                  guest_at((uint32_t)(uintptr_t)(ring_ent + 0x34));
-      local_2c = (*(undefined2 *)
+      ly = (*(undefined2 *)
                    guest_at((uint32_t)(uintptr_t)(ring_ent + 0x3c))) & 0xffff;
     }
     setCopControlWord(2,0,((uint32_t *)g_DAT_801be838)[0]);
@@ -15982,35 +15982,35 @@ void ring_effect_task_update(int rec)
     setCopControlWord(2,0x2800,((uint32_t *)g_DAT_801be838)[5]);
     setCopControlWord(2,0x3000,((uint32_t *)g_DAT_801be838)[6]);
     setCopControlWord(2,0x3800,((uint32_t *)g_DAT_801be838)[7]);
-    setCopReg(2,0,local_30);
-    setCopReg(2,0x800,local_2c);
+    setCopReg(2,0,lx);
+    setCopReg(2,0x800,ly);
     copFunction(2,0x180001);
-    uVar1 = (undefined4)getCopReg(2,0xe);
-    iVar6 = 0;
-    psVar4 = (short *)((intptr_t)puVar5 + 0x1a);
-    iVar2 = rec;
+    xy = (undefined4)getCopReg(2,0xe);
+    i = 0;
+    pc = (short *)((intptr_t)pp + 0x1a);
+    tmp = rec;
     do {
-      *(undefined4 *)(psVar4 + -9) = uVar1;
-      iVar3 = lut_cos_q12((int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x16c))));
-      psVar4[-5] = psVar4[-9] + (short)((iVar3 << 9) >> 0xc);
-      iVar3 = lut_sin_q12((int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x16c))));
-      psVar4[-4] = psVar4[-8] + (short)((iVar3 << 9) >> 0xc);
-      iVar3 = lut_cos_q12((int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x16c) ))+ (int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x184))));
-      psVar4[-1] = psVar4[-9] + (short)(iVar3 * 0x164 >> 0xc);
-      iVar3 = lut_sin_q12((int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x16c) ))+ (int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x184))));
-      *psVar4 = psVar4[-8] + (short)(iVar3 * 0x164 >> 0xc);
+      *(undefined4 *)(pc + -9) = xy;
+      tr = lut_cos_q12((int)*(short *)guest_at((uint32_t)(uintptr_t)((tmp + 0x16c))));
+      pc[-5] = pc[-9] + (short)((tr << 9) >> 0xc);
+      tr = lut_sin_q12((int)*(short *)guest_at((uint32_t)(uintptr_t)((tmp + 0x16c))));
+      pc[-4] = pc[-8] + (short)((tr << 9) >> 0xc);
+      tr = lut_cos_q12((int)*(short *)guest_at((uint32_t)(uintptr_t)((tmp + 0x16c) ))+ (int)*(short *)guest_at((uint32_t)(uintptr_t)((tmp + 0x184))));
+      pc[-1] = pc[-9] + (short)(tr * 0x164 >> 0xc);
+      tr = lut_sin_q12((int)*(short *)guest_at((uint32_t)(uintptr_t)((tmp + 0x16c) ))+ (int)*(short *)guest_at((uint32_t)(uintptr_t)((tmp + 0x184))));
+      *pc = pc[-8] + (short)(tr * 0x164 >> 0xc);
       if (_DAT_1f800082 == 0) {
-        *(short *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x16c) ))= *(short *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x16c) ))+ *(short *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x178)));
-        *(short *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x178) ))= (short)(*(short *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x178) ))* 0x753 >> 0xb);
-        *(short *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x184) ))= (short)(*(short *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x184) ))* 0x753 >> 0xb);
+        *(short *)guest_at((uint32_t)(uintptr_t)((tmp + 0x16c) ))= *(short *)guest_at((uint32_t)(uintptr_t)((tmp + 0x16c) ))+ *(short *)guest_at((uint32_t)(uintptr_t)((tmp + 0x178)));
+        *(short *)guest_at((uint32_t)(uintptr_t)((tmp + 0x178) ))= (short)(*(short *)guest_at((uint32_t)(uintptr_t)((tmp + 0x178) ))* 0x753 >> 0xb);
+        *(short *)guest_at((uint32_t)(uintptr_t)((tmp + 0x184) ))= (short)(*(short *)guest_at((uint32_t)(uintptr_t)((tmp + 0x184) ))* 0x753 >> 0xb);
       }
-      psVar4 = psVar4 + 0xe;
-      iVar2 = iVar2 + 2;
-      iVar6 = iVar6 + 1;
-      *puVar5 = *(uint *)guest_at((uint32_t)(uintptr_t)((_DAT_1f800008 + 0xc) ))| 0x6000000;
-      *(uint *)guest_at((uint32_t)(uintptr_t)((_DAT_1f800008 + 0xc) ))= (uint)guest_of(puVar5) & 0xffffff;
-      puVar5 = puVar5 + 7;
-    } while (iVar6 < 6);
+      pc = pc + 0xe;
+      tmp = tmp + 2;
+      i = i + 1;
+      *pp = *(uint *)guest_at((uint32_t)(uintptr_t)((_DAT_1f800008 + 0xc) ))| 0x6000000;
+      *(uint *)guest_at((uint32_t)(uintptr_t)((_DAT_1f800008 + 0xc) ))= (uint)guest_of(pp) & 0xffffff;
+      pp = pp + 7;
+    } while (i < 6);
     *(uint *)guest_at((uint32_t)(uintptr_t)((_DAT_1f80000c * 8 + rec + 0x150) ))= *(uint *)guest_at((uint32_t)(uintptr_t)((_DAT_1f800008 + 0xc) ))| 0x1000000;
     *(uint *)guest_at((uint32_t)(uintptr_t)((_DAT_1f800008 + 0xc) ))= (rec + _DAT_1f80000c * 8 + 0x150) & 0xffffff;
   }
@@ -16021,78 +16021,78 @@ void ring_effect_task_update(int rec)
 void firework_task_update(int rec)
 {
   short sVar1;
-  ushort uVar2;
-  int iVar3;
-  int iVar4;
-  char *pcVar5;
-  short *psVar6;
-  uint *puVar7;
-  short *psVar8;
-  short *psVar9;
-  undefined4 *puVar10;
-  short *psVar11;
-  int iVar12;
+  ushort t;
+  int tmp;
+  int r;
+  char *cb;
+  short *pb;
+  uint *pp;
+  short *pc;
+  short *p9;
+  undefined4 *pq;
+  short *pa;
+  int i;
 
-  iVar3 = _DAT_1f80000c * 400;
+  tmp = _DAT_1f80000c * 400;
   if (_DAT_1f800082 == 0) {
-    uVar2 = (ushort)(*(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x3d4) ))- 1);
-    *(ushort *)guest_at((uint32_t)(uintptr_t)((rec + 0x3d4) ))= uVar2;
-    psVar9 = (short *)guest_at((uint32_t)(uintptr_t)((rec + 800)));
-    if ((int)((uint)uVar2 << 0x10) < 0) {
+    t = (ushort)(*(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x3d4) ))- 1);
+    *(ushort *)guest_at((uint32_t)(uintptr_t)((rec + 0x3d4) ))= t;
+    p9 = (short *)guest_at((uint32_t)(uintptr_t)((rec + 800)));
+    if ((int)((uint)t << 0x10) < 0) {
       task_slot_step();
       return;
     }
-    psVar11 = (short *)guest_at((uint32_t)(uintptr_t)((rec + 0x370)));
-    iVar12 = 0;
-    psVar6 = (short *)guest_at((uint32_t)(uintptr_t)((rec + 0x374)));
-    psVar8 = (short *)guest_at((uint32_t)(uintptr_t)((rec + 0x324)));
-    pcVar5 = (char *)guest_at((uint32_t)(uintptr_t)((rec + iVar3 + 6)));
-    iVar3 = rec;
+    pa = (short *)guest_at((uint32_t)(uintptr_t)((rec + 0x370)));
+    i = 0;
+    pb = (short *)guest_at((uint32_t)(uintptr_t)((rec + 0x374)));
+    pc = (short *)guest_at((uint32_t)(uintptr_t)((rec + 0x324)));
+    cb = (char *)guest_at((uint32_t)(uintptr_t)((rec + tmp + 6)));
+    tmp = rec;
     do {
       if (*(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x3d4) ))< 10) {
-        pcVar5[-2] = pcVar5[-2] + -0x20;
-        *pcVar5 = *pcVar5 + -0x20;
-        pcVar5[-1] = pcVar5[-1] + -0x20;
+        cb[-2] = cb[-2] + -0x20;
+        *cb = *cb + -0x20;
+        cb[-1] = cb[-1] + -0x20;
       }
       if (10 < *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x3d4)))) {
-        *(short *)guest_at((uint32_t)(uintptr_t)((iVar3 + 0x3c0) ))= *(short *)guest_at((uint32_t)(uintptr_t)((iVar3 + 0x3c0) ))+ 4;
-        iVar4 = *psVar11 * 0xf0a;
-        if (iVar4 < 0) {
-          iVar4 = iVar4 + 0xfff;
+        *(short *)guest_at((uint32_t)(uintptr_t)((tmp + 0x3c0) ))= *(short *)guest_at((uint32_t)(uintptr_t)((tmp + 0x3c0) ))+ 4;
+        r = *pa * 0xf0a;
+        if (r < 0) {
+          r = r + 0xfff;
         }
-        *psVar11 = (short)(iVar4 >> 0xc);
-        iVar4 = psVar6[-1] * 0xf0a;
-        if (iVar4 < 0) {
-          iVar4 = iVar4 + 0xfff;
+        *pa = (short)(r >> 0xc);
+        r = pb[-1] * 0xf0a;
+        if (r < 0) {
+          r = r + 0xfff;
         }
-        psVar6[-1] = (short)(iVar4 >> 0xc);
-        iVar4 = *psVar6 * 0xf0a;
-        if (iVar4 < 0) {
-          iVar4 = iVar4 + 0xfff;
+        pb[-1] = (short)(r >> 0xc);
+        r = *pb * 0xf0a;
+        if (r < 0) {
+          r = r + 0xfff;
         }
-        *psVar6 = (short)(iVar4 >> 0xc);
+        *pb = (short)(r >> 0xc);
       }
-      pcVar5 = pcVar5 + 0x28;
-      sVar1 = *psVar11;
-      psVar11 = psVar11 + 4;
-      iVar3 = iVar3 + 2;
-      iVar12 = iVar12 + 1;
-      *psVar9 = *psVar9 + sVar1;
-      psVar9 = psVar9 + 4;
-      psVar8[-1] = psVar8[-1] + psVar6[-1];
-      sVar1 = *psVar6;
-      psVar6 = psVar6 + 4;
-      *psVar8 = *psVar8 + sVar1;
-      psVar8 = psVar8 + 4;
-    } while (iVar12 < 10);
+      cb = cb + 0x28;
+      sVar1 = *pa;
+      pa = pa + 4;
+      tmp = tmp + 2;
+      i = i + 1;
+      *p9 = *p9 + sVar1;
+      p9 = p9 + 4;
+      pc[-1] = pc[-1] + pb[-1];
+      sVar1 = *pb;
+      pb = pb + 4;
+      *pc = *pc + sVar1;
+      pc = pc + 4;
+    } while (i < 10);
   }
-  puVar10 = (undefined4 *)guest_at((uint32_t)(uintptr_t)((rec + 800)));
-  iVar3 = 0;
-  puVar7 = (uint *)guest_at((uint32_t)(uintptr_t)((rec + _DAT_1f80000c * 400)));
-  psVar9 = (short *)((intptr_t)puVar7 + 0x22);
+  pq = (undefined4 *)guest_at((uint32_t)(uintptr_t)((rec + 800)));
+  tmp = 0;
+  pp = (uint *)guest_at((uint32_t)(uintptr_t)((rec + _DAT_1f80000c * 400)));
+  p9 = (short *)((intptr_t)pp + 0x22);
   do {
-    setCopReg(2,0,*puVar10);
-    setCopReg(2,0x800,puVar10[1]);
+    setCopReg(2,0,*pq);
+    setCopReg(2,0x800,pq[1]);
     copFunction(2,0x180001);
     _DAT_1f8003fc = (uint32_t)getCopReg(2,0xe);
     _DAT_1f8003f8 = (uint32_t)getCopReg(2,0x9800);
@@ -16100,25 +16100,25 @@ void firework_task_update(int rec)
     sVar1 = *(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x3c0)));
     /* guest @0x80140F70-0x80140F7C: lhu @0x1f800024 then sll16/sra16 =
      * sext16 of the low halfword only — NOT the full u32 cell. */
-    iVar12 = (int)(int16_t)(uint16_t)_DAT_1f800024;
-    iVar4 = _DAT_1f8003f8 << 2;
-    psVar9[-0xd] = (short)_DAT_1f8003fc;
-    psVar9[-0xc] = _DAT_1f8003fe;
-    sVar1 = (short)mips_div_lo((int32_t)(sVar1 * iVar12),iVar4); /* guest div @0x80140F94 */
-    psVar9[-9] = (short)_DAT_1f8003fc + sVar1;
-    psVar9[-8] = _DAT_1f8003fe;
-    psVar9[-5] = (short)_DAT_1f8003fc;
-    psVar9[-4] = _DAT_1f8003fe + sVar1;
-    puVar10 = puVar10 + 2;
-    psVar9[-1] = (short)_DAT_1f8003fc + sVar1;
+    i = (int)(int16_t)(uint16_t)_DAT_1f800024;
+    r = _DAT_1f8003f8 << 2;
+    p9[-0xd] = (short)_DAT_1f8003fc;
+    p9[-0xc] = _DAT_1f8003fe;
+    sVar1 = (short)mips_div_lo((int32_t)(sVar1 * i),r); /* guest div @0x80140F94 */
+    p9[-9] = (short)_DAT_1f8003fc + sVar1;
+    p9[-8] = _DAT_1f8003fe;
+    p9[-5] = (short)_DAT_1f8003fc;
+    p9[-4] = _DAT_1f8003fe + sVar1;
+    pq = pq + 2;
+    p9[-1] = (short)_DAT_1f8003fc + sVar1;
     rec = rec + 2;
-    *psVar9 = _DAT_1f8003fe + sVar1;
-    iVar3 = iVar3 + 1;
-    psVar9 = psVar9 + 0x14;
-    *puVar7 = *(uint *)guest_at((uint32_t)(uintptr_t)((_DAT_1f800008 + 0x10) ))| 0x9000000;
-    *(uint *)guest_at((uint32_t)(uintptr_t)((_DAT_1f800008 + 0x10) ))= guest_of(puVar7) & 0xffffff;
-    puVar7 = puVar7 + 10;
-  } while (iVar3 < 10);
+    *p9 = _DAT_1f8003fe + sVar1;
+    tmp = tmp + 1;
+    p9 = p9 + 0x14;
+    *pp = *(uint *)guest_at((uint32_t)(uintptr_t)((_DAT_1f800008 + 0x10) ))| 0x9000000;
+    *(uint *)guest_at((uint32_t)(uintptr_t)((_DAT_1f800008 + 0x10) ))= guest_of(pp) & 0xffffff;
+    pp = pp + 10;
+  } while (tmp < 10);
   return;
 }
 
