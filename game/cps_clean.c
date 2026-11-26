@@ -89449,6 +89449,7 @@ block_80198F44:
  * from SLES_017.22_full_46.c. */
 void cps_80199440(void)
 {
+/* cd_mc_state_machine thunk -> cd_result_wait_b_fwd -> cd_copy_u32 -> cd_chan_cmd_submit -> cd_dir_clear -> cd_dir_clear */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -90410,6 +90411,7 @@ block_80199AA4:
  * from SLES_017.22_full_46.c. */
 void cps_80199aa8(void)
 {
+/* cd_mc_state_machine piece: continues at 0x80199ab0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -90427,6 +90429,7 @@ block_80199AA8:
  * from SLES_017.22_full_46.c. */
 void cps_80199ab0(void)
 {
+/* cd_mc_state_machine piece: continues at 0x80199AEC */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -90472,6 +90475,7 @@ block_80199AD0:
  * from SLES_017.22_full_46.c. */
 void cps_80199aec(void)
 {
+/* cd_mc_state_machine piece: continues at 0x80199afc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -90490,6 +90494,7 @@ block_80199AEC:
  * from SLES_017.22_full_46.c. */
 void cps_80199afc(void)
 {
+/* cd_mc_state_machine piece: continues at 0x80199b10 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -90509,6 +90514,7 @@ block_80199AFC:
  * from SLES_017.22_full_46.c. */
 void cps_80199b10(void)
 {
+/* cd_mc_state_machine piece: continues at 0x80199b30 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -90531,6 +90537,7 @@ block_80199B10:
  * from SLES_017.22_full_46.c. */
 void cps_80199b30(void)
 {
+/* cd_mc_state_machine piece: continues at 0x80199b74 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -90569,6 +90576,7 @@ block_80199B30:
  * from SLES_017.22_full_46.c. */
 void cps_80199b74(void)
 {
+/* cd_mc_state_machine piece: continues at 0x80199b9c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -90594,6 +90602,7 @@ block_80199B74:
  * from SLES_017.22_full_46.c. */
 void cps_80199b9c(void)
 {
+/* cd_mc_state_machine piece: continues at 0x80199bb8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -90615,6 +90624,7 @@ block_80199B9C:
  * from SLES_017.22_full_46.c. */
 void cps_80199bb8(void)
 {
+/* cd_mc_state_machine piece: continues at 0x80199bc8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -90633,6 +90643,7 @@ block_80199BB8:
  * from SLES_017.22_full_46.c. */
 void cps_80199bc8(void)
 {
+/* cd_mc_state_machine piece: continues at 0x80199c0c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -90691,6 +90702,7 @@ block_80199BF0:
  * from SLES_017.22_full_46.c. */
 void cps_80199c0c(void)
 {
+/* cd_mc_state_machine thunk -> cd_copy_u32 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -90726,6 +90738,7 @@ block_80199C14:
  * from SLES_017.22_full_46.c. */
 void cps_80199c30(void)
 {
+/* cd_mc_state_machine thunk -> cd_chan_cmd_submit */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -90750,6 +90763,7 @@ block_80199C30:
  * from SLES_017.22_full_46.c. */
 void cps_80199c50(void)
 {
+/* cd_mc_state_machine piece: continues at 0x80199c54 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -90765,6 +90779,7 @@ block_80199C50:
  * from SLES_017.22_full_46.c. */
 void cps_80199c54(void)
 {
+/* cd_mc_state_machine piece: continues at 0x80199c78 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -90789,6 +90804,7 @@ block_80199C54:
  * from SLES_017.22_full_46.c. */
 void cps_80199c78(void)
 {
+/* cd_mc_state_machine piece: continues at 0x80199c94 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -90826,6 +90842,7 @@ block_80199C8C:
  * from SLES_017.22_full_46.c. */
 void cps_80199c94(void)
 {
+/* cd_mc_state_machine thunk -> cd_copy_u32 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -90866,6 +90883,7 @@ block_80199CB0:
  * from SLES_017.22_full_46.c. */
 void cps_80199ccc(void)
 {
+/* cd_mc_state_machine thunk -> cd_chan_cmd_submit */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -90890,6 +90908,7 @@ block_80199CCC:
  * from SLES_017.22_full_46.c. */
 void cps_80199cf0(void)
 {
+/* cd_mc_state_machine thunk -> cd_dir_entry_finalize */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -90956,6 +90975,7 @@ block_80199D44:
  * from SLES_017.22_full_46.c. */
 void cps_80199d4c(void)
 {
+/* cd_mc_state_machine piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -90975,6 +90995,7 @@ block_80199D4C:
  * from SLES_017.22_full_46.c. */
 void cps_80199ff0(void)
 {
+/* bios_table_tramp thunk -> cd_kobj_init_a -> cpu_critical_enter -> cd_kobj_init_b -> cpu_critical_exit -> bios_table_tramp -> cd_subchan_table_install -> bios_tramp_b015 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
