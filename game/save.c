@@ -6307,57 +6307,57 @@ void hud_slot_blitter(uint32_t a0, uint32_t a1)
   uint32_t i = st[2];
   uint16_t *hw68 = (uint16_t *)(g + 0x68 + i * 2);
   uint16_t *hw6c = (uint16_t *)(g + 0x6c + i * 2);
-  uint8_t *s1 = (uint8_t *)guest_at(0x801f4ee8 + i * 24);
-  uint32_t s2 = (*(uint16_t *)(st + 0x7c) & 0xe8) | (*hw6c & 0xf000);
-  int32_t s0 = (*(uint16_t *)(st + 0x7a) & 0xe8) | (*hw68 & 0xf000);
+  uint8_t *ring = (uint8_t *)guest_at(0x801f4ee8 + i * 24);
+  uint32_t attr_in = (*(uint16_t *)(st + 0x7c) & 0xe8) | (*hw6c & 0xf000);
+  int32_t attr_cur = (*(uint16_t *)(st + 0x7a) & 0xe8) | (*hw68 & 0xf000);
   uint32_t x, y;
   int32_t idx, cnt;
 
-  if (*(uint16_t *)(s1 + 0x16) >= 0x32 && s0 != 0)
+  if (*(uint16_t *)(ring + 0x16) >= 0x32 && attr_cur != 0)
     clear_f4ee8_u16s(a0);
-  if (s0 != 0) {
-    *(uint16_t *)(s1 + 0x16) = 0;
+  if (attr_cur != 0) {
+    *(uint16_t *)(ring + 0x16) = 0;
   } else {
-    uint32_t t = *(uint16_t *)(s1 + 0x16);
-    if (t < 0x33) *(uint16_t *)(s1 + 0x16) = (uint16_t)(t + 1);
+    uint32_t age = *(uint16_t *)(ring + 0x16);
+    if (age < 0x33) *(uint16_t *)(ring + 0x16) = (uint16_t)(age + 1);
   }
 
   if (*(uint16_t *)(g + 0x82) == 0) {
     int do_adv;
-    x = s1[0x14] % 10;
-    y = s1[0x15] % 10;
-    s1[0x14] = (uint8_t)x;
-    s1[0x15] = (uint8_t)y;
-    if (s0 != 0) {
+    x = ring[0x14] % 10;
+    y = ring[0x15] % 10;
+    ring[0x14] = (uint8_t)x;
+    ring[0x15] = (uint8_t)y;
+    if (attr_cur != 0) {
       do_adv = 1;
     } else {
-      uint32_t v1 = s2 & 0xf000;
-      if (v1 == 0) {
+      uint32_t attr_hi = attr_in & 0xf000;
+      if (attr_hi == 0) {
         do_adv = 0;
       } else {
-        do_adv = (*(uint16_t *)(s1 + (y & 0xff) * 2) & 0xf000) != v1;
+        do_adv = (*(uint16_t *)(ring + (y & 0xff) * 2) & 0xf000) != attr_hi;
       }
     }
     if (do_adv) {
       uint32_t ny = (y + 1) & 0xff;
       uint32_t xv;
       ny %= 10;
-      s1[0x15] = (uint8_t)ny;
-      xv = s1[0x14];
+      ring[0x15] = (uint8_t)ny;
+      xv = ring[0x14];
       if (ny == xv) {
         xv = (xv + 1) & 0xff;
         xv %= 10;
-        s1[0x14] = (uint8_t)xv;
+        ring[0x14] = (uint8_t)xv;
       }
-      *(uint16_t *)(s1 + s1[0x15] * 2) = (uint16_t)s2;
+      *(uint16_t *)(ring + ring[0x15] * 2) = (uint16_t)attr_in;
     }
   }
 
   /* blit all 10 slots starting at cursor x */
-  idx = s1[0x14];
+  idx = ring[0x14];
   cnt = 0;
   for (;;) {
-    uint16_t attr = *(uint16_t *)(s1 + idx * 2);
+    uint16_t attr = *(uint16_t *)(ring + idx * 2);
     idx += 1;
     slot_attr_packet_build(_DAT_1f800008, _DAT_1f80000c, attr, 0x1000, 0x1000, a1);
     idx %= 10;
@@ -6399,61 +6399,61 @@ void flag_table_dump(uint32_t a0, uint32_t a1)
    s2 = sub-struct ptr @a0+0x3c (guest ptr -> host). */
 void record_struct_dump(uint32_t a0)
 {
-  uint8_t *s3 = (uint8_t *)guest_at(a0);
-  uint8_t *s2;
-  uint32_t s1, s0;
+  uint8_t *st = (uint8_t *)guest_at(a0);
+  uint8_t *sub;
+  uint32_t save_58, save_6c;
   int32_t idx;
-  uint32_t f, t1, t2;
+  uint32_t f, tbl_a, tbl_b;
   const char *a3s;
-  int32_t p;
+  int32_t num;
 
-  if (s3[1] == 0) return;
-  s2 = (uint8_t *)guest_at(*(uint32_t *)(s3 + 0x3c));
-  s1 = *(uint32_t *)(s3 + 0x58);
-  s0 = *(uint32_t *)(s3 + 0x6c);
-  *(uint32_t *)(s3 + 0x58) = *(uint32_t *)(s2 + 0x70);
-  *(uint32_t *)(s3 + 0x6c) = *(uint32_t *)(s2 + 0x74);
+  if (st[1] == 0) return;
+  sub = (uint8_t *)guest_at(*(uint32_t *)(st + 0x3c));
+  save_58 = *(uint32_t *)(st + 0x58);
+  save_6c = *(uint32_t *)(st + 0x6c);
+  *(uint32_t *)(st + 0x58) = *(uint32_t *)(sub + 0x70);
+  *(uint32_t *)(st + 0x6c) = *(uint32_t *)(sub + 0x74);
   flag_table_dump(a0, 0);
   flag_table_dump(a0, 5);
-  *(uint32_t *)(s3 + 0x58) = s1;
-  *(uint32_t *)(s3 + 0x6c) = s0;
+  *(uint32_t *)(st + 0x58) = save_58;
+  *(uint32_t *)(st + 0x6c) = save_6c;
 
-  idx = (int32_t)*(int16_t *)(s2 + 0x28);
+  idx = (int32_t)*(int16_t *)(sub + 0x28);
   print_dispatch((const char *)guest_at(0x80123094),
                (const char *)guest_at(g32(0x801b52c8 + (uint32_t)(idx * 4))),
-               (int32_t)*(int16_t *)(s2 + 0x2a));
+               (int32_t)*(int16_t *)(sub + 0x2a));
 
-  f = *(uint16_t *)(s2 + 6);
-  t1 = 0x801b52f0 + ((f >> 12) << 2);
-  t2 = 0x801b52f0 + ((f >> 3) & 0x1c);
+  f = *(uint16_t *)(sub + 6);
+  tbl_a = 0x801b52f0 + ((f >> 12) << 2);
+  tbl_b = 0x801b52f0 + ((f >> 3) & 0x1c);
   a3s = (f & 0x400) ? (const char *)guest_at(0x801230ac)
                     : (const char *)guest_at(0x801230b0);
   print_dispatch((const char *)guest_at(0x801230a0),
-               (const char *)guest_at(g32(t1)),
-               (const char *)guest_at(g32(t2 + 0x40)),
+               (const char *)guest_at(g32(tbl_a)),
+               (const char *)guest_at(g32(tbl_b + 0x40)),
                a3s);
 
-  p = (int32_t)*(int32_t *)(s2 + 0x30);
-  if (p >= 0) {
-    print_dispatch((const char *)guest_at(0x801230b4), p,
-                 (int32_t)*(int32_t *)(s2 + 0x34));
+  num = (int32_t)*(int32_t *)(sub + 0x30);
+  if (num >= 0) {
+    print_dispatch((const char *)guest_at(0x801230b4), num,
+                 (int32_t)*(int32_t *)(sub + 0x34));
   } else {
     print_dispatch((const char *)guest_at(0x801230c4));
   }
   print_dispatch((const char *)guest_at(0x801230cc),
-               (int32_t)*(uint16_t *)(s2 + 0x6c));
+               (int32_t)*(uint16_t *)(sub + 0x6c));
   print_dispatch((const char *)guest_at(0x801230d4),
-               (int32_t)*(int16_t *)(s3 + 0x76));
+               (int32_t)*(int16_t *)(st + 0x76));
   print_dispatch((const char *)guest_at(0x801230dc),
-               (int32_t)*(int16_t *)(s2 + 0x3e),
-               (int32_t)*(int16_t *)(s2 + 0x40),
-               (int32_t)*(int16_t *)(s2 + 0x42),
-               (int32_t)*(int16_t *)(s2 + 0x44),
-               (int32_t)*(int16_t *)(s2 + 0x46));
-  if ((s3[1] & 0x80) != 0) {
+               (int32_t)*(int16_t *)(sub + 0x3e),
+               (int32_t)*(int16_t *)(sub + 0x40),
+               (int32_t)*(int16_t *)(sub + 0x42),
+               (int32_t)*(int16_t *)(sub + 0x44),
+               (int32_t)*(int16_t *)(sub + 0x46));
+  if ((st[1] & 0x80) != 0) {
     print_dispatch((const char *)guest_at(0x801230fc));
-  } else if (s2[0x7c] != 0) {
-    print_dispatch((const char *)guest_at(0x80123110), (const char *)(s2 + 0x7c));
+  } else if (sub[0x7c] != 0) {
+    print_dispatch((const char *)guest_at(0x80123110), (const char *)(sub + 0x7c));
   }
   print_dispatch((const char *)guest_at(0x80123114));
 }
