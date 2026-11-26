@@ -3366,106 +3366,106 @@ void match_setup_apply(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
   static const int32_t tab0[5] = {1000,2000,3000,4500,-1};
   static const int32_t tab1[8] = {0,8,0xb,0xe,0x10,0x12,0x15,0x18};
   static const int32_t tab2[8] = {0x64,0x5a,0x50,0x4b,0x46,0x41,0x3c,0x37};
-  uint8_t *s2 = (uint8_t *)guest_at(a0);
-  uint8_t *s3 = (uint8_t *)guest_at(a1);
-  uint8_t *s4 = (uint8_t *)guest_at(a2);
-  uint8_t *s0 = (uint8_t *)guest_at(a3);
-  uint8_t *s5 = (uint8_t *)guest_at(*(uint32_t *)(s4 + 0xc4));
-  uint8_t *s6 = (uint8_t *)guest_at(0x801f44a8);
-  int32_t s1 = 0;
+  uint8_t *pa = (uint8_t *)guest_at(a0);
+  uint8_t *pb = (uint8_t *)guest_at(a1);
+  uint8_t *cfg = (uint8_t *)guest_at(a2);
+  uint8_t *rules = (uint8_t *)guest_at(a3);
+  uint8_t *match = (uint8_t *)guest_at(*(uint32_t *)(cfg + 0xc4));
+  uint8_t *aux = (uint8_t *)guest_at(0x801f44a8);
+  int32_t rate = 0;
   uint32_t idx;
   int32_t v;
 
-  /* table 0x80120f20 on lbu 9(s0) */
-  idx = s0[9];
+  /* table 0x80120f20 on lbu 9(rules) */
+  idx = rules[9];
   if (idx < 5) {
-    *(int16_t *)(s4 + 0x94) = (int16_t)tab0[idx];
+    *(int16_t *)(cfg + 0x94) = (int16_t)tab0[idx];
   }
-  /* 0x54(s2) = (s2[1] ? s0[0x19]&3 : s0[0x19]) */
-  v = s2[1] ? (s0[0x19] & 3) : s0[0x19];
-  *(uint32_t *)(s2 + 0x54) = (uint32_t)v;
-  if ((*(uint32_t *)(s2 + 0x54) & 0xfffffffcU) == 0 && s5) {
-    uint32_t c = s5[1];
+  /* 0x54(pa) = (pa[1] ? rules[0x19]&3 : rules[0x19]) */
+  v = pa[1] ? (rules[0x19] & 3) : rules[0x19];
+  *(uint32_t *)(pa + 0x54) = (uint32_t)v;
+  if ((*(uint32_t *)(pa + 0x54) & 0xfffffffcU) == 0 && match) {
+    uint32_t c = match[1];
     uint32_t nv = 0;
     int have = 1;
-    if (c == 1)      nv = (s0[0x19] & 3) | 4;
-    else if (c == 0) nv = (s0[0x19] & 3);
-    else if (c == 2) nv = (s0[0x19] & 3) | 8;
-    else if (c == 3) nv = (s0[0x19] & 3) | 0x10;
+    if (c == 1)      nv = (rules[0x19] & 3) | 4;
+    else if (c == 0) nv = (rules[0x19] & 3);
+    else if (c == 2) nv = (rules[0x19] & 3) | 8;
+    else if (c == 3) nv = (rules[0x19] & 3) | 0x10;
     else have = 0;
-    if (have) *(uint32_t *)(s2 + 0x54) = nv;
+    if (have) *(uint32_t *)(pa + 0x54) = nv;
   }
-  /* 0x54(s3) = (s3[1] ? s0[0x1a]&3 : s0[0x1a]) */
-  v = s3[1] ? (s0[0x1a] & 3) : s0[0x1a];
-  *(uint32_t *)(s3 + 0x54) = (uint32_t)v;
-  if ((*(uint32_t *)(s3 + 0x54) & 0xfffffffcU) == 0 && s5) {
-    uint32_t c = s5[1];
+  /* 0x54(pb) = (pb[1] ? rules[0x1a]&3 : rules[0x1a]) */
+  v = pb[1] ? (rules[0x1a] & 3) : rules[0x1a];
+  *(uint32_t *)(pb + 0x54) = (uint32_t)v;
+  if ((*(uint32_t *)(pb + 0x54) & 0xfffffffcU) == 0 && match) {
+    uint32_t c = match[1];
     uint32_t nv = 0;
     int have = 1;
-    if (c == 1)      nv = (s0[0x1a] & 3) | 4;
-    else if (c == 0) nv = (s0[0x1a] & 3);
-    else if (c == 2) nv = (s0[0x1a] & 3) | 8;
-    else if (c == 3) nv = (s0[0x1a] & 3) | 0x10;
+    if (c == 1)      nv = (rules[0x1a] & 3) | 4;
+    else if (c == 0) nv = (rules[0x1a] & 3);
+    else if (c == 2) nv = (rules[0x1a] & 3) | 8;
+    else if (c == 3) nv = (rules[0x1a] & 3) | 0x10;
     else have = 0;
-    if (have) *(uint32_t *)(s3 + 0x54) = nv;
+    if (have) *(uint32_t *)(pb + 0x54) = nv;
   }
-  /* table 0x80120f38 on lbu 0x26(s0) -> sh 0x86(s3), 0x86(s2) */
-  idx = s0[0x26];
+  /* table 0x80120f38 on lbu 0x26(rules) -> sh 0x86(pb), 0x86(pa) */
+  idx = rules[0x26];
   if (idx < 8) {
     int32_t t;
     if (idx == 0) {
-      t = (*(uint16_t *)(s0 + 0x26) >> 8) != 0 ? 0xe : 0x10;
+      t = (*(uint16_t *)(rules + 0x26) >> 8) != 0 ? 0xe : 0x10;
     } else {
       t = tab1[idx];
     }
-    *(int16_t *)(s3 + 0x86) = (int16_t)t;
-    *(int16_t *)(s2 + 0x86) = (int16_t)t;
+    *(int16_t *)(pb + 0x86) = (int16_t)t;
+    *(int16_t *)(pa + 0x86) = (int16_t)t;
   } else {
     /* t0 stale in guest; store last computed value is unobservable -
        keep previous behaviour: store 0 */
-    *(int16_t *)(s3 + 0x86) = 0;
-    *(int16_t *)(s2 + 0x86) = 0;
+    *(int16_t *)(pb + 0x86) = 0;
+    *(int16_t *)(pa + 0x86) = 0;
   }
-  if (s6) s6[0x20] = s0[0x12];
-  *(int16_t *)(s4 + 0x96) = 3;
-  /* u16_tbl_copy(0, table-or-custom) for s0[0x17] */
+  if (aux) aux[0x20] = rules[0x12];
+  *(int16_t *)(cfg + 0x96) = 3;
+  /* u16_tbl_copy(0, table-or-custom) for rules[0x17] */
   {
-    uint32_t sel = s0[0x17];
+    uint32_t sel = rules[0x17];
     uint32_t a1v = sel ? (0x801b3f68 + sel * 16) : 0x801c15d0;
     u16_tbl_copy(0,a1v);
   }
   {
-    uint32_t sel = s0[0x18];
+    uint32_t sel = rules[0x18];
     uint32_t a1v = sel ? (0x801b3f68 + sel * 16) : 0x801c15e0;
     u16_tbl_copy(1,a1v);
   }
-  if (s5 && ((*(uint32_t *)(s5 + 8) >> 4) & 1)) {
-    *(uint32_t *)(s2 + 0x54) &= 0xfffffffeU;
-    *(uint32_t *)(s3 + 0x54) &= 0xfffffffeU;
+  if (match && ((*(uint32_t *)(match + 8) >> 4) & 1)) {
+    *(uint32_t *)(pa + 0x54) &= 0xfffffffeU;
+    *(uint32_t *)(pb + 0x54) &= 0xfffffffeU;
   }
-  if (s5 && ((*(uint32_t *)(s5 + 8) >> 6) & 1)) {
-    if (s6) s6[0x20] &= 0xfe;
-  } else if (s6) {
-    s6[0x20] |= 1;
+  if (match && ((*(uint32_t *)(match + 8) >> 6) & 1)) {
+    if (aux) aux[0x20] &= 0xfe;
+  } else if (aux) {
+    aux[0x20] |= 1;
   }
-  /* table 0x80120f58 on lbu 8(s0) -> s1 */
-  idx = s0[8];
-  if (idx < 8) s1 = tab2[idx];
-  /* table 0x80120f78 on lbu 0x9c(s4) */
-  idx = s4[0x9c];
+  /* table 0x80120f58 on lbu 8(rules) -> rate */
+  idx = rules[8];
+  if (idx < 8) rate = tab2[idx];
+  /* table 0x80120f78 on lbu 0x9c(cfg) */
+  idx = cfg[0x9c];
   if (idx < 6) {
     if (idx == 5) {
-      if (s4[0x9b] == 4) {
-        *(int16_t *)(s4 + 0x94) = -1;
-        *(uint32_t *)(s2 + 0x54) |= 2;
-        *(uint32_t *)(s3 + 0x54) |= 2;
+      if (cfg[0x9b] == 4) {
+        *(int16_t *)(cfg + 0x94) = -1;
+        *(uint32_t *)(pa + 0x54) |= 2;
+        *(uint32_t *)(pb + 0x54) |= 2;
       }
     } else if (idx == 3) {
-      *(int16_t *)(s4 + 0x94) = 0xbb8;
+      *(int16_t *)(cfg + 0x94) = 0xbb8;
     }
-    /* all six targets store s1 -> 0xde(s2)/0xde(s3) */
-    if (s2) s2[0xde] = (uint8_t)s1;
-    if (s3) s3[0xde] = (uint8_t)s1;
+    /* all six targets store rate -> 0xde(pa)/0xde(pb) */
+    if (pa) pa[0xde] = (uint8_t)rate;
+    if (pb) pb[0xde] = (uint8_t)rate;
   }
 }
 
