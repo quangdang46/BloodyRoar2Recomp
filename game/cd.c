@@ -398,7 +398,7 @@ extern char *s_CdRead__retry____80125af8;
 
 /* cd_cmd_issue — CD command issue. arg_addr/arg_addr2 are guest addrs
  * (or 0); async_flag = async flag. */
-undefined4 cd_cmd_issue(byte a0,uint32_t a1,uint32_t a2,int a3)
+undefined4 cd_cmd_issue(byte opcode,uint32_t arg_addr,uint32_t arg_addr2,int async_flag)
 
 {
   /* The sync wait loop (DB8(0x801bcb24)==0) depends on the CD interrupt
@@ -407,7 +407,7 @@ undefined4 cd_cmd_issue(byte a0,uint32_t a1,uint32_t a2,int a3)
    * so the IRQ that would set busy is either deferred forever or abandons
    * this frame. Run the recompiled guest body so the wait is interruptible
    * exactly like hardware. Clean port preserved in git history. */
-  return (undefined4)call_guest4(0x80196e14,(uint32_t)a0,a1,a2,(uint32_t)a3);
+  return (undefined4)call_guest4(0x80196e14,(uint32_t)opcode,arg_addr,arg_addr2,(uint32_t)async_flag);
 }
 
 /* ======== 0x80198c90 ======== */
