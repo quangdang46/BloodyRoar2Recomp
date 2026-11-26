@@ -494,9 +494,13 @@ extern void chk_atk1_self(void);
 extern void chk_atk2_foe(void);
 extern void chk_atk2_self(void);
 extern void chk_atk3_foe(void);
+extern void chk_atk3_free(void);
 extern void chk_atk3_self(void);
+extern void chk_distx(void);
+extern void chk_mask_op(void);
 extern void chk_mode1_foe(void);
 extern void chk_mode1_self(void);
+extern void chk_state20(void);
 extern void clear_battle_counters(void);
 extern void clear_f0300_records(void);
 extern void clear_f4ee8_u16s(void);
@@ -1415,6 +1419,8 @@ extern void scriptop_ret_pop_0x80183594(void);
 extern void scriptop_sflag(void);
 extern void scriptop_sub(void);
 extern void scriptop_wait(void);
+extern void scriptop_wait_atk3_foe(void);
+extern void scriptop_wait_atk3_self(void);
 extern void scriptop_wait_cps_80183964(void);
 extern void scriptop_wait_cps_8018397c(void);
 extern void scriptop_wait_cps_80183988(void);
@@ -1425,8 +1431,6 @@ extern void scriptop_wait_fragment_8018371c(void);
 extern void scriptop_wait_fragment_801837b0(void);
 extern void scriptop_wait_fragment_801838b0(void);
 extern void scriptop_wait_fragment_801838e8(void);
-extern void scriptop_wait_fragment_80183920(void);
-extern void scriptop_wait_fragment_80183948(void);
 extern void scroll_attr_100_update(void);
 extern void scroll_cfg_set(void);
 extern void scroll_offset_accumulate(void);
@@ -2402,8 +2406,8 @@ const Br2FnEnt fn_table[] = {
   { 0x801837b0, (void *)scriptop_wait_fragment_801837b0 },
   { 0x801838b0, (void *)scriptop_wait_fragment_801838b0 },
   { 0x801838e8, (void *)scriptop_wait_fragment_801838e8 },
-  { 0x80183920, (void *)scriptop_wait_fragment_80183920 },
-  { 0x80183948, (void *)scriptop_wait_fragment_80183948 },
+  { 0x80183920, (void *)scriptop_wait_atk3_self },
+  { 0x80183948, (void *)scriptop_wait_atk3_foe },
   { 0x80183964, (void *)scriptop_wait_cps_80183964 },
   { 0x8018397c, (void *)scriptop_wait_cps_8018397c },
   { 0x80183988, (void *)scriptop_wait_cps_80183988 },
@@ -2423,6 +2427,10 @@ const Br2FnEnt fn_table[] = {
   { 0x80183ec4, (void *)chk_atk3_foe },
   { 0x80183ef0, (void *)chk_mode1_self },
   { 0x80183efc, (void *)chk_mode1_foe },
+  { 0x80184018, (void *)chk_state20 },
+  { 0x80184040, (void *)chk_atk3_free },
+  { 0x80184110, (void *)chk_mask_op },
+  { 0x80184210, (void *)chk_distx },
   { 0x80184378, (void *)scriptop_cmp },
   { 0x8018444c, (void *)scriptop_move },
   { 0x80184710, (void *)scriptop_add },
