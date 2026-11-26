@@ -77242,6 +77242,8 @@ void cps_8018cc4c(void)
     }
     /* Address: 0x8018CC4C, Size: 32 bytes, Blocks: 3 */
 
+    /* clamped slot write (sibling of 0x8018C0F8): v1 = (v1<24)?v1:0;
+       *a0=a2 with a0=a1; *(a3+21988)=v1; returns a0+4. CPS-blocked. */
 block_8018CC4C:
     v0 = ((int32_t)v1 < 24) ? 1 : 0;  /* 0x8018CC4C: 0x28620018 */
     int _bc_8018CC50 = (v0 != zero);  /* save branch cond before delay slot */
@@ -77286,6 +77288,8 @@ void cps_8018ce50(void)
     }
     /* Address: 0x8018CE50, Size: 32 bytes, Blocks: 3 */
 
+    /* clamped slot write (sibling of 0x8018C0F8): v1 = (v1<8)?v1:0;
+       *a0=a2 with a0=a1; *(a3+21992)=v1; returns a0+4. CPS-blocked. */
 block_8018CE50:
     v0 = ((int32_t)v1 < 8) ? 1 : 0;  /* 0x8018CE50: 0x28620008 */
     int _bc_8018CE54 = (v0 != zero);  /* save branch cond before delay slot */
@@ -77322,10 +77326,9 @@ void cps_8018cfd4(void)
 
     /* Address: 0x8018CFD4, Size: 8 bytes, Blocks: 1 */
 
-block_8018CFD4:
+    /* return 0 */
     uint32_t _jt_8018CFD4 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = zero;
+    v0 = zero;                           /* delay slot: ret 0 */
     psx_check_interrupts_at(cpu, _jt_8018CFD4);
     cpu->pc = _jt_8018CFD4; return;  /* CPS: jr $ra */
 }
@@ -77369,6 +77372,12 @@ void cps_8018cfdc(void)
     }
     /* Address: 0x8018CFDC, Size: 372 bytes, Blocks: 25 */
 
+    /* guarded op dispatcher: loads pair (s1,s3) from table
+       0x801B0000+23444 + a0*8; negative a0 -> error path (0x80157368/
+       0x80198AF0/0x80195D8C init); positive path refcount-gates on
+       0x801F0000+26840 and flag 0x801C0000+17792, calls 0x8018D150 or
+       0x80198E2C depending on slot state 0x801B0000+21996, returns 0/1.
+       CPS-blocked. */
 block_8018CFDC:
     sp = sp + -48;
     cpu->write_word(sp + 40, s4);
@@ -77637,6 +77646,8 @@ void cps_8018d150(void)
     }
     /* Address: 0x8018D150, Size: 108 bytes, Blocks: 7 */
 
+    /* retry wrapper: polls 0x80195D8C(2, s1, 0) until nonzero, then
+       0x80198C90(s0, s2, 128) until nonzero; returns s0. CPS-blocked. */
 block_8018D150:
     sp = sp + -32;
     cpu->write_word(sp + 20, s1);
@@ -77715,10 +77726,9 @@ void cps_8018d27c(void)
 
     /* Address: 0x8018D27C, Size: 8 bytes, Blocks: 1 */
 
-block_8018D27C:
+    /* return -v0 */
     uint32_t _jt_8018D27C = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = zero - v0;
+    v0 = zero - v0;                      /* delay slot: negate */
     psx_check_interrupts_at(cpu, _jt_8018D27C);
     cpu->pc = _jt_8018D27C; return;  /* CPS: jr $ra */
 }
@@ -77732,6 +77742,8 @@ void cps_8018d284(void)
 
     /* Address: 0x8018D284, Size: 12 bytes, Blocks: 1 */
 
+    /* saturate helper: a0&0x400 -> tail 0x8018D27C (returns -v0=-0x7FFF),
+       else falls into 0x8018D290 with v0=0x7FFF. CPS-blocked. */
 block_8018D284:
     v1 = a0 & 0x0400;  /* 0x8018D284: 0x30830400 */
     int _bc_8018D288 = (v1 != zero);  /* save branch cond before delay slot */
@@ -77756,10 +77768,8 @@ void cps_8018d290(void)
 
     /* Address: 0x8018D290, Size: 8 bytes, Blocks: 1 */
 
-block_8018D290:
+    /* bare return (jr $ra, nop delay slot) */
     uint32_t _jt_8018D290 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    /* nop */  /* 0x8018D294: 0x00000000 */
     psx_check_interrupts_at(cpu, _jt_8018D290);
     cpu->pc = _jt_8018D290; return;  /* CPS: jr $ra */
 }
@@ -77773,10 +77783,8 @@ void cps_8018d2d8(void)
 
     /* Address: 0x8018D2D8, Size: 8 bytes, Blocks: 1 */
 
-block_8018D2D8:
+    /* bare return (jr $ra, nop delay slot) */
     uint32_t _jt_8018D2D8 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    /* nop */  /* 0x8018D2DC: 0x00000000 */
     psx_check_interrupts_at(cpu, _jt_8018D2D8);
     cpu->pc = _jt_8018D2D8; return;  /* CPS: jr $ra */
 }
@@ -77895,10 +77903,8 @@ void cps_8018d47c(void)
 
     /* Address: 0x8018D47C, Size: 8 bytes, Blocks: 1 */
 
-block_8018D47C:
+    /* tail-dispatch: jr t5 (nop delay slot) */
     uint32_t _jt_8018D47C = t5;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    /* nop */  /* 0x8018D480: 0x00000000 */
     psx_check_interrupts_at(cpu, _jt_8018D47C);
     cpu->pc = _jt_8018D47C; return;  /* CPS: jr t5 */
 }
@@ -77919,6 +77925,10 @@ void cps_8018d49c(void)
     }
     /* Address: 0x8018D49C, Size: 96 bytes, Blocks: 2 */
 
+    /* fixed-point pair normalize: jal 0x8018D4FC reads half deltas at
+       a2/+4; adds them to (v1,v0), rounds each to the 128-grid
+       ((x+64)&~127)-64, stores halves back, returns packed
+       (v0>>7)<<16 | (v1>>7)&0xFFFF via jr t1. CPS-blocked. */
 block_8018D49C:
     t2 = (int32_t)(int16_t)cpu->read_half(a2);
     t3 = (int32_t)(int16_t)cpu->read_half(a2 + 4);
@@ -77963,10 +77973,8 @@ void cps_8018d668(void)
 
     /* Address: 0x8018D668, Size: 8 bytes, Blocks: 1 */
 
-block_8018D668:
+    /* bare return (jr $ra, nop delay slot) */
     uint32_t _jt_8018D668 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    /* nop */  /* 0x8018D66C: 0x00000000 */
     psx_check_interrupts_at(cpu, _jt_8018D668);
     cpu->pc = _jt_8018D668; return;  /* CPS: jr $ra */
 }
@@ -77980,6 +77988,8 @@ void cps_8018d670(void)
 
     /* Address: 0x8018D670, Size: 36 bytes, Blocks: 1 */
 
+    /* squared-distance gate: t1 -= a0*a0 + a1*a1 (mulhi:lo); t1<0 ->
+       tail 0x8018D668, else -> 0x8018D694 (return 0). CPS-blocked. */
 block_8018D670:
     { int64_t result = (int64_t)(int32_t)a0 * (int64_t)(int32_t)a0; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
     psx_muldiv_set(cpu, psx_mult_latency_s(a0));
@@ -78014,10 +78024,9 @@ void cps_8018d694(void)
 
     /* Address: 0x8018D694, Size: 8 bytes, Blocks: 1 */
 
-block_8018D694:
+    /* return 0 */
     uint32_t _jt_8018D694 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = zero;
+    v0 = zero;                           /* delay slot: ret 0 */
     psx_check_interrupts_at(cpu, _jt_8018D694);
     cpu->pc = _jt_8018D694; return;  /* CPS: jr $ra */
 }
