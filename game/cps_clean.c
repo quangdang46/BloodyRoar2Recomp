@@ -3968,7 +3968,10 @@ block_80126A2C:
 }
 
 /* cps_80126a38 — clean CPS transliteration of br2eu_func_80126A38 (guest 0x80126a38)
- * from SLES_017.22_full_00.c. */
+ * from SLES_017.22_full_00.c.
+ * stream_frame_decode_draw: scratch_013_set + tag_table_get +
+ * stream_block_decode + spr_draw_off/pair + cd_timer_read — decodes a
+ * stream block and draws its sprites (title/streaming path). */
 void cps_80126a38(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -7717,7 +7720,9 @@ block_801294B8:
 }
 
 /* cps_801294d4 — clean CPS transliteration of br2eu_func_801294D4 (guest 0x801294d4)
- * from SLES_017.22_full_01.c. */
+ * from SLES_017.22_full_01.c.
+ * menu_stepper_refresh: menu_stepper_redraw + menu_stepper_input —
+ * redraw then read input. */
 void cps_801294d4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -7832,7 +7837,8 @@ block_80129530:
 }
 
 /* cps_80129558 — clean CPS transliteration of br2eu_func_80129558 (guest 0x80129558)
- * from SLES_017.22_full_01.c. */
+ * from SLES_017.22_full_01.c.
+ * menu_stepper_input_wrap: menu_stepper_input caller. */
 void cps_80129558(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -8175,7 +8181,9 @@ block_80129648:
 }
 
 /* cps_80129664 — clean CPS transliteration of br2eu_func_80129664 (guest 0x80129664)
- * from SLES_017.22_full_01.c. */
+ * from SLES_017.22_full_01.c.
+ * menu_row_paint_pair: menu_row_paint + menu_row_paint_b — paints a
+ * pair of menu rows. */
 void cps_80129664(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -8520,7 +8528,8 @@ block_801297C4:
 }
 
 /* cps_80129800 — clean CPS transliteration of br2eu_func_80129800 (guest 0x80129800)
- * from SLES_017.22_full_01.c. */
+ * from SLES_017.22_full_01.c.
+ * menu_deferred_wrap_b: deferred_cmd_post caller. */
 void cps_80129800(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -8870,7 +8879,8 @@ block_80129934:
 }
 
 /* cps_801299a8 — clean CPS transliteration of br2eu_func_801299A8 (guest 0x801299a8)
- * from SLES_017.22_full_01.c. */
+ * from SLES_017.22_full_01.c.
+ * menu_deferred_wrap: deferred_cmd_post caller in menu region. */
 void cps_801299a8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -9159,7 +9169,8 @@ block_80129B1C:
 }
 
 /* cps_80129b58 — clean CPS transliteration of br2eu_func_80129B58 (guest 0x80129b58)
- * from SLES_017.22_full_01.c. */
+ * from SLES_017.22_full_01.c.
+ * menu_deferred_wrap_c: deferred_cmd_post caller. */
 void cps_80129b58(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -10697,7 +10708,8 @@ block_8012A724:
 }
 
 /* cps_8012a7bc — clean CPS transliteration of br2eu_func_8012A7BC (guest 0x8012a7bc)
- * from SLES_017.22_full_01.c. */
+ * from SLES_017.22_full_01.c.
+ * pad_slot_state_wrap: pad_slot_state_walk caller. */
 void cps_8012a7bc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -10907,7 +10919,8 @@ block_8012A944:
 }
 
 /* cps_8012a94c — clean CPS transliteration of br2eu_func_8012A94C (guest 0x8012a94c)
- * from SLES_017.22_full_01.c. */
+ * from SLES_017.22_full_01.c.
+ * dialog_mode_wrap: dialog_mode_mirror caller. */
 void cps_8012a94c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -11361,7 +11374,10 @@ block_8012AADC:
 }
 
 /* cps_8012ab30 — clean CPS transliteration of br2eu_func_8012AB30 (guest 0x8012ab30)
- * from SLES_017.22_full_01.c. */
+ * from SLES_017.22_full_01.c.
+ * gpu_env_reset_seq: gpu_pkt_unlink_n + gpu_graph_reset +
+ * gpu_draw_env_put + draw_env_timing + gpu_stat_sign + cd_timer_read —
+ * full GPU environment reset/teardown sequence. */
 void cps_8012ab30(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -11559,7 +11575,9 @@ block_8012ABDC:
 }
 
 /* cps_8012abe8 — clean CPS transliteration of br2eu_func_8012ABE8 (guest 0x8012abe8)
- * from SLES_017.22_full_01.c. */
+ * from SLES_017.22_full_01.c.
+ * gpu_disp_load_img: gpu_disp_mask_set + gpu_load_image_cmd — display
+ * mask set + image DMA command issue. */
 void cps_8012abe8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -12172,7 +12190,9 @@ block_8012AFD0:
 }
 
 /* cps_8012afd4 — clean CPS transliteration of br2eu_func_8012AFD4 (guest 0x8012afd4)
- * from SLES_017.22_full_01.c. */
+ * from SLES_017.22_full_01.c.
+ * gpu_env_commit_a: gpu_disp_mask_set + gpu_draw_env_put +
+ * draw_env_timing + gpu_stat_sign — draw-env commit variant A. */
 void cps_8012afd4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -12777,7 +12797,8 @@ block_8012B2FC:
 }
 
 /* cps_8012b300 — clean CPS transliteration of br2eu_func_8012B300 (guest 0x8012b300)
- * from SLES_017.22_full_01.c. */
+ * from SLES_017.22_full_01.c.
+ * gpu_env_commit_b: same quad as afd4 — draw-env commit variant B. */
 void cps_8012b300(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -13202,7 +13223,8 @@ block_8012B5FC:
 }
 
 /* cps_8012b604 — clean CPS transliteration of br2eu_func_8012B604 (guest 0x8012b604)
- * from SLES_017.22_full_01.c. */
+ * from SLES_017.22_full_01.c.
+ * deferred_cmd_wrap: deferred_cmd_post caller. */
 void cps_8012b604(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -13452,7 +13474,9 @@ block_8012B6FC:
 }
 
 /* cps_8012b700 — clean CPS transliteration of br2eu_func_8012B700 (guest 0x8012b700)
- * from SLES_017.22_full_01.c. */
+ * from SLES_017.22_full_01.c.
+ * pad_input_dispatch: deferred_cmd_post + pad_handler_a/b/c — polls pad
+ * handlers and posts deferred cmds. */
 void cps_8012b700(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -14571,7 +14595,8 @@ block_8012BCD4:
 }
 
 /* cps_8012bce4 — clean CPS transliteration of br2eu_func_8012BCE4 (guest 0x8012bce4)
- * from SLES_017.22_full_02.c. */
+ * from SLES_017.22_full_02.c.
+ * ui_state_step: 18-block leaf state step in the menu/GPU band. */
 void cps_8012bce4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -14839,7 +14864,8 @@ block_8012BD9C:
 }
 
 /* cps_8012bda0 — clean CPS transliteration of br2eu_func_8012BDA0 (guest 0x8012bda0)
- * from SLES_017.22_full_02.c. */
+ * from SLES_017.22_full_02.c.
+ * ui_leaf_step_b: 12-block leaf state step. */
 void cps_8012bda0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -15350,7 +15376,9 @@ block_8012C138:
 }
 
 /* cps_8012c168 — clean CPS transliteration of br2eu_func_8012C168 (guest 0x8012c168)
- * from SLES_017.22_full_02.c. */
+ * from SLES_017.22_full_02.c.
+ * stream_block_load_draw: scratch_013_set + stream_block_decode +
+ * spr_draw_off + cd_file_load_sm — loads a CD stream block then draws. */
 void cps_8012c168(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -16304,7 +16332,9 @@ block_8012C624:
 }
 
 /* cps_8012c64c — clean CPS transliteration of br2eu_func_8012C64C (guest 0x8012c64c)
- * from SLES_017.22_full_02.c. */
+ * from SLES_017.22_full_02.c.
+ * sprite_node_emit_pair: spr_attr_alloc_b + spr_slot_pkt_submit +
+ * sprite_node_emit_b/a — paired sprite node emit. */
 void cps_8012c64c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -16513,7 +16543,9 @@ block_8012C820:
 }
 
 /* cps_8012c824 — clean CPS transliteration of br2eu_func_8012C824 (guest 0x8012c824)
- * from SLES_017.22_full_02.c. */
+ * from SLES_017.22_full_02.c.
+ * hud_text_emit: hud_text_d + spr_attr_alloc_b + spr_slot_pkt_submit +
+ * spr_attr_alloc_a + sprite_node_emit_a — HUD text sprite emit. */
 void cps_8012c824(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -17082,7 +17114,8 @@ block_8012F19C:
 }
 
 /* cps_8012f1b0 — clean CPS transliteration of br2eu_func_8012F1B0 (guest 0x8012f1b0)
- * from SLES_017.22_full_03.c. */
+ * from SLES_017.22_full_03.c.
+ * print_dispatch_wrap: print_dispatch_guest caller — routed debug print. */
 void cps_8012f1b0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -17233,7 +17266,9 @@ block_8012FB54:
 }
 
 /* cps_8012fb58 — clean CPS transliteration of br2eu_func_8012FB58 (guest 0x8012fb58)
- * from SLES_017.22_full_03.c. */
+ * from SLES_017.22_full_03.c.
+ * vec3_step_dispatch: fans out to vec3_step_toward / _spd / _q /
+ * _q_spd — velocity-step variant selector. */
 void cps_8012fb58(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -17479,7 +17514,10 @@ block_8012FCD8:
 }
 
 /* cps_8012fce0 — clean CPS transliteration of br2eu_func_8012FCE0 (guest 0x8012fce0)
- * from SLES_017.22_full_05.c. */
+ * from SLES_017.22_full_05.c.
+ * script_cmd_interpreter: 355-block script VM — byte-tagged command
+ * dispatch calling table_byte_next_a/b, target_angles/depth setters,
+ * pair_depth_set, vec3_step_toward family. Largest body in the file. */
 void cps_8012fce0(void)
 {
   CPUState *cpu = clean_cpu_state();
