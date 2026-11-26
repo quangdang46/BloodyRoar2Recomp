@@ -22,7 +22,7 @@
  *                     window setup, stream reader, palette, then
  *                     battle_session_arm(1) battle start + 2 frames
  *   battle_session_arm      battle session arm: fighter buf ptrs +0x4/+8
- *                     = param_2*0x2150 + fixed guest addrs
+ *                     = slot*0x2150 + fixed guest addrs
  */
 #include <stdint.h>
 #include <string.h>
@@ -859,7 +859,7 @@ void boot(void)
 
 /* ==================================================================
  * cd_file_pump — CD file streaming pump.
- * param_2 = pump state: 0 init -> 0x100 streaming -> 0x110 tail ->
+ * state = pump state: 0 init -> 0x100 streaming -> 0x110 tail ->
  * 0x120 done -> -1. Each step queues one file's DMA reads.
  * ================================================================== */
 int cd_file_pump(int cd_base,int state)
@@ -1022,7 +1022,7 @@ void scratch_zero_reset(void)
 }
 
 /* display_mode_setup — display mode + screen window setup.
- * param_1 = video mode (0-7 from system config +0xb):
+ * mode = video mode (0-7 from system config +0xb):
  *   0,2,4,6 -> 0xf0-height variant (interlaced?), odd -> 0x1e0.
  * Sets _DAT_1f800020/22/24 screen geometry, OAM window regs via
  * FUN_80195290/2b0, sprite blocks at 0x801e40a0/0x801e61f0/0x801e40fc/
@@ -1332,7 +1332,7 @@ undefined4 memcard_poll_frame(void)
 
 /* ==================================================================
  * frame_tick — frame driver (called 2x/frame: fighter slot toggle).
- * param_1 = battle object guest addr (0x1f800000).
+ * ctx = battle object guest addr (0x1f800000).
  * +0xc fighter index XORs 0/1 each call -> double-buffered submit.
  * ================================================================== */
 void frame_tick(intptr_t ctx)
@@ -1598,8 +1598,8 @@ LAB_801472a4:
 
 /* ==================================================================
  * scene_entry — scene/stage entry.
- * param_1 = VRAM arena base, param_2 = stage/file-table index,
- * param_3 = demo flag. Loads stage file, sets VRAM windows,
+ * vram_base = VRAM arena base, stage_idx = stage/file-table index,
+ * demo_flag = demo flag. Loads stage file, sets VRAM windows,
  * streams data, uploads palette/OAM, arms battle, runs 2 frames.
  * Returns 1 on success (state->5), 0 to retry.
  * ================================================================== */
@@ -1734,7 +1734,7 @@ LAB_801593a8:
 /* cd_file_load_sm — per-file CD load state machine. The clean port passed
  * piVar2 = guest_at(filetab[..]) — a HOST arena pointer — into
  * cd_read_issue -> cd_mode_flag_set -> cd_cmd_issue(2,..), which is delegated
- * to generated code that reads the SetLoc MSF params treating param_2 as a
+ * to generated code that reads the SetLoc MSF params treating dst as a
  * GUEST address. The host pointer decoded to a bogus address -> SetLoc
  * [0,0,0] -> read lead-in zeros -> game rejected data and retried forever
  * (the Pause->SetLoc[0,0,0]->Setmode->ReadN livelock at LBAs -148/-149/-150).
@@ -1855,7 +1855,7 @@ void task_table_init(int32_t arg)
 /* intro_movie_state — intro/movie playback state machine. State byte
  * _DAT_1f80008c: -1 idle; 0 init; 0x10..0x30 staged file loads via
  * cd_file_load_sm(file_id, heap=_DAT_801e3cfc); stream_block_decode advances
- * frames; param_1 selects which queued load to start (0/1/2). */
+ * frames; which selects which queued load to start (0/1/2). */
 int32_t intro_movie_state(int32_t which)
 {
   uint8_t saved_013;
@@ -2072,7 +2072,7 @@ void print_dispatch_selfdesc(void *self,const char *fmt,...)
  * callees read the correct low-32 bits. */
 
 /* print_dispatch @0x8012cc6c — guest reads a0-a3 + 5 caller stack words
- * (args 5-9); param_8 covers stack word 3, arg9 (+0x20) recovered. */
+ * (args 5-9); a7 covers stack word 3, arg9 (+0x20) recovered. */
 void print_dispatch_guest(const char *fmt,uint32_t a1,uint32_t a2,
                           uint32_t a3,uint32_t a4,uint32_t a5,
                           uint32_t a6,uint32_t a7)
@@ -2324,7 +2324,7 @@ void *sprite_node_alloc(void)
 }
 
 /* sprite_node_emit_a — sprite-list node emit (pool sprite_node_alloc, tag
- * 0x08000000, packet tail +0x24). 10 args; param_10 selects GPU
+ * 0x08000000, packet tail +0x24). 10 args; variant selects GPU
  * command variant 0x3a/0x38000000 and stride. */
 int sprite_node_emit_a(uint32_t head_ptr,int32_t x,int32_t y,
                  int32_t w,int32_t h,uint32_t cmd,
@@ -2365,8 +2365,8 @@ int sprite_node_emit_a(uint32_t head_ptr,int32_t x,int32_t y,
 }
 
 /* sprite_node_emit_b — sprite-list node emit (pool spr_desc_slot_alloc, tag
- * 0x04000000, packet tail +0x14). param_2 packs x|y<<16,
- * param_3 packs w|h<<16; param_5 low byte = colour, param_6 picks
+ * 0x04000000, packet tail +0x14). xy packs x|y<<16,
+ * wh packs w|h<<16; color low byte = colour, variant picks
  * GPU variant 0x66/0x64000000 + stride. */
 int sprite_node_emit_b(uint32_t head_ptr,uint32_t xy,uint32_t wh,
                  uint32_t aux,int32_t color,int32_t variant)
