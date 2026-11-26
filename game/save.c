@@ -1,11 +1,11 @@
 /* save.c — memory-card / settings / display-helper cluster.
  * Cleaned Ghidra ports (decomp/batch_shell.txt origin): mechanical
- * Ghidra names (param_*/uVar*/local_* scalars, undefinedN typedefs,
- * switchD/caseD/LAB_ labels, '\xNN' char-literal ints) have been
+ * Ghidra names (param_N, uVarN, local_N scalars, undefinedN typedefs,
+ * switchD/caseD/LAB_ labels, char-literal ints) have been
  * renamed to semantic or address-anchored forms. Deliberately kept:
- * local_XX frame-offset macros (encode guest sp offsets), DAT_*/
- * g_DAT_*/PTR_*/s_* guest-address anchors (bound in bind.c), and
- * FUN_*/ARG_GPRS register-mirror params (live guest-register
+ * local_XX frame-offset macros (encode guest sp offsets), the
+ * DAT_/g_DAT_/PTR_/s_ guest-address anchors (bound in bind.c), and
+ * the FUN_/ARG_GPRS register-mirror params (live guest-register
  * contract). Guest globals bound via g_DAT_* (bind.c arena,
  * payload-backed); s_* strings resolve through guest_at into the
  * loaded EXE image. */
