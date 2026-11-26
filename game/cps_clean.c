@@ -95483,6 +95483,11 @@ void cps_801a0008(void)
     }
     /* Address: 0x801A0008, Size: 180 bytes, Blocks: 14 */
 
+    /* module init/verify: checks a sentinel word at 0x801FF630-0x13;
+       on success calls 0x8018E550 (header check on 0x80125E6C), else
+       fills sp+16..143 with 0xFF and runs a 15-iteration loop calling
+       0x801A0E90/0x801A0610/0x801A0600/0x801A1070 (per-slot init+verify),
+       returning 1 on success / -1 or 0 on failure. CPS-blocked. */
 block_801A0008:
     sp = sp + -160;
     v0 = 0x8020 << 16;  /* 0x80200000 */
@@ -95639,6 +95644,10 @@ void cps_801a041c(void)
     }
     /* Address: 0x801A041C, Size: 256 bytes, Blocks: 12 */
 
+    /* pool/slot allocator: optionally marks *s2=1, sizes the free region
+       via mulhi(*0x154/0x154) magic-divide, walks 80-byte records calling
+       0x801984A0 until one accepts (then stores link at rec+52), and
+       tail-dispatches an indirect callback from 0x801FAFA0-0x13. CPS-blocked. */
 block_801A041C:
     sp = sp + -48;
     cpu->write_word(sp + 24, s2);
@@ -95821,6 +95830,11 @@ void cps_801a0660(void)
     }
     /* Address: 0x801A0660, Size: 324 bytes, Blocks: 22 */
 
+    /* checksum-verified load with retries: XOR-folds 127 bytes of s3 into
+       a seed byte written back at s3+127, then up to 8 attempts run
+       0x801A0610/0x801A0600/0x801A09F0/0x801A09B0/0x801A09E0 (decode+verify
+       into sp+16), recomputes the XOR and compares against s3[127];
+       failure calls 0x8018E550 on 0x80125F68. Returns 1 on match. CPS-blocked. */
 block_801A0660:
     sp = sp + -176;
     cpu->write_word(sp + 144, s0);
@@ -96053,13 +96067,12 @@ void cps_801a0b10(void)
 
     /* Address: 0x801A0B10, Size: 20 bytes, Blocks: 1 */
 
-block_801A0B10:
+    /* set flag word 0x801FEF90u to 1; return 0 */
     v0 = 1;
-    at = 0x8020 << 16;  /* 0x80200000 */
-    cpu->write_word(at + -4208, v0);
+    at = 0x80200000;                     /* flag table base (live $at) */
+    cpu->write_word(at - 4208, v0);
     uint32_t _jt_801A0B1C = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = zero;
+    v0 = zero;                           /* delay slot: ret 0 */
     psx_check_interrupts_at(cpu, _jt_801A0B1C);
     cpu->pc = _jt_801A0B1C; return;  /* CPS: jr $ra */
 }
@@ -96073,13 +96086,12 @@ void cps_801a0b24(void)
 
     /* Address: 0x801A0B24, Size: 20 bytes, Blocks: 1 */
 
-block_801A0B24:
+    /* set flag word 0x801FEF94u to 1; return 0 */
     v0 = 1;
-    at = 0x8020 << 16;  /* 0x80200000 */
-    cpu->write_word(at + -4204, v0);
+    at = 0x80200000;                     /* flag table base (live $at) */
+    cpu->write_word(at - 4204, v0);
     uint32_t _jt_801A0B30 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = zero;
+    v0 = zero;                           /* delay slot: ret 0 */
     psx_check_interrupts_at(cpu, _jt_801A0B30);
     cpu->pc = _jt_801A0B30; return;  /* CPS: jr $ra */
 }
@@ -96093,13 +96105,12 @@ void cps_801a0b38(void)
 
     /* Address: 0x801A0B38, Size: 20 bytes, Blocks: 1 */
 
-block_801A0B38:
+    /* set flag word 0x801FEF98u to 1; return 0 */
     v0 = 1;
-    at = 0x8020 << 16;  /* 0x80200000 */
-    cpu->write_word(at + -4200, v0);
+    at = 0x80200000;                     /* flag table base (live $at) */
+    cpu->write_word(at - 4200, v0);
     uint32_t _jt_801A0B44 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = zero;
+    v0 = zero;                           /* delay slot: ret 0 */
     psx_check_interrupts_at(cpu, _jt_801A0B44);
     cpu->pc = _jt_801A0B44; return;  /* CPS: jr $ra */
 }
@@ -96113,13 +96124,12 @@ void cps_801a0b4c(void)
 
     /* Address: 0x801A0B4C, Size: 20 bytes, Blocks: 1 */
 
-block_801A0B4C:
+    /* set flag word 0x801FEF9Cu to 1; return 0 */
     v0 = 1;
-    at = 0x8020 << 16;  /* 0x80200000 */
-    cpu->write_word(at + -4196, v0);
+    at = 0x80200000;                     /* flag table base (live $at) */
+    cpu->write_word(at - 4196, v0);
     uint32_t _jt_801A0B58 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = zero;
+    v0 = zero;                           /* delay slot: ret 0 */
     psx_check_interrupts_at(cpu, _jt_801A0B58);
     cpu->pc = _jt_801A0B58; return;  /* CPS: jr $ra */
 }
@@ -96133,13 +96143,12 @@ void cps_801a0b60(void)
 
     /* Address: 0x801A0B60, Size: 20 bytes, Blocks: 1 */
 
-block_801A0B60:
+    /* set flag word 0x801FEFA0u to 1; return 0 */
     v0 = 1;
-    at = 0x8020 << 16;  /* 0x80200000 */
-    cpu->write_word(at + -4192, v0);
+    at = 0x80200000;                     /* flag table base (live $at) */
+    cpu->write_word(at - 4192, v0);
     uint32_t _jt_801A0B6C = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = zero;
+    v0 = zero;                           /* delay slot: ret 0 */
     psx_check_interrupts_at(cpu, _jt_801A0B6C);
     cpu->pc = _jt_801A0B6C; return;  /* CPS: jr $ra */
 }
@@ -96153,13 +96162,12 @@ void cps_801a0b74(void)
 
     /* Address: 0x801A0B74, Size: 20 bytes, Blocks: 1 */
 
-block_801A0B74:
+    /* set flag word 0x801FEFA4u to 1; return 0 */
     v0 = 1;
-    at = 0x8020 << 16;  /* 0x80200000 */
-    cpu->write_word(at + -4188, v0);
+    at = 0x80200000;                     /* flag table base (live $at) */
+    cpu->write_word(at - 4188, v0);
     uint32_t _jt_801A0B80 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = zero;
+    v0 = zero;                           /* delay slot: ret 0 */
     psx_check_interrupts_at(cpu, _jt_801A0B80);
     cpu->pc = _jt_801A0B80; return;  /* CPS: jr $ra */
 }
@@ -96173,13 +96181,12 @@ void cps_801a0b88(void)
 
     /* Address: 0x801A0B88, Size: 20 bytes, Blocks: 1 */
 
-block_801A0B88:
+    /* set flag word 0x801FEFA8u to 1; return 0 */
     v0 = 1;
-    at = 0x8020 << 16;  /* 0x80200000 */
-    cpu->write_word(at + -4184, v0);
+    at = 0x80200000;                     /* flag table base (live $at) */
+    cpu->write_word(at - 4184, v0);
     uint32_t _jt_801A0B94 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = zero;
+    v0 = zero;                           /* delay slot: ret 0 */
     psx_check_interrupts_at(cpu, _jt_801A0B94);
     cpu->pc = _jt_801A0B94; return;  /* CPS: jr $ra */
 }
@@ -96193,13 +96200,12 @@ void cps_801a0b9c(void)
 
     /* Address: 0x801A0B9C, Size: 20 bytes, Blocks: 1 */
 
-block_801A0B9C:
+    /* set flag word 0x801FEFACu to 1; return 0 */
     v0 = 1;
-    at = 0x8020 << 16;  /* 0x80200000 */
-    cpu->write_word(at + -4180, v0);
+    at = 0x80200000;                     /* flag table base (live $at) */
+    cpu->write_word(at - 4180, v0);
     uint32_t _jt_801A0BA8 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = zero;
+    v0 = zero;                           /* delay slot: ret 0 */
     psx_check_interrupts_at(cpu, _jt_801A0BA8);
     cpu->pc = _jt_801A0BA8; return;  /* CPS: jr $ra */
 }
@@ -96223,6 +96229,10 @@ void cps_801a0be0(void)
     }
     /* Address: 0x801A0BE0, Size: 136 bytes, Blocks: 5 */
 
+    /* DMA/channel setup prologue: calls 0x8018E300, then issues four
+       0x8019B380 requests (a0=0xF4000001, sizes 4/0x8000/256/8192) with
+       buffers at 0x801A0B10/2C/48 guest addrs, storing results into
+       0x801FAEC8/CC; falls through into cps_801a0c68. CPS-blocked. */
 block_801A0BE0:
     sp = sp + -24;
     cpu->write_word(sp + 20, ra);
