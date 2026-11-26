@@ -77926,6 +77926,7 @@ block_8018D130:
  * from SLES_017.22_full_41.c. */
 void cps_8018d150(void)
 {
+/* cd_read_issue thunk -> cd_mode_flag_set -> cd_read_setup */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -78016,6 +78017,7 @@ block_8018D1A0:
  * from SLES_017.22_full_41.c. */
 void cps_8018d27c(void)
 {
+/* trig_sin_lookup piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -78033,6 +78035,7 @@ block_8018D27C:
  * from SLES_017.22_full_42.c. */
 void cps_8018d284(void)
 {
+/* trig_sin_lookup piece: continues at 0x8018d290 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -78057,6 +78060,7 @@ block_8018D284:
  * from SLES_017.22_full_42.c. */
 void cps_8018d290(void)
 {
+/* trig_sin_lookup piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -78074,6 +78078,7 @@ block_8018D290:
  * from SLES_017.22_full_42.c. */
 void cps_8018d2d8(void)
 {
+/* lut_sin_q12 piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -78091,6 +78096,7 @@ block_8018D2D8:
  * from SLES_017.22_full_42.c. */
 void cps_8018d2e0(void)
 {
+/* lut_sin_q12 piece: continues at 0x8018d2ec */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -78108,6 +78114,7 @@ block_8018D2E0:
  * from SLES_017.22_full_42.c. */
 void cps_8018d3b4(void)
 {
+/* fixed_point_divide thunk -> dir_rotate_pair -> dir_rotate_pair -> dir_rotate_pair */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -78180,6 +78187,7 @@ block_8018D3F8:
  * from SLES_017.22_full_42.c. */
 void cps_8018d474(void)
 {
+/* dir_rotate_set piece: continues at 0x8018d47c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -78196,6 +78204,7 @@ block_8018D474:
  * from SLES_017.22_full_42.c. */
 void cps_8018d47c(void)
 {
+/* dir_rotate_set piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -78213,6 +78222,7 @@ block_8018D47C:
  * from SLES_017.22_full_42.c. */
 void cps_8018d49c(void)
 {
+/* dir_rotate_wrap thunk -> vec2_rot_lut */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -78264,6 +78274,7 @@ block_8018D4AC:
  * from SLES_017.22_full_42.c. */
 void cps_8018d668(void)
 {
+/* range_circle_test piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -78281,6 +78292,7 @@ block_8018D668:
  * from SLES_017.22_full_42.c. */
 void cps_8018d670(void)
 {
+/* range_circle_test piece: continues at 0x8018d694 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -78315,6 +78327,7 @@ block_8018D670:
  * from SLES_017.22_full_42.c. */
 void cps_8018d694(void)
 {
+/* range_circle_test piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -78332,6 +78345,7 @@ block_8018D694:
  * from SLES_017.22_full_42.c. */
 void cps_8018da28(void)
 {
+/* pad_record_init piece: continues at 0x8018da2c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -78347,6 +78361,7 @@ block_8018DA28:
  * from SLES_017.22_full_42.c. */
 void cps_8018da2c(void)
 {
+/* rotmat2_build piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -78447,6 +78462,7 @@ block_8018DA98:
  * from SLES_017.22_full_42.c. */
 void cps_8018dab4(void)
 {
+/* rotmat2_build piece: continues at 0x8018dac0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -78464,6 +78480,7 @@ block_8018DAB4:
  * from SLES_017.22_full_42.c. */
 void cps_8018dac0(void)
 {
+/* angle_pair_rotmat piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -78656,6 +78673,7 @@ block_8018DB8C:
  * from SLES_017.22_full_42.c. */
 void cps_8018dbe4(void)
 {
+/* angle_pair_rotmat piece: continues at 0x8018dc00 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -78684,6 +78702,7 @@ block_8018DBE4:
  * from SLES_017.22_full_42.c. */
 void cps_8018dc00(void)
 {
+/* angle_pair_rotmat piece: continues at 0x8018dc18 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -78704,6 +78723,7 @@ block_8018DC00:
  * from SLES_017.22_full_42.c. */
 void cps_8018dc20(void)
 {
+/* euler_rotmat piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -79112,6 +79132,7 @@ block_8018DE24:
  * from SLES_017.22_full_42.c. */
 void cps_8018de68(void)
 {
+/* euler_rotmat piece: continues at 0x8018de6c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -79127,6 +79148,7 @@ block_8018DE68:
  * from SLES_017.22_full_42.c. */
 void cps_8018de6c(void)
 {
+/* rotmat_rtps_build piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -79227,6 +79249,7 @@ block_8018DEDC:
  * from SLES_017.22_full_42.c. */
 void cps_8018def4(void)
 {
+/* rotmat_rtps_build piece: continues at 0x8018df00 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -79244,6 +79267,7 @@ block_8018DEF4:
  * from SLES_017.22_full_42.c. */
 void cps_8018df00(void)
 {
+/* rotmat2_pair_build piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
