@@ -4595,3 +4595,69 @@
 8012a93c cps_8012a92c
 801298f8 cps_801298f8
 801268b8 cps_801268b8
+
+# --- w2_e05 script-VM CPS piece entries (game/w2_e05.c) ---
+# scriptop_bsr CPS body (guest 0x80183248 shared body; entries 0x80183430/
+# 0x8018344c/0x80183514 + all continuation/alias blocks).
+801832b8 scriptop_bsr_0x80183430
+80183280 scriptop_bsr_0x80183430
+8018329c scriptop_bsr_0x80183430
+801832c8 scriptop_bsr_0x80183430
+801832d4 scriptop_bsr_0x80183430
+801832f0 scriptop_bsr_0x80183430
+80183308 scriptop_bsr_0x80183430
+80183338 scriptop_bsr_0x80183430
+80183348 scriptop_bsr_0x80183430
+80183354 scriptop_bsr_0x80183430
+80183364 scriptop_bsr_0x80183430
+80183368 scriptop_bsr_0x80183430
+80183378 scriptop_bsr_0x80183430
+80183390 scriptop_bsr_0x80183430
+80183398 scriptop_bsr_0x80183430
+801833b8 scriptop_bsr_0x80183430
+801833c8 scriptop_bsr_0x80183430
+801833d0 scriptop_bsr_0x80183430
+801833e0 scriptop_bsr_0x80183430
+801833e8 scriptop_bsr_0x80183430
+801833f8 scriptop_bsr_0x80183430
+80183400 scriptop_bsr_0x80183430
+80183410 scriptop_bsr_0x80183430
+80183418 scriptop_bsr_0x80183430
+80183428 scriptop_bsr_0x80183430
+80183430 scriptop_bsr_0x80183430
+80183440 scriptop_bsr_0x80183430
+80183444 scriptop_bsr_0x80183430
+8018344c scriptop_bsr_0x8018344c
+80183474 scriptop_bsr_0x80183430
+80183478 scriptop_bsr_0x80183430
+80183498 scriptop_bsr_0x80183430
+801834d8 scriptop_bsr_0x80183430
+801834dc scriptop_bsr_0x80183430
+801834f4 scriptop_bsr_0x80183430
+80183514 scriptop_bsr_0x80183514
+80183524 scriptop_bsr_0x80183430
+80183530 scriptop_bsr_0x80183430
+8018353c scriptop_bsr_0x80183430
+
+# scriptop_ret pop block (guest 0x80183558 shared body; entry 0x80183594 +
+# continuations 0x80183578/0x801835A4).
+80183578 scriptop_ret_pop_0x80183594
+80183594 scriptop_ret_pop_0x80183594
+801835a4 scriptop_ret_pop_0x80183594
+
+# scriptop_ret conditional-return select (guest 0x801835D0 shared body;
+# entries 0x801835D0/0x801835E8/0x80183600/0x80183618 + continuations and the
+# sibling compare entries 0x80183630/0x80183648).
+801835d0 scriptop_ret_cond_0x801835d0
+801835e0 scriptop_ret_cond_0x801835d0
+801835e8 scriptop_ret_cond_0x801835e8
+801835f8 scriptop_ret_cond_0x801835d0
+80183600 scriptop_ret_cond_0x80183600
+80183610 scriptop_ret_cond_0x801835d0
+80183618 scriptop_ret_cond_0x80183618
+80183628 scriptop_ret_cond_0x801835d0
+80183630 scriptop_ret_cond_0x801835d0
+80183640 scriptop_ret_cond_0x801835d0
+80183648 scriptop_ret_cond_0x801835d0
+80183658 scriptop_ret_cond_0x801835d0
+8018365c scriptop_ret_cond_0x801835d0
