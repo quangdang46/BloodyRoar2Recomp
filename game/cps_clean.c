@@ -26781,6 +26781,9 @@ void cps_80134df4(void)
 
     /* Address: 0x80134DF4, Size: 24 bytes, Blocks: 1 */
 
+    /* cmd-emit variant A: a2=16, a3=1, word[sp+16]=a0, v0=482,
+       j 0x80134E20. CPS-blocked. */
+
 block_80134DF4:
     a2 = 16;
     a3 = 1;
@@ -26801,6 +26804,9 @@ void cps_80134e0c(void)
   if (!cpu) return;
 
     /* Address: 0x80134E0C, Size: 20 bytes, Blocks: 1 */
+
+    /* cmd-emit variant B: same setup, v0=483, -> 0x80134E20.
+       CPS-blocked. */
 
 block_80134E0C:
     a2 = 16;
@@ -26836,6 +26842,8 @@ void cps_80134e28(void)
   if (!cpu) return;
 
     /* Address: 0x80134E28, Size: 28 bytes, Blocks: 1 */
+
+    /* epilogue: pop s0-s3, ra (sp += 48), jr ra */
 
 block_80134E28:
     ra = cpu->read_word(sp + 40);
@@ -28044,6 +28052,9 @@ void cps_80135740(void)
 
     /* Address: 0x80135740, Size: 40 bytes, Blocks: 1 */
 
+    /* matrix init piece A: writes 4096/0 identity-ish triple to
+       a0+116..144 (3x2 fixed-point block), jr ra */
+
 block_80135740:
     v0 = 4096;
     cpu->write_word(a0 + 116, v0);
@@ -28068,6 +28079,9 @@ void cps_80135768(void)
   if (!cpu) return;
 
     /* Address: 0x80135768, Size: 116 bytes, Blocks: 1 */
+
+    /* matrix init piece B (full): three 4096-diag blocks at
+       a0+196/276/356 (+zeros), half[a0+38/40/42]=0, jr ra */
 
 block_80135768:
     v0 = 4096;
@@ -28113,6 +28127,9 @@ void cps_801357dc(void)
 
     /* Address: 0x801357DC, Size: 40 bytes, Blocks: 1 */
 
+    /* matrix init piece A (duplicate of 0x80135740): 4096/0
+       triple at a0+116..144, jr ra */
+
 block_801357DC:
     v0 = 4096;
     cpu->write_word(a0 + 116, v0);
@@ -28154,6 +28171,9 @@ void cps_8013580c(void)
   if (!cpu) return;
 
     /* Address: 0x8013580C, Size: 48 bytes, Blocks: 1 */
+
+    /* matrix init piece C: 4096/0 block at a0+196..224 +
+       half[a0+38/40]=0, jr ra */
 
 block_8013580C:
     v0 = 4096;
@@ -28200,6 +28220,9 @@ void cps_80135848(void)
 
     /* Address: 0x80135848, Size: 80 bytes, Blocks: 1 */
 
+    /* matrix init piece D: 4096/0 blocks at a0+196..224 (last=
+       -4518) and a0+116..144, half[a0+38]=0, jr ra */
+
 block_80135848:
     v1 = 4096;
     v0 = -4518;
@@ -28234,6 +28257,9 @@ void cps_80135898(void)
   if (!cpu) return;
 
     /* Address: 0x80135898, Size: 80 bytes, Blocks: 1 */
+
+    /* matrix init piece E: 4096/0 blocks at a0+196..224 and
+       a0+276..304 (last=-4518), half[a0+38]=0, jr ra */
 
 block_80135898:
     v1 = 4096;
@@ -28276,6 +28302,10 @@ void cps_80135bd0(void)
         }
     }
     /* Address: 0x80135BD0, Size: 40 bytes, Blocks: 2 */
+
+    /* vector-accum init: copy half[sp+0/2/4]->[8/10/12], t0=0;
+       t6==0 -> 0x8013602C else a3=t3+12,a2=t2+20 -> 0x80135BF8.
+       CPS-blocked. */
 
 block_80135BD0:
     v0 = cpu->read_half(sp);
@@ -28733,6 +28763,11 @@ void cps_80135ff0(void)
 
     /* Address: 0x80135FF0, Size: 60 bytes, Blocks: 1 */
 
+    /* vector accumulate step: half[sp]+=half[sp+16],
+       half[sp+2]+=half[sp+18], half[sp+4]+=half[sp+20];
+       t0++; loop while t0<t6 -> 0x80135BF8 else 0x8013602C.
+       CPS-blocked. */
+
 block_80135FF0:
     t0 = t0 + 1;
     v0 = cpu->read_half(sp);
@@ -28768,6 +28803,10 @@ void cps_8013602c(void)
   if (!cpu) return;
 
     /* Address: 0x8013602C, Size: 72 bytes, Blocks: 1 */
+
+    /* vector fold step: half[sp]+=half[sp+24], half[sp+2]+=
+       half[sp+26], half[sp+4]+=half[sp+28]; t4++; loop while
+       t4<t7 -> 0x80135BD0 else 0x80136074. CPS-blocked. */
 
 block_8013602C:
     v0 = cpu->read_half(sp + 8);
@@ -28807,6 +28846,9 @@ void cps_80136074(void)
   if (!cpu) return;
 
     /* Address: 0x80136074, Size: 28 bytes, Blocks: 1 */
+
+    /* vector-accum epilogue: pop s0-s3, v0=t2, ra (sp += 48),
+       jr ra */
 
 block_80136074:
     s3 = cpu->read_word(sp + 44);
@@ -28860,6 +28902,10 @@ void cps_801361a8(void)
   if (!cpu) return;
 
     /* Address: 0x801361A8, Size: 20 bytes, Blocks: 1 */
+
+    /* ratio piece: s1=half[s5+6]<<1; divide by half[s7+20]+1
+       (div-by-zero guarded); psx_muldiv_set(37); -> 0x801361BC.
+       CPS-blocked. */
 
 block_801361A8:
     s1 = (int32_t)(int16_t)cpu->read_half(s5 + 6);
@@ -29575,6 +29621,8 @@ void cps_80136578(void)
 
     /* Address: 0x80136578, Size: 44 bytes, Blocks: 1 */
 
+    /* epilogue: pop s0-s7, ra (sp += 56), jr ra */
+
 block_80136578:
     ra = cpu->read_word(sp + 48);
     s7 = cpu->read_word(sp + 44);
@@ -30271,6 +30319,11 @@ void cps_80136a34(void)
 
     /* Address: 0x80136A34, Size: 72 bytes, Blocks: 1 */
 
+    /* field-negate/adjust piece: half[s1+32]=-a1,
+       half[s1+36]=-(v0>>1 rounded), word[s1+20]-=a0,
+       word[s1+28]-=a2, half[s1+44]=-half[s1+44]; -> 0x80136A7C.
+       CPS-blocked. */
+
 block_80136A34:
     a1 = zero - a1;
     cpu->write_half(s1 + 32, (uint16_t)a1);
@@ -30424,6 +30477,9 @@ void cps_80136b18(void)
 
     /* Address: 0x80136B18, Size: 20 bytes, Blocks: 1 */
 
+    /* loop step: s3++, s1+=52; v0=half[s5+20]; continue while
+       s3<v0 -> 0x80136B2C. CPS-blocked. */
+
 block_80136B18:
     s3 = s3 + 1;
     s1 = s1 + 52;
@@ -30464,6 +30520,8 @@ void cps_80136b34(void)
   if (!cpu) return;
 
     /* Address: 0x80136B34, Size: 48 bytes, Blocks: 1 */
+
+    /* epilogue: pop s0-s7, fp, ra (sp += 88), jr ra */
 
 block_80136B34:
     ra = cpu->read_word(sp + 84);
@@ -30530,6 +30588,12 @@ void cps_80136b80(void)
         }
     }
     /* Address: 0x80136B80, Size: 168 bytes, Blocks: 4 */
+
+    /* GTE rotation setup: s4=v0+1600, s0=0x801F0660+s3*300
+       (s3*3*4*8+s3 -> *300); loads 7-word matrix from s5+40 into
+       gte_ctrl[0..7] via ctc2; jal lut_sin_q12(half[a1+42]);
+       v0*s2>>12 (round-to-nearest) -> half[sp+16]; v1=half[s4+22];
+       -> 0x80136C28. CPS-blocked. */
 
 block_80136B80:
     s4 = v0 + 1600;
@@ -30998,6 +31062,9 @@ void cps_80137074(void)
 
     /* Address: 0x80137074, Size: 20 bytes, Blocks: 1 */
 
+    /* vec3 forwarder: a1=word[s0], a2=word[s0+4], a3=word[s0+8],
+       a0=v0; jal 0x801AD240. CPS-blocked. */
+
 block_80137074:
     a1 = cpu->read_word(s0);
     a2 = cpu->read_word(s0 + 4);
@@ -31070,6 +31137,8 @@ void cps_80137548(void)
   if (!cpu) return;
 
     /* Address: 0x80137548, Size: 40 bytes, Blocks: 1 */
+
+    /* epilogue: pop s0-s6, ra (sp += 56), jr ra */
 
 block_80137548:
     ra = cpu->read_word(sp + 52);
@@ -31897,6 +31966,8 @@ void cps_80137cb4(void)
 
     /* Address: 0x80137CB4, Size: 28 bytes, Blocks: 1 */
 
+    /* epilogue: pop s0-s3, ra (sp += 40), jr ra */
+
 block_80137CB4:
     ra = cpu->read_word(sp + 32);
     s3 = cpu->read_word(sp + 28);
@@ -32188,6 +32259,11 @@ void cps_80138074(void)
     }
     /* Address: 0x80138074, Size: 112 bytes, Blocks: 4 */
 
+    /* event/record alloc: a2=6, a3+=31952; jal 0x801A4308 ->
+       a0; if nonzero: word[a0+16] record gets s0-s3/s0 copy,
+       half[v0+20]=half[s0+2]+1, half[v0+22]=0; epilogue (v0=a0).
+       CPS-blocked. */
+
 block_80138074:
     a2 = 6;
     a3 = a3 + 31952;
@@ -32252,6 +32328,11 @@ void cps_80138100(void)
         }
     }
     /* Address: 0x80138100, Size: 116 bytes, Blocks: 2 */
+
+    /* GTE dot/length piece: push regs; gte_data[0..1]=word[v0],
+       word[v0+4]; gte cmd 0x0180001; gte_data[14] -> sp+40;
+       a0=(half[sp+40]+half[sp+42])*2; a1=0x1F8003E0; jal
+       0x8018E028 (scratchpad store?). CPS-blocked. */
 
 block_80138100:
     cpu->write_word(sp + 104, ra);
