@@ -2544,8 +2544,8 @@ LAB_8018604c:
 void deferred_cmd_post(uint cmd,int arg,short aux)
 {
   int i;
-  ushort *puVar2;
-  short *psVar3;
+  ushort *slotw;
+  short *slot;
   if (((cmd & 0xff) != 0) || (-1 < arg)) {
     if (cmd == 0) {
       deferred_cmd_reset();
@@ -2553,28 +2553,28 @@ void deferred_cmd_post(uint cmd,int arg,short aux)
     else if ((cmd & 0x1000) == 0) {
       i = 0;
       if (_DAT_801f35f4 < 0x20) {
-        psVar3 = (short *)&DAT_801f3600;
+        slot = (short *)&DAT_801f3600;
         do {
           i = i + 1;
-          if (*psVar3 == 0) break;
-          psVar3 = psVar3 + 3;
+          if (*slot == 0) break;
+          slot = slot + 3;
         } while (i < 0x20);
-        *psVar3 = (short)cmd;
-        psVar3[1] = (short)arg;
-        psVar3[2] = aux;
+        *slot = (short)cmd;
+        slot[1] = (short)arg;
+        slot[2] = aux;
         _DAT_801f35f4 = _DAT_801f35f4 + 1;
       }
     }
     else {
-      puVar2 = (ushort *)&DAT_801f3600;
+      slotw = (ushort *)&DAT_801f3600;
       i = 0;
       do {
-        if (((*puVar2 & 0xfff) == (cmd & 0xfff)) && ((short)puVar2[1] == arg)) {
-          *puVar2 = 0;
+        if (((*slotw & 0xfff) == (cmd & 0xfff)) && ((short)slotw[1] == arg)) {
+          *slotw = 0;
           _DAT_801f35f4 = _DAT_801f35f4 + -1;
         }
         i = i + 1;
-        puVar2 = puVar2 + 3;
+        slotw = slotw + 3;
       } while (i < 0x20);
     }
   }
@@ -2608,39 +2608,39 @@ int range_circle_test(int x,int y,uint *box,int radius)
 
 }
 
-int atan2_lut(int mat,int vec)
+int atan2_lut(int x,int y)
 {
-  bool bVar1;
-  int iVar2;
-  int iVar3;
-  int iVar4;
-  iVar4 = 0;
-  iVar2 = 0;
-  if (mat != 0 || vec != 0) {
-    iVar2 = 0x800;
-    bVar1 = vec < 1;
-    if (bVar1) {
-      vec = -vec;
-      iVar2 = -0x800;
+  bool neg;
+  int ang;
+  int hi;
+  int quad;
+  quad = 0;
+  ang = 0;
+  if (x != 0 || y != 0) {
+    ang = 0x800;
+    neg = y < 1;
+    if (neg) {
+      y = -y;
+      ang = -0x800;
     }
-    if (mat < 0) {
-      mat = -mat;
-      bVar1 = !bVar1;
-      iVar4 = iVar2;
+    if (x < 0) {
+      x = -x;
+      neg = !neg;
+      quad = ang;
     }
-    iVar3 = mat;
-    if (mat < vec) {
-      bVar1 = (bool)(bVar1 ^ 1);
-      iVar4 = iVar2 >> 1;
-      iVar3 = vec;
-      vec = mat;
+    hi = x;
+    if (x < y) {
+      neg = (bool)(neg ^ 1);
+      quad = ang >> 1;
+      hi = y;
+      y = x;
     }
-    iVar2 = (int)*(short *)(&DAT_80123844 + ((vec << 0xc) / iVar3 >> 2) * 2);
-    if (bVar1) {
-      iVar2 = -iVar2;
+    ang = (int)*(short *)(&DAT_80123844 + ((y << 0xc) / hi >> 2) * 2);
+    if (neg) {
+      ang = -ang;
     }
   }
-  return iVar4 + iVar2;
+  return quad + ang;
 
 }
 
@@ -2714,28 +2714,28 @@ int lut_sin_q12(uint angle)
 
 unsigned long long dir_rotate_wrap(undefined4 angle,int mag,short *vec)
 {
-  ushort uVar1;
-  ushort uVar2;
-  int iVar3;
-  uint uVar4;
-  int iVar5;
-  int iVar6;
-  undefined8 uVar7;
+  ushort wx;
+  ushort wz;
+  int nz;
+  uint carry;
+  int oz;
+  int ox;
+  undefined8 rot;
   
   if (mag == 0) {
     return 0;
   }
-  iVar5 = (int)*vec;
-  iVar6 = (int)vec[2];
-  uVar7 = vec2_rot_lut(angle,mag);
-  iVar3 = (int)((ulonglong)uVar7 >> 0x20) + iVar5 + 0x40;
-  iVar5 = (int)uVar7 + iVar6 + 0x40;
-  uVar1 = (ushort)iVar3;
-  uVar2 = (ushort)iVar5;
-  uVar4 = iVar3 >> 7;
-  *vec = (uVar1 - (uVar1 & 0xff80)) + -0x40;
-  vec[2] = (uVar2 - (uVar2 & 0xff80)) + -0x40;
-  return CONCAT44(uVar4,(iVar5 >> 7) << 0x10 | uVar4 & 0xffff) & 0xffffffffffff;
+  oz = (int)*vec;
+  ox = (int)vec[2];
+  rot = vec2_rot_lut(angle,mag);
+  nz = (int)((ulonglong)rot >> 0x20) + oz + 0x40;
+  oz = (int)rot + ox + 0x40;
+  wx = (ushort)nz;
+  wz = (ushort)oz;
+  carry = nz >> 7;
+  *vec = (wx - (wx & 0xff80)) + -0x40;
+  vec[2] = (wz - (wz & 0xff80)) + -0x40;
+  return CONCAT44(carry,(oz >> 7) << 0x10 | carry & 0xffff) & 0xffffffffffff;
 
 }
 
@@ -2826,25 +2826,25 @@ void keyframe_blend_apply(byte *ctrl,byte *motion)
 
 void keyframe_advance(byte *ctrl,byte *motion)
 {
-  short sVar1;
-  undefined4 uVar2;
-  undefined2 local_8;
-  undefined2 uStack_6;
+  short step;
+  undefined4 kf;
+  undefined2 lo;
+  undefined2 hi;
   
-  uVar2 = *(undefined4 *)((char *)guest_at(*(uint32_t *)(motion + 0xb4)) + *(short *)(motion + 0xc6) * 4);
-  sVar1 = *(short *)(motion + 0xcc);
-  *(short *)(motion + 200) = sVar1;
-  if (sVar1 == 0) {
+  kf = *(undefined4 *)((char *)guest_at(*(uint32_t *)(motion + 0xb4)) + *(short *)(motion + 0xc6) * 4);
+  step = *(short *)(motion + 0xcc);
+  *(short *)(motion + 200) = step;
+  if (step == 0) {
     *(undefined2 *)(motion + 0xce) = 0;
     *(undefined2 *)(motion + 0xca) = 0;
   }
   else {
-    *(short *)(motion + 0xca) = *(short *)(motion + 0xca) + sVar1;
+    *(short *)(motion + 0xca) = *(short *)(motion + 0xca) + step;
     *(undefined2 *)(motion + 0xce) = *(undefined2 *)(ctrl + 0x88);
-    local_8 = (short)uVar2;
-    *(int *)(motion + 0xb8) = (int)local_8 + *(int *)(motion + 0xb0);
-    uStack_6 = (short)((uint)uVar2 >> 0x10);
-    *(short *)(motion + 0xcc) = uStack_6 << 4;
+    lo = (short)kf;
+    *(int *)(motion + 0xb8) = (int)lo + *(int *)(motion + 0xb0);
+    hi = (short)((uint)kf >> 0x10);
+    *(short *)(motion + 0xcc) = hi << 4;
   }
   return;
 
@@ -2852,31 +2852,31 @@ void keyframe_advance(byte *ctrl,byte *motion)
 
 void skeleton_pose_step(byte *joints,undefined2 *pose,byte *parts,int count)
 {
-  ushort uVar1;
-  ushort *puVar2;
-  byte *pbVar3;
-  int iVar4;
+  ushort w;
+  ushort *pp;
+  byte *jp;
+  int i;
   
-  iVar4 = 0;
+  i = 0;
   if (0 < count + -2) {
-    puVar2 = pose + 3;
-    pbVar3 = joints + 4;
+    pp = pose + 3;
+    jp = joints + 4;
     do {
-      puVar2[4] = *(ushort *)(pbVar3 + 0x30);
-      puVar2[5] = *(ushort *)(pbVar3 + 0x34);
-      puVar2[6] = *(ushort *)(pbVar3 + 0x38);
+      pp[4] = *(ushort *)(jp + 0x30);
+      pp[5] = *(ushort *)(jp + 0x34);
+      pp[6] = *(ushort *)(jp + 0x38);
       _DAT_1f80038c = *pose;
-      iVar4 = iVar4 + 1;
-      _DAT_1f80038e = puVar2[-2];
-      _DAT_1f800390 = puVar2[-1];
-      uVar1 = *puVar2;
-      puVar2 = puVar2 + 0xe;
-      part_matrix_compute((undefined4 *)pbVar3,parts,&DAT_1f80038c,(int)((uint)uVar1 << 0x10) >> 0x11);
+      i = i + 1;
+      _DAT_1f80038e = pp[-2];
+      _DAT_1f800390 = pp[-1];
+      w = *pp;
+      pp = pp + 0xe;
+      part_matrix_compute((undefined4 *)jp,parts,&DAT_1f80038c,(int)((uint)w << 0x10) >> 0x11);
       joints = joints + 0x50;
       pose = pose + 0xe;
       parts = parts + 0x20;
-      pbVar3 = pbVar3 + 0x50;
-    } while (iVar4 < count + -2);
+      jp = jp + 0x50;
+    } while (i < count + -2);
   }
   rotmat_rtps_build(-(int)(short)pose[3] >> 1,(uint *)(joints + 4));
   rotmat_rtps_build(-(int)(short)pose[0x11] >> 1,(uint *)(joints + 0x54));
@@ -2919,7 +2919,7 @@ void anim_lerp_scalar(short *dst,short src,int flip,int alpha)
 
 void anim_lerp_vec3(short *dst,short *src,int flip,int alpha,short yscale)
 {
-  short sVar1;
+  short sz;
   int dx;
   int dy;
   
@@ -2934,7 +2934,7 @@ void anim_lerp_vec3(short *dst,short *src,int flip,int alpha,short yscale)
     dy = dy * yscale >> 7;
   }
   dx = (dx - *dst) * alpha;
-  sVar1 = src[2];
+  sz = src[2];
   if (dx < 0) {
     dx = dx + 0xfff;
   }
@@ -2943,7 +2943,7 @@ void anim_lerp_vec3(short *dst,short *src,int flip,int alpha,short yscale)
   if (dy < 0) {
     dy = dy + 0xfff;
   }
-  alpha = ((int)sVar1 - (int)dst[2]) * alpha;
+  alpha = ((int)sz - (int)dst[2]) * alpha;
   dst[1] = dst[1] + (short)(dy >> 0xc);
   if (alpha < 0) {
     alpha = alpha + 0xfff;
@@ -2955,7 +2955,7 @@ void anim_lerp_vec3(short *dst,short *src,int flip,int alpha,short yscale)
 
 void anim_lerp_vec3_raw(short *dst,short *src,int flip,int alpha)
 {
-  short sVar1;
+  short sz;
   int dx;
   int dy;
   
@@ -2966,7 +2966,7 @@ void anim_lerp_vec3_raw(short *dst,short *src,int flip,int alpha)
     dy = -(int)src[1];
   }
   dx = ((int)*src - (int)*dst) * alpha;
-  sVar1 = src[2];
+  sz = src[2];
   if (dx < 0) {
     dx = dx + 0xfff;
   }
@@ -2975,7 +2975,7 @@ void anim_lerp_vec3_raw(short *dst,short *src,int flip,int alpha)
   if (dy < 0) {
     dy = dy + 0xfff;
   }
-  alpha = ((int)sVar1 - (int)dst[2]) * alpha;
+  alpha = ((int)sz - (int)dst[2]) * alpha;
   dst[1] = dst[1] + (short)(dy >> 0xc);
   if (alpha < 0) {
     alpha = alpha + 0xfff;
@@ -2987,11 +2987,11 @@ void anim_lerp_vec3_raw(short *dst,short *src,int flip,int alpha)
 
 void anim_lerp_packed4(short *dst,ushort *src,int flip,int alpha)
 {
-  uint uVar1;
-  int iVar2;
-  int iVar3;
-  int iVar4;
-  int iVar5;
+  uint pk;
+  int d3;
+  int d0;
+  int d1;
+  int d2;
   {
     extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
     uint32_t _gd = (uint32_t)guest_of(dst);
@@ -2999,32 +2999,32 @@ void anim_lerp_packed4(short *dst,ushort *src,int flip,int alpha)
       decomp_trace_record(53, _gd, (uint32_t)guest_of(src), 4, 0);
   }
   
-  uVar1 = (uint)*src;
-  iVar5 = uVar1 + (uint)src[1] * 0x10000;
+  pk = (uint)*src;
+  d2 = pk + (uint)src[1] * 0x10000;
   if (flip == 0) {
-    iVar2 = (int)(short)src[2];
-    iVar3 = (int)(uVar1 << 0x16) >> 0x11;
+    d3 = (int)(short)src[2];
+    d0 = (int)(pk << 0x16) >> 0x11;
   }
   else {
-    iVar3 = -((int)(uVar1 << 0x16) >> 0x11);
-    iVar2 = -(int)(short)src[2];
+    d0 = -((int)(pk << 0x16) >> 0x11);
+    d3 = -(int)(short)src[2];
   }
-  iVar3 = (iVar3 - *dst) * alpha;
-  if (iVar3 < 0) {
-    iVar3 = iVar3 + 0xfff;
+  d0 = (d0 - *dst) * alpha;
+  if (d0 < 0) {
+    d0 = d0 + 0xfff;
   }
-  iVar4 = ((iVar5 * 0x1000 >> 0x16) * 0x20 - (int)dst[1]) * alpha;
-  *dst = *dst + (short)(iVar3 >> 0xc);
-  if (iVar4 < 0) {
-    iVar4 = iVar4 + 0xfff;
+  d1 = ((d2 * 0x1000 >> 0x16) * 0x20 - (int)dst[1]) * alpha;
+  *dst = *dst + (short)(d0 >> 0xc);
+  if (d1 < 0) {
+    d1 = d1 + 0xfff;
   }
-  iVar5 = ((iVar5 * 4 >> 0x16) * 0x20 - (int)dst[2]) * alpha;
-  dst[1] = dst[1] + (short)(iVar4 >> 0xc);
-  if (iVar5 < 0) {
-    iVar5 = iVar5 + 0xfff;
+  d2 = ((d2 * 4 >> 0x16) * 0x20 - (int)dst[2]) * alpha;
+  dst[1] = dst[1] + (short)(d1 >> 0xc);
+  if (d2 < 0) {
+    d2 = d2 + 0xfff;
   }
-  alpha = (iVar2 * 2 - (int)dst[3]) * alpha;
-  dst[2] = dst[2] + (short)(iVar5 >> 0xc);
+  alpha = (d3 * 2 - (int)dst[3]) * alpha;
+  dst[2] = dst[2] + (short)(d2 >> 0xc);
   if (alpha < 0) {
     alpha = alpha + 0xfff;
   }
@@ -3052,9 +3052,9 @@ void anim_lerp_aux(byte *dst,int src,int flip,int alpha)
 
 void anim_lerp_packed3(short *dst,ushort *src,int flip,int alpha)
 {
-  ushort uVar1;
-  int iVar2;
-  int iVar3;
+  ushort hi;
+  int q;
+  int d;
   {
     extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
     uint32_t _gd = (uint32_t)guest_of(dst);
@@ -3062,23 +3062,23 @@ void anim_lerp_packed3(short *dst,ushort *src,int flip,int alpha)
       decomp_trace_record(53, _gd, (uint32_t)guest_of(src), 3, 0);
   }
   
-  iVar2 = (int)((uint)*src << 0x10) >> 0x18;
-  iVar3 = iVar2 * 0x10;
-  uVar1 = src[1];
+  q = (int)((uint)*src << 0x10) >> 0x18;
+  d = q * 0x10;
+  hi = src[1];
   if (flip != 0) {
-    iVar3 = iVar2 * -0x10;
+    d = q * -0x10;
   }
-  iVar3 = (iVar3 - *dst) * alpha;
-  if (iVar3 < 0) {
-    iVar3 = iVar3 + 0xfff;
+  d = (d - *dst) * alpha;
+  if (d < 0) {
+    d = d + 0xfff;
   }
-  iVar2 = (((int)((uint)uVar1 << 0x18) >> 0x14) - (int)dst[1]) * alpha;
-  *dst = *dst + (short)(iVar3 >> 0xc);
-  if (iVar2 < 0) {
-    iVar2 = iVar2 + 0xfff;
+  q = (((int)((uint)hi << 0x18) >> 0x14) - (int)dst[1]) * alpha;
+  *dst = *dst + (short)(d >> 0xc);
+  if (q < 0) {
+    q = q + 0xfff;
   }
-  alpha = (((int)((uint)uVar1 << 0x10) >> 0x18) * 0x10 - (int)dst[2]) * alpha;
-  dst[1] = dst[1] + (short)(iVar2 >> 0xc);
+  alpha = (((int)((uint)hi << 0x10) >> 0x18) * 0x10 - (int)dst[2]) * alpha;
+  dst[1] = dst[1] + (short)(q >> 0xc);
   if (alpha < 0) {
     alpha = alpha + 0xfff;
   }
