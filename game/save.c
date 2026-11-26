@@ -3236,63 +3236,63 @@ void confirm_code_select(uint32_t a0,uint32_t a1)
    s4+0xa8/+0xac hold guest pointers 0x801f47a0/0x801f4770. */
 void select_phase_update(uint32_t a0)
 {
-  uint8_t *s4 = (uint8_t *)guest_at(a0);
-  uint8_t *s3 = (uint8_t *)guest_at(0x1f8000e8);
-  uint8_t *s2 = (uint8_t *)guest_at(0x1f8001f0);
-  int32_t s0;
-  int32_t s1;
-  int32_t s5;
+  uint8_t *ctx = (uint8_t *)guest_at(a0);
+  uint8_t *chan_a = (uint8_t *)guest_at(0x1f8000e8);
+  uint8_t *chan_b = (uint8_t *)guest_at(0x1f8001f0);
+  int32_t gate0;
+  int32_t sel_idx;
+  int32_t match_ok;
   int32_t gate1;
-  int32_t a1v;
-  int32_t a0v;
+  int32_t va;
+  int32_t vb;
   int32_t idx;
-  uint8_t *bp;
+  uint8_t *blk;
   uint32_t *cell;
 
-  s0 = select_phase_gate(a0,0);
+  gate0 = select_phase_gate(a0,0);
   gate1 = select_phase_gate(a0,1);
-  if (s0 != 0) {
-    s5 = (gate1 == 0);
+  if (gate0 != 0) {
+    match_ok = (gate1 == 0);
   } else {
-    s5 = 0;
+    match_ok = 0;
     if (gate1 == 0) {
-      s5 = (*(uint16_t *)(s4 + 0xb6) & 0x1000) != 0;
+      match_ok = (*(uint16_t *)(ctx + 0xb6) & 0x1000) != 0;
     }
   }
-  *(uint32_t *)(s4 + 0xa8) = 0x801f47a0;
-  *(uint16_t *)(s4 + 0xa2) = *(uint16_t *)(s4 + 0xa4);
-  *(uint32_t *)(s4 + 0xac) = 0x801f4770;
-  idx = (int32_t)*(int16_t *)(s4 + 0xa2);
+  *(uint32_t *)(ctx + 0xa8) = 0x801f47a0;
+  *(uint16_t *)(ctx + 0xa2) = *(uint16_t *)(ctx + 0xa4);
+  *(uint32_t *)(ctx + 0xac) = 0x801f4770;
+  idx = (int32_t)*(int16_t *)(ctx + 0xa2);
   {
     uint8_t *ta = (uint8_t *)guest_at(0x801f47a0 + (uint32_t)idx);
     uint8_t *tb = (uint8_t *)guest_at(0x801f4770 + (uint32_t)idx);
-    a1v = ta ? (int32_t)(int8_t)ta[0] : 0;
-    a0v = tb ? (int32_t)(int8_t)tb[0] : 0;
+    va = ta ? (int32_t)(int8_t)ta[0] : 0;
+    vb = tb ? (int32_t)(int8_t)tb[0] : 0;
   }
-  /* jump table 0x80120f08 on lbu 0x9c(s4): only idx 3 has a body */
-  if (s4[0x9c] == 3) {
-    s1 = (int32_t)*(int16_t *)(s4 + 0xa2);
-    if (s1 >= 0xf) {
-      bp = (uint8_t *)guest_at(*(uint32_t *)(s4 + 0xc0));
-      cell = bp ? (uint32_t *)(bp + 0x44) : NULL;
+  /* jump table 0x80120f08 on lbu 0x9c(ctx): only idx 3 has a body */
+  if (ctx[0x9c] == 3) {
+    sel_idx = (int32_t)*(int16_t *)(ctx + 0xa2);
+    if (sel_idx >= 0xf) {
+      blk = (uint8_t *)guest_at(*(uint32_t *)(ctx + 0xc0));
+      cell = blk ? (uint32_t *)(blk + 0x44) : NULL;
       if (cell && !(((*cell) >> 0xd) & 1)) {
         *cell |= 0x2000;
         *(uint32_t *)guest_at(0x801c15f0) = 1;
       }
     }
-    if (s1 >= 0xb) {
+    if (sel_idx >= 0xb) {
       /* write pseudo-random bytes into the tables */
       int32_t r = table_byte_next_a();
-      int32_t q = (s1 * (int32_t)0x2e8ba2e9) >> 33; /* mfhi>>1 - sign */
+      int32_t q = (sel_idx * (int32_t)0x2e8ba2e9) >> 33; /* mfhi>>1 - sign */
       int32_t rem;
-      /* faithful: hi = mulhi(s1,0x2e8ba2e9); q = (hi>>1) - (s1>>31) */
+      /* faithful: hi = mulhi(sel_idx,0x2e8ba2e9); q = (hi>>1) - (sel_idx>>31) */
       {
-        int64_t hi = ((int64_t)s1 * (int64_t)(int32_t)0x2e8ba2e9) >> 32;
-        q = (int32_t)((hi >> 1) - ((int32_t)s1 >> 31));
+        int64_t hi = ((int64_t)sel_idx * (int64_t)(int32_t)0x2e8ba2e9) >> 32;
+        q = (int32_t)((hi >> 1) - ((int32_t)sel_idx >> 31));
       }
-      rem = s1 - q * 11;
+      rem = sel_idx - q * 11;
       {
-        uint8_t *ta = (uint8_t *)guest_at(*(uint32_t *)(s4 + 0xa8) + (uint32_t)rem);
+        uint8_t *ta = (uint8_t *)guest_at(*(uint32_t *)(ctx + 0xa8) + (uint32_t)rem);
         int64_t hi2;
         int32_t q2, rem2, adj, q3;
         if (ta) {
@@ -3301,55 +3301,55 @@ void select_phase_update(uint32_t a0)
           rem2 = r - q2 * 11;
           ta[0] = (uint8_t)rem2;
         }
-        /* second table: index rem (=s1%11), value r%8 trunc */
+        /* second table: index rem (=sel_idx%11), value r%8 trunc */
         adj = (r < 0) ? r + 7 : r;
         q3 = adj >> 3;
         rem2 = r - q3 * 8;
         {
-          uint8_t *tb = (uint8_t *)guest_at(*(uint32_t *)(s4 + 0xac) + (uint32_t)rem);
+          uint8_t *tb = (uint8_t *)guest_at(*(uint32_t *)(ctx + 0xac) + (uint32_t)rem);
           if (tb) tb[0] = (uint8_t)rem2;
         }
       }
     }
-    /* common tail a3d8: a1 = tblA[s1%11], a0 = tblB[s1%8] */
+    /* common tail a3d8: a1 = tblA[sel_idx%11], a0 = tblB[sel_idx%8] */
     {
-      int64_t hi = ((int64_t)s1 * (int64_t)(int32_t)0x2e8ba2e9) >> 32;
-      int32_t q = (int32_t)((hi >> 1) - ((int32_t)s1 >> 31));
-      int32_t rem = s1 - q * 11;
+      int64_t hi = ((int64_t)sel_idx * (int64_t)(int32_t)0x2e8ba2e9) >> 32;
+      int32_t q = (int32_t)((hi >> 1) - ((int32_t)sel_idx >> 31));
+      int32_t rem = sel_idx - q * 11;
       int32_t adj, q3, rem8;
-      uint8_t *ta = (uint8_t *)guest_at(*(uint32_t *)(s4 + 0xa8) + (uint32_t)rem);
+      uint8_t *ta = (uint8_t *)guest_at(*(uint32_t *)(ctx + 0xa8) + (uint32_t)rem);
       uint8_t *tb;
-      a1v = ta ? (int32_t)(int8_t)ta[0] : 0;
-      adj = (s1 < 0) ? s1 + 7 : s1;
+      va = ta ? (int32_t)(int8_t)ta[0] : 0;
+      adj = (sel_idx < 0) ? sel_idx + 7 : sel_idx;
       q3 = adj >> 3;
-      rem8 = s1 - q3 * 8;
-      tb = (uint8_t *)guest_at(*(uint32_t *)(s4 + 0xac) + (uint32_t)rem8);
-      a0v = tb ? (int32_t)(int8_t)tb[0] : 0;
+      rem8 = sel_idx - q3 * 8;
+      tb = (uint8_t *)guest_at(*(uint32_t *)(ctx + 0xac) + (uint32_t)rem8);
+      vb = tb ? (int32_t)(int8_t)tb[0] : 0;
     }
   }
-  if (s4[0x9b] == 0) {
-    if (s3[1] != 0) s3[4] = 1;
-    if (s2[1] != 0) s2[4] = 0;
-    if (s3[1] != 0 && a1v == s2[3]) {
-      s3[3] = (uint8_t)a1v;
-      s3[4] = (s2[4] == 0) ? 1 : 0;
+  if (ctx[0x9b] == 0) {
+    if (chan_a[1] != 0) chan_a[4] = 1;
+    if (chan_b[1] != 0) chan_b[4] = 0;
+    if (chan_a[1] != 0 && va == chan_b[3]) {
+      chan_a[3] = (uint8_t)va;
+      chan_a[4] = (chan_b[4] == 0) ? 1 : 0;
     }
-    if (s2[1] != 0 && s3[3] == a1v) {
-      s2[3] = (uint8_t)a1v;
-      s2[4] = (s3[4] == 0) ? 1 : 0;
+    if (chan_b[1] != 0 && chan_a[3] == va) {
+      chan_b[3] = (uint8_t)va;
+      chan_b[4] = (chan_a[4] == 0) ? 1 : 0;
     }
-    s4[0x98] = (uint8_t)a0v;
+    ctx[0x98] = (uint8_t)vb;
   }
-  if (s3[3] == s2[3] && s3[4] == s2[4]) {
-    if (s5 == 0) {
-      s2[4] = (s3[4] != 0) ? 0 : 1;
+  if (chan_a[3] == chan_b[3] && chan_a[4] == chan_b[4]) {
+    if (match_ok == 0) {
+      chan_b[4] = (chan_a[4] != 0) ? 0 : 1;
     } else {
-      s3[4] = (s3[4] != 0) ? 0 : 1;
+      chan_a[4] = (chan_a[4] != 0) ? 0 : 1;
     }
   }
-  if (s4[0x9c] == 4) {
-    s3[4] = 0;
-    s2[4] = 0;
+  if (ctx[0x9c] == 4) {
+    chan_a[4] = 0;
+    chan_b[4] = 0;
   }
 }
 
