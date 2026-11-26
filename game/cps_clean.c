@@ -7202,6 +7202,7 @@ block_80128FF4:
  * from SLES_017.22_full_01.c. */
 void cps_80128ff8(void)
 {
+/* results fragment: continues at 0x80129050 (menu band). */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
