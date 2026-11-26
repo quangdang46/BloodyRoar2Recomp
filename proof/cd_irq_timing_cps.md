@@ -394,3 +394,62 @@ Verified: clean build EU + USA targets; headless :4907 frames
 Frontier status: every clean_cps.map row in 0x8018-0x801B resolves to a
 timed cpst_ body or a peer hand-port. Remaining generated execution is
 unconverted parent piece-groups (~1300) — mechanical --timing candidates.
+
+## Batch 13 (orch/w5/e05) — post-merge untimed-cps_ regression sweep
+
+After fast-forwarding to master 1c35503 (w5e01 cps-final-111 + w5e02
+cps-8018-gte merges), re-ran the untimed-cps_ sweep: master's map regen
+had re-introduced 6 rows pointing at UNTIMED cps_ bodies in the CD
+region — all were _cont resume addrs whose coverage batches 3/7 had
+already converted:
+
+- 8018f628/8018f6b4/8018f6e8 -> cps_8018ef6c  (sprintf/GPU-packet
+  interpreter continuations; timed body cpst_8018ef6c has all 3 as
+  _cont cases — verified case-insensitive, untimed body uses UPPERCASE
+  hex labels)
+- 80196718/80196798/80196818 -> cps_80196370  (cd_response_process
+  continuations; cpst_80196370 has all 3 block/case labels)
+
+Repointed all 6 rows to the cpst_ symbols. Post-fix: ZERO untimed cps_
+map rows >= 0x80180000 again.
+
+Direct-call audit on merged tree: only peer hand-ports remain
+(printf_cps_*/scriptop_*_cps_* named variants in gfx_emit_p05/w2_e07,
+plus fnmap slots 0x80120000/0x80125698 -> cps_801a8ee0/cps_80195cf0
+which are 0x8012-band game-logic, deliberately untimed).
+
+clean_table regen: 8733 wrappers, 5 skipped — all legit framework
+skips: cps_80175964 no-def (known peer map-row gap) + 4 peer
+self-delegate fragments (text_format_*/draw_env_* in gfx_gpu_d0*).
+
+Verified: clean build EU + USA; headless :4923 frames 22753 -> 27514+
+attract CD streaming, no wedge.
+
+## Batch 14 (orch/w5/e05) — first uncovered piece-ENTRY conversions
+
+Targeted the worklist's remaining 2-block CD-region defs that have NO
+clean_cps.map rows and NO fnmap rows — generated-reachable piece entries:
+
+- cpst_80191e18 (blocks 80191E18/80191E48)
+- cpst_80199ab0 (blocks 80199AB0/80199AD0; fallthrough -> 80199AEC
+  stays generated — mid-cluster piece, status quo)
+- cpst_801a1c90 (blocks 801A1C90/801A1C98)
+- cpst_801a3510 (blocks 801A3510/801A3524; fallthrough -> 801A3568
+  stays generated)
+
+8 clean_cps.map rows (entry + _cont/block addrs each). Entries now run
+timed CPS; intra-piece psx_cyc_*/psx_slice_block charges apply; IRQ
+preemption resumes via _cont cases. Continuation pieces reached only by
+cpu->pc tail-dispatch still run generated — faithful (same boundary the
+untimed cps_ bodies used), strictly better than before (entries were
+generated too).
+
+Cluster caveat (worklist): these are pieces of larger state-machine
+clusters — e.g. cpst_801a3510's sibling piece 801A3570 tail-dispatches
+to 6+ addrs (80199B10/801A36C0/801A4210/801A23FC/801A35B8/801A35B0 +
+jalr). Full-cluster timed conversion is future work sized per-cluster.
+
+clean_table: 8741 wrappers, 5 skipped (unchanged legit set).
+Verified: clean build EU + USA; headless :4927 frames 7834 -> 14198+
+boot/attract, no wedge. clean_stats: new entries 0 hits in window
+(infrequent paths — faithful-by-construction).

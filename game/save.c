@@ -373,7 +373,7 @@ void memcard_tick(void)
     case 0x15:
       cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
       if (cd_rc == 2) {
-        brightness_packet_send(0xffffffff);
+        brightness_packet_send(0xffffffffu);
         cd_cmd_issue_async(0x1b,0);
         DAT_801bef6d = DAT_801bef6d + 0x01;
         return;
@@ -514,7 +514,7 @@ void memcard_tick(void)
   case 0x15:
     cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
     if (cd_rc == 2) {
-      brightness_packet_send(0xffffffff);
+      brightness_packet_send(0xffffffffu);
       cd_cmd_issue_async(3,0);
       DAT_801bef6d = DAT_801bef6d + 0x01;
     }
@@ -761,12 +761,12 @@ int memcard_file_flow(int a0)
             local_9e = 0;
             _DAT_801e8518 = 0x30;
             if (a0) {
-              ow_flag = 0xffffffff;
+              ow_flag = 0xffffffffu;
               dlg_type = 1;
               slot_no = 0;
               local_bd = 0x11;
             }
-            battle_session_arm(0x1f800000,0xffffffff);
+            battle_session_arm(0x1f800000,0xffffffffu);
             sm_state = 1;
             goto bb_8015f820;
           }
@@ -1026,7 +1026,7 @@ dflt_8015ffe4:
               }
               break;
             case 2:
-              ow_flag = 0xffffffff;
+              ow_flag = 0xffffffffu;
               if (!(a0)) {
                 if (local_b8 != 2) {
                   if (local_b8 < 3) {
@@ -1440,7 +1440,7 @@ void brightness_commit(uint16_t a0)
 
 {
   _DAT_801f36c0 = a0;
-  brightness_packet_send(0xffffffff);
+  brightness_packet_send(0xffffffffu);
   return;
 }
 
@@ -1596,16 +1596,16 @@ uint32_t attr_word_decode(uint8_t *a0)
     attr_word = ~(uint32_t)CONCAT11(*(uint8_t *)(a0 + 2),*(uint8_t *)(a0 + 3)) & 63999;
   }
   else if ((attr_hi < 0x41) || (attr_hi == 0x60)) {
-    attr_word = 0xffffffff;
+    attr_word = 0xffffffffu;
   }
   else {
     if (attr_hi < 0x61) {
       if (attr_hi != 0x50) {
-        return 0xffffffff;
+        return 0xffffffffu;
       }
     }
     else if (attr_hi != 0x70) {
-      return 0xffffffff;
+      return 0xffffffffu;
     }
     attr_word = ~(uint32_t)CONCAT11(*(uint8_t *)(a0 + 2),*(uint8_t *)(a0 + 3)) & 63999;
     if (*(uint8_t *)(a0 + 6) < 0x40) {
@@ -2989,7 +2989,7 @@ extern int display_page_commit_a(int32_t);
 extern int save_channel_init_commit(uint32_t,int32_t,uint8_t *,uint8_t *);
 extern int save_load_state_machine(uint32_t,int32_t);
 extern int save_state_machine_alt(uint32_t,uint8_t *,int32_t);
-extern void FUN_80195290(int32_t,int32_t);
+extern void gte_ofs_set(int32_t,int32_t);
 extern void gte_cw_d000_set(int32_t);
 extern int mc_file_cmd_stable_poll(uint32_t,const void *,uint32_t);
 extern int mc_job_a_result_poll(uint32_t,const void *,void *,uint32_t,uint32_t);
@@ -3600,7 +3600,7 @@ int dialog_sel_dispatch(intptr_t a0,uint32_t a1)
   uint32_t ctx8 = *(uint32_t *)(ctx + 8);
   uint32_t ctxc = *(uint32_t *)(ctx + 0xc);
 
-  scroll_offset_set(0x20,0xffffffff);
+  scroll_offset_set(0x20,0xffffffffu);
   sel = (int32_t)(a1 & 0xffff);
   if (sel == (int32_t)(*(uint16_t *)(dlg + 8) + 0x100)) {
     hud_text_b(ctx8,ctxc,(const void *)guest_at(0x80121270),0x1000,0x1000,0);
@@ -3616,7 +3616,7 @@ int dialog_sel_dispatch(intptr_t a0,uint32_t a1)
   sel &= 0xffff;
   if (sel == 0x100) {
     int32_t inrange;
-    scroll_offset_set(0xffffffff,0x18);
+    scroll_offset_set(0xffffffffu,0x18);
     announce_param_block_init(ctx8,ctxc,(const void *)guest_at(0x80121360),0x1000,0x1000,0);
     inrange = ((uint32_t)(dlg[3] - 0x12) < 3);
     banner_stripe_scroll(4,0,inrange ? 0 : 4,7);
@@ -4409,7 +4409,7 @@ stf00:
     {
       int32_t x = (int32_t)*(int16_t *)(ctx + 0x20);
       int32_t y = (int32_t)*(int16_t *)(ctx + 0x22);
-      FUN_80195290(x / 2, y / 2);
+      gte_ofs_set(x / 2, y / 2);
       gte_cw_d000_set((int32_t)*(int16_t *)(ctx + 0x24));
     }
     return 1;
@@ -4720,7 +4720,7 @@ void fighter_anim_table_init(int32_t a0)
       int32_t dv = (int32_t)gs16(s0 + 0xb0);
       /* guest @0x801736C8-0x801736E8: lh dv,[s0+0xb0]; lui v1,0x64
        * (num = 100<<16, 16.16 fixed-point); div; mflo; sw -> 0x801f5228[i].
-       * dv==0 -> LO = num>=0 ? -1 : 1 = 0xffffffff (num is positive). */
+       * dv==0 -> LO = num>=0 ? -1 : 1 = 0xffffffffu (num is positive). */
       uint32_t q = (dv == 0) ? 0xffffffffu : (uint32_t)((100 << 16) / dv);
       *(uint32_t *)guest_at(0x801f5228 + (uint32_t)i * 4) = q;
       *(uint16_t *)guest_at(0x801f524c + (uint32_t)i * 2) = 0;
@@ -5603,7 +5603,7 @@ int dialog_sel_dispatch_wide(intptr_t a0,uint32_t a1)
   uint8_t *c0;
   int32_t code;
 
-  scroll_offset_set(0x20,0xffffffff);
+  scroll_offset_set(0x20,0xffffffffu);
   sel = a1 & 0xffff;
   if (sel == (uint32_t)(*(uint16_t *)(st + 8) + 0x100)) {
     flag = 0;
@@ -5618,7 +5618,7 @@ int dialog_sel_dispatch_wide(intptr_t a0,uint32_t a1)
 #define BDC0_STATUS() do { *(uint32_t *)guest_at(0x801c11f0) = 1; return 0; } while (0)
 
   if (sel == 0x100) {
-    scroll_offset_set(0xffffffff,0x18);
+    scroll_offset_set(0xffffffffu,0x18);
     BDC0_E58C(0x80121278,0x1000,0);
     banner_stripe_scroll(9,0,4,7);
     scroll_offset_accumulate(0,0x10);
@@ -6964,7 +6964,7 @@ int dialog_msg_dispatch(intptr_t a0, uint32_t a1)
     deferred_cmd_post(0x400,0xc,0); \
   } while (0)
 
-  scroll_offset_set(0x20,0xffffffff);
+  scroll_offset_set(0x20,0xffffffffu);
   if (sel == (uint32_t)(*(uint16_t *)(st + 8) + 0x100)) {
     flag = 0;
     hud_text_b(ctx8,ctxc,(const void *)guest_at(0x80121270),0x1000,0x1000,0);
@@ -6974,7 +6974,7 @@ int dialog_msg_dispatch(intptr_t a0, uint32_t a1)
   }
 
   if (sel == 0x100) {
-    scroll_offset_set(0xffffffff,0x18);
+    scroll_offset_set(0xffffffffu,0x18);
     CAA8_E58C(0x80121358,0x1000,0);
     banner_stripe_scroll(3,0,4,7);
     scroll_offset_accumulate(0,0x10);
