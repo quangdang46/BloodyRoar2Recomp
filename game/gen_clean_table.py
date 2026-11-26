@@ -575,6 +575,20 @@ uint32_t br2_dbg_clean_trace(uint32_t i) { return g_clean_trace[i & 511]; }
 uint32_t br2_dbg_clean_trace_ra(uint32_t i) { return g_clean_trace_ra[i & 511]; }
 uint32_t br2_dbg_clean_count(void) { return g_clean_trace_n; }
 
+/* Per-entry hit counters: g_clean_hits[i] counts how many times dispatch
+ * slot i actually ran its clean body (after range/CPS filters pass).
+ * Unlike the 512-entry trace ring this answers "did clean fn X ever run"
+ * for infrequent paths. br2_dbg_clean_hit_at maps slot -> (addr,count). */
+static uint64_t g_clean_hits[sizeof(k_clean_dispatch) / sizeof(k_clean_dispatch[0])];
+uint32_t br2_dbg_clean_hit_count(void) {
+    return (uint32_t)(sizeof(g_clean_hits) / sizeof(g_clean_hits[0]));
+}
+uint32_t br2_dbg_clean_hit_at(uint32_t i, uint64_t *cnt) {
+    if (i >= br2_dbg_clean_hit_count()) return 0;
+    *cnt = g_clean_hits[i];
+    return k_clean_dispatch[i].addr;
+}
+
 int clean_try_dispatch(CPUState *cpu, uint32_t addr) {
     const CleanDispatchEnt *e;
     if (!clean_range_ok(addr)) return 0;
@@ -616,6 +630,7 @@ int clean_try_dispatch(CPUState *cpu, uint32_t addr) {
     g_clean_trace[g_clean_trace_n & 511] = addr;
     g_clean_trace_ra[g_clean_trace_n & 511] = cpu->gpr[31];
     g_clean_trace_n++;
+    g_clean_hits[e - k_clean_dispatch]++;
     extern void psx_check_interrupts_dispatch_entry(CPUState *cpu, uint32_t resume_pc);
     psx_check_interrupts_dispatch_entry(cpu, addr);
     /* Emulate the MIPS prologue/epilogue stack frame the clean body skips:
