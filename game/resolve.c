@@ -1517,13 +1517,13 @@ extern uint8_t *g_DAT_1f8003a0,*g_DAT_1f8003c0;
 #define DAT_1f8003c0 (*g_DAT_1f8003c0)
 typedef uint8_t *evhandler_t(uint8_t *ctrl, uint8_t *motion, uint32_t pc_g);
 extern evhandler_t *PTR_FUN_801b4e68[];
-extern void FUN_801851d8();
-extern int trig_cos();
-extern int trig_sin();
-extern void gte_mat_vec_swap();
+extern void FUN_801851d8(void);
+extern int trig_cos(int);
+extern int trig_sin(uint);
+extern void gte_mat_vec_swap(void*,void*,void*);
 extern void setCopReg(int,int,uint);
 extern int getCopReg(int,int);
-extern void copFunction(int,int);
+extern void copFunction(int,uint);
 extern void setCopControlWord(int,int,uint);
 extern uint32_t *g__DAT_1f8003a0,*g__DAT_1f8003a4,*g__DAT_1f8003a8,*g__DAT_1f8003ac,
   *g__DAT_1f8003b0,*g__DAT_1f8003b4,*g__DAT_1f8003b8,*g__DAT_1f8003bc,
@@ -1954,7 +1954,7 @@ LAB_8017938c:
 extern void motion_blend_frame(byte*,byte*);
 extern int  atan2_lut(int,int);
 extern void gte_op_a00428(int*,int*);
-extern uint FUN_80194500(int);
+extern int32_t FUN_80194500(uint32_t);
 undefined2 *euler_rotmat(uint,uint,uint,undefined2*);
 void hitrec_table_clear(int);
 void table_1f0ae0_clear(int);
@@ -2968,7 +2968,7 @@ void skeleton_pose_step(byte *joints,undefined2 *pose,byte *parts,int count)
       _DAT_1f800390 = pp[-1];
       w = *pp;
       pp = pp + 0xe;
-      part_matrix_compute((undefined4 *)jp,parts,&DAT_1f80038c,(int)((uint)w << 0x10) >> 0x11);
+      part_matrix_compute((undefined4 *)jp,parts,(short *)&DAT_1f80038c,(int)((uint)w << 0x10) >> 0x11);
       joints = joints + 0x50;
       pose = pose + 0xe;
       parts = parts + 0x20;
