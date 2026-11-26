@@ -15339,102 +15339,102 @@ void speech_bubble_spawn(undefined4 *pos,short dir,int pt,ushort at)
 void effect_arg_set(undefined4 arg)
 
 {
-  undefined4 *puVar1;
+  undefined4 *blk;
   
   if ((DAT_1f8000b1 == '\0') &&
-     (puVar1 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(task_alloc_wrap_e(4,(int)br2_gaddr(g_PTR_FUN_801b1ec0),(int)guest_of(&DAT_801b1eac)))),
-     puVar1 != (undefined4 *)0x0)) {
-    *puVar1 = arg;
+     (blk = (undefined4 *)guest_at((uint32_t)(uintptr_t)(task_alloc_wrap_e(4,(int)br2_gaddr(g_PTR_FUN_801b1ec0),(int)guest_of(&DAT_801b1eac)))),
+     blk != (undefined4 *)0x0)) {
+    *blk = arg;
   }
   return;
 }
 
 /* guest hit_spark_spawn @0x80140710 */
-void hit_spark_spawn(undefined4 pos,uint a1,undefined2 a2)
+void hit_spark_spawn(undefined4 pos,uint kind,undefined2 dur)
 
 {
-  int iVar1;
-  undefined4 *puVar2;
-  undefined *puVar3;
+  int node;
+  undefined4 *pay;
+  undefined *dat;
   
-  if ((DAT_1f8000b1 == '\0') && ((a1 & 0x7f) < 3)) {
-    iVar1 = (int)(uintptr_t)task_node_alloc(1,2,8,0x80140510,0,0x14);
-    if (iVar1 != 0) {
-      puVar2 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0x10))));
-      /* guest: lw v1, (0x801B22EC + (a1&0x7f)*4) — u32 table of guest
+  if ((DAT_1f8000b1 == '\0') && ((kind & 0x7f) < 3)) {
+    node = (int)(uintptr_t)task_node_alloc(1,2,8,0x80140510,0,0x14);
+    if (node != 0) {
+      pay = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((node + 0x10))));
+      /* guest: lw v1, (0x801B22EC + (kind&0x7f)*4) — u32 table of guest
        * data addrs. g_DAT_801b22ec is undefined** so [&PTR][i] reads 8
        * bytes at i*8; index as u32 instead. */
-      puVar3 = (undefined *)guest_at(((uint32_t *)&PTR_DAT_801b22ec)[a1 & 0x7f]);
-      *puVar2 = (undefined4)br2_gaddr(puVar3);
-      puVar2[1] = (undefined4)br2_gaddr(puVar3);
-      *(undefined2 *)(puVar2 + 3) = 0;
-      *(undefined2 *)((intptr_t)puVar2 + 0xe) = 0;
-      puVar2[2] = pos;
-      *(ushort *)(puVar2 + 4) = (ushort)a1 & 0x80;
-      *(undefined2 *)((intptr_t)puVar2 + 0x12) = a2;
+      dat = (undefined *)guest_at(((uint32_t *)&PTR_DAT_801b22ec)[kind & 0x7f]);
+      *pay = (undefined4)br2_gaddr(dat);
+      pay[1] = (undefined4)br2_gaddr(dat);
+      *(undefined2 *)(pay + 3) = 0;
+      *(undefined2 *)((intptr_t)pay + 0xe) = 0;
+      pay[2] = pos;
+      *(ushort *)(pay + 4) = (ushort)kind & 0x80;
+      *(undefined2 *)((intptr_t)pay + 0x12) = dur;
     }
   }
   return;
 }
 
 /* guest sprite_burst_spawn @0x80140b18 */
-void sprite_burst_spawn(undefined4 a0,undefined4 a1)
+void sprite_burst_spawn(undefined4 x,undefined4 y)
 
 {
-  undefined2 uVar1;
-  short sVar2;
-  int iVar3;
-  undefined4 *puVar4;
-  undefined4 *puVar5;
-  undefined2 *puVar6;
-  undefined2 *puVar7;
-  int iVar8;
-  undefined4 *puVar9;
+  undefined2 tv;
+  short ang;
+  int tmp;
+  undefined4 *row;
+  undefined4 *cell;
+  undefined2 *t1;
+  undefined2 *t2;
+  int i;
+  undefined4 *pay;
   
   if (DAT_1f8000b1 == '\0') {
-    iVar3 = (int)(uintptr_t)task_node_alloc(1,2,0xe,0x801407cc,0,400);
-    iVar8 = 0;
-    if (iVar3 != 0) {
-      puVar9 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar3 + 0x10))));
-      puVar9[0x58] = a0;
-      puVar9[0x59] = a1;
-      puVar9[0x5a] = 0x14;
-      sVar2 = rand_lcg();
-      puVar7 = &DAT_801b2314;
-      puVar6 = &DAT_801b2308;
-      puVar4 = puVar9;
+    tmp = (int)(uintptr_t)task_node_alloc(1,2,0xe,0x801407cc,0,400);
+    i = 0;
+    if (tmp != 0) {
+      pay = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((tmp + 0x10))));
+      pay[0x58] = x;
+      pay[0x59] = y;
+      pay[0x5a] = 0x14;
+      ang = rand_lcg();
+      t2 = &DAT_801b2314;
+      t1 = &DAT_801b2308;
+      row = pay;
       do {
-        uVar1 = *puVar6;
-        puVar6 = puVar6 + 1;
-        *(undefined2 *)(puVar4 + 0x5e) = uVar1;
-        uVar1 = *puVar7;
-        iVar8 = iVar8 + 1;
-        *(short *)(puVar4 + 0x5b) = sVar2;
-        sVar2 = sVar2 + 0x2aa;
-        puVar7 = puVar7 + 1;
-        *(undefined2 *)(puVar4 + 0x61) = uVar1;
-        puVar4 = (undefined4 *)((intptr_t)puVar4 + 2);
-      } while (iVar8 < 6);
-      iVar3 = 0;
-      puVar4 = puVar9;
+        tv = *t1;
+        t1 = t1 + 1;
+        *(undefined2 *)(row + 0x5e) = tv;
+        tv = *t2;
+        i = i + 1;
+        *(short *)(row + 0x5b) = ang;
+        ang = ang + 0x2aa;
+        t2 = t2 + 1;
+        *(undefined2 *)(row + 0x61) = tv;
+        row = (undefined4 *)((intptr_t)row + 2);
+      } while (i < 6);
+      tmp = 0;
+      row = pay;
       do {
-        iVar8 = 0;
-        puVar5 = puVar4;
+        i = 0;
+        cell = row;
         do {
-          puVar5[1] = DAT_801b22f8;
-          puVar5[3] = DAT_801b22fc;
-          puVar5[5] = DAT_801b2304;
-          *puVar5 = 0x6000000;
-          *(undefined1 *)((intptr_t)puVar5 + 7) = 0x32;
-          iVar8 = iVar8 + 1;
-          puVar5 = puVar5 + 7;
-        } while (iVar8 < 6);
-        puVar9[0x54] = 0x1000000;
-        puVar9[0x55] = 0xe1000020;
-        puVar9 = puVar9 + 2;
-        iVar3 = iVar3 + 1;
-        puVar4 = puVar4 + 0x2a;
-      } while (iVar3 < 2);
+          cell[1] = DAT_801b22f8;
+          cell[3] = DAT_801b22fc;
+          cell[5] = DAT_801b2304;
+          *cell = 0x6000000;
+          *(undefined1 *)((intptr_t)cell + 7) = 0x32;
+          i = i + 1;
+          cell = cell + 7;
+        } while (i < 6);
+        pay[0x54] = 0x1000000;
+        pay[0x55] = 0xe1000020;
+        pay = pay + 2;
+        tmp = tmp + 1;
+        row = row + 0x2a;
+      } while (tmp < 2);
     }
   }
   return;
@@ -15444,68 +15444,68 @@ void sprite_burst_spawn(undefined4 a0,undefined4 a1)
 void firework_spawn(undefined2 *pos)
 
 {
-  ushort uVar1;
-  int iVar2;
-  undefined4 *puVar3;
-  int iVar4;
-  undefined4 *puVar5;
-  int iVar6;
-  int iVar7;
-  undefined4 *puVar8;
+  ushort r;
+  int tmp;
+  undefined4 *cell;
+  int off;
+  undefined4 *pay;
+  int i;
+  int j;
+  undefined4 *grp;
   
-  iVar2 = (int)(uintptr_t)(int)(uintptr_t)task_node_alloc(1,2,0xb,0x80140d38,0,0x3d8);
-  iVar6 = 0;
-  if (iVar2 != 0) {
-    iVar4 = 0;
-    puVar5 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x10))));
-    *(undefined2 *)(puVar5 + 0xf5) = 0x1a;
-    puVar8 = puVar5;
+  tmp = (int)(uintptr_t)(int)(uintptr_t)task_node_alloc(1,2,0xb,0x80140d38,0,0x3d8);
+  i = 0;
+  if (tmp != 0) {
+    off = 0;
+    pay = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((tmp + 0x10))));
+    *(undefined2 *)(pay + 0xf5) = 0x1a;
+    grp = pay;
     do {
-      iVar7 = 0;
-      puVar3 = puVar8;
-      iVar2 = iVar4;
+      j = 0;
+      cell = grp;
+      tmp = off;
       do {
-        *puVar3 = 0x9000000;
-        *(undefined1 *)((intptr_t)puVar3 + 7) = 0x2e;
-        *(undefined2 *)((intptr_t)puVar5 + iVar2 + 0x16) = 0x39;
-        *(undefined2 *)((intptr_t)puVar5 + iVar2 + 0xe) = 0x789a;
-        *(undefined1 *)(puVar3 + 3) = 0xc0;
-        *(undefined1 *)((intptr_t)puVar3 + 0xd) = 0x20;
-        *(undefined1 *)(puVar3 + 5) = 0xdf;
-        *(undefined1 *)((intptr_t)puVar3 + 0x15) = 0x20;
-        *(undefined1 *)(puVar3 + 7) = 0xc0;
-        *(undefined1 *)((intptr_t)puVar3 + 0x1d) = 0x3f;
-        *(undefined1 *)(puVar3 + 9) = 0xdf;
-        *(undefined1 *)((intptr_t)puVar3 + 0x25) = 0x3f;
-        *(undefined1 *)(puVar3 + 1) = 0xa2;
-        *(undefined1 *)((intptr_t)puVar3 + 5) = 0xa2;
-        *(undefined1 *)((intptr_t)puVar3 + 6) = 0xa2;
-        iVar7 = iVar7 + 1;
-        puVar3 = puVar3 + 10;
-        iVar2 = iVar2 + 0x28;
-      } while (iVar7 < 10);
-      puVar8 = puVar8 + 100;
-      iVar6 = iVar6 + 1;
-      iVar4 = iVar4 + 400;
-    } while (iVar6 < 2);
-    iVar2 = 0;
-    puVar8 = puVar5;
+        *cell = 0x9000000;
+        *(undefined1 *)((intptr_t)cell + 7) = 0x2e;
+        *(undefined2 *)((intptr_t)pay + tmp + 0x16) = 0x39;
+        *(undefined2 *)((intptr_t)pay + tmp + 0xe) = 0x789a;
+        *(undefined1 *)(cell + 3) = 0xc0;
+        *(undefined1 *)((intptr_t)cell + 0xd) = 0x20;
+        *(undefined1 *)(cell + 5) = 0xdf;
+        *(undefined1 *)((intptr_t)cell + 0x15) = 0x20;
+        *(undefined1 *)(cell + 7) = 0xc0;
+        *(undefined1 *)((intptr_t)cell + 0x1d) = 0x3f;
+        *(undefined1 *)(cell + 9) = 0xdf;
+        *(undefined1 *)((intptr_t)cell + 0x25) = 0x3f;
+        *(undefined1 *)(cell + 1) = 0xa2;
+        *(undefined1 *)((intptr_t)cell + 5) = 0xa2;
+        *(undefined1 *)((intptr_t)cell + 6) = 0xa2;
+        j = j + 1;
+        cell = cell + 10;
+        tmp = tmp + 0x28;
+      } while (j < 10);
+      grp = grp + 100;
+      i = i + 1;
+      off = off + 400;
+    } while (i < 2);
+    tmp = 0;
+    grp = pay;
     do {
-      iVar2 = iVar2 + 1;
-      uVar1 = rand_lcg();
-      *(ushort *)(puVar8 + 0xf0) = (uVar1 & 0x1f) + 8;
-      *(undefined2 *)(puVar5 + 200) = *pos;
-      puVar8 = (undefined4 *)((intptr_t)puVar8 + 2);
-      *(undefined2 *)((intptr_t)puVar5 + 0x322) = pos[2];
-      *(undefined2 *)(puVar5 + 0xc9) = pos[4];
-      uVar1 = rand_lcg();
-      *(ushort *)(puVar5 + 0xdc) = 0x20 - (uVar1 & 0x3f);
-      uVar1 = rand_lcg();
-      *(ushort *)((intptr_t)puVar5 + 0x372) = 0x20 - (uVar1 & 0x3f);
-      uVar1 = rand_lcg();
-      *(ushort *)(puVar5 + 0xdd) = 0x20 - (uVar1 & 0x3f);
-      puVar5 = puVar5 + 2;
-    } while (iVar2 < 10);
+      tmp = tmp + 1;
+      r = rand_lcg();
+      *(ushort *)(grp + 0xf0) = (r & 0x1f) + 8;
+      *(undefined2 *)(pay + 200) = *pos;
+      grp = (undefined4 *)((intptr_t)grp + 2);
+      *(undefined2 *)((intptr_t)pay + 0x322) = pos[2];
+      *(undefined2 *)(pay + 0xc9) = pos[4];
+      r = rand_lcg();
+      *(ushort *)(pay + 0xdc) = 0x20 - (r & 0x3f);
+      r = rand_lcg();
+      *(ushort *)((intptr_t)pay + 0x372) = 0x20 - (r & 0x3f);
+      r = rand_lcg();
+      *(ushort *)(pay + 0xdd) = 0x20 - (r & 0x3f);
+      pay = pay + 2;
+    } while (tmp < 10);
   }
   return;
 }
