@@ -11046,8 +11046,10 @@ extern int pending_hit_a_clear();
 extern int pending_hit_b_clear();
 extern int options_menu_alloc();
 extern int atan2_lut(int32_t,int32_t);
-extern int FUN_80195370(uint32_t *,uint32_t *);
-extern int FUN_801948c0(uint32_t);
+extern int gte_sqr_vec3_b(uint32_t *,uint32_t *);
+extern int fixed_recip_lut(uint32_t);
+#define FUN_80195370 gte_sqr_vec3_b
+#define FUN_801948c0 fixed_recip_lut
 extern undefined2 *vec2_rot(uint32_t,uint32_t,undefined2 *);
 extern uint *angle_gte_vec(uint32_t,uint32_t,uint *);
 extern int state_pair_init();
