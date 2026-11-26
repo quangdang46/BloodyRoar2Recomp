@@ -29,7 +29,7 @@ extern void     br2_st8(uint32_t a, uint8_t v);
 extern void     br2_st16(uint32_t a, uint16_t v);
 extern int      psx_ws_cull_sltiu(uint32_t sx, uint32_t imm);
 extern uint32_t br2_call_generated(uint32_t addr, uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3);
-extern void     gte_light_set(uint32_t param_1, uint32_t param_2, uint32_t param_3);
+extern void     gte_light_set(uint32_t a0, uint32_t a1, uint32_t a2);
 
 #define DB16(a) (*(uint16_t *)guest_at(a))
 #define DB32(a) (*(uint32_t *)guest_at(a))
