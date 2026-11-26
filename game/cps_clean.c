@@ -27254,6 +27254,7 @@ block_80134E28:
  * from SLES_017.22_full_06.c. */
 void cps_80135238(void)
 {
+/* particle fragment: continues at 0x80135298 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -27326,6 +27327,7 @@ block_80135264:
  * from SLES_017.22_full_06.c. */
 void cps_80135298(void)
 {
+/* particle fragment: continues at 0x801352a0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -27343,6 +27345,7 @@ block_80135298:
  * from SLES_017.22_full_06.c. */
 void cps_801352a0(void)
 {
+/* particle thunk -> particle_burst_spawn */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -27442,6 +27445,7 @@ block_801352FC:
  * from SLES_017.22_full_06.c. */
 void cps_80135314(void)
 {
+/* particle fragment: continues at 0x8013531c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -27458,6 +27462,7 @@ block_80135314:
  * from SLES_017.22_full_06.c. */
 void cps_8013531c(void)
 {
+/* particle fragment: continues at 0x80135320 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -27473,6 +27478,7 @@ block_8013531C:
  * from SLES_017.22_full_06.c. */
 void cps_80135320(void)
 {
+/* particle thunk -> gte_xform_add_off -> prim_task_run */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -28246,6 +28252,7 @@ block_80135628:
  * from SLES_017.22_full_06.c. */
 void cps_80135630(void)
 {
+/* particle thunk -> prim_task_run */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -28359,6 +28366,7 @@ block_801356AC:
  * from SLES_017.22_full_06.c. */
 void cps_801356c0(void)
 {
+/* particle thunk -> particle_burst_update */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -28441,6 +28449,7 @@ block_801356F4:
  * from SLES_017.22_full_06.c. */
 void cps_80135740(void)
 {
+/* particle leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -28466,6 +28475,7 @@ block_80135740:
  * from SLES_017.22_full_06.c. */
 void cps_80135768(void)
 {
+/* particle leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -28510,6 +28520,7 @@ block_80135768:
  * from SLES_017.22_full_06.c. */
 void cps_801357dc(void)
 {
+/* particle leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -28535,6 +28546,7 @@ block_801357DC:
  * from SLES_017.22_full_06.c. */
 void cps_80135804(void)
 {
+/* particle leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -28552,6 +28564,7 @@ block_80135804:
  * from SLES_017.22_full_06.c. */
 void cps_8013580c(void)
 {
+/* particle leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -28579,6 +28592,7 @@ block_8013580C:
  * from SLES_017.22_full_06.c. */
 void cps_8013583c(void)
 {
+/* particle leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -28597,6 +28611,7 @@ block_8013583C:
  * from SLES_017.22_full_06.c. */
 void cps_80135848(void)
 {
+/* particle leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -28632,6 +28647,7 @@ block_80135848:
  * from SLES_017.22_full_06.c. */
 void cps_80135898(void)
 {
+/* particle leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -28667,6 +28683,7 @@ block_80135898:
  * from SLES_017.22_full_06.c. */
 void cps_80135bd0(void)
 {
+/* particle fragment: continues at 0x80135bf8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -28707,6 +28724,7 @@ block_80135BF0:
  * from SLES_017.22_full_06.c. */
 void cps_80135bf8(void)
 {
+/* particle fragment: continues at 0x80135c3c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -28754,6 +28772,7 @@ block_80135C04:
  * from SLES_017.22_full_06.c. */
 void cps_80135c3c(void)
 {
+/* particle fragment: continues at 0x80135d14 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -28823,6 +28842,7 @@ block_80135C3C:
  * from SLES_017.22_full_06.c. */
 void cps_80135d14(void)
 {
+/* particle fragment: continues at 0x80135de4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -28916,6 +28936,7 @@ block_80135D28:
  * from SLES_017.22_full_06.c. */
 void cps_80135de4(void)
 {
+/* particle fragment: continues at 0x80135de8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -28931,6 +28952,7 @@ block_80135DE4:
  * from SLES_017.22_full_06.c. */
 void cps_80135de8(void)
 {
+/* particle fragment: continues at 0x80135fb8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -29104,6 +29126,7 @@ block_80135F10:
  * from SLES_017.22_full_06.c. */
 void cps_80135fb8(void)
 {
+/* particle fragment: continues at 0x80135ff0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -29132,6 +29155,7 @@ block_80135FB8:
  * from SLES_017.22_full_06.c. */
 void cps_80135ff0(void)
 {
+/* particle fragment: continues at 0x80136074 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
