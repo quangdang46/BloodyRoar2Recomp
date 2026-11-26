@@ -1,0 +1,51 @@
+p00 w2W:p1 ws=w2W branch=orch/emit/p00 file=game/gfx_emit_p00.c
+p01 w2X:p1 ws=w2X branch=orch/emit/p01 file=game/gfx_emit_p01.c
+p02 w2Y:p1 ws=w2Y branch=orch/emit/p02 file=game/gfx_emit_p02.c
+p03 w2Z:p1 ws=w2Z branch=orch/emit/p03 file=game/gfx_emit_p03.c
+p04 w20:p1 ws=w20 branch=orch/emit/p04 file=game/gfx_emit_p04.c
+p05 w31:p1 ws=w31 branch=orch/emit/p05 file=game/gfx_emit_p05.c
+p06 w32:p1 ws=w32 branch=orch/emit/p06 file=game/gfx_emit_p06.c
+p07 w33:p1 ws=w33 branch=orch/emit/p07 file=game/gfx_emit_p07.c
+p08 w34:p1 ws=w34 branch=orch/emit/p08 file=game/gfx_emit_p08.c
+p09 w35:p1 ws=w35 branch=orch/emit/p09 file=game/gfx_emit_p09.c
+d00 w36:p1 ws=w36 branch=orch/gpu/d00 file=game/gfx_gpu_d00.c kind=droid
+d01 w37:p1 ws=w37 branch=orch/gpu/d01 file=game/gfx_gpu_d01.c kind=droid
+d02 w38:p1 ws=w38 branch=orch/gpu/d02 file=game/gfx_gpu_d02.c kind=droid
+d03 w39:p1 ws=w39 branch=orch/gpu/d03 file=game/gfx_gpu_d03.c kind=droid
+d04 w3A:p1 ws=w3A branch=orch/gpu/d04 file=game/gfx_gpu_d04.c kind=droid
+d05 w3B:p1 ws=w3B branch=orch/gpu/d05 file=game/gfx_gpu_d05.c kind=droid
+d06 w3C:p1 ws=w3C branch=orch/gpu/d06 file=game/gfx_gpu_d06.c kind=droid
+d07 w3D:p1 ws=w3D branch=orch/gpu/d07 file=game/gfx_gpu_d07.c kind=droid
+d08 w3E:p1 ws=w3E branch=orch/gpu/d08 file=game/gfx_gpu_d08.c kind=droid
+d09 w3F:p1 ws=w3F branch=orch/gpu/d09 file=game/gfx_gpu_d09.c kind=droid
+# wave2 below-emit 0x80180000-0x80186000
+e00 w3G:p1 orch/w2/e00 game/w2_e00.c devin
+e01 w3H:p1 orch/w2/e01 game/w2_e01.c devin
+e02 w3J:p1 orch/w2/e02 game/w2_e02.c devin
+e03 w3K:p1 orch/w2/e03 game/w2_e03.c devin
+e04 w3M:p1 orch/w2/e04 game/w2_e04.c devin
+e05 w3N:p1 orch/w2/e05 game/w2_e05.c devin
+e06 w3P:p1 orch/w2/e06 game/w2_e06.c devin
+e07 w3Q:p1 orch/w2/e07 game/w2_e07.c devin
+e08 w3R:p1 orch/w2/e08 game/w2_e08.c devin
+e09 w3S:p1 orch/w2/e09 game/w2_e09.c devin
+d00 w3T:p1 orch/w2/d00 game/w2_d00.c droid
+d01 w3V:p1 orch/w2/d01 game/w2_d01.c droid
+d02 w3W:p1 orch/w2/d02 game/w2_d02.c droid
+d03 w3X:p1 orch/w2/d03 game/w2_d03.c droid
+d04 w3Y:p1 orch/w2/d04 game/w2_d04.c droid
+d05 w3Z:p1 orch/w2/d05 game/w2_d05.c droid
+d06 w30:p1 orch/w2/d06 game/w2_d06.c droid
+d07 w41:p1 orch/w2/d07 game/w2_d07.c droid
+d08 w42:p1 orch/w2/d08 game/w2_d08.c droid
+# wave3 leftover-coverage sweep (109 uncovered generated addrs)
+w3e00 w48:p1 orch/w3/e00 game/w3_e00.c devin
+w3e01 w49:p1 orch/w3/e01 game/w3_e01.c devin
+w3e02 w4A:p1 orch/w3/e02 game/w3_e02.c devin
+w3e03 w4B:p1 orch/w3/e03 game/w3_e03.c devin
+w3e04 w4C:p1 orch/w3/e04 game/w3_e04.c devin
+w3e05 w4D:p1 orch/w3/e05 game/w3_e05.c devin
+w3e06 w4E:p1 orch/w3/e06 game/w3_e06.c devin
+w3e07 w4F:p1 orch/w3/e07 game/w3_e07.c devin
+w3e08 w4G:p1 orch/w3/e08 game/w3_e08.c devin
+w3e09 w4H:p1 orch/w3/e09 game/w3_e09.c devin
