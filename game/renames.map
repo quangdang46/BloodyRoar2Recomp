@@ -205,6 +205,7 @@
 80151328 battle_state_init
 801487ac fighter_spawn_setup
 8015113c confirm_bookkeeping
+80151300 confirm_bookkeeping_cps
 8015343c gate_read_ec
 8014f260 select_screen_tick
 801583cc peak_track
@@ -216,6 +217,7 @@
 80154930 post_battle_dispatch
 801506d0 battle_init
 8015143c hud_announce
+80151494 hud_announce_cps
 8012e100 hud_text_blk
 801524b0 please_wait_announce
 80166f64 fighter_reinit_tail
@@ -330,6 +332,7 @@
 80148f58 palette_attr_record_write
 8014a804 victory_jingle_schedule
 80150f04 ko_count_announce
+80151074 ko_count_announce_cps
 8015a614 string_pair_emit
 80127ae0 record_field_step
 80128bfc battle_subrecord_set2

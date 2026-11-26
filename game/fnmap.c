@@ -514,6 +514,7 @@ extern void condition_word_dispatch(void);
 extern void confetti_burst_spawn(void);
 extern void confetti_burst_update(void);
 extern void confirm_bookkeeping(void);
+extern void confirm_bookkeeping_cps(void);
 extern void confirm_code_select(void);
 extern void console_emit(void);
 extern void console_pct(void);
@@ -901,6 +902,7 @@ extern void hitbox_xform_node_commit(void);
 extern void hitrec_table_clear(void);
 extern void hp_bar_tick(void);
 extern void hud_announce(void);
+extern void hud_announce_cps(void);
 extern void hud_cell_frame_set(void);
 extern void hud_digits_color(void);
 extern void hud_gauge_render(void);
@@ -939,6 +941,7 @@ extern void keyframe_blend_apply(void);
 extern void keyframe_cursor_search(void);
 extern void ko_count_announce(void);
 extern void ko_count_announce_alt_1014(void);
+extern void ko_count_announce_cps(void);
 extern void launch_vel_update(void);
 extern void lazy_node_wrap(void);
 extern void lut_cos_q12(void);
@@ -2061,11 +2064,14 @@ const Br2FnEnt fn_table[] = {
   { 0x801506d0, (void *)battle_init },
   { 0x80150f04, (void *)ko_count_announce },
   { 0x80151014, (void *)ko_count_announce_alt_1014 },
+  { 0x80151074, (void *)ko_count_announce_cps },
   { 0x8015113c, (void *)confirm_bookkeeping },
+  { 0x80151300, (void *)confirm_bookkeeping_cps },
   { 0x80151328, (void *)battle_state_init },
   { 0x801513c8, (void *)s16_dec_with_floor },
   { 0x801513fc, (void *)slot_name_measure },
   { 0x8015143c, (void *)hud_announce },
+  { 0x80151494, (void *)hud_announce_cps },
   { 0x80151cd0, (void *)champion_win_announce },
   { 0x80151dc8, (void *)stage_fight_announce },
   { 0x8015200c, (void *)fight_timer_announce },
