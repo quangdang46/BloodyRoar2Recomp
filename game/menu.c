@@ -4550,12 +4550,12 @@ void champion_win_announce(uint32_t battle_g,uint8_t *side,int32_t player)
  * challenger/press-start tail. Jump tables 0x80121ec4 (state+0x92,
  * 17) and 0x80121f0c (state+0x9c, 6) — disasm+rodata verified. */
 extern void please_wait_announce(uint32_t,uint32_t);
-void mode_name_announce(uint32_t param_1,uint32_t param_2,int32_t param_3)
+void mode_name_announce(uint32_t battle_g,uint32_t player,int32_t force)
 {
-  uint8_t *t0 = (uint8_t *)guest_at(param_1);
+  uint8_t *t0 = (uint8_t *)guest_at(battle_g);
   int32_t a3, v0;
   uint32_t text = 0;
-  a3 = param_2 ? ((int32_t)*(int16_t *)(t0 + 0x20) - 0x50) : 0x50;
+  a3 = player ? ((int32_t)*(int16_t *)(t0 + 0x20) - 0x50) : 0x50;
   if (((*(uint16_t *)guest_at(*(uint32_t *)(t0 + 0xc8) + (2)) >> 0xb) & 1) == 0) return;
   if (((*(uint32_t *)guest_at(0x1f8000dc) >> 4) & 3) == 0) return;
   /* JT1 on t0[0x92] < 0x11 */
@@ -4572,17 +4572,17 @@ void mode_name_announce(uint32_t param_1,uint32_t param_2,int32_t param_3)
         break;
       }
     }
-    if (do524b0) { please_wait_announce(param_1,param_2); return; }
+    if (do524b0) { please_wait_announce(battle_g,player); return; }
     if (!cont) return;
   }
   /* 636d0: mode==0 extra gate */
   if (t0[0x9c] == 0 &&
       (int32_t)*(int16_t *)(t0 + 0xa4) >=
       (int32_t)*(uint8_t *)guest_at(*(uint32_t *)(t0 + 0xc0) + (0x10))) {
-    please_wait_announce(param_1,param_2); return;
+    please_wait_announce(battle_g,player); return;
   }
   v0 = 4;
-  if (param_3 == 0 && t0[0x9c] < 6) {
+  if (force == 0 && t0[0x9c] < 6) {
     static const uint32_t jt2[6] = {
       0x801637d8,0x80163744,0x80163758,0x8016376c,0x801637c4,0x80163780 };
     uint32_t tgt = jt2[t0[0x9c]];
@@ -4598,7 +4598,7 @@ void mode_name_announce(uint32_t param_1,uint32_t param_2,int32_t param_3)
   }
   /* 637d8 tail */
   if ((*(uint32_t *)guest_at(0x1f8000dc) & 0x40) != 0) {
-    if (param_3 != 0) return;
+    if (force != 0) return;
     text = 0x80121ea4;  /* AWAITING CHALLENGER */
     v0 = 1; a3 -= 0x39;
   } else {
@@ -4620,10 +4620,10 @@ extern int32_t battle_state_gate(uint32_t,uint32_t);
 extern int32_t ret_zero_a(uint32_t);
 extern int32_t ret_zero_c(uint32_t);
 extern int str_len(char *);
-int32_t continue_countdown(uint32_t param_1,uint32_t param_2)
+int32_t continue_countdown(uint32_t battle_g,uint32_t player)
 {
-  uint8_t *s0 = (uint8_t *)guest_at(param_1);
-  uint32_t s1 = param_2;
+  uint8_t *s0 = (uint8_t *)guest_at(battle_g);
+  uint32_t s1 = player;
   /* sprintf buf = guest $sp+0x18 (frame -0x38) = entry_sp-0x20; str_len/
    * hud_text_blk_alt re-read it through nested frames, so the
    * write->draw span below runs inside a reserved guest frame
@@ -4631,7 +4631,7 @@ int32_t continue_countdown(uint32_t param_1,uint32_t param_2)
   uint8_t *buf;
   int32_t v0 = 0;
   uint32_t dc;
-  if (battle_state_gate(param_1,1) == 0) return 0;
+  if (battle_state_gate(battle_g,1) == 0) return 0;
   dc = *(uint32_t *)guest_at(0x1f8000dc);
   if (((*(uint16_t *)guest_at(*(uint32_t *)(s0 + 0xc8) + (2)) >> 0xb) & 1) != 0 &&
       (dc & 0x40) != 0 && ((dc >> 4) & 3) != 0) {
@@ -4691,9 +4691,9 @@ int32_t continue_countdown(uint32_t param_1,uint32_t param_2)
  * +0xb0=1/+0xb1=0, *(u16*)(*(u32*)(p+0x38)+0x80)=0x28 for both players,
  * phase-gate select_phase_gate -> force +0xb4/+0xb6 phase 0x300, then
  * confirm_bookkeeping. Disasm 0x80151328-0x801513c4. */
-void battle_state_init(uint8_t *p0, uint8_t *p1, uint32_t a2)
+void battle_state_init(uint8_t *p0, uint8_t *p1, uint32_t battle_g)
 {
-  uint8_t *s0 = (uint8_t *)guest_at(a2);
+  uint8_t *s0 = (uint8_t *)guest_at(battle_g);
   uint16_t v;
   *(uint8_t *)(s0 + 0x9d) = 0;
   *(uint8_t *)(s0 + 0x9e) = 0;
@@ -4702,15 +4702,15 @@ void battle_state_init(uint8_t *p0, uint8_t *p1, uint32_t a2)
   *(uint8_t *)(s0 + 0xb1) = 0;
   *(uint16_t *)guest_at(*(uint32_t *)(p0 + 0x38) + 0x80) = 0x28;
   *(uint16_t *)guest_at(*(uint32_t *)(p1 + 0x38) + 0x80) = 0x28;
-  if (select_phase_gate(a2,0) == 0) {
+  if (select_phase_gate(battle_g,0) == 0) {
     v = *(uint16_t *)(s0 + 0xb4);
     *(uint16_t *)(s0 + 0xb4) = (uint16_t)((v & 0xf000) | 0x300);
   }
-  if (select_phase_gate(a2,1) == 0) {
+  if (select_phase_gate(battle_g,1) == 0) {
     v = *(uint16_t *)(s0 + 0xb6);
     *(uint16_t *)(s0 + 0xb6) = (uint16_t)((v & 0xf000) | 0x300);
   }
-  confirm_bookkeeping(a2);
+  confirm_bookkeeping(battle_g);
 }
 
 /* ======== batch31: menu stepper / battle-struct helpers ======== */
@@ -4722,9 +4722,9 @@ void battle_state_init(uint8_t *p0, uint8_t *p1, uint32_t a2)
  * cases 2-5: counter+6++; case 6: same as 1 but timer 0xc8 and
  * state+0 = 1. Disasm 0x80128898-0x801289b0. */
 extern int32_t results_record_build(int32_t,int32_t);
-void record_state_stepper(uint32_t param_1)
+void record_state_stepper(uint32_t obj_g)
 {
-  uint32_t s0 = *(uint32_t *)((uint8_t *)guest_at(param_1) + 0xcc);
+  uint32_t s0 = *(uint32_t *)((uint8_t *)guest_at(obj_g) + 0xcc);
   int32_t st = (int16_t)MB16(s0);          /* lh ($s0) */
   if ((uint32_t)st >= 7) return;           /* sltiu $v1,7 */
   switch (st) {
@@ -4769,20 +4769,20 @@ void record_state_stepper(uint32_t param_1)
  * until bit `param_2 >> (timer&31)` fires, invokes cb(p,timer), then
  * menu_stepper_masked_sweep(p,param_2). Disasm 0x80129540-0x8012965c. */
 extern void menu_stepper_masked_sweep(void *,uint32_t);
-void menu_stepper_button_wait(void *param_1, uint32_t param_2)
+void menu_stepper_button_wait(void *desc, uint32_t btn_mask)
 {
-  uint8_t *p = (uint8_t *)param_1;
+  uint8_t *p = (uint8_t *)desc;
   uint32_t b2;
-  if (param_2 == 0) return;
+  if (btn_mask == 0) return;
   b2 = p[2];
   if (b2 != 1) {
     if (b2 >= 2) return;
     p[2] = 1;                            /* b2 == 0 */
   }
   if (p[3] != 0) goto L_tail;
-  menu_stepper_input(param_1);
+  menu_stepper_input(desc);
   /* first bit test on current timer */
-  if (((param_2 >> (*(uint16_t *)(p + 8) & 31)) & 1) != 0) goto L_cb;
+  if (((btn_mask >> (*(uint16_t *)(p + 8) & 31)) & 1) != 0) goto L_cb;
   for (;;) {
     uint16_t t, c;
     if ((MB16(0x1f80007e) & 0x4000) == 0) {
@@ -4795,7 +4795,7 @@ void menu_stepper_button_wait(void *param_1, uint32_t param_2)
       *(uint16_t *)(p + 8) = (t < c) ? (uint16_t)(t + 1) : (uint16_t)1;
     }
     t = *(uint16_t *)(p + 8);
-    if (((param_2 >> (t & 31)) & 1) != 0) break;
+    if (((btn_mask >> (t & 31)) & 1) != 0) break;
   }
 L_cb:
   {
@@ -4805,21 +4805,21 @@ L_cb:
     uint32_t cb_g = *(uint32_t *)(p + 0xc);
     void *cb = fn_lookup(cb_g);
     if (cb != NULL)
-      ((void (*)(void *,uint16_t))cb)(param_1,*(uint16_t *)(p + 8));
+      ((void (*)(void *,uint16_t))cb)(desc,*(uint16_t *)(p + 8));
     else
-      call_guest(cb_g,guest_of(param_1),(uint32_t)*(uint16_t *)(p + 8));
+      call_guest(cb_g,guest_of(desc),(uint32_t)*(uint16_t *)(p + 8));
   }
 L_tail:
-  menu_stepper_masked_sweep(param_1,param_2);
+  menu_stepper_masked_sweep(desc,btn_mask);
 }
 
 /* battle_field_set — battle-struct field setter: u16 @+0x76 = a1,
  * u16 @+0x78 = 0. param_1 = guest u32 struct addr. Disasm
  * 0x8012fb04-0x8012fb10. */
-void battle_field_set(uint32_t param_1, int32_t param_2)
+void battle_field_set(uint32_t obj_g, int32_t val)
 {
-  *(uint16_t *)guest_at(param_1 + 0x76) = (uint16_t)param_2;
-  *(uint16_t *)guest_at(param_1 + 0x78) = 0;
+  *(uint16_t *)guest_at(obj_g + 0x76) = (uint16_t)val;
+  *(uint16_t *)guest_at(obj_g + 0x78) = 0;
 }
 
 /* battle_struct_init — battle-struct init: zero 31 u16 window fields
@@ -4831,7 +4831,7 @@ void battle_field_set(uint32_t param_1, int32_t param_2)
  * Disasm 0x8012f024-0x8012f160. */
 extern void gte_cw_d000_set(int32_t,uint32_t);
 extern void battle_math_init(uint32_t,uint32_t);
-void battle_struct_init(uint32_t param_1, uint32_t param_2)
+void battle_struct_init(uint32_t battle_g, uint32_t env_g)
 {
   static const uint16_t zfld[] = {
     0x20,0x22,0x24,0x28,0x2a,0x2c,0x30,0x32,0x34,0x38,0x3a,0x3c,0x3e,
@@ -4839,26 +4839,26 @@ void battle_struct_init(uint32_t param_1, uint32_t param_2)
     0x64,0x66,0x68,0x6c,0x7e };
   unsigned i;
   for (i = 0; i < sizeof(zfld)/sizeof(zfld[0]); i++)
-    *(uint16_t *)guest_at(param_1 + zfld[i]) = 0;
-  *(uint32_t *)guest_at(param_2 + 0x5c) = 0;
-  *(uint32_t *)guest_at(param_2 + 0x60) = 0;
-  *(uint32_t *)guest_at(param_2 + 0x64) = 0;
-  *(uint16_t *)guest_at(param_1 + 0x4a) = MB16(0x8011f944);
+    *(uint16_t *)guest_at(battle_g + zfld[i]) = 0;
+  *(uint32_t *)guest_at(env_g + 0x5c) = 0;
+  *(uint32_t *)guest_at(env_g + 0x60) = 0;
+  *(uint32_t *)guest_at(env_g + 0x64) = 0;
+  *(uint16_t *)guest_at(battle_g + 0x4a) = MB16(0x8011f944);
   {
     uint32_t e = 0x8011f944u +
-                 ((uint32_t)(int32_t)(int16_t)MB16(param_1 + 0x7e) << 3);
-    *(uint16_t *)guest_at(param_1 + 0x4c) = MB16(e + 2);
-    *(uint16_t *)guest_at(param_1 + 0x4e) = MB16(e + 4);
+                 ((uint32_t)(int32_t)(int16_t)MB16(battle_g + 0x7e) << 3);
+    *(uint16_t *)guest_at(battle_g + 0x4c) = MB16(e + 2);
+    *(uint16_t *)guest_at(battle_g + 0x4e) = MB16(e + 4);
   }
-  *(uint16_t *)guest_at(param_2 + 0x24) = 0x168;   /* jal delay slot */
-  gte_cw_d000_set(0x168,param_2);
-  *(uint16_t *)guest_at(param_1 + 0x7c) = 1;
-  *(uint8_t  *)guest_at(param_1 + 0x81) = 4;
-  *(uint8_t  *)guest_at(param_1 + 0x80) = 4;       /* jal delay slot */
-  battle_math_init(param_1,param_2);
-  *(uint16_t *)guest_at(param_1 + 0x7a) = 0x1000;
-  *(uint16_t *)guest_at(param_1 + 0x82) = (uint16_t)-1; /* jal delay */
-  battle_field_set(param_1,3);
+  *(uint16_t *)guest_at(env_g + 0x24) = 0x168;   /* jal delay slot */
+  gte_cw_d000_set(0x168,env_g);
+  *(uint16_t *)guest_at(battle_g + 0x7c) = 1;
+  *(uint8_t  *)guest_at(battle_g + 0x81) = 4;
+  *(uint8_t  *)guest_at(battle_g + 0x80) = 4;       /* jal delay slot */
+  battle_math_init(battle_g,env_g);
+  *(uint16_t *)guest_at(battle_g + 0x7a) = 0x1000;
+  *(uint16_t *)guest_at(battle_g + 0x82) = (uint16_t)-1; /* jal delay */
+  battle_field_set(battle_g,3);
 }
 
 /* per_side_setup — per-side setup: record_table_select(a0,a1); rec @0x801f04a8
@@ -4870,15 +4870,15 @@ void battle_struct_init(uint32_t param_1, uint32_t param_2)
  * Disasm 0x801358e8-0x80135a10. */
 extern uint32_t call_guest(uint32_t,uint32_t,uint32_t);
 extern void record_table_select(int32_t,int32_t);
-int32_t per_side_setup(int32_t param_1, int32_t param_2)
+int32_t per_side_setup(int32_t side, int32_t flag)
 {
   const uint32_t s0 = 0x801f04a8u;
-  const uint32_t s2 = ((uint32_t)param_1 << 4) + 0x8011fda0u;
+  const uint32_t s2 = ((uint32_t)side << 4) + 0x8011fda0u;
   uint16_t *D = (uint16_t *)guest_at(s0 + 0x34);
   const uint16_t *S = (const uint16_t *)guest_at(s2);
   uint32_t c0, fn, t;
   int32_t i, lhs, rhs;
-  record_table_select(param_1,param_2);
+  record_table_select(side,flag);
   *(uint16_t *)guest_at(s0 + 0x1e) = 0;
   c0  = MB32(0x1f8000c0);
   lhs = (int32_t)(int8_t)MB8(0x1f800099) + 1;
@@ -4891,7 +4891,7 @@ int32_t per_side_setup(int32_t param_1, int32_t param_2)
     D[8 + i]  = 0;
     D[12 + i] = 0;
   }
-  if (param_2 == 0) *(uint16_t *)guest_at(s0 + 0x22) = 0;
+  if (flag == 0) *(uint16_t *)guest_at(s0 + 0x22) = 0;
   t = 0x801b1774u +
       (uint32_t)((int32_t)((uint32_t)MB8(0x1f800098) << 24) >> 22);
   fn = MB32(t);
@@ -4916,11 +4916,11 @@ extern void battle_subrecord_reset(uint32_t);
 extern void battle_subrecord_set1(uint32_t);
 extern void s16_dec_with_floor(uint32_t);
 extern void post_battle_side_commit(uint8_t *,uint8_t *,uint32_t);
-void battle_sides_commit(uint8_t *param_1, uint8_t *param_2, uint32_t param_3)
+void battle_sides_commit(uint8_t *side_a, uint8_t *side_b, uint32_t battle_g)
 {
-  uint8_t *s1 = (uint8_t *)guest_at(param_3);
-  uint8_t *s2 = param_1;
-  uint8_t *s3 = param_2;
+  uint8_t *s1 = (uint8_t *)guest_at(battle_g);
+  uint8_t *s2 = side_a;
+  uint8_t *s3 = side_b;
   uint32_t s0 = 0;
   int32_t t;
   uint8_t b92;
@@ -4931,21 +4931,21 @@ void battle_sides_commit(uint8_t *param_1, uint8_t *param_2, uint32_t param_3)
   }
   s1[0x9d] = 1;
 L_eval:
-  s0 |= (uint32_t)battle_config_eval(s2,param_3,0);
-  s0 |= (uint32_t)battle_config_eval(s3,param_3,0);
+  s0 |= (uint32_t)battle_config_eval(s2,battle_g,0);
+  s0 |= (uint32_t)battle_config_eval(s3,battle_g,0);
   if (s1[0x92] == 4)
-    battle_input_dispatch(param_3,s0 & 0xffff);
-  if ((int16_t)MB16((param_3) + 0x82) != 0) return;
+    battle_input_dispatch(battle_g,s0 & 0xffff);
+  if ((int16_t)MB16((battle_g) + 0x82) != 0) return;
   b92 = s1[0x92];
   if (b92 >= 5) return;
   switch (b92) {
   case 0: {
-    uint32_t bc = MB32(param_3 + 0xbc);
+    uint32_t bc = MB32(battle_g + 0xbc);
     *(uint16_t *)guest_at(bc + 0x82) = (uint16_t)-1;
     battle_field_set(bc,3);
     clear_f0300_records();
     *(uint16_t *)(s1 + 0x8c) = 0;
-    battle_subrecord_reset(param_3);
+    battle_subrecord_reset(battle_g);
     *(uint16_t *)(s1 + 0x92) =
       (uint16_t)((*(uint16_t *)(s1 + 0x92) & 0xff00) | 1);
     break;
@@ -4961,13 +4961,13 @@ L_eval:
   case 3:
     *(uint32_t *)(s2 + 0x60) = 0;
     *(uint32_t *)(s3 + 0x60) = 0;
-    battle_subrecord_set1(param_3);
+    battle_subrecord_set1(battle_g);
     *(uint16_t *)(s1 + 0x92) =
       (uint16_t)((*(uint16_t *)(s1 + 0x92) & 0xff00) | 4);
     /* fallthrough */
   case 4:
-    s16_dec_with_floor(param_3);
-    post_battle_side_commit(s2,s3,param_3);
+    s16_dec_with_floor(battle_g);
+    post_battle_side_commit(s2,s3,battle_g);
     if (s0 & 0x100) {
       s1[0x9a] = 2;
       s1[1]    = 6;
