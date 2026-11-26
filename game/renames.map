@@ -1717,8 +1717,16 @@
 
 80176248 action_resolve
 801787dc fighter_frame
+80182a58 fsm_script_vm_gate
+80182ac0 fsm_combat_mode_eval
+80182cac fsm_mode1_eval
+80182d14 fsm_mode3_flag1000
+80182d1c fsm_mode2_flag4000
+80182d24 fsm_mode_eval
+80182ee4 fsm_flags_commit
 80182f3c scriptop_end
 80182f48 scriptop_bra
+80182ff0 scriptop_bra_pc_commit
 801831e0 scriptop_bra_cps
 80183248 scriptop_bsr
 801832f0 scriptop_bsr_cps

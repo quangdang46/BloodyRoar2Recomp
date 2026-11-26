@@ -686,6 +686,13 @@ extern void frame_counter_bump(void);
 extern void frame_divisor_get(void);
 extern void frame_present(void);
 extern void frame_tick(void);
+extern void fsm_combat_mode_eval(void);
+extern void fsm_flags_commit(void);
+extern void fsm_mode1_eval(void);
+extern void fsm_mode2_flag4000(void);
+extern void fsm_mode3_flag1000(void);
+extern void fsm_mode_eval(void);
+extern void fsm_script_vm_gate(void);
 extern void fx_group_alloc(void);
 extern void fx_record_alloc(void);
 extern void fx_record_init(void);
@@ -1346,6 +1353,7 @@ extern void script_stream_tick(void);
 extern void scriptop_add(void);
 extern void scriptop_bra(void);
 extern void scriptop_bra_cps(void);
+extern void scriptop_bra_pc_commit(void);
 extern void scriptop_bsr(void);
 extern void scriptop_bsr_cps(void);
 extern void scriptop_camera(void);
@@ -2294,8 +2302,16 @@ const Br2FnEnt fn_table[] = {
   { 0x80181f18, (void *)ani_cat_tail_ret },
   { 0x80181f20, (void *)fighter_script_fsm },
   { 0x80182960, (void *)fighter_script_fsm_cps },
+  { 0x80182a58, (void *)fsm_script_vm_gate },
+  { 0x80182ac0, (void *)fsm_combat_mode_eval },
+  { 0x80182cac, (void *)fsm_mode1_eval },
+  { 0x80182d14, (void *)fsm_mode3_flag1000 },
+  { 0x80182d1c, (void *)fsm_mode2_flag4000 },
+  { 0x80182d24, (void *)fsm_mode_eval },
+  { 0x80182ee4, (void *)fsm_flags_commit },
   { 0x80182f3c, (void *)scriptop_end },
   { 0x80182f48, (void *)scriptop_bra },
+  { 0x80182ff0, (void *)scriptop_bra_pc_commit },
   { 0x801831e0, (void *)scriptop_bra_cps },
   { 0x80183248, (void *)scriptop_bsr },
   { 0x80183418, (void *)scriptop_bsr_cps },
