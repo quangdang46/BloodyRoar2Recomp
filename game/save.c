@@ -6710,8 +6710,8 @@ void hud_announce(uint32_t a0,uint32_t a1,uint32_t a2)
 int save_load_state_machine(uint32_t a0, int32_t a1)
 {
   uint8_t *s0h = (uint8_t *)guest_at(a0);
-  int32_t s0 = (int32_t)*(int16_t *)(s0h + 0x8e);
-  int32_t t1 = a1;
+  int32_t phase = (int32_t)*(int16_t *)(s0h + 0x8e);
+  int32_t a1v = a1;
   int32_t saved8 = (int32_t)g8(0x1f800013);
   uint8_t blk[0x20];           /* sp+0x28..0x47 block for terrain_packet_gen */
   /* heap_record_emit's param_6 is a uint32_t* out-count (*s5 = 0; ++*s5)
@@ -6719,26 +6719,26 @@ int save_load_state_machine(uint32_t a0, int32_t a1)
    * 4-byte store. */
   uint32_t sp48 = 0, sp4c = 0;
   int32_t i, sel, ret;
-  uint32_t heapB, heapA, sz, z0, z1, zsum, old, s7, s3n, s0v, h;
-  uint8_t *s2h;
-  uint32_t lhu4, lhu6;
-  int32_t lh4, lh6;
+  uint32_t heapB, heapA, sz, alloc0, alloc1, alloc_sum, heapB0, zoff, zneg, zq, h;
+  uint8_t *dims;
+  uint32_t uw, uh;
+  int32_t sw, sh;
 #define BK16(o)  (*(int16_t *)(blk + ((o) - 0x28)))
 #define BK8(o)   (blk[(o) - 0x28])
 #define BKX(v)   ((int32_t)(((uint32_t)(int32_t)(int16_t)(v)) << 16) >> 23)
 
-  if (s0 == 0x10) goto L10;
-  if (s0 < 0x11) {
-    if (s0 != 0) goto ret0;
+  if (phase == 0x10) goto L10;
+  if (phase < 0x11) {
+    if (phase != 0) goto ret0;
     goto init;
   }
-  if (s0 == 0x20) goto L20;
+  if (phase == 0x20) goto L20;
   goto ret0;
 
 init:
   /* ---- state 0: build save image ---- */
   if (attr_records_scan(0,0x17) == 0) goto ret0;
-  if (cd_file_load_sm(t1 + 0xa0, guest_of(tag_table_get())) == 0)
+  if (cd_file_load_sm(a1v + 0xa0, guest_of(tag_table_get())) == 0)
     goto ret0;
   scratch_013_set(0);
   {
@@ -6748,20 +6748,20 @@ init:
 
     /* alloc tag0 + tag1, then ret_zero_d */
     heapB = g32(0x801e3cfc);
-    z0 = heap_alloc54(heapB, tbl, 0);
-    if (z0 != 0) {
+    alloc0 = heap_alloc54(heapB, tbl, 0);
+    if (alloc0 != 0) {
       uint32_t mid, fin, r;
-      old = heapB;
+      heapB0 = heapB;
       *(uint32_t *)(s5 + 0) = 0x801c11b0u;
-      mid = old + z0;                    /* heapB advance #1 (delay slot) */
+      mid = heapB0 + alloc0;                    /* heapB advance #1 (delay slot) */
       BR2_W32(0x801e3cfc, mid);
-      z1 = heap_alloc54(mid, tbl, 1);
-      zsum = z0 + z1;
+      alloc1 = heap_alloc54(mid, tbl, 1);
+      alloc_sum = alloc0 + alloc1;
       heapA = g32(0x801c47b8);
-      fin = mid + zsum;                  /* heapB advance #2 (delay slot) */
+      fin = mid + alloc_sum;                  /* heapB advance #2 (delay slot) */
       BR2_W32(0x801e3cfc, fin);
-      r = (uint32_t)ret_zero_d(old, mid, 0x801c11b0u, heapA,
-                               g32(0x801b4844u + (uint32_t)t1 * 4));
+      r = (uint32_t)ret_zero_d(heapB0, mid, 0x801c11b0u, heapA,
+                               g32(0x801b4844u + (uint32_t)a1v * 4));
       BR2_W32(0x801c47b8, r);
       *(int16_t *)(s5 + 4) = (int16_t)(*(int16_t *)(s5 + 4) + 1);
     }
@@ -6773,7 +6773,7 @@ init:
       uint8_t *rec = (uint8_t *)guest_at(0x801e3d08);
       uint8_t *s2p = rec + 4;
       int32_t s3i;
-      uint32_t s4o = (uint32_t)t1 * 23;
+      uint32_t s4o = (uint32_t)a1v * 23;
       heap_ptr_fixup(g32(0x801e3cfc));
       *(uint32_t *)(s5 + 8) = 0x801e3d08u;
       for (s3i = 0; s3i < 0x17; s3i++, rec += 0x28, s2p += 0x28) {
@@ -6812,7 +6812,7 @@ init:
       {
         uint32_t r = (uint32_t)heap_record_emit(
             g32(0x801e3cfc), 0x801c4588u, g32(0x801c47b8), 0,
-            0, &sp4c, g8(0x801b49a4u + (uint32_t)t1), 0, 0);
+            0, &sp4c, g8(0x801b49a4u + (uint32_t)a1v), 0, 0);
         BR2_W32(0x801c47b8, r);
         *(int16_t *)(s5 + 0x14) = (int16_t)sp4c;
       }
@@ -6848,94 +6848,94 @@ init:
     }
 
     /* ---- render/param block: 5x terrain_packet_gen ---- */
-    s7 = g32(0x801b1674u + (uint32_t)t1 * 4);
+    zoff = g32(0x801b1674u + (uint32_t)a1v * 4);
     {
-      uint8_t *s4p = (uint8_t *)guest_at(0x801c46c8);
-      s2h = (uint8_t *)guest_at(0x801b1524u + (uint32_t)t1 * 8);
+      uint8_t *blk_arr = (uint8_t *)guest_at(0x801c46c8);
+      dims = (uint8_t *)guest_at(0x801b1524u + (uint32_t)a1v * 8);
       *(int16_t *)(s5 + 0x1c) = 5;
       *(uint32_t *)(s5 + 0x18) = 0x801c46c8u;
-      if (t1 < 9) {
-        lhu4 = *(uint16_t *)(s2h + 4);
-        lhu6 = *(uint16_t *)(s2h + 6);
-        lh4 = *(int16_t *)(s2h + 4);
-        lh6 = *(int16_t *)(s2h + 6);
-        s3n = -(int32_t)s7;
-        s0v = (s3n < 0 ? s3n + 0xff : s3n) >> 8;
+      if (a1v < 9) {
+        uw = *(uint16_t *)(dims + 4);
+        uh = *(uint16_t *)(dims + 6);
+        sw = *(int16_t *)(dims + 4);
+        sh = *(int16_t *)(dims + 6);
+        zneg = -(int32_t)zoff;
+        zq = (zneg < 0 ? zneg + 0xff : zneg) >> 8;
         memset(blk, 0, sizeof blk);
 
         /* call 1: a0 = s4+0xa0 */
-        BK16(0x28) = (int16_t)(-(int32_t)lhu4);
+        BK16(0x28) = (int16_t)(-(int32_t)uw);
         BK16(0x2a) = 0;
-        BK16(0x2c) = (int16_t)lhu6;
-        BK16(0x30) = (int16_t)(lh4 * 2);
+        BK16(0x2c) = (int16_t)uh;
+        BK16(0x30) = (int16_t)(sw * 2);
         BK16(0x32) = 0; BK16(0x34) = 0;
         BK16(0x38) = 0; BK16(0x3a) = 0;
-        BK16(0x3c) = (int16_t)(-(lh6 * 2));
+        BK16(0x3c) = (int16_t)(-(sh * 2));
         BK8(0x40) = 0x40; BK8(0x41) = 0x40; BK8(0x42) = 0x80;
         ret = (int32_t)terrain_packet_gen(0x801c46c8u + 0xa0,
                     g32(0x801c47b8), blk, blk + 8,
-                    blk + 0x10, BKX(lhu4), BKX(lhu6), blk + 0x18);
+                    blk + 0x10, BKX(uw), BKX(uh), blk + 0x18);
         BR2_W32(0x801c47b8, (uint32_t)ret);
 
         /* call 2: a0 = s4 */
-        BK16(0x2a) = (int16_t)s7;
-        BK16(0x28) = (int16_t)lhu4;
-        BK16(0x2c) = (int16_t)lhu6;
+        BK16(0x2a) = (int16_t)zoff;
+        BK16(0x28) = (int16_t)uw;
+        BK16(0x2c) = (int16_t)uh;
         BK16(0x30) = 0; BK16(0x32) = 0;
-        BK16(0x34) = (int16_t)(-(lh6 * 2));
+        BK16(0x34) = (int16_t)(-(sh * 2));
         BK16(0x38) = 0;
-        BK16(0x3a) = (int16_t)s3n;
+        BK16(0x3a) = (int16_t)zneg;
         BK16(0x3c) = 0;
         BK8(0x40) = 0x40; BK8(0x41) = 0x80; BK8(0x42) = 0x40;
         ret = (int32_t)terrain_packet_gen(0x801c46c8u, (uint32_t)ret,
-                    blk, blk + 8, blk + 0x10, BKX(lhu6), s0v,
+                    blk, blk + 8, blk + 0x10, BKX(uh), zq,
                     blk + 0x18);
         BR2_W32(0x801c47b8, (uint32_t)ret);
 
         /* call 3: a0 = s4+0x28 */
-        BK16(0x2a) = (int16_t)s7;
-        BK16(0x28) = (int16_t)(-(int32_t)lhu4);
-        BK16(0x2c) = (int16_t)(-(int32_t)lhu6);
+        BK16(0x2a) = (int16_t)zoff;
+        BK16(0x28) = (int16_t)(-(int32_t)uw);
+        BK16(0x2c) = (int16_t)(-(int32_t)uh);
         BK16(0x30) = 0; BK16(0x32) = 0; BK16(0x38) = 0;
-        BK16(0x34) = (int16_t)(lh6 * 2);
-        BK16(0x3a) = (int16_t)s3n;
+        BK16(0x34) = (int16_t)(sh * 2);
+        BK16(0x3a) = (int16_t)zneg;
         BK16(0x3c) = 0;
         ret = (int32_t)terrain_packet_gen(0x801c46c8u + 0x28, (uint32_t)ret,
-                    blk, blk + 8, blk + 0x10, BKX(lhu6), s0v,
+                    blk, blk + 8, blk + 0x10, BKX(uh), zq,
                     blk + 0x18);
         BR2_W32(0x801c47b8, (uint32_t)ret);
 
         /* call 4: a0 = s4+0x50 */
-        BK16(0x2a) = (int16_t)s7;
-        BK16(0x28) = (int16_t)lhu4;
-        BK16(0x2c) = (int16_t)(-(int32_t)lhu6);
-        BK16(0x30) = (int16_t)(-(lh4 * 2));
+        BK16(0x2a) = (int16_t)zoff;
+        BK16(0x28) = (int16_t)uw;
+        BK16(0x2c) = (int16_t)(-(int32_t)uh);
+        BK16(0x30) = (int16_t)(-(sw * 2));
         BK16(0x32) = 0; BK16(0x34) = 0; BK16(0x38) = 0;
-        BK16(0x3a) = (int16_t)s3n;
+        BK16(0x3a) = (int16_t)zneg;
         BK16(0x3c) = 0;
         ret = (int32_t)terrain_packet_gen(0x801c46c8u + 0x50, (uint32_t)ret,
-                    blk, blk + 8, blk + 0x10, BKX(lhu4), s0v,
+                    blk, blk + 8, blk + 0x10, BKX(uw), zq,
                     blk + 0x18);
         BR2_W32(0x801c47b8, (uint32_t)ret);
 
         /* call 5: a0 = s4+0x78 */
-        BK16(0x2a) = (int16_t)s7;
-        BK16(0x28) = (int16_t)(-(int32_t)lhu4);
-        BK16(0x2c) = (int16_t)lhu6;
-        BK16(0x30) = (int16_t)(lh4 * 2);
+        BK16(0x2a) = (int16_t)zoff;
+        BK16(0x28) = (int16_t)(-(int32_t)uw);
+        BK16(0x2c) = (int16_t)uh;
+        BK16(0x30) = (int16_t)(sw * 2);
         BK16(0x32) = 0; BK16(0x34) = 0; BK16(0x38) = 0;
-        BK16(0x3a) = (int16_t)s3n;
+        BK16(0x3a) = (int16_t)zneg;
         BK16(0x3c) = 0;
         ret = (int32_t)terrain_packet_gen(0x801c46c8u + 0x78, (uint32_t)ret,
-                    blk, blk + 8, blk + 0x10, BKX(lhu4), s0v,
+                    blk, blk + 8, blk + 0x10, BKX(uw), zq,
                     blk + 0x18);
         BR2_W32(0x801c47b8, (uint32_t)ret);
       } else {
-        *(int16_t *)(s4p + 0xc) = 1;
-        *(int16_t *)(s4p + 0x34) = 1;
-        *(int16_t *)(s4p + 0x5c) = 1;
-        *(int16_t *)(s4p + 0x84) = 1;
-        *(int16_t *)(s4p + 0xac) = 1;
+        *(int16_t *)(blk_arr + 0xc) = 1;
+        *(int16_t *)(blk_arr + 0x34) = 1;
+        *(int16_t *)(blk_arr + 0x5c) = 1;
+        *(int16_t *)(blk_arr + 0x84) = 1;
+        *(int16_t *)(blk_arr + 0xac) = 1;
       }
     }
 
@@ -6955,22 +6955,22 @@ init:
     }
     cd_timer_read(0);
     scratch_013_set((uint32_t)saved8);
-    s0 = 0x10;
+    phase = 0x10;
   }
 
 L10:
   /* commit tail: also reached by state-0 fallthrough and state 0x10 */
-  if (t1 < 0) sel = 7;
-  else if (t1 < 8) sel = t1;
-  else if (t1 == 0xb) sel = 0xb;
+  if (a1v < 0) sel = 7;
+  else if (a1v < 8) sel = a1v;
+  else if (a1v == 0xb) sel = 0xb;
   else sel = 7;
   if (cd_file_load_sm(sel + 0xb0, guest_of(tag_table_get())) == 0)
     goto ret0;
-  s0 = 0x20;   /* resume state for L20: generated 0x80171800 li s0,0x20 —
-                  without it a busy L20 load stores s0=0x10 and re-runs L10,
+  phase = 0x20;   /* resume state for L20: generated 0x80171800 li phase,0x20 —
+                  without it a busy L20 load stores phase=0x10 and re-runs L10,
                   ping-ponging the tag-table/heap loads forever. */
   fighter_record_apply(guest_of(tag_table_get()), 2);
-  page_table_ptr_set((uint32_t)t1, 2);
+  page_table_ptr_set((uint32_t)a1v, 2);
 
 L20:
   if (cd_file_load_sm(0x88, g32(0x801c47b8)) == 0) goto ret0;
@@ -6979,7 +6979,7 @@ L20:
   return 1;
 
 ret0:
-  *(int16_t *)(s0h + 0x8e) = (int16_t)s0;
+  *(int16_t *)(s0h + 0x8e) = (int16_t)phase;
   return 0;
 #undef BK16
 #undef BK8
