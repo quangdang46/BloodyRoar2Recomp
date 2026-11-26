@@ -7763,7 +7763,7 @@ uint32_t part_skin_emit(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
       (uint32_t *)guest_at(g[5]),
       (int *)guest_at(g[6])));
 
-L_80186568:
+  /* L_80186568 */
   g[2] = br2_ld16(g[20]);                /* lhu */
   g[18] |= 0x38Cu;                       /* delay slot: s2 += 0x38C */
   g[2] &= 0x4000u;
@@ -7800,9 +7800,7 @@ L_80186568:
   g[2] = g[2] << 3;
   g[2] = g[2] + g[19];
   g[4] = (int32_t)g[3] >> 8;             /* delay slot sra */
-  if ((int32_t)g[2] >= 0) goto L_801865F8;
-  g[2] += 0xFFu;
-L_801865F8:
+  if ((int32_t)g[2] < 0) g[2] += 0xFFu;  /* L_801865F8: skip round-up */
   g[3] = (int32_t)g[2] >> 8;
   g[3] = g[4] + g[3];
   g[2] = br2_ld16(g[16] + 56);           /* lhu */
@@ -7900,14 +7898,14 @@ L_801865F8:
                       (int8_t *)guest_at(g[5]),
                       (short *)guest_at(g[6]), g[7]);
 
-L_8018673C:
+  /* L_8018673C */
   g[4] = fr + 16;
   g[16] = g[18] + 8;                      /* s2 + 8 */
   /* jal 0x80186744 -> prim_attr_repack(sp+16, s2+8) */
   g[5] = g[16];                           /* delay slot */
   g[2] = prim_attr_repack(g[4], g[5]);
 
-L_8018674C:
+  /* L_8018674C */
   g[4] = g[16];                           /* s2 + 8 */
   g[5] = fr + 48;
   /* jal 0x80186754 -> gte_rtps_xform1(s2+8, sp+48, s2) */
@@ -7922,102 +7920,95 @@ L_8018674C:
   /* 0x80186760: nop */
   g[2] = ((int32_t)g[3] < 6) ? 1u : 0u;
   g[2] = 6;                               /* delay slot */
-  if (((int32_t)g[3] < 6)) goto L_801868D8;
-  /* beq g3,6 : delay slot g2 = 9 always executes */
-  g[2] = 9;
-  if (g[3] == 6) goto L_801867F8;
-  if (g[3] != 9) goto L_80186870;          /* _bc_80186778 */
-
-  /* ================= mode == 9 ================= */
-  /* atan2 pair #1: (s16)lhu(s2+2), lh(s2+0) */
-  g[4] = br2_ld16(g[18] + 2);             /* lhu */
-  g[5] = (int32_t)(int16_t)br2_ld16(g[18]);       /* lh */
-  g[4] = g[4] << 16;
-  /* jal atan2_lut, delay: g4 = (s32)g4 >> 16 */
-  g[4] = (int32_t)g[4] >> 16;
-  g[2] = (uint32_t)atan2_lut((int)g[4], (int)g[5]);
-L_80186794:
-  g[17] = g[2];
-  /* atan2 pair #2: (s16)lhu(s2+2), lh(s2+4) */
-  g[4] = br2_ld16(g[18] + 2);
-  g[5] = (int32_t)(int16_t)br2_ld16(g[18] + 4);
-  g[4] = g[4] << 16;
-  g[4] = (int32_t)g[4] >> 16;             /* delay slot */
-  g[2] = (uint32_t)atan2_lut((int)g[4], (int)g[5]);
-L_801867AC:
-  g[3] = (int32_t)(int16_t)br2_ld16(g[20] + 16);  /* lh */
-  g[19] = g[2];
-  g[2] = ((int32_t)g[3] < (int32_t)g[17]) ? 1u : 0u;
-  if (g[2] != 0) goto L_801867D4;          /* _bc_801867B8 taken */
-  g[3] = (int32_t)(int16_t)br2_ld16(g[20] + 14);  /* lh */
-  /* 0x801867c4: nop */
-  g[2] = ((int32_t)g[17] < (int32_t)g[3]) ? 1u : 0u;
-  if (g[2] == 0) goto L_801867D8;          /* _bc_801867CC taken */
-L_801867D4:
-  g[17] = g[3];
-L_801867D8:
-  g[3] = (int32_t)(int16_t)br2_ld16(g[20] + 20);  /* lh */
-  /* 0x801867dc: nop */
-  g[2] = ((int32_t)g[3] < (int32_t)g[19]) ? 1u : 0u;
-  if (g[2] != 0) goto L_8018686C;          /* _bc_801867E4 taken */
-  g[3] = (int32_t)(int16_t)br2_ld16(g[20] + 18);  /* lh */
-  /* 0x801867f0: j 0x80186864 ; delay slot slti */
-  g[2] = ((int32_t)g[19] < (int32_t)g[3]) ? 1u : 0u;
-  goto L_80186864;
-
-  /* ================= mode == 6 ================= */
-L_801867F8:
-  g[4] = br2_ld16(g[18] + 2);             /* lhu */
-  g[5] = (int32_t)(int16_t)br2_ld16(g[18]);       /* lh */
-  g[4] = g[4] << 16;
-  g[4] = (int32_t)g[4] >> 16;             /* delay slot */
-  g[2] = (uint32_t)atan2_lut((int)g[4], (int)g[5]);
-L_8018680C:
-  g[17] = g[2];
-  g[4] = br2_ld16(g[18] + 2);
-  g[5] = (int32_t)(int16_t)br2_ld16(g[18] + 4);
-  g[4] = g[4] << 16;
-  g[4] = (int32_t)g[4] >> 16;             /* delay slot */
-  g[2] = (uint32_t)atan2_lut((int)g[4], (int)g[5]);
-L_80186824:
-  g[19] = g[2];
-  g[3] = (int32_t)(int16_t)br2_ld16(g[20] + 14);  /* lh */
-  g[2] = ((int32_t)g[3] < (int32_t)g[17]) ? 1u : 0u;
-  g[4] = g[0] - g[3];                     /* delay slot: g4 = -g3 */
-  if (g[2] == 0) goto L_80186840;         /* _bc_80186830 taken */
-  /* 0x80186838: */
-  g[17] = g[3];
-  goto L_80186850;                        /* j */
-L_80186840:
-  g[2] = ((int32_t)g[17] < (int32_t)g[4]) ? 1u : 0u;
-  g[2] = ((int32_t)g[3] < (int32_t)g[19]) ? 1u : 0u;  /* delay slot */
-  if (((int32_t)g[17] < (int32_t)g[4]) == 0) goto L_80186854;
-  /* 0x8018684c: */
-  g[17] = g[4];
-L_80186850:
-  g[2] = ((int32_t)g[3] < (int32_t)g[19]) ? 1u : 0u;
-L_80186854:
-  if (g[2] != 0) goto L_8018686C;         /* _bc_80186854 taken */
-  /* 0x8018685c: */
-  g[3] = g[0] - g[3];                     /* g3 = -g3 */
-  g[2] = ((int32_t)g[19] < (int32_t)g[3]) ? 1u : 0u;
-L_80186864:
-  if (g[2] == 0) goto L_80186870;         /* _bc_80186864 taken */
-  /* fallthrough */
-L_8018686C:
-  g[19] = g[3];
+  if ((int32_t)g[3] >= 6) {
+    /* beq g3,6 : delay slot g2 = 9 always executes */
+    g[2] = 9;
+    if (g[3] == 6) {
+      /* ================= mode == 6 ================= */
+      /* atan2 pair #1: (s16)lhu(s2+2), lh(s2+0) */
+      g[4] = br2_ld16(g[18] + 2);           /* lhu */
+      g[5] = (int32_t)(int16_t)br2_ld16(g[18]);     /* lh */
+      g[4] = g[4] << 16;
+      g[4] = (int32_t)g[4] >> 16;           /* delay slot */
+      g[2] = (uint32_t)atan2_lut((int)g[4], (int)g[5]);
+      /* L_8018680C */
+      g[17] = g[2];
+      /* atan2 pair #2: (s16)lhu(s2+2), lh(s2+4) */
+      g[4] = br2_ld16(g[18] + 2);
+      g[5] = (int32_t)(int16_t)br2_ld16(g[18] + 4);
+      g[4] = g[4] << 16;
+      g[4] = (int32_t)g[4] >> 16;           /* delay slot */
+      g[2] = (uint32_t)atan2_lut((int)g[4], (int)g[5]);
+      /* L_80186824 */
+      g[19] = g[2];
+      g[3] = (int32_t)(int16_t)br2_ld16(g[20] + 14);  /* lh */
+      g[2] = ((int32_t)g[3] < (int32_t)g[17]) ? 1u : 0u;
+      g[4] = g[0] - g[3];                   /* delay slot: g4 = -g3 */
+      if (g[2] != 0) {
+        g[17] = g[3];
+      } else {
+        /* L_80186840: g17 < -g3 ? g17 = -g3 (dead slti kept for fidelity) */
+        g[2] = ((int32_t)g[17] < (int32_t)g[4]) ? 1u : 0u;
+        if ((int32_t)g[17] < (int32_t)g[4]) g[17] = g[4];
+      }
+      /* L_80186850/54: converge on g2 = (g3 < g19) */
+      g[2] = ((int32_t)g[3] < (int32_t)g[19]) ? 1u : 0u;
+      if (g[2] != 0) {
+        g[19] = g[3];                       /* L_8018686C */
+      } else {
+        g[3] = g[0] - g[3];                 /* g3 = -g3 */
+        g[2] = ((int32_t)g[19] < (int32_t)g[3]) ? 1u : 0u;
+        if (g[2] != 0) g[19] = g[3];        /* L_80186864 -> L_8018686C */
+      }
+    } else if (g[3] == 9) {
+      /* ================= mode == 9 ================= */
+      /* atan2 pair #1: (s16)lhu(s2+2), lh(s2+0) */
+      g[4] = br2_ld16(g[18] + 2);           /* lhu */
+      g[5] = (int32_t)(int16_t)br2_ld16(g[18]);     /* lh */
+      g[4] = g[4] << 16;
+      g[4] = (int32_t)g[4] >> 16;           /* delay slot */
+      g[2] = (uint32_t)atan2_lut((int)g[4], (int)g[5]);
+      /* L_80186794 */
+      g[17] = g[2];
+      /* atan2 pair #2: (s16)lhu(s2+2), lh(s2+4) */
+      g[4] = br2_ld16(g[18] + 2);
+      g[5] = (int32_t)(int16_t)br2_ld16(g[18] + 4);
+      g[4] = g[4] << 16;
+      g[4] = (int32_t)g[4] >> 16;           /* delay slot */
+      g[2] = (uint32_t)atan2_lut((int)g[4], (int)g[5]);
+      /* L_801867AC */
+      g[3] = (int32_t)(int16_t)br2_ld16(g[20] + 16);  /* lh */
+      g[19] = g[2];
+      g[2] = ((int32_t)g[3] < (int32_t)g[17]) ? 1u : 0u;
+      if (g[2] != 0) {
+        g[17] = g[3];                       /* L_801867D4 */
+      } else {
+        g[3] = (int32_t)(int16_t)br2_ld16(g[20] + 14);  /* lh */
+        g[2] = ((int32_t)g[17] < (int32_t)g[3]) ? 1u : 0u;
+        if (g[2] != 0) g[17] = g[3];        /* L_801867D4 fallthrough */
+      }
+      /* L_801867D8 */
+      g[3] = (int32_t)(int16_t)br2_ld16(g[20] + 20);  /* lh */
+      g[2] = ((int32_t)g[3] < (int32_t)g[19]) ? 1u : 0u;
+      if (g[2] != 0) {
+        g[19] = g[3];                       /* L_8018686C */
+      } else {
+        g[3] = (int32_t)(int16_t)br2_ld16(g[20] + 18);  /* lh */
+        g[2] = ((int32_t)g[19] < (int32_t)g[3]) ? 1u : 0u;
+        if (g[2] != 0) g[19] = g[3];        /* L_80186864 -> L_8018686C */
+      }
+    }
+    /* other modes >= 6: g17/g19 keep prior values (guest-faithful) */
 
   /* ================= shared angle fold tail ================= */
-L_80186870:
+  /* L_80186870 (mode >= 6 only) */
   /* jal -> lut_cos_q12(g17) */
   g[4] = g[17];                           /* delay slot */
   g[2] = (uint32_t)lut_cos_q12((int)g[4]);
-L_80186878:
   g[4] = g[19];
   g[16] = g[2];                           /* delay slot: save cos(g17) */
   /* jal -> lut_cos_q12(g19) */
   g[2] = (uint32_t)lut_cos_q12((int)g[4]);
-L_80186884:
   g[4] = g[17];
   g[16] = g[16] + g[2];
   g[2] = (uint32_t)g[16] >> 31;
@@ -8026,27 +8017,25 @@ L_80186884:
   br2_st16(g[18] + 2, (uint16_t)g[16]);   /* delay slot of jal */
   /* jal -> lut_sin_q12(g17) */
   g[2] = (uint32_t)lut_sin_q12(g[4]);
-L_801868A0:
   g[4] = g[19];
   br2_st16(g[18], (uint16_t)g[2]);        /* delay slot: sh s2+0 */
   /* jal -> lut_sin_q12(g19) */
   g[2] = (uint32_t)lut_sin_q12(g[4]);
-L_801868AC:
   g[5] = (int32_t)(int16_t)br2_ld16(g[18]);       /* lh */
   g[4] = br2_ld16(g[18] + 2);             /* lhu */
   br2_st16(g[18] + 4, (uint16_t)g[2]);    /* sh s2+4 = sin(g19) */
   g[4] = g[4] << 16;
   g[4] = (int32_t)g[4] >> 16;             /* delay slot */
   g[2] = (uint32_t)atan2_lut((int)g[4], (int)g[5]);
-L_801868C4:
   g[4] = br2_ld16(g[18] + 2);             /* lhu */
   g[5] = (int32_t)(int16_t)br2_ld16(g[18] + 4);   /* lh */
   g[4] = g[4] << 16;
   g[4] = (int32_t)g[4] >> 16;             /* delay slot */
   g[2] = (uint32_t)atan2_lut((int)g[4], (int)g[5]);
+  }
 
   /* ================= mode < 6 / tail ================= */
-L_801868D8:
+  /* L_801868D8 */
   g[16] = g[22] + 4;
   g[4] = g[16];
   g[2] = br2_ld16(g[18]);                 /* lhu */
@@ -8063,7 +8052,7 @@ L_801868D8:
                       (int8_t *)guest_at(g[5]),
                       (short *)guest_at(g[6]), g[7]);
 
-L_80186908:
+  /* L_80186908 */
   g[5] = g[16];                           /* a1 + 4 */
   g[8] = br2_ld32(fr + 68);               /* reload saved ptr */
   g[6] = g[22] + 32;
@@ -8116,7 +8105,7 @@ L_8018691C:
  * prim_ot_link_indexed and gte_data[22] is stored at out+28.
  *
  * Faithful CPS transliteration: one clean body, cpu->gpr[] live mirrors,
- * block_* labels + goto for the two taken branches and the loop back-edge.
+ * blez guard -> early return, beq+bgtz branches -> structured if/do-while.
  * The generated pc-switch mid-entries (0x80188518/20/24/70/65C) are CPS
  * suspend continuations only — this port has no suspend points, so the
  * function-entry dispatch is the sole live entry (verified: no external
@@ -8248,8 +8237,8 @@ uint32_t prim_poly_emit_6c(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * emits a single transformed vertex, not a quad).
  *
  * Faithful CPS transliteration in the same style as the 0x6c/0x88
- * siblings: cpu->gpr[] live mirrors, block_* labels + goto for the two
- * taken branches and the loop back-edge. lwc2 sites use the generated
+ * siblings: cpu->gpr[] live mirrors, blez guard -> early return,
+ * beq+bgtz branches -> structured if/do-while. lwc2 sites use the generated
  * psx_cyc_lwc2_read (charge + raw read); the gte[6] mtc2 keeps the
  * generated direct gte_data[] write (gte_write_data would mask to
  * 0xFFFF); swc2 keeps the generated gte_precision_store_word side-call.
