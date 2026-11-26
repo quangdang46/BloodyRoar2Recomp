@@ -1509,7 +1509,7 @@ extern char * strchr_bounded(char *,char,int);
 extern char s_0123456789abcdef_80124fe8[];
 extern char s_0123456789ABCDEF_80125004[];
 extern char s__null__80124ffc[];
-extern uint8_t DAT_801b6701[];
+extern uint8_t ctype_bitmap_801b6701[];
 uint32_t printf_core(uint32_t param_1,const uint8_t *param_2,const uint32_t *param_3)
 {
   uint8_t bVar1, bVar2;
@@ -1588,7 +1588,7 @@ LAB_8018e60c:
           puVar13 = puVar13 + 1;
         } else {
           puVar17i = 0;
-          while (bVar1 < 0x80 && (bVar2 = *pbVar20, (DAT_801b6701[bVar2] & 4) != 0)) {
+          while (bVar1 < 0x80 && (bVar2 = *pbVar20, (ctype_bitmap_801b6701[bVar2] & 4) != 0)) {
             pbVar20 = pbVar20 + 1;
             bVar1 = *pbVar20;
             puVar17i = (intptr_t)((intptr_t)puVar17i * 10 + -0x30 + (uint32_t)bVar2);
@@ -1609,7 +1609,7 @@ LAB_8018e60c:
           param_2 = pbVar20 + 1;
           local_34 = (intptr_t)((intptr_t)local_34 * 10 + -0x30 + (uint32_t)*pbVar20);
           if (0x7f < *param_2) break;
-        } while ((DAT_801b6701[*param_2] & 4) != 0);
+        } while ((ctype_bitmap_801b6701[*param_2] & 4) != 0);
         goto LAB_8018e60c;
       case 0x44:
         bVar5 = 1;
@@ -1800,7 +1800,7 @@ void console_emit(uint32_t c)
     console_emit(0xd);
     *(int32_t *)guest_at(0x801b6790) = 0;
   } else {
-    if ((DAT_801b6701[ch & 0xff] & 0x97) != 0)
+    if ((ctype_bitmap_801b6701[ch & 0xff] & 0x97) != 0)
       *(int32_t *)guest_at(0x801b6790) += 1;
   }
   int32_t cnt = *(int32_t *)guest_at(0x801b6794);
