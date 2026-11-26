@@ -11484,6 +11484,9 @@ void cps_8012aa00(void)
     }
     /* Address: 0x8012AA00, Size: 40 bytes, Blocks: 2 */
 
+    /* packed-arg call: word[sp+20]=v1*0x01010101; jal
+       0x8018CC6C(word[s1+8], a2=a1); -> 0x8012AA58. CPS-blocked. */
+
 block_8012AA00:
     v0 = v1 << 8;
     v0 = v1 | v0;
@@ -11597,6 +11600,8 @@ void cps_8012aa58(void)
 
     /* Address: 0x8012AA58, Size: 20 bytes, Blocks: 1 */
 
+    /* epilogue: pop s0-s1, ra (sp += 48), jr ra */
+
 block_8012AA58:
     ra = cpu->read_word(sp + 40);
     s1 = cpu->read_word(sp + 36);
@@ -11652,6 +11657,9 @@ void cps_8012aa8c(void)
   if (!cpu) return;
 
     /* Address: 0x8012AA8C, Size: 28 bytes, Blocks: 1 */
+
+    /* divisor step: v0=256/a1 +1 (guarded); byte[a2+25]=v0;
+       jr ra. CPS-blocked. */
 
 block_8012AA8C:
     v0 = 256;
@@ -11917,6 +11925,11 @@ void cps_8012abc0(void)
         }
     }
     /* Address: 0x8012ABC0, Size: 40 bytes, Blocks: 2 */
+
+    /* DMA/irq teardown + call: v0|=0xE4; v1=word[v0];
+       word[v0]=0; word[0x1F8000E0]=v1; jal 0x8019A460(1);
+       half[0x801F0000-31826]=v0; half[s2+208]=v1; -> 0x8012ABE8.
+       CPS-blocked. */
 
 block_8012ABC0:
     v0 = v0 | 0x00E4;
@@ -12249,6 +12262,10 @@ void cps_8012ad58(void)
     }
     /* Address: 0x8012AD58, Size: 52 bytes, Blocks: 2 */
 
+    /* attr fetch + emit: v1=((v1+a0)*4+a0)*16+v0 stride calc;
+       a1..a3=byte[t0+4/5/6], half[t0+10]=half[v1+2], a0=t0+8; jal
+       0x80191300; v0=0x801E0000 -> 0x8012AD8C. CPS-blocked. */
+
 block_8012AD58:
     v1 = v1 + a0;
     v1 = v1 << 2;
@@ -12370,6 +12387,8 @@ void cps_8012add8(void)
 
     /* Address: 0x8012ADD8, Size: 32 bytes, Blocks: 1 */
 
+    /* epilogue: pop s0-s4, ra (sp += 40), jr ra */
+
 block_8012ADD8:
     ra = cpu->read_word(sp + 36);
     s4 = cpu->read_word(sp + 32);
@@ -12438,6 +12457,8 @@ void cps_8012aed4(void)
   if (!cpu) return;
 
     /* Address: 0x8012AED4, Size: 24 bytes, Blocks: 1 */
+
+    /* epilogue: pop s0-s2, ra (sp += 32), jr ra */
 
 block_8012AED4:
     ra = cpu->read_word(sp + 28);
@@ -12572,6 +12593,12 @@ void cps_8012afd4(void)
     }
     /* Address: 0x8012AFD4, Size: 116 bytes, Blocks: 8 */
 
+    /* object teardown sequence: same 0xE4 word drain to
+       scratchpad; jal 0x80191ED8, 0x801919AC(s2+92), 0x801917E0(s2);
+       byte[s1+18] countdown -> jal 0x801910E4(byte-1) else clear;
+       half[s1+208]<=0 -> 0x8012B06C else s5=0x801C4530,
+       s4=0x801BEF38, s0=a0-1 -> 0x8012B048. CPS-blocked. */
+
 block_8012AFD4:
     v0 = v0 | 0x00E4;
     v1 = cpu->read_word(v0);
@@ -12656,6 +12683,9 @@ void cps_8012b048(void)
   if (!cpu) return;
 
     /* Address: 0x8012B048, Size: 12 bytes, Blocks: 1 */
+
+    /* slot ptr load: v0=s0*4+s4; a1=word[v0]; -> 0x8012B054.
+       CPS-blocked. */
 
 block_8012B048:
     v0 = s0 << 2;
@@ -12831,6 +12861,10 @@ void cps_8012b118(void)
   if (!cpu) return;
 
     /* Address: 0x8012B118, Size: 60 bytes, Blocks: 1 */
+
+    /* attr fetch + emit variant: v1=a0*416+v0 stride;
+       a1..a3=byte[t0+4/5/6], half[t0+10]=half[v1+2], a0=t0+8; jal
+       0x80191300. CPS-blocked. */
 
 block_8012B118:
     v1 = a0 << 5;
@@ -13026,6 +13060,8 @@ void cps_8012b21c(void)
 
     /* Address: 0x8012B21C, Size: 32 bytes, Blocks: 1 */
 
+    /* epilogue: pop s0-s5, ra (sp += 48), jr ra */
+
 block_8012B21C:
     s5 = cpu->read_word(sp + 36);
     s4 = cpu->read_word(sp + 32);
@@ -13176,6 +13212,11 @@ void cps_8012b300(void)
         }
     }
     /* Address: 0x8012B300, Size: 108 bytes, Blocks: 8 */
+
+    /* object teardown variant (s4/s1 regs): same 0xE4 drain;
+       jal 0x80191ED8, 0x801919AC(s4+92), 0x801917E0(s4); byte[s1+18]
+       countdown -> 0x801910E4/clear; half[s1+208]<=0 -> 0x8012B398
+       else s3=0x801C4530 -> 0x8012B36C. CPS-blocked. */
 
 block_8012B300:
     v0 = v0 | 0x00E4;
