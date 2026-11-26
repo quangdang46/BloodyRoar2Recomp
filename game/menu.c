@@ -11010,9 +11010,9 @@ void bcd_time_frame_print(uint32_t out)
  * save_defaults_fill(); save_block_init(); save_tables_commit();
  * dbg_marker_mode_set(MB8(a0+0x24)); gauge_scale_fixed(MB8(a0+0xe),
  * magic-div(MB8(a0+0xf)<<3)); brightness_commit(MB8(a0+0xc)^1). */
-void versus_state_init(uint32_t baddr)
+void versus_state_init(uint32_t state)
 {
-  uint32_t s0 = baddr;
+  uint32_t s0 = state;
   uint32_t v0 = 0x801b1280u;
   uint32_t v1 = s0;
   int i;
