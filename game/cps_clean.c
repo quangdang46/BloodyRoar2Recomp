@@ -31867,6 +31867,13 @@ void cps_80137c14(void)
     }
     /* Address: 0x80137C14, Size: 160 bytes, Blocks: 6 */
 
+    /* script/op dispatch walk: loop over records at word[s2];
+       half[s1] is current op id; if word[s2]->half != half[s1] ->
+       0x80137CA4 (advance); else iterate word[s2]+2 count times:
+       jalr table[word[s3+12] + half[v1+4]*4](a0=word[s3]) — op
+       handler dispatch; after list, word[s2]+=6, compare next id;
+       loop or exit: half[s1]++ -> 0x80137CB4. CPS-blocked. */
+
 block_80137C14:
     a1 = cpu->read_word(s2);
     v1 = (int32_t)(int16_t)cpu->read_half(s1);
@@ -36665,6 +36672,14 @@ void cps_8013ac70(void)
     }
     /* Address: 0x8013AC70, Size: 300 bytes, Blocks: 10 */
 
+    /* projectile/FX spawn init: word[a1]=s1; unaligned 24B
+       copy from word[0x801C0000+17784]+v1*24+a2 into t0-t3;
+       half[a1+6]=0; clamp half[a1+12]<=45, half[a1+24]<=400; if
+       byte[word[word[a1]+56]+256]!=0: half[a1+10]=byte[0x801B0000+
+       6156+half[a1+10]], and if s2&0x80: half[a1+16]-=4096; then
+       half[a1+16]-=1024, half[a1+20]-=1024 -> 0x8013AD9C.
+       CPS-blocked. */
+
 block_8013AC70:
     v0 = v1 << 1;
     v0 = v0 + v1;
@@ -37266,6 +37281,13 @@ void cps_8013b1d8(void)
         }
     }
     /* Address: 0x8013B1D8, Size: 348 bytes, Blocks: 6 */
+
+    /* 2x2 GTE bone-transform + offset apply: half[s5+840]++;
+       per fp<2: load 7-word matrix from word[word[s5]+32]+192 into
+       gte_ctrl, gte_data[0..1]=word[s5+a1], cmd 0x0486012, read
+       mfc2 r9/10/11 -> half[s5+a2]; then half[a0+20/22/24] +=
+       half[mat+212/216/220]; a2+=48,a1+=8,a0+=48. Then nested
+       s4=5..1 unaligned-copy loop (fp<2, a2+=48). CPS-blocked. */
 
 block_8013B1D8:
     a0 = s5;
