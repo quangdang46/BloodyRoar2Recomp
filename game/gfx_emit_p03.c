@@ -199,7 +199,7 @@ void dir_emit_ret_t5(void)
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
-block_8018D47C:
+block_8018D47C:;
     uint32_t jr_target = t5;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8018D480: 0x00000000 */
@@ -271,7 +271,7 @@ void emit_tail_ra(void)
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
-block_8018D668:
+block_8018D668:;
     uint32_t jr_target = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8018D66C: 0x00000000 */
@@ -322,7 +322,7 @@ void emit_tail_zero(void)
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
-block_8018D694:
+block_8018D694:;
     uint32_t jr_target = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     v0 = zero;
