@@ -7106,20 +7106,20 @@ LAB_80141918:
 
 }
 
-void group_fx_spawn(undefined4 a0,undefined4 a1,undefined4 a2,undefined4 a3, undefined4 arg5,undefined4 arg6,undefined4 arg7)
+void group_fx_spawn(undefined4 arg,undefined4 w0,undefined4 w1,undefined4 w2, undefined4 w3,undefined4 w4,undefined4 w5)
 {
   int grp;
   int rec;
   grp = fx_group_alloc(1,1,0,0xc);
   if (grp != 0) {
     rec = noop_c(grp);
-    noop_b(grp,a0, (undefined4)br2_gaddr(&DAT_801f0760));
-    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((rec + 0xc) ))= a1;
-    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((rec + 0x10) ))= a2;
-    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((rec + 0x14) ))= a3;
-    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((rec + 0x18) ))= arg5;
-    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((rec + 0x1c) ))= arg6;
-    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((rec + 0x20) ))= arg7;
+    noop_b(grp,arg, (undefined4)br2_gaddr(&DAT_801f0760));
+    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((rec + 0xc) ))= w0;
+    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((rec + 0x10) ))= w1;
+    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((rec + 0x14) ))= w2;
+    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((rec + 0x18) ))= w3;
+    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((rec + 0x1c) ))= w4;
+    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((rec + 0x20) ))= w5;
   }
   return;
 
@@ -7470,18 +7470,18 @@ void sprite_strip_draw_dual(int src_a,int src_b,int uv,int n,ushort *pal,int x0,
 
 }
 
-int task_alloc_wrap_a(undefined4 a0,undefined4 a1,int a2,undefined4 a3)
+int task_alloc_wrap_a(undefined4 w0,undefined4 w1,int w2,undefined4 w3)
 {
   int node;
   undefined4 *pay;
   node = (int)(intptr_t)task_node_alloc(0,2,0,0x80137680,0,0x1c);
   if (node != 0) {
     pay = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((node + 0x10))));
-    *pay = a0;
-    pay[1] = a1;
-    pay[2] = a2;
-    pay[3] = a3;
-    pay[4] = a2 + -4;
+    *pay = w0;
+    pay[1] = w1;
+    pay[2] = w2;
+    pay[3] = w3;
+    pay[4] = w2 + -4;
     pay[5] = 0;
     pay[6] = 0;
   }
@@ -7489,30 +7489,30 @@ int task_alloc_wrap_a(undefined4 a0,undefined4 a1,int a2,undefined4 a3)
 
 }
 
-int task_alloc_wrap_b(undefined4 a0,undefined4 a1,undefined4 a2,undefined4 a3, int arg5)
+int task_alloc_wrap_b(undefined4 w0,undefined4 w1,undefined4 w2,undefined4 w3, int w4)
 {
   int node;
   undefined4 *pay;
   { extern uint32_t g_wb_last_p1,g_wb_last_p2,g_wb_last_p3,g_wb_last_p4,g_wb_last_p5;
     extern uint32_t g_wb_bad_count,g_wb_bad_node,g_wrap_src;
     g_wrap_src=1;
-    g_wb_last_p1=(uint32_t)a0; g_wb_last_p2=(uint32_t)a1;
-    g_wb_last_p3=(uint32_t)a2; g_wb_last_p4=(uint32_t)a3;
-    g_wb_last_p5=(uint32_t)arg5;
-    if (((uint32_t)a0 < 0x80100000u || (uint32_t)a1 < 0x80100000u) &&
-        (uint32_t)a0 != 0u && (uint32_t)a1 != 0u) {
-      g_wb_bad_count++; g_wb_bad_node=(uint32_t)a3;
+    g_wb_last_p1=(uint32_t)w0; g_wb_last_p2=(uint32_t)w1;
+    g_wb_last_p3=(uint32_t)w2; g_wb_last_p4=(uint32_t)w3;
+    g_wb_last_p5=(uint32_t)w4;
+    if (((uint32_t)w0 < 0x80100000u || (uint32_t)w1 < 0x80100000u) &&
+        (uint32_t)w0 != 0u && (uint32_t)w1 != 0u) {
+      g_wb_bad_count++; g_wb_bad_node=(uint32_t)w3;
     }
   }
   node = (int)(intptr_t)task_node_alloc(0,3,0,0x80137824,0,0x1c);
   if (node != 0) {
     pay = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((node + 0x10))));
-    *pay = a0;
-    pay[1] = a1;
-    pay[2] = a2;
-    pay[3] = a3;
-    pay[4] = arg5;
-    pay[5] = arg5 + -4;
+    *pay = w0;
+    pay[1] = w1;
+    pay[2] = w2;
+    pay[3] = w3;
+    pay[4] = w4;
+    pay[5] = w4 + -4;
     *(undefined2 *)(pay + 6) = 0;
     *(undefined2 *)((intptr_t)pay + 0x1a) = 0;
   }
@@ -8853,7 +8853,7 @@ void slot_height_proj(undefined4 a0,int obj,int idx,int xf)
 
 }
 
-void battle_intro_fsm(undefined4 a0,undefined4 a1,undefined4 a2,int a3)
+void battle_intro_fsm(undefined4 mat,undefined4 a1,undefined4 a2,int st)
 {
   char cnt;
   int fx;
@@ -8863,7 +8863,7 @@ void battle_intro_fsm(undefined4 a0,undefined4 a1,undefined4 a2,int a3)
   int i;
   int t7;
   int *pp;
-  if (*(char *)guest_at((uint32_t)(uintptr_t)((a3 + 0xb1) ))< '\0') {
+  if (*(char *)guest_at((uint32_t)(uintptr_t)((st + 0xb1) ))< '\0') {
     return;
   }
   if (_DAT_801f0738 == 1) {
@@ -8886,7 +8886,7 @@ void battle_intro_fsm(undefined4 a0,undefined4 a1,undefined4 a2,int a3)
     if (_DAT_801f0738 != 3) {
       return;
     }
-    DAT_801bef20 = (uint)(*(short *)guest_at((uint32_t)(uintptr_t)((a3 + 0x82) ))!= 0);
+    DAT_801bef20 = (uint)(*(short *)guest_at((uint32_t)(uintptr_t)((st + 0x82) ))!= 0);
     i = 0;
     t7 = 0;
     do {
@@ -8907,9 +8907,9 @@ void battle_intro_fsm(undefined4 a0,undefined4 a1,undefined4 a2,int a3)
       i = i + 1;
       t7 = t7 + 0x108;
     } while (i < 2);
-    gp_slot48_set(*(undefined4 *)guest_at((uint32_t)(uintptr_t)((a3 + 8))));
-    gp_slot24_set(*(undefined4 *)guest_at((uint32_t)(uintptr_t)((a3 + 0xc))));
-    gte_matrix_base_set(a0,a0);
+    gp_slot48_set(*(undefined4 *)guest_at((uint32_t)(uintptr_t)((st + 8))));
+    gp_slot24_set(*(undefined4 *)guest_at((uint32_t)(uintptr_t)((st + 0xc))));
+    gte_matrix_base_set(mat,mat);
     angle_pair_rotmat(-(int)_DAT_801f0298,(int)_DAT_801f029a,(uint *)(uintptr_t)&DAT_801f0760);
     gte_rot_load((undefined4 *)(uintptr_t)&DAT_801be838);
     gte_tr_load(DAT_801be838);
@@ -8994,18 +8994,18 @@ LAB_801373c0:
 
 }
 
-int task_alloc_wrap_c(undefined4 a0,undefined4 a1,int a2,undefined4 a3)
+int task_alloc_wrap_c(undefined4 w0,undefined4 w1,int w2,undefined4 w3)
 {
   int node;
   undefined4 *pay;
   node = (int)(intptr_t)task_node_alloc(1,2,6,0x80137680,0,0x1c);
   if (node != 0) {
     pay = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((node + 0x10))));
-    *pay = a0;
-    pay[1] = a1;
-    pay[2] = a2;
-    pay[3] = a3;
-    pay[4] = a2 + -4;
+    *pay = w0;
+    pay[1] = w1;
+    pay[2] = w2;
+    pay[3] = w3;
+    pay[4] = w2 + -4;
     pay[5] = 0;
     pay[6] = 0;
   }
@@ -9013,7 +9013,7 @@ int task_alloc_wrap_c(undefined4 a0,undefined4 a1,int a2,undefined4 a3)
 
 }
 
-int task_alloc_wrap_d(undefined4 a0,undefined4 a1,undefined4 a2,undefined4 a3,int arg5)
+int task_alloc_wrap_d(undefined4 w0,undefined4 w1,undefined4 w2,undefined4 w3,int w4)
 {
   int node;
   undefined4 *pay;
@@ -9023,24 +9023,24 @@ int task_alloc_wrap_d(undefined4 a0,undefined4 a1,undefined4 a2,undefined4 a3,in
   { extern uint32_t g_wd_last_p1,g_wd_last_p2,g_wd_last_p3,g_wd_last_p4,g_wd_last_p5;
     extern uint32_t g_wd_bad_count,g_wd_bad_node,g_wrap_src;
     g_wrap_src=2;
-    g_wd_last_p1=(uint32_t)a0; g_wd_last_p2=(uint32_t)a1;
-    g_wd_last_p3=(uint32_t)a2; g_wd_last_p4=(uint32_t)a3;
-    g_wd_last_p5=(uint32_t)arg5;
-    if (((uint32_t)a0 < 0x80100000u || (uint32_t)a1 < 0x80100000u ||
-         (uint32_t)a2 < 0x80100000u) &&
-        (uint32_t)a0 != 0u && (uint32_t)a1 != 0u) {
-      g_wd_bad_count++; g_wd_bad_node=(uint32_t)(uintptr_t)a3;
+    g_wd_last_p1=(uint32_t)w0; g_wd_last_p2=(uint32_t)w1;
+    g_wd_last_p3=(uint32_t)w2; g_wd_last_p4=(uint32_t)w3;
+    g_wd_last_p5=(uint32_t)w4;
+    if (((uint32_t)w0 < 0x80100000u || (uint32_t)w1 < 0x80100000u ||
+         (uint32_t)w2 < 0x80100000u) &&
+        (uint32_t)w0 != 0u && (uint32_t)w1 != 0u) {
+      g_wd_bad_count++; g_wd_bad_node=(uint32_t)(uintptr_t)w3;
     }
   }
   node = (int)(intptr_t)task_node_alloc(1,2,6,0x80137824,0,0x1c);
   if (node != 0) {
     pay = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((node + 0x10))));
-    *pay = a0;
-    pay[1] = a1;
-    pay[2] = a2;
-    pay[3] = a3;
-    pay[4] = arg5;
-    pay[5] = arg5 + -4;
+    *pay = w0;
+    pay[1] = w1;
+    pay[2] = w2;
+    pay[3] = w3;
+    pay[4] = w4;
+    pay[5] = w4 + -4;
     *(undefined2 *)(pay + 6) = 0;
     *(undefined2 *)((intptr_t)pay + 0x1a) = 0;
   }
@@ -9048,14 +9048,14 @@ int task_alloc_wrap_d(undefined4 a0,undefined4 a1,undefined4 a2,undefined4 a3,in
 
 }
 
-int task_alloc_wrap_e(int a0,int a1,int a2)
+int task_alloc_wrap_e(int w0,int w1,int w2)
 {
   int res;
   int *pay;
   { extern uint32_t g_wrape_calls,g_wrape_last_ret,g_wrape_p1,g_wrape_p2,g_wrape_p3;
-    g_wrape_calls++; g_wrape_p1=(uint32_t)a0;
-    g_wrape_p2=(uint32_t)a1; g_wrape_p3=(uint32_t)a2; }
-  res = (int)(intptr_t)task_node_alloc(1,2,6,0x80137acc,0,a0 + 0x14);
+    g_wrape_calls++; g_wrape_p1=(uint32_t)w0;
+    g_wrape_p2=(uint32_t)w1; g_wrape_p3=(uint32_t)w2; }
+  res = (int)(intptr_t)task_node_alloc(1,2,6,0x80137acc,0,w0 + 0x14);
   if (res == 0) {
     res = 0;
     { extern uint32_t g_wrape_last_ret; g_wrape_last_ret = 0; }
@@ -9063,10 +9063,10 @@ int task_alloc_wrap_e(int a0,int a1,int a2)
   else {
     { extern uint32_t g_wrape_last_ret; g_wrape_last_ret = (uint32_t)res; }
     pay = (int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((res + 0x10))));
-    pay[1] = a2;
-    pay[2] = a2;
+    pay[1] = w2;
+    pay[2] = w2;
     pay[4] = 0;
-    pay[3] = a1;
+    pay[3] = w1;
     res = *(int *)guest_at((uint32_t)(uintptr_t)((res + 0x10) ))+ 0x14;
     *pay = res;
   }
@@ -9074,7 +9074,7 @@ int task_alloc_wrap_e(int a0,int a1,int a2)
 
 }
 
-int task_alloc_wrap_f(undefined4 a0,undefined4 a1,undefined4 a2,int a3)
+int task_alloc_wrap_f(undefined4 w0,undefined4 w1,undefined4 w2,int seq)
 {
   short seq_next;
   int node;
@@ -9082,12 +9082,12 @@ int task_alloc_wrap_f(undefined4 a0,undefined4 a1,undefined4 a2,int a3)
   node = (int)(intptr_t)task_node_alloc(1,2,6,0x80137cd0,0,0x18);
   if (node != 0) {
     pay = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((node + 0x10))));
-    *pay = a0;
-    pay[1] = a1;
-    pay[2] = a2;
-    pay[3] = a3;
-    pay[4] = a3;
-    seq_next = *(short *)guest_at((uint32_t)(uintptr_t)((a3 + 2)));
+    *pay = w0;
+    pay[1] = w1;
+    pay[2] = w2;
+    pay[3] = seq;
+    pay[4] = seq;
+    seq_next = *(short *)guest_at((uint32_t)(uintptr_t)((seq + 2)));
     *(undefined2 *)((intptr_t)pay + 0x16) = 0;
     *(short *)(pay + 5) = seq_next + 1;
   }
