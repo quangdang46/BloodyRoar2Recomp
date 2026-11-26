@@ -46,13 +46,14 @@ combat), then `fn_entry_dump`. 2048-entry sample of 405338 captured entries.
 ## Port progress (this session — emit family)
 
 The `0x80188xxx` GTE emit family proved HIGHLY tractable — shared skeleton,
-per-function faithful transcription. **11 functions ported to clean C**
-(commits `ef09697`, `e5e6576`, `639a207`), all in `game/gfx.c`:
+per-function faithful transcription. **17 functions ported to clean C**
+(commits `ef09697`, `e5e6576`, `639a207`, `7c76830`), all in `game/gfx.c`:
 
 - `prim_poly_emit_64` (0x8018866C), `_6c` (0x80188510), `_88` (0x80188754)
 - `prim_poly_emit_6c_tex` (0x801888C0), `prim_poly_emit_78` (0x801889F4)
 - `prim_xform_emit` (0x80188B5C), `prim_poly_emit_64_vs` (0x80189E2C)
 - `prim_nclip_emit_{50,4c,5c,6c,8c,60}` (0x80188C34/2C/DCC/E88/F40/902C)
+- `prim_nclip_emit_{80,a8,64,74,80b,98}` (0x801891A4/26C/360/428/500/5F8)
 
 Pattern: leaf, `cpu->gpr[]` args, loop over structs, `br2_ld*/br2_st*`,
 `psx_cyc_lwc2_read`(lwc2)/`swl_guest`(swl)/`br2_st32`+`gte_precision_store_word`(swc2),
