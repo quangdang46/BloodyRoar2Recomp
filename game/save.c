@@ -331,7 +331,7 @@ void memcard_tick(void)
     if ((DAT_801bef6e & 0xf) != 2) {
       return;
     }
-    switch(DAT_801bef6d) {
+    switch (DAT_801bef6d) {
     default:
       return;
     case 0x10:
@@ -477,7 +477,7 @@ void memcard_tick(void)
     }
     goto case_30_80157ebc;
   }
-  switch(DAT_801bef6d) {
+  switch (DAT_801bef6d) {
   case 0x10:
     brightness_packet_send(0);
     DAT_801bef60 = 7;
@@ -784,7 +784,7 @@ bb_8015f820:
     if (!(a0)) {
       menu_stepper_state_advance(&local_c0);
     }
-    switch(local_bd) {
+    switch (local_bd) {
     case 0:
       if ((_DAT_1f80007c & 0x10) != 0) {
         deferred_cmd_post(0x400,0xd,0);
@@ -821,7 +821,7 @@ bb_8015fbfc:
     case 0x11:
       if ((int)ow_flag < 0) goto bb_8015ffac;
       scroll_offset_set(0x10,0x68);
-      switch(dlg_type) {
+      switch (dlg_type) {
       case 0:
         sprintf_core(msg_buf,s_LOAD_FROM_MEMORY_CARD__s___80121788,
                      SLOTSTR(slot_no));
@@ -848,7 +848,7 @@ bb_8015fbfc:
       announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,&DAT_8012181c,0x30,0x1000,ow_flag != 0);
       announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,&DAT_80121820,0x90,0x1000,ow_flag == 0);
       scroll_offset_accumulate(0,0x10);
-      switch(dlg_type) {
+      switch (dlg_type) {
       case 1:
       case 5:
         announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_1_BLOCK_IS_REQUIRED_TO_SAVE__80121824,0x10,0x1000
@@ -862,7 +862,7 @@ bb_8015fbfc:
       if ((_DAT_1f80007c & 0x10) == 0) {
         if ((_DAT_1f80007c & 0xe0) != 0) {
           deferred_cmd_post(0x400,0xc,0);
-          switch(dlg_type) {
+          switch (dlg_type) {
           case 0:
           case 1:
 case_0_8015fbc4:
@@ -888,7 +888,7 @@ bb_8015fc08:
     case 0x12:
     case 0x13:
       scroll_offset_set(0x10,0x68);
-      switch(dlg_type) {
+      switch (dlg_type) {
       case 0:
         announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_NOW_LOADING_FROM_MEMORY_CARD_80121844,0x10,0x1000
                      ,0);
@@ -930,7 +930,7 @@ dflt_8015fc3c:
       else if (slot_no == 1) {
         op_sel = 0x10;
       }
-      switch(dlg_type) {
+      switch (dlg_type) {
       case 0:
         op_rc = mc_data_read(op_sel,DAT_801b45f4,DAT_801b45f8,DAT_801b45fc,DAT_801b4600,
                                 DAT_801b4604,DAT_801b4608,DAT_801b460c,DAT_801b4610,DAT_801b4614,
@@ -966,7 +966,7 @@ bb_8015ffac:
       break;
     case 0x15:
       scroll_offset_set(0x10,0x68);
-      switch(dlg_type) {
+      switch (dlg_type) {
       case 0:
         str_arg = SLOTSTR(slot_no);
         fmt_str = s_LOAD_FROM_MEMORY_CARD__s__801218ec;
@@ -1011,7 +1011,7 @@ dflt_8015ffe4:
         if (op_rc != 1) {
           if (op_rc < 2) {
             if (op_rc) goto bb_801603ec;
-            switch(dlg_type) {
+            switch (dlg_type) {
             case 0:
               gauge_scale_fixed(*(uint8_t *)(_g_system_config_ptr + 0xe),
                            ((uint32_t)*(int8_t *)(_g_system_config_ptr + 0xf) << 3) / 10);
@@ -1161,7 +1161,7 @@ bb_80160558:
       br2_guest_frame_free();
       return sm_ret;
     }
-  } while( true );
+  } while (true);
 }
 #undef local_c0
 #undef local_be
@@ -1295,7 +1295,7 @@ bb_80156ebc:
     if (0x1f < slot_i) {
       return;
     }
-  } while( true );
+  } while (true);
 }
 
 /* ======== 0x8015ab4c ======== */
