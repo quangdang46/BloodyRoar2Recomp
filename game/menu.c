@@ -195,9 +195,9 @@ extern void dialog_sel_dispatch_wide(void);
 undefined1 frame_divisor_get(void);
 extern int card_sprite_load_sm(uint32_t,int);
 extern int attr_word_decode(void *);
-undefined4 stream_block_decode(undefined4,int *,int idx);
-uint pad_state_refresh(intptr_t ctx);
-undefined2 match_mode_set(int ctx);
+undefined4 stream_block_decode(undefined4 ctx,int *tab,int idx);
+uint pad_state_refresh(intptr_t pad);
+undefined2 match_mode_set(int mode);
 void cd_stream_mode_init(undefined4 stptr);
 
 /* ---- guest globals ---- */
@@ -2435,55 +2435,55 @@ void tile_decode_wait(intptr_t job)
 
 /* ======== 0x80159ce4 ======== */
 
-void cd_stream_mode_init(undefined4 param_1)
+void cd_stream_mode_init(undefined4 stptr)
 
 {
-  int iVar1;
+  int rc;
   undefined1 local_18 [8];
   extern void cd_seek_note(uint32_t,uint32_t,uint32_t);
   extern int  cd_stamp_to_sector(const void *);
   extern uint32_t g_cdfn_log[24];
-  uint32_t _st = *(uint32_t *)guest_at(param_1);
+  uint32_t _st = *(uint32_t *)guest_at(stptr);
   g_cdfn_log[14]++;   /* CDFN_STREAM_MODE_INIT */
-  cd_seek_note(4, _st, (uint32_t)cd_stamp_to_sector(guest_at(param_1)));
+  cd_seek_note(4, _st, (uint32_t)cd_stamp_to_sector(guest_at(stptr)));
 
   local_18[0] = 0x80;
   do {
     do {
-      iVar1 = cd_mode_flag_set(2,param_1,0);
-    } while (iVar1 == 0);
+      rc = cd_mode_flag_set(2,stptr,0);
+    } while (rc == 0);
     do {
-      iVar1 = cd_mode_flag_set(0xe,local_18,0);
-    } while (iVar1 == 0);
+      rc = cd_mode_flag_set(0xe,local_18,0);
+    } while (rc == 0);
     if (DAT_801c4580 == '\0') {
       cd_timer_read(3);
     }
     DAT_801c4580 = '\x01';
-    iVar1 = cd_mode_set_0e(0x1e0);
-  } while (iVar1 == 0);
+    rc = cd_mode_set_0e(0x1e0);
+  } while (rc == 0);
   return;
 }
 
 /* ======== 0x80163154 ======== */
 
-undefined4 stream_block_decode(undefined4 param_1,int *param_2,int param_3)
+undefined4 stream_block_decode(undefined4 ctx,int *tab,int idx)
 
 {
-  if (param_3 < *param_2) {
-    if (param_2[param_3 + 1] != -1) {
-      /* param_2 is a host pointer into guest RAM (callers pass guest_at()).
-       * The original MIPS added the table's GUEST address; (int)param_2
+  if (idx < *tab) {
+    if (tab[idx + 1] != -1) {
+      /* tab is a host pointer into guest RAM (callers pass guest_at()).
+       * The original MIPS added the table's GUEST address; (int)tab
        * truncated the host pointer instead, so mode3_dispatch received a
        * bogus a1 (~0x87xxxxxx), read the mode word from open bus, and
        * returned a garbage length that corrupted the heap cursor
        * (_DAT_801e3cfc / _DAT_801c47b8) -> wrong CD dest -> DMA into .text.
        * guest_of() recovers the guest address faithfully. */
-      uint32_t srcg = guest_of(param_2) + (uint32_t)param_2[param_3 + 1] + (uint32_t)(*param_2 + 1) * 4u;
-      { uint32_t r = mode3_dispatch(param_1,srcg);
+      uint32_t srcg = guest_of(tab) + (uint32_t)tab[idx + 1] + (uint32_t)(*tab + 1) * 4u;
+      { uint32_t r = mode3_dispatch(ctx,srcg);
         /* tag 11: record the RETURN length so cursor advances are fully
          * attributed (decode dst->dst+len). dst=heap cursor arg. */
         { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-          decomp_trace_record(11,param_1,srcg,0,r); }
+          decomp_trace_record(11,ctx,srcg,0,r); }
         return r; }
     }
   }
@@ -2554,11 +2554,11 @@ store_ff:
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-undefined2 match_mode_set(int param_1)
+undefined2 match_mode_set(int mode)
 
 {
-  if (-1 < param_1) {
-    _DAT_801f36c2 = (undefined2)param_1;
+  if (-1 < mode) {
+    _DAT_801f36c2 = (undefined2)mode;
   }
   return _DAT_801f36c2;
 }
@@ -2953,54 +2953,54 @@ undefined4 attract_menu_dispatch(intptr_t state,uint code)
 
 /* ======== 0x8012a72c ======== */
 
-uint pad_state_refresh(intptr_t param_1)
+uint pad_state_refresh(intptr_t pad)
 
 {
-  char cVar1;
-  uint uVar2;
+  char cnt;
+  uint btns;
   intptr_t iVar3;
-  uint uVar4;
-  intptr_t iVar5;
-  int iVar6;
-  uint uVar7;
+  uint edge;
+  intptr_t bcur;
+  int i;
+  uint prev;
   
-  if ((DAT_801befa8 != '\0') || (uVar2 = attr_word_decode(&DAT_801befa8), (int)uVar2 < 0)) {
-    uVar2 = 0;
+  if ((DAT_801befa8 != '\0') || (btns = attr_word_decode(&DAT_801befa8), (int)btns < 0)) {
+    btns = 0;
   }
   if ((DAT_801befca != '\0') || (iVar3 = attr_word_decode(&DAT_801befca), iVar3 < 0)) {
     iVar3 = 0;
   }
-  iVar6 = 0;
-  uVar2 = iVar3 << 0x10 | uVar2;
-  uVar7 = *(uint *)(param_1 + 0x6c);
-  *(uint *)(param_1 + 0x6c) = uVar2;
-  uVar4 = (uVar2 ^ uVar7) & uVar2;
-  *(uint *)(param_1 + 0x70) = uVar7;
-  *(uint *)(param_1 + 0x68) = uVar4;
-  *(uint *)(param_1 + 0x74) = uVar4;
-  iVar3 = param_1;
-  iVar5 = param_1;
+  i = 0;
+  btns = iVar3 << 0x10 | btns;
+  prev = *(uint *)(pad + 0x6c);
+  *(uint *)(pad + 0x6c) = btns;
+  edge = (btns ^ prev) & btns;
+  *(uint *)(pad + 0x70) = prev;
+  *(uint *)(pad + 0x68) = edge;
+  *(uint *)(pad + 0x74) = edge;
+  iVar3 = pad;
+  bcur = pad;
   do {
     if ((*(short *)(iVar3 + 0x6c) == 0) || (*(short *)(iVar3 + 0x6c) != *(short *)(iVar3 + 0x70))) {
-      *(undefined1 *)(iVar5 + 0x78) = 0x10;
+      *(undefined1 *)(bcur + 0x78) = 0x10;
     }
     else {
-      cVar1 = *(char *)(iVar5 + 0x78) + -1;
-      *(char *)(iVar5 + 0x78) = cVar1;
-      if (cVar1 == '\0') {
+      cnt = *(char *)(bcur + 0x78) + -1;
+      *(char *)(bcur + 0x78) = cnt;
+      if (cnt == '\0') {
         *(undefined2 *)(iVar3 + 0x74) = *(undefined2 *)(iVar3 + 0x6c);
-        *(undefined1 *)(iVar5 + 0x78) = 2;
+        *(undefined1 *)(bcur + 0x78) = 2;
       }
     }
-    iVar5 = iVar5 + 1;
-    iVar6 = iVar6 + 1;
+    bcur = bcur + 1;
+    i = i + 1;
     iVar3 = iVar3 + 2;
-  } while (iVar6 < 2);
-  *(ushort *)(param_1 + 0x80) = *(ushort *)(param_1 + 0x6c) | *(ushort *)(param_1 + 0x6e);
-  *(ushort *)(param_1 + 0x7c) = *(ushort *)(param_1 + 0x68) | *(ushort *)(param_1 + 0x6a);
-  *(ushort *)(param_1 + 0x7e) = *(ushort *)(param_1 + 0x74) | *(ushort *)(param_1 + 0x76);
+  } while (i < 2);
+  *(ushort *)(pad + 0x80) = *(ushort *)(pad + 0x6c) | *(ushort *)(pad + 0x6e);
+  *(ushort *)(pad + 0x7c) = *(ushort *)(pad + 0x68) | *(ushort *)(pad + 0x6a);
+  *(ushort *)(pad + 0x7e) = *(ushort *)(pad + 0x74) | *(ushort *)(pad + 0x76);
   pad_slot_state_walk();
-  return uVar2;
+  return btns;
 }
 
 
@@ -13130,14 +13130,14 @@ extern uint32_t br2_ld32(uint32_t);
 extern void br2_st16(uint32_t, uint16_t);
 extern uint32_t call_guest4(uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
 
-uint32_t desc_cmd_interp(uint32_t param_1, uint32_t param_2,
-                         uint32_t param_3, uint32_t param_4)
+uint32_t desc_cmd_interp(uint32_t unused1, uint32_t unused2,
+                         uint32_t unused3, uint32_t unused4)
 {
   CPUState *cpu = clean_cpu_state();
   uint32_t _sv_s0 = cpu->gpr[16], _sv_s1 = cpu->gpr[17];
   uint32_t _sv_s2 = cpu->gpr[18], _sv_s3 = cpu->gpr[19];
   uint32_t jt;
-  (void)param_1; (void)param_2; (void)param_3; (void)param_4;
+  (void)unused1; (void)unused2; (void)unused3; (void)unused4;
 
 block_8017DB88:
 { uint32_t _pgx1 = cpu->gpr[6]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[19] = cpu->gpr[6];
