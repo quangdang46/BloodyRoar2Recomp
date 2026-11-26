@@ -691,52 +691,13 @@ uint32_t bios_svc6(uint32_t table, uint32_t svc,
         return v;
     }
 }
-
-/* BIOS kernel-call trampolines. Guest code reaches these as 4-insn
- * stubs (`li t2,<vec>; jr t2; li t1,<svc>`) that forward the caller's
- * a0-a3 untouched. Game/ ports that call the C symbol directly must
- * route through the real recompiled BIOS — the bind.c weak stubs
- * returned 0, which silently skipped kernel object allocation
- * (FUN_8019b380/390), CD channel services (FUN_801a02x0), and event
- * calls, deadlocking CD init inside the BIOS idle loop. */
-uint32_t FUN_8019b380(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
-{ return bios_svc6(0xb0,0x08,a0,a1,a2,a3); }
-void FUN_8019b390(uint32_t a0)
-{ (void)bios_svc6(0xb0,0x0c,a0,0,0,0); }
-uint32_t FUN_801a0260(const void *a0)
-{ return bios_svc6(0xb0,0x43,guest_of(a0),0,0,0); }
-void FUN_801a05f0(uint32_t a0)
-{ (void)bios_svc6(0xa0,0xac,a0,0,0,0); }
-void FUN_8019a2f0(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
-{ (void)bios_svc6(0xb0,0x12,a0,a1,a2,a3); }
-void FUN_8019a300(void)
-{ (void)bios_svc6(0xb0,0x13,0,0,0,0); }
-void FUN_8019a310(void)
-{ (void)bios_svc6(0xb0,0x14,0,0,0,0); }
-/* FUN_8019a350 / FUN_8019a364 are indirect tail-calls: `lw t1, mem[0x801FEB58/5C];
- * jr t1`. The cells hold OpenBIOS kernel-object method pointers installed by
- * cd_kobj_init_b (sub+0x884 / sub+0x894). Route through call_guest so the real
- * callee runs; both targets are leaf flag-setters taking no args. */
-void FUN_8019a350(void)
-{ (void)call_guest(br2_ld32(0x801feb58u),0,0); }
+/* FUN_8019a364 is an indirect tail-call: `lw t1, mem[0x801FEB5C]; jr t1`.
+ * The cell holds the OpenBIOS kernel-object method pointer installed by
+ * cd_kobj_init_b (sub+0x894). Route through call_guest so the real callee
+ * runs; the target is a leaf flag-setter taking no args. (Sibling
+ * FUN_8019a350 @0x801FEB58 was removed — no remaining callers.) */
 void FUN_8019a364(void)
 { (void)call_guest(br2_ld32(0x801feb5cu),0,0); }
-void FUN_8019ad48(uint32_t a0)
-{ (void)bios_svc6(0xa0,0x72,a0,0,0,0); }
-void FUN_8019ad70(uint32_t a0)
-{ (void)bios_svc6(0xb0,0x18,a0,0,0,0); }
-void FUN_8019ad80(uint32_t a0)
-{ (void)bios_svc6(0xb0,0x19,a0,0,0,0); }
-void FUN_8019e420(void)
-{ (void)bios_svc6(0xb0,0x4c,0,0,0,0); }
-int32_t FUN_801a0220(uint32_t a0,uint32_t a1,uint32_t a2)
-{ return (int32_t)bios_svc6(0xb0,0x32,a0,a1,a2,0); }
-uint32_t FUN_801a0230(uint32_t a0,uint32_t a1,uint32_t a2)
-{ return bios_svc6(0xb0,0x33,a0,a1,a2,0); }
-uint32_t FUN_801a0240(uint32_t a0,uint32_t a1,uint32_t a2)
-{ return bios_svc6(0xb0,0x34,a0,a1,a2,0); }
-void FUN_801a0250(uint32_t a0)
-{ (void)bios_svc6(0xb0,0x36,a0,0,0,0); }
 
 /* br2_bios_tramp — guest `jr $t2`-vector trampoline semantics: the stub
  * sets only $t1=svc/$t2=vector and forwards the caller's a0-a3 untouched.
