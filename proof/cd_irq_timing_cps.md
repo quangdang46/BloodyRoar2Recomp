@@ -235,3 +235,41 @@ faithful-by-construction). Hot-path counters meanwhile show the timed
 bodies carrying real load: cd_cmd_issue 0x80196E14 = 100.7M dispatches,
 cd_result_wait_a 0x801968CC = 31.3M — the clean-dispatch + timed-body
 path sustains ~2M dispatches/sec of CD polling without timing drift.
+
+## Batch 9 (orch/w5/e05) — embedded entries; self-delegates reach ZERO
+
+Transformer extension: `gen_cps_clean.py --timing` now supports
+EMBEDDED ENTRIES — guest addrs that are instruction anchors mid-block
+(jal targets inside a parent's first block, e.g. 0x8019D508 inside
+br2eu_func_8019D500). find_body also matches the per-instruction
+`/* 0xADDR: ENC */` op comment; when the requested addr has no block
+label or _cont case, `_truncate_embedded_entry` rewrites the parent's
+FIRST block only:
+
+- drops instruction segments before the entry anchor (prologue kept
+  through the first psx_icache_fetch/psx_cyc_step so fetch accounting
+  still brackets the block)
+- rewrites psx_slice_block to (entry addr, bcyc - skipped_slots, side)
+  — bcyc is instr-slot count, skipped = (entry - block_start)/4
+- renames the block label to the entry addr and injects an explicit
+  `case 0xADDR: goto block_ADDR` into the _cont switch
+- entries in LATER blocks are rejected (branch targets must stay whole)
+
+Bodies this batch:
+| symbol | coverage |
+|---|---|
+| cpst_8018cfdc | cd_file_load_sm — 25 blocks / 372B standalone body |
+| cpst_8019d500 | cd_seek_complete_poll parent — 12 blocks (rows for all blocks) |
+| cpst_8019d508 | cd_seek_step EMBEDDED entry — truncated first block starts at the addiu sp,-32; skips parent's lui/lw v0 preload exactly as a real jal to 0x8019D508 does |
+| (rows) | 8019b310 -> cpst_8019b308 (block inside cd_ext_init_once), 8018f220 -> cpst_8018ef6c (sprintf piece _cont case) |
+
+Result: clean_table self-delegate count 4 -> 0 (8419 wrappers, 0
+skipped). The four former self-delegates all resolve through timed CPS
+bodies now; the clean-C wrappers' literal call_guest4(self) stays
+unwrapped by design but dispatches into the cpst_ body.
+
+Verification: clean build EU+USA; headless :4877 frames 23659 ->
+65220 attract CD streaming, no wedge. clean_stats: new entries 0 hits
+in attract (file-load/seek/sprintf-piece paths not exercised
+headless — faithful-by-construction); cd_cmd_issue still ~84M
+dispatches.
