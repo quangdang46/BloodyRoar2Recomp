@@ -23160,7 +23160,9 @@ block_80132D40:
 }
 
 /* cps_8013309c — clean CPS transliteration of br2eu_func_8013309C (guest 0x8013309c)
- * from SLES_017.22_full_05.c. */
+ * from SLES_017.22_full_05.c.
+ * table_walk_depth: table_byte_next_a + pair_depth_set — byte-table
+ * walk updating depth pairs (dual_target_track family). */
 void cps_8013309c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -23748,7 +23750,9 @@ block_80133550:
 }
 
 /* cps_80133554 — clean CPS transliteration of br2eu_func_80133554 (guest 0x80133554)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * approach_step_leaf: fixed_approach_s16-driven approach step near
+ * fixed_approach_s16/u16_step_toward. */
 void cps_80133554(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -26728,7 +26732,9 @@ block_80135298:
 }
 
 /* cps_801352a0 — clean CPS transliteration of br2eu_func_801352A0 (guest 0x801352a0)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * particle_burst_spawn_wrap: particle_burst_spawn caller in the
+ * channel_script_emit region. */
 void cps_801352a0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -27631,7 +27637,8 @@ block_80135628:
 }
 
 /* cps_80135630 — clean CPS transliteration of br2eu_func_80135630 (guest 0x80135630)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * prim_task_emit_wrap: prim_task_run caller. */
 void cps_80135630(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -27744,7 +27751,8 @@ block_801356AC:
 }
 
 /* cps_801356c0 — clean CPS transliteration of br2eu_func_801356C0 (guest 0x801356c0)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * particle_burst_update_wrap: particle_burst_update caller. */
 void cps_801356c0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -30123,7 +30131,9 @@ block_80136A8C:
 }
 
 /* cps_80136a90 — clean CPS transliteration of br2eu_func_80136A90 (guest 0x80136a90)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * prim_emit_rtps_t: prim_task_run + gte_rtps_xform3_t — prim emit with
+ * RTPS transform variant. */
 void cps_80136a90(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -30961,7 +30971,9 @@ block_80137868:
 }
 
 /* cps_80137878 — clean CPS transliteration of br2eu_func_80137878 (guest 0x80137878)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * task_slot_advance_a: task_slot_step-driven 18-block task advance in
+ * the battle_intro_fsm region. */
 void cps_80137878(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -31713,7 +31725,9 @@ block_80137CB4:
 }
 
 /* cps_80137d28 — clean CPS transliteration of br2eu_func_80137D28 (guest 0x80137d28)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * task_slot_advance_b: task_slot_step + fighter_chan_delta_accum —
+ * per-frame fighter channel delta accumulation. */
 void cps_80137d28(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -31973,7 +31987,8 @@ block_80137E60:
 }
 
 /* cps_80138074 — clean CPS transliteration of br2eu_func_80138074 (guest 0x80138074)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * task_node_alloc_wrap: task_node_alloc caller. */
 void cps_80138074(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -37135,7 +37150,9 @@ block_8013B324:
 }
 
 /* cps_8013b334 — clean CPS transliteration of br2eu_func_8013B334 (guest 0x8013b334)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * gte_points_xform_wrap: gte_rot_load + gte_tr_load + gte_points_xform
+ * — point-cloud transform setup+run. */
 void cps_8013b334(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -39773,7 +39790,9 @@ block_8013C580:
 }
 
 /* cps_8013c5e0 — clean CPS transliteration of br2eu_func_8013C5E0 (guest 0x8013c5e0)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * angle_pair_rotmat_wrap: angle_from_xy + angle_pair_rotmat — builds
+ * rotation from XY angle pair. */
 void cps_8013c5e0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -42921,7 +42940,9 @@ block_8013E788:
 }
 
 /* cps_8013e790 — clean CPS transliteration of br2eu_func_8013E790 (guest 0x8013e790)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * task_slot_free_wrap: task_slot_step + task_node_free — advance then
+ * free task node. */
 void cps_8013e790(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -44587,7 +44608,9 @@ block_8013FD2C:
 }
 
 /* cps_8013fd48 — clean CPS transliteration of br2eu_func_8013FD48 (guest 0x8013fd48)
- * from SLES_017.22_full_10.c. */
+ * from SLES_017.22_full_10.c.
+ * gte_sxy_pack_wrap: gte_rtps3_sxy_pack caller — screen-xy pack via
+ * RTPS variant. */
 void cps_8013fd48(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -82263,7 +82286,9 @@ block_80191A8C:
 }
 
 /* cps_80191aa4 — clean CPS transliteration of br2eu_func_80191AA4 (guest 0x80191aa4)
- * from SLES_017.22_full_43.c. */
+ * from SLES_017.22_full_43.c.
+ * gpu_callback_state_flags (renames.map): gp_bde20_read-driven 22-block
+ * GPU callback state machine. */
 void cps_80191aa4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -83339,7 +83364,9 @@ block_80191E88:
 }
 
 /* cps_80191fc8 — clean CPS transliteration of br2eu_func_80191FC8 (guest 0x80191fc8)
- * from SLES_017.22_full_44.c. */
+ * from SLES_017.22_full_44.c.
+ * gpu_prim_emit_pack: gpu_pkt_pack + coord_clamp_a/b + coord_pack +
+ * texpage_pack — packs a textured GPU primitive (15 blocks). */
 void cps_80191fc8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -84700,7 +84727,8 @@ block_80195B00:
 }
 
 /* cps_80195b20 — clean CPS transliteration of br2eu_func_80195B20 (guest 0x80195b20)
- * from SLES_017.22_full_45.c. */
+ * from SLES_017.22_full_45.c.
+ * cd_reg_init_wrap: cd_reg_init_seq caller. */
 void cps_80195b20(void)
 {
   CPUState *cpu = clean_cpu_state();
