@@ -197,3 +197,41 @@ attract CD streaming, no wedge. clean_stats positive hits:
 calls executing through timed bodies). cd_mc_state_machine /
 cd_response_process entry = 0 in attract (memcard/response paths —
 faithful-by-construction).
+
+## Batch 8 (orch/w5/e05) — self-delegate sweep + overlapping-alias bodies
+
+Transformer extension: `gen_cps_clean.py --timing` now handles
+`br2eu_psx_alias_body_<base>(cpu, entry)` generated bodies. The emitted
+cpst_ binds `uint32_t entry = cpu->pc;` before the `_cont` consumption
+and keeps the body's `switch (entry)` dispatch verbatim, so a timed
+body can faithfully transliterate an alias thunk that multiplexes many
+guest entries through shared blocks.
+
+Six bodies appended to game/cd_irq_probe.c (204 clean_cps.map rows,
+self-delegate count 22 -> 4):
+
+| symbol | source body | role |
+|---|---|---|
+| cpst_8018d150 | 0x8018D150 cd_read_issue | CD read-issue parent (21 blocks) |
+| cpst_8018bba8 | pad_slot_state_walk parent | pad-slot walk resumes (70 blocks) |
+| cpst_80183664 | scriptop_wait parent | scriptop_wait fragments (125 blocks) |
+| cpst_8018e590 | printf_core parent | printf_core pieces (102 blocks) |
+| cpst_8018bc78 | alias body of 0x8018BBA8 | alias-unique entry only |
+| cpst_8018e8d0 | alias body of 0x8018E590 | 2 alias-unique entries (0x8018E8D0, 0x8018E910) |
+| (entry row) | 0x8018EF6C sprintf_core_engine | entry registered -> existing batch-3 body |
+
+Coverage decisions:
+- Addrs already claimed by peer clean-C ports (scriptop_wait_atk3_self,
+  printf_cps_8018e63c family in w4_e00.c / gfx_emit_p05.c) were left
+  untouched — 23 conflicts dropped, peer ports win.
+- For alias bodies only alias-UNIQUE entry addrs were registered; the
+  ~23 shared alias entries stay routed to the main-parent cpst_ bodies
+  (identical guest code either way).
+
+Verification: clean build; headless :4871 frames 23341 -> 54314+
+attract CD streaming, no wedge. clean_stats: batch-8 entries 0 hits in
+attract window (scriptop/printf/pad paths not exercised headless —
+faithful-by-construction). Hot-path counters meanwhile show the timed
+bodies carrying real load: cd_cmd_issue 0x80196E14 = 100.7M dispatches,
+cd_result_wait_a 0x801968CC = 31.3M — the clean-dispatch + timed-body
+path sustains ~2M dispatches/sec of CD polling without timing drift.

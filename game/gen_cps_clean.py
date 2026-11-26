@@ -198,7 +198,7 @@ def find_body(addr):
         txt = open(path, errors='replace').read()
         for m in re.finditer(
                 r'void (br2eu_func_[0-9a-fA-F]+|br2eu_psx_alias_body_[0-9a-fA-F]+)'
-                r'\(CPUState\*\s*cpu\)\s*\{', txt):
+                r'\(CPUState\*\s*cpu\s*(?:,\s*uint32_t\s+\w+\s*)?\)\s*\{', txt):
             name = m.group(1)
             start = m.end()
             end = txt.find('\n}\n', start)
@@ -415,6 +415,14 @@ def emit_fn(addr):
     name, body, path = found
     sym = f'cpst_{addr:08x}' if TIMING else f'cps_{addr:08x}'
     core = _GPR_RE.sub(_gpr_names, transform(body))
+    if 'alias_body' in name:
+        # Overlapping-alias bodies take (cpu, entry): the alias-entry
+        # switch dispatches on the C param, not cpu->pc. In clean CPS the
+        # dispatched addr always arrives in cpu->pc, so bind entry to it
+        # before the _cont consumption zeroes cpu->pc. Resume addrs are
+        # still caught by the _cont switch first; alias entries fall
+        # through to switch(entry) exactly as generated.
+        core = '    uint32_t entry = cpu->pc;\n' + core
     hdr = (f'\n/* {sym} — clean CPS transliteration of {name} (guest {addr:#x})\n'
            f' * from {os.path.basename(path)}. */\n')
     return hdr + f'void {sym}(void)\n{{\n  CPUState *cpu = clean_cpu_state();\n  if (!cpu) return;\n' + core + '\n}\n'
