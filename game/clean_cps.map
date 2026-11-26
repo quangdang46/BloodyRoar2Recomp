@@ -6226,3 +6226,6 @@
 80192e50 gpu_command_words_send
 80192e54 gpu_command_words_send
 80192e70 gpu_command_words_send
+8019457c fixed_rsqrt_q12_zero_result
+8019466c vec3_s32_h_normalize_store_tail
+80194678 vec3_s32_h_normalize_store_tail

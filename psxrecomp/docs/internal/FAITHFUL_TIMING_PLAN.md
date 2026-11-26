@@ -10734,3 +10734,10 @@ N+102 — x28 bug narrowed to a frame_tick CALLEE (4 agents, still unfixed):
   pad-2 record (0x801befca region) or +0x1f8000b6 seeding, and disassemble
   the pad-poll/SIO path for a CPU/demo-input branch. If found in generated,
   port it clean (it is the game's own faithful mechanism, not a fake).
+
+- **2026-11-26 (BR2 GTE helper ports; no timing-core change):** Added clean
+  dispatch for four generated GTE/math helpers at 0x8019457C, 0x80194614,
+  0x8019466C, and 0x80194940, including the 0x80194678 CPS continuation.
+  Debug-enabled headless verification on port 4507 advanced frames 2206 to
+  8446 to 19726 without a crash; the runtime was then stopped. No timing-core
+  behavior changed.
