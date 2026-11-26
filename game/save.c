@@ -9,6 +9,7 @@
  * contract). Guest globals bound via g_DAT_* (bind.c arena,
  * payload-backed); s_* strings resolve through guest_at into the
  * loaded EXE image. */
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,11 +18,6 @@
 
 #define CONCAT11(hi,lo) (((uint16_t)(uint8_t)(hi) << 8) | (uint8_t)(lo))
 #define CONCAT12(hi,lo) (((uint32_t)(uint8_t)(hi) << 16) | (uint16_t)(lo))
-#ifndef bool
-#define bool int
-#define true 1
-#define false 0
-#endif
 
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
