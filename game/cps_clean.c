@@ -72094,8 +72094,7 @@ block_80189A58:
     cpu->pc = _jt_80189A58; return;  /* CPS: jr $ra */
 }
 
-/* cps_80189a60 — clean CPS transliteration of br2eu_func_80189A60 (guest 0x80189a60)
- * from SLES_017.22_full_40.c. */
+/* cps_80189a60 — guest 0x80189A60: GTE batch transform → OT packet writer (3-vertex perspective). t4 = 28 (+28 when a2!=0); cmds 0x06/3×0x1C; gte_data[22] at t3+4/12/20, raw triples at t3+8/16/24. Stride a0 += 84. */
 void cps_80189a60(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -72266,8 +72265,7 @@ block_80189B48:
     cpu->pc = _jt_80189B48; return;  /* CPS: jr $ra */
 }
 
-/* cps_80189b50 — clean CPS transliteration of br2eu_func_80189B50 (guest 0x80189b50)
- * from SLES_017.22_full_40.c. */
+/* cps_80189b50 — guest 0x80189B50: GTE batch transform → OT packet writer (3-vertex perspective, wider). t4 = 36 (+28 when a2!=0); cmds 0x06/3×0x1C; gte_data[22] at t3+4/12/20, raw triples at t3+8/16/24. Stride a0 += 92. */
 void cps_80189b50(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -72441,8 +72439,7 @@ block_80189C44:
     cpu->pc = _jt_80189C44; return;  /* CPS: jr $ra */
 }
 
-/* cps_80189c4c — clean CPS transliteration of br2eu_func_80189C4C (guest 0x80189c4c)
- * from SLES_017.22_full_40.c. */
+/* cps_80189c4c — guest 0x80189C4C: GTE batch transform → OT packet writer (single-vertex). t4 = 24 (+24 when a2!=0); cmds 0x06/0x1C; gte_data[22] at t3+4, raw words at t3+8/12/16/20. Stride a0 += 72. */
 void cps_80189c4c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -72578,8 +72575,7 @@ block_80189D00:
     cpu->pc = _jt_80189D00; return;  /* CPS: jr $ra */
 }
 
-/* cps_80189d08 — clean CPS transliteration of br2eu_func_80189D08 (guest 0x80189d08)
- * from SLES_017.22_full_40.c. */
+/* cps_80189d08 — guest 0x80189D08: GTE batch transform → OT packet writer (4-vertex perspective). t4 = 36 (+36 when a2!=0); cmds 0x06/4×0x1C; gte_data[22] at t3+4/12/20/28, raw triples at t3+8/16/24/32. Stride a0 += 108. */
 void cps_80189d08(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -72768,8 +72764,7 @@ block_80189E24:
     cpu->pc = _jt_80189E24; return;  /* CPS: jr $ra */
 }
 
-/* cps_80189e2c — clean CPS transliteration of br2eu_func_80189E2C (guest 0x80189e2c)
- * from SLES_017.22_full_40.c. */
+/* cps_80189e2c — guest 0x80189E2C: GTE batch transform → OT packet writer. t4 = 20 (+40 when a2!=0); cmds 0x06/0x1C; gte_data[22] at t3+4, raw words at t3+8/16/24/32. Stride a0 += 100. */
 void cps_80189e2c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -72910,8 +72905,7 @@ block_80189EF4:
     cpu->pc = _jt_80189EF4; return;  /* CPS: jr $ra */
 }
 
-/* cps_80189efc — clean CPS transliteration of br2eu_func_80189EFC (guest 0x80189efc)
- * from SLES_017.22_full_40.c. */
+/* cps_80189efc — guest 0x80189EFC: GTE batch transform → OT packet writer, largest record (writes to t3+44). t4 = 32 with two a2 variants (+36/+52); 2× cmd 0x06 + 4×0x1C; interleaved gte_data[22] and raw words across t3+4..+44. Stride a0 += 136. */
 void cps_80189efc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -73104,8 +73098,7 @@ block_8018A028:
     cpu->pc = _jt_8018A028; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018a030 — clean CPS transliteration of br2eu_func_8018A030 (guest 0x8018a030)
- * from SLES_017.22_full_40.c. */
+/* cps_8018a030 — guest 0x8018A030: GTE batch transform → OT packet writer (4-vertex perspective, no 0x06 preamble). t4 = 36 (+36 when a2!=0); 4× cmd 0x1C; gte_data[22] at t3+4/12/20/28 plus raw words. Stride a0 += 108. */
 void cps_8018a030(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -73298,8 +73291,7 @@ block_8018A144:
     cpu->pc = _jt_8018A144; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018a14c — clean CPS transliteration of br2eu_func_8018A14C (guest 0x8018a14c)
- * from SLES_017.22_full_40.c. */
+/* cps_8018a14c — guest 0x8018A14C: GTE batch transform → OT packet writer (4-vertex perspective). t4 = 48 (+36 when a2!=0); cmds 0x06/4×0x1C; gte_data[22] at t3+4/12/20/28, raw words at t3+8/16/24/32. Stride a0 += 120. */
 void cps_8018a14c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -73497,8 +73489,7 @@ block_8018A274:
     cpu->pc = _jt_8018A274; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018a27c — clean CPS transliteration of br2eu_func_8018A27C (guest 0x8018a27c)
- * from SLES_017.22_full_41.c. */
+/* cps_8018a27c — guest 0x8018A27C: GTE batch writer, a2-indexed record layout (stride table like cps_80188b5c): t6={20,28,32,40}, t7={64,80,88,104}, t8={4,8,8,12}; t4 = 24 + t6. Cmds 0x30/0x06; 3 result words. Stride a0 += t7. */
 void cps_8018a27c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -73661,8 +73652,7 @@ block_8018A338:
     cpu->pc = _jt_8018A338; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018a340 — clean CPS transliteration of br2eu_func_8018A340 (guest 0x8018a340)
- * from SLES_017.22_full_41.c. */
+/* cps_8018a340 — guest 0x8018A340: GTE batch writer, a2-indexed layout (table like cps_80188c34): t6={24,36,40,52}, t7={80,104,112,136}, t8={4,8,8,12}; t4 = 32 + t6. Cmds 0x30/0x06/0x01; 4 result words. Stride a0 += t7. */
 void cps_8018a340(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -73840,8 +73830,7 @@ block_8018A41C:
     cpu->pc = _jt_8018A41C; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018a424 — clean CPS transliteration of br2eu_func_8018A424 (guest 0x8018a424)
- * from SLES_017.22_full_41.c. */
+/* cps_8018a424 — guest 0x8018A424: GTE batch writer, a2-indexed layout: t6={24,36,40,52}, t7={64,88,96,120}, t8={4,8,8,12}; t4 = 16 + t6. Only cmd 0x06 (transform-only, no MV preload). Stride a0 += t7. */
 void cps_8018a424(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -73991,8 +73980,7 @@ block_8018A4F0:
     cpu->pc = _jt_8018A4F0; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018a59c — clean CPS transliteration of br2eu_func_8018A59C (guest 0x8018a59c)
- * from SLES_017.22_full_41.c. */
+/* cps_8018a59c — guest 0x8018A59C: GTE batch writer, a2-indexed layout: t6/t7/t8 stride table; t4 = 24 + t6. Cmds 0x30/0x06; 3 result words. Stride a0 += t7. */
 void cps_8018a59c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -74219,8 +74207,7 @@ block_8018A6CC:
     cpu->pc = _jt_8018A6CC; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018a6d4 — clean CPS transliteration of br2eu_func_8018A6D4 (guest 0x8018a6d4)
- * from SLES_017.22_full_41.c. */
+/* cps_8018a6d4 — guest 0x8018A6D4: GTE batch writer, a2-indexed 5-entry layout: t6={24,28,36,40,52}, t7={80,88,104,112,136}, t8={4,8,12}; t4 = 32 + t6. Cmds 0x30/0x06/0x01; 15 CPS blocks. */
 void cps_8018a6d4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -74467,8 +74454,7 @@ block_8018A83C:
     cpu->pc = _jt_8018A83C; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018a844 — clean CPS transliteration of br2eu_func_8018A844 (guest 0x8018a844)
- * from SLES_017.22_full_41.c. */
+/* cps_8018a844 — guest 0x8018A844: GTE batch writer, a2-indexed 4-entry layout (same table as cps_8018a27c): t6={20,28,32,40}, t7={64,80,88,104}, t8={4,8,12}; t4 = 24 + t6. Cmds 0x30/0x06/0x2D; 20 CPS blocks. */
 void cps_8018a844(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -74755,8 +74741,7 @@ block_8018A9C0:
     cpu->pc = _jt_8018A9C0; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018a9c8 — clean CPS transliteration of br2eu_func_8018A9C8 (guest 0x8018a9c8)
- * from SLES_017.22_full_41.c. */
+/* cps_8018a9c8 — guest 0x8018A9C8: GTE batch writer, a2-indexed 5-entry layout (same table as cps_8018a6d4): t6={24,28,36,40,52}, t7={80,88,104,112,136}, t8={4,8,12}; t4 = 32 + t6. Cmds 0x30/0x06/0x01/0x2E; 20 CPS blocks. */
 void cps_8018a9c8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -75063,8 +75048,7 @@ block_8018AB7C:
     cpu->pc = _jt_8018AB7C; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018ad80 — clean CPS transliteration of br2eu_func_8018AD80 (guest 0x8018ad80)
- * from SLES_017.22_full_41.c. */
+/* cps_8018ad80 — guest 0x8018AD80: GTE batch transform → OT packet writer. t4 = 32 (+40 when a2!=0); cmds 0x30/0x06/0x01/0x2E; src reads a0+24/28; writes t3+8/12/16/24/32. Stride a0 += 112. 15 CPS blocks. */
 void cps_8018ad80(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -75326,8 +75310,7 @@ block_8018AEE0:
     cpu->pc = _jt_8018AEE0; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018aee8 — clean CPS transliteration of br2eu_func_8018AEE8 (guest 0x8018aee8)
- * from SLES_017.22_full_41.c. */
+/* cps_8018aee8 — guest 0x8018AEE8: GTE batch transform → OT packet writer, wider variant of cps_8018ad80. t4 = 32 (+52 when a2!=0); same cmds 0x30/0x06/0x01/0x2E; writes t3+8/12/20/32/44. Stride a0 += 136. 15 CPS blocks. */
 void cps_8018aee8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -75589,8 +75572,7 @@ block_8018B048:
     cpu->pc = _jt_8018B048; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018b100 — clean CPS transliteration of br2eu_func_8018B100 (guest 0x8018b100)
- * from SLES_017.22_full_41.c. */
+/* cps_8018b100 — guest 0x8018B100: NOT an OT-writer: scratchpad save/restore + extent helper. Saves s0-s6/ra to 0x1F8003E0..0x1F800404, calls 0x80186F5C twice (once with a1 = s0+32, once with a1 = 0x1F8003C0 result block), runs GTE cmd 0x12 and stores MAC/t-matrix results at 0x1F8003C0+960..988. */
 void cps_8018b100(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -75782,8 +75764,7 @@ block_8018B200:
     cpu->pc = _jt_8018B200; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018b380 — clean CPS transliteration of br2eu_func_8018B380 (guest 0x8018b380)
- * from SLES_017.22_full_41.c. */
+/* cps_8018b380 — guest 0x8018B380: GTE batch writer, a2-indexed 5-entry layout (same table as cps_8018a59c): t6={20,24,28,32,40}, t7={64,72,80,88,104}, t8={4,8,12}; t4 = 24 + t6. Cmds 0x30/0x06; 15 CPS blocks. */
 void cps_8018b380(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -76010,8 +75991,7 @@ block_8018B4B0:
     cpu->pc = _jt_8018B4B0; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018b4b8 — clean CPS transliteration of br2eu_func_8018B4B8 (guest 0x8018b4b8)
- * from SLES_017.22_full_41.c. */
+/* cps_8018b4b8 — guest 0x8018B4B8: GTE batch writer, a2-indexed 5-entry layout (same table as cps_8018a6d4): t6={24,28,36,40,52}, t7={80,88,104,112,136}, t8={4,8,12}; t4 = 32 + t6. Cmds 0x30/0x06/0x01; 15 CPS blocks. */
 void cps_8018b4b8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -76258,8 +76238,7 @@ block_8018B620:
     cpu->pc = _jt_8018B620; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018b628 — clean CPS transliteration of br2eu_func_8018B628 (guest 0x8018b628)
- * from SLES_017.22_full_41.c. */
+/* cps_8018b628 — guest 0x8018B628: GTE batch writer, a2-indexed layout (stride table; e.g. t6=32/t7=88/t8=8 variant). Cmds 0x30/0x06/0x2D; 11 CPS blocks. */
 void cps_8018b628(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -76465,8 +76444,7 @@ block_8018B730:
     cpu->pc = _jt_8018B730; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018b738 — clean CPS transliteration of br2eu_func_8018B738 (guest 0x8018b738)
- * from SLES_017.22_full_41.c. */
+/* cps_8018b738 — guest 0x8018B738: a2-dispatch prologue piece for the cps_8018b76c family: selects (t6,t7,t8) from a 2-entry table {(24,80,4),(40,112,8)}, sets t4 = 32 + t6, then tail-dispatches to 0x8018B76C (worker) or 0x8018B88C (bail). */
 void cps_8018b738(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -76529,8 +76507,7 @@ block_8018B768:
     cpu->pc = 0x8018b76cu; return;  /* fallthrough to split piece */
 }
 
-/* cps_8018b76c — clean CPS transliteration of br2eu_func_8018B76C (guest 0x8018b76c)
- * from SLES_017.22_full_41.c. */
+/* cps_8018b76c — guest 0x8018B76C: Worker body for the cps_8018b738 dispatch: 6-reg GTE preload from a0 (cmd 0x30), preamble 0x06, per-vertex transforms writing gte_data[24]/[12]/[13] into t8-strided slots at t3 = a0 + t4; tail-dispatches to 0x8018B884. */
 void cps_8018b76c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -76701,8 +76678,7 @@ block_8018B870:
     cpu->pc = 0x8018b884u; return;  /* fallthrough to split piece */
 }
 
-/* cps_8018b88c — clean CPS transliteration of br2eu_func_8018B88C (guest 0x8018b88c)
- * from SLES_017.22_full_41.c. */
+/* cps_8018b88c — guest 0x8018B88C: 8-byte CPS piece: v0 = a0; jr $ra (nop delay). Bail-out return for the cps_8018b738/b76c family. */
 void cps_8018b88c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -76718,8 +76694,7 @@ block_8018B88C:
     cpu->pc = _jt_8018B88C; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018b894 — clean CPS transliteration of br2eu_func_8018B894 (guest 0x8018b894)
- * from SLES_017.22_full_41.c. */
+/* cps_8018b894 — guest 0x8018B894: GTE batch worker (10 blocks): 6-reg preload from a0 (cmd 0x30), preamble 0x06, per-vertex transform writing results through t3 slots; reads src word at a1. Continuation of the b76c-family dispatchers. */
 void cps_8018b894(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -76906,8 +76881,7 @@ block_8018B984:
     cpu->pc = _jt_8018B984; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018bae8 — clean CPS transliteration of br2eu_func_8018BAE8 (guest 0x8018bae8)
- * from SLES_017.22_full_41.c. */
+/* cps_8018bae8 — guest 0x8018BAE8: 8-byte CPS piece: bare jr $ra (nop delay slot). Return stub. */
 void cps_8018bae8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -76923,8 +76897,7 @@ block_8018BAE8:
     cpu->pc = _jt_8018BAE8; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018baf0 — clean CPS transliteration of br2eu_func_8018BAF0 (guest 0x8018baf0)
- * from SLES_017.22_full_41.c. */
+/* cps_8018baf0 — guest 0x8018BAF0: Byte-pattern writer: stores 4 bytes of a0 (=30) at 0x801F5964 and alternating a1/a2 (=64/x) bytes at 0x801F5968 — 8-byte global config block. Tail-dispatches to 0x8018BB38; entered via cps_8018bb48 (a2=0) / cps_8018bae8. */
 void cps_8018baf0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -76982,8 +76955,7 @@ block_8018BB04:
     cpu->pc = 0x8018bb38u; return;  /* fallthrough to split piece */
 }
 
-/* cps_8018bb48 — clean CPS transliteration of br2eu_func_8018BB48 (guest 0x8018bb48)
- * from SLES_017.22_full_41.c. */
+/* cps_8018bb48 — guest 0x8018BB48: 4-byte CPS piece: a2 = 0; fallthrough to cps_8018bb4c (default arg for the byte-writer chain). Dead duplicate return removed by generator shape kept. */
 void cps_8018bb48(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -76997,8 +76969,7 @@ block_8018BB48:
     cpu->pc = 0x8018bb4cu; return;/* fallthrough to next function */
 }
 
-/* cps_8018bb4c — clean CPS transliteration of br2eu_func_8018BB4C (guest 0x8018bb4c)
- * from SLES_017.22_full_41.c. */
+/* cps_8018bb4c — guest 0x8018BB4C: Byte-table init: writes zero bytes at v1/v0 and a0 at hw-mirror 0x1F800000+21968 region; 5-block piece. */
 void cps_8018bb4c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -77071,8 +77042,7 @@ block_8018BB98:
     cpu->pc = _jt_8018BBA0; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018c0f8 — clean CPS transliteration of br2eu_func_8018C0F8 (guest 0x8018c0f8)
- * from SLES_017.22_full_41.c. */
+/* cps_8018c0f8 — guest 0x8018C0F8: Bounds-checked tagged store: if v1 < 32 keep tag v1 else v1 = 0; writes tag to a3+21980 and value a1 to *a2 (a0=a2, returns v0=a0+4). 32B/3 blocks. */
 void cps_8018c0f8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -77115,8 +77085,7 @@ block_8018C108:
     cpu->pc = _jt_8018C110; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018c1d4 — clean CPS transliteration of br2eu_func_8018C1D4 (guest 0x8018c1d4)
- * from SLES_017.22_full_41.c. */
+/* cps_8018c1d4 — guest 0x8018C1D4: Same tagged-store shape as cps_8018c0f8: limit 32, tag to a3+21984, *a2 = a1, returns a2+4. */
 void cps_8018c1d4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -77159,8 +77128,7 @@ block_8018C1E4:
     cpu->pc = _jt_8018C1EC; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018cc4c — clean CPS transliteration of br2eu_func_8018CC4C (guest 0x8018cc4c)
- * from SLES_017.22_full_41.c. */
+/* cps_8018cc4c — guest 0x8018CC4C: Same tagged-store shape: limit 24, a0 = a1, tag to a3+21988, *a1 = a2, returns a1+4. */
 void cps_8018cc4c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -77203,8 +77171,7 @@ block_8018CC5C:
     cpu->pc = _jt_8018CC64; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018ce50 — clean CPS transliteration of br2eu_func_8018CE50 (guest 0x8018ce50)
- * from SLES_017.22_full_41.c. */
+/* cps_8018ce50 — guest 0x8018CE50: Same tagged-store shape: limit 8, a0 = a1, tag to a3+21992, *a1 = a2, returns a1+4. */
 void cps_8018ce50(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -77247,8 +77214,7 @@ block_8018CE60:
     cpu->pc = _jt_8018CE68; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018cfd4 — clean CPS transliteration of br2eu_func_8018CFD4 (guest 0x8018cfd4)
- * from SLES_017.22_full_41.c. */
+/* cps_8018cfd4 — guest 0x8018CFD4: 8-byte CPS piece: v0 = 0; jr $ra. Return-zero stub. */
 void cps_8018cfd4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -77264,8 +77230,7 @@ block_8018CFD4:
     cpu->pc = _jt_8018CFD4; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018cfdc — clean CPS transliteration of br2eu_func_8018CFDC (guest 0x8018cfdc)
- * from SLES_017.22_full_41.c. */
+/* cps_8018cfdc — guest 0x8018CFDC: List/pointer fixup routine (372B, 25 blocks): calls 0x80157368, manipulates link fields at +26840/+21996/+17792 across two objects (s1/s2 lists), zeroes cleared slots. Continuation-heavy CPS body kept in generated shape. */
 void cps_8018cfdc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -77550,8 +77515,7 @@ block_8018D130:
     cpu->pc = _jt_8018D148; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018d150 — clean CPS transliteration of br2eu_func_8018D150 (guest 0x8018d150)
- * from SLES_017.22_full_41.c. */
+/* cps_8018d150 — guest 0x8018D150: Two-phase submit-with-retry: polls 0x80195D8C(2, s1, 0) until v0 != 0, then polls 0x80198C90(s0, s2, 128) until done; returns v0 = s0. Saves s0-s2/ra. */
 void cps_8018d150(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -77640,8 +77604,7 @@ block_8018D1A0:
     cpu->pc = _jt_8018D1B4; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018d27c — clean CPS transliteration of br2eu_func_8018D27C (guest 0x8018d27c)
- * from SLES_017.22_full_41.c. */
+/* cps_8018d27c — guest 0x8018D27C: CPS piece: bare jr $ra (nop delay). Tail of the d284 flag-test chain. */
 void cps_8018d27c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -77657,8 +77620,7 @@ block_8018D27C:
     cpu->pc = _jt_8018D27C; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018d284 — clean CPS transliteration of br2eu_func_8018D284 (guest 0x8018d284)
- * from SLES_017.22_full_42.c. */
+/* cps_8018d284 — guest 0x8018D284: Flag-test piece (12B): v1 = a0 & 0x0400; v0 = 0x7FFF; dispatches to 0x8018D27C or 0x8018D290 by the test result. */
 void cps_8018d284(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -77681,8 +77643,7 @@ block_8018D284:
     cpu->pc = 0x8018d290u; return;/* fallthrough to next function */
 }
 
-/* cps_8018d290 — clean CPS transliteration of br2eu_func_8018D290 (guest 0x8018d290)
- * from SLES_017.22_full_42.c. */
+/* cps_8018d290 — guest 0x8018D290: 8-byte CPS piece: bare jr $ra (nop delay). */
 void cps_8018d290(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -77698,8 +77659,7 @@ block_8018D290:
     cpu->pc = _jt_8018D290; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018d2d8 — clean CPS transliteration of br2eu_func_8018D2D8 (guest 0x8018d2d8)
- * from SLES_017.22_full_42.c. */
+/* cps_8018d2d8 — guest 0x8018D2D8: 8-byte CPS piece: bare jr $ra (nop delay). */
 void cps_8018d2d8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -77715,8 +77675,7 @@ block_8018D2D8:
     cpu->pc = _jt_8018D2D8; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018d2e0 — clean CPS transliteration of br2eu_func_8018D2E0 (guest 0x8018d2e0)
- * from SLES_017.22_full_42.c. */
+/* cps_8018d2e0 — guest 0x8018D2E0: Coordinate scale piece (12B): a0 <<= 4; a1 <<= 4; a2 <<= 4; falls through to cps piece 0x8018D2EC — fixed-point ×16 on three coords. */
 void cps_8018d2e0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -77732,8 +77691,7 @@ block_8018D2E0:
     cpu->pc = 0x8018d2ecu; return;  /* fallthrough to next function */
 }
 
-/* cps_8018d3b4 — clean CPS transliteration of br2eu_func_8018D3B4 (guest 0x8018d3b4)
- * from SLES_017.22_full_42.c. */
+/* cps_8018d3b4 — guest 0x8018D3B4: Write-back helper trio (84B): calls 0x8018D408 three times with different store widths — word pair at a3/a3+8, half pair at a3/a3+4, and a shifted variant; returns v0 = a3 via saved t1 (jr t1). */
 void cps_8018d3b4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -77804,8 +77762,7 @@ block_8018D3F8:
     cpu->pc = _jt_8018D400; return;  /* CPS: jr t1 */
 }
 
-/* cps_8018d474 — clean CPS transliteration of br2eu_func_8018D474 (guest 0x8018d474)
- * from SLES_017.22_full_42.c. */
+/* cps_8018d474 — guest 0x8018D474: CPS piece ending in jr $ra chain (16B): tail piece of the d3b4/d408 write-back family. */
 void cps_8018d474(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -77820,8 +77777,7 @@ block_8018D474:
     cpu->pc = 0x8018d47cu; return;/* fallthrough to next function */
 }
 
-/* cps_8018d47c — clean CPS transliteration of br2eu_func_8018D47C (guest 0x8018d47c)
- * from SLES_017.22_full_42.c. */
+/* cps_8018d47c — guest 0x8018D47C: 8-byte CPS piece: jr t5 (indirect return via saved reg). */
 void cps_8018d47c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -77837,8 +77793,7 @@ block_8018D47C:
     cpu->pc = _jt_8018D47C; return;  /* CPS: jr t5 */
 }
 
-/* cps_8018d49c — clean CPS transliteration of br2eu_func_8018D49C (guest 0x8018d49c)
- * from SLES_017.22_full_42.c. */
+/* cps_8018d49c — guest 0x8018D49C: Grid-snap helper (96B): reads s16 pair at a2, calls 0x8018D4FC, adds +64/+64 offsets, rounds each coord to the nearest 128 boundary (mask -128, ±64 adjust), writes s16 results back at a2/a2+4; also produces v1/v0 >> 7 quotients. */
 void cps_8018d49c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -77888,8 +77843,7 @@ block_8018D4AC:
     cpu->pc = _jt_8018D4F4; return;  /* CPS: jr t1 */
 }
 
-/* cps_8018d668 — clean CPS transliteration of br2eu_func_8018D668 (guest 0x8018d668)
- * from SLES_017.22_full_42.c. */
+/* cps_8018d668 — guest 0x8018D668: CPS piece: bare jr $ra (nop delay). */
 void cps_8018d668(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -77905,8 +77859,7 @@ block_8018D668:
     cpu->pc = _jt_8018D668; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018d670 — clean CPS transliteration of br2eu_func_8018D670 (guest 0x8018d670)
- * from SLES_017.22_full_42.c. */
+/* cps_8018d670 — guest 0x8018D670: Delta-compute piece (36B): two multiplies via psx_mult_latency_s(a0)/(a1), subtracts both lo results from t1; branches to 0x8018D668 (done) or 0x8018D694. */
 void cps_8018d670(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -77939,8 +77892,7 @@ block_8018D670:
     cpu->pc = 0x8018d694u; return;/* fallthrough to next function */
 }
 
-/* cps_8018d694 — clean CPS transliteration of br2eu_func_8018D694 (guest 0x8018d694)
- * from SLES_017.22_full_42.c. */
+/* cps_8018d694 — guest 0x8018D694: 8-byte CPS piece: v0 = 0; jr $ra — return-zero stub for the d670 chain. */
 void cps_8018d694(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -77956,8 +77908,7 @@ block_8018D694:
     cpu->pc = _jt_8018D694; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018da28 — clean CPS transliteration of br2eu_func_8018DA28 (guest 0x8018da28)
- * from SLES_017.22_full_42.c. */
+/* cps_8018da28 — guest 0x8018DA28: 4-byte CPS piece: a0 = s16 lh(a0) (sign-extended half load); falls through to cps piece 0x8018DA2C. */
 void cps_8018da28(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -77971,8 +77922,7 @@ block_8018DA28:
     cpu->pc = 0x8018da2cu; return;/* fallthrough to next function */
 }
 
-/* cps_8018da2c — clean CPS transliteration of br2eu_func_8018DA2C (guest 0x8018da2c)
- * from SLES_017.22_full_42.c. */
+/* cps_8018da2c — guest 0x8018DA2C: Struct normalize/copy (136B): reads s16 fields, writes word+half fields at a1+0..16 (v1, 0, t1, v0, v1) — vertex/prim record fixup; returns via $ra. */
 void cps_8018da2c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -78071,8 +78021,7 @@ block_8018DA98:
     cpu->pc = _jt_8018DAAC; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018dab4 — clean CPS transliteration of br2eu_func_8018DAB4 (guest 0x8018dab4)
- * from SLES_017.22_full_42.c. */
+/* cps_8018dab4 — guest 0x8018DAB4: 12-byte CPS piece: a0 = lw(a0) (pointer dereference); falls through to cps piece 0x8018DAC0. */
 void cps_8018dab4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -78088,8 +78037,7 @@ block_8018DAB4:
     cpu->pc = 0x8018dac0u; return;/* fallthrough to next function */
 }
 
-/* cps_8018dac0 — clean CPS transliteration of br2eu_func_8018DAC0 (guest 0x8018dac0)
- * from SLES_017.22_full_42.c. */
+/* cps_8018dac0 — guest 0x8018DAC0: Struct normalize/copy (292B, 13 blocks): reads s16 coords from v0/v1/t7, writes word+half record at a2+0..16 — same family as cps_8018da2c, wider variant. */
 void cps_8018dac0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -78280,8 +78228,7 @@ block_8018DB8C:
     cpu->pc = _jt_8018DBDC; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018dbe4 — clean CPS transliteration of br2eu_func_8018DBE4 (guest 0x8018dbe4)
- * from SLES_017.22_full_42.c. */
+/* cps_8018dbe4 — guest 0x8018DBE4: 28-byte CPS piece: a2 = s16 lh(a0+4); a0 = lw(a0); falls through to cps piece 0x8018DC00 — load coord+ptr pair. */
 void cps_8018dbe4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -78308,8 +78255,7 @@ block_8018DBE4:
     cpu->pc = 0x8018dc00u; return;/* fallthrough to next function */
 }
 
-/* cps_8018dc00 — clean CPS transliteration of br2eu_func_8018DC00 (guest 0x8018dc00)
- * from SLES_017.22_full_42.c. */
+/* cps_8018dc00 — guest 0x8018DC00: 24-byte CPS piece: a2 = s16 lh(a0+4); a0 = lw(a0); falls through to cps piece 0x8018DC18 — same load-pair shape as dbe4. */
 void cps_8018dc00(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -78328,8 +78274,7 @@ block_8018DC00:
     cpu->pc = 0x8018dc18u; return;  /* fallthrough to next function */
 }
 
-/* cps_8018dc20 — clean CPS transliteration of br2eu_func_8018DC20 (guest 0x8018dc20)
- * from SLES_017.22_full_42.c. */
+/* cps_8018dc20 — guest 0x8018DC20: Vertex math routine (584B, 31 blocks): reads eight s16 fields, writes normalized half results at a3+0..16+ — heaviest math body in the band; kept in generated CPS shape. */
 void cps_8018dc20(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -78736,8 +78681,7 @@ block_8018DE24:
     cpu->pc = _jt_8018DE60; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018de68 — clean CPS transliteration of br2eu_func_8018DE68 (guest 0x8018de68)
- * from SLES_017.22_full_42.c. */
+/* cps_8018de68 — guest 0x8018DE68: CPS piece tail of the de6c struct-copy family (jr $ra chain). */
 void cps_8018de68(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -78751,8 +78695,7 @@ block_8018DE68:
     cpu->pc = 0x8018de6cu; return;/* fallthrough to next function */
 }
 
-/* cps_8018de6c — clean CPS transliteration of br2eu_func_8018DE6C (guest 0x8018de6c)
- * from SLES_017.22_full_42.c. */
+/* cps_8018de6c — guest 0x8018DE6C: Struct normalize/copy (136B): reads s16 fields, writes word+half record at a1+0..16 — same shape as cps_8018da2c. */
 void cps_8018de6c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -78851,8 +78794,7 @@ block_8018DEDC:
     cpu->pc = _jt_8018DEEC; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018def4 — clean CPS transliteration of br2eu_func_8018DEF4 (guest 0x8018def4)
- * from SLES_017.22_full_42.c. */
+/* cps_8018def4 — guest 0x8018DEF4: 12-byte CPS piece: a0 = lw(a0); falls through to cps piece 0x8018DF00 — pointer deref before the df00 normalizer. */
 void cps_8018def4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -78868,8 +78810,7 @@ block_8018DEF4:
     cpu->pc = 0x8018df00u; return;/* fallthrough to next function */
 }
 
-/* cps_8018df00 — clean CPS transliteration of br2eu_func_8018DF00 (guest 0x8018df00)
- * from SLES_017.22_full_42.c. */
+/* cps_8018df00 — guest 0x8018DF00: Struct normalize/copy (292B, 13 blocks): reads s16 coords, writes word+half record at a2+0..16 — same family as cps_8018dac0. */
 void cps_8018df00(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -79060,8 +79001,7 @@ block_8018DFCC:
     cpu->pc = _jt_8018E01C; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018e024 — clean CPS transliteration of br2eu_func_8018E024 (guest 0x8018e024)
- * from SLES_017.22_full_42.c. */
+/* cps_8018e024 — guest 0x8018E024: 4-byte CPS piece: a0 = s16 lh(a0+4); falls through to cps piece 0x8018E028 — half-load before the e028 normalizer. */
 void cps_8018e024(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -79075,8 +79015,7 @@ block_8018E024:
     cpu->pc = 0x8018e028u; return;/* fallthrough to next function */
 }
 
-/* cps_8018e028 — clean CPS transliteration of br2eu_func_8018E028 (guest 0x8018e028)
- * from SLES_017.22_full_42.c. */
+/* cps_8018e028 — guest 0x8018E028: Struct normalize/copy (136B): reads s16 fields, writes word+half record at a1+0..12 (t1, v0, v1, 0) — same family as cps_8018da2c. */
 void cps_8018e028(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -79175,8 +79114,7 @@ block_8018E094:
     cpu->pc = _jt_8018E0A8; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018e0b0 — clean CPS transliteration of br2eu_func_8018E0B0 (guest 0x8018e0b0)
- * from SLES_017.22_full_42.c. */
+/* cps_8018e0b0 — guest 0x8018E0B0: Struct normalize (288B, 13 blocks): reads s16 fields from v0/v1/t7, writes seven half results at a2+0..16 — s16 field remap variant. */
 void cps_8018e0b0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -79366,8 +79304,7 @@ block_8018E190:
     cpu->pc = _jt_8018E1C8; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018e1d0 — clean CPS transliteration of br2eu_func_8018E1D0 (guest 0x8018e1d0)
- * from SLES_017.22_full_42.c. */
+/* cps_8018e1d0 — guest 0x8018E1D0: Struct normalize (same family as cps_8018e0b0): s16 reads → half writes at a2+0..16, different field ordering; returns via $ra. */
 void cps_8018e1d0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -79557,8 +79494,7 @@ block_8018E2A8:
     cpu->pc = _jt_8018E2E8; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018e320 — clean CPS transliteration of br2eu_func_8018E320 (guest 0x8018e320)
- * from SLES_017.22_full_42.c. */
+/* cps_8018e320 — guest 0x8018E320: Record init (108B): reads word fields at +26340 of two objects, writes half fields at v1+4/8 — small linked-record setup; returns via $ra. */
 void cps_8018e320(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -79720,8 +79656,7 @@ block_8018E3B4:
     cpu->pc = _jt_8018E3B4; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018ef6c — clean CPS transliteration of br2eu_func_8018EF6C (guest 0x8018ef6c)
- * from SLES_017.22_full_42.c. */
+/* cps_8018ef6c — guest 0x8018EF6C: Large dispatch routine (2164B, 121 CPS blocks — entry in band, body extends past 0x8018FFFF into 0x8019xxxx): walks byte-tagged records (int8 field reads + word triples) and tail-dispatches through a jump table at +21040. Entangled; kept in generated CPS shape. */
 void cps_8018ef6c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -81236,8 +81171,7 @@ block_8018F7AC:
     cpu->pc = _jt_8018F7D8; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018f884 — clean CPS transliteration of br2eu_func_8018F884 (guest 0x8018f884)
- * from SLES_017.22_full_43.c. */
+/* cps_8018f884 — guest 0x8018F884: Word-copy stub: copies lw(a1) to *a2 twice (two source fields) then jr $ra. */
 void cps_8018f884(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -81337,8 +81271,7 @@ block_8018F908:
     cpu->pc = _jt_8018F908; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018f910 — clean CPS transliteration of br2eu_func_8018F910 (guest 0x8018f910)
- * from SLES_017.22_full_43.c. */
+/* cps_8018f910 — guest 0x8018F910: Copy-and-submit (152B): v0 = lw(a0); sw(a1, v0); then two jal calls to 0x8018FC00 with different ra continuations before jr $ra. */
 void cps_8018f910(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -81438,8 +81371,7 @@ block_8018F994:
     cpu->pc = _jt_8018F9A0; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018f9a8 — clean CPS transliteration of br2eu_func_8018F9A8 (guest 0x8018f9a8)
- * from SLES_017.22_full_43.c. */
+/* cps_8018f9a8 — guest 0x8018F9A8: 12-byte CPS piece: v0 = lh(a0) (zero-extended half load); jr $ra. */
 void cps_8018f9a8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -81456,8 +81388,7 @@ block_8018F9A8:
     cpu->pc = _jt_8018F9AC; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018fee0 — clean CPS transliteration of br2eu_func_8018FEE0 (guest 0x8018fee0)
- * from SLES_017.22_full_43.c. */
+/* cps_8018fee0 — guest 0x8018FEE0: 32-byte CPS piece (2 blocks): lw(t0); sw(t0, at)-style word write then jr $ra — small setter stub. */
 void cps_8018fee0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -81496,8 +81427,7 @@ block_8018FEF4:
     cpu->pc = _jt_8018FEF8; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018ff00 — clean CPS transliteration of br2eu_func_8018FF00 (guest 0x8018ff00)
- * from SLES_017.22_full_43.c. */
+/* cps_8018ff00 — guest 0x8018FF00: Entry in band but body spans 0x8018FF00-0x801906E8 (796B, 39 blocks) — belongs to next band's address range; left in generated CPS shape. */
 void cps_8018ff00(void)
 {
   CPUState *cpu = clean_cpu_state();
