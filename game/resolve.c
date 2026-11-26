@@ -384,7 +384,7 @@ int32_t action_resolve(byte *ctrl, uint8_t *motion)
       }
       return 0x6f;
     }
-    goto LAB_80176d24;
+    goto resolve_tail;
   }
   /* pending-hit window: return stored follow-up action from
    * motion_p+0x24 after clearing hit records. */
@@ -419,7 +419,7 @@ int32_t action_resolve(byte *ctrl, uint8_t *motion)
    * path; the nested tree maps flag combos to action ids). */
   if ((f58 & 0x40000000) == 0) {
     if ((f58 & 0x100000) == 0) {
-      if ((f5c & 0x4000000) != 0) goto LAB_801766e8;
+      if ((f5c & 0x4000000) != 0) goto getup_path;
       if ((f6c & 0x80000) != 0) {
         if ((f58 & 0x3000) == 0x3000) {
           if (((((*(ushort *)(ctrl + 0x7c) & 0x800) != 0) && ((f60 & 0x1000000) == 0)) &&
@@ -431,7 +431,7 @@ int32_t action_resolve(byte *ctrl, uint8_t *motion)
           }
           *(uint *)(ctrl + 0x5c) = *(uint *)(ctrl + 0x5c) | 0x4000;
         }
-        goto LAB_80176d18;
+        goto resolve_tail_f60;
       }
       if (((f58 & 0x10000000) == 0) && ((f5c & 0x2000000) == 0)) {
         if (((f58 & 0x40000) == 0) && ((f58 & 0x40) == 0)) {
@@ -584,14 +584,14 @@ int32_t action_resolve(byte *ctrl, uint8_t *motion)
                           *(uint *)(ctrl + 0x5c) = *(uint *)(ctrl + 0x5c) | 2;
                         }
                         f68 = *(uint *)(ctrl + 0x5c);
-                        goto LAB_80177a7c;
+                        goto ack_request;
                       }
                     }
                   }
                   else {
                     cat = *(ushort *)(ctrl + 0xcc);
                     if (*(short *)(ctrl + 0xcc) < 1) {
-                      if (*(short *)(ctrl + 0xcc) == 0) goto LAB_80177940;
+                      if (*(short *)(ctrl + 0xcc) == 0) goto combo_flag_4000;
                     }
                     else {
                       *(short *)(ctrl + 0xcc) =
@@ -606,7 +606,7 @@ int32_t action_resolve(byte *ctrl, uint8_t *motion)
                 else if ((f58 & 0x400000) == 0) {
                   f68 = f58 & 0x2800;
                   if (f68 == 0x800) {
-LAB_8017788c:
+combo_eval_2800:
                     if ((f58 & 0x4000) == 0) {
                       if ((((*(ushort *)(ctrl + 0x7c) & 0x800) != 0) &&
                           ((f60 & 0x1000000) == 0)) &&
@@ -616,7 +616,7 @@ LAB_8017788c:
                         }
                         *(uint *)(ctrl + 0x5c) = *(uint *)(ctrl + 0x5c) | 1;
                       }
-LAB_80177940:
+combo_flag_4000:
                       *(uint *)(ctrl + 0x5c) = *(uint *)(ctrl + 0x5c) | 0x4000;
                     }
                   }
@@ -632,9 +632,9 @@ LAB_80177940:
                         }
                         *(uint *)(ctrl + 0x5c) = *(uint *)(ctrl + 0x5c) | 1;
                       }
-                      goto LAB_80177940;
+                      goto combo_flag_4000;
                     }
-                    if (f68 == 0x2800) goto LAB_8017788c;
+                    if (f68 == 0x2800) goto combo_eval_2800;
                   }
                 }
               }
@@ -799,7 +799,7 @@ LAB_80177940:
                   ctrl[0xc1] = 0;
                 }
                 if ((*(ushort *)(ctrl + 0x7a) & 0xf0e0) == 0) {
-LAB_8017764c:
+read_c0_value:
                   sv = *(short *)(ctrl + 0xc0);
                 }
                 else {
@@ -812,7 +812,7 @@ LAB_8017764c:
                       ctrl[0xc0] = 0;
                       ctrl[0xc1] = 0;
                     }
-                    goto LAB_8017764c;
+                    goto read_c0_value;
                   }
                 }
                 if ((sv < 0x80) && ((*(ushort *)(ctrl + 0x82) & 0x40) != 0)) {
@@ -852,9 +852,9 @@ LAB_8017764c:
                      || (((_DAT_801f04a4[3] + -0x40 < zb && (0 < *(short *)(ctrl + 0x9e))) ||
                          ((zb < -(_DAT_801f04a4[3] + -0x40) && (*(short *)(ctrl + 0x9e) < 0)))
                          ))) {
-LAB_801770c0:
+range_recheck:
                     if (*(short *)(ctrl + 0x94) + -0x100 <=
-                        *(int *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x178)) goto LAB_801772e0;
+                        *(int *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x178)) goto act_8a_assign;
                     act = 0x4c;
                     if (*(short *)(ctrl + 0x96) == 0x800) {
                       act = 0x4b;
@@ -862,7 +862,7 @@ LAB_801770c0:
                   }
                 }
                 else if (*(int *)(_DAT_801f04a4 + 2) + -0x1000 < t2 * t2 + zb * zb)
-                goto LAB_801770c0;
+                goto range_recheck;
               }
             }
             else if ((f58 & 0x4000000) == 0) {
@@ -871,11 +871,11 @@ LAB_801770c0:
                 if (t2 < 0) {
                   t2 = -t2;
                 }
-                if (t2 < 0x400) goto LAB_801772ec;
+                if (t2 < 0x400) goto post_pick_tail;
               }
               if (((f5c & 0x1000000) != 0) &&
                  (act = 0x8a, *(int *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x178) < -0x100)) {
-LAB_801772c8:
+act_62_pick:
                 act = 0x62;
                 if (*(short *)(ctrl + 0x96) == 0x800) {
                   act = 0x61;
@@ -904,9 +904,9 @@ LAB_801772c8:
                     _DAT_801f04fa = 0xffff;
                     _DAT_801f04f2 = w;
                   }
-                  goto LAB_801772c8;
+                  goto act_62_pick;
                 }
-LAB_801772e0:
+act_8a_assign:
                 act = 0x8a;
               }
               else {
@@ -929,7 +929,7 @@ LAB_801772e0:
                 }
               }
             }
-LAB_801772ec:
+post_pick_tail:
             if (((ba & 0xc0) == 0xc0) && (*(short *)(ctrl + 0xcc) == 0)) {
               ctrl[0xc0] = 0;
               ctrl[0xc1] = 0;
@@ -953,7 +953,7 @@ LAB_801772ec:
                 ctrl[0x92] = 0xa0;
                 ctrl[0x93] = 0;
                 if ((btn & 0x2000) == 0) {
-                  if ((btn & 0x8000) == 0) goto LAB_80177350;
+                  if ((btn & 0x8000) == 0) goto clear_98_99;
                   ctrl[0x98] = 0;
                   ctrl[0x99] = 0xfe;
                 }
@@ -971,7 +971,7 @@ LAB_801772ec:
                   sv = -sv;
                 }
                 *(short *)(ctrl + 0xb2) = *(short *)(ctrl + 0xb2) + sv;
-LAB_80177350:
+clear_98_99:
                 ctrl[0x98] = 0;
                 ctrl[0x99] = 0;
               }
@@ -983,7 +983,7 @@ LAB_80177350:
        * request-ack bit and fall through to the tail. */
       else if ((int)f58 < 0) {
         f68 = *(uint *)(ctrl + 0x5c) & 0xfdfffffb;
-LAB_80177a7c:
+ack_request:
         *(uint *)(ctrl + 0x5c) = f68 | 1;
       }
       else {
@@ -1022,13 +1022,13 @@ LAB_80177a7c:
             if (((f5c & 0x2004) == 0) && ((*(ushort *)(ctrl + 0x7a) & 0x2000) != 0)) {
               f58 = f68 & 0xfdfffffb | 1;
               t2 = 0x35;
-              goto LAB_80176f0c;
+              goto commit_f58_return;
             }
           }
           else if (((f5c & 0x2004) == 0) &&
                   (t2 = 0x3f, (*(ushort *)(ctrl + 0x7a) & 0x2000) != 0)) {
             f58 = *(uint *)(ctrl + 0x5c) | 1;
-            goto LAB_80176f0c;
+            goto commit_f58_return;
           }
         }
         if ((*(short *)(motion_p + 0x80) != 0x35) && (*(short *)(motion_p + 0x80) != 0x3f)) {
@@ -1053,7 +1053,7 @@ LAB_80177a7c:
         if ((*(uint *)(ctrl + 0x60) & 0x4000000) != 0) {
           f58 = *(uint *)(ctrl + 0x5c) | 1;
           t2 = act;
-LAB_80176f0c:
+commit_f58_return:
           *(uint *)(ctrl + 0x5c) = f58;
           return t2;
         }
@@ -1074,11 +1074,11 @@ LAB_80176f0c:
         cancel = true;
       }
       if (((((f58 & 0x40000) != 0) || ((f58 & 0x40) != 0)) || ((f58 & 0x8000) != 0)) ||
-         (((f58 & 0x80080000) == 0x80000 || ((f58 & 0x1000000) != 0)))) goto LAB_8017862c;
+         (((f58 & 0x80080000) == 0x80000 || ((f58 & 0x1000000) != 0)))) goto act_return;
       if ((int)f58 < 0) {
         if (cancel) {
           if (((*(ushort *)(ctrl + 0x80) & 0xe8) == 0xe0) && ((ctrl[5] & 0x10) == 0)) {
-LAB_8017857c:
+pending_hit_clear:
             pending_hit_a_clear(ctrl);
             hit_chain_clear(ctrl);
             if (*(short *)(ctrl + 0xd6) < 0x1e00) {
@@ -1142,7 +1142,7 @@ LAB_8017857c:
           ctrl[0xce] = 0xa0;
           ctrl[0xcf] = 0;
         }
-        goto LAB_8017862c;
+        goto act_return;
       }
       if ((f58 & 0x1000) == 0) {
         if ((f58 & 0x400) == 0) {
@@ -1160,7 +1160,7 @@ LAB_8017857c:
             else {
               act2 = 10;
             }
-            goto LAB_8017862c;
+            goto act_return;
           }
         }
         else {
@@ -1180,7 +1180,7 @@ LAB_8017857c:
                 act2 = 6;
               }
             }
-            goto LAB_8017862c;
+            goto act_return;
           }
           if (((f58 & 2) != 0) && ((btn & 0x2000) != 0)) {
             if ((ba & 0x80) == 0) {
@@ -1197,7 +1197,7 @@ LAB_8017857c:
             else {
               act2 = 7;
             }
-            goto LAB_8017862c;
+            goto act_return;
           }
         }
         if ((-1 < *(short *)(motion_p + 0x1c)) &&
@@ -1340,21 +1340,21 @@ LAB_8017857c:
           }
         }
         if (((*(ushort *)(ctrl + 0x80) & 0x20) != 0) && ((ctrl[5] & 0x10) == 0))
-        goto LAB_8017857c;
-        goto LAB_8017862c;
+        goto pending_hit_clear;
+        goto act_return;
       }
-      if ((f58 & 0x400000) != 0) goto LAB_8017862c;
+      if ((f58 & 0x400000) != 0) goto act_return;
       if ((*(uint *)(motion_p + 0x30) & 0x20000) == 0) {
         if ((*(uint *)(motion_p + 0x30) & 0x40000) == 0) {
           if ((*(int *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x178) < (int)*(short *)(motion_p + 0x38)) &&
-             ((f58 & 0x800) != 0)) goto LAB_80178118;
+             ((f58 & 0x800) != 0)) goto motion34_fetch;
         }
-        else if ((f58 & 0x2800) == 0x2000) goto LAB_80178120;
+        else if ((f58 & 0x2800) == 0x2000) goto motion34_clear;
       }
       else if ((f58 & 0x2800) == 0) {
-LAB_80178118:
+motion34_fetch:
         act2 = (int)*(short *)(motion_p + 0x34);
-LAB_80178120:
+motion34_clear:
         *(undefined2 *)(motion_p + 0x34) = 0xffff;
       }
       f58 = f58 & 0x2800;
@@ -1369,7 +1369,7 @@ LAB_80178120:
       }
       /* attack/cancel selection tail: act2<0 keeps act, else
        * returns act2+0x90 (extended action range). */
-LAB_8017862c:
+act_return:
       if (act2 < 0) {
         return act;
       }
@@ -1389,7 +1389,7 @@ LAB_8017862c:
       pending_hit_b_clear(ctrl);
       return 0x7e;
     }
-    if ((f6c & 0x80000) == 0) goto LAB_801766c8;
+    if ((f6c & 0x80000) == 0) goto resolve_neg1;
   }
   /* f58 high bit set: special-state tail - juggle timer, then
    * get-up path or -1. */
@@ -1403,14 +1403,14 @@ LAB_8017862c:
     }
     if ((f6c & 0x80000) == 0) {
       if ((f5c & 0x4000000) == 0) {
-LAB_801766c8:
+resolve_neg1:
         *(uint *)(ctrl + 0x5c) = *(uint *)(ctrl + 0x5c) & 0xfbffffff;
         return -1;
       }
       /* get-up/knockdown path: clear flags, mark slot, reset or
        * clear hits, then pick directional get-up action (0x30-0x5b
        * range) from f68/f58 nibble combos. */
-LAB_801766e8:
+getup_path:
       *(uint *)(ctrl + 0x5c) = *(uint *)(ctrl + 0x5c) & 0xfbffffff;
       *(uint *)(ctrl + 0x6c) = *(uint *)(ctrl + 0x6c) & 0xfff7efff;
       *(undefined2 *)(motion_p + 0x82) = 0xffff;
@@ -1503,24 +1503,24 @@ LAB_801766e8:
       else {
         act = 0x44;
       }
-      if ((f68 & 0x800) == 0) goto LAB_80176a88;
+      if ((f68 & 0x800) == 0) goto getup_dir_finish;
       f58 = f68 & 0xc;
       if ((f5c & 0x100000) == 0) {
         if (f58 != 4) {
-          if (f58 != 8) goto LAB_80176a88;
-          goto LAB_80176a80;
+          if (f58 != 8) goto getup_dir_finish;
+          goto act_58_assign;
         }
       }
       else {
         if (f58 == 4) {
-LAB_80176a80:
+act_58_assign:
           act = 0x58;
-          goto LAB_80176a88;
+          goto getup_dir_finish;
         }
-        if (f58 != 8) goto LAB_80176a88;
+        if (f58 != 8) goto getup_dir_finish;
       }
       act = 0x59;
-LAB_80176a88:
+getup_dir_finish:
       if (((f68 & 0x1000) != 0) && (act = 0x4f, (f68 & 3) == 2)) {
         act = 0x53;
       }
@@ -1604,9 +1604,9 @@ LAB_80176a88:
       return 0x57;
     }
   }
-LAB_80176d18:
+resolve_tail_f60:
   f60 = *(uint *)(ctrl + 0x6c);
-LAB_80176d24:
+resolve_tail:
   *(uint *)(ctrl + 0x6c) = f60 & 0xfff7ffff;
   return (int)*(short *)(motion_p + 0x9a);
 }
@@ -1763,7 +1763,7 @@ void fighter_frame(byte *ctrl, uint8_t *motion)
       ctrl[200] = '\0';
       ctrl[0xc9] = '\0';
       dv = -dv;
-LAB_80178d48:
+store_ca_dv:
       *(short *)(ctrl + 0xca) = dv;
     }
     else if (*(short *)(ctrl + 200) != 0) {
@@ -1781,7 +1781,7 @@ LAB_80178d48:
       dv = *(short *)(ctrl + 200);
       ctrl[200] = '\0';
       ctrl[0xc9] = '\0';
-      goto LAB_80178d48;
+      goto store_ca_dv;
     }
     if ((((ctrl[5] & 0x10U) != 0) && ((*(uint *)(ctrl + 0x5c) & 0x60000000) == 0)) &&
        ((*(uint *)(ctrl + 0x58) & 0x10008000) == 0)) {
@@ -1812,7 +1812,7 @@ LAB_80178d48:
                          *(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x17c),(uint *)guest_at((uint32_t)(ia + -0x7fe4ea74)),0);
     *(short *)(ctrl + 0x94) = dv;
     if (dv == 0) {
-LAB_80178f9c:
+clear_range_94:
       ctrl[0x94] = '\0';
       ctrl[0x95] = '\0';
       uv = *(uint *)(ctrl + 0x60) & 0xdfffffff;
@@ -1827,7 +1827,7 @@ LAB_80178f9c:
                            *(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x35c),(uint *)guest_at((uint32_t)ib),0);
       z3 = range_circle_test(*(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x264),
                            *(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x26c),(uint *)guest_at((uint32_t)ib),0);
-      if ((uv == 0 && z2 == 0) && z3 == 0) goto LAB_80178f9c;
+      if ((uv == 0 && z2 == 0) && z3 == 0) goto clear_range_94;
       if ((-1 < *(int *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x38)) &&
          ((*(uint *)(ctrl + 0x6c) & 0x100000) == 0)) {
         if (((uv & z2 & z3) == 0) && ((*(uint *)(ctrl + 0x58) & 0x1000000) == 0)) {
@@ -1895,7 +1895,7 @@ LAB_80178f9c:
     else {
       uv = uv + 0x40;
     }
-LAB_80179238:
+post_cmd_400:
     deferred_cmd_post(0x400,uv,auxv);
   }
   else if (((*(uint *)(ctrl + 0x68) & 0x8000000) != 0) &&
@@ -1930,7 +1930,7 @@ LAB_80179238:
       uv = uv + 0x40;
     }
     auxv = 0;
-    goto LAB_80179238;
+    goto post_cmd_400;
   }
   /* resolve next action; commit applies it to motion+0x80
    * (extended ids >=0x90 stored as id-0x90 in +0x14). */
@@ -1965,20 +1965,20 @@ LAB_80179238:
   if (*(short *)(ctrl + 0x8c) < 1) {
     if ((-1 < *(short *)(ctrl + 0x8c)) ||
        (acc = *(short *)(ctrl + 0x8c) + *(short *)(ctrl + 0x8e),
-       *(ushort *)(ctrl + 0x8c) = acc, (int)((uint)acc << 0x10) < 1)) goto LAB_8017938c;
+       *(ushort *)(ctrl + 0x8c) = acc, (int)((uint)acc << 0x10) < 1)) goto spin_decay;
     ctrl[0x8e] = '\0';
     ctrl[0x8f] = '\0';
   }
   else {
     acc = *(short *)(ctrl + 0x8c) + *(short *)(ctrl + 0x8e);
     *(ushort *)(ctrl + 0x8c) = acc;
-    if (-1 < (int)((uint)acc << 0x10)) goto LAB_8017938c;
+    if (-1 < (int)((uint)acc << 0x10)) goto spin_decay;
     ctrl[0x8e] = '\0';
     ctrl[0x8f] = '\0';
   }
   ctrl[0x8c] = '\0';
   ctrl[0x8d] = '\0';
-LAB_8017938c:
+spin_decay:
   /* spin decay: apply rotation rate 0xb2 into 0xa2/0x9a, then
    * scale 0xb2 by 0xb4 >> 7. */
   if (*(short *)(ctrl + 0xb2) != 0) {
@@ -2417,7 +2417,7 @@ void launch_vel_update(byte *ctrl,byte *motion)
          (acc = *(short *)(ctrl + 0x98) + *(short *)(ctrl + 0x8e),
          *(ushort *)(ctrl + 0x98) = acc, 0 < (int)((uint)acc << 0x10))) {
         *(undefined2 *)(ctrl + 0x8e) = 0;
-        goto LAB_8017957c;
+        goto vel98_done;
       }
     }
     else {
@@ -2425,7 +2425,7 @@ void launch_vel_update(byte *ctrl,byte *motion)
       *(ushort *)(ctrl + 0x98) = acc;
       if ((int)((uint)acc << 0x10) < 0) {
         *(undefined2 *)(ctrl + 0x8e) = 0;
-LAB_8017957c:
+vel98_done:
         *(undefined2 *)(ctrl + 0x98) = 0;
       }
     }
@@ -2438,7 +2438,7 @@ LAB_8017957c:
     vy = vx + (vy >> 4);
   }
   else {
-    if (((*(uint *)(ctrl + 0x60) & 0x1000) != 0) || (vx < 1)) goto LAB_80179618;
+    if (((*(uint *)(ctrl + 0x60) & 0x1000) != 0) || (vx < 1)) goto vy_merge;
     vy = vy * *(short *)(ctrl + 0x88);
     if (vy < 0) {
       vy = vy + 0xf;
@@ -2450,7 +2450,7 @@ LAB_8017957c:
   }
   *(short *)(ctrl + 0x90) = (short)vy;
   rem = (short)(vx >> 7);
-LAB_80179618:
+vy_merge:
   *(undefined2 *)(ctrl + 0x9c) = rem;
   return;
 
@@ -2509,7 +2509,7 @@ void motion_turn_update(byte *ctrl,byte *motion)
           abs_rate = -rate;
         }
         if (0x155 < abs_rate) {
-          if (abs_rate < 0x6aa) goto LAB_801798e0;
+          if (abs_rate < 0x6aa) goto motion_10a_tick;
           rate = (rate + -0x800) * 0x100000 >> 0x14;
         }
         abs_rate = rate;
@@ -2529,7 +2529,7 @@ void motion_turn_update(byte *ctrl,byte *motion)
           abs_rate = -rate;
         }
         if ((*(short *)(motion + 0x10c) <= abs_rate) && ((*(ushort *)(motion + 0x10a) & 0x80) == 0))
-        goto LAB_801798e0;
+        goto motion_10a_tick;
       }
       else {
         abs_rate = rate;
@@ -2537,7 +2537,7 @@ void motion_turn_update(byte *ctrl,byte *motion)
           abs_rate = -rate;
         }
         if ((abs_rate <= *(short *)(motion + 0x10c)) && ((*(ushort *)(motion + 0x10a) & 0x80) == 0))
-        goto LAB_801798e0;
+        goto motion_10a_tick;
         rate = (rate + -0x800) * 0x100000 >> 0x14;
       }
       abs_rate = rate;
@@ -2550,7 +2550,7 @@ void motion_turn_update(byte *ctrl,byte *motion)
       }
     }
   }
-LAB_801798e0:
+motion_10a_tick:
   ctr16 = *(ushort *)(motion + 0x10a) - 1;
   if (((*(ushort *)(motion + 0x10a) & 0x7f) != 0) &&
      (*(ushort *)(motion + 0x10a) = ctr16, (ctr16 & 0x7f) == 0)) {
