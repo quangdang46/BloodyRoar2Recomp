@@ -10713,6 +10713,9 @@ void cps_8012a470(void)
 
     /* Address: 0x8012A470, Size: 68 bytes, Blocks: 1 */
 
+    /* word-merge emit: word[a1]|=v1; byte-mask a1<<8>>8 ->
+       word[a0]; word[word[a2+8]]|v1 -> word[a3-48]; a3-=48
+       masked. CPS-blocked. */
 block_8012A470:
     /* nop */  /* 0x8012A470: 0x00000000 */
     v0 = v0 | v1;
@@ -11939,6 +11942,9 @@ void cps_8012ab30(void)
     }
     /* Address: 0x8012AB30, Size: 140 bytes, Blocks: 13 */
 
+    /* voice teardown A: gate byte[s2+21]; jal
+       0x8018BD50(s1+8316,2079); jal 0x80191ED8; drains
+       word[0x801F0000-31488] list. CPS-blocked. */
 block_8012AB30:
     v0 = cpu->read_byte(s2 + 21);
     /* nop */  /* 0x8012AB34: 0x00000000 */
@@ -12140,6 +12146,10 @@ void cps_8012abe8(void)
     }
     /* Address: 0x8012ABE8, Size: 184 bytes, Blocks: 11 */
 
+    /* voice teardown B: s0 index walk; jal
+       0x80191428(a0=s0*8+0x801C4530, a1=word[0x801C0000-4296
+       +(s0-1)*4]) per channel; byte[s2+18] countdown ->
+       half[s2+208]=0. CPS-blocked. */
 block_8012ABE8:
     v1 = v1 << 16;
     s0 = (int32_t)v1 >> 16;
@@ -12282,6 +12292,9 @@ void cps_8012aca0(void)
     }
     /* Address: 0x8012ACA0, Size: 76 bytes, Blocks: 2 */
 
+    /* sample/param fetch: v1 = 0x801E0000+16544 +
+       a0*132-stride; reads byte[t0+4..6], half[v1+2] ->
+       half[t0+10]; jal 0x80191300(t0+8). CPS-blocked. */
 block_8012ACA0:
     /* nop */  /* 0x8012ACA0: 0x00000000 */
     int _bc_8012ACA4 = (v0 != zero);  /* save branch cond before delay slot */
@@ -12333,6 +12346,8 @@ void cps_8012acec(void)
     }
     /* Address: 0x8012ACEC, Size: 24 bytes, Blocks: 2 */
 
+    /* jal 0x80191770(s4+8428); word[0x801F0000-31820]=0.
+       CPS-blocked. */
 block_8012ACEC:
     ra = 0x8012ACF4u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -12366,6 +12381,9 @@ void cps_8012ad04(void)
     }
     /* Address: 0x8012AD04, Size: 84 bytes, Blocks: 3 */
 
+    /* indexed param fetch: idx=(word[s2+12]^1)*45-ish;
+       half[t0+14] -> 0x801E table; byte[s2+158] variant.
+       CPS-blocked. */
 block_8012AD04:
     v0 = cpu->read_word(s2 + 12);
     v1 = v1 + 1632;
@@ -12471,6 +12489,8 @@ void cps_8012ad8c(void)
     }
     /* Address: 0x8012AD8C, Size: 52 bytes, Blocks: 4 */
 
+    /* jal 0x80191770(0x801E0000+16544+{8428|16956});
+       half[0x801F0000-31832]++. CPS-blocked. */
 block_8012AD8C:
     v0 = v0 + 16544;
     int _bc_8012AD90 = (s4 != v0);  /* save branch cond before delay slot */
@@ -12523,6 +12543,7 @@ void cps_8012adc0(void)
     }
     /* Address: 0x8012ADC0, Size: 24 bytes, Blocks: 2 */
 
+    /* word[0x801F0000-31820]=0 (clear pending flag). */
 block_8012ADC0:
     v1 = 0x801F << 16;  /* 0x801F0000 */
     v0 = cpu->read_word(v1 + -31820);
@@ -12585,6 +12606,8 @@ void cps_8012ae14(void)
     }
     /* Address: 0x8012AE14, Size: 40 bytes, Blocks: 3 */
 
+    /* delta check: v1=v0-v1; if <11 ->
+       half[0x1F80001C]=v1; epilogue sp+=24. CPS-blocked. */
 block_8012AE14:
     v1 = v0 - v1;
     v0 = ((int32_t)v1 < 11) ? 1 : 0;  /* 0x8012AE18: 0x2862000B */
@@ -12668,6 +12691,9 @@ void cps_8012af94(void)
     }
     /* Address: 0x8012AF94, Size: 28 bytes, Blocks: 3 */
 
+    /* sound cmd pair: jal 0x8019A460(1); jal
+       0x8019A460(byte[s1+16]) -> half[s1+28]=v0.
+       CPS-blocked. */
 block_8012AF94:
     ra = 0x8012AF9Cu;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -12708,6 +12734,9 @@ void cps_8012afb0(void)
     }
     /* Address: 0x8012AFB0, Size: 36 bytes, Blocks: 4 */
 
+    /* sound cmd triple: jal 0x8019A460(1); half[s1+28]
+       and half[s1+26]=v0; jal 0x8019A460(byte[s1+16]);
+       jal 0x80190E00(1). CPS-blocked. */
 block_8012AFB0:
     ra = 0x8012AFB8u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -12875,6 +12904,8 @@ void cps_8012b054(void)
     }
     /* Address: 0x8012B054, Size: 24 bytes, Blocks: 2 */
 
+    /* loop: jal 0x80191428(a0=a0*8+s5); s0-- while
+       a0!=0. CPS-blocked. */
 block_8012B054:
     a0 = a0 << 3;
     ra = 0x8012B060u;  /* jal link before delay slot */
