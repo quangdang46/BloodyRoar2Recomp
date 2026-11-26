@@ -5183,126 +5183,126 @@ void pad_edge_scan(int ctrl_g)
 
 void cmd_input_parse(int ctrl_g)
 {
-  bool bVar1;
-  short sVar2;
-  bool bVar3;
-  short sVar4;
-  byte bVar5;
-  ushort uVar6;
-  uint uVar7;
-  int iVar8;
-  uint uVar9;
-  int iVar10;
-  short *psVar11;
-  undefined2 *puVar12;
-  short *psVar13;
-  int iVar14;
-  int iVar15;
-  ushort in_t5;
-  int iVar16;
-  int *piVar17;
-  uint uVar18;
-  short sVar19;
-  uVar18 = 0xffffffff;
-  sVar19 = 0;
-  iVar15 = *(int *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x38)));
-  iVar14 = (uint)*(byte *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 2) ))* 0x168;
-  psVar11 = (short *)(&DAT_801f0ae0 + iVar14);
-  piVar17 = (int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar15 + 0xc))));
-  bVar3 = false;
-  if (((*(uint *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x5c) ))& 0x40) == 0) && (*(char *)guest_at((uint32_t)(uintptr_t)((iVar15 + 0x7e) ))< '\0')) {
-    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((iVar15 + 0x3a) ))= 0;
-    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((iVar15 + 0x7c) ))= 0;
-    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((iVar15 + 0x7d) ))= 0;
+  bool pos;
+  short prev;
+  bool clr;
+  short cnt;
+  byte nxt;
+  ushort cw;
+  uint t7;
+  int cur;
+  uint j;
+  int t10;
+  short *tab;
+  undefined2 *tp;
+  short *rc;
+  int t14;
+  int st;
+  ushort btn;
+  int i;
+  int *hd;
+  uint opc;
+  short arg;
+  opc = 0xffffffff;
+  arg = 0;
+  st = *(int *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x38)));
+  t14 = (uint)*(byte *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 2) ))* 0x168;
+  tab = (short *)(&DAT_801f0ae0 + t14);
+  hd = (int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((st + 0xc))));
+  clr = false;
+  if (((*(uint *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x5c) ))& 0x40) == 0) && (*(char *)guest_at((uint32_t)(uintptr_t)((st + 0x7e) ))< '\0')) {
+    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((st + 0x3a) ))= 0;
+    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((st + 0x7c) ))= 0;
+    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((st + 0x7d) ))= 0;
   }
-  uVar7 = *(uint *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x6c) ))& 0xfcffffff;
-  *(uint *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x6c) ))= uVar7;
-  sVar2 = *(short *)guest_at((uint32_t)(uintptr_t)((iVar15 + 0x14)));
-  if (-1 < *(char *)guest_at((uint32_t)(uintptr_t)((iVar15 + 0x7e)))) {
-    *(uint *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x6c) ))= uVar7 | 0x1000000;
-    sVar2 = *(short *)guest_at((uint32_t)(uintptr_t)((iVar15 + *(char *)guest_at((uint32_t)(uintptr_t)((iVar15 + 0x7e) ))* 2 + 0x3c)));
+  t7 = *(uint *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x6c) ))& 0xfcffffff;
+  *(uint *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x6c) ))= t7;
+  prev = *(short *)guest_at((uint32_t)(uintptr_t)((st + 0x14)));
+  if (-1 < *(char *)guest_at((uint32_t)(uintptr_t)((st + 0x7e)))) {
+    *(uint *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x6c) ))= t7 | 0x1000000;
+    prev = *(short *)guest_at((uint32_t)(uintptr_t)((st + *(char *)guest_at((uint32_t)(uintptr_t)((st + 0x7e) ))* 2 + 0x3c)));
   }
-  iVar16 = 0;
-  psVar13 = (short *)guest_at((uint32_t)(uintptr_t)((iVar14 + -0x7fe0f51e)));
+  i = 0;
+  rc = (short *)guest_at((uint32_t)(uintptr_t)((t14 + -0x7fe0f51e)));
 LAB_8014359c:
-  if (*piVar17 != 0) {
-    iVar14 = *piVar17 + *(int *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x30)));
+  if (*hd != 0) {
+    t14 = *hd + *(int *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x30)));
     do {
-      switch(*(undefined2 *)guest_at((uint32_t)(uintptr_t)((*psVar11 * 2 + iVar14)))) {
+      switch(*(undefined2 *)guest_at((uint32_t)(uintptr_t)((*tab * 2 + t14)))) {
       case 0:
         goto switchD_801435e8_caseD_0;
       case 1:
         if (-1 < *(int *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x58)))) goto LAB_80143970;
-        uVar6 = *(ushort *)guest_at((uint32_t)(uintptr_t)((*psVar11 * 2 + iVar14 + 2)));
-        bVar1 = (uVar6 & 0x4000) == 0;
-        if (bVar1) {
-          uVar7 = 1;
+        cw = *(ushort *)guest_at((uint32_t)(uintptr_t)((*tab * 2 + t14 + 2)));
+        pos = (cw & 0x4000) == 0;
+        if (pos) {
+          t7 = 1;
         }
         else {
-          uVar7 = (uVar6 & 0xfff) + 1;
+          t7 = (cw & 0xfff) + 1;
         }
-        uVar9 = (uint)!bVar1;
-        if (uVar7 <= uVar9) goto LAB_80143970;
+        j = (uint)!pos;
+        if (t7 <= j) goto LAB_80143970;
         goto LAB_8014365c;
       case 2:
-        if (((-1 < *(int *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x58)))) || (((ushort)psVar13[1] & 0xfff) != (int)sVar2)) ||
-           (((psVar13[1] & 0x1000U) != 0 &&
-            ((*(char *)guest_at((uint32_t)(uintptr_t)((iVar15 + 0x7c) ))!= *(char *)guest_at((uint32_t)(uintptr_t)((iVar15 + 0x7d) ))||
+        if (((-1 < *(int *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x58)))) || (((ushort)rc[1] & 0xfff) != (int)prev)) ||
+           (((rc[1] & 0x1000U) != 0 &&
+            ((*(char *)guest_at((uint32_t)(uintptr_t)((st + 0x7c) ))!= *(char *)guest_at((uint32_t)(uintptr_t)((st + 0x7d) ))||
              ((*(uint *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x5c) ))& 0x40) != 0)))))) goto LAB_80143970;
-        if ((-1 < psVar13[2]) &&
-           ((*(char *)guest_at((uint32_t)(uintptr_t)((iVar15 + 0x7e) ))< '\0' && (psVar13[2] < *(short *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0xbc)))))))
+        if ((-1 < rc[2]) &&
+           ((*(char *)guest_at((uint32_t)(uintptr_t)((st + 0x7e) ))< '\0' && (rc[2] < *(short *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0xbc)))))))
         goto switchD_801435e8_default;
         *(uint *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x6c) ))= *(uint *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x6c) ))| 0x2000000;
-        switch(*(undefined2 *)guest_at((uint32_t)(uintptr_t)((*psVar11 * 2 + iVar14 + 4)))) {
+        switch(*(undefined2 *)guest_at((uint32_t)(uintptr_t)((*tab * 2 + t14 + 4)))) {
         case 0:
         case 1:
-          in_t5 = *(ushort *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x7c)));
+          btn = *(ushort *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x7c)));
           break;
         case 2:
-          in_t5 = *(ushort *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x7a)));
+          btn = *(ushort *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x7a)));
           break;
         case 3:
-          in_t5 = *(ushort *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x80)));
+          btn = *(ushort *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x80)));
           break;
         case 4:
-          in_t5 = *(ushort *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x84)));
+          btn = *(ushort *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x84)));
           break;
         case 5:
-          in_t5 = *(ushort *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x82)));
+          btn = *(ushort *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x82)));
           break;
         case 6:
-          in_t5 = *(ushort *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x7c) ))& 0xf000 | *(ushort *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x7a) ))& 0xe8;
+          btn = *(ushort *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x7c) ))& 0xf000 | *(ushort *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x7a) ))& 0xe8;
           break;
         case 7:
-          in_t5 = *(ushort *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x80)));
-          uVar6 = *(ushort *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x7a) ))& 0xe8;
-          if ((uVar6 != 0xc0) && (uVar6 != 0x88)) goto switchD_801435e8_default;
+          btn = *(ushort *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x80)));
+          cw = *(ushort *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x7a) ))& 0xe8;
+          if ((cw != 0xc0) && (cw != 0x88)) goto switchD_801435e8_default;
         }
         if (((*(byte *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 5) ))& 1) == 0) && (*(short *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0xd6) ))< 0x1e00)) {
-          in_t5 = in_t5 & 0xffdf;
+          btn = btn & 0xffdf;
         }
-        iVar10 = *psVar11 * 2 + iVar14;
-        if ((in_t5 & *(ushort *)guest_at((uint32_t)(uintptr_t)((iVar10 + 6)))) != *(ushort *)guest_at((uint32_t)(uintptr_t)((iVar10 + 8))))
+        t10 = *tab * 2 + t14;
+        if ((btn & *(ushort *)guest_at((uint32_t)(uintptr_t)((t10 + 6)))) != *(ushort *)guest_at((uint32_t)(uintptr_t)((t10 + 8))))
         goto switchD_801435e8_default;
-        sVar4 = *psVar13;
-        *psVar13 = sVar4 + 1;
-        if ((int)(short)(sVar4 + 1) < (int)(uint)*(ushort *)guest_at((uint32_t)(uintptr_t)((*psVar11 * 2 + iVar14 + 2))))
+        cnt = *rc;
+        *rc = cnt + 1;
+        if ((int)(short)(cnt + 1) < (int)(uint)*(ushort *)guest_at((uint32_t)(uintptr_t)((*tab * 2 + t14 + 2))))
         goto switchD_801435e8_default;
-        *psVar11 = *psVar11 + 5;
-        *psVar13 = 0;
+        *tab = *tab + 5;
+        *rc = 0;
         break;
       case 3:
-        uVar6 = *(ushort *)guest_at((uint32_t)(uintptr_t)((*psVar11 * 2 + iVar14 + 2)));
-        bVar3 = false;
-        if ((uVar6 & 0x2000) == 0) goto LAB_801438fc;
-        iVar10 = 0;
-        if (*(byte *)guest_at((uint32_t)(uintptr_t)((iVar15 + 0x7d) ))== 0) goto LAB_801438fc;
-        iVar8 = iVar15;
+        cw = *(ushort *)guest_at((uint32_t)(uintptr_t)((*tab * 2 + t14 + 2)));
+        clr = false;
+        if ((cw & 0x2000) == 0) goto LAB_801438fc;
+        t10 = 0;
+        if (*(byte *)guest_at((uint32_t)(uintptr_t)((st + 0x7d) ))== 0) goto LAB_801438fc;
+        cur = st;
         goto LAB_801438e0;
       case 4:
-        psVar13[2] = *(short *)guest_at((uint32_t)(uintptr_t)((*psVar11 * 2 + iVar14 + 2) ))<< 4;
-        psVar13[3] = *(short *)guest_at((uint32_t)(uintptr_t)((*psVar11 * 2 + iVar14 + 4) ))<< 4;
-        sVar4 = *psVar11 + 3;
+        rc[2] = *(short *)guest_at((uint32_t)(uintptr_t)((*tab * 2 + t14 + 2) ))<< 4;
+        rc[3] = *(short *)guest_at((uint32_t)(uintptr_t)((*tab * 2 + t14 + 4) ))<< 4;
+        cnt = *tab + 3;
         goto LAB_801439c4;
       default:
         goto switchD_801435e8_default;
@@ -5310,77 +5310,77 @@ LAB_8014359c:
     } while( true );
   }
   goto LAB_801439e8;
-  while (iVar8 = iVar8 + 2, iVar10 < (int)(uint)*(byte *)guest_at((uint32_t)(uintptr_t)((iVar15 + 0x7d)))) {
+  while (cur = cur + 2, t10 < (int)(uint)*(byte *)guest_at((uint32_t)(uintptr_t)((st + 0x7d)))) {
 LAB_801438e0:
-    iVar10 = iVar10 + 1;
-    if ((uVar6 & 0xfff) == (int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar8 + 0x3c)))) goto LAB_80143970;
+    t10 = t10 + 1;
+    if ((cw & 0xfff) == (int)*(short *)guest_at((uint32_t)(uintptr_t)((cur + 0x3c)))) goto LAB_80143970;
   }
 LAB_801438fc:
-  uVar18 = uVar6 & 0xfff;
-  sVar19 = psVar13[3];
-  psVar13[1] = (short)uVar18;
-  psVar13[2] = -1;
-  psVar13[3] = 0;
-  *psVar11 = *psVar11 + 2;
-  *psVar13 = 0;
-  if (*(short *)guest_at((uint32_t)(uintptr_t)((*psVar11 * 2 + iVar14) ))== 0) goto LAB_801439d8;
+  opc = cw & 0xfff;
+  arg = rc[3];
+  rc[1] = (short)opc;
+  rc[2] = -1;
+  rc[3] = 0;
+  *tab = *tab + 2;
+  *rc = 0;
+  if (*(short *)guest_at((uint32_t)(uintptr_t)((*tab * 2 + t14) ))== 0) goto LAB_801439d8;
 switchD_801435e8_default:
-  piVar17 = piVar17 + 1;
-  psVar13 = psVar13 + 5;
-  psVar11 = psVar11 + 5;
+  hd = hd + 1;
+  rc = rc + 5;
+  tab = tab + 5;
 LAB_801439d8:
-  iVar16 = iVar16 + 1;
-  if (0x23 < iVar16) {
+  i = i + 1;
+  if (0x23 < i) {
 LAB_801439e8:
-    if (bVar3) {
-      iVar14 = 0x23;
-      puVar12 = (undefined2 *)(&DAT_801f0ae0 + (uint)*(byte *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 2) ))* 0x168);
+    if (clr) {
+      t14 = 0x23;
+      tp = (undefined2 *)(&DAT_801f0ae0 + (uint)*(byte *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 2) ))* 0x168);
       do {
-        *puVar12 = 0;
-        iVar14 = iVar14 + -1;
-        puVar12 = puVar12 + 5;
-      } while (-1 < iVar14);
+        *tp = 0;
+        t14 = t14 + -1;
+        tp = tp + 5;
+      } while (-1 < t14);
     }
-    if (-1 < (int)(uVar18 << 0x10)) {
-      if (((*(uint *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x5c) ))& 0x40) == 0) && (*(char *)guest_at((uint32_t)(uintptr_t)((iVar15 + 0x7e) ))< '\0')) {
-        *(ushort *)guest_at((uint32_t)(uintptr_t)((iVar15 + 0x3a) ))= (ushort)*(byte *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0xda)));
+    if (-1 < (int)(opc << 0x10)) {
+      if (((*(uint *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x5c) ))& 0x40) == 0) && (*(char *)guest_at((uint32_t)(uintptr_t)((st + 0x7e) ))< '\0')) {
+        *(ushort *)guest_at((uint32_t)(uintptr_t)((st + 0x3a) ))= (ushort)*(byte *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0xda)));
       }
-      *(short *)guest_at((uint32_t)(uintptr_t)((iVar15 + (uint)*(byte *)guest_at((uint32_t)(uintptr_t)((iVar15 + 0x7d) ))* 2 + 0x3c) ))= (short)uVar18;
-      *(short *)guest_at((uint32_t)(uintptr_t)((iVar15 + (uint)*(byte *)guest_at((uint32_t)(uintptr_t)((iVar15 + 0x7d) ))* 2 + 0x5c) ))= sVar19;
-      bVar5 = *(char *)guest_at((uint32_t)(uintptr_t)((iVar15 + 0x7d) ))+ 1;
-      *(undefined1 *)guest_at((uint32_t)(uintptr_t)((iVar15 + 0x7e) ))= *(undefined1 *)guest_at((uint32_t)(uintptr_t)((iVar15 + 0x7d)));
-      *(byte *)guest_at((uint32_t)(uintptr_t)((iVar15 + 0x7d) ))= bVar5 - (bVar5 & 0xf0);
+      *(short *)guest_at((uint32_t)(uintptr_t)((st + (uint)*(byte *)guest_at((uint32_t)(uintptr_t)((st + 0x7d) ))* 2 + 0x3c) ))= (short)opc;
+      *(short *)guest_at((uint32_t)(uintptr_t)((st + (uint)*(byte *)guest_at((uint32_t)(uintptr_t)((st + 0x7d) ))* 2 + 0x5c) ))= arg;
+      nxt = *(char *)guest_at((uint32_t)(uintptr_t)((st + 0x7d) ))+ 1;
+      *(undefined1 *)guest_at((uint32_t)(uintptr_t)((st + 0x7e) ))= *(undefined1 *)guest_at((uint32_t)(uintptr_t)((st + 0x7d)));
+      *(byte *)guest_at((uint32_t)(uintptr_t)((st + 0x7d) ))= nxt - (nxt & 0xf0);
     }
     return;
   }
   goto LAB_8014359c;
 LAB_80143970:
-  *psVar11 = 0;
+  *tab = 0;
   goto switchD_801435e8_default;
 LAB_8014365c:
-  uVar6 = *(ushort *)guest_at((uint32_t)(uintptr_t)(((uVar9 + (int)*psVar11) * 2 + iVar14 + 2)));
-  if ((((uVar6 & 0x1000) != 0) &&
-      ((*(char *)guest_at((uint32_t)(uintptr_t)((iVar15 + 0x7c) ))!= *(char *)guest_at((uint32_t)(uintptr_t)((iVar15 + 0x7d) ))||
-       ((*(uint *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x5c) ))& 0x40) != 0)))) || ((int)sVar2 != (uVar6 & 0xfff)))
+  cw = *(ushort *)guest_at((uint32_t)(uintptr_t)(((j + (int)*tab) * 2 + t14 + 2)));
+  if ((((cw & 0x1000) != 0) &&
+      ((*(char *)guest_at((uint32_t)(uintptr_t)((st + 0x7c) ))!= *(char *)guest_at((uint32_t)(uintptr_t)((st + 0x7d) ))||
+       ((*(uint *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x5c) ))& 0x40) != 0)))) || ((int)prev != (cw & 0xfff)))
   goto LAB_801436a8;
-  psVar13[1] = uVar6;
-  psVar13[2] = -1;
-  psVar13[3] = 0;
-  sVar4 = *psVar11 + 1 + (short)uVar7;
+  rc[1] = cw;
+  rc[2] = -1;
+  rc[3] = 0;
+  cnt = *tab + 1 + (short)t7;
 LAB_801439c4:
-  *psVar11 = sVar4;
-  *psVar13 = 0;
+  *tab = cnt;
+  *rc = 0;
   goto switchD_801435e8_default;
 LAB_801436a8:
-  uVar9 = uVar9 + 1;
-  if ((int)uVar7 <= (int)uVar9) goto code_r0x801436b8;
+  j = j + 1;
+  if ((int)t7 <= (int)j) goto code_r0x801436b8;
   goto LAB_8014365c;
 code_r0x801436b8:
-  *psVar11 = 0;
+  *tab = 0;
   goto switchD_801435e8_default;
 switchD_801435e8_caseD_0:
-  *psVar11 = 0;
-  bVar3 = true;
+  *tab = 0;
+  clr = true;
   goto switchD_801435e8_default;
 
 }
