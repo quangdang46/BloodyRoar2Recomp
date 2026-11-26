@@ -690,6 +690,7 @@ extern void fighter_tint_fade(void);
 extern void fighter_trail_emit(void);
 extern void file_op_dispatch(void);
 extern void file_rec_size_get(void);
+extern void file_rec_size_get_zero(void);
 extern void file_state_bit24_query(void);
 extern void file_state_bit29_query(void);
 extern void firework_spawn(void);
@@ -776,6 +777,7 @@ extern void gte_dpct_vec3(void);
 extern void gte_intpl_vec3(void);
 extern void gte_light_load(void);
 extern void gte_light_set(void);
+extern void gte_light_set_q4(void);
 extern void gte_lwc2_r0_r1(void);
 extern void gte_mat_vec_swap(void);
 extern void gte_matrix_base_set(void);
@@ -922,7 +924,11 @@ extern void lazy_node_wrap(void);
 extern void lut_cos_q12(void);
 extern void lut_mask_clear(void);
 extern void lut_mask_or(void);
+extern void lut_q12_tail_pos(void);
+extern void lut_sat_sign(void);
 extern void lut_sin_q12(void);
+extern void lut_tail_neg(void);
+extern void lut_tail_pos(void);
 extern void lzss_decode(void);
 extern void lzss_trap(void);
 extern void mat3x3_build(void);
@@ -1493,12 +1499,14 @@ extern void spr_desc_a(void);
 extern void spr_desc_b(void);
 extern void spr_desc_c(void);
 extern void spr_desc_slot_alloc(void);
+extern void spr_desc_slot_alloc_commit(void);
 extern void spr_desc_tbl_a_init(void);
 extern void spr_desc_tbl_b_init(void);
 extern void spr_draw_cond(void);
 extern void spr_draw_off(void);
 extern void spr_draw_pair(void);
 extern void spr_pool_a_alloc(void);
+extern void spr_pool_a_alloc_commit(void);
 extern void spr_pool_b_alloc(void);
 extern void spr_pool_b_commit(void);
 extern void spr_prim_tag_a(void);
@@ -1516,6 +1524,7 @@ extern void sprite_blit_center_b(void);
 extern void sprite_burst_spawn(void);
 extern void sprite_desc_table_init(void);
 extern void sprite_node_alloc(void);
+extern void sprite_node_alloc_commit(void);
 extern void sprite_node_emit_a(void);
 extern void sprite_node_emit_b(void);
 extern void sprite_obj_alloc_emit(void);
@@ -2602,6 +2611,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8018c0f8, (void *)spr_pool_b_commit },
   { 0x8018c118, (void *)spr_desc_tbl_b_init },
   { 0x8018c18c, (void *)spr_desc_slot_alloc },
+  { 0x8018c1d4, (void *)spr_desc_slot_alloc_commit },
   { 0x8018c1f4, (void *)sprite_9slice_build },
   { 0x8018c31c, (void *)sprite_quad_emit },
   { 0x8018c578, (void *)sprite_prim_build },
@@ -2611,17 +2621,25 @@ const Br2FnEnt fn_table[] = {
   { 0x8018ca8c, (void *)sprite_obj_alloc_emit },
   { 0x8018cb98, (void *)spr_tbl_init_a },
   { 0x8018cbfc, (void *)spr_pool_a_alloc },
+  { 0x8018cc4c, (void *)spr_pool_a_alloc_commit },
   { 0x8018cc6c, (void *)spr_attr_alloc_a },
   { 0x8018cd94, (void *)spr_tbl_init_b },
   { 0x8018cdf8, (void *)sprite_node_alloc },
+  { 0x8018ce50, (void *)sprite_node_alloc_commit },
   { 0x8018ce70, (void *)sprite_node_emit_a },
   { 0x8018cfb4, (void *)file_rec_size_get },
+  { 0x8018cfd4, (void *)file_rec_size_get_zero },
   { 0x8018cfdc, (void *)cd_file_load_sm },
   { 0x8018d150, (void *)cd_read_issue },
   { 0x8018d1bc, (void *)atan2_lut },
   { 0x8018d244, (void *)trig_sin_lookup },
+  { 0x8018d27c, (void *)lut_tail_neg },
+  { 0x8018d284, (void *)lut_sat_sign },
+  { 0x8018d290, (void *)lut_tail_pos },
   { 0x8018d298, (void *)lut_cos_q12 },
   { 0x8018d29c, (void *)lut_sin_q12 },
+  { 0x8018d2d8, (void *)lut_q12_tail_pos },
+  { 0x8018d2e0, (void *)gte_light_set_q4 },
   { 0x8018d2ec, (void *)gte_light_set },
   { 0x8018d300, (void *)fixed_point_divide },
   { 0x8018d408, (void *)dir_rotate_pair },
