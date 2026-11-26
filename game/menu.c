@@ -4726,38 +4726,38 @@ void battle_state_init(uint8_t *p0, uint8_t *p1, uint32_t battle_g)
 extern int32_t results_record_build(int32_t,int32_t);
 void record_state_stepper(uint32_t obj_g)
 {
-  uint32_t s0 = *(uint32_t *)((uint8_t *)guest_at(obj_g) + 0xcc);
-  int32_t st = (int16_t)MB16(s0);          /* lh ($s0) */
+  uint32_t rec = *(uint32_t *)((uint8_t *)guest_at(obj_g) + 0xcc);
+  int32_t st = (int16_t)MB16(rec);          /* lh ($rec) */
   if ((uint32_t)st >= 7) return;           /* sltiu $v1,7 */
   switch (st) {
   case 1: {
-    uint32_t nc = MB16(s0 + 6) + 1;        /* lhu +6, +1 */
-    int32_t  ts = (int16_t)MB16(s0 + 8);   /* lh +8 zero test */
-    *(uint16_t *)guest_at(s0 + 6) = (uint16_t)nc;   /* sh delay slot */
+    uint32_t nc = MB16(rec + 6) + 1;        /* lhu +6, +1 */
+    int32_t  ts = (int16_t)MB16(rec + 8);   /* lh +8 zero test */
+    *(uint16_t *)guest_at(rec + 6) = (uint16_t)nc;   /* sh delay slot */
     if (ts != 0) {
-      *(uint16_t *)guest_at(s0 + 8) = (uint16_t)(MB16(s0 + 8) - 1);
+      *(uint16_t *)guest_at(rec + 8) = (uint16_t)(MB16(rec + 8) - 1);
     } else {
-      results_record_build((int16_t)MB16(s0 + 2), (int16_t)nc);
-      *(uint16_t *)guest_at(s0 + 8) = 0x14;
-      uint32_t f2 = MB16(s0 + 2) + 1;
-      *(uint16_t *)guest_at(s0 + 2) = (uint16_t)f2;
-      if ((int16_t)f2 >= 3) *(uint16_t *)guest_at(s0 + 2) = 0;
+      results_record_build((int16_t)MB16(rec + 2), (int16_t)nc);
+      *(uint16_t *)guest_at(rec + 8) = 0x14;
+      uint32_t f2 = MB16(rec + 2) + 1;
+      *(uint16_t *)guest_at(rec + 2) = (uint16_t)f2;
+      if ((int16_t)f2 >= 3) *(uint16_t *)guest_at(rec + 2) = 0;
     }
     break;
   }
   case 6: {
-    uint32_t nc = MB16(s0 + 6) + 1;
-    *(uint16_t *)guest_at(s0 + 6) = (uint16_t)nc;   /* jal delay slot */
-    results_record_build((int16_t)MB16(s0 + 2), (int16_t)nc);
-    *(uint16_t *)guest_at(s0 + 8) = 0xc8;
-    uint32_t f2 = MB16(s0 + 2) + 1;
-    *(uint16_t *)guest_at(s0 + 2) = (uint16_t)f2;
-    if ((int16_t)f2 >= 3) *(uint16_t *)guest_at(s0 + 2) = 0;
-    *(uint16_t *)guest_at(s0) = 1;                 /* sh $v0,($s0), v0=1 */
+    uint32_t nc = MB16(rec + 6) + 1;
+    *(uint16_t *)guest_at(rec + 6) = (uint16_t)nc;   /* jal delay slot */
+    results_record_build((int16_t)MB16(rec + 2), (int16_t)nc);
+    *(uint16_t *)guest_at(rec + 8) = 0xc8;
+    uint32_t f2 = MB16(rec + 2) + 1;
+    *(uint16_t *)guest_at(rec + 2) = (uint16_t)f2;
+    if ((int16_t)f2 >= 3) *(uint16_t *)guest_at(rec + 2) = 0;
+    *(uint16_t *)guest_at(rec) = 1;                 /* sh $v0,($rec), v0=1 */
     break;
   }
   case 2: case 3: case 4: case 5:
-    *(uint16_t *)guest_at(s0 + 6) = (uint16_t)(MB16(s0 + 6) + 1);
+    *(uint16_t *)guest_at(rec + 6) = (uint16_t)(MB16(rec + 6) + 1);
     break;
   default: break;                                    /* case 0: nop */
   }
@@ -4874,18 +4874,18 @@ extern uint32_t call_guest(uint32_t,uint32_t,uint32_t);
 extern void record_table_select(int32_t,int32_t);
 int32_t per_side_setup(int32_t side, int32_t flag)
 {
-  const uint32_t s0 = 0x801f04a8u;
-  const uint32_t s2 = ((uint32_t)side << 4) + 0x8011fda0u;
-  uint16_t *D = (uint16_t *)guest_at(s0 + 0x34);
-  const uint16_t *S = (const uint16_t *)guest_at(s2);
+  const uint32_t dst_g = 0x801f04a8u;
+  const uint32_t src_g = ((uint32_t)side << 4) + 0x8011fda0u;
+  uint16_t *D = (uint16_t *)guest_at(dst_g + 0x34);
+  const uint16_t *S = (const uint16_t *)guest_at(src_g);
   uint32_t c0, fn, t;
   int32_t i, lhs, rhs;
   record_table_select(side,flag);
-  *(uint16_t *)guest_at(s0 + 0x1e) = 0;
+  *(uint16_t *)guest_at(dst_g + 0x1e) = 0;
   c0  = MB32(0x1f8000c0);
   lhs = (int32_t)(int8_t)MB8(0x1f800099) + 1;
   rhs = (int32_t)MB8(c0 + 4) * 2 - 1;
-  *(uint8_t *)guest_at(s0 + 0x21) = (lhs < rhs) ? 1 : 0;
+  *(uint8_t *)guest_at(dst_g + 0x21) = (lhs < rhs) ? 1 : 0;
   for (i = 0; i < 4; i++) {
     D[i]     = S[i];
     D[4 + i] = S[4 + i];
@@ -4893,12 +4893,12 @@ int32_t per_side_setup(int32_t side, int32_t flag)
     D[8 + i]  = 0;
     D[12 + i] = 0;
   }
-  if (flag == 0) *(uint16_t *)guest_at(s0 + 0x22) = 0;
+  if (flag == 0) *(uint16_t *)guest_at(dst_g + 0x22) = 0;
   t = 0x801b1774u +
       (uint32_t)((int32_t)((uint32_t)MB8(0x1f800098) << 24) >> 22);
   fn = MB32(t);
   if (fn != 0)
-    return (int32_t)call_guest(fn,s0,0x1f800000u);
+    return (int32_t)call_guest(fn,dst_g,0x1f800000u);
   return 0;
 }
 
