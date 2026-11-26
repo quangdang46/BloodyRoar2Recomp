@@ -552,14 +552,14 @@ switchD_801678c4_caseD_1:
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void battle_flow_state_machine(intptr_t param_1)
+void battle_flow_state_machine(intptr_t in_rec)
 
 {
-  int iVar1;
+  int ot_base;
   bool battle_ran;
-  undefined4 uVar3;
-  int iVar4;
-  int iVar5;
+  undefined4 aux_val;
+  int tmp;
+  int tmp2;
   
   battle_ran = false;
   { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
@@ -592,8 +592,8 @@ joined_r0x8016fd30:
    * the same OT cells with no intervening ch6 clear, so the second pass linked
    * each packet chain's tail to the previous head and the GPU walked a closed
    * cycle. Read them fresh here; the guest stores nothing back. */
-  iVar4 = _DAT_1f80000c;
-  iVar1 = _DAT_1f800008;
+  tmp = _DAT_1f80000c;
+  ot_base = _DAT_1f800008;
   if ((int8_t)DAT_1f800001 == -1) {
     if (g_game_state != '\t') {
       rec_timer_pair_clear(0x1f800000);
@@ -606,8 +606,8 @@ joined_r0x8016fd30:
     DAT_1f800001 = '\x01';
   case '\x01':
     hud_sprite_desc_init();
-    iVar4 = frame_divisor_get();
-    if (iVar4 == 0) {
+    tmp = frame_divisor_get();
+    if (tmp == 0) {
       display_mode_setup(*(undefined1 *)(_g_system_config_ptr + 0xb));
       frame_advance_helper();
       match_mode_set(1);
@@ -622,7 +622,7 @@ joined_r0x8016fd30:
       case 0:
         _DAT_1f8000c4 = guest_of(_g_system_config_ptr + 0x2c);
         if ((DAT_1f80009b == '\0') && (*(char *)(_g_system_config_ptr + 0x11) != '\x01')) {
-          iVar4 = battle_frame();
+          tmp = battle_frame();
           /* battle_frame returns early on a bail unwind — propagate it so
            * the unwind reaches the dispatch boundary instead of continuing
            * this clean-C loop with every generated fallback dropped.
@@ -630,14 +630,14 @@ joined_r0x8016fd30:
            * must not leak BFSM-private DAT1 into match_loop (see above). */
           { extern int br2_bail_pending(void);
             if (br2_bail_pending()) { DAT_1f800001 = 0; return; } }
-          if (iVar4 < 0) {
+          if (tmp < 0) {
             DAT_1f800001 = -1;
           }
           battle_ran = true;
         }
         else {
-          iVar4 = select_screen_tick(0);
-          if (iVar4 != 0) {
+          tmp = select_screen_tick(0);
+          if (tmp != 0) {
             DAT_1f800001 = -1;
           }
         }
@@ -645,17 +645,17 @@ joined_r0x8016fd30:
       case 1:
       case 2:
         _DAT_1f8000c4 = guest_of(_g_system_config_ptr + 0x2c);
-        iVar4 = select_screen_tick(1);
+        tmp = select_screen_tick(1);
         { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-          decomp_trace_record(74,0xf00d,(uint32_t)iVar4,(uint8_t)DAT_1f800001,(uint32_t)DAT_1f80009c); }
-        if (iVar4 != 0) {
+          decomp_trace_record(74,0xf00d,(uint32_t)tmp,(uint8_t)DAT_1f800001,(uint32_t)DAT_1f80009c); }
+        if (tmp != 0) {
           DAT_1f800001 = -1;
         }
         break;
       case 3:
         _DAT_1f8000c4 = guest_of(_g_system_config_ptr + 0x2c);
-        iVar4 = select_screen_tick(3);
-        if (iVar4 != 0) {
+        tmp = select_screen_tick(3);
+        if (tmp != 0) {
           DAT_1f800001 = -1;
         }
         break;
@@ -668,8 +668,8 @@ joined_r0x8016fd30:
           *(uint *)(_g_system_config_ptr + 0x28) = *(uint *)(_g_system_config_ptr + 0x28) | 2;
           _DAT_801c15f0 = 1;
         }
-        iVar4 = select_screen_tick(2);
-        if (iVar4 == 0) {
+        tmp = select_screen_tick(2);
+        if (tmp == 0) {
           countdown_display_sm(0);
           hud_state_machine(0);
         }
@@ -679,12 +679,12 @@ joined_r0x8016fd30:
         break;
       case 5:
         _DAT_1f8000c4 = guest_of(_g_system_config_ptr + 0x38);
-        uVar3 = 1;
+        aux_val = 1;
         if (DAT_1f80009b == '\0') {
-          uVar3 = 3;
+          aux_val = 3;
         }
-        iVar4 = select_screen_tick(uVar3);
-        if (iVar4 != 0) {
+        tmp = select_screen_tick(aux_val);
+        if (tmp != 0) {
           g_game_state = '\v';
           g_sub_state = 4;
           DAT_1f800001 = -1;
@@ -706,8 +706,8 @@ switchD_8016fd64_caseD_2:
         { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
           decomp_trace_record(73,0xcafe,(uint32_t)DAT_1f800001,(uint8_t)DAT_1f80009b,(uint32_t)DAT_1f80009c); }
 switchD_8016fd64_caseD_3:
-        iVar4 = frame_divisor_get();
-        if (iVar4 == 0) {
+        tmp = frame_divisor_get();
+        if (tmp == 0) {
           if (battle_ran) {
             battle_ran = false;
           }
@@ -738,7 +738,7 @@ switchD_8016fd64_caseD_3:
     if (_DAT_1f800090 != 0) {
       _DAT_1f800090 = 0;
     }
-    iVar5 = menu_res_load_sm(0x1f800000,&DAT_1f8000e8,&DAT_1f8001f0,0);
+    tmp2 = menu_res_load_sm(0x1f800000,&DAT_1f8000e8,&DAT_1f8001f0,0);
     /* menu_res_load_sm returns -1 both for "already done" (s1+0x8c<0
      * stored marker) and for a br2_bail_pending unwind. Only the bail case
      * must NOT advance the phase — the load is mid-flight and the fighter
@@ -749,7 +749,7 @@ switchD_8016fd64_caseD_3:
      * leak BFSM-private DAT1 into match_loop — restore canonical 0. */
     { extern int br2_bail_pending(void);
       if (br2_bail_pending()) { DAT_1f800001 = 0; return; } }
-    if ((iVar5 != 0) && (_DAT_1f800090 == 0)) goto switchD_8016fd64_caseD_5;
+    if ((tmp2 != 0) && (_DAT_1f800090 == 0)) goto switchD_8016fd64_caseD_5;
     break;
   case '\x05':
 switchD_8016fd64_caseD_5:
@@ -764,8 +764,8 @@ switchD_8016fd64_caseD_5:
   case '\x06':
     match_setup_apply(0x1f8000e8u,0x1f8001f0u,0x1f800000u,(uint32_t)guest_of(_g_system_config_ptr));
     battle_state_init(&DAT_1f8000e8,&DAT_1f8001f0,0x1f800000);
-    uVar3 = table_byte_next_a();
-    perm_table_apply(uVar3);
+    aux_val = table_byte_next_a();
+    perm_table_apply(aux_val);
     reset_sprite_ot_block(0x1f800000);
     task_table_init(1);
     flow_cfg_init(1);
@@ -784,8 +784,8 @@ switchD_8016fd64_caseD_5:
     frame_tick(0x1f800000);
     DAT_1f800001 = '\a';
 switchD_8016fd64_caseD_7:
-    iVar5 = frame_divisor_get();
-    if (iVar5 == 0) {
+    tmp2 = frame_divisor_get();
+    if (tmp2 == 0) {
       DAT_1f800001 = '\b';
 switchD_8016fd64_caseD_8:
       { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
@@ -798,8 +798,8 @@ switchD_8016fd64_caseD_8:
       }
       if ((DAT_1f800001 != '\x06') && (DAT_1f800001 != '\b')) {
         frame_present(0x1f800000);
-        iVar4 = _DAT_1f80000c;
-        iVar1 = _DAT_1f800008;
+        tmp = _DAT_1f80000c;
+        ot_base = _DAT_1f800008;
         goto joined_r0x8016fd30;
       }
       if ((*(uint *)((uint32_t *)guest_at(_DAT_1f8000c4) + 8) >> 0xb & 1) != 0) {
@@ -812,23 +812,23 @@ switchD_8016fd64_caseD_8:
         FUN_801787dc(&DAT_1f8001f0,(uint8_t *)guest_at(0x1f800000));
         fighter_pair_update((int)guest_of(&DAT_1f8000e8),(int)guest_of(&DAT_1f8001f0),0x1f800000);
       }
-      if (((*(ushort *)(param_1 + 2) >> 2 & 1) != 0) && (DAT_1f8000b0 == '\0')) {
-        iVar5 = iVar1 + 0x10;
+      if (((*(ushort *)(in_rec + 2) >> 2 & 1) != 0) && (DAT_1f8000b0 == '\0')) {
+        tmp2 = ot_base + 0x10;
         if (DAT_1f80009d == '\0') {
-          iVar5 = iVar1 + 0x2038;
+          tmp2 = ot_base + 0x2038;
         }
-        battle_hud_draw(iVar5,0x1f800000,(int)guest_of(&DAT_1f8000e8),(int)guest_of(&DAT_1f8001f0));
+        battle_hud_draw(tmp2,0x1f800000,(int)guest_of(&DAT_1f8000e8),(int)guest_of(&DAT_1f8001f0));
       }
       battle_camera_step(_DAT_1f8000bc,&DAT_1f8000e8,&DAT_1f8001f0,0x1f800000);
       camera_state_cache(_DAT_1f8000bc,0x1f800000);
-      if (((*(ushort *)(param_1 + 2) & 1) != 0) && ((_DAT_1f800148 & 2) == 0)) {
-        fighter_flash_update(iVar1,iVar4,0x1f800000,&DAT_1f8000e8);
+      if (((*(ushort *)(in_rec + 2) & 1) != 0) && ((_DAT_1f800148 & 2) == 0)) {
+        fighter_flash_update(ot_base,tmp,0x1f800000,&DAT_1f8000e8);
         if ((_DAT_1f800154 & 0x400) == 0) {
           if ((_DAT_1f800154 & 0x200) == 0) {
-            if (((_DAT_1f800154 & 0x8000000) == 0) || (iVar4 == 0)) {
+            if (((_DAT_1f800154 & 0x8000000) == 0) || (tmp == 0)) {
               player_light_apply(&DAT_1f8000e8,1);
-              iVar5 = (int)(int8_t)DAT_1f8000ee;
-              uVar3 = _DAT_1f800100;
+              tmp2 = (int)(int8_t)DAT_1f8000ee;
+              aux_val = _DAT_1f800100;
             }
             else {
               player_light_apply(&DAT_1f8000e8,1);
@@ -837,108 +837,108 @@ switchD_8016fd64_caseD_8:
                * _DAT_1f800110 (record[1]: count byte +0x24, prim hdr +0x34).
                * The decompiler's +0x24/+0x34 were element indices on a
                * uint32_t*, i.e. byte offsets 4x too far. */
-              iVar5 = (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800110 + 0x24);
-              uVar3 = *(undefined4 *)guest_at(_DAT_1f800110 + 0x34);
+              tmp2 = (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800110 + 0x24);
+              aux_val = *(undefined4 *)guest_at(_DAT_1f800110 + 0x34);
             }
           }
           else {
             player_light_apply(&DAT_1f8000e8,1);
             /* Guest 0x80170414/0x80170404: lw 0x10($v0) / lb 0($v0) —
-             * param_1 = record[0] prim hdr (byte +0x10), param_4 = signed
+             * in_rec = record[0] prim hdr (byte +0x10), param_4 = signed
              * count byte at struct +0. */
-            prim_list_gte_invoke((int *)guest_at(*(uint32_t *)guest_at(_DAT_1f800110 + 0x10)),iVar1 + 0x40,iVar4,
+            prim_list_gte_invoke((int *)guest_at(*(uint32_t *)guest_at(_DAT_1f800110 + 0x10)),ot_base + 0x40,tmp,
                          (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800110),0x1f800028,0x1f80033c);
-            if (iVar4 == 0) goto LAB_801704bc;
-            iVar5 = (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800110 + 0x24);
-            uVar3 = *(undefined4 *)guest_at(_DAT_1f800110 + 0x34);
+            if (tmp == 0) goto LAB_801704bc;
+            tmp2 = (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800110 + 0x24);
+            aux_val = *(undefined4 *)guest_at(_DAT_1f800110 + 0x34);
           }
-          prim_list_gte_invoke((int *)guest_at(uVar3),iVar1 + 0x40,iVar4,iVar5,0x1f800028,0x1f80033c);
+          prim_list_gte_invoke((int *)guest_at(aux_val),ot_base + 0x40,tmp,tmp2,0x1f800028,0x1f80033c);
         }
 LAB_801704bc:
-        if (((*(ushort *)(param_1 + 2) >> 6 & 1) != 0) && (DAT_1f80009f == '\0')) {
+        if (((*(ushort *)(in_rec + 2) >> 6 & 1) != 0) && (DAT_1f80009f == '\0')) {
           if (DAT_1f800098 == 4) {
 LAB_80170524:
-            FUN_8018b100(_DAT_1f800104,iVar1 + 0x2040,iVar4,0xf,0x1f800028,0x1f80035c);
+            FUN_8018b100(_DAT_1f800104,ot_base + 0x2040,tmp,0xf,0x1f800028,0x1f80035c);
           }
           else {
             if ((char)DAT_1f800098 < '\x05') {
               if (DAT_1f800098 == 1) goto LAB_80170524;
             }
             else if (DAT_1f800098 == 6) goto LAB_80170524;
-            prim_list_persp_step((int *)guest_at(_DAT_1f800104),iVar1 + 0x2040,iVar4,0xf,0x1f800028,0x1f80035c,
-                         ((int)((uint)DAT_1f800098 << 0x18) >> 0x15) + -0x7fe4e94c,iVar1 + 0x206c);
+            prim_list_persp_step((int *)guest_at(_DAT_1f800104),ot_base + 0x2040,tmp,0xf,0x1f800028,0x1f80035c,
+                         ((int)((uint)DAT_1f800098 << 0x18) >> 0x15) + -0x7fe4e94c,ot_base + 0x206c);
           }
         }
       }
-      if (((*(ushort *)(param_1 + 2) >> 1 & 1) != 0) && ((_DAT_1f800250 & 2) == 0)) {
-        fighter_flash_update(iVar1,iVar4,0x1f800000,&DAT_1f8001f0);
+      if (((*(ushort *)(in_rec + 2) >> 1 & 1) != 0) && ((_DAT_1f800250 & 2) == 0)) {
+        fighter_flash_update(ot_base,tmp,0x1f800000,&DAT_1f8001f0);
         if ((_DAT_1f80025c & 0x400) == 0) {
           if ((_DAT_1f80025c & 0x200) == 0) {
-            if (((_DAT_1f80025c & 0x8000000) == 0) || (iVar4 == 0)) {
+            if (((_DAT_1f80025c & 0x8000000) == 0) || (tmp == 0)) {
               player_light_apply(&DAT_1f8001f0,2);
-              iVar5 = (int)(int8_t)DAT_1f8001f6;
-              uVar3 = _DAT_1f800208;
+              tmp2 = (int)(int8_t)DAT_1f8001f6;
+              aux_val = _DAT_1f800208;
             }
             else {
               player_light_apply(&DAT_1f8001f0,2);
-              iVar5 = (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800218 + 0x24);
-              uVar3 = *(undefined4 *)guest_at(_DAT_1f800218 + 0x34);
+              tmp2 = (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800218 + 0x24);
+              aux_val = *(undefined4 *)guest_at(_DAT_1f800218 + 0x34);
             }
           }
           else {
             player_light_apply(&DAT_1f8001f0,2);
-            prim_list_gte_invoke((int *)guest_at(*(uint32_t *)guest_at(_DAT_1f800218 + 0x10)),iVar1 + 0x40,iVar4,
+            prim_list_gte_invoke((int *)guest_at(*(uint32_t *)guest_at(_DAT_1f800218 + 0x10)),ot_base + 0x40,tmp,
                          (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800218),0x1f800028,0x1f80033c);
-            if (iVar4 == 0) goto LAB_801706ac;
-            iVar5 = (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800218 + 0x24);
-            uVar3 = *(undefined4 *)guest_at(_DAT_1f800218 + 0x34);
+            if (tmp == 0) goto LAB_801706ac;
+            tmp2 = (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800218 + 0x24);
+            aux_val = *(undefined4 *)guest_at(_DAT_1f800218 + 0x34);
           }
-          prim_list_gte_invoke((int *)guest_at(uVar3),iVar1 + 0x40,iVar4,iVar5,0x1f800028,0x1f80033c);
+          prim_list_gte_invoke((int *)guest_at(aux_val),ot_base + 0x40,tmp,tmp2,0x1f800028,0x1f80033c);
         }
 LAB_801706ac:
-        if (((*(ushort *)(param_1 + 2) >> 6 & 1) != 0) && (DAT_1f80009f == '\0')) {
+        if (((*(ushort *)(in_rec + 2) >> 6 & 1) != 0) && (DAT_1f80009f == '\0')) {
           if (DAT_1f800098 == 4) {
 LAB_80170714:
-            FUN_8018b100(_DAT_1f80020c,iVar1 + 0x2040,iVar4,0xf,0x1f800028,0x1f80035c);
+            FUN_8018b100(_DAT_1f80020c,ot_base + 0x2040,tmp,0xf,0x1f800028,0x1f80035c);
           }
           else {
             if ((char)DAT_1f800098 < '\x05') {
               if (DAT_1f800098 == 1) goto LAB_80170714;
             }
             else if (DAT_1f800098 == 6) goto LAB_80170714;
-            prim_list_persp_step((int *)guest_at(_DAT_1f80020c),iVar1 + 0x2040,iVar4,0xf,0x1f800028,0x1f80035c,
-                         ((int)((uint)DAT_1f800098 << 0x18) >> 0x15) + -0x7fe4e94c,iVar1 + 0x206c);
+            prim_list_persp_step((int *)guest_at(_DAT_1f80020c),ot_base + 0x2040,tmp,0xf,0x1f800028,0x1f80035c,
+                         ((int)((uint)DAT_1f800098 << 0x18) >> 0x15) + -0x7fe4e94c,ot_base + 0x206c);
           }
         }
       }
-      if ((*(ushort *)(param_1 + 2) >> 4 & 1) == 0) {
+      if ((*(ushort *)(in_rec + 2) >> 4 & 1) == 0) {
         DAT_1f8000b1 = 1;
       }
-      battle_intro_fsm(0x1f800028,iVar1,iVar4,0x1f800000);
+      battle_intro_fsm(0x1f800028,ot_base,tmp,0x1f800000);
       if (((_DAT_1f800154 & 0x8000) != 0) || (_DAT_801f4cb6 = 0xfff8, (_DAT_1f80025c & 0x8000) != 0)
          ) {
         _DAT_801f4cb6 = 0x10;
       }
       _DAT_801f4cb2 = 0;
-      fighter_tint_fade(iVar1,iVar4,0x1f800000,(int)(char)DAT_1f800098);
-      if ((*(ushort *)(param_1 + 2) >> 3 & 1) != 0) {
+      fighter_tint_fade(ot_base,tmp,0x1f800000,(int)(char)DAT_1f800098);
+      if ((*(ushort *)(in_rec + 2) >> 3 & 1) != 0) {
         fighter_trail_emit((undefined4 *)guest_at(0x1f800028),0x1f80033c,_DAT_1f8000bc,0x1f800000);
       }
       if (((DAT_1f80009f == '\0') && (DAT_1f80009e == '\0')) &&
-         ((*(ushort *)(param_1 + 2) >> 5 & 1) != 0)) {
-        slot_height_proj(iVar1 + 0x207c,_DAT_1f8000bc,iVar4,0x1f800000);
+         ((*(ushort *)(in_rec + 2) >> 5 & 1) != 0)) {
+        slot_height_proj(ot_base + 0x207c,_DAT_1f8000bc,tmp,0x1f800000);
       }
-      if (*(short *)(param_1 + 8) != 0) {
-        FUN_801468ec(iVar1,iVar4,0x1f800028,&DAT_1f8000e8,(int)*(short *)(param_1 + 8));
+      if (*(short *)(in_rec + 8) != 0) {
+        FUN_801468ec(ot_base,tmp,0x1f800028,&DAT_1f8000e8,(int)*(short *)(in_rec + 8));
       }
-      if (*(short *)(param_1 + 10) != 0) {
-        FUN_801468ec(iVar1,iVar4,0x1f800028,&DAT_1f8001f0,(int)*(short *)(param_1 + 10));
+      if (*(short *)(in_rec + 10) != 0) {
+        FUN_801468ec(ot_base,tmp,0x1f800028,&DAT_1f8001f0,(int)*(short *)(in_rec + 10));
       }
-      if (*(short *)(param_1 + 4) != 0) {
-        status_text_display(0x1f8000e8u,(uint32_t)*(short *)(param_1 + 4));
+      if (*(short *)(in_rec + 4) != 0) {
+        status_text_display(0x1f8000e8u,(uint32_t)*(short *)(in_rec + 4));
       }
-      if (*(short *)(param_1 + 6) != 0) {
-        status_text_display(0x1f8001f0u,(uint32_t)*(short *)(param_1 + 6));
+      if (*(short *)(in_rec + 6) != 0) {
+        status_text_display(0x1f8001f0u,(uint32_t)*(short *)(in_rec + 6));
       }
     }
     break;
@@ -966,16 +966,16 @@ LAB_80170714:
     }
     break;
   case '\f':
-    iVar4 = frame_divisor_get();
-    if (iVar4 != 0) break;
+    tmp = frame_divisor_get();
+    if (tmp != 0) break;
     DAT_1f800001 = -1;
-    iVar4 = _DAT_1f80000c;
-    iVar1 = _DAT_1f800008;
+    tmp = _DAT_1f80000c;
+    ot_base = _DAT_1f800008;
     goto joined_r0x8016fd30;
   }
   frame_tick(0x1f800000);
-  iVar4 = _DAT_1f80000c;
-  iVar1 = _DAT_1f800008;
+  tmp = _DAT_1f80000c;
+  ot_base = _DAT_1f800008;
   goto joined_r0x8016fd30;
 }
 
@@ -1355,11 +1355,11 @@ void menu_noop(void)
 void results_scoreboard(int mode)
 
 {
-  int iVar1;
+  int tmp;
   undefined4 draw_mode;
   char *title_str;
-  undefined2 uVar4;
-  int iVar5;
+  undefined2 attr;
+  int tmp2;
   int rec_off;
   int row_off;
   undefined1 *name_ptr;
@@ -1399,8 +1399,8 @@ void results_scoreboard(int mode)
   }
   local_30 = &DAT_801c1304;
 LAB_80164714:
-  iVar1 = memcard_err_sentinel();
-  if (iVar1 < 0) {
+  tmp = memcard_err_sentinel();
+  if (tmp < 0) {
     _DAT_1f80008c = 0;
 joined_r0x80164744:
     /* Bail-unwind exit must preserve the DAT1 exit invariant: every normal
@@ -1435,48 +1435,48 @@ LAB_80164830:
             }
           }
         }
-        uVar4 = 0x10;
+        attr = 0x10;
         if (DAT_1f800015 != '\0') {
-          uVar4 = 0x20;
+          attr = 0x20;
         }
         if (mode < 3) {
           if (mode < 1) {
             if (mode != 0) goto LAB_80164a2c;
             title_str = s_RANKING_80122048;
-            iVar1 = _DAT_1f800020 + -0x62;
+            tmp = _DAT_1f800020 + -0x62;
           }
           else {
             title_str = s_TIME_ATTACK_80122050;
-            iVar1 = _DAT_1f800020 + -0x9a;
+            tmp = _DAT_1f800020 + -0x9a;
           }
 LAB_80164a00:
           announce_param_block_init_b(_DAT_1f800008 + 4,_DAT_1f80000c,title_str,
-                       (iVar1 / 2 + local_40) * 0x10000 >> 0x10,uVar4,1);
+                       (tmp / 2 + local_40) * 0x10000 >> 0x10,attr,1);
         }
         else if (mode == 3) {
           title_str = s_SURVIVAL_8012205c;
-          iVar1 = _DAT_1f800020 + -0x70;
+          tmp = _DAT_1f800020 + -0x70;
           goto LAB_80164a00;
         }
 LAB_80164a2c:
         rec_off = 0;
         row_off = 0;
-        iVar1 = rec_off;
+        tmp = rec_off;
         name_ptr = local_34;
         do {
           if (DAT_1f800015 == '\0') {
-            iVar5 = row_off + 0x30;
+            tmp2 = row_off + 0x30;
           }
           else {
-            iVar5 = (row_off + 0x30) * 2;
+            tmp2 = (row_off + 0x30) * 2;
           }
           if (-1 < *(int *)((char *)local_60 + rec_off)) {
-            sprintf_core((char *)auStack_70,&DAT_80121fe0,iVar1 + 1);
+            sprintf_core((char *)auStack_70,&DAT_80121fe0,tmp + 1);
             announce_param_block_init_b(_DAT_1f800008 + 0x14,_DAT_1f80000c,auStack_70,
-                         (local_40 + 0x38) * 0x10000 >> 0x10,(int)(short)iVar5,3);
+                         (local_40 + 0x38) * 0x10000 >> 0x10,(int)(short)tmp2,3);
             announce_param_block_init_b(_DAT_1f800008 + 0x14,_DAT_1f80000c,
                          (const void *)guest_at(*(uint32_t *)((char *)&PTR_DAT_801b4254 + rec_off)),
-                         (local_40 + 0x48) * 0x10000 >> 0x10,(int)(short)iVar5,4);
+                         (local_40 + 0x48) * 0x10000 >> 0x10,(int)(short)tmp2,4);
             if (-1 < mode) {
               if (mode < 3) {
                 draw_mode = 0;
@@ -1485,45 +1485,45 @@ LAB_80164a2c:
                 if (mode != 3) goto LAB_80164b68;
                 draw_mode = 5;
               }
-              hud_time_score_draw(_DAT_1f800008 + 0x14,_DAT_1f80000c,local_40 + 0x70,iVar5,name_ptr,draw_mode);
+              hud_time_score_draw(_DAT_1f800008 + 0x14,_DAT_1f80000c,local_40 + 0x70,tmp2,name_ptr,draw_mode);
             }
 LAB_80164b68:
-            iVar5 = *(int *)((char *)local_60 + rec_off);
-            if (iVar5 < _DAT_1f800020 + 0x80) {
-              *(int *)((char *)local_60 + rec_off) = iVar5 + 0x10;
+            tmp2 = *(int *)((char *)local_60 + rec_off);
+            if (tmp2 < _DAT_1f800020 + 0x80) {
+              *(int *)((char *)local_60 + rec_off) = tmp2 + 0x10;
             }
           }
           rec_off = rec_off + 4;
           name_ptr = name_ptr + 0x10;
-          iVar1 = iVar1 + 1;
+          tmp = tmp + 1;
           row_off = row_off + 0x20;
-        } while (iVar1 < 5);
-        uVar4 = 0x10;
+        } while (tmp < 5);
+        attr = 0x10;
         if (DAT_1f800015 != '\0') {
-          uVar4 = 0x20;
+          attr = 0x20;
         }
         if (mode == 0) {
           title_str = s_VS_RANKING_80122068;
-          iVar1 = _DAT_1f800020 + -0x8c;
+          tmp = _DAT_1f800020 + -0x8c;
 LAB_80164c38:
           announce_param_block_init_b(_DAT_1f800008 + 4,_DAT_1f80000c,title_str,
-                       (iVar1 / 2 + local_3c) * 0x10000 >> 0x10,uVar4,1);
+                       (tmp / 2 + local_3c) * 0x10000 >> 0x10,attr,1);
         }
         else if (mode == 1) {
           title_str = s_SURVIVAL_8012205c;
-          iVar1 = _DAT_1f800020 + -0x70;
+          tmp = _DAT_1f800020 + -0x70;
           goto LAB_80164c38;
         }
         rec_off = 0;
         name_tbl = &PTR_DAT_801b4254;
-        iVar1 = 0;
+        tmp = 0;
         name_ptr = local_30;
         do {
           if (DAT_1f800015 == '\0') {
-            row_off = iVar1 + 0x30;
+            row_off = tmp + 0x30;
           }
           else {
-            row_off = (iVar1 + 0x30) * 2;
+            row_off = (tmp + 0x30) * 2;
           }
           sprintf_core((char *)auStack_70,&DAT_80121fe0,rec_off + 1);
           announce_param_block_init_b(_DAT_1f800008 + 0x14,_DAT_1f80000c,auStack_70,
@@ -1546,7 +1546,7 @@ LAB_80164d68:
           name_ptr = name_ptr + 0x10;
           name_tbl = name_tbl + 1;
           rec_off = rec_off + 1;
-          iVar1 = iVar1 + 0x20;
+          tmp = tmp + 0x20;
         } while (rec_off < 5);
         if (local_44 != 0) {
           fighter_reinit_tail(0x1f800000);
@@ -1564,7 +1564,7 @@ LAB_80164d68:
           DAT_1f800001 = 0xff;
           goto joined_r0x80164744;
         }
-        if ((DAT_1f800001 == 0) && (iVar1 = frame_divisor_get(), iVar1 == 0)) {
+        if ((DAT_1f800001 == 0) && (tmp = frame_divisor_get(), tmp == 0)) {
           if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
             draw_mode = 9;
             if (*(char *)(_g_system_config_ptr + 0xd) == '\0') {
@@ -3186,12 +3186,12 @@ extern int32_t table_byte_next_a(void);
 extern void sprite_9slice_build(uint32_t,uint32_t,uint32_t,uint32_t);
 int32_t select_screen_tick(int32_t entry_mode)
 {
-  uint8_t bVar1;
-  int32_t iVar2, iVar3, iVar4, iVar9, iVar10;
-  uint32_t uVar5, uVar8, uVar11;
-  uint8_t *puVar6;
-  uint32_t *puVar7;
-  uint32_t unaff_s2;
+  uint8_t next_state;
+  int32_t iVar2, iVar3, iVar4, draw_slot, aux_val;
+  uint32_t uVar5, uVar8, pidx_b;
+  uint8_t *rec;
+  uint32_t *spr_tab;
+  uint32_t attr_idx;
   int32_t local_c8 = 0, local_c0 = 0;
   /* guest sp-0xf8..sp frame image (prologue @0x8014f260: addiu sp,-0xf8,
    * s7=sp+0x40, sp+0x18 -> cell 0x801f10bc). Reserve the window on the
@@ -3233,77 +3233,77 @@ int32_t select_screen_tick(int32_t entry_mode)
       if (((*(uint32_t *)g__DAT_1f80007c & 0x10) == 0) ||
           ((*(uint8_t *)g_DAT_1f8000a2 != 0 && (entry_mode != 1)))) {
         uVar8 = 0;
-        puVar6 = auStack_b8;
+        rec = auStack_b8;
         do {
-          iVar4 = *(int32_t *)(puVar6 + 0x24);
+          iVar4 = *(int32_t *)(rec + 0x24);
           if (iVar4 == 1) {
-            if (*(int32_t *)(puVar6 + 0x10) == 0) {
-              if (*(int32_t *)(puVar6 + 0x2c) == 0) {
+            if (*(int32_t *)(rec + 0x10) == 0) {
+              if (*(int32_t *)(rec + 0x2c) == 0) {
                 if (local_a8[(uVar8 ^ 1) * 0xc] == 0) {
                   iVar4 = local_94[(uVar8 ^ 1) * 0xc];
                   goto code_r0x8014f6c0;
                 }
                 if (local_a8[(uVar8 ^ 1) * 0xc] == 1) {
-                  *(uint32_t *)(puVar6 + 0x24) = 2;
+                  *(uint32_t *)(rec + 0x24) = 2;
                 }
               }
             }
-            else if (*(int32_t *)(puVar6 + 0x10) == 1) {
+            else if (*(int32_t *)(rec + 0x10) == 1) {
               iVar4 = local_94[(uVar8 ^ 1) * 0xc];
 code_r0x8014f6c0:
-              if (0 < iVar4) *(uint32_t *)(puVar6 + 0x24) = 2;
+              if (0 < iVar4) *(uint32_t *)(rec + 0x24) = 2;
             }
           }
           else if (iVar4 < 2) {
             if (iVar4 == 0 && local_2c != 0) {
-              iVar4 = *(int32_t *)(puVar6 + 0x1c);
-              if ((*(uint32_t *)(puVar6 + 8) & 0x1000) != 0) {
+              iVar4 = *(int32_t *)(rec + 0x1c);
+              if ((*(uint32_t *)(rec + 8) & 0x1000) != 0) {
                 uVar5 = (uint32_t)select_cursor_step(iVar4,0);
-                *(uint32_t *)(puVar6 + 0x1c) = uVar5;
+                *(uint32_t *)(rec + 0x1c) = uVar5;
               }
-              if ((*(uint32_t *)(puVar6 + 8) & 0x2000) != 0) {
-                uVar5 = (uint32_t)select_cursor_step(*(int32_t *)(puVar6 + 0x1c),1);
-                *(uint32_t *)(puVar6 + 0x1c) = uVar5;
+              if ((*(uint32_t *)(rec + 8) & 0x2000) != 0) {
+                uVar5 = (uint32_t)select_cursor_step(*(int32_t *)(rec + 0x1c),1);
+                *(uint32_t *)(rec + 0x1c) = uVar5;
               }
-              if ((*(uint32_t *)(puVar6 + 8) & 0x4000) != 0) {
-                uVar5 = (uint32_t)select_cursor_step(*(int32_t *)(puVar6 + 0x1c),2);
-                *(uint32_t *)(puVar6 + 0x1c) = uVar5;
+              if ((*(uint32_t *)(rec + 8) & 0x4000) != 0) {
+                uVar5 = (uint32_t)select_cursor_step(*(int32_t *)(rec + 0x1c),2);
+                *(uint32_t *)(rec + 0x1c) = uVar5;
               }
-              if ((*(uint32_t *)(puVar6 + 8) & 0x8000) != 0) {
-                uVar5 = (uint32_t)select_cursor_step(*(int32_t *)(puVar6 + 0x1c),3);
-                *(uint32_t *)(puVar6 + 0x1c) = uVar5;
+              if ((*(uint32_t *)(rec + 8) & 0x8000) != 0) {
+                uVar5 = (uint32_t)select_cursor_step(*(int32_t *)(rec + 0x1c),3);
+                *(uint32_t *)(rec + 0x1c) = uVar5;
               }
-              iVar3 = *(int32_t *)(puVar6 + 0x1c);
-              if (iVar3 < 0) { *(uint32_t *)(puVar6 + 0x1c) = 0; iVar3 = 0; }
-              if (10 < iVar3) *(uint32_t *)(puVar6 + 0x1c) = 10;
-              if (*(int32_t *)(puVar6 + 0x1c) != iVar4) deferred_cmd_post(0x400,0x40,0);
-              if (((*(uint32_t *)(puVar6 + 8) & 0xe0) != 0) ||
-                  (((*(uint32_t *)(puVar6 + 8) & 0x800) != 0 &&
+              iVar3 = *(int32_t *)(rec + 0x1c);
+              if (iVar3 < 0) { *(uint32_t *)(rec + 0x1c) = 0; iVar3 = 0; }
+              if (10 < iVar3) *(uint32_t *)(rec + 0x1c) = 10;
+              if (*(int32_t *)(rec + 0x1c) != iVar4) deferred_cmd_post(0x400,0x40,0);
+              if (((*(uint32_t *)(rec + 8) & 0xe0) != 0) ||
+                  (((*(uint32_t *)(rec + 8) & 0x800) != 0 &&
                     ((*(uint32_t *)(_g_system_config_ptr + 0x50) >>
-                      (*(uint32_t *)(puVar6 + 0x1c) & 0x1f) & 1) != 0)))) {
-                select_confirm_handler(0x1f800000,uVar8,puVar6,*(uint32_t *)(puVar6 + 8),1);
-                *(uint32_t *)(puVar6 + 0x24) = 1;
+                      (*(uint32_t *)(rec + 0x1c) & 0x1f) & 1) != 0)))) {
+                select_confirm_handler(0x1f800000,uVar8,rec,*(uint32_t *)(rec + 8),1);
+                *(uint32_t *)(rec + 0x24) = 1;
                 deferred_cmd_post(0x400,0x41,0);
-                *(uint32_t *)(puVar6 + 0x2c) = 8;
+                *(uint32_t *)(rec + 0x2c) = 8;
               }
             }
           }
           else if (iVar4 == 2 && local_94[0] == 2 && local_94[0xc] == 2) {
             DAT_1f800001 = 0xf0;
           }
-          puVar6 += 0x30;
+          rec += 0x30;
           uVar8++;
         } while ((int32_t)uVar8 < 2);
         if ((DAT_1f80009b != 0) && (entry_mode != 2)) {
           iVar4 = 0;
-          puVar6 = auStack_b8;
+          rec = auStack_b8;
           do {
-            if ((*(uint32_t *)(puVar6 + 8) & 4) != 0) { deferred_cmd_post(0x400,0x40,0); local_c8--; }
-            if ((*(uint32_t *)(puVar6 + 8) & 8) != 0) { deferred_cmd_post(0x400,0x40,0); local_c8++; }
+            if ((*(uint32_t *)(rec + 8) & 4) != 0) { deferred_cmd_post(0x400,0x40,0); local_c8--; }
+            if ((*(uint32_t *)(rec + 8) & 8) != 0) { deferred_cmd_post(0x400,0x40,0); local_c8++; }
             if (9 < local_c8) local_c8 = 0;
             if (local_c8 < 0) local_c8 = 9;
             iVar4++;
-            puVar6 += 0x30;
+            rec += 0x30;
           } while (iVar4 < 2);
           announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x80120688),0xd8,0x88,4);
           announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x80120690),0xd0,0x98,4);
@@ -3333,47 +3333,47 @@ code_r0x8014f6c0:
           int16_t *t44 = (int16_t *)guest_at(0x801b3244);
           int16_t *t46 = (int16_t *)guest_at(0x801b3246);
           if (local_34 != 0) {
-            iVar10 = 0xe9;
-            if (local_34 == 1) iVar10 = 0xb9;
+            aux_val = 0xe9;
+            if (local_34 == 1) aux_val = 0xb9;
             sprite_9slice_build(_DAT_1f800008,
                          ((uint32_t)(t46[local_a8[3] * 2] + 0xf) << 16) |
                          ((uint32_t)(t44[local_a8[3] * 2] + 0x24) & 0xffff),0x151d000e,
-                         (uint32_t)((iVar10 << 8) | 0x7adc00b1));
-            iVar10 = 0x7adc;
-            if (local_94[0] < 1) iVar10 = (local_38 + 0x1e5 & 0x1ff) * 0x40 + 0x1c;
+                         (uint32_t)((aux_val << 8) | 0x7adc00b1));
+            aux_val = 0x7adc;
+            if (local_94[0] < 1) aux_val = (local_38 + 0x1e5 & 0x1ff) * 0x40 + 0x1c;
             sprite_9slice_build(_DAT_1f800008 + 4,
                          ((uint32_t)(t46[iVar4 * 2] + 0x1f) << 16) |
                          ((uint32_t)(t44[iVar4 * 2] + 0x1c) & 0xffff),0x3e37000e,
-                         ((uint32_t)iVar10 << 16) | 0xc040);
+                         ((uint32_t)aux_val << 16) | 0xc040);
           }
           if (local_30 != 0) {
-            iVar10 = 0xe9;
-            if (local_30 == 1) iVar10 = 0xd1;
+            aux_val = 0xe9;
+            if (local_30 == 1) aux_val = 0xd1;
             sprite_9slice_build(_DAT_1f800008,
                          ((uint32_t)(t46[iVar3 * 2] + 0x31) << 16) |
                          ((uint32_t)(t44[iVar3 * 2] + 0x12) & 0xffff),0x151d000e,
-                         (uint32_t)((iVar10 << 8) | 0x7adc00b1));
-            iVar10 = 0x7adc;
-            if (local_94[0xc] < 1) iVar10 = (local_38 + 0x1e5 & 0x1ff) * 0x40 + 0x1c;
+                         (uint32_t)((aux_val << 8) | 0x7adc00b1));
+            aux_val = 0x7adc;
+            if (local_94[0xc] < 1) aux_val = (local_38 + 0x1e5 & 0x1ff) * 0x40 + 0x1c;
             sprite_9slice_build(_DAT_1f800008 + 4,
                          ((uint32_t)(t46[iVar3 * 2] + 0x1f) << 16) |
                          ((uint32_t)(t44[iVar3 * 2] + 0x1c) & 0xffff),0x3e37000e,
-                         ((uint32_t)iVar10 << 16) | 0xc078);
+                         ((uint32_t)aux_val << 16) | 0xc078);
           }
-          unaff_s2 = 0;
-          puVar7 = (uint32_t *)guest_at(0x801b3244);
+          attr_idx = 0;
+          spr_tab = (uint32_t *)guest_at(0x801b3244);
           uVar8 = *(uint32_t *)(_g_system_config_ptr + 0x4c);
           do {
             if ((uVar8 & 1) != 0) {
-              spr_slot_pkt_submit((uint *)(uintptr_t)(_DAT_1f800008 + 4),*puVar7,0x3e37009d,
-                           ((unaff_s2 + 0x1e0 & 0x1ff) << 0x16) |
-                           ((((int32_t)unaff_s2 >> 2) * 0x40 + 1U & 0xff) << 8) |
-                           ((unaff_s2 & 3) << 6));
+              spr_slot_pkt_submit((uint *)(uintptr_t)(_DAT_1f800008 + 4),*spr_tab,0x3e37009d,
+                           ((attr_idx + 0x1e0 & 0x1ff) << 0x16) |
+                           ((((int32_t)attr_idx >> 2) * 0x40 + 1U & 0xff) << 8) |
+                           ((attr_idx & 3) << 6));
             }
             uVar8 = (int32_t)uVar8 >> 1;
-            unaff_s2++;
-            puVar7++;
-          } while ((int32_t)unaff_s2 < 0xb);
+            attr_idx++;
+            spr_tab++;
+          } while ((int32_t)attr_idx < 0xb);
           {
             int32_t cx = (((int16_t)((uint16_t)_DAT_1f800020 << 16) >> 16) -
                          (((int32_t)((uint16_t)_DAT_1f800020 << 16)) >> 31)) >> 1;
@@ -3381,18 +3381,18 @@ code_r0x8014f6c0:
                          ((((cx - 0x80) * 0x10000) >> 16)),0x28,0);
           }
           switch (DAT_1f80009c) {
-          case 0: unaff_s2 = 10; break;
-          case 1: unaff_s2 = 0xb; break;
-          case 2: unaff_s2 = 0xe; break;
-          case 3: unaff_s2 = 0xf; break;
-          case 4: unaff_s2 = 0xc; break;
+          case 0: attr_idx = 10; break;
+          case 1: attr_idx = 0xb; break;
+          case 2: attr_idx = 0xe; break;
+          case 3: attr_idx = 0xf; break;
+          case 4: attr_idx = 0xc; break;
           case 5:
-            if (DAT_1f80009b == 1) unaff_s2 = 0x15;
-            else if (DAT_1f80009b < 2) { unaff_s2 = 0xd; if (DAT_1f80009b == 0) unaff_s2 = 0x16; }
-            else if (DAT_1f80009b == 2) unaff_s2 = 0x14;
-            else { unaff_s2 = 0xd; if (DAT_1f80009b == 4) unaff_s2 = 0x17; }
+            if (DAT_1f80009b == 1) attr_idx = 0x15;
+            else if (DAT_1f80009b < 2) { attr_idx = 0xd; if (DAT_1f80009b == 0) attr_idx = 0x16; }
+            else if (DAT_1f80009b == 2) attr_idx = 0x14;
+            else { attr_idx = 0xd; if (DAT_1f80009b == 4) attr_idx = 0x17; }
           }
-          banner_stripe_scroll(unaff_s2,0,4,7);
+          banner_stripe_scroll(attr_idx,0,4,7);
           uint8_t *t270 = (uint8_t *)guest_at(0x801b3270);
           uint8_t *t271 = (uint8_t *)guest_at(0x801b3271);
           uint8_t *t2f4 = (uint8_t *)guest_at(0x801b32f4);
@@ -3402,7 +3402,7 @@ code_r0x8014f6c0:
           if (entry_mode < 4 && 1 < entry_mode) {
             uVar8 = (uint32_t)local_94[10];
             if (local_a8[0] == 0) uVar8 = (uint32_t)local_a8[3];
-            uVar11 = (uint32_t)(local_a8[0] != 0);
+            pidx_b = (uint32_t)(local_a8[0] != 0);
             if (entry_mode == 2) {
               iVar3 = (((int16_t)_DAT_1f800020) -
                       (((int32_t)((uint16_t)_DAT_1f800020 << 16)) >> 31)) >> 1;
@@ -3427,7 +3427,7 @@ code_r0x8014f6c0:
               }
             } else {
               iVar4 = 0;
-              if (uVar11 != 0) iVar4 = 0x140;
+              if (pidx_b != 0) iVar4 = 0x140;
               iVar3 = ((int16_t)_DAT_1f800022 * 3) / 5;
               announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47ec[uVar8 * 2]),
                            (int32_t)(((uint32_t)(t270[uVar8 * 2] + iVar4)) * 0x10000) >> 16,
@@ -3442,38 +3442,38 @@ code_r0x8014f6c0:
             iVar3 = iVar2 + -8;
             {
               uint8_t *hh = (uint8_t *)guest_at(0x801b3288);
-              iVar10 = 0x140 - hh[uVar8];
+              aux_val = 0x140 - hh[uVar8];
             }
-            if (local_94[uVar11 * 0xc + 2] == 0) iVar4 = 0x7996;
-            else { local_94[uVar11 * 0xc + 2]--; iVar4 = 0x7b56; }
-            iVar9 = (int32_t)(uVar8 + 0xb);
-            if (uVar8 == 8) iVar9 = 0x16;
-            spr_draw_off(iVar9 * 0x8014 + -0x7fff0000,0x280,0,1);
+            if (local_94[pidx_b * 0xc + 2] == 0) iVar4 = 0x7996;
+            else { local_94[pidx_b * 0xc + 2]--; iVar4 = 0x7b56; }
+            draw_slot = (int32_t)(uVar8 + 0xb);
+            if (uVar8 == 8) draw_slot = 0x16;
+            spr_draw_off(draw_slot * 0x8014 + -0x7fff0000,0x280,0,1);
             iVar4 <<= 16;
-            unaff_s2 = 200;
+            attr_idx = 200;
             spr_attr_alloc_b(_DAT_1f800008 + 4,(uint32_t)((iVar2 + -0x107) * 0x10000 | 0x13f),
                          0xfebe000a,(uint32_t)iVar4,0x80,iVar3);
             spr_draw_off(uVar8 * 0x8014 + -0x7fff0000,0x200,0,1);
             iVar2 = -200;
-            if (uVar8 == 8) { unaff_s2 = 0xff; iVar2 = -0xff; }
-            uVar8 = (uint32_t)((iVar3 + iVar2) * 0x10000 | ((iVar10 + (int32_t)unaff_s2) & 0xffff));
+            if (uVar8 == 8) { attr_idx = 0xff; iVar2 = -0xff; }
+            uVar8 = (uint32_t)((iVar3 + iVar2) * 0x10000 | ((aux_val + (int32_t)attr_idx) & 0xffff));
             {
               uint32_t uVar5l = 0xfefe0008;
               int32_t iVar2l = _DAT_1f800008 + 4;
 LAB_80150558:
-              spr_attr_alloc_b((uint32_t)iVar2l,uVar8,uVar5l,(uint32_t)iVar4,iVar10,iVar3);
+              spr_attr_alloc_b((uint32_t)iVar2l,uVar8,uVar5l,(uint32_t)iVar4,aux_val,iVar3);
             }
           } else {
-            iVar10 = ((int16_t)_DAT_1f800022 * 3) / 5;
+            aux_val = ((int16_t)_DAT_1f800022 * 3) / 5;
             if (local_34 != 0) {
               announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47ec[iVar4 * 2]),
                            (int32_t)((uint32_t)t270[iVar4 * 2] + 0), /* (&DAT_801b3270)[iVar4*2] u32? */
-                           (iVar10 + -0x34) * 0x10000 >> 16,5);
+                           (aux_val + -0x34) * 0x10000 >> 16,5);
               hud_text_d(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x801206b4),0x48,
-                           (iVar10 + -0x24) * 0x10000 >> 16,0);
+                           (aux_val + -0x24) * 0x10000 >> 16,0);
               announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47f0[iVar4 * 2]),
                            (int32_t)((uint32_t)t271[iVar4 * 2] + 0),
-                           (iVar10 + -0x1b) * 0x10000 >> 16,5);
+                           (aux_val + -0x1b) * 0x10000 >> 16,5);
               if ((*(uint32_t *)(_g_system_config_ptr + 0x60) >> ((iVar4 + 0x10U) & 0x1f) & 1) != 0) {
                 iVar2 = (int32_t)(int16_t)_DAT_1f800022;
                 if (iVar2 < 0) iVar2 += 7;
@@ -3484,26 +3484,26 @@ LAB_80150558:
             if (local_30 != 0) {
               announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47ec[iVar3 * 2]),
                            (int32_t)((uint32_t)t270[iVar3 * 2] + 0x140),
-                           (iVar10 + -0x34) * 0x10000 >> 16,5);
+                           (aux_val + -0x34) * 0x10000 >> 16,5);
               hud_text_d(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x801206b4),0x188,
-                           (iVar10 + -0x24) * 0x10000 >> 16,0);
+                           (aux_val + -0x24) * 0x10000 >> 16,0);
               announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47f0[iVar3 * 2]),
                            (int32_t)((uint32_t)t271[iVar3 * 2] + 0x140),
-                           (iVar10 + -0x1b) * 0x10000 >> 16,5);
+                           (aux_val + -0x1b) * 0x10000 >> 16,5);
               if ((*(uint32_t *)(_g_system_config_ptr + 0x60) >> ((iVar3 + 0x10U) & 0x1f) & 1) != 0) {
-                iVar10 = (int32_t)(int16_t)_DAT_1f800022;
-                if (iVar10 < 0) iVar10 += 7;
+                aux_val = (int32_t)(int16_t)_DAT_1f800022;
+                if (aux_val < 0) aux_val += 7;
                 hud_text_d(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x801206bc),
-                             (int32_t)((_DAT_1f800020 - 0x38) * 0x10000) >> 16,iVar10 >> 3,3);
+                             (int32_t)((_DAT_1f800020 - 0x38) * 0x10000) >> 16,aux_val >> 3,3);
               }
             }
             if (local_34 != 0) {
-              if (local_94[2] == 0) iVar10 = 0x7996;
-              else { iVar10 = 0x7b56; local_94[2]--; }
+              if (local_94[2] == 0) aux_val = 0x7996;
+              else { aux_val = 0x7b56; local_94[2]--; }
               spr_draw_off(iVar4 * 0x8014 + -0x7fff0000,0x200,0,1);
               if (iVar4 == 8) uVar8 = (uint32_t)_DAT_1f800022 * 0x10000 + 0xfe390000 | 0xff;
               else uVar8 = (uint32_t)_DAT_1f800022 * 0x10000 + 0xfe700000 | 200;
-              spr_attr_alloc_b(_DAT_1f800008 + 4,uVar8,0xfefe0008,(uint32_t)(iVar10 << 16),0,
+              spr_attr_alloc_b(_DAT_1f800008 + 4,uVar8,0xfefe0008,(uint32_t)(aux_val << 16),0,
                            (int16_t)_DAT_1f800022 + -200);
             }
             if (local_30 != 0) {
@@ -3512,16 +3512,16 @@ LAB_80150558:
               spr_draw_off(iVar3 * 0x8014 + -0x7fff0000,0x240,0,1);
               if (iVar3 == 8) {
                 uVar5 = 0xfefe0009; iVar4 <<= 16; iVar2 = _DAT_1f800008 + 4;
-                iVar10 = (int32_t)(int16_t)_DAT_1f800020;
-                uVar8 = (uint32_t)_DAT_1f800022 * 0x10000 + 0xfe390000 | ((iVar10 - 0xffU) & 0xffff);
+                aux_val = (int32_t)(int16_t)_DAT_1f800020;
+                uVar8 = (uint32_t)_DAT_1f800022 * 0x10000 + 0xfe390000 | ((aux_val - 0xffU) & 0xffff);
                 iVar3 = (int16_t)_DAT_1f800022 + -200;
               } else {
                 uVar5 = 0xfefe0009; iVar4 <<= 16; iVar2 = _DAT_1f800008 + 4;
-                iVar10 = (int32_t)(int16_t)_DAT_1f800020;
-                uVar8 = (uint32_t)_DAT_1f800022 * 0x10000 + 0xfe700000 | ((iVar10 - 200U) & 0xffff);
+                aux_val = (int32_t)(int16_t)_DAT_1f800020;
+                uVar8 = (uint32_t)_DAT_1f800022 * 0x10000 + 0xfe700000 | ((aux_val - 200U) & 0xffff);
                 iVar3 = (int16_t)_DAT_1f800022 + -200;
               }
-              spr_attr_alloc_b((uint32_t)iVar2,uVar8,uVar5,(uint32_t)iVar4,iVar10,iVar3);
+              spr_attr_alloc_b((uint32_t)iVar2,uVar8,uVar5,(uint32_t)iVar4,aux_val,iVar3);
             }
           }
         }
@@ -3541,10 +3541,10 @@ LAB_80150558:
       if (DAT_1f800001 < 7) {
         if (DAT_1f800001 == 0 && (iVar4 = frame_divisor_get(), iVar4 == 0)) {
           if (-1 < entry_mode) {
-            if (entry_mode < 2) unaff_s2 = 1;
-            else if (entry_mode < 4) unaff_s2 = 2;
+            if (entry_mode < 2) attr_idx = 1;
+            else if (entry_mode < 4) attr_idx = 2;
           }
-          iVar4 = intro_movie_state((int32_t)unaff_s2);
+          iVar4 = intro_movie_state((int32_t)attr_idx);
           if (iVar4 != 0) {
             sprite_desc_table_init(1);
             print_mode_dispatch_b(2,0,0);
@@ -3557,7 +3557,7 @@ LAB_80150558:
             uVar5 = 1;
             if (*(char *)(_g_system_config_ptr + 0xd) == 0) uVar5 = 0x1f;
             mc_confirm_dispatch(uVar5,1);
-            bVar1 = 6;
+            next_state = 6;
             local_2c = 0;
             goto LAB_8015060c;
           }
@@ -3565,13 +3565,13 @@ LAB_80150558:
       } else {
         if (DAT_1f800001 == 0xf0) {
           deferred_cmd_post(0x204,0,0);
-          bVar1 = 0xf1;
+          next_state = 0xf1;
         } else {
-          bVar1 = 0xff;
+          next_state = 0xff;
           if (DAT_1f800001 != 0xf1) goto LAB_80150610;
         }
 LAB_8015060c:
-        DAT_1f800001 = bVar1;
+        DAT_1f800001 = next_state;
       }
 LAB_80150610:
       frame_tick(0x1f800000);
@@ -15576,24 +15576,24 @@ static void tpg_cell48_v2(uint32_t r, const uint16_t *fr,
   MW16(r + 12u, (uint16_t)(fr[2] + fr[14]));
 }
 
-uint32_t terrain_packet_gen(uint32_t param_1,uint32_t param_2,
-                      const uint16_t *param_3,const int16_t *param_4,
-                      const int16_t *param_5,int32_t param_6,
-                      int32_t param_7,const uint8_t *param_8)
+uint32_t terrain_packet_gen(uint32_t hdr,uint32_t cur,
+                      const uint16_t *u16vec,const int16_t *colvec,
+                      const int16_t *rowvec,int32_t sx,
+                      int32_t sy,const uint8_t *u8vec)
 {
-  uint32_t hdr = param_1;              /* guest $a0 */
-  uint32_t cur = param_2;              /* guest $a1 */
-  int32_t  sx  = param_6;              /* guest $s6: col count + p4 divisor */
-  int32_t  sy  = param_7;              /* guest $s7: row count + p5 divisor */
+
+
+
+
   uint32_t prod, r48, r72;             /* mult lo; g11/g10 cursors */
   uint16_t fr[16];                     /* guest sp+0..0x1c frame (lhu) */
   int32_t  col, row;                   /* g8/g12 loop counters */
   int32_t  diff;                       /* g24 = sx - sy (signed) */
-  uint8_t  b0 = param_8[0], b1 = param_8[1], b2 = param_8[2];
+  uint8_t  b0 = u8vec[0], b1 = u8vec[1], b2 = u8vec[2];
   int i;
 
   /* ---- block_80135A14: header ---- */
-  MW32(hdr + 0x1cu, cur);              /* hdr->out_cursor = param_2 */
+  MW32(hdr + 0x1cu, cur);              /* hdr->out_cursor = cur */
   MW16(hdr + 0x0cu, 0);
   MW16(hdr + 0x0eu, 0);
 
@@ -15633,15 +15633,15 @@ uint32_t terrain_packet_gen(uint32_t param_1,uint32_t param_2,
   }
 
   /* ---- block_80135B00: scaled triples into the sp frame ----
-   * sp+16..20 = lh(param_4)/sx, sp+24..28 = lh(param_5)/sy,
-   * sp+0..4 = lhu(param_3). Frame reloads everywhere below are lhu. */
+   * sp+16..20 = lh(colvec)/sx, sp+24..28 = lh(rowvec)/sy,
+   * sp+0..4 = lhu(u16vec). Frame reloads everywhere below are lhu. */
   for (i = 0; i < 3; i++) {
-    fr[8  + i] = (uint16_t)tpg_idiv((int32_t)param_4[i], sx);
-    fr[12 + i] = (uint16_t)tpg_idiv((int32_t)param_5[i], sy);
+    fr[8  + i] = (uint16_t)tpg_idiv((int32_t)colvec[i], sx);
+    fr[12 + i] = (uint16_t)tpg_idiv((int32_t)rowvec[i], sy);
   }
-  fr[0] = param_3[0];
-  fr[1] = param_3[1];
-  fr[2] = param_3[2];
+  fr[0] = u16vec[0];
+  fr[1] = u16vec[1];
+  fr[2] = u16vec[2];
 
   if (sy == 0) return r72;             /* block_80135BB0 -> epilogue */
 
@@ -15786,10 +15786,10 @@ uint32_t peak_track(void)
  * from desc+8; the disasm splits them (s7=+0x10 for euler_rotmat,
  * a0=+8 for the sh fields). Ported verbatim here.
  * Return value is whatever v0 last held; callers ignore it. */
-int32_t skeleton_init(uint32_t param_1,uint32_t param_2,uint32_t param_3)
+int32_t skeleton_init(uint32_t ctrl,uint32_t desc,uint32_t unused3)
 {
-  uint32_t ctrl = param_1;
-  uint32_t desc = param_2;
+
+
   uint32_t base = MB32(ctrl + 0x30u);
   int32_t  np   = (int8_t)MB8(ctrl + 6u);   /* lb */
   int32_t  nr   = (int8_t)MB8(ctrl + 8u);   /* lb */
@@ -15800,7 +15800,7 @@ int32_t skeleton_init(uint32_t param_1,uint32_t param_2,uint32_t param_3)
   uint32_t seedM   = MB32(desc + 0x10u) + base;
   uint32_t extrat  = MB32(desc + 0x18u) + base;
   int32_t  i, j, k;
-  (void)param_3;
+  (void)unused3;
 
   /* zero part-record lead fields: fobj + i*0x50, i = nr-1 .. 0 */
   for (i = nr - 1; i >= 0; i--)
@@ -15992,26 +15992,26 @@ extern uint32_t heap_serialize_tag_01000000(uint32_t,uint32_t,uint32_t,uint32_t,
  * Epilogue: *dst+0x1c = cursor (before trailer), *outp = count,
  * then u32 count + count*16 scratch bytes appended at cursor;
  * returns cursor past the trailer. */
-int32_t heap_serialize(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7)
+int32_t heap_serialize(uint32_t blk,uint32_t cur,uint32_t dst,
+                     uint32_t mode,uint32_t outp,uint32_t s7,
+                     uint32_t fp)
 {
-  uint32_t blk  = param_1;
-  uint32_t cur  = param_2;
-  uint32_t dst  = param_3;
-  uint32_t mode = param_4;
-  uint32_t outp = param_5;
-  uint32_t s7   = param_6;
-  uint32_t fp   = param_7;
+
+
+
+
+
+
+
   uint32_t scr[128];             /* sp+0x20: guest fits 16 x 16B;
                                   * 32 here so an over-count can't
                                   * smash the C frame (guest would
                                   * corrupt its own locals instead) */
   uint32_t s3 = 0;
   uint32_t i;
-  uint32_t _eb = param_1;   /* entry blk for trace */
+  uint32_t _eb = blk;   /* entry blk for trace */
   { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-    decomp_trace_record(22,param_1,param_2,param_3,0); }  /* tag22 hser_in */
+    decomp_trace_record(22,blk,cur,dst,0); }  /* tag22 hser_in */
 
 #define B7C0_EMIT(N_) do {                                    \
     scr[s3*4u+0u] = tag;   scr[s3*4u+1u] = param;             \
@@ -16270,19 +16270,19 @@ uint32_t NM(uint32_t a,uint32_t b,uint32_t c,uint32_t d,uint32_t e, \
  * src+4/+6/+8/+10 stride 0xc, src aux ptr src+10 stride 0xc.
  * Tag bytes 4/0x20 at dst+0x27/0x2b/0x3b/0x3f (a0 = cur+0x10).
  * Returns cur + count*0x4c. */
-uint32_t heap_serialize_tag_08(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7)
+uint32_t heap_serialize_tag_08(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t v1,uint32_t unused6,
+                     uint32_t unused7)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t1 = param_2;
+
+
+
+
+  uint32_t t0 = a0;
+
+  uint32_t t1 = a1;
   uint32_t v0, t4, t5;
-  (void)param_6; (void)param_7;
+  (void)unused6; (void)unused7;
   if (v1 == 0) return t0;
   a0 += 16; a1 += 10;
   do {
@@ -16319,16 +16319,16 @@ uint32_t heap_serialize_tag_08(uint32_t param_1,uint32_t param_2,uint32_t param_
  * src+4/+8, u16 index quads at src+12/+14/+16/+18 stride 0x14,
  * aux src+18 stride 0x14. Tag bytes 6/0x30 at dst+0x2f/0x33/0x4b/0x4f.
  * Returns cur + count*0x64. */
-uint32_t heap_serialize_tag_0a(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_0a(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t1 = param_2;
+
+
+
+
+  uint32_t t0 = a0;
+
+  uint32_t t1 = a1;
   uint32_t v0, t4, t5;
   if (v1 == 0) return t0;
   a0 += 16; a1 += 18;
@@ -16369,16 +16369,16 @@ uint32_t heap_serialize_tag_0a(uint32_t param_1,uint32_t param_2,uint32_t param_
  * Six 8-byte table lookups alternating arg4/arg3 tables
  * (-10,-8,-6,-4,-2,0). Tag bytes 6/0x30 at dst+0x37/0x3b/0x5b/0x5f.
  * Returns cur + count*0x6c. */
-uint32_t heap_serialize_tag_0c(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_0c(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t1 = param_2;
+
+
+
+
+  uint32_t t0 = a0;
+
+  uint32_t t1 = a1;
   uint32_t v0, t4, t5;
   if (v1 == 0) return t0;
   a0 += 16; a1 += 14;
@@ -16416,16 +16416,16 @@ uint32_t heap_serialize_tag_0c(uint32_t param_1,uint32_t param_2,uint32_t param_
  * src+4/+6/+8/+10 stride 0x10, aux src+12 stride 0x10.
  * Tag bytes 5/0x28 at dst+0x27/0x2b/0x3b/0x3f (a0 = cur+0x18).
  * Returns cur + count*0x5c. */
-uint32_t heap_serialize_tag_10(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_10(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t1 = param_2;
+
+
+
+
+  uint32_t t0 = a0;
+
+  uint32_t t1 = a1;
   uint32_t v0, t4, t5;
   if (v1 == 0) return t0;
   a0 += 24; a1 += 12;
@@ -16460,16 +16460,16 @@ uint32_t heap_serialize_tag_10(uint32_t param_1,uint32_t param_2,uint32_t param_
  * Eight 8-byte lookups alternating arg4/arg3 tables
  * (-14,-12,-10,-8,-6,-4,-2,0). Tag bytes 8/0x38 at
  * dst+0x3f/0x43/0x6b/0x6f (a0 = cur+0x18). Returns cur + count*0x8c. */
-uint32_t heap_serialize_tag_14(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_14(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t1 = param_2;
+
+
+
+
+  uint32_t t0 = a0;
+
+  uint32_t t1 = a1;
   uint32_t v0, t4, t5;
   if (v1 == 0) return t0;
   a0 += 24; a1 += 18;
@@ -16512,16 +16512,16 @@ uint32_t heap_serialize_tag_14(uint32_t param_1,uint32_t param_2,uint32_t param_
  * src+4/+8/+12, u16 index quad at src+16/+18/+20/+22 stride 0x1c,
  * aux src+24 stride 0x1c. Tag bytes 8/0x38 at dst+0x33/0x37/0x57/0x5b
  * (a0 = cur+0x18). Returns cur + count*0x80. */
-uint32_t heap_serialize_tag_12(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_12(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t1 = param_2;
+
+
+
+
+  uint32_t t0 = a0;
+
+  uint32_t t1 = a1;
   uint32_t v0, t4, t5;
   if (v1 == 0) return t0;
   a0 += 24; a1 += 24;
@@ -16559,16 +16559,16 @@ uint32_t heap_serialize_tag_12(uint32_t param_1,uint32_t param_2,uint32_t param_
  * aux src+30 stride 0x20. Eight 8-byte lookups alternating
  * arg4/arg3 tables (-14..0 step 2). Tag bytes 8/0x38 at
  * dst+0x3b/0x3f/0x5f/0x63 (a0 = cur+0x18). Returns cur + count*0x98. */
-uint32_t heap_serialize_tag_16(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_16(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t1 = param_2;
+
+
+
+
+  uint32_t t0 = a0;
+
+  uint32_t t1 = a1;
   uint32_t v0, t4, t5;
   if (v1 == 0) return t0;
   a0 += 24; a1 += 30;
@@ -16615,16 +16615,16 @@ uint32_t heap_serialize_tag_16(uint32_t param_1,uint32_t param_2,uint32_t param_
  * aux src+22 stride 0x18. Six 8-byte lookups alternating
  * arg4/arg3 tables (-10..0 step 2). Tag bytes 6/0x30 at
  * dst+0x2f/0x33/0x4b/0x4f (a0 = cur+0x10). Returns cur + count*0x74. */
-uint32_t heap_serialize_tag_0e(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_0e(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t1 = param_2;
+
+
+
+
+  uint32_t t0 = a0;
+
+  uint32_t t1 = a1;
   uint32_t v0, t4, t5;
   if (v1 == 0) return t0;
   a0 += 16; a1 += 22;
@@ -16665,17 +16665,17 @@ uint32_t heap_serialize_tag_0e(uint32_t param_1,uint32_t param_2,uint32_t param_
  * first lands at the a3 cursor pair, a3 += 0x40 per record.
  * Tag bytes 4/0x20 at dst+0xb/0xf/0x1f/0x23 (a0 = cur+0x10).
  * Returns cur + count*0x40. */
-uint32_t heap_serialize_tag_40048(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_40048(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t unused4,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_1;
-  uint32_t t0 = param_2;
-  uint32_t v1 = param_5;
+
+
+
+  uint32_t a3 = a0;
+  uint32_t t0 = a1;
+
   uint32_t v0, t3, t4;
-  (void)param_4;
+  (void)unused4;
   if (v1 == 0) return a3;
   a0 += 16; a1 += 8;
   do {
@@ -16705,17 +16705,17 @@ uint32_t heap_serialize_tag_40048(uint32_t param_1,uint32_t param_2,uint32_t par
  * (-4,-2,0); first at a3 pair, a3 += 0x50.
  * Tag bytes 6/0x30 at dst+0xb/0xf/0x27/0x2b (a0 = cur+0x10).
  * Returns cur + count*0x50. */
-uint32_t heap_serialize_tag_4004c(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_4004c(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t unused4,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_1;
-  uint32_t t0 = param_2;
-  uint32_t v1 = param_5;
+
+
+
+  uint32_t a3 = a0;
+  uint32_t t0 = a1;
+
   uint32_t v0, t3, t4;
-  (void)param_4;
+  (void)unused4;
   if (v1 == 0) return a3;
   a0 += 16; a1 += 16;
   do {
@@ -16746,17 +16746,17 @@ uint32_t heap_serialize_tag_4004c(uint32_t param_1,uint32_t param_2,uint32_t par
  * Four 8-byte lookups via arg3 table (-6,-4,-2,0); first at a3
  * pair, a3 += 0x50. Tag bytes 5/0x28 at dst+0xb/0xf/0x23/0x27
  * (a0 = cur+0x18). Returns cur + count*0x50. */
-uint32_t heap_serialize_tag_40050(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_40050(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t unused4,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_1;
-  uint32_t t0 = param_2;
-  uint32_t v1 = param_5;
+
+
+
+  uint32_t a3 = a0;
+  uint32_t t0 = a1;
+
   uint32_t v0, t3, t4;
-  (void)param_4;
+  (void)unused4;
   if (v1 == 0) return a3;
   a0 += 24; a1 += 10;
   do {
@@ -16788,17 +16788,17 @@ uint32_t heap_serialize_tag_40050(uint32_t param_1,uint32_t param_2,uint32_t par
  * Four 8-byte lookups via arg3 table (-6,-4,-2,0); first at a3
  * pair, a3 += 0x68. Tag bytes 8/0x38 at dst+0xb/0xf/0x2f/0x33
  * (a0 = cur+0x18). Returns cur + count*0x68. */
-uint32_t heap_serialize_tag_40054(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_40054(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t unused4,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_1;
-  uint32_t t0 = param_2;
-  uint32_t v1 = param_5;
+
+
+
+  uint32_t a3 = a0;
+  uint32_t t0 = a1;
+
   uint32_t v0, t3, t4;
-  (void)param_4;
+  (void)unused4;
   if (v1 == 0) return a3;
   a0 += 24; a1 += 22;
   do {
@@ -16835,20 +16835,20 @@ uint32_t heap_serialize_tag_40054(uint32_t param_1,uint32_t param_2,uint32_t par
  * arg7 to the two y u16s (a0-0x18/+8 x, a0-0x20/+0 y).
  * Tag bytes 7/0x24 at dst+0x1b/0x1f/0x3b/0x3f (a0 = cur+0x46).
  * Returns cur + count*0x58. */
-uint32_t heap_serialize_tag_40049(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7)
+uint32_t heap_serialize_tag_40049(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t unused4,uint32_t v1,uint32_t t5,
+                     uint32_t t4)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t5 = param_6;
-  uint32_t t4 = param_7;
-  uint32_t t1 = param_2;
+
+
+
+  uint32_t t0 = a0;
+
+
+
+  uint32_t t1 = a1;
   uint32_t v0, v2, t6, t7;
-  (void)param_4;
+  (void)unused4;
   if (v1 == 0) return t0;
   a0 += 70; a1 += 18;
   do {
@@ -16887,20 +16887,20 @@ uint32_t heap_serialize_tag_40049(uint32_t param_1,uint32_t param_2,uint32_t par
  * cursor pair, t0 += 0x68. Tail adds arg6/arg7 to the coord u16s
  * (a0-0x1c/+0xc x, a0-0x28/+0 y). Tag bytes 9/0x34 at
  * dst+0x1b/0x1f/0x43/0x47 (a0 = cur+0x4e). Returns cur + count*0x68. */
-uint32_t heap_serialize_tag_4004d(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7)
+uint32_t heap_serialize_tag_4004d(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t unused4,uint32_t v1,uint32_t t5,
+                     uint32_t t4)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t5 = param_6;
-  uint32_t t4 = param_7;
-  uint32_t t1 = param_2;
+
+
+
+  uint32_t t0 = a0;
+
+
+
+  uint32_t t1 = a1;
   uint32_t v0, v2, t6, t7;
-  (void)param_4;
+  (void)unused4;
   if (v1 == 0) return t0;
   a0 += 78; a1 += 26;
   do {
@@ -16941,20 +16941,20 @@ uint32_t heap_serialize_tag_4004d(uint32_t param_1,uint32_t param_2,uint32_t par
  * t0 cursor pair, t0 += 0x70. Tail adds arg6/arg7 to coord u16s
  * (a0-0x20/+8 x, a0-0x28/+0 y). Tag bytes 9/0x2c at
  * dst+0x1b/0x1f/0x43/0x47 (a0 = cur+0x56). Returns cur + count*0x70. */
-uint32_t heap_serialize_tag_40051(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7)
+uint32_t heap_serialize_tag_40051(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t unused4,uint32_t v1,uint32_t t5,
+                     uint32_t t4)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t5 = param_6;
-  uint32_t t4 = param_7;
-  uint32_t t1 = param_2;
+
+
+
+  uint32_t t0 = a0;
+
+
+
+  uint32_t t1 = a1;
   uint32_t v0, v2, t6, t7;
-  (void)param_4;
+  (void)unused4;
   if (v1 == 0) return t0;
   a0 += 86; a1 += 22;
   do {
@@ -16998,20 +16998,20 @@ uint32_t heap_serialize_tag_40051(uint32_t param_1,uint32_t param_2,uint32_t par
  * (a0-0x28/+0xc) and arg7 to the two y u16s (a0-0x34/+0).
  * Tag bytes 12/0x3c at dst+0x1b/0x1f/0x57/0x5b (a0 = cur+0x62).
  * Returns cur + count*0x88. */
-uint32_t heap_serialize_tag_40055(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7)
+uint32_t heap_serialize_tag_40055(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t unused4,uint32_t v1,uint32_t t5,
+                     uint32_t t4)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t5 = param_6;
-  uint32_t t4 = param_7;
-  uint32_t t1 = param_2;
+
+
+
+  uint32_t t0 = a0;
+
+
+
+  uint32_t t1 = a1;
   uint32_t v0, v2, t6, t7;
-  (void)param_4;
+  (void)unused4;
   if (v1 == 0) return t0;
   a0 += 98; a1 += 34;
   do {
@@ -17055,16 +17055,16 @@ uint32_t heap_serialize_tag_40055(uint32_t param_1,uint32_t param_2,uint32_t par
  * Four single-word lookups: lh idx<<3 +table -> lw -> sw
  * (arg4 table for -6, arg3 table for -4/-2/0). Tag bytes 4/0x20 at
  * dst+0xf/0x13/0x23/0x27 (a0 = cur+8). Returns cur + count*0x3c. */
-uint32_t heap_serialize_tag_01000008(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_01000008(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t t1 = param_2;
-  uint32_t v1 = param_5;
+
+
+
+
+  uint32_t t0 = a0;
+  uint32_t t1 = a1;
+
   uint32_t v0;
   if (v1 == 0) return t0;
   a0 += 8; a1 += 10;
@@ -17092,16 +17092,16 @@ uint32_t heap_serialize_tag_01000008(uint32_t param_1,uint32_t param_2,uint32_t 
  * lookups alternating arg4/arg3 tables (-10,-8,-6,-4,-2,0).
  * Tag bytes 6/0x30 stamped at loop tail at dst+0x1f/0x23/0x3b/0x3f
  * (a0 = cur+0x3f). Returns cur + count*0x54. */
-uint32_t heap_serialize_tag_0100000c(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_0100000c(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t t1 = param_2;
-  uint32_t v1 = param_5;
+
+
+
+
+  uint32_t t0 = a0;
+  uint32_t t1 = a1;
+
   uint32_t v0;
   if (v1 == 0) return t0;
   a0 += 63; a1 += 14;
@@ -17133,16 +17133,16 @@ uint32_t heap_serialize_tag_0100000c(uint32_t param_1,uint32_t param_2,uint32_t 
  * aux src+18. Four single-word lookups (arg4 for -6, arg3 for
  * -4/-2/0). Tag bytes 6/0x30 at dst+0x1f/0x23/0x37/0x3b
  * (a0 = cur+8). Returns cur + count*0x54. */
-uint32_t heap_serialize_tag_0100000a(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_0100000a(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t t1 = param_2;
-  uint32_t v1 = param_5;
+
+
+
+
+  uint32_t t0 = a0;
+  uint32_t t1 = a1;
+
   uint32_t v0;
   if (v1 == 0) return t0;
   a0 += 8; a1 += 18;
@@ -17172,16 +17172,16 @@ uint32_t heap_serialize_tag_0100000a(uint32_t param_1,uint32_t param_2,uint32_t 
  * aux src+22. Six single-word lookups alternating arg4/arg3
  * tables (-10,-8,-6,-4,-2,0). Tag bytes 6/0x30 at
  * dst+0x1f/0x23/0x3b/0x3f (a0 = cur+8). Returns cur + count*0x5c. */
-uint32_t heap_serialize_tag_0100000e(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_0100000e(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t t1 = param_2;
-  uint32_t v1 = param_5;
+
+
+
+
+  uint32_t t0 = a0;
+  uint32_t t1 = a1;
+
   uint32_t v0;
   if (v1 == 0) return t0;
   a0 += 8; a1 += 22;
@@ -17215,16 +17215,16 @@ uint32_t heap_serialize_tag_0100000e(uint32_t param_1,uint32_t param_2,uint32_t 
  * Five single-word lookups (arg4 for -8, arg3 for -6/-4/-2/0).
  * Tag bytes 5/0x28 at dst+0xf/0x13/0x27/0x2b (a0 = cur+0xc).
  * Returns cur + count*0x48. */
-uint32_t heap_serialize_tag_01000010(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_01000010(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t t1 = param_2;
-  uint32_t v1 = param_5;
+
+
+
+
+  uint32_t t0 = a0;
+  uint32_t t1 = a1;
+
   uint32_t v0;
   if (v1 == 0) return t0;
   a0 += 12; a1 += 12;
@@ -17254,16 +17254,16 @@ uint32_t heap_serialize_tag_01000010(uint32_t param_1,uint32_t param_2,uint32_t 
  * Eight single-word lookups alternating arg4/arg3 tables
  * (-14..0 step 2). Tag bytes 8/0x38 at dst+0x1b/0x1f/0x3f/0x43
  * (a0 = cur+0xc). Returns cur + count*0x6c. */
-uint32_t heap_serialize_tag_01000014(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_01000014(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t t1 = param_2;
-  uint32_t v1 = param_5;
+
+
+
+
+  uint32_t t0 = a0;
+  uint32_t t1 = a1;
+
   uint32_t v0;
   if (v1 == 0) return t0;
   a0 += 12; a1 += 18;
@@ -17299,16 +17299,16 @@ uint32_t heap_serialize_tag_01000014(uint32_t param_1,uint32_t param_2,uint32_t 
  * 0x1c, aux src+24. Five single-word lookups (arg4 for -8, arg3
  * for -6/-4/-2/0). Tag bytes 8/0x38 at dst+0x1b/0x1f/0x3f/0x43
  * (a0 = cur+0xc). Returns cur + count*0x6c. */
-uint32_t heap_serialize_tag_01000012(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_01000012(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t t1 = param_2;
-  uint32_t v1 = param_5;
+
+
+
+
+  uint32_t t0 = a0;
+  uint32_t t1 = a1;
+
   uint32_t v0;
   if (v1 == 0) return t0;
   a0 += 12; a1 += 24;
@@ -17341,16 +17341,16 @@ uint32_t heap_serialize_tag_01000012(uint32_t param_1,uint32_t param_2,uint32_t 
  * aux src+30. Eight single-word lookups alternating arg4/arg3
  * tables (-14..0 step 2). Tag bytes 8/0x38 at dst+0x27/0x2b/0x4b/0x4f
  * (a0 = cur+0xc). Returns cur + count*0x78. */
-uint32_t heap_serialize_tag_01000016(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_01000016(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t v1)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t t1 = param_2;
-  uint32_t v1 = param_5;
+
+
+
+
+  uint32_t t0 = a0;
+  uint32_t t1 = a1;
+
   uint32_t v0;
   if (v1 == 0) return t0;
   a0 += 12; a1 += 30;
@@ -17390,20 +17390,20 @@ uint32_t heap_serialize_tag_01000016(uint32_t param_1,uint32_t param_2,uint32_t 
  * arg3 for -4/-2/0). Tail adds param_6 to x u16s (t0-0x18/+8) and
  * param_7 to y u16s (t0-0x20/+0). Tag bytes 7/0x24 at
  * dst+0x13/0x17/0x33/0x37 (t0 = cur+0x3e). Returns cur + count*0x50. */
-uint32_t heap_serialize_tag_01000009(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7)
+uint32_t heap_serialize_tag_01000009(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t v1,uint32_t t7,
+                     uint32_t t6)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t2 = param_1;
-  uint32_t t3 = param_2;
-  uint32_t v1 = param_5;
-  uint32_t t7 = param_6;
-  uint32_t t6 = param_7;
-  uint32_t t0 = param_1 + 62;
+
+
+
+
+  uint32_t t2 = a0;
+  uint32_t t3 = a1;
+
+
+
+  uint32_t t0 = a0 + 62;
   uint32_t v0;
   if (v1 == 0) return t2;
   a1 += 18;
@@ -17444,19 +17444,19 @@ uint32_t heap_serialize_tag_01000009(uint32_t param_1,uint32_t param_2,uint32_t 
  * (+4,+6,+8,+10,+12,+14). Tail adds param_6 to x u16s (a0-0x1c/+0xc)
  * and param_7 to y u16s (a0-0x28/+0). Tag bytes 9/0x34 at
  * dst+0x1b/0x1f/0x43/0x47 (a0 = cur+0x4e). Returns cur + count*0x68. */
-uint32_t heap_serialize_tag_0100000d(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7)
+uint32_t heap_serialize_tag_0100000d(uint32_t a0,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t t0,uint32_t t6,
+                     uint32_t t5)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t1 = param_1;
-  uint32_t t2 = param_2;
-  uint32_t t0 = param_5;
-  uint32_t t6 = param_6;
-  uint32_t t5 = param_7;
+
+
+
+
+  uint32_t t1 = a0;
+  uint32_t t2 = a1;
+
+
+
   uint32_t v0, v1;
   if (t0 == 0) return t1;
   a0 += 78; a1 += 8;
@@ -17500,19 +17500,19 @@ uint32_t heap_serialize_tag_0100000d(uint32_t param_1,uint32_t param_2,uint32_t 
  * Tail adds param_6 to x u16s (t0-0x20/+8) and param_7 to y u16s
  * (t0-0x28/+0). Tag bytes 9/0x2c at dst+0x1b/0x1f/0x43/0x47
  * (t0 = cur+0x4a). Returns cur + count*0x64. */
-uint32_t heap_serialize_tag_01000011(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7)
+uint32_t heap_serialize_tag_01000011(uint32_t t2,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t t1,uint32_t t7,
+                     uint32_t t6)
 {
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t2 = param_1;
-  uint32_t t3 = param_2;
-  uint32_t t1 = param_5;
-  uint32_t t7 = param_6;
-  uint32_t t6 = param_7;
-  uint32_t t0 = param_1 + 74;
+
+
+
+
+  uint32_t t3 = a1;
+
+
+
+  uint32_t t0 = t2 + 74;
   uint32_t v0;
   if (t1 == 0) return t2;
   a1 += 22;
@@ -17556,19 +17556,19 @@ uint32_t heap_serialize_tag_01000011(uint32_t param_1,uint32_t param_2,uint32_t 
  * (-16..0 step 2). Tail adds param_6 to x u16s (t0-0x28/+0xc) and
  * param_7 to y u16s (t0-0x34/+0). Tag bytes 12/0x3c at
  * dst+0x1b/0x1f/0x57/0x5b (t0 = cur+0x62). Returns cur + count*0x88. */
-uint32_t heap_serialize_tag_01000015(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7)
+uint32_t heap_serialize_tag_01000015(uint32_t t2,uint32_t a1,uint32_t a2,
+                     uint32_t a3,uint32_t t1,uint32_t t7,
+                     uint32_t t6)
 {
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t2 = param_1;
-  uint32_t t3 = param_2;
-  uint32_t t1 = param_5;
-  uint32_t t7 = param_6;
-  uint32_t t6 = param_7;
-  uint32_t t0 = param_1 + 98;
+
+
+
+
+  uint32_t t3 = a1;
+
+
+
+  uint32_t t0 = t2 + 98;
   uint32_t v0;
   if (t1 == 0) return t2;
   a1 += 26;

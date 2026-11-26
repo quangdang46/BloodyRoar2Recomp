@@ -7334,137 +7334,137 @@ undefined1 table_byte_next_b(void)
 }
 void sprite_strip_draw_dual(int src_a,int src_b,int uv,int n,ushort *pal,int arg6, int rgb,int tag)
 {
-  ushort *puVar1;
-  ushort *puVar2;
-  ushort uVar3;
-  int iVar4;
-  int iVar5;
-  ushort *puVar6;
-  int iVar7;
-  int local_30;
-  int local_2c;
+  ushort *pa;
+  ushort *pb;
+  ushort pv;
+  int xfp;
+  int yfp;
+  ushort *pq;
+  int i;
+  int cur_a;
+  int cur_b;
   if (tag == 1) {
-    iVar7 = 0;
+    i = 0;
     if (0 < n) {
       arg6 = arg6 * uv;
-      puVar6 = pal + 3;
+      pq = pal + 3;
       rgb = rgb * uv;
       do {
-        iVar4 = arg6;
+        xfp = arg6;
         if (arg6 < 0) {
-          iVar4 = arg6 + 0xfff;
+          xfp = arg6 + 0xfff;
         }
-        iVar5 = rgb;
+        yfp = rgb;
         if (rgb < 0) {
-          iVar5 = rgb + 0xfff;
+          yfp = rgb + 0xfff;
         }
-        sprite_place_centered(src_a,0x1f800000,(int)(((uint)*pal + (iVar4 >> 0xc)) * 0x10000) >> 0x10,
-                     (int)(((uint)puVar6[-2] + (iVar5 >> 0xc)) * 0x10000) >> 0x10,
-                     (int)(short)puVar6[-1],(int)(short)*puVar6);
-        iVar7 = iVar7 + 1;
-        puVar1 = puVar6 + -2;
-        puVar2 = puVar6 + -1;
-        uVar3 = *puVar6;
-        puVar6 = puVar6 + 4;
-        sprite_place_centered(src_b,0x1f800000,(int)(((uint)*pal + (iVar4 >> 0xc)) * 0x10000) >> 0x10,
-                     (int)(((uint)*puVar1 + (iVar5 >> 0xc)) * 0x10000) >> 0x10,(int)(short)*puVar2,
-                     (int)(short)uVar3);
+        sprite_place_centered(src_a,0x1f800000,(int)(((uint)*pal + (xfp >> 0xc)) * 0x10000) >> 0x10,
+                     (int)(((uint)pq[-2] + (yfp >> 0xc)) * 0x10000) >> 0x10,
+                     (int)(short)pq[-1],(int)(short)*pq);
+        i = i + 1;
+        pa = pq + -2;
+        pb = pq + -1;
+        pv = *pq;
+        pq = pq + 4;
+        sprite_place_centered(src_b,0x1f800000,(int)(((uint)*pal + (xfp >> 0xc)) * 0x10000) >> 0x10,
+                     (int)(((uint)*pa + (yfp >> 0xc)) * 0x10000) >> 0x10,(int)(short)*pb,
+                     (int)(short)pv);
         pal = pal + 4;
         src_a = src_a + 0x28;
         src_b = src_b + 0x28;
-      } while (iVar7 < n);
+      } while (i < n);
     }
   }
   else if (tag < 2) {
-    if ((tag == 0) && (iVar7 = 0, 0 < n)) {
+    if ((tag == 0) && (i = 0, 0 < n)) {
       arg6 = arg6 * uv;
-      puVar6 = pal + 3;
+      pq = pal + 3;
       rgb = rgb * uv;
       do {
-        iVar4 = arg6;
+        xfp = arg6;
         if (arg6 < 0) {
-          iVar4 = arg6 + 0xfff;
+          xfp = arg6 + 0xfff;
         }
-        iVar5 = rgb;
+        yfp = rgb;
         if (rgb < 0) {
-          iVar5 = rgb + 0xfff;
+          yfp = rgb + 0xfff;
         }
-        sprite_rect_set_c(src_a,(int)(short)*pal + (iVar4 >> 0xc),
-                     (int)(short)puVar6[-2] + (iVar5 >> 0xc),(int)(short)puVar6[-1],
-                     (int)(short)*puVar6);
-        puVar1 = puVar6 + -2;
-        puVar2 = puVar6 + -1;
-        uVar3 = *puVar6;
-        puVar6 = puVar6 + 4;
-        iVar7 = iVar7 + 1;
-        sprite_rect_set_c(src_b,(int)(short)*pal + (iVar4 >> 0xc),
-                     (int)(short)*puVar1 + (iVar5 >> 0xc),(int)(short)*puVar2,(int)(short)uVar3);
+        sprite_rect_set_c(src_a,(int)(short)*pal + (xfp >> 0xc),
+                     (int)(short)pq[-2] + (yfp >> 0xc),(int)(short)pq[-1],
+                     (int)(short)*pq);
+        pa = pq + -2;
+        pb = pq + -1;
+        pv = *pq;
+        pq = pq + 4;
+        i = i + 1;
+        sprite_rect_set_c(src_b,(int)(short)*pal + (xfp >> 0xc),
+                     (int)(short)*pa + (yfp >> 0xc),(int)(short)*pb,(int)(short)pv);
         pal = pal + 4;
         src_a = src_a + 0x28;
         src_b = src_b + 0x28;
-      } while (iVar7 < n);
+      } while (i < n);
     }
   }
   else if (tag == 2) {
-    iVar7 = 0;
+    i = 0;
     if (0 < n) {
       arg6 = arg6 * uv;
-      puVar6 = pal + 3;
+      pq = pal + 3;
       rgb = rgb * uv;
-      local_30 = src_a;
+      cur_a = src_a;
       do {
-        iVar4 = arg6;
+        xfp = arg6;
         if (arg6 < 0) {
-          iVar4 = arg6 + 0xfff;
+          xfp = arg6 + 0xfff;
         }
-        iVar5 = rgb;
+        yfp = rgb;
         if (rgb < 0) {
-          iVar5 = rgb + 0xfff;
+          yfp = rgb + 0xfff;
         }
-        sprite_rect_set_a(local_30,(int)(short)*pal + (iVar4 >> 0xc),
-                     (int)(short)puVar6[-2] + (iVar5 >> 0xc),(int)(short)puVar6[-1],
-                     (int)(short)*puVar6);
-        puVar1 = puVar6 + -2;
-        puVar2 = puVar6 + -1;
-        uVar3 = *puVar6;
-        puVar6 = puVar6 + 4;
-        iVar7 = iVar7 + 1;
-        local_30 = local_30 + 0x18;
-        sprite_rect_set_a(src_b,(int)(short)*pal + (iVar4 >> 0xc),
-                     (int)(short)*puVar1 + (iVar5 >> 0xc),(int)(short)*puVar2,(int)(short)uVar3);
+        sprite_rect_set_a(cur_a,(int)(short)*pal + (xfp >> 0xc),
+                     (int)(short)pq[-2] + (yfp >> 0xc),(int)(short)pq[-1],
+                     (int)(short)*pq);
+        pa = pq + -2;
+        pb = pq + -1;
+        pv = *pq;
+        pq = pq + 4;
+        i = i + 1;
+        cur_a = cur_a + 0x18;
+        sprite_rect_set_a(src_b,(int)(short)*pal + (xfp >> 0xc),
+                     (int)(short)*pa + (yfp >> 0xc),(int)(short)*pb,(int)(short)pv);
         pal = pal + 4;
         src_b = src_b + 0x18;
-      } while (iVar7 < n);
+      } while (i < n);
     }
   }
-  else if ((tag == 3) && (iVar7 = 0, 0 < n)) {
+  else if ((tag == 3) && (i = 0, 0 < n)) {
     arg6 = arg6 * uv;
-    puVar6 = pal + 3;
+    pq = pal + 3;
     rgb = rgb * uv;
-    local_2c = src_a;
+    cur_b = src_a;
     do {
-      iVar4 = arg6;
+      xfp = arg6;
       if (arg6 < 0) {
-        iVar4 = arg6 + 0xfff;
+        xfp = arg6 + 0xfff;
       }
-      iVar5 = rgb;
+      yfp = rgb;
       if (rgb < 0) {
-        iVar5 = rgb + 0xfff;
+        yfp = rgb + 0xfff;
       }
-      sprite_rect_set_b(local_2c,(int)(short)*pal + (iVar4 >> 0xc),
-                   (int)(short)puVar6[-2] + (iVar5 >> 0xc),(int)(short)puVar6[-1],
-                   (int)(short)*puVar6);
-      puVar1 = puVar6 + -2;
-      puVar2 = puVar6 + -1;
-      uVar3 = *puVar6;
-      puVar6 = puVar6 + 4;
-      iVar7 = iVar7 + 1;
-      local_2c = local_2c + 0x24;
-      sprite_rect_set_b(src_b,(int)(short)*pal + (iVar4 >> 0xc),
-                   (int)(short)*puVar1 + (iVar5 >> 0xc),(int)(short)*puVar2,(int)(short)uVar3);
+      sprite_rect_set_b(cur_b,(int)(short)*pal + (xfp >> 0xc),
+                   (int)(short)pq[-2] + (yfp >> 0xc),(int)(short)pq[-1],
+                   (int)(short)*pq);
+      pa = pq + -2;
+      pb = pq + -1;
+      pv = *pq;
+      pq = pq + 4;
+      i = i + 1;
+      cur_b = cur_b + 0x24;
+      sprite_rect_set_b(src_b,(int)(short)*pal + (xfp >> 0xc),
+                   (int)(short)*pa + (yfp >> 0xc),(int)(short)*pb,(int)(short)pv);
       pal = pal + 4;
       src_b = src_b + 0x24;
-    } while (iVar7 < n);
+    } while (i < n);
   }
   return;
 
@@ -7472,27 +7472,27 @@ void sprite_strip_draw_dual(int src_a,int src_b,int uv,int n,ushort *pal,int arg
 
 int task_alloc_wrap_a(undefined4 a0,undefined4 a1,int a2,undefined4 a3)
 {
-  int iVar1;
-  undefined4 *puVar2;
-  iVar1 = (int)(intptr_t)task_node_alloc(0,2,0,0x80137680,0,0x1c);
-  if (iVar1 != 0) {
-    puVar2 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0x10))));
-    *puVar2 = a0;
-    puVar2[1] = a1;
-    puVar2[2] = a2;
-    puVar2[3] = a3;
-    puVar2[4] = a2 + -4;
-    puVar2[5] = 0;
-    puVar2[6] = 0;
+  int node;
+  undefined4 *pay;
+  node = (int)(intptr_t)task_node_alloc(0,2,0,0x80137680,0,0x1c);
+  if (node != 0) {
+    pay = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((node + 0x10))));
+    *pay = a0;
+    pay[1] = a1;
+    pay[2] = a2;
+    pay[3] = a3;
+    pay[4] = a2 + -4;
+    pay[5] = 0;
+    pay[6] = 0;
   }
-  return iVar1;
+  return node;
 
 }
 
 int task_alloc_wrap_b(undefined4 a0,undefined4 a1,undefined4 a2,undefined4 a3, int arg5)
 {
-  int iVar1;
-  undefined4 *puVar2;
+  int node;
+  undefined4 *pay;
   { extern uint32_t g_wb_last_p1,g_wb_last_p2,g_wb_last_p3,g_wb_last_p4,g_wb_last_p5;
     extern uint32_t g_wb_bad_count,g_wb_bad_node,g_wrap_src;
     g_wrap_src=1;
@@ -7504,19 +7504,19 @@ int task_alloc_wrap_b(undefined4 a0,undefined4 a1,undefined4 a2,undefined4 a3, i
       g_wb_bad_count++; g_wb_bad_node=(uint32_t)a3;
     }
   }
-  iVar1 = (int)(intptr_t)task_node_alloc(0,3,0,0x80137824,0,0x1c);
-  if (iVar1 != 0) {
-    puVar2 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0x10))));
-    *puVar2 = a0;
-    puVar2[1] = a1;
-    puVar2[2] = a2;
-    puVar2[3] = a3;
-    puVar2[4] = arg5;
-    puVar2[5] = arg5 + -4;
-    *(undefined2 *)(puVar2 + 6) = 0;
-    *(undefined2 *)((intptr_t)puVar2 + 0x1a) = 0;
+  node = (int)(intptr_t)task_node_alloc(0,3,0,0x80137824,0,0x1c);
+  if (node != 0) {
+    pay = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((node + 0x10))));
+    *pay = a0;
+    pay[1] = a1;
+    pay[2] = a2;
+    pay[3] = a3;
+    pay[4] = arg5;
+    pay[5] = arg5 + -4;
+    *(undefined2 *)(pay + 6) = 0;
+    *(undefined2 *)((intptr_t)pay + 0x1a) = 0;
   }
-  return iVar1;
+  return node;
 
 }
 
