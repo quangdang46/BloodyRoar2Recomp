@@ -2229,3 +2229,8 @@
 801a0ddc cd_hw_chan_release_all
 801a2808 cd_cmd_rec_arm_extent
 801a2ec8 cd_cmd_rec_arm_op
+# GPU/GTE entries from the 0x80192xxx/0x80194xxx sweep, sorted by address.
+80192b80 gpu_image_transfer_dma
+80192e24 gpu_tag_cmd_byte_get
+80192e38 gpu_command_words_send
+80194470 gte_screen_init_hi_entry
