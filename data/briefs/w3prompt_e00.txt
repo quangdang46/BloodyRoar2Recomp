@@ -1,0 +1,82 @@
+Read AGENTS.md at the repo root first — it defines the clean-room RE mission and the non-negotiable rules.
+
+TASK: clean-port these guest functions from generated recompiler output into readable C, in THIS worktree (branch orch/w3/e00).
+
+Guest functions to port:
+  - 0x80122170  (generated/SLES_017.22_full_00.c, search `br2eu_func_80122170`)
+  - 0x80126344  (generated/SLES_017.22_full_00.c, search `br2eu_func_80126344`)
+  - 0x80127100  (generated/SLES_017.22_full_00.c, search `br2eu_func_80127100`)
+  - 0x80127108  (generated/SLES_017.22_full_00.c, search `br2eu_func_80127108`)
+  - 0x80127110  (generated/SLES_017.22_full_00.c, search `br2eu_func_80127110`)
+  - 0x80127118  (generated/SLES_017.22_full_00.c, search `br2eu_func_80127118`)
+  - 0x80127120  (generated/SLES_017.22_full_00.c, search `br2eu_func_80127120`)
+  - 0x80127128  (generated/SLES_017.22_full_00.c, search `br2eu_func_80127128`)
+  - 0x80127130  (generated/SLES_017.22_full_00.c, search `br2eu_func_80127130`)
+  - 0x80127148  (generated/SLES_017.22_full_00.c, search `br2eu_func_80127148`)
+
+This range is leftover generated coverage not yet in clean_table (mixed engine/kernel/utility code). Some addrs may be CPS piece-entries/continuation PCs rather than standalone functions — for those use the established `block_XXXX:` label + `cpu->pc` CPS-dispatch idiom (see cps_clean.c / the committed game/gfx_emit_p03.c in git history for the pattern) and route continuation addrs via game/clean_cps.map. For CD-ROM/kernel/BIOS functions delegate via `return br2_call_generated(0x<addr>, a0,a1,a2,a3);` per AGENTS.md §4.
+
+For EACH real function: read its generated body, transcribe FAITHFULLY op-by-op (every cpu->gpr[]/cpu->gte_data[]/br2_ld*/br2_st*/gte_*/psx_cyc_*/psx_check_interrupts_at call, every branch+delay-slot). Idiom: `CPUState *cpu = clean_cpu_state()`, `cpu->gpr[N]`, block labels + goto, return cpu->gpr[2].
+
+Write ALL into ONE new file `game/w3_e00.c` with this preamble:
+```c
+#include <stdint.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include "cpu_state.h"
+
+typedef uint8_t  undefined;
+typedef uint8_t  undefined1;
+typedef uint16_t undefined2;
+typedef uint32_t undefined4;
+typedef int8_t   byte;
+typedef uint16_t ushort;
+typedef uint32_t uint;
+typedef int      int32_t_ghidra;
+#ifndef bool
+#define bool int
+#define true 1
+#define false 0
+#endif
+
+extern void *guest_at(uint32_t addr);
+extern uint32_t guest_of(const void *p);
+extern CPUState *clean_cpu_state(void);
+extern uint32_t br2_ld32(uint32_t a);
+extern void     br2_st32(uint32_t a, uint32_t v);
+extern uint8_t  br2_ld8(uint32_t a);
+extern uint16_t br2_ld16(uint32_t a);
+extern void     br2_st8(uint32_t a, uint8_t v);
+extern void     br2_st16(uint32_t a, uint16_t v);
+extern int      psx_ws_cull_sltiu(uint32_t sx, uint32_t imm);
+extern uint32_t br2_call_generated(uint32_t addr, uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3);
+
+#define DB16(a) (*(uint16_t *)guest_at(a))
+#define DB32(a) (*(uint32_t *)guest_at(a))
+
+static void swl_guest(uint32_t addr, uint32_t v)
+{
+  uint32_t al = addr & ~3u;
+  uint32_t w = DB32(al);
+  switch (addr & 3u) {
+  case 0: w = (w & 0xFFFFFF00u) | (v >> 24); break;
+  case 1: w = (w & 0xFFFF0000u) | (v >> 16); break;
+  case 2: w = (w & 0xFF000000u) | (v >> 8);  break;
+  default: w = v; break;
+  }
+  DB32(al) = w;
+}
+
+static void prim_ot_link_indexed(uint32_t ot, uint32_t out, uint32_t otz)
+{
+  uint32_t slot = ot + (otz & 0x1ffcu);
+  uint32_t old  = DB32(slot);
+  swl_guest(slot + 2, out << 8);
+  swl_guest(out + 2, old << 8);
+}
+```
+
+Then: pick descriptive names, add `<addr> <name>` to game/renames.map (sorted); for CPS piece-entries add routing to game/clean_cps.map. Regenerate `python3 game/gen_fnmap.py && python3 game/gen_clean_table.py`. Build `cmake --build build -j8` clean. Verify `./build/BloodyRoar2_Recompiled --disc /Users/tranquangdang21/Projects/bloody-roar-2/Game.cue --debug-port 4800 --headless` (frames advance, no crash), kill it. Commit on current branch.
+
+NOTE: generated/ is symlinked into this worktree — read generated/SLES_017.22_full_NN.c directly. Ignore Ghidra/PLAN.md. Do NOT edit generated/ or other game/*.c. No stubs. Report ported vs delegated + commit hash.
