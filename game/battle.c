@@ -9575,30 +9575,30 @@ void announce_param_block_init_b(undefined4 a0,undefined2 a1,const void *a2,unde
 
 }
 
-void slot_triple_set(int a0,int a1,int a2,int a3)
+void slot_triple_set(int slot,int c0,int c1,int c2)
 {
-  int iVar1;
-  int iVar2;
-  iVar1 = _DAT_801f0228;
-  if (a1 == -1) {
-    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((a0 * 8 + 0x1f800324) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((_DAT_801f0228 + a0 * 8 + 0x2c)));
+  int base;
+  int off;
+  base = _DAT_801f0228;
+  if (c0 == -1) {
+    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((slot * 8 + 0x1f800324) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((_DAT_801f0228 + slot * 8 + 0x2c)));
   }
   else {
-    *(short *)guest_at((uint32_t)(uintptr_t)((a0 * 8 + 0x1f800324) ))= (short)a1;
+    *(short *)guest_at((uint32_t)(uintptr_t)((slot * 8 + 0x1f800324) ))= (short)c0;
   }
-  iVar2 = a0 * 8;
-  if (a2 == -1) {
-    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x1f800326) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((iVar1 + iVar2 + 0x2e)));
+  off = slot * 8;
+  if (c1 == -1) {
+    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((off + 0x1f800326) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((base + off + 0x2e)));
   }
   else {
-    *(short *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x1f800326) ))= (short)a2;
+    *(short *)guest_at((uint32_t)(uintptr_t)((off + 0x1f800326) ))= (short)c1;
   }
-  a0 = a0 * 8;
-  if (a3 == -1) {
-    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((a0 + 0x1f800328) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((iVar1 + a0 + 0x30)));
+  slot = slot * 8;
+  if (c2 == -1) {
+    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((slot + 0x1f800328) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((base + slot + 0x30)));
     return;
   }
-  *(short *)guest_at((uint32_t)(uintptr_t)((a0 + 0x1f800328) ))= (short)a3;
+  *(short *)guest_at((uint32_t)(uintptr_t)((slot + 0x1f800328) ))= (short)c2;
   return;
 
 }
@@ -9615,21 +9615,21 @@ void rec_flag1_set(undefined2 *a0)
 
 void target_angles_set(short *dst,int idx)
 {
-  short sVar1;
-  short sVar2;
-  undefined2 uVar3;
-  undefined4 uVar4;
-  int iVar5;
-  int iVar6;
-  iVar6 = (int)*dst - (int)*(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x4a)));
-  iVar5 = (int)dst[2] - (int)*(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x4e)));
-  sVar1 = dst[1];
-  sVar2 = *(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x4c)));
-  uVar4 = FUN_80194500(iVar6 * iVar6 + iVar5 * iVar5);
-  uVar3 = atan2_lut(uVar4,(int)sVar1 - (int)sVar2);
-  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((idx + 0x30) ))= uVar3;
-  uVar3 = atan2_lut(iVar5,iVar6);
-  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((idx + 0x32) ))= uVar3;
+  short y0;
+  short y1;
+  undefined2 ang;
+  undefined4 d2;
+  int dz;
+  int dx;
+  dx = (int)*dst - (int)*(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x4a)));
+  dz = (int)dst[2] - (int)*(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x4e)));
+  y0 = dst[1];
+  y1 = *(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x4c)));
+  d2 = FUN_80194500(dx * dx + dz * dz);
+  ang = atan2_lut(d2,(int)y0 - (int)y1);
+  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((idx + 0x30) ))= ang;
+  ang = atan2_lut(dz,dx);
+  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((idx + 0x32) ))= ang;
   *(undefined2 *)guest_at((uint32_t)(uintptr_t)((idx + 0x34) ))= 0;
   return;
 
@@ -9638,8 +9638,8 @@ void target_angles_set(short *dst,int idx)
 void target_depth_set(short *dst,int idx)
 {
   undefined4 uVar1;
-  int iVar2;
-  int iVar3;
+  int dep2;
+  int dep;
   _DAT_1f80038c = *dst - *(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x4a)));
   _DAT_1f80038e = dst[1] - *(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x4c)));
   _DAT_1f800390 = dst[2] - *(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x4e)));
@@ -9648,35 +9648,35 @@ void target_depth_set(short *dst,int idx)
                        (uint *)(uintptr_t)&DAT_1f8003a0);
     gte_rtps_xform1_raw((undefined4 *)rm,(undefined4 *)(uintptr_t)&DAT_1f80038c,(undefined4 *)(uintptr_t)&DAT_1f800394);
   }
-  iVar3 = _DAT_1f800394;
+  dep = _DAT_1f800394;
   if (_DAT_1f800394 < 0) {
-    iVar3 = -_DAT_1f800394;
+    dep = -_DAT_1f800394;
   }
-  iVar2 = _DAT_1f800398;
+  dep2 = _DAT_1f800398;
   if (_DAT_1f800398 < 0) {
-    iVar2 = -_DAT_1f800398;
+    dep2 = -_DAT_1f800398;
   }
-  iVar3 = ((iVar3 + 0x180) * 0x168) / 0x140;
-  iVar2 = ((iVar2 + 0x180) * 0x168) / 0xf0;
-  if (iVar2 <= iVar3) {
-    iVar2 = iVar3;
+  dep = ((dep + 0x180) * 0x168) / 0x140;
+  dep2 = ((dep2 + 0x180) * 0x168) / 0xf0;
+  if (dep2 <= dep) {
+    dep2 = dep;
   }
-  iVar3 = 0x4a4;
-  if (0x4a3 < iVar2) {
-    iVar3 = iVar2;
+  dep = 0x4a4;
+  if (0x4a3 < dep2) {
+    dep = dep2;
   }
-  *(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x68) ))= (short)iVar3 - _DAT_1f80039c;
+  *(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x68) ))= (short)dep - _DAT_1f80039c;
   return;
 
 }
 
 void pair_depth_set(short *pa,short *pb,int idx)
 {
-  short sVar1;
+  short dmin;
   undefined4 uVar2;
-  int iVar3;
-  int iVar4;
-  int iVar5;
+  int az;
+  int ay;
+  int ax;
   _DAT_1f80038c = *pa - *(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x4a)));
   _DAT_1f80038e = pa[2] - *(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x4c)));
   _DAT_1f800390 = pa[4] - *(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x4e)));
@@ -9689,44 +9689,44 @@ void pair_depth_set(short *pa,short *pb,int idx)
     gte_rtps_xform1_raw((undefined4 *)rm,(undefined4 *)(uintptr_t)&DAT_1f80038c,(undefined4 *)(uintptr_t)&DAT_1f80039c);
   }
   gte_xform1_ir(&DAT_1f800394,&DAT_1f8003a8);
-  iVar5 = _DAT_1f80039c;
+  ax = _DAT_1f80039c;
   if (_DAT_1f80039c < 0) {
-    iVar5 = -_DAT_1f80039c;
+    ax = -_DAT_1f80039c;
   }
-  iVar4 = _DAT_1f8003a8;
+  ay = _DAT_1f8003a8;
   if (_DAT_1f8003a8 < 0) {
-    iVar4 = -_DAT_1f8003a8;
+    ay = -_DAT_1f8003a8;
   }
-  if (iVar4 <= iVar5) {
-    iVar4 = iVar5;
+  if (ay <= ax) {
+    ay = ax;
   }
-  iVar5 = _DAT_1f8003a0;
+  ax = _DAT_1f8003a0;
   if (_DAT_1f8003a0 < 0) {
-    iVar5 = -_DAT_1f8003a0;
+    ax = -_DAT_1f8003a0;
   }
-  iVar3 = _DAT_1f8003ac;
+  az = _DAT_1f8003ac;
   if (_DAT_1f8003ac < 0) {
-    iVar3 = -_DAT_1f8003ac;
+    az = -_DAT_1f8003ac;
   }
-  iVar4 = ((iVar4 * 2 + 0x180) * 0x168) / 0x140;
-  if (iVar3 <= iVar5) {
-    iVar3 = iVar5;
+  ay = ((ay * 2 + 0x180) * 0x168) / 0x140;
+  if (az <= ax) {
+    az = ax;
   }
-  iVar5 = ((iVar3 * 2 + 0x180) * 0x168) / 0xf0;
-  if (iVar5 <= iVar4) {
-    iVar5 = iVar4;
+  ax = ((az * 2 + 0x180) * 0x168) / 0xf0;
+  if (ax <= ay) {
+    ax = ay;
   }
-  iVar4 = 0x4a4;
-  if (0x4a3 < iVar5) {
-    iVar4 = iVar5;
+  ay = 0x4a4;
+  if (0x4a3 < ax) {
+    ay = ax;
   }
   if (_DAT_1f8003a4 < _DAT_1f8003b0) {
-    sVar1 = _DAT_1f8003a4;
+    dmin = _DAT_1f8003a4;
   }
   else {
-    sVar1 = _DAT_1f8003b0;
+    dmin = _DAT_1f8003b0;
   }
-  *(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x68) ))= (short)iVar4 - sVar1;
+  *(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x68) ))= (short)ay - dmin;
   return;
 
 }
@@ -9734,22 +9734,22 @@ void pair_depth_set(short *pa,short *pb,int idx)
 void target_angles_depth_set(short *dst,int idx)
 {
   short sVar1;
-  undefined2 uVar2;
-  undefined4 uVar3;
+  undefined2 ang;
+  undefined4 d2;
   int iVar4;
-  int iVar5;
-  int iVar6;
-  iVar5 = (int)*dst - (int)*(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x4a)));
-  _DAT_1f80038c = (undefined2)iVar5;
+  int dx;
+  int dz;
+  dx = (int)*dst - (int)*(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x4a)));
+  _DAT_1f80038c = (undefined2)dx;
   iVar4 = (int)dst[1] - (int)*(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x4c)));
   _DAT_1f80038e = (undefined2)iVar4;
-  iVar6 = (int)dst[2] - (int)*(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x4e)));
-  _DAT_1f800390 = (undefined2)iVar6;
-  uVar3 = FUN_80194500(iVar5 * iVar5 + iVar6 * iVar6);
-  uVar2 = atan2_lut(uVar3,iVar4);
-  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((idx + 0x30) ))= uVar2;
-  uVar2 = atan2_lut(iVar6,iVar5);
-  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((idx + 0x32) ))= uVar2;
+  dz = (int)dst[2] - (int)*(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x4e)));
+  _DAT_1f800390 = (undefined2)dz;
+  d2 = FUN_80194500(dx * dx + dz * dz);
+  ang = atan2_lut(d2,iVar4);
+  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((idx + 0x30) ))= ang;
+  ang = atan2_lut(dz,dx);
+  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((idx + 0x32) ))= ang;
   *(undefined2 *)guest_at((uint32_t)(uintptr_t)((idx + 0x34) ))= 0;
   {
     uint *rm = rotmat2_pair_build((int)*(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x30))),-(int)*(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x32))),
