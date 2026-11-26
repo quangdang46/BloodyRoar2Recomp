@@ -62191,8 +62191,7 @@ block_801688C8:
 
 /* cps_80172a2c — clean CPS transliteration of br2eu_func_80172A2C (guest 0x80172a2c)
  * from SLES_017.22_full_32.c.
- * leaf reg-op / return-value helper  * leaf/dispatch piece. CPS-blocked.
- */
+ * leaf reg-op / return-value helper */
 void cps_80172a2c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -62260,8 +62259,7 @@ block_80175A18:
 
 /* cps_801796e4 — clean CPS transliteration of br2eu_func_801796E4 (guest 0x801796e4)
  * from SLES_017.22_full_34.c.
- * split piece of cps_8017a990  * leaf/dispatch piece. CPS-blocked.
- */
+ * split piece of cps_8017a990 */
 void cps_801796e4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -62292,8 +62290,7 @@ void cps_80179a5c(void)
 
 /* cps_80179a60 — clean CPS transliteration of br2eu_func_80179A60 (guest 0x80179a60)
  * from SLES_017.22_full_34.c.
- * split piece of cps_80179a5c  * write_word(a1 + 76, zero);. CPS-blocked.
- */
+ * split piece of cps_80179a5c */
 void cps_80179a60(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -62311,8 +62308,7 @@ void cps_80179a60(void)
 
 /* cps_8017a6e0 — clean CPS transliteration of br2eu_func_8017A6E0 (guest 0x8017a6e0)
  * from SLES_017.22_full_34.c.
- * leaf reg-op / return-value helper  * leaf/dispatch piece. CPS-blocked.
- */
+ * leaf reg-op / return-value helper */
 void cps_8017a6e0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -62384,8 +62380,7 @@ ret:
 
 /* cps_8017a9b8 — clean CPS transliteration of br2eu_func_8017A9B8 (guest 0x8017a9b8)
  * from SLES_017.22_full_34.c.
- * split piece of cps_8017a990  * v0 = read_word(a1 + 136);. CPS-blocked.
- */
+ * split piece of cps_8017a990 */
 void cps_8017a9b8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -62403,8 +62398,7 @@ void cps_8017a9b8(void)
 
 /* cps_8017a9c4 — clean CPS transliteration of br2eu_func_8017A9C4 (guest 0x8017a9c4)
  * from SLES_017.22_full_34.c.
- * split piece of cps_8017a990  * write_word(a1 + 136, v0);. CPS-blocked.
- */
+ * split piece of cps_8017a990 */
 void cps_8017a9c4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -62472,8 +62466,7 @@ check_bound:
 
 /* cps_8017a9fc — clean CPS transliteration of br2eu_func_8017A9FC (guest 0x8017a9fc)
  * from SLES_017.22_full_34.c.
- * split piece of cps_8017a9d0  * leaf/dispatch piece. CPS-blocked.
- */
+ * split piece of cps_8017a9d0 */
 void cps_8017a9fc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -62490,8 +62483,7 @@ void cps_8017a9fc(void)
 
 /* cps_8017aa04 — clean CPS transliteration of br2eu_func_8017AA04 (guest 0x8017aa04)
  * from SLES_017.22_full_34.c.
- * split piece of cps_8017a9d0  * leaf/dispatch piece. CPS-blocked.
- */
+ * split piece of cps_8017a9d0 */
 void cps_8017aa04(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -62508,8 +62500,7 @@ void cps_8017aa04(void)
 
 /* cps_8017ab30 — clean CPS transliteration of br2eu_func_8017AB30 (guest 0x8017ab30)
  * from SLES_017.22_full_34.c.
- * CPS leaf — 2 stores, 1 loads  * v0 = read_half(a2);; write_half(a1 + 144, v1);; write_word(a1 + 132, v1);; -> 0x801AB5C. CPS-blocked.
- */
+ * CPS leaf — 2 stores, 1 loads */
 void cps_8017ab30(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -62576,8 +62567,7 @@ void cps_8017ab5c(void)
 
 /* cps_8017ac44 — clean CPS transliteration of br2eu_func_8017AC44 (guest 0x8017ac44)
  * from SLES_017.22_full_34.c.
- * split piece of cps_8017ac4c  * leaf/dispatch piece. CPS-blocked.
- */
+ * split piece of cps_8017ac4c */
 void cps_8017ac44(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -62594,8 +62584,7 @@ void cps_8017ac44(void)
 
 /* cps_8017ac4c — clean CPS transliteration of br2eu_func_8017AC4C (guest 0x8017ac4c)
  * from SLES_017.22_full_34.c.
- * single word read from a1+148  * v0 = read_word(a1 + 148);; -> 0x801AC44/0x801AE00. CPS-blocked.
- */
+ * single word read from a1+148 */
 void cps_8017ac4c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -62709,8 +62698,7 @@ ret:
 
 /* cps_8017adb8 — clean CPS transliteration of br2eu_func_8017ADB8 (guest 0x8017adb8)
  * from SLES_017.22_full_34.c.
- * single byte read from a3+3  * v1 = read_byte(a3 + 3);; -> 0x801AD78. CPS-blocked.
- */
+ * single byte read from a3+3 */
 void cps_8017adb8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -62727,8 +62715,7 @@ void cps_8017adb8(void)
 
 /* cps_8017ae00 — clean CPS transliteration of br2eu_func_8017AE00 (guest 0x8017ae00)
  * from SLES_017.22_full_34.c.
- * split piece of cps_8017ac4c  * v1 = read_half(a2 + 2);; v0 = read_word(a0 + 48);. CPS-blocked.
- */
+ * split piece of cps_8017ac4c */
 void cps_8017ae00(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -62749,8 +62736,7 @@ void cps_8017ae00(void)
 
 /* cps_8017ae10 — clean CPS transliteration of br2eu_func_8017AE10 (guest 0x8017ae10)
  * from SLES_017.22_full_34.c.
- * leaf reg-op / return-value helper  * leaf/dispatch piece. CPS-blocked.
- */
+ * leaf reg-op / return-value helper */
 void cps_8017ae10(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -62854,8 +62840,7 @@ flag_check:
 
 /* cps_8017b648 — clean CPS transliteration of br2eu_func_8017B648 (guest 0x8017b648)
  * from SLES_017.22_full_35.c.
- * split piece of cps_8017b5f4  * leaf/dispatch piece. CPS-blocked.
- */
+ * split piece of cps_8017b5f4 */
 void cps_8017b648(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -62872,8 +62857,7 @@ void cps_8017b648(void)
 
 /* cps_8017b650 — clean CPS transliteration of br2eu_func_8017B650 (guest 0x8017b650)
  * from SLES_017.22_full_35.c.
- * split piece of cps_8017b5f4  * v0 = read_byte(a0 + 5);; -> 0x801B648/0x801B664. CPS-blocked.
- */
+ * split piece of cps_8017b5f4 */
 void cps_8017b650(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -63393,8 +63377,7 @@ flag_check:
 
 /* cps_8017b8b4 — clean CPS transliteration of br2eu_func_8017B8B4 (guest 0x8017b8b4)
  * from SLES_017.22_full_35.c.
- * split piece of cps_8017b860  * leaf/dispatch piece. CPS-blocked.
- */
+ * split piece of cps_8017b860 */
 void cps_8017b8b4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -63411,8 +63394,7 @@ void cps_8017b8b4(void)
 
 /* cps_8017b8bc — clean CPS transliteration of br2eu_func_8017B8BC (guest 0x8017b8bc)
  * from SLES_017.22_full_35.c.
- * split piece of cps_8017b860  * v0 = read_byte(a0 + 5);; -> 0x801B8B4/0x801B8D0. CPS-blocked.
- */
+ * split piece of cps_8017b860 */
 void cps_8017b8bc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -63801,8 +63783,7 @@ flag_check:
 
 /* cps_8017baac — clean CPS transliteration of br2eu_func_8017BAAC (guest 0x8017baac)
  * from SLES_017.22_full_35.c.
- * split piece of cps_8017ba3c  * leaf/dispatch piece. CPS-blocked.
- */
+ * split piece of cps_8017ba3c */
 void cps_8017baac(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -63819,8 +63800,7 @@ void cps_8017baac(void)
 
 /* cps_8017bab4 — clean CPS transliteration of br2eu_func_8017BAB4 (guest 0x8017bab4)
  * from SLES_017.22_full_35.c.
- * split piece of cps_8017ba3c  * v0 = read_byte(t0 + 5);; -> 0x801BAAC/0x801BAC8. CPS-blocked.
- */
+ * split piece of cps_8017ba3c */
 void cps_8017bab4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -64300,8 +64280,7 @@ block_8017BD84:
 
 /* cps_8017bd8c — clean CPS transliteration of br2eu_func_8017BD8C (guest 0x8017bd8c)
  * from SLES_017.22_full_35.c.
- * leaf reg-op / return-value helper  * leaf/dispatch piece. CPS-blocked.
- */
+ * leaf reg-op / return-value helper */
 void cps_8017bd8c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -64406,8 +64385,7 @@ flag_check:
 
 /* cps_8017c3b4 — clean CPS transliteration of br2eu_func_8017C3B4 (guest 0x8017c3b4)
  * from SLES_017.22_full_35.c.
- * split piece of cps_8017c35c  * leaf/dispatch piece. CPS-blocked.
- */
+ * split piece of cps_8017c35c */
 void cps_8017c3b4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -64424,8 +64402,7 @@ void cps_8017c3b4(void)
 
 /* cps_8017c3bc — clean CPS transliteration of br2eu_func_8017C3BC (guest 0x8017c3bc)
  * from SLES_017.22_full_35.c.
- * split piece of cps_8017c35c  * v0 = read_byte(a3 + 5);; -> 0x801C3B4/0x801C3D0. CPS-blocked.
- */
+ * split piece of cps_8017c35c */
 void cps_8017c3bc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -64921,8 +64898,7 @@ flag_check:
 
 /* cps_8017c600 — clean CPS transliteration of br2eu_func_8017C600 (guest 0x8017c600)
  * from SLES_017.22_full_35.c.
- * split piece of cps_8017c5b8  * leaf/dispatch piece. CPS-blocked.
- */
+ * split piece of cps_8017c5b8 */
 void cps_8017c600(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -64939,8 +64915,7 @@ void cps_8017c600(void)
 
 /* cps_8017c608 — clean CPS transliteration of br2eu_func_8017C608 (guest 0x8017c608)
  * from SLES_017.22_full_35.c.
- * split piece of cps_8017c5b8  * v0 = read_byte(a0 + 5);; -> 0x801C600/0x801C61C. CPS-blocked.
- */
+ * split piece of cps_8017c5b8 */
 void cps_8017c608(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -64965,8 +64940,7 @@ void cps_8017c608(void)
 
 /* cps_8017c61c — clean CPS transliteration of br2eu_func_8017C61C (guest 0x8017c61c)
  * from SLES_017.22_full_35.c.
- * split piece of cps_8017c5b8  * v0 = read_byte(a2 + 2);; write_byte(a0 + 219, v0);; v0 = read_byte(a1 + 256);; v0 = read_half(a2 + 2);. CPS-blocked.
- */
+ * split piece of cps_8017c5b8 */
 void cps_8017c61c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -65158,8 +65132,7 @@ void cps_8017c818(void)
 
 /* cps_8017c840 — clean CPS transliteration of br2eu_func_8017C840 (guest 0x8017c840)
  * from SLES_017.22_full_35.c.
- * split piece of cps_8017c7b0  * write_half(a1 + 266, v0);; v0 = read_half(a2 + 2);; write_half(a1 + 268, v0);; -> 0x801c850. CPS-blocked.
- */
+ * split piece of cps_8017c7b0 */
 void cps_8017c840(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -65176,8 +65149,7 @@ void cps_8017c840(void)
 
 /* cps_8017c850 — clean CPS transliteration of br2eu_func_8017C850 (guest 0x8017c850)
  * from SLES_017.22_full_35.c.
- * split piece of cps_8017c818  * v0 = read_word(a0 + 92);; write_word(a0 + 92, v1);; v0 = (int32_t)(int16_t)read_half(a1 + 266);; write_word(a0 + 92, v0);. CPS-blocked.
- */
+ * split piece of cps_8017c818 */
 void cps_8017c850(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -65367,8 +65339,7 @@ void cps_8017c900(void)
 
 /* cps_8017c928 — clean CPS transliteration of br2eu_func_8017C928 (guest 0x8017c928)
  * from SLES_017.22_full_35.c.
- * split piece of cps_8017c898  * write_half(a1 + 266, v0);; v0 = read_half(a2 + 2);; write_half(a1 + 268, v0);; -> 0x801c938. CPS-blocked.
- */
+ * split piece of cps_8017c898 */
 void cps_8017c928(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -65385,8 +65356,7 @@ void cps_8017c928(void)
 
 /* cps_8017c938 — clean CPS transliteration of br2eu_func_8017C938 (guest 0x8017c938)
  * from SLES_017.22_full_35.c.
- * split piece of cps_8017c900  * v0 = read_word(a0 + 92);; write_word(a0 + 92, v1);; v0 = (int32_t)(int16_t)read_half(a1 + 266);; write_word(a0 + 92, v0);. CPS-blocked.
- */
+ * split piece of cps_8017c900 */
 void cps_8017c938(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -65444,8 +65414,7 @@ store:
 
 /* cps_8017c9bc — clean CPS transliteration of br2eu_func_8017C9BC (guest 0x8017c9bc)
  * from SLES_017.22_full_35.c.
- * single byte store to a0+39  * v0 = read_half(a2);; write_byte(a0 + 39, v0);. CPS-blocked.
- */
+ * single byte store to a0+39 */
 void cps_8017c9bc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -65466,8 +65435,7 @@ void cps_8017c9bc(void)
 
 /* cps_8017ca84 — clean CPS transliteration of br2eu_func_8017CA84 (guest 0x8017ca84)
  * from SLES_017.22_full_35.c.
- * fighter-param decoder — reads half(a2) + byte(a0+5)  * v0 = read_half(a2);; v0 = read_byte(a0 + 5);; -> 0x801CAEC/0x801CAD8/0x801CAD0. CPS-blocked.
- */
+ * fighter-param decoder — reads half(a2) + byte(a0+5) */
 void cps_8017ca84(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -65550,8 +65518,7 @@ flag_check:
 
 /* cps_8017cad0 — clean CPS transliteration of br2eu_func_8017CAD0 (guest 0x8017cad0)
  * from SLES_017.22_full_35.c.
- * split piece of cps_8017ca84  * leaf/dispatch piece. CPS-blocked.
- */
+ * split piece of cps_8017ca84 */
 void cps_8017cad0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -65568,8 +65535,7 @@ void cps_8017cad0(void)
 
 /* cps_8017cad8 — clean CPS transliteration of br2eu_func_8017CAD8 (guest 0x8017cad8)
  * from SLES_017.22_full_35.c.
- * split piece of cps_8017ca84  * v0 = read_byte(a0 + 5);; -> 0x801CAD0/0x801CAEC. CPS-blocked.
- */
+ * split piece of cps_8017ca84 */
 void cps_8017cad8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -65594,8 +65560,7 @@ void cps_8017cad8(void)
 
 /* cps_8017caec — clean CPS transliteration of br2eu_func_8017CAEC (guest 0x8017caec)
  * from SLES_017.22_full_35.c.
- * split piece of cps_8017ca84  * leaf/dispatch piece. CPS-blocked.
- */
+ * split piece of cps_8017ca84 */
 void cps_8017caec(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -66438,8 +66403,7 @@ flag_check:
 
 /* cps_8017d23c — clean CPS transliteration of br2eu_func_8017D23C (guest 0x8017d23c)
  * from SLES_017.22_full_35.c.
- * split piece of cps_8017d1d0  * leaf/dispatch piece. CPS-blocked.
- */
+ * split piece of cps_8017d1d0 */
 void cps_8017d23c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -66456,8 +66420,7 @@ void cps_8017d23c(void)
 
 /* cps_8017d244 — clean CPS transliteration of br2eu_func_8017D244 (guest 0x8017d244)
  * from SLES_017.22_full_35.c.
- * split piece of cps_8017d1d0  * v0 = read_byte(a3 + 5);; -> 0x801D23C/0x801D258. CPS-blocked.
- */
+ * split piece of cps_8017d1d0 */
 void cps_8017d244(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -66794,8 +66757,7 @@ flag_check:
 
 /* cps_8017d5c0 — clean CPS transliteration of br2eu_func_8017D5C0 (guest 0x8017d5c0)
  * from SLES_017.22_full_35.c.
- * split piece of cps_8017d55c  * leaf/dispatch piece. CPS-blocked.
- */
+ * split piece of cps_8017d55c */
 void cps_8017d5c0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -66812,8 +66774,7 @@ void cps_8017d5c0(void)
 
 /* cps_8017d5c8 — clean CPS transliteration of br2eu_func_8017D5C8 (guest 0x8017d5c8)
  * from SLES_017.22_full_35.c.
- * split piece of cps_8017d55c  * v0 = read_byte(a0 + 5);; -> 0x801D5C0/0x801D5DC. CPS-blocked.
- */
+ * split piece of cps_8017d55c */
 void cps_8017d5c8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -67114,8 +67075,7 @@ sub_check:
 
 /* cps_8017d71c — clean CPS transliteration of br2eu_func_8017D71C (guest 0x8017d71c)
  * from SLES_017.22_full_35.c.
- * split piece of cps_8017d6ac  * leaf/dispatch piece. CPS-blocked.
- */
+ * split piece of cps_8017d6ac */
 void cps_8017d71c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -67132,8 +67092,7 @@ void cps_8017d71c(void)
 
 /* cps_8017d724 — clean CPS transliteration of br2eu_func_8017D724 (guest 0x8017d724)
  * from SLES_017.22_full_35.c.
- * split piece of cps_8017d6ac  * leaf/dispatch piece. CPS-blocked.
- */
+ * split piece of cps_8017d6ac */
 void cps_8017d724(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -67150,8 +67109,7 @@ void cps_8017d724(void)
 
 /* cps_8017d72c — clean CPS transliteration of br2eu_func_8017D72C (guest 0x8017d72c)
  * from SLES_017.22_full_35.c.
- * split piece of cps_8017d6ac  * v0 = read_byte(a0 + 5);; -> 0x801D754/0x801D71C/0x801D724. CPS-blocked.
- */
+ * split piece of cps_8017d6ac */
 void cps_8017d72c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -67313,8 +67271,7 @@ block_8017D7B0:
 
 /* cps_8017d7ec — clean CPS transliteration of br2eu_func_8017D7EC (guest 0x8017d7ec)
  * from SLES_017.22_full_35.c.
- * split piece of cps_8017d758 — jt_dispatch_5: v1<5 table @0x80122A6C indexed dispatch.  * leaf/dispatch piece. CPS-blocked.
- */
+ * split piece of cps_8017d758 — jt_dispatch_5: v1<5 table @0x80122A6C indexed dispatch. */
 void cps_8017d7ec(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -67331,8 +67288,7 @@ void cps_8017d7ec(void)
 
 /* cps_8017d9dc — clean CPS transliteration of br2eu_func_8017D9DC (guest 0x8017d9dc)
  * from SLES_017.22_full_36.c.
- * fighter state reader — reads a0+5, a2+0/2/4, t0+44  * v0 = read_half(a2);; a3 = read_byte(a2 + 2);; a0 = read_word(t0 + 44);; v0 = read_byte(a0 + 5);; -> 0x801DA60/0x801DA4C/0x801DA68. CPS-blocked.
- */
+ * fighter state reader — reads a0+5, a2+0/2/4, t0+44 */
 void cps_8017d9dc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -67437,8 +67393,7 @@ flag_check:
 
 /* cps_8017da44 — clean CPS transliteration of br2eu_func_8017DA44 (guest 0x8017da44)
  * from SLES_017.22_full_36.c.
- * split piece of cps_8017d9dc  * leaf/dispatch piece. CPS-blocked.
- */
+ * split piece of cps_8017d9dc */
 void cps_8017da44(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -67455,8 +67410,7 @@ void cps_8017da44(void)
 
 /* cps_8017da4c — clean CPS transliteration of br2eu_func_8017DA4C (guest 0x8017da4c)
  * from SLES_017.22_full_36.c.
- * split piece of cps_8017d9dc  * v0 = read_byte(a0 + 5);; -> 0x801DA44/0x801DA60. CPS-blocked.
- */
+ * split piece of cps_8017d9dc */
 void cps_8017da4c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -67678,8 +67632,7 @@ ret:
 
 /* cps_8017e4cc — clean CPS transliteration of br2eu_func_8017E4CC (guest 0x8017e4cc)
  * from SLES_017.22_full_36.c.
- * leaf reg-op / return-value helper  * leaf/dispatch piece. CPS-blocked.
- */
+ * leaf reg-op / return-value helper */
 void cps_8017e4cc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -67930,8 +67883,7 @@ ret:
 
 /* cps_8017e628 — clean CPS transliteration of br2eu_func_8017E628 (guest 0x8017e628)
  * from SLES_017.22_full_36.c.
- * fighter state reader — reads a0+44/5, a2+0/2; 5-way dispatch  * v0 = read_half(a2);; a0 = read_word(a0 + 44);; v0 = read_byte(a0 + 5);; -> 0x801E6A8/0x801E694/0x801E6B0. CPS-blocked.
- */
+ * fighter state reader — reads a0+44/5, a2+0/2; 5-way dispatch */
 void cps_8017e628(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -68035,8 +67987,7 @@ flag_check:
 
 /* cps_8017e68c — clean CPS transliteration of br2eu_func_8017E68C (guest 0x8017e68c)
  * from SLES_017.22_full_36.c.
- * split piece of cps_8017e628  * leaf/dispatch piece. CPS-blocked.
- */
+ * split piece of cps_8017e628 */
 void cps_8017e68c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -68053,8 +68004,7 @@ void cps_8017e68c(void)
 
 /* cps_8017e694 — clean CPS transliteration of br2eu_func_8017E694 (guest 0x8017e694)
  * from SLES_017.22_full_36.c.
- * split piece of cps_8017e628  * v0 = read_byte(a0 + 5);; -> 0x801E68C/0x801E6A8. CPS-blocked.
- */
+ * split piece of cps_8017e628 */
 void cps_8017e694(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -68635,8 +68585,7 @@ ret_m1:
 
 /* cps_8017fae4 — clean CPS transliteration of br2eu_func_8017FAE4 (guest 0x8017fae4)
  * from SLES_017.22_full_36.c.
- * split piece of cps_8017f97c  * v0 = read_word(a1 + 88);; -> 0x801FB00/0x801FAF8. CPS-blocked.
- */
+ * split piece of cps_8017f97c */
 void cps_8017fae4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -68661,8 +68610,7 @@ void cps_8017fae4(void)
 
 /* cps_8017faf8 — clean CPS transliteration of br2eu_func_8017FAF8 (guest 0x8017faf8)
  * from SLES_017.22_full_36.c.
- * split piece of cps_8017f97c  * leaf/dispatch piece. CPS-blocked.
- */
+ * split piece of cps_8017f97c */
 void cps_8017faf8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -68679,8 +68627,7 @@ void cps_8017faf8(void)
 
 /* cps_8017fb00 — clean CPS transliteration of br2eu_func_8017FB00 (guest 0x8017fb00)
  * from SLES_017.22_full_36.c.
- * split piece of cps_8017f97c  * v0 = read_word(a2 + 32);; v1 = read_word(a1 + 92);. CPS-blocked.
- */
+ * split piece of cps_8017f97c */
 void cps_8017fb00(void)
 {
   CPUState *cpu = clean_cpu_state();
