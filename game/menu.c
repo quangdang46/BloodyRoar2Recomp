@@ -4727,7 +4727,7 @@ extern int32_t results_record_build(int32_t,int32_t);
 void record_state_stepper(uint32_t obj_g)
 {
   uint32_t rec = *(uint32_t *)((uint8_t *)guest_at(obj_g) + 0xcc);
-  int32_t st = (int16_t)MB16(rec);          /* lh ($rec) */
+  int32_t st = (int16_t)MB16(rec);          /* lh ($s0) */
   if ((uint32_t)st >= 7) return;           /* sltiu $v1,7 */
   switch (st) {
   case 1: {
