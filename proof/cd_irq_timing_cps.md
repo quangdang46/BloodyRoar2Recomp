@@ -145,3 +145,24 @@ Verification: clean build EU+USA; headless :4843 frames advanced past
 hits (cd_cmd_issue actively dispatching through the timed body);
 others 0 in attract window (init/callback paths — faithful-by-
 construction).
+
+## Batch 6 (orch/w5/e05) — CD device-command/channel path -> timed cpst_
+
+Five more CD-path functions upgraded to timed cpst_ bodies (89
+clean_cps.map rows). Confirmed zero untimed cps_* bodies remain in
+0x8018xxxx-0x801Bxxxx — the 741 remaining cps_ symbols all live in
+0x8012-0x8017 game-logic (deliberately untimed; no device deadlines).
+self-delegate count 33 -> 30.
+
+| guest entry | fnmap name | blocks | role |
+|---|---|---|---|
+| 0x801A2184 | dev_cmd_byte_send | 33 | device command byte send |
+| 0x801A36F0 | cd_channel_table_init | 8 | channel table init |
+| 0x801A0660 | cd_chan_cmd_pump | 22 | channel command pump |
+| 0x8019AABC | cd_chan_slot_set | 20 | channel slot set — HOT-ish |
+| 0x801A1B50 | dev_cmd_seq | 6 | device command seq |
+
+Verification: clean build EU+USA; headless :4849 frames past 65K
+attract CD streaming, no wedge. clean_stats: 0x8019AABC = 5 hits;
+others 0 in attract window (device-command paths — faithful-by-
+construction).
