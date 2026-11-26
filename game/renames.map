@@ -1931,3 +1931,7 @@
 80188510 prim_poly_emit_6c
 8018866c prim_poly_emit_64
 80188754 prim_poly_emit_88
+801888c0 prim_poly_emit_6c_tex
+801889f4 prim_poly_emit_78
+80188b5c prim_xform_emit
+80189e2c prim_poly_emit_64_vs
