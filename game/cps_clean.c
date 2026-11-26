@@ -97481,7 +97481,10 @@ block_801A1AE0:
 }
 
 /* cps_801a1b40 — clean CPS transliteration of br2eu_func_801A1B40 (guest 0x801a1b40)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Epilogue of the slot-drain family (1BC4-1CAC): restores ra from
+ * sp+16, sp += 24, jr ra.
+ */
 void cps_801a1b40(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -97500,7 +97503,12 @@ block_801A1B40:
 }
 
 /* cps_801a1bc4 — clean CPS transliteration of br2eu_func_801A1BC4 (guest 0x801a1bc4)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Slot-drain entry: writes half a0+10 = v1, then reads an indexed word
+ * from table @0x801BE7D8 (+v0*4 via AT). Result <0 -> 1CAC bail, <=0
+ * -> 1C58 (slot already consumed), else falls into 1BEC with s1 =
+ * table base 0x801BE7D8.
+ */
 void cps_801a1bc4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -97551,7 +97559,12 @@ block_801A1BE8:
 }
 
 /* cps_801a1bec — clean CPS transliteration of br2eu_func_801A1BEC (guest 0x801a1bec)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Slot-drain loop body: slot ptr = @0x801BE7D8 + (*(0x801BE7C0)<<2);
+ * decrements the slot word, computes record offset (slotval-1)*240,
+ * adds record-array base *(s0+12), and jalr handler @0x801BE7A0 on it.
+ * Reloads the slot ptr and -> 1C48.
+ */
 void cps_801a1bec(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -97600,7 +97613,10 @@ block_801A1C34:
 }
 
 /* cps_801a1c48 — clean CPS transliteration of br2eu_func_801A1C48 (guest 0x801a1c48)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Slot-drain loop test: reloads *slot; while >0 loops back to 1BEC,
+ * else -> 1C58 finish path.
+ */
 void cps_801a1c48(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -97625,7 +97641,11 @@ block_801A1C48:
 }
 
 /* cps_801a1c58 — clean CPS transliteration of br2eu_func_801A1C58 (guest 0x801a1c58)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Slot-drain finish: recomputes slot ptr @0x801BE7D8 + idx*4; if the
+ * slot word != 0 bails to 1CAC, else jalr handler @0x801BE7A0(s0) ->
+ * 1C90.
+ */
 void cps_801a1c58(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -97669,7 +97689,10 @@ block_801A1C80:
 }
 
 /* cps_801a1c90 — clean CPS transliteration of br2eu_func_801A1C90 (guest 0x801a1c90)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Slot-drain teardown: jalr handler (delay slot stores v1=-1 -> *slot,
+ * marking it consumed), then jalr handler @0x801BE7A4(a0=s0) -> 1CAC.
+ */
 void cps_801a1c90(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -97705,7 +97728,10 @@ block_801A1C98:
 }
 
 /* cps_801a1cac — clean CPS transliteration of br2eu_func_801A1CAC (guest 0x801a1cac)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Slot-drain return tail: restores saved regs and jr ra (32 bytes,
+ * single block).
+ */
 void cps_801a1cac(void)
 {
   CPUState *cpu = clean_cpu_state();
