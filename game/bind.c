@@ -20,14 +20,14 @@ void *guest_at(uint32_t addr);
 uint32_t guest_of(const void *p);
 static uint8_t *guest_for(const char *name)
 {
-    char buf[64]; int n=0; unsigned long best=0; int found=0;
-    for (const char *c=name; *c; c++) {
-        if ((*c>='0'&&*c<='9')||(*c>='a'&&*c<='f')) { if(n<63)buf[n++]=*c; }
-        else { if(n>=6){ buf[n]=0; char *e; unsigned long v=strtoul(buf,&e,16); if(v>best)best=v; found=1;} n=0; }
+    char hexbuf[64]; int ndx=0; unsigned long best_addr=0; int have_addr=0;
+    for (const char *p=name; *p; p++) {
+        if ((*p>='0'&&*p<='9')||(*p>='a'&&*p<='f')) { if(ndx<63)hexbuf[ndx++]=*p; }
+        else { if(ndx>=6){ hexbuf[ndx]=0; char *endp; unsigned long val=strtoul(hexbuf,&endp,16); if(val>best_addr)best_addr=val; have_addr=1;} ndx=0; }
     }
-    if(n>=6){ buf[n]=0; char *e; unsigned long v=strtoul(buf,&e,16); if(v>best)best=v; found=1; }
-    if(!found) return guest_arena;
-    return (uint8_t *)guest_at((uint32_t)best);
+    if(ndx>=6){ hexbuf[ndx]=0; char *endp; unsigned long val=strtoul(hexbuf,&endp,16); if(val>best_addr)best_addr=val; have_addr=1; }
+    if(!have_addr) return guest_arena;
+    return (uint8_t *)guest_at((uint32_t)best_addr);
 }
 
 /* guest_at — address-based twin of guest_for for sites that carry
@@ -882,12 +882,12 @@ int host_rand(void) { return rand() % 100; }
 extern void action_switch_guest(int,int*,int);
 void action_select(uint8_t *ctrl,int idx)
 {
-    uint32_t mg;
+    uint32_t motion_g;
     if (!ctrl) return;
-    mg = *(const uint32_t *)(ctrl + 0x38);   /* ctrl -> motion obj */
+    motion_g = *(const uint32_t *)(ctrl + 0x38);   /* ctrl -> motion obj */
     /* action_switch_guest has no zero test; guest_at(0) is still a
-     * valid low-memory object, so do not skip on mg==0. */
-    action_switch_guest((int)guest_of(ctrl),(int *)guest_at(mg),idx);
+     * valid low-memory object, so do not skip on motion_g==0. */
+    action_switch_guest((int)guest_of(ctrl),(int *)guest_at(motion_g),idx);
 }
 /* reaction_load removed: the guest tail at 0x8017b090 calls
  * fighter_anim_advance(ctrl,motion) directly; ev.c calls it now. */
@@ -899,13 +899,13 @@ extern CPUState *clean_cpu_state(void);
  * value is >= 0x800) and a bare register index for narrow ones; both resolve
  * to a GTE register 0-31.  Verified against the recompiled MIPS: e.g.
  * 0x4884F000 (MTC2 rd=30) -> arg 0xF000, 0x4802F800 (MFC2 rd=31) -> 0xF800. */
-static int cop2_reg_index(int r){ return (r>=0x800)?((r>>11)&0x1f):(r&0x1f); }
+static int cop2_reg_index(int reg){ return (reg>=0x800)?((reg>>11)&0x1f):(reg&0x1f); }
 
-void setCopReg(int f,int r,uint32_t v){ (void)f; CPUState*c=clean_cpu_state(); if(c) gte_write_data(c,(uint8_t)cop2_reg_index(r),v); }
-int  getCopReg(int f,int r){ (void)f; CPUState*c=clean_cpu_state(); return c?(int)gte_read_data(c,(uint8_t)cop2_reg_index(r)):0; }
-void copFunction(int f,uint32_t op){ (void)f; CPUState*c=clean_cpu_state(); if(c) gte_execute(c,op); }
-void setCopControlWord(int f,int r,uint32_t v){ (void)f; CPUState*c=clean_cpu_state(); if(c) gte_write_ctrl(c,(uint8_t)cop2_reg_index(r),v); }
-int  getCopControlWord(int f,int r){ (void)f; CPUState*c=clean_cpu_state(); return c?(int)gte_read_ctrl(c,(uint8_t)cop2_reg_index(r)):0; }
+void setCopReg(int fmt,int reg,uint32_t v){ (void)fmt; CPUState*c=clean_cpu_state(); if(c) gte_write_data(c,(uint8_t)cop2_reg_index(reg),v); }
+int  getCopReg(int fmt,int reg){ (void)fmt; CPUState*c=clean_cpu_state(); return c?(int)gte_read_data(c,(uint8_t)cop2_reg_index(reg)):0; }
+void copFunction(int fmt,uint32_t op){ (void)fmt; CPUState*c=clean_cpu_state(); if(c) gte_execute(c,op); }
+void setCopControlWord(int fmt,int reg,uint32_t v){ (void)fmt; CPUState*c=clean_cpu_state(); if(c) gte_write_ctrl(c,(uint8_t)cop2_reg_index(reg),v); }
+int  getCopControlWord(int fmt,int reg){ (void)fmt; CPUState*c=clean_cpu_state(); return c?(int)gte_read_ctrl(c,(uint8_t)cop2_reg_index(reg)):0; }
 
 
 
@@ -1008,15 +1008,15 @@ void     br2_st16(uint32_t a, uint16_t v);
  * state. */
 static uint32_t bind_gte_vec3_mag2(CPUState *c)
 {
-    uint32_t s;
+    uint32_t mag2;
     setCopReg(2, BR2_GTE_REG(9),  c->gpr[8]);
     setCopReg(2, BR2_GTE_REG(10), c->gpr[9]);
     setCopReg(2, BR2_GTE_REG(11), c->gpr[10]);
     copFunction(2, 0x0A00428);              /* SQR */
-    s  = (uint32_t)getCopReg(2, BR2_GTE_REG(25));
-    s += (uint32_t)getCopReg(2, BR2_GTE_REG(26));
-    s += (uint32_t)getCopReg(2, BR2_GTE_REG(27));
-    return s;
+    mag2  = (uint32_t)getCopReg(2, BR2_GTE_REG(25));
+    mag2 += (uint32_t)getCopReg(2, BR2_GTE_REG(26));
+    mag2 += (uint32_t)getCopReg(2, BR2_GTE_REG(27));
+    return mag2;
 }
 
 #if defined(__GNUC__) || defined(__clang__)
@@ -1039,17 +1039,17 @@ int32_t FUN_80194630(const void *in, void *out)
     const uint32_t *iv = (const uint32_t *)in;
     uint32_t *ov = (uint32_t *)out;
     CPUState *c = clean_cpu_state();
-    uint32_t s;
+    uint32_t mag2;
     if (!c) return 0;
     c->gpr[8]  = iv[0];
     c->gpr[9]  = iv[1];
     c->gpr[10] = iv[2];
-    s = bind_gte_vec3_mag2(c);
+    mag2 = bind_gte_vec3_mag2(c);
     gte_vec3_normalize();
     ov[0] = c->gpr[8];
     ov[1] = c->gpr[9];
     ov[2] = c->gpr[10];
-    return (int32_t)s;
+    return (int32_t)mag2;
 }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
@@ -1062,17 +1062,17 @@ int32_t FUN_80194660(const void *in, void *out)
     const int16_t *iv = (const int16_t *)in;
     uint16_t *ov = (uint16_t *)out;
     CPUState *c = clean_cpu_state();
-    uint32_t s;
+    uint32_t mag2;
     if (!c) return 0;
     c->gpr[8]  = (uint32_t)(int32_t)iv[0];
     c->gpr[9]  = (uint32_t)(int32_t)iv[1];
     c->gpr[10] = (uint32_t)(int32_t)iv[2];
-    s = bind_gte_vec3_mag2(c);
+    mag2 = bind_gte_vec3_mag2(c);
     gte_vec3_normalize();
     ov[0] = (uint16_t)c->gpr[8];
     ov[1] = (uint16_t)c->gpr[9];
     ov[2] = (uint16_t)c->gpr[10];
-    return (int32_t)s;
+    return (int32_t)mag2;
 }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
@@ -1082,11 +1082,11 @@ int32_t FUN_80194690(void)
     /* guest 0x80194690: GTE vec3 normalize core on the live
      * $t0-$t2 (gpr[8..10]); $v0 = MAC1+MAC2+MAC3 magnitude-squared. */
     CPUState *c = clean_cpu_state();
-    uint32_t s;
+    uint32_t mag2;
     if (!c) return 0;
-    s = bind_gte_vec3_mag2(c);
+    mag2 = bind_gte_vec3_mag2(c);
     gte_vec3_normalize();
-    return (int32_t)s;
+    return (int32_t)mag2;
 }
 
 #if defined(__GNUC__) || defined(__clang__)
@@ -1893,17 +1893,17 @@ static uint32_t bind_jal(uint32_t fn, uint32_t link)
  * guest bodies. Args 5+ travel on the guest stack (o32), staged via
  * br2_guest_frame; pointer args arrive as host pointers and are
  * converted with guest_of. */
-int FUN_801468ec(uint32_t a0,uint32_t a1,uint32_t a2,const void *a3,int32_t a4)
+int FUN_801468ec(uint32_t a0,uint32_t a1,uint32_t mat,const void *ctrl,int32_t mode)
 {
     /* guest 0x801468EC — fighter emit state machine. Loads the 8-word
-     * matrix at a2 into GTE CT0..CT7, normalizes the mode index a4
+     * matrix at mat into GTE CT0..CT7, normalizes the mode index mode
      * through the 6-entry jr table at 0x801202CC ({0,4,2,6,1,7}), then
      * runs three bit-selected emit sections (bit0/bit1/bit2 of the
      * normalized mode) that walk 4-byte record lists hanging off the
-     * FighterCtrl at a3 and jal the 8-byte jr-$ra padding stubs
+     * FighterCtrl at ctrl and jal the 8-byte jr-$ra padding stubs
      * 0x80136F70/0x80136F80 (interrupt-check waypoints; the args are
      * dead but reproduced faithfully). Faithful notes:
-     *  - guest frame is exactly 0x60; incoming arg5 (a4) is already
+     *  - guest frame is exactly 0x60; incoming arg5 (mode) is already
      *    marshalled at old_sp+0x10 by the dispatch wrapper; outgoing
      *    arg5/arg6 land at fr+0x10/0x14 and the 3-word vector at
      *    fr+0x18 is passed by guest pointer — all via br2_guest_frame.
@@ -1917,14 +1917,14 @@ int FUN_801468ec(uint32_t a0,uint32_t a1,uint32_t a2,const void *a3,int32_t a4)
     if (!c) {
         uint32_t fr0 = br2_guest_frame(0x20);
         int r;
-        br2_st32(fr0 + 0x10, (uint32_t)a4);
-        r = (int)br2_call_clean(0x801468ecu,a0,a1,a2,guest_of(a3));
+        br2_st32(fr0 + 0x10, (uint32_t)mode);
+        r = (int)br2_call_clean(0x801468ecu,a0,a1,mat,guest_of(ctrl));
         br2_guest_frame_free();
         return r;
     }
-    s4 = guest_of(a3);
-    s6 = a4;
-    c->gpr[4] = a0; c->gpr[5] = a1; c->gpr[6] = a2; c->gpr[7] = s4;
+    s4 = guest_of(ctrl);
+    s6 = mode;
+    c->gpr[4] = a0; c->gpr[5] = a1; c->gpr[6] = mat; c->gpr[7] = s4;
     fr = br2_guest_frame(0x60);
     br2_st32(fr + 0x38, c->gpr[16]);
     br2_st32(fr + 0x3c, c->gpr[17]);
@@ -1944,12 +1944,12 @@ int FUN_801468ec(uint32_t a0,uint32_t a1,uint32_t a2,const void *a3,int32_t a4)
     fp = br2_ld32(s4 + 0x20);
     s0 = br2_ld32(s4 + 0x0c);
 
-    /* GTE CT0..CT7 <- 8 matrix words at a2 (generated order preserved) */
+    /* GTE CT0..CT7 <- 8 matrix words at mat (generated order preserved) */
     {
-        uint32_t m0 = br2_ld32(a2 + 0x00), m1 = br2_ld32(a2 + 0x04);
-        uint32_t m2 = br2_ld32(a2 + 0x08), m3 = br2_ld32(a2 + 0x0c);
-        uint32_t m4 = br2_ld32(a2 + 0x10), m5 = br2_ld32(a2 + 0x14);
-        uint32_t m6 = br2_ld32(a2 + 0x18), m7 = br2_ld32(a2 + 0x1c);
+        uint32_t m0 = br2_ld32(mat + 0x00), m1 = br2_ld32(mat + 0x04);
+        uint32_t m2 = br2_ld32(mat + 0x08), m3 = br2_ld32(mat + 0x0c);
+        uint32_t m4 = br2_ld32(mat + 0x10), m5 = br2_ld32(mat + 0x14);
+        uint32_t m6 = br2_ld32(mat + 0x18), m7 = br2_ld32(mat + 0x1c);
         c->gte_ctrl[0] = m0; c->gte_ctrl[1] = m1;
         c->gte_ctrl[2] = m2; c->gte_ctrl[3] = m3;
         gte_write_ctrl(c, 4, m4);
@@ -2142,26 +2142,26 @@ int FUN_801468ec(uint32_t a0,uint32_t a1,uint32_t a2,const void *a3,int32_t a4)
  *    jump target first, matching `lw $t0,0xC($s2); jalr $ra,$t0`.
  *  - $v0 = final record pointer (a0 advanced by 0x28*count), or a0
  *    unchanged when count <= 0 (shared epilogue `move $v0,$a0`). */
-int FUN_8018b100(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,
+int FUN_8018b100(uint32_t recs,uint32_t a1,uint32_t a2,uint32_t count,
                  uint32_t a4,uint32_t a5)
 {
     CPUState *c = clean_cpu_state();
-    uint32_t s0, s1, s4, s5, s2, ep;
-    int32_t cnt;
+    uint32_t s0, s1, s4, s5, s2, entry;
+    int32_t remaining;
     if (!c) {
         uint32_t fr = br2_guest_frame(0x20);
         int r;
         br2_st32(fr + 0x10, a4);
         br2_st32(fr + 0x14, a5);
-        r = (int)br2_call_clean(0x8018b100u,a0,a1,a2,a3);
+        r = (int)br2_call_clean(0x8018b100u,recs,a1,a2,count);
         br2_guest_frame_free();
         return r;
     }
-    if ((int32_t)a3 <= 0) return (int)a0;      /* blez -> shared epilogue */
+    if ((int32_t)count <= 0) return (int)recs;      /* blez -> shared epilogue */
 
     /* Guest entry register state: $a2/$a3 arrive in $a2/$a3; mirror them
      * so the first xform call sees the same live $a2/$a3 the guest does. */
-    c->gpr[4] = a0; c->gpr[5] = a1; c->gpr[6] = a2; c->gpr[7] = a3;
+    c->gpr[4] = recs; c->gpr[5] = a1; c->gpr[6] = a2; c->gpr[7] = count;
 
     /* save caller s0-s6 + ra into scratchpad (0x1F8003E0..0x3FC) */
     br2_st32(0x1f8003fcu, c->gpr[31]);
@@ -2173,8 +2173,8 @@ int FUN_8018b100(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,
     br2_st32(0x1f8003e4u, c->gpr[21]);
     br2_st32(0x1f8003e0u, c->gpr[22]);
 
-    s0 = a0; s1 = a1; s4 = a4; s5 = a5;
-    cnt = (int32_t)a3;
+    s0 = recs; s1 = a1; s4 = a4; s5 = a5;
+    remaining = (int32_t)count;
     do {
         int32_t t0v = (int16_t)br2_ld16(s0 + 0xcu);
         uint32_t prim = br2_ld32(s0);          /* lw $a1,0($s0) */
@@ -2209,24 +2209,24 @@ int FUN_8018b100(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,
             c->gpr[5] = s1;                     /* move $a1,$s1 once */
             {
                 int32_t n = (int32_t)br2_ld32(s2);
-                ep = s2 + 4;
+                entry = s2 + 4;
                 /* guest guards with beqz/bgtz: any n != 0 runs >=1 entry */
                 if (n != 0) do {
-                    uint32_t a3v = br2_ld32(ep + 4);
-                    uint32_t a0v = br2_ld32(ep + 8);
-                    uint32_t fn  = br2_ld32(ep + 12);
+                    uint32_t a3v = br2_ld32(entry + 4);
+                    uint32_t a0v = br2_ld32(entry + 8);
+                    uint32_t fn  = br2_ld32(entry + 12);
                     c->gpr[7] = a3v;
                     c->gpr[8] = fn;             /* $t0 = jalr target */
                     c->gpr[4] = a0v;
                     br2_call_clean(fn, a0v, c->gpr[5], c->gpr[6], a3v);
                     n--;
-                    ep += 16;
+                    entry += 16;
                 } while (n > 0);
             }
         }
-        cnt--;
+        remaining--;
         s0 += 0x28;                             /* delay-slot advance */
-    } while (cnt > 0);
+    } while (remaining > 0);
 
     /* epilogue: $a0 = final record ptr (-> $v0), restore saved regs */
     c->gpr[4] = s0;
@@ -2492,11 +2492,11 @@ uint8_t DAT_801b6701[256] = {32, 32, 32, 32, 32, 32, 32, 32, 32, 8, 8, 8, 8, 8, 
  * trampoline fronting the line-buffer flush. a1 arrives as a host
  * pointer (callers pass guest_at(...)); convert back to a guest
  * address for the generated body. */
-__attribute__((weak)) void bios_tramp_b035(uint32_t a0, const void *a1, uint32_t a2)
+__attribute__((weak)) void bios_tramp_b035(uint32_t a0, const void *buf, uint32_t a2)
 {
-    /* Same routing as the strong cd.c port: B0 svc 0x35 with a1
+    /* Same routing as the strong cd.c port: B0 svc 0x35 with buf
      * translated host-pointer -> guest address. */
-    (void)bios_svc6(0xb0,0x35,a0,guest_of(a1),a2,0);
+    (void)bios_svc6(0xb0,0x35,a0,guest_of(buf),a2,0);
 }
 __attribute__((weak)) void battle_config_eval() { return; }
 __attribute__((weak)) int32_t mode_name_announce() { return 0; }
@@ -2682,11 +2682,11 @@ int32_t cd_seek_state_machine(uint32_t a0)
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-uint32_t FUN_801a0260(const void *a0)
+uint32_t FUN_801a0260(const void *rec)
 {
     /* guest 0x801A0260: B0 svc 0x43 CD-record read trampoline.
      * Callers pass a host pointer; translate back to a guest address. */
-    return bios_svc6(0xb0,0x43,guest_of(a0),0,0,0);
+    return bios_svc6(0xb0,0x43,guest_of(rec),0,0,0);
 }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
@@ -2716,7 +2716,7 @@ __attribute__((weak))
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int ret_zero_e(int32_t a0)
+int ret_zero_e(int32_t arg)
 {
     /* guest 0x80161630 — debug/service state machine. Frame is 0xa0;
      * state lives at sp+0x58 (0=init, 1=announce loop, 0xf0=table
@@ -2729,11 +2729,11 @@ int ret_zero_e(int32_t a0)
     uint32_t fr;
     int ret;
     if (!c) {
-        return (int)br2_call_clean(0x80161630u,(uint32_t)a0,0,0,0);
+        return (int)br2_call_clean(0x80161630u,(uint32_t)arg,0,0,0);
     }
-    c->gpr[4] = (uint32_t)a0;
+    c->gpr[4] = (uint32_t)arg;
     fr = br2_guest_frame(0xa0);
-    /* prologue spills + a0 home slot (observable stack image) */
+    /* prologue spills + arg home slot (observable stack image) */
     br2_st32(fr + 0x78, c->gpr[16]);
     br2_st32(fr + 0x7c, c->gpr[17]);
     br2_st32(fr + 0x80, c->gpr[18]);
@@ -2744,7 +2744,7 @@ int ret_zero_e(int32_t a0)
     br2_st32(fr + 0x94, c->gpr[23]);
     br2_st32(fr + 0x98, c->gpr[30]);
     br2_st32(fr + 0x9c, c->gpr[31]);
-    br2_st32(fr + 0xa0, (uint32_t)a0);
+    br2_st32(fr + 0xa0, (uint32_t)arg);
     br2_st32(fr + 0x50, 0);
     br2_st32(fr + 0x58, 0);
     br2_st16(0x1f80008c, 0);
@@ -2760,7 +2760,7 @@ int ret_zero_e(int32_t a0)
         goto L_tick;                        /* unknown state */
 
     L_init:
-        /* 0x801616B4: a0==0 -> frame_divisor gate + intro sequence */
+        /* 0x801616B4: arg==0 -> frame_divisor gate + intro sequence */
         if (br2_ld32(fr + 0xa0) == 0) {
             bind_jal(0x8012aaa8u, 0x801616ccu);      /* frame_divisor_get */
             if ((int32_t)c->gpr[2] == 0) {
@@ -2960,7 +2960,7 @@ int ret_zero_e(int32_t a0)
             c->gpr[6] = 0x0f17001eu; c->gpr[7] = 0x7a16d8e0u;
             bind_jal(0x8018c824u, 0x80161b44u);             /* spr_slot_pkt_submit */
         }
-        /* 0x80161B44: saved-a0 dispatch -> hud_gauge_render or tick */
+        /* 0x80161B44: saved-arg dispatch -> hud_gauge_render or tick */
         if (br2_ld32(fr + 0xa0) == 0) {
             c->gpr[4] = 0x1f800000; c->gpr[5] = br2_ld32(0x1f800008);
             c->gpr[6] = 0x24;
@@ -3022,11 +3022,11 @@ int FUN_80195370(uint32_t *in, uint32_t *out)
      * $v0 = a1. Callers pass host pointers that may alias; stage
      * through a real guest frame like gte_sqr_vec3_b expects. */
     uint32_t fr = br2_guest_frame(0x20);
-    uint32_t ib = fr, ob = fr + 0x10;
+    uint32_t in_g = fr, out_g = fr + 0x10;
     uint32_t r;
-    memcpy(guest_at(ib), in, 12);
-    r = gte_sqr_vec3_b(ib, ob);
-    memcpy(out, guest_at(ob), 12);
+    memcpy(guest_at(in_g), in, 12);
+    r = gte_sqr_vec3_b(in_g, out_g);
+    memcpy(out, guest_at(out_g), 12);
     br2_guest_frame_free();
     return (int)r;
 }
