@@ -131,18 +131,18 @@ static void apply(uint8_t *ctrl, uint8_t *motion)
     GSU32(motion, 0x04) = GU32(ani + h[2] + GU8(foe, FC_CHAR) * 4, 0);
 
     /* ---- post-header param block at blob+0x24 (u32-indexed) ---- */
-    /* piVar7[9..0xe] = blob +0x24..0x38 */
-    GS8 (tbl, 0x02) = (int8_t)GU8(ani, 0x24);          /* (char)piVar7[9] */
+    /* param block: blob u32[9..0xe] = ani+0x24..0x38 */
+    GS8 (tbl, 0x02) = (int8_t)GU8(ani, 0x24);          /* blob u32[9] lo byte */
     GS8 (tbl, 0x26) = GU8(ani, 0x26);
-    GS16(tbl, 0x20) = (int16_t)GU32(ani, 0x28);        /* (short)piVar7[10] */
+    GS16(tbl, 0x20) = (int16_t)GU32(ani, 0x28);        /* blob u32[10] */
     GSU16(tbl, 0x44) = GU16(ani, 0x2a);
     GS16(ctrl, 0xb0)  = (int16_t)GU16(ani, 0x2e);
     GS16(ctrl, 0xfc)  = (int16_t)GU16(ani, 0x32);
-    GS16(ctrl, 0xfe)  = (int16_t)GU32(ani, 0x34);          /* (short)piVar7[13] */
+    GS16(ctrl, 0xfe)  = (int16_t)GU32(ani, 0x34);          /* blob u32[13] */
     GS16(ctrl, 0x100) = (int16_t)GU16(ani, 0x36);
-    GS16(ctrl, 0x102) = (int16_t)GU32(ani, 0x38);          /* (short)piVar7[14] */
+    GS16(ctrl, 0x102) = (int16_t)GU32(ani, 0x38);          /* blob u32[14] */
     GS16(ctrl, 0x104) = (int16_t)GU16(ani, 0x3a);
-    GS16(motion, 0xbc) = (int16_t)GU32(ani, 0x30);         /* (short)piVar7[12] */
+    GS16(motion, 0xbc) = (int16_t)GU32(ani, 0x30);         /* blob u32[12] */
 
     /* ctrl+0xf8 = (cfgbyte<<8)/s16(ani+0x2c)+1; cfgbyte = byte4 of the
      * battle-config ptr at guest 0x1f8000c4 (disasm 0x8017a250-0x8017a28c).
@@ -583,7 +583,7 @@ static void entry_setup(uint8_t *ctrl, uint32_t group)
 
     /* ---- group switch (guest constants, verbatim) ---- */
     int32_t x = 0, y = 0;
-    int32_t z;                 /* unaff_s4 — always set per branch */
+    int32_t z;                 /* z — always set per branch before use */
     int slot = GU8(ctrl, FC_PLAYER);
     int chr  = GU8(ctrl, FC_CHAR);
 
