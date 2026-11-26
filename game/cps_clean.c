@@ -97174,7 +97174,7 @@ block_801A1688:
  * Two-channel state reconcile: computes expected mask s1 from globals
  * @0x801BE7D4/@0x801BE7D0, compares with arg s0. For bit0: clears/sets
  * @0x801BE7B8 and @0x801BE7D0 and — when counter @0x801FEF60 < 150 —
- * calls handler @0x801BE784 with a0 = record ptr @0x801BE7B4. For bit1:
+ * calls handler @0x801BE77C with a0 = record ptr @0x801BE7B4. For bit1:
  * same dance on @0x801BE7D4/@0x801BE7D0 with counter @0x801FEF64 and
  * a0 += 240. Finally sets @0x801BE7B8 = 1 and returns s1.
  */
@@ -97264,7 +97264,7 @@ block_801A175C:
     a0 = 0x801C << 16;  /* 0x801C0000 */
     a0 = cpu->read_word(a0 + -6220);  /* record ptr @0x801BE7B4 */
     v0 = 0x801C << 16;  /* 0x801C0000 */
-    v0 = cpu->read_word(v0 + -6268);  /* handler ptr @0x801BE784 */
+    v0 = cpu->read_word(v0 + -6268);  /* handler ptr @0x801BE77C */
     /* nop */  /* 0x801A176C: 0x00000000 */
     uint32_t _jt_801A1770 = v0;  /* latch indirect target before delay slot */
     ra = 0x801A1778u;  /* jalr link before delay slot */
@@ -97319,7 +97319,7 @@ block_801A17B4:
     a0 = 0x801C << 16;  /* 0x801C0000 */
     a0 = cpu->read_word(a0 + -6220);  /* record ptr @0x801BE7B4 */
     v0 = 0x801C << 16;  /* 0x801C0000 */
-    v0 = cpu->read_word(v0 + -6268);  /* handler ptr @0x801BE784 */
+    v0 = cpu->read_word(v0 + -6268);  /* handler ptr @0x801BE77C */
     /* nop */  /* 0x801A17C4: 0x00000000 */
     uint32_t _jt_801A17C8 = v0;  /* latch indirect target before delay slot */
     ra = 0x801A17D0u;  /* jalr link before delay slot */
@@ -97363,7 +97363,7 @@ block_801A17EC:
  * Init/teardown sequence: clears @0x801BE7B8, calls 0x8019A340 and
  * 0x8019A330 with a0=2, a1=@0x801FEF60; pokes state object @0x801BE7E0
  * (-2, then |=1 at +4) via 0x8019A670 with a0=3; calls 0x8018E310;
- * jalr handler @0x801BE784 twice with a0 = record @0x801BE7B4 (+240 on
+ * jalr handler @0x801BE77C twice with a0 = record @0x801BE7B4 (+240 on
  * second); clears @0x801FEF60/64 and sets @0x801BE7B8 = 1; returns.
  */
 void cps_801a1a40(void)
@@ -97441,7 +97441,7 @@ block_801A1AA8:
     a0 = 0x801C << 16;  /* 0x801C0000 */
     a0 = cpu->read_word(a0 + -6220);  /* record ptr @0x801BE7B4 */
     v0 = 0x801C << 16;  /* 0x801C0000 */
-    v0 = cpu->read_word(v0 + -6268);  /* handler ptr @0x801BE784 */
+    v0 = cpu->read_word(v0 + -6268);  /* handler ptr @0x801BE77C */
     /* nop */  /* 0x801A1AB8: 0x00000000 */
     uint32_t _jt_801A1ABC = v0;  /* latch indirect target before delay slot */
     ra = 0x801A1AC4u;  /* jalr link before delay slot */
@@ -97454,7 +97454,7 @@ block_801A1AC4:
     a0 = 0x801C << 16;  /* 0x801C0000 */
     a0 = cpu->read_word(a0 + -6220);  /* record ptr @0x801BE7B4 */
     v0 = 0x801C << 16;  /* 0x801C0000 */
-    v0 = cpu->read_word(v0 + -6268);  /* handler ptr @0x801BE784 */
+    v0 = cpu->read_word(v0 + -6268);  /* handler ptr @0x801BE77C */
     /* nop */  /* 0x801A1AD4: 0x00000000 */
     uint32_t _jt_801A1AD8 = v0;  /* latch indirect target before delay slot */
     ra = 0x801A1AE0u;  /* jalr link before delay slot */
@@ -97734,7 +97734,12 @@ block_801A1CAC:
 }
 
 /* cps_801a1ccc — clean CPS transliteration of br2eu_func_801A1CCC (guest 0x801a1ccc)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Device-protocol piece: sets flag bit 0x10 at device-obj +10, polls
+ * status halfword +4 for bit 0x200 (retrying 0x801A4230(a0=2000) while
+ * clear), then issues command byte 1 via 0x801A4210 + 0x801A23FC and
+ * branches on result toward the 0x801A1D24/0x801A1D5C continuation.
+ */
 void cps_801a1ccc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -97796,7 +97801,7 @@ block_801A1CF8:
 
 block_801A1D00:
     v1 = 0x801C << 16;  /* 0x801C0000 */
-    v1 = cpu->read_word(v1 + -6172);
+    v1 = cpu->read_word(v1 + -6172);  /* @0x801BE7E4 */
     v0 = 1;
     ra = 0x801A1D14u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -97832,7 +97837,7 @@ block_801A1D24:
 
 block_801A1D2C:
     v0 = 0x801C << 16;  /* 0x801C0000 */
-    v0 = cpu->read_word(v0 + -6172);
+    v0 = cpu->read_word(v0 + -6172);  /* @0x801BE7E4 */
     a0 = 430;
     v0 = cpu->read_byte(v0);
     ra = 0x801A1D44u;  /* jal link before delay slot */
@@ -97849,7 +97854,9 @@ block_801A1D44:
 }
 
 /* cps_801a1d4c — clean CPS transliteration of br2eu_func_801A1D4C (guest 0x801a1d4c)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Device-protocol piece: tail-calls 0x801A4230 (wait/delay).
+ */
 void cps_801a1d4c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -97866,7 +97873,9 @@ block_801A1D4C:
 }
 
 /* cps_801a1d50 — clean CPS transliteration of br2eu_func_801A1D50 (guest 0x801a1d50)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Device-protocol piece: nop slide into cps_801a1d54.
+ */
 void cps_801a1d50(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -97881,7 +97890,9 @@ block_801A1D50:
 }
 
 /* cps_801a1d54 — clean CPS transliteration of br2eu_func_801A1D54 (guest 0x801a1d54)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Device-protocol piece: branches on v0 — nonzero exits via 0x801A1E70, zero continues to 0x801A1D5C.
+ */
 void cps_801a1d54(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -97904,7 +97915,11 @@ block_801A1D54:
 }
 
 /* cps_801a1d5c — clean CPS transliteration of br2eu_func_801A1D5C (guest 0x801a1d5c)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Device-protocol piece: polls status word (@0x801BE7E0 -> *ptr) bit 0x80;
+ * while clear retries 0x801A4230(a0=60). Once set, writes command byte
+ * 66 to device obj @0x801BE7E4 and calls 0x801A4210 + 0x801A23FC.
+ */
 void cps_801a1d5c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -97922,7 +97937,7 @@ void cps_801a1d5c(void)
 
 block_801A1D5C:
     v0 = 0x801C << 16;  /* 0x801C0000 */
-    v0 = cpu->read_word(v0 + -6176);
+    v0 = cpu->read_word(v0 + -6176);  /* @0x801BE7E0 */
     /* nop */  /* 0x801A1D64: 0x00000000 */
     v0 = cpu->read_word(v0);
     /* nop */  /* 0x801A1D6C: 0x00000000 */
@@ -97940,7 +97955,7 @@ block_801A1D5C:
 
 block_801A1D7C:
     v1 = 0x801C << 16;  /* 0x801C0000 */
-    v1 = cpu->read_word(v1 + -6172);
+    v1 = cpu->read_word(v1 + -6172);  /* @0x801BE7E4 */
     v0 = 66;
     ra = 0x801A1D90u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -97957,7 +97972,11 @@ block_801A1D90:
 }
 
 /* cps_801a1d98 — clean CPS transliteration of br2eu_func_801A1D98 (guest 0x801a1d98)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Device-protocol piece: on v0==0 exits via 0x801A1E70; else calls
+ * 0x801A248C, reads device byte, issues 0x801A4210(a0=430), then
+ * continues to 0x801A1DD8.
+ */
 void cps_801a1d98(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -97995,7 +98014,7 @@ block_801A1DA0:
 
 block_801A1DA8:
     v0 = 0x801C << 16;  /* 0x801C0000 */
-    v0 = cpu->read_word(v0 + -6172);
+    v0 = cpu->read_word(v0 + -6172);  /* @0x801BE7E4 */
     a0 = 430;
     v0 = cpu->read_byte(v0);
     ra = 0x801A1DC0u;  /* jal link before delay slot */
@@ -98012,7 +98031,10 @@ block_801A1DC0:
 }
 
 /* cps_801a1dc8 — clean CPS transliteration of br2eu_func_801A1DC8 (guest 0x801a1dc8)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Device-protocol piece: tail-calls 0x801A4230; branches on v0 —
+ * nonzero exits via 0x801A1E70, zero continues to 0x801A1DD8.
+ */
 void cps_801a1dc8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -98048,7 +98070,9 @@ block_801A1DD0:
 }
 
 /* cps_801a1dd4 — clean CPS transliteration of br2eu_func_801A1DD4 (guest 0x801a1dd4)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Device-protocol piece: v0 = 0 slide into cps_801a1dd8.
+ */
 void cps_801a1dd4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -98063,7 +98087,11 @@ block_801A1DD4:
 }
 
 /* cps_801a1dd8 — clean CPS transliteration of br2eu_func_801A1DD8 (guest 0x801a1dd8)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Device-protocol piece: same status-bit-0x80 poll as 0x801A1D5C but
+ * writes command byte 1; on success path calls 0x801A248C, reads the
+ * device byte and finishes at 0x801A1E70.
+ */
 void cps_801a1dd8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -98084,7 +98112,7 @@ void cps_801a1dd8(void)
 
 block_801A1DD8:
     v0 = 0x801C << 16;  /* 0x801C0000 */
-    v0 = cpu->read_word(v0 + -6176);
+    v0 = cpu->read_word(v0 + -6176);  /* @0x801BE7E0 */
     /* nop */  /* 0x801A1DE0: 0x00000000 */
     v0 = cpu->read_word(v0);
     /* nop */  /* 0x801A1DE8: 0x00000000 */
@@ -98102,7 +98130,7 @@ block_801A1DD8:
 
 block_801A1DF8:
     v1 = 0x801C << 16;  /* 0x801C0000 */
-    v1 = cpu->read_word(v1 + -6172);
+    v1 = cpu->read_word(v1 + -6172);  /* @0x801BE7E4 */
     v0 = 1;
     ra = 0x801A1E0Cu;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -98138,7 +98166,7 @@ block_801A1E1C:
 
 block_801A1E24:
     v1 = 0x801C << 16;  /* 0x801C0000 */
-    v1 = cpu->read_word(v1 + -6172);
+    v1 = cpu->read_word(v1 + -6172);  /* @0x801BE7E4 */
     v0 = zero;
     v1 = cpu->read_byte(v1);
     /* delay slot (always executes) */
@@ -98148,7 +98176,10 @@ block_801A1E24:
 }
 
 /* cps_801a1e3c — clean CPS transliteration of br2eu_func_801A1E3C (guest 0x801a1e3c)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Device-protocol piece: stores v0 into the status word via ptr
+ * @0x801BE7E0, then falls into cps_801a1e4c.
+ */
 void cps_801a1e3c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -98158,7 +98189,7 @@ void cps_801a1e3c(void)
 
 block_801A1E3C:
     v1 = 0x801C << 16;  /* 0x801C0000 */
-    v1 = cpu->read_word(v1 + -6176);
+    v1 = cpu->read_word(v1 + -6176);  /* @0x801BE7E0 */
     /* nop */  /* 0x801A1E44: 0x00000000 */
     cpu->write_word(v1, v0);
     cpu->pc = 0x801a1e4cu; return;  /* fallthrough to split piece */
@@ -98166,7 +98197,10 @@ block_801A1E3C:
 }
 
 /* cps_801a1e4c — clean CPS transliteration of br2eu_func_801A1E4C (guest 0x801a1e4c)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Device-protocol piece: tests byte[s0+80] — zero exits via 0x801A1E70,
+ * nonzero continues to 0x801A1E5C (v0 = 1).
+ */
 void cps_801a1e4c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -98191,7 +98225,9 @@ block_801A1E4C:
 }
 
 /* cps_801a1e58 — clean CPS transliteration of br2eu_func_801A1E58 (guest 0x801a1e58)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Device-protocol piece: v0 = 1 slide into cps_801a1e5c.
+ */
 void cps_801a1e58(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -98206,7 +98242,10 @@ block_801A1E58:
 }
 
 /* cps_801a1e5c — clean CPS transliteration of br2eu_func_801A1E5C (guest 0x801a1e5c)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Device-protocol piece: tests byte[s0+55] — nonzero exits via 0x801A1E70
+ * with v0 = 0, zero continues with v0 = 1.
+ */
 void cps_801a1e5c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -98241,7 +98280,9 @@ block_801A1E6C:
 }
 
 /* cps_801a1e70 — clean CPS transliteration of br2eu_func_801A1E70 (guest 0x801a1e70)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Device-protocol epilogue: restores s0/s1/ra and jr ra.
+ */
 void cps_801a1e70(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -98261,7 +98302,9 @@ block_801A1E70:
 }
 
 /* cps_801a1edc — clean CPS transliteration of br2eu_func_801A1EDC (guest 0x801a1edc)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Protocol piece: v0 = 3 slide into cps_801a1ee0.
+ */
 void cps_801a1edc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -98276,7 +98319,12 @@ block_801A1EDC:
 }
 
 /* cps_801a1ee0 — clean CPS transliteration of br2eu_func_801A1EE0 (guest 0x801a1ee0)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Protocol piece: compares v1 vs v0; when equal checks byte[*(s0+60)]
+ * against 0x80 — on match skips the retry; else issues 0x801A4210(a0=60)
+ * + 0x801A23FC, and on failure calls handler @0x801BE780 with a0=-3.
+ * Then loads retry counter @0x801BE7C4 into v1 for cps_801a1f38.
+ */
 void cps_801a1ee0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -98352,7 +98400,7 @@ block_801A1F10:
 
 block_801A1F18:
     v0 = 0x801C << 16;  /* 0x801C0000 */
-    v0 = cpu->read_word(v0 + -6272);
+    v0 = cpu->read_word(v0 + -6272);  /* @0x801BE780 */
     /* nop */  /* 0x801A1F20: 0x00000000 */
     uint32_t _jt_801A1F24 = v0;  /* latch indirect target before delay slot */
     ra = 0x801A1F2Cu;  /* jalr link before delay slot */
@@ -98363,13 +98411,16 @@ block_801A1F18:
 
 block_801A1F2C:
     v1 = 0x801C << 16;  /* 0x801C0000 */
-    v1 = cpu->read_word(v1 + -6204);
+    v1 = cpu->read_word(v1 + -6204);  /* @0x801BE7C4 */
     /* nop */  /* 0x801A1F34: 0x00000000 */
     cpu->pc = 0x801a1f38u; return;  /* fallthrough to split piece */
 }
 
 /* cps_801a1f38 — clean CPS transliteration of br2eu_func_801A1F38 (guest 0x801a1f38)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Protocol piece: if retry counter v1 < 5 exits via 0x801A1F64; else
+ * decrements @0x801BE7C4 and continues to 0x801A1F64.
+ */
 void cps_801a1f38(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -98406,7 +98457,10 @@ block_801A1F44:
 }
 
 /* cps_801a1f50 — clean CPS transliteration of br2eu_func_801A1F50 (guest 0x801a1f50)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Protocol piece: jalr through handler ptr @0x801BE780 (no explicit
+ * a0 — uses incoming args), returns to 0x801A1F64.
+ */
 void cps_801a1f50(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -98416,7 +98470,7 @@ void cps_801a1f50(void)
 
 block_801A1F50:
     v0 = 0x801C << 16;  /* 0x801C0000 */
-    v0 = cpu->read_word(v0 + -6272);
+    v0 = cpu->read_word(v0 + -6272);  /* @0x801BE780 */
     /* nop */  /* 0x801A1F58: 0x00000000 */
     uint32_t _jt_801A1F5C = v0;  /* latch indirect target before delay slot */
     ra = 0x801A1F64u;  /* jalr link before delay slot */
@@ -98427,7 +98481,9 @@ block_801A1F50:
 }
 
 /* cps_801a1f64 — clean CPS transliteration of br2eu_func_801A1F64 (guest 0x801a1f64)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Protocol epilogue: restores s0/ra and jr ra.
+ */
 void cps_801a1f64(void)
 {
   CPUState *cpu = clean_cpu_state();
