@@ -82880,7 +82880,11 @@ block_80191B88:
 }
 
 /* cps_80191b90 — clean CPS transliteration of br2eu_func_80191B90 (guest 0x80191b90)
- * from SLES_017.22_full_43.c. */
+ * from SLES_017.22_full_43.c.
+ * Dirty-check: compares record s1's four i16 fields (+8,+10,+12,+14) against
+ * the cached snapshot @0x801B839C (0x801C0000-31852). Any field diff exits
+ * via 0x80191C08 (recompute path); all-match then requires class byte
+ * s1+18 == 8 else exits via 0x80191E74. */
 void cps_80191b90(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -82995,7 +82999,12 @@ block_80191C04:
 }
 
 /* cps_80191c08 — clean CPS transliteration of br2eu_func_80191C08 (guest 0x80191c08)
- * from SLES_017.22_full_43.c. */
+ * from SLES_017.22_full_43.c.
+ * Screen-span setup feeding 0x80191C88: calls 0x8019B1E4, stores result
+ * byte to s1+18; picks record base s0 = s1+10 + (19 or 16 by result),
+ * span end s2 = s0 + s1+14 (or +240); class index a2 from s1+4 thresholds
+ * (281/353/401/561 → 0..4); tail-loads byte @0x801B841C+a2
+ * (0x801C0000-31716). */
 void cps_80191c08(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -83130,7 +83139,12 @@ block_80191C78:
 }
 
 /* cps_80191c88 — clean CPS transliteration of br2eu_func_80191C88 (guest 0x80191c88)
- * from SLES_017.22_full_43.c. */
+ * from SLES_017.22_full_43.c.
+ * Perspective transform + window clamp: muldiv record+8 i16 × table value,
+ * adds per-class i16 pair @0x801B83F4/0x801B83F2
+ * (0x801C0000-31756/-31754)+(class*5+a2)*4 delta,
+ * optional second muldiv by s1+12 i16 >>8; result clamped to the
+ * 500/540/3220 window (class byte s1+18==0 → 0x80191D80 path). */
 void cps_80191c88(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -83234,7 +83248,10 @@ block_80191D08:
 }
 
 /* cps_80191d0c — clean CPS transliteration of br2eu_func_80191D0C (guest 0x80191d0c)
- * from SLES_017.22_full_43.c. */
+ * from SLES_017.22_full_43.c.
+ * X-axis clamp chain: bounds a1 by a0 + per-class table byte*4 and 3260,
+ * clamps s0 into [19,303]; then compares s2 against s0+2 → exits
+ * 0x80191E18 (in-range) or 0x80191E0C with a1=305. */
 void cps_80191d0c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -83355,7 +83372,9 @@ block_80191D78:
 }
 
 /* cps_80191d80 — clean CPS transliteration of br2eu_func_80191D80 (guest 0x80191d80)
- * from SLES_017.22_full_43.c. */
+ * from SLES_017.22_full_43.c.
+ * Window clamp helper: a0 < 500 → 0x80191D9C; else a0 < 3251 → 0x80191D90
+ * (which yields a1=3250 on overflow, else a1=a0). */
 void cps_80191d80(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -83389,7 +83408,8 @@ block_80191D8C:
 }
 
 /* cps_80191d90 — clean CPS transliteration of br2eu_func_80191D90 (guest 0x80191d90)
- * from SLES_017.22_full_43.c. */
+ * from SLES_017.22_full_43.c.
+ * Clamp tail: a0 >= 3251 → a1=3250 via 0x80191D9C, else a1=a0. */
 void cps_80191d90(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -83422,7 +83442,10 @@ block_80191D98:
 }
 
 /* cps_80191d9c — clean CPS transliteration of br2eu_func_80191D9C (guest 0x80191d9c)
- * from SLES_017.22_full_43.c. */
+ * from SLES_017.22_full_43.c.
+ * Y-axis twin of 0x80191D0C: bounds a1 by a0 + per-class table byte*4 and
+ * 3290, clamps s0 into [16,257]; compares s2 vs s0+2 → 0x80191E18 in-range
+ * else 0x80191E0C with a1=258. */
 void cps_80191d9c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -84615,7 +84638,11 @@ block_80192E24:
 }
 
 /* cps_80192e38 — clean CPS transliteration of br2eu_func_80192E38 (guest 0x80192e38)
- * from SLES_017.22_full_44.c. */
+ * from SLES_017.22_full_44.c.
+ * GPU context push: writes tag 0x04000000 through ptr cell @0x801B8428
+ * (0x801C0000-31704); when a1 != 0 copies a1-1 words from a0 through the
+ * ptr cell @0x801B8424 (0x801C0000-31708); returns 0. Sits between the
+ * gpu_tag_cmd_store / gpu_reg_cells_init / gpu_reg_cmd_commit helpers. */
 void cps_80192e38(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -84695,7 +84722,11 @@ block_80194470:
 }
 
 /* cps_80194478 — clean CPS transliteration of br2eu_func_80194478 (guest 0x80194478)
- * from SLES_017.22_full_44.c. */
+ * from SLES_017.22_full_44.c.
+ * gte_screen_init_defer: saves ra @0x801B8490 (0x801C0000-31632), calls
+ * 0x80195710, sets COP0 SR bit30 (CU2/GTE enable), then ctc2-programs
+ * GTE control regs: 29=341, 30=256, 26=1000, 27=-4194, 28=0x01400000,
+ * 24=0, 25=0 (screen offset/clip window init). */
 void cps_80194478(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -85219,7 +85250,10 @@ block_80195C40:
 }
 
 /* cps_80195c44 — clean CPS transliteration of br2eu_func_80195C44 (guest 0x80195c44)
- * from SLES_017.22_full_45.c. */
+ * from SLES_017.22_full_45.c.
+ * Conditional two-stage probe: calls 0x801974B8 — nonzero result exits
+ * via 0x80195C78; zero result with s0==1 then calls 0x8019737C and returns
+ * 1 only when that also yields 0. */
 void cps_80195c44(void)
 {
   CPUState *cpu = clean_cpu_state();
