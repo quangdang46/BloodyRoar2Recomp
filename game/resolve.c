@@ -2331,108 +2331,108 @@ LAB_80179618:
 
 }
 
-void motion_turn_update(byte *param_1,byte *param_2)
+void motion_turn_update(byte *mo,byte *ctrl)
 {
-  ushort uVar1;
-  uint uVar2;
-  int iVar3;
-  int iVar4;
-  int iVar5;
-  iVar4 = (int)*(short *)(param_1 + 0x74);
-  iVar3 = iVar4;
-  if (iVar4 < 0) {
-    iVar3 = -iVar4;
+  ushort ctr16;
+  uint flags;
+  int abs_rate;
+  int rate;
+  int step;
+  rate = (int)*(short *)(mo + 0x74);
+  abs_rate = rate;
+  if (rate < 0) {
+    abs_rate = -rate;
   }
-  iVar5 = 0;
-  if (iVar3 < 0x401) {
-    uVar2 = *(uint *)(param_1 + 0x5c) & 0xffbfffff;
-  }
-  else {
-    uVar2 = *(uint *)(param_1 + 0x5c) | 0x400000;
-  }
-  *(uint *)(param_1 + 0x5c) = uVar2;
-  iVar4 = (iVar4 + *(short *)(param_2 + 0xd2)) * 0x100000 >> 0x14;
-  iVar3 = iVar4;
-  if (iVar4 < 0) {
-    iVar3 = -iVar4;
-  }
-  if (iVar3 < 0x2ab) {
-    uVar2 = *(uint *)(param_1 + 0x5c) & 0xfffffbff;
+  step = 0;
+  if (abs_rate < 0x401) {
+    flags = *(uint *)(mo + 0x5c) & 0xffbfffff;
   }
   else {
-    uVar2 = *(uint *)(param_1 + 0x5c) | 0x400;
+    flags = *(uint *)(mo + 0x5c) | 0x400000;
   }
-  *(uint *)(param_1 + 0x5c) = uVar2;
-  iVar3 = iVar4;
-  if (iVar4 < 0) {
-    iVar3 = -iVar4;
+  *(uint *)(mo + 0x5c) = flags;
+  rate = (rate + *(short *)(ctrl + 0xd2)) * 0x100000 >> 0x14;
+  abs_rate = rate;
+  if (rate < 0) {
+    abs_rate = -rate;
   }
-  if (iVar3 < 0x556) {
-    uVar2 = *(uint *)(param_1 + 0x5c) & 0xffefffff;
+  if (abs_rate < 0x2ab) {
+    flags = *(uint *)(mo + 0x5c) & 0xfffffbff;
   }
   else {
-    uVar2 = *(uint *)(param_1 + 0x5c) | 0x100000;
+    flags = *(uint *)(mo + 0x5c) | 0x400;
   }
-  *(uint *)(param_1 + 0x5c) = uVar2;
-  if ((*(uint *)((char *)guest_at(*(uint32_t *)(param_1 + 0x2c)) + 0x60) & 0x4000000) == 0) {
-    if ((*(uint *)(param_1 + 0x5c) & 0x20000) == 0) {
-      if ((*(uint *)(param_1 + 0x60) & 0x2000000) != 0) {
-        iVar3 = iVar4;
-        if (iVar4 < 0) {
-          iVar3 = -iVar4;
+  *(uint *)(mo + 0x5c) = flags;
+  abs_rate = rate;
+  if (rate < 0) {
+    abs_rate = -rate;
+  }
+  if (abs_rate < 0x556) {
+    flags = *(uint *)(mo + 0x5c) & 0xffefffff;
+  }
+  else {
+    flags = *(uint *)(mo + 0x5c) | 0x100000;
+  }
+  *(uint *)(mo + 0x5c) = flags;
+  if ((*(uint *)((char *)guest_at(*(uint32_t *)(mo + 0x2c)) + 0x60) & 0x4000000) == 0) {
+    if ((*(uint *)(mo + 0x5c) & 0x20000) == 0) {
+      if ((*(uint *)(mo + 0x60) & 0x2000000) != 0) {
+        abs_rate = rate;
+        if (rate < 0) {
+          abs_rate = -rate;
         }
-        if (0x155 < iVar3) {
-          if (iVar3 < 0x6aa) goto LAB_801798e0;
-          iVar4 = (iVar4 + -0x800) * 0x100000 >> 0x14;
+        if (0x155 < abs_rate) {
+          if (abs_rate < 0x6aa) goto LAB_801798e0;
+          rate = (rate + -0x800) * 0x100000 >> 0x14;
         }
-        iVar3 = iVar4;
-        if (iVar4 < 0) {
-          iVar3 = -iVar4;
+        abs_rate = rate;
+        if (rate < 0) {
+          abs_rate = -rate;
         }
-        iVar5 = iVar4;
-        if ((0x22 < iVar3) && (iVar5 = 0x22, iVar4 < 0)) {
-          iVar5 = -0x22;
+        step = rate;
+        if ((0x22 < abs_rate) && (step = 0x22, rate < 0)) {
+          step = -0x22;
         }
       }
     }
     else {
-      if ((*(uint *)(param_1 + 0x5c) & 0x8000000) == 0) {
-        iVar3 = iVar4;
-        if (iVar4 < 0) {
-          iVar3 = -iVar4;
+      if ((*(uint *)(mo + 0x5c) & 0x8000000) == 0) {
+        abs_rate = rate;
+        if (rate < 0) {
+          abs_rate = -rate;
         }
-        if ((*(short *)(param_2 + 0x10c) <= iVar3) && ((*(ushort *)(param_2 + 0x10a) & 0x80) == 0))
+        if ((*(short *)(ctrl + 0x10c) <= abs_rate) && ((*(ushort *)(ctrl + 0x10a) & 0x80) == 0))
         goto LAB_801798e0;
       }
       else {
-        iVar3 = iVar4;
-        if (iVar4 < 0) {
-          iVar3 = -iVar4;
+        abs_rate = rate;
+        if (rate < 0) {
+          abs_rate = -rate;
         }
-        if ((iVar3 <= *(short *)(param_2 + 0x10c)) && ((*(ushort *)(param_2 + 0x10a) & 0x80) == 0))
+        if ((abs_rate <= *(short *)(ctrl + 0x10c)) && ((*(ushort *)(ctrl + 0x10a) & 0x80) == 0))
         goto LAB_801798e0;
-        iVar4 = (iVar4 + -0x800) * 0x100000 >> 0x14;
+        rate = (rate + -0x800) * 0x100000 >> 0x14;
       }
-      iVar3 = iVar4;
-      if (iVar4 < 0) {
-        iVar3 = -iVar4;
+      abs_rate = rate;
+      if (rate < 0) {
+        abs_rate = -rate;
       }
-      iVar5 = iVar4;
-      if ((0xb6 < iVar3) && (iVar5 = 0xb6, iVar4 < 0)) {
-        iVar5 = -0xb6;
+      step = rate;
+      if ((0xb6 < abs_rate) && (step = 0xb6, rate < 0)) {
+        step = -0xb6;
       }
     }
   }
 LAB_801798e0:
-  uVar1 = *(ushort *)(param_2 + 0x10a) - 1;
-  if (((*(ushort *)(param_2 + 0x10a) & 0x7f) != 0) &&
-     (*(ushort *)(param_2 + 0x10a) = uVar1, (uVar1 & 0x7f) == 0)) {
-    *(uint *)(param_1 + 0x5c) = *(uint *)(param_1 + 0x5c) & 0xfffdffff;
+  ctr16 = *(ushort *)(ctrl + 0x10a) - 1;
+  if (((*(ushort *)(ctrl + 0x10a) & 0x7f) != 0) &&
+     (*(ushort *)(ctrl + 0x10a) = ctr16, (ctr16 & 0x7f) == 0)) {
+    *(uint *)(mo + 0x5c) = *(uint *)(mo + 0x5c) & 0xfffdffff;
   }
-  if (iVar5 != 0) {
-    *(short *)(param_1 + 0x74) = (short)((*(short *)(param_1 + 0x74) - iVar5) * 0x100000 >> 0x14);
-    *(short *)(param_1 + 0x4e) = (short)((*(short *)(param_1 + 0x4e) + iVar5) * 0x100000 >> 0x14);
-    *(short *)(param_2 + 0xe4) = (short)((*(short *)(param_2 + 0xe4) + iVar5) * 0x100000 >> 0x14);
+  if (step != 0) {
+    *(short *)(mo + 0x74) = (short)((*(short *)(mo + 0x74) - step) * 0x100000 >> 0x14);
+    *(short *)(mo + 0x4e) = (short)((*(short *)(mo + 0x4e) + step) * 0x100000 >> 0x14);
+    *(short *)(ctrl + 0xe4) = (short)((*(short *)(ctrl + 0xe4) + step) * 0x100000 >> 0x14);
   }
   return;
 
