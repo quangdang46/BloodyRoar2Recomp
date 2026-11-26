@@ -1359,6 +1359,8 @@ extern void prim_xform3_task_run(void);
 extern void prim_xform3_task_run_b(void);
 extern void prim_xform_emit(void);
 extern void prim_xform_emit_64(void);
+extern void print_dispatch_guest(void);
+extern void print_dispatch_selfdesc_guest(void);
 extern void print_mode_dispatch_b(void);
 extern void print_mode_dispatch_guest(void);
 extern void printf_arg_byte(void);
@@ -1387,6 +1389,7 @@ extern void printf_cps_8018e710(void);
 extern void printf_cps_8018e76c(void);
 extern void printf_flags_h_set(void);
 extern void printf_flags_l_set(void);
+extern void printf_forward_guest(void);
 extern void proj_coord_gte_emit(void);
 extern void pt_box_radius_test(void);
 extern void qbyte_take(void);
@@ -1600,6 +1603,7 @@ extern void spr_tbl_init_a(void);
 extern void spr_tbl_init_b(void);
 extern void sprintf_core_engine(void);
 extern void sprintf_core_engine_piece_f220(void);
+extern void sprintf_core_guest(void);
 extern void sprite_9slice_build(void);
 extern void sprite_anim_chain_build(void);
 extern void sprite_attr_init_a(void);
@@ -1610,6 +1614,7 @@ extern void sprite_burst_spawn(void);
 extern void sprite_desc_table_init(void);
 extern void sprite_node_alloc(void);
 extern void sprite_node_alloc_commit(void);
+extern void sprite_node_emit_a(void);
 extern void sprite_node_emit_b(void);
 extern void sprite_obj_alloc_emit(void);
 extern void sprite_place_centered(void);
@@ -1621,6 +1626,7 @@ extern void sprite_rect_pkt_fill(void);
 extern void sprite_rect_set_a(void);
 extern void sprite_rect_set_b(void);
 extern void sprite_rect_set_c(void);
+extern void sprite_rect_table_init(void);
 extern void sprite_slot_commit(void);
 extern void sprite_strip_draw_dual(void);
 extern void stage_char_data_load(void);
@@ -1813,6 +1819,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80129ff4, (void *)perm_table_load },
   { 0x8012a030, (void *)perm_table_apply },
   { 0x8012a088, (void *)debug_stat_print },
+  { 0x8012a0f0, (void *)sprite_rect_table_init },
   { 0x8012a30c, (void *)ot_packet_chain_fixup },
   { 0x8012a4b4, (void *)queue_slot_peek },
   { 0x8012a4dc, (void *)cmd_queue_slot_next },
@@ -1838,10 +1845,12 @@ const Br2FnEnt fn_table[] = {
   { 0x8012c0b4, (void *)intro_movie_state },
   { 0x8012c374, (void *)hud_gauge_render },
   { 0x8012cbc0, (void *)print_mode_dispatch_b },
+  { 0x8012cc6c, (void *)print_dispatch_guest },
   { 0x8012cd9c, (void *)scroll_offset_set },
   { 0x8012cdd8, (void *)scroll_offset_accumulate },
   { 0x8012ce20, (void *)scroll_offset_y_get },
   { 0x8012ce30, (void *)print_mode_dispatch_guest },
+  { 0x8012cf64, (void *)print_dispatch_selfdesc_guest },
   { 0x8012d090, (void *)sprite_desc_table_init },
   { 0x8012d154, (void *)text_render_full },
   { 0x8012dce4, (void *)text_render_simple },
@@ -2723,6 +2732,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8018cd94, (void *)spr_tbl_init_b },
   { 0x8018cdf8, (void *)sprite_node_alloc },
   { 0x8018ce50, (void *)sprite_node_alloc_commit },
+  { 0x8018ce70, (void *)sprite_node_emit_a },
   { 0x8018cfb4, (void *)file_rec_size_get },
   { 0x8018cfd4, (void *)file_rec_size_get_zero },
   { 0x8018cfdc, (void *)cd_file_load_sm },
@@ -2788,6 +2798,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8018e4d0, (void *)rand_lcg },
   { 0x8018e500, (void *)rand_seed },
   { 0x8018e510, (void *)str_len },
+  { 0x8018e550, (void *)printf_forward_guest },
   { 0x8018e590, (void *)printf_core },
   { 0x8018e63c, (void *)printf_cps_8018e63c },
   { 0x8018e64c, (void *)printf_cps_8018e64c },
@@ -2822,6 +2833,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8018edf4, (void *)debug_line_flush },
   { 0x8018ee28, (void *)debug_line_putc },
   { 0x8018ef50, (void *)bios_tramp_b035 },
+  { 0x8018ef60, (void *)sprintf_core_guest },
   { 0x8018ef6c, (void *)sprintf_core_engine },
   { 0x8018f220, (void *)sprintf_core_engine_piece_f220 },
   { 0x8018f22c, (void *)gpu_pkt_cmd_f22c },
