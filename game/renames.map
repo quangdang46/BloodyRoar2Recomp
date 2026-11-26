@@ -1736,7 +1736,15 @@
 801833e8 scriptop_bsr_cps
 80183400 scriptop_bsr_cps
 80183418 scriptop_bsr_cps
+80183430 scriptop_bsr_0x80183430
+8018344c scriptop_bsr_0x8018344c
+80183514 scriptop_bsr_0x80183514
 80183558 scriptop_ret
+80183594 scriptop_ret_pop_0x80183594
+801835d0 scriptop_ret_cond_0x801835d0
+801835e8 scriptop_ret_cond_0x801835e8
+80183600 scriptop_ret_cond_0x80183600
+80183618 scriptop_ret_cond_0x80183618
 80183664 scriptop_wait
 8018371c scriptop_wait_fragment_8018371c
 801837b0 scriptop_wait_fragment_801837b0
