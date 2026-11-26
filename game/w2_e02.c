@@ -10,6 +10,16 @@
  * Each body is a faithful op-by-op transcription of the generated
  * br2eu_func_* piece: same guest ops, same order, same yield/continuation
  * points, minus cycle/icache/cosim/debug instrumentation.
+ *
+ * Shared ctx convention (same script-VM ctx as w2_e01's
+ * fighter_script_fsm decode): s0=script ctx (+36 stream pc, +40
+ * state halfword, +6/+10 flag halfwords, +42 sub-state), s1=script
+ * descriptor (+88/+92 params, +204 ext ptr), t0=fighter/anim state
+ * (+88/+100/+118). The fsm_mode* bodies are the mode-dispatch arms:
+ * each evaluates ctx/fighter conditions and commits the next script
+ * pc via ctx[36]; fsm_flags_commit / scriptop_bra_pc_commit are the
+ * shared tail pieces. The ~750 blocks are per-condition eval arms —
+ * annotate per-arm only when a specific mode needs RE work.
  */
 #include <stdint.h>
 #include <stdarg.h>
