@@ -26379,7 +26379,7 @@ extern uint32_t script_op_dispatch(undefined4 a0,undefined4 a1,int a2,undefined4
     cpu->gpr[2] = (uint32_t)(script_op_dispatch(((undefined4)cpu->gpr[4]), ((undefined4)cpu->gpr[5]), ((int)cpu->gpr[6]), ((undefined4)cpu->gpr[7])));
 }
 static void wrap_80185048(CPUState *cpu) {
-extern void part_matrix_compute(undefined4 *mat,byte *vec,short *param_3,undefined4 param_4);
+extern void part_matrix_compute(undefined4 *mat,byte *parts,short *euler,undefined4 angle);
     part_matrix_compute(((undefined4 *)guest_at(cpu->gpr[4])), ((byte *)guest_at(cpu->gpr[5])), ((short *)guest_at(cpu->gpr[6])), ((undefined4)cpu->gpr[7]));
 }
 static void wrap_801851d8(CPUState *cpu) {
