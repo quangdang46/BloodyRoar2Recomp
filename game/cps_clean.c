@@ -80985,6 +80985,7 @@ void cps_801906e8(void)
         }
     }
     /* Address: 0x801906E8, Size: 796 bytes, Blocks: 39 */
+    /* note: large multi-block body (522 lines) — left in CPS transliteration form */
 
 block_801906E8:
     sp = sp + -80;
@@ -81520,6 +81521,7 @@ void cps_80190a14(void)
         }
     }
     /* Address: 0x80190A14, Size: 944 bytes, Blocks: 49 */
+    /* note: large multi-block body (647 lines) — left in CPS transliteration form */
 
 block_80190A14:
     sp = sp + -568;
@@ -82190,6 +82192,7 @@ void cps_80191aa4(void)
         }
     }
     /* Address: 0x80191AA4, Size: 220 bytes, Blocks: 22 */
+    /* note: large multi-block body (229 lines) — left in CPS transliteration form */
 
 block_80191AA4:
     ra = 0x80191AACu;  /* jal link before delay slot */
@@ -83243,6 +83246,7 @@ void cps_80191fc8(void)
         }
     }
     /* Address: 0x80191FC8, Size: 504 bytes, Blocks: 15 */
+    /* note: large multi-block body (245 lines) — left in CPS transliteration form */
 
 block_80191FC8:
     sp = sp + -40;
@@ -83494,6 +83498,7 @@ void cps_80192714(void)
         }
     }
     /* Address: 0x80192714, Size: 560 bytes, Blocks: 17 */
+    /* note: large multi-block body (274 lines) — left in CPS transliteration form */
 
 block_80192714:
     sp = sp + -32;
@@ -83778,6 +83783,7 @@ void cps_80192b80(void)
         }
     }
     /* Address: 0x80192B80, Size: 640 bytes, Blocks: 28 */
+    /* note: large multi-block body (394 lines) — left in CPS transliteration form */
 
 block_80192B80:
     sp = sp + -40;
@@ -84252,6 +84258,7 @@ void cps_80194478(void)
         }
     }
     /* Address: 0x80194478, Size: 128 bytes, Blocks: 2 */
+    /* note: gte_screen_init_defer — deferred GTE screen-init entry; saves ra to 0x801C0000-31632, jal 0x80195710 */
 
 block_80194478:
     at = 0x801C << 16;  /* 0x801C0000 */
@@ -84320,6 +84327,7 @@ void cps_8019457c(void)
   if (!cpu) return;
 
     /* Address: 0x8019457C, Size: 8 bytes, Blocks: 1 */
+    /* note: return-0 tail: v0 = 0; jr ra */
 
 block_8019457C:
     uint32_t _jt_8019457C = ra;  /* latch indirect target before delay slot */
@@ -84362,6 +84370,7 @@ void cps_8019466c(void)
         }
     }
     /* Address: 0x8019466C, Size: 36 bytes, Blocks: 2 */
+    /* note: call 0x80194690 (setup), then store t0,t1,t2 as three s16 at a1[0..2] — vec3/halfword3 store helper */
 
 block_8019466C:
     a3 = ra;
@@ -84410,6 +84419,7 @@ void cps_8019494c(void)
   if (!cpu) return;
 
     /* Address: 0x8019494C, Size: 8 bytes, Blocks: 1 */
+    /* note: return-0 tail: v0 = 0; jr ra */
 
 block_8019494C:
     uint32_t _jt_8019494C = ra;  /* latch indirect target before delay slot */
@@ -84720,6 +84730,7 @@ void cps_80195c00(void)
   if (!cpu) return;
 
     /* Address: 0x80195C00, Size: 16 bytes, Blocks: 1 */
+    /* note: return byte at 0x801C0000-14235 (CD status byte read) */
 
 block_80195C00:
     v0 = 0x801C << 16;  /* 0x801C0000 */
@@ -84784,6 +84795,7 @@ void cps_80195c44(void)
         }
     }
     /* Address: 0x80195C44, Size: 52 bytes, Blocks: 6 */
+    /* note: CD command issue piece: jal 0x801974B8, on v0!=0 -> ret 0; if s0==1 -> jal 0x8019737C and ret its v0!=0 ? chain : 1 */
 
 block_80195C44:
     ra = 0x80195C4Cu;  /* jal link before delay slot */
@@ -84850,6 +84862,7 @@ void cps_80195c78(void)
   if (!cpu) return;
 
     /* Address: 0x80195C78, Size: 12 bytes, Blocks: 1 */
+    /* note: epilogue: restore ra,s0; sp+=24; jr ra */
 
 block_80195C78:
     ra = cpu->read_word(sp + 20);
@@ -84929,6 +84942,7 @@ void cps_80195cbc(void)
         }
     }
     /* Address: 0x80195CBC, Size: 52 bytes, Blocks: 4 */
+    /* note: indexed getter: idx=a0&0xFF; if idx<28 v0=word[0x801C0000-14228 + idx*4] else v0=0x80125658; jr ra */
 
 block_80195CBC:
     a0 = a0 & 0x00FF;  /* 0x80195CBC: 0x308400FF */
@@ -84981,6 +84995,7 @@ void cps_80195cf0(void)
         }
     }
     /* Address: 0x80195CF0, Size: 52 bytes, Blocks: 4 */
+    /* note: indexed getter: idx=a0&0xFF; if idx<7 v0=word[0x801C0000-14100 + idx*4] else v0=0x80125658; jr ra */
 
 block_80195CF0:
     a0 = a0 & 0x00FF;  /* 0x80195CF0: 0x308400FF */
@@ -85099,6 +85114,7 @@ void cps_80196370(void)
         }
     }
     /* Address: 0x80196370, Size: 1372 bytes, Blocks: 70 */
+    /* note: cd_response_process — delegated CD coroutine, kept on CPS path deliberately */
 
 block_80196370:
     sp = sp + -48;
@@ -85968,6 +85984,7 @@ void cps_80196e14(void)
         }
     }
     /* Address: 0x80196E14, Size: 1036 bytes, Blocks: 53 */
+    /* note: cd_cmd_issue — large CD command issuer (688 lines), left in CPS form */
 
 block_80196E14:
     v0 = 0x801C << 16;  /* 0x801C0000 */
@@ -113243,6 +113260,7 @@ void cps_801968cc(void)
         }
     }
     /* Address: 0x801968CC, Size: 640 bytes, Blocks: 33 */
+    /* note: cd_result_wait_a — large CD result waiter (430 lines), left in CPS form */
 
 block_801968CC:
     sp = sp + -64;
@@ -113663,6 +113681,7 @@ void cps_80196b4c(void)
         }
     }
     /* Address: 0x80196B4C, Size: 712 bytes, Blocks: 37 */
+    /* note: cd_result_wait_b — large CD result waiter (479 lines), left in CPS form */
 
 block_80196B4C:
     sp = sp + -64;
