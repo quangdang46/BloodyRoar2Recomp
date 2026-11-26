@@ -537,7 +537,6 @@ extern void corner_emit_variant(void);
 extern void countdown_display_sm(void);
 extern void counter_step_pad_c(void);
 extern void cps_80195cf0(void);
-extern void cps_801a8ee0(void);
 extern void cpu_critical_enter(void);
 extern void cpu_critical_exit(void);
 extern void cpu_regs_snapshot(void);
@@ -564,6 +563,7 @@ extern void deferred_cmd_drain(void);
 extern void deferred_cmd_exec(void);
 extern void deferred_cmd_post(void);
 extern void deferred_cmd_reset(void);
+extern void desc_cmd_interp(void);
 extern void desc_cmd_map(void);
 extern void desc_cursor_advance(void);
 extern void desc_cursor_select(void);
@@ -883,6 +883,34 @@ extern void heap_ptr_fixup(void);
 extern void heap_record_emit(void);
 extern void heap_serialize(void);
 extern void heap_serialize_tag_01000000(void);
+extern void heap_serialize_tag_01000008(void);
+extern void heap_serialize_tag_01000009(void);
+extern void heap_serialize_tag_0100000a(void);
+extern void heap_serialize_tag_0100000c(void);
+extern void heap_serialize_tag_0100000d(void);
+extern void heap_serialize_tag_0100000e(void);
+extern void heap_serialize_tag_01000010(void);
+extern void heap_serialize_tag_01000011(void);
+extern void heap_serialize_tag_01000012(void);
+extern void heap_serialize_tag_01000014(void);
+extern void heap_serialize_tag_01000015(void);
+extern void heap_serialize_tag_01000016(void);
+extern void heap_serialize_tag_08(void);
+extern void heap_serialize_tag_0a(void);
+extern void heap_serialize_tag_0c(void);
+extern void heap_serialize_tag_0e(void);
+extern void heap_serialize_tag_10(void);
+extern void heap_serialize_tag_12(void);
+extern void heap_serialize_tag_14(void);
+extern void heap_serialize_tag_16(void);
+extern void heap_serialize_tag_40048(void);
+extern void heap_serialize_tag_40049(void);
+extern void heap_serialize_tag_4004c(void);
+extern void heap_serialize_tag_4004d(void);
+extern void heap_serialize_tag_40050(void);
+extern void heap_serialize_tag_40051(void);
+extern void heap_serialize_tag_40054(void);
+extern void heap_serialize_tag_40055(void);
 extern void hit_chain_clear(void);
 extern void hit_elig_check(void);
 extern void hit_pose_swap(void);
@@ -1735,7 +1763,6 @@ extern void xform_accum_tick(void);
 typedef struct { uint32_t addr; void *fn; } Br2FnEnt;
 
 const Br2FnEnt fn_table[] = {
-  { 0x80120000, (void *)cps_801a8ee0 },
   { 0x80120948, (void *)battle_state_gate_tail },
   { 0x80125698, (void *)cps_80195cf0 },
   { 0x80126170, (void *)empty_leaf_e },
@@ -2335,11 +2362,39 @@ const Br2FnEnt fn_table[] = {
   { 0x80168838, (void *)mc_job_a_result_poll },
   { 0x801688f0, (void *)mc_job_b_result_poll },
   { 0x801689a8, (void *)cd_subsys_boot },
+  { 0x801689d0, (void *)heap_serialize_tag_08 },
+  { 0x80168ae0, (void *)heap_serialize_tag_10 },
+  { 0x80168c20, (void *)heap_serialize_tag_0c },
+  { 0x80168d90, (void *)heap_serialize_tag_14 },
   { 0x80168f60, (void *)record_table_expand_a },
   { 0x801690fc, (void *)record_table_expand_b },
   { 0x801692d8, (void *)quad_strip_emit_a },
   { 0x8016951c, (void *)quad_strip_emit_b },
+  { 0x801697f4, (void *)heap_serialize_tag_0a },
+  { 0x8016991c, (void *)heap_serialize_tag_0e },
+  { 0x80169aa4, (void *)heap_serialize_tag_12 },
+  { 0x80169c08, (void *)heap_serialize_tag_16 },
+  { 0x80169dfc, (void *)heap_serialize_tag_40048 },
+  { 0x80169ee0, (void *)heap_serialize_tag_4004c },
+  { 0x80169fe4, (void *)heap_serialize_tag_40050 },
+  { 0x8016a0f8, (void *)heap_serialize_tag_40054 },
+  { 0x8016a23c, (void *)heap_serialize_tag_40049 },
+  { 0x8016a384, (void *)heap_serialize_tag_40051 },
+  { 0x8016a50c, (void *)heap_serialize_tag_4004d },
+  { 0x8016a674, (void *)heap_serialize_tag_40055 },
   { 0x8016a82c, (void *)heap_serialize_tag_01000000 },
+  { 0x8016a8ec, (void *)heap_serialize_tag_01000008 },
+  { 0x8016a9ac, (void *)heap_serialize_tag_0100000c },
+  { 0x8016aaa4, (void *)heap_serialize_tag_01000009 },
+  { 0x8016abb4, (void *)heap_serialize_tag_0100000d },
+  { 0x8016ad04, (void *)heap_serialize_tag_0100000a },
+  { 0x8016addc, (void *)heap_serialize_tag_0100000e },
+  { 0x8016aeec, (void *)heap_serialize_tag_01000010 },
+  { 0x8016afc8, (void *)heap_serialize_tag_01000014 },
+  { 0x8016b0f8, (void *)heap_serialize_tag_01000011 },
+  { 0x8016b234, (void *)heap_serialize_tag_01000015 },
+  { 0x8016b3c4, (void *)heap_serialize_tag_01000012 },
+  { 0x8016b4c4, (void *)heap_serialize_tag_01000016 },
   { 0x8016b618, (void *)entry_attr_bump_loop },
   { 0x8016b6bc, (void *)dual_entry_attr_bump },
   { 0x8016b7c0, (void *)heap_serialize },
@@ -2420,6 +2475,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8017d1c4, (void *)desc_frag_tail },
   { 0x8017d378, (void *)condition_word_dispatch },
   { 0x8017d7f4, (void *)button_cond_eval },
+  { 0x8017db88, (void *)desc_cmd_interp },
   { 0x8017e138, (void *)desc_cmd_map },
   { 0x8017e46c, (void *)desc_cursor_advance },
   { 0x8017e77c, (void *)battle_reset_tail },
