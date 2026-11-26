@@ -4595,3 +4595,15 @@
 8012a93c cps_8012a92c
 801298f8 cps_801298f8
 801268b8 cps_801268b8
+
+# fighter_script_fsm_cps (game/w2_e01.c) — CPS piece-entries inside the
+# fighter_script_fsm (0x80181F20) continuation surface. All eight addrs
+# share the one clean CPS body (215-block pc-switch transliteration).
+80181ff8 fighter_script_fsm_cps
+80182090 fighter_script_fsm_cps
+801822d0 fighter_script_fsm_cps
+801823bc fighter_script_fsm_cps
+80182690 fighter_script_fsm_cps
+80182740 fighter_script_fsm_cps
+8018287c fighter_script_fsm_cps
+80182960 fighter_script_fsm_cps
