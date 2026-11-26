@@ -98984,7 +98984,7 @@ block_801A27C0:
  * from SLES_017.22_full_49.c.
  * cd_cmd_rec_arm_extent — arms an RX extent on the command record
  * (clean port: cd_cmd_rec_arm_extent in game/w5_e01.c). Gate: jalr
- * through handler @0x801BE77C must return 0; on arm sets rec[73]=4,
+ * through handler @0x801BE79C must return 0; on arm sets rec[73]=4,
  * rec[70]=1, rec[20]=0x801A28F4, rec[24]=0x801A298C and the extent
  * table rec[0]/[4]/[8] from rec[227]/rec[233]; returns 1 on arm.
  */
@@ -99963,7 +99963,7 @@ block_801A2D74:
 /* cps_801a2ec8 — clean CPS transliteration of br2eu_func_801A2EC8 (guest 0x801a2ec8)
  * from SLES_017.22_full_49.c.
  * cd_cmd_rec_arm_op — arms an RX op on the command record (clean port:
- * cd_cmd_rec_arm_op in game/w5_e01.c). Same @0x801BE77C gate; on arm
+ * cd_cmd_rec_arm_op in game/w5_e01.c). Same @0x801BE79C gate; on arm
  * sets rec[70]=1, rec[20]=0x801A2F70, rec[24]=0x801A2FC4, rec[81]=a1,
  * rec[82]=a2, rec[83]=((a1&0xFF)^rec[228])==0; returns 1 on arm.
  */
