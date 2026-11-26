@@ -99461,7 +99461,10 @@ block_801A2FAC:
 }
 
 /* cps_801a347c — clean CPS transliteration of br2eu_func_801A347C (guest 0x801a347c)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * stream_slot_select: idx=*s2; <0 → 0x801A35DC; ==s5 → 0x801A3510; >0
+ * computes node = *(*(0x801BE844)+12 @s3) + idx*240 - 240 then jalr
+ * cell @0x801BE840(node); loops via 0x801A34DC piece on idx<4. */
 void cps_801a347c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -100215,7 +100218,9 @@ block_801A382C:
 }
 
 /* cps_801a3cf4 — clean CPS transliteration of br2eu_func_801A3CF4 (guest 0x801a3cf4)
- * from SLES_017.22_full_50.c. */
+ * from SLES_017.22_full_50.c.
+ * range_lookup_2rec: scans two 240B records @0x801FEF30 stepping +240;
+ * returns offset 16/32 when a0==rec start, else 255. */
 void cps_801a3cf4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -101324,7 +101329,10 @@ block_801A4FC8:
 }
 
 /* cps_801a5240 — clean CPS transliteration of br2eu_func_801A5240 (guest 0x801a5240)
- * from SLES_017.22_full_50.c. */
+ * from SLES_017.22_full_50.c.
+ * list_sum_scan: node = *(a0*60 + a1*12 + @0x801FF2B8); walks next@+4
+ * chain adding 16+*(node+8) for entries with s16@+12==0; jal
+ * 0x80190A04(fmt @0x80125FFC, sum); returns sum. */
 void cps_801a5240(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -103476,7 +103484,10 @@ block_801A9BA4:
 }
 
 /* cps_801a9c28 — clean CPS transliteration of br2eu_func_801A9C28 (guest 0x801a9c28)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * tween_dispatch: ctx t2 null → 0x801AA0D4; mode s16@+2==1 →
+ * 0x801A9F64 apply; ==2 → if s16@+14==a1 && s16@+10==t7 tail else
+ * fallthrough piece 0x801A9C7C. */
 void cps_801a9c28(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -103631,7 +103642,10 @@ block_801A9CAC:
 }
 
 /* cps_801a9cb8 — clean CPS transliteration of br2eu_func_801A9CB8 (guest 0x801a9cb8)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * tween_range_check: a1<v1 → load entry *(t2+24)[a1*5]+4, negate
+ * s16@+10 into sp+24, t6=-1,t4=0; else t6=0,t4=2 and bound t7-s16@+10
+ * → sp+32; continues at 0x801A9D10. */
 void cps_801a9cb8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -110370,7 +110384,9 @@ block_801AECCC:
 }
 
 /* cps_801aece4 — clean CPS transliteration of br2eu_func_801AECE4 (guest 0x801aece4)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * jalr_store_result: s16@a2!=0 → s0=*(gp+76)+8+s16, jalr *a1, store
+ * v0→*s0; else plain jalr *a1. */
 void cps_801aece4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111424,7 +111440,9 @@ block_801AF484:
 }
 
 /* cps_801af628 — clean CPS transliteration of br2eu_func_801AF628 (guest 0x801af628)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * flag_select_call: s16@(v0+8 + s16[a0+2])!=0 → jal 0x801A7498(a1)
+ * else jal 0x801A74F0(a1). */
 void cps_801af628(void)
 {
   CPUState *cpu = clean_cpu_state();
