@@ -114014,6 +114014,10 @@ block_801B0088:
 /* cps_801b00a0 — clean CPS transliteration of br2eu_func_801B00A0 (guest 0x801b00a0)
  * from SLES_017.22_full_54.c. */
 void cps_801b00a0(void)
+/* GTE vertex-transform piece (SLES full_54): resolves vertex
+ * record via *(gp+76)+8 table + halfword index, runs GTE cmd 0x01
+ * (RTPS-class transform), then depth-checks the result against
+ * the -17..2063 clip window before committing. */
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
@@ -114200,6 +114204,9 @@ block_801B0220:
 /* cps_801b03d8 — clean CPS transliteration of br2eu_func_801B03D8 (guest 0x801b03d8)
  * from SLES_017.22_full_54.c. */
 void cps_801b03d8(void)
+/* GTE transform entry linker: resolves the ctx table
+ * (*(gp+76)+8) + halfword(a0+2) index, prefetches the record
+ * halfword, tails into cps_801b03f0. */
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
@@ -114220,6 +114227,9 @@ block_801B03D8:
 /* cps_801b03f0 — clean CPS transliteration of br2eu_func_801B03F0 (guest 0x801b03f0)
  * from SLES_017.22_full_54.c. */
 void cps_801b03f0(void)
+/* GTE vertex-transform sibling of cps_801b00a0 — same
+ * RTPS-class transform + -17..2063 depth clip check, alternate
+ * entry/piece of the transform family. */
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
@@ -114409,6 +114419,8 @@ block_801B057C:
 /* cps_801b07d8 — clean CPS transliteration of br2eu_func_801B07D8 (guest 0x801b07d8)
  * from SLES_017.22_full_54.c. */
 void cps_801b07d8(void)
+/* GPU/GTE-region helper: marshals args on stack and
+ * dispatches into the primitive/task path (5-block CPS body). */
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
@@ -114499,6 +114511,8 @@ block_801B086C:
 /* cps_801b0874 — clean CPS transliteration of br2eu_func_801B0874 (guest 0x801b0874)
  * from SLES_017.22_full_54.c. */
 void cps_801b0874(void)
+/* Task-spawn wrapper: tail-calls task_spawn_var_a
+ * (0x8014B2CC) with prepared args. */
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
@@ -114547,6 +114561,10 @@ block_801B08B4:
 /* cps_801b08c8 — clean CPS transliteration of br2eu_func_801B08C8 (guest 0x801b08c8)
  * from SLES_017.22_full_54.c. */
 void cps_801b08c8(void)
+/* Prim-descriptor initializer: copies halfword pairs
+ * from the a0 source record into a1+8/10/16/18/24..., adding
+ * the a1+80/+82 page/cluster offsets — UV/position field setup
+ * for a GPU primitive packet. */
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
@@ -114623,6 +114641,8 @@ block_801B08C8:
 /* cps_801b09bc — clean CPS transliteration of br2eu_func_801B09BC (guest 0x801b09bc)
  * from SLES_017.22_full_54.c. */
 void cps_801b09bc(void)
+/* Prim/GPU packet helper in the 0x801B08xx-0x801B0Dxx
+ * emitter cluster (ordering-table primitive writers). */
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
@@ -114703,6 +114723,8 @@ block_801B09BC:
 /* cps_801b0ac0 — clean CPS transliteration of br2eu_func_801B0AC0 (guest 0x801b0ac0)
  * from SLES_017.22_full_54.c. */
 void cps_801b0ac0(void)
+/* Prim/GPU packet helper in the 0x801B08xx-0x801B0Dxx
+ * emitter cluster (ordering-table primitive writers). */
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
@@ -114785,6 +114807,8 @@ block_801B0AC0:
 /* cps_801b0bcc — clean CPS transliteration of br2eu_func_801B0BCC (guest 0x801b0bcc)
  * from SLES_017.22_full_54.c. */
 void cps_801b0bcc(void)
+/* Prim/GPU packet helper in the 0x801B08xx-0x801B0Dxx
+ * emitter cluster (ordering-table primitive writers). */
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
@@ -114914,6 +114938,9 @@ block_801B0D28:
 /* cps_801b0d40 — clean CPS transliteration of br2eu_func_801B0D40 (guest 0x801b0d40)
  * from SLES_017.22_full_54.c. */
 void cps_801b0d40(void)
+/* OT-slot primitive writer: bases from 0x801BEF60/
+ * 0x801BEF84 tables, writes prim_word | 0x09000000 (GPU tag)
+ * and length into the ordering-table slot at a1 + idx*40. */
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
