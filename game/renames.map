@@ -1971,3 +1971,12 @@
 8018b380 prim_nclip_cull_emit_48
 8018b4b8 prim_rtps_cull_emit_58
 8018b628 prim_avsz3_cull_emit_58
+8018baf0 dbg_marker_mode_set_dispatch
+8018bb48 dbg_marker_mode_set_clr_gate
+8018bb4c dbg_marker_mode_set_clear
+8018bc2c pad_slot_walk_case6_resume
+8018bc78 pad_slot_walk_decay_resume
+8018bcb4 pad_slot_walk_case2_resume
+8018bcd0 pad_slot_walk_case01_resume
+8018bce4 pad_slot_walk_tail_resume
+8018c0f8 spr_pool_b_commit

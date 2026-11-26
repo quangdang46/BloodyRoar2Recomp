@@ -514,6 +514,9 @@ extern void data_relocate(void);
 extern void datetime_confirm_a(void);
 extern void datetime_confirm_b(void);
 extern void dbg_marker_mode_set(void);
+extern void dbg_marker_mode_set_clear(void);
+extern void dbg_marker_mode_set_clr_gate(void);
+extern void dbg_marker_mode_set_dispatch(void);
 extern void debug_line_flush(void);
 extern void debug_line_putc(void);
 extern void debug_stat_print(void);
@@ -1102,6 +1105,11 @@ extern void pad_handler_c(void);
 extern void pad_hist_record(void);
 extern void pad_record_init(void);
 extern void pad_slot_state_walk(void);
+extern void pad_slot_walk_case01_resume(void);
+extern void pad_slot_walk_case2_resume(void);
+extern void pad_slot_walk_case6_resume(void);
+extern void pad_slot_walk_decay_resume(void);
+extern void pad_slot_walk_tail_resume(void);
 extern void pad_state_refresh(void);
 extern void page_table_ptr_set(void);
 extern void pair_depth_set(void);
@@ -1397,6 +1405,7 @@ extern void spr_draw_off(void);
 extern void spr_draw_pair(void);
 extern void spr_pool_a_alloc(void);
 extern void spr_pool_b_alloc(void);
+extern void spr_pool_b_commit(void);
 extern void spr_prim_tag_a(void);
 extern void spr_prim_tag_b(void);
 extern void spr_slot_pkt_submit(void);
@@ -2380,8 +2389,16 @@ const Br2FnEnt fn_table[] = {
   { 0x8018b884, (void *)prim_emit_tail_advance },
   { 0x8018b98c, (void *)prim_persp_ot_emit_112 },
   { 0x8018babc, (void *)dbg_marker_mode_set },
+  { 0x8018baf0, (void *)dbg_marker_mode_set_dispatch },
   { 0x8018bb38, (void *)flag_801b55d0_set },
+  { 0x8018bb48, (void *)dbg_marker_mode_set_clr_gate },
+  { 0x8018bb4c, (void *)dbg_marker_mode_set_clear },
   { 0x8018bba8, (void *)pad_slot_state_walk },
+  { 0x8018bc2c, (void *)pad_slot_walk_case6_resume },
+  { 0x8018bc78, (void *)pad_slot_walk_decay_resume },
+  { 0x8018bcb4, (void *)pad_slot_walk_case2_resume },
+  { 0x8018bcd0, (void *)pad_slot_walk_case01_resume },
+  { 0x8018bce4, (void *)pad_slot_walk_tail_resume },
   { 0x8018bd24, (void *)rec_hibyte_pair_swap },
   { 0x8018bd40, (void *)bitfield_or_write },
   { 0x8018bd50, (void *)gpu_pkt_unlink_n },
@@ -2392,6 +2409,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8018bfcc, (void *)spr_draw_pair },
   { 0x8018c034, (void *)spr_desc_tbl_a_init },
   { 0x8018c0a8, (void *)spr_pool_b_alloc },
+  { 0x8018c0f8, (void *)spr_pool_b_commit },
   { 0x8018c118, (void *)spr_desc_tbl_b_init },
   { 0x8018c18c, (void *)spr_desc_slot_alloc },
   { 0x8018c1f4, (void *)sprite_9slice_build },
