@@ -120,6 +120,7 @@ extern void battle_session_arm(void);
 extern void battle_side_flag_prop(void);
 extern void battle_sides_commit(void);
 extern void battle_state_gate(void);
+extern void battle_state_gate_tail(void);
 extern void battle_state_init(void);
 extern void battle_struct_init(void);
 extern void battle_subrecord_reset(void);
@@ -1133,6 +1134,7 @@ extern void please_wait_announce(void);
 extern void popup_spawn(void);
 extern void pose_chain_build(void);
 extern void post_battle_dispatch(void);
+extern void post_battle_dispatch_sel(void);
 extern void post_battle_side_commit(void);
 extern void post_confirm_config_build(void);
 extern void prim_attr_repack(void);
@@ -1552,6 +1554,7 @@ extern void xform_accum_tick(void);
 typedef struct { uint32_t addr; void *fn; } Br2FnEnt;
 
 const Br2FnEnt fn_table[] = {
+  { 0x80120948, (void *)battle_state_gate_tail },
   { 0x80126170, (void *)empty_leaf_e },
   { 0x80126720, (void *)versus_state_init },
   { 0x801267dc, (void *)cd_channel_init_seq },
@@ -1907,6 +1910,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80154368, (void *)vs_confirm_d },
   { 0x801545d0, (void *)vs_confirm_e },
   { 0x80154930, (void *)post_battle_dispatch },
+  { 0x80155708, (void *)post_battle_dispatch_sel },
   { 0x80155c14, (void *)battle_sides_commit },
   { 0x80155dd0, (void *)blk_1f26c0_init_b },
   { 0x80155e30, (void *)blk_1f26c0_init },

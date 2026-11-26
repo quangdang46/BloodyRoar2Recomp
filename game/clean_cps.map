@@ -4595,3 +4595,21 @@
 8012a93c cps_8012a92c
 801298f8 cps_801298f8
 801268b8 cps_801268b8
+
+# --- orch-w3-e04: alias/JT piece-entries of already-clean parents ---
+# battle_state_gate (0x801521A4, menu.c) JT tail pieces
+80152248 battle_state_gate_tail
+80152258 battle_state_gate_tail
+# mc_slot_action (0x8015260C, save.c) JT case-0 piece
+80152698 mc_slot_action_case0
+# battle_config_eval (0x80153544, menu.c) state-0 JT piece
+80153730 battle_config_eval_b0
+# post_battle_dispatch (0x80154930, menu.c) select pieces
+80155678 post_battle_dispatch_sel
+80155708 post_battle_dispatch_sel
+# page_table_ptr_set (0x801566D4, menu.c) table-select pieces
+80156784 page_table_ptr_set_sel
+80156800 page_table_ptr_set_sel
+80156818 page_table_ptr_set_sel
+80156824 page_table_ptr_set_sel
+80156830 page_table_ptr_set_sel
