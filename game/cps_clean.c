@@ -9104,6 +9104,8 @@ void cps_801298fc(void)
 
     /* Address: 0x801298FC, Size: 20 bytes, Blocks: 1 */
 
+    /* epilogue: pop s0-s1, ra (sp += 32), jr ra */
+
 block_801298FC:
     ra = cpu->read_word(sp + 24);
     s1 = cpu->read_word(sp + 20);
@@ -9184,6 +9186,11 @@ void cps_801299a8(void)
         }
     }
     /* Address: 0x801299A8, Size: 144 bytes, Blocks: 9 */
+
+    /* frame-counter poll x2: if v0!=8192 or s3!=0 jal
+       0x80156EF4(1024,11,0); half[s0]++ wrap vs s1<<16;
+       then if half[0x1F80007E]==0x8000 repeat decrement poll;
+       exits via 0x80129A3C/0x80129A38. CPS-blocked. */
 
 block_801299A8:
     v1 = 8192;
@@ -9317,6 +9324,9 @@ void cps_80129a3c(void)
   if (!cpu) return;
 
     /* Address: 0x80129A3C, Size: 48 bytes, Blocks: 1 */
+
+    /* epilogue + compare: v0=half[s0]; pop s0-s5, ra
+       (sp += 48); v0=(s4^v0)>0; jr ra */
 
 block_80129A3C:
     v0 = (int32_t)(int16_t)cpu->read_half(s0);
@@ -9473,6 +9483,10 @@ void cps_80129b58(void)
     }
     /* Address: 0x80129B58, Size: 144 bytes, Blocks: 8 */
 
+    /* frame-counter poll variant: same 0x80156EF4(1024,11,0)
+       gate on half[0x1F80007E]!=0x8000; half[s0]++ wrap vs a1,
+       decrement wrap; exits via 0x80129BEC. CPS-blocked. */
+
 block_80129B58:
     v1 = 8192;
     cpu->write_word(sp + 28, ra);
@@ -9592,6 +9606,9 @@ void cps_80129bec(void)
 
     /* Address: 0x80129BEC, Size: 36 bytes, Blocks: 1 */
 
+    /* epilogue + compare: v0=half[s0]; pop s0-s2, ra
+       (sp += 32); v0=(s2^v0)>0; jr ra */
+
 block_80129BEC:
     v0 = (int32_t)(int16_t)cpu->read_half(s0);
     ra = cpu->read_word(sp + 28);
@@ -9637,6 +9654,10 @@ void cps_80129c80(void)
     }
     /* Address: 0x80129C80, Size: 28 bytes, Blocks: 2 */
 
+    /* loop counter step: s0++; while s0 < (int16)s1 -> keep
+       s0, v0=s2*2 -> 0x80129C9C; else s0=0 -> 0x80129C9C.
+       CPS-blocked. */
+
 block_80129C80:
     s0 = s0 + 1;
     v0 = s1 << 16;
@@ -9673,6 +9694,9 @@ void cps_80129c9c(void)
         }
     }
     /* Address: 0x80129C9C, Size: 32 bytes, Blocks: 2 */
+
+    /* slot check: v1=half[s3+v0+116]; !=4096 -> 0x80129D3C;
+       ==4096 -> j 0x80129D1C (a0=1024,a1=10). CPS-blocked. */
 
 block_80129C9C:
     v0 = s3 + v0;
@@ -9715,6 +9739,10 @@ void cps_80129cbc(void)
         }
     }
     /* Address: 0x80129CBC, Size: 84 bytes, Blocks: 5 */
+
+    /* 3-slot scan: for s0<s1: half[(s2*2+s3)+116] vs 8192/32768
+       sentinels; ==8192 -> jal 0x80156EF4(1024,11,0) then s0++/wrap;
+       mismatches -> 0x80129D3C/0x80129D14. CPS-blocked. */
 
 block_80129CBC:
     v0 = s2 << 1;
@@ -9859,6 +9887,8 @@ void cps_80129d3c(void)
 
     /* Address: 0x80129D3C, Size: 32 bytes, Blocks: 1 */
 
+    /* epilogue: pop s0-s4, ra (sp += 40), jr ra */
+
 block_80129D3C:
     ra = cpu->read_word(sp + 36);
     s4 = cpu->read_word(sp + 32);
@@ -9902,6 +9932,9 @@ void cps_80129dac(void)
         }
     }
     /* Address: 0x80129DAC, Size: 44 bytes, Blocks: 2 */
+
+    /* byte counter step: byte[s0]++ wrap vs (int8)s1; on
+       wrap byte[s0]=0; exit via 0x80129DD8. CPS-blocked. */
 
 block_80129DAC:
     v0 = s1 << 16;
@@ -10023,6 +10056,9 @@ void cps_80129ed8(void)
     }
     /* Address: 0x80129ED8, Size: 24 bytes, Blocks: 2 */
 
+    /* byte countdown: byte[s0]--; while >=0 exit 0x80129EF0;
+       else byte[s0]=s3 -> 0x80129EF0. CPS-blocked. */
+
 block_80129ED8:
     v0 = v0 + -1;
     cpu->write_byte(s0, (uint8_t)v0);
@@ -10051,6 +10087,9 @@ void cps_80129ef0(void)
   if (!cpu) return;
 
     /* Address: 0x80129EF0, Size: 44 bytes, Blocks: 1 */
+
+    /* epilogue + compare: v0=(int8)byte[s0]; pop s0-s4, ra
+       (sp += 40); v0=(s4^v0)>0; jr ra */
 
 block_80129EF0:
     v0 = (int32_t)(int8_t)cpu->read_byte(s0);
