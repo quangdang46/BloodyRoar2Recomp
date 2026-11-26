@@ -10696,12 +10696,12 @@ void gte_xform_accum(short *acc,uint *vec,int n,undefined4 tr)
 
 uint * gte_rtps_xform3(undefined4 *rt,ushort *in,uint *out)
 {
-  uint uVar1;
-  int iVar2;
-  uint uVar3;
-  int iVar4;
-  uint uVar5;
-  int iVar6;
+  uint t0;
+  int t1;
+  uint t2;
+  int t3;
+  uint t4;
+  int t5;
   setCopControlWord(2,0,*rt);
   setCopControlWord(2,0x800,rt[1]);
   setCopControlWord(2,0x1000,rt[2]);
@@ -10710,61 +10710,61 @@ uint * gte_rtps_xform3(undefined4 *rt,ushort *in,uint *out)
   setCopReg(2,0,(uint)*in | *(uint *)(in + 2) & 0xffff0000);
   setCopReg(2,0x800,*(undefined4 *)(in + 6));
   copFunction(2,0x486012);
-  uVar1 = getCopReg(2,0x4800);
-  iVar2 = getCopReg(2,0x5000);
-  uVar3 = getCopReg(2,0x5800);
+  t0 = getCopReg(2,0x4800);
+  t1 = getCopReg(2,0x5000);
+  t2 = getCopReg(2,0x5800);
   setCopReg(2,0,(uint)in[1] | *(int *)(in + 4) << 0x10);
   setCopReg(2,0x800,(int)(short)in[7]);
   copFunction(2,0x486012);
-  iVar4 = getCopReg(2,0x4800);
-  uVar5 = getCopReg(2,0x5000);
-  iVar6 = getCopReg(2,0x5800);
+  t3 = getCopReg(2,0x4800);
+  t4 = getCopReg(2,0x5000);
+  t5 = getCopReg(2,0x5800);
   setCopReg(2,0,(uint)in[2] | *(uint *)(in + 4) & 0xffff0000);
   setCopReg(2,0x800,*(undefined4 *)(in + 8));
   copFunction(2,0x486012);
-  *out = iVar4 << 0x10 | uVar1 & 0xffff;
-  out[3] = iVar6 << 0x10 | uVar3 & 0xffff;
-  uVar1 = getCopReg(2,0x4800);
-  iVar4 = getCopReg(2,0x5000);
-  out[1] = uVar1 & 0xffff | iVar2 << 0x10;
-  out[2] = iVar4 << 0x10 | uVar5 & 0xffff;
-  uVar1 = getCopReg(2,0xb);
-  out[4] = uVar1;
+  *out = t3 << 0x10 | t0 & 0xffff;
+  out[3] = t5 << 0x10 | t2 & 0xffff;
+  t0 = getCopReg(2,0x4800);
+  t3 = getCopReg(2,0x5000);
+  out[1] = t0 & 0xffff | t1 << 0x10;
+  out[2] = t3 << 0x10 | t4 & 0xffff;
+  t0 = getCopReg(2,0xb);
+  out[4] = t0;
   return out;
 
 }
 
 uint * gte_xform3_nold(ushort *in,uint *out)
 {
-  uint uVar1;
-  int iVar2;
-  uint uVar3;
-  int iVar4;
-  uint uVar5;
-  int iVar6;
+  uint t0;
+  int t1;
+  uint t2;
+  int t3;
+  uint t4;
+  int t5;
   setCopReg(2,0,(uint)*in | *(uint *)(in + 2) & 0xffff0000);
   setCopReg(2,0x800,*(undefined4 *)(in + 6));
   copFunction(2,0x486012);
-  uVar1 = getCopReg(2,0x4800);
-  iVar2 = getCopReg(2,0x5000);
-  uVar3 = getCopReg(2,0x5800);
+  t0 = getCopReg(2,0x4800);
+  t1 = getCopReg(2,0x5000);
+  t2 = getCopReg(2,0x5800);
   setCopReg(2,0,(uint)in[1] | *(int *)(in + 4) << 0x10);
   setCopReg(2,0x800,(int)(short)in[7]);
   copFunction(2,0x486012);
-  iVar4 = getCopReg(2,0x4800);
-  uVar5 = getCopReg(2,0x5000);
-  iVar6 = getCopReg(2,0x5800);
+  t3 = getCopReg(2,0x4800);
+  t4 = getCopReg(2,0x5000);
+  t5 = getCopReg(2,0x5800);
   setCopReg(2,0,(uint)in[2] | *(uint *)(in + 4) & 0xffff0000);
   setCopReg(2,0x800,*(undefined4 *)(in + 8));
   copFunction(2,0x486012);
-  *out = iVar4 << 0x10 | uVar1 & 0xffff;
-  out[3] = iVar6 << 0x10 | uVar3 & 0xffff;
-  uVar1 = getCopReg(2,0x4800);
-  iVar4 = getCopReg(2,0x5000);
-  out[1] = uVar1 & 0xffff | iVar2 << 0x10;
-  out[2] = iVar4 << 0x10 | uVar5 & 0xffff;
-  uVar1 = getCopReg(2,0xb);
-  out[4] = uVar1;
+  *out = t3 << 0x10 | t0 & 0xffff;
+  out[3] = t5 << 0x10 | t2 & 0xffff;
+  t0 = getCopReg(2,0x4800);
+  t3 = getCopReg(2,0x5000);
+  out[1] = t0 & 0xffff | t1 << 0x10;
+  out[2] = t3 << 0x10 | t4 & 0xffff;
+  t0 = getCopReg(2,0xb);
+  out[4] = t0;
   return out;
 
 }
@@ -13389,15 +13389,15 @@ void iris_wipe_spawn(int req,int arg)
 
 undefined4 * gte_xform3_ip(undefined4 *rt,undefined2 *in)
 {
-  uint uVar1;
-  int iVar2;
-  undefined4 uVar3;
-  uint uVar4;
-  int iVar5;
-  uint uVar6;
-  int iVar7;
-  uint uVar8;
-  int iVar9;
+  uint t0;
+  int t1;
+  undefined4 t2;
+  uint t3;
+  int t4;
+  uint t5;
+  int t6;
+  uint t7;
+  int t8;
   setCopControlWord(2,0,*rt);
   setCopControlWord(2,0x800,rt[1]);
   setCopControlWord(2,0x1000,rt[2]);
@@ -13406,44 +13406,44 @@ undefined4 * gte_xform3_ip(undefined4 *rt,undefined2 *in)
   setCopReg(2,0,CONCAT22(in[3],*in));
   setCopReg(2,0x800,*(uint *)(in + 6));
   copFunction(2,0x486012);
-  uVar4 = getCopReg(2,0x4800);
-  iVar5 = getCopReg(2,0x5000);
-  uVar6 = getCopReg(2,0x5800);
+  t3 = getCopReg(2,0x4800);
+  t4 = getCopReg(2,0x5000);
+  t5 = getCopReg(2,0x5800);
   setCopReg(2,0,(uint)(ushort)in[1] | *(uint *)(in + 4) << 0x10);
   setCopReg(2,0x800,*(uint *)(in + 6) >> 0x10);
   copFunction(2,0x486012);
-  iVar7 = getCopReg(2,0x4800);
-  uVar8 = getCopReg(2,0x5000);
-  iVar9 = getCopReg(2,0x5800);
+  t6 = getCopReg(2,0x4800);
+  t7 = getCopReg(2,0x5000);
+  t8 = getCopReg(2,0x5800);
   setCopReg(2,0,(uint)(ushort)in[2] | *(uint *)(in + 4) & 0xffff0000);
   setCopReg(2,0x800,*(undefined4 *)(in + 8));
   copFunction(2,0x486012);
-  uVar1 = getCopReg(2,0x4800);
-  iVar2 = getCopReg(2,0x5000);
-  uVar3 = getCopReg(2,0x5800);
-  setCopControlWord(2,0x4000,iVar7 << 0x10 | uVar4 & 0xffff);
-  setCopControlWord(2,0x4800,uVar1 & 0xffff | iVar5 << 0x10);
-  setCopControlWord(2,0x5000,iVar2 << 0x10 | uVar8 & 0xffff);
-  setCopControlWord(2,0x5800,iVar9 << 0x10 | uVar6 & 0xffff);
-  setCopControlWord(2,0x6000,uVar3);
+  t0 = getCopReg(2,0x4800);
+  t1 = getCopReg(2,0x5000);
+  t2 = getCopReg(2,0x5800);
+  setCopControlWord(2,0x4000,t6 << 0x10 | t3 & 0xffff);
+  setCopControlWord(2,0x4800,t0 & 0xffff | t4 << 0x10);
+  setCopControlWord(2,0x5000,t1 << 0x10 | t7 & 0xffff);
+  setCopControlWord(2,0x5800,t8 << 0x10 | t5 & 0xffff);
+  setCopControlWord(2,0x6000,t2);
   return rt;
 
 }
 
 undefined4 * gte_xform3_t_ip(undefined4 *rt,undefined2 *in)
 {
-  uint uVar1;
-  int iVar2;
-  uint uVar3;
-  int iVar4;
-  int iVar5;
-  int iVar6;
-  int iVar7;
-  uint uVar8;
-  undefined4 uVar9;
-  int iVar10;
-  uint uVar11;
-  int iVar12;
+  uint t0;
+  int t1;
+  uint t2;
+  int t3;
+  int t4;
+  int t5;
+  int t6;
+  uint t7;
+  undefined4 t8;
+  int t9;
+  uint t10;
+  int t11;
   setCopControlWord(2,0,*rt);
   setCopControlWord(2,0x800,rt[1]);
   setCopControlWord(2,0x1000,rt[2]);
@@ -13452,35 +13452,35 @@ undefined4 * gte_xform3_t_ip(undefined4 *rt,undefined2 *in)
   setCopReg(2,0,CONCAT22(in[3],*in));
   setCopReg(2,0x800,*(uint *)(in + 6));
   copFunction(2,0x486012);
-  uVar3 = getCopReg(2,0x4800);
-  iVar7 = getCopReg(2,0x5000);
-  uVar8 = getCopReg(2,0x5800);
+  t2 = getCopReg(2,0x4800);
+  t6 = getCopReg(2,0x5000);
+  t7 = getCopReg(2,0x5800);
   setCopReg(2,0,(uint)(ushort)in[1] | *(uint *)(in + 4) << 0x10);
   setCopReg(2,0x800,*(uint *)(in + 6) >> 0x10);
   copFunction(2,0x486012);
-  iVar10 = getCopReg(2,0x4800);
-  uVar11 = getCopReg(2,0x5000);
-  iVar12 = getCopReg(2,0x5800);
+  t9 = getCopReg(2,0x4800);
+  t10 = getCopReg(2,0x5000);
+  t11 = getCopReg(2,0x5800);
   setCopReg(2,0,(uint)(ushort)in[2] | *(uint *)(in + 4) & 0xffff0000);
   setCopReg(2,0x800,*(undefined4 *)(in + 8));
   copFunction(2,0x486012);
-  uVar1 = getCopReg(2,0x4800);
-  iVar4 = getCopReg(2,0x5000);
-  uVar9 = getCopReg(2,0x5800);
+  t0 = getCopReg(2,0x4800);
+  t3 = getCopReg(2,0x5000);
+  t8 = getCopReg(2,0x5800);
   setCopReg(2,0,(uint)(ushort)in[10] | *(int *)(in + 0xc) << 0x10);
   setCopReg(2,0x800,*(undefined4 *)(in + 0xe));
   copFunction(2,0x486012);
-  iVar5 = getCopReg(2,0x4800);
-  iVar2 = getCopReg(2,0x5000);
-  iVar6 = getCopReg(2,0x5800);
-  setCopControlWord(2,0,iVar10 << 0x10 | uVar3 & 0xffff);
-  setCopControlWord(2,0x800,uVar1 & 0xffff | iVar7 << 0x10);
-  setCopControlWord(2,0x1000,uVar11 & 0xffff | iVar4 << 0x10);
-  setCopControlWord(2,0x1800,iVar12 << 0x10 | uVar8 & 0xffff);
-  setCopControlWord(2,0x2000,uVar9);
-  setCopControlWord(2,0x2800,rt[5] + iVar5);
-  setCopControlWord(2,0x3000,iVar2 + rt[6]);
-  setCopControlWord(2,0x3800,rt[7] + iVar6);
+  t4 = getCopReg(2,0x4800);
+  t1 = getCopReg(2,0x5000);
+  t5 = getCopReg(2,0x5800);
+  setCopControlWord(2,0,t9 << 0x10 | t2 & 0xffff);
+  setCopControlWord(2,0x800,t0 & 0xffff | t6 << 0x10);
+  setCopControlWord(2,0x1000,t10 & 0xffff | t3 << 0x10);
+  setCopControlWord(2,0x1800,t11 << 0x10 | t7 & 0xffff);
+  setCopControlWord(2,0x2000,t8);
+  setCopControlWord(2,0x2800,rt[5] + t4);
+  setCopControlWord(2,0x3000,t1 + rt[6]);
+  setCopControlWord(2,0x3800,rt[7] + t5);
   return rt;
 
 }
@@ -13977,34 +13977,34 @@ int trig_sin_lookup(uint ang)
 
 }
 
-uint * angle_vec_build(uint ang,uint *a1)
+uint * angle_vec_build(uint ang,uint *out)
 {
-  int iVar1;
-  int iVar2;
-  uint uVar3;
-  int iVar4;
-  uint uVar5;
-  *(undefined2 *)(a1 + 4) = 0x1000;
-  iVar1 = (ang & 0x3ff) * 2;
-  iVar4 = (ang & 0x3ff) * -2 + 0x800;
-  iVar2 = iVar1;
+  int i0;
+  int i2;
+  uint v0;
+  int i1;
+  uint v1;
+  *(undefined2 *)(out + 4) = 0x1000;
+  i0 = (ang & 0x3ff) * 2;
+  i1 = (ang & 0x3ff) * -2 + 0x800;
+  i2 = i0;
   if ((ang & 0x400) != 0) {
-    iVar2 = iVar4;
-    iVar4 = iVar1;
+    i2 = i1;
+    i1 = i0;
   }
-  uVar3 = (uint)*(ushort *)(&DAT_801247a8 + iVar2);
+  v0 = (uint)*(ushort *)(&DAT_801247a8 + i2);
   if ((ang & 0x800) != 0) {
-    uVar3 = -uVar3;
+    v0 = -v0;
   }
-  uVar5 = (uint)*(ushort *)(&DAT_801247a8 + iVar4);
+  v1 = (uint)*(ushort *)(&DAT_801247a8 + i1);
   if ((ang + 0x400 & 0x800) != 0) {
-    uVar5 = -uVar5 & 0xffff;
+    v1 = -v1 & 0xffff;
   }
-  *a1 = uVar5 | uVar3 * -0x10000;
-  a1[1] = uVar3 * 0x10000;
-  a1[2] = uVar5;
-  a1[3] = 0;
-  return a1;
+  *out = v1 | v0 * -0x10000;
+  out[1] = v0 * 0x10000;
+  out[2] = v1;
+  out[3] = 0;
+  return out;
 
 }
 
@@ -14048,14 +14048,14 @@ int isqrt(int n)
 
 uint * gte_rtps_xform3_t(undefined4 *n,ushort *a1,uint *a2)
 {
-  uint uVar1;
-  int iVar2;
-  int iVar3;
-  uint uVar4;
-  int iVar5;
-  int iVar6;
-  uint uVar7;
-  int iVar8;
+  uint t0;
+  int t1;
+  int t2;
+  uint t3;
+  int t4;
+  int t5;
+  uint t6;
+  int t7;
   setCopControlWord(2,0,*n);
   setCopControlWord(2,0x800,n[1]);
   setCopControlWord(2,0x1000,n[2]);
@@ -14064,37 +14064,37 @@ uint * gte_rtps_xform3_t(undefined4 *n,ushort *a1,uint *a2)
   setCopReg(2,0,(uint)*a1 | *(uint *)(a1 + 2) & 0xffff0000);
   setCopReg(2,0x800,*(undefined4 *)(a1 + 6));
   copFunction(2,0x486012);
-  uVar1 = getCopReg(2,0x4800);
-  iVar2 = getCopReg(2,0x5000);
-  uVar4 = getCopReg(2,0x5800);
+  t0 = getCopReg(2,0x4800);
+  t1 = getCopReg(2,0x5000);
+  t3 = getCopReg(2,0x5800);
   setCopReg(2,0,(uint)a1[1] | *(int *)(a1 + 4) << 0x10);
   setCopReg(2,0x800,(int)(short)a1[7]);
   copFunction(2,0x486012);
-  iVar6 = getCopReg(2,0x4800);
-  uVar7 = getCopReg(2,0x5000);
-  iVar8 = getCopReg(2,0x5800);
+  t5 = getCopReg(2,0x4800);
+  t6 = getCopReg(2,0x5000);
+  t7 = getCopReg(2,0x5800);
   setCopReg(2,0,(uint)a1[2] | *(uint *)(a1 + 4) & 0xffff0000);
   setCopReg(2,0x800,*(undefined4 *)(a1 + 8));
   copFunction(2,0x486012);
-  *a2 = iVar6 << 0x10 | uVar1 & 0xffff;
-  a2[3] = iVar8 << 0x10 | uVar4 & 0xffff;
-  uVar4 = getCopReg(2,0x4800);
-  iVar6 = getCopReg(2,0x5000);
-  uVar1 = getCopReg(2,0xb);
-  a2[4] = uVar1;
+  *a2 = t5 << 0x10 | t0 & 0xffff;
+  a2[3] = t7 << 0x10 | t3 & 0xffff;
+  t3 = getCopReg(2,0x4800);
+  t5 = getCopReg(2,0x5000);
+  t0 = getCopReg(2,0xb);
+  a2[4] = t0;
   setCopReg(2,0,(uint)a1[10] | *(int *)(a1 + 0xc) << 0x10);
   setCopReg(2,0x800,*(undefined4 *)(a1 + 0xe));
   copFunction(2,0x486012);
-  a2[1] = uVar4 & 0xffff | iVar2 << 0x10;
-  a2[2] = iVar6 << 0x10 | uVar7 & 0xffff;
-  iVar6 = getCopReg(2,0xc800);
-  iVar2 = getCopReg(2,0xd000);
-  iVar8 = getCopReg(2,0xd800);
-  iVar3 = n[6];
-  iVar5 = n[7];
-  a2[5] = iVar6 + n[5];
-  a2[6] = iVar2 + iVar3;
-  a2[7] = iVar8 + iVar5;
+  a2[1] = t3 & 0xffff | t1 << 0x10;
+  a2[2] = t5 << 0x10 | t6 & 0xffff;
+  t5 = getCopReg(2,0xc800);
+  t1 = getCopReg(2,0xd000);
+  t7 = getCopReg(2,0xd800);
+  t2 = n[6];
+  t4 = n[7];
+  a2[5] = t5 + n[5];
+  a2[6] = t1 + t2;
+  a2[7] = t7 + t4;
   return a2;
 
 }
@@ -14556,23 +14556,23 @@ void gte_points_xform(undefined4 *a0,undefined4 *a1,undefined2 *a2,undefined2 *a
 {
   undefined4 in_zero;
   undefined4 in_at;
-  uint uVar1;
-  undefined4 uVar2;
-  undefined4 uVar3;
+  uint code;
+  undefined4 t0;
+  undefined4 t1;
   do {
     setCopReg(2,in_zero,*a0);
     setCopReg(2,in_at,a0[1]);
     copFunction(2,0x180001);
     a0 = a0 + 2;
     arg6 = arg6 + -1;
-    uVar2 = getCopReg(2,0xe);
-    *a1 = uVar2;
-    uVar2 = getCopReg(2,0x9800);
-    uVar3 = getCopReg(2,0x4000);
-    uVar1 = getCopControlWord(2,0xf800);
-    *a2 = (short)uVar2;
-    *a3 = (short)uVar3;
-    *arg5 = (short)(uVar1 >> 0xc);
+    t0 = getCopReg(2,0xe);
+    *a1 = t0;
+    t0 = getCopReg(2,0x9800);
+    t1 = getCopReg(2,0x4000);
+    code = getCopControlWord(2,0xf800);
+    *a2 = (short)t0;
+    *a3 = (short)t1;
+    *arg5 = (short)(code >> 0xc);
     a1 = a1 + 1;
     a2 = a2 + 1;
     a3 = a3 + 1;
@@ -14824,76 +14824,76 @@ void prim_packet_init(int pkt,int a1,int a2,uint fl)
 
 }
 
-void verts_offset_apply(undefined4 *v,uint *c,int n,short *off,int arg5, undefined4 arg6)
+void verts_offset_apply(undefined4 *v,uint *c,int n,short *off,int cnt, undefined4 fl)
 {
-  uint *puVar1;
-  short sVar2;
-  short *psVar3;
-  uint uVar4;
-  undefined4 uVar5;
-  undefined4 uVar6;
-  undefined4 uVar7;
-  undefined4 uVar8;
-  setCopReg(2,0x4000,arg6);
-  if (arg5 != 0) {
+  uint *cz;
+  short t;
+  short *vp;
+  uint xy;
+  undefined4 tx;
+  undefined4 ty;
+  undefined4 tz;
+  undefined4 cur;
+  setCopReg(2,0x4000,fl);
+  if (cnt != 0) {
     do {
-      uVar4 = *c;
-      arg5 = arg5 + -1;
-      puVar1 = c + 1;
+      xy = *c;
+      cnt = cnt + -1;
+      cz = c + 1;
       c = c + 2;
-      setCopReg(2,0x4800,uVar4 & 0xffff);
-      setCopReg(2,0x5000,uVar4 >> 0x10);
-      uVar8 = *v;
-      setCopReg(2,0x5800,(int)(short)*puVar1);
+      setCopReg(2,0x4800,xy & 0xffff);
+      setCopReg(2,0x5000,xy >> 0x10);
+      cur = *v;
+      setCopReg(2,0x5800,(int)(short)*cz);
       copFunction(2,0x98003d);
-      sVar2 = *off;
+      t = *off;
       off = off + 1;
-      psVar3 = (short *)guest_at((uint32_t)(uintptr_t)((sVar2 * 8 + n)));
-      uVar5 = getCopReg(2,0xc800);
-      sVar2 = *(short *)(v + 1);
+      vp = (short *)guest_at((uint32_t)(uintptr_t)((t * 8 + n)));
+      tx = getCopReg(2,0xc800);
+      t = *(short *)(v + 1);
       v = v + 2;
-      uVar6 = getCopReg(2,0xd000);
-      uVar7 = getCopReg(2,0xd800);
-      *psVar3 = (short)uVar8 + (short)uVar5;
-      psVar3[1] = (short)((uint)uVar8 >> 0x10) + (short)uVar6;
-      psVar3[2] = sVar2 + (short)uVar7;
-    } while (0 < arg5);
+      ty = getCopReg(2,0xd000);
+      tz = getCopReg(2,0xd800);
+      *vp = (short)cur + (short)tx;
+      vp[1] = (short)((uint)cur >> 0x10) + (short)ty;
+      vp[2] = t + (short)tz;
+    } while (0 < cnt);
   }
   return;
 
 }
 
-void verts_rgb_apply(uint *v,uint *c,int n,short *off,int arg5, undefined4 arg6)
+void verts_rgb_apply(uint *v,uint *c,int n,short *off,int cnt, undefined4 fl)
 {
-  short sVar1;
-  char *pcVar2;
-  uint uVar3;
-  uint uVar4;
-  undefined4 uVar5;
-  undefined4 uVar6;
-  undefined4 uVar7;
-  setCopReg(2,0x4000,arg6);
-  if (arg5 != 0) {
+  short vi;
+  char *vp;
+  uint cur;
+  uint tgt;
+  undefined4 dr;
+  undefined4 dg;
+  undefined4 db;
+  setCopReg(2,0x4000,fl);
+  if (cnt != 0) {
     do {
-      uVar3 = *v;
+      cur = *v;
       v = v + 1;
-      uVar4 = *c;
+      tgt = *c;
       c = c + 1;
-      sVar1 = *off;
-      arg5 = arg5 + -1;
-      setCopReg(2,0x4800,(uVar4 & 0xff) - (uVar3 & 0xff));
-      setCopReg(2,0x5000,(uVar4 >> 8 & 0xff) - (uVar3 >> 8 & 0xff));
-      setCopReg(2,0x5800,(uVar4 >> 0x10 & 0xff) - (uVar3 >> 0x10 & 0xff));
+      vi = *off;
+      cnt = cnt + -1;
+      setCopReg(2,0x4800,(tgt & 0xff) - (cur & 0xff));
+      setCopReg(2,0x5000,(tgt >> 8 & 0xff) - (cur >> 8 & 0xff));
+      setCopReg(2,0x5800,(tgt >> 0x10 & 0xff) - (cur >> 0x10 & 0xff));
       off = off + 1;
       copFunction(2,0x98003d);
-      pcVar2 = (char *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((sVar1 * 4 + n))));
-      uVar5 = getCopReg(2,0xc800);
-      uVar6 = getCopReg(2,0xd000);
-      uVar7 = getCopReg(2,0xd800);
-      *pcVar2 = (char)uVar3 + (char)uVar5;
-      pcVar2[1] = (char)(uVar3 >> 8) + (char)uVar6;
-      pcVar2[2] = (char)(uVar3 >> 0x10) + (char)uVar7;
-    } while (0 < arg5);
+      vp = (char *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((vi * 4 + n))));
+      dr = getCopReg(2,0xc800);
+      dg = getCopReg(2,0xd000);
+      db = getCopReg(2,0xd800);
+      *vp = (char)cur + (char)dr;
+      vp[1] = (char)(cur >> 8) + (char)dg;
+      vp[2] = (char)(cur >> 0x10) + (char)db;
+    } while (0 < cnt);
   }
   return;
 
@@ -15827,42 +15827,42 @@ undefined2 * euler_rotmat(uint node,uint a1,uint a2,undefined2 *a3)
 /* spark_trail_task_update — spark-trail task update (EV7 sub 3). */
 void spark_trail_task_update(int *rec)
 {
-  ushort uVar1;
-  short sVar2;
-  int iVar3;
-  int iVar4;
+  ushort life;
+  short pos;
+  int t;
+  int sp;
 
   if (DAT_801bef20 != 0) {
     return;
   }
-  uVar1 = (ushort)((short)rec[1] - 1);
-  *(ushort *)(rec + 1) = uVar1;
-  if ((int)((uint)uVar1 << 0x10) < 0) {
+  life = (ushort)((short)rec[1] - 1);
+  *(ushort *)(rec + 1) = life;
+  if ((int)((uint)life << 0x10) < 0) {
     task_slot_step();
     return;
   }
   if ((_DAT_801c4578 == 0) || (_DAT_801c4578 == 3)) {
     if ((*(ushort *)(rec + 1) & 1) != 0) goto LAB_8013ab68;
-    iVar4 = ((int)(short)rec[3] << 3) / 10;
+    sp = ((int)(short)rec[3] << 3) / 10;
   }
   else {
-    iVar4 = (int)(short)rec[3];
+    sp = (int)(short)rec[3];
   }
-  iVar3 = (uint)*(ushort *)((intptr_t)rec + 6) << 0x10;
-  if ((iVar3 >> 0x13 < (iVar3 >> 0x10) + (int)(short)rec[2]) >> 3) {
-    iVar3 = (int)(short)rec[6];
-    if (iVar3 < 0) {
-      iVar3 = iVar3 + 0xf;
+  t = (uint)*(ushort *)((intptr_t)rec + 6) << 0x10;
+  if ((t >> 0x13 < (t >> 0x10) + (int)(short)rec[2]) >> 3) {
+    t = (int)(short)rec[6];
+    if (t < 0) {
+      t = t + 0xf;
     }
     impact_fx_spawn((undefined4 *)(uintptr_t)(*(int *)guest_at((uint32_t)(uintptr_t)((*rec + 0x20) ))+ *(short *)((intptr_t)rec + 10) * 0x50 + 0x34),0x80000005,
                  (int)(short)rec[4] + (int)*(short *)guest_at((uint32_t)(uintptr_t)((*rec + 0x4e))),(int)(short)rec[5],
-                 (uint)(iVar4 << 0x10 | iVar3 >> 4));
+                 (uint)(sp << 0x10 | t >> 4));
     *(short *)(rec + 4) = (short)rec[4] + *(short *)((intptr_t)rec + 0x12);
     *(short *)(rec + 3) = (short)rec[3] + *(short *)((intptr_t)rec + 0xe);
-    sVar2 = (short)rec[6] + *(short *)((intptr_t)rec + 0x1a);
-    *(short *)(rec + 6) = sVar2;
+    pos = (short)rec[6] + *(short *)((intptr_t)rec + 0x1a);
+    *(short *)(rec + 6) = pos;
     *(short *)(rec + 5) = (short)rec[5] + *(short *)((intptr_t)rec + 0x16);
-    if (sVar2 < 0xa0) {
+    if (pos < 0xa0) {
       *(undefined2 *)(rec + 6) = 0xa0;
     }
     if ((short)rec[3] < 0xf) {
@@ -16733,52 +16733,52 @@ void LAB_80137590(void)
  * Data layout (guest u32 fields): [0]/[1] output ptrs, [2] jump-table
  * base, [3] u16 table base, [4] script cursor, [5] frame countdown,
  * [6] repeat counter. */
-void LAB_80137680(int *a0)
+void LAB_80137680(int *ctx)
 {
-  short sVar1;
-  ushort uVar2;
-  uint uVar4;
-  ushort *puVar5;
-  uint uVar6;
+  short w;
+  ushort arg;
+  uint op;
+  ushort *ip;
+  uint subop;
 
   if (_DAT_1f800082 == 0) {
-    a0[5] = a0[5] + -1;
+    ctx[5] = ctx[5] + -1;
   }
-  if (a0[5] < 1) {
-    a0[4] = a0[4] + 4;
-    sVar1 = *(short *)guest_at((uint32_t)a0[4]);
-    while (((int)sVar1 & 0xff00U) != 0) {
-      puVar5 = (ushort *)guest_at((uint32_t)a0[4]);
-      uVar6 = *puVar5 & 0xff;
-      uVar4 = *puVar5 & 0xff00;
-      if (uVar4 == 0xfe00) {
-        uVar2 = puVar5[1];
+  if (ctx[5] < 1) {
+    ctx[4] = ctx[4] + 4;
+    w = *(short *)guest_at((uint32_t)ctx[4]);
+    while (((int)w & 0xff00U) != 0) {
+      ip = (ushort *)guest_at((uint32_t)ctx[4]);
+      subop = *ip & 0xff;
+      op = *ip & 0xff00;
+      if (op == 0xfe00) {
+        arg = ip[1];
 LAB_80137758:
-        a0[4] = a0[2] + (short)uVar2 * 4;
+        ctx[4] = ctx[2] + (short)arg * 4;
       }
-      else if (uVar4 < 0xfe01) {
-        if (uVar4 == 0xfc00) {
-          if ((int)uVar6 < a0[6]) goto LAB_80137790;
-          a0[6] = a0[6] + 1;
-          uVar2 = *(ushort *)guest_at((uint32_t)(a0[4] + 2));
+      else if (op < 0xfe01) {
+        if (op == 0xfc00) {
+          if ((int)subop < ctx[6]) goto LAB_80137790;
+          ctx[6] = ctx[6] + 1;
+          arg = *(ushort *)guest_at((uint32_t)(ctx[4] + 2));
           goto LAB_80137758;
         }
       }
-      else if (uVar4 == 0xff00) {
-        if ((int)uVar6 <= a0[6]) {
+      else if (op == 0xff00) {
+        if ((int)subop <= ctx[6]) {
           task_slot_step();
           return;
         }
 LAB_80137790:
-        a0[4] = (int)guest_of(puVar5 + 2);
+        ctx[4] = (int)guest_of(ip + 2);
       }
-      sVar1 = *(short *)guest_at((uint32_t)a0[4]);
+      w = *(short *)guest_at((uint32_t)ctx[4]);
     }
-    *(undefined2 *)guest_at((uint32_t)a0[0]) =
-        *(undefined2 *)guest_at((uint32_t)(*(short *)guest_at((uint32_t)a0[4]) * 2 + a0[3]));
-    *(undefined2 *)guest_at((uint32_t)a0[1]) =
-        *(undefined2 *)guest_at((uint32_t)(*(short *)guest_at((uint32_t)a0[4]) * 2 + a0[3]));
-    a0[5] = (int)*(short *)guest_at((uint32_t)(a0[4] + 2));
+    *(undefined2 *)guest_at((uint32_t)ctx[0]) =
+        *(undefined2 *)guest_at((uint32_t)(*(short *)guest_at((uint32_t)ctx[4]) * 2 + ctx[3]));
+    *(undefined2 *)guest_at((uint32_t)ctx[1]) =
+        *(undefined2 *)guest_at((uint32_t)(*(short *)guest_at((uint32_t)ctx[4]) * 2 + ctx[3]));
+    ctx[5] = (int)*(short *)guest_at((uint32_t)(ctx[4] + 2));
   }
   return;
 }
@@ -16787,14 +16787,14 @@ LAB_80137790:
  * [2] script cursor (guest addr), [3] handler table base (guest addr),
  * [1] record table base (guest addr); byte +0x10 current op,
  * byte +0x12 repeat index. */
-void LAB_80137acc(int *a0)
+void LAB_80137acc(int *ctx)
 {
-  short sVar1;
-  short sVar2;
-  short *psVar3;
-  int iVar4;
-  short *psVar5;
-  int *piVar6;
+  short idx;
+  short op;
+  short *rec;
+  int t;
+  short *opp;
+  int *curp;
 
   /* Bail-unwind in flight (g_psx_call_bail): the generated interpreter's CPS
    * frames return immediately without consuming script records. Checking
@@ -16806,71 +16806,71 @@ void LAB_80137acc(int *a0)
     if (br2_bail_pending()) return; }
   { extern uint32_t g_tramp_calls,g_tramp_last_node,g_tramp_last_cur,g_tramp_last_op;
     g_tramp_calls++;
-    g_tramp_last_node = (uint32_t)(uintptr_t)guest_of(a0);
-    g_tramp_last_cur  = (uint32_t)a0[2];
-    g_tramp_last_op   = (uint32_t)*(unsigned char *)((intptr_t)a0 + 0x10); }
-  psVar5 = (short *)((intptr_t)a0 + 0x10);
-  piVar6 = a0 + 2;
+    g_tramp_last_node = (uint32_t)(uintptr_t)guest_of(ctx);
+    g_tramp_last_cur  = (uint32_t)ctx[2];
+    g_tramp_last_op   = (uint32_t)*(unsigned char *)((intptr_t)ctx + 0x10); }
+  opp = (short *)((intptr_t)ctx + 0x10);
+  curp = ctx + 2;
   if (_DAT_1f800082 != 0) {
     return;
   }
   do {
     while( true ) {
-      psVar3 = (short *)guest_at((uint32_t)*piVar6);
-      sVar2 = *psVar3;
-      if (sVar2 != 0x2000) break;
-      if (*(short *)((intptr_t)a0 + 0x12) < psVar3[1]) {
-        psVar3 = (short *)guest_at((uint32_t)(a0[1] + psVar3[2] * 6));
-        *piVar6 = (int)guest_of(psVar3);
-        sVar1 = *(short *)((intptr_t)a0 + 0x12);
-        sVar2 = *psVar3;
+      rec = (short *)guest_at((uint32_t)*curp);
+      op = *rec;
+      if (op != 0x2000) break;
+      if (*(short *)((intptr_t)ctx + 0x12) < rec[1]) {
+        rec = (short *)guest_at((uint32_t)(ctx[1] + rec[2] * 6));
+        *curp = (int)guest_of(rec);
+        idx = *(short *)((intptr_t)ctx + 0x12);
+        op = *rec;
 LAB_80137bb8:
-        *psVar5 = sVar2;
-        *(short *)((intptr_t)a0 + 0x12) = sVar1 + 1;
+        *opp = op;
+        *(short *)((intptr_t)ctx + 0x12) = idx + 1;
       }
       else {
 LAB_80137bc8:
-        *piVar6 = (int)guest_of(psVar3 + 3);
-        *(undefined2 *)((intptr_t)a0 + 0x12) = 0;
+        *curp = (int)guest_of(rec + 3);
+        *(undefined2 *)((intptr_t)ctx + 0x12) = 0;
       }
     }
-    if (sVar2 < 0x2001) {
-      if (sVar2 == 0x1000) {
-        if (psVar3[1] <= *(short *)((intptr_t)a0 + 0x12)) goto LAB_80137bc8;
-        *piVar6 = (int)guest_of(psVar3 + -3);
-        sVar1 = *(short *)((intptr_t)a0 + 0x12);
-        sVar2 = psVar3[-3];
+    if (op < 0x2001) {
+      if (op == 0x1000) {
+        if (rec[1] <= *(short *)((intptr_t)ctx + 0x12)) goto LAB_80137bc8;
+        *curp = (int)guest_of(rec + -3);
+        idx = *(short *)((intptr_t)ctx + 0x12);
+        op = rec[-3];
         goto LAB_80137bb8;
       }
       goto LAB_80137c14;
     }
-    if (sVar2 != 0x3000) {
-      if (sVar2 == 0x4000) {
+    if (op != 0x3000) {
+      if (op == 0x4000) {
         task_slot_step();
         return;
       }
 LAB_80137c14:
-      psVar3 = (short *)guest_at((uint32_t)*piVar6);
-      if (*psVar5 == *psVar3) {
+      rec = (short *)guest_at((uint32_t)*curp);
+      if (*opp == *rec) {
         do {
-          iVar4 = 0;
-          if (0 < psVar3[1]) {
+          t = 0;
+          if (0 < rec[1]) {
             do {
-              iVar4 = iVar4 + 1;
+              t = t + 1;
               {
-                /* guest fn-ptr table: a0[3] + psVar3[2]*4 */
-                uint32_t fn_g = *(uint32_t *)guest_at((uint32_t)(a0[3] + psVar3[2] * 4));
+                /* guest fn-ptr table: ctx[3] + rec[2]*4 */
+                uint32_t fn_g = *(uint32_t *)guest_at((uint32_t)(ctx[3] + rec[2] * 4));
                 void *fn = fn_lookup(fn_g);
                 if (fn != (void *)0x0) {
-                  ((void (*)(uintptr_t))fn)(a0[0] != 0 ? (uintptr_t)guest_at((uint32_t)a0[0]) : 0);
+                  ((void (*)(uintptr_t))fn)(ctx[0] != 0 ? (uintptr_t)guest_at((uint32_t)ctx[0]) : 0);
                 }
                 else {
-                  /* Unported jalr target: a0 = a0[0] (guest addr or 0). */
-                  br2_call_clean(fn_g,(uint32_t)a0[0],0,0,0);
+                  /* Unported jalr target: ctx = ctx[0] (guest addr or 0). */
+                  br2_call_clean(fn_g,(uint32_t)ctx[0],0,0,0);
                 }
               }
-              psVar3 = (short *)guest_at((uint32_t)*piVar6);
-            } while (iVar4 < psVar3[1]);
+              rec = (short *)guest_at((uint32_t)*curp);
+            } while (t < rec[1]);
           }
           /* A handler began a bail unwind: do NOT advance the script cursor
            * or tick — the generated frame would return here and the record
@@ -16878,19 +16878,19 @@ LAB_80137c14:
            * Advancing now would consume records whose handlers were dropped. */
           { extern int br2_bail_pending(void);
             if (br2_bail_pending()) return; }
-          iVar4 = *piVar6;
-          psVar3 = (short *)guest_at((uint32_t)(iVar4 + 6));
-          *piVar6 = (int)guest_of(psVar3);
-        } while (*psVar5 == *(short *)guest_at((uint32_t)(iVar4 + 6)));
+          t = *curp;
+          rec = (short *)guest_at((uint32_t)(t + 6));
+          *curp = (int)guest_of(rec);
+        } while (*opp == *(short *)guest_at((uint32_t)(t + 6)));
       }
-      *psVar5 = *psVar5 + 1;
+      *opp = *opp + 1;
       return;
     }
-    psVar3 = (short *)guest_at((uint32_t)(a0[1] + psVar3[1] * 6));
-    *piVar6 = (int)guest_of(psVar3);
-    sVar2 = *psVar3;
-    *(undefined2 *)((intptr_t)a0 + 0x12) = 0;
-    *psVar5 = sVar2;
+    rec = (short *)guest_at((uint32_t)(ctx[1] + rec[1] * 6));
+    *curp = (int)guest_of(rec);
+    op = *rec;
+    *(undefined2 *)((intptr_t)ctx + 0x12) = 0;
+    *opp = op;
   } while( true );
 }
 
