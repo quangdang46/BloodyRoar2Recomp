@@ -4869,3 +4869,13 @@
 80183efc chk_mode1_foe
 80183fdc chk_mode1_self
 80184354 chk_atk2_self
+80122170 ptr_table_80122170
+80126344 main_state_byte_gate
+80127100 display_mode_w320_hf0
+80127108 display_mode_w320_h1e0
+80127110 display_mode_w384_hf0
+80127118 display_mode_w384_h1e0
+80127120 display_mode_w512_hf0
+80127128 display_mode_w512_h1e0
+80127130 display_mode_w640_hf0
+80127148 display_mode_w640_h1e0
