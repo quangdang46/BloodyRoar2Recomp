@@ -1929,4 +1929,5 @@
 8017cf6c byte2_probe_commit
 8017db88 desc_cmd_interp
 80188510 prim_poly_emit_6c
+8018866c prim_poly_emit_64
 80188754 prim_poly_emit_88
