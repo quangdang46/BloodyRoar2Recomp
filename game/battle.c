@@ -15511,7 +15511,7 @@ void firework_spawn(undefined2 *pos)
 }
 
 /* guest gte_mat_vec_swap @0x80185290 */
-void gte_mat_vec_swap(undefined4 *a0,ushort *a1,undefined4 *a2)
+void gte_mat_vec_swap(undefined4 *dst,ushort *m,undefined4 *src)
 
 {
   ushort uVar1;
@@ -15523,66 +15523,66 @@ void gte_mat_vec_swap(undefined4 *a0,ushort *a1,undefined4 *a2)
   undefined4 uVar7;
   undefined4 uVar8;
   
-  setCopControlWord(2,0,*a2);
-  setCopControlWord(2,0x800,a2[1]);
-  setCopControlWord(2,0x1000,a2[2]);
-  setCopControlWord(2,0x1800,a2[3]);
-  setCopControlWord(2,0x2000,a2[4]);
-  setCopReg(2,0,(int)(short)*a1);
-  setCopReg(2,0x800,(int)(short)a1[6]);
+  setCopControlWord(2,0,*src);
+  setCopControlWord(2,0x800,src[1]);
+  setCopControlWord(2,0x1000,src[2]);
+  setCopControlWord(2,0x1800,src[3]);
+  setCopControlWord(2,0x2000,src[4]);
+  setCopReg(2,0,(int)(short)*m);
+  setCopReg(2,0x800,(int)(short)m[6]);
   copFunction(2,0x486012);
-  uVar1 = *(ushort *)(a2 + 2);
-  uVar2 = *(ushort *)((intptr_t)a2 + 0xe);
+  uVar1 = *(ushort *)(src + 2);
+  uVar2 = *(ushort *)((intptr_t)src + 0xe);
   uVar3 = getCopReg(2,0x4800);
   uVar4 = getCopReg(2,0x5000);
   uVar5 = getCopReg(2,0x5800);
-  setCopReg(2,0,-(int)(short)a1[6] & 0xffff);
-  setCopReg(2,0x800,(int)(short)*a1);
-  a1[1] = *(ushort *)((intptr_t)a2 + 2);
+  setCopReg(2,0,-(int)(short)m[6] & 0xffff);
+  setCopReg(2,0x800,(int)(short)*m);
+  m[1] = *(ushort *)((intptr_t)src + 2);
   copFunction(2,0x486012);
-  a1[4] = uVar1;
-  a1[7] = uVar2;
-  *a1 = (ushort)uVar3;
-  a1[3] = (ushort)uVar4;
-  a1[6] = (ushort)uVar5;
+  m[4] = uVar1;
+  m[7] = uVar2;
+  *m = (ushort)uVar3;
+  m[3] = (ushort)uVar4;
+  m[6] = (ushort)uVar5;
   uVar4 = getCopReg(2,0x4800);
   uVar5 = getCopReg(2,0x5000);
   uVar3 = getCopReg(2,0xb);
-  *(undefined4 *)(a1 + 8) = uVar3;
-  a1[2] = (ushort)uVar4;
-  a1[5] = (ushort)uVar5;
-  setCopControlWord(2,0,*a0);
-  setCopControlWord(2,0x800,a0[1]);
-  setCopControlWord(2,0x1000,a0[2]);
-  setCopControlWord(2,0x1800,a0[3]);
-  setCopControlWord(2,0x2000,a0[4]);
-  setCopReg(2,0,(uint)*a1 | *(uint *)(a1 + 2) & 0xffff0000);
-  setCopReg(2,0x800,*(undefined4 *)(a1 + 6));
+  *(undefined4 *)(m + 8) = uVar3;
+  m[2] = (ushort)uVar4;
+  m[5] = (ushort)uVar5;
+  setCopControlWord(2,0,*dst);
+  setCopControlWord(2,0x800,dst[1]);
+  setCopControlWord(2,0x1000,dst[2]);
+  setCopControlWord(2,0x1800,dst[3]);
+  setCopControlWord(2,0x2000,dst[4]);
+  setCopReg(2,0,(uint)*m | *(uint *)(m + 2) & 0xffff0000);
+  setCopReg(2,0x800,*(undefined4 *)(m + 6));
   copFunction(2,0x486012);
   uVar3 = getCopReg(2,0x4800);
   uVar4 = getCopReg(2,0x5000);
   uVar5 = getCopReg(2,0x5800);
-  setCopReg(2,0,(uint)a1[1] | *(int *)(a1 + 4) << 0x10);
-  setCopReg(2,0x800,(int)(short)a1[7]);
+  setCopReg(2,0,(uint)m[1] | *(int *)(m + 4) << 0x10);
+  setCopReg(2,0x800,(int)(short)m[7]);
   copFunction(2,0x486012);
   uVar6 = getCopReg(2,0x4800);
   uVar7 = getCopReg(2,0x5000);
   uVar8 = getCopReg(2,0x5800);
-  setCopReg(2,0,(uint)a1[2] | *(uint *)(a1 + 4) & 0xffff0000);
-  setCopReg(2,0x800,*(undefined4 *)(a1 + 8));
+  setCopReg(2,0,(uint)m[2] | *(uint *)(m + 4) & 0xffff0000);
+  setCopReg(2,0x800,*(undefined4 *)(m + 8));
   copFunction(2,0x486012);
-  *a1 = (ushort)uVar3;
-  a1[3] = (ushort)uVar4;
-  a1[6] = (ushort)uVar5;
-  a1[1] = (ushort)uVar6;
-  a1[4] = (ushort)uVar7;
-  a1[7] = (ushort)uVar8;
+  *m = (ushort)uVar3;
+  m[3] = (ushort)uVar4;
+  m[6] = (ushort)uVar5;
+  m[1] = (ushort)uVar6;
+  m[4] = (ushort)uVar7;
+  m[7] = (ushort)uVar8;
   uVar4 = getCopReg(2,0x4800);
   uVar5 = getCopReg(2,0x5000);
   uVar3 = getCopReg(2,0xb);
-  *(undefined4 *)(a1 + 8) = uVar3;
-  a1[2] = (ushort)uVar4;
-  a1[5] = (ushort)uVar5;
+  *(undefined4 *)(m + 8) = uVar3;
+  m[2] = (ushort)uVar4;
+  m[5] = (ushort)uVar5;
   return;
 }
 
@@ -15621,41 +15621,41 @@ int trig_sin(uint ang)
 }
 
 /* guest fighter_anim_advance @0x80185e6c */
-void fighter_anim_advance(int f,int n)
+void fighter_anim_advance(int fighter,int node)
 
 {
-  byte bVar1;
-  undefined2 uVar2;
+  byte fl;
+  undefined2 sw;
   short sVar3;
-  int iVar4;
+  int frec;
   
-  if (*(short *)guest_at((uint32_t)(uintptr_t)((n + 0xc0) ))== 0) {
-    motion_integrator_tail(f,n);
+  if (*(short *)guest_at((uint32_t)(uintptr_t)((node + 0xc0) ))== 0) {
+    motion_integrator_tail(fighter,node);
   }
-  if (*(char *)guest_at((uint32_t)(uintptr_t)((n + 0x9c) ))!= '\0') {
-    iVar4 = *(int *)guest_at((uint32_t)(uintptr_t)((f + 0x18)));
-    uVar2 = *(undefined2 *)guest_at((uint32_t)(uintptr_t)((iVar4 + 0x23c)));
-    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((iVar4 + 0x23c) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((iVar4 + 0x1c4)));
-    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f + 0x18) ))+ 0x1c4) ))= uVar2;
-    iVar4 = *(int *)guest_at((uint32_t)(uintptr_t)((f + 0x18)));
-    uVar2 = *(undefined2 *)guest_at((uint32_t)(uintptr_t)((iVar4 + 0x28c)));
-    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((iVar4 + 0x28c) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((iVar4 + 0x264)));
-    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f + 0x18) ))+ 0x264) ))= uVar2;
+  if (*(char *)guest_at((uint32_t)(uintptr_t)((node + 0x9c) ))!= '\0') {
+    frec = *(int *)guest_at((uint32_t)(uintptr_t)((fighter + 0x18)));
+    sw = *(undefined2 *)guest_at((uint32_t)(uintptr_t)((frec + 0x23c)));
+    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((frec + 0x23c) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((frec + 0x1c4)));
+    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter + 0x18) ))+ 0x1c4) ))= sw;
+    frec = *(int *)guest_at((uint32_t)(uintptr_t)((fighter + 0x18)));
+    sw = *(undefined2 *)guest_at((uint32_t)(uintptr_t)((frec + 0x28c)));
+    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((frec + 0x28c) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((frec + 0x264)));
+    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter + 0x18) ))+ 0x264) ))= sw;
   }
-  bVar1 = *(byte *)guest_at((uint32_t)(uintptr_t)((n + 0x9c)));
-  *(undefined1 *)guest_at((uint32_t)(uintptr_t)((n + 0x9c) ))= 0;
-  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((n + 0xc0) ))= 0;
-  *(byte *)guest_at((uint32_t)(uintptr_t)((n + 0x100) ))= *(byte *)guest_at((uint32_t)(uintptr_t)((n + 0x100) ))^ bVar1;
-  sVar3 = *(short *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((n + 0xb0))));
-  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((n + 0xc4) ))= 0;
-  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((n + 0xc6) ))= 0;
-  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((n + 0xca) ))= 0;
-  *(int *)guest_at((uint32_t)(uintptr_t)((n + 0xb4) ))= *(int *)guest_at((uint32_t)(uintptr_t)((n + 0xb0) ))+ 4;
-  *(short *)guest_at((uint32_t)(uintptr_t)((n + 0xc2) ))= sVar3 << 4;
-  sVar3 = *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((n + 0xb0) ))+ 6)));
-  *(short *)guest_at((uint32_t)(uintptr_t)((n + 0xc6) ))= *(short *)guest_at((uint32_t)(uintptr_t)((n + 0xc6) ))+ 1;
-  *(short *)guest_at((uint32_t)(uintptr_t)((n + 0xcc) ))= sVar3 << 4;
-  keyframe_advance((byte *)guest_at((uint32_t)f),(byte *)guest_at((uint32_t)n));
+  fl = *(byte *)guest_at((uint32_t)(uintptr_t)((node + 0x9c)));
+  *(undefined1 *)guest_at((uint32_t)(uintptr_t)((node + 0x9c) ))= 0;
+  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((node + 0xc0) ))= 0;
+  *(byte *)guest_at((uint32_t)(uintptr_t)((node + 0x100) ))= *(byte *)guest_at((uint32_t)(uintptr_t)((node + 0x100) ))^ fl;
+  sVar3 = *(short *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((node + 0xb0))));
+  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((node + 0xc4) ))= 0;
+  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((node + 0xc6) ))= 0;
+  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((node + 0xca) ))= 0;
+  *(int *)guest_at((uint32_t)(uintptr_t)((node + 0xb4) ))= *(int *)guest_at((uint32_t)(uintptr_t)((node + 0xb0) ))+ 4;
+  *(short *)guest_at((uint32_t)(uintptr_t)((node + 0xc2) ))= sVar3 << 4;
+  sVar3 = *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((node + 0xb0) ))+ 6)));
+  *(short *)guest_at((uint32_t)(uintptr_t)((node + 0xc6) ))= *(short *)guest_at((uint32_t)(uintptr_t)((node + 0xc6) ))+ 1;
+  *(short *)guest_at((uint32_t)(uintptr_t)((node + 0xcc) ))= sVar3 << 4;
+  keyframe_advance((byte *)guest_at((uint32_t)fighter),(byte *)guest_at((uint32_t)node));
   return;
 }
 
@@ -15663,53 +15663,53 @@ void fighter_anim_advance(int f,int n)
 void pose_chain_build(int node)
 
 {
-  int iVar1;
-  undefined2 *puVar2;
-  undefined4 *puVar3;
-  short *psVar4;
-  int iVar5;
-  int iVar6;
+  int cur;
+  undefined2 *out;
+  undefined4 *lc;
+  short *jt;
+  int key;
+  int i;
   
-  iVar6 = 0x13;
-  psVar4 = (short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(((*(byte *)guest_at((uint32_t)(uintptr_t)((node + 5) ))& 1) * 0x1c +
+  i = 0x13;
+  jt = (short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(((*(byte *)guest_at((uint32_t)(uintptr_t)((node + 5) ))& 1) * 0x1c +
                               *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((node + 0x38) ))+ 0x10) ))+ 0x14) ))+
                     *(int *)guest_at((uint32_t)(uintptr_t)((node + 0x30))))));
-  iVar5 = *(int *)guest_at((uint32_t)(uintptr_t)((node + 0x20) ))+ 0x5f0;
+  key = *(int *)guest_at((uint32_t)(uintptr_t)((node + 0x20) ))+ 0x5f0;
   if ('\x13' < *(char *)guest_at((uint32_t)(uintptr_t)((node + 8)))) {
-    puVar3 = (undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((node + 0x20) ))+ 0x638)));
-    puVar2 = (undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((node + 0x40) ))+ 0x21c)));
+    lc = (undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((node + 0x20) ))+ 0x638)));
+    out = (undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((node + 0x40) ))+ 0x21c)));
     do {
-      *(uint32_t *)(puVar2 + 8) = (uint32_t)guest_of(psVar4);
-      if (((int)*psVar4 & 0x8000U) != 0) {
-        iVar1 = *(int *)guest_at((uint32_t)(uintptr_t)((puVar3[-2] + 0x44)));
-        if (iVar1 == iVar5) {
-          *(undefined4 *)guest_at((uint32_t)(uintptr_t)((puVar3[-2] + 0x44) ))= *puVar3;
+      *(uint32_t *)(out + 8) = (uint32_t)guest_of(jt);
+      if (((int)*jt & 0x8000U) != 0) {
+        cur = *(int *)guest_at((uint32_t)(uintptr_t)((lc[-2] + 0x44)));
+        if (cur == key) {
+          *(undefined4 *)guest_at((uint32_t)(uintptr_t)((lc[-2] + 0x44) ))= *lc;
         }
         else {
-          for (; *(int *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0x48) ))!= iVar5; iVar1 = *(int *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0x48)))) {
+          for (; *(int *)guest_at((uint32_t)(uintptr_t)((cur + 0x48) ))!= key; cur = *(int *)guest_at((uint32_t)(uintptr_t)((cur + 0x48)))) {
           }
-          *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0x48) ))= *puVar3;
+          *(undefined4 *)guest_at((uint32_t)(uintptr_t)((cur + 0x48) ))= *lc;
         }
       }
-      puVar2[6] = 0;
-      puVar2[5] = 0;
-      puVar2[4] = 0;
-      puVar2[3] = 0;
-      puVar2[2] = 0;
-      puVar2[1] = 0;
-      *puVar2 = 0;
-      puVar2 = puVar2 + 0xe;
-      puVar3 = puVar3 + 0x14;
-      iVar5 = iVar5 + 0x50;
-      iVar6 = iVar6 + 1;
-      psVar4 = psVar4 + psVar4[1] + 2;
-    } while (iVar6 < *(char *)guest_at((uint32_t)(uintptr_t)((node + 8))));
+      out[6] = 0;
+      out[5] = 0;
+      out[4] = 0;
+      out[3] = 0;
+      out[2] = 0;
+      out[1] = 0;
+      *out = 0;
+      out = out + 0xe;
+      lc = lc + 0x14;
+      key = key + 0x50;
+      i = i + 1;
+      jt = jt + jt[1] + 2;
+    } while (i < *(char *)guest_at((uint32_t)(uintptr_t)((node + 8))));
   }
   return;
 }
 
 /* guest euler_rotmat @0x8018dc18 */
-undefined2 * euler_rotmat(uint node,uint a1,uint a2,undefined2 *a3)
+undefined2 * euler_rotmat(uint x,uint y,uint z,undefined2 *m)
 
 {
   short sVar1;
@@ -15725,41 +15725,41 @@ undefined2 * euler_rotmat(uint node,uint a1,uint a2,undefined2 *a3)
   int iVar11;
   uint uVar12;
   
-  iVar2 = (a1 & 0x3ff) * 2;
-  iVar4 = (a1 & 0x3ff) * -2 + 0x800;
+  iVar2 = (y & 0x3ff) * 2;
+  iVar4 = (y & 0x3ff) * -2 + 0x800;
   iVar3 = iVar2;
-  if ((a1 & 0x400) != 0) {
+  if ((y & 0x400) != 0) {
     iVar3 = iVar4;
     iVar4 = iVar2;
   }
   iVar4 = (int)*(short *)(&DAT_801247a8 + iVar4);
-  uVar12 = node + a2;
-  if ((a1 + 0x400 & 0x800) != 0) {
+  uVar12 = x + z;
+  if ((y + 0x400 & 0x800) != 0) {
     iVar4 = -iVar4;
   }
   sVar1 = *(short *)(&DAT_801247a8 + iVar3);
   iVar3 = (int)sVar1;
-  iVar5 = (node & 0x3ff) * 2;
-  iVar6 = (node & 0x3ff) * -2 + 0x800;
+  iVar5 = (x & 0x3ff) * 2;
+  iVar6 = (x & 0x3ff) * -2 + 0x800;
   iVar2 = iVar5;
-  if ((node & 0x400) != 0) {
+  if ((x & 0x400) != 0) {
     iVar2 = iVar6;
     iVar6 = iVar5;
   }
   iVar6 = (int)*(short *)(&DAT_801247a8 + iVar6);
-  if ((node + 0x400 & 0x800) != 0) {
+  if ((x + 0x400 & 0x800) != 0) {
     iVar6 = -iVar6;
   }
   iVar2 = (int)*(short *)(&DAT_801247a8 + iVar2);
-  iVar7 = (a2 & 0x3ff) * 2;
-  iVar9 = (a2 & 0x3ff) * -2 + 0x800;
+  iVar7 = (z & 0x3ff) * 2;
+  iVar9 = (z & 0x3ff) * -2 + 0x800;
   iVar5 = iVar7;
-  if ((a2 & 0x400) != 0) {
+  if ((z & 0x400) != 0) {
     iVar5 = iVar9;
     iVar9 = iVar7;
   }
   iVar9 = (int)*(short *)(&DAT_801247a8 + iVar9);
-  if ((a2 + 0x400 & 0x800) != 0) {
+  if ((z + 0x400 & 0x800) != 0) {
     iVar9 = -iVar9;
   }
   iVar5 = (int)*(short *)(&DAT_801247a8 + iVar5);
@@ -15771,54 +15771,54 @@ undefined2 * euler_rotmat(uint node,uint a1,uint a2,undefined2 *a3)
     iVar11 = iVar10;
   }
   iVar11 = (int)*(short *)(&DAT_801247a8 + iVar11);
-  if ((node & 0x800) != 0) {
+  if ((x & 0x800) != 0) {
     iVar2 = -iVar2;
   }
   iVar7 = (int)*(short *)(&DAT_801247a8 + iVar7);
   if ((uVar12 + 0x400 & 0x800) != 0) {
     iVar11 = -iVar11;
   }
-  if ((a2 & 0x800) != 0) {
+  if ((z & 0x800) != 0) {
     iVar5 = -iVar5;
   }
-  *a3 = (short)(iVar9 * iVar4 >> 0xc);
-  a3[7] = (short)(iVar2 * iVar4 >> 0xc);
+  *m = (short)(iVar9 * iVar4 >> 0xc);
+  m[7] = (short)(iVar2 * iVar4 >> 0xc);
   sVar8 = -sVar1;
-  if ((a1 & 0x800) != 0) {
+  if ((y & 0x800) != 0) {
     iVar3 = -iVar3;
     sVar8 = sVar1;
   }
-  a3[6] = sVar8;
+  m[6] = sVar8;
   if ((uVar12 & 0x800) != 0) {
     iVar7 = -iVar7;
   }
   iVar11 = iVar11 * (iVar3 + -0x1000);
-  a3[8] = (short)(iVar6 * iVar4 >> 0xc);
-  node = node - a2;
-  a3[3] = (short)(iVar5 * iVar4 >> 0xc);
-  iVar6 = (node & 0x3ff) * 2;
+  m[8] = (short)(iVar6 * iVar4 >> 0xc);
+  x = x - z;
+  m[3] = (short)(iVar5 * iVar4 >> 0xc);
+  iVar6 = (x & 0x3ff) * 2;
   iVar7 = iVar7 * (iVar3 + -0x1000);
-  iVar2 = (node & 0x3ff) * -2 + 0x800;
+  iVar2 = (x & 0x3ff) * -2 + 0x800;
   iVar4 = iVar6;
-  if ((node & 0x400) != 0) {
+  if ((x & 0x400) != 0) {
     iVar4 = iVar2;
     iVar2 = iVar6;
   }
   iVar2 = (int)*(short *)(&DAT_801247a8 + iVar2);
-  if ((node + 0x400 & 0x800) != 0) {
+  if ((x + 0x400 & 0x800) != 0) {
     iVar2 = -iVar2;
   }
   iVar2 = iVar2 * (iVar3 + 0x1000);
   iVar4 = (int)*(short *)(&DAT_801247a8 + iVar4);
-  if ((node & 0x800) != 0) {
+  if ((x & 0x800) != 0) {
     iVar4 = -iVar4;
   }
   iVar4 = iVar4 * (iVar3 + 0x1000);
-  a3[2] = (short)((iVar11 + iVar2) >> 0xd);
-  a3[4] = (short)((iVar2 - iVar11) >> 0xd);
-  a3[1] = (short)((iVar7 + iVar4) >> 0xd);
-  a3[5] = (short)((iVar7 - iVar4) >> 0xd);
-  return a3;
+  m[2] = (short)((iVar11 + iVar2) >> 0xd);
+  m[4] = (short)((iVar2 - iVar11) >> 0xd);
+  m[1] = (short)((iVar7 + iVar4) >> 0xd);
+  m[5] = (short)((iVar7 - iVar4) >> 0xd);
+  return m;
 }
 
 /* ---- batch25: task callbacks + motion_integrator_tail (verified vs disasm) ---- */
