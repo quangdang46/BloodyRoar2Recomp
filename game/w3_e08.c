@@ -2901,6 +2901,9 @@ void mc_op_result_poll_alt(void)
     }
     /* Address: 0x80168424, Size: 164 bytes, Blocks: 11 */
 
+    /* memcard op-result poll: retry 0x8019EA98 until v0!=0, then retry
+     * 0x8019FA80; index word(sp+20) (<5) dispatches via table s2, else
+     * re-poll while the value keeps changing; v0 = word(sp+20) on return */
 block_80168424:
     sp = sp + -40;
     cpu->write_word(sp + 28, s1);
@@ -2921,16 +2924,14 @@ block_80168448:
     cpu->pc = 0x8019EA98u; return;  /* CPS jal -> 0x8019EA98 */
 
 block_80168450:
-    int _bc_80168450 = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     a0 = zero;
-    if (_bc_80168450) {
+    if (v0 == zero) {
         psx_check_interrupts_at(cpu, 0x80168448u);
-        goto block_80168448;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x80168458u);
-        goto block_80168458;  /* not taken */
+        goto block_80168448;  /* taken: poll again */
     }
+    psx_check_interrupts_at(cpu, 0x80168458u);
+    /* fall through to block_80168458 */
 
 block_80168458:
     a1 = sp + 16;
@@ -2941,16 +2942,14 @@ block_80168458:
     cpu->pc = 0x8019FA80u; return;  /* CPS jal -> 0x8019FA80 */
 
 block_80168464:
-    int _bc_80168464 = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     a0 = zero;
-    if (_bc_80168464) {
+    if (v0 == zero) {
         psx_check_interrupts_at(cpu, 0x80168458u);
-        goto block_80168458;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8016846Cu);
-        goto block_8016846C;  /* not taken */
+        goto block_80168458;  /* taken: poll again */
     }
+    psx_check_interrupts_at(cpu, 0x8016846Cu);
+    /* fall through to block_8016846C */
 
 block_8016846C:
     v1 = cpu->read_word(sp + 20);
@@ -2961,11 +2960,10 @@ block_8016846C:
     v0 = v1 << 2;
     if (_bc_80168478) {
         psx_check_interrupts_at(cpu, 0x80168494u);
-        goto block_80168494;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x80168480u);
-        goto block_80168480;  /* not taken */
+        goto block_80168494;  /* taken: index >=5 -> stability check */
     }
+    psx_check_interrupts_at(cpu, 0x80168480u);
+    /* fall through to block_80168480 */
 
 block_80168480:
     v0 = v0 + s2;
@@ -2985,11 +2983,10 @@ block_80168494:
     s0 = v0;
     if (_bc_8016849C) {
         psx_check_interrupts_at(cpu, 0x801684B0u);
-        goto block_801684B0;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x801684A4u);
-        goto block_801684A4;  /* not taken */
+        goto block_801684B0;  /* taken: unchanged -> done */
     }
+    psx_check_interrupts_at(cpu, 0x801684A4u);
+    /* fall through to block_801684A4 */
 
 block_801684A4:
     /* delay slot (always executes) */
@@ -3032,6 +3029,9 @@ void mc_file_cmd_stable_poll_alt(void)
     }
     /* Address: 0x801685B4, Size: 148 bytes, Blocks: 6 */
 
+    /* stable-result poll: retry 0x8019FB9C until v0!=0; index v0 (<8)
+     * dispatches via table s1, else re-poll while the value keeps
+     * changing; v0 = last index on return */
 block_801685B4:
     sp = sp + -40;
     cpu->write_word(sp + 24, s2);
@@ -3065,11 +3065,10 @@ block_801685F8:
     v0 = v1 << 2;
     if (_bc_80168600) {
         psx_check_interrupts_at(cpu, 0x8016861Cu);
-        goto block_8016861C;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x80168608u);
-        goto block_80168608;  /* not taken */
+        goto block_8016861C;  /* taken: index >=8 -> stability check */
     }
+    psx_check_interrupts_at(cpu, 0x80168608u);
+    /* fall through to block_80168608 */
 
 block_80168608:
     v0 = v0 + s1;
@@ -3087,11 +3086,10 @@ block_8016861C:
     s0 = v1;
     if (_bc_8016861C) {
         psx_check_interrupts_at(cpu, 0x801685E8u);
-        goto block_801685E8;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x80168624u);
-        goto block_80168624;  /* not taken */
+        goto block_801685E8;  /* taken: changed -> repoll */
     }
+    psx_check_interrupts_at(cpu, 0x80168624u);
+    /* fall through to block_80168624 */
 
 block_80168624:
     v0 = v1;

@@ -59889,7 +59889,9 @@ void cps_80168838(void)
     }
     /* Address: 0x80168838, Size: 184 bytes, Blocks: 9 */
 
-block_80168838:
+    /* poll-until-stable wrapper: saves args to s1-s4, then loops on
+     * 0x8019F35C/0x8019FA80 polls tracking word(sp+28) until it holds
+     * a value >=4 or stops changing; v0 = word(sp+28) on return */
     sp = sp + -64;
     cpu->write_word(sp + 52, s5);
     s5 = cpu->read_word(sp + 80);
@@ -59918,16 +59920,14 @@ block_80168870:
     cpu->pc = 0x8019F35Cu; return;  /* CPS jal -> 0x8019F35C */
 
 block_80168888:
-    int _bc_80168888 = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     a0 = zero;
-    if (_bc_80168888) {
+    if (v0 == zero) {
         psx_check_interrupts_at(cpu, 0x80168870u);
-        goto block_80168870;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x80168890u);
-        goto block_80168890;  /* not taken */
+        goto block_80168870;  /* taken: poll again */
     }
+    psx_check_interrupts_at(cpu, 0x80168890u);
+    /* fall through to block_80168890 */
 
 block_80168890:
     a1 = sp + 24;
@@ -59938,43 +59938,35 @@ block_80168890:
     cpu->pc = 0x8019FA80u; return;  /* CPS jal -> 0x8019FA80 */
 
 block_8016889C:
-    int _bc_8016889C = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     a0 = zero;
-    if (_bc_8016889C) {
+    if (v0 == zero) {
         psx_check_interrupts_at(cpu, 0x80168890u);
-        goto block_80168890;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x801688A4u);
-        goto block_801688A4;  /* not taken */
+        goto block_80168890;  /* taken: poll again */
     }
+    psx_check_interrupts_at(cpu, 0x801688A4u);
+    /* fall through to block_801688A4 */
 
 block_801688A4:
     v1 = cpu->read_word(sp + 28);
     /* nop */  /* 0x801688A8: 0x00000000 */
     v0 = (v1 < (uint32_t)4) ? 1 : 0;  /* 0x801688AC: 0x2C620004 */
-    int _bc_801688B0 = (v0 == zero);  /* save branch cond before delay slot */
-    /* delay slot (always executes) */
     /* nop */  /* 0x801688B4: 0x00000000 */
-    if (_bc_801688B0) {
+    if (v0 == zero) {
         psx_check_interrupts_at(cpu, 0x801688C0u);
-        goto block_801688C0;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x801688B8u);
-        goto block_801688B8;  /* not taken */
+        goto block_801688C0;  /* taken: count >= 4 -> stability check */
     }
+    psx_check_interrupts_at(cpu, 0x801688B8u);
+    /* fall through to block_801688B8 */
 
 block_801688B8:
-    int _bc_801688B8 = (v1 == zero);  /* save branch cond before delay slot */
-    /* delay slot (always executes) */
     /* nop */  /* 0x801688BC: 0x00000000 */
-    if (_bc_801688B8) {
+    if (v1 == zero) {
         psx_check_interrupts_at(cpu, 0x801688C8u);
-        goto block_801688C8;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x801688C0u);
-        goto block_801688C0;  /* not taken */
+        goto block_801688C8;  /* taken: count == 0 -> done */
     }
+    psx_check_interrupts_at(cpu, 0x801688C0u);
+    /* fall through to block_801688C0 */
 
 block_801688C0:
     int _bc_801688C0 = (s0 != v1);  /* save branch cond before delay slot */
@@ -59982,11 +59974,10 @@ block_801688C0:
     s0 = v1;
     if (_bc_801688C0) {
         psx_check_interrupts_at(cpu, 0x80168870u);
-        goto block_80168870;  /* taken */
-    } else {
-        psx_check_interrupts_at(cpu, 0x801688C8u);
-        goto block_801688C8;  /* not taken */
+        goto block_80168870;  /* taken: count changed -> restart poll */
     }
+    psx_check_interrupts_at(cpu, 0x801688C8u);
+    /* fall through to block_801688C8 */
 
 block_801688C8:
     v0 = cpu->read_word(sp + 28);
