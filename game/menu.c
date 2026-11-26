@@ -14272,54 +14272,53 @@ extern uint32_t fighter_reset_fx();
  *    0x801b1d5c); if p: MB32(p)=s1, MB32(p+4)=
  *    0x1f8000e8+((MB8(s1+2)^1)*264)
  * 15: fighter_reset_fx(1,s1) */
-uint32_t desc_opcode_dispatch(uint32_t param_1,uint32_t param_2,
-                      uint32_t param_3,uint32_t v0in)
+uint32_t desc_opcode_dispatch(uint32_t ent,uint32_t unused,
+                      uint32_t desc,uint32_t gate)
 {
-  uint32_t s1 = param_1, s2 = param_3;
-  uint32_t a3 = MB16(s2 + 2);
-  uint32_t idx, p, rec;
-  int32_t sx8 = (int32_t)(int8_t)(a3 >> 8);
-  int32_t sx16 = (int32_t)(int16_t)a3;
+  uint32_t arg = MB16(desc + 2);
+  uint32_t op, blk, rec;
+  int32_t sx8 = (int32_t)(int8_t)(arg >> 8);
+  int32_t sx16 = (int32_t)(int16_t)arg;
   /* case-12 vec = guest $sp+0x20 (frame -0x38) = entry_sp-0x18; staged
    * inside a reserved guest frame in the case-12 block below. */
-  if (v0in != 0) return s2 + 4;
-  idx = (uint32_t)(int32_t)(int8_t)(MB16(s2) >> 8);
-  if (idx >= 0x10) return s2 + 4;
-  switch (idx) {
+  if (gate != 0) return desc + 4;
+  op = (uint32_t)(int32_t)(int8_t)(MB16(desc) >> 8);
+  if (op >= 0x10) return desc + 4;
+  switch (op) {
   case 0: {
-    uint32_t f = MB32(s1 + 0x38);
-    uint32_t sel = (MB8(f + 0x100) != 0 && (a3 & 0x80)) ? (a3 & 0xff) : (a3 & 0x7f);
-    hit_spark_spawn(s1, sel, (uint32_t)sx8);
+    uint32_t f = MB32(ent + 0x38);
+    uint32_t sel = (MB8(f + 0x100) != 0 && (arg & 0x80)) ? (arg & 0xff) : (arg & 0x7f);
+    hit_spark_spawn(ent, sel, (uint32_t)sx8);
     break;
   }
   case 1:
-    triple_track_spawn(MB8(s1 + 2), a3 & 0xffu, (uint32_t)sx8);
+    triple_track_spawn(MB8(ent + 2), arg & 0xffu, (uint32_t)sx8);
     break;
   case 2:
-    speech_bubble_spawn((undefined4 *)guest_at(MB32(s1 + 0x20) + 0x124u),
-                 (uint32_t)(MBS16(s1 + 0x4e) - 0x400),
-                 (uint32_t)sx8, a3 & 0xffu);
+    speech_bubble_spawn((undefined4 *)guest_at(MB32(ent + 0x20) + 0x124u),
+                 (uint32_t)(MBS16(ent + 0x4e) - 0x400),
+                 (uint32_t)sx8, arg & 0xffu);
     break;
   case 3:
-    speech_bubble_spawn((undefined4 *)guest_at(MB32(s1 + 0x20) + 0x124u),
-                 (uint32_t)(MBS16(s1 + 0x4e) + 0x400),
-                 (uint32_t)sx8, a3 & 0xffu);
+    speech_bubble_spawn((undefined4 *)guest_at(MB32(ent + 0x20) + 0x124u),
+                 (uint32_t)(MBS16(ent + 0x4e) + 0x400),
+                 (uint32_t)sx8, arg & 0xffu);
     break;
   case 4:
-    effect_arg_set(s1);
+    effect_arg_set(ent);
     break;
   case 5:
-    sprite_burst_spawn(s1, (uint32_t)sx16);
+    sprite_burst_spawn(ent, (uint32_t)sx16);
     break;
   case 6:
-    confetti_burst_spawn(s1, (uint32_t)sx16);
+    confetti_burst_spawn(ent, (uint32_t)sx16);
     break;
   case 7:
     if (MB8(MB32(0x1f8000c4u) + 2) != 0)
-      popup_spawn(s1, (uint32_t)sx8, a3 & 0xffu);
+      popup_spawn(ent, (uint32_t)sx8, arg & 0xffu);
     break;
   case 8:
-    iris_wipe_spawn(s1, (uint32_t)sx16);
+    iris_wipe_spawn(ent, (uint32_t)sx16);
     break;
   case 9: {
     /* guest: s0 = sx16(param) loaded in the branch delay slot
@@ -14327,18 +14326,18 @@ uint32_t desc_opcode_dispatch(uint32_t param_1,uint32_t param_2,
      * lbu(0x801b180c+s0) (@0x80141f28-34), else it stays sx16 — single
      * convergent path, offset = s0*0x50 + 0x34 (@0x80141f5c-74). */
     int32_t pi = sx16;
-    if (MB8(MB32(s1 + 0x38) + 0x100) != 0)
+    if (MB8(MB32(ent + 0x38) + 0x100) != 0)
       pi = (int32_t)MB8(0x801b180cu + (uint32_t)sx16);
-    p = fx_group_alloc(1, 1, 0, 0xf);
-    if (p != 0)
-      noop_b(p, MB32(s1 + 0x20) + (uint32_t)(pi * 0x50) + 0x34u, 0x801f0760u);
+    blk = fx_group_alloc(1, 1, 0, 0xf);
+    if (blk != 0)
+      noop_b(blk, MB32(ent + 0x20) + (uint32_t)(pi * 0x50) + 0x34u, 0x801f0760u);
     break;
   }
   case 10:
-    color_rec_table_init(MB8(s1 + 3), (uint32_t)sx16);
+    color_rec_table_init(MB8(ent + 3), (uint32_t)sx16);
     break;
   case 11:
-    firework_spawn((undefined2 *)guest_at(MB32(s1 + 0x20) + (uint32_t)sx16 * 80u + 0x34u));
+    firework_spawn((undefined2 *)guest_at(MB32(ent + 0x20) + (uint32_t)sx16 * 80u + 0x34u));
     break;
   case 12: {
     /* vec = guest $sp+0x20 (frame -0x38) = entry_sp-0x18; emit_task_spawn_b
@@ -14349,37 +14348,37 @@ uint32_t desc_opcode_dispatch(uint32_t param_1,uint32_t param_2,
     uint32_t dod_frm = br2_guest_frame(0x38);
     uint32_t dod_vec = dod_frm + 0x28;
     uint32_t i2 = (uint32_t)(sx8 & 0x7f);
-    if (MB8(MB32(s1 + 0x38) + 0x100) != 0 && (sx16 & 0x8000))
+    if (MB8(MB32(ent + 0x38) + 0x100) != 0 && (sx16 & 0x8000))
       i2 = MB8(0x801b180cu + i2);
-    rec = MB32(s1 + 0x20) + i2 * 80u;
+    rec = MB32(ent + 0x20) + i2 * 80u;
     MW16(dod_vec + 0, MB16(rec + 0x34));
     MW16(dod_vec + 2, MB16(rec + 0x38));
     MW16(dod_vec + 4, MB16(rec + 0x3c));
     /* emit_task_spawn_b takes a host pointer to the 8-byte vec */
     emit_task_spawn_b((undefined4 *)guest_at(dod_vec),
-                 MB32(0x801f0790u + (a3 & 0xffu) * 4u),
-                 MB32(0x801f0780u + (a3 & 0xffu) * 4u), 0);
+                 MB32(0x801f0790u + (arg & 0xffu) * 4u),
+                 MB32(0x801f0780u + (arg & 0xffu) * 4u), 0);
     br2_guest_frame_free();
     break;
   }
   case 13:
-    p = fx_record_alloc(MB32(s1 + 0x20) + 0x124u, 6, 0x80000010u, 2,
+    blk = fx_record_alloc(MB32(ent + 0x20) + 0x124u, 6, 0x80000010u, 2,
                      MB32(0x801b1d44u));
-    if (p != 0) MW16(p, (uint16_t)rand_lcg());
+    if (blk != 0) MW16(blk, (uint16_t)rand_lcg());
     break;
   case 14:
-    p = fx_record_alloc(MB32(s1 + 0x20) + 0x444u, 0xc, 0x80000012u, 0x8e,
+    blk = fx_record_alloc(MB32(ent + 0x20) + 0x444u, 0xc, 0x80000012u, 0x8e,
                      0x801b1d5cu);
-    if (p != 0) {
-      MW32(p, s1);
-      MW32(p + 4, 0x1f8000e8u + (uint32_t)(MB8(s1 + 2) ^ 1u) * 264u);
+    if (blk != 0) {
+      MW32(blk, ent);
+      MW32(blk + 4, 0x1f8000e8u + (uint32_t)(MB8(ent + 2) ^ 1u) * 264u);
     }
     break;
   case 15:
-    fighter_reset_fx(1, (byte *)guest_at(s1));
+    fighter_reset_fx(1, (byte *)guest_at(ent));
     break;
   }
-  return s2 + 4;
+  return desc + 4;
 }
 
 /* script_move_timer_eval — scripted movement/timer evaluator @0x8014b37c
