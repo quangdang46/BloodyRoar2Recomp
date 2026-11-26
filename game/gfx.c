@@ -974,28 +974,28 @@ undefined4 gp_bde20_read(void)
 
 /* ======== 0x8019b220 ======== */
 
-void cd_chan_boot_init(int param_1)
+void cd_chan_boot_init(int chan)
 
 {
   /* Keep clean: it must reach cd_ext_init_once() so the CD
    * OpenEvent(0xF0000009) init path runs. Delegating this body (and
    * cd_chan_boot_fwd) to generated was tried; the generated CPS path did not
    * dispatch cd_ext_init_once either, leaving the guard unset. */
-  undefined2 *puVar1;
-  int iVar2;
-  uint16_t *t;
+  undefined2 *w;
+  int i;
+  uint16_t *base;
   
   cd_dispatch_tblc();
-  cd_chan_reg_init(param_1);
-  if (param_1 == 0) {
-    iVar2 = 0x17;
-    t = (uint16_t *)guest_at(0x801bde9a);
-    puVar1 = t;
+  cd_chan_reg_init(chan);
+  if (chan == 0) {
+    i = 0x17;
+    base = (uint16_t *)guest_at(0x801bde9a);
+    w = base;
     do {
-      *puVar1 = 0xc000;
-      iVar2 = iVar2 + -1;
-      puVar1 = puVar1 + -1;
-    } while (-1 < iVar2);
+      *w = 0xc000;
+      i = i + -1;
+      w = w + -1;
+    } while (-1 < i);
   }
   cd_ext_init_once();
   GP32(0x801bde44) = 0;
@@ -1024,33 +1024,33 @@ extern uint32_t printf_core(uint32_t,const uint8_t *,const uint32_t *);
 
 /* printf_forward — printf-style forwarder: packs up to 3 varargs and
  * calls printf_core(1, fmt, &args). Verbatim from decompile. */
-void printf_forward(const char *param_1, ...)
+void printf_forward(const char *fmt, ...)
 {
   uint32_t args[8];
   va_list ap;
   int i;
-  va_start(ap,param_1);
+  va_start(ap,fmt);
   for (i = 0; i < 8; i++) {
     uintptr_t v = va_arg(ap,uintptr_t);
     uint32_t g = guest_of((const void *)v);
     args[i] = g ? g : (uint32_t)v;
   }
   va_end(ap);
-  printf_core(1,param_1,args);
+  printf_core(1,fmt,args);
 }
 
 /* sprite_attr_init_a — sprite/OAM attribute block init (u16 fields + tail
  * bytes). param_1 = host pointer to the attr struct. */
-void sprite_attr_init_a(uint32_t param_1,uint16_t param_2,uint16_t param_3,
-                  uint16_t param_4,int32_t param_5)
+void sprite_attr_init_a(uint32_t attr_g,uint16_t x,uint16_t y,
+                  uint16_t w,int32_t h)
 {
-  int iVar2;
-  uint16_t *p1 = (uint16_t *)guest_at(param_1);
+  int sys;
+  uint16_t *p1 = (uint16_t *)guest_at(attr_g);
   uint8_t *b = (uint8_t *)p1;
-  iVar2 = gp_bde20_read();
-  p1[0] = param_2;
-  p1[1] = param_3;
-  p1[2] = param_4;
+  sys = gp_bde20_read();
+  p1[0] = x;
+  p1[1] = y;
+  p1[2] = w;
   p1[6] = 0;
   p1[7] = 0;
   p1[8] = 0;
@@ -1059,23 +1059,23 @@ void sprite_attr_init_a(uint32_t param_1,uint16_t param_2,uint16_t param_3,
   b[0x1a] = 0;
   b[0x1b] = 0;
   b[0x16] = 1;
-  p1[3] = (int16_t)param_5;
-  b[0x17] = (uint8_t)(iVar2 == 0 ? param_5 < 0x101 : param_5 < 0x121);
-  p1[4] = param_2;
-  p1[5] = param_3;
+  p1[3] = (int16_t)h;
+  b[0x17] = (uint8_t)(sys == 0 ? h < 0x101 : h < 0x121);
+  p1[4] = x;
+  p1[5] = y;
   p1[10] = 10;
   b[0x18] = 0;
 }
 
 /* sprite_attr_init_b — second sprite-attr variant init. */
-void sprite_attr_init_b(uint32_t param_1,uint16_t param_2,uint16_t param_3,
-                  uint16_t param_4,uint16_t param_5)
+void sprite_attr_init_b(uint32_t attr_g,uint16_t x,uint16_t y,
+                  uint16_t w,uint16_t aux)
 {
-  uint16_t *p1 = (uint16_t *)guest_at(param_1);
+  uint16_t *p1 = (uint16_t *)guest_at(attr_g);
   uint8_t *b = (uint8_t *)p1;
-  p1[0] = param_2;
-  p1[1] = param_3;
-  p1[2] = param_4;
+  p1[0] = x;
+  p1[1] = y;
+  p1[2] = w;
   p1[4] = 0;
   p1[5] = 0;
   p1[6] = 0;
@@ -1084,7 +1084,7 @@ void sprite_attr_init_b(uint32_t param_1,uint16_t param_2,uint16_t param_3,
   b[0x10] = 0;
   b[0x13] = 0;
   b[0x12] = 0;
-  p1[3] = param_5;
+  p1[3] = aux;
 }
 
 /* ---- batch29: sprite-attr bit helpers (guest-addr convention) ---- */
@@ -1092,35 +1092,35 @@ void sprite_attr_init_b(uint32_t param_1,uint16_t param_2,uint16_t param_3,
 /* bitfield_or_write — unaligned bitfield OR-write: inserts param_2 (8-bit
  * value) at bit offset derived from param_1 alignment. param_1 is a
  * host pointer (sole caller hud_sprite_desc_init passes arena ptrs). */
-void bitfield_or_write(const void *param_1,int param_2)
+void bitfield_or_write(const void *p,int val)
 {
-  uintptr_t a = (uintptr_t)param_1;
-  uint32_t uVar1 = (uint32_t)(a + 2) & 3;
-  uint32_t *puVar2 = (uint32_t *)((a + 2) - uVar1);
-  *puVar2 = *puVar2 & (0xffffffffu << ((uVar1 + 1) * 8)) |
-           (uint32_t)((uint32_t)param_2 << 8) >> ((3 - uVar1) * 8);
+  uintptr_t a = (uintptr_t)p;
+  uint32_t align = (uint32_t)(a + 2) & 3;
+  uint32_t *wp = (uint32_t *)((a + 2) - align);
+  *wp = *wp & (0xffffffffu << ((align + 1) * 8)) |
+           (uint32_t)((uint32_t)val << 8) >> ((3 - align) * 8);
 }
 
 /* spr_desc_a/4060/4090 — per-slot sprite descriptor helpers.
  * param_1 = guest address of a 0x28-byte slot record. */
-void spr_desc_a(uint32_t param_1)
+void spr_desc_a(uint32_t slot_g)
 {
-  uint8_t *p = (uint8_t *)guest_at(param_1);
+  uint8_t *p = (uint8_t *)guest_at(slot_g);
   p[3] = 9;
   p[7] = 0x2c;
 }
 
-void spr_desc_b(uint32_t param_1,uint32_t param_2)
+void spr_desc_b(uint32_t slot_g,uint32_t on)
 {
-  uint8_t *p = (uint8_t *)guest_at(param_1);
-  if (param_2 == 0) p[7] &= 0xfd;
+  uint8_t *p = (uint8_t *)guest_at(slot_g);
+  if (on == 0) p[7] &= 0xfd;
   else               p[7] |= 2;
 }
 
-void spr_desc_c(uint32_t param_1,uint32_t param_2)
+void spr_desc_c(uint32_t slot_g,uint32_t on)
 {
-  uint8_t *p = (uint8_t *)guest_at(param_1);
-  if (param_2 == 0) p[7] &= 0xfe;
+  uint8_t *p = (uint8_t *)guest_at(slot_g);
+  if (on == 0) p[7] &= 0xfe;
   else               p[7] |= 1;
 }
 
@@ -1141,173 +1141,173 @@ extern void     gpu_pkt_tag_74(uint32_t);
 extern void    *PTR_FUN_801b831c;
 
 /* text_win_init — text window init: two draw-env installs + clear. */
-void text_win_init(uint32_t param_1,int32_t param_2)
+void text_win_init(uint32_t w,int32_t h)
 {
-  GB32(0x801fad12) = gpu_sprite_rect_emit(0x801b78c8,param_1,(uint32_t)(param_2 + 0x80));
-  GB32(0x801fad10) = gpu_sprite_rect_emit_mode(0x801b7ac8,0,0,param_1,(uint32_t)param_2,0x80,0x20);
+  GB32(0x801fad12) = gpu_sprite_rect_emit(0x801b78c8,w,(uint32_t)(h + 0x80));
+  GB32(0x801fad10) = gpu_sprite_rect_emit_mode(0x801b7ac8,0,0,w,(uint32_t)h,0x80,0x20);
   GB8(0x801b78c0) = 0;
   guest_memset_b(0x801b7740,0,0x180);
 }
 
 /* text_line_select — select active text line (bounds vs DAT_801b78c0). */
-void text_line_select(int32_t param_1)
+void text_line_select(int32_t line)
 {
-  if ((0 <= param_1) && (param_1 <= (int32_t)GB8(0x801b78c0))) {
+  if ((0 <= line) && (line <= (int32_t)GB8(0x801b78c0))) {
     PTR_FUN_801b831c = (void *)text_win_printf;
-    GB8(0x801b78c4) = (uint8_t)param_1;
+    GB8(0x801b78c4) = (uint8_t)line;
   }
 }
 
 /* text_widget_alloc — allocate one 0x30-byte text-string widget slot.
  * Returns slot index or -1 when DAT_801b78c0 >= 8. */
-int32_t text_widget_alloc(uint16_t param_1,uint16_t param_2,int32_t param_3,
-                     uint16_t param_4,int32_t param_5,int32_t param_6)
+int32_t text_widget_alloc(uint16_t x,uint16_t y,int32_t attr,
+                     uint16_t aux,int32_t mode,int32_t count)
 {
-  int32_t iVar1, iVar2;
+  int32_t i, tmp;
   /* guest sp-0x30..-0x28 is one contiguous 8-byte texcoord buffer read by
-   * prim_packet_init_tex as bytes 0..7 (param_5[0..2] + shorts +4/+6).
+   * prim_packet_init_tex as bytes 0..7 (mode[0..2] + shorts +4/+6).
    * Ghidra split the four halfwords into scalars; keep them contiguous. */
-  uint16_t local_30[4];
+  uint16_t uv[4];
   uint32_t slot;
 
   if ((int32_t)GB8(0x801b78c0) < 8) {
     if (GB8(0x801b78c0) == 0) GB32(0x801b82c8) = 0;
     slot = GB8(0x801b78c0) * 0x30;
-    GB32(0x801b7740 + slot + 0x2c) = (param_3 == 0);
-    iVar2 = (int32_t)GB32(0x801b82c8);
-    if (0x400 < iVar2 + param_6) param_6 = 0x400 - iVar2;
-    local_30[2] = 0x100; local_30[3] = 0x100;
-    local_30[0] = 0;     local_30[1] = 0;
+    GB32(0x801b7740 + slot + 0x2c) = (attr == 0);
+    tmp = (int32_t)GB32(0x801b82c8);
+    if (0x400 < tmp + count) count = 0x400 - tmp;
+    uv[2] = 0x100; uv[3] = 0x100;
+    uv[0] = 0;     uv[1] = 0;
     prim_packet_init_tex((int)(0x801b7750 + slot),0,0,(uint32_t)GB32(0x801fad10),
-                 (byte *)local_30);
-    if (param_5 != 0) {
+                 (byte *)uv);
+    if (mode != 0) {
       gpu_pkt_tag_60(0x801b7740 + slot);
       GB8(0x801b7744 + slot) = 0;
       GB8(0x801b7745 + slot) = 0;
       GB8(0x801b7746 + slot) = 0;
-      spr_desc_b(0x801b7740 + slot,(param_5 == 2));
+      spr_desc_b(0x801b7740 + slot,(mode == 2));
     }
-    iVar2 = (int32_t)GB32(0x801b82c8);
+    tmp = (int32_t)GB32(0x801b82c8);
     slot = GB8(0x801b78c0) * 0x30;
-    GB16(0x801b7748 + slot) = param_1;
-    GB16(0x801b774a + slot) = param_2;
-    GB16S(0x801b774c + slot) = (int16_t)param_3;
-    GB16(0x801b774e + slot) = param_4;
-    GB32S(0x801b775c + slot) = param_6;
+    GB16(0x801b7748 + slot) = x;
+    GB16(0x801b774a + slot) = y;
+    GB16S(0x801b774c + slot) = (int16_t)attr;
+    GB16(0x801b774e + slot) = aux;
+    GB32S(0x801b775c + slot) = count;
     GB32(0x801b7768 + slot) = 0;
-    GB32S(0x801b7764 + slot) = iVar2 + (int32_t)0x801f6910;
-    GB32S(0x801b7760 + slot) = iVar2 * 0x10 + (int32_t)0x801f6d10;
+    GB32S(0x801b7764 + slot) = tmp + (int32_t)0x801f6910;
+    GB32S(0x801b7760 + slot) = tmp * 0x10 + (int32_t)0x801f6d10;
     *(uint8_t *)guest_at(GB32(0x801b7764 + slot)) = 0;
-    iVar2 = GB32S(0x801b7760 + GB8(0x801b78c0) * 0x30);
-    iVar1 = 0;
-    if (0 < param_6) {
+    tmp = GB32S(0x801b7760 + GB8(0x801b78c0) * 0x30);
+    i = 0;
+    if (0 < count) {
       do {
-        gpu_pkt_tag_74((uint32_t)iVar2);
-        iVar1 = iVar1 + 1;
-        GB16((uint32_t)iVar2 + 0xe) = GB16(0x801fad12);
-        iVar2 += 0x10;
-      } while (iVar1 < param_6);
+        gpu_pkt_tag_74((uint32_t)tmp);
+        i = i + 1;
+        GB16((uint32_t)tmp + 0xe) = GB16(0x801fad12);
+        tmp += 0x10;
+      } while (i < count);
     }
-    GB32(0x801b82c8) = GB32(0x801b82c8) + (uint32_t)param_6;
-    iVar2 = GB8(0x801b78c0);
+    GB32(0x801b82c8) = GB32(0x801b82c8) + (uint32_t)count;
+    tmp = GB8(0x801b78c0);
     GB8(0x801b78c0) = GB8(0x801b78c0) + 1;
   } else {
-    iVar2 = -1;
+    tmp = -1;
   }
-  return iVar2;
+  return tmp;
 }
 
 /* spr_attr_alloc_a — sprite-attr slot alloc with 0x5000000/0x28000000|
  * 0x2a000000 tag packing (same cluster as spr_desc_slot_alloc/c824).
  * param_1 = guest address of the head pointer cell. */
 extern void *spr_pool_a_alloc(void);
-uint32_t spr_attr_alloc_a(uint32_t param_1,int16_t param_2,int16_t param_3,
-                      int16_t param_4,int16_t param_5,uint32_t param_6,
-                      int32_t param_7)
+uint32_t spr_attr_alloc_a(uint32_t head_g,int16_t x0,int16_t y0,
+                      int16_t w,int16_t h,uint32_t tag,
+                      int32_t variant)
 {
-  uint32_t *puVar1;
-  uint32_t uVar2;
-  int32_t iVar3;
-  puVar1 = (uint32_t *)spr_pool_a_alloc();
-  if (puVar1 == (uint32_t *)0x0) {
-    uVar2 = 0xffffffff;
+  uint32_t *pkt;
+  uint32_t ret;
+  int32_t tex_ofs;
+  pkt = (uint32_t *)spr_pool_a_alloc();
+  if (pkt == (uint32_t *)0x0) {
+    ret = 0xffffffff;
   } else {
-    uint8_t *b = (uint8_t *)puVar1;
-    *(int16_t *)(b + 8) = param_2;
-    *(int16_t *)(b + 10) = param_3;
-    *(int16_t *)(b + 12) = (int16_t)(param_2 + param_4);
-    *(int16_t *)(b + 14) = param_3;
-    *(int16_t *)(b + 16) = param_2;
-    *(int16_t *)(b + 18) = (int16_t)(param_2 + param_4);
-    *(int16_t *)(b + 22) = (int16_t)(param_3 + param_5);
-    *(int16_t *)(b + 26) = (int16_t)(param_3 + param_5);
-    if (param_7 == 0) {
-      puVar1[1] = param_6 | 0x28000000;
-      iVar3 = 0;
+    uint8_t *b = (uint8_t *)pkt;
+    *(int16_t *)(b + 8) = x0;
+    *(int16_t *)(b + 10) = y0;
+    *(int16_t *)(b + 12) = (int16_t)(x0 + w);
+    *(int16_t *)(b + 14) = y0;
+    *(int16_t *)(b + 16) = x0;
+    *(int16_t *)(b + 18) = (int16_t)(x0 + w);
+    *(int16_t *)(b + 22) = (int16_t)(y0 + h);
+    *(int16_t *)(b + 26) = (int16_t)(y0 + h);
+    if (variant == 0) {
+      pkt[1] = tag | 0x28000000;
+      tex_ofs = 0;
     } else {
-      puVar1[1] = param_6 | 0x2a000000;
-      iVar3 = (param_7 + -1) * 0x20;
+      pkt[1] = tag | 0x2a000000;
+      tex_ofs = (variant + -1) * 0x20;
     }
-    prim_packet_init_tex((int)guest_of(puVar1 + 6),GB8(0x801e40b7),GB8(0x801e40b6),iVar3,0);
-    uVar2 = 0;
-    uint32_t *head = (uint32_t *)guest_at(param_1);
+    prim_packet_init_tex((int)guest_of(pkt + 6),GB8(0x801e40b7),GB8(0x801e40b6),tex_ofs,0);
+    ret = 0;
+    uint32_t *head = (uint32_t *)guest_at(head_g);
     /* OT link word goes into the packet's first word (node[0] =
      * old_head | 0x05000000), NOT into the head cell — writing *head
      * here leaves node[0] uninitialised and the GPU linked-list DMA
      * follows a garbage next-pointer (versus/attract OT runaway). */
-    puVar1[0] = *head | 0x05000000u;
-    *head = guest_of(puVar1) & 0xffffff;
-    puVar1[6] = guest_of(puVar1) & 0xffffff | 0x2000000;
-    *head = guest_of(puVar1 + 6) & 0xffffff;
+    pkt[0] = *head | 0x05000000u;
+    *head = guest_of(pkt) & 0xffffff;
+    pkt[6] = guest_of(pkt) & 0xffffff | 0x2000000;
+    *head = guest_of(pkt + 6) & 0xffffff;
   }
-  return uVar2;
+  return ret;
 }
 
 /* spr_attr_alloc_b — sprite-attr slot alloc variant: fixed tag
  * 0x2c808080, *param_1 head cell gets 0x9000000 tag. Same
  * guest-addr + pointer-tag conventions as spr_attr_alloc_a. */
 extern void *spr_pool_b_alloc(void);
-uint32_t spr_attr_alloc_b(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                      uint32_t param_4,uint16_t param_5,uint16_t param_6)
+uint32_t spr_attr_alloc_b(uint32_t head_g,uint32_t pxy,uint32_t pc,
+                      uint32_t prgb,uint16_t tu,uint16_t tv)
 {
-  uint32_t *puVar1;
-  uint32_t uVar2;
-  uint16_t uVar3;
-  int8_t cVar4, cVar5;
-  puVar1 = (uint32_t *)spr_pool_b_alloc();
-  if (puVar1 == (uint32_t *)0x0) {
-    uVar2 = 0xffffffff;
+  uint32_t *pkt;
+  uint32_t ret;
+  uint16_t yh;
+  int8_t ca, cb;
+  pkt = (uint32_t *)spr_pool_b_alloc();
+  if (pkt == (uint32_t *)0x0) {
+    ret = 0xffffffff;
   } else {
-    uint8_t *b = (uint8_t *)puVar1;
-    uVar2 = 0;
-    cVar5 = (int8_t)param_4 + (int8_t)(param_3 >> 16) + 1;
-    cVar4 = (int8_t)(param_4 >> 8);
-    b[0x1c] = (uint8_t)param_4;
-    b[0x15] = (uint8_t)cVar4;
-    cVar4 = (int8_t)(cVar4 + (param_3 >> 24) + 1);
-    puVar1[3] = param_4;                    /* byte 0x0c */
-    *(int16_t *)(b + 0x16) = (int16_t)param_3;
-    b[0x14] = (uint8_t)cVar5;
-    b[0x1d] = (uint8_t)cVar4;
-    b[0x24] = (uint8_t)cVar5;
-    b[0x25] = (uint8_t)cVar4;
-    *(int16_t *)(b + 0x08) = (int16_t)param_2;
-    uVar3 = (uint16_t)(param_2 >> 16);
-    *(uint16_t *)(b + 0x0a) = uVar3;
-    *(uint16_t *)(b + 0x10) = param_5;
-    *(uint16_t *)(b + 0x12) = uVar3;
-    *(int16_t *)(b + 0x18) = (int16_t)param_2;
-    *(uint16_t *)(b + 0x1a) = param_6;
-    *(uint16_t *)(b + 0x20) = param_5;
-    *(uint16_t *)(b + 0x22) = param_6;
-    puVar1[1] = 0x2c808080;
-    uint32_t *head = (uint32_t *)guest_at(param_1);
+    uint8_t *b = (uint8_t *)pkt;
+    ret = 0;
+    cb = (int8_t)prgb + (int8_t)(pc >> 16) + 1;
+    ca = (int8_t)(prgb >> 8);
+    b[0x1c] = (uint8_t)prgb;
+    b[0x15] = (uint8_t)ca;
+    ca = (int8_t)(ca + (pc >> 24) + 1);
+    pkt[3] = prgb;                    /* byte 0x0c */
+    *(int16_t *)(b + 0x16) = (int16_t)pc;
+    b[0x14] = (uint8_t)cb;
+    b[0x1d] = (uint8_t)ca;
+    b[0x24] = (uint8_t)cb;
+    b[0x25] = (uint8_t)ca;
+    *(int16_t *)(b + 0x08) = (int16_t)pxy;
+    yh = (uint16_t)(pxy >> 16);
+    *(uint16_t *)(b + 0x0a) = yh;
+    *(uint16_t *)(b + 0x10) = tu;
+    *(uint16_t *)(b + 0x12) = yh;
+    *(int16_t *)(b + 0x18) = (int16_t)pxy;
+    *(uint16_t *)(b + 0x1a) = tv;
+    *(uint16_t *)(b + 0x20) = tu;
+    *(uint16_t *)(b + 0x22) = tv;
+    pkt[1] = 0x2c808080;
+    uint32_t *head = (uint32_t *)guest_at(head_g);
     /* node[0] = old_head | 0x09000000 (link word into the packet, not
      * the head cell) — same fix as spr_attr_alloc_a. */
-    puVar1[0] = *head | 0x09000000u;
-    *head = guest_of(puVar1) & 0xffffff;
+    pkt[0] = *head | 0x09000000u;
+    *head = guest_of(pkt) & 0xffffff;
   }
-  return uVar2;
+  return ret;
 }
 
 /* hud_gauge_render — HUD gauge/frame sprite renderer. param_1 = guest
@@ -1318,128 +1318,128 @@ uint32_t spr_attr_alloc_b(uint32_t param_1,uint32_t param_2,uint32_t param_3,
 extern void hud_text_d(uint32_t,uint32_t,const void *,int32_t,int32_t,int32_t);
 extern void sprite_node_emit_a(uint32_t,int32_t,int32_t,int32_t,int32_t,uint32_t,uint32_t,uint32_t,uint32_t,int32_t);
 extern void sprite_node_emit_b(uint32_t,uint32_t,uint32_t,uint32_t,int32_t,int32_t);
-void hud_gauge_render(uint32_t param_1,uint32_t param_2,uint32_t param_3)
+void hud_gauge_render(uint32_t st_g,uint32_t head_g,uint32_t variant)
 {
-  int16_t sVar1;
-  int32_t iVar2, iVar4;
-  uint32_t uVar3, uVar5, uVar6, uVar7, uVar8;
-  uint8_t *st = (uint8_t *)guest_at(param_1);
-  uVar3 = *(uint32_t *)(st + 0xc);
-  switch (param_3 & 0xf) {
+  int16_t x;
+  int32_t cell, v;
+  uint32_t attr, col_a, col_b, col_c, col_d;
+  uint8_t *st = (uint8_t *)guest_at(st_g);
+  attr = *(uint32_t *)(st + 0xc);
+  switch (variant & 0xf) {
   default:
-    uVar8 = 0xc; uVar7 = 0x20; uVar5 = 0x30; uVar6 = 0x40;
+    col_d = 0xc; col_c = 0x20; col_a = 0x30; col_b = 0x40;
     goto LAB_8012c4f8;
   case 1:
-    uVar8 = 0; uVar7 = 0x1000; uVar5 = 0x3000; uVar6 = 0x3000;
-    iVar4 = 1;
+    col_d = 0; col_c = 0x1000; col_a = 0x3000; col_b = 0x3000;
+    v = 1;
     break;
   case 2:
-    uVar8 = 0x100000; uVar7 = 0x300000; uVar5 = 0x400000; uVar6 = 0x600000;
-    iVar4 = 2;
+    col_d = 0x100000; col_c = 0x300000; col_a = 0x400000; col_b = 0x600000;
+    v = 2;
     break;
   case 3:
-    uVar8 = 0x101010; uVar7 = 0x202020; uVar5 = 0x303030; uVar6 = 0x404040;
-    iVar4 = 3;
+    col_d = 0x101010; col_c = 0x202020; col_a = 0x303030; col_b = 0x404040;
+    v = 3;
     break;
   case 4:
-    uVar8 = 0x8121c; uVar7 = 0x121c26; uVar5 = 0x1c2630; uVar6 = 0x26303a;
-    iVar4 = 4;
+    col_d = 0x8121c; col_c = 0x121c26; col_a = 0x1c2630; col_b = 0x26303a;
+    v = 4;
     break;
   case 5:
-    uVar8 = 0xc000c; uVar7 = 0x200020; uVar5 = 0x300030; uVar6 = 0x400040;
-    iVar4 = 5;
+    col_d = 0xc000c; col_c = 0x200020; col_a = 0x300030; col_b = 0x400040;
+    v = 5;
     break;
   case 6:
-    uVar8 = 0x408; uVar7 = 0xc18; uVar5 = 0x1020; uVar6 = 0x1830;
-    iVar4 = 6;
+    col_d = 0x408; col_c = 0xc18; col_a = 0x1020; col_b = 0x1830;
+    v = 6;
     break;
   case 7:
-    uVar8 = 0x80805; uVar7 = 0x18180f; uVar5 = 0x202014; uVar6 = 0x30301c;
-    iVar4 = 7;
+    col_d = 0x80805; col_c = 0x18180f; col_a = 0x202014; col_b = 0x30301c;
+    v = 7;
     break;
   case 8:
-    uVar8 = 0; uVar7 = 0x80; uVar5 = 0x800000; uVar6 = 0x200000;
+    col_d = 0; col_c = 0x80; col_a = 0x800000; col_b = 0x200000;
     goto LAB_8012c4f8;
   case 9:
-    uVar8 = 0x800000; uVar7 = 0; uVar5 = 0x80; uVar6 = 0x20;
+    col_d = 0x800000; col_c = 0; col_a = 0x80; col_b = 0x20;
 LAB_8012c4f8:
-    iVar4 = 0;
+    v = 0;
   }
-  param_3 = param_3 & 0xf0;
-  if (param_3 == 0x20) {
+  variant = variant & 0xf0;
+  if (variant == 0x20) {
 LAB_8012c64c:
-    iVar2 = param_2 + 4;
-    spr_attr_alloc_b(iVar2,0x280000,0x177e001e,0x7ad68080,0x80,0x48);
-    spr_attr_alloc_b(iVar2,0x280080,0x177e001e,0x7a968080,0x100,0x48);
-    spr_attr_alloc_b(iVar2,0x280100,0x177e001e,0x7a568080,0x180,0x48);
-    spr_attr_alloc_b(iVar2,0x280180,0x1780001e,0x7a5680ff,0x200,0x48);
-    spr_slot_pkt_submit((uint *)guest_at(iVar2),(*(int16_t *)(st + 0x22) + -0x54) * 0x10000 |
+    cell = head_g + 4;
+    spr_attr_alloc_b(cell,0x280000,0x177e001e,0x7ad68080,0x80,0x48);
+    spr_attr_alloc_b(cell,0x280080,0x177e001e,0x7a968080,0x100,0x48);
+    spr_attr_alloc_b(cell,0x280100,0x177e001e,0x7a568080,0x180,0x48);
+    spr_attr_alloc_b(cell,0x280180,0x1780001e,0x7a5680ff,0x200,0x48);
+    spr_slot_pkt_submit((uint *)guest_at(cell),(*(int16_t *)(st + 0x22) + -0x54) * 0x10000 |
                  ((uint32_t)*(int16_t *)(st + 0x20) - 0x90U) & 0xffff,0x277e001e,
-                 ((uint32_t)(iVar4 << 6) | 0x7e16U) << 0x10 | 0x9880);
-    sprite_node_emit_a(iVar2,0,*(int16_t *)(st + 0x22) + -0x40,(int32_t)*(int16_t *)(st + 0x20),0x18,
-                 uVar5,0,uVar5,0,2);
-    sprite_node_emit_b(iVar2,((uint32_t)(*(int16_t *)(st + 0x22) + -0x13f) * 0x10000) |
+                 ((uint32_t)(v << 6) | 0x7e16U) << 0x10 | 0x9880);
+    sprite_node_emit_a(cell,0,*(int16_t *)(st + 0x22) + -0x40,(int32_t)*(int16_t *)(st + 0x20),0x18,
+                 col_a,0,col_a,0,2);
+    sprite_node_emit_b(cell,((uint32_t)(*(int16_t *)(st + 0x22) + -0x13f) * 0x10000) |
                  ((uint32_t)*(int16_t *)(st + 0x20) - 0xffU) & 0xffff,0xfefe001f,
-                 ((uint32_t)(iVar4 << 6) | 0x7c16U) << 0x10,0x80,1);
+                 ((uint32_t)(v << 6) | 0x7c16U) << 0x10,0x80,1);
 LAB_8012cb64:
-    sVar1 = *(int16_t *)(st + 0x20);
-    iVar4 = (int32_t)*(int16_t *)(st + 0x22);
-    iVar2 = 0;
+    x = *(int16_t *)(st + 0x20);
+    v = (int32_t)*(int16_t *)(st + 0x22);
+    cell = 0;
   } else {
-    if (param_3 < 0x21) {
-      if (param_3 == 0) {
-        iVar2 = param_2 + 4;
-        hud_text_d(iVar2,uVar3,guest_at(0x8011f10c),0xc0,
+    if (variant < 0x21) {
+      if (variant == 0) {
+        cell = head_g + 4;
+        hud_text_d(cell,attr,guest_at(0x8011f10c),0xc0,
                      (int32_t)(((uint32_t)*(uint16_t *)(st + 0x22) - 0x38) * 0x10000) >> 0x10,0);
-        spr_slot_pkt_submit((uint *)guest_at(iVar2),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xd8,0xf0f001e,0x7a16d830);
-        spr_slot_pkt_submit((uint *)guest_at(iVar2),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xe8,0xf0f001e,0x7a16d820);
-        spr_slot_pkt_submit((uint *)guest_at(iVar2),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xf8,0xf0f001e,0x7a16d810);
-        hud_text_d(iVar2,uVar3,guest_at(0x8011f110),0x120,
+        spr_slot_pkt_submit((uint *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xd8,0xf0f001e,0x7a16d830);
+        spr_slot_pkt_submit((uint *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xe8,0xf0f001e,0x7a16d820);
+        spr_slot_pkt_submit((uint *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xf8,0xf0f001e,0x7a16d810);
+        hud_text_d(cell,attr,guest_at(0x8011f110),0x120,
                      (int32_t)(((uint32_t)*(uint16_t *)(st + 0x22) - 0x38) * 0x10000) >> 0x10,0);
-        spr_slot_pkt_submit((uint *)guest_at(iVar2),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0x148,0xf0f001e,0x7a16d800);
+        spr_slot_pkt_submit((uint *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0x148,0xf0f001e,0x7a16d800);
         goto LAB_8012c64c;
       }
-      if (param_3 != 0x10) return;
-      hud_text_d(param_2 + 4,uVar3,guest_at(0x8011f110),0x120,
+      if (variant != 0x10) return;
+      hud_text_d(head_g + 4,attr,guest_at(0x8011f110),0x120,
                    (int32_t)(((uint32_t)*(uint16_t *)(st + 0x22) - 0x30) * 0x10000) >> 0x10,0);
-      spr_slot_pkt_submit((uint *)guest_at(param_2 + 4),((uint32_t)(*(int16_t *)(st + 0x22) + -0x34) * 0x10000) | 0x148,0xf0f001e,0x7a16d800);
+      spr_slot_pkt_submit((uint *)guest_at(head_g + 4),((uint32_t)(*(int16_t *)(st + 0x22) + -0x34) * 0x10000) | 0x148,0xf0f001e,0x7a16d800);
     } else {
-      if (param_3 == 0x30) {
-        iVar2 = param_2 + 4;
-        spr_attr_alloc_b(iVar2,0x280000,0x177e001e,0x7ad68080,0x80,0x48);
-        spr_attr_alloc_b(iVar2,0x280080,0x177e001e,0x7a968080,0x100,0x48);
-        spr_attr_alloc_b(iVar2,0x280100,0x177e001e,0x7a568080,0x180,0x48);
-        spr_attr_alloc_b(iVar2,0x280180,0x1780001e,0x7a5680ff,0x200,0x48);
-        spr_slot_pkt_submit((uint *)guest_at(iVar2),((uint32_t)(*(int16_t *)(st + 0x22) + -0x54) * 0x10000) |
+      if (variant == 0x30) {
+        cell = head_g + 4;
+        spr_attr_alloc_b(cell,0x280000,0x177e001e,0x7ad68080,0x80,0x48);
+        spr_attr_alloc_b(cell,0x280080,0x177e001e,0x7a968080,0x100,0x48);
+        spr_attr_alloc_b(cell,0x280100,0x177e001e,0x7a568080,0x180,0x48);
+        spr_attr_alloc_b(cell,0x280180,0x1780001e,0x7a5680ff,0x200,0x48);
+        spr_slot_pkt_submit((uint *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x54) * 0x10000) |
                      ((uint32_t)*(int16_t *)(st + 0x20) - 0x90U) & 0xffff,0x277e001e,
-                     ((uint32_t)(iVar4 << 6) | 0x7e16U) << 0x10 | 0x9880);
-        sprite_node_emit_a(iVar2,0,*(int16_t *)(st + 0x22) + -0x40,(int32_t)*(int16_t *)(st + 0x20),0x18,
-                     uVar5,0,uVar5,0,2);
+                     ((uint32_t)(v << 6) | 0x7e16U) << 0x10 | 0x9880);
+        sprite_node_emit_a(cell,0,*(int16_t *)(st + 0x22) + -0x40,(int32_t)*(int16_t *)(st + 0x20),0x18,
+                     col_a,0,col_a,0,2);
         goto LAB_8012cb64;
       }
-      if (param_3 != 0x40) return;
+      if (variant != 0x40) return;
     }
-    iVar4 = param_2 + 4;
-    hud_text_d(iVar4,uVar3,guest_at(0x8011f10c),0xc0,
+    v = head_g + 4;
+    hud_text_d(v,attr,guest_at(0x8011f10c),0xc0,
                  (int32_t)(((uint32_t)*(uint16_t *)(st + 0x22) - 0x30) * 0x10000) >> 0x10,0);
-    spr_slot_pkt_submit((uint *)guest_at(iVar4),((uint32_t)(*(int16_t *)(st + 0x22) + -0x34) * 0x10000) | 0xd8,0xf0f001e,0x7a16d830);
-    spr_slot_pkt_submit((uint *)guest_at(iVar4),((uint32_t)(*(int16_t *)(st + 0x22) + -0x34) * 0x10000) | 0xe8,0xf0f001e,0x7a16d820);
-    spr_slot_pkt_submit((uint *)guest_at(iVar4),((uint32_t)(*(int16_t *)(st + 0x22) + -0x34) * 0x10000) | 0xf8,0xf0f001e,0x7a16d810);
-    spr_attr_alloc_b(param_2,0x200000,0x1780001e,0x7a5680ff,0x80,0x40);
-    spr_attr_alloc_b(param_2,0x200080,0x1780001e,0x7a9680ff,0x100,0x40);
-    spr_attr_alloc_b(param_2,0x200100,0x177e001e,0x7a968080,0x180,0x40);
-    spr_attr_alloc_b(param_2,0x200180,0x177e001e,0x7a568080,0x200,0x40);
-    spr_attr_alloc_a(iVar4,0,*(int16_t *)(st + 0x22) + -0x38,(int32_t)*(int16_t *)(st + 0x20),0x18,
-                 uVar6,2);
-    iVar2 = (*(int16_t *)(st + 0x22) * 3) / 5 + -8;
-    sprite_node_emit_a(iVar4,0,0,(int32_t)*(int16_t *)(st + 0x20),iVar2,(int32_t)uVar8,(int32_t)uVar8,(int32_t)uVar7,(int32_t)uVar7,0);
-    sVar1 = *(int16_t *)(st + 0x20);
-    uVar8 = 0;
-    iVar4 = *(int16_t *)(st + 0x22) - iVar2;
-    uVar7 = uVar5;
-    uVar6 = uVar5;
+    spr_slot_pkt_submit((uint *)guest_at(v),((uint32_t)(*(int16_t *)(st + 0x22) + -0x34) * 0x10000) | 0xd8,0xf0f001e,0x7a16d830);
+    spr_slot_pkt_submit((uint *)guest_at(v),((uint32_t)(*(int16_t *)(st + 0x22) + -0x34) * 0x10000) | 0xe8,0xf0f001e,0x7a16d820);
+    spr_slot_pkt_submit((uint *)guest_at(v),((uint32_t)(*(int16_t *)(st + 0x22) + -0x34) * 0x10000) | 0xf8,0xf0f001e,0x7a16d810);
+    spr_attr_alloc_b(head_g,0x200000,0x1780001e,0x7a5680ff,0x80,0x40);
+    spr_attr_alloc_b(head_g,0x200080,0x1780001e,0x7a9680ff,0x100,0x40);
+    spr_attr_alloc_b(head_g,0x200100,0x177e001e,0x7a968080,0x180,0x40);
+    spr_attr_alloc_b(head_g,0x200180,0x177e001e,0x7a568080,0x200,0x40);
+    spr_attr_alloc_a(v,0,*(int16_t *)(st + 0x22) + -0x38,(int32_t)*(int16_t *)(st + 0x20),0x18,
+                 col_b,2);
+    cell = (*(int16_t *)(st + 0x22) * 3) / 5 + -8;
+    sprite_node_emit_a(v,0,0,(int32_t)*(int16_t *)(st + 0x20),cell,(int32_t)col_d,(int32_t)col_d,(int32_t)col_c,(int32_t)col_c,0);
+    x = *(int16_t *)(st + 0x20);
+    col_d = 0;
+    v = *(int16_t *)(st + 0x22) - cell;
+    col_c = col_a;
+    col_b = col_a;
   }
-  sprite_node_emit_a(param_2 + 4,0,iVar2,(int32_t)sVar1,iVar4,(int32_t)uVar7,(int32_t)uVar6,0,(int32_t)uVar8,0);
+  sprite_node_emit_a(head_g + 4,0,cell,(int32_t)x,v,(int32_t)col_c,(int32_t)col_b,0,(int32_t)col_d,0);
 }
 
 /* ======== 0x8018cbfc ======== */
@@ -1450,24 +1450,24 @@ LAB_8012cb64:
  * else mark sentinel, bump counter (wrap at 0x18), return slot+4. */
 void *spr_pool_a_alloc(void)
 {
-  int32_t iVar3;
-  uint32_t *puVar4;
-  int32_t iVar2;
+  int32_t owner;
+  uint32_t *slot;
+  int32_t next;
   int32_t v1 = DAT_801b55e4;
   uint32_t sent = _DAT_1f8000dc;
   if (v1 < 0) {
-    puVar4 = (uint32_t *)guest_at(0x801f5978);
+    slot = (uint32_t *)guest_at(0x801f5978);
     v1 = 0;
   } else {
-    puVar4 = (uint32_t *)guest_at(0x801f5978 + (uint32_t)v1 * 0x28);
+    slot = (uint32_t *)guest_at(0x801f5978 + (uint32_t)v1 * 0x28);
   }
-  iVar3 = (int32_t)*puVar4;
-  if (iVar3 == (int32_t)sent || iVar3 == (int32_t)(sent - 1))
+  owner = (int32_t)*slot;
+  if (owner == (int32_t)sent || owner == (int32_t)(sent - 1))
     return (void *)0;
-  iVar2 = v1 + 1;
-  if (0x17 < iVar2) iVar2 = 0;
-  DAT_801b55e4 = iVar2;
-  *puVar4 = sent;
+  next = v1 + 1;
+  if (0x17 < next) next = 0;
+  DAT_801b55e4 = next;
+  *slot = sent;
   return guest_at(0x801f5978 + (uint32_t)v1 * 0x28 + 4);
 }
 
