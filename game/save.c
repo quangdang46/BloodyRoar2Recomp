@@ -4966,34 +4966,34 @@ static int32_t sdiv16(int32_t v)
 
 void status_text_display(uint32_t a0,uint32_t a1)
 {
-  uint8_t *s0 = (uint8_t *)guest_at(a0);
-  uint8_t *s2;
-  uint32_t s1 = a1;
-  uint32_t s3 = 0x801f04a8;
+  uint8_t *st = (uint8_t *)guest_at(a0);
+  uint8_t *sub;
+  uint32_t a1v = a1;
+  uint32_t aux = 0x801f04a8;
   int32_t i;
 
-  /* s2 = lw 0x38(s0): guest ptr stored in state block */
-  s2 = (uint8_t *)guest_at(*(uint32_t *)(s0 + 0x38));
+  /* sub = lw 0x38(st): guest ptr stored in state block */
+  sub = (uint8_t *)guest_at(*(uint32_t *)(st + 0x38));
 
-  if (s0[2] == 0) {
+  if (st[2] == 0) {
     scroll_offset_set(0,0x20);
-    if (s0[2] == 0) goto sel;
+    if (st[2] == 0) goto sel;
   }
   scroll_offset_set(0,0x60);
 sel:
-  if (s1 != 0)
-    print_dispatch((const char *)guest_at(0x801223d0),(int32_t)s0[2] + 1);
-  if (s1 >= 0x10) return;
+  if (a1v != 0)
+    print_dispatch((const char *)guest_at(0x801223d0),(int32_t)st[2] + 1);
+  if (a1v >= 0x10) return;
 
-  switch (s1) {
+  switch (a1v) {
   case 0: return;
   case 1: {
-    int32_t b0 = (int32_t)*(int16_t *)(s0 + 0xb0);
-    int32_t t0 = (int32_t)*(int16_t *)(s0 + 0xd6);
+    int32_t b0 = (int32_t)*(int16_t *)(st + 0xb0);
+    int32_t t0 = (int32_t)*(int16_t *)(st + 0xd6);
     if (t0 < 0) t0 += 0x3f;
     print_dispatch((const char *)guest_at(0x801223e0),
-                 b0 - (int32_t)*(int16_t *)(s0 + 0xac),
-                 b0 - (int32_t)*(int16_t *)(s0 + 0xaa),
+                 b0 - (int32_t)*(int16_t *)(st + 0xac),
+                 b0 - (int32_t)*(int16_t *)(st + 0xaa),
                  b0, t0 >> 6);
     return;
   }
@@ -5003,11 +5003,11 @@ sel:
     flag_table_dump(a0,0);
     flag_table_dump(a0,3);
     print_dispatch((const char *)guest_at(0x801223fc),
-                 (int32_t)(uint8_t)s0[0xda],(int32_t)(uint8_t)s0[0xdd]);
-    v = (int32_t)*(int16_t *)(s0 + 0xc6) * 360 / 4096;
+                 (int32_t)(uint8_t)st[0xda],(int32_t)(uint8_t)st[0xdd]);
+    v = (int32_t)*(int16_t *)(st + 0xc6) * 360 / 4096;
     {
-      int32_t w = (int32_t)(uint8_t)s0[0xdb] * 5760;
-      int32_t a3 = (int32_t)*(int16_t *)(s2 + 0x3a);
+      int32_t w = (int32_t)(uint8_t)st[0xdb] * 5760;
+      int32_t a3 = (int32_t)*(int16_t *)(sub + 0x3a);
       print_dispatch((const char *)guest_at(0x80122410),v,w/4096,a3);
     }
     return;
@@ -5016,21 +5016,21 @@ sel:
     int32_t n16,quo;
     flag_table_dump(a0,0);
     flag_table_dump(a0,4);
-    n16 = (int32_t)*(int16_t *)(s0 + 0xcc);
+    n16 = (int32_t)*(int16_t *)(st + 0xcc);
     if (n16 < 0) n16 += 0xf;
     quo = n16 >> 4;
     print_dispatch((const char *)guest_at(0x8012242c),
-                 (int32_t)*(int16_t *)(s0 + 0xca),
-                 (int32_t)*(int16_t *)(s0 + 0xc2),
-                 (int32_t)*(int16_t *)(s0 + 0xbe), quo);
+                 (int32_t)*(int16_t *)(st + 0xca),
+                 (int32_t)*(int16_t *)(st + 0xc2),
+                 (int32_t)*(int16_t *)(st + 0xbe), quo);
     {
-      int32_t a1 = (int32_t)*(int16_t *)(s0 + 0xc0);
+      int32_t a1 = (int32_t)*(int16_t *)(st + 0xc0);
       int32_t a3;
       if (a1 < 0) a1 += 0xf;
       a1 >>= 4;
-      a3 = (int32_t)((uint32_t)*(uint16_t *)(s0 + 0xb2) << 16) >> 17;
+      a3 = (int32_t)((uint32_t)*(uint16_t *)(st + 0xb2) << 16) >> 17;
       print_dispatch((const char *)guest_at(0x80122448),a1,
-                   (int32_t)*(int16_t *)(s0 + 0xd2),a3);
+                   (int32_t)*(int16_t *)(st + 0xd2),a3);
     }
     return;
   }
@@ -5038,35 +5038,35 @@ sel:
   case 5: slot_action_dump(a0); return;
   case 6: hud_slot_blitter(a0,1); return;
   case 7: {
-    uint8_t *q = (uint8_t *)guest_at(*(uint32_t *)(s0 + 0x20));
+    uint8_t *q = (uint8_t *)guest_at(*(uint32_t *)(st + 0x20));
     int32_t a1 = mul100_div256(*(int32_t *)(q + 0x34));
     int32_t a2 = mul100_div256(*(int32_t *)(q + 0x38));
     int32_t a3 = mul100_div256(*(int32_t *)(q + 0x3c));
     print_dispatch((const char *)guest_at(0x80122460),a1,a2,a3);
-    q = (uint8_t *)guest_at(*(uint32_t *)(s0 + 0x20));
+    q = (uint8_t *)guest_at(*(uint32_t *)(st + 0x20));
     a1 = mul100_div256(*(int32_t *)(q + 0x174));
     a2 = mul100_div256(*(int32_t *)(q + 0x178));
     a3 = mul100_div256(*(int32_t *)(q + 0x17c));
     print_dispatch((const char *)guest_at(0x80122478),a1,a2,a3);
     print_dispatch((const char *)guest_at(0x80122490),
-                 (int32_t)*(int16_t *)(s0 + 0x8c),
-                 (int32_t)*(int16_t *)(s0 + 0x8a),
-                 (int32_t)*(int16_t *)(s0 + 0xb2),
-                 (int32_t)*(int16_t *)(s0 + 0xb4));
+                 (int32_t)*(int16_t *)(st + 0x8c),
+                 (int32_t)*(int16_t *)(st + 0x8a),
+                 (int32_t)*(int16_t *)(st + 0xb2),
+                 (int32_t)*(int16_t *)(st + 0xb4));
     print_dispatch((const char *)guest_at(0x801224a8),
-                 (int32_t)*(int16_t *)(s0 + 0x98),
-                 (int32_t)*(int16_t *)(s0 + 0x96),
-                 (int32_t)*(int16_t *)(s0 + 0x90),
-                 (int32_t)*(int16_t *)(s0 + 0x92));
+                 (int32_t)*(int16_t *)(st + 0x98),
+                 (int32_t)*(int16_t *)(st + 0x96),
+                 (int32_t)*(int16_t *)(st + 0x90),
+                 (int32_t)*(int16_t *)(st + 0x92));
     return;
   }
   case 8: {
-    int32_t a1 = mul360_div4096(*(int16_t *)(s0 + 0x4e));
+    int32_t a1 = mul360_div4096(*(int16_t *)(st + 0x4e));
     print_dispatch((const char *)guest_at(0x801224c0),a1);
-    a1 = mul360_div4096(*(int16_t *)(s0 + 0x70));
+    a1 = mul360_div4096(*(int16_t *)(st + 0x70));
     {
-      int32_t a2 = mul360_div4096(*(int16_t *)(s0 + 0x74));
-      int32_t a3 = mul100_div256(*(int16_t *)(s0 + 0x76));
+      int32_t a2 = mul360_div4096(*(int16_t *)(st + 0x74));
+      int32_t a3 = mul100_div256(*(int16_t *)(st + 0x76));
       print_dispatch((const char *)guest_at(0x801224c8),a1,a2,a3);
     }
     return;
@@ -5075,7 +5075,7 @@ sel:
     status_text_dump(g32(0x1f8000bc));
     return;
   case 10: {
-    uint8_t *q = (uint8_t *)guest_at(*(uint32_t *)(s0 + 0x38));
+    uint8_t *q = (uint8_t *)guest_at(*(uint32_t *)(st + 0x38));
     int32_t a1 = sdiv16(*(int16_t *)(q + 0xc6));
     int32_t a2 = sdiv16(*(int16_t *)(q + 0xca));
     int32_t a3 = sdiv16(*(int16_t *)(q + 0xc8));
@@ -5085,7 +5085,7 @@ sel:
     return;
   }
   case 11: {
-    uint8_t *q = (uint8_t *)guest_at(*(uint32_t *)(s0 + 0x38));
+    uint8_t *q = (uint8_t *)guest_at(*(uint32_t *)(st + 0x38));
     print_dispatch((const char *)guest_at(0x80122508),
                  (int32_t)*(int16_t *)(q + 0x80),
                  (int32_t)*(int16_t *)(q + 0x14),
@@ -5105,21 +5105,21 @@ sel:
   case 13: guest_noop(a0); return;
   case 14:
     print_dispatch((const char *)guest_at(0x80122540),
-                 (int32_t)*(int16_t *)guest_at(s3 + 0x3c),
-                 (int32_t)*(int16_t *)guest_at(s3 + 0x3e));
+                 (int32_t)*(int16_t *)guest_at(aux + 0x3c),
+                 (int32_t)*(int16_t *)guest_at(aux + 0x3e));
     print_dispatch((const char *)guest_at(0x8012254c),
-                 (int32_t)*(int16_t *)guest_at(s3 + 0x40),
-                 (int32_t)*(int16_t *)guest_at(s3 + 0x42));
+                 (int32_t)*(int16_t *)guest_at(aux + 0x40),
+                 (int32_t)*(int16_t *)guest_at(aux + 0x42));
     return;
   case 15: {
-    uint8_t *q = s2;
+    uint8_t *q = sub;
     print_dispatch((const char *)guest_at(0x80122558),
                  (int32_t)(uint8_t)q[0x7c] + 1,
                  (int32_t)(uint8_t)q[0x7d] + 1,
                  (int32_t)*(int16_t *)(q + 0x3a));
     print_dispatch((const char *)guest_at(0x80122574),
                  (int32_t)(int8_t)q[0x7e]);
-    if ((*(uint32_t *)(s0 + 0x5c) & 0x40) != 0) {
+    if ((*(uint32_t *)(st + 0x5c) & 0x40) != 0) {
       print_dispatch((const char *)guest_at(0x80122580));
       if (q[0x7d] != 0) {
         for (i = 0; i < (int32_t)(uint8_t)q[0x7d]; i++)
@@ -5643,7 +5643,7 @@ int dialog_sel_dispatch_wide(intptr_t a0,uint32_t a1)
    * a0 is reused below as a guest address (a0+0xNN counter addrs). */
   extern uint32_t br2_gaddr(const void *);
   a0 = (intptr_t)br2_gaddr((const void *)a0);
-  uint8_t *s4 = (uint8_t *)guest_at((uint32_t)a0);
+  uint8_t *st = (uint8_t *)guest_at((uint32_t)a0);
   uint8_t *g  = (uint8_t *)guest_at(0x1f800000);
   uint32_t ctx8 = *(uint32_t *)(g + 8);
   uint32_t ctxc = *(uint32_t *)(g + 0xc);
@@ -5653,7 +5653,7 @@ int dialog_sel_dispatch_wide(intptr_t a0,uint32_t a1)
 
   scroll_offset_set(0x20,0xffffffff);
   sel = a1 & 0xffff;
-  if (sel == (uint32_t)(*(uint16_t *)(s4 + 8) + 0x100)) {
+  if (sel == (uint32_t)(*(uint16_t *)(st + 8) + 0x100)) {
     flag = 0;
     hud_text_b(ctx8,ctxc,(const void *)guest_at(0x80121270),0x1000,0x1000,0);
   } else {
@@ -5678,7 +5678,7 @@ int dialog_sel_dispatch_wide(intptr_t a0,uint32_t a1)
       if (u16_counter_step_pad_a(a0 + 0x14,3,1) == 0) return 0;
       *(uint32_t *)guest_at(0x801c11f0) = 1;
       g[0x9c] = 5;
-      v0 = *(int16_t *)(s4 + 0x14);
+      v0 = *(int16_t *)(st + 0x14);
       if (v0 == 1)      g[0x9b] = 1;
       else if (v0 == 0) g[0x9b] = 2;
       else if (v0 == 2) {
@@ -5733,17 +5733,17 @@ int dialog_sel_dispatch_wide(intptr_t a0,uint32_t a1)
       if ((*(uint16_t *)(g + 0x7c) & 0xe0) == 0) return 0;
       deferred_cmd_post(0x400,0xc,0);
       {
-        uint8_t *v1 = (uint8_t *)guest_at(0x801b4280);
-        *(uint16_t *)(s4 + 0x14) = 0;
-        *(uint16_t *)(s4 + 0x16) = v1[0x39];
-        *(uint16_t *)(s4 + 0x18) = v1[0x3a];
-        w40 = *(uint32_t *)(v1 + 0x40);
-        *(uint16_t *)(s4 + 0x1a) = (uint16_t)((w40 >> 13) & 1);
-        *(uint16_t *)(s4 + 0x1c) = v1[0x3b];
-        *(uint16_t *)(s4 + 0x1e) = v1[0x3c];
-        *(uint16_t *)(s4 + 0x20) = (uint16_t)(((w40 >> 6) ^ 1) & 1);
-        *(uint16_t *)(s4 + 0x22) = (uint16_t)((w40 >> 11) & 1);
-        *(uint16_t *)(s4 + 0x24) = (uint16_t)((w40 >> 10) & 1);
+        uint8_t *rec = (uint8_t *)guest_at(0x801b4280);
+        *(uint16_t *)(st + 0x14) = 0;
+        *(uint16_t *)(st + 0x16) = rec[0x39];
+        *(uint16_t *)(st + 0x18) = rec[0x3a];
+        w40 = *(uint32_t *)(rec + 0x40);
+        *(uint16_t *)(st + 0x1a) = (uint16_t)((w40 >> 13) & 1);
+        *(uint16_t *)(st + 0x1c) = rec[0x3b];
+        *(uint16_t *)(st + 0x1e) = rec[0x3c];
+        *(uint16_t *)(st + 0x20) = (uint16_t)(((w40 >> 6) ^ 1) & 1);
+        *(uint16_t *)(st + 0x22) = (uint16_t)((w40 >> 11) & 1);
+        *(uint16_t *)(st + 0x24) = (uint16_t)((w40 >> 10) & 1);
       }
       *(uint32_t *)guest_at(0x801c11f0) = 1;
       return 0;
@@ -5757,26 +5757,26 @@ int dialog_sel_dispatch_wide(intptr_t a0,uint32_t a1)
     uint32_t f2;
     switch (sel) {
     case 0x101:
-      f2 = (sel == (uint32_t)(*(uint16_t *)(s4 + 8) + 0x100)) ? 3 : 4;
+      f2 = (sel == (uint32_t)(*(uint16_t *)(st + 8) + 0x100)) ? 3 : 4;
       BDC0_E58C(0x80121280,0x1000,f2);
-      BDC0_E58C(g32(0x801b4028 + (uint32_t)(*(int16_t *)(s4 + 0x14)) * 4),0x140,f2);
+      BDC0_E58C(g32(0x801b4028 + (uint32_t)(*(int16_t *)(st + 0x14)) * 4),0x140,f2);
       scroll_offset_accumulate(0,0xa);
-      BDC0_E58C(g32(0x801b4038 + (uint32_t)(*(int16_t *)(s4 + 0x14)) * 4),0x140,f2);
+      BDC0_E58C(g32(0x801b4038 + (uint32_t)(*(int16_t *)(st + 0x14)) * 4),0x140,f2);
       scroll_offset_accumulate(0,0xc);
       return 0;
     case 0x102:
       BDC0_E58C(0x8012128c,0x1000,flag);
-      BDC0_E58C(g32(0x801b4048 + (uint32_t)(*(int16_t *)(s4 + 0x16)) * 4),0x140,flag);
+      BDC0_E58C(g32(0x801b4048 + (uint32_t)(*(int16_t *)(st + 0x16)) * 4),0x140,flag);
       scroll_offset_accumulate(0,0xc);
       return 0;
     case 0x103:
       BDC0_E58C(0x80121298,0x1000,flag);
-      BDC0_E58C(g32(0x801b3f70 + (uint32_t)(*(int16_t *)(s4 + 0x18)) * 4),0x140,flag);
+      BDC0_E58C(g32(0x801b3f70 + (uint32_t)(*(int16_t *)(st + 0x18)) * 4),0x140,flag);
       scroll_offset_accumulate(0,0xc);
       return 0;
     case 0x104:
       BDC0_E58C(0x801212a8,0x1000,flag);
-      BDC0_E58C(g32(0x801b3f70 + (uint32_t)(*(int16_t *)(s4 + 0x1a)) * 4),0x140,flag);
+      BDC0_E58C(g32(0x801b3f70 + (uint32_t)(*(int16_t *)(st + 0x1a)) * 4),0x140,flag);
       scroll_offset_accumulate(0,0xc);
       return 0;
     case 0x105: {
@@ -5790,7 +5790,7 @@ int dialog_sel_dispatch_wide(intptr_t a0,uint32_t a1)
         BDC0_E58C(0x801212bc,0x1000,flag);
       round_announce_block(ctx8,ctxc,(const void *)guest_at(0x801212cc),0x140,0x1000,flag);
       sprintf_core((char *)guest_at(dsw_buf),(char *)guest_at(0x801212d0),
-                   (int32_t)*(int16_t *)(s4 + 0x1c));
+                   (int32_t)*(int16_t *)(st + 0x1c));
       BDC0_E58C(dsw_buf,0x140,flag);
       br2_guest_frame_free();
       scroll_offset_accumulate(0,0xc);
@@ -5804,7 +5804,7 @@ int dialog_sel_dispatch_wide(intptr_t a0,uint32_t a1)
       BDC0_E58C(0x801212d4,0x1000,flag);
       round_announce_block(ctx8,ctxc,(const void *)guest_at(0x801212cc),0x140,0x1000,flag);
       sprintf_core((char *)guest_at(dsw_buf),(char *)guest_at(0x801212d0),
-                   (int32_t)*(int16_t *)(s4 + 0x1e));
+                   (int32_t)*(int16_t *)(st + 0x1e));
       BDC0_E58C(dsw_buf,0x140,flag);
       br2_guest_frame_free();
       scroll_offset_accumulate(0,0xc);
@@ -5819,17 +5819,17 @@ int dialog_sel_dispatch_wide(intptr_t a0,uint32_t a1)
     switch (sel) {
     case 0x107:
       BDC0_E58C(0x801212e4,0x1000,flag);
-      BDC0_E58C(g32(0x801b3f70 + (uint32_t)(*(int16_t *)(s4 + 0x20)) * 4),0x140,flag);
+      BDC0_E58C(g32(0x801b3f70 + (uint32_t)(*(int16_t *)(st + 0x20)) * 4),0x140,flag);
       scroll_offset_accumulate(0,0xc);
       return 0;
     case 0x108:
       BDC0_E58C(0x801212f4,0x1000,flag);
-      BDC0_E58C(g32(0x801b3f70 + (uint32_t)(*(int16_t *)(s4 + 0x22)) * 4),0x140,flag);
+      BDC0_E58C(g32(0x801b3f70 + (uint32_t)(*(int16_t *)(st + 0x22)) * 4),0x140,flag);
       scroll_offset_accumulate(0,0xc);
       return 0;
     case 0x109:
       BDC0_E58C(0x80121304,0x1000,flag);
-      BDC0_E58C(g32(0x801b3f70 + (uint32_t)(*(int16_t *)(s4 + 0x24)) * 4),0x140,flag);
+      BDC0_E58C(g32(0x801b3f70 + (uint32_t)(*(int16_t *)(st + 0x24)) * 4),0x140,flag);
       scroll_offset_accumulate(0,0xc);
       return 0;
     case 0x10a:
