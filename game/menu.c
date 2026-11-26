@@ -12298,72 +12298,71 @@ extern void impact_fx_spawn(void *,uint32_t,int32_t,int32_t,uint32_t);
  * for lh(e+2) iters: if lh(cur+6)==0 impact_fx_spawn(
  * MB32(MB32(s0+8)+0x20)+v1*80+0x34, 0x80000003, lh(s0+0x12),0,0).
  * Advance e+=8 while lh(s0+0xc)==lh(prev+8); else s0+0xc++, ret. */
-void script_entry_walk(uint32_t param_1)
+void script_entry_walk(uint32_t w)
 {
-  uint32_t s0 = param_1;
-  uint32_t s3 = 0x801b180cu;
-  uint32_t a0, a1e, v1;
+  uint32_t lut = 0x801b180cu;
+  uint32_t e, ne, v;
   uint32_t tag, sub;
-  int32_t s1;
-  uint32_t s2;
+  int32_t i;
+  uint32_t voff;
   if (MBS8(0x1f8000b1u) != 0) return;
   for (;;) {
-    a0 = MB32(s0 + 4);
-    v1 = MB16(a0);
-    sub = v1 & 0xffu;
-    tag = v1 & 0xff00u;
+    e = MB32(w + 4);
+    v = MB16(e);
+    sub = v & 0xffu;
+    tag = v & 0xff00u;
     if (tag == 0xfe00u) {
-      a1e = MB32(s0) + (uint32_t)MBS16(a0 + 2) * 8u;
-      MW32(s0 + 4, a1e);
-      MW16(s0 + 0xc, MB16(a1e));
+      ne = MB32(w) + (uint32_t)MBS16(e + 2) * 8u;
+      MW32(w + 4, ne);
+      MW16(w + 0xc, MB16(ne));
       continue;
     }
     if ((int32_t)tag > 0xfe00) {
       if (tag == 0xff00u) {
-        if (sub < (uint32_t)MBS16(s0 + 0xe)) {
-          MW32(s0 + 4, a0 + 8);
+        if (sub < (uint32_t)MBS16(w + 0xe)) {
+          MW32(w + 4, e + 8);
         } else {
           task_slot_step();
         }
         return;
       }
     } else if (tag == 0xfc00u) {
-      if (sub < (uint32_t)MBS16(s0 + 0xe)) {
-        MW32(s0 + 4, a0 + 8);
+      if (sub < (uint32_t)MBS16(w + 0xe)) {
+        MW32(w + 4, e + 8);
       } else {
-        a1e = MB32(s0) + (uint32_t)MBS16(a0 + 2) * 8u;
-        MW32(s0 + 4, a1e);
-        MW16(s0 + 0xe, MB16(s0 + 0xe) + 1);
-        MW16(s0 + 0xc, MB16(a1e));
+        ne = MB32(w) + (uint32_t)MBS16(e + 2) * 8u;
+        MW32(w + 4, ne);
+        MW16(w + 0xe, MB16(w + 0xe) + 1);
+        MW16(w + 0xc, MB16(ne));
       }
       continue;
     }
     /* match block */
-    a1e = MB32(s0 + 4);
-    if (MBS16(s0 + 0xc) != MBS16(a1e)) {
-      MW16(s0 + 0xc, MB16(s0 + 0xc) + 1);
+    ne = MB32(w + 4);
+    if (MBS16(w + 0xc) != MBS16(ne)) {
+      MW16(w + 0xc, MB16(w + 0xc) + 1);
       return;
     }
     for (;;) {
-      v1 = (uint32_t)MBS16(a1e + 4);
-      if (MBS16(s0 + 0x10) != 0)
-        v1 = MB8(s3 + v1);
-      if (MBS16(a1e + 2) > 0) {
-        s2 = v1 * 80u;
-        for (s1 = 0; s1 < MBS16(MB32(s0 + 4) + 2); s1++) {
-          if (MBS16(MB32(s0 + 4) + 6) == 0) {
+      v = (uint32_t)MBS16(ne + 4);
+      if (MBS16(w + 0x10) != 0)
+        v = MB8(lut + v);
+      if (MBS16(ne + 2) > 0) {
+        voff = v * 80u;
+        for (i = 0; i < MBS16(MB32(w + 4) + 2); i++) {
+          if (MBS16(MB32(w + 4) + 6) == 0) {
             impact_fx_spawn((void *)guest_at(
-                           MB32(MB32(s0 + 8) + 0x20) + s2 + 0x34),
-                         0x80000003u, MBS16(s0 + 0x12), 0, 0);
+                           MB32(MB32(w + 8) + 0x20) + voff + 0x34),
+                         0x80000003u, MBS16(w + 0x12), 0, 0);
           }
         }
       }
-      a0 = MB32(s0 + 4);
-      MW32(s0 + 4, a0 + 8);
-      if (MBS16(s0 + 0xc) != MBS16(a0 + 8)) break;
-      a1e = a0 + 8;
+      e = MB32(w + 4);
+      MW32(w + 4, e + 8);
+      if (MBS16(w + 0xc) != MBS16(e + 8)) break;
+      ne = e + 8;
     }
-    MW16(s0 + 0xc, MB16(s0 + 0xc) + 1);
+    MW16(w + 0xc, MB16(w + 0xc) + 1);
     return;
   }
 }
@@ -12379,58 +12378,58 @@ void script_entry_walk(uint32_t param_1)
  * a0/c0/a7/df, case2: a8/c0/af/df, case3: 70/a0/7f/af). Phase 2:
  * per i<30: two rand_lcg()&0x1ff halfwords at t0+0x960+4i,
  * byte (rand&0x3f)+0x20 if i&3==2 else +8 at t0+0x9d8+i. */
-void color_rec_table_init(uint32_t param_1,uint32_t param_2)
+void color_rec_table_init(uint32_t unused,uint32_t arg)
 {
-  uint32_t blk, t0;
-  int32_t s1, s2;
-  uint32_t a3;
-  (void)param_1;
+  uint32_t blk, rec;
+  int32_t oi, i;
+  uint32_t a3off;
+  (void)unused;
   blk = task_node_alloc(1, 2, 0xe, 0x801411e8u, 0, 0x9fc);
   if (blk == 0) return;
-  t0 = MB32(blk + 0x10);
-  MW32(t0 + 0x9f8, param_2);
-  a3 = 0;
-  for (s1 = 0; s1 < 2; s1++) {
-    for (s2 = 0; s2 < 0x1e; s2++) {
-      uint32_t R = t0 + a3 + (uint32_t)s2 * 0x28u;
-      uint32_t c = (uint32_t)s2 & 3u;
-      MW32(R, 0x90000000u);
-      MW8(R + 7, 0x2e);
-      MW16(R + 0x16, 0x39);
-      MW8(R + 4, 0x2a);
-      MW8(R + 5, 0x2a);
-      MW8(R + 6, 0x2a);
-      if (c == 2) {
-        MW8(R + 0xc, 0xa8); MW8(R + 0xd, 0xc0);
-        MW8(R + 0x14, 0xaf); MW8(R + 0x15, 0xc0);
-        MW8(R + 0x1c, 0xa8); MW8(R + 0x1d, 0xdf);
-        MW8(R + 0x24, 0xaf); MW8(R + 0x25, 0xdf);
-      } else if (c == 3) {
-        MW8(R + 0xc, 0x70); MW8(R + 0xd, 0xa0);
-        MW8(R + 0x14, 0x7f); MW8(R + 0x15, 0xa0);
-        MW8(R + 0x1c, 0x70); MW8(R + 0x1d, 0xaf);
-        MW8(R + 0x24, 0x7f); MW8(R + 0x25, 0xaf);
-      } else if (c < 3) {
-        MW8(R + 0xc, 0xa0); MW8(R + 0xd, 0xc0);
-        MW8(R + 0x14, 0xa7); MW8(R + 0x15, 0xc0);
-        MW8(R + 0x1c, 0xa0); MW8(R + 0x1d, 0xdf);
-        MW8(R + 0x24, 0xa7); MW8(R + 0x25, 0xdf);
+  rec = MB32(blk + 0x10);
+  MW32(rec + 0x9f8, arg);
+  a3off = 0;
+  for (oi = 0; oi < 2; oi++) {
+    for (i = 0; i < 0x1e; i++) {
+      uint32_t rp = rec + a3off + (uint32_t)i * 0x28u;
+      uint32_t ci = (uint32_t)i & 3u;
+      MW32(rp, 0x90000000u);
+      MW8(rp + 7, 0x2e);
+      MW16(rp + 0x16, 0x39);
+      MW8(rp + 4, 0x2a);
+      MW8(rp + 5, 0x2a);
+      MW8(rp + 6, 0x2a);
+      if (ci == 2) {
+        MW8(rp + 0xc, 0xa8); MW8(rp + 0xd, 0xc0);
+        MW8(rp + 0x14, 0xaf); MW8(rp + 0x15, 0xc0);
+        MW8(rp + 0x1c, 0xa8); MW8(rp + 0x1d, 0xdf);
+        MW8(rp + 0x24, 0xaf); MW8(rp + 0x25, 0xdf);
+      } else if (ci == 3) {
+        MW8(rp + 0xc, 0x70); MW8(rp + 0xd, 0xa0);
+        MW8(rp + 0x14, 0x7f); MW8(rp + 0x15, 0xa0);
+        MW8(rp + 0x1c, 0x70); MW8(rp + 0x1d, 0xaf);
+        MW8(rp + 0x24, 0x7f); MW8(rp + 0x25, 0xaf);
+      } else if (ci < 3) {
+        MW8(rp + 0xc, 0xa0); MW8(rp + 0xd, 0xc0);
+        MW8(rp + 0x14, 0xa7); MW8(rp + 0x15, 0xc0);
+        MW8(rp + 0x1c, 0xa0); MW8(rp + 0x1d, 0xdf);
+        MW8(rp + 0x24, 0xa7); MW8(rp + 0x25, 0xdf);
       }
     }
-    a3 += 0x4b0;
+    a3off += 0x4b0;
   }
   {
-    uint32_t s0 = t0, s1b = t0;
-    for (s2 = 0; s2 < 0x1e; s2++) {
+    uint32_t wp = rec, bp = rec;
+    for (i = 0; i < 0x1e; i++) {
       uint32_t r;
       r = rand_lcg() & 0x1ffu;
-      MW16(s0 + 0x960, (uint16_t)r);
+      MW16(wp + 0x960, (uint16_t)r);
       r = rand_lcg() & 0x1ffu;
-      MW16(s0 + 0x962, (uint16_t)r);
+      MW16(wp + 0x962, (uint16_t)r);
       r = rand_lcg() & 0x3fu;
-      MW8(s1b + 0x9d8, (uint8_t)(r + ((s2 & 3) == 2 ? 0x20 : 8)));
-      s1b += 1;
-      s0 += 4;
+      MW8(bp + 0x9d8, (uint8_t)(r + ((i & 3) == 2 ? 0x20 : 8)));
+      bp += 1;
+      wp += 4;
     }
   }
 }
@@ -12447,58 +12446,57 @@ void color_rec_table_init(uint32_t param_1,uint32_t param_2)
  * field palette-indexed via 0x1f8003f0[(v&7)*2]) written at
  * s5+0xe..+0x22 step 0x28, GPU link 0x90000000|field with
  * backlink s5&0xffffff into MB32(MB32(0x1f800008)+0x203c). */
-void emitter_30_teardown(uint32_t param_1)
+void emitter_30_teardown(uint32_t rec)
 {
-  uint32_t s4 = param_1;
-  uint32_t s7 = 0x1f8003f0u;
-  uint32_t s5, s1, s0, s3, a1, v0, v1;
-  int32_t s2, i;
+  uint32_t slot, p16, q16, dec, dst, v0, v1;
+  int32_t i;
+  uint32_t pal = 0x1f8003f0u;
   for (i = 0; i < 8; i++)
-    MW16(s7 + (uint32_t)i * 2u, MB16(0x801b2320u + (uint32_t)i * 2u));
-  s5 = s4 + MB32(0x1f80000cu) * 1200u;
+    MW16(pal + (uint32_t)i * 2u, MB16(0x801b2320u + (uint32_t)i * 2u));
+  slot = rec + MB32(0x1f80000cu) * 1200u;
   if (MB16(0x1f800082u) == 0) {
-    int32_t c = (int32_t)MB32(s4 + 0x9f8) - 1;
-    MW32(s4 + 0x9f8, (uint32_t)c);
+    int32_t c = (int32_t)MB32(rec + 0x9f8) - 1;
+    MW32(rec + 0x9f8, (uint32_t)c);
     if (c < 0) {
       task_slot_step();
       return;
     }
-    s1 = s4 + 0x960;
-    s3 = s4 + 0x9d8;
-    s0 = s4 + 0x962;
-    for (s2 = 0; s2 < 0x1e; s2++) {
-      v1 = MB8(s3);
-      v0 = (uint32_t)(int16_t)(MB16(s0) - v1);
-      MW16(s0, (uint16_t)v0);
+    p16 = rec + 0x960;
+    dec = rec + 0x9d8;
+    q16 = rec + 0x962;
+    for (i = 0; i < 0x1e; i++) {
+      v1 = MB8(dec);
+      v0 = (uint32_t)(int16_t)(MB16(q16) - v1);
+      MW16(q16, (uint16_t)v0);
       if ((int32_t)(int16_t)v0 < -0x40) {
-        MW16(s0, 0x200u);
-        MW16(s1, (uint16_t)(rand_lcg() & 0x1ffu));
+        MW16(q16, 0x200u);
+        MW16(p16, (uint16_t)(rand_lcg() & 0x1ffu));
       }
-      s3 += 1;
-      s0 += 4;
-      s1 += 4;
+      dec += 1;
+      q16 += 4;
+      p16 += 4;
     }
   }
-  s1 = s4 + 0x960;
-  s0 = s4 + 0x962;
-  a1 = s5 + 0x22;
-  for (s2 = 0; s2 < 0x1e; s2++) {
-    MW16(a1 - 0x14, MB16(s7 + (MB16(s0) & 7u) * 2u));
-    MW16(a1 - 0x1a, MB16(s1));
-    MW16(a1 - 0x18, MB16(s0));
-    MW16(a1 - 0x12, MB16(s1) + 0x18u);
-    MW16(a1 - 0x10, MB16(s0));
-    MW16(a1 - 0xa,  MB16(s1));
-    MW16(a1 - 8,   MB16(s0) + 0x60u);
-    MW16(a1 - 2,   MB16(s1) + 0x18u);
-    MW16(a1,       MB16(s0) + 0x60u);
+  p16 = rec + 0x960;
+  q16 = rec + 0x962;
+  dst = slot + 0x22;
+  for (i = 0; i < 0x1e; i++) {
+    MW16(dst - 0x14, MB16(pal + (MB16(q16) & 7u) * 2u));
+    MW16(dst - 0x1a, MB16(p16));
+    MW16(dst - 0x18, MB16(q16));
+    MW16(dst - 0x12, MB16(p16) + 0x18u);
+    MW16(dst - 0x10, MB16(q16));
+    MW16(dst - 0xa,  MB16(p16));
+    MW16(dst - 8,   MB16(q16) + 0x60u);
+    MW16(dst - 2,   MB16(p16) + 0x18u);
+    MW16(dst,       MB16(q16) + 0x60u);
     v0 = MB32(MB32(0x1f800008u) + 0x203cu) | 0x90000000u;
-    MW32(s5, v0);
-    MW32(MB32(0x1f800008u) + 0x203cu, s5 & 0xffffffu);
-    s1 += 4;
-    s0 += 4;
-    a1 += 0x28;
-    s5 += 0x28;
+    MW32(slot, v0);
+    MW32(MB32(0x1f800008u) + 0x203cu, slot & 0xffffffu);
+    p16 += 4;
+    q16 += 4;
+    dst += 0x28;
+    slot += 0x28;
   }
 }
 
