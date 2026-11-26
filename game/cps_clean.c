@@ -2042,7 +2042,9 @@ block_801263E0:
 }
 
 /* cps_801263ec — clean CPS transliteration of br2eu_func_801263EC (guest 0x801263ec)
- * from SLES_017.22_full_00.c. */
+ * from SLES_017.22_full_00.c.
+ * display_mode_setup_wrap: display_mode_setup + frame_advance_helper +
+ * match_mode_set — display init then mode set. */
 void cps_801263ec(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -2103,7 +2105,8 @@ block_80126418:
 }
 
 /* cps_80126420 — clean CPS transliteration of br2eu_func_80126420 (guest 0x80126420)
- * from SLES_017.22_full_00.c. */
+ * from SLES_017.22_full_00.c.
+ * transition_flow_wrap: transition_screen_flow caller. */
 void cps_80126420(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -2162,7 +2165,8 @@ block_8012644C:
 }
 
 /* cps_80126450 — clean CPS transliteration of br2eu_func_80126450 (guest 0x80126450)
- * from SLES_017.22_full_00.c. */
+ * from SLES_017.22_full_00.c.
+ * frame_advance_wrap: frame_advance_helper + match_mode_set. */
 void cps_80126450(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -2500,7 +2504,9 @@ block_80126574:
 }
 
 /* cps_8012657c — clean CPS transliteration of br2eu_func_8012657C (guest 0x8012657c)
- * from SLES_017.22_full_00.c. */
+ * from SLES_017.22_full_00.c.
+ * match_frame_tick: frame_tick + match_loop + memcard_poll_frame —
+ * per-frame match loop with memcard poll. */
 void cps_8012657c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -2677,7 +2683,9 @@ block_801265E0:
 }
 
 /* cps_801265e4 — clean CPS transliteration of br2eu_func_801265E4 (guest 0x801265e4)
- * from SLES_017.22_full_00.c. */
+ * from SLES_017.22_full_00.c.
+ * results_flow_enter: match_mode_set + results_scoreboard +
+ * battle_intro_flow — results screen entry sequence. */
 void cps_801265e4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -2804,7 +2812,9 @@ block_8012663C:
 }
 
 /* cps_80126640 — clean CPS transliteration of br2eu_func_80126640 (guest 0x80126640)
- * from SLES_017.22_full_00.c. */
+ * from SLES_017.22_full_00.c.
+ * battle_flow_enter: match_mode_set + battle_flow_state_machine —
+ * enters a battle mode and starts the flow FSM. */
 void cps_80126640(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -2884,7 +2894,9 @@ block_80126670:
 }
 
 /* cps_80126674 — clean CPS transliteration of br2eu_func_80126674 (guest 0x80126674)
- * from SLES_017.22_full_00.c. */
+ * from SLES_017.22_full_00.c.
+ * scene_unlock_entry: match_mode_set + unlock_progress_scene_entry —
+ * unlocks a progress scene then sets match mode. */
 void cps_80126674(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -3209,7 +3221,9 @@ block_80126740:
 }
 
 /* cps_80126764 — clean CPS transliteration of br2eu_func_80126764 (guest 0x80126764)
- * from SLES_017.22_full_00.c. */
+ * from SLES_017.22_full_00.c.
+ * save_init_seq: save_defaults_fill + save_tables_commit +
+ * save_block_init + dbg_marker_mode_set — save-system init sequence. */
 void cps_80126764(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -4617,7 +4631,9 @@ block_80126EA0:
 }
 
 /* cps_80126ea8 — clean CPS transliteration of br2eu_func_80126EA8 (guest 0x80126ea8)
- * from SLES_017.22_full_00.c. */
+ * from SLES_017.22_full_00.c.
+ * fighter_load_apply: fighter_record_apply + page_table_ptr_set +
+ * cd_file_load_sm — loads fighter record and page table from CD. */
 void cps_80126ea8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -7636,7 +7652,8 @@ block_80129444:
 }
 
 /* cps_80129450 — clean CPS transliteration of br2eu_func_80129450 (guest 0x80129450)
- * from SLES_017.22_full_01.c. */
+ * from SLES_017.22_full_01.c.
+ * victory_restore_wrap: victory_record_restore caller. */
 void cps_80129450(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -10347,7 +10364,8 @@ block_8012A590:
 }
 
 /* cps_8012a5bc — clean CPS transliteration of br2eu_func_8012A5BC (guest 0x8012a5bc)
- * from SLES_017.22_full_01.c. */
+ * from SLES_017.22_full_01.c.
+ * cmd_queue_next_wrap: cmd_queue_slot_next caller. */
 void cps_8012a5bc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -12592,7 +12610,9 @@ block_8012B1DC:
 }
 
 /* cps_8012b1e0 — clean CPS transliteration of br2eu_func_8012B1E0 (guest 0x8012b1e0)
- * from SLES_017.22_full_01.c. */
+ * from SLES_017.22_full_01.c.
+ * debug_stat_scroll: debug_stat_print + ot_packet_chain_fixup +
+ * scroll_offset_set — debug stat print + OT fixup + scroll. */
 void cps_8012b1e0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -12682,7 +12702,9 @@ block_8012B21C:
 }
 
 /* cps_8012b2a4 — clean CPS transliteration of br2eu_func_8012B2A4 (guest 0x8012b2a4)
- * from SLES_017.22_full_01.c. */
+ * from SLES_017.22_full_01.c.
+ * gpu_draw_sync_wait: gpu_draw_sync + cd_timer_read — waits for GPU
+ * draw sync using CD timer. */
 void cps_8012b2a4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -13401,7 +13423,8 @@ block_8012B6B8:
 }
 
 /* cps_8012b6bc — clean CPS transliteration of br2eu_func_8012B6BC (guest 0x8012b6bc)
- * from SLES_017.22_full_01.c. */
+ * from SLES_017.22_full_01.c.
+ * deferred_cmd_wrap_d: deferred_cmd_post caller. */
 void cps_8012b6bc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -15135,7 +15158,8 @@ block_8012BF04:
 }
 
 /* cps_8012bf58 — clean CPS transliteration of br2eu_func_8012BF58 (guest 0x8012bf58)
- * from SLES_017.22_full_02.c. */
+ * from SLES_017.22_full_02.c.
+ * ui_leaf_step_c: 5-block leaf state step. */
 void cps_8012bf58(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -15554,7 +15578,8 @@ block_8012C224:
 }
 
 /* cps_8012c228 — clean CPS transliteration of br2eu_func_8012C228 (guest 0x8012c228)
- * from SLES_017.22_full_02.c. */
+ * from SLES_017.22_full_02.c.
+ * stream_decode_load_b: same pair as c270 — variant B. */
 void cps_8012c228(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -15630,7 +15655,9 @@ block_8012C268:
 }
 
 /* cps_8012c270 — clean CPS transliteration of br2eu_func_8012C270 (guest 0x8012c270)
- * from SLES_017.22_full_02.c. */
+ * from SLES_017.22_full_02.c.
+ * stream_decode_load_a: stream_block_decode + cd_file_load_sm — decode
+ * then load stream block variant A. */
 void cps_8012c270(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -15706,7 +15733,10 @@ block_8012C2B0:
 }
 
 /* cps_8012c2b8 — clean CPS transliteration of br2eu_func_8012C2B8 (guest 0x8012c2b8)
- * from SLES_017.22_full_02.c. */
+ * from SLES_017.22_full_02.c.
+ * fighter_page_commit: fighter_record_apply + page_table_ptr_set +
+ * cd_file_load_sm + cd_timer_read — fighter page-table commit with
+ * CD timing. */
 void cps_8012c2b8(void)
 {
   CPUState *cpu = clean_cpu_state();
