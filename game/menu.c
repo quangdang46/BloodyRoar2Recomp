@@ -5063,11 +5063,11 @@ void pad_slot_state_walk(void)
 static uint32_t desc_frag_store_pair(uint32_t off, uint32_t src,
                                      uint32_t owner)
 {
-  uint32_t h  = MB16(src + 2);                  /* lhu a2+2 */
-  uint32_t t1 = MB32(owner + 0x18);
-  uint32_t t2 = MB32(owner + 0x1c);
-  MW16(t1 + off + 0x0c, h);
-  MW16(t2 + off + 0x0c, h);
+  uint32_t hval  = MB16(src + 2);                  /* lhu a2+2 */
+  uint32_t dst_a = MB32(owner + 0x18);
+  uint32_t dst_b = MB32(owner + 0x1c);
+  MW16(dst_a + off + 0x0c, hval);
+  MW16(dst_b + off + 0x0c, hval);
   return src + 4;
 }
 
