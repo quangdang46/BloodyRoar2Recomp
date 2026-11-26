@@ -8,10 +8,6 @@
 #include <string.h>
 #include "cpu_state.h"
 
-typedef uint8_t  undefined;
-typedef uint8_t  undefined1;
-typedef uint16_t undefined2;
-typedef uint32_t undefined4;
 typedef int8_t   byte;
 typedef uint16_t ushort;
 typedef uint32_t uint;
@@ -34,7 +30,7 @@ extern uint16_t psx_read_half(uint32_t addr);
 extern void decomp_trace_record(uint8_t tag, uint32_t dst, uint32_t src,
                                 uint8_t mode, uint32_t len);
 void gauge_scale_fixed(short a0,short a1);
-void brightness_commit(undefined2 a0);
+void brightness_commit(uint16_t a0);
 
 
 /* ---- guest globals ---- */
@@ -232,6 +228,27 @@ extern uint8_t  *g_DAT_801b43f0;
 #define DAT_801f5972   (*(uint8_t *)g_DAT_801f5972)
 #define DAT_801f5973   (*(uint8_t *)g_DAT_801f5973)
 #define PTR_DAT_801b4618   (*(uint32_t *)g_PTR_DAT_801b4618)
+/* Identified globals (roles inferred from use; names keep the guest addr):
+ *   0x801bef60  memcard dialog/state block base (s0/s1 in datetime_confirm_*)
+ *   0x801bef64  CD command result/status word (cd_sync_wait_a out-param)
+ *   0x801bef67..69  BCD timestamp bytes fed to cd_stamp_to_sector
+ *   0x801bef6c  populated slot count (cd_dir_read_wrap result)
+ *   0x801bef6d  memcard tick state (switch cases 0x10..0x23)
+ *   0x801bef6e  dialog mode byte; low nibble = confirm path (1/2)
+ *   0x801bef6f  memcard_tick gate flag (!=0 -> tick returns early)
+ *   0x801bef72  expected slot-count threshold for dir scan
+ *   0x801bef74  slot scan counter
+ *   0x801bef76  brightness fade countdown (u16, ticked in memcard_tick)
+ *   0x801bef78/80/84/88  save-sector numbers (cd_stamp_to_sector results)
+ *   0x801bef8c  directory-read buffer pointer
+ *   0x801c11e0  save record block (0x264-byte stride area, 11 records)
+ *   0x801c1264/1304/13a4  16-byte record tables (save_rec_table_copy)
+ *   0x801c4580  CD command-in-flight flag
+ *   0x801e8400  256-byte permutation table (perm_table_load/apply)
+ *   0x801f24d0  24x16 slot poll records (memcard_slot_poll)
+ *   0x801f35f4  live deferred-command count
+ *   0x801f3600  deferred command queue, 32 entries x 6 bytes
+ *   0x801f5968..73  debug marker mode params (dbg_marker_mode_set) */
 #define _DAT_1f800008   (*(uint32_t *)g__DAT_1f800008)
 #define _DAT_1f80000c   (*(uint32_t *)g__DAT_1f80000c)
 #define _DAT_1f80007c   (*(uint16_t *)g__DAT_1f80007c) /* guest lhu @0x1f80007c (0x8015f6a0) */
@@ -320,7 +337,7 @@ void memcard_tick(void)
   /* Guest builds a 3-byte BCD timestamp at sp+0x10..0x12 (sb @0x10,
    * 0x11, 0x12) and passes sp+0x10 to cd_stamp_to_sector, which reads
    * s[0..2]. Ghidra split it into 3 scalars — keep it one array. */
-  undefined1 timestamp_bcd[3];
+  uint8_t timestamp_bcd[3];
   
   if (DAT_801bef6f != '\0') {
     return;
@@ -358,7 +375,7 @@ void memcard_tick(void)
       DAT_801bef6d = DAT_801bef6d + '\x01';
       return;
     case '\x14':
-      cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+      cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
       if (cd_rc == 2) {
         /* disasm-verified: sprintf/cd buf = $sp+0x10, frame -0x28
          * (0x80157b44/0x80157f3c) -> entry_sp - 0x18. The buf is handed
@@ -381,7 +398,7 @@ void memcard_tick(void)
       DAT_801bef6d = 0x20;
       return;
     case '\x15':
-      cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+      cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
       if (cd_rc == 2) {
         brightness_packet_send(0xffffffff);
         cd_cmd_issue_async(0x1b,0);
@@ -394,7 +411,7 @@ void memcard_tick(void)
       DAT_801bef6d = 0x20;
       return;
     case '\x16':
-      cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+      cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
       if (cd_rc == 2) {
         cd_cmd_issue_async(1,0);
         DAT_801bef6d = DAT_801bef6d + '\x01';
@@ -406,7 +423,7 @@ void memcard_tick(void)
       DAT_801bef6d = 0x20;
       return;
     case '\x17':
-      cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+      cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
       if (cd_rc != 2) {
         if (cd_rc != 5) {
           return;
@@ -425,7 +442,7 @@ void memcard_tick(void)
       DAT_801bef6d = DAT_801bef6d + '\x01';
       return;
     case '\x19':
-      cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+      cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
       if (cd_rc != 2) {
         if (cd_rc != 5) {
           return;
@@ -454,7 +471,7 @@ void memcard_tick(void)
       DAT_801bef6d = DAT_801bef6d + '\x01';
       return;
     case '\"':
-      cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+      cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
       if (cd_rc != 2) {
         if (cd_rc != 5) {
           return;
@@ -473,7 +490,7 @@ void memcard_tick(void)
       DAT_801bef6d = DAT_801bef6d + '\x01';
       return;
     case '$':
-      cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+      cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
       if (cd_rc != 2) {
         if (cd_rc != 5) {
           return;
@@ -502,7 +519,7 @@ void memcard_tick(void)
     DAT_801bef6d = DAT_801bef6d + '\x01';
     break;
   case '\x14':
-    cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+    cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
     if (cd_rc == 2) {
       /* disasm-verified: sprintf/cd buf = $sp+0x10, frame -0x28
        * (0x80157b44/0x80157f3c) -> entry_sp - 0x18. Same guest-frame
@@ -522,7 +539,7 @@ void memcard_tick(void)
     }
     break;
   case '\x15':
-    cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+    cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
     if (cd_rc == 2) {
       brightness_packet_send(0xffffffff);
       cd_cmd_issue_async(3,0);
@@ -533,7 +550,7 @@ void memcard_tick(void)
     }
     break;
   case '\x16':
-    cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+    cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
     if (cd_rc == 2) {
       DAT_801bef6d = DAT_801bef6d + '\x01';
     }
@@ -577,7 +594,7 @@ joined_r0x80157c80:
     }
     break;
   case '\x18':
-    cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+    cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
     if (cd_rc == 2) {
       DAT_801bef6d = DAT_801bef6d + -1;
     }
@@ -600,7 +617,7 @@ joined_r0x80157c80:
     DAT_801bef6d = DAT_801bef6d + '\x01';
     break;
   case '\"':
-    cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+    cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
     if (cd_rc == 2) {
       if ((DAT_801bef64 & 0x10) == 0) {
         DAT_801bef6d = DAT_801bef6d + '\x01';
@@ -618,7 +635,7 @@ joined_r0x80157c80:
     DAT_801bef6d = DAT_801bef6d + '\x01';
     break;
   case '$':
-    cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+    cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
     if (cd_rc != 2) {
       if (cd_rc != 5) {
         return;
@@ -632,7 +649,7 @@ joined_r0x80157c80:
     DAT_801bef6d = DAT_801bef6d + '\x01';
     break;
   case '1':
-    cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+    cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
     if (cd_rc != 2) {
       if (cd_rc != 5) {
         return;
@@ -671,7 +688,7 @@ int memcard_file_flow(int a0)
 
 {
   int rc;
-  undefined *str_arg;
+  uint8_t *str_arg;
   char *fmt_str;
   int dlg_type;
   int unaff_s2;
@@ -706,7 +723,7 @@ int memcard_file_flow(int a0)
 #define local_a0 (*(uint16_t *)&step_desc[0x20])
 #define local_9e (*(uint16_t *)&step_desc[0x22])
   char *msg_buf;   /* guest-backed staging buffer: $sp+0x80, frame -0xf8 */
-  undefined4 op_sel;
+  uint32_t op_sel;
   int sm_ret;
   int wait_cnt;
   char *msg_arg;
@@ -1023,7 +1040,7 @@ switchD_8015ffe4_default:
             if (unaff_s2 != 0) goto LAB_801603ec;
             switch(dlg_type) {
             case 0:
-              gauge_scale_fixed(*(undefined1 *)(_g_system_config_ptr + 0xe),
+              gauge_scale_fixed(*(uint8_t *)(_g_system_config_ptr + 0xe),
                            ((uint)*(byte *)(_g_system_config_ptr + 0xf) << 3) / 10);
               brightness_commit(*(byte *)(_g_system_config_ptr + 0xc) ^ 1);
             case 1:
@@ -1156,7 +1173,7 @@ LAB_80160464:
 LAB_801604f4:
       if (local_b8 == 1) {
 LAB_80160504:
-        *(undefined1 *)(_g_system_config_ptr + 0x22) = 0;
+        *(uint8_t *)(_g_system_config_ptr + 0x22) = 0;
       }
 LAB_80160510:
       local_bd = '\0';
@@ -1201,7 +1218,7 @@ void memcard_slot_poll(void)
 {
   short age;
   int ent_off;
-  undefined1 *rec;
+  uint8_t *rec;
   char *slot_flag;
   int slot_i;
   char status_buf [24];
@@ -1213,25 +1230,25 @@ void memcard_slot_poll(void)
   do {
     if (*slot_flag != '\0') {
       if (*slot_flag == -0x80) {
-        *(undefined2 *)(rec + 0xb) = 0;
+        *(uint16_t *)(rec + 0xb) = 0;
         *slot_flag = '\x01';
-        _DAT_801f2650 = *(undefined4 *)(rec + 7);
+        _DAT_801f2650 = *(uint32_t *)(rec + 7);
         _DAT_801f2654 = 0x600e3;
         _DAT_801f2666 = 0;
         ent_off = (uint)*(ushort *)(rec + 5) * 8;
-        _DAT_801f2668 = *(undefined2 *)guest_at((uint32_t)(ent_off + -0x7fe0d41e));
-        _DAT_801f2658 = *(undefined2 *)(rec + 1);
-        _DAT_801f265a = *(undefined2 *)(rec + 3);
-        _DAT_801f266c = *(undefined4 *)guest_at((uint32_t)((uint)*(ushort *)guest_at((uint32_t)(ent_off + -0x7fe0d420)) * 4 + -0x7fe0d920));
-        _DAT_801f268a = *(undefined2 *)guest_at((uint32_t)(ent_off + -0x7fe0d41c));
-        _DAT_801f268c = *(undefined2 *)guest_at((uint32_t)(ent_off + -0x7fe0d41a));
+        _DAT_801f2668 = *(uint16_t *)guest_at((uint32_t)(ent_off + -0x7fe0d41e));
+        _DAT_801f2658 = *(uint16_t *)(rec + 1);
+        _DAT_801f265a = *(uint16_t *)(rec + 3);
+        _DAT_801f266c = *(uint32_t *)guest_at((uint32_t)((uint)*(ushort *)guest_at((uint32_t)(ent_off + -0x7fe0d420)) * 4 + -0x7fe0d920));
+        _DAT_801f268a = *(uint16_t *)guest_at((uint32_t)(ent_off + -0x7fe0d41c));
+        _DAT_801f268c = *(uint16_t *)guest_at((uint32_t)(ent_off + -0x7fe0d41a));
         cd_reg_window_update(&DAT_801f2650);
       }
       else {
         age = *(short *)(rec + 0xb);
         *(short *)(rec + 0xb) = age + 1;
         if ((short)(age + 1) == 2) {
-          cd_reg_window_u16(0,*(undefined4 *)(rec + 7));
+          cd_reg_window_u16(0,*(uint32_t *)(rec + 7));
         }
         if ((status_buf[slot_i] == '\0') && (0x14 < *(short *)(rec + 0xb))) {
           *slot_flag = '\0';
@@ -1250,7 +1267,7 @@ void memcard_slot_poll(void)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void deferred_cmd_drain(undefined4 a0,int a1)
+void deferred_cmd_drain(uint32_t a0,int a1)
 
 {
   ushort cmdw;
@@ -1313,9 +1330,9 @@ LAB_80156ebc:
 void save_defaults_fill(void)
 
 {
-  undefined2 def_val;
-  undefined1 *dst;
-  undefined2 *src;
+  uint16_t def_val;
+  uint8_t *dst;
+  uint16_t *src;
   int i;
   
   i = 0;
@@ -1325,8 +1342,8 @@ void save_defaults_fill(void)
     def_val = *src;
     src = src + 1;
     i = i + 1;
-    *(undefined2 *)(dst + 0x400) = def_val;
-    *(undefined2 *)(dst + 0x3f0) = def_val;
+    *(uint16_t *)(dst + 0x400) = def_val;
+    *(uint16_t *)(dst + 0x3f0) = def_val;
     dst = dst + 2;
   } while (i < 8);
   return;
@@ -1337,9 +1354,9 @@ void save_defaults_fill(void)
 void save_block_init(void)
 
 {
-  undefined *src_name;
-  undefined1 *dst;
-  undefined1 *src;
+  uint8_t *src_name;
+  uint8_t *dst;
+  uint8_t *src;
   int i;
   int j;
   int n;
@@ -1359,13 +1376,13 @@ void save_block_init(void)
   do {
     j = 10;
     dst = &DAT_801c11f4 + n;
-    *(undefined2 *)(&DAT_801c11ec + n) = 0;
-    *(undefined2 *)(&DAT_801c11e8 + n) = 0;
-    *(undefined2 *)(&DAT_801c11e4 + n) = 0;
-    *(undefined2 *)guest_at((uint32_t)(n + -0x7fe3ee1e)) = 0;
-    *(undefined2 *)(&DAT_801c11e0 + n) = 0;
+    *(uint16_t *)(&DAT_801c11ec + n) = 0;
+    *(uint16_t *)(&DAT_801c11e8 + n) = 0;
+    *(uint16_t *)(&DAT_801c11e4 + n) = 0;
+    *(uint16_t *)guest_at((uint32_t)(n + -0x7fe3ee1e)) = 0;
+    *(uint16_t *)(&DAT_801c11e0 + n) = 0;
     do {
-      *(undefined2 *)(dst + 0xe) = 0;
+      *(uint16_t *)(dst + 0xe) = 0;
       j = j + -1;
       dst = dst + -2;
     } while (-1 < j);
@@ -1446,7 +1463,7 @@ LAB_8018bb4c:
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void brightness_commit(undefined2 a0)
+void brightness_commit(uint16_t a0)
 
 {
   _DAT_801f36c0 = a0;
@@ -1463,14 +1480,14 @@ void rec_timer_pair_clear(intptr_t a0)
 
 {
   uint8_t *p = (uint8_t *)guest_at((uint32_t)a0);
-  *(undefined2 *)(p + 0xb4) = 0;
-  *(undefined2 *)(p + 0xb6) = 0;
+  *(uint16_t *)(p + 0xb4) = 0;
+  *(uint16_t *)(p + 0xb6) = 0;
   return;
 }
 
 /* ======== 0x80129f64 ======== */
 
-void mode_flag_pair_set(undefined1 a0)
+void mode_flag_pair_set(uint8_t a0)
 
 {
   DAT_801e83aa = a0;
@@ -1483,16 +1500,16 @@ void mode_flag_pair_set(undefined1 a0)
 void perm_table_load(void)
 
 {
-  undefined1 *dst;
+  uint8_t *dst;
   int i;
   int j;
   
-  dst = (undefined1 *)guest_at(0x801e8400);
+  dst = (uint8_t *)guest_at(0x801e8400);
   i = 0;
   do {
     j = i + 1;
     *dst = (&DAT_8011ec40)[i];
-    dst = (undefined1 *)guest_at((uint32_t)(i + -0x7fe17bff));
+    dst = (uint8_t *)guest_at((uint32_t)(i + -0x7fe17bff));
     i = j;
   } while (j < 0x100);
   return;
@@ -1504,18 +1521,18 @@ void perm_table_apply(uint a0)
 
 {
   byte perm_idx;
-  undefined1 swap_tmp;
-  undefined1 *cell;
+  uint8_t swap_tmp;
+  uint8_t *cell;
   int i;
   
   i = 0;
   do {
-    cell = (undefined1 *)guest_at((uint32_t)(i + -0x7fe17c00));
+    cell = (uint8_t *)guest_at((uint32_t)(i + -0x7fe17c00));
     perm_idx = (&DAT_8011ec40)[a0 & 0xff];
     swap_tmp = *cell;
     i = i + 1;
-    *cell = *(undefined1 *)guest_at((uint32_t)(perm_idx + 0x801e8400));
-    *(undefined1 *)guest_at((uint32_t)(perm_idx + 0x801e8400)) = swap_tmp;
+    *cell = *(uint8_t *)guest_at((uint32_t)(perm_idx + 0x801e8400));
+    *(uint8_t *)guest_at((uint32_t)(perm_idx + 0x801e8400)) = swap_tmp;
     a0 = a0 + 1;
   } while (i < 0x100);
   return;
@@ -1523,7 +1540,7 @@ void perm_table_apply(uint a0)
 
 /* ======== 0x8012aa6c ======== */
 
-void scroll_cfg_set(undefined1 a0,int a1)
+void scroll_cfg_set(uint8_t a0,int a1)
 
 {
   DAT_1f800017 = a0;
@@ -1549,7 +1566,7 @@ void scroll_cfg_set(undefined1 a0,int a1)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void flow_cfg_init(undefined1 a0)
+void flow_cfg_init(uint8_t a0)
 
 {
   int idx;
@@ -1567,7 +1584,7 @@ void flow_cfg_init(undefined1 a0)
   do {
     idx = i * 2;
     i = i + 1;
-    *(undefined2 *)((char *)cfg + (idx + 6) * 4) = 0;
+    *(uint16_t *)((char *)cfg + (idx + 6) * 4) = 0;
   } while (i < 8);
   if (_DAT_1f8000b8 == 0) {
     cfg[3] = 3;
@@ -1603,7 +1620,7 @@ uint attr_word_decode(uint8_t *a0)
   
   attr_hi = *(byte *)(a0 + 1) & 0xf0;
   if (attr_hi == 0x40) {
-    attr_word = ~(uint)CONCAT11(*(undefined1 *)(a0 + 2),*(undefined1 *)(a0 + 3)) & 63999;
+    attr_word = ~(uint)CONCAT11(*(uint8_t *)(a0 + 2),*(uint8_t *)(a0 + 3)) & 63999;
   }
   else if ((attr_hi < 0x41) || (attr_hi == 0x60)) {
     attr_word = 0xffffffff;
@@ -1617,7 +1634,7 @@ uint attr_word_decode(uint8_t *a0)
     else if (attr_hi != 0x70) {
       return 0xffffffff;
     }
-    attr_word = ~(uint)CONCAT11(*(undefined1 *)(a0 + 2),*(undefined1 *)(a0 + 3)) & 63999;
+    attr_word = ~(uint)CONCAT11(*(uint8_t *)(a0 + 2),*(uint8_t *)(a0 + 3)) & 63999;
     if (*(uint8_t *)(a0 + 6) < 0x40) {
       attr_word = attr_word | 0x8000;
     }
@@ -1847,7 +1864,7 @@ extern uint8_t  *g_DAT_801e40b8;
 extern uint8_t  *g_DAT_801e6208;
 extern uint32_t *g_PTR_DAT_801b5b94;
 extern int      str_len(char *);
-extern undefined1 table_byte_next_a(void);
+extern uint8_t table_byte_next_a(void);
 extern int32_t  mc_dialog_bit4(int32_t);
 extern void     ret_stub_b();
 extern void     hud_text_blk_alt(uint32_t,uint32_t,const void *,int32_t,int32_t,int32_t);
@@ -2548,7 +2565,7 @@ int32_t mc_action_dispatch_b(uint32_t a0,uint32_t a1)
  * Disasm 0x80166398-0x80166424. */
 extern void fighter_link_init(uint32_t,uint32_t,uint8_t *,uint32_t);
 extern void scratchpad_pair_init(void);
-extern void flow_cfg_init(undefined1);
+extern void flow_cfg_init(uint8_t);
 extern void rec_timer_pair_clear(intptr_t);
 extern void battle_state_init(uint8_t *,uint8_t *,uint32_t);
 extern uint8_t *g_DAT_1f8000e8,*g_DAT_1f8001f0;
@@ -2997,7 +3014,7 @@ extern void page_table_ptr_set(uint32_t,int32_t);
  * tag) -> consumed length. The table argument is a GUEST address at these
  * call sites, so wrap it in guest_at() — passing the raw guest address as
  * int* made *a1 dereference host memory ~0x80xxxxxx (wild read). */
-extern undefined4 stream_block_decode(undefined4,int *,int);
+extern uint32_t stream_block_decode(uint32_t,int *,int);
 extern void cd_timer_read(uint32_t);
 extern uint32_t action_enter(void *battle, uint8_t *ctrl, uint32_t sel);
 /* strong action_enter_fwd: forwards to action_enter (action.c).
@@ -3050,7 +3067,7 @@ extern int32_t FUN_801a0220(uint32_t,uint32_t,uint32_t);
 extern void FUN_801a0250(int32_t);
 extern uint32_t cd_xchg_fec24(uint32_t);
 extern int32_t fifo_space_check(void);
-extern int tween_seq_alloc(int,undefined2,undefined4,undefined4,short,undefined2,undefined4,undefined4);
+extern int tween_seq_alloc(int,uint16_t,uint32_t,uint32_t,short,uint16_t,uint32_t,uint32_t);
 extern int *node_lazy_attach(int,int,int,int);
 extern int cd_file_load_sm(int32_t,uint32_t);
 extern int sprite_quad_emit(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
@@ -7775,7 +7792,7 @@ extern int angle_pair_rotmat();
 extern uint  rand_lcg(void);
 extern void tween_dur_spread();
 extern void prim_attr_word_set();
-extern undefined4 tween_ensure(int);
+extern uint32_t tween_ensure(int);
 extern void obj_flag34_set(int);
 extern void obj_flag34_clear(int);
 extern void task_node_free(int *);
@@ -7970,7 +7987,7 @@ void mat3x3_build_wrap(uint32_t a0,uint32_t a1,int16_t *a2)
 }
 
 /* 0x801af804 — rotmat2_build(*a2, a1); a0 unused. */
-void *op_wrap_8da2c_a(uint32_t a0,undefined4 *a1,int16_t *a2)
+void *op_wrap_8da2c_a(uint32_t a0,uint32_t *a1,int16_t *a2)
 {
   (void)a0;
   return (void *)rotmat2_build((uint)(int32_t)*a2,a1);
@@ -7999,7 +8016,7 @@ void *op_wrap_8dac0_a(uint32_t a0,uint32_t a1,int16_t *a2)
 }
 
 /* 0x801af89c — rotmat2_build(a0[1], a1). */
-void *op_wrap_8da2c_b(int16_t *a0,undefined4 *a1)
+void *op_wrap_8da2c_b(int16_t *a0,uint32_t *a1)
 {
   return (void *)rotmat2_build((uint)(int32_t)a0[1],a1);
 }
@@ -8042,14 +8059,14 @@ extern void op_job_submit_init();
 extern int32_t dev_byte_xfer(uint8_t *,int32_t);
 extern uint32_t cd_svc_50(uint32_t,uint32_t);
 extern uint32_t cd_svc_4e(uint32_t,uint32_t,uint32_t);
-extern int fx_group_alloc(undefined4,undefined4,int,int);
-extern undefined4 tween_chan_alloc(int,int);
+extern int fx_group_alloc(uint32_t,uint32_t,int,int);
+extern uint32_t tween_chan_alloc(int,int);
 extern void tween_seek(int,int);
 extern int lut_sin_q12();
 extern int lut_cos_q12();
-extern int task_alloc_wrap_f(undefined4,undefined4,undefined4,int);
+extern int task_alloc_wrap_f(uint32_t,uint32_t,uint32_t,int);
 extern int angle_from_xy(int,int);
-extern undefined4 noop_c(int);
+extern uint32_t noop_c(int);
 extern void node_tree_free(int);
 extern void bios_tramp_c003(uint32_t,uint32_t);
 extern void FUN_8018e300(void);
@@ -8486,7 +8503,7 @@ void op_field_store_idx(uint8_t *a0,uint32_t *a1)
 /* ======== batch34: 0x801a0a/0x801a18/0x801a51/0x801a6b/0x801a9b/0x801ac/0x801ad/0x801ae ======== */
 
 extern void text_win_printf();
-extern int *task_node_alloc(int,undefined4,uint,int,int,int);
+extern int *task_node_alloc(int,uint32_t,uint,int,int,int);
 extern void tween_apply(short *,int,int);
 extern void gp_20_store_default(void);
 extern int prim_group_build();
