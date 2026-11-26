@@ -10405,30 +10405,30 @@ int fixed_approach_s16(ushort *cur,short *tgt,uint step)
 
 void fighter_trail_emit(undefined4 *a0,undefined4 a1,int a2,int a3)
 {
-  ushort uVar1;
-  bool bVar2;
-  short sVar3;
-  int iVar4;
-  int iVar5;
-  int iVar6;
-  int unaff_s3;
-  short sVar7;
-  int unaff_s4;
-  int iVar8;
-  undefined1 *puVar9;
-  int iVar10;
-  undefined4 uVar11;
+  ushort lif;
+  bool far;
+  short o0;
+  int t4;
+  int nd;
+  int q;
+  int t3;
+  short o1;
+  int sp;
+  int hdg;
+  undefined1 *tp;
+  int base;
+  undefined4 arg;
   /* Guest vec3 slot: gte_xform_add_off writes a2[0..2] as 3
    * contiguous int; the decompiler split the 12-byte vec3 into
-   * scalars. local_44[0..2] = old local_44/local_40/local_3c. */
-  undefined4 local_44 [3];
-  short local_38 [4];
-  uint local_30;
-  uint local_2c;
-  puVar9 = &DAT_801f04a8;
-  uVar11 = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((a3 + 0xc)));
-  iVar10 = *(int *)guest_at((uint32_t)(uintptr_t)((a3 + 8)));
-  iVar8 = ((int)*(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0x2a) ))<< 0x14) >> 0x14;
+   * scalars. out[0..2] = old out/local_40/local_3c. */
+  undefined4 out [3];
+  short off [4];
+  uint fl0;
+  uint fl1;
+  tp = &DAT_801f04a8;
+  arg = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((a3 + 0xc)));
+  base = *(int *)guest_at((uint32_t)(uintptr_t)((a3 + 8)));
+  hdg = ((int)*(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0x2a) ))<< 0x14) >> 0x14;
   setCopControlWord(2,0,*a0);
   setCopControlWord(2,0x800,a0[1]);
   setCopControlWord(2,0x1000,a0[2]);
@@ -10437,166 +10437,166 @@ void fighter_trail_emit(undefined4 *a0,undefined4 a1,int a2,int a3)
   setCopControlWord(2,0x2800,a0[5]);
   setCopControlWord(2,0x3000,a0[6]);
   setCopControlWord(2,0x3800,a0[7]);
-  iVar6 = 0;
+  q = 0;
   if (*(char *)guest_at((uint32_t)(uintptr_t)((a3 + 0x9e) ))== '\0') {
-    local_30 = (uint)(-iVar8 < 0x4e4);
-    local_2c = (uint)(-iVar8 < 0x31c);
+    fl0 = (uint)(-hdg < 0x4e4);
+    fl1 = (uint)(-hdg < 0x31c);
     do {
-      if (0 < *(short *)(puVar9 + 0x3c)) {
-        local_38[2] = 0;
-        local_38[1] = 0;
-        local_38[0] = 0;
-        if (*(short *)(puVar9 + 0x4c) == 0) {
-          iVar4 = (uint)*(ushort *)(puVar9 + 0x3c) -
-                  ((((int)((uint)*(ushort *)(puVar9 + 0x44) << 0x10) >> 0x10) -
-                   ((int)((uint)*(ushort *)(puVar9 + 0x44) << 0x10) >> 0x1f)) >> 1);
-          *(short *)(puVar9 + 0x3c) = (short)iVar4;
-          if (iVar4 * 0x10000 < 1) {
+      if (0 < *(short *)(tp + 0x3c)) {
+        off[2] = 0;
+        off[1] = 0;
+        off[0] = 0;
+        if (*(short *)(tp + 0x4c) == 0) {
+          t4 = (uint)*(ushort *)(tp + 0x3c) -
+                  ((((int)((uint)*(ushort *)(tp + 0x44) << 0x10) >> 0x10) -
+                   ((int)((uint)*(ushort *)(tp + 0x44) << 0x10) >> 0x1f)) >> 1);
+          *(short *)(tp + 0x3c) = (short)t4;
+          if (t4 * 0x10000 < 1) {
 LAB_80135314:
-            *(undefined2 *)(puVar9 + 0x3c) = 1;
+            *(undefined2 *)(tp + 0x3c) = 1;
           }
 LAB_8013531c:
-          *(undefined2 *)(puVar9 + 0x4c) = 0x100;
+          *(undefined2 *)(tp + 0x4c) = 0x100;
         }
-        else if (*(short *)(puVar9 + 0x4c) < 0) {
-          uVar1 = *(ushort *)(puVar9 + 0x3c);
-          *(short *)(puVar9 + 0x3c) = (short)((uint)uVar1 - (uint)*(ushort *)(puVar9 + 0x44));
-          if ((int)(((uint)uVar1 - (uint)*(ushort *)(puVar9 + 0x44)) * 0x10000) < 1) {
-            if ((*(short *)(puVar9 + 0x44) != 10000) || (DAT_801f04c9 != '\0')) goto LAB_80135314;
-            particle_burst_spawn(iVar6,(int)*(char *)guest_at((uint32_t)(uintptr_t)((a3 + 0x98))));
-            *(undefined2 *)(puVar9 + 0x34) = 0xffff;
-            *(undefined2 *)(puVar9 + 0x3c) = 0;
+        else if (*(short *)(tp + 0x4c) < 0) {
+          lif = *(ushort *)(tp + 0x3c);
+          *(short *)(tp + 0x3c) = (short)((uint)lif - (uint)*(ushort *)(tp + 0x44));
+          if ((int)(((uint)lif - (uint)*(ushort *)(tp + 0x44)) * 0x10000) < 1) {
+            if ((*(short *)(tp + 0x44) != 10000) || (DAT_801f04c9 != '\0')) goto LAB_80135314;
+            particle_burst_spawn(q,(int)*(char *)guest_at((uint32_t)(uintptr_t)((a3 + 0x98))));
+            *(undefined2 *)(tp + 0x34) = 0xffff;
+            *(undefined2 *)(tp + 0x3c) = 0;
             DAT_801f04c9 = '\x01';
             goto LAB_80135630;
           }
           goto LAB_8013531c;
         }
-        if ((*(ushort *)(puVar9 + 0x4c) & 3) < 2) {
-          unaff_s4 = (int)*(short *)(puVar9 + 0x44);
-          if (0x80 < unaff_s4) {
-            unaff_s4 = 0x80;
+        if ((*(ushort *)(tp + 0x4c) & 3) < 2) {
+          sp = (int)*(short *)(tp + 0x44);
+          if (0x80 < sp) {
+            sp = 0x80;
           }
         }
-        else if ((*(ushort *)(puVar9 + 0x4c) & 3) < 4) {
-          unaff_s4 = 0;
+        else if ((*(ushort *)(tp + 0x4c) & 3) < 4) {
+          sp = 0;
         }
         if (*(short *)guest_at((uint32_t)(uintptr_t)((a3 + 0x82) ))== 0) {
-          iVar4 = *(short *)(puVar9 + 0x44) * 7;
-          *(short *)(puVar9 + 0x4c) = *(short *)(puVar9 + 0x4c) + 1;
-          if (iVar4 < 0) {
-            iVar4 = iVar4 + 7;
+          t4 = *(short *)(tp + 0x44) * 7;
+          *(short *)(tp + 0x4c) = *(short *)(tp + 0x4c) + 1;
+          if (t4 < 0) {
+            t4 = t4 + 7;
           }
-          *(short *)(puVar9 + 0x44) = (short)(iVar4 >> 3);
-          if ((iVar4 >> 3 & 0xffffU) == 0) {
-            *(undefined2 *)(puVar9 + 0x4c) = 0;
+          *(short *)(tp + 0x44) = (short)(t4 >> 3);
+          if ((t4 >> 3 & 0xffffU) == 0) {
+            *(undefined2 *)(tp + 0x4c) = 0;
           }
         }
-        sVar7 = (short)unaff_s4;
-        if (iVar6 == 1) {
-          sVar3 = -sVar7;
-          sVar7 = local_38[2];
+        o1 = (short)sp;
+        if (q == 1) {
+          o0 = -o1;
+          o1 = off[2];
         }
         else {
-          sVar3 = local_38[0];
-          if (iVar6 < 2) {
-            sVar3 = sVar7;
-            sVar7 = local_38[2];
-            if (iVar6 != 0) {
-              sVar3 = local_38[0];
+          o0 = off[0];
+          if (q < 2) {
+            o0 = o1;
+            o1 = off[2];
+            if (q != 0) {
+              o0 = off[0];
             }
           }
-          else if ((iVar6 != 2) && (sVar7 = -sVar7, iVar6 != 3)) {
-            sVar7 = local_38[2];
+          else if ((q != 2) && (o1 = -o1, q != 3)) {
+            o1 = off[2];
           }
         }
-        local_38[2] = sVar7;
-        local_38[0] = sVar3;
+        off[2] = o1;
+        off[0] = o0;
         if ((DAT_801f04c8 & 1) != 0) {
-          bVar2 = false;
-          if (iVar6 == 1) {
-            iVar4 = iVar8 + -0x400;
+          far = false;
+          if (q == 1) {
+            t4 = hdg + -0x400;
 LAB_80135460:
-            iVar4 = (iVar4 << 0x14) >> 0x14;
-            if (iVar4 < 0) {
-              if (0x31b < -iVar4) {
-                bVar2 = true;
+            t4 = (t4 << 0x14) >> 0x14;
+            if (t4 < 0) {
+              if (0x31b < -t4) {
+                far = true;
               }
             }
             else {
 joined_r0x801354dc:
-              if (0x31b < iVar4) {
+              if (0x31b < t4) {
 LAB_801354fc:
-                bVar2 = true;
+                far = true;
               }
             }
           }
           else {
-            if (iVar6 < 2) {
-              if (iVar6 != 0) goto LAB_80135504;
-              iVar4 = iVar8 + 0x400;
+            if (q < 2) {
+              if (q != 0) goto LAB_80135504;
+              t4 = hdg + 0x400;
               goto LAB_80135460;
             }
-            if (iVar6 == 2) {
-              if (iVar8 < 0) {
-                if (local_30 != 0) {
-                  bVar2 = true;
+            if (q == 2) {
+              if (hdg < 0) {
+                if (fl0 != 0) {
+                  far = true;
                 }
                 goto LAB_80135504;
               }
-              if (0x4e3 < iVar8) goto LAB_80135504;
+              if (0x4e3 < hdg) goto LAB_80135504;
               goto LAB_801354fc;
             }
-            if (iVar6 == 3) {
-              iVar4 = iVar8;
-              if (iVar8 < 0) {
-                if (local_2c == 0) goto LAB_801354fc;
+            if (q == 3) {
+              t4 = hdg;
+              if (hdg < 0) {
+                if (fl1 == 0) goto LAB_801354fc;
                 goto LAB_80135504;
               }
               goto joined_r0x801354dc;
             }
           }
 LAB_80135504:
-          gte_xform_add_off((int)guest_of(a0),(undefined4 *)local_38,(int *)local_44);
-          setCopControlWord(2,0x2800,local_44[0]);
-          setCopControlWord(2,0x3000,local_44[1]);
-          setCopControlWord(2,0x3800,local_44[2]);
+          gte_xform_add_off((int)guest_of(a0),(undefined4 *)off,(int *)out);
+          setCopControlWord(2,0x2800,out[0]);
+          setCopControlWord(2,0x3000,out[1]);
+          setCopControlWord(2,0x3800,out[2]);
           if (*(char *)guest_at((uint32_t)(uintptr_t)((a3 + 0x9f) ))== '\0') {
-            unaff_s3 = (int)*(short *)(puVar9 + 0x34);
-            if (((unaff_s3 < 0) || (iVar4 = _DAT_801f04b0 + unaff_s3 * 0x28, _DAT_801f04c6 != 0)) ||
-               (!bVar2)) goto LAB_80135630;
-            iVar5 = iVar10 + 0x203c;
+            t3 = (int)*(short *)(tp + 0x34);
+            if (((t3 < 0) || (t4 = _DAT_801f04b0 + t3 * 0x28, _DAT_801f04c6 != 0)) ||
+               (!far)) goto LAB_80135630;
+            nd = base + 0x203c;
           }
           else {
-            if (iVar6 == 1) {
-              unaff_s3 = 1;
+            if (q == 1) {
+              t3 = 1;
             }
-            else if (iVar6 < 2) {
-              if (iVar6 == 0) {
-                unaff_s3 = 0;
+            else if (q < 2) {
+              if (q == 0) {
+                t3 = 0;
               }
             }
-            else if (iVar6 == 2) {
-              unaff_s3 = 3;
+            else if (q == 2) {
+              t3 = 3;
             }
-            else if (iVar6 == 3) {
-              unaff_s3 = 2;
+            else if (q == 3) {
+              t3 = 2;
             }
-            iVar5 = iVar10 + 0x203c;
-            if (bVar2) {
-              iVar4 = _DAT_801f04c0 + unaff_s3 * 0x28;
+            nd = base + 0x203c;
+            if (far) {
+              t4 = _DAT_801f04c0 + t3 * 0x28;
             }
             else {
-              iVar5 = iVar10 + 0x18;
-              iVar4 = _DAT_801f04c0 + unaff_s3 * 0x28;
+              nd = base + 0x18;
+              t4 = _DAT_801f04c0 + t3 * 0x28;
             }
           }
-          prim_task_run(iVar4,iVar5,uVar11,1);
+          prim_task_run(t4,nd,arg,1);
         }
       }
 LAB_80135630:
-      iVar6 = iVar6 + 1;
-      puVar9 = puVar9 + 2;
-    } while (iVar6 < 4);
+      q = q + 1;
+      tp = tp + 2;
+    } while (q < 4);
     if (*(char *)guest_at((uint32_t)(uintptr_t)((a3 + 0x9e) ))== '\0') {
       if (*(char *)guest_at((uint32_t)(uintptr_t)((a3 + 0x9f) ))== '\0') {
         /* PTR_FUN_801b1734 is the guest u32 code-pointer table @0x801B1734
@@ -10610,18 +10610,18 @@ LAB_80135630:
           if (_tf != 0) {
             uint32_t _fr = br2_guest_frame(0x20);
             br2_st32(_fr + 0x10, br2_gaddr(a0));
-            br2_call_clean(_tf,(uint32_t)iVar10,uVar11,0x801f04a8u,(uint32_t)a3);
+            br2_call_clean(_tf,(uint32_t)base,arg,0x801f04a8u,(uint32_t)a3);
             br2_guest_frame_free();
           }
         }
       }
       else {
-        prim_task_run(_DAT_801f04c0 + 0xa0,iVar10 + 0x2074,uVar11,1);
+        prim_task_run(_DAT_801f04c0 + 0xa0,base + 0x2074,arg,1);
       }
     }
   }
   if (_DAT_801f04c6 == 0) {
-    particle_burst_update(iVar10,uVar11,(undefined4)br2_gaddr(a0),a3);
+    particle_burst_update(base,arg,(undefined4)br2_gaddr(a0),a3);
   }
   if (0 < _DAT_801f04c6) {
     _DAT_801f04c6 = _DAT_801f04c6 + -1;
