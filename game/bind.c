@@ -3226,12 +3226,12 @@ uint32_t br2_ld32p(uint32_t cell) { return br2_ld32(*(uint32_t *)guest_at(cell))
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void br2_st8p(uint32_t cell, uint8_t v) { br2_st8(*(uint32_t *)guest_at(cell), v); }
+void br2_st8p(uint32_t cell, uint8_t val) { br2_st8(*(uint32_t *)guest_at(cell), val); }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void br2_st16p(uint32_t cell, uint16_t v) { br2_st16(*(uint32_t *)guest_at(cell), v); }
+void br2_st16p(uint32_t cell, uint16_t val) { br2_st16(*(uint32_t *)guest_at(cell), val); }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void br2_st32p(uint32_t cell, uint32_t v) { br2_st32(*(uint32_t *)guest_at(cell), v); }
+void br2_st32p(uint32_t cell, uint32_t val) { br2_st32(*(uint32_t *)guest_at(cell), val); }
