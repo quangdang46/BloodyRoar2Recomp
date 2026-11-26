@@ -4920,25 +4920,25 @@ extern void s16_dec_with_floor(uint32_t);
 extern void post_battle_side_commit(uint8_t *,uint8_t *,uint32_t);
 void battle_sides_commit(uint8_t *side_a, uint8_t *side_b, uint32_t battle_g)
 {
-  uint8_t *s1 = (uint8_t *)guest_at(battle_g);
+  uint8_t *b = (uint8_t *)guest_at(battle_g);
   uint8_t *s2 = side_a;
   uint8_t *s3 = side_b;
-  uint32_t s0 = 0;
+  uint32_t cfg_fl = 0;
   int32_t t;
   uint8_t b92;
   t = (int32_t)MB32(*(uint32_t *)(s2 + 0x20) + 0x38);
   if (t <= 0) {
     t = (int32_t)MB32(*(uint32_t *)(s3 + 0x20) + 0x38);
-    if (t <= 0) { s1[0x9d] = 0; goto L_eval; }
+    if (t <= 0) { b[0x9d] = 0; goto L_eval; }
   }
-  s1[0x9d] = 1;
+  b[0x9d] = 1;
 L_eval:
-  s0 |= (uint32_t)battle_config_eval(s2,battle_g,0);
-  s0 |= (uint32_t)battle_config_eval(s3,battle_g,0);
-  if (s1[0x92] == 4)
-    battle_input_dispatch(battle_g,s0 & 0xffff);
+  cfg_fl |= (uint32_t)battle_config_eval(s2,battle_g,0);
+  cfg_fl |= (uint32_t)battle_config_eval(s3,battle_g,0);
+  if (b[0x92] == 4)
+    battle_input_dispatch(battle_g,cfg_fl & 0xffff);
   if ((int16_t)MB16((battle_g) + 0x82) != 0) return;
-  b92 = s1[0x92];
+  b92 = b[0x92];
   if (b92 >= 5) return;
   switch (b92) {
   case 0: {
@@ -4946,33 +4946,33 @@ L_eval:
     *(uint16_t *)guest_at(bc + 0x82) = (uint16_t)-1;
     battle_field_set(bc,3);
     clear_f0300_records();
-    *(uint16_t *)(s1 + 0x8c) = 0;
+    *(uint16_t *)(b + 0x8c) = 0;
     battle_subrecord_reset(battle_g);
-    *(uint16_t *)(s1 + 0x92) =
-      (uint16_t)((*(uint16_t *)(s1 + 0x92) & 0xff00) | 1);
+    *(uint16_t *)(b + 0x92) =
+      (uint16_t)((*(uint16_t *)(b + 0x92) & 0xff00) | 1);
     break;
   }
   case 1:
-    *(uint16_t *)(s1 + 0x92) =
-      (uint16_t)((*(uint16_t *)(s1 + 0x92) & 0xff00) | 2);
+    *(uint16_t *)(b + 0x92) =
+      (uint16_t)((*(uint16_t *)(b + 0x92) & 0xff00) | 2);
     /* fallthrough */
   case 2:
-    *(uint16_t *)(s1 + 0x92) =
-      (uint16_t)((*(uint16_t *)(s1 + 0x92) & 0xff00) | 3);
+    *(uint16_t *)(b + 0x92) =
+      (uint16_t)((*(uint16_t *)(b + 0x92) & 0xff00) | 3);
     /* fallthrough */
   case 3:
     *(uint32_t *)(s2 + 0x60) = 0;
     *(uint32_t *)(s3 + 0x60) = 0;
     battle_subrecord_set1(battle_g);
-    *(uint16_t *)(s1 + 0x92) =
-      (uint16_t)((*(uint16_t *)(s1 + 0x92) & 0xff00) | 4);
+    *(uint16_t *)(b + 0x92) =
+      (uint16_t)((*(uint16_t *)(b + 0x92) & 0xff00) | 4);
     /* fallthrough */
   case 4:
     s16_dec_with_floor(battle_g);
     post_battle_side_commit(s2,s3,battle_g);
-    if (s0 & 0x100) {
-      s1[0x9a] = 2;
-      s1[1]    = 6;
+    if (cfg_fl & 0x100) {
+      b[0x9a] = 2;
+      b[1]    = 6;
     }
     break;
   default: break;
@@ -4995,49 +4995,49 @@ extern void cd_ctx_set_fwd(int32_t,uint32_t,int32_t);
 extern void cd_ctx_cmd_fwd(int32_t,uint32_t);
 void pad_slot_state_walk(void)
 {
-  uint32_t s2a, s0a, s1a;
-  int32_t s3;
+  uint32_t cur2, cur0, cur1;
+  int32_t ctx_off;
   int32_t st;
   if ((MB8(0x801b55d0) & 1) == 0) return;
-  s2a = 0x801f5968u; s0a = 0x801f596cu; s1a = 0x801f5970u; s3 = 0;
+  cur2 = 0x801f5968u; cur0 = 0x801f596cu; cur1 = 0x801f5970u; ctx_off = 0;
   do {
-    st = cd_ctx_status_map(s3);
+    st = cd_ctx_status_map(ctx_off);
     if ((uint32_t)st < 7) {
       switch (st) {
       case 6:
-        if (MB8(s2a) == 0) {
-          if (cd_ctx_field_get(s3,2,0) != 0) {
-            cd_ctx_set_fwd(s3,s1a,2);
-            cd_ctx_cmd_fwd(s3,0x801b55d4u);
+        if (MB8(cur2) == 0) {
+          if (cd_ctx_field_get(ctx_off,2,0) != 0) {
+            cd_ctx_set_fwd(ctx_off,cur1,2);
+            cd_ctx_cmd_fwd(ctx_off,0x801b55d4u);
           }
         }
-        MB8(s2a) = 1;
+        MB8(cur2) = 1;
         /* fallthrough */
       case 4: case 5:
-        if (*(int8_t *)guest_at(s0a) != 0)
-          MB8(s0a) = (uint8_t)(MB8(s0a) - 1);
+        if (*(int8_t *)guest_at(cur0) != 0)
+          MB8(cur0) = (uint8_t)(MB8(cur0) - 1);
         else
-          MB8(s1a) = 0;
-        if (*(int8_t *)guest_at(s0a + 1) != 0)
-          MB8(s0a + 1) = (uint8_t)(MB8(s0a + 1) - 1);
+          MB8(cur1) = 0;
+        if (*(int8_t *)guest_at(cur0 + 1) != 0)
+          MB8(cur0 + 1) = (uint8_t)(MB8(cur0 + 1) - 1);
         else
-          MB8(s1a + 1) = 0;
+          MB8(cur1 + 1) = 0;
         break;
       case 2:
-        MB8(s1a + 1) = 0; MB8(s1a) = 0;
-        MB8(s0a + 1) = 0; MB8(s0a) = 0;
-        MB8(s2a)     = 1;
+        MB8(cur1 + 1) = 0; MB8(cur1) = 0;
+        MB8(cur0 + 1) = 0; MB8(cur0) = 0;
+        MB8(cur2)     = 1;
         break;
       case 0: case 1:
-        MB8(s1a + 1) = 0; MB8(s1a) = 0;
-        MB8(s0a + 1) = 0; MB8(s0a) = 0;
-        MB8(s2a)     = 0;
+        MB8(cur1 + 1) = 0; MB8(cur1) = 0;
+        MB8(cur0 + 1) = 0; MB8(cur0) = 0;
+        MB8(cur2)     = 0;
         break;
       default: break;                            /* case 3: nop */
       }
     }
-    s2a += 1; s0a += 2; s1a += 2; s3 += 0x10;
-  } while (s2a < 0x801f596au);
+    cur2 += 1; cur0 += 2; cur1 += 2; ctx_off += 0x10;
+  } while (cur2 < 0x801f596au);
 }
 
 /* ======== batch32: menu helpers (capstone-verified disasm ports) ======== */
