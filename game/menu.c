@@ -1935,50 +1935,50 @@ LAB_801651e8:
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void transition_screen_flow(int param_1)
+void transition_screen_flow(int mode)
 
 {
-  int iVar1;
-  int iVar2;
-  uint uVar3;
-  undefined4 uVar4;
-  int unaff_s1;
+  int fade_acc;
+  int tmp;
+  uint gray;
+  undefined4 spr_code;
+  int fade_ctr;
   
-  if ((param_1 != 0) || (_DAT_801c4578 == 1)) {
-    iVar1 = memcard_err_sentinel();
-    if (iVar1 < 0) {
+  if ((mode != 0) || (_DAT_801c4578 == 1)) {
+    fade_acc = memcard_err_sentinel();
+    if (fade_acc < 0) {
       _DAT_1f80008c = 0;
       if (DAT_1f800001 != 0xff) {
-        iVar1 = unaff_s1 * 0xff + -0x956a;
+        fade_acc = fade_ctr * 0xff + -0x956a;
         do {
           if (DAT_1f800001 == 1) {
 LAB_80165dd8:
-            unaff_s1 = unaff_s1 + -1;
-            iVar1 = iVar1 + -0xff;
-            if (unaff_s1 == 0) {
+            fade_ctr = fade_ctr + -1;
+            fade_acc = fade_acc + -0xff;
+            if (fade_ctr == 0) {
               rgb_triple_store(0,0,0);
               DAT_1f800001 = 0xf0;
             }
             else {
-              if (unaff_s1 < 0x32) {
-                uVar3 = 0xff - (unaff_s1 * 0xff) / 0x32;
+              if (fade_ctr < 0x32) {
+                gray = 0xff - (fade_ctr * 0xff) / 0x32;
 LAB_80165ed0:
                 spr_attr_alloc_a(_DAT_1f800008,0,0,(int)(short)_DAT_1f800020,(int)_DAT_1f800022,
-                             uVar3 | uVar3 << 8 | uVar3 << 0x10,3);
+                             gray | gray << 8 | gray << 0x10,3);
               }
-              else if ((0x95 < unaff_s1) && (unaff_s1 < 200)) {
-                uVar3 = iVar1 / 0x32;
+              else if ((0x95 < fade_ctr) && (fade_ctr < 200)) {
+                gray = fade_acc / 0x32;
                 goto LAB_80165ed0;
               }
-              if (param_1 == 3) {
+              if (mode == 3) {
                 rgb_triple_store(0xff,0xff,0xff);
                 spr_attr_alloc_b(_DAT_1f800008,0,0xeffe008c,0x7d000000,
                              (((int)((uint)_DAT_1f800020 << 0x10) >> 0x10) -
                              ((int)((uint)_DAT_1f800020 << 0x10) >> 0x1f)) >> 1,(int)_DAT_1f800022);
-                uVar4 = 0xeffe008a;
+                spr_code = 0xeffe008a;
               }
               else {
-                if (param_1 != 0xf) {
+                if (mode != 0xf) {
                   spr_attr_alloc_b(_DAT_1f800008,0,0xeffe008c,0x7d000000,(int)(short)_DAT_1f800020,
                                (int)_DAT_1f800022);
                   goto LAB_80166058;
@@ -1986,26 +1986,26 @@ LAB_80165ed0:
                 spr_attr_alloc_b(_DAT_1f800008,0,0xeffe000c,0x7d000000,
                              (((int)((uint)_DAT_1f800020 << 0x10) >> 0x10) -
                              ((int)((uint)_DAT_1f800020 << 0x10) >> 0x1f)) >> 1,(int)_DAT_1f800022);
-                uVar4 = 0xeffe000d;
+                spr_code = 0xeffe000d;
               }
-              iVar2 = (int)((uint)_DAT_1f800020 << 0x10) >> 0x10;
+              tmp = (int)((uint)_DAT_1f800020 << 0x10) >> 0x10;
               spr_attr_alloc_b(_DAT_1f800008,
-                           (iVar2 - ((int)((uint)_DAT_1f800020 << 0x10) >> 0x1f)) >> 1 & 0xffff,uVar4,
-                           0x7d000000,iVar2,(int)_DAT_1f800022);
+                           (tmp - ((int)((uint)_DAT_1f800020 << 0x10) >> 0x1f)) >> 1 & 0xffff,spr_code,
+                           0x7d000000,tmp,(int)_DAT_1f800022);
             }
 LAB_80166058:
             frame_tick(0x1f800000);
-            if ((param_1 == 0) && (DAT_1f800001 == 1)) {
+            if ((mode == 0) && (DAT_1f800001 == 1)) {
               save_slot_state_fixup(0x1f800000,2);
             }
           }
           else {
             if (DAT_1f800001 < 2) {
-              if (((DAT_1f800001 == 0) && (iVar2 = card_sprite_load_sm(0x1f800000,param_1), iVar2 != 0)) &&
-                 (iVar2 = frame_divisor_get(), iVar2 == 0)) {
-                iVar1 = 0x31ce;
+              if (((DAT_1f800001 == 0) && (tmp = card_sprite_load_sm(0x1f800000,mode), tmp != 0)) &&
+                 (tmp = frame_divisor_get(), tmp == 0)) {
+                fade_acc = 0x31ce;
                 spr_attr_alloc_a(_DAT_1f800008,0,0,(int)(short)_DAT_1f800020,(int)_DAT_1f800022,0,0);
-                unaff_s1 = 200;
+                fade_ctr = 200;
                 DAT_1f800001 = DAT_1f800001 + 1;
                 goto LAB_80165dd8;
               }
@@ -2033,24 +2033,24 @@ LAB_80166058:
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void battle_intro_flow(int param_1)
+void battle_intro_flow(int mode)
 
 {
-  bool bVar1;
-  undefined1 uVar2;
-  ushort uVar3;
-  int iVar4;
-  uint uVar5;
-  char cVar6;
+  bool is_attract;
+  undefined1 saved_sub;
+  ushort field_attr;
+  int tmp;
+  uint flags;
+  char round_step;
   /* The generated code keeps the phase-2 intro countdown in $s3 across the
    * per-frame calls to this state machine; it must persist here or the
    * countdown restarts from stack garbage every frame. */
-  static int unaff_s3;
-  undefined4 unaff_s6;
-  bVar1 = false;
-  iVar4 = memcard_err_sentinel();
-  uVar2 = DAT_1f80009b;
-  if (iVar4 < 0) {
+  static int intro_timer;
+  undefined4 field_id;
+  is_attract = false;
+  tmp = memcard_err_sentinel();
+  saved_sub = DAT_1f80009b;
+  if (tmp < 0) {
     DAT_1f80009b = 3;
 joined_r0x801673ac:
     /* Bail-unwind exit must preserve the DAT1 exit invariant (normal exits
@@ -2061,8 +2061,8 @@ joined_r0x801673ac:
     if (DAT_1f800001 != 0xff) {
       if (DAT_1f800001 == 2) {
 LAB_80167620:
-        unaff_s3 = unaff_s3 + -1;
-        if (unaff_s3 == 0) {
+        intro_timer = intro_timer + -1;
+        if (intro_timer == 0) {
           DAT_1f800001 = 0xf0;
         }
         if (_DAT_1f80008c == 0) {
@@ -2077,22 +2077,22 @@ LAB_8016767c:
         }
         if (_DAT_1f80008e == 0) {
           _DAT_1f80008e = 200;
-          uVar5 = table_byte_next_a();
-          if ((uVar5 & 1) == 0) {
-            unaff_s6 = 3;
+          flags = table_byte_next_a();
+          if ((flags & 1) == 0) {
+            field_id = 3;
           }
-          else if ((uVar5 & 1) == 1) {
-            unaff_s6 = 0x20;
+          else if ((flags & 1) == 1) {
+            field_id = 0x20;
           }
-          battle_field_set(_DAT_1f8000bc,unaff_s6);
-          uVar3 = table_byte_next_a();
-          *(ushort *)guest_at(_DAT_1f8000bc + 0x7e) = uVar3 & 7;
+          battle_field_set(_DAT_1f8000bc,field_id);
+          field_attr = table_byte_next_a();
+          *(ushort *)guest_at(_DAT_1f8000bc + 0x7e) = field_attr & 7;
         }
         _DAT_1f80008e = _DAT_1f80008e + -1;
         if ((DAT_1f8000e8 != '\x01') || (DAT_1f8001f0 != '\x01')) {
           DAT_1f800001 = 0xf0;
         }
-        if (bVar1) {
+        if (is_attract) {
           battle_frame_tick(0x1f800000,0x1ff);
         }
         else {
@@ -2104,24 +2104,24 @@ LAB_8016767c:
           DAT_1f8000ec = 0;
           DAT_1f8001f4 = 0;
           _DAT_1f8000c4 = guest_of(_g_system_config_ptr + 0x2c);
-          if (param_1 == 0) {
-            iVar4 = table_byte_next_a();
-            DAT_1f8000eb = (char)iVar4 + (char)(iVar4 / 9) * -9;
-            iVar4 = table_byte_next_a();
-            DAT_1f8001f3 = (char)iVar4 + (char)(iVar4 / 9) * -9;
-            iVar4 = table_byte_next_a();
-            cVar6 = (char)(iVar4 / 5) * '\x05';
+          if (mode == 0) {
+            tmp = table_byte_next_a();
+            DAT_1f8000eb = (char)tmp + (char)(tmp / 9) * -9;
+            tmp = table_byte_next_a();
+            DAT_1f8001f3 = (char)tmp + (char)(tmp / 9) * -9;
+            tmp = table_byte_next_a();
+            round_step = (char)(tmp / 5) * '\x05';
           }
           else {
-            bVar1 = true;
-            iVar4 = table_byte_next_a();
-            DAT_1f8000eb = (char)iVar4 + (char)(iVar4 / 9) * -9;
-            iVar4 = table_byte_next_a();
-            DAT_1f8001f3 = (char)iVar4 + (char)(iVar4 / 9) * -9;
-            iVar4 = table_byte_next_a();
-            cVar6 = (char)(iVar4 / 6) * '\x06';
+            is_attract = true;
+            tmp = table_byte_next_a();
+            DAT_1f8000eb = (char)tmp + (char)(tmp / 9) * -9;
+            tmp = table_byte_next_a();
+            DAT_1f8001f3 = (char)tmp + (char)(tmp / 9) * -9;
+            tmp = table_byte_next_a();
+            round_step = (char)(tmp / 6) * '\x06';
           }
-          DAT_1f800098 = (char)iVar4 - cVar6;
+          DAT_1f800098 = (char)tmp - round_step;
           DAT_1f800099 = *(char *)(_g_system_config_ptr + 4) * '\x02' + -2;
           fighter_spawn_tail((uint8_t *)guest_at(0x1f800000),0);
           _DAT_1f800088 = 0;
@@ -2134,7 +2134,7 @@ LAB_8016767c:
         if (_DAT_1f800090 != 0) {
           _DAT_1f800090 = 0;
         }
-        iVar4 = menu_res_load_sm(0x1f800000,&DAT_1f8000e8,&DAT_1f8001f0,0);
+        tmp = menu_res_load_sm(0x1f800000,&DAT_1f8000e8,&DAT_1f8001f0,0);
         /* Same -1 ambiguity as battle_flow_state_machine: a br2_bail_pending
          * unwind must propagate, not be read as "load done". Restore the
          * DAT1 exit invariant (normal exits leave DAT_1f800001 = 0) so the
@@ -2142,19 +2142,19 @@ LAB_8016767c:
          * match_loop. */
         { extern int br2_bail_pending(void);
           if (br2_bail_pending()) { DAT_1f800001 = 0; return; } }
-        if ((iVar4 != 0) && (_DAT_1f800090 == 0)) {
+        if ((tmp != 0) && (_DAT_1f800090 == 0)) {
           if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
             confirm_code_select(0x1f800000);
           }
-          unaff_s3 = 9000;
+          intro_timer = 9000;
           se_value_select((int)DAT_1f800098);
           DAT_1f8000e9 = 0x11;
           DAT_1f8001f1 = 0x12;
           battle_round_init(0x1f800000,0);
           _DAT_1f80008c = 0;
           _DAT_1f80008e = 0;
-          if (param_1 == 0) {
-            unaff_s3 = 0x5dc;
+          if (mode == 0) {
+            intro_timer = 0x5dc;
           }
           battle_session_arm(0x1f800000,0xffffffff);
           DAT_1f800001 = DAT_1f800001 + 1;
@@ -2177,8 +2177,8 @@ LAB_8016767c:
           DAT_1f800001 = DAT_1f800001 + 1;
         }
         else if (DAT_1f800001 != 0xf1) goto LAB_801677b4;
-        iVar4 = frame_divisor_get();
-        if (iVar4 == 0) {
+        tmp = frame_divisor_get();
+        if (tmp == 0) {
           /* The hoisted 0xff constant lives in callee-saved x28 across the
            * whole do-while; the IRQ setjmp/longjmp path restores x28 stale
            * (g_irqctx_ring base), so even a fresh-pointer store emitted
@@ -2201,7 +2201,7 @@ LAB_801677b4:
     g_game_state = 5;
   }
   DAT_1f800001 = 0;
-  DAT_1f80009b = uVar2;
+  DAT_1f80009b = saved_sub;
   return;
 }
 
@@ -2219,52 +2219,52 @@ void cd_subsys_boot(void)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void display_frame_present(int *param_1,int param_2)
+void display_frame_present(int *env,int ticks)
 
 {
-  int iVar1;
-  int iVar2;
+  int tmp;
+  int w;
   
   gpu_draw_sync(0);
   memcard_tick();
   deferred_cmd_drain();
   memcard_slot_poll();
-  iVar1 = 0;
-  if (-1 < param_2) {
-    iVar1 = param_2;
+  tmp = 0;
+  if (-1 < ticks) {
+    tmp = ticks;
   }
-  cd_timer_read(iVar1);
+  cd_timer_read(tmp);
   _DAT_1f80000c = (uint)(_DAT_801f4728 == 0);
-  if (*param_1 == 0) {
-    iVar1 = param_1[3];
+  if (*env == 0) {
+    tmp = env[3];
   }
   else {
-    iVar1 = (param_1[3] * 3) / 2;
+    tmp = (env[3] * 3) / 2;
   }
-  if (*param_1 == 0) {
-    iVar2 = param_1[5];
+  if (*env == 0) {
+    w = env[5];
   }
   else {
-    iVar2 = (param_1[5] * 3) / 2;
+    w = (env[5] * 3) / 2;
   }
-  sprite_attr_init_b(_DAT_1f800004 + 0x5c,*(short *)guest_at((uint32_t)(_DAT_1f80000c * 8 + -0x7fe0b8e8)) - iVar1,
-               (int)*(short *)guest_at((uint32_t)(_DAT_1f80000c * 8 + -0x7fe0b8e6)) - param_1[4],iVar2,param_1[6]);
+  sprite_attr_init_b(_DAT_1f800004 + 0x5c,*(short *)guest_at((uint32_t)(_DAT_1f80000c * 8 + -0x7fe0b8e8)) - tmp,
+               (int)*(short *)guest_at((uint32_t)(_DAT_1f80000c * 8 + -0x7fe0b8e6)) - env[4],w,env[6]);
   *(undefined1 *)guest_at(_DAT_1f800004 + 0x6e) = 1;
   *(undefined2 *)guest_at(_DAT_1f800004 + 0x66) = 0x18;
-  if (*param_1 != 0) {
-    *(char *)guest_at(_DAT_1f800004 + 0x6d) = (char)*param_1;
-    iVar1 = (int)*(short *)guest_at(_DAT_1f800004 + 0x60) << 1;
+  if (*env != 0) {
+    *(char *)guest_at(_DAT_1f800004 + 0x6d) = (char)*env;
+    tmp = (int)*(short *)guest_at(_DAT_1f800004 + 0x60) << 1;
     *(short *)guest_at(_DAT_1f800004 + 0x60) =
-         (short)((ulonglong)((longlong)iVar1 * 0x55555556) >> 0x20) - (short)(iVar1 >> 0x1f);
+         (short)((ulonglong)((longlong)tmp * 0x55555556) >> 0x20) - (short)(tmp >> 0x1f);
   }
-  if (*param_1 == 0) {
-    iVar1 = param_1[5];
+  if (*env == 0) {
+    tmp = env[5];
   }
   else {
-    iVar1 = (param_1[5] * 3) / 2;
+    tmp = (env[5] * 3) / 2;
   }
   sprite_attr_init_a(_DAT_1f800004,(int)*(short *)guest_at((uint32_t)(_DAT_1f80000c * 8 + -0x7fe0b8e8)),
-               (int)*(short *)guest_at((uint32_t)(_DAT_1f80000c * 8 + -0x7fe0b8e6)),iVar1,param_1[6]);
+               (int)*(short *)guest_at((uint32_t)(_DAT_1f80000c * 8 + -0x7fe0b8e6)),tmp,env[6]);
   draw_env_timing(_DAT_1f800004 + 0x5c);
   gpu_draw_env_put(_DAT_1f800004);
   gpu_draw_otag((int)_DAT_1f800008 + 0x24);
@@ -2283,49 +2283,49 @@ void display_frame_present(int *param_1,int param_2)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void tile_stream_job_init(undefined4 *param_1,undefined2 param_2,undefined2 param_3,undefined2 param_4,
-                 undefined2 param_5,int *param_6)
+void tile_stream_job_init(undefined4 *job,undefined2 param_2,undefined2 param_3,undefined2 param_4,
+                 undefined2 param_5,int *opt)
 
 {
-  undefined4 uVar1;
-  undefined4 uVar2;
-  undefined4 uVar3;
-  undefined4 uVar4;
-  undefined2 uVar5;
+  undefined4 w0;
+  undefined4 w1;
+  undefined4 w2;
+  undefined4 w3;
+  undefined2 stride;
   
-  param_1 = (undefined4 *)guest_at((uint32_t)(uintptr_t)param_1);
-  uVar4 = _DAT_801f4750;
-  uVar3 = _DAT_801f474c;
-  uVar2 = _DAT_801f4748;
-  uVar1 = _DAT_801f4744;
+  job = (undefined4 *)guest_at((uint32_t)(uintptr_t)job);
+  w3 = _DAT_801f4750;
+  w2 = _DAT_801f474c;
+  w1 = _DAT_801f4748;
+  w0 = _DAT_801f4744;
   if (DAT_801b3f64 == 1) {
-    param_1[2] = 0;
-    param_1[5] = 0;
-    param_1[10] = 0;
-    param_1[0xd] = 0;
+    job[2] = 0;
+    job[5] = 0;
+    job[10] = 0;
+    job[0xd] = 0;
     DAT_801b3f64 = 0;
-    *param_1 = uVar1;
-    param_1[1] = uVar2;
-    param_1[3] = uVar3;
-    param_1[4] = uVar4;
+    *job = w0;
+    job[1] = w1;
+    job[3] = w2;
+    job[4] = w3;
   }
-  *(undefined2 *)(param_1 + 6) = param_2;
-  *(undefined2 *)((char *)param_1 + 0x1a) = param_3;
-  *(undefined2 *)(param_1 + 8) = param_4;
-  *(undefined2 *)((char *)param_1 + 0x22) = param_5;
-  uVar5 = 0x10;
-  if (*param_6 != 0) {
-    uVar5 = 0x18;
+  *(undefined2 *)(job + 6) = param_2;
+  *(undefined2 *)((char *)job + 0x1a) = param_3;
+  *(undefined2 *)(job + 8) = param_4;
+  *(undefined2 *)((char *)job + 0x22) = param_5;
+  stride = 0x10;
+  if (*opt != 0) {
+    stride = 0x18;
   }
-  *(undefined2 *)(param_1 + 0xc) = uVar5;
-  param_1[0xe] = *param_6;
-  if (param_1[10] == 0) {
-    *(undefined2 *)(param_1 + 0xb) = param_2;
-    *(undefined2 *)((char *)param_1 + 0x2e) = param_3;
+  *(undefined2 *)(job + 0xc) = stride;
+  job[0xe] = *opt;
+  if (job[10] == 0) {
+    *(undefined2 *)(job + 0xb) = param_2;
+    *(undefined2 *)((char *)job + 0x2e) = param_3;
     return;
   }
-  *(undefined2 *)(param_1 + 0xb) = param_4;
-  *(undefined2 *)((char *)param_1 + 0x2e) = param_5;
+  *(undefined2 *)(job + 0xb) = param_4;
+  *(undefined2 *)((char *)job + 0x2e) = param_5;
   return;
 }
 
@@ -2333,14 +2333,14 @@ void tile_stream_job_init(undefined4 *param_1,undefined2 param_2,undefined2 para
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void tile_stream_open(uint8_t *param_1,void *param_2,int *param_3)
+void tile_stream_open(uint8_t *stream,void *name,int *params)
 
 {
   cd_fileop_reset(0);
-  cd_fileop_dispatch(br2_gaddr(param_2));
+  cd_fileop_dispatch(br2_gaddr(name));
   cd_dir_table_set(_DAT_801f4754,0x20);
-  cd_read_params_store(*param_3,param_3[1],0xffffffff,0,0);
-  cd_stream_mode_init(guest_of(param_1));
+  cd_read_params_store(*params,params[1],0xffffffff,0,0);
+  cd_stream_mode_init(guest_of(stream));
   return;
 }
 
@@ -2351,11 +2351,11 @@ void tile_stream_open(uint8_t *param_1,void *param_2,int *param_3)
 void tile_stream_pump(void)
 
 {
-  short sVar1;
-  int iVar2;
-  int iVar3;
-  undefined4 local_18;
-  undefined4 local_14;
+  short step;
+  int buf_sel;
+  int blk;
+  undefined4 off_x;
+  undefined4 off_y;
   extern uint32_t g_cdfn_log[24];
   g_cdfn_log[13]++;   /* CDFN_TILE_STREAM_PUMP */
   
@@ -2363,26 +2363,26 @@ void tile_stream_pump(void)
     cd_mc_state_machine();
     _DAT_801fc68c = 0;
   }
-  iVar2 = _DAT_801f4714;
-  local_18 = _DAT_801f472c;
-  local_14 = _DAT_801f4730;
+  buf_sel = _DAT_801f4714;
+  off_x = _DAT_801f472c;
+  off_y = _DAT_801f4730;
   _DAT_801f4714 = (uint)(_DAT_801f4714 == 0);
-  sVar1 = _DAT_801f4730;
+  step = _DAT_801f4730;
   if ((_DAT_801f473c != 0) &&
-     (iVar3 = (int)*(short *)guest_at((uint32_t)(_DAT_801f4728 * 8 + -0x7fe0b8e4)) % (int)_DAT_801f4730, iVar3 != 0)) {
+     (blk = (int)*(short *)guest_at((uint32_t)(_DAT_801f4728 * 8 + -0x7fe0b8e4)) % (int)_DAT_801f4730, blk != 0)) {
     _DAT_801f473c = 0;
-    sVar1 = (short)iVar3;
+    step = (short)blk;
   }
-  _DAT_801f472c = _DAT_801f472c + sVar1;
+  _DAT_801f472c = _DAT_801f472c + step;
   if ((int)_DAT_801f472c <
       (int)*(short *)guest_at((uint32_t)(_DAT_801f4728 * 8 + -0x7fe0b8e8)) +
       (int)*(short *)guest_at((uint32_t)(_DAT_801f4728 * 8 + -0x7fe0b8e4))) {
-    iVar3 = _DAT_801f4732 + -1;
-    if (iVar3 < 0) {
-      iVar3 = _DAT_801f4732 + 0xe;
+    blk = _DAT_801f4732 + -1;
+    if (blk < 0) {
+      blk = _DAT_801f4732 + 0xe;
     }
     cd_fileop_forward(*(undefined4 *)guest_at((uint32_t)(_DAT_801f4714 * 4 + -0x7fe0b8f4)),
-                 _DAT_801f4730 * 0x10 * ((iVar3 >> 4) + 1) >> 1);
+                 _DAT_801f4730 * 0x10 * ((blk >> 4) + 1) >> 1);
   }
   else {
     _DAT_801f4728 = (uint)(_DAT_801f4728 == 0);
@@ -2390,7 +2390,7 @@ void tile_stream_pump(void)
     _DAT_801f472c = *(undefined4 *)guest_at((uint32_t)(_DAT_801f4728 * 8 + -0x7fe0b8e8));
     _DAT_801f473c = 1;
   }
-  { uint32_t rect[2] = { local_18, local_14 };
+  { uint32_t rect[2] = { off_x, off_y };
     /* guest rect lives at $sp+0x10 (frame -0x28) = entry_sp-0x18;
      * gpu_load_image_cmd reads it through nested frames, so stage it in
      * a reserved guest frame (sp+0x10 -> frm+0x18). */
@@ -2399,37 +2399,37 @@ void tile_stream_pump(void)
     uint32_t tsp_frm = br2_guest_frame(0x28);
     uint32_t gaddr = tsp_frm + 0x18;
     memcpy(guest_at(gaddr), rect, 8);
-    gpu_load_image_cmd(gaddr,*(undefined4 *)guest_at((uint32_t)(iVar2 * 4 + -0x7fe0b8f4)));
+    gpu_load_image_cmd(gaddr,*(undefined4 *)guest_at((uint32_t)(buf_sel * 4 + -0x7fe0b8f4)));
     br2_guest_frame_free(); }
   return;
 }
 
 /* ======== 0x80159c24 ======== */
 
-void tile_decode_wait(intptr_t param_1)
+void tile_decode_wait(intptr_t job)
 
 {
-  uint uVar1;
-  int iVar2;
-  int local_18;
+  uint next_buf;
+  int done;
+  int timeout;
   
-  param_1 = (intptr_t)guest_at((uint32_t)param_1);
-  iVar2 = *(int *)(param_1 + 0x34);
-  local_18 = 0x800000;
-  while (iVar2 == 0) {
-    local_18 = local_18 + -1;
-    if (local_18 == 0) {
+  job = (intptr_t)guest_at((uint32_t)job);
+  done = *(int *)(job + 0x34);
+  timeout = 0x800000;
+  while (done == 0) {
+    timeout = timeout + -1;
+    if (timeout == 0) {
       printf_forward(s_time_out_in_decoding___80120e90);
-      *(undefined4 *)(param_1 + 0x34) = 1;
-      uVar1 = (uint)(*(int *)(param_1 + 0x28) == 0);
-      *(uint *)(param_1 + 0x28) = uVar1;
-      *(undefined2 *)(param_1 + 0x2c) = *(undefined2 *)(param_1 + uVar1 * 8 + 0x18);
-      *(undefined2 *)(param_1 + 0x2e) =
-           *(undefined2 *)(param_1 + *(int *)(param_1 + 0x28) * 8 + 0x1a);
+      *(undefined4 *)(job + 0x34) = 1;
+      next_buf = (uint)(*(int *)(job + 0x28) == 0);
+      *(uint *)(job + 0x28) = next_buf;
+      *(undefined2 *)(job + 0x2c) = *(undefined2 *)(job + next_buf * 8 + 0x18);
+      *(undefined2 *)(job + 0x2e) =
+           *(undefined2 *)(job + *(int *)(job + 0x28) * 8 + 0x1a);
     }
-    iVar2 = *(int *)(param_1 + 0x34);
+    done = *(int *)(job + 0x34);
   }
-  *(undefined4 *)(param_1 + 0x34) = 0;
+  *(undefined4 *)(job + 0x34) = 0;
   return;
 }
 
