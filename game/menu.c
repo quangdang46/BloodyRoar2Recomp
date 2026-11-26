@@ -37,7 +37,7 @@ extern uint8_t *_g_system_config_ptr;
 extern uint8_t *_g_pad_buffer;
 extern CPUState *clean_cpu_state(void);
 /* g_game_state/g_sub_state are guest scratchpad bytes at 0x1f800000/0x1f800002
- * (the top-level mode SM read by guest_main in game.c). They must alias
+ * (the top-level mode SM read by entry_0x80126234 in game.c). They must alias
  * the SAME guest storage — declaring them `extern int` bound them to throwaway
  * host ints in bind.c, so menu writes (e.g. g_game_state=8 on mode confirm)
  * never reached the dispatcher and battle_flow_state_machine never ran. */
