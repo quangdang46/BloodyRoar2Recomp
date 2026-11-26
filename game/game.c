@@ -1478,26 +1478,26 @@ struct match_stepper_desc {
 
 void match_loop(void)
 {
-    int iVar1;
-    int unaff_s2;
+    int ret;
+    int attract_ctr;
     struct match_stepper_desc sd;
     /* Guest: attract_stage_load_step writes 4 contiguous words at
      * sp+0x68..0x77 (a1 = sp+0x68); spr_draw_pair then loads
      * sp+0x68/0x6c/0x70/0x74. Ghidra split the block into 4 scalars —
-     * keep it one array (local_40[i] == old local_4X). */
-    undefined4 local_40[4];
-    undefined4 local_30;
-    undefined4 local_2c;
-    undefined4 local_28;
-    undefined4 local_24;
-    undefined4 local_20;
+     * keep it one array (spr_quad[i] == old local_4X). */
+    undefined4 spr_quad[4];
+    undefined4 cfg_e4;
+    undefined4 cfg_e8;
+    undefined4 cfg_ec;
+    undefined4 cfg_f0;
+    undefined4 cfg_f4;
 
     DAT_1f80008c = 0;
-    local_30 = *(undefined4 *)g_DAT_801202e4;
-    local_2c = *(undefined4 *)g_DAT_801202e8;
-    local_28 = *(undefined4 *)g_DAT_801202ec;
-    local_24 = *(undefined4 *)g_DAT_801202f0;
-    local_20 = *(undefined4 *)g_DAT_801202f4;
+    cfg_e4 = *(undefined4 *)g_DAT_801202e4;
+    cfg_e8 = *(undefined4 *)g_DAT_801202e8;
+    cfg_ec = *(undefined4 *)g_DAT_801202ec;
+    cfg_f0 = *(undefined4 *)g_DAT_801202f0;
+    cfg_f4 = *(undefined4 *)g_DAT_801202f4;
 joined_r0x801470b0:
     { extern int br2_bail_pending(void);
       if (br2_bail_pending()) return; }
@@ -1530,11 +1530,11 @@ LAB_801472f8:
         }
         else if (DAT_1f800001 < 3) {
             if (DAT_1f800001 == 0) {
-                iVar1 = frame_divisor_get();
-                if (iVar1 == 0) {
+                ret = frame_divisor_get();
+                if (ret == 0) {
                     spr_attr_alloc_a(_DAT_1f800008,0,0,(int)_DAT_1f800020,(int)_DAT_1f800022,0,0);
-                    iVar1 = attract_stage_load_step(0x1f800000,local_40);
-                    if (iVar1 != 0) {
+                    ret = attract_stage_load_step(0x1f800000,spr_quad);
+                    if (ret != 0) {
                         deferred_cmd_post(0x204,0,0);
                         print_mode_dispatch_b(2,0,0);
                         deferred_cmd_post(0x400,0x82,0);
@@ -1551,15 +1551,15 @@ LAB_801472f8:
                         sd.unk10 = 0xffff;
                         sd.unk12 = 0xffff;
                         scratch_013_set(0);
-                        spr_draw_pair(local_40[0],0,0x1f0,1,0x200,0,1);
-                        spr_draw_pair(local_40[1],0,0x1f1,1,0x280,0,1);
-                        spr_draw_pair(local_40[2],0,0x1f2,1,0x240,0x100,1);
-                        spr_draw_pair(local_40[3],0,499,1,0x2c0,0x100,1);
+                        spr_draw_pair(spr_quad[0],0,0x1f0,1,0x200,0,1);
+                        spr_draw_pair(spr_quad[1],0,0x1f1,1,0x280,0,1);
+                        spr_draw_pair(spr_quad[2],0,0x1f2,1,0x240,0x100,1);
+                        spr_draw_pair(spr_quad[3],0,499,1,0x2c0,0x100,1);
                         cd_timer_read(0);
                         scratch_013_set(1);
                         _DAT_1f80008c = 0;
                         battle_session_arm(0x1f800000,0xffffffff);
-                        unaff_s2 = 300;
+                        attract_ctr = 300;
                         DAT_1f800001 = DAT_1f800001 + 1;
                         goto LAB_801472a4;
                     }
@@ -1567,8 +1567,8 @@ LAB_801472f8:
             }
             else if (DAT_1f800001 == 1) {
 LAB_801472a4:
-                iVar1 = match_end_check(0x1f800000);
-                if ((iVar1 < 0) && (unaff_s2 = unaff_s2 + -1, unaff_s2 == 0)) {
+                ret = match_end_check(0x1f800000);
+                if ((ret < 0) && (attract_ctr = attract_ctr + -1, attract_ctr == 0)) {
                     DAT_1f800001 = 0xf0;
                 }
                 _DAT_1f80008c = _DAT_1f80008c + 1;
@@ -1585,7 +1585,7 @@ LAB_801472a4:
             scroll_cfg_set(1,8);
             DAT_1f800001 = DAT_1f800001 + 1;
         }
-        else if ((DAT_1f800001 == 0xf1) && (iVar1 = frame_divisor_get(), iVar1 == 0)) {
+        else if ((DAT_1f800001 == 0xf1) && (ret = frame_divisor_get(), ret == 0)) {
             /* Same stale-callee-saved hazard as battle_intro_flow: the hoisted
              * 0xff can sit in a register the IRQ setjmp/longjmp restores
              * stale. br2_st8 materializes the value in the arg register. */
@@ -1603,118 +1603,118 @@ LAB_801472a4:
  * streams data, uploads palette/OAM, arms battle, runs 2 frames.
  * Returns 1 on success (state->5), 0 to retry.
  * ================================================================== */
-undefined4 scene_entry(int param_1,int param_2,int param_3)
+undefined4 scene_entry(int vram_base,int stage_idx,int demo_flag)
 {
-    int iVar1;
-    int iVar2;
-    undefined4 uVar3;
-    int iVar4;
-    int *piVar5;
-    undefined4 *puVar6;
-    undefined4 uVar7;
-    /* guest sp-0x60..sp frame image (frame 0x60). local_48/local_40/
-     * local_38 are read and written across blk_io_retry/cd_stream_mode_init/
+    int rec_off;
+    int dim_a;
+    undefined4 pkt_sel;
+    int dim_b;
+    int *stage_rec;
+    undefined4 *data_ptr;
+    undefined4 ret;
+    /* guest sp-0x60..sp frame image (frame 0x60). cmd_byte/clear_rect/
+     * stream_ctx are read and written across blk_io_retry/cd_stream_mode_init/
      * gpu_clear_image_cmd2 nested calls, so reserve the window on the live
      * guest sp: sp+0x18 -> frm+0x18, sp+0x20 -> frm+0x20, sp+0x28 -> frm+0x28. */
     extern uint32_t br2_guest_frame(uint32_t);
     extern void br2_guest_frame_free(void);
     uint32_t se_frm = br2_guest_frame(0x60);
-    /* local_48 = sp+0x18 (frame 0x60);
+    /* cmd_byte = sp+0x18 (frame 0x60);
      * `sb $v0,0x18($sp)` + `addiu $a1,$sp,0x18` in 0x80159028. */
-    undefined1 *local_48 = (undefined1 *)guest_at(se_frm + 0x18);
+    undefined1 *cmd_byte = (undefined1 *)guest_at(se_frm + 0x18);
     /* ClearImage rect = sp+0x20..0x27 (frame 0x60) -> frm+0x20.
-     * gpu_clear_image_cmd2 forwards param_1 to generated GPU code as a
+     * gpu_clear_image_cmd2 forwards vram_base to generated GPU code as a
      * raw guest address, so the rect must live in the guest frame —
      * host stack locals are invisible to it. */
-    uint16_t *local_40 = (uint16_t *)guest_at(se_frm + 0x20);
-    /* local_38 = sp+0x28 (frame 0x60) -> frm+0x28;
+    uint16_t *clear_rect = (uint16_t *)guest_at(se_frm + 0x20);
+    /* stream_ctx = sp+0x28 (frame 0x60) -> frm+0x28;
      * `swl/swr $t2,0x28($sp)` + `addiu $a0,$sp,0x28` in 0x80159028. */
-    undefined4 *local_38 = (undefined4 *)guest_at(se_frm + 0x28);
+    undefined4 *stream_ctx = (undefined4 *)guest_at(se_frm + 0x28);
 
-    uVar7 = 0;
+    ret = 0;
     DAT_801c43a0 = 0;
     DAT_801e3d00 = 0xff;
-    _DAT_801f4744 = param_1 + 0x10000;
-    _DAT_801f4748 = param_1 + 0x38000;
-    _DAT_801f474c = param_1 + 0x60000;
-    _DAT_801f4750 = param_1 + 0x67800;
-    _DAT_801f4758 = param_1 + 0x6f000;
-    iVar1 = param_2 * 0x1c;
-    puVar6 = (undefined4 *)guest_at(((uint32_t *)g_PTR_DAT_801b5b94)[(param_2 + 8) * 2]);
-    piVar5 = (int *)((char *)g_DAT_801b3ed8 + iVar1);
-    _DAT_801f4754 = param_1;
+    _DAT_801f4744 = vram_base + 0x10000;
+    _DAT_801f4748 = vram_base + 0x38000;
+    _DAT_801f474c = vram_base + 0x60000;
+    _DAT_801f4750 = vram_base + 0x67800;
+    _DAT_801f4758 = vram_base + 0x6f000;
+    rec_off = stage_idx * 0x1c;
+    data_ptr = (undefined4 *)guest_at(((uint32_t *)g_PTR_DAT_801b5b94)[(stage_idx + 8) * 2]);
+    stage_rec = (int *)((char *)g_DAT_801b3ed8 + rec_off);
+    _DAT_801f4754 = vram_base;
     frame_tick(0x1f800000);
     brightness_packet_send(0x7f);
     scratch_013_set(0);
     cd_timer_read(0);
     _DAT_801f473c = 1;
-    if (*piVar5 == 0) {
-        iVar2 = *(int *)((char *)g_DAT_801b3ed8 + 0xc + iVar1);
+    if (*stage_rec == 0) {
+        dim_a = *(int *)((char *)g_DAT_801b3ed8 + 0xc + rec_off);
     }
     else {
-        iVar2 = (*(int *)((char *)g_DAT_801b3ed8 + 0xc + iVar1) * 3) / 2;
+        dim_a = (*(int *)((char *)g_DAT_801b3ed8 + 0xc + rec_off) * 3) / 2;
     }
-    if (*piVar5 == 0) {
-        iVar4 = *(int *)((char *)g_DAT_801b3ed8 + 0xc + iVar1);
+    if (*stage_rec == 0) {
+        dim_b = *(int *)((char *)g_DAT_801b3ed8 + 0xc + rec_off);
     }
     else {
-        iVar4 = (*(int *)((char *)g_DAT_801b3ed8 + 0xc + iVar1) * 3) / 2;
+        dim_b = (*(int *)((char *)g_DAT_801b3ed8 + 0xc + rec_off) * 3) / 2;
     }
-    tile_stream_job_init(0x801f4700,iVar2,*(undefined4 *)((char *)g_DAT_801b3ed8 + 0x10 + iVar1),iVar4,
-                 *(int *)((char *)g_DAT_801b3ed8 + 0x10 + iVar1) + *(int *)((char *)g_DAT_801b3ed8 + 0x18 + iVar1),piVar5);
-    tile_stream_open((uint8_t *)puVar6,(void *)(uintptr_t)0x80159864,piVar5);
+    tile_stream_job_init(0x801f4700,dim_a,*(undefined4 *)((char *)g_DAT_801b3ed8 + 0x10 + rec_off),dim_b,
+                 *(int *)((char *)g_DAT_801b3ed8 + 0x10 + rec_off) + *(int *)((char *)g_DAT_801b3ed8 + 0x18 + rec_off),stage_rec);
+    tile_stream_open((uint8_t *)data_ptr,(void *)(uintptr_t)0x80159864,stage_rec);
     vram_tile_decode(_DAT_801f4758);
-    while (iVar2 = (int)blk_io_retry(0x801f4700,piVar5), iVar2 == -1) {
-        local_38[0] = *puVar6;
-        cd_stream_mode_init(guest_of(local_38));
+    while (dim_a = (int)blk_io_retry(0x801f4700,stage_rec), dim_a == -1) {
+        stream_ctx[0] = *data_ptr;
+        cd_stream_mode_init(guest_of(stream_ctx));
     }
     _DAT_801f4740 = 0;
     gpu_disp_mask_set(0);
-    local_40[0] = 0;
-    local_40[1] = 0;
-    if (*piVar5 == 0) {
-        local_40[2] = *(undefined2 *)((char *)g_DAT_801b3ed8 + 0x14 + iVar1);
+    clear_rect[0] = 0;
+    clear_rect[1] = 0;
+    if (*stage_rec == 0) {
+        clear_rect[2] = *(undefined2 *)((char *)g_DAT_801b3ed8 + 0x14 + rec_off);
     }
     else {
-        local_40[2] = (undefined2)
-                   ((uint)(*(int *)((char *)g_DAT_801b3ed8 + 0x14 + iVar1) * 3 -
-                          (*(int *)((char *)g_DAT_801b3ed8 + 0x14 + iVar1) * 3 >> 0x1f)) >> 1);
+        clear_rect[2] = (undefined2)
+                   ((uint)(*(int *)((char *)g_DAT_801b3ed8 + 0x14 + rec_off) * 3 -
+                          (*(int *)((char *)g_DAT_801b3ed8 + 0x14 + rec_off) * 3 >> 0x1f)) >> 1);
     }
-    local_40[3] = (undefined2)(*(int *)((char *)g_DAT_801b3ed8 + 0x18 + iVar1) << 1);
-    /* param_1 is a raw guest address (the sp+0x20 rect), matching the
+    clear_rect[3] = (undefined2)(*(int *)((char *)g_DAT_801b3ed8 + 0x18 + rec_off) << 1);
+    /* vram_base is a raw guest address (the sp+0x20 rect), matching the
      * callee's undefined4 signature — not a host pointer. */
     gpu_clear_image_cmd2((undefined4)(se_frm + 0x20),0,0,0);
     do {
-        uVar3 = 2;
-        if (*piVar5 != 0) {
-            uVar3 = 3;
+        pkt_sel = 2;
+        if (*stage_rec != 0) {
+            pkt_sel = 3;
         }
-        gpu_pkt_attr_set(*(uint32_t *)guest_at(_DAT_801f4708 * 4 + -0x7fe0b900),uVar3);
-        iVar2 = _DAT_801f4732 + -1;
-        if (iVar2 < 0) {
-            iVar2 = _DAT_801f4732 + 0xe;
+        gpu_pkt_attr_set(*(uint32_t *)guest_at(_DAT_801f4708 * 4 + -0x7fe0b900),pkt_sel);
+        dim_a = _DAT_801f4732 + -1;
+        if (dim_a < 0) {
+            dim_a = _DAT_801f4732 + 0xe;
         }
         cd_fileop_forward(*(uint32_t *)guest_at(_DAT_801f4714 * 4 + -0x7fe0b8f4),
-                     _DAT_801f4730 * 0x10 * ((iVar2 >> 4) + 1) >> 1);
-        while (iVar2 = (int)blk_io_retry(0x801f4700,piVar5), iVar2 == -1) {
-            iVar2 = cd_file_open_b(guest_of(local_38));
-            if ((*(int *)((char *)g_DAT_801b3ed8 + 0x8 + iVar1) < iVar2) || (iVar2 < 1)) {
-                local_38[0] = *puVar6;
+                     _DAT_801f4730 * 0x10 * ((dim_a >> 4) + 1) >> 1);
+        while (dim_a = (int)blk_io_retry(0x801f4700,stage_rec), dim_a == -1) {
+            dim_a = cd_file_open_b(guest_of(stream_ctx));
+            if ((*(int *)((char *)g_DAT_801b3ed8 + 0x8 + rec_off) < dim_a) || (dim_a < 1)) {
+                stream_ctx[0] = *data_ptr;
             }
-            cd_stream_mode_init(guest_of(local_38));
+            cd_stream_mode_init(guest_of(stream_ctx));
         }
         tile_decode_wait(0x801f4700,0);
-        display_frame_present(piVar5,0xffffffff);
+        display_frame_present(stage_rec,0xffffffff);
         if (_DAT_801f4740 == 1) goto LAB_801593a8;
-    } while ((param_3 == 0) || ((_DAT_1f80007c & 0x850) == 0));
-    uVar7 = 1;
+    } while ((demo_flag == 0) || ((_DAT_1f80007c & 0x850) == 0));
+    ret = 1;
 LAB_801593a8:
     brightness_packet_send(0);
-    local_48[0] = 0x80;
+    cmd_byte[0] = 0x80;
     _DAT_1f80000c = (uint)(_DAT_1f80000c == 0);
     _DAT_1f800004 = _DAT_1f80000c * 0x2150 + -0x7fe1bf60;
     _DAT_1f800008 = _DAT_1f80000c * 0x2150 + -0x7fe1bef0;
-    cd_cmd_issue_sync(0xe,(int)guest_of(local_48),0);
+    cd_cmd_issue_sync(0xe,(int)guest_of(cmd_byte),0);
     DAT_801c4580 = 1;
     cd_fileop_dispatch(0);
     cd_subsystem_reset();
@@ -1726,7 +1726,7 @@ LAB_801593a8:
     frame_advance_helper();
     frame_tick(0x1f800000);
     br2_guest_frame_free();
-    return uVar7;
+    return ret;
 }
 
 /* ======== 0x8018cfdc ======== */
@@ -1740,7 +1740,7 @@ LAB_801593a8:
  * (the Pause->SetLoc[0,0,0]->Setmode->ReadN livelock at LBAs -148/-149/-150).
  * The generated body keeps filetab[..] as a guest address end-to-end and has
  * per-block interrupt checks for the poll loops. Delegate it. */
-int cd_file_load_sm(int param_1,uint32_t param_2)
+int cd_file_load_sm(int file_id,uint32_t dest_gaddr)
 
 {
   /* file-load dest trace (tag 10): dst=dest arg, src=file_id. Clean-C path
@@ -1753,12 +1753,12 @@ int cd_file_load_sm(int param_1,uint32_t param_2)
     extern uint32_t g_cdfn_log[24];
     static uint32_t last_f=-1,last_d=-1;
     g_cdfn_log[15]++;   /* CDFN_FILE_LOAD_SM */
-    if((uint32_t)param_1!=last_f||param_2!=last_d){
-      last_f=(uint32_t)param_1;last_d=param_2;
+    if((uint32_t)file_id!=last_f||dest_gaddr!=last_d){
+      last_f=(uint32_t)file_id;last_d=dest_gaddr;
       /* len field carries the generated caller's $ra (post-jal addr) so the
        * file_load provenance names which function aimed file_id at dst. */
-      decomp_trace_record(10,param_2,(uint32_t)param_1,0,clean_caller_ra());} }
-  return (int)br2_call_clean(0x8018cfdc,(uint32_t)param_1,param_2,0,0);
+      decomp_trace_record(10,dest_gaddr,(uint32_t)file_id,0,clean_caller_ra());} }
+  return (int)br2_call_clean(0x8018cfdc,(uint32_t)file_id,dest_gaddr,0,0);
 }
 
 /* ======== 0x8012b23c ======== */
