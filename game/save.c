@@ -431,7 +431,7 @@ void memcard_tick(void)
         DAT_801bef6d = DAT_801bef6d + 0x01;
         return;
       }
-      DAT_801bef6d = DAT_801bef6d + -1;
+      DAT_801bef6d = DAT_801bef6d - 1;
       return;
     case 0x18:
       cd_cmd_issue_async(0x10,0);
@@ -447,8 +447,8 @@ void memcard_tick(void)
         return;
       }
       DAT_801bef80 = cd_stamp_to_sector(&DAT_801bef64);
-      if ((DAT_801bef80 <= DAT_801bef88) && (DAT_801bef84 + -300 <= DAT_801bef80)) {
-        DAT_801bef6d = DAT_801bef6d + -1;
+      if ((DAT_801bef80 <= DAT_801bef88) && (DAT_801bef84 - 300 <= DAT_801bef80)) {
+        DAT_801bef6d = DAT_801bef6d - 1;
         return;
       }
       goto bb_80157c80;
@@ -472,14 +472,14 @@ void memcard_tick(void)
         if (cd_rc != 5) {
           return;
         }
-        DAT_801bef6d = DAT_801bef6d + -1;
+        DAT_801bef6d = DAT_801bef6d - 1;
         return;
       }
       if ((DAT_801bef64 & 0x10) == 0) {
         DAT_801bef6d = DAT_801bef6d + 0x01;
         return;
       }
-      DAT_801bef6d = DAT_801bef6d + -1;
+      DAT_801bef6d = DAT_801bef6d - 1;
       return;
     case '#':
       cd_cmd_issue_async(0x13,0);
@@ -592,7 +592,7 @@ bb_80157c80:
   case 0x18:
     cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
     if (cd_rc == 2) {
-      DAT_801bef6d = DAT_801bef6d + -1;
+      DAT_801bef6d = DAT_801bef6d - 1;
     }
     else if (cd_rc == 5) {
       DAT_801bef6d = ' ';
@@ -619,11 +619,11 @@ bb_80157c80:
         DAT_801bef6d = DAT_801bef6d + 0x01;
       }
       else {
-        DAT_801bef6d = DAT_801bef6d + -1;
+        DAT_801bef6d = DAT_801bef6d - 1;
       }
     }
     else if (cd_rc == 5) {
-      DAT_801bef6d = DAT_801bef6d + -1;
+      DAT_801bef6d = DAT_801bef6d - 1;
     }
     break;
   case '#':
@@ -655,7 +655,7 @@ bb_80157c80:
     }
     dir_n = cd_dir_read_wrap(&DAT_801bef8c);
     if ((int)dir_n < 1) {
-      DAT_801bef6d = DAT_801bef6d + -1;
+      DAT_801bef6d = DAT_801bef6d - 1;
       return;
     }
     DAT_801bef6c = (int8_t)dir_n;
@@ -1043,7 +1043,7 @@ dflt_8015ffe4:
             case 3:
               _DAT_801c15f0 = 0;
               announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_COMPLETED___80121954,0x10,0x1000,3);
-              rc = wait_cnt + -1;
+              rc = wait_cnt - 1;
               if ((-1 < wait_cnt) && (wait_cnt = rc, rc == -1)) {
                 local_bd = 0x16;
               }
@@ -1232,12 +1232,12 @@ void memcard_slot_poll(void)
         _DAT_801f2654 = 0x600e3;
         _DAT_801f2666 = 0;
         ent_off = (uint32_t)*(uint16_t *)(rec + 5) * 8;
-        _DAT_801f2668 = *(uint16_t *)guest_at((uint32_t)(ent_off + -0x7fe0d41e));
+        _DAT_801f2668 = *(uint16_t *)guest_at((uint32_t)(ent_off - 0x7fe0d41e));
         _DAT_801f2658 = *(uint16_t *)(rec + 1);
         _DAT_801f265a = *(uint16_t *)(rec + 3);
-        _DAT_801f266c = *(uint32_t *)guest_at((uint32_t)((uint32_t)*(uint16_t *)guest_at((uint32_t)(ent_off + -0x7fe0d420)) * 4 + -0x7fe0d920));
-        _DAT_801f268a = *(uint16_t *)guest_at((uint32_t)(ent_off + -0x7fe0d41c));
-        _DAT_801f268c = *(uint16_t *)guest_at((uint32_t)(ent_off + -0x7fe0d41a));
+        _DAT_801f266c = *(uint32_t *)guest_at((uint32_t)((uint32_t)*(uint16_t *)guest_at((uint32_t)(ent_off - 0x7fe0d420)) * 4 - 0x7fe0d920));
+        _DAT_801f268a = *(uint16_t *)guest_at((uint32_t)(ent_off - 0x7fe0d41c));
+        _DAT_801f268c = *(uint16_t *)guest_at((uint32_t)(ent_off - 0x7fe0d41a));
         cd_reg_window_update(&DAT_801f2650);
       }
       else {
@@ -1304,11 +1304,11 @@ void deferred_cmd_drain(uint32_t a0,int a1)
         }
         if (a1 != 0) {
           *rec_u = 0;
-          _DAT_801f35f4 = _DAT_801f35f4 + -1;
+          _DAT_801f35f4 = _DAT_801f35f4 - 1;
         }
       }
       else {
-        rec_s[1] = rec_s[1] + -1;
+        rec_s[1] = rec_s[1] - 1;
       }
     }
 bb_80156ebc:
@@ -1361,7 +1361,7 @@ void save_block_init(void)
   i = 0;
   n = 0x1f;
   do {
-    n = n + -1;
+    n = n - 1;
     dst = &DAT_801c11e0 + i;
     src = src_name + i;
     i = i + 1;
@@ -1375,12 +1375,12 @@ void save_block_init(void)
     *(uint16_t *)(&DAT_801c11ec + n) = 0;
     *(uint16_t *)(&DAT_801c11e8 + n) = 0;
     *(uint16_t *)(&DAT_801c11e4 + n) = 0;
-    *(uint16_t *)guest_at((uint32_t)(n + -0x7fe3ee1e)) = 0;
+    *(uint16_t *)guest_at((uint32_t)(n - 0x7fe3ee1e)) = 0;
     *(uint16_t *)(&DAT_801c11e0 + n) = 0;
     do {
       *(uint16_t *)(dst + 0xe) = 0;
-      j = j + -1;
-      dst = dst + -2;
+      j = j - 1;
+      dst = dst - 2;
     } while (-1 < j);
     i = i + 1;
     n = n + 0x24;
@@ -1505,7 +1505,7 @@ void perm_table_load(void)
   do {
     j = i + 1;
     *dst = (&DAT_8011ec40)[i];
-    dst = (uint8_t *)guest_at((uint32_t)(i + -0x7fe17bff));
+    dst = (uint8_t *)guest_at((uint32_t)(i - 0x7fe17bff));
     i = j;
   } while (j < 0x100);
   return;
@@ -1523,7 +1523,7 @@ void perm_table_apply(uint32_t a0)
   
   i = 0;
   do {
-    cell = (uint8_t *)guest_at((uint32_t)(i + -0x7fe17c00));
+    cell = (uint8_t *)guest_at((uint32_t)(i - 0x7fe17c00));
     perm_idx = (&DAT_8011ec40)[a0 & 0xff];
     swap_tmp = *cell;
     i = i + 1;
