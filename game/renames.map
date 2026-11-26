@@ -248,6 +248,15 @@
 8018cbfc spr_pool_a_alloc
 8018c0a8 spr_pool_b_alloc
 8018e590 printf_core
+8018e774 printf_flags_h_set
+8018e77c printf_flags_l_set
+8018e784 printf_arg_byte
+8018e7a0 printf_arg_dec_l
+8018e7a4 printf_arg_dec
+8018e7e8 printf_arg_word
+8018e824 printf_arg_oct_l
+8018e828 printf_arg_oct
+8018e85c printf_arg_hex
 8018ecf0 console_emit
 8018edec console_pct
 8018c1f4 sprite_9slice_build
