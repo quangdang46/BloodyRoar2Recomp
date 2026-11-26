@@ -7796,13 +7796,13 @@ L_end:                                          /* 0x8012fae8 */
  * 0x300-class arms records @t0+0xb2/b4/b6 (hi nibble kept |0x900) and
  * calls name_rec_gate(side-block host ptr, table @0x801209ac) +
  * status_flag_cond_set(guest side,0). */
-void side_phase_advance(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                  int32_t param_4)
+void side_phase_advance(uint32_t battle,uint32_t side_a,uint32_t side_b,
+                  int32_t flag)
 {
-  uint32_t t0 = param_1;
-  uint32_t s1 = param_2;
-  uint32_t s2 = param_3;
-  int32_t  a3 = param_4;
+  uint32_t t0 = battle;
+  uint32_t s1 = side_a;
+  uint32_t s2 = side_b;
+  int32_t  a3 = flag;
   uint32_t idx, v1, a0b, cnt, lim;
   const void *tbl = guest_at(0x801209ac);
 
@@ -7888,10 +7888,10 @@ L_inc:                                          /* 0x80152bb4 */
  * 30 insns. a0 = guest struct (s0); a1/a2 unused. If (s8)@+0x99 >= 0
  * increment the u8; if u8 @+0x9b < 4 call confirm_bookkeeping(s0), then store
  * 2 or 3 @+0x9a (3 when the signed byte went negative) and 6 @+1. */
-void side_phase_commit(uint32_t param_1,uint32_t param_2,uint32_t param_3)
+void side_phase_commit(uint32_t obj,uint32_t unused_a,uint32_t unused_b)
 {
-  uint32_t s0 = param_1;
-  (void)param_2; (void)param_3;
+  uint32_t s0 = obj;
+  (void)unused_a; (void)unused_b;
   if ((int32_t)MBS8(s0 + 0x99) >= 0)
     MW8(s0 + 0x99,(uint8_t)(MB8(s0 + 0x99) + 1));
   if ((uint32_t)MB8(s0 + 0x9b) < 4) {
@@ -7909,14 +7909,14 @@ void side_phase_commit(uint32_t param_1,uint32_t param_2,uint32_t param_3)
  * battle_side_flag_prop/vs_confirm_a on the guest/host pair. Ends with the
  * 0x80020000 flag merge, optional 0x81000005 remap, and the >=0x78
  * phase-reset writing 9/0xa/0xb into @s0+0x92. Returns 0 (v0). */
-void vs_confirm_c(uint8_t *param_1,uint8_t *param_2,uint32_t param_3,
-                  uint32_t param_4)
+void vs_confirm_c(uint8_t *blk_a,uint8_t *blk_b,uint32_t battle,
+                  uint32_t unused)
 {
-  uint8_t *s2 = param_1;
-  uint8_t *s1 = param_2;
-  uint32_t s0 = param_3;
+  uint8_t *s2 = blk_a;
+  uint8_t *s1 = blk_b;
+  uint32_t s0 = battle;
   uint32_t v1, a1v;
-  (void)param_4;
+  (void)unused;
 
   if (MBS16(s0 + 0x8c) == 0) {
     if (s2[1] != 0) s2[1] = (uint8_t)(s2[1] | 0x80);
@@ -8028,13 +8028,13 @@ L_tail:                                       /* 0x80154258 */
  * clear_f0300_records, versus_stage_commit(s0,2). Optional (s4&0x800) cancel via
  * engine_tables_restore + same reset writing 0xb. Tail: subrecord_u16_rw(s0,-1)==4
  * gate -> engine_tables_restore + reset writing 0xb. Returns 0. */
-void vs_confirm_d(uint8_t *param_1,uint8_t *param_2,uint32_t param_3,
-                  uint32_t param_4)
+void vs_confirm_d(uint8_t *blk_a,uint8_t *blk_b,uint32_t battle,
+                  uint32_t flag)
 {
-  uint8_t *s1 = param_1;
-  uint8_t *s2 = param_2;
-  uint32_t s0 = param_3;
-  uint32_t s4 = param_4;
+  uint8_t *s1 = blk_a;
+  uint8_t *s2 = blk_b;
+  uint32_t s0 = battle;
+  uint32_t s4 = flag;
   uint32_t s3 = 0;
   uint32_t v0;
 
@@ -8097,13 +8097,13 @@ void vs_confirm_d(uint8_t *param_1,uint8_t *param_2,uint32_t param_3,
  * action_enter_fwd x2 + field writes + battle_field_set(bc,3). Tail merges
  * 0x40a10005/0x40a10007, optional 0x8c==2 record fixup, and the
  * >=0xa && s3&0x800 -> 0x1356 clamp. Returns 0. */
-void vs_confirm_e(uint8_t *param_1,uint8_t *param_2,uint32_t param_3,
-                  uint32_t param_4)
+void vs_confirm_e(uint8_t *blk_a,uint8_t *blk_b,uint32_t battle,
+                  uint32_t flag)
 {
-  uint8_t *s2 = param_1;
-  uint8_t *s1 = param_2;
-  uint32_t s0 = param_3;
-  uint32_t s3 = param_4;
+  uint8_t *s2 = blk_a;
+  uint8_t *s1 = blk_b;
+  uint32_t s0 = battle;
+  uint32_t s3 = flag;
   uint32_t v1;
 
   if (MBS16(s0 + 0x8c) >= 0x12c) {
