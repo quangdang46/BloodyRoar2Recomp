@@ -105453,7 +105453,10 @@ block_801AA0D4:
 }
 
 /* cps_801aa558 — clean CPS transliteration of br2eu_func_801AA558 (guest 0x801aa558)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the s0-object state machine (AA558-AA618):
+ * writes computed halfword -> s0+58, continues to AA55C.
+ */
 void cps_801aa558(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -105468,7 +105471,11 @@ block_801AA558:
 }
 
 /* cps_801aa55c — clean CPS transliteration of br2eu_func_801AA55C (guest 0x801aa55c)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the s0-object state machine: resolves a
+ * record via s0+56 index *4 into *(s0+52) table, s0+58*2 byte offset,
+ * reads halfword + byte; 7-block dispatch body.
+ */
 void cps_801aa55c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -105582,7 +105589,9 @@ block_801AA5C4:
 }
 
 /* cps_801aa5c8 — clean CPS transliteration of br2eu_func_801AA5C8 (guest 0x801aa5c8)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the state machine: sets v0 = -2 -> AA5CC.
+ */
 void cps_801aa5c8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -105597,7 +105606,9 @@ block_801AA5C8:
 }
 
 /* cps_801aa5cc — clean CPS transliteration of br2eu_func_801AA5CC (guest 0x801aa5cc)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the state machine: tail-jumps to AA618.
+ */
 void cps_801aa5cc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -105614,7 +105625,10 @@ block_801AA5CC:
 }
 
 /* cps_801aa5d4 — clean CPS transliteration of br2eu_func_801AA5D4 (guest 0x801aa5d4)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the state machine: stores a1 -> s0+4 and
+ * s0+68 (halfwords), exits via AA95C epilogue.
+ */
 void cps_801aa5d4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -105632,7 +105646,10 @@ block_801AA5D4:
 }
 
 /* cps_801aa5e0 — clean CPS transliteration of br2eu_func_801AA5E0 (guest 0x801aa5e0)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the state machine: stores v0 -> s0+4 and
+ * a1 -> s0+68, exits via AA95C.
+ */
 void cps_801aa5e0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -105650,7 +105667,10 @@ block_801AA5E0:
 }
 
 /* cps_801aa5ec — clean CPS transliteration of br2eu_func_801AA5EC (guest 0x801aa5ec)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the state machine: sets bit 0x0100 in
+ * s0+68 flags, exits via AA95C.
+ */
 void cps_801aa5ec(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -105670,7 +105690,10 @@ block_801AA5EC:
 }
 
 /* cps_801aa600 — clean CPS transliteration of br2eu_func_801AA600 (guest 0x801aa600)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the state machine: sign-extends v0>>24 ->
+ * AA558.
+ */
 void cps_801aa600(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -105687,7 +105710,10 @@ block_801AA600:
 }
 
 /* cps_801aa608 — clean CPS transliteration of br2eu_func_801AA608 (guest 0x801aa608)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Piece of the state machine: stores v0>>24 -> s0+56,
+ * clears s0+58, continues to AA55C.
+ */
 void cps_801aa608(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -105706,7 +105732,11 @@ block_801AA608:
 }
 
 /* cps_801aa618 — clean CPS transliteration of br2eu_func_801AA618 (guest 0x801aa618)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Main dispatcher of the s0-object state machine
+ * (24 blocks, ~200 ops): branches on s16 s0+68 against a3 and drives
+ * the AA7E8/AA95C paths.
+ */
 void cps_801aa618(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -106024,7 +106054,10 @@ block_801AA7D0:
 }
 
 /* cps_801aa7e8 — clean CPS transliteration of br2eu_func_801AA7E8 (guest 0x801aa7e8)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Large state-machine body (21 blocks): gates on
+ * s16 s0+2 == 2, multi-way field updates on the s0 object.
+ */
 void cps_801aa7e8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -106278,7 +106311,9 @@ block_801AA94C:
 }
 
 /* cps_801aa95c — clean CPS transliteration of br2eu_func_801AA95C (guest 0x801aa95c)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Shared epilogue: restores s0/s1/ra, sp += 32, jr ra.
+ */
 void cps_801aa95c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -106297,7 +106332,9 @@ block_801AA95C:
 }
 
 /* cps_801aad18 — clean CPS transliteration of br2eu_func_801AAD18 (guest 0x801aad18)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Tiny accessor: writes 0 -> *(a0+12), returns via jr ra.
+ */
 void cps_801aad18(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -106315,7 +106352,11 @@ block_801AAD18:
 }
 
 /* cps_801ab470 — clean CPS transliteration of br2eu_func_801AB470 (guest 0x801ab470)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Large body (~320 ops, 3 CPS pieces AB470-ABD94):
+ * gates on s16 a0+40, reads gp+52 global, iterates object fields —
+ * part of the same object-processing family as AA618.
+ */
 void cps_801ab470(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -106781,7 +106822,10 @@ block_801AB5A4:
 }
 
 /* cps_801ab84c — clean CPS transliteration of br2eu_func_801AB84C (guest 0x801ab84c)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Large body (~440 ops): gates on *(a0+36) and s16
+ * a0+40, exits via ABD94; sibling of AB470 in the object family.
+ */
 void cps_801ab84c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107414,7 +107458,10 @@ block_801ABA84:
 }
 
 /* cps_801abd94 — clean CPS transliteration of br2eu_func_801ABD94 (guest 0x801abd94)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * Large body (~245 ops): gates on s16 a0+40, reads
+ * gp+52; continuation/tail sibling of AB470/AB84C.
+ */
 void cps_801abd94(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107770,7 +107817,10 @@ block_801ABEC8:
 }
 
 /* cps_801ac8f0 — clean CPS transliteration of br2eu_func_801AC8F0 (guest 0x801ac8f0)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * Medium body (12 blocks): saves s0-s2/ra, s1=a0,
+ * s2=a1; s1==0 early-out — function entry of the next object routine.
+ */
 void cps_801ac8f0(void)
 {
   CPUState *cpu = clean_cpu_state();
