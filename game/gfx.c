@@ -8105,7 +8105,7 @@ L_8018691C:
  * prim_ot_link_indexed and gte_data[22] is stored at out+28.
  *
  * Faithful CPS transliteration: one clean body, cpu->gpr[] live mirrors,
- * block_* labels + goto for the two taken branches and the loop back-edge.
+ * blez guard -> early return, beq+bgtz branches -> structured if/do-while.
  * The generated pc-switch mid-entries (0x80188518/20/24/70/65C) are CPS
  * suspend continuations only — this port has no suspend points, so the
  * function-entry dispatch is the sole live entry (verified: no external
@@ -8237,8 +8237,8 @@ uint32_t prim_poly_emit_6c(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * emits a single transformed vertex, not a quad).
  *
  * Faithful CPS transliteration in the same style as the 0x6c/0x88
- * siblings: cpu->gpr[] live mirrors, block_* labels + goto for the two
- * taken branches and the loop back-edge. lwc2 sites use the generated
+ * siblings: cpu->gpr[] live mirrors, blez guard -> early return,
+ * beq+bgtz branches -> structured if/do-while. lwc2 sites use the generated
  * psx_cyc_lwc2_read (charge + raw read); the gte[6] mtc2 keeps the
  * generated direct gte_data[] write (gte_write_data would mask to
  * 0xFFFF); swc2 keeps the generated gte_precision_store_word side-call.
