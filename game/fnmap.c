@@ -699,7 +699,6 @@ extern void fighter_contact_resolve(void);
 extern void fighter_flash_update(void);
 extern void fighter_frame(void);
 extern void fighter_frame_triple_emit(void);
-extern void fighter_height_check(void);
 extern void fighter_height_track(void);
 extern void fighter_hud_emit_pair(void);
 extern void fighter_link_init(void);
@@ -934,8 +933,6 @@ extern void hitrec_table_clear(void);
 extern void hp_bar_tick(void);
 extern void hud_announce(void);
 extern void hud_announce_cps(void);
-extern void hud_cell_frame_set(void);
-extern void hud_digits_color(void);
 extern void hud_gauge_render(void);
 extern void hud_name_fixup(void);
 extern void hud_prim_init(void);
@@ -1459,17 +1456,13 @@ extern void ring_effect_task_update(void);
 extern void rotate_xy_pairs(void);
 extern void rotmat2_build(void);
 extern void rotmat2_build_s16(void);
-extern void rotmat2_pair_build(void);
 extern void rotmat2_pair_build_word(void);
 extern void rotmat_half_euler_a(void);
 extern void rotmat_half_euler_b(void);
-extern void rotmat_rtps_build(void);
 extern void rotmat_rtps_build_half(void);
 extern void round_announce_block(void);
 extern void round_banner_draw(void);
 extern void rtps_basis_xform(void);
-extern void rtps_point_xform(void);
-extern void rtps_point_xform2(void);
 extern void rtps_pt_xform(void);
 extern void s16_dec_with_floor(void);
 extern void save_blk_cmp32(void);
@@ -1625,12 +1618,8 @@ extern void sprite_prim_update(void);
 extern void sprite_quad_emit(void);
 extern void sprite_record_tick(void);
 extern void sprite_rect_pkt_fill(void);
-extern void sprite_rect_set_a(void);
-extern void sprite_rect_set_b(void);
-extern void sprite_rect_set_c(void);
 extern void sprite_rect_table_init(void);
 extern void sprite_slot_commit(void);
-extern void sprite_strip_draw_dual(void);
 extern void stage_char_data_load(void);
 extern void stage_fight_announce(void);
 extern void stat_counter_accum(void);
@@ -1649,15 +1638,11 @@ extern void system_config_menu_a(void);
 extern void system_config_menu_b(void);
 extern void system_tick_frame(void);
 extern void table_1f0ae0_clear(void);
-extern void table_byte_next_a(void);
-extern void table_byte_next_b(void);
 extern void tag_table_get(void);
 extern void target_angles_depth_set(void);
 extern void target_angles_set(void);
 extern void target_depth_set(void);
 extern void task_alloc_setup(void);
-extern void task_alloc_wrap_a(void);
-extern void task_alloc_wrap_b(void);
 extern void task_alloc_wrap_c(void);
 extern void task_alloc_wrap_d(void);
 extern void task_alloc_wrap_e(void);
@@ -1734,7 +1719,6 @@ extern void vec3_s32_h_normalize_store_tail(void);
 extern void vec3_s32_normalize(void);
 extern void vec3_step_toward(void);
 extern void vec3_step_toward_q(void);
-extern void vec3_step_toward_q_spd(void);
 extern void vec3_step_toward_spd(void);
 extern void vec_emit_spawn(void);
 extern void versus_stage_commit(void);
@@ -1818,8 +1802,6 @@ const Br2FnEnt fn_table[] = {
   { 0x80129e40, (void *)menu_step_a },
   { 0x80129f1c, (void *)mode_string_dispatch },
   { 0x80129f64, (void *)mode_flag_pair_set },
-  { 0x80129f78, (void *)table_byte_next_a },
-  { 0x80129fc4, (void *)table_byte_next_b },
   { 0x80129ff4, (void *)perm_table_load },
   { 0x8012a030, (void *)perm_table_apply },
   { 0x8012a088, (void *)debug_stat_print },
@@ -1904,7 +1886,6 @@ const Br2FnEnt fn_table[] = {
   { 0x80133aa0, (void *)vec3_step_toward },
   { 0x80133c08, (void *)vec3_step_toward_spd },
   { 0x80133db0, (void *)vec3_step_toward_q },
-  { 0x80133f30, (void *)vec3_step_toward_q_spd },
   { 0x801340f0, (void *)mode_select_wrapper },
   { 0x80134128, (void *)channel_script_emit_pair_2gate },
   { 0x801341a0, (void *)channel_script_emit_triple },
@@ -2422,17 +2403,8 @@ const Br2FnEnt fn_table[] = {
   { 0x80170fe0, (void *)save_load_state_machine },
   { 0x80171890, (void *)save_state_machine_alt },
   { 0x80172100, (void *)centered_sprite_emit },
-  { 0x801721a4, (void *)sprite_strip_draw_dual },
-  { 0x801725a4, (void *)task_alloc_wrap_a },
-  { 0x80172640, (void *)task_alloc_wrap_b },
-  { 0x801726ec, (void *)hud_cell_frame_set },
-  { 0x801727b8, (void *)hud_digits_color },
-  { 0x80172a04, (void *)fighter_height_check },
   { 0x80172a34, (void *)fighter_anim_table_init },
   { 0x801737ec, (void *)battle_hud_draw },
-  { 0x801756b0, (void *)sprite_rect_set_a },
-  { 0x80175708, (void *)sprite_rect_set_b },
-  { 0x80175760, (void *)sprite_rect_set_c },
   { 0x801757b8, (void *)players_ctrl_init },
   { 0x80175898, (void *)reset_guest },
   { 0x80175a7c, (void *)entry_setup_guest },
@@ -2761,8 +2733,6 @@ const Br2FnEnt fn_table[] = {
   { 0x8018d484, (void *)dir_rotate_wrap },
   { 0x8018d49c, (void *)vec2_rot_emit },
   { 0x8018d4fc, (void *)vec2_rot_lut },
-  { 0x8018d538, (void *)rtps_point_xform },
-  { 0x8018d540, (void *)rtps_point_xform2 },
   { 0x8018d568, (void *)gte_xform_add_off },
   { 0x8018d5b4, (void *)rtps_pt_xform },
   { 0x8018d5fc, (void *)gte_lwc2_r0_r1 },
@@ -2783,9 +2753,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8018dc18, (void *)euler_rotmat },
   { 0x8018dc20, (void *)euler_rotmat_core },
   { 0x8018de68, (void *)rotmat_rtps_build_half },
-  { 0x8018de6c, (void *)rotmat_rtps_build },
   { 0x8018def4, (void *)rotmat2_pair_build_word },
-  { 0x8018df00, (void *)rotmat2_pair_build },
   { 0x8018e024, (void *)angle_vec_build_half },
   { 0x8018e028, (void *)angle_vec_build },
   { 0x8018e0b0, (void *)rotmat_half_euler_a },
