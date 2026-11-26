@@ -1502,7 +1502,7 @@ extern char s_0123456789abcdef_80124fe8[];
 extern char s_0123456789ABCDEF_80125004[];
 extern char s__null__80124ffc[];
 extern uint8_t ctype_bitmap_801b6701[];
-uint32_t printf_core(uint32_t param_1,const uint8_t *param_2,const uint32_t *param_3)
+uint32_t printf_core(uint32_t chan,const uint8_t *fmt,const uint32_t *args)
 {
   uint8_t c1, c2;
   char dig;
@@ -1577,13 +1577,11 @@ LAB_8018e60c:
           prec_raw = (intptr_t)*ap;
           ap = ap + 1;
         } else {
-          puVar17i = 0;
-          while (bVar1 < 0x80 && (bVar2 = *pbVar20, (ctype_bitmap_801b6701[bVar2] & 4) != 0)) {
-            pbVar20 = pbVar20 + 1;
-            bVar1 = *pbVar20;
           prec_raw = 0;
+          while (c1 < 0x80 && (c2 = *fp, (ctype_bitmap_801b6701[c2] & 4) != 0)) {
             fp = fp + 1;
             c1 = *fp;
+            prec_raw = (intptr_t)((intptr_t)prec_raw * 10 + -0x30 + (uint32_t)c2);
           }
           fp = fp - 1;
         }
@@ -1597,14 +1595,11 @@ LAB_8018e60c:
       case 0x35: case 0x36: case 0x37: case 0x38: case 0x39:
         width = 0;
         do {
-          pbVar20 = param_2;
-          param_2 = pbVar20 + 1;
-          local_34 = (intptr_t)((intptr_t)local_34 * 10 + -0x30 + (uint32_t)*pbVar20);
-          if (0x7f < *param_2) break;
-        } while ((ctype_bitmap_801b6701[*param_2] & 4) != 0);
           fp = fmt;
           fmt = fp + 1;
           width = (intptr_t)((intptr_t)width * 10 + -0x30 + (uint32_t)*fp);
+          if (0x7f < *fmt) break;
+        } while ((ctype_bitmap_801b6701[*fmt] & 4) != 0);
         goto LAB_8018e60c;
       case 0x44:
         lng = 1;
