@@ -16271,8 +16271,8 @@ uint32_t NM(uint32_t a,uint32_t b,uint32_t c,uint32_t d,uint32_t e, \
  * Tag bytes 4/0x20 at dst+0x27/0x2b/0x3b/0x3f (a0 = cur+0x10).
  * Returns cur + count*0x4c. */
 uint32_t heap_serialize_tag_08(uint32_t dst,uint32_t src,uint32_t ptab,
-                     uint32_t ptab2,uint32_t count,uint32_t xoff,
-                     uint32_t yoff)
+                     uint32_t ptab2,uint32_t count,uint32_t unused6,
+                     uint32_t unused7)
 {
   uint32_t a0 = dst;
   uint32_t a1 = src;
@@ -16282,7 +16282,7 @@ uint32_t heap_serialize_tag_08(uint32_t dst,uint32_t src,uint32_t ptab,
   uint32_t v1 = count;
   uint32_t t1 = src;
   uint32_t v0, t4, t5;
-  (void)xoff; (void)yoff;
+  (void)unused6; (void)unused7;
   if (v1 == 0) return t0;
   a0 += 16; a1 += 10;
   do {
