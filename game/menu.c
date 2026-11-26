@@ -4307,12 +4307,12 @@ int32_t bcfg_step_a(uint32_t battle_g,uint32_t player,uint32_t flags)
 extern void hud_text_blk_alt(uint32_t,uint32_t,const void *,int32_t,int32_t,int32_t);
 void bcfg_step_b(uint32_t battle_g,int32_t flag)
 {
-  uint8_t *v1 = (uint8_t *)guest_at(battle_g);
-  int32_t a3 = flag ? ((int32_t)*(int16_t *)(v1 + 0x20) - 0x50) : 0x50;
-  uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(v1 + 0xc8));
+  uint8_t *b = (uint8_t *)guest_at(battle_g);
+  int32_t txt_y = flag ? ((int32_t)*(int16_t *)(b + 0x20) - 0x50) : 0x50;
+  uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(b + 0xc8));
   if (((*(uint16_t *)(cr + 2) >> 0xb) & 1) != 0) {
-    hud_text_blk_alt(*(uint32_t *)(v1 + 8),*(uint32_t *)(v1 + 0xc),
-                 (const void *)guest_at(0x8012834),(int16_t)(a3 - 0x1b),1,0x20);
+    hud_text_blk_alt(*(uint32_t *)(b + 8),*(uint32_t *)(b + 0xc),
+                 (const void *)guest_at(0x8012834),(int16_t)(txt_y - 0x1b),1,0x20);
   }
 }
 
@@ -4323,21 +4323,21 @@ extern void chan_blocks_reset(uint32_t,uint32_t,int32_t);
 extern void ret_stub_b(uint8_t *,int32_t);
 void bcfg_step_c(uint32_t battle_g,uint32_t player)
 {
-  uint8_t *s1 = (uint8_t *)guest_at(battle_g);
-  uint8_t *s2 = (uint8_t *)guest_at(0x1f8000e8 + player * 0x108);
-  uint8_t *v1, *cr;
+  uint8_t *b = (uint8_t *)guest_at(battle_g);
+  uint8_t *st_rec = (uint8_t *)guest_at(0x1f8000e8 + player * 0x108);
+  uint8_t *obj, *cr;
   deferred_cmd_post(0x400,0xc,0);
-  *(uint16_t *)(s1 + player * 2 + 0xb4) = 0x100;
-  cr = (uint8_t *)guest_at(*(uint32_t *)(s1 + 0xc0)) + player;
+  *(uint16_t *)(b + player * 2 + 0xb4) = 0x100;
+  cr = (uint8_t *)guest_at(*(uint32_t *)(b + 0xc0)) + player;
   cr[0x19] = cr[0x19] & 3;
-  v1 = (uint8_t *)guest_at(*(uint32_t *)(s2 + 0x2c));
-  if (v1[1] == 0) {
-    uint32_t a1 = *(uint32_t *)(v1 + 0xf0);
-    uint32_t a0 = *(uint32_t *)(v1 + 0xf4);
-    if (a1 >= a0) *(uint32_t *)(v1 + 0xf0) = a1 - a0;
+  obj = (uint8_t *)guest_at(*(uint32_t *)(st_rec + 0x2c));
+  if (obj[1] == 0) {
+    uint32_t cnt_cur = *(uint32_t *)(obj + 0xf0);
+    uint32_t cnt_per = *(uint32_t *)(obj + 0xf4);
+    if (cnt_cur >= cnt_per) *(uint32_t *)(obj + 0xf0) = cnt_cur - cnt_per;
   }
-  chan_blocks_reset(0x1f8000e8 + player * 0x108,*(uint32_t *)guest_at(*(uint32_t *)(s2 + 0x2c) + (0xf0)),1);
-  ret_stub_b(s2,2);
+  chan_blocks_reset(0x1f8000e8 + player * 0x108,*(uint32_t *)guest_at(*(uint32_t *)(st_rec + 0x2c) + (0xf0)),1);
+  ret_stub_b(st_rec,2);
 }
 
 /* bcfg_step_d — variant of 8015279c: same reset but foe-side extra
@@ -4433,16 +4433,16 @@ void fight_timer_announce(uint32_t battle_g,uint8_t *side,int32_t flag)
 extern void champion_win_announce(uint32_t,uint8_t *,int32_t);
 void stage_fight_announce(uint32_t battle_g,uint8_t *side)
 {
-  uint8_t *s0 = (uint8_t *)guest_at(battle_g);
-  uint8_t *s1 = side;
-  uint8_t *v1, *c0;
+  uint8_t *b = (uint8_t *)guest_at(battle_g);
+
+  uint8_t *v1, *crecs;
   /* sprintf buf = guest $sp+0x18 (frame -0x38) = entry_sp-0x20; hud_text_blk_alt
    * re-reads it through nested frames, so the write->draw span inside the
    * v1[1]!=0 branch runs inside a reserved guest frame (sp+0x18 -> frm+0x20). */
   uint8_t *buf;
-  int32_t a2, a3;
-  if (((*(uint16_t *)guest_at(*(uint32_t *)(s0 + 0xc8) + (2)) >> 0xb) & 1) == 0) return;
-  v1 = (uint8_t *)guest_at(*(uint32_t *)(s1 + 0x2c));
+  int32_t a2, txt_y;
+  if (((*(uint16_t *)guest_at(*(uint32_t *)(b + 0xc8) + (2)) >> 0xb) & 1) == 0) return;
+  v1 = (uint8_t *)guest_at(*(uint32_t *)(side + 0x2c));
   if (v1[1] != 0) {
     extern uint32_t br2_guest_frame(uint32_t);
     extern void br2_guest_frame_free(void);
@@ -4450,22 +4450,22 @@ void stage_fight_announce(uint32_t battle_g,uint8_t *side)
     buf = (uint8_t *)guest_at(sfa_frm + 0x20);
     static const uint32_t jt[6] = {
       0x80151e4c,0x80151ed0,0x80151ed0,0x80151ea8,0x80151ea8,0x80151ed0 };
-    a2 = (int32_t)*(int16_t *)(s0 + 0xa2) + 1;
-    c0 = (uint8_t *)guest_at(*(uint32_t *)(s0 + 0xc0));
+    a2 = (int32_t)*(int16_t *)(b + 0xa2) + 1;
+    crecs = (uint8_t *)guest_at(*(uint32_t *)(b + 0xc0));
     {
-      uint32_t mode = s0[0x9c];
+      uint32_t mode = b[0x9c];
       if (mode < 6) {
         uint32_t tgt = jt[mode];
         if (tgt == 0x80151e4c) {                 /* case 0 */
           if (a2 == 9) {
             sprintf_core((char *)buf,(char *)guest_at(0x801208c0));
-          } else if (a2 < (int32_t)c0[0x10]) {
+          } else if (a2 < (int32_t)crecs[0x10]) {
             sprintf_core((char *)buf,(char *)guest_at(0x801208dc),a2);
           } else {
             sprintf_core((char *)buf,(char *)guest_at(0x801208d0));
           }
         } else if (tgt == 0x80151ea8) {          /* cases 3,4 */
-          if (a2 < (int32_t)c0[0x10]) {
+          if (a2 < (int32_t)crecs[0x10]) {
             sprintf_core((char *)buf,(char *)guest_at(0x801208f4),a2);
           } else {
             sprintf_core((char *)buf,(char *)guest_at(0x801208e8));
@@ -4475,31 +4475,31 @@ void stage_fight_announce(uint32_t battle_g,uint8_t *side)
         }
       }
     }
-    if (s1[2] == 0) {
-      a3 = 0xe;
-      hud_text_blk_alt(*(uint32_t *)(s0 + 8),*(uint32_t *)(s0 + 0xc),
-                   buf,a3,0x20,7);
+    if (side[2] == 0) {
+      txt_y = 0xe;
+      hud_text_blk_alt(*(uint32_t *)(b + 8),*(uint32_t *)(b + 0xc),
+                   buf,txt_y,0x20,7);
     } else {
-      a3 = (int32_t)*(int16_t *)(s0 + 0x20) - 0x92;
-      hud_text_blk_alt(*(uint32_t *)(s0 + 8),*(uint32_t *)(s0 + 0xc),
-                   buf,a3,0x20,7);
+      txt_y = (int32_t)*(int16_t *)(b + 0x20) - 0x92;
+      hud_text_blk_alt(*(uint32_t *)(b + 8),*(uint32_t *)(b + 0xc),
+                   buf,txt_y,0x20,7);
     }
     br2_guest_frame_free();
     return;
   }
   /* obj+1 clear path */
-  a2 = (int32_t)*(uint16_t *)(s1 + 0xe2) + (int32_t)*(uint16_t *)(v1 + 0xe2);
+  a2 = (int32_t)*(uint16_t *)(side + 0xe2) + (int32_t)*(uint16_t *)(v1 + 0xe2);
   if (a2 == 0 &&
-      (*(uint16_t *)(s0 + s1[2] * 2 + 0xb4) & 0x1000) != 0) a2 = 1;
+      (*(uint16_t *)(b + side[2] * 2 + 0xb4) & 0x1000) != 0) a2 = 1;
   if (a2 != 0) {
-    champion_win_announce(battle_g,s1,s1[2]);
+    champion_win_announce(battle_g,side,side[2]);
     return;
   }
   if ((*(uint32_t *)guest_at(0x1f8000dc) & 0x40) == 0) return;
-  if (s1[2] == 0) a3 = 0x32;
-  else            a3 = (int32_t)*(int16_t *)(s0 + 0x20) - 0x6e;
-  hud_text_blk_alt(*(uint32_t *)(s0 + 8),*(uint32_t *)(s0 + 0xc),
-               (const void *)guest_at(0x80120900),a3,0x20,1);
+  if (side[2] == 0) txt_y = 0x32;
+  else            txt_y = (int32_t)*(int16_t *)(b + 0x20) - 0x6e;
+  hud_text_blk_alt(*(uint32_t *)(b + 8),*(uint32_t *)(b + 0xc),
+               (const void *)guest_at(0x80120900),txt_y,0x20,1);
 }
 
 /* champion_win_announce — champion-win announce: "CHAMPION 1 WIN" /
