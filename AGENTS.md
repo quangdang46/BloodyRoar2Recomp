@@ -1034,3 +1034,35 @@ does NOT fix => not flat cycle under-charge.
 physically delete map ranges + regen per candidate); arm `fntrace`/
 `pc_probe` to catch the last game PC before the BIOS park. Full writeup:
 `proof/cps_boot_wedge_master_localization.md`.
+
+### Session update 20 (boot wedge SOLVED — two cooperating cps_ defects, `2b57002`)
+
+The deterministic early-boot wedge is **fixed and verified** (gs cycles
+3/5/6 title/attract, frame 141k+, no BIOS park). Two cooperating defects in
+`cps_*` transliterations starved IRQ/device deadlines; BOTH were required:
+
+1. **Piece-boundary collapse (all regions).** Split-piece/next-function
+   fallthroughs were bare `cps_X()` direct C calls → a piece chain ran in ONE
+   `clean_try_dispatch` → cost charged once, `cpu->pc` stale → per-piece cycle
+   accounting collapsed. `gen_cps_clean.py` now emits `cpu->pc=<piece>;return`
+   (generated tail-dispatch) for all 721 sites; `cps_clean.c` regenerated.
+2. **Intra-piece timing loss (`0x8018`–`0x801B` CD/IRQ/kernel).** A `cps_`
+   piece runs its whole block with a frozen cycle counter; MMIO/BIOS-boundary
+   fns never see the interrupt that breaks their wait. Removed those 2976
+   transliterations from `clean_cps.map` → they run **generated** (§4-faithful).
+   Kept game-logic `0x8012`–`0x8017` + hand-ported coroutines (`cd_irq_init_seq`,
+   `cd_response_pump`).
+
+Also fixed: `gen_clean_table.py` self-delegate detection now scans ALL bridge
+calls (`call_guest`/`call_guest4`/`br2_call_clean`/`psx_dispatch_call`), not
+just `br2_call_generated` — the 27 CD/IRQ §4 delegates forwarding via
+`call_guest4(<own addr>)` are skipped → generated, no wrap→self recursion.
+`src/clean_table.c`: 6003 wrappers, 27 self-delegate skips.
+
+**A/B proof** (`proof/cps_fallthrough_cycle_wedge.md`): restricted-map alone
+wedges; yields alone (full map) wedges; BOTH together boot. The proper
+long-term fix is real per-instruction cycle charging inside `cps_` bodies so
+the CD/IRQ region can be transliterated safely; until then the region split
+is the correct conservative boundary. **Versus/arcade gameplay should be
+re-verified** — boot→title is proven; CD-heavy paths (streaming/FMV) now run
+generated.
