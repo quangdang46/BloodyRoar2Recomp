@@ -405,7 +405,7 @@ fail:
  *   {u8 pad, u8 ctrl, s16 param}
  * ctrl: op = ctrl&0xf, foe-ctrl arg = ctrl&0x40, mode = (ctrl>>4)&3.
  * All state writes go to SELF motion; the foe bit only swaps the ctrl
- * arg passed to action_switch (actor_g in guest). op5 alone reads the
+ * arg passed to action_switch (target_g in guest). op5 alone reads the
  * OPPONENT's reaction tables (ctrl+0x2c -> +0x38) but still writes
  * self motion. param==-1 = auto-index via motion+0xa0 (wrap +0xa4).
  * mode gate (approx — Ghidra merged mode1 branches): mode1 always
@@ -1194,95 +1194,126 @@ static uint8_t *ev21_skip(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
 }
 extern void fighter_anim_advance(int,int);
 extern void action_switch_guest(int,int*,int);
-ushort * ev5_action_select(int ctrl_g,int motion_g,ushort *stream)
+ushort * ev5_action_select(int ctrl_g,int foe_g,ushort *stream)
 {
-  short sel_v;
-  undefined4 foe_attr;
-  uint op;
-  int mo_g;
-  /* ctrl_g/motion_g arrive as guest addresses; stream is a host
+  short act_idx;
+  undefined4 pend_g;
+  ushort *next;
+  uint opcode;
+  int motion_g;
+  int foe_motion_g;
+  int op_word;
+  int off;
+  uint subop;
+  ushort operand;
+  int idx;
+  int target_g;
+  /* ctrl_g/foe_g arrive as guest addresses; stream is a host
    * stream pointer. Bridge the guest addrs once here. */
   uint8_t *ctrl = (uint8_t *)guest_at((uint32_t)ctrl_g);
-  arg = stream[1];
-  sel = (int)(short)arg;
-  work = ((int)((uint)*stream << 0x10) >> 0x18) << 0x10;
-  op = work >> 0x10;
-  actor_g = ctrl_g;
-  if ((op & 0x40) != 0) {
-  }
-  mo_g = (int)GU32(ctrl, 0x38);
-  mo = (uint8_t *)guest_at((uint32_t)mo_g);
-  tgt_sel = work >> 0x14 & 3;
-    goto LAB_8017ae9c;
-    return stream + 2;
-LAB_8017aebc:
-  next_pc = (ushort *)0x0;
-  switch(op & 0xf) {
-  case 0:
-        *(undefined2 *)(mot + 0xa0) = 0;
-      *(short *)(mot + 0xa0) = *(short *)(mot + 0xa0) + 1;
-        *(undefined4 *)(mot + 0xb0) = *(undefined4 *)((uint8_t *)guest_at(GU32(mot, 0xa8)) + work);
-      else {
-LAB_8017b090:
-      fighter_anim_advance(ctrl_g,motion_g);
+  uint8_t *foe = (uint8_t *)guest_at((uint32_t)foe_g);
+  uint8_t *motion;
+  uint8_t *foe_motion;
   operand = stream[1];
   idx = (int)(short)operand;
   op_word = ((int)((uint)*stream << 0x10) >> 0x18) << 0x10;
   opcode = op_word >> 0x10;
   target_g = ctrl_g;
+  if ((opcode & 0x40) != 0) {
+    target_g = (int)GU32(ctrl, 0x2c);
+  }
   motion_g = (int)GU32(ctrl, 0x38);
   motion = (uint8_t *)guest_at((uint32_t)motion_g);
   subop = op_word >> 0x14 & 3;
+  if (subop == 1) {
+    if ((GU8(ctrl, 5) & 1) == 0) goto LAB_8017aebc;
+    goto LAB_8017ae9c;
+  }
+  if (((1 < subop) && (subop == 2)) && ((GU8(ctrl, 5) & 1) == 0)) {
+    return stream + 2;
+  }
+LAB_8017aebc:
   next = (ushort *)0x0;
   switch(opcode & 0xf) {
+  case 0:
+    if (idx == -1) {
+      idx = (int)*(short *)(foe + 0xa0);
+      if (*(short *)(foe + 0xa4) <= idx) {
+        *(undefined2 *)(foe + 0xa0) = 0;
+        idx = 0;
+      }
+      *(short *)(foe + 0xa0) = *(short *)(foe + 0xa0) + 1;
+    }
     off = idx * 4;
+    if (idx < *(short *)(foe + 0xa4)) {
+      if (*(uint *)((uint8_t *)guest_at(GU32(foe, 0xac)) + off) < 0x80000001) {
+        if (*(int *)((uint8_t *)guest_at(GU32(foe, 0xa8)) + off) == 0) goto LAB_8017b034;
+        *(undefined2 *)(foe + 0xbe) = *(undefined2 *)(foe + 0xbc);
+        *(undefined4 *)(foe + 0xb0) = *(undefined4 *)((uint8_t *)guest_at(GU32(foe, 0xa8)) + off);
+      }
+      else {
+        *(undefined2 *)(foe + 0xbe) = 0x80;
+        *(undefined4 *)(foe + 0xb0) = *(undefined4 *)((uint8_t *)guest_at(GU32(foe, 0xac)) + off);
+      }
+      *(short *)(foe + 0xa2) = (short)idx;
+LAB_8017b090:
       fighter_anim_advance(ctrl_g,foe_g);
       return stream + 2;
     }
     break;
   case 1:
-    if (sel == -1) {
-      arg = *(ushort *)(mo + 0x98);
+    if (idx == -1) {
+      operand = *(ushort *)(motion + 0x98);
     }
-    *(ushort *)(mo + 0x80) = arg;
-    sel_v = *(short *)(mo + 0x80);
+    *(ushort *)(motion + 0x80) = operand;
+    act_idx = *(short *)(motion + 0x80);
+    *(ushort *)(motion + 0x82) = operand;
     goto LAB_8017b044;
   case 2:
+    *(ushort *)(foe + 0x98) = operand;
     break;
-    work = (int)GU32((const uint8_t *)guest_at(GU32(ctrl, 0x2c)), 0x38);
-    foe_mo = (uint8_t *)guest_at((uint32_t)work);
-        *(undefined2 *)(mot + 0xbe) = *(undefined2 *)(mot + 0xbc);
-        foe_attr = *(undefined4 *)((uint8_t *)guest_at(GU32(foe_mo, 0xac)) + sel * 4);
-        *(undefined4 *)(mot + 0xb0) = foe_attr;
-LAB_8017b034:
-LAB_8017b044:
-      action_switch_guest(actor_g,(int *)mo,(int)sel_v);
-      {
-        uint32_t ns = GU32(mot, 0x84);
-      operand = *(ushort *)(motion + 0x98);
-    act_idx = *(short *)(motion + 0x80);
+  case 3:
+    *(ushort *)(foe + 0x9a) = operand;
+    break;
+  case 4:
+    *(ushort *)(foe + 0x16) = operand;
+    break;
+  case 5:
     foe_motion_g = (int)GU32((const uint8_t *)guest_at(GU32(ctrl, 0x2c)), 0x38);
     foe_motion = (uint8_t *)guest_at((uint32_t)foe_motion_g);
+    if (idx < *(short *)(foe_motion + 0xa4)) {
+      if (0x80000000 < *(uint *)((uint8_t *)guest_at(GU32(foe_motion, 0xac)) + idx * 4)) {
+        *(undefined2 *)(foe + 0xbe) = *(undefined2 *)(foe + 0xbc);
         pend_g = *(undefined4 *)((uint8_t *)guest_at(GU32(foe_motion, 0xac)) + idx * 4);
+        *(ushort *)(foe + 0xa2) = operand;
+        *(undefined4 *)(foe + 0xb0) = pend_g;
+        goto LAB_8017b090;
+      }
+LAB_8017b034:
+      *(undefined2 *)(motion + 0x80) = 1;
+      act_idx = *(short *)(motion + 0x80);
+      *(undefined2 *)(motion + 0x82) = 1;
+LAB_8017b044:
       action_switch_guest(target_g,(int *)motion,(int)act_idx);
+      {
+        uint32_t ns = GU32(foe, 0x84);
         return ns ? (ushort *)guest_at(ns) : (ushort *)0;
       }
     }
     break;
   case 6:
-    *(ushort *)(mot + 0x14) = arg;
+    *(ushort *)(foe + 0x14) = operand;
     break;
   case 7:
-    next_pc = stream + 2;
     next = stream + 2;
+    *(ushort *)(foe + (*(byte *)(foe + 0x7d) - 1) * 2 + 0x3c) = operand;
   default:
     goto switchD_8017aedc_default;
   }
 LAB_8017ae9c:
-  next_pc = stream + 2;
-switchD_8017aedc_default:
-  return next_pc;
   next = stream + 2;
+switchD_8017aedc_default:
+  return next;
 
 }
 
@@ -1327,38 +1358,49 @@ extern void fighter_reset_fx(int,byte*);
 ushort * ev_spark_spawn(int ctrl_g,undefined4 unused,ushort *stream)
 {
   ushort rec;
-  int ti_g;
+  int task_g;
+  int tmp;
   /* ctrl_g arrives as a guest address; stream is a host stream ptr. */
   uint8_t *ctrl = (uint8_t *)guest_at((uint32_t)ctrl_g);
+  uint8_t *task;
 
   if (*g_DAT_1f8000b1 == 0) {
     /* guest: s1 = sx8(byte@pc+1); slti s1,3 is SIGNED — negative
      * opcodes still take the alloc path (@0x80141bb4-0x80141bc4) */
-    grp = (int)(int8_t)(*stream >> 8);
-    if (grp < 3) {
-        ti_g = (int)noop_c(grp);
-        ti = (uint8_t *)guest_at((uint32_t)ti_g);
-        noop_a(grp,GU32(ctrl, 0x20) + 0x124,
-                     (uint32_t)ctrl_g,guest_of(g_DAT_801f0760));
-        rec = *stream;
-        *(uint32_t *)(ti + 0x18) = 0x80140710;
-        /* guest: sll16/sra24 -> sx8(byte@pc+1), sw @task+0x14
-         * (@0x80141c38-0x80141c44) */
-        *(int *)(ti + 0x14) = (int)(int8_t)(rec >> 8);
-      }
-    else if ((grp == 3) &&
-               (grp = fx_group_alloc(1,1,GU8(ctrl,2) + 1,0), grp != 0)) {
-        node_param_quad_set(grp,(uint32_t)ctrl_g,
-                     guest_of(g_DAT_1f8000e8 + (GU8(ctrl,2) ^ 1) * 0x108),
-                     (uint32_t)(GU8(ctrl,2) + 1),
-                     guest_of(g_DAT_801f0760));
-             (uint32_t)GU8((uint8_t *)guest_at(GU32(ctrl, 0x38)), 0x100);
     tmp = (int)(int8_t)(*stream >> 8);
+    if (tmp < 3) {
+      tmp = fx_group_alloc(1,1,0,0);
+      if (tmp != 0) {
         task_g = (int)noop_c(tmp);
         task = (uint8_t *)guest_at((uint32_t)task_g);
         noop_a(tmp,GU32(ctrl, 0x20) + 0x124,
+                     (uint32_t)ctrl_g,guest_of(g_DAT_801f0760));
+        rec = *stream;
+        *(uint32_t *)(task + 0x18) = 0x80140710;
+        *(uint32_t *)(task + 0x1c) = 0;
+        /* guest: sll16/sra24 -> sx8(byte@pc+1), sw @task+0x14
+         * (@0x80141c38-0x80141c44) */
+        *(int *)(task + 0x14) = (int)(int8_t)(rec >> 8);
+      }
+    }
+    else if ((tmp == 3) &&
                (tmp = fx_group_alloc(1,1,GU8(ctrl,2) + 1,0), tmp != 0)) {
+        task_g = (int)noop_c(tmp);
+        task = (uint8_t *)guest_at((uint32_t)task_g);
         node_param_quad_set(tmp,(uint32_t)ctrl_g,
+                     guest_of(g_DAT_1f8000e8 + (GU8(ctrl,2) ^ 1) * 0x108),
+                     (uint32_t)(GU8(ctrl,2) + 1),
+                     guest_of(g_DAT_801f0760));
+        *(uint32_t *)(task + 0x14) =
+             (uint32_t)GU8((uint8_t *)guest_at(GU32(ctrl, 0x38)), 0x100);
+        if (*(int8_t *)(ctrl + 3) == 3) {
+          *(uint32_t *)(task + 0x18) = 0x1f800000;
+          /* guest: lh @0x801f093a / lh @0x801f093e — signed 16-bit
+           * loads (@0x80141ce8/@0x80141cf8), not u32 */
+          *(int *)(task + 0x1c) = (int)*(const int16_t *)g__DAT_801f093a;
+          tmp = (int)*(const int16_t *)g__DAT_801f093e;
+          *(uint32_t *)(task + 0x24) = 0x8013f178;
+          *(int *)(task + 0x20) = tmp;
         }
     }
   }
@@ -1375,29 +1417,33 @@ static uint8_t *w22(uint8_t *c, uint8_t *m, uint32_t pc_g)
  * Consumes a 4-byte record {u8 op, u8 arg, u16 param}; returns pc+4. */
 ushort * ev_cmd_dispatch(int ctrl_g,undefined4 unused,ushort *stream)
 {
-  ushort rec;
-  undefined2 rand_v;
-  int *fx_pair;
-  uint arg;
+  ushort param16;
+  undefined2 rand_val;
+  undefined2 *fx_rec;
+  int *fx_rec2;
+  int tmp;
+  uint arg7;
+  uint param32;
+  undefined2 vec[4];
   /* ctrl_g arrives as a guest address; stream is a host stream ptr. */
   uint8_t *ctrl = (uint8_t *)guest_at((uint32_t)ctrl_g);
-  rec = stream[1];
-  rec_u = (uint)rec;
-  arg = rec_u;
+  uint8_t *motion;
+
+  param16 = stream[1];
+  param32 = (uint)param16;
   if (*g_DAT_1f8000b1 == 0) {
     switch((int)((uint)*stream << 0x10) >> 0x18) {
     case 0:
-      mo = (uint8_t *)guest_at(GU32(ctrl, 0x38));
+      motion = (uint8_t *)guest_at(GU32(ctrl, 0x38));
+      if ((*(int8_t *)(motion + 0x100) == 0) || ((param16 & 0x80) == 0)) {
+        arg7 = param32 & 0x7f;
       }
       else {
-      hit_spark_spawn(ctrl_g,arg,(int)(int8_t)(rec_u >> 8));
-      break;
-      triple_track_spawn(GU8(ctrl,2),rec_u & 0xff,(int)(int8_t)(rec_u >> 8));
-  param16 = stream[1];
-  param32 = (uint)param16;
-      motion = (uint8_t *)guest_at(GU32(ctrl, 0x38));
-        arg7 = param32 & 0x7f;
+        arg7 = param32 & 0xff;
+      }
       hit_spark_spawn(ctrl_g,arg7,(int)(int8_t)(param32 >> 8));
+      break;
+    case 1:
       triple_track_spawn(GU8(ctrl,2),param32 & 0xff,(int)(int8_t)(param32 >> 8));
       break;
     case 2:
@@ -1405,30 +1451,28 @@ ushort * ev_cmd_dispatch(int ctrl_g,undefined4 unused,ushort *stream)
        * a3 = param&0xFF = byte@pc+2 — order matters, not swapped. */
       speech_bubble_spawn((undefined4 *)guest_at(GU32(ctrl, 0x20) + 0x124),
                    *(short *)(ctrl + 0x4e) + -0x400,
-                   (int)(int8_t)(rec_u >> 8),(ushort)(rec_u & 0xff));
                    (int)(int8_t)(param32 >> 8),(ushort)(param32 & 0xff));
       break;
     case 3:
       speech_bubble_spawn((undefined4 *)guest_at(GU32(ctrl, 0x20) + 0x124),
                    *(short *)(ctrl + 0x4e) + 0x400,
-                   (int)(int8_t)(rec_u >> 8),(ushort)(rec_u & 0xff));
                    (int)(int8_t)(param32 >> 8),(ushort)(param32 & 0xff));
       break;
     case 4:
       effect_arg_set(ctrl_g);
       break;
     case 5:
-      sprite_burst_spawn(ctrl_g,(int)(short)rec);
+      sprite_burst_spawn(ctrl_g,(int)(short)param16);
       break;
     case 6:
-      confetti_burst_spawn(ctrl_g,(int)(short)rec);
-      if (*(int8_t *)((uint8_t *)guest_at(*g__DAT_1f8000c4) + 2) != 0) {
-        popup_spawn(ctrl_g,(int)(int8_t)(rec_u >> 8),rec_u & 0xff);
-      }
-      iris_wipe_spawn(ctrl_g,(int)(short)rec);
-      sprite_burst_spawn(ctrl_g,(int)(short)param16);
       confetti_burst_spawn(ctrl_g,(int)(short)param16);
+      break;
+    case 7:
+      if (*(int8_t *)((uint8_t *)guest_at(*g__DAT_1f8000c4) + 2) != 0) {
         popup_spawn(ctrl_g,(int)(int8_t)(param32 >> 8),param32 & 0xff);
+      }
+      break;
+    case 8:
       iris_wipe_spawn(ctrl_g,(int)(short)param16);
       break;
     case 9: {
@@ -1436,69 +1480,60 @@ ushort * ev_cmd_dispatch(int ctrl_g,undefined4 unused,ushort *stream)
        * offset = s0*0x50 (@0x80141f24-0x80141f74). Index stays signed —
        * guest adds sx16 to the table base, so negative params read
        * before the table exactly like the guest does. */
-      int32_t pi = (int16_t)rec;
-      mo = (uint8_t *)guest_at(GU32(ctrl, 0x38));
-      if (*(int8_t *)(mo + 0x100) != 0) {
+      int32_t pi = (int16_t)param16;
+      motion = (uint8_t *)guest_at(GU32(ctrl, 0x38));
+      if (*(int8_t *)(motion + 0x100) != 0) {
         pi = (int32_t)g_DAT_801b180c[pi];
       }
-      grp = fx_group_alloc(1,1,0,0xf);
-        noop_b(grp,GU32(ctrl, 0x20) + (uint32_t)(pi * 0x50) + 0x34,
-      motion = (uint8_t *)guest_at(GU32(ctrl, 0x38));
       tmp = fx_group_alloc(1,1,0,0xf);
+      if (tmp != 0) {
         noop_b(tmp,GU32(ctrl, 0x20) + (uint32_t)(pi * 0x50) + 0x34,
                      guest_of(g_DAT_801f0760));
       }
       break;
     }
     case 10:
-      color_rec_table_init(GU8(ctrl,3),(uint32_t)(int16_t)rec);
+      color_rec_table_init(GU8(ctrl,3),(uint32_t)(int16_t)param16);
       break;
     case 0xb:
       firework_spawn((undefined2 *)guest_at(GU32(ctrl, 0x20) +
-                        (uint32_t)((int16_t)rec * 0x50) + 0x34));
-      uint8_t *obj;
-      arg = (int)(int8_t)(rec_u >> 8) & 0x7f;
-      mo = (uint8_t *)guest_at(GU32(ctrl, 0x38));
-      if ((*(int8_t *)(mo + 0x100) != 0) &&
-         (((int)(rec_u << 0x10) >> 0x10 & 0x8000U) != 0)) {
-      }
-      grp = arg * 0x50;
-      color_rec_table_init(GU8(ctrl,3),(uint32_t)(int16_t)param16);
                         (uint32_t)((int16_t)param16 * 0x50) + 0x34));
+      break;
+    case 0xc: {
+      uint8_t *obj;
       arg7 = (int)(int8_t)(param32 >> 8) & 0x7f;
       motion = (uint8_t *)guest_at(GU32(ctrl, 0x38));
+      if ((*(int8_t *)(motion + 0x100) != 0) &&
          (((int)(param32 << 0x10) >> 0x10 & 0x8000U) != 0)) {
+        arg7 = (uint)g_DAT_801b180c[arg7];
+      }
       tmp = arg7 * 0x50;
       obj = (uint8_t *)guest_at(GU32(ctrl, 0x20));
       /* guest copies 3 u16 to its stack vec; emit_task_spawn_b reads
        * 8 bytes — keep the host vec contiguous and padded like the
        * guest frame (@0x80141e18-0x80141e50) */
-      vec[0] = *(undefined2 *)(obj + grp + 0x34);
-      vec[1] = *(undefined2 *)(obj + grp + 0x38);
-      vec[2] = *(undefined2 *)(obj + grp + 0x3c);
+      vec[0] = *(undefined2 *)(obj + tmp + 0x34);
+      vec[1] = *(undefined2 *)(obj + tmp + 0x38);
+      vec[2] = *(undefined2 *)(obj + tmp + 0x3c);
       vec[3] = 0;
-      grp = (rec_u & 0xff) * 4;
-      emit_task_spawn_b((undefined4 *)vec,
-                   *(uint32_t *)((char *)g__DAT_801f0790 + grp),
       tmp = (param32 & 0xff) * 4;
+      emit_task_spawn_b((undefined4 *)vec,
+                   *(uint32_t *)((char *)g__DAT_801f0790 + tmp),
+                   *(uint32_t *)((char *)g__DAT_801f0780 + tmp),0);
       break;
     }
     case 0xd:
       fx_rec = (undefined2 *)guest_at((uint32_t)fx_record_alloc(GU32(ctrl, 0x20) + 0x124,6,
                             0x80000010,2,*g_PTR_DAT_801b1d44));
       if (fx_rec != (undefined2 *)0x0) {
-        rand_v = (undefined2)rand_lcg();
-        *fx_rec = rand_v;
+        rand_val = (undefined2)rand_lcg();
+        *fx_rec = rand_val;
       }
       break;
     case 0xe:
-      fx_pair = (int *)guest_at((uint32_t)fx_record_alloc(GU32(ctrl, 0x20) + 0x444,0xc,
-                                   0x80000012,0x8e,guest_of(g_DAT_801b1d5c)));
-      if (fx_pair != (int *)0x0) {
-        *fx_pair = ctrl_g;
-        fx_pair[1] = (int)guest_of(g_DAT_1f8000e8 + (GU8(ctrl,2) ^ 1) * 0x108);
-        rand_val = (undefined2)rand_lcg();
       fx_rec2 = (int *)guest_at((uint32_t)fx_record_alloc(GU32(ctrl, 0x20) + 0x444,0xc,
+                                   0x80000012,0x8e,guest_of(g_DAT_801b1d5c)));
+      if (fx_rec2 != (int *)0x0) {
         *fx_rec2 = ctrl_g;
         fx_rec2[1] = (int)guest_of(g_DAT_1f8000e8 + (GU8(ctrl,2) ^ 1) * 0x108);
       }
@@ -1548,7 +1583,6 @@ EVWRAP(w19, ev19_flag27)
 EVWRAP(w20, ev20_timers)
 EVWRAP(w21, ev21_skip)
 
-/* guest handler table @0x801b4e68 (24 opcodes); name kept for resolve.c */
 evhandler_t *PTR_FUN_801b4e68[24] = {
     w0, w1, w2, w3, w4, w5, w6, w7,
     w8, w9, w10, w11, w12, w13, w14, w15,
