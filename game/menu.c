@@ -3458,10 +3458,10 @@ code_r0x8014f6c0:
             if (t0 == 8) { attr_idx = 0xff; t3 = -0xff; }
             t0 = (uint32_t)((t2 + t3) * 0x10000 | ((aux_val + (int32_t)attr_idx) & 0xffff));
             {
-              uint32_t uVar5l = 0xfefe0008;
-              int32_t iVar2l = _DAT_1f800008 + 4;
+              uint32_t aw = 0xfefe0008;
+              int32_t pd = _DAT_1f800008 + 4;
 LAB_80150558:
-              spr_attr_alloc_b((uint32_t)iVar2l,t0,uVar5l,(uint32_t)t1,aux_val,t2);
+              spr_attr_alloc_b((uint32_t)pd,t0,aw,(uint32_t)t1,aux_val,t2);
             }
           } else {
             aux_val = ((int16_t)_DAT_1f800022 * 3) / 5;
