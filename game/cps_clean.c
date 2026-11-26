@@ -10148,6 +10148,7 @@ block_80129FA8:
  * from SLES_017.22_full_01.c. */
 void cps_8012a00c(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10189,6 +10190,7 @@ block_8012A028:
  * from SLES_017.22_full_01.c. */
 void cps_8012a0a8(void)
 {
+/* UI/print thunk -> print_dispatch_guest */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10254,6 +10256,7 @@ block_8012A0E0:
  * from SLES_017.22_full_01.c. */
 void cps_8012a144(void)
 {
+/* UI/print fragment: continues at 0x8012a1e4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10308,6 +10311,7 @@ block_8012A144:
  * from SLES_017.22_full_01.c. */
 void cps_8012a1e4(void)
 {
+/* UI/print thunk -> spr_prim_tag_b */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10388,6 +10392,7 @@ block_8012A20C:
  * from SLES_017.22_full_01.c. */
 void cps_8012a284(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10437,6 +10442,7 @@ block_8012A284:
  * from SLES_017.22_full_01.c. */
 void cps_8012a328(void)
 {
+/* UI/print fragment: continues at 0x8012a3c8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10491,6 +10497,7 @@ block_8012A328:
  * from SLES_017.22_full_01.c. */
 void cps_8012a3c8(void)
 {
+/* UI/print fragment: continues at 0x8012a470 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10547,6 +10554,7 @@ block_8012A3C8:
  * from SLES_017.22_full_01.c. */
 void cps_8012a470(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10579,6 +10587,7 @@ block_8012A470:
  * from SLES_017.22_full_01.c. */
 void cps_8012a514(void)
 {
+/* UI/print thunk -> queue_slot_peek -> gpu_texclut_pkt */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10673,6 +10682,7 @@ block_8012A590:
  * from SLES_017.22_full_01.c. */
 void cps_8012a5bc(void)
 {
+/* UI/print thunk -> cmd_queue_slot_next */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10757,6 +10767,7 @@ block_8012A634:
  * from SLES_017.22_full_01.c. */
 void cps_8012a664(void)
 {
+/* UI/print fragment: continues at 0x8012a668 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10772,6 +10783,7 @@ block_8012A664:
  * from SLES_017.22_full_01.c. */
 void cps_8012a668(void)
 {
+/* UI/print fragment: continues at 0x8012A724 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10867,6 +10879,7 @@ block_8012A69C:
  * from SLES_017.22_full_01.c. */
 void cps_8012a6a4(void)
 {
+/* UI/print fragment: continues at 0x8012a6bc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10888,6 +10901,7 @@ block_8012A6A4:
  * from SLES_017.22_full_01.c. */
 void cps_8012a6bc(void)
 {
+/* UI/print fragment: continues at 0x8012A724 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10971,6 +10985,7 @@ block_8012A708:
  * from SLES_017.22_full_01.c. */
 void cps_8012a710(void)
 {
+/* UI/print fragment: continues at 0x8012A724 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11006,6 +11021,7 @@ block_8012A718:
  * from SLES_017.22_full_01.c. */
 void cps_8012a720(void)
 {
+/* UI/print fragment: continues at 0x8012a724 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11021,6 +11037,7 @@ block_8012A720:
  * from SLES_017.22_full_01.c. */
 void cps_8012a724(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11038,6 +11055,7 @@ block_8012A724:
  * from SLES_017.22_full_01.c. */
 void cps_8012a7bc(void)
 {
+/* UI/print thunk -> pad_slot_state_walk */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11159,6 +11177,7 @@ block_8012A834:
  * from SLES_017.22_full_01.c. */
 void cps_8012a868(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11181,6 +11200,7 @@ block_8012A868:
  * from SLES_017.22_full_01.c. */
 void cps_8012a918(void)
 {
+/* UI/print fragment: continues at 0x8012a92c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11200,6 +11220,7 @@ block_8012A918:
  * from SLES_017.22_full_01.c. */
 void cps_8012a92c(void)
 {
+/* UI/print thunk -> spr_attr_alloc_a */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11232,6 +11253,7 @@ block_8012A93C:
  * from SLES_017.22_full_01.c. */
 void cps_8012a944(void)
 {
+/* UI/print thunk -> dialog_mode_mirror */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11249,6 +11271,7 @@ block_8012A944:
  * from SLES_017.22_full_01.c. */
 void cps_8012a94c(void)
 {
+/* UI/print thunk -> dialog_mode_mirror */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11383,6 +11406,7 @@ block_8012A9AC:
  * from SLES_017.22_full_01.c. */
 void cps_8012a9cc(void)
 {
+/* UI/print thunk -> dialog_mode_mirror */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11432,6 +11456,7 @@ block_8012A9E8:
  * from SLES_017.22_full_01.c. */
 void cps_8012aa00(void)
 {
+/* UI/print thunk -> spr_attr_alloc_a */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11468,6 +11493,7 @@ block_8012AA20:
  * from SLES_017.22_full_01.c. */
 void cps_8012aa28(void)
 {
+/* UI/print thunk -> dialog_mode_mirror -> frame_counter_bump */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11507,6 +11533,7 @@ block_8012AA3C:
  * from SLES_017.22_full_01.c. */
 void cps_8012aa44(void)
 {
+/* UI/print fragment: continues at 0x8012aa4c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11524,6 +11551,7 @@ block_8012AA44:
  * from SLES_017.22_full_01.c. */
 void cps_8012aa4c(void)
 {
+/* UI/print thunk -> frame_counter_bump */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11552,6 +11580,7 @@ block_8012AA54:
  * from SLES_017.22_full_01.c. */
 void cps_8012aa58(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11572,6 +11601,7 @@ block_8012AA58:
  * from SLES_017.22_full_01.c. */
 void cps_8012aa7c(void)
 {
+/* UI/print fragment: continues at 0x8012AA8C */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11608,6 +11638,7 @@ block_8012AA84:
  * from SLES_017.22_full_01.c. */
 void cps_8012aa8c(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11632,6 +11663,7 @@ block_8012AA8C:
  * from SLES_017.22_full_01.c. */
 void cps_8012aac0(void)
 {
+/* UI/print fragment: continues at 0x8012AAD4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11669,6 +11701,7 @@ block_8012AACC:
  * from SLES_017.22_full_01.c. */
 void cps_8012aad4(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11686,6 +11719,7 @@ block_8012AAD4:
  * from SLES_017.22_full_01.c. */
 void cps_8012aadc(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11703,6 +11737,7 @@ block_8012AADC:
  * from SLES_017.22_full_01.c. */
 void cps_8012ab30(void)
 {
+/* UI/print thunk -> gpu_pkt_unlink_n -> gpu_stat_sign -> cd_timer_read -> gpu_graph_reset -> draw_env_timing -> gpu_draw_env_put */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11852,6 +11887,7 @@ block_8012ABB4:
  * from SLES_017.22_full_01.c. */
 void cps_8012abbc(void)
 {
+/* UI/print fragment: continues at 0x8012abc0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11867,6 +11903,7 @@ block_8012ABBC:
  * from SLES_017.22_full_01.c. */
 void cps_8012abc0(void)
 {
+/* UI/print thunk -> cd_timer_read */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11902,6 +11939,7 @@ block_8012ABDC:
  * from SLES_017.22_full_01.c. */
 void cps_8012abe8(void)
 {
+/* UI/print thunk -> gpu_load_image_cmd -> gpu_disp_mask_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12053,6 +12091,7 @@ block_8012AC9C:
  * from SLES_017.22_full_01.c. */
 void cps_8012aca0(void)
 {
+/* UI/print thunk -> gpu_clear_image_cmd */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12104,6 +12143,7 @@ block_8012ACAC:
  * from SLES_017.22_full_01.c. */
 void cps_8012acec(void)
 {
+/* UI/print thunk -> gpu_draw_otag */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12136,6 +12176,7 @@ block_8012ACF4:
  * from SLES_017.22_full_01.c. */
 void cps_8012ad04(void)
 {
+/* UI/print fragment: continues at 0x8012ad58 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12198,6 +12239,7 @@ block_8012AD48:
  * from SLES_017.22_full_01.c. */
 void cps_8012ad58(void)
 {
+/* UI/print thunk -> gpu_clear_image_cmd */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12236,6 +12278,7 @@ block_8012AD88:
  * from SLES_017.22_full_01.c. */
 void cps_8012ad8c(void)
 {
+/* UI/print thunk -> gpu_draw_otag */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12290,6 +12333,7 @@ block_8012ADA4:
  * from SLES_017.22_full_01.c. */
 void cps_8012adc0(void)
 {
+/* UI/print fragment: continues at 0x8012add8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12326,6 +12370,7 @@ block_8012ADD4:
  * from SLES_017.22_full_01.c. */
 void cps_8012add8(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12349,6 +12394,7 @@ block_8012ADD8:
  * from SLES_017.22_full_01.c. */
 void cps_8012ae14(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12395,6 +12441,7 @@ block_8012AE2C:
  * from SLES_017.22_full_01.c. */
 void cps_8012aed4(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12416,6 +12463,7 @@ block_8012AED4:
  * from SLES_017.22_full_01.c. */
 void cps_8012af90(void)
 {
+/* UI/print fragment: continues at 0x8012af94 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12431,6 +12479,7 @@ block_8012AF90:
  * from SLES_017.22_full_01.c. */
 void cps_8012af94(void)
 {
+/* UI/print thunk -> cd_timer_read -> cd_timer_read */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12470,6 +12519,7 @@ block_8012AFA8:
  * from SLES_017.22_full_01.c. */
 void cps_8012afb0(void)
 {
+/* UI/print thunk -> cd_timer_read -> cd_timer_read -> gpu_graph_reset */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12516,6 +12566,7 @@ block_8012AFD0:
  * from SLES_017.22_full_01.c. */
 void cps_8012afd4(void)
 {
+/* UI/print thunk -> gpu_stat_sign -> draw_env_timing -> gpu_draw_env_put -> gpu_disp_mask_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
