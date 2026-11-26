@@ -498,7 +498,7 @@ void memcard_tick(void)
     case '0':
       break;
     }
-    goto switchD_80157ebc_caseD_30;
+    goto case_30_80157ebc;
   }
   switch(DAT_801bef6d) {
   case '\x10':
@@ -639,7 +639,7 @@ joined_r0x80157c80:
       DAT_801bef6d = 0x20;
       return;
     }
-    goto switchD_80157ebc_caseD_30;
+    goto case_30_80157ebc;
   case '0':
     cd_cmd_issue_async(1,0);
     DAT_801bef6d = DAT_801bef6d + '\x01';
@@ -670,7 +670,7 @@ joined_r0x80157c80:
       DAT_801bef72 = (uint16_t)DAT_801bef6c;
     }
     DAT_801bef84 = cd_stamp_to_sector(&DAT_801bef8c + (short)DAT_801bef72 * 4);
-switchD_80157ebc_caseD_30:
+case_30_80157ebc:
     DAT_801bef6d = '\x10';
   }
   return;
@@ -791,19 +791,19 @@ int memcard_file_flow(int a0)
             }
             battle_session_arm(0x1f800000,0xffffffff);
             sm_state = 1;
-            goto LAB_8015f820;
+            goto bb_8015f820;
           }
         }
-        goto LAB_80160550;
+        goto bb_80160550;
       }
       if (sm_state == 0xf0) {
         deferred_cmd_post(0x203,0,0);
       }
-      else if (sm_state != 0xf1) goto LAB_80160550;
+      else if (sm_state != 0xf1) goto bb_80160550;
       sm_state = 0xff;
-      goto LAB_80160558;
+      goto bb_80160558;
     }
-LAB_8015f820:
+bb_8015f820:
     if (a0 == 0) {
       menu_stepper_state_advance(&local_c0);
     }
@@ -815,7 +815,7 @@ LAB_8015f820:
       }
       if ((local_b8 == local_ba) && ((_DAT_1f80007c & 0xe0) != 0)) {
         deferred_cmd_post(0x400,0xc,0);
-LAB_8015f8c0:
+bb_8015f8c0:
         sm_state = 0xf0;
       }
       break;
@@ -825,24 +825,24 @@ LAB_8015f8c0:
       if (local_b8 == 2) {
         slot_no = (int)local_aa;
         dlg_type = 0;
-        goto code_r0x8015ffac;
+        goto bb_8015ffac;
       }
       if (local_b8 < 3) {
         if (local_b8 == 1) {
           dlg_type = 4;
           slot_no = 0;
-LAB_8015fbfc:
+bb_8015fbfc:
           local_bd = '\x12';
         }
       }
       else if (local_b8 == 3) {
         slot_no = (int)local_a8;
         dlg_type = 4;
-        goto LAB_8015fbfc;
+        goto bb_8015fbfc;
       }
       break;
     case '\x11':
-      if ((int)ow_flag < 0) goto code_r0x8015ffac;
+      if ((int)ow_flag < 0) goto bb_8015ffac;
       scroll_offset_set(0x10,0x68);
       switch(dlg_type) {
       case 0:
@@ -888,14 +888,14 @@ LAB_8015fbfc:
           switch(dlg_type) {
           case 0:
           case 1:
-switchD_8015fbc4_caseD_0:
-            if (ow_flag == 0) goto LAB_8015fbfc;
-            goto LAB_8015fc08;
+case_0_8015fbc4:
+            if (ow_flag == 0) goto bb_8015fbfc;
+            goto bb_8015fc08;
           case 2:
           case 3:
           case 5:
-            if (a0 == 0) goto switchD_8015fbc4_caseD_0;
-            if (ow_flag == 0) goto LAB_8015fbfc;
+            if (a0 == 0) goto case_0_8015fbc4;
+            if (ow_flag == 0) goto bb_8015fbfc;
             local_bd = '\x11';
             dlg_type = 1;
             ow_flag = 1;
@@ -904,7 +904,7 @@ switchD_8015fbc4_caseD_0:
       }
       else {
         deferred_cmd_post(0x400,0xd,0);
-LAB_8015fc08:
+bb_8015fc08:
         local_bd = ' ';
       }
       break;
@@ -937,15 +937,15 @@ LAB_8015fc08:
         fmt_str = s_NOW_SAVING_TO_MEMORY_CARD__s____8012186c;
         break;
       default:
-        goto switchD_8015fc3c_default;
+        goto dflt_8015fc3c;
       }
       sprintf_core(msg_buf,fmt_str,str_arg);
-switchD_8015fc3c_default:
+dflt_8015fc3c:
       announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,msg_buf,0x10,0x1000,0);
       scroll_offset_accumulate(0,0x10);
       announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_DO_NOT_REMOVE_MEMORY_CARD___801218d0,0x10,0x1000,3)
       ;
-      goto code_r0x8015ffac;
+      goto bb_8015ffac;
     case '\x14':
       if (slot_no == 0) {
         op_sel = 0;
@@ -984,7 +984,7 @@ switchD_8015fc3c_default:
       if (a0 == 0) {
         wait_cnt = -1;
       }
-code_r0x8015ffac:
+bb_8015ffac:
       local_bd = local_bd + '\x01';
       break;
     case '\x15':
@@ -1008,10 +1008,10 @@ code_r0x8015ffac:
         fmt_str = s_CHECKING_MEMORY_CARD__s__80121938;
         break;
       default:
-        goto switchD_8015ffe4_default;
+        goto dflt_8015ffe4;
       }
       sprintf_core(msg_buf,fmt_str,str_arg);
-switchD_8015ffe4_default:
+dflt_8015ffe4:
       announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,msg_arg,0x10,0x1000,0);
       scroll_offset_accumulate(0,0x10);
       if ((_DAT_1f80007c & 0xe0) != 0) {
@@ -1033,7 +1033,7 @@ switchD_8015ffe4_default:
       else if (op_rc < 5) {
         if (op_rc != 1) {
           if (op_rc < 2) {
-            if (op_rc != 0) goto LAB_801603ec;
+            if (op_rc != 0) goto bb_801603ec;
             switch(dlg_type) {
             case 0:
               gauge_scale_fixed(*(uint8_t *)(_g_system_config_ptr + 0xe),
@@ -1053,14 +1053,14 @@ switchD_8015ffe4_default:
               if (a0 == 0) {
                 if (local_b8 != 2) {
                   if (local_b8 < 3) {
-                    if (local_b8 == 1) goto LAB_8016026c;
+                    if (local_b8 == 1) goto bb_8016026c;
                     local_bd = '\x11';
                   }
                   else {
                     if (local_b8 == 3) {
                       dlg_type = 1;
                       slot_no = (int)local_a8;
-                      goto LAB_8016028c;
+                      goto bb_8016028c;
                     }
                     local_bd = '\x11';
                   }
@@ -1070,23 +1070,23 @@ switchD_8015ffe4_default:
                 dlg_type = 0;
               }
               else {
-LAB_8016026c:
+bb_8016026c:
                 dlg_type = 1;
                 slot_no = 0;
               }
-LAB_8016028c:
+bb_8016028c:
               local_bd = '\x11';
               break;
             case 4:
               dlg_type = 1;
-              goto LAB_80160464;
+              goto bb_80160464;
             }
           }
           else if (op_rc == 2) {
             announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_DATA_ERROR____80121a24,0x10,0x1000,2);
           }
           else {
-            if (op_rc != 3) goto LAB_801603ec;
+            if (op_rc != 3) goto bb_801603ec;
             ow_flag = 1;
             if (dlg_type == 4) {
               dlg_type = 1;
@@ -1114,72 +1114,72 @@ LAB_8016028c:
         if (op_rc < 8) {
           if (op_rc == 5) {
             fmt_str = s_NO_BLOODY_ROAR_2_DATA_DETECTED___801219e4;
-            goto LAB_801603fc;
+            goto bb_801603fc;
           }
         }
         else if (op_rc == 0xf) {
           dlg_type = 3;
-LAB_80160488:
+bb_80160488:
           ow_flag = 1;
           local_bd = '\x11';
           break;
         }
-LAB_801603ec:
+bb_801603ec:
         fmt_str = s_ERROR___80121a34;
       }
-LAB_801603fc:
+bb_801603fc:
       announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,fmt_str,0x10,0x1000,2);
       break;
     case '\x16':
       if (dlg_type == 0) {
-        if (a0 != 0) goto LAB_8015f8c0;
-        if (op_rc == 0) goto LAB_80160510;
+        if (a0 != 0) goto bb_8015f8c0;
+        if (op_rc == 0) goto bb_80160510;
         if (local_b8 != 1) {
           local_bd = '\0';
           break;
         }
-        goto LAB_80160504;
+        goto bb_80160504;
       }
       if (op_rc == 5) {
-LAB_80160494:
-        if (a0 != 0) goto LAB_8015f8c0;
-LAB_801604a4:
-        if (op_rc != 0) goto LAB_801604f4;
-        goto LAB_80160510;
+bb_80160494:
+        if (a0 != 0) goto bb_8015f8c0;
+bb_801604a4:
+        if (op_rc != 0) goto bb_801604f4;
+        goto bb_80160510;
       }
       if (5 < op_rc) {
-        if (op_rc == 0xf) goto LAB_80160494;
-LAB_80160470:
-        if (a0 == 0) goto LAB_801604a4;
+        if (op_rc == 0xf) goto bb_80160494;
+bb_80160470:
+        if (a0 == 0) goto bb_801604a4;
         dlg_type = 1;
-        goto LAB_80160488;
+        goto bb_80160488;
       }
       if (op_rc < 4) {
-        if ((op_rc < 1) && (op_rc == 0)) goto LAB_80160494;
-        goto LAB_80160470;
+        if ((op_rc < 1) && (op_rc == 0)) goto bb_80160494;
+        goto bb_80160470;
       }
       dlg_type = 2;
-LAB_80160464:
+bb_80160464:
       ow_flag = 1;
       local_bd = '\x11';
       break;
     case ' ':
     case '!':
-      if (a0 != 0) goto LAB_8015f8c0;
-LAB_801604f4:
+      if (a0 != 0) goto bb_8015f8c0;
+bb_801604f4:
       if (local_b8 == 1) {
-LAB_80160504:
+bb_80160504:
         *(uint8_t *)(_g_system_config_ptr + 0x22) = 0;
       }
-LAB_80160510:
+bb_80160510:
       local_bd = '\0';
     }
     if (a0 == 0) {
       hud_gauge_render(0x1f800000,_DAT_1f800008,7);
     }
-LAB_80160550:
+bb_80160550:
     frame_tick(0x1f800000);
-LAB_80160558:
+bb_80160558:
     if (sm_state == 0xff) {
       br2_guest_frame_free();
       return sm_ret;
@@ -1293,12 +1293,12 @@ void deferred_cmd_drain(uint32_t a0,int a1)
           }
         }
         else if (cmdcls == 0x300) {
-          if (cls300_seen) goto LAB_80156ebc;
+          if (cls300_seen) goto bb_80156ebc;
           cls300_seen = true;
           a1 = ret_one(cmdw & 0xff,(int)*rec_s);
         }
         else if (cmdcls == 0x400) {
-          if (cls400_seen) goto LAB_80156ebc;
+          if (cls400_seen) goto bb_80156ebc;
           cls400_seen = true;
           a1 = deferred_cmd_exec(cmdw & 0xff,(int)*rec_s);
         }
@@ -1311,7 +1311,7 @@ void deferred_cmd_drain(uint32_t a0,int a1)
         rec_s[1] = rec_s[1] + -1;
       }
     }
-LAB_80156ebc:
+bb_80156ebc:
     slot_i = slot_i + 1;
     rec_s = rec_s + 3;
     rec_u = rec_u + 3;
@@ -1416,7 +1416,7 @@ void dbg_marker_mode_set(int a0)
   }
   if (a0 < 2) {
     if (a0 == 0) {
-LAB_8018bb4c:
+bb_8018bb4c:
       i = 0;
       do {
         j = 0;
@@ -1434,7 +1434,7 @@ LAB_8018bb4c:
     }
   }
   else {
-    if (a0 == 2) goto LAB_8018bb4c;
+    if (a0 == 2) goto bb_8018bb4c;
     if (a0 == 3) {
       DAT_801b55d0 = 1;
       DAT_801f5968 = 0;
@@ -1753,7 +1753,7 @@ uint32_t mc_pad_button_handler(uint8_t *a0)
     if ((*(uint16_t *)(a0 + 0x6a) & 0x840) == 0) return handled;
     chk_rc = ret_zero_b(1);
     if (chk_rc < 0) return handled;
-    if (*a0 == 5) { snd_id = 0x80; goto LAB_801533b0; }
+    if (*a0 == 5) { snd_id = 0x80; goto bb_801533b0; }
   } else {
     if (3 < a0[0x9b]) return 0;
     if ((*(uint16_t *)(a0 + 0x68) & 0x840) != 0) {
@@ -1763,10 +1763,10 @@ uint32_t mc_pad_button_handler(uint8_t *a0)
       handled = 1;
     }
     if ((*(uint16_t *)(a0 + 0x6a) & 0x840) == 0) return handled;
-    if (*a0 == 5) { snd_id = 0x80; goto LAB_801533b0; }
+    if (*a0 == 5) { snd_id = 0x80; goto bb_801533b0; }
   }
   snd_id = 0xc;
-LAB_801533b0:
+bb_801533b0:
   deferred_cmd_post(0x400,snd_id,0);
   mc_slot_action(a0,1);
   return handled | 2;
