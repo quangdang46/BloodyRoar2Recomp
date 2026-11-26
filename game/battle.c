@@ -9637,7 +9637,6 @@ void target_angles_set(short *dst,int idx)
 
 void target_depth_set(short *dst,int idx)
 {
-  undefined4 uVar1;
   int dep2;
   int dep;
   _DAT_1f80038c = *dst - *(short *)guest_at((uint32_t)(uintptr_t)((idx + 0x4a)));
@@ -9673,7 +9672,6 @@ void target_depth_set(short *dst,int idx)
 void pair_depth_set(short *pa,short *pb,int idx)
 {
   short dmin;
-  undefined4 uVar2;
   int az;
   int ay;
   int ax;
@@ -12053,27 +12051,27 @@ int * prim_list_gte_invoke(int *a0,undefined4 a1,undefined4 a2,int a3,undefined4
   undefined4 t0;
   undefined4 t1;
   undefined4 t2;
-  undefined4 unaff_s0;
-  undefined4 unaff_s1;
-  undefined4 unaff_s2;
+  undefined4 in_s0;
+  undefined4 in_s1;
+  undefined4 in_s2;
   int *rp;
-  undefined4 unaff_s3;
-  undefined4 unaff_s4;
-  undefined4 unaff_s5;
-  undefined4 unaff_s6;
+  undefined4 in_s3;
+  undefined4 in_s4;
+  undefined4 in_s5;
+  undefined4 in_s6;
   int n;
-  undefined4 unaff_retaddr;
+  undefined4 in_ra;
   if (0 < a3) {
     setCopControlWord(2,0xe800,0x555);
     setCopControlWord(2,0xf000,0x400);
-    _DAT_1f8003e0 = unaff_s6;
-    _DAT_1f8003e4 = unaff_s5;
-    _DAT_1f8003e8 = unaff_s4;
-    _DAT_1f8003ec = unaff_s3;
-    _DAT_1f8003f0 = unaff_s2;
-    _DAT_1f8003f4 = unaff_s1;
-    _DAT_1f8003f8 = unaff_s0;
-    _DAT_1f8003fc = unaff_retaddr;
+    _DAT_1f8003e0 = in_s6;
+    _DAT_1f8003e4 = in_s5;
+    _DAT_1f8003e8 = in_s4;
+    _DAT_1f8003ec = in_s3;
+    _DAT_1f8003f0 = in_s2;
+    _DAT_1f8003f4 = in_s1;
+    _DAT_1f8003f8 = in_s0;
+    _DAT_1f8003fc = in_ra;
     do {
       if (((short)a0[3] == 0) && (*a0 != 0)) {
         gte_xform3_ip((undefined4 *)guest_at((uint32_t)arg6),(undefined2 *)guest_at((uint32_t)(*a0 + 0x20)));
@@ -13499,20 +13497,20 @@ int prim_task_run(int rec,undefined4 a1,undefined4 a2,int mode)
   undefined4 sv_s2;
   undefined4 sv_s1;
   undefined4 sv_s0;
-  undefined4 unaff_s0;
-  undefined4 unaff_s1;
-  undefined4 unaff_s2;
+  undefined4 in_s0;
+  undefined4 in_s1;
+  undefined4 in_s2;
   int *pi;
-  undefined4 unaff_s3;
-  undefined4 unaff_s6;
+  undefined4 in_s3;
+  undefined4 in_s6;
   int n;
-  undefined4 unaff_retaddr;
-  sv_ra = unaff_retaddr;
-  sv_s6 = unaff_s6;
-  sv_s3 = unaff_s3;
-  sv_s2 = unaff_s2;
-  sv_s1 = unaff_s1;
-  sv_s0 = unaff_s0;
+  undefined4 in_ra;
+  sv_ra = in_ra;
+  sv_s6 = in_s6;
+  sv_s3 = in_s3;
+  sv_s2 = in_s2;
+  sv_s1 = in_s1;
+  sv_s0 = in_s0;
   t1 = _DAT_1f8003fc;
   t2 = _DAT_1f8003f8;
   t3 = _DAT_1f8003f4;
@@ -13616,31 +13614,31 @@ int * prim_list_persp_step(int *a0,undefined4 a1,undefined4 a2,int a3,undefined4
   undefined4 in_t5;
   undefined4 in_t6;
   undefined4 in_t7;
-  undefined4 unaff_s0;
-  undefined4 unaff_s1;
-  undefined4 unaff_s2;
+  undefined4 in_s0;
+  undefined4 in_s1;
+  undefined4 in_s2;
   int *rp;
-  undefined4 unaff_s3;
-  undefined4 unaff_s4;
-  undefined4 unaff_s5;
-  undefined4 unaff_s6;
-  undefined4 unaff_s7;
+  undefined4 in_s3;
+  undefined4 in_s4;
+  undefined4 in_s5;
+  undefined4 in_s6;
+  undefined4 in_s7;
   undefined4 in_t8;
-  undefined4 unaff_retaddr;
+  undefined4 in_ra;
   if (0 < a3) {
     _DAT_1f8003d4 = arg5;
     _DAT_1f8003d0 = arg7;
     _DAT_1f8003cc = arg8;
     _DAT_1f8003d8 = a1;
-    _DAT_1f8003dc = unaff_s7;
-    _DAT_1f8003e0 = unaff_s6;
-    _DAT_1f8003e4 = unaff_s5;
-    _DAT_1f8003e8 = unaff_s4;
-    _DAT_1f8003ec = unaff_s3;
-    _DAT_1f8003f0 = unaff_s2;
-    _DAT_1f8003f4 = unaff_s1;
-    _DAT_1f8003f8 = unaff_s0;
-    _DAT_1f8003fc = unaff_retaddr;
+    _DAT_1f8003dc = in_s7;
+    _DAT_1f8003e0 = in_s6;
+    _DAT_1f8003e4 = in_s5;
+    _DAT_1f8003e8 = in_s4;
+    _DAT_1f8003ec = in_s3;
+    _DAT_1f8003f0 = in_s2;
+    _DAT_1f8003f4 = in_s1;
+    _DAT_1f8003f8 = in_s0;
+    _DAT_1f8003fc = in_ra;
     do {
       if (((short)a0[3] == 0) && (*a0 != 0)) {
         vp = *a0 + 0x20;
@@ -14290,8 +14288,8 @@ void tween_seq_step(short *seq)
   short sVar1;
   byte *pbVar2;
   int iVar3;
-  uint uVar4;
-  byte bVar5;
+  uint op;
+  byte arg;
   int iVar6;
   int unaff_gp = (int)guest_gp();
   if ((((*(int *)guest_at((uint32_t)(uintptr_t)((unaff_gp + 0x44) ))!= 1) && (seq != (short *)0x0)) && (-1 < seq[0x22])) &&
@@ -14304,19 +14302,19 @@ LAB_801aa55c:
       do {
         pbVar2 = (byte *)guest_at((uint32_t)(uintptr_t)((seq[0x1d] * 2 + *(int *)guest_at((uint32_t)(uintptr_t)((seq[0x1c] * 4 + *(int *)(seq + 0x1a))))
                          )));
-        bVar5 = *pbVar2;
-        uVar4 = (int)*(short *)pbVar2 & 0xff00;
-        if (uVar4 == 0x2000) {
+        arg = *pbVar2;
+        op = (int)*(short *)pbVar2 & 0xff00;
+        if (op == 0x2000) {
           seq[0x22] = seq[0x22] | 0x100;
           return;
         }
-        if (0x2000 < uVar4) {
-          if (uVar4 == 0x4000) {
+        if (0x2000 < op) {
+          if (op == 0x4000) {
             seq[2] = -1;
             seq[0x22] = -1;
             return;
           }
-          if (uVar4 == 0x8000) {
+          if (op == 0x8000) {
             seq[2] = -2;
             seq[0x22] = -1;
             return;
@@ -14324,24 +14322,24 @@ LAB_801aa55c:
 LAB_801aa618:
           if (seq[0x22] == 0) {
 LAB_801aa65c:
-            if ((int)((uint)bVar5 << 0x18) < 0) {
+            if ((int)((uint)arg << 0x18) < 0) {
               seq[0x1f] = -1;
-              bVar5 = -bVar5;
+              arg = -arg;
             }
             else {
               seq[0x1f] = 1;
             }
           }
           else if (seq[0x22] == 1) {
-            if ((int)(char)bVar5 != (int)seq[0x23]) goto LAB_801aa65c;
+            if ((int)(char)arg != (int)seq[0x23]) goto LAB_801aa65c;
             seq[0x1d] = 0;
             seq[0x22] = 0;
             seq[0x1c] = seq[0x24];
             goto LAB_801aa55c;
           }
-          seq[7] = (short)((char)bVar5 + -1);
-          seq[0x1e] = (short)(char)bVar5;
-          seq[5] = *(short *)guest_at((uint32_t)(uintptr_t)(((((char)bVar5 + -1) * 0x10000 >> 0x10) * 0x14 +
+          seq[7] = (short)((char)arg + -1);
+          seq[0x1e] = (short)(char)arg;
+          seq[5] = *(short *)guest_at((uint32_t)(uintptr_t)(((((char)arg + -1) * 0x10000 >> 0x10) * 0x14 +
                                   *(int *)(seq + 0xc) + 4) ))+ -1;
           *(undefined4 *)(seq + 10) =
                *(undefined4 *)guest_at((uint32_t)(uintptr_t)((seq[7] * 0x14 + *(int *)(seq + 0xc) + 0x10)));
@@ -14369,9 +14367,9 @@ LAB_801aa65c:
           }
           break;
         }
-        if (uVar4 == 0x100) goto LAB_801aa600;
-        if (uVar4 != 0x200) goto LAB_801aa618;
-        seq[0x1c] = (short)(char)bVar5;
+        if (op == 0x100) goto LAB_801aa600;
+        if (op != 0x200) goto LAB_801aa618;
+        seq[0x1c] = (short)(char)arg;
         seq[0x1d] = 0;
       } while( true );
     }
@@ -14416,7 +14414,7 @@ LAB_801aa65c:
   }
   return;
 LAB_801aa600:
-  sVar1 = (short)(char)bVar5;
+  sVar1 = (short)(char)arg;
   goto LAB_801aa558;
 
 }
