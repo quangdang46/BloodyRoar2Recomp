@@ -96121,7 +96121,8 @@ block_8019E4A0:
 }
 
 /* cps_8019e4c8 — clean CPS transliteration of br2eu_func_8019E4C8 (guest 0x8019e4c8)
- * from SLES_017.22_full_48.c. */
+ * from SLES_017.22_full_48.c.
+ * cd_kobj_b56_commit piece -> cpu_critical_enter -> bios_tramp_a044. */
 void cps_8019e4c8(void)
 {
 /* cd_kobj_b56_commit piece -> cpu_critical_enter -> bios_tramp_a044 */
@@ -96217,7 +96218,8 @@ block_8019E548:
 }
 
 /* cps_8019e55c — clean CPS transliteration of br2eu_func_8019E55C (guest 0x8019e55c)
- * from SLES_017.22_full_48.c. */
+ * from SLES_017.22_full_48.c.
+ * cd_kobj_b57_commit piece -> cpu_critical_enter -> bios_tramp_a044. */
 void cps_8019e55c(void)
 {
 /* cd_kobj_b57_commit piece -> cpu_critical_enter -> bios_tramp_a044 */
