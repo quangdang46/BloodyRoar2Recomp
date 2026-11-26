@@ -5460,6 +5460,10 @@ void cps_801286cc(void)
     }
     /* Address: 0x801286CC, Size: 108 bytes, Blocks: 3 */
 
+    /* bank-select copy 2: v0=((v0*15*16)+a0) dest; copy a2->v0 16B/iter
+       until a3; then a3=a1+4324,a2=a1+5076, a0=0x801E0000+11292-7344;
+       v0=(byte[t0+5]&1)*756 stride calc -> 0x80128738. CPS-blocked. */
+
     v0 = ((((v0 << 3) - v1) << 4) + a0);
 
 copy_loop:
@@ -5518,6 +5522,11 @@ void cps_80128738(void)
         }
     }
     /* Address: 0x80128738, Size: 108 bytes, Blocks: 3 */
+
+    /* bank-select copy 3: copy a3->v0 16B/iter until a2=a1+
+       5076; tail word; then half[a1+2]->half[t3+148]; unpack
+       flags=word[a1+9048] bits -> half[word[t0+24]+572/452/652]
+       etc.; -> 0x80128814. CPS-blocked. */
 
     v0 = v0 + a0;
 
@@ -5581,6 +5590,11 @@ void cps_801287a4(void)
     }
     /* Address: 0x801287A4, Size: 112 bytes, Blocks: 3 */
 
+    /* bank-select copy 4: copy a2->v0 16B/iter until t1=a1+
+       5832; tail word; half[a1+2]->half[t3+148]; flags=
+       word[a1+9048]; bits0..2 -> half[word[t0+24]+572/452/652];
+       -> 0x80128814. CPS-blocked. */
+
     v0 = v0 + a0;
 
 copy_loop:
@@ -5633,6 +5647,10 @@ void cps_80128814(void)
 
     /* Address: 0x80128814, Size: 108 bytes, Blocks: 1 */
 
+    /* flag-unpack tail: flags bits 2..7 -> half[word[t0/t2+24]
+       +652/612/572/452]; word[0x801F0000+196]=word[+8]=-1; ->
+       0x80128880. CPS-blocked. */
+
     flags = v1;
     v0 = v0 & 1u;
     cpu->write_half(a0 + 652, (uint16_t)v0);
@@ -5666,6 +5684,9 @@ void cps_80128880(void)
   if (!cpu) return;
 
     /* Address: 0x80128880, Size: 24 bytes, Blocks: 1 */
+
+    /* sentinel write + exit: half[v0+198]=half[v0+10]=-2;
+       v0=half[a1]; jr ra */
 
 block_80128880:
     v1 = -2;
@@ -5785,6 +5806,10 @@ void cps_80128960(void)
         }
     }
     /* Address: 0x80128960, Size: 84 bytes, Blocks: 4 */
+
+    /* counter step: half[s0+6]=v0+1 (sign-ext a2); jal
+       0x80127C60; half[s0+8]=200, half[s0+2]++ wrap at 3->0;
+       half[s0]=v0(1); epilogue. CPS-blocked. */
 
 block_80128960:
     v0 = v0 + 1;
@@ -6206,6 +6231,9 @@ void cps_80128c68(void)
 
     /* Address: 0x80128C68, Size: 32 bytes, Blocks: 1 */
 
+    /* 16B block copy variant: word[v0..+12]=word[v1..+12]; ->
+       0x80128C88. CPS-blocked. */
+
 block_80128C68:
     a3 = cpu->read_word(v1);
     t0 = cpu->read_word(v1 + 4);
@@ -6552,6 +6580,8 @@ void cps_80128d7c(void)
 
     /* Address: 0x80128D7C, Size: 28 bytes, Blocks: 1 */
 
+    /* epilogue: pop s0-s3, ra (sp += 40), jr ra */
+
 block_80128D7C:
     ra = cpu->read_word(sp + 32);
     s3 = cpu->read_word(sp + 28);
@@ -6573,6 +6603,9 @@ void cps_80128dcc(void)
   if (!cpu) return;
 
     /* Address: 0x80128DCC, Size: 32 bytes, Blocks: 1 */
+
+    /* 16B block copy variant: word[a2..+12]=word[v1..+12]; ->
+       0x80128DEC. CPS-blocked. */
 
 block_80128DCC:
     t2 = cpu->read_word(v1);
@@ -6935,6 +6968,9 @@ void cps_80128f58(void)
     }
     /* Address: 0x80128F58, Size: 64 bytes, Blocks: 3 */
 
+    /* copy loop tail + call: 16B/iter v1->v0 until a1; then
+       jal 0x80128268(a1=4); half[s0+6]=v0; epilogue. CPS-blocked. */
+
 block_80128F58:
     t0 = cpu->read_word(v1 + 8);
     t1 = cpu->read_word(v1 + 12);
@@ -7079,6 +7115,10 @@ void cps_80128fb8(void)
   if (!cpu) return;
 
     /* Address: 0x80128FB8, Size: 28 bytes, Blocks: 1 */
+
+    /* countdown piece: v1=0; v0=word[a0+204]; a2++; a3=half
+       [v0+2]; a0=0x801C0000+18368; a2<=0 -> 0x80128FF8 else
+       0x80128FD4. CPS-blocked. */
 
 block_80128FB8:
     v1 = zero;
@@ -7255,6 +7295,10 @@ void cps_80129050(void)
         }
     }
     /* Address: 0x80129050, Size: 124 bytes, Blocks: 3 */
+
+    /* table copy: dest=0x80200000+(v1*8+a1)*4; copy
+       0x801C15F8+11680.. src 16B/iter; tail 8B; then v0=a1*45*4-45
+       stride calc; a0=0x80202DA8; -> 0x801290CC. CPS-blocked. */
 
 block_80129050:
     v1 = v1 << 3;
