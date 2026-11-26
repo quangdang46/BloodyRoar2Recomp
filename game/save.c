@@ -9094,31 +9094,31 @@ int op_node_count16(uint32_t a0)
 void op_node_rebucket(uint32_t a0,uint32_t a1)
 {
   int32_t tidx;
-  uint32_t a2, v1, v0, slot;
+  uint32_t a2, lnk_a, lnk_b, slot;
   /* guest reads lb(a0+0x14) and forms a2 before the a0/a1 guards */
   tidx = *(int8_t *)guest_at(a0 + 0x14);
   a2 = 0x801ff398 + (uint32_t)(tidx * 72);
   if (a0 == 0) return;
   if (a1 >= 0x10) return;
-  v1 = *(uint32_t *)guest_at(a0 + 0);
-  if (v1 != 0) {
-    v0 = *(uint32_t *)guest_at(a0 + 4);
-    *(uint32_t *)guest_at(v1 + 4) = v0;
+  lnk_a = *(uint32_t *)guest_at(a0 + 0);
+  if (lnk_a != 0) {
+    lnk_b = *(uint32_t *)guest_at(a0 + 4);
+    *(uint32_t *)guest_at(lnk_a + 4) = lnk_b;
   }
-  v1 = *(uint32_t *)guest_at(a0 + 4);
-  if (v1 != 0) {
-    v0 = *(uint32_t *)guest_at(a0 + 0);
-    *(uint32_t *)guest_at(v1 + 0) = v0;
+  lnk_a = *(uint32_t *)guest_at(a0 + 4);
+  if (lnk_a != 0) {
+    lnk_b = *(uint32_t *)guest_at(a0 + 0);
+    *(uint32_t *)guest_at(lnk_a + 0) = lnk_b;
   } else {
-    v0 = (uint32_t)*(int8_t *)guest_at(a0 + 0x16) * 4 + a2;
-    v1 = *(uint32_t *)guest_at(a0 + 0);
-    *(uint32_t *)guest_at(v0) = v1;
+    lnk_b = (uint32_t)*(int8_t *)guest_at(a0 + 0x16) * 4 + a2;
+    lnk_a = *(uint32_t *)guest_at(a0 + 0);
+    *(uint32_t *)guest_at(lnk_b) = lnk_a;
   }
   slot = a2 + a1 * 4;
-  v0 = *(uint32_t *)guest_at(slot);
-  if (v0 != 0) {
-    *(uint32_t *)guest_at(v0 + 4) = a0;
-    *(uint32_t *)guest_at(a0 + 0) = v0;
+  lnk_b = *(uint32_t *)guest_at(slot);
+  if (lnk_b != 0) {
+    *(uint32_t *)guest_at(lnk_b + 4) = a0;
+    *(uint32_t *)guest_at(a0 + 0) = lnk_b;
   } else {
     *(uint32_t *)guest_at(a0 + 0) = 0;
   }
@@ -10419,8 +10419,8 @@ uint32_t dev_cmd_seq(uint32_t rec, uint32_t a1)
      * FALLS THROUGH to the 0x801A1C58 recheck below (not straight to
      * send) — a drained-to-zero slot still runs the -1 + callbacks. */
     for (;;) {
-      uint32_t s  = br2_ld32(0x801be7c0u);
-      uint32_t tp = 0x801be7d8u + (s << 2);
+      uint32_t slot_b  = br2_ld32(0x801be7c0u);
+      uint32_t tp = 0x801be7d8u + (slot_b << 2);
       uint32_t cnt = (uint32_t)(int32_t)br2_ld32(tp);
       uint32_t idx = cnt - 1u;
       uint32_t arg;
