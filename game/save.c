@@ -8774,19 +8774,19 @@ static void guard_ctx_save(void)
 /* Shared OT-insert tail for both variants. tag = the 0x4000000/0x5000000/
  * 0x6000000/0x8000000 OR'd into the old head; 0x1000000 marks the chained
  * second record; addresses are guest addresses end-to-end. */
-static void guard_ot_fixed(uint32_t a0,uint32_t s0,uint32_t s4,
-                           uint32_t s6,uint32_t tag,uint32_t *s4p)
+static void guard_ot_fixed(uint32_t a0,uint32_t ot,uint32_t ot2,
+                           uint32_t flags,uint32_t tag,uint32_t *ot2_next)
 {
-  uint32_t t1;
-  uint32_t t5 = *(uint32_t *)guest_at(a0);
-  *(uint32_t *)guest_at(s0) = tag | t5;
-  t1 = s0 & 0xffffffu;
-  *(uint32_t *)guest_at(a0) = t1;
-  if ((s6 & 0x100) != 0) {
-    *(uint32_t *)guest_at(s4) = 0x1000000u | t1;
-    t1 = s4 & 0xffffffu;
-    *(uint32_t *)guest_at(a0) = t1;
-    *s4p = s4 + 8;
+  uint32_t addr24;
+  uint32_t tag_prev = *(uint32_t *)guest_at(a0);
+  *(uint32_t *)guest_at(ot) = tag | tag_prev;
+  addr24 = ot & 0xffffffu;
+  *(uint32_t *)guest_at(a0) = addr24;
+  if ((flags & 0x100) != 0) {
+    *(uint32_t *)guest_at(ot2) = 0x1000000u | addr24;
+    addr24 = ot2 & 0xffffffu;
+    *(uint32_t *)guest_at(a0) = addr24;
+    *ot2_next = ot2 + 8;
   }
 }
 
@@ -10279,15 +10279,15 @@ int32_t fifo_space_check(void)
   uint32_t a0 = (uint32_t)(uint16_t)psx_read_half(0x1f801120);
   uint32_t base = *(uint32_t *)guest_at(0x801ff260);
   uint32_t lim2 = *(uint32_t *)guest_at(0x801ff264);
-  uint32_t v0;
+  uint32_t free;
   if (a0 < base) {
     uint32_t c2 = (uint32_t)(uint16_t)psx_read_half(0x1f801128);
     a0 += (c2 != 0) ? c2 : 0x10000u;
   }
-  v0 = a0 - base;
+  free = a0 - base;
   if (((uint16_t)psx_read_half(0x1f801124) & 0x200) == 0)
-    v0 >>= 3;
-  return (v0 < lim2) ? 0 : 1;
+    free >>= 3;
+  return (free < lim2) ? 0 : 1;
 }
 
 /* dev_cmd_commit — SIO/device command commit (guest 0x801A23FC, 144B,
@@ -10336,14 +10336,14 @@ uint32_t dev_stat_bit1_wait(void)
 {
   extern int br2_bail_pending(void);
   uint32_t dev = br2_ld32(0x801be7e4u);
-  uint32_t v0;
+  uint32_t stat;
   for (;;) {
-    v0 = (uint32_t)br2_ld16(dev + 4u) & 2u;
-    if (v0 != 0) break;
-    if (br2_bail_pending()) return v0;
+    stat = (uint32_t)br2_ld16(dev + 4u) & 2u;
+    if (stat != 0) break;
+    if (br2_bail_pending()) return stat;
     br2_irq_poll();
   }
-  return v0;
+  return stat;
 }
 
 /* dev_cmd_seq — SIO/memory-card per-slot command sequencer (guest
