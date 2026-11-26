@@ -2325,6 +2325,7 @@ LAB_80131f4c:
   return;
 
 }
+
 void battle_hud_draw(int param_1,int param_2,int param_3,int param_4)
 {
   short sVar1;
