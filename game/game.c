@@ -522,10 +522,10 @@ static void entry_0x80126178(void)
      *   jal bzero_tramp(0x801FF654, a1);  jal main(0x80126234); break.
      * sp/gp/fp setup is skipped: the runtime owns cpu->gpr[29] and the
      * clean ports address globals absolutely via guest_at(). */
-    uint32_t *puVar1 = (uint32_t *)guest_at(0x801ceef0);
-    uint32_t *end    = (uint32_t *)guest_at(0x801ff650);
+    uint32_t *p    = (uint32_t *)guest_at(0x801ceef0);
+    uint32_t *end  = (uint32_t *)guest_at(0x801ff650);
     uint32_t lit, v1, size;
-    while (puVar1 < end) *puVar1++ = 0;
+    while (p < end) *p++ = 0;
     *(uint32_t *)guest_at(0x801ceef0) = 0;   /* saved-ra slot (unused) */
     lit  = *(uint32_t *)guest_at(0x80126228); /* literal pool: 2MB top */
     v1   = *(uint32_t *)guest_at(0x801be720);
