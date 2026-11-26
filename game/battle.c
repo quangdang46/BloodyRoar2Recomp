@@ -14807,145 +14807,145 @@ void prim_tag_set(int prim)
 
 }
 
-void prim_packet_init(int pkt,int a1,int a2,uint fl)
+void prim_packet_init(int pkt,int flag1,int flag2,uint fl)
 {
-  uint uVar1;
+  uint pw;
   *(undefined1 *)guest_at((uint32_t)(uintptr_t)((pkt + 3) ))= 1;
-  uVar1 = 0xe1000000;
-  if (a2 != 0) {
-    uVar1 = 0xe1000200;
+  pw = 0xe1000000;
+  if (flag2 != 0) {
+    pw = 0xe1000200;
   }
   fl = fl & 0x9ff;
-  if (a1 != 0) {
+  if (flag1 != 0) {
     fl = fl | 0x400;
   }
-  *(uint *)guest_at((uint32_t)(uintptr_t)((pkt + 4) ))= uVar1 | fl;
+  *(uint *)guest_at((uint32_t)(uintptr_t)((pkt + 4) ))= pw | fl;
   return;
 
 }
 
-void verts_offset_apply(undefined4 *v,uint *c,int n,short *off,int arg5, undefined4 arg6)
+void verts_offset_apply(undefined4 *vp,uint *col,int tbl,short *idx,int cnt, undefined4 fq)
 {
-  uint *puVar1;
-  short sVar2;
-  short *psVar3;
-  uint uVar4;
-  undefined4 uVar5;
-  undefined4 uVar6;
-  undefined4 uVar7;
-  undefined4 uVar8;
-  setCopReg(2,0x4000,arg6);
-  if (arg5 != 0) {
+  uint *c1;
+  short tmp;
+  short *dst;
+  uint cc;
+  undefined4 rx;
+  undefined4 ry;
+  undefined4 rz;
+  undefined4 vv;
+  setCopReg(2,0x4000,fq);
+  if (cnt != 0) {
     do {
-      uVar4 = *c;
-      arg5 = arg5 + -1;
-      puVar1 = c + 1;
-      c = c + 2;
-      setCopReg(2,0x4800,uVar4 & 0xffff);
-      setCopReg(2,0x5000,uVar4 >> 0x10);
-      uVar8 = *v;
-      setCopReg(2,0x5800,(int)(short)*puVar1);
+      cc = *col;
+      cnt = cnt + -1;
+      c1 = col + 1;
+      col = col + 2;
+      setCopReg(2,0x4800,cc & 0xffff);
+      setCopReg(2,0x5000,cc >> 0x10);
+      vv = *vp;
+      setCopReg(2,0x5800,(int)(short)*c1);
       copFunction(2,0x98003d);
-      sVar2 = *off;
-      off = off + 1;
-      psVar3 = (short *)guest_at((uint32_t)(uintptr_t)((sVar2 * 8 + n)));
-      uVar5 = getCopReg(2,0xc800);
-      sVar2 = *(short *)(v + 1);
-      v = v + 2;
-      uVar6 = getCopReg(2,0xd000);
-      uVar7 = getCopReg(2,0xd800);
-      *psVar3 = (short)uVar8 + (short)uVar5;
-      psVar3[1] = (short)((uint)uVar8 >> 0x10) + (short)uVar6;
-      psVar3[2] = sVar2 + (short)uVar7;
-    } while (0 < arg5);
+      tmp = *idx;
+      idx = idx + 1;
+      dst = (short *)guest_at((uint32_t)(uintptr_t)((tmp * 8 + tbl)));
+      rx = getCopReg(2,0xc800);
+      tmp = *(short *)(vp + 1);
+      vp = vp + 2;
+      ry = getCopReg(2,0xd000);
+      rz = getCopReg(2,0xd800);
+      *dst = (short)vv + (short)rx;
+      dst[1] = (short)((uint)vv >> 0x10) + (short)ry;
+      dst[2] = tmp + (short)rz;
+    } while (0 < cnt);
   }
   return;
 
 }
 
-void verts_rgb_apply(uint *v,uint *c,int n,short *off,int arg5, undefined4 arg6)
+void verts_rgb_apply(uint *vp,uint *col,int tbl,short *idx,int cnt, undefined4 fq)
 {
-  short sVar1;
-  char *pcVar2;
-  uint uVar3;
-  uint uVar4;
-  undefined4 uVar5;
-  undefined4 uVar6;
-  undefined4 uVar7;
-  setCopReg(2,0x4000,arg6);
-  if (arg5 != 0) {
+  short vi;
+  char *dst;
+  uint rgb;
+  uint cd;
+  undefined4 rx;
+  undefined4 ry;
+  undefined4 rz;
+  setCopReg(2,0x4000,fq);
+  if (cnt != 0) {
     do {
-      uVar3 = *v;
-      v = v + 1;
-      uVar4 = *c;
-      c = c + 1;
-      sVar1 = *off;
-      arg5 = arg5 + -1;
-      setCopReg(2,0x4800,(uVar4 & 0xff) - (uVar3 & 0xff));
-      setCopReg(2,0x5000,(uVar4 >> 8 & 0xff) - (uVar3 >> 8 & 0xff));
-      setCopReg(2,0x5800,(uVar4 >> 0x10 & 0xff) - (uVar3 >> 0x10 & 0xff));
-      off = off + 1;
+      rgb = *vp;
+      vp = vp + 1;
+      cd = *col;
+      col = col + 1;
+      vi = *idx;
+      cnt = cnt + -1;
+      setCopReg(2,0x4800,(cd & 0xff) - (rgb & 0xff));
+      setCopReg(2,0x5000,(cd >> 8 & 0xff) - (rgb >> 8 & 0xff));
+      setCopReg(2,0x5800,(cd >> 0x10 & 0xff) - (rgb >> 0x10 & 0xff));
+      idx = idx + 1;
       copFunction(2,0x98003d);
-      pcVar2 = (char *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((sVar1 * 4 + n))));
-      uVar5 = getCopReg(2,0xc800);
-      uVar6 = getCopReg(2,0xd000);
-      uVar7 = getCopReg(2,0xd800);
-      *pcVar2 = (char)uVar3 + (char)uVar5;
-      pcVar2[1] = (char)(uVar3 >> 8) + (char)uVar6;
-      pcVar2[2] = (char)(uVar3 >> 0x10) + (char)uVar7;
-    } while (0 < arg5);
+      dst = (char *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((vi * 4 + tbl))));
+      rx = getCopReg(2,0xc800);
+      ry = getCopReg(2,0xd000);
+      rz = getCopReg(2,0xd800);
+      *dst = (char)rgb + (char)rx;
+      dst[1] = (char)(rgb >> 8) + (char)ry;
+      dst[2] = (char)(rgb >> 0x10) + (char)rz;
+    } while (0 < cnt);
   }
   return;
 
 }
 
-void verts_add_apply(int n,undefined4 *v,ushort *c,int d)
+void verts_add_apply(int tbl,undefined4 *vp,ushort *idx,int cnt)
 {
-  short sVar1;
-  ushort uVar2;
-  undefined4 uVar3;
-  undefined4 uVar4;
-  short *psVar5;
-  if (d != 0) {
+  short dz;
+  ushort vi;
+  undefined4 ov;
+  undefined4 dv;
+  short *dst;
+  if (cnt != 0) {
     do {
-      d = d + -1;
-      uVar2 = *c;
-      c = c + 1;
-      psVar5 = (short *)guest_at((uint32_t)(uintptr_t)(((uint)uVar2 * 8 + n)));
-      uVar3 = *(undefined4 *)psVar5;
-      uVar4 = *v;
-      sVar1 = *(short *)(v + 1);
-      v = v + 2;
-      *psVar5 = (short)uVar3 + (short)uVar4;
-      psVar5[1] = (short)((uint)uVar3 >> 0x10) + (short)((uint)uVar4 >> 0x10);
-      psVar5[2] = psVar5[2] + sVar1;
-    } while (0 < d);
+      cnt = cnt + -1;
+      vi = *idx;
+      idx = idx + 1;
+      dst = (short *)guest_at((uint32_t)(uintptr_t)(((uint)vi * 8 + tbl)));
+      ov = *(undefined4 *)dst;
+      dv = *vp;
+      dz = *(short *)(vp + 1);
+      vp = vp + 2;
+      *dst = (short)ov + (short)dv;
+      dst[1] = (short)((uint)ov >> 0x10) + (short)((uint)dv >> 0x10);
+      dst[2] = dst[2] + dz;
+    } while (0 < cnt);
   }
   return;
 
 }
 
-void verts_sub_apply(int n,undefined4 *v,ushort *c,int d)
+void verts_sub_apply(int tbl,undefined4 *vp,ushort *idx,int cnt)
 {
-  short sVar1;
-  ushort uVar2;
-  undefined4 uVar3;
-  undefined4 uVar4;
-  short *psVar5;
-  if (d != 0) {
+  short dz;
+  ushort vi;
+  undefined4 ov;
+  undefined4 dv;
+  short *dst;
+  if (cnt != 0) {
     do {
-      d = d + -1;
-      uVar2 = *c;
-      c = c + 1;
-      psVar5 = (short *)guest_at((uint32_t)(uintptr_t)(((uint)uVar2 * 8 + n)));
-      uVar3 = *(undefined4 *)psVar5;
-      uVar4 = *v;
-      sVar1 = *(short *)(v + 1);
-      v = v + 2;
-      *psVar5 = (short)uVar3 - (short)uVar4;
-      psVar5[1] = (short)((uint)uVar3 >> 0x10) - (short)((uint)uVar4 >> 0x10);
-      psVar5[2] = psVar5[2] - sVar1;
-    } while (0 < d);
+      cnt = cnt + -1;
+      vi = *idx;
+      idx = idx + 1;
+      dst = (short *)guest_at((uint32_t)(uintptr_t)(((uint)vi * 8 + tbl)));
+      ov = *(undefined4 *)dst;
+      dv = *vp;
+      dz = *(short *)(vp + 1);
+      vp = vp + 2;
+      *dst = (short)ov - (short)dv;
+      dst[1] = (short)((uint)ov >> 0x10) - (short)((uint)dv >> 0x10);
+      dst[2] = dst[2] - dz;
+    } while (0 < cnt);
   }
   return;
 
