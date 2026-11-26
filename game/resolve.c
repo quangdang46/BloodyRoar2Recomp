@@ -1640,6 +1640,8 @@ void fighter_frame(byte *ctrl, uint8_t *motion)
     ctrl[0xc9] = '\0';
   }
   else {
+    /* gauge block (ctrl+0x54 bit1 clear): decay +0xd8 bonus into
+     * +0xd6 launch timer, then regen/clamp +0xd6 vs +0x3bff. */
     if ((*(uint *)(ctrl + 0x54) & 2) == 0) {
       dv = *(short *)(ctrl + 0xd8);
       if (dv < 0) {
@@ -1767,6 +1769,8 @@ LAB_80178d48:
     }
   }
   motion_turn_update(ctrl,motion_p);
+  /* terrain probe: point (actor +0x174/+0x17c) vs floor box
+   * table; miss clears ctrl+0x94 and +0x60 bit29. */
   if (((*(uint *)(ctrl + 0x60) & 0x10000000) == 0) &&
      ((*(uint *)(ctrl + 0x6c) & 0x100000) == 0)) {
     dv = range_circle_test(*(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x174),
@@ -1781,6 +1785,9 @@ LAB_80178f9c:
     else {
       uv = range_circle_test(*(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0xd4),
                            *(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0xdc),(uint *)guest_at((uint32_t)ib),0);
+      /* three zone tests (actor +0xd4/+0xdc, +0x354/+0x35c,
+       * +0x264/+0x26c) vs the same box: all-miss => no ground
+       * contact; partial => +0x6c bit20 + possible knockdown. */
       z2 = range_circle_test(*(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x354),
                            *(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x35c),(uint *)guest_at((uint32_t)ib),0);
       z3 = range_circle_test(*(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x264),
@@ -1890,6 +1897,8 @@ LAB_80179238:
     auxv = 0;
     goto LAB_80179238;
   }
+  /* resolve next action; commit applies it to motion+0x80
+   * (extended ids >=0x90 stored as id-0x90 in +0x14). */
   uv = action_resolve(ctrl,motion);
   if (-1 < (int)uv) {
     dv = (short)(uv & 0xfff);
@@ -1906,12 +1915,15 @@ LAB_80179238:
     }
     *(uint *)(ctrl + 0x5c) = uv;
   }
+  /* per-frame commit on the motion_p (ctrl+0x38) object. */
   action_commit(ctrl,motion_p);
   if ((((*(uint *)(ctrl + 0x6c) & 0x800) != 0) && ((ctrl[5] & 0x10U) == 0)) &&
      ((*(uint *)(ctrl + 0x6c) & 0x8000) == 0)) {
     *(ushort *)(ctrl + 0xd8) =
          *(short *)(ctrl + 0xd8) + (ushort)((byte)ctrl[0xda] >> 3) * 0x3c;
   }
+  /* facing sync: rotate ctrl+0xa2 vector by (facing - motion yaw
+   * + 0x8a) at rate 0x8c, accumulate into ctrl+0x9a/+0x9c. */
   dir_rotate_set(((int)*(short *)(ctrl + 0x4e) - (int)*(short *)(motion_p + 0xd2)) +
                (int)*(short *)(ctrl + 0x8a),(int)*(short *)(ctrl + 0x8c),ctrl + 0xa2,
                ctrl + 0x9a);
@@ -1932,6 +1944,8 @@ LAB_80179238:
   ctrl[0x8c] = '\0';
   ctrl[0x8d] = '\0';
 LAB_8017938c:
+  /* spin decay: apply rotation rate 0xb2 into 0xa2/0x9a, then
+   * scale 0xb2 by 0xb4 >> 7. */
   if (*(short *)(ctrl + 0xb2) != 0) {
     dir_rotate_acc((int)*(short *)(ctrl + 0xc4),(int)*(short *)(ctrl + 0xb2),ctrl + 0xa2,
                  ctrl + 0x9a);
@@ -1941,6 +1955,8 @@ LAB_8017938c:
     }
     *(short *)(ctrl + 0xb2) = (short)(ia >> 7);
   }
+  /* integrate launch velocity; then decay ctrl+0x9a/+0x9c/+0x9e
+   * by frame step >> 4. */
   launch_vel_update(ctrl,motion_p);
   ia = (int)*(short *)(ctrl + 0x9a) * (int)*(short *)(ctrl + 0x88);
   if (ia < 0) {
@@ -2002,16 +2018,21 @@ void action_commit(byte *ctrl, byte *motion)
   undefined1 rotm [32];
   int dvec [4];
   
+  /* action change: mirror +0x80 into +0x82 and switch via guest;
+   * then run the event stream. */
   if (*(short *)(motion + 0x80) != *(short *)(motion + 0x82)) {
     *(undefined2 *)(motion + 0x82) = *(undefined2 *)(motion + 0x80);
     action_switch_guest((int)guest_of(ctrl),(int *)motion,(int)*(short *)(motion + 0x80));
   }
   ev_stream_dispatch(ctrl,motion);
+  /* frame step: +0x88 = +0x86 normally, +0xfc while the +0x6c
+   * bit15 & ctrl[5]&1 & motion!=0xbe combo holds. */
   *(undefined2 *)(ctrl + 0x88) = *(undefined2 *)(ctrl + 0x86);
   if ((((ctrl[5] & 1U) != 0) && ((*(uint *)(ctrl + 0x58) & 0xc0000000) == 0x80000000)) &&
      (*(short *)(motion + 0x80) != 0xbe)) {
     *(undefined2 *)(ctrl + 0x88) = *(undefined2 *)(ctrl + 0xfc);
   }
+  /* advance keyframe anim + skeleton pose for this frame. */
   motion_blend_frame(ctrl,motion);
   *(short *)(ctrl + 0xb6) = *(short *)(ctrl + 0xb6) + *(short *)(ctrl + 0x88);
   *(uint *)(ctrl + 0x6c) = *(uint *)(ctrl + 0x6c) & 0xfffff7ff;
@@ -2046,6 +2067,7 @@ void action_commit(byte *ctrl, byte *motion)
       ctrl[0x27] = '\0';
     }
   }
+  /* +0x6c bit14: set while +0x64<0, +0xb8<0xc0 and +0xbc expired. */
   if (((*(int *)(ctrl + 100) < 0) && (*(short *)(ctrl + 0xb8) < 0xc0)) &&
      (*(short *)(ctrl + 0xbc) <= *(short *)(ctrl + 0x88))) {
     f6c = *(uint *)(ctrl + 0x6c) | 0x4000;
@@ -2067,6 +2089,8 @@ void action_commit(byte *ctrl, byte *motion)
     pending_hit_a_clear(ctrl);
     pending_hit_b_clear(ctrl);
   }
+  /* motion-side timers +0x116/+0x110 expire -> deferred_cmd_post
+   * 0x400 with the +0x114/+0x10e channel value. */
   if ((0 < *(short *)(motion + 0x116)) &&
      (tv = (uint)*(ushort *)(motion + 0x116) - (uint)*(ushort *)(ctrl + 0x88),
      *(short *)(motion + 0x116) = (short)tv, tv * 0x10000 < 1)) {
@@ -2091,6 +2115,10 @@ void action_commit(byte *ctrl, byte *motion)
       deferred_cmd_post(0x400,tv,0);
     }
   }
+  /* steering block (only when +0x5c bit16 set and ctrl sign
+   * clear): rotate launch dir toward foe, write motion+0x106/0x108
+   * steering offsets and apply the resulting rotmat to the actor
+   * position vector. */
   if (((*(uint *)(ctrl + 0x5c) & 0x10000) == 0) || (*ctrl < '\0')) {
     *(undefined2 *)(motion + 0x106) = 0;
     *(undefined2 *)(motion + 0x108) = 0;
