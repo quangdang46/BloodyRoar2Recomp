@@ -2989,7 +2989,7 @@ extern int display_page_commit_a(int32_t);
 extern int save_channel_init_commit(uint32_t,int32_t,uint8_t *,uint8_t *);
 extern int save_load_state_machine(uint32_t,int32_t);
 extern int save_state_machine_alt(uint32_t,uint8_t *,int32_t);
-extern void FUN_80195290(int32_t,int32_t);
+extern void gte_ofs_set(int32_t,int32_t);
 extern void gte_cw_d000_set(int32_t);
 extern int mc_file_cmd_stable_poll(uint32_t,const void *,uint32_t);
 extern int mc_job_a_result_poll(uint32_t,const void *,void *,uint32_t,uint32_t);
@@ -4409,7 +4409,7 @@ stf00:
     {
       int32_t x = (int32_t)*(int16_t *)(ctx + 0x20);
       int32_t y = (int32_t)*(int16_t *)(ctx + 0x22);
-      FUN_80195290(x / 2, y / 2);
+      gte_ofs_set(x / 2, y / 2);
       gte_cw_d000_set((int32_t)*(int16_t *)(ctx + 0x24));
     }
     return 1;

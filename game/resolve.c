@@ -2580,9 +2580,9 @@ void motion_blend_frame(byte *ctrl,byte *motion)
   int t;
   int dx;
   int obj_g;
-  if (*(int *)(motion + 0xb0) == 0) goto LAB_8018604c;
+  if (*(int *)(motion + 0xb0) == 0) goto pose_copy;
   if (*(short *)(motion + 0xce) == 0) {
-LAB_80186010:
+blend_apply:
     keyframe_blend_apply(ctrl,motion);
   }
   else {
@@ -2591,7 +2591,7 @@ LAB_80186010:
       keyframe_advance(ctrl,motion);
     }
     if (*(short *)(motion + 0xce) == 0) {
-      if (*(short *)(motion + 0xc0) == 0) goto LAB_80186010;
+      if (*(short *)(motion + 0xc0) == 0) goto blend_apply;
     }
     else {
       keyframe_blend_apply(ctrl,motion);
@@ -2601,7 +2601,7 @@ LAB_80186010:
   if (*(short *)(motion + 0xc4) < *(short *)(motion + 0xc2)) {
     *(short *)(motion + 0xc4) = *(short *)(motion + 0xc4) + *(short *)(ctrl + 0x88);
   }
-LAB_8018604c:
+pose_copy:
   t = 0;
   jdst = (undefined2 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x40)) + 0x12);
   jsrc = (undefined2 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x3c);
