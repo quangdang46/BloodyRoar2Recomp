@@ -114,6 +114,7 @@ extern void battle_camera_step(void);
 extern void battle_config_eval(void);
 extern void battle_field_set(void);
 extern void battle_flow_state_machine(void);
+extern void battle_flow_state_machine_alt(void);
 extern void battle_frame(void);
 extern void battle_frame_tick(void);
 extern void battle_hud_draw(void);
@@ -880,6 +881,7 @@ extern void hud_digits_color(void);
 extern void hud_gauge_render(void);
 extern void hud_name_fixup(void);
 extern void hud_prim_init(void);
+extern void hud_score_draw_alt(void);
 extern void hud_slot_blitter(void);
 extern void hud_sprite_desc_init(void);
 extern void hud_state_machine(void);
@@ -937,6 +939,7 @@ extern void mc_date_serial_cmp(void);
 extern void mc_dialog_bit4(void);
 extern void mc_file_cmd(void);
 extern void mc_file_cmd_stable_poll(void);
+extern void mc_file_cmd_stable_poll_alt(void);
 extern void mc_init_reset(void);
 extern void mc_job_a_result_poll(void);
 extern void mc_job_b_result_poll(void);
@@ -946,6 +949,7 @@ extern void mc_mode_nibble_rw(void);
 extern void mc_op_dispatch(void);
 extern void mc_op_dispatch_b(void);
 extern void mc_op_result_poll(void);
+extern void mc_op_result_poll_alt(void);
 extern void mc_op_seq_probe(void);
 extern void mc_op_wait_stable(void);
 extern void mc_pad_button_handler(void);
@@ -1181,6 +1185,7 @@ extern void perm_table_load(void);
 extern void picker_table_shuffle(void);
 extern void player_light_apply(void);
 extern void player_name_entry(void);
+extern void player_name_entry_alt(void);
 extern void players_ctrl_init(void);
 extern void please_wait_announce(void);
 extern void popup_spawn(void);
@@ -2185,8 +2190,10 @@ const Br2FnEnt fn_table[] = {
   { 0x80163cbc, (void *)name_rec_gate },
   { 0x80163d7c, (void *)hud_name_fixup },
   { 0x80163e38, (void *)hud_time_score_draw },
+  { 0x80164070, (void *)hud_score_draw_alt },
   { 0x80164668, (void *)results_scoreboard },
   { 0x80164ea4, (void *)player_name_entry },
+  { 0x80165174, (void *)player_name_entry_alt },
   { 0x80165908, (void *)card_sprite_load_sm },
   { 0x80165cb4, (void *)transition_screen_flow },
   { 0x801660c0, (void *)card_fade_sm },
@@ -2214,9 +2221,11 @@ const Br2FnEnt fn_table[] = {
   { 0x8016831c, (void *)mc_op_seq_probe },
   { 0x80168380, (void *)job_pump_filter },
   { 0x80168424, (void *)mc_op_result_poll },
+  { 0x80168494, (void *)mc_op_result_poll_alt },
   { 0x801684c8, (void *)mc_op_wait_stable },
   { 0x8016850c, (void *)mc_chan_job_stable_poll },
   { 0x801685b4, (void *)mc_file_cmd_stable_poll },
+  { 0x80168624, (void *)mc_file_cmd_stable_poll_alt },
   { 0x80168648, (void *)job_result_poll_stable },
   { 0x80168700, (void *)job_state_query },
   { 0x80168720, (void *)job_wait_pump },
@@ -2276,6 +2285,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8016fca8, (void *)FUN_8016fca8 },
   { 0x8016fcb0, (void *)FUN_8016fcb0 },
   { 0x8016fcc4, (void *)battle_flow_state_machine },
+  { 0x80170050, (void *)battle_flow_state_machine_alt },
   { 0x801709fc, (void *)menu_res_load_sm },
   { 0x80170d38, (void *)save_channel_init_commit },
   { 0x80170fe0, (void *)save_load_state_machine },

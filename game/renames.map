@@ -2079,3 +2079,8 @@
 80157930 confirm_code_select_alt_3
 80157938 confirm_code_select_alt_6
 80157940 confirm_code_select_alt_4
+80164070 hud_score_draw_alt
+80165174 player_name_entry_alt
+80168494 mc_op_result_poll_alt
+80168624 mc_file_cmd_stable_poll_alt
+80170050 battle_flow_state_machine_alt
