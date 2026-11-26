@@ -10871,26 +10871,26 @@ static int32_t tpg_idiv(int32_t,int32_t);   /* defined in batch47 */
  * and task_slot_step() runs when sx16 @R+0x1e != 0. */
 void sprite_record_tick(uint32_t rec)
 {
-  uint32_t s0 = rec;
+
   int32_t arr[8];
-  uint32_t cur, tag, hi, lo, q, src;
+  uint32_t cur, tag, hi, lo, sent, src;
   int32_t i, idx, f14, f1a, d, prod;
 
-  if (MBS16(s0 + 0x18u) != 0) {
-    MW16(s0 + 0x18u, (uint16_t)(MB16(s0 + 0x18u) - 1u));
+  if (MBS16(rec + 0x18u) != 0) {
+    MW16(rec + 0x18u, (uint16_t)(MB16(rec + 0x18u) - 1u));
     goto L_tail;
   }
   if (*(uint16_t *)g__DAT_1f800082 == 0)
-    MW16(s0 + 0x14u, (uint16_t)(MB16(s0 + 0x14u) - 1u));
-  if (MBS16(s0 + 0x14u) > 0) goto L_tail;
+    MW16(rec + 0x14u, (uint16_t)(MB16(rec + 0x14u) - 1u));
+  if (MBS16(rec + 0x14u) > 0) goto L_tail;
 
-  cur = MB32(s0 + 0x10u);
-  MW32(s0 + 0x10u, cur + 4u);
+  cur = MB32(rec + 0x10u);
+  MW32(rec + 0x10u, cur + 4u);
   if ((MB16(cur + 4u) & 0xff00u) == 0) goto L_scan_done;
 
 L_scan_loop:                                    /* 0x8014ab60 */
-  q   = MB32(s0 + 0x10u);
-  tag = MB16(q);
+  sent   = MB32(rec + 0x10u);
+  tag = MB16(sent);
   hi  = tag & 0xff00u;
   lo  = tag & 0x00ffu;
   if (hi == 0xfd00u) goto L_tag_fd;
@@ -10903,54 +10903,54 @@ L_scan_loop:                                    /* 0x8014ab60 */
   goto L_next;
 
 L_tag_fd:                                       /* 0x8014abb4 */
-  MB32(s0 + 0x10u) = MB32(s0 + 0x08u) +
-                     ((uint32_t)MBS16(q + 2u) << 2);
+  MB32(rec + 0x10u) = MB32(rec + 0x08u) +
+                     ((uint32_t)MBS16(sent + 2u) << 2);
   goto L_next;
 
 L_tag_fe:                                       /* 0x8014abc0 */
-  MW16(s0 + 0x18u, MB16(q + 2u));
-  MB32(s0 + 0x10u) = q + 4u;
+  MW16(rec + 0x18u, MB16(sent + 2u));
+  MB32(rec + 0x10u) = sent + 4u;
   goto L_next;
 
 L_tag_fc:                                       /* 0x8014abd4 */
-  if ((int32_t)lo < (int32_t)MBS16(s0 + 0x16u)) {
-    MB32(s0 + 0x10u) = q + 4u;                  /* 0x8014ac24 */
+  if ((int32_t)lo < (int32_t)MBS16(rec + 0x16u)) {
+    MB32(rec + 0x10u) = sent + 4u;                  /* 0x8014ac24 */
     goto L_next;
   }
-  MW16(s0 + 0x16u, (uint16_t)(MB16(s0 + 0x16u) + 1u));
-  MB32(s0 + 0x10u) = MB32(s0 + 0x08u) +
-                     ((uint32_t)MBS16(q + 2u) << 2);
+  MW16(rec + 0x16u, (uint16_t)(MB16(rec + 0x16u) + 1u));
+  MB32(rec + 0x10u) = MB32(rec + 0x08u) +
+                     ((uint32_t)MBS16(sent + 2u) << 2);
   goto L_next;
 
 L_tag_ff:                                       /* 0x8014ac10 */
-  if ((int32_t)lo < (int32_t)MBS16(s0 + 0x16u)) {
-    MB32(s0 + 0x10u) = q + 4u;
+  if ((int32_t)lo < (int32_t)MBS16(rec + 0x16u)) {
+    MB32(rec + 0x10u) = sent + 4u;
     goto L_next;
   }
-  MW16(s0 + 0x1eu, 1u);
-  MW16(s0 + 0x14u, 0u);
-  MB32(s0 + 0x10u) = MB32(s0 + 0x10u) - 4u;
+  MW16(rec + 0x1eu, 1u);
+  MW16(rec + 0x14u, 0u);
+  MB32(rec + 0x10u) = MB32(rec + 0x10u) - 4u;
   goto L_tail;
 
 L_next:                                        /* 0x8014ac28 */
-  q = MB32(s0 + 0x10u);
-  if ((MB16(q) & 0xff00u) != 0) goto L_scan_loop;
+  sent = MB32(rec + 0x10u);
+  if ((MB16(sent) & 0xff00u) != 0) goto L_scan_loop;
 L_scan_done:                                    /* 0x8014ac44 */
-  cur = MB32(s0 + 0x10u);
-  MW16(s0 + 0x1au, MB16(cur + 2u));
-  MW16(s0 + 0x14u, MB16(cur + 2u));
-  MW16(s0 + 0x1cu, (uint16_t)(MBS16(cur + 2u) <= 0 ? 1u : 0u));
+  cur = MB32(rec + 0x10u);
+  MW16(rec + 0x1au, MB16(cur + 2u));
+  MW16(rec + 0x14u, MB16(cur + 2u));
+  MW16(rec + 0x1cu, (uint16_t)(MBS16(cur + 2u) <= 0 ? 1u : 0u));
 
 L_tail:                                         /* 0x8014ac9c */
-  cur = MB32(s0 + 0x10u);
+  cur = MB32(rec + 0x10u);
   idx = (int32_t)MBS16(cur);
-  src = MB32(s0 + 0x0cu) + (uint32_t)idx * 16u;
+  src = MB32(rec + 0x0cu) + (uint32_t)idx * 16u;
   for (i = 0; i < 8; i++)
     arr[i] = (int32_t)MBS16(src + (uint32_t)i * 2u);
 
-  f14 = (int32_t)MBS16(s0 + 0x14u);
-  f1a = (int32_t)MBS16(s0 + 0x1au);
-  if (MBS16(s0 + 0x1cu) != 0) {
+  f14 = (int32_t)MBS16(rec + 0x14u);
+  f1a = (int32_t)MBS16(rec + 0x1au);
+  if (MBS16(rec + 0x1cu) != 0) {
     prod = (int32_t)((int64_t)arr[2] * (int64_t)f14);
     arr[0] += tpg_idiv(prod, f1a);
     prod = (int32_t)((int64_t)arr[3] * (int64_t)f14);
@@ -10971,13 +10971,13 @@ L_tail:                                         /* 0x8014ac9c */
     arr[5] += tpg_idiv(prod, f1a);
   }
 
-  sprite_place_centered(MB32(s0 + 0x00u), 0x1f800000u,
+  sprite_place_centered(MB32(rec + 0x00u), 0x1f800000u,
                         (int16_t)arr[0], (int16_t)arr[1],
                         (int16_t)arr[4], (int16_t)arr[5]);
-  sprite_place_centered(MB32(s0 + 0x04u), 0x1f800000u,
+  sprite_place_centered(MB32(rec + 0x04u), 0x1f800000u,
                         (int16_t)arr[0], (int16_t)arr[1],
                         (int16_t)arr[4], (int16_t)arr[5]);
-  if (MBS16(s0 + 0x1eu) != 0) task_slot_step();
+  if (MBS16(rec + 0x1eu) != 0) task_slot_step();
 }
 
 /* bcd_time_frame_print — BCD time -> frame count print @0x80158da8 (44
@@ -10987,23 +10987,23 @@ L_tail:                                         /* 0x8014ac9c */
  * buf[0], buf[1], frames). */
 void bcd_time_frame_print(uint32_t out)
 {
-  uint32_t s0 = out;
+
   uint8_t buf[8];
-  int32_t d;
-  uint32_t v1, x;
+  int32_t fdelta;
+  uint32_t sec_bcd, sec100;
   int64_t prod;
-  int32_t q;
+  int32_t quo;
   memset(buf, 0, sizeof(buf));
-  d = (int32_t)(MB32(0x801bef80u) - MB32(0x801bef84u)) - 0x12c;
-  d = (d + (int32_t)((uint32_t)d >> 31)) >> 1;
-  cd_file_open(d, buf);
-  v1 = ((uint32_t)buf[2] >> 4) * 10u + ((uint32_t)buf[2] & 0xfu);
-  x = v1 * 100u;
-  prod = (int64_t)(int32_t)x * (int64_t)(int32_t)0x1b4e81b5;
-  q = (int32_t)(prod >> 32) >> 3;
-  q -= (int32_t)x >> 31;
-  sprintf_core((char *)guest_at(s0), (char *)guest_at(0x80120de0),
-               (int)buf[0], (int)buf[1], q);
+  fdelta = (int32_t)(MB32(0x801bef80u) - MB32(0x801bef84u)) - 0x12c;
+  fdelta = (fdelta + (int32_t)((uint32_t)fdelta >> 31)) >> 1;
+  cd_file_open(fdelta, buf);
+  sec_bcd = ((uint32_t)buf[2] >> 4) * 10u + ((uint32_t)buf[2] & 0xfu);
+  sec100 = sec_bcd * 100u;
+  prod = (int64_t)(int32_t)sec100 * (int64_t)(int32_t)0x1b4e81b5;
+  quo = (int32_t)(prod >> 32) >> 3;
+  quo -= (int32_t)sec100 >> 31;
+  sprintf_core((char *)guest_at(out), (char *)guest_at(0x80120de0),
+               (int)buf[0], (int)buf[1], quo);
 }
 
 /* versus_state_init — versus-screen state init @0x80126720 (46 insns):
@@ -11258,15 +11258,15 @@ void quad_redraw_flag(void)
 {
   uint32_t b0 = MB32(0x801f10c0u);
   uint32_t b1 = MB32(0x801f10c4u);
-  uint32_t v1;
+  uint32_t ctxp;
   options_page_dispatch(3);
   options_page_dispatch(5);
   task_alloc_wrap_c(b0 + 0xa5e, b1 + 0xa5e, 0x801b2f24u, 0x801b2f3cu);
   task_alloc_wrap_c(b0 + 0xa86, b1 + 0xa86, 0x801b2f24u, 0x801b2f48u);
   task_alloc_wrap_c(b0 + 0xafe, b1 + 0xafe, 0x801b2f24u, 0x801b2f3cu);
   task_alloc_wrap_c(b0 + 0xb26, b1 + 0xb26, 0x801b2f24u, 0x801b2f48u);
-  v1 = MB32(0x801f10bcu);
-  MW32(v1 + 0x1c, MB32(v1 + 0x1c) | 0x18u);
+  ctxp = MB32(0x801f10bcu);
+  MW32(ctxp + 0x1c, MB32(ctxp + 0x1c) | 0x18u);
 }
 
 /* dual_entry_attr_bump — dual-entry attr bump loop @0x8016b6bc (64 insns,
