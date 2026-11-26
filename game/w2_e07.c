@@ -104,6 +104,11 @@ static void prim_ot_link_indexed(uint32_t ot, uint32_t out, uint32_t otz)
  * and the _cont switch picks the right block, exactly like the generated
  * alias body. The canonical entry 0x80183664 stays with the vm.c
  * scriptop_wait port; this body only serves the piece-entry addrs. */
+/* scriptop_wait (guest 0x80183664 region) — script WAIT opcode
+ * CPS body. Args: s2=a0 owner obj, s0=a2 script ctx; s3=ctx[36]
+ * stream, ctx[110] mode halfword. ~70 blocks: operand fetches from
+ * the stream select wait-until conditions (frame count / flag /
+ * timer); 5 sprintf_core_guest calls format trace strings. */
 static void scriptop_wait_cps_body(CPUState *cpu)
 {
 
@@ -1030,6 +1035,10 @@ block_80183BB4:
  * clean_try_dispatch sets cpu->pc = <addr> and the _cont switch picks
  * the right block. The canonical entry 0x80183C30 stays with the vm.c
  * scriptop_chk port; this body only serves the two piece-entry addrs. */
+/* scriptop_chk (guest 0x80183C30 region) — script CHK opcode
+ * CPS body. Same ctx convention (s0=ctx, s2=owner, s3=ctx[36]
+ * stream). Condition-eval opcode: tests script flags/vars and
+ * branches the stream; 2 sprintf_core_guest trace calls. */
 static void scriptop_chk_cps_body(CPUState *cpu)
 {
 
