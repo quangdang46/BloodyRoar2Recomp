@@ -5893,41 +5893,41 @@ ushort attr_flag_mask(uint node)
 
 undefined2 pad_hist_record(int ctrl_g,int pad,undefined2 flags)
 {
-  undefined2 *puVar1;
+  undefined2 *hist;
   /* cell at ctrl_g+0xcc holds a guest u32 pointer to the u16 history
    * array — read the guest word then translate (never a host-ptr-size
    * deref of guest memory). */
-  puVar1 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0xcc))));
-  switch(*puVar1) {
+  hist = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0xcc))));
+  switch(*hist) {
   default:
     return flags;
   case 3:
-    if (599 < (short)puVar1[3]) {
-      puVar1[3] = 0;
+    if (599 < (short)hist[3]) {
+      hist[3] = 0;
     }
-    if ((int)(short)puVar1[3] != (int)(short)puVar1[2]) {
-      return *(undefined2 *)(&DAT_801cf88c + (short)puVar1[3] * 2 + pad * 0x4b0);
+    if ((int)(short)hist[3] != (int)(short)hist[2]) {
+      return *(undefined2 *)(&DAT_801cf88c + (short)hist[3] * 2 + pad * 0x4b0);
     }
-    *puVar1 = 4;
+    *hist = 4;
 switchD_801289e8_caseD_4:
     return 0;
   case 4:
     goto switchD_801289e8_caseD_4;
   case 5:
-    if (599 < (short)puVar1[3]) {
-      puVar1[3] = 0;
+    if (599 < (short)hist[3]) {
+      hist[3] = 0;
     }
-    if ((int)(short)puVar1[3] != (int)(short)puVar1[2]) {
-      return *(undefined2 *)(&DAT_801cf88c + (short)puVar1[3] * 2 + pad * 0x4b0);
+    if ((int)(short)hist[3] != (int)(short)hist[2]) {
+      return *(undefined2 *)(&DAT_801cf88c + (short)hist[3] * 2 + pad * 0x4b0);
     }
-    *puVar1 = 1;
+    *hist = 1;
   case 1:
   case 2:
-    if (599 < (short)puVar1[3]) {
-      puVar1[3] = 0;
+    if (599 < (short)hist[3]) {
+      hist[3] = 0;
     }
-    puVar1[2] = puVar1[3];
-    *(undefined2 *)(&DAT_801cf88c + (short)puVar1[3] * 2 + pad * 0x4b0) = flags;
+    hist[2] = hist[3];
+    *(undefined2 *)(&DAT_801cf88c + (short)hist[3] * 2 + pad * 0x4b0) = flags;
     return flags;
   }
 
@@ -15590,34 +15590,34 @@ void gte_mat_vec_swap(undefined4 *a0,ushort *a1,undefined4 *a2)
 int trig_cos(int ang)
 
 {
-  int iVar1;
-  uint uVar2;
+  int idx;
+  uint q;
   
-  uVar2 = ang + 0x400;
-  iVar1 = (uVar2 & 0x3ff) * 2;
-  if ((uVar2 & 0x400) != 0) {
-    iVar1 = (uVar2 & 0x3ff) * -2 + 0x800;
+  q = ang + 0x400;
+  idx = (q & 0x3ff) * 2;
+  if ((q & 0x400) != 0) {
+    idx = (q & 0x3ff) * -2 + 0x800;
   }
-  if ((uVar2 & 0x800) != 0) {
-    return -(int)*(short *)(&DAT_801247a8 + iVar1);
+  if ((q & 0x800) != 0) {
+    return -(int)*(short *)(&DAT_801247a8 + idx);
   }
-  return (int)*(short *)(&DAT_801247a8 + iVar1);
+  return (int)*(short *)(&DAT_801247a8 + idx);
 }
 
 /* guest trig_sin @0x80185408 */
 int trig_sin(uint ang)
 
 {
-  int iVar1;
+  int idx;
   
-  iVar1 = (ang & 0x3ff) * 2;
+  idx = (ang & 0x3ff) * 2;
   if ((ang & 0x400) != 0) {
-    iVar1 = (ang & 0x3ff) * -2 + 0x800;
+    idx = (ang & 0x3ff) * -2 + 0x800;
   }
   if ((ang & 0x800) != 0) {
-    return -(int)*(short *)(&DAT_801247a8 + iVar1);
+    return -(int)*(short *)(&DAT_801247a8 + idx);
   }
-  return (int)*(short *)(&DAT_801247a8 + iVar1);
+  return (int)*(short *)(&DAT_801247a8 + idx);
 }
 
 /* guest fighter_anim_advance @0x80185e6c */
