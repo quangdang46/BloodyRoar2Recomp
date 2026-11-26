@@ -166,3 +166,34 @@ Verification: clean build EU+USA; headless :4849 frames past 65K
 attract CD streaming, no wedge. clean_stats: 0x8019AABC = 5 hits;
 others 0 in attract window (device-command paths — faithful-by-
 construction).
+
+## Batch 7 (orch/w5/e05) — small-fry sweep + the two big delegates
+
+Ten functions upgraded to timed cpst_ bodies (190 clean_cps.map rows,
+net of 3 duplicate continuation rows deduped). self-delegate count
+30 -> 22.
+
+Small delegates (entry + all blocks):
+| entry | fnmap name | blocks |
+|---|---|---|
+| 0x801A09B0 | cd_bzero | 5 |
+| 0x8019E330 | cd_mode_apply_seq | 11 |
+| 0x8019B308 | cd_ext_init_once | 7 |
+| 0x8019A3F0 | cd_kobj_init_a | 7 |
+| 0x8019A378 | cd_kobj_init_b | 6 |
+| 0x8019A09C | cd_subsys_init_full | 8 |
+| 0x8019A00C | cd_cmd_sequence | 8 |
+| 0x801A1E84 | dev_cmd_round_dispatch | 3 |
+
+The two big ones:
+| 0x80199440 | cd_mc_state_machine | 65 blocks / 1640B |
+| 0x80196370 | cd_response_process ENTRY | 70 blocks / 1372B |
+  (entry row added; its 3 batch-3 continuation rows deduped — the
+  batch-3 cpst_ body was byte-identical, transform is deterministic)
+
+Verification: clean build EU+USA; headless :4853 frames past 160K
+attract CD streaming, no wedge. clean_stats positive hits:
+0x8019E330=1, 0x8019B308=1, 0x8019A00C=1 (one-shot init/sequence
+calls executing through timed bodies). cd_mc_state_machine /
+cd_response_process entry = 0 in attract (memcard/response paths —
+faithful-by-construction).
