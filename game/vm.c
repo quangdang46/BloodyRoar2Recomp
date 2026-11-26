@@ -1174,10 +1174,10 @@ int scriptop_wait(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
 /*    v0 = that nonzero mask (bnez -> epilogue without reloading 1).  */
 /* ================================================================== */
 
-extern int sprintf_core_guest(char *param_1,char *param_2,uint32_t param_3,
-                              uint32_t param_4,uint32_t param_5,
-                              uint32_t param_6,uint32_t param_7,
-                              uint32_t param_8);
+extern int sprintf_core_guest(char *dst,char *fmt,uint32_t a2,
+                              uint32_t a3,uint32_t a4,
+                              uint32_t a5,uint32_t a6,
+                              uint32_t a7,uint32_t a8);
 
 /* cond-name strings for the "(%s)" debug trace — guest ptrs @0x801b5440 */
 static const uint32_t chk_cond_name[45] = {
