@@ -2398,9 +2398,9 @@ void tile_stream_pump(void)
     extern uint32_t br2_guest_frame(uint32_t);
     extern void br2_guest_frame_free(void);
     uint32_t tsp_frm = br2_guest_frame(0x28);
-    uint32_t gaddr = tsp_frm + 0x18;
-    memcpy(guest_at(gaddr), rect, 8);
-    gpu_load_image_cmd(gaddr,*(undefined4 *)guest_at((uint32_t)(buf_sel * 4 + -0x7fe0b8f4)));
+    uint32_t rect_g = tsp_frm + 0x18;
+    memcpy(guest_at(rect_g), rect, 8);
+    gpu_load_image_cmd(rect_g,*(undefined4 *)guest_at((uint32_t)(buf_sel * 4 + -0x7fe0b8f4)));
     br2_guest_frame_free(); }
   return;
 }
@@ -2480,12 +2480,12 @@ undefined4 stream_block_decode(undefined4 dst,int *tbl,int idx)
        * (_DAT_801e3cfc / _DAT_801c47b8) -> wrong CD dest -> DMA into .text.
        * guest_of() recovers the guest address faithfully. */
       uint32_t srcg = guest_of(tbl) + (uint32_t)tbl[idx + 1] + (uint32_t)(*tbl + 1) * 4u;
-      { uint32_t r = mode3_dispatch(dst,srcg);
+      { uint32_t len = mode3_dispatch(dst,srcg);
         /* tag 11: record the RETURN length so cursor advances are fully
          * attributed (decode dst->dst+len). dst=heap cursor arg. */
         { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-          decomp_trace_record(11,dst,srcg,0,r); }
-        return r; }
+          decomp_trace_record(11,dst,srcg,0,len); }
+        return len; }
     }
   }
   return 0;
@@ -2512,10 +2512,10 @@ int32_t gauge_leaf_update(uint32_t a0g)
   case 2:
     goto set_ff;
   case 3: {
-    int32_t p = (int32_t)*(int16_t *)(rec + 0xa2) * 12;
-    *(int16_t *)(rec + 0xa0) = (int16_t)p;
-    if (p < 0x100)
-      return p;
+    int32_t gauge_v = (int32_t)*(int16_t *)(rec + 0xa2) * 12;
+    *(int16_t *)(rec + 0xa0) = (int16_t)gauge_v;
+    if (gauge_v < 0x100)
+      return gauge_v;
     v0 = 0xff;
     goto store_ff;
   }
@@ -4553,23 +4553,23 @@ void champion_win_announce(uint32_t battle_g,uint8_t *side,int32_t player)
 extern void please_wait_announce(uint32_t,uint32_t);
 void mode_name_announce(uint32_t battle_g,uint32_t player,int32_t force)
 {
-  uint8_t *t0 = (uint8_t *)guest_at(battle_g);
-  int32_t a3, v0;
+  uint8_t *B = (uint8_t *)guest_at(battle_g);
+  int32_t text_x, attr;
   uint32_t text = 0;
-  a3 = player ? ((int32_t)*(int16_t *)(t0 + 0x20) - 0x50) : 0x50;
-  if (((*(uint16_t *)guest_at(*(uint32_t *)(t0 + 0xc8) + (2)) >> 0xb) & 1) == 0) return;
+  text_x = player ? ((int32_t)*(int16_t *)(B + 0x20) - 0x50) : 0x50;
+  if (((*(uint16_t *)guest_at(*(uint32_t *)(B + 0xc8) + (2)) >> 0xb) & 1) == 0) return;
   if (((*(uint32_t *)guest_at(0x1f8000dc) >> 4) & 3) == 0) return;
-  /* JT1 on t0[0x92] < 0x11 */
+  /* JT1 on B[0x92] < 0x11 */
   {
     static const uint8_t jt1_kind[17] = {
       0,0,0,0,0,1,1,1,1,1,1,1,2,2,2,0,1 };   /* 0->636d0 1->524b0 2->a4-gate */
-    uint32_t s92 = t0[0x92];
+    uint32_t jt1_idx = B[0x92];
     int do524b0 = 0, cont = 1;
-    if (s92 < 0x11) {
-      switch (jt1_kind[s92]) {
+    if (jt1_idx < 0x11) {
+      switch (jt1_kind[jt1_idx]) {
       case 1: do524b0 = 1; cont = 0; break;
       case 2:
-        if (*(int16_t *)(t0 + 0xa4) < 0) { do524b0 = 1; cont = 0; }
+        if (*(int16_t *)(B + 0xa4) < 0) { do524b0 = 1; cont = 0; }
         break;
       }
     }
@@ -4577,23 +4577,23 @@ void mode_name_announce(uint32_t battle_g,uint32_t player,int32_t force)
     if (!cont) return;
   }
   /* 636d0: mode==0 extra gate */
-  if (t0[0x9c] == 0 &&
-      (int32_t)*(int16_t *)(t0 + 0xa4) >=
-      (int32_t)*(uint8_t *)guest_at(*(uint32_t *)(t0 + 0xc0) + (0x10))) {
+  if (B[0x9c] == 0 &&
+      (int32_t)*(int16_t *)(B + 0xa4) >=
+      (int32_t)*(uint8_t *)guest_at(*(uint32_t *)(B + 0xc0) + (0x10))) {
     please_wait_announce(battle_g,player); return;
   }
-  v0 = 4;
-  if (force == 0 && t0[0x9c] < 6) {
+  attr = 4;
+  if (force == 0 && B[0x9c] < 6) {
     static const uint32_t jt2[6] = {
       0x801637d8,0x80163744,0x80163758,0x8016376c,0x801637c4,0x80163780 };
-    uint32_t tgt = jt2[t0[0x9c]];
-    if (tgt == 0x80163744) { text = 0x80121e54; a3 -= 0x1b; }
-    else if (tgt == 0x80163758) { text = 0x80121e60; a3 -= 0x1e; }
-    else if (tgt == 0x8016376c) { text = 0x80121e6c; a3 -= 0x27; }
-    else if (tgt == 0x801637c4) { text = 0x80121e98; a3 -= 0x1e; }
+    uint32_t tgt = jt2[B[0x9c]];
+    if (tgt == 0x80163744) { text = 0x80121e54; text_x -= 0x1b; }
+    else if (tgt == 0x80163758) { text = 0x80121e60; text_x -= 0x1e; }
+    else if (tgt == 0x8016376c) { text = 0x80121e6c; text_x -= 0x27; }
+    else if (tgt == 0x801637c4) { text = 0x80121e98; text_x -= 0x1e; }
     else if (tgt == 0x80163780) {
-      if (t0[0x9b] == 4) { text = 0x80121e7c; a3 -= 0x27; }
-      else               { text = 0x80121e8c; a3 -= 0x21; }
+      if (B[0x9b] == 4) { text = 0x80121e7c; text_x -= 0x27; }
+      else               { text = 0x80121e8c; text_x -= 0x21; }
     } else tgt = 0x801637d8;
     if (text) goto emit;
   }
@@ -4601,16 +4601,16 @@ void mode_name_announce(uint32_t battle_g,uint32_t player,int32_t force)
   if ((*(uint32_t *)guest_at(0x1f8000dc) & 0x40) != 0) {
     if (force != 0) return;
     text = 0x80121ea4;  /* AWAITING CHALLENGER */
-    v0 = 1; a3 -= 0x39;
+    attr = 1; text_x -= 0x39;
   } else {
     text = 0x80121eb8;  /* PRESS START */
-    a3 -= 0x21; v0 = 4;  /* guest leaves $v0=4 (delay-slot li at 0x801637EC);
+    text_x -= 0x21; attr = 4;  /* guest leaves $v0=4 (delay-slot li at 0x801637EC);
                          * only the AWAITING CHALLENGER path sets $v0=1 */
   }
 emit:
-  a3 = (int32_t)(int16_t)a3;
-  hud_text_blk_alt(*(uint32_t *)(t0 + 8),*(uint32_t *)(t0 + 0xc),
-               (const void *)guest_at(text),a3,0x20,v0);
+  text_x = (int32_t)(int16_t)text_x;
+  hud_text_blk_alt(*(uint32_t *)(B + 8),*(uint32_t *)(B + 0xc),
+               (const void *)guest_at(text),text_x,0x20,attr);
 }
 
 /* continue_countdown — continue/countdown ticker on battle+0xb2 (14-bit
@@ -6148,9 +6148,9 @@ void ko_count_announce(uint32_t battle,uint32_t text_list)
 
   /* shared tail math: t = trunc2(lh20 + K), w = trunc16(lh22) */
   {
-    int32_t vv = (int32_t)MBS16(s0 + 0x20) + K;
-    int32_t uu = vv + (int32_t)((uint32_t)vv >> 31);
-    t = (uu << 15) >> 16;
+    int32_t v_raw = (int32_t)MBS16(s0 + 0x20) + K;
+    int32_t v_adj = v_raw + (int32_t)((uint32_t)v_raw >> 31);
+    t = (v_adj << 15) >> 16;
     a1x = (int32_t)MBS16(s0 + 0x22);
     if (a1x < 0) a1x += 0xf;
     w = a1x >> 4;
@@ -9584,11 +9584,11 @@ L_reca:                                     /* 0x80153d74 */
  * side+0xac = lhu(side+0xac) - q, clamped to 0 when bit15 set. */
 static void side_scale_ac(uint8_t *side,uint32_t s1)
 {
-  int32_t p = (int32_t)((int32_t)*(int16_t *)(side + 0xb0) *
+  int32_t prod = (int32_t)((int32_t)*(int16_t *)(side + 0xb0) *
                         (int32_t)MBS16(s1 + 0x94));
-  int32_t hi = (int32_t)(((int64_t)p * 0x57619f1LL) >> 32);
-  int32_t q = (hi >> 7) - (p >> 31);
-  int32_t nv = (int32_t)*(uint16_t *)(side + 0xac) - q;
+  int32_t hi = (int32_t)(((int64_t)prod * 0x57619f1LL) >> 32);
+  int32_t quot = (hi >> 7) - (prod >> 31);
+  int32_t nv = (int32_t)*(uint16_t *)(side + 0xac) - quot;
   *(int16_t *)(side + 0xac) = (int16_t)nv;
   if (*(int16_t *)(side + 0xac) < 0) *(int16_t *)(side + 0xac) = 0;
 }
@@ -10382,29 +10382,29 @@ void descblk_variant_d(uint32_t ctx,uint32_t ctx2,uint32_t str,
  * writes through a1/a2 — host locals stand in. */
 uint32_t job_wait_pump(uint32_t cd_a,uint32_t cd_b,uint32_t cd_c)
 {
-  uint32_t s0 = 0;
-  uint32_t sp10 = 0, sp14 = 0;
+  uint32_t prev_st = 0;
+  uint32_t out_aux = 0, status = 0;
   for (;;) {
     while (cd_submit5(cd_a, cd_b, cd_c) == 0) { }
-    while (cd_job_result(0, &sp10, &sp14) == 0) { }
-    if (sp14 == 0) break;
-    if (s0 == sp14) break;
-    s0 = sp14;
+    while (cd_job_result(0, &out_aux, &status) == 0) { }
+    if (status == 0) break;
+    if (prev_st == status) break;
+    prev_st = status;
   }
-  return sp14;
+  return status;
 }
 
 /* job_wait_pump_b — same pump on cd_submit6 @0x801687ac (34 insns). */
 void job_wait_pump_b(uint32_t cd_a,uint32_t cd_b,uint32_t cd_c)
 {
-  uint32_t s0 = 0;
-  uint32_t sp10 = 0, sp14 = 0;
+  uint32_t prev_st = 0;
+  uint32_t out_aux = 0, status = 0;
   for (;;) {
     while (cd_submit6(cd_a, cd_b, cd_c) == 0) { }
-    while (cd_job_result(0, &sp10, &sp14) == 0) { }
-    if (sp14 == 0) break;
-    if (s0 == sp14) break;
-    s0 = sp14;
+    while (cd_job_result(0, &out_aux, &status) == 0) { }
+    if (status == 0) break;
+    if (prev_st == status) break;
+    prev_st = status;
   }
 }
 
@@ -10626,12 +10626,12 @@ void gte_quad_attr_emit(uint32_t obj,uint32_t mode,uint32_t idx,
  * slot_height_proj(obj+8 + 0x207c, obj+0xbc, obj+0xc, s0); return 0. */
 int32_t fighter_frame_triple_emit(uint32_t obj)
 {
-  uint32_t sub28 = obj + 0x28;
+  uint32_t trail_ent = obj + 0x28;
   if (MBS8(0x801e3d00u) < 0) return -1;
   MW8(obj + 0x9d, 0);
   battle_camera_step(MB32(obj + 0xbc), (uint8_t *)guest_at(0x1f8000e8),(uint8_t *)guest_at(0x1f8001f0),(int32_t)obj);
   fighter_tint_fade(MB32(obj + 8), MB32(obj + 0xc), obj, MBS8(obj + 0x98));
-  fighter_trail_emit((undefined4 *)guest_at(sub28), 0x1f80033cu, MB32(obj + 0xbc), (int32_t)obj);
+  fighter_trail_emit((undefined4 *)guest_at(trail_ent), 0x1f80033cu, MB32(obj + 0xbc), (int32_t)obj);
   slot_height_proj(MB32(obj + 8) + 0x207cu, MB32(obj + 0xbc), MB32(obj + 0xc),
                obj);
   return 0;
@@ -10644,17 +10644,17 @@ int32_t fighter_frame_triple_emit(uint32_t obj)
 int32_t job_pump_filter(uint32_t job)
 {
   uint32_t prev = 0;
-  uint32_t sp10 = 0, sp14 = 0;
+  uint32_t out_aux = 0, status = 0;
   for (;;) {
     while (cd_job_start_e(job) == 0) { }
-    while (cd_job_result(0, &sp10, &sp14) == 0) { }
-    if (sp14 < 3u) {
-      if (sp14 == 0) return (int32_t)sp14;
+    while (cd_job_result(0, &out_aux, &status) == 0) { }
+    if (status < 3u) {
+      if (status == 0) return (int32_t)status;
     } else {
-      if (sp14 == 3) return (int32_t)sp14;
+      if (status == 3) return (int32_t)status;
     }
-    if (prev == sp14) return (int32_t)sp14;
-    prev = sp14;
+    if (prev == status) return (int32_t)status;
+    prev = status;
   }
 }
 
@@ -11082,9 +11082,9 @@ static void redraw_4recs(uint32_t start0,uint32_t str0a,
  * hit_chain_clear/42da0/42dd8(s0); return s2+2. */
 uint32_t battle_reset_tail(uint32_t obj,uint32_t unused,uint32_t desc)
 {
-  int32_t fl = (int32_t)(int8_t)(MB16(desc) >> 8);
-  if ((fl & 2) == 0) deferred_cmd_post(0x400, 7, 0);
-  if ((fl & 1) == 0) cond_triple_spawn(1, obj);
+  int32_t tag_fl = (int32_t)(int8_t)(MB16(desc) >> 8);
+  if ((tag_fl & 2) == 0) deferred_cmd_post(0x400, 7, 0);
+  if ((tag_fl & 1) == 0) cond_triple_spawn(1, obj);
   MW32(obj + 0x6c, MB32(obj + 0x6c) & 0xffff7fffu);
   MW16(obj + 0xd6, 0);
   MW16(obj + 0xd8, 0);
@@ -12026,9 +12026,9 @@ void hp_bar_tick(void)
     /* guest div @0x801598F8 + mfhi: HI = lh(+0x1c) % lh(+0x30);
      * divisor 0 -> HI = dividend (no trap). */
     {
-      int32_t _dn = MBS16(a0 + 0x30);
-      int32_t _nm = MBS16(idx + 0x1c);
-      rem = _dn == 0 ? _nm : _nm % _dn;
+      int32_t divisor = MBS16(a0 + 0x30);
+      int32_t dividend = MBS16(idx + 0x1c);
+      rem = divisor == 0 ? dividend : dividend % divisor;
     }
     if (rem != 0) {
       MW32(0x801f473cu, 0);
@@ -15057,27 +15057,27 @@ void heap_ptr_fixup(uint32_t blk)
    * pass for (+4==0, +8==0) blocks the guest still processes and ran it
    * for (+4!=0, +8 small) blocks the guest skips. */
   if (MB32(blk + 4u) == 0) {
-    uint32_t toff = MB32(blk + 8u);
-    cur = blk + toff * 4u;
+    uint32_t tbl_off = MB32(blk + 8u);
+    cur = blk + tbl_off * 4u;
     MW32(blk + 8u, cur);
     n = (int32_t)MB32(cur);
     cur += 4u;
     if (n > 0) {
       do {
-        int32_t a1 = (int32_t)MB32(cur);
+        int32_t inner_n = (int32_t)MB32(cur);
         cur += 4u;
-        if (a1 > 0) {
+        if (inner_n > 0) {
           do {
             /* generated stores back to the SAME slot it loaded
              * (cur advances in the delay slot AFTER the sw), and the
              * only test is bit31 — a 0x80000000 entry stores blk+0.
              * The prior port wrote one word too far (post-increment)
              * and added a spurious low-bits!=0 guard. */
-            uint32_t v1 = MB32(cur);
-            if ((v1 & 0x80000000u) != 0)
-              MW32(cur, blk + (v1 & 0x7fffffffu) * 4u);
+            uint32_t ent = MB32(cur);
+            if ((ent & 0x80000000u) != 0)
+              MW32(cur, blk + (ent & 0x7fffffffu) * 4u);
             cur += 4u;
-          } while (--a1 > 0);
+          } while (--inner_n > 0);
         }
       } while (--n > 0);
     }
@@ -15227,9 +15227,9 @@ int32_t options_menu_alloc(void)
   /* loop2: two banks of 100 records */
   {
     int32_t bi;
-    uint32_t boff = 0;
-    for (bi = 0; bi < 2; bi++, boff += 0xfa0u) {
-      uint32_t b1 = obj + boff;
+    uint32_t bank_off = 0;
+    for (bi = 0; bi < 2; bi++, bank_off += 0xfa0u) {
+      uint32_t b1 = obj + bank_off;
       int32_t  j;
       for (j = 0; j < 100; j++, b1 += 0x28u) {
         uint32_t e = b1 + 0xeu;
