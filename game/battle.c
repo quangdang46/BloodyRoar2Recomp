@@ -5682,7 +5682,7 @@ undefined4 seg_sphere_hit(int rad0,int rad1,int *seg0,int *seg1,int *cen,short *
 
 undefined4 sphere_pt_hit(int r0,int r1,int *p,int *q,short *mid)
 {
-  int ad;
+  int a;
   int dy;
   int dz;
   int dx;
@@ -5692,23 +5692,23 @@ undefined4 sphere_pt_hit(int r0,int r1,int *p,int *q,short *mid)
   int vdif [3];
   r0 = r0 + r1;
   dx = *p - *q;
-  ad = dx;
+  a = dx;
   if (dx < 0) {
-    ad = -dx;
+    a = -dx;
   }
-  if (ad < r0) {
+  if (a < r0) {
     dy = p[1] - q[1];
-    ad = dy;
+    a = dy;
     if (dy < 0) {
-      ad = -dy;
+      a = -dy;
     }
-    if (ad < r0) {
+    if (a < r0) {
       dz = p[2] - q[2];
-      ad = dz;
+      a = dz;
       if (dz < 0) {
-        ad = -dz;
+        a = -dz;
       }
-      if ((ad < r0) &&
+      if ((a < r0) &&
          (vdif[0] = dx, vdif[1] = dy, vdif[2] = dz, gte_op_a00428((undefined4 *)vdif,(undefined4 *)vdif),
          vdif[0] + vdif[1] + vdif[2] < r0 * r0)) {
         *mid = (short)*q + (short)(dx / 2);
@@ -6431,31 +6431,31 @@ switchD_80181ff0_caseD_9:
 bool pt_box_radius_test(int r0,int r1,int *p,int *q)
 {
   int r2;
-  int ad;
+  int a;
   /* Guest vec3 slot: gte_op_a00428 reads/writes 3 contiguous u32
    * through vdif; the decompiler split the 12-byte vec3 into
    * scalars. vdif[0..2] = old vdif/local_14/local_10. */
   int vdif [3];
   r0 = r0 + r1;
   vdif[0] = *q - *p;
-  ad = vdif[0];
+  a = vdif[0];
   if (vdif[0] < 0) {
-    ad = -vdif[0];
+    a = -vdif[0];
   }
-  if (ad < r0) {
+  if (a < r0) {
     vdif[1] = q[1] - p[1];
-    ad = vdif[1];
+    a = vdif[1];
     if (vdif[1] < 0) {
-      ad = -vdif[1];
+      a = -vdif[1];
     }
-    if (ad < r0) {
+    if (a < r0) {
       vdif[2] = q[2] - p[2];
-      ad = vdif[2];
+      a = vdif[2];
       if (vdif[2] < 0) {
-        ad = -vdif[2];
+        a = -vdif[2];
       }
       r2 = r0 * r0;
-      if (ad < r0) {
+      if (a < r0) {
         gte_op_a00428((undefined4 *)vdif,(undefined4 *)vdif);
         if (r2 <= vdif[0]) {
           return false;
@@ -7317,19 +7317,19 @@ undefined4 * vec3_step_toward_q_spd(undefined4 *a0,short *a1,short *a2,int a3)
 
 undefined1 table_byte_next_a(void)
 {
-  byte bVar1;
-  bVar1 = DAT_801e83aa;
+  byte i;
+  i = DAT_801e83aa;
   DAT_801e83aa = DAT_801e83aa + 1;
-  return (&DAT_8011ec40)[bVar1];
+  return (&DAT_8011ec40)[i];
 
 }
 
 undefined1 table_byte_next_b(void)
 {
-  byte bVar1;
-  bVar1 = DAT_801e83b0;
+  byte i;
+  i = DAT_801e83b0;
   DAT_801e83b0 = DAT_801e83b0 + 1;
-  return *(undefined1 *)guest_at((uint32_t)(uintptr_t)((bVar1 + 0x801e8400)));
+  return *(undefined1 *)guest_at((uint32_t)(uintptr_t)((i + 0x801e8400)));
 
 }
 void sprite_strip_draw_dual(int src_a,int src_b,int uv,int n,ushort *pal,int arg6, int rgb,int tag)
@@ -8311,13 +8311,13 @@ int * task_node_alloc(int kind,undefined4 cnt,uint sz,int cb,int arg5,int arg6)
 
 void task_node_free(int *node)
 {
-  int iVar1;
+  int pi;
   /* callers pass the node's GUEST address (cast to int*); resolve it */
   if (node == (int *)0x0) {
     return;
   }
   node = (int *)guest_at((uint32_t)(uintptr_t)node);
-  iVar1 = node[5];
+  pi = node[5];
   {
     if ((char)node[6] == '\0') {
       *(undefined1 *)(node + 6) = 1;
@@ -8329,7 +8329,7 @@ void task_node_free(int *node)
         *(int *)guest_at((uint32_t)(uintptr_t)((*node + 4) ))= node[1];
       }
       if (node[1] == 0) {
-        *(int *)guest_at((uint32_t)(uintptr_t)(((char)iVar1 * 0x48 + -0x7fe00c68 + *(char *)((intptr_t)node + 0x16) * 4) ))= *node;
+        *(int *)guest_at((uint32_t)(uintptr_t)(((char)pi * 0x48 + -0x7fe00c68 + *(char *)((intptr_t)node + 0x16) * 4) ))= *node;
       }
       else {
         *(int *)guest_at((uint32_t)(uintptr_t)(node[1] ))= *node;
@@ -8387,13 +8387,13 @@ void task_pools_tick(int pool)
 
 }
 
-void noop_a(int u0,undefined4 u1,undefined4 u2,undefined4 u3)
+void noop_a(int nd,undefined4 v0,undefined4 v1,undefined4 v2)
 {
-  int iVar1;
-  iVar1 = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((u0 + 0x10) ))+ 8)));
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar1 + 4) ))= u1;
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar1 + 8) ))= u2;
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0xc) ))= u3;
+  int pb;
+  pb = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((nd + 0x10) ))+ 8)));
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((pb + 4) ))= v0;
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((pb + 8) ))= v1;
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((pb + 0xc) ))= v2;
   return;
 
 }
@@ -8417,12 +8417,12 @@ int fx_group_alloc(undefined4 a0,undefined4 a1,int a2,int a3)
 
 }
 
-void noop_b(int u0,undefined4 u1,undefined4 u2)
+void noop_b(int nd,undefined4 v0,undefined4 v1)
 {
-  int iVar1;
-  iVar1 = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((u0 + 0x10) ))+ 8)));
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar1 + 4) ))= u1;
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar1 + 8) ))= u2;
+  int pb;
+  pb = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((nd + 0x10) ))+ 8)));
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((pb + 4) ))= v0;
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((pb + 8) ))= v1;
   return;
 
 }
@@ -8638,16 +8638,16 @@ undefined4 tween_chan_alloc(int grp,int idx)
 
 void tween_dur_spread(int grp,int n)
 {
-  int iVar1;
+  int i;
   if (n < 0) {
     n = 1;
   }
-  if ((grp != 0) && (iVar1 = 0, 0 < *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x40))))) {
+  if ((grp != 0) && (i = 0, 0 < *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x40))))) {
     do {
-      *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((iVar1 * 4 + *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x10)))) ))+ 0x10) ))+ 0x32) ))=
+      *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((i * 4 + *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x10)))) ))+ 0x10) ))+ 0x32) ))=
            (short)n;
-      iVar1 = iVar1 + 1;
-    } while (iVar1 < *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x40))));
+      i = i + 1;
+    } while (i < *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x40))));
   }
   return;
 
@@ -8669,48 +8669,48 @@ int str_len(char *s)
 
 }
 
-char * strchr_bounded(char *s,char a1,int a2)
+char * strchr_bounded(char *s,char c,int n)
 {
-  char *pcVar1;
-  pcVar1 = (char *)0x0;
-  if ((s != (char *)0x0) && (0 < a2)) {
+  char *p;
+  p = (char *)0x0;
+  if ((s != (char *)0x0) && (0 < n)) {
     do {
-      pcVar1 = s;
-      a2 = a2 + -1;
-      if (a2 < 0) {
+      p = s;
+      n = n + -1;
+      if (n < 0) {
         return (char *)0x0;
       }
-      s = pcVar1 + 1;
-    } while (*pcVar1 != a1);
+      s = p + 1;
+    } while (*p != c);
   }
-  return pcVar1;
+  return p;
 
 }
 
-undefined1 * mem_move(undefined1 *s,undefined1 *a1,int a2)
+undefined1 * mem_move(undefined1 *dst,undefined1 *src,int n)
 {
-  undefined1 uVar1;
-  if (s < a1) {
-    for (; 0 < a2; a2 = a2 + -1) {
-      uVar1 = *a1;
-      a1 = a1 + 1;
-      *s = uVar1;
-      s = s + 1;
+  undefined1 t;
+  if (dst < src) {
+    for (; 0 < n; n = n + -1) {
+      t = *src;
+      src = src + 1;
+      *dst = t;
+      dst = dst + 1;
     }
   }
   else {
-    while (0 < a2) {
-      a2 = a2 + -1;
-      s[a2] = a1[a2];
+    while (0 < n) {
+      n = n + -1;
+      dst[n] = src[n];
     }
   }
-  return s;
+  return dst;
 
 }
 
 /* script_stream_tick dest-ptr anomaly latch: the quad-vertex dest pointers
- * (*s, s[1]) must be normal RAM (>=0x80100000). A value in the
- * kernel/vector page means the stream state's pointers are corrupt — record
+ * (*dst, dst[1]) must be normal RAM (>=0x80100000). A value in the
+ * kernel/vector page means the stream state'dst pointers are corrupt — record
  * the state addr, both dest ptrs, and the script base/pc for freeze_check. */
 extern uint32_t g_sst_bad_state, g_sst_bad_d0, g_sst_bad_d1;
 extern uint32_t g_sst_bad_sbase, g_sst_bad_spc, g_sst_bad_count;
@@ -9126,7 +9126,7 @@ void slot_triple_tick(int *slot)
 
 void xform_accum_tick(undefined4 *rec)
 {
-  short sVar1;
+  short t;
   _DAT_1f8003f8 = *rec;
   _DAT_1f8003fc = rec[1];
   gte_xform_accum((short *)(uintptr_t)&DAT_1f8003f8,(uint *)(uintptr_t)(rec + 2),1,(int)*(short *)(rec + 4));
@@ -9136,10 +9136,10 @@ void xform_accum_tick(undefined4 *rec)
     _DAT_801f0748 = 0;
   }
   else if (((_DAT_1f800082 == 0) &&
-           (sVar1 = *(short *)((intptr_t)rec + 0x12) + 1, *(short *)((intptr_t)rec + 0x12) = sVar1,
-           10 < sVar1)) &&
-          (sVar1 = *(short *)(rec + 4), *(ushort *)(rec + 4) = sVar1 - 0x88U,
-          (int)((uint)(ushort)(sVar1 - 0x88U) << 0x10) < 0)) {
+           (t = *(short *)((intptr_t)rec + 0x12) + 1, *(short *)((intptr_t)rec + 0x12) = t,
+           10 < t)) &&
+          (t = *(short *)(rec + 4), *(ushort *)(rec + 4) = t - 0x88U,
+          (int)((uint)(ushort)(t - 0x88U) << 0x10) < 0)) {
     *(undefined2 *)(rec + 4) = 0;
   }
   return;
@@ -9359,16 +9359,16 @@ int angle_from_xy(int x,int y)
 
 void table_1f0ae0_clear(int idx)
 {
-  int iVar1;
-  iVar1 = 0;
+  int i;
+  i = 0;
   idx = idx * 0x168;
   do {
-    iVar1 = iVar1 + 1;
+    i = i + 1;
     *(undefined2 *)(&DAT_801f0ae0 + idx) = 0;
     *(undefined2 *)guest_at((uint32_t)(uintptr_t)((idx + -0x7fe0f51e) ))= 0;
     *(undefined2 *)(&DAT_801f0ae4 + idx) = 0;
     idx = idx + 10;
-  } while (iVar1 < 0x24);
+  } while (i < 0x24);
   return;
 
 }
@@ -10639,27 +10639,27 @@ bool burst_slot_active(int slot)
 }
 
 /* ---- batch15: GTE/vector + string helpers ---- */
-void prim_packet_init_tex(int pkt,int a1,int a2,uint fl,byte *arg5)
+void prim_packet_init_tex(int pkt,int sh,int tx,uint fl,byte *uv)
 {
-  uint uVar1;
-  uVar1 = 0xe1000000;
+  uint op;
+  op = 0xe1000000;
   *(undefined1 *)guest_at((uint32_t)(uintptr_t)((pkt + 3) ))= 2;
-  if (a2 != 0) {
-    uVar1 = 0xe1000200;
+  if (tx != 0) {
+    op = 0xe1000200;
   }
   fl = fl & 0x9ff;
-  if (a1 != 0) {
+  if (sh != 0) {
     fl = fl | 0x400;
   }
-  *(uint *)guest_at((uint32_t)(uintptr_t)((pkt + 4) ))= uVar1 | fl;
-  if (arg5 == (byte *)0x0) {
+  *(uint *)guest_at((uint32_t)(uintptr_t)((pkt + 4) ))= op | fl;
+  if (uv == (byte *)0x0) {
     *(undefined4 *)guest_at((uint32_t)(uintptr_t)((pkt + 8) ))= 0;
   }
   else {
     *(uint *)guest_at((uint32_t)(uintptr_t)((pkt + 8) ))=
-         (uint)(arg5[2] >> 3) << 0xf | (uint)(*arg5 >> 3) << 10 | 0xe2000000 |
-         (-(int)*(short *)(arg5 + 6) & 0xf8U) << 2 |
-         (int)(-(int)*(short *)(arg5 + 4) & 0xffU) >> 3;
+         (uint)(uv[2] >> 3) << 0xf | (uint)(*uv >> 3) << 10 | 0xe2000000 |
+         (-(int)*(short *)(uv + 6) & 0xf8U) << 2 |
+         (int)(-(int)*(short *)(uv + 4) & 0xffU) >> 3;
   }
   return;
 
@@ -10993,14 +10993,14 @@ void orbit_fx_spawn(int rec)
 /* ---- batch16: task/resource internals ---- */
 void task_heads_clear(int pool)
 {
-  int iVar1;
-  iVar1 = 0;
+  int i;
+  i = 0;
   pool = pool * 0x48;
   do {
     *(undefined4 *)guest_at((uint32_t)(uintptr_t)((pool + -0x7fe00c68) ))= 0;
-    iVar1 = iVar1 + 1;
+    i = i + 1;
     pool = pool + 4;
-  } while (iVar1 < 0x10);
+  } while (i < 0x10);
   return;
 
 }
@@ -11193,16 +11193,16 @@ void task_pool_free(int pool)
 
 void gp_slot48_set(undefined4 v)
 {
-  int unaff_gp = (int)guest_gp();
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((unaff_gp + 0x48) ))= v;
+  int gp = (int)guest_gp();
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((gp + 0x48) ))= v;
   return;
 
 }
 
 void gp_slot24_set(undefined4 v)
 {
-  int unaff_gp = (int)guest_gp();
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((unaff_gp + 0x24) ))= v;
+  int gp = (int)guest_gp();
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((gp + 0x24) ))= v;
   return;
 
 }
@@ -11800,12 +11800,12 @@ switchD_801a776c_default:
 
 void obj_flag34_clear(int obj)
 {
-  int iVar1;
-  if ((obj != 0) && (iVar1 = 0, 0 < *(int *)guest_at((uint32_t)(uintptr_t)((obj + 0x40))))) {
+  int i;
+  if ((obj != 0) && (i = 0, 0 < *(int *)guest_at((uint32_t)(uintptr_t)((obj + 0x40))))) {
     do {
-      *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((iVar1 * 4 + *(int *)guest_at((uint32_t)(uintptr_t)((obj + 0x10)))) ))+ 0x10) ))+ 0x34) ))= 0;
-      iVar1 = iVar1 + 1;
-    } while (iVar1 < *(int *)guest_at((uint32_t)(uintptr_t)((obj + 0x40))));
+      *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((i * 4 + *(int *)guest_at((uint32_t)(uintptr_t)((obj + 0x10)))) ))+ 0x10) ))+ 0x34) ))= 0;
+      i = i + 1;
+    } while (i < *(int *)guest_at((uint32_t)(uintptr_t)((obj + 0x40))));
   }
   return;
 
@@ -11846,11 +11846,11 @@ int tween_seq_alloc(int a0,undefined2 a1,undefined4 a2,undefined4 a3,short arg5,
 
 }
 
-void gte_matrix_base_set(undefined4 a0,undefined4 a1)
+void gte_matrix_base_set(undefined4 base,undefined4 cur)
 {
-  int unaff_gp = (int)guest_gp();
-  DAT_801be838 = a0;
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((unaff_gp + 0x34) ))= a1;
+  int gp = (int)guest_gp();
+  DAT_801be838 = base;
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((gp + 0x34) ))= cur;
   return;
 
 }
@@ -12034,14 +12034,14 @@ int prim_group_alloc(undefined4 a0,int a1,int a2,int a3,int arg5,int arg6, undef
 
 }
 
-void node_param_quad_set(int a0,undefined4 a1,undefined4 a2,undefined4 a3, undefined4 arg5)
+void node_param_quad_set(int nd,undefined4 v0,undefined4 v1,undefined4 v2, undefined4 v3)
 {
-  int iVar1;
-  iVar1 = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((a0 + 0x10) ))+ 8)));
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar1 + 4) ))= a1;
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar1 + 8) ))= a2;
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0xc) ))= a3;
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0x10) ))= arg5;
+  int pb;
+  pb = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((nd + 0x10) ))+ 8)));
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((pb + 4) ))= v0;
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((pb + 8) ))= v1;
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((pb + 0xc) ))= v2;
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((pb + 0x10) ))= v3;
   return;
 
 }
@@ -13775,10 +13775,10 @@ uint * angle_pair_rotmat(uint x,uint y,uint *z)
 /* ---- batch18: task/alloc + GTE helpers ---- */
 void vec_emit_spawn(undefined4 *rec)
 {
-  int iVar1;
-  iVar1 = fx_group_alloc(1,1,3,3);
-  if (iVar1 != 0) {
-    noop_a(iVar1,*rec,rec[1],rec[2]);
+  int grp;
+  grp = fx_group_alloc(1,1,3,3);
+  if (grp != 0) {
+    noop_a(grp,*rec,rec[1],rec[2]);
   }
   return;
 
@@ -14206,12 +14206,12 @@ undefined4 tween_ensure(int chan)
 
 void obj_flag34_set(int obj)
 {
-  int iVar1;
-  if ((obj != 0) && (iVar1 = 0, 0 < *(int *)guest_at((uint32_t)(uintptr_t)((obj + 0x40))))) {
+  int i;
+  if ((obj != 0) && (i = 0, 0 < *(int *)guest_at((uint32_t)(uintptr_t)((obj + 0x40))))) {
     do {
-      *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((iVar1 * 4 + *(int *)guest_at((uint32_t)(uintptr_t)((obj + 0x10)))) ))+ 0x10) ))+ 0x34) ))= 1;
-      iVar1 = iVar1 + 1;
-    } while (iVar1 < *(int *)guest_at((uint32_t)(uintptr_t)((obj + 0x40))));
+      *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((i * 4 + *(int *)guest_at((uint32_t)(uintptr_t)((obj + 0x10)))) ))+ 0x10) ))+ 0x34) ))= 1;
+      i = i + 1;
+    } while (i < *(int *)guest_at((uint32_t)(uintptr_t)((obj + 0x40))));
   }
   return;
 
@@ -14545,10 +14545,10 @@ undefined4 isqrt_refine(int n)
 
 undefined4 cop2_clz(undefined4 v)
 {
-  undefined4 uVar1;
+  undefined4 r;
   setCopReg(2,0xf000,v);
-  uVar1 = getCopReg(2,0xf800);
-  return uVar1;
+  r = getCopReg(2,0xf800);
+  return r;
 
 }
 
@@ -14807,19 +14807,19 @@ void prim_tag_set(int prim)
 
 }
 
-void prim_packet_init(int pkt,int a1,int a2,uint fl)
+void prim_packet_init(int pkt,int sh,int tx,uint fl)
 {
-  uint uVar1;
+  uint op;
   *(undefined1 *)guest_at((uint32_t)(uintptr_t)((pkt + 3) ))= 1;
-  uVar1 = 0xe1000000;
-  if (a2 != 0) {
-    uVar1 = 0xe1000200;
+  op = 0xe1000000;
+  if (tx != 0) {
+    op = 0xe1000200;
   }
   fl = fl & 0x9ff;
-  if (a1 != 0) {
+  if (sh != 0) {
     fl = fl | 0x400;
   }
-  *(uint *)guest_at((uint32_t)(uintptr_t)((pkt + 4) ))= uVar1 | fl;
+  *(uint *)guest_at((uint32_t)(uintptr_t)((pkt + 4) ))= op | fl;
   return;
 
 }
@@ -15339,12 +15339,12 @@ void speech_bubble_spawn(undefined4 *a0,short a1,int a2,ushort a3)
 void effect_arg_set(undefined4 arg)
 
 {
-  undefined4 *puVar1;
+  undefined4 *slot;
   
   if ((DAT_1f8000b1 == '\0') &&
-     (puVar1 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(task_alloc_wrap_e(4,(int)br2_gaddr(g_PTR_FUN_801b1ec0),(int)guest_of(&DAT_801b1eac)))),
-     puVar1 != (undefined4 *)0x0)) {
-    *puVar1 = arg;
+     (slot = (undefined4 *)guest_at((uint32_t)(uintptr_t)(task_alloc_wrap_e(4,(int)br2_gaddr(g_PTR_FUN_801b1ec0),(int)guest_of(&DAT_801b1eac)))),
+     slot != (undefined4 *)0x0)) {
+    *slot = arg;
   }
   return;
 }
@@ -16352,19 +16352,19 @@ void announce_param_block_init(uint32_t a0,uint32_t a1,const void *a2,
 }
 
 /* print_mode_dispatch — print-mode dispatch (mode 1 = text window). */
-void print_mode_dispatch_b(int32_t a0,uint32_t a1,uint32_t a2)
+void print_mode_dispatch_b(int32_t mode,uint32_t a1,uint32_t a2)
 {
-  BA32(0x1f800384) = (uint32_t)a0;
-  if (a0 == 1) {
-    uint32_t uVar1;
+  BA32(0x1f800384) = (uint32_t)mode;
+  if (mode == 1) {
+    uint32_t w;
     text_win_init(0x3c0,0);
-    uVar1 = text_widget_alloc(a1,a2,0x140,0xf0,0,0x200);
-    text_line_select(uVar1);
+    w = text_widget_alloc(a1,a2,0x140,0xf0,0,0x200);
+    text_line_select(w);
     return;
   }
-  if (a0 < 2) {
-    if (a0 == 0) return;
-  } else if (a0 == 2) {
+  if (mode < 2) {
+    if (mode == 0) return;
+  } else if (mode == 2) {
     return;
   }
   printf_forward(s_Print_mode_error_8011f140);
@@ -17110,28 +17110,28 @@ void mode_select_wrapper(int mode)
  * else mdec_status_read()>>29 & 1. */
 int file_state_bit29_query(int st)
 {
-  int iVar1;
+  int r;
   if (st == 0) {
-    iVar1 = mdec_stat_wait_a();
+    r = mdec_stat_wait_a();
   }
   else {
-    iVar1 = mdec_status_read() >> 0x1d & 1;
+    r = mdec_status_read() >> 0x1d & 1;
   }
-  return iVar1;
+  return r;
 }
 
 /* guest file_state_bit24_query @0x8018fa8c — file-state query: op0 -> mdec_stat_wait_b(),
  * else mdec_status_read()>>24 & 1. */
 int file_state_bit24_query(int st)
 {
-  int iVar1;
+  int r;
   if (st == 0) {
-    iVar1 = mdec_stat_wait_b();
+    r = mdec_stat_wait_b();
   }
   else {
-    iVar1 = mdec_status_read() >> 0x18 & 1;
+    r = mdec_status_read() >> 0x18 & 1;
   }
-  return iVar1;
+  return r;
 }
 
 /* guest node_distance_check @0x80133708 — distance check vs node->h2a tracker.
@@ -17648,24 +17648,24 @@ many:
 /* guest gte_vec_transform_emit @0x80186aa8 — copies 3 hwords from p2+0x34..3c into
  * p3+8..c, GTE transform via rtps_point_xform2, resets p2+4..0x14 to a
  * 0x1000-strided pattern then gte_rtps_xform3 emit. p1 unused. */
-void gte_vec_transform_emit(int a0,int a1,int a2)
+void gte_vec_transform_emit(int unused,int nd,int out)
 {
-  int iVar1;
-  iVar1 = *(int *)guest_at((uint32_t)(uintptr_t)(a1 + 0x40)) + 0x20;
-  *(ushort *)guest_at((uint32_t)(uintptr_t)(a2 + 8)) = *(ushort *)guest_at((uint32_t)(uintptr_t)(a1 + 0x34));
-  *(ushort *)guest_at((uint32_t)(uintptr_t)(a2 + 0xa)) = *(ushort *)guest_at((uint32_t)(uintptr_t)(a1 + 0x38));
-  *(ushort *)guest_at((uint32_t)(uintptr_t)(a2 + 0xc)) = *(ushort *)guest_at((uint32_t)(uintptr_t)(a1 + 0x3c));
-  rtps_point_xform2((undefined4 *)guest_at((uint32_t)(uintptr_t)iVar1),
-               (undefined4 *)guest_at((uint32_t)(uintptr_t)(a1 + 0x18)),
-               (undefined4 *)guest_at((uint32_t)(uintptr_t)(a1 + 0x34)));
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)(a1 + 4)) = 0x1000;
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)(a1 + 8)) = 0;
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)(a1 + 0xc)) = 0x1000;
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)(a1 + 0x10)) = 0;
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)(a1 + 0x14)) = 0x1000;
-  gte_rtps_xform3((undefined4 *)guest_at((uint32_t)(uintptr_t)iVar1),
-               (ushort *)guest_at((uint32_t)(uintptr_t)(a1 + 4)),
-               (uint *)guest_at((uint32_t)(uintptr_t)(a1 + 0x20)));
+  int src;
+  src = *(int *)guest_at((uint32_t)(uintptr_t)(nd + 0x40)) + 0x20;
+  *(ushort *)guest_at((uint32_t)(uintptr_t)(out + 8)) = *(ushort *)guest_at((uint32_t)(uintptr_t)(nd + 0x34));
+  *(ushort *)guest_at((uint32_t)(uintptr_t)(out + 0xa)) = *(ushort *)guest_at((uint32_t)(uintptr_t)(nd + 0x38));
+  *(ushort *)guest_at((uint32_t)(uintptr_t)(out + 0xc)) = *(ushort *)guest_at((uint32_t)(uintptr_t)(nd + 0x3c));
+  rtps_point_xform2((undefined4 *)guest_at((uint32_t)(uintptr_t)src),
+               (undefined4 *)guest_at((uint32_t)(uintptr_t)(nd + 0x18)),
+               (undefined4 *)guest_at((uint32_t)(uintptr_t)(nd + 0x34)));
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)(nd + 4)) = 0x1000;
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)(nd + 8)) = 0;
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)(nd + 0xc)) = 0x1000;
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)(nd + 0x10)) = 0;
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)(nd + 0x14)) = 0x1000;
+  gte_rtps_xform3((undefined4 *)guest_at((uint32_t)(uintptr_t)src),
+               (ushort *)guest_at((uint32_t)(uintptr_t)(nd + 4)),
+               (uint *)guest_at((uint32_t)(uintptr_t)(nd + 0x20)));
   return;
 }
 
