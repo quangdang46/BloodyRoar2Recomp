@@ -951,7 +951,7 @@ extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t)
 extern uint32_t br2_call_clean(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern uint32_t call_guest4(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern void br2_guest_frame_free(void);
-void br2_st32(uint32_t a, uint32_t v);
+void br2_st32(uint32_t addr, uint32_t val);
 static uint32_t g_bind_frm_sp[32];
 static int g_bind_frm_depth;
 #if defined(__GNUC__) || defined(__clang__)
@@ -992,11 +992,11 @@ extern void gpu_state_patch_defer(void);
 extern void FUN_8018e300(void);
 extern void FUN_8018e310(uint32_t);
 extern int psx_syscall(CPUState *cpu, uint32_t code);
-uint32_t br2_ld32(uint32_t a);
-uint16_t br2_ld16(uint32_t a);
-uint8_t  br2_ld8 (uint32_t a);
-void     br2_st8 (uint32_t a, uint8_t  v);
-void     br2_st16(uint32_t a, uint16_t v);
+uint32_t br2_ld32(uint32_t addr);
+uint16_t br2_ld16(uint32_t addr);
+uint8_t  br2_ld8 (uint32_t addr);
+void     br2_st8 (uint32_t addr, uint8_t  val);
+void     br2_st16(uint32_t addr, uint16_t val);
 
 /* COP2 register field encoding shared with ani.c/gfx.c: reg n -> n*0x800. */
 #define BR2_GTE_REG(n) ((n) * 0x800)
@@ -1026,7 +1026,7 @@ void FUN_801851d8(void) { anim_vec3_normalize(); }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int32_t FUN_80194500(uint32_t a0) { return (int32_t)fixed_rsqrt_q12(a0); }
+int32_t FUN_80194500(uint32_t val) { return (int32_t)fixed_rsqrt_q12(val); }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -1511,7 +1511,7 @@ void FUN_80194478(void) { gte_screen_init_defer(); }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_80195290(int32_t a0,int32_t a1) { gte_ofs_set(a0,a1); }
+void FUN_80195290(int32_t ofs_x,int32_t ofs_y) { gte_ofs_set(ofs_x,ofs_y); }
 
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
@@ -2524,11 +2524,11 @@ void FUN_8018e300(void)
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void FUN_8018e310(uint32_t a0)
+void FUN_8018e310(uint32_t arg)
 {
     /* guest 0x8018E310: li a0,2; syscall 0 (ExitCriticalSection/EI). */
     CPUState *cpu = clean_cpu_state();
-    (void)a0;
+    (void)arg;
     if (!cpu) return;
     cpu->gpr[4] = 2;
     psx_syscall(cpu, 0);
@@ -2662,7 +2662,7 @@ void FUN_8019e55c(void)
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int32_t cd_seek_state_machine(uint32_t a0)
+int32_t cd_seek_state_machine(uint32_t arg)
 {
     /* guest 0x8019D5B0: li t2,0xB0; li t1,0x0B; jr t2 — B0 svc 0x0B
      * trampoline forwarding live a0-a3 (generated
@@ -2670,7 +2670,7 @@ int32_t cd_seek_state_machine(uint32_t a0)
      * caller's return address; record it as the svc return pc. */
     CPUState *c = clean_cpu_state();
     uint32_t ret = c ? c->gpr[31] : 0x8019d5bcu;
-    (void)a0;
+    (void)arg;
     return (int32_t)bind_bios_call_live(0x0b, ret);
 }
 
@@ -3011,7 +3011,7 @@ __attribute__((weak))
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-int32_t FUN_801948c0(uint32_t a0) { return (int32_t)fixed_recip_lut(a0); }
+int32_t FUN_801948c0(uint32_t val) { return (int32_t)fixed_recip_lut(val); }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -3190,27 +3190,27 @@ void FUN_801a0250(uint32_t a0)
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-uint8_t br2_ld8(uint32_t a) { return *(uint8_t *)guest_at(a); }
+uint8_t br2_ld8(uint32_t addr) { return *(uint8_t *)guest_at(addr); }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-uint16_t br2_ld16(uint32_t a) { return *(uint16_t *)guest_at(a); }
+uint16_t br2_ld16(uint32_t addr) { return *(uint16_t *)guest_at(addr); }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-uint32_t br2_ld32(uint32_t a) { return *(uint32_t *)guest_at(a); }
+uint32_t br2_ld32(uint32_t addr) { return *(uint32_t *)guest_at(addr); }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void br2_st8(uint32_t a, uint8_t v) { *(uint8_t *)guest_at(a) = v; }
+void br2_st8(uint32_t addr, uint8_t val) { *(uint8_t *)guest_at(addr) = val; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void br2_st16(uint32_t a, uint16_t v) { *(uint16_t *)guest_at(a) = v; }
+void br2_st16(uint32_t addr, uint16_t val) { *(uint16_t *)guest_at(addr) = val; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void br2_st32(uint32_t a, uint32_t v) { *(uint32_t *)guest_at(a) = v; }
+void br2_st32(uint32_t addr, uint32_t val) { *(uint32_t *)guest_at(addr) = val; }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -3226,12 +3226,12 @@ uint32_t br2_ld32p(uint32_t cell) { return br2_ld32(*(uint32_t *)guest_at(cell))
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void br2_st8p(uint32_t cell, uint8_t v) { br2_st8(*(uint32_t *)guest_at(cell), v); }
+void br2_st8p(uint32_t cell, uint8_t val) { br2_st8(*(uint32_t *)guest_at(cell), val); }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void br2_st16p(uint32_t cell, uint16_t v) { br2_st16(*(uint32_t *)guest_at(cell), v); }
+void br2_st16p(uint32_t cell, uint16_t val) { br2_st16(*(uint32_t *)guest_at(cell), val); }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-void br2_st32p(uint32_t cell, uint32_t v) { br2_st32(*(uint32_t *)guest_at(cell), v); }
+void br2_st32p(uint32_t cell, uint32_t val) { br2_st32(*(uint32_t *)guest_at(cell), val); }
