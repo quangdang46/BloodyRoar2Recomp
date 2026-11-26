@@ -14994,14 +14994,14 @@ int fixed_point_divide(int num,int den)
 void keyframe_cursor_search(uint *cur)
 {
   int unaff_gp = (int)guest_gp();
-  int iVar1;
-  int iVar2;
-  int iVar3;
-  int iVar4;
-  int iVar5;
-  byte *pbVar6;
-  uint *puVar7;
-  int iVar8;
+  int t0;
+  int pos;
+  int it;
+  int dir;
+  int idx;
+  byte *cb;
+  uint *ent;
+  int tv;
 
   if (*(int *)guest_at((uint32_t)(uintptr_t)((unaff_gp + 0x44) ))== 1) {
     return;
@@ -15009,70 +15009,70 @@ void keyframe_cursor_search(uint *cur)
   if (cur == (uint *)0x0) {
     return;
   }
-  pbVar6 = (byte *)cur;
-  iVar1 = (int)*(short *)(pbVar6 + 0xa);
-  iVar2 = *(int *)(pbVar6 + 0x2c);
-  if (iVar2 == iVar1) {
+  cb = (byte *)cur;
+  t0 = (int)*(short *)(cb + 0xa);
+  pos = *(int *)(cb + 0x2c);
+  if (pos == t0) {
     return;
   }
-  iVar4 = 1;
-  iVar5 = (int)*(short *)(pbVar6 + 0xe);
-  iVar3 = 0;
-  if (iVar1 < iVar2) {
-    iVar4 = -1;
+  dir = 1;
+  idx = (int)*(short *)(cb + 0xe);
+  it = 0;
+  if (t0 < pos) {
+    dir = -1;
   }
-  iVar1 = iVar2 - iVar1;
-  if (iVar1 < 0) {
+  t0 = pos - t0;
+  if (t0 < 0) {
 LAB_801a9784:
-    iVar1 = (int)*(short *)(pbVar6 + 0xa) - *(int *)(pbVar6 + 0x2c);
-    if (iVar3 >= iVar1) {
+    t0 = (int)*(short *)(cb + 0xa) - *(int *)(cb + 0x2c);
+    if (it >= t0) {
       goto LAB_801a9830;
     }
   }
-  else if (iVar3 >= iVar1) {
+  else if (it >= t0) {
     goto LAB_801a9830;
   }
   for (;;) {
 LAB_801a97a0:
-    puVar7 = (uint *)guest_at(*(uint32_t *)(pbVar6 + 0x18));
-    iVar8 = *(int *)(puVar7 + iVar5 * 5 + 1);
-    iVar2 = iVar2 + iVar4;
-    if (iVar8 < iVar2) {
-      if (0 <= iVar2) {
+    ent = (uint *)guest_at(*(uint32_t *)(cb + 0x18));
+    tv = *(int *)(ent + idx * 5 + 1);
+    pos = pos + dir;
+    if (tv < pos) {
+      if (0 <= pos) {
         goto LAB_801a9810;
       }
-      iVar5 = iVar5 + -1;
-      puVar7 = (uint *)guest_at(*(uint32_t *)(pbVar6 + 0x18));
-      iVar8 = *(int *)(puVar7 + iVar5 * 5 + 1);
-      iVar2 = iVar8 + -1;
-      if (iVar5 < 0) {
-        iVar5 = 0;
-        iVar2 = 0;
+      idx = idx + -1;
+      ent = (uint *)guest_at(*(uint32_t *)(cb + 0x18));
+      tv = *(int *)(ent + idx * 5 + 1);
+      pos = tv + -1;
+      if (idx < 0) {
+        idx = 0;
+        pos = 0;
         goto LAB_801a9830;
       }
       goto LAB_801a9810;
     }
-    iVar5 = iVar5 + 1;
-    iVar2 = 1;
-    if ((int)*(short *)(pbVar6 + 6) <= iVar5) {
-      iVar5 = (int)*(short *)(pbVar6 + 6);
-      iVar2 = 0;
+    idx = idx + 1;
+    pos = 1;
+    if ((int)*(short *)(cb + 6) <= idx) {
+      idx = (int)*(short *)(cb + 6);
+      pos = 0;
       goto LAB_801a9830;
     }
 LAB_801a9810:
-    iVar1 = *(int *)(pbVar6 + 0x2c) - (int)*(short *)(pbVar6 + 0xa);
-    iVar3 = iVar3 + 1;
-    if (iVar1 < 0) {
+    t0 = *(int *)(cb + 0x2c) - (int)*(short *)(cb + 0xa);
+    it = it + 1;
+    if (t0 < 0) {
       goto LAB_801a9784;
     }
-    if (iVar3 < iVar1) {
+    if (it < t0) {
       continue;
     }
     break;
   }
 LAB_801a9830:
-  *(undefined2 *)(pbVar6 + 0xa) = *(undefined2 *)(pbVar6 + 0x2c);
-  tween_apply((short *)cur,iVar5,iVar2);
+  *(undefined2 *)(cb + 0xa) = *(undefined2 *)(cb + 0x2c);
+  tween_apply((short *)cur,idx,pos);
   return;
 }
 /* globals/callees for batch24 ports */
