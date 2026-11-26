@@ -50,6 +50,27 @@ or an external `jal`. To port:
    clean fn that manages its OWN `cpu->pc` continuation switch; that is the
    established pattern for coroutine-capable ports).
 
+## ⚠ KEY — `psx_check_interrupts_at` is a HARD interrupt-delivery point
+
+`psx_check_interrupts_at(cpu, resume)` → `psx_check_interrupts(cpu)`
+(`interrupts.c:2757`) delivers pending IRQs and **can longjmp/redirect into
+an ISR**, resuming later at `resume`. It is NOT a soft check. This is why
+1052/1283 defs carry yields: **block-level IRQ delivery IS the faithful
+timing model** — collapsing a yielding function to straight-line C removes
+interrupt delivery points → deferred-IRQ/coroutine starvation (the
+historical wedge class).
+
+**Therefore reconstruction ≠ transliterating ops.** Per function you must
+decide the IRQ-check granularity the guest actually needs:
+- Timing-critical paths (CD/DMA/coroutine-resume/kernel) → keep CPS or
+  `cd_response_pump`-style internal `cpu->pc` switch.
+- Ordinary game logic → collapse to structured C and replace per-block
+  yields with `br2_irq_poll()` (synchronous check, no resume) at the
+  function boundary or a coarse loop — matching how the 1371 hand-ports
+  already work.
+The hard part is PROVING a given function tolerates coarser IRQ timing —
+that is per-function §4 analysis + runtime verification, not mechanical.
+
 ## ⚠ CORRECTION — "atomic" defs are pieces, not functions (verified)
 
 A follow-up cluster trace disproved the naive candidate filter. The
