@@ -127,6 +127,7 @@ static void feb00_note(uint32_t tag, uint32_t val) {
   s_feb00_tag[i] = tag;
   s_feb00_seq++;
 }
+/* cd_feb00_trace_dump — format feb00 trace ring (tag:val; CSV) into out, cap-bounded; ret chars written. */
 int cd_feb00_trace_dump(char *out, int cap) {
   int pos = 0, i, n = (int)(s_feb00_seq < FEB00_TRACE_CAP ? s_feb00_seq : FEB00_TRACE_CAP);
   int start = (int)(s_feb00_seq - (uint32_t)n);
@@ -153,6 +154,7 @@ void cd_seek_note(uint32_t tag, uint32_t a, uint32_t b) {
   uint32_t i = s_seek_seq % SEEK_TRACE_CAP;
   s_seek_tag[i] = tag; s_seek_a[i] = a; s_seek_b[i] = b; s_seek_seq++;
 }
+/* cd_seek_dump — format seek trace ring (tag:a>b; CSV) into out; ret chars written. */
 int cd_seek_dump(char *out, int cap) {
   int pos = 0, i, n = (int)(s_seek_seq < SEEK_TRACE_CAP ? s_seek_seq : SEEK_TRACE_CAP);
   int start = (int)(s_seek_seq - (uint32_t)n);
@@ -717,6 +719,7 @@ uint32_t mc_session_b(uint32_t cb)
 
 /* ======== 0x80195ec8 ======== */
 
+/* cd_cmd_issue_async — async variant of cd_cmd_issue_sync: opcode zero-extended, retry loop w/ CD_BIOS_CB_20 handshake. */
 uint32_t cd_cmd_issue_async(int8_t opcode,int param_addr)
 
 {
