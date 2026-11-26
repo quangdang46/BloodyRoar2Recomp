@@ -43397,6 +43397,7 @@ block_8013E0C0:
  * from SLES_017.22_full_09.c. */
 void cps_8013e654(void)
 {
+/* task/trig fragment: continues at 0x8013e71c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -43491,6 +43492,7 @@ block_8013E654:
  * from SLES_017.22_full_09.c. */
 void cps_8013e71c(void)
 {
+/* task/trig leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -43510,6 +43512,7 @@ block_8013E71C:
  * from SLES_017.22_full_09.c. */
 void cps_8013e72c(void)
 {
+/* task/trig fragment: continues at 0x8013e778 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -43543,6 +43546,7 @@ block_8013E72C:
  * from SLES_017.22_full_09.c. */
 void cps_8013e778(void)
 {
+/* task/trig fragment: continues at 0x8013e784 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -43568,6 +43572,7 @@ block_8013E778:
  * from SLES_017.22_full_09.c. */
 void cps_8013e784(void)
 {
+/* task/trig fragment: continues at 0x8013e788 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -43583,6 +43588,7 @@ block_8013E784:
  * from SLES_017.22_full_09.c. */
 void cps_8013e788(void)
 {
+/* task/trig fragment: continues at 0x8013e790 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -43599,6 +43605,7 @@ block_8013E788:
  * from SLES_017.22_full_09.c. */
 void cps_8013e790(void)
 {
+/* task/trig thunk -> task_node_free -> task_slot_step */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -43673,6 +43680,7 @@ block_8013E7CC:
  * from SLES_017.22_full_09.c. */
 void cps_8013e7d0(void)
 {
+/* task/trig fragment: continues at 0x8013e7dc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -43690,6 +43698,7 @@ block_8013E7D0:
  * from SLES_017.22_full_09.c. */
 void cps_8013e7dc(void)
 {
+/* task/trig fragment: continues at 0x8013e800 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -43713,6 +43722,7 @@ block_8013E7DC:
  * from SLES_017.22_full_09.c. */
 void cps_8013e800(void)
 {
+/* task/trig fragment: continues at 0x8013e80c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -43730,6 +43740,7 @@ block_8013E800:
  * from SLES_017.22_full_09.c. */
 void cps_8013e80c(void)
 {
+/* task/trig fragment: continues at 0x8013e818 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -43747,6 +43758,7 @@ block_8013E80C:
  * from SLES_017.22_full_09.c. */
 void cps_8013e818(void)
 {
+/* task/trig fragment: continues at 0x8013e820 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -43763,6 +43775,7 @@ block_8013E818:
  * from SLES_017.22_full_09.c. */
 void cps_8013e820(void)
 {
+/* task/trig fragment: continues at 0x8013e82c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -43782,6 +43795,7 @@ block_8013E820:
  * from SLES_017.22_full_09.c. */
 void cps_8013e82c(void)
 {
+/* task/trig fragment: continues at 0x8013e850 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -43808,6 +43822,7 @@ block_8013E82C:
  * from SLES_017.22_full_09.c. */
 void cps_8013e850(void)
 {
+/* task/trig fragment: continues at 0x8013e858 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -43825,6 +43840,7 @@ block_8013E850:
  * from SLES_017.22_full_09.c. */
 void cps_8013e858(void)
 {
+/* task/trig fragment: continues at 0x8013e86c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -43853,6 +43869,7 @@ block_8013E858:
  * from SLES_017.22_full_09.c. */
 void cps_8013e86c(void)
 {
+/* task/trig fragment: continues at 0x8013e874 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -43869,6 +43886,7 @@ block_8013E86C:
  * from SLES_017.22_full_10.c. */
 void cps_8013e874(void)
 {
+/* task/trig thunk -> lut_cos_q12 -> lut_sin_q12 -> lut_cos_q12 -> lut_sin_q12 -> lut_sin_q12 -> lut_cos_q12 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -44115,6 +44133,7 @@ block_8013E9D4:
  * from SLES_017.22_full_10.c. */
 void cps_8013ead4(void)
 {
+/* task/trig leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -44142,6 +44161,7 @@ block_8013EAD4:
  * from SLES_017.22_full_10.c. */
 void cps_8013eb0c(void)
 {
+/* task/trig fragment: continues at 0x8013eb5c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -44214,6 +44234,7 @@ block_8013EB50:
  * from SLES_017.22_full_10.c. */
 void cps_8013eb5c(void)
 {
+/* task/trig thunk -> task_node_alloc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -44383,6 +44404,7 @@ block_8013ECCC:
  * from SLES_017.22_full_10.c. */
 void cps_8013ecdc(void)
 {
+/* task/trig fragment: continues at 0x8013ecf0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -44418,6 +44440,7 @@ block_8013ECEC:
  * from SLES_017.22_full_10.c. */
 void cps_8013ecf0(void)
 {
+/* task/trig fragment: continues at 0x8013ed10 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -44447,6 +44470,7 @@ block_8013ECF0:
  * from SLES_017.22_full_10.c. */
 void cps_8013ed10(void)
 {
+/* task/trig fragment: continues at 0x8013ed24 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -44467,6 +44491,7 @@ block_8013ED10:
  * from SLES_017.22_full_10.c. */
 void cps_8013ed24(void)
 {
+/* task/trig thunk -> task_slot_step */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -44515,6 +44540,7 @@ block_8013ED48:
  * from SLES_017.22_full_10.c. */
 void cps_8013ed50(void)
 {
+/* task/trig fragment: continues at 0x8013ed80 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -44550,6 +44576,7 @@ block_8013ED50:
  * from SLES_017.22_full_10.c. */
 void cps_8013ed80(void)
 {
+/* task/trig fragment: continues at 0x8013f888 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
