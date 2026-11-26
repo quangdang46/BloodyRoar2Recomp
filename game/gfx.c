@@ -3411,6 +3411,10 @@ void gpu_state_patch_defer(void)
 uint32_t gte_xform_packet(uint32_t a0)
 {
     CPUState *c = clean_cpu_state();
+    /* g[] shadows the MIPS gpr file by index: g[2]=v0 g[3]=v1 g[4..7]=a0..a3
+     * g[8..15]=t0..t7 g[16..23]=s0..s7 g[24..25]=t8,t9 g[28]=gp g[31]=ra;
+     * g[0] stays 0 ($zero). Only the registers the guest path touches are
+     * initialized; the rest are dead-zero like the CPS block model. */
     uint32_t g[32] = {0};
     g[4] = a0;
     g[28] = c ? c->gpr[28] : 0;   /* $gp — read by lw 52($gp) matrix ptr */
@@ -7719,6 +7723,10 @@ static void psk_mult_lo(CPUState *c, uint32_t x, uint32_t y)
 uint32_t part_skin_emit(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
   CPUState *c = clean_cpu_state();
+  /* g[] is a private copy of the MIPS gpr file by index (g[2]=v0,
+   * g[4..7]=a0..a3, g[16..23]=s0..s7, g[31]=ra, ...); all guest register
+   * traffic in this function goes through it, then c->gpr[2]/[3] are
+   * written back at the end. g[0] is forced to 0 ($zero). */
   uint32_t g[32];
   uint32_t fr;
   int i;
