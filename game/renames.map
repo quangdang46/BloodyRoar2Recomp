@@ -1805,8 +1805,8 @@
 801837b0 scriptop_wait_fragment_801837b0
 801838b0 scriptop_wait_fragment_801838b0
 801838e8 scriptop_wait_fragment_801838e8
-80183920 scriptop_wait_fragment_80183920
-80183948 scriptop_wait_fragment_80183948
+80183920 scriptop_wait_atk3_self
+80183948 scriptop_wait_atk3_foe
 80183964 scriptop_wait_cps_80183964
 8018397c scriptop_wait_cps_8018397c
 80183988 scriptop_wait_cps_80183988
@@ -1826,6 +1826,10 @@
 80183ec4 chk_atk3_foe
 80183ef0 chk_mode1_self
 80183efc chk_mode1_foe
+80184018 chk_state20
+80184040 chk_atk3_free
+80184110 chk_mask_op
+80184210 chk_distx
 80184378 scriptop_cmp
 8018444c scriptop_move
 80184620 scriptop_move_ext_cases
