@@ -10536,9 +10536,9 @@ L_tail:
 uint32_t dev_cmd_process(uint32_t ctx)
 {
   CPUState *c = clean_cpu_state();
-  uint32_t aux, s1, s2, rec_off, chan, fn, r, saved_ra;
+  uint32_t aux, s2, rec_off, chan, fn, r, saved_ra;
   if (!c) return 0;
-  s1 = ctx;
+
 
   /* 0x801A3350: if (*BE804) cb78C(ctx); chan = *BE804 (reload). */
   if (br2_ld32(0x801be804u) != 0) {
@@ -10561,7 +10561,7 @@ uint32_t dev_cmd_process(uint32_t ctx)
       br2_st32(0x801be7f8u, v);                /* delay-slot store */
       if ((int32_t)v <= 0) break;
       if ((int32_t)aux >= 0) {
-        uint32_t a = br2_ld32(s1 + 0xcu) + s2;
+        uint32_t a = br2_ld32(ctx + 0xcu) + s2;
         fn = br2_ld32(0x801be78cu);
         saved_ra = c->gpr[31];
         c->gpr[31] = 0x801a33e8u;
@@ -10572,9 +10572,9 @@ uint32_t dev_cmd_process(uint32_t ctx)
       fn = br2_ld32(0x801be788u);
       saved_ra = c->gpr[31];
       c->gpr[31] = 0x801a3400u;
-      r = br2_call_clean(fn, s1, 1u, c->gpr[6], c->gpr[7]);
+      r = br2_call_clean(fn, ctx, 1u, c->gpr[6], c->gpr[7]);
       c->gpr[31] = saved_ra;
-      r = (uint32_t)dev_byte_xfer((uint8_t *)guest_at(s1),
+      r = (uint32_t)dev_byte_xfer((uint8_t *)guest_at(ctx),
                                   (int32_t)(r & 0xffu));
       if ((int32_t)r < 0) return r;            /* -> epilogue v0=r */
       fifo_space_sample(60);
@@ -10652,9 +10652,9 @@ L_commitA:
     fn = br2_ld32(0x801be788u);
     saved_ra = c->gpr[31];
     c->gpr[31] = 0x801a3584u;
-    r = br2_call_clean(fn, s1, chan, c->gpr[6], c->gpr[7]);
+    r = br2_call_clean(fn, ctx, chan, c->gpr[6], c->gpr[7]);
     c->gpr[31] = saved_ra;
-    r = (uint32_t)dev_byte_xfer((uint8_t *)guest_at(s1),
+    r = (uint32_t)dev_byte_xfer((uint8_t *)guest_at(ctx),
                                 (int32_t)(r & 0xffu));
     if ((int32_t)r < 0) return r;
     fifo_space_sample(60);
@@ -10680,9 +10680,9 @@ L_collect:
         fn = br2_ld32(0x801be788u);
         saved_ra = c->gpr[31];
         c->gpr[31] = 0x801a3614u;
-        r = br2_call_clean(fn, s1, chan, c->gpr[6], c->gpr[7]);
+        r = br2_call_clean(fn, ctx, chan, c->gpr[6], c->gpr[7]);
         c->gpr[31] = saved_ra;
-        r = (uint32_t)dev_byte_xfer((uint8_t *)guest_at(s1),
+        r = (uint32_t)dev_byte_xfer((uint8_t *)guest_at(ctx),
                                     (int32_t)(r & 0xffu));
         if ((int32_t)r < 0) return r;
         /* 0x801A3628: lhu (*BE7FC)+0xE == 0x22 -> skip commit. */
@@ -10705,11 +10705,11 @@ L_collect:
    * ctx->f3C + old_f44, then cb780(0); return 0. */
   (void)dev_stat_bit1_wait();
   {
-    uint32_t old = br2_ld8(s1 + 0x44u);
+    uint32_t old = br2_ld8(ctx + 0x44u);
     uint32_t sp  = br2_ld32(0x801be7fcu);   /* status ptr (0x801A3694) */
     uint32_t b   = br2_ld8(sp);             /* lbu (v0) -> status byte0 */
-    br2_st8(s1 + 0x44u, (uint8_t)(old + 1u));
-    br2_st8(br2_ld32(s1 + 0x3cu) + old, (uint8_t)b);
+    br2_st8(ctx + 0x44u, (uint8_t)(old + 1u));
+    br2_st8(br2_ld32(ctx + 0x3cu) + old, (uint8_t)b);
     fn = br2_ld32(0x801be780u);
     saved_ra = c->gpr[31];
     c->gpr[31] = 0x801a36bcu;
