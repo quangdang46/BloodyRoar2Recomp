@@ -13258,6 +13258,7 @@ block_8012B038:
  * split piece of cps_8012afd4 — gpu_env_commit_a: gpu_disp_mask_set + gpu_draw_env_put + */
 void cps_8012b048(void)
 {
+/* GPU/pad fragment: continues at 0x8012b054 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13278,6 +13279,7 @@ block_8012B048:
  * split piece of cps_8012b048 */
 void cps_8012b054(void)
 {
+/* GPU/pad thunk -> gpu_load_image_cmd */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13319,6 +13321,7 @@ block_8012B060:
  * rec_byte_step: half+byte read/write leaf step. */
 void cps_8012b06c(void)
 {
+/* GPU/pad fragment: continues at 0x8012b118 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13445,6 +13448,7 @@ block_8012B114:
  * split piece of cps_8012b06c — rec_byte_step: half+byte read/write leaf step. */
 void cps_8012b118(void)
 {
+/* GPU/pad thunk -> gpu_clear_image_cmd */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13480,6 +13484,7 @@ block_8012B118:
  * split piece of cps_8012b06c — rec_byte_step: half+byte read/write leaf step. */
 void cps_8012b154(void)
 {
+/* GPU/pad thunk -> gpu_draw_otag */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13499,6 +13504,7 @@ block_8012B154:
  * split piece of cps_8012b06c — rec_byte_step: half+byte read/write leaf step. */
 void cps_8012b15c(void)
 {
+/* GPU/pad thunk -> table_byte_next_a -> gpu_clear_otag_r -> menu_noop */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13570,6 +13576,7 @@ block_8012B1C4:
  * from SLES_017.22_full_01.c. */
 void cps_8012b1dc(void)
 {
+/* GPU/pad fragment: continues at 0x8012b1e0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13586,6 +13593,7 @@ block_8012B1DC:
  * scroll_offset_set — debug stat print + OT fixup + scroll. */
 void cps_8012b1e0(void)
 {
+/* GPU/pad thunk -> debug_stat_print -> ot_packet_chain_fixup -> scroll_offset_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13656,6 +13664,7 @@ block_8012B218:
  * split piece of cps_8012b1e0 — debug_stat_scroll: debug_stat_print + ot_packet_chain_fixup + */
 void cps_8012b21c(void)
 {
+/* GPU/pad leaf or terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13683,6 +13692,7 @@ block_8012B21C:
  * draw sync using CD timer. */
 void cps_8012b2a4(void)
 {
+/* GPU/pad thunk -> cd_timer_read -> gpu_draw_sync -> cd_timer_read -> cd_timer_read */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13756,6 +13766,7 @@ block_8012B2D4:
  * gpu_graph_reset_wait_b: gpu_graph_reset + cd_timer_read variant B. */
 void cps_8012b2dc(void)
 {
+/* GPU/pad thunk -> cd_timer_read -> cd_timer_read -> gpu_graph_reset */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13806,6 +13817,7 @@ block_8012B2FC:
  * gpu_env_commit_b: same quad as afd4 — draw-env commit variant B. */
 void cps_8012b300(void)
 {
+/* GPU/pad thunk -> gpu_stat_sign -> draw_env_timing -> gpu_draw_env_put -> gpu_disp_mask_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13908,6 +13920,7 @@ block_8012B364:
  * split piece of cps_8012b300 — gpu_env_commit_b: same quad as afd4 — draw-env commit variant B. */
 void cps_8012b36c(void)
 {
+/* GPU/pad thunk -> gpu_load_image_cmd */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13959,6 +13972,7 @@ block_8012B38C:
  * gpu_clear_image_wrap: gpu_clear_image_cmd caller. */
 void cps_8012b398(void)
 {
+/* GPU/pad thunk -> gpu_clear_image_cmd */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14065,6 +14079,7 @@ block_8012B434:
  * split piece of cps_8012b398 — gpu_clear_image_wrap: gpu_clear_image_cmd caller. */
 void cps_8012b438(void)
 {
+/* GPU/pad thunk -> gpu_draw_otag */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14109,6 +14124,7 @@ block_8012B444:
  * split piece of cps_8012b398 — gpu_clear_image_wrap: gpu_clear_image_cmd caller. */
 void cps_8012b44c(void)
 {
+/* GPU/pad leaf or terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14135,6 +14151,7 @@ block_8012B44C:
  * rec_byte_step_b: half+byte read/write leaf step. */
 void cps_8012b504(void)
 {
+/* GPU/pad leaf or terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14216,6 +14233,7 @@ block_8012B548:
  * from SLES_017.22_full_01.c. */
 void cps_8012b5d4(void)
 {
+/* GPU/pad thunk -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14259,6 +14277,7 @@ block_8012B5FC:
  * deferred_cmd_wrap: deferred_cmd_post caller. */
 void cps_8012b604(void)
 {
+/* GPU/pad thunk -> deferred_cmd_post -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14399,6 +14418,7 @@ block_8012B68C:
  * split piece of cps_8012b604 — deferred_cmd_wrap: deferred_cmd_post caller. */
 void cps_8012b6a4(void)
 {
+/* GPU/pad fragment: continues at 0x8012b6bc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14443,6 +14463,7 @@ block_8012B6B8:
  * deferred_cmd_wrap_d: deferred_cmd_post caller. */
 void cps_8012b6bc(void)
 {
+/* GPU/pad thunk -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14521,6 +14542,7 @@ block_8012B6FC:
  * handlers and posts deferred cmds. */
 void cps_8012b700(void)
 {
+/* GPU/pad thunk -> pad_handler_c -> pad_handler_a -> pad_handler_b -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14641,6 +14663,7 @@ block_8012B768:
  * split piece of cps_8012b700 — pad_input_dispatch: deferred_cmd_post + pad_handler_a/b/c — polls pad */
 void cps_8012b778(void)
 {
+/* GPU/pad thunk -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14683,6 +14706,7 @@ block_8012B79C:
  * split piece of cps_8012b5d4 */
 void cps_8012b7a4(void)
 {
+/* GPU/pad fragment: continues at 0x8012b7cc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14711,6 +14735,7 @@ block_8012B7A4:
  * split piece of cps_8012b7a4 */
 void cps_8012b7cc(void)
 {
+/* GPU/pad fragment: continues at 0x8012b7ec */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14756,6 +14781,7 @@ block_8012B7E8:
  * split piece of cps_8012b7a4 */
 void cps_8012b7ec(void)
 {
+/* GPU/pad fragment: continues at 0x8012b7f0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14771,6 +14797,7 @@ block_8012B7EC:
  * split piece of cps_8012b778 */
 void cps_8012b7f0(void)
 {
+/* GPU/pad leaf or terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14793,6 +14820,7 @@ block_8012B7F0:
  * from SLES_017.22_full_01.c. */
 void cps_8012b804(void)
 {
+/* GPU/pad leaf or terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14824,6 +14852,7 @@ block_8012B804:
  * from SLES_017.22_full_01.c. */
 void cps_8012b834(void)
 {
+/* GPU/pad fragment: continues at 0x8012b850 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14848,6 +14877,7 @@ block_8012B834:
  * split piece of cps_8012b834 */
 void cps_8012b850(void)
 {
+/* GPU/pad leaf or terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14872,6 +14902,7 @@ block_8012B850:
  * rec_byte_step_c: half+byte read/write leaf step. */
 void cps_8012b864(void)
 {
+/* GPU/pad fragment: continues at 0x8012b928 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14999,6 +15030,7 @@ block_8012B8F0:
  * split piece of cps_8012b864 — rec_byte_step_c: half+byte read/write leaf step. */
 void cps_8012b928(void)
 {
+/* GPU/pad leaf or terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15087,6 +15119,7 @@ block_8012B9E8:
  * split piece of cps_8012b864 — rec_byte_step_c: half+byte read/write leaf step. */
 void cps_8012b9fc(void)
 {
+/* GPU/pad leaf or terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15105,6 +15138,7 @@ block_8012B9FC:
  * from SLES_017.22_full_02.c. */
 void cps_8012bae0(void)
 {
+/* GPU/pad fragment: continues at 0x8012bae4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15120,6 +15154,7 @@ block_8012BAE0:
  * ui_leaf_step_j: leaf state step, no calls. */
 void cps_8012bae4(void)
 {
+/* GPU/pad fragment: continues at 0x8012BB50. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15192,6 +15227,7 @@ block_8012BB08:
  * ui_leaf_step_k: leaf state step, no calls. */
 void cps_8012bb10(void)
 {
+/* GPU/pad fragment: continues at 0x8012BB60. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15291,6 +15327,7 @@ block_8012BB48:
  * split piece of cps_8012bae4 — ui_leaf_step_j: leaf state step, no calls. */
 void cps_8012bb50(void)
 {
+/* GPU/pad fragment: continues at 0x8012bb58 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15310,6 +15347,7 @@ block_8012BB50:
  * split piece of cps_8012bb50 */
 void cps_8012bb58(void)
 {
+/* GPU/pad fragment: continues at 0x8012bb60 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15329,6 +15367,7 @@ block_8012BB58:
  * split piece of cps_8012bb10 — ui_leaf_step_k: leaf state step, no calls. */
 void cps_8012bb60(void)
 {
+/* GPU/pad fragment: continues at 0x8012bb68 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15348,6 +15387,7 @@ block_8012BB60:
  * split piece of cps_8012bb60 */
 void cps_8012bb68(void)
 {
+/* GPU/pad fragment: continues at 0x8012bb70 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15367,6 +15407,7 @@ block_8012BB68:
  * split piece of cps_8012bae4 — ui_leaf_step_j: leaf state step, no calls. */
 void cps_8012bb70(void)
 {
+/* GPU/pad fragment: continues at 0x8012bb78 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15386,6 +15427,7 @@ block_8012BB70:
  * split piece of cps_8012bb10 — ui_leaf_step_k: leaf state step, no calls. */
 void cps_8012bb78(void)
 {
+/* GPU/pad fragment: continues at 0x8012bb80 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15405,6 +15447,7 @@ block_8012BB78:
  * split piece of cps_8012bb10 — ui_leaf_step_k: leaf state step, no calls. */
 void cps_8012bb80(void)
 {
+/* GPU/pad fragment: continues at 0x8012bb88 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15424,6 +15467,7 @@ block_8012BB80:
  * split piece of cps_8012bb10 — ui_leaf_step_k: leaf state step, no calls. */
 void cps_8012bb88(void)
 {
+/* GPU/pad fragment: continues at 0x8012bb8c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15439,6 +15483,7 @@ block_8012BB88:
  * split piece of cps_8012bb50 */
 void cps_8012bb8c(void)
 {
+/* GPU/pad fragment: continues at 0x8012bb90 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15454,6 +15499,7 @@ block_8012BB8C:
  * record_half_step_g: s16 read/write leaf step. */
 void cps_8012bb90(void)
 {
+/* GPU/pad fragment: continues at 0x8012bbc0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15533,6 +15579,7 @@ block_8012BBB0:
  * rec_byte_write_leaf: byte read/write leaf step. */
 void cps_8012bbc0(void)
 {
+/* GPU/pad fragment: continues at 0x8012bca4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15651,6 +15698,7 @@ block_8012BC68:
  * split piece of cps_8012bbc0 — rec_byte_write_leaf: byte read/write leaf step. */
 void cps_8012bca4(void)
 {
+/* GPU/pad leaf or terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15697,6 +15745,7 @@ block_8012BCCC:
  * split piece of cps_8012bb90 — record_half_step_g: s16 read/write leaf step. */
 void cps_8012bcd4(void)
 {
+/* GPU/pad fragment: continues at 0x8012bce4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15717,6 +15766,7 @@ block_8012BCD4:
  * ui_state_step: 18-block leaf state step in the menu/GPU band. */
 void cps_8012bce4(void)
 {
+/* GPU/pad fragment: continues at 0x8012BDA0. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15926,6 +15976,7 @@ block_8012BD80:
  * split piece of cps_8012bce4 — ui_state_step: 18-block leaf state step in the menu/GPU band. */
 void cps_8012bd88(void)
 {
+/* GPU/pad fragment: continues at 0x8012bd90 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15945,6 +15996,7 @@ block_8012BD88:
  * split piece of cps_8012bce4 — ui_state_step: 18-block leaf state step in the menu/GPU band. */
 void cps_8012bd90(void)
 {
+/* GPU/pad fragment: continues at 0x8012bd98 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15964,6 +16016,7 @@ block_8012BD90:
  * split piece of cps_8012bce4 — ui_state_step: 18-block leaf state step in the menu/GPU band. */
 void cps_8012bd98(void)
 {
+/* GPU/pad fragment: continues at 0x8012bd9c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15979,6 +16032,7 @@ block_8012BD98:
  * split piece of cps_8012bce4 — ui_state_step: 18-block leaf state step in the menu/GPU band. */
 void cps_8012bd9c(void)
 {
+/* GPU/pad fragment: continues at 0x8012bda0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15994,6 +16048,7 @@ block_8012BD9C:
  * ui_leaf_step_b: 12-block leaf state step. */
 void cps_8012bda0(void)
 {
+/* GPU/pad fragment: continues at 0x8012be70 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16162,6 +16217,7 @@ block_8012BE18:
  * split piece of cps_8012bda0 — ui_leaf_step_b: 12-block leaf state step. */
 void cps_8012be70(void)
 {
+/* GPU/pad fragment: continues at 0x8012be94 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16187,6 +16243,7 @@ block_8012BE70:
  * split piece of cps_8012bda0 — ui_leaf_step_b: 12-block leaf state step. */
 void cps_8012be94(void)
 {
+/* GPU/pad fragment: continues at 0x8012bee4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16225,6 +16282,7 @@ block_8012BE94:
  * split piece of cps_8012bda0 — ui_leaf_step_b: 12-block leaf state step. */
 void cps_8012bee4(void)
 {
+/* GPU/pad fragment: continues at 0x8012bef4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16245,6 +16303,7 @@ block_8012BEE4:
  * split piece of cps_8012bda0 — ui_leaf_step_b: 12-block leaf state step. */
 void cps_8012bef4(void)
 {
+/* GPU/pad fragment: continues at 0x8012bf04 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16266,6 +16325,7 @@ block_8012BEF4:
  * split piece of cps_8012bef4 */
 void cps_8012bf04(void)
 {
+/* GPU/pad leaf or terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16285,6 +16345,7 @@ block_8012BF04:
  * ui_leaf_step_c: 5-block leaf state step. */
 void cps_8012bf58(void)
 {
+/* GPU/pad fragment: continues at 0x8012C06C. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
