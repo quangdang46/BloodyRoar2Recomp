@@ -1226,13 +1226,13 @@ ushort * ev5_action_select(int ctrl_g,int foe_g,ushort *stream)
   motion = (uint8_t *)guest_at((uint32_t)motion_g);
   subop = op_word >> 0x14 & 3;
   if (subop == 1) {
-    if ((GU8(ctrl, 5) & 1) == 0) goto LAB_8017aebc;
-    goto LAB_8017ae9c;
+    if ((GU8(ctrl, 5) & 1) == 0) goto L_8017aebc;
+    goto L_8017ae9c;
   }
   if (((1 < subop) && (subop == 2)) && ((GU8(ctrl, 5) & 1) == 0)) {
     return stream + 2;
   }
-LAB_8017aebc:
+L_8017aebc:
   next = (ushort *)0x0;
   switch(opcode & 0xf) {
   case 0:
@@ -1247,7 +1247,7 @@ LAB_8017aebc:
     off = idx * 4;
     if (idx < *(short *)(foe + 0xa4)) {
       if (*(uint *)((uint8_t *)guest_at(GU32(foe, 0xac)) + off) < 0x80000001) {
-        if (*(int *)((uint8_t *)guest_at(GU32(foe, 0xa8)) + off) == 0) goto LAB_8017b034;
+        if (*(int *)((uint8_t *)guest_at(GU32(foe, 0xa8)) + off) == 0) goto L_8017b034;
         *(undefined2 *)(foe + 0xbe) = *(undefined2 *)(foe + 0xbc);
         *(undefined4 *)(foe + 0xb0) = *(undefined4 *)((uint8_t *)guest_at(GU32(foe, 0xa8)) + off);
       }
@@ -1256,7 +1256,7 @@ LAB_8017aebc:
         *(undefined4 *)(foe + 0xb0) = *(undefined4 *)((uint8_t *)guest_at(GU32(foe, 0xac)) + off);
       }
       *(short *)(foe + 0xa2) = (short)idx;
-LAB_8017b090:
+L_8017b090:
       fighter_anim_advance(ctrl_g,foe_g);
       return stream + 2;
     }
@@ -1268,7 +1268,7 @@ LAB_8017b090:
     *(ushort *)(motion + 0x80) = operand;
     act_idx = *(short *)(motion + 0x80);
     *(ushort *)(motion + 0x82) = operand;
-    goto LAB_8017b044;
+    goto L_8017b044;
   case 2:
     *(ushort *)(foe + 0x98) = operand;
     break;
@@ -1287,13 +1287,13 @@ LAB_8017b090:
         pend_g = *(undefined4 *)((uint8_t *)guest_at(GU32(foe_motion, 0xac)) + idx * 4);
         *(ushort *)(foe + 0xa2) = operand;
         *(undefined4 *)(foe + 0xb0) = pend_g;
-        goto LAB_8017b090;
+        goto L_8017b090;
       }
-LAB_8017b034:
+L_8017b034:
       *(undefined2 *)(motion + 0x80) = 1;
       act_idx = *(short *)(motion + 0x80);
       *(undefined2 *)(motion + 0x82) = 1;
-LAB_8017b044:
+L_8017b044:
       action_switch_guest(target_g,(int *)motion,(int)act_idx);
       {
         uint32_t ns = GU32(foe, 0x84);
@@ -1308,11 +1308,11 @@ LAB_8017b044:
     next = stream + 2;
     *(ushort *)(foe + (*(byte *)(foe + 0x7d) - 1) * 2 + 0x3c) = operand;
   default:
-    goto switchD_8017aedc_default;
+    goto L_8017aedc_default;
   }
-LAB_8017ae9c:
+L_8017ae9c:
   next = stream + 2;
-switchD_8017aedc_default:
+L_8017aedc_default:
   return next;
 
 }
