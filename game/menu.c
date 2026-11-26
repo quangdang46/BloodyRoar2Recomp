@@ -6686,43 +6686,43 @@ extern void u16_tbl_copy(int32_t,const void *);
  * 0x2000: beep then ++byte, wrap to 0 if (int8)byte < (int8)(a1<<16>>16);
  * 0x8000: beep then --byte, wrap to a1 if result goes negative.
  * Returns 1 iff the byte changed. */
-int32_t menu_step_a(uint32_t param_1,int32_t param_2,uint32_t param_3)
+int32_t menu_step_a(uint32_t ctr_addr,int32_t floor,uint32_t mask)
 {
-  uint32_t s0 = param_1;
-  int32_t  s1 = param_2;
-  uint32_t s2 = param_3 & 0xffff;
-  int32_t  s4 = MBS8(s0);
+  uint32_t ctr = ctr_addr;
+  int32_t  fl = floor;
+  uint32_t s2 = mask & 0xffff;
+  int32_t  old = MBS8(ctr);
   uint32_t v1  = s2;
 
   if (v1 == 0x2000) {
     deferred_cmd_post(0x400,0xb,0);
     {
-      int32_t nv = (int32_t)(int16_t)(s1 << 16 >> 16);   /* s1 sll/sra 16 */
-      int32_t cb = MB8(s0) + 1;                          /* lbu then +1 */
-      MW8(s0,(uint8_t)cb);
+      int32_t nv = (int32_t)(int16_t)(fl << 16 >> 16);   /* fl sll/sra 16 */
+      int32_t cb = MB8(ctr) + 1;                          /* lbu then +1 */
+      MW8(ctr,(uint8_t)cb);
       cb = (int8_t)cb;                                  /* sll18/sra18 */
-      if (nv < cb) MW8(s0,0);
+      if (nv < cb) MW8(ctr,0);
     }
   }
   if (v1 == 0x8000) {
     deferred_cmd_post(0x400,0xb,0);
     {
-      int32_t cb = (int8_t)(MB8(s0) - 1);               /* lbu-1, sll24 test */
-      MW8(s0,(uint8_t)cb);
-      if (cb < 0) MW8(s0,s1);
+      int32_t cb = (int8_t)(MB8(ctr) - 1);               /* lbu-1, sll24 test */
+      MW8(ctr,(uint8_t)cb);
+      if (cb < 0) MW8(ctr,fl);
     }
   }
-  return (MBS8(s0) ^ s4) != 0;
+  return (MBS8(ctr) ^ old) != 0;
 }
 
 /* ======== 0x8015a614 ========
- * Twin string-pair emit (32 insns). a3 = guest record (s0).
+ * Twin string-pair emit (32 insns). a3 = guest record (ctr).
  * +0x17 / +0x18 select: 0 -> fixed 0x801c15d0 / 0x801c15e0 string,
  * nonzero -> 0x801b3f68 + idx*16 record. Calls u16_tbl_copy(0/1,str). */
-void string_pair_emit(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                  uint32_t param_4)
+void string_pair_emit(uint32_t unused_a,uint32_t unused_b,uint32_t unused_c,
+                  uint32_t rec)
 {
-  uint32_t s0 = param_4;
+  uint32_t s0 = rec;
   uint32_t v0 = MB8(s0 + 0x17);
   const void *s;
   if (v0 == 0) s = guest_at(0x801c15d0);
@@ -6786,11 +6786,11 @@ extern void sprite_place_centered(uint32_t,uint32_t,int32_t,int32_t,int32_t,int3
     MW8((r)+0x24,(uint8_t)((b0)+(b2))); MW8((r)+0x25,(uint8_t)((b1)+(b3))); \
   } while (0)
 
-void record_init_sweep(uint32_t param_1,uint32_t param_2)
+void record_init_sweep(uint32_t ctx,uint32_t unused)
 {
-  uint32_t p1 = param_1;
+  uint32_t p1 = ctx;
   int32_t  i;
-  (void)param_2;
+  (void)unused;
   for (i = 0; i < 2; i++) {
     uint32_t eng = MB32(0x801f10c0 + (uint32_t)i * 4);
     uint32_t s4, s6, s7, s1, s3, t0, s5, t1, t2, fp, s0, s2;
