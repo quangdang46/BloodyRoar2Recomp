@@ -3422,6 +3422,8 @@ void battle_flow_state_machine_alt(void)
         default: return;
     }
 
+    /* Phase 1 — attract/menu boot: display_mode_setup,
+     * frame_advance_helper, rgb_triple_store; select_screen_tick polls. */
 block_8016FD38:
     v1 = cpu->read_byte(s0 + 1);
     s4 = cpu->read_word(s0 + 12);
@@ -3455,6 +3457,8 @@ block_8016FD6C:
     cpu->write_byte(s0 + 1, (uint8_t)v0);
     /* fall through to block_8016FD74 */
 
+    /* hud_sprite_desc_init + deferred_cmd_post — HUD sprite
+     * descriptor setup for the upcoming screens. */
 block_8016FD74:
     ra = 0x8016FD7Cu;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -3462,6 +3466,7 @@ block_8016FD74:
     psx_check_interrupts_at(cpu, 0x80136DDCu);
     cpu->pc = 0x80136DDCu; return;  /* CPS jal -> 0x80136DDC */
 
+    /* frame_divisor_get — frame timing base. */
 block_8016FD7C:
     ra = 0x8016FD84u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -3590,6 +3595,8 @@ block_8016FE24:
         goto block_8016FE3C;  /* not taken */
     }
 
+    /* battle_frame (0x8014CDD0) x5 — per-frame tick during
+     * the menu/attract sequence. */
 block_8016FE3C:
     ra = 0x8016FE44u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -3751,6 +3758,7 @@ block_8016FEFC:
     psx_check_interrupts_at(cpu, 0x8016FFA0u);
     goto block_8016FFA0;  /* j */
 
+    /* deferred_cmd_post + frame_tick — end of frame. */
 block_8016FF04:
     a0 = 1027;
     a1 = zero;
@@ -3763,6 +3771,7 @@ block_8016FF04:
     psx_check_interrupts_at(cpu, 0x80156EF4u);
     cpu->pc = 0x80156EF4u; return;  /* CPS jal -> 0x80156EF4 */
 
+    /* select_screen_tick — character-select screen tick. */
 block_8016FF20:
     ra = 0x8016FF28u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -3833,6 +3842,8 @@ block_8016FF88:
     psx_check_interrupts_at(cpu, 0x8016FFA0u);
     goto block_8016FFA0;  /* j */
 
+    /* countdown_display_sm + hud_state_machine —
+     * versus-screen countdown/state. */
 block_8016FF90:
     ra = 0x8016FF98u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -3909,6 +3920,8 @@ block_8016FFE0:
     psx_check_interrupts_at(cpu, 0x80156EF4u);
     cpu->pc = 0x80156EF4u; return;  /* CPS jal -> 0x80156EF4 */
 
+    /* hud_sprite_desc_init + rgb_triple_store +
+     * print_mode_dispatch_b — versus screen chrome. */
 block_8016FFF0:
     ra = 0x8016FFF8u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -3925,6 +3938,8 @@ block_8016FFF8:
     psx_check_interrupts_at(cpu, 0x801274FCu);
     cpu->pc = 0x801274FCu; return;  /* CPS jal -> 0x801274FC */
 
+    /* match_mode_set + battle_state_init +
+     * scratchpad_pair_init — commit mode, init battle state. */
 block_80170008:
     a0 = 2;
     a1 = zero;
@@ -4048,6 +4063,7 @@ block_801700BC:
     cpu->write_half(s0 + 144, (uint16_t)zero);
     /* fall through to block_801700C0 */
 
+    /* menu_res_load_sm — load battle resources. */
 block_801700C0:
     a1 = s3;
     a2 = s2;
@@ -4083,6 +4099,13 @@ block_801700D8:
         goto block_801700E8;  /* not taken */
     }
 
+    /* Phase 2 — character/mode select: se_value_select,
+     * confirm_bookkeeping, brightness_packet_send,
+     * battle_struct_init, sprite_desc_table_init,
+     * print_mode_dispatch_b, battle_session_arm,
+     * match_setup_apply, battle_state_init, table_byte_next_a,
+     * perm_table_apply, flow_cfg_init, battle_sides_commit,
+     * battle_init, frame_present. */
 block_801700E8:
     a0 = cpu->read_byte(s0 + 152);
     /* nop */  /* 0x801700EC: 0x00000000 */
@@ -4144,6 +4167,9 @@ block_8017013C:
     cpu->write_byte(s0 + 1, (uint8_t)v0);
     /* fall through to block_80170144 */
 
+    /* match_setup_apply + battle_state_init +
+     * flow_cfg_init + battle_sides_commit + battle_init —
+     * select confirmed: build battle sides. */
 block_80170144:
     a0 = s3;
     a1 = s2;
@@ -4350,6 +4376,9 @@ block_80170260:
         goto block_80170270;  /* not taken */
     }
 
+    /* Phase 3 — battle setup: post_battle_dispatch,
+     * battle_sides_commit, frame_present, record_state_stepper,
+     * battle_camera_step, battle_hud_draw. */
 block_80170270:
     a1 = s2;
     ra = 0x8017027Cu;  /* jal link before delay slot */
@@ -4400,6 +4429,7 @@ block_801702A8:
         goto block_801702B0;  /* not taken */
     }
 
+    /* frame_present — first battle frame. */
 block_801702B0:
     ra = 0x801702B8u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -4538,6 +4568,7 @@ block_8017036C:
     a0 = s5 + 8248;
     /* fall through to block_80170370 */
 
+    /* battle_camera_step — camera fly-in. */
 block_80170370:
     a1 = s0;
     a2 = s3;
@@ -4601,6 +4632,9 @@ block_801703B4:
         goto block_801703C8;  /* not taken */
     }
 
+    /* Phase 4 — render chain: player_light_apply +
+     * prim_list_gte_invoke / prim_xform3_task_run /
+     * prim_list_persp_step (GTE primitive submission). */
 block_801703C8:
     a1 = s4;
     a2 = s0;
@@ -4708,6 +4742,8 @@ block_80170458:
         goto block_80170460;  /* not taken */
     }
 
+    /* player_light_apply + prim_list_gte_invoke —
+     * second light/prim pass. */
 block_80170460:
     ra = 0x80170468u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -4843,6 +4879,8 @@ block_80170518:
         goto block_80170524;  /* not taken */
     }
 
+    /* prim_xform3_task_run + prim_list_persp_step —
+     * transform+perspective primitive pass. */
 block_80170524:
     a1 = s5 + 8256;
     a2 = s4;
@@ -4917,6 +4955,7 @@ block_801705A4:
         goto block_801705B8;  /* not taken */
     }
 
+    /* fighter_flash_update — hit-flash updates. */
 block_801705B8:
     a1 = s4;
     a2 = s0;
@@ -5159,6 +5198,8 @@ block_80170708:
         goto block_80170714;  /* not taken */
     }
 
+    /* prim_xform3_task_run + prim_list_persp_step —
+     * final primitive pass before sim. */
 block_80170714:
     a1 = s5 + 8256;
     a2 = s4;
@@ -5223,6 +5264,7 @@ block_80170794:
     cpu->write_byte(s0 + 177, (uint8_t)v0);
     /* fall through to block_8017079C */
 
+    /* battle_intro_fsm — intro camera sequence. */
 block_8017079C:
     a1 = s5;
     a2 = s4;
@@ -5273,6 +5315,10 @@ block_801707E0:
     t0 = t0 + 19632;
     /* fall through to block_801707E4 */
 
+    /* Phase 5 — fight loop per frame: fighter_tint_fade,
+     * slot_height_proj, fighter_trail_emit, fighter_frame x2,
+     * fighter_contact_resolve, fighter_pair_update,
+     * hud_state_machine x2, status_text_display x2. */
 block_801707E4:
     cpu->write_half(t0 + 2, (uint16_t)zero);
     cpu->write_half(t0 + 6, (uint16_t)v0);
@@ -5427,6 +5473,7 @@ block_801708C0:
         goto block_801708D0;  /* not taken */
     }
 
+    /* status_text_display — KO/countdown text. */
 block_801708D0:
     ra = 0x801708D8u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -5461,6 +5508,7 @@ block_801708F0:
     psx_check_interrupts_at(cpu, 0x80170998u);
     goto block_80170998;  /* j */
 
+    /* frame_present — end of fight frame. */
 block_801708F8:
     ra = 0x80170900u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -5468,6 +5516,11 @@ block_801708F8:
     psx_check_interrupts_at(cpu, 0x8012B23Cu);
     cpu->pc = 0x8012B23Cu; return;  /* CPS jal -> 0x8012B23C */
 
+    /* Phase 6 — battle exit/teardown: hud_sprite_desc_init,
+     * match_mode_set, se_value_select, deferred_cmd_post,
+     * scroll_cfg_set, task_table_init, rgb_triple_store,
+     * hud_state_machine, frame_divisor_get, frame_tick,
+     * rec_timer_pair_clear — return toward menu. */
 block_80170900:
     ra = 0x80170908u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -5618,6 +5671,7 @@ block_801709B0:
         goto block_801709C0;  /* not taken */
     }
 
+    /* rec_timer_pair_clear + epilogue. */
 block_801709C0:
     ra = 0x801709C8u;  /* jal link before delay slot */
     /* delay slot (always executes) */
