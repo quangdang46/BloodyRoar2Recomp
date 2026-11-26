@@ -12059,7 +12059,6 @@ int * prim_list_gte_invoke(int *lst,undefined4 a1,undefined4 a2,int num,undefine
   undefined4 in_s4;
   undefined4 in_s5;
   undefined4 in_s6;
-  int num;
   undefined4 in_ra;
   if (0 < num) {
     setCopControlWord(2,0xe800,0x555);
