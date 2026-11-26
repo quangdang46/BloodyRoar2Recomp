@@ -4,6 +4,35 @@
  * DAT_ symbols are lvalue macros yielding guest-field pointers;
  * _DAT_801f04a4 is an int32_t* guest pointer. FUN_ calls bind to
  * host hooks (declared below; guest names preserved for audit). */
+
+/* Observed field map (from usage in this file; offsets are guest
+ * byte offsets, names are descriptive not official):
+ *
+ * ctrl (fighter state record):
+ *   +0x02 fighter slot, +0x05 mode flags, +0x20 own actor obj guest
+ *   ptr, +0x2c foe ctrl guest ptr, +0x38 hit/motion obj guest ptr
+ *   (motion_p), +0x40 skeleton/joint pose guest ptr, +0x48 parts
+ *   table guest ptr.
+ *   +0x4e facing/yaw, +0x50/+0x4c euler pair, +0x54/+0x58/+0x5c/
+ *   +0x60/+0x64/+0x68/+0x6c flag words (snapshotted as fXX locals).
+ *   +0x70 turn-rate value, +0x74 turn rate, +0x7a held-button mask,
+ *   +0x7c/+0x80/+0x82/+0x84 button words (btn/ba/bb/cat/cat2).
+ *   +0x86/+0x88 frame-step pair, +0x8a/+0x8c/+0x8e/+0x90..+0xa4
+ *   velocity/impulse block, +0xaa/+0xac/+0xae/+0xb0/+0xb2/+0xb4/
+ *   +0xb6/+0xb8/+0xba/+0xbc/+0xbe timers & gauges, +0xc0..+0xd8
+ *   action/velocity scratch, +0xd4 countdown, +0xd6 launch timer,
+ *   +0xe5 counter, +0xfc alt frame step.
+ *
+ * motion (per-fighter motion/anim state):
+ *   +0x80 current action, +0x82 next/pending action, +0x84 event
+ *   stream pc, +0x88 blend timer, +0x90 stream countdown,
+ *   +0x92/+0x98 anim channels, +0xb0 keyframe table guest ptr,
+ *   +0xb2/+0xb4/+0xb8/+0xbe anim params, +0xc0..+0xce keyframe
+ *   timeline (pos/step/window), +0xd0..+0xdc motion position,
+ *   +0xe4 yaw rate, +0xf8..+0x100 keyframe record slots,
+ *   +0x106/+0x108 steering offsets, +0x10a/+0x10c/+0x10e/+0x110/
+ *   +0x114/+0x116 timers, +0x24 divisor (mass-like, +4000 bias).
+ */
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -1552,37 +1581,37 @@ void fighter_frame(byte *ctrl, uint8_t *motion)
   bool downed;
   short dv;
   ushort acc;
-  int iv3;
+  int ic;
   uint uv;
   uint z2;
   uint z3;
   undefined *tab;
-  int iv;
+  int ia;
   undefined4 auxv;
-  int iv2;
+  int ib;
   byte *motion_p;
   
-  iv = *(char *)(motion + 0x98) * 8;
-  iv2 = iv + -0x7fe4eadc;
+  ia = *(char *)(motion + 0x98) * 8;
+  ib = ia + -0x7fe4eadc;
   motion_p = (byte *)guest_at(*(uint32_t *)(ctrl + 0x38));
   downed = false;
   if (ctrl[1] == '\0') {
     dv = *(short *)(ctrl + 200);
-    iv3 = (int)dv;
-    if (iv3 < 0) {
+    ic = (int)dv;
+    if (ic < 0) {
       if ((DAT_801b55d0 & 1) != 0) {
         (&DAT_801f596c)[(uint)(byte)ctrl[2] * 2] = 5;
         (&DAT_801f5970)[(uint)(byte)ctrl[2] * 2] = '@' - (char)dv;
       }
     }
-    else if (iv3 != 0) {
-      iv3 = iv3 * 4 + 0x40;
-      if (0xff < iv3) {
-        iv3 = 0xff;
+    else if (ic != 0) {
+      ic = ic * 4 + 0x40;
+      if (0xff < ic) {
+        ic = 0xff;
       }
       if ((DAT_801b55d0 & 1) != 0) {
         (&DAT_801f596c)[(uint)(byte)ctrl[2] * 2] = 0xf;
-        (&DAT_801f5970)[(uint)(byte)ctrl[2] * 2] = (char)iv3;
+        (&DAT_801f5970)[(uint)(byte)ctrl[2] * 2] = (char)ic;
         (&DAT_801f596d)[(uint)(byte)ctrl[2] * 2] = 0xf;
         (&DAT_801f5971)[(uint)(byte)ctrl[2] * 2] = 1;
       }
@@ -1653,14 +1682,14 @@ void fighter_frame(byte *ctrl, uint8_t *motion)
        (*(short *)(ctrl + 0xae) < *(short *)(ctrl + 0xac))) {
       dv = *(short *)(ctrl + 0xfa);
       *(short *)(ctrl + 0xfa) = dv + *(short *)(ctrl + 0xf8);
-      iv3 = (int)(short)(dv + *(short *)(ctrl + 0xf8));
-      if (0xff < iv3) {
-        if (iv3 < 0) {
-          iv3 = iv3 + 0xff;
+      ic = (int)(short)(dv + *(short *)(ctrl + 0xf8));
+      if (0xff < ic) {
+        if (ic < 0) {
+          ic = ic + 0xff;
         }
-        iv3 = (uint)*(ushort *)(ctrl + 0xac) - (iv3 >> 8);
-        *(short *)(ctrl + 0xac) = (short)iv3;
-        if (iv3 * 0x10000 >> 0x10 < (int)*(short *)(ctrl + 0xae)) {
+        ic = (uint)*(ushort *)(ctrl + 0xac) - (ic >> 8);
+        *(short *)(ctrl + 0xac) = (short)ic;
+        if (ic * 0x10000 >> 0x10 < (int)*(short *)(ctrl + 0xae)) {
           *(undefined2 *)(ctrl + 0xac) = *(undefined2 *)(ctrl + 0xae);
         }
         *(ushort *)(ctrl + 0xfa) = (ushort)(byte)ctrl[0xfa];
@@ -1730,7 +1759,7 @@ LAB_80178d48:
   if (((*(uint *)(ctrl + 0x60) & 0x10000000) == 0) &&
      ((*(uint *)(ctrl + 0x6c) & 0x100000) == 0)) {
     dv = range_circle_test(*(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x174),
-                         *(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x17c),(uint *)guest_at((uint32_t)(iv + -0x7fe4ea74)),0);
+                         *(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x17c),(uint *)guest_at((uint32_t)(ia + -0x7fe4ea74)),0);
     *(short *)(ctrl + 0x94) = dv;
     if (dv == 0) {
 LAB_80178f9c:
@@ -1740,11 +1769,11 @@ LAB_80178f9c:
     }
     else {
       uv = range_circle_test(*(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0xd4),
-                           *(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0xdc),(uint *)guest_at((uint32_t)iv2),0);
+                           *(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0xdc),(uint *)guest_at((uint32_t)ib),0);
       z2 = range_circle_test(*(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x354),
-                           *(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x35c),(uint *)guest_at((uint32_t)iv2),0);
+                           *(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x35c),(uint *)guest_at((uint32_t)ib),0);
       z3 = range_circle_test(*(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x264),
-                           *(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x26c),(uint *)guest_at((uint32_t)iv2),0);
+                           *(undefined4 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x26c),(uint *)guest_at((uint32_t)ib),0);
       if ((uv == 0 && z2 == 0) && z3 == 0) goto LAB_80178f9c;
       if ((-1 < *(int *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x38)) &&
          ((*(uint *)(ctrl + 0x6c) & 0x100000) == 0)) {
@@ -1780,11 +1809,11 @@ LAB_80178f9c:
   }
   *(uint *)(ctrl + 0x5c) = uv;
   uv = *(uint *)(ctrl + 0x5c);
-  iv2 = *(int *)(ctrl + 0x20);
+  ib = *(int *)(ctrl + 0x20);
   *(uint *)(ctrl + 0x5c) = uv & 0xeffba5fc;
-  iv = *(short *)(ctrl + 0x94) + -0x66;
-  if (((*(int *)((char *)guest_at((uint32_t)iv2) + 0x268) < iv) && (*(int *)((char *)guest_at((uint32_t)iv2) + 0x358) < iv)) &&
-     (*(int *)((char *)guest_at((uint32_t)iv2) + 0x178) < iv)) {
+  ia = *(short *)(ctrl + 0x94) + -0x66;
+  if (((*(int *)((char *)guest_at((uint32_t)ib) + 0x268) < ia) && (*(int *)((char *)guest_at((uint32_t)ib) + 0x358) < ia)) &&
+     (*(int *)((char *)guest_at((uint32_t)ib) + 0x178) < ia)) {
     *(uint *)(ctrl + 0x5c) = uv & 0xeffba5fc | 0x40000;
   }
   if (*(int *)((char *)guest_at(*(uint32_t *)(ctrl + 0x2c)) + 0x58) < 0) {
@@ -1895,28 +1924,28 @@ LAB_8017938c:
   if (*(short *)(ctrl + 0xb2) != 0) {
     dir_rotate_acc((int)*(short *)(ctrl + 0xc4),(int)*(short *)(ctrl + 0xb2),ctrl + 0xa2,
                  ctrl + 0x9a);
-    iv = (int)*(short *)(ctrl + 0xb2) * (int)*(short *)(ctrl + 0xb4);
-    if (iv < 0) {
-      iv = iv + 0x7f;
+    ia = (int)*(short *)(ctrl + 0xb2) * (int)*(short *)(ctrl + 0xb4);
+    if (ia < 0) {
+      ia = ia + 0x7f;
     }
-    *(short *)(ctrl + 0xb2) = (short)(iv >> 7);
+    *(short *)(ctrl + 0xb2) = (short)(ia >> 7);
   }
   launch_vel_update(ctrl,motion_p);
-  iv = (int)*(short *)(ctrl + 0x9a) * (int)*(short *)(ctrl + 0x88);
-  if (iv < 0) {
-    iv = iv + 0xf;
+  ia = (int)*(short *)(ctrl + 0x9a) * (int)*(short *)(ctrl + 0x88);
+  if (ia < 0) {
+    ia = ia + 0xf;
   }
-  iv2 = (int)*(short *)(ctrl + 0x9c) * (int)*(short *)(ctrl + 0x88);
-  *(short *)(ctrl + 0x9a) = (short)(iv >> 4);
-  if (iv2 < 0) {
-    iv2 = iv2 + 0xf;
+  ib = (int)*(short *)(ctrl + 0x9c) * (int)*(short *)(ctrl + 0x88);
+  *(short *)(ctrl + 0x9a) = (short)(ia >> 4);
+  if (ib < 0) {
+    ib = ib + 0xf;
   }
-  iv = (int)*(short *)(ctrl + 0x9e) * (int)*(short *)(ctrl + 0x88);
-  *(short *)(ctrl + 0x9c) = (short)(iv2 >> 4);
-  if (iv < 0) {
-    iv = iv + 0xf;
+  ia = (int)*(short *)(ctrl + 0x9e) * (int)*(short *)(ctrl + 0x88);
+  *(short *)(ctrl + 0x9c) = (short)(ib >> 4);
+  if (ia < 0) {
+    ia = ia + 0xf;
   }
-  *(short *)(ctrl + 0x9e) = (short)(iv >> 4);
+  *(short *)(ctrl + 0x9e) = (short)(ia >> 4);
   return;
 
 }
@@ -1953,14 +1982,14 @@ void action_commit(byte *ctrl, byte *motion)
   bool sign;
   ushort rem;
   uint f6c;
-  int v;
+  int tv;
   int raw;
   undefined4 res;
   int lead;
-  int dv;
+  int delta;
   int bias;
   undefined1 rotm [32];
-  int dlt [4];
+  int dvec [4];
   
   if (*(short *)(motion + 0x80) != *(short *)(motion + 0x82)) {
     *(undefined2 *)(motion + 0x82) = *(undefined2 *)(motion + 0x80);
@@ -2028,27 +2057,27 @@ void action_commit(byte *ctrl, byte *motion)
     pending_hit_b_clear(ctrl);
   }
   if ((0 < *(short *)(motion + 0x116)) &&
-     (v = (uint)*(ushort *)(motion + 0x116) - (uint)*(ushort *)(ctrl + 0x88),
-     *(short *)(motion + 0x116) = (short)v, v * 0x10000 < 1)) {
-    v = (int)*(short *)(motion + 0x114);
+     (tv = (uint)*(ushort *)(motion + 0x116) - (uint)*(ushort *)(ctrl + 0x88),
+     *(short *)(motion + 0x116) = (short)tv, tv * 0x10000 < 1)) {
+    tv = (int)*(short *)(motion + 0x114);
     *(undefined2 *)(motion + 0x116) = 0;
-    if ((-1 < v) && (*(int *)(ctrl + 0x58) < 0)) {
-      if ((v < 0xc0) || (v = v + 0x40, ctrl[2] == '\0')) {
-        v = (int)*(short *)(motion + 0x114);
+    if ((-1 < tv) && (*(int *)(ctrl + 0x58) < 0)) {
+      if ((tv < 0xc0) || (tv = tv + 0x40, ctrl[2] == '\0')) {
+        tv = (int)*(short *)(motion + 0x114);
       }
-      deferred_cmd_post(0x400,v,0);
+      deferred_cmd_post(0x400,tv,0);
     }
   }
   if ((0 < *(short *)(motion + 0x110)) &&
-     (v = (uint)*(ushort *)(motion + 0x110) - (uint)*(ushort *)(ctrl + 0x88),
-     *(short *)(motion + 0x110) = (short)v, v * 0x10000 < 1)) {
-    v = (int)*(short *)(motion + 0x10e);
+     (tv = (uint)*(ushort *)(motion + 0x110) - (uint)*(ushort *)(ctrl + 0x88),
+     *(short *)(motion + 0x110) = (short)tv, tv * 0x10000 < 1)) {
+    tv = (int)*(short *)(motion + 0x10e);
     *(undefined2 *)(motion + 0x110) = 0;
-    if (-1 < v) {
-      if ((v < 0xc0) || (v = v + 0x40, ctrl[2] == '\0')) {
-        v = (int)*(short *)(motion + 0x10e);
+    if (-1 < tv) {
+      if ((tv < 0xc0) || (tv = tv + 0x40, ctrl[2] == '\0')) {
+        tv = (int)*(short *)(motion + 0x10e);
       }
-      deferred_cmd_post(0x400,v,0);
+      deferred_cmd_post(0x400,tv,0);
     }
   }
   if (((*(uint *)(ctrl + 0x5c) & 0x10000) == 0) || (*ctrl < '\0')) {
@@ -2056,70 +2085,70 @@ void action_commit(byte *ctrl, byte *motion)
     *(undefined2 *)(motion + 0x108) = 0;
   }
   else {
-    v = atan2_lut(*(int *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x3c) -
+    tv = atan2_lut(*(int *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x3c) -
                          *(int *)((char *)guest_at(*(uint32_t *)((char *)guest_at(*(uint32_t *)(ctrl + 0x2c)) + 0x20)) + 0x3c),
                          *(int *)((char *)guest_at(*(uint32_t *)((char *)guest_at(*(uint32_t *)(ctrl + 0x2c)) + 0x20)) + 0x34) -
                          *(int *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x34));
     lead = (int)((uint)*(ushort *)((char *)guest_at(*(uint32_t *)(ctrl + 0x40)) + 0x3e) << 0x10) >> 0x11;
-    dv = ((v - *(short *)(ctrl + 0x4e)) + lead) * 0x100000 >> 0x14;
-    v = dv;
-    if (dv < 0) {
-      v = -dv;
+    delta = ((tv - *(short *)(ctrl + 0x4e)) + lead) * 0x100000 >> 0x14;
+    tv = delta;
+    if (delta < 0) {
+      tv = -delta;
     }
-    if ((0x31c < v) && (sign = -1 < dv, dv = -0x31c, sign)) {
-      dv = 0x31c;
+    if ((0x31c < tv) && (sign = -1 < delta, delta = -0x31c, sign)) {
+      delta = 0x31c;
     }
-    v = dv;
-    if (dv < 0) {
-      v = -dv;
+    tv = delta;
+    if (delta < 0) {
+      tv = -delta;
     }
     bias = 0;
-    if (0x400 < v) {
-      raw = -v + 0x800;
+    if (0x400 < tv) {
+      raw = -tv + 0x800;
       bias = raw >> 3;
       if (raw < 0) {
-        bias = (-v + 0x807) >> 3;
+        bias = (-tv + 0x807) >> 3;
       }
     }
-    dv = dv - ((lead + *(short *)(motion + 0x106)) * 0x100000 >> 0x14);
-    v = dv;
-    if (dv < 0) {
-      v = -dv;
+    delta = delta - ((lead + *(short *)(motion + 0x106)) * 0x100000 >> 0x14);
+    tv = delta;
+    if (delta < 0) {
+      tv = -delta;
     }
-    if ((0x2d < v) && (sign = -1 < dv, dv = -0x2d, sign)) {
-      dv = 0x2d;
+    if ((0x2d < tv) && (sign = -1 < delta, delta = -0x2d, sign)) {
+      delta = 0x2d;
     }
-    *(short *)(motion + 0x106) = *(short *)(motion + 0x106) + (short)dv;
-    dlt[1] = 0;
-    dlt[0] = *(int *)((char *)guest_at(*(uint32_t *)((char *)guest_at(*(uint32_t *)(ctrl + 0x2c)) + 0x20)) + 0xd4) -
+    *(short *)(motion + 0x106) = *(short *)(motion + 0x106) + (short)delta;
+    dvec[1] = 0;
+    dvec[0] = *(int *)((char *)guest_at(*(uint32_t *)((char *)guest_at(*(uint32_t *)(ctrl + 0x2c)) + 0x20)) + 0xd4) -
                   *(int *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0xd4);
-    dlt[2] = *(int *)((char *)guest_at(*(uint32_t *)((char *)guest_at(*(uint32_t *)(ctrl + 0x2c)) + 0x20)) + 0xdc) -
+    dvec[2] = *(int *)((char *)guest_at(*(uint32_t *)((char *)guest_at(*(uint32_t *)(ctrl + 0x2c)) + 0x20)) + 0xdc) -
                   *(int *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0xdc);
-    gte_op_a00428(dlt,dlt);
-    dv = *(int *)((char *)guest_at(*(uint32_t *)((char *)guest_at(*(uint32_t *)(ctrl + 0x2c)) + 0x20)) + 0xd8);
-    v = *(int *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0xd8);
-    res = FUN_80194500(dlt[0] + dlt[2]);
-    v = atan2_lut(res,dv - v);
-    dv = atan2_lut((int)*(short *)((char *)guest_at(*(uint32_t *)(ctrl + 0x40)) + 0x3a),
+    gte_op_a00428(dvec,dvec);
+    delta = *(int *)((char *)guest_at(*(uint32_t *)((char *)guest_at(*(uint32_t *)(ctrl + 0x2c)) + 0x20)) + 0xd8);
+    tv = *(int *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0xd8);
+    res = FUN_80194500(dvec[0] + dvec[2]);
+    tv = atan2_lut(res,delta - tv);
+    delta = atan2_lut((int)*(short *)((char *)guest_at(*(uint32_t *)(ctrl + 0x40)) + 0x3a),
                          (int)*(short *)((char *)guest_at(*(uint32_t *)(ctrl + 0x40)) + 0x3c));
-    v = (v + dv + bias) * 0x100000 >> 0x14;
-    if (v < -0x271) {
-      v = -0x271;
+    tv = (tv + delta + bias) * 0x100000 >> 0x14;
+    if (tv < -0x271) {
+      tv = -0x271;
     }
-    else if (0x1c7 < v) {
-      v = 0x1c7;
+    else if (0x1c7 < tv) {
+      tv = 0x1c7;
     }
-    v = v - ((dv + *(short *)(motion + 0x108)) * 0x100000 >> 0x14);
-    dv = v;
-    if (v < 0) {
-      dv = -v;
+    tv = tv - ((delta + *(short *)(motion + 0x108)) * 0x100000 >> 0x14);
+    delta = tv;
+    if (tv < 0) {
+      delta = -tv;
     }
-    if ((0x22 < dv) && (sign = -1 < v, v = -0x22, sign)) {
-      v = 0x22;
+    if ((0x22 < delta) && (sign = -1 < tv, tv = -0x22, sign)) {
+      tv = 0x22;
     }
-    v = (uint)*(ushort *)(motion + 0x108) + v;
-    *(short *)(motion + 0x108) = (short)v;
-    euler_rotmat(v * 0x10000 >> 0x10,-(int)*(short *)(motion + 0x106),0,rotm);
+    tv = (uint)*(ushort *)(motion + 0x108) + tv;
+    *(short *)(motion + 0x108) = (short)tv;
+    euler_rotmat(tv * 0x10000 >> 0x10,-(int)*(short *)(motion + 0x106),0,rotm);
     matrix_vec3_apply(rotm,(uint *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0xa4));
   }
   return;
