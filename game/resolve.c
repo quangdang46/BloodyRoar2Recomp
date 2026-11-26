@@ -3240,6 +3240,8 @@ void anim_lerp_packed3(short *dst,ushort *src,int flip,int alpha)
 
 }
 
+/* vec2_rot_lut - rotate unit direction by angle, scale by mag;
+ * returns packed Q12 (sin*-1?, cos) pair for dir_rotate_wrap. */
 undefined8 vec2_rot_lut(undefined4 angle,int mag)
 {
   int sn;
