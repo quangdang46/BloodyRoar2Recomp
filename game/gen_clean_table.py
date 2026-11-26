@@ -552,6 +552,15 @@ int clean_try_dispatch(CPUState *cpu, uint32_t addr) {
     if (!clean_range_ok(addr)) return 0;
     e = clean_find(addr);
     if (!e) return 0;
+    /* PSX_NO_CPS=1 routes CLEAN_ENT_CPS coroutine entries to generated — an
+     * A/B diagnostic isolating whether the cps_ transliterations wedge boot
+     * vs the named clean ports. Default off = normal clean-first order. */
+    static int _no_cps = -1;
+    if (_no_cps < 0) {
+        const char *_s = getenv("PSX_NO_CPS");
+        _no_cps = (_s && _s[0] == '1');
+    }
+    if (_no_cps && (e->flags & CLEAN_ENT_CPS)) return 0;
     g_clean_trace[g_clean_trace_n & 511] = addr;
     g_clean_trace_ra[g_clean_trace_n & 511] = cpu->gpr[31];
     g_clean_trace_n++;

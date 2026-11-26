@@ -10,6 +10,7 @@
 #include "psx_game_backend.h"
 
 #include <ctype.h>
+#include <stdlib.h>
 
 #if defined(PSX_GAME_BACKEND_REGISTRY)
 
@@ -79,7 +80,15 @@ int clean_try_dispatch(CPUState* cpu, uint32_t addr) { (void)cpu; (void)addr; re
  * fail-closed default before selection guarantees no regional code can run
  * against the wrong image during early boot. */
 int psx_dispatch_game_compiled(CPUState* cpu, uint32_t addr) {
-    if (clean_try_dispatch(cpu, addr)) return 1;
+    /* PSX_NO_CLEAN=1 forces every dispatch onto the generated path — an A/B
+     * diagnostic to isolate whether a clean/CPS transliteration wedges boot
+     * vs the runtime/hardware layer. Default off = normal clean-first order. */
+    static int _no_clean = -1;
+    if (_no_clean < 0) {
+        const char *_s = getenv("PSX_NO_CLEAN");
+        _no_clean = (_s && _s[0] == '1');
+    }
+    if (!_no_clean && clean_try_dispatch(cpu, addr)) return 1;
     const PsxGameBackend* be = psx_game_backend_active();
     return be ? be->dispatch_compiled(cpu, addr) : 0;
 }
