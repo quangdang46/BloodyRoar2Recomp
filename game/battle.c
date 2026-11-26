@@ -14136,15 +14136,15 @@ undefined4 * gte_rtps_xform1_raw(undefined4 *mtx,undefined4 *in,undefined4 *out)
 
 }
 
-int * node_lazy_attach(int n,int a1,int a2,int a3)
+int * node_lazy_attach(int n,int en,int aux,int par)
 {
   char cls;
   undefined1 sh;
   int *nd;
   int *slot;
   cls = *(char *)guest_at((uint32_t)(uintptr_t)((n + 0x14)));
-  if ((a1 == 0) ||
-     (nd = (int *)guest_at((uint32_t)(uintptr_t)(task_pool_alloc((int)cls,(int)*(char *)guest_at((uint32_t)(uintptr_t)((n + 0x15))),a3 + 0x1c))),
+  if ((en == 0) ||
+     (nd = (int *)guest_at((uint32_t)(uintptr_t)(task_pool_alloc((int)cls,(int)*(char *)guest_at((uint32_t)(uintptr_t)((n + 0x15))),par + 0x1c))),
      nd == (int *)0x0)) {
     nd = (int *)0x0;
   }
@@ -14160,8 +14160,8 @@ int * node_lazy_attach(int n,int a1,int a2,int a3)
     *nd = n;
     nd[1] = *(int *)guest_at((uint32_t)(uintptr_t)((n + 4)));
     *(uint32_t *)guest_at((uint32_t)(uintptr_t)((n + 4) ))= guest_of(nd);
-    nd[2] = a1;
-    nd[3] = a2;
+    nd[2] = en;
+    nd[3] = aux;
     *(undefined1 *)(nd + 5) = *(undefined1 *)guest_at((uint32_t)(uintptr_t)((n + 0x14)));
     *(undefined1 *)((intptr_t)nd + 0x15) = *(undefined1 *)guest_at((uint32_t)(uintptr_t)((n + 0x15)));
     sh = *(undefined1 *)guest_at((uint32_t)(uintptr_t)((n + 0x16)));
@@ -14550,7 +14550,7 @@ undefined4 cop2_clz(undefined4 v)
 
 }
 
-void gte_points_xform(undefined4 *a0,undefined4 *a1,undefined2 *a2,undefined2 *a3, undefined2 *arg5,int arg6)
+void gte_points_xform(undefined4 *ip,undefined4 *sz,undefined2 *sx,undefined2 *sy, undefined2 *cc,int n)
 {
   undefined4 in_zero;
   undefined4 in_at;
@@ -14558,24 +14558,24 @@ void gte_points_xform(undefined4 *a0,undefined4 *a1,undefined2 *a2,undefined2 *a
   undefined4 t0;
   undefined4 t1;
   do {
-    setCopReg(2,in_zero,*a0);
-    setCopReg(2,in_at,a0[1]);
+    setCopReg(2,in_zero,*ip);
+    setCopReg(2,in_at,ip[1]);
     copFunction(2,0x180001);
-    a0 = a0 + 2;
-    arg6 = arg6 + -1;
+    ip = ip + 2;
+    n = n + -1;
     t0 = getCopReg(2,0xe);
-    *a1 = t0;
+    *sz = t0;
     t0 = getCopReg(2,0x9800);
     t1 = getCopReg(2,0x4000);
     code = getCopControlWord(2,0xf800);
-    *a2 = (short)t0;
-    *a3 = (short)t1;
-    *arg5 = (short)(code >> 0xc);
-    a1 = a1 + 1;
-    a2 = a2 + 1;
-    a3 = a3 + 1;
-    arg5 = arg5 + 1;
-  } while (0 < arg6);
+    *sx = (short)t0;
+    *sy = (short)t1;
+    *cc = (short)(code >> 0xc);
+    sz = sz + 1;
+    sx = sx + 1;
+    sy = sy + 1;
+    cc = cc + 1;
+  } while (0 < n);
   return;
 
 }
@@ -15707,7 +15707,7 @@ void pose_chain_build(int node)
 }
 
 /* guest euler_rotmat @0x8018dc18 */
-undefined2 * euler_rotmat(uint node,uint a1,uint a2,undefined2 *a3)
+undefined2 * euler_rotmat(uint node,uint ang0,uint ang1,undefined2 *out)
 
 {
   short g0;
@@ -15723,16 +15723,16 @@ undefined2 * euler_rotmat(uint node,uint a1,uint a2,undefined2 *a3)
   int t9;
   uint an;
   
-  t0 = (a1 & 0x3ff) * 2;
-  t2 = (a1 & 0x3ff) * -2 + 0x800;
+  t0 = (ang0 & 0x3ff) * 2;
+  t2 = (ang0 & 0x3ff) * -2 + 0x800;
   t1 = t0;
-  if ((a1 & 0x400) != 0) {
+  if ((ang0 & 0x400) != 0) {
     t1 = t2;
     t2 = t0;
   }
   t2 = (int)*(short *)(&DAT_801247a8 + t2);
-  an = node + a2;
-  if ((a1 + 0x400 & 0x800) != 0) {
+  an = node + ang1;
+  if ((ang0 + 0x400 & 0x800) != 0) {
     t2 = -t2;
   }
   g0 = *(short *)(&DAT_801247a8 + t1);
@@ -15749,15 +15749,15 @@ undefined2 * euler_rotmat(uint node,uint a1,uint a2,undefined2 *a3)
     t4 = -t4;
   }
   t0 = (int)*(short *)(&DAT_801247a8 + t0);
-  t5 = (a2 & 0x3ff) * 2;
-  t7 = (a2 & 0x3ff) * -2 + 0x800;
+  t5 = (ang1 & 0x3ff) * 2;
+  t7 = (ang1 & 0x3ff) * -2 + 0x800;
   t3 = t5;
-  if ((a2 & 0x400) != 0) {
+  if ((ang1 & 0x400) != 0) {
     t3 = t7;
     t7 = t5;
   }
   t7 = (int)*(short *)(&DAT_801247a8 + t7);
-  if ((a2 + 0x400 & 0x800) != 0) {
+  if ((ang1 + 0x400 & 0x800) != 0) {
     t7 = -t7;
   }
   t3 = (int)*(short *)(&DAT_801247a8 + t3);
@@ -15776,24 +15776,24 @@ undefined2 * euler_rotmat(uint node,uint a1,uint a2,undefined2 *a3)
   if ((an + 0x400 & 0x800) != 0) {
     t9 = -t9;
   }
-  if ((a2 & 0x800) != 0) {
+  if ((ang1 & 0x800) != 0) {
     t3 = -t3;
   }
-  *a3 = (short)(t7 * t2 >> 0xc);
-  a3[7] = (short)(t0 * t2 >> 0xc);
+  *out = (short)(t7 * t2 >> 0xc);
+  out[7] = (short)(t0 * t2 >> 0xc);
   g0n = -g0;
-  if ((a1 & 0x800) != 0) {
+  if ((ang0 & 0x800) != 0) {
     t1 = -t1;
     g0n = g0;
   }
-  a3[6] = g0n;
+  out[6] = g0n;
   if ((an & 0x800) != 0) {
     t5 = -t5;
   }
   t9 = t9 * (t1 + -0x1000);
-  a3[8] = (short)(t4 * t2 >> 0xc);
-  node = node - a2;
-  a3[3] = (short)(t3 * t2 >> 0xc);
+  out[8] = (short)(t4 * t2 >> 0xc);
+  node = node - ang1;
+  out[3] = (short)(t3 * t2 >> 0xc);
   t4 = (node & 0x3ff) * 2;
   t5 = t5 * (t1 + -0x1000);
   t0 = (node & 0x3ff) * -2 + 0x800;
@@ -15812,11 +15812,11 @@ undefined2 * euler_rotmat(uint node,uint a1,uint a2,undefined2 *a3)
     t2 = -t2;
   }
   t2 = t2 * (t1 + 0x1000);
-  a3[2] = (short)((t9 + t0) >> 0xd);
-  a3[4] = (short)((t0 - t9) >> 0xd);
-  a3[1] = (short)((t5 + t2) >> 0xd);
-  a3[5] = (short)((t5 - t2) >> 0xd);
-  return a3;
+  out[2] = (short)((t9 + t0) >> 0xd);
+  out[4] = (short)((t0 - t9) >> 0xd);
+  out[1] = (short)((t5 + t2) >> 0xd);
+  out[5] = (short)((t5 - t2) >> 0xd);
+  return out;
 }
 
 /* ---- batch25: task callbacks + motion_integrator_tail (verified vs disasm) ---- */
@@ -16350,19 +16350,19 @@ void announce_param_block_init(uint32_t a0,uint32_t a1,const void *a2,
 }
 
 /* print_mode_dispatch — print-mode dispatch (mode 1 = text window). */
-void print_mode_dispatch_b(int32_t a0,uint32_t a1,uint32_t a2)
+void print_mode_dispatch_b(int32_t mode,uint32_t a1,uint32_t a2)
 {
-  BA32(0x1f800384) = (uint32_t)a0;
-  if (a0 == 1) {
+  BA32(0x1f800384) = (uint32_t)mode;
+  if (mode == 1) {
     uint32_t widget;
     text_win_init(0x3c0,0);
     widget = text_widget_alloc(a1,a2,0x140,0xf0,0,0x200);
     text_line_select(widget);
     return;
   }
-  if (a0 < 2) {
-    if (a0 == 0) return;
-  } else if (a0 == 2) {
+  if (mode < 2) {
+    if (mode == 0) return;
+  } else if (mode == 2) {
     return;
   }
   printf_forward(s_Print_mode_error_8011f140);
