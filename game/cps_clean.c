@@ -96184,6 +96184,11 @@ void cps_801a14a0(void)
     }
     /* Address: 0x801A14A0, Size: 212 bytes, Blocks: 13 */
 
+    /* record field getter: jalr-resolves a record via table
+       0x801AE6E4-6252, bounds-checks index s0 against byte[rec+233],
+       then returns one of 5 byte fields (rec+233..237 or via ptr rec+4 +
+       s0*5) selected through jump table 0x80126028+(s1-1)*4; 0 if OOB.
+       CPS-blocked. */
 block_801A14A0:
     v0 = 0x801C << 16;  /* 0x801C0000 */
     v0 = cpu->read_word(v0 + -6252);  /* handler ptr @0x801BE78C */
@@ -96340,6 +96345,10 @@ void cps_801a1574(void)
     }
     /* Address: 0x801A1574, Size: 168 bytes, Blocks: 10 */
 
+    /* nested record field getter (sibling of 0x801A14A0): jalr-resolves
+       via 0x801AE6E4-6252, bounds-checks s0 against byte[rec+234],
+       indexes 8-byte subrecords via rec+8 + s0*8, then bounds-checks s1
+       and returns byte[sub+4 + s1]; 0 on any OOB. CPS-blocked. */
 block_801A1574:
     v0 = 0x801C << 16;  /* 0x801C0000 */
     v0 = cpu->read_word(v0 + -6252);  /* handler ptr @0x801BE78C */
@@ -96470,6 +96479,9 @@ void cps_801a1654(void)
     }
     /* Address: 0x801A1654, Size: 72 bytes, Blocks: 3 */
 
+    /* byte-triple forwarder: jalr-resolves record via
+       0x801AE6E4-6252, then tail-jals 0x801A2EC8(a0=record,
+       a1=a1&0xFF, a2=a2&0xFF). CPS-blocked. */
 block_801A1654:
     v0 = 0x801C << 16;  /* 0x801C0000 */
     v0 = cpu->read_word(v0 + -6252);  /* handler ptr @0x801BE78C */
@@ -96539,6 +96551,12 @@ void cps_801a16f0(void)
     }
     /* Address: 0x801A16F0, Size: 280 bytes, Blocks: 13 */
 
+    /* mode-flag setter: computes expected = (g[0x801AE644]<<1)|(
+       g[0x801AE644-4]<1) and compares to a0; per bit0/bit1 sets or
+       clears globals 0x801AE6DC/0x801AE6E0 (with <150 counter gates on
+       0x801FAEF0/F4) and fires two jalr notify callbacks via
+       0x801AE6D4 table (base and +240); finally sets flag 0x801AE6EC
+       and returns s1. CPS-blocked. */
 block_801A16F0:
     v1 = 0x801C << 16;  /* 0x801C0000 */
     v1 = cpu->read_word(v1 + -6188);  /* @0x801BE7D4 */
@@ -96720,6 +96738,12 @@ void cps_801a1a40(void)
     }
     /* Address: 0x801A1A40, Size: 204 bytes, Blocks: 8 */
 
+    /* channel init/teardown sequence: clears flag 0x801AE6EC, calls
+       0x8018E300, channel ops 0x8019A340/0x8019A330 on handle
+       0x801FAEE0, writes -2 + sets bit0 in table entry 0x801AE660,
+       calls 0x8019A670(3,0), 0x8018E310, then two jalr callbacks via
+       0x801AE6D4 (base/+240), zeroes counters 0x801FAEF0/F4, sets
+       flag 0x801AE6EC=1. CPS-blocked. */
 block_801A1A40:
     sp = sp + -24;
     cpu->write_word(sp + 20, ra);
@@ -96823,12 +96847,10 @@ void cps_801a1b40(void)
 
     /* Address: 0x801A1B40, Size: 16 bytes, Blocks: 1 */
 
-block_801A1B40:
+    /* epilogue piece: pop saved ra at sp+16, restore sp, return */
     ra = cpu->read_word(sp + 16);
     sp = sp + 24;
     uint32_t _jt_801A1B48 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    /* nop */  /* 0x801A1B4C: 0x00000000 */
     psx_check_interrupts_at(cpu, _jt_801A1B48);
     cpu->pc = _jt_801A1B48; return;  /* CPS: jr $ra */
 }
@@ -96855,6 +96877,9 @@ void cps_801a1bc4(void)
     }
     /* Address: 0x801A1BC4, Size: 40 bytes, Blocks: 3 */
 
+    /* refcount guard piece: stores half(a0+10)=v1, reads slot
+       0x801AE6D8[v0] — negative splits to 0x801A1CAC, zero to
+       0x801A1C58, positive continues into cps_801a1bec. CPS-blocked. */
 block_801A1BC4:
     cpu->write_half(a0 + 10, (uint16_t)v1);
     at = 0x801C << 16;  /* 0x801C0000 */
@@ -96910,6 +96935,10 @@ void cps_801a1bec(void)
     }
     /* Address: 0x801A1BEC, Size: 92 bytes, Blocks: 2 */
 
+    /* refcount decrement + notify: slot = 0x801AE650[g[0x801AE648]];
+       *slot -= 1; computes offset idx*240 into record s0+12 and
+       jalr-calls handler g[0x801AE610]; continuation 0x801A1C48 reloads
+       the slot pointer. CPS-blocked. */
 block_801A1BEC:
     v1 = 0x801C << 16;  /* 0x801C0000 */
     v1 = cpu->read_word(v1 + -6208);
