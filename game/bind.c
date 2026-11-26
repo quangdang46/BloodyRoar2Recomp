@@ -948,6 +948,7 @@ int32_t pending_action_gate(uint32_t motion, uint8_t *ctrl,
  * build uses clean_bridge's version, which also mirrors the reservation
  * into cpu->gpr[29]. */
 extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+extern uint32_t call_guest4(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern void br2_guest_frame_free(void);
 void br2_st32(uint32_t a, uint32_t v);
 static uint32_t g_bind_frm_sp[32];

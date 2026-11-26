@@ -2244,6 +2244,7 @@ int32_t mc_dialog_bit4(int32_t param_1)
  * Disasm 0x80159a14-0x80159aac. */
 extern int32_t mc_date_serial_cmp(uint8_t *,void *);
 extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+extern uint32_t call_guest4(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern void cd_bitstream_decode(int32_t,uint32_t,uint32_t);
 extern void cd_dir_entry_probe(int32_t);
 int32_t blk_io_retry(uint32_t param_1,void *param_2)

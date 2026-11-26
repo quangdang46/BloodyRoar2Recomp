@@ -9155,7 +9155,7 @@ void impact_fx_update(int param_1)
    * That register state cannot be reconstructed from clean C locals, so the
    * whole body delegates to the generated implementation (faithful per the
    * delegation rule) rather than guessing the jump-table dispatch. */
-  br2_call_generated(0x80138CECu,(uint32_t)param_1,0,0,0);
+  call_guest4(0x80138CECu,(uint32_t)param_1,0,0,0);
 }
 
 void impact_fx_emit_tick(int param_1)

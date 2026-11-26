@@ -172,6 +172,7 @@ extern void     br2_st8(uint32_t a, uint8_t v);
 extern void     br2_st16(uint32_t a, uint16_t v);
 extern void     br2_st32(uint32_t a, uint32_t v);
 extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+extern uint32_t call_guest4(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern uint32_t bios_svc6(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern uint32_t clean_caller_ra(void);
 extern void     br2_guest_ra_set(uint32_t);
@@ -232,7 +233,7 @@ undefined4 cd_read_issue(undefined4 param_1,undefined4 param_2,undefined4 param_
    * MMIO busy-waits lack per-block interrupt checks. Delegate to the
    * generated MIPS (behavioral oracle) — same contract as the other
    * read-path functions already delegated. */
-  return (undefined4)br2_call_generated(0x8018d150u,param_1, param_2, param_3, 0);
+  return (undefined4)call_guest4(0x8018d150u,param_1, param_2, param_3, 0);
 }
 
 /* ======== 0x80198af0 ======== */
@@ -254,7 +255,7 @@ undefined4 cd_read_issue(undefined4 param_1,undefined4 param_2,undefined4 param_
  * br2_call_generated thunk also makes gen_clean_table skip this address. */
 void cd_init_session(void)
 {
-  br2_call_generated(0x80198af0, 0, 0, 0, 0);
+  call_guest4(0x80198af0, 0, 0, 0, 0);
 }
 
 /* ======== 0x80198e2c ======== */
@@ -299,7 +300,7 @@ void cd_init_session(void)
 int cd_read_poll(int param_1,undefined4 param_2)
 {
   (void)param_1; (void)param_2;
-  return (int)br2_call_generated(0x80198e2cu, (uint32_t)param_1,
+  return (int)call_guest4(0x80198e2cu, (uint32_t)param_1,
                                  (uint32_t)param_2, 0, 0);
 }
 
@@ -403,7 +404,7 @@ undefined4 cd_cmd_issue(byte param_1,uint32_t param_2,uint32_t param_3,int param
    * so the IRQ that would set busy is either deferred forever or abandons
    * this frame. Run the recompiled guest body so the wait is interruptible
    * exactly like hardware. Clean port preserved in git history. */
-  return (undefined4)br2_call_generated(0x80196e14,(uint32_t)param_1,param_2,param_3,(uint32_t)param_4);
+  return (undefined4)call_guest4(0x80196e14,(uint32_t)param_1,param_2,param_3,(uint32_t)param_4);
 }
 
 /* ======== 0x80198c90 ======== */
@@ -420,7 +421,7 @@ bool cd_read_setup(undefined4 param_1,undefined4 param_2,uint param_3)
    * It also sits on the IRQ/deferred-coroutine boundary like the other
    * read-path functions already delegated. Delegate to generated. */
   CDFN(CDFN_READ_SETUP,(uint32_t)param_1);
-  return (bool)br2_call_generated(0x80198c90u,(uint32_t)param_1,
+  return (bool)call_guest4(0x80198c90u,(uint32_t)param_1,
                                   (uint32_t)param_2,(uint32_t)param_3,0);
 }
 
@@ -528,10 +529,10 @@ uint cd_timer_read(int param_1)
     a1v = (uint32_t)param_1 - 1u;
   }
   a0v = v0;
-  br2_call_generated(0x8019a5d8u, a0v, a1v, 0, 0);   /* jal vsync_wait_n */
+  call_guest4(0x8019a5d8u, a0v, a1v, 0, 0);   /* jal vsync_wait_n */
 
   s0 = br2_ld32(br2_ld32(0x801bcca8));         /* reload counter sample */
-  br2_call_generated(0x8019a5d8u,
+  call_guest4(0x8019a5d8u,
                      br2_ld32(0x801bdde0) + 1u, 1u, 0, 0); /* jal vsync_wait_n */
 
   /* @0x8019A53C: if bit 0x00400000 of the sample is set, wait for the
@@ -873,7 +874,7 @@ uint cd_result_wait_a(int param_1,undefined1 *param_2)
    * coroutine never resumes to set 0x801bcb25/26 -> infinite
    * spin. Same contract as cd_init_session/cd_file_read_seq.
    * br2_call_generated makes gen_clean_table skip this address. */
-  return (uint)br2_call_generated(0x801968ccu, (uint32_t)param_1,
+  return (uint)call_guest4(0x801968ccu, (uint32_t)param_1,
                                   br2_gaddr(param_2), 0, 0);
 }
 
@@ -1235,7 +1236,7 @@ bAA4:
  * authoritative until the coroutine runtime exists. */
 undefined4 cd_response_process(void)
 {
-  return (undefined4)br2_call_generated(0x80196370u,0,0,0,0);
+  return (undefined4)call_guest4(0x80196370u,0,0,0,0);
 }
 
 /* ======== small getters ======== */
@@ -1337,7 +1338,7 @@ uint cd_result_wait_b(int param_1,undefined1 *param_2)
    * coroutine never resumes to set 0x801bcb25/26 -> infinite
    * spin. Same contract as cd_init_session/cd_file_read_seq.
    * br2_call_generated makes gen_clean_table skip this address. */
-  return (uint)br2_call_generated(0x80196b4cu, (uint32_t)param_1,
+  return (uint)call_guest4(0x80196b4cu, (uint32_t)param_1,
                                   br2_gaddr(param_2), 0, 0);
 }
 
@@ -1445,7 +1446,7 @@ int cd_dispatch_tbl4(int param_1,uint32_t param_2)
  * authoritative per AGENTS.md §4. */
 void cd_read_step_cb(uint32_t param_1,undefined4 param_2)
 {
-  br2_call_generated(0x801985c4u,param_1,param_2,0,0);
+  call_guest4(0x801985c4u,param_1,param_2,0,0);
 }
 
 /* ======== 0x80198838 ======== */
@@ -1825,7 +1826,7 @@ void cd_channel_table_init(uint8_t *param_1,uint8_t *param_2)
   /* BISECT: re-delegated — clean port of the channel fn-ptr/record table
    * stores (0x801BE780+ base, 0xf0-stride channel records) broke the
    * title->menu file-load path. Keep generated until re-verified. */
-  br2_call_generated(0x801a36f0u, guest_of(param_1), guest_of(param_2), 0, 0);
+  call_guest4(0x801a36f0u, guest_of(param_1), guest_of(param_2), 0, 0);
 }
 
 /* cd_tbl4_dispatch3 — dispatch wrapper: cd_dispatch_tbl4(3,arg). */
@@ -1868,7 +1869,7 @@ void cd_cmd_sequence(uint32_t param_1,uint32_t param_2,uint32_t param_3,uint32_t
    * generated caller-token/arg-forwarding semantics. Delegate whole
    * body to generated MIPS until the BIOS kernel boundary is modeled
    * faithfully. */
-  br2_call_generated(0x8019a00c,param_1,param_2,param_3,param_4);
+  call_guest4(0x8019a00c,param_1,param_2,param_3,param_4);
 }
 
 /* cd_channel_main_init — CD channel main init: crit-in, flag=0, 9a340/9a330
@@ -1882,7 +1883,7 @@ void cd_channel_main_init(void)
 {
   /* gpr-forwarding trampoline calls inside need live cpu->gpr that clean
    * callers cannot supply; delegate whole body to generated MIPS. */
-  br2_call_generated(0x801a1a40u,0,0,0,0);
+  call_guest4(0x801a1a40u,0,0,0,0);
 }
 
 /* cd_dir_entry_probe — CD directory entry probe/free: magic-div index into
@@ -2160,7 +2161,7 @@ void cd_kobj_init_a(void)
    * corrupts kernel-object state (boot dies in the 0x801970xx CD-event
    * wait -> unknown dispatch). Delegate whole body to generated MIPS —
    * the BIOS kernel boundary needs live gpr/ra semantics clean C lacks. */
-  br2_call_generated(0x8019a3f0,0,0,0,0);
+  call_guest4(0x8019a3f0,0,0,0,0);
 }
 
 /* cd_kobj_init_b — kernel-object init B. Faithful port of generated
@@ -2173,7 +2174,7 @@ void cd_kobj_init_a(void)
 void cd_kobj_init_b(void)
 {
   /* Same e9fc366 regression as cd_kobj_init_a — delegate to generated. */
-  br2_call_generated(0x8019a378,0,0,0,0);
+  call_guest4(0x8019a378,0,0,0,0);
 }
 
 /* bios_tramp_a044 — BIOS svc A0/0x44 trampoline. */
@@ -2280,7 +2281,7 @@ void cd_ext_init_once(void)
    * the clean port livelocked versus boot in the CD-event wait. Delegate
    * whole body to generated MIPS. (The 0x8019B7E0 callback arg was
    * verified against generated: a0 = 0x801A0000-0x4820.) */
-  br2_call_generated(0x8019b308u,0,0,0,0);
+  call_guest4(0x8019b308u,0,0,0,0);
 }
 
 /* cd_chan_block_boot — channel block @0x801febe0 init: clears +0/4/8/0xc/
@@ -2395,7 +2396,7 @@ void cd_mode_reset_seq(void)
   /* c784bf1 clean port of 0x8019e39c regressed versus boot (same
    * bios_table_tramp/BIOS-svc boundary family as the e9fc366 break):
    * delegate whole body to generated MIPS. */
-  br2_call_generated(0x8019e39cu,0,0,0,0);
+  call_guest4(0x8019e39cu,0,0,0,0);
 }
 
 /* cd_dir_reset — CD dir reset: a1=*0x801fc6c4, clears
@@ -2428,7 +2429,7 @@ void cd_mode_apply_seq(uint32_t a0)
 {
   /* c784bf1 clean port of 0x8019e330 regressed versus boot — delegate
    * whole body to generated MIPS (BIOS trampoline boundary). */
-  (void)br2_call_generated(0x8019e330u,a0,0,0,0);
+  (void)call_guest4(0x8019e330u,a0,0,0,0);
 }
 
 /* bios_tramp_a070 — BIOS svc A0/0x70 trampoline. */
@@ -4642,7 +4643,7 @@ void cd_mc_state_machine(void)
    * (bit4 set -> status 3 livelock). Generated code reserves the real
    * frame, placing the out buffer above the callee frame. Same contract
    * as cd_result_wait_b/cd_file_read_seq. */
-  br2_call_generated(0x80199440u,0,0,0,0);
+  call_guest4(0x80199440u,0,0,0,0);
   return;
 }
 
@@ -4906,7 +4907,7 @@ int32_t cd_chan_cmd_pump(uint32_t a0,uint32_t a1,uint32_t a2)
    * MMIO busy-waits lack per-block interrupt checks. Delegate to the
    * generated MIPS (behavioral oracle) — same contract as the other
    * read-path functions already delegated. */
-  return (int32_t)br2_call_generated(0x801a0660u,a0, a1, a2, 0);
+  return (int32_t)call_guest4(0x801a0660u,a0, a1, a2, 0);
 }
 
 /* ======== batch34 ======== */
@@ -5628,7 +5629,7 @@ int cd_subsys_init_full(uint32_t param_1,uint32_t param_2,uint32_t param_3,
   /* e9fc366 clean port of 0x8019a09c regressed early boot (same root
    * cause as cd_kobj_init_a/b — inline B0 BIOS svc6 path). Delegate
    * whole body to generated MIPS. */
-  return (int)br2_call_generated(0x8019a09cu,param_1,param_2,param_3,param_4);
+  return (int)call_guest4(0x8019a09cu,param_1,param_2,param_3,param_4);
 }
 
 /* ======== 0x8019ac04 ======== */
@@ -6012,7 +6013,7 @@ int32_t cd_gpu_call_1c(uint32_t param_1,uint32_t param_2)
  * correct and makes gen_clean_table skip the address. */
 uint32_t cd_chan_full_init(void)
 {
-  return br2_call_generated(0x8019a814, 0, 0, 0, 0);
+  return call_guest4(0x8019a814, 0, 0, 0, 0);
 }
 
 /* ======== 0x801918a0 ======== */
@@ -6503,7 +6504,7 @@ void cd_gpu_call_8b(uint32_t param_1,uint32_t param_2)
 void cd_dma_chan_init(uint32_t param_1)
 {
   (void)param_1;
-  br2_call_generated(0x8019b310u,param_1, 0, 0, 0);
+  call_guest4(0x8019b310u,param_1, 0, 0, 0);
 }
 
 /* ======== 0x80199100 ======== */
@@ -6534,7 +6535,7 @@ int32_t cd_seek_step(uint32_t param_1,uint32_t param_2)
   /* IRQ-poll spin on TestEvent(0x801bde38) — DeliverEvent needs the deferred
    * CD coroutine resumed on IRQ, which a clean-C spin cannot drive. Delegate
    * to generated (same contract as cd_seek_complete_poll 0x8019d500). */
-  return (int32_t)br2_call_generated(0x8019d508u,param_1,param_2,0,0);
+  return (int32_t)call_guest4(0x8019d508u,param_1,param_2,0,0);
 }
 
 /* ======== 0x8019b8a4 ======== */
@@ -6665,7 +6666,7 @@ void cd_prim_list_b(uint32_t param_1,uint32_t param_2,uint32_t param_3)
  * delegated to generated MIPS. */
 uint32_t cd_chan_slot_set(uint32_t param_1,uint32_t param_2)
 {
-  return (uint32_t)br2_call_generated(0x8019aabcu,param_1,param_2,0,0);
+  return (uint32_t)call_guest4(0x8019aabcu,param_1,param_2,0,0);
 }
 
 /* ======== batch_mass13 ======== */
@@ -7116,7 +7117,7 @@ int cd_ctx_save(uint32_t a0)
  * live-resume-PC contract; stays generated-authoritative per §4. */
 void cd_intc_dispatch(void)
 {
-  br2_call_generated(0x8019a8ecu,0,0,0,0);
+  call_guest4(0x8019a8ecu,0,0,0,0);
 }
 /* bios_tramp_b035 — BIOS trampoline only (0x8018ef50-0x8018ef58):
  * addiu t2,0xb0; jr t2; t1=0x35. Kernel svc 0x35 (line-buffer
@@ -7147,7 +7148,7 @@ int32_t bios_tramp_b035(int32_t a0,const void *a1,int32_t a2)
  * (session-18 boundary bug — same as cd_ext_init_once/cd_dma_chan_init). */
 void cd_hw_chan_init(void)
 {
-  br2_call_generated(0x801a0be0u,0, 0, 0, 0);
+  call_guest4(0x801a0be0u,0, 0, 0, 0);
 }
 
 /* ======== 0x8019ad60 ======== */

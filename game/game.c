@@ -200,6 +200,7 @@ extern uint8_t  *g_DAT_801b12e0;
 extern uint8_t  *g_DAT_801b12e6;
 extern uint8_t  *g_DAT_801b3ed8;   /* stage param table (0x1c stride) */
 extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+extern uint32_t call_guest4(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern void br2_st8(uint32_t a, uint8_t v);
 extern uint32_t *g_PTR_DAT_801b5b94; /* file ptr table */
 extern uint8_t  *g_DAT_801b5b98;
