@@ -7235,52 +7235,52 @@ int dialog_msg_dispatch(intptr_t a0, uint32_t a1)
    (lbu@2,3,4; ptr@0x28,0x2c), a2 = gate flag. States 0/0x10/0x20/0x30/0x40. */
 int save_state_machine_alt(uint32_t a0, uint8_t *s4, int32_t a2)
 {
-  uint8_t *fp = (uint8_t *)guest_at(a0);
-  int32_t s0 = (int32_t)*(int16_t *)(fp + 0x8e);
-  uint32_t s5 = s4[2];
-  uint32_t s2 = s4[4] & 3;
-  uint32_t s6 = g8(0x801b49f8u + s4[3]);
-  /* DIAG: log each entry — resume state (fp+0x8e) in dst, s4 block in src,
-     char index s4[3] in mode, s2 (s4[4]&3) in len. */
-  decomp_trace_record(86,(uint32_t)s0,(uint32_t)s4,(uint8_t)s4[3],s2);
+  uint8_t *st = (uint8_t *)guest_at(a0);
+  int32_t phase = (int32_t)*(int16_t *)(st + 0x8e);
+  uint32_t variant = s4[2];
+  uint32_t sub = s4[4] & 3;
+  uint32_t base = g8(0x801b49f8u + s4[3]);
+  /* DIAG: log each entry — resume state (st+0x8e) in dst, s4 block in src,
+     char index s4[3] in mode, sub (s4[4]&3) in len. */
+  decomp_trace_record(86,(uint32_t)phase,(uint32_t)s4,(uint8_t)s4[3],sub);
   int32_t saved8;
   /* guest sp+0x28 word — heap_record_emit param_6 out-count is u32* */
   uint32_t sp28 = 0;
-  uint32_t heapB, heapA, sz, s1v, p, v1, i;
+  uint32_t heapB, heapA, sz, rec_dst, pblk, slot_base, i;
   int *tbl = (int *)tag_table_get();   /* tag table; pure getter */
 #define H90W16(a,v) BR2_WS16(a,v)
 
-  if (s0 == 0x20) goto L20;
-  if (s0 < 0x21) {
-    if (s0 == 0) goto L00;
-    if (s0 == 0x10) goto L10;
+  if (phase == 0x20) goto L20;
+  if (phase < 0x21) {
+    if (phase == 0) goto L00;
+    if (phase == 0x10) goto L10;
     goto ret0;
   }
-  if (s0 == 0x30) goto L30;
-  if (s0 == 0x40) goto L40;
+  if (phase == 0x30) goto L30;
+  if (phase == 0x40) goto L40;
   goto ret0;
 
 L00:
   /* state 0: quick commit, requires a2 == 0 */
   if (a2 != 0) goto ret0;
   heapB = g32(0x801e3cfc);
-  decomp_trace_record(81,(uint32_t)(s6 + 0xc4),s6,(uint8_t)s4[3],s2); /* L00 gate */
-  if (cd_file_load_sm((int32_t)(s6 + 0xc4), heapB) == 0) goto ret0;
-  if (s5 == 0) {
+  decomp_trace_record(81,(uint32_t)(base + 0xc4),base,(uint8_t)s4[3],sub); /* L00 gate */
+  if (cd_file_load_sm((int32_t)(base + 0xc4), heapB) == 0) goto ret0;
+  if (variant == 0) {
     fighter_record_apply(heapB, 3);
     page_table_ptr_set(s4[3], 3);
   } else {
     fighter_record_apply(heapB, 4);
     page_table_ptr_set(s4[3], 4);
   }
-  s0 = 0x10;
-  goto ret0;                   /* gen 0x80171990 sh s0,0x8e(fp) stores 0x10, then j 0x801720cc ret 0 —
-                                  the store must NOT be skipped or L00 reloads s6+0xc4 forever */
+  phase = 0x10;
+  goto ret0;                   /* gen 0x80171990 sh phase,0x8e(st) stores 0x10, then j 0x801720cc ret 0 —
+                                  the store must NOT be skipped or L00 reloads base+0xc4 forever */
 
 L10:
-  /* state 0x10: build image (two variants on s5) */
-  decomp_trace_record(82,(uint32_t)(s6 + s2 + 0xc0),s6,(uint8_t)s4[3],s2); /* L10 gate */
-  if (cd_file_load_sm((int32_t)(s6 + s2 + 0xc0),
+  /* state 0x10: build image (two variants on variant) */
+  decomp_trace_record(82,(uint32_t)(base + sub + 0xc0),base,(uint8_t)s4[3],sub); /* L10 gate */
+  if (cd_file_load_sm((int32_t)(base + sub + 0xc0),
                    guest_of(tag_table_get())) == 0) goto ret0;
   saved8 = (int32_t)g8(0x1f800013);
   scratch_013_set(0);
@@ -7288,86 +7288,86 @@ L10:
   BR2_W32(0x801e3cfc, 0x800f0000u);
   BR2_W32(0x801f4f18, heapA);
 
-  /* tag0 + cc5c -> p+0x10 / p+0 */
+  /* tag0 + cc5c -> pblk+0x10 / pblk+0 */
   heapB = g32(0x801e3cfc);
   sz = heap_alloc54(heapB, tbl, 0);
   heap_ptr_fixup(g32(0x801e3cfc));
-  if (s5 == 0) {
-    s1v = 0x801beff0u;
-    heapA = (uint32_t)heap_record_emit(g32(0x801e3cfc), s1v,
+  if (variant == 0) {
+    rec_dst = 0x801beff0u;
+    heapA = (uint32_t)heap_record_emit(g32(0x801e3cfc), rec_dst,
                  g32(0x801c47b8), 0, 0, &sp28, 0, 0, 0);
   } else {
-    s1v = 0x801c00d0u;
-    heapA = (uint32_t)heap_record_emit(g32(0x801e3cfc), s1v,
+    rec_dst = 0x801c00d0u;
+    heapA = (uint32_t)heap_record_emit(g32(0x801e3cfc), rec_dst,
                  g32(0x801c47b8), 0, 0, &sp28, 0, 3, 3);
   }
   BR2_W32(0x801c47b8, heapA);
-  p = *(uint32_t *)(s4 + 0x28);
-  *(uint32_t *)guest_at(p + 0x10) = s1v;
-  *(uint8_t *)guest_at(p) = sp28;
+  pblk = *(uint32_t *)(s4 + 0x28);
+  *(uint32_t *)guest_at(pblk + 0x10) = rec_dst;
+  *(uint8_t *)guest_at(pblk) = sp28;
   BR2_W32(0x801e3cfc, g32(0x801e3cfc) + sz);
 
-  /* tag1 + cc5c -> p+0x14 / p+1 */
+  /* tag1 + cc5c -> pblk+0x14 / pblk+1 */
   heapB = g32(0x801e3cfc);
   sz = heap_alloc54(heapB, tbl, 1);
   heap_ptr_fixup(g32(0x801e3cfc));
-  if (s5 == 0) {
-    s1v = 0x801bf860u;
-    heapA = (uint32_t)heap_record_emit(g32(0x801e3cfc), s1v,
+  if (variant == 0) {
+    rec_dst = 0x801bf860u;
+    heapA = (uint32_t)heap_record_emit(g32(0x801e3cfc), rec_dst,
                  g32(0x801c47b8), 0, 0, &sp28, 0x81, 0, 0);
   } else {
-    s1v = 0x801c0940u;
-    heapA = (uint32_t)heap_record_emit(g32(0x801e3cfc), s1v,
+    rec_dst = 0x801c0940u;
+    heapA = (uint32_t)heap_record_emit(g32(0x801e3cfc), rec_dst,
                  g32(0x801c47b8), 0, 0, &sp28, 0x81, 3, 3);
   }
   BR2_W32(0x801c47b8, heapA);
-  p = *(uint32_t *)(s4 + 0x28);
-  *(uint32_t *)guest_at(p + 0x14) = s1v;
-  *(uint8_t *)guest_at(p + 1) = sp28;
+  pblk = *(uint32_t *)(s4 + 0x28);
+  *(uint32_t *)guest_at(pblk + 0x14) = rec_dst;
+  *(uint8_t *)guest_at(pblk + 1) = sp28;
   BR2_W32(0x801e3cfc, g32(0x801e3cfc) + sz);
 
-  /* tag2 + cc5c -> p+0x34 / p+0x24 */
+  /* tag2 + cc5c -> pblk+0x34 / pblk+0x24 */
   heapB = g32(0x801e3cfc);
   sz = heap_alloc54(heapB, tbl, 2);
   heap_ptr_fixup(g32(0x801e3cfc));
-  if (s5 == 0) {
-    s1v = 0x801bf428u;
-    heapA = (uint32_t)heap_record_emit(g32(0x801e3cfc), s1v,
+  if (variant == 0) {
+    rec_dst = 0x801bf428u;
+    heapA = (uint32_t)heap_record_emit(g32(0x801e3cfc), rec_dst,
                  g32(0x801c47b8), 0, 0, &sp28, 0, 0, 0);
   } else {
-    s1v = 0x801c0508u;
-    heapA = (uint32_t)heap_record_emit(g32(0x801e3cfc), s1v,
+    rec_dst = 0x801c0508u;
+    heapA = (uint32_t)heap_record_emit(g32(0x801e3cfc), rec_dst,
                  g32(0x801c47b8), 0, 0, &sp28, 0, 3, 3);
   }
   BR2_W32(0x801c47b8, heapA);
-  p = *(uint32_t *)(s4 + 0x28);
-  *(uint32_t *)guest_at(p + 0x34) = s1v;
-  *(uint8_t *)guest_at(p + 0x24) = sp28;
+  pblk = *(uint32_t *)(s4 + 0x28);
+  *(uint32_t *)guest_at(pblk + 0x34) = rec_dst;
+  *(uint8_t *)guest_at(pblk + 0x24) = sp28;
   BR2_W32(0x801e3cfc, g32(0x801e3cfc) + sz);
 
-  /* tag3 + cc5c -> p+0x38 / p+0x25 */
+  /* tag3 + cc5c -> pblk+0x38 / pblk+0x25 */
   heapB = g32(0x801e3cfc);
   sz = heap_alloc54(heapB, tbl, 3);
   heap_ptr_fixup(g32(0x801e3cfc));
-  if (s5 == 0) {
-    s1v = 0x801bfc98u;
-    heapA = (uint32_t)heap_record_emit(g32(0x801e3cfc), s1v,
+  if (variant == 0) {
+    rec_dst = 0x801bfc98u;
+    heapA = (uint32_t)heap_record_emit(g32(0x801e3cfc), rec_dst,
                  g32(0x801c47b8), 0, 0, &sp28, 0x81, 0, 0);
   } else {
-    s1v = 0x801c0d78u;
-    heapA = (uint32_t)heap_record_emit(g32(0x801e3cfc), s1v,
+    rec_dst = 0x801c0d78u;
+    heapA = (uint32_t)heap_record_emit(g32(0x801e3cfc), rec_dst,
                  g32(0x801c47b8), 0, 0, &sp28, 0x81, 3, 3);
   }
   BR2_W32(0x801c47b8, heapA);
-  p = *(uint32_t *)(s4 + 0x28);
-  *(uint32_t *)guest_at(p + 0x38) = s1v;
-  *(uint8_t *)guest_at(p + 0x25) = sp28;
+  pblk = *(uint32_t *)(s4 + 0x28);
+  *(uint32_t *)guest_at(pblk + 0x38) = rec_dst;
+  *(uint8_t *)guest_at(pblk + 0x25) = sp28;
   BR2_W32(0x801e3cfc, g32(0x801e3cfc) + sz);
 
   /* tags 4,5,6: bf40 strips; tag7,8: double bf40 */
   {
-    uint32_t b0 = s5 ? 0x2c0 : 0x200;
-    uint32_t b1 = s5 ? 0x30 : 0;
+    uint32_t b0 = variant ? 0x2c0 : 0x200;
+    uint32_t b1 = variant ? 0x30 : 0;
     /* tag4 */
     sz = heap_alloc54(g32(0x801e3cfc), tbl, 4);
     if (sz) {
@@ -7393,7 +7393,7 @@ L10:
       spr_draw_off((int32_t)g32(0x801e3cfc), (int32_t)b1, 0x1f0, 1);
       BR2_W32(0x801e3cfc, g32(0x801e3cfc) + sz);
     }
-    /* tag8: s0 += 0x10 unconditionally (delay slot) */
+    /* tag8: phase += 0x10 unconditionally (delay slot) */
     b1 += 0x10;
     sz = heap_alloc54(g32(0x801e3cfc), tbl, 8);
     if (sz) {
@@ -7404,28 +7404,28 @@ L10:
   }
   cd_timer_read(0);
   scratch_013_set((uint32_t)saved8);
-  s0 = 0x20;
+  phase = 0x20;
   /* fall into L20 */
 
 L20:
   /* state 0x20 */
-  decomp_trace_record(83,(uint32_t)(s6 + 0x25),s6,(uint8_t)s4[3],s2); /* L20 gate */
-  if (cd_file_load_sm((int32_t)(s6 + 0x25),
+  decomp_trace_record(83,(uint32_t)(base + 0x25),base,(uint8_t)s4[3],sub); /* L20 gate */
+  if (cd_file_load_sm((int32_t)(base + 0x25),
                    guest_of(tag_table_get())) == 0) goto ret0;
   saved8 = (int32_t)g8(0x1f800013);
   scratch_013_set(0);
   heapB = g32(0x801e3cfc);
   sz = heap_alloc54(heapB, tbl, 0);
   if (sz) {
-    if (s5 == 0)
+    if (variant == 0)
       spr_draw_pair(heapB, 0x60, 0x1e0, 1, 0x3c0, 0x140, 1);
     else
       spr_draw_pair(heapB, 0x70, 0x1e0, 1, 0x3c0, 0x140, 1);
     BR2_W32(0x801e3cfc, g32(0x801e3cfc) + sz);
   }
-  v1 = s5 ? 0x3c : 0x28;
+  slot_base = variant ? 0x3c : 0x28;
   {
-    uint32_t slot = 0x801c43a8u + v1 * 4;
+    uint32_t slot = 0x801c43a8u + slot_base * 4;
     for (i = 0; i < 0x14; i++, slot += 4) {
       uint32_t h = (g32(0x801c47b8) + 3) & ~3u;
       uint32_t r;
@@ -7442,16 +7442,16 @@ L20:
   }
   cd_timer_read(0);
   scratch_013_set((uint32_t)saved8);
-  s0 = 0x30;                    /* next state L30 — gen 0x80172020 li s0,0x30 -> ret0;
-                                   storing 0x20 here would re-run L20 and reload s6+0x25 forever */
+  phase = 0x30;                    /* next state L30 — gen 0x80172020 li phase,0x30 -> ret0;
+                                   storing 0x20 here would re-run L20 and reload base+0x25 forever */
   goto ret0;
 
 L30:
   /* state 0x30 */
   heapA = (g32(0x801c47b8) + 3) & ~3u;
   BR2_W32(0x801c47b8, heapA);
-  decomp_trace_record(84,(uint32_t)(s6 + s2 + 0x20),s6,(uint8_t)s4[3],s2); /* L30 gate */
-  if (cd_file_load_sm((int32_t)(s6 + s2 + 0x20), heapA) == 0) goto ret0;
+  decomp_trace_record(84,(uint32_t)(base + sub + 0x20),base,(uint8_t)s4[3],sub); /* L30 gate */
+  if (cd_file_load_sm((int32_t)(base + sub + 0x20), heapA) == 0) goto ret0;
   saved8 = (int32_t)g8(0x1f800013);
   scratch_013_set(0);
   heapA = g32(0x801c47b8);
@@ -7462,28 +7462,28 @@ L30:
     decomp_trace_record(63,guest_of(s4),guest_of(s4)+0x30,0,heapA); }
   sz = *(uint32_t *)guest_at(heapA);   /* lw (v0): size at heap head */
   BR2_W32(0x801c47b8, heapA + sz);
-  s0 = 0x40;
+  phase = 0x40;
   /* fall into L40 */
 
 L40:
   /* state 0x40 */
-  if (s5 != 0) {
+  if (variant != 0) {
     uint32_t q = *(uint32_t *)(s4 + 0x2c);
     if (s4[3] == *(uint8_t *)guest_at(q + 3)) return 1;
   }
   heapA = g32(0x801c47b8);
-  decomp_trace_record(85,(uint32_t)(s6 + 0x24),s6,(uint8_t)s4[3],s2); /* L40 gate */
-  if (cd_file_load_sm((int32_t)(s6 + 0x24), heapA) == 0) goto ret0;
+  decomp_trace_record(85,(uint32_t)(base + 0x24),base,(uint8_t)s4[3],sub); /* L40 gate */
+  if (cd_file_load_sm((int32_t)(base + 0x24), heapA) == 0) goto ret0;
   heapA = g32(0x801c47b8);
   sz = *(uint32_t *)guest_at(heapA);
   BR2_W32(0x801c47b8, heapA + sz);
   return 1;
 
 ret0:
-  /* every generated return-0 path stores s0 -> fp+0x8e first (0x80171910/
-     0x80171928/0x80171990/0x801720C8 all sh s0,0x8e(fp) before j 0x801720cc);
+  /* every generated return-0 path stores phase -> st+0x8e first (0x80171910/
+     0x80171928/0x80171990/0x801720C8 all sh phase,0x8e(st) before j 0x801720cc);
      there is no store-less return-0, so ret_nc is removed. */
-  *(int16_t *)(fp + 0x8e) = (int16_t)s0;
+  *(int16_t *)(st + 0x8e) = (int16_t)phase;
   return 0;
 #undef H90W16
 }
