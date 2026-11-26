@@ -62601,6 +62601,7 @@ block_8017BD8C:
  * from SLES_017.22_full_35.c. */
 void cps_8017c35c(void)
 {
+/* desc_slot_alloc piece: continues at 0x8017C3B4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -62687,6 +62688,7 @@ block_8017C3A0:
  * from SLES_017.22_full_35.c. */
 void cps_8017c3b4(void)
 {
+/* desc_slot_alloc piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -62704,6 +62706,7 @@ block_8017C3B4:
  * from SLES_017.22_full_35.c. */
 void cps_8017c3bc(void)
 {
+/* desc_slot_alloc piece: continues at 0x8017c3d0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -62730,6 +62733,7 @@ block_8017C3BC:
  * from SLES_017.22_full_35.c. */
 void cps_8017c3d0(void)
 {
+/* desc_slot_alloc piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63115,6 +63119,7 @@ block_8017C5B0:
  * from SLES_017.22_full_35.c. */
 void cps_8017c5b8(void)
 {
+/* desc_slot_alloc piece: continues at 0x8017C600 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63197,6 +63202,7 @@ block_8017C5EC:
  * from SLES_017.22_full_35.c. */
 void cps_8017c600(void)
 {
+/* desc_slot_alloc piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63214,6 +63220,7 @@ block_8017C600:
  * from SLES_017.22_full_35.c. */
 void cps_8017c608(void)
 {
+/* desc_slot_alloc piece: continues at 0x8017c61c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63240,6 +63247,7 @@ block_8017C608:
  * from SLES_017.22_full_35.c. */
 void cps_8017c61c(void)
 {
+/* desc_slot_alloc piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63301,6 +63309,7 @@ block_8017C660:
  * from SLES_017.22_full_35.c. */
 void cps_8017c7b0(void)
 {
+/* desc_state_commit piece: continues at 0x8017C818 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63400,6 +63409,7 @@ block_8017C810:
  * from SLES_017.22_full_35.c. */
 void cps_8017c818(void)
 {
+/* desc_state_commit piece: continues at 0x8017c840 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63427,6 +63437,7 @@ block_8017C818:
  * from SLES_017.22_full_35.c. */
 void cps_8017c840(void)
 {
+/* desc_state_commit piece: continues at 0x8017c850 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63445,6 +63456,7 @@ block_8017C840:
  * from SLES_017.22_full_35.c. */
 void cps_8017c850(void)
 {
+/* desc_state_commit piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63504,6 +63516,7 @@ block_8017C88C:
  * from SLES_017.22_full_35.c. */
 void cps_8017c898(void)
 {
+/* desc_state_commit piece: continues at 0x8017C900 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63603,6 +63616,7 @@ block_8017C8F8:
  * from SLES_017.22_full_35.c. */
 void cps_8017c900(void)
 {
+/* desc_state_commit piece: continues at 0x8017c928 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63630,6 +63644,7 @@ block_8017C900:
  * from SLES_017.22_full_35.c. */
 void cps_8017c928(void)
 {
+/* desc_state_commit piece: continues at 0x8017c938 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63648,6 +63663,7 @@ block_8017C928:
  * from SLES_017.22_full_35.c. */
 void cps_8017c938(void)
 {
+/* desc_state_commit piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63706,6 +63722,7 @@ block_8017C970:
  * from SLES_017.22_full_35.c. */
 void cps_8017c9bc(void)
 {
+/* slot_byte_commit piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63727,6 +63744,7 @@ block_8017C9BC:
  * from SLES_017.22_full_35.c. */
 void cps_8017ca84(void)
 {
+/* ev20_timer_dispatch piece: continues at 0x8017CAD0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63810,6 +63828,7 @@ block_8017CABC:
  * from SLES_017.22_full_35.c. */
 void cps_8017cad0(void)
 {
+/* ev20_timer_dispatch piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63827,6 +63846,7 @@ block_8017CAD0:
  * from SLES_017.22_full_35.c. */
 void cps_8017cad8(void)
 {
+/* ev20_timer_dispatch piece: continues at 0x8017caec */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63853,6 +63873,7 @@ block_8017CAD8:
  * from SLES_017.22_full_35.c. */
 void cps_8017caec(void)
 {
+/* ev20_timer_dispatch piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63870,6 +63891,7 @@ block_8017CAEC:
  * from SLES_017.22_full_35.c. */
 void cps_8017caf4(void)
 {
+/* ev20_timer_dispatch piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
