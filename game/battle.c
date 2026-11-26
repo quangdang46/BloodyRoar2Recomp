@@ -9521,13 +9521,13 @@ void hud_text_blk(undefined4 a0,undefined2 a1,uint32_t a2,undefined2 a3, undefin
 
 /* please_wait_announce — "PLEASE WAIT" announce when record flag bit 0x800 set
  * and 0x1f8000dc mode bits 4-5 nonzero; disasm 0x801524b0-0x80152440. */
-void please_wait_announce(uint32_t a0,int a1)
+void please_wait_announce(uint32_t ent,int en)
 {
-  uint8_t *rec = (uint8_t *)guest_at(a0);
+  uint8_t *rec = (uint8_t *)guest_at(ent);
   int32_t yadj;
   uint32_t fl;
   if (rec == NULL) return;
-  if (a1) yadj = (int32_t)*(int16_t *)(rec + 0x20) - 0x50;
+  if (en) yadj = (int32_t)*(int16_t *)(rec + 0x20) - 0x50;
   else    yadj = 0x50;
   fl = *(uint16_t *)((uint8_t *)guest_at(*(uint32_t *)(rec + 0xc8)) + 2);
   if (((fl >> 0xb) & 1) == 0) return;
@@ -9540,18 +9540,18 @@ void please_wait_announce(uint32_t a0,int a1)
 /* ctr_clamp — signed counter adjust on a0+0xa0 gated by mode byte
  * a0+0x9c (mode 0, mode>5, or mode==5&&+0x9b==0); clamps [-inf,0xff].
  * Disasm 0x80159eec-0x80159f58. */
-void ctr_clamp(uint32_t a0,int32_t a1)
+void ctr_clamp(uint32_t ent,int32_t delta)
 {
-  uint8_t *rec = (uint8_t *)guest_at(a0);
+  uint8_t *rec = (uint8_t *)guest_at(ent);
   int mode, adj = 0;
   if (rec == NULL) return;
   mode = rec[0x9c];
   if (mode < 5) { if (mode == 0) adj = 1; }
   else if (mode != 5 || rec[0x9b] == 0) adj = 1;
   if (!adj) return;
-  a1 += *(int16_t *)(rec + 0xa0);
-  if (a1 < 0) { *(int16_t *)(rec + 0xa0) = 0; return; }
-  *(int16_t *)(rec + 0xa0) = (a1 < 0x100) ? (int16_t)a1 : (int16_t)0xff;
+  delta += *(int16_t *)(rec + 0xa0);
+  if (delta < 0) { *(int16_t *)(rec + 0xa0) = 0; return; }
+  *(int16_t *)(rec + 0xa0) = (delta < 0x100) ? (int16_t)delta : (int16_t)0xff;
 }
 
 void announce_param_block_init_b(undefined4 a0,undefined2 a1,const void *a2,undefined2 a3, undefined2 arg5,short arg6)
@@ -9603,12 +9603,12 @@ void slot_triple_set(int slot,int c0,int c1,int c2)
 
 }
 
-void rec_flag1_set(undefined2 *a0)
+void rec_flag1_set(undefined2 *src)
 {
   _DAT_801f022c = 1;
-  _DAT_801f0234 = *a0;
-  _DAT_801f0236 = a0[1];
-  _DAT_801f0238 = a0[2];
+  _DAT_801f0234 = *src;
+  _DAT_801f0236 = src[1];
+  _DAT_801f0238 = src[2];
   return;
 
 }
@@ -10403,7 +10403,7 @@ int fixed_approach_s16(ushort *cur,short *tgt,uint step)
 
 }
 
-void fighter_trail_emit(undefined4 *a0,undefined4 a1,int a2,int a3)
+void fighter_trail_emit(undefined4 *mat,undefined4 a1,int ent,int spec)
 {
   ushort lif;
   bool far;
@@ -10418,7 +10418,7 @@ void fighter_trail_emit(undefined4 *a0,undefined4 a1,int a2,int a3)
   undefined1 *tp;
   int base;
   undefined4 arg;
-  /* Guest vec3 slot: gte_xform_add_off writes a2[0..2] as 3
+  /* Guest vec3 slot: gte_xform_add_off writes ent[0..2] as 3
    * contiguous int; the decompiler split the 12-byte vec3 into
    * scalars. out[0..2] = old out/local_40/local_3c. */
   undefined4 out [3];
@@ -10426,19 +10426,19 @@ void fighter_trail_emit(undefined4 *a0,undefined4 a1,int a2,int a3)
   uint fl0;
   uint fl1;
   tp = &DAT_801f04a8;
-  arg = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((a3 + 0xc)));
-  base = *(int *)guest_at((uint32_t)(uintptr_t)((a3 + 8)));
-  hdg = ((int)*(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0x2a) ))<< 0x14) >> 0x14;
-  setCopControlWord(2,0,*a0);
-  setCopControlWord(2,0x800,a0[1]);
-  setCopControlWord(2,0x1000,a0[2]);
-  setCopControlWord(2,0x1800,a0[3]);
-  setCopControlWord(2,0x2000,a0[4]);
-  setCopControlWord(2,0x2800,a0[5]);
-  setCopControlWord(2,0x3000,a0[6]);
-  setCopControlWord(2,0x3800,a0[7]);
+  arg = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((spec + 0xc)));
+  base = *(int *)guest_at((uint32_t)(uintptr_t)((spec + 8)));
+  hdg = ((int)*(short *)guest_at((uint32_t)(uintptr_t)((ent + 0x2a) ))<< 0x14) >> 0x14;
+  setCopControlWord(2,0,*mat);
+  setCopControlWord(2,0x800,mat[1]);
+  setCopControlWord(2,0x1000,mat[2]);
+  setCopControlWord(2,0x1800,mat[3]);
+  setCopControlWord(2,0x2000,mat[4]);
+  setCopControlWord(2,0x2800,mat[5]);
+  setCopControlWord(2,0x3000,mat[6]);
+  setCopControlWord(2,0x3800,mat[7]);
   q = 0;
-  if (*(char *)guest_at((uint32_t)(uintptr_t)((a3 + 0x9e) ))== '\0') {
+  if (*(char *)guest_at((uint32_t)(uintptr_t)((spec + 0x9e) ))== '\0') {
     fl0 = (uint)(-hdg < 0x4e4);
     fl1 = (uint)(-hdg < 0x31c);
     do {
@@ -10463,7 +10463,7 @@ LAB_8013531c:
           *(short *)(tp + 0x3c) = (short)((uint)lif - (uint)*(ushort *)(tp + 0x44));
           if ((int)(((uint)lif - (uint)*(ushort *)(tp + 0x44)) * 0x10000) < 1) {
             if ((*(short *)(tp + 0x44) != 10000) || (DAT_801f04c9 != '\0')) goto LAB_80135314;
-            particle_burst_spawn(q,(int)*(char *)guest_at((uint32_t)(uintptr_t)((a3 + 0x98))));
+            particle_burst_spawn(q,(int)*(char *)guest_at((uint32_t)(uintptr_t)((spec + 0x98))));
             *(undefined2 *)(tp + 0x34) = 0xffff;
             *(undefined2 *)(tp + 0x3c) = 0;
             DAT_801f04c9 = '\x01';
@@ -10480,7 +10480,7 @@ LAB_8013531c:
         else if ((*(ushort *)(tp + 0x4c) & 3) < 4) {
           sp = 0;
         }
-        if (*(short *)guest_at((uint32_t)(uintptr_t)((a3 + 0x82) ))== 0) {
+        if (*(short *)guest_at((uint32_t)(uintptr_t)((spec + 0x82) ))== 0) {
           t4 = *(short *)(tp + 0x44) * 7;
           *(short *)(tp + 0x4c) = *(short *)(tp + 0x4c) + 1;
           if (t4 < 0) {
@@ -10556,11 +10556,11 @@ LAB_801354fc:
             }
           }
 LAB_80135504:
-          gte_xform_add_off((int)guest_of(a0),(undefined4 *)off,(int *)out);
+          gte_xform_add_off((int)guest_of(mat),(undefined4 *)off,(int *)out);
           setCopControlWord(2,0x2800,out[0]);
           setCopControlWord(2,0x3000,out[1]);
           setCopControlWord(2,0x3800,out[2]);
-          if (*(char *)guest_at((uint32_t)(uintptr_t)((a3 + 0x9f) ))== '\0') {
+          if (*(char *)guest_at((uint32_t)(uintptr_t)((spec + 0x9f) ))== '\0') {
             t3 = (int)*(short *)(tp + 0x34);
             if (((t3 < 0) || (t4 = _DAT_801f04b0 + t3 * 0x28, _DAT_801f04c6 != 0)) ||
                (!far)) goto LAB_80135630;
@@ -10597,20 +10597,20 @@ LAB_80135630:
       q = q + 1;
       tp = tp + 2;
     } while (q < 4);
-    if (*(char *)guest_at((uint32_t)(uintptr_t)((a3 + 0x9e) ))== '\0') {
-      if (*(char *)guest_at((uint32_t)(uintptr_t)((a3 + 0x9f) ))== '\0') {
+    if (*(char *)guest_at((uint32_t)(uintptr_t)((spec + 0x9e) ))== '\0') {
+      if (*(char *)guest_at((uint32_t)(uintptr_t)((spec + 0x9f) ))== '\0') {
         /* PTR_FUN_801b1734 is the guest u32 code-pointer table @0x801B1734
          * (channel_script_emit_* handlers). It was never populated with host
-         * pointers; dispatch the real guest jalr — a0=s7=*(a3+8),
-         * a1=fp=*(a3+0xc), a2=0x801F04A8, a3=a3, arg5@sp+16=
-         * a0's guest address. */
+         * pointers; dispatch the real guest jalr — mat=s7=*(spec+8),
+         * a1=fp=*(spec+0xc), ent=0x801F04A8, spec=spec, arg5@sp+16=
+         * mat's guest address. */
         {
-          int _ti = (int)*(char *)guest_at((uint32_t)(uintptr_t)((a3 + 0x98)));
+          int _ti = (int)*(char *)guest_at((uint32_t)(uintptr_t)((spec + 0x98)));
           uint32_t _tf = *(uint32_t *)guest_at(0x801b1734u + (uint32_t)_ti * 4u);
           if (_tf != 0) {
             uint32_t _fr = br2_guest_frame(0x20);
-            br2_st32(_fr + 0x10, br2_gaddr(a0));
-            br2_call_clean(_tf,(uint32_t)base,arg,0x801f04a8u,(uint32_t)a3);
+            br2_st32(_fr + 0x10, br2_gaddr(mat));
+            br2_call_clean(_tf,(uint32_t)base,arg,0x801f04a8u,(uint32_t)spec);
             br2_guest_frame_free();
           }
         }
@@ -10621,7 +10621,7 @@ LAB_80135630:
     }
   }
   if (_DAT_801f04c6 == 0) {
-    particle_burst_update(base,arg,(undefined4)br2_gaddr(a0),a3);
+    particle_burst_update(base,arg,(undefined4)br2_gaddr(mat),spec);
   }
   if (0 < _DAT_801f04c6) {
     _DAT_801f04c6 = _DAT_801f04c6 + -1;
@@ -11853,19 +11853,19 @@ void gte_matrix_base_set(undefined4 mat,undefined4 aux)
 
 }
 
-int lazy_node_wrap(undefined4 a0,undefined4 a1,undefined2 a2)
+int lazy_node_wrap(undefined4 proto,undefined4 arg,undefined2 aux)
 {
   int node;
   int pay;
-  node = (int)(uintptr_t)node_lazy_attach(a0,0x801aae08,0,0x2c);
+  node = (int)(uintptr_t)node_lazy_attach(proto,0x801aae08,0,0x2c);
   if (node == 0) {
     node = 0;
   }
   else {
     pay = *(int *)guest_at((uint32_t)(uintptr_t)((node + 0x10)));
-    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((pay + 0x20) ))= a1;
+    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((pay + 0x20) ))= arg;
     *(undefined4 *)guest_at((uint32_t)(uintptr_t)((pay + 0x24) ))= 0;
-    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((pay + 0x28) ))= a2;
+    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((pay + 0x28) ))= aux;
   }
   return node;
 
@@ -13014,7 +13014,7 @@ void particle_burst_spawn(int type,int idx)
 
 }
 
-void particle_burst_update(int a0,undefined4 a1,undefined4 a2,int a3)
+void particle_burst_update(int ctx,undefined4 arg,undefined4 pos,int rec)
 {
   short vx;
   short vy;
@@ -13023,7 +13023,7 @@ void particle_burst_update(int a0,undefined4 a1,undefined4 a2,int a3)
   undefined1 *pr;
   short *slot;
   int k;
-  /* Guest GTE output slot: gte_rtps_xform3_t writes a2[0..7] as
+  /* Guest GTE output slot: gte_rtps_xform3_t writes pos[0..7] as
    * 8 contiguous u32; the decompiler split them into scalars.
    * xf[0..7] = old xf/local_44/local_40/local_3c/
    * local_38/local_34/local_30/local_2c. */
@@ -13045,7 +13045,7 @@ LAB_80136660:
     pr = &DAT_801f0304;
     do {
       if (*slot != 0) {
-        if (*(short *)guest_at((uint32_t)(uintptr_t)((a3 + 0x82) ))== 0) {
+        if (*(short *)guest_at((uint32_t)(uintptr_t)((rec + 0x82) ))== 0) {
           *(short *)(pr + 0x22) = *(short *)(pr + 0x22) + 2;
           *(int *)(pr + 0x1c) = *(int *)(pr + 0x1c) + (int)*(short *)(pr + 0x24);
           *(int *)(pr + 0x14) = *(int *)(pr + 0x14) + (int)*(short *)(pr + 0x20);
@@ -13053,7 +13053,7 @@ LAB_80136660:
           t = *(int *)(pr + 0x18);
           *(int *)(pr + 0x18) = t + *(short *)(pr + 0x22);
           t = (t + *(short *)(pr + 0x22)) - (int)bnd[1];
-          if (*(char *)guest_at((uint32_t)(uintptr_t)((a3 + 0x98) ))== '\x02') {
+          if (*(char *)guest_at((uint32_t)(uintptr_t)((rec + 0x98) ))== '\x02') {
             if (-1 < t) {
               vec_emit_spawn(slot + 0xc);
               deferred_cmd_post(0x400,0x83,0);
@@ -13148,7 +13148,7 @@ LAB_8013683c:
           }
           angle_pair_rotmat((int)*(short *)(pr + 0x28),(int)*(short *)(pr + 0x2a),pr);
         }
-        gte_rtps_xform3_t((undefined4 *)(uintptr_t)a2,(ushort *)(uintptr_t)pr,(uint *)xf);
+        gte_rtps_xform3_t((undefined4 *)(uintptr_t)pos,(ushort *)(uintptr_t)pr,(uint *)xf);
         setCopControlWord(2,0,xf[0]);
         setCopControlWord(2,0x800,xf[1]);
         setCopControlWord(2,0x1000,xf[2]);
@@ -13157,7 +13157,7 @@ LAB_8013683c:
         setCopControlWord(2,0x2800,xf[5]);
         setCopControlWord(2,0x3000,xf[6]);
         setCopControlWord(2,0x3800,xf[7]);
-        prim_task_run(_DAT_801f04b8 + k * 0x28,a0 + 0x2068,a1,1);
+        prim_task_run(_DAT_801f04b8 + k * 0x28,ctx + 0x2068,arg,1);
         if (*slot == 0) {
           *slot = 1;
         }
