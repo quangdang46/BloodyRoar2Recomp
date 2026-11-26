@@ -107,9 +107,9 @@ static void prim_ot_link_indexed(uint32_t ot, uint32_t out, uint32_t otz)
 #define fp   cpu->gpr[30]
 #define ra   cpu->gpr[31]
 
-/* ======== w3e02_body_801434d4 — clean CPS transliteration of br2eu_psx_alias_body_801434D4
+/* ======== cmd_input_parse_body — clean CPS transliteration of br2eu_psx_alias_body_801434D4
  * (shared alias body; entry + cmd_input_parse_cps continuation blocks). */
-static void w3e02_body_801434d4(CPUState *cpu, uint32_t entry)
+static void cmd_input_parse_body(CPUState *cpu, uint32_t entry)
 {
 
     if (cpu->pc != 0u) {
@@ -1000,9 +1000,9 @@ block_80143AB4:
     cpu->pc = _jt_80143AC0; return;  /* CPS: jr $ra */
 }
 
-/* ======== w3e02_body_80143d38 — clean CPS transliteration of br2eu_psx_alias_body_80143D38
+/* ======== hit_react_apply_body — clean CPS transliteration of br2eu_psx_alias_body_80143D38
  * (shared alias body; entry + hit_react_apply_cps continuation blocks). */
-static void w3e02_body_80143d38(CPUState *cpu, uint32_t entry)
+static void hit_react_apply_body(CPUState *cpu, uint32_t entry)
 {
 
     if (cpu->pc != 0u) {
@@ -3101,9 +3101,9 @@ block_80144F5C:
     cpu->pc = _jt_80144F84; return;  /* CPS: jr $ra */
 }
 
-/* ======== w3e02_body_80148170 — clean CPS transliteration of br2eu_psx_alias_body_80148170
+/* ======== battle_bringup_a_body — clean CPS transliteration of br2eu_psx_alias_body_80148170
  * (shared alias body; entry + battle_bringup_a_cps continuation blocks). */
-static void w3e02_body_80148170(CPUState *cpu, uint32_t entry)
+static void battle_bringup_a_body(CPUState *cpu, uint32_t entry)
 {
 
     if (cpu->pc != 0u) {
@@ -3618,9 +3618,9 @@ block_801484C4:
     cpu->pc = _jt_801484E0; return;  /* CPS: jr $ra */
 }
 
-/* ======== w3e02_body_80150f04 — clean CPS transliteration of br2eu_psx_alias_body_80150F04
+/* ======== ko_count_announce_body — clean CPS transliteration of br2eu_psx_alias_body_80150F04
  * (shared alias body; entry + ko_count_announce_cps continuation blocks). */
-static void w3e02_body_80150f04(CPUState *cpu, uint32_t entry)
+static void ko_count_announce_body(CPUState *cpu, uint32_t entry)
 {
 
     if (cpu->pc != 0u) {
@@ -3932,136 +3932,136 @@ block_80151128:
 }
 
 /* cmd_input_parse_cps — CPS re-entry symbol for every continuation/branch-target addr of
- * the w3e02_body_801434d4 region (game/clean_cps.map). cpu->pc == dispatched addr. */
+ * the cmd_input_parse_body region (game/clean_cps.map). cpu->pc == dispatched addr. */
 void cmd_input_parse_cps(void)
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
-  w3e02_body_801434d4(cpu, cpu->pc);
+  cmd_input_parse_body(cpu, cpu->pc);
 }
 
 /* hit_react_apply_cps — CPS re-entry symbol for every continuation/branch-target addr of
- * the w3e02_body_80143d38 region (game/clean_cps.map). cpu->pc == dispatched addr. */
+ * the hit_react_apply_body region (game/clean_cps.map). cpu->pc == dispatched addr. */
 void hit_react_apply_cps(void)
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
-  w3e02_body_80143d38(cpu, cpu->pc);
+  hit_react_apply_body(cpu, cpu->pc);
 }
 
 /* battle_bringup_a_cps — CPS re-entry symbol for every continuation/branch-target addr of
- * the w3e02_body_80148170 region (game/clean_cps.map). cpu->pc == dispatched addr. */
+ * the battle_bringup_a_body region (game/clean_cps.map). cpu->pc == dispatched addr. */
 void battle_bringup_a_cps(void)
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
-  w3e02_body_80148170(cpu, cpu->pc);
+  battle_bringup_a_body(cpu, cpu->pc);
 }
 
 /* ko_count_announce_cps — CPS re-entry symbol for every continuation/branch-target addr of
- * the w3e02_body_80150f04 region (game/clean_cps.map). cpu->pc == dispatched addr. */
+ * the ko_count_announce_body region (game/clean_cps.map). cpu->pc == dispatched addr. */
 void ko_count_announce_cps(void)
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
-  w3e02_body_80150f04(cpu, cpu->pc);
+  ko_count_announce_body(cpu, cpu->pc);
 }
 
-/* 0x80143978 — alias piece-entry into w3e02_body_801434d4 (see game/renames.map). */
+/* 0x80143978 — alias piece-entry into cmd_input_parse_body (see game/renames.map). */
 void cmd_input_parse_alt_3978(void)
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   cpu->pc = 0;  /* fresh-entry semantics: skip _cont switch, entry switch routes */
-  w3e02_body_801434d4(cpu, 0x80143978u);
+  cmd_input_parse_body(cpu, 0x80143978u);
 }
 
-/* 0x80144034 — alias piece-entry into w3e02_body_80143d38 (see game/renames.map). */
+/* 0x80144034 — alias piece-entry into hit_react_apply_body (see game/renames.map). */
 void hit_react_apply_alt_4034(void)
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   cpu->pc = 0;  /* fresh-entry semantics: skip _cont switch, entry switch routes */
-  w3e02_body_80143d38(cpu, 0x80144034u);
+  hit_react_apply_body(cpu, 0x80144034u);
 }
 
-/* 0x80144054 — alias piece-entry into w3e02_body_80143d38 (see game/renames.map). */
+/* 0x80144054 — alias piece-entry into hit_react_apply_body (see game/renames.map). */
 void hit_react_apply_alt_4054(void)
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   cpu->pc = 0;  /* fresh-entry semantics: skip _cont switch, entry switch routes */
-  w3e02_body_80143d38(cpu, 0x80144054u);
+  hit_react_apply_body(cpu, 0x80144054u);
 }
 
-/* 0x80144070 — alias piece-entry into w3e02_body_80143d38 (see game/renames.map). */
+/* 0x80144070 — alias piece-entry into hit_react_apply_body (see game/renames.map). */
 void hit_react_apply_alt_4070(void)
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   cpu->pc = 0;  /* fresh-entry semantics: skip _cont switch, entry switch routes */
-  w3e02_body_80143d38(cpu, 0x80144070u);
+  hit_react_apply_body(cpu, 0x80144070u);
 }
 
-/* 0x80144094 — alias piece-entry into w3e02_body_80143d38 (see game/renames.map). */
+/* 0x80144094 — alias piece-entry into hit_react_apply_body (see game/renames.map). */
 void hit_react_apply_alt_4094(void)
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   cpu->pc = 0;  /* fresh-entry semantics: skip _cont switch, entry switch routes */
-  w3e02_body_80143d38(cpu, 0x80144094u);
+  hit_react_apply_body(cpu, 0x80144094u);
 }
 
-/* 0x80144114 — alias piece-entry into w3e02_body_80143d38 (see game/renames.map). */
+/* 0x80144114 — alias piece-entry into hit_react_apply_body (see game/renames.map). */
 void hit_react_apply_alt_4114(void)
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   cpu->pc = 0;  /* fresh-entry semantics: skip _cont switch, entry switch routes */
-  w3e02_body_80143d38(cpu, 0x80144114u);
+  hit_react_apply_body(cpu, 0x80144114u);
 }
 
-/* 0x80144158 — alias piece-entry into w3e02_body_80143d38 (see game/renames.map). */
+/* 0x80144158 — alias piece-entry into hit_react_apply_body (see game/renames.map). */
 void hit_react_apply_alt_4158(void)
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   cpu->pc = 0;  /* fresh-entry semantics: skip _cont switch, entry switch routes */
-  w3e02_body_80143d38(cpu, 0x80144158u);
+  hit_react_apply_body(cpu, 0x80144158u);
 }
 
-/* 0x80148224 — alias piece-entry into w3e02_body_80148170 (see game/renames.map). */
+/* 0x80148224 — alias piece-entry into battle_bringup_a_body (see game/renames.map). */
 void battle_bringup_a_alt_8224(void)
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   cpu->pc = 0;  /* fresh-entry semantics: skip _cont switch, entry switch routes */
-  w3e02_body_80148170(cpu, 0x80148224u);
+  battle_bringup_a_body(cpu, 0x80148224u);
 }
 
-/* 0x80148304 — alias piece-entry into w3e02_body_80148170 (see game/renames.map). */
+/* 0x80148304 — alias piece-entry into battle_bringup_a_body (see game/renames.map). */
 void battle_bringup_a_alt_8304(void)
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   cpu->pc = 0;  /* fresh-entry semantics: skip _cont switch, entry switch routes */
-  w3e02_body_80148170(cpu, 0x80148304u);
+  battle_bringup_a_body(cpu, 0x80148304u);
 }
 
-/* 0x80148380 — alias piece-entry into w3e02_body_80148170 (see game/renames.map). */
+/* 0x80148380 — alias piece-entry into battle_bringup_a_body (see game/renames.map). */
 void battle_bringup_a_alt_8380(void)
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   cpu->pc = 0;  /* fresh-entry semantics: skip _cont switch, entry switch routes */
-  w3e02_body_80148170(cpu, 0x80148380u);
+  battle_bringup_a_body(cpu, 0x80148380u);
 }
 
-/* 0x80151014 — alias piece-entry into w3e02_body_80150f04 (see game/renames.map). */
+/* 0x80151014 — alias piece-entry into ko_count_announce_body (see game/renames.map). */
 void ko_count_announce_alt_1014(void)
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   cpu->pc = 0;  /* fresh-entry semantics: skip _cont switch, entry switch routes */
-  w3e02_body_80150f04(cpu, 0x80151014u);
+  ko_count_announce_body(cpu, 0x80151014u);
 }

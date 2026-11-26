@@ -609,7 +609,12 @@ extern void display_mode_setup(void);
 extern void display_page_commit_a(void);
 extern void display_page_commit_b(void);
 extern void display_pair_invalidate(void);
+extern void draw_env_field_compare_fragment(void);
 extern void draw_env_timing(void);
+extern void draw_env_timing_axis_limit(void);
+extern void draw_env_timing_interpolate(void);
+extern void draw_env_timing_span_clamp(void);
+extern void draw_env_timing_status_store(void);
 extern void dual_axis_coord_xform(void);
 extern void dual_entry_attr_bump(void);
 extern void dual_mode_announce(void);
@@ -725,6 +730,7 @@ extern void fixed_recip_lut(void);
 extern void fixed_recip_neg_exp(void);
 extern void fixed_rsqrt_q12(void);
 extern void fixed_rsqrt_q12_ex(void);
+extern void fixed_rsqrt_q12_zero_result(void);
 extern void flag_801b55d0_set(void);
 extern void flag_table_dump(void);
 extern void flow_cfg_init(void);
@@ -754,9 +760,14 @@ extern void gp_bde20_read(void);
 extern void gp_slot24_set(void);
 extern void gp_slot48_set(void);
 extern void gpu_bits_pack_a(void);
+extern void gpu_callback_descriptor_match(void);
+extern void gpu_callback_dispatch(void);
+extern void gpu_callback_resume_next(void);
+extern void gpu_callback_state_flags(void);
 extern void gpu_clear_image_cmd(void);
 extern void gpu_clear_image_cmd2(void);
 extern void gpu_clear_otag_r(void);
+extern void gpu_command_words_send(void);
 extern void gpu_coord_clamp_a(void);
 extern void gpu_coord_clamp_b(void);
 extern void gpu_coord_pack(void);
@@ -769,6 +780,7 @@ extern void gpu_draw_otag(void);
 extern void gpu_draw_sync(void);
 extern void gpu_flag_8322_read(void);
 extern void gpu_graph_reset(void);
+extern void gpu_image_transfer_dma(void);
 extern void gpu_load_image_cmd(void);
 extern void gpu_mode_regs_apply(void);
 extern void gpu_pkt_attr_set(void);
@@ -801,6 +813,7 @@ extern void gpu_stat_sign(void);
 extern void gpu_state_patch_defer(void);
 extern void gpu_state_patch_submit_3w(void);
 extern void gpu_status_cmd(void);
+extern void gpu_tag_cmd_byte_get(void);
 extern void gpu_tag_cmd_store(void);
 extern void gpu_texclut_pkt(void);
 extern void gpu_texpage_pack(void);
@@ -835,7 +848,7 @@ extern void gte_rtps_xform1_raw(void);
 extern void gte_rtps_xform3(void);
 extern void gte_rtps_xform3_t(void);
 extern void gte_screen_init_defer(void);
-extern void gte_screen_init_defer_mfhi(void);
+extern void gte_screen_init_hi_entry(void);
 extern void gte_sqr_vec3_b(void);
 extern void gte_tr_load(void);
 extern void gte_vec3_normalize(void);
@@ -1668,6 +1681,9 @@ extern void task_spawn_var_a(void);
 extern void task_spawn_var_b(void);
 extern void task_table_init(void);
 extern void terrain_packet_gen(void);
+extern void text_format_copy_byte_fragment(void);
+extern void text_format_measure_string_fragment(void);
+extern void text_format_width_check_fragment(void);
 extern void text_line_select(void);
 extern void text_render_full(void);
 extern void text_render_simple(void);
@@ -1712,6 +1728,7 @@ extern void vec3_approach_step(void);
 extern void vec3_midpoint_angles(void);
 extern void vec3_s16_normalize(void);
 extern void vec3_s32_h_normalize(void);
+extern void vec3_s32_h_normalize_store_tail(void);
 extern void vec3_s32_normalize(void);
 extern void vec3_step_toward(void);
 extern void vec3_step_toward_q(void);
@@ -2855,6 +2872,9 @@ const Br2FnEnt fn_table[] = {
   { 0x80190390, (void *)text_win_init },
   { 0x80190430, (void *)text_widget_alloc },
   { 0x80190a04, (void *)text_win_printf_guest },
+  { 0x80190ca4, (void *)text_format_copy_byte_fragment },
+  { 0x80190cc4, (void *)text_format_measure_string_fragment },
+  { 0x80190ce4, (void *)text_format_width_check_fragment },
   { 0x80190dd0, (void *)guest_memset_b },
   { 0x80190e00, (void *)gpu_graph_reset },
   { 0x80190f74, (void *)set_graph_debug },
@@ -2881,6 +2901,15 @@ const Br2FnEnt fn_table[] = {
   { 0x801918a0, (void *)cd_prim_emit_a },
   { 0x80191978, (void *)cd_blk5c_copy },
   { 0x801919ac, (void *)draw_env_timing },
+  { 0x80191a78, (void *)draw_env_field_compare_fragment },
+  { 0x80191aa4, (void *)gpu_callback_state_flags },
+  { 0x80191b80, (void *)gpu_callback_dispatch },
+  { 0x80191b90, (void *)gpu_callback_descriptor_match },
+  { 0x80191c04, (void *)gpu_callback_resume_next },
+  { 0x80191c08, (void *)draw_env_timing_status_store },
+  { 0x80191c88, (void *)draw_env_timing_interpolate },
+  { 0x80191d0c, (void *)draw_env_timing_span_clamp },
+  { 0x80191d80, (void *)draw_env_timing_axis_limit },
   { 0x80191ea4, (void *)cd_blk14_copy },
   { 0x80191ed8, (void *)gpu_stat_sign },
   { 0x80191ee0, (void *)cd_vcall_38 },
@@ -2895,7 +2924,10 @@ const Br2FnEnt fn_table[] = {
   { 0x8019261c, (void *)gpu_data_reg_read },
   { 0x80192634, (void *)cd_cmd_queue_load },
   { 0x80192944, (void *)gpu_draw_env_dma },
+  { 0x80192b80, (void *)gpu_image_transfer_dma },
   { 0x80192e00, (void *)gpu_tag_cmd_store },
+  { 0x80192e24, (void *)gpu_tag_cmd_byte_get },
+  { 0x80192e38, (void *)gpu_command_words_send },
   { 0x80192e78, (void *)gpu_reg_cells_init },
   { 0x80192ec0, (void *)gpu_reg_cmd_commit },
   { 0x80192ef0, (void *)cd_queue_push_wrap },
@@ -2933,14 +2965,16 @@ const Br2FnEnt fn_table[] = {
   { 0x801941e0, (void *)prim_packet_init_tex },
   { 0x80194280, (void *)isqrt_refine },
   { 0x801943d4, (void *)isqrt },
-  { 0x80194470, (void *)gte_screen_init_defer_mfhi },
+  { 0x80194470, (void *)gte_screen_init_hi_entry },
   { 0x80194478, (void *)gte_screen_init_defer },
   { 0x80194500, (void *)fixed_rsqrt_q12 },
+  { 0x8019457c, (void *)fixed_rsqrt_q12_zero_result },
   { 0x80194590, (void *)fixed_rsqrt_q12_ex },
   { 0x80194614, (void *)fixed_point_ret_neg1 },
   { 0x8019461c, (void *)vec3_s32_h_normalize },
   { 0x80194630, (void *)vec3_s32_normalize },
   { 0x80194660, (void *)vec3_s16_normalize },
+  { 0x8019466c, (void *)vec3_s32_h_normalize_store_tail },
   { 0x80194690, (void *)gte_vec3_normalize },
   { 0x80194750, (void *)gte_xform_norm3pts },
   { 0x80194840, (void *)gte_xform_accum },

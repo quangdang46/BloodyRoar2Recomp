@@ -381,6 +381,10 @@ void fighter_script_fsm_cps(void)
     }
     /* Address: 0x80181F20, Size: 4124 bytes, Blocks: 215 */
 
+    /* Entry — args: s1=a0 script descriptor, s3=a1,
+     * s0=a2 script context, s2=a3 aux object. Init ctx[120]=&ctx[124],
+     * ctx[124]=0; compute mode flag a1 (0/1) from descriptor byte+2
+     * and aux-object state halfwords (+4/+6 == 4). */
 block_80181F20:
     sp = sp + -40;
     cpu->write_word(sp + 20, s1);
@@ -411,6 +415,8 @@ block_80181F20:
         goto block_80181F70;  /* not taken */
     }
 
+    /* Mode-flag compute: aux = *(s2+200); flag = 1 iff
+     * descriptor[2]!=0 XOR-state checks on aux+4/aux+6 halfwords. */
 block_80181F70:
     v0 = cpu->read_word(s2 + 200);
     /* nop */  /* 0x80181F74: 0x00000000 */
@@ -460,6 +466,9 @@ block_80181FAC:
     a1 = 1;
     /* fall through to block_80181FB0 */
 
+    /* Seed ctx: [110]=mode flag, [112]=desc[88],
+     * [116]=desc[108], [6]=0. Then state check: ctx[40] < 10 ->
+     * primary opcode dispatch; >=10 -> secondary class dispatch. */
 block_80181FB0:
     cpu->write_half(s0 + 110, (uint16_t)a1);
     v0 = cpu->read_word(s1 + 88);
@@ -481,6 +490,8 @@ block_80181FB0:
         goto block_80181FDC;  /* not taken */
     }
 
+    /* Primary dispatch: opcode = *(s0+4); jump table
+     * @0x801232B4 (0x80120000+12916) -> jr v0 opcode handler. */
 block_80181FDC:
     v0 = v0 + 12916;
     v1 = v1 << 2;
@@ -493,6 +504,8 @@ block_80181FDC:
     psx_check_interrupts_at(cpu, _jt_80181FF0);
     cpu->pc = _jt_80181FF0; return;  /* CPS: jr v0 */
 
+    /* Opcode handler entry: a2 = sub-index<<2,
+     * table base = ctx[16]; fetch operand via ctx[4]. */
 block_80181FF8:
     a2 = t1 << 2;
     v0 = cpu->read_word(s0 + 16);
@@ -1466,6 +1479,8 @@ block_801825CC:
         goto block_801825E8;  /* not taken */
     }
 
+    /* sprintf_core_guest(buf, fmt@0x801232A4, ctx[48],
+     * ctx[52]) — format two ctx fields (coords/values). */
 block_801825E8:
     a2 = cpu->read_word(s0 + 48);
     a3 = cpu->read_word(s0 + 52);
@@ -2209,6 +2224,8 @@ block_80182A58:
         goto block_80182A6C;  /* not taken */
     }
 
+    /* script_op_dispatch (0x80184F28) — nested script-op
+     * handler for extended opcodes. */
 block_80182A6C:
     a0 = s1;
     a1 = s3;
@@ -2225,6 +2242,9 @@ block_80182A80:
     psx_check_interrupts_at(cpu, 0x80182EE4u);
     goto block_80182EE4;  /* j */
 
+    /* Secondary dispatch (ctx[40] >= 10): class =
+     * (a0 & 0x47) - 64; <5 -> jump table @0x801232DC
+     * (0x80120000+12956); else bail to 0x80182EE4. */
 block_80182A88:
     v0 = a0 & 0x0047;  /* 0x80182A88: 0x30820047 */
     v0 = v0 + -64;
@@ -2242,6 +2262,7 @@ block_80182A88:
         goto block_80182AA4;  /* not taken */
     }
 
+    /* Secondary jr v0 — dispatch class handler. */
 block_80182AA4:
     v0 = v0 + 12956;
     v1 = v1 << 2;
@@ -3024,6 +3045,8 @@ block_80182EE0:
     cpu->write_half(s0 + 10, (uint16_t)v0);
     /* fall through to block_80182EE4 */
 
+    /* Script-end/teardown: set ctx[6] flag bits (0x8 if 0x400
+     * clear; 0x800 if ctx[10]&1) then jr $ra epilogue. */
 block_80182EE4:
     v1 = cpu->read_half(s0 + 6);
     /* nop */  /* 0x80182EE8: 0x00000000 */

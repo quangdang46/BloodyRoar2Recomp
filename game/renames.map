@@ -241,6 +241,15 @@
 80129e40 menu_step_a
 8012f2a8 menu_step_b
 801919ac draw_env_timing
+80191a78 draw_env_field_compare_fragment
+80191aa4 gpu_callback_state_flags
+80191b80 gpu_callback_dispatch
+80191b90 gpu_callback_descriptor_match
+80191c04 gpu_callback_resume_next
+80191c08 draw_env_timing_status_store
+80191c88 draw_env_timing_interpolate
+80191d0c draw_env_timing_span_clamp
+80191d80 draw_env_timing_axis_limit
 80193ea0 sprite_attr_init_a
 80193f60 sprite_attr_init_b
 8018bd40 bitfield_or_write
@@ -287,6 +296,9 @@
 8018fb10 mdec_pump_a
 8018fc90 mdec_pump_b
 80190a04 text_win_printf_guest
+80190ca4 text_format_copy_byte_fragment
+80190cc4 text_format_measure_string_fragment
+80190ce4 text_format_width_check_fragment
 80179ae0 skeleton_init
 80179a6c part_record_reset
 80179964 part_link_unlink
@@ -1859,11 +1871,13 @@
 80185444 anim_ret_nop
 801858f8 anim_angle_approach
 80194500 fixed_rsqrt_q12
+8019457c fixed_rsqrt_q12_zero_result
 80194590 fixed_rsqrt_q12_ex
 80194614 fixed_point_ret_neg1
 8019461c vec3_s32_h_normalize
 80194630 vec3_s32_normalize
 80194660 vec3_s16_normalize
+8019466c vec3_s32_h_normalize_store_tail
 80194690 gte_vec3_normalize
 80190228 cpu_regs_snapshot
 80191074 gpu_flag_8322_read
@@ -2217,3 +2231,8 @@
 801a0ddc cd_hw_chan_release_all
 801a2808 cd_cmd_rec_arm_extent
 801a2ec8 cd_cmd_rec_arm_op
+# GPU/GTE entries from the 0x80192xxx/0x80194xxx sweep, sorted by address.
+80192b80 gpu_image_transfer_dma
+80192e24 gpu_tag_cmd_byte_get
+80192e38 gpu_command_words_send
+80194470 gte_screen_init_hi_entry

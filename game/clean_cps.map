@@ -66,6 +66,38 @@
 80197a9c cd_response_pump
 80197aa4 cd_response_pump
 
+# draw_env_timing CPS continuations. Each entry resumes the corresponding
+# block in the same guest frame, or tail-dispatches to the next CPS piece.
+80191c08 draw_env_timing_status_store
+80191c10 draw_env_timing_status_store
+80191c24 draw_env_timing_status_store
+80191c28 draw_env_timing_status_store
+80191c38 draw_env_timing_status_store
+80191c3c draw_env_timing_status_store
+80191c50 draw_env_timing_status_store
+80191c5c draw_env_timing_status_store
+80191c68 draw_env_timing_status_store
+80191c74 draw_env_timing_status_store
+80191c78 draw_env_timing_status_store
+80191c88 draw_env_timing_interpolate
+80191cd4 draw_env_timing_interpolate
+80191ce0 draw_env_timing_interpolate
+80191cf4 draw_env_timing_interpolate
+80191cfc draw_env_timing_interpolate
+80191d08 draw_env_timing_interpolate
+80191d0c draw_env_timing_span_clamp
+80191d30 draw_env_timing_span_clamp
+80191d3c draw_env_timing_span_clamp
+80191d40 draw_env_timing_span_clamp
+80191d44 draw_env_timing_span_clamp
+80191d4c draw_env_timing_span_clamp
+80191d58 draw_env_timing_span_clamp
+80191d60 draw_env_timing_span_clamp
+80191d64 draw_env_timing_span_clamp
+80191d78 draw_env_timing_span_clamp
+80191d80 draw_env_timing_axis_limit
+80191d8c draw_env_timing_axis_limit
+
 
 # --- CD readers + mc_file_cmd (clean CPS transform) ---
 # cd_status_raw / cd_mode_byte_read / cd_param_buf_get removed: they are
@@ -5982,9 +6014,9 @@
 8018f994 mdec_parambuf_commit
 8018fee0 vram_span_set
 8018fef4 vram_span_set
-8018f628 cpst_8018ef6c
-8018f6b4 cpst_8018ef6c
-8018f6e8 cpst_8018ef6c
+8018f628 cps_8018ef6c
+8018f6b4 cps_8018ef6c
+8018f6e8 cps_8018ef6c
 # confirm_bookkeeping_cps — CPS twin of confirm_bookkeeping (0x8015113C)
 80151170 confirm_bookkeeping_cps
 80151180 confirm_bookkeeping_cps
@@ -6101,6 +6133,9 @@
 80194470 gte_screen_init_defer_mfhi
 80194614 fixed_point_ret_neg1
 80194940 fixed_recip_neg_exp
+80196718 cps_80196370
+80196798 cps_80196370
+80196818 cps_80196370
 8019e600 gpu_state_patch_submit_3w
 8019e610 gpu_state_patch_submit_3w
 8019e620 gpu_state_patch_submit_3w
@@ -6164,13 +6199,72 @@
 801a2efc cd_cmd_rec_arm_op
 801a2f04 cd_cmd_rec_arm_op
 801a2f44 cd_cmd_rec_arm_op
-
+80191aa4 gpu_callback_state_flags
+80191aac gpu_callback_state_flags
+80191ac0 gpu_callback_state_flags
+80191ac4 gpu_callback_state_flags
+80191ad4 gpu_callback_state_flags
+80191ad8 gpu_callback_state_flags
+80191ae8 gpu_callback_state_flags
+80191aec gpu_callback_state_flags
+80191b00 gpu_callback_state_flags
+80191b04 gpu_callback_state_flags
+80191b18 gpu_callback_state_flags
+80191b20 gpu_callback_state_flags
+80191b28 gpu_callback_state_flags
+80191b30 gpu_callback_state_flags
+80191b38 gpu_callback_state_flags
+80191b40 gpu_callback_state_flags
+80191b48 gpu_callback_state_flags
+80191b4c gpu_callback_state_flags
+80191b5c gpu_callback_state_flags
+80191b60 gpu_callback_state_flags
+80191b68 gpu_callback_state_flags
+80191b6c gpu_callback_state_flags
+80191b80 gpu_callback_dispatch
+80191b88 gpu_callback_dispatch
+80191b90 gpu_callback_descriptor_match
+80191bb0 gpu_callback_descriptor_match
+80191bc8 gpu_callback_descriptor_match
+80191be0 gpu_callback_descriptor_match
+80191bf8 gpu_callback_descriptor_match
+80191c04 gpu_callback_resume_next
+80192b80 gpu_image_transfer_dma
+80192ba8 gpu_image_transfer_dma
+80192bb8 gpu_image_transfer_dma
+80192bd4 gpu_image_transfer_dma
+80192bdc gpu_image_transfer_dma
+80192be0 gpu_image_transfer_dma
+80192bf0 gpu_image_transfer_dma
+80192c10 gpu_image_transfer_dma
+80192c18 gpu_image_transfer_dma
+80192c1c gpu_image_transfer_dma
+80192c20 gpu_image_transfer_dma
+80192c4c gpu_image_transfer_dma
+80192c54 gpu_image_transfer_dma
+80192c80 gpu_image_transfer_dma
+80192c84 gpu_image_transfer_dma
+80192c8c gpu_image_transfer_dma
+80192c94 gpu_image_transfer_dma
+80192cb4 gpu_image_transfer_dma
+80192d2c gpu_image_transfer_dma
+80192d30 gpu_image_transfer_dma
+80192d38 gpu_image_transfer_dma
+80192d40 gpu_image_transfer_dma
+80192d60 gpu_image_transfer_dma
+80192d70 gpu_image_transfer_dma
+80192d90 gpu_image_transfer_dma
+80192d98 gpu_image_transfer_dma
+80192ddc gpu_image_transfer_dma
+80192de0 gpu_image_transfer_dma
+80192e38 gpu_command_words_send
+80192e50 gpu_command_words_send
+80192e54 gpu_command_words_send
+80192e70 gpu_command_words_send
+8019457c fixed_rsqrt_q12_zero_result
+8019466c vec3_s32_h_normalize_store_tail
+80194678 vec3_s32_h_normalize_store_tail
 # Batch 4 (orch/w5/e05) — timing-faithful cpst_ upgrades of the game/cd.c
-# whole-body §4 delegates. Entry + every CPS block addr routes to the
-# cpst_ body so call_guest4(<entry>) and IRQ/coroutine re-entry land in
-# the per-instruction-timed transliteration instead of the generated
-# twin. The clean-C delegate wrappers in cd.c are unchanged — they now
-# resolve through dispatch into these bodies.
 8019e39c cpst_8019e39c
 8019e3ac cpst_8019e39c
 8019e3b4 cpst_8019e39c

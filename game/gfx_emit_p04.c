@@ -54,10 +54,10 @@ static void prim_ot_link_indexed(uint32_t ot, uint32_t out, uint32_t otz)
   swl_guest(out + 2, old << 8);
 }
 
-extern undefined2 *euler_rotmat(uint param_1, uint param_2, uint param_3, undefined2 *param_4);
-extern uint *rotmat_rtps_build(uint param_1, uint *param_2);
-extern uint *rotmat2_pair_build(uint param_1, uint param_2, uint *param_3);
-extern uint *angle_vec_build(uint param_1, uint *param_2);
+extern undefined2 *euler_rotmat(uint a0, uint a1, uint a2, undefined2 *a3);
+extern uint *rotmat_rtps_build(uint a0, uint *a1);
+extern uint *rotmat2_pair_build(uint a0, uint a1, uint *a2);
+extern uint *angle_vec_build(uint a0, uint *a1);
 
 undefined2 *euler_rotmat_unpack(uint32_t src, undefined2 *out)
 {
