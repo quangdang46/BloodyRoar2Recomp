@@ -766,6 +766,7 @@ extern void gpu_pkt_cmd_f4dc(void);
 extern void gpu_pkt_cmd_f4f0(void);
 extern void gpu_pkt_cmd_f4fc(void);
 extern void gpu_pkt_cmd_f608(void);
+extern void gpu_pkt_field2_get(void);
 extern void gpu_pkt_low24_or(void);
 extern void gpu_pkt_merge24(void);
 extern void gpu_pkt_pack(void);
@@ -988,6 +989,8 @@ extern void mc_slot_action(void);
 extern void mc_state_init(void);
 extern void mdec_decode_issue(void);
 extern void mdec_error_reset(void);
+extern void mdec_parambuf_commit(void);
+extern void mdec_parambuf_restore(void);
 extern void mdec_pump_a(void);
 extern void mdec_pump_b(void);
 extern void mdec_stat_wait_a(void);
@@ -1704,6 +1707,8 @@ extern void verts_sub_apply(void);
 extern void victory_jingle_schedule(void);
 extern void victory_record_restore(void);
 extern void voice_desc_fill(void);
+extern void vram_span_set(void);
+extern void vram_span_set_max(void);
 extern void vram_tile_decode(void);
 extern void vs_confirm_a(void);
 extern void vs_confirm_b(void);
@@ -2795,6 +2800,9 @@ const Br2FnEnt fn_table[] = {
   { 0x8018f608, (void *)gpu_pkt_cmd_f608 },
   { 0x8018f7e0, (void *)mem_move },
   { 0x8018f850, (void *)cd_fileop_reset },
+  { 0x8018f884, (void *)mdec_parambuf_restore },
+  { 0x8018f910, (void *)mdec_parambuf_commit },
+  { 0x8018f9a8, (void *)gpu_pkt_field2_get },
   { 0x8018f9b4, (void *)gpu_pkt_attr_set },
   { 0x8018fa30, (void *)cd_fileop_forward },
   { 0x8018fa50, (void *)file_state_bit29_query },
@@ -2808,6 +2816,8 @@ const Br2FnEnt fn_table[] = {
   { 0x8018fdb0, (void *)mdec_stat_wait_b },
   { 0x8018fe44, (void *)mdec_status_read },
   { 0x8018fe5c, (void *)mdec_error_reset },
+  { 0x8018fee0, (void *)vram_span_set },
+  { 0x8018ff00, (void *)vram_span_set_max },
   { 0x8018ff10, (void *)cd_bitstream_decode },
   { 0x80190228, (void *)cpu_regs_snapshot },
   { 0x80190260, (void *)vram_tile_decode },

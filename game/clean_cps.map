@@ -5907,3 +5907,15 @@
 8018f4fc gpu_pkt_cmd_f4fc
 8018f608 gpu_pkt_cmd_f608
 8018f504 cps_8018ef6c
+8018f910 mdec_parambuf_commit
+8018f930 mdec_parambuf_commit
+8018f948 mdec_parambuf_commit
+8018f95c mdec_parambuf_commit
+8018f974 mdec_parambuf_commit
+8018f984 mdec_parambuf_commit
+8018f994 mdec_parambuf_commit
+8018fee0 vram_span_set
+8018fef4 vram_span_set
+8018f628 cps_8018ef6c
+8018f6b4 cps_8018ef6c
+8018f6e8 cps_8018ef6c
