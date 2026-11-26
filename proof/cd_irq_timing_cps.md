@@ -331,3 +331,40 @@ sites introduced; conclusions unchanged.
 
 Verified: clean build EU+USA; headless :4889 frames 32698 -> 61246+
 attract CD streaming, no wedge.
+
+## Batch 11b (orch/w5/e05) — CD leaf-function sweep (8 bodies, 238 rows)
+
+Next tranche of 1-piece CD leaf parents + one medium body, all via
+--timing:
+| entry | fnmap name | blocks |
+|---|---|---|
+| 0x80195B4C | cd_bios_cmd20 | 1 |
+| 0x80195BF0 | cd_mode_byte_read | 1 |
+| 0x801962F0 | cd_stamp_to_sector | 1 |
+| 0x80197220 | cd_cmd_bytes | 1 |
+| 0x80199420 | cd_read_param_block | 1 |
+| 0x8019A7FC | cd_u16_swap_store | 1 |
+| 0x8019DAD0 | cd_chan_attr_push | 112 |
+| 0x801A1148 | cd_queue_a_read | 1 |
+
+clean_table: 8637 wrappers, 0 skipped. Verified: clean build EU+USA;
+headless :4897 frames 29328 -> 57498 attract CD streaming, no wedge.
+clean_stats: new entries 0 hits in attract (init/query leaves —
+faithful-by-construction); cd_cmd_issue remains hot.
+
+Audit follow-up sweep (batch 11 continuation): cpu->pc literal writes
+(842 sites) are all CPS tail-dispatch contract inside cpst_/peer CPS
+bodies — they feed the outer dispatch loop, not bypasses. br2_irq_poll
+sites are framework IRQ delivery. No new generated-dispatch bypasses
+found; proof/generated_zero_audit.md conclusions stand.
+
+## Batch 11c (orch/w5/e05) — 10 more CD 1-block leaves (20 rows)
+
+cd_xchg_bc850(0x80195CA8), cd_status_bcc90(0x80199FFC), cd_xchg_bde20
+(0x8019B1D0), cd_mmio_strobe_22(0x8019BE50), cd_xchg_fec24(0x8019FA6C),
+cd_job_slots_reset(0x801A0A00), cd_xchg_fefb4(0x801A11E4),
+cd_xchg_fefb8(0x801A11F8), cd_state_clear(0x801A1A2C),
+cd_ctx_set_28_34(0x801A24C0) — all 1-block timed cpst_ bodies.
+
+clean_table: 8637 wrappers, 0 skipped. Verified: clean build EU+USA;
+headless :4901 frames 30684 -> 45772+ attract CD streaming, no wedge.
