@@ -10,13 +10,6 @@
 #include <stdlib.h>
 #include "cpu_state.h"
 
-typedef uint8_t  undefined;
-typedef uint8_t  undefined1;
-typedef uint16_t undefined2;
-typedef uint32_t undefined4;
-typedef int8_t   byte;
-typedef uint16_t ushort;
-typedef uint32_t uint;
 #ifndef bool
 #define bool int
 #define true 1
@@ -28,18 +21,18 @@ extern uint32_t guest_sp(void);
 extern uint32_t psx_read_word(uint32_t addr);
 extern void psx_write_word(uint32_t addr, uint32_t val);
 
-uint cd_timer_read(int);
+uint32_t cd_timer_read(int);
 void cd_busy_wait_fwd(int);
-int cd_cmd_dispatch3(undefined4);
+int cd_cmd_dispatch3(uint32_t);
 void cd_init_done_cb(void);
-undefined4 mc_session(undefined4);
-undefined4 mc_session_b(undefined4);
-undefined4 cd_cmd_issue_async(byte,int);
-undefined4 cd_read_open(int);
-undefined4 cd_cmd_issue(byte,uint32_t,uint32_t,int);
-bool cd_read_setup(undefined4,undefined4,uint);
+uint32_t mc_session(uint32_t);
+uint32_t mc_session_b(uint32_t);
+uint32_t cd_cmd_issue_async(int8_t,int);
+uint32_t cd_read_open(int);
+uint32_t cd_cmd_issue(int8_t,uint32_t,uint32_t,int);
+bool cd_read_setup(uint32_t,uint32_t,uint32_t);
 int cd_chan_boot_init(int);
-void cd_result_wait_b_fwd(int,undefined4);
+void cd_result_wait_b_fwd(int,uint32_t);
 void printf_forward(const char *, ...);
 extern void br2_irq_poll(void);
 extern int br2_bail_pending(void);
@@ -222,10 +215,10 @@ extern uint8_t  *g_DAT_801bc7c0;
 
 /* ======== 0x8018d150 ======== */
 
-undefined4 cd_mode_flag_set(byte,int,undefined4);
-undefined4 cd_cmd_issue(byte,uint32_t,uint32_t,int);
+uint32_t cd_mode_flag_set(int8_t,int,uint32_t);
+uint32_t cd_cmd_issue(int8_t,uint32_t,uint32_t,int);
 
-undefined4 cd_read_issue(undefined4 param_1,undefined4 param_2,undefined4 param_3)
+uint32_t cd_read_issue(uint32_t param_1,uint32_t param_2,uint32_t param_3)
 
 {
   /* IRQ/coroutine-boundary function: clean-C body cannot supply the
@@ -233,7 +226,7 @@ undefined4 cd_read_issue(undefined4 param_1,undefined4 param_2,undefined4 param_
    * MMIO busy-waits lack per-block interrupt checks. Delegate to the
    * generated MIPS (behavioral oracle) — same contract as the other
    * read-path functions already delegated. */
-  return (undefined4)call_guest4(0x8018d150u,param_1, param_2, param_3, 0);
+  return (uint32_t)call_guest4(0x8018d150u,param_1, param_2, param_3, 0);
 }
 
 /* ======== 0x80198af0 ======== */
@@ -297,7 +290,7 @@ void cd_init_session(void)
  * supply the live $ra/resume-PC the generated CPS frame provides, so
  * IRQ-adjacent waits on the CD read path must stay delegated.
  * Faithful port preserved in git history (stash "cd_read_poll port wip"). */
-int cd_read_poll(int param_1,undefined4 param_2)
+int cd_read_poll(int param_1,uint32_t param_2)
 {
   (void)param_1; (void)param_2;
   return (int)call_guest4(0x80198e2cu, (uint32_t)param_1,
@@ -307,7 +300,7 @@ int cd_read_poll(int param_1,undefined4 param_2)
 /* ======== 0x80195d8c ======== */
 
 extern int cd_stamp_to_sector(const void *);
-undefined4 cd_mode_flag_set(byte param_1,int param_2,undefined4 param_3)
+uint32_t cd_mode_flag_set(int8_t param_1,int param_2,uint32_t param_3)
 
 {
   /* Faithful port of 0x80195d8c-0x80195ec4: bounded 4-attempt retry loop
@@ -358,20 +351,20 @@ void cd_chan_boot_fwd(void)
 
 /* ======== batch26: CD driver cluster ======== */
 
-extern uint cd_result_wait_a(int,undefined1 *);
+extern uint32_t cd_result_wait_a(int,uint8_t *);
 extern void cd_str_print(uint32_t);
 extern void cd_cmd_state_reset(void);
-extern undefined2 cd_intc_busy_read(void);
+extern uint16_t cd_intc_busy_read(void);
 extern uint32_t cd_response_process(void);
-extern undefined1 cd_status_raw(void);
-extern bool cd_cmd_issue_sync(byte,int,undefined4);
-extern undefined1 * cd_param_buf_get(void);
+extern uint8_t cd_status_raw(void);
+extern bool cd_cmd_issue_sync(int8_t,int,uint32_t);
+extern uint8_t * cd_param_buf_get(void);
 extern void cd_cmd_reset_wrap(void);
-extern undefined1 cd_mode_byte_read(void);
+extern uint8_t cd_mode_byte_read(void);
 extern int cd_stamp_to_sector(const void *);
 extern void vsync_wait_n(int,int);
-extern uint cd_result_wait_b(int,undefined1 *);
-extern undefined4 cd_busy_wait(int);
+extern uint32_t cd_result_wait_b(int,uint8_t *);
+extern uint32_t cd_busy_wait(int);
 extern int cd_dispatch_tbl4(int,uint32_t);
 uint32_t call_guest(uint32_t,uint32_t,uint32_t);
 
@@ -395,7 +388,7 @@ extern char *s_CdRead__retry____80125af8;
 
 /* cd_cmd_issue — CD command issue. param_2/param_3 are guest addrs
  * (or 0); param_4 = async flag. */
-undefined4 cd_cmd_issue(byte param_1,uint32_t param_2,uint32_t param_3,int param_4)
+uint32_t cd_cmd_issue(int8_t param_1,uint32_t param_2,uint32_t param_3,int param_4)
 
 {
   /* The sync wait loop (DB8(0x801bcb24)==0) depends on the CD interrupt
@@ -404,12 +397,12 @@ undefined4 cd_cmd_issue(byte param_1,uint32_t param_2,uint32_t param_3,int param
    * so the IRQ that would set busy is either deferred forever or abandons
    * this frame. Run the recompiled guest body so the wait is interruptible
    * exactly like hardware. Clean port preserved in git history. */
-  return (undefined4)call_guest4(0x80196e14,(uint32_t)param_1,param_2,param_3,(uint32_t)param_4);
+  return (uint32_t)call_guest4(0x80196e14,(uint32_t)param_1,param_2,param_3,(uint32_t)param_4);
 }
 
 /* ======== 0x80198c90 ======== */
 
-bool cd_read_setup(undefined4 param_1,undefined4 param_2,uint param_3)
+bool cd_read_setup(uint32_t param_1,uint32_t param_2,uint32_t param_3)
 
 {
   /* Read configurator: picks sector size (0x200/0x246/0x249), mode|0x20,
@@ -428,14 +421,14 @@ bool cd_read_setup(undefined4 param_1,undefined4 param_2,uint param_3)
 #if 0
   int iVar1;
   int iVar2;
-  uint uVar3;
+  uint32_t uVar3;
 
   if (DAT_801bcba4 != 0) {
     iVar1 = cd_timer_read(0xffffffff);
     do {
       if (DAT_801bcba4 == 0) goto LAB_80198d0c;
       iVar2 = cd_timer_read(0xffffffff);
-    } while ((uint)(iVar2 - iVar1) < 0x79);
+    } while ((uint32_t)(iVar2 - iVar1) < 0x79);
     mc_session(DAT_801bcba8);
     DAT_801bcba4 = 0;
   }
@@ -491,7 +484,7 @@ LAB_80198d0c:
  * *0x801bccac counters) is driven by psx_check_interrupts exactly like
  * the generated per-block checks. The guest sp-0x28 frame is reserved via
  * br2_guest_frame so nested generated calls observe the same $sp. */
-uint cd_timer_read(int param_1)
+uint32_t cd_timer_read(int param_1)
 {
   uint32_t fr = br2_guest_frame(0x28);
   uint32_t p_cnt  = br2_ld32(0x801bcca8);
@@ -638,13 +631,13 @@ void vsync_wait_n(int param_1,int param_2)
 
 /* ======== 0x80195d44 ======== */
 
-void cd_result_wait_b_fwd(int param_1,undefined4 param_2)
+void cd_result_wait_b_fwd(int param_1,uint32_t param_2)
 
 {
   /* param_2 arrives as a raw guest address (undefined4); the callee's
    * undefined1* is a host pointer into guest memory — resolve it. */
-  cd_result_wait_b(param_1,param_2 ? (undefined1 *)guest_at(param_2)
-                                   : (undefined1 *)0);
+  cd_result_wait_b(param_1,param_2 ? (uint8_t *)guest_at(param_2)
+                                   : (uint8_t *)0);
   return;
 }
 
@@ -659,7 +652,7 @@ void cd_busy_wait_fwd(int param_1)
 
 /* ======== 0x801961a8 ======== */
 
-int cd_cmd_dispatch3(undefined4 param_1)
+int cd_cmd_dispatch3(uint32_t param_1)
 
 {
   return cd_dispatch_tbl4(3,param_1);
@@ -667,10 +660,10 @@ int cd_cmd_dispatch3(undefined4 param_1)
 
 /* ======== 0x80195d64 ======== */
 
-undefined4 mc_session(undefined4 param_1)
+uint32_t mc_session(uint32_t param_1)
 
 {
-  undefined4 uVar1;
+  uint32_t uVar1;
   
   uVar1 = DAT_801bc848;
   DAT_801bc848 = param_1;
@@ -679,10 +672,10 @@ undefined4 mc_session(undefined4 param_1)
 
 /* ======== 0x80195d78 ======== */
 
-undefined4 mc_session_b(undefined4 param_1)
+uint32_t mc_session_b(uint32_t param_1)
 
 {
-  undefined4 uVar1;
+  uint32_t uVar1;
   
   CDFN(CDFN_MC_SESSION_B,param_1);
   uVar1 = DAT_801bc84c;
@@ -697,10 +690,10 @@ undefined4 mc_session_b(undefined4 param_1)
 
 /* ======== 0x80195ec8 ======== */
 
-undefined4 cd_cmd_issue_async(byte param_1,int param_2)
+uint32_t cd_cmd_issue_async(int8_t param_1,int param_2)
 
 {
-  undefined4 uVar1;
+  uint32_t uVar1;
   int iVar2;
   int iVar3;
   /* guest zero-extends the opcode byte (andi $s4,$s1,0xff @0x80195EF0)
@@ -718,7 +711,7 @@ undefined4 cd_cmd_issue_async(byte param_1,int param_2)
     }
     if ((((param_2 == 0) || (I32AT(0x801bc7c0,p1) == 0)) ||
         (iVar2 = cd_cmd_issue(2,param_2,0,0), iVar2 == 0)) &&
-       (DAT_801bc848 = uVar1, iVar2 = cd_cmd_issue((byte)p1,param_2,0,1), iVar2 == 0)) break;
+       (DAT_801bc848 = uVar1, iVar2 = cd_cmd_issue((int8_t)p1,param_2,0,1), iVar2 == 0)) break;
     iVar3 = iVar3 + -1;
     if (iVar3 == -1) {
       DAT_801bc848 = uVar1;
@@ -736,7 +729,7 @@ undefined4 cd_cmd_issue_async(byte param_1,int param_2)
  * cd_cmd_issue sees the same buffer the guest's sp+0x10 would produce —
  * the earlier guest_sp()-0x18 version decoded to 0x1C instead of the
  * computed mode and wedged the read retry loop. */
-undefined4 cd_read_open(int param_1)
+uint32_t cd_read_open(int param_1)
 {
   /* Faithful port of 0x80198908-0x80198AE4 (36 blocks, all leaves clean).
    * Guest frame is 0x28; the Setmode param byte lives at sp+0x10, i.e.
@@ -746,7 +739,7 @@ undefined4 cd_read_open(int param_1)
    * cd_cmd_issue sees the same buffer the guest's sp+0x10 produces. */
   uint32_t fr = br2_guest_frame(0x28);
   uint8_t *p18;
-  undefined4 uVar2;
+  uint32_t uVar2;
   int iVar3;
   uint32_t uVar1, uVar4;
 
@@ -835,7 +828,7 @@ extern int  cd_sync_wait_c();
 extern void bios_table_tramp();
 extern void bios_kobj_tramp();
 extern uint16_t cd_u16_swap_store(uint16_t);
-extern uint32_t gpu_status_cmd(uint);
+extern uint32_t gpu_status_cmd(uint32_t);
 
 extern char *s_CD_sync_8012582c;
 extern char *s_CD_ready_80125834;
@@ -862,7 +855,7 @@ extern char *s__s___s__Sync__s__Ready__s_801257b4;
 
 /* ======== 0x801968cc ======== */
 
-uint cd_result_wait_a(int param_1,undefined1 *param_2)
+uint32_t cd_result_wait_a(int param_1,uint8_t *param_2)
 
 {
   /* Delegate the whole body to generated MIPS (0x801968cc): the
@@ -874,7 +867,7 @@ uint cd_result_wait_a(int param_1,undefined1 *param_2)
    * coroutine never resumes to set 0x801bcb25/26 -> infinite
    * spin. Same contract as cd_init_session/cd_file_read_seq.
    * br2_call_generated makes gen_clean_table skip this address. */
-  return (uint)call_guest4(0x801968ccu, (uint32_t)param_1,
+  return (uint32_t)call_guest4(0x801968ccu, (uint32_t)param_1,
                                   br2_gaddr(param_2), 0, 0);
 }
 
@@ -933,14 +926,14 @@ void cd_cmd_state_reset(void)
 
 /* ======== 0x8019a7d4 ======== */
 
-undefined2 cd_intc_busy_read(void)
+uint16_t cd_intc_busy_read(void)
 
 {
   /* guest 0x8019A7D4: lui $v0,0x801C; lh $v0,-0x32E6($v0); jr $ra; nop
    * -> signed halfword at guest 0x801C0000-0x32E6 = 0x801BCD1A (lh
    * sign-extends into $v0, but the undefined2 return truncates to the
    * same 16 bits). */
-  return (undefined2)br2_ld16(0x801bcd1a);
+  return (uint16_t)br2_ld16(0x801bcd1a);
 }
 
 /* ======== 0x8019a87c ======== */
@@ -1234,29 +1227,29 @@ bAA4:
  * cd_intc_dispatch) that needs the generated CPS live-resume-PC, which
  * clean C cannot supply. Per AGENTS.md §4 this stays generated-
  * authoritative until the coroutine runtime exists. */
-undefined4 cd_response_process(void)
+uint32_t cd_response_process(void)
 {
-  return (undefined4)call_guest4(0x80196370u,0,0,0,0);
+  return (uint32_t)call_guest4(0x80196370u,0,0,0,0);
 }
 
 /* ======== small getters ======== */
 
-undefined1 cd_status_raw(void)
+uint8_t cd_status_raw(void)
 
 {
-  return (undefined1)DAT_801bc854;
+  return (uint8_t)DAT_801bc854;
 }
 
-undefined1 cd_mode_byte_read(void)
+uint8_t cd_mode_byte_read(void)
 
 {
   return DB8(0x801bc864);
 }
 
-undefined1 * cd_param_buf_get(void)
+uint8_t * cd_param_buf_get(void)
 
 {
-  return (undefined1 *)guest_at(0x801bc860);
+  return (uint8_t *)guest_at(0x801bc860);
 }
 
 void cd_cmd_reset_wrap(void)
@@ -1268,10 +1261,10 @@ void cd_cmd_reset_wrap(void)
 
 /* ======== 0x80195ffc ======== */
 
-bool cd_cmd_issue_sync(byte param_1,int param_2,undefined4 param_3)
+bool cd_cmd_issue_sync(int8_t param_1,int param_2,uint32_t param_3)
 
 {
-  undefined4 uVar1;
+  uint32_t uVar1;
   bool bVar2;
   int iVar3;
   int iVar4;
@@ -1291,7 +1284,7 @@ bool cd_cmd_issue_sync(byte param_1,int param_2,undefined4 param_3)
     if (((param_2 == 0) || (I32AT(0x801bc7c0,p1) == 0)) ||
        (iVar3 = cd_cmd_issue(2,param_2,param_3,0), iVar3 == 0)) {
       DAT_801bc848 = uVar1;
-      iVar3 = cd_cmd_issue((byte)p1,param_2,param_3,0);
+      iVar3 = cd_cmd_issue((int8_t)p1,param_2,param_3,0);
       iVar4 = 0;
       if (iVar3 == 0) break;
       /* cd_cmd_issue(param_1) returned nonzero */
@@ -1303,8 +1296,8 @@ bool cd_cmd_issue_sync(byte param_1,int param_2,undefined4 param_3)
   if (iVar4 == 0) {
     /* param_3 is a raw guest address value; cd_result_wait_a's
      * undefined1* param is a host pointer — resolve via guest_at. */
-    iVar5 = cd_result_wait_a(0,param_3 ? (undefined1 *)guest_at(param_3)
-                                      : (undefined1 *)0);
+    iVar5 = cd_result_wait_a(0,param_3 ? (uint8_t *)guest_at(param_3)
+                                      : (uint8_t *)0);
     bVar2 = iVar5 == 2;
   }
   else {
@@ -1319,14 +1312,14 @@ int cd_stamp_to_sector(const void *param_1)
 
 {
   const uint8_t *s = (const uint8_t *)param_1;
-  return (((uint)(s[0] >> 4) * 10 + (s[0] & 0xf)) * 0x3c +
-         (uint)(s[1] >> 4) * 10 + (s[1] & 0xf)) * 0x4b +
-         (uint)(s[2] >> 4) * 10 + (s[2] & 0xf) + -0x96;
+  return (((uint32_t)(s[0] >> 4) * 10 + (s[0] & 0xf)) * 0x3c +
+         (uint32_t)(s[1] >> 4) * 10 + (s[1] & 0xf)) * 0x4b +
+         (uint32_t)(s[2] >> 4) * 10 + (s[2] & 0xf) + -0x96;
 }
 
 /* ======== 0x80196b4c ======== */
 
-uint cd_result_wait_b(int param_1,undefined1 *param_2)
+uint32_t cd_result_wait_b(int param_1,uint8_t *param_2)
 
 {
   /* Delegate the whole body to generated MIPS (0x80196b4c): the
@@ -1338,7 +1331,7 @@ uint cd_result_wait_b(int param_1,undefined1 *param_2)
    * coroutine never resumes to set 0x801bcb25/26 -> infinite
    * spin. Same contract as cd_init_session/cd_file_read_seq.
    * br2_call_generated makes gen_clean_table skip this address. */
-  return (uint)call_guest4(0x80196b4cu, (uint32_t)param_1,
+  return (uint32_t)call_guest4(0x80196b4cu, (uint32_t)param_1,
                                   br2_gaddr(param_2), 0, 0);
 }
 
@@ -1361,7 +1354,7 @@ uint cd_result_wait_b(int param_1,undefined1 *param_2)
  * same stack slots — then cd_cmd_state_reset() and return -1.
  * cd_timer_read is now clean (8663946); cd_str_print/cd_cmd_state_reset
  * were already clean; only the printf jal needed call_guest4. */
-undefined4 cd_busy_wait(int param_1)
+uint32_t cd_busy_wait(int param_1)
 {
   extern uint32_t call_guest4(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
   uint32_t fr = br2_guest_frame(0x30);
@@ -1406,7 +1399,7 @@ timeout:
   (void)call_guest4(0x8018e550, 0x801257b4, br2_ld32(0x801fc6e8), a2v, a3v);
   cd_cmd_state_reset();
   br2_guest_frame_free();
-  return (undefined4)0xffffffffu;
+  return (uint32_t)0xffffffffu;
 }
 
 /* ======== 0x8019a6e0 ======== */
@@ -1444,7 +1437,7 @@ int cd_dispatch_tbl4(int param_1,uint32_t param_2)
  * attract/boot. The mode-0x200 command sequencing + session teardown +
  * user-callback jalr need generated CPS state; stays generated-
  * authoritative per AGENTS.md §4. */
-void cd_read_step_cb(uint32_t param_1,undefined4 param_2)
+void cd_read_step_cb(uint32_t param_1,uint32_t param_2)
 {
   call_guest4(0x801985c4u,param_1,param_2,0,0);
 }
@@ -1511,7 +1504,7 @@ extern uint32_t cd_cmd_issue_c(uint32_t,uint32_t);
 uint32_t bios_call(uint32_t fn, uint32_t a0);
 extern void cd_cmd_bytes(uintptr_t);
 
-uint cd_sync_wait_a(int param_1,undefined1 *param_2)
+uint32_t cd_sync_wait_a(int param_1,uint8_t *param_2)
 {
   return cd_result_wait_a(param_1,param_2);
 }
@@ -2787,14 +2780,14 @@ uint32_t cd_dir_read(uint32_t a0,uint32_t a1)
   (void)a0;
   cmd[0] = 1;
   s6 = mc_session(0);
-  if (!cd_cmd_issue_sync(0x13,0,(undefined4)(fr + 8))) goto fail;
+  if (!cd_cmd_issue_sync(0x13,0,(uint32_t)(fr + 8))) goto fail;
   s0 = ((uint32_t)(resp[1] >> 4)) * 10 + (resp[1] & 0xf);
   s3 = ((uint32_t)(resp[2] >> 4)) * 10 + (resp[2] & 0xf);
   dbg = *(uint32_t *)guest_at(0x801bc850);
   if (dbg >= 2)
     printf_forward((const char *)guest_at(0x801255f8),s0,s3);
   cmd[0] = 0;
-  if (!cd_cmd_issue_sync(0x14,(int)fr,(undefined4)(fr + 8))) goto fail;
+  if (!cd_cmd_issue_sync(0x14,(int)fr,(uint32_t)(fr + 8))) goto fail;
   out[0] = resp[1];
   out[2] = 0;
   out[1] = resp[2];
@@ -2805,7 +2798,7 @@ uint32_t cd_dir_read(uint32_t a0,uint32_t a1)
     /* BCD encode s0 via /10 magic */
     uint32_t q = s0 / 10;
     cmd[0] = (uint8_t)(q * 16 + (s0 - q * 10));
-    if (!cd_cmd_issue_sync(0x14,(int)fr,(undefined4)(fr + 8))) goto fail;
+    if (!cd_cmd_issue_sync(0x14,(int)fr,(uint32_t)(fr + 8))) goto fail;
     s2++;
     s1p[0] = resp[1];
     s1p[2] = 0;
@@ -5009,14 +5002,14 @@ done:
 
 /* ======== batch_mass1: small wrappers / trampolines ======== */
 
-extern undefined4 cd_strncmp(undefined4,undefined4,undefined4);
+extern uint32_t cd_strncmp(uint32_t,uint32_t,uint32_t);
 extern void FUN_8019a364(void);
 extern void FUN_8019a310(void);
 extern void FUN_8019a300(void);
 extern void FUN_8019a350(void);
 extern void FUN_8019e420(void);
 extern void FUN_8019e600(void);
-extern undefined1 *guest_memcpy(uint32_t *,uint32_t *,int);
+extern uint8_t *guest_memcpy(uint32_t *,uint32_t *,int);
 int cd_queue_push(uint32_t,uint32_t,uint32_t,uint32_t);
 void cd_chan_reset_seq(void);
 int cd_crit_c003(void);
@@ -5041,7 +5034,7 @@ uint32_t cd_bios_svc_16(uint32_t a0,uint32_t a1)
 
 /* ======== 0x80197e08 ======== */
 
-int cd_strncmp12_eq(undefined4 param_1,undefined4 param_2)
+int cd_strncmp12_eq(uint32_t param_1,uint32_t param_2)
 {
   return cd_strncmp(param_1,param_2,0xc) == 0;
 }
@@ -5384,7 +5377,7 @@ static uint32_t cd_gpu_call(uint32_t off,uint32_t a0,uint32_t a1,
   uint32_t *t = (uint32_t *)guest_at(*(uint32_t *)guest_at(0x801b8318));
   return gpu_invoke(t[off >> 2],a0,a1,a2,a3);
 }
-extern void gpu_rect_bounds_dbg(undefined4,short *);
+extern void gpu_rect_bounds_dbg(uint32_t,short *);
 extern int cd_pump_watchdog(void);
 extern uint32_t cd_dma_xfer_start(uint32_t,uint32_t,uint32_t);
 extern void FUN_8019ad80(uint32_t);
@@ -5878,7 +5871,7 @@ int cd_submit6(uint32_t param_1,uint32_t param_2,uint32_t param_3)
 
 /* ======== batch_mass7 ======== */
 
-extern void gpu_prim_pkt_build(int,ushort *);
+extern void gpu_prim_pkt_build(int,uint16_t *);
 extern void cd_guest_zero32_a(uint32_t,uint32_t);
 extern int cd_ctx_save(uint32_t);
 extern void FUN_8019ad48(uint32_t);
@@ -6026,7 +6019,7 @@ void cd_prim_emit_a(uint32_t param_1,uint32_t param_2)
     call_guest(DB32G(0x801b831c),0x80125584,param_1);
   }
   s0 = param_2 + 0x1c;
-  gpu_prim_pkt_build((int)s0,(ushort *)(uintptr_t)param_2);
+  gpu_prim_pkt_build((int)s0,(uint16_t *)(uintptr_t)param_2);
   *(uint32_t *)guest_at(param_2 + 0x1c) =
       (DB32(param_2 + 0x1c) & 0xff000000) | (param_1 & 0xffffff);
   tbl = DB32G(0x801b8318);
@@ -6873,7 +6866,7 @@ uint32_t mdec_status_read(void)
  * bytes. NULL guards -> 0/-1/1; signed-byte diff on mismatch; the
  * count bound is a2-1 (compares at most a2 bytes). Disasm
  * 0x80198510-0x8019858c. */
-undefined4 cd_strncmp(undefined4 param_1,undefined4 param_2,undefined4 param_3)
+uint32_t cd_strncmp(uint32_t param_1,uint32_t param_2,uint32_t param_3)
 {
   const int8_t *a;
   const int8_t *b;
@@ -6883,7 +6876,7 @@ undefined4 cd_strncmp(undefined4 param_1,undefined4 param_2,undefined4 param_3)
    * param_1/param_2 (a1 arrives as a u32-held host ptr) */
   if (param_1 == 0) {
     if (param_2 == 0) return 0;
-    return (undefined4)-1;
+    return (uint32_t)-1;
   }
   if (param_2 == 0) return 1;
   a = (const int8_t *)guest_at(param_1);
@@ -6898,7 +6891,7 @@ undefined4 cd_strncmp(undefined4 param_1,undefined4 param_2,undefined4 param_3)
     b++;
     if (ca != cb) {
       if (n < 0) return 0;
-      return (undefined4)(int32_t)((int32_t)ca - (int32_t)cb);
+      return (uint32_t)(int32_t)((int32_t)ca - (int32_t)cb);
     }
     if (ca == 0) return 0;
     a++;
