@@ -5019,16 +5019,16 @@ sel:
     return;
   }
   case 3: {
-    int32_t v1,v0;
+    int32_t n16,quo;
     flag_table_dump(a0,0);
     flag_table_dump(a0,4);
-    v1 = (int32_t)*(int16_t *)(s0 + 0xcc);
-    if (v1 < 0) v1 += 0xf;
-    v0 = v1 >> 4;
+    n16 = (int32_t)*(int16_t *)(s0 + 0xcc);
+    if (n16 < 0) n16 += 0xf;
+    quo = n16 >> 4;
     print_dispatch((const char *)guest_at(0x8012242c),
                  (int32_t)*(int16_t *)(s0 + 0xca),
                  (int32_t)*(int16_t *)(s0 + 0xc2),
-                 (int32_t)*(int16_t *)(s0 + 0xbe), v0);
+                 (int32_t)*(int16_t *)(s0 + 0xbe), quo);
     {
       int32_t a1 = (int32_t)*(int16_t *)(s0 + 0xc0);
       int32_t a3;
@@ -8144,11 +8144,11 @@ void op_list_head_reset(uint32_t *a0)
   *(uint32_t *)guest_at(a0[0]) = 0;
   {
     uint32_t p4 = a0[1];
-    uint32_t v1 = *(uint32_t *)guest_at(p4 + 0x10);
-    if (v1 != 0) {
-      a0[3] = p4 + v1;
+    uint32_t off = *(uint32_t *)guest_at(p4 + 0x10);
+    if (off != 0) {
+      a0[3] = p4 + off;
       {
-        /* Guest jal 0x801B0DB8 (unconditional inside the v1!=0 branch):
+        /* Guest jal 0x801B0DB8 (unconditional inside the off!=0 branch):
          * a0 = struct guest addr, a1 = caller's live $a1. */
         void *fn = fn_lookup(0x801b0db8);
         if (fn != (void *)0x0) {
@@ -8466,11 +8466,11 @@ void op_cond_call_store(uint32_t a0,uint32_t a1,int16_t *a2)
 {
   (void)a0;
   {
-    int32_t v1 = *a2;
+    int32_t off = *a2;
     uint32_t fp = *(uint32_t *)guest_at(a1);
     void *fn = fn_lookup(fp);
-    if (v1 != 0) {
-      uint32_t s0 = BR2_GPF(8) + (uint32_t)v1;
+    if (off != 0) {
+      uint32_t s0 = BR2_GPF(8) + (uint32_t)off;
       uint32_t r = 0;
       if (fn != (void *)0x0) {
         r = ((uint32_t (*)(uint32_t))fn)(a0);
@@ -8660,13 +8660,13 @@ void op_dbg_dump_tbl(uint32_t a0,uint32_t a1)
   uint32_t cur = *(uint32_t *)guest_at(addr);
   uint32_t first = cur;
   uint32_t off = 0;
-  uint32_t v1;
+  uint32_t next;
   do {
     uint32_t nxt;
-    v1 = off + 0x10;
+    next = off + 0x10;
     nxt = *(uint32_t *)guest_at(cur + 8);
     cur = *(uint32_t *)guest_at(cur + 4);
-    off = v1 + nxt;
+    off = next + nxt;
   } while (cur != first);
   text_win_printf((const char *)guest_at(0x80126074),a1,off,first);
   return;
@@ -9073,19 +9073,19 @@ void op_node_register(uint32_t a0)
 /* 0x801a4cd8 — count nodes across 16 buckets of table a0; returns count. */
 int op_node_count16(uint32_t a0)
 {
-  uint32_t v1 = 0x801ff398 + a0 * 72;
+  uint32_t tab = 0x801ff398 + a0 * 72;
   int32_t s0 = 0;
   int32_t i;
   for (i = 0; i < 0x10; i++) {
-    uint32_t v0 = *(uint32_t *)guest_at(v1);
-    if (v0 != 0) {
+    uint32_t node = *(uint32_t *)guest_at(tab);
+    if (node != 0) {
       for (;;) {
-        v0 = *(uint32_t *)guest_at(v0);
+        node = *(uint32_t *)guest_at(node);
         s0++;
-        if (v0 == 0) break;
+        if (node == 0) break;
       }
     }
-    v1 += 4;
+    tab += 4;
   }
   text_win_printf((const char *)guest_at(0x80126008),s0);
   return s0;
@@ -9380,12 +9380,12 @@ void op_globals_reset_shift(void)
 /* 0x801a40f8 — per-frame state advance on s0 (host struct). */
 void op_frame_advance(uint8_t *s0)
 {
-  uint32_t v0 = *(uint32_t *)(s0 + 0x4c) + 1;
-  *(uint32_t *)(s0 + 0x4c) = v0;
+  uint32_t ctr = *(uint32_t *)(s0 + 0x4c) + 1;
+  *(uint32_t *)(s0 + 0x4c) = ctr;
   {
-    uint8_t v1 = *(uint8_t *)(s0 + 0x46);
-    if (v1 != 0) {
-      if (v1 == 1) {
+    uint8_t mode = *(uint8_t *)(s0 + 0x46);
+    if (mode != 0) {
+      if (mode == 1) {
         uint8_t t = *(uint8_t *)(s0 + 0x4a);
         if ((uint32_t)t < 0xb) {
           *(uint8_t *)(s0 + 0x4a) = (uint8_t)(t + 1);
@@ -9915,27 +9915,27 @@ void elem_pair_field_set_alt(uint32_t v0,uint32_t a0,uint32_t a1,
 uint32_t mat3x3_build(int32_t a0,int32_t a1,int32_t a2,uint32_t a3)
 {
   /* t2=d29c(a0) t1=d298(a0) t9=d29c(a1) t3=d298(a1)
-   * t5=d29c(a2) v0=d298(a2); mult+mflo+sra 12 (signed, >>12 arith) */
+   * t5=d29c(a2) cos_a2=d298(a2); mult+mflo+sra 12 (signed, >>12 arith) */
   int32_t t2 = lut_sin_q12(a0);
   int32_t t1 = lut_cos_q12(a0);
   int32_t t9 = lut_sin_q12(a1);
   int32_t t3 = lut_cos_q12(a1);
   int32_t t5 = lut_sin_q12(a2);
-  int32_t v0 = lut_cos_q12(a2);
+  int32_t cos_a2 = lut_cos_q12(a2);
   int32_t t4 = -t9;                    /* -cos a1 */
   int32_t t9n = -t3;                   /* -sin a1 (neg at 0x801b1214) */
   int32_t t6a = (t2 * t5) >> 12;       /* cos0*cos2 */
-  int32_t t6b = (t2 * v0) >> 12;       /* cos0*sin2 */
+  int32_t t6b = (t2 * cos_a2) >> 12;       /* cos0*sin2 */
   int16_t *m = (int16_t *)mem_ptr(a3);
   m[2] = (int16_t)(-((t9 * t1) >> 12));
-  m[8] = (int16_t)((t9 * v0) >> 12);
-  m[6] = (int16_t)(((t9 * v0) >> 12) + ((t3 * t6a) >> 12));
+  m[8] = (int16_t)((t9 * cos_a2) >> 12);
+  m[6] = (int16_t)(((t9 * cos_a2) >> 12) + ((t3 * t6a) >> 12));
   m[5] = (int16_t)(-t2);
-  m[0] = (int16_t)(((t3 * v0) >> 12) + ((t4 * t6a) >> 12));
+  m[0] = (int16_t)(((t3 * cos_a2) >> 12) + ((t4 * t6a) >> 12));
   m[7] = (int16_t)(((t4 * t5) >> 12) + ((t3 * t6b) >> 12));
   m[1] = (int16_t)(((t9n * t5) >> 12) + ((t4 * t6b) >> 12));
   m[3] = (int16_t)((t1 * t5) >> 12);
-  m[4] = (int16_t)((t1 * v0) >> 12);
+  m[4] = (int16_t)((t1 * cos_a2) >> 12);
   return a3;
 }
 
