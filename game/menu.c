@@ -5876,11 +5876,11 @@ extern int  text_render_full(uint32_t *,uint32_t,int32_t);
  * a1 = ctx2 (u16), a2 = host string ptr (stored back as guest addr),
  * a3 = u16 field, stack5 = u16 field8, stack6 = packed attr for +0x16.
  * Tail: text_render_full(ctx, ctx2 & 0xffff, 0x1f80038c). */
-void round_announce_block(uint32_t param_1,uint32_t param_2,const void *param_3,
-                  uint32_t param_4,uint32_t param_5,int32_t param_6)
+void round_announce_block(uint32_t ctx,uint32_t ctx2,const void *str,
+                  uint32_t fld6,uint32_t fld8,int32_t attr)
 {
-  MW32(0x1f8003a8, guest_of(param_3));
-  MW16(0x1f80038c + 6,    (uint16_t)param_4);
+  MW32(0x1f8003a8, guest_of(str));
+  MW16(0x1f80038c + 6,    (uint16_t)fld6);
   MW16(0x1f80038c + 4,    7);
   MW16(0x1f80038c + 0xe,  0xffff);
   MW16(0x1f80038c + 0x12, 1);
@@ -5891,10 +5891,10 @@ void round_announce_block(uint32_t param_1,uint32_t param_2,const void *param_3,
   MW16(0x1f80038c + 0xc,  8);
   MW16(0x1f80038c + 0x10, 8);
   MW16(0x1f80038c + 0x18, 5);
-  MW16(0x1f80038c + 8,    (uint16_t)param_5);
+  MW16(0x1f80038c + 8,    (uint16_t)fld8);
   MW16(0x1f80038c + 0x16,
-       (uint16_t)((((uint32_t)param_6 + 0x1e0) & 0x1ff) * 0x40 + 0x16));
-  text_render_full((uint32_t *)guest_at(param_1), param_2 & 0xffff,
+       (uint16_t)((((uint32_t)attr + 0x1e0) & 0x1ff) * 0x40 + 0x16));
+  text_render_full((uint32_t *)guest_at(ctx), ctx2 & 0xffff,
                0x1f80038c);
 }
 
@@ -5905,18 +5905,18 @@ void round_announce_block(uint32_t param_1,uint32_t param_2,const void *param_3,
  * (cases 0,8,0x10,0x20,0x30; all other values store-and-return 0).
  * Returns -1 when the state halfword is negative, 1 after the full
  * heap/tag-table load (state -> -1), else 0. */
-int32_t battle_bringup_a(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     void *param_4)
+int32_t battle_bringup_a(uint32_t battle,uint32_t sel_a,uint32_t sel_b,
+                     void *unused)
 {
-  uint32_t s5 = param_1, s4 = param_2, s2 = param_3;
+  uint32_t s5 = battle, s4 = sel_a, s2 = sel_b;
   uint32_t s3, s0, s1, a0v;
   int32_t  v1;
-  (void)param_4;
+  (void)unused;
 
   s3 = guest_of(tag_table_get());       /* tag table 0x801c47c0 */
   v1 = MBS16(s5 + 0x8c);
   { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-    decomp_trace_record(43,param_1,param_2,param_3,(uint32_t)(int16_t)v1); }
+    decomp_trace_record(43,battle,sel_a,sel_b,(uint32_t)(int16_t)v1); }
   if (v1 < 0) return -1;
   s0 = (uint32_t)v1;
   if (s0 >= 0x31) goto L_store;
@@ -6012,15 +6012,15 @@ L_store:                                     /* 0x801484bc */
  * 0x801204d8) writes a packed u16 at rec+0x16 from the 0x801b2648
  * palette halfwords, then always runs sprite_place_centered + the byte-sum
  * fields at rec+0xc..0x25 and the packed u16 at rec+0xe. */
-void palette_attr_record_write(uint32_t param_1,uint32_t param_2,int32_t param_3,
-                  uint32_t param_4)
+void palette_attr_record_write(uint32_t ctx,uint32_t rec,int32_t tbl_idx,
+                  uint32_t slot)
 {
-  uint32_t t0 = param_1;
-  uint32_t s1 = param_2;
-  uint32_t s0 = 0x801b2658 + param_4 * 2;
-  uint32_t s3 = 0x801b2650 + (uint32_t)param_3 * 4;
-  uint32_t s2 = 0x801b260c + param_4 * 4;
-  int32_t  idx = param_4 - 2;
+  uint32_t t0 = ctx;
+  uint32_t s1 = rec;
+  uint32_t s0 = 0x801b2658 + slot * 2;
+  uint32_t s3 = 0x801b2650 + (uint32_t)tbl_idx * 4;
+  uint32_t s2 = 0x801b260c + slot * 4;
+  int32_t  idx = slot - 2;
   uint32_t v1, v0, a0p;
 
   if ((uint32_t)idx < 0xb) {
@@ -6038,7 +6038,7 @@ void palette_attr_record_write(uint32_t param_1,uint32_t param_2,int32_t param_3
     MW16(s1 + 0x16,(uint16_t)v1);
   }
 
-  a0p = 0x801b2604 + (uint32_t)param_3 * 4;
+  a0p = 0x801b2604 + (uint32_t)tbl_idx * 4;
   sprite_place_centered(s1,t0,
                (int32_t)MBS16(a0p),(int32_t)MBS16(a0p + 2),
                (int32_t)MBS16(s2),(int32_t)MBS16(s2 + 2));
@@ -6061,9 +6061,9 @@ void palette_attr_record_write(uint32_t param_1,uint32_t param_2,int32_t param_3
  * six deferred_cmd_post(0x400,...) notes at record offsets derived from the
  * id*6, accumulating MB8(0x801b23bc + id*2) / +1 into the pitch.
  * id==10 is remapped to 2 between the two halves. */
-void victory_jingle_schedule(uint32_t param_1,uint32_t param_2)
+void victory_jingle_schedule(uint32_t id_a,uint32_t id_b)
 {
-  uint32_t s3 = param_1, s6 = param_2;
+  uint32_t s3 = id_a, s6 = id_b;
   uint32_t s2 = 0;
   int32_t  s4;
 
@@ -6095,9 +6095,9 @@ void victory_jingle_schedule(uint32_t param_1,uint32_t param_2)
  * formatted string via sprintf_core into a stack buf then emits it, or
  * emits a rodata string directly through announce_param_block_init_b. The y/attr pair
  * always derives from lh +0x20 (row) and lh +0x22 (col/16). */
-void ko_count_announce(uint32_t param_1,uint32_t param_2)
+void ko_count_announce(uint32_t battle,uint32_t text_list)
 {
-  uint32_t s0 = param_1, s1 = param_2;
+  uint32_t s0 = battle, s1 = text_list;
   char     buf[0x20];
   int32_t  a0, t, w, a1x, K;
   uint32_t sel, fmt;
@@ -6165,10 +6165,10 @@ void ko_count_announce(uint32_t param_1,uint32_t param_2)
  * 0 = confirm beep store, 1 = menu_step_b + strings, 2 = d-pad held
  * redraw block, 3 = shoulder-button page cycle. Returns 1 only via the
  * mask&0x800 early-out. */
-int32_t pad_handler_a(uint32_t param_1,uint32_t param_2)
+int32_t pad_handler_a(uint32_t battle,uint32_t mask)
 {
-  uint32_t s3 = param_1;
-  uint32_t fp = param_2;                 /* lhu a1 */
+  uint32_t s3 = battle;
+  uint32_t fp = mask;                 /* lhu a1 */
   uint32_t s7 = 1, s6, s5, s4, s2, s1, s0;
   uint32_t a0, p84;
   int32_t  lb2;
@@ -6325,10 +6325,10 @@ L_2194:                                        /* case2, lh14 == 0 */
  * mask, with a wider announce block (five hud_text_blk_alt lines + bar).
  * Dispatch handles lb (obj+0x84)+2 states 0,1,2 only; state 1 commits
  * via ret_zero_e + string_pair_emit when (mask & 0xe0) and +0x9c != 2. */
-int32_t pad_handler_b(uint32_t param_1,uint32_t param_2)
+int32_t pad_handler_b(uint32_t battle,uint32_t mask)
 {
-  uint32_t s3 = param_1;
-  uint32_t s7 = param_2;                 /* pad mask */
+  uint32_t s3 = battle;
+  uint32_t s7 = mask;                 /* pad mask */
   uint32_t a0 = 1, fp = 0;
   uint32_t s6, s5, s4, s2, s0, s1;
   uint32_t p84;
@@ -6388,7 +6388,7 @@ L_dispatch:
     if (MB8(s3 + 0x9c) == 2) return 0;
     deferred_cmd_post(0x400,0xc,0);
     ret_zero_e(1);
-    string_pair_emit(param_2,0x1f8000e8,s3,MB32(s3 + 0xc0));
+    string_pair_emit(mask,0x1f8000e8,s3,MB32(s3 + 0xc0));
     return 0;
   }
   if (lbv == 0) {
@@ -6469,10 +6469,10 @@ L_27d4:                                        /* state2, lh14 == 0 */
  * 0x80121e20): 0 = d-pad edge -> d4 recompute block (ret 1),
  * 1..4 = menu_step_a field setters, 5 = ret_zero_e+string_pair_emit,
  * 6 = held-dpad redraw. */
-int32_t pad_handler_c(uint32_t param_1,uint32_t param_2)
+int32_t pad_handler_c(uint32_t battle,uint32_t mask)
 {
-  uint32_t s2 = param_1;
-  uint32_t fp = param_2;                 /* pad mask */
+  uint32_t s2 = battle;
+  uint32_t fp = mask;                 /* pad mask */
   uint32_t a0 = 1;
   uint32_t s5, s4, s3, s6, s7 = 0, s1, s0;
   uint32_t p84, a2v;
