@@ -451,7 +451,7 @@ void memcard_tick(void)
         DAT_801bef6d = DAT_801bef6d + -1;
         return;
       }
-      goto joined_r0x80157c80;
+      goto bb_80157c80;
     case ' ':
       brightness_packet_send(0);
       if ((DAT_801bef64 & 0x10) == 0) {
@@ -575,7 +575,7 @@ void memcard_tick(void)
       DAT_801bef6d = 0x20;
       return;
     }
-joined_r0x80157c80:
+bb_80157c80:
     if ((DAT_801bef6e & 0x10) == 0) {
       brightness_packet_send(0);
       cd_cmd_issue_async(9,0);
@@ -6727,12 +6727,12 @@ int save_load_state_machine(uint32_t a0, int32_t a1)
 #define BK8(o)   (blk[(o) - 0x28])
 #define BKX(v)   ((int32_t)(((uint32_t)(int32_t)(int16_t)(v)) << 16) >> 23)
 
-  if (phase == 0x10) goto L10;
+  if (phase == 0x10) goto st_10;
   if (phase < 0x11) {
     if (phase != 0) goto ret0;
     goto init;
   }
-  if (phase == 0x20) goto L20;
+  if (phase == 0x20) goto st_20;
   goto ret0;
 
 init:
@@ -6958,7 +6958,7 @@ init:
     phase = 0x10;
   }
 
-L10:
+st_10:
   /* commit tail: also reached by state-0 fallthrough and state 0x10 */
   if (a1v < 0) sel = 7;
   else if (a1v < 8) sel = a1v;
@@ -6966,13 +6966,13 @@ L10:
   else sel = 7;
   if (cd_file_load_sm(sel + 0xb0, guest_of(tag_table_get())) == 0)
     goto ret0;
-  phase = 0x20;   /* resume state for L20: generated 0x80171800 li phase,0x20 —
-                  without it a busy L20 load stores phase=0x10 and re-runs L10,
+  phase = 0x20;   /* resume state for st_20: generated 0x80171800 li phase,0x20 —
+                  without it a busy st_20 load stores phase=0x10 and re-runs st_10,
                   ping-ponging the tag-table/heap loads forever. */
   fighter_record_apply(guest_of(tag_table_get()), 2);
   page_table_ptr_set((uint32_t)a1v, 2);
 
-L20:
+st_20:
   if (cd_file_load_sm(0x88, g32(0x801c47b8)) == 0) goto ret0;
   fighter_record_apply(g32(0x801c47b8), 1);
   page_table_ptr_set(0, 1);
@@ -7250,21 +7250,21 @@ int save_state_machine_alt(uint32_t a0, uint8_t *blk, int32_t a2)
   int *tbl = (int *)tag_table_get();   /* tag table; pure getter */
 #define H90W16(a,v) BR2_WS16(a,v)
 
-  if (phase == 0x20) goto L20;
+  if (phase == 0x20) goto st_20;
   if (phase < 0x21) {
-    if (phase == 0) goto L00;
-    if (phase == 0x10) goto L10;
+    if (phase == 0) goto st_00;
+    if (phase == 0x10) goto st_10;
     goto ret0;
   }
-  if (phase == 0x30) goto L30;
-  if (phase == 0x40) goto L40;
+  if (phase == 0x30) goto st_30;
+  if (phase == 0x40) goto st_40;
   goto ret0;
 
-L00:
+st_00:
   /* state 0: quick commit, requires a2 == 0 */
   if (a2 != 0) goto ret0;
   heapB = g32(0x801e3cfc);
-  decomp_trace_record(81,(uint32_t)(base + 0xc4),base,(uint8_t)blk[3],sub); /* L00 gate */
+  decomp_trace_record(81,(uint32_t)(base + 0xc4),base,(uint8_t)blk[3],sub); /* st_00 gate */
   if (cd_file_load_sm((int32_t)(base + 0xc4), heapB) == 0) goto ret0;
   if (variant == 0) {
     fighter_record_apply(heapB, 3);
@@ -7275,11 +7275,11 @@ L00:
   }
   phase = 0x10;
   goto ret0;                   /* gen 0x80171990 sh phase,0x8e(st) stores 0x10, then j 0x801720cc ret 0 —
-                                  the store must NOT be skipped or L00 reloads base+0xc4 forever */
+                                  the store must NOT be skipped or st_00 reloads base+0xc4 forever */
 
-L10:
+st_10:
   /* state 0x10: build image (two variants on variant) */
-  decomp_trace_record(82,(uint32_t)(base + sub + 0xc0),base,(uint8_t)blk[3],sub); /* L10 gate */
+  decomp_trace_record(82,(uint32_t)(base + sub + 0xc0),base,(uint8_t)blk[3],sub); /* st_10 gate */
   if (cd_file_load_sm((int32_t)(base + sub + 0xc0),
                    guest_of(tag_table_get())) == 0) goto ret0;
   saved8 = (int32_t)g8(0x1f800013);
@@ -7405,11 +7405,11 @@ L10:
   cd_timer_read(0);
   scratch_013_set((uint32_t)saved8);
   phase = 0x20;
-  /* fall into L20 */
+  /* fall into st_20 */
 
-L20:
+st_20:
   /* state 0x20 */
-  decomp_trace_record(83,(uint32_t)(base + 0x25),base,(uint8_t)blk[3],sub); /* L20 gate */
+  decomp_trace_record(83,(uint32_t)(base + 0x25),base,(uint8_t)blk[3],sub); /* st_20 gate */
   if (cd_file_load_sm((int32_t)(base + 0x25),
                    guest_of(tag_table_get())) == 0) goto ret0;
   saved8 = (int32_t)g8(0x1f800013);
@@ -7442,15 +7442,15 @@ L20:
   }
   cd_timer_read(0);
   scratch_013_set((uint32_t)saved8);
-  phase = 0x30;                    /* next state L30 — gen 0x80172020 li phase,0x30 -> ret0;
-                                   storing 0x20 here would re-run L20 and reload base+0x25 forever */
+  phase = 0x30;                    /* next state st_30 — gen 0x80172020 li phase,0x30 -> ret0;
+                                   storing 0x20 here would re-run st_20 and reload base+0x25 forever */
   goto ret0;
 
-L30:
+st_30:
   /* state 0x30 */
   heapA = (g32(0x801c47b8) + 3) & ~3u;
   BR2_W32(0x801c47b8, heapA);
-  decomp_trace_record(84,(uint32_t)(base + sub + 0x20),base,(uint8_t)blk[3],sub); /* L30 gate */
+  decomp_trace_record(84,(uint32_t)(base + sub + 0x20),base,(uint8_t)blk[3],sub); /* st_30 gate */
   if (cd_file_load_sm((int32_t)(base + sub + 0x20), heapA) == 0) goto ret0;
   saved8 = (int32_t)g8(0x1f800013);
   scratch_013_set(0);
@@ -7463,16 +7463,16 @@ L30:
   sz = *(uint32_t *)guest_at(heapA);   /* lw (v0): size at heap head */
   BR2_W32(0x801c47b8, heapA + sz);
   phase = 0x40;
-  /* fall into L40 */
+  /* fall into st_40 */
 
-L40:
+st_40:
   /* state 0x40 */
   if (variant != 0) {
     uint32_t q = *(uint32_t *)(blk + 0x2c);
     if (blk[3] == *(uint8_t *)guest_at(q + 3)) return 1;
   }
   heapA = g32(0x801c47b8);
-  decomp_trace_record(85,(uint32_t)(base + 0x24),base,(uint8_t)blk[3],sub); /* L40 gate */
+  decomp_trace_record(85,(uint32_t)(base + 0x24),base,(uint8_t)blk[3],sub); /* st_40 gate */
   if (cd_file_load_sm((int32_t)(base + 0x24), heapA) == 0) goto ret0;
   heapA = g32(0x801c47b8);
   sz = *(uint32_t *)guest_at(heapA);
@@ -10413,7 +10413,7 @@ uint32_t dev_cmd_seq(uint32_t rec, uint32_t a1)
   br2_st16(dev + 10u, (slot == 0u) ? 0x1003u : 0x3003u);
 
   n = (uint32_t)(int32_t)br2_ld32(0x801be7d8u + (slot << 2));
-  if ((int32_t)n < 0) goto L_send;         /* bltz -> 0x801A1CAC */
+  if ((int32_t)n < 0) goto send;         /* bltz -> 0x801A1CAC */
   if (n != 0) {
     /* drain loop 0x801A1BEC-0x801A1C54: exits when tbl[slot] <= 0 and
      * FALLS THROUGH to the 0x801A1C58 recheck below (not straight to
@@ -10439,7 +10439,7 @@ uint32_t dev_cmd_seq(uint32_t rec, uint32_t a1)
   /* 0x801A1C58 recheck: tbl[slot]!=0 -> send; ==0 -> -1 store + cbs. */
   slot = br2_ld32(0x801be7c0u);
   n    = br2_ld32(0x801be7d8u + (slot << 2));
-  if (n != 0) goto L_send;
+  if (n != 0) goto send;
   br2_st32(0x801be7d8u + (slot << 2), 0xffffffffu);   /* jalr delay slot */
   fn = br2_ld32(0x801be7a0u);
   saved_ra = c->gpr[31];
@@ -10452,15 +10452,15 @@ uint32_t dev_cmd_seq(uint32_t rec, uint32_t a1)
   br2_call_clean(fn, rec, c->gpr[5], c->gpr[6], c->gpr[7]);
   c->gpr[31] = saved_ra;
 
-L_send:
+send:
   dev = br2_ld32(0x801be7e4u);
-  if ((br2_ld16(dev + 4u) & 0x200u) == 0) goto L_tail;
+  if ((br2_ld16(dev + 4u) & 0x200u) == 0) goto tail;
   br2_st16(dev + 10u, (uint16_t)(br2_ld16(dev + 10u) | 0x10u));
   /* 0x801A1CDC-0x801A1CE8: second bit9 test reuses the same dev (v1). */
   if ((br2_ld16(dev + 4u) & 0x200u) == 0) {
     /* 0x801A1E3C: *ctrl = 0xFFFFFF7F (v0 = -129 from the delay slot) */
     br2_st32(br2_ld32(0x801be7e0u), 0xffffff7fu);
-    goto L_tail;
+    goto tail;
   }
   /* 0x801A1CF0: retry fifo_space_check until nonzero (a0=2000 in the
    * branch delay slot is dead — the clean check reads hw counters). */
@@ -10512,7 +10512,7 @@ L_send:
   (void)br2_ld8(br2_ld32(0x801be7e4u));
   return 0;
 
-L_tail:
+tail:
   /* 0x801A1E4C: rec->f50==0 -> 1; else rec->f37!=0 -> 0; else 1. */
   if (br2_ld8(rec + 0x50u) == 0) return 1;
   if (br2_ld8(rec + 0x37u) != 0) return 0;
@@ -10624,7 +10624,7 @@ uint32_t dev_cmd_process(uint32_t ctx)
       br2_call_clean(fn, aux - 0xf0u, c->gpr[5], c->gpr[6], c->gpr[7]);
       c->gpr[31] = saved_ra;
       br2_st32(s2, 1u);
-      goto L_commitA;
+      goto commit_a;
     }
     if (st >= 0 && st < 2) {
       /* 0x801A352C: aux = *BE7B4 + rec_off; cb7A0(aux); cb7A4(aux); *s2 = -1. */
@@ -10640,14 +10640,14 @@ uint32_t dev_cmd_process(uint32_t ctx)
       br2_call_clean(fn, aux, c->gpr[5], c->gpr[6], c->gpr[7]);
       c->gpr[31] = saved_ra;
       br2_st32(s2, 0xffffffffu);
-      goto L_commitA;
+      goto commit_a;
     }
     if (st == 4) {
       /* 0x801A34FC-0x801A350C: *s2 = 3 (delay-slot store) then send. */
       br2_st32(s2, 3u);
     }
     /* all other states (2, >4, negative recheck) -> 0x801A3570 send. */
-L_commitA:
+commit_a:
     /* 0x801A3570: cb788(ctx, chan); byte_xfer(ctx, ret&0xff). */
     fn = br2_ld32(0x801be788u);
     saved_ra = c->gpr[31];
