@@ -14138,39 +14138,39 @@ undefined4 * gte_rtps_xform1_raw(undefined4 *mtx,undefined4 *in,undefined4 *out)
 
 int * node_lazy_attach(int n,int a1,int a2,int a3)
 {
-  char cVar1;
+  char cls;
   undefined1 sh;
-  int *piVar3;
-  int *piVar4;
-  cVar1 = *(char *)guest_at((uint32_t)(uintptr_t)((n + 0x14)));
+  int *nd;
+  int *slot;
+  cls = *(char *)guest_at((uint32_t)(uintptr_t)((n + 0x14)));
   if ((a1 == 0) ||
-     (piVar3 = (int *)guest_at((uint32_t)(uintptr_t)(task_pool_alloc((int)cVar1,(int)*(char *)guest_at((uint32_t)(uintptr_t)((n + 0x15))),a3 + 0x1c))),
-     piVar3 == (int *)0x0)) {
-    piVar3 = (int *)0x0;
+     (nd = (int *)guest_at((uint32_t)(uintptr_t)(task_pool_alloc((int)cls,(int)*(char *)guest_at((uint32_t)(uintptr_t)((n + 0x15))),a3 + 0x1c))),
+     nd == (int *)0x0)) {
+    nd = (int *)0x0;
   }
   else {
-    piVar4 = (int *)guest_at((uint32_t)(uintptr_t)((cVar1 * 0x48 + -0x7fe00c68 + *(char *)guest_at((uint32_t)(uintptr_t)((n + 0x16) ))* 4)));
-    if (*piVar4 == n) {
-      *piVar4 = (int)guest_of(piVar3);
+    slot = (int *)guest_at((uint32_t)(uintptr_t)((cls * 0x48 + -0x7fe00c68 + *(char *)guest_at((uint32_t)(uintptr_t)((n + 0x16) ))* 4)));
+    if (*slot == n) {
+      *slot = (int)guest_of(nd);
     }
     else {
       /* field at n+4 holds a GUEST addr; resolve before deref */
-      *(uint32_t *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)(n + 4)))= guest_of(piVar3);
+      *(uint32_t *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)(n + 4)))= guest_of(nd);
     }
-    *piVar3 = n;
-    piVar3[1] = *(int *)guest_at((uint32_t)(uintptr_t)((n + 4)));
-    *(uint32_t *)guest_at((uint32_t)(uintptr_t)((n + 4) ))= guest_of(piVar3);
-    piVar3[2] = a1;
-    piVar3[3] = a2;
-    *(undefined1 *)(piVar3 + 5) = *(undefined1 *)guest_at((uint32_t)(uintptr_t)((n + 0x14)));
-    *(undefined1 *)((intptr_t)piVar3 + 0x15) = *(undefined1 *)guest_at((uint32_t)(uintptr_t)((n + 0x15)));
+    *nd = n;
+    nd[1] = *(int *)guest_at((uint32_t)(uintptr_t)((n + 4)));
+    *(uint32_t *)guest_at((uint32_t)(uintptr_t)((n + 4) ))= guest_of(nd);
+    nd[2] = a1;
+    nd[3] = a2;
+    *(undefined1 *)(nd + 5) = *(undefined1 *)guest_at((uint32_t)(uintptr_t)((n + 0x14)));
+    *(undefined1 *)((intptr_t)nd + 0x15) = *(undefined1 *)guest_at((uint32_t)(uintptr_t)((n + 0x15)));
     sh = *(undefined1 *)guest_at((uint32_t)(uintptr_t)((n + 0x16)));
-    *(undefined1 *)((intptr_t)piVar3 + 0x17) = 1;
-    piVar3[4] = (int)guest_of((char *)(piVar3 + 7));
-    *(undefined1 *)(piVar3 + 6) = 0;
-    *(undefined1 *)((intptr_t)piVar3 + 0x16) = sh;
+    *(undefined1 *)((intptr_t)nd + 0x17) = 1;
+    nd[4] = (int)guest_of((char *)(nd + 7));
+    *(undefined1 *)(nd + 6) = 0;
+    *(undefined1 *)((intptr_t)nd + 0x16) = sh;
   }
-  return (int *)(uintptr_t)guest_of(piVar3);
+  return (int *)(uintptr_t)guest_of(nd);
 
 }
 
@@ -14285,25 +14285,25 @@ void tween_seek(int seq,int pos)
 
 void tween_seq_step(short *seq)
 {
-  short sVar1;
-  byte *pbVar2;
-  int iVar3;
+  short t;
+  byte *ip;
+  int off;
   uint op;
   byte arg;
-  int iVar6;
+  int va;
   int unaff_gp = (int)guest_gp();
   if ((((*(int *)guest_at((uint32_t)(uintptr_t)((unaff_gp + 0x44) ))!= 1) && (seq != (short *)0x0)) && (-1 < seq[0x22])) &&
      (seq[0x22] < 2)) {
     if (seq[5] < 0) {
-      sVar1 = seq[0x1d] + 1;
+      t = seq[0x1d] + 1;
 LAB_801aa558:
-      seq[0x1d] = sVar1;
+      seq[0x1d] = t;
 LAB_801aa55c:
       do {
-        pbVar2 = (byte *)guest_at((uint32_t)(uintptr_t)((seq[0x1d] * 2 + *(int *)guest_at((uint32_t)(uintptr_t)((seq[0x1c] * 4 + *(int *)(seq + 0x1a))))
+        ip = (byte *)guest_at((uint32_t)(uintptr_t)((seq[0x1d] * 2 + *(int *)guest_at((uint32_t)(uintptr_t)((seq[0x1c] * 4 + *(int *)(seq + 0x1a))))
                          )));
-        arg = *pbVar2;
-        op = (int)*(short *)pbVar2 & 0xff00;
+        arg = *ip;
+        op = (int)*(short *)ip & 0xff00;
         if (op == 0x2000) {
           seq[0x22] = seq[0x22] | 0x100;
           return;
@@ -14356,13 +14356,13 @@ LAB_801aa65c:
             int32_t _q = (_den == 0) ? -1 : 0x1000 / _den;
             if (seq[0x1f] < 1) {
               seq[0x20] = 0x1000;
-              sVar1 = -(short)_q;
+              t = -(short)_q;
             }
             else {
-              sVar1 = (short)_q;
+              t = (short)_q;
               seq[0x20] = 0;
             }
-            seq[0x21] = sVar1;
+            seq[0x21] = t;
             seq[0x20] = seq[0x20] + seq[0x21];
           }
           break;
@@ -14384,12 +14384,12 @@ LAB_801aa65c:
       }
     }
     else {
-      sVar1 = seq[0x20];
-      if (sVar1 < 0) {
+      t = seq[0x20];
+      if (t < 0) {
         seq[0x20] = 0;
-        sVar1 = seq[0x20];
+        t = seq[0x20];
       }
-      if (0x1000 < sVar1) {
+      if (0x1000 < t) {
         seq[0x20] = 0x1000;
       }
       if (*seq == 0) {
@@ -14398,14 +14398,14 @@ LAB_801aa65c:
                      (int)seq[0x20]);
       }
       else if (*seq == 2) {
-        iVar3 = seq[7] * 0x14 + *(int *)(seq + 0xc);
+        off = seq[7] * 0x14 + *(int *)(seq + 0xc);
         if (*(int *)guest_at((uint32_t)(uintptr_t)((unaff_gp + 0x24) ))== 0) {
-          iVar6 = *(int *)(seq + 0x10);
+          va = *(int *)(seq + 0x10);
         }
         else {
-          iVar6 = *(int *)(seq + 0x10) + seq[4] * 4;
+          va = *(int *)(seq + 0x10) + seq[4] * 4;
         }
-        verts_rgb_apply((uint *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar3 + 8)))),(uint *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar3 + 0xc)))),iVar6,
+        verts_rgb_apply((uint *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((off + 8)))),(uint *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((off + 0xc)))),va,
                      (short *)guest_at(*(uint32_t *)(seq + 10)),(int)seq[8],(int)seq[0x20]);
       }
       seq[0x20] = seq[0x20] + seq[0x21];
@@ -14414,7 +14414,7 @@ LAB_801aa65c:
   }
   return;
 LAB_801aa600:
-  sVar1 = (short)(char)arg;
+  t = (short)(char)arg;
   goto LAB_801aa558;
 
 }
