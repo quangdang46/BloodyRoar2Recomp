@@ -208,11 +208,91 @@ def find_body(addr):
             covers = (f'case 0x{addr:08X}u' in body or
                       f'case 0x{addr:x}u' in body or
                       f'block_{addr:08X}:' in body or
-                      f'block_{addr:08x}:' in body)
+                      f'block_{addr:08x}:' in body or
+                      # embedded entry: addr is an instruction inside a block
+                      # (jal target mid-block — e.g. 0x8019D508 inside
+                      # br2eu_func_8019D500's first block). The /* 0xADDR: ENC */
+                      # op comment is the per-instruction anchor.
+                      f'/* 0x{addr:08X}:' in body)
             if covers and 'block_' in body:
                 if best is None or len(body) > len(best[1]):
                     best = (name, body, path)
     return best
+
+
+def _truncate_embedded_entry(body, entry):
+    """Emit a body variant whose FIRST block starts executing at guest
+    instruction `entry` (a mid-block jal target). Only the first block can
+    host an embedded entry: it is reachable solely via function dispatch,
+    so dropping its leading instructions is safe — no internal goto targets
+    the block head. Later blocks are branch targets and must stay whole.
+
+    Returns the rewritten body, or None if `entry` is not an instruction
+    anchor inside the first block (caller must not emit a body then — a
+    plain parent transliteration would execute instructions the guest
+    entry point skips)."""
+    m = re.search(r'(?m)^block_[0-9A-Fa-f]+:', body)
+    if not m:
+        return None
+    lines = body.split('\n')
+    # first-block line range: [bi, b_end)
+    bi = next(i for i, l in enumerate(lines) if re.match(r'^block_[0-9A-Fa-f]+:', l))
+    b_end = next((i for i in range(bi + 1, len(lines))
+                  if re.match(r'^block_[0-9A-Fa-f]+:', lines[i])), len(lines))
+    block_label = re.match(r'block_([0-9A-Fa-f]+):', lines[bi]).group(1)
+    block_addr = int(block_label, 16)
+    # find the op line anchored at entry inside the first block
+    pat = f'/* 0x{entry:08X}:'
+    op_i = None
+    for i in range(bi, b_end):
+        if pat in lines[i]:
+            op_i = i
+            break
+    if op_i is None or op_i == bi:
+        return None
+    # entry instr's prelude starts after the previous instr's cosim_instr
+    # #endif. Walk back from the op line to the previous cosim_instr.
+    cut = None
+    for i in range(op_i - 1, bi - 1, -1):
+        if 'cosim_instr(' in lines[i]:
+            for j in range(i + 1, min(i + 6, len(lines))):
+                if lines[j].strip() == '#endif':
+                    cut = j + 1
+                    break
+            break
+    if cut is None:
+        return None
+    # prologue = block head through the first timing fetch/step line
+    # (kept so the icache fetch + slice guard still bracket the block).
+    p_end = None
+    for i in range(bi, cut):
+        if 'psx_icache_fetch(' in lines[i] or 'psx_cyc_step(' in lines[i]:
+            p_end = i + 1
+            break
+    if p_end is None:
+        return None
+    # rewrite the slice guard inside the prologue only: entry addr +
+    # reduced instr budget (bcyc counts 4-byte instr slots block-start..end).
+    skipped = (entry - block_addr) // 4
+    prologue = []
+    for l in lines[bi:p_end]:
+        if 'psx_slice_block(' in l:
+            l = re.sub(
+                r'psx_slice_block\(cpu, 0x[0-9A-Fa-f]+u, (\d+)u,',
+                lambda mm: (f'psx_slice_block(cpu, 0x{entry:08X}u, '
+                            f'{max(1, int(mm.group(1)) - skipped)}u,'),
+                l, count=1)
+        prologue.append(l)
+    kept = lines[:bi] + prologue + lines[cut:]
+    body2 = '\n'.join(kept)
+    # rename the truncated block label so it reads as the embedded entry
+    body2 = body2.replace(f'block_{block_label}:', f'block_{entry:08X}:', 1)
+    # explicit _cont case for the embedded entry (default fallthrough would
+    # also reach it, but the case documents the dispatch contract).
+    body2 = re.sub(r'(switch \(_cont\) \{\n)',
+                   rf'\1            case 0x{entry:08X}u: goto block_{entry:08X};\n',
+                   body2, count=1)
+    return body2
 
 
 def transform(body):
@@ -413,6 +493,20 @@ def emit_fn(addr):
         print(f'/* {addr:#x}: no generated body found */', file=sys.stderr)
         return None
     name, body, path = found
+    # Embedded entry: addr is not a block label or _cont case but anchors an
+    # instruction inside the parent's FIRST block (mid-block jal target).
+    # Truncate the first block so execution starts at that instruction —
+    # emitting the untruncated parent would run instructions the guest entry
+    # point skips (e.g. 0x8019D508 skips func_8019D500's lui/lw prelude).
+    has_entry = (f'case 0x{addr:08X}u' in body or f'case 0x{addr:x}u' in body or
+                 f'block_{addr:08X}:' in body or f'block_{addr:08x}:' in body)
+    if not has_entry:
+        tb = _truncate_embedded_entry(body, addr)
+        if tb is None:
+            print(f'/* {addr:#x}: embedded entry not in first block of '
+                  f'{name} — no body emitted */', file=sys.stderr)
+            return None
+        body = tb
     sym = f'cpst_{addr:08x}' if TIMING else f'cps_{addr:08x}'
     core = _GPR_RE.sub(_gpr_names, transform(body))
     if 'alias_body' in name:
