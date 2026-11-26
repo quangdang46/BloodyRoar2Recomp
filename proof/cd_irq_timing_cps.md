@@ -95,3 +95,33 @@ are reached via cpu->pc re-entry (IRQ resume / coroutine yield), which
 attract-mode boot does not always exercise; the mechanism is identical to
 the proven batch-1/2 bodies and faithful-by-construction (same generated
 source, only instrumentation policy differs).
+
+## Batch 4 (orch/w5/e05) — §4 whole-body delegates -> timed cpst_
+
+Upgraded the five tractable game/cd.c whole-body §4 delegates to timed
+cpst_ bodies (entry + every CPS block addr registered in clean_cps.map).
+The clean-C delegate wrappers are unchanged — call_guest4(<entry>) now
+resolves through clean_try_dispatch into the per-instruction-timed CPS
+body instead of the generated twin. self-delegate count in
+clean_table.c dropped 43 -> 38.
+
+| guest entry | fnmap name | blocks | role |
+|---|---|---|---|
+| 0x8019E39C | cd_mode_reset_seq | 5 | CD mode reset sequence |
+| 0x801A0BE0 | cd_hw_chan_init | 5 | HW channel init (8x FUN_8019b380 allocs) |
+| 0x801A1A40 | cd_channel_main_init | 8 | crit-out fn-ptr channel init |
+| 0x801968CC | cd_result_wait_a | 33 | CD result wait (jalr x2 via _jt_ latch) |
+| 0x80196B4C | cd_result_wait_b | 37 | CD result wait sibling |
+
+Remaining delegates left for later batches: 0x80199440 (65 blocks),
+0x80196370 entry (cd_response_process, 70 blocks — continuations already
+timed since batch 3), 0x8019B310 (cd_dma_chan_init — no standalone
+generated body found), plus the ~132 large uncovered data-pointer CD
+bodies.
+
+Verification: clean build both targets; headless :4837 frames advanced
+through 43K+ with heavy attract CD streaming, no wedge. clean_stats
+shows positive execution: 0x801968CC = 10 hits, 0x8019E39C = 1 hit;
+0x801A0BE0/0x801A1A40/0x80196B4C = 0 (fire on init/versus paths not
+reached in attract — faithful-by-construction, same transform as proven
+bodies).
