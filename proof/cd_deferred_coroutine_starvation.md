@@ -1,5 +1,17 @@
 # UNIFIED ROOT CAUSE — CD deferred-coroutine / BIOS-event starvation
 
+> **✅ RESOLVED (post-`2b57002`, session 21).** The "single runtime bug"
+> diagnosed below was actually the **`cps_*` transliteration timing loss**
+> in the `0x8018`–`0x801B` CD/IRQ region: cps_ bodies strip the per-
+> instruction `psx_cyc_*`/`psx_cyc_readmem` calls, so the deferred CD
+> coroutine's resume deadlines never fired. Fix = yield-fallthrough (per-
+> piece cost) + removing the CD/IRQ region from `clean_cps.map` so it runs
+> **generated** (real `psx_check_interrupts_at` + per-instruction cycle
+> advance). Verified: intro FMV decodes fully to title, versus/arcade/
+> attract/mode-(1,4) all run real combat + streaming. See
+> `proof/cps_fallthrough_cycle_wedge.md` + AGENTS.md session 20/21. The
+> analysis below is retained for mechanism history.
+
 Single runtime bug underlying ALL remaining fidelity/gameplay gaps.
 
 ## Symptoms (one mechanism, three surfaces)
