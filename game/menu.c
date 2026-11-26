@@ -3639,49 +3639,49 @@ LAB_f208:
  * battle+0xb4 phase bits. Disasm-verified. */
 extern int32_t select_phase_gate(uint32_t,uint32_t);
 extern void selection_stat_bump(uint8_t *,int32_t);
-void select_confirm_handler(uint32_t param_1,uint32_t param_2,uint8_t *param_3,
-                  uint32_t param_4,int32_t param_5)
+void select_confirm_handler(uint32_t battle_g,uint32_t player,uint8_t *recs,
+                  uint32_t btns,int32_t direct)
 {
-  uint8_t *b = (uint8_t *)guest_at(param_1);
-  uint8_t *s1 = (uint8_t *)guest_at(0x1f8000e8 + param_2 * 0x108);
+  uint8_t *b = (uint8_t *)guest_at(battle_g);
+  uint8_t *s1 = (uint8_t *)guest_at(0x1f8000e8 + player * 0x108);
   uint8_t mode = b[0x9b];
-  uint8_t *rec = param_3 + param_2 * 0x30;
+  uint8_t *rec = recs + player * 0x30;
   uint8_t *tbl = (uint8_t *)guest_at(0x801b239c);
   if (mode != 0 && 0 <= (int8_t)mode && mode < 5) {
-    if (param_5 != 0) {
-      uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(b + 0xc0)) + param_2;
+    if (direct != 0) {
+      uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(b + 0xc0)) + player;
       cr[0x1b] = rec[0x1c];
     } else {
-      uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(b + 0xc0)) + param_2;
+      uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(b + 0xc0)) + player;
       cr[0x1b] = tbl[*(uint32_t *)(rec + 0x1c)];
     }
-    if (param_5 != 0) s1[3] = rec[0x1c];
+    if (direct != 0) s1[3] = rec[0x1c];
     else s1[3] = tbl[*(uint32_t *)(rec + 0x1c)];
   }
-  if (select_phase_gate(param_1,param_2) == 0) {
+  if (select_phase_gate(battle_g,player) == 0) {
     uint16_t *ph = (uint16_t *)(b + 0xb4);
-    if ((ph[param_2] & 0xf00) == 0x200) {
+    if ((ph[player] & 0xf00) == 0x200) {
       selection_stat_bump(s1,0);
-      if (param_4 & 0x800) s1[4] = 3;
-      if (param_4 & 0x20)  s1[4] = 2;
-      if (param_4 & 0x40)  s1[4] = 1;
-      if (param_4 & 0x80)  s1[4] = 0;
-      uint32_t foe = param_2 ^ 1;
+      if (btns & 0x800) s1[4] = 3;
+      if (btns & 0x20)  s1[4] = 2;
+      if (btns & 0x40)  s1[4] = 1;
+      if (btns & 0x80)  s1[4] = 0;
+      uint32_t foe = player ^ 1;
       if (ph[foe] & 0x1000) ph[foe] &= 0xefff; else ph[foe] |= 0x1000;
-      ph[param_2] = (ph[param_2] & 0xf000) | 0x300;
-      uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(b + 0xc0)) + param_2;
+      ph[player] = (ph[player] & 0xf000) | 0x300;
+      uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(b + 0xc0)) + player;
       cr[0x1b] = s1[3];
     }
   } else {
     if (mode == 0) {
-      uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(b + 0xc0)) + param_2;
+      uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(b + 0xc0)) + player;
       cr[0x19] = cr[0x19] & 3;
-      s1[4] = (uint8_t)(param_2 ^ 1);
+      s1[4] = (uint8_t)(player ^ 1);
     } else if (0 <= (int8_t)mode && mode < 5) {
-      if (param_4 & 0x800) s1[4] = 3;
-      if (param_4 & 0x20)  s1[4] = 2;
-      if (param_4 & 0x40)  s1[4] = 1;
-      if (param_4 & 0x80)  s1[4] = 0;
+      if (btns & 0x800) s1[4] = 3;
+      if (btns & 0x20)  s1[4] = 2;
+      if (btns & 0x40)  s1[4] = 1;
+      if (btns & 0x80)  s1[4] = 0;
     }
   }
 }
@@ -3724,16 +3724,16 @@ void selection_stat_bump(uint8_t *state,int32_t unused)
  * (+0x38), flag word (+0x28), char id (+0x44), then mode-specific
  * (+0x3c/40/4c/48) fill. Disasm-verified. */
 extern int32_t gate_read_ec(uint32_t,uint32_t);
-void post_confirm_config_build(uint32_t param_1,uint8_t *param_2,int32_t param_3)
+void post_confirm_config_build(uint32_t battle_g,uint8_t *recs,int32_t direct)
 {
-  uint8_t *s3 = (uint8_t *)guest_at(param_1);
-  uint8_t *s4 = param_2;
+  uint8_t *s3 = (uint8_t *)guest_at(battle_g);
+  uint8_t *s4 = recs;
   uint8_t *a3 = (uint8_t *)guest_at(0x801b23ac);
   uint8_t *u16src = (uint8_t *)guest_at(0x801b2378);
-  int32_t s1, s5 = param_3;
+  int32_t s1, s5 = direct;
   int32_t i;
 
-  confirm_bookkeeping(param_1);
+  confirm_bookkeeping(battle_g);
   for (i = 0; i < 0xa; i++)
     *(uint16_t *)(s4 + 0x88 + i * 2) = *(uint16_t *)(u16src + i * 2);
 
@@ -3752,12 +3752,12 @@ void post_confirm_config_build(uint32_t param_1,uint8_t *param_2,int32_t param_3
     uint16_t *ph = (uint16_t *)(s3 + 0xb4 + s1 * 2);
     uint32_t cls = *ph & 0xf00;
     uint32_t t, a0, v1;
-    *(uint32_t *)(s0 + 0x38) = (uint32_t)select_phase_gate(param_1,s1);
+    *(uint32_t *)(s0 + 0x38) = (uint32_t)select_phase_gate(battle_g,s1);
     t = *(uint32_t *)(s0 + 0x28);
     if (cls==0x100||cls==0x200||cls==0x700) t |= 1; else t &= ~1u;
     *(uint32_t *)(s0 + 0x28) = t;
     {
-      int32_t r = gate_read_ec(param_1,s1);
+      int32_t r = gate_read_ec(battle_g,s1);
       a0 = (t & ~3u) | ((uint32_t)(r & 1) << 1);
       *(uint32_t *)(s0 + 0x28) = a0;
       *(uint32_t *)(s0 + 0x54) = 0;
@@ -3852,18 +3852,18 @@ void post_confirm_config_build(uint32_t param_1,uint8_t *param_2,int32_t param_3
 extern void task_node_free(uint32_t);
 extern uint32_t task_alloc_wrap_c(uint32_t,uint32_t,uint32_t,uint32_t);
 extern void deferred_cmd_post(int32_t,int32_t,int32_t);
-void fighter_spawn_setup(uint32_t param_1,uint8_t *param_2,uint8_t *param_3,
-                  uint8_t *param_4,int32_t param_5)
+void fighter_spawn_setup(uint32_t battle_g,uint8_t *ab_a,uint8_t *ab_b,
+                  uint8_t *cfg,int32_t flag)
 {
-  uint8_t *s3 = (uint8_t *)guest_at(param_1);
+  uint8_t *s3 = (uint8_t *)guest_at(battle_g);
   uint16_t *bp = (uint16_t *)s3;
-  uint8_t *s2 = param_4;
-  uint8_t *s6 = param_4 + 0x28;
-  int32_t fp = param_5;
+  uint8_t *s2 = cfg;
+  uint8_t *s6 = cfg + 0x28;
+  int32_t fp = flag;
   int32_t s1, i;
 
-  battle_config_eval(param_2,param_1,fp);
-  battle_config_eval(param_3,param_1,fp);
+  battle_config_eval(ab_a,battle_g,fp);
+  battle_config_eval(ab_b,battle_g,fp);
 
   if ((bp[0xb4/2] & 0xf00) == 0x500) { bp[0xb2/2] = 0; bp[0xb4/2] = 0x600; }
   if ((bp[0xb6/2] & 0xf00) == 0x500) { bp[0xb2/2] = 0; bp[0xb6/2] = 0x600; }
@@ -3876,7 +3876,7 @@ void fighter_spawn_setup(uint32_t param_1,uint8_t *param_2,uint8_t *param_3,
           ((bp[0xb4/2 + s1] & 0xf00) == 0x700)) {
         uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(s3 + 0xc0));
         uint32_t ch;
-        confirm_bookkeeping(param_1);
+        confirm_bookkeeping(battle_g);
         if (fp != 0) {
           ch = cr[s1 + 0x1b];
           *(uint32_t *)s0 = (uint32_t)s7;
@@ -3993,7 +3993,7 @@ void fighter_spawn_setup(uint32_t param_1,uint8_t *param_2,uint8_t *param_3,
       for (s1 = 0; s1 < 2; s1++) {
         uint8_t *s0p = s3 + s1 * 2;
         uint8_t *s2p = s6 + s1 * 0x30;
-        if (select_phase_gate(param_1,s1) != 0) continue;
+        if (select_phase_gate(battle_g,s1) != 0) continue;
         {
           uint8_t *dst;
           uint16_t *h = (uint16_t *)s0p;
