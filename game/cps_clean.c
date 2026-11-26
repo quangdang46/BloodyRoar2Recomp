@@ -95360,7 +95360,11 @@ block_801A00A8:
 }
 
 /* cps_801a041c — clean CPS transliteration of br2eu_func_801A041C (guest 0x801a041c)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * cd_window_fill_dispatch: claims *s2 (busy flag), computes window size
+ * from ticks*(0xCCCCCCCD>>6)*80, scans 80-byte slots calling
+ * 0x801984A0 until a free one (writes slot+52=ctx), then tail-jalr the
+ * fn ptr @0x801FEF30 with (s2,s4,s5). */
 void cps_801a041c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -96033,7 +96037,9 @@ block_801A0C58:
 }
 
 /* cps_801a0c68 — clean CPS transliteration of br2eu_func_801A0C68 (guest 0x801a0c68)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * cd_chan_commit_seq: cpu_critical_exit → bios_tramp_b008/b00c →
+ * cd_pending_args_pump — channel command commit/teardown sequence. */
 void cps_801a0c68(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -96400,7 +96406,10 @@ block_801A11D0:
 }
 
 /* cps_801a1290 — clean CPS transliteration of br2eu_func_801A1290 (guest 0x801a1290)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * chan_slot_ready: if cell @0x801BE828==0 ret 0; else idx=a0>>4, entry
+ * = *(0x801BE844) + idx*240, returns (byte@entry+232 ^ 8)==0 — bit3
+ * clear means slot ready. */
 void cps_801a1290(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -96805,7 +96814,11 @@ block_801A1688:
 }
 
 /* cps_801a16f0 — clean CPS transliteration of br2eu_func_801A16F0 (guest 0x801a16f0)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * chan_cfg_commit: builds desired mask s1 = cell@0x801BE834*2 | (counter
+ * @0x801BE838<1); returns mask if ==a0. Else per bit0/bit1 of a0: clears
+ * cells @0x801BE830/-6192/-6188, arms @0x801BE838/-6216, polls counter
+ * @0x801FEF30 <150 → jalr @0x801BE838(a0=@0x801BE844[, +240]). */
 void cps_801a16f0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -97585,7 +97598,9 @@ block_801A1D90:
 }
 
 /* cps_801a1d98 — clean CPS transliteration of br2eu_func_801A1D98 (guest 0x801a1d98)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * stream_cmd_tail: jal 0x801A248C, reads byte@(*(0x801BE858))+430,
+ * jal 0x801A4210(a0=byte), tail-j 0x801A1DD8 (stream_wait_poll). */
 void cps_801a1d98(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -97691,7 +97706,10 @@ block_801A1DD4:
 }
 
 /* cps_801a1dd8 — clean CPS transliteration of br2eu_func_801A1DD8 (guest 0x801a1dd8)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * stream_wait_poll: polls status cell @0x801BE878 bit 0x80 (busy), arms byte
+ * @0x801BE858=1, then 0x801A4210(60)/0x801A23FC poll; on ok calls
+ * 0x801A248C and returns byte@0x801BE858 into v0 (0/-3 paths split). */
 void cps_801a1dd8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -98096,7 +98114,9 @@ block_801A24CC:
 }
 
 /* cps_801a2560 — clean CPS transliteration of br2eu_func_801A2560 (guest 0x801a2560)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * cd_extent_table_walk: byte-table scan (s16+byte reads) resolving extents
+ * via cd_extent_len + cd_cmd_rec_arm_extent; 1 jalr callback. */
 void cps_801a2560(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -98673,7 +98693,9 @@ block_801A28C8:
 }
 
 /* cps_801a28dc — clean CPS transliteration of br2eu_func_801A28DC (guest 0x801a28dc)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * cd_cmd_state_step: dispatches on rec byte @+70 (<4 / ==3 arms);
+ * mid-state commit piece for the armed record (see cd_cmd_rec_arm_extent). */
 void cps_801a28dc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -98840,7 +98862,10 @@ block_801A2974:
 }
 
 /* cps_801a2984 — clean CPS transliteration of br2eu_func_801A2984 (guest 0x801a2984)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * rec_state_machine_main: 49-block dispatcher on byte@rec+70 (<4 / ==3 /
+ * ==2 arms) driving the cmd-record lifecycle — the big sibling of
+ * rec_mode_arm (2f60) and cd_cmd_state_step (28dc). */
 void cps_801a2984(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -99516,7 +99541,10 @@ block_801A2D74:
 }
 
 /* cps_801a2ec8 — clean CPS transliteration of br2eu_func_801A2EC8 (guest 0x801a2ec8)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * cmd_rec_arm_b: jalr cell @0x801BE864; on 0 → rec byte+70=1,
+ * ptr+20=0x801A2F60, ptr+24=0x801A2FAC, bytes +81/+82=s1/s2,
+ * +83=(s3&0xFF)^byte@+228. */
 void cps_801a2ec8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -99597,7 +99625,9 @@ block_801A2F44:
 }
 
 /* cps_801a2f60 — clean CPS transliteration of br2eu_func_801A2F60 (guest 0x801a2f60)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * rec_mode_arm: dispatches on byte@rec+70 — 2: byte+55=68, ptr+44=rec+81,
+ * byte+54=2; 3: byte+55=77, ptr+44=rec+93, byte+54=6; else no arm; jr ra. */
 void cps_801a2f60(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -99675,7 +99705,10 @@ block_801A2FAC:
 }
 
 /* cps_801a347c — clean CPS transliteration of br2eu_func_801A347C (guest 0x801a347c)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * stream_slot_select: idx=*s2; <0 → 0x801A35DC; ==s5 → 0x801A3510; >0
+ * computes node = *(*(0x801BE844)+12 @s3) + idx*240 - 240 then jalr
+ * cell @0x801BE840(node); loops via 0x801A34DC piece on idx<4. */
 void cps_801a347c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -99758,7 +99791,9 @@ block_801A34D8:
 }
 
 /* cps_801a34dc — clean CPS transliteration of br2eu_func_801A34DC (guest 0x801a34dc)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * mode_dispatch_piece: tail of cd/cmd state fn — v0!=0 && v1>=0 && v1!=4
+ * → jal 0x801A3570(s1); v1==4 → store s5→*s2 then same tail. */
 void cps_801a34dc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -99938,7 +99973,10 @@ block_801A3568:
 }
 
 /* cps_801a3570 — clean CPS transliteration of br2eu_func_801A3570 (guest 0x801a3570)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * status_query_chain: jalr cell @0x801BE858(a1=s4) → jal 0x801A1F74(s1,
+ * ret&0xFF); on negative → split 0x801A36C0; else 0x801A4210(60)+
+ * 0x801A23FC poll, v0!=0 → 0x801A35B8 else 0x801A35B0. */
 void cps_801a3570(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -100063,7 +100101,11 @@ block_801A35B8:
 }
 
 /* cps_801a35dc — clean CPS transliteration of br2eu_func_801A35DC (guest 0x801a35dc)
- * from SLES_017.22_full_50.c. */
+ * from SLES_017.22_full_50.c.
+ * stream_byte_consume: waits until s16@(*(0x801BE864)+14)==s0 via
+ * 0x801A4210(60)/0x801A23FC poll (-3 on fail); decrements counter
+ * @0x801BE86C, appends byte from cell @0x801BE864+68 idx into
+ * *(*(s1+60)+idx), jalr @0x801BE840(0). */
 void cps_801a35dc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -100420,7 +100462,9 @@ block_801A382C:
 }
 
 /* cps_801a3cf4 — clean CPS transliteration of br2eu_func_801A3CF4 (guest 0x801a3cf4)
- * from SLES_017.22_full_50.c. */
+ * from SLES_017.22_full_50.c.
+ * range_lookup_2rec: scans two 240B records @0x801FEF30 stepping +240;
+ * returns offset 16/32 when a0==rec start, else 255. */
 void cps_801a3cf4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -100529,7 +100573,9 @@ block_801A3D44:
 }
 
 /* cps_801a41d8 — clean CPS transliteration of br2eu_func_801A41D8 (guest 0x801a41d8)
- * from SLES_017.22_full_50.c. */
+ * from SLES_017.22_full_50.c.
+ * rec_state_ready: ret 1 when u16@a0+230==0 or byte@+70!=255;
+ * ret 0 only when pending half set AND state byte==255. */
 void cps_801a41d8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -100587,7 +100633,9 @@ block_801A41FC:
 }
 
 /* cps_801a4518 — clean CPS transliteration of br2eu_func_801A4518 (guest 0x801a4518)
- * from SLES_017.22_full_50.c. */
+ * from SLES_017.22_full_50.c.
+ * node_field_init_copy: copies flag bytes 20-23 from src node, links
+ * self+16 -> self+28 sub-struct, sets byte@+23=1, byte@+24=0; returns node. */
 void cps_801a4518(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -100689,7 +100737,11 @@ block_801A45B0:
 }
 
 /* cps_801a45c8 — clean CPS transliteration of br2eu_func_801A45C8 (guest 0x801a45c8)
- * from SLES_017.22_full_50.c. */
+ * from SLES_017.22_full_50.c.
+ * list_reparent: unlink node a1 from its chain (fix prev/next or slot
+ * head in 72B class rec @0x801FE3F8 via byte@+20), insert after a2
+ * (or as head when a2.next==0 → slot table via byte@a2+22), copy
+ * bytes +20/+22. Guards a1/a2 nonnull and a2.next!=a1. */
 void cps_801a45c8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -100866,7 +100918,10 @@ block_801A46C0:
 }
 
 /* cps_801a4788 — clean CPS transliteration of br2eu_func_801A4788 (guest 0x801a4788)
- * from SLES_017.22_full_50.c. */
+ * from SLES_017.22_full_50.c.
+ * anim_slot_table_init: for slot a0 (72B rec @0x801FE3F8), walks all 16
+ * word slots calling 0x801A482C on each non-empty chain head; stores
+ * slot idx @rec+68, head @rec+64; a0 saved to gp+28. */
 void cps_801a4788(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -101307,7 +101362,9 @@ block_801A4C88:
 }
 
 /* cps_801a4c9c — clean CPS transliteration of br2eu_func_801A4C9C (guest 0x801a4c9c)
- * from SLES_017.22_full_50.c. */
+ * from SLES_017.22_full_50.c.
+ * node_pair_dump: three 0x80190A04 printf calls — fmt @0x80125C18
+ * (a1=s0), @0x80125C28 (*s0), @0x80125C38 (*(s0+4)). */
 void cps_801a4c9c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -101361,7 +101418,10 @@ block_801A4CC8:
 }
 
 /* cps_801a4d58 — clean CPS transliteration of br2eu_func_801A4D58 (guest 0x801a4d58)
- * from SLES_017.22_full_50.c. */
+ * from SLES_017.22_full_50.c.
+ * list_node_insert: cell = a0*60+a1*12+@0x801FF2B8; alloc via 0x801A54C8,
+ * links node between head/tail (fixups @node/+4,+8), zeroes s16@+12,
+ * jal 0x801A4EBC(a0=s2,a1=s3,a2=s1*16); returns 1/0. */
 void cps_801a4d58(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -101517,7 +101577,10 @@ block_801A4FC8:
 }
 
 /* cps_801a5240 — clean CPS transliteration of br2eu_func_801A5240 (guest 0x801a5240)
- * from SLES_017.22_full_50.c. */
+ * from SLES_017.22_full_50.c.
+ * list_sum_scan: node = *(a0*60 + a1*12 + @0x801FF2B8); walks next@+4
+ * chain adding 16+*(node+8) for entries with s16@+12==0; jal
+ * 0x80190A04(fmt @0x80125FFC, sum); returns sum. */
 void cps_801a5240(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -101902,7 +101965,9 @@ block_801A5A04:
 }
 
 /* cps_801a6b70 — clean CPS transliteration of br2eu_func_801A6B70 (guest 0x801a6b70)
- * from SLES_017.22_full_51.c. */
+ * from SLES_017.22_full_51.c.
+ * gp36_flag_toggle: flips gp+36 (0->1 else ->0), then caches
+ * word @0x801BEEF8[gp36] into gp+72 and returns. */
 void cps_801a6b70(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -101961,7 +102026,9 @@ block_801A6B90:
 }
 
 /* cps_801a6d48 — clean CPS transliteration of br2eu_func_801A6D48 (guest 0x801a6d48)
- * from SLES_017.22_full_51.c. */
+ * from SLES_017.22_full_51.c.
+ * tween_track_release: task_node_free + tween_track_alloc pair — frees
+ * and reallocates a tween track node. */
 void cps_801a6d48(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -102359,7 +102426,9 @@ block_801A8634:
 }
 
 /* cps_801a8ee0 — clean CPS transliteration of br2eu_func_801A8EE0 (guest 0x801a8ee0)
- * from SLES_017.22_full_51.c. */
+ * from SLES_017.22_full_51.c.
+ * gte_transform_kernel_a: GTE cmd sequence (RTPS/mvmva family via
+ * gte_execute + ctc2/mfc2) transforming vertex data @0x80120000 table. */
 void cps_801a8ee0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -102801,7 +102870,9 @@ block_801A91CC:
 }
 
 /* cps_801a91e0 — clean CPS transliteration of br2eu_func_801A91E0 (guest 0x801a91e0)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * gte_transform_kernel_b: second GTE transform kernel — same cmd/ctc2
+ * pattern, 8 gte_execute ops, heavier register traffic than 8ee0. */
 void cps_801a91e0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -103282,7 +103353,9 @@ block_801A9528:
 }
 
 /* cps_801a972c — clean CPS transliteration of br2eu_func_801A972C (guest 0x801a972c)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * keyframe_cursor_search (renames.map): searches keyframe table then
+ * calls tween_apply — per-frame anim param evaluation. */
 void cps_801a972c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -103669,7 +103742,10 @@ block_801A9BA4:
 }
 
 /* cps_801a9c28 — clean CPS transliteration of br2eu_func_801A9C28 (guest 0x801a9c28)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * tween_dispatch: ctx t2 null → 0x801AA0D4; mode s16@+2==1 →
+ * 0x801A9F64 apply; ==2 → if s16@+14==a1 && s16@+10==t7 tail else
+ * fallthrough piece 0x801A9C7C. */
 void cps_801a9c28(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -103824,7 +103900,10 @@ block_801A9CAC:
 }
 
 /* cps_801a9cb8 — clean CPS transliteration of br2eu_func_801A9CB8 (guest 0x801a9cb8)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * tween_range_check: a1<v1 → load entry *(t2+24)[a1*5]+4, negate
+ * s16@+10 into sp+24, t6=-1,t4=0; else t6=0,t4=2 and bound t7-s16@+10
+ * → sp+32; continues at 0x801A9D10. */
 void cps_801a9cb8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104542,7 +104621,11 @@ block_801A9F48:
 }
 
 /* cps_801a9f64 — clean CPS transliteration of br2eu_func_801A9F64 (guest 0x801a9f64)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * tween_param_apply: validates s16 fields on ctx t2 (skip if already set),
+ * writes s16@+14=a1, @+10=t7, w@+44/+48, indexes *(t2+24) table by a1*5;
+ * type byte @t2 selects: 0 → build args + jal 0x801ACFE4, 2 → jal
+ * 0x801AD070, else tail 0x801AA0D4. */
 void cps_801a9f64(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -105021,7 +105104,9 @@ block_801AA608:
 }
 
 /* cps_801aa618 — clean CPS transliteration of br2eu_func_801AA618 (guest 0x801aa618)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * fixedpoint_vec_math: muldiv/div-heavy routine with /0,-1,INT_MIN break
+ * traps — vector normalize/scale helper for the anim pipeline. */
 void cps_801aa618(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -105339,7 +105424,9 @@ block_801AA7D0:
 }
 
 /* cps_801aa7e8 — clean CPS transliteration of br2eu_func_801AA7E8 (guest 0x801aa7e8)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * verts_pass_dispatch: fans out to verts_offset_apply / verts_rgb_apply /
+ * verts_add_apply / verts_sub_apply — per-vertex attribute pass. */
 void cps_801aa7e8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -106096,7 +106183,11 @@ block_801AB5A4:
 }
 
 /* cps_801ab84c — clean CPS transliteration of br2eu_func_801AB84C (guest 0x801ab84c)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * gte_light_setup: guarded by *(a0+36)!=0 && s16@+40!=0; programs GTE
+ * light dir/colour matrix (RTPS cmd 0x12 via gte_data 9-11), ctc2
+ * regs 0-7 from matrix @v1, translation from a0+20 (cmd 0x12 →
+ * gte_data 25-27 → 0x1F8003F4), for two matrix slots (a0/a1). */
 void cps_801ab84c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107085,7 +107176,10 @@ block_801ABEC8:
 }
 
 /* cps_801ac8f0 — clean CPS transliteration of br2eu_func_801AC8F0 (guest 0x801ac8f0)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * node_array_foreach: ctx s1 nonnull → for i<*(s1+64) call
+ * 0x801A46C8(*(s1+16)[i], s2) on nonzero entries; then same on single
+ * ptrs *(s1+24), *(s1+72), *(s1+20) when nonzero. */
 void cps_801ac8f0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109149,7 +109243,10 @@ block_801AE198:
 }
 
 /* cps_801ae1a4 — clean CPS transliteration of br2eu_func_801AE1A4 (guest 0x801ae1a4)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * s16_fixed_div: scaled s16 table divmod — a3=(s16[a0+2]<<1)+a1,
+ * v1=(s16[a0+6]<<1)+a2, s16 divmod, traps on /0, -1, INT_MIN, stores
+ * lo back to s16@a3. */
 void cps_801ae1a4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109235,7 +109332,9 @@ block_801AE1F0:
 }
 
 /* cps_801ae1fc — clean CPS transliteration of br2eu_func_801AE1FC (guest 0x801ae1fc)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * u32_fixed_div: same as ae1a4 but word-width tables (<<2 offsets,
+ * w reads/writes) — s32 divmod with identical /0,-1,INT_MIN break traps. */
 void cps_801ae1fc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -110252,7 +110351,9 @@ block_801AE7B0:
 }
 
 /* cps_801ae7f8 — clean CPS transliteration of br2eu_func_801AE7F8 (guest 0x801ae7f8)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * table_row_copy: for i<s16[a3+6] copy words *(gp+76)+24 table row
+ * (s16[a3+4]+i*4) into dst t1+(s16[a3+2]+i)*4. */
 void cps_801ae7f8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -110423,7 +110524,10 @@ block_801AE9E4:
 }
 
 /* cps_801aeb24 — clean CPS transliteration of br2eu_func_801AEB24 (guest 0x801aeb24)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * cmd_result_copy4: jal 0x801AD284(*(a1)) then copies 4 words from the
+ * resolved table entry (*(gp+76)+8 + s16[s0+2], idx s16[s0+4]*4) into
+ * v0+4..+16. */
 void cps_801aeb24(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -110548,7 +110652,9 @@ block_801AECCC:
 }
 
 /* cps_801aece4 — clean CPS transliteration of br2eu_func_801AECE4 (guest 0x801aece4)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * jalr_store_result: s16@a2!=0 → s0=*(gp+76)+8+s16, jalr *a1, store
+ * v0→*s0; else plain jalr *a1. */
 void cps_801aece4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -110621,7 +110727,9 @@ block_801AED2C:
 }
 
 /* cps_801aed3c — clean CPS transliteration of br2eu_func_801AED3C (guest 0x801aed3c)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * jalr_store_result_b: s16@a2!=0 → a0=*(a3+s16[a0+4]*4), s0=
+ * *(gp+76)+8+s16, jalr *a1 → *s0=v0; else same a0 resolve, plain jalr. */
 void cps_801aed3c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -110719,7 +110827,10 @@ block_801AEDB8:
 }
 
 /* cps_801aedbc — clean CPS transliteration of br2eu_func_801AEDBC (guest 0x801aedbc)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * jalr_store_result_c: two-index variant — a0/a1 resolved from a3 via
+ * s16@a0+4/+6 when s16@a2!=0 (result stored *(gp+76)+8+s16), else
+ * plain jalr *t0. */
 void cps_801aedbc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -110809,7 +110920,10 @@ block_801AEE48:
 }
 
 /* cps_801aee58 — clean CPS transliteration of br2eu_func_801AEE58 (guest 0x801aee58)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * cmd_invoke_idx: param block t0 s16 idxs @+4/+6/+8 index table a3;
+ * resolves (a0,a1,a2) and jalr *t2 — when s16@a2==0 stores result into
+ * *(gp+76)+8+t1 instead. */
 void cps_801aee58(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -110908,7 +111022,9 @@ block_801AEF08:
 }
 
 /* cps_801aef18 — clean CPS transliteration of br2eu_func_801AEF18 (guest 0x801aef18)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * cmd_invoke_idx4: same shape as aee58 but 4 indices (@+4,+6,+8,+10)
+ * resolving a0..a3, jalr *t2; s16@a2==0 path stores via gp+76 ctx+8. */
 void cps_801aef18(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111033,7 +111149,10 @@ block_801AF088:
 }
 
 /* cps_801af098 — clean CPS transliteration of br2eu_func_801AF098 (guest 0x801af098)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * cmd_invoke_table: if *s0==0 resolve params via 3-level s16 table
+ * (@0x801FF668 base, idxs @a0+2/+4/+6/+8), jal 0x801A6BD0, store result
+ * *s0; on success *(gp+76 ctx)+20=1. */
 void cps_801af098(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111117,7 +111236,9 @@ block_801AF104:
 }
 
 /* cps_801af11c — clean CPS transliteration of br2eu_func_801AF11C (guest 0x801af11c)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * cmd_invoke_table_b: same resolver as af098 but a0+8 ptr + s16@a3+4
+ * offset base and 2-level table; stores *s0, sets ctx+20=1 on success. */
 void cps_801af11c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111204,7 +111325,9 @@ block_801AF194:
 }
 
 /* cps_801af1ac — clean CPS transliteration of br2eu_func_801AF1AC (guest 0x801af1ac)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * cmd_invoke_table_c: same family — a0+8 + s16@a3+2 base, table idx
+ * s16@a3+4, args a2/a3 from +6/+8; jal 0x801A6BD0 -> *s0, ctx+20=1. */
 void cps_801af1ac(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111292,7 +111415,9 @@ block_801AF228:
 }
 
 /* cps_801af23c — clean CPS transliteration of br2eu_func_801AF23C (guest 0x801af23c)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * slot_invoke_clear: s0=*(v0+8)+s16@a0; if *s0!=0 jal 0x801AC758(*s0)
+ * then *s0=0. */
 void cps_801af23c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111352,7 +111477,9 @@ block_801AF274:
 }
 
 /* cps_801af288 — clean CPS transliteration of br2eu_func_801AF288 (guest 0x801af288)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * slot_invoke_clear_b: two-level — s0=*(v1+8)+*(*(v1+8)+s16@a0); same
+ * invoke 0x801AC758 + clear when nonzero. */
 void cps_801af288(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111590,7 +111717,9 @@ block_801AF484:
 }
 
 /* cps_801af628 — clean CPS transliteration of br2eu_func_801AF628 (guest 0x801af628)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * flag_select_call: s16@(v0+8 + s16[a0+2])!=0 → jal 0x801A7498(a1)
+ * else jal 0x801A74F0(a1). */
 void cps_801af628(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -112148,7 +112277,9 @@ block_801AFB24:
 }
 
 /* cps_801afb28 — clean CPS transliteration of br2eu_func_801AFB28 (guest 0x801afb28)
- * from SLES_017.22_full_54.c. */
+ * from SLES_017.22_full_54.c.
+ * scene_node_walk: 25-half-read traversal calling scene_node_walk
+ * recursively — scene graph node iteration. */
 void cps_801afb28(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -112665,7 +112796,11 @@ block_801AFF04:
 }
 
 /* cps_801aff70 — clean CPS transliteration of br2eu_func_801AFF70 (guest 0x801aff70)
- * from SLES_017.22_full_54.c. */
+ * from SLES_017.22_full_54.c.
+ * fx_param_init_2: fills two 40B param records at a1/a1+40 from src
+ * record *(gp+80)+s16@a0+2 (+80): bytes 3=9,7=44/46,12,13,20,21,28,29,
+ * 36,37 (sums of src+8/+9/+10/+11), 4,5,6, halves @22,@14; tail writes
+ * halves src+4/+6 → a1+80/+82. */
 void cps_801aff70(void)
 {
   CPUState *cpu = clean_cpu_state();
