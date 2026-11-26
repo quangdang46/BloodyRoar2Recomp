@@ -2431,28 +2431,6 @@ uint32_t bios_svc(uint32_t table, uint32_t svc, uint32_t a0, uint32_t a1)
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-/* canonical guest name: bios_tramp_b008 (renames.map); FUN_ symbol kept as the CPS-frame ABI wrapper. */
-uint32_t FUN_8019b380(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
-{
-    /* guest 0x8019B380: B0 svc 0x08 (kernel object alloc) trampoline —
-     * forwards a0-a3 to the BIOS vector. */
-    return bios_svc6(0xb0,0x08,a0,a1,a2,a3);
-}
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-/* canonical guest name: bios_tramp_b00c (renames.map); FUN_ symbol kept as the CPS-frame ABI wrapper. */
-void FUN_8019b390(uint32_t a0)
-{
-    /* guest 0x8019B390: B0 svc 0x0C (kernel object delete) trampoline. */
-    (void)bios_svc6(0xb0,0x0c,a0,0,0,0);
-}
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
 void cd_mode_apply_wrap(void)
 {
     /* guest 0x8019E410: B0 svc 0x4B trampoline — forwards live a0-a3. */
@@ -2492,70 +2470,6 @@ static uint32_t bind_bios_call_live(uint32_t svc, uint32_t ret_pc)
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-/* canonical guest name: cd_kobj_param_copy (renames.map); FUN_ symbol kept as the CPS-frame ABI wrapper. */
-void FUN_8019e5cc(void)
-{
-    /* guest 0x8019E5CC: v0=0xDF80; copy 0x70 bytes (28 words)
-     * 0x801AE430..0x801AE4A0 -> 0x0000DF80.., jr ra. Pure copy —
-     * no calls, no IRQ-sensitive state. */
-    uint32_t src = 0x801ae430u, end = 0x801ae4a0u, dst = 0xdf80u;
-    while (src != end) {
-        br2_st32(dst, br2_ld32(src));
-        src += 4;
-        dst += 4;
-    }
-}
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-/* canonical guest name: cd_kobj_b56_commit (renames.map); FUN_ symbol kept as the CPS-frame ABI wrapper. */
-void FUN_8019e4c8(void)
-{
-    /* guest 0x8019E4C8: DI; B0:0x56 (live a0-a3) -> obj;
-     * p = *(obj+0x18); dst = (*(p+0x70)&0xFFFF)<<16 + (*(p+0x74)&0xFFFF)
-     * + 40; copy 5 words 0x801AE4A0..0x801AE4B4 -> dst..; then
-     * *(0x0000DFFC) = dst+20; jal 0x801957F0 (gpu_state_patch_defer).
-     * No EI — faithful to the guest epilogue. */
-    uint32_t obj, p, dst, src, end;
-    FUN_8018e300();
-    obj = bind_bios_call_live(0x56, 0x8019e4e8u);
-    p   = br2_ld32(obj + 0x18u);
-    dst = ((br2_ld32(p + 0x70u) & 0xffffu) << 16)
-        + (br2_ld32(p + 0x74u) & 0xffffu) + 40u;
-    src = 0x801ae4a0u; end = 0x801ae4b4u;
-    while (src != end) {
-        br2_st32(dst, br2_ld32(src));
-        src += 4;
-        dst += 4;
-    }
-    br2_st32(0xdffcu, dst);              /* dst already advanced +20 */
-    gpu_state_patch_defer();
-}
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-/* canonical guest name: cd_kobj_b57_commit (renames.map); FUN_ symbol kept as the CPS-frame ABI wrapper. */
-void FUN_8019e55c(void)
-{
-    /* guest 0x8019E55C: DI; B0:0x57 (live a0-a3) -> obj;
-     * p = *(obj+0x16C); copy 5 words 0x801AE4B4..0x801AE4C8 ->
-     * p+0x9C8..; jal 0x801957F0. No EI — faithful epilogue. */
-    uint32_t obj, p, src, end;
-    FUN_8018e300();
-    obj = bind_bios_call_live(0x57, 0x8019e57cu);
-    p   = br2_ld32(obj + 0x16cu);
-    src = 0x801ae4b4u; end = 0x801ae4c8u;
-    while (src != end) {
-        br2_st32(p + 0x9c8u, br2_ld32(src));
-        src += 4;
-        p   += 4;
-    }
-    gpu_state_patch_defer();
-}
-
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
 int32_t cd_seek_state_machine(uint32_t arg)
 {
     /* guest 0x8019D5B0: li t2,0xB0; li t1,0x0B; jr t2 — B0 svc 0x0B
@@ -2566,31 +2480,6 @@ int32_t cd_seek_state_machine(uint32_t arg)
     uint32_t ret = c ? c->gpr[31] : 0x8019d5bcu;
     (void)arg;
     return (int32_t)bind_bios_call_live(0x0b, ret);
-}
-
-/* ---- menu-agent callees (unported, weak until disasm-verified) ---- */
-
-/* ---- save-agent callees (unported, weak until disasm-verified) ---- */
-
-/* ---- round-2 unported callees (weak until disasm-verified) ---- */
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-/* canonical guest name: bios_tramp_b043 (renames.map); FUN_ symbol kept as the CPS-frame ABI wrapper. */
-uint32_t FUN_801a0260(const void *rec)
-{
-    /* guest 0x801A0260: B0 svc 0x43 CD-record read trampoline.
-     * Callers pass a host pointer; translate back to a guest address. */
-    return bios_svc6(0xb0,0x43,guest_of(rec),0,0,0);
-}
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-/* canonical guest name: bios_tramp_a0ac (renames.map); FUN_ symbol kept as the CPS-frame ABI wrapper. */
-void FUN_801a05f0(uint32_t a0)
-{
-    /* guest 0x801A05F0: A0 svc 0xAC trampoline. */
-    (void)bios_svc6(0xa0,0xac,a0,0,0,0);
 }
 
 /* ---- round-3 unported callees ---- */
@@ -2948,84 +2837,11 @@ void FUN_8019a0ddc(void)
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-/* canonical guest name: bios_tramp_b012 (renames.map); FUN_ symbol kept as the CPS-frame ABI wrapper. */
-void FUN_8019a2f0(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
-{
-    /* guest 0x8019A2F0: B0 svc 0x12 CD channel init trampoline. */
-    (void)bios_svc6(0xb0,0x12,a0,a1,a2,a3);
-}
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-/* canonical guest name: bios_tramp_b013 (renames.map); FUN_ symbol kept as the CPS-frame ABI wrapper. */
-void FUN_8019a300(void)
-{
-    /* guest 0x8019A300: B0 svc 0x13 trampoline. */
-    (void)bios_svc6(0xb0,0x13,0,0,0,0);
-}
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-/* canonical guest name: bios_tramp_b014 (renames.map); FUN_ symbol kept as the CPS-frame ABI wrapper. */
-void FUN_8019a310(void)
-{
-    /* guest 0x8019A310: B0 svc 0x14 trampoline. */
-    (void)bios_svc6(0xb0,0x14,0,0,0,0);
-}
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-/* canonical guest name: cd_kobj_mcall_58 (renames.map); FUN_ symbol kept as the CPS-frame ABI wrapper. */
-void FUN_8019a350(void)
-{
-    /* guest 0x8019A350: indirect tail-call — lw t1,0x801FEB58; jr t1.
-     * The cell holds an OpenBIOS kernel-object method pointer. */
-    (void)call_guest(br2_ld32(0x801feb58u),0,0);
-}
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
 /* canonical guest name: cd_kobj_mcall_5c (renames.map); FUN_ symbol kept as the CPS-frame ABI wrapper. */
 void FUN_8019a364(void)
 {
     /* guest 0x8019A364: indirect tail-call — lw t1,0x801FEB5C; jr t1. */
     (void)call_guest(br2_ld32(0x801feb5cu),0,0);
-}
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-/* canonical guest name: bios_tramp_a072 (renames.map); FUN_ symbol kept as the CPS-frame ABI wrapper. */
-void FUN_8019ad48(uint32_t a0)
-{
-    /* guest 0x8019AD48: A0 svc 0x72 trampoline. */
-    (void)bios_svc6(0xa0,0x72,a0,0,0,0);
-}
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-/* canonical guest name: bios_tramp_b018 (renames.map); FUN_ symbol kept as the CPS-frame ABI wrapper. */
-void FUN_8019ad70(uint32_t a0)
-{
-    /* guest 0x8019AD70: B0 svc 0x18 trampoline. */
-    (void)bios_svc6(0xb0,0x18,a0,0,0,0);
-}
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-/* canonical guest name: bios_tramp_b019 (renames.map); FUN_ symbol kept as the CPS-frame ABI wrapper. */
-void FUN_8019ad80(uint32_t a0)
-{
-    /* guest 0x8019AD80: B0 svc 0x19 trampoline. */
-    (void)bios_svc6(0xb0,0x19,a0,0,0,0);
-}
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-/* canonical guest name: bios_tramp_b04c (renames.map); FUN_ symbol kept as the CPS-frame ABI wrapper. */
-void FUN_8019e420(void)
-{
-    /* guest 0x8019E420: B0 svc 0x4C trampoline. */
-    (void)bios_svc6(0xb0,0x4c,0,0,0,0);
 }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
@@ -3048,42 +2864,6 @@ void FUN_8019e600(void)
     }
     gpu_state_patch_defer();
     FUN_8018e310(0);
-}
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-/* canonical guest name: bios_tramp_b032 (renames.map); FUN_ symbol kept as the CPS-frame ABI wrapper. */
-int32_t FUN_801a0220(uint32_t a0,uint32_t a1,uint32_t a2)
-{
-    /* guest 0x801A0220: B0 svc 0x32 CD queue op (indirect via $t2). */
-    return (int32_t)bios_svc6(0xb0,0x32,a0,a1,a2,0);
-}
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-/* canonical guest name: bios_tramp_b033 (renames.map); FUN_ symbol kept as the CPS-frame ABI wrapper. */
-uint32_t FUN_801a0230(uint32_t a0,uint32_t a1,uint32_t a2)
-{
-    /* guest 0x801A0230: B0 svc 0x33 CD queue op. */
-    return bios_svc6(0xb0,0x33,a0,a1,a2,0);
-}
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-/* canonical guest name: bios_tramp_b034 (renames.map); FUN_ symbol kept as the CPS-frame ABI wrapper. */
-uint32_t FUN_801a0240(uint32_t a0,uint32_t a1,uint32_t a2)
-{
-    /* guest 0x801A0240: B0 svc 0x34 CD queue op. */
-    return bios_svc6(0xb0,0x34,a0,a1,a2,0);
-}
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-/* canonical guest name: bios_tramp_b036 (renames.map); FUN_ symbol kept as the CPS-frame ABI wrapper. */
-void FUN_801a0250(uint32_t a0)
-{
-    /* guest 0x801A0250: B0 svc 0x36 trampoline. */
-    (void)bios_svc6(0xb0,0x36,a0,0,0,0);
 }
 
 /* ---- MMIO-aware accessors (weak selftest fallbacks) ----

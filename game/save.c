@@ -6665,7 +6665,7 @@ void hud_announce(uint32_t a0,uint32_t a1,uint32_t a2)
                  (int16_t)(x2 - 0x58), (int16_t)(y2 - 0x10), 0xa);
     return;
   case 21: {
-    int64_t m = (int64_t)(*(uint16_t *)(st + 0xb2) & 0x3fff) * 0x66666667LL;
+    int64_t m = (int64_t)(*(uint16_t *)(st + 0xb2) & 0x3fff) * 0x66666667ll;
     int32_t hi = (int32_t)(m >> 32);
     int32_t num = 9 - (int32_t)(((int32_t)(hi << 11)) >> 16);
     int32_t v;
@@ -8167,7 +8167,7 @@ void op_rand_i8(uint32_t a0,int8_t *a1)
   (void)a0;
   {
     int32_t r = (int32_t)rand_lcg();
-    int32_t hi = (int32_t)(((int64_t)r * 266338049LL) >> 32);
+    int32_t hi = (int32_t)(((int64_t)r * 266338049ll) >> 32);
     int32_t q = (hi >> 3) - (r >> 31);
     *a1 = (int8_t)q;
   }

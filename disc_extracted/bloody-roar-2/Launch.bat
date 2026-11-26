@@ -1,1 +1,0 @@
-psxfin.exe Game.cdz

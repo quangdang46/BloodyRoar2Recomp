@@ -9302,58 +9302,58 @@ LAB_801417f8:
 
 int angle_from_xy(int x,int y)
 {
-  int iVar1;
-  int iVar2;
+  int ay;
+  int ax;
   if (x == 0) {
     x = 1;
   }
   if (y == 0) {
     y = 1;
   }
-  iVar2 = x;
+  ax = x;
   if (x < 1) {
-    iVar2 = -x;
+    ax = -x;
   }
-  iVar1 = y;
+  ay = y;
   if (y < 1) {
-    iVar1 = -y;
+    ay = -y;
   }
-  if (iVar1 < iVar2) {
+  if (ay < ax) {
     if (x < 1) {
       if (y < 1) {
-        iVar1 = iVar2 * -8;
+        ay = ax * -8;
       }
       else {
-        iVar1 = iVar2 * 8;
+        ay = ax * 8;
       }
-      iVar2 = 0xc00 - (y * 0x200 + iVar1) / iVar2;
+      ax = 0xc00 - (y * 0x200 + ay) / ax;
     }
     else {
       if (y < 1) {
-        iVar1 = iVar2 * -8;
+        ay = ax * -8;
       }
       else {
-        iVar1 = iVar2 * 8;
+        ay = ax * 8;
       }
-      iVar2 = (y * 0x200 + iVar1) / iVar2 + 0x400;
+      ax = (y * 0x200 + ay) / ax + 0x400;
     }
   }
   else if (y < 1) {
     if (0 < x) {
-      return (x * 0x200 + iVar1 * 8) / iVar1;
+      return (x * 0x200 + ay * 8) / ay;
     }
-    iVar2 = (x * 0x200 + iVar1 * -8) / iVar1 + 0xfff;
+    ax = (x * 0x200 + ay * -8) / ay + 0xfff;
   }
   else {
     if (x < 1) {
-      iVar2 = iVar1 * -8;
+      ax = ay * -8;
     }
     else {
-      iVar2 = iVar1 * 8;
+      ax = ay * 8;
     }
-    iVar2 = 0x800 - (x * 0x200 + iVar2) / iVar1;
+    ax = 0x800 - (x * 0x200 + ax) / ay;
   }
-  return iVar2;
+  return ax;
 
 }
 

@@ -247,6 +247,9 @@ void anim_lerp_packed4(short*,ushort*,int,int);
 extern void anim_lerp_aux(byte*,int,int,int);
 void anim_lerp_packed3(short*,ushort*,int,int);
 uint *rotmat_rtps_build(uint,uint*);
+int32_t action_resolve(byte *ctrl,byte *motion);
+void fighter_frame(byte *ctrl,byte *motion);
+unsigned long long dir_rotate_wrap(undefined4 angle,int mag,short *vec);
 
 extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
 extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
