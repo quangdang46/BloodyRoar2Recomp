@@ -5607,7 +5607,6 @@ uint32_t cd_state_blk_save(void)
 
 extern void cd_kobj_init_a(void);
 extern void cd_kobj_init_b(void);
-extern void FUN_8019a2f0(uint32_t,uint32_t,uint32_t,uint32_t);
 extern int cd_seek_state_machine(uint32_t);
 extern void cd_mmio_strobe_22(void);
 
