@@ -886,15 +886,15 @@ uint cd_result_wait_a(int a0,undefined1 *out_buf)
 void cd_str_print(uint32_t msg)
 
 {
-  char cVar1;
+  char ch;
   uint8_t *s;
 
   s = msg ? (uint8_t *)guest_at(msg) : (uint8_t *)guest_at(0x801258c8);
   while( true ) {
-    cVar1 = (char)*s;
+    ch = (char)*s;
     s = s + 1;
-    if (cVar1 == '\0') break;
-    console_emit((int)cVar1);
+    if (ch == '\0') break;
+    console_emit((int)ch);
   }
   console_pct();
   return;
@@ -5260,13 +5260,13 @@ uint32_t cd_state9_store(uint32_t a0)
 
 int cd_coord_pack_entry(uint32_t a0,uint32_t a1)
 {
-  int iVar1;
+  int packed;
   *(uint8_t *)guest_at(a0 + 3) = 2;
-  iVar1 = gpu_coord_pack((int)*(int16_t *)guest_at(a1),
+  packed = gpu_coord_pack((int)*(int16_t *)guest_at(a1),
                        (int)*(int16_t *)guest_at(a1 + 2));
-  *(uint32_t *)guest_at(a0 + 4) = (uint32_t)iVar1;
+  *(uint32_t *)guest_at(a0 + 4) = (uint32_t)packed;
   *(uint32_t *)guest_at(a0 + 8) = 0;
-  return iVar1;
+  return packed;
 }
 
 /* ======== 0x8019d170 ======== */
