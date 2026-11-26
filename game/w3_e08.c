@@ -229,6 +229,10 @@ void hud_score_draw_alt(void)
     }
     /* Address: 0x80163E38, Size: 2096 bytes, Blocks: 68 */
 
+    /* Phase 1 — prologue + time decompose: *(fp+8) ticks ->
+     * min/sec.cent fields via magic-multiply division (0x51EB851F,
+     * 0x88888889), clamped to 99:59 at block_80163F04. Args a0..a3
+     * and stack arg saved to s4..s7/s3 for the draw phases. */
 block_80163E38:
     sp = sp + -96;
     cpu->write_word(sp + 88, fp);
@@ -300,6 +304,8 @@ block_80163F04:
     s1 = 59;
     /* fall through to block_80163F10 */
 
+    /* sprintf_core_guest(sp+24, fmt@0x80121FA8, s2, s1, s0) —
+     * format the decomposed time into the stack string buffer. */
 block_80163F10:
     a0 = sp + 24;
     a1 = 0x8012 << 16;  /* 0x80120000 */
@@ -312,6 +318,8 @@ block_80163F10:
     psx_check_interrupts_at(cpu, 0x8018EF60u);
     cpu->pc = 0x8018EF60u; return;  /* CPS jal -> 0x8018EF60 */
 
+    /* Phase 2 — screen position: fp+12/fp+14 halfwords scaled by
+     * 0x10624DD3 fixed-point, then jr v0 computed-goto dispatch. */
 block_80163F2C:
     v1 = 0x1062 << 16;  /* 0x10620000 */
     v0 = cpu->read_half(fp + 12);
@@ -363,6 +371,7 @@ block_80163F2C:
         goto block_80163FC0;  /* not taken */
     }
 
+    /* jr v0 — indirect dispatch into the per-field draw chain. */
 block_80163FC0:
     v0 = 0x8012 << 16;  /* 0x80120000 */
     v0 = v0 + 8172;
@@ -436,6 +445,7 @@ block_80164068:
     psx_check_interrupts_at(cpu, 0x80164638u);
     goto block_80164638;  /* j */
 
+    /* sprintf_core_guest(sp+24, fmt@0x80121FB8, ...) — field 2. */
 block_80164070:
     a0 = sp + 24;
     a1 = 0x8012 << 16;  /* 0x80120000 */
@@ -448,6 +458,7 @@ block_80164070:
     psx_check_interrupts_at(cpu, 0x8018EF60u);
     cpu->pc = 0x8018EF60u; return;  /* CPS jal -> 0x8018EF60 */
 
+    /* print_dispatch_guest — emit formatted field text. */
 block_8016408C:
     a0 = 0x8012 << 16;  /* 0x80120000 */
     a0 = a0 + 8136;
@@ -509,6 +520,7 @@ block_80164108:
     psx_check_interrupts_at(cpu, 0x80164638u);
     goto block_80164638;  /* j */
 
+    /* print_dispatch_guest — emit formatted field text. */
 block_80164110:
     a0 = 0x8012 << 16;  /* 0x80120000 */
     a0 = a0 + 8148;
@@ -527,6 +539,7 @@ block_80164124:
     psx_check_interrupts_at(cpu, 0x801513FCu);
     cpu->pc = 0x801513FCu; return;  /* CPS jal -> 0x801513FC */
 
+    /* print_dispatch_guest — emit formatted field text. */
 block_80164130:
     ra = 0x80164138u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -540,6 +553,7 @@ block_80164138:
     psx_check_interrupts_at(cpu, 0x80164638u);
     goto block_80164638;  /* j */
 
+    /* sprintf_core_guest(sp+24, fmt@0x80121FE0, ...) — field 3. */
 block_80164140:
     a0 = sp + 24;
     a1 = 0x8012 << 16;  /* 0x80120000 */
@@ -628,6 +642,7 @@ block_80164210:
     psx_check_interrupts_at(cpu, 0x80164638u);
     goto block_80164638;  /* j */
 
+    /* sprintf_core_guest(sp+24, fmt@0x80121FE0, ...) — field 4. */
 block_80164218:
     a0 = sp + 24;
     a1 = 0x8012 << 16;  /* 0x80120000 */
@@ -719,6 +734,7 @@ block_801642F4:
     psx_check_interrupts_at(cpu, 0x80164638u);
     goto block_80164638;  /* j */
 
+    /* sprintf_core_guest(sp+24, fmt@0x80121FE0, ...) — field 5. */
 block_801642FC:
     a0 = sp + 24;
     a1 = 0x8012 << 16;  /* 0x80120000 */
@@ -879,6 +895,7 @@ block_80164458:
     psx_check_interrupts_at(cpu, 0x8016457Cu);
     goto block_8016457C;  /* j */
 
+    /* sprintf_core_guest(sp+24, fmt@0x80121FE0, ...) — field 6. */
 block_8016446C:
     a0 = sp + 24;
     a1 = 0x8012 << 16;  /* 0x80120000 */
@@ -1001,6 +1018,7 @@ block_8016456C:
     a2 = t0;
     /* fall through to block_8016457C */
 
+    /* sprintf_core_guest(sp+24, fmt@0x80121FE0, ...) — field 7. */
 block_8016457C:
     ra = 0x80164584u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -1081,6 +1099,7 @@ block_80164610:
     psx_check_interrupts_at(cpu, 0x8012E58Cu);
     cpu->pc = 0x8012E58Cu; return;  /* CPS jal -> 0x8012E58C */
 
+    /* Epilogue — restore s0..s7/fp/ra, return. */
 block_80164638:
     ra = cpu->read_word(sp + 92);
     fp = cpu->read_word(sp + 88);
@@ -1268,6 +1287,7 @@ void player_name_entry_alt(void)
     }
     /* Address: 0x80164EA4, Size: 2660 bytes, Blocks: 152 */
 
+    /* Phase 1 — prologue: save regs, init name-entry state. */
 block_80164EA4:
     sp = sp + -144;
     t0 = 0x1F80 << 16;  /* 0x1F800000 */
@@ -1541,6 +1561,9 @@ block_80165044:
     psx_check_interrupts_at(cpu, 0x801658B4u);
     goto block_801658B4;  /* j */
 
+    /* Phase 2 — frame/UI init: frame_divisor_get,
+     * intro_movie_state, sprite_desc_table_init, print_mode_dispatch_b,
+     * menu_sprite_load_sm — set up the name-entry screen. */
 block_8016504C:
     ra = 0x80165054u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -1601,6 +1624,7 @@ block_80165084:
     cpu->write_byte(s2 + 1, (uint8_t)t3);
     /* fall through to block_80165090 */
 
+    /* menu_sprite_load_sm — load name-entry sprites. */
 block_80165090:
     t0 = 1;
     cpu->write_word(sp + 16, t0);
@@ -1755,6 +1779,9 @@ block_801651A4:
     psx_check_interrupts_at(cpu, 0x801651ECu);
     goto block_801651EC;  /* j */
 
+    /* Phase 3 — name-record logic: rec_find_lt_f8 /
+     * rec_find_ge_e locate the save slot; name_rec_insert writes the
+     * new name; hud_name_fixup patches display fields. */
 block_801651AC:
     t3 = cpu->read_word(sp + 76);
     a0 = cpu->read_word(sp + 88);
@@ -1850,6 +1877,7 @@ block_80165234:
     a0 = 41;
     /* fall through to block_80165238 */
 
+    /* mc_confirm_dispatch — memory-card confirm dialog. */
 block_80165238:
     ra = 0x80165240u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -2143,6 +2171,7 @@ block_80165410:
     psx_check_interrupts_at(cpu, 0x80156EF4u);
     cpu->pc = 0x80156EF4u; return;  /* CPS jal -> 0x80156EF4 */
 
+    /* hud_name_fixup — apply name record to HUD fields. */
 block_8016541C:
     a0 = cpu->read_word(sp + 96);
     v0 = 32;
@@ -2219,6 +2248,7 @@ block_801654BC:
     s7 = 32;
     /* fall through to block_801654C0 */
 
+    /* scroll_offset_set — position the name text. */
 block_801654C0:
     a0 = s7;
     ra = 0x801654CCu;  /* jal link before delay slot */
@@ -2234,6 +2264,7 @@ block_801654CC:
     s5 = v0 + 16980;
     /* fall through to block_801654DC */
 
+    /* sprintf_core_guest — format name/score string. */
 block_801654DC:
     a1 = 0x8012 << 16;  /* 0x80120000 */
     a1 = a1 + 8160;
@@ -2311,6 +2342,8 @@ block_80165560:
     s0 = 21;
     /* fall through to block_80165564 */
 
+    /* jal -> hud_time_score_draw (0x80163E38): the
+     * name-entry screen also renders the in-game HUD. */
 block_80165564:
     a2 = s7 + 64;
     a0 = cpu->read_word(s2 + 8);
@@ -2393,6 +2426,8 @@ block_801655AC:
         goto block_801655C4;  /* not taken */
     }
 
+    /* Phase 4 — text/glyph emit: announce_param_block_init
+     * (0x8012E6A8/0x8012E58C) batches + scroll_offset_accumulate. */
 block_801655C4:
     a0 = cpu->read_word(s2 + 8);
     t2 = cpu->read_word(sp + 96);
@@ -2587,6 +2622,7 @@ block_80165708:
     psx_check_interrupts_at(cpu, 0x8012E58Cu);
     cpu->pc = 0x8012E58Cu; return;  /* CPS jal -> 0x8012E58C */
 
+    /* banner_stripe_scroll + hud_gauge_render — chrome. */
 block_8016572C:
     a0 = zero;
     a1 = a0;
@@ -2646,6 +2682,9 @@ block_80165780:
     a0 = 40;
     /* fall through to block_80165784 */
 
+    /* Phase 5 — per-frame tail: mc_confirm_dispatch,
+     * rec_timer_pair_clear, name_rec_gate, status_flag_cond_set,
+     * frame_present, scroll_cfg_set, rgb_triple_store. */
 block_80165784:
     ra = 0x8016578Cu;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -2754,6 +2793,7 @@ block_80165828:
     psx_check_interrupts_at(cpu, 0x801654C0u);
     goto block_801654C0;  /* j */
 
+    /* rec_timer_pair_clear — reset per-frame timers. */
 block_80165830:
     ra = 0x80165838u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -2845,6 +2885,7 @@ block_801658AC:
     psx_check_interrupts_at(cpu, 0x801658BCu);
     goto block_801658BC;  /* j */
 
+    /* frame_tick — advance frame counter. */
 block_801658B4:
     ra = 0x801658BCu;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -2867,6 +2908,7 @@ block_801658BC:
         goto block_801658D0;  /* not taken */
     }
 
+    /* Epilogue — restore regs, return. */
 block_801658D0:
     ra = cpu->read_word(sp + 140);
     fp = cpu->read_word(sp + 136);
@@ -2913,6 +2955,11 @@ void mc_op_result_poll_alt(void)
         }
     }
     /* Address: 0x80168424, Size: 164 bytes, Blocks: 11 */
+    /* mc_op_result_poll: submit a job on channel s1 (a0), then poll
+     * cd_job_result until the result index at sp+20 stabilizes.
+     * Result classes <5 dispatch through jump table @0x8012212C;
+     * classes >=5 are "in flight" — re-poll until the index stops
+     * changing, then return it in v0. */
 
     /* memcard op-result poll: retry 0x8019EA98 until v0!=0, then retry
      * 0x8019FA80; index word(sp+20) (<5) dispatches via table s2, else
@@ -2922,10 +2969,10 @@ block_80168424:
     cpu->write_word(sp + 28, s1);
     s1 = a0;
     cpu->write_word(sp + 24, s0);
-    s0 = zero;
+    s0 = zero;                       /* s0 = previous result index (stable-detect) */
     v0 = 0x8012 << 16;  /* 0x80120000 */
     cpu->write_word(sp + 32, s2);
-    s2 = v0 + 8492;
+    s2 = v0 + 8492;                  /* s2 = jump table @0x8012212C */
     cpu->write_word(sp + 36, ra);
     /* fall through to block_80168448 */
 
@@ -2934,7 +2981,7 @@ block_80168448:
     /* delay slot (always executes) */
     a0 = s1;
     psx_check_interrupts_at(cpu, 0x8019EA98u);
-    cpu->pc = 0x8019EA98u; return;  /* CPS jal -> 0x8019EA98 */
+    cpu->pc = 0x8019EA98u; return;  /* CPS jal -> cd_chan_job_submit */
 
 block_80168450:
     /* delay slot (always executes) */
@@ -2942,17 +2989,19 @@ block_80168450:
     if (v0 == zero) {
         psx_check_interrupts_at(cpu, 0x80168448u);
         goto block_80168448;  /* taken: poll again */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80168458u);
     }
     psx_check_interrupts_at(cpu, 0x80168458u);
     /* fall through to block_80168458 */
 
 block_80168458:
-    a1 = sp + 16;
+    a1 = sp + 16;                    /* &result_word */
     ra = 0x80168464u;  /* jal link before delay slot */
     /* delay slot (always executes) */
-    a2 = sp + 20;
+    a2 = sp + 20;                    /* &result_index */
     psx_check_interrupts_at(cpu, 0x8019FA80u);
-    cpu->pc = 0x8019FA80u; return;  /* CPS jal -> 0x8019FA80 */
+    cpu->pc = 0x8019FA80u; return;  /* CPS jal -> cd_job_result */
 
 block_80168464:
     /* delay slot (always executes) */
@@ -2960,12 +3009,14 @@ block_80168464:
     if (v0 == zero) {
         psx_check_interrupts_at(cpu, 0x80168458u);
         goto block_80168458;  /* taken: poll again */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8016846Cu);
     }
     psx_check_interrupts_at(cpu, 0x8016846Cu);
     /* fall through to block_8016846C */
 
 block_8016846C:
-    v1 = cpu->read_word(sp + 20);
+    v1 = cpu->read_word(sp + 20);    /* v1 = result index/class */
     /* nop */  /* 0x80168470: 0x00000000 */
     v0 = (v1 < (uint32_t)5) ? 1 : 0;  /* 0x80168474: 0x2C620005 */
     int _bc_80168478 = (v0 == zero);  /* save branch cond before delay slot */
@@ -2974,29 +3025,33 @@ block_8016846C:
     if (_bc_80168478) {
         psx_check_interrupts_at(cpu, 0x80168494u);
         goto block_80168494;  /* taken: index >=5 -> stability check */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80168480u);
     }
     psx_check_interrupts_at(cpu, 0x80168480u);
     /* fall through to block_80168480 */
 
 block_80168480:
-    v0 = v0 + s2;
+    v0 = v0 + s2;                    /* table_8012212C[class] */
     v0 = cpu->read_word(v0);
     /* nop */  /* 0x80168488: 0x00000000 */
     uint32_t _jt_8016848C = v0;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x80168490: 0x00000000 */
     psx_check_interrupts_at(cpu, _jt_8016848C);
-    cpu->pc = _jt_8016848C; return;  /* CPS: jr v0 */
+    cpu->pc = _jt_8016848C; return;  /* CPS: jr v0 — tail-dispatch class handler */
 
 block_80168494:
-    v0 = cpu->read_word(sp + 20);
+    v0 = cpu->read_word(sp + 20);    /* current index again */
     /* nop */  /* 0x80168498: 0x00000000 */
     int _bc_8016849C = (s0 == v0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
-    s0 = v0;
+    s0 = v0;                         /* remember this index */
     if (_bc_8016849C) {
         psx_check_interrupts_at(cpu, 0x801684B0u);
         goto block_801684B0;  /* taken: unchanged -> done */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801684A4u);
     }
     psx_check_interrupts_at(cpu, 0x801684A4u);
     /* fall through to block_801684A4 */
@@ -3005,7 +3060,7 @@ block_801684A4:
     /* delay slot (always executes) */
     /* nop */  /* 0x801684A8: 0x00000000 */
     psx_check_interrupts_at(cpu, 0x80168448u);
-    goto block_80168448;  /* j */
+    goto block_80168448;  /* j — back to submit/poll loop */
 
 block_801684AC:
     v0 = cpu->read_word(sp + 20);
@@ -3045,6 +3100,11 @@ void mc_file_cmd_stable_poll_alt(void)
         }
     }
     /* Address: 0x801685B4, Size: 148 bytes, Blocks: 6 */
+    /* mc_file_cmd_stable_poll: issue mc_file_cmd(s2,s3,s4) = (a0,a1,a2)
+     * and poll until the result stabilizes. Result classes <8 dispatch
+     * through jump table @0x80122144; classes >=8 mean "command still
+     * in flight" — re-issue until the result stops changing, then
+     * return it in v0. */
 
     /* stable-result poll: retry 0x8019FB9C until v0!=0; index v0 (<8)
      * dispatches via table s1, else re-poll while the value keeps
@@ -3052,16 +3112,16 @@ void mc_file_cmd_stable_poll_alt(void)
 block_801685B4:
     sp = sp + -40;
     cpu->write_word(sp + 24, s2);
-    s2 = a0;
+    s2 = a0;                         /* s2 = cmd arg0 */
     cpu->write_word(sp + 28, s3);
-    s3 = a1;
+    s3 = a1;                         /* s3 = cmd arg1 */
     cpu->write_word(sp + 32, s4);
-    s4 = a2;
+    s4 = a2;                         /* s4 = cmd arg2 */
     cpu->write_word(sp + 16, s0);
-    s0 = zero;
+    s0 = zero;                       /* s0 = previous result (stable-detect) */
     v0 = 0x8012 << 16;  /* 0x80120000 */
     cpu->write_word(sp + 20, s1);
-    s1 = v0 + 8516;
+    s1 = v0 + 8516;                  /* s1 = jump table @0x80122144 */
     cpu->write_word(sp + 36, ra);
     /* fall through to block_801685E8 */
 
@@ -3072,10 +3132,10 @@ block_801685E8:
     /* delay slot (always executes) */
     a2 = s4;
     psx_check_interrupts_at(cpu, 0x8019FB9Cu);
-    cpu->pc = 0x8019FB9Cu; return;  /* CPS jal -> 0x8019FB9C */
+    cpu->pc = 0x8019FB9Cu; return;  /* CPS jal -> mc_file_cmd */
 
 block_801685F8:
-    v1 = v0;
+    v1 = v0;                         /* v1 = mc_file_cmd result */
     v0 = (v1 < (uint32_t)8) ? 1 : 0;  /* 0x801685FC: 0x2C620008 */
     int _bc_80168600 = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -3083,33 +3143,37 @@ block_801685F8:
     if (_bc_80168600) {
         psx_check_interrupts_at(cpu, 0x8016861Cu);
         goto block_8016861C;  /* taken: index >=8 -> stability check */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80168608u);
     }
     psx_check_interrupts_at(cpu, 0x80168608u);
     /* fall through to block_80168608 */
 
 block_80168608:
-    v0 = v0 + s1;
+    v0 = v0 + s1;                    /* table_80122144[class] */
     v0 = cpu->read_word(v0);
     /* nop */  /* 0x80168610: 0x00000000 */
     uint32_t _jt_80168614 = v0;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x80168618: 0x00000000 */
     psx_check_interrupts_at(cpu, _jt_80168614);
-    cpu->pc = _jt_80168614; return;  /* CPS: jr v0 */
+    cpu->pc = _jt_80168614; return;  /* CPS: jr v0 — tail-dispatch class handler */
 
 block_8016861C:
     int _bc_8016861C = (s0 != v1);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
-    s0 = v1;
+    s0 = v1;                         /* remember this result */
     if (_bc_8016861C) {
         psx_check_interrupts_at(cpu, 0x801685E8u);
         goto block_801685E8;  /* taken: changed -> repoll */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80168624u);
     }
     psx_check_interrupts_at(cpu, 0x80168624u);
     /* fall through to block_80168624 */
 
 block_80168624:
-    v0 = v1;
+    v0 = v1;                         /* return stable result */
     ra = cpu->read_word(sp + 36);
     s4 = cpu->read_word(sp + 32);
     s3 = cpu->read_word(sp + 28);
@@ -3368,6 +3432,8 @@ void battle_flow_state_machine_alt(void)
         default: return;
     }
 
+    /* Phase 1 — attract/menu boot: display_mode_setup,
+     * frame_advance_helper, rgb_triple_store; select_screen_tick polls. */
 block_8016FD38:
     v1 = cpu->read_byte(s0 + 1);
     s4 = cpu->read_word(s0 + 12);
@@ -3401,6 +3467,8 @@ block_8016FD6C:
     cpu->write_byte(s0 + 1, (uint8_t)v0);
     /* fall through to block_8016FD74 */
 
+    /* hud_sprite_desc_init + deferred_cmd_post — HUD sprite
+     * descriptor setup for the upcoming screens. */
 block_8016FD74:
     ra = 0x8016FD7Cu;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -3408,6 +3476,7 @@ block_8016FD74:
     psx_check_interrupts_at(cpu, 0x80136DDCu);
     cpu->pc = 0x80136DDCu; return;  /* CPS jal -> 0x80136DDC */
 
+    /* frame_divisor_get — frame timing base. */
 block_8016FD7C:
     ra = 0x8016FD84u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -3536,6 +3605,8 @@ block_8016FE24:
         goto block_8016FE3C;  /* not taken */
     }
 
+    /* battle_frame (0x8014CDD0) x5 — per-frame tick during
+     * the menu/attract sequence. */
 block_8016FE3C:
     ra = 0x8016FE44u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -3697,6 +3768,7 @@ block_8016FEFC:
     psx_check_interrupts_at(cpu, 0x8016FFA0u);
     goto block_8016FFA0;  /* j */
 
+    /* deferred_cmd_post + frame_tick — end of frame. */
 block_8016FF04:
     a0 = 1027;
     a1 = zero;
@@ -3709,6 +3781,7 @@ block_8016FF04:
     psx_check_interrupts_at(cpu, 0x80156EF4u);
     cpu->pc = 0x80156EF4u; return;  /* CPS jal -> 0x80156EF4 */
 
+    /* select_screen_tick — character-select screen tick. */
 block_8016FF20:
     ra = 0x8016FF28u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -3779,6 +3852,8 @@ block_8016FF88:
     psx_check_interrupts_at(cpu, 0x8016FFA0u);
     goto block_8016FFA0;  /* j */
 
+    /* countdown_display_sm + hud_state_machine —
+     * versus-screen countdown/state. */
 block_8016FF90:
     ra = 0x8016FF98u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -3855,6 +3930,8 @@ block_8016FFE0:
     psx_check_interrupts_at(cpu, 0x80156EF4u);
     cpu->pc = 0x80156EF4u; return;  /* CPS jal -> 0x80156EF4 */
 
+    /* hud_sprite_desc_init + rgb_triple_store +
+     * print_mode_dispatch_b — versus screen chrome. */
 block_8016FFF0:
     ra = 0x8016FFF8u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -3871,6 +3948,8 @@ block_8016FFF8:
     psx_check_interrupts_at(cpu, 0x801274FCu);
     cpu->pc = 0x801274FCu; return;  /* CPS jal -> 0x801274FC */
 
+    /* match_mode_set + battle_state_init +
+     * scratchpad_pair_init — commit mode, init battle state. */
 block_80170008:
     a0 = 2;
     a1 = zero;
@@ -3994,6 +4073,7 @@ block_801700BC:
     cpu->write_half(s0 + 144, (uint16_t)zero);
     /* fall through to block_801700C0 */
 
+    /* menu_res_load_sm — load battle resources. */
 block_801700C0:
     a1 = s3;
     a2 = s2;
@@ -4029,6 +4109,13 @@ block_801700D8:
         goto block_801700E8;  /* not taken */
     }
 
+    /* Phase 2 — character/mode select: se_value_select,
+     * confirm_bookkeeping, brightness_packet_send,
+     * battle_struct_init, sprite_desc_table_init,
+     * print_mode_dispatch_b, battle_session_arm,
+     * match_setup_apply, battle_state_init, table_byte_next_a,
+     * perm_table_apply, flow_cfg_init, battle_sides_commit,
+     * battle_init, frame_present. */
 block_801700E8:
     a0 = cpu->read_byte(s0 + 152);
     /* nop */  /* 0x801700EC: 0x00000000 */
@@ -4090,6 +4177,9 @@ block_8017013C:
     cpu->write_byte(s0 + 1, (uint8_t)v0);
     /* fall through to block_80170144 */
 
+    /* match_setup_apply + battle_state_init +
+     * flow_cfg_init + battle_sides_commit + battle_init —
+     * select confirmed: build battle sides. */
 block_80170144:
     a0 = s3;
     a1 = s2;
@@ -4296,6 +4386,9 @@ block_80170260:
         goto block_80170270;  /* not taken */
     }
 
+    /* Phase 3 — battle setup: post_battle_dispatch,
+     * battle_sides_commit, frame_present, record_state_stepper,
+     * battle_camera_step, battle_hud_draw. */
 block_80170270:
     a1 = s2;
     ra = 0x8017027Cu;  /* jal link before delay slot */
@@ -4346,6 +4439,7 @@ block_801702A8:
         goto block_801702B0;  /* not taken */
     }
 
+    /* frame_present — first battle frame. */
 block_801702B0:
     ra = 0x801702B8u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -4484,6 +4578,7 @@ block_8017036C:
     a0 = s5 + 8248;
     /* fall through to block_80170370 */
 
+    /* battle_camera_step — camera fly-in. */
 block_80170370:
     a1 = s0;
     a2 = s3;
@@ -4547,6 +4642,9 @@ block_801703B4:
         goto block_801703C8;  /* not taken */
     }
 
+    /* Phase 4 — render chain: player_light_apply +
+     * prim_list_gte_invoke / prim_xform3_task_run /
+     * prim_list_persp_step (GTE primitive submission). */
 block_801703C8:
     a1 = s4;
     a2 = s0;
@@ -4654,6 +4752,8 @@ block_80170458:
         goto block_80170460;  /* not taken */
     }
 
+    /* player_light_apply + prim_list_gte_invoke —
+     * second light/prim pass. */
 block_80170460:
     ra = 0x80170468u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -4789,6 +4889,8 @@ block_80170518:
         goto block_80170524;  /* not taken */
     }
 
+    /* prim_xform3_task_run + prim_list_persp_step —
+     * transform+perspective primitive pass. */
 block_80170524:
     a1 = s5 + 8256;
     a2 = s4;
@@ -4863,6 +4965,7 @@ block_801705A4:
         goto block_801705B8;  /* not taken */
     }
 
+    /* fighter_flash_update — hit-flash updates. */
 block_801705B8:
     a1 = s4;
     a2 = s0;
@@ -5105,6 +5208,8 @@ block_80170708:
         goto block_80170714;  /* not taken */
     }
 
+    /* prim_xform3_task_run + prim_list_persp_step —
+     * final primitive pass before sim. */
 block_80170714:
     a1 = s5 + 8256;
     a2 = s4;
@@ -5169,6 +5274,7 @@ block_80170794:
     cpu->write_byte(s0 + 177, (uint8_t)v0);
     /* fall through to block_8017079C */
 
+    /* battle_intro_fsm — intro camera sequence. */
 block_8017079C:
     a1 = s5;
     a2 = s4;
@@ -5219,6 +5325,10 @@ block_801707E0:
     t0 = t0 + 19632;
     /* fall through to block_801707E4 */
 
+    /* Phase 5 — fight loop per frame: fighter_tint_fade,
+     * slot_height_proj, fighter_trail_emit, fighter_frame x2,
+     * fighter_contact_resolve, fighter_pair_update,
+     * hud_state_machine x2, status_text_display x2. */
 block_801707E4:
     cpu->write_half(t0 + 2, (uint16_t)zero);
     cpu->write_half(t0 + 6, (uint16_t)v0);
@@ -5373,6 +5483,7 @@ block_801708C0:
         goto block_801708D0;  /* not taken */
     }
 
+    /* status_text_display — KO/countdown text. */
 block_801708D0:
     ra = 0x801708D8u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -5407,6 +5518,7 @@ block_801708F0:
     psx_check_interrupts_at(cpu, 0x80170998u);
     goto block_80170998;  /* j */
 
+    /* frame_present — end of fight frame. */
 block_801708F8:
     ra = 0x80170900u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -5414,6 +5526,11 @@ block_801708F8:
     psx_check_interrupts_at(cpu, 0x8012B23Cu);
     cpu->pc = 0x8012B23Cu; return;  /* CPS jal -> 0x8012B23C */
 
+    /* Phase 6 — battle exit/teardown: hud_sprite_desc_init,
+     * match_mode_set, se_value_select, deferred_cmd_post,
+     * scroll_cfg_set, task_table_init, rgb_triple_store,
+     * hud_state_machine, frame_divisor_get, frame_tick,
+     * rec_timer_pair_clear — return toward menu. */
 block_80170900:
     ra = 0x80170908u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -5564,6 +5681,7 @@ block_801709B0:
         goto block_801709C0;  /* not taken */
     }
 
+    /* rec_timer_pair_clear + epilogue. */
 block_801709C0:
     ra = 0x801709C8u;  /* jal link before delay slot */
     /* delay slot (always executes) */

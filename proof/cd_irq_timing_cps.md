@@ -197,3 +197,200 @@ attract CD streaming, no wedge. clean_stats positive hits:
 calls executing through timed bodies). cd_mc_state_machine /
 cd_response_process entry = 0 in attract (memcard/response paths —
 faithful-by-construction).
+
+## Batch 8 (orch/w5/e05) — self-delegate sweep + overlapping-alias bodies
+
+Transformer extension: `gen_cps_clean.py --timing` now handles
+`br2eu_psx_alias_body_<base>(cpu, entry)` generated bodies. The emitted
+cpst_ binds `uint32_t entry = cpu->pc;` before the `_cont` consumption
+and keeps the body's `switch (entry)` dispatch verbatim, so a timed
+body can faithfully transliterate an alias thunk that multiplexes many
+guest entries through shared blocks.
+
+Six bodies appended to game/cd_irq_probe.c (204 clean_cps.map rows,
+self-delegate count 22 -> 4):
+
+| symbol | source body | role |
+|---|---|---|
+| cpst_8018d150 | 0x8018D150 cd_read_issue | CD read-issue parent (21 blocks) |
+| cpst_8018bba8 | pad_slot_state_walk parent | pad-slot walk resumes (70 blocks) |
+| cpst_80183664 | scriptop_wait parent | scriptop_wait fragments (125 blocks) |
+| cpst_8018e590 | printf_core parent | printf_core pieces (102 blocks) |
+| cpst_8018bc78 | alias body of 0x8018BBA8 | alias-unique entry only |
+| cpst_8018e8d0 | alias body of 0x8018E590 | 2 alias-unique entries (0x8018E8D0, 0x8018E910) |
+| (entry row) | 0x8018EF6C sprintf_core_engine | entry registered -> existing batch-3 body |
+
+Coverage decisions:
+- Addrs already claimed by peer clean-C ports (scriptop_wait_atk3_self,
+  printf_cps_8018e63c family in w4_e00.c / gfx_emit_p05.c) were left
+  untouched — 23 conflicts dropped, peer ports win.
+- For alias bodies only alias-UNIQUE entry addrs were registered; the
+  ~23 shared alias entries stay routed to the main-parent cpst_ bodies
+  (identical guest code either way).
+
+Verification: clean build; headless :4871 frames 23341 -> 54314+
+attract CD streaming, no wedge. clean_stats: batch-8 entries 0 hits in
+attract window (scriptop/printf/pad paths not exercised headless —
+faithful-by-construction). Hot-path counters meanwhile show the timed
+bodies carrying real load: cd_cmd_issue 0x80196E14 = 100.7M dispatches,
+cd_result_wait_a 0x801968CC = 31.3M — the clean-dispatch + timed-body
+path sustains ~2M dispatches/sec of CD polling without timing drift.
+
+## Batch 9 (orch/w5/e05) — embedded entries; self-delegates reach ZERO
+
+Transformer extension: `gen_cps_clean.py --timing` now supports
+EMBEDDED ENTRIES — guest addrs that are instruction anchors mid-block
+(jal targets inside a parent's first block, e.g. 0x8019D508 inside
+br2eu_func_8019D500). find_body also matches the per-instruction
+`/* 0xADDR: ENC */` op comment; when the requested addr has no block
+label or _cont case, `_truncate_embedded_entry` rewrites the parent's
+FIRST block only:
+
+- drops instruction segments before the entry anchor (prologue kept
+  through the first psx_icache_fetch/psx_cyc_step so fetch accounting
+  still brackets the block)
+- rewrites psx_slice_block to (entry addr, bcyc - skipped_slots, side)
+  — bcyc is instr-slot count, skipped = (entry - block_start)/4
+- renames the block label to the entry addr and injects an explicit
+  `case 0xADDR: goto block_ADDR` into the _cont switch
+- entries in LATER blocks are rejected (branch targets must stay whole)
+
+Bodies this batch:
+| symbol | coverage |
+|---|---|
+| cpst_8018cfdc | cd_file_load_sm — 25 blocks / 372B standalone body |
+| cpst_8019d500 | cd_seek_complete_poll parent — 12 blocks (rows for all blocks) |
+| cpst_8019d508 | cd_seek_step EMBEDDED entry — truncated first block starts at the addiu sp,-32; skips parent's lui/lw v0 preload exactly as a real jal to 0x8019D508 does |
+| (rows) | 8019b310 -> cpst_8019b308 (block inside cd_ext_init_once), 8018f220 -> cpst_8018ef6c (sprintf piece _cont case) |
+
+Result: clean_table self-delegate count 4 -> 0 (8419 wrappers, 0
+skipped). The four former self-delegates all resolve through timed CPS
+bodies now; the clean-C wrappers' literal call_guest4(self) stays
+unwrapped by design but dispatches into the cpst_ body.
+
+Verification: clean build EU+USA; headless :4877 frames 23659 ->
+65220 attract CD streaming, no wedge. clean_stats: new entries 0 hits
+in attract (file-load/seek/sprintf-piece paths not exercised
+headless — faithful-by-construction); cd_cmd_issue still ~84M
+dispatches.
+
+## Batch 10 (orch/w5/e05) — residual leaf sweep + missing-row completion
+
+Coverage completion first: 109 clean_cps.map rows added for _cont/entry
+cases that existed inside already-emitted cpst_ bodies but were never
+registered — sprintf_core_engine resumes (107 rows -> cpst_8018ef6c) and
+two alias-body cases (-> cpst_8018e8d0). Those resumes previously fell
+through to generated/interp mid-coroutine.
+
+New timed bodies (all 1-block leaf functions, --timing):
+| entry | fnmap name | size |
+|---|---|---|
+| 0x80195A80 | cd_probe_retry | 16B |
+| 0x80195B10 | cd_ready_probe | 16B |
+| 0x80195BE0 | cd_status_raw | 16B |
+| 0x801961EC | cd_file_open | 260B |
+| 0x8019A7D4 | cd_intc_busy_read | 16B |
+| 0x8019BE28 | cd_mmio_strobe_20 | 40B |
+| 0x80191074 | gpu_flag_8322_read | 16B |
+| 0x80192580 | gpu_coord_pack | 28B |
+
+clean_table: 8526 wrappers, 0 skipped. Verified: clean build EU+USA;
+headless :4883 frames 31281 -> 38938+ attract CD streaming, no wedge.
+clean_stats: new entries 0 hits in attract window (init/probe leaves —
+faithful-by-construction).
+
+Also landed: proof/generated_zero_audit.md — full audit of
+br2_call_generated / psx_dispatch_call sites. Verdict: zero reachable
+generated-bypass sites; 20 literal self-delegates remain but are
+shadowed dead code (all targets now route to cpst_/clean-C via
+clean_cps.map before fnmap wrappers are consulted).
+
+## Batch 11 (orch/w5/e05) — untimed-cps_ residual sweep: LAST live path closed
+
+Sweep result: zero untimed `cps_` map rows exist at >=0x80180000 (all
+4512 remaining untimed rows live in 0x8012-0x8017 game-logic, deliberately
+untimed — no device deadlines). BUT one live untimed EXECUTION path
+remained outside the map: game/gfx_emit_p08.c's nine GPU packet-command
+wrappers (gpu_pkt_cmd_f22c..f608) called `cps_8018ef6c()` — the UNTIMED
+transliteration of the sprintf/GPU-packet interpreter — directly, bypassing
+cpst_8018ef6c. That body is hot (GPU packet dispatch every frame) and its
+untimed run had exactly the intra-piece cycle-loss the --timing mode fixes.
+
+Fix: extern + all 9 call sites switched cps_8018ef6c -> cpst_8018ef6c
+(identical void(void) contract; cpst_ has every _cont case the untimed
+body had, verified incl. 0x8018F504). The untimed body is now fully dead
+(still defined in cps_clean.c, zero callers).
+
+Peer check: gfx_emit_p05.c's printf_cps_body is a separate HAND-VERIFIED
+timed transliteration of printf_core (163 psx_cyc_/psx_check_interrupts
+calls) — already timed, correctly left alone. w3_e09.c cps_ defs are
+0x8016/0x8017 game-logic — out of region.
+
+Audit re-check (proof/generated_zero_audit.md): no new generated-dispatch
+sites introduced; conclusions unchanged.
+
+Verified: clean build EU+USA; headless :4889 frames 32698 -> 61246+
+attract CD streaming, no wedge.
+
+## Batch 11b (orch/w5/e05) — CD leaf-function sweep (8 bodies, 238 rows)
+
+Next tranche of 1-piece CD leaf parents + one medium body, all via
+--timing:
+| entry | fnmap name | blocks |
+|---|---|---|
+| 0x80195B4C | cd_bios_cmd20 | 1 |
+| 0x80195BF0 | cd_mode_byte_read | 1 |
+| 0x801962F0 | cd_stamp_to_sector | 1 |
+| 0x80197220 | cd_cmd_bytes | 1 |
+| 0x80199420 | cd_read_param_block | 1 |
+| 0x8019A7FC | cd_u16_swap_store | 1 |
+| 0x8019DAD0 | cd_chan_attr_push | 112 |
+| 0x801A1148 | cd_queue_a_read | 1 |
+
+clean_table: 8637 wrappers, 0 skipped. Verified: clean build EU+USA;
+headless :4897 frames 29328 -> 57498 attract CD streaming, no wedge.
+clean_stats: new entries 0 hits in attract (init/query leaves —
+faithful-by-construction); cd_cmd_issue remains hot.
+
+Audit follow-up sweep (batch 11 continuation): cpu->pc literal writes
+(842 sites) are all CPS tail-dispatch contract inside cpst_/peer CPS
+bodies — they feed the outer dispatch loop, not bypasses. br2_irq_poll
+sites are framework IRQ delivery. No new generated-dispatch bypasses
+found; proof/generated_zero_audit.md conclusions stand.
+
+## Batch 11c (orch/w5/e05) — 10 more CD 1-block leaves (20 rows)
+
+cd_xchg_bc850(0x80195CA8), cd_status_bcc90(0x80199FFC), cd_xchg_bde20
+(0x8019B1D0), cd_mmio_strobe_22(0x8019BE50), cd_xchg_fec24(0x8019FA6C),
+cd_job_slots_reset(0x801A0A00), cd_xchg_fefb4(0x801A11E4),
+cd_xchg_fefb8(0x801A11F8), cd_state_clear(0x801A1A2C),
+cd_ctx_set_28_34(0x801A24C0) — all 1-block timed cpst_ bodies.
+
+clean_table: 8637 wrappers, 0 skipped. Verified: clean build EU+USA;
+headless :4901 frames 30684 -> 45772+ attract CD streaming, no wedge.
+
+## Batch 12 (orch/w5/e05) — dead cps_ body sweep + cps_clean.c slim
+
+Residual sweep result: ZERO untimed cps_ map rows >= 0x80180000; the only
+cps_ defs left in clean_cps.map are 0x8012-0x8017 game-logic (deliberately
+untimed). cps_clean.c carried 543 dead cps_ bodies in 0x8018-0x801B with
+no clean_cps.map rows — leftovers from earlier coverage passes where a
+body was emitted then its map rows were reassigned to cpst_/peer ports.
+
+Regeneration was REJECTED: ~19 addrs in 0x801261xx-0x801267xx (game-logic
+band) have hand-written/readability-pass bodies in cps_clean.c that the
+mechanical transformer cannot reproduce (e.g. embedded entries in later
+blocks of split pieces — _truncate_embedded_entry only handles first-block
+entries). A full regen would have lost those hand edits.
+
+Instead: surgical removal of the 543 dead defs (prototype + body) via
+script, verified symbol-exact: remaining defs = exactly the 740 syms that
+have clean_cps.map rows; no live def lost, no extra defs added.
+File: 115528 -> 67056 lines.
+
+Verified: clean build EU + USA targets; headless :4907 frames
+24143 -> 30733+ attract CD streaming, no wedge.
+
+Frontier status: every clean_cps.map row in 0x8018-0x801B resolves to a
+timed cpst_ body or a peer hand-port. Remaining generated execution is
+unconverted parent piece-groups (~1300) — mechanical --timing candidates.

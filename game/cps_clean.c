@@ -1380,6 +1380,7 @@ void cps_8019a8ec(void);
  * CPS fallthrough stub — continues at 0x80126188 */
 void cps_80126178(void)
 {
+/* scene-thunk fragment: continues at 0x80126188 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1397,6 +1398,7 @@ block_80126178:
  * split piece of cps_80126178 */
 void cps_80126188(void)
 {
+/* scene-thunk fragment: continues at 0x80126194 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1413,6 +1415,7 @@ void cps_80126188(void)
  * split piece of cps_80126188 */
 void cps_80126194(void)
 {
+/* scene-thunk fragment: continues at 0x80126198 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1433,6 +1436,7 @@ void cps_80126194(void)
  * CPS fallthrough stub — continues at 0x8012619C */
 void cps_80126198(void)
 {
+/* scene-thunk fragment: continues at 0x8012619c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1447,6 +1451,7 @@ void cps_80126198(void)
  * split piece of cps_80126194 */
 void cps_8012619c(void)
 {
+/* scene-thunk fragment: continues at 0x801261c4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1466,6 +1471,7 @@ void cps_8012619c(void)
  * split piece of cps_8012619c */
 void cps_801261c4(void)
 {
+/* scene-thunk fragment: continues at 0x801261d8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1482,6 +1488,7 @@ block_801261C4:
  * split piece of cps_801261c4 */
 void cps_801261d8(void)
 {
+/* scene-thunk fragment: continues at 0x801261f8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1501,6 +1508,7 @@ void cps_801261d8(void)
  * split piece of cps_801261d8 */
 void cps_801261f8(void)
 {
+/* scene/mode thunk -> guest_bzero -> self */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1534,6 +1542,7 @@ block_8012620C:
  * CPS fallthrough stub — continues at 0x80126220 */
 void cps_8012621c(void)
 {
+/* scene-thunk fragment: continues at 0x80126220 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1548,6 +1557,7 @@ void cps_8012621c(void)
  * split piece of cps_801261f8 */
 void cps_80126220(void)
 {
+/* scene-thunk fragment: continues at 0x80126228 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1562,6 +1572,7 @@ void cps_80126220(void)
  * split piece of cps_80126220 */
 void cps_80126228(void)
 {
+/* scene-thunk fragment: continues at 0x80126234 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1576,6 +1587,7 @@ void cps_80126228(void)
  * split piece of cps_801261f8 */
 void cps_80126234(void)
 {
+/* scene/mode thunk -> empty_leaf -> boot */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1613,6 +1625,7 @@ block_80126258:
  * CPS fallthrough stub — continues at 0x80126260 */
 void cps_8012625c(void)
 {
+/* scene-thunk fragment: continues at 0x80126260 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1628,6 +1641,7 @@ block_8012625C:
  * split piece of cps_80126234 */
 void cps_80126260(void)
 {
+/* scene-thunk fragment: continues at 0x80126290 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1654,6 +1668,7 @@ block_80126260:
  * versus_init_memcard: versus_state_init + memcard_info_query — versus-mode init with memcard info poll. */
 void cps_80126290(void)
 {
+/* scene/mode thunk -> memcard_info_query -> versus_state_init */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1667,6 +1682,10 @@ void cps_80126290(void)
         }
     }
     /* Address: 0x80126290, Size: 48 bytes, Blocks: 4 */
+
+    /* record init + dispatch: word[s1+200]=v0, clears bytes s1+0/2/155/156,
+       jal 0x8015F590; on v0!=0 -> cps_801262C4, else jal
+       0x80126720(word[s1+192]) -> cps_80126328. CPS-blocked. */
 
 block_80126290:
     cpu->write_word(s1 + 200, v0);
@@ -1711,10 +1730,15 @@ block_801262BC:
  * CPS fallthrough stub — continues at 0x801262C4 */
 void cps_801262c0(void)
 {
+/* scene-thunk fragment: continues at 0x801262c4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x801262C0, Size: 4 bytes, Blocks: 1 */
+
+    /* nop sled -> cps_801262C4 */
+
+
 
 block_801262C0:
     /* nop */  /* 0x801262C0: 0x00000000 */
@@ -1726,6 +1750,7 @@ block_801262C0:
  * split piece of cps_80126290 — versus_init_memcard: versus_state_init + memcard_info_query — versus-mode init w */
 void cps_801262c4(void)
 {
+/* scene/mode thunk -> dbg_marker_mode_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1737,6 +1762,10 @@ void cps_801262c4(void)
         }
     }
     /* Address: 0x801262C4, Size: 48 bytes, Blocks: 2 */
+
+    /* attr read piece: half[sp+16]=byte[rec+29], a0=byte[rec+36],
+       jal 0x8018BABC; then a1=byte[rec+15], v1=0x66666667 (magic /10),
+       falls into cps_801262F4. CPS-blocked. */
 
 block_801262C4:
     v1 = cpu->read_word(s1 + 192);
@@ -1764,6 +1793,7 @@ block_801262E4:
  * split piece of cps_801262c4 */
 void cps_801262f4(void)
 {
+/* scene/mode thunk -> gauge_scale_fixed -> brightness_commit */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1775,6 +1805,10 @@ void cps_801262f4(void)
         }
     }
     /* Address: 0x801262F4, Size: 48 bytes, Blocks: 2 */
+
+    /* scale piece: a1=byte[rec+15]*8 * 0x66666667 >>2 -sign -> a1;
+       a0=byte[rec+14]; jal 0x80156048; then a0=byte[rec+12]^1,
+       jal 0x801561C8 -> cps_80126328. CPS-blocked. */
 
 block_801262F4:
     a1 = a1 << 3;
@@ -1807,6 +1841,7 @@ block_80126314:
  * CPS fallthrough stub — continues at 0x80126328 */
 void cps_80126324(void)
 {
+/* scene-thunk fragment: continues at 0x80126328 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1822,6 +1857,7 @@ block_80126324:
  * split piece of cps_80126290 — versus_init_memcard: versus_state_init + memcard_info_query — versus-mode init w */
 void cps_80126328(void)
 {
+/* scene/mode thunk -> frame_advance_helper -> ? */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1834,6 +1870,9 @@ void cps_80126328(void)
         }
     }
     /* Address: 0x80126328, Size: 32 bytes, Blocks: 3 */
+
+    /* setup piece: s5=0x66666667, jal 0x8012748C, jal 0x80163840(0);
+       s2=5, s4=4, v1=byte[s1], falls into cps_80126348. CPS-blocked. */
 
 block_80126328:
     ra = 0x80126330u;  /* jal link before delay slot */
@@ -1862,10 +1901,15 @@ block_80126338:
  * split piece of cps_80126328 */
 void cps_80126348(void)
 {
+/* scene-thunk fragment: continues at 0x80126350 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80126348, Size: 8 bytes, Blocks: 1 */
+
+    /* bounds check: v0 = (v1 < 14); falls into cps_80126350. */
+
+
 
 block_80126348:
     /* nop */  /* 0x80126348: 0x00000000 */
@@ -1878,10 +1922,15 @@ block_80126348:
  * split piece of cps_80126348 */
 void cps_80126350(void)
 {
+/* scene-thunk fragment: continues at 0x80126358 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80126350, Size: 8 bytes, Blocks: 1 */
+
+    /* loop gate: v0==0 spins here (CPS self-loop), else -> cps_80126358. */
+
+
 
 block_80126350:
     int cond_80126350 = (v0 == zero);  /* save branch cond before delay slot */
@@ -1901,6 +1950,7 @@ block_80126350:
  * split piece of cps_80126350 */
 void cps_80126358(void)
 {
+/* scene/mode thunk -> match_mode_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1913,6 +1963,10 @@ void cps_80126358(void)
         }
     }
     /* Address: 0x80126358, Size: 48 bytes, Blocks: 3 */
+
+    /* jump-table dispatch: v0 = word[0x8012E7F0 + v1*4]; jr v0.
+       Fallback arm: jal 0x801560F8(1), byte[s1]=1 -> cps_80126344.
+       CPS-blocked. */
 
 block_80126358:
     v0 = 0x8011E800u;  /* 0x80120000 -6144 */
@@ -1946,6 +2000,7 @@ block_80126380:
  * display_transition_wrap: display_mode_setup + frame_advance_helper + transition_screen_flow. */
 void cps_80126388(void)
 {
+/* scene/mode thunk -> display_mode_setup -> frame_advance_helper -> transition_screen_flow */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1959,6 +2014,10 @@ void cps_80126388(void)
         }
     }
     /* Address: 0x80126388, Size: 52 bytes, Blocks: 4 */
+
+    /* state-1 step: byte[s1]=v0, a0=byte[rec+11], jal 0x8012708C +
+       0x8012748C + 0x80165CB4(15); loop gate on byte[s1]!=1 / <14.
+       CPS-blocked. */
 
 block_80126388:
     cpu->write_byte(s1, (uint8_t)v0);
@@ -2005,6 +2064,7 @@ block_801263B0:
  * CPS fallthrough stub — continues at 0x801263C0 */
 void cps_801263bc(void)
 {
+/* scene-thunk fragment: continues at 0x801263c0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2020,6 +2080,7 @@ block_801263BC:
  * byte_table_leaf: byte-read leaf dispatch piece. */
 void cps_801263c0(void)
 {
+/* scene-thunk fragment: continues at 0x801263ec */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2033,6 +2094,10 @@ void cps_801263c0(void)
         }
     }
     /* Address: 0x801263C0, Size: 44 bytes, Blocks: 4 */
+
+    /* state-2 step: byte[s1]==2 check -> v0=3 path 0x8012661C, else
+       re-gate via 0x80126348; tail reads byte[rec+32] -> cps_801263EC.
+       CPS-blocked. */
 
 block_801263C0:
     /* delay slot (always executes) */
@@ -2073,6 +2138,7 @@ block_801263E0:
  * match_mode_set — display init then mode set. */
 void cps_801263ec(void)
 {
+/* scene/mode thunk -> match_mode_set -> display_mode_setup -> frame_advance_helper */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2087,6 +2153,10 @@ void cps_801263ec(void)
         }
     }
     /* Address: 0x801263EC, Size: 52 bytes, Blocks: 5 */
+
+    /* attr apply: a0 = (byte[rec+32]==0) ? 2 : 1, jal 0x801560F8,
+       then jal 0x8012708C(byte[rec+11]) + 0x8012748C -> cps_80126420.
+       CPS-blocked. */
 
 block_801263EC:
     /* nop */  /* 0x801263EC: 0x00000000 */
@@ -2135,6 +2205,7 @@ block_80126418:
  * transition_flow_wrap: transition_screen_flow caller. */
 void cps_80126420(void)
 {
+/* scene/mode thunk -> transition_screen_flow -> transition_screen_flow */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2149,6 +2220,10 @@ void cps_80126420(void)
         }
     }
     /* Address: 0x80126420, Size: 48 bytes, Blocks: 5 */
+
+    /* state-3 step: jal 0x80165CB4(3) + 0x80165CB4(1); byte[s1]==3 gate
+       -> byte[s1]=4 via cps_80126344; tail rec lookup -> cps_80126450.
+       CPS-blocked. */
 
 block_80126420:
     ra = 0x80126428u;  /* jal link before delay slot */
@@ -2195,6 +2270,7 @@ block_8012644C:
  * frame_advance_wrap: frame_advance_helper + match_mode_set. */
 void cps_80126450(void)
 {
+/* scene/mode thunk -> match_mode_set -> frame_advance_helper */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2209,6 +2285,11 @@ void cps_80126450(void)
         }
     }
     /* Address: 0x80126450, Size: 52 bytes, Blocks: 5 */
+
+    /* attr apply variant: a0 = (byte[rec+32]==0) ? 2 : 1, jal
+       0x801560F8 + 0x8012748C; then a2=rec, a0=0x51EB0000,
+       v1=byte[rec+15] -> cps_80126484 (magic-divide scale like
+       0x801262F4). CPS-blocked. */
 
 block_80126450:
     /* nop */  /* 0x80126450: 0x00000000 */
@@ -2255,10 +2336,14 @@ block_80126478:
  * split piece of cps_80126450 — frame_advance_wrap: frame_advance_helper + match_mode_set. */
 void cps_80126484(void)
 {
+/* scene-thunk fragment: continues at 0x801264b4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80126484, Size: 48 bytes, Blocks: 1 */
+
+    /* fixed-point index piece: a0|=0x851F; v0=v1*100 (v1*32+v1)*4+v1)*2;
+       a1=((v0*a0)>>32 hi)>>5 -sign <<3; -> 0x801264B4. CPS-blocked. */
 
 block_80126484:
     a0 = a0 | 0x851F;
@@ -2283,6 +2368,7 @@ block_80126484:
  * split piece of cps_80126484 */
 void cps_801264b4(void)
 {
+/* scene/mode thunk -> gauge_scale_fixed -> scene_entry */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2295,6 +2381,10 @@ void cps_801264b4(void)
         }
     }
     /* Address: 0x801264B4, Size: 52 bytes, Blocks: 3 */
+
+    /* scale + spawn: a1*s5 * 0x66666667 >>2 -sign -> jal 0x80156048;
+       then jal 0x80159028(0x80010000, 0, 1); v0==0 -> cps_801264EC.
+       CPS-blocked. */
 
 block_801264B4:
     { int64_t result = (int64_t)(int32_t)a1 * (int64_t)(int32_t)s5; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
@@ -2337,6 +2427,7 @@ block_801264E0:
  * split piece of cps_801264b4 */
 void cps_801264e8(void)
 {
+/* scene-thunk fragment: continues at 0x801264ec */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2352,10 +2443,15 @@ block_801264E8:
  * split piece of cps_801264b4 */
 void cps_801264ec(void)
 {
+/* scene/mode thunk -> gauge_scale_fixed */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x801264EC, Size: 44 bytes, Blocks: 1 */
+
+    /* scale piece (state-3 tail): a1=byte[rec+15]*8 * s5(0x66666667)
+       >>2 -sign -> a1; a0=byte[rec+14]; jal 0x80156048 -> cps_8012651C.
+       CPS-blocked. */
 
 block_801264EC:
     v0 = cpu->read_word(s1 + 192);
@@ -2382,6 +2478,7 @@ block_801264EC:
  * CPS fallthrough stub — continues at 0x8012651C */
 void cps_80126518(void)
 {
+/* scene-thunk fragment: continues at 0x8012651c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2397,10 +2494,14 @@ block_80126518:
  * split piece of cps_801264ec */
 void cps_8012651c(void)
 {
+/* scene-thunk fragment: continues at 0x8012652c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012651C, Size: 16 bytes, Blocks: 1 */
+
+    /* state gate: byte[s1] != s4(4) -> cps_80126344 loop, else ->
+       cps_8012652C. CPS-blocked. */
 
 block_8012651C:
     v0 = cpu->read_byte(s1);
@@ -2423,6 +2524,7 @@ block_8012651C:
  * split piece of cps_8012651c */
 void cps_8012652c(void)
 {
+/* scene-thunk fragment: continues at 0x80126550 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2434,6 +2536,10 @@ void cps_8012652c(void)
         }
     }
     /* Address: 0x8012652C, Size: 28 bytes, Blocks: 2 */
+
+    /* state-4 commit: byte[s1]=s2(5) -> cps_80126344; then
+       byte[rec+32]==0 ? a0=2 -> cps_80126550 : -> cps_8012654C.
+       CPS-blocked. */
 
 block_8012652C:
     /* delay slot (always executes) */
@@ -2463,6 +2569,7 @@ block_80126534:
  * CPS fallthrough stub — continues at 0x8012654C */
 void cps_80126548(void)
 {
+/* scene-thunk fragment: continues at 0x8012654c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2478,6 +2585,7 @@ block_80126548:
  * split piece of cps_8012652c */
 void cps_8012654c(void)
 {
+/* scene-thunk fragment: continues at 0x80126550 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2493,6 +2601,7 @@ block_8012654C:
  * display_tick_mode: display_mode_setup + frame_advance_helper + frame_tick + match_mode_set. */
 void cps_80126550(void)
 {
+/* scene/mode thunk -> match_mode_set -> display_mode_setup -> frame_tick -> frame_advance_helper */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2506,6 +2615,10 @@ void cps_80126550(void)
         }
     }
     /* Address: 0x80126550, Size: 44 bytes, Blocks: 4 */
+
+    /* attr apply (state-4): s3++, jal 0x801560F8, jal 0x8012708C
+       (byte[rec+11]), jal 0x8012AEEC(s1), jal 0x8012748C -> cps_8012657C.
+       CPS-blocked. */
 
 block_80126550:
     ra = 0x80126558u;  /* jal link before delay slot */
@@ -2545,6 +2658,7 @@ block_80126574:
  * per-frame match loop with memcard poll. */
 void cps_8012657c(void)
 {
+/* scene/mode thunk -> frame_tick -> memcard_poll_frame -> match_loop */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2559,6 +2673,10 @@ void cps_8012657c(void)
         }
     }
     /* Address: 0x8012657C, Size: 48 bytes, Blocks: 5 */
+
+    /* state-5 step: jal 0x8012AEEC(s1), 0x8015F644, 0x80147034(0);
+       byte[s1]==5 gate -> (s3&0xFFFF)<4 ? v0=6 : v0=2 -> cps_801265AC.
+       CPS-blocked. */
 
 block_8012657C:
     ra = 0x80126584u;  /* jal link before delay slot */
@@ -2606,6 +2724,7 @@ block_801265A4:
  * split piece of cps_8012657c — match_frame_tick: frame_tick + match_loop + memcard_poll_frame — */
 void cps_801265ac(void)
 {
+/* scene-thunk fragment: continues at 0x801265b8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2617,6 +2736,9 @@ void cps_801265ac(void)
         }
     }
     /* Address: 0x801265AC, Size: 12 bytes, Blocks: 2 */
+
+    /* next-state select: v0!=0 -> byte[s1]=6 (cps_801265C0),
+       else v0=2 -> cps_801265B8. CPS-blocked. */
 
 block_801265AC:
     int cond_801265AC = (v0 != zero);  /* save branch cond before delay slot */
@@ -2640,10 +2762,13 @@ block_801265B4:
  * split piece of cps_801263c0 — byte_table_leaf: byte-read leaf dispatch piece. */
 void cps_801265b8(void)
 {
+/* scene-thunk fragment: continues at 0x801265c0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x801265B8, Size: 8 bytes, Blocks: 1 */
+
+    /* state commit: byte[s1]=v0 -> cps_80126344 loop. CPS-blocked. */
 
 block_801265B8:
     /* delay slot (always executes) */
@@ -2658,6 +2783,7 @@ block_801265B8:
  * split piece of cps_801265ac */
 void cps_801265c0(void)
 {
+/* scene-thunk fragment: continues at 0x80126344 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2669,6 +2795,10 @@ void cps_801265c0(void)
         }
     }
     /* Address: 0x801265C0, Size: 28 bytes, Blocks: 2 */
+
+    /* state-6 commit: byte[s1]=6 -> cps_80126344; then
+       byte[rec+32]==0 ? a0=2 -> cps_801265E4 : -> cps_801265E0.
+       CPS-blocked. */
 
 block_801265C0:
     /* delay slot (always executes) */
@@ -2698,6 +2828,7 @@ block_801265C8:
  * CPS fallthrough stub — continues at 0x801265E0 */
 void cps_801265dc(void)
 {
+/* scene-thunk fragment: continues at 0x801265e0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2713,6 +2844,7 @@ block_801265DC:
  * split piece of cps_801265c0 */
 void cps_801265e0(void)
 {
+/* scene-thunk fragment: continues at 0x801265e4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2729,6 +2861,7 @@ block_801265E0:
  * battle_intro_flow — results screen entry sequence. */
 void cps_801265e4(void)
 {
+/* scene/mode thunk -> match_mode_set -> battle_intro_flow -> results_scoreboard */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2743,6 +2876,10 @@ void cps_801265e4(void)
         }
     }
     /* Address: 0x801265E4, Size: 44 bytes, Blocks: 5 */
+
+    /* attr apply (state-6): jal 0x801560F8 + 0x80167330(0); s0=byte[s1],
+       gate s0!=6 -> loop; else jal 0x80164668(0) -> cps_80126610.
+       CPS-blocked. */
 
 block_801265E4:
     ra = 0x801265ECu;  /* jal link before delay slot */
@@ -2789,10 +2926,14 @@ block_8012660C:
  * split piece of cps_801265e4 — results_flow_enter: match_mode_set + results_scoreboard + */
 void cps_80126610(void)
 {
+/* scene-thunk fragment: continues at 0x8012661c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80126610, Size: 12 bytes, Blocks: 1 */
+
+    /* state gate: byte[s1] != s0(6) -> cps_80126344 loop, else v0=3 ->
+       cps_8012661C. CPS-blocked. */
 
 block_80126610:
     /* nop */  /* 0x80126610: 0x00000000 */
@@ -2814,6 +2955,7 @@ block_80126610:
  * split piece of cps_801263c0 — byte_table_leaf: byte-read leaf dispatch piece. */
 void cps_8012661c(void)
 {
+/* scene-thunk fragment: continues at 0x80126640 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2826,6 +2968,9 @@ void cps_8012661c(void)
         }
     }
     /* Address: 0x8012661C, Size: 36 bytes, Blocks: 3 */
+
+    /* state-3 commit variant: byte[s1]=3 -> cps_80126344; then
+       byte[rec+32]==0 ? a0=2 : a0=1 -> cps_80126640. CPS-blocked. */
 
 block_8012661C:
     /* delay slot (always executes) */
@@ -2860,6 +3005,7 @@ block_8012663C:
  * enters a battle mode and starts the flow FSM. */
 void cps_80126640(void)
 {
+/* scene/mode thunk -> match_mode_set -> match_mode_set -> battle_flow_state_machine */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2875,6 +3021,10 @@ void cps_80126640(void)
         }
     }
     /* Address: 0x80126640, Size: 48 bytes, Blocks: 6 */
+
+    /* attr apply (state-7/8): jal 0x801560F8; byte[s1]==7 -> jal
+       0x801560F8(1) + 0x8016FCC4(sp+16), v0=8; gate byte[s1]!=v0 ->
+       loop, else cps_80126674. CPS-blocked. */
 
 block_80126640:
     ra = 0x80126648u;  /* jal link before delay slot */
@@ -2927,10 +3077,13 @@ block_8012666C:
  * CPS fallthrough stub — continues at 0x80126674 */
 void cps_80126670(void)
 {
+/* scene-thunk fragment: continues at 0x80126674 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80126670, Size: 4 bytes, Blocks: 1 */
+
+    /* nop sled -> cps_80126674 */
 
 block_80126670:
     /* nop */  /* 0x80126670: 0x00000000 */
@@ -2943,6 +3096,7 @@ block_80126670:
  * unlocks a progress scene then sets match mode. */
 void cps_80126674(void)
 {
+/* scene/mode thunk -> match_mode_set -> unlock_progress_scene_entry */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2957,6 +3111,10 @@ void cps_80126674(void)
         }
     }
     /* Address: 0x80126674, Size: 44 bytes, Blocks: 5 */
+
+    /* attr apply (state-8): byte[s1]=s2(5) -> loop; jal 0x801560F8(1) +
+       0x80167840(0); byte[s1+156]==s4(4) -> cps_8012652C, ==s0(5) ->
+       cps_801266B4, else -> cps_801266A4. CPS-blocked. */
 
 block_80126674:
     /* delay slot (always executes) */
@@ -3010,6 +3168,7 @@ block_8012669C:
  * CPS fallthrough stub — continues at 0x801266A4 */
 void cps_801266a0(void)
 {
+/* scene-thunk fragment: continues at 0x801266a4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3025,6 +3184,7 @@ block_801266A0:
  * split piece of cps_80126674 — scene_unlock_entry: match_mode_set + unlock_progress_scene_entry — */
 void cps_801266a4(void)
 {
+/* scene/mode thunk -> player_name_entry */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3036,6 +3196,9 @@ void cps_801266a4(void)
         }
     }
     /* Address: 0x801266A4, Size: 16 bytes, Blocks: 2 */
+
+    /* state commit: jal 0x80164EA4(0), byte[s1]=s0(5) -> cps_80126344.
+       CPS-blocked. */
 
 block_801266A4:
     ra = 0x801266ACu;  /* jal link before delay slot */
@@ -3056,6 +3219,7 @@ block_801266AC:
  * split piece of cps_80126674 — scene_unlock_entry: match_mode_set + unlock_progress_scene_entry — */
 void cps_801266b4(void)
 {
+/* scene/mode thunk -> match_mode_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3068,6 +3232,10 @@ void cps_801266b4(void)
         }
     }
     /* Address: 0x801266B4, Size: 32 bytes, Blocks: 3 */
+
+    /* state commit: byte[s1]=11, byte[s1+2]=s4(4) -> cps_80126344;
+       then jal 0x801560F8(1), byte[s1+2]==3 ? -> cps_801266F0 :
+       cps_801266D8. CPS-blocked. */
 
 block_801266B4:
     cpu->write_byte(s1, (uint8_t)v0);
@@ -3103,10 +3271,13 @@ block_801266C8:
  * CPS fallthrough stub — continues at 0x801266D8 */
 void cps_801266d4(void)
 {
+/* scene-thunk fragment: continues at 0x801266d8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x801266D4, Size: 4 bytes, Blocks: 1 */
+
+    /* nop sled -> cps_801266D8 */
 
 block_801266D4:
     /* nop */  /* 0x801266D4: 0x00000000 */
@@ -3118,6 +3289,7 @@ block_801266D4:
  * split piece of cps_801266b4 */
 void cps_801266d8(void)
 {
+/* scene/mode thunk -> system_config_menu_b */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3130,6 +3302,9 @@ void cps_801266d8(void)
         }
     }
     /* Address: 0x801266D8, Size: 24 bytes, Blocks: 3 */
+
+    /* state gate: byte[s1+2]!=s4(4) -> cps_80126344 loop; else jal
+       0x8015B9A0 -> cps_801266F8. CPS-blocked. */
 
 block_801266D8:
     int cond_801266D8 = (v1 != s4);  /* save branch cond before delay slot */
@@ -3162,10 +3337,13 @@ block_801266E8:
  * split piece of cps_801266b4 */
 void cps_801266f0(void)
 {
+/* scene/mode thunk -> system_config_menu_a */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x801266F0, Size: 8 bytes, Blocks: 1 */
+
+    /* tail call: jal 0x8015C754 -> cps_801266F8. CPS-blocked. */
 
 block_801266F0:
     ra = 0x801266F8u;  /* jal link before delay slot */
@@ -3180,6 +3358,7 @@ block_801266F0:
  * split piece of cps_801266d8 */
 void cps_801266f8(void)
 {
+/* scene-thunk fragment: continues at 0x80126344 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3191,6 +3370,9 @@ void cps_801266f8(void)
         }
     }
     /* Address: 0x801266F8, Size: 12 bytes, Blocks: 2 */
+
+    /* state gate: v0==0 -> cps_80126344 loop; else byte[s1]=s2(5) ->
+       cps_80126344. CPS-blocked. */
 
 block_801266F8:
     int cond_801266F8 = (v0 == zero);  /* save branch cond before delay slot */
@@ -3216,10 +3398,15 @@ block_80126700:
  * CPS leaf — 3 stores, 0 loads */
 void cps_80126704(void)
 {
+/* scratchpad/RAM byte store: writes s2 to *s1 and 13/255 to
+ * 0x1F800000+13 — low-level state byte init. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80126704, Size: 28 bytes, Blocks: 1 */
+
+    /* scratchpad poke: byte[s1]=s2(5); byte[0x1F800000]=13,
+       byte[0x1F800001]=255; return. */
 
 block_80126704:
     cpu->write_byte(s1, (uint8_t)s2);
@@ -3239,10 +3426,14 @@ block_80126704:
  * CPS fallthrough stub — continues at 0x80126740 */
 void cps_80126734(void)
 {
+/* scene-thunk fragment: continues at 0x80126740 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80126734, Size: 12 bytes, Blocks: 1 */
+
+    /* arg setup: v0+=4736, a0=v0+96, save ra at sp+20; ->
+       0x80126740. CPS-blocked. */
 
 block_80126734:
     v0 = v0 + 4736;
@@ -3256,10 +3447,14 @@ block_80126734:
  * split piece of cps_80126734 */
 void cps_80126740(void)
 {
+/* scene-thunk fragment: continues at 0x80126764 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80126740, Size: 36 bytes, Blocks: 1 */
+
+    /* 16B block copy: word[v1..+12]=word[v0..+12], v0+=16;
+       -> 0x80126764. CPS-blocked. */
 
 block_80126740:
     a2 = cpu->read_word(v0);
@@ -3280,6 +3475,7 @@ block_80126740:
  * save_block_init + dbg_marker_mode_set — save-system init sequence. */
 void cps_80126764(void)
 {
+/* scene/mode thunk -> save_defaults_fill -> save_block_init -> save_tables_commit -> dbg_marker_mode_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3294,6 +3490,10 @@ void cps_80126764(void)
         }
     }
     /* Address: 0x80126764, Size: 48 bytes, Blocks: 5 */
+
+    /* list walk + apply: v0!=a0 -> cps_80126740; else word[v1]=word[v0],
+       jal 0x8015AB4C + 0x80167A64 + 0x80163AB4, then jal 0x8018BABC
+       (byte[s0+36]). CPS-blocked. */
 
 block_80126764:
     int cond_80126764 = (v0 != a0);  /* save branch cond before delay slot */
@@ -3343,6 +3543,7 @@ block_80126788:
  * split piece of cps_80126764 — save_init_seq: save_defaults_fill + save_tables_commit + */
 void cps_80126794(void)
 {
+/* scene/mode thunk -> gauge_scale_fixed -> brightness_commit */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3354,6 +3555,10 @@ void cps_80126794(void)
         }
     }
     /* Address: 0x80126794, Size: 52 bytes, Blocks: 2 */
+
+    /* scale piece (s0 variant of 0x801264EC): byte[s0+15]*8 * 0x66666667
+       >>2 -sign -> a1; byte[s0+14]=a0; jal 0x80156048; then
+       a0=byte[s0+12]^1, jal 0x801561C8. CPS-blocked. */
 
 block_80126794:
     v0 = 0x66660000u;  /* 0x66660000 */
@@ -3387,6 +3592,7 @@ block_801267C0:
  * CPS fallthrough stub — continues at 0x801267CC */
 void cps_801267c8(void)
 {
+/* scene-thunk fragment: continues at 0x801267cc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3402,10 +3608,13 @@ block_801267C8:
  * split piece of cps_80126794 */
 void cps_801267cc(void)
 {
+/* leaf epilogue piece: restore s0/ra, sp += 24, jr ra. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x801267CC, Size: 16 bytes, Blocks: 1 */
+
+    /* epilogue: pop s0, ra (sp += 24), jr ra */
 
 block_801267CC:
     ra = cpu->read_word(sp + 20);
@@ -3422,10 +3631,13 @@ block_801267CC:
  * CPS fallthrough stub — continues at 0x801267FC */
 void cps_801267f8(void)
 {
+/* scene-thunk fragment: continues at 0x801267fc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x801267F8, Size: 4 bytes, Blocks: 1 */
+
+    /* nop sled -> cps_801267FC */
 
 block_801267F8:
     /* nop */  /* 0x801267F8: 0x00000000 */
@@ -3437,6 +3649,7 @@ block_801267F8:
  * split piece of cps_801267f8 */
 void cps_801267fc(void)
 {
+/* scene/mode thunk -> dbg_marker_mode_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3448,6 +3661,9 @@ void cps_801267fc(void)
         }
     }
     /* Address: 0x801267FC, Size: 24 bytes, Blocks: 2 */
+
+    /* tail call + epilogue: jal 0x8018BABC(0), pop ra (sp += 24), jr ra.
+       CPS-blocked. */
 
 block_801267FC:
     ra = 0x80126804u;  /* jal link before delay slot */
@@ -3471,6 +3687,7 @@ block_80126804:
  * CPS fallthrough stub — continues at 0x80126828 */
 void cps_80126814(void)
 {
+/* scene-thunk fragment: continues at 0x80126828 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3490,10 +3707,13 @@ block_80126814:
  * split piece of cps_80126814 */
 void cps_80126828(void)
 {
+/* counter-increment leaf: *(a0) += 1 and *a1 += 1. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80126828, Size: 24 bytes, Blocks: 1 */
+
+    /* refcount bump: word[a0]++, word[a1]++ (delay slot), return. */
 
 block_80126828:
     v1 = cpu->read_word(a1);
@@ -3512,10 +3732,13 @@ block_80126828:
  * leaf reg-op / return-value helper */
 void cps_80126840(void)
 {
+/* empty leaf: immediate jr ra. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80126840, Size: 8 bytes, Blocks: 1 */
+
+    /* bare return (jr $ra, nop delay slot) */
 
 block_80126840:
     uint32_t jt_80126840 = ra;  /* latch indirect target before delay slot */
@@ -3530,6 +3753,7 @@ block_80126840:
  * split piece of cps_80126858 */
 void cps_80126854(void)
 {
+/* scene-thunk fragment: continues at 0x80126858 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3545,6 +3769,7 @@ block_80126854:
  * split piece of cps_80126854 */
 void cps_80126858(void)
 {
+/* scene-thunk fragment: continues at 0x80126854 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3556,6 +3781,9 @@ void cps_80126858(void)
         }
     }
     /* Address: 0x80126858, Size: 24 bytes, Blocks: 2 */
+
+    /* bounds-loop tail: v1+=4; while (a0 < v1) loop back to 0x80126854;
+       else jr $ra. CPS-blocked. */
 
 block_80126858:
     v1 = v1 + 4;
@@ -3584,6 +3812,7 @@ block_80126868:
  * ui_leaf_step_f: leaf state step, no calls. */
 void cps_80126888(void)
 {
+/* small multi-block piece in the 0x80126 thunk cluster. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3600,6 +3829,10 @@ void cps_80126888(void)
     }
     /* Address: 0x80126888, Size: 48 bytes, Blocks: 6 */
 
+    /* mode/state dispatcher on s0: s0==v0 -> 0x8012691C;
+       s0<257 or s0==0 -> 0x801268C4 (reset); s0==272 ->
+       0x80126EA8; s0==288 -> 0x80126EE0; else -> 0x80126EEC.
+       CPS-blocked. */
 block_80126888:
     int cond_80126888 = (s0 == v0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -3673,6 +3906,7 @@ block_801268B4:
  * CPS fallthrough stub — continues at 0x801268BC */
 void cps_801268b8(void)
 {
+/* scene-thunk fragment: continues at 0x801268bc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3688,11 +3922,14 @@ block_801268B8:
  * split piece of cps_80126888 — ui_leaf_step_f: leaf state step, no calls. */
 void cps_801268bc(void)
 {
+/* scene-thunk fragment: continues at 0x801268c4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x801268BC, Size: 8 bytes, Blocks: 1 */
 
+    /* dispatch tail: nop delay slot -> j 0x80126EEC.
+       CPS-blocked. */
 block_801268BC:
     /* delay slot (always executes) */
     /* nop */  /* 0x801268C0: 0x00000000 */
@@ -3706,6 +3943,7 @@ block_801268BC:
  * split piece of cps_80126888 — ui_leaf_step_f: leaf state step, no calls. */
 void cps_801268c4(void)
 {
+/* scene/mode thunk -> cd_file_load_sm */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3718,6 +3956,9 @@ void cps_801268c4(void)
     }
     /* Address: 0x801268C4, Size: 36 bytes, Blocks: 2 */
 
+    /* state reset: jal 0x8018CFDC(-1,0); s0=256;
+       word[0x801C0000+17312]=0; byte[0x801C0000-4116]=0xFF;
+       -> 0x801268E8 init tail. CPS-blocked. */
 block_801268C4:
     a0 = -1;
     ra = 0x801268D0u;  /* jal link before delay slot */
@@ -3741,6 +3982,7 @@ block_801268D0:
  * split piece of cps_801268c4 */
 void cps_801268e8(void)
 {
+/* scene-thunk fragment: continues at 0x80126918 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3767,6 +4009,7 @@ block_801268E8:
  * split piece of cps_801268e8 */
 void cps_80126918(void)
 {
+/* scene-thunk fragment: continues at 0x8012691c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3782,6 +4025,7 @@ block_80126918:
  * tag_table_load: scratch_013_set + tag_table_get + cd_file_load_sm — tag-table load from CD. */
 void cps_8012691c(void)
 {
+/* scene/mode thunk -> tag_table_get -> cd_file_load_sm -> scratch_013_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3796,6 +4040,9 @@ void cps_8012691c(void)
     }
     /* Address: 0x8012691C, Size: 44 bytes, Blocks: 4 */
 
+    /* init/verify: jal 0x80127680; jal 0x8018CFDC(128,v0);
+       if v0==0 -> 0x80126EEC; else s1=byte[0x1F800013],
+       jal 0x801274D8(0). CPS-blocked. */
 block_8012691C:
     ra = 0x80126924u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -3838,6 +4085,7 @@ block_80126938:
  * split piece of cps_8012691c — tag_table_load: scratch_013_set + tag_table_get + cd_file_load_sm — tag-table lo */
 void cps_80126948(void)
 {
+/* scene/mode thunk -> tag_table_get -> stream_block_decode -> spr_draw_off */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3851,6 +4099,9 @@ void cps_80126948(void)
     }
     /* Address: 0x80126948, Size: 48 bytes, Blocks: 3 */
 
+    /* display-list stream steps: jal 0x80127680;
+       jal 0x80163154(word[0x801E3CF4],v0,0) -> s2;
+       jal 0x8018BF40(word[0x801E3CF4],960,0,1). CPS-blocked. */
 block_80126948:
     ra = 0x80126950u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -3884,6 +4135,7 @@ block_80126960:
  * split piece of cps_80126948 */
 void cps_80126978(void)
 {
+/* scene/mode thunk -> tag_table_get -> stream_block_decode */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3896,6 +4148,10 @@ void cps_80126978(void)
         }
     }
     /* Address: 0x80126978, Size: 48 bytes, Blocks: 3 */
+
+    /* stream step 1: word[s0+15612] += s2; jal 0x80127680; then
+       0x80163154(word[s0+15612], v0, 1) -> s2=v0; -> 0x801269A8.
+       CPS-blocked. */
 
 block_80126978:
     v0 = cpu->read_word(s0 + 15612);
@@ -3928,6 +4184,7 @@ block_8012699C:
  * split piece of cps_80126978 */
 void cps_801269a8(void)
 {
+/* scene/mode thunk -> spr_draw_off -> tag_table_get -> stream_block_decode */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3940,6 +4197,10 @@ void cps_801269a8(void)
         }
     }
     /* Address: 0x801269A8, Size: 48 bytes, Blocks: 3 */
+
+    /* stream step 2: jal 0x8018BF40(word[s0+15612],896,0,1); word
+       [s0+15612]+=s2; jal 0x80127680; then 0x80163154(...,2)->s2=v0;
+       -> 0x801269D8. CPS-blocked. */
 
 block_801269A8:
     a0 = cpu->read_word(s0 + 15612);
@@ -3974,6 +4235,7 @@ block_801269C8:
  * split piece of cps_801269a8 */
 void cps_801269d8(void)
 {
+/* scene/mode thunk -> spr_draw_off -> tag_table_get */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3986,6 +4248,10 @@ void cps_801269d8(void)
         }
     }
     /* Address: 0x801269D8, Size: 48 bytes, Blocks: 3 */
+
+    /* stream step 3: jal 0x8018BF40(word[s0+15612],496,480,1); word
+       [s0+15612]+=s2; jal 0x80127680; a1=v0; -> 0x80126A08.
+       CPS-blocked. */
 
 block_801269D8:
     s2 = v0;
@@ -4018,6 +4284,7 @@ block_80126A04:
  * split piece of cps_801269d8 */
 void cps_80126a08(void)
 {
+/* scene/mode thunk -> stream_block_decode -> spr_draw_off */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -4030,6 +4297,10 @@ void cps_80126a08(void)
         }
     }
     /* Address: 0x80126A08, Size: 48 bytes, Blocks: 3 */
+
+    /* stream step 4: jal 0x80163154(...,3)->s2=v0; jal 0x8018BF40
+       (word[s0+15612],480,480,1); word[s0+15612]+=s2; -> 0x80126A38.
+       CPS-blocked. */
 
 block_80126A08:
     a0 = cpu->read_word(s0 + 15612);
@@ -4064,6 +4335,7 @@ block_80126A2C:
  * stream block and draws its sprites (title/streaming path). */
 void cps_80126a38(void)
 {
+/* scene/mode thunk -> tag_table_get -> stream_block_decode -> spr_draw_off -> tag_table_get -> stream_block_decode -> spr_draw_off -> tag_table_get -> stream_block_decode -> spr_draw_off -> tag_table_get -> stream_block_decode -> spr_draw_off -> tag_table_get -> stream_block_decode -> spr_draw_off -> tag_table_get -> stream_block_decode -> spr_draw_off -> tag_table_get -> stream_block_decode -> spr_draw_off -> tag_table_get -> stream_block_decode -> spr_draw_off -> tag_table_get -> stream_block_decode -> spr_draw_off -> tag_table_get -> stream_block_decode -> spr_draw_off -> tag_table_get -> stream_block_decode -> spr_draw_off -> tag_table_get -> stream_block_decode -> spr_draw_off -> tag_table_get -> stream_block_decode -> spr_draw_off -> tag_table_get -> stream_block_decode -> spr_draw_off -> tag_table_get -> stream_block_decode -> spr_draw_off -> tag_table_get -> stream_block_decode -> spr_draw_pair -> tag_table_get -> stream_block_decode -> spr_draw_off -> tag_table_get -> stream_block_decode -> spr_draw_off -> cd_timer_read -> cd_timer_read -> scratch_013_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -4132,6 +4404,10 @@ void cps_80126a38(void)
     }
     /* Address: 0x80126A38, Size: 1136 bytes, Blocks: 58 */
 
+    /* channel/display-list init: word[s0+15612]=v0;
+       jal 0x80127680, 0x80163154(handle,v0,4) -> s2;
+       jal 0x8018BF40 params 464/480... 58-block init chain.
+       CPS-blocked. */
 block_80126A38:
     ra = 0x80126A40u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -4712,6 +4988,7 @@ block_80126EA0:
  * cd_file_load_sm — loads fighter record and page table from CD. */
 void cps_80126ea8(void)
 {
+/* scene/mode thunk -> cd_file_load_sm -> fighter_record_apply -> page_table_ptr_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -4727,6 +5004,9 @@ void cps_80126ea8(void)
     }
     /* Address: 0x80126EA8, Size: 56 bytes, Blocks: 5 */
 
+    /* mode-272 step: jal 0x8018CFDC(137, word[0x801E3CF4]);
+       jal 0x801566A0(word[0x801E3CF4],0); jal
+       0x801566D4(0,0); s0=288 (next mode). CPS-blocked. */
 block_80126EA8:
     s1 = 0x801E0000u;  /* 0x801E0000 */
     a1 = cpu->read_word(s1 + 15612);
@@ -4776,11 +5056,13 @@ block_80126ED8:
  * split piece of cps_80126888 — ui_leaf_step_f: leaf state step, no calls. */
 void cps_80126ee0(void)
 {
+/* scene-thunk fragment: continues at 0x80126ee8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80126EE0, Size: 8 bytes, Blocks: 1 */
 
+    /* mode-288 step head: v0=-1 -> falls into shared tail. */
 block_80126EE0:
     /* delay slot (always executes) */
     v0 = -1;
@@ -4794,6 +5076,7 @@ block_80126EE0:
  * split piece of cps_80126a38 — stream_frame_decode_draw: scratch_013_set + tag_table_get + */
 void cps_80126ee8(void)
 {
+/* scene-thunk fragment: continues at 0x80126eec */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -4809,10 +5092,13 @@ block_80126EE8:
  * split piece of cps_80126888 — ui_leaf_step_f: leaf state step, no calls. */
 void cps_80126eec(void)
 {
+/* leaf epilogue piece: restore s0-s2/ra, sp += 48, jr ra. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80126EEC, Size: 24 bytes, Blocks: 1 */
+
+    /* epilogue: pop s0-s2, ra (sp += 48), jr ra */
 
 block_80126EEC:
     ra = cpu->read_word(sp + 44);
@@ -4836,6 +5122,7 @@ void cps_801279c0(void)
 
     /* Address: 0x801279C0, Size: 8 bytes, Blocks: 1 */
 
+    /* bare jr $ra (delay-slot nop). */
 block_801279C0:
     uint32_t jt_801279C0 = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
@@ -4854,6 +5141,8 @@ void cps_80127b4c(void)
 
     /* Address: 0x80127B4C, Size: 24 bytes, Blocks: 1 */
 
+    /* halfword refcount bump: word[a0+6]++, jr ra */
+
 block_80127B4C:
     v0 = cpu->read_half(a0 + 6);
     /* nop */  /* 0x80127B50: 0x00000000 */
@@ -4871,11 +5160,15 @@ block_80127B4C:
  * split piece of cps_8012844c */
 void cps_80128428(void)
 {
+/* results fragment: continues at 0x8012844c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   uint32_t w0, w1, w2, w3;
 
     /* Address: 0x80128428, Size: 36 bytes, Blocks: 1 */
+
+    /* 16B block copy (w0-w3 variant): word[a0..+12]=word[v1..+12],
+       v1+=16; -> 0x8012844C. CPS-blocked. */
 
     w0 = cpu->read_word(v1);
     w1 = cpu->read_word(v1 + 4);
@@ -4894,6 +5187,7 @@ void cps_80128428(void)
  * split piece of cps_80128428 */
 void cps_8012844c(void)
 {
+/* results fragment: continues at 0x80128458 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   int more;
@@ -4906,6 +5200,8 @@ void cps_8012844c(void)
         }
     }
     /* Address: 0x8012844C, Size: 12 bytes, Blocks: 2 */
+    /* CPS piece (cps_8012844c):-> 0x8018428/0x8018458.
+       CPS-blocked. */
 
     more = (v1 != v0);
     /* delay slot (always executes) */
@@ -4925,6 +5221,7 @@ done:
  * split piece of cps_8012844c */
 void cps_80128458(void)
 {
+/* results fragment: continues at 0x801284ac */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   uint32_t w0, w1, w2, w3;
@@ -4939,6 +5236,10 @@ void cps_80128458(void)
         }
     }
     /* Address: 0x80128458, Size: 84 bytes, Blocks: 3 */
+
+    /* bulk copy loop: v0=v0+1192 dest, v1=a1+7132 src -> a1+7532;
+       16B/iter copy; then tail single word; t4=word[v1]; v1=a1+7536;
+       -> 0x801284AC. CPS-blocked. */
 
     v0 = v0 + 1192;
     v1 = a1 + 7132;
@@ -4983,6 +5284,7 @@ block_80128490:
  * split piece of cps_80128458 */
 void cps_801284ac(void)
 {
+/* results fragment: continues at 0x801284b4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -4999,6 +5301,7 @@ block_801284AC:
  * split piece of cps_801284ac */
 void cps_801284b4(void)
 {
+/* results fragment: continues at 0x80128504 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -5010,6 +5313,10 @@ void cps_801284b4(void)
         }
     }
     /* Address: 0x801284B4, Size: 80 bytes, Blocks: 2 */
+
+    /* bulk copy loop 2: copy 16B/iter v1->v0 until a0=a1+7792;
+       tail 8B; then alignment check ((v1|a0)&3)==0 -> unaligned
+       path 0x80128558 else 0x80128504. CPS-blocked. */
 
 block_801284B4:
     t6 = cpu->read_word(v1 + 8);
@@ -5057,10 +5364,14 @@ block_801284D8:
  * split piece of cps_801284b4 */
 void cps_80128504(void)
 {
+/* results fragment: continues at 0x80128520 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80128504, Size: 28 bytes, Blocks: 1 */
+
+    /* unaligned 16B load via lwl/lwr x4 -> t4-t7; -> 0x80128520.
+       CPS-blocked. */
 
 block_80128504:
     t4 = br2_lwl(cpu, v1 + 3, t4);
@@ -5078,6 +5389,7 @@ block_80128504:
  * split piece of cps_80128504 */
 void cps_80128520(void)
 {
+/* results fragment: continues at 0x80128588 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -5090,6 +5402,9 @@ void cps_80128520(void)
     }
     /* Address: 0x80128520, Size: 56 bytes, Blocks: 2 */
 
+    /* tail of a 16B-stride copy loop (lwr word[v1+12], advance
+       both ptrs, loop while v1!=v0 -> 0x80128504) -> j
+       0x80128588 with v0=0x801F0000. CPS-blocked. */
 block_80128520:
     t7 = br2_lwr(cpu, v1 + 12, t7);
     v1 = v1 + 16;
@@ -5116,6 +5431,7 @@ block_80128550:
  * split piece of cps_801284b4 */
 void cps_80128558(void)
 {
+/* results fragment: continues at 0x80128588 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   uint32_t w0, w1, w2, w3;
@@ -5129,6 +5445,9 @@ void cps_80128558(void)
         }
     }
     /* Address: 0x80128558, Size: 48 bytes, Blocks: 2 */
+
+    /* bulk copy loop 3 (aligned fast path): v1=a1+8312 -> v0=
+       a1+9032 16B/iter; then a2=a1+4; -> 0x80128624. CPS-blocked. */
 
     for (;;) {
         w0 = cpu->read_word(v1);
@@ -5161,6 +5480,7 @@ done:
  * split piece of cps_80128520 */
 void cps_80128588(void)
 {
+/* results fragment: continues at 0x80128624 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -5173,6 +5493,10 @@ void cps_80128588(void)
         }
     }
     /* Address: 0x80128588, Size: 108 bytes, Blocks: 3 */
+
+    /* copy-select: if (a1+8312 | 0x801F0000+2784)&3: unaligned
+       lwl/lwr loop v1->a0 until a1+9032; else -> 0x801285F4; a2=a1+4;
+       -> 0x80128624. CPS-blocked. */
 
 block_80128588:
     a0 = v0 + 2784;
@@ -5223,6 +5547,7 @@ block_801285EC:
  * split piece of cps_80128588 */
 void cps_801285f4(void)
 {
+/* results fragment: continues at 0x80128624 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   uint32_t w0, w1, w2, w3;
@@ -5236,6 +5561,9 @@ void cps_801285f4(void)
         }
     }
     /* Address: 0x801285F4, Size: 48 bytes, Blocks: 2 */
+
+    /* bulk copy loop 4 (aligned): v1=a1+8312 -> v0=a1+9032
+       16B/iter; a2=a1+4; -> 0x80128624. CPS-blocked. */
 
     for (;;) {
         w0 = cpu->read_word(v1);
@@ -5268,6 +5596,7 @@ done:
  * split piece of cps_80128588 */
 void cps_80128624(void)
 {
+/* results fragment: continues at 0x80128660 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   uint32_t w0, w1;
@@ -5297,6 +5626,7 @@ void cps_80128624(void)
  * split piece of cps_80128624 */
 void cps_80128660(void)
 {
+/* results fragment: continues at 0x801286cc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   uint32_t w0, w1, w2, w3;
@@ -5311,6 +5641,11 @@ void cps_80128660(void)
         }
     }
     /* Address: 0x80128660, Size: 108 bytes, Blocks: 3 */
+
+    /* bank-select copy: v1&1 picks 2160-stride bank at a0; copy
+       a2->v0 16B/iter until a3; then a2=a1+2164,a3=a1+4324,
+       a0=0x801E0000+6972+4320; v1=byte[t2+5]&1*17; -> 0x801286CC.
+       CPS-blocked. */
 
     v1 = v1 & 1u;
     v0 = a0 + v1 * 2160u;
@@ -5354,6 +5689,7 @@ tail:
  * split piece of cps_80128660 */
 void cps_801286cc(void)
 {
+/* results fragment: continues at 0x80128738 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   uint32_t w0, w1, w2, w3;
@@ -5368,6 +5704,10 @@ void cps_801286cc(void)
         }
     }
     /* Address: 0x801286CC, Size: 108 bytes, Blocks: 3 */
+
+    /* bank-select copy 2: v0=((v0*15*16)+a0) dest; copy a2->v0 16B/iter
+       until a3; then a3=a1+4324,a2=a1+5076, a0=0x801E0000+11292-7344;
+       v0=(byte[t0+5]&1)*756 stride calc -> 0x80128738. CPS-blocked. */
 
     v0 = ((((v0 << 3) - v1) << 4) + a0);
 
@@ -5414,6 +5754,7 @@ tail:
  * split piece of cps_801286cc */
 void cps_80128738(void)
 {
+/* results fragment: continues at 0x801287a4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   uint32_t w0, w1, w2, w3;
@@ -5428,6 +5769,11 @@ void cps_80128738(void)
         }
     }
     /* Address: 0x80128738, Size: 108 bytes, Blocks: 3 */
+
+    /* bank-select copy 3: copy a3->v0 16B/iter until a2=a1+
+       5076; tail word; then half[a1+2]->half[t3+148]; unpack
+       flags=word[a1+9048] bits -> half[word[t0+24]+572/452/652]
+       etc.; -> 0x80128814. CPS-blocked. */
 
     v0 = v0 + a0;
 
@@ -5477,6 +5823,7 @@ tail:
  * split piece of cps_80128738 */
 void cps_801287a4(void)
 {
+/* results fragment: continues at 0x80128814 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   uint32_t w0, w1, w2, w3, flags;
@@ -5491,6 +5838,11 @@ void cps_801287a4(void)
         }
     }
     /* Address: 0x801287A4, Size: 112 bytes, Blocks: 3 */
+
+    /* bank-select copy 4: copy a2->v0 16B/iter until t1=a1+
+       5832; tail word; half[a1+2]->half[t3+148]; flags=
+       word[a1+9048]; bits0..2 -> half[word[t0+24]+572/452/652];
+       -> 0x80128814. CPS-blocked. */
 
     v0 = v0 + a0;
 
@@ -5539,11 +5891,16 @@ tail:
  * split piece of cps_801287a4 */
 void cps_80128814(void)
 {
+/* results fragment: continues at 0x80128880 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   uint32_t flags;
 
     /* Address: 0x80128814, Size: 108 bytes, Blocks: 1 */
+
+    /* flag-unpack tail: flags bits 2..7 -> half[word[t0/t2+24]
+       +652/612/572/452]; word[0x801F0000+196]=word[+8]=-1; ->
+       0x80128880. CPS-blocked. */
 
     flags = v1;
     v0 = v0 & 1u;
@@ -5575,10 +5932,14 @@ void cps_80128814(void)
  * split piece of cps_80128814 */
 void cps_80128880(void)
 {
+/* results leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80128880, Size: 24 bytes, Blocks: 1 */
+
+    /* sentinel write + exit: half[v0+198]=half[v0+10]=-2;
+       v0=half[a1]; jr ra */
 
 block_80128880:
     v1 = -2;
@@ -5597,6 +5958,7 @@ block_80128880:
  * results_record_build_wrap: results_record_build caller A. */
 void cps_801288f0(void)
 {
+/* results thunk -> results_record_build */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -5614,6 +5976,10 @@ void cps_801288f0(void)
     }
     /* Address: 0x801288F0, Size: 112 bytes, Blocks: 7 */
 
+    /* counter/anim step: half[s0+6]=a2 (sign-ext); jal
+       0x80127C60; half[s0+8]=20; half[s0+2]++ wrap 3->0;
+       half[s0+6]++; tail reads half[s0+6]/[s0+2] -> emit.
+       CPS-blocked. */
 block_801288F0:
     int cond_801288F0 = (v0 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -5687,6 +6053,7 @@ block_80128958:
  * results_record_build_wrap_b: results_record_build caller B. */
 void cps_80128960(void)
 {
+/* results thunk -> results_record_build */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -5700,6 +6067,10 @@ void cps_80128960(void)
         }
     }
     /* Address: 0x80128960, Size: 84 bytes, Blocks: 4 */
+
+    /* counter step: half[s0+6]=v0+1 (sign-ext a2); jal
+       0x80127C60; half[s0+8]=200, half[s0+2]++ wrap at 3->0;
+       half[s0]=v0(1); epilogue. CPS-blocked. */
 
 block_80128960:
     v0 = v0 + 1;
@@ -5750,6 +6121,7 @@ block_801289A0:
  * single word read from v1 */
 void cps_801289d0(void)
 {
+/* results leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -5762,6 +6134,8 @@ void cps_801289d0(void)
     }
     /* Address: 0x801289D0, Size: 40 bytes, Blocks: 2 */
 
+    /* jr-table dispatch: pc = word[0x8011EC08 + (v1<<2)];
+       alt entry 0x801289F0: v0 = t0 & 0xFFFF; jr ra. */
 block_801289D0:
     v0 = 0x8011EC08u;  /* 0x80120000 -5112 */
     v1 = v1 << 2;
@@ -5787,6 +6161,7 @@ block_801289F0:
  * split piece of cps_80128ac0 — record_half_step_b: s16 read/write leaf step. */
 void cps_801289f8(void)
 {
+/* results fragment: continues at 0x80128a44 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -5800,6 +6175,9 @@ void cps_801289f8(void)
     }
     /* Address: 0x801289F8, Size: 76 bytes, Blocks: 3 */
 
+    /* palette slot alloc: if half[a3+6]>=600 reset to 0;
+       half[a3+4]=idx; a1 = 0x801C47C0 + idx*240 +
+       half[a3+6]*2 -> 0x80128A44 stores t0 there. CPS-blocked. */
 block_801289F8:
     v0 = (int32_t)(int16_t)cpu->read_half(a3 + 6);
     /* nop */  /* 0x801289FC: 0x00000000 */
@@ -5840,11 +6218,13 @@ block_80128A10:
  * split piece of cps_801289f8 */
 void cps_80128a44(void)
 {
+/* results leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80128A44, Size: 16 bytes, Blocks: 1 */
 
+    /* palette write: half[a1+0x8000+12492] = t0; jr ra. */
 block_80128A44:
     v1 = 0x8000;
     a1 = a1 + v1;
@@ -5860,6 +6240,7 @@ block_80128A44:
  * record_half_step_a: s16 read/write leaf step. */
 void cps_80128a54(void)
 {
+/* results fragment: continues at 0x80128AB4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -5874,6 +6255,9 @@ void cps_80128a54(void)
     }
     /* Address: 0x80128A54, Size: 96 bytes, Blocks: 4 */
 
+    /* palette read variant A: same slot math; if
+       half[a3+6]>=600 reset; returns v1=half[entry+12492+0x8000]
+       with v0=4 tag. CPS-blocked. */
 block_80128A54:
     v0 = (int32_t)(int16_t)cpu->read_half(a3 + 6);
     /* nop */  /* 0x80128A58: 0x00000000 */
@@ -5932,11 +6316,13 @@ block_80128AAC:
  * split piece of cps_80128a54 — record_half_step_a: s16 read/write leaf step. */
 void cps_80128ab4(void)
 {
+/* results leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80128AB4, Size: 12 bytes, Blocks: 1 */
 
+    /* store half[a3]=v0; return v0=0. */
 block_80128AB4:
     cpu->write_half(a3, (uint16_t)v0);
     uint32_t jt_80128AB8 = ra;  /* latch indirect target before delay slot */
@@ -5951,6 +6337,7 @@ block_80128AB4:
  * record_half_step_b: s16 read/write leaf step. */
 void cps_80128ac0(void)
 {
+/* results fragment: continues at 0x801289F8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -5966,6 +6353,9 @@ void cps_80128ac0(void)
     }
     /* Address: 0x80128AC0, Size: 104 bytes, Blocks: 5 */
 
+    /* palette read variant B: same slot math as
+       0x80128A54; writes half[a3]=1 tag; returns v1.
+       CPS-blocked. */
 block_80128AC0:
     v0 = (int32_t)(int16_t)cpu->read_half(a3 + 6);
     /* nop */  /* 0x80128AC4: 0x00000000 */
@@ -6030,6 +6420,7 @@ block_80128B20:
  * results_record_build_wrap_c: results_record_build caller C. */
 void cps_80128b9c(void)
 {
+/* results thunk -> results_record_build */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6044,6 +6435,9 @@ void cps_80128b9c(void)
     }
     /* Address: 0x80128B9C, Size: 80 bytes, Blocks: 4 */
 
+    /* 16B-stride copy loop tail (v0+3948/+3024 src, a1 dst,
+       t0-t3 words) -> epilogue: a2=half[v1+6], a1=3, pop ra,
+       sp+=24, jr ra. CPS-blocked. */
 block_80128B9C:
     v0 = v0 + 3948;
     a2 = v0 + 3024;
@@ -6093,6 +6487,7 @@ block_80128BDC:
  * CPS fallthrough stub — continues at 0x80128C10 */
 void cps_80128c0c(void)
 {
+/* results fragment: continues at 0x80128c10 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6108,11 +6503,13 @@ block_80128C0C:
  * split piece of cps_80128c0c */
 void cps_80128c10(void)
 {
+/* results leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80128C10, Size: 8 bytes, Blocks: 1 */
 
+    /* halfword[v0]=0; jr ra. */
 block_80128C10:
     uint32_t jt_80128C10 = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
@@ -6126,10 +6523,14 @@ block_80128C10:
  * split piece of cps_80128c88 — record_half_read_leaf: s16 field read step. */
 void cps_80128c68(void)
 {
+/* results fragment: continues at 0x80128c88 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80128C68, Size: 32 bytes, Blocks: 1 */
+
+    /* 16B block copy variant: word[v0..+12]=word[v1..+12]; ->
+       0x80128C88. CPS-blocked. */
 
 block_80128C68:
     a3 = cpu->read_word(v1);
@@ -6148,6 +6549,7 @@ block_80128C68:
  * record_half_read_leaf: s16 field read step. */
 void cps_80128c88(void)
 {
+/* results fragment: continues at 0x80128cf8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6165,6 +6567,8 @@ void cps_80128c88(void)
     }
     /* Address: 0x80128C88, Size: 112 bytes, Blocks: 7 */
 
+    /* bulk 16B copy s0+8664 -> 0x801E0F6C (loop), then
+       counter step s2+1, a1=half[s0+2]-1. CPS-blocked. */
 block_80128C88:
     v1 = v1 + 16;
     int cond_80128C8C = (v1 != a0);  /* save branch cond before delay slot */
@@ -6248,11 +6652,13 @@ block_80128CF0:
  * split piece of cps_80128c88 — record_half_read_leaf: s16 field read step. */
 void cps_80128cf8(void)
 {
+/* results fragment: continues at 0x80128cfc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80128CF8, Size: 4 bytes, Blocks: 1 */
 
+    /* empty piece (branch joins only). */
 block_80128CF8:
     int cond_80128CF8 = ((int32_t)a1 >= 0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -6272,11 +6678,13 @@ block_80128CF8:
  * split piece of cps_80128cf8 */
 void cps_80128cfc(void)
 {
+/* results fragment: continues at 0x80128d00 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80128CFC, Size: 4 bytes, Blocks: 1 */
 
+    /* empty piece. */
 block_80128CFC:
     /* nop */  /* 0x80128CFC: 0x00000000 */
     cpu->pc = 0x80128d00u; return;  /* fallthrough to split piece */
@@ -6287,11 +6695,13 @@ block_80128CFC:
  * split piece of cps_80128cf8 */
 void cps_80128d00(void)
 {
+/* results fragment: continues at 0x80128d04 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80128D00, Size: 4 bytes, Blocks: 1 */
 
+    /* a1=2; falls through. */
 block_80128D00:
     a1 = 2;
     cpu->pc = 0x80128d04u; return;  /* fallthrough to split piece */
@@ -6302,6 +6712,7 @@ block_80128D00:
  * split piece of cps_80128cf8 */
 void cps_80128d04(void)
 {
+/* results fragment: continues at 0x80128d18 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6314,6 +6725,8 @@ void cps_80128d04(void)
     }
     /* Address: 0x80128D04, Size: 20 bytes, Blocks: 2 */
 
+    /* countdown/step: v1++, while v1<a0 a1-- else a1++;
+       CPS-blocked. */
 block_80128D04:
     v1 = v1 + 1;
     v0 = ((int32_t)v1 < (int32_t)a0) ? 1 : 0;  /* 0x80128D08: 0x0064102A */
@@ -6338,6 +6751,7 @@ block_80128D14:
  * record_half_step_c: s16 read/write leaf step. */
 void cps_80128d18(void)
 {
+/* results fragment: continues at 0x80128d5c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6353,6 +6767,9 @@ void cps_80128d18(void)
     }
     /* Address: 0x80128D18, Size: 68 bytes, Blocks: 5 */
 
+    /* indexed halfword fetch: addr = s3 + a1*(9*8+1)*4
+       pattern (~a1*292-9052 stride walk), read half[v1],
+       a1-- loop. CPS-blocked. */
 block_80128D18:
     int cond_80128D18 = ((int32_t)a1 <= 0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -6412,6 +6829,7 @@ block_80128D58:
  * split piece of cps_80128c88 — record_half_read_leaf: s16 field read step. */
 void cps_80128d5c(void)
 {
+/* results thunk -> victory_record_restore */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6424,6 +6842,8 @@ void cps_80128d5c(void)
     }
     /* Address: 0x80128D5C, Size: 24 bytes, Blocks: 2 */
 
+    /* counter step: jal; half[s0+6]=v0-1; bound v0=599.
+       CPS-blocked. */
 block_80128D5C:
     ra = 0x80128D64u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -6452,6 +6872,7 @@ block_80128D64:
  * CPS fallthrough stub — continues at 0x80128D78 */
 void cps_80128d74(void)
 {
+/* results fragment: continues at 0x80128d78 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6467,6 +6888,7 @@ block_80128D74:
  * split piece of cps_80128d5c */
 void cps_80128d78(void)
 {
+/* results fragment: continues at 0x80128d7c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6482,10 +6904,13 @@ block_80128D78:
  * split piece of cps_80128d5c */
 void cps_80128d7c(void)
 {
+/* results leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80128D7C, Size: 28 bytes, Blocks: 1 */
+
+    /* epilogue: pop s0-s3, ra (sp += 40), jr ra */
 
 block_80128D7C:
     ra = cpu->read_word(sp + 32);
@@ -6505,10 +6930,14 @@ block_80128D7C:
  * split piece of cps_80128dec — record_half_step_d: s16 read/write leaf step. */
 void cps_80128dcc(void)
 {
+/* results fragment: continues at 0x80128dec */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80128DCC, Size: 32 bytes, Blocks: 1 */
+
+    /* 16B block copy variant: word[a2..+12]=word[v1..+12]; ->
+       0x80128DEC. CPS-blocked. */
 
 block_80128DCC:
     t2 = cpu->read_word(v1);
@@ -6527,6 +6956,7 @@ block_80128DCC:
  * record_half_step_d: s16 read/write leaf step. */
 void cps_80128dec(void)
 {
+/* results fragment: continues at 0x80128e54 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6543,6 +6973,9 @@ void cps_80128dec(void)
     }
     /* Address: 0x80128DEC, Size: 104 bytes, Blocks: 6 */
 
+    /* sibling of 0x80128C88: 16B copy s0+8664 ->
+       0x801E0F6C (t2-t5 regs), counter t0+1, a1=half[s0+2]-1.
+       CPS-blocked. */
 block_80128DEC:
     v1 = v1 + 16;
     int cond_80128DF0 = (v1 != a3);  /* save branch cond before delay slot */
@@ -6620,6 +7053,7 @@ block_80128E4C:
  * split piece of cps_80128dec — record_half_step_d: s16 read/write leaf step. */
 void cps_80128e54(void)
 {
+/* results fragment: continues at 0x80128e64 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6633,6 +7067,7 @@ void cps_80128e54(void)
     }
     /* Address: 0x80128E54, Size: 16 bytes, Blocks: 3 */
 
+    /* loop step: a1=2 branch; v1++ counter. CPS-blocked. */
 block_80128E54:
     int cond_80128E54 = ((int32_t)a1 >= 0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -6659,6 +7094,7 @@ block_80128E60:
  * split piece of cps_80128e54 */
 void cps_80128e64(void)
 {
+/* results fragment: continues at 0x80128e74 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6671,6 +7107,8 @@ void cps_80128e64(void)
     }
     /* Address: 0x80128E64, Size: 16 bytes, Blocks: 2 */
 
+    /* loop bound: while v1<a2 keep a1-- else a1++.
+       CPS-blocked. */
 block_80128E64:
     v0 = ((int32_t)v1 < (int32_t)a2) ? 1 : 0;  /* 0x80128E64: 0x0066102A */
     int cond_80128E68 = (v0 != zero);  /* save branch cond before delay slot */
@@ -6694,6 +7132,7 @@ block_80128E70:
  * record_half_step_e: s16 read/write leaf step. */
 void cps_80128e74(void)
 {
+/* results fragment: continues at 0x80128EB4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6708,6 +7147,9 @@ void cps_80128e74(void)
     }
     /* Address: 0x80128E74, Size: 64 bytes, Blocks: 4 */
 
+    /* indexed halfword fetch (sibling of 0x80128D18):
+       addr = t1 + a1*292-ish, read half[v1], a1-- walk -9052.
+       CPS-blocked. */
 block_80128E74:
     int cond_80128E74 = ((int32_t)a1 <= 0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -6763,6 +7205,7 @@ block_80128EA8:
  * victory_restore_wrap_b: victory_record_restore caller. */
 void cps_80128eb4(void)
 {
+/* results thunk -> victory_record_restore */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6777,6 +7220,8 @@ void cps_80128eb4(void)
     }
     /* Address: 0x80128EB4, Size: 40 bytes, Blocks: 4 */
 
+    /* counter step (sibling of 0x80128D5C): jal;
+       half[s0+6]=v0-1; bound 599. CPS-blocked. */
 block_80128EB4:
     ra = 0x80128EBCu;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -6814,11 +7259,13 @@ block_80128ED4:
  * split piece of cps_80128eb4 — victory_restore_wrap_b: victory_record_restore caller. */
 void cps_80128edc(void)
 {
+/* results leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80128EDC, Size: 8 bytes, Blocks: 1 */
 
+    /* epilogue: pop, sp+=24, jr ra. */
 block_80128EDC:
     uint32_t jt_80128EDC = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
@@ -6832,11 +7279,13 @@ block_80128EDC:
  * single half store to v0 */
 void cps_80128ee4(void)
 {
+/* results leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80128EE4, Size: 12 bytes, Blocks: 1 */
 
+    /* halfword[word[a0+204]]=0; jr ra. */
 block_80128EE4:
     v0 = cpu->read_word(a0 + 204);
     uint32_t jt_80128EE8 = ra;  /* latch indirect target before delay slot */
@@ -6851,6 +7300,7 @@ block_80128EE4:
  * split piece of cps_80128f58 */
 void cps_80128f50(void)
 {
+/* results fragment: continues at 0x80128f58 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6867,6 +7317,7 @@ block_80128F50:
  * split piece of cps_80128f50 */
 void cps_80128f58(void)
 {
+/* results thunk -> victory_record_restore */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6879,6 +7330,9 @@ void cps_80128f58(void)
         }
     }
     /* Address: 0x80128F58, Size: 64 bytes, Blocks: 3 */
+
+    /* copy loop tail + call: 16B/iter v1->v0 until a1; then
+       jal 0x80128268(a1=4); half[s0+6]=v0; epilogue. CPS-blocked. */
 
 block_80128F58:
     t0 = cpu->read_word(v1 + 8);
@@ -6922,11 +7376,13 @@ block_80128F84:
  * CPS fallthrough stub — continues at 0x80128FA0 */
 void cps_80128f9c(void)
 {
+/* results fragment: continues at 0x80128fa0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80128F9C, Size: 4 bytes, Blocks: 1 */
 
+    /* empty piece. */
 block_80128F9C:
     int cond_80128F9C = ((int32_t)a1 >= 0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -6946,11 +7402,13 @@ block_80128F9C:
  * split piece of cps_80128f9c */
 void cps_80128fa0(void)
 {
+/* results fragment: continues at 0x80128fa4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80128FA0, Size: 4 bytes, Blocks: 1 */
 
+    /* empty piece. */
 block_80128FA0:
     /* nop */  /* 0x80128FA0: 0x00000000 */
     cpu->pc = 0x80128fa4u; return;  /* fallthrough to split piece */
@@ -6961,6 +7419,7 @@ block_80128FA0:
  * split piece of cps_80128f9c */
 void cps_80128fa4(void)
 {
+/* results fragment: continues at 0x80128fa8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6976,11 +7435,13 @@ block_80128FA4:
  * split piece of cps_80128fa4 */
 void cps_80128fa8(void)
 {
+/* results leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80128FA8, Size: 4 bytes, Blocks: 1 */
 
+    /* bare jr ra. */
 block_80128FA8:
     uint32_t jt_80128FA8 = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
@@ -6994,11 +7455,13 @@ block_80128FA8:
  * CPS fallthrough stub — continues at 0x80128FB0 */
 void cps_80128fac(void)
 {
+/* results fragment: continues at 0x80128fb0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80128FAC, Size: 4 bytes, Blocks: 1 */
 
+    /* empty piece. */
 block_80128FAC:
     /* nop */  /* 0x80128FAC: 0x00000000 */
     cpu->pc = 0x80128fb0u; return;  /* fallthrough to split piece */
@@ -7009,11 +7472,13 @@ block_80128FAC:
  * split piece of cps_80128f9c */
 void cps_80128fb0(void)
 {
+/* results leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80128FB0, Size: 8 bytes, Blocks: 1 */
 
+    /* halfword[v0]=a1; jr ra. */
 block_80128FB0:
     uint32_t jt_80128FB0 = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
@@ -7027,10 +7492,15 @@ block_80128FB0:
  * CPS fallthrough stub — continues at 0x80128FD4 */
 void cps_80128fb8(void)
 {
+/* results fragment: continues at 0x80128fd4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80128FB8, Size: 28 bytes, Blocks: 1 */
+
+    /* countdown piece: v1=0; v0=word[a0+204]; a2++; a3=half
+       [v0+2]; a0=0x801C0000+18368; a2<=0 -> 0x80128FF8 else
+       0x80128FD4. CPS-blocked. */
 
 block_80128FB8:
     v1 = zero;
@@ -7056,6 +7526,7 @@ block_80128FB8:
  * ui_leaf_step_g: leaf state step, no calls. */
 void cps_80128fd4(void)
 {
+/* results fragment: continues at 0x80128ff8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7071,6 +7542,8 @@ void cps_80128fd4(void)
     }
     /* Address: 0x80128FD4, Size: 36 bytes, Blocks: 5 */
 
+    /* countdown step: a3--, v1++ while v1<a2 a3--/++
+       (sibling of 0x80128E64). CPS-blocked. */
 block_80128FD4:
     a3 = a3 + -1;
     /* fall through to block_80128FD8 */
@@ -7115,6 +7588,7 @@ block_80128FF4:
  * record_half_step_f: s16 read/write leaf step. */
 void cps_80128ff8(void)
 {
+/* results fragment: continues at 0x80129050 (menu band). */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7131,6 +7605,9 @@ void cps_80128ff8(void)
     }
     /* Address: 0x80128FF8, Size: 88 bytes, Blocks: 6 */
 
+    /* indexed halfword fetch variant (base a0):
+       addr = a0 + a3*292-ish stride, half[v1], a3-- walk;
+       second stride expr a1*15*16-a1... CPS-blocked. */
 block_80128FF8:
     int cond_80128FF8 = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -7198,6 +7675,7 @@ block_8012903C:
  * split piece of cps_80128ff8 — record_half_step_f: s16 read/write leaf step. */
 void cps_80129050(void)
 {
+/* menu-piece fragment: continues at 0x801290cc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7210,6 +7688,10 @@ void cps_80129050(void)
         }
     }
     /* Address: 0x80129050, Size: 124 bytes, Blocks: 3 */
+
+    /* table copy: dest=0x80200000+(v1*8+a1)*4; copy
+       0x801C15F8+11680.. src 16B/iter; tail 8B; then v0=a1*45*4-45
+       stride calc; a0=0x80202DA8; -> 0x801290CC. CPS-blocked. */
 
 block_80129050:
     v1 = v1 << 3;
@@ -7263,6 +7745,7 @@ block_8012909C:
  * split piece of cps_80129050 */
 void cps_801290cc(void)
 {
+/* menu-piece fragment: continues at 0x80129148 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7275,6 +7758,10 @@ void cps_801290cc(void)
         }
     }
     /* Address: 0x801290CC, Size: 124 bytes, Blocks: 3 */
+
+    /* table copy 2: dest=0x80200000+((v0*8+a1)*4); src=0x801C47C0+
+       a3*9052 .. +9040; 16B/iter; tail 12B; -> 0x80129148.
+       CPS-blocked. */
 
 block_801290CC:
     v0 = v0 << 3;
@@ -7328,11 +7815,15 @@ block_80129134:
  * split piece of cps_801290cc */
 void cps_80129148(void)
 {
+/* menu-piece fragment: continues at 0x80129190 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80129148, Size: 72 bytes, Blocks: 1 */
 
+    /* table slot store + dispatch: word[a2+8]=t2; a0 =
+       0x80205104 + a1*45*8-ish stride; v0=0x801CF88C, low2 bits
+       pick path -> 0x801291E4/0x80129190. CPS-blocked. */
 block_80129148:
     cpu->write_word(a2 + 8, t2);
     a0 = 0x80200000u;  /* 0x80200000 */
@@ -7367,10 +7858,14 @@ block_80129148:
  * split piece of cps_80129148 */
 void cps_80129190(void)
 {
+/* menu-piece fragment: continues at 0x801291c8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80129190, Size: 56 bytes, Blocks: 1 */
+
+    /* unaligned 16B load via lwl/lwr x4 -> t0-t3; -> 0x801291C8.
+       CPS-blocked. */
 
 block_80129190:
     t0 = br2_lwl(cpu, v0 + 3, t0);
@@ -7389,6 +7884,7 @@ block_80129190:
  * split piece of cps_80129190 */
 void cps_801291c8(void)
 {
+/* menu-piece fragment: continues at 0x80129190 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7401,6 +7897,7 @@ void cps_801291c8(void)
     }
     /* Address: 0x801291C8, Size: 28 bytes, Blocks: 2 */
 
+    /* 16B-stride copy loop tail (v0/a0 +=16) -> jr ra. */
 block_801291C8:
     v0 = v0 + 16;
     int cond_801291D4 = (v0 != v1);  /* save branch cond before delay slot */
@@ -7427,6 +7924,7 @@ block_801291DC:
  * split piece of cps_80129148 */
 void cps_801291e4(void)
 {
+/* menu leaf/terminal piece (jr/jr $ra exit of the menu cluster). */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   uint32_t w0, w1, w2, w3, ret;
@@ -7440,6 +7938,9 @@ void cps_801291e4(void)
         }
     }
     /* Address: 0x801291E4, Size: 52 bytes, Blocks: 2 */
+
+    /* copy loop + return: v0->a0 16B/iter until v1; then
+       jr ra. CPS-blocked. */
 
     for (;;) {
         w0 = cpu->read_word(v0);
@@ -7473,6 +7974,7 @@ done:
  * param-record field copier — reads rec fields (v1+4/8/12, s1+204), writes a0+4/8/12 and stack frame */
 void cps_80129248(void)
 {
+/* menu-piece fragment: continues at 0x801292c8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7485,6 +7987,10 @@ void cps_80129248(void)
         }
     }
     /* Address: 0x80129248, Size: 128 bytes, Blocks: 3 */
+
+    /* framed table copy: dest=0x80200000+(v1*8+a1)*4 <-
+       v1+11680 16B/iter; tail 8B; s0=word[s1+204]; a0=0x80202DA8,
+       a2=0x801C0000+18368; -> 0x801292C8. CPS-blocked. */
 
 block_80129248:
     v1 = v1 << 3;
@@ -7540,6 +8046,7 @@ block_80129298:
  * split piece of cps_80129248 */
 void cps_801292c8(void)
 {
+/* menu-piece fragment: continues at 0x80129348 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7552,6 +8059,10 @@ void cps_801292c8(void)
         }
     }
     /* Address: 0x801292C8, Size: 128 bytes, Blocks: 3 */
+
+    /* framed table copy 2: src=0x80202DA8+a1*23140 region, dst=a2
+       (0x801C47C0); 16B/iter to src+9040; tail 12B; then
+       a0=0x80205104, a2=0x801D0000-1908; -> 0x80129348. CPS-blocked. */
 
 block_801292C8:
     v0 = v1 << 2;
@@ -7607,6 +8118,7 @@ block_80129310:
  * ui_leaf_step_h: leaf state step, no calls. */
 void cps_80129348(void)
 {
+/* menu-piece fragment: continues at 0x801293c4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7621,6 +8133,10 @@ void cps_80129348(void)
         }
     }
     /* Address: 0x80129348, Size: 124 bytes, Blocks: 5 */
+
+    /* copy-select: if (a2&3)==0 aligned path 0x801293C0 else
+       unaligned lwl/lwr loop v0->a2 until v0+2400; v0=3 ->
+       0x801293F4. CPS-blocked. */
 
 block_80129348:
     v0 = v1 << 2;
@@ -7681,6 +8197,7 @@ block_801293C0:
  * split piece of cps_80129348 — ui_leaf_step_h: leaf state step, no calls. */
 void cps_801293c4(void)
 {
+/* menu-piece fragment: continues at 0x801293cc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7697,6 +8214,7 @@ block_801293C4:
  * split piece of cps_801293c4 */
 void cps_801293cc(void)
 {
+/* menu-piece fragment: continues at 0x801293f4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7708,6 +8226,9 @@ void cps_801293cc(void)
         }
     }
     /* Address: 0x801293CC, Size: 40 bytes, Blocks: 2 */
+
+    /* copy loop tail: 16B/iter v0->a2 until v1; v0=3 ->
+       0x801293F4. CPS-blocked. */
 
 block_801293CC:
     t2 = cpu->read_word(v0 + 8);
@@ -7738,6 +8259,7 @@ block_801293F0:
  * split piece of cps_80129348 — ui_leaf_step_h: leaf state step, no calls. */
 void cps_801293f4(void)
 {
+/* menu-piece fragment: continues at 0x80129444 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7751,6 +8273,9 @@ void cps_801293f4(void)
     }
     /* Address: 0x801293F4, Size: 80 bytes, Blocks: 3 */
 
+    /* state record init: half[s0]=v0; 16B copy s0+24 ->
+       0x801E1B3C; then chain -> 0x80129444 (s0+8664 ->
+       0x801E0F6C copy setup). CPS-blocked. */
 block_801293F4:
     cpu->write_half(s0, (uint16_t)v0);
     v0 = 0x801E1B3Cu;  /* 0x801E0000 6972 */
@@ -7791,10 +8316,14 @@ block_80129434:
  * split piece of cps_801293f4 */
 void cps_80129444(void)
 {
+/* menu-piece fragment: continues at 0x80129450 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80129444, Size: 12 bytes, Blocks: 1 */
+
+    /* 12B prefetch: t0-t2=word[v1..+8]; -> 0x80129450.
+       CPS-blocked. */
 
 block_80129444:
     t0 = cpu->read_word(v1);
@@ -7808,6 +8337,7 @@ block_80129444:
  * victory_restore_wrap: victory_record_restore caller. */
 void cps_80129450(void)
 {
+/* menu thunk -> victory_record_restore */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7822,6 +8352,11 @@ void cps_80129450(void)
         }
     }
     /* Address: 0x80129450, Size: 124 bytes, Blocks: 5 */
+
+    /* copy loop + record fill: 16B/iter v1->v0 until a0; jal
+       0x80128268(s1,a3); byte[s1+152/153]=byte[s0+18/20],
+       half[s1+160]=half[s0+22]; half[s0+6]-- clamp>=0 else 599;
+       epilogue. CPS-blocked. */
 
 block_80129450:
     t3 = cpu->read_word(v1 + 12);
@@ -7894,6 +8429,7 @@ block_801294B8:
  * redraw then read input. */
 void cps_801294d4(void)
 {
+/* menu thunk -> menu_stepper_input -> menu_stepper_redraw */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7912,6 +8448,11 @@ void cps_801294d4(void)
         }
     }
     /* Address: 0x801294D4, Size: 108 bytes, Blocks: 9 */
+
+    /* object state dispatch: s0=a0; byte[s0+2] switch
+       (==1, <2, !=0 paths) may set byte[s0+2]=1; if byte[s0+3]==0:
+       jal 0x801297DC(s0) then jalr word[s0+12](s0,half[s0+8]);
+       jal 0x80129660(s0); epilogue. CPS-blocked. */
 
 block_801294D4:
     s0 = a0;
@@ -8010,6 +8551,7 @@ block_80129530:
  * menu_stepper_input_wrap: menu_stepper_input caller. */
 void cps_80129558(void)
 {
+/* menu thunk -> menu_stepper_input */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8029,6 +8571,9 @@ void cps_80129558(void)
     }
     /* Address: 0x80129558, Size: 100 bytes, Blocks: 9 */
 
+    /* input/button state init: byte[s0+2] clamp <2 -> a0=1;
+       byte[s0+2]=a0; jal on s0; then bit test
+       (s1 >> half[s0+8]) & 1 -> a0/a1 flags. CPS-blocked. */
 block_80129558:
     s2 = 0x1F800000u;  /* 0x1F800000 */
     int cond_8012955C = (s1 == zero);  /* save branch cond before delay slot */
@@ -8131,6 +8676,7 @@ block_801295B8:
  * split piece of cps_80129558 — menu_stepper_input_wrap: menu_stepper_input caller. */
 void cps_801295bc(void)
 {
+/* menu-piece fragment: continues at 0x801295e0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8143,6 +8689,8 @@ void cps_801295bc(void)
     }
     /* Address: 0x801295BC, Size: 36 bytes, Blocks: 2 */
 
+    /* input flag check: half[s2+126]&0x4000 gate; result
+       half[s0+8] < half[s0+6]. CPS-blocked. */
 block_801295BC:
     v0 = cpu->read_half(s2 + 126);
     /* nop */  /* 0x801295C0: 0x00000000 */
@@ -8171,6 +8719,7 @@ block_801295D0:
  * split piece of cps_801295bc */
 void cps_801295e0(void)
 {
+/* menu-piece fragment: continues at 0x80129610 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8183,6 +8732,8 @@ void cps_801295e0(void)
     }
     /* Address: 0x801295E0, Size: 16 bytes, Blocks: 2 */
 
+    /* step: v1=v0+1; half[s0+8]=a1 (arg override).
+       CPS-blocked. */
 block_801295E0:
     int cond_801295E0 = (v0 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -8207,6 +8758,7 @@ block_801295E8:
  * split piece of cps_801295bc */
 void cps_801295f0(void)
 {
+/* menu-piece fragment: continues at 0x80129610 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8219,6 +8771,8 @@ void cps_801295f0(void)
     }
     /* Address: 0x801295F0, Size: 28 bytes, Blocks: 2 */
 
+    /* step: half[s0+8]-1 -> reload half[s0+6] into it.
+       CPS-blocked. */
 block_801295F0:
     v0 = cpu->read_half(s0 + 8);
     /* nop */  /* 0x801295F4: 0x00000000 */
@@ -8246,6 +8800,7 @@ block_80129600:
  * split piece of cps_801295e0 */
 void cps_8012960c(void)
 {
+/* menu-piece fragment: continues at 0x80129610 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8261,11 +8816,13 @@ block_8012960C:
  * split piece of cps_801295e0 */
 void cps_80129610(void)
 {
+/* menu-piece fragment: continues at 0x80129628 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80129610, Size: 24 bytes, Blocks: 1 */
 
+    /* bit test: v0 = (s1 >> (half[s0+8]&31)) & 1. */
 block_80129610:
     v0 = cpu->read_half(s0 + 8);
     /* nop */  /* 0x80129614: 0x00000000 */
@@ -8289,6 +8846,7 @@ block_80129610:
  * split piece of cps_80129558 — menu_stepper_input_wrap: menu_stepper_input caller. */
 void cps_80129628(void)
 {
+/* menu-piece fragment: continues at 0x80129640 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8301,6 +8859,8 @@ void cps_80129628(void)
     }
     /* Address: 0x80129628, Size: 24 bytes, Blocks: 2 */
 
+    /* callback dispatch: a1=half[s0+8]; jalr
+       word[s0+12](s0). CPS-blocked. */
 block_80129628:
     a1 = cpu->read_half(s0 + 8);
     v0 = cpu->read_word(s0 + 12);
@@ -8322,11 +8882,13 @@ block_8012963C:
  * split piece of cps_80129558 — menu_stepper_input_wrap: menu_stepper_input caller. */
 void cps_80129640(void)
 {
+/* menu thunk -> menu_stepper_masked_sweep */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80129640, Size: 8 bytes, Blocks: 1 */
 
+    /* jal link setup: ra=ret, a1=s1 -> next piece. */
 block_80129640:
     ra = 0x80129648u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -8340,10 +8902,13 @@ block_80129640:
  * split piece of cps_80129558 — menu_stepper_input_wrap: menu_stepper_input caller. */
 void cps_80129648(void)
 {
+/* menu leaf/terminal piece (jr/jr $ra exit of the menu cluster). */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80129648, Size: 24 bytes, Blocks: 1 */
+
+    /* epilogue: pop s0-s2, ra (sp += 32), jr ra */
 
 block_80129648:
     ra = cpu->read_word(sp + 28);
@@ -8363,6 +8928,7 @@ block_80129648:
  * pair of menu rows. */
 void cps_80129664(void)
 {
+/* menu thunk -> menu_row_paint -> menu_row_paint_b */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8382,6 +8948,11 @@ void cps_80129664(void)
         }
     }
     /* Address: 0x80129664, Size: 140 bytes, Blocks: 10 */
+
+    /* per-slot update loop: jalr word[s1+12](s1,256); for
+       s0=1..half[s1+6]: dispatch on half[s1+8]==s0 -> jal
+       0x80129910/0x80129944 else jalr word[s1+12](s1,(s0+256)&0xFFFF);
+       -> 0x801296F0. CPS-blocked. */
 
 block_80129664:
     cpu->write_word(sp + 20, s1);
@@ -8486,6 +9057,7 @@ block_801296E8:
  * split piece of cps_80129664 — menu_row_paint_pair: menu_row_paint + menu_row_paint_b — paints a */
 void cps_801296f0(void)
 {
+/* menu leaf/terminal piece (jr/jr $ra exit of the menu cluster). */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8498,6 +9070,8 @@ void cps_801296f0(void)
     }
     /* Address: 0x801296F0, Size: 32 bytes, Blocks: 2 */
 
+    /* indirect call tail: jalr v0(a1=511); epilogue
+       pop s0-s2,ra sp+=32. CPS-blocked. */
 block_801296F0:
     /* nop */  /* 0x801296F0: 0x00000000 */
     uint32_t jt_801296F4 = v0;  /* latch indirect target before delay slot */
@@ -8523,6 +9097,7 @@ block_801296FC:
  * menu_row_paint_wrap: menu_row_paint caller. */
 void cps_80129750(void)
 {
+/* menu thunk -> menu_row_paint */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8537,6 +9112,8 @@ void cps_80129750(void)
     }
     /* Address: 0x80129750, Size: 40 bytes, Blocks: 4 */
 
+    /* bit test + jal: v0&1; read half[s1+8]; jal
+       (a0=s1). CPS-blocked. */
 block_80129750:
     v0 = v0 & 0x0001;  /* 0x80129750: 0x30420001 */
     int cond_80129754 = (v0 == zero);  /* save branch cond before delay slot */
@@ -8583,6 +9160,7 @@ block_80129774:
  * CPS fallthrough stub — continues at 0x8012977C */
 void cps_80129778(void)
 {
+/* menu-piece fragment: continues at 0x8012977c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8598,6 +9176,7 @@ block_80129778:
  * split piece of cps_80129750 — menu_row_paint_wrap: menu_row_paint caller. */
 void cps_8012977c(void)
 {
+/* menu thunk -> menu_row_paint_b */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8610,6 +9189,7 @@ void cps_8012977c(void)
     }
     /* Address: 0x8012977C, Size: 12 bytes, Blocks: 2 */
 
+    /* jal setup: ra=ret, a0=s1 -> next piece. */
 block_8012977C:
     ra = 0x80129784u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -8627,11 +9207,14 @@ block_80129784:
  * split piece of cps_80129750 — menu_row_paint_wrap: menu_row_paint caller. */
 void cps_80129788(void)
 {
+/* menu leaf/terminal piece (jr/jr $ra exit of the menu cluster). */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80129788, Size: 20 bytes, Blocks: 1 */
 
+    /* callback dispatch: a1=(s0+256)&0xFFFF; jalr
+       word[s1+12]. CPS-blocked. */
 block_80129788:
     a1 = s0 + 256;
     v0 = cpu->read_word(s1 + 12);
@@ -8649,11 +9232,14 @@ block_80129788:
  * split piece of cps_80129750 — menu_row_paint_wrap: menu_row_paint caller. */
 void cps_8012979c(void)
 {
+/* menu-piece fragment: continues at 0x801297b0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012979C, Size: 20 bytes, Blocks: 1 */
 
+    /* bit-field step: s0++; test half[s1+6]<s0;
+       v0 = (s2 >> (s0&31)). CPS-blocked. */
 block_8012979C:
     v0 = cpu->read_half(s1 + 6);
     s0 = s0 + 1;
@@ -8676,6 +9262,7 @@ block_8012979C:
  * split piece of cps_8012979c */
 void cps_801297b0(void)
 {
+/* menu leaf/terminal piece (jr/jr $ra exit of the menu cluster). */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8688,6 +9275,8 @@ void cps_801297b0(void)
     }
     /* Address: 0x801297B0, Size: 44 bytes, Blocks: 2 */
 
+    /* callback dispatch: a1=511; jalr word[s0+12](s0);
+       epilogue pop s0-s2,ra sp+=32. CPS-blocked. */
 block_801297B0:
     a0 = s1;
     v0 = cpu->read_word(a0 + 12);
@@ -8716,6 +9305,7 @@ block_801297C4:
  * menu_deferred_wrap_b: deferred_cmd_post caller. */
 void cps_80129800(void)
 {
+/* menu thunk -> deferred_cmd_post -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8735,6 +9325,9 @@ void cps_80129800(void)
     }
     /* Address: 0x80129800, Size: 124 bytes, Blocks: 9 */
 
+    /* menu nav (up): if half[s1+126]&0x4000 ->
+       jal 0x80156EF4(1024,10,0); cursor half[s0+8]++ clamp
+       vs half[s0+6]. CPS-blocked. */
 block_80129800:
     v0 = cpu->read_half(s1 + 126);
     /* nop */  /* 0x80129804: 0x00000000 */
@@ -8832,11 +9425,14 @@ block_80129870:
  * CPS fallthrough stub — continues at 0x8012988C */
 void cps_8012987c(void)
 {
+/* menu-piece fragment: continues at 0x8012988c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012987C, Size: 16 bytes, Blocks: 1 */
 
+    /* menu nav (down): gate half[s1+126]&0x2000 ->
+       jal 0x80156EF4. CPS-blocked. */
 block_8012987C:
     v0 = cpu->read_half(s1 + 126);
     /* nop */  /* 0x80129880: 0x00000000 */
@@ -8859,6 +9455,7 @@ block_8012987C:
  * split piece of cps_8012987c */
 void cps_8012988c(void)
 {
+/* menu-piece fragment: continues at 0x80129890 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8874,6 +9471,7 @@ block_8012988C:
  * deferred_cmd_wrap_e: deferred_cmd_post caller. */
 void cps_80129890(void)
 {
+/* menu thunk -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8888,6 +9486,8 @@ void cps_80129890(void)
     }
     /* Address: 0x80129890, Size: 44 bytes, Blocks: 4 */
 
+    /* menu nav variant: jal 0x80156EF4(1024,11,0);
+       cursor half[s0+8]++ clamp. CPS-blocked. */
 block_80129890:
     a1 = 11;
     ra = 0x8012989Cu;  /* jal link before delay slot */
@@ -8926,6 +9526,7 @@ block_801298B8:
  * deferred_cmd_wrap_f: deferred_cmd_post caller. */
 void cps_801298bc(void)
 {
+/* menu thunk -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8940,6 +9541,9 @@ void cps_801298bc(void)
     }
     /* Address: 0x801298BC, Size: 60 bytes, Blocks: 4 */
 
+    /* menu nav variant: gate half[s1+126]&0x8000 ->
+       jal 0x80156EF4(1024,11,0); cursor half[s0+8]-- clamp.
+       CPS-blocked. */
 block_801298BC:
     v0 = cpu->read_half(s1 + 126);
     /* nop */  /* 0x801298C0: 0x00000000 */
@@ -8990,6 +9594,7 @@ block_801298EC:
  * split piece of cps_80129800 — menu_deferred_wrap_b: deferred_cmd_post caller. */
 void cps_801298f8(void)
 {
+/* menu-piece fragment: continues at 0x801298fc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9005,10 +9610,13 @@ block_801298F8:
  * split piece of cps_80129800 — menu_deferred_wrap_b: deferred_cmd_post caller. */
 void cps_801298fc(void)
 {
+/* menu leaf/terminal piece (jr/jr $ra exit of the menu cluster). */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x801298FC, Size: 20 bytes, Blocks: 1 */
+
+    /* epilogue: pop s0-s1, ra (sp += 32), jr ra */
 
 block_801298FC:
     ra = cpu->read_word(sp + 24);
@@ -9026,6 +9634,7 @@ block_801298FC:
  * frame epilogue — restores ra, frees 24B stack */
 void cps_80129918(void)
 {
+/* menu thunk -> print_dispatch_selfdesc_guest */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9039,6 +9648,8 @@ void cps_80129918(void)
     }
     /* Address: 0x80129918, Size: 44 bytes, Blocks: 3 */
 
+    /* menu item dispatch: byte[a0+4] check -> jal
+       table 0x8011EC20; epilogue sp+=24. CPS-blocked. */
 block_80129918:
     v0 = cpu->read_byte(a0 + 4);
     /* nop */  /* 0x8012991C: 0x00000000 */
@@ -9074,6 +9685,7 @@ block_80129934:
  * menu_deferred_wrap: deferred_cmd_post caller in menu region. */
 void cps_801299a8(void)
 {
+/* menu thunk -> deferred_cmd_post -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9092,6 +9704,11 @@ void cps_801299a8(void)
         }
     }
     /* Address: 0x801299A8, Size: 144 bytes, Blocks: 9 */
+
+    /* frame-counter poll x2: if v0!=8192 or s3!=0 jal
+       0x80156EF4(1024,11,0); half[s0]++ wrap vs s1<<16;
+       then if half[0x1F80007E]==0x8000 repeat decrement poll;
+       exits via 0x80129A3C/0x80129A38. CPS-blocked. */
 
 block_801299A8:
     v1 = 8192;
@@ -9208,6 +9825,7 @@ block_80129A1C:
  * split piece of cps_801299a8 — menu_deferred_wrap: deferred_cmd_post caller in menu region. */
 void cps_80129a38(void)
 {
+/* menu-piece fragment: continues at 0x80129a3c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9223,10 +9841,14 @@ block_80129A38:
  * split piece of cps_801299a8 — menu_deferred_wrap: deferred_cmd_post caller in menu region. */
 void cps_80129a3c(void)
 {
+/* menu leaf/terminal piece (jr/jr $ra exit of the menu cluster). */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80129A3C, Size: 48 bytes, Blocks: 1 */
+
+    /* epilogue + compare: v0=half[s0]; pop s0-s5, ra
+       (sp += 48); v0=(s4^v0)>0; jr ra */
 
 block_80129A3C:
     v0 = (int32_t)(int16_t)cpu->read_half(s0);
@@ -9251,6 +9873,7 @@ block_80129A3C:
  * CPS fallthrough stub — continues at 0x80129AE0 */
 void cps_80129ac8(void)
 {
+/* menu-piece fragment: continues at 0x80129ae0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9263,6 +9886,8 @@ void cps_80129ac8(void)
     }
     /* Address: 0x80129AC8, Size: 24 bytes, Blocks: 2 */
 
+    /* timer clamp: half[s0]=v1; if v0 < v1<<16 keep
+       else half[s0]=0. CPS-blocked. */
 block_80129AC8:
     cpu->write_half(s0, (uint16_t)v1);
     v1 = v1 << 16;
@@ -9288,6 +9913,7 @@ block_80129ADC:
  * deferred_cmd_wrap_g: deferred_cmd_post caller. */
 void cps_80129ae0(void)
 {
+/* menu thunk -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9303,6 +9929,9 @@ void cps_80129ae0(void)
     }
     /* Address: 0x80129AE0, Size: 104 bytes, Blocks: 5 */
 
+    /* menu confirm/timeout: gate half[s2+126] bit;
+       jal 0x80156EF4(1024,11,0); half[s0]--, reload s4 on
+       underflow. CPS-blocked. */
 block_80129AE0:
     v1 = cpu->read_half(s2 + 126);
     v0 = 16384;
@@ -9368,6 +9997,7 @@ block_80129B1C:
  * menu_deferred_wrap_c: deferred_cmd_post caller. */
 void cps_80129b58(void)
 {
+/* menu thunk -> deferred_cmd_post -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9385,6 +10015,10 @@ void cps_80129b58(void)
         }
     }
     /* Address: 0x80129B58, Size: 144 bytes, Blocks: 8 */
+
+    /* frame-counter poll variant: same 0x80156EF4(1024,11,0)
+       gate on half[0x1F80007E]!=0x8000; half[s0]++ wrap vs a1,
+       decrement wrap; exits via 0x80129BEC. CPS-blocked. */
 
 block_80129B58:
     v1 = 8192;
@@ -9487,6 +10121,7 @@ block_80129BE0:
  * CPS fallthrough stub — continues at 0x80129BEC */
 void cps_80129be8(void)
 {
+/* menu-piece fragment: continues at 0x80129bec */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9502,10 +10137,14 @@ block_80129BE8:
  * split piece of cps_80129b58 — menu_deferred_wrap_c: deferred_cmd_post caller. */
 void cps_80129bec(void)
 {
+/* menu leaf/terminal piece (jr/jr $ra exit of the menu cluster). */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80129BEC, Size: 36 bytes, Blocks: 1 */
+
+    /* epilogue + compare: v0=half[s0]; pop s0-s2, ra
+       (sp += 32); v0=(s2^v0)>0; jr ra */
 
 block_80129BEC:
     v0 = (int32_t)(int16_t)cpu->read_half(s0);
@@ -9527,6 +10166,7 @@ block_80129BEC:
  * CPS fallthrough stub — continues at 0x80129C80 */
 void cps_80129c7c(void)
 {
+/* menu-piece fragment: continues at 0x80129c80 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9542,6 +10182,7 @@ block_80129C7C:
  * split piece of cps_80129c7c */
 void cps_80129c80(void)
 {
+/* menu-piece fragment: continues at 0x80129c9c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9553,6 +10194,10 @@ void cps_80129c80(void)
         }
     }
     /* Address: 0x80129C80, Size: 28 bytes, Blocks: 2 */
+
+    /* loop counter step: s0++; while s0 < (int16)s1 -> keep
+       s0, v0=s2*2 -> 0x80129C9C; else s0=0 -> 0x80129C9C.
+       CPS-blocked. */
 
 block_80129C80:
     s0 = s0 + 1;
@@ -9580,6 +10225,7 @@ block_80129C98:
  * split piece of cps_80129c80 */
 void cps_80129c9c(void)
 {
+/* menu leaf/terminal piece (jr/jr $ra exit of the menu cluster). */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9591,6 +10237,9 @@ void cps_80129c9c(void)
         }
     }
     /* Address: 0x80129C9C, Size: 32 bytes, Blocks: 2 */
+
+    /* slot check: v1=half[s3+v0+116]; !=4096 -> 0x80129D3C;
+       ==4096 -> j 0x80129D1C (a0=1024,a1=10). CPS-blocked. */
 
 block_80129C9C:
     v0 = s3 + v0;
@@ -9620,6 +10269,7 @@ block_80129CB0:
  * deferred_cmd_wrap_h: deferred_cmd_post caller. */
 void cps_80129cbc(void)
 {
+/* menu thunk -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9634,6 +10284,10 @@ void cps_80129cbc(void)
         }
     }
     /* Address: 0x80129CBC, Size: 84 bytes, Blocks: 5 */
+
+    /* 3-slot scan: for s0<s1: half[(s2*2+s3)+116] vs 8192/32768
+       sentinels; ==8192 -> jal 0x80156EF4(1024,11,0) then s0++/wrap;
+       mismatches -> 0x80129D3C/0x80129D14. CPS-blocked. */
 
 block_80129CBC:
     v0 = s2 << 1;
@@ -9701,6 +10355,7 @@ block_80129D00:
  * CPS fallthrough stub — continues at 0x80129D14 */
 void cps_80129d10(void)
 {
+/* menu-piece fragment: continues at 0x80129d14 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9716,6 +10371,7 @@ block_80129D10:
  * split piece of cps_80129cbc — deferred_cmd_wrap_h: deferred_cmd_post caller. */
 void cps_80129d14(void)
 {
+/* menu-piece fragment: continues at 0x80129d1c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9732,6 +10388,7 @@ block_80129D14:
  * split piece of cps_80129c9c */
 void cps_80129d1c(void)
 {
+/* menu thunk -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9745,6 +10402,8 @@ void cps_80129d1c(void)
     }
     /* Address: 0x80129D1C, Size: 32 bytes, Blocks: 3 */
 
+    /* countdown step: jal 0x80156EF4; s0--; reload
+       sign-extended s4<<16. CPS-blocked. */
 block_80129D1C:
     ra = 0x80129D24u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -9777,10 +10436,13 @@ block_80129D30:
  * split piece of cps_80129c9c */
 void cps_80129d3c(void)
 {
+/* menu leaf/terminal piece (jr/jr $ra exit of the menu cluster). */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80129D3C, Size: 32 bytes, Blocks: 1 */
+
+    /* epilogue: pop s0-s4, ra (sp += 40), jr ra */
 
 block_80129D3C:
     ra = cpu->read_word(sp + 36);
@@ -9801,6 +10463,7 @@ block_80129D3C:
  * CPS fallthrough stub — continues at 0x80129DAC */
 void cps_80129da8(void)
 {
+/* menu-piece fragment: continues at 0x80129dac */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9816,6 +10479,7 @@ block_80129DA8:
  * split piece of cps_80129da8 */
 void cps_80129dac(void)
 {
+/* menu-piece fragment: continues at 0x80129dd8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9827,6 +10491,9 @@ void cps_80129dac(void)
         }
     }
     /* Address: 0x80129DAC, Size: 44 bytes, Blocks: 2 */
+
+    /* byte counter step: byte[s0]++ wrap vs (int8)s1; on
+       wrap byte[s0]=0; exit via 0x80129DD8. CPS-blocked. */
 
 block_80129DAC:
     v0 = s1 << 16;
@@ -9858,6 +10525,7 @@ block_80129DD4:
  * deferred_cmd_wrap_i: deferred_cmd_post caller. */
 void cps_80129dd8(void)
 {
+/* menu thunk -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9873,6 +10541,9 @@ void cps_80129dd8(void)
     }
     /* Address: 0x80129DD8, Size: 104 bytes, Blocks: 5 */
 
+    /* menu confirm: gate half[s2+126]&0x8000 ->
+       jal 0x80156EF4(1024,11,0); byte[s0]-- reload s4;
+       epilogue returns (s3 ^ byte[s0])>0 flag. CPS-blocked. */
 block_80129DD8:
     v1 = cpu->read_half(s2 + 126);
     v0 = 0x8000;
@@ -9938,6 +10609,7 @@ block_80129E14:
  * CPS fallthrough stub — continues at 0x80129EF0 */
 void cps_80129ed8(void)
 {
+/* menu-piece fragment: continues at 0x80129ef0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9949,6 +10621,9 @@ void cps_80129ed8(void)
         }
     }
     /* Address: 0x80129ED8, Size: 24 bytes, Blocks: 2 */
+
+    /* byte countdown: byte[s0]--; while >=0 exit 0x80129EF0;
+       else byte[s0]=s3 -> 0x80129EF0. CPS-blocked. */
 
 block_80129ED8:
     v0 = v0 + -1;
@@ -9975,10 +10650,14 @@ block_80129EEC:
  * split piece of cps_80129ed8 */
 void cps_80129ef0(void)
 {
+/* menu leaf/terminal piece (jr/jr $ra exit of the menu cluster). */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80129EF0, Size: 44 bytes, Blocks: 1 */
+
+    /* epilogue + compare: v0=(int8)byte[s0]; pop s0-s4, ra
+       (sp += 40); v0=(s4^v0)>0; jr ra */
 
 block_80129EF0:
     v0 = (int32_t)(int8_t)cpu->read_byte(s0);
@@ -10002,11 +10681,13 @@ block_80129EF0:
  * single byte store to v0 + -31824 */
 void cps_80129f70(void)
 {
+/* menu leaf/terminal piece (jr/jr $ra exit of the menu cluster). */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80129F70, Size: 8 bytes, Blocks: 1 */
 
+    /* byte[v0-31824] = a0; jr ra. */
 block_80129F70:
     uint32_t jt_80129F70 = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
@@ -10020,11 +10701,14 @@ block_80129F70:
  * single byte read from a0 */
 void cps_80129fa8(void)
 {
+/* menu thunk -> print_dispatch_guest */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80129FA8, Size: 28 bytes, Blocks: 1 */
 
+    /* byte lookup: v0 = byte[0x8011EC40 + (a0&0xFF)];
+       jr ra. */
 block_80129FA8:
     v0 = 0x8011EC40u;  /* 0x80120000 -5056 */
     a0 = a0 & 0x00FF;  /* 0x80129FB0: 0x308400FF */
@@ -10042,6 +10726,7 @@ block_80129FA8:
  * single byte store to v1 */
 void cps_8012a00c(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10053,6 +10738,9 @@ void cps_8012a00c(void)
         }
     }
     /* Address: 0x8012A00C, Size: 36 bytes, Blocks: 2 */
+
+    /* byte-copy loop: byte[v1=a0+a2]=byte[a0+a1], a0++ while
+       a0<256; then jr ra. CPS-blocked. */
 
 block_8012A00C:
     v0 = a0 + a1;
@@ -10084,6 +10772,7 @@ block_8012A028:
  * print_dispatch_wrap_b: print_dispatch_guest caller. */
 void cps_8012a0a8(void)
 {
+/* UI/print thunk -> print_dispatch_guest */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10099,6 +10788,9 @@ void cps_8012a0a8(void)
     }
     /* Address: 0x8012A0A8, Size: 72 bytes, Blocks: 5 */
 
+    /* pad state read: a1=half[0x1F80001A],
+       a2=half[0x1F80001C]; calls via 0x80120000-4800/-4780
+       (two entries); epilogue sp+=24. CPS-blocked. */
 block_8012A0A8:
     /* nop */  /* 0x8012A0A8: 0x00000000 */
     int cond_8012A0AC = (v0 != zero);  /* save branch cond before delay slot */
@@ -10150,10 +10842,16 @@ block_8012A0E0:
  * param block init — writes halfwords a0+10..20 */
 void cps_8012a144(void)
 {
+/* UI/print fragment: continues at 0x8012a1e4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012A144, Size: 160 bytes, Blocks: 1 */
+
+    /* OAM/sprite attr triple init: v1=v1-31816 base; writes
+       halfword field pairs (s3,s2,s3+255,s2+9/14/15...) at
+       v1+8..22, a1+8..22, a0+8..22 and byte tags 40/200; ->
+       0x8012A1E4. CPS-blocked. */
 
 block_8012A144:
     v1 = v1 + -31816;
@@ -10204,6 +10902,7 @@ block_8012A144:
  * spr_prim_tag_wrap: spr_prim_tag_b caller. */
 void cps_8012a1e4(void)
 {
+/* UI/print thunk -> spr_prim_tag_b */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10217,6 +10916,11 @@ void cps_8012a1e4(void)
         }
     }
     /* Address: 0x8012A1E4, Size: 160 bytes, Blocks: 4 */
+
+    /* sprite-attr finish + loop: byte[a1+6]=0, byte[a0+4..6];
+       loop s1<6: jal 0x80194160(s0), s0+=16; then writes 6 halfword
+       pairs at 0x801E8348.. (s3+250/200/150/100/50 ladder); ->
+       0x8012A284. CPS-blocked. */
 
 block_8012A1E4:
     cpu->write_byte(a1 + 6, (uint8_t)zero);
@@ -10284,10 +10988,15 @@ block_8012A20C:
  * split piece of cps_8012a1e4 — spr_prim_tag_wrap: spr_prim_tag_b caller. */
 void cps_8012a284(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012A284, Size: 136 bytes, Blocks: 1 */
+
+    /* sprite-attr tail: halfword writes + byte tags 0/64/255
+       across v0/a3/a2/a1/a0/v1 blocks; epilogue (sp += 40).
+       CPS-blocked. */
 
 block_8012A284:
     v1 = v0 + 80;
@@ -10334,10 +11043,16 @@ block_8012A284:
  * coord/vec helper — reads a0, a1+8, a2+8/28/30; writes a1+12/20 and v1-16/-32 */
 void cps_8012a328(void)
 {
+/* UI/print fragment: continues at 0x8012a3c8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012A328, Size: 160 bytes, Blocks: 1 */
+
+    /* GPU packet chain emit: halfword pair sums ->
+       half[a1-24 +/-]; then 6x pattern: word[cmdptr]|0x03000000 ->
+       v1-16/-32/-48/-64/-80 slots, cmdptr=v1-16<<8>>8; ->
+       0x8012A3C8. CPS-blocked. */
 
 block_8012A328:
     cpu->write_half(a1 + 20, (uint16_t)v0);
@@ -10388,10 +11103,14 @@ block_8012A328:
  * split piece of cps_8012a328 */
 void cps_8012a3c8(void)
 {
+/* UI/print fragment: continues at 0x8012a470 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012A3C8, Size: 168 bytes, Blocks: 1 */
+
+    /* GPU packet chain emit cont.: -64/-80 + t2-31848 slots,
+       0x05000000 tag at a3-31768; -> 0x8012A470. CPS-blocked. */
 
 block_8012A3C8:
     v0 = (uint32_t)v0 >> 8;
@@ -10444,11 +11163,15 @@ block_8012A3C8:
  * split piece of cps_8012a3c8 */
 void cps_8012a470(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012A470, Size: 68 bytes, Blocks: 1 */
 
+    /* word-merge emit: word[a1]|=v1; byte-mask a1<<8>>8 ->
+       word[a0]; word[word[a2+8]]|v1 -> word[a3-48]; a3-=48
+       masked. CPS-blocked. */
 block_8012A470:
     /* nop */  /* 0x8012A470: 0x00000000 */
     v0 = v0 | v1;
@@ -10477,6 +11200,7 @@ block_8012A470:
  * gpu_texclut_emit: queue_slot_peek + gpu_texclut_pkt — texture-clut packet emit. */
 void cps_8012a514(void)
 {
+/* UI/print thunk -> queue_slot_peek -> gpu_texclut_pkt */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10492,6 +11216,11 @@ void cps_8012a514(void)
         }
     }
     /* Address: 0x8012A514, Size: 164 bytes, Blocks: 6 */
+
+    /* object spawn wrapper: save regs; s2=word[0x1F800004];
+       jal 0x8012A4B4 -> s0=v0; if nonzero: a0=s0*24+8408+s2,
+       half[0x1F8000D2]=s0, pack s3-s6 halfwords at sp+16, jal
+       0x80194180; v0=s0; epilogue. CPS-blocked. */
 
 block_8012A514:
     s4 = a1;
@@ -10572,6 +11301,7 @@ block_8012A590:
  * cmd_queue_next_wrap: cmd_queue_slot_next caller. */
 void cps_8012a5bc(void)
 {
+/* UI/print thunk -> cmd_queue_slot_next */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10586,6 +11316,11 @@ void cps_8012a5bc(void)
         }
     }
     /* Address: 0x8012A5BC, Size: 148 bytes, Blocks: 5 */
+
+    /* slot alloc + register: jal 0x8012A4DC -> v0; if nonzero:
+       half[0x801C4530+v0*8]=s0..s3, half[0x1F8000D0]=v0,
+       word[0x801BEF38+(v0-1)*4]=ret addr arg; epilogue.
+       CPS-blocked. */
 
 block_8012A5BC:
     cpu->write_word(sp + 16, s0);
@@ -10655,6 +11390,7 @@ block_8012A634:
  * CPS fallthrough stub — continues at 0x8012A668 */
 void cps_8012a664(void)
 {
+/* UI/print fragment: continues at 0x8012a668 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10670,6 +11406,7 @@ block_8012A664:
  * ui_leaf_step_i: leaf state step, no calls. */
 void cps_8012a668(void)
 {
+/* UI/print fragment: continues at 0x8012A724 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10687,6 +11424,8 @@ void cps_8012a668(void)
     }
     /* Address: 0x8012A668, Size: 60 bytes, Blocks: 7 */
 
+    /* char-class map on v1: <97 -> 96/80 paths,
+       default v1=-1 -> class 112. CPS-blocked. */
 block_8012A668:
     int cond_8012A668 = (v0 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -10766,10 +11505,14 @@ block_8012A69C:
  * CPS fallthrough stub — continues at 0x8012A6BC */
 void cps_8012a6a4(void)
 {
+/* UI/print fragment: continues at 0x8012a6bc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012A6A4, Size: 24 bytes, Blocks: 1 */
+
+    /* status-word compute: v1=~(byte[a0+3]|byte[a0+2]<<8)&
+       0xF9FF; j 0x8012A724. CPS-blocked. */
 
 block_8012A6A4:
     v0 = cpu->read_byte(a0 + 2);
@@ -10788,6 +11531,7 @@ block_8012A6A4:
  * byte_leaf_step: byte-read leaf step. */
 void cps_8012a6bc(void)
 {
+/* UI/print fragment: continues at 0x8012A724 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10803,6 +11547,10 @@ void cps_8012a6bc(void)
         }
     }
     /* Address: 0x8012A6BC, Size: 84 bytes, Blocks: 6 */
+
+    /* status-word compute extended: same base + range checks
+       byte[a0+6]/[a0+7]&0xFF vs 64/193 -> set bits 0x8000/0x2000/
+       0x1000 in v1; j 0x8012A724. CPS-blocked. */
 
 block_8012A6BC:
     v0 = cpu->read_byte(a0 + 2);
@@ -10872,6 +11620,7 @@ block_8012A708:
  * split piece of cps_8012a6bc — byte_leaf_step: byte-read leaf step. */
 void cps_8012a710(void)
 {
+/* UI/print fragment: continues at 0x8012A724 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10884,6 +11633,8 @@ void cps_8012a710(void)
     }
     /* Address: 0x8012A710, Size: 16 bytes, Blocks: 2 */
 
+    /* status-word bit set: v1 |= 0x4000 -> 0x8012A724.
+       CPS-blocked. */
 block_8012A710:
     int cond_8012A710 = (v0 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -10908,6 +11659,7 @@ block_8012A718:
  * split piece of cps_8012a668 — ui_leaf_step_i: leaf state step, no calls. */
 void cps_8012a720(void)
 {
+/* UI/print fragment: continues at 0x8012a724 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10923,11 +11675,13 @@ block_8012A720:
  * split piece of cps_8012a668 — ui_leaf_step_i: leaf state step, no calls. */
 void cps_8012a724(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012A724, Size: 8 bytes, Blocks: 1 */
 
+    /* status-word return: v0=v1; jr ra. */
 block_8012A724:
     uint32_t jt_8012A724 = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
@@ -10941,6 +11695,7 @@ block_8012A724:
  * pad_slot_state_wrap: pad_slot_state_walk caller. */
 void cps_8012a7bc(void)
 {
+/* UI/print thunk -> pad_slot_state_walk */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10959,6 +11714,10 @@ void cps_8012a7bc(void)
     }
     /* Address: 0x8012A7BC, Size: 172 bytes, Blocks: 8 */
 
+    /* channel record update: word[s1+104/112/116] =
+       masked fields; per-channel loop (a0+2 stride, a2<2):
+       byte[a1+120] countdown -> half[a0+116]=half[a0+108];
+       then merge half[s1+104..128] attr pairs. CPS-blocked. */
 block_8012A7BC:
     v0 = v0 & s2;  /* 0x8012A7BC: 0x00521024 */
     cpu->write_word(s1 + 112, s0);
@@ -11063,10 +11822,13 @@ block_8012A834:
  * split piece of cps_8012a7bc — pad_slot_state_wrap: pad_slot_state_walk caller. */
 void cps_8012a868(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012A868, Size: 28 bytes, Blocks: 1 */
+
+    /* epilogue: v0=s2; pop s0-s2, ra (sp += 32), jr ra */
 
 block_8012A868:
     v0 = s2;
@@ -11086,10 +11848,14 @@ block_8012A868:
  * CPS leaf — 2 stores, 2 loads */
 void cps_8012a918(void)
 {
+/* UI/print fragment: continues at 0x8012a92c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012A918, Size: 20 bytes, Blocks: 1 */
+
+    /* arg preload: a3=half[s1+32], v1=half[s1+34], a1=0,
+       word[sp+20]=v0, word[sp+24]=s0; -> 0x8012A92C. CPS-blocked. */
 
 block_8012A918:
     a3 = (int32_t)(int16_t)cpu->read_half(s1 + 32);
@@ -11105,6 +11871,7 @@ block_8012A918:
  * split piece of cps_8012a918 */
 void cps_8012a92c(void)
 {
+/* UI/print thunk -> spr_attr_alloc_a */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11117,6 +11884,8 @@ void cps_8012a92c(void)
     }
     /* Address: 0x8012A92C, Size: 24 bytes, Blocks: 2 */
 
+    /* call wrapper: word[sp+16]=v1; jal 0x8018CC6C(
+       word[s1+8], a1, a2=a1). CPS-blocked. */
 block_8012A92C:
     cpu->write_word(sp + 16, v1);
     a0 = cpu->read_word(s1 + 8);
@@ -11138,11 +11907,13 @@ block_8012A93C:
  * CPS leaf — 1 jal(s), 0 stores, 0 loads */
 void cps_8012a944(void)
 {
+/* UI/print thunk -> dialog_mode_mirror */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012A944, Size: 8 bytes, Blocks: 1 */
 
+    /* jal link setup -> 0x8012A94C. */
 block_8012A944:
     ra = 0x8012A94Cu;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -11156,6 +11927,7 @@ block_8012A944:
  * dialog_mode_wrap: dialog_mode_mirror caller. */
 void cps_8012a94c(void)
 {
+/* UI/print thunk -> dialog_mode_mirror */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11176,6 +11948,10 @@ void cps_8012a94c(void)
     }
     /* Address: 0x8012A94C, Size: 128 bytes, Blocks: 10 */
 
+    /* anim/channel state step: mode select on
+       byte[s1+23] (-2/-1/1/2); byte[s1+25] countdown--; packs
+       half[s1+32/34] + byte[s1+24] params to sp+16/24.
+       CPS-blocked. */
 block_8012A94C:
     s0 = (int32_t)(int8_t)cpu->read_byte(s1 + 23);
     v1 = -1;
@@ -11291,6 +12067,7 @@ block_8012A9AC:
  * split piece of cps_8012a94c — dialog_mode_wrap: dialog_mode_mirror caller. */
 void cps_8012a9cc(void)
 {
+/* UI/print thunk -> dialog_mode_mirror */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11304,6 +12081,9 @@ void cps_8012a9cc(void)
     }
     /* Address: 0x8012A9CC, Size: 52 bytes, Blocks: 3 */
 
+    /* countdown tail (sibling of 0x8012A94C):
+       byte[s1+25]--, packs half[s1+32/34], byte[s1+24],
+       s0 -> sp+16/24. CPS-blocked. */
 block_8012A9CC:
     v0 = cpu->read_byte(s1 + 25);
     /* nop */  /* 0x8012A9D0: 0x00000000 */
@@ -11341,6 +12121,7 @@ block_8012A9E8:
  * split piece of cps_8012a94c — dialog_mode_wrap: dialog_mode_mirror caller. */
 void cps_8012aa00(void)
 {
+/* UI/print thunk -> spr_attr_alloc_a */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11352,6 +12133,9 @@ void cps_8012aa00(void)
         }
     }
     /* Address: 0x8012AA00, Size: 40 bytes, Blocks: 2 */
+
+    /* packed-arg call: word[sp+20]=v1*0x01010101; jal
+       0x8018CC6C(word[s1+8], a2=a1); -> 0x8012AA58. CPS-blocked. */
 
 block_8012AA00:
     v0 = v1 << 8;
@@ -11378,6 +12162,7 @@ block_8012AA20:
  * split piece of cps_8012a94c — dialog_mode_wrap: dialog_mode_mirror caller. */
 void cps_8012aa28(void)
 {
+/* UI/print thunk -> dialog_mode_mirror -> frame_counter_bump */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11391,6 +12176,8 @@ void cps_8012aa28(void)
     }
     /* Address: 0x8012AA28, Size: 28 bytes, Blocks: 3 */
 
+    /* state write: byte[s1+23]=v1; jal(1); jal(0).
+       CPS-blocked. */
 block_8012AA28:
     cpu->write_byte(s1 + 23, (uint8_t)v1);
     ra = 0x8012AA34u;  /* jal link before delay slot */
@@ -11418,11 +12205,13 @@ block_8012AA3C:
  * split piece of cps_8012a94c — dialog_mode_wrap: dialog_mode_mirror caller. */
 void cps_8012aa44(void)
 {
+/* UI/print fragment: continues at 0x8012aa4c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012AA44, Size: 8 bytes, Blocks: 1 */
 
+    /* byte[s1+23]=v0. */
 block_8012AA44:
     /* delay slot (always executes) */
     cpu->write_byte(s1 + 23, (uint8_t)v0);
@@ -11436,6 +12225,7 @@ block_8012AA44:
  * split piece of cps_8012a94c — dialog_mode_wrap: dialog_mode_mirror caller. */
 void cps_8012aa4c(void)
 {
+/* UI/print thunk -> frame_counter_bump */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11448,6 +12238,7 @@ void cps_8012aa4c(void)
     }
     /* Address: 0x8012AA4C, Size: 12 bytes, Blocks: 2 */
 
+    /* jal(1); byte[s1+23]=0. CPS-blocked. */
 block_8012AA4C:
     ra = 0x8012AA54u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -11465,10 +12256,13 @@ block_8012AA54:
  * split piece of cps_8012a94c — dialog_mode_wrap: dialog_mode_mirror caller. */
 void cps_8012aa58(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012AA58, Size: 20 bytes, Blocks: 1 */
+
+    /* epilogue: pop s0-s1, ra (sp += 48), jr ra */
 
 block_8012AA58:
     ra = cpu->read_word(sp + 40);
@@ -11486,6 +12280,7 @@ block_8012AA58:
  * CPS leaf — 2 stores, 0 loads */
 void cps_8012aa7c(void)
 {
+/* UI/print fragment: continues at 0x8012AA8C */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11498,6 +12293,7 @@ void cps_8012aa7c(void)
     }
     /* Address: 0x8012AA7C, Size: 16 bytes, Blocks: 2 */
 
+    /* byte[a2+20]=v0; byte[a2+25]=0; jr ra. */
 block_8012AA7C:
     int cond_8012AA7C = (a1 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -11523,10 +12319,14 @@ block_8012AA84:
  * split piece of cps_8012aa7c */
 void cps_8012aa8c(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012AA8C, Size: 28 bytes, Blocks: 1 */
+
+    /* divisor step: v0=256/a1 +1 (guarded); byte[a2+25]=v0;
+       jr ra. CPS-blocked. */
 
 block_8012AA8C:
     v0 = 256;
@@ -11548,6 +12348,7 @@ block_8012AA8C:
  * single byte store to v1+16 */
 void cps_8012aac0(void)
 {
+/* UI/print fragment: continues at 0x8012AAD4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11560,6 +12361,7 @@ void cps_8012aac0(void)
     }
     /* Address: 0x8012AAC0, Size: 20 bytes, Blocks: 2 */
 
+    /* byte[0x1F800010]=0; return v0=1. */
 block_8012AAC0:
     v0 = 1;
     int cond_8012AAC4 = (a0 != v0);  /* save branch cond before delay slot */
@@ -11586,11 +12388,13 @@ block_8012AACC:
  * split piece of cps_8012aac0 */
 void cps_8012aad4(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012AAD4, Size: 8 bytes, Blocks: 1 */
 
+    /* byte[0x1F800010]=a0; jr ra. */
 block_8012AAD4:
     uint32_t jt_8012AAD4 = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
@@ -11604,11 +12408,13 @@ block_8012AAD4:
  * leaf reg-op / return-value helper */
 void cps_8012aadc(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012AADC, Size: 8 bytes, Blocks: 1 */
 
+    /* bare jr ra. */
 block_8012AADC:
     uint32_t jt_8012AADC = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
@@ -11624,6 +12430,7 @@ block_8012AADC:
  * full GPU environment reset/teardown sequence. */
 void cps_8012ab30(void)
 {
+/* UI/print thunk -> gpu_pkt_unlink_n -> gpu_stat_sign -> cd_timer_read -> gpu_graph_reset -> draw_env_timing -> gpu_draw_env_put */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11647,6 +12454,9 @@ void cps_8012ab30(void)
     }
     /* Address: 0x8012AB30, Size: 140 bytes, Blocks: 13 */
 
+    /* voice teardown A: gate byte[s2+21]; jal
+       0x8018BD50(s1+8316,2079); jal 0x80191ED8; drains
+       word[0x801F0000-31488] list. CPS-blocked. */
 block_8012AB30:
     v0 = cpu->read_byte(s2 + 21);
     /* nop */  /* 0x8012AB34: 0x00000000 */
@@ -11774,6 +12584,7 @@ block_8012ABB4:
  * split piece of cps_8012ab30 — gpu_env_reset_seq: gpu_pkt_unlink_n + gpu_graph_reset + */
 void cps_8012abbc(void)
 {
+/* UI/print fragment: continues at 0x8012abc0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11789,6 +12600,7 @@ block_8012ABBC:
  * split piece of cps_8012ab30 — gpu_env_reset_seq: gpu_pkt_unlink_n + gpu_graph_reset + */
 void cps_8012abc0(void)
 {
+/* UI/print thunk -> cd_timer_read */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11800,6 +12612,11 @@ void cps_8012abc0(void)
         }
     }
     /* Address: 0x8012ABC0, Size: 40 bytes, Blocks: 2 */
+
+    /* DMA/irq teardown + call: v0|=0xE4; v1=word[v0];
+       word[v0]=0; word[0x1F8000E0]=v1; jal 0x8019A460(1);
+       half[0x801F0000-31826]=v0; half[s2+208]=v1; -> 0x8012ABE8.
+       CPS-blocked. */
 
 block_8012ABC0:
     v0 = v0 | 0x00E4;
@@ -11826,6 +12643,7 @@ block_8012ABDC:
  * mask set + image DMA command issue. */
 void cps_8012abe8(void)
 {
+/* UI/print thunk -> gpu_load_image_cmd -> gpu_disp_mask_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11847,6 +12665,10 @@ void cps_8012abe8(void)
     }
     /* Address: 0x8012ABE8, Size: 184 bytes, Blocks: 11 */
 
+    /* voice teardown B: s0 index walk; jal
+       0x80191428(a0=s0*8+0x801C4530, a1=word[0x801C0000-4296
+       +(s0-1)*4]) per channel; byte[s2+18] countdown ->
+       half[s2+208]=0. CPS-blocked. */
 block_8012ABE8:
     v1 = v1 << 16;
     s0 = (int32_t)v1 >> 16;
@@ -11978,6 +12800,7 @@ block_8012AC9C:
  * split piece of cps_8012abe8 — gpu_disp_load_img: gpu_disp_mask_set + gpu_load_image_cmd — display */
 void cps_8012aca0(void)
 {
+/* UI/print thunk -> gpu_clear_image_cmd */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11990,6 +12813,9 @@ void cps_8012aca0(void)
     }
     /* Address: 0x8012ACA0, Size: 76 bytes, Blocks: 2 */
 
+    /* sample/param fetch: v1 = 0x801E0000+16544 +
+       a0*132-stride; reads byte[t0+4..6], half[v1+2] ->
+       half[t0+10]; jal 0x80191300(t0+8). CPS-blocked. */
 block_8012ACA0:
     /* nop */  /* 0x8012ACA0: 0x00000000 */
     int cond_8012ACA4 = (v0 != zero);  /* save branch cond before delay slot */
@@ -12030,6 +12856,7 @@ block_8012ACAC:
  * split piece of cps_8012abe8 — gpu_disp_load_img: gpu_disp_mask_set + gpu_load_image_cmd — display */
 void cps_8012acec(void)
 {
+/* UI/print thunk -> gpu_draw_otag */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12042,6 +12869,8 @@ void cps_8012acec(void)
     }
     /* Address: 0x8012ACEC, Size: 24 bytes, Blocks: 2 */
 
+    /* jal 0x80191770(s4+8428); word[0x801F0000-31820]=0.
+       CPS-blocked. */
 block_8012ACEC:
     ra = 0x8012ACF4u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -12063,6 +12892,7 @@ block_8012ACF4:
  * split piece of cps_8012abe8 — gpu_disp_load_img: gpu_disp_mask_set + gpu_load_image_cmd — display */
 void cps_8012ad04(void)
 {
+/* UI/print fragment: continues at 0x8012ad58 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12076,6 +12906,9 @@ void cps_8012ad04(void)
     }
     /* Address: 0x8012AD04, Size: 84 bytes, Blocks: 3 */
 
+    /* indexed param fetch: idx=(word[s2+12]^1)*45-ish;
+       half[t0+14] -> 0x801E table; byte[s2+158] variant.
+       CPS-blocked. */
 block_8012AD04:
     v0 = cpu->read_word(s2 + 12);
     v1 = v1 + 1632;
@@ -12126,6 +12959,7 @@ block_8012AD48:
  * split piece of cps_8012ad04 */
 void cps_8012ad58(void)
 {
+/* UI/print thunk -> gpu_clear_image_cmd */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12137,6 +12971,10 @@ void cps_8012ad58(void)
         }
     }
     /* Address: 0x8012AD58, Size: 52 bytes, Blocks: 2 */
+
+    /* attr fetch + emit: v1=((v1+a0)*4+a0)*16+v0 stride calc;
+       a1..a3=byte[t0+4/5/6], half[t0+10]=half[v1+2], a0=t0+8; jal
+       0x80191300; v0=0x801E0000 -> 0x8012AD8C. CPS-blocked. */
 
 block_8012AD58:
     v1 = v1 + a0;
@@ -12165,6 +13003,7 @@ block_8012AD88:
  * gpu_draw_otag_wrap: gpu_draw_otag caller. */
 void cps_8012ad8c(void)
 {
+/* UI/print thunk -> gpu_draw_otag */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12179,6 +13018,8 @@ void cps_8012ad8c(void)
     }
     /* Address: 0x8012AD8C, Size: 52 bytes, Blocks: 4 */
 
+    /* jal 0x80191770(0x801E0000+16544+{8428|16956});
+       half[0x801F0000-31832]++. CPS-blocked. */
 block_8012AD8C:
     v0 = v0 + 16544;
     int cond_8012AD90 = (s4 != v0);  /* save branch cond before delay slot */
@@ -12220,6 +13061,7 @@ block_8012ADA4:
  * split piece of cps_8012abe8 — gpu_disp_load_img: gpu_disp_mask_set + gpu_load_image_cmd — display */
 void cps_8012adc0(void)
 {
+/* UI/print fragment: continues at 0x8012add8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12232,6 +13074,7 @@ void cps_8012adc0(void)
     }
     /* Address: 0x8012ADC0, Size: 24 bytes, Blocks: 2 */
 
+    /* word[0x801F0000-31820]=0 (clear pending flag). */
 block_8012ADC0:
     v1 = 0x801F0000u;  /* 0x801F0000 */
     v0 = cpu->read_word(v1 + -31820);
@@ -12257,10 +13100,13 @@ block_8012ADD4:
  * split piece of cps_8012acec */
 void cps_8012add8(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012ADD8, Size: 32 bytes, Blocks: 1 */
+
+    /* epilogue: pop s0-s4, ra (sp += 40), jr ra */
 
 block_8012ADD8:
     ra = cpu->read_word(sp + 36);
@@ -12281,6 +13127,7 @@ block_8012ADD8:
  * frame epilogue — restores ra, frees 24B stack */
 void cps_8012ae14(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12294,6 +13141,8 @@ void cps_8012ae14(void)
     }
     /* Address: 0x8012AE14, Size: 40 bytes, Blocks: 3 */
 
+    /* delta check: v1=v0-v1; if <11 ->
+       half[0x1F80001C]=v1; epilogue sp+=24. CPS-blocked. */
 block_8012AE14:
     v1 = v0 - v1;
     v0 = ((int32_t)v1 < 11) ? 1 : 0;  /* 0x8012AE18: 0x2862000B */
@@ -12328,10 +13177,13 @@ block_8012AE2C:
  * frame epilogue — restores ra, frees 32B stack */
 void cps_8012aed4(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012AED4, Size: 24 bytes, Blocks: 1 */
+
+    /* epilogue: pop s0-s2, ra (sp += 32), jr ra */
 
 block_8012AED4:
     ra = cpu->read_word(sp + 28);
@@ -12350,6 +13202,7 @@ block_8012AED4:
  * CPS fallthrough stub — continues at 0x8012AF94 */
 void cps_8012af90(void)
 {
+/* UI/print fragment: continues at 0x8012af94 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12365,6 +13218,7 @@ block_8012AF90:
  * split piece of cps_8012af90 */
 void cps_8012af94(void)
 {
+/* UI/print thunk -> cd_timer_read -> cd_timer_read */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12378,6 +13232,9 @@ void cps_8012af94(void)
     }
     /* Address: 0x8012AF94, Size: 28 bytes, Blocks: 3 */
 
+    /* sound cmd pair: jal 0x8019A460(1); jal
+       0x8019A460(byte[s1+16]) -> half[s1+28]=v0.
+       CPS-blocked. */
 block_8012AF94:
     ra = 0x8012AF9Cu;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -12405,6 +13262,7 @@ block_8012AFA8:
  * gpu_graph_reset_wait: gpu_graph_reset + cd_timer_read — reset + timer wait. */
 void cps_8012afb0(void)
 {
+/* UI/print thunk -> cd_timer_read -> cd_timer_read -> gpu_graph_reset */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12419,6 +13277,9 @@ void cps_8012afb0(void)
     }
     /* Address: 0x8012AFB0, Size: 36 bytes, Blocks: 4 */
 
+    /* sound cmd triple: jal 0x8019A460(1); half[s1+28]
+       and half[s1+26]=v0; jal 0x8019A460(byte[s1+16]);
+       jal 0x80190E00(1). CPS-blocked. */
 block_8012AFB0:
     ra = 0x8012AFB8u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -12453,6 +13314,7 @@ block_8012AFD0:
  * draw_env_timing + gpu_stat_sign — draw-env commit variant A. */
 void cps_8012afd4(void)
 {
+/* UI/print thunk -> gpu_stat_sign -> draw_env_timing -> gpu_draw_env_put -> gpu_disp_mask_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12470,6 +13332,12 @@ void cps_8012afd4(void)
         }
     }
     /* Address: 0x8012AFD4, Size: 116 bytes, Blocks: 8 */
+
+    /* object teardown sequence: same 0xE4 word drain to
+       scratchpad; jal 0x80191ED8, 0x801919AC(s2+92), 0x801917E0(s2);
+       byte[s1+18] countdown -> jal 0x801910E4(byte-1) else clear;
+       half[s1+208]<=0 -> 0x8012B06C else s5=0x801C4530,
+       s4=0x801BEF38, s0=a0-1 -> 0x8012B048. CPS-blocked. */
 
 block_8012AFD4:
     v0 = v0 | 0x00E4;
@@ -12552,10 +13420,14 @@ block_8012B038:
  * split piece of cps_8012afd4 — gpu_env_commit_a: gpu_disp_mask_set + gpu_draw_env_put + */
 void cps_8012b048(void)
 {
+/* GPU/pad fragment: continues at 0x8012b054 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012B048, Size: 12 bytes, Blocks: 1 */
+
+    /* slot ptr load: v0=s0*4+s4; a1=word[v0]; -> 0x8012B054.
+       CPS-blocked. */
 
 block_8012B048:
     v0 = s0 << 2;
@@ -12569,6 +13441,7 @@ block_8012B048:
  * split piece of cps_8012b048 */
 void cps_8012b054(void)
 {
+/* GPU/pad thunk -> gpu_load_image_cmd */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12581,6 +13454,8 @@ void cps_8012b054(void)
     }
     /* Address: 0x8012B054, Size: 24 bytes, Blocks: 2 */
 
+    /* loop: jal 0x80191428(a0=a0*8+s5); s0-- while
+       a0!=0. CPS-blocked. */
 block_8012B054:
     a0 = a0 << 3;
     ra = 0x8012B060u;  /* jal link before delay slot */
@@ -12608,6 +13483,7 @@ block_8012B060:
  * rec_byte_step: half+byte read/write leaf step. */
 void cps_8012b06c(void)
 {
+/* GPU/pad fragment: continues at 0x8012b118 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12625,6 +13501,10 @@ void cps_8012b06c(void)
     }
     /* Address: 0x8012B06C, Size: 172 bytes, Blocks: 7 */
 
+    /* voice channel drain: half[s1+210] count -> slots
+       a0*24-stride at s2+8408 tagged 0x05000000, word[s3+8316]
+       drained; byte[s1+19] countdown; indexed param fetch.
+       CPS-blocked. */
 block_8012B06C:
     a0 = (int32_t)(int16_t)cpu->read_half(s1 + 210);
     /* nop */  /* 0x8012B070: 0x00000000 */
@@ -12730,10 +13610,15 @@ block_8012B114:
  * split piece of cps_8012b06c — rec_byte_step: half+byte read/write leaf step. */
 void cps_8012b118(void)
 {
+/* GPU/pad thunk -> gpu_clear_image_cmd */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012B118, Size: 60 bytes, Blocks: 1 */
+
+    /* attr fetch + emit variant: v1=a0*416+v0 stride;
+       a1..a3=byte[t0+4/5/6], half[t0+10]=half[v1+2], a0=t0+8; jal
+       0x80191300. CPS-blocked. */
 
 block_8012B118:
     v1 = a0 << 5;
@@ -12761,11 +13646,13 @@ block_8012B118:
  * split piece of cps_8012b06c — rec_byte_step: half+byte read/write leaf step. */
 void cps_8012b154(void)
 {
+/* GPU/pad thunk -> gpu_draw_otag */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012B154, Size: 8 bytes, Blocks: 1 */
 
+    /* jal 0x80191770(s3+8316). CPS-blocked. */
 block_8012B154:
     ra = 0x8012B15Cu;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -12779,6 +13666,7 @@ block_8012B154:
  * split piece of cps_8012b06c — rec_byte_step: half+byte read/write leaf step. */
 void cps_8012b15c(void)
 {
+/* GPU/pad thunk -> table_byte_next_a -> gpu_clear_otag_r -> menu_noop */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12792,6 +13680,11 @@ void cps_8012b15c(void)
     }
     /* Address: 0x8012B15C, Size: 128 bytes, Blocks: 3 */
 
+    /* channel alloc: idx=(word[s1+12]^1)*208-stride ->
+       0x801E0000+16544; word[0x1F8000DC]++ seq; stores s2/s3
+       ptrs to s1+4/8/12; jal 0x80191668(s3,2080); then
+       word[s2+112]|=0x00FFFFFF; jal 0x8016362C(s1).
+       CPS-blocked. */
 block_8012B15C:
     ra = 0x8012B164u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -12846,6 +13739,7 @@ block_8012B1C4:
  * CPS fallthrough stub — continues at 0x8012B1E0 */
 void cps_8012b1dc(void)
 {
+/* GPU/pad fragment: continues at 0x8012b1e0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12862,6 +13756,7 @@ block_8012B1DC:
  * scroll_offset_set — debug stat print + OT fixup + scroll. */
 void cps_8012b1e0(void)
 {
+/* GPU/pad thunk -> debug_stat_print -> ot_packet_chain_fixup -> scroll_offset_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12878,6 +13773,8 @@ void cps_8012b1e0(void)
     }
     /* Address: 0x8012B1E0, Size: 60 bytes, Blocks: 6 */
 
+    /* voice status query: byte[word[s1+200]+2]>>7 ->
+       a0; three jal setups -> epilogue sp+=40. CPS-blocked. */
 block_8012B1E0:
     v0 = cpu->read_word(s1 + 200);
     /* nop */  /* 0x8012B1E4: 0x00000000 */
@@ -12930,10 +13827,13 @@ block_8012B218:
  * split piece of cps_8012b1e0 — debug_stat_scroll: debug_stat_print + ot_packet_chain_fixup + */
 void cps_8012b21c(void)
 {
+/* GPU/pad leaf or terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012B21C, Size: 32 bytes, Blocks: 1 */
+
+    /* epilogue: pop s0-s5, ra (sp += 48), jr ra */
 
 block_8012B21C:
     s5 = cpu->read_word(sp + 36);
@@ -12955,6 +13855,7 @@ block_8012B21C:
  * draw sync using CD timer. */
 void cps_8012b2a4(void)
 {
+/* GPU/pad thunk -> cd_timer_read -> gpu_draw_sync -> cd_timer_read -> cd_timer_read */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12971,6 +13872,9 @@ void cps_8012b2a4(void)
     }
     /* Address: 0x8012B2A4, Size: 56 bytes, Blocks: 6 */
 
+    /* sound cmd seq: jal 0x8019A460(1); jal
+       0x8019117C(0)->half[s1+26]; jal 0x8019A460(1); jal
+       0x8019A460(byte[s1+16])->half[s1+28]. CPS-blocked. */
 block_8012B2A4:
     int cond_8012B2A4 = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -13025,6 +13929,7 @@ block_8012B2D4:
  * gpu_graph_reset_wait_b: gpu_graph_reset + cd_timer_read variant B. */
 void cps_8012b2dc(void)
 {
+/* GPU/pad thunk -> cd_timer_read -> cd_timer_read -> gpu_graph_reset */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13039,6 +13944,9 @@ void cps_8012b2dc(void)
     }
     /* Address: 0x8012B2DC, Size: 36 bytes, Blocks: 4 */
 
+    /* sound cmd seq B: jal 0x8019A460(1); half[s1+28]
+       and half[s1+26]=v0; jal 0x8019A460(byte[s1+16]);
+       jal 0x80190E00(1). CPS-blocked. */
 block_8012B2DC:
     ra = 0x8012B2E4u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -13072,6 +13980,7 @@ block_8012B2FC:
  * gpu_env_commit_b: same quad as afd4 — draw-env commit variant B. */
 void cps_8012b300(void)
 {
+/* GPU/pad thunk -> gpu_stat_sign -> draw_env_timing -> gpu_draw_env_put -> gpu_disp_mask_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13089,6 +13998,11 @@ void cps_8012b300(void)
         }
     }
     /* Address: 0x8012B300, Size: 108 bytes, Blocks: 8 */
+
+    /* object teardown variant (s4/s1 regs): same 0xE4 drain;
+       jal 0x80191ED8, 0x801919AC(s4+92), 0x801917E0(s4); byte[s1+18]
+       countdown -> 0x801910E4/clear; half[s1+208]<=0 -> 0x8012B398
+       else s3=0x801C4530 -> 0x8012B36C. CPS-blocked. */
 
 block_8012B300:
     v0 = v0 | 0x00E4;
@@ -13169,6 +14083,7 @@ block_8012B364:
  * split piece of cps_8012b300 — gpu_env_commit_b: same quad as afd4 — draw-env commit variant B. */
 void cps_8012b36c(void)
 {
+/* GPU/pad thunk -> gpu_load_image_cmd */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13182,6 +14097,9 @@ void cps_8012b36c(void)
     }
     /* Address: 0x8012B36C, Size: 44 bytes, Blocks: 3 */
 
+    /* channel walk setup: s2=v0-4296 (0x801C table),
+       s3=0x801C4530 -> loop jal 0x80191428 per slot.
+       CPS-blocked. */
 block_8012B36C:
     s2 = v0 + -4296;
     s0 = a0 + -1;
@@ -13217,6 +14135,7 @@ block_8012B38C:
  * gpu_clear_image_wrap: gpu_clear_image_cmd caller. */
 void cps_8012b398(void)
 {
+/* GPU/pad thunk -> gpu_clear_image_cmd */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13233,6 +14152,9 @@ void cps_8012b398(void)
     }
     /* Address: 0x8012B398, Size: 160 bytes, Blocks: 6 */
 
+    /* sample param fetch + upload: idx=(word[s1+12]^1)*208;
+       half[0x801F0000+1632 + idx*45 +14] -> half[t0+10]; bytes
+       t0+4..6 -> a1/a2/a3; jal 0x80191300(t0+8). CPS-blocked. */
 block_8012B398:
     v0 = cpu->read_byte(s1 + 19);
     /* nop */  /* 0x8012B39C: 0x00000000 */
@@ -13320,6 +14242,7 @@ block_8012B434:
  * split piece of cps_8012b398 — gpu_clear_image_wrap: gpu_clear_image_cmd caller. */
 void cps_8012b438(void)
 {
+/* GPU/pad thunk -> gpu_draw_otag */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13333,6 +14256,8 @@ void cps_8012b438(void)
     }
     /* Address: 0x8012B438, Size: 20 bytes, Blocks: 3 */
 
+    /* jal 0x80191770(v0+{8428|16956}) variant tail.
+       CPS-blocked. */
 block_8012B438:
     int cond_8012B438 = (s4 != v0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -13362,10 +14287,13 @@ block_8012B444:
  * split piece of cps_8012b398 — gpu_clear_image_wrap: gpu_clear_image_cmd caller. */
 void cps_8012b44c(void)
 {
+/* GPU/pad leaf or terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012B44C, Size: 32 bytes, Blocks: 1 */
+
+    /* epilogue: pop s0-s4, ra (sp += 40), jr ra */
 
 block_8012B44C:
     ra = cpu->read_word(sp + 36);
@@ -13386,6 +14314,7 @@ block_8012B44C:
  * rec_byte_step_b: half+byte read/write leaf step. */
 void cps_8012b504(void)
 {
+/* GPU/pad leaf or terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13402,6 +14331,9 @@ void cps_8012b504(void)
     }
     /* Address: 0x8012B504, Size: 88 bytes, Blocks: 6 */
 
+    /* channel state write: byte[word[s1+132]+3] =
+       4/3/7 selected by half[s1+184] and byte[s1+155];
+       epilogue sp+=32. CPS-blocked. */
 block_8012B504:
     v0 = cpu->read_half(s1 + 184);
     /* nop */  /* 0x8012B508: 0x00000000 */
@@ -13465,6 +14397,7 @@ block_8012B548:
  * CPS leaf — 1 jal(s), 3 stores, 3 loads */
 void cps_8012b5d4(void)
 {
+/* GPU/pad thunk -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13476,6 +14409,10 @@ void cps_8012b5d4(void)
         }
     }
     /* Address: 0x8012B5D4, Size: 48 bytes, Blocks: 2 */
+
+    /* channel reset + wait: word[s0+132] rec -> byte[+1]=
+       byte[+2]=0, half[+6]=0; jal 0x80156EF4(513,0,0); ->
+       0x8012B7A4. CPS-blocked. */
 
 block_8012B5D4:
     v0 = cpu->read_word(s0 + 132);
@@ -13504,6 +14441,7 @@ block_8012B5FC:
  * deferred_cmd_wrap: deferred_cmd_post caller. */
 void cps_8012b604(void)
 {
+/* GPU/pad thunk -> deferred_cmd_post -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13524,6 +14462,9 @@ void cps_8012b604(void)
     }
     /* Address: 0x8012B604, Size: 160 bytes, Blocks: 10 */
 
+    /* menu/channel step: gates a1&0x0100 / &0x4100 ->
+       jal 0x80156EF4(1024,10,0); byte[rec+2]++ wrap vs
+       byte[rec+3]-1 (rec=word[s0+132]). CPS-blocked. */
 block_8012B604:
     v0 = (int32_t)(int16_t)cpu->read_half(a0 + 20);
     /* nop */  /* 0x8012B608: 0x00000000 */
@@ -13641,6 +14582,7 @@ block_8012B68C:
  * split piece of cps_8012b604 — deferred_cmd_wrap: deferred_cmd_post caller. */
 void cps_8012b6a4(void)
 {
+/* GPU/pad fragment: continues at 0x8012b6bc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13654,6 +14596,8 @@ void cps_8012b6a4(void)
     }
     /* Address: 0x8012B6A4, Size: 24 bytes, Blocks: 3 */
 
+    /* byte counter step: byte[a0+2]++ wrap at
+       byte[a0+3]-1 bound. CPS-blocked. */
 block_8012B6A4:
     v0 = cpu->read_byte(a0 + 2);
     int cond_8012B6A8 = (v1 != zero);  /* save branch cond before delay slot */
@@ -13683,6 +14627,7 @@ block_8012B6B8:
  * deferred_cmd_wrap_d: deferred_cmd_post caller. */
 void cps_8012b6bc(void)
 {
+/* GPU/pad thunk -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13699,6 +14644,9 @@ void cps_8012b6bc(void)
     }
     /* Address: 0x8012B6BC, Size: 68 bytes, Blocks: 6 */
 
+    /* menu step: gate s1&0x1000 -> jal
+       0x80156EF4(1024,10,0); byte[rec+2]-- vs byte[rec+3]-1.
+       CPS-blocked. */
 block_8012B6BC:
     v0 = s1 & 0x1000;  /* 0x8012B6BC: 0x32221000 */
     int cond_8012B6C0 = (v0 == zero);  /* save branch cond before delay slot */
@@ -13758,6 +14706,7 @@ block_8012B6FC:
  * handlers and posts deferred cmds. */
 void cps_8012b700(void)
 {
+/* GPU/pad thunk -> pad_handler_c -> pad_handler_a -> pad_handler_b -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13778,6 +14727,9 @@ void cps_8012b700(void)
     }
     /* Address: 0x8012B700, Size: 120 bytes, Blocks: 10 */
 
+    /* channel action dispatch: byte[s0+155] gate;
+       jals 0x80162838/0x80161C54/0x80162280(s0,s1&0xFFFF);
+       jal 0x80156EF4(1024,17,0); byte[rec]=-10. CPS-blocked. */
 block_8012B700:
     v1 = cpu->read_byte(s0 + 155);
     v0 = 4;
@@ -13875,6 +14827,7 @@ block_8012B768:
  * split piece of cps_8012b700 — pad_input_dispatch: deferred_cmd_post + pad_handler_a/b/c — polls pad */
 void cps_8012b778(void)
 {
+/* GPU/pad thunk -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13886,6 +14839,10 @@ void cps_8012b778(void)
         }
     }
     /* Address: 0x8012B778, Size: 44 bytes, Blocks: 2 */
+
+    /* channel reset variant: byte[rec+1]=byte[rec+2]=0,
+       half[s0+130]=1; jal 0x80156EF4(1,0,0); v0=0 -> 0x8012B7F0.
+       CPS-blocked. */
 
 block_8012B778:
     v0 = cpu->read_word(s0 + 132);
@@ -13913,11 +14870,14 @@ block_8012B79C:
  * split piece of cps_8012b5d4 */
 void cps_8012b7a4(void)
 {
+/* GPU/pad fragment: continues at 0x8012b7cc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012B7A4, Size: 40 bytes, Blocks: 1 */
 
+    /* channel state load: half[s0+130]=byte[rec],
+       byte[rec+1] -> v0; j 0x8012B7EC. CPS-blocked. */
 block_8012B7A4:
     v0 = cpu->read_word(s0 + 132);
     /* nop */  /* 0x8012B7A8: 0x00000000 */
@@ -13939,6 +14899,7 @@ block_8012B7A4:
  * split piece of cps_8012b7a4 */
 void cps_8012b7cc(void)
 {
+/* GPU/pad fragment: continues at 0x8012b7ec */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13952,6 +14913,8 @@ void cps_8012b7cc(void)
     }
     /* Address: 0x8012B7CC, Size: 32 bytes, Blocks: 3 */
 
+    /* byte counter bump: byte[a0]++ (or =1);
+       half[s0+130]=1. CPS-blocked. */
 block_8012B7CC:
     v0 = (int32_t)(int8_t)cpu->read_byte(a0);
     v1 = cpu->read_byte(a0);
@@ -13982,6 +14945,7 @@ block_8012B7E8:
  * split piece of cps_8012b7a4 */
 void cps_8012b7ec(void)
 {
+/* GPU/pad fragment: continues at 0x8012b7f0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13997,10 +14961,13 @@ block_8012B7EC:
  * split piece of cps_8012b778 */
 void cps_8012b7f0(void)
 {
+/* GPU/pad leaf or terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012B7F0, Size: 20 bytes, Blocks: 1 */
+
+    /* epilogue: pop s0-s1, ra (sp += 32), jr ra */
 
 block_8012B7F0:
     ra = cpu->read_word(sp + 24);
@@ -14018,10 +14985,15 @@ block_8012B7F0:
  * CPS leaf — 8 stores, 1 loads */
 void cps_8012b804(void)
 {
+/* GPU/pad leaf or terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012B804, Size: 48 bytes, Blocks: 1 */
+
+    /* halfword attr pair writer: half[a0+8/10]=a1/a2,
+       [+16/18]=a1+a3/a2, [+24]=a1, [+32]=a1+a3, [+26/34]=a2+
+       word[sp+16]; jr ra. CPS-blocked. */
 
 block_8012B804:
     cpu->write_half(a0 + 8, (uint16_t)a1);
@@ -14046,10 +15018,14 @@ block_8012B804:
  * CPS leaf — 5 stores, 1 loads */
 void cps_8012b834(void)
 {
+/* GPU/pad fragment: continues at 0x8012b850 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012B834, Size: 28 bytes, Blocks: 1 */
+
+    /* byte attr pair writer (part 1): byte[a0+12/13]=a1/a2,
+       [+20/21]=a1+a3/a2, [+28]=a1; -> 0x8012B850. CPS-blocked. */
 
 block_8012B834:
     v0 = cpu->read_word(sp + 16);
@@ -14067,10 +15043,14 @@ block_8012B834:
  * split piece of cps_8012b834 */
 void cps_8012b850(void)
 {
+/* GPU/pad leaf or terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012B850, Size: 20 bytes, Blocks: 1 */
+
+    /* byte attr pair writer (part 2): byte[a0+36]=a1+a3,
+       [+29/37]=a2+word[sp+16]; jr ra. CPS-blocked. */
 
 block_8012B850:
     cpu->write_byte(a0 + 36, (uint8_t)a3);
@@ -14088,6 +15068,7 @@ block_8012B850:
  * rec_byte_step_c: half+byte read/write leaf step. */
 void cps_8012b864(void)
 {
+/* GPU/pad fragment: continues at 0x8012b928 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14106,6 +15087,10 @@ void cps_8012b864(void)
     }
     /* Address: 0x8012B864, Size: 196 bytes, Blocks: 8 */
 
+    /* voice config pack: scratchpad 0x1F80037C fields
+       (word[+12]=a1, half[+4]=0, half[]=a3, half[+2]=t2);
+       table 0x801E8528 + idx*248-stride -> t0 record:
+       half[+14/+22] params; -> 0x801B12EC table. CPS-blocked. */
 block_8012B864:
     t1 = 0x1F800000u;  /* 0x1F800000 */
     t1 = t1 | 0x037C;
@@ -14211,6 +15196,7 @@ block_8012B8F0:
  * split piece of cps_8012b864 — rec_byte_step_c: half+byte read/write leaf step. */
 void cps_8012b928(void)
 {
+/* GPU/pad leaf or terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14223,6 +15209,9 @@ void cps_8012b928(void)
     }
     /* Address: 0x8012B928, Size: 212 bytes, Blocks: 2 */
 
+    /* record field copy: byte pairs v1[0..1] ->
+       t0+13/20/21/28/29/36/37..., half[t0+10/18]=a0.
+       CPS-blocked. */
 block_8012B928:
     cpu->write_byte(t0 + 13, (uint8_t)v0);
     v0 = cpu->read_byte(v1);
@@ -14296,11 +15285,13 @@ block_8012B9E8:
  * split piece of cps_8012b864 — rec_byte_step_c: half+byte read/write leaf step. */
 void cps_8012b9fc(void)
 {
+/* GPU/pad leaf or terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012B9FC, Size: 8 bytes, Blocks: 1 */
 
+    /* branch-only piece (joins dispatch). */
 block_8012B9FC:
     uint32_t jt_8012B9FC = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
@@ -14314,6 +15305,7 @@ block_8012B9FC:
  * CPS fallthrough stub — continues at 0x8012BAE4 */
 void cps_8012bae0(void)
 {
+/* GPU/pad fragment: continues at 0x8012bae4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14329,6 +15321,7 @@ block_8012BAE0:
  * ui_leaf_step_j: leaf state step, no calls. */
 void cps_8012bae4(void)
 {
+/* GPU/pad fragment: continues at 0x8012BB50. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14344,6 +15337,8 @@ void cps_8012bae4(void)
     }
     /* Address: 0x8012BAE4, Size: 44 bytes, Blocks: 5 */
 
+    /* multi-way dispatch -> 0x8012BB50/70/90.
+       CPS-blocked. */
 block_8012BAE4:
     int cond_8012BAE4 = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -14399,6 +15394,7 @@ block_8012BB08:
  * ui_leaf_step_k: leaf state step, no calls. */
 void cps_8012bb10(void)
 {
+/* GPU/pad fragment: continues at 0x8012BB60. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14416,6 +15412,8 @@ void cps_8012bb10(void)
     }
     /* Address: 0x8012BB10, Size: 64 bytes, Blocks: 7 */
 
+    /* multi-way dispatch -> 0x8012BB60/78/80/88/90.
+       CPS-blocked. */
 block_8012BB10:
     v0 = 0x8000;
     int cond_8012BB14 = (v1 == v0);  /* save branch cond before delay slot */
@@ -14496,11 +15494,13 @@ block_8012BB48:
  * split piece of cps_8012bae4 — ui_leaf_step_j: leaf state step, no calls. */
 void cps_8012bb50(void)
 {
+/* GPU/pad fragment: continues at 0x8012bb58 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012BB50, Size: 8 bytes, Blocks: 1 */
 
+    /* dispatch stub: j 0x8012BB8C. */
 block_8012BB50:
     /* delay slot (always executes) */
     v1 = 1;
@@ -14514,11 +15514,13 @@ block_8012BB50:
  * split piece of cps_8012bb50 */
 void cps_8012bb58(void)
 {
+/* GPU/pad fragment: continues at 0x8012bb60 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012BB58, Size: 8 bytes, Blocks: 1 */
 
+    /* dispatch stub: j 0x8012BB8C. */
 block_8012BB58:
     /* delay slot (always executes) */
     v1 = 2;
@@ -14532,11 +15534,13 @@ block_8012BB58:
  * split piece of cps_8012bb10 — ui_leaf_step_k: leaf state step, no calls. */
 void cps_8012bb60(void)
 {
+/* GPU/pad fragment: continues at 0x8012bb68 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012BB60, Size: 8 bytes, Blocks: 1 */
 
+    /* dispatch stub: j 0x8012BB8C. */
 block_8012BB60:
     /* delay slot (always executes) */
     v1 = 3;
@@ -14550,11 +15554,13 @@ block_8012BB60:
  * split piece of cps_8012bb60 */
 void cps_8012bb68(void)
 {
+/* GPU/pad fragment: continues at 0x8012bb70 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012BB68, Size: 8 bytes, Blocks: 1 */
 
+    /* dispatch stub: j 0x8012BB8C. */
 block_8012BB68:
     /* delay slot (always executes) */
     v1 = 4;
@@ -14568,11 +15574,13 @@ block_8012BB68:
  * split piece of cps_8012bae4 — ui_leaf_step_j: leaf state step, no calls. */
 void cps_8012bb70(void)
 {
+/* GPU/pad fragment: continues at 0x8012bb78 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012BB70, Size: 8 bytes, Blocks: 1 */
 
+    /* dispatch stub: j 0x8012BB8C. */
 block_8012BB70:
     /* delay slot (always executes) */
     v1 = 5;
@@ -14586,11 +15594,13 @@ block_8012BB70:
  * split piece of cps_8012bb10 — ui_leaf_step_k: leaf state step, no calls. */
 void cps_8012bb78(void)
 {
+/* GPU/pad fragment: continues at 0x8012bb80 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012BB78, Size: 8 bytes, Blocks: 1 */
 
+    /* dispatch stub: j 0x8012BB8C. */
 block_8012BB78:
     /* delay slot (always executes) */
     v1 = 6;
@@ -14604,11 +15614,13 @@ block_8012BB78:
  * split piece of cps_8012bb10 — ui_leaf_step_k: leaf state step, no calls. */
 void cps_8012bb80(void)
 {
+/* GPU/pad fragment: continues at 0x8012bb88 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012BB80, Size: 8 bytes, Blocks: 1 */
 
+    /* dispatch stub: j 0x8012BB8C. */
 block_8012BB80:
     /* delay slot (always executes) */
     v1 = 7;
@@ -14622,6 +15634,7 @@ block_8012BB80:
  * split piece of cps_8012bb10 — ui_leaf_step_k: leaf state step, no calls. */
 void cps_8012bb88(void)
 {
+/* GPU/pad fragment: continues at 0x8012bb8c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14637,6 +15650,7 @@ block_8012BB88:
  * split piece of cps_8012bb50 */
 void cps_8012bb8c(void)
 {
+/* GPU/pad fragment: continues at 0x8012bb90 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14652,6 +15666,7 @@ block_8012BB8C:
  * record_half_step_g: s16 read/write leaf step. */
 void cps_8012bb90(void)
 {
+/* GPU/pad fragment: continues at 0x8012bbc0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14667,6 +15682,9 @@ void cps_8012bb90(void)
     }
     /* Address: 0x8012BB90, Size: 48 bytes, Blocks: 5 */
 
+    /* record param pack A: half[t0+14]=v0; reads
+       half[t1]/[t1+2] -> a3/t2; dispatch -> 0x8012BCE4/
+       0x8012BCD4/0x8012BBC0. CPS-blocked. */
 block_8012BB90:
     int cond_8012BB90 = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -14728,6 +15746,7 @@ block_8012BBB0:
  * rec_byte_write_leaf: byte read/write leaf step. */
 void cps_8012bbc0(void)
 {
+/* GPU/pad fragment: continues at 0x8012bca4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14745,6 +15764,9 @@ void cps_8012bbc0(void)
     }
     /* Address: 0x8012BBC0, Size: 228 bytes, Blocks: 7 */
 
+    /* record byte-field fill: byte pairs v1[] ->
+       t0+12/13/20/21/28/29/36/37..., half[t0+22]=v0.
+       CPS-blocked. */
 block_8012BBC0:
     int cond_8012BBC0 = (a0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -14843,6 +15865,7 @@ block_8012BC68:
  * split piece of cps_8012bbc0 — rec_byte_write_leaf: byte read/write leaf step. */
 void cps_8012bca4(void)
 {
+/* GPU/pad leaf or terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14855,6 +15878,8 @@ void cps_8012bca4(void)
     }
     /* Address: 0x8012BCA4, Size: 48 bytes, Blocks: 2 */
 
+    /* word[t8]=v0; half[t1+4] adjust -> 0x8012BCD4.
+       CPS-blocked. */
 block_8012BCA4:
     cpu->write_word(t8, v0);
     v0 = cpu->read_half(t1 + 4);
@@ -14887,11 +15912,14 @@ block_8012BCCC:
  * split piece of cps_8012bb90 — record_half_step_g: s16 read/write leaf step. */
 void cps_8012bcd4(void)
 {
+/* GPU/pad fragment: continues at 0x8012bce4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012BCD4, Size: 16 bytes, Blocks: 1 */
 
+    /* half[t1] read-modify -> 0x8012BCE4.
+       CPS-blocked. */
 block_8012BCD4:
     v0 = cpu->read_half(t1);
     /* nop */  /* 0x8012BCD8: 0x00000000 */
@@ -14905,6 +15933,7 @@ block_8012BCD4:
  * ui_state_step: 18-block leaf state step in the menu/GPU band. */
 void cps_8012bce4(void)
 {
+/* GPU/pad fragment: continues at 0x8012BDA0. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14933,6 +15962,8 @@ void cps_8012bce4(void)
     }
     /* Address: 0x8012BCE4, Size: 164 bytes, Blocks: 18 */
 
+    /* 4-way param dispatch -> 0x8012BD88/90/98/9C
+       then 0x8012BDA0/BE70/BEE4/BF04 tails. CPS-blocked. */
 block_8012BCE4:
     a2 = a2 & 0x00E8;  /* 0x8012BCE4: 0x30C600E8 */
     v0 = 128;
@@ -15112,11 +16143,13 @@ block_8012BD80:
  * split piece of cps_8012bce4 — ui_state_step: 18-block leaf state step in the menu/GPU band. */
 void cps_8012bd88(void)
 {
+/* GPU/pad fragment: continues at 0x8012bd90 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012BD88, Size: 8 bytes, Blocks: 1 */
 
+    /* dispatch stub -> 0x8012BD9C/0x8012BD90. */
 block_8012BD88:
     /* delay slot (always executes) */
     v1 = 5;
@@ -15130,11 +16163,13 @@ block_8012BD88:
  * split piece of cps_8012bce4 — ui_state_step: 18-block leaf state step in the menu/GPU band. */
 void cps_8012bd90(void)
 {
+/* GPU/pad fragment: continues at 0x8012bd98 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012BD90, Size: 8 bytes, Blocks: 1 */
 
+    /* dispatch stub -> 0x8012BD9C/0x8012BD98. */
 block_8012BD90:
     /* delay slot (always executes) */
     v1 = 6;
@@ -15148,6 +16183,7 @@ block_8012BD90:
  * split piece of cps_8012bce4 — ui_state_step: 18-block leaf state step in the menu/GPU band. */
 void cps_8012bd98(void)
 {
+/* GPU/pad fragment: continues at 0x8012bd9c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15163,6 +16199,7 @@ block_8012BD98:
  * split piece of cps_8012bce4 — ui_state_step: 18-block leaf state step in the menu/GPU band. */
 void cps_8012bd9c(void)
 {
+/* GPU/pad fragment: continues at 0x8012bda0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15178,6 +16215,7 @@ block_8012BD9C:
  * ui_leaf_step_b: 12-block leaf state step. */
 void cps_8012bda0(void)
 {
+/* GPU/pad fragment: continues at 0x8012be70 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15200,6 +16238,9 @@ void cps_8012bda0(void)
     }
     /* Address: 0x8012BDA0, Size: 208 bytes, Blocks: 12 */
 
+    /* record param pack B (sibling of 0x8012BB90):
+       half[t0+14/+22], half[t1]/[t1+2] -> a3/t2 ->
+       0x8012BEF4/0x8012BEE4. CPS-blocked. */
 block_8012BDA0:
     int cond_8012BDA0 = (a0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -15343,11 +16384,14 @@ block_8012BE18:
  * split piece of cps_8012bda0 — ui_leaf_step_b: 12-block leaf state step. */
 void cps_8012be70(void)
 {
+/* GPU/pad fragment: continues at 0x8012be94 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012BE70, Size: 36 bytes, Blocks: 1 */
 
+    /* record byte copy tail: byte v1[] -> t0+36/37
+       -> 0x8012BE94. CPS-blocked. */
 block_8012BE70:
     v0 = cpu->read_byte(v1);
     /* nop */  /* 0x8012BE74: 0x00000000 */
@@ -15366,10 +16410,15 @@ block_8012BE70:
  * split piece of cps_8012bda0 — ui_leaf_step_b: 12-block leaf state step. */
 void cps_8012be94(void)
 {
+/* GPU/pad fragment: continues at 0x8012bee4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012BE94, Size: 80 bytes, Blocks: 1 */
+
+    /* GPU packet emit: halfword pairs at t0+8..34
+       (a3/t2/v1/t2+t6), word[t0]=word[t8]|0x09000000, word[t8]=
+       t0<<8>>8; half[t1+4]++; -> 0x8012BEE4. CPS-blocked. */
 
 block_8012BE94:
     v0 = t2 + t6;
@@ -15400,11 +16449,14 @@ block_8012BE94:
  * split piece of cps_8012bda0 — ui_leaf_step_b: 12-block leaf state step. */
 void cps_8012bee4(void)
 {
+/* GPU/pad fragment: continues at 0x8012bef4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012BEE4, Size: 16 bytes, Blocks: 1 */
 
+    /* half[t1] read-modify -> 0x8012BEF4.
+       CPS-blocked. */
 block_8012BEE4:
     v0 = cpu->read_half(t1);
     /* nop */  /* 0x8012BEE8: 0x00000000 */
@@ -15418,10 +16470,14 @@ block_8012BEE4:
  * split piece of cps_8012bda0 — ui_leaf_step_b: 12-block leaf state step. */
 void cps_8012bef4(void)
 {
+/* GPU/pad fragment: continues at 0x8012bf04 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012BEF4, Size: 16 bytes, Blocks: 1 */
+
+    /* counter step: v1=half[t1]+8; half[t1]=v1; v0=0; ->
+       0x8012BF04. CPS-blocked. */
 
 block_8012BEF4:
     v1 = cpu->read_half(t1);
@@ -15436,11 +16492,13 @@ block_8012BEF4:
  * split piece of cps_8012bef4 */
 void cps_8012bf04(void)
 {
+/* GPU/pad leaf or terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012BF04, Size: 8 bytes, Blocks: 1 */
 
+    /* branch-only piece. */
 block_8012BF04:
     uint32_t jt_8012BF04 = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
@@ -15454,6 +16512,7 @@ block_8012BF04:
  * ui_leaf_step_c: 5-block leaf state step. */
 void cps_8012bf58(void)
 {
+/* GPU/pad fragment: continues at 0x8012C06C. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15468,6 +16527,11 @@ void cps_8012bf58(void)
         }
     }
     /* Address: 0x8012BF58, Size: 176 bytes, Blocks: 5 */
+
+    /* fade/lerp driver: word[a0]-=a2; s2=word[v1]; if
+       word[a0] < -s2: add s2 to word[a1+t0+i] until >= -s2; then
+       table lookups 0x801E8508/0x801F0000-31464 by t1<<2 vs
+       half[0x1F800020]; -> 0x8012C008. CPS-blocked. */
 
 block_8012BF58:
     cpu->write_word(sp + 28, s1);
@@ -15553,6 +16617,7 @@ block_8012BFE4:
  * announce_param_init_wrap: announce_param_block_init caller. */
 void cps_8012c008(void)
 {
+/* hud/sprite thunk -> announce_param_block_init */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15567,6 +16632,8 @@ void cps_8012c008(void)
     }
     /* Address: 0x8012C008, Size: 64 bytes, Blocks: 4 */
 
+    /* call arg pack: word[sp+16/20]=s5/s3; jal with
+       word[s4+8]/[s4+12], word[s6+28]. CPS-blocked. */
 block_8012C008:
     int cond_8012C008 = (fp != v0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -15611,10 +16678,14 @@ block_8012C040:
  * split piece of cps_8012c008 — announce_param_init_wrap: announce_param_block_init caller. */
 void cps_8012c048(void)
 {
+/* hud/sprite fragment: continues at 0x8012c06c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012C048, Size: 36 bytes, Blocks: 1 */
+
+    /* fade loop step: s0+=s2<<16; while s1 < half[s4+32]
+       loop 0x8012C008 else 0x8012C06C; v0=7. CPS-blocked. */
 
 block_8012C048:
     v0 = s2 << 16;
@@ -15641,11 +16712,14 @@ block_8012C048:
  * split piece of cps_8012bf58 — ui_leaf_step_c: 5-block leaf state step. */
 void cps_8012c06c(void)
 {
+/* hud/sprite leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012C06C, Size: 72 bytes, Blocks: 1 */
 
+    /* epilogue: restore s3-s7/fp/ra from sp+36..68.
+       CPS-blocked. */
 block_8012C06C:
     v1 = 0x801E8508u;  /* 0x801F0000 -31480 */
     t1 = cpu->read_word(sp + 68);
@@ -15674,6 +16748,7 @@ block_8012C06C:
  * CPS leaf — 4 stores, 0 loads */
 void cps_8012c138(void)
 {
+/* hud/sprite fragment: continues at 0x8012c168 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15701,6 +16776,7 @@ block_8012C138:
  * spr_draw_off + cd_file_load_sm — loads a CD stream block then draws. */
 void cps_8012c168(void)
 {
+/* hud/sprite thunk -> cd_file_load_sm -> scratch_013_set -> stream_block_decode -> spr_draw_off */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15726,6 +16802,8 @@ void cps_8012c168(void)
     }
     /* Address: 0x8012C168, Size: 192 bytes, Blocks: 15 */
 
+    /* channel op: half[s3+140]=s0; jal 0x8018CFDC;
+       jal via word[s1+15612] (channel handle). CPS-blocked. */
 block_8012C168:
     v0 = 1;
     int cond_8012C16C = (s1 == v0);  /* save branch cond before delay slot */
@@ -15878,6 +16956,7 @@ block_8012C224:
  * stream_decode_load_b: same pair as c270 — variant B. */
 void cps_8012c228(void)
 {
+/* hud/sprite thunk -> cd_file_load_sm -> stream_block_decode */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15894,6 +16973,9 @@ void cps_8012c228(void)
     }
     /* Address: 0x8012C228, Size: 72 bytes, Blocks: 6 */
 
+    /* channel op B: jal 0x8018CFDC/0x80163154 on
+       word[s1/s2+15612] handles; word[s1+18360]++ cursor.
+       CPS-blocked. */
 block_8012C228:
     a1 = cpu->read_word(s2 + 15612);
     ra = 0x8012C234u;  /* jal link before delay slot */
@@ -15956,6 +17038,7 @@ block_8012C268:
  * then load stream block variant A. */
 void cps_8012c270(void)
 {
+/* hud/sprite thunk -> cd_file_load_sm -> stream_block_decode */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15972,6 +17055,8 @@ void cps_8012c270(void)
     }
     /* Address: 0x8012C270, Size: 72 bytes, Blocks: 6 */
 
+    /* channel op C: sibling of 0x8012C228.
+       CPS-blocked. */
 block_8012C270:
     a1 = cpu->read_word(s2 + 15612);
     ra = 0x8012C27Cu;  /* jal link before delay slot */
@@ -16035,6 +17120,7 @@ block_8012C2B0:
  * CD timing. */
 void cps_8012c2b8(void)
 {
+/* hud/sprite thunk -> cd_file_load_sm -> fighter_record_apply -> page_table_ptr_set -> cd_timer_read */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16051,6 +17137,8 @@ void cps_8012c2b8(void)
     }
     /* Address: 0x8012C2B8, Size: 60 bytes, Blocks: 6 */
 
+    /* channel teardown: jal 0x8018CFDC, 0x801566A0,
+       0x801566D4, 0x8019A460 on word[s1+15612]. CPS-blocked. */
 block_8012C2B8:
     s1 = 0x801E0000u;  /* 0x801E0000 */
     a1 = cpu->read_word(s1 + 15612);
@@ -16105,6 +17193,7 @@ block_8012C2F0:
  * scratch_tag_cd_load: scratch_013_set + cd_file_load_sm — scratch tag + CD load. */
 void cps_8012c2f4(void)
 {
+/* hud/sprite thunk -> cd_file_load_sm -> scratch_013_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16119,6 +17208,8 @@ void cps_8012c2f4(void)
     }
     /* Address: 0x8012C2F4, Size: 44 bytes, Blocks: 4 */
 
+    /* channel step: jal 0x8018CFDC; byte[s2+19];
+       jal 0x801274D8. CPS-blocked. */
 block_8012C2F4:
     a1 = cpu->read_word(s1 + 15612);
     ra = 0x8012C300u;  /* jal link before delay slot */
@@ -16159,6 +17250,7 @@ block_8012C318:
  * split piece of cps_8012c2f4 — scratch_tag_cd_load: scratch_013_set + cd_file_load_sm — scratch tag + CD load. */
 void cps_8012c320(void)
 {
+/* hud/sprite thunk -> spr_draw_off */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16171,6 +17263,8 @@ void cps_8012c320(void)
     }
     /* Address: 0x8012C320, Size: 16 bytes, Blocks: 2 */
 
+    /* jal 0x8018BF40(word[s1+15612],...) -> 0x8012C330.
+       CPS-blocked. */
 block_8012C320:
     a0 = cpu->read_word(s1 + 15612);
     ra = 0x8012C32Cu;  /* jal link before delay slot */
@@ -16189,6 +17283,7 @@ block_8012C32C:
  * split piece of cps_8012c168 — stream_block_load_draw: scratch_013_set + stream_block_decode + */
 void cps_8012c330(void)
 {
+/* hud/sprite thunk -> cd_timer_read -> scratch_013_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16202,6 +17297,8 @@ void cps_8012c330(void)
     }
     /* Address: 0x8012C330, Size: 32 bytes, Blocks: 3 */
 
+    /* channel tail: jal 0x8019A460 + 0x801274D8;
+       half[s3+140]=v1 -> 0x8012C358. CPS-blocked. */
 block_8012C330:
     ra = 0x8012C338u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -16230,6 +17327,7 @@ block_8012C340:
  * split piece of cps_8012c168 — stream_block_load_draw: scratch_013_set + stream_block_decode + */
 void cps_8012c350(void)
 {
+/* hud/sprite fragment: continues at 0x8012c354 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16245,6 +17343,7 @@ block_8012C350:
  * split piece of cps_8012c168 — stream_block_load_draw: scratch_013_set + stream_block_decode + */
 void cps_8012c354(void)
 {
+/* hud/sprite fragment: continues at 0x8012c358 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16260,10 +17359,13 @@ block_8012C354:
  * split piece of cps_8012c330 */
 void cps_8012c358(void)
 {
+/* hud/sprite leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012C358, Size: 28 bytes, Blocks: 1 */
+
+    /* epilogue: pop s0-s3, ra (sp += 40), jr ra */
 
 block_8012C358:
     ra = cpu->read_word(sp + 32);
@@ -16283,6 +17385,7 @@ block_8012C358:
  * ui_leaf_step_l: leaf state step, no calls. */
 void cps_8012c418(void)
 {
+/* hud/sprite fragment: continues at 0x8012c4f8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16300,6 +17403,8 @@ void cps_8012c418(void)
     }
     /* Address: 0x8012C418, Size: 224 bytes, Blocks: 7 */
 
+    /* 7-way state dispatch -> 0x8012C4F8/0x8012C4FC.
+       CPS-blocked. */
 block_8012C418:
     s3 = 2;
     fp = 0x00100000u;  /* 0x00100000 */
@@ -16389,6 +17494,7 @@ block_8012C4E8:
  * split piece of cps_8012c418 — ui_leaf_step_l: leaf state step, no calls. */
 void cps_8012c4f8(void)
 {
+/* hud/sprite fragment: continues at 0x8012c4fc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16404,6 +17510,7 @@ block_8012C4F8:
  * split piece of cps_8012c418 — ui_leaf_step_l: leaf state step, no calls. */
 void cps_8012c4fc(void)
 {
+/* hud/sprite fragment: continues at 0x8012C514 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16416,6 +17523,8 @@ void cps_8012c4fc(void)
     }
     /* Address: 0x8012C4FC, Size: 20 bytes, Blocks: 2 */
 
+    /* dispatch -> 0x8012C514/0x8012C52C/0x8012C64C.
+       CPS-blocked. */
 block_8012C4FC:
     a2 = a2 & 0x00F0;  /* 0x8012C4FC: 0x30C600F0 */
     v0 = 32;
@@ -16448,6 +17557,7 @@ block_8012C50C:
  * CPS fallthrough stub — continues at 0x8012C514 */
 void cps_8012c510(void)
 {
+/* hud/sprite fragment: continues at 0x8012c514 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16463,6 +17573,7 @@ block_8012C510:
  * split piece of cps_8012c4fc */
 void cps_8012c514(void)
 {
+/* hud/sprite fragment: continues at 0x8012CB90 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16476,6 +17587,8 @@ void cps_8012c514(void)
     }
     /* Address: 0x8012C514, Size: 24 bytes, Blocks: 3 */
 
+    /* dispatch -> 0x8012C544/0x8012C7C4/0x8012CB90.
+       CPS-blocked. */
 block_8012C514:
     int cond_8012C514 = (a2 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -16512,6 +17625,7 @@ block_8012C524:
  * split piece of cps_8012c4fc */
 void cps_8012c52c(void)
 {
+/* hud/sprite fragment: continues at 0x8012CB90 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16525,6 +17639,8 @@ void cps_8012c52c(void)
     }
     /* Address: 0x8012C52C, Size: 24 bytes, Blocks: 3 */
 
+    /* dispatch -> 0x8012CA34/0x8012C824/0x8012CB90.
+       CPS-blocked. */
 block_8012C52C:
     int cond_8012C52C = (a2 == v0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -16561,6 +17677,7 @@ block_8012C53C:
  * hud_text_submit: hud_text_d + spr_slot_pkt_submit — HUD text + slot packet submit. */
 void cps_8012c544(void)
 {
+/* hud/sprite thunk -> hud_text_d -> spr_slot_pkt_submit -> spr_slot_pkt_submit -> spr_slot_pkt_submit -> hud_text_d -> spr_slot_pkt_submit */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16577,6 +17694,8 @@ void cps_8012c544(void)
     }
     /* Address: 0x8012C544, Size: 264 bytes, Blocks: 6 */
 
+    /* emit args: sp+16=half[s4+34], sp+20=0 ->
+       jal 0x8012E7CC + 4x jal 0x8018C824. CPS-blocked. */
 block_8012C544:
     a1 = s2;
     a2 = 0x8011F10Cu;  /* 0x80120000 -3828 */
@@ -16676,6 +17795,7 @@ block_8012C624:
  * sprite_node_emit_b/a — paired sprite node emit. */
 void cps_8012c64c(void)
 {
+/* hud/sprite thunk -> spr_attr_alloc_b -> spr_attr_alloc_b -> spr_attr_alloc_b -> spr_attr_alloc_b -> spr_slot_pkt_submit -> sprite_node_emit_a -> sprite_node_emit_b */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16694,6 +17814,8 @@ void cps_8012c64c(void)
     }
     /* Address: 0x8012C64C, Size: 376 bytes, Blocks: 8 */
 
+    /* emit args: sp+16/20=s2/s0 -> 3x jal
+       0x8018C71C + jal 0x8018C824. CPS-blocked. */
 block_8012C64C:
     a1 = 0x00280000u;  /* 0x00280000 */
     a2 = 0x177E0000u;  /* 0x177E0000 */
@@ -16833,6 +17955,7 @@ block_8012C7BC:
  * split piece of cps_8012c514 */
 void cps_8012c7c4(void)
 {
+/* hud/sprite thunk -> hud_text_d -> spr_slot_pkt_submit */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16846,6 +17969,9 @@ void cps_8012c7c4(void)
     }
     /* Address: 0x8012C7C4, Size: 96 bytes, Blocks: 3 */
 
+    /* emit args (sibling of 0x8012C544): sp+16=
+       half[s4+34] -> jal 0x8012E7CC + jal 0x8018C824.
+       CPS-blocked. */
 block_8012C7C4:
     a2 = 0x8011F110u;  /* 0x80120000 -3824 */
     t0 = cpu->read_word(sp + 84);
@@ -16888,6 +18014,7 @@ block_8012C820:
  * spr_attr_alloc_a + sprite_node_emit_a — HUD text sprite emit. */
 void cps_8012c824(void)
 {
+/* hud/sprite thunk -> hud_text_d -> spr_slot_pkt_submit -> spr_slot_pkt_submit -> spr_slot_pkt_submit -> spr_attr_alloc_b -> spr_attr_alloc_b -> spr_attr_alloc_b -> spr_attr_alloc_b -> spr_attr_alloc_a -> sprite_node_emit_a */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16909,6 +18036,8 @@ void cps_8012c824(void)
     }
     /* Address: 0x8012C824, Size: 528 bytes, Blocks: 11 */
 
+    /* emit args: same pack as 0x8012C544 + jal
+       0x8018C71C tail. CPS-blocked. */
 block_8012C824:
     a2 = 0x8011F10Cu;  /* 0x80120000 -3828 */
     t0 = cpu->read_word(sp + 84);
@@ -17101,6 +18230,7 @@ block_8012CA04:
  * split piece of cps_8012c52c */
 void cps_8012ca34(void)
 {
+/* hud/sprite thunk -> spr_attr_alloc_b */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -17113,6 +18243,8 @@ void cps_8012ca34(void)
     }
     /* Address: 0x8012CA34, Size: 80 bytes, Blocks: 2 */
 
+    /* emit args: sp+16=v0, sp+20=s1 -> jal
+       0x8018C71C -> 0x8012CA84. CPS-blocked. */
 block_8012CA34:
     a1 = 0x00280000u;  /* 0x00280000 */
     a2 = 0x177E0000u;  /* 0x177E0000 */
@@ -17147,6 +18279,7 @@ block_8012CA68:
  * spr_attr_alloc_wrap: spr_attr_alloc_b caller. */
 void cps_8012ca84(void)
 {
+/* hud/sprite thunk -> spr_attr_alloc_b -> spr_attr_alloc_b -> spr_attr_alloc_b */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -17161,6 +18294,8 @@ void cps_8012ca84(void)
     }
     /* Address: 0x8012CA84, Size: 108 bytes, Blocks: 4 */
 
+    /* emit args loop: sp+16=v0, sp+20=s1 ->
+       3x jal 0x8018C71C. CPS-blocked. */
 block_8012CA84:
     v0 = 256;
     cpu->write_word(sp + 16, v0);
@@ -17212,6 +18347,7 @@ block_8012CAEC:
  * split piece of cps_8012ca84 — spr_attr_alloc_wrap: spr_attr_alloc_b caller. */
 void cps_8012caf0(void)
 {
+/* hud/sprite thunk -> spr_slot_pkt_submit -> sprite_node_emit_a */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -17225,6 +18361,9 @@ void cps_8012caf0(void)
     }
     /* Address: 0x8012CAF0, Size: 116 bytes, Blocks: 3 */
 
+    /* emit args: half[s4+34]/[s4+32] -> a1/a2/a3,
+       sp+16/20 pack -> jal 0x8018C824 + 0x8018CE70.
+       CPS-blocked. */
 block_8012CAF0:
     a2 = 0x277E0000u;  /* 0x277E0000 */
     a2 = a2 | 0x001E;
@@ -17273,10 +18412,14 @@ block_8012CB60:
  * split piece of cps_8012c64c — sprite_node_emit_pair: spr_attr_alloc_b + spr_slot_pkt_submit + */
 void cps_8012cb64(void)
 {
+/* hud/sprite fragment: continues at 0x8012cb88 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012CB64, Size: 36 bytes, Blocks: 1 */
+
+    /* arg preload: a3=half[s4+32], v0=half[s4+34], a1=a2=0;
+       stack saves (sp+20..36); -> 0x8012CB88. CPS-blocked. */
 
 block_8012CB64:
     a1 = zero;
@@ -17296,11 +18439,14 @@ block_8012CB64:
  * split piece of cps_8012c824 — hud_text_emit: hud_text_d + spr_attr_alloc_b + spr_slot_pkt_submit + */
 void cps_8012cb88(void)
 {
+/* hud/sprite thunk -> sprite_node_emit_a */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012CB88, Size: 8 bytes, Blocks: 1 */
 
+    /* emit: word[sp+16]=v0 -> jal 0x8018CE70.
+       CPS-blocked. */
 block_8012CB88:
     ra = 0x8012CB90u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -17314,10 +18460,13 @@ block_8012CB88:
  * split piece of cps_8012c514 */
 void cps_8012cb90(void)
 {
+/* hud/sprite leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012CB90, Size: 48 bytes, Blocks: 1 */
+
+    /* epilogue: pop s0-s7, fp, ra (sp += 80), jr ra */
 
 block_8012CB90:
     ra = cpu->read_word(sp + 76);
@@ -17342,11 +18491,13 @@ block_8012CB90:
  * single half read from v0+892 */
 void cps_8012ce10(void)
 {
+/* hud/sprite thunk -> print_dispatch_guest */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012CE10, Size: 16 bytes, Blocks: 1 */
 
+    /* halfword read: v0 = half[v0+892]. */
 block_8012CE10:
     v0 = 0x1F800000u;  /* 0x1F800000 */
     v0 = (int32_t)(int16_t)cpu->read_half(v0 + 892);
@@ -17367,6 +18518,7 @@ void cps_8012ea9c(void)
 
     /* Address: 0x8012EA9C, Size: 12 bytes, Blocks: 1 */
 
+    /* halfword[v0+48]=a3. */
 block_8012EA9C:
     v0 = t0 + v0;
     uint32_t jt_8012EAA0 = ra;  /* latch indirect target before delay slot */
@@ -17386,6 +18538,7 @@ void cps_8012edf4(void)
 
     /* Address: 0x8012EDF4, Size: 24 bytes, Blocks: 1 */
 
+    /* halfword[a0+6]=a1. */
 block_8012EDF4:
     v0 = 0x801F0228u;  /* 0x801F0000 552 */
     a0 = a0 << 1;
@@ -17407,6 +18560,7 @@ void cps_8012ee40(void)
 
     /* Address: 0x8012EE40, Size: 8 bytes, Blocks: 1 */
 
+    /* empty/branch piece. */
 block_8012EE40:
     uint32_t jt_8012EE40 = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
@@ -17446,6 +18600,10 @@ void cps_8012f188(void)
         }
     }
     /* Address: 0x8012F188, Size: 40 bytes, Blocks: 2 */
+
+    /* dispatch entry: a1=word[v0*4+v1]; jal 0x8012CC6C(a0-
+       1188, a1); then a0=0x80120000, v1=0x801B148C, a1=half
+       [0x1F800024]; -> 0x8012F1B0. CPS-blocked. */
 
 block_8012F188:
     v0 = v0 << 2;
@@ -17489,6 +18647,11 @@ void cps_8012f1b0(void)
         }
     }
     /* Address: 0x8012F1B0, Size: 248 bytes, Blocks: 10 */
+
+    /* HUD/param dump: 8x jal 0x8012CC6C(0x8012xxxx-const,
+       fields from s0 record: half[124]*4 table ptr, byte[128/129],
+       half[74..138 pairs], each with sp+16 spill); epilogue.
+       CPS-blocked. */
 
 block_8012F1B0:
     v0 = (int32_t)(int16_t)cpu->read_half(s0 + 124);
@@ -17650,6 +18813,10 @@ void cps_8012fb58(void)
     }
     /* Address: 0x8012FB58, Size: 376 bytes, Blocks: 16 */
 
+    /* record compact/remap: if half[s1+118]&0x80 ->
+       copy half pairs s1+82..104 -> +74/76/78, +40/42/44,
+       +92/94/96, mask half[+118]&=0x7F; else half[s1+90]<=0
+       -> sp+72 out-param path. CPS-blocked. */
 block_8012FB58:
     v0 = 0x8011FCCCu;  /* 0x80120000 -820 */
     v1 = v1 << 2;
@@ -17855,6 +19022,9 @@ void cps_8012fcd0(void)
     }
     /* Address: 0x8012FCD0, Size: 16 bytes, Blocks: 2 */
 
+    /* halfword[s1+36]=t2; jal 0x80131F48;
+       byte[s1+128] -> 0x8012FCE0 mega-dispatch.
+       CPS-blocked. */
 block_8012FCD0:
     /* delay slot (always executes) */
     cpu->write_half(s1 + 36, (uint16_t)t2);
@@ -18239,6 +19409,10 @@ void cps_8012fce0(void)
     }
     /* Address: 0x8012FCE0, Size: 8808 bytes, Blocks: 355 */
 
+    /* mega CPS routine (~4.7k lines): entered via
+       byte[s1+128] dispatch from 0x8012FCD0; per-state channel/
+       object processing. CPS-blocked — too large to summarize
+       faithfully; ops untouched. */
 block_8012FCE0:
     int cond_8012FCE0 = ((int32_t)v1 < 0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -22676,6 +23850,14 @@ void cps_80131f4c(void)
     }
     /* Address: 0x80131F4C, Size: 312 bytes, Blocks: 8 */
 
+    /* velocity/rate update: half[s1+132]*0x8BAD >>12 -> s2 (with
+       3*value rounding fixup), same for half[s1+134] -> s5; then
+       writes 4096/-val triple to s6+72..92 (matrix diag?), negates
+       half[s1+74/76/78], calls 0x8018DF00 (rotate?), stores
+       half[s1+92]+s5 -> s6+60, half[s1+94]+s2 -> s6+64, fixed-point
+       divide (<<12 / half[s1+122]) -> s6+68; two 0x80186D20 calls;
+       epilogue. CPS-blocked. */
+
 block_80131F4C:
     v0 = (int32_t)(int16_t)cpu->read_half(s1 + 132);
     v1 |= 0x8BADu;
@@ -22846,6 +24028,9 @@ void cps_80132868(void)
     }
     /* Address: 0x80132868, Size: 320 bytes, Blocks: 20 */
 
+    /* large CPS state machine (65 blocks) —
+       per-state object/channel processing; ops untouched.
+       CPS-blocked. */
 block_80132868:
     a0 = 0x1F800000u;  /* 0x1F800000 */
     a0 = a0 | 0x0394;
@@ -23082,6 +24267,9 @@ void cps_801329ac(void)
 
     /* Address: 0x801329AC, Size: 44 bytes, Blocks: 1 */
 
+    /* result store + epilogue: half[s6+104]=v0; pop s0-s6, ra
+       (sp += 48), jr ra */
+
 block_801329AC:
     cpu->write_half(s6 + 104, (uint16_t)v0);
     ra = cpu->read_word(sp + 44);
@@ -23107,6 +24295,10 @@ void cps_80132b50(void)
   if (!cpu) return;
 
     /* Address: 0x80132B50, Size: 80 bytes, Blocks: 1 */
+
+    /* fixed-point add piece: half[s2+74/76/78] += (word[sp+36/40] *
+       a0) >> 16 each (Q16.16 mul, stall-respecting); falls into
+       0x80132BA0. CPS-blocked. */
 
 block_80132B50:
     a3 = cpu->lo;
@@ -23190,6 +24382,12 @@ void cps_80132ba0(void)
         }
     }
     /* Address: 0x80132BA0, Size: 464 bytes, Blocks: 39 */
+
+    /* aim-angle solve (sibling of 0x8013358C): dist² =
+       s1²+(s3-s6)² -> jal 0x80194500 (isqrt); if <129 ->
+       atan2_lut(s0,s1); angle negated, wrapped mod 2048 (&0xFFF),
+       stored half[s2+50]; half[s2+42] adjusted; tilt deltas
+       -> param block emit. CPS-blocked. */
 
 block_80132BA0:
     { int64_t result = (int64_t)(int32_t)s1 * (int64_t)(int32_t)s1; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
@@ -23562,6 +24760,7 @@ block_80132D40:
  * walk updating depth pairs (dual_target_track family). */
 void cps_8013309c(void)
 {
+/* math thunk -> table_byte_next_a -> pair_depth_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   const uint32_t angle_table = 0x8011FD78u;
@@ -23578,6 +24777,12 @@ void cps_8013309c(void)
         }
     }
     /* Address: 0x8013309C, Size: 200 bytes, Blocks: 6 */
+
+    /* heading/aim init: s1=v0; s0=sign of (s1-v1)<<20; jal 0x80129F78;
+       a0=v0&7 indexes angle_table -> half[s2+42]=s1±table[a0],
+       half[s2+40]=table[a0+1]; half[s2+44]=0, half[s2+92..96]=-1024;
+       jal 0x8013237C(word[s3+32]+372, word[s4+32]+372); then copy
+       half[s2+100/102/104]->[92/94/96], half[s2+120]++. CPS-blocked. */
 
 block_8013309C:
     s1 = v0;
@@ -23653,6 +24858,7 @@ block_80133140:
  * fixed_rsqrt_q12 + vec3_s32_normalize; normalized direction track. */
 void cps_80133164(void)
 {
+/* math thunk -> vec3_s32_normalize -> fixed_rsqrt_q12 -> pair_depth_set -> u16_step_toward */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -23682,6 +24888,8 @@ void cps_80133164(void)
     }
     /* Address: 0x80133164, Size: 396 bytes, Blocks: 19 */
 
+    /* large CPS state machine (59 blocks) —
+       sibling of 0x80132868. CPS-blocked. */
 block_80133164:
     v0 = cpu->read_word(s3 + 32);
     /* nop */  /* 0x80133168: 0x00000000 */
@@ -23908,10 +25116,14 @@ block_801332E8:
  * split piece of cps_80133164 — dual_track_step_b: same family — pair_depth_set + u16_step_toward + */
 void cps_801332f0(void)
 {
+/* math leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x801332F0, Size: 56 bytes, Blocks: 1 */
+
+    /* vector copy + epilogue: half[s2+32..36] = half[s2+40..44]; pop
+       s0-s4, ra (sp += 96), jr ra */
 
 block_801332F0:
     v0 = cpu->read_half(s2 + 40);
@@ -23937,10 +25149,15 @@ block_801332F0:
  * fixed-point muldiv step — 1 RMW pairs on s2+74 */
 void cps_80133428(void)
 {
+/* math fragment: continues at 0x80133450 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80133428, Size: 40 bytes, Blocks: 1 */
+
+    /* fixed-point scale piece 1: s3=v0, scale=v1; half[s2+74] +=
+       (scale*s3)>>12; then product word[sp+36]*s3 -> lo/hi,
+       psx_muldiv_set; falls into 0x80133450. CPS-blocked. */
 
 block_80133428:
     s3 = v0;
@@ -23968,10 +25185,14 @@ block_80133428:
  * split piece of cps_80133428 */
 void cps_80133450(void)
 {
+/* math fragment: continues at 0x8013345c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80133450, Size: 12 bytes, Blocks: 1 */
+
+    /* fixed-point scale piece 2 (mid): half[s2+76] += lo>>12;
+       falls into 0x8013345C. CPS-blocked. */
 
 block_80133450:
     v0 = cpu->read_half(s2 + 76);
@@ -23986,10 +25207,15 @@ block_80133450:
  * split piece of cps_80133450 */
 void cps_8013345c(void)
 {
+/* math fragment: continues at 0x80133488 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8013345C, Size: 44 bytes, Blocks: 1 */
+
+    /* fixed-point scale piece 3 (tail): half[s2+76]+=v1 (delay
+       carry), half[s2+78]+=(word[sp+40]*s3)>>12; s1=s7-s6; falls
+       into 0x80133488. CPS-blocked. */
 
 block_8013345C:
     v0 += v1;
@@ -24015,6 +25241,7 @@ block_8013345C:
  * fixed_approach_s16. */
 void cps_80133488(void)
 {
+/* math thunk -> fixed_rsqrt_q12 -> atan2_lut */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   const uint32_t table_base = 0x8011FD98u;
@@ -24035,6 +25262,12 @@ void cps_80133488(void)
         }
     }
     /* Address: 0x80133488, Size: 200 bytes, Blocks: 10 */
+
+    /* aim-error / angle-delta piece: s1²+s0² -> jal 0x80194500 (sqrt?);
+       if s3>=129: atan2_lut(s0,s1) -> s0=-v0; s1=|half[s2+42]-s0|<<20>>20;
+       if s1>=1025 s0+=2048; a0=s0&0xFFF; delta=(half[s2+42]>>9)&6
+       indexes table_base -> half[s2+50]=a0+entry; residual
+       half[s2+42]-a0 stored back; two split exits. CPS-blocked. */
 
 block_80133488:
     { int64_t square = (int64_t)(int32_t)s1 * (int64_t)(int32_t)s1; cpu->lo = (uint32_t)square; cpu->hi = (uint32_t)(square >> 32); }
@@ -24141,6 +25374,7 @@ block_80133548:
  * split piece of cps_80133488 — rsqrt_step_leaf: fixed_rsqrt_q12-driven reciprocal-sqrt step near */
 void cps_80133550(void)
 {
+/* math fragment: continues at 0x80133554 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -24157,6 +25391,7 @@ block_80133550:
  * fixed_approach_s16/u16_step_toward. */
 void cps_80133554(void)
 {
+/* math thunk -> fixed_approach_s16 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -24171,6 +25406,7 @@ void cps_80133554(void)
     }
     /* Address: 0x80133554, Size: 36 bytes, Blocks: 4 */
 
+    /* dispatch -> 0x801338C4 / 0x80133578. CPS-blocked. */
 block_80133554:
     s0 = (int32_t)v0 >> 3;
     int cond_80133558 = ((int32_t)s0 > 0);  /* save branch cond before delay slot */
@@ -24207,6 +25443,7 @@ block_80133574:
  * split piece of cps_80133488 — rsqrt_step_leaf: fixed_rsqrt_q12-driven reciprocal-sqrt step near */
 void cps_80133578(void)
 {
+/* math fragment: continues at 0x80133588 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -24219,6 +25456,8 @@ void cps_80133578(void)
     }
     /* Address: 0x80133578, Size: 16 bytes, Blocks: 2 */
 
+    /* dispatch -> 0x8013358C / 0x80133588 (aim-solve
+       entry). CPS-blocked. */
 block_80133578:
     int cond_80133578 = (v0 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -24242,6 +25481,7 @@ block_80133580:
  * split piece of cps_80133578 */
 void cps_80133588(void)
 {
+/* math fragment: continues at 0x8013358c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -24258,6 +25498,7 @@ block_80133588:
  * fixed_approach_s16 — third dual-target tracking variant. */
 void cps_8013358c(void)
 {
+/* math thunk -> atan2_lut -> fixed_approach_s16 -> pair_depth_set -> u16_step_toward */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -24297,6 +25538,12 @@ void cps_8013358c(void)
         }
     }
     /* Address: 0x8013358C, Size: 380 bytes, Blocks: 30 */
+
+    /* sprite orient/tilt emit: angle from atan2_lut -> -angle to
+       half[s2+48], adjusts half[s2+40]; computes tilt deltas
+       s0/s5/s4 clamped >=-128 (rounding via +7>>3); clears
+       half[s2+44/52]; packs {fp,s5,s6,s4} param block sp+16 and
+       calls emit with a0=sp+16,a1=sp+32,a2=s2. CPS-blocked. */
 
 block_8013358C:
     v1 = v1 + s1;
@@ -24584,6 +25831,7 @@ block_801336D8:
  * vec_leaf_step: leaf vector step near vec3_step_toward family. */
 void cps_80133768(void)
 {
+/* math fragment: continues at 0x80133794 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -24599,6 +25847,8 @@ void cps_80133768(void)
     }
     /* Address: 0x80133768, Size: 44 bytes, Blocks: 5 */
 
+    /* 4-way dispatch -> 0x80133794/9C/AC/B4.
+       CPS-blocked. */
 block_80133768:
     v0 = a1 - a0;
     int cond_8013376C = (v0 == zero);  /* save branch cond before delay slot */
@@ -24659,11 +25909,13 @@ block_80133788:
  * split piece of cps_80133768 — vec_leaf_step: leaf vector step near vec3_step_toward family. */
 void cps_80133794(void)
 {
+/* math leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80133794, Size: 8 bytes, Blocks: 1 */
 
+    /* dispatch stub -> 0x801337B4 family. */
 block_80133794:
     uint32_t jt_80133794 = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
@@ -24677,11 +25929,14 @@ block_80133794:
  * split piece of cps_80133768 — vec_leaf_step: leaf vector step near vec3_step_toward family. */
 void cps_8013379c(void)
 {
+/* math fragment: continues at 0x801337ac */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8013379C, Size: 16 bytes, Blocks: 1 */
 
+    /* dispatch -> 0x80133794/0x801337AC.
+       CPS-blocked. */
 block_8013379C:
     v0 = zero - v0;
     v0 = ((int32_t)a2 < (int32_t)v0) ? 1 : 0;  /* 0x801337A0: 0x00C2102A */
@@ -24703,11 +25958,13 @@ block_8013379C:
  * split piece of cps_80133768 — vec_leaf_step: leaf vector step near vec3_step_toward family. */
 void cps_801337ac(void)
 {
+/* math leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x801337AC, Size: 8 bytes, Blocks: 1 */
 
+    /* branch-only piece. */
 block_801337AC:
     uint32_t jt_801337AC = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
@@ -24721,11 +25978,13 @@ block_801337AC:
  * split piece of cps_80133768 — vec_leaf_step: leaf vector step near vec3_step_toward family. */
 void cps_801337b4(void)
 {
+/* math leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x801337B4, Size: 8 bytes, Blocks: 1 */
 
+    /* branch-only piece. */
 block_801337B4:
     uint32_t jt_801337B4 = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
@@ -24739,6 +25998,7 @@ block_801337B4:
  * vec_step_leaf: 11-block leaf vector step near vec3_step_toward family. */
 void cps_801337bc(void)
 {
+/* math leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -24760,6 +26020,8 @@ void cps_801337bc(void)
     }
     /* Address: 0x801337BC, Size: 108 bytes, Blocks: 11 */
 
+    /* pointer swap: a1=word[a1], a3=word[a0];
+       word[a0]=v0, word[a0]=a1 sequence. CPS-blocked. */
 block_801337BC:
     a1 = cpu->read_word(a1);
     a3 = cpu->read_word(a0);
@@ -24865,11 +26127,14 @@ block_80133820:
  * CPS fallthrough stub — continues at 0x801338B4 */
 void cps_801338ac(void)
 {
+/* math fragment: continues at 0x801338b4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x801338AC, Size: 8 bytes, Blocks: 1 */
 
+    /* halfword[a0]=v0 -> 0x801338B4/0x801338B8.
+       CPS-blocked. */
 block_801338AC:
     /* delay slot (always executes) */
     cpu->write_half(a0, (uint16_t)v0);
@@ -24883,6 +26148,7 @@ block_801338AC:
  * split piece of cps_801338ac */
 void cps_801338b4(void)
 {
+/* math fragment: continues at 0x801338b8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -24898,6 +26164,7 @@ block_801338B4:
  * split piece of cps_801338ac */
 void cps_801338b8(void)
 {
+/* math fragment: continues at 0x801338bc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -24913,11 +26180,13 @@ block_801338B8:
  * split piece of cps_801338b8 */
 void cps_801338bc(void)
 {
+/* math leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x801338BC, Size: 8 bytes, Blocks: 1 */
 
+    /* branch-only piece. */
 block_801338BC:
     uint32_t jt_801338BC = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
@@ -24931,11 +26200,13 @@ block_801338BC:
  * CPS fallthrough stub — continues at 0x80133900 */
 void cps_801338fc(void)
 {
+/* math fragment: continues at 0x80133900 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x801338FC, Size: 4 bytes, Blocks: 1 */
 
+    /* dispatch -> 0x80133900. */
 block_801338FC:
     /* nop */  /* 0x801338FC: 0x00000000 */
     cpu->pc = 0x80133900u; return;  /* fallthrough to split piece */
@@ -24946,11 +26217,14 @@ block_801338FC:
  * split piece of cps_801338fc */
 void cps_80133900(void)
 {
+/* math fragment: continues at 0x8013390c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80133900, Size: 12 bytes, Blocks: 1 */
 
+    /* dispatch -> 0x8013390C/0x8013392C.
+       CPS-blocked. */
 block_80133900:
     a1 = a2;
     /* delay slot (always executes) */
@@ -24965,6 +26239,7 @@ block_80133900:
  * split piece of cps_80133900 */
 void cps_8013390c(void)
 {
+/* math fragment: continues at 0x8013392C */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -24977,6 +26252,8 @@ void cps_8013390c(void)
     }
     /* Address: 0x8013390C, Size: 28 bytes, Blocks: 2 */
 
+    /* dispatch -> 0x80133928/0x8013392C.
+       CPS-blocked. */
 block_8013390C:
     v0 = zero - a1;
     v0 = ((int32_t)a2 < (int32_t)v0) ? 1 : 0;  /* 0x80133910: 0x00C2102A */
@@ -25004,6 +26281,7 @@ block_8013391C:
  * split piece of cps_8013390c */
 void cps_80133928(void)
 {
+/* math fragment: continues at 0x8013392c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25019,11 +26297,13 @@ block_80133928:
  * split piece of cps_80133900 */
 void cps_8013392c(void)
 {
+/* math leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8013392C, Size: 16 bytes, Blocks: 1 */
 
+    /* halfword[a0]=v0; jr. */
 block_8013392C:
     v0 = (uint32_t)a3 >> 20;
     cpu->write_half(a0, (uint16_t)v0);
@@ -25039,11 +26319,13 @@ block_8013392C:
  * leaf reg-op / return-value helper */
 void cps_8013393c(void)
 {
+/* math leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8013393C, Size: 8 bytes, Blocks: 1 */
 
+    /* branch-only piece. */
 block_8013393C:
     uint32_t jt_8013393C = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
@@ -25057,6 +26339,7 @@ block_8013393C:
  * muldiv_half_step: muldiv + s16 read/write — fixed-point leaf step. */
 void cps_80133c9c(void)
 {
+/* math fragment: continues at 0x80133ce8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25071,6 +26354,8 @@ void cps_80133c9c(void)
     }
     /* Address: 0x80133C9C, Size: 76 bytes, Blocks: 4 */
 
+    /* out-param pack: half[sp+48/50/52]=a0/v1/v0
+       -> 0x80133CE8. CPS-blocked. */
 block_80133C9C:
     /* nop */  /* 0x80133C9C: 0x00000000 */
     { int64_t result = (int64_t)(int32_t)v0 * (int64_t)(int32_t)a0; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
@@ -25123,6 +26408,7 @@ block_80133CE0:
  * record_half_step_h: s16 read/write leaf step. */
 void cps_80133ce8(void)
 {
+/* math fragment: continues at 0x80133D74 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25140,6 +26426,8 @@ void cps_80133ce8(void)
     }
     /* Address: 0x80133CE8, Size: 128 bytes, Blocks: 7 */
 
+    /* param shuffle: rotates half[sp+48..52] and
+       half[s0..+4] pairs. CPS-blocked. */
 block_80133CE8:
     int cond_80133CE8 = (v0 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -25228,10 +26516,14 @@ block_80133D28:
  * CPS leaf — 3 stores, 0 loads */
 void cps_80133d68(void)
 {
+/* math fragment: continues at 0x80133d74 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80133D68, Size: 12 bytes, Blocks: 1 */
+
+    /* zero 3 halfwords at sp+48..52 (saved-vector clear), falls into
+       0x80133D74. CPS-blocked. */
 
 block_80133D68:
     cpu->write_half(sp + 52, (uint16_t)zero);
@@ -25245,10 +26537,15 @@ block_80133D68:
  * split piece of cps_80133ce8 — record_half_step_h: s16 read/write leaf step. */
 void cps_80133d74(void)
 {
+/* math leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80133D74, Size: 60 bytes, Blocks: 1 */
+
+    /* unaligned-load epilogue: v0=s2, lwl/lwr pairs rebuild sp+48..55
+       into t0/t1 (o32 unaligned arg save area); pop s0-s2, ra
+       (sp += 72), jr ra */
 
 block_80133D74:
     v0 = s2;
@@ -25272,11 +26569,15 @@ block_80133D74:
  * fixed-point muldiv step — 1 RMW pairs on s1+4 */
 void cps_80133ebc(void)
 {
+/* math fragment: continues at 0x80133ef0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80133EBC, Size: 52 bytes, Blocks: 1 */
 
+    /* halfword field copy: half[s1+2]=v0,
+       half[sp+20]=v1, half[s1+4] reload -> 0x80133EF0.
+       CPS-blocked. */
 block_80133EBC:
     /* nop */  /* 0x80133EBC: 0x00000000 */
     v0 = v0 + v1;
@@ -25301,10 +26602,14 @@ block_80133EBC:
  * split piece of cps_80133ebc */
 void cps_80133ef0(void)
 {
+/* math fragment: continues at 0x801340c4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80133EF0, Size: 64 bytes, Blocks: 1 */
+
+    /* unaligned-load epilogue: v0=s3, lwl/lwr pairs rebuild sp+16..23
+       into t1/t2; pop s0-s3, ra (sp += 56), jr ra */
 
 block_80133EF0:
     v0 = s3;
@@ -25334,6 +26639,9 @@ void cps_80134080(void)
 
     /* Address: 0x80134080, Size: 40 bytes, Blocks: 1 */
 
+    /* halfword field copy variant: half[s0+2/+4]
+       <- v0/v1, sp+18/20 reads -> 0x801340A8/0x801340B4.
+       CPS-blocked. */
 block_80134080:
     v1 = cpu->read_half(sp + 18);
     /* nop */  /* 0x80134084: 0x00000000 */
@@ -25360,6 +26668,9 @@ void cps_801340a8(void)
 
     /* Address: 0x801340A8, Size: 12 bytes, Blocks: 1 */
 
+    /* zero 3 halfwords at sp+16..20, falls into 0x801340B4.
+       CPS-blocked. */
+
 block_801340A8:
     cpu->write_half(sp + 20, (uint16_t)zero);
     cpu->write_half(sp + 18, (uint16_t)zero);
@@ -25376,6 +26687,10 @@ void cps_801340b4(void)
   if (!cpu) return;
 
     /* Address: 0x801340B4, Size: 16 bytes, Blocks: 1 */
+
+    /* unaligned-load epilogue part 1: v0=s2, lwl/lwr rebuild
+       sp+16..23 into t0 (and t1 start); falls into 0x801340C4.
+       CPS-blocked. */
 
 block_801340B4:
     v0 = s2;
@@ -25394,6 +26709,9 @@ void cps_801340c4(void)
   if (!cpu) return;
 
     /* Address: 0x801340C4, Size: 44 bytes, Blocks: 1 */
+
+    /* unaligned-load epilogue part 2: t1 lwr finish; pop s0-s2, ra
+       (sp += 48), jr ra */
 
 block_801340C4:
     t1 = br2_lwr(cpu, sp + 20, t1);
@@ -25433,6 +26751,12 @@ void cps_801342d0(void)
         }
     }
     /* Address: 0x801342D0, Size: 236 bytes, Blocks: 10 */
+
+    /* 3-point bone/joint transform emit: for each of 3 joints
+       (s0+276, +356 offsets; half[s0+38/40/42] counters +5/+2/+1):
+       half++ -> sign-extend a0 -> jal 0x8018DE6C, jal
+       gte_xform3_t_ip(s4,s1), jal 0x8018A4F8(word[s0+8]+240/320/640,
+       s3/s5, s2, mode 2/8/6). CPS-blocked. */
 
 block_801342D0:
     v0 = cpu->read_half(s0 + 38);
@@ -25660,6 +26984,13 @@ void cps_80134648(void)
         }
     }
     /* Address: 0x80134648, Size: 1260 bytes, Blocks: 101 */
+
+    /* limb/part setup (extended sibling of 0x80134C30): 3x jal
+       0x8018A4F8 with ptrs s3+8264/+8308 and word[s1]/word[s1+8]
+       +160/200 offsets, a3=1 (third call a3=half[s1+12]-5);
+       half[s1+38]+=20 and &0x1F00 field selects param pair
+       (4096/480, 2048, 1024, 512...) for further emit.
+       CPS-blocked. */
 
 block_80134648:
     sp = sp + -48;
@@ -26706,6 +28037,11 @@ void cps_80134c30(void)
     }
     /* Address: 0x80134C30, Size: 452 bytes, Blocks: 26 */
 
+    /* limb/part setup: 4x jal 0x8018A4F8 with ptrs a0+8264/+8308
+       and word[s1]/word[s1+8]+200/240/160 offsets, a3=1; then
+       half[s1+40]+=20 and &0x0700 field selects param pairs
+       (768/484, 512/272, 1024/485) for further emit. CPS-blocked. */
+
 block_80134C30:
     sp = sp + -48;
     cpu->write_word(sp + 24, s0);
@@ -27003,6 +28339,9 @@ void cps_80134df4(void)
 
     /* Address: 0x80134DF4, Size: 24 bytes, Blocks: 1 */
 
+    /* cmd-emit variant A: a2=16, a3=1, word[sp+16]=a0, v0=482,
+       j 0x80134E20. CPS-blocked. */
+
 block_80134DF4:
     a2 = 16;
     a3 = 1;
@@ -27025,6 +28364,9 @@ void cps_80134e0c(void)
 
     /* Address: 0x80134E0C, Size: 20 bytes, Blocks: 1 */
 
+    /* cmd-emit variant B: same setup, v0=483, -> 0x80134E20.
+       CPS-blocked. */
+
 block_80134E0C:
     a2 = 16;
     a3 = 1;
@@ -27044,6 +28386,7 @@ void cps_80134e20(void)
 
     /* Address: 0x80134E20, Size: 8 bytes, Blocks: 1 */
 
+    /* word[sp+20]=v0 -> j 0x8012A504. CPS-blocked. */
 block_80134E20:
     ra = 0x80134E28u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -27061,6 +28404,8 @@ void cps_80134e28(void)
   if (!cpu) return;
 
     /* Address: 0x80134E28, Size: 28 bytes, Blocks: 1 */
+
+    /* epilogue: pop s0-s3, ra (sp += 48), jr ra */
 
 block_80134E28:
     ra = cpu->read_word(sp + 40);
@@ -27080,6 +28425,7 @@ block_80134E28:
  * split piece of cps_80135630 — prim_task_emit_wrap: prim_task_run caller. */
 void cps_80135238(void)
 {
+/* particle fragment: continues at 0x80135298 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -27093,6 +28439,9 @@ void cps_80135238(void)
     }
     /* Address: 0x80135238, Size: 96 bytes, Blocks: 3 */
 
+    /* anim record init: half[s0+60] read ->
+       0x80135630; clears half[sp+56..60]; half[s0+76] ->
+       0x801352A0; half[s0+68/60] reload. CPS-blocked. */
 block_80135238:
     v0 = (int32_t)(int16_t)cpu->read_half(s0 + 60);
     /* nop */  /* 0x8013523C: 0x00000000 */
@@ -27153,11 +28502,14 @@ block_80135264:
  * split piece of cps_80135238 */
 void cps_80135298(void)
 {
+/* particle fragment: continues at 0x801352a0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80135298, Size: 8 bytes, Blocks: 1 */
 
+    /* dispatch -> 0x80135314 / 0x801352A0.
+       CPS-blocked. */
 block_80135298:
     /* delay slot (always executes) */
     v0 = 1;
@@ -27172,6 +28524,7 @@ block_80135298:
  * channel_script_emit region. */
 void cps_801352a0(void)
 {
+/* particle thunk -> particle_burst_spawn */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -27188,6 +28541,8 @@ void cps_801352a0(void)
     }
     /* Address: 0x801352A0, Size: 116 bytes, Blocks: 6 */
 
+    /* anim step: -> 0x80135320; half[s0+60]/[s0+68]
+       update; byte[s6+33] -> 0x80135314. CPS-blocked. */
 block_801352A0:
     int cond_801352A0 = ((int32_t)v0 >= 0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -27272,6 +28627,7 @@ block_801352FC:
  * split piece of cps_80135298 */
 void cps_80135314(void)
 {
+/* particle fragment: continues at 0x8013531c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -27288,6 +28644,7 @@ block_80135314:
  * split piece of cps_80135238 */
 void cps_8013531c(void)
 {
+/* particle fragment: continues at 0x80135320 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -27304,6 +28661,7 @@ block_8013531C:
  * offset GTE transform applied. */
 void cps_80135320(void)
 {
+/* particle thunk -> gte_xform_add_off -> prim_task_run */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -27382,6 +28740,9 @@ void cps_80135320(void)
     }
     /* Address: 0x80135320, Size: 784 bytes, Blocks: 68 */
 
+    /* large CPS state machine (234 blocks) —
+       anim/frame processing chain entered from
+       0x801352A0. CPS-blocked. */
 block_80135320:
     v0 = cpu->read_half(s0 + 76);
     /* nop */  /* 0x80135324: 0x00000000 */
@@ -28078,6 +29439,7 @@ block_80135628:
  * prim_task_emit_wrap: prim_task_run caller. */
 void cps_80135630(void)
 {
+/* particle thunk -> prim_task_run */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -28095,6 +29457,9 @@ void cps_80135630(void)
     }
     /* Address: 0x80135630, Size: 144 bytes, Blocks: 7 */
 
+    /* state step: -> 0x80135238; reads
+       byte[word[sp+124]+158/159/152] params ->
+       0x801356C0. CPS-blocked. */
 block_80135630:
     s1 = s1 + 1;
     v0 = ((int32_t)s1 < 4) ? 1 : 0;  /* 0x80135634: 0x2A220004 */
@@ -28192,6 +29557,7 @@ block_801356AC:
  * particle_burst_update_wrap: particle_burst_update caller. */
 void cps_801356c0(void)
 {
+/* particle thunk -> particle_burst_update */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -28208,6 +29574,9 @@ void cps_801356c0(void)
     }
     /* Address: 0x801356C0, Size: 100 bytes, Blocks: 6 */
 
+    /* frame end: half[s6+30] update; jal
+       0x801365A4; epilogue restore fp/s-regs.
+       CPS-blocked. */
 block_801356C0:
     v0 = (int32_t)(int16_t)cpu->read_half(s6 + 30);
     /* nop */  /* 0x801356C4: 0x00000000 */
@@ -28275,10 +29644,14 @@ block_801356F4:
  * CPS leaf — 8 stores, 0 loads */
 void cps_80135740(void)
 {
+/* particle leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80135740, Size: 40 bytes, Blocks: 1 */
+
+    /* matrix init piece A: writes 4096/0 identity-ish triple to
+       a0+116..144 (3x2 fixed-point block), jr ra */
 
 block_80135740:
     v0 = 4096;
@@ -28301,10 +29674,14 @@ block_80135740:
  * CPS leaf — 27 stores, 0 loads */
 void cps_80135768(void)
 {
+/* particle leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80135768, Size: 116 bytes, Blocks: 1 */
+
+    /* matrix init piece B (full): three 4096-diag blocks at
+       a0+196/276/356 (+zeros), half[a0+38/40/42]=0, jr ra */
 
 block_80135768:
     v0 = 4096;
@@ -28346,10 +29723,14 @@ block_80135768:
  * CPS leaf — 8 stores, 0 loads */
 void cps_801357dc(void)
 {
+/* particle leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x801357DC, Size: 40 bytes, Blocks: 1 */
+
+    /* matrix init piece A (duplicate of 0x80135740): 4096/0
+       triple at a0+116..144, jr ra */
 
 block_801357DC:
     v0 = 4096;
@@ -28372,11 +29753,13 @@ block_801357DC:
  * single half store to a0+38 */
 void cps_80135804(void)
 {
+/* particle leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80135804, Size: 8 bytes, Blocks: 1 */
 
+    /* halfword[a0+38]=0. */
 block_80135804:
     uint32_t jt_80135804 = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
@@ -28390,10 +29773,14 @@ block_80135804:
  * CPS leaf — 10 stores, 0 loads */
 void cps_8013580c(void)
 {
+/* particle leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8013580C, Size: 48 bytes, Blocks: 1 */
+
+    /* matrix init piece C: 4096/0 block at a0+196..224 +
+       half[a0+38/40]=0, jr ra */
 
 block_8013580C:
     v0 = 4096;
@@ -28418,11 +29805,13 @@ block_8013580C:
  * CPS leaf — 2 stores, 0 loads */
 void cps_8013583c(void)
 {
+/* particle leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8013583C, Size: 12 bytes, Blocks: 1 */
 
+    /* halfword[a0+38]=0; halfword[a0+40]=0. */
 block_8013583C:
     cpu->write_half(a0 + 38, (uint16_t)zero);
     uint32_t jt_80135840 = ra;  /* latch indirect target before delay slot */
@@ -28437,10 +29826,14 @@ block_8013583C:
  * CPS leaf — 17 stores, 0 loads */
 void cps_80135848(void)
 {
+/* particle leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80135848, Size: 80 bytes, Blocks: 1 */
+
+    /* matrix init piece D: 4096/0 blocks at a0+196..224 (last=
+       -4518) and a0+116..144, half[a0+38]=0, jr ra */
 
 block_80135848:
     v1 = 4096;
@@ -28473,10 +29866,14 @@ block_80135848:
  * CPS leaf — 17 stores, 0 loads */
 void cps_80135898(void)
 {
+/* particle leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80135898, Size: 80 bytes, Blocks: 1 */
+
+    /* matrix init piece E: 4096/0 blocks at a0+196..224 and
+       a0+276..304 (last=-4518), half[a0+38]=0, jr ra */
 
 block_80135898:
     v1 = 4096;
@@ -28509,6 +29906,7 @@ block_80135898:
  * split piece of cps_8013602c */
 void cps_80135bd0(void)
 {
+/* particle fragment: continues at 0x80135bf8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -28520,6 +29918,10 @@ void cps_80135bd0(void)
         }
     }
     /* Address: 0x80135BD0, Size: 40 bytes, Blocks: 2 */
+
+    /* vector-accum init: copy half[sp+0/2/4]->[8/10/12], t0=0;
+       t6==0 -> 0x8013602C else a3=t3+12,a2=t2+20 -> 0x80135BF8.
+       CPS-blocked. */
 
 block_80135BD0:
     v0 = cpu->read_half(sp);
@@ -28550,6 +29952,7 @@ block_80135BF0:
  * split piece of cps_80135bd0 */
 void cps_80135bf8(void)
 {
+/* particle fragment: continues at 0x80135c3c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -28562,6 +29965,9 @@ void cps_80135bf8(void)
     }
     /* Address: 0x80135BF8, Size: 68 bytes, Blocks: 2 */
 
+    /* sprite record builder A: byte/word scatter into
+       a2 record (+7/+11/+24/+31/+35/+48, byte copies t1[])
+       -> 0x80135D14. CPS-blocked. */
 block_80135BF8:
     v0 = (t0 < t4) ? 1 : 0;  /* 0x80135BF8: 0x010C102B */
     int cond_80135BFC = (v0 != zero);  /* save branch cond before delay slot */
@@ -28598,11 +30004,14 @@ block_80135C04:
  * split piece of cps_80135bf8 */
 void cps_80135c3c(void)
 {
+/* particle fragment: continues at 0x80135d14 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80135C3C, Size: 216 bytes, Blocks: 1 */
 
+    /* sprite record builder B: byte copies t1[] ->
+       a2+10/32/33/34, half[sp]->t2. CPS-blocked. */
 block_80135C3C:
     cpu->write_byte(a2 + 10, (uint8_t)v0);
     v0 = cpu->read_byte(t1);
@@ -28668,6 +30077,7 @@ block_80135C3C:
  * split piece of cps_80135bf8 */
 void cps_80135d14(void)
 {
+/* particle fragment: continues at 0x80135de4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -28681,6 +30091,9 @@ void cps_80135d14(void)
     }
     /* Address: 0x80135D14, Size: 208 bytes, Blocks: 3 */
 
+    /* sprite record builder C (sibling of 0x80135BF8):
+       byte/word scatter into a3 -> 0x80135DE8 x2.
+       CPS-blocked. */
 block_80135D14:
     int cond_80135D14 = ((int32_t)t8 >= 0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -28762,6 +30175,7 @@ block_80135D28:
  * split piece of cps_80135c3c */
 void cps_80135de4(void)
 {
+/* particle fragment: continues at 0x80135de8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -28777,6 +30191,7 @@ block_80135DE4:
  * rec_byte_step_d: half+byte read/write leaf step. */
 void cps_80135de8(void)
 {
+/* particle fragment: continues at 0x80135fb8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -28792,6 +30207,8 @@ void cps_80135de8(void)
     }
     /* Address: 0x80135DE8, Size: 464 bytes, Blocks: 5 */
 
+    /* sprite record builder D: same scatter pattern as
+       0x80135BF8. CPS-blocked. */
 block_80135DE8:
     int cond_80135DE8 = (v0 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -28951,11 +30368,14 @@ block_80135F10:
  * split piece of cps_80135de8 — rec_byte_step_d: half+byte read/write leaf step. */
 void cps_80135fb8(void)
 {
+/* particle fragment: continues at 0x80135ff0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80135FB8, Size: 56 bytes, Blocks: 1 */
 
+    /* out-param pack: half[a3-4/-2/0] = sp+2/4 vals;
+       half[sp+26/28] pairs -> 0x80135FF0. CPS-blocked. */
 block_80135FB8:
     /* nop */  /* 0x80135FB8: 0x00000000 */
     v0 = v0 + v1;
@@ -28979,10 +30399,16 @@ block_80135FB8:
  * split piece of cps_80135de8 — rec_byte_step_d: half+byte read/write leaf step. */
 void cps_80135ff0(void)
 {
+/* particle fragment: continues at 0x80136074 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80135FF0, Size: 60 bytes, Blocks: 1 */
+
+    /* vector accumulate step: half[sp]+=half[sp+16],
+       half[sp+2]+=half[sp+18], half[sp+4]+=half[sp+20];
+       t0++; loop while t0<t6 -> 0x80135BF8 else 0x8013602C.
+       CPS-blocked. */
 
 block_80135FF0:
     t0 = t0 + 1;
@@ -29016,10 +30442,15 @@ block_80135FF0:
  * split piece of cps_80135bd0 */
 void cps_8013602c(void)
 {
+/* vec/GTE fragment: continues at 0x80136074 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8013602C, Size: 72 bytes, Blocks: 1 */
+
+    /* vector fold step: half[sp]+=half[sp+24], half[sp+2]+=
+       half[sp+26], half[sp+4]+=half[sp+28]; t4++; loop while
+       t4<t7 -> 0x80135BD0 else 0x80136074. CPS-blocked. */
 
 block_8013602C:
     v0 = cpu->read_half(sp + 8);
@@ -29056,10 +30487,14 @@ block_8013602C:
  * split piece of cps_8013602c */
 void cps_80136074(void)
 {
+/* vec/GTE leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80136074, Size: 28 bytes, Blocks: 1 */
+
+    /* vector-accum epilogue: pop s0-s3, v0=t2, ra (sp += 48),
+       jr ra */
 
 block_80136074:
     s3 = cpu->read_word(sp + 44);
@@ -29079,11 +30514,13 @@ block_80136074:
  * single word store to v0+1184 */
 void cps_8013610c(void)
 {
+/* vec/GTE leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8013610C, Size: 8 bytes, Blocks: 1 */
 
+    /* word[v0+1184]=0. */
 block_8013610C:
     uint32_t jt_8013610C = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
@@ -29097,11 +30534,13 @@ block_8013610C:
  * CPS fallthrough stub — continues at 0x801361A8 */
 void cps_801361a4(void)
 {
+/* vec/GTE fragment: continues at 0x801361a8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x801361A4, Size: 4 bytes, Blocks: 1 */
 
+    /* dispatch -> 0x801361A8. */
 block_801361A4:
     /* nop */  /* 0x801361A4: 0x00000000 */
     cpu->pc = 0x801361a8u; return;  /* fallthrough to split piece */
@@ -29112,10 +30551,15 @@ block_801361A4:
  * split piece of cps_801361a4 */
 void cps_801361a8(void)
 {
+/* vec/GTE fragment: continues at 0x801361bc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x801361A8, Size: 20 bytes, Blocks: 1 */
+
+    /* ratio piece: s1=half[s5+6]<<1; divide by half[s7+20]+1
+       (div-by-zero guarded); psx_muldiv_set(37); -> 0x801361BC.
+       CPS-blocked. */
 
 block_801361A8:
     s1 = (int32_t)(int16_t)cpu->read_half(s5 + 6);
@@ -29133,6 +30577,7 @@ block_801361A8:
  * as 36294 — sibling table walk. */
 void cps_801361bc(void)
 {
+/* vec/GTE thunk -> table_byte_next_a -> rotmat_rtps_build -> table_byte_next_a -> table_byte_next_a */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -29157,6 +30602,10 @@ void cps_801361bc(void)
     }
     /* Address: 0x801361BC, Size: 216 bytes, Blocks: 14 */
 
+    /* ring-buffer fill variant (sibling of
+       0x80136294): half writes via jal 0x80129F78/0x8018DE6C,
+       word[s0-16/-12/-8] fixed-point -> -> 0x80136578.
+       CPS-blocked. */
 block_801361BC:
     s4 = cpu->lo;
     psx_muldiv_stall(cpu);
@@ -29305,6 +30754,7 @@ block_8013628C:
  * walks a byte table building RTPS rotation matrices per entry. */
 void cps_80136294(void)
 {
+/* vec/GTE thunk -> table_byte_next_a -> rotmat_rtps_build -> table_byte_next_a -> table_byte_next_a */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -29328,6 +30778,13 @@ void cps_80136294(void)
         }
     }
     /* Address: 0x80136294, Size: 248 bytes, Blocks: 14 */
+
+    /* vertex ring-buffer fill (variant A): per s2<half[s7+20]
+       records at 52B stride (s3 cursor): s1=half[s5+6]*2/(half
+       [s7+20]+1) step; writes half pairs at s0=s3+40 (+4=1024,
+       +6=-1024, +8 scaled), negated fixed-point triples at
+       s0-16/-12/-8 via jal 0x80129F78 rounding, half[s0-4/-2/0]
+       scaled deltas; half[s3]=16. CPS-blocked. */
 
 block_80136294:
     s1 = (int32_t)(int16_t)cpu->read_half(s5 + 6);
@@ -29485,6 +30942,7 @@ block_80136384:
  * table_byte_walk: table_byte_next_a-driven byte table iteration. */
 void cps_8013638c(void)
 {
+/* vec/GTE thunk -> table_byte_next_a -> table_byte_next_a -> table_byte_next_a */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -29507,6 +30965,11 @@ void cps_8013638c(void)
         }
     }
     /* Address: 0x8013638C, Size: 252 bytes, Blocks: 13 */
+
+    /* vertex ring-buffer fill (variant B): same loop shape;
+       writes half[s0+4]=1024, half[s0+6]=0, half[s0+8]=scaled;
+       fixed-point identity rows 4096/0 at s0-36..-16; ->
+       0x80136578. CPS-blocked. */
 
 block_8013638C:
     s1 = (int32_t)(int16_t)cpu->read_half(s5 + 4);
@@ -29661,6 +31124,7 @@ block_80136480:
  * sibling of the RTPS table walks. */
 void cps_80136488(void)
 {
+/* vec/GTE thunk -> table_byte_next_a -> rotmat_rtps_build -> table_byte_next_a -> table_byte_next_a */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -29683,6 +31147,9 @@ void cps_80136488(void)
         }
     }
     /* Address: 0x80136488, Size: 240 bytes, Blocks: 13 */
+
+    /* vertex ring-buffer fill (variant C): same 52B-stride loop,
+       sibling of 0x8013638C. CPS-blocked. */
 
 block_80136488:
     s1 = (int32_t)(int16_t)cpu->read_half(s5 + 4);
@@ -29834,10 +31301,13 @@ block_8013654C:
  * split piece of cps_801361bc — table_walk_rtps_b: same table_byte_next_a + rotmat_rtps_build pattern */
 void cps_80136578(void)
 {
+/* vec/GTE leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80136578, Size: 44 bytes, Blocks: 1 */
+
+    /* epilogue: pop s0-s7, ra (sp += 56), jr ra */
 
 block_80136578:
     ra = cpu->read_word(sp + 48);
@@ -29862,6 +31332,7 @@ block_80136578:
  * vector-emit effect then post deferred cmd. */
 void cps_80136680(void)
 {
+/* vec/GTE thunk -> vec_emit_spawn -> deferred_cmd_post -> deferred_cmd_post -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -29903,6 +31374,10 @@ void cps_80136680(void)
     }
     /* Address: 0x80136680, Size: 708 bytes, Blocks: 31 */
 
+    /* 100-block anim/frame state machine: half[s2]
+       -> 0x80136B18; half[s6+130] -> 0x80136A90; vector
+       half[s1+32/34/36] update + word[s1+28] -> emit.
+       CPS-blocked. */
 block_80136680:
     v0 = cpu->read_half(s2);
     /* nop */  /* 0x80136684: 0x00000000 */
@@ -30322,11 +31797,14 @@ block_80136940:
  * split piece of cps_80136680 — vec_emit_spawn_wrap: vec_emit_spawn + deferred_cmd_post — spawn a */
 void cps_80136944(void)
 {
+/* vec/GTE fragment: continues at 0x80136950 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80136944, Size: 12 bytes, Blocks: 1 */
 
+    /* 3-way dispatch -> 0x80136950/0x80136978.
+       CPS-blocked. */
 block_80136944:
     /* nop */  /* 0x80136944: 0x00000000 */
     int cond_80136948 = ((int32_t)v0 > 0);  /* save branch cond before delay slot */
@@ -30347,6 +31825,7 @@ block_80136944:
  * split piece of cps_80136680 — vec_emit_spawn_wrap: vec_emit_spawn + deferred_cmd_post — spawn a */
 void cps_80136950(void)
 {
+/* vec/GTE fragment: continues at 0x80136974 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30359,6 +31838,8 @@ void cps_80136950(void)
     }
     /* Address: 0x80136950, Size: 32 bytes, Blocks: 2 */
 
+    /* anim vector step: word[s1+28]/half[s1+36] ->
+       0x80136A7C; -> 0x80136974 loop tail. CPS-blocked. */
 block_80136950:
     v0 = cpu->read_word(s1 + 28);
     s0 = zero - s0;
@@ -30394,11 +31875,13 @@ block_80136964:
  * CPS fallthrough stub — continues at 0x80136974 */
 void cps_80136970(void)
 {
+/* vec/GTE fragment: continues at 0x80136974 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80136970, Size: 4 bytes, Blocks: 1 */
 
+    /* dispatch -> 0x80136974. */
 block_80136970:
     /* nop */  /* 0x80136970: 0x00000000 */
     cpu->pc = 0x80136974u; return;  /* fallthrough to split piece */
@@ -30409,6 +31892,7 @@ block_80136970:
  * split piece of cps_80136950 */
 void cps_80136974(void)
 {
+/* vec/GTE fragment: continues at 0x80136978 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30424,6 +31908,7 @@ block_80136974:
  * split piece of cps_80136944 */
 void cps_80136978(void)
 {
+/* vec/GTE thunk -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30436,6 +31921,8 @@ void cps_80136978(void)
     }
     /* Address: 0x80136978, Size: 92 bytes, Blocks: 2 */
 
+    /* anim state commit: jal 0x80156EF4; word[s1+28]=s0;
+       half[s1+32/36/44] rotate-update. CPS-blocked. */
 block_80136978:
     a1 = 131;
     ra = 0x80136984u;  /* jal link before delay slot */
@@ -30474,6 +31961,7 @@ block_80136984:
  * split piece of cps_80136680 — vec_emit_spawn_wrap: vec_emit_spawn + deferred_cmd_post — spawn a */
 void cps_801369d4(void)
 {
+/* vec/GTE thunk -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30487,6 +31975,8 @@ void cps_801369d4(void)
     }
     /* Address: 0x801369D4, Size: 96 bytes, Blocks: 3 */
 
+    /* anim step: word[s1+20/28] -> 0x80136A7C; jal
+       0x80156EF4; half[s1+32/36] -> emit. CPS-blocked. */
 block_801369D4:
     s0 = cpu->read_word(s1 + 20);
     /* nop */  /* 0x801369D8: 0x00000000 */
@@ -30539,10 +32029,16 @@ block_80136A10:
  * split piece of cps_801369d4 */
 void cps_80136a34(void)
 {
+/* vec/GTE fragment: continues at 0x80136a7c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80136A34, Size: 72 bytes, Blocks: 1 */
+
+    /* field-negate/adjust piece: half[s1+32]=-a1,
+       half[s1+36]=-(v0>>1 rounded), word[s1+20]-=a0,
+       word[s1+28]-=a2, half[s1+44]=-half[s1+44]; -> 0x80136A7C.
+       CPS-blocked. */
 
 block_80136A34:
     a1 = zero - a1;
@@ -30571,6 +32067,7 @@ block_80136A34:
  * split piece of cps_80136680 — vec_emit_spawn_wrap: vec_emit_spawn + deferred_cmd_post — spawn a */
 void cps_80136a7c(void)
 {
+/* vec/GTE thunk -> angle_pair_rotmat */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30583,6 +32080,8 @@ void cps_80136a7c(void)
     }
     /* Address: 0x80136A7C, Size: 20 bytes, Blocks: 2 */
 
+    /* vector emit: half[s1+40/42] -> jal 0x8018DAC0 ->
+       0x80136A90. CPS-blocked. */
 block_80136A7C:
     a0 = (int32_t)(int16_t)cpu->read_half(s1 + 40);
     a1 = (int32_t)(int16_t)cpu->read_half(s1 + 42);
@@ -30603,6 +32102,7 @@ block_80136A8C:
  * RTPS transform variant. */
 void cps_80136a90(void)
 {
+/* vec/GTE thunk -> gte_rtps_xform3_t -> prim_task_run */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30617,6 +32117,9 @@ void cps_80136a90(void)
     }
     /* Address: 0x80136A90, Size: 136 bytes, Blocks: 4 */
 
+    /* record copy: jal 0x80194C50 -> v0; copies 6+
+       words v0..+20 -> t4-t6 stack out-params.
+       CPS-blocked. */
 block_80136A90:
     a0 = cpu->read_word(sp + 96);
     ra = 0x80136A9Cu;  /* jal link before delay slot */
@@ -30696,10 +32199,14 @@ block_80136B14:
  * split piece of cps_80136680 — vec_emit_spawn_wrap: vec_emit_spawn + deferred_cmd_post — spawn a */
 void cps_80136b18(void)
 {
+/* vec/GTE fragment: continues at 0x80136b2c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80136B18, Size: 20 bytes, Blocks: 1 */
+
+    /* loop step: s3++, s1+=52; v0=half[s5+20]; continue while
+       s3<v0 -> 0x80136B2C. CPS-blocked. */
 
 block_80136B18:
     s3 = s3 + 1;
@@ -30715,11 +32222,14 @@ block_80136B18:
  * split piece of cps_80136b18 */
 void cps_80136b2c(void)
 {
+/* vec/GTE fragment: continues at 0x80136b34 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80136B2C, Size: 8 bytes, Blocks: 1 */
 
+    /* dispatch -> 0x80136680/0x80136B34.
+       CPS-blocked. */
 block_80136B2C:
     int cond_80136B2C = (v0 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -30739,10 +32249,13 @@ block_80136B2C:
  * split piece of cps_80136b2c */
 void cps_80136b34(void)
 {
+/* vec/GTE leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80136B34, Size: 48 bytes, Blocks: 1 */
+
+    /* epilogue: pop s0-s7, fp, ra (sp += 88), jr ra */
 
 block_80136B34:
     ra = cpu->read_word(sp + 84);
@@ -30767,6 +32280,7 @@ block_80136B34:
  * CPS fallthrough stub — continues at 0x80136B78 */
 void cps_80136b70(void)
 {
+/* vec/GTE fragment: continues at 0x80136b78 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30783,6 +32297,7 @@ block_80136B70:
  * split piece of cps_80136b70 */
 void cps_80136b78(void)
 {
+/* vec/GTE fragment: continues at 0x80136b80 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30799,6 +32314,7 @@ block_80136B78:
  * gte_muldiv_emit: GTE + muldiv + ptr ops — transform/emit leaf near slot_height_proj. */
 void cps_80136b80(void)
 {
+/* vec/GTE thunk -> lut_sin_q12 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30812,6 +32328,12 @@ void cps_80136b80(void)
         }
     }
     /* Address: 0x80136B80, Size: 168 bytes, Blocks: 4 */
+
+    /* GTE rotation setup: s4=v0+1600, s0=0x801F0660+s3*300
+       (s3*3*4*8+s3 -> *300); loads 7-word matrix from s5+40 into
+       gte_ctrl[0..7] via ctc2; jal lut_sin_q12(half[a1+42]);
+       v0*s2>>12 (round-to-nearest) -> half[sp+16]; v1=half[s4+22];
+       -> 0x80136C28. CPS-blocked. */
 
 block_80136B80:
     s4 = v0 + 1600;
@@ -30900,6 +32422,7 @@ block_80136C1C:
  * near slot_height_proj. */
 void cps_80136c28(void)
 {
+/* vec/GTE thunk -> lut_cos_q12 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30920,6 +32443,9 @@ void cps_80136c28(void)
     }
     /* Address: 0x80136C28, Size: 256 bytes, Blocks: 10 */
 
+    /* GTE emit: half[sp+18]=v1; jal lut_cos_q12;
+       RTPS-style gte_data[0]/[1] from v0 -> SZ store;
+       half[s0+14]=v0. CPS-blocked. */
 block_80136C28:
     ra = 0x80136C30u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -31061,6 +32587,7 @@ block_80136D04:
  * bitfield_or_write_wrap: single-call bitfield_or_write wrapper. */
 void cps_80136e98(void)
 {
+/* vec/GTE thunk -> bitfield_or_write -> bitfield_or_write -> bitfield_or_write -> bitfield_or_write -> bitfield_or_write -> bitfield_or_write -> bitfield_or_write */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31081,6 +32608,9 @@ void cps_80136e98(void)
     }
     /* Address: 0x80136E98, Size: 216 bytes, Blocks: 10 */
 
+    /* alloc loop: jal 0x8018BD40 x3 on
+       word[s2+1600]/word[s1+4]/[s1+8]; half[s4+32].
+       CPS-blocked. */
 block_80136E98:
     a1 = cpu->read_word(s2 + 1600);
     ra = 0x80136EA4u;  /* jal link before delay slot */
@@ -31194,11 +32724,13 @@ block_80136F3C:
  * leaf reg-op / return-value helper */
 void cps_80136f88(void)
 {
+/* vec/GTE leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80136F88, Size: 8 bytes, Blocks: 1 */
 
+    /* empty piece. */
 block_80136F88:
     uint32_t jt_80136F88 = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
@@ -31212,11 +32744,13 @@ block_80136F88:
  * leaf reg-op / return-value helper */
 void cps_80136f90(void)
 {
+/* vec/GTE leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80136F90, Size: 8 bytes, Blocks: 1 */
 
+    /* empty piece. */
 block_80136F90:
     uint32_t jt_80136F90 = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
@@ -31230,11 +32764,13 @@ block_80136F90:
  * leaf reg-op / return-value helper */
 void cps_80136f98(void)
 {
+/* vec/GTE leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80136F98, Size: 8 bytes, Blocks: 1 */
 
+    /* empty piece. */
 block_80136F98:
     uint32_t jt_80136F98 = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
@@ -31248,11 +32784,13 @@ block_80136F98:
  * leaf reg-op / return-value helper */
 void cps_80136fa0(void)
 {
+/* vec/GTE leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80136FA0, Size: 8 bytes, Blocks: 1 */
 
+    /* empty piece. */
 block_80136FA0:
     uint32_t jt_80136FA0 = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
@@ -31266,11 +32804,13 @@ block_80136FA0:
  * leaf reg-op / return-value helper */
 void cps_80136fa8(void)
 {
+/* vec/GTE thunk -> noop_a */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80136FA8, Size: 8 bytes, Blocks: 1 */
 
+    /* empty piece. */
 block_80136FA8:
     uint32_t jt_80136FA8 = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
@@ -31284,10 +32824,14 @@ block_80136FA8:
  * CPS leaf — 1 jal(s), 0 stores, 3 loads */
 void cps_80137074(void)
 {
+/* vec_emit_spawn thunk -> noop_a */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80137074, Size: 20 bytes, Blocks: 1 */
+
+    /* vec3 forwarder: a1=word[s0], a2=word[s0+4], a3=word[s0+8],
+       a0=v0; jal 0x801AD240. CPS-blocked. */
 
 block_80137074:
     a1 = cpu->read_word(s0);
@@ -31305,11 +32849,13 @@ block_80137074:
  * split piece of cps_80137074 */
 void cps_80137088(void)
 {
+/* vec_emit_spawn piece: continues at 0x8013784c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80137088, Size: 16 bytes, Blocks: 1 */
 
+    /* epilogue: pop s0, ra sp+=24, jr ra. */
 block_80137088:
     ra = cpu->read_word(sp + 20);
     s0 = cpu->read_word(sp + 16);
@@ -31325,6 +32871,7 @@ block_80137088:
  * CPS fallthrough stub — continues at 0x8013752C */
 void cps_80137528(void)
 {
+/* battle_intro_fsm_alias piece: continues at 0x80137868 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31340,6 +32887,7 @@ block_80137528:
  * split piece of cps_80137528 */
 void cps_8013752c(void)
 {
+/* battle_intro_fsm_alias piece: continues at 0x80137878 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31361,10 +32909,13 @@ block_8013752C:
  * split piece of cps_8013752c */
 void cps_80137548(void)
 {
+/* battle_intro_fsm_alias piece: continues at 0x80137878 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80137548, Size: 40 bytes, Blocks: 1 */
+
+    /* epilogue: pop s0-s6, ra (sp += 56), jr ra */
 
 block_80137548:
     ra = cpu->read_word(sp + 52);
@@ -31387,11 +32938,14 @@ block_80137548:
  * CPS fallthrough stub — continues at 0x8013784C */
 void cps_8013783c(void)
 {
+/* script_stream_tick piece: continues at 0x80137878 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8013783C, Size: 16 bytes, Blocks: 1 */
 
+    /* halfword[a2+24] adjust -> 0x8013784C.
+       CPS-blocked. */
 block_8013783C:
     v0 = cpu->read_half(a2 + 24);
     /* nop */  /* 0x80137840: 0x00000000 */
@@ -31405,6 +32959,7 @@ block_8013783C:
  * split piece of cps_8013783c */
 void cps_8013784c(void)
 {
+/* script_stream_tick piece: continues at 0x80137878 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31417,6 +32972,8 @@ void cps_8013784c(void)
     }
     /* Address: 0x8013784C, Size: 28 bytes, Blocks: 2 */
 
+    /* node step: half[a2+24] -> 0x80137ABC;
+       word[a2+20] -> 0x80137868. CPS-blocked. */
 block_8013784C:
     v0 = (int32_t)(int16_t)cpu->read_half(a2 + 24);
     /* nop */  /* 0x80137850: 0x00000000 */
@@ -31443,11 +33000,14 @@ block_8013785C:
  * split piece of cps_8013784c */
 void cps_80137868(void)
 {
+/* script_stream_tick piece: continues at 0x80137878 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80137868, Size: 16 bytes, Blocks: 1 */
 
+    /* node link: word[a2+20]=v0; half[v1+4] ->
+       0x80137878. CPS-blocked. */
 block_80137868:
     cpu->write_word(a2 + 20, v0);
     v0 = (int32_t)(int16_t)cpu->read_half(v1 + 4);
@@ -31462,6 +33022,7 @@ block_80137868:
  * the battle_intro_fsm region. */
 void cps_80137878(void)
 {
+/* script_stream_tick piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31490,6 +33051,8 @@ void cps_80137878(void)
     }
     /* Address: 0x80137878, Size: 580 bytes, Blocks: 18 */
 
+    /* node field update: word[a2+16]/[a2+20] chain,
+       half[a2+26] rotate -> emit. CPS-blocked. */
 block_80137878:
     int cond_80137878 = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -31765,11 +33328,13 @@ block_80137974:
  * split piece of cps_8013784c */
 void cps_80137abc(void)
 {
+/* script_stream_tick piece: continues at 0x80137C04 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80137ABC, Size: 16 bytes, Blocks: 1 */
 
+    /* epilogue: pop s0, ra sp+=24, jr ra. */
 block_80137ABC:
     ra = cpu->read_word(sp + 16);
     /* nop */  /* 0x80137AC0: 0x00000000 */
@@ -31785,6 +33350,7 @@ block_80137ABC:
  * record_half_step_i: s16 read step. */
 void cps_80137afc(void)
 {
+/* script_stream_tick piece: continues at 0x80137b58 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31803,6 +33369,9 @@ void cps_80137afc(void)
     }
     /* Address: 0x80137AFC, Size: 92 bytes, Blocks: 8 */
 
+    /* linked-list walk: a0=word[s2] node; half[a0]/
+       [a0+2]/[a0+4] field reads -> 0x80137B74/0x80137C14/
+       0x80137BD4/0x80137C04 dispatch. CPS-blocked. */
 block_80137AFC:
     a0 = cpu->read_word(s2);
     /* nop */  /* 0x80137B00: 0x00000000 */
@@ -31893,6 +33462,7 @@ block_80137B48:
  * split piece of cps_80137afc — record_half_step_i: s16 read step. */
 void cps_80137b58(void)
 {
+/* script_stream_tick piece: continues at 0x80137bc8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31905,6 +33475,8 @@ void cps_80137b58(void)
     }
     /* Address: 0x80137B58, Size: 28 bytes, Blocks: 2 */
 
+    /* node store: word[s2]=v0; half[s1+2],
+       half[a0-6] -> 0x80137BB8. CPS-blocked. */
 block_80137B58:
     int cond_80137B58 = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -31932,6 +33504,7 @@ block_80137B60:
  * split piece of cps_80137afc — record_half_step_i: s16 read step. */
 void cps_80137b74(void)
 {
+/* script_stream_tick piece: continues at 0x80137bd4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31944,6 +33517,8 @@ void cps_80137b74(void)
     }
     /* Address: 0x80137B74, Size: 68 bytes, Blocks: 2 */
 
+    /* node field merge: half[a0+2/4] vs half[s1+2];
+       word[s2]=word[s3+4]; half[v1] -> loop. CPS-blocked. */
 block_80137B74:
     v1 = (int32_t)(int16_t)cpu->read_half(a0 + 2);
     v0 = (int32_t)(int16_t)cpu->read_half(s1 + 2);
@@ -31980,11 +33555,14 @@ block_80137B8C:
  * split piece of cps_80137b58 */
 void cps_80137bb8(void)
 {
+/* script_stream_tick thunk -> task_slot_step */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80137BB8, Size: 12 bytes, Blocks: 1 */
 
+    /* node writeback: half[s1]/[s1+2]=v1/v0 ->
+       0x80137AFC/0x80137BC4. CPS-blocked. */
 block_80137BB8:
     cpu->write_half(s1, (uint16_t)v1);
     /* delay slot (always executes) */
@@ -31999,6 +33577,7 @@ block_80137BB8:
  * split piece of cps_80137b58 */
 void cps_80137bc4(void)
 {
+/* script_stream_tick thunk -> task_slot_step */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32014,11 +33593,14 @@ block_80137BC4:
  * split piece of cps_80137b74 */
 void cps_80137bc8(void)
 {
+/* script_stream_tick thunk -> task_slot_step */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80137BC8, Size: 12 bytes, Blocks: 1 */
 
+    /* node writeback B: word[s2]=v0; half[s1+2]=0
+       -> 0x80137AFC/0x80137BD4. CPS-blocked. */
 block_80137BC8:
     cpu->write_word(s2, v0);
     /* delay slot (always executes) */
@@ -32033,11 +33615,15 @@ block_80137BC8:
  * split piece of cps_80137afc — record_half_step_i: s16 read step. */
 void cps_80137bd4(void)
 {
+/* script_stream_tick thunk -> task_slot_step */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80137BD4, Size: 48 bytes, Blocks: 1 */
 
+    /* node writeback C: half[a0+2] -> word[s2]=
+       word[s3+4]; half[s1+2]=0, half[s1]=v0 ->
+       0x80137AFC/0x80137C04. CPS-blocked. */
 block_80137BD4:
     v1 = (int32_t)(int16_t)cpu->read_half(a0 + 2);
     /* nop */  /* 0x80137BD8: 0x00000000 */
@@ -32061,6 +33647,7 @@ block_80137BD4:
  * split piece of cps_80137afc — record_half_step_i: s16 read step. */
 void cps_80137c04(void)
 {
+/* script_stream_tick thunk -> task_slot_step */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32073,6 +33660,7 @@ void cps_80137c04(void)
     }
     /* Address: 0x80137C04, Size: 16 bytes, Blocks: 2 */
 
+    /* jal 0x801A482C -> 0x80137CB4. CPS-blocked. */
 block_80137C04:
     ra = 0x80137C0Cu;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -32092,6 +33680,7 @@ block_80137C0C:
  * record_ptr_step: s16 read/write + ptr step. */
 void cps_80137c14(void)
 {
+/* script_stream_tick piece: continues at 0x80137cb4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32107,6 +33696,13 @@ void cps_80137c14(void)
         }
     }
     /* Address: 0x80137C14, Size: 160 bytes, Blocks: 6 */
+
+    /* script/op dispatch walk: loop over records at word[s2];
+       half[s1] is current op id; if word[s2]->half != half[s1] ->
+       0x80137CA4 (advance); else iterate word[s2]+2 count times:
+       jalr table[word[s3+12] + half[v1+4]*4](a0=word[s3]) — op
+       handler dispatch; after list, word[s2]+=6, compare next id;
+       loop or exit: half[s1]++ -> 0x80137CB4. CPS-blocked. */
 
 block_80137C14:
     a1 = cpu->read_word(s2);
@@ -32203,10 +33799,13 @@ block_80137CA4:
  * split piece of cps_80137c04 */
 void cps_80137cb4(void)
 {
+/* script_stream_tick piece: continues at 0x80137cb4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80137CB4, Size: 28 bytes, Blocks: 1 */
+
+    /* epilogue: pop s0-s3, ra (sp += 40), jr ra */
 
 block_80137CB4:
     ra = cpu->read_word(sp + 32);
@@ -32227,6 +33826,7 @@ block_80137CB4:
  * per-frame fighter channel delta accumulation. */
 void cps_80137d28(void)
 {
+/* script_stream_tick piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32256,6 +33856,9 @@ void cps_80137d28(void)
     }
     /* Address: 0x80137D28, Size: 312 bytes, Blocks: 19 */
 
+    /* node field update (sibling of 0x80137878):
+       word[s0+16]/[s0+12], half[s0+22] rotate -> emit.
+       CPS-blocked. */
 block_80137D28:
     int cond_80137D28 = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -32469,11 +34072,13 @@ block_80137E4C:
  * split piece of cps_80137d28 — task_slot_advance_b: task_slot_step + fighter_chan_delta_accum — */
 void cps_80137e60(void)
 {
+/* script_stream_tick thunk -> task_node_alloc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80137E60, Size: 16 bytes, Blocks: 1 */
 
+    /* epilogue: pop s0, ra sp+=24, jr ra. */
 block_80137E60:
     ra = cpu->read_word(sp + 20);
     s0 = cpu->read_word(sp + 16);
@@ -32502,6 +34107,11 @@ void cps_80138074(void)
         }
     }
     /* Address: 0x80138074, Size: 112 bytes, Blocks: 4 */
+
+    /* event/record alloc: a2=6, a3+=31952; jal 0x801A4308 ->
+       a0; if nonzero: word[a0+16] record gets s0-s3/s0 copy,
+       half[v0+20]=half[s0+2]+1, half[v0+22]=0; epilogue (v0=a0).
+       CPS-blocked. */
 
 block_80138074:
     a2 = 6;
@@ -32568,6 +34178,11 @@ void cps_80138100(void)
         }
     }
     /* Address: 0x80138100, Size: 116 bytes, Blocks: 2 */
+
+    /* GTE dot/length piece: push regs; gte_data[0..1]=word[v0],
+       word[v0+4]; gte cmd 0x0180001; gte_data[14] -> sp+40;
+       a0=(half[sp+40]+half[sp+42])*2; a1=0x1F8003E0; jal
+       0x8018E028 (scratchpad store?). CPS-blocked. */
 
 block_80138100:
     cpu->write_word(sp + 104, ra);
@@ -32645,6 +34260,13 @@ void cps_80138174(void)
         }
     }
     /* Address: 0x80138174, Size: 212 bytes, Blocks: 14 */
+
+    /* aim/angle solve: (v0² + v1<<12) -> jal 0x801943D4 (atan2-ish);
+       s2=v0>>12; if (half[sp+40]+50)&0xFFFF >=613 or half[sp+42]
+       outside [-50,563): fallback s1=0; else s1 = index from
+       half[sp+42] range -> jal 0x80142B3C(s0-a0, s0-v1); then
+       lut_cos/lut_sin_q12(s0-1024) * s1>>3 -> half[sp+64];
+       -> 0x80138248. CPS-blocked. */
 
 block_80138174:
     { int64_t result = (int64_t)(int32_t)v0 * (int64_t)(int32_t)v0; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
@@ -32851,6 +34473,13 @@ void cps_80138248(void)
         }
     }
     /* Address: 0x80138248, Size: 872 bytes, Blocks: 43 */
+
+    /* aim-reticle/HUD emit (cont. of 0x80138174): screen coords
+       (v1>>1+240, (v0-256 sign-adj)>>1+240) -> half[sp+56/58],
+       scaled offset -> half[sp+66]; jal 0x8018E4D0 sprite emit;
+       then repeated jal 0x801ACE48 with param blocks
+       {192/224,64,57,30937,1} at reticle positions
+       (sp+56/58 +/- half[sp+64/66]-16), gated s2<150. CPS-blocked. */
 
 block_80138248:
     v1 = (int32_t)v1 >> 1;
@@ -33348,6 +34977,8 @@ void cps_801385b0(void)
 
     /* Address: 0x801385B0, Size: 44 bytes, Blocks: 1 */
 
+    /* epilogue: pop s0-s7, ra (sp += 112), jr ra */
+
     ra = cpu->read_word(sp + 104);
     s7 = cpu->read_word(sp + 100);
     s6 = cpu->read_word(sp + 96);
@@ -33467,6 +35098,8 @@ void cps_8013892c(void)
   if (!cpu) return;
 
     /* Address: 0x8013892C, Size: 16 bytes, Blocks: 1 */
+    /* CPS piece (cps_8013892c): ra = read_word(sp + 20); s0 = read_word(sp + 16);.
+       CPS-blocked. */
 
     ra = cpu->read_word(sp + 20);
     s0 = cpu->read_word(sp + 16);
@@ -33542,6 +35175,8 @@ void cps_80138cec(void)
     }
     /* Address: 0x80138CEC, Size: 1740 bytes, Blocks: 49 */
 
+    /* large CPS state machine (154 blocks).
+       CPS-blocked. */
 block_80138CEC:
     sp = sp + -64;
     cpu->write_word(sp + 44, s3);
@@ -34322,6 +35957,7 @@ block_8013937C:
  * impact_fx_type_b: GTE ops + impact_fx_spawn — spawns typed impact FX. */
 void cps_801393b8(void)
 {
+/* impact_fx_update thunk -> impact_fx_spawn */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -34365,6 +36001,11 @@ void cps_801393b8(void)
         }
     }
     /* Address: 0x801393B8, Size: 1148 bytes, Blocks: 34 */
+
+    /* particle/physics integrator: velocity damping per axis
+       half[a1+n] -= (half[a1+n]+7)>>3 (~*7/8), pos half[s1+88..92]
+       += half[s0..4] from record s0=word[s1+96]; word[s0+12]
+       counter inc/reset gate; jal emit with a1=15. CPS-blocked. */
 
 block_801393B8:
     cpu->write_half(s1 + 92, (uint16_t)v0);
@@ -34885,6 +36526,7 @@ block_80139830:
  * split piece of cps_80138cec — impact_fx_update renames.map: GTE transform loop + task_slot_step — */
 void cps_80139834(void)
 {
+/* impact_fx_type_alias piece: continues at 0x80139954 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -35001,6 +36643,7 @@ block_80139874:
  * rec_byte_step_e: half+byte read/write leaf step. */
 void cps_80139954(void)
 {
+/* impact_fx_type_alias piece: continues at 0x80139a0c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -35105,6 +36748,7 @@ block_80139A08:
  * gte_muldiv_emit_b: GTE + muldiv + ptr ops variant B. */
 void cps_80139a0c(void)
 {
+/* impact_fx_type_alias thunk -> lut_cos_q12 -> lut_cos_q12 -> lut_sin_q12 -> lut_sin_q12 -> lut_cos_q12 -> lut_cos_q12 -> lut_sin_q12 -> lut_sin_q12 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -35131,6 +36775,16 @@ void cps_80139a0c(void)
         }
     }
     /* Address: 0x80139A0C, Size: 908 bytes, Blocks: 17 */
+
+    /* billboard/quad emit: GPU packet word tagged 0x09000000 at
+       s1+40*s4[3]-indexed slot + cursor word; GTE RTPS (cmd 0x0180001)
+       on s1+88 -> SZ readback to s5 (-4 bound 2059); if half[s4+130]
+       clear: fade RGB bytes of indexed 40B record (s4[3]*40+s1+4..6)
+       by -24, bump s1+84 cursor; fade = half[s4+36]*cursor / (4*
+       word[s5]) / byte[s4+21], halved when byte[s4+21]==0 -> s5;
+       then 8 halfword corner writes at rec+8/10/16/32/34: base half[s3]/[s3+2]
+       +/- (lut_cos/lut_sin(angle=half[s2]) * s0/s5 >>12), angle+1024
+       variant. CPS-blocked. */
 
 block_80139A0C:
     v0 = cpu->read_word(s4 + 12);
@@ -35489,6 +37143,7 @@ block_80139D68:
  * split piece of cps_801393b8 — impact_fx_type_b: GTE ops + impact_fx_spawn — spawns typed impact FX. */
 void cps_80139d98(void)
 {
+/* impact_fx_type_alias piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -35535,6 +37190,7 @@ void cps_80139d98(void)
  * CPS fallthrough stub — continues at 0x80139F20 */
 void cps_80139f1c(void)
 {
+/* impact_fx_emit_tick piece: continues at 0x80139f20 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -35550,11 +37206,13 @@ block_80139F1C:
  * split piece of cps_80139f1c */
 void cps_80139f20(void)
 {
+/* impact_fx_emit_tick piece: continues at 0x80139f28 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80139F20, Size: 8 bytes, Blocks: 1 */
 
+    /* dispatch -> 0x80139F28/0x80139F90. CPS-blocked. */
 block_80139F20:
     /* delay slot (always executes) */
     /* nop */  /* 0x80139F24: 0x00000000 */
@@ -35568,6 +37226,7 @@ block_80139F20:
  * split piece of cps_80139f20 */
 void cps_80139f28(void)
 {
+/* impact_fx_emit_tick piece: continues at 0x80139F90 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -35616,11 +37275,14 @@ block_80139F38:
  * CPS fallthrough stub — continues at 0x80139F58 */
 void cps_80139f40(void)
 {
+/* impact_fx_emit_tick piece: continues at 0x80139f58 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80139F40, Size: 24 bytes, Blocks: 1 */
 
+    /* half[s1+92] = half[v0+2366] -> 0x80139F58/8C.
+       CPS-blocked. */
 block_80139F40:
     v0 = 0x801F0000u;  /* 0x801F0000 */
     v0 = cpu->read_half(v0 + 2366);
@@ -35638,11 +37300,14 @@ block_80139F40:
  * split piece of cps_80139f40 */
 void cps_80139f58(void)
 {
+/* impact_fx_emit_tick piece: continues at 0x80139f68 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80139F58, Size: 16 bytes, Blocks: 1 */
 
+    /* half[s1+88] = half[v0+2362] -> 0x80139F68/8C.
+       CPS-blocked. */
 block_80139F58:
     v0 = 0x801F0000u;  /* 0x801F0000 */
     v0 = cpu->read_half(v0 + 2362);
@@ -35658,11 +37323,14 @@ block_80139F58:
  * split piece of cps_80139f28 */
 void cps_80139f68(void)
 {
+/* impact_fx_emit_tick piece: continues at 0x80139f78 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80139F68, Size: 16 bytes, Blocks: 1 */
 
+    /* half[s1+92] = half[v0+2366] -> 0x80139F78/8C.
+       CPS-blocked. */
 block_80139F68:
     v0 = 0x801F0000u;  /* 0x801F0000 */
     v0 = cpu->read_half(v0 + 2366);
@@ -35678,11 +37346,14 @@ block_80139F68:
  * split piece of cps_80139f28 */
 void cps_80139f78(void)
 {
+/* impact_fx_emit_tick piece: continues at 0x80139f8c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80139F78, Size: 20 bytes, Blocks: 1 */
 
+    /* half[s1+88] = half[v0+2362] -> 0x80139F8C.
+       CPS-blocked. */
 block_80139F78:
     v0 = 0x801F0000u;  /* 0x801F0000 */
     v0 = cpu->read_half(v0 + 2362);
@@ -35697,6 +37368,7 @@ block_80139F78:
  * split piece of cps_80139f40 */
 void cps_80139f8c(void)
 {
+/* impact_fx_emit_tick piece: continues at 0x80139f90 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -35712,6 +37384,7 @@ block_80139F8C:
  * split piece of cps_80139f20 */
 void cps_80139f90(void)
 {
+/* impact_fx_emit_tick piece: continues at 0x80139fb0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -35754,11 +37427,13 @@ block_80139F9C:
  * split piece of cps_80139f90 */
 void cps_80139fb0(void)
 {
+/* impact_fx_emit_tick thunk -> impact_fx_spawn */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80139FB0, Size: 8 bytes, Blocks: 1 */
 
+    /* dispatch -> 0x80139FD0. */
 block_80139FB0:
     ra = 0x80139FB8u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -35772,10 +37447,13 @@ block_80139FB0:
  * split piece of cps_80139fb0 */
 void cps_80139fb8(void)
 {
+/* impact_fx_emit_tick piece: continues at 0x8013a4e4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80139FB8, Size: 24 bytes, Blocks: 1 */
+
+    /* epilogue: pop s0-s2, ra (sp += 40), jr ra */
 
 block_80139FB8:
     ra = cpu->read_word(sp + 36);
@@ -35799,6 +37477,7 @@ void cps_8013a468(void)
 
     /* Address: 0x8013A468, Size: 8 bytes, Blocks: 1 */
 
+    /* word[t1+17784] read -> 0x8013A470. CPS-blocked. */
 block_8013A468:
     v0 = cpu->read_word(t1 + 17784);
     /* nop */  /* 0x8013A46C: 0x00000000 */
@@ -35826,6 +37505,8 @@ void cps_8013a470(void)
     }
     /* Address: 0x8013A470, Size: 116 bytes, Blocks: 6 */
 
+    /* record byte init: byte[a0+7] inc; byte[a0+4..6]
+       = a3/a1/v1 -> 0x8013A468/0x8013A9B0. CPS-blocked. */
 block_8013A470:
     int cond_8013A470 = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -35905,6 +37586,10 @@ void cps_8013a4e4(void)
   if (!cpu) return;
 
     /* Address: 0x8013A4E4, Size: 48 bytes, Blocks: 1 */
+
+    /* byte-field scatter: writes t4,t3,t2,t1,t0,a3,a2 to
+       a0+4/5/6/12/13/20/21/28/29/36/37 (stride-8 channel table);
+       a1++; -> 0x8013A514. CPS-blocked. */
 
 block_8013A4E4:
     cpu->write_byte(a0 + 4, (uint8_t)t4);
@@ -36011,6 +37696,8 @@ void cps_8013a514(void)
     }
     /* Address: 0x8013A514, Size: 1172 bytes, Blocks: 73 */
 
+    /* large CPS state machine (210 blocks).
+       CPS-blocked. */
 block_8013A514:
     v0 = ((int32_t)a1 < 2) ? 1 : 0;  /* 0x8013A514: 0x28A20002 */
     int cond_8013A518 = (v0 != zero);  /* save branch cond before delay slot */
@@ -36774,6 +38461,7 @@ void cps_8013a9a8(void)
     }
     /* Address: 0x8013A9A8, Size: 48 bytes, Blocks: 2 */
 
+    /* epilogue: jal 0x801A48FC; pop s2-s6,ra. */
 block_8013A9A8:
     ra = 0x8013A9B0u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -36816,6 +38504,8 @@ void cps_8013ab40(void)
     }
     /* Address: 0x8013AB40, Size: 40 bytes, Blocks: 4 */
 
+    /* half[s0+20/24]=v1/v0; half[s0+12] adjust ->
+       0x8013AB68. CPS-blocked. */
 block_8013AB40:
     int cond_8013AB40 = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -36863,6 +38553,7 @@ void cps_8013ab68(void)
 
     /* Address: 0x8013AB68, Size: 20 bytes, Blocks: 1 */
 
+    /* half[s0+6/8] pair -> 0x8013AB7C. CPS-blocked. */
 block_8013AB68:
     v0 = cpu->read_half(s0 + 6);
     v1 = cpu->read_half(s0 + 8);
@@ -36882,6 +38573,7 @@ void cps_8013ab7c(void)
 
     /* Address: 0x8013AB7C, Size: 16 bytes, Blocks: 1 */
 
+    /* epilogue: pop s0, ra sp+=32, jr ra. */
 block_8013AB7C:
     ra = cpu->read_word(sp + 28);
     s0 = cpu->read_word(sp + 24);
@@ -36902,6 +38594,7 @@ void cps_8013ac6c(void)
 
     /* Address: 0x8013AC6C, Size: 4 bytes, Blocks: 1 */
 
+    /* dispatch -> 0x8013AC70. */
 block_8013AC6C:
     /* nop */  /* 0x8013AC6C: 0x00000000 */
     cpu->pc = 0x8013ac70u; return;  /* fallthrough to split piece */
@@ -36931,6 +38624,14 @@ void cps_8013ac70(void)
         }
     }
     /* Address: 0x8013AC70, Size: 300 bytes, Blocks: 10 */
+
+    /* projectile/FX spawn init: word[a1]=s1; unaligned 24B
+       copy from word[0x801C0000+17784]+v1*24+a2 into t0-t3;
+       half[a1+6]=0; clamp half[a1+12]<=45, half[a1+24]<=400; if
+       byte[word[word[a1]+56]+256]!=0: half[a1+10]=byte[0x801B0000+
+       6156+half[a1+10]], and if s2&0x80: half[a1+16]-=4096; then
+       half[a1+16]-=1024, half[a1+20]-=1024 -> 0x8013AD9C.
+       CPS-blocked. */
 
 block_8013AC70:
     v0 = v1 << 1;
@@ -37078,6 +38779,8 @@ void cps_8013ad9c(void)
 
     /* Address: 0x8013AD9C, Size: 24 bytes, Blocks: 1 */
 
+    /* epilogue: pop s0-s2, ra (sp += 40), jr ra */
+
 block_8013AD9C:
     ra = cpu->read_word(sp + 36);
     s2 = cpu->read_word(sp + 32);
@@ -37100,6 +38803,7 @@ void cps_8013adf0(void)
 
     /* Address: 0x8013ADF0, Size: 44 bytes, Blocks: 1 */
 
+    /* v0 = word[a0+8]; jr/fallthrough. */
 block_8013ADF0:
     v0 = cpu->read_word(a0 + 8);
     /* nop */  /* 0x8013ADF4: 0x00000000 */
@@ -37154,6 +38858,12 @@ void cps_8013ae1c(void)
         }
     }
     /* Address: 0x8013AE1C, Size: 620 bytes, Blocks: 26 */
+
+    /* sprite/command dispatcher: gate word[s1+20]&0x80; index
+       (word&0x7F)<32 -> jr table 0x80120000+344; cases build GPU
+       packets (tag 0x40000000 | half[t0+4], half[t0+2], word[s1+16]
+       +0x40000000) -> jal 0x8018E4D0; coord fixups half[s1]-128.
+       CPS-blocked. */
 
 block_8013AE1C:
     sp = sp + -48;
@@ -37476,6 +39186,8 @@ void cps_8013b1a4(void)
     }
     /* Address: 0x8013B1A4, Size: 52 bytes, Blocks: 4 */
 
+    /* anim counter: byte[v0+5]; half[s5+844]=0 ->
+       0x8013B578/0x8013B1D8; half[s5+840]=0. CPS-blocked. */
 block_8013B1A4:
     v0 = cpu->read_byte(v0 + 5);
     /* nop */  /* 0x8013B1A8: 0x00000000 */
@@ -37537,6 +39249,13 @@ void cps_8013b1d8(void)
         }
     }
     /* Address: 0x8013B1D8, Size: 348 bytes, Blocks: 6 */
+
+    /* 2x2 GTE bone-transform + offset apply: half[s5+840]++;
+       per fp<2: load 7-word matrix from word[word[s5]+32]+192 into
+       gte_ctrl, gte_data[0..1]=word[s5+a1], cmd 0x0486012, read
+       mfc2 r9/10/11 -> half[s5+a2]; then half[a0+20/22/24] +=
+       half[mat+212/216/220]; a2+=48,a1+=8,a0+=48. Then nested
+       s4=5..1 unaligned-copy loop (fp<2, a2+=48). CPS-blocked. */
 
 block_8013B1D8:
     a0 = s5;
@@ -37701,6 +39420,9 @@ void cps_8013b334(void)
     }
     /* Address: 0x8013B334, Size: 104 bytes, Blocks: 4 */
 
+    /* setup: jal 0x80195210/0x80195270 on
+       word[0x801C0000-6088]; sp+16/20 pack -> jal
+       0x80195500. CPS-blocked. */
 block_8013B334:
     s0 = 0x801C0000u;  /* 0x801C0000 */
     v0 = sp + 32;
@@ -37756,6 +39478,9 @@ void cps_8013b39c(void)
 
     /* Address: 0x8013B39C, Size: 12 bytes, Blocks: 1 */
 
+    /* loop init: s4=0, s3=s6+34, s2=s7+6; -> 0x8013B3A8.
+       CPS-blocked. */
+
 block_8013B39C:
     s4 = zero;
     s3 = s6 + 34;
@@ -37789,6 +39514,8 @@ void cps_8013b3a8(void)
     }
     /* Address: 0x8013B3A8, Size: 352 bytes, Blocks: 11 */
 
+    /* aim solve: half[s5+840]/half[s2-2/-4/0],
+       half[s7] -> jal 0x80142B3C. CPS-blocked. */
 block_8013B3A8:
     v0 = (int32_t)(int16_t)cpu->read_half(s5 + 840);
     /* nop */  /* 0x8013B3AC: 0x00000000 */
@@ -37964,6 +39691,8 @@ void cps_8013b508(void)
 
     /* Address: 0x8013B508, Size: 60 bytes, Blocks: 1 */
 
+    /* ptr fixup: word[v0+8]->+64 -> word[s6]; same
+       for v1 -> 0x8013B3A8/0x8013B544. CPS-blocked. */
 block_8013B508:
     v0 = 0x1F800000u;  /* 0x1F800000 */
     v0 = cpu->read_word(v0 + 8);
@@ -38016,6 +39745,10 @@ void cps_8013b548(void)
 
     /* Address: 0x8013B548, Size: 48 bytes, Blocks: 1 */
 
+    /* stride step: fp++; v0=word[word[v0+12]]*720 (x*3*16-x)*8
+       -> s6=base+296; loop while fp<2 -> 0x8013B39C else
+       0x8013B578; s7=sp+56. CPS-blocked. */
+
 block_8013B548:
     v0 = cpu->read_word(v0 + 12);
     fp = fp + 1;
@@ -38049,6 +39782,8 @@ void cps_8013b578(void)
   if (!cpu) return;
 
     /* Address: 0x8013B578, Size: 48 bytes, Blocks: 1 */
+
+    /* epilogue: pop s0-s7, fp, ra (sp += 168), jr ra */
 
 block_8013B578:
     ra = cpu->read_word(sp + 164);
@@ -38085,6 +39820,12 @@ void cps_8013b72c(void)
         }
     }
     /* Address: 0x8013B72C, Size: 280 bytes, Blocks: 3 */
+
+    /* bone/joint offset gather: sp-=376, save all; half[sp+32]=
+       -10, half[sp+34]=-60, half[sp+36]=-60->36; two jal
+       0x801951B0 lookups on word[s4+5764]+32+192 and word[s4+5768]
+       indexed by half[s4+7198]*80+32; accumulates half offsets into
+       sp+32/34/36/56; -> 0x8013B844. CPS-blocked. */
 
 block_8013B72C:
     sp = sp + -376;
@@ -38259,6 +40000,12 @@ void cps_8013b844(void)
         }
     }
     /* Address: 0x8013B844, Size: 1408 bytes, Blocks: 74 */
+
+    /* projectile/aim trajectory solve: combines two bone-space
+       half offsets (half[s4+7198]*80 + word[word[s4+5768]+32]
+       -> +56/+60) into sp+56..63 point; dist via 0x80142B3C;
+       atan2-style (dx<<12 / lut_cos(dist+1024)) divisions ->
+       launch angles; unaligned lwl/lwr point load. CPS-blocked. */
 
 block_8013B844:
     cpu->write_half(sp + 56, (uint16_t)v1);
@@ -39148,6 +40895,12 @@ void cps_8013bdc4(void)
     }
     /* Address: 0x8013BDC4, Size: 348 bytes, Blocks: 13 */
 
+    /* fixed-point 2D rotation apply: basis (4096-t1)²,
+       (4096-t1)*t1, t1² with round-to-nearest shifts (>>13 />>12)
+       -> sp+16/20/24; then each basis * half[sp+40/48/56] vector
+       components accumulated into sp+.. output; loops over s4+8
+       records (a3 += 8). CPS-blocked. */
+
 block_8013BDC4:
     v0 = 4096;
     v0 = v0 - t1;
@@ -39351,6 +41104,8 @@ void cps_8013bf20(void)
 
     /* Address: 0x8013BF20, Size: 12 bytes, Blocks: 1 */
 
+    /* dispatch -> 0x8013BDC4/0x8013BF2C.
+       CPS-blocked. */
 block_8013BF20:
     v0 = ((int32_t)s1 < 17) ? 1 : 0;  /* 0x8013BF20: 0x2A220011 */
     int cond_8013BF24 = (v0 != zero);  /* save branch cond before delay slot */
@@ -39433,6 +41188,9 @@ void cps_8013bf2c(void)
     }
     /* Address: 0x8013BF2C, Size: 1504 bytes, Blocks: 51 */
 
+    /* large CPS routine (147 blocks): setup jals
+       0x80195210/0x80195270 + table walk at
+       0x80120000+7056. CPS-blocked. */
 block_8013BF2C:
     s0 = 0x801C0000u;  /* 0x801C0000 */
     a0 = cpu->read_word(s0 + -6088);
@@ -40208,6 +41966,10 @@ void cps_8013c510(void)
     }
     /* Address: 0x8013C510, Size: 48 bytes, Blocks: 3 */
 
+    /* angle-delta piece: v0=(half[sp+56]-half[sp+32])<<12 (abs);
+       divide by v1 (guarded); psx_muldiv_set(37); s2=-lo; ->
+       0x8013C540. CPS-blocked. */
+
 block_8013C510:
     a1 = (int32_t)(int16_t)cpu->read_half(sp + 56);
     a0 = (int32_t)(int16_t)cpu->read_half(sp + 32);
@@ -40256,6 +42018,11 @@ void cps_8013c540(void)
     }
     /* Address: 0x8013C540, Size: 56 bytes, Blocks: 2 */
 
+    /* record field fetch + call: v0=half[s4+7196]*8 -> s4+v0;
+       v1=word[word[s4+5768]+32]; a1=word[v1+216]-half[v0+7058];
+       jal 0x80142B3C(s2, a1); then a1=2048-v0, a2=word[word[s4+5772]];
+       -> 0x8013C578. CPS-blocked. */
+
 block_8013C540:
     v0 = (int32_t)(int16_t)cpu->read_half(s4 + 7196);
     v1 = cpu->read_word(s4 + 5768);
@@ -40296,6 +42063,9 @@ void cps_8013c578(void)
     }
     /* Address: 0x8013C578, Size: 104 bytes, Blocks: 2 */
 
+    /* bone offset fetch: half[s4+7196] ->
+       half[v0+7056]; word chain s4+5772->[0]+20 = v0.
+       CPS-blocked. */
 block_8013C578:
     ra = 0x8013C580u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -40364,6 +42134,12 @@ void cps_8013c5e0(void)
         }
     }
     /* Address: 0x8013C5E0, Size: 368 bytes, Blocks: 17 */
+
+    /* aim-angle solve toward target: dist/angle via
+       0x80142B3C(target - pos) -> s0; then repeated
+       lut_cos_q12(s0) with atan2-style ((dy)<<12 / cos)
+       divisions -> s2 and further angle slots on stack;
+       iterates a fixed unrolled count. CPS-blocked. */
 
 block_8013C5E0:
     v0 = cpu->read_word(s4 + 5768);
@@ -40593,6 +42369,8 @@ void cps_8013c750(void)
     }
     /* Address: 0x8013C750, Size: 328 bytes, Blocks: 11 */
 
+    /* field gather: half[v0+130]; word[s4+5760]
+       inc; loads s4+5756/5540/5544/5548 args. CPS-blocked. */
 block_8013C750:
     v0 = 0x1F800000u;  /* 0x1F800000 */
     v0 = (int32_t)(int16_t)cpu->read_half(v0 + 130);
@@ -40758,6 +42536,8 @@ void cps_8013c898(void)
 
     /* Address: 0x8013C898, Size: 4 bytes, Blocks: 1 */
 
+    /* 3-way dispatch -> 0x8013C899/0x8013C89C/9C.
+       CPS-blocked. */
 block_8013C898:
     int cond_8013C898 = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -40782,6 +42562,7 @@ void cps_8013c89c(void)
 
     /* Address: 0x8013C89C, Size: 4 bytes, Blocks: 1 */
 
+    /* dispatch -> 0x8013C8A0. */
 block_8013C89C:
     /* nop */  /* 0x8013C89C: 0x00000000 */
     cpu->pc = 0x8013c8a0u; return;  /* fallthrough to split piece */
@@ -40804,6 +42585,12 @@ void cps_8013c8a0(void)
         }
     }
     /* Address: 0x8013C8A0, Size: 228 bytes, Blocks: 3 */
+
+    /* 16-iteration DMA-list builder: for a1=0..15, reads two
+       unaligned ptr pairs via lwl/lwr from sp+296 table (indexed by
+       s1, s1+1) and writes word[a2] = word[0x1F800008]+64 | 0x0C000000
+       (GPU packet tag), plus word[0x1F800008]+64 = a2<<8>>8; a0+=52,
+       a2+=52. -> 0x8013C984. CPS-blocked. */
 
 block_8013C8A0:
     a1 = zero;
@@ -40888,6 +42675,8 @@ void cps_8013c984(void)
     }
     /* Address: 0x8013C984, Size: 24 bytes, Blocks: 2 */
 
+    /* 3-way dispatch -> 0x8013C898/0x8013C8A0/99C.
+       CPS-blocked. */
 block_8013C984:
     v0 = ((int32_t)v1 < 3) ? 1 : 0;  /* 0x8013C984: 0x28620003 */
     int cond_8013C988 = (v0 == zero);  /* save branch cond before delay slot */
@@ -40924,6 +42713,8 @@ void cps_8013c99c(void)
   if (!cpu) return;
 
     /* Address: 0x8013C99C, Size: 48 bytes, Blocks: 1 */
+
+    /* epilogue: pop s0-s7, fp, ra (sp += 376), jr ra */
 
 block_8013C99C:
     ra = cpu->read_word(sp + 372);
@@ -40998,6 +42789,8 @@ void cps_8013c9cc(void)
     }
     /* Address: 0x8013C9CC, Size: 1052 bytes, Blocks: 38 */
 
+    /* large CPS state machine (122 blocks).
+       CPS-blocked. */
 block_8013C9CC:
     v0 = 0x1F800000u;  /* 0x1F800000 */
     v0 = (int32_t)(int8_t)cpu->read_byte(v0 + 177);
@@ -41583,6 +43376,8 @@ void cps_8013ce68(void)
     }
     /* Address: 0x8013CE68, Size: 2120 bytes, Blocks: 62 */
 
+    /* large CPS state machine (206 blocks).
+       CPS-blocked. */
 block_8013CE68:
     v0 = 0x1F800000u;  /* 0x1F800000 */
     v0 = (int32_t)(int16_t)cpu->read_half(v0 + 130);
@@ -42588,6 +44383,8 @@ void cps_8013da40(void)
     }
     /* Address: 0x8013DA40, Size: 408 bytes, Blocks: 12 */
 
+    /* medium CPS state machine (34 blocks).
+       CPS-blocked. */
 block_8013DA40:
     v0 = 1432;
     a3 = 0x8013D7E4u;  /* 0x80140000 -10268 */
@@ -42803,6 +44600,14 @@ void cps_8013dbd8(void)
         }
     }
     /* Address: 0x8013DBD8, Size: 1304 bytes, Blocks: 25 */
+
+    /* sprite anim/palette effect: frame save; unaligned LUT load
+       0x80120000+472 via lwl/lwr; per-frame half[s3+194]--, lerp
+       halves s3+176/180 += t0/t1 steps, ratio half[194]<<12 /
+       half[192] -> a3; jal 0x801A482C + 0x80194840; writes RGB
+       triples from sp+80 into record word[s3+12]*80+s3 (+4..6 and
+       +44..46 — dual palette slots); then loop jal 0x801954D0 over
+       s3+160 records. CPS-blocked. */
 
 block_8013DBD8:
     sp = sp + -160;
@@ -43294,11 +45099,14 @@ block_8013E0C0:
  * record field update — reads/writes v0+6 and v0+12 */
 void cps_8013e654(void)
 {
+/* task/trig fragment: continues at 0x8013e71c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8013E654, Size: 200 bytes, Blocks: 1 */
 
+    /* triple halfword init: half[v0/+6/+12]=t4/t5/t6;
+       reloads -> compare. CPS-blocked. */
 block_8013E654:
     /* nop */  /* 0x8013E654: 0x00000000 */
     v0 = cpu->read_word(v0);
@@ -43388,11 +45196,13 @@ block_8013E654:
  * split piece of cps_8013e654 */
 void cps_8013e71c(void)
 {
+/* task/trig leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8013E71C, Size: 16 bytes, Blocks: 1 */
 
+    /* epilogue: pop s0, ra sp+=24, jr ra. */
 block_8013E71C:
     ra = cpu->read_word(sp + 20);
     s0 = cpu->read_word(sp + 16);
@@ -43408,10 +45218,15 @@ block_8013E71C:
  * split piece of cps_8013eb5c — task_node_spawn: task_node_alloc wrapper in the emit_task region. */
 void cps_8013e72c(void)
 {
+/* task/trig fragment: continues at 0x8013e778 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8013E72C, Size: 76 bytes, Blocks: 1 */
+
+    /* prologue: sp-=64, save s0-s7/fp/ra, s1=a0, a0=0x1F800000;
+       v1=word[0x1F80000C]; s3=0x1F8003D0; v0=v1*240 (v1*15*16); ->
+       0x8013E778. CPS-blocked. */
 
 block_8013E72C:
     sp = sp + -64;
@@ -43441,11 +45256,14 @@ block_8013E72C:
  * split piece of cps_8013e72c */
 void cps_8013e778(void)
 {
+/* task/trig fragment: continues at 0x8013e784 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8013E778, Size: 12 bytes, Blocks: 1 */
 
+    /* half[a0+130] gate -> 0x8013E784/0x8013E788/80C.
+       CPS-blocked. */
 block_8013E778:
     v1 = cpu->read_half(a0 + 130);
     /* nop */  /* 0x8013E77C: 0x00000000 */
@@ -43467,6 +45285,7 @@ block_8013E778:
  * split piece of cps_8013e778 */
 void cps_8013e784(void)
 {
+/* task/trig fragment: continues at 0x8013e788 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -43482,11 +45301,13 @@ block_8013E784:
  * split piece of cps_8013e778 */
 void cps_8013e788(void)
 {
+/* task/trig fragment: continues at 0x8013e790 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8013E788, Size: 8 bytes, Blocks: 1 */
 
+    /* half[s1+480] -> 0x8013E790. CPS-blocked. */
 block_8013E788:
     v0 = cpu->read_half(s1 + 480);
     /* nop */  /* 0x8013E78C: 0x00000000 */
@@ -43499,6 +45320,7 @@ block_8013E788:
  * free task node. */
 void cps_8013e790(void)
 {
+/* task/trig thunk -> task_node_free -> task_slot_step */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -43514,6 +45336,10 @@ void cps_8013e790(void)
         }
     }
     /* Address: 0x8013E790, Size: 64 bytes, Blocks: 6 */
+
+    /* countdown/timer piece: half[s1+480]--; if result<0 and
+       word[s1+508]!=0: jal 0x801A48FC then 0x801A482C -> 0x8013EAD4;
+       else v0=half[s1+482] -> 0x8013E7D0. CPS-blocked. */
 
 block_8013E790:
     v0 = v0 + -1;
@@ -43574,10 +45400,14 @@ block_8013E7CC:
  * split piece of cps_8013e790 — task_slot_free_wrap: task_slot_step + task_node_free — advance then */
 void cps_8013e7d0(void)
 {
+/* task/trig fragment: continues at 0x8013e7dc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8013E7D0, Size: 12 bytes, Blocks: 1 */
+
+    /* halfword load piece: a0=half[s1+484], v1=half[s1+490],
+       a1=half[s1+492]; -> 0x8013E7DC. CPS-blocked. */
 
 block_8013E7D0:
     a0 = cpu->read_half(s1 + 484);
@@ -43591,10 +45421,14 @@ block_8013E7D0:
  * split piece of cps_8013e7d0 */
 void cps_8013e7dc(void)
 {
+/* task/trig fragment: continues at 0x8013e800 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8013E7DC, Size: 36 bytes, Blocks: 1 */
+
+    /* halfword add piece 1: half[s1+482]+=v0, half[s1+490]+=a1;
+       preload half[s1+494/496/486/488]; -> 0x8013E800. CPS-blocked. */
 
 block_8013E7DC:
     v0 = v0 + a0;
@@ -43614,10 +45448,14 @@ block_8013E7DC:
  * split piece of cps_8013e7dc */
 void cps_8013e800(void)
 {
+/* task/trig fragment: continues at 0x8013e80c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8013E800, Size: 12 bytes, Blocks: 1 */
+
+    /* halfword add piece 2: half[s1+494]=v0, half[s1+486]=v1;
+       -> 0x8013E80C. CPS-blocked. */
 
 block_8013E800:
     v1 = v1 + a1;
@@ -43631,6 +45469,7 @@ block_8013E800:
  * split piece of cps_8013e778 */
 void cps_8013e80c(void)
 {
+/* task/trig fragment: continues at 0x8013e818 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -43648,6 +45487,7 @@ block_8013E80C:
  * split piece of cps_8013e80c */
 void cps_8013e818(void)
 {
+/* task/trig fragment: continues at 0x8013e820 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -43663,10 +45503,14 @@ block_8013E818:
  * split piece of cps_8013e818 */
 void cps_8013e820(void)
 {
+/* task/trig fragment: continues at 0x8013e82c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8013E820, Size: 12 bytes, Blocks: 1 */
+
+    /* fixed-point mul piece: lo=v0*v1; psx_muldiv_set; a2=lo,
+       v0=word[s1+504]; stall; -> 0x8013E82C. CPS-blocked. */
 
 block_8013E820:
     { int64_t result = (int64_t)(int32_t)v0 * (int64_t)(int32_t)v1; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
@@ -43682,11 +45526,14 @@ block_8013E820:
  * split piece of cps_8013e820 */
 void cps_8013e82c(void)
 {
+/* task/trig fragment: continues at 0x8013e850 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8013E82C, Size: 36 bytes, Blocks: 1 */
 
+    /* v0=word[v0]; half[s1+482] -> sp+20 pack ->
+       0x8013E850. CPS-blocked. */
 block_8013E82C:
     a0 = cpu->read_word(v0);
     /* nop */  /* 0x8013E830: 0x00000000 */
@@ -43708,10 +45555,14 @@ block_8013E82C:
  * split piece of cps_8013e82c */
 void cps_8013e850(void)
 {
+/* task/trig fragment: continues at 0x8013e858 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8013E850, Size: 8 bytes, Blocks: 1 */
+
+    /* muldiv tail piece: v1=lo, stall; s2=half[s1+490]; ->
+       0x8013E858. CPS-blocked. */
 
 block_8013E850:
     v1 = cpu->lo;
@@ -43725,10 +45576,15 @@ block_8013E850:
  * split piece of cps_8013e850 */
 void cps_8013e858(void)
 {
+/* task/trig fragment: continues at 0x8013e86c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8013E858, Size: 20 bytes, Blocks: 1 */
+
+    /* divide + branch piece: v0=byte[a1+21]; fp=lo=v1/a0
+       (guarded); v0=0x55550000; byte!=0 -> 0x8013E874 else 0x8013E86C.
+       CPS-blocked. */
 
 block_8013E858:
     v0 = cpu->read_byte(a1 + 21);
@@ -43754,6 +45610,7 @@ block_8013E858:
  * split piece of cps_8013e858 */
 void cps_8013e86c(void)
 {
+/* task/trig fragment: continues at 0x8013e874 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -43771,6 +45628,7 @@ block_8013E86C:
  * region. */
 void cps_8013e874(void)
 {
+/* task/trig thunk -> lut_cos_q12 -> lut_sin_q12 -> lut_cos_q12 -> lut_sin_q12 -> lut_sin_q12 -> lut_cos_q12 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -43792,6 +45650,14 @@ void cps_8013e874(void)
         }
     }
     /* Address: 0x8013E874, Size: 608 bytes, Blocks: 12 */
+
+    /* 4-point rotated-vertex emit: fp*0x5556 hi -> sp+16 scale;
+       per s7=0..3: lut_cos/lut_sin_q12(s2) scaled by fp and
+       fp+s5 accumulate into half[s3..s4+/-] pairs (4 verts x
+       3 comps); s5 wraps via a0>>3; s2 += half[s1+494]. Then
+       3x unaligned lwl/lwr copy from 0x1F8003D0 scratchpad into
+       GPU packet slots s6/s6+40 (tag |0x09000000, back-ptr
+       <<8>>8). -> 0x8013EAD4. CPS-blocked. */
 
 block_8013E874:
     v0 = v0 | 0x5556;
@@ -44018,10 +45884,13 @@ block_8013E9D4:
  * split piece of cps_8013e790 — task_slot_free_wrap: task_slot_step + task_node_free — advance then */
 void cps_8013ead4(void)
 {
+/* task/trig leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8013EAD4, Size: 48 bytes, Blocks: 1 */
+
+    /* epilogue: pop s0-s7, fp, ra (sp += 64), jr ra */
 
 block_8013EAD4:
     ra = cpu->read_word(sp + 60);
@@ -44046,6 +45915,7 @@ block_8013EAD4:
  * record_half_step_k: s16 read step. */
 void cps_8013eb0c(void)
 {
+/* task/trig fragment: continues at 0x8013eb5c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -44059,6 +45929,11 @@ void cps_8013eb0c(void)
         }
     }
     /* Address: 0x8013EB0C, Size: 80 bytes, Blocks: 4 */
+
+    /* list-walk prologue: sp-=40, save s0-s2/ra; s0=a0;
+       v0!=0 -> 0x8013ED50; else check word[s0+24]->half<0 ->
+       0x8013ED24, half[s0+28]!=v1 -> 0x8013ED10, else s2=0x801B0000+
+       7876, v0=512 -> 0x8013EB5C. CPS-blocked. */
 
 block_8013EB0C:
     sp = sp + -40;
@@ -44119,6 +45994,7 @@ block_8013EB50:
  * task_node_spawn: task_node_alloc wrapper in the emit_task region. */
 void cps_8013eb5c(void)
 {
+/* task/trig thunk -> task_node_alloc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -44138,6 +46014,9 @@ void cps_8013eb5c(void)
     }
     /* Address: 0x8013EB5C, Size: 384 bytes, Blocks: 9 */
 
+    /* emit call: a2=14, sp+16=0, sp+20=v0 ->
+       jal 0x801A4308 -> 0x8013ECF0; half[v0+2] read.
+       CPS-blocked. */
 block_8013EB5C:
     a3 = 0x8013E72Cu;  /* 0x80140000 -6356 */
     a0 = 1;
@@ -44287,6 +46166,7 @@ block_8013ECCC:
  * split piece of cps_8013eb5c — task_node_spawn: task_node_alloc wrapper in the emit_task region. */
 void cps_8013ecdc(void)
 {
+/* task/trig fragment: continues at 0x8013ecf0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -44299,6 +46179,8 @@ void cps_8013ecdc(void)
     }
     /* Address: 0x8013ECDC, Size: 20 bytes, Blocks: 2 */
 
+    /* half[t0+480] -> 0x8013ECF0; half[s0+30]=v0.
+       CPS-blocked. */
 block_8013ECDC:
     v0 = ((int32_t)v0 < (int32_t)v1) ? 1 : 0;  /* 0x8013ECDC: 0x0043102A */
     v1 = cpu->read_half(t0 + 480);
@@ -44323,10 +46205,15 @@ block_8013ECEC:
  * split piece of cps_8013eb5c — task_node_spawn: task_node_alloc wrapper in the emit_task region. */
 void cps_8013ecf0(void)
 {
+/* task/trig fragment: continues at 0x8013ed10 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8013ECF0, Size: 32 bytes, Blocks: 1 */
+
+    /* cursor-advance check: a0=word[s0+24]; word[s0+24]=a0+4;
+       v0=half[a0+4]; half[s0+28]==v0 -> 0x8013EB5C else 0x8013ED10;
+       v0=512. CPS-blocked. */
 
 block_8013ECF0:
     a0 = cpu->read_word(s0 + 24);
@@ -44353,11 +46240,14 @@ block_8013ECF0:
  * split piece of cps_8013eb0c — record_half_step_k: s16 read step. */
 void cps_8013ed10(void)
 {
+/* task/trig fragment: continues at 0x8013ed24 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8013ED10, Size: 20 bytes, Blocks: 1 */
 
+    /* half[s0+28] adjust -> 0x8013ED50/0x8013ED24.
+       CPS-blocked. */
 block_8013ED10:
     v0 = cpu->read_half(s0 + 28);
     /* nop */  /* 0x8013ED14: 0x00000000 */
@@ -44374,6 +46264,7 @@ block_8013ED10:
  * split piece of cps_8013eb0c — record_half_step_k: s16 read step. */
 void cps_8013ed24(void)
 {
+/* task/trig thunk -> task_slot_step */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -44387,6 +46278,8 @@ void cps_8013ed24(void)
     }
     /* Address: 0x8013ED24, Size: 44 bytes, Blocks: 3 */
 
+    /* half[s0+30] adjust -> 0x8013ED50; jal
+       0x801A482C -> 0x8013ED80. CPS-blocked. */
 block_8013ED24:
     v0 = cpu->read_half(s0 + 30);
     /* nop */  /* 0x8013ED28: 0x00000000 */
@@ -44423,10 +46316,15 @@ block_8013ED48:
  * split piece of cps_8013eb0c — record_half_step_k: s16 read step. */
 void cps_8013ed50(void)
 {
+/* task/trig fragment: continues at 0x8013ed80 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8013ED50, Size: 48 bytes, Blocks: 1 */
+
+    /* GTE length piece: gte_data[0..1]=word[s0],word[s0+4];
+       cmd 0x0180001; word[s0+8]=gte_data[14]; word[s0+12]=
+       gte_data[19]>>2 (mfc2); -> 0x8013ED80. CPS-blocked. */
 
 block_8013ED50:
     
@@ -44458,10 +46356,13 @@ block_8013ED50:
  * split piece of cps_8013ed24 */
 void cps_8013ed80(void)
 {
+/* task/trig fragment: continues at 0x8013f888 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8013ED80, Size: 24 bytes, Blocks: 1 */
+
+    /* epilogue: pop s0-s2, ra (sp += 40), jr ra */
 
 block_8013ED80:
     ra = cpu->read_word(sp + 36);
@@ -44493,6 +46394,8 @@ void cps_8013f828(void)
     }
     /* Address: 0x8013F828, Size: 96 bytes, Blocks: 3 */
 
+    /* frame prologue: half[v0+130] gate; saves
+       s3-s7/fp/ra to sp+36..60. CPS-blocked. */
 block_8013F828:
     v0 = 0x1F800000u;  /* 0x1F800000 */
     v0 = (int32_t)(int16_t)cpu->read_half(v0 + 130);
@@ -44561,6 +46464,8 @@ void cps_8013f888(void)
     }
     /* Address: 0x8013F888, Size: 124 bytes, Blocks: 5 */
 
+    /* field pair update: half[s6+2410]/[s6+2418] ->
+       0x8013F914/0x8013FEA0 -> 0x8013F904. CPS-blocked. */
 block_8013F888:
     /* nop */  /* 0x8013F888: 0x00000000 */
     int cond_8013F88C = (v0 != zero);  /* save branch cond before delay slot */
@@ -44649,6 +46554,7 @@ void cps_8013f904(void)
     }
     /* Address: 0x8013F904, Size: 16 bytes, Blocks: 2 */
 
+    /* jal 0x801A482C -> 0x80140198. CPS-blocked. */
 block_8013F904:
     ra = 0x8013F90Cu;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -44704,6 +46610,8 @@ void cps_8013f914(void)
     }
     /* Address: 0x8013F914, Size: 804 bytes, Blocks: 25 */
 
+    /* field rotate: half[s6+2412]/[s6+2408]/[s6+2416]
+       update -> 0x80140198. CPS-blocked. */
 block_8013F914:
     v0 = (int32_t)(int16_t)cpu->read_half(s6 + 2412);
     v1 = cpu->read_half(s6 + 2412);
@@ -45098,6 +47006,11 @@ void cps_8013fc38(void)
 
     /* Address: 0x8013FC38, Size: 244 bytes, Blocks: 1 */
 
+    /* 3x vert blend loop (part 1): s2=word[a1+1684]; per iter
+       s5<3: unaligned lwl/lwr loads, averages 6 halfword pairs
+       (s4[i]+a0-neg-offsets)/2 -> half[s2+16..26]; s4+=48,a0+=48.
+       -> 0x8013FD2C. CPS-blocked. */
+
 block_8013FC38:
     s2 = cpu->read_word(a1 + 1684);
     t8 = br2_lwl(cpu, s4 + 3, t8);
@@ -45165,6 +47078,10 @@ void cps_8013fd2c(void)
 
     /* Address: 0x8013FD2C, Size: 28 bytes, Blocks: 1 */
 
+    /* 3x vert blend loop (part 2): half[s2+28]=(v0+sign)>>1;
+       a0+=48; loop while s5<3 -> 0x8013FC38 else 0x8013FD48.
+       CPS-blocked. */
+
 block_8013FD2C:
     v1 = (uint32_t)v0 >> 31;
     v0 = v0 + v1;
@@ -45207,6 +47124,8 @@ void cps_8013fd48(void)
     }
     /* Address: 0x8013FD48, Size: 344 bytes, Blocks: 7 */
 
+    /* record unpack: t4-t6 = word[t8..+16]; fp/s4 =
+       word[a1+1688/1684]; half[s2] read. CPS-blocked. */
 block_8013FD48:
     s2 = s6 + 2164;
     t8 = 0x801B1860u;  /* 0x801B0000 6240 */
@@ -45383,6 +47302,9 @@ void cps_8013fea0(void)
     }
     /* Address: 0x8013FEA0, Size: 760 bytes, Blocks: 20 */
 
+    /* field update: half[v0+130]/half[s6+2410] ->
+       word[v0-4352]; s3=word[s6+2372]; half[s6+2420/2422]
+       -> half[s2]=0. CPS-blocked. */
 block_8013FEA0:
     v0 = 0x1F800000u;  /* 0x1F800000 */
     v0 = (int32_t)(int16_t)cpu->read_half(v0 + 130);
@@ -45795,6 +47717,8 @@ void cps_80140c98(void)
   if (!cpu) return;
 
     /* Address: 0x80140C98, Size: 8 bytes, Blocks: 1 */
+    /* CPS piece (cps_80140c98): dispatch/leaf piece.
+       CPS-blocked. */
 
 block_80140C98:
     uint32_t jt_80140C98 = ra;  /* latch indirect target before delay slot */
@@ -45995,6 +47919,8 @@ void cps_80142b0c(void)
 
     /* Address: 0x80142B0C, Size: 48 bytes, Blocks: 1 */
 
+    /* epilogue: pop s0-s7, fp, ra (sp += 88), jr ra */
+
 block_80142B0C:
     ra = cpu->read_word(sp + 84);
     fp = cpu->read_word(sp + 80);
@@ -46050,6 +47976,8 @@ void cps_80142c50(void)
   if (!cpu) return;
 
     /* Address: 0x80142C50, Size: 12 bytes, Blocks: 1 */
+    /* CPS piece (cps_80142c50):-> 0x8012c50.
+       CPS-blocked. */
 
 block_80142C50:
     v0 = v1;
@@ -46520,6 +48448,8 @@ void cps_80143d30(void)
   if (!cpu) return;
 
     /* Address: 0x80143D30, Size: 8 bytes, Blocks: 1 */
+    /* CPS piece (cps_80143d30): dispatch/leaf piece.
+       CPS-blocked. */
 
 block_80143D30:
     uint32_t jt_80143D30 = ra;  /* latch indirect target before delay slot */
@@ -47775,6 +49705,8 @@ void cps_80147dec(void)
   if (!cpu) return;
 
     /* Address: 0x80147DEC, Size: 8 bytes, Blocks: 1 */
+    /* CPS piece (cps_80147dec): dispatch/leaf piece.
+       CPS-blocked. */
 
 block_80147DEC:
     uint32_t jt_80147DEC = ra;  /* latch indirect target before delay slot */
@@ -55392,6 +57324,8 @@ void cps_8015e8bc(void)
         }
     }
     /* Address: 0x8015E8BC, Size: 320 bytes, Blocks: 19 */
+    /* CPS piece (cps_8015e8bc): s2 = read_word(sp + 64); s1 = read_word(sp + 60); s0 = read_word(sp + 56); v1 = read_word(v0 + 16724);-> 0x801CFDC/0x80174D8/0x8013154/0x801BFCC.
+       CPS-blocked. */
 
     v0 = 0x801B0000u;  /* 0x801B0000 */
     v1 = cpu->read_word(v0 + 16724);
@@ -59448,6 +61382,11 @@ void cps_80163ddc(void)
     }
     /* Address: 0x80163DDC, Size: 76 bytes, Blocks: 5 */
 
+    /* string compare + patch: nested scan — for each word
+       ptr t0 step -4, byte-compare a3+a1 vs t1+a1 down to 0; on
+       match write t2,t3,t4 bytes to t1[0..2], v0=1; ret.
+       CPS-blocked. */
+
 block_80163DDC:
     a3 = cpu->read_word(t0);
     a1 = 2;
@@ -59509,6 +61448,9 @@ void cps_80163e28(void)
         }
     }
     /* Address: 0x80163E28, Size: 16 bytes, Blocks: 2 */
+
+    /* scan-loop tail: t0-=4; while a2>=0 loop 0x80163DDC;
+       else v0=0, jr ra. CPS-blocked. */
 
 block_80163E28:
     t0 -= 4;
@@ -60395,6 +62337,8 @@ void cps_80175a18(void)
   if (!cpu) return;
 
     /* Address: 0x80175A18, Size: 100 bytes, Blocks: 1 */
+    /* CPS piece (cps_80175a18): a0 = (int32_t)(int16_t)read_half(a2 + 176); write_half(a2 + 216, zero); 
+       CPS-blocked. */
 
 block_80175A18:
     /* entity motion-state init: scale = (s16[@a2+176] * u8[@a2+222]) * 0x51EB851F >> 37
@@ -60516,6 +62460,8 @@ void cps_8017a990(void)
         }
     }
     /* Address: 0x8017A990, Size: 40 bytes, Blocks: 3 */
+    /* CPS piece (cps_8017a990): write_word(a1 + 76, zero); v0 = read_half(a2);.
+       CPS-blocked. */
 
     v0 = cpu->read_half(a2);
     /* nop */  /* 0x8017A994: 0x00000000 */
@@ -60604,6 +62550,8 @@ void cps_8017a9d0(void)
         }
     }
     /* Address: 0x8017A9D0, Size: 44 bytes, Blocks: 2 */
+    /* CPS piece (cps_8017a9d0): v0 = read_word(a1 + 136); write_word(a1 + 136, v0); v0 = read_half(a2);.
+       CPS-blocked. */
 
     v0 = cpu->read_half(a2);
     /* nop */  /* 0x8017A9D4: 0x00000000 */
@@ -60723,6 +62671,9 @@ void cps_8017ab5c(void)
 
     /* Address: 0x8017AB5C, Size: 24 bytes, Blocks: 1 */
 
+    /* record field set: word[a1+132]=a2+2; half[a1+144]=
+       half[a0+190]<<4; jr ra */
+
     v1 = (int32_t)(int16_t)cpu->read_half(a0 + 190);
     a0 = a2 + 2;
     cpu->write_word(a1 + 132, a0);
@@ -60808,6 +62759,8 @@ void cps_8017ad78(void)
         }
     }
     /* Address: 0x8017AD78, Size: 64 bytes, Blocks: 6 */
+    /* CPS piece (cps_8017ad78): v0 = read_word(a1 + 148);-> 0x801AC44/0x801AE00.
+       CPS-blocked. */
 
 compare:
     int match = (v1 == v0);  /* save branch cond before delay slot */
@@ -60923,6 +62876,7 @@ void cps_8017ae10(void)
  * fighter-param decoder — reads half(a2) + byte(a0+5); range-checks bitfield, 4 continuations */
 void cps_8017b5f4(void)
 {
+/* desc_transform_dispatch piece: continues at 0x8017B648 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -60937,6 +62891,8 @@ void cps_8017b5f4(void)
         }
     }
     /* Address: 0x8017B5F4, Size: 84 bytes, Blocks: 5 */
+    /* CPS piece (cps_8017b5f4): v1 = read_half(a2 + 2); v0 = read_word(a0 + 48); v0 = read_half(a2);-> 0x801B664.
+       CPS-blocked. */
 
     v0 = cpu->read_half(a2);
     /* nop */  /* 0x8017B5F8: 0x00000000 */
@@ -61008,6 +62964,7 @@ flag_check:
  * split piece of cps_8017b5f4 */
 void cps_8017b648(void)
 {
+/* desc_transform_dispatch piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -61025,6 +62982,7 @@ void cps_8017b648(void)
  * split piece of cps_8017b5f4 */
 void cps_8017b650(void)
 {
+/* desc_transform_dispatch piece: continues at 0x8017b664 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -61050,6 +63008,7 @@ void cps_8017b650(void)
  * split piece of cps_8017b5f4 */
 void cps_8017b664(void)
 {
+/* desc_transform_dispatch piece: continues at 0x8017b668 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -61065,6 +63024,7 @@ void cps_8017b664(void)
  * @0x8012279C — 38-block indexed dispatch (script op family). */
 void cps_8017b668(void)
 {
+/* desc_transform_dispatch piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -61458,6 +63418,7 @@ block_8017B858:
  * fighter-param decoder — reads half(a2) + byte(a0+5); range-checks bitfield, 4 continuations */
 void cps_8017b860(void)
 {
+/* desc_transform_dispatch piece: continues at 0x8017B8B4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -61472,6 +63433,8 @@ void cps_8017b860(void)
         }
     }
     /* Address: 0x8017B860, Size: 84 bytes, Blocks: 5 */
+    /* CPS piece (cps_8017b860): v0 = read_word(a0 + 32); v0 = read_half(v0 + 380); write_half(a1 + 216, v0); v1 = (int32_t)(int16_t)read_half(a0 + 78);-> 0x801B8D0.
+       CPS-blocked. */
 
     v0 = cpu->read_half(a2);
     /* nop */  /* 0x8017B864: 0x00000000 */
@@ -61543,6 +63506,7 @@ flag_check:
  * split piece of cps_8017b860 */
 void cps_8017b8b4(void)
 {
+/* desc_transform_dispatch piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -61560,6 +63524,7 @@ void cps_8017b8b4(void)
  * split piece of cps_8017b860 */
 void cps_8017b8bc(void)
 {
+/* desc_transform_dispatch piece: continues at 0x8017b8d0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -61585,6 +63550,7 @@ void cps_8017b8bc(void)
  * split piece of cps_8017b860 */
 void cps_8017b8d0(void)
 {
+/* desc_transform_dispatch piece: continues at 0x8017b8d4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -61600,6 +63566,7 @@ void cps_8017b8d0(void)
  * indexed dispatch variant B. */
 void cps_8017b8d4(void)
 {
+/* desc_transform_dispatch piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -61828,6 +63795,7 @@ block_8017BA34:
  * param decoder — reads half(a2)+0/2/4 and byte(t0+5); 5-way dispatch */
 void cps_8017ba3c(void)
 {
+/* desc_transform_dispatch piece: continues at 0x8017BAAC */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -61845,6 +63813,8 @@ void cps_8017ba3c(void)
         }
     }
     /* Address: 0x8017BA3C, Size: 112 bytes, Blocks: 8 */
+    /* CPS piece (cps_8017ba3c): write_half(a0 + 152, v0); v1 = (int32_t)(int16_t)read_half(a0 + 152); v0 = (int32_t)(int16_t)read_half(a2 + 2); v1 = read_half(a2 + 4);-> 0x801BAC8/0x801BAD4.
+       CPS-blocked. */
 
     t0 = a0;
     v1 = cpu->read_half(a2 + 4);
@@ -61947,6 +63917,7 @@ flag_check:
  * split piece of cps_8017ba3c */
 void cps_8017baac(void)
 {
+/* desc_transform_dispatch piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -61964,6 +63935,7 @@ void cps_8017baac(void)
  * split piece of cps_8017ba3c */
 void cps_8017bab4(void)
 {
+/* desc_transform_dispatch piece: continues at 0x8017bac8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -61989,6 +63961,7 @@ void cps_8017bab4(void)
  * split piece of cps_8017ba3c */
 void cps_8017bac8(void)
 {
+/* desc_transform_dispatch piece: continues at 0x8017bad0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -62005,6 +63978,7 @@ void cps_8017bac8(void)
  * split piece of cps_8017ba3c */
 void cps_8017bad0(void)
 {
+/* desc_transform_dispatch piece: continues at 0x8017bad4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -62020,6 +63994,7 @@ void cps_8017bad0(void)
  * flag bits into a 42-block dispatch — descriptor flag-bit handler. */
 void cps_8017bad4(void)
 {
+/* desc_flagbit_dispatch piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -62444,6 +64419,7 @@ block_8017BD84:
  * leaf reg-op / return-value helper */
 void cps_8017bd8c(void)
 {
+/* desc_flagbit_dispatch piece: continues at 0x8017C3B4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -62461,6 +64437,7 @@ void cps_8017bd8c(void)
  * param decoder — reads half(a2)+0/2, byte(a3+5); range + flag checks */
 void cps_8017c35c(void)
 {
+/* desc_slot_alloc piece: continues at 0x8017C3B4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -62475,6 +64452,8 @@ void cps_8017c35c(void)
         }
     }
     /* Address: 0x8017C35C, Size: 88 bytes, Blocks: 5 */
+    /* CPS piece (cps_8017c35c): write_word(a3 + 84, v0); v0 = read_word(a3 + 84); write_word(a1 + 148, v0); v0 = read_half(a2 + 2);.
+       CPS-blocked. */
 
     v0 = cpu->read_half(a2 + 2);
     v1 = cpu->read_half(a2);
@@ -62547,6 +64526,7 @@ flag_check:
  * split piece of cps_8017c35c */
 void cps_8017c3b4(void)
 {
+/* desc_slot_alloc piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -62564,6 +64544,7 @@ void cps_8017c3b4(void)
  * split piece of cps_8017c35c */
 void cps_8017c3bc(void)
 {
+/* desc_slot_alloc piece: continues at 0x8017c3d0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -62590,6 +64571,7 @@ void cps_8017c3bc(void)
  * nibble-field handler sibling of bad4. */
 void cps_8017c3d0(void)
 {
+/* desc_slot_alloc piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -62976,6 +64958,7 @@ block_8017C5B0:
  * fighter-param decoder — reads half(a2) + byte(a0+5) */
 void cps_8017c5b8(void)
 {
+/* desc_slot_alloc piece: continues at 0x8017C600 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -62990,6 +64973,8 @@ void cps_8017c5b8(void)
         }
     }
     /* Address: 0x8017C5B8, Size: 72 bytes, Blocks: 5 */
+    /* CPS piece (cps_8017c5b8): v1 = read_byte(a3 + 218); v1 = read_word(a3 + 56); write_half(v1 + 276, v0); v0 = read_half(a2);.
+       CPS-blocked. */
 
     v0 = cpu->read_half(a2);
     /* nop */  /* 0x8017C5BC: 0x00000000 */
@@ -63058,6 +65043,7 @@ flag_check:
  * split piece of cps_8017c5b8 */
 void cps_8017c600(void)
 {
+/* desc_slot_alloc piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63075,6 +65061,7 @@ void cps_8017c600(void)
  * split piece of cps_8017c5b8 */
 void cps_8017c608(void)
 {
+/* desc_slot_alloc piece: continues at 0x8017c61c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63100,6 +65087,7 @@ void cps_8017c608(void)
  * split piece of cps_8017c5b8 */
 void cps_8017c61c(void)
 {
+/* desc_slot_alloc piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63161,6 +65149,7 @@ store:
  * fighter state reader — reads a0+92/116, a1+210, a2+0/2 */
 void cps_8017c7b0(void)
 {
+/* desc_state_commit piece: continues at 0x8017C818 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63177,6 +65166,8 @@ void cps_8017c7b0(void)
         }
     }
     /* Address: 0x8017C7B0, Size: 104 bytes, Blocks: 7 */
+    /* CPS piece (cps_8017c7b0): v0 = read_byte(a2 + 2); write_byte(a0 + 219, v0); v0 = read_byte(a1 + 256); v0 = read_half(a2 + 2);-> 0x801C600/0x801C61C/0x801C840.
+       CPS-blocked. */
 
     v0 = cpu->read_half(a2);
     /* nop */  /* 0x8017C7B4: 0x00000000 */
@@ -63260,10 +65251,15 @@ ret:
  * split piece of cps_8017c7b0 */
 void cps_8017c818(void)
 {
+/* desc_state_commit piece: continues at 0x8017c840 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8017C818, Size: 40 bytes, Blocks: 1 */
+
+    /* fixed-point scale piece A: half[a1+268]=a3;
+       half[a1+266]=(a3*0x40B5 hi +a3)>>7 -sign; -> 0x8017C850.
+       CPS-blocked. */
 
     v0 = v0 | 0x40B5;
     { int64_t result = (int64_t)(int32_t)a3 * (int64_t)(int32_t)v0; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
@@ -63286,6 +65282,7 @@ void cps_8017c818(void)
  * split piece of cps_8017c7b0 */
 void cps_8017c840(void)
 {
+/* desc_state_commit piece: continues at 0x8017c850 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63303,6 +65300,7 @@ void cps_8017c840(void)
  * split piece of cps_8017c818 */
 void cps_8017c850(void)
 {
+/* desc_state_commit piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63362,6 +65360,7 @@ store:
  * fighter state reader — reads a0+92/116, a1+210, a2+0/2 */
 void cps_8017c898(void)
 {
+/* desc_state_commit piece: continues at 0x8017C900 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63378,6 +65377,8 @@ void cps_8017c898(void)
         }
     }
     /* Address: 0x8017C898, Size: 104 bytes, Blocks: 7 */
+    /* CPS piece (cps_8017c898): write_half(a1 + 266, v0); v0 = read_half(a2 + 2); write_half(a1 + 268, v0); v0 = read_word(a0 + 92);-> 0x801c850.
+       CPS-blocked. */
 
     v0 = cpu->read_half(a2);
     /* nop */  /* 0x8017C89C: 0x00000000 */
@@ -63461,10 +65462,15 @@ ret:
  * split piece of cps_8017c898 */
 void cps_8017c900(void)
 {
+/* desc_state_commit piece: continues at 0x8017c928 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8017C900, Size: 40 bytes, Blocks: 1 */
+
+    /* fixed-point scale piece B (dup of A): half[a1+268]=a3;
+       half[a1+266]=(a3*0x40B5 hi +a3)>>7 -sign; -> 0x8017C938.
+       CPS-blocked. */
 
     v0 = v0 | 0x40B5;
     { int64_t result = (int64_t)(int32_t)a3 * (int64_t)(int32_t)v0; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
@@ -63487,6 +65493,7 @@ void cps_8017c900(void)
  * split piece of cps_8017c898 */
 void cps_8017c928(void)
 {
+/* desc_state_commit piece: continues at 0x8017c938 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63504,6 +65511,7 @@ void cps_8017c928(void)
  * split piece of cps_8017c900 */
 void cps_8017c938(void)
 {
+/* desc_state_commit piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63562,6 +65570,7 @@ store:
  * single byte store to a0+39 */
 void cps_8017c9bc(void)
 {
+/* slot_byte_commit piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63583,6 +65592,7 @@ void cps_8017c9bc(void)
  * fighter-param decoder — reads half(a2) + byte(a0+5) */
 void cps_8017ca84(void)
 {
+/* ev20_timer_dispatch piece: continues at 0x8017CAD0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63666,6 +65676,7 @@ flag_check:
  * split piece of cps_8017ca84 */
 void cps_8017cad0(void)
 {
+/* ev20_timer_dispatch piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63683,6 +65694,7 @@ void cps_8017cad0(void)
  * split piece of cps_8017ca84 */
 void cps_8017cad8(void)
 {
+/* ev20_timer_dispatch piece: continues at 0x8017caec */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63708,6 +65720,7 @@ void cps_8017cad8(void)
  * split piece of cps_8017ca84 */
 void cps_8017caec(void)
 {
+/* ev20_timer_dispatch piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63727,6 +65740,7 @@ void cps_8017caec(void)
  * full fighter reset/hit-state clear sequence (55 blocks). */
 void cps_8017caf4(void)
 {
+/* ev20_timer_dispatch piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -64443,6 +66457,7 @@ block_8017CF00:
  * fighter state reader — reads a1+44, a2+0/2, byte(a3+5) */
 void cps_8017d1d0(void)
 {
+/* descriptor_quad_dispatch piece: continues at 0x8017D23C */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -64459,6 +66474,8 @@ void cps_8017d1d0(void)
         }
     }
     /* Address: 0x8017D1D0, Size: 108 bytes, Blocks: 7 */
+    /* CPS piece (cps_8017d1d0): v0 = read_half(s0 + 172); write_half(s0 + 214, zero); write_half(s0 + 216, zero); write_byte(s0 + 5, zero);-> 0x8016EF4/0x8010CA0/0x8015E08/0x8012D20.
+       CPS-blocked. */
 
     a1 = a0;
     v0 = cpu->read_half(a2);
@@ -64549,6 +66566,7 @@ flag_check:
  * split piece of cps_8017d1d0 */
 void cps_8017d23c(void)
 {
+/* descriptor_quad_dispatch terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -64566,6 +66584,7 @@ void cps_8017d23c(void)
  * split piece of cps_8017d1d0 */
 void cps_8017d244(void)
 {
+/* descriptor_quad_dispatch piece: continues at 0x8017d258 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -64591,6 +66610,7 @@ void cps_8017d244(void)
  * split piece of cps_8017d1d0 */
 void cps_8017d258(void)
 {
+/* descriptor_quad_dispatch piece: continues at 0x8017d25c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -64605,6 +66625,7 @@ void cps_8017d258(void)
  * jt_dispatch_7: v1<7 table @0x801229CC indexed dispatch. */
 void cps_8017d25c(void)
 {
+/* descriptor_quad_dispatch terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -64770,10 +66791,14 @@ block_8017D34C:
  * CPS leaf — 3 stores, 1 loads */
 void cps_8017d354(void)
 {
+/* descriptor_quad_dispatch terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8017D354, Size: 36 bytes, Blocks: 1 */
+
+    /* record init: word[a1+32]=0x8000, half[a1+42]=4095,
+       half[a1+36]=half[a2+2]+208, a0=a2+4; jr ra */
 
     v1 = cpu->read_half(a2 + 2);
     v0 = 0x8000;
@@ -64794,6 +66819,7 @@ void cps_8017d354(void)
  * fighter state reader — reads a0+44/5, a2+0/2 */
 void cps_8017d55c(void)
 {
+/* condition_word_dispatch piece: continues at 0x8017D5C0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -64810,6 +66836,8 @@ void cps_8017d55c(void)
         }
     }
     /* Address: 0x8017D55C, Size: 100 bytes, Blocks: 7 */
+    /* CPS piece (cps_8017d55c): write_half(a1 + 178, v0); write_half(a1 + 152, zero); v0 = read_half(a2 + 2); write_half(a1 + 180, v0);.
+       CPS-blocked. */
 
     v0 = cpu->read_half(a2);
     /* nop */  /* 0x8017D560: 0x00000000 */
@@ -64898,6 +66926,7 @@ flag_check:
  * split piece of cps_8017d55c */
 void cps_8017d5c0(void)
 {
+/* condition_word_dispatch terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -64915,6 +66944,7 @@ void cps_8017d5c0(void)
  * split piece of cps_8017d55c */
 void cps_8017d5c8(void)
 {
+/* condition_word_dispatch piece: continues at 0x8017d5dc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -64940,6 +66970,7 @@ void cps_8017d5c8(void)
  * split piece of cps_8017d55c */
 void cps_8017d5dc(void)
 {
+/* condition_word_dispatch piece: continues at 0x8017d5e0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -64954,6 +66985,7 @@ void cps_8017d5dc(void)
  * jt_dispatch_9: v1<9 table @0x80122A2C indexed dispatch. */
 void cps_8017d5e0(void)
 {
+/* condition_word_dispatch terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -65096,6 +67128,7 @@ block_8017D6A4:
  * fighter state reader — reads a0+44/5, a2+0/2; 5-way dispatch */
 void cps_8017d6ac(void)
 {
+/* condition_word_dispatch piece: continues at 0x8017D71C */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -65113,6 +67146,8 @@ void cps_8017d6ac(void)
         }
     }
     /* Address: 0x8017D6AC, Size: 112 bytes, Blocks: 8 */
+    /* CPS piece (cps_8017d6ac): v0 = read_word(a0 + 32); v1 = (int32_t)(int16_t)read_half(a2 + 2); v0 = read_word(v0 + 56); v0 = (int32_t)(int16_t)read_half(a0 + 144);.
+       CPS-blocked. */
 
     v0 = cpu->read_half(a2);
     /* nop */  /* 0x8017D6B0: 0x00000000 */
@@ -65214,6 +67249,7 @@ sub_check:
  * split piece of cps_8017d6ac */
 void cps_8017d71c(void)
 {
+/* condition_word_dispatch terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -65231,6 +67267,7 @@ void cps_8017d71c(void)
  * split piece of cps_8017d6ac */
 void cps_8017d724(void)
 {
+/* condition_word_dispatch terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -65248,6 +67285,7 @@ void cps_8017d724(void)
  * split piece of cps_8017d6ac */
 void cps_8017d72c(void)
 {
+/* condition_word_dispatch piece: continues at 0x8017D724 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -65300,6 +67338,7 @@ tail:
  * split piece of cps_8017d6ac */
 void cps_8017d754(void)
 {
+/* condition_word_dispatch piece: continues at 0x8017d758 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -65314,6 +67353,7 @@ void cps_8017d754(void)
  * jt_dispatch_5: v1<5 table @0x80122A6C indexed dispatch. */
 void cps_8017d758(void)
 {
+/* condition_word_dispatch piece: continues at 0x8017D7EC */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -65410,6 +67450,7 @@ block_8017D7B0:
  * split piece of cps_8017d758 — jt_dispatch_5: v1<5 table @0x80122A6C indexed dispatch. */
 void cps_8017d7ec(void)
 {
+/* condition_word_dispatch terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -65427,6 +67468,7 @@ void cps_8017d7ec(void)
  * fighter state reader — reads a0+5, a2+0/2/4, t0+44 */
 void cps_8017d9dc(void)
 {
+/* button_cond_eval piece: continues at 0x8017DA44 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -65532,6 +67574,7 @@ flag_check:
  * split piece of cps_8017d9dc */
 void cps_8017da44(void)
 {
+/* button_cond_eval terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -65549,6 +67592,7 @@ void cps_8017da44(void)
  * split piece of cps_8017d9dc */
 void cps_8017da4c(void)
 {
+/* button_cond_eval piece: continues at 0x8017da60 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -65574,6 +67618,7 @@ void cps_8017da4c(void)
  * split piece of cps_8017d9dc */
 void cps_8017da60(void)
 {
+/* button_cond_eval piece: continues at 0x8017da64 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -65588,6 +67633,7 @@ void cps_8017da60(void)
  * split piece of cps_8017d9dc */
 void cps_8017da64(void)
 {
+/* button_cond_eval piece: continues at 0x8017da68 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -65602,6 +67648,7 @@ void cps_8017da64(void)
  * split piece of cps_8017d9dc */
 void cps_8017da68(void)
 {
+/* button_cond_eval terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -65622,6 +67669,8 @@ void cps_8017da68(void)
         }
     }
     /* Address: 0x8017DA68, Size: 288 bytes, Blocks: 11 */
+    /* CPS piece (cps_8017da68): v0 = read_byte(a0 + 5);-> 0x801DA4C/0x801DA68/0x801DA64/0x801DA44.
+       CPS-blocked. */
 
     int is_one = (v1 == v0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -65812,6 +67861,8 @@ void cps_8017e4d4(void)
         }
     }
     /* Address: 0x8017E4D4, Size: 340 bytes, Blocks: 17 */
+    /* CPS piece (cps_8017e4d4): v1 = read_word(t0 + 64); a0 = read_word(v0 + 24); v1 = read_half(a2 + 4); v0 = read_half(a0);.
+       CPS-blocked. */
 
     a3 = a0;
     v0 = cpu->read_half(a2);
@@ -66219,6 +68270,8 @@ void cps_8017e6b0(void)
         }
     }
     /* Address: 0x8017E6B0, Size: 204 bytes, Blocks: 18 */
+    /* CPS piece (cps_8017e6b0): v0 = read_byte(a0 + 5); v0 = read_word(a0 + 88);-> 0x801E694/0x801E6B0/0x801E6AC/0x801E68C.
+       CPS-blocked. */
 
     int is_one = (v1 == v0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -66435,6 +68488,8 @@ void cps_8017f97c(void)
         }
     }
     /* Address: 0x8017F97C, Size: 360 bytes, Blocks: 19 */
+    /* CPS piece (cps_8017f97c): v0 = (int32_t)(int16_t)read_half(a0 + 186); v0 = read_word(a0 + 88); v0 = (int32_t)(int16_t)read_half(a0 + 184); v0 = (int32_t)(int16_t)read_half(a0 + 188);.
+       CPS-blocked. */
 
     v0 = (int32_t)(int16_t)cpu->read_half(a1 + 208);
     /* nop */  /* 0x8017F980: 0x00000000 */
@@ -66833,6 +68888,8 @@ void cps_801800a4(void)
         }
     }
     /* Address: 0x801800A4, Size: 552 bytes, Blocks: 6 */
+    /* CPS piece (cps_801800a4): v0 = read_word(a1 + 88); v0 = read_word(a2 + 32); v1 = read_word(a1 + 92); write_word(v1 + 56, v0);-> 0x801FAE4/0x801FB00/0x801FAF8/0x801D788.
+       CPS-blocked. */
     /* Hitbox bone transform, entry piece: stage the parent's baked matrix block
      * (node+0x20..0x3c) into the work node via node_xform_apply, snapshot the
      * child's local position (s3+0xd4..0xd8) into the work node, then build a
@@ -70422,6 +72479,7 @@ block_80189024:
  * Continuations: 80189034/.../CC/D4. */
 void cps_8018902c(void)
 {
+/* prim_nclip_emit_60 piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -70574,6 +72632,7 @@ block_801890D4:
  * Stride a0 += 120. */
 void cps_801890dc(void)
 {
+/* prim_nclip_emit_60 piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -70738,6 +72797,7 @@ block_8018919C:
  * Flag byte t3+7. Stride a0 += 128. */
 void cps_801891a4(void)
 {
+/* prim_nclip_emit_80 piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -70910,6 +72970,7 @@ block_80189264:
  * Flag byte t3+7. Stride a0 += 168. */
 void cps_8018926c(void)
 {
+/* prim_nclip_emit_a8 piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -71106,6 +73167,7 @@ block_80189358:
  * depth/flag) and gte_data[12..14] at t3+8/16/24. Stride a0 += 100. */
 void cps_80189360(void)
 {
+/* prim_nclip_emit_64 piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -71273,6 +73335,7 @@ block_80189420:
  * gte_data[12..14] at t3+8/16/24. Stride a0 += 116. */
 void cps_80189428(void)
 {
+/* prim_nclip_emit_74 piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -71453,6 +73516,7 @@ block_801894F8:
  * Stride a0 += 128. */
 void cps_80189500(void)
 {
+/* prim_nclip_emit_80b piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -71644,6 +73708,7 @@ block_801895F0:
  * Stride a0 += 152. */
 void cps_801895f8(void)
 {
+/* prim_nclip_emit_98 piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -71853,6 +73918,7 @@ block_801896FC:
  * halfword at t0+2. Stride a0 += 60. */
 void cps_80189704(void)
 {
+/* prim_poly_emit_3c piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -71989,6 +74055,7 @@ block_801897A8:
  * t0+2/t6+2. Stride a0 += 84. */
 void cps_801897b0(void)
 {
+/* prim_poly_emit_54 piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -72160,6 +74227,7 @@ block_80189898:
  * Stride a0 += 80. */
 void cps_801898a0(void)
 {
+/* prim_poly_emit_50 piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -72300,6 +74368,7 @@ block_80189954:
  * t6+2. Stride a0 += 104. */
 void cps_8018995c(void)
 {
+/* prim_poly_emit_68 piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -72472,6 +74541,7 @@ block_80189A58:
 /* cps_80189a60 — guest 0x80189A60: GTE batch transform → OT packet writer (3-vertex perspective). t4 = 28 (+28 when a2!=0); cmds 0x06/3×0x1C; gte_data[22] at t3+4/12/20, raw triples at t3+8/16/24. Stride a0 += 84. */
 void cps_80189a60(void)
 {
+/* prim_poly_emit_54b piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -72643,6 +74713,7 @@ block_80189B48:
 /* cps_80189b50 — guest 0x80189B50: GTE batch transform → OT packet writer (3-vertex perspective, wider). t4 = 36 (+28 when a2!=0); cmds 0x06/3×0x1C; gte_data[22] at t3+4/12/20, raw triples at t3+8/16/24. Stride a0 += 92. */
 void cps_80189b50(void)
 {
+/* prim_poly_emit_5c piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -72817,6 +74888,7 @@ block_80189C44:
 /* cps_80189c4c — guest 0x80189C4C: GTE batch transform → OT packet writer (single-vertex). t4 = 24 (+24 when a2!=0); cmds 0x06/0x1C; gte_data[22] at t3+4, raw words at t3+8/12/16/20. Stride a0 += 72. */
 void cps_80189c4c(void)
 {
+/* prim_point_emit_48 piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -72953,6 +75025,7 @@ block_80189D00:
 /* cps_80189d08 — guest 0x80189D08: GTE batch transform → OT packet writer (4-vertex perspective). t4 = 36 (+36 when a2!=0); cmds 0x06/4×0x1C; gte_data[22] at t3+4/12/20/28, raw triples at t3+8/16/24/32. Stride a0 += 108. */
 void cps_80189d08(void)
 {
+/* prim_poly_emit_6cb piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -73142,6 +75215,7 @@ block_80189E24:
 /* cps_80189e2c — guest 0x80189E2C: GTE batch transform → OT packet writer. t4 = 20 (+40 when a2!=0); cmds 0x06/0x1C; gte_data[22] at t3+4, raw words at t3+8/16/24/32. Stride a0 += 100. */
 void cps_80189e2c(void)
 {
+/* prim_poly_emit_64_vs piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -73283,6 +75357,7 @@ block_80189EF4:
 /* cps_80189efc — guest 0x80189EFC: GTE batch transform → OT packet writer, largest record (writes to t3+44). t4 = 32 with two a2 variants (+36/+52); 2× cmd 0x06 + 4×0x1C; interleaved gte_data[22] and raw words across t3+4..+44. Stride a0 += 136. */
 void cps_80189efc(void)
 {
+/* prim_poly_emit_88b piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -76900,6 +78975,8 @@ void cps_8018b76c(void)
         }
     }
     /* Address: 0x8018B76C, Size: 280 bytes, Blocks: 6 */
+    /* CPS piece (cps_8018b76c): write_word(t3, t1); write_word(t3, t2); t0 = read_word(a1); gte_data[0] = (read_word((a0)));-> 0x801B884/0x801B88C/0x801B76C/0x801b76c.
+       CPS-blocked. */
 
 block_8018B76C:
     
@@ -77518,6 +79595,8 @@ void cps_8018cc4c(void)
     }
     /* Address: 0x8018CC4C, Size: 32 bytes, Blocks: 3 */
 
+    /* clamped slot write (sibling of 0x8018C0F8): v1 = (v1<24)?v1:0;
+       *a0=a2 with a0=a1; *(a3+21988)=v1; returns a0+4. CPS-blocked. */
 block_8018CC4C:
     v0 = ((int32_t)v1 < 24) ? 1 : 0;  /* 0x8018CC4C: 0x28620018 */
     int cond_8018CC50 = (v0 != zero);  /* save branch cond before delay slot */
@@ -77561,6 +79640,8 @@ void cps_8018ce50(void)
     }
     /* Address: 0x8018CE50, Size: 32 bytes, Blocks: 3 */
 
+    /* clamped slot write (sibling of 0x8018C0F8): v1 = (v1<8)?v1:0;
+       *a0=a2 with a0=a1; *(a3+21992)=v1; returns a0+4. CPS-blocked. */
 block_8018CE50:
     v0 = ((int32_t)v1 < 8) ? 1 : 0;  /* 0x8018CE50: 0x28620008 */
     int cond_8018CE54 = (v0 != zero);  /* save branch cond before delay slot */
@@ -77595,6 +79676,8 @@ void cps_8018cfd4(void)
   if (!cpu) return;
 
     /* Address: 0x8018CFD4, Size: 8 bytes, Blocks: 1 */
+
+    /* return 0 */
 
 block_8018CFD4:
     uint32_t jt_8018CFD4 = ra;  /* latch indirect target before delay slot */
@@ -77642,6 +79725,12 @@ void cps_8018cfdc(void)
     }
     /* Address: 0x8018CFDC, Size: 372 bytes, Blocks: 25 */
 
+    /* guarded op dispatcher: loads pair (s1,s3) from table
+       0x801B0000+23444 + a0*8; negative a0 -> error path (0x80157368/
+       0x80198AF0/0x80195D8C init); positive path refcount-gates on
+       0x801F0000+26840 and flag 0x801C0000+17792, calls 0x8018D150 or
+       0x80198E2C depending on slot state 0x801B0000+21996, returns 0/1.
+       CPS-blocked. */
 block_8018CFDC:
     sp = sp + -48;
     cpu->write_word(sp + 40, s4);
@@ -77891,6 +79980,7 @@ block_8018D130:
 /* cps_8018d150 — guest 0x8018D150: Two-phase submit-with-retry: polls 0x80195D8C(2, s1, 0) until v0 != 0, then polls 0x80198C90(s0, s2, 128) until done; returns v0 = s0. Saves s0-s2/ra. */
 void cps_8018d150(void)
 {
+/* cd_read_issue thunk -> cd_mode_flag_set -> cd_read_setup */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -77908,6 +79998,8 @@ void cps_8018d150(void)
     }
     /* Address: 0x8018D150, Size: 108 bytes, Blocks: 7 */
 
+    /* retry wrapper: polls 0x80195D8C(2, s1, 0) until nonzero, then
+       0x80198C90(s0, s2, 128) until nonzero; returns s0. CPS-blocked. */
 block_8018D150:
     sp = sp + -32;
     cpu->write_word(sp + 20, s1);
@@ -77980,27 +80072,31 @@ block_8018D1A0:
 /* cps_8018d27c — guest 0x8018D27C: CPS piece: bare jr $ra (nop delay). Tail of the d284 flag-test chain. */
 void cps_8018d27c(void)
 {
+/* trig_sin_lookup piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8018D27C, Size: 8 bytes, Blocks: 1 */
 
+    /* return -v0 */
+    uint32_t _jt_8018D27C = ra;  /* latch indirect target before delay slot */
+    v0 = zero - v0;                      /* delay slot: negate */
+    psx_check_interrupts_at(cpu, _jt_8018D27C);
+    cpu->pc = _jt_8018D27C; return;  /* CPS: jr $ra */
 block_8018D27C:
-    uint32_t jt_8018D27C = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = zero - v0;
-    psx_check_interrupts_at(cpu, jt_8018D27C);
-    cpu->pc = jt_8018D27C; return;  /* CPS: jr $ra */
 }
 
 /* cps_8018d284 — guest 0x8018D284: Flag-test piece (12B): v1 = a0 & 0x0400; v0 = 0x7FFF; dispatches to 0x8018D27C or 0x8018D290 by the test result. */
 void cps_8018d284(void)
 {
+/* trig_sin_lookup piece: continues at 0x8018d290 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8018D284, Size: 12 bytes, Blocks: 1 */
 
+    /* saturate helper: a0&0x400 -> tail 0x8018D27C (returns -v0=-0x7FFF),
+       else falls into 0x8018D290 with v0=0x7FFF. CPS-blocked. */
 block_8018D284:
     v1 = a0 & 0x0400;  /* 0x8018D284: 0x30830400 */
     int cond_8018D288 = (v1 != zero);  /* save branch cond before delay slot */
@@ -78019,42 +80115,45 @@ block_8018D284:
 /* cps_8018d290 — guest 0x8018D290: 8-byte CPS piece: bare jr $ra (nop delay). */
 void cps_8018d290(void)
 {
+/* trig_sin_lookup piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8018D290, Size: 8 bytes, Blocks: 1 */
 
+    /* bare return (jr $ra, nop delay slot) */
+    uint32_t _jt_8018D290 = ra;  /* latch indirect target before delay slot */
+    psx_check_interrupts_at(cpu, _jt_8018D290);
+    cpu->pc = _jt_8018D290; return;  /* CPS: jr $ra */
 block_8018D290:
-    uint32_t jt_8018D290 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    /* nop */  /* 0x8018D294: 0x00000000 */
-    psx_check_interrupts_at(cpu, jt_8018D290);
-    cpu->pc = jt_8018D290; return;  /* CPS: jr $ra */
 }
 
 /* cps_8018d2d8 — guest 0x8018D2D8: 8-byte CPS piece: bare jr $ra (nop delay). */
 void cps_8018d2d8(void)
 {
+/* lut_sin_q12 piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8018D2D8, Size: 8 bytes, Blocks: 1 */
 
+    /* bare return (jr $ra, nop delay slot) */
+    uint32_t _jt_8018D2D8 = ra;  /* latch indirect target before delay slot */
+    psx_check_interrupts_at(cpu, _jt_8018D2D8);
+    cpu->pc = _jt_8018D2D8; return;  /* CPS: jr $ra */
 block_8018D2D8:
-    uint32_t jt_8018D2D8 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    /* nop */  /* 0x8018D2DC: 0x00000000 */
-    psx_check_interrupts_at(cpu, jt_8018D2D8);
-    cpu->pc = jt_8018D2D8; return;  /* CPS: jr $ra */
 }
 
 /* cps_8018d2e0 — guest 0x8018D2E0: Coordinate scale piece (12B): a0 <<= 4; a1 <<= 4; a2 <<= 4; falls through to cps piece 0x8018D2EC — fixed-point ×16 on three coords. */
 void cps_8018d2e0(void)
 {
+/* lut_sin_q12 piece: continues at 0x8018d2ec */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8018D2E0, Size: 12 bytes, Blocks: 1 */
+
+    /* arg scale: a0/a1/a2 <<= 4; -> 0x8018D2EC. CPS-blocked. */
 
 block_8018D2E0:
     a0 = a0 << 4;
@@ -78066,6 +80165,7 @@ block_8018D2E0:
 /* cps_8018d3b4 — guest 0x8018D3B4: Write-back helper trio (84B): calls 0x8018D408 three times with different store widths — word pair at a3/a3+8, half pair at a3/a3+4, and a shifted variant; returns v0 = a3 via saved t1 (jr t1). */
 void cps_8018d3b4(void)
 {
+/* fixed_point_divide thunk -> dir_rotate_pair -> dir_rotate_pair -> dir_rotate_pair */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -78082,6 +80182,10 @@ void cps_8018d3b4(void)
     }
     /* Address: 0x8018D3B4, Size: 84 bytes, Blocks: 6 */
 
+    /* vector store trio (three entry points share jal 0x8018D408 arg
+       fetch): stores (v1,v0) as two words / two halves / one packed
+       32-bit (v0<<16|v1&0xFFFF) into a3, returns a3 via jr t1.
+       CPS-blocked. */
 block_8018D3B4:
     t1 = ra;
     ra = 0x8018D3C0u;  /* jal link before delay slot */
@@ -78137,6 +80241,7 @@ block_8018D3F8:
 /* cps_8018d474 — guest 0x8018D474: CPS piece ending in jr $ra chain (16B): tail piece of the d3b4/d408 write-back family. */
 void cps_8018d474(void)
 {
+/* dir_rotate_set piece: continues at 0x8018d47c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -78151,22 +80256,23 @@ block_8018D474:
 /* cps_8018d47c — guest 0x8018D47C: 8-byte CPS piece: jr t5 (indirect return via saved reg). */
 void cps_8018d47c(void)
 {
+/* dir_rotate_set piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8018D47C, Size: 8 bytes, Blocks: 1 */
 
+    /* tail-dispatch: jr t5 (nop delay slot) */
+    uint32_t _jt_8018D47C = t5;  /* latch indirect target before delay slot */
+    psx_check_interrupts_at(cpu, _jt_8018D47C);
+    cpu->pc = _jt_8018D47C; return;  /* CPS: jr t5 */
 block_8018D47C:
-    uint32_t jt_8018D47C = t5;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    /* nop */  /* 0x8018D480: 0x00000000 */
-    psx_check_interrupts_at(cpu, jt_8018D47C);
-    cpu->pc = jt_8018D47C; return;  /* CPS: jr t5 */
 }
 
 /* cps_8018d49c — guest 0x8018D49C: Grid-snap helper (96B): reads s16 pair at a2, calls 0x8018D4FC, adds +64/+64 offsets, rounds each coord to the nearest 128 boundary (mask -128, ±64 adjust), writes s16 results back at a2/a2+4; also produces v1/v0 >> 7 quotients. */
 void cps_8018d49c(void)
 {
+/* dir_rotate_wrap thunk -> vec2_rot_lut */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -78179,6 +80285,10 @@ void cps_8018d49c(void)
     }
     /* Address: 0x8018D49C, Size: 96 bytes, Blocks: 2 */
 
+    /* fixed-point pair normalize: jal 0x8018D4FC reads half deltas at
+       a2/+4; adds them to (v1,v0), rounds each to the 128-grid
+       ((x+64)&~127)-64, stores halves back, returns packed
+       (v0>>7)<<16 | (v1>>7)&0xFFFF via jr t1. CPS-blocked. */
 block_8018D49C:
     t2 = (int32_t)(int16_t)cpu->read_half(a2);
     t3 = (int32_t)(int16_t)cpu->read_half(a2 + 4);
@@ -78217,27 +80327,30 @@ block_8018D4AC:
 /* cps_8018d668 — guest 0x8018D668: CPS piece: bare jr $ra (nop delay). */
 void cps_8018d668(void)
 {
+/* range_circle_test piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8018D668, Size: 8 bytes, Blocks: 1 */
 
+    /* bare return (jr $ra, nop delay slot) */
+    uint32_t _jt_8018D668 = ra;  /* latch indirect target before delay slot */
+    psx_check_interrupts_at(cpu, _jt_8018D668);
+    cpu->pc = _jt_8018D668; return;  /* CPS: jr $ra */
 block_8018D668:
-    uint32_t jt_8018D668 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    /* nop */  /* 0x8018D66C: 0x00000000 */
-    psx_check_interrupts_at(cpu, jt_8018D668);
-    cpu->pc = jt_8018D668; return;  /* CPS: jr $ra */
 }
 
 /* cps_8018d670 — guest 0x8018D670: Delta-compute piece (36B): two multiplies via psx_mult_latency_s(a0)/(a1), subtracts both lo results from t1; branches to 0x8018D668 (done) or 0x8018D694. */
 void cps_8018d670(void)
 {
+/* range_circle_test piece: continues at 0x8018d694 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8018D670, Size: 36 bytes, Blocks: 1 */
 
+    /* squared-distance gate: t1 -= a0*a0 + a1*a1 (mulhi:lo); t1<0 ->
+       tail 0x8018D668, else -> 0x8018D694 (return 0). CPS-blocked. */
 block_8018D670:
     { int64_t result = (int64_t)(int32_t)a0 * (int64_t)(int32_t)a0; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
     psx_muldiv_set(cpu, psx_mult_latency_s(a0));
@@ -78266,22 +80379,24 @@ block_8018D670:
 /* cps_8018d694 — guest 0x8018D694: 8-byte CPS piece: v0 = 0; jr $ra — return-zero stub for the d670 chain. */
 void cps_8018d694(void)
 {
+/* range_circle_test piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8018D694, Size: 8 bytes, Blocks: 1 */
 
+    /* return 0 */
+    uint32_t _jt_8018D694 = ra;  /* latch indirect target before delay slot */
+    v0 = zero;                           /* delay slot: ret 0 */
+    psx_check_interrupts_at(cpu, _jt_8018D694);
+    cpu->pc = _jt_8018D694; return;  /* CPS: jr $ra */
 block_8018D694:
-    uint32_t jt_8018D694 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = zero;
-    psx_check_interrupts_at(cpu, jt_8018D694);
-    cpu->pc = jt_8018D694; return;  /* CPS: jr $ra */
 }
 
 /* cps_8018da28 — guest 0x8018DA28: 4-byte CPS piece: a0 = s16 lh(a0) (sign-extended half load); falls through to cps piece 0x8018DA2C. */
 void cps_8018da28(void)
 {
+/* pad_record_init piece: continues at 0x8018da2c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -78295,6 +80410,7 @@ block_8018DA28:
 /* cps_8018da2c — guest 0x8018DA2C: Struct normalize/copy (136B): reads s16 fields, writes word+half fields at a1+0..16 (v1, 0, t1, v0, v1) — vertex/prim record fixup; returns via $ra. */
 void cps_8018da2c(void)
 {
+/* rotmat2_build piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -78312,6 +80428,10 @@ void cps_8018da2c(void)
     }
     /* Address: 0x8018DA2C, Size: 136 bytes, Blocks: 7 */
 
+    /* 2D vector transform: decodes angle a0 (10-bit idx -> sin/cos via
+       table 0x801247A8 with quadrant XOR fixups on bits 0x400/0x800),
+       applies sign flips, writes result vector + flags into a1
+       (0x1000 tag, packed halves). CPS-blocked. */
 block_8018DA2C:
     t0 = 0x801247A8u;  /* 0x80120000 18344 */
     t1 = 0x1000;
@@ -78393,10 +80513,14 @@ block_8018DA98:
 /* cps_8018dab4 — guest 0x8018DAB4: 12-byte CPS piece: a0 = lw(a0) (pointer dereference); falls through to cps piece 0x8018DAC0. */
 void cps_8018dab4(void)
 {
+/* rotmat2_build piece: continues at 0x8018dac0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8018DAB4, Size: 12 bytes, Blocks: 1 */
+
+    /* packed-field unpack: a0=word[a0]; a2=a1;
+       a1=(int32)a0>>16; -> 0x8018DAC0. CPS-blocked. */
 
 block_8018DAB4:
     a0 = cpu->read_word(a0);
@@ -78408,6 +80532,7 @@ block_8018DAB4:
 /* cps_8018dac0 — guest 0x8018DAC0: Struct normalize/copy (292B, 13 blocks): reads s16 coords from v0/v1/t7, writes word+half record at a2+0..16 — same family as cps_8018da2c, wider variant. */
 void cps_8018dac0(void)
 {
+/* angle_pair_rotmat piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -78431,6 +80556,10 @@ void cps_8018dac0(void)
     }
     /* Address: 0x8018DAC0, Size: 292 bytes, Blocks: 13 */
 
+    /* 2x2 rotation matrix build: decodes two angles (a0,a1) through the
+       same 0x801247A8 sin/cos table with quadrant fixups, then four
+       fixed-point multiplies (>>12) assemble the matrix into a2
+       (+0/+4/+8/+12 words, +16 half). CPS-blocked. */
 block_8018DAC0:
     t0 = 0x801247A8u;  /* 0x80120000 18344 */
     v0 = a0 & 0x03FF;  /* 0x8018DAC8: 0x308203FF */
@@ -78598,11 +80727,16 @@ block_8018DB8C:
 /* cps_8018dbe4 — guest 0x8018DBE4: 28-byte CPS piece: a2 = s16 lh(a0+4); a0 = lw(a0); falls through to cps piece 0x8018DC00 — load coord+ptr pair. */
 void cps_8018dbe4(void)
 {
+/* angle_pair_rotmat piece: continues at 0x8018dc00 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8018DBE4, Size: 28 bytes, Blocks: 1 */
 
+    /* prologue piece: loads half(a0+4) and word(a0) args, sets up
+       t7 = 0x801247A8 table base, a3 = a1, a1 = a0>>16, then CPS-splits
+       into cps_8018dc00/cps_8018dc20 (the two halves of the transform
+       above). */
 block_8018DBE4:
     a2 = (int32_t)(int16_t)cpu->read_half(a0 + 4);
     t7 = 0x801247A8u;  /* 0x80120000 18344 */
@@ -78624,10 +80758,15 @@ block_8018DBE4:
 /* cps_8018dc00 — guest 0x8018DC00: 24-byte CPS piece: a2 = s16 lh(a0+4); a0 = lw(a0); falls through to cps piece 0x8018DC18 — same load-pair shape as dbe4. */
 void cps_8018dc00(void)
 {
+/* angle_pair_rotmat piece: continues at 0x8018dc18 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8018DC00, Size: 24 bytes, Blocks: 1 */
+
+    /* packed-field unpack negated: a2=half[a0+4], a0=word
+       [a0]; a3=a1; a1=-(a0>>16); a2=-a2; -> 0x8018DC18.
+       CPS-blocked. */
 
 block_8018DC00:
     a2 = (int32_t)(int16_t)cpu->read_half(a0 + 4);
@@ -78642,6 +80781,7 @@ block_8018DC00:
 /* cps_8018dc20 — guest 0x8018DC20: Vertex math routine (584B, 31 blocks): reads eight s16 fields, writes normalized half results at a3+0..16+ — heaviest math body in the band; kept in generated CPS shape. */
 void cps_8018dc20(void)
 {
+/* euler_rotmat piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -78683,6 +80823,10 @@ void cps_8018dc20(void)
     }
     /* Address: 0x8018DC20, Size: 584 bytes, Blocks: 31 */
 
+    /* 3-angle transform (continuation of cps_8018dbe4): decodes three
+       angles (a1, a0, a2) through the 0x801247A8 sin/cos table with
+       quadrant fixups, combines via fixed-point muls into a transform
+       written through a3. CPS-blocked. */
 block_8018DC20:
     v0 = a1 & 0x03FF;  /* 0x8018DC20: 0x30A203FF */
     v0 = v0 << 1;
@@ -79049,6 +81193,7 @@ block_8018DE24:
 /* cps_8018de68 — guest 0x8018DE68: CPS piece tail of the de6c struct-copy family (jr $ra chain). */
 void cps_8018de68(void)
 {
+/* euler_rotmat piece: continues at 0x8018de6c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -79062,6 +81207,7 @@ block_8018DE68:
 /* cps_8018de6c — guest 0x8018DE6C: Struct normalize/copy (136B): reads s16 fields, writes word+half record at a1+0..16 — same shape as cps_8018da2c. */
 void cps_8018de6c(void)
 {
+/* rotmat_rtps_build piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -79079,6 +81225,9 @@ void cps_8018de6c(void)
     }
     /* Address: 0x8018DE6C, Size: 136 bytes, Blocks: 7 */
 
+    /* single-angle vector writer: decodes a0 via 0x801247A8 sin/cos
+       table (quadrant fixups), writes (packed, v0, 0, v1, 0x1000 tag)
+       into a1+0..16. CPS-blocked. */
 block_8018DE6C:
     t0 = 0x801247A8u;  /* 0x80120000 18344 */
     t1 = 0x1000;
@@ -79160,10 +81309,14 @@ block_8018DEDC:
 /* cps_8018def4 — guest 0x8018DEF4: 12-byte CPS piece: a0 = lw(a0); falls through to cps piece 0x8018DF00 — pointer deref before the df00 normalizer. */
 void cps_8018def4(void)
 {
+/* rotmat_rtps_build piece: continues at 0x8018df00 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8018DEF4, Size: 12 bytes, Blocks: 1 */
+
+    /* packed-field unpack (dup of 0x8018DAB4): a0=word[a0];
+       a2=a1; a1=a0>>16; -> 0x8018DF00. CPS-blocked. */
 
 block_8018DEF4:
     a0 = cpu->read_word(a0);
@@ -79175,6 +81328,7 @@ block_8018DEF4:
 /* cps_8018df00 — guest 0x8018DF00: Struct normalize/copy (292B, 13 blocks): reads s16 coords, writes word+half record at a2+0..16 — same family as cps_8018dac0. */
 void cps_8018df00(void)
 {
+/* rotmat2_pair_build piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -79198,6 +81352,9 @@ void cps_8018df00(void)
     }
     /* Address: 0x8018DF00, Size: 292 bytes, Blocks: 13 */
 
+    /* two-angle transform writer (sibling of 0x8018DAC0): decodes a0/a1
+       via 0x801247A8 sin/cos table, four fixed-point muls (>>12) into a
+       2x2 matrix written to a2. CPS-blocked. */
 block_8018DF00:
     t0 = 0x801247A8u;  /* 0x80120000 18344 */
     v0 = a0 & 0x03FF;  /* 0x8018DF08: 0x308203FF */
@@ -79395,6 +81552,9 @@ void cps_8018e028(void)
     }
     /* Address: 0x8018E028, Size: 136 bytes, Blocks: 7 */
 
+    /* single-angle vector writer variant: same 0x801247A8 decode as
+       0x8018DE6C but writes packed result into a1+0..12 with zero at
+       +12. CPS-blocked. */
 block_8018E028:
     t0 = 0x801247A8u;  /* 0x80120000 18344 */
     t1 = 0x1000;
@@ -79499,6 +81659,9 @@ void cps_8018e0b0(void)
     }
     /* Address: 0x8018E0B0, Size: 288 bytes, Blocks: 13 */
 
+    /* two-angle vector transform: reads angle pair from half(a0)/half(a0+4),
+       decodes both via 0x801247A8 sin/cos table, writes result vector to
+       a2 (sibling of 0x8018DAC0). CPS-blocked. */
 block_8018E0B0:
     a2 = a1;
     a1 = (int32_t)(int16_t)cpu->read_half(a0 + 4);
@@ -79688,6 +81851,8 @@ void cps_8018e1d0(void)
     }
     /* Address: 0x8018E1D0, Size: 288 bytes, Blocks: 13 */
 
+    /* two-angle vector transform variant (same 0x801247A8 decode as
+       0x8018E0B0, different output layout). CPS-blocked. */
 block_8018E1D0:
     a2 = a1;
     a1 = (int32_t)(int16_t)cpu->read_half(a0 + 4);
@@ -79878,6 +82043,9 @@ void cps_8018e320(void)
     }
     /* Address: 0x8018E320, Size: 156 bytes, Blocks: 14 */
 
+    /* slot init: a0&0xFFFF bounds (<3), entry = word[0x801B66FC] + idx*16;
+       writes half fields (+4=0, +8=a1), picks code a3=72/73/... from
+       flag bits of a2 (0x10/0x01/0x1000). CPS-blocked. */
 block_8018E320:
     t0 = a0 & 0xFFFF;  /* 0x8018E320: 0x3088FFFF */
     v0 = ((int32_t)t0 < 3) ? 1 : 0;  /* 0x8018E324: 0x29020003 */
@@ -80146,6 +82314,10 @@ void cps_8018ef6c(void)
         }
     }
     /* Address: 0x8018EF6C, Size: 2164 bytes, Blocks: 121 */
+
+    /* bytecode interpreter: 584-byte frame, walks op stream at a1
+       dispatching on opcode bytes (cmps vs 37/43/45...), calls
+       sub-handlers 0x8018E510 / 0x8018ECA0 / 0x8018F7E0. CPS-blocked. */
 
 block_8018EF6C:
     sp = sp + -584;
@@ -81544,6 +83716,8 @@ void cps_8018f884(void)
     }
     /* Address: 0x8018F884, Size: 140 bytes, Blocks: 7 */
 
+    /* table -> buffer copy: 16 words 0x801B67FC->a0, 16 words
+       0x801B680C->a0+64, 32 words 0x801B6850->a0+128. CPS-blocked. */
 block_8018F884:
     a2 = a0;
     a1 = 0x801B67B4u;  /* 0x801B0000 26548 */
@@ -81641,6 +83815,10 @@ void cps_8018f910(void)
     }
     /* Address: 0x8018F910, Size: 152 bytes, Blocks: 7 */
 
+    /* buffer -> table save + sort: copies 16 words a0->0x801B67FC and
+       16 words a0+64->0x801B680C, then jal 0x8018FC00(32) on
+       0x801B67F0 and 0x801B682C (insertion-sort the saved arrays).
+       CPS-blocked. */
 block_8018F910:
     sp = sp + -24;
     cpu->write_word(sp + 16, s0);
@@ -81725,6 +83903,8 @@ void cps_8018f9a8(void)
 
     /* Address: 0x8018F9A8, Size: 12 bytes, Blocks: 1 */
 
+    /* return read_half(a0) */
+
 block_8018F9A8:
     v0 = cpu->read_half(a0);
     uint32_t jt_8018F9AC = ra;  /* latch indirect target before delay slot */
@@ -81749,6 +83929,8 @@ void cps_8018fee0(void)
     }
     /* Address: 0x8018FEE0, Size: 32 bytes, Blocks: 2 */
 
+    /* counter write: word[0x801B9D50] = (a0>1) ? a0*2 : 0x00FFFFFF.
+       CPS-blocked (split into cps_8018ff00). */
 block_8018FEE0:
     t0 = 0x801B6900u;  /* 0x801B0000 26880 */
     at = a0 + -1;
@@ -81779,6 +83961,8 @@ void cps_8018ff00(void)
   if (!cpu) return;
 
     /* Address: 0x8018FF00, Size: 16 bytes, Blocks: 1 */
+
+    /* counter reset: word[0x801B9D50] = 0x00FFFFFF (tail of 0x8018FEE0). */
 
 block_8018FF00:
     at = 0x00FF0000u;  /* 0x00FF0000 */
@@ -82976,6 +85160,7 @@ block_80190DA0:
  * draw-env field compare fragment — reads a0+6, s1+4/6; branches to 0x80191B90 */
 void cps_80191a78(void)
 {
+/* gpu/cd-pkt chain piece: continues at 0x80191AA4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -83026,6 +85211,7 @@ block_80191A8C:
  * GPU callback state machine. */
 void cps_80191aa4(void)
 {
+/* gpu/cd-pkt thunk -> gp_bde20_read */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -83260,6 +85446,7 @@ block_80191B6C:
  * gpu_callback_dispatch — see renames.map canonical name. */
 void cps_80191b80(void)
 {
+/* gpu/cd-pkt chain piece: continues at 0x80191b90 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -83294,6 +85481,7 @@ block_80191B88:
  * s1+18 == 8 else exits via 0x80191E74. */
 void cps_80191b90(void)
 {
+/* gpu/cd-pkt chain piece: continues at 0x80191C08 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -83395,6 +85583,7 @@ block_80191BF8:
  * gpu_callback_resume_next — see renames.map canonical name. */
 void cps_80191c04(void)
 {
+/* gpu/cd-pkt chain piece: continues at 0x80191c08 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -83415,6 +85604,7 @@ block_80191C04:
  * (0x801C0000-31716). */
 void cps_80191c08(void)
 {
+/* gpu/cd-pkt thunk -> gp_bde20_read */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -83555,6 +85745,7 @@ block_80191C78:
  * 500/540/3220 window (class byte s1+18==0 → 0x80191D80 path). */
 void cps_80191c88(void)
 {
+/* gpu/cd-pkt chain piece: continues at 0x80191d0c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -83662,6 +85853,7 @@ block_80191D08:
  * 0x80191E18 (in-range) or 0x80191E0C with a1=305. */
 void cps_80191d0c(void)
 {
+/* gpu/cd-pkt chain piece: continues at 0x80191E0C */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -83785,6 +85977,7 @@ block_80191D78:
  * (which yields a1=3250 on overflow, else a1=a0). */
 void cps_80191d80(void)
 {
+/* gpu/cd-pkt chain piece: continues at 0x80191d90 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -83820,6 +86013,7 @@ block_80191D8C:
  * Clamp tail: a0 >= 3251 → a1=3250 via 0x80191D9C, else a1=a0. */
 void cps_80191d90(void)
 {
+/* gpu/cd-pkt chain piece: continues at 0x80191d9c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -83856,6 +86050,7 @@ block_80191D98:
  * else 0x80191E0C with a1=258. */
 void cps_80191d9c(void)
 {
+/* gpu/cd-pkt chain piece: continues at 0x80191e0c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -83976,6 +86171,7 @@ block_80191E08:
  * CPS fallthrough stub — continues at 0x80191E14 */
 void cps_80191e0c(void)
 {
+/* gpu/cd-pkt chain piece: continues at 0x80191e14 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -84000,6 +86196,7 @@ block_80191E0C:
  * CPS fallthrough stub — continues at 0x80191E18 */
 void cps_80191e14(void)
 {
+/* gpu/cd-pkt chain piece: continues at 0x80191e18 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -84016,6 +86213,7 @@ block_80191E14:
  * env-table lookup — reads a1-31976 and a1+16 */
 void cps_80191e18(void)
 {
+/* gpu/cd-pkt terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -84069,6 +86267,7 @@ block_80191E48:
  * frame epilogue — restores ra, frees 32B stack */
 void cps_80191e74(void)
 {
+/* gpu/cd-pkt thunk -> guest_memcpy */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -84110,6 +86309,7 @@ block_80191E88:
  * texpage_pack — packs a textured GPU primitive (15 blocks). */
 void cps_80191fc8(void)
 {
+/* gpu/cd-pkt thunk -> gpu_coord_clamp_a -> gpu_coord_clamp_b -> gpu_coord_pack -> 0x80192430 -> gpu_texpage_pack */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -85335,6 +87535,7 @@ block_8019494C:
  * CPS leaf — 1 jal(s), 0 stores, 0 loads */
 void cps_80195a90(void)
 {
+/* cd_probe_retry thunk -> cd_ready_probe */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -85353,6 +87554,7 @@ block_80195A90:
  * CPS leaf — 4 stores, 0 loads */
 void cps_80195a98(void)
 {
+/* cd_probe_retry piece: continues at 0x80195B00 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -85403,6 +87605,7 @@ block_80195AA4:
  * CPS fallthrough stub — continues at 0x80195AE0 */
 void cps_80195adc(void)
 {
+/* cd_probe_retry piece: continues at 0x80195ae0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -85419,6 +87622,7 @@ block_80195ADC:
  * CPS fallthrough stub — continues at 0x80195B00 */
 void cps_80195ae0(void)
 {
+/* cd_probe_retry thunk -> printf_forward_guest */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -85464,6 +87668,7 @@ block_80195AFC:
  * frame epilogue — restores ra, frees 24B stack */
 void cps_80195b00(void)
 {
+/* cd_probe_retry piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -85484,6 +87689,7 @@ block_80195B00:
  * cd_reg_init_wrap: cd_reg_init_seq caller. */
 void cps_80195b20(void)
 {
+/* cd_ready_probe thunk -> cd_reg_init_seq */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -85543,6 +87749,7 @@ block_80195B3C:
  * frame epilogue — restores ra, frees 24B stack */
 void cps_80195b64(void)
 {
+/* cd_bios_cmd20 piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -85563,6 +87770,7 @@ block_80195B64:
  * leaf reg-op / return-value helper */
 void cps_80195bb8(void)
 {
+/* cd_bios_cmd40_b piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -85582,6 +87790,7 @@ block_80195BB8:
  * cd_status_raw — see renames.map canonical name. */
 void cps_80195be0(void)
 {
+/* cd_status_raw piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -85602,6 +87811,7 @@ block_80195BE0:
  * cd_mode_byte_read — see renames.map canonical name. */
 void cps_80195bf0(void)
 {
+/* cd_mode_byte_read piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -85622,6 +87832,7 @@ block_80195BF0:
  * CPS fallthrough stub — continues at 0x80195C00 */
 void cps_80195bfc(void)
 {
+/* cd_mode_byte_read piece: continues at 0x80195c00 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -85638,6 +87849,7 @@ block_80195BFC:
  * split piece of cps_80195c44 */
 void cps_80195c00(void)
 {
+/* cd_mode_byte_read piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -85658,6 +87870,7 @@ block_80195C00:
  * cd_param_buf_get — see renames.map canonical name. */
 void cps_80195c10(void)
 {
+/* cd_param_buf_get piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -85677,6 +87890,7 @@ block_80195C10:
  * CPS fallthrough stub — continues at 0x80195C44 */
 void cps_80195c40(void)
 {
+/* cd_init_mode_dispatch piece: continues at 0x80195c44 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -85695,6 +87909,7 @@ block_80195C40:
  * 1 only when that also yields 0. */
 void cps_80195c44(void)
 {
+/* cd_init_mode_dispatch thunk -> cd_subsystem_init -> cd_reg_init_seq */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -85773,6 +87988,7 @@ block_80195C74:
  * frame epilogue — restores ra, frees 24B stack */
 void cps_80195c78(void)
 {
+/* cd_init_mode_dispatch piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -85793,6 +88009,7 @@ block_80195C78:
  * CPS fallthrough stub — continues at 0x80195C88 */
 void cps_80195c84(void)
 {
+/* cd_init_mode_dispatch piece: continues at 0x80195c88 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -85809,6 +88026,7 @@ block_80195C84:
  * cd_cmd_reset_wrap — see renames.map canonical name. */
 void cps_80195c88(void)
 {
+/* cd_cmd_reset_wrap thunk -> cd_cmd_state_reset */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -85846,6 +88064,7 @@ block_80195C98:
  * str ptr @0x80125698 — CD status→string table. */
 void cps_80195cbc(void)
 {
+/* cd_xchg_bc850 piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -85902,6 +88121,7 @@ block_80195CE8:
  * str ptr @0x80125698 — CD error→string table. */
 void cps_80195cf0(void)
 {
+/* cd_xchg_bc850 piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -89264,6 +91484,7 @@ void cps_80198f30(void)
 
     /* Address: 0x80198F30, Size: 20 bytes, Blocks: 1 */
 
+    /* global set: *0x801BC7B0 = a0. */
 block_80198F30:
     v0 = cpu->read_word(0x801BC7B0u);
     uint32_t return_pc = ra;  /* latch indirect target before delay slot */
@@ -89283,6 +91504,7 @@ void cps_80198f44(void)
 
     /* Address: 0x80198F44, Size: 20 bytes, Blocks: 1 */
 
+    /* global set: *0x801BC7B4 = a0. */
 block_80198F44:
     v0 = cpu->read_word(0x801BC7B4u);
     uint32_t return_pc = ra;  /* latch indirect target before delay slot */
@@ -89305,6 +91527,7 @@ block_80198F44:
  * Latch names cond_/jt_ keep the guest branch addresses for traceability. */
 void cps_80199440(void)
 {
+/* cd_mc_state_machine thunk -> cd_result_wait_b_fwd -> cd_copy_u32 -> cd_chan_cmd_submit -> cd_dir_clear -> cd_dir_clear */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -90268,11 +92491,14 @@ block_80199AA4:
  * (at = 0x801C0000 is established by the predecessor piece). */
 void cps_80199aa8(void)
 {
+/* cd_mc_state_machine piece: continues at 0x80199ab0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80199AA8, Size: 8 bytes, Blocks: 1 */
 
+    /* store arg to *0x801BCC88 (at delay slot) ->
+       0x801399D4C/0x80199AB0. CPS-blocked. */
 block_80199AA8:
     /* delay slot (always executes) */
     cpu->write_word(0x801BCC88u, v0);          /* at(0x801C0000) - 13176 */
@@ -90288,6 +92514,7 @@ block_80199AA8:
  * cell @0x801FC6C0, and clears cell @0x801FC6A4. */
 void cps_80199ab0(void)
 {
+/* cd_mc_state_machine piece: continues at 0x80199AEC */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -90300,6 +92527,9 @@ void cps_80199ab0(void)
     }
     /* Address: 0x80199AB0, Size: 60 bytes, Blocks: 2 */
 
+    /* DMA/blit: half[a0]=v0; row ptr 0x801FC6C0/
+       src 0x801FEB18; clears 0x801FC6A4; copies
+       word[v1]->word[a1] -> 0x801399AEC. CPS-blocked. */
 block_80199AB0:
     cpu->write_half(a0, (uint16_t)v0);        /* store arg halfword @a0 */
     a1 = cpu->read_word(0x801FC6C0u);         /* dst buffer ptr cell */
@@ -90331,6 +92561,7 @@ block_80199AD0:
  * @0x801FEB18 after the 8-word copy. */
 void cps_80199aec(void)
 {
+/* cd_mc_state_machine piece: continues at 0x80199afc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -90349,10 +92580,14 @@ block_80199AEC:
  * (table entry counter for the next piece). */
 void cps_80199afc(void)
 {
+/* cd_mc_state_machine piece: continues at 0x80199b10 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80199AFC, Size: 20 bytes, Blocks: 1 */
+
+    /* word copy + const: word[0x801FC6A8]=word[0x801FC6A4];
+       v0=10; -> 0x80199B10. CPS-blocked. */
 
 block_80199AFC:
     v0 = cpu->read_word(0x801FC6A4u);
@@ -90369,6 +92604,7 @@ block_80199AFC:
  * index-computation piece at 0x80199B30. */
 void cps_80199b10(void)
 {
+/* cd_mc_state_machine piece: continues at 0x80199b30 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -90391,11 +92627,15 @@ block_80199B10:
  * cell @0x801FC688 (0 → 0x80199B9C alt cmd, else 0x80199B74 cmd). */
 void cps_80199b30(void)
 {
+/* cd_mc_state_machine piece: continues at 0x80199b74 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80199B30, Size: 68 bytes, Blocks: 1 */
 
+    /* record setup: row 0x801FC6A4; half 0x801FC684;
+       mode 0x801FC688; rec 0x801FC6BC ->
+       0x801399B9C/74. CPS-blocked. */
 block_80199B30:
     a1 = cpu->read_word(0x801FC6A4u);          /* row index cell */
     v0 = v0 + 1;                               /* count + 1 */
@@ -90426,11 +92666,14 @@ block_80199B30:
  * word0 = 0x00020943, word1 = 4899 (0x1323). */
 void cps_80199b74(void)
 {
+/* cd_mc_state_machine piece: continues at 0x80199b9c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80199B74, Size: 40 bytes, Blocks: 1 */
 
+    /* cmd pair: *0x801BCC50/54 = v1/v0 ->
+       0x801399BB8/9BC. CPS-blocked. */
 block_80199B74:
     v1 = 0x00020943u;                          /* was 0x0002<<16 | 0x0943 */
     v0 = cpu->read_word(0x801BCC50u);          /* cmd buf ptr A */
@@ -90450,6 +92693,7 @@ block_80199B74:
  * buffer ptr @0x801BCC50 (t0 = 0x11400100 preset for the next piece). */
 void cps_80199b9c(void)
 {
+/* cd_mc_state_machine piece: continues at 0x80199bb8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -90470,11 +92714,14 @@ block_80199B9C:
  * halfword for the compare piece at 0x80199BC8. */
 void cps_80199bb8(void)
 {
+/* cd_mc_state_machine piece: continues at 0x80199bc8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80199BB8, Size: 16 bytes, Blocks: 1 */
 
+    /* rec read: rec=*0x801FEB18; half[rec+6] ->
+       0x801399BC8. CPS-blocked. */
 block_80199BB8:
     v0 = cpu->read_word(0x801FEB18u);          /* record buf ptr cell */
     /* nop */  /* 0x80199BC0: 0x00000000 */
@@ -90491,6 +92738,7 @@ block_80199BB8:
  * cell @0x801FC6B0 is clear). a2 = 504 is a shared arg. */
 void cps_80199bc8(void)
 {
+/* cd_mc_state_machine piece: continues at 0x80199c0c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -90504,6 +92752,9 @@ void cps_80199bc8(void)
     }
     /* Address: 0x80199BC8, Size: 68 bytes, Blocks: 3 */
 
+    /* field ops: half[v0+4]; base 0x801FC6B0 ->
+       store 0x801FC69C; sect 0x801FC6A0/rec
+       0x801FC6BC -> 0x801399C30. CPS-blocked. */
 block_80199BC8:
     v0 = cpu->read_half(v0 + 4);               /* rec+4 halfword */
     v1 = v1 + -1;                              /* status - 1 */
@@ -90546,6 +92797,7 @@ block_80199BF0:
  * @0x801FC6A0 and chains to the cursor-reset piece 0x80199C54. */
 void cps_80199c0c(void)
 {
+/* cd_mc_state_machine thunk -> cd_copy_u32 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -90558,6 +92810,8 @@ void cps_80199c0c(void)
     }
     /* Address: 0x80199C0C, Size: 36 bytes, Blocks: 2 */
 
+    /* sect loop: word[0x801FC6A0] self-bump ->
+       0x801399C54/D5C. CPS-blocked. */
 block_80199C0C:
     ra = 0x80199C14u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -90581,11 +92835,14 @@ block_80199C14:
  * — channel command variant A. */
 void cps_80199c30(void)
 {
+/* cd_mc_state_machine thunk -> cd_chan_cmd_submit */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80199C30, Size: 32 bytes, Blocks: 1 */
 
+    /* stack pack: sp+16=t0, sp+20=v1, sp+24=0 ->
+       jal 0x801399D88. CPS-blocked. */
 block_80199C30:
     a0 = 3;                                    /* cmd type */
     a2 = zero;
@@ -90605,6 +92862,7 @@ block_80199C30:
  * Fills stack arg2 = 0 for the variant-B cd_chan_cmd_submit at 0x80199CCC. */
 void cps_80199c50(void)
 {
+/* cd_mc_state_machine piece: continues at 0x80199c54 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -90623,11 +92881,15 @@ block_80199C50:
  * @0x801FC698 (delay slot), then chains to 0x80199CF0. */
 void cps_80199c54(void)
 {
+/* cd_mc_state_machine piece: continues at 0x80199c78 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80199C54, Size: 36 bytes, Blocks: 1 */
 
+    /* save/restore: half 0x801FC684=0;
+       word 0x801FC680=0; word 0x801FC698=v0(0x801FC690)
+       -> 0x801399CF0/9C78. CPS-blocked. */
 block_80199C54:
     v0 = cpu->read_word(0x801FC690u);          /* saved cursor word */
     cpu->write_half(0x801FC684u, (uint16_t)zero);
@@ -90646,6 +92908,7 @@ block_80199C54:
  * runs the cd_copy_u32 path at 0x80199C94. a2 = 504 shared arg. */
 void cps_80199c78(void)
 {
+/* cd_mc_state_machine piece: continues at 0x80199c94 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -90658,6 +92921,8 @@ void cps_80199c78(void)
     }
     /* Address: 0x80199C78, Size: 28 bytes, Blocks: 2 */
 
+    /* base read: word[0x801FC6B0] ->
+       0x801399CCC/9C94. CPS-blocked. */
 block_80199C78:
     v0 = cpu->read_word(0x801FC6B0u);          /* base/flag cell */
     /* nop */  /* 0x80199C80: 0x00000000 */
@@ -90684,6 +92949,7 @@ block_80199C8C:
  * @0x801FC6BC, then cd_copy_u32(addr+32) and sector++ → 0x80199CF0. */
 void cps_80199c94(void)
 {
+/* cd_mc_state_machine thunk -> cd_copy_u32 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -90696,6 +92962,9 @@ void cps_80199c94(void)
     }
     /* Address: 0x80199C94, Size: 56 bytes, Blocks: 2 */
 
+    /* section walk: a1=word[a1-14688]; rec
+       0x801FC6BC -> jal 0x801399D5C; sect bump ->
+       0x801399CF0. CPS-blocked. */
 block_80199C94:
     a1 = cpu->read_word(a1 + -14688);         /* sector counter (a1=0x80200000) */
     a0 = cpu->read_word(0x801FC6BCu);         /* record ptr */
@@ -90723,11 +92992,14 @@ block_80199CB0:
  * — channel command variant B (stack arg1 = 0, filled by 0x80199C50). */
 void cps_80199ccc(void)
 {
+/* cd_mc_state_machine thunk -> cd_chan_cmd_submit */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80199CCC, Size: 36 bytes, Blocks: 1 */
 
+    /* stack pack: sp+16=t0, sp+20/24=0 ->
+       jal 0x801399D88. CPS-blocked. */
 block_80199CCC:
     a0 = 3;                                    /* cmd type */
     a2 = zero;
@@ -90750,6 +93022,7 @@ block_80199CCC:
  * @0x801FC69C clear → cd_dir_entry_finalize (0x801990F0). */
 void cps_80199cf0(void)
 {
+/* cd_mc_state_machine thunk -> cd_dir_entry_finalize */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -90763,6 +93036,9 @@ void cps_80199cf0(void)
     }
     /* Address: 0x80199CF0, Size: 92 bytes, Blocks: 3 */
 
+    /* cmd/rec emit: *0x801BCC54=v0; half[rec
+       *0x801FEB18]=v0; count swap 0x801FC6A4/6B0 ->
+       0x801399D5C. CPS-blocked. */
 block_80199CF0:
     v1 = cpu->read_word(0x801BCC54u);          /* cmd buf ptr B */
     v0 = 4901;                                 /* 0x1325 */
@@ -90810,11 +93086,14 @@ block_80199D44:
  * pop 64-byte frame, return. */
 void cps_80199d4c(void)
 {
+/* cd_mc_state_machine piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80199D4C, Size: 16 bytes, Blocks: 1 */
 
+    /* epilogue fragment: ra = word[sp+56].
+       CPS-blocked. */
 block_80199D4C:
     ra = cpu->read_word(sp + 56);
     sp = sp + 64;
@@ -90830,11 +93109,13 @@ block_80199D4C:
  * Cell setter: stores a0 @0x801BCC90 (CD ctx cell). */
 void cps_80199ff0(void)
 {
+/* bios_table_tramp thunk -> cd_kobj_init_a -> cpu_critical_enter -> cd_kobj_init_b -> cpu_critical_exit -> bios_table_tramp -> cd_subchan_table_install -> bios_tramp_b015 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x80199FF0, Size: 12 bytes, Blocks: 1 */
 
+    /* global set: *0x801BCC90 = a0 (at delay). */
 block_80199FF0:
     uint32_t return_pc = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
@@ -90852,6 +93133,7 @@ block_80199FF0:
  * returns 1. */
 void cps_8019a00c(void)
 {
+/* cd_cmd_sequence piece -> cd_kobj_init_a -> cpu_critical_enter -> cd_kobj_init_b */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -90870,6 +93152,9 @@ void cps_8019a00c(void)
     }
     /* Address: 0x8019A00C, Size: 144 bytes, Blocks: 8 */
 
+    /* prologue: saves s0-s3/ra sp+16..32 ->
+       0x8019A3F0 -> jal 0x8018E300 -> 0x8019A378.
+       CPS-blocked. */
 block_8019A00C:
     /* prologue: s0-s3 = a0-a3 (args forwarded to bios_tramp_b015) */
     sp = sp + -40;
@@ -90955,6 +93240,7 @@ block_8019A074:
  * Sets flag @0x801BCC90 = 1, returns 1. */
 void cps_8019a09c(void)
 {
+/* cd_subsys_init_full piece -> cd_kobj_init_a -> cpu_critical_enter -> cd_kobj_init_b */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -90973,6 +93259,9 @@ void cps_8019a09c(void)
     }
     /* Address: 0x8019A09C, Size: 144 bytes, Blocks: 8 */
 
+    /* sibling prologue (same saves) ->
+       0x8019A3F0 -> 0x8018E300 -> 0x8019A378.
+       CPS-blocked. */
 block_8019A09C:
     /* prologue: s0-s3 = a0-a3 (args forwarded to bios_tramp_b012) */
     sp = sp + -40;
@@ -91057,6 +93346,7 @@ block_8019A104:
  * bit0 of ptr[0] are both set, else 0. */
 void cps_8019a2ac(void)
 {
+/* cd_hdr_clear piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -91071,6 +93361,8 @@ void cps_8019a2ac(void)
     }
     /* Address: 0x8019A2AC, Size: 64 bytes, Blocks: 4 */
 
+    /* flag/ptr deref: v1=*0x801BCC98; v0=[v1+4];
+       v0=[v1]. CPS-blocked. */
 block_8019A2AC:
     v1 = cpu->read_word(0x801BCC98u);          /* flag-pair ptr cell */
     /* nop */  /* 0x8019A2B4: 0x00000000 */
@@ -91117,11 +93409,13 @@ block_8019A2E4:
  * from SLES_017.22_full_46.c. */
 void cps_8019a350(void)
 {
+/* bios_tramp_c003 piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8019A350, Size: 20 bytes, Blocks: 1 */
 
+    /* ptr chase: t1 = word[t1-5288]; jr/fallthrough. */
 block_8019A350:
     t1 = 0x8020 << 16;  /* 0x80200000 */
     t1 = cpu->read_word(t1 + -5288);
@@ -91137,11 +93431,13 @@ block_8019A350:
  * from SLES_017.22_full_46.c. */
 void cps_8019a364(void)
 {
+/* bios_tramp_c003 piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8019A364, Size: 20 bytes, Blocks: 1 */
 
+    /* ptr chase: t1 = word[t1-5284]; jr/fallthrough. */
 block_8019A364:
     t1 = 0x8020 << 16;  /* 0x80200000 */
     t1 = cpu->read_word(t1 + -5284);
@@ -91164,6 +93460,7 @@ block_8019A364:
  * has no matching cpu_critical_exit. */
 void cps_8019a378(void)
 {
+/* cd_kobj_init_b piece -> cpu_critical_enter -> bios_tramp_a044 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -91180,6 +93477,9 @@ void cps_8019a378(void)
     }
     /* Address: 0x8019A378, Size: 112 bytes, Blocks: 6 */
 
+    /* at-slot save 0x801FEB50; jalr -> v0=[v0+364];
+       at 0x801FEB58/5C=v1; word[v0+1428]=0 ->
+       jal 0x801957F0. CPS-blocked. */
 block_8019A378:
     cpu->write_word(0x801FEB50u, ra);          /* at(0x80200000) - 5296: save ra */
     ra = 0x8019A388u;  /* jal link before delay slot */
@@ -91247,6 +93547,7 @@ block_8019A3D4:
  * @0x801FEB60. */
 void cps_8019a3f0(void)
 {
+/* cd_kobj_init_a piece -> cpu_critical_enter -> bios_tramp_a044 -> cpu_critical_exit */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -91264,6 +93565,9 @@ void cps_8019a3f0(void)
     }
     /* Address: 0x8019A3F0, Size: 104 bytes, Blocks: 7 */
 
+    /* at-slot save 0x801FEB60; jalr -> v0=[v0+364];
+       word[v1]=0 -> 0x801957F0/0x8018E310; restore
+       ra. CPS-blocked. */
 block_8019A3F0:
     cpu->write_word(0x801FEB60u, ra);          /* at(0x80200000) - 5280: save ra */
     ra = 0x8019A400u;  /* jal link before delay slot */
@@ -91335,6 +93639,7 @@ block_8019A444:
  * bios_table_tramp(0) + bios_kobj_tramp(3,0), then returns either way. */
 void cps_8019a5d8(void)
 {
+/* vsync_wait_n piece -> cd_str_print -> bios_table_tramp -> bios_kobj_tramp */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -91354,6 +93659,9 @@ void cps_8019a5d8(void)
     }
     /* Address: 0x8019A5D8, Size: 152 bytes, Blocks: 9 */
 
+    /* tick wrapper: a1->sp+16; *0x801BDDE0 tick;
+       sp+24=ra; pack -> jal 0x80197AD0/0x80199FE0.
+       CPS-blocked. */
 block_8019A5D8:
     sp = sp + -32;
     a1 = a1 << 15;                             /* poll budget = a1 * 0x8000 */
@@ -91452,11 +93760,13 @@ block_8019A660:
  * Reads the halfword at the pointer stored in cell @0x801BDDA8 and returns it. */
 void cps_8019a7e4(void)
 {
+/* cd_intc_busy_read piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8019A7E4, Size: 24 bytes, Blocks: 1 */
 
+    /* ptr deref: *0x801BDDA8 then half[v0]. */
 block_8019A7E4:
     v0 = cpu->read_word(0x801BDDA8u);          /* ptr cell */
     /* nop */  /* 0x8019A7EC: 0x00000000 */
@@ -91473,11 +93783,13 @@ block_8019A7E4:
  * Epilogue fragment: restores s0/ra and pops 24 bytes of stack. */
 void cps_8019a8dc(void)
 {
+/* cd_chan_full_init piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8019A8DC, Size: 16 bytes, Blocks: 1 */
 
+    /* epilogue fragment: s0=word[sp+16], ra=[sp+20]. */
 block_8019A8DC:
     ra = cpu->read_word(sp + 20);
     s0 = cpu->read_word(sp + 16);
@@ -91498,6 +93810,7 @@ block_8019A8DC:
  * 4/5/6), then writes s3 back. Returns previous slot value. */
 void cps_8019aabc(void)
 {
+/* cd_chan_slot_set piece -> bios_table_tramp -> bios_kobj_tramp */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -91528,6 +93841,8 @@ void cps_8019aabc(void)
     }
     /* Address: 0x8019AABC, Size: 328 bytes, Blocks: 20 */
 
+    /* frame: saves s0-s4/ra sp+16..36; s4=word[a0]
+       (old); half 0x801BCD18 a1-related. CPS-blocked. */
 block_8019AABC:
     /* s1 = slot index, s2 = new value; slot_tbl @0x801BCD1C */
     sp = sp + -40;
@@ -91738,11 +94053,14 @@ block_8019ABE4:
  * the buffer (not sp) so the epilogue is a longjmp-return. */
 void cps_8019adcc(void)
 {
+/* cd_ctx_save piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8019ADCC, Size: 60 bytes, Blocks: 1 */
 
+    /* context restore: ra/gp/sp/fp/s0-s2+ = word[a0+..]
+       (setjmp-style). CPS-blocked. */
 block_8019ADCC:
     /* restore full context from jmp_buf @a0: ra@0, sp@4, fp@8, gp@44, s0-s7@12..40 */
     ra = cpu->read_word(a0);
@@ -91771,6 +94089,7 @@ block_8019ADCC:
  * current word differs (dirty-flag style update). */
 void cps_8019aed4(void)
 {
+/* cd_cb8_run_param piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -91784,6 +94103,7 @@ void cps_8019aed4(void)
     }
     /* Address: 0x8019AED4, Size: 44 bytes, Blocks: 3 */
 
+    /* swap: v0=word[a0]; word[a0]=a1. */
 block_8019AED4:
     a0 = a0 << 2;
     a0 = a0 + 0x801BDDC0u;                     /* cell table base */
@@ -91822,6 +94142,7 @@ block_8019AEF8:
  * stride @0x801BDE14) via printf_forward_guest. */
 void cps_8019af7c(void)
 {
+/* cd_init_stage_b piece -> printf_forward_guest -> cd_u16_table_store -> cd_delay_3c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -91848,6 +94169,8 @@ void cps_8019af7c(void)
     }
     /* Address: 0x8019AF7C, Size: 384 bytes, Blocks: 16 */
 
+    /* frame: *0x801BDDF0 chan; saves s0-s5/ra
+       sp+16..40. CPS-blocked. */
 block_8019AF7C:
     v0 = cpu->read_word(0x801BDDF0u);          /* channel status ptr cell */
     sp = sp + -48;
@@ -92096,6 +94419,11 @@ void cps_8019b290(void)
         }
     }
     /* Address: 0x8019B290, Size: 120 bytes, Blocks: 2 */
+
+    /* CD init/verify: half[v0+4/6]=0, word[v0+8/12]=0,
+       word[0x801BDE4C]=a1; jal cd_u16_table_store(a0?,0); then
+       clears 9 CD state cells 0x801BDE3C..0x801BDF18; epilogue.
+       CPS-blocked. */
 
 block_8019B290:
     cpu->write_half(v0 + 4, (uint16_t)zero);
@@ -92704,6 +95032,8 @@ void cps_8019bd94(void)
     }
     /* Address: 0x8019BD94, Size: 60 bytes, Blocks: 4 */
 
+    /* table setup: *0x801BDEB0/0x801BDED8; a0=half[a0];
+       CPS-blocked. */
 block_8019BD94:
     v0 = cpu->read_word(0x801BDEB0u);          /* 0x801C0000 - 8528: u16 table ptr */
     a0 = a0 << 1;
@@ -92760,6 +95090,8 @@ void cps_8019bdd0(void)
     }
     /* Address: 0x8019BDD0, Size: 88 bytes, Blocks: 4 */
 
+    /* self-heal: *0x801BDEC0 relink — reads v0=[a1]
+       twice, writes back. CPS-blocked. */
 block_8019BDD0:
     a1 = cpu->read_word(0x801BDEC0u);          /* 0x801C0000 - 8512: reg ptr cell */
     v1 = 0xFFF8FFFFu;                          /* clear bits 16-18 */
@@ -92828,6 +95160,8 @@ void cps_8019bfe0(void)
     }
     /* Address: 0x8019BFE0, Size: 128 bytes, Blocks: 10 */
 
+    /* record fetch: *0x801BDF18; rec=[a1]/[a1+4];
+       half[rec+12]; byte code written. CPS-blocked. */
 block_8019BFE0:
     v0 = cpu->read_word(0x801BDF18u);          /* 0x801C0000 - 8424: record ptr cell */
     /* nop */  /* 0x8019BFE8: 0x00000000 */
@@ -93375,6 +95709,7 @@ void cps_8019e300(void)
     }
     /* Address: 0x8019E300, Size: 32 bytes, Blocks: 2 */
 
+    /* leaf: save ra sp+16 -> 0x8019E3D4 -> restore. */
 block_8019E300:
     sp = sp + -24;
     cpu->write_word(sp + 16, ra);
@@ -93423,6 +95758,9 @@ void cps_8019e330(void)
     }
     /* Address: 0x8019E330, Size: 108 bytes, Blocks: 11 */
 
+    /* frame: s0/ra sp+16/20 -> jal 0x80199FE0 ->
+       0x8018E300 -> 0x80199FFC -> 0x8019E400 ->
+       0x8019E5CC -> 0x8019E4C8. CPS-blocked. */
 block_8019E330:
     sp = sp + -24;
     cpu->write_word(sp + 16, s0);
@@ -93529,6 +95867,9 @@ void cps_8019e39c(void)
     }
     /* Address: 0x8019E39C, Size: 56 bytes, Blocks: 5 */
 
+    /* frame: save ra sp+16 -> 0x8018E300 ->
+       0x8019E410 -> 0x80199FE0 -> 0x8018E310 -> restore.
+       CPS-blocked. */
 block_8019E39C:
     sp = sp + -24;
     cpu->write_word(sp + 16, ra);
@@ -93588,6 +95929,8 @@ void cps_8019e430(void)
     }
     /* Address: 0x8019E430, Size: 44 bytes, Blocks: 3 */
 
+    /* half pair update: half[v1+10]=t9 (t7 read).
+       CPS-blocked. */
 block_8019E430:
     t7 = cpu->read_half(v1 + 10);               /* current reg half */
     t0 = 0x00000000u;
@@ -93638,6 +95981,8 @@ void cps_8019e45c(void)
     }
     /* Address: 0x8019E45C, Size: 68 bytes, Blocks: 4 */
 
+    /* field reads: word[v1+4212]/[v1+4164]/
+       [0x0001DFF4]. CPS-blocked. */
 block_8019E45C:
     v0 = cpu->read_word(v1 + 4212);              /* status word A */
     /* nop */  /* 0x8019E460: 0x00000000 */
@@ -93694,6 +96039,7 @@ void cps_8019e4a0(void)
 
     /* Address: 0x8019E4A0, Size: 16 bytes, Blocks: 1 */
 
+    /* leaf fragment (1 block). */
 block_8019E4A0:
     v0 = 0xA000DFACu;                          /* 0xA0010000 - 8276: scratchpad */
     uint32_t tail_pc = v0;  /* latch indirect target before delay slot */
@@ -93723,6 +96069,9 @@ void cps_8019e4c8(void)
     }
     /* Address: 0x8019E4C8, Size: 148 bytes, Blocks: 6 */
 
+    /* at-slot save -5232; jalr -> v0=[v0+24];
+       v1=[v0+112]/[v0+116]; word[v0]=word[t2].
+       CPS-blocked. */
 block_8019E4C8:
     at = 0x8020 << 16;  /* 0x80200000 */
     cpu->write_word(at + -5232, ra);
@@ -93815,6 +96164,9 @@ void cps_8019e55c(void)
     }
     /* Address: 0x8019E55C, Size: 112 bytes, Blocks: 6 */
 
+    /* at-slot save -5232; jalr -> v0=[v0+364];
+       v1=[v0+2504]; word[v0+2504]=word[t2] ->
+       jal 0x801957F0. CPS-blocked. */
 block_8019E55C:
     at = 0x8020 << 16;  /* 0x80200000 */
     cpu->write_word(at + -5232, ra);
@@ -93895,6 +96247,7 @@ void cps_8019e5cc(void)
     }
     /* Address: 0x8019E5CC, Size: 52 bytes, Blocks: 3 */
 
+    /* store: word[v0]=word[t2]. CPS-blocked. */
 block_8019E5CC:
     v0 = 0xDF80;
     t2 = 0x801A << 16;  /* 0x801A0000 */
@@ -93952,6 +96305,9 @@ void cps_8019e600(void)
     }
     /* Address: 0x8019E600, Size: 112 bytes, Blocks: 7 */
 
+    /* at-slot save -5216; jalr -> v0=[v0+24];
+       word[v0+112]=word[t2] -> 0x801957F0/0x8018E310.
+       CPS-blocked. */
 block_8019E600:
     at = 0x80200000u;                          /* 0x8020 << 16 */
     cpu->write_word(at + -5216, ra);           /* save ra @0x801FEB60 */
@@ -95452,6 +97808,8 @@ void cps_8019fd98(void)
     }
     /* Address: 0x8019FD98, Size: 132 bytes, Blocks: 6 */
 
+    /* frame: s3=0x801FEBE0; saves s0-s3/ra sp+56..72;
+       word[s3] chan -> jal 0x8018E550. CPS-blocked. */
 block_8019FD98:
     sp = sp + -80;
     cpu->write_word(sp + 64, s2);
@@ -95540,6 +97898,9 @@ void cps_8019fe1c(void)
     }
     /* Address: 0x8019FE1C, Size: 88 bytes, Blocks: 7 */
 
+    /* res->sp+48; -> jal 0x801A0270 -> 0x8019FF2C ->
+       0x8019FA6C; rec word[s0] -> at-5064 ->
+       0x8018E550/0x8019FE78. CPS-blocked. */
 block_8019FE1C:
     ra = 0x8019FE24u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -95669,6 +98030,9 @@ void cps_8019fe7c(void)
     }
     /* Address: 0x8019FE7C, Size: 176 bytes, Blocks: 13 */
 
+    /* rec fields: word[s0+8]/[s0]/[s0+4]; gate
+       word[v1]; v0=0x801FEBD4; word[s0+8]=0 ->
+       sp+48 pack. CPS-blocked. */
 block_8019FE7C:
     /* nop */  /* 0x8019FE7C: 0x00000000 */
     int cond_busy0 = (v0 != zero);             /* latch: delay is nop */
@@ -95826,6 +98190,8 @@ void cps_8019ff30(void)
   if (!cpu) return;
 
     /* Address: 0x8019FF30, Size: 28 bytes, Blocks: 1 */
+
+    /* epilogue: pop s0-s3, ra (sp += 80), jr ra */
 
 block_8019FF30:
     ra = cpu->read_word(sp + 72);
@@ -98567,6 +100933,8 @@ void cps_801a1e70(void)
 
     /* Address: 0x801A1E70, Size: 20 bytes, Blocks: 1 */
 
+    /* epilogue: pop s0-s1, ra (sp += 32), jr ra */
+
 block_801A1E70:
     ra = cpu->read_word(sp + 24);
     s1 = cpu->read_word(sp + 20);
@@ -100969,6 +103337,8 @@ void cps_801a36c0(void)
 
     /* Address: 0x801A36C0, Size: 36 bytes, Blocks: 1 */
 
+    /* epilogue: pop s0-s5, ra (sp += 48), jr ra */
+
 block_801A36C0:
     ra = cpu->read_word(sp + 40);
     s5 = cpu->read_word(sp + 36);
@@ -102035,6 +104405,9 @@ void cps_801a4c88(void)
   if (!cpu) return;
 
     /* Address: 0x801A4C88, Size: 20 bytes, Blocks: 1 */
+
+    /* prologue piece: sp-=24, save s0, s0=a0; a0=
+       0x80125FD8; -> 0x801A4C9C. CPS-blocked. */
 
 block_801A4C88:
     sp = sp + -24;
@@ -113797,6 +116170,10 @@ block_801B0088:
  * gte_half_euler_a: reads cell @0x801BF0C0, s16 idx @a0+2, GTE cmds +
  * muldiv + traps — half-angle euler→matrix kernel variant A. */
 void cps_801b00a0(void)
+/* GTE vertex-transform piece (SLES full_54): resolves vertex
+ * record via *(gp+76)+8 table + halfword index, runs GTE cmd 0x01
+ * (RTPS-class transform), then depth-checks the result against
+ * the -17..2063 clip window before committing. */
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
@@ -113815,6 +116192,11 @@ void cps_801b00a0(void)
         }
     }
     /* Address: 0x801B00A0, Size: 392 bytes, Blocks: 8 */
+
+    /* OT sort-key calc (GTE variant): loads vertex via gte_data[0/1],
+       cmd 0x01 RTPS, reads SZ (data 19>>2) + OT anchor from gte_data[14],
+       bounds-checks depth (a3-17 vs 2063), divides half[a1+80]<<9 by it
+       for the sort key. CPS-blocked (GTE + muldiv). */
 
 block_801B00A0:
     sp = sp + -16;
@@ -113984,11 +116366,17 @@ block_801B0220:
  * from SLES_017.22_full_54.c.
  * CPS leaf — 0 stores, 4 loads */
 void cps_801b03d8(void)
+/* GTE transform entry linker: resolves the ctx table
+ * (*(gp+76)+8) + halfword(a0+2) index, prefetches the record
+ * halfword, tails into cps_801b03f0. */
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x801B03D8, Size: 24 bytes, Blocks: 1 */
+
+    /* index resolve + fallthrough: entry = word[word[gp+76]+8] +
+       half[a0+2]; v1 = half[entry+2]; falls into cps_801b03f0. */
 
 block_801B03D8:
     v0 = cpu->read_word(gp + 76);
@@ -114006,6 +116394,9 @@ block_801B03D8:
  * gte_half_euler_b: same shape as b00a0 reading s16 @+6/+10 — euler
  * kernel variant B. */
 void cps_801b03f0(void)
+/* GTE vertex-transform sibling of cps_801b00a0 — same
+ * RTPS-class transform + -17..2063 depth clip check, alternate
+ * entry/piece of the transform family. */
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
@@ -114024,6 +116415,11 @@ void cps_801b03f0(void)
         }
     }
     /* Address: 0x801B03F0, Size: 404 bytes, Blocks: 8 */
+
+    /* OT sort-key calc (entry variant of 0x801B00A0): packs three
+       halves (v1, half[v0+6], half[v0+10]) onto stack, GTE cmd 0x01,
+       SZ>>2 depth check vs half[a0+4]-17, divide by depth<<2.
+       CPS-blocked (GTE + muldiv). */
 
 block_801B03F0:
     sp = sp + -24;
@@ -114197,6 +116593,8 @@ block_801B057C:
  * sp_record_step: half-word countdown at sp+4+112 loop — small record
  * step helper. */
 void cps_801b07d8(void)
+/* GPU/GTE-region helper: marshals args on stack and
+ * dispatches into the primitive/task path (5-block CPS body). */
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
@@ -114212,6 +116610,11 @@ void cps_801b07d8(void)
         }
     }
     /* Address: 0x801B07D8, Size: 156 bytes, Blocks: 5 */
+
+    /* display-list cursor step: decrements half[sp+4]+112 counter; on
+       expiry walks word[+108] chain (skips tag-128 nodes via +104
+       fallback), reads half[v0] through +100 index table, writes result
+       to half[a1+54] and half[a1+14], reloads counter. CPS-blocked. */
 
 block_801B07D8:
     a0 = sp + 4;
@@ -114288,6 +116691,8 @@ block_801B086C:
  * from SLES_017.22_full_54.c.
  * frame epilogue — restores ra, frees 24B stack */
 void cps_801b0874(void)
+/* Task-spawn wrapper: tail-calls task_spawn_var_a
+ * (0x8014B2CC) with prepared args. */
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
@@ -114300,6 +116705,11 @@ void cps_801b0874(void)
         }
     }
     /* Address: 0x801B0874, Size: 84 bytes, Blocks: 2 */
+
+    /* vertex attr fetch: reads three signed halves from a3 (+2/+4/+6),
+       resolves pointers via word[gp+76]+8 and word[gp+80], jal
+       0x8014B2CC(a1=a0+40, a2,a3 offsets), stores result word to *s0.
+       CPS-blocked. */
 
 block_801B0874:
     sp = sp + -24;
@@ -114337,11 +116747,19 @@ block_801B08B4:
  * from SLES_017.22_full_54.c.
  * record copier — reads a0+2/4, a1+80/82; writes a1+10..32 field set */
 void cps_801b08c8(void)
+/* Prim-descriptor initializer: copies halfword pairs
+ * from the a0 source record into a1+8/10/16/18/24..., adding
+ * the a1+80/+82 page/cluster offsets — UV/position field setup
+ * for a GPU primitive packet. */
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x801B08C8, Size: 244 bytes, Blocks: 1 */
+
+    /* UV/coord table expand: copies half pairs (a0+2,a0+4) into six
+       8-half rows at a1+8..74, adding base offsets half[a1+80]/[a1+82]
+       alternately per column (unrolled 3x2 pattern x3 groups). */
 
 block_801B08C8:
     v0 = cpu->read_half(a0 + 2);
@@ -114414,11 +116832,16 @@ block_801B08C8:
  * from SLES_017.22_full_54.c.
  * record copier — reads a0+2/4/6/8; writes a1+10..32 field set */
 void cps_801b09bc(void)
+/* Prim/GPU packet helper in the 0x801B08xx-0x801B0Dxx
+ * emitter cluster (ordering-table primitive writers). */
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x801B09BC, Size: 260 bytes, Blocks: 1 */
+
+    /* UV/coord table expand variant: same 6-row layout as 0x801B08C8
+       but sums come from a0's own fields (+6/+8) instead of a1+80/82. */
 
 block_801B09BC:
     v0 = cpu->read_half(a0 + 2);
@@ -114495,11 +116918,17 @@ block_801B09BC:
  * from SLES_017.22_full_54.c.
  * record copier — reads a0+0/2, a1+80/82, gp+76; writes a1+10..32 field set */
 void cps_801b0ac0(void)
+/* Prim/GPU packet helper in the 0x801B08xx-0x801B0Dxx
+ * emitter cluster (ordering-table primitive writers). */
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x801B0AC0, Size: 268 bytes, Blocks: 1 */
+
+    /* UV/coord table expand (indexed variant): resolves source record
+       via word[gp+76]+8 + half[a0+2], then same 6-row half-pair expand
+       into a1+8..74 using a1+80/82 bases. */
 
 block_801B0AC0:
     v0 = cpu->read_word(gp + 76);
@@ -114578,6 +117007,8 @@ block_801B0AC0:
  * from SLES_017.22_full_54.c.
  * record copier — reads a0+2, a2+2..14; writes a0-10..-16 back-fields */
 void cps_801b0bcc(void)
+/* Prim/GPU packet helper in the 0x801B08xx-0x801B0Dxx
+ * emitter cluster (ordering-table primitive writers). */
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
@@ -114591,6 +117022,11 @@ void cps_801b0bcc(void)
         }
     }
     /* Address: 0x801B0BCC, Size: 372 bytes, Blocks: 3 */
+
+    /* GPU packet builder: resolves src = word[gp+80] + half[a0+2],
+       emits packet header bytes (9,45,128,128,128) at a1+3..7 then
+       copies half/byte fields with pairwise sums into a1-31..+3.
+       CPS-blocked. */
 
 block_801B0BCC:
     t0 = zero;
@@ -114708,11 +117144,19 @@ block_801B0D28:
  * from SLES_017.22_full_54.c.
  * CPS leaf — 2 stores, 7 loads */
 void cps_801b0d40(void)
+/* OT-slot primitive writer: bases from 0x801BEF60/
+ * 0x801BEF84 tables, writes prim_word | 0x09000000 (GPU tag)
+ * and length into the ordering-table slot at a1 + idx*40. */
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x801B0D40, Size: 120 bytes, Blocks: 1 */
+
+    /* GPU packet emit: builds OT entry — idx = half[a0+2]*4 +
+       word[0x801BEB7C]; word[v1] = word[word[0x801BEB84]+idx*4] | 0x09000000;
+       then word[v1] = ((a1 + count*40) << 8) >> 8 (sign-extended byte
+       offset into the ordering table). */
 
 block_801B0D40:
     v0 = 0x801C0000u;  /* 0x801C0000 */
@@ -115673,6 +118117,7 @@ block_80196DE4:
  * 0x8019AD1C(ctx, 1050) and 0x8019AD90(ctx+56). */
 void cps_8019a814(void)
 {
+/* cd_chan_full_init piece -> cd_guest_zero32_a -> cd_ctx_save */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -115686,6 +118131,9 @@ void cps_8019a814(void)
     }
     /* Address: 0x8019A814, Size: 104 bytes, Blocks: 3 */
 
+    /* frame: s0=0x801BCD18; half[s0] ctx; saves
+       s0/ra -> 0x8019A8DC; ptrs 0x801BDDA4/A8;
+       half[v0]=0. CPS-blocked. */
 block_8019A814:
     sp = sp + -24;
     cpu->write_word(sp + 16, s0);
@@ -115738,6 +118186,7 @@ block_8019A874:
  * 0x801BCD0A and calling 0x8019AD60. */
 void cps_8019a8ec(void)
 {
+/* cd_intc_dispatch piece -> printf_forward_guest -> bios_tramp_b017 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -115768,6 +118217,8 @@ void cps_8019a8ec(void)
     }
     /* Address: 0x8019A8EC, Size: 464 bytes, Blocks: 20 */
 
+    /* frame: s1=0x801BCD18; saves s0-s4/ra ->
+       half[s1] ctx read. CPS-blocked. */
 block_8019A8EC:
     sp = sp + -40;
     cpu->write_word(sp + 20, s1);
@@ -116031,6 +118482,9 @@ void cps_8019b308(void)
     }
     /* Address: 0x8019B308, Size: 112 bytes, Blocks: 7 */
 
+    /* frame: *0x801BDEA0; save ra; mark at-8544;
+       -> jal 0x8018E300 -> 0x8019BEE0/0x8019B380;
+       at-8648=a0 -> 0x8019B390. CPS-blocked. */
 block_8019B308:
     v0 = cpu->read_word(0x801BDEA0u);          /* 0x801C0000 - 8544: init flag */
 

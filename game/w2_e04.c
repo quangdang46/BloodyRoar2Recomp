@@ -164,6 +164,9 @@ void scriptop_bra_cps(void)
     }
     /* Address: 0x80182F48, Size: 768 bytes, Blocks: 40 */
 
+    /* scriptop_bra entry — s1=ctx(a2), s0=*(ctx+36)
+     * script stream, s3=a0 owner obj. Fetch op halfword; ctx[110]
+     * flag halfword selects path; ctx[56] = repeat/condition counter. */
 block_80182F48:
     sp = sp + -72;
     cpu->write_word(sp + 52, s1);
@@ -249,6 +252,8 @@ block_80182FD4:
     psx_check_interrupts_at(cpu, _jt_80182FE8);
     cpu->pc = _jt_80182FE8; return;  /* CPS: jr v0 */
 
+    /* scriptop_bra_pc_commit — ctx[36] = halfword(s0+2) +
+     * obj[48]: commit branch target = operand + stream base. */
 block_80182FF0:
     v1 = cpu->read_half(s0 + 2);
     a0 = cpu->read_word(s3 + 48);
@@ -259,6 +264,9 @@ block_80182FF0:
     psx_check_interrupts_at(cpu, 0x8018322Cu);
     goto block_8018322C;  /* j */
 
+    /* scriptop_bra_subops — conditional variants: ctx[56]<=0
+     * picks operand s0+6 and clears ctx[56], else operand s0+2;
+     * each arm commits ctx[36] then joins epilogue. */
 block_80183008:
     v0 = cpu->read_word(s1 + 56);
     /* nop */  /* 0x8018300C: 0x00000000 */
@@ -554,6 +562,8 @@ block_801831C8:
     psx_check_interrupts_at(cpu, 0x80183224u);
     goto block_80183224;  /* j */
 
+    /* BRA piece-entry (CPS resume): ctx[56]==0 -> target
+     * halfword(s0+4), else halfword(s0+2); NULL check on ctx[36]. */
 block_801831E0:
     v0 = cpu->read_word(s1 + 56);
     /* nop */  /* 0x801831E4: 0x00000000 */
@@ -682,6 +692,9 @@ void scriptop_bsr_cps(void)
     }
     /* Address: 0x80183248, Size: 784 bytes, Blocks: 40 */
 
+    /* scriptop_bsr entry — same ctx setup; s2 = op>>8
+     * sub-op; stack bounds check: ctx[120]-124-ctx < 196 (call
+     * stack lives inside ctx, 196-byte limit). */
 block_80183248:
     sp = sp + -72;
     cpu->write_word(sp + 52, s1);
@@ -767,6 +780,8 @@ block_801832D4:
     psx_check_interrupts_at(cpu, _jt_801832E8);
     cpu->pc = _jt_801832E8; return;  /* CPS: jr v0 */
 
+    /* BSR piece-entry — push return pc / select target
+     * operand by sub-op. */
 block_801832F0:
     v1 = cpu->read_half(s1 + 108);
     /* nop */  /* 0x801832F4: 0x00000000 */
@@ -799,6 +814,7 @@ block_80183308:
     psx_check_interrupts_at(cpu, 0x8018353Cu);
     goto block_8018353C;  /* j */
 
+    /* BSR piece-entry — stack push + branch commit. */
 block_80183338:
     v0 = cpu->read_word(s1 + 56);
     /* nop */  /* 0x8018333C: 0x00000000 */
@@ -879,6 +895,7 @@ block_80183398:
     psx_check_interrupts_at(cpu, 0x80183440u);
     goto block_80183440;  /* j */
 
+    /* BSR piece-entry — stack push + branch commit. */
 block_801833B8:
     v0 = cpu->read_word(s1 + 56);
     /* nop */  /* 0x801833BC: 0x00000000 */
@@ -959,6 +976,7 @@ block_80183410:
     psx_check_interrupts_at(cpu, 0x80183444u);
     goto block_80183444;  /* j */
 
+    /* BSR tail — epilogue / next-piece yield. */
 block_80183418:
     v0 = cpu->read_word(s1 + 56);
     /* nop */  /* 0x8018341C: 0x00000000 */
