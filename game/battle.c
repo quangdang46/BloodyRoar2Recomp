@@ -12119,550 +12119,550 @@ int * prim_list_gte_invoke(int *a0,undefined4 a1,undefined4 a2,int a3,undefined4
 /* ---- batch17: announcer/round + vector math ---- */
 undefined4 text_render_full(uint *a0,uint a1,int a2)
 {
-  byte bVar1;
-  undefined2 uVar2;
-  char cVar3;
-  char cVar4;
-  char cVar5;
-  short sVar6;
-  short sVar7;
-  char cVar8;
-  short sVar9;
-  char cVar10;
-  ushort uVar11;
-  uint uVar12;
-  short *psVar13;
-  char cVar14;
-  byte bVar15;
-  short sVar16;
-  ushort uVar17;
-  short sVar18;
-  uint *puVar19;
-  ushort uVar20;
-  int iVar21;
-  byte *pbVar22;
-  byte *pbVar23;
-  ushort uVar24;
-  cVar5 = DAT_1f800015;
+  byte wd;
+  undefined2 aw;
+  char tint;
+  char ac;
+  char dw;
+  short by;
+  short sx;
+  char tc;
+  short rx;
+  char gy;
+  ushort xc0;
+  uint ch;
+  short *gp;
+  char gx;
+  byte t0;
+  short sy;
+  ushort gw;
+  short lh;
+  uint *pkt;
+  ushort xc1;
+  int t2;
+  byte *tp;
+  byte *nx;
+  ushort xc2;
+  dw = DAT_1f800015;
   a1 = a1 & 0xffff;
   if (_DAT_1f800388 != a1) {
     _DAT_1f800380 = 0;
     _DAT_1f800388 = a1;
   }
   if (_DAT_1f800380 < 400) {
-    puVar19 = (uint *)guest_at((uint32_t)(uintptr_t)((a1 * 16000 + _DAT_1f800380 * 0x28 + -0x7fe17ad8)));
+    pkt = (uint *)guest_at((uint32_t)(uintptr_t)((a1 * 16000 + _DAT_1f800380 * 0x28 + -0x7fe17ad8)));
     if (*(short *)guest_at((uint32_t)(uintptr_t)((a2 + 6) ))< 0x1000) {
       _DAT_1f80037c = *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 6)));
     }
     if (*(short *)guest_at((uint32_t)(uintptr_t)((a2 + 8) ))< 0x1000) {
       _DAT_1f80037e = *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 8)));
     }
-    uVar17 = *(ushort *)guest_at((uint32_t)(uintptr_t)((a2 + 10)));
-    uVar2 = *(undefined2 *)guest_at((uint32_t)(uintptr_t)((a2 + 0x10)));
+    gw = *(ushort *)guest_at((uint32_t)(uintptr_t)((a2 + 10)));
+    aw = *(undefined2 *)guest_at((uint32_t)(uintptr_t)((a2 + 0x10)));
     if (((*(ushort *)guest_at((uint32_t)(uintptr_t)((a2 + 0x18) ))< 6) && (3 < *(ushort *)guest_at((uint32_t)(uintptr_t)((a2 + 0x18))))) ||
        (DAT_1f800015 == '\0')) {
-      sVar18 = *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0xc)));
+      lh = *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0xc)));
     }
     else {
-      sVar18 = *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0xc) ))<< 1;
+      lh = *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0xc) ))<< 1;
     }
     /* +0x1c cell stores a GUEST text pointer — resolve via guest_at before
      * dereferencing (raw guest addr faults as a host pointer). */
-    pbVar22 = (byte *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a2 + 0x1c))));
-    if (*pbVar22 != 0) {
-      iVar21 = (int)*(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0xe)));
-      cVar4 = (char)*(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0xe)));
-      uVar20 = (ushort)DAT_8011ede0;
-      uVar24 = (ushort)DAT_8011ef64;
-      psVar13 = (short *)((intptr_t)puVar19 + 0x22);
-      uVar11 = (ushort)DAT_8011ed80;
+    tp = (byte *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a2 + 0x1c))));
+    if (*tp != 0) {
+      t2 = (int)*(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0xe)));
+      ac = (char)*(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0xe)));
+      xc1 = (ushort)DAT_8011ede0;
+      xc2 = (ushort)DAT_8011ef64;
+      gp = (short *)((intptr_t)pkt + 0x22);
+      xc0 = (ushort)DAT_8011ed80;
       do {
-        psVar13[-10] = *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0x16)));
-        uVar12 = (uint)*pbVar22;
-        pbVar23 = pbVar22 + 1;
-        sVar16 = _DAT_1f80037e + *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 4)));
-        sVar7 = _DAT_1f80037c + *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 2)));
-        if (uVar12 != 0x20) {
-          if (uVar12 < 0x21) {
-            if (uVar12 == 10) {
+        gp[-10] = *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0x16)));
+        ch = (uint)*tp;
+        nx = tp + 1;
+        sy = _DAT_1f80037e + *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 4)));
+        sx = _DAT_1f80037c + *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 2)));
+        if (ch != 0x20) {
+          if (ch < 0x21) {
+            if (ch == 10) {
 LAB_8012d3f4:
               _DAT_1f80037c = 0;
-              _DAT_1f80037e = _DAT_1f80037e + sVar18 + *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0x14)));
+              _DAT_1f80037e = _DAT_1f80037e + lh + *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0x14)));
               goto LAB_8012dca4;
             }
           }
-          else if (uVar12 == 0x23) {
-            bVar15 = *pbVar23;
-            uVar12 = (uint)bVar15;
-            pbVar23 = pbVar22 + 2;
-            if (uVar12 != 0x23) {
-              if (uVar12 != 0x6e) {
+          else if (ch == 0x23) {
+            t0 = *nx;
+            ch = (uint)t0;
+            nx = tp + 2;
+            if (ch != 0x23) {
+              if (ch != 0x6e) {
                 *(ushort *)guest_at((uint32_t)(uintptr_t)((a2 + 0x16) ))=
-                     (*(ushort *)guest_at((uint32_t)(uintptr_t)((a2 + 0x16) ))& 0xfc3f) + (bVar15 - 0x30 & 0x1ff) * 0x40;
+                     (*(ushort *)guest_at((uint32_t)(uintptr_t)((a2 + 0x16) ))& 0xfc3f) + (t0 - 0x30 & 0x1ff) * 0x40;
                 goto LAB_8012dca4;
               }
               goto LAB_8012d3f4;
             }
           }
-          cVar3 = (char)uVar2;
+          tint = (char)aw;
           switch(*(undefined2 *)guest_at((uint32_t)(uintptr_t)((a2 + 0x18)))) {
           default:
-            psVar13[-6] = 0x2f;
-            uVar12 = uVar12 - 0x20;
-            cVar14 = ((byte)uVar12 & 0xf) * '\b';
-            cVar10 = (char)((uVar12 & 0xf0) >> 1);
-            if (iVar21 < 0) {
-              bVar15 = (&DAT_8011ed80)[uVar12 & 0xff];
-              uVar17 = (ushort)bVar15;
-              *(char *)(psVar13 + -0xb) = cVar14;
-              *(char *)((intptr_t)psVar13 + -0x15) = cVar10;
-              *(char *)((intptr_t)psVar13 + -0xd) = cVar10;
-              *(char *)(psVar13 + -3) = cVar14;
-              *(char *)((intptr_t)psVar13 + -5) = cVar10 + cVar3;
-              *(char *)((intptr_t)psVar13 + 3) = cVar10 + cVar3;
-              cVar14 = bVar15 + cVar14;
-              *(char *)(psVar13 + -7) = cVar14;
-              *(char *)(psVar13 + 1) = cVar14;
+            gp[-6] = 0x2f;
+            ch = ch - 0x20;
+            gx = ((byte)ch & 0xf) * '\b';
+            gy = (char)((ch & 0xf0) >> 1);
+            if (t2 < 0) {
+              t0 = (&DAT_8011ed80)[ch & 0xff];
+              gw = (ushort)t0;
+              *(char *)(gp + -0xb) = gx;
+              *(char *)((intptr_t)gp + -0x15) = gy;
+              *(char *)((intptr_t)gp + -0xd) = gy;
+              *(char *)(gp + -3) = gx;
+              *(char *)((intptr_t)gp + -5) = gy + tint;
+              *(char *)((intptr_t)gp + 3) = gy + tint;
+              gx = t0 + gx;
+              *(char *)(gp + -7) = gx;
+              *(char *)(gp + 1) = gx;
             }
             else {
-              *(char *)(psVar13 + -0xb) = cVar14;
-              *(char *)((intptr_t)psVar13 + -0x15) = cVar10;
-              *(char *)(psVar13 + -7) = cVar14 + cVar4;
-              *(char *)((intptr_t)psVar13 + -0xd) = cVar10;
-              *(char *)(psVar13 + -3) = cVar14;
-              *(char *)((intptr_t)psVar13 + -5) = cVar10 + cVar3;
-              *(char *)(psVar13 + 1) = cVar14 + cVar4;
-              *(char *)((intptr_t)psVar13 + 3) = cVar10 + cVar3;
+              *(char *)(gp + -0xb) = gx;
+              *(char *)((intptr_t)gp + -0x15) = gy;
+              *(char *)(gp + -7) = gx + ac;
+              *(char *)((intptr_t)gp + -0xd) = gy;
+              *(char *)(gp + -3) = gx;
+              *(char *)((intptr_t)gp + -5) = gy + tint;
+              *(char *)(gp + 1) = gx + ac;
+              *(char *)((intptr_t)gp + 3) = gy + tint;
             }
-            psVar13[-9] = sVar7 + uVar17;
-            psVar13[-0xd] = sVar7;
-            psVar13[-0xc] = sVar16;
-            psVar13[-8] = sVar16;
-            psVar13[-5] = sVar7;
-            sVar6 = sVar16;
-            if (cVar5 != '\0') {
-              sVar6 = sVar16 + -1;
+            gp[-9] = sx + gw;
+            gp[-0xd] = sx;
+            gp[-0xc] = sy;
+            gp[-8] = sy;
+            gp[-5] = sx;
+            by = sy;
+            if (dw != '\0') {
+              by = sy + -1;
             }
-            psVar13[-4] = sVar6 + sVar18;
-            psVar13[-1] = sVar7 + uVar17;
-            if (cVar5 == '\0') {
-              sVar6 = sVar16 + sVar18;
+            gp[-4] = by + lh;
+            gp[-1] = sx + gw;
+            if (dw == '\0') {
+              by = sy + lh;
             }
             else {
-              sVar6 = sVar16 + -1 + sVar18;
+              by = sy + -1 + lh;
             }
             break;
           case 1:
-            psVar13[-6] = 0x2f;
-            bVar15 = (byte)(uVar12 - 0x20);
-            cVar14 = (bVar15 & 0xf) * '\b';
-            cVar10 = (bVar15 & 0xf0) + 0x30;
-            if (iVar21 < 0) {
-              bVar15 = (&DAT_8011ede0)[uVar12 - 0x20 & 0xff];
-              uVar17 = (ushort)bVar15;
-              *(char *)(psVar13 + -0xb) = cVar14;
-              *(char *)((intptr_t)psVar13 + -0x15) = cVar10;
-              *(char *)((intptr_t)psVar13 + -0xd) = cVar10;
-              *(char *)(psVar13 + -3) = cVar14;
-              *(char *)((intptr_t)psVar13 + -5) = cVar10 + cVar3;
-              *(char *)((intptr_t)psVar13 + 3) = cVar10 + cVar3;
-              cVar14 = bVar15 + cVar14;
-              *(char *)(psVar13 + -7) = cVar14;
-              *(char *)(psVar13 + 1) = cVar14;
+            gp[-6] = 0x2f;
+            t0 = (byte)(ch - 0x20);
+            gx = (t0 & 0xf) * '\b';
+            gy = (t0 & 0xf0) + 0x30;
+            if (t2 < 0) {
+              t0 = (&DAT_8011ede0)[ch - 0x20 & 0xff];
+              gw = (ushort)t0;
+              *(char *)(gp + -0xb) = gx;
+              *(char *)((intptr_t)gp + -0x15) = gy;
+              *(char *)((intptr_t)gp + -0xd) = gy;
+              *(char *)(gp + -3) = gx;
+              *(char *)((intptr_t)gp + -5) = gy + tint;
+              *(char *)((intptr_t)gp + 3) = gy + tint;
+              gx = t0 + gx;
+              *(char *)(gp + -7) = gx;
+              *(char *)(gp + 1) = gx;
             }
             else {
-              *(char *)(psVar13 + -0xb) = cVar14;
-              *(char *)((intptr_t)psVar13 + -0x15) = cVar10;
-              *(char *)(psVar13 + -7) = cVar14 + cVar4;
-              *(char *)((intptr_t)psVar13 + -0xd) = cVar10;
-              *(char *)(psVar13 + -3) = cVar14;
-              *(char *)((intptr_t)psVar13 + -5) = cVar10 + cVar3;
-              *(char *)(psVar13 + 1) = cVar14 + cVar4;
-              *(char *)((intptr_t)psVar13 + 3) = cVar10 + cVar3;
+              *(char *)(gp + -0xb) = gx;
+              *(char *)((intptr_t)gp + -0x15) = gy;
+              *(char *)(gp + -7) = gx + ac;
+              *(char *)((intptr_t)gp + -0xd) = gy;
+              *(char *)(gp + -3) = gx;
+              *(char *)((intptr_t)gp + -5) = gy + tint;
+              *(char *)(gp + 1) = gx + ac;
+              *(char *)((intptr_t)gp + 3) = gy + tint;
             }
-            psVar13[-9] = sVar7 + uVar17;
-            psVar13[-0xd] = sVar7;
-            psVar13[-0xc] = sVar16;
-            psVar13[-8] = sVar16;
-            psVar13[-5] = sVar7;
-            sVar6 = sVar16;
-            if (cVar5 != '\0') {
-              sVar6 = sVar16 + -1;
+            gp[-9] = sx + gw;
+            gp[-0xd] = sx;
+            gp[-0xc] = sy;
+            gp[-8] = sy;
+            gp[-5] = sx;
+            by = sy;
+            if (dw != '\0') {
+              by = sy + -1;
             }
-            psVar13[-4] = sVar6 + sVar18;
-            psVar13[-1] = sVar7 + uVar17;
-            if (cVar5 == '\0') {
-              sVar6 = sVar16 + sVar18;
+            gp[-4] = by + lh;
+            gp[-1] = sx + gw;
+            if (dw == '\0') {
+              by = sy + lh;
             }
             else {
-              sVar6 = sVar16 + -1 + sVar18;
+              by = sy + -1 + lh;
             }
             break;
           case 2:
-            psVar13[-6] = 0x2f;
-            switch(uVar12) {
+            gp[-6] = 0x2f;
+            switch(ch) {
             case 0x21:
-              uVar12 = 0x1b;
+              ch = 0x1b;
               break;
             case 0x22:
-              uVar12 = 0x24;
+              ch = 0x24;
               break;
             default:
-              if ((uVar12 - 0x30 & 0xff) < 10) {
-                uVar12 = uVar12 - 10;
+              if ((ch - 0x30 & 0xff) < 10) {
+                ch = ch - 10;
               }
-              else if (uVar12 < 0x61) {
-                uVar12 = uVar12 - 0x41;
+              else if (ch < 0x61) {
+                ch = ch - 0x41;
               }
               else {
-                uVar12 = uVar12 - 0x61;
+                ch = ch - 0x61;
               }
               break;
             case 0x26:
-              uVar12 = 0x1d;
+              ch = 0x1d;
               break;
             case 0x27:
-              bVar15 = 0xc0;
-              cVar14 = '`';
-              uVar12 = 0x30;
+              t0 = 0xc0;
+              gx = '`';
+              ch = 0x30;
               goto LAB_8012d724;
             case 0x2a:
-              uVar12 = 0x1f;
+              ch = 0x1f;
               break;
             case 0x2d:
-              uVar12 = 0x1e;
+              ch = 0x1e;
               break;
             case 0x2e:
-              uVar12 = 0x1a;
+              ch = 0x1a;
               break;
             case 0x3c:
-              uVar12 = 0x20;
+              ch = 0x20;
               break;
             case 0x3e:
-              uVar12 = 0x22;
+              ch = 0x22;
               break;
             case 0x3f:
-              uVar12 = 0x1c;
+              ch = 0x1c;
               break;
             case 0x5f:
-              uVar12 = 0x23;
+              ch = 0x23;
               break;
             case 0x7e:
-              uVar12 = 0x25;
+              ch = 0x25;
               break;
             case 0x7f:
-              uVar12 = 0x21;
+              ch = 0x21;
             }
-            bVar15 = (byte)((uVar12 & 7) << 4) | 0x80;
-            cVar14 = (char)((uVar12 & 0xff) >> 3) * '\x18';
+            t0 = (byte)((ch & 7) << 4) | 0x80;
+            gx = (char)((ch & 0xff) >> 3) * '\x18';
 LAB_8012d724:
-            cVar10 = bVar15 + cVar4 + -1;
-            if (iVar21 < 0) {
-              bVar1 = (&DAT_8011ee40)[uVar12 & 0xff];
-              uVar17 = (ushort)bVar1;
-              *(byte *)(psVar13 + -0xb) = bVar15;
-              *(char *)((intptr_t)psVar13 + -0x15) = cVar14;
-              *(char *)((intptr_t)psVar13 + -0xd) = cVar14;
-              *(byte *)(psVar13 + -3) = bVar15;
-              *(char *)((intptr_t)psVar13 + -5) = cVar14 + cVar3;
-              *(char *)((intptr_t)psVar13 + 3) = cVar14 + cVar3;
-              psVar13[-0xd] = sVar7;
-              psVar13[-0xc] = sVar16;
-              psVar13[-8] = sVar16;
-              psVar13[-5] = sVar7;
-              *(byte *)(psVar13 + -7) = bVar1 + bVar15;
-              *(byte *)(psVar13 + 1) = bVar1 + bVar15;
-              psVar13[-9] = sVar7 + (ushort)bVar1;
-              sVar6 = sVar16;
-              if (cVar5 != '\0') {
-                sVar6 = sVar16 + -1;
+            gy = t0 + ac + -1;
+            if (t2 < 0) {
+              wd = (&DAT_8011ee40)[ch & 0xff];
+              gw = (ushort)wd;
+              *(byte *)(gp + -0xb) = t0;
+              *(char *)((intptr_t)gp + -0x15) = gx;
+              *(char *)((intptr_t)gp + -0xd) = gx;
+              *(byte *)(gp + -3) = t0;
+              *(char *)((intptr_t)gp + -5) = gx + tint;
+              *(char *)((intptr_t)gp + 3) = gx + tint;
+              gp[-0xd] = sx;
+              gp[-0xc] = sy;
+              gp[-8] = sy;
+              gp[-5] = sx;
+              *(byte *)(gp + -7) = wd + t0;
+              *(byte *)(gp + 1) = wd + t0;
+              gp[-9] = sx + (ushort)wd;
+              by = sy;
+              if (dw != '\0') {
+                by = sy + -1;
               }
-              psVar13[-4] = sVar6 + sVar18;
-              psVar13[-1] = sVar7 + (ushort)bVar1;
-              if (cVar5 == '\0') {
-                sVar6 = sVar16 + sVar18;
+              gp[-4] = by + lh;
+              gp[-1] = sx + (ushort)wd;
+              if (dw == '\0') {
+                by = sy + lh;
               }
               else {
-                sVar6 = sVar16 + -1 + sVar18;
+                by = sy + -1 + lh;
               }
             }
             else {
-              *(byte *)(psVar13 + -0xb) = bVar15;
-              *(char *)((intptr_t)psVar13 + -0x15) = cVar14;
-              *(char *)(psVar13 + -7) = cVar10;
-              *(char *)((intptr_t)psVar13 + -0xd) = cVar14;
-              *(byte *)(psVar13 + -3) = bVar15;
-              *(char *)((intptr_t)psVar13 + -5) = cVar14 + cVar3;
-              *(char *)(psVar13 + 1) = cVar10;
-              *(char *)((intptr_t)psVar13 + 3) = cVar14 + cVar3;
-              psVar13[-0xd] = sVar7;
-              psVar13[-0xc] = sVar16;
-              sVar6 = *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 10)));
-              psVar13[-8] = sVar16;
-              psVar13[-5] = sVar7;
-              psVar13[-9] = sVar6 + sVar7 + -1;
-              sVar6 = sVar16;
-              if (cVar5 != '\0') {
-                sVar6 = sVar16 + -1;
+              *(byte *)(gp + -0xb) = t0;
+              *(char *)((intptr_t)gp + -0x15) = gx;
+              *(char *)(gp + -7) = gy;
+              *(char *)((intptr_t)gp + -0xd) = gx;
+              *(byte *)(gp + -3) = t0;
+              *(char *)((intptr_t)gp + -5) = gx + tint;
+              *(char *)(gp + 1) = gy;
+              *(char *)((intptr_t)gp + 3) = gx + tint;
+              gp[-0xd] = sx;
+              gp[-0xc] = sy;
+              by = *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 10)));
+              gp[-8] = sy;
+              gp[-5] = sx;
+              gp[-9] = by + sx + -1;
+              by = sy;
+              if (dw != '\0') {
+                by = sy + -1;
               }
-              psVar13[-4] = sVar6 + sVar18;
-              psVar13[-1] = *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 10) ))+ sVar7 + -1;
-              if (cVar5 == '\0') {
-                sVar6 = sVar16 + sVar18;
+              gp[-4] = by + lh;
+              gp[-1] = *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 10) ))+ sx + -1;
+              if (dw == '\0') {
+                by = sy + lh;
               }
               else {
-                sVar6 = sVar16 + -1 + sVar18;
+                by = sy + -1 + lh;
               }
             }
             break;
           case 3:
-            psVar13[-6] = 0x2e;
-            switch(uVar12) {
+            gp[-6] = 0x2e;
+            switch(ch) {
             case 0x21:
-              uVar12 = 0x1b;
+              ch = 0x1b;
               break;
             default:
-              if ((uVar12 - 0x30 & 0xff) < 10) {
-                uVar12 = uVar12 - 10;
+              if ((ch - 0x30 & 0xff) < 10) {
+                ch = ch - 10;
               }
-              else if (uVar12 < 0x61) {
-                uVar12 = uVar12 - 0x41;
+              else if (ch < 0x61) {
+                ch = ch - 0x41;
               }
               else {
-                uVar12 = uVar12 - 0x61;
+                ch = ch - 0x61;
               }
               break;
             case 0x26:
-              uVar12 = 0x1d;
+              ch = 0x1d;
               break;
             case 0x2a:
-              uVar12 = 0x1f;
+              ch = 0x1f;
               break;
             case 0x2d:
-              uVar12 = 0x1e;
+              ch = 0x1e;
               break;
             case 0x2e:
-              uVar12 = 0x1a;
+              ch = 0x1a;
               break;
             case 0x3c:
-              uVar12 = 0x20;
+              ch = 0x20;
               break;
             case 0x3e:
-              uVar12 = 0x22;
+              ch = 0x22;
               break;
             case 0x3f:
-              uVar12 = 0x1c;
+              ch = 0x1c;
               break;
             case 0x5f:
-              uVar12 = 0x23;
+              ch = 0x23;
               break;
             case 0x7e:
-              uVar12 = 0x25;
+              ch = 0x25;
               break;
             case 0x7f:
-              uVar12 = 0x21;
+              ch = 0x21;
             }
-            uVar12 = uVar12 & 0xff;
-            cVar14 = (&DAT_8011eea4)[uVar12];
-            cVar10 = (&DAT_8011eed4)[uVar12];
-            if (iVar21 < 0) {
-              bVar15 = (&DAT_8011ee74)[uVar12];
-              uVar17 = (ushort)bVar15;
-              *(char *)(psVar13 + -0xb) = cVar14;
-              *(char *)((intptr_t)psVar13 + -0x15) = cVar10;
-              *(char *)((intptr_t)psVar13 + -0xd) = cVar10;
-              *(char *)(psVar13 + -3) = cVar14;
-              *(char *)((intptr_t)psVar13 + -5) = cVar10 + cVar3;
-              *(char *)((intptr_t)psVar13 + 3) = cVar10 + cVar3;
-              psVar13[-0xd] = sVar7;
-              psVar13[-0xc] = sVar16;
-              psVar13[-8] = sVar16;
-              psVar13[-5] = sVar7;
-              *(byte *)(psVar13 + -7) = bVar15 + cVar14;
-              *(byte *)(psVar13 + 1) = bVar15 + cVar14;
-              psVar13[-9] = sVar7 + (ushort)bVar15;
-              sVar6 = sVar16;
-              if (cVar5 != '\0') {
-                sVar6 = sVar16 + -1;
+            ch = ch & 0xff;
+            gx = (&DAT_8011eea4)[ch];
+            gy = (&DAT_8011eed4)[ch];
+            if (t2 < 0) {
+              t0 = (&DAT_8011ee74)[ch];
+              gw = (ushort)t0;
+              *(char *)(gp + -0xb) = gx;
+              *(char *)((intptr_t)gp + -0x15) = gy;
+              *(char *)((intptr_t)gp + -0xd) = gy;
+              *(char *)(gp + -3) = gx;
+              *(char *)((intptr_t)gp + -5) = gy + tint;
+              *(char *)((intptr_t)gp + 3) = gy + tint;
+              gp[-0xd] = sx;
+              gp[-0xc] = sy;
+              gp[-8] = sy;
+              gp[-5] = sx;
+              *(byte *)(gp + -7) = t0 + gx;
+              *(byte *)(gp + 1) = t0 + gx;
+              gp[-9] = sx + (ushort)t0;
+              by = sy;
+              if (dw != '\0') {
+                by = sy + -1;
               }
-              psVar13[-4] = sVar6 + sVar18;
-              psVar13[-1] = sVar7 + (ushort)bVar15;
-              if (cVar5 == '\0') {
-                sVar6 = sVar16 + sVar18;
+              gp[-4] = by + lh;
+              gp[-1] = sx + (ushort)t0;
+              if (dw == '\0') {
+                by = sy + lh;
               }
               else {
-                sVar6 = sVar16 + -1 + sVar18;
+                by = sy + -1 + lh;
               }
             }
             else {
-              cVar8 = cVar14 + cVar4 + -1;
-              *(char *)(psVar13 + -0xb) = cVar14;
-              *(char *)((intptr_t)psVar13 + -0x15) = cVar10;
-              *(char *)(psVar13 + -7) = cVar8;
-              *(char *)((intptr_t)psVar13 + -0xd) = cVar10;
-              *(char *)(psVar13 + -3) = cVar14;
-              *(char *)((intptr_t)psVar13 + -5) = cVar10 + cVar3;
-              *(char *)(psVar13 + 1) = cVar8;
-              *(char *)((intptr_t)psVar13 + 3) = cVar10 + cVar3;
-              psVar13[-0xd] = sVar7;
-              psVar13[-0xc] = sVar16;
-              sVar6 = *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 10)));
-              psVar13[-8] = sVar16;
-              psVar13[-5] = sVar7;
-              psVar13[-9] = sVar6 + sVar7 + -1;
-              sVar6 = sVar16;
-              if (cVar5 != '\0') {
-                sVar6 = sVar16 + -1;
+              tc = gx + ac + -1;
+              *(char *)(gp + -0xb) = gx;
+              *(char *)((intptr_t)gp + -0x15) = gy;
+              *(char *)(gp + -7) = tc;
+              *(char *)((intptr_t)gp + -0xd) = gy;
+              *(char *)(gp + -3) = gx;
+              *(char *)((intptr_t)gp + -5) = gy + tint;
+              *(char *)(gp + 1) = tc;
+              *(char *)((intptr_t)gp + 3) = gy + tint;
+              gp[-0xd] = sx;
+              gp[-0xc] = sy;
+              by = *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 10)));
+              gp[-8] = sy;
+              gp[-5] = sx;
+              gp[-9] = by + sx + -1;
+              by = sy;
+              if (dw != '\0') {
+                by = sy + -1;
               }
-              psVar13[-4] = sVar6 + sVar18;
-              psVar13[-1] = *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 10) ))+ sVar7 + -1;
-              if (cVar5 == '\0') {
-                sVar6 = sVar16 + sVar18;
+              gp[-4] = by + lh;
+              gp[-1] = *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 10) ))+ sx + -1;
+              if (dw == '\0') {
+                by = sy + lh;
               }
               else {
-                sVar6 = sVar16 + -1 + sVar18;
+                by = sy + -1 + lh;
               }
             }
             break;
           case 4:
-            if (0x5f < uVar12) {
-              uVar17 = 0xf;
-              psVar13[-6] = 0x5e;
-              cVar3 = (char)uVar12 * '\x10';
-              bVar15 = (char)uVar12 + 0xa0U & 0xf0;
-              cVar10 = bVar15 - 0x28;
-              cVar14 = bVar15 - 0x18;
-              *(char *)(psVar13 + -0xb) = cVar3;
-              *(char *)(psVar13 + -3) = cVar3;
-              sVar9 = sVar7 + 0x10;
-              *(char *)((intptr_t)psVar13 + -5) = cVar14;
-              *(char *)((intptr_t)psVar13 + 3) = cVar14;
-              sVar6 = sVar16 + 0x10;
-              *(char *)((intptr_t)psVar13 + -0x15) = cVar10;
-              *(char *)(psVar13 + -7) = cVar3 + '\x10';
-              *(char *)((intptr_t)psVar13 + -0xd) = cVar10;
-              *(char *)(psVar13 + 1) = cVar3 + '\x10';
+            if (0x5f < ch) {
+              gw = 0xf;
+              gp[-6] = 0x5e;
+              tint = (char)ch * '\x10';
+              t0 = (char)ch + 0xa0U & 0xf0;
+              gy = t0 - 0x28;
+              gx = t0 - 0x18;
+              *(char *)(gp + -0xb) = tint;
+              *(char *)(gp + -3) = tint;
+              rx = sx + 0x10;
+              *(char *)((intptr_t)gp + -5) = gx;
+              *(char *)((intptr_t)gp + 3) = gx;
+              by = sy + 0x10;
+              *(char *)((intptr_t)gp + -0x15) = gy;
+              *(char *)(gp + -7) = tint + '\x10';
+              *(char *)((intptr_t)gp + -0xd) = gy;
+              *(char *)(gp + 1) = tint + '\x10';
               goto LAB_8012dc2c;
             }
-            psVar13[-6] = 0x5d;
-            uVar12 = uVar12 - 0x20;
-            cVar14 = (byte)uVar12 * '\x10';
-            cVar10 = ((byte)uVar12 & 0xf0) - 0x40;
-            if (iVar21 < 0) {
-              bVar15 = (&DAT_8011ef64)[uVar12 & 0xff];
-              uVar17 = (ushort)bVar15;
-              *(char *)(psVar13 + -0xb) = cVar14;
-              *(char *)((intptr_t)psVar13 + -0x15) = cVar10;
-              *(char *)((intptr_t)psVar13 + -0xd) = cVar10;
-              *(char *)(psVar13 + -3) = cVar14;
-              *(char *)((intptr_t)psVar13 + -5) = cVar10 + cVar3;
-              *(char *)((intptr_t)psVar13 + 3) = cVar10 + cVar3;
-              cVar14 = bVar15 + cVar14;
-              *(char *)(psVar13 + -7) = cVar14;
-              *(char *)(psVar13 + 1) = cVar14;
+            gp[-6] = 0x5d;
+            ch = ch - 0x20;
+            gx = (byte)ch * '\x10';
+            gy = ((byte)ch & 0xf0) - 0x40;
+            if (t2 < 0) {
+              t0 = (&DAT_8011ef64)[ch & 0xff];
+              gw = (ushort)t0;
+              *(char *)(gp + -0xb) = gx;
+              *(char *)((intptr_t)gp + -0x15) = gy;
+              *(char *)((intptr_t)gp + -0xd) = gy;
+              *(char *)(gp + -3) = gx;
+              *(char *)((intptr_t)gp + -5) = gy + tint;
+              *(char *)((intptr_t)gp + 3) = gy + tint;
+              gx = t0 + gx;
+              *(char *)(gp + -7) = gx;
+              *(char *)(gp + 1) = gx;
             }
             else {
-              *(char *)(psVar13 + -0xb) = cVar14;
-              *(char *)((intptr_t)psVar13 + -0x15) = cVar10;
-              *(char *)(psVar13 + -7) = cVar14 + cVar4;
-              *(char *)((intptr_t)psVar13 + -0xd) = cVar10;
-              *(char *)(psVar13 + -3) = cVar14;
-              *(char *)((intptr_t)psVar13 + -5) = cVar10 + cVar3;
-              *(char *)(psVar13 + 1) = cVar14 + cVar4;
-              *(char *)((intptr_t)psVar13 + 3) = cVar10 + cVar3;
+              *(char *)(gp + -0xb) = gx;
+              *(char *)((intptr_t)gp + -0x15) = gy;
+              *(char *)(gp + -7) = gx + ac;
+              *(char *)((intptr_t)gp + -0xd) = gy;
+              *(char *)(gp + -3) = gx;
+              *(char *)((intptr_t)gp + -5) = gy + tint;
+              *(char *)(gp + 1) = gx + ac;
+              *(char *)((intptr_t)gp + 3) = gy + tint;
             }
-            if ((iVar21 < 0) || ((uVar12 & 0xff) != 0x11)) goto LAB_8012dc28;
-            uVar12 = (uint)DAT_8011ef75;
-            psVar13[-0xc] = sVar16;
-            psVar13[-8] = sVar16;
-            psVar13[-4] = sVar16 + sVar18;
-            *psVar13 = sVar16 + sVar18;
-            sVar7 = sVar7 + (short)((int)(iVar21 - uVar12) / 2);
-            psVar13[-0xd] = sVar7;
-            psVar13[-9] = uVar17 + sVar7;
-            psVar13[-5] = sVar7;
-            psVar13[-1] = uVar17 + sVar7;
+            if ((t2 < 0) || ((ch & 0xff) != 0x11)) goto LAB_8012dc28;
+            ch = (uint)DAT_8011ef75;
+            gp[-0xc] = sy;
+            gp[-8] = sy;
+            gp[-4] = sy + lh;
+            *gp = sy + lh;
+            sx = sx + (short)((int)(t2 - ch) / 2);
+            gp[-0xd] = sx;
+            gp[-9] = gw + sx;
+            gp[-5] = sx;
+            gp[-1] = gw + sx;
             goto LAB_8012dc4c;
           case 5:
-            psVar13[-6] = 0x3e;
-            uVar12 = uVar12 - 0x20;
-            cVar14 = (char)uVar12 * '\b';
-            cVar10 = (char)((uVar12 & 0xe0) >> 2) + -0x40;
-            if (iVar21 < 0) {
-              bVar15 = (&DAT_8011ef04)[uVar12 & 0xff];
-              uVar17 = (ushort)bVar15;
-              *(char *)(psVar13 + -0xb) = cVar14;
-              *(char *)((intptr_t)psVar13 + -0x15) = cVar10;
-              *(char *)((intptr_t)psVar13 + -0xd) = cVar10;
-              *(char *)(psVar13 + -3) = cVar14;
-              *(char *)((intptr_t)psVar13 + -5) = cVar10 + cVar3;
-              *(char *)((intptr_t)psVar13 + 3) = cVar10 + cVar3;
-              cVar14 = bVar15 + cVar14;
-              *(char *)(psVar13 + -7) = cVar14;
-              *(char *)(psVar13 + 1) = cVar14;
+            gp[-6] = 0x3e;
+            ch = ch - 0x20;
+            gx = (char)ch * '\b';
+            gy = (char)((ch & 0xe0) >> 2) + -0x40;
+            if (t2 < 0) {
+              t0 = (&DAT_8011ef04)[ch & 0xff];
+              gw = (ushort)t0;
+              *(char *)(gp + -0xb) = gx;
+              *(char *)((intptr_t)gp + -0x15) = gy;
+              *(char *)((intptr_t)gp + -0xd) = gy;
+              *(char *)(gp + -3) = gx;
+              *(char *)((intptr_t)gp + -5) = gy + tint;
+              *(char *)((intptr_t)gp + 3) = gy + tint;
+              gx = t0 + gx;
+              *(char *)(gp + -7) = gx;
+              *(char *)(gp + 1) = gx;
             }
             else {
-              *(char *)(psVar13 + -0xb) = cVar14;
-              *(char *)((intptr_t)psVar13 + -0x15) = cVar10;
-              *(char *)(psVar13 + -7) = cVar14 + cVar4;
-              *(char *)((intptr_t)psVar13 + -0xd) = cVar10;
-              *(char *)(psVar13 + -3) = cVar14;
-              *(char *)((intptr_t)psVar13 + -5) = cVar10 + cVar3;
-              *(char *)(psVar13 + 1) = cVar14 + cVar4;
-              *(char *)((intptr_t)psVar13 + 3) = cVar10 + cVar3;
+              *(char *)(gp + -0xb) = gx;
+              *(char *)((intptr_t)gp + -0x15) = gy;
+              *(char *)(gp + -7) = gx + ac;
+              *(char *)((intptr_t)gp + -0xd) = gy;
+              *(char *)(gp + -3) = gx;
+              *(char *)((intptr_t)gp + -5) = gy + tint;
+              *(char *)(gp + 1) = gx + ac;
+              *(char *)((intptr_t)gp + 3) = gy + tint;
             }
 LAB_8012dc28:
-            sVar9 = sVar7 + uVar17;
-            sVar6 = sVar16 + sVar18;
+            rx = sx + gw;
+            by = sy + lh;
 LAB_8012dc2c:
-            psVar13[-0xd] = sVar7;
-            psVar13[-0xc] = sVar16;
-            psVar13[-9] = sVar9;
-            psVar13[-8] = sVar16;
-            psVar13[-5] = sVar7;
-            psVar13[-4] = sVar6;
-            psVar13[-1] = sVar9;
+            gp[-0xd] = sx;
+            gp[-0xc] = sy;
+            gp[-9] = rx;
+            gp[-8] = sy;
+            gp[-5] = sx;
+            gp[-4] = by;
+            gp[-1] = rx;
           }
-          *psVar13 = sVar6;
+          *gp = by;
 LAB_8012dc4c:
-          psVar13 = psVar13 + 0x14;
-          *puVar19 = *a0 | 0x9000000;
-          *a0 = guest_of(puVar19) & 0xffffff;
+          gp = gp + 0x14;
+          *pkt = *a0 | 0x9000000;
+          *a0 = guest_of(pkt) & 0xffffff;
           _DAT_1f800380 = _DAT_1f800380 + 1;
-          puVar19 = puVar19 + 10;
+          pkt = pkt + 10;
           if (399 < _DAT_1f800380) {
             return 0xffffffff;
           }
-          sVar7 = uVar17 + *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0x12)));
+          sx = gw + *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0x12)));
           goto LAB_8012dc9c;
         }
-        if (-1 < iVar21) {
+        if (-1 < t2) {
           _DAT_1f80037c = _DAT_1f80037c + *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 10) ))+ *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0x12)));
           goto LAB_8012dca4;
         }
         switch(*(undefined2 *)guest_at((uint32_t)(uintptr_t)((a2 + 0x18)))) {
         default:
-          sVar7 = uVar11 + *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0x12)));
+          sx = xc0 + *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0x12)));
           break;
         case 1:
-          sVar7 = uVar20 + *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0x12)));
+          sx = xc1 + *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0x12)));
           break;
         case 2:
-          bVar15 = DAT_8011ee5b;
+          t0 = DAT_8011ee5b;
           goto LAB_8012d390;
         case 3:
-          bVar15 = DAT_8011ee8f;
+          t0 = DAT_8011ee8f;
 LAB_8012d390:
-          _DAT_1f80037c = _DAT_1f80037c + (ushort)bVar15 + *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0x12)));
+          _DAT_1f80037c = _DAT_1f80037c + (ushort)t0 + *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0x12)));
           goto LAB_8012dca4;
         case 4:
-          sVar7 = uVar24 + *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0x12)));
+          sx = xc2 + *(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0x12)));
         }
 LAB_8012dc9c:
-        _DAT_1f80037c = _DAT_1f80037c + sVar7;
+        _DAT_1f80037c = _DAT_1f80037c + sx;
 LAB_8012dca4:
-        pbVar22 = pbVar23;
-      } while (*pbVar23 != 0);
+        tp = nx;
+      } while (*nx != 0);
     }
   }
   return 0;
