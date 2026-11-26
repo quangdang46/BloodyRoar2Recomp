@@ -349,6 +349,7 @@ uint32_t cd_mode_flag_set(int8_t opcode,int param_addr,uint32_t param_val)
 
 /* ======== 0x8019b200 ======== */
 
+/* cd_chan_boot_fwd — boot-init channel 0 via cd_chan_boot_init(0). */
 void cd_chan_boot_fwd(void)
 
 {
@@ -416,6 +417,7 @@ uint32_t cd_cmd_issue(int8_t opcode,uint32_t arg_addr,uint32_t arg_addr2,int asy
 
 /* ======== 0x80198c90 ======== */
 
+/* cd_read_setup — CD read-setup entry; delegates to generated MIPS (IRQ-timing bound). */
 bool cd_read_setup(uint32_t count,uint32_t pos,uint32_t mode)
 
 {
@@ -5472,6 +5474,7 @@ void cd_gpu_call_8(uint32_t a0,uint32_t a1)
 
 /* ======== 0x8019a244 ======== */
 
+/* cd_hdr_clear_fixed — clear u16 @p+0xA on block @0x801BCC94 (dead loop kept for fidelity). */
 void cd_hdr_clear_fixed(void)
 {
   uint32_t p = DB32G(0x801bcc94);
@@ -5482,6 +5485,7 @@ void cd_hdr_clear_fixed(void)
 
 /* ======== 0x8019ae68 ======== */
 
+/* cd_cb8_dispatch — table-8 dispatch group; faithful port of 0x8019AE68. */
 void cd_cb8_dispatch(void)
 {
   /* Faithful port of generated 0x8019AE68 (108B / 5 blocks, decoded
@@ -5520,6 +5524,7 @@ void cd_cb8_dispatch(void)
 
 /* ======== 0x8019bc48 ======== */
 
+/* cd_win_shift_op — window ops: shift u16 @0x801BDEC8 by (@0x801BDED8&31) into regs 2/0, then reg 3 with (a0,a1). */
 uint32_t cd_win_shift_op(uint32_t a0,uint32_t a1)
 {
   uint32_t sh = (uint32_t)DB16(0x801bdec8)
@@ -5532,6 +5537,7 @@ uint32_t cd_win_shift_op(uint32_t a0,uint32_t a1)
 
 /* ======== 0x8019842c ======== */
 
+/* cd_file_load_sync — open file a1 into guest-frame buf, mode_flag_set(2), read_setup(a0,a2,0x80), poll; returns poll==0. */
 int cd_file_load_sync(uint32_t a0,uint32_t a1,uint32_t a2)
 {
   /* buf is written by cd_file_open through a host pointer, then handed
@@ -5550,6 +5556,7 @@ int cd_file_load_sync(uint32_t a0,uint32_t a1,uint32_t a2)
 
 /* ======== 0x8019e730 ======== */
 
+/* cd_job_start_e — if job block @0x801FEBE0 busy print+ret 0; else arm state cells + job_slot_alloc(0x8019E798,a0); ret 1. */
 int cd_job_start_e(uint32_t a0)
 {
   if ((int32_t)DB32(0x801febe0) > 0) {
@@ -5566,6 +5573,7 @@ int cd_job_start_e(uint32_t a0)
 
 /* ======== 0x80195c1c ======== */
 
+/* cd_init_mode_dispatch — trace; a0==2 -> chan_reset_b; else subsystem_init, a0==1 -> reg_init_seq. */
 int cd_init_mode_dispatch(uint32_t a0)
 {
   CDFN(CDFN_INIT_MODE_DISPATCH,a0);
@@ -5581,6 +5589,7 @@ int cd_init_mode_dispatch(uint32_t a0)
 
 /* ======== 0x801915a0 ======== */
 
+/* cd_prim_list_a — walk prim list a0 (count a1-1): clear tag byte +3, link each node to next via low-24 bits; tail-link @0x801B83E0. */
 uint32_t cd_prim_list_a(uint32_t a0,uint32_t a1)
 {
   uint32_t s0 = a0;
@@ -5611,6 +5620,7 @@ uint32_t cd_prim_list_a(uint32_t a0,uint32_t a1)
 
 /* ======== 0x80193be4 ======== */
 
+/* cd_gpu_call_18 — poll GPU status @0x801B8434 until ready (watchdog); dispatch tbl4(2,0x80193CE0) then gpu_call(0x18,a0). */
 int32_t cd_gpu_call_18(uint32_t a0)
 {
   for (;;) {
@@ -5635,6 +5645,7 @@ int32_t cd_gpu_call_18(uint32_t a0)
 
 /* ======== 0x8019cfc0 ======== */
 
+/* cd_dma_xfer_mode — mode dispatch: 5->xfer(a0,0,0x20), 6->xfer(a0+0x800,0x100,0x20), else xfer(a0,0,0x40); ret status bit 0x800. */
 int cd_dma_xfer_mode(uint32_t a0,uint32_t a1)
 {
   if (a1 == 5) {
@@ -5649,6 +5660,7 @@ int cd_dma_xfer_mode(uint32_t a0,uint32_t a1)
 
 /* ======== 0x8019aca4 ======== */
 
+/* cd_state_blk_save — save block @0x801BCD18: if flag clear, FUN_8019AD80(+0x38), set flag, stash fields to globals, crit-enter; ret s0. */
 uint32_t cd_state_blk_save(void)
 {
   uint32_t s0 = 0x801bcd18;
@@ -5683,6 +5695,7 @@ int cd_subsys_init_full(uint32_t a0,uint32_t a1,uint32_t a2,
 
 /* ======== 0x8019ac04 ======== */
 
+/* cd_state_blk_restore — inverse of save: restore fields, clear MMIO cells, FUN_8019AD70, clear flag; ret s0. */
 uint32_t cd_state_blk_restore(void)
 {
   uint32_t s0 = 0x801bcd18;
@@ -5742,6 +5755,7 @@ uint32_t cd_dma_xfer_start(uint32_t a0,uint32_t a1,uint32_t a2)
 
 /* ======== 0x80190fd0 ======== */
 
+/* cd_gpu_call_34 — if a0 != cached byte @0x801B8321: gpu_invoke(tbl+0x34), store byte, dispatch tbl4(2,0). ret old byte. */
 uint32_t cd_gpu_call_34(uint32_t a0,uint32_t a1,uint32_t a2,
                       uint32_t a3)
 {
@@ -5837,6 +5851,7 @@ dir_done:
 
 /* ======== 0x801980ec ======== */
 
+/* cd_file_rec_find — scan 0x80-entry table @0x801FCD00 (stride 0x2c): match entry-no a0 + cd_strcmp name; ret index+1 or -1. */
 int cd_file_rec_find(uint32_t a0,uint32_t a1)
 {
   uint32_t i, off = 0;
@@ -5860,6 +5875,7 @@ int cd_file_rec_find(uint32_t a0,uint32_t a1)
 
 /* ======== 0x801914e8 ======== */
 
+/* cd_gpu_rect_draw — validate rect dims (w/h !=0), stash params @0x801B83C0-E8, gpu_invoke(tbl+8) packet emit; ret height. */
 int32_t cd_gpu_rect_draw(uint32_t a0,uint32_t a1,uint32_t a2)
 {
   int32_t v0;
@@ -5913,6 +5929,7 @@ static int cd_submit_check(uint32_t a0,uint32_t a1,uint32_t a2,
 
 /* ======== 0x8019ef74 ======== */
 
+/* cd_submit5 — cd_submit_check(a0,a1,a2,state=5,cb=0x8019F02C): guarded job submit. */
 int cd_submit5(uint32_t a0,uint32_t a1,uint32_t a2)
 {
   return cd_submit_check(a0,a1,a2,5,0x8019f02c);
@@ -5920,6 +5937,7 @@ int cd_submit5(uint32_t a0,uint32_t a1,uint32_t a2)
 
 /* ======== 0x8019f168 ======== */
 
+/* cd_submit6 — cd_submit_check(a0,a1,a2,state=6,cb=0x8019F220). */
 int cd_submit6(uint32_t a0,uint32_t a1,uint32_t a2)
 {
   return cd_submit_check(a0,a1,a2,6,0x8019f220);
