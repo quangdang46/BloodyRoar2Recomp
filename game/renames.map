@@ -2084,3 +2084,12 @@
 80168494 mc_op_result_poll_alt
 80168624 mc_file_cmd_stable_poll_alt
 80170050 battle_flow_state_machine_alt
+801870a4 prim_xform3_task_run_b
+80188200 prim_quad_emit_54
+80188308 prim_quad_emit_5c
+80188434 prim_emit_48
+801890dc prim_persp_emit_78
+8018b738 prim_persp_ot_emit_var
+8018b88c prim_emit_ret_a0
+8018b894 prim_persp_ot_emit_58
+8018bae8 prim_emit_ret_v0
