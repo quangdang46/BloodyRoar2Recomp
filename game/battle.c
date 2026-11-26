@@ -13316,71 +13316,71 @@ void radial_glow_draw(int *rec)
 
 }
 
-void iris_wipe_spawn(int a0,int a1)
+void iris_wipe_spawn(int req,int arg)
 {
-  char cVar1;
-  int iVar2;
-  undefined1 *puVar3;
-  char cVar4;
-  int *piVar5;
-  int iVar6;
-  int *piVar7;
+  char x1;
+  int tmp;
+  undefined1 *bp;
+  char x0;
+  int *pay;
+  int j;
+  int *cur;
   if ((DAT_1f8000b1 == '\0') &&
-     (((*(char *)guest_at((uint32_t)(uintptr_t)((a0 + 3) ))!= '\x04' || (*(char *)guest_at((uint32_t)(uintptr_t)((a0 + 4) ))!= '\x02')) ||
-      (a1 == 0xfffffff)))) {
-    iVar2 = (int)(uintptr_t)task_node_alloc(1,2,6,0x8013b12c,0,0x350);
-    if (iVar2 != 0) {
-      piVar5 = (int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x10))));
-      *piVar5 = a0;
-      piVar5[0xd1] = a1;
-      *(undefined2 *)(piVar5 + 0xd2) = 0;
-      piVar7 = piVar5 + 0x1d;
-      if (*(char *)guest_at((uint32_t)(uintptr_t)((a0 + 3) ))== '\x04') {
-        *(undefined2 *)((intptr_t)piVar5 + 0x34a) = 1;
-        if (*(char *)guest_at((uint32_t)(uintptr_t)((a0 + 5) ))== '\x11') {
-          *(undefined2 *)(piVar5 + 0xd3) = 1;
+     (((*(char *)guest_at((uint32_t)(uintptr_t)((req + 3) ))!= '\x04' || (*(char *)guest_at((uint32_t)(uintptr_t)((req + 4) ))!= '\x02')) ||
+      (arg == 0xfffffff)))) {
+    tmp = (int)(uintptr_t)task_node_alloc(1,2,6,0x8013b12c,0,0x350);
+    if (tmp != 0) {
+      pay = (int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((tmp + 0x10))));
+      *pay = req;
+      pay[0xd1] = arg;
+      *(undefined2 *)(pay + 0xd2) = 0;
+      cur = pay + 0x1d;
+      if (*(char *)guest_at((uint32_t)(uintptr_t)((req + 3) ))== '\x04') {
+        *(undefined2 *)((intptr_t)pay + 0x34a) = 1;
+        if (*(char *)guest_at((uint32_t)(uintptr_t)((req + 5) ))== '\x11') {
+          *(undefined2 *)(pay + 0xd3) = 1;
         }
         else {
-          *(undefined2 *)(piVar5 + 0xd3) = 0;
+          *(undefined2 *)(pay + 0xd3) = 0;
         }
       }
       else {
-        *(undefined2 *)((intptr_t)piVar5 + 0x34a) = 0;
+        *(undefined2 *)((intptr_t)pay + 0x34a) = 0;
       }
-      iVar2 = 0;
-      *(undefined2 *)(piVar5 + 1) = 10;
-      *(undefined2 *)((intptr_t)piVar5 + 6) = 0xffe9;
-      *(undefined2 *)(piVar5 + 2) = 0xffd8;
-      *(undefined2 *)(piVar5 + 3) = 0xfff6;
-      *(undefined2 *)((intptr_t)piVar5 + 0xe) = 0xffe9;
-      *(undefined2 *)(piVar5 + 4) = 0xffd8;
+      tmp = 0;
+      *(undefined2 *)(pay + 1) = 10;
+      *(undefined2 *)((intptr_t)pay + 6) = 0xffe9;
+      *(undefined2 *)(pay + 2) = 0xffd8;
+      *(undefined2 *)(pay + 3) = 0xfff6;
+      *(undefined2 *)((intptr_t)pay + 0xe) = 0xffe9;
+      *(undefined2 *)(pay + 4) = 0xffd8;
       do {
-        iVar6 = 0;
-        puVar3 = (undefined1 *)((intptr_t)piVar7 + 7);
-        cVar4 = -1;
+        j = 0;
+        bp = (undefined1 *)((intptr_t)cur + 7);
+        x0 = -1;
         do {
-          cVar1 = cVar4 + -0x32;
-          puVar3[-3] = cVar4;
-          puVar3[5] = cVar4;
-          puVar3[-2] = 0;
-          puVar3[-1] = 0;
-          puVar3[6] = 0;
-          puVar3[7] = 0;
-          puVar3[0xd] = cVar1;
-          puVar3[0xe] = 0;
-          puVar3[0xf] = 0;
-          puVar3[0x15] = cVar1;
-          puVar3[0x16] = 0;
-          puVar3[0x17] = 0;
-          *piVar7 = 0x8000000;
-          *puVar3 = 0x3a;
-          puVar3 = puVar3 + 0x24;
-          iVar6 = iVar6 + 1;
-          piVar7 = piVar7 + 9;
-          cVar4 = cVar1;
-        } while (iVar6 < 5);
-        iVar2 = iVar2 + 1;
-      } while (iVar2 < 4);
+          x1 = x0 + -0x32;
+          bp[-3] = x0;
+          bp[5] = x0;
+          bp[-2] = 0;
+          bp[-1] = 0;
+          bp[6] = 0;
+          bp[7] = 0;
+          bp[0xd] = x1;
+          bp[0xe] = 0;
+          bp[0xf] = 0;
+          bp[0x15] = x1;
+          bp[0x16] = 0;
+          bp[0x17] = 0;
+          *cur = 0x8000000;
+          *bp = 0x3a;
+          bp = bp + 0x24;
+          j = j + 1;
+          cur = cur + 9;
+          x0 = x1;
+        } while (j < 5);
+        tmp = tmp + 1;
+      } while (tmp < 4);
     }
   }
   return;
@@ -13485,84 +13485,84 @@ undefined4 * gte_xform3_t_ip(undefined4 *a0,undefined2 *a1)
 
 }
 
-int prim_task_run(int a0,undefined4 a1,undefined4 a2,int mode)
+int prim_task_run(int rec,undefined4 a1,undefined4 a2,int mode)
 {
-  undefined4 uVar1;
-  undefined4 uVar2;
-  undefined4 uVar3;
-  undefined4 uVar4;
-  undefined4 uVar5;
-  undefined4 uVar6;
-  undefined4 uVar7;
-  undefined4 uVar8;
-  undefined4 uVar9;
-  undefined4 uVar10;
-  undefined4 uVar11;
-  undefined4 uVar12;
+  undefined4 t1;
+  undefined4 t2;
+  undefined4 t3;
+  undefined4 t4;
+  undefined4 t5;
+  undefined4 t6;
+  undefined4 sv_ra;
+  undefined4 sv_s6;
+  undefined4 sv_s3;
+  undefined4 sv_s2;
+  undefined4 sv_s1;
+  undefined4 sv_s0;
   undefined4 unaff_s0;
   undefined4 unaff_s1;
   undefined4 unaff_s2;
-  int *piVar13;
+  int *pi;
   undefined4 unaff_s3;
   undefined4 unaff_s6;
-  int iVar14;
+  int n;
   undefined4 unaff_retaddr;
-  uVar7 = unaff_retaddr;
-  uVar8 = unaff_s6;
-  uVar9 = unaff_s3;
-  uVar10 = unaff_s2;
-  uVar11 = unaff_s1;
-  uVar12 = unaff_s0;
-  uVar1 = _DAT_1f8003fc;
-  uVar2 = _DAT_1f8003f8;
-  uVar3 = _DAT_1f8003f4;
-  uVar4 = _DAT_1f8003f0;
-  uVar5 = _DAT_1f8003ec;
-  uVar6 = _DAT_1f8003e0;
-  for (; _DAT_1f8003f8 = uVar12, _DAT_1f8003f4 = uVar11, _DAT_1f8003f0 = uVar10,
-      _DAT_1f8003ec = uVar9, _DAT_1f8003e0 = uVar8, _DAT_1f8003fc = uVar7, 0 < mode;
+  sv_ra = unaff_retaddr;
+  sv_s6 = unaff_s6;
+  sv_s3 = unaff_s3;
+  sv_s2 = unaff_s2;
+  sv_s1 = unaff_s1;
+  sv_s0 = unaff_s0;
+  t1 = _DAT_1f8003fc;
+  t2 = _DAT_1f8003f8;
+  t3 = _DAT_1f8003f4;
+  t4 = _DAT_1f8003f0;
+  t5 = _DAT_1f8003ec;
+  t6 = _DAT_1f8003e0;
+  for (; _DAT_1f8003f8 = sv_s0, _DAT_1f8003f4 = sv_s1, _DAT_1f8003f0 = sv_s2,
+      _DAT_1f8003ec = sv_s3, _DAT_1f8003e0 = sv_s6, _DAT_1f8003fc = sv_ra, 0 < mode;
       mode = mode + -1) {
-    if (*(short *)guest_at((uint32_t)(uintptr_t)((a0 + 0xc) ))== 0) {
-      iVar14 = *(int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x1c))));
-      piVar13 = (int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x1c) )))+ 1;
-      if (iVar14 != 0) {
-        /* Generated 0x8018A4F8 jalr's each record fn with the full a0-mode
-         * set: a0 = record[2] (data cursor), a1 = a1 + lh(task+0xE)
+    if (*(short *)guest_at((uint32_t)(uintptr_t)((rec + 0xc) ))== 0) {
+      n = *(int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((rec + 0x1c))));
+      pi = (int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((rec + 0x1c) )))+ 1;
+      if (n != 0) {
+        /* Generated 0x8018A4F8 jalr's each record fn with the full rec-mode
+         * set: rec = record[2] (data cursor), a1 = a1 + lh(task+0xE)
          * (computed once per task block), a2 = a2, mode = record[1]
-         * (per-record field). task_invoke/call_guest only program $a0/$a1,
+         * (per-record field). task_invoke/call_guest only program $rec/$a1,
          * leaving $a2/$mode as stale register-file values — truncated host
          * pointers that the generated mode-7 serializer (0x8018A9E8)
          * dereferences, spraying kernel RAM. call_guest4 reproduces the
          * guest ABI exactly. */
-        uint32_t prim_a1 = a1 + (uint32_t)(int)*(short *)guest_at((uint32_t)(uintptr_t)((a0 + 0xe) ));
+        uint32_t prim_a1 = a1 + (uint32_t)(int)*(short *)guest_at((uint32_t)(uintptr_t)((rec + 0xe) ));
         do {
-          iVar14 = iVar14 + -1;
-          call_guest4((uint32_t)piVar13[3],(uint32_t)piVar13[2],prim_a1,(uint32_t)a2,(uint32_t)piVar13[1]);
-          piVar13 = piVar13 + 4;
-        } while (0 < iVar14);
+          n = n + -1;
+          call_guest4((uint32_t)pi[3],(uint32_t)pi[2],prim_a1,(uint32_t)a2,(uint32_t)pi[1]);
+          pi = pi + 4;
+        } while (0 < n);
       }
     }
-    a0 = a0 + 0x28;
-    uVar7 = _DAT_1f8003fc;
-    uVar8 = _DAT_1f8003e0;
-    uVar9 = _DAT_1f8003ec;
-    uVar10 = _DAT_1f8003f0;
-    uVar11 = _DAT_1f8003f4;
-    uVar12 = _DAT_1f8003f8;
-    uVar1 = _DAT_1f8003fc;
-    uVar2 = _DAT_1f8003f8;
-    uVar3 = _DAT_1f8003f4;
-    uVar4 = _DAT_1f8003f0;
-    uVar5 = _DAT_1f8003ec;
-    uVar6 = _DAT_1f8003e0;
+    rec = rec + 0x28;
+    sv_ra = _DAT_1f8003fc;
+    sv_s6 = _DAT_1f8003e0;
+    sv_s3 = _DAT_1f8003ec;
+    sv_s2 = _DAT_1f8003f0;
+    sv_s1 = _DAT_1f8003f4;
+    sv_s0 = _DAT_1f8003f8;
+    t1 = _DAT_1f8003fc;
+    t2 = _DAT_1f8003f8;
+    t3 = _DAT_1f8003f4;
+    t4 = _DAT_1f8003f0;
+    t5 = _DAT_1f8003ec;
+    t6 = _DAT_1f8003e0;
   }
-  _DAT_1f8003e0 = uVar6;
-  _DAT_1f8003ec = uVar5;
-  _DAT_1f8003f0 = uVar4;
-  _DAT_1f8003f4 = uVar3;
-  _DAT_1f8003f8 = uVar2;
-  _DAT_1f8003fc = uVar1;
-  return a0;
+  _DAT_1f8003e0 = t6;
+  _DAT_1f8003ec = t5;
+  _DAT_1f8003f0 = t4;
+  _DAT_1f8003f4 = t3;
+  _DAT_1f8003f8 = t2;
+  _DAT_1f8003fc = t1;
+  return rec;
 
 }
 
