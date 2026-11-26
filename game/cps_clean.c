@@ -95131,7 +95131,11 @@ block_801A00A8:
 }
 
 /* cps_801a041c — clean CPS transliteration of br2eu_func_801A041C (guest 0x801a041c)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * cd_window_fill_dispatch: claims *s2 (busy flag), computes window size
+ * from ticks*(0xCCCCCCCD>>6)*80, scans 80-byte slots calling
+ * 0x801984A0 until a free one (writes slot+52=ctx), then tail-jalr the
+ * fn ptr @0x801FEF30 with (s2,s4,s5). */
 void cps_801a041c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -98444,7 +98448,9 @@ block_801A28C8:
 }
 
 /* cps_801a28dc — clean CPS transliteration of br2eu_func_801A28DC (guest 0x801a28dc)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * cd_cmd_state_step: dispatches on rec byte @+70 (<4 / ==3 arms);
+ * mid-state commit piece for the armed record (see cd_cmd_rec_arm_extent). */
 void cps_801a28dc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -100358,7 +100364,9 @@ block_801A41FC:
 }
 
 /* cps_801a4518 — clean CPS transliteration of br2eu_func_801A4518 (guest 0x801a4518)
- * from SLES_017.22_full_50.c. */
+ * from SLES_017.22_full_50.c.
+ * node_field_init_copy: copies flag bytes 20-23 from src node, links
+ * self+16 -> self+28 sub-struct, sets byte@+23=1, byte@+24=0; returns node. */
 void cps_801a4518(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -100637,7 +100645,10 @@ block_801A46C0:
 }
 
 /* cps_801a4788 — clean CPS transliteration of br2eu_func_801A4788 (guest 0x801a4788)
- * from SLES_017.22_full_50.c. */
+ * from SLES_017.22_full_50.c.
+ * anim_slot_table_init: for slot a0 (72B rec @0x801FE3F8), walks all 16
+ * word slots calling 0x801A482C on each non-empty chain head; stores
+ * slot idx @rec+68, head @rec+64; a0 saved to gp+28. */
 void cps_801a4788(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -101132,7 +101143,10 @@ block_801A4CC8:
 }
 
 /* cps_801a4d58 — clean CPS transliteration of br2eu_func_801A4D58 (guest 0x801a4d58)
- * from SLES_017.22_full_50.c. */
+ * from SLES_017.22_full_50.c.
+ * list_node_insert: cell = a0*60+a1*12+@0x801FF2B8; alloc via 0x801A54C8,
+ * links node between head/tail (fixups @node/+4,+8), zeroes s16@+12,
+ * jal 0x801A4EBC(a0=s2,a1=s3,a2=s1*16); returns 1/0. */
 void cps_801a4d58(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104313,7 +104327,11 @@ block_801A9F48:
 }
 
 /* cps_801a9f64 — clean CPS transliteration of br2eu_func_801A9F64 (guest 0x801a9f64)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * tween_param_apply: validates s16 fields on ctx t2 (skip if already set),
+ * writes s16@+14=a1, @+10=t7, w@+44/+48, indexes *(t2+24) table by a1*5;
+ * type byte @t2 selects: 0 → build args + jal 0x801ACFE4, 2 → jal
+ * 0x801AD070, else tail 0x801AA0D4. */
 void cps_801a9f64(void)
 {
   CPUState *cpu = clean_cpu_state();
