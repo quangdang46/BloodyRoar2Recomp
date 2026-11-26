@@ -2886,16 +2886,16 @@ void skeleton_pose_step(byte *joints,undefined2 *pose,byte *parts,int count)
 
 void deferred_cmd_reset(void)
 {
-  undefined2 *puVar1;
+  undefined2 *ent;
   int i;
   
   _DAT_801f35f4 = 0;
   i = 0x1f;
-  puVar1 = (undefined2 *)&DAT_801f36ba;
+  ent = (undefined2 *)&DAT_801f36ba;
   do {
-    *puVar1 = 0;
+    *ent = 0;
     i = i + -1;
-    puVar1 = puVar1 + -3;
+    ent = ent + -3;
   } while (-1 < i);
   return;
 
@@ -3105,7 +3105,7 @@ undefined8 vec2_rot_lut(undefined4 angle,int mag)
  * residual modelled explicitly: handlers get pc = motion+0x84). */
 void ev_stream_dispatch(byte *ctrl,byte *motion)
 {
-  byte *pbVar1;
+  byte *ret;
   extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
   extern uint32_t br2_gaddr(const void *p);
   /* Guest 0x8017ea7c carries the stream pc in $a2/$v0 through the
@@ -3125,8 +3125,8 @@ void ev_stream_dispatch(byte *ctrl,byte *motion)
       uint8_t op = *(uint8_t *)guest_at(pc_g);
       uint32_t npc_g = 0;
       if (op < 24) {
-        pbVar1 = (byte *)PTR_FUN_801b4e68[op]((uint8_t *)ctrl,(uint8_t *)motion, pc_g);
-        npc_g = pbVar1 ? guest_of(pbVar1) : 0;
+        ret = (byte *)PTR_FUN_801b4e68[op]((uint8_t *)ctrl,(uint8_t *)motion, pc_g);
+        npc_g = ret ? guest_of(ret) : 0;
       } else {
         /* Opcodes >=24 dispatch through the guest handler table; try the
          * clean-room port first (call_guest4 -> clean_try_dispatch), with
@@ -3134,7 +3134,7 @@ void ev_stream_dispatch(byte *ctrl,byte *motion)
         uint32_t h = *(uint32_t *)guest_at(0x801b4e68u + (uint32_t)op * 4);
         extern uint32_t call_guest4(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
         npc_g = call_guest4(h, br2_gaddr(ctrl), br2_gaddr(motion), pc_g, 0);
-        pbVar1 = npc_g ? (byte *)guest_at(npc_g) : (byte *)0;
+        ret = npc_g ? (byte *)guest_at(npc_g) : (byte *)0;
       }
       { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
         decomp_trace_record(60, pc_g, (uint32_t)br2_gaddr(motion), op, npc_g); }
