@@ -233,6 +233,10 @@
 80129e40 menu_step_a
 8012f2a8 menu_step_b
 801919ac draw_env_timing
+80191c08 draw_env_timing_status_store
+80191c88 draw_env_timing_interpolate
+80191d0c draw_env_timing_span_clamp
+80191d80 draw_env_timing_axis_limit
 80193ea0 sprite_attr_init_a
 80193f60 sprite_attr_init_b
 8018bd40 bitfield_or_write
