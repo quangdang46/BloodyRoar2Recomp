@@ -92,15 +92,15 @@ extern char *s__Id__sys_c_v_1_140_1998_01_12_07_801b82d8;
 #define DAT_801e40b6   (*(uint8_t *)g_DAT_801e40b6)
 #define DAT_801e40b7   (*(uint8_t *)g_DAT_801e40b7)
 #define gpu_mode   (*(uint8_t  *)g_DAT_801b8320)
-#define DAT_801b8321   (*(uint8_t  *)g_DAT_801b8321)
+#define gpu_mode_state   (*(uint8_t  *)g_DAT_801b8321)
 #define gpu_dbg_level   (*(uint8_t  *)g_DAT_801b8322)
 #define DAT_801b8323   (*(uint8_t  *)g_DAT_801b8323)
 #define disp_width   (*(uint16_t *)g_DAT_801b8324)
 #define disp_height   (*(uint16_t *)g_DAT_801b8326)
 #define draw_env   ((uint32_t *)guest_at(0x801b8330))
 #define disp_env_shadow   ((uint32_t *)guest_at(0x801b838c))
-#define DAT_801b839c   (*(int32_t  *)guest_at(0x801b839c))
-#define DAT_801b83e0   (*(uint32_t *)guest_at(0x801b83e0))
+#define disp_env_tail   (*(int32_t  *)guest_at(0x801b839c))
+#define otag_r_tag   (*(uint32_t *)guest_at(0x801b83e0))
 
 /* GPU func table: PTR_PTR_801b8318 -> 0x801b82d8 (verified in
  * payload). Entries are guest addrs of libgpu syscall impls;
@@ -425,7 +425,7 @@ void gpu_clear_otag_r(uint32_t addr,uint32_t tag)
   /* jalr t[11] with a0=addr,a1=tag (a2/a3 = caller leftovers in
    * guest; 0 here — ClearOTagR impl reads only a0/a1). */
   gpu_call(0x2c,addr,tag,0,0);
-  DAT_801b83e0 = 0x41b83cc;
+  otag_r_tag = 0x41b83cc;
   *(uint32_t *)guest_at(addr) = 0x1b83e0;
   return;
 }
@@ -523,7 +523,7 @@ LAB_80190e68:
     cd_dispatch_tblc();
     bios_call_a0((*(uint32_t *)guest_at(0x801b8318)) & 0xffffff);
     gpu_mode = (uint8_t)gpu_mode_regs_apply(arg);
-    DAT_801b8321 = 1;
+    gpu_mode_state = 1;
     disp_width = *(uint16_t *)((char *)guest_at(0x801b83a0) + (uint32_t)gpu_mode * 4);
     disp_height = *(uint16_t *)((char *)guest_at(0x801b83ac) + (uint32_t)gpu_mode * 4);
     guest_memset((uint32_t *)0x801b8330,0xff,0x5c);
