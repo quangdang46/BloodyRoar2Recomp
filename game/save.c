@@ -3387,7 +3387,7 @@ void match_setup_apply(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
   /* 0x54(pa) = (pa[1] ? rules[0x19]&3 : rules[0x19]) */
   v = pa[1] ? (rules[0x19] & 3) : rules[0x19];
   *(uint32_t *)(pa + 0x54) = (uint32_t)v;
-  if ((*(uint32_t *)(pa + 0x54) & 0xfffffffcU) == 0 && match) {
+  if ((*(uint32_t *)(pa + 0x54) & 0xfffffffcu) == 0 && match) {
     uint32_t c = match[1];
     uint32_t nv = 0;
     int have = 1;
@@ -3401,7 +3401,7 @@ void match_setup_apply(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
   /* 0x54(pb) = (pb[1] ? rules[0x1a]&3 : rules[0x1a]) */
   v = pb[1] ? (rules[0x1a] & 3) : rules[0x1a];
   *(uint32_t *)(pb + 0x54) = (uint32_t)v;
-  if ((*(uint32_t *)(pb + 0x54) & 0xfffffffcU) == 0 && match) {
+  if ((*(uint32_t *)(pb + 0x54) & 0xfffffffcu) == 0 && match) {
     uint32_t c = match[1];
     uint32_t nv = 0;
     int have = 1;
@@ -3443,8 +3443,8 @@ void match_setup_apply(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
     u16_tbl_copy(1,a1v);
   }
   if (match && ((*(uint32_t *)(match + 8) >> 4) & 1)) {
-    *(uint32_t *)(pa + 0x54) &= 0xfffffffeU;
-    *(uint32_t *)(pb + 0x54) &= 0xfffffffeU;
+    *(uint32_t *)(pa + 0x54) &= 0xfffffffeu;
+    *(uint32_t *)(pb + 0x54) &= 0xfffffffeu;
   }
   if (match && ((*(uint32_t *)(match + 8) >> 6) & 1)) {
     if (aux) aux[0x20] &= 0xfe;
@@ -3794,7 +3794,7 @@ void card_fade_sm(uint32_t a0)
   int32_t arg0 = (int32_t)a0;
   int32_t bright = 0;
 
-  bright_acc = (int32_t)((uint32_t)(fade_t * 255) + 0xffff06faU);
+  bright_acc = (int32_t)((uint32_t)(fade_t * 255) + 0xffff06fau);
   ctx[1] = 0;
   *(uint16_t *)(ctx + 0x8c) = 0;
   for (;;) {
