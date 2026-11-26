@@ -2913,16 +2913,21 @@ void mc_op_result_poll_alt(void)
         }
     }
     /* Address: 0x80168424, Size: 164 bytes, Blocks: 11 */
+    /* mc_op_result_poll: submit a job on channel s1 (a0), then poll
+     * cd_job_result until the result index at sp+20 stabilizes.
+     * Result classes <5 dispatch through jump table @0x8012212C;
+     * classes >=5 are "in flight" — re-poll until the index stops
+     * changing, then return it in v0. */
 
 block_80168424:
     sp = sp + -40;
     cpu->write_word(sp + 28, s1);
     s1 = a0;
     cpu->write_word(sp + 24, s0);
-    s0 = zero;
+    s0 = zero;                       /* s0 = previous result index (stable-detect) */
     v0 = 0x8012 << 16;  /* 0x80120000 */
     cpu->write_word(sp + 32, s2);
-    s2 = v0 + 8492;
+    s2 = v0 + 8492;                  /* s2 = jump table @0x8012212C */
     cpu->write_word(sp + 36, ra);
     /* fall through to block_80168448 */
 
@@ -2931,7 +2936,7 @@ block_80168448:
     /* delay slot (always executes) */
     a0 = s1;
     psx_check_interrupts_at(cpu, 0x8019EA98u);
-    cpu->pc = 0x8019EA98u; return;  /* CPS jal -> 0x8019EA98 */
+    cpu->pc = 0x8019EA98u; return;  /* CPS jal -> cd_chan_job_submit */
 
 block_80168450:
     int _bc_80168450 = (v0 == zero);  /* save branch cond before delay slot */
@@ -2939,19 +2944,19 @@ block_80168450:
     a0 = zero;
     if (_bc_80168450) {
         psx_check_interrupts_at(cpu, 0x80168448u);
-        goto block_80168448;  /* taken */
+        goto block_80168448;  /* taken — job not accepted yet, resubmit */
     } else {
         psx_check_interrupts_at(cpu, 0x80168458u);
         goto block_80168458;  /* not taken */
     }
 
 block_80168458:
-    a1 = sp + 16;
+    a1 = sp + 16;                    /* &result_word */
     ra = 0x80168464u;  /* jal link before delay slot */
     /* delay slot (always executes) */
-    a2 = sp + 20;
+    a2 = sp + 20;                    /* &result_index */
     psx_check_interrupts_at(cpu, 0x8019FA80u);
-    cpu->pc = 0x8019FA80u; return;  /* CPS jal -> 0x8019FA80 */
+    cpu->pc = 0x8019FA80u; return;  /* CPS jal -> cd_job_result */
 
 block_80168464:
     int _bc_80168464 = (v0 == zero);  /* save branch cond before delay slot */
@@ -2959,14 +2964,14 @@ block_80168464:
     a0 = zero;
     if (_bc_80168464) {
         psx_check_interrupts_at(cpu, 0x80168458u);
-        goto block_80168458;  /* taken */
+        goto block_80168458;  /* taken — result not ready, refetch */
     } else {
         psx_check_interrupts_at(cpu, 0x8016846Cu);
         goto block_8016846C;  /* not taken */
     }
 
 block_8016846C:
-    v1 = cpu->read_word(sp + 20);
+    v1 = cpu->read_word(sp + 20);    /* v1 = result index/class */
     /* nop */  /* 0x80168470: 0x00000000 */
     v0 = (v1 < (uint32_t)5) ? 1 : 0;  /* 0x80168474: 0x2C620005 */
     int _bc_80168478 = (v0 == zero);  /* save branch cond before delay slot */
@@ -2974,41 +2979,41 @@ block_8016846C:
     v0 = v1 << 2;
     if (_bc_80168478) {
         psx_check_interrupts_at(cpu, 0x80168494u);
-        goto block_80168494;  /* taken */
+        goto block_80168494;  /* taken — class >=5: in-flight, wait for stable */
     } else {
         psx_check_interrupts_at(cpu, 0x80168480u);
-        goto block_80168480;  /* not taken */
+        goto block_80168480;  /* not taken — class <5: dispatch handler */
     }
 
 block_80168480:
-    v0 = v0 + s2;
+    v0 = v0 + s2;                    /* table_8012212C[class] */
     v0 = cpu->read_word(v0);
     /* nop */  /* 0x80168488: 0x00000000 */
     uint32_t _jt_8016848C = v0;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x80168490: 0x00000000 */
     psx_check_interrupts_at(cpu, _jt_8016848C);
-    cpu->pc = _jt_8016848C; return;  /* CPS: jr v0 */
+    cpu->pc = _jt_8016848C; return;  /* CPS: jr v0 — tail-dispatch class handler */
 
 block_80168494:
-    v0 = cpu->read_word(sp + 20);
+    v0 = cpu->read_word(sp + 20);    /* current index again */
     /* nop */  /* 0x80168498: 0x00000000 */
     int _bc_8016849C = (s0 == v0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
-    s0 = v0;
+    s0 = v0;                         /* remember this index */
     if (_bc_8016849C) {
         psx_check_interrupts_at(cpu, 0x801684B0u);
-        goto block_801684B0;  /* taken */
+        goto block_801684B0;  /* taken — index unchanged: stable, exit */
     } else {
         psx_check_interrupts_at(cpu, 0x801684A4u);
-        goto block_801684A4;  /* not taken */
+        goto block_801684A4;  /* not taken — still changing: re-poll */
     }
 
 block_801684A4:
     /* delay slot (always executes) */
     /* nop */  /* 0x801684A8: 0x00000000 */
     psx_check_interrupts_at(cpu, 0x80168448u);
-    goto block_80168448;  /* j */
+    goto block_80168448;  /* j — back to submit/poll loop */
 
 block_801684AC:
     v0 = cpu->read_word(sp + 20);
@@ -3048,20 +3053,25 @@ void mc_file_cmd_stable_poll_alt(void)
         }
     }
     /* Address: 0x801685B4, Size: 148 bytes, Blocks: 6 */
+    /* mc_file_cmd_stable_poll: issue mc_file_cmd(s2,s3,s4) = (a0,a1,a2)
+     * and poll until the result stabilizes. Result classes <8 dispatch
+     * through jump table @0x80122144; classes >=8 mean "command still
+     * in flight" — re-issue until the result stops changing, then
+     * return it in v0. */
 
 block_801685B4:
     sp = sp + -40;
     cpu->write_word(sp + 24, s2);
-    s2 = a0;
+    s2 = a0;                         /* s2 = cmd arg0 */
     cpu->write_word(sp + 28, s3);
-    s3 = a1;
+    s3 = a1;                         /* s3 = cmd arg1 */
     cpu->write_word(sp + 32, s4);
-    s4 = a2;
+    s4 = a2;                         /* s4 = cmd arg2 */
     cpu->write_word(sp + 16, s0);
-    s0 = zero;
+    s0 = zero;                       /* s0 = previous result (stable-detect) */
     v0 = 0x8012 << 16;  /* 0x80120000 */
     cpu->write_word(sp + 20, s1);
-    s1 = v0 + 8516;
+    s1 = v0 + 8516;                  /* s1 = jump table @0x80122144 */
     cpu->write_word(sp + 36, ra);
     /* fall through to block_801685E8 */
 
@@ -3072,46 +3082,46 @@ block_801685E8:
     /* delay slot (always executes) */
     a2 = s4;
     psx_check_interrupts_at(cpu, 0x8019FB9Cu);
-    cpu->pc = 0x8019FB9Cu; return;  /* CPS jal -> 0x8019FB9C */
+    cpu->pc = 0x8019FB9Cu; return;  /* CPS jal -> mc_file_cmd */
 
 block_801685F8:
-    v1 = v0;
+    v1 = v0;                         /* v1 = mc_file_cmd result */
     v0 = (v1 < (uint32_t)8) ? 1 : 0;  /* 0x801685FC: 0x2C620008 */
     int _bc_80168600 = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v0 = v1 << 2;
     if (_bc_80168600) {
         psx_check_interrupts_at(cpu, 0x8016861Cu);
-        goto block_8016861C;  /* taken */
+        goto block_8016861C;  /* taken — class >=8: in-flight, wait for stable */
     } else {
         psx_check_interrupts_at(cpu, 0x80168608u);
-        goto block_80168608;  /* not taken */
+        goto block_80168608;  /* not taken — class <8: dispatch handler */
     }
 
 block_80168608:
-    v0 = v0 + s1;
+    v0 = v0 + s1;                    /* table_80122144[class] */
     v0 = cpu->read_word(v0);
     /* nop */  /* 0x80168610: 0x00000000 */
     uint32_t _jt_80168614 = v0;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x80168618: 0x00000000 */
     psx_check_interrupts_at(cpu, _jt_80168614);
-    cpu->pc = _jt_80168614; return;  /* CPS: jr v0 */
+    cpu->pc = _jt_80168614; return;  /* CPS: jr v0 — tail-dispatch class handler */
 
 block_8016861C:
     int _bc_8016861C = (s0 != v1);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
-    s0 = v1;
+    s0 = v1;                         /* remember this result */
     if (_bc_8016861C) {
         psx_check_interrupts_at(cpu, 0x801685E8u);
-        goto block_801685E8;  /* taken */
+        goto block_801685E8;  /* taken — result changed: re-issue/poll */
     } else {
         psx_check_interrupts_at(cpu, 0x80168624u);
-        goto block_80168624;  /* not taken */
+        goto block_80168624;  /* not taken — stable: exit */
     }
 
 block_80168624:
-    v0 = v1;
+    v0 = v1;                         /* return stable result */
     ra = cpu->read_word(sp + 36);
     s4 = cpu->read_word(sp + 32);
     s3 = cpu->read_word(sp + 28);
