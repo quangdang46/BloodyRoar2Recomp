@@ -314,21 +314,21 @@ extern void bios_kobj_tramp();
 void memcard_tick(void)
 
 {
-  ushort uVar1;
-  uint uVar2;
-  int iVar3;
+  ushort tick_dec;
+  uint dir_n;
+  int cd_rc;
   /* Guest builds a 3-byte BCD timestamp at sp+0x10..0x12 (sb @0x10,
    * 0x11, 0x12) and passes sp+0x10 to cd_stamp_to_sector, which reads
    * s[0..2]. Ghidra split it into 3 scalars — keep it one array. */
-  undefined1 local_18[3];
+  undefined1 timestamp_bcd[3];
   
   if (DAT_801bef6f != '\0') {
     return;
   }
-  uVar1 = DAT_801bef76 - 1;
+  tick_dec = DAT_801bef76 - 1;
   if (DAT_801bef76 != 0) {
-    DAT_801bef76 = uVar1;
-    if ((int)((uint)uVar1 << 0x10) < 0) {
+    DAT_801bef76 = tick_dec;
+    if ((int)((uint)tick_dec << 0x10) < 0) {
       DAT_801bef76 = 0;
     }
     brightness_packet_send((int)(short)DAT_801bef76);
@@ -358,8 +358,8 @@ void memcard_tick(void)
       DAT_801bef6d = DAT_801bef6d + '\x01';
       return;
     case '\x14':
-      iVar3 = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
-      if (iVar3 == 2) {
+      cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+      if (cd_rc == 2) {
         /* disasm-verified: sprintf/cd buf = $sp+0x10, frame -0x28
          * (0x80157b44/0x80157f3c) -> entry_sp - 0x18. The buf is handed
          * to cd_cmd_issue_async as a guest param address that generated
@@ -375,40 +375,40 @@ void memcard_tick(void)
         DAT_801bef6d = DAT_801bef6d + '\x01';
         return;
       }
-      if (iVar3 != 5) {
+      if (cd_rc != 5) {
         return;
       }
       DAT_801bef6d = 0x20;
       return;
     case '\x15':
-      iVar3 = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
-      if (iVar3 == 2) {
+      cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+      if (cd_rc == 2) {
         brightness_packet_send(0xffffffff);
         cd_cmd_issue_async(0x1b,0);
         DAT_801bef6d = DAT_801bef6d + '\x01';
         return;
       }
-      if (iVar3 != 5) {
+      if (cd_rc != 5) {
         return;
       }
       DAT_801bef6d = 0x20;
       return;
     case '\x16':
-      iVar3 = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
-      if (iVar3 == 2) {
+      cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+      if (cd_rc == 2) {
         cd_cmd_issue_async(1,0);
         DAT_801bef6d = DAT_801bef6d + '\x01';
         return;
       }
-      if (iVar3 != 5) {
+      if (cd_rc != 5) {
         return;
       }
       DAT_801bef6d = 0x20;
       return;
     case '\x17':
-      iVar3 = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
-      if (iVar3 != 2) {
-        if (iVar3 != 5) {
+      cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+      if (cd_rc != 2) {
+        if (cd_rc != 5) {
           return;
         }
         DAT_801bef6d = 0x20;
@@ -425,9 +425,9 @@ void memcard_tick(void)
       DAT_801bef6d = DAT_801bef6d + '\x01';
       return;
     case '\x19':
-      iVar3 = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
-      if (iVar3 != 2) {
-        if (iVar3 != 5) {
+      cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+      if (cd_rc != 2) {
+        if (cd_rc != 5) {
           return;
         }
         DAT_801bef6d = 0x20;
@@ -454,9 +454,9 @@ void memcard_tick(void)
       DAT_801bef6d = DAT_801bef6d + '\x01';
       return;
     case '\"':
-      iVar3 = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
-      if (iVar3 != 2) {
-        if (iVar3 != 5) {
+      cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+      if (cd_rc != 2) {
+        if (cd_rc != 5) {
           return;
         }
         DAT_801bef6d = DAT_801bef6d + -1;
@@ -473,9 +473,9 @@ void memcard_tick(void)
       DAT_801bef6d = DAT_801bef6d + '\x01';
       return;
     case '$':
-      iVar3 = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
-      if (iVar3 != 2) {
-        if (iVar3 != 5) {
+      cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+      if (cd_rc != 2) {
+        if (cd_rc != 5) {
           return;
         }
         DAT_801bef6d = 0x20;
@@ -502,8 +502,8 @@ void memcard_tick(void)
     DAT_801bef6d = DAT_801bef6d + '\x01';
     break;
   case '\x14':
-    iVar3 = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
-    if (iVar3 == 2) {
+    cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+    if (cd_rc == 2) {
       /* disasm-verified: sprintf/cd buf = $sp+0x10, frame -0x28
        * (0x80157b44/0x80157f3c) -> entry_sp - 0x18. Same guest-frame
        * reservation as the mode-2 branch above: generated CD frames
@@ -517,46 +517,46 @@ void memcard_tick(void)
       br2_guest_frame_free();
       DAT_801bef6d = DAT_801bef6d + '\x01';
     }
-    else if (iVar3 == 5) {
+    else if (cd_rc == 5) {
       DAT_801bef6d = ' ';
     }
     break;
   case '\x15':
-    iVar3 = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
-    if (iVar3 == 2) {
+    cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+    if (cd_rc == 2) {
       brightness_packet_send(0xffffffff);
       cd_cmd_issue_async(3,0);
       DAT_801bef6d = DAT_801bef6d + '\x01';
     }
-    else if (iVar3 == 5) {
+    else if (cd_rc == 5) {
       DAT_801bef6d = ' ';
     }
     break;
   case '\x16':
-    iVar3 = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
-    if (iVar3 == 2) {
+    cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+    if (cd_rc == 2) {
       DAT_801bef6d = DAT_801bef6d + '\x01';
     }
-    else if (iVar3 == 5) {
+    else if (cd_rc == 5) {
       DAT_801bef6d = ' ';
     }
     break;
   case '\x17':
     cd_cmd_issue_async(1,0);
     DAT_801bef6d = DAT_801bef6d + '\x01';
-    iVar3 = cd_result_wait_b_fwd(1,guest_of(&DAT_801bef64));
-    if (iVar3 == 1) {
+    cd_rc = cd_result_wait_b_fwd(1,guest_of(&DAT_801bef64));
+    if (cd_rc == 1) {
       if ((DAT_801bef68 & 0x80) != 0) {
         return;
       }
-      local_18[0] = DAT_801bef67;
-      local_18[1] = DAT_801bef68;
-      local_18[2] = DAT_801bef69;
-      DAT_801bef80 = cd_stamp_to_sector(local_18);
+      timestamp_bcd[0] = DAT_801bef67;
+      timestamp_bcd[1] = DAT_801bef68;
+      timestamp_bcd[2] = DAT_801bef69;
+      DAT_801bef80 = cd_stamp_to_sector(timestamp_bcd);
       return;
     }
-    if (iVar3 != 4) {
-      if (iVar3 != 5) {
+    if (cd_rc != 4) {
+      if (cd_rc != 5) {
         return;
       }
       DAT_801bef6d = 0x20;
@@ -577,11 +577,11 @@ joined_r0x80157c80:
     }
     break;
   case '\x18':
-    iVar3 = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
-    if (iVar3 == 2) {
+    cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+    if (cd_rc == 2) {
       DAT_801bef6d = DAT_801bef6d + -1;
     }
-    else if (iVar3 == 5) {
+    else if (cd_rc == 5) {
       DAT_801bef6d = ' ';
     }
     break;
@@ -600,8 +600,8 @@ joined_r0x80157c80:
     DAT_801bef6d = DAT_801bef6d + '\x01';
     break;
   case '\"':
-    iVar3 = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
-    if (iVar3 == 2) {
+    cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+    if (cd_rc == 2) {
       if ((DAT_801bef64 & 0x10) == 0) {
         DAT_801bef6d = DAT_801bef6d + '\x01';
       }
@@ -609,7 +609,7 @@ joined_r0x80157c80:
         DAT_801bef6d = DAT_801bef6d + -1;
       }
     }
-    else if (iVar3 == 5) {
+    else if (cd_rc == 5) {
       DAT_801bef6d = DAT_801bef6d + -1;
     }
     break;
@@ -618,9 +618,9 @@ joined_r0x80157c80:
     DAT_801bef6d = DAT_801bef6d + '\x01';
     break;
   case '$':
-    iVar3 = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
-    if (iVar3 != 2) {
-      if (iVar3 != 5) {
+    cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+    if (cd_rc != 2) {
+      if (cd_rc != 5) {
         return;
       }
       DAT_801bef6d = 0x20;
@@ -632,24 +632,24 @@ joined_r0x80157c80:
     DAT_801bef6d = DAT_801bef6d + '\x01';
     break;
   case '1':
-    iVar3 = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
-    if (iVar3 != 2) {
-      if (iVar3 != 5) {
+    cd_rc = cd_sync_wait_a(1,(undefined1 *)guest_of(&DAT_801bef64));
+    if (cd_rc != 2) {
+      if (cd_rc != 5) {
         return;
       }
       DAT_801bef6d = 0x20;
       return;
     }
-    uVar2 = cd_dir_read_wrap(&DAT_801bef8c);
-    if ((int)uVar2 < 1) {
+    dir_n = cd_dir_read_wrap(&DAT_801bef8c);
+    if ((int)dir_n < 1) {
       DAT_801bef6d = DAT_801bef6d + -1;
       return;
     }
-    DAT_801bef6c = (byte)uVar2;
-    if ((int)(uVar2 & 0xff) < (int)(short)DAT_801bef72) {
+    DAT_801bef6c = (byte)dir_n;
+    if ((int)(dir_n & 0xff) < (int)(short)DAT_801bef72) {
       /* guest div @0x80157E2C + mfhi: signed div HI = nm % dv;
        * dv==0 -> HI = dividend (recompiler no-trap semantics). */
-      int32_t _dv = (int32_t)(uVar2 & 0xff);
+      int32_t _dv = (int32_t)(dir_n & 0xff);
       int32_t _nm = (int32_t)(short)DAT_801bef72;
       DAT_801bef72 = (ushort)(_dv == 0 ? _nm : _nm % _dv);
     }
@@ -1199,50 +1199,50 @@ LAB_80160558:
 void memcard_slot_poll(void)
 
 {
-  short sVar1;
-  int iVar2;
-  undefined1 *puVar3;
-  char *pcVar4;
-  int iVar5;
-  char acStack_38 [24];
+  short age;
+  int ent_off;
+  undefined1 *rec;
+  char *slot_flag;
+  int slot_i;
+  char status_buf [24];
   
-  slot_status_fill(acStack_38);
-  pcVar4 = &DAT_801f24d0;
-  iVar5 = 0;
-  puVar3 = &DAT_801f24d1;
+  slot_status_fill(status_buf);
+  slot_flag = &DAT_801f24d0;
+  slot_i = 0;
+  rec = &DAT_801f24d1;
   do {
-    if (*pcVar4 != '\0') {
-      if (*pcVar4 == -0x80) {
-        *(undefined2 *)(puVar3 + 0xb) = 0;
-        *pcVar4 = '\x01';
-        _DAT_801f2650 = *(undefined4 *)(puVar3 + 7);
+    if (*slot_flag != '\0') {
+      if (*slot_flag == -0x80) {
+        *(undefined2 *)(rec + 0xb) = 0;
+        *slot_flag = '\x01';
+        _DAT_801f2650 = *(undefined4 *)(rec + 7);
         _DAT_801f2654 = 0x600e3;
         _DAT_801f2666 = 0;
-        iVar2 = (uint)*(ushort *)(puVar3 + 5) * 8;
-        _DAT_801f2668 = *(undefined2 *)guest_at((uint32_t)(iVar2 + -0x7fe0d41e));
-        _DAT_801f2658 = *(undefined2 *)(puVar3 + 1);
-        _DAT_801f265a = *(undefined2 *)(puVar3 + 3);
-        _DAT_801f266c = *(undefined4 *)guest_at((uint32_t)((uint)*(ushort *)guest_at((uint32_t)(iVar2 + -0x7fe0d420)) * 4 + -0x7fe0d920));
-        _DAT_801f268a = *(undefined2 *)guest_at((uint32_t)(iVar2 + -0x7fe0d41c));
-        _DAT_801f268c = *(undefined2 *)guest_at((uint32_t)(iVar2 + -0x7fe0d41a));
+        ent_off = (uint)*(ushort *)(rec + 5) * 8;
+        _DAT_801f2668 = *(undefined2 *)guest_at((uint32_t)(ent_off + -0x7fe0d41e));
+        _DAT_801f2658 = *(undefined2 *)(rec + 1);
+        _DAT_801f265a = *(undefined2 *)(rec + 3);
+        _DAT_801f266c = *(undefined4 *)guest_at((uint32_t)((uint)*(ushort *)guest_at((uint32_t)(ent_off + -0x7fe0d420)) * 4 + -0x7fe0d920));
+        _DAT_801f268a = *(undefined2 *)guest_at((uint32_t)(ent_off + -0x7fe0d41c));
+        _DAT_801f268c = *(undefined2 *)guest_at((uint32_t)(ent_off + -0x7fe0d41a));
         cd_reg_window_update(&DAT_801f2650);
       }
       else {
-        sVar1 = *(short *)(puVar3 + 0xb);
-        *(short *)(puVar3 + 0xb) = sVar1 + 1;
-        if ((short)(sVar1 + 1) == 2) {
-          cd_reg_window_u16(0,*(undefined4 *)(puVar3 + 7));
+        age = *(short *)(rec + 0xb);
+        *(short *)(rec + 0xb) = age + 1;
+        if ((short)(age + 1) == 2) {
+          cd_reg_window_u16(0,*(undefined4 *)(rec + 7));
         }
-        if ((acStack_38[iVar5] == '\0') && (0x14 < *(short *)(puVar3 + 0xb))) {
-          *pcVar4 = '\0';
-          *puVar3 = 0;
+        if ((status_buf[slot_i] == '\0') && (0x14 < *(short *)(rec + 0xb))) {
+          *slot_flag = '\0';
+          *rec = 0;
         }
       }
     }
-    iVar5 = iVar5 + 1;
-    puVar3 = puVar3 + 0x10;
-    pcVar4 = pcVar4 + 0x10;
-  } while (iVar5 < 0x18);
+    slot_i = slot_i + 1;
+    rec = rec + 0x10;
+    slot_flag = slot_flag + 0x10;
+  } while (slot_i < 0x18);
   return;
 }
 
@@ -1253,56 +1253,56 @@ void memcard_slot_poll(void)
 void deferred_cmd_drain(undefined4 a0,int a1)
 
 {
-  ushort uVar1;
-  bool bVar2;
-  bool bVar3;
-  ushort uVar4;
-  short *psVar5;
-  ushort *puVar6;
-  int iVar7;
+  ushort cmdw;
+  bool cls300_seen;
+  bool cls400_seen;
+  ushort cmdcls;
+  short *rec_s;
+  ushort *rec_u;
+  int slot_i;
   
-  bVar2 = false;
-  bVar3 = false;
-  puVar6 = (ushort *)&DAT_801f3600;
-  iVar7 = 0;
-  psVar5 = (short *)&DAT_801f3602;
+  cls300_seen = false;
+  cls400_seen = false;
+  rec_u = (ushort *)&DAT_801f3600;
+  slot_i = 0;
+  rec_s = (short *)&DAT_801f3602;
   do {
-    uVar1 = *puVar6;
-    if (*puVar6 != 0) {
-      if (psVar5[1] == 0) {
-        uVar4 = uVar1 & 0xf00;
-        if (uVar4 == 0x200) {
-          a1 = mc_action_dispatch_b(uVar1 & 0xff,(int)*psVar5);
+    cmdw = *rec_u;
+    if (*rec_u != 0) {
+      if (rec_s[1] == 0) {
+        cmdcls = cmdw & 0xf00;
+        if (cmdcls == 0x200) {
+          a1 = mc_action_dispatch_b(cmdw & 0xff,(int)*rec_s);
         }
-        else if (uVar4 < 0x201) {
-          if (uVar4 == 0x100) {
-            a1 = mc_action_dispatch(uVar1 & 0xff,(int)*psVar5);
+        else if (cmdcls < 0x201) {
+          if (cmdcls == 0x100) {
+            a1 = mc_action_dispatch(cmdw & 0xff,(int)*rec_s);
           }
         }
-        else if (uVar4 == 0x300) {
-          if (bVar2) goto LAB_80156ebc;
-          bVar2 = true;
-          a1 = ret_one(uVar1 & 0xff,(int)*psVar5);
+        else if (cmdcls == 0x300) {
+          if (cls300_seen) goto LAB_80156ebc;
+          cls300_seen = true;
+          a1 = ret_one(cmdw & 0xff,(int)*rec_s);
         }
-        else if (uVar4 == 0x400) {
-          if (bVar3) goto LAB_80156ebc;
-          bVar3 = true;
-          a1 = deferred_cmd_exec(uVar1 & 0xff,(int)*psVar5);
+        else if (cmdcls == 0x400) {
+          if (cls400_seen) goto LAB_80156ebc;
+          cls400_seen = true;
+          a1 = deferred_cmd_exec(cmdw & 0xff,(int)*rec_s);
         }
         if (a1 != 0) {
-          *puVar6 = 0;
+          *rec_u = 0;
           _DAT_801f35f4 = _DAT_801f35f4 + -1;
         }
       }
       else {
-        psVar5[1] = psVar5[1] + -1;
+        rec_s[1] = rec_s[1] + -1;
       }
     }
 LAB_80156ebc:
-    iVar7 = iVar7 + 1;
-    psVar5 = psVar5 + 3;
-    puVar6 = puVar6 + 3;
-    if (0x1f < iVar7) {
+    slot_i = slot_i + 1;
+    rec_s = rec_s + 3;
+    rec_u = rec_u + 3;
+    if (0x1f < slot_i) {
       return;
     }
   } while( true );
@@ -1313,22 +1313,22 @@ LAB_80156ebc:
 void save_defaults_fill(void)
 
 {
-  undefined2 uVar1;
-  undefined1 *puVar2;
-  undefined2 *puVar3;
-  int iVar4;
+  undefined2 def_val;
+  undefined1 *dst;
+  undefined2 *src;
+  int i;
   
-  iVar4 = 0;
-  puVar3 = &DAT_801b3f78;
-  puVar2 = &DAT_801c11e0;
+  i = 0;
+  src = &DAT_801b3f78;
+  dst = &DAT_801c11e0;
   do {
-    uVar1 = *puVar3;
-    puVar3 = puVar3 + 1;
-    iVar4 = iVar4 + 1;
-    *(undefined2 *)(puVar2 + 0x400) = uVar1;
-    *(undefined2 *)(puVar2 + 0x3f0) = uVar1;
-    puVar2 = puVar2 + 2;
-  } while (iVar4 < 8);
+    def_val = *src;
+    src = src + 1;
+    i = i + 1;
+    *(undefined2 *)(dst + 0x400) = def_val;
+    *(undefined2 *)(dst + 0x3f0) = def_val;
+    dst = dst + 2;
+  } while (i < 8);
   return;
 }
 
@@ -1337,41 +1337,41 @@ void save_defaults_fill(void)
 void save_block_init(void)
 
 {
-  undefined *puVar1;
-  undefined1 *puVar2;
-  undefined1 *puVar3;
-  int iVar4;
-  int iVar5;
-  int iVar6;
+  undefined *src_name;
+  undefined1 *dst;
+  undefined1 *src;
+  int i;
+  int j;
+  int n;
   
-  puVar1 = PTR_s___BloodyRoar2__byRAIZINGver1_60_801b43f0;
-  iVar4 = 0;
-  iVar6 = 0x1f;
+  src_name = PTR_s___BloodyRoar2__byRAIZINGver1_60_801b43f0;
+  i = 0;
+  n = 0x1f;
   do {
-    iVar6 = iVar6 + -1;
-    puVar2 = &DAT_801c11e0 + iVar4;
-    puVar3 = puVar1 + iVar4;
-    iVar4 = iVar4 + 1;
-    *puVar2 = *puVar3;
-  } while (-1 < iVar6);
-  iVar4 = 0;
-  iVar6 = 0x264;
+    n = n + -1;
+    dst = &DAT_801c11e0 + i;
+    src = src_name + i;
+    i = i + 1;
+    *dst = *src;
+  } while (-1 < n);
+  i = 0;
+  n = 0x264;
   do {
-    iVar5 = 10;
-    puVar2 = &DAT_801c11f4 + iVar6;
-    *(undefined2 *)(&DAT_801c11ec + iVar6) = 0;
-    *(undefined2 *)(&DAT_801c11e8 + iVar6) = 0;
-    *(undefined2 *)(&DAT_801c11e4 + iVar6) = 0;
-    *(undefined2 *)guest_at((uint32_t)(iVar6 + -0x7fe3ee1e)) = 0;
-    *(undefined2 *)(&DAT_801c11e0 + iVar6) = 0;
+    j = 10;
+    dst = &DAT_801c11f4 + n;
+    *(undefined2 *)(&DAT_801c11ec + n) = 0;
+    *(undefined2 *)(&DAT_801c11e8 + n) = 0;
+    *(undefined2 *)(&DAT_801c11e4 + n) = 0;
+    *(undefined2 *)guest_at((uint32_t)(n + -0x7fe3ee1e)) = 0;
+    *(undefined2 *)(&DAT_801c11e0 + n) = 0;
     do {
-      *(undefined2 *)(puVar2 + 0xe) = 0;
-      iVar5 = iVar5 + -1;
-      puVar2 = puVar2 + -2;
-    } while (-1 < iVar5);
-    iVar4 = iVar4 + 1;
-    iVar6 = iVar6 + 0x24;
-  } while (iVar4 < 0xb);
+      *(undefined2 *)(dst + 0xe) = 0;
+      j = j + -1;
+      dst = dst + -2;
+    } while (-1 < j);
+    i = i + 1;
+    n = n + 0x24;
+  } while (i < 0xb);
   return;
 }
 
@@ -1391,9 +1391,9 @@ void save_tables_commit(void)
 void dbg_marker_mode_set(int a0)
 
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
+  int idx;
+  int j;
+  int i;
   
   DAT_801f5969 = 0;
   DAT_801f5968 = 0;
@@ -1404,18 +1404,18 @@ void dbg_marker_mode_set(int a0)
   if (a0 < 2) {
     if (a0 == 0) {
 LAB_8018bb4c:
-      iVar3 = 0;
+      i = 0;
       do {
-        iVar2 = 0;
-        iVar1 = iVar3 * 2;
+        j = 0;
+        idx = i * 2;
         do {
-          iVar2 = iVar2 + 1;
-          (&DAT_801f596c)[iVar1] = 0;
-          (&DAT_801f5970)[iVar1] = 0;
-          iVar1 = iVar2 + iVar3 * 2;
-        } while (iVar2 < 2);
-        iVar3 = iVar3 + 1;
-      } while (iVar3 < 2);
+          j = j + 1;
+          (&DAT_801f596c)[idx] = 0;
+          (&DAT_801f5970)[idx] = 0;
+          idx = j + i * 2;
+        } while (j < 2);
+        i = i + 1;
+      } while (i < 2);
       DAT_801b55d0 = (char)a0;
       return;
     }
