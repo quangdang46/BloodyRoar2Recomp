@@ -4920,77 +4920,87 @@ static void scene_op_loop(uint32_t entry)
   uint32_t a1, a2;
   if (!c) return;
   a1 = c->gpr[5];
-  if (entry == 0x801b0684u) goto L_cursor_set;      /* frag 0x801B0684  */
-  if (entry == 0x801b0688u) goto L_op_next;         /* frag 0x801B0688  */
-
-L_step_head:                                         /* 0x801B05D8 */
-  a2 = br2_ld32(a1 + 0x58);                          /* lw a2,0x58(a1)  */
-  c->gpr[6] = a2;
-  c->gpr[2] = (uint32_t)br2_ld16(a2);                /* lhu v0,0(a2)    */
-  c->gpr[3] = c->gpr[2] & 0xff00u;                   /* v1 = tag & FF00 */
-  c->gpr[7] = c->gpr[2] & 0x00ffu;                   /* delay: a3=&FF  */
-  if (c->gpr[3] == c->gpr[9]) goto L_idx;            /* beq v1,t1->0620 */
-  c->gpr[2] = ((int32_t)c->gpr[9] < (int32_t)c->gpr[3]) ? 1u : 0u; /* slt */
-  {
-    uint32_t take = (c->gpr[2] != 0u);
-    c->gpr[2] = 0xff00u;                             /* delay: v0=FF00  */
-    if (take) goto L_ff00_chk;                       /* bnez -> 0610    */
+  /* Entry fragments: 0x801B0684 stores $v0 as the record cursor, then
+   * both it and 0x801B0688 enter at the op_next tail check; only the
+   * 0x801B05D8 step head (and loop-backs) run the tag dispatch. */
+  int skip_step = (entry == 0x801b0684u || entry == 0x801b0688u);
+  if (entry == 0x801b0684u) {
+    br2_st32(a1 + 0x58, c->gpr[2]);                     /* sw v0,0x58(a1)  */
   }
-  if (c->gpr[3] == c->gpr[10]) goto L_cond_adv;      /* beq v1,t2->062C */
-  goto L_op_next;                                    /* j 0x801B0688    */
 
-L_ff00_chk:                                          /* 0x801B0610 */
-  if (c->gpr[3] == c->gpr[2]) goto L_ff00_body;      /* beq v1,FF00    */
-  goto L_op_next;                                    /* j 0x801B0688    */
+  for (;;) {
+    if (!skip_step) {
+      /* ---- step head 0x801B05D8: tag dispatch ---- */
+      a2 = br2_ld32(a1 + 0x58);                          /* lw a2,0x58(a1)  */
+      c->gpr[6] = a2;
+      c->gpr[2] = (uint32_t)br2_ld16(a2);                /* lhu v0,0(a2)    */
+      c->gpr[3] = c->gpr[2] & 0xff00u;                   /* v1 = tag & FF00 */
+      c->gpr[7] = c->gpr[2] & 0x00ffu;                   /* delay: a3=&FF  */
+      /* action: 0 = op_next, 1 = cursor_set (sw gpr[2]),
+       *         2 = emit_idx (gpr[2] = halfword index) */
+      int action = 0;
+      if (c->gpr[3] == c->gpr[9]) {                      /* beq v1,t1 */
+        c->gpr[2] = (uint32_t)br2_ld16(a2 + 2);          /* lhu v0,2(a2)    */
+        action = 2;
+      } else {
+        int t1_lt = ((int32_t)c->gpr[9] < (int32_t)c->gpr[3]); /* slt */
+        c->gpr[2] = 0xff00u;                             /* delay: v0=FF00  */
+        if (t1_lt) {                                     /* bnez -> 0610    */
+          if (c->gpr[3] == c->gpr[2]) {                  /* beq v1,FF00     */
+            /* ---- L_ff00_body 0x801B0664 ---- */
+            c->gpr[2] = (uint32_t)br2_ld16(a1 + 0x62);   /* lhu v0,0x62(a1) */
+            int inb = (c->gpr[2] < c->gpr[7]) ? 1 : 0;   /* sltu v0,v0,a3   */
+            c->gpr[2] = a2 + 4u;                         /* delay: v0=a2+4  */
+            if (inb) {
+              action = 1;                                /* -> cursor_set  */
+            } else {
+              /* 0x801B0678: *(gp_cache+0x14) = 0; jr ra */
+              c->gpr[2] = br2_ld32((uint32_t)(c->gpr[28] + 0x4c));
+              br2_st32(c->gpr[2] + 0x14, 0u);            /* delay slot      */
+              return;
+            }
+          }
+          /* else -> op_next */
+        } else if (c->gpr[3] == c->gpr[10]) {            /* beq v1,t2      */
+          /* ---- L_cond_adv 0x801B062C ---- */
+          c->gpr[4] = (uint32_t)br2_ld16(a1 + 0x62);     /* lhu a0,0x62(a1) */
+          int adv = (c->gpr[7] < c->gpr[4]) ? 1 : 0;     /* sltu v0,a3,a0   */
+          c->gpr[2] = a2 + 4u;                           /* delay: v0=a2+4  */
+          if (adv) {
+            action = 1;                                  /* -> cursor_set  */
+          } else {
+            /* 0x801B0640: index++ then emit via cursor+2 halfword */
+            c->gpr[3] = br2_ld32(a1 + 0x58);             /* lw v1,0x58(a1)  */
+            c->gpr[2] = c->gpr[4] + 1u;                  /* v0 = a0+1       */
+            br2_st16(a1 + 0x62, (uint16_t)c->gpr[2]);    /* sh v0,0x62(a1)  */
+            c->gpr[2] = (uint32_t)br2_ld16(c->gpr[3] + 2);/* lhu v0,2(v1)   */
+            action = 2;
+          }
+        }
+        /* else -> op_next */
+      }
 
-L_idx:                                               /* 0x801B0620 */
-  c->gpr[2] = (uint32_t)br2_ld16(a2 + 2);             /* lhu v0,2(a2)    */
-  goto L_emit_idx;                                   /* j 0x801B0650    */
+      if (action == 1) {                                 /* L_cursor_set   */
+        br2_st32(a1 + 0x58, c->gpr[2]);                  /* sw v0,0x58(a1)  */
+      } else if (action == 2) {                          /* L_emit_idx     */
+        c->gpr[3] = br2_ld32(a1 + 0x5c);                 /* lw v1,0x5C(a1)  */
+        c->gpr[2] <<= 2;                                 /* sll v0,v0,2     */
+        c->gpr[3] += c->gpr[2];                          /* v1 += v0        */
+        br2_st32(a1 + 0x58, c->gpr[3]);                  /* delay: sw cur   */
+      }
+      /* action 0 falls through to op_next */
+    }
+    skip_step = 0;
 
-L_cond_adv:                                          /* 0x801B062C */
-  c->gpr[4] = (uint32_t)br2_ld16(a1 + 0x62);          /* lhu a0,0x62(a1) */
-  c->gpr[2] = (c->gpr[7] < c->gpr[4]) ? 1u : 0u;      /* sltu v0,a3,a0   */
-  {
-    uint32_t take = (c->gpr[2] != 0u);
-    c->gpr[2] = a2 + 4u;                              /* delay: v0=a2+4  */
-    if (take) goto L_cursor_set;                      /* -> 0x801B0684   */
+    /* ---- op_next 0x801B0688: loop while next tag nonzero ---- */
+    c->gpr[2] = br2_ld32(a1 + 0x58);                     /* lw v0,0x58(a1)  */
+    c->gpr[2] = (uint32_t)br2_ld16(c->gpr[2]);           /* lhu v0,0(v0)    */
+    c->gpr[2] &= 0xff00u;                                /* andi v0,FF00    */
+    if (c->gpr[2] == 0u) {                               /* beqz -> flush   */
+      scene_op_flush();                                 /* -> 0x801B06A4   */
+      return;
+    }
   }
-  /* 0x801B0640: index++ then emit via cursor+2 halfword */
-  c->gpr[3] = br2_ld32(a1 + 0x58);                    /* lw v1,0x58(a1)  */
-  c->gpr[2] = c->gpr[4] + 1u;                         /* v0 = a0+1       */
-  br2_st16(a1 + 0x62, (uint16_t)c->gpr[2]);           /* sh v0,0x62(a1)  */
-  c->gpr[2] = (uint32_t)br2_ld16(c->gpr[3] + 2);      /* lhu v0,2(v1)    */
-  /* fall through to 0x801B0650 */
-L_emit_idx:                                          /* 0x801B0650 */
-  c->gpr[3] = br2_ld32(a1 + 0x5c);                    /* lw v1,0x5C(a1)  */
-  c->gpr[2] <<= 2;                                    /* sll v0,v0,2     */
-  c->gpr[3] += c->gpr[2];                             /* v1 += v0        */
-  br2_st32(a1 + 0x58, c->gpr[3]);                     /* delay: sw cur   */
-  goto L_op_next;                                    /* j 0x801B0688    */
-
-L_ff00_body:                                         /* 0x801B0664 */
-  c->gpr[2] = (uint32_t)br2_ld16(a1 + 0x62);          /* lhu v0,0x62(a1) */
-  c->gpr[2] = (c->gpr[2] < c->gpr[7]) ? 1u : 0u;      /* sltu v0,v0,a3   */
-  {
-    uint32_t take = (c->gpr[2] != 0u);
-    c->gpr[2] = a2 + 4u;                              /* delay: v0=a2+4  */
-    if (take) goto L_cursor_set;                      /* -> 0x801B0684   */
-  }
-  /* 0x801B0678: *(gp_cache+0x14) = 0; jr ra */
-  c->gpr[2] = br2_ld32((uint32_t)(c->gpr[28] + 0x4c));
-  br2_st32(c->gpr[2] + 0x14, 0u);                     /* delay slot      */
-  return;
-
-L_cursor_set:                                        /* 0x801B0684 */
-  br2_st32(a1 + 0x58, c->gpr[2]);                     /* sw v0,0x58(a1)  */
-  /* fall through */
-L_op_next:                                           /* 0x801B0688 */
-  c->gpr[2] = br2_ld32(a1 + 0x58);                    /* lw v0,0x58(a1)  */
-  c->gpr[2] = (uint32_t)br2_ld16(c->gpr[2]);          /* lhu v0,0(v0)    */
-  c->gpr[2] &= 0xff00u;                               /* andi v0,FF00    */
-  if (c->gpr[2] != 0u) goto L_step_head;              /* bnez -> 05D8    */
-  scene_op_flush();                                  /* -> 0x801B06A4   */
-  return;
 }
 
 /* scene_op_step — entry 0x801B05D8 (op-stream step dispatch). */
