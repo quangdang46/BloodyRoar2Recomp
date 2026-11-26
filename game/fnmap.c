@@ -1319,6 +1319,13 @@ extern void print_dispatch_guest(void);
 extern void print_dispatch_selfdesc_guest(void);
 extern void print_mode_dispatch_b(void);
 extern void print_mode_dispatch_guest(void);
+extern void printf_arg_byte(void);
+extern void printf_arg_dec(void);
+extern void printf_arg_dec_l(void);
+extern void printf_arg_hex(void);
+extern void printf_arg_oct(void);
+extern void printf_arg_oct_l(void);
+extern void printf_arg_word(void);
 extern void printf_core(void);
 extern void printf_cps_8018e63c(void);
 extern void printf_cps_8018e64c(void);
@@ -1329,6 +1336,8 @@ extern void printf_cps_8018e680(void);
 extern void printf_cps_8018e708(void);
 extern void printf_cps_8018e710(void);
 extern void printf_cps_8018e76c(void);
+extern void printf_flags_h_set(void);
+extern void printf_flags_l_set(void);
 extern void printf_forward_guest(void);
 extern void proj_coord_gte_emit(void);
 extern void pt_box_radius_test(void);
@@ -2730,6 +2739,15 @@ const Br2FnEnt fn_table[] = {
   { 0x8018e708, (void *)printf_cps_8018e708 },
   { 0x8018e710, (void *)printf_cps_8018e710 },
   { 0x8018e76c, (void *)printf_cps_8018e76c },
+  { 0x8018e774, (void *)printf_flags_h_set },
+  { 0x8018e77c, (void *)printf_flags_l_set },
+  { 0x8018e784, (void *)printf_arg_byte },
+  { 0x8018e7a0, (void *)printf_arg_dec_l },
+  { 0x8018e7a4, (void *)printf_arg_dec },
+  { 0x8018e7e8, (void *)printf_arg_word },
+  { 0x8018e824, (void *)printf_arg_oct_l },
+  { 0x8018e828, (void *)printf_arg_oct },
+  { 0x8018e85c, (void *)printf_arg_hex },
   { 0x8018ec30, (void *)ctype_adj_m32 },
   { 0x8018ec64, (void *)ctype_adj_p32 },
   { 0x8018eca0, (void *)strchr_bounded },
