@@ -2861,38 +2861,38 @@ void rec_clear_irq(uint32_t a0,uint32_t a1)
 extern void blk_1f26c0_init(void);
 uint32_t fighter_record_build(uint32_t a0,uint32_t a1,uint32_t a2)
 {
-  uint8_t *s0 = (uint8_t *)guest_at(a0);
-  uint32_t s1 = a1, acc = a1, s3 = a2;
-  uint32_t t3, t2, base, i;
-  uint8_t *p, *t1, *a2p;
-  if (s0 == NULL) return 0;
+  uint8_t *rec = (uint8_t *)guest_at(a0);
+  uint32_t slot = a1, acc = a1, off0 = a2;
+  uint32_t hdr_sz, cnt, base, i;
+  uint8_t *pp, *dst, *src;
+  if (rec == NULL) return 0;
   rec_slot_scan();
   rec_clear_irq(6,0x18);
   blk_1f26c0_init();
-  t3 = ((uint32_t)*(uint16_t *)(s0 + 0x12) << 9) + 0xa20;
-  *(uint32_t *)guest_at(0x801f36d0 + (s1 << 2)) =
-      *(uint32_t *)(s0 + 0xc) - t3;
-  p = s0 + (((uint32_t)*(uint16_t *)(s0 + 0x12)) << 9) + 0x820;
+  hdr_sz = ((uint32_t)*(uint16_t *)(rec + 0x12) << 9) + 0xa20;
+  *(uint32_t *)guest_at(0x801f36d0 + (slot << 2)) =
+      *(uint32_t *)(rec + 0xc) - hdr_sz;
+  pp = rec + (((uint32_t)*(uint16_t *)(rec + 0x12)) << 9) + 0x820;
   for (i = 0; i < 0x40; i++) {
-    *(uint32_t *)guest_at(0x801f26e0 + ((s1 << 6) + i) * 4) = s3 + acc;
-    acc += (uint32_t)*(uint16_t *)p * 8;
-    p += 2;
+    *(uint32_t *)guest_at(0x801f26e0 + ((slot << 6) + i) * 4) = off0 + acc;
+    acc += (uint32_t)*(uint16_t *)pp * 8;
+    pp += 2;
   }
-  t2 = *(uint16_t *)(s0 + 0x14);
-  if (t2 >= 0x41) t2 = 0x40;
-  t1 = (uint8_t *)guest_at(0x801f2be0 + (s1 << 9));
-  a2p = s0 + 0x832;
-  base = s1 << 6;
-  for (i = 0; i < t2; i++) {
-    int32_t d = (int32_t)a2p[-0xe] - (int32_t)a2p[-0xc];
-    *(uint16_t *)(t1 + 2) = (uint16_t)(d * 0x100 + a2p[-0xd]);
-    *(uint16_t *)(t1 + 0) = (uint16_t)(*(uint16_t *)(a2p + 4) + base);
-    *(uint16_t *)(t1 + 4) = *(uint16_t *)(a2p - 2);
-    *(uint16_t *)(t1 + 6) = *(uint16_t *)(a2p + 0);
-    a2p += 0x20;
-    t1 += 8;
+  cnt = *(uint16_t *)(rec + 0x14);
+  if (cnt >= 0x41) cnt = 0x40;
+  dst = (uint8_t *)guest_at(0x801f2be0 + (slot << 9));
+  src = rec + 0x832;
+  base = slot << 6;
+  for (i = 0; i < cnt; i++) {
+    int32_t d = (int32_t)src[-0xe] - (int32_t)src[-0xc];
+    *(uint16_t *)(dst + 2) = (uint16_t)(d * 0x100 + src[-0xd]);
+    *(uint16_t *)(dst + 0) = (uint16_t)(*(uint16_t *)(src + 4) + base);
+    *(uint16_t *)(dst + 4) = *(uint16_t *)(src - 2);
+    *(uint16_t *)(dst + 6) = *(uint16_t *)(src + 0);
+    src += 0x20;
+    dst += 8;
   }
-  return guest_of(s0 + t3);
+  return guest_of(rec + hdr_sz);
 }
 
 /* lzss_decode — LZSS stream decoder. src[8..11] returned verbatim;
@@ -2905,12 +2905,12 @@ uint32_t lzss_decode(uint32_t dst,uint32_t src)
 {
   uint8_t *sd = (uint8_t *)guest_at(src);
   decomp_trace_record(2,dst,src,2,0);
-  uint32_t t1 = *(const uint32_t *)(sd + 8);
+  uint32_t ret_val = *(const uint32_t *)(sd + 8);
   const uint8_t *ip = sd + 0xc;
   uint8_t *op = (uint8_t *)guest_at(dst);
   uint8_t *op0 = op;
   uint32_t runaway_logged = 0;
-  uint32_t a2 = 0x8000;
+  uint32_t bitwin = 0x8000;
   for (;;) {
     /* DIAGNOSTIC: flag runaway decode (garbage src -> unbounded *op++) so the
      * guilty src is captured before it sprays the 0x5555 poison pattern. */
@@ -2919,61 +2919,61 @@ uint32_t lzss_decode(uint32_t dst,uint32_t src)
       runaway_logged = 1;
     }
     uint32_t bit, len;
-    const uint8_t *a3;
-    if ((a2 & 0xffff) == 0x8000) {
+    const uint8_t *ref;
+    if ((bitwin & 0xffff) == 0x8000) {
       uint32_t b = *ip++;
-      a2 = (b << 8) | 0x80;
+      bitwin = (b << 8) | 0x80;
     }
-    bit = a2 & 0x8000;
-    a2 <<= 1;
+    bit = bitwin & 0x8000;
+    bitwin <<= 1;
     if (bit) {
       *op++ = *ip++;
       continue;
     }
-    if ((a2 & 0xffff) == 0x8000) {
+    if ((bitwin & 0xffff) == 0x8000) {
       uint32_t b = *ip++;
-      a2 = (b << 8) | 0x80;
+      bitwin = (b << 8) | 0x80;
     }
-    bit = a2 & 0x8000;
-    a2 <<= 1;
+    bit = bitwin & 0x8000;
+    bitwin <<= 1;
     if (bit) {
       /* long back-ref: 13-bit offset, len in low 3 bits or count byte */
-      uint32_t v0 = ((uint32_t)ip[0] << 8) | ip[1];
+      uint32_t be16 = ((uint32_t)ip[0] << 8) | ip[1];
       uint32_t b1 = ip[1];
-      int32_t off = (int32_t)(v0 >> 3) - 0x2000;
+      int32_t off = (int32_t)(be16 >> 3) - 0x2000;
       ip += 2;
       len = b1 & 7;
       if (len != 0) {
         len += 2;
       } else {
         len = *ip++;
-        if (len == 0) return t1;
+        if (len == 0) return ret_val;
         len += 1;
       }
-      a3 = op + off;
+      ref = op + off;
     } else {
       /* short back-ref: 2-bit len code + offset byte */
       uint32_t l = 0, b;
-      if ((a2 & 0xffff) == 0x8000) {
+      if ((bitwin & 0xffff) == 0x8000) {
         uint32_t bb = *ip++;
-        a2 = (bb << 8) | 0x80;
+        bitwin = (bb << 8) | 0x80;
       }
-      bit = a2 & 0x8000;
-      a2 <<= 1;
+      bit = bitwin & 0x8000;
+      bitwin <<= 1;
       if (bit) l = 2;
-      if ((a2 & 0xffff) == 0x8000) {
+      if ((bitwin & 0xffff) == 0x8000) {
         uint32_t bb = *ip++;
-        a2 = (bb << 8) | 0x80;
+        bitwin = (bb << 8) | 0x80;
       }
-      bit = a2 & 0x8000;
-      a2 <<= 1;
+      bit = bitwin & 0x8000;
+      bitwin <<= 1;
       if (bit) l += 1;
       len = l + 2;
       b = *ip++;
-      a3 = op + ((int32_t)b - 0x100);
+      ref = op + ((int32_t)b - 0x100);
     }
     while (len != 0) {
-      *op++ = *a3++;
+      *op++ = *ref++;
       len--;
     }
   }
