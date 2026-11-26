@@ -6951,31 +6951,31 @@ int fx_record_alloc(undefined4 pos_g,int kind,uint fl,undefined4 aux,undefined4 
 
 void emit_task_spawn(int *pos,int kind,undefined2 x,short y,undefined2 p5, undefined2 p6)
 {
-  int iVar1;
-  int *piVar2;
-  int *piVar3;
-  if ((DAT_1f8000b1 == '\0') && (iVar1 = always_one(3), iVar1 != 0)) {
-    iVar1 = (int)(intptr_t)task_node_alloc(1,2,0xb,0x8013ce68,0,kind * 0x62 + 0x2c);
-    if (iVar1 != 0) {
-      piVar3 = (int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0x10))));
-      piVar2 = piVar3 + 0xb;
-      *piVar3 = (int)br2_gaddr(piVar2);
-      piVar2 = piVar2 + kind * 10;
-      piVar3[1] = (int)br2_gaddr(piVar2);
-      piVar2 = piVar2 + kind * 10;
-      piVar3[2] = (int)br2_gaddr(piVar2);
-      piVar3[3] = (int)br2_gaddr(piVar2 + kind * 2);
-      piVar3[4] = (int)br2_gaddr(piVar2 + kind * 2 + kind * 2);
-      *(undefined2 *)(piVar3 + 7) = 0;
-      *(short *)((intptr_t)piVar3 + 0x1e) = (short)kind;
-      *(undefined2 *)(piVar3 + 8) = 0;
-      *(short *)(piVar3 + 9) = 0x400 - y;
-      *(undefined2 *)((intptr_t)piVar3 + 0x22) = x;
-      *(undefined2 *)((intptr_t)piVar3 + 0x26) = p5;
-      iVar1 = pos[1];
-      piVar3[5] = *pos;
-      piVar3[6] = iVar1;
-      *(undefined2 *)(piVar3 + 10) = p6;
+  int tmp;
+  int *cur;
+  int *pay;
+  if ((DAT_1f8000b1 == '\0') && (tmp = always_one(3), tmp != 0)) {
+    tmp = (int)(intptr_t)task_node_alloc(1,2,0xb,0x8013ce68,0,kind * 0x62 + 0x2c);
+    if (tmp != 0) {
+      pay = (int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((tmp + 0x10))));
+      cur = pay + 0xb;
+      *pay = (int)br2_gaddr(cur);
+      cur = cur + kind * 10;
+      pay[1] = (int)br2_gaddr(cur);
+      cur = cur + kind * 10;
+      pay[2] = (int)br2_gaddr(cur);
+      pay[3] = (int)br2_gaddr(cur + kind * 2);
+      pay[4] = (int)br2_gaddr(cur + kind * 2 + kind * 2);
+      *(undefined2 *)(pay + 7) = 0;
+      *(short *)((intptr_t)pay + 0x1e) = (short)kind;
+      *(undefined2 *)(pay + 8) = 0;
+      *(short *)(pay + 9) = 0x400 - y;
+      *(undefined2 *)((intptr_t)pay + 0x22) = x;
+      *(undefined2 *)((intptr_t)pay + 0x26) = p5;
+      tmp = pos[1];
+      pay[5] = *pos;
+      pay[6] = tmp;
+      *(undefined2 *)(pay + 10) = p6;
     }
   }
   return;
@@ -7005,103 +7005,103 @@ void emit_task_spawn_b(undefined4 *pos,undefined4 ea,undefined4 eb,undefined4 fl
 
 void quad_fx_spawn(int f,int kind,undefined4 *pos,undefined2 aux,ushort fl, int p6,int p7)
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
-  int iVar4;
-  int iVar5;
-  undefined2 *puVar6;
-  undefined2 uVar7;
-  int *piVar8;
+  int e1;
+  int e2;
+  int e3;
+  int node;
+  int tmp2;
+  undefined2 *tp;
+  undefined2 tv;
+  int *pay;
   if (DAT_1f8000b1 != '\0') {
     return;
   }
-  iVar4 = (int)(intptr_t)task_node_alloc(1,2,7,0x80141610,0,0x78);
-  if (iVar4 == 0) {
+  node = (int)(intptr_t)task_node_alloc(1,2,7,0x80141610,0,0x78);
+  if (node == 0) {
     return;
   }
-  piVar8 = (int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar4 + 0x10))));
-  iVar5 = (int)(intptr_t)prim_group_build((undefined4)br2_gaddr(piVar8 + 1),*(undefined4 *)(&DAT_801c43a8 + kind * 4),0,1);
-  piVar8[1] = iVar5;
-  if (iVar5 != 0) {
-    iVar5 = tween_chan_alloc(iVar5,0);
-    if (iVar5 != 0) {
-      piVar8[2] = 0;
+  pay = (int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((node + 0x10))));
+  tmp2 = (int)(intptr_t)prim_group_build((undefined4)br2_gaddr(pay + 1),*(undefined4 *)(&DAT_801c43a8 + kind * 4),0,1);
+  pay[1] = tmp2;
+  if (tmp2 != 0) {
+    tmp2 = tween_chan_alloc(tmp2,0);
+    if (tmp2 != 0) {
+      pay[2] = 0;
       if (kind != 0x17) {
 LAB_80141918:
-        *piVar8 = f;
-        piVar8[3] = (intptr_t)pos;
-        *(ushort *)(piVar8 + 0x1c) = fl;
-        *(short *)((intptr_t)piVar8 + 0x72) = (short)p6;
-        *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(piVar8[1] ))+ 0x14) ))= *pos;
-        *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(piVar8[1] ))+ 0x18) ))= pos[1];
-        *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(piVar8[1] ))+ 0x1c) ))= pos[2];
+        *pay = f;
+        pay[3] = (intptr_t)pos;
+        *(ushort *)(pay + 0x1c) = fl;
+        *(short *)((intptr_t)pay + 0x72) = (short)p6;
+        *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(pay[1] ))+ 0x14) ))= *pos;
+        *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(pay[1] ))+ 0x18) ))= pos[1];
+        *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(pay[1] ))+ 0x1c) ))= pos[2];
         if (p7 != 0) {
-          prim_attr_word_set(piVar8[1],(p7 + 0x1e0U & 0x1ff) << 6 | 0x1a);
+          prim_attr_word_set(pay[1],(p7 + 0x1e0U & 0x1ff) << 6 | 0x1a);
         }
         if (p6 == 1) {
-          rotmat2_build(0xfffffc00,piVar8 + 4);
+          rotmat2_build(0xfffffc00,pay + 4);
           if (-1 < *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f + 0x20) ))+ 0x128)))) {
-            *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(piVar8[1] ))+ 0x18) ))= (int)*(short *)guest_at((uint32_t)(uintptr_t)((f + 0x94)));
+            *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(pay[1] ))+ 0x18) ))= (int)*(short *)guest_at((uint32_t)(uintptr_t)((f + 0x94)));
           }
-          *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(piVar8[1] ))+ 0x18) ))= 0;
+          *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(pay[1] ))+ 0x18) ))= 0;
         }
         else if (p6 < 2) {
           if (p6 == 0) {
             angle_pair_rotmat((uint)*(byte *)guest_at((uint32_t)(uintptr_t)((f + 0xdb) ))* -0x10 + 0xc00,
                          -((int)*(short *)guest_at((uint32_t)(uintptr_t)((f + 0x4e) ))+ (int)*(short *)guest_at((uint32_t)(uintptr_t)((f + 0xc6)))),
-                         piVar8 + 4);
+                         pay + 4);
           }
         }
         else if (p6 == 2) {
-          tween_dur_spread(piVar8[1],3);
+          tween_dur_spread(pay[1],3);
         }
         else if (p6 == 3) {
-          rotmat2_build(0xfffffc00,piVar8 + 4);
+          rotmat2_build(0xfffffc00,pay + 4);
         }
-        iVar4 = DAT_801b1820;
-        piVar8[0xc] = DAT_801b1820;
-        iVar5 = DAT_801b1824;
-        piVar8[0xd] = DAT_801b1824;
-        iVar1 = DAT_801b1828;
-        piVar8[0xe] = DAT_801b1828;
-        iVar2 = DAT_801b182c;
-        piVar8[0xf] = DAT_801b182c;
-        iVar3 = DAT_801b1830;
-        piVar8[0x14] = iVar4;
-        piVar8[0x15] = iVar5;
-        piVar8[0x16] = iVar1;
-        piVar8[0x17] = iVar2;
-        *(undefined2 *)(piVar8 + 0x14) = aux;
-        *(undefined2 *)(piVar8 + 0x16) = aux;
-        piVar8[0x10] = iVar3;
-        piVar8[0x18] = iVar3;
-        *(undefined2 *)(piVar8 + 0x18) = aux;
+        node = DAT_801b1820;
+        pay[0xc] = DAT_801b1820;
+        tmp2 = DAT_801b1824;
+        pay[0xd] = DAT_801b1824;
+        e1 = DAT_801b1828;
+        pay[0xe] = DAT_801b1828;
+        e2 = DAT_801b182c;
+        pay[0xf] = DAT_801b182c;
+        e3 = DAT_801b1830;
+        pay[0x14] = node;
+        pay[0x15] = tmp2;
+        pay[0x16] = e1;
+        pay[0x17] = e2;
+        *(undefined2 *)(pay + 0x14) = aux;
+        *(undefined2 *)(pay + 0x16) = aux;
+        pay[0x10] = e3;
+        pay[0x18] = e3;
+        *(undefined2 *)(pay + 0x18) = aux;
         if ((fl & 0x1000) == 0) {
-          *(undefined2 *)(piVar8 + 0xc) = DAT_801b2340;
-          *(undefined2 *)(piVar8 + 0xe) = DAT_801b2342;
-          *(undefined2 *)(piVar8 + 0x10) = DAT_801b2344;
-          puVar6 = &DAT_801b2348;
-          uVar7 = DAT_801b2348;
+          *(undefined2 *)(pay + 0xc) = DAT_801b2340;
+          *(undefined2 *)(pay + 0xe) = DAT_801b2342;
+          *(undefined2 *)(pay + 0x10) = DAT_801b2344;
+          tp = &DAT_801b2348;
+          tv = DAT_801b2348;
         }
         else {
-          *(undefined2 *)(piVar8 + 0xc) = DAT_801b2330;
-          *(undefined2 *)(piVar8 + 0xe) = DAT_801b2332;
-          *(undefined2 *)(piVar8 + 0x10) = DAT_801b2334;
-          puVar6 = &DAT_801b2338;
-          uVar7 = DAT_801b2338;
+          *(undefined2 *)(pay + 0xc) = DAT_801b2330;
+          *(undefined2 *)(pay + 0xe) = DAT_801b2332;
+          *(undefined2 *)(pay + 0x10) = DAT_801b2334;
+          tp = &DAT_801b2338;
+          tv = DAT_801b2338;
         }
-        *(undefined2 *)(piVar8 + 0x1d) = uVar7;
-        *(undefined2 *)((intptr_t)piVar8 + 0x76) = puVar6[1];
+        *(undefined2 *)(pay + 0x1d) = tv;
+        *(undefined2 *)((intptr_t)pay + 0x76) = tp[1];
         return;
       }
-      iVar5 = task_alloc_wrap_f((undefined4)(uintptr_t)piVar8[1],(undefined4)br2_gaddr(piVar8 + 2), (undefined4)br2_gaddr(&DAT_801b1cbc), (undefined4)br2_gaddr(&DAT_801b1ccc));
-      piVar8[2] = iVar5;
-      if (iVar5 != 0) goto LAB_80141918;
+      tmp2 = task_alloc_wrap_f((undefined4)(uintptr_t)pay[1],(undefined4)br2_gaddr(pay + 2), (undefined4)br2_gaddr(&DAT_801b1cbc), (undefined4)br2_gaddr(&DAT_801b1ccc));
+      pay[2] = tmp2;
+      if (tmp2 != 0) goto LAB_80141918;
     }
-    node_tree_free(piVar8[1]);
+    node_tree_free(pay[1]);
   }
-  task_node_free((int *)(uintptr_t)iVar4);
+  task_node_free((int *)(uintptr_t)node);
   return;
 
 }
