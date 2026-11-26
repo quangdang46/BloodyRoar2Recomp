@@ -1337,6 +1337,7 @@ extern void scriptop_bra(void);
 extern void scriptop_bsr(void);
 extern void scriptop_camera(void);
 extern void scriptop_chk(void);
+extern void scriptop_chk_state_bits(void);
 extern void scriptop_cmp(void);
 extern void scriptop_div(void);
 extern void scriptop_end(void);
@@ -2263,6 +2264,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80183664, (void *)scriptop_wait },
   { 0x80183bd0, (void *)scriptop_sflag },
   { 0x80183c30, (void *)scriptop_chk },
+  { 0x80183d0c, (void *)scriptop_chk_state_bits },
   { 0x80184378, (void *)scriptop_cmp },
   { 0x8018444c, (void *)scriptop_move },
   { 0x80184710, (void *)scriptop_add },
