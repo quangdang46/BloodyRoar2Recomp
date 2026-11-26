@@ -63139,16 +63139,15 @@ void cps_8017c9bc(void)
 
     /* Address: 0x8017C9BC, Size: 24 bytes, Blocks: 1 */
 
-block_8017C9BC:
     v0 = cpu->read_half(a2);
     /* nop */  /* 0x8017C9C0: 0x00000000 */
     v0 = (uint32_t)v0 >> 8;
     cpu->write_byte(a0 + 39, (uint8_t)v0);
-    uint32_t _jt_8017C9CC = ra;  /* latch indirect target before delay slot */
+    uint32_t ret = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     v0 = a2 + 2;
-    psx_check_interrupts_at(cpu, _jt_8017C9CC);
-    cpu->pc = _jt_8017C9CC; return;  /* CPS: jr $ra */
+    psx_check_interrupts_at(cpu, ret);
+    cpu->pc = ret; return;  /* CPS: jr $ra */
 }
 
 /* cps_8017ca84 — clean CPS transliteration of br2eu_func_8017CA84 (guest 0x8017ca84)
@@ -63161,71 +63160,70 @@ void cps_8017ca84(void)
     if (cpu->pc != 0u) {
         uint32_t _cont = cpu->pc; cpu->pc = 0;
         switch (_cont) {
-            case 0x8017CAA0u: goto block_8017CAA0;
-            case 0x8017CAA8u: goto block_8017CAA8;
-            case 0x8017CAB4u: goto block_8017CAB4;
-            case 0x8017CABCu: goto block_8017CABC;
+            case 0x8017CAA0u: goto range_check;
+            case 0x8017CAA8u: goto is_two;
+            case 0x8017CAB4u: goto tail;
+            case 0x8017CABCu: goto flag_check;
             default: break;
         }
     }
     /* Address: 0x8017CA84, Size: 76 bytes, Blocks: 5 */
 
-block_8017CA84:
     v0 = cpu->read_half(a2);
     /* nop */  /* 0x8017CA88: 0x00000000 */
     v0 = v0 << 16;
     v1 = (int32_t)v0 >> 28;
     v0 = 1;
-    int _bc_8017CA98 = (v1 == v0);  /* save branch cond before delay slot */
+    int is_one = (v1 == v0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v0 = ((int32_t)v1 < 2) ? 1 : 0;  /* 0x8017CA9C: 0x28620002 */
-    if (_bc_8017CA98) {
+    if (is_one) {
         psx_check_interrupts_at(cpu, 0x8017CABCu);
-        goto block_8017CABC;  /* taken */
+        goto flag_check;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x8017CAA0u);
-        goto block_8017CAA0;  /* not taken */
+        goto range_check;  /* not taken */
     }
 
-block_8017CAA0:
-    int _bc_8017CAA0 = (v0 != zero);  /* save branch cond before delay slot */
+range_check:
+    int below_two = (v0 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v0 = a2 + 6;
-    if (_bc_8017CAA0) {
+    if (below_two) {
         psx_check_interrupts_at(cpu, 0x8017CAECu);
         cpu->pc = 0x8017CAECu; return;  /* CPS taken: split */
     } else {
         psx_check_interrupts_at(cpu, 0x8017CAA8u);
-        goto block_8017CAA8;  /* not taken */
+        goto is_two;  /* not taken */
     }
 
-block_8017CAA8:
+is_two:
     v0 = 2;
-    int _bc_8017CAAC = (v1 == v0);  /* save branch cond before delay slot */
+    int eq_two = (v1 == v0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v0 = a2 + 6;
-    if (_bc_8017CAAC) {
+    if (eq_two) {
         psx_check_interrupts_at(cpu, 0x8017CAD8u);
         cpu->pc = 0x8017CAD8u; return;  /* CPS taken: split */
     } else {
         psx_check_interrupts_at(cpu, 0x8017CAB4u);
-        goto block_8017CAB4;  /* not taken */
+        goto tail;  /* not taken */
     }
 
-block_8017CAB4:
+tail:
     /* delay slot (always executes) */
     /* nop */  /* 0x8017CAB8: 0x00000000 */
     psx_check_interrupts_at(cpu, 0x8017CAECu);
     cpu->pc = 0x8017CAECu; return;  /* CPS j: split */
 
-block_8017CABC:
+flag_check:
     v0 = cpu->read_byte(a0 + 5);
     /* nop */  /* 0x8017CAC0: 0x00000000 */
     v0 = v0 & 0x0001;  /* 0x8017CAC4: 0x30420001 */
-    int _bc_8017CAC8 = (v0 == zero);  /* save branch cond before delay slot */
+    int flag_clear = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v0 = a2 + 6;
-    if (_bc_8017CAC8) {
+    if (flag_clear) {
         psx_check_interrupts_at(cpu, 0x8017CAECu);
         cpu->pc = 0x8017CAECu; return;  /* CPS taken: split */
     } else {
@@ -63243,12 +63241,11 @@ void cps_8017cad0(void)
 
     /* Address: 0x8017CAD0, Size: 8 bytes, Blocks: 1 */
 
-block_8017CAD0:
-    uint32_t _jt_8017CAD0 = ra;  /* latch indirect target before delay slot */
+    uint32_t ret = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     v0 = a2 + 6;
-    psx_check_interrupts_at(cpu, _jt_8017CAD0);
-    cpu->pc = _jt_8017CAD0; return;  /* CPS: jr $ra */
+    psx_check_interrupts_at(cpu, ret);
+    cpu->pc = ret; return;  /* CPS: jr $ra */
 }
 
 /* cps_8017cad8 — clean CPS transliteration of br2eu_func_8017CAD8 (guest 0x8017cad8)
@@ -63260,21 +63257,19 @@ void cps_8017cad8(void)
 
     /* Address: 0x8017CAD8, Size: 20 bytes, Blocks: 1 */
 
-block_8017CAD8:
     v0 = cpu->read_byte(a0 + 5);
     /* nop */  /* 0x8017CADC: 0x00000000 */
     v0 = v0 & 0x0001;  /* 0x8017CAE0: 0x30420001 */
-    int _bc_8017CAE4 = (v0 == zero);  /* save branch cond before delay slot */
+    int flag_clear = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v0 = a2 + 6;
-    if (_bc_8017CAE4) {
+    if (flag_clear) {
         psx_check_interrupts_at(cpu, 0x8017CAD0u);
         cpu->pc = 0x8017CAD0u; return;  /* CPS taken: split */
     } else {
         psx_check_interrupts_at(cpu, 0x8017CAECu);
         cpu->pc = 0x8017CAECu; return;  /* CPS not taken: split */
     }
-    cpu->pc = 0x8017caecu; return;/* fallthrough to next function */
 }
 
 /* cps_8017caec — clean CPS transliteration of br2eu_func_8017CAEC (guest 0x8017caec)
@@ -63286,12 +63281,11 @@ void cps_8017caec(void)
 
     /* Address: 0x8017CAEC, Size: 8 bytes, Blocks: 1 */
 
-block_8017CAEC:
-    uint32_t _jt_8017CAEC = ra;  /* latch indirect target before delay slot */
+    uint32_t ret = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8017CAF0: 0x00000000 */
-    psx_check_interrupts_at(cpu, _jt_8017CAEC);
-    cpu->pc = _jt_8017CAEC; return;  /* CPS: jr $ra */
+    psx_check_interrupts_at(cpu, ret);
+    cpu->pc = ret; return;  /* CPS: jr $ra */
 }
 
 /* cps_8017caf4 — clean CPS transliteration of br2eu_func_8017CAF4 (guest 0x8017caf4)
@@ -64021,18 +64015,17 @@ void cps_8017d1d0(void)
     if (cpu->pc != 0u) {
         uint32_t _cont = cpu->pc; cpu->pc = 0;
         switch (_cont) {
-            case 0x8017D1F8u: goto block_8017D1F8;
-            case 0x8017D1FCu: goto block_8017D1FC;
-            case 0x8017D210u: goto block_8017D210;
-            case 0x8017D218u: goto block_8017D218;
-            case 0x8017D220u: goto block_8017D220;
-            case 0x8017D228u: goto block_8017D228;
+            case 0x8017D1F8u: goto use_owner;
+            case 0x8017D1FCu: goto range_check;
+            case 0x8017D210u: goto below_two;
+            case 0x8017D218u: goto eq_two;
+            case 0x8017D220u: goto tail;
+            case 0x8017D228u: goto flag_check;
             default: break;
         }
     }
     /* Address: 0x8017D1D0, Size: 108 bytes, Blocks: 7 */
 
-block_8017D1D0:
     a1 = a0;
     v0 = cpu->read_half(a2);
     /* nop */  /* 0x8017D1D8: 0x00000000 */
@@ -64041,74 +64034,74 @@ block_8017D1D0:
     a0 = v0 << 16;
     v1 = (int32_t)a0 >> 16;
     v0 = v1 & 0x0040;  /* 0x8017D1EC: 0x30620040 */
-    int _bc_8017D1F0 = (v0 == zero);  /* save branch cond before delay slot */
+    int flag_clear = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     a3 = a1;
-    if (_bc_8017D1F0) {
+    if (flag_clear) {
         psx_check_interrupts_at(cpu, 0x8017D1FCu);
-        goto block_8017D1FC;  /* taken */
+        goto range_check;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x8017D1F8u);
-        goto block_8017D1F8;  /* not taken */
+        goto use_owner;  /* not taken */
     }
 
-block_8017D1F8:
+use_owner:
     a3 = cpu->read_word(a1 + 44);
-    /* fall through to block_8017D1FC */
+    /* fall through to range_check */
 
-block_8017D1FC:
+range_check:
     v0 = (int32_t)a0 >> 20;
     a0 = v0 & 0x0003;  /* 0x8017D200: 0x30440003 */
     v0 = 1;
-    int _bc_8017D208 = (a0 == v0);  /* save branch cond before delay slot */
+    int is_one = (a0 == v0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v0 = ((int32_t)a0 < 2) ? 1 : 0;  /* 0x8017D20C: 0x28820002 */
-    if (_bc_8017D208) {
+    if (is_one) {
         psx_check_interrupts_at(cpu, 0x8017D228u);
-        goto block_8017D228;  /* taken */
+        goto flag_check;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x8017D210u);
-        goto block_8017D210;  /* not taken */
+        goto below_two;  /* not taken */
     }
 
-block_8017D210:
-    int _bc_8017D210 = (v0 != zero);  /* save branch cond before delay slot */
+below_two:
+    int below = (v0 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v0 = 2;
-    if (_bc_8017D210) {
+    if (below) {
         psx_check_interrupts_at(cpu, 0x8017D258u);
         cpu->pc = 0x8017D258u; return;  /* CPS taken: split */
     } else {
         psx_check_interrupts_at(cpu, 0x8017D218u);
-        goto block_8017D218;  /* not taken */
+        goto eq_two;  /* not taken */
     }
 
-block_8017D218:
-    int _bc_8017D218 = (a0 == v0);  /* save branch cond before delay slot */
+eq_two:
+    int eq_two_flag = (a0 == v0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8017D21C: 0x00000000 */
-    if (_bc_8017D218) {
+    if (eq_two_flag) {
         psx_check_interrupts_at(cpu, 0x8017D244u);
         cpu->pc = 0x8017D244u; return;  /* CPS taken: split */
     } else {
         psx_check_interrupts_at(cpu, 0x8017D220u);
-        goto block_8017D220;  /* not taken */
+        goto tail;  /* not taken */
     }
 
-block_8017D220:
+tail:
     /* delay slot (always executes) */
     v1 = v1 & 0x000F;  /* 0x8017D224: 0x3063000F */
     psx_check_interrupts_at(cpu, 0x8017D25Cu);
     cpu->pc = 0x8017D25Cu; return;  /* CPS j: split */
 
-block_8017D228:
+flag_check:
     v0 = cpu->read_byte(a3 + 5);
     /* nop */  /* 0x8017D22C: 0x00000000 */
     v0 = v0 & 0x0001;  /* 0x8017D230: 0x30420001 */
-    int _bc_8017D234 = (v0 == zero);  /* save branch cond before delay slot */
+    int flag_clear_b = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v1 = v1 & 0x000F;  /* 0x8017D238: 0x3063000F */
-    if (_bc_8017D234) {
+    if (flag_clear_b) {
         psx_check_interrupts_at(cpu, 0x8017D25Cu);
         cpu->pc = 0x8017D25Cu; return;  /* CPS taken: split */
     } else {
@@ -64126,12 +64119,11 @@ void cps_8017d23c(void)
 
     /* Address: 0x8017D23C, Size: 8 bytes, Blocks: 1 */
 
-block_8017D23C:
-    uint32_t _jt_8017D23C = ra;  /* latch indirect target before delay slot */
+    uint32_t ret = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     v0 = a2 + 4;
-    psx_check_interrupts_at(cpu, _jt_8017D23C);
-    cpu->pc = _jt_8017D23C; return;  /* CPS: jr $ra */
+    psx_check_interrupts_at(cpu, ret);
+    cpu->pc = ret; return;  /* CPS: jr $ra */
 }
 
 /* cps_8017d244 — clean CPS transliteration of br2eu_func_8017D244 (guest 0x8017d244)
@@ -64143,21 +64135,19 @@ void cps_8017d244(void)
 
     /* Address: 0x8017D244, Size: 20 bytes, Blocks: 1 */
 
-block_8017D244:
     v0 = cpu->read_byte(a3 + 5);
     /* nop */  /* 0x8017D248: 0x00000000 */
     v0 = v0 & 0x0001;  /* 0x8017D24C: 0x30420001 */
-    int _bc_8017D250 = (v0 == zero);  /* save branch cond before delay slot */
+    int flag_clear = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8017D254: 0x00000000 */
-    if (_bc_8017D250) {
+    if (flag_clear) {
         psx_check_interrupts_at(cpu, 0x8017D23Cu);
         cpu->pc = 0x8017D23Cu; return;  /* CPS taken: split */
     } else {
         psx_check_interrupts_at(cpu, 0x8017D258u);
         cpu->pc = 0x8017D258u; return;  /* CPS not taken: split */
     }
-    cpu->pc = 0x8017d258u; return;/* fallthrough to next function */
 }
 
 /* cps_8017d258 — clean CPS transliteration of br2eu_func_8017D258 (guest 0x8017d258)
@@ -64169,10 +64159,8 @@ void cps_8017d258(void)
 
     /* Address: 0x8017D258, Size: 4 bytes, Blocks: 1 */
 
-block_8017D258:
     v1 = v1 & 0x000F;  /* 0x8017D258: 0x3063000F */
     cpu->pc = 0x8017d25cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8017d25cu; return;/* fallthrough to next function */
 }
 
 /* cps_8017d25c — clean CPS transliteration of br2eu_func_8017D25C (guest 0x8017d25c)
@@ -64348,7 +64336,6 @@ void cps_8017d354(void)
 
     /* Address: 0x8017D354, Size: 36 bytes, Blocks: 1 */
 
-block_8017D354:
     v1 = cpu->read_half(a2 + 2);
     v0 = 0x8000;
     cpu->write_word(a1 + 32, v0);
@@ -64356,11 +64343,11 @@ block_8017D354:
     cpu->write_half(a1 + 42, (uint16_t)v0);
     v0 = a2 + 4;
     v1 = v1 + 208;
-    uint32_t _jt_8017D370 = ra;  /* latch indirect target before delay slot */
+    uint32_t ret = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     cpu->write_half(a1 + 36, (uint16_t)v1);
-    psx_check_interrupts_at(cpu, _jt_8017D370);
-    cpu->pc = _jt_8017D370; return;  /* CPS: jr $ra */
+    psx_check_interrupts_at(cpu, ret);
+    cpu->pc = ret; return;  /* CPS: jr $ra */
 }
 
 /* cps_8017d55c — clean CPS transliteration of br2eu_func_8017D55C (guest 0x8017d55c)
@@ -64373,18 +64360,17 @@ void cps_8017d55c(void)
     if (cpu->pc != 0u) {
         uint32_t _cont = cpu->pc; cpu->pc = 0;
         switch (_cont) {
-            case 0x8017D580u: goto block_8017D580;
-            case 0x8017D584u: goto block_8017D584;
-            case 0x8017D594u: goto block_8017D594;
-            case 0x8017D59Cu: goto block_8017D59C;
-            case 0x8017D5A4u: goto block_8017D5A4;
-            case 0x8017D5ACu: goto block_8017D5AC;
+            case 0x8017D580u: goto use_owner;
+            case 0x8017D584u: goto range_check;
+            case 0x8017D594u: goto below_two;
+            case 0x8017D59Cu: goto eq_two;
+            case 0x8017D5A4u: goto tail;
+            case 0x8017D5ACu: goto flag_check;
             default: break;
         }
     }
     /* Address: 0x8017D55C, Size: 100 bytes, Blocks: 7 */
 
-block_8017D55C:
     v0 = cpu->read_half(a2);
     /* nop */  /* 0x8017D560: 0x00000000 */
     v0 = v0 << 16;
@@ -64392,73 +64378,73 @@ block_8017D55C:
     a3 = v0 << 16;
     v1 = (int32_t)a3 >> 16;
     v0 = v1 & 0x0040;  /* 0x8017D574: 0x30620040 */
-    int _bc_8017D578 = (v0 == zero);  /* save branch cond before delay slot */
+    int flag_clear = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v0 = (int32_t)a3 >> 20;
-    if (_bc_8017D578) {
+    if (flag_clear) {
         psx_check_interrupts_at(cpu, 0x8017D584u);
-        goto block_8017D584;  /* taken */
+        goto range_check;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x8017D580u);
-        goto block_8017D580;  /* not taken */
+        goto use_owner;  /* not taken */
     }
 
-block_8017D580:
+use_owner:
     a0 = cpu->read_word(a0 + 44);
-    /* fall through to block_8017D584 */
+    /* fall through to range_check */
 
-block_8017D584:
+range_check:
     a3 = v0 & 0x0003;  /* 0x8017D584: 0x30470003 */
     v0 = 1;
-    int _bc_8017D58C = (a3 == v0);  /* save branch cond before delay slot */
+    int is_one = (a3 == v0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v0 = ((int32_t)a3 < 2) ? 1 : 0;  /* 0x8017D590: 0x28E20002 */
-    if (_bc_8017D58C) {
+    if (is_one) {
         psx_check_interrupts_at(cpu, 0x8017D5ACu);
-        goto block_8017D5AC;  /* taken */
+        goto flag_check;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x8017D594u);
-        goto block_8017D594;  /* not taken */
+        goto below_two;  /* not taken */
     }
 
-block_8017D594:
-    int _bc_8017D594 = (v0 != zero);  /* save branch cond before delay slot */
+below_two:
+    int below = (v0 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v0 = 2;
-    if (_bc_8017D594) {
+    if (below) {
         psx_check_interrupts_at(cpu, 0x8017D5DCu);
         cpu->pc = 0x8017D5DCu; return;  /* CPS taken: split */
     } else {
         psx_check_interrupts_at(cpu, 0x8017D59Cu);
-        goto block_8017D59C;  /* not taken */
+        goto eq_two;  /* not taken */
     }
 
-block_8017D59C:
-    int _bc_8017D59C = (a3 == v0);  /* save branch cond before delay slot */
+eq_two:
+    int eq_two_flag = (a3 == v0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8017D5A0: 0x00000000 */
-    if (_bc_8017D59C) {
+    if (eq_two_flag) {
         psx_check_interrupts_at(cpu, 0x8017D5C8u);
         cpu->pc = 0x8017D5C8u; return;  /* CPS taken: split */
     } else {
         psx_check_interrupts_at(cpu, 0x8017D5A4u);
-        goto block_8017D5A4;  /* not taken */
+        goto tail;  /* not taken */
     }
 
-block_8017D5A4:
+tail:
     /* delay slot (always executes) */
     v1 = v1 & 0x000F;  /* 0x8017D5A8: 0x3063000F */
     psx_check_interrupts_at(cpu, 0x8017D5E0u);
     cpu->pc = 0x8017D5E0u; return;  /* CPS j: split */
 
-block_8017D5AC:
+flag_check:
     v0 = cpu->read_byte(a0 + 5);
     /* nop */  /* 0x8017D5B0: 0x00000000 */
     v0 = v0 & 0x0001;  /* 0x8017D5B4: 0x30420001 */
-    int _bc_8017D5B8 = (v0 == zero);  /* save branch cond before delay slot */
+    int flag_clear_b = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v1 = v1 & 0x000F;  /* 0x8017D5BC: 0x3063000F */
-    if (_bc_8017D5B8) {
+    if (flag_clear_b) {
         psx_check_interrupts_at(cpu, 0x8017D5E0u);
         cpu->pc = 0x8017D5E0u; return;  /* CPS taken: split */
     } else {
@@ -64476,12 +64462,11 @@ void cps_8017d5c0(void)
 
     /* Address: 0x8017D5C0, Size: 8 bytes, Blocks: 1 */
 
-block_8017D5C0:
-    uint32_t _jt_8017D5C0 = ra;  /* latch indirect target before delay slot */
+    uint32_t ret = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     v0 = a2 + 4;
-    psx_check_interrupts_at(cpu, _jt_8017D5C0);
-    cpu->pc = _jt_8017D5C0; return;  /* CPS: jr $ra */
+    psx_check_interrupts_at(cpu, ret);
+    cpu->pc = ret; return;  /* CPS: jr $ra */
 }
 
 /* cps_8017d5c8 — clean CPS transliteration of br2eu_func_8017D5C8 (guest 0x8017d5c8)
@@ -64493,21 +64478,19 @@ void cps_8017d5c8(void)
 
     /* Address: 0x8017D5C8, Size: 20 bytes, Blocks: 1 */
 
-block_8017D5C8:
     v0 = cpu->read_byte(a0 + 5);
     /* nop */  /* 0x8017D5CC: 0x00000000 */
     v0 = v0 & 0x0001;  /* 0x8017D5D0: 0x30420001 */
-    int _bc_8017D5D4 = (v0 == zero);  /* save branch cond before delay slot */
+    int flag_clear = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8017D5D8: 0x00000000 */
-    if (_bc_8017D5D4) {
+    if (flag_clear) {
         psx_check_interrupts_at(cpu, 0x8017D5C0u);
         cpu->pc = 0x8017D5C0u; return;  /* CPS taken: split */
     } else {
         psx_check_interrupts_at(cpu, 0x8017D5DCu);
         cpu->pc = 0x8017D5DCu; return;  /* CPS not taken: split */
     }
-    cpu->pc = 0x8017d5dcu; return;/* fallthrough to next function */
 }
 
 /* cps_8017d5dc — clean CPS transliteration of br2eu_func_8017D5DC (guest 0x8017d5dc)
@@ -64519,10 +64502,8 @@ void cps_8017d5dc(void)
 
     /* Address: 0x8017D5DC, Size: 4 bytes, Blocks: 1 */
 
-block_8017D5DC:
     v1 = v1 & 0x000F;  /* 0x8017D5DC: 0x3063000F */
     cpu->pc = 0x8017d5e0u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8017d5e0u; return;/* fallthrough to next function */
 }
 
 /* cps_8017d5e0 — clean CPS transliteration of br2eu_func_8017D5E0 (guest 0x8017d5e0)
