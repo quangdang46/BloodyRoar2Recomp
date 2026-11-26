@@ -105,8 +105,6 @@ enum {
 };
 extern uint32_t guest_of(const void *);
 extern uint32_t br2_gaddr(const void *);
-extern uint32_t br2_guest_frame(uint32_t);
-extern void br2_guest_frame_free(void);
 extern uint8_t  br2_ld8p(uint32_t cell);
 extern uint16_t br2_ld16p(uint32_t cell);
 extern uint32_t br2_ld32p(uint32_t cell);
@@ -1363,7 +1361,6 @@ uint cd_result_wait_b(int a0,undefined1 *out_buf)
  * were already clean; only the printf jal needed call_guest4. */
 undefined4 cd_busy_wait(int report_busy)
 {
-  extern uint32_t call_guest4(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
   uint32_t fr = br2_guest_frame(0x30);
   const uint32_t s0 = 0x801bc8ec, s1 = 0x801bcb24, s3 = 0x801bc86c;
   const uint32_t s4 = 0x003c0000;
@@ -1482,7 +1479,6 @@ uint32_t cd_read_finish_cb(void)
    * callback's $ra token is the epilogue itself — reproduced by returning
    * the call_guest result straight to the wrapper. No loops, no BIOS/kernel
    * boundary inside this body, no gpr-file snapshot. */
-  extern CPUState *clean_cpu_state(void);
   uint32_t s0 = 0x801bcb80;
   uint32_t cb, r, cnt;
   CDFN(CDFN_READ_FINISH_CB,0);
@@ -3315,8 +3311,6 @@ int32_t cd_chan_job_pump(uint32_t a0,const void *a1,const void *a2,const void *a
    * (svc B0/0x42 tail call in cd_file_record_lookup) and host stack
    * buffers are invisible to guest code. br2_guest_frame reserves real
    * guest stack below $sp so nested BIOS frames can't collide. */
-  extern uint32_t br2_guest_frame(uint32_t);
-  extern void br2_guest_frame_free(void);
   uint32_t fr = br2_guest_frame(0x60);
   uint32_t *blk = (uint32_t *)guest_at(fr + 0x10);   /* sp+0x10: 0x20 job blk */
   uint32_t *rec = (uint32_t *)guest_at(fr + 0x30);   /* sp+0x30: 0x28 record  */
@@ -3925,9 +3919,6 @@ void cd_reg_stream_push(uint32_t a0,uint32_t a1)
    * (+0x1ae & 0x7ff) == saved status (cap -> printf arg 0x80125c1c).
    * Polls use br2_irq_poll so the CD device model advances guest cycles;
    * printf goes through a real guest frame + call_guest4. */
-  extern uint32_t call_guest4(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
-  extern CPUState *clean_cpu_state(void);
-  extern void br2_guest_frame_abandon(void);
   uint32_t b    = br2_ld32(0x801bdeb0);
   uint32_t dec8 = (uint32_t)br2_ld16(0x801bdec8);
   uint32_t cnt  = a1;                          /* s1: byte count */
@@ -4424,8 +4415,7 @@ uint32_t cd_file_record_lookup(void *a0,void *a1)
   }
   {
     /* live a3 = caller's $a3 (function never writes it) */
-    extern CPUState *clean_cpu_state(void);
-    CPUState *cpu = clean_cpu_state();
+      CPUState *cpu = clean_cpu_state();
     uint32_t a3 = cpu ? cpu->gpr[7] : 0;
     return bios_svc6(0xb0,0x42,s2,s3,a2live,a3);
   }
@@ -6094,9 +6084,6 @@ int cd_queue_poll(uint32_t a0)
  * caller gpr[6]/gpr[7] are forwarded exactly. */
 int cd_reg_bit40_ctrl(uint32_t a0)
 {
-  extern uint32_t call_guest4(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
-  extern CPUState *clean_cpu_state(void);
-  extern void br2_guest_frame_abandon(void);
   uint32_t cell, h, cnt, a1v = 0;
 
   if (a0 == 0 || a0 == 3) {
@@ -7089,7 +7076,6 @@ int cd_queue_push(uint32_t a0_fn,uint32_t a1_data,uint32_t a2_count,
  * clean_cpu_state()->gpr[] reproduces the guest sw sequence exactly. */
 int cd_ctx_save(uint32_t a0)
 {
-  extern CPUState *clean_cpu_state(void);
   CPUState *c = clean_cpu_state();
   br2_st32(a0 +  0, c->gpr[31]);  /* sw $ra,  0(a0)  */
   br2_st32(a0 + 44, c->gpr[28]);  /* sw $gp, 44(a0)  */
@@ -7136,7 +7122,6 @@ int32_t bios_tramp_b035(int32_t a0,const void *a1,int32_t a2)
   /* callers pass a host pointer into guest RAM; the BIOS service expects a
    * guest address, so translate back through guest_of. svc 0x35 forwards
    * a0-a2 (line/buf/count). */
-  extern uint32_t bios_svc6(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
   return (int32_t)bios_svc6(0xb0,0x35,(uint32_t)a0,
                               guest_of(a1),(uint32_t)a2,0);
 }
@@ -7167,7 +7152,6 @@ void cd_hw_chan_init(void)
  * Disasm 0x8019ad60-0x8019ad6c. */
 uint32_t bios_tramp_b017(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
 {
-  extern uint32_t bios_svc6(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
   return bios_svc6(0xb0,0x17,a0,a1,a2,a3);
 }
 
