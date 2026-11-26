@@ -949,22 +949,31 @@ BIOS (phys≥0x1FC00000 = BIOS ROM), which is legitimately generated per
 psxrecomp architecture (BIOS = recomp target #1). **Game-side `generated/`
 is dead code at runtime.** Verified: 44k+ frames, zero errors.
 
-### ⚠ TOOLING LIMITATION — `read_ram`/`write_ram` bypass overlay resolution
+### ⚠ TOOLING LIMITATION — `read_ram` is faithful; the game is WEDGED (CD starvation)
 
-All state-inspection tools (versus_*, memcard, combat probes) read guest
-memory via `read_ram`→`psx_read_byte`→`ram[]` DIRECTLY. But the recomp's
-overlay/paging system (`overlay_loader.c`) demand-loads game modules into
-guest RAM; only the resident boot image (~0x80120000-0x801b0000) is backed
-in `ram[]`. Stack/BSS/scratchpad/overlay data read as **zeros** even though
-the CPU uses them (sp_ring shows live sp=0x801FFCF8 while read_ram sees
-0x801ffc00=0). `write_ram`/`read_ram` round-trip correctly on `ram[]`, so
-the path works — it just doesn't resolve overlays the way real CPU accesses
-do. **Consequence:** versus/state tools can't navigate or confirm combat/
-memcard on this build. Working verification that DOES NOT need read_ram:
-`frame`, `dispatch_stats` (0 misses), `cdrom_state`, `fntrace`,
-`clean_trace`, `phase_profile`, `bioscall_dump`. To fix read_ram properly,
-route it through the same overlay/paging resolution real CPU loads use —
-a memory-subsystem change, not a debug_server tweak.
+**CORRECTED twice:** (1) NOT an overlay/paging bug — `read_ram`,
+`write_ram`, `mem_words`, `guest_at`, `cpu->write_word`, and
+`psx_read/write_*` ALL share the SAME backing with identical phys mapping
+(`guest_at`→`memory_get_ram_ptr()`, `cpu.write_word=psx_write_word`,
+`psx_phys_addr`/`br2_phys` both 2MB; scratchpad `0x1F800000` is a separate
+`scratchpad[]` array that `psx_read_byte` DOES resolve). (2) NOT "idle" —
+the headless instance is **wedged in the documented CD deferred-coroutine /
+BIOS-event starvation** (`proof/arcade_residual_wedge.md`,
+`proof/cd_deferred_coroutine_starvation.md`): main thread TCB `0x00008FE0`
+(= live `s0`) is parked in a BIOS event wait; `bioscall_dump` shows
+**1.36M historical `B0/0x11 TestEvent`** calls (frozen — thread now asleep,
+woken only by VBlank); `card_mgr_trace` shows 2.78M historical card calls;
+`get_registers` frozen at `ra=0xBFC05E00`/`sp=0x801FFD68`; `gwatch` on
+`0x801FF000`/`0x1F800000` captured ZERO writes; `clean_trace` shows only
+BIOS-called memset pieces; scratchpad `gs`/`ph` never written; pad START
+presses do not wake it. **Consequence:** versus/state tools can't confirm
+combat/memcard headless because the game never progresses past the
+starvation wedge unattended — a KNOWN hard frontier (§4 deferred-coroutine
+IRQ granularity), not a `read_ram` bug and not benign idle. Do NOT "fix"
+`read_ram`; it reads correctly. The real unblock is the deferred-coroutine
+DeliverEvent path — see the wedge proofs. Write-path probes that don't
+need idle-memory reads: `gwatch`, `fntrace`, `clean_trace`,
+`bioscall_dump`, `cdrom_state`, `dispatch_stats`, `card_mgr_trace`.
 
 ### Session update 18 (readability pass — named GPRs in cps_clean.c)
 
