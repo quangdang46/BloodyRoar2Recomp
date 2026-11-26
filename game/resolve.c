@@ -143,6 +143,122 @@ undefined8 vec2_rot_lut(undefined4,int);
 void dir_rotate_acc(int,int,byte*,byte*);
 void dir_rotate_set(int,int,byte*,byte*);
 
+
+/* ---- guest globals + prototypes (consolidated) ---- */
+extern uint8_t *g_DAT_801b4e2c, *g_DAT_801b4e38, *g_DAT_801b4e44,
+              *g_DAT_801b4e50, *g_DAT_801b4e5c;
+#define DAT_801b4e2c   (*g_DAT_801b4e2c)
+#define DAT_801b4e38   (*g_DAT_801b4e38)
+#define DAT_801b4e44   (*g_DAT_801b4e44)
+#define DAT_801b4e50   (*g_DAT_801b4e50)
+#define DAT_801b4e5c   (*g_DAT_801b4e5c)
+extern void motion_turn_update(byte*,byte*);
+int range_circle_test(int,int,uint*,int);
+void deferred_cmd_post(uint,int,short);
+extern void action_commit(byte*,byte*);
+
+extern void launch_vel_update(byte*,byte*);
+extern void ev_stream_dispatch(byte *ctrl,byte *motion);
+extern void action_switch_guest(int ctrl,int *motion,int act);
+extern void slot_apply_guest(int ctrl,int motion);
+extern void part_record_reset(undefined2 *ctrl);
+extern ushort * ev5_action_select(int ctrl,int motion,ushort *stream);
+void part_matrix_compute(undefined4 *mat,byte *parts,short *euler,undefined4 angle);
+uint * matrix_vec3_apply(undefined4 *mat,uint *vec);
+extern uint8_t *g_DAT_1f8003a0,*g_DAT_1f8003c0;
+#define DAT_1f8003a0 (*g_DAT_1f8003a0)
+#define DAT_1f8003c0 (*g_DAT_1f8003c0)
+typedef uint8_t *evhandler_t(uint8_t *ctrl, uint8_t *motion, uint32_t pc_g);
+extern evhandler_t *PTR_FUN_801b4e68[];
+extern void FUN_801851d8(void);
+extern int trig_cos(int);
+extern int trig_sin(uint);
+extern void gte_mat_vec_swap(void*,void*,void*);
+extern void setCopReg(int,int,uint);
+extern int getCopReg(int,int);
+extern void copFunction(int,uint);
+extern void setCopControlWord(int,int,uint);
+extern uint32_t *g__DAT_1f8003a0,*g__DAT_1f8003a4,*g__DAT_1f8003a8,*g__DAT_1f8003ac,
+  *g__DAT_1f8003b0,*g__DAT_1f8003b4,*g__DAT_1f8003b8,*g__DAT_1f8003bc,
+  *g__DAT_1f8003c0,*g__DAT_1f8003c4,*g__DAT_1f8003c8,*g__DAT_1f8003cc,
+  *g__DAT_1f8003d0,*g__DAT_1f8003d4,*g__DAT_1f8003d8,*g__DAT_1f8003dc,
+  *g__DAT_1f8003e0,*g__DAT_1f8003e4,*g__DAT_1f8003e8,*g__DAT_1f8003ec,
+  *g__DAT_1f8003f0,*g__DAT_1f8003f4,*g__DAT_1f8003f8,*g__DAT_1f8003fc;
+#define _DAT_1f8003a0 (*g__DAT_1f8003a0)
+#define _DAT_1f8003a4 (*g__DAT_1f8003a4)
+#define _DAT_1f8003a8 (*g__DAT_1f8003a8)
+#define _DAT_1f8003ac (*g__DAT_1f8003ac)
+#define _DAT_1f8003b0 (*(int16_t *)g__DAT_1f8003b0) /* guest lh/sh @0x1f8003b0 (0x80185048) */
+#define _DAT_1f8003b4 (*g__DAT_1f8003b4)
+#define _DAT_1f8003b8 (*g__DAT_1f8003b8)
+#define _DAT_1f8003bc (*g__DAT_1f8003bc)
+#define _DAT_1f8003c0 (*(int16_t *)g__DAT_1f8003c0) /* guest sh @0x1f8003c0 (0x80185048) */
+#define _DAT_1f8003c4 (*(int16_t *)g__DAT_1f8003c4) /* guest sh @0x1f8003c4 */
+#define _DAT_1f8003c8 (*(int16_t *)g__DAT_1f8003c8) /* guest sh @0x1f8003c8 */
+#define _DAT_1f8003cc (*(int16_t *)g__DAT_1f8003cc) /* guest sh @0x1f8003cc */
+#define _DAT_1f8003d0 (*(int16_t *)g__DAT_1f8003d0) /* guest sh @0x1f8003d0 */
+#define _DAT_1f8003d4 (*g__DAT_1f8003d4)
+#define _DAT_1f8003d8 (*g__DAT_1f8003d8)
+#define _DAT_1f8003dc (*g__DAT_1f8003dc)
+#define _DAT_1f8003e0 (*g__DAT_1f8003e0)
+#define _DAT_1f8003e4 (*g__DAT_1f8003e4)
+#define _DAT_1f8003e8 (*g__DAT_1f8003e8)
+#define _DAT_1f8003ec (*g__DAT_1f8003ec)
+#define _DAT_1f8003f0 (*g__DAT_1f8003f0)
+#define _DAT_1f8003f4 (*g__DAT_1f8003f4)
+#define _DAT_1f8003f8 (*g__DAT_1f8003f8)
+#define _DAT_1f8003fc (*g__DAT_1f8003fc)
+#define _DAT_1f8003a2 (*(uint16_t *)&_DAT_1f8003a0)
+#define _DAT_1f8003a6 (*(uint16_t *)&_DAT_1f8003a4)
+#define _DAT_1f8003aa (*(uint16_t *)&_DAT_1f8003a8)
+#define _DAT_1f8003ae (*(uint16_t *)&_DAT_1f8003ac)
+#define _DAT_1f8003b2 (*(uint16_t *)&_DAT_1f8003b0)
+#define _DAT_1f8003b6 (*(uint16_t *)&_DAT_1f8003b4)
+#define _DAT_1f8003ba (*(uint16_t *)&_DAT_1f8003b8)
+#define _DAT_1f8003be (*(uint16_t *)&_DAT_1f8003bc)
+#define _DAT_1f8003c2 (*(uint16_t *)&_DAT_1f8003c0)
+#define _DAT_1f8003c6 (*(uint16_t *)&_DAT_1f8003c4)
+#define _DAT_1f8003ca (*(uint16_t *)&_DAT_1f8003c8)
+#define _DAT_1f8003ce (*(uint16_t *)&_DAT_1f8003cc)
+#define _DAT_1f8003d2 (*(uint16_t *)&_DAT_1f8003d0)
+#define _DAT_1f8003d6 (*(uint16_t *)&_DAT_1f8003d4)
+#define _DAT_1f8003da (*(uint16_t *)&_DAT_1f8003d8)
+#define _DAT_1f8003de (*(uint16_t *)&_DAT_1f8003dc)
+
+/* ---- action-commit + state helpers (action_commit family) ---- */
+extern void motion_blend_frame(byte*,byte*);
+extern int  atan2_lut(int,int);
+extern void gte_op_a00428(int*,int*);
+extern int32_t FUN_80194500(uint32_t);
+undefined2 *euler_rotmat(uint,uint,uint,undefined2*);
+void hitrec_table_clear(int);
+void table_1f0ae0_clear(int);
+extern void fighter_reset_fx(int,byte*);
+extern void keyframe_blend_apply(byte*,byte*);
+void keyframe_advance(byte*,byte*);
+void skeleton_pose_step(byte*,undefined2*,byte*,int);
+extern void fx_record_alloc(int,int,int,int,void*);
+extern void quad_fx_spawn(int,int,undefined4*,undefined2,ushort,int,int);
+extern void triple_track_spawn(int,int,int);
+undefined8 vec2_rot_lut(undefined4,int);
+void anim_lerp_scalar(short*,short,int,int);
+void anim_lerp_vec3(short*,short*,int,int,short);
+void anim_lerp_vec3_raw(short*,short*,int,int);
+void anim_lerp_packed4(short*,ushort*,int,int);
+extern void anim_lerp_aux(byte*,int,int,int);
+void anim_lerp_packed3(short*,ushort*,int,int);
+uint *rotmat_rtps_build(uint,uint*);
+
+
+/* action_commit - commit resolved action: sync motion state,
+ * advance timers/blends, steer toward foe, post deferred cmds. */
+
+extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+extern uint32_t br2_gaddr(const void *p);
+extern uint32_t call_guest4(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+extern void debug_server_poll(void);
+
 /* Faithful signed 32/32 `div` LO result. Guest div-by-zero yields
  * LO = (dividend<0) ? 1 : -1 (no trap); INT_MIN/-1 yields INT_MIN.
  * Use wherever the guest emits `div`/`break 7`-free signed divide. */
@@ -1503,86 +1619,6 @@ LAB_80176d24:
 
 /* FUN_801787dc — per-fighter frame update. Calls the resolver and
  * applies its result to motion+0x80, then physics/anim tail. */
-extern uint8_t *g_DAT_801b4e2c, *g_DAT_801b4e38, *g_DAT_801b4e44,
-              *g_DAT_801b4e50, *g_DAT_801b4e5c;
-#define DAT_801b4e2c   (*g_DAT_801b4e2c)
-#define DAT_801b4e38   (*g_DAT_801b4e38)
-#define DAT_801b4e44   (*g_DAT_801b4e44)
-#define DAT_801b4e50   (*g_DAT_801b4e50)
-#define DAT_801b4e5c   (*g_DAT_801b4e5c)
-extern void motion_turn_update(byte*,byte*);
-int range_circle_test(int,int,uint*,int);
-void deferred_cmd_post(uint,int,short);
-extern void action_commit(byte*,byte*);
-
-extern void launch_vel_update(byte*,byte*);
-extern void ev_stream_dispatch(byte *ctrl,byte *motion);
-extern void action_switch_guest(int ctrl,int *motion,int act);
-extern void slot_apply_guest(int ctrl,int motion);
-extern void part_record_reset(undefined2 *ctrl);
-extern ushort * ev5_action_select(int ctrl,int motion,ushort *stream);
-void part_matrix_compute(undefined4 *mat,byte *parts,short *euler,undefined4 angle);
-uint * matrix_vec3_apply(undefined4 *mat,uint *vec);
-extern uint8_t *g_DAT_1f8003a0,*g_DAT_1f8003c0;
-#define DAT_1f8003a0 (*g_DAT_1f8003a0)
-#define DAT_1f8003c0 (*g_DAT_1f8003c0)
-typedef uint8_t *evhandler_t(uint8_t *ctrl, uint8_t *motion, uint32_t pc_g);
-extern evhandler_t *PTR_FUN_801b4e68[];
-extern void FUN_801851d8(void);
-extern int trig_cos(int);
-extern int trig_sin(uint);
-extern void gte_mat_vec_swap(void*,void*,void*);
-extern void setCopReg(int,int,uint);
-extern int getCopReg(int,int);
-extern void copFunction(int,uint);
-extern void setCopControlWord(int,int,uint);
-extern uint32_t *g__DAT_1f8003a0,*g__DAT_1f8003a4,*g__DAT_1f8003a8,*g__DAT_1f8003ac,
-  *g__DAT_1f8003b0,*g__DAT_1f8003b4,*g__DAT_1f8003b8,*g__DAT_1f8003bc,
-  *g__DAT_1f8003c0,*g__DAT_1f8003c4,*g__DAT_1f8003c8,*g__DAT_1f8003cc,
-  *g__DAT_1f8003d0,*g__DAT_1f8003d4,*g__DAT_1f8003d8,*g__DAT_1f8003dc,
-  *g__DAT_1f8003e0,*g__DAT_1f8003e4,*g__DAT_1f8003e8,*g__DAT_1f8003ec,
-  *g__DAT_1f8003f0,*g__DAT_1f8003f4,*g__DAT_1f8003f8,*g__DAT_1f8003fc;
-#define _DAT_1f8003a0 (*g__DAT_1f8003a0)
-#define _DAT_1f8003a4 (*g__DAT_1f8003a4)
-#define _DAT_1f8003a8 (*g__DAT_1f8003a8)
-#define _DAT_1f8003ac (*g__DAT_1f8003ac)
-#define _DAT_1f8003b0 (*(int16_t *)g__DAT_1f8003b0) /* guest lh/sh @0x1f8003b0 (0x80185048) */
-#define _DAT_1f8003b4 (*g__DAT_1f8003b4)
-#define _DAT_1f8003b8 (*g__DAT_1f8003b8)
-#define _DAT_1f8003bc (*g__DAT_1f8003bc)
-#define _DAT_1f8003c0 (*(int16_t *)g__DAT_1f8003c0) /* guest sh @0x1f8003c0 (0x80185048) */
-#define _DAT_1f8003c4 (*(int16_t *)g__DAT_1f8003c4) /* guest sh @0x1f8003c4 */
-#define _DAT_1f8003c8 (*(int16_t *)g__DAT_1f8003c8) /* guest sh @0x1f8003c8 */
-#define _DAT_1f8003cc (*(int16_t *)g__DAT_1f8003cc) /* guest sh @0x1f8003cc */
-#define _DAT_1f8003d0 (*(int16_t *)g__DAT_1f8003d0) /* guest sh @0x1f8003d0 */
-#define _DAT_1f8003d4 (*g__DAT_1f8003d4)
-#define _DAT_1f8003d8 (*g__DAT_1f8003d8)
-#define _DAT_1f8003dc (*g__DAT_1f8003dc)
-#define _DAT_1f8003e0 (*g__DAT_1f8003e0)
-#define _DAT_1f8003e4 (*g__DAT_1f8003e4)
-#define _DAT_1f8003e8 (*g__DAT_1f8003e8)
-#define _DAT_1f8003ec (*g__DAT_1f8003ec)
-#define _DAT_1f8003f0 (*g__DAT_1f8003f0)
-#define _DAT_1f8003f4 (*g__DAT_1f8003f4)
-#define _DAT_1f8003f8 (*g__DAT_1f8003f8)
-#define _DAT_1f8003fc (*g__DAT_1f8003fc)
-#define _DAT_1f8003a2 (*(uint16_t *)&_DAT_1f8003a0)
-#define _DAT_1f8003a6 (*(uint16_t *)&_DAT_1f8003a4)
-#define _DAT_1f8003aa (*(uint16_t *)&_DAT_1f8003a8)
-#define _DAT_1f8003ae (*(uint16_t *)&_DAT_1f8003ac)
-#define _DAT_1f8003b2 (*(uint16_t *)&_DAT_1f8003b0)
-#define _DAT_1f8003b6 (*(uint16_t *)&_DAT_1f8003b4)
-#define _DAT_1f8003ba (*(uint16_t *)&_DAT_1f8003b8)
-#define _DAT_1f8003be (*(uint16_t *)&_DAT_1f8003bc)
-#define _DAT_1f8003c2 (*(uint16_t *)&_DAT_1f8003c0)
-#define _DAT_1f8003c6 (*(uint16_t *)&_DAT_1f8003c4)
-#define _DAT_1f8003ca (*(uint16_t *)&_DAT_1f8003c8)
-#define _DAT_1f8003ce (*(uint16_t *)&_DAT_1f8003cc)
-#define _DAT_1f8003d2 (*(uint16_t *)&_DAT_1f8003d0)
-#define _DAT_1f8003d6 (*(uint16_t *)&_DAT_1f8003d4)
-#define _DAT_1f8003da (*(uint16_t *)&_DAT_1f8003d8)
-#define _DAT_1f8003de (*(uint16_t *)&_DAT_1f8003dc)
-
 /* fighter_frame - per-fighter frame update: resource drain,
  * floor/height clamps, hit-zone tests, turn, action resolve+commit. */
 void fighter_frame(byte *ctrl, uint8_t *motion)
@@ -1982,33 +2018,6 @@ LAB_8017938c:
 
 }
 
-/* ---- action-commit + state helpers (action_commit family) ---- */
-extern void motion_blend_frame(byte*,byte*);
-extern int  atan2_lut(int,int);
-extern void gte_op_a00428(int*,int*);
-extern int32_t FUN_80194500(uint32_t);
-undefined2 *euler_rotmat(uint,uint,uint,undefined2*);
-void hitrec_table_clear(int);
-void table_1f0ae0_clear(int);
-extern void fighter_reset_fx(int,byte*);
-extern void keyframe_blend_apply(byte*,byte*);
-void keyframe_advance(byte*,byte*);
-void skeleton_pose_step(byte*,undefined2*,byte*,int);
-extern void fx_record_alloc(int,int,int,int,void*);
-extern void quad_fx_spawn(int,int,undefined4*,undefined2,ushort,int,int);
-extern void triple_track_spawn(int,int,int);
-undefined8 vec2_rot_lut(undefined4,int);
-void anim_lerp_scalar(short*,short,int,int);
-void anim_lerp_vec3(short*,short*,int,int,short);
-void anim_lerp_vec3_raw(short*,short*,int,int);
-void anim_lerp_packed4(short*,ushort*,int,int);
-extern void anim_lerp_aux(byte*,int,int,int);
-void anim_lerp_packed3(short*,ushort*,int,int);
-uint *rotmat_rtps_build(uint,uint*);
-
-
-/* action_commit - commit resolved action: sync motion state,
- * advance timers/blends, steer toward foe, post deferred cmds. */
 void action_commit(byte *ctrl, byte *motion)
 {
   /* Locals: rem = countdown remainder; f6c = ctrl+0x6c flag word;
@@ -2881,7 +2890,6 @@ unsigned long long dir_rotate_wrap(undefined4 angle,int mag,short *vec)
  * motion/skeleton state at blend alpha. */
 void keyframe_blend_apply(byte *ctrl,byte *motion)
 {
-  extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
   byte tag;
   short w;
   byte *rec;
@@ -3144,8 +3152,7 @@ void anim_lerp_packed4(short *dst,ushort *src,int flip,int alpha)
   int d1;
   int d2;
   {
-    extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-    uint32_t _gd = (uint32_t)guest_of(dst);
+      uint32_t _gd = (uint32_t)guest_of(dst);
     if (_gd >= 0x801d0000u && _gd < 0x80200000u)
       decomp_trace_record(53, _gd, (uint32_t)guest_of(src), 4, 0);
   }
@@ -3209,8 +3216,7 @@ void anim_lerp_packed3(short *dst,ushort *src,int flip,int alpha)
   int q;
   int d0;
   {
-    extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-    uint32_t _gd = (uint32_t)guest_of(dst);
+      uint32_t _gd = (uint32_t)guest_of(dst);
     if (_gd >= 0x801d0000u && _gd < 0x80200000u)
       decomp_trace_record(53, _gd, (uint32_t)guest_of(src), 3, 0);
   }
@@ -3259,8 +3265,6 @@ undefined8 vec2_rot_lut(undefined4 angle,int mag)
 void ev_stream_dispatch(byte *ctrl,byte *motion)
 {
   byte *ret;
-  extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
-  extern uint32_t br2_gaddr(const void *p);
   /* Guest 0x8017ea7c carries the stream pc in $a2/$v0 through the
    * handler loop AND mirrors every nonzero next-pc into motion+0x84
    * (block_8017EAF0: sw v0,0x84(s0) @0x8017EAF4, executed on every
@@ -3285,11 +3289,10 @@ void ev_stream_dispatch(byte *ctrl,byte *motion)
          * clean-room port first (call_guest4 -> clean_try_dispatch), with
          * the same generated fallback br2_call_generated used. */
         uint32_t h = *(uint32_t *)guest_at(0x801b4e68u + (uint32_t)op * 4);
-        extern uint32_t call_guest4(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
-        npc_g = call_guest4(h, br2_gaddr(ctrl), br2_gaddr(motion), pc_g, 0);
+              npc_g = call_guest4(h, br2_gaddr(ctrl), br2_gaddr(motion), pc_g, 0);
         ret = npc_g ? (byte *)guest_at(npc_g) : (byte *)0;
       }
-      { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+      {
         decomp_trace_record(60, pc_g, (uint32_t)br2_gaddr(motion), op, npc_g); }
       if (npc_g == 0) break;
       *(uint32_t *)(motion + 0x84) = npc_g;   /* guest sw @0x8017EAF4 */
@@ -3301,8 +3304,7 @@ void ev_stream_dispatch(byte *ctrl,byte *motion)
        * Poll periodically — host-side socket service only, no guest
        * interrupt/resume semantics. */
       if (((++_dbsp_n) & 0x3FFu) == 0) {
-        extern void debug_server_poll(void);
-        debug_server_poll();
+              debug_server_poll();
       }
     }
   }
