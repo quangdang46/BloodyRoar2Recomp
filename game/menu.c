@@ -6996,11 +6996,11 @@ extern int32_t record_field_step(int32_t,int32_t);
 extern int  menu_sprite_load_sm(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern void hud_announce(uint32_t,uint32_t,uint32_t);
 extern uint32_t g_pbd_calls,g_pbd_phase,g_pbd_ctr,g_pbd_exit,g_pbd_writes;
-int32_t post_battle_dispatch(uint8_t *param_1,uint8_t *param_2,uint32_t param_3)
+int32_t post_battle_dispatch(uint8_t *side_a,uint8_t *side_b,uint32_t battle)
 {
-  uint32_t s1 = param_3;
-  uint32_t g2 = guest_of(param_1);
-  uint32_t g3 = guest_of(param_2);
+  uint32_t s1 = battle;
+  uint32_t g2 = guest_of(side_a);
+  uint32_t g3 = guest_of(side_b);
   uint32_t s5 = 0;
   int32_t  r;
   uint32_t b92;
@@ -7014,8 +7014,8 @@ int32_t post_battle_dispatch(uint8_t *param_1,uint8_t *param_2,uint32_t param_3)
     MW8(s1 + 0x9d,1);
   else
     MW8(s1 + 0x9d,0);
-  s5  = (uint32_t)battle_config_eval(param_1,s1,0);
-  s5 |= (uint32_t)battle_config_eval(param_2,s1,0);
+  s5  = (uint32_t)battle_config_eval(side_a,s1,0);
+  s5 |= (uint32_t)battle_config_eval(side_b,s1,0);
 
   {
     uint32_t v1 = MB16(s1 + 0xb4) & 0xf00;
@@ -7177,7 +7177,7 @@ L_case1:
         MW32(g3 + 0xf0,MB32(g3 + 0xf0) + 1);
       }
     }
-    post_battle_side_commit(param_1,param_2,s1);
+    post_battle_side_commit(side_a,side_b,s1);
     if (((MB32(g2 + 0x64) | MB32(g3 + 0x64)) & 1) != 0) {
       MW32(g2 + 0x64,MB32(g2 + 0x64) & 0xfffffffe);
       MW32(g3 + 0x64,MB32(g3 + 0x64) & 0xfffffffe);
@@ -7242,10 +7242,10 @@ L_c4b:
   }
 
   case 5:
-    vs_confirm_c(param_1,param_2,s1,s5 & 0xffff);
+    vs_confirm_c(side_a,side_b,s1,s5 & 0xffff);
     return 0;
   case 6:
-    vs_confirm_c(param_2,param_1,s1,s5 & 0xffff);
+    vs_confirm_c(side_b,side_a,s1,s5 & 0xffff);
     return 0;
 
   case 7: case 8: {
@@ -7291,10 +7291,10 @@ L_c78:
   }
 
   case 9:
-    vs_confirm_d(param_1,param_2,s1,s5 & 0xffff);
+    vs_confirm_d(side_a,side_b,s1,s5 & 0xffff);
     return 0;
   case 10:
-    vs_confirm_d(param_2,param_1,s1,s5 & 0xffff);
+    vs_confirm_d(side_b,side_a,s1,s5 & 0xffff);
     return 0;
 
   case 11: {
@@ -7385,10 +7385,10 @@ L_ewin:
     return 0;
 
   case 13:
-    vs_confirm_e(param_1,param_2,s1,s5 & 0xffff);
+    vs_confirm_e(side_a,side_b,s1,s5 & 0xffff);
     return 0;
   case 14:
-    vs_confirm_e(param_2,param_1,s1,s5 & 0xffff);
+    vs_confirm_e(side_b,side_a,s1,s5 & 0xffff);
     return 0;
 
   case 15: {
@@ -7530,9 +7530,9 @@ extern uint16_t attr_flag_mask(uint32_t);
  * 0x80127b5c): 0x80127b5c is a bare jr $ra returning v0 = target itself.
  * Shared tail @0x80127b30: a1!=0 -> ++u16 @rec+6 (via fn @0x80127b4c);
  * a1==0 -> ++u16 @rec+0xa. Returns the incremented u32. */
-int32_t record_field_step(int32_t param_1,int32_t param_2)
+int32_t record_field_step(int32_t ent,int32_t which)
 {
-  uint32_t a0 = (uint32_t)param_1;
+  uint32_t a0 = (uint32_t)ent;
   uint32_t rec;
   uint32_t idx, tgt;
   uint32_t v;
@@ -7544,7 +7544,7 @@ int32_t record_field_step(int32_t param_1,int32_t param_2)
     if (tgt == 0x80127b5cu) return (int32_t)tgt;   /* jr $v0 -> jr $ra, v0=tgt */
     /* tgt == 0x80127b30 -> shared tail */
   }
-  if (param_2 != 0) {
+  if (which != 0) {
     v = (uint32_t)MB16(rec + 6) + 1u;
     MW16(rec + 6,(uint16_t)v);
     return (int32_t)v;
@@ -7556,19 +7556,19 @@ int32_t record_field_step(int32_t param_1,int32_t param_2)
 
 /* ======== 0x80128bfc ========
  * 4 insns: *(u16*)MB32(a0+0xcc) = 2. */
-void battle_subrecord_set2(uint32_t param_1)
+void battle_subrecord_set2(uint32_t battle)
 {
-  MW16(MB32(param_1 + 0xcc),2);
+  MW16(MB32(battle + 0xcc),2);
 }
 
 /* ======== 0x80128f98 ========
  * 8 insns, two return paths. a1<0 -> return (s16)*(u16*)MB32(a0+0xcc);
  * a1>=0 -> store a1 there and return the pointer itself (v0). */
-int32_t subrecord_u16_rw(uint32_t param_1,int32_t param_2)
+int32_t subrecord_u16_rw(uint32_t battle,int32_t val)
 {
-  uint32_t v0 = MB32(param_1 + 0xcc);
-  if (param_2 < 0) return (int32_t)MBS16(v0);
-  MW16(v0,(uint16_t)param_2);
+  uint32_t v0 = MB32(battle + 0xcc);
+  if (val < 0) return (int32_t)MBS16(v0);
+  MW16(v0,(uint16_t)val);
   return (int32_t)v0;
 }
 
@@ -7588,11 +7588,11 @@ void state_word_set_ffff(void)
  * 35/36->0x8012f960, else epilogue). Direction table @0x8011f944
  * (8x3 u16). Matrix/vector path via angle_pair_rotmat + gte_rtps_xform1 on
  * s3+0x48; velocity deltas accumulate into s1+0x52..0x56 / 0x4a..0x4e. */
-void menu_step_b(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                  uint32_t param_4)
+void menu_step_b(uint32_t cursor,uint32_t unused_a,uint32_t unused_b,
+                  uint32_t rec)
 {
-  uint32_t s1 = param_1;
-  uint32_t s3 = param_4;
+  uint32_t s1 = cursor;
+  uint32_t s3 = rec;
   uint32_t s2 = MB16(s3 + 0x68);
   uint32_t s0 = MB16(s3 + 0x6c);
   uint32_t v0, v1, idx, e;
@@ -7600,7 +7600,7 @@ void menu_step_b(uint32_t param_1,uint32_t param_2,uint32_t param_3,
   uint16_t *dvh;
   uint32_t *m;
 
-  (void)param_2; (void)param_3;
+  (void)unused_a; (void)unused_b;
 
   /* ---- held-button auto-repeat bytes ---- */
   if (s2 & 4) {
