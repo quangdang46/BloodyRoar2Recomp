@@ -833,10 +833,10 @@ void cd_init_done_cb(void)
 
 extern int  console_emit(int);
 extern void console_pct(void);
-extern int  cd_sync_wait_b();
-extern int  cd_sync_wait_c();
-extern void bios_table_tramp();
-extern void bios_kobj_tramp();
+extern int  cd_sync_wait_b(uint32_t,uint32_t);
+extern int  cd_sync_wait_c(uint32_t,uint32_t);
+extern void bios_table_tramp(void);
+extern void bios_kobj_tramp(void);
 extern uint16_t cd_u16_swap_store(uint16_t);
 extern uint32_t gpu_status_cmd(uint);
 
@@ -1535,12 +1535,12 @@ int cd_sync_wait_c(uint32_t a0,uint32_t a1)
  * 0x80199fe0 = B0/0x5b, 0x8019a670 = C0/0x0a, 0x801957f0 = A0/0x44. */
 extern void br2_bios_tramp(uint32_t,uint32_t);
 extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
-void bios_table_tramp()
+void bios_table_tramp(void)
 {
   br2_bios_tramp(0xb0,0x5b);
 }
 
-void bios_kobj_tramp()
+void bios_kobj_tramp(void)
 {
   br2_bios_tramp(0xc0,0x0a);
 }
@@ -4631,7 +4631,7 @@ uint32_t cd_queue_a_read(void)
 extern uint32_t cd_copy_u32(uint32_t,uint32_t,uint32_t,uint32_t);
 extern uint32_t cd_chan_cmd_submit(uint32_t,uint32_t,uint32_t,uint32_t,
                              uint32_t,uint32_t,uint32_t);
-extern void cd_dir_entry_finalize();
+extern void cd_dir_entry_finalize(void);
 
 #define CD_ENT16(o)  (*(uint16_t *)guest_at(DB32(0x801feb18) + (o)))
 
