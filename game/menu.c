@@ -9786,32 +9786,32 @@ L_31ac:                                       /* 0x801531ac shared tail */
  * (a guest ptr into the blob area past the offset table), or 0 when
  * a1 >= count (signed slt) or the slot holds -1. The batch37 caller
  * uses the result as a cursor advance. */
-uint32_t offset_table_lookup(uint32_t a0,int32_t a1)
+uint32_t offset_table_lookup(uint32_t tbl,int32_t idx)
 {
   extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-  int32_t n = (int32_t)MB32(a0);
+  int32_t n = (int32_t)MB32(tbl);
   uint32_t off, ret;
-  if (a1 >= n) { decomp_trace_record(14,a0,(uint32_t)n,(uint8_t)a1,0); return 0; }
-  off = MB32(a0 + (uint32_t)a1 * 4u + 4u);
-  if (off == 0xffffffffu) { decomp_trace_record(14,a0,(uint32_t)n,(uint8_t)a1,0); return 0; }
-  ret = a0 + off + (uint32_t)(n + 1) * 4u + 0xc;
-  decomp_trace_record(14,a0,(uint32_t)n,(uint8_t)a1,ret);
+  if (idx >= n) { decomp_trace_record(14,tbl,(uint32_t)n,(uint8_t)idx,0); return 0; }
+  off = MB32(tbl + (uint32_t)idx * 4u + 4u);
+  if (off == 0xffffffffu) { decomp_trace_record(14,tbl,(uint32_t)n,(uint8_t)idx,0); return 0; }
+  ret = tbl + off + (uint32_t)(n + 1) * 4u + 0xc;
+  decomp_trace_record(14,tbl,(uint32_t)n,(uint8_t)idx,ret);
   return ret;
 }
 
 /* packed_u16_expand — packed u16-pair expander @0x80148edc (20 insns,
  * leaf). tbl = 0x801b2580 + a2*4 (two u16). val =
  * ((h0 & 0x3ff) >> 4) + ((h1 & 0x1ff) << 6); the SAME u16 is stored
- * to guest a0+0xe and a1+0xe (the paired engine records walked by
+ * to guest rec_a+0xe and rec_b+0xe (the paired engine records walked by
  * engine_record_pair_update). v0 = val at jr $ra; all in-file callers ignore it
  * so the value is dropped here. */
-void packed_u16_expand(uint32_t a0,uint32_t a1,uint32_t a2)
+void packed_u16_expand(uint32_t rec_a,uint32_t rec_b,uint32_t idx)
 {
-  uint32_t t = 0x801b2580u + a2 * 4u;
-  uint32_t v = ((uint32_t)MB16(t) & 0x3ffu) >> 4;
-  v += ((uint32_t)MB16(t + 2) & 0x1ffu) << 6;
-  MW16(a0 + 0xe, v);
-  MW16(a1 + 0xe, v);
+  uint32_t tbl = 0x801b2580u + idx * 4u;
+  uint32_t val = ((uint32_t)MB16(tbl) & 0x3ffu) >> 4;
+  val += ((uint32_t)MB16(tbl + 2) & 0x1ffu) << 6;
+  MW16(rec_a + 0xe, val);
+  MW16(rec_b + 0xe, val);
 }
 
 /* cmd_queue_push — 8-entry u16 command-queue push @0x8012a5b8 (38
@@ -9821,8 +9821,8 @@ void packed_u16_expand(uint32_t a0,uint32_t a1,uint32_t a2)
  * four args as u16s, 0x1f8000d0 = slot, and the 5th (stack) arg
  * goes to u32 table 0x801bef38 + (slot-1)*4. v0 = slot at jr;
  * in-file callers treat it as void so it is dropped. */
-void cmd_queue_push(int32_t a0,int32_t a1,int32_t a2,int32_t a3,
-                  uint32_t a4)
+void cmd_queue_push(int32_t f0,int32_t f1,int32_t f2,int32_t f3,
+                  uint32_t aux)
 {
   int32_t nxt = (int32_t)MBS16(0x1f8000d0) + 1;
   int32_t slot = (nxt < 9) ? nxt : 0;
@@ -9830,30 +9830,30 @@ void cmd_queue_push(int32_t a0,int32_t a1,int32_t a2,int32_t a3,
   if (slot == 0) return;
   e = 0x801c4530u + (uint32_t)slot * 8u;
   MW16(0x1f8000d0, (uint16_t)slot);
-  MW16(e + 0, (uint16_t)a0);
-  MW16(e + 2, (uint16_t)a1);
-  MW16(e + 4, (uint16_t)a2);
-  MW16(e + 6, (uint16_t)a3);
-  MW32(0x801bef38u + (uint32_t)(slot - 1) * 4u, a4);
+  MW16(e + 0, (uint16_t)f0);
+  MW16(e + 2, (uint16_t)f1);
+  MW16(e + 4, (uint16_t)f2);
+  MW16(e + 6, (uint16_t)f3);
+  MW32(0x801bef38u + (uint32_t)(slot - 1) * 4u, aux);
 }
 
 /* victory_record_restore — victory-record restorer @0x80128268 (397 insns,
- * jr $ra @0x80128890). a0 = guest battle base (kept in t3), a1 =
- * record index. rec = 0x801c47c0 + a1*0x235c — the same table
+ * jr $ra @0x80128890). f0 = guest battle base (kept in t3), f1 =
+ * record index. rec = 0x801c47c0 + f1*0x235c — the same table
  * results_record_build builds. Copies nine fixed blobs OUT of the record
  * into the live tables (inverse direction of results_record_build), plus
  * two flag-selected 0x870 tables and two 756-stride subtables, then
  * unpacks the packed flag u32 at rec+0x2358 into the two side
  * records (pa = MB32(0x1f800100), pb = MB32(0x1f800208); bits 0-3
  * -> pa +0x23c/+0x1c4/+0x28c/+0x264, bits 4-7 -> pb same offsets),
- * mirrors rec+2 -> a0+0x94, writes -1/-2 sentinels around the
+ * mirrors rec+2 -> f0+0x94, writes -1/-2 sentinels around the
  * 0x801f4d70 blobs, and returns lh(rec+0). All lwl/lwr vs lw/sw
  * pairs are alignment variants of the same 16-byte block copy
  * (blk_copy); the K subtable genuinely copies only 0x2f0 (no tail
  * word) while L copies 0x2f0 + 1 trailing word = 0x2f4. */
-int32_t victory_record_restore(uint32_t param_1,int32_t param_2)
+int32_t victory_record_restore(uint32_t battle,int32_t idx)
 {
-  uint32_t rec = 0x801c47c0u + (uint32_t)param_2 * 0x235cu;
+  uint32_t rec = 0x801c47c0u + (uint32_t)idx * 0x235cu;
   uint32_t bit, pa, pb, f;
 
   blk_copy(0x1f8000e8, rec + 0x16cc, 0x210);
@@ -9876,7 +9876,7 @@ int32_t victory_record_restore(uint32_t param_1,int32_t param_2)
   bit = MB8(0x1f8001f5) & 1;
   blk_copy(0x801e1554 + bit * 756u,  rec + 0x13d8, 0x2f4);
 
-  MW16(param_1 + 0x94, MB16(rec + 2));
+  MW16(battle + 0x94, MB16(rec + 2));
   f  = MB32(rec + 0x2358);
   pa = MB32(0x1f800100);                     /* lw 0x18(0x1f8000e8) */
   MW16(pa + 0x23c, f & 1u);
