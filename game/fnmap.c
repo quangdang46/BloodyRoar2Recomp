@@ -670,8 +670,11 @@ extern void firework_task_update(void);
 extern void fixed_approach_s16(void);
 extern void fixed_point_divide(void);
 extern void fixed_recip_lut(void);
+extern void fixed_recip_negative_shift_tail(void);
 extern void fixed_rsqrt_q12(void);
 extern void fixed_rsqrt_q12_ex(void);
+extern void fixed_rsqrt_q12_ex_failure(void);
+extern void fixed_rsqrt_q12_zero_result(void);
 extern void flag_801b55d0_set(void);
 extern void flag_table_dump(void);
 extern void flow_cfg_init(void);
@@ -1521,6 +1524,7 @@ extern void vec3_approach_step(void);
 extern void vec3_midpoint_angles(void);
 extern void vec3_s16_normalize(void);
 extern void vec3_s32_h_normalize(void);
+extern void vec3_s32_h_normalize_store_tail(void);
 extern void vec3_s32_normalize(void);
 extern void vec3_step_toward(void);
 extern void vec3_step_toward_q(void);
@@ -2561,14 +2565,18 @@ const Br2FnEnt fn_table[] = {
   { 0x801943d4, (void *)isqrt },
   { 0x80194478, (void *)gte_screen_init_defer },
   { 0x80194500, (void *)fixed_rsqrt_q12 },
+  { 0x8019457c, (void *)fixed_rsqrt_q12_zero_result },
   { 0x80194590, (void *)fixed_rsqrt_q12_ex },
+  { 0x80194614, (void *)fixed_rsqrt_q12_ex_failure },
   { 0x8019461c, (void *)vec3_s32_h_normalize },
   { 0x80194630, (void *)vec3_s32_normalize },
   { 0x80194660, (void *)vec3_s16_normalize },
+  { 0x8019466c, (void *)vec3_s32_h_normalize_store_tail },
   { 0x80194690, (void *)gte_vec3_normalize },
   { 0x80194750, (void *)gte_xform_norm3pts },
   { 0x80194840, (void *)gte_xform_accum },
   { 0x801948c0, (void *)fixed_recip_lut },
+  { 0x80194940, (void *)fixed_recip_negative_shift_tail },
   { 0x80194960, (void *)gte_rtps_xform3 },
   { 0x80194a70, (void *)gte_rtps3_sxy_pack },
   { 0x80194b60, (void *)gte_xform3_nold },

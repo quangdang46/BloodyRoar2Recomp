@@ -4595,3 +4595,10 @@
 8012a93c cps_8012a92c
 801298f8 cps_801298f8
 801268b8 cps_801268b8
+
+# GTE helper leaves and the continuation of the 0x8019466C split tail.
+8019457c fixed_rsqrt_q12_zero_result
+80194614 fixed_rsqrt_q12_ex_failure
+8019466c vec3_s32_h_normalize_store_tail
+80194678 vec3_s32_h_normalize_store_tail
+80194940 fixed_recip_negative_shift_tail
