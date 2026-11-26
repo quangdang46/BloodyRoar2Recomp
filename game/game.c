@@ -22,23 +22,14 @@
  *                     window setup, stream reader, palette, then
  *                     battle_session_arm(1) battle start + 2 frames
  *   battle_session_arm      battle session arm: fighter buf ptrs +0x4/+8
- *                     = param_2*0x2150 + fixed guest addrs
+ *                     = slot*0x2150 + fixed guest addrs
  */
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
 #include <stddef.h>
 
-typedef uint8_t  byte;
-typedef uint16_t ushort;
-typedef uint32_t uint;
-typedef uint16_t undefined2;
-typedef uint32_t undefined4;
-typedef uint8_t  undefined1;
-typedef uint8_t  undefined;
-typedef int64_t  longlong;
-typedef uint64_t ulonglong;
-#define CONCAT22(hi,lo) (((undefined4)(uint16_t)(hi) << 16) | (uint16_t)(lo))
+#define CONCAT22(hi,lo) (((uint32_t)(uint16_t)(hi) << 16) | (uint16_t)(lo))
 #define CONCAT11(hi,lo) (((uint16_t)(uint8_t)(hi) << 8) | (uint8_t)(lo))
 
 /* ---- guest globals (bindings in bind.c) ---- */
@@ -364,14 +355,13 @@ int cd_read_issue();
 void cursor_sprite_anim(uint8_t *);
 extern void entry_0x80126234(void);
 
-typedef void code(void);
 
 /* ---- callee externs (ported in later batches; weak-bound meanwhile) ---- */
 extern void memcard_tick(void);
 extern void deferred_cmd_drain();
 extern void cursor_sprite_anim(uint8_t *);
 extern void memcard_slot_poll(void);
-extern uint cd_timer_read(int);
+extern uint32_t cd_timer_read(int);
 extern void gpu_pkt_unlink_n(int,int);
 extern void pad_state_refresh(intptr_t);
 extern void gpu_draw_sync(int);
@@ -426,10 +416,10 @@ extern int  cd_file_pump(int,int);
 extern void gfx_tbls_init(void);
 extern void game_globals_reset(void);
 extern void battle_session_arm(intptr_t,int);
-extern undefined4 scene_entry(int,int,int);
+extern uint32_t scene_entry(int,int,int);
 extern void frame_tick(intptr_t);
 extern void br2_irq_poll(void);
-extern undefined4 memcard_poll_frame(void);
+extern uint32_t memcard_poll_frame(void);
 extern void match_loop(void);
 extern void scratch_zero_reset(void);
 extern void game_globals_reset(void);
@@ -441,14 +431,12 @@ extern void gfx_tbls_init(void);
 extern void battle_session_arm(intptr_t,int);
 extern void frame_tick(intptr_t);
 extern void display_mode_setup(uint32_t);
-extern void FUN_80195290(int,int);
-extern void FUN_80195290(int,int);
+extern void gte_ofs_set(int,int);
 extern void gte_cw_d000_set(int);
 extern void sprite_attr_init_b(int,int,int,int,int);
 extern void sprite_attr_init_a(int,int,int,int,int);
 extern void oam_list_rebuild(void);
 extern void hud_sprite_desc_init(void);
-extern void FUN_8019117c_(void);
 extern void frame_counter_bump(int);
 extern void spr_desc_tbl_a_init(void);
 extern void spr_desc_tbl_b_init(void);
@@ -482,17 +470,17 @@ extern void spr_slot_pkt_submit(int,int,uint32_t,uint32_t);
 extern void spr_attr_alloc_a(int,int,int,int,int,int,int);
 extern int  frame_divisor_get(void);
 extern void frame_present(intptr_t);
-extern undefined4 match_end_check(intptr_t);
+extern uint32_t match_end_check(intptr_t);
 extern void hud_text_blk_alt(int,int,const void *,int,int,int);
-extern undefined4 memcard_poll_frame(void);
-extern undefined4 scene_entry(int,int,int);
+extern uint32_t memcard_poll_frame(void);
+extern uint32_t scene_entry(int,int,int);
 extern void brightness_packet_send(int);
 extern void tile_stream_job_init(int,int,int,int,int,int*);
 extern void tile_stream_open(uint8_t*,void*,int*);
 extern int  tile_stream_pump(void);
 extern int blk_io_retry(int,int*);
 extern void cd_stream_mode_init(uint32_t);
-extern void gpu_clear_image_cmd2(undefined4,int,int,int);
+extern void gpu_clear_image_cmd2(uint32_t,int,int,int);
 extern void gpu_pkt_attr_set(int,int);
 extern void cd_fileop_forward(uint32_t,uint32_t);
 extern void tile_decode_wait(int,int);
@@ -503,7 +491,7 @@ extern void cd_subsystem_reset(void);
 extern void vram_tile_decode(int);
 extern int  cd_file_open_b(uint32_t);
 extern void vsync_wait_n(uint32_t,int);
-extern undefined4 memcard_file_flow(int);
+extern uint32_t memcard_file_flow(int);
 extern void guest_bzero(uint32_t,int);
 
 /* ==================================================================
@@ -514,7 +502,7 @@ extern void guest_bzero(uint32_t,int);
 static void entry_0x80126178(void)
 {
     /* Faithful _start (disasm 0x80126178-0x8012621c, delay slots incl.):
-     *   BSS clear 0x801CEEF0..0x801FF650 (sw $zero loop, end exclusive)
+     *   BSS clear 0x801CEEF0..0x801FF650 (sw $zero loop, bss_end exclusive)
      *   sp = (*(u32*)0x80126228) | 0x80000000   — literal-pool load, NOT a
      *     BSS read; a0 = 0x801FF650 then sll/srl 3 -> phys 0x1FF650
      *   a1 = v0 - *(0x801BE720) - 0x1FF650     — size for BIOS bzero
@@ -523,8 +511,6 @@ static void entry_0x80126178(void)
      * sp/gp/fp setup is skipped: the runtime owns cpu->gpr[29] and the
      * clean ports address globals absolutely via guest_at(). */
     uint32_t *p    = (uint32_t *)guest_at(0x801ceef0);
-    uint32_t *end  = (uint32_t *)guest_at(0x801ff650);
-    uint32_t lit, v1, size;
     while (p < end) *p++ = 0;
     *(uint32_t *)guest_at(0x801ceef0) = 0;   /* saved-ra slot (unused) */
     lit  = *(uint32_t *)guest_at(0x80126228); /* literal pool: 2MB top */
@@ -542,7 +528,7 @@ static void entry_0x80126178(void)
 
 /* func_0x80126170 / func_0x80163840 — jr-ra thunks (empty).
  * empty_leaf_e is the renames.map-registered form of guest 0x80126170
- * (`jr ra; nop`, 8-byte body — a bind_jal waypoint slot). */
+ * (`jr ra; nop`, 8-uint8_t body — a bind_jal waypoint slot). */
 void empty_leaf_e(void) { }
 static void func_0x80126170(void) { empty_leaf_e(); }
 static void func_0x80163840(int p) { (void)p; }
@@ -551,11 +537,6 @@ static void func_0x80163840(int p) { (void)p; }
 static void apply_saved_settings_or_defaults(undefined4 *cfg)
 {
     undefined4 *src;
-    undefined4 *dst;
-    undefined4 w1;
-    undefined4 w2;
-    undefined4 w3;
-
     src = (undefined4 *)g_DAT_801b1280;
     dst = cfg;
     do {
@@ -566,10 +547,7 @@ static void apply_saved_settings_or_defaults(undefined4 *cfg)
         dst[1] = w1;
         dst[2] = w2;
         dst[3] = w3;
-        src = src + 4;
-        dst = dst + 4;
     } while (src != (undefined4 *)g_DAT_801b12e0);
-    *dst = *(undefined4 *)g_DAT_801b12e0;
     save_defaults_fill();
     save_block_init();
     save_tables_commit();
@@ -577,6 +555,17 @@ static void apply_saved_settings_or_defaults(undefined4 *cfg)
     gauge_scale_fixed(*(undefined1 *)((uint8_t *)cfg + 0xe),
                  ((uint)*(byte *)((uint8_t *)cfg + 0xf) << 3) / 10);
     brightness_commit(*(byte *)(cfg + 3) ^ 1);
+    uint32_t *src_rec;
+    src_rec = (uint32_t *)g_DAT_801b1280;
+    dst_rec = sys_cfg;
+        *dst_rec = *src_rec;
+        dst_rec[1] = w1;
+        dst_rec[2] = w2;
+        dst_rec[3] = w3;
+    dbg_marker_mode_set(*(uint8_t *)(sys_cfg + 9));
+    gauge_scale_fixed(*(uint8_t *)((uint8_t *)sys_cfg + 0xe),
+                 ((uint32_t)*(uint8_t *)((uint8_t *)sys_cfg + 0xf) << 3) / 10);
+    brightness_commit(*(uint8_t *)(sys_cfg + 3) ^ 1);
 }
 
 /* ==================================================================
@@ -598,21 +587,25 @@ void entry_0x80126234(void)
     uint gs;
     undefined4 mode_sel;
     ushort match_ctr;
+    uint8_t ret_state;
+    uint32_t state;
+    uint16_t retry_count;
     /* pad_buf = the pad/input buffer. In the original it lives on the guest
      * stack at sp_old-0x30 (generated 0x80126234: addiu sp,-64; buffer at
      * sp+16). The pad driver is generated/BIOS code that writes guest RAM, so
      * _g_pad_buffer must alias that guest buffer — a host stack array would
      * never receive the controller data. main() never returns, so the
      * reservation is never freed: it reproduces the guest's permanent
-     * 0x40-byte main frame and keeps every nested call's frame below the
+     * 0x40-uint8_t main frame and keeps every nested call's frame below the
      * pad buffer instead of overwriting it (frame 0x40 -> sp+0x10 maps to
      * frm+0x10). */
     extern uint32_t br2_guest_frame(uint32_t);
     uint32_t mn_frm = br2_guest_frame(0x40);
     ushort *pad_buf = (ushort *)guest_at(mn_frm + 0x10);
-
     func_0x80126170();
     match_ctr = 0;
+    uint16_t *pad_buf = (uint16_t *)guest_at(mn_frm + 0x10);
+    retry_count = 0;
     boot();
     pad_buf[1] = 0x1c7f;
     _g_pad_buffer = (uint8_t *)pad_buf;
@@ -638,6 +631,12 @@ void entry_0x80126234(void)
         gauge_scale_fixed(*(undefined1 *)(_g_system_config_ptr + 0xe),
                      ((uint)*(byte *)(_g_system_config_ptr + 0xf) << 3) / 10);
         brightness_commit(*(byte *)(_g_system_config_ptr + 0xc) ^ 1);
+    call_ret = memcard_info_query();
+        apply_saved_settings_or_defaults((uint32_t *)_g_system_config_ptr);
+        dbg_marker_mode_set(*(uint8_t *)(_g_system_config_ptr + 0x24));
+        gauge_scale_fixed(*(uint8_t *)(_g_system_config_ptr + 0xe),
+                     ((uint32_t)*(uint8_t *)(_g_system_config_ptr + 0xf) << 3) / 10);
+        brightness_commit(*(uint8_t *)(_g_system_config_ptr + 0xc) ^ 1);
     }
     frame_advance_helper();
     func_0x80163840(0);
@@ -659,24 +658,28 @@ LAB_80126350:
     do {
     } while (!state_ok);
     switch(gs) {
+    state = (uint32_t)g_game_state;
+    state_lt_14 = state < 0xe;
+    switch(state) {
     case 0: /* 0x80126378 */
         match_mode_set(1);
         g_game_state = 1;
         goto switchD_80126370_caseD_80126344;
     case 1: /* 0x8012638c */
-        display_mode_setup(*(undefined1 *)(_g_system_config_ptr + 0xb));
+        display_mode_setup(*(uint8_t *)(_g_system_config_ptr + 0xb));
         frame_advance_helper();
         transition_screen_flow(0xf);
         gs = (uint)g_game_state;
         state_ok = gs < 0xe;
         if (gs == 1) goto LAB_801265b8;
+        state = (uint32_t)g_game_state;
+        state_lt_14 = state < 0xe;
         goto LAB_80126350;
     case 2: /* 0x801263c8 */
         goto switchD_80126370_caseD_801263c8;
     case 3: /* 0x801263e0 */
         mode_sel = 2;
         if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
-            mode_sel = 1;
         }
         match_mode_set(mode_sel);
         display_mode_setup(*(undefined1 *)(_g_system_config_ptr + 0xb));
@@ -685,7 +688,11 @@ LAB_80126350:
         transition_screen_flow(1);
         gs = (uint)g_game_state;
         state_ok = gs < 0xe;
-        if (gs == 3) {
+        mmode = 2;
+        match_mode_set(mmode);
+        display_mode_setup(*(uint8_t *)(_g_system_config_ptr + 0xb));
+        state = (uint32_t)g_game_state;
+        state_lt_14 = state < 0xe;
             g_game_state = 4;
             goto switchD_80126370_caseD_80126344;
         }
@@ -693,18 +700,21 @@ LAB_80126350:
     case 4: /* 0x8012644c */
         mode_sel = 2;
         if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
-            mode_sel = 1;
         }
         match_mode_set(mode_sel);
         frame_advance_helper();
         gauge_scale_fixed(*(undefined1 *)(_g_system_config_ptr + 0xe),
                      ((((uint)*(byte *)(_g_system_config_ptr + 0xf) * 0x10a) / 100) * 8) / 10);
         ret = scene_entry(0x80010000,0,1);
-        if (ret != 0) {
+        mmode = 2;
+        match_mode_set(mmode);
+        gauge_scale_fixed(*(uint8_t *)(_g_system_config_ptr + 0xe),
+                     ((((uint32_t)*(uint8_t *)(_g_system_config_ptr + 0xf) * 0x10a) / 100) * 8) / 10);
+        call_ret = scene_entry(0x80010000,0,1);
             g_game_state = 5;
         }
-        gauge_scale_fixed(*(undefined1 *)(_g_system_config_ptr + 0xe),
-                     ((uint)*(byte *)(_g_system_config_ptr + 0xf) << 3) / 10);
+        gauge_scale_fixed(*(uint8_t *)(_g_system_config_ptr + 0xe),
+                     ((uint32_t)*(uint8_t *)(_g_system_config_ptr + 0xf) << 3) / 10);
         if (g_game_state != 4) goto switchD_80126370_caseD_80126344;
         break;
     case 5: /* 0x80126534 */
@@ -712,9 +722,10 @@ LAB_80126350:
     case 6: /* 0x801265c8 */
         mode_sel = 2;
         if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
-            mode_sel = 1;
         }
         match_mode_set(mode_sel);
+        mmode = 2;
+        match_mode_set(mmode);
         battle_intro_flow(0);
         if ((g_game_state != 6) || (results_scoreboard(0), g_game_state != 6))
             goto switchD_80126370_caseD_80126344;
@@ -722,10 +733,12 @@ LAB_80126350:
     case 7: /* 0x80126624 */
         mode_sel = 2;
         if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
-            mode_sel = 1;
         }
         match_mode_set(mode_sel);
         prev_state = 7;
+        mmode = 2;
+        match_mode_set(mmode);
+        ret_state = 7;
         goto LAB_8012666c;
     case 8: /* 0x80126654 */
         match_mode_set(1);
@@ -736,6 +749,7 @@ LAB_80126350:
         prev_state = 8;
 LAB_8012666c:
         if (g_game_state == prev_state) {
+        ret_state = 8;
             g_game_state = 5;
         }
         goto switchD_80126370_caseD_80126344;
@@ -761,9 +775,7 @@ LAB_8012666c:
         }
         else {
             if (g_sub_state != '\x04') goto switchD_80126370_caseD_80126344;
-            ret = system_config_menu_b();
-        }
-        if (ret != 0) {
+            call_ret = system_config_menu_a();
             g_game_state = 5;
         }
         goto switchD_80126370_caseD_80126344;
@@ -775,11 +787,14 @@ LAB_8012666c:
 switchD_80126370_caseD_80126534:
     mode_sel = 2;
     if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
-        mode_sel = 1;
     }
     match_ctr = match_ctr + 1;
     match_mode_set(mode_sel);
     display_mode_setup(*(undefined1 *)(_g_system_config_ptr + 0xb));
+    mmode = 2;
+    retry_count = retry_count + 1;
+    match_mode_set(mmode);
+    display_mode_setup(*(uint8_t *)(_g_system_config_ptr + 0xb));
     /* Faithful call order (generated block_80126534 chain): frame_tick,
      * frame_advance_helper, frame_tick, memcard_poll_frame, then match_loop
      * as the last call before the g_game_state re-check at block_80126594.
@@ -793,7 +808,8 @@ switchD_80126370_caseD_80126534:
     gs = (uint)g_game_state;
     state_ok = gs < 0xe;
     if (gs == 5) {
-        if (match_ctr < 4) {
+    state = (uint32_t)g_game_state;
+    state_lt_14 = state < 0xe;
             g_game_state = 6;
         }
         else {
@@ -807,6 +823,8 @@ switchD_80126370_caseD_801263c8:
     gs = (uint)g_game_state;
     match_ctr = 0;
     if (gs == 2) goto LAB_8012661c;
+    state = (uint32_t)g_game_state;
+    retry_count = 0;
     goto code_r0x8012634c;
 LAB_8012661c:
     g_game_state = 3;
@@ -836,7 +854,7 @@ void boot(void)
     boot_globals_init(0x1f800000);
     match_mode_set(1);
     DAT_801c4578 = 2;
-    DAT_801c457c = (uint)*(uint8_t *)g_DAT_801b12e6;
+    DAT_801c457c = (uint32_t)*(uint8_t *)g_DAT_801b12e6;
     gpu_disp_mask_set(0);
     pump_state = cd_file_pump(0x1f800000,0);
     gfx_tbls_init();
@@ -844,12 +862,13 @@ void boot(void)
     sprite_desc_table_init(0);
     print_mode_dispatch_b(2,0,0);
     apply_saved_settings_or_defaults((undefined4 *)_g_system_config_ptr);
+    apply_saved_settings_or_defaults((uint32_t *)_g_system_config_ptr);
     while (-1 < pump_state) {
         pump_state = cd_file_pump(0x1f800000,pump_state);
         cd_timer_read(0);
     }
     battle_session_arm(0x1f800000,0);
-    display_mode_setup(*(undefined1 *)(_g_system_config_ptr + 0xb));
+    display_mode_setup(*(uint8_t *)(_g_system_config_ptr + 0xb));
     sprite_rect_table_init(0x40,(_DAT_1f800022 * 0xb) / 0xc,0);
     frame_advance_helper();
     return;
@@ -859,14 +878,15 @@ void boot(void)
 
 /* ==================================================================
  * cd_file_pump — CD file streaming pump.
- * param_2 = pump state: 0 init -> 0x100 streaming -> 0x110 tail ->
+ * state = pump state: 0 init -> 0x100 streaming -> 0x110 tail ->
  * 0x120 done -> -1. Each step queues one file's DMA reads.
  * ================================================================== */
 int cd_file_pump(int base,int state)
 {
     undefined1 scratch013_save;
     undefined4 tag_addr;
-    int ret;
+    uint8_t saved_013;
+    uint32_t tag_addr;
 
     if (state != 0x100) {
         if (0x100 < state) {
@@ -878,6 +898,7 @@ int cd_file_pump(int base,int state)
             }
             ret = cd_file_load_sm(0x89,_DAT_801e3cfc);
             if (ret == 0) {
+            n = cd_file_load_sm(0x89,_DAT_801e3cfc);
                 return 0x110;
             }
             fighter_record_apply(_DAT_801e3cfc,0);
@@ -904,96 +925,34 @@ int cd_file_pump(int base,int state)
     if (ret != 0) {
         scratch_013_set(0);
         tag_addr = guest_of(tag_table_get());
-        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0);
         spr_draw_off(_DAT_801e3cfc,0x3c0,0,1);
         _DAT_801e3cfc = _DAT_801e3cfc + ret;
-        tag_addr = guest_of(tag_table_get());
-        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),1);
         spr_draw_off(_DAT_801e3cfc,0x380,0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + ret;
-        tag_addr = guest_of(tag_table_get());
-        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),2);
         spr_draw_off(_DAT_801e3cfc,0x1f0,0x1e0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + ret;
-        tag_addr = guest_of(tag_table_get());
-        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),3);
         spr_draw_off(_DAT_801e3cfc,0x1e0,0x1e0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + ret;
-        tag_addr = guest_of(tag_table_get());
-        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),4);
         spr_draw_off(_DAT_801e3cfc,0x1d0,0x1e0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + ret;
-        tag_addr = guest_of(tag_table_get());
-        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),5);
         spr_draw_off(_DAT_801e3cfc,0x170,0x1e0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + ret;
-        tag_addr = guest_of(tag_table_get());
-        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),6);
         spr_draw_off(_DAT_801e3cfc,0x160,0x1f0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + ret;
-        tag_addr = guest_of(tag_table_get());
-        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x10);
         spr_draw_off(_DAT_801e3cfc,0x1d0,0x1f0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + ret;
-        tag_addr = guest_of(tag_table_get());
-        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x11);
         spr_draw_off(_DAT_801e3cfc,0x1f0,0x1f0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + ret;
-        tag_addr = guest_of(tag_table_get());
-        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x12);
         spr_draw_off(_DAT_801e3cfc,0x1e0,0x1f0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + ret;
-        tag_addr = guest_of(tag_table_get());
-        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x13);
         spr_draw_off(_DAT_801e3cfc,0x1c0,0x1f0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + ret;
-        tag_addr = guest_of(tag_table_get());
-        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x14);
         spr_draw_off(_DAT_801e3cfc,0x180,0x1f0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + ret;
-        tag_addr = guest_of(tag_table_get());
-        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x15);
         spr_draw_off(_DAT_801e3cfc,400,0x1f0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + ret;
-        tag_addr = guest_of(tag_table_get());
-        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x16);
         spr_draw_off(_DAT_801e3cfc,0x1a0,0x1f0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + ret;
-        tag_addr = guest_of(tag_table_get());
-        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x17);
         spr_draw_off(_DAT_801e3cfc,0x1b0,0x1f0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + ret;
-        tag_addr = guest_of(tag_table_get());
-        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x18);
         spr_draw_off(_DAT_801e3cfc,0x340,0x100,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + ret;
-        tag_addr = guest_of(tag_table_get());
-        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x19);
         spr_draw_off(_DAT_801e3cfc,0x200,0x100,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + ret;
-        tag_addr = guest_of(tag_table_get());
-        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x1a);
         spr_draw_off(_DAT_801e3cfc,0x1c0,0x1e0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + ret;
-        tag_addr = guest_of(tag_table_get());
-        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x1b);
         spr_draw_off(_DAT_801e3cfc,0x1b0,0x1e0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + ret;
-        tag_addr = guest_of(tag_table_get());
-        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),7);
         spr_draw_pair(_DAT_801e3cfc,0x160,0x1e0,1,0x340,0x1c0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + ret;
-        tag_addr = guest_of(tag_table_get());
-        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),8);
         spr_draw_off(_DAT_801e3cfc,0x380,0x1c0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + ret;
-        tag_addr = guest_of(tag_table_get());
-        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),9);
         spr_draw_off(_DAT_801e3cfc,0x3a0,0x180,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + ret;
-        cd_timer_read(0);
         cd_timer_read(0);
         scratch_013_set(scratch013_save);
+    n = cd_file_load_sm(0x80,tag_addr);
+    saved_013 = DAT_1f800013;
+        scratch_013_set(saved_013);
         state = 0x110;
     }
     return state;
@@ -1013,29 +972,32 @@ void cd_channel_init_seq(void)
 void scratch_zero_reset(void)
 {
     undefined4 *p;
-
     p = (undefined4 *)g_DAT_1f800000;
     do {
         *p = 0;
-        p = p + 1;
     } while (p < (undefined4 *)guest_at(0x1f800400));
+    uint32_t *cell;
+    cell = (uint32_t *)g_DAT_1f800000;
+        *cell = 0;
 }
 
 /* display_mode_setup — display mode + screen window setup.
- * param_1 = video mode (0-7 from system config +0xb):
+ * mode = video mode (0-7 from system config +0xb):
  *   0,2,4,6 -> 0xf0-height variant (interlaced?), odd -> 0x1e0.
  * Sets _DAT_1f800020/22/24 screen geometry, OAM window regs via
- * FUN_80195290/2b0, sprite blocks at 0x801e40a0/0x801e61f0/0x801e40fc/
+ * gte_ofs_set/gte_cw_d000_set, sprite blocks at 0x801e40a0/0x801e61f0/0x801e40fc/
  * 0x801e624c, then oam_list_rebuild mode commit + hud_sprite_desc_init. */
 void display_mode_setup(uint32_t video_mode)
 {
     int dim_arg;
     undefined4 mode_arg;
+    uint32_t rect_y;
 
     cd_timer_read(2);
     scratch_013_set(0);
     gpu_graph_reset(1);
     switch(video_mode) {
+    switch(mode) {
     case 0:
         _DAT_1f800020 = 0x140;
         goto LAB_80127134;
@@ -1070,7 +1032,7 @@ LAB_80127134:
     DAT_1f800015 = '\x01';
 LAB_80127160:
     _DAT_1f800024 = 0x168;
-    FUN_80195290(_DAT_1f800020 >> 1,(short)_DAT_1f800022 >> 1);
+    gte_ofs_set(_DAT_1f800020 >> 1,(short)_DAT_1f800022 >> 1);
     gte_cw_d000_set((int)_DAT_1f800024);
     *(uint8_t *)g_DAT_801e625e = 1;
     *(uint8_t *)g_DAT_801e410e = 1;
@@ -1080,6 +1042,8 @@ LAB_80127160:
         sprite_attr_init_b(0x801e40fc,0,0xf0,(int)_DAT_1f800020,0);
         mode_arg = 0;
         dim_arg = 0;
+        rect_y = 0;
+        rect_h = 0;
     }
     else {
         sprite_attr_init_a(0x801e40a0,0,0,(int)_DAT_1f800020,(int)(short)_DAT_1f800022);
@@ -1089,17 +1053,20 @@ LAB_80127160:
         dim_arg = (short)_DAT_1f800022 + -2;
     }
     sprite_attr_init_b(0x801e624c,0,mode_arg,(int)_DAT_1f800020,dim_arg);
+        rect_y = 2;
+        rect_h = (short)_DAT_1f800022 + -2;
+    sprite_attr_init_b(0x801e624c,0,rect_y,(int)_DAT_1f800020,rect_h);
     if (DAT_1f800015 == '\0') {
         *(uint16_t *)g_DAT_801e410a = _DAT_1f800022;
         *(uint16_t *)g_DAT_801e625a = _DAT_1f800022;
     }
     else {
         *(uint16_t *)g_DAT_801e410a =
-             (short)((((int)((uint)_DAT_1f800022 << 0x10) >> 0x10) -
-                     ((int)((uint)_DAT_1f800022 << 0x10) >> 0x1f)) >> 1) - 2;
+             (short)((((int)((uint32_t)_DAT_1f800022 << 0x10) >> 0x10) -
+                     ((int)((uint32_t)_DAT_1f800022 << 0x10) >> 0x1f)) >> 1) - 2;
         *(uint16_t *)g_DAT_801e625a =
-             (short)((((int)((uint)_DAT_1f800022 << 0x10) >> 0x10) -
-                     ((int)((uint)_DAT_1f800022 << 0x10) >> 0x1f)) >> 1) - 2;
+             (short)((((int)((uint32_t)_DAT_1f800022 << 0x10) >> 0x10) -
+                     ((int)((uint32_t)_DAT_1f800022 << 0x10) >> 0x1f)) >> 1) - 2;
     }
     *(uint16_t *)g_DAT_801e6258 = 0x100;
     *(uint16_t *)g_DAT_801e6256 = 0x18;
@@ -1183,8 +1150,8 @@ void game_globals_reset(void)
     _DAT_1f8000cc = 0x801c15f8;
     players_ctrl_init();
     {
-        uint32_t uVar1 = u16_lut_lookup(0xf2000002);
-        mode_flag_pair_set(uVar1);
+        uint32_t flags = u16_lut_lookup(0xf2000002);
+        mode_flag_pair_set(flags);
     }
     perm_table_load();
     perm_table_apply(0);
@@ -1215,30 +1182,22 @@ void stat_counter_accum(int rec_gaddr,int which)
 {
     /* rec_gaddr is a raw guest address (clean_table passes gpr[4] verbatim);
      * resolve it once — the direct (rec_gaddr+off) derefs below would read
-     * guest address bits as a host pointer. */
     uint8_t *rec = (uint8_t *)guest_at((uint32_t)rec_gaddr);
     short old_val;
     int slot_off;
-    int rec_off;
-
     rec_off = (uint)rec[3] * 0x24;
     switch(DAT_1f80009c) {
     default:
         if (which == 0) {
             old_val = *(short *)guest_at((uint32_t)(rec_off + -0x7fe3ebb2));
             *(short *)((char *)g_DAT_801c144c + rec_off) = *(short *)((char *)g_DAT_801c144c + rec_off) + 1;
-            *(short *)guest_at((uint32_t)(rec_off + -0x7fe3ebb2)) = old_val + 1;
             slot_off = (uint)*(byte *)guest_at(*(uint32_t *)(rec + 0x2c) + 3) * 2 + rec_off;
-            *(short *)((char *)g_DAT_801c1444 + slot_off + 0xe) = *(short *)((char *)g_DAT_801c1444 + slot_off + 0xe) + 1;
         }
         else {
-            old_val = *(short *)guest_at((uint32_t)(rec_off + -0x7fe3ebb6));
-            *(short *)((char *)g_DAT_801c1448 + rec_off) = *(short *)((char *)g_DAT_801c1448 + rec_off) + 1;
-            *(short *)guest_at((uint32_t)(rec_off + -0x7fe3ebb6)) = old_val + 1;
-        }
-        *(short *)((char *)g_DAT_801c1446 + rec_off) = *(short *)((char *)g_DAT_801c1446 + rec_off) + 1;
-        if (*(ushort *)((char *)g_DAT_801c1450 + rec_off) < *(ushort *)(rec + 0xe2)) {
             *(ushort *)((char *)g_DAT_801c1450 + rec_off) = *(ushort *)(rec + 0xe2);
+            ctr = *(short *)guest_at((uint32_t)(rec_off + -0x7fe3ebb2));
+            sub_idx = (uint32_t)*(uint8_t *)guest_at(*(uint32_t *)(rec + 0x2c) + 3) * 2 + rec_off;
+            *(uint16_t *)((char *)g_DAT_801c1450 + rec_off) = *(uint16_t *)(rec + 0xe2);
         }
         break;
     case 2:
@@ -1264,24 +1223,23 @@ void oam_list_rebuild(void)
 void battle_session_arm(intptr_t base_gaddr,int slot)
 {
     int buf_addr;
-
     base_gaddr = (intptr_t)guest_at((uint32_t)base_gaddr);
     if (-1 < slot) {
         buf_addr = slot * 0x2150 + -0x7fe1bef0;
         *(undefined2 *)(base_gaddr + 0xd0) = 0;
-        *(undefined2 *)(base_gaddr + 0xd2) = 0;
         *(undefined1 *)(base_gaddr + 0x10) = 0;
         _DAT_1f8000d8 = 0;
         _DAT_1f8000e4 = 0;
         *(int *)(base_gaddr + 0xc) = slot;
-        *(int *)(base_gaddr + 4) = slot * 0x2150 + -0x7fe1bf60;
-        *(int *)(base_gaddr + 8) = buf_addr;
         clear_battle_counters();
-        if (slot == 0) {
             gpu_clear_otag_r(0x801e4110,0x820);
-            buf_addr = -0x7fe19da0;
         }
         gpu_clear_otag_r((uint32_t)buf_addr,0x820);
+    base = (intptr_t)guest_at((uint32_t)base);
+        addr = slot * 0x2150 + -0x7fe1bef0;
+        *(uint16_t *)(base + 0xd0) = 0;
+        *(uint8_t *)(base + 0x10) = 0;
+        gpu_clear_otag_r((uint32_t)addr,0x820);
     }
 }
 
@@ -1289,11 +1247,10 @@ void battle_session_arm(intptr_t base_gaddr,int slot)
  * Returns -1 normally; 0xffffff9d (-99) while prompting exit. */
 undefined4 match_end_check(intptr_t base_gaddr)
 {
-    undefined4 ret;
     int x_raw;
-    int y_scaled;
-
     base_gaddr = (intptr_t)guest_at((uint32_t)base_gaddr);
+uint32_t match_end_check(intptr_t ctx)
+    ctx = (intptr_t)guest_at((uint32_t)ctx);
     if ((_DAT_1f8000dc >> 4 & 3U) == 0) {
         ret = 0xffffffff;
     }
@@ -1301,21 +1258,26 @@ undefined4 match_end_check(intptr_t base_gaddr)
         y_scaled = *(short *)(base_gaddr + 0x22) * 3;
         x_raw = (uint)*(ushort *)(base_gaddr + 0x20) << 0x10;
         if (y_scaled < 0) {
-            y_scaled = y_scaled + 3;
         }
         hud_text_blk_alt(*(undefined4 *)(base_gaddr + 8),*(undefined4 *)(base_gaddr + 0xc),
                      g_DAT_80121e3c,
                      ((((x_raw >> 0x10) - (x_raw >> 0x1f)) >> 1) + -0x45) * 0x10000 >> 0x10,
                      (y_scaled << 0xe) >> 0x10,4);
+        h = *(short *)(ctx + 0x22) * 3;
+        w = (uint32_t)*(uint16_t *)(ctx + 0x20) << 0x10;
+        hud_text_blk_alt(*(uint32_t *)(ctx + 8),*(uint32_t *)(ctx + 0xc),
+                     ((((w >> 0x10) - (w >> 0x1f)) >> 1) + -0x45) * 0x10000 >> 0x10,
+                     (h << 0xe) >> 0x10,4);
         ret = 0xffffff9d;
     }
     return ret;
 }
 
 /* memcard_poll_frame — per-frame memcard/save poll */
-undefined4 memcard_poll_frame(void)
+uint32_t memcard_poll_frame(void)
 {
     undefined4 ret;
+    uint32_t ret;
 
     if (*(char *)(_g_system_config_ptr + 0x22) == '\0') {
         ret = 0xffffffff;
@@ -1332,20 +1294,18 @@ undefined4 memcard_poll_frame(void)
 
 /* ==================================================================
  * frame_tick — frame driver (called 2x/frame: fighter slot toggle).
- * param_1 = battle object guest addr (0x1f800000).
+ * ctx = battle object guest addr (0x1f800000).
  * +0xc fighter index XORs 0/1 each call -> double-buffered submit.
  * ================================================================== */
 void frame_tick(intptr_t battle)
 {
     undefined1 clear_arg3;
-    undefined1 clear_arg4;
     undefined2 timer_val;
     int tmp;
     uint next_slot;
-    int cur_b;
-    int cur_a;
-    int env_base;
-    int pkt_base;
+    uint8_t img_w;
+    uint16_t ticks;
+    uint32_t next_slot;
 
     /* Clean-C frame loops (match_loop, battle_flow_state_machine, the
      * g_game_state SM) never cross a generated-code boundary on idle or
@@ -1367,19 +1327,19 @@ void frame_tick(intptr_t battle)
         gpu_pkt_unlink_n(pkt_base + 0x207c,0x81f);
     }
     pad_state_refresh(battle);
-    if ((*(char *)(battle + 0x15) == '\0') && ((*(ushort *)(battle + 0x82) & 1) != 0)) {
         timer_val = cd_timer_read(1);
         *(undefined2 *)(battle + 0x1a) = timer_val;
         gpu_draw_sync(0);
-        timer_val = cd_timer_read(1);
-        *(undefined2 *)(battle + 0x1c) = timer_val;
         cd_timer_read(*(undefined1 *)(battle + 0x10));
-    }
     else {
-        timer_val = cd_timer_read(1);
-        *(undefined2 *)(battle + 0x1c) = timer_val;
-        *(undefined2 *)(battle + 0x1a) = timer_val;
-        cd_timer_read(*(undefined1 *)(battle + 0x10));
+    ctx = (intptr_t)guest_at((uint32_t)ctx);
+    env_ptr = *(int *)(ctx + 4);
+    ot_ptr = *(int *)(ctx + 8);
+        gpu_pkt_unlink_n(ot_ptr + 0x207c,0x81f);
+    pad_state_refresh(ctx);
+        ticks = cd_timer_read(1);
+        *(uint16_t *)(ctx + 0x1a) = ticks;
+        cd_timer_read(*(uint8_t *)(ctx + 0x10));
         gpu_graph_reset(1);
     }
     _DAT_1f8000e0 = _DAT_1f8000e4;
@@ -1392,6 +1352,10 @@ void frame_tick(intptr_t battle)
         *(undefined1 *)(battle + 0x12) = 0;
     }
     tmp = (int)*(short *)(battle + 0xd0);
+    draw_env_timing(env_ptr + 0x5c);
+    gpu_draw_env_put(env_ptr);
+        gpu_disp_mask_set(*(uint8_t *)(ctx + 0x12) - 1);
+        *(uint8_t *)(ctx + 0x12) = 0;
     while (0 < tmp) {
         gpu_load_image_cmd(tmp * 8 + -0x7fe3bad0,((uint32_t *)g_DAT_801bef38)[tmp + -1]);
         tmp = tmp + -1;
@@ -1403,41 +1367,28 @@ void frame_tick(intptr_t battle)
         cur_b = tmp * 0x18 + env_base;
         do {
             next_slot = env_base + cur_a;
-            cur_a = cur_a + -0x18;
-            tmp = tmp + -1;
             /* cur_b/pkt_base hold GUEST addresses (OT/packet bases stored
              * as 0x801e.... ints) — resolve through guest_at, not a raw
-             * host dereference. */
             *(uint *)guest_at((uint32_t)(cur_b + 0x20d8)) =
-                *(uint *)guest_at((uint32_t)(pkt_base + 0x207c)) | 0x5000000;
-            cur_b = cur_b + -0x18;
-            *(uint *)guest_at((uint32_t)(pkt_base + 0x207c)) = next_slot & 0xffffff;
         } while (0 < tmp);
-    }
-    *(undefined2 *)(battle + 0xd2) = 0;
-    if (*(char *)(battle + 0x13) != '\0') {
-        tmp = *(int *)(battle + 0xc) * 0x68;
-        if ((0 < *(short *)((char *)g_DAT_801f066e + tmp)) && (*(char *)(battle + 0x9e) == '\0')) {
             clear_arg3 = *(undefined1 *)guest_at((uint32_t)(tmp + -0x7fe0f99b));
             clear_arg4 = *(undefined1 *)guest_at((uint32_t)(tmp + -0x7fe0f99a));
-            *(undefined2 *)((char *)g_DAT_801f066a + tmp) =
-                 *(undefined2 *)guest_at((uint32_t)(*(int *)(battle + 0xc) * 0x2150 + -0x7fe1bf5e));
             gpu_clear_image_cmd(guest_of((char *)g_DAT_801f0668 + tmp),
                          (uint32_t)(uintptr_t)*(uint32_t *)((char *)g_DAT_801f0664 + tmp),clear_arg3,clear_arg4);
-        }
         gpu_draw_otag(pkt_base + 0x207c);
-    }
     table_byte_next_a();
-    next_slot = *(uint *)(battle + 0xc) ^ 1;
-    tmp = next_slot * 0x2150;
     _DAT_1f8000dc = *(uint32_t *)guest_at((uint32_t)(tmp + -0x7fe1bf60)) + 1;
-    *(uint *)(battle + 0xc) = next_slot;
     *(int *)(battle + 4) = tmp + -0x7fe1bf60;
-    *(int *)(battle + 8) = tmp + -0x7fe1bef0;
     gpu_clear_otag_r(tmp + -0x7fe1bef0,0x820);
-    *(uint *)guest_at((uint32_t)(tmp + -0x7fe1bef0)) = *(uint *)guest_at((uint32_t)(tmp + -0x7fe1bef0)) | 0xffffff;
     menu_noop(battle);
-    if (*(char *)guest_at(*(uint32_t *)(battle + 200) + 2) < '\0') {
+    *(uint16_t *)(ctx + 0xd0) = 0;
+        env_off = tmp * 0x18 + 0x20d8;
+        pkt_ptr = tmp * 0x18 + env_ptr;
+            *(uint32_t *)guest_at((uint32_t)(pkt_ptr + 0x20d8)) =
+            img_w = *(uint8_t *)guest_at((uint32_t)(tmp + -0x7fe0f99b));
+            img_h = *(uint8_t *)guest_at((uint32_t)(tmp + -0x7fe0f99a));
+        gpu_draw_otag(ot_ptr + 0x207c);
+    menu_noop(ctx);
         debug_stat_print();
         ot_packet_chain_fixup();
     }
@@ -1453,7 +1404,7 @@ void frame_tick(intptr_t battle)
 /* match_stepper_desc — contiguous menu-stepper descriptor. In the original
  * frame this is a single stack block at sp+0x20: menu_stepper_state_advance /
  * menu_stepper_input / menu_stepper_redraw and the +0xc callback all address
- * it by byte offset, so the fields MUST be contiguous. Declaring them as
+ * it by uint8_t offset, so the fields MUST be contiguous. Declaring them as
  * separate C locals lets the compiler reorder/pad them, which breaks the
  * +0xc callback read (fn_lookup gets garbage -> dead menu). */
 struct match_stepper_desc {
@@ -1486,18 +1437,18 @@ void match_loop(void)
      * sp+0x68/0x6c/0x70/0x74. Ghidra split the block into 4 scalars —
      * keep it one array (spr_quad[i] == old local_4X). */
     undefined4 spr_quad[4];
-    undefined4 cfg_e4;
-    undefined4 cfg_e8;
-    undefined4 cfg_ec;
-    undefined4 cfg_f0;
-    undefined4 cfg_f4;
-
     DAT_1f80008c = 0;
     cfg_e4 = *(undefined4 *)g_DAT_801202e4;
     cfg_e8 = *(undefined4 *)g_DAT_801202e8;
     cfg_ec = *(undefined4 *)g_DAT_801202ec;
     cfg_f0 = *(undefined4 *)g_DAT_801202f0;
     cfg_f4 = *(undefined4 *)g_DAT_801202f4;
+    uint32_t stage_sprs[4];
+    cfg_w0 = *(uint32_t *)g_DAT_801202e4;
+    cfg_w1 = *(uint32_t *)g_DAT_801202e8;
+    cfg_w2 = *(uint32_t *)g_DAT_801202ec;
+    cfg_w3 = *(uint32_t *)g_DAT_801202f0;
+    cfg_w4 = *(uint32_t *)g_DAT_801202f4;
 joined_r0x801470b0:
     { extern int br2_bail_pending(void);
       if (br2_bail_pending()) return; }
@@ -1555,11 +1506,16 @@ LAB_801472f8:
                         spr_draw_pair(spr_quad[1],0,0x1f1,1,0x280,0,1);
                         spr_draw_pair(spr_quad[2],0,0x1f2,1,0x240,0x100,1);
                         spr_draw_pair(spr_quad[3],0,499,1,0x2c0,0x100,1);
+                        spr_draw_pair(stage_sprs[0],0,0x1f0,1,0x200,0,1);
+                        spr_draw_pair(stage_sprs[1],0,0x1f1,1,0x280,0,1);
+                        spr_draw_pair(stage_sprs[2],0,0x1f2,1,0x240,0x100,1);
+                        spr_draw_pair(stage_sprs[3],0,499,1,0x2c0,0x100,1);
                         cd_timer_read(0);
                         scratch_013_set(1);
                         _DAT_1f80008c = 0;
                         battle_session_arm(0x1f800000,0xffffffff);
                         attract_ctr = 300;
+                        attract_timer = 300;
                         DAT_1f800001 = DAT_1f800001 + 1;
                         goto LAB_801472a4;
                     }
@@ -1598,22 +1554,17 @@ LAB_801472a4:
 
 /* ==================================================================
  * scene_entry — scene/stage entry.
- * param_1 = VRAM arena base, param_2 = stage/file-table index,
- * param_3 = demo flag. Loads stage file, sets VRAM windows,
+ * vram_base = VRAM arena base, stage_idx = stage/file-table index,
+ * demo_flag = demo flag. Loads stage file, sets VRAM windows,
  * streams data, uploads palette/OAM, arms battle, runs 2 frames.
  * Returns 1 on success (state->5), 0 to retry.
  * ================================================================== */
 undefined4 scene_entry(int vram_base,int stage_idx,int demo_flag)
 {
     int rec_off;
-    int dim_a;
-    undefined4 pkt_sel;
-    int dim_b;
-    int *stage_rec;
-    undefined4 *data_ptr;
-    undefined4 ret;
     /* guest sp-0x60..sp frame image (frame 0x60). cmd_byte/clear_rect/
      * stream_ctx are read and written across blk_io_retry/cd_stream_mode_init/
+uint32_t scene_entry(int vram_base,int stage_idx,int demo_flag)
      * gpu_clear_image_cmd2 nested calls, so reserve the window on the live
      * guest sp: sp+0x18 -> frm+0x18, sp+0x20 -> frm+0x20, sp+0x28 -> frm+0x28. */
     extern uint32_t br2_guest_frame(uint32_t);
@@ -1622,6 +1573,7 @@ undefined4 scene_entry(int vram_base,int stage_idx,int demo_flag)
     /* cmd_byte = sp+0x18 (frame 0x60);
      * `sb $v0,0x18($sp)` + `addiu $a1,$sp,0x18` in 0x80159028. */
     undefined1 *cmd_byte = (undefined1 *)guest_at(se_frm + 0x18);
+    uint8_t *cmd_byte = (uint8_t *)guest_at(se_frm + 0x18);
     /* ClearImage rect = sp+0x20..0x27 (frame 0x60) -> frm+0x20.
      * gpu_clear_image_cmd2 forwards vram_base to generated GPU code as a
      * raw guest address, so the rect must live in the guest frame —
@@ -1630,6 +1582,7 @@ undefined4 scene_entry(int vram_base,int stage_idx,int demo_flag)
     /* stream_ctx = sp+0x28 (frame 0x60) -> frm+0x28;
      * `swl/swr $t2,0x28($sp)` + `addiu $a0,$sp,0x28` in 0x80159028. */
     undefined4 *stream_ctx = (undefined4 *)guest_at(se_frm + 0x28);
+    uint32_t *io_ptr = (uint32_t *)guest_at(se_frm + 0x28);
 
     ret = 0;
     DAT_801c43a0 = 0;
@@ -1642,6 +1595,9 @@ undefined4 scene_entry(int vram_base,int stage_idx,int demo_flag)
     rec_off = stage_idx * 0x1c;
     data_ptr = (undefined4 *)guest_at(((uint32_t *)g_PTR_DAT_801b5b94)[(stage_idx + 8) * 2]);
     stage_rec = (int *)((char *)g_DAT_801b3ed8 + rec_off);
+    tbl_off = stage_idx * 0x1c;
+    src = (uint32_t *)guest_at(((uint32_t *)g_PTR_DAT_801b5b94)[(stage_idx + 8) * 2]);
+    io_ctx = (int *)((char *)g_DAT_801b3ed8 + tbl_off);
     _DAT_801f4754 = vram_base;
     frame_tick(0x1f800000);
     brightness_packet_send(0x7f);
@@ -1652,14 +1608,7 @@ undefined4 scene_entry(int vram_base,int stage_idx,int demo_flag)
         dim_a = *(int *)((char *)g_DAT_801b3ed8 + 0xc + rec_off);
     }
     else {
-        dim_a = (*(int *)((char *)g_DAT_801b3ed8 + 0xc + rec_off) * 3) / 2;
-    }
-    if (*stage_rec == 0) {
         dim_b = *(int *)((char *)g_DAT_801b3ed8 + 0xc + rec_off);
-    }
-    else {
-        dim_b = (*(int *)((char *)g_DAT_801b3ed8 + 0xc + rec_off) * 3) / 2;
-    }
     tile_stream_job_init(0x801f4700,dim_a,*(undefined4 *)((char *)g_DAT_801b3ed8 + 0x10 + rec_off),dim_b,
                  *(int *)((char *)g_DAT_801b3ed8 + 0x10 + rec_off) + *(int *)((char *)g_DAT_801b3ed8 + 0x18 + rec_off),stage_rec);
     tile_stream_open((uint8_t *)data_ptr,(void *)(uintptr_t)0x80159864,stage_rec);
@@ -1667,6 +1616,11 @@ undefined4 scene_entry(int vram_base,int stage_idx,int demo_flag)
     while (dim_a = (int)blk_io_retry(0x801f4700,stage_rec), dim_a == -1) {
         stream_ctx[0] = *data_ptr;
         cd_stream_mode_init(guest_of(stream_ctx));
+        tmp = *(int *)((char *)g_DAT_801b3ed8 + 0xc + tbl_off);
+        tmp2 = *(int *)((char *)g_DAT_801b3ed8 + 0xc + tbl_off);
+    tile_stream_job_init(0x801f4700,tmp,*(uint32_t *)((char *)g_DAT_801b3ed8 + 0x10 + tbl_off),tmp2,
+        io_ptr[0] = *src;
+        cd_stream_mode_init(guest_of(io_ptr));
     }
     _DAT_801f4740 = 0;
     gpu_disp_mask_set(0);
@@ -1676,35 +1630,30 @@ undefined4 scene_entry(int vram_base,int stage_idx,int demo_flag)
         clear_rect[2] = *(undefined2 *)((char *)g_DAT_801b3ed8 + 0x14 + rec_off);
     }
     else {
-        clear_rect[2] = (undefined2)
                    ((uint)(*(int *)((char *)g_DAT_801b3ed8 + 0x14 + rec_off) * 3 -
                           (*(int *)((char *)g_DAT_801b3ed8 + 0x14 + rec_off) * 3 >> 0x1f)) >> 1);
-    }
     clear_rect[3] = (undefined2)(*(int *)((char *)g_DAT_801b3ed8 + 0x18 + rec_off) << 1);
     /* vram_base is a raw guest address (the sp+0x20 rect), matching the
      * callee's undefined4 signature — not a host pointer. */
     gpu_clear_image_cmd2((undefined4)(se_frm + 0x20),0,0,0);
     do {
         pkt_sel = 2;
-        if (*stage_rec != 0) {
-            pkt_sel = 3;
-        }
         gpu_pkt_attr_set(*(uint32_t *)guest_at(_DAT_801f4708 * 4 + -0x7fe0b900),pkt_sel);
         dim_a = _DAT_801f4732 + -1;
-        if (dim_a < 0) {
-            dim_a = _DAT_801f4732 + 0xe;
-        }
         cd_fileop_forward(*(uint32_t *)guest_at(_DAT_801f4714 * 4 + -0x7fe0b8f4),
                      _DAT_801f4730 * 0x10 * ((dim_a >> 4) + 1) >> 1);
         while (dim_a = (int)blk_io_retry(0x801f4700,stage_rec), dim_a == -1) {
-            dim_a = cd_file_open_b(guest_of(stream_ctx));
-            if ((*(int *)((char *)g_DAT_801b3ed8 + 0x8 + rec_off) < dim_a) || (dim_a < 1)) {
                 stream_ctx[0] = *data_ptr;
-            }
             cd_stream_mode_init(guest_of(stream_ctx));
-        }
         tile_decode_wait(0x801f4700,0);
         display_frame_present(stage_rec,0xffffffff);
+                   ((uint32_t)(*(int *)((char *)g_DAT_801b3ed8 + 0x14 + tbl_off) * 3 -
+    gpu_clear_image_cmd2((uint32_t)(se_frm + 0x20),0,0,0);
+        pkt_attr = 2;
+        tmp = _DAT_801f4732 + -1;
+                io_ptr[0] = *src;
+            cd_stream_mode_init(guest_of(io_ptr));
+        display_frame_present(io_ctx,0xffffffff);
         if (_DAT_801f4740 == 1) goto LAB_801593a8;
     } while ((demo_flag == 0) || ((_DAT_1f80007c & 0x850) == 0));
     ret = 1;
@@ -1720,7 +1669,7 @@ LAB_801593a8:
     cd_subsystem_reset();
     cd_cmd_issue_sync(9,0,0);
     cd_timer_read(0);
-    display_mode_setup(*(undefined1 *)(_g_system_config_ptr + 0xb));
+    display_mode_setup(*(uint8_t *)(_g_system_config_ptr + 0xb));
     battle_session_arm(0x1f800000,1);
     frame_tick(0x1f800000);
     frame_advance_helper();
@@ -1732,9 +1681,9 @@ LAB_801593a8:
 /* ======== 0x8018cfdc ======== */
 
 /* cd_file_load_sm — per-file CD load state machine. The clean port passed
- * piVar2 = guest_at(filetab[..]) — a HOST arena pointer — into
+ * dst = guest_at(filetab[..]) — a HOST arena pointer — into
  * cd_read_issue -> cd_mode_flag_set -> cd_cmd_issue(2,..), which is delegated
- * to generated code that reads the SetLoc MSF params treating param_2 as a
+ * to generated code that reads the SetLoc MSF params treating dst as a
  * GUEST address. The host pointer decoded to a bogus address -> SetLoc
  * [0,0,0] -> read lead-in zeros -> game rejected data and retried forever
  * (the Pause->SetLoc[0,0,0]->Setmode->ReadN livelock at LBAs -148/-149/-150).
@@ -1759,22 +1708,21 @@ int cd_file_load_sm(int file_id,uint32_t dest_gaddr)
        * file_load provenance names which function aimed file_id at dst. */
       decomp_trace_record(10,dest_gaddr,(uint32_t)file_id,0,clean_caller_ra());} }
   return (int)br2_call_clean(0x8018cfdc,(uint32_t)file_id,dest_gaddr,0,0);
+    if((uint32_t)file_id!=last_f||dst!=last_d){
+      last_f=(uint32_t)file_id;last_d=dst;
+      decomp_trace_record(10,dst,(uint32_t)file_id,0,clean_caller_ra());} }
 }
 
 /* ======== 0x8012b23c ======== */
 
 void frame_present(intptr_t battle)
-
 {
   battle = (intptr_t)guest_at((uint32_t)battle);
   undefined1 clear_arg3;
-  undefined1 clear_arg4;
   undefined2 timer_val;
   int tmp;
   uint next_slot;
   undefined4 ot_tag;
-  int env_base;
-  
   env_base = *(int *)(battle + 4);
   memcard_tick();
   deferred_cmd_drain();
@@ -1785,15 +1733,18 @@ void frame_present(intptr_t battle)
     timer_val = cd_timer_read(1);
     *(undefined2 *)(battle + 0x1a) = timer_val;
     gpu_draw_sync(0);
-    timer_val = cd_timer_read(1);
-    *(undefined2 *)(battle + 0x1c) = timer_val;
     cd_timer_read(*(undefined1 *)(battle + 0x10));
   }
   else {
-    timer_val = cd_timer_read(1);
-    *(undefined2 *)(battle + 0x1c) = timer_val;
-    *(undefined2 *)(battle + 0x1a) = timer_val;
-    cd_timer_read(*(undefined1 *)(battle + 0x10));
+  ctx = (intptr_t)guest_at((uint32_t)ctx);
+  uint8_t img_w;
+  uint16_t ticks;
+  uint32_t next_slot;
+  env_ptr = *(int *)(ctx + 4);
+  pad_state_refresh(ctx);
+    ticks = cd_timer_read(1);
+    *(uint16_t *)(ctx + 0x1a) = ticks;
+    cd_timer_read(*(uint8_t *)(ctx + 0x10));
     gpu_graph_reset(1);
   }
   DAT_1f8000e0 = DAT_1f8000e4;
@@ -1808,23 +1759,22 @@ void frame_present(intptr_t battle)
   tmp = (int)*(short *)(battle + 0xd0);
   while (0 < tmp) {
     gpu_load_image_cmd((int)(tmp * 8 + -0x7fe3bad0),*(undefined4 *)((char *)DAT_801bef38 + (tmp + -1) * 4));
-    tmp = tmp + -1;
-  }
   *(undefined2 *)(battle + 0xd0) = 0;
-  if (*(char *)(battle + 0x13) != '\0') {
     next_slot = *(uint *)(battle + 0xc) ^ 1;
-    tmp = next_slot * 0x68;
-    if ((0 < *(short *)((char *)DAT_801f066e + tmp)) && (*(char *)(battle + 0x9e) == '\0')) {
       clear_arg3 = *(undefined1 *)((char *)g_DAT_801f0664 + tmp + 4);
       clear_arg4 = *(undefined1 *)((char *)g_DAT_801f0664 + tmp + 5);
-      *(undefined2 *)((char *)g_DAT_801f066a + tmp) = *(undefined2 *)((char *)g_DAT_801f0664 + tmp - 0x42);
       gpu_clear_image_cmd(guest_of((char *)g_DAT_801f0668 + tmp),((uint32_t *)g_DAT_801f0664)[tmp / 4],clear_arg3,clear_arg4);
-    }
     ot_tag = 0x801e618c;
-    if (env_base == -0x7fe1bf60) {
-      ot_tag = 0x801e82dc;
-    }
     gpu_draw_otag(ot_tag);
+  draw_env_timing(env_ptr + 0x5c);
+  gpu_draw_env_put(env_ptr);
+    gpu_disp_mask_set(*(uint8_t *)(ctx + 0x12) - 1);
+    *(uint8_t *)(ctx + 0x12) = 0;
+  *(uint16_t *)(ctx + 0xd0) = 0;
+      img_w = *(uint8_t *)((char *)g_DAT_801f0664 + tmp + 4);
+      img_h = *(uint8_t *)((char *)g_DAT_801f0664 + tmp + 5);
+    ot_sel = 0x801e618c;
+    gpu_draw_otag(ot_sel);
   }
   return;
 }
@@ -1839,6 +1789,7 @@ extern void aux_tbl_store_b(uint32_t,int32_t);
 void task_table_init(int32_t unused)
 {
   (void)unused;
+  (void)arg;
   *(uint32_t *)guest_at(0x801f0738) = 0;
   *(uint32_t *)guest_at(0x801bef20) = 0;
   gp_20_store_default();
@@ -1852,14 +1803,13 @@ void task_table_init(int32_t unused)
   aux_tbl_store_b(0x801c4434,3);
 }
 
-/* intro_movie_state — intro/movie playback state machine. State byte
+/* intro_movie_state — intro/movie playback state machine. State uint8_t
  * _DAT_1f80008c: -1 idle; 0 init; 0x10..0x30 staged file loads via
  * cd_file_load_sm(file_id, heap=_DAT_801e3cfc); stream_block_decode advances
  * frames; param_1 selects which queued load to start (0/1/2). */
 int32_t intro_movie_state(int32_t queue_sel)
 {
   uint8_t scratch013_save;
-  int32_t tmp, blk_len;
   int16_t state;
   state = *(int16_t *)g_DAT_1f80008c;
   if (state < 0) return -1;
@@ -1868,6 +1818,7 @@ int32_t intro_movie_state(int32_t queue_sel)
       if (state == 0x20) {
         tmp = cd_file_load_sm(0x8b,(uint32_t)_DAT_801e3cfc);
         if (tmp == 0) { *(int16_t *)g_DAT_1f80008c = state; return 0; }
+        ret = cd_file_load_sm(0x8b,(uint32_t)_DAT_801e3cfc);
         state = 0x30;
         fighter_record_apply(_DAT_801e3cfc,1);
         page_table_ptr_set(1,1);
@@ -1879,6 +1830,8 @@ int32_t intro_movie_state(int32_t queue_sel)
       tmp = cd_file_load_sm(0x16,(uint32_t)_DAT_801e3cfc);
       scratch013_save = DAT_1f800013;
       if (tmp == 0) { *(int16_t *)g_DAT_1f80008c = state; return 0; }
+      ret = cd_file_load_sm(0x16,(uint32_t)_DAT_801e3cfc);
+      saved_013 = DAT_1f800013;
       scratch_013_set(0);
       spr_draw_off(_DAT_801e3cfc,0,0x1e0,1);
       goto LAB_8012c330;
@@ -1893,19 +1846,19 @@ int32_t intro_movie_state(int32_t queue_sel)
   }
   if (queue_sel == 1) {
     tmp = cd_file_load_sm(0x14,(uint32_t)_DAT_801e3cfc);
-    if (tmp != 0) {
-      tmp = 0;
       do {
         blk_len = stream_block_decode((uint32_t)_DAT_801c47b8,(int *)guest_at(_DAT_801e3cfc),tmp);
         tmp++;
         _DAT_801c47b8 = _DAT_801c47b8 + (uint32_t)blk_len;
       } while (tmp < 0xb);
       state = 0x20;
-    }
-  } else if (queue_sel < 2) {
-    if (queue_sel == 0 &&
         (tmp = cd_file_load_sm(0x14,(uint32_t)_DAT_801e3cfc),
          scratch013_save = DAT_1f800013, tmp != 0)) {
+    ret = cd_file_load_sm(0x14,(uint32_t)_DAT_801e3cfc);
+        decoded = stream_block_decode((uint32_t)_DAT_801c47b8,(int *)guest_at(_DAT_801e3cfc),ret);
+        ret++;
+        (ret = cd_file_load_sm(0x14,(uint32_t)_DAT_801e3cfc),
+         saved_013 = DAT_1f800013, ret != 0)) {
       scratch_013_set(0);
       uint8_t *ctr = (uint8_t *)guest_at(0x801b1408);
       *ctr = *ctr + 1;
@@ -1919,14 +1872,15 @@ LAB_8012c330:
       *(int16_t *)g_DAT_1f80008c = -1;
       return 1;
     }
-  } else if (queue_sel == 2 &&
              (tmp = cd_file_load_sm(0x15,(uint32_t)_DAT_801e3cfc), tmp != 0)) {
-    tmp = 0;
     do {
       blk_len = stream_block_decode((uint32_t)_DAT_801c47b8,(int *)guest_at(_DAT_801e3cfc),tmp);
       tmp++;
-      _DAT_801c47b8 = _DAT_801c47b8 + (uint32_t)blk_len;
-    } while (tmp < 0x17);
+      ret = stream_block_decode(_DAT_801c47b8,(int *)guest_at(_DAT_801e3cfc),*ctr);
+      scratch_013_set(saved_013);
+             (ret = cd_file_load_sm(0x15,(uint32_t)_DAT_801e3cfc), ret != 0)) {
+      decoded = stream_block_decode((uint32_t)_DAT_801c47b8,(int *)guest_at(_DAT_801e3cfc),ret);
+      ret++;
     state = 0x20;
   }
   *(int16_t *)g_DAT_1f80008c = state;
@@ -1950,9 +1904,9 @@ extern void     print_mode_dispatch(uint32_t,uint32_t,uint32_t,uint32_t,
                                     uint32_t);
 extern uint32_t printf_core(uint32_t,const uint8_t *,const uint32_t *);
 extern uint32_t guest_of(const void *);
-extern undefined4 text_render_full(uint *,uint,int);
-extern undefined4 text_render_simple(uint *,uint,int);
-extern void     prim_packet_init_tex(int,int,int,uint,byte *);
+extern uint32_t text_render_full(uint32_t *,uint32_t,int);
+extern uint32_t text_render_simple(uint32_t *,uint32_t,int);
+extern void     prim_packet_init_tex(int,int,int,uint32_t,uint8_t *);
 extern void    *spr_desc_slot_alloc(void);
 
 /* Varargs forwarders: the guest dispatchers pass fmt + 8 raw 32-bit
@@ -2009,7 +1963,7 @@ void print_dispatch(const char *fmt,...)
     b[0] = 0; b[1] = 0; b[2] = 0; b[9] = 0; b[10] = 0;
     b[11] = 0x78df; b[13] = 0;
     *(uint32_t *)(b + 14) = guest_of(buf);   /* +0x1c */
-    text_render_simple((uint *)guest_at(BR2B32(0x1f800008)),
+    text_render_simple((uint32_t *)guest_at(BR2B32(0x1f800008)),
                  BR2B16(0x1f80000c),(int)guest_of(b));
     br2_guest_frame_free();
   }
@@ -2046,14 +2000,14 @@ void print_dispatch_selfdesc(void *desc,const char *fmt,...)
     text9_spr(guest_of(buf),fmt,v);
     b = (uint16_t *)guest_at(0x1f80038c);
     b[0] = 0;
-    b[1] = *(uint16_t *)(self + 0x10);
-    b[2] = *(uint16_t *)(self + 0x12);
+    b[1] = *(uint16_t *)(selfb + 0x10);
+    b[2] = *(uint16_t *)(selfb + 0x12);
     b[3] = 0x1000; b[4] = 0x1000;
     b[5] = 8; b[6] = 8; b[7] = 8; b[8] = 8;
     b[11] = 0x78df; b[9] = 0; b[10] = 0;
     *(uint32_t *)(b + 14) = guest_of(buf);   /* +0x1c */
     b[12] = 0;
-    text_render_simple((uint *)guest_at(BR2B32(0x1f800008)),
+    text_render_simple((uint32_t *)guest_at(BR2B32(0x1f800008)),
                  BR2B16(0x1f80000c),(int)guest_of(b));
     br2_guest_frame_free();
   }
@@ -2075,11 +2029,13 @@ void print_dispatch_selfdesc(void *desc,const char *fmt,...)
  * (args 5-9); param_8 covers stack word 3, arg9 (+0x20) recovered. */
 void print_dispatch_guest(const char *fmt,uint32_t param_2,uint32_t param_3,
                           uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                          uint32_t param_7,uint32_t param_8)
 {
   print_dispatch(fmt,(uintptr_t)param_2,(uintptr_t)param_3,
                  (uintptr_t)param_4,(uintptr_t)param_5,(uintptr_t)param_6,
                  (uintptr_t)param_7,(uintptr_t)param_8,
+  print_dispatch(fmt,(uintptr_t)a1,(uintptr_t)a2,
+                 (uintptr_t)a3,(uintptr_t)a4,(uintptr_t)a5,
+                 (uintptr_t)a6,(uintptr_t)a7,
                  (uintptr_t)BR2B32((uint32_t)(guest_sp() + 0x20)));
 }
 
@@ -2087,13 +2043,15 @@ void print_dispatch_guest(const char *fmt,uint32_t param_2,uint32_t param_3,
  * stack words are the 8 varargs; stack words 4-5 (+0x20/+0x24) recovered. */
 void print_dispatch_selfdesc_guest(void *desc,const char *fmt,
                                    uint32_t param_3,uint32_t param_4,
-                                   uint32_t param_5,uint32_t param_6,
-                                   uint32_t param_7,uint32_t param_8)
 {
   print_dispatch_selfdesc(desc,fmt,(uintptr_t)param_3,
                           (uintptr_t)param_4,(uintptr_t)param_5,
                           (uintptr_t)param_6,(uintptr_t)param_7,
                           (uintptr_t)param_8,
+  print_dispatch_selfdesc(self,fmt,(uintptr_t)a2,
+                          (uintptr_t)a3,(uintptr_t)a4,
+                          (uintptr_t)a5,(uintptr_t)a6,
+                          (uintptr_t)a7,
                           (uintptr_t)BR2B32((uint32_t)(guest_sp() + 0x20)),
                           (uintptr_t)BR2B32((uint32_t)(guest_sp() + 0x24)));
 }
@@ -2101,13 +2059,13 @@ void print_dispatch_selfdesc_guest(void *desc,const char *fmt,
 /* print_mode_dispatch @0x8012ce30 — 9 fixed args; the clean impl is already
  * fixed-arity but exceeds the 8-param marshal window, so arg9 (+0x20) is
  * recovered from the caller stack here. */
-void print_mode_dispatch_guest(uint32_t param_1,uint32_t param_2,
-                               uint32_t param_3,uint32_t param_4,
-                               uint32_t param_5,uint32_t param_6,
-                               uint32_t param_7,uint32_t param_8)
+void print_mode_dispatch_guest(uint32_t a0,uint32_t a1,
+                               uint32_t a2,uint32_t a3,
+                               uint32_t a4,uint32_t a5,
+                               uint32_t a6,uint32_t a7)
 {
-  print_mode_dispatch(param_1,param_2,param_3,param_4,param_5,param_6,
-                      param_7,param_8,
+  print_mode_dispatch(a0,a1,a2,a3,a4,a5,
+                      a6,a7,
                       BR2B32((uint32_t)(guest_sp() + 0x20)));
 }
 
@@ -2116,14 +2074,11 @@ void print_mode_dispatch_guest(uint32_t param_1,uint32_t param_2,
  * propagates printf_core's v0, so the entry returns it. 8th vararg
  * (+0x20) recovered. */
 uint32_t printf_forward_guest(const char *fmt,uint32_t param_2,
-                              uint32_t param_3,uint32_t param_4,
-                              uint32_t param_5,uint32_t param_6,
-                              uint32_t param_7,uint32_t param_8)
 {
   uint32_t args[8];
-  args[0] = param_2; args[1] = param_3; args[2] = param_4;
-  args[3] = param_5; args[4] = param_6; args[5] = param_7;
-  args[6] = param_8;
+  args[0] = a1; args[1] = a2; args[2] = a3;
+  args[3] = a4; args[4] = a5; args[5] = a6;
+  args[6] = a7;
   args[7] = BR2B32((uint32_t)(guest_sp() + 0x20));
   return printf_core(1,(const uint8_t *)fmt,args);
 }
@@ -2133,11 +2088,12 @@ uint32_t printf_forward_guest(const char *fmt,uint32_t param_2,
  * Returns the formatted length in v0 like the guest. */
 int sprintf_core_guest(char *dst,char *fmt,uint32_t param_3,
                        uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                       uint32_t param_7,uint32_t param_8)
 {
   return sprintf_core(dst,fmt,(uintptr_t)param_3,(uintptr_t)param_4,
                       (uintptr_t)param_5,(uintptr_t)param_6,(uintptr_t)param_7,
                       (uintptr_t)param_8,
+                      (uintptr_t)a4,(uintptr_t)a5,(uintptr_t)a6,
+                      (uintptr_t)a7,
                       (uintptr_t)BR2B32((uint32_t)(guest_sp() + 0x20)),
                       (uintptr_t)BR2B32((uint32_t)(guest_sp() + 0x24)));
 }
@@ -2145,14 +2101,14 @@ int sprintf_core_guest(char *dst,char *fmt,uint32_t param_3,
 /* text_win_printf @0x80190a04 — a0..a3 are the four named params; caller
  * stack words are the va_args; stack words 4-5 (+0x20/+0x24) recovered.
  * Returns the window-write count / -1 in v0 like the guest. */
-int32_t text_win_printf_guest(int32_t param_1,uint32_t param_2,
-                              uint32_t param_3,uint32_t param_4,
-                              uint32_t param_5,uint32_t param_6,
-                              uint32_t param_7,uint32_t param_8)
+int32_t text_win_printf_guest(int32_t a0,uint32_t a1,
+                              uint32_t a2,uint32_t a3,
+                              uint32_t a4,uint32_t a5,
+                              uint32_t a6,uint32_t a7)
 {
-  return text_win_printf(param_1,param_2,param_3,param_4,(uintptr_t)param_5,
-                         (uintptr_t)param_6,(uintptr_t)param_7,
-                         (uintptr_t)param_8,
+  return text_win_printf(a0,a1,a2,a3,(uintptr_t)a4,
+                         (uintptr_t)a5,(uintptr_t)a6,
+                         (uintptr_t)a7,
                          (uintptr_t)BR2B32((uint32_t)(guest_sp() + 0x20)),
                          (uintptr_t)BR2B32((uint32_t)(guest_sp() + 0x24)));
 }
@@ -2203,7 +2159,7 @@ void menu_stepper_redraw(void *desc)
   else            call_guest(cb_g,guest_of(desc),0x1ff);
 }
 
-/* menu_stepper_input — menu stepper input: pad flags @0x1f80007e; byte+5
+/* menu_stepper_input — menu stepper input: pad flags @0x1f80007e; uint8_t+5
  * selects button pair (0: 0x4000/0x1000 sfx 0xa, else 0x2000/0x8000
  * sfx 0xb). Up wraps cur(+8) to 1 past max(+6); down wraps 1 -> max. */
 void menu_stepper_input(void *desc)
@@ -2248,6 +2204,7 @@ void hud_text_a(undefined4 ot,undefined2 flags,const void *text,
   b[4] = (uint16_t)metric4;
   b[11] = (uint16_t)((((uint32_t)tile_idx + 0x1e0) & 0x1ff) * 0x40 + 0x1f);
   text_render_full((uint *)guest_at(ot),(uint)flags & 0xffff,
+  text_render_full((uint32_t *)guest_at(ot_ptr),(uint32_t)flags & 0xffff,
                (int)guest_of(b));
 }
 
@@ -2265,6 +2222,8 @@ void hud_text_b(undefined4 ot,undefined4 flags,const void *text,
   b[4] = (uint16_t)metric4;
   b[11] = (uint16_t)((((uint32_t)tile_idx + 0x1e0) & 0x1ff) * 0x40 + 0x16);
   text_render_full((uint *)guest_at(ot),(uint)flags & 0xffff,
+                  uint32_t attr,uint16_t attr_b,short tile_row)
+  text_render_full((uint32_t *)guest_at(ot_ptr),(uint32_t)flags & 0xffff,
                (int)guest_of(b));
 }
 
@@ -2275,6 +2234,7 @@ void hud_text_c(undefined4 ot,undefined4 flags,const void *text,
   uint16_t *b = (uint16_t *)guest_at(0x1f80038c);
   BR2B32(0x1f8003a8) = guest_of(text);
   b[3] = (uint16_t)metric3;
+                  uint32_t attr,uint16_t attr_b,uint32_t tile_row)
   b[6] = 0x1e;
   b[9] = 1; b[10] = 1;
   b[0] = 0; b[1] = 0; b[2] = 0;
@@ -2283,6 +2243,7 @@ void hud_text_c(undefined4 ot,undefined4 flags,const void *text,
   b[4] = (uint16_t)metric4;
   b[11] = (uint16_t)((((uint32_t)tile_idx + 0x1e0) & 0x1ff) * 0x40 + 0x16);
   text_render_full((uint *)guest_at(ot),(uint)flags & 0xffff,
+  text_render_full((uint32_t *)guest_at(ot_ptr),(uint32_t)flags & 0xffff,
                (int)guest_of(b));
 }
 
@@ -2301,6 +2262,7 @@ void hud_text_d(uint32_t ot,uint32_t flags,const void *text,
   b[4] = (uint16_t)metric4;
   b[11] = (uint16_t)((((uint32_t)tile_idx + 0x1e0) & 0x1ff) * 0x40 + 0x16);
   text_render_full((uint *)guest_at(ot),flags & 0xffff,
+  text_render_full((uint32_t *)guest_at(ot_ptr),flags & 0xffff,
                (int)guest_of(b));
 }
 
@@ -2309,54 +2271,42 @@ void hud_text_d(uint32_t ot,uint32_t flags,const void *text,
  * Returns slot+4 host pointer or NULL when generation matches. */
 void *sprite_node_alloc(void)
 {
-  int32_t v1 = (int32_t)BR2B32(0x801b55e8);
+  int32_t slot_idx = (int32_t)BR2B32(0x801b55e8);
   uint32_t gen = BR2B32(0x1f8000dc);
   uint8_t *slot;
-  if (v1 < 0) v1 = 0;
-  slot = (uint8_t *)guest_at(0x801f5d38 + (uint32_t)v1 * 0x34);
+  if (slot_idx < 0) slot_idx = 0;
+  slot = (uint8_t *)guest_at(0x801f5d38 + (uint32_t)slot_idx * 0x34);
   if (*(uint32_t *)slot == gen || *(uint32_t *)slot == gen - 1)
     return (void *)0;
-  v1++;
-  if (v1 >= 8) v1 = 0;
-  BR2B32(0x801b55e8) = (uint32_t)v1;
+  slot_idx++;
+  if (slot_idx >= 8) slot_idx = 0;
+  BR2B32(0x801b55e8) = (uint32_t)slot_idx;
   *(uint32_t *)slot = gen;
   return slot + 4;
 }
 
 /* sprite_node_emit_a — sprite-list node emit (pool sprite_node_alloc, tag
- * 0x08000000, packet tail +0x24). 10 args; param_10 selects GPU
+ * 0x08000000, packet tail +0x24). 10 args; variant selects GPU
  * command variant 0x3a/0x38000000 and stride. */
 int sprite_node_emit_a(uint32_t head_gaddr,int32_t param_2,int32_t param_3,
                  int32_t param_4,int32_t param_5,uint32_t param_6,
                  uint32_t param_7,uint32_t param_8,uint32_t param_9,
-                 int32_t variant)
 {
-  uint32_t *head = (uint32_t *)guest_at(head_gaddr);
   uint8_t *node = (uint8_t *)sprite_node_alloc();
   uint32_t guest;
   int32_t tag;
   if (node == (uint8_t *)0) return -1;
   guest = guest_of(node);
   *(uint32_t *)(node + 0x0c) = param_7;
-  *(uint32_t *)(node + 0x14) = param_8;
   *(uint16_t *)(node + 0x08) = (uint16_t)param_2;
-  *(uint16_t *)(node + 0x0a) = (uint16_t)param_3;
-  *(uint16_t *)(node + 0x10) = (uint16_t)(param_2 + param_4);
-  *(uint16_t *)(node + 0x12) = (uint16_t)param_3;
-  *(uint16_t *)(node + 0x18) = (uint16_t)param_2;
-  *(uint16_t *)(node + 0x1a) = (uint16_t)(param_3 + param_5);
-  *(uint32_t *)(node + 0x1c) = param_9;
-  *(uint16_t *)(node + 0x20) = (uint16_t)(param_2 + param_4);
-  *(uint16_t *)(node + 0x22) = (uint16_t)(param_3 + param_5);
   if (variant != 0) {
-    *(uint32_t *)(node + 4) = param_6 | 0x3a000000;
     tag = (variant - 1) << 5;
   } else {
-    *(uint32_t *)(node + 4) = param_6 | 0x38000000;
+    *(uint32_t *)(node + 4) = cmd | 0x38000000;
     tag = 0;
   }
   prim_packet_init_tex((int)guest_of(node + 0x24),
-               BR2B8(0x801e40b7),BR2B8(0x801e40b6),(uint)tag,(byte *)0);
+               BR2B8(0x801e40b7),BR2B8(0x801e40b6),(uint32_t)tag,(uint8_t *)0);
   *(uint32_t *)node = *head | 0x08000000;
   *head = guest & 0xffffff;
   *(uint32_t *)(node + 0x24) = (guest & 0xffffff) | 0x02000000;
@@ -2365,37 +2315,36 @@ int sprite_node_emit_a(uint32_t head_gaddr,int32_t param_2,int32_t param_3,
 }
 
 /* sprite_node_emit_b — sprite-list node emit (pool spr_desc_slot_alloc, tag
- * 0x04000000, packet tail +0x14). param_2 packs x|y<<16,
- * param_3 packs w|h<<16; param_5 low byte = colour, param_6 picks
+ * 0x04000000, packet tail +0x14). xy packs x|y<<16,
+ * wh packs w|h<<16; color low uint8_t = colour, variant picks
  * GPU variant 0x66/0x64000000 + stride. */
 int sprite_node_emit_b(uint32_t head_gaddr,uint32_t param_2,uint32_t param_3,
                  uint32_t param_4,int32_t param_5,int32_t variant)
 {
-  uint32_t *head = (uint32_t *)guest_at(head_gaddr);
   uint8_t *node = (uint8_t *)spr_desc_slot_alloc();
   uint32_t guest;
   int32_t tag;
   if (node == (uint8_t *)0) return -1;
   guest = guest_of(node);
-  *(uint16_t *)(node + 0x10) = (uint16_t)((((int32_t)param_3 >> 16) & 0xff) + 1);
-  *(uint16_t *)(node + 0x12) = (uint16_t)(((uint32_t)param_3 >> 24) + 1);
-  *(uint32_t *)(node + 0x0c) = param_4;
-  *(uint16_t *)(node + 0x08) = (uint16_t)param_2;
-  *(uint16_t *)(node + 0x0a) = (uint16_t)(param_2 >> 16);
+  *(uint16_t *)(node + 0x10) = (uint16_t)((((int32_t)wh >> 16) & 0xff) + 1);
+  *(uint16_t *)(node + 0x12) = (uint16_t)(((uint32_t)wh >> 24) + 1);
+  *(uint32_t *)(node + 0x0c) = aux;
+  *(uint16_t *)(node + 0x08) = (uint16_t)xy;
+  *(uint16_t *)(node + 0x0a) = (uint16_t)(xy >> 16);
   node[7] |= 1;
   if (variant != 0) {
     uint32_t c = param_5 & 0xff;
     *(uint32_t *)(node + 4) = (c | (c << 8) | (c << 16)) | 0x66000000;
     tag = (variant - 1) << 5;
   } else {
-    uint32_t c = param_5 & 0xff;
+    uint32_t c = color & 0xff;
     *(uint32_t *)(node + 4) = (c | (c << 8) | (c << 16)) | 0x64000000;
     tag = 0;
   }
   prim_packet_init_tex((int)guest_of(node + 0x14),
                BR2B8(0x801e40b7),BR2B8(0x801e40b6),
-               (uint32_t)((int32_t)(param_3 << 16) >> 16) | (uint32_t)tag,
-               (byte *)0);
+               (uint32_t)((int32_t)(wh << 16) >> 16) | (uint32_t)tag,
+               (uint8_t *)0);
   *(uint32_t *)node = *head | 0x04000000;
   *head = guest & 0xffffff;
   *(uint32_t *)(node + 0x14) = (guest & 0xffffff) | 0x02000000;
@@ -2500,7 +2449,7 @@ int32_t ctype_adj_p32(uint32_t ch)
 }
 
 /* file_rec_size_get — CD file-record size getter: a0 < 0 (signed) -> 0;
- * else returns word1 of the 8-byte record @0x801b5b94 + a0*8 (the
+ * else returns word1 of the 8-uint8_t record @0x801b5b94 + a0*8 (the
  * (size+0x7ff)>>0xb page count written by pad_record_init).
  * Disasm 0x8018cfb4-0x8018cfd0 (bltz a0 -> shared ret-0 tail 0x8018cfd4,
  * sll a0,3, lw +4). */
@@ -2510,9 +2459,9 @@ uint32_t file_rec_size_get(int32_t file_idx)
   return *(uint32_t *)guest_at(0x801b5b98 + (uint32_t)file_idx * 8);
 }
 
-/* set_graph_debug — SetGraphDebug level setter: byte @0x801b8322 = arg;
+/* set_graph_debug — SetGraphDebug level setter: uint8_t @0x801b8322 = arg;
  * when nonzero calls PTR_FUN_801b831c (text_win_printf text-window printf)
- * with "SetGraphDebug:level:%d,type:%d reverse:%d". Returns old byte.
+ * with "SetGraphDebug:level:%d,type:%d reverse:%d". Returns old uint8_t.
  * Disasm 0x80190f74-0x80190fc8. */
 extern void *PTR_FUN_801b831c;
 int32_t set_graph_debug(uint32_t level)
@@ -2529,7 +2478,7 @@ int32_t set_graph_debug(uint32_t level)
 
 /* memcard_info_query — memcard/info query: mc_data_read(0, tbl[0..2],
  * tbl[3..9], 0x801c11e0, 0x414) over table @0x801b45f4; ret 0 clears
- * @0x801c15f0 and returns byte @(*(u32*)0x1f8000c0)+0x22, ret<8&&!=0
+ * @0x801c15f0 and returns uint8_t @(*(u32*)0x1f8000c0)+0x22, ret<8&&!=0
  * ->1, ret>=8 ->0. Disasm 0x8015f590-0x8015f63c. */
 extern int32_t mc_data_read(int32_t,uint32_t,uint32_t,uint32_t,uint32_t,
                             uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,
@@ -2556,12 +2505,10 @@ int32_t memcard_info_query(void)
 void debug_stat_print(void)
 {
   uint16_t cpu_val = *(uint16_t *)guest_at(0x1f80001a);
-  uint16_t gpu_val = *(uint16_t *)guest_at(0x1f80001c);
   scroll_offset_set(0,0xdc);
   if (*(uint16_t *)guest_at(0x801e83a8) == 0)
     print_dispatch((const char *)guest_at(0x8011ed40),cpu_val,gpu_val);
   else
-    print_dispatch((const char *)guest_at(0x8011ed54),cpu_val,gpu_val);
 }
 
 /* players_ctrl_init — two-player control-block init: fills guest structs at
@@ -2577,30 +2524,19 @@ void players_ctrl_init(void)
   if (!ctrl_a || !ctrl_b || !tbl_a) return;
   ctrl_a[2] = 0; ctrl_a[3] = 0;
   *(uint32_t *)(ctrl_a + 0x28) = 0x801f5258;
-  *(uint32_t *)(tbl_a + 0x3c) = base_gaddr + 0x870;
-  *(uint32_t *)(tbl_a + 0x1c) = base_gaddr - 0xbd0;
-  *(uint32_t *)(tbl_a + 0x40) = base_gaddr - 0x8dc;
-  *(uint32_t *)(tbl_a + 0x18) = base_gaddr;
-  *(uint32_t *)(ctrl_a + 0x44) = base_gaddr - 0x1950;
-  *(uint32_t *)(ctrl_a + 0x48) = base_gaddr - 0x1290;
   *(uint32_t *)(ctrl_a + 0x2c) = 0x1f8001f0;
   *(uint32_t *)(ctrl_a + 0x38) = 0x801f5328;
   *(uint32_t *)(ctrl_a + 0x3c) = 0x801f55c0;
   ctrl_b[2] = 1; ctrl_b[3] = 5;
   *(uint32_t *)(ctrl_b + 0x28) = 0x801f52a0;
   *(uint32_t *)(tbl_b + 0x18) = base_gaddr + 0x10e0;
-  *(uint32_t *)(tbl_b + 0x3c) = base_gaddr + 0x1950;
-  *(uint32_t *)(tbl_b + 0x1c) = base_gaddr - 0x5e8;
-  *(uint32_t *)(tbl_b + 0x40) = base_gaddr - 0x2f4;
-  *(uint32_t *)(ctrl_b + 0x44) = base_gaddr - 0x15f0;
-  *(uint32_t *)(ctrl_b + 0x48) = base_gaddr - 0xf30;
   *(uint32_t *)(ctrl_b + 0x2c) = 0x1f8000e8;
   *(uint32_t *)(ctrl_b + 0x38) = 0x801f5440;
   *(uint32_t *)(ctrl_b + 0x3c) = 0x801f5704;
   *(uint8_t *)guest_at(0x1f800098) = 0;
 }
 
-/* ot_packet_chain_fixup — OT/GPU packet-chain fixup: positions two 0x18-byte
+/* ot_packet_chain_fixup — OT/GPU packet-chain fixup: positions two 0x18-uint8_t
  * records at 0x801e83e8/0x801e83d0 from u16 fields + scroll offsets,
  * then links five slots at 0x801e8348..0x801e8388 plus tail slots
  * 0x801e8398/0x801e83d0/0x801e83b8: each slot gets (*T1 | tag) and
@@ -2649,22 +2585,19 @@ void ot_packet_chain_fixup(void)
 
 /* sprite_rect_table_init — sprite/UV rect table init: spr_prim_tag_a x3 over
  * 0x18-stride recs @0x801e83b8, fills three textured-quad descriptors
- * (u16 pos/uv fields from args, byte tags 0x28/0xc8), spr_prim_tag_b x6
+ * (u16 pos/uv fields from args, uint8_t tags 0x28/0xc8), spr_prim_tag_b x6
  * over 0x10-stride recs @0x801e8348, then six flat-shade quads.
  * Disasm 0x8012a0f0-0x8012a304. */
 extern void spr_prim_tag_a(uint32_t);
 extern void spr_prim_tag_b(uint32_t);
 static void sh16(uint32_t a,uint32_t o,uint32_t v)
 { *(uint16_t *)((uint8_t *)guest_at(a) + o) = (uint16_t)v; }
-static void sb8(uint32_t a,uint32_t o,uint32_t v)
-{ *(uint8_t *)((uint8_t *)guest_at(a) + o) = (uint8_t)v; }
 void sprite_rect_table_init(int32_t x_dim,int32_t y_dim,int32_t param_3)
-{
   uint32_t xd = (uint32_t)x_dim, yd = (uint32_t)y_dim;
   (void)param_3;
-  uint32_t v1 = 0x801e83b8, a1 = v1 + 0x18, a0 = v1 + 0x30;
+  (void)unused;
   uint32_t b, i;
-  for (i = 0; i < 3; i++) spr_prim_tag_a(v1 + i * 0x18);
+  for (i = 0; i < 3; i++) spr_prim_tag_a(rec0 + i * 0x18);
   /* three 0x18 records */
   sh16(v1,0x12,yd+0xf);  sh16(v1,0x16,yd+0xf);
   sh16(v1,0x08,xd);      sh16(v1,0x0a,yd);
@@ -2681,6 +2614,21 @@ void sprite_rect_table_init(int32_t x_dim,int32_t y_dim,int32_t param_3)
   sb8(v1,4,0x28); sb8(v1,5,0x28); sb8(v1,6,0x28);
   sb8(a1,4,0xc8); sb8(a1,5,0xc8); sb8(a1,6,0);
   sb8(a0,4,0xc8); sb8(a0,5,0);    sb8(a0,6,0);
+  sh16(rec0,0x12,y+0xf);  sh16(rec0,0x16,y+0xf);
+  sh16(rec0,0x08,x);      sh16(rec0,0x0a,y);
+  sh16(rec0,0x0c,x+0xff); sh16(rec0,0x0e,y);
+  sh16(rec0,0x10,x);      sh16(rec0,0x14,x+0xff);
+  sh16(rec1,0x0a,y+9);    sh16(rec1,0x0e,y+9);
+  sh16(rec1,0x12,y+0xe);  sh16(rec1,0x16,y+0xe);
+  sh16(rec1,0x08,x);      sh16(rec1,0x0c,x+0xff);
+  sh16(rec1,0x10,x);      sh16(rec1,0x14,x+0xff);
+  sh16(rec2,0x0a,y+1);    sh16(rec2,0x0e,y+1);
+  sh16(rec2,0x12,y+6);    sh16(rec2,0x16,y+6);
+  sh16(rec2,0x08,x);      sh16(rec2,0x0c,x+0xff);
+  sh16(rec2,0x10,x);      sh16(rec2,0x14,x+0xff);
+  sb8(rec0,4,0x28); sb8(rec0,5,0x28); sb8(rec0,6,0x28);
+  sb8(rec1,4,0xc8); sb8(rec1,5,0xc8); sb8(rec1,6,0);
+  sb8(rec2,4,0xc8); sb8(rec2,5,0);    sb8(rec2,6,0);
   for (i = 0; i < 6; i++) spr_prim_tag_b(0x801e8348 + i * 0x10);
   /* six 0x10 records */
   {
@@ -2713,10 +2661,10 @@ void empty_leaf_d(void) { }
  * s16 @0x801f04a8+0x14. Disasm 0x801360cc-0x80136108+. */
 void clear_f0300_records(void)
 {
-  uint16_t *a0 = (uint16_t *)guest_at(0x801f0300);
+  uint16_t *recs = (uint16_t *)guest_at(0x801f0300);
   int16_t *cnt = (int16_t *)guest_at(0x801f04a8 + 0x14);
   int32_t n = cnt ? *cnt : 0, i;
-  for (i = 0; i < n; i++) a0[i * 0x1a] = 0;   /* 0x34 bytes = 0x1a u16 */
+  for (i = 0; i < n; i++) recs[i * 0x1a] = 0;   /* 0x34 bytes = 0x1a u16 */
 }
 
 /* reset_combat_slots — reset both combatant slots: 42c5c/42c9c/42cd8
@@ -2738,19 +2686,18 @@ extern void cd_chan_mode_apply(uint32_t);
 extern void cd_chan_mode_set(int32_t);
 void blk_1f26c0_init(void)
 {
-  uint32_t blk = 0x801f26c0;
+  uint32_t block = 0x801f26c0;
   *(uint32_t *)guest_at(0x801f36c4) = 0;
-  *(uint32_t *)guest_at(blk + 4) = 0x100;
-  cd_chan_mode_apply(blk);
+  *(uint32_t *)guest_at(block + 4) = 0x100;
+  cd_chan_mode_apply(block);
   cd_chan_mode_set(0);
 }
 
-/* clear_f4ee8_u16s — clear 10 u16s at 0x801f4ee8 + byte(a0+2)*24 + 0x12,
+/* clear_f4ee8_u16s — clear 10 u16s at 0x801f4ee8 + uint8_t(a0+2)*24 + 0x12,
  * plus u16 @+0x14/+0x16 and 9 words before +0x12. Disasm verified. */
 void clear_f4ee8_u16s(uint32_t ctrl_gaddr)
 {
   uint8_t *ctrl = (uint8_t *)guest_at(ctrl_gaddr);
-  uint8_t *rec = (uint8_t *)guest_at(0x801f4ee8) + ctrl[2] * 24;
   uint16_t *dst = (uint16_t *)(rec + 0x12);
   int i;
   rec[0x14] = 0; rec[0x15] = 0;
@@ -2764,14 +2711,14 @@ void clear_f4ee8_u16s(uint32_t ctrl_gaddr)
 extern void cd_chan_flags_to_dir(uint32_t);
 void blk_1f26c0_init_b(void)
 {
-  uint32_t s0 = 0x801f26c0;
+  uint32_t block = 0x801f26c0;
   *(uint32_t *)guest_at(0x801f36c4) = 0;
-  *(uint32_t *)guest_at(s0) = 7;
-  *(uint32_t *)guest_at(s0 + 4) = 0x100;
-  *(uint16_t *)guest_at(s0 + 8) = 0x3fff;
-  *(uint16_t *)guest_at(s0 + 0xa) = 0x3fff;
-  cd_chan_mode_apply(s0);
-  cd_chan_flags_to_dir(s0);
+  *(uint32_t *)guest_at(block) = 7;
+  *(uint32_t *)guest_at(block + 4) = 0x100;
+  *(uint16_t *)guest_at(block + 8) = 0x3fff;
+  *(uint16_t *)guest_at(block + 0xa) = 0x3fff;
+  cd_chan_mode_apply(block);
+  cd_chan_flags_to_dir(block);
   cd_chan_mode_set(1);
 }
 
@@ -2812,15 +2759,17 @@ void reset_sprite_ot_block(uint32_t obj_gaddr)
   int i;
   if (obj == NULL) return;
   vec = (uint16_t *)guest_at(*(uint32_t *)(obj + 0xcc));
-  if (vec == NULL) return;
   for (i = 0; i < 8; i++) vec[i] = 0;
   vec[9] = (uint16_t)(int8_t)obj[0x98];
   vec[10] = (uint16_t)(int8_t)obj[0x99];
   vec[11] = *(uint16_t *)(obj + 0xa0);
   slot_addr = 0x801cd530;
-  for (i = 4; i >= 0; i--) {
     *(uint16_t *)guest_at(slot_addr) = 0xffff;
-    slot_addr -= 0x235c;
+  tbl = (uint16_t *)guest_at(*(uint32_t *)(ctx_b + 0xcc));
+  tbl[9] = (uint16_t)(int8_t)ctx_b[0x98];
+  tbl[10] = (uint16_t)(int8_t)ctx_b[0x99];
+  tbl[11] = *(uint16_t *)(ctx_b + 0xa0);
+  addr = 0x801cd530;
   }
 }
 
@@ -2845,17 +2794,16 @@ void blk_1f26c0_init_c(int32_t mode,uint32_t dim)
 {
   uint32_t blk = 0x801f26c0;
   *(uint32_t *)guest_at(0x801f36c4) = (uint32_t)mode;
-  *(uint32_t *)guest_at(blk) = 7;
-  *(uint32_t *)guest_at(blk + 4) = (uint32_t)mode | 0x100;
   *(uint16_t *)guest_at(blk + 8) = (uint16_t)dim;
-  *(uint16_t *)guest_at(blk + 0xa) = (uint16_t)dim;
   cd_chan_mode_apply(blk);
   cd_chan_flags_to_dir(blk);
+  cd_chan_mode_apply(block);
+  cd_chan_flags_to_dir(block);
   cd_reg_win_rmw_cc_cd(1,0xffffFF08);
   cd_chan_mode_set(1);
 }
 
-/* record_copy_1a — copy 0x1a-byte record 0x8011fea0 + idx*0x1a ->
+/* record_copy_1a — copy 0x1a-uint8_t record 0x8011fea0 + idx*0x1a ->
  * 0x801f0640 then hud_sprite_desc_init. Disasm 0x80136d28-0x80136dd4. */
 void record_copy_1a(int idx)
 {

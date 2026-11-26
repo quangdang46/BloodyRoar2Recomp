@@ -69,6 +69,7 @@ extern void action_from_input(void);
 extern void action_from_input_alias(void);
 extern void action_resolve(void);
 extern void action_switch_guest(void);
+extern void always_one(void);
 extern void angle_from_xy(void);
 extern void angle_gte_vec(void);
 extern void angle_pair_rotmat(void);
@@ -693,12 +694,14 @@ extern void fighter_attach_run(void);
 extern void fighter_chan_delta_accum(void);
 extern void fighter_combat_reset(void);
 extern void fighter_contact_resolve(void);
+extern void fighter_flash_update(void);
 extern void fighter_frame(void);
 extern void fighter_frame_triple_emit(void);
 extern void fighter_height_check(void);
 extern void fighter_height_track(void);
 extern void fighter_hud_emit_pair(void);
 extern void fighter_link_init(void);
+extern void fighter_pair_update(void);
 extern void fighter_range_code(void);
 extern void fighter_rec_fetch_apply(void);
 extern void fighter_record_apply(void);
@@ -706,6 +709,7 @@ extern void fighter_record_build(void);
 extern void fighter_reinit_tail(void);
 extern void fighter_reset_fx(void);
 extern void fighter_respawn_init(void);
+extern void fighter_script_fsm(void);
 extern void fighter_script_fsm_cps(void);
 extern void fighter_spawn_setup(void);
 extern void fighter_spawn_tail(void);
@@ -1355,8 +1359,6 @@ extern void prim_xform3_task_run(void);
 extern void prim_xform3_task_run_b(void);
 extern void prim_xform_emit(void);
 extern void prim_xform_emit_64(void);
-extern void print_dispatch_guest(void);
-extern void print_dispatch_selfdesc_guest(void);
 extern void print_mode_dispatch_b(void);
 extern void print_mode_dispatch_guest(void);
 extern void printf_arg_byte(void);
@@ -1385,7 +1387,6 @@ extern void printf_cps_8018e710(void);
 extern void printf_cps_8018e76c(void);
 extern void printf_flags_h_set(void);
 extern void printf_flags_l_set(void);
-extern void printf_forward_guest(void);
 extern void proj_coord_gte_emit(void);
 extern void pt_box_radius_test(void);
 extern void qbyte_take(void);
@@ -1599,7 +1600,6 @@ extern void spr_tbl_init_a(void);
 extern void spr_tbl_init_b(void);
 extern void sprintf_core_engine(void);
 extern void sprintf_core_engine_piece_f220(void);
-extern void sprintf_core_guest(void);
 extern void sprite_9slice_build(void);
 extern void sprite_anim_chain_build(void);
 extern void sprite_attr_init_a(void);
@@ -1610,7 +1610,6 @@ extern void sprite_burst_spawn(void);
 extern void sprite_desc_table_init(void);
 extern void sprite_node_alloc(void);
 extern void sprite_node_alloc_commit(void);
-extern void sprite_node_emit_a(void);
 extern void sprite_node_emit_b(void);
 extern void sprite_obj_alloc_emit(void);
 extern void sprite_place_centered(void);
@@ -1622,7 +1621,6 @@ extern void sprite_rect_pkt_fill(void);
 extern void sprite_rect_set_a(void);
 extern void sprite_rect_set_b(void);
 extern void sprite_rect_set_c(void);
-extern void sprite_rect_table_init(void);
 extern void sprite_slot_commit(void);
 extern void sprite_strip_draw_dual(void);
 extern void stage_char_data_load(void);
@@ -1698,6 +1696,7 @@ extern void trig_sin_lookup(void);
 extern void trig_vel_diag(void);
 extern void trig_vel_flat(void);
 extern void trig_vel_up(void);
+extern void triple_track_spawn(void);
 extern void tween_apply(void);
 extern void tween_chan_alloc(void);
 extern void tween_dur_spread(void);
@@ -1726,6 +1725,9 @@ extern void vec3_s32_h_normalize(void);
 extern void vec3_s32_h_normalize_store_tail(void);
 extern void vec3_s32_normalize(void);
 extern void vec3_step_toward(void);
+extern void vec3_step_toward_q(void);
+extern void vec3_step_toward_q_spd(void);
+extern void vec3_step_toward_spd(void);
 extern void vec_emit_spawn(void);
 extern void versus_stage_commit(void);
 extern void versus_stage_commit_b(void);
@@ -1811,7 +1813,6 @@ const Br2FnEnt fn_table[] = {
   { 0x80129ff4, (void *)perm_table_load },
   { 0x8012a030, (void *)perm_table_apply },
   { 0x8012a088, (void *)debug_stat_print },
-  { 0x8012a0f0, (void *)sprite_rect_table_init },
   { 0x8012a30c, (void *)ot_packet_chain_fixup },
   { 0x8012a4b4, (void *)queue_slot_peek },
   { 0x8012a4dc, (void *)cmd_queue_slot_next },
@@ -1837,12 +1838,10 @@ const Br2FnEnt fn_table[] = {
   { 0x8012c0b4, (void *)intro_movie_state },
   { 0x8012c374, (void *)hud_gauge_render },
   { 0x8012cbc0, (void *)print_mode_dispatch_b },
-  { 0x8012cc6c, (void *)print_dispatch_guest },
   { 0x8012cd9c, (void *)scroll_offset_set },
   { 0x8012cdd8, (void *)scroll_offset_accumulate },
   { 0x8012ce20, (void *)scroll_offset_y_get },
   { 0x8012ce30, (void *)print_mode_dispatch_guest },
-  { 0x8012cf64, (void *)print_dispatch_selfdesc_guest },
   { 0x8012d090, (void *)sprite_desc_table_init },
   { 0x8012d154, (void *)text_render_full },
   { 0x8012dce4, (void *)text_render_simple },
@@ -1890,6 +1889,9 @@ const Br2FnEnt fn_table[] = {
   { 0x801338c4, (void *)fixed_approach_s16 },
   { 0x80133944, (void *)vec3_approach_step },
   { 0x80133aa0, (void *)vec3_step_toward },
+  { 0x80133c08, (void *)vec3_step_toward_spd },
+  { 0x80133db0, (void *)vec3_step_toward_q },
+  { 0x80133f30, (void *)vec3_step_toward_q_spd },
   { 0x801340f0, (void *)mode_select_wrapper },
   { 0x80134128, (void *)channel_script_emit_pair_2gate },
   { 0x801341a0, (void *)channel_script_emit_triple },
@@ -1919,6 +1921,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80137048, (void *)vec_emit_spawn },
   { 0x80137098, (void *)battle_intro_fsm },
   { 0x80137394, (void *)battle_intro_fsm_alias },
+  { 0x80137570, (void *)always_one },
   { 0x80137578, (void *)rec16_fill },
   { 0x80137590, (void *)LAB_80137590 },
   { 0x801375e8, (void *)slot_mark2_set },
@@ -1936,6 +1939,7 @@ const Br2FnEnt fn_table[] = {
   { 0x801387dc, (void *)node_list_walk_b },
   { 0x8013885c, (void *)slot_triple_tick },
   { 0x8013893c, (void *)xform_accum_tick },
+  { 0x80138a24, (void *)triple_track_spawn },
   { 0x80138b00, (void *)xform_accum_spawn },
   { 0x80138c6c, (void *)node_list_walk_c },
   { 0x80138cec, (void *)impact_fx_update },
@@ -2385,6 +2389,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8016b7c0, (void *)heap_serialize },
   { 0x8016cb20, (void *)heap_ptr_fixup },
   { 0x8016cc5c, (void *)heap_record_emit },
+  { 0x8016cd8c, (void *)fighter_flash_update },
   { 0x8016d244, (void *)fighter_tint_fade },
   { 0x8016d478, (void *)sprite_anim_chain_build },
   { 0x8016dadc, (void *)ret_zero_d },
@@ -2487,6 +2492,7 @@ const Br2FnEnt fn_table[] = {
   { 0x801800a4, (void *)hitbox_xform_node_commit },
   { 0x801802cc, (void *)hitbox_xform_flag_pair },
   { 0x8018098c, (void *)hitbox_xform_epilogue },
+  { 0x801809c8, (void *)fighter_pair_update },
   { 0x80181000, (void *)pair_update_attach_tail },
   { 0x8018106c, (void *)record_struct_dump },
   { 0x8018123c, (void *)slot_action_dump },
@@ -2495,6 +2501,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80181ef0, (void *)ani_cat_tail_v2 },
   { 0x80181f10, (void *)ani_cat_tail_nine },
   { 0x80181f18, (void *)ani_cat_tail_ret },
+  { 0x80181f20, (void *)fighter_script_fsm },
   { 0x80182960, (void *)fighter_script_fsm_cps },
   { 0x80182a58, (void *)fsm_script_vm_gate },
   { 0x80182ac0, (void *)fsm_combat_mode_eval },
@@ -2716,7 +2723,6 @@ const Br2FnEnt fn_table[] = {
   { 0x8018cd94, (void *)spr_tbl_init_b },
   { 0x8018cdf8, (void *)sprite_node_alloc },
   { 0x8018ce50, (void *)sprite_node_alloc_commit },
-  { 0x8018ce70, (void *)sprite_node_emit_a },
   { 0x8018cfb4, (void *)file_rec_size_get },
   { 0x8018cfd4, (void *)file_rec_size_get_zero },
   { 0x8018cfdc, (void *)cd_file_load_sm },
@@ -2782,7 +2788,6 @@ const Br2FnEnt fn_table[] = {
   { 0x8018e4d0, (void *)rand_lcg },
   { 0x8018e500, (void *)rand_seed },
   { 0x8018e510, (void *)str_len },
-  { 0x8018e550, (void *)printf_forward_guest },
   { 0x8018e590, (void *)printf_core },
   { 0x8018e63c, (void *)printf_cps_8018e63c },
   { 0x8018e64c, (void *)printf_cps_8018e64c },
@@ -2817,7 +2822,6 @@ const Br2FnEnt fn_table[] = {
   { 0x8018edf4, (void *)debug_line_flush },
   { 0x8018ee28, (void *)debug_line_putc },
   { 0x8018ef50, (void *)bios_tramp_b035 },
-  { 0x8018ef60, (void *)sprintf_core_guest },
   { 0x8018ef6c, (void *)sprintf_core_engine },
   { 0x8018f220, (void *)sprintf_core_engine_piece_f220 },
   { 0x8018f22c, (void *)gpu_pkt_cmd_f22c },
