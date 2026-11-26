@@ -22415,7 +22415,9 @@ block_80132864:
 }
 
 /* cps_80132868 — clean CPS transliteration of br2eu_func_80132868 (guest 0x80132868)
- * from SLES_017.22_full_05.c. */
+ * from SLES_017.22_full_05.c.
+ * gte_xform1_wrapper: thin wrapper calling gte_xform1_ir — single
+ * instruction GTE transform entry. */
 void cps_80132868(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -22735,7 +22737,10 @@ block_80132B50:
 }
 
 /* cps_80132ba0 — clean CPS transliteration of br2eu_func_80132BA0 (guest 0x80132ba0)
- * from SLES_017.22_full_05.c. */
+ * from SLES_017.22_full_05.c.
+ * dual_track_step_a: pair_depth_set + u16_step_toward +
+ * fixed_approach_s16 + fixed_rsqrt_q12 — dual-target depth/angle
+ * tracking step (sibling of dual_target_track 0x801329D8). */
 void cps_80132ba0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -23242,7 +23247,9 @@ block_80133140:
 }
 
 /* cps_80133164 — clean CPS transliteration of br2eu_func_80133164 (guest 0x80133164)
- * from SLES_017.22_full_05.c. */
+ * from SLES_017.22_full_05.c.
+ * dual_track_step_b: same family — pair_depth_set + u16_step_toward +
+ * fixed_rsqrt_q12 + vec3_s32_normalize; normalized direction track. */
 void cps_80133164(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -23834,7 +23841,9 @@ block_80133588:
 }
 
 /* cps_8013358c — clean CPS transliteration of br2eu_func_8013358C (guest 0x8013358c)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * dual_track_step_c: pair_depth_set + u16_step_toward +
+ * fixed_approach_s16 — third dual-target tracking variant. */
 void cps_8013358c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -25096,7 +25105,9 @@ block_80134398:
 }
 
 /* cps_80134648 — clean CPS transliteration of br2eu_func_80134648 (guest 0x80134648)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * sprite_prim_emit_a: sprite_slot_commit + prim_task_run — commits a
+ * sprite slot then runs the prim task (channel_script_emit family). */
 void cps_80134648(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -26215,7 +26226,8 @@ block_80134B18:
 }
 
 /* cps_80134c30 — clean CPS transliteration of br2eu_func_80134C30 (guest 0x80134c30)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * prim_task_run_wrap: single-call wrapper around prim_task_run. */
 void cps_80134c30(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -26837,7 +26849,9 @@ block_8013531C:
 }
 
 /* cps_80135320 — clean CPS transliteration of br2eu_func_80135320 (guest 0x80135320)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * prim_emit_xform: prim_task_run + gte_xform_add_off — emit prim with
+ * offset GTE transform applied. */
 void cps_80135320(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -29362,7 +29376,9 @@ block_80136578:
 }
 
 /* cps_80136680 — clean CPS transliteration of br2eu_func_80136680 (guest 0x80136680)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * vec_emit_spawn_wrap: vec_emit_spawn + deferred_cmd_post — spawn a
+ * vector-emit effect then post deferred cmd. */
 void cps_80136680(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -32244,7 +32260,10 @@ block_80138230:
 }
 
 /* cps_80138248 — clean CPS transliteration of br2eu_func_80138248 (guest 0x80138248)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * orbit_fx_update_a: rand_lcg + gte_rtps_xform3 + obj_flag34 set/clear
+ * + tween_seek + rect_prim_spawn — orbiting FX particle update (sibling
+ * of orbit_fx_spawn 0x801385DC). */
 void cps_80138248(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -32920,7 +32939,9 @@ void cps_8013892c(void)
 }
 
 /* cps_80138cec — clean CPS transliteration of br2eu_func_80138CEC (guest 0x80138cec)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * impact_fx_update (renames.map): GTE transform loop + task_slot_step —
+ * per-frame impact effect update. */
 void cps_80138cec(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -33758,7 +33779,8 @@ block_8013937C:
 }
 
 /* cps_801393b8 — clean CPS transliteration of br2eu_func_801393B8 (guest 0x801393b8)
- * from SLES_017.22_full_08.c. */
+ * from SLES_017.22_full_08.c.
+ * impact_fx_type_b: GTE ops + impact_fx_spawn — spawns typed impact FX. */
 void cps_801393b8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -35344,7 +35366,9 @@ block_8013A4E4:
 }
 
 /* cps_8013a514 — clean CPS transliteration of br2eu_func_8013A514 (guest 0x8013a514)
- * from SLES_017.22_full_08.c. */
+ * from SLES_017.22_full_08.c.
+ * task_batch_spawn: task_alloc_wrap_c/d + rand_lcg + task_node_free —
+ * allocates a pair of task nodes with randomized params. */
 void cps_8013a514(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -36525,7 +36549,9 @@ block_8013ADF0:
 }
 
 /* cps_8013ae1c — clean CPS transliteration of br2eu_func_8013AE1C (guest 0x8013ae1c)
- * from SLES_017.22_full_08.c. */
+ * from SLES_017.22_full_08.c.
+ * fx_impact_spawn_rand: impact_fx_spawn + fx_record_init +
+ * angle_from_xy + rand_lcg — randomized impact FX spawn. */
 void cps_8013ae1c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -37569,7 +37595,9 @@ block_8013B818:
 }
 
 /* cps_8013b844 — clean CPS transliteration of br2eu_func_8013B844 (guest 0x8013b844)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * fx_burst_update: angle_from_xy + gte_rtps_xform1 + task_slot_step +
+ * node_tree_free — directional burst FX update. */
 void cps_8013b844(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -38760,7 +38788,9 @@ block_8013BF20:
 }
 
 /* cps_8013bf2c — clean CPS transliteration of br2eu_func_8013BF2C (guest 0x8013bf2c)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * gte_rot_tr_setup: angle_from_xy + gte_rot_load + gte_tr_load + GTE
+ * ops — loads rotation+translation into GTE for a transform. */
 void cps_8013bf2c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -40322,7 +40352,10 @@ block_8013C99C:
 }
 
 /* cps_8013c9cc — clean CPS transliteration of br2eu_func_8013C9CC (guest 0x8013c9cc)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * prim_group_emit: gpu_pkt_tag_0c3c + task_node_alloc/free +
+ * prim_group_build + prim_attr_word_set + fighter_chan_delta_accum —
+ * builds and emits a fighter channel prim group. */
 void cps_8013c9cc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -40881,7 +40914,9 @@ block_8013CDB8:
 }
 
 /* cps_8013ce68 — clean CPS transliteration of br2eu_func_8013CE68 (guest 0x8013ce68)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * fx_particle_update: rand_lcg + task_slot_step + GTE ops — randomized
+ * particle update loop. */
 void cps_8013ce68(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -42135,7 +42170,9 @@ block_8013DBB0:
 }
 
 /* cps_8013dbd8 — clean CPS transliteration of br2eu_func_8013DBD8 (guest 0x8013dbd8)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * fx_trail_update: angle_from_xy + gte_xform_accum + gte_rtps_vec3 +
+ * task_slot_step — trail/ribbon FX update. */
 void cps_8013dbd8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -44001,7 +44038,9 @@ block_8013F90C:
 }
 
 /* cps_8013f914 — clean CPS transliteration of br2eu_func_8013F914 (guest 0x8013f914)
- * from SLES_017.22_full_10.c. */
+ * from SLES_017.22_full_10.c.
+ * gte_sxy_pack_ctrl: gte_rtps3_sxy_pack_ctrl + GTE ops — packs
+ * screen-space xy coords via GTE RTPS. */
 void cps_8013f914(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -44679,7 +44718,9 @@ block_8013FE8C:
 }
 
 /* cps_8013fea0 — clean CPS transliteration of br2eu_func_8013FEA0 (guest 0x8013fea0)
- * from SLES_017.22_full_10.c. */
+ * from SLES_017.22_full_10.c.
+ * gte_xform_accum_wrap: gte_xform_accum + GTE ops — accumulated
+ * transform wrapper. */
 void cps_8013fea0(void)
 {
   CPUState *cpu = clean_cpu_state();
