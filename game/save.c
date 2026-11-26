@@ -24,7 +24,6 @@ extern uint32_t guest_of(const void *p);
 extern uint32_t br2_guest_frame(uint32_t);
 extern void br2_guest_frame_free(void);
 extern uint32_t bios_svc(uint32_t table,uint32_t svc,uint32_t a0,uint32_t a1);
-extern uint32_t guest_sp(void);
 extern uint16_t psx_read_half(uint32_t addr);
 extern void decomp_trace_record(uint8_t tag, uint32_t dst, uint32_t src,
                                 uint8_t mode, uint32_t len);
@@ -295,7 +294,6 @@ extern int cd_dir_read_wrap();
 extern void slot_status_fill();
 extern void cd_reg_window_update();
 extern void cd_reg_window_u16();
-extern void cd_chan_attr_apply();
 extern int mc_action_dispatch_b();
 extern int mc_action_dispatch();
 extern int ret_one();
@@ -321,8 +319,6 @@ extern int frame_divisor_get();
 extern void scroll_offset_set();
 extern void battle_session_arm(intptr_t,int);
 extern void frame_tick(intptr_t);
-extern void cd_str_print();
-extern void bios_table_tramp();
 extern void bios_kobj_tramp();
 
 /* ======== 0x80157a00 ======== */
@@ -2261,7 +2257,6 @@ int32_t mc_dialog_bit4(int32_t a0)
 extern int32_t mc_date_serial_cmp(uint8_t *,void *);
 extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern uint32_t br2_call_clean(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
-extern uint32_t call_guest4(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern void cd_bitstream_decode(int32_t,uint32_t,uint32_t);
 extern void cd_dir_entry_probe(int32_t);
 int32_t blk_io_retry(uint32_t a0,void *a1)
@@ -2584,10 +2579,6 @@ void fighter_spawn_tail(uint8_t *rec,uint32_t flag)
 /* cd_file_read_seq — CD file read seq: 9d4d0(0), 9d470(a1),
  * 9d410(a0,a2), poll 9d500(0) till nonzero; returns a2.
  * Disasm 0x801565ec-0x80156648. */
-extern void cd_mode_store(int32_t);
-extern void cd_status_shifted_read(uint32_t);
-extern void cd_seek_param_issue_clamped(uint32_t,uint32_t);
-extern int32_t cd_seek_complete_poll(int32_t);
 extern void br2_irq_poll(void);
 extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 /* cd_file_read_seq — delegate the whole body to the generated MIPS
