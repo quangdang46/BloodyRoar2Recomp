@@ -818,7 +818,7 @@ LAB_8012661c:
  * ================================================================== */
 void boot(void)
 {
-    int iVar1;
+    int pump_state;
 
     cd_dispatch_tblc();
     cd_read_param_set(0);
@@ -838,14 +838,14 @@ void boot(void)
     DAT_801c4578 = 2;
     DAT_801c457c = (uint)*(uint8_t *)g_DAT_801b12e6;
     gpu_disp_mask_set(0);
-    iVar1 = cd_file_pump(0x1f800000,0);
+    pump_state = cd_file_pump(0x1f800000,0);
     gfx_tbls_init();
     game_globals_reset();
     sprite_desc_table_init(0);
     print_mode_dispatch_b(2,0,0);
     apply_saved_settings_or_defaults((undefined4 *)_g_system_config_ptr);
-    while (-1 < iVar1) {
-        iVar1 = cd_file_pump(0x1f800000,iVar1);
+    while (-1 < pump_state) {
+        pump_state = cd_file_pump(0x1f800000,pump_state);
         cd_timer_read(0);
     }
     battle_session_arm(0x1f800000,0);
@@ -862,33 +862,33 @@ void boot(void)
  * param_2 = pump state: 0 init -> 0x100 streaming -> 0x110 tail ->
  * 0x120 done -> -1. Each step queues one file's DMA reads.
  * ================================================================== */
-int cd_file_pump(int param_1,int param_2)
+int cd_file_pump(int base,int state)
 {
-    undefined1 uVar1;
-    undefined4 uVar2;
-    int iVar3;
+    undefined1 scratch013_save;
+    undefined4 tag_addr;
+    int ret;
 
-    if (param_2 != 0x100) {
-        if (0x100 < param_2) {
-            if (param_2 != 0x110) {
-                if (param_2 != 0x120) {
-                    return param_2;
+    if (state != 0x100) {
+        if (0x100 < state) {
+            if (state != 0x110) {
+                if (state != 0x120) {
+                    return state;
                 }
                 return -1;
             }
-            iVar3 = cd_file_load_sm(0x89,_DAT_801e3cfc);
-            if (iVar3 == 0) {
+            ret = cd_file_load_sm(0x89,_DAT_801e3cfc);
+            if (ret == 0) {
                 return 0x110;
             }
             fighter_record_apply(_DAT_801e3cfc,0);
             page_table_ptr_set(0,0);
             return 0x120;
         }
-        if (param_2 != 0) {
-            return param_2;
+        if (state != 0) {
+            return state;
         }
         cd_file_load_sm(0xffffffff,0);
-        param_2 = 0x100;
+        state = 0x100;
         DAT_801c43a0 = 0;
         DAT_801befec = 0xff;
         DAT_801befa6 = 0xff;
@@ -898,105 +898,105 @@ int cd_file_pump(int param_1,int param_2)
         _DAT_801c47b8 = 0x80010000;
         _DAT_801e3cfc = -0x7fff0000;
     }
-    uVar2 = guest_of(tag_table_get());
-    iVar3 = cd_file_load_sm(0x80,uVar2);
-    uVar1 = DAT_1f800013;
-    if (iVar3 != 0) {
+    tag_addr = guest_of(tag_table_get());
+    ret = cd_file_load_sm(0x80,tag_addr);
+    scratch013_save = DAT_1f800013;
+    if (ret != 0) {
         scratch_013_set(0);
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),0);
+        tag_addr = guest_of(tag_table_get());
+        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0);
         spr_draw_off(_DAT_801e3cfc,0x3c0,0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),1);
+        _DAT_801e3cfc = _DAT_801e3cfc + ret;
+        tag_addr = guest_of(tag_table_get());
+        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),1);
         spr_draw_off(_DAT_801e3cfc,0x380,0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),2);
+        _DAT_801e3cfc = _DAT_801e3cfc + ret;
+        tag_addr = guest_of(tag_table_get());
+        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),2);
         spr_draw_off(_DAT_801e3cfc,0x1f0,0x1e0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),3);
+        _DAT_801e3cfc = _DAT_801e3cfc + ret;
+        tag_addr = guest_of(tag_table_get());
+        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),3);
         spr_draw_off(_DAT_801e3cfc,0x1e0,0x1e0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),4);
+        _DAT_801e3cfc = _DAT_801e3cfc + ret;
+        tag_addr = guest_of(tag_table_get());
+        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),4);
         spr_draw_off(_DAT_801e3cfc,0x1d0,0x1e0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),5);
+        _DAT_801e3cfc = _DAT_801e3cfc + ret;
+        tag_addr = guest_of(tag_table_get());
+        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),5);
         spr_draw_off(_DAT_801e3cfc,0x170,0x1e0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),6);
+        _DAT_801e3cfc = _DAT_801e3cfc + ret;
+        tag_addr = guest_of(tag_table_get());
+        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),6);
         spr_draw_off(_DAT_801e3cfc,0x160,0x1f0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),0x10);
+        _DAT_801e3cfc = _DAT_801e3cfc + ret;
+        tag_addr = guest_of(tag_table_get());
+        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x10);
         spr_draw_off(_DAT_801e3cfc,0x1d0,0x1f0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),0x11);
+        _DAT_801e3cfc = _DAT_801e3cfc + ret;
+        tag_addr = guest_of(tag_table_get());
+        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x11);
         spr_draw_off(_DAT_801e3cfc,0x1f0,0x1f0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),0x12);
+        _DAT_801e3cfc = _DAT_801e3cfc + ret;
+        tag_addr = guest_of(tag_table_get());
+        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x12);
         spr_draw_off(_DAT_801e3cfc,0x1e0,0x1f0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),0x13);
+        _DAT_801e3cfc = _DAT_801e3cfc + ret;
+        tag_addr = guest_of(tag_table_get());
+        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x13);
         spr_draw_off(_DAT_801e3cfc,0x1c0,0x1f0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),0x14);
+        _DAT_801e3cfc = _DAT_801e3cfc + ret;
+        tag_addr = guest_of(tag_table_get());
+        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x14);
         spr_draw_off(_DAT_801e3cfc,0x180,0x1f0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),0x15);
+        _DAT_801e3cfc = _DAT_801e3cfc + ret;
+        tag_addr = guest_of(tag_table_get());
+        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x15);
         spr_draw_off(_DAT_801e3cfc,400,0x1f0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),0x16);
+        _DAT_801e3cfc = _DAT_801e3cfc + ret;
+        tag_addr = guest_of(tag_table_get());
+        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x16);
         spr_draw_off(_DAT_801e3cfc,0x1a0,0x1f0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),0x17);
+        _DAT_801e3cfc = _DAT_801e3cfc + ret;
+        tag_addr = guest_of(tag_table_get());
+        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x17);
         spr_draw_off(_DAT_801e3cfc,0x1b0,0x1f0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),0x18);
+        _DAT_801e3cfc = _DAT_801e3cfc + ret;
+        tag_addr = guest_of(tag_table_get());
+        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x18);
         spr_draw_off(_DAT_801e3cfc,0x340,0x100,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),0x19);
+        _DAT_801e3cfc = _DAT_801e3cfc + ret;
+        tag_addr = guest_of(tag_table_get());
+        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x19);
         spr_draw_off(_DAT_801e3cfc,0x200,0x100,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),0x1a);
+        _DAT_801e3cfc = _DAT_801e3cfc + ret;
+        tag_addr = guest_of(tag_table_get());
+        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x1a);
         spr_draw_off(_DAT_801e3cfc,0x1c0,0x1e0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),0x1b);
+        _DAT_801e3cfc = _DAT_801e3cfc + ret;
+        tag_addr = guest_of(tag_table_get());
+        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),0x1b);
         spr_draw_off(_DAT_801e3cfc,0x1b0,0x1e0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),7);
+        _DAT_801e3cfc = _DAT_801e3cfc + ret;
+        tag_addr = guest_of(tag_table_get());
+        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),7);
         spr_draw_pair(_DAT_801e3cfc,0x160,0x1e0,1,0x340,0x1c0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),8);
+        _DAT_801e3cfc = _DAT_801e3cfc + ret;
+        tag_addr = guest_of(tag_table_get());
+        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),8);
         spr_draw_off(_DAT_801e3cfc,0x380,0x1c0,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
-        uVar2 = guest_of(tag_table_get());
-        iVar3 = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(uVar2),9);
+        _DAT_801e3cfc = _DAT_801e3cfc + ret;
+        tag_addr = guest_of(tag_table_get());
+        ret = stream_block_decode(_DAT_801e3cfc,(int *)guest_at(tag_addr),9);
         spr_draw_off(_DAT_801e3cfc,0x3a0,0x180,1);
-        _DAT_801e3cfc = _DAT_801e3cfc + iVar3;
+        _DAT_801e3cfc = _DAT_801e3cfc + ret;
         cd_timer_read(0);
         cd_timer_read(0);
-        scratch_013_set(uVar1);
-        param_2 = 0x110;
+        scratch_013_set(scratch013_save);
+        state = 0x110;
     }
-    return param_2;
+    return state;
 }
 
 /* small frame/console helpers */
@@ -1012,13 +1012,13 @@ void cd_channel_init_seq(void)
 
 void scratch_zero_reset(void)
 {
-    undefined4 *puVar1;
+    undefined4 *p;
 
-    puVar1 = (undefined4 *)g_DAT_1f800000;
+    p = (undefined4 *)g_DAT_1f800000;
     do {
-        *puVar1 = 0;
-        puVar1 = puVar1 + 1;
-    } while (puVar1 < (undefined4 *)guest_at(0x1f800400));
+        *p = 0;
+        p = p + 1;
+    } while (p < (undefined4 *)guest_at(0x1f800400));
 }
 
 /* display_mode_setup — display mode + screen window setup.
@@ -1027,15 +1027,15 @@ void scratch_zero_reset(void)
  * Sets _DAT_1f800020/22/24 screen geometry, OAM window regs via
  * FUN_80195290/2b0, sprite blocks at 0x801e40a0/0x801e61f0/0x801e40fc/
  * 0x801e624c, then oam_list_rebuild mode commit + hud_sprite_desc_init. */
-void display_mode_setup(uint32_t param_1)
+void display_mode_setup(uint32_t video_mode)
 {
-    int iVar1;
-    undefined4 uVar2;
+    int dim_arg;
+    undefined4 mode_arg;
 
     cd_timer_read(2);
     scratch_013_set(0);
     gpu_graph_reset(1);
-    switch(param_1) {
+    switch(video_mode) {
     case 0:
         _DAT_1f800020 = 0x140;
         goto LAB_80127134;
@@ -1078,17 +1078,17 @@ LAB_80127160:
         sprite_attr_init_a(0x801e40a0,0,0,(int)_DAT_1f800020,(int)(short)_DAT_1f800022);
         sprite_attr_init_a(0x801e61f0,0,0xf0,(int)_DAT_1f800020,(int)(short)_DAT_1f800022);
         sprite_attr_init_b(0x801e40fc,0,0xf0,(int)_DAT_1f800020,0);
-        uVar2 = 0;
-        iVar1 = 0;
+        mode_arg = 0;
+        dim_arg = 0;
     }
     else {
         sprite_attr_init_a(0x801e40a0,0,0,(int)_DAT_1f800020,(int)(short)_DAT_1f800022);
         sprite_attr_init_a(0x801e61f0,0,0,(int)_DAT_1f800020,(int)(short)_DAT_1f800022);
         sprite_attr_init_b(0x801e40fc,0,2,(int)_DAT_1f800020,(short)_DAT_1f800022 + -2);
-        uVar2 = 2;
-        iVar1 = (short)_DAT_1f800022 + -2;
+        mode_arg = 2;
+        dim_arg = (short)_DAT_1f800022 + -2;
     }
-    sprite_attr_init_b(0x801e624c,0,uVar2,(int)_DAT_1f800020,iVar1);
+    sprite_attr_init_b(0x801e624c,0,mode_arg,(int)_DAT_1f800020,dim_arg);
     if (DAT_1f800015 == '\0') {
         *(uint16_t *)g_DAT_801e410a = _DAT_1f800022;
         *(uint16_t *)g_DAT_801e625a = _DAT_1f800022;
