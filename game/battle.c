@@ -13726,48 +13726,48 @@ int * gte_xform_add_off(int x,undefined4 *y,int *z)
 
 uint * angle_pair_rotmat(uint x,uint y,uint *z)
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
-  int iVar4;
-  uint uVar5;
-  uint uVar6;
-  int iVar7;
-  iVar1 = (x & 0x3ff) * 2;
-  iVar7 = (x & 0x3ff) * -2 + 0x800;
-  iVar4 = iVar1;
+  int i0;
+  int i1;
+  int i2;
+  int i3;
+  uint v0;
+  uint v1;
+  int i4;
+  i0 = (x & 0x3ff) * 2;
+  i4 = (x & 0x3ff) * -2 + 0x800;
+  i3 = i0;
   if ((x & 0x400) != 0) {
-    iVar4 = iVar7;
-    iVar7 = iVar1;
+    i3 = i4;
+    i4 = i0;
   }
-  iVar4 = (int)*(short *)(&DAT_801247a8 + iVar4);
+  i3 = (int)*(short *)(&DAT_801247a8 + i3);
   if ((x & 0x800) != 0) {
-    iVar4 = -iVar4;
+    i3 = -i3;
   }
-  iVar2 = (y & 0x3ff) * 2;
-  iVar3 = (y & 0x3ff) * -2 + 0x800;
-  iVar1 = iVar2;
+  i1 = (y & 0x3ff) * 2;
+  i2 = (y & 0x3ff) * -2 + 0x800;
+  i0 = i1;
   if ((y & 0x400) != 0) {
-    iVar1 = iVar3;
-    iVar3 = iVar2;
+    i0 = i2;
+    i2 = i1;
   }
-  iVar1 = (int)*(short *)(&DAT_801247a8 + iVar1);
+  i0 = (int)*(short *)(&DAT_801247a8 + i0);
   if ((y & 0x800) != 0) {
-    iVar1 = -iVar1;
+    i0 = -i0;
   }
-  uVar6 = (uint)*(short *)(&DAT_801247a8 + iVar3);
+  v1 = (uint)*(short *)(&DAT_801247a8 + i2);
   if ((y + 0x400 & 0x800) != 0) {
-    uVar6 = -uVar6;
+    v1 = -v1;
   }
-  uVar5 = (uint)*(short *)(&DAT_801247a8 + iVar7);
+  v0 = (uint)*(short *)(&DAT_801247a8 + i4);
   if ((x + 0x400 & 0x800) != 0) {
-    uVar5 = -uVar5;
+    v0 = -v0;
   }
-  z[3] = -iVar1 & 0xffffU | ((int)(uVar6 * iVar4) >> 0xc) << 0x10;
-  *z = uVar6 & 0xffff | (iVar1 * iVar4 >> 0xc) << 0x10;
-  z[1] = (int)(iVar1 * uVar5) >> 0xc & 0xffff;
-  z[2] = uVar5 & 0xffff | iVar4 * -0x10000;
-  *(short *)(z + 4) = (short)((int)(uVar6 * uVar5) >> 0xc);
+  z[3] = -i0 & 0xffffU | ((int)(v1 * i3) >> 0xc) << 0x10;
+  *z = v1 & 0xffff | (i0 * i3 >> 0xc) << 0x10;
+  z[1] = (int)(i0 * v0) >> 0xc & 0xffff;
+  z[2] = v0 & 0xffff | i3 * -0x10000;
+  *(short *)(z + 4) = (short)((int)(v1 * v0) >> 0xc);
   return z;
 
 }
@@ -14219,65 +14219,65 @@ void obj_flag34_set(int obj)
 
 void tween_seek(int seq,int pos)
 {
-  uint uVar1;
-  int iVar2;
-  int iVar3;
-  int iVar4;
-  int iVar5;
-  int iVar6;
-  int iVar7;
-  int iVar8;
+  uint ok;
+  int dv;
+  int trk;
+  int p;
+  int off;
+  int t;
+  int acc;
+  int from;
   if (seq != 0) {
-    iVar4 = pos;
+    p = pos;
     if (pos < 0) {
-      iVar4 = 0;
+      p = 0;
     }
     if (0x1000 < pos) {
-      iVar4 = 0x1000;
+      p = 0x1000;
     }
-    iVar3 = *(int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((seq + 0x3c))));
-    if (iVar3 != 0) {
-      iVar8 = 0;
-      iVar7 = 0;
-      iVar6 = 0;
-      if (-1 < *(short *)guest_at((uint32_t)(uintptr_t)((iVar3 + 6)))) {
-        iVar5 = 0;
+    trk = *(int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((seq + 0x3c))));
+    if (trk != 0) {
+      from = 0;
+      acc = 0;
+      t = 0;
+      if (-1 < *(short *)guest_at((uint32_t)(uintptr_t)((trk + 6)))) {
+        off = 0;
         do {
-          iVar2 = (int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar3 + 0xc)));
-          iVar7 = iVar7 + *(int *)guest_at((uint32_t)(uintptr_t)((iVar5 + *(int *)guest_at((uint32_t)(uintptr_t)((iVar3 + 0x18) ))+ 4)));
+          dv = (int)*(short *)guest_at((uint32_t)(uintptr_t)((trk + 0xc)));
+          acc = acc + *(int *)guest_at((uint32_t)(uintptr_t)((off + *(int *)guest_at((uint32_t)(uintptr_t)((trk + 0x18) ))+ 4)));
           /* guest div @0x801A9A5C: num = acc<<12, den = dv (lh).
            * break @0x801A9A68 (dv==0) and @0x801A9A80 (INT_MIN/-1) are
            * recompiler no-ops -> LO = dv==0 ? (num>=0?-1:1)
            * : (INT_MIN/-1 ? INT_MIN : num/dv). C /0 would SIGFPE. */
           {
-            int32_t _num = (int32_t)((uint32_t)iVar7 << 12);
+            int32_t _num = (int32_t)((uint32_t)acc << 12);
             int32_t _quo;
-            if (iVar2 != 0) {
-              _quo = (_num == (int32_t)0x80000000 && iVar2 == -1)
-                   ? (int32_t)0x80000000 : _num / iVar2;
+            if (dv != 0) {
+              _quo = (_num == (int32_t)0x80000000 && dv == -1)
+                   ? (int32_t)0x80000000 : _num / dv;
             } else {
               _quo = (_num >= 0) ? -1 : 1;
             }
-            uVar1 = (uint)((_quo < iVar4) ^ 1);
+            ok = (uint)((_quo < p) ^ 1);
           }
-          if (uVar1 != 0) {
-            iVar6 = (iVar4 * 0x1000) / (int)uVar1;
-            if (uVar1 == 0) {
+          if (ok != 0) {
+            t = (p * 0x1000) / (int)ok;
+            if (ok == 0) {
               trap(0x1c00);
             }
-            if ((uVar1 == 0xffffffff) && (iVar4 * 0x1000 == -0x80000000)) {
+            if ((ok == 0xffffffff) && (p * 0x1000 == -0x80000000)) {
               trap(0x1800);
             }
-            if (iVar6 < 0) {
-              iVar6 = iVar6 + 0xfff;
+            if (t < 0) {
+              t = t + 0xfff;
             }
-            tween_apply((short *)guest_at((uint32_t)iVar3),iVar8,iVar6 >> 0xc);
+            tween_apply((short *)guest_at((uint32_t)trk),from,t >> 0xc);
             return;
           }
-          iVar8 = iVar8 + 1;
-          iVar6 = iVar6 + 1;
-          iVar5 = iVar5 + 0x14;
-        } while (iVar6 <= *(short *)guest_at((uint32_t)(uintptr_t)((iVar3 + 6))));
+          from = from + 1;
+          t = t + 1;
+          off = off + 0x14;
+        } while (t <= *(short *)guest_at((uint32_t)(uintptr_t)((trk + 6))));
       }
     }
   }
