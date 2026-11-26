@@ -4509,13 +4509,13 @@ void stage_fight_announce(uint32_t battle_g,uint8_t *side)
 extern int str_len(char *);
 void champion_win_announce(uint32_t battle_g,uint8_t *side,int32_t player)
 {
-  uint8_t *s0 = (uint8_t *)guest_at(battle_g);
+  uint8_t *b = (uint8_t *)guest_at(battle_g);
   /* guest sprintf/draw buffer is a stack slot: $sp+0x18 post-prologue
    * (frame -0x40) = entry_sp-0x28; str_len/hud_text_blk_alt re-read it
    * through nested frames, so the write->draw span runs inside a
    * reserved guest frame (sp+0x18 -> frm+0x18). */
   uint8_t *buf;
-  int32_t cnt, a2, a3;
+  int32_t cnt, txt_w, txt_y;
   uint32_t dc = *(uint32_t *)guest_at(0x1f8000dc);
   if (((dc >> 4) & 3) == 0) return;
   if (dc & 0x40) return;
@@ -4530,18 +4530,18 @@ void champion_win_announce(uint32_t battle_g,uint8_t *side,int32_t player)
     buf = (uint8_t *)guest_at(cwa_frm + 0x18);
     if (cnt == 1) {
       sprintf_core((char *)buf,(const char *)guest_at(0x8012089c));
-      a2 = 0xe;
+      txt_w = 0xe;
     } else {
       sprintf_core((char *)buf,(const char *)guest_at(0x801208ac),cnt);
-      a2 = str_len((char *)buf);
+      txt_w = str_len((char *)buf);
     }
     if (player != 0) {
-      a3 = (int16_t)(*(int16_t *)(s0 + 0x20) - (a2 * 3 + 0x50));
+      txt_y = (int16_t)(*(int16_t *)(b + 0x20) - (txt_w * 3 + 0x50));
     } else {
-      a3 = (int16_t)(0x50 - a2 * 3);
+      txt_y = (int16_t)(0x50 - txt_w * 3);
     }
-    hud_text_blk_alt(*(uint32_t *)(s0 + 8),*(uint32_t *)(s0 + 0xc),
-                 (const void *)buf,a3,0x20,1);
+    hud_text_blk_alt(*(uint32_t *)(b + 8),*(uint32_t *)(b + 0xc),
+                 (const void *)buf,txt_y,0x20,1);
     br2_guest_frame_free();
   }
 }
@@ -5238,19 +5238,19 @@ int32_t results_record_build(int32_t idx, int32_t val)
  * results_record_build(a0, 3, lh v1+6). a0 = guest battle base. */
 void battle_subrecord_reset(uint32_t battle_g)
 {
-  uint32_t v1 = MB32(battle_g + 0xcc);
-  uint8_t *p = (uint8_t *)guest_at(v1);
-  MW16(v1 + 0,    2);
-  MW16(v1 + 2,    0);
-  MW16(v1 + 4,    0);
-  MW16(v1 + 8,    0);
-  MW16(v1 + 6,    0);
-  MW16(v1 + 0xa,  0);
-  MW16(v1 + 0xc,  0);
-  MW16(v1 + 0xe,  0);
-  memcpy(p + 0x18,  guest_at(0x801e1b3c), 0x21c0);
-  memcpy(p + 0x21d8, guest_at(0x801e0f6c), 0xbd0);
-  results_record_build(3, (int32_t)(int16_t)*(int16_t *)(p + 6));
+  uint32_t sub = MB32(battle_g + 0xcc);
+  uint8_t *hrec = (uint8_t *)guest_at(sub);
+  MW16(sub + 0,    2);
+  MW16(sub + 2,    0);
+  MW16(sub + 4,    0);
+  MW16(sub + 8,    0);
+  MW16(sub + 6,    0);
+  MW16(sub + 0xa,  0);
+  MW16(sub + 0xc,  0);
+  MW16(sub + 0xe,  0);
+  memcpy(hrec + 0x18,  guest_at(0x801e1b3c), 0x21c0);
+  memcpy(hrec + 0x21d8, guest_at(0x801e0f6c), 0xbd0);
+  results_record_build(3, (int32_t)(int16_t)*(int16_t *)(hrec + 6));
 }
 
 /* battle_subrecord_set1 — *(u16*)(*(u32*)(a0+0xcc)) = 1. */
@@ -5301,30 +5301,30 @@ L_tail:
  * 0xb,0). Returns whether the s16 value changed. */
 int u16_counter_step_pad_a(uint32_t ctr_g, int32_t max, int32_t sfx)
 {
-  uint8_t *s0 = (uint8_t *)guest_at(ctr_g);
-  int16_t  s4 = *(int16_t *)s0;
-  uint32_t s5 = (uint32_t)max;
+  uint8_t *ctr = (uint8_t *)guest_at(ctr_g);
+  int16_t  old = *(int16_t *)ctr;
+  uint32_t lim = (uint32_t)max;
   uint32_t pad = MB16(0x1f80007e);
 
   if (pad == 0x2000) {
-    uint16_t v1;
+    uint16_t nv;
     if (sfx != 0) deferred_cmd_post(0x400,0xb,0);
-    v1 = (uint16_t)(*(uint16_t *)s0 + 1);
-    *(uint16_t *)s0 = v1;
-    if ((int32_t)((uint32_t)max << 16) < (int32_t)(v1 << 16))
-      *(uint16_t *)s0 = 0;
+    nv = (uint16_t)(*(uint16_t *)ctr + 1);
+    *(uint16_t *)ctr = nv;
+    if ((int32_t)((uint32_t)max << 16) < (int32_t)(nv << 16))
+      *(uint16_t *)ctr = 0;
   }
   if (MB16(0x1f80007e) == 0x8000) {
-    uint16_t v0;
+    uint16_t nv;
     if (sfx != 0) deferred_cmd_post(0x400,0xb,0);
-    v0 = (uint16_t)(*(uint16_t *)s0 - 1);
-    *(uint16_t *)s0 = v0;
-    /* sh $s5,(s0) sits in the bgez delay slot and both branch
+    nv = (uint16_t)(*(uint16_t *)ctr - 1);
+    *(uint16_t *)ctr = nv;
+    /* sh $lim,(ctr) sits in the bgez delay slot and both branch
      * outcomes converge: the reload is UNCONDITIONAL. */
-    *(uint16_t *)s0 = (uint16_t)s5;
-    (void)v0;
+    *(uint16_t *)ctr = (uint16_t)lim;
+    (void)nv;
   }
-  return (int)(*(int16_t *)s0 != s4);
+  return (int)(*(int16_t *)ctr != old);
 }
 
 /* u16_counter_step_pad_b — same counter shape as u16_counter_step_pad_a but different
@@ -5336,17 +5336,17 @@ int u16_counter_step_pad_b(uint32_t ctr_addr, int32_t clamp)
   int16_t  old = *(int16_t *)ctr;
 
   if (MB16(0x1f80007e) == 0x2000) {
-    uint16_t v1 = (uint16_t)(*(uint16_t *)ctr + 1);
-    *(uint16_t *)ctr = v1;
-    if ((int32_t)((uint32_t)clamp << 16) < (int32_t)(v1 << 16))
+    uint16_t nv = (uint16_t)(*(uint16_t *)ctr + 1);
+    *(uint16_t *)ctr = nv;
+    if ((int32_t)((uint32_t)clamp << 16) < (int32_t)(nv << 16))
       *(uint16_t *)ctr = (uint16_t)clamp;   /* j delay: sh $a1 */
     else
       deferred_cmd_post(0x400,0xb,0);
   }
   if (MB16(0x1f80007e) == 0x8000) {
-    uint16_t v0 = (uint16_t)(*(uint16_t *)ctr - 1);
-    *(uint16_t *)ctr = v0;
-    if ((int32_t)(v0 << 16) < 0)
+    uint16_t nv = (uint16_t)(*(uint16_t *)ctr - 1);
+    *(uint16_t *)ctr = nv;
+    if ((int32_t)(nv << 16) < 0)
       *(uint16_t *)ctr = 0;                    /* j delay: sh zero */
     else
       deferred_cmd_post(0x400,0xb,0);
@@ -7533,12 +7533,12 @@ extern uint16_t attr_flag_mask(uint32_t);
  * a1==0 -> ++u16 @rec+0xa. Returns the incremented u32. */
 int32_t record_field_step(int32_t ent,int32_t which)
 {
-  uint32_t a0 = (uint32_t)ent;
+  uint32_t ent_u = (uint32_t)ent;
   uint32_t rec;
   uint32_t idx, tgt;
-  uint32_t v;
+  uint32_t nv;
 
-  rec = 0x801c11e0u + ((uint32_t)MB8(a0 + 3) * 36u) + 0x264u;
+  rec = 0x801c11e0u + ((uint32_t)MB8(ent_u + 3) * 36u) + 0x264u;
   idx = MB8(0x1f80009c);
   if (idx < 6) {
     tgt = MB32(0x8011ebb8u + (idx << 2));
@@ -7546,13 +7546,13 @@ int32_t record_field_step(int32_t ent,int32_t which)
     /* tgt == 0x80127b30 -> shared tail */
   }
   if (which != 0) {
-    v = (uint32_t)MB16(rec + 6) + 1u;
-    MW16(rec + 6,(uint16_t)v);
-    return (int32_t)v;
+    nv = (uint32_t)MB16(rec + 6) + 1u;
+    MW16(rec + 6,(uint16_t)nv);
+    return (int32_t)nv;
   }
-  v = (uint32_t)MB16(rec + 0xa) + 1u;
-  MW16(rec + 0xa,(uint16_t)v);
-  return (int32_t)v;
+  nv = (uint32_t)MB16(rec + 0xa) + 1u;
+  MW16(rec + 0xa,(uint16_t)nv);
+  return (int32_t)nv;
 }
 
 /* ======== 0x80128bfc ========
@@ -7567,10 +7567,10 @@ void battle_subrecord_set2(uint32_t battle)
  * a1>=0 -> store a1 there and return the pointer itself (v0). */
 int32_t subrecord_u16_rw(uint32_t battle,int32_t val)
 {
-  uint32_t v0 = MB32(battle + 0xcc);
-  if (val < 0) return (int32_t)MBS16(v0);
-  MW16(v0,(uint16_t)val);
-  return (int32_t)v0;
+  uint32_t sub = MB32(battle + 0xcc);
+  if (val < 0) return (int32_t)MBS16(sub);
+  MW16(sub,(uint16_t)val);
+  return (int32_t)sub;
 }
 
 /* ======== 0x8012b488 ========
@@ -7891,14 +7891,14 @@ L_inc:                                          /* 0x80152bb4 */
  * 2 or 3 @+0x9a (3 when the signed byte went negative) and 6 @+1. */
 void side_phase_commit(uint32_t obj,uint32_t unused_a,uint32_t unused_b)
 {
-  uint32_t s0 = obj;
+
   (void)unused_a; (void)unused_b;
-  if ((int32_t)MBS8(s0 + 0x99) >= 0)
-    MW8(s0 + 0x99,(uint8_t)(MB8(s0 + 0x99) + 1));
-  if ((uint32_t)MB8(s0 + 0x9b) < 4) {
-    confirm_bookkeeping(s0);
-    MW8(s0 + 0x9a,(uint8_t)(((int32_t)MBS8(s0 + 0x99) < 0) ? 3 : 2));
-    MW8(s0 + 1,6);
+  if ((int32_t)MBS8(obj + 0x99) >= 0)
+    MW8(obj + 0x99,(uint8_t)(MB8(obj + 0x99) + 1));
+  if ((uint32_t)MB8(obj + 0x9b) < 4) {
+    confirm_bookkeeping(obj);
+    MW8(obj + 0x9a,(uint8_t)(((int32_t)MBS8(obj + 0x99) < 0) ? 3 : 2));
+    MW8(obj + 1,6);
   }
 }
 
@@ -9052,11 +9052,11 @@ void battle_side_flag_prop(uint32_t battle,uint8_t *side)
  * victory_record_restore(battle,4) and stores the low halfword at s0+6. */
 void engine_tables_restore(uint32_t battle)
 {
-  uint32_t s0 = MB32(battle + 0xcc);
-  MW16(s0,0);
-  memcpy(guest_at(0x801e1b3c),guest_at(s0 + 0x18),0x21c0);
-  memcpy(guest_at(0x801e0f6c),guest_at(s0 + 0x21d8),0xbd0);
-  MW16(s0 + 6,(uint16_t)victory_record_restore(battle,4));
+  uint32_t tbl = MB32(battle + 0xcc);
+  MW16(tbl,0);
+  memcpy(guest_at(0x801e1b3c),guest_at(tbl + 0x18),0x21c0);
+  memcpy(guest_at(0x801e0f6c),guest_at(tbl + 0x21d8),0xbd0);
+  MW16(tbl + 6,(uint16_t)victory_record_restore(battle,4));
 }
 
 /* ======== batch37 ======== */
@@ -9078,23 +9078,23 @@ extern void cmd_queue_push(int32_t,int32_t,int32_t,int32_t,uint32_t);
  * 0/4/8/0x10/0x30 have bodies; each state re-runs its gate
  * cd_file_load_sm and on failure stores the state back and returns 0.
  * On full completion stores -1 to +0x8c and returns 1. */
-int battle_bringup_b(uint32_t a0,void *a1,void *a2,void *a3)
+int battle_bringup_b(uint32_t battle,void *a1,void *a2,void *a3)
 {
   uint32_t *o1 = (uint32_t *)a1;              /* s6: 11 slots */
   uint32_t *o2 = (uint32_t *)a2;              /* s4: 12 slots */
   uint32_t *o3 = (uint32_t *)a3;              /* s7: 6 slots  */
-  uint32_t s3;
-  int32_t st, s0;
+  uint32_t ttab;
+  int32_t state, cur_st;
   uint32_t cur, r;
   int i;
 
-  s3 = guest_of(tag_table_get());         /* tag table 0x801c47c0 */
-  st = MBS16(a0 + 0x8c);
-  if (st < 0) return -1;
-  s0 = st;                                    /* s0 = v1 before dispatch */
-  if ((uint32_t)st >= 0x31) goto L_store;     /* sltiu 0x31 -> default */
+  ttab = guest_of(tag_table_get());         /* tag table 0x801c47c0 */
+  state = MBS16(battle + 0x8c);
+  if (state < 0) return -1;
+  cur_st = state;                                    /* cur_st = v1 before dispatch */
+  if ((uint32_t)state >= 0x31) goto L_store;     /* sltiu 0x31 -> default */
 
-  switch (st) {
+  switch (state) {
   case 0:  goto L_state0;
   case 4:  goto L_state4;
   case 8:  goto L_state8;
@@ -9109,43 +9109,43 @@ L_state0:                                     /* 0x80147e74 */
   MW8(0x801e3d00,0xff);
   MW32(0x801c47b8,0x80010000);
   MW32(0x801e3cfc,0x800dc800);
-  s0 = 4;
+  cur_st = 4;
 L_state4:                                     /* 0x80147eb4 */
   if (cd_file_load_sm(0x8b,MB32(0x801c47b8)) == 0) goto L_store;
   fighter_record_apply(MB32(0x801c47b8),1);
-  s0 = 8;                                     /* delay slot of jal 566a0 */
+  cur_st = 8;                                     /* delay slot of jal 566a0 */
   page_table_ptr_set(1,1,(undefined *)0);
   cd_timer_read(0);
 L_state8:                                     /* 0x80147eec */
   if (cd_file_load_sm(0x8c,MB32(0x801c47b8)) == 0) goto L_store;
   fighter_record_apply(MB32(0x801c47b8),2);
-  s0 = 0x10;
+  cur_st = 0x10;
   page_table_ptr_set(0x11,2,(undefined *)0);
   cd_timer_read(0);
 L_state10:                                    /* 0x80147f24 */
   /* gen 0x80147F28: a1 = *(0x801C47B8) = heap-A cursor — file 0x82 (the
    * o2[] offset table) loads INTO the heap data region, NOT the tag table.
-   * Passing s3 (0x801c47c0) overwrote the master decode tag table, so the
+   * Passing ttab (0x801c47c0) overwrote the master decode tag table, so the
    * offset_table_lookup below read foreign data -> wild +1.8MB cursor jump. */
   if (cd_file_load_sm(0x82,(uint32_t)MB32(0x801c47b8)) == 0) goto L_store;
-  s0 = 0;
+  cur_st = 0;
   for (i = 0; i < 0xc; i++)                   /* 0x80147f44 loop */
     o2[i] = offset_table_lookup(MB32(0x801c47b8),i + 0x10);
   /* absolute store: cursor = o2[11] + (o2[1]-o2[0])  (host reads) */
   MW32(0x801c47b8,o2[0xb] + (o2[1] - o2[0]));
-  s0 = 0x30;
+  cur_st = 0x30;
 L_state30:                                    /* 0x80147f84 */
-  if (cd_file_load_sm(0x81,s3) == 0) goto L_store;
+  if (cd_file_load_sm(0x81,ttab) == 0) goto L_store;
   scratch_013_set(0);
   for (i = 0; i < 0xb; i++) {                 /* 0x80147fac loop */
     cur = MB32(0x801c47b8);
-    r = stream_block_decode(cur,(int *)guest_at(s3),i);
+    r = stream_block_decode(cur,(int *)guest_at(ttab),i);
     o1[i] = cur;
     MW32(0x801c47b8,cur + r);
   }
   for (i = 0; i < 6; i++) {                  /* 0x80147fe8 loop */
     cur = MB32(0x801c47b8);
-    r = stream_block_decode(cur,(int *)guest_at(s3),i + 0x20);
+    r = stream_block_decode(cur,(int *)guest_at(ttab),i + 0x20);
     o3[i] = cur;
     MW32(0x801c47b8,cur + r);
   }
@@ -9154,28 +9154,28 @@ L_state30:                                    /* 0x80147f84 */
    * call's delay slot; the 0x34/0x35 steps read the SECOND cursor
    * 0x801e3cfc (never advanced here) while 0x801c47b8 keeps
    * accumulating every return. */
-  r = stream_block_decode(MB32(0x801c47b8),(int *)guest_at(s3),0x31);
+  r = stream_block_decode(MB32(0x801c47b8),(int *)guest_at(ttab),0x31);
   spr_draw_off(MB32(0x801c47b8),0x300,0x100,1);
   MW32(0x801c47b8,MB32(0x801c47b8) + r);
-  r = stream_block_decode(MB32(0x801c47b8),(int *)guest_at(s3),0x32);
+  r = stream_block_decode(MB32(0x801c47b8),(int *)guest_at(ttab),0x32);
   spr_draw_off(MB32(0x801c47b8),0x280,0x100,1);
   MW32(0x801c47b8,MB32(0x801c47b8) + r);
-  r = stream_block_decode(MB32(0x801c47b8),(int *)guest_at(s3),0x30);
+  r = stream_block_decode(MB32(0x801c47b8),(int *)guest_at(ttab),0x30);
   spr_draw_off(MB32(0x801c47b8),0,0x1e0,1);
   MW32(0x801c47b8,MB32(0x801c47b8) + r);      /* += r30, w/ 0x34 call */
-  r = stream_block_decode(MB32(0x801e3cfc),(int *)guest_at(s3),0x34);
+  r = stream_block_decode(MB32(0x801e3cfc),(int *)guest_at(ttab),0x34);
   spr_draw_off(MB32(0x801e3cfc),0x2c0,0,1);
   MW32(0x801c47b8,MB32(0x801c47b8) + r);      /* += r34, w/ 0x35 call */
-  r = stream_block_decode(MB32(0x801e3cfc),(int *)guest_at(s3),0x35);
+  r = stream_block_decode(MB32(0x801e3cfc),(int *)guest_at(ttab),0x35);
   spr_draw_off(MB32(0x801e3cfc),0x2c0,0x100,1);
   MW32(0x801c47b8,MB32(0x801c47b8) + r);      /* += r35, w/ 9a460 */
   cd_timer_read(0);
   scratch_013_set(1);
-  MW16(a0 + 0x8c,0xffff);
+  MW16(battle + 0x8c,0xffff);
   return 1;
 
 L_store:                                      /* 0x8014813c */
-  MW16(a0 + 0x8c,(uint16_t)s0);
+  MW16(battle + 0x8c,(uint16_t)cur_st);
   return 0;
 }
 
@@ -9474,96 +9474,96 @@ void record_flag_byte_set(uint32_t rec)
 void vs_confirm_a(uint8_t *blk_a,uint8_t *blk_b,uint32_t battle,
                   uint32_t flag)
 {
-  uint8_t *s1 = blk_a;
-  uint8_t *s2 = blk_b;
-  uint32_t s0 = battle;
-  uint32_t s3 = flag;
-  uint32_t rec, v0;
+
+
+
+
+  uint32_t rec, kind;
   int32_t ret;
   { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-    decomp_trace_record(49,(uint32_t)(uintptr_t)blk_a,(uint32_t)(uintptr_t)blk_b,s0,flag); }
+    decomp_trace_record(49,(uint32_t)(uintptr_t)blk_a,(uint32_t)(uintptr_t)blk_b,battle,flag); }
 
-  rec = MB32(s0 + 0xcc);
-  v0 = MB8(rec + 0xa);
-  if (v0 >= 6) return;
+  rec = MB32(battle + 0xcc);
+  kind = MB8(rec + 0xa);
+  if (kind >= 6) return;
 
-  switch (v0) {
+  switch (kind) {
   case 0:
     return;                                   /* -> 0x80153dd0 */
 
   case 1:                                     /* 0x80153b0c */
-    MW16(MB32(s0 + 0xcc) + 0xe,MB16(s0 + 0x94));
-    MW16(MB32(s0 + 0xcc) + 0xc,0);            /* jal delay slot */
-    battle_subrecord_set2(s0);
+    MW16(MB32(battle + 0xcc) + 0xe,MB16(battle + 0x94));
+    MW16(MB32(battle + 0xcc) + 0xc,0);            /* jal delay slot */
+    battle_subrecord_set2(battle);
     goto L_reca;                            /* 0x80153d74 */
 
   case 2:                                     /* 0x80153b34 */
-    rec = MB32(s0 + 0xcc);
+    rec = MB32(battle + 0xcc);
     MW16(rec + 0xc,(uint16_t)(MB16(rec + 0xc) + 1));
-    rec = MB32(s0 + 0xcc);
+    rec = MB32(battle + 0xcc);
     if (MBS16(rec + 0xc) < 10) return;
     MW16(rec + 0xc,0);                        /* delay slot of j */
     goto L_recA_9e;                           /* 0x80153c5c */
 
   case 3:                                     /* 0x80153b70 */
-    hud_announce(s0,0x10,(uint32_t)MBS16(s0 + 0x8c));
-    if (s1[0] == 1 && s2[0] == 1) s16_dec_with_floor(s0);
-    rec = MB32(s0 + 0xcc);
+    hud_announce(battle,0x10,(uint32_t)MBS16(battle + 0x8c));
+    if (blk_a[0] == 1 && blk_b[0] == 1) s16_dec_with_floor(battle);
+    rec = MB32(battle + 0xcc);
     if (MBS16(rec + 0xc) == 0) {
-      battle_field_set(MB32(s0 + 0xbc),s3 != 0 ? 0x10 : 0xe);
+      battle_field_set(MB32(battle + 0xbc),flag != 0 ? 0x10 : 0xe);
       task_table_init(1);
       clear_f0300_records();
-      versus_stage_commit(s0,1);
+      versus_stage_commit(battle,1);
     }
-    rec = MB32(s0 + 0xcc);
-    if (MBS16(rec + 0xc) == 1) MW8(s0 + 0x9e,0);
-    rec = MB32(s0 + 0xcc);
+    rec = MB32(battle + 0xcc);
+    if (MBS16(rec + 0xc) == 1) MW8(battle + 0x9e,0);
+    rec = MB32(battle + 0xcc);
     MW16(rec + 0xc,(uint16_t)(MB16(rec + 0xc) + 1));  /* jal delay */
-    ret = subrecord_u16_rw(s0,-1);
+    ret = subrecord_u16_rw(battle,-1);
     if (ret != 4) return;
     deferred_cmd_post(0x400,0x5f,0);
-    MW16(MB32(s0 + 0xcc) + 0xc,0);
+    MW16(MB32(battle + 0xcc) + 0xc,0);
     goto L_recA_9e;
 
   case 4:                                     /* 0x80153c7c */
-    hud_announce(s0,0x10,(uint32_t)MBS16(s0 + 0x8c));
-    if (s1[0] == 1 && s2[0] == 1) s16_dec_with_floor(s0);
-    rec = MB32(s0 + 0xcc);
+    hud_announce(battle,0x10,(uint32_t)MBS16(battle + 0x8c));
+    if (blk_a[0] == 1 && blk_b[0] == 1) s16_dec_with_floor(battle);
+    rec = MB32(battle + 0xcc);
     if (MBS16(rec + 0xc) == 0) {
-      battle_field_set(MB32(s0 + 0xbc),s3 != 0 ? 0x11 : 0xf);
+      battle_field_set(MB32(battle + 0xbc),flag != 0 ? 0x11 : 0xf);
       task_table_init(1);
       clear_f0300_records();
-      versus_stage_commit_b(s0,1);
+      versus_stage_commit_b(battle,1);
     }
-    rec = MB32(s0 + 0xcc);
+    rec = MB32(battle + 0xcc);
     if (MBS16(rec + 0xc) == 2)
-      MW8(s0 + 0x9e,(uint8_t)(MB16(rec + 0xa) >> 8));
-    rec = MB32(s0 + 0xcc);
+      MW8(battle + 0x9e,(uint8_t)(MB16(rec + 0xa) >> 8));
+    rec = MB32(battle + 0xcc);
     MW16(rec + 0xc,(uint16_t)(MB16(rec + 0xc) + 1));  /* jal delay */
-    ret = subrecord_u16_rw(s0,-1);
+    ret = subrecord_u16_rw(battle,-1);
     if (ret != 4) return;
     deferred_cmd_post(0x400,0x60,0);
-    MW16(MB32(s0 + 0xcc) + 0xc,0);
+    MW16(MB32(battle + 0xcc) + 0xc,0);
     goto L_recA_9e;
 
   case 5:                                     /* 0x80153d90 */
-    MW8(s0 + 0xb0,0);
-    MW16(MB32(s0 + 0xbc) + 0x82,0xfffd);      /* jal delay slot */
-    engine_tables_restore(s0);
-    battle_subrecord_set2(s0);
-    MW16(MB32(s0 + 0xcc) + 0xa,0);
-    MW16(s0 + 0x94,MB16(MB32(s0 + 0xcc) + 0xe));
+    MW8(battle + 0xb0,0);
+    MW16(MB32(battle + 0xbc) + 0x82,0xfffd);      /* jal delay slot */
+    engine_tables_restore(battle);
+    battle_subrecord_set2(battle);
+    MW16(MB32(battle + 0xcc) + 0xa,0);
+    MW16(battle + 0x94,MB16(MB32(battle + 0xcc) + 0xe));
     return;
   }
   return;
 
 L_recA_9e:                                    /* 0x80153c5c */
-  MW16(MB32(s0 + 0xcc) + 0xa,(uint16_t)(MB16(MB32(s0 + 0xcc) + 0xa) + 1));
-  MW8(s0 + 0x9e,0);                           /* j delay slot */
+  MW16(MB32(battle + 0xcc) + 0xa,(uint16_t)(MB16(MB32(battle + 0xcc) + 0xa) + 1));
+  MW8(battle + 0x9e,0);                           /* j delay slot */
   return;
 
 L_reca:                                     /* 0x80153d74 */
-  MW16(MB32(s0 + 0xcc) + 0xa,(uint16_t)(MB16(MB32(s0 + 0xcc) + 0xa) + 1));
+  MW16(MB32(battle + 0xcc) + 0xa,(uint16_t)(MB16(MB32(battle + 0xcc) + 0xa) + 1));
   return;
 }
 
@@ -9947,26 +9947,26 @@ static void dec_finish(uint32_t battle,uint32_t rec,int32_t idx)
  * resulting record's lh is negative. */
 void versus_stage_commit(uint32_t baddr,uint32_t stage)
 {
-  uint32_t s1 = baddr;
-  int32_t s2 = (int32_t)stage;
-  uint32_t s0 = MB32(s1 + 0xcc);
-  int32_t a1;
+
+  int32_t stg = (int32_t)stage;
+  uint32_t rec = MB32(baddr + 0xcc);
+  int32_t idx;
   { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-    decomp_trace_record(47,baddr,stage,s0,MB32(s1+0xcc)); }
+    decomp_trace_record(47,baddr,stage,rec,MB32(baddr+0xcc)); }
 
-  MW16(s0 + 0, 3);
-  results_record_build(4, (int32_t)MBS16(s0 + 6));
-  blk_copy(0x801e1b3c, s0 + 0x18,   0x21c0);
-  blk_copy(0x801e0f6c, s0 + 0x21d8, 0xbd0);
+  MW16(rec + 0, 3);
+  results_record_build(4, (int32_t)MBS16(rec + 6));
+  blk_copy(0x801e1b3c, rec + 0x18,   0x21c0);
+  blk_copy(0x801e0f6c, rec + 0x21d8, 0xbd0);
 
-  if (s2 < 0) {
-    a1 = 3;
+  if (stg < 0) {
+    idx = 3;
   } else {
-    a1 = (int32_t)MBS16(s0 + 2);
-    if (s2 + 1 > 0) a1 = dec_wrap(a1, s2 + 1);
-    if (a1 > 0) a1 = dec_walk(a1);
+    idx = (int32_t)MBS16(rec + 2);
+    if (stg + 1 > 0) idx = dec_wrap(idx, stg + 1);
+    if (idx > 0) idx = dec_walk(idx);
   }
-  dec_finish(s1, s0, a1);
+  dec_finish(baddr, rec, idx);
 }
 
 /* versus_stage_commit_b — same stage commit minus the 27c60 rebuild @
@@ -9975,24 +9975,24 @@ void versus_stage_commit(uint32_t baddr,uint32_t stage)
  * resolution; t0 < 0 -> idx 3. */
 void versus_stage_commit_b(uint32_t baddr,int32_t stage)
 {
-  int32_t t0 = stage;
-  uint32_t s0 = MB32(baddr + 0xcc);
-  int32_t a1;
+  int32_t stg = stage;
+  uint32_t rec = MB32(baddr + 0xcc);
+  int32_t idx;
   { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-    decomp_trace_record(48,baddr,stage,s0,MB32(baddr+0xcc)); }
+    decomp_trace_record(48,baddr,stage,rec,MB32(baddr+0xcc)); }
 
-  MW16(s0 + 0, 3);
-  blk_copy(0x801e1b3c, s0 + 0x18,   0x21c0);
-  blk_copy(0x801e0f6c, s0 + 0x21d8, 0xbd0);
+  MW16(rec + 0, 3);
+  blk_copy(0x801e1b3c, rec + 0x18,   0x21c0);
+  blk_copy(0x801e0f6c, rec + 0x21d8, 0xbd0);
 
-  if (t0 < 0) {
-    a1 = 3;
+  if (stg < 0) {
+    idx = 3;
   } else {
-    a1 = (int32_t)MBS16(s0 + 2);
-    if (t0 + 1 > 0) a1 = dec_wrap(a1, t0 + 1);
-    if (a1 > 0) a1 = dec_walk(a1);
+    idx = (int32_t)MBS16(rec + 2);
+    if (stg + 1 > 0) idx = dec_wrap(idx, stg + 1);
+    if (idx > 0) idx = dec_walk(idx);
   }
-  dec_finish(baddr, s0, a1);
+  dec_finish(baddr, rec, idx);
 }
 
 /* ======== batch39 ======== */
@@ -10552,9 +10552,9 @@ int32_t cmd_queue_slot_next(void)
 int32_t sprite_slot_commit(uint32_t w0,uint32_t w1,uint32_t w2,
                      uint32_t w3,uint32_t aux5,uint32_t aux6)
 {
-  uint32_t s0 = (uint32_t)queue_slot_peek();
+  uint32_t slot = (uint32_t)queue_slot_peek();
   uint32_t *gbuf;
-  if (s0 == 0) return 0;
+  if (slot == 0) return 0;
   /* The four-u16 packet buf is handed to gpu_texclut_pkt, which resolves
    * a1 via guest_of()/guest_at(): a host stack buffer yields guest_of()==0
    * and the fallback reads the host pointer bits as a guest address
@@ -10563,12 +10563,12 @@ int32_t sprite_slot_commit(uint32_t w0,uint32_t w1,uint32_t w2,
   gbuf = (uint32_t *)guest_at(br2_guest_frame(0x20) + 0x10);
   gbuf[0] = (w0 & 0xffffu) | ((w1 & 0xffffu) << 16);
   gbuf[1] = (w2 & 0xffffu) | ((w3 & 0xffffu) << 16);
-  MW16(0x1f8000d2u, s0);
-  gpu_texclut_pkt((uint32_t *)guest_at(MB32(0x1f800004u) + s0 * 24u
+  MW16(0x1f8000d2u, slot);
+  gpu_texclut_pkt((uint32_t *)guest_at(MB32(0x1f800004u) + slot * 24u
                                       + 0x20d8u),
                gbuf, aux5, aux6);
   br2_guest_frame_free();
-  return (int32_t)s0;
+  return (int32_t)slot;
 }
 
 /* menu_quad_reset_redraw — quad reset + two redraws @0x8014cb64 (38 insns):
@@ -10691,26 +10691,26 @@ void entry_attr_bump_loop(uint32_t rec,uint32_t img,
 uint32_t centered_sprite_emit(uint32_t ctx,uint32_t fl,uint32_t x,
                       uint32_t w,uint32_t hgt,uint32_t vht)
 {
-  uint32_t t0 = x, t1 = vht, t2 = hgt;
-  uint32_t a2 = w, v1, h;
+
+  uint32_t hw = w, vsz, scr;
   int32_t sx_v1, sx_t2, half_t2, half_v1;
   if (MB8(fl + 0x15) == 0) {
-    h = (uint32_t)((int32_t)(int16_t)w
+    scr = (uint32_t)((int32_t)(int16_t)w
                    + (int32_t)((w >> 15) & 1u));
-    a2 = h >> 1;
-    h = (uint32_t)((int32_t)(int16_t)vht
+    hw = scr >> 1;
+    scr = (uint32_t)((int32_t)(int16_t)vht
                    + (int32_t)((vht >> 15) & 1u));
-    v1 = h >> 1;
+    vsz = scr >> 1;
   } else {
-    v1 = t1;
+    vsz = vht;
   }
-  sx_v1 = (int32_t)(int16_t)v1;
-  sx_t2 = (int32_t)(int16_t)t2;
-  half_t2 = (sx_t2 + (int32_t)((t2 >> 15) & 1u)) >> 1;
-  half_v1 = (sx_v1 + (int32_t)((v1 >> 15) & 1u)) >> 1;
+  sx_v1 = (int32_t)(int16_t)vsz;
+  sx_t2 = (int32_t)(int16_t)hgt;
+  half_t2 = (sx_t2 + (int32_t)((hgt >> 15) & 1u)) >> 1;
+  half_v1 = (sx_v1 + (int32_t)((vsz >> 15) & 1u)) >> 1;
   return sprite_rect_set_a((int32_t)ctx,
-                      (int16_t)((int32_t)(int16_t)t0 - half_t2),
-                      (int32_t)(int16_t)a2 - half_v1,
+                      (int16_t)((int32_t)(int16_t)x - half_t2),
+                      (int32_t)(int16_t)hw - half_v1,
                       (uint32_t)sx_t2, (int32_t)sx_v1);
 }
 
@@ -11013,30 +11013,30 @@ void bcd_time_frame_print(uint32_t out)
  * magic-div(MB8(a0+0xf)<<3)); brightness_commit(MB8(a0+0xc)^1). */
 void versus_state_init(uint32_t state)
 {
-  uint32_t s0 = state;
-  uint32_t v0 = 0x801b1280u;
-  uint32_t v1 = s0;
+
+  uint32_t src = 0x801b1280u;
+  uint32_t dst = state;
   int i;
   for (i = 0; i < 6; i++) {
-    MW32(v1 + 0x0,  MB32(v0 + 0x0));
-    MW32(v1 + 0x4,  MB32(v0 + 0x4));
-    MW32(v1 + 0x8,  MB32(v0 + 0x8));
-    MW32(v1 + 0xc,  MB32(v0 + 0xc));
-    v0 += 0x10;
-    v1 += 0x10;
+    MW32(dst + 0x0,  MB32(src + 0x0));
+    MW32(dst + 0x4,  MB32(src + 0x4));
+    MW32(dst + 0x8,  MB32(src + 0x8));
+    MW32(dst + 0xc,  MB32(src + 0xc));
+    src += 0x10;
+    dst += 0x10;
   }
-  MW32(v1, MB32(v0));
+  MW32(dst, MB32(src));
   save_defaults_fill();
   save_block_init();
   save_tables_commit();
-  dbg_marker_mode_set(MB8(s0 + 0x24));
+  dbg_marker_mode_set(MB8(state + 0x24));
   {
-    uint32_t x = MB8(s0 + 0xf) << 3;
-    int32_t a1 = (int32_t)(((uint64_t)x * 0x66666667u) >> 32) >> 2;
-    a1 -= (int32_t)x >> 31;
-    gauge_scale_fixed((short)MB8(s0 + 0xe), (short)a1);
+    uint32_t x = MB8(state + 0xf) << 3;
+    int32_t gscale = (int32_t)(((uint64_t)x * 0x66666667u) >> 32) >> 2;
+    gscale -= (int32_t)x >> 31;
+    gauge_scale_fixed((short)MB8(state + 0xe), (short)gscale);
   }
-  brightness_commit((undefined2)(MB8(s0 + 0xc) ^ 1u));
+  brightness_commit((undefined2)(MB8(state + 0xc) ^ 1u));
 }
 
 /* ======== batch42 ======== */
@@ -11111,20 +11111,21 @@ void dual_axis_coord_xform(uint32_t unused,uint32_t unused2,uint32_t dst,
 {
   uint32_t obj = MB32(ent + 0x20);
   uint32_t pos[3];
-  uint32_t s0, s1, s2 = dst;
+
+  uint32_t s0, ang_a;
   int32_t ang;
   pos[0] = MB32(obj + 0x174);
   s0 = MB32(obj + 0x178) + 0xa00u;
   pos[1] = s0;
   pos[2] = MB32(obj + 0x17c);
-  s1 = (uint32_t)atan2_lut((int32_t)pos[2], (int32_t)pos[0]);
+  ang_a = (uint32_t)atan2_lut((int32_t)pos[2], (int32_t)pos[0]);
   (void)FUN_80195370(&pos[0], &pos[0]);
   ang = FUN_801948c0(pos[0] + pos[2]);
   ang = atan2_lut(-(int32_t)s0, ang);
   s0 = (uint32_t)(int32_t)(int16_t)ang;
-  s1 = (uint32_t)(int32_t)(int16_t)s1;
-  vec2_rot(s0, s1, (undefined2 *)guest_at(s2 + 6));
-  angle_gte_vec(s0, s1, (uint *)guest_at(s2 + 0x20));
+  ang_a = (uint32_t)(int32_t)(int16_t)ang_a;
+  vec2_rot(s0, ang_a, (undefined2 *)guest_at(dst + 6));
+  angle_gte_vec(s0, ang_a, (uint *)guest_at(dst + 0x20));
 }
 
 /* dual_redraw_a — dual redraw, no pre/post call @0x8014c258 (50
@@ -11501,32 +11502,32 @@ void print_mode_dispatch(uint32_t win,uint32_t fmt,uint32_t a3,
 void scroll_attr_100_update(uint32_t base)
 {
   uint32_t slot = base + MB32(0x1f80000cu) * 4000u;
-  uint32_t r4 = base, r2 = base;
+  uint32_t cur4 = base, cur2 = base;
   int32_t i;
-  uint32_t v0;
+  uint32_t ot_tail;
   for (i = 0; i < 100; i++) {
-    if (MB32(r4 + 0x2260) != 0) {
-      uint32_t a2;
-      MW16(r4 + 0x1f40, MB16(r4 + 0x1f40) + MB16(r4 + 0x20d0));
-      a2 = MB16(r4 + 0x1f42) + MB16(r4 + 0x20d2);
-      MW16(r4 + 0x1f42, a2);
-      a2 = (uint32_t)(int32_t)(int16_t)a2;
+    if (MB32(cur4 + 0x2260) != 0) {
+      uint32_t sy;
+      MW16(cur4 + 0x1f40, MB16(cur4 + 0x1f40) + MB16(cur4 + 0x20d0));
+      sy = MB16(cur4 + 0x1f42) + MB16(cur4 + 0x20d2);
+      MW16(cur4 + 0x1f42, sy);
+      sy = (uint32_t)(int32_t)(int16_t)sy;
       {
-        int32_t a3 = (int32_t)MBS16(r2 + 0x23f0);
-        sprite_rect_set_c(slot, (int32_t)MBS16(r4 + 0x1f40), (int32_t)a2,
-                     a3, a3);
+        int32_t sz = (int32_t)MBS16(cur2 + 0x23f0);
+        sprite_rect_set_c(slot, (int32_t)MBS16(cur4 + 0x1f40), (int32_t)sy,
+                     sz, sz);
       }
-      v0 = MB32(MB32(0x1f800008u) + 0x40);
-      MW32(slot, v0 | 0x90000000u);
+      ot_tail = MB32(MB32(0x1f800008u) + 0x40);
+      MW32(slot, ot_tail | 0x90000000u);
       MW32(MB32(0x1f800008u) + 0x40, slot & 0xffffffu);
     }
     slot += 0x28;
-    r2 += 2;
-    r4 += 4;
+    cur2 += 2;
+    cur4 += 4;
   }
-  v0 = MB16(base + 0x24b8) - 1u;
-  MW16(base + 0x24b8, v0);
-  if ((int32_t)(int16_t)v0 < 0) task_slot_step();
+  ot_tail = MB16(base + 0x24b8) - 1u;
+  MW16(base + 0x24b8, ot_tail);
+  if ((int32_t)(int16_t)ot_tail < 0) task_slot_step();
 }
 
 /* ======== batch45 ======== */
@@ -12451,7 +12452,7 @@ void color_rec_table_init(uint32_t unused,uint32_t arg)
  * backlink s5&0xffffff into MB32(MB32(0x1f800008)+0x203c). */
 void emitter_30_teardown(uint32_t rec)
 {
-  uint32_t slot, p16, q16, dec, dst, v0, v1;
+  uint32_t slot, p16, q16, dec, dst, v0, dec_b;
   int32_t i;
   uint32_t pal = 0x1f8003f0u;
   for (i = 0; i < 8; i++)
@@ -12468,8 +12469,8 @@ void emitter_30_teardown(uint32_t rec)
     dec = rec + 0x9d8;
     q16 = rec + 0x962;
     for (i = 0; i < 0x1e; i++) {
-      v1 = MB8(dec);
-      v0 = (uint32_t)(int16_t)(MB16(q16) - v1);
+      dec_b = MB8(dec);
+      v0 = (uint32_t)(int16_t)(MB16(q16) - dec_b);
       MW16(q16, (uint16_t)v0);
       if ((int32_t)(int16_t)v0 < -0x40) {
         MW16(q16, 0x200u);
@@ -13011,13 +13012,13 @@ void system_tick_frame(void)
  * byte; mode = (t0>>4)&3. mode1/2 gate on MB8(a0+5)&1 (mode1:
  * set -> ret; mode2: clear -> ret; else continue).
  * src byte pair: flag40 ? MB8(MB32(a0+0x2c)+2/3) : MB8(a0+2/3);
- * a3 = t0&0xf.
- * a3==0: q = MBS16(s0+4)<<4 / MBS16(a0+0x88); deferred_cmd_post(0x400,
- *   lh(s0+2) + (lh>=0xc0 && srcB!=0 ? 0x40 : 0), q).
- * a3==1: A = lh(s0+2), B = srcB. If MB8(a0+5)&1==0: A==0xfe ->
- *   T_fe[B<0xb]; A==0xff -> T_ff[B<0xb]; A==0xfd -> T_fd[B<0xb];
- *   else keep A. If bit set: compare chain -> 0xc3/0xc4/keep.
- *   Tables (B index 0..10):
+ * subop = t0&0xf.
+ * subop==0: quo = MBS16(s0+4)<<4 / MBS16(a0+0x88); deferred_cmd_post(0x400,
+ *   lh(s0+2) + (lh>=0xc0 && srcB!=0 ? 0x40 : 0), quo).
+ * subop==1: cmdarg = lh(s0+2), tbl_i = srcB. If MB8(a0+5)&1==0: cmdarg==0xfe ->
+ *   T_fe[tbl_i<0xb]; cmdarg==0xff -> T_ff[tbl_i<0xb]; cmdarg==0xfd -> T_fd[tbl_i<0xb];
+ *   else keep cmdarg. If bit set: compare chain -> 0xc3/0xc4/keep.
+ *   Tables (tbl_i index 0..10):
  *   ff: d3 cf cd cd ce d0 cd cb d2 d2 cc
  *   fe: d4 d0 ce ce cf d1 ce cc d3 d3 cd
  *   fd: d5 d1 cf cf d0 d2 cf cd d0 cc ce
@@ -13029,7 +13030,7 @@ uint32_t desc_cmd_map(uint32_t obj,uint32_t st,
 {
   int32_t op = (int32_t)(int8_t)(MB16(desc) >> 8);
   int32_t mode = (op >> 4) & 3;
-  int32_t flag40, a3, A, B, a2, q, den;
+  int32_t flag40, subop, cmdarg, tbl_i, a2, quo, den;
   uint32_t sub;
   static const uint8_t t_ff[11] = {0xd3,0xcf,0xcd,0xcd,0xce,0xd0,0xcd,0xcb,0xd2,0xd2,0xcc};
   static const uint8_t t_fe[11] = {0xd4,0xd0,0xce,0xce,0xcf,0xd1,0xce,0xcc,0xd3,0xd3,0xcd};
@@ -13043,48 +13044,48 @@ uint32_t desc_cmd_map(uint32_t obj,uint32_t st,
   if (flag40) {
     sub = MB32(obj + 0x2c);
     a2 = MB8(sub + 2);
-    B = MB8(sub + 3);
+    tbl_i = MB8(sub + 3);
   } else {
     a2 = MB8(obj + 2);
-    B = MB8(obj + 3);
+    tbl_i = MB8(obj + 3);
   }
-  a3 = op & 0xf;
-  if (a3 == 0) {
+  subop = op & 0xf;
+  if (subop == 0) {
     int32_t c = MBS16(desc + 2);
     int32_t n4 = (int32_t)MBS16(desc + 4) << 4;
     den = MBS16(obj + 0x88);
     /* guest 0x8017E22C/0x8017E254: lh/lh/sll4/div unconditional —
      * MIPS div-by-zero LO = num>=0 ? -1 : 1. */
-    q = den != 0 ? n4 / den : (n4 >= 0 ? -1 : 1);
-    deferred_cmd_post(0x400, c + (c >= 0xc0 && a2 != 0 ? 0x40 : 0), q);
+    quo = den != 0 ? n4 / den : (n4 >= 0 ? -1 : 1);
+    deferred_cmd_post(0x400, c + (c >= 0xc0 && a2 != 0 ? 0x40 : 0), quo);
     return desc + 6;
   }
-  if (a3 != 1) return desc + 6;
-  A = MBS16(desc + 2);
-  a2 = A;
+  if (subop != 1) return desc + 6;
+  cmdarg = MBS16(desc + 2);
+  a2 = cmdarg;
   if (MB8(obj + 5) & 1) {
     /* bit set: compare chain */
-    if (A == 6) a2 = 0xc3;
-    else if (A < 7) {
-      if (A == 2) a2 = 0xc3;
-      else if (A < 3) {
-        if (A == 0) a2 = 0xc4;
-        else if (A == (op & 0xf)) a2 = 0xc3;
-        /* else keep A */
+    if (cmdarg == 6) a2 = 0xc3;
+    else if (cmdarg < 7) {
+      if (cmdarg == 2) a2 = 0xc3;
+      else if (cmdarg < 3) {
+        if (cmdarg == 0) a2 = 0xc4;
+        else if (cmdarg == (op & 0xf)) a2 = 0xc3;
+        /* else keep cmdarg */
       } else a2 = 0xc3;
-    } else if (A == 9) a2 = 0xc3;
-    else if (A < 0xa) a2 = 0xc3;      /* 7,8 */
-    else if (A == 0xa) a2 = 0xc3;
-    else if (A < 0x100) {
-      if (A >= 0xfd) a2 = 0xc4;
-      /* else keep A */
+    } else if (cmdarg == 9) a2 = 0xc3;
+    else if (cmdarg < 0xa) a2 = 0xc3;      /* 7,8 */
+    else if (cmdarg == 0xa) a2 = 0xc3;
+    else if (cmdarg < 0x100) {
+      if (cmdarg >= 0xfd) a2 = 0xc4;
+      /* else keep cmdarg */
     }
-    /* A >= 0x100 keeps A */
+    /* cmdarg >= 0x100 keeps cmdarg */
   } else {
-    if (A == 0xfe) { if ((uint32_t)B < 0xb) a2 = t_fe[B]; }
-    else if (A == 0xff) { if ((uint32_t)B < 0xb) a2 = t_ff[B]; }
-    else if (A == 0xfd) { if ((uint32_t)B < 0xb) a2 = t_fd[B]; }
-    /* else keep A (a2 already = A? no — a2 was src byte!) */
+    if (cmdarg == 0xfe) { if ((uint32_t)tbl_i < 0xb) a2 = t_fe[tbl_i]; }
+    else if (cmdarg == 0xff) { if ((uint32_t)tbl_i < 0xb) a2 = t_ff[tbl_i]; }
+    else if (cmdarg == 0xfd) { if ((uint32_t)tbl_i < 0xb) a2 = t_fd[tbl_i]; }
+    /* else keep cmdarg (a2 already = cmdarg? no — a2 was src byte!) */
   }
   if (a2 < 0) return desc + 6;
   if (!flag40) {
@@ -14155,52 +14156,52 @@ void anim_wb_init_gate(uint32_t ent,uint32_t aidx,uint32_t v3,
 uint32_t desc_slot_alloc(uint32_t ent,uint32_t aidx,
                       uint32_t v3)
 {
-  uint32_t s0 = ent, s2 = aidx, s3 = v3;
-  uint32_t v0 = MB16(s3);
-  int32_t s1 = (int32_t)(int8_t)(v0 >> 8);
+
+  uint32_t cmdw = MB16(v3);
+  int32_t s1 = (int32_t)(int8_t)(cmdw >> 8);
   int32_t mode = s1 >> 4;
-  uint32_t rec = s2 + MB8(s2 + 0x100) * 4u;
-  uint32_t t0 = MB32(rec + 0xf8);
-  int32_t flag = MB8(s0 + 5) & 1;
+  uint32_t rec = aidx + MB8(aidx + 0x100) * 4u;
+  uint32_t tbl = MB32(rec + 0xf8);
+  int32_t flag = MB8(ent + 5) & 1;
   int32_t q1, q2, q3, b101, den;
   int i;
-  if (mode == 1) { if (flag) return s3 + 4; }
-  else if (mode == 2) { if (!flag) return s3 + 4; }
+  if (mode == 1) { if (flag) return v3 + 4; }
+  else if (mode == 2) { if (!flag) return v3 + 4; }
   for (i = 0; i < 8; i++) {
-    uint32_t slot = MB32(s0 + 0x14) + (uint32_t)i * 4u;
+    uint32_t slot = MB32(ent + 0x14) + (uint32_t)i * 4u;
     if ((int8_t)MB8(slot) == -1) {
       uint32_t nb;
       MW8(slot, 0);
-      nb = MB8(t0 + MB8(s3 + 2)) + 1u;
+      nb = MB8(tbl + MB8(v3 + 2)) + 1u;
       MW8(slot + 1, (uint8_t)nb);
-      MW16(slot + 2, (uint16_t)(MB16(s3 + 2) >> 8));
+      MW16(slot + 2, (uint16_t)(MB16(v3 + 2) >> 8));
       s1 = (int32_t)(int8_t)nb;
       if (i + 1 < 8)
-        MW8(MB32(s0 + 0x14) + (uint32_t)(i + 1) * 4u, 0xff);
+        MW8(MB32(ent + 0x14) + (uint32_t)(i + 1) * 4u, 0xff);
       break;
     }
   }
-  den = MBS16(s0 + 0x88);
+  den = MBS16(ent + 0x88);
   {
     /* MIPS div-by-zero rule (generated): lo = num>=0 ? -1 : 1 */
-    int32_t b = (int8_t)MB8(s2 + 0x102);
+    int32_t b = (int8_t)MB8(aidx + 0x102);
     int32_t n;
     if (b < 0) {
-      n = MBS16(s0 + 0xba);
+      n = MBS16(ent + 0xba);
       q1 = (den != 0 ? n / den : (n >= 0 ? -1 : 1)) - 3;
     } else {
       n = b * 16;
       q1 = den != 0 ? n / den : -1;
     }
-    b = (int8_t)MB8(s2 + 0x103);
+    b = (int8_t)MB8(aidx + 0x103);
     if (b < 0) {
-      n = MBS16(s0 + 0xb8);
+      n = MBS16(ent + 0xb8);
       q2 = den != 0 ? n / den : (n >= 0 ? -1 : 1);
     } else {
       n = b * 16;
       q2 = den != 0 ? n / den : -1;
     }
-    b = (int8_t)MB8(s2 + 0x104);
+    b = (int8_t)MB8(aidx + 0x104);
     if (b < 0) q3 = 4;
     else {
       n = b * 16;
@@ -14208,29 +14209,29 @@ uint32_t desc_slot_alloc(uint32_t ent,uint32_t aidx,
     }
   }
   q3 <<= 16;
-  b101 = (int8_t)MB8(s2 + 0x101);
+  b101 = (int8_t)MB8(aidx + 0x101);
   if (b101 == 2) {
-    if (s1 == 0xa) anim_wb_init_gate(s0, 0xa, (uint32_t)q2, (uint32_t)q1, (uint32_t)q3);
-    else if (s1 < 0xb) { if (s1 == 7) anim_wb_init_gate(s0, 7, (uint32_t)q2, (uint32_t)q1, (uint32_t)q3); }
+    if (s1 == 0xa) anim_wb_init_gate(ent, 0xa, (uint32_t)q2, (uint32_t)q1, (uint32_t)q3);
+    else if (s1 < 0xb) { if (s1 == 7) anim_wb_init_gate(ent, 7, (uint32_t)q2, (uint32_t)q1, (uint32_t)q3); }
     else {
-      if (s1 == 0xd) anim_wb_init_gate(s0, 0xd, (uint32_t)q2, (uint32_t)q1, (uint32_t)q3);
-      else if (s1 == 0x10) anim_wb_init_gate(s0, 0x10, (uint32_t)q2, (uint32_t)q1, (uint32_t)q3);
+      if (s1 == 0xd) anim_wb_init_gate(ent, 0xd, (uint32_t)q2, (uint32_t)q1, (uint32_t)q3);
+      else if (s1 == 0x10) anim_wb_init_gate(ent, 0x10, (uint32_t)q2, (uint32_t)q1, (uint32_t)q3);
     }
   } else if (b101 == -1) {
-    /* guest reloads lbu 5(s0) here (0x8017c1c4) — after the slot
+    /* guest reloads lbu 5(ent) here (0x8017c1c4) — after the slot
      * stores, so re-read rather than reuse the cached flag */
-    if ((MB8(s0 + 5) & 1) && s1 != 0xa && s1 >= 0xb) {
-      if (s1 == 0xd) anim_wb_init_gate(s0, 0xd, (uint32_t)q2, (uint32_t)q1, (uint32_t)q3);
-      else if (s1 == 0x10) anim_wb_init_gate(s0, 0x10, (uint32_t)q2, (uint32_t)q1, (uint32_t)q3);
+    if ((MB8(ent + 5) & 1) && s1 != 0xa && s1 >= 0xb) {
+      if (s1 == 0xd) anim_wb_init_gate(ent, 0xd, (uint32_t)q2, (uint32_t)q1, (uint32_t)q3);
+      else if (s1 == 0x10) anim_wb_init_gate(ent, 0x10, (uint32_t)q2, (uint32_t)q1, (uint32_t)q3);
     }
   }
-  if ((MB32(s0 + 0x64) & 0x20000u) != 0 && MBS16(s2 + 0x80) != 0x11f) {
+  if ((MB32(ent + 0x64) & 0x20000u) != 0 && MBS16(aidx + 0x80) != 0x11f) {
     if ((uint32_t)(s1 - 2) < 0xf &&
         (s1 == 2 || s1 == 7 || s1 == 10 || s1 == 13 || s1 == 16))
-      task_node_alloc_init((int32_t)s0, s1, 0);
+      task_node_alloc_init((int32_t)ent, s1, 0);
     if (s1 != 0) deferred_cmd_post(0x400, 0x5a, 0);
   }
-  return s3 + 4;
+  return v3 + 4;
 }
 
 /* ======== batch67 ======== */
