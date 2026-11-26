@@ -31464,6 +31464,7 @@ block_80136FA8:
  * from SLES_017.22_full_07.c. */
 void cps_80137074(void)
 {
+/* ? thunk -> noop_a */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31484,6 +31485,7 @@ block_80137074:
  * from SLES_017.22_full_07.c. */
 void cps_80137088(void)
 {
+/* ? piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31503,6 +31505,7 @@ block_80137088:
  * from SLES_017.22_full_07.c. */
 void cps_80137528(void)
 {
+/* ? piece: continues at 0x8013752c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31518,6 +31521,7 @@ block_80137528:
  * from SLES_017.22_full_07.c. */
 void cps_8013752c(void)
 {
+/* ? piece: continues at 0x80137548 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31539,6 +31543,7 @@ block_8013752C:
  * from SLES_017.22_full_07.c. */
 void cps_80137548(void)
 {
+/* ? piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31564,6 +31569,7 @@ block_80137548:
  * from SLES_017.22_full_07.c. */
 void cps_8013783c(void)
 {
+/* ? piece: continues at 0x8013784c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31582,6 +31588,7 @@ block_8013783C:
  * from SLES_017.22_full_07.c. */
 void cps_8013784c(void)
 {
+/* ? piece: continues at 0x80137868 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31619,6 +31626,7 @@ block_8013785C:
  * from SLES_017.22_full_07.c. */
 void cps_80137868(void)
 {
+/* ? piece: continues at 0x80137878 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31637,6 +31645,7 @@ block_80137868:
  * from SLES_017.22_full_07.c. */
 void cps_80137878(void)
 {
+/* ? thunk -> task_slot_step */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31939,6 +31948,7 @@ block_80137974:
  * from SLES_017.22_full_07.c. */
 void cps_80137abc(void)
 {
+/* ? piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31958,6 +31968,7 @@ block_80137ABC:
  * from SLES_017.22_full_07.c. */
 void cps_80137afc(void)
 {
+/* ? piece: continues at 0x80137b58 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32065,6 +32076,7 @@ block_80137B48:
  * from SLES_017.22_full_07.c. */
 void cps_80137b58(void)
 {
+/* ? piece: continues at 0x80137BB8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32103,6 +32115,7 @@ block_80137B60:
  * from SLES_017.22_full_07.c. */
 void cps_80137b74(void)
 {
+/* ? piece: continues at 0x80137bb8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32150,6 +32163,7 @@ block_80137B8C:
  * from SLES_017.22_full_07.c. */
 void cps_80137bb8(void)
 {
+/* ? piece: continues at 0x80137bc4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32168,6 +32182,7 @@ block_80137BB8:
  * from SLES_017.22_full_07.c. */
 void cps_80137bc4(void)
 {
+/* ? piece: continues at 0x80137bc8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32183,6 +32198,7 @@ block_80137BC4:
  * from SLES_017.22_full_07.c. */
 void cps_80137bc8(void)
 {
+/* ? piece: continues at 0x80137bd4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32201,6 +32217,7 @@ block_80137BC8:
  * from SLES_017.22_full_07.c. */
 void cps_80137bd4(void)
 {
+/* ? piece: continues at 0x80137c04 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32228,6 +32245,7 @@ block_80137BD4:
  * from SLES_017.22_full_07.c. */
 void cps_80137c04(void)
 {
+/* ? thunk -> task_slot_step */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32258,6 +32276,7 @@ block_80137C0C:
  * from SLES_017.22_full_07.c. */
 void cps_80137c14(void)
 {
+/* ? piece: continues at 0x80137cb4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32368,6 +32387,7 @@ block_80137CA4:
  * from SLES_017.22_full_07.c. */
 void cps_80137cb4(void)
 {
+/* ? piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32390,6 +32410,7 @@ block_80137CB4:
  * from SLES_017.22_full_07.c. */
 void cps_80137d28(void)
 {
+/* ? thunk -> task_slot_step -> fighter_chan_delta_accum */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32631,6 +32652,7 @@ block_80137E4C:
  * from SLES_017.22_full_07.c. */
 void cps_80137e60(void)
 {
+/* ? thunk -> task_node_alloc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
