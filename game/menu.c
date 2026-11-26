@@ -5187,13 +5187,13 @@ static void blk_copy(uint32_t dst, uint32_t src, uint32_t len)
  * packed controller/option byte at +0x2358 (self-ptr slot also
  * receives the +0x16d0 host-visible cursor). Returns bit7 of the
  * second side's +0x264 flag word (v0 left live at jr $ra). */
-int32_t results_record_build(int32_t param_1, int32_t param_2)
+int32_t results_record_build(int32_t idx, int32_t val)
 {
   const uint32_t a0 = 0x1f800000u;
-  uint32_t a3 = 0x801c47c0u + ((uint32_t)param_1 * 0x235cu);
+  uint32_t a3 = 0x801c47c0u + ((uint32_t)idx * 0x235cu);
   uint32_t pa, pb, f, bit;
 
-  MW16(a3 + 0, (uint16_t)param_2);          /* sh $a2,($a3) */
+  MW16(a3 + 0, (uint16_t)val);          /* sh $a2,($a3) */
   MW16(a3 + 2, MB16(a0 + 0x94));            /* sh lhu 0x94(a0),2 */
 
   blk_copy(a3 + 0x16cc, 0x1f8000e8, 0x210);
@@ -5234,9 +5234,9 @@ int32_t results_record_build(int32_t param_1, int32_t param_2)
  * v1[0]=2, v1[2..0xe even u16s = 0; memcpy v1+0x18 <- 0x801e1b3c
  * (0x21c0), v1+0x21d8 <- 0x801e0f6c (0xbd0); then
  * results_record_build(a0, 3, lh v1+6). a0 = guest battle base. */
-void battle_subrecord_reset(uint32_t param_1)
+void battle_subrecord_reset(uint32_t battle_g)
 {
-  uint32_t v1 = MB32(param_1 + 0xcc);
+  uint32_t v1 = MB32(battle_g + 0xcc);
   uint8_t *p = (uint8_t *)guest_at(v1);
   MW16(v1 + 0,    2);
   MW16(v1 + 2,    0);
@@ -5252,9 +5252,9 @@ void battle_subrecord_reset(uint32_t param_1)
 }
 
 /* battle_subrecord_set1 — *(u16*)(*(u32*)(a0+0xcc)) = 1. */
-void battle_subrecord_set1(uint32_t param_1)
+void battle_subrecord_set1(uint32_t battle_g)
 {
-  MW16(MB32(param_1 + 0xcc), 1);
+  MW16(MB32(battle_g + 0xcc), 1);
 }
 
 /* menu_stepper_masked_sweep — masked menu-stepper sweep: cb(+0xc)(p,0x100); for
@@ -5263,9 +5263,9 @@ void battle_subrecord_set1(uint32_t param_1)
  * cb(p,(s0+0x100)&0xffff); finally cb(p,0x1ff). p+0xc = u32 guest cb. */
 extern void menu_row_paint(void *);
 extern void menu_row_paint_b(void *);
-void menu_stepper_masked_sweep(void *param_1, uint32_t param_2)
+void menu_stepper_masked_sweep(void *desc, uint32_t btn_mask)
 {
-  uint8_t *p = (uint8_t *)param_1;
+  uint8_t *p = (uint8_t *)desc;
   /* p+0xc is a u32 GUEST code address (guest lw/jalr) — resolve via
    * fn_lookup like menu_stepper_redraw, not a host pointer. */
   uint32_t cb_g = *(uint32_t *)(p + 0xc);
@@ -5273,16 +5273,16 @@ void menu_stepper_masked_sweep(void *param_1, uint32_t param_2)
       (void (*)(void *,uint32_t))fn_lookup(cb_g);
   uint32_t s0;
 #define CB_CALL(code_) do { \
-    if (cb != NULL) cb(param_1,(code_)); \
-    else            call_guest(cb_g,guest_of(param_1),(code_)); \
+    if (cb != NULL) cb(desc,(code_)); \
+    else            call_guest(cb_g,guest_of(desc),(code_)); \
   } while (0)
   CB_CALL(0x100);
   if (*(uint16_t *)(p + 6) == 0) goto L_tail;
   s0 = 1;
   for (;;) {
-    if (((param_2 >> (s0 & 31)) & 1) != 0) {
-      if (s0 != *(uint16_t *)(p + 8)) menu_row_paint_b(param_1);
-      else                            menu_row_paint(param_1);
+    if (((btn_mask >> (s0 & 31)) & 1) != 0) {
+      if (s0 != *(uint16_t *)(p + 8)) menu_row_paint_b(desc);
+      else                            menu_row_paint(desc);
       CB_CALL((s0 + 0x100) & 0xffff);
     }
     s0++;
@@ -5297,24 +5297,24 @@ L_tail:
  * sfx: on 0x2000 frame ++ (wrap to 0 when a1 < new), on 0x8000 frame
  * -- (reload a1 on underflow); a2 != 0 triggers deferred_cmd_post(0x400,
  * 0xb,0). Returns whether the s16 value changed. */
-int u16_counter_step_pad_a(uint32_t param_1, int32_t param_2, int32_t param_3)
+int u16_counter_step_pad_a(uint32_t ctr_g, int32_t max, int32_t sfx)
 {
-  uint8_t *s0 = (uint8_t *)guest_at(param_1);
+  uint8_t *s0 = (uint8_t *)guest_at(ctr_g);
   int16_t  s4 = *(int16_t *)s0;
-  uint32_t s5 = (uint32_t)param_2;
+  uint32_t s5 = (uint32_t)max;
   uint32_t pad = MB16(0x1f80007e);
 
   if (pad == 0x2000) {
     uint16_t v1;
-    if (param_3 != 0) deferred_cmd_post(0x400,0xb,0);
+    if (sfx != 0) deferred_cmd_post(0x400,0xb,0);
     v1 = (uint16_t)(*(uint16_t *)s0 + 1);
     *(uint16_t *)s0 = v1;
-    if ((int32_t)((uint32_t)param_2 << 16) < (int32_t)(v1 << 16))
+    if ((int32_t)((uint32_t)max << 16) < (int32_t)(v1 << 16))
       *(uint16_t *)s0 = 0;
   }
   if (MB16(0x1f80007e) == 0x8000) {
     uint16_t v0;
-    if (param_3 != 0) deferred_cmd_post(0x400,0xb,0);
+    if (sfx != 0) deferred_cmd_post(0x400,0xb,0);
     v0 = (uint16_t)(*(uint16_t *)s0 - 1);
     *(uint16_t *)s0 = v0;
     /* sh $s5,(s0) sits in the bgez delay slot and both branch
