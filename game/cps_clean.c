@@ -29137,6 +29137,7 @@ block_80135FF0:
  * from SLES_017.22_full_06.c. */
 void cps_8013602c(void)
 {
+/* vec/GTE fragment: continues at 0x80136074 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -29176,6 +29177,7 @@ block_8013602C:
  * from SLES_017.22_full_06.c. */
 void cps_80136074(void)
 {
+/* vec/GTE leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -29198,6 +29200,7 @@ block_80136074:
  * from SLES_017.22_full_06.c. */
 void cps_8013610c(void)
 {
+/* vec/GTE leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -29215,6 +29218,7 @@ block_8013610C:
  * from SLES_017.22_full_06.c. */
 void cps_801361a4(void)
 {
+/* vec/GTE fragment: continues at 0x801361a8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -29230,6 +29234,7 @@ block_801361A4:
  * from SLES_017.22_full_06.c. */
 void cps_801361a8(void)
 {
+/* vec/GTE fragment: continues at 0x801361bc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -29250,6 +29255,7 @@ block_801361A8:
  * from SLES_017.22_full_06.c. */
 void cps_801361bc(void)
 {
+/* vec/GTE thunk -> table_byte_next_a -> rotmat_rtps_build -> table_byte_next_a -> table_byte_next_a */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -29420,6 +29426,7 @@ block_8013628C:
  * from SLES_017.22_full_06.c. */
 void cps_80136294(void)
 {
+/* vec/GTE thunk -> table_byte_next_a -> rotmat_rtps_build -> table_byte_next_a -> table_byte_next_a */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -29599,6 +29606,7 @@ block_80136384:
  * from SLES_017.22_full_06.c. */
 void cps_8013638c(void)
 {
+/* vec/GTE thunk -> table_byte_next_a -> table_byte_next_a -> table_byte_next_a */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -29773,6 +29781,7 @@ block_80136480:
  * from SLES_017.22_full_06.c. */
 void cps_80136488(void)
 {
+/* vec/GTE thunk -> table_byte_next_a -> rotmat_rtps_build -> table_byte_next_a -> table_byte_next_a */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -29945,6 +29954,7 @@ block_8013654C:
  * from SLES_017.22_full_06.c. */
 void cps_80136578(void)
 {
+/* vec/GTE leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -29971,6 +29981,7 @@ block_80136578:
  * from SLES_017.22_full_07.c. */
 void cps_80136680(void)
 {
+/* vec/GTE thunk -> vec_emit_spawn -> deferred_cmd_post -> deferred_cmd_post -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30430,6 +30441,7 @@ block_80136940:
  * from SLES_017.22_full_07.c. */
 void cps_80136944(void)
 {
+/* vec/GTE fragment: continues at 0x80136950 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30454,6 +30466,7 @@ block_80136944:
  * from SLES_017.22_full_07.c. */
 void cps_80136950(void)
 {
+/* vec/GTE fragment: continues at 0x80136974 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30500,6 +30513,7 @@ block_80136964:
  * from SLES_017.22_full_07.c. */
 void cps_80136970(void)
 {
+/* vec/GTE fragment: continues at 0x80136974 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30515,6 +30529,7 @@ block_80136970:
  * from SLES_017.22_full_07.c. */
 void cps_80136974(void)
 {
+/* vec/GTE fragment: continues at 0x80136978 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30530,6 +30545,7 @@ block_80136974:
  * from SLES_017.22_full_07.c. */
 void cps_80136978(void)
 {
+/* vec/GTE thunk -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30579,6 +30595,7 @@ block_80136984:
  * from SLES_017.22_full_07.c. */
 void cps_801369d4(void)
 {
+/* vec/GTE thunk -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30643,6 +30660,7 @@ block_80136A10:
  * from SLES_017.22_full_07.c. */
 void cps_80136a34(void)
 {
+/* vec/GTE fragment: continues at 0x80136a7c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30675,6 +30693,7 @@ block_80136A34:
  * from SLES_017.22_full_07.c. */
 void cps_80136a7c(void)
 {
+/* vec/GTE thunk -> angle_pair_rotmat */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30705,6 +30724,7 @@ block_80136A8C:
  * from SLES_017.22_full_07.c. */
 void cps_80136a90(void)
 {
+/* vec/GTE thunk -> gte_rtps_xform3_t -> prim_task_run */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30797,6 +30817,7 @@ block_80136B14:
  * from SLES_017.22_full_07.c. */
 void cps_80136b18(void)
 {
+/* vec/GTE fragment: continues at 0x80136b2c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30816,6 +30837,7 @@ block_80136B18:
  * from SLES_017.22_full_07.c. */
 void cps_80136b2c(void)
 {
+/* vec/GTE fragment: continues at 0x80136b34 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30839,6 +30861,7 @@ block_80136B2C:
  * from SLES_017.22_full_07.c. */
 void cps_80136b34(void)
 {
+/* vec/GTE leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30866,6 +30889,7 @@ block_80136B34:
  * from SLES_017.22_full_07.c. */
 void cps_80136b70(void)
 {
+/* vec/GTE fragment: continues at 0x80136b78 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30882,6 +30906,7 @@ block_80136B70:
  * from SLES_017.22_full_07.c. */
 void cps_80136b78(void)
 {
+/* vec/GTE fragment: continues at 0x80136b80 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30898,6 +30923,7 @@ block_80136B78:
  * from SLES_017.22_full_07.c. */
 void cps_80136b80(void)
 {
+/* vec/GTE thunk -> lut_sin_q12 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30998,6 +31024,7 @@ block_80136C1C:
  * from SLES_017.22_full_07.c. */
 void cps_80136c28(void)
 {
+/* vec/GTE thunk -> lut_cos_q12 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31159,6 +31186,7 @@ block_80136D04:
  * from SLES_017.22_full_07.c. */
 void cps_80136e98(void)
 {
+/* vec/GTE thunk -> bitfield_or_write -> bitfield_or_write -> bitfield_or_write -> bitfield_or_write -> bitfield_or_write -> bitfield_or_write -> bitfield_or_write */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31291,6 +31319,7 @@ block_80136F3C:
  * from SLES_017.22_full_07.c. */
 void cps_80136f88(void)
 {
+/* vec/GTE leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31308,6 +31337,7 @@ block_80136F88:
  * from SLES_017.22_full_07.c. */
 void cps_80136f90(void)
 {
+/* vec/GTE leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31325,6 +31355,7 @@ block_80136F90:
  * from SLES_017.22_full_07.c. */
 void cps_80136f98(void)
 {
+/* vec/GTE leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31342,6 +31373,7 @@ block_80136F98:
  * from SLES_017.22_full_07.c. */
 void cps_80136fa0(void)
 {
+/* vec/GTE leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31359,6 +31391,7 @@ block_80136FA0:
  * from SLES_017.22_full_07.c. */
 void cps_80136fa8(void)
 {
+/* vec/GTE thunk -> noop_a */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
