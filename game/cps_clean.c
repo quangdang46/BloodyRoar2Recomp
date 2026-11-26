@@ -95808,7 +95808,9 @@ block_801A0C58:
 }
 
 /* cps_801a0c68 — clean CPS transliteration of br2eu_func_801A0C68 (guest 0x801a0c68)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * cd_chan_commit_seq: cpu_critical_exit → bios_tramp_b008/b00c →
+ * cd_pending_args_pump — channel command commit/teardown sequence. */
 void cps_801a0c68(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -97883,7 +97885,9 @@ block_801A24CC:
 }
 
 /* cps_801a2560 — clean CPS transliteration of br2eu_func_801A2560 (guest 0x801a2560)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * cd_extent_table_walk: byte-table scan (s16+byte reads) resolving extents
+ * via cd_extent_len + cd_cmd_rec_arm_extent; 1 jalr callback. */
 void cps_801a2560(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -98629,7 +98633,10 @@ block_801A2974:
 }
 
 /* cps_801a2984 — clean CPS transliteration of br2eu_func_801A2984 (guest 0x801a2984)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * rec_state_machine_main: 49-block dispatcher on byte@rec+70 (<4 / ==3 /
+ * ==2 arms) driving the cmd-record lifecycle — the big sibling of
+ * rec_mode_arm (2f60) and cd_cmd_state_step (28dc). */
 void cps_801a2984(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -101790,7 +101797,9 @@ block_801A6B90:
 }
 
 /* cps_801a6d48 — clean CPS transliteration of br2eu_func_801A6D48 (guest 0x801a6d48)
- * from SLES_017.22_full_51.c. */
+ * from SLES_017.22_full_51.c.
+ * tween_track_release: task_node_free + tween_track_alloc pair — frees
+ * and reallocates a tween track node. */
 void cps_801a6d48(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -102188,7 +102197,9 @@ block_801A8634:
 }
 
 /* cps_801a8ee0 — clean CPS transliteration of br2eu_func_801A8EE0 (guest 0x801a8ee0)
- * from SLES_017.22_full_51.c. */
+ * from SLES_017.22_full_51.c.
+ * gte_transform_kernel_a: GTE cmd sequence (RTPS/mvmva family via
+ * gte_execute + ctc2/mfc2) transforming vertex data @0x80120000 table. */
 void cps_801a8ee0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -102630,7 +102641,9 @@ block_801A91CC:
 }
 
 /* cps_801a91e0 — clean CPS transliteration of br2eu_func_801A91E0 (guest 0x801a91e0)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * gte_transform_kernel_b: second GTE transform kernel — same cmd/ctc2
+ * pattern, 8 gte_execute ops, heavier register traffic than 8ee0. */
 void cps_801a91e0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -103111,7 +103124,9 @@ block_801A9528:
 }
 
 /* cps_801a972c — clean CPS transliteration of br2eu_func_801A972C (guest 0x801a972c)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * keyframe_cursor_search (renames.map): searches keyframe table then
+ * calls tween_apply — per-frame anim param evaluation. */
 void cps_801a972c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104860,7 +104875,9 @@ block_801AA608:
 }
 
 /* cps_801aa618 — clean CPS transliteration of br2eu_func_801AA618 (guest 0x801aa618)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * fixedpoint_vec_math: muldiv/div-heavy routine with /0,-1,INT_MIN break
+ * traps — vector normalize/scale helper for the anim pipeline. */
 void cps_801aa618(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -105178,7 +105195,9 @@ block_801AA7D0:
 }
 
 /* cps_801aa7e8 — clean CPS transliteration of br2eu_func_801AA7E8 (guest 0x801aa7e8)
- * from SLES_017.22_full_52.c. */
+ * from SLES_017.22_full_52.c.
+ * verts_pass_dispatch: fans out to verts_offset_apply / verts_rgb_apply /
+ * verts_add_apply / verts_sub_apply — per-vertex attribute pass. */
 void cps_801aa7e8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -112029,7 +112048,9 @@ block_801AFB24:
 }
 
 /* cps_801afb28 — clean CPS transliteration of br2eu_func_801AFB28 (guest 0x801afb28)
- * from SLES_017.22_full_54.c. */
+ * from SLES_017.22_full_54.c.
+ * scene_node_walk: 25-half-read traversal calling scene_node_walk
+ * recursively — scene graph node iteration. */
 void cps_801afb28(void)
 {
   CPUState *cpu = clean_cpu_state();
