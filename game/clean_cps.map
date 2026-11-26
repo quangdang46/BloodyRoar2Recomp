@@ -4595,3 +4595,9 @@
 8012a93c cps_8012a92c
 801298f8 cps_801298f8
 801268b8 cps_801268b8
+
+# w2_e06 — continuation pieces of guest fn 0x801835D0 (script-operand
+# compare/select family). The clean CPS body cps_801835d0 (game/cps_clean.c)
+# already contains block_80183630 and block_80183648 verbatim.
+80183630 cps_801835d0
+80183648 cps_801835d0
