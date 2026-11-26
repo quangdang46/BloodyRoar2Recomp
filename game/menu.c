@@ -78,7 +78,7 @@ void post_confirm_config_build(uint32_t,uint8_t *,int32_t);
 extern int battle_init();
 extern int confirm_bookkeeping();
 extern void battle_state_init(uint8_t *,uint8_t *,uint32_t);
-extern uint32_t mc_pad_button_handler(uint8_t *param_1);
+extern uint32_t mc_pad_button_handler(uint8_t *battle_g);
 extern int post_battle_dispatch();
 extern void battle_sides_commit(uint8_t *,uint8_t *,uint32_t);
 extern int blk_1f26c0_init_b();
@@ -3184,7 +3184,7 @@ extern void post_confirm_config_build(uint32_t,uint8_t *,int32_t);
 extern int32_t battle_config_eval(uint8_t *,uint32_t,int32_t);
 extern int32_t table_byte_next_a(void);
 extern void sprite_9slice_build(uint32_t,uint32_t,uint32_t,uint32_t);
-int32_t select_screen_tick(int32_t param_1)
+int32_t select_screen_tick(int32_t mode)
 {
   uint8_t bVar1;
   int32_t iVar2, iVar3, iVar4, iVar9, iVar10;
@@ -3231,7 +3231,7 @@ int32_t select_screen_tick(int32_t param_1)
     if (DAT_1f800001 == 6) {
       fighter_spawn_setup(0x1f800000,local_40,local_3c,auStack_e0,1);
       if (((*(uint32_t *)g__DAT_1f80007c & 0x10) == 0) ||
-          ((*(uint8_t *)g_DAT_1f8000a2 != 0 && (param_1 != 1)))) {
+          ((*(uint8_t *)g_DAT_1f8000a2 != 0 && (mode != 1)))) {
         uVar8 = 0;
         puVar6 = auStack_b8;
         do {
@@ -3294,7 +3294,7 @@ code_r0x8014f6c0:
           puVar6 += 0x30;
           uVar8++;
         } while ((int32_t)uVar8 < 2);
-        if ((DAT_1f80009b != 0) && (param_1 != 2)) {
+        if ((DAT_1f80009b != 0) && (mode != 2)) {
           iVar4 = 0;
           puVar6 = auStack_b8;
           do {
@@ -3399,11 +3399,11 @@ code_r0x8014f6c0:
           uint8_t *t300 = (uint8_t *)guest_at(0x801b3300);
           uint32_t *p47ec = (uint32_t *)guest_at(0x801b47ec);
           uint32_t *p47f0 = (uint32_t *)guest_at(0x801b47f0);
-          if (param_1 < 4 && 1 < param_1) {
+          if (mode < 4 && 1 < mode) {
             uVar8 = (uint32_t)local_94[10];
             if (local_a8[0] == 0) uVar8 = (uint32_t)local_a8[3];
             uVar11 = (uint32_t)(local_a8[0] != 0);
-            if (param_1 == 2) {
+            if (mode == 2) {
               iVar3 = (((int16_t)_DAT_1f800020) -
                       (((int32_t)((uint16_t)_DAT_1f800020 << 16)) >> 31)) >> 1;
               iVar4 = ((int16_t)_DAT_1f800022 * 3) / 5;
@@ -3527,8 +3527,8 @@ LAB_80150558:
         }
         if ((*(uint32_t *)g__DAT_1f8000dc & 3) == 0 && (local_38 = local_38 + 1, 5 < local_38))
           local_38 = 0;
-        if (param_1 == 2) uVar5 = 0x19;
-        else if ((*(uint8_t *)g_DAT_1f8000a2 == 0) || param_1 == 1) uVar5 = 0x18;
+        if (mode == 2) uVar5 = 0x19;
+        else if ((*(uint8_t *)g_DAT_1f8000a2 == 0) || mode == 1) uVar5 = 0x18;
         else uVar5 = 0x48;
         hud_gauge_render(0x1f800000,_DAT_1f800008,uVar5);
         local_2c++;
@@ -3540,9 +3540,9 @@ LAB_80150558:
     } else {
       if (DAT_1f800001 < 7) {
         if (DAT_1f800001 == 0 && (iVar4 = frame_divisor_get(), iVar4 == 0)) {
-          if (-1 < param_1) {
-            if (param_1 < 2) unaff_s2 = 1;
-            else if (param_1 < 4) unaff_s2 = 2;
+          if (-1 < mode) {
+            if (mode < 2) unaff_s2 = 1;
+            else if (mode < 4) unaff_s2 = 2;
           }
           iVar4 = intro_movie_state((int32_t)unaff_s2);
           if (iVar4 != 0) {
@@ -3597,13 +3597,13 @@ LAB_80150610:
  * at 0x801b3218 from (param_1 row, param_2 col-offset a3) checking the
  * unlocked-character bitmask at system_config+0x4c; wraps column a3
  * mod 4 and returns the validated bit. Disasm-verified. */
-int32_t select_cursor_step(int32_t param_1,int32_t param_2)
+int32_t select_cursor_step(int32_t row,int32_t col)
 {
-  int32_t a3 = param_2;
+  int32_t a3 = col;
   uint8_t *t0 = (uint8_t *)guest_at(0x801b3218);
   uint32_t t1 = *(uint32_t *)(_g_system_config_ptr + 0x4c);
   uint32_t v1 = t1;
-  int32_t a2 = t0[a3 + param_1 * 4];
+  int32_t a2 = t0[a3 + row * 4];
   uint32_t v0 = (v1 >> a2) & 1;
   if (v0 != 0) return (int32_t)v0;
   v1 = (uint32_t)a2 * 4;
@@ -3620,12 +3620,12 @@ LAB_f208:
     a2 = b;
     if (b != a2) goto LAB_f248;
     a3 = (a3 - 1) & 3;
-    if (a3 != param_2) {
+    if (a3 != col) {
       a2 = t0[a3 + v1];
       v0 = (t1 >> a2) & 1;
       goto LAB_f24c;
     }
-    a2 = param_1;
+    a2 = row;
     goto LAB_f248;
   }
 }
@@ -3689,11 +3689,11 @@ void select_confirm_handler(uint32_t param_1,uint32_t param_2,uint8_t *param_3,
 /* select_phase_gate — select-phase gate: returns 0 only when the player's
  * battle+0xb4 phase hi-nibble is 0x100/0x200/0x300/0x400/0x700,
  * else 1. param_1 = guest battle addr. Disasm-verified. */
-int32_t select_phase_gate(uint32_t param_1,uint32_t param_2)
+int32_t select_phase_gate(uint32_t baddr,uint32_t player)
 {
-  uint8_t *b = (uint8_t *)guest_at(param_1);
+  uint8_t *b = (uint8_t *)guest_at(baddr);
   uint16_t *ph = (uint16_t *)(b + 0xb4);
-  uint32_t cls = ph[param_2] & 0xf00;
+  uint32_t cls = ph[player] & 0xf00;
   if (cls==0x100||cls==0x200||cls==0x300||cls==0x400||cls==0x700) return 0;
   return 1;
 }
@@ -3702,9 +3702,9 @@ int32_t select_phase_gate(uint32_t param_1,uint32_t param_2)
  * mode 2 always skips, mode 5 skips when battle+0x9b==4, else bumps
  * counter at 0x801c11e0 + state[3]*0x24 + 0x264 and sets dirty flag
  * 0x801c11e0+0x410. Disasm-verified (jump table 0x8011ebd0). */
-void selection_stat_bump(uint8_t *param_1,int32_t param_2)
+void selection_stat_bump(uint8_t *state,int32_t unused)
 {
-  (void)param_2;
+  (void)unused;
   uint8_t *battle = (uint8_t *)guest_at(0x1f800000);
   uint32_t mode = battle[0x9c];
   if (mode < 6) {
@@ -3712,7 +3712,7 @@ void selection_stat_bump(uint8_t *param_1,int32_t param_2)
     if (mode == 5 && battle[0x9b] == 4) return;
   }
   uint8_t *tbl = (uint8_t *)guest_at(0x801c11e0);
-  uint8_t *rec = tbl + param_1[3] * 0x24;
+  uint8_t *rec = tbl + state[3] * 0x24;
   uint16_t *cnt = (uint16_t *)(rec + 0x264);
   *cnt = *cnt + 1;
   *(uint32_t *)(tbl + 0x410) = 1;
@@ -4015,10 +4015,10 @@ void fighter_spawn_setup(uint32_t param_1,uint8_t *param_2,uint8_t *param_3,
 
 /* gate_read_ec — returns state-rec u16 at +0xec for player when
  * select_phase_gate gate passes, else 0. Disasm-verified. */
-int32_t gate_read_ec(uint32_t param_1,uint32_t param_2)
+int32_t gate_read_ec(uint32_t baddr,uint32_t player)
 {
-  if (select_phase_gate(param_1,param_2) != 0) return 0;
-  uint8_t *st = (uint8_t *)guest_at(0x1f8000e8 + param_2 * 0x108);
+  if (select_phase_gate(baddr,player) != 0) return 0;
+  uint8_t *st = (uint8_t *)guest_at(0x1f8000e8 + player * 0x108);
   return *(uint16_t *)(st + 0xec);
 }
 
@@ -4026,15 +4026,15 @@ int32_t gate_read_ec(uint32_t param_1,uint32_t param_2)
  * pick battle+0x92 phase (0x100/0x200/0x300/0x400) and bump char-record
  * counters; mode==4 clears cr[4] and bumps state+1 when set;
  * battle+0x9c==3 sets cr[4]=1 (jump table 0x80120750). Disasm-verified. */
-int confirm_bookkeeping(uint32_t param_1)
+int confirm_bookkeeping(uint32_t baddr)
 {
-  uint8_t *s0 = (uint8_t *)guest_at(param_1);
+  uint8_t *s0 = (uint8_t *)guest_at(baddr);
   uint8_t *s2 = (uint8_t *)guest_at(0x1f8000e8);
   uint8_t *s3 = (uint8_t *)guest_at(0x1f8001f0);
   uint8_t *cr;
   int32_t g0, g1, mode;
-  g0 = select_phase_gate(param_1,0);
-  g1 = select_phase_gate(param_1,1);
+  g0 = select_phase_gate(baddr,0);
+  g1 = select_phase_gate(baddr,1);
   cr = (uint8_t *)guest_at(*(uint32_t *)(s0 + 0xc0));
   mode = (int8_t)s0[0x9b];
   if (mode >= 0 && mode < 5) {
