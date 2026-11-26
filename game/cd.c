@@ -6623,6 +6623,7 @@ int32_t cd_seek_step(uint32_t a0,uint32_t a1)
 
 extern void cd_mmio_strobe_22(void);
 
+/* cd_dma_xfer_start_b — mid-entry (0x8019B8A4) of cd_dma_xfer_start: MMIO channel setup, args p_a0=buf p_a1=ch p_a2=len; arms DMA cb cell @0x801BDF00. */
 void cd_dma_xfer_start_b(uint32_t p_v0,uint32_t p_a0,uint32_t p_a1,uint32_t p_a2)
 {
   uint32_t b;
@@ -6661,6 +6662,7 @@ void cd_gpu_call_2c(uint32_t a0,uint32_t a1,uint32_t a2)
 
 /* ======== 0x8019b7e8 ======== */
 
+/* cd_dma_chan_reset — ch reset: settle delay_3c if BDF00==0, clear status bits 0x30 with bounded poll, then DeliverEvent(0xF0000009,0x20) or direct cb @0x801BDEE8. */
 void cd_dma_chan_reset(uint32_t a0)
 {
   int i;
@@ -6700,6 +6702,7 @@ void cd_dma_chan_reset(uint32_t a0)
 
 /* ======== 0x801915a8 ======== */
 
+/* cd_prim_list_b — prim-list link walk (a1 count, a2>=2 notify); tail-link @0x801B83E0 same as cd_prim_list_a. */
 void cd_prim_list_b(uint32_t a0,uint32_t a1,uint32_t a2)
 {
   uint32_t s0 = a0;
@@ -6755,6 +6758,7 @@ uint32_t cd_chan_slot_set(uint32_t a0,uint32_t a1)
 
 /* ======== 0x8019af84 ======== */
 
+/* cd_cb7_run — DICR done-mask walk: for each set ch bit clear DICR bit, call handler tbl @0x801BDDF4 cursor; tail DMA-error dump on 0x80000000/bit15. */
 void cd_cb7_run(uint32_t a0)
 {
   uint32_t s3 = 0x00ffffff;
@@ -6816,6 +6820,7 @@ void cd_cb7_run(uint32_t a0)
 
 /* ======== 0x8019eda8 ======== */
 
+/* cd_file_open_wait — open-file job loop: FUN_801A0220 alloc slot, job_slot_alloc(0x8019E700), pump until job_result st==0 (retry st==2 x5, st==3 continue). */
 int cd_file_open_wait(uint32_t a0,uint32_t a1,uint32_t a2)
 {
   uint32_t *q = (uint32_t *)guest_at(0x801febf4);
@@ -6868,6 +6873,7 @@ int cd_file_open_wait(uint32_t a0,uint32_t a1,uint32_t a2)
 
 /* ======== 0x801936e4 ======== */
 
+/* cd_pump_watchdog — GPU/DMA stall watchdog: on deadline expiry dump regs, reset channel regs via pointer cells, return -1. */
 int cd_pump_watchdog(void)
 {
   uint32_t v0 = cd_timer_read(-1);
@@ -6901,6 +6907,7 @@ int cd_pump_watchdog(void)
 
 /* ======== 0x80193aa0 ======== */
 
+/* cd_gpu_call_18_b — timed variant of cd_gpu_call_18: arm deadline @0x801B845C=timer+0xF0, validate rect, emit gpu packet via tbl+0x18. */
 int cd_gpu_call_18_b(uint32_t a0,uint32_t a1,uint32_t a2)
 {
   uint8_t *s0 = (uint8_t *)guest_at(a0);
@@ -6926,6 +6933,7 @@ int cd_gpu_call_18_b(uint32_t a0,uint32_t a1,uint32_t a2)
 
 /* ======== 0x8019ae70 ======== */
 
+/* cd_cb8_run_param — table-8 run with param (see body). */
 void cd_cb8_run_param(uint32_t a0)
 {
   uint32_t *tbl = (uint32_t *)guest_at(0x801bddc0);
@@ -7500,6 +7508,7 @@ uint32_t cd_cmd_state_commit(uint32_t rec,uint32_t a1)
  *   ==0 -> rec[73]=1,rec[70]=1 ret 1; else jalr rec[24](rec,a1) or
  *   jal 0x801a2560, rec[70]+=ret, ret v0.
  * a1 register = param until 0x801a3efc, then old rec[232] (a1s). */
+/* cd_cmd_state_rx — command-state RX machine (see body/labels). */
 uint32_t cd_cmd_state_rx(uint32_t rec,uint32_t a1)
 {
   uint8_t *s0 = (uint8_t *)guest_at(rec);
@@ -7597,6 +7606,7 @@ L_b70_dispatch:
  * (*(rec+40)&0xc0)==0x40 && (*(rec+40)+1)&1 && BE7C8+10<61 ->
  * rec[87]=rec[88]=1, BE7C8+=10; else rec[232]==3 -> rec[87]=1;
  * else rec[230]==0 -> rec[87..92]=1. v0 return is dead in callers. */
+/* cd_cmd_rec_scan — command record scan machine (see body/labels). */
 uint32_t cd_cmd_rec_scan(uint32_t rec)
 {
   uint8_t *s0 = (uint8_t *)guest_at(rec);
