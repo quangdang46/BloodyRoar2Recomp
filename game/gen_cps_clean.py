@@ -44,6 +44,20 @@ REAL_OP_RE = re.compile(
     r'|cpu->(?:write|read)_(?:word|half|byte)\s*\([^;]*\);'
     r'|cpu->gpr\[\d+\]\s*=\s*psx_cyc_load_\w+\s*\([^;]*\);)')
 
+# --timing mode: CD/IRQ-region faithful CPS. Keeps the per-instruction
+# psx_cyc_step / psx_cyc_load_* / psx_cyc_lwc2_read / psx_icache_fetch /
+# psx_slice_block calls that the default transform strips — without them a
+# cps_ piece runs its whole block on a frozen cycle counter and device
+# deadlines (CD IRQ, DMA, VBlank) never service inside the piece (the
+# cps_fallthrough_cycle_wedge.md intra-piece timing loss). Still drops
+# debug/cosim/PGXP instrumentation and the cycle-batch defer calls (charges
+# then take the unbatched psx_cyc_charge -> psx_advance_cycles path, which is
+# the same accounting generated code performs at every flush boundary).
+TIMING = False
+DROP_SUBSTR_TIMING = [d for d in DROP_SUBSTR
+                      if d not in ('psx_cyc_step', 'psx_icache_fetch',
+                                   'psx_slice_block')]
+
 _LOAD_RE = re.compile(
     r'psx_cyc_load_(word|half|byte)\s*\(\s*cpu\s*,\s*(.+?)\s*,\s*\d+\s*,\s*0x[0-9a-fA-F]+u?\s*\)')
 # cpu->read_word/read_half/read_byte are function pointers bound to the
@@ -63,6 +77,12 @@ _UNAL_RE = re.compile(
 # is a synchronous call to the next CPS split piece of the same logical fn.
 _FT_RE = re.compile(
     r'\b(?:br2eu_func_|br2eu_psx_alias_body_)([0-9a-fA-F]{8})\s*\(\s*cpu\s*\)')
+# 2-arg alias dispatch: br2eu_psx_alias_body_<base>(cpu, 0x<entry>u) tail-enters
+# the shared host body at guest entry <entry> — equivalent to dispatching
+# cpu->pc = <entry> through clean_try_dispatch.
+_ALIAS_CALL_RE = re.compile(
+    r'\bbr2eu_psx_alias_body_[0-9a-fA-F]{8}\s*\(\s*cpu\s*,\s*'
+    r'0x([0-9a-fA-F]+)u?\s*\)')
 
 
 # COP2 lwc2: psx_cyc_lwc2_read(cpu, addr) is a 32-bit GTE load == cpu->read_word
@@ -81,8 +101,10 @@ def _sub_temps(expr, tmap):
 
 def _conv(expr):
     """Apply load/store semantic rewrites to an expression/statement."""
-    expr = _LWC2_RE.sub(lambda m: f'cpu->read_word({m.group(1).strip()})', expr)
-    return _sub_loads(expr)
+    if not TIMING:
+        expr = _LWC2_RE.sub(lambda m: f'cpu->read_word({m.group(1).strip()})', expr)
+        expr = _sub_loads(expr)
+    return expr
 
 
 def unwrap_pgx_group(text):
@@ -106,25 +128,34 @@ def unwrap_pgx_group(text):
     body = re.sub(r'PGXP_\w+\s*\([^;]*\)\s*;?', '', body)
     body = re.sub(r'g_debug_last_store_pc\s*=\s*[^;]+;', '', body)
     body = re.sub(r'psx_store_cycle_barrier\s*\(\s*\)\s*;?', '', body)
-    body = re.sub(r'psx_cyc_step\s*\([^;]*\)\s*;?', '', body)
+    if not TIMING:
+        body = re.sub(r'psx_cyc_step\s*\([^;]*\)\s*;?', '', body)
     # drop stray braces / whitespace
     body = body.replace('{', ' ').replace('}', ' ')
     # keep only real statements: gpr/gte_data assign, cpu->read/write_*,
     # gte_write_data / gte_precision_store_word / gte_read_data calls, cps_ fallthrough
+    keep_re = (r'^(cpu->gpr\[|cpu->gte_data\[|cpu->(?:read|write)_(?:word|half|byte)\s*\(|'
+               r'gte_write_data\s*\(|gte_precision_store_word\s*\(|gte_read_data\s*\(|'
+               r'cps_[0-9a-f]|br2_lw|br2_sw)')
+    if TIMING:
+        keep_re = keep_re[:-1] + r'|psx_|_jt_)'
     stmts = []
     for st in body.split(';'):
         st = st.strip()
         if not st:
             continue
-        if re.match(r'^(cpu->gpr\[|cpu->gte_data\[|cpu->(?:read|write)_(?:word|half|byte)\s*\(|gte_write_data\s*\(|gte_precision_store_word\s*\(|gte_read_data\s*\(|cps_[0-9a-f]|br2_lw|br2_sw)', st):
+        if re.match(keep_re, st):
             stmts.append(_sub_loads(_sub_temps(st, tmap)).strip() + ';')
     return stmts
 
 
 def _sub_loads(s):
-    s = _LOAD_RE.sub(lambda m: f'{_LOAD_RD[m.group(1)]}({m.group(2).strip()})', s)
-    s = _UNAL_RE.sub(lambda m: f'br2_{m.group(1)}(cpu, {m.group(2).strip()}, {m.group(3).strip()})', s)
+    if not TIMING:
+        s = _LOAD_RE.sub(lambda m: f'{_LOAD_RD[m.group(1)]}({m.group(2).strip()})', s)
+        s = _LWC2_RE.sub(lambda m: f'cpu->read_word({m.group(1).strip()})', s)
+        s = _UNAL_RE.sub(lambda m: f'br2_{m.group(1)}(cpu, {m.group(2).strip()}, {m.group(3).strip()})', s)
     s = _FT_RE.sub(lambda m: f'cps_{m.group(1).lower()}()', s)
+    s = _ALIAS_CALL_RE.sub(lambda m: f'cpu->pc = 0x{m.group(1)}u; return;', s)
     return s
 
 
@@ -140,7 +171,8 @@ def rewrite_line(ln):
     """Rewrite a non-brace semantic line; return None to drop it."""
     if not ln.strip():
         return ln
-    for d in DROP_SUBSTR:
+    drops = DROP_SUBSTR_TIMING if TIMING else DROP_SUBSTR
+    for d in drops:
         if d in ln and 'psx_check_interrupts_at' not in ln:
             return None
     if any(r.search(ln) for r in DROP_LINE_RE):
@@ -324,7 +356,7 @@ def emit_fn(addr):
         print(f'/* {addr:#x}: no generated body found */', file=sys.stderr)
         return None
     name, body, path = found
-    sym = f'cps_{addr:08x}'
+    sym = f'cpst_{addr:08x}' if TIMING else f'cps_{addr:08x}'
     core = _GPR_RE.sub(_gpr_names, transform(body))
     hdr = (f'\n/* {sym} — clean CPS transliteration of {name} (guest {addr:#x})\n'
            f' * from {os.path.basename(path)}. */\n')
@@ -333,6 +365,9 @@ def emit_fn(addr):
 
 if __name__ == '__main__':
     args = sys.argv[1:]
+    if '--timing' in args:
+        TIMING = True
+        args.remove('--timing')
     if args and args[0] == '--file':
         addrs = [int(a, 16) for a in args[1:]]
         # two passes: emit prototypes for every cps_ sym first (split-piece
@@ -343,7 +378,7 @@ if __name__ == '__main__':
             r = emit_fn(a)
             if r:
                 fns.append(r)
-                syms.append(f'cps_{a:08x}')
+                syms.append(f'cpst_{a:08x}' if TIMING else f'cps_{a:08x}')
         protos = ''.join(f'void {s}(void);\n' for s in syms)
         sys.stdout.write(FILE_HDR + protos + ''.join(fns))
     else:

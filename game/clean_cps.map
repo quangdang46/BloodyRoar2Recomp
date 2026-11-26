@@ -7,6 +7,24 @@
 # cd_irq_init_seq (guest 0x8019A87C) — CD IRQ/init sequencing coroutine.
 # Entry + its 7 CPS continuation/branch-target blocks all re-enter the same
 # clean body; 0x8019A8DC is the NEXT function (stays generated).
+80198e2c cpst_80198e2c
+80198e5c cpst_80198e2c
+80198e64 cpst_80198e2c
+80198e7c cpst_80198e2c
+80198e8c cpst_80198e2c
+80198e94 cpst_80198e2c
+80198eac cpst_80198e2c
+80198eb4 cpst_80198e2c
+80198ec0 cpst_80198e2c
+80198ec4 cpst_80198e2c
+80198ecc cpst_80198e2c
+80198edc cpst_80198e2c
+80198ee4 cpst_80198e2c
+80198eec cpst_80198e2c
+80198ef4 cpst_80198e2c
+80198f04 cpst_80198e2c
+80198f0c cpst_80198e2c
+80198f10 cpst_80198e2c
 8019a87c cd_irq_init_seq
 8019a884 cd_irq_init_seq
 8019a88c cd_irq_init_seq
