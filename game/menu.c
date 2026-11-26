@@ -12082,39 +12082,39 @@ void cd_sector_debug_dump(void)
 {
   uint8_t buf8[8];
   uint8_t buf24[24];
-  uint32_t s2 = 0x801bef60u;
-  int32_t sel = MB8(s2 + 0xe) & 0xf;
-  int32_t s1;
+  uint32_t st = 0x801bef60u;
+  int32_t sel = MB8(st + 0xe) & 0xf;
+  int32_t i;
   if (sel == 1) {
     print_mode_dispatch(0x8012ddf0u,0,0,0,0,0,0,0,0);
   } else if (sel == 2) {
     print_mode_dispatch(0x8012ddfcu,0,0,0,0,0,0,0,0);
   }
-  if ((MB8(s2 + 0xe) & 0xf0u) != 0) {
+  if ((MB8(st + 0xe) & 0xf0u) != 0) {
     print_mode_dispatch(0x8012de08u,0,0,0,0,0,0,0,0);
   } else {
     print_mode_dispatch(0x8012de10u,0,0,0,0,0,0,0,0);
   }
-  cd_file_open((int32_t)MB32(s2 + 0x20), buf8);
+  cd_file_open((int32_t)MB32(st + 0x20), buf8);
   print_dispatch((const char *)guest_at(0x8012de18u),
                buf8[0], buf8[1], buf8[2]);
-  cd_file_open((int32_t)(MB32(s2 + 0x20) - MB32(s2 + 0x24)), buf8);
+  cd_file_open((int32_t)(MB32(st + 0x20) - MB32(st + 0x24)), buf8);
   print_dispatch((const char *)guest_at(0x8012de30u),
                buf8[0], buf8[1], buf8[2]);
-  cd_file_open((int32_t)MB32(s2 + 0x24), buf8);
+  cd_file_open((int32_t)MB32(st + 0x24), buf8);
   print_dispatch((const char *)guest_at(0x8012de48u),
                buf8[0], buf8[1], buf8[2]);
-  cd_file_open((int32_t)MB32(s2 + 0x28), buf8);
+  cd_file_open((int32_t)MB32(st + 0x28), buf8);
   print_dispatch((const char *)guest_at(0x8012de60u),
                buf8[0], buf8[1], buf8[2]);
   slot_status_fill(buf24);
   print_dispatch((const char *)guest_at(0x8012de78u));
-  for (s1 = 0; s1 < 0xc; s1++) {
-    print_dispatch((const char *)guest_at(0x80120e84u), buf24[s1]);
+  for (i = 0; i < 0xc; i++) {
+    print_dispatch((const char *)guest_at(0x80120e84u), buf24[i]);
   }
   print_dispatch((const char *)guest_at(0x80120e8cu));
-  for (s1 = 0xc; s1 < 0x18; s1++) {
-    print_dispatch((const char *)guest_at(0x80120e84u), buf24[s1]);
+  for (i = 0xc; i < 0x18; i++) {
+    print_dispatch((const char *)guest_at(0x80120e84u), buf24[i]);
   }
   print_dispatch((const char *)guest_at(0x80120e8cu));
 }
@@ -12124,59 +12124,58 @@ void cd_sector_debug_dump(void)
  * 0x78, src stride 0x18, tags 9/0x2c at +0x2b/+0x2f/+0x53/+0x57;
  * extra u16 copy src+0xc -> +0x4c/+0x74; coord adds dx at
  * +0x3e/+0x66, dy at +0x36/+0x5e. Returns dst + count*0x78. */
-uint32_t record_table_expand_b(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                      uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                      uint32_t param_7)
+uint32_t record_table_expand_b(uint32_t dst,uint32_t src,uint32_t tblA,
+                      uint32_t tblB,uint32_t count,uint32_t dx,
+                      uint32_t dy)
 {
-  uint32_t t1 = param_1;
-  uint32_t t2 = param_2;
-  uint32_t t0 = param_5;
-  uint32_t dx = param_6, dy = param_7;
-  uint32_t a0 = param_1 + 0x5e;
-  uint32_t a1 = param_2 + 0x16;
-  if (t0 == 0) return t1;
+  uint32_t dw = dst;
+  uint32_t srw = src;
+  uint32_t n = count;
+  uint32_t aw = dst + 0x5e;
+  uint32_t srcw = src + 0x16;
+  if (n == 0) return dw;
   do {
-    uint32_t B = a0 - 0x5e;
-    uint32_t idx;
-    MW8(B + 0x2b, 9);
-    MW8(B + 0x2f, 0x2c);
-    MW8(B + 0x53, 9);
-    MW8(B + 0x57, 0x2c);
-    MW32(B + 0x5c, MB32(t2));
-    MW32(B + 0x34, MB32(t2));
-    MW32(B + 0x64, MB32(a1 - 0x12));
-    MW32(B + 0x3c, MB32(a1 - 0x12));
-    MW32(B + 0x6c, MB32(a1 - 0xe));
-    MW32(B + 0x44, MB32(a1 - 0xe));
-    MW32(B + 0x74, MB16(a1 - 0xa));
-    MW32(B + 0x4c, MB16(a1 - 0xa));
-    idx = param_4 + (uint32_t)MBS16(a1 - 8) * 8u;
-    MW16(B + 0x20, MB16(idx));
-    MW16(B + 0x22, MB16(idx + 2));
-    MW16(B + 0x24, MB16(idx + 4));
-    idx = param_3 + (uint32_t)MBS16(a1 - 6) * 8u;
-    MW32(t1,      MB32(idx));
-    MW32(t1 + 4,  MB32(idx + 4));
-    idx = param_3 + (uint32_t)MBS16(a1 - 4) * 8u;
-    MW32(B + 8,  MB32(idx));
-    MW32(B + 0xc, MB32(idx + 4));
-    idx = param_3 + (uint32_t)MBS16(a1 - 2) * 8u;
-    MW32(B + 0x10, MB32(idx));
-    MW32(B + 0x14, MB32(idx + 4));
-    idx = param_3 + (uint32_t)MBS16(a1) * 8u;
-    MW32(B + 0x18, MB32(idx));
-    MW32(B + 0x1c, MB32(idx + 4));
-    MW16(B + 0x3e, MB16(B + 0x3e) + dx);
-    MW16(B + 0x36, MB16(B + 0x36) + dy);
-    MW16(B + 0x66, MB16(B + 0x66) + dx);
-    MW16(B + 0x5e, MB16(B + 0x5e) + dy);
-    t1 += 0x78;
-    a0 += 0x78;
-    t2 += 0x18;
-    a1 += 0x18;
-    t0--;
-  } while (t0 != 0);
-  return t1;
+    uint32_t rec = aw - 0x5e;
+    uint32_t ti;
+    MW8(rec + 0x2b, 9);
+    MW8(rec + 0x2f, 0x2c);
+    MW8(rec + 0x53, 9);
+    MW8(rec + 0x57, 0x2c);
+    MW32(rec + 0x5c, MB32(srw));
+    MW32(rec + 0x34, MB32(srw));
+    MW32(rec + 0x64, MB32(srcw - 0x12));
+    MW32(rec + 0x3c, MB32(srcw - 0x12));
+    MW32(rec + 0x6c, MB32(srcw - 0xe));
+    MW32(rec + 0x44, MB32(srcw - 0xe));
+    MW32(rec + 0x74, MB16(srcw - 0xa));
+    MW32(rec + 0x4c, MB16(srcw - 0xa));
+    ti = tblB + (uint32_t)MBS16(srcw - 8) * 8u;
+    MW16(rec + 0x20, MB16(ti));
+    MW16(rec + 0x22, MB16(ti + 2));
+    MW16(rec + 0x24, MB16(ti + 4));
+    ti = tblA + (uint32_t)MBS16(srcw - 6) * 8u;
+    MW32(dw,      MB32(ti));
+    MW32(dw + 4,  MB32(ti + 4));
+    ti = tblA + (uint32_t)MBS16(srcw - 4) * 8u;
+    MW32(rec + 8,  MB32(ti));
+    MW32(rec + 0xc, MB32(ti + 4));
+    ti = tblA + (uint32_t)MBS16(srcw - 2) * 8u;
+    MW32(rec + 0x10, MB32(ti));
+    MW32(rec + 0x14, MB32(ti + 4));
+    ti = tblA + (uint32_t)MBS16(srcw) * 8u;
+    MW32(rec + 0x18, MB32(ti));
+    MW32(rec + 0x1c, MB32(ti + 4));
+    MW16(rec + 0x3e, MB16(rec + 0x3e) + dx);
+    MW16(rec + 0x36, MB16(rec + 0x36) + dy);
+    MW16(rec + 0x66, MB16(rec + 0x66) + dx);
+    MW16(rec + 0x5e, MB16(rec + 0x5e) + dy);
+    dw += 0x78;
+    aw += 0x78;
+    srw += 0x18;
+    srcw += 0x18;
+    n--;
+  } while (n != 0);
+  return dw;
 }
 
 /* ======== batch53 ======== */
@@ -12190,50 +12189,48 @@ uint32_t record_table_expand_b(uint32_t param_1,uint32_t param_2,uint32_t param_
  * hit_chain_clear/da0/dd8 then ret a2+6; ==0x40 -> table
  * 0x801229ac[v1&0xf<6] xor-test stores (dead: flag can only be
  * 0/0x80); else ret a2+6. */
-uint32_t condition_word_dispatch(uint32_t param_1,uint32_t param_2,
-                      uint32_t param_3)
+uint32_t condition_word_dispatch(uint32_t obj,uint32_t st,
+                      uint32_t desc)
 {
-  uint32_t s0 = param_3;
-  uint32_t a0 = param_1, a1 = param_2;
-  int32_t sx = (int32_t)(int8_t)(MB16(s0) >> 8);
+  int32_t sx = (int32_t)(int8_t)(MB16(desc) >> 8);
   int32_t mode = (sx >> 4) & 3;
   uint32_t f80, idx;
-  if (sx & 0x40) a0 = MB32(a0 + 0x2c);
+  if (sx & 0x40) obj = MB32(obj + 0x2c);
   if (mode == 1) {
-    if ((MB8(a0 + 5) & 1u) != 0) return s0 + 6;
+    if ((MB8(obj + 5) & 1u) != 0) return desc + 6;
   } else if (mode < 2) {
     /* fall into flag dispatch */
   } else if (mode == 2) {
-    if ((MB8(a0 + 5) & 1u) == 0) return s0 + 6;
+    if ((MB8(obj + 5) & 1u) == 0) return desc + 6;
   }
   f80 = (uint32_t)sx & 0x80u;
   if (f80 == 0) {
     idx = (uint32_t)sx & 0xfu;
-    if (idx >= 9) return s0 + 6;
+    if (idx >= 9) return desc + 6;
     switch (idx) {
-    case 0: return s0 + 6;
-    case 1: MW32(a1 + 0x94, MB16(a0 + 0x7c) & MB16(s0 + 2)); break;
-    case 2: MW32(a1 + 0x94, MB16(a0 + 0x7a) & MB16(s0 + 2)); break;
-    case 3: MW32(a1 + 0x94, MB16(a0 + 0x80) & MB16(s0 + 2)); break;
-    case 4: MW32(a1 + 0x94, MB16(a0 + 0x84) & MB16(s0 + 2)); break;
-    case 5: MW32(a1 + 0x94, MB16(a0 + 0x82) & MB16(s0 + 2)); break;
-    case 6: hit_chain_clear(a0, a1); return s0 + 6;
-    case 7: pending_hit_a_clear(a0, a1); return s0 + 6;
-    case 8: pending_hit_b_clear(a0, a1); return s0 + 6;
+    case 0: return desc + 6;
+    case 1: MW32(st + 0x94, MB16(obj + 0x7c) & MB16(desc + 2)); break;
+    case 2: MW32(st + 0x94, MB16(obj + 0x7a) & MB16(desc + 2)); break;
+    case 3: MW32(st + 0x94, MB16(obj + 0x80) & MB16(desc + 2)); break;
+    case 4: MW32(st + 0x94, MB16(obj + 0x84) & MB16(desc + 2)); break;
+    case 5: MW32(st + 0x94, MB16(obj + 0x82) & MB16(desc + 2)); break;
+    case 6: hit_chain_clear(obj, st); return desc + 6;
+    case 7: pending_hit_a_clear(obj, st); return desc + 6;
+    case 8: pending_hit_b_clear(obj, st); return desc + 6;
     }
-    return s0 + 6;
+    return desc + 6;
   }
   if (f80 == 0x40) {   /* unreachable: f80 is only ever 0 or 0x80 */
     static const uint16_t off[5] = {0x7c,0x7a,0x80,0x84,0x82};
     idx = (uint32_t)sx & 0xfu;
-    if (idx >= 6 || idx == 0) return s0 + 6;
+    if (idx >= 6 || idx == 0) return desc + 6;
     {
-      uint32_t x = (MB16(a0 + off[idx - 1]) & MB16(s0 + 2))
-                   ^ MB16(s0 + 4);
-      MW32(a1 + 0x94, x < 1u ? 1u : 0u);
+      uint32_t xf = (MB16(obj + off[idx - 1]) & MB16(desc + 2))
+                   ^ MB16(desc + 4);
+      MW32(st + 0x94, xf < 1u ? 1u : 0u);
     }
   }
-  return s0 + 6;
+  return desc + 6;
 }
 
 /* ======== batch54 ======== */
@@ -12247,44 +12244,43 @@ extern int burst_slot_active(int32_t);
  * >= -0x280 and MB32(s0+0x5c)&0x1000000, then for bits 1/2/4/8
  * of MB32(s0+0x6c) call burst_slot_active(0..3) and store 1 on hit;
  * 1 -> same gates then a1+0x94 = idx(1); default ret a2+2. */
-uint32_t button_cond_eval(uint32_t param_1,uint32_t param_2,
-                      uint32_t param_3)
+uint32_t button_cond_eval(uint32_t obj,uint32_t st,
+                      uint32_t desc)
 {
-  uint32_t s0 = param_1, s1 = param_2, s2 = param_3;
-  int32_t sx = (int32_t)(int8_t)(MB16(s2) >> 8);
+  int32_t sx = (int32_t)(int8_t)(MB16(desc) >> 8);
   int32_t mode = (sx >> 4) & 3;
   uint32_t idx;
-  if (sx & 0x40) s0 = MB32(s0 + 0x2c);
+  if (sx & 0x40) obj = MB32(obj + 0x2c);
   if (mode == 1) {
-    if ((MB8(s0 + 5) & 1u) != 0) return s2 + 4;
+    if ((MB8(obj + 5) & 1u) != 0) return desc + 4;
   } else if (mode < 2) {
     /* fall into dispatch */
   } else if (mode == 2) {
-    if ((MB8(s0 + 5) & 1u) == 0) return s2 + 4;
+    if ((MB8(obj + 5) & 1u) == 0) return desc + 4;
   }
   idx = (uint32_t)sx & 0xfu;
   if (idx == 0 || idx == 1) {
     uint32_t gate;
-    MW32(s1 + 0x94, 0);
-    gate = MB32(MB32(param_1 + 0x20) + 0x178);
-    if ((int32_t)gate < -0x280) return s2 + 2;
-    if ((MB32(s0 + 0x5c) & 0x1000000u) == 0) return s2 + 2;
+    MW32(st + 0x94, 0);
+    gate = MB32(MB32(obj + 0x20) + 0x178);
+    if ((int32_t)gate < -0x280) return desc + 2;
+    if ((MB32(obj + 0x5c) & 0x1000000u) == 0) return desc + 2;
     if (idx == 1) {
-      MW32(s1 + 0x94, idx);
-      return s2 + 2;
+      MW32(st + 0x94, idx);
+      return desc + 2;
     }
-    if ((MB32(s0 + 0x6c) & 1u) && burst_slot_active(0))
-      MW32(s1 + 0x94, 1);
-    if ((MB32(s0 + 0x6c) & 2u) && burst_slot_active(1))
-      MW32(s1 + 0x94, 1);
-    if ((MB32(s0 + 0x6c) & 4u) && burst_slot_active(2))
-      MW32(s1 + 0x94, 1);
-    if (MB32(s0 + 0x6c) & 8u) {
-      if (burst_slot_active(3)) MW32(s1 + 0x94, 1);
+    if ((MB32(obj + 0x6c) & 1u) && burst_slot_active(0))
+      MW32(st + 0x94, 1);
+    if ((MB32(obj + 0x6c) & 2u) && burst_slot_active(1))
+      MW32(st + 0x94, 1);
+    if ((MB32(obj + 0x6c) & 4u) && burst_slot_active(2))
+      MW32(st + 0x94, 1);
+    if (MB32(obj + 0x6c) & 8u) {
+      if (burst_slot_active(3)) MW32(st + 0x94, 1);
     }
-    return s2 + 2;
+    return desc + 2;
   }
-  return s2 + 2;
+  return desc + 2;
 }
 
 /* ======== batch55 ======== */
