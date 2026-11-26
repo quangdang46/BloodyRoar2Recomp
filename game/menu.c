@@ -14156,52 +14156,52 @@ void anim_wb_init_gate(uint32_t ent,uint32_t aidx,uint32_t v3,
 uint32_t desc_slot_alloc(uint32_t ent,uint32_t aidx,
                       uint32_t v3)
 {
-  uint32_t s0 = ent, s2 = aidx, s3 = v3;
-  uint32_t v0 = MB16(s3);
-  int32_t s1 = (int32_t)(int8_t)(v0 >> 8);
+
+  uint32_t cmdw = MB16(v3);
+  int32_t s1 = (int32_t)(int8_t)(cmdw >> 8);
   int32_t mode = s1 >> 4;
-  uint32_t rec = s2 + MB8(s2 + 0x100) * 4u;
-  uint32_t t0 = MB32(rec + 0xf8);
-  int32_t flag = MB8(s0 + 5) & 1;
+  uint32_t rec = aidx + MB8(aidx + 0x100) * 4u;
+  uint32_t tbl = MB32(rec + 0xf8);
+  int32_t flag = MB8(ent + 5) & 1;
   int32_t q1, q2, q3, b101, den;
   int i;
-  if (mode == 1) { if (flag) return s3 + 4; }
-  else if (mode == 2) { if (!flag) return s3 + 4; }
+  if (mode == 1) { if (flag) return v3 + 4; }
+  else if (mode == 2) { if (!flag) return v3 + 4; }
   for (i = 0; i < 8; i++) {
-    uint32_t slot = MB32(s0 + 0x14) + (uint32_t)i * 4u;
+    uint32_t slot = MB32(ent + 0x14) + (uint32_t)i * 4u;
     if ((int8_t)MB8(slot) == -1) {
       uint32_t nb;
       MW8(slot, 0);
-      nb = MB8(t0 + MB8(s3 + 2)) + 1u;
+      nb = MB8(tbl + MB8(v3 + 2)) + 1u;
       MW8(slot + 1, (uint8_t)nb);
-      MW16(slot + 2, (uint16_t)(MB16(s3 + 2) >> 8));
+      MW16(slot + 2, (uint16_t)(MB16(v3 + 2) >> 8));
       s1 = (int32_t)(int8_t)nb;
       if (i + 1 < 8)
-        MW8(MB32(s0 + 0x14) + (uint32_t)(i + 1) * 4u, 0xff);
+        MW8(MB32(ent + 0x14) + (uint32_t)(i + 1) * 4u, 0xff);
       break;
     }
   }
-  den = MBS16(s0 + 0x88);
+  den = MBS16(ent + 0x88);
   {
     /* MIPS div-by-zero rule (generated): lo = num>=0 ? -1 : 1 */
-    int32_t b = (int8_t)MB8(s2 + 0x102);
+    int32_t b = (int8_t)MB8(aidx + 0x102);
     int32_t n;
     if (b < 0) {
-      n = MBS16(s0 + 0xba);
+      n = MBS16(ent + 0xba);
       q1 = (den != 0 ? n / den : (n >= 0 ? -1 : 1)) - 3;
     } else {
       n = b * 16;
       q1 = den != 0 ? n / den : -1;
     }
-    b = (int8_t)MB8(s2 + 0x103);
+    b = (int8_t)MB8(aidx + 0x103);
     if (b < 0) {
-      n = MBS16(s0 + 0xb8);
+      n = MBS16(ent + 0xb8);
       q2 = den != 0 ? n / den : (n >= 0 ? -1 : 1);
     } else {
       n = b * 16;
       q2 = den != 0 ? n / den : -1;
     }
-    b = (int8_t)MB8(s2 + 0x104);
+    b = (int8_t)MB8(aidx + 0x104);
     if (b < 0) q3 = 4;
     else {
       n = b * 16;
@@ -14209,29 +14209,29 @@ uint32_t desc_slot_alloc(uint32_t ent,uint32_t aidx,
     }
   }
   q3 <<= 16;
-  b101 = (int8_t)MB8(s2 + 0x101);
+  b101 = (int8_t)MB8(aidx + 0x101);
   if (b101 == 2) {
-    if (s1 == 0xa) anim_wb_init_gate(s0, 0xa, (uint32_t)q2, (uint32_t)q1, (uint32_t)q3);
-    else if (s1 < 0xb) { if (s1 == 7) anim_wb_init_gate(s0, 7, (uint32_t)q2, (uint32_t)q1, (uint32_t)q3); }
+    if (s1 == 0xa) anim_wb_init_gate(ent, 0xa, (uint32_t)q2, (uint32_t)q1, (uint32_t)q3);
+    else if (s1 < 0xb) { if (s1 == 7) anim_wb_init_gate(ent, 7, (uint32_t)q2, (uint32_t)q1, (uint32_t)q3); }
     else {
-      if (s1 == 0xd) anim_wb_init_gate(s0, 0xd, (uint32_t)q2, (uint32_t)q1, (uint32_t)q3);
-      else if (s1 == 0x10) anim_wb_init_gate(s0, 0x10, (uint32_t)q2, (uint32_t)q1, (uint32_t)q3);
+      if (s1 == 0xd) anim_wb_init_gate(ent, 0xd, (uint32_t)q2, (uint32_t)q1, (uint32_t)q3);
+      else if (s1 == 0x10) anim_wb_init_gate(ent, 0x10, (uint32_t)q2, (uint32_t)q1, (uint32_t)q3);
     }
   } else if (b101 == -1) {
-    /* guest reloads lbu 5(s0) here (0x8017c1c4) — after the slot
+    /* guest reloads lbu 5(ent) here (0x8017c1c4) — after the slot
      * stores, so re-read rather than reuse the cached flag */
-    if ((MB8(s0 + 5) & 1) && s1 != 0xa && s1 >= 0xb) {
-      if (s1 == 0xd) anim_wb_init_gate(s0, 0xd, (uint32_t)q2, (uint32_t)q1, (uint32_t)q3);
-      else if (s1 == 0x10) anim_wb_init_gate(s0, 0x10, (uint32_t)q2, (uint32_t)q1, (uint32_t)q3);
+    if ((MB8(ent + 5) & 1) && s1 != 0xa && s1 >= 0xb) {
+      if (s1 == 0xd) anim_wb_init_gate(ent, 0xd, (uint32_t)q2, (uint32_t)q1, (uint32_t)q3);
+      else if (s1 == 0x10) anim_wb_init_gate(ent, 0x10, (uint32_t)q2, (uint32_t)q1, (uint32_t)q3);
     }
   }
-  if ((MB32(s0 + 0x64) & 0x20000u) != 0 && MBS16(s2 + 0x80) != 0x11f) {
+  if ((MB32(ent + 0x64) & 0x20000u) != 0 && MBS16(aidx + 0x80) != 0x11f) {
     if ((uint32_t)(s1 - 2) < 0xf &&
         (s1 == 2 || s1 == 7 || s1 == 10 || s1 == 13 || s1 == 16))
-      task_node_alloc_init((int32_t)s0, s1, 0);
+      task_node_alloc_init((int32_t)ent, s1, 0);
     if (s1 != 0) deferred_cmd_post(0x400, 0x5a, 0);
   }
-  return s3 + 4;
+  return v3 + 4;
 }
 
 /* ======== batch67 ======== */
