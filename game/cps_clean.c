@@ -74169,8 +74169,7 @@ block_8018A6CC:
     cpu->pc = _jt_8018A6CC; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018a6d4 — clean CPS transliteration of br2eu_func_8018A6D4 (guest 0x8018a6d4)
- * from SLES_017.22_full_41.c. */
+/* cps_8018a6d4 — guest 0x8018A6D4: GTE batch writer, a2-indexed 5-entry layout: t6={24,28,36,40,52}, t7={80,88,104,112,136}, t8={4,8,12}; t4 = 32 + t6. Cmds 0x30/0x06/0x01; 15 CPS blocks. */
 void cps_8018a6d4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -74417,8 +74416,7 @@ block_8018A83C:
     cpu->pc = _jt_8018A83C; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018a844 — clean CPS transliteration of br2eu_func_8018A844 (guest 0x8018a844)
- * from SLES_017.22_full_41.c. */
+/* cps_8018a844 — guest 0x8018A844: GTE batch writer, a2-indexed 4-entry layout (same table as cps_8018a27c): t6={20,28,32,40}, t7={64,80,88,104}, t8={4,8,12}; t4 = 24 + t6. Cmds 0x30/0x06/0x2D; 20 CPS blocks. */
 void cps_8018a844(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -74705,8 +74703,7 @@ block_8018A9C0:
     cpu->pc = _jt_8018A9C0; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018a9c8 — clean CPS transliteration of br2eu_func_8018A9C8 (guest 0x8018a9c8)
- * from SLES_017.22_full_41.c. */
+/* cps_8018a9c8 — guest 0x8018A9C8: GTE batch writer, a2-indexed 5-entry layout (same table as cps_8018a6d4): t6={24,28,36,40,52}, t7={80,88,104,112,136}, t8={4,8,12}; t4 = 32 + t6. Cmds 0x30/0x06/0x01/0x2E; 20 CPS blocks. */
 void cps_8018a9c8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -75013,8 +75010,7 @@ block_8018AB7C:
     cpu->pc = _jt_8018AB7C; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018ad80 — clean CPS transliteration of br2eu_func_8018AD80 (guest 0x8018ad80)
- * from SLES_017.22_full_41.c. */
+/* cps_8018ad80 — guest 0x8018AD80: GTE batch transform → OT packet writer. t4 = 32 (+40 when a2!=0); cmds 0x30/0x06/0x01/0x2E; src reads a0+24/28; writes t3+8/12/16/24/32. Stride a0 += 112. 15 CPS blocks. */
 void cps_8018ad80(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -75276,8 +75272,7 @@ block_8018AEE0:
     cpu->pc = _jt_8018AEE0; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018aee8 — clean CPS transliteration of br2eu_func_8018AEE8 (guest 0x8018aee8)
- * from SLES_017.22_full_41.c. */
+/* cps_8018aee8 — guest 0x8018AEE8: GTE batch transform → OT packet writer, wider variant of cps_8018ad80. t4 = 32 (+52 when a2!=0); same cmds 0x30/0x06/0x01/0x2E; writes t3+8/12/20/32/44. Stride a0 += 136. 15 CPS blocks. */
 void cps_8018aee8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -75539,8 +75534,7 @@ block_8018B048:
     cpu->pc = _jt_8018B048; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018b100 — clean CPS transliteration of br2eu_func_8018B100 (guest 0x8018b100)
- * from SLES_017.22_full_41.c. */
+/* cps_8018b100 — guest 0x8018B100: NOT an OT-writer: scratchpad save/restore + extent helper. Saves s0-s6/ra to 0x1F8003E0..0x1F800404, calls 0x80186F5C twice (once with a1 = s0+32, once with a1 = 0x1F8003C0 result block), runs GTE cmd 0x12 and stores MAC/t-matrix results at 0x1F8003C0+960..988. */
 void cps_8018b100(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -75732,8 +75726,7 @@ block_8018B200:
     cpu->pc = _jt_8018B200; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018b380 — clean CPS transliteration of br2eu_func_8018B380 (guest 0x8018b380)
- * from SLES_017.22_full_41.c. */
+/* cps_8018b380 — guest 0x8018B380: GTE batch writer, a2-indexed 5-entry layout (same table as cps_8018a59c): t6={20,24,28,32,40}, t7={64,72,80,88,104}, t8={4,8,12}; t4 = 24 + t6. Cmds 0x30/0x06; 15 CPS blocks. */
 void cps_8018b380(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -75960,8 +75953,7 @@ block_8018B4B0:
     cpu->pc = _jt_8018B4B0; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018b4b8 — clean CPS transliteration of br2eu_func_8018B4B8 (guest 0x8018b4b8)
- * from SLES_017.22_full_41.c. */
+/* cps_8018b4b8 — guest 0x8018B4B8: GTE batch writer, a2-indexed 5-entry layout (same table as cps_8018a6d4): t6={24,28,36,40,52}, t7={80,88,104,112,136}, t8={4,8,12}; t4 = 32 + t6. Cmds 0x30/0x06/0x01; 15 CPS blocks. */
 void cps_8018b4b8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -76208,8 +76200,7 @@ block_8018B620:
     cpu->pc = _jt_8018B620; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018b628 — clean CPS transliteration of br2eu_func_8018B628 (guest 0x8018b628)
- * from SLES_017.22_full_41.c. */
+/* cps_8018b628 — guest 0x8018B628: GTE batch writer, a2-indexed layout (stride table; e.g. t6=32/t7=88/t8=8 variant). Cmds 0x30/0x06/0x2D; 11 CPS blocks. */
 void cps_8018b628(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -76415,8 +76406,7 @@ block_8018B730:
     cpu->pc = _jt_8018B730; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018b738 — clean CPS transliteration of br2eu_func_8018B738 (guest 0x8018b738)
- * from SLES_017.22_full_41.c. */
+/* cps_8018b738 — guest 0x8018B738: a2-dispatch prologue piece for the cps_8018b76c family: selects (t6,t7,t8) from a 2-entry table {(24,80,4),(40,112,8)}, sets t4 = 32 + t6, then tail-dispatches to 0x8018B76C (worker) or 0x8018B88C (bail). */
 void cps_8018b738(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -76479,8 +76469,7 @@ block_8018B768:
     cpu->pc = 0x8018b76cu; return;  /* fallthrough to split piece */
 }
 
-/* cps_8018b76c — clean CPS transliteration of br2eu_func_8018B76C (guest 0x8018b76c)
- * from SLES_017.22_full_41.c. */
+/* cps_8018b76c — guest 0x8018B76C: Worker body for the cps_8018b738 dispatch: 6-reg GTE preload from a0 (cmd 0x30), preamble 0x06, per-vertex transforms writing gte_data[24]/[12]/[13] into t8-strided slots at t3 = a0 + t4; tail-dispatches to 0x8018B884. */
 void cps_8018b76c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -76651,8 +76640,7 @@ block_8018B870:
     cpu->pc = 0x8018b884u; return;  /* fallthrough to split piece */
 }
 
-/* cps_8018b88c — clean CPS transliteration of br2eu_func_8018B88C (guest 0x8018b88c)
- * from SLES_017.22_full_41.c. */
+/* cps_8018b88c — guest 0x8018B88C: 8-byte CPS piece: v0 = a0; jr $ra (nop delay). Bail-out return for the cps_8018b738/b76c family. */
 void cps_8018b88c(void)
 {
   CPUState *cpu = clean_cpu_state();
