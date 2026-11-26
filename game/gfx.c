@@ -515,10 +515,10 @@ uint32_t gpu_graph_reset(uint32_t arg)
   
   v = arg & 7;
   if (v == 3) {
-LAB_80190e4c:
+L_80190e4c:
     printf_forward(s_ResetGraph_jtb__08x_env__08x_80125410,
                  (uint32_t *)0x801b82d8,(uint32_t *)0x801b8320);
-LAB_80190e68:
+L_80190e68:
     guest_memset((uint32_t *)0x801b8320,0,0x80);
     cd_dispatch_tblc();
     bios_call_a0((*(uint32_t *)guest_at(0x801b8318)) & 0xffffff);
@@ -532,9 +532,9 @@ LAB_80190e68:
   }
   else {
     if (v < 4) {
-      if (v == 0) goto LAB_80190e4c;
+      if (v == 0) goto L_80190e4c;
     }
-    else if (v == 5) goto LAB_80190e68;
+    else if (v == 5) goto L_80190e68;
     if (1 < gpu_dbg_level) {
       GPU_DBG(s_ResetGraph__d_____80125430,arg);
     }
@@ -620,7 +620,7 @@ uint32_t draw_env_timing(uint32_t env_g)
   }
   if (((DB16(0x801b8394) == env[4]) && (DB16(0x801b8396) == env[5])) &&
      ((DB16(0x801b8398) == env[6] && ((DB16(0x801b839a) == env[7] && ((char)env[9] != '\b'))))))
-   goto LAB_80191e74;
+   goto L_80191e74;
   gp_type = gp_bde20_read();
   *(char *)(env + 9) = gp_type;
   tc = (int)(short)env[5] + 0x13;
@@ -670,7 +670,7 @@ uint32_t draw_env_timing(uint32_t env_g)
     narrow = (int)tot < 0x103;
     if ((int)tc <= (int)tot) {
       tc = 0x102;
-      goto LAB_80191e0c;
+      goto L_80191e0c;
     }
   }
   else {
@@ -695,7 +695,7 @@ uint32_t draw_env_timing(uint32_t env_g)
     tc = td + 2;
     if ((int)(td + 2) <= (int)tot) {
       tc = 0x131;
-LAB_80191e0c:
+L_80191e0c:
       if (narrow) {
         tc = tot;
       }
@@ -703,7 +703,7 @@ LAB_80191e0c:
   }
   gpu_call(0x10,(ta & 0xfff) << 0xc | tb & 0xfff | 0x6000000,0,0,0);
   gpu_call(0x10,(tc & 0x3ff) << 10 | td & 0x3ff | 0x7000000,0,0,0);
-LAB_80191e74:
+L_80191e74:
   guest_memcpy((uint32_t *)0x801b838c,(uint32_t *)env_g,0x14);
   return env_g;
 }
@@ -1320,7 +1320,7 @@ void hud_gauge_render(uint32_t st_g,uint32_t head_g,uint32_t variant)
   switch (variant & 0xf) {
   default:
     col_d = 0xc; col_c = 0x20; col_a = 0x30; col_b = 0x40;
-    goto LAB_8012c4f8;
+    goto L_8012c4f8;
   case 1:
     col_d = 0; col_c = 0x1000; col_a = 0x3000; col_b = 0x3000;
     v = 1;
@@ -1351,15 +1351,15 @@ void hud_gauge_render(uint32_t st_g,uint32_t head_g,uint32_t variant)
     break;
   case 8:
     col_d = 0; col_c = 0x80; col_a = 0x800000; col_b = 0x200000;
-    goto LAB_8012c4f8;
+    goto L_8012c4f8;
   case 9:
     col_d = 0x800000; col_c = 0; col_a = 0x80; col_b = 0x20;
-LAB_8012c4f8:
+L_8012c4f8:
     v = 0;
   }
   variant = variant & 0xf0;
   if (variant == 0x20) {
-LAB_8012c64c:
+L_8012c64c:
     cell = head_g + 4;
     spr_attr_alloc_b(cell,0x280000,0x177e001e,0x7ad68080,0x80,0x48);
     spr_attr_alloc_b(cell,0x280080,0x177e001e,0x7a968080,0x100,0x48);
@@ -1373,7 +1373,7 @@ LAB_8012c64c:
     sprite_node_emit_b(cell,((uint32_t)(*(int16_t *)(st + 0x22) + -0x13f) * 0x10000) |
                  ((uint32_t)*(int16_t *)(st + 0x20) - 0xffU) & 0xffff,0xfefe001f,
                  ((uint32_t)(v << 6) | 0x7c16U) << 0x10,0x80,1);
-LAB_8012cb64:
+L_8012cb64:
     x = *(int16_t *)(st + 0x20);
     v = (int32_t)*(int16_t *)(st + 0x22);
     cell = 0;
@@ -1389,7 +1389,7 @@ LAB_8012cb64:
         hud_text_d(cell,attr,guest_at(0x8011f110),0x120,
                      (int32_t)(((uint32_t)*(uint16_t *)(st + 0x22) - 0x38) * 0x10000) >> 0x10,0);
         spr_slot_pkt_submit((uint32_t *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0x148,0xf0f001e,0x7a16d800);
-        goto LAB_8012c64c;
+        goto L_8012c64c;
       }
       if (variant != 0x10) return;
       hud_text_d(head_g + 4,attr,guest_at(0x8011f110),0x120,
@@ -1407,7 +1407,7 @@ LAB_8012cb64:
                      ((uint32_t)(v << 6) | 0x7e16U) << 0x10 | 0x9880);
         sprite_node_emit_a(cell,0,*(int16_t *)(st + 0x22) + -0x40,(int32_t)*(int16_t *)(st + 0x20),0x18,
                      col_a,0,col_a,0,2);
-        goto LAB_8012cb64;
+        goto L_8012cb64;
       }
       if (variant != 0x40) return;
     }
@@ -1521,7 +1521,7 @@ uint32_t printf_core(uint32_t chan,const uint8_t *fmt,const uint32_t *args)
   if (fmt == 0) return 0;
   const char *digits = s_0123456789abcdef_80124fe8;
   count = 0;
-LAB_8018e5e0:
+L_8018e5e0:
   v = (uint32_t)*fmt;
   if (v != 0) {
     flags = 0;
@@ -1534,12 +1534,12 @@ LAB_8018e5e0:
       width = 0;
       ap = (uint32_t *)args;
       fp = fmt;
-LAB_8018e60c:
+L_8018e60c:
       fmt = fp + 1;
       apn = ap;
       switch (*fmt) {
       case 0:
-        goto switchD_8018e634_caseD_0;
+        goto L_8018e634_case0;
       default:
         v = (uint32_t)(char)*fmt;
         count = count + 1;
@@ -1548,28 +1548,28 @@ LAB_8018e60c:
       case 0x20:
         fp = fmt;
         if (sign == 0) sign = 0x20;
-        goto LAB_8018e60c;
+        goto L_8018e60c;
       case 0x23:
         alt = 1;
         fp = fmt;
-        goto LAB_8018e60c;
+        goto L_8018e60c;
       case 0x2a:
         apn = ap + 1;
         width = (intptr_t)*ap;
         ap = apn;
         fp = fmt;
-        if (-1 < (int)width) goto LAB_8018e60c;
+        if (-1 < (int)width) goto L_8018e60c;
         width = -width;
         /* fallthrough */
       case 0x2d:
         flags |= 0x10;
         ap = apn;
         fp = fmt;
-        goto LAB_8018e60c;
+        goto L_8018e60c;
       case 0x2b:
         sign = 0x2b;
         fp = fmt;
-        goto LAB_8018e60c;
+        goto L_8018e60c;
       case 0x2e:
         fp = fp + 2;
         c1 = *fp;
@@ -1586,11 +1586,11 @@ LAB_8018e60c:
           fp = fp - 1;
         }
         if ((int)prec_raw < 0) prec_raw = -1;
-        goto LAB_8018e60c;
+        goto L_8018e60c;
       case 0x30:
         flags |= 0x20;
         fp = fmt;
-        goto LAB_8018e60c;
+        goto L_8018e60c;
       case 0x31: case 0x32: case 0x33: case 0x34:
       case 0x35: case 0x36: case 0x37: case 0x38: case 0x39:
         width = 0;
@@ -1600,7 +1600,7 @@ LAB_8018e60c:
           width = (intptr_t)((intptr_t)width * 10 + -0x30 + (uint32_t)*fp);
           if (0x7f < *fmt) break;
         } while ((ctype_bitmap_801b6701[*fmt] & 4) != 0);
-        goto LAB_8018e60c;
+        goto L_8018e60c;
       case 0x44:
         lng = 1;
         /* fallthrough */
@@ -1610,10 +1610,10 @@ LAB_8018e60c:
         else v = (uint32_t)(int16_t)*ap;
         base = 10;
         if ((int32_t)v < 0) { v = -v; sign = 0x2d; }
-        goto LAB_8018e95c_d;
+        goto L_8018e95c_d;
       case 0x4c:
         fp = fmt;
-        goto LAB_8018e60c;
+        goto L_8018e60c;
       case 0x4f:
         lng = 1;
         /* fallthrough */
@@ -1621,11 +1621,11 @@ LAB_8018e60c:
         if (lng || (base = 8, !sht)) {
           v = *ap;
           base = 8;
-          goto LAB_8018e958_d;
+          goto L_8018e958_d;
         }
         v = (uint32_t)(int16_t)*ap;
         sign = 0;
-        goto LAB_8018e95c_d;
+        goto L_8018e95c_d;
       case 0x55:
         lng = 1;
         /* fallthrough */
@@ -1633,11 +1633,11 @@ LAB_8018e60c:
         if (lng || (base = 10, !sht)) {
           v = *ap;
           base = 10;
-          goto LAB_8018e958_d;
+          goto L_8018e958_d;
         }
         v = (uint32_t)(int16_t)*ap;
         sign = 0;
-        goto LAB_8018e95c_d;
+        goto L_8018e95c_d;
       case 0x58:
         digits = s_0123456789ABCDEF_80125004;
         /* fallthrough */
@@ -1646,22 +1646,22 @@ LAB_8018e60c:
         else v = (uint32_t)(int16_t)*ap;
         base = 0x10;
         sign = 0;
-        if (alt && v != 0) { pfx = 1; goto LAB_8018e958_d; }
-        goto LAB_8018e95c_d;
+        if (alt && v != 0) { pfx = 1; goto L_8018e958_d; }
+        goto L_8018e95c_d;
       case 99:
         txt = (char *)dbuf;
         left = (uint32_t *)1;
         sign = 0;
         dbuf[0] = (char)*ap;
-        goto LAB_8018e9fc_d;
+        goto L_8018e9fc_d;
       case 0x68:
         sht = 1;
         fp = fmt;
-        goto LAB_8018e60c;
+        goto L_8018e60c;
       case 0x6c:
         lng = 1;
         fp = fmt;
-        goto LAB_8018e60c;
+        goto L_8018e60c;
       case 0x6e:
         if (lng || !sht) {
           args = (const uint32_t *)(ap + 1);
@@ -1670,11 +1670,11 @@ LAB_8018e60c:
           args = (const uint32_t *)(ap + 1);
           *(uint16_t *)guest_at(*ap) = (uint16_t)count;
         }
-        goto LAB_8018ebec_d;
+        goto L_8018ebec_d;
       case 0x70:
         v = *ap;
         base = 0x10;
-        goto LAB_8018e958_d;
+        goto L_8018e958_d;
       case 0x73:
         txt = *ap == 0 ? (char *)s__null__80124ffc
                                 : (char *)guest_at(*ap);
@@ -1685,22 +1685,22 @@ LAB_8018e60c:
           if (hit != 0 &&
               (sign = 0, left = (uint32_t *)(intptr_t)(hit - txt),
                hit - txt <= (intptr_t)prec_raw))
-            goto LAB_8018e9fc_d;
+            goto L_8018e9fc_d;
         }
         sign = 0;
         left = (uint32_t *)prec_raw;
-        goto LAB_8018e9fc_d;
+        goto L_8018e9fc_d;
       }
       console_emit(v);
-      goto LAB_8018ebec_d;
+      goto L_8018ebec_d;
     }
-switchD_8018e634_caseD_0:
+L_8018e634_case0:
     console_pct();
   }
   return (uint32_t)count;
-LAB_8018e958_d:
+L_8018e958_d:
   sign = 0;
-LAB_8018e95c_d:
+L_8018e95c_d:
   prec = (intptr_t)prec_raw;
   if (-1 < (int)prec_raw) flags &= ~0x20;
   {
@@ -1713,12 +1713,12 @@ LAB_8018e95c_d:
      * never assigned txt — rebuild it as one real buffer. */
     dcur = dbuf + sizeof(dbuf);
     if (v != 0 || prec_raw != 0)
-      goto LAB_8018e984_d;
+      goto L_8018e984_d;
     txt = dcur;
     left = (uint32_t *)0;
-    goto LAB_8018e9fc_d;
+    goto L_8018e9fc_d;
   }
-LAB_8018e984_d:
+L_8018e984_d:
   do {
     quo = v / base;
     if (base == 0) { /* guest break 7 — div-by-zero */ }
@@ -1734,7 +1734,7 @@ LAB_8018e984_d:
   }
   txt = dcur;
   left = (uint32_t *)(uintptr_t)((dbuf + sizeof(dbuf)) - dcur);
-LAB_8018e9fc_d:
+L_8018e9fc_d:
   args = (const uint32_t *)((const uint32_t *)ap + 1);
   need = (uint32_t *)((intptr_t)left + zpad);
   if (sign != 0) need = (uint32_t *)((intptr_t)need + 1);
@@ -1768,9 +1768,9 @@ LAB_8018e9fc_d:
   need = (uint32_t *)width;
   if (width < (intptr_t)fldw) need = fldw;
   count = count + (intptr_t)need;
-LAB_8018ebec_d:
+L_8018ebec_d:
   fmt = fmt + 1;
-  goto LAB_8018e5e0;
+  goto L_8018e5e0;
 }
 
 /* ======== debug console emit layer ========
