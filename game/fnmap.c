@@ -479,6 +479,14 @@ extern void channel_script_emit_pair(void);
 extern void channel_script_emit_pair_2gate(void);
 extern void channel_script_emit_pair_gated(void);
 extern void channel_script_emit_triple(void);
+extern void chk_atk1_foe(void);
+extern void chk_atk1_self(void);
+extern void chk_atk2_foe(void);
+extern void chk_atk2_self(void);
+extern void chk_atk3_foe(void);
+extern void chk_atk3_self(void);
+extern void chk_mode1_foe(void);
+extern void chk_mode1_self(void);
 extern void clear_battle_counters(void);
 extern void clear_f0300_records(void);
 extern void clear_f4ee8_u16s(void);
@@ -2263,6 +2271,14 @@ const Br2FnEnt fn_table[] = {
   { 0x80183664, (void *)scriptop_wait },
   { 0x80183bd0, (void *)scriptop_sflag },
   { 0x80183c30, (void *)scriptop_chk },
+  { 0x80183dc8, (void *)chk_atk2_self },
+  { 0x80183df4, (void *)chk_atk2_foe },
+  { 0x80183e20, (void *)chk_atk1_self },
+  { 0x80183e5c, (void *)chk_atk1_foe },
+  { 0x80183e98, (void *)chk_atk3_self },
+  { 0x80183ec4, (void *)chk_atk3_foe },
+  { 0x80183ef0, (void *)chk_mode1_self },
+  { 0x80183efc, (void *)chk_mode1_foe },
   { 0x80184378, (void *)scriptop_cmp },
   { 0x8018444c, (void *)scriptop_move },
   { 0x80184710, (void *)scriptop_add },

@@ -1716,6 +1716,14 @@
 80183664 scriptop_wait
 80183bd0 scriptop_sflag
 80183c30 scriptop_chk
+80183dc8 chk_atk2_self
+80183df4 chk_atk2_foe
+80183e20 chk_atk1_self
+80183e5c chk_atk1_foe
+80183e98 chk_atk3_self
+80183ec4 chk_atk3_foe
+80183ef0 chk_mode1_self
+80183efc chk_mode1_foe
 80184378 scriptop_cmp
 8018444c scriptop_move
 80184aa0 scriptop_gpad

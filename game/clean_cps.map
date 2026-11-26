@@ -4595,3 +4595,39 @@
 8012a93c cps_8012a92c
 801298f8 cps_801298f8
 801268b8 cps_801268b8
+
+# chk_atk*/chk_mode1_* (game/w2_e09.c) — scriptop_chk (0x80183C30, op04 Chk)
+# case piece-entries: the guest cond-table `jr v0` lands mid-function on a
+# per-cond case block; each stores ctx+0x38 and advances ctx+0x24, then runs
+# the shared epilogue 0x80184358. Shared tails 0x80184354/0x80184358 are
+# owned by chk_atk2_self (context-free: sw ctx+0x24 + reg restore + jr ra);
+# 0x80183FDC/0x80183FE4 are owned by chk_mode1_self (shared by the self/foe
+# mode5&1 pair). All block addrs are psx_check_interrupts_at resume points.
+80183dc8 chk_atk2_self
+80183dd8 chk_atk2_self
+80183de4 chk_atk2_self
+80183df4 chk_atk2_foe
+80183e04 chk_atk2_foe
+80183e10 chk_atk2_foe
+80183e20 chk_atk1_self
+80183e30 chk_atk1_self
+80183e40 chk_atk1_self
+80183e4c chk_atk1_self
+80183e50 chk_atk1_self
+80183e5c chk_atk1_foe
+80183e6c chk_atk1_foe
+80183e7c chk_atk1_foe
+80183e88 chk_atk1_foe
+80183e8c chk_atk1_foe
+80183e98 chk_atk3_self
+80183ea8 chk_atk3_self
+80183eb4 chk_atk3_self
+80183ec4 chk_atk3_foe
+80183ed4 chk_atk3_foe
+80183ee0 chk_atk3_foe
+80183ef0 chk_mode1_self
+80183efc chk_mode1_foe
+80183fdc chk_mode1_self
+80183fe4 chk_mode1_self
+80184354 chk_atk2_self
+80184358 chk_atk2_self
