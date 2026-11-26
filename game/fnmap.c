@@ -692,7 +692,9 @@ extern void firework_spawn(void);
 extern void firework_task_update(void);
 extern void fixed_approach_s16(void);
 extern void fixed_point_divide(void);
+extern void fixed_point_ret_neg1(void);
 extern void fixed_recip_lut(void);
+extern void fixed_recip_neg_exp(void);
 extern void fixed_rsqrt_q12(void);
 extern void fixed_rsqrt_q12_ex(void);
 extern void flag_801b55d0_set(void);
@@ -793,6 +795,7 @@ extern void gte_rtps_xform1_raw(void);
 extern void gte_rtps_xform3(void);
 extern void gte_rtps_xform3_t(void);
 extern void gte_screen_init_defer(void);
+extern void gte_screen_init_defer_mfhi(void);
 extern void gte_sqr_vec3_b(void);
 extern void gte_tr_load(void);
 extern void gte_vec3_normalize(void);
@@ -1253,11 +1256,14 @@ extern void prim_persp_ot_emit(void);
 extern void prim_persp_ot_emit_112(void);
 extern void prim_persp_ot_emit_50(void);
 extern void prim_point_emit_48(void);
+extern void prim_point_emit_48a(void);
 extern void prim_poly_emit_3c(void);
 extern void prim_poly_emit_50(void);
 extern void prim_poly_emit_54(void);
+extern void prim_poly_emit_54a(void);
 extern void prim_poly_emit_54b(void);
 extern void prim_poly_emit_5c(void);
+extern void prim_poly_emit_5ca(void);
 extern void prim_poly_emit_64(void);
 extern void prim_poly_emit_64_vs(void);
 extern void prim_poly_emit_68(void);
@@ -2482,6 +2488,9 @@ const Br2FnEnt fn_table[] = {
   { 0x80187ee0, (void *)prim_emit_ptr_54 },
   { 0x80187ffc, (void *)prim_emit_ptr_50 },
   { 0x801880d4, (void *)prim_emit_ptr_68 },
+  { 0x80188200, (void *)prim_poly_emit_54a },
+  { 0x80188308, (void *)prim_poly_emit_5ca },
+  { 0x80188434, (void *)prim_point_emit_48a },
   { 0x80188510, (void *)prim_poly_emit_6c },
   { 0x8018866c, (void *)prim_poly_emit_64 },
   { 0x80188754, (void *)prim_poly_emit_88 },
@@ -2719,9 +2728,11 @@ const Br2FnEnt fn_table[] = {
   { 0x801941e0, (void *)prim_packet_init_tex },
   { 0x80194280, (void *)isqrt_refine },
   { 0x801943d4, (void *)isqrt },
+  { 0x80194470, (void *)gte_screen_init_defer_mfhi },
   { 0x80194478, (void *)gte_screen_init_defer },
   { 0x80194500, (void *)fixed_rsqrt_q12 },
   { 0x80194590, (void *)fixed_rsqrt_q12_ex },
+  { 0x80194614, (void *)fixed_point_ret_neg1 },
   { 0x8019461c, (void *)vec3_s32_h_normalize },
   { 0x80194630, (void *)vec3_s32_normalize },
   { 0x80194660, (void *)vec3_s16_normalize },
@@ -2729,6 +2740,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80194750, (void *)gte_xform_norm3pts },
   { 0x80194840, (void *)gte_xform_accum },
   { 0x801948c0, (void *)fixed_recip_lut },
+  { 0x80194940, (void *)fixed_recip_neg_exp },
   { 0x80194960, (void *)gte_rtps_xform3 },
   { 0x80194a70, (void *)gte_rtps3_sxy_pack },
   { 0x80194b60, (void *)gte_xform3_nold },

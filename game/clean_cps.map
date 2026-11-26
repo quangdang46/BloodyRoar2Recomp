@@ -5327,3 +5327,36 @@
 80183fe4 scriptop_chk_state_bits
 80184354 chk_atk2_self
 80184358 scriptop_chk_state_bits
+
+# --- w4/e02: heap-serialize prim emitters + fixed-point/GTE leaf entries ---
+# prim_poly_emit_54a (guest 0x80188200) — mode-0 poly emit, vertex stride 0x54
+80188200 prim_poly_emit_54a
+80188208 prim_poly_emit_54a
+80188210 prim_poly_emit_54a
+80188214 prim_poly_emit_54a
+80188260 prim_poly_emit_54a
+801882f8 prim_poly_emit_54a
+80188300 prim_poly_emit_54a
+# prim_poly_emit_5ca (guest 0x80188308) — mode-0 poly emit, stride 0x5c, UVs
+80188308 prim_poly_emit_5ca
+80188310 prim_poly_emit_5ca
+80188318 prim_poly_emit_5ca
+8018831c prim_poly_emit_5ca
+80188368 prim_poly_emit_5ca
+80188424 prim_poly_emit_5ca
+8018842c prim_poly_emit_5ca
+# prim_point_emit_48a (guest 0x80188434) — mode-0 point emit, stride 0x48
+80188434 prim_point_emit_48a
+8018843c prim_point_emit_48a
+80188444 prim_point_emit_48a
+80188448 prim_point_emit_48a
+80188494 prim_point_emit_48a
+80188500 prim_point_emit_48a
+80188508 prim_point_emit_48a
+# gte_screen_init_defer_mfhi (guest 0x80194470) — mfhi $t6 alt entry,
+# falls through to gte_screen_init_defer (0x80194478, already clean)
+80194470 gte_screen_init_defer_mfhi
+# fixed_point_ret_neg1 (guest 0x80194614) — shared li $v0,-1; jr $ra tail
+80194614 fixed_point_ret_neg1
+# fixed_recip_neg_exp (guest 0x80194940) — negative-exponent srlv tail
+80194940 fixed_recip_neg_exp
