@@ -10639,62 +10639,62 @@ bool burst_slot_active(int slot)
 }
 
 /* ---- batch15: GTE/vector + string helpers ---- */
-void prim_packet_init_tex(int pkt,int a1,int a2,uint fl,byte *arg5)
+void prim_packet_init_tex(int pkt,int flag1,int flag2,uint fl,byte *tex)
 {
-  uint uVar1;
-  uVar1 = 0xe1000000;
+  uint pw;
+  pw = 0xe1000000;
   *(undefined1 *)guest_at((uint32_t)(uintptr_t)((pkt + 3) ))= 2;
-  if (a2 != 0) {
-    uVar1 = 0xe1000200;
+  if (flag2 != 0) {
+    pw = 0xe1000200;
   }
   fl = fl & 0x9ff;
-  if (a1 != 0) {
+  if (flag1 != 0) {
     fl = fl | 0x400;
   }
-  *(uint *)guest_at((uint32_t)(uintptr_t)((pkt + 4) ))= uVar1 | fl;
-  if (arg5 == (byte *)0x0) {
+  *(uint *)guest_at((uint32_t)(uintptr_t)((pkt + 4) ))= pw | fl;
+  if (tex == (byte *)0x0) {
     *(undefined4 *)guest_at((uint32_t)(uintptr_t)((pkt + 8) ))= 0;
   }
   else {
     *(uint *)guest_at((uint32_t)(uintptr_t)((pkt + 8) ))=
-         (uint)(arg5[2] >> 3) << 0xf | (uint)(*arg5 >> 3) << 10 | 0xe2000000 |
-         (-(int)*(short *)(arg5 + 6) & 0xf8U) << 2 |
-         (int)(-(int)*(short *)(arg5 + 4) & 0xffU) >> 3;
+         (uint)(tex[2] >> 3) << 0xf | (uint)(*tex >> 3) << 10 | 0xe2000000 |
+         (-(int)*(short *)(tex + 6) & 0xf8U) << 2 |
+         (int)(-(int)*(short *)(tex + 4) & 0xffU) >> 3;
   }
   return;
 
 }
 
 
-void gte_xform_accum(short *a0,uint *a1,int a2,undefined4 a3)
+void gte_xform_accum(short *acc,uint *vec,int n,undefined4 tr)
 {
-  undefined4 uVar1;
-  uint *puVar2;
-  undefined4 uVar3;
-  undefined4 uVar4;
-  undefined4 uVar5;
-  puVar2 = a1 + a2 * 2;
-  setCopReg(2,0x4000,a3);
+  undefined4 old;
+  uint *end;
+  undefined4 rx;
+  undefined4 ry;
+  undefined4 rz;
+  end = vec + n * 2;
+  setCopReg(2,0x4000,tr);
   do {
-    setCopReg(2,0x4800,*a1 & 0xffff);
-    setCopReg(2,0x5000,(int)*a1 >> 0x10);
-    setCopReg(2,0x5800,(int)(short)a1[1]);
+    setCopReg(2,0x4800,*vec & 0xffff);
+    setCopReg(2,0x5000,(int)*vec >> 0x10);
+    setCopReg(2,0x5800,(int)(short)vec[1]);
     copFunction(2,0x198003d);
-    uVar1 = *(undefined4 *)a0;
-    a1 = a1 + 2;
-    uVar3 = getCopReg(2,0x4800);
-    uVar4 = getCopReg(2,0x5000);
-    uVar5 = getCopReg(2,0x5800);
-    *a0 = (short)uVar1 + (short)uVar3;
-    a0[1] = (short)((uint)uVar1 >> 0x10) + (short)uVar4;
-    a0[2] = a0[2] + (short)uVar5;
-    a0 = a0 + 4;
-  } while (a1 != puVar2);
+    old = *(undefined4 *)acc;
+    vec = vec + 2;
+    rx = getCopReg(2,0x4800);
+    ry = getCopReg(2,0x5000);
+    rz = getCopReg(2,0x5800);
+    *acc = (short)old + (short)rx;
+    acc[1] = (short)((uint)old >> 0x10) + (short)ry;
+    acc[2] = acc[2] + (short)rz;
+    acc = acc + 4;
+  } while (vec != end);
   return;
 
 }
 
-uint * gte_rtps_xform3(undefined4 *a0,ushort *a1,uint *a2)
+uint * gte_rtps_xform3(undefined4 *rt,ushort *in,uint *out)
 {
   uint uVar1;
   int iVar2;
@@ -10702,39 +10702,39 @@ uint * gte_rtps_xform3(undefined4 *a0,ushort *a1,uint *a2)
   int iVar4;
   uint uVar5;
   int iVar6;
-  setCopControlWord(2,0,*a0);
-  setCopControlWord(2,0x800,a0[1]);
-  setCopControlWord(2,0x1000,a0[2]);
-  setCopControlWord(2,0x1800,a0[3]);
-  setCopControlWord(2,0x2000,a0[4]);
-  setCopReg(2,0,(uint)*a1 | *(uint *)(a1 + 2) & 0xffff0000);
-  setCopReg(2,0x800,*(undefined4 *)(a1 + 6));
+  setCopControlWord(2,0,*rt);
+  setCopControlWord(2,0x800,rt[1]);
+  setCopControlWord(2,0x1000,rt[2]);
+  setCopControlWord(2,0x1800,rt[3]);
+  setCopControlWord(2,0x2000,rt[4]);
+  setCopReg(2,0,(uint)*in | *(uint *)(in + 2) & 0xffff0000);
+  setCopReg(2,0x800,*(undefined4 *)(in + 6));
   copFunction(2,0x486012);
   uVar1 = getCopReg(2,0x4800);
   iVar2 = getCopReg(2,0x5000);
   uVar3 = getCopReg(2,0x5800);
-  setCopReg(2,0,(uint)a1[1] | *(int *)(a1 + 4) << 0x10);
-  setCopReg(2,0x800,(int)(short)a1[7]);
+  setCopReg(2,0,(uint)in[1] | *(int *)(in + 4) << 0x10);
+  setCopReg(2,0x800,(int)(short)in[7]);
   copFunction(2,0x486012);
   iVar4 = getCopReg(2,0x4800);
   uVar5 = getCopReg(2,0x5000);
   iVar6 = getCopReg(2,0x5800);
-  setCopReg(2,0,(uint)a1[2] | *(uint *)(a1 + 4) & 0xffff0000);
-  setCopReg(2,0x800,*(undefined4 *)(a1 + 8));
+  setCopReg(2,0,(uint)in[2] | *(uint *)(in + 4) & 0xffff0000);
+  setCopReg(2,0x800,*(undefined4 *)(in + 8));
   copFunction(2,0x486012);
-  *a2 = iVar4 << 0x10 | uVar1 & 0xffff;
-  a2[3] = iVar6 << 0x10 | uVar3 & 0xffff;
+  *out = iVar4 << 0x10 | uVar1 & 0xffff;
+  out[3] = iVar6 << 0x10 | uVar3 & 0xffff;
   uVar1 = getCopReg(2,0x4800);
   iVar4 = getCopReg(2,0x5000);
-  a2[1] = uVar1 & 0xffff | iVar2 << 0x10;
-  a2[2] = iVar4 << 0x10 | uVar5 & 0xffff;
+  out[1] = uVar1 & 0xffff | iVar2 << 0x10;
+  out[2] = iVar4 << 0x10 | uVar5 & 0xffff;
   uVar1 = getCopReg(2,0xb);
-  a2[4] = uVar1;
-  return a2;
+  out[4] = uVar1;
+  return out;
 
 }
 
-uint * gte_xform3_nold(ushort *a0,uint *a1)
+uint * gte_xform3_nold(ushort *in,uint *out)
 {
   uint uVar1;
   int iVar2;
@@ -10742,75 +10742,75 @@ uint * gte_xform3_nold(ushort *a0,uint *a1)
   int iVar4;
   uint uVar5;
   int iVar6;
-  setCopReg(2,0,(uint)*a0 | *(uint *)(a0 + 2) & 0xffff0000);
-  setCopReg(2,0x800,*(undefined4 *)(a0 + 6));
+  setCopReg(2,0,(uint)*in | *(uint *)(in + 2) & 0xffff0000);
+  setCopReg(2,0x800,*(undefined4 *)(in + 6));
   copFunction(2,0x486012);
   uVar1 = getCopReg(2,0x4800);
   iVar2 = getCopReg(2,0x5000);
   uVar3 = getCopReg(2,0x5800);
-  setCopReg(2,0,(uint)a0[1] | *(int *)(a0 + 4) << 0x10);
-  setCopReg(2,0x800,(int)(short)a0[7]);
+  setCopReg(2,0,(uint)in[1] | *(int *)(in + 4) << 0x10);
+  setCopReg(2,0x800,(int)(short)in[7]);
   copFunction(2,0x486012);
   iVar4 = getCopReg(2,0x4800);
   uVar5 = getCopReg(2,0x5000);
   iVar6 = getCopReg(2,0x5800);
-  setCopReg(2,0,(uint)a0[2] | *(uint *)(a0 + 4) & 0xffff0000);
-  setCopReg(2,0x800,*(undefined4 *)(a0 + 8));
+  setCopReg(2,0,(uint)in[2] | *(uint *)(in + 4) & 0xffff0000);
+  setCopReg(2,0x800,*(undefined4 *)(in + 8));
   copFunction(2,0x486012);
-  *a1 = iVar4 << 0x10 | uVar1 & 0xffff;
-  a1[3] = iVar6 << 0x10 | uVar3 & 0xffff;
+  *out = iVar4 << 0x10 | uVar1 & 0xffff;
+  out[3] = iVar6 << 0x10 | uVar3 & 0xffff;
   uVar1 = getCopReg(2,0x4800);
   iVar4 = getCopReg(2,0x5000);
-  a1[1] = uVar1 & 0xffff | iVar2 << 0x10;
-  a1[2] = iVar4 << 0x10 | uVar5 & 0xffff;
+  out[1] = uVar1 & 0xffff | iVar2 << 0x10;
+  out[2] = iVar4 << 0x10 | uVar5 & 0xffff;
   uVar1 = getCopReg(2,0xb);
-  a1[4] = uVar1;
-  return a1;
+  out[4] = uVar1;
+  return out;
 
 }
 
-int * gte_mvmva_add(undefined4 *a0,uint *a1,int *a2)
+int * gte_mvmva_add(undefined4 *rt,uint *vec,int *out)
 {
-  uint uVar1;
+  uint vx;
   int iVar2;
-  uint uVar3;
+  uint vy;
   int iVar4;
-  uint uVar5;
+  uint vz;
   int iVar6;
   int iVar7;
   int iVar8;
   int iVar9;
-  setCopControlWord(2,0,*a0);
-  setCopControlWord(2,0x800,a0[1]);
-  setCopControlWord(2,0x1000,a0[2]);
-  setCopControlWord(2,0x1800,a0[3]);
-  setCopControlWord(2,0x2000,a0[4]);
-  uVar1 = *a1;
-  uVar3 = a1[1];
-  uVar5 = a1[2];
-  if ((int)uVar1 < 0) {
-    iVar7 = -((int)-uVar1 >> 0xf);
-    uVar1 = -(-uVar1 & 0x7fff);
+  setCopControlWord(2,0,*rt);
+  setCopControlWord(2,0x800,rt[1]);
+  setCopControlWord(2,0x1000,rt[2]);
+  setCopControlWord(2,0x1800,rt[3]);
+  setCopControlWord(2,0x2000,rt[4]);
+  vx = *vec;
+  vy = vec[1];
+  vz = vec[2];
+  if ((int)vx < 0) {
+    iVar7 = -((int)-vx >> 0xf);
+    vx = -(-vx & 0x7fff);
   }
   else {
-    iVar7 = (int)uVar1 >> 0xf;
-    uVar1 = uVar1 & 0x7fff;
+    iVar7 = (int)vx >> 0xf;
+    vx = vx & 0x7fff;
   }
-  if ((int)uVar3 < 0) {
-    iVar8 = -((int)-uVar3 >> 0xf);
-    uVar3 = -(-uVar3 & 0x7fff);
-  }
-  else {
-    iVar8 = (int)uVar3 >> 0xf;
-    uVar3 = uVar3 & 0x7fff;
-  }
-  if ((int)uVar5 < 0) {
-    iVar9 = -((int)-uVar5 >> 0xf);
-    uVar5 = -(-uVar5 & 0x7fff);
+  if ((int)vy < 0) {
+    iVar8 = -((int)-vy >> 0xf);
+    vy = -(-vy & 0x7fff);
   }
   else {
-    iVar9 = (int)uVar5 >> 0xf;
-    uVar5 = uVar5 & 0x7fff;
+    iVar8 = (int)vy >> 0xf;
+    vy = vy & 0x7fff;
+  }
+  if ((int)vz < 0) {
+    iVar9 = -((int)-vz >> 0xf);
+    vz = -(-vz & 0x7fff);
+  }
+  else {
+    iVar9 = (int)vz >> 0xf;
+    vz = vz & 0x7fff;
   }
   setCopReg(2,0x4800,iVar7);
   setCopReg(2,0x5000,iVar8);
@@ -10819,9 +10819,9 @@ int * gte_mvmva_add(undefined4 *a0,uint *a1,int *a2)
   iVar7 = getCopReg(2,0xc800);
   iVar8 = getCopReg(2,0xd000);
   iVar9 = getCopReg(2,0xd800);
-  setCopReg(2,0x4800,uVar1);
-  setCopReg(2,0x5000,uVar3);
-  setCopReg(2,0x5800,uVar5);
+  setCopReg(2,0x4800,vx);
+  setCopReg(2,0x5000,vy);
+  setCopReg(2,0x5800,vz);
   copFunction(2,0x49e012);
   if (iVar7 < 0) {
     iVar7 = iVar7 * 8;
@@ -10844,35 +10844,35 @@ int * gte_mvmva_add(undefined4 *a0,uint *a1,int *a2)
   iVar2 = getCopReg(2,0xc800);
   iVar4 = getCopReg(2,0xd000);
   iVar6 = getCopReg(2,0xd800);
-  *a2 = iVar2 + iVar7;
-  a2[1] = iVar4 + iVar8;
-  a2[2] = iVar6 + iVar9;
-  return a2;
+  *out = iVar2 + iVar7;
+  out[1] = iVar4 + iVar8;
+  out[2] = iVar6 + iVar9;
+  return out;
 
 }
 
-undefined2 * gte_rtps_xform1(undefined4 *a0,undefined4 *a1,undefined2 *a2)
+undefined2 * gte_rtps_xform1(undefined4 *rt,undefined4 *in,undefined2 *out)
 {
   undefined4 in_zero;
   undefined4 in_at;
-  undefined4 uVar1;
-  undefined4 uVar2;
-  undefined4 uVar3;
-  setCopControlWord(2,0,*a0);
-  setCopControlWord(2,0x800,a0[1]);
-  setCopControlWord(2,0x1000,a0[2]);
-  setCopControlWord(2,0x1800,a0[3]);
-  setCopControlWord(2,0x2000,a0[4]);
-  setCopReg(2,in_zero,*a1);
-  setCopReg(2,in_at,a1[1]);
+  undefined4 gx;
+  undefined4 gy;
+  undefined4 gz;
+  setCopControlWord(2,0,*rt);
+  setCopControlWord(2,0x800,rt[1]);
+  setCopControlWord(2,0x1000,rt[2]);
+  setCopControlWord(2,0x1800,rt[3]);
+  setCopControlWord(2,0x2000,rt[4]);
+  setCopReg(2,in_zero,*in);
+  setCopReg(2,in_at,in[1]);
   copFunction(2,0x486012);
-  uVar1 = getCopReg(2,0x4800);
-  uVar2 = getCopReg(2,0x5000);
-  uVar3 = getCopReg(2,0x5800);
-  *a2 = (short)uVar1;
-  a2[1] = (short)uVar2;
-  a2[2] = (short)uVar3;
-  return a2;
+  gx = getCopReg(2,0x4800);
+  gy = getCopReg(2,0x5000);
+  gz = getCopReg(2,0x5800);
+  *out = (short)gx;
+  out[1] = (short)gy;
+  out[2] = (short)gz;
+  return out;
 
 }
 
@@ -10898,39 +10898,39 @@ void gte_light_load(undefined4 *light)
 
 }
 
-void gte_tr_load(int t)
+void gte_tr_load(int trec)
 {
-  setCopControlWord(2,0x2800,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((t + 0x14))));
-  setCopControlWord(2,0x3000,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((t + 0x18))));
-  setCopControlWord(2,0x3800,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((t + 0x1c))));
+  setCopControlWord(2,0x2800,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((trec + 0x14))));
+  setCopControlWord(2,0x3000,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((trec + 0x18))));
+  setCopControlWord(2,0x3800,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((trec + 0x1c))));
   return;
 
 }
 
-void gte_cw_d000_set(undefined4 a0)
+void gte_cw_d000_set(undefined4 cw)
 {
-  setCopControlWord(2,0xd000,a0);
+  setCopControlWord(2,0xd000,cw);
   return;
 
 }
 
-undefined4 * gte_op_a00428(undefined4 *a0,undefined4 *a1)
+undefined4 * gte_op_a00428(undefined4 *in,undefined4 *out)
 {
-  undefined4 uVar1;
+  undefined4 res;
   undefined4 in_t1;
   undefined4 in_t2;
   undefined4 in_t3;
-  setCopReg(2,in_t1,*a0);
-  setCopReg(2,in_t2,a0[1]);
-  setCopReg(2,in_t3,a0[2]);
+  setCopReg(2,in_t1,*in);
+  setCopReg(2,in_t2,in[1]);
+  setCopReg(2,in_t3,in[2]);
   copFunction(2,0xa00428);
-  uVar1 = getCopReg(2,0x19);
-  *a1 = uVar1;
-  uVar1 = getCopReg(2,0x1a);
-  a1[1] = uVar1;
-  uVar1 = getCopReg(2,0x1b);
-  a1[2] = uVar1;
-  return a1;
+  res = getCopReg(2,0x19);
+  *out = res;
+  res = getCopReg(2,0x1a);
+  out[1] = res;
+  res = getCopReg(2,0x1b);
+  out[2] = res;
+  return out;
 
 }
 
