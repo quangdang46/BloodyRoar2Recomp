@@ -100493,7 +100493,8 @@ block_801A35A8:
 }
 
 /* cps_801a35b0 — clean CPS transliteration of br2eu_func_801A35B0 (guest 0x801a35b0)
- * from SLES_017.22_full_50.c.  * Continuation fragment of the record-fetch/device-protocol family:
+ * from SLES_017.22_full_50.c.
+ * Continuation fragment of the record-fetch/device-protocol family:
  * rejoins at 36C0.
  */
 void cps_801a35b0(void)
@@ -100512,7 +100513,8 @@ block_801A35B0:
 }
 
 /* cps_801a35b8 — clean CPS transliteration of br2eu_func_801A35B8 (guest 0x801a35b8)
- * from SLES_017.22_full_50.c.  * Continuation fragment: reads handler-table word @0x801BE840 region
+ * from SLES_017.22_full_50.c.
+ * Continuation fragment: reads handler-table word @0x801BE840 region
  * (-6152) and re-enters cps_801a347c fetch or splits to 35DC.
  */
 void cps_801a35b8(void)
@@ -100544,7 +100546,8 @@ block_801A35B8:
 }
 
 /* cps_801a35dc — clean CPS transliteration of br2eu_func_801A35DC (guest 0x801a35dc)
- * from SLES_017.22_full_50.c.  * Device-protocol completion variant: issues CD command via jal
+ * from SLES_017.22_full_50.c.
+ * Device-protocol completion variant: issues CD command via jal
  * 0x801A4210 (code 60) plus 0x801A1F74 / 0x801A23FC / 0x801A248C
  * sequence, writes status byte s1+68, then -> 36C0 epilogue.
  */
@@ -100720,7 +100723,8 @@ block_801A36BC:
 }
 
 /* cps_801a36c0 — clean CPS transliteration of br2eu_func_801A36C0 (guest 0x801a36c0)
- * from SLES_017.22_full_50.c.  * Shared epilogue for the 347C-family fetch functions: restores
+ * from SLES_017.22_full_50.c.
+ * Shared epilogue for the 347C-family fetch functions: restores
  * s0-s5 + ra, sp += 48, jr ra.
  */
 void cps_801a36c0(void)
@@ -100746,7 +100750,8 @@ block_801A36C0:
 }
 
 /* cps_801a36f0 — clean CPS transliteration of br2eu_func_801A36F0 (guest 0x801a36f0)
- * from SLES_017.22_full_50.c.  * Object teardown/init body: writes fields at s0+48 and s0+288 and
+ * from SLES_017.22_full_50.c.
+ * Object teardown/init body: writes fields at s0+48 and s0+288 and
  * caller-frame locals a0-52/-48/-4, calls 0x801A09B0 / 0x801A1808 /
  * 0x801A37D0 family with a1 = 480 (block size).
  */
@@ -100906,7 +100911,8 @@ block_801A382C:
 }
 
 /* cps_801a3cf4 — clean CPS transliteration of br2eu_func_801A3CF4 (guest 0x801a3cf4)
- * from SLES_017.22_full_50.c.  * Two-slot probe: scans records at 0x801FF080 and +240 looking for a0;
+ * from SLES_017.22_full_50.c.
+ * Two-slot probe: scans records at 0x801FF080 and +240 looking for a0;
  * returns the matching 16-byte sub-offset (a2, stepping by 16) or 255.
  */
 void cps_801a3cf4(void)
@@ -100973,7 +100979,8 @@ block_801A3D24:
 }
 
 /* cps_801a3d2c — clean CPS transliteration of br2eu_func_801A3D2C (guest 0x801a3d2c)
- * from SLES_017.22_full_50.c.  * Record selector: returns 0x801FF080 + 240 when (a0 & 0xF0) != 0,
+ * from SLES_017.22_full_50.c.
+ * Record selector: returns 0x801FF080 + 240 when (a0 & 0xF0) != 0,
  * else 0x801FF080 — picks between the two 240-byte record slots probed
  * by cps_801a3cf4.
  */
@@ -101020,7 +101027,8 @@ block_801A3D44:
 }
 
 /* cps_801a41d8 — clean CPS transliteration of br2eu_func_801A41D8 (guest 0x801a41d8)
- * from SLES_017.22_full_50.c.  * RX-record state probe: returns 0 iff halfword rec+230 is nonzero AND
+ * from SLES_017.22_full_50.c.
+ * RX-record state probe: returns 0 iff halfword rec+230 is nonzero AND
  * state byte rec+70 == 0xFF; returns 1 otherwise.
  */
 void cps_801a41d8(void)
@@ -101080,7 +101088,8 @@ block_801A41FC:
 }
 
 /* cps_801a4518 — clean CPS transliteration of br2eu_func_801A4518 (guest 0x801a4518)
- * from SLES_017.22_full_50.c.  * Object field initializer: stores words at a0+4/+8/+12 and bytes at
+ * from SLES_017.22_full_50.c.
+ * Object field initializer: stores words at a0+4/+8/+12 and bytes at
  * a0+20/+21 (+ further fields in later blocks), tail-dispatches to
  * 0x801A45B0 / 0x801A4EBC region.
  */
@@ -101185,7 +101194,8 @@ block_801A45B0:
 }
 
 /* cps_801a45c8 — clean CPS transliteration of br2eu_func_801A45C8 (guest 0x801a45c8)
- * from SLES_017.22_full_50.c.  * List/node update body operating on a1: rewrites link word a1+4
+ * from SLES_017.22_full_50.c.
+ * List/node update body operating on a1: rewrites link word a1+4
  * (read-modify-write x3) and sets bytes a1+20/+22; multi-block.
  */
 void cps_801a45c8(void)
@@ -101364,7 +101374,8 @@ block_801A46C0:
 }
 
 /* cps_801a4788 — clean CPS transliteration of br2eu_func_801A4788 (guest 0x801a4788)
- * from SLES_017.22_full_50.c.  * Record update body: writes s3+64 and s3+68 fields; multi-block
+ * from SLES_017.22_full_50.c.
+ * Record update body: writes s3+64 and s3+68 fields; multi-block
  * state-machine body.
  */
 void cps_801a4788(void)
@@ -101486,7 +101497,8 @@ block_801A4810:
 }
 
 /* cps_801a4830 — clean CPS transliteration of br2eu_func_801A4830 (guest 0x801a4830)
- * from SLES_017.22_full_50.c.  * Buffer/object fill body: writes s0+8 (word) and s0+24 (byte) plus
+ * from SLES_017.22_full_50.c.
+ * Buffer/object fill body: writes s0+8 (word) and s0+24 (byte) plus
  * extended field stores across many blocks.
  */
 void cps_801a4830(void)
@@ -101635,7 +101647,8 @@ block_801A48E8:
 }
 
 /* cps_801a4b34 — clean CPS transliteration of br2eu_func_801A4B34 (guest 0x801a4b34)
- * from SLES_017.22_full_50.c.  * Record update sibling of cps_801a4788: writes s1+64/+68, calls
+ * from SLES_017.22_full_50.c.
+ * Record update sibling of cps_801a4788: writes s1+64/+68, calls
  * 0x801A482C.
  */
 void cps_801a4b34(void)
@@ -101784,7 +101797,8 @@ block_801A4BD4:
 }
 
 /* cps_801a4c88 — clean CPS transliteration of br2eu_func_801A4C88 (guest 0x801a4c88)
- * from SLES_017.22_full_50.c.  * Entry fragment: saves s0 = a0, sets a0 = rodata @0x80125FC8, falls
+ * from SLES_017.22_full_50.c.
+ * Entry fragment: saves s0 = a0, sets a0 = rodata @0x80125FC8, falls
  * into cps_801a4c9c.
  */
 void cps_801a4c88(void)
@@ -101805,7 +101819,8 @@ block_801A4C88:
 }
 
 /* cps_801a4c9c — clean CPS transliteration of br2eu_func_801A4C9C (guest 0x801a4c9c)
- * from SLES_017.22_full_50.c.  * Registers three fields of s0 via helper 0x80190A04, each paired with
+ * from SLES_017.22_full_50.c.
+ * Registers three fields of s0 via helper 0x80190A04, each paired with
  * a rodata descriptor: 0x80125FC8 with s0 itself, 0x80125FD8 with
  * *(s0), 0x80125FE8 with *(s0+4). Then epilogue.
  */
@@ -101862,7 +101877,8 @@ block_801A4CC8:
 }
 
 /* cps_801a4d58 — clean CPS transliteration of br2eu_func_801A4D58 (guest 0x801a4d58)
- * from SLES_017.22_full_50.c.  * Object init/teardown body: writes s0+4/+8, calls 0x801A4DBC /
+ * from SLES_017.22_full_50.c.
+ * Object init/teardown body: writes s0+4/+8, calls 0x801A4DBC /
  * 0x801A4E10 / 0x801A4EBC / 0x801A54C8.
  */
 void cps_801a4d58(void)
@@ -101970,7 +101986,8 @@ block_801A4E10:
 }
 
 /* cps_801a4fb8 — clean CPS transliteration of br2eu_func_801A4FB8 (guest 0x801a4fb8)
- * from SLES_017.22_full_50.c.  * Leaf: returns 0 (v0 = 0, jr ra).
+ * from SLES_017.22_full_50.c.
+ * Leaf: returns 0 (v0 = 0, jr ra).
  */
 void cps_801a4fb8(void)
 {
@@ -101988,7 +102005,8 @@ block_801A4FB8:
 }
 
 /* cps_801a4fc0 — clean CPS transliteration of br2eu_func_801A4FC0 (guest 0x801a4fc0)
- * from SLES_017.22_full_50.c.  * Field-store fragment (split pair with 4FC8): writes halfword
+ * from SLES_017.22_full_50.c.
+ * Field-store fragment (split pair with 4FC8): writes halfword
  * (a1+1) -> a3+12.
  */
 void cps_801a4fc0(void)
@@ -102006,7 +102024,8 @@ block_801A4FC0:
 }
 
 /* cps_801a4fc8 — clean CPS transliteration of br2eu_func_801A4FC8 (guest 0x801a4fc8)
- * from SLES_017.22_full_50.c.  * Field-store fragment (split pair with 4FC0): writes halfword t1 ->
+ * from SLES_017.22_full_50.c.
+ * Field-store fragment (split pair with 4FC0): writes halfword t1 ->
  * a3+14, jr ra.
  */
 void cps_801a4fc8(void)
@@ -102025,7 +102044,8 @@ block_801A4FC8:
 }
 
 /* cps_801a5240 — clean CPS transliteration of br2eu_func_801A5240 (guest 0x801a5240)
- * from SLES_017.22_full_50.c.  * Small reader body: loads words a0+4 and a0+8 and runs internal
+ * from SLES_017.22_full_50.c.
+ * Small reader body: loads words a0+4 and a0+8 and runs internal
  * blocks 0x801A5280-52AC.
  */
 void cps_801a5240(void)
@@ -102120,7 +102140,8 @@ block_801A52BC:
 }
 
 /* cps_801a52d0 — clean CPS transliteration of br2eu_func_801A52D0 (guest 0x801a52d0)
- * from SLES_017.22_full_50.c.  * Internal-block body spanning 0x801A5310-534C.
+ * from SLES_017.22_full_50.c.
+ * Internal-block body spanning 0x801A5310-534C.
  */
 void cps_801a52d0(void)
 {
@@ -102228,7 +102249,8 @@ block_801A5358:
 }
 
 /* cps_801a5464 — clean CPS transliteration of br2eu_func_801A5464 (guest 0x801a5464)
- * from SLES_017.22_full_50.c.  * Small accessor: reads word a0+8 and iterates blocks 0x801A547C-5490.
+ * from SLES_017.22_full_50.c.
+ * Small accessor: reads word a0+8 and iterates blocks 0x801A547C-5490.
  */
 void cps_801a5464(void)
 {
@@ -102285,7 +102307,8 @@ block_801A5490:
 }
 
 /* cps_801a5498 — clean CPS transliteration of br2eu_func_801A5498 (guest 0x801a5498)
- * from SLES_017.22_full_50.c.  * Small accessor sibling of cps_801a5464: reads word a0+8, blocks
+ * from SLES_017.22_full_50.c.
+ * Small accessor sibling of cps_801a5464: reads word a0+8, blocks
  * 0x801A54AC-54C0.
  */
 void cps_801a5498(void)
@@ -102342,7 +102365,8 @@ block_801A54C0:
 }
 
 /* cps_801a54d4 — clean CPS transliteration of br2eu_func_801A54D4 (guest 0x801a54d4)
- * from SLES_017.22_full_50.c.  * Trampoline stub: presets t1 = 52 and indirect-jumps via t2.
+ * from SLES_017.22_full_50.c.
+ * Trampoline stub: presets t1 = 52 and indirect-jumps via t2.
  */
 void cps_801a54d4(void)
 {
@@ -102361,7 +102385,8 @@ block_801A54D4:
 }
 
 /* cps_801a54e0 — clean CPS transliteration of br2eu_func_801A54E0 (guest 0x801a54e0)
- * from SLES_017.22_full_50.c.  * Trampoline stub: presets t1 = 55 and indirect-jumps via t2.
+ * from SLES_017.22_full_50.c.
+ * Trampoline stub: presets t1 = 55 and indirect-jumps via t2.
  */
 void cps_801a54e0(void)
 {
@@ -102380,7 +102405,8 @@ block_801A54E0:
 }
 
 /* cps_801a54ec — clean CPS transliteration of br2eu_func_801A54EC (guest 0x801a54ec)
- * from SLES_017.22_full_50.c.  * Trampoline stub: presets t1 = 56 and indirect-jumps via t2.
+ * from SLES_017.22_full_50.c.
+ * Trampoline stub: presets t1 = 56 and indirect-jumps via t2.
  */
 void cps_801a54ec(void)
 {
@@ -102399,7 +102425,8 @@ block_801A54EC:
 }
 
 /* cps_801a5a04 — clean CPS transliteration of br2eu_func_801A5A04 (guest 0x801a5a04)
- * from SLES_017.22_full_50.c.  * Empty leaf: jr ra with nop delay slot.
+ * from SLES_017.22_full_50.c.
+ * Empty leaf: jr ra with nop delay slot.
  */
 void cps_801a5a04(void)
 {
@@ -102417,7 +102444,8 @@ block_801A5A04:
 }
 
 /* cps_801a6b70 — clean CPS transliteration of br2eu_func_801A6B70 (guest 0x801a6b70)
- * from SLES_017.22_full_51.c.  * Small internal-block body spanning 0x801A6B80-6B90.
+ * from SLES_017.22_full_51.c.
+ * Small internal-block body spanning 0x801A6B80-6B90.
  */
 void cps_801a6b70(void)
 {
@@ -102477,7 +102505,8 @@ block_801A6B90:
 }
 
 /* cps_801a6d48 — clean CPS transliteration of br2eu_func_801A6D48 (guest 0x801a6d48)
- * from SLES_017.22_full_51.c.  * Large multi-block body: reads a0+16/+36/+136, calls 0x801A48FC and
+ * from SLES_017.22_full_51.c.
+ * Large multi-block body: reads a0+16/+36/+136, calls 0x801A48FC and
  * the 0x801A6D60-6F34 internal range plus 0x801A953C.
  */
 void cps_801a6d48(void)
@@ -102762,7 +102791,8 @@ block_801A6F34:
 }
 
 /* cps_801a7544 — clean CPS transliteration of br2eu_func_801A7544 (guest 0x801a7544)
- * from SLES_017.22_full_51.c.  * Pointer-chase accessor: returns s16 halfword at
+ * from SLES_017.22_full_51.c.
+ * Pointer-chase accessor: returns s16 halfword at
  * *(a0+16) -> * -> +16 -> +52; a0 == 0 takes the early return path.
  */
 void cps_801a7544(void)
