@@ -3622,6 +3622,9 @@ void cps_80126858(void)
     }
     /* Address: 0x80126858, Size: 24 bytes, Blocks: 2 */
 
+    /* bounds-loop tail: v1+=4; while (a0 < v1) loop back to 0x80126854;
+       else jr $ra. CPS-blocked. */
+
 block_80126858:
     v1 = v1 + 4;
     v0 = (a0 < v1) ? 1 : 0;  /* 0x8012685C: 0x0083102B */
@@ -3953,6 +3956,10 @@ void cps_80126978(void)
     }
     /* Address: 0x80126978, Size: 48 bytes, Blocks: 3 */
 
+    /* stream step 1: word[s0+15612] += s2; jal 0x80127680; then
+       0x80163154(word[s0+15612], v0, 1) -> s2=v0; -> 0x801269A8.
+       CPS-blocked. */
+
 block_80126978:
     v0 = cpu->read_word(s0 + 15612);
     /* nop */  /* 0x8012697C: 0x00000000 */
@@ -3995,6 +4002,10 @@ void cps_801269a8(void)
         }
     }
     /* Address: 0x801269A8, Size: 48 bytes, Blocks: 3 */
+
+    /* stream step 2: jal 0x8018BF40(word[s0+15612],896,0,1); word
+       [s0+15612]+=s2; jal 0x80127680; then 0x80163154(...,2)->s2=v0;
+       -> 0x801269D8. CPS-blocked. */
 
 block_801269A8:
     a0 = cpu->read_word(s0 + 15612);
@@ -4041,6 +4052,10 @@ void cps_801269d8(void)
     }
     /* Address: 0x801269D8, Size: 48 bytes, Blocks: 3 */
 
+    /* stream step 3: jal 0x8018BF40(word[s0+15612],496,480,1); word
+       [s0+15612]+=s2; jal 0x80127680; a1=v0; -> 0x80126A08.
+       CPS-blocked. */
+
 block_801269D8:
     s2 = v0;
     a1 = 496;
@@ -4083,6 +4098,10 @@ void cps_80126a08(void)
         }
     }
     /* Address: 0x80126A08, Size: 48 bytes, Blocks: 3 */
+
+    /* stream step 4: jal 0x80163154(...,3)->s2=v0; jal 0x8018BF40
+       (word[s0+15612],480,480,1); word[s0+15612]+=s2; -> 0x80126A38.
+       CPS-blocked. */
 
 block_80126A08:
     a0 = cpu->read_word(s0 + 15612);
@@ -4896,6 +4915,8 @@ void cps_80127b4c(void)
   if (!cpu) return;
 
     /* Address: 0x80127B4C, Size: 24 bytes, Blocks: 1 */
+
+    /* halfword refcount bump: word[a0+6]++, jr ra */
 
 block_80127B4C:
     v0 = cpu->read_half(a0 + 6);
