@@ -1145,6 +1145,8 @@ extern void prim_cull3_emit_50(void);
 extern void prim_cull3_emit_58(void);
 extern void prim_cull3_emit_68(void);
 extern void prim_depth_shade_emit(void);
+extern void prim_depth_shade_emit_40(void);
+extern void prim_depth_shade_emit_50(void);
 extern void prim_emit_3c(void);
 extern void prim_emit_4c(void);
 extern void prim_emit_5c(void);
@@ -1187,8 +1189,11 @@ extern void prim_nclip_emit_98(void);
 extern void prim_nclip_emit_a8(void);
 extern void prim_packet_init(void);
 extern void prim_packet_init_tex(void);
+extern void prim_persp_cull_emit_48(void);
+extern void prim_persp_cull_emit_58(void);
 extern void prim_persp_ot_emit(void);
 extern void prim_persp_ot_emit_112(void);
+extern void prim_persp_ot_emit_50(void);
 extern void prim_point_emit_48(void);
 extern void prim_poly_emit_3c(void);
 extern void prim_poly_emit_50(void);
@@ -1209,6 +1214,7 @@ extern void prim_poly_emit_88b(void);
 extern void prim_tag_set(void);
 extern void prim_task_run(void);
 extern void prim_tri_batch_rtpt(void);
+extern void prim_vert3_ot_emit_40(void);
 extern void prim_xform_emit(void);
 extern void prim_xform_emit_64(void);
 extern void print_dispatch_guest(void);
@@ -2341,7 +2347,13 @@ const Br2FnEnt fn_table[] = {
   { 0x8018a030, (void *)prim_poly_emit_6cc },
   { 0x8018a14c, (void *)prim_poly_emit_78b },
   { 0x8018a27c, (void *)prim_xform_emit_64 },
+  { 0x8018a340, (void *)prim_persp_ot_emit_50 },
+  { 0x8018a424, (void *)prim_vert3_ot_emit_40 },
   { 0x8018a4f8, (void *)prim_task_run },
+  { 0x8018a59c, (void *)prim_persp_cull_emit_48 },
+  { 0x8018a6d4, (void *)prim_persp_cull_emit_58 },
+  { 0x8018a844, (void *)prim_depth_shade_emit_40 },
+  { 0x8018a9c8, (void *)prim_depth_shade_emit_50 },
   { 0x8018a9e8, (void *)prim_depth_shade_emit },
   { 0x8018ab84, (void *)prim_cull2_emit_30 },
   { 0x8018ac54, (void *)prim_cull3_emit_48 },

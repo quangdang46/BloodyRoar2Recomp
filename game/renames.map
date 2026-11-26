@@ -1959,3 +1959,9 @@
 8018a030 prim_poly_emit_6cc
 8018a14c prim_poly_emit_78b
 8018a27c prim_xform_emit_64
+8018a340 prim_persp_ot_emit_50
+8018a424 prim_vert3_ot_emit_40
+8018a59c prim_persp_cull_emit_48
+8018a6d4 prim_persp_cull_emit_58
+8018a844 prim_depth_shade_emit_40
+8018a9c8 prim_depth_shade_emit_50
