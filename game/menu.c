@@ -9321,9 +9321,9 @@ void width3_num_zero_pad(int32_t unused_a,int32_t val,int32_t unused_b,
  * slot so it always runs, then (a0 & 0x400) rewrites it |4. */
 void packed_field_store(uint32_t val)
 {
-  uint32_t v0 = (val & 0x3ffu) << 3;
-  MW32(0x801f10b8,v0);
-  if (val & 0x400u) MW32(0x801f10b8,v0 | 4u);
+  uint32_t ctl_w = (val & 0x3ffu) << 3;
+  MW32(0x801f10b8,ctl_w);
+  if (val & 0x400u) MW32(0x801f10b8,ctl_w | 4u);
 }
 
 /* side_flag_merge — per-side flag merge @0x8014a5bc (58 insns).
@@ -11999,8 +11999,8 @@ uint32_t record_table_expand_a(uint32_t dst,uint32_t src,uint32_t tblA,
  * gpu_load_image_cmd(rect=copy of +0x2c..0x33, MB32(0x801f470c+s0*4)). */
 void hp_bar_tick(void)
 {
-  uint32_t a0 = 0x801f4700u;
-  uint32_t a1 = a0;
+  uint32_t rec_a = 0x801f4700u;
+  uint32_t rec_b = rec_a;
   uint32_t s0, v1, a2, v0, idx, flag, sum, prod, cnt, adj;
   /* guest rect = $sp+0x10 (frame -0x28) = entry_sp-0x18; it is filled
    * near the top and re-read by gpu_load_image_cmd at the bottom across
@@ -12017,51 +12017,51 @@ void hp_bar_tick(void)
       MW32(0x801fc68cu, 0);
     }
   }
-  memcpy(guest_at(hpb_rect), guest_at(a0 + 0x2c), 8);
-  s0 = MB32(a0 + 0x14);
-  MW32(a0 + 0x14, s0 < 1u ? 1u : 0u);
+  memcpy(guest_at(hpb_rect), guest_at(rec_a + 0x2c), 8);
+  s0 = MB32(rec_a + 0x14);
+  MW32(rec_a + 0x14, s0 < 1u ? 1u : 0u);
   if (MB32(0x801f473cu) != 0) {
     int32_t rem;
-    idx = MB32(a0 + 0x28) * 8u + a0;
+    idx = MB32(rec_a + 0x28) * 8u + rec_a;
     /* guest div @0x801598F8 + mfhi: HI = lh(+0x1c) % lh(+0x30);
      * divisor 0 -> HI = dividend (no trap). */
     {
-      int32_t divisor = MBS16(a0 + 0x30);
+      int32_t divisor = MBS16(rec_a + 0x30);
       int32_t dividend = MBS16(idx + 0x1c);
       rem = divisor == 0 ? dividend : dividend % divisor;
     }
     if (rem != 0) {
       MW32(0x801f473cu, 0);
-      MW16(a0 + 0x2c, MB16(a0 + 0x2c) + (uint16_t)rem);
+      MW16(rec_a + 0x2c, MB16(rec_a + 0x2c) + (uint16_t)rem);
     } else {
       MW16(0x801f472cu, MB16(0x801f472cu) + MB16(0x801f4730u));
     }
   } else {
     MW16(0x801f472cu, MB16(0x801f472cu) + MB16(0x801f4730u));
   }
-  a2 = MB32(a1 + 0x28);
-  idx = a2 * 8u + a1;
+  a2 = MB32(rec_b + 0x28);
+  idx = a2 * 8u + rec_b;
   sum = (uint32_t)(int32_t)(MBS16(idx + 0x18) + MBS16(idx + 0x1c));
-  if ((int32_t)MB16(a1 + 0x2c) < (int32_t)sum) {
-    cnt = (uint32_t)MBS16(a1 + 0x32);
-    v1 = (uint32_t)MBS16(a1 + 0x30) << 4;
+  if ((int32_t)MB16(rec_b + 0x2c) < (int32_t)sum) {
+    cnt = (uint32_t)MBS16(rec_b + 0x32);
+    v1 = (uint32_t)MBS16(rec_b + 0x30) << 4;
     adj = cnt - 1;
     if ((int32_t)adj < 0) adj = cnt + 0xe;
     prod = (uint32_t)((int32_t)(v1 * ((adj >> 4) + 1)));
     /* cd_fileop_forward forwards only a0/a1 to mdec_pump_b; cnt/prod
      * (a2/a3) are dead registers in the guest thunk. */
-    cd_fileop_forward(MB32(a1 + (MB32(a1 + 0x14) * 4u) + 0xc),
+    cd_fileop_forward(MB32(rec_b + (MB32(rec_b + 0x14) * 4u) + 0xc),
                  prod >> 1);
   } else {
     /* a0 still = lh(entry+0x1c): unsigned idx<a0 flag, +0x34 and
      * the 0x801f473c gate store that sx16 value. */
     uint32_t lim = (uint32_t)(int32_t)MBS16(idx + 0x1c);
     flag = a2 < lim ? 1u : 0u;
-    MW32(a1 + 0x28, flag);
-    idx = a1 + flag * 8u;
-    MW32(a1 + 0x34, lim);
-    MW16(a1 + 0x2c, MB16(idx + 0x18));
-    MW16(a1 + 0x2e, MB16(idx + 0x1a));
+    MW32(rec_b + 0x28, flag);
+    idx = rec_b + flag * 8u;
+    MW32(rec_b + 0x34, lim);
+    MW16(rec_b + 0x2c, MB16(idx + 0x18));
+    MW16(rec_b + 0x2e, MB16(idx + 0x1a));
     MW32(0x801f473cu, lim);
   }
   idx = 0x801f4700u + s0 * 4u;
@@ -15361,7 +15361,7 @@ int32_t slot_attr_packet_build(uint32_t head,uint32_t sector,uint32_t attr,
 {
   const uint32_t T = 0x1f80037cu;
   int32_t shade, code1, code2;
-  uint32_t t0, base, x, y;
+  uint32_t pkt_ptr, base, x, y;
   int drawA;
   if (MB32(T + 0xcu) != sector) {
     MW32(T + 0xcu, sector);
@@ -15369,7 +15369,7 @@ int32_t slot_attr_packet_build(uint32_t head,uint32_t sector,uint32_t attr,
   }
   if ((int16_t)MB16(T + 4u) >= 0x190) return 0;
   base = sector * 16000u;
-  t0 = 0x801f8528u + base +
+  pkt_ptr = 0x801f8528u + base +
        (uint32_t)((int32_t)(int16_t)MB16(T + 4u) * 40);
   if ((int16_t)cx < 0x1000) MW16(T + 0u, (uint16_t)cx);
   if ((int16_t)cy < 0x1000) MW16(T + 2u, (uint16_t)cy);
@@ -15388,23 +15388,23 @@ int32_t slot_attr_packet_build(uint32_t head,uint32_t sector,uint32_t attr,
     uint32_t tab = (flags & 1) ? 0x801b1324u : 0x801b1300u;
     uint32_t p = tab + (uint32_t)code1 * 2u;
     uint8_t b0 = MB8(p), b1 = MB8(p + 1u);
-    MW16(t0 + 0xeu, 0x799eu);
-    MW16(t0 + 0x16u, 0x2eu);
-    MW8(t0 + 0xcu, b0);  MW8(t0 + 0xdu, b1);
-    MW8(t0 + 0x14u, (uint8_t)(b0 + shade)); MW8(t0 + 0x15u, b1);
-    MW8(t0 + 0x1cu, b0); MW8(t0 + 0x1du, (uint8_t)(b1 + shade));
-    MW8(t0 + 0x24u, (uint8_t)(b0 + shade)); MW8(t0 + 0x25u, (uint8_t)(b1 + shade));
+    MW16(pkt_ptr + 0xeu, 0x799eu);
+    MW16(pkt_ptr + 0x16u, 0x2eu);
+    MW8(pkt_ptr + 0xcu, b0);  MW8(pkt_ptr + 0xdu, b1);
+    MW8(pkt_ptr + 0x14u, (uint8_t)(b0 + shade)); MW8(pkt_ptr + 0x15u, b1);
+    MW8(pkt_ptr + 0x1cu, b0); MW8(pkt_ptr + 0x1du, (uint8_t)(b1 + shade));
+    MW8(pkt_ptr + 0x24u, (uint8_t)(b0 + shade)); MW8(pkt_ptr + 0x25u, (uint8_t)(b1 + shade));
     x = MB16(T + 0u); y = MB16(T + 2u);
-    MW16(t0 + 0x08u, (uint16_t)x);
-    MW16(t0 + 0x0au, (uint16_t)y);
-    MW16(t0 + 0x10u, (uint16_t)(x + shade));
-    MW16(t0 + 0x12u, (uint16_t)y);
-    MW16(t0 + 0x18u, (uint16_t)x);
-    MW16(t0 + 0x1au, (uint16_t)(y + shade));
-    MW16(t0 + 0x20u, (uint16_t)(x + shade));
-    MW16(t0 + 0x22u, (uint16_t)(y + shade));
-    MW32(t0 + 0x00u, MB32(head) | 0x90000000u);
-    MW32(head, t0 & 0xffffffu);
+    MW16(pkt_ptr + 0x08u, (uint16_t)x);
+    MW16(pkt_ptr + 0x0au, (uint16_t)y);
+    MW16(pkt_ptr + 0x10u, (uint16_t)(x + shade));
+    MW16(pkt_ptr + 0x12u, (uint16_t)y);
+    MW16(pkt_ptr + 0x18u, (uint16_t)x);
+    MW16(pkt_ptr + 0x1au, (uint16_t)(y + shade));
+    MW16(pkt_ptr + 0x20u, (uint16_t)(x + shade));
+    MW16(pkt_ptr + 0x22u, (uint16_t)(y + shade));
+    MW32(pkt_ptr + 0x00u, MB32(head) | 0x90000000u);
+    MW32(head, pkt_ptr & 0xffffffu);
     {
       uint32_t c2 = (uint16_t)(MB16(T + 4u) + 1u);
       MW16(T + 4u, (uint16_t)c2);
@@ -15431,23 +15431,23 @@ blockB:
     uint32_t tab = (flags & 1) ? 0x801b1338u : 0x801b1314u;
     uint32_t p = tab + (uint32_t)code2 * 2u;
     uint8_t b0 = MB8(p), b1 = MB8(p + 1u);
-    MW16(t0 + 0xeu, 0x799eu);
-    MW16(t0 + 0x16u, 0x2eu);
-    MW8(t0 + 0xcu, b0);  MW8(t0 + 0xdu, b1);
-    MW8(t0 + 0x14u, (uint8_t)(b0 + shade)); MW8(t0 + 0x15u, b1);
-    MW8(t0 + 0x1cu, b0); MW8(t0 + 0x1du, (uint8_t)(b1 + shade));
-    MW8(t0 + 0x24u, (uint8_t)(b0 + shade)); MW8(t0 + 0x25u, (uint8_t)(b1 + shade));
+    MW16(pkt_ptr + 0xeu, 0x799eu);
+    MW16(pkt_ptr + 0x16u, 0x2eu);
+    MW8(pkt_ptr + 0xcu, b0);  MW8(pkt_ptr + 0xdu, b1);
+    MW8(pkt_ptr + 0x14u, (uint8_t)(b0 + shade)); MW8(pkt_ptr + 0x15u, b1);
+    MW8(pkt_ptr + 0x1cu, b0); MW8(pkt_ptr + 0x1du, (uint8_t)(b1 + shade));
+    MW8(pkt_ptr + 0x24u, (uint8_t)(b0 + shade)); MW8(pkt_ptr + 0x25u, (uint8_t)(b1 + shade));
     x = MB16(T + 0u); y = MB16(T + 2u);
-    MW16(t0 + 0x08u, (uint16_t)x);
-    MW16(t0 + 0x0au, (uint16_t)y);
-    MW16(t0 + 0x10u, (uint16_t)(x + shade));
-    MW16(t0 + 0x12u, (uint16_t)y);
-    MW16(t0 + 0x18u, (uint16_t)x);
-    MW16(t0 + 0x1au, (uint16_t)(y + shade));
-    MW16(t0 + 0x20u, (uint16_t)(x + shade));
-    MW16(t0 + 0x22u, (uint16_t)(y + shade));
-    MW32(t0 + 0x00u, MB32(head) | 0x90000000u);
-    MW32(head, t0 & 0xffffffu);
+    MW16(pkt_ptr + 0x08u, (uint16_t)x);
+    MW16(pkt_ptr + 0x0au, (uint16_t)y);
+    MW16(pkt_ptr + 0x10u, (uint16_t)(x + shade));
+    MW16(pkt_ptr + 0x12u, (uint16_t)y);
+    MW16(pkt_ptr + 0x18u, (uint16_t)x);
+    MW16(pkt_ptr + 0x1au, (uint16_t)(y + shade));
+    MW16(pkt_ptr + 0x20u, (uint16_t)(x + shade));
+    MW16(pkt_ptr + 0x22u, (uint16_t)(y + shade));
+    MW32(pkt_ptr + 0x00u, MB32(head) | 0x90000000u);
+    MW32(head, pkt_ptr & 0xffffffu);
     MW16(T + 4u, (uint16_t)(MB16(T + 4u) + 1u));
     MW16(T + 0u, (uint16_t)(MB16(T + 0u) + shade));
     MW16(T + 0u, (uint16_t)(MB16(T + 0u) + 8));
