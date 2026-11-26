@@ -10536,11 +10536,11 @@ L_tail:
 uint32_t dev_cmd_process(uint32_t ctx)
 {
   CPUState *c = clean_cpu_state();
-  uint32_t s0, s1, s2, s3, s4, fn, r, saved_ra;
+  uint32_t aux, s1, s2, rec_off, chan, fn, r, saved_ra;
   if (!c) return 0;
   s1 = ctx;
 
-  /* 0x801A3350: if (*BE804) cb78C(ctx); s4 = *BE804 (reload). */
+  /* 0x801A3350: if (*BE804) cb78C(ctx); chan = *BE804 (reload). */
   if (br2_ld32(0x801be804u) != 0) {
     fn = br2_ld32(0x801be78cu);
     saved_ra = c->gpr[31];
@@ -10548,19 +10548,19 @@ uint32_t dev_cmd_process(uint32_t ctx)
     br2_call_clean(fn, ctx, c->gpr[5], c->gpr[6], c->gpr[7]);
     c->gpr[31] = saved_ra;
   }
-  s4 = br2_ld32(0x801be804u);
-  s0 = 0xffffffffu;                            /* s0 = -1 */
+  chan = br2_ld32(0x801be804u);
+  aux = 0xffffffffu;                            /* aux = -1 */
   s2 = 0xfffffff0u;                            /* s2 = -0xf0 */
 
-  if (s4 != 0) {
+  if (chan != 0) {
     /* send loop 0x801A33AC-0x801A3434: cell-- unconditional (delay
-     * slot), exit when <=0; up to 4 record sends (s0=-1..3, s2 step
-     * 0xF0). bltz s0 skips the cb78C call on the first pass only. */
+     * slot), exit when <=0; up to 4 record sends (aux=-1..3, s2 step
+     * 0xF0). bltz aux skips the cb78C call on the first pass only. */
     for (;;) {
       uint32_t v = br2_ld32(0x801be7f8u) - 1u;
       br2_st32(0x801be7f8u, v);                /* delay-slot store */
       if ((int32_t)v <= 0) break;
-      if ((int32_t)s0 >= 0) {
+      if ((int32_t)aux >= 0) {
         uint32_t a = br2_ld32(s1 + 0xcu) + s2;
         fn = br2_ld32(0x801be78cu);
         saved_ra = c->gpr[31];
@@ -10579,14 +10579,14 @@ uint32_t dev_cmd_process(uint32_t ctx)
       if ((int32_t)r < 0) return r;            /* -> epilogue v0=r */
       fifo_space_sample(60);
       if (dev_cmd_commit() == 0) return 0xfffffffdu;   /* -3 */
-      s0 += 1u;                                /* delay slot: always */
-      if ((int32_t)s0 >= 4) break;
+      aux += 1u;                                /* delay slot: always */
+      if ((int32_t)aux >= 4) break;
       s2 += 0xf0u;                             /* delay slot on loop */
     }
   }
 
   /* 0x801A3438: slot-based dispatch setup. */
-  s0 = 0;
+  aux = 0;
   {
     uint32_t slot = br2_ld32(0x801be7c0u);
     uint32_t cnt  = br2_ld32(0x801be7f8u);
@@ -10594,7 +10594,7 @@ uint32_t dev_cmd_process(uint32_t ctx)
     if ((int32_t)cnt < 2) goto L_collect;      /* bnez -> 0x801A35DC */
     a0i = (slot < 1u) ? 1u : 0u;               /* sltiu a0,slot,1 */
     s2 = 0x801be7d8u + (a0i << 2);             /* &tbl[a0i] */
-    s3 = a0i * 240u;
+    rec_off = a0i * 240u;
     /* s5 = 3 (guest li) — the ==3 state compare below is literal. */
   }
 
@@ -10603,11 +10603,11 @@ uint32_t dev_cmd_process(uint32_t ctx)
     int32_t st = (int32_t)br2_ld32(s2);
     if (st < 0) goto L_collect;
     if (st > 0) {
-      /* drain one record: ptr = *BE7B4 + s3; arg = ptr->fC + st*240
-       * - 0xF0 == ptr->fC + (st-1)*240; s0 = arg (persists). */
-      uint32_t base = br2_ld32(0x801be7b4u) + s3;
+      /* drain one record: ptr = *BE7B4 + rec_off; arg = ptr->fC + st*240
+       * - 0xF0 == ptr->fC + (st-1)*240; aux = arg (persists). */
+      uint32_t base = br2_ld32(0x801be7b4u) + rec_off;
       uint32_t arg  = br2_ld32(base + 0xcu) + (uint32_t)st * 240u - 0xf0u;
-      s0 = arg;
+      aux = arg;
       fn = br2_ld32(0x801be7a0u);
       saved_ra = c->gpr[31];
       c->gpr[31] = 0x801a34c8u;
@@ -10617,27 +10617,27 @@ uint32_t dev_cmd_process(uint32_t ctx)
     /* 0x801A34C8: reload state, dispatch on value. */
     st = (int32_t)br2_ld32(s2);
     if (st == 3) {
-      /* 0x801A3510: cb7A0(s0-0xF0); then *s2 = 1 (via 0x801A3568). */
+      /* 0x801A3510: cb7A0(aux-0xF0); then *s2 = 1 (via 0x801A3568). */
       fn = br2_ld32(0x801be7a0u);
       saved_ra = c->gpr[31];
       c->gpr[31] = 0x801a3524u;
-      br2_call_clean(fn, s0 - 0xf0u, c->gpr[5], c->gpr[6], c->gpr[7]);
+      br2_call_clean(fn, aux - 0xf0u, c->gpr[5], c->gpr[6], c->gpr[7]);
       c->gpr[31] = saved_ra;
       br2_st32(s2, 1u);
       goto L_commitA;
     }
     if (st >= 0 && st < 2) {
-      /* 0x801A352C: s0 = *BE7B4 + s3; cb7A0(s0); cb7A4(s0); *s2 = -1. */
-      s0 = br2_ld32(0x801be7b4u) + s3;
+      /* 0x801A352C: aux = *BE7B4 + rec_off; cb7A0(aux); cb7A4(aux); *s2 = -1. */
+      aux = br2_ld32(0x801be7b4u) + rec_off;
       fn = br2_ld32(0x801be7a0u);
       saved_ra = c->gpr[31];
       c->gpr[31] = 0x801a3550u;
-      br2_call_clean(fn, s0, c->gpr[5], c->gpr[6], c->gpr[7]);
+      br2_call_clean(fn, aux, c->gpr[5], c->gpr[6], c->gpr[7]);
       c->gpr[31] = saved_ra;
       fn = br2_ld32(0x801be7a4u);
       saved_ra = c->gpr[31];
       c->gpr[31] = 0x801a3564u;
-      br2_call_clean(fn, s0, c->gpr[5], c->gpr[6], c->gpr[7]);
+      br2_call_clean(fn, aux, c->gpr[5], c->gpr[6], c->gpr[7]);
       c->gpr[31] = saved_ra;
       br2_st32(s2, 0xffffffffu);
       goto L_commitA;
@@ -10648,11 +10648,11 @@ uint32_t dev_cmd_process(uint32_t ctx)
     }
     /* all other states (2, >4, negative recheck) -> 0x801A3570 send. */
 L_commitA:
-    /* 0x801A3570: cb788(ctx, s4); byte_xfer(ctx, ret&0xff). */
+    /* 0x801A3570: cb788(ctx, chan); byte_xfer(ctx, ret&0xff). */
     fn = br2_ld32(0x801be788u);
     saved_ra = c->gpr[31];
     c->gpr[31] = 0x801a3584u;
-    r = br2_call_clean(fn, s1, s4, c->gpr[6], c->gpr[7]);
+    r = br2_call_clean(fn, s1, chan, c->gpr[6], c->gpr[7]);
     c->gpr[31] = saved_ra;
     r = (uint32_t)dev_byte_xfer((uint8_t *)guest_at(s1),
                                 (int32_t)(r & 0xffu));
@@ -10674,13 +10674,13 @@ L_collect:
     uint32_t v = br2_ld32(0x801be7f8u) - 1u;
     br2_st32(0x801be7f8u, v);                  /* delay-slot store */
     if ((int32_t)v > 0) {
-      s0 = 0x22;
+      aux = 0x22;
       for (;;) {
-        /* 0x801A35FC: cb788(ctx,s4); byte_xfer(ctx,ret&0xff). */
+        /* 0x801A35FC: cb788(ctx,chan); byte_xfer(ctx,ret&0xff). */
         fn = br2_ld32(0x801be788u);
         saved_ra = c->gpr[31];
         c->gpr[31] = 0x801a3614u;
-        r = br2_call_clean(fn, s1, s4, c->gpr[6], c->gpr[7]);
+        r = br2_call_clean(fn, s1, chan, c->gpr[6], c->gpr[7]);
         c->gpr[31] = saved_ra;
         r = (uint32_t)dev_byte_xfer((uint8_t *)guest_at(s1),
                                     (int32_t)(r & 0xffu));
@@ -10688,7 +10688,7 @@ L_collect:
         /* 0x801A3628: lhu (*BE7FC)+0xE == 0x22 -> skip commit. */
         {
           uint32_t sp = br2_ld32(0x801be7fcu);
-          if (br2_ld16(sp + 0xeu) != s0) {
+          if (br2_ld16(sp + 0xeu) != aux) {
             fifo_space_sample(60);
             if (dev_cmd_commit() == 0) return 0xfffffffdu;
           }
@@ -10752,7 +10752,7 @@ extern volatile uint32_t g_drr_ring_pos;
 uint32_t dev_cmd_round_dispatch(uint32_t ctx, uint32_t a2, uint32_t a3)
 {
   CPUState *c = clean_cpu_state();
-  uint32_t idx, fn, r, v1, saved_ra;
+  uint32_t idx, fn, r, counter, saved_ra;
   if (!c) return 0;
 
   idx = br2_ld32(0x801be7c4u);
@@ -10783,16 +10783,16 @@ uint32_t dev_cmd_round_dispatch(uint32_t ctx, uint32_t a2, uint32_t a3)
     return r;
   }
 
-  v1 = br2_ld32(0x801be7c4u);
-  if (v1 == 0) {
-    /* beq -> 0x801A1F38 with v1 still 0: v0 = v1-1 = -1, bne -> ret. */
+  counter = br2_ld32(0x801be7c4u);
+  if (counter == 0) {
+    /* beq -> 0x801A1F38 with counter still 0: v0 = counter-1 = -1, bne -> ret. */
     return 0xffffffffu;
   }
 
   {
     int run_jals = 1;
-    if (v1 == 3) {
-      /* lw v0,0x3C(s0); lbu v1,0(v0); beq v1,128 -> wrap (skip jals). */
+    if (counter == 3) {
+      /* lw v0,0x3C(s0); lbu counter,0(v0); beq counter,128 -> wrap (skip jals). */
       uint32_t p = br2_ld32(ctx + 60u);
       run_jals = (*(volatile uint8_t *)guest_at(p) != 128);
     }
@@ -10818,11 +10818,11 @@ uint32_t dev_cmd_round_dispatch(uint32_t ctx, uint32_t a2, uint32_t a3)
     }
   }
 
-  /* 0x801A1F2C/0x801A1F38: reload counter; v0 = v1-1 always (delay slot).
-   * slti v1,5 -> return v0 untouched; else store counter = v0 first. */
-  v1 = br2_ld32(0x801be7c4u);
-  r = v1 - 1u;
-  if ((int32_t)v1 >= 5) br2_st32(0x801be7c4u, r);
+  /* 0x801A1F2C/0x801A1F38: reload counter; v0 = counter-1 always (delay slot).
+   * slti counter,5 -> return v0 untouched; else store counter = v0 first. */
+  counter = br2_ld32(0x801be7c4u);
+  r = counter - 1u;
+  if ((int32_t)counter >= 5) br2_st32(0x801be7c4u, r);
   return r;
 }
 
