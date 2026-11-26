@@ -1652,6 +1652,10 @@ void cps_80126290(void)
     }
     /* Address: 0x80126290, Size: 48 bytes, Blocks: 4 */
 
+    /* record init + dispatch: word[s1+200]=v0, clears bytes s1+0/2/155/156,
+       jal 0x8015F590; on v0!=0 -> cps_801262C4, else jal
+       0x80126720(word[s1+192]) -> cps_80126328. CPS-blocked. */
+
 block_80126290:
     cpu->write_word(s1 + 200, v0);
     cpu->write_byte(s1, (uint8_t)zero);
@@ -1699,6 +1703,8 @@ void cps_801262c0(void)
 
     /* Address: 0x801262C0, Size: 4 bytes, Blocks: 1 */
 
+    /* nop sled -> cps_801262C4 */
+
 block_801262C0:
     /* nop */  /* 0x801262C0: 0x00000000 */
     cpu->pc = 0x801262c4u; return;  /* fallthrough to split piece */
@@ -1720,6 +1726,10 @@ void cps_801262c4(void)
         }
     }
     /* Address: 0x801262C4, Size: 48 bytes, Blocks: 2 */
+
+    /* attr read piece: half[sp+16]=byte[rec+29], a0=byte[rec+36],
+       jal 0x8018BABC; then a1=byte[rec+15], v1=0x66666667 (magic /10),
+       falls into cps_801262F4. CPS-blocked. */
 
 block_801262C4:
     v1 = cpu->read_word(s1 + 192);
@@ -1757,6 +1767,10 @@ void cps_801262f4(void)
         }
     }
     /* Address: 0x801262F4, Size: 48 bytes, Blocks: 2 */
+
+    /* scale piece: a1=byte[rec+15]*8 * 0x66666667 >>2 -sign -> a1;
+       a0=byte[rec+14]; jal 0x80156048; then a0=byte[rec+12]^1,
+       jal 0x801561C8 -> cps_80126328. CPS-blocked. */
 
 block_801262F4:
     a1 = a1 << 3;
@@ -1816,6 +1830,9 @@ void cps_80126328(void)
     }
     /* Address: 0x80126328, Size: 32 bytes, Blocks: 3 */
 
+    /* setup piece: s5=0x66666667, jal 0x8012748C, jal 0x80163840(0);
+       s2=5, s4=4, v1=byte[s1], falls into cps_80126348. CPS-blocked. */
+
 block_80126328:
     ra = 0x80126330u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -1847,6 +1864,8 @@ void cps_80126348(void)
 
     /* Address: 0x80126348, Size: 8 bytes, Blocks: 1 */
 
+    /* bounds check: v0 = (v1 < 14); falls into cps_80126350. */
+
 block_80126348:
     /* nop */  /* 0x80126348: 0x00000000 */
     v0 = (v1 < (uint32_t)14) ? 1 : 0;  /* 0x8012634C: 0x2C62000E */
@@ -1862,6 +1881,8 @@ void cps_80126350(void)
   if (!cpu) return;
 
     /* Address: 0x80126350, Size: 8 bytes, Blocks: 1 */
+
+    /* loop gate: v0==0 spins here (CPS self-loop), else -> cps_80126358. */
 
 block_80126350:
     int _bc_80126350 = (v0 == zero);  /* save branch cond before delay slot */
@@ -1892,6 +1913,10 @@ void cps_80126358(void)
         }
     }
     /* Address: 0x80126358, Size: 48 bytes, Blocks: 3 */
+
+    /* jump-table dispatch: v0 = word[0x8012E7F0 + v1*4]; jr v0.
+       Fallback arm: jal 0x801560F8(1), byte[s1]=1 -> cps_80126344.
+       CPS-blocked. */
 
 block_80126358:
     v0 = 0x8012 << 16;  /* 0x80120000 */
@@ -1938,6 +1963,10 @@ void cps_80126388(void)
         }
     }
     /* Address: 0x80126388, Size: 52 bytes, Blocks: 4 */
+
+    /* state-1 step: byte[s1]=v0, a0=byte[rec+11], jal 0x8012708C +
+       0x8012748C + 0x80165CB4(15); loop gate on byte[s1]!=1 / <14.
+       CPS-blocked. */
 
 block_80126388:
     cpu->write_byte(s1, (uint8_t)v0);
@@ -2012,6 +2041,10 @@ void cps_801263c0(void)
     }
     /* Address: 0x801263C0, Size: 44 bytes, Blocks: 4 */
 
+    /* state-2 step: byte[s1]==2 check -> v0=3 path 0x8012661C, else
+       re-gate via 0x80126348; tail reads byte[rec+32] -> cps_801263EC.
+       CPS-blocked. */
+
 block_801263C0:
     /* delay slot (always executes) */
     v0 = 2;
@@ -2063,6 +2096,10 @@ void cps_801263ec(void)
         }
     }
     /* Address: 0x801263EC, Size: 52 bytes, Blocks: 5 */
+
+    /* attr apply: a0 = (byte[rec+32]==0) ? 2 : 1, jal 0x801560F8,
+       then jal 0x8012708C(byte[rec+11]) + 0x8012748C -> cps_80126420.
+       CPS-blocked. */
 
 block_801263EC:
     /* nop */  /* 0x801263EC: 0x00000000 */
@@ -2125,6 +2162,10 @@ void cps_80126420(void)
     }
     /* Address: 0x80126420, Size: 48 bytes, Blocks: 5 */
 
+    /* state-3 step: jal 0x80165CB4(3) + 0x80165CB4(1); byte[s1]==3 gate
+       -> byte[s1]=4 via cps_80126344; tail rec lookup -> cps_80126450.
+       CPS-blocked. */
+
 block_80126420:
     ra = 0x80126428u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -2183,6 +2224,11 @@ void cps_80126450(void)
         }
     }
     /* Address: 0x80126450, Size: 52 bytes, Blocks: 5 */
+
+    /* attr apply variant: a0 = (byte[rec+32]==0) ? 2 : 1, jal
+       0x801560F8 + 0x8012748C; then a2=rec, a0=0x51EB0000,
+       v1=byte[rec+15] -> cps_80126484 (magic-divide scale like
+       0x801262F4). CPS-blocked. */
 
 block_80126450:
     /* nop */  /* 0x80126450: 0x00000000 */
@@ -2268,6 +2314,10 @@ void cps_801264b4(void)
         }
     }
     /* Address: 0x801264B4, Size: 52 bytes, Blocks: 3 */
+
+    /* scale + spawn: a1*s5 * 0x66666667 >>2 -sign -> jal 0x80156048;
+       then jal 0x80159028(0x80010000, 0, 1); v0==0 -> cps_801264EC.
+       CPS-blocked. */
 
 block_801264B4:
     { int64_t result = (int64_t)(int32_t)a1 * (int64_t)(int32_t)s5; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
