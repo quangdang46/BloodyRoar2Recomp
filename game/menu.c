@@ -2565,124 +2565,124 @@ undefined2 match_mode_set(int param_1)
 
 /* ======== 0x801566a0 ======== */
 
-void fighter_record_apply(undefined4 param_1,int param_2)
+void fighter_record_apply(undefined4 fighter,int idx)
 
 {
-  fighter_rec_fetch_apply(param_1,param_2,*(undefined4 *)(&DAT_801b3ebc + param_2 * 4));
+  fighter_rec_fetch_apply(fighter,idx,*(undefined4 *)(&DAT_801b3ebc + idx * 4));
   return;
 }
 
 /* ======== 0x801566d4 ======== */
 
-void page_table_ptr_set(int param_1,int param_2,undefined *param_3)
+void page_table_ptr_set(int idx,int slot,undefined *out)
 
 {
-  switch(param_2) {
+  switch(slot) {
   case 0:
-    if (param_1 == 0) {
-      param_3 = &DAT_801b3400;
+    if (idx == 0) {
+      out = &DAT_801b3400;
     }
     else {
-      if (param_1 != 1) goto LAB_801568ec;
-      param_3 = &DAT_801b33dc;
+      if (idx != 1) goto LAB_801568ec;
+      out = &DAT_801b33dc;
     }
     break;
   case 1:
-    if (param_1 == 1) {
-      param_3 = &DAT_801b35b8;
+    if (idx == 1) {
+      out = &DAT_801b35b8;
     }
-    else if (param_1 < 2) {
-      if (param_1 != 0) goto LAB_801568ec;
-      param_3 = &DAT_801b346c;
+    else if (idx < 2) {
+      if (idx != 0) goto LAB_801568ec;
+      out = &DAT_801b346c;
     }
     else {
-      if (param_1 != 2) goto LAB_801568ec;
-      param_3 = &DAT_801b3eb0;
+      if (idx != 2) goto LAB_801568ec;
+      out = &DAT_801b3eb0;
     }
     break;
   case 2:
-    switch(param_1) {
+    switch(idx) {
     case 0:
-      param_3 = &DAT_801b37dc;
+      out = &DAT_801b37dc;
       break;
     case 1:
-      param_3 = &DAT_801b37f4;
+      out = &DAT_801b37f4;
       break;
     case 2:
-      param_3 = &DAT_801b3814;
+      out = &DAT_801b3814;
       break;
     case 3:
-      param_3 = &DAT_801b3834;
+      out = &DAT_801b3834;
       break;
     case 4:
-      param_3 = &DAT_801b3854;
+      out = &DAT_801b3854;
       break;
     case 5:
-      param_3 = &DAT_801b3868;
+      out = &DAT_801b3868;
       break;
     case 6:
-      param_3 = &DAT_801b388c;
+      out = &DAT_801b388c;
       break;
     case 7:
     case 8:
     case 9:
     case 10:
     case 0xc:
-      param_3 = &DAT_801b38ac;
+      out = &DAT_801b38ac;
       break;
     case 0xb:
     case 0x12:
-      param_3 = &DAT_801b3758;
+      out = &DAT_801b3758;
       break;
     case 0x10:
-      param_3 = &DAT_801b35a0;
+      out = &DAT_801b35a0;
       break;
     case 0x11:
-      param_3 = &DAT_801b35cc;
+      out = &DAT_801b35cc;
       break;
     case 0x13:
-      param_3 = &DAT_801b377c;
+      out = &DAT_801b377c;
     }
     break;
   case 3:
   case 4:
-    switch(param_1) {
+    switch(idx) {
     case 0:
-      param_3 = &DAT_801b38d0;
+      out = &DAT_801b38d0;
       break;
     case 1:
-      param_3 = &DAT_801b3968;
+      out = &DAT_801b3968;
       break;
     case 2:
-      param_3 = &DAT_801b3a00;
+      out = &DAT_801b3a00;
       break;
     case 3:
-      param_3 = &DAT_801b3a84;
+      out = &DAT_801b3a84;
       break;
     case 4:
-      param_3 = &DAT_801b3b08;
+      out = &DAT_801b3b08;
       break;
     case 5:
-      param_3 = &DAT_801b3b94;
+      out = &DAT_801b3b94;
       break;
     case 6:
-      param_3 = &DAT_801b3c24;
+      out = &DAT_801b3c24;
       break;
     case 7:
-      param_3 = &DAT_801b3ca8;
+      out = &DAT_801b3ca8;
       break;
     case 8:
-      param_3 = &DAT_801b3d34;
+      out = &DAT_801b3d34;
       break;
     case 9:
-      param_3 = &DAT_801b3db4;
+      out = &DAT_801b3db4;
       break;
     case 10:
-      param_3 = &DAT_801b3e44;
+      out = &DAT_801b3e44;
     }
   }
 LAB_801568ec:
-  *(uint32_t *)guest_at((uint32_t)(param_2 * 4 + -0x7fe0ca20)) = guest_of(param_3);
+  *(uint32_t *)guest_at((uint32_t)(slot * 4 + -0x7fe0ca20)) = guest_of(out);
   return;
 }
 
@@ -2693,10 +2693,10 @@ LAB_801568ec:
 void boot_globals_init(void)
 
 {
-  int *piVar1;
-  undefined1 *puVar2;
-  int iVar3;
-  int iVar4;
+  int *tp;
+  undefined1 *bp;
+  int i;
+  int mask;
   
   cd_chan_boot_fwd();
   mc_init_reset();
@@ -2718,19 +2718,19 @@ void boot_globals_init(void)
   match_mode_set(0);
   deferred_cmd_reset();
   brightness_commit(0);
-  puVar2 = &DAT_801f24d0;
-  iVar4 = 1;
-  iVar3 = 0;
-  piVar1 = (int *)&DAT_801f24d8;
+  bp = &DAT_801f24d0;
+  mask = 1;
+  i = 0;
+  tp = (int *)&DAT_801f24d8;
   do {
-    *puVar2 = 0;
-    *piVar1 = iVar4;
-    iVar4 = iVar4 << 1;
-    *(undefined1 *)((char *)piVar1 + -7) = 0;
-    piVar1 = piVar1 + 4;
-    iVar3 = iVar3 + 1;
-    puVar2 = puVar2 + 0x10;
-  } while (iVar3 < 0x18);
+    *bp = 0;
+    *tp = mask;
+    mask = mask << 1;
+    *(undefined1 *)((char *)tp + -7) = 0;
+    tp = tp + 4;
+    i = i + 1;
+    bp = bp + 0x10;
+  } while (i < 0x18);
   return;
 }
 
@@ -2738,15 +2738,15 @@ void boot_globals_init(void)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-undefined4 attract_stage_load_step(int param_1,int *param_2)
+undefined4 attract_stage_load_step(int state,int *out)
 
 {
-  undefined4 uVar1;
+  undefined4 desc;
   int iVar2;
   short sVar3;
-  /* param_1 is a GUEST base (0x1f800000 scratchpad state block), not a host
+  /* state is a GUEST base (0x1f800000 scratchpad state block), not a host
    * pointer — dereference via guest_at() or the raw 0x1f80008c access faults. */
-  short *st8c = (short *)guest_at((uint32_t)param_1 + 0x8cu);
+  short *st8c = (short *)guest_at((uint32_t)state + 0x8cu);
   
   sVar3 = *st8c;
   if (sVar3 < 0) {
@@ -2758,13 +2758,13 @@ undefined4 attract_stage_load_step(int param_1,int *param_2)
         iVar2 = cd_file_load_sm(0x90,_DAT_801e3cfc);
         if (iVar2 != 0) {
           iVar2 = stream_block_decode(_DAT_801c47b8,(int *)guest_at(_DAT_801e3cfc),2);
-          uVar1 = _DAT_801e3cfc;
+          desc = _DAT_801e3cfc;
           iVar2 = _DAT_801c47b8 + iVar2;
-          param_2[2] = _DAT_801c47b8;
+          out[2] = _DAT_801c47b8;
           _DAT_801c47b8 = iVar2;
-          iVar2 = stream_block_decode(iVar2,(int *)guest_at(uVar1),3);
+          iVar2 = stream_block_decode(iVar2,(int *)guest_at(desc),3);
           sVar3 = 0x30;
-          param_2[3] = _DAT_801c47b8;
+          out[3] = _DAT_801c47b8;
           _DAT_801c47b8 = _DAT_801c47b8 + iVar2;
         }
       }
@@ -2776,10 +2776,10 @@ undefined4 attract_stage_load_step(int param_1,int *param_2)
         iVar2 = cd_file_load_sm(DAT_801b2350 + 0x91,_DAT_801e3cfc);
         if (iVar2 != 0) {
           iVar2 = stream_block_decode(_DAT_801c47b8,(int *)guest_at(_DAT_801e3cfc),0);
-          *param_2 = _DAT_801c47b8;
+          *out = _DAT_801c47b8;
           _DAT_801c47b8 = _DAT_801c47b8 + iVar2;
           iVar2 = stream_block_decode(_DAT_801c47b8,(int *)guest_at(_DAT_801e3cfc),1);
-          param_2[1] = _DAT_801c47b8;
+          out[1] = _DAT_801c47b8;
           _DAT_801c47b8 = _DAT_801c47b8 + iVar2;
           *(undefined2 *)st8c = 0xffff;
           return 1;
@@ -2818,13 +2818,13 @@ LAB_8014700c:
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-undefined4 attract_menu_dispatch(intptr_t param_1,uint param_2)
+undefined4 attract_menu_dispatch(intptr_t state,uint code)
 
 {
-  int iVar1;
+  int rc;
   
-  param_2 = param_2 & 0xffff;
-  if (param_2 == 6) {
+  code = code & 0xffff;
+  if (code == 6) {
     if ((_DAT_1f80007c & 0x840) == 0) {
       return 0;
     }
@@ -2832,36 +2832,36 @@ undefined4 attract_menu_dispatch(intptr_t param_1,uint param_2)
     g_sub_state = 4;
   }
   else {
-    if (param_2 < 7) {
-      if (param_2 == 3) {
+    if (code < 7) {
+      if (code == 3) {
         DAT_1f80009b = 1;
         DAT_1f80009c = 4;
-        iVar1 = mc_pad_button_handler((uint8_t *)guest_at(0x1f800000));
-        if (iVar1 != 0) {
+        rc = mc_pad_button_handler((uint8_t *)guest_at(0x1f800000));
+        if (rc != 0) {
           g_game_state = 8;
           DAT_1f800001 = 0xf0;
           return 0;
         }
         return 0;
       }
-      if (3 < param_2) {
-        if (param_2 == 4) {
+      if (3 < code) {
+        if (code == 4) {
           *(undefined1 *)(_g_system_config_ptr + 0x10) = 99;
           DAT_1f80009b = 0;
           DAT_1f80009c = 3;
-          iVar1 = mc_pad_button_handler((uint8_t *)guest_at(0x1f800000));
-          if (iVar1 != 0) {
+          rc = mc_pad_button_handler((uint8_t *)guest_at(0x1f800000));
+          if (rc != 0) {
             g_game_state = 8;
             DAT_1f800001 = 0xf0;
             return 0;
           }
           return 0;
         }
-        if (param_2 == 5) {
+        if (code == 5) {
           DAT_1f80009b = 3;
           DAT_1f80009c = 2;
-          iVar1 = mc_pad_button_handler((uint8_t *)guest_at(0x1f800000));
-          if (iVar1 != 0) {
+          rc = mc_pad_button_handler((uint8_t *)guest_at(0x1f800000));
+          if (rc != 0) {
             g_game_state = 8;
             DAT_1f800001 = 0xf0;
             return 0;
@@ -2870,23 +2870,23 @@ undefined4 attract_menu_dispatch(intptr_t param_1,uint param_2)
         }
         return 1;
       }
-      if (param_2 == 1) {
+      if (code == 1) {
         *(undefined1 *)(_g_system_config_ptr + 0x10) = 8;
         DAT_1f80009b = 0;
         DAT_1f80009c = 0;
-        iVar1 = mc_pad_button_handler((uint8_t *)guest_at(0x1f800000));
-        if (iVar1 != 0) {
+        rc = mc_pad_button_handler((uint8_t *)guest_at(0x1f800000));
+        if (rc != 0) {
           g_game_state = 8;
           DAT_1f800001 = 0xf0;
           return 0;
         }
         return 0;
       }
-      if (param_2 == 2) {
+      if (code == 2) {
         DAT_1f80009b = 2;
         DAT_1f80009c = 1;
-        iVar1 = mc_pad_button_handler((uint8_t *)guest_at(0x1f800000));
-        if (iVar1 != 0) {
+        rc = mc_pad_button_handler((uint8_t *)guest_at(0x1f800000));
+        if (rc != 0) {
           g_game_state = 8;
           DAT_1f800001 = 0xf0;
           return 0;
@@ -2895,46 +2895,46 @@ undefined4 attract_menu_dispatch(intptr_t param_1,uint param_2)
       }
       return 1;
     }
-    if (0x107 < param_2) {
-      if (param_2 != 0x1ff) {
+    if (0x107 < code) {
+      if (code != 0x1ff) {
         return 1;
       }
       return 0;
     }
-    if (0x100 < param_2) {
-      if ((uint)*(ushort *)(param_1 + 8) != param_2 - 0x100) {
+    if (0x100 < code) {
+      if ((uint)*(ushort *)(state + 8) != code - 0x100) {
         return 0;
       }
-      iVar1 = _DAT_1f800022 * 3;
-      if (iVar1 < 0) {
-        iVar1 = iVar1 + 3;
+      rc = _DAT_1f800022 * 3;
+      if (rc < 0) {
+        rc = rc + 3;
       }
-      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(char *)guest_at(((uint32_t *)guest_at(0x801b235c))[param_2 - 0x101]),
+      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(char *)guest_at(((uint32_t *)guest_at(0x801b235c))[code - 0x101]),
                    (int)((((((int)((uint)_DAT_1f800020 << 0x10) >> 0x10) -
                            ((int)((uint)_DAT_1f800020 << 0x10) >> 0x1f)) >> 1) -
-                         (uint)(byte)(&DAT_801b2253)[param_2]) * 0x10000) >> 0x10,
-                   (iVar1 << 0xe) >> 0x10,0);
+                         (uint)(byte)(&DAT_801b2253)[code]) * 0x10000) >> 0x10,
+                   (rc << 0xe) >> 0x10,0);
       return 0;
     }
-    if (param_2 != 7) {
-      if (param_2 != 0x100) {
+    if (code != 7) {
+      if (code != 0x100) {
         return 1;
       }
-      iVar1 = _DAT_1f800022 * 3;
-      if (iVar1 < 0) {
-        iVar1 = iVar1 + 3;
+      rc = _DAT_1f800022 * 3;
+      if (rc < 0) {
+        rc = rc + 3;
       }
       spr_slot_pkt_submit(_DAT_1f800008 + 4,
-                   ((iVar1 >> 2) + -0x10) * 0x10000 |
+                   ((rc >> 2) + -0x10) * 0x10000 |
                    ((((int)((uint)_DAT_1f800020 << 0x10) >> 0x10) -
                     ((int)((uint)_DAT_1f800020 << 0x10) >> 0x1f)) >> 1) - 8U & 0xffff,0xf0f001e,
                    0x7816e800);
-      iVar1 = _DAT_1f800022 * 3;
-      if (iVar1 < 0) {
-        iVar1 = iVar1 + 3;
+      rc = _DAT_1f800022 * 3;
+      if (rc < 0) {
+        rc = rc + 3;
       }
       spr_slot_pkt_submit(_DAT_1f800008 + 4,
-                   ((iVar1 >> 2) + 0x10) * 0x10000 |
+                   ((rc >> 2) + 0x10) * 0x10000 |
                    ((((int)((uint)_DAT_1f800020 << 0x10) >> 0x10) -
                     ((int)((uint)_DAT_1f800020 << 0x10) >> 0x1f)) >> 1) - 8U & 0xffff,0xf0f001e,
                    0x7816e810);
